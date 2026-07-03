@@ -1,0 +1,125 @@
+---
+/**
+ * ProposalsSection.astro — f00097 S5.
+ *
+ * The static web-parity body for `/[lang]/proposals`: a read-only projection of
+ * the proposals board the VS Code host shows. It reuses the existing
+ * `StatusBadge` / `KindBadge` components and the proposal glossary, and sources
+ * its copy from the standalone `proposalBoardByLang` map (en source of truth,
+ * es translated, others fall back to en) so it never touches the 12-lang site
+ * dict gate. Static site → no live tool calls; this documents the same
+ * projection the host renders live.
+ */
+import KindBadge from '#COMPONENTS/proposals/KindBadge.astro';
+import StatusBadge from '#COMPONENTS/proposals/StatusBadge.astro';
+import { proposalGlossaryByLang, type Lang } from '#I18N/index';
+import { proposalBoardByLang } from '#I18N/proposals-board';
+import { PROPOSAL_KINDS } from '@mcp-vertex/proposals/public';
+
+interface Props {
+	readonly lang: Lang;
+}
+
+const { lang } = Astro.props;
+const tb = proposalBoardByLang[lang];
+const glossary = proposalGlossaryByLang[lang];
+
+const statuses = [
+	'ready',
+	'in-progress',
+	'review',
+	'paused',
+	'blocked',
+	'done',
+	'retired',
+] as const;
+
+const kinds = (
+	Object.keys(glossary.kinds) as Array<keyof typeof PROPOSAL_KINDS>
+).filter((kind) => kind in PROPOSAL_KINDS);
+
+const chips = [
+	{ label: 'Locks', body: tb.chips.locks },
+	{ label: 'Stale', body: tb.chips.stale },
+	{ label: 'Queue', body: tb.chips.queue },
+	{ label: 'Health', body: tb.chips.health },
+];
+
+const filters = [tb.filter.status, tb.filter.text, tb.filter.tag];
+const detailCards = [
+	tb.detail.slices,
+	tb.detail.diagnose,
+	tb.detail.logs,
+	tb.detail.related,
+];
+---
+
+<section class="proposals-board">
+	<p class="proposals-board__lead">{tb.lead}</p>
+
+	<div class="proposals-board__panel">
+		<h2 class="proposals-board__panel-title">{tb.readOnly.title}</h2>
+		<p class="proposals-board__panel-body">{tb.readOnly.body}</p>
+	</div>
+
+	<h2 class="proposals-board__h">{tb.chipsTitle}</h2>
+	<div class="proposals-board__cards">
+		{
+			chips.map((chip) => (
+				<div class="proposals-board__card">
+					<strong class="proposals-board__card-title">{chip.label}</strong>
+					<span class="proposals-board__card-body">{chip.body}</span>
+				</div>
+			))
+		}
+	</div>
+
+	<h2 class="proposals-board__h">{tb.statusesTitle}</h2>
+	<ul class="proposals-board__rows">
+		{
+			statuses.map((status) => {
+				const key = status === 'in-progress' ? 'in_progress' : status;
+				return (
+					<li class="proposals-board__row">
+						<StatusBadge status={status} lang={lang} />
+						<span class="proposals-board__row-desc">
+							{glossary.statuses[key].long}
+						</span>
+					</li>
+				);
+			})
+		}
+	</ul>
+
+	<h2 class="proposals-board__h">{tb.kindsTitle}</h2>
+	<ul class="proposals-board__rows">
+		{
+			kinds.map((kind) => (
+				<li class="proposals-board__row">
+					<KindBadge kind={kind} lang={lang} />
+					<span class="proposals-board__row-desc">
+						{glossary.kinds[kind as keyof typeof glossary.kinds].long}
+					</span>
+				</li>
+			))
+		}
+	</ul>
+
+	<h2 class="proposals-board__h">{tb.filtersTitle}</h2>
+	<ul class="proposals-board__chips">
+		{filters.map((filter) => <li class="proposals-board__chip">{filter}</li>)}
+	</ul>
+
+	<h2 class="proposals-board__h">{tb.detailTitle}</h2>
+	<div class="proposals-board__cards">
+		{
+			detailCards.map((card) => (
+				<div class="proposals-board__card">
+					<strong class="proposals-board__card-title">{card}</strong>
+				</div>
+			))
+		}
+	</div>
+
+	<p class="proposals-board__note">{tb.recoverable}</p>
+</section>
