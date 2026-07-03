@@ -70,6 +70,7 @@ import {
 } from './providers/tool-tree-data-provider';
 import { MemoryTreeDataProvider } from './providers/memory-tree-data-provider';
 import { ProposalBoardProvider } from './providers/proposal-board-provider';
+import { createProposalFilterStore } from './host/proposal-filter-store';
 import {
 	type IStatusBarItem,
 	McpVertexStatusBar,
@@ -310,7 +311,10 @@ export const activate = async (
 	// (it mirrors `mcp-vertex_proposals_proposal_board`) so the view
 	// renders the live board and each node can route to its proposal via
 	// `mcp-vertex.openProposal` (S5).
-	const proposalsTree = new ProposalBoardProvider(client);
+	const proposalsTree = new ProposalBoardProvider(client, {
+		...(namespacePrefix === undefined ? {} : { namespacePrefix }),
+		filterStore: createProposalFilterStore(context.globalState),
+	});
 	const proposalsRegistration = vscode.window.registerTreeDataProvider?.(
 		PROPOSALS_VIEW_ID,
 		proposalsTree,
