@@ -1,6 +1,8 @@
 import type { IMcpLogHint, McpStdioClient } from '@mcp-vertex/client';
 import { DEFAULT_DENY, injectCspMeta } from '@mcp-vertex/ui-extension/public';
 
+import type { ProposalsSnapshotSource } from '../lib/proposals-snapshot';
+
 import type { IDisposable, IWebviewPanel } from '../extension';
 import type { MemoryTreeDataProvider } from '../providers/memory-tree-data-provider';
 import type { ToolTreeDataProvider } from '../providers/tool-tree-data-provider';
@@ -88,6 +90,14 @@ export interface ICommandDeps {
 	 * service so a deployment started with `--prefix=acme` calls
 	 * `acme_*` tools. Omitted → the default `mcp-vertex_` is used. */
 	readonly namespacePrefix?: string;
+	/** Shared read-only proposals snapshot source (f00097 S3). When present,
+	 * the open-proposal command reuses it so the detail webview draws from the
+	 * same TTL cache as the sidebar board instead of refetching. Omitted → a
+	 * private source is built from `client` + `namespacePrefix`. */
+	readonly proposalsSource?: Pick<
+		ProposalsSnapshotSource,
+		'fetchProposalDetail'
+	>;
 }
 
 export const showCommandError = async (

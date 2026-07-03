@@ -71,6 +71,7 @@ import {
 import { MemoryTreeDataProvider } from './providers/memory-tree-data-provider';
 import { ProposalBoardProvider } from './providers/proposal-board-provider';
 import { createProposalFilterStore } from './host/proposal-filter-store';
+import { ProposalsSnapshotSource } from './lib/proposals-snapshot';
 import {
 	type IStatusBarItem,
 	McpVertexStatusBar,
@@ -311,8 +312,15 @@ export const activate = async (
 	// (it mirrors `mcp-vertex_proposals_proposal_board`) so the view
 	// renders the live board and each node can route to its proposal via
 	// `mcp-vertex.openProposal` (S5).
-	const proposalsTree = new ProposalBoardProvider(client, {
+	// f00097 S2/S3: one shared read-only snapshot source backs BOTH the
+	// sidebar board and the detail webview, so opening a proposal reuses the
+	// board's cached fetch (one TTL cache, fewer tool calls).
+	const proposalsSource = new ProposalsSnapshotSource({
+		client,
 		...(namespacePrefix === undefined ? {} : { namespacePrefix }),
+	});
+	const proposalsTree = new ProposalBoardProvider(client, {
+		snapshotSource: proposalsSource,
 		filterStore: createProposalFilterStore(context.globalState),
 	});
 	const proposalsRegistration = vscode.window.registerTreeDataProvider?.(
@@ -340,7 +348,14 @@ export const activate = async (
 	track(registerShowOverviewCommand({ vscode, client, ...withPrefix }));
 	track(registerRefreshCommand({ vscode, client, toolTree }));
 	track(registerRunValidationCommand({ vscode, client }));
-	track(registerOpenProposalCommand({ vscode, client }));
+	track(
+		registerOpenProposalCommand({
+			vscode,
+			client,
+			proposalsSource,
+			...withPrefix,
+		}),
+	);
 	track(registerShowMetricsCommand({ vscode, client }));
 	// Fix #6: `openDocs` was declared in package.json but never wired up
 	// in `activate()`, so the command was unreachable from the UI. It is
