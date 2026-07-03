@@ -45,6 +45,16 @@ export interface IAgentNamesToolOptions {
 	 * behaviour (host/model fall back to `null`).
 	 */
 	readonly defaultIdentity?: IResolvedHostIdentity;
+	/**
+	 * Optional hook fired for each agent NAME whose task is released back to
+	 * the pool (the `release` action, including cascaded children). The loop
+	 * detector uses it to forget that name's sliding window + stuck verdict,
+	 * so the next lease of the reusable name starts clean instead of
+	 * inheriting the previous holder's state. Kept as a narrow callback
+	 * (Solid-ISP): this tool knows nothing about the loop detector; the
+	 * adapter in `index.ts` bridges the two.
+	 */
+	readonly onAgentReleased?: (agentName: string) => void;
 }
 
 export interface IAgentNamesArgs {
@@ -381,6 +391,16 @@ const runAgentNamesImpl = async (
 				}
 			}
 			await store.write(r);
+			// Let the loop detector forget every released name (this task +
+			// cascaded children) so a future lease of the same pooled name
+			// starts from a clean window with no inherited stuck verdict.
+			if (options.onAgentReleased) {
+				for (const a of r.assignments) {
+					if (released.has(a.task_id)) {
+						options.onAgentReleased(a.agent_name);
+					}
+				}
+			}
 			return json({ released: [...released] });
 		}
 

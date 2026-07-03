@@ -83,6 +83,27 @@ describe('agent_names (covers the orchestrator, not only subagents)', async () =
 		expect(list.summary.active).toBe(2);
 	});
 
+	it('fires onAgentReleased for the released name (loop-detector reset seam)', async () => {
+		const releasedNames: string[] = [];
+		const opts: IAgentNamesToolOptions = {
+			...options,
+			onAgentReleased: (name) => releasedNames.push(name),
+		};
+		const assigned = parse(
+			await runAgentNames(
+				{
+					action: 'assign',
+					task_id: 'root',
+					agent_slot: 'orchestrator',
+				},
+				opts,
+			),
+		) as { agent_name: string };
+
+		await runAgentNames({ action: 'release', task_id: 'root' }, opts);
+		expect(releasedNames).toContain(assigned.agent_name);
+	});
+
 	it('f00082 S3: persists host/model on assign (unknown host coerced)', async () => {
 		const known = parse(
 			await runAgentNames(
