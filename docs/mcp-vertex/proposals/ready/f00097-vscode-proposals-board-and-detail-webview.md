@@ -382,7 +382,24 @@ state in the extension.
 
 ### S6 — E2E + acceptance
 
-- **Status**: pending
+- **Status**: done
+- **Done note (2026-07-03)**: shipped as a **lightweight** e2e (user-approved
+  over the heavy `@vscode/test-electron` harness, which would download VS Code
+  + run Electron and largely duplicates the S2–S4 unit coverage). New
+  `extensions/vscode/src/test/proposals-board.spec.ts` wires the real
+  provider + open-proposal + copy-error commands through ONE canned stub
+  client (board + compact_status + state_health + stale_list + diagnose +
+  logs_tail) and asserts the four S6 behaviors as a flow: (a) every status
+  group renders exactly once when the snapshot has one per family, (b) a leaf's
+  command dispatches `openProposal` with the correct id and opens the detail
+  webview for that id, (c) refresh refetches but a filter change does not, (d)
+  a malformed board yields a recoverable banner (no crash) and Copy-error
+  places VALID JSON on the clipboard. New `apps/web/tests/ui/proposals-page.spec.ts`
+  pins the web-parity acceptance: `proposalBoardByLang` + `proposalGlossaryByLang`
+  resolve for all 12 languages, every key the page reads is present, and the
+  non-en/es fallback maps to the `en` object. 143 vscode specs green; web spec
+  green. **Deferred:** the full `@vscode/test-electron` harness is noted as a
+  separate infra task (the unit + integration coverage stands in for it).
 - **Files**: `extensions/vscode/src/test/proposals-board.spec.ts` (new),
   `apps/web/tests/proposals-page.spec.ts` (new),
   the 4 implementation files above + this proposal
