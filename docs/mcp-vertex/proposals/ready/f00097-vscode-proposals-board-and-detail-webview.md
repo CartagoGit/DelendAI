@@ -148,7 +148,7 @@ state in the extension.
 
 ### S1 — Read-only tool whitelist
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `docs/mcp-vertex/proposals/ready/f00097-vscode-proposals-board-and-detail-webview.md`
   (this proposal), `docs/mcp-vertex/PLUGINS-MCP-VERTEX.md` (design note appended)
 - **Agent**: proposal_guardian

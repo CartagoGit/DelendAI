@@ -222,3 +222,38 @@ Use [CROSS-PROJECT-SETUP.md](./CROSS-PROJECT-SETUP.md) for the canonical first-r
 See `plugins/proposals` (`@mcp-vertex/proposals`) for a real plugin: it
 derives its paths from `ctx`, exposes `agent_lock` and `task_queue`, and ships
 a compact workflow knowledge entry.
+
+## VS Code read-only proposals surface (f00097 S1)
+
+The VS Code proposals board and its detail webview are **read-only**: they
+project state the proposals plugin already computes, they never mutate it.
+Moving a proposal, claiming a slice, transitioning status, or syncing the
+registry stays in the agent / CLI, where `agent_lock` and the transition DFA
+enforce ownership. Doing those from a UI would need to coordinate with the
+lock manager, the transition DFA, and the worktree gate — none of which the UI
+does, and none of which it should.
+
+This whitelist is the **contract** between `f00097` and the proposals plugin.
+It is mirrored as `READ_ONLY_TOOLS` / `MUTATING_TOOLS_DENIED` in
+`extensions/vscode/src/views/proposals-board-view.ts`; the two must stay in
+sync. Names are plugin-qualified suffixes — call sites prepend the host
+namespace via `formatToolName(namespacePrefix, suffix)`, so a renamed prefix
+never breaks the whitelist. Adding a tool here (or promoting one to the UI)
+requires an explicit follow-up proposal.
+
+| Tool (suffix) | Board | Detail | Why it is read-only |
+|---|---|---|---|
+| `proposals_proposal_board` | yes | yes (per-id) | Lists proposals; derives nothing on disk |
+| `proposals_proposal_diagnose` | no | yes | Per-proposal diagnosis; pure read |
+| `proposals_compact_status` | yes (locks badge) | yes | Aggregated locks + queue + counts |
+| `proposals_state_health` | yes (header chip) | yes | Recovery hints; read-only snapshot |
+| `proposals_proposal_stale_list` | yes (badge) | yes | "stale > 7d"; read-only |
+| `logs_tail` | no | yes (filtered) | Tool-side-redacted point-in-time tail |
+| `proposals_proposal_transition` | **no** | **no** | Mutates status (DFA) |
+| `proposals_agent_lock` | **no** | **no** | Mutates write-ownership locks |
+| `proposals_close_slice` | **no** | **no** | Mutates slice state |
+| `proposals_sync_proposals` | **no** | **no** | Mutates the registry / folders |
+
+The detail webview also surfaces the latest `status_marker_close` line for the
+slice owner when `logs_tail` carries it — observational only (no parser, no
+enforcement); the host appendix §8.1 contract remains the agent's job.
