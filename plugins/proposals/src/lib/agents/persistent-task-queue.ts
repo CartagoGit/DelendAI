@@ -440,7 +440,17 @@ export const enqueue = (
 				})(),
 			};
 
-	const entries = [...queue.entries, entryWithExpiry];
+	// Idempotent by taskId: a re-enqueue REPLACES the prior entry (queued or
+	// consumed) rather than appending a duplicate. This is mandatory, not a
+	// nicety — `parseQueue` throws DUPLICATE_TASK_ID on any two entries that
+	// share a taskId, and `dequeue`/`computePosition` use findIndex (first
+	// match), so a duplicate would both corrupt the on-disk file (next
+	// parseQueue read throws) and strand a phantom entry that can never be
+	// consumed. Replacement is the only parse-valid outcome.
+	const entries = [
+		...queue.entries.filter((e) => e.taskId !== entryWithExpiry.taskId),
+		entryWithExpiry,
+	];
 
 	// Sort: priority desc, then enqueuedAt asc
 	entries.sort((a, b) => {
