@@ -330,7 +330,34 @@ state in the extension.
 
 ### S5 — Web parity
 
-- **Status**: pending
+- **Status**: done
+- **Done note (2026-07-03)**: **premise reconciled** — `apps/web` is a
+  STATIC site (`getStaticPaths`, build-time), so "reads via the SSR data
+  layer / calls the read-only tools" is not achievable; there is no live MCP
+  server at build. Shipped instead as a static **parity/showcase** page that
+  documents the same read-only projection the VS Code host renders live,
+  reusing the pre-existing `components/proposals/StatusBadge.astro` +
+  `KindBadge.astro` and the 12-lang proposal glossary. Files:
+  `pages/[lang]/proposals.astro` + `pages/proposals.astro` (dedicated pages
+  mirroring `skills.astro`, NOT `[lang]/proposals/index.astro` — matches the
+  sibling convention), `components/ProposalsSection.astro`,
+  `i18n/proposals-board.ts`, `styles/components/_proposals-board.scss` (+
+  `@use` in `styles.scss`). **i18n:** used the repo's real convention — a
+  standalone `proposalBoardByLang` map (en source of truth, es translated,
+  other 10 langs → en fallback), exactly like `proposalGlossaryByLang`. This
+  is OUTSIDE the site `ITranslations`/`dictsByLang`, so the 12-lang
+  `check:i18n` gate is unaffected (the proposal's "9 keys × 12 languages =
+  108 strings in ui.ts" was wrong for this repo). Covers all 9 acceptance
+  keys (title, filter.status/text/tag, recoverable, detail.diagnose/slices/
+  logs/related) plus chips + read-only-contract copy. **Gates:**
+  `check:i18n --strict` ✓, `stylelint` (scoped-BEM) ✓, `scan-jsx-literals` ✓,
+  and `astro check` reports 0 diagnostics on the 4 new files. **Known
+  pre-existing red gate:** `astro check` overall has 2 errors in
+  `scripts/gen-capabilities.ts` (`agentCatalogTools` missing from
+  `IAssembledCliConfig`) — a STALE gitignored core `dist/public/index.d.ts`
+  (predates catalog commit `2353e5a0`), confirmed present on clean develop via
+  `git stash`; orthogonal to S5, fixed by a full core type rebuild (see the
+  `stale-core-dts-breaks-web-astro-check` memory).
 - **Files**: `apps/web/src/pages/[lang]/proposals/index.astro` (new),
   `apps/web/src/data/pages/proposals/index.md` (new),
   `apps/web/src/i18n/ui.ts` (9 new keys × 12 languages),
