@@ -42,14 +42,18 @@ const wait = async (
 ): Promise<void> => {
 	if (signal?.aborted === true) return;
 	await new Promise<void>((resolve) => {
-		const timer = setTimeout(resolve, intervalMs);
-		signal?.addEventListener(
-			'abort',
-			() => {
-				clearTimeout(timer);
-				resolve();
-			},
-			{ once: true },
-		);
+		// The abort listener must be removed on BOTH exits, not just on abort:
+		// with only `{ once: true }` the timeout path leaves the listener
+		// attached, so a long-lived `stream()` accumulates one dead listener
+		// per tick on the same signal (Node warns past 10 — an unbounded leak).
+		const onAbort = (): void => {
+			clearTimeout(timer);
+			resolve();
+		};
+		const timer = setTimeout(() => {
+			signal?.removeEventListener('abort', onAbort);
+			resolve();
+		}, intervalMs);
+		signal?.addEventListener('abort', onAbort, { once: true });
 	});
 };
