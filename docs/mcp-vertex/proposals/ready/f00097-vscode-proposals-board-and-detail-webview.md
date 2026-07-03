@@ -177,6 +177,23 @@ state in the extension.
 ### S2 — Sidebar board view
 
 - **Status**: pending
+- **Reconciliation note (2026-07-03, S1 follow-up)**: this proposal's premise
+  ("the activitybar container is reserved but empty") is now partly stale —
+  **f00079 S4 already shipped** `extensions/vscode/src/providers/proposal-board-provider.ts`
+  (`ProposalBoardProvider`), a flat `TreeDataProvider` over `proposal_board`
+  with a plain invalidate-cache + `refresh()` and the `mcp-vertex.openProposal`
+  wiring (covered by `test/proposal-board-provider.spec.ts` +
+  `test/proposals-view-registration.spec.ts`). **S2 must EVOLVE that provider,
+  not add a parallel `IProposalsBoardProvider`** (a second provider would be
+  dead-code duplication). Concretely, S2 layers onto the existing provider:
+  (a) status-GROUP roots instead of a flat list; (b) the four header chips
+  (Locks/Stale/Queue/Health) sourced from `compact_status` + `state_health` +
+  `proposal_stale_list`; (c) a TTL cache (30 s) + refresh-on-focus + persisted
+  filters; (d) `outputSchema.safeParse` tolerance with the `recoverable`
+  banner; (e) call sites go through `READ_ONLY_TOOLS` +
+  `formatToolName(namespacePrefix, …)` (S1's whitelist in
+  `views/proposals-board-view.ts`) instead of the currently-hardcoded
+  `mcp-vertex_proposals_proposal_board` name. Keep the existing spec green.
 - **Files**: `extensions/vscode/src/views/proposals-board-view.ts` (new),
   `extensions/vscode/src/lib/proposals-snapshot.ts` (new, shared with S3 + S5),
   `extensions/vscode/src/views/proposals-board.css` (new)
