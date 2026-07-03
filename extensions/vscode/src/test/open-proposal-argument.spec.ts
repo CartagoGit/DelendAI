@@ -59,12 +59,30 @@ const board = {
 	],
 };
 
+// f00097 S3: the detail webview fans out to proposal_board + proposal_diagnose
+// + logs_tail, so the stub routes by tool name (a naive "return board for all"
+// would leak other ids into the diagnose card).
 const register = (ctx: ReturnType<typeof createVscode>) =>
 	registerOpenProposalCommand({
 		vscode: ctx.vscode,
 		client: McpStdioClient.fromTransport({
-			async callTool() {
-				return { structuredContent: board };
+			async callTool(input) {
+				if (input.name.endsWith('proposal_board')) {
+					return { structuredContent: board };
+				}
+				if (input.name.endsWith('proposal_diagnose')) {
+					const id = (input.arguments as { id?: string }).id;
+					const known = board.proposals.some((p) => p.id === id);
+					return {
+						structuredContent: known
+							? { ok: true, id, status: 'done', folder: 'done' }
+							: { ok: false, error: { reason: 'unknown' } },
+					};
+				}
+				if (input.name.endsWith('logs_tail')) {
+					return { structuredContent: { events: [] } };
+				}
+				return { structuredContent: {} };
 			},
 		}),
 	});
