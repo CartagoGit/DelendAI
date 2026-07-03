@@ -366,6 +366,32 @@ async function executeLockAction(
 		const existing = lock.in_flight.find((e) => e.task_id === taskId);
 		if (existing) {
 			existing.last_seen = getNow(deps);
+			// A re-claim is a heartbeat and must never fail. But if it carries
+			// files this task doesn't yet own, don't silently drop them (the
+			// caller would think the claim succeeded while not owning them):
+			// add the conflict-free ones to ownership and surface any that
+			// clash with another live task instead of swallowing them.
+			const owned = new Set(existing.ownership);
+			const newFiles = files.filter((f) => !owned.has(f));
+			const notGranted: Array<{
+				file: string;
+				conflicting_task: string;
+			}> = [];
+			const added: string[] = [];
+			for (const f of newFiles) {
+				const holder = lock.in_flight.find(
+					(e) => e.task_id !== taskId && e.ownership.includes(f),
+				);
+				if (holder) {
+					notGranted.push({
+						file: f,
+						conflicting_task: holder.task_id,
+					});
+				} else {
+					existing.ownership.push(f);
+					added.push(f);
+				}
+			}
 			await writeLock(lock, deps);
 			return {
 				content: [
@@ -379,7 +405,14 @@ async function executeLockAction(
 							path: lockFileLabel,
 							lock_path: lockPath,
 							ownership_count: existing.ownership.length,
-							summary: `refreshed ${taskId}`,
+							...(added.length > 0 ? { added_files: added } : {}),
+							...(notGranted.length > 0
+								? { not_granted: notGranted }
+								: {}),
+							summary:
+								notGranted.length > 0
+									? `refreshed ${taskId}; ${notGranted.length} file(s) not granted (owned by another task)`
+									: `refreshed ${taskId}`,
 						}),
 					},
 				],
