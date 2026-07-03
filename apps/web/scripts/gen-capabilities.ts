@@ -216,12 +216,24 @@ const formatHarvestError = (error: unknown): string => {
 const buildClient = async (
 	pluginList: string,
 	workspace: string,
-): Promise<{ client: Client; close: () => Promise<void> }> => {
+): Promise<{
+	client: Client;
+	close: () => Promise<void>;
+	/**
+	 * Authoritative tool name → namespace map (core tools → `core`). Built
+	 * from the assembled catalog's real owning-plugin field, so it is
+	 * correct even for core tools whose id contains an underscore
+	 * (`fs_read`, `agent_catalog`, …) — which `namespaceOf` can only guess
+	 * by parsing and gets wrong. Use this for tools; fall back to
+	 * `namespaceOf` for prompts/resources/knowledge (no catalog entry).
+	 */
+	toolNamespaces: ReadonlyMap<string, string>;
+}> => {
 	const args = parseCliArgs(
 		[`--plugins=${pluginList}`, `--workspace=${workspace}`],
 		workspace,
 	);
-	const { config } = await assembleCliConfig(args, {
+	const { config, agentCatalogTools } = await assembleCliConfig(args, {
 		import: async (specifier: string) => {
 			const hit = Object.entries(PLUGINS).find(([k]) =>
 				specifier.includes(k),
@@ -247,8 +259,15 @@ const buildClient = async (
 		{ capabilities: {} },
 	);
 	await client.connect(ct);
+	const toolNamespaces = new Map<string, string>(
+		agentCatalogTools.map((tool) => [
+			tool.name,
+			tool.plugin === 'mcp-vertex' ? 'core' : tool.plugin,
+		]),
+	);
 	return {
 		client,
+		toolNamespaces,
 		close: async () => {
 			assembled.server.server.onclose?.();
 			await client.close();
@@ -313,7 +332,10 @@ const collectBenchmarks = async (): Promise<IBenchmark[]> => {
 const collectTools = async (): Promise<ICollected> => {
 	const workspace = mkdtempSync(join(tmpdir(), 'mcp-site-'));
 	try {
-		const { client, close } = await buildClient(PLUGIN_LIST, workspace);
+		const { client, close, toolNamespaces } = await buildClient(
+			PLUGIN_LIST,
+			workspace,
+		);
 		// Query tools + prompts + resources + knowledge in parallel. Each call
 		// is independently optional: an SDK without listPrompts is fine, we
 		// just won't render the /prompts page.
@@ -369,7 +391,8 @@ const collectTools = async (): Promise<ICollected> => {
 					const i18nBlock = i18nByName[t.name];
 					return {
 						name: t.name,
-						namespace: namespaceOf(t.name),
+						namespace:
+							toolNamespaces.get(t.name) ?? namespaceOf(t.name),
 						description: t.description ?? '',
 						...(effectsByName.has(t.name)
 							? { effects: effectsByName.get(t.name) }
