@@ -83,6 +83,48 @@ export const OptionsSchema = z
 			.enum(['minimize', 'balanced', 'maximize'])
 			.optional(),
 		/**
+		 * Wall-clock cap (ms) per `<prefix>_invoke` call (S6). Default 30_000.
+		 * A per-call `timeoutMs` argument overrides it. When the cap elapses
+		 * the runner fires the per-kind cancellation ladder (SIGTERM→SIGKILL
+		 * for `cli`, `$/cancelRequest` for `mcp-server`, `AbortController` for
+		 * `api`) then surfaces a `timeout-exceeded` error.
+		 */
+		invokeTimeoutMs: z.number().int().min(1).optional(),
+		/** Warm subprocess pool size (S6). Default 2. */
+		subprocessPoolSize: z.number().int().min(1).optional(),
+		/** Max concurrent in-flight invocations (S6). Default 4. */
+		concurrencyLimit: z.number().int().min(1).optional(),
+		/** Max fallback hops when a provider fails (S6). Default 3. */
+		maxFallbackDepth: z.number().int().min(1).optional(),
+		/**
+		 * How the runner walks the fallback chain (CRITICAL I7). `rerank`
+		 * (default) re-scores with the failed provider excluded and relaxes
+		 * the cost-tier cap by 1 per hop; `tier-down` walks strictly downward.
+		 */
+		fallbackStrategy: z.enum(['rerank', 'tier-down']).optional(),
+		/**
+		 * Safety default (CRITICAL I5): OFF. When false the runner NEVER spends
+		 * the user's API money — `api`/`cli` invocations return an
+		 * `execution-disabled` error with a handoff, not a spawn. Flip to true
+		 * to allow spending (still gated by `confirmBeforeExecute`).
+		 */
+		executeApi: z.boolean().optional(),
+		/**
+		 * Safety default (CRITICAL I5): ON. With `executeApi:true`, each
+		 * `api`/`cli` invocation still requires a signed confirmation token
+		 * tied to that specific invocation (emitted via an MCP elicitation).
+		 * The LLM cannot mint its own token. Set false ONLY with the explicit
+		 * per-session opt-in; every auto-bypassed invocation is recorded.
+		 */
+		confirmBeforeExecute: z.boolean().optional(),
+		/**
+		 * Explicit per-session opt-in that lets `confirmBeforeExecute:false`
+		 * actually auto-bypass the token prompt (the CLI's
+		 * `--yes-i-take-responsibility-for-spend` equivalent). Without this the
+		 * runner refuses to bypass even when `confirmBeforeExecute` is false.
+		 */
+		autoBypassConfirmed: z.boolean().optional(),
+		/**
 		 * Injected cross-plugin dependencies (e.g. the shared loop detector).
 		 * Passthrough — validated structurally by the seam resolver, never by
 		 * this schema, so a host can inject a class instance.
@@ -96,4 +138,12 @@ export type OrchestratorRunnerOptions = z.infer<typeof OptionsSchema>;
 export const DEFAULT_OPTIONS = {
 	sessionStickinessTtlSeconds: 300,
 	defaultCostPreference: 'balanced' as const,
+	invokeTimeoutMs: 30_000,
+	subprocessPoolSize: 2,
+	concurrencyLimit: 4,
+	maxFallbackDepth: 3,
+	fallbackStrategy: 'rerank' as const,
+	executeApi: false,
+	confirmBeforeExecute: true,
+	autoBypassConfirmed: false,
 };

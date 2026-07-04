@@ -17,6 +17,7 @@ import type { IProviderCapabilities } from '@mcp-vertex/core/public';
 
 import { assertUsageTrackingLoaded, USAGE_TRACKING_PLUGIN } from './lib/guard';
 import { HealthStore } from './lib/healthcheck/store';
+import { buildDefaultInvocationManager } from './lib/invoke/build-manager';
 import { resolveLoopDetectionSeam } from './lib/loop-detection-seam';
 import { DEFAULT_OPTIONS, OptionsSchema } from './lib/options';
 import { SessionStore } from './lib/router/session';
