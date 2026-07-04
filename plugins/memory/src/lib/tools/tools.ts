@@ -21,6 +21,7 @@ import {
 } from '../services/store';
 import { selectLatestSessionDigest } from '../services/session-digest-recall';
 import { buildCompactToolRegistration } from './compact.tool';
+import { buildCompactionCheckToolRegistration } from './compaction-check.tool';
 
 // MCP modern outputSchema shapes (N16). Error envelopes are exempt from
 // SDK validation (isError:true), so these describe only the success path.
@@ -114,6 +115,7 @@ export const buildMemoryToolRegistrations = (
 			storePathAbs: options.storePathAbs,
 			maxNotes: options.maxNotes,
 		}),
+		buildCompactionCheckToolRegistration({ namespacePrefix: prefix }),
 		{
 			id: 'save',
 			effects: ['write'],
