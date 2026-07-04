@@ -423,7 +423,7 @@ highest-risk).
   - "4 of 10 tools ship in this slice (the headless ones). Remaining 6 (bootstrap, invoke, advise_spend, format_handoff, list_models, set_provider_state, cancel_invocation) ship in S5–S7."
 
 ---
-
+- status: done
 ### S5 — orchestrator-runner plugin: bootstrap wizard + quota tracking (the discovery layer)
 
 - **Status**: ready
