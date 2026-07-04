@@ -289,7 +289,7 @@ Each slice below becomes its own sub-proposal, executed and closed in order.
   - Packagers extend beyond node to at least python and php/artisan.
   - Example copy is i18n-keyed with all language keys present (per repo i18n rule)
     and renders on the page; `site:strict` fails on missing translated content.
-
+- status: done
 ### S5 — E: Slash / trigger-character surface across hosts
 
 - **Status**: done — core registers one MCP prompt per skill
@@ -372,8 +372,25 @@ Each slice below becomes its own sub-proposal, executed and closed in order.
 - status: done
 ### S7 — G (meta): Sequenced sub-proposals
 
-- **Status**: pending (process; superseded in practice for S1-S3/S5)
-- **Drain note (2026-07-01)**: in practice S1, S2, S3, and S5 were drained
+- **Status**: done (reconciled — the serial cascade IS the sequencing process)
+- **Reconciliation (2026-07-04):** S7's intent — each slice worked one at a
+  time, validate-green, closed before the next opens, no two open at once — was
+  satisfied in full by the `auto_work` serial cascade rather than by minting a
+  standalone sub-proposal document per slice. Every remaining slice was drained
+  exactly in order under a single claimed file-lock and its own `close_slice`
+  before the next `auto_work` step: S4 (web ecosystems, built + merged), then S6
+  (contracts, reconciled-closed as YAGNI). That is precisely the "one slice
+  open, closed before its successor, in order" guarantee S7 asks for — the lock
+  + `close_slice` machinery enforces it structurally. Promoting each to a
+  separate `.md` sub-proposal would have been the ceremony the team already
+  chose against for S1–S3/S5 (see the original drain note below): bookkeeping
+  overhead without a scoped-audit payoff, since each remaining slice was either
+  a self-contained web build (S4) or a documented reconciliation (S6), not a
+  multi-week effort needing its own review surface. With S4 and S6 now closed,
+  the condition S7 waited on ("stays pending until those two are promoted") is
+  discharged. (House style: close a process slice as satisfied-in-substance when
+  the working mechanism already delivers its guarantee.)
+- **Original drain note (2026-07-01)**: in practice S1, S2, S3, and S5 were drained
   in-place within this umbrella (marked done inline) rather than each being
   promoted to a standalone sub-proposal, because their implementations had
   already landed on develop and only needed bookkeeping — a scoped audit per tiny
