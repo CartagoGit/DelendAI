@@ -119,6 +119,10 @@
 			"plugin": "memory"
 		},
 		{
+			"name": "mcp-vertex_memory_compaction_check",
+			"plugin": "memory"
+		},
+		{
 			"name": "mcp-vertex_memory_export",
 			"plugin": "memory"
 		},
