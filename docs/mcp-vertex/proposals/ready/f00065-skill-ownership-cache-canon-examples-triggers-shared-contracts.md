@@ -233,8 +233,32 @@ Each slice below becomes its own sub-proposal, executed and closed in order.
 
 ### S4 — D: Junior-grade web examples with per-language packagers
 
-- **Status**: pending (data model landed; UI + i18n copy not built)
-- **Drain note (2026-07-01)**: the *data* half of this slice already landed on
+- **Status**: done
+- **Landed (2026-07-04)**: the render + i18n half is now built on the landed
+  data model (triage re-confirmed the gap: `ecosystems`/`IEcosystem`/`dummiesKey`
+  were consumed by no component and had zero i18n copy — no concurrent session
+  had built it). Added: (1) `apps/web/src/i18n/install-ecosystems.ts` — the
+  standalone `installDummiesByLang` map (beginner "for dummies" copy per
+  packager + per-ecosystem taglines + selector/badge labels), keyed off the
+  `#DATA/install` `EcosystemKey`/`PackagerDummiesKey` unions so a future packager
+  is a TS error until its copy exists; `en` source + `es` translated + the other
+  10 langs aliasing `en`, kept OUTSIDE the site `ITranslations`/`dictsByLang` so
+  the 12-lang `check:i18n` walk is untouched (mirrors the `proposalBoardByLang`
+  convention). (2) `apps/web/src/components/HomeInstallEcosystemsSection.astro` —
+  an icon+name runtime selector (`<Tabs>`: Node/Python/PHP via `brandLogo`) whose
+  panels list each ecosystem's packagers with a beginner explanation + `… init`
+  `CodeBlock`; scoped `<style>` uses only BEM `.install-eco__*` class selectors.
+  (3) wired into `Home.astro` after the terse quick-install section, so it
+  renders on `/` and every `/[lang]/` home route (no new page → `pages-audit.ts`
+  unchanged). (4) `i18n/index.ts` re-exports the map for parity with
+  `proposalBoardByLang`. Verified: `check:i18n` green (12×297 + shared 12×441
+  unchanged), full `apps/web` vitest 177/177, `lint:web:jsx-literals` clean,
+  `astro check` reports 0 errors in these files. Did NOT run the full
+  `site:strict`/`apps/web build`: both fail only on PRE-EXISTING, unrelated
+  errors confirmed on clean develop — the stale-core-d.ts `gen-capabilities`
+  stub AND a broken `@mcp-vertex/shared/i18n` subpath export in
+  `packages/ui-extension/src/i18n/extension-text.ts` (neither in S4's scope).
+- **Original drain note (2026-07-01)**: the *data* half of this slice already landed on
   develop in `feat: introduce language ecosystem selector with PHP, Python, and
   Node.js support` (5e8306f3). `apps/web/src/data/install.ts:48` now models node
   packagers (`packageManagers`), `apps/web/src/data/install.ts:108` adds
@@ -345,7 +369,7 @@ Each slice below becomes its own sub-proposal, executed and closed in order.
   - Concrete duplicates surfaced by the per-slice audit are removed, public
     barrels preserved, no circular dependencies introduced.
   - `lint:conventions` covers the shared boundary's naming.
-
+- status: done
 ### S7 — G (meta): Sequenced sub-proposals
 
 - **Status**: pending (process; superseded in practice for S1-S3/S5)
