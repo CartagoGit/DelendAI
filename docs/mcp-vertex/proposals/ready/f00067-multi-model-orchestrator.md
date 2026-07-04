@@ -414,7 +414,22 @@ highest-risk).
 
 ### S8 — Lint + secrets posture
 
-- **Status**: ready
+- **Status**: ready (redact half landed — see note)
+- **Partial landing (2026-07-04)**: the `redactSecrets` half is done ahead of
+  the rest because it is a **standalone core hardening** that benefits every
+  durable write TODAY (memory notes, proposal docs, logs), independent of the
+  orchestrator plugins. `packages/core/src/lib/shared/redact.ts` now redacts:
+  (a) hyphenated provider keys the alnum-only `openai-key` rule missed —
+  `sk-ant-…` (Anthropic) and `sk-or-…` (OpenRouter); and (b) prefixed UPPER
+  env-var assignments whose name ends in a secret-ish suffix
+  (`OPENAI_API_KEY=…`, `ANTHROPIC_API_KEY=…`, `AWS_SECRET_ACCESS_KEY=…`,
+  `DATABASE_PASSWORD=…`) — the generic `\bapi_key\b` rule missed these because
+  the `_` before `API_KEY`/`SECRET` denies the leading word boundary. New
+  property-spec generators (`anthropic-key`, `openrouter-key`, `env-assignment`)
+  cover redaction + idempotency; core redact suite 15 green, memory redact-ttl 8
+  green, `tsc -p packages/core` exit 0. **Still pending in S8**: the
+  `no-cleartext-secrets.script.ts` lint + its `validate`/`vitest.config`
+  wiring (coupled to the `providers` config block from S1, deferred).
 - **Files**: `tools/scripts/lint/no-cleartext-secrets.script.ts` (NEW), `packages/core/src/lib/shared/redact.ts` (EXT — learn `OPENAI_API_KEY = <value>` / `ANTHROPIC_API_KEY = <value>` / `OPENROUTER_API_KEY = <value>` env-var assignment shapes), `vitest.config.ts` (EXT — register new lint), `package.json` (EXT — add `lint:no-cleartext-secrets` to `validate`).
 - **Gate**: `bun run lint && bun run lint:no-cleartext-secrets && bun run validate`
 - **Acceptance**:
