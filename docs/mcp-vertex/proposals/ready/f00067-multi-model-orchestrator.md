@@ -320,7 +320,38 @@ highest-risk).
 
 ### S3 — usage-tracking plugin MVP (the eyes)
 
-- **Status**: ready
+- **Status**: done
+- **Landed (2026-07-04)**: full `plugins/usage-tracking/` scaffold mirroring
+  `plugins/memory/` (package.json, tsconfig, vitest.config, `src/index.ts`
+  `register()`, `src/public/index.ts` barrel, README, LICENSE, tests). Wires
+  `IHostObservability.onToolStart`/`onToolCall` (no new host contract). CRITICAL
+  invariants honored: (rule 3/7) `RecordBuffer` flushes at most once per 250ms OR
+  64 entries, `push()` is O(1) and never awaits I/O, p99 < 5ms over 1000 calls
+  asserted; (rule 4/6) growable `invocations.jsonl` uses `appendFile` under
+  `withFileMutex` with the batch piped through `redactSecrets` first, while
+  `usage-summary.json`/`pricing.json`/clear-truncation go through
+  `withFileMutex(writeFileAtomic())` after `redactSecrets`; (rule 2/5) all paths
+  from `ctx.pluginCacheDir` (no `process.cwd()`/`~/.cache`); (rule 8) both tools
+  ship Zod `outputSchema`. Two tools: `<prefix>_usage_report` (totals + bucketed
+  rollup + top-10 expensive) and `<prefix>_usage_clear` (refuses without
+  `confirm:true`). Agent detection covers Copilot/Claude Code/Codex/Cursor/
+  Aider/Continue + `cli-doctor`/`cli-direct` + a `clientMap` override. Pricing is
+  stale-while-revalidate off LiteLLM with a hard 1s `AbortController` timeout +
+  bundled `resources/pricing.snapshot.json` fallback; subscription providers
+  return `null` marginal cost (N4). 12-lang × 2-tool i18n at
+  `apps/web/src/i18n/tools/usage-tracking/`. **Verified green:**
+  `tsc -p plugins/usage-tracking` 0, plugin vitest **54/54**, `lint:cli:i18n` 0,
+  `lint:cli-imports` 0, web `check:i18n` 0, and **root `bun run typecheck` 0**
+  (the plugin is in the root `plugins/*/src` typecheck glob and does not break
+  it). **Deferred to later slices (correctly out of S3 scope):** the plugin is
+  NOT yet in `tsconfig.base.json` paths / `vitest.shared.ts` aliases nor in any
+  preset, and its i18n files are not yet registered in
+  `apps/web/src/i18n/tools/index.ts` — that workspace-alias + catalogue
+  registration + opt-in preset wiring is the S9 "plugin surface" job (the plugin
+  is opt-in and does not ship in the default preset). `model`/`usage`/`costUsd`
+  are `null` for generic tool calls until orchestrated calls (S4/S6) return
+  structured `usage` — the extraction + `costOf` paths are implemented and
+  unit-tested so accounting lights up automatically then.
 - **Files**: `plugins/usage-tracking/` (NEW — full plugin scaffold), `apps/web/src/i18n/tools/usage-tracking/` (NEW — 12 langs × 2 tools).
 - **Gate**: `bun run test plugins/usage-tracking && bun run typecheck && bun run lint:cli:i18n`
 - **Acceptance**:
