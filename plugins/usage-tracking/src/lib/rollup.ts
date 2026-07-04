@@ -1,0 +1,172 @@
+/**
+ * rollup.ts — read `invocations.jsonl` and fold it into rollups.
+ *
+ * Pure, cheap groupby over the NDJSON log (well under 100ms for tens of
+ * thousands of lines in Bun). The read is tolerant: a truncated or
+ * partially-flushed final line is skipped, never fatal — the log is
+ * observability, not a transactional store.
+ *
+ * The write side goes through `writeFileAtomic` under `withFileMutex`,
+ * piped through `redactSecrets` first (AGENTS.md rules 4 + 6), same as
+ * every other durable write in this plugin.
+ */
+import { readFile } from 'node:fs/promises';
+
+import {
+	redactSecrets,
+	withFileMutex,
+	writeFileAtomic,
+} from '@mcp-vertex/core/public';
+
+import type {
+	GroupByAxis,
+	IInvocationRecord,
+	IRollupBucket,
+	IRollupTotals,
+	IUsageSummary,
+	SortBy,
+} from './types';
+
+/** Parse the NDJSON log, skipping blank/corrupt lines. */
+export const readInvocations = async (
+	absPath: string,
+): Promise<IInvocationRecord[]> => {
+	let raw: string;
+	try {
+		raw = await readFile(absPath, 'utf8');
+	} catch (err) {
+		if ((err as NodeJS.ErrnoException).code === 'ENOENT') return [];
+		throw err;
+	}
+	const out: IInvocationRecord[] = [];
+	for (const line of raw.split('\n')) {
+		const trimmed = line.trim();
+		if (trimmed === '') continue;
+		try {
+			out.push(JSON.parse(trimmed) as IInvocationRecord);
+		} catch {
+			// Skip a partially-written tail line; the next flush completes it.
+		}
+	}
+	return out;
+};
+
+/** Filter to records whose `ts` falls within the last `windowDays`. */
+export const withinWindow = (
+	records: readonly IInvocationRecord[],
+	windowDays: number,
+	now: number = Date.now(),
+): IInvocationRecord[] => {
+	if (!Number.isFinite(windowDays) || windowDays <= 0) return [...records];
+	const cutoff = now - windowDays * 24 * 60 * 60 * 1000;
+	return records.filter((r) => {
+		const ts = Date.parse(r.ts);
+		return Number.isNaN(ts) || ts >= cutoff;
+	});
+};
+
+const axisKey = (record: IInvocationRecord, axis: GroupByAxis): string => {
+	switch (axis) {
+		case 'provider':
+			return record.model?.provider ?? 'unknown';
+		case 'plugin':
+			return record.plugin;
+		case 'agent':
+			return record.agent.id;
+		case 'extension':
+			return record.agent.extension;
+	}
+};
+
+/** Fold records into buckets keyed by `axis`, sorted by `sortBy` desc. */
+export const bucketBy = (
+	records: readonly IInvocationRecord[],
+	axis: GroupByAxis,
+	sortBy: SortBy = 'calls',
+): IRollupBucket[] => {
+	const map = new Map<string, IRollupBucket>();
+	for (const record of records) {
+		const key = axisKey(record, axis);
+		const prev =
+			map.get(key) ??
+			({
+				key,
+				calls: 0,
+				inputTokens: 0,
+				outputTokens: 0,
+				totalTokens: 0,
+				costUsd: 0,
+				errors: 0,
+			} satisfies IRollupBucket);
+		map.set(key, {
+			key,
+			calls: prev.calls + 1,
+			inputTokens: prev.inputTokens + (record.usage?.inputTokens ?? 0),
+			outputTokens: prev.outputTokens + (record.usage?.outputTokens ?? 0),
+			totalTokens: prev.totalTokens + (record.usage?.totalTokens ?? 0),
+			costUsd: prev.costUsd + (record.costUsd ?? 0),
+			errors: prev.errors + (record.outcome === 'success' ? 0 : 1),
+		});
+	}
+	return [...map.values()].sort((a, b) => b[sortBy] - a[sortBy]);
+};
+
+export const computeTotals = (
+	records: readonly IInvocationRecord[],
+): IRollupTotals => {
+	let calls = 0;
+	let inputTokens = 0;
+	let outputTokens = 0;
+	let totalTokens = 0;
+	let costUsd = 0;
+	let errors = 0;
+	for (const record of records) {
+		calls += 1;
+		inputTokens += record.usage?.inputTokens ?? 0;
+		outputTokens += record.usage?.outputTokens ?? 0;
+		totalTokens += record.usage?.totalTokens ?? 0;
+		costUsd += record.costUsd ?? 0;
+		if (record.outcome !== 'success') errors += 1;
+	}
+	return { calls, inputTokens, outputTokens, totalTokens, costUsd, errors };
+};
+
+/** Build the full `usage-summary.json` document from the raw log. */
+export const buildSummary = (
+	records: readonly IInvocationRecord[],
+	windowDays: number,
+	now: number = Date.now(),
+): IUsageSummary => {
+	const windowed = withinWindow(records, windowDays, now);
+	return {
+		updatedAt: new Date(now).toISOString(),
+		windowDays,
+		totals: computeTotals(windowed),
+		byProvider: bucketBy(windowed, 'provider', 'costUsd'),
+		byPlugin: bucketBy(windowed, 'plugin', 'costUsd'),
+		byAgent: bucketBy(windowed, 'agent', 'costUsd'),
+		byExtension: bucketBy(windowed, 'extension', 'costUsd'),
+	};
+};
+
+/** Durably persist a rollup document (mutex + atomic + redact). */
+export const writeSummary = async (
+	absPath: string,
+	summary: IUsageSummary,
+): Promise<void> => {
+	const { text } = redactSecrets(`${JSON.stringify(summary, null, '\t')}\n`);
+	await withFileMutex(absPath, () => writeFileAtomic(absPath, text));
+};
+
+/** Read + rebuild + persist the summary in one shot (the 5-min tick). */
+export const regenerateSummary = async (
+	invocationsPath: string,
+	summaryPath: string,
+	windowDays: number,
+	now: number = Date.now(),
+): Promise<IUsageSummary> => {
+	const records = await readInvocations(invocationsPath);
+	const summary = buildSummary(records, windowDays, now);
+	await writeSummary(summaryPath, summary);
+	return summary;
+};
