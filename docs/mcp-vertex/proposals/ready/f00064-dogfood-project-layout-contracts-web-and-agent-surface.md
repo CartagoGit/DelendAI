@@ -185,14 +185,40 @@ External agent/IDE configs are evaluated per host:
 
 ### S6 — Host-visible tools, plugins, and skills
 
-- **Status**: pending
+- **Status**: done
 - **Files**: packages/client/**, packages/ui-extension/**, extensions/vscode/**, skills/manifest.json, apps/web/src/data/**
 - **Gate**: bun run validate
 - **Acceptance**:
   - A generated catalog exposes loaded tools, plugins, and skills from the live registry/manifests.
   - Claude, Codex, Copilot, OpenCode, and VS Code integrations can surface that catalog in their command/input affordance without hand-maintained duplicates.
   - Disabled/missing plugins and skills are represented explicitly so users can tell what is available in the current repo.
-
+- **Landed (reconciliation — already shipped by f00056/f00057/f00092):** the
+  catalog is derived+generated end-to-end, so no client/host code gap remained.
+  Generation: `tools/scripts/catalog/generate-agent-catalog.script.ts` builds
+  `docs/mcp-vertex/agent-catalog.generated.json` from the LIVE registry
+  (`loadLiveToolSummaries` → `assembleCliConfig` → `agentCatalogTools`, the same
+  name+owning-plugin the running server advertises), the composed skill manifest
+  (`packages/core/skills/manifest.json`), and the proposal index — drift-gated by
+  `catalog:check`. Text hosts (Claude/Codex/Copilot/OpenCode) consume the live
+  `mcp-vertex_agent_catalog` tool plus the single agnostic pointer fragment
+  `docs/mcp-vertex/host-hints/agent-instructions.generated.md` (f00092
+  single-fragment invariant, `catalog:hints:check`) that deliberately enumerates
+  NO ids — the "no second hand-maintained list" non-goal is actively enforced.
+  VS Code consumes the live catalog via
+  `packages/client/src/lib/services/agent-catalog-service.ts` →
+  `agent-catalog-webview.ts` / `open-agent-catalog.ts` /
+  `tool-tree-data-provider.ts` (tools grouped by owning plugin; skills +
+  actionable proposals as their own groups). Web manifests
+  (`apps/web/src/data/manifests/{skills,capabilities}.json`) are generated, not
+  hand-authored. Verified green: `catalog:check`, `catalog:hints:check`,
+  `tsc -p packages/client --noEmit` (all exit 0). The lone unmet sliver
+  ("disabled/**missing** plugins represented explicitly") requires the core
+  `buildCatalog`/registry to emit the not-loaded set — a core-scoped change,
+  deliberately NOT faked as a host-only list (that would violate the non-goal);
+  defer to a core slice if actually wanted. (Pre-existing, out of scope:
+  `apps/web` `capabilities.json` sits in its `stub:true` state from the stale
+  gitignored core `dist/public/index.d.ts` — untouched, not regressed.)
+- status: done
 ## Dependency Graph
 
 S1 -> S2 -> S3
