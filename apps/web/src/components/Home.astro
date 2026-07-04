@@ -28,6 +28,7 @@ import { clients, runtimes } from '#DATA/marquees';
 import capabilities from '#MANIFESTS/capabilities.json';
 import ConceptSection from '#COMPONENTS/ConceptSection.astro';
 import HomeQuickInstallSection from '#COMPONENTS/HomeQuickInstallSection.astro';
+import HomeInstallEcosystemsSection from '#COMPONENTS/HomeInstallEcosystemsSection.astro';
 import HomeAtAGlanceSection from '#COMPONENTS/HomeAtAGlanceSection.astro';
 import Marquee from '#COMPONENTS/Marquee.astro';
 
@@ -63,6 +64,8 @@ const sectionHref = (section: string) =>
 </section>
 
 <HomeQuickInstallSection lang={lang} />
+
+<HomeInstallEcosystemsSection lang={lang} />
 
 <ConceptSection lang={lang} />
 
