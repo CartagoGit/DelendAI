@@ -159,6 +159,14 @@ export const PAGES_AUDIT: readonly IPageAuditEntry[] = Object.freeze([
 		why: 'This localized prompts index is still the clearest discovery surface for prompt capabilities and mirrors the live registry instead of stale hand-written copy.',
 	},
 	{
+		path: 'apps/web/src/pages/[lang]/proposals.astro',
+		langCoverage: NON_EN_LOCALES,
+		kind: 'content',
+		lastMeaningfulEdit: '2026-07-03',
+		verdict: 'keep',
+		why: 'The localized proposals board is the canonical static parity of the VS Code host board (f00097 S5), backed by the standalone proposalBoardByLang map, and has no other owner on the site.',
+	},
+	{
 		path: 'apps/web/src/pages/[lang]/resources.astro',
 		langCoverage: NON_EN_LOCALES,
 		kind: 'content',
@@ -317,6 +325,14 @@ export const PAGES_AUDIT: readonly IPageAuditEntry[] = Object.freeze([
 		lastMeaningfulEdit: '2026-06-25',
 		verdict: 'keep',
 		why: 'The English prompts index is still the clearest dedicated entry point for prompt capabilities and mirrors the live registry.',
+	},
+	{
+		path: 'apps/web/src/pages/proposals.astro',
+		langCoverage: EN_ONLY,
+		kind: 'content',
+		lastMeaningfulEdit: '2026-07-03',
+		verdict: 'keep',
+		why: 'The English proposals board is the default-locale read-only mirror of the VS Code host board (f00097 S5) and the canonical discovery surface for shipped proposals.',
 	},
 	{
 		path: 'apps/web/src/pages/resources.astro',
