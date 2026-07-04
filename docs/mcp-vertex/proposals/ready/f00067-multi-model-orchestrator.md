@@ -369,10 +369,45 @@ highest-risk).
   - "12 languages × 2 tool summaries ship in `apps/web/src/i18n/tools/usage-tracking/`. `bun run lint:cli:i18n` passes."
 
 ---
-
+- status: done
 ### S4 — orchestrator-runner plugin: healthcheck + score + advise_routing (the routing brain, headless)
 
-- **Status**: ready
+- **Status**: done
+- **Landed (2026-07-04)**: the headless `orchestrator-runner` plugin ships the
+  3 named headless tools (`healthcheck_providers`, `advise_routing`,
+  `get_quota` — the S4 acceptance names exactly these three; the "4 of 10"
+  count in the prose is a drafting slip). CRITICAL invariants honored:
+  (I15) `dependsOn: ['usage-tracking']` is the authoritative loader guard —
+  the loader refuses the batch when usage-tracking is absent — plus a defensive
+  `assertUsageTrackingLoaded` from `register()` that only trips when the peer
+  registry is already populated (never false-trips a normal boot, where the
+  registry is empty at register time); (C5) the pure `scoreProvider(p, hint,
+  health)` at `src/lib/router/score.ts` is the single canonical scorer with the
+  (N10) `{plan:4, review:3, implement:2, explore:1}` tiers, tested to full
+  branch coverage; (C4) `advise_routing` returns a decision whose `strategy` ∈
+  `passthrough|api|cli|mcp-tool|handoff` with top-2 backups + a transparent
+  scoring trace, and hands off when the roster is empty/all-unavailable;
+  (I12) session stickiness is an in-memory TTL-300s `Map` pruned by an
+  `unref()`'d sweep; (rule 3) availability is mirrored in memory (no
+  per-decision fs read), with the durable `healthcheck.json` snapshot written
+  under `withFileMutex` + `writeFileAtomic` + `redactSecrets`; (I4) missing-CLI
+  `installHint`s flag pipe-to-shell installers `dangerous:true`+`pipeTo:'sh'`;
+  (rule 1) loop detection reuses the ONE detector via an injected seam (no
+  second detector, no cross-plugin import). `healthcheck_providers` probes each
+  CLI via core `runCommand`. All 3 tools ship Zod `outputSchema` (rule 8) and a
+  12-lang i18n entry under `apps/web/src/i18n/tools/orchestrator-runner/`.
+  **Verified green:** `tsc -p plugins/orchestrator-runner` 0, plugin vitest
+  **38/38** (7 spec files, scorer at 100% branch), **root `bun run typecheck`
+  0**, `lint:cli:i18n` 0, web `check:i18n` 0, `astro check` 0 errors in the new
+  i18n files. **Deferred (correctly out of S4 scope):** the provider roster is
+  read from `plugins.orchestrator-runner.options.providers` (a pragmatic,
+  fully-typed source) until core surfaces the root-level `providers` block
+  (S1's deferred schema half / S5 bootstrap); the plugin is not yet in
+  `tsconfig.base.json`/`vitest.shared.ts` aliases nor its i18n registered in the
+  tools catalogue index (S9 plugin-surface, mirrors usage-tracking); the
+  remaining 6 tools (bootstrap, invoke, advise_spend, format_handoff,
+  list_models, set_provider_state, cancel_invocation) are S5–S7. Salvaged +
+  completed from a subagent partial that hit the account session limit mid-build.
 - **Files**: `plugins/orchestrator-runner/` (NEW — partial), `apps/web/src/i18n/tools/orchestrator-runner/` (NEW — 12 langs × 4 tools).
 - **Gate**: `bun run test plugins/orchestrator-runner && bun run typecheck && bun run lint:cli:i18n`
 - **Acceptance**:
