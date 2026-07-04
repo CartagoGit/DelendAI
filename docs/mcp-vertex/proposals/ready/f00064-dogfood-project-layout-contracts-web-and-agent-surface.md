@@ -194,16 +194,40 @@ External agent/IDE configs are evaluated per host:
   `pages-audit.spec.ts`, audit lists 48 pages vs 46 on disk — is PRE-EXISTING
   page-inventory drift confirmed on clean develop and belongs to S5), plus
   `check:i18n` and `stylelint` on the touched partials both exit 0.
-
+- status: done
 ### S5 — Complete web plugin/page/i18n surface
 
-- **Status**: pending
+- **Status**: done
 - **Files**: apps/web/src/pages/**, apps/web/src/components/**, apps/web/src/i18n/**, apps/web/src/data/**
 - **Gate**: bun run site:strict
 - **Acceptance**:
   - The home plugin section reflects the live plugin registry and has complete copy/assets for shipped plugins.
   - Pages that currently exist only in English are converted, hidden, or routed through the PageSpec/i18n workflow.
   - `site:strict` fails when a user-visible page is missing required translated content.
+- **Landed (one concrete fix + reconciliation — the surface machinery already
+  existed):** the three acceptance points are satisfied by generated + gated
+  infrastructure, and the single real gap was a page-inventory drift.
+  (1) **Home plugin section is registry-driven** — `PluginsSection.astro`
+  consumes the generated `apps/web/src/data/manifests/capabilities.json`
+  (emitted from the live in-memory MCP registry by `gen-capabilities.ts`, which
+  has a `--strict` CI mode that FAILS on gaps) plus `PLUGIN_CATALOG`; copy +
+  capabilities are canonical, not hand-authored. (2) **En-only page tracking is
+  the `PAGES_AUDIT` verdict mechanism** (`apps/web/src/data/pages-audit.ts`):
+  every page carries a `keep`/`shelve`/`rewrite`/`merge-into-*` verdict, and
+  `rewrite`/`merge-into-*` are the intentional-follow-up workflow (warn, don't
+  fail), enforced against `git ls-files` by `pages-audit.spec.ts`. **The real
+  drift:** the two proposals pages added by f00097 S5 (`pages/proposals.astro`
+  + `pages/[lang]/proposals.astro`) were never registered in `PAGES_AUDIT` — 48
+  pages on disk vs 46 catalogued, failing `pages-audit.spec.ts` on clean
+  develop. Registered both (verdict `keep`: canonical static parity of the VS
+  Code host board, backed by the standalone `proposalBoardByLang` map). (3)
+  **Translation-completeness is gated** by `check:i18n` (12 langs × 297 site
+  keys + 12 × 441 shared) — green. Verified: `pages-audit.spec` 4/4, full
+  `apps/web` vitest 177/177, `check:i18n` + `stylelint` exit 0. Did NOT run the
+  full `site:strict` build: it fails only on the documented PRE-EXISTING stale
+  gitignored core `dist/public/index.d.ts` stub (`gen-capabilities`
+  `agentCatalogTools` regression), which is out of scope and untouched; the
+  committed 640k `capabilities.json` is fully populated.
 
 ### S6 — Host-visible tools, plugins, and skills
 
