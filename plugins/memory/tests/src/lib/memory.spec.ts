@@ -139,6 +139,61 @@ describe('memory store', async () => {
 		// The digest surfaces even though the query matched a different note.
 		expect(out.notes.some((n) => n.title === 'A plain note')).toBe(true);
 	});
+
+	// f00090 S2: the compaction-check tool is the live surface of the pure
+	// evaluateCompactionTrigger heuristic — the WHEN half of the loop.
+	it('memory_compaction_check reports when to compact (f00090 S2)', async () => {
+		const regs = buildMemoryToolRegistrations({
+			namespacePrefix: 'memory',
+			storePathAbs: store,
+			bm25K1: 1.5,
+			bm25B: 0.75,
+			titleWeight: 2,
+			maxNotes: 1000,
+		});
+		const handler = await captureHandler(
+			regs.find((r) => r.id === 'compaction_check')!,
+		);
+		const check = async (args: unknown) =>
+			JSON.parse((await handler(args)).content[0]?.text ?? '{}') as {
+				shouldCompact: boolean;
+				reason: string;
+				hint: string;
+			};
+
+		// Below both thresholds → no compaction.
+		expect(
+			await check({
+				carriedTailTokens: 100,
+				turnsSinceLastCompaction: 3,
+			}),
+		).toMatchObject({ shouldCompact: false, reason: 'below-threshold' });
+
+		// Token pressure trips and wins the tie-break.
+		expect(
+			await check({
+				carriedTailTokens: 9000,
+				turnsSinceLastCompaction: 30,
+			}),
+		).toMatchObject({ shouldCompact: true, reason: 'token-threshold' });
+
+		// Turn threshold alone trips when tokens are low.
+		expect(
+			await check({
+				carriedTailTokens: 10,
+				turnsSinceLastCompaction: 40,
+			}),
+		).toMatchObject({ shouldCompact: true, reason: 'turn-threshold' });
+
+		// Custom thresholds are honoured.
+		expect(
+			await check({
+				carriedTailTokens: 500,
+				turnsSinceLastCompaction: 1,
+				tokenThreshold: 400,
+			}),
+		).toMatchObject({ shouldCompact: true, reason: 'token-threshold' });
+	});
 });
 
 describe('memory recall — relevance ranking (N22)', async () => {
@@ -364,7 +419,7 @@ describe('memory store — corrupt ≠ empty (M10)', async () => {
 });
 
 describe('memory plugin', async () => {
-	it('registers the seven memory tools + knowledge', async () => {
+	it('registers the eight memory tools + knowledge', async () => {
 		const ctx = {
 			workspace: { root: '/ws', resolve: (p: string) => `/ws/${p}` },
 			corePaths: {
@@ -383,6 +438,7 @@ describe('memory plugin', async () => {
 		const reg = await plugin.register(ctx);
 		expect(reg.tools?.map((t) => t.id)).toEqual([
 			'compact',
+			'compaction_check',
 			'save',
 			'recall',
 			'list',
