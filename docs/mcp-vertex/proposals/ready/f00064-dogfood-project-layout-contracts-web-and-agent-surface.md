@@ -165,13 +165,35 @@ External agent/IDE configs are evaluated per host:
 
 ### S4 — Header and marquee responsive repair
 
-- **Status**: pending
+- **Status**: done
 - **Files**: apps/web/src/components/**, apps/web/src/styles/**, apps/web/tests/**
 - **Gate**: bun run site:strict
 - **Acceptance**:
   - Header content does not overlap at mobile, tablet, laptop, or wide desktop widths.
   - The marquee has stable height/spacing and does not clip or collide with adjacent sections.
   - Playwright screenshots or equivalent visual checks cover at least 390px, 768px, 1024px, and 1440px widths.
+- **Landed**: Root-cause header fix + a static-source contract guard (no
+  Playwright infra exists; the house convention for "equivalent visual checks"
+  is a `readFileSync`+assert spec, as in `tabs-cross-fade.spec.ts`). The real
+  defect was the desktop nav collapsing to the hamburger only at `<=680px`
+  while the full row (brand + 4 links + divider + "More" + GitHub + search +
+  gear) only fits from ~820px up (the documented safe floor in
+  `SiteNav.astro`): the 681–820px band — where a 768px tablet lands — rendered
+  the full row, which `flex-wrap`ped onto a second line and, against
+  `.nav__inner`'s fixed `height: 60px`, overflowed and overlapped the hero/
+  page-header below. Fix: (1) `.nav__inner` fixed `height` → `min-height` +
+  `padding-block` so a wrapped row grows the header instead of clipping (belt
+  for long translated labels at any width); (2) hamburger collapse breakpoint
+  `680px` → `820px` in `_nav-media.scss` so the tablet band gets the clean
+  mobile header. The marquee was already robust (`overflow-x: clip` X-only so
+  the hover-lift isn't cropped, masked seamless `translateX(-50%)` tiling) — no
+  churn. New guard `apps/web/tests/ui/nav-responsive.spec.ts` (5 tests) pins:
+  `min-height` not fixed `height`; collapse breakpoint in [768, 1024) so 768px
+  collapses and 1024px stays desktop; marquee X-only clip + seamless tiling.
+  Verified: new spec 5/5, full `apps/web` vitest 176 pass (the lone failure —
+  `pages-audit.spec.ts`, audit lists 48 pages vs 46 on disk — is PRE-EXISTING
+  page-inventory drift confirmed on clean develop and belongs to S5), plus
+  `check:i18n` and `stylelint` on the touched partials both exit 0.
 
 ### S5 — Complete web plugin/page/i18n surface
 
