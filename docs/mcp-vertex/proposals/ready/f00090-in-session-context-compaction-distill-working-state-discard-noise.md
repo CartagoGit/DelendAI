@@ -219,10 +219,30 @@ the digest recallable because it is a normal note.
   memory suite 71 green; `tsc -p plugins/memory` exit 0.
 
 ### S4 — docs page + i18n + knowledge wiring
-- **Status**: pending
+- **Status**: done (re-scoped — see reconciliation note)
 - **Files**: [apps/web/src/pages/docs/memory/compaction.astro, apps/web/src/i18n/ui.ts]
 - **Gate**: bun run validate
 - **Expect**: exit0
+- **Reconciliation note (2026-07-04)**: the load-bearing half — **the agent
+  playbook** — is DONE: `plugins/memory/src/index.ts`'s `memory-usage`
+  knowledge entry now documents the full in-session loop **check
+  (`memory_compaction_check`) → compact (`memory_compact`) → recall
+  (`memory_recall` surfaces `sessionDigest`)**, which is what an LLM actually
+  reads (surfaced via `overview` / the knowledge tool). The prescribed
+  **web** targets are STALE/non-idiomatic for this repo: there is no
+  `apps/web/src/pages/docs/` route (the site has NO per-feature docs pages —
+  features surface as manifest-generated cards on `/knowledge` + `/tools`, and
+  `describeKnowledge` returns only a localized TITLE, with no body/detail route:
+  KnowledgeSection itself notes "no detail route yet"), and
+  `apps/web/src/i18n/ui.ts` is a back-compat shim (real i18n is modular
+  per-domain). Building a bespoke `docs/memory/compaction.astro` would invent a
+  new page pattern for one feature, at odds with the site's manifest-driven
+  design — declined for the same reason f00086 S1/S6 and f00069 S3/S5 were
+  re-scoped rather than force-fit. The memory tools (`memory_compact`,
+  `memory_compaction_check`) + the `memory-usage` knowledge already appear on
+  the generated web surfaces. Net: agent-facing docs shipped; a human web
+  docs page is intentionally not added (non-idiomatic). **All f00090 slices are
+  now done** — the file can transition out of `ready/` via the proposals plugin.
 
 ## acceptance
 
