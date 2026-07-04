@@ -292,8 +292,33 @@ Each slice below becomes its own sub-proposal, executed and closed in order.
 
 ### S6 — F: Shared cross-package contracts (SOLID/DRY)
 
-- **Status**: pending (not started)
-- **Drain note (2026-07-01)**: not implemented on develop — no root `contracts/`
+- **Status**: done (reconciled — no concrete duplicate exists to extract)
+- **Reconciliation (2026-07-04, closed as YAGNI):** a fresh duplicate-detection
+  pass over `packages/*/src` + `plugins/*/src` found **no concrete cross-package
+  contract duplication** to de-duplicate, which is the whole justification for a
+  shared boundary. Evidence: the only interface/type name defined 3× is
+  `IProposalFrontmatter` — all three **intra-package** (`plugins/proposals`),
+  not cross-package. Every name defined in exactly two places is either
+  intra-package (`ILockEntry` — both in `plugins/proposals`), a false-positive
+  substring match (`IMetricsSnapshot` in core vs `IMetricsSnapshotOptions` in
+  client — different types), or a **deliberately-distinct client↔server shape**:
+  `packages/client` (the host-facing MCP client) defines its own contract DTOs
+  in `contracts/interfaces/*` that mirror but stay DECOUPLED from the
+  server-side `core`/plugin types (e.g. client `IKnowledgeEntry extends
+  IKnowledgeSummary { body }` vs core's flat `{ id, title, body }`; likewise
+  `ISearchResult`, `ILogEvent`). That is an intentional anti-corruption
+  boundary, not copy-paste — DRY governs duplicated *knowledge*, not incidental
+  same-name collisions of distinct-layer shapes. Creating a
+  `@mcp-vertex/contracts` package to hold zero proven duplicates would add
+  cross-package coupling + real circular-dep risk for no dedup payoff — the
+  opposite of the SOLID/DRY this slice invokes. The genuine need it names
+  (per-package `contracts/{interfaces,constants}` naming) already exists in
+  `packages/{cli,core,client}` + `plugins/{rules,proposals,issues,audit}` and is
+  green under `lint:conventions`. If a real cross-package duplicate is
+  introduced later, extract that single leaf contract then — do not stand up a
+  speculative shared package now. (House style: re-scope/close when the
+  prescribed target is speculative generality rather than a real defect.)
+- **Original drain note (2026-07-01)**: not implemented on develop — no root `contracts/`
   and no `packages/contracts` package exist. The per-package `contracts/` dirs
   (`packages/{cli,core,client}/**/contracts`, `plugins/{rules,proposals,issues,
   audit}/**/contracts`) remain package-local; the mixed `*.types.ts` candidates
