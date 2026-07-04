@@ -1,0 +1,113 @@
+---
+/**
+ * `HomeInstallEcosystemsSection.astro` — junior-grade install guide (f00065 S4).
+ *
+ * Renders an icon+name runtime selector (`<Tabs>`: Node / Python / PHP). Each
+ * panel opens with a one-line tagline, then lists that ecosystem's packagers —
+ * every packager carries a beginner "for dummies" explanation plus its one-line
+ * `… init` command. This complements the terse `HomeQuickInstallSection`
+ * (Node-only, no prose) so a developer who lives in Python or PHP can start from
+ * the tooling they already know.
+ *
+ * Copy comes from the standalone `installDummiesByLang` map (en source of truth,
+ * es translated, the other ten languages fall back to en). That map is outside
+ * the site `ITranslations`, so it never touches the 12-lang `check:i18n` walk.
+ * The runtime + packager structure (and which `dummiesKey` each renders) is the
+ * single source of truth in `#DATA/install`.
+ */
+import type { Lang } from '#I18N/ui';
+import { ecosystems } from '#DATA/install';
+import { installDummiesByLang } from '#I18N/install-ecosystems';
+import { brandLogo } from '#LIB/brand-logos';
+import Tabs from '#UI/Tabs.astro';
+import CodeBlock from '#UI/CodeBlock.astro';
+
+interface Props {
+	readonly lang: Lang;
+}
+const { lang } = Astro.props;
+const t = installDummiesByLang[lang];
+
+const tabs = ecosystems.map((eco) => ({
+	id: eco.id,
+	icon: brandLogo(eco.id, 'lang') ?? undefined,
+	label: eco.label,
+}));
+const defaultEco = ecosystems[0]?.id ?? '';
+---
+
+<section id="install-runtimes" class="section section--install-eco">
+	<div class="container">
+		<h2>{t.title}</h2>
+		<p class="lead">{t.lead}</p>
+
+		<Tabs tabs={tabs} defaultTab={defaultEco} label={t.selectorLabel}>
+			{
+				ecosystems.map((eco) => (
+					<section
+						data-tab-panel={eco.id}
+						id={`ui-panel-${eco.id}`}
+						hidden={eco.id !== defaultEco}
+					>
+						<p class="install-eco__tagline">{t.tagline[eco.taglineKey]}</p>
+						<ul class="install-eco__packagers">
+							{eco.packagers.map((pm) => (
+								<li class="install-eco__packager">
+									<div class="install-eco__head">
+										<span class="install-eco__name">{pm.label}</span>
+										<span class="install-eco__badge">{t.beginnerBadge}</span>
+									</div>
+									<p class="install-eco__dummies">{t.dummies[pm.dummiesKey]}</p>
+									<CodeBlock
+										code={pm.init}
+										lang="bash"
+										filename="terminal"
+										lang_label={lang}
+									/>
+								</li>
+							))}
+						</ul>
+					</section>
+				))
+			}
+		</Tabs>
+	</div>
+</section>
+
+<style>
+	.section--install-eco {
+		padding-block: clamp(2.5rem, 5vw, 4rem);
+	}
+	.install-eco__tagline {
+		margin: 0 0 1.5rem;
+		font-weight: 500;
+	}
+	.install-eco__packagers {
+		display: grid;
+		gap: 1.75rem;
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+	.install-eco__head {
+		display: flex;
+		align-items: center;
+		gap: 0.75rem;
+		margin-bottom: 0.5rem;
+	}
+	.install-eco__name {
+		font-weight: 700;
+		font-size: 1.05rem;
+	}
+	.install-eco__badge {
+		font-size: 0.75rem;
+		font-weight: 600;
+		padding: 0.1rem 0.5rem;
+		border-radius: 999px;
+		background: color-mix(in srgb, currentColor 12%, transparent);
+	}
+	.install-eco__dummies {
+		margin: 0 0 0.75rem;
+		max-width: 65ch;
+	}
+</style>
