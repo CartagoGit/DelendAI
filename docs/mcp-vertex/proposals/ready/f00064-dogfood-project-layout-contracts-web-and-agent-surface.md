@@ -228,7 +228,7 @@ External agent/IDE configs are evaluated per host:
   gitignored core `dist/public/index.d.ts` stub (`gen-capabilities`
   `agentCatalogTools` regression), which is out of scope and untouched; the
   committed 640k `capabilities.json` is fully populated.
-
+- status: done
 ### S6 — Host-visible tools, plugins, and skills
 
 - **Status**: done
