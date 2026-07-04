@@ -132,4 +132,37 @@ export const GetQuotaOutputSchema = z.object({
 	note: z.string().optional(),
 });
 
+const DetectedProviderSchema = z.object({
+	id: z.string(),
+	cliPath: z.string().nullable(),
+	version: z.string().nullable(),
+	authTier: z.string().nullable(),
+});
+
+const MissingProviderSchema = z.object({
+	id: z.string(),
+	installHint: InstallHintSchema,
+});
+
+export const DiscoverProvidersOutputSchema = z.object({
+	detected: z.array(DetectedProviderSchema),
+	missing: z.array(MissingProviderSchema),
+});
+
+/** A single RFC 6902 JSON Patch `add` op (CRITICAL I13). */
+const JsonPatchOpSchema = z.object({
+	op: z.literal('add'),
+	path: z.string(),
+	value: z.unknown(),
+});
+
+export const BootstrapProvidersOutputSchema = z.object({
+	detected: z.array(DetectedProviderSchema),
+	missing: z.array(MissingProviderSchema),
+	rosterDraftPath: z.string(),
+	configPatch: z.array(JsonPatchOpSchema),
+	brief: z.string(),
+	note: z.string(),
+});
+
 export { CapabilityTagSchema };

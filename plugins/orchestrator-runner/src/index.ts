@@ -62,6 +62,14 @@ export default definePlugin({
 		const quotasPath = ctx.workspace.resolve(
 			joinRel(ctx.pluginCacheDir, 'quotas.json'),
 		);
+		const rosterDraftPath = ctx.workspace.resolve(
+			joinRel(ctx.pluginCacheDir, 'roster.draft.json'),
+		);
+		// The confirmed config the bootstrap wizard emits a JSON Patch against.
+		// The wizard READS it to diff (never WRITES it): confirmed intent is
+		// the user's to own (CRITICAL I13 — patch is returned, applied on
+		// confirm via elicitation / a CLI prompt).
+		const configPath = ctx.workspace.resolve('mcp-vertex.config.json');
 
 		// In-memory availability mirror (CRITICAL rule 3: never a per-decision
 		// fs read). Hydrated best-effort from the last on-disk snapshot; a
@@ -87,6 +95,8 @@ export default definePlugin({
 				defaultCostPreference,
 				healthcheckPath,
 				quotasPath,
+				rosterDraftPath,
+				configPath,
 				workspaceRoot: ctx.workspace.root,
 				runner: runCommand,
 				loopDetector,
@@ -100,7 +110,9 @@ export default definePlugin({
 						'',
 						`Tools: \`${ctx.namespacePrefix}_healthcheck_providers\`, ` +
 							`\`${ctx.namespacePrefix}_advise_routing\`, ` +
-							`\`${ctx.namespacePrefix}_get_quota\`.`,
+							`\`${ctx.namespacePrefix}_get_quota\`, ` +
+							`\`${ctx.namespacePrefix}_discover_providers\`, ` +
+							`\`${ctx.namespacePrefix}_bootstrap_providers\`.`,
 						'',
 						'- `advise_routing {taskDescription, sliceCapabilityHints?, mode?,',
 						'  costPreference?, sessionId?}` scores the confirmed roster with a',
@@ -109,8 +121,15 @@ export default definePlugin({
 						'  and the full scoring trace. Headless: it never spends.',
 						'- `healthcheck_providers` probes each provider CLI on PATH and',
 						'  mirrors availability in memory for the router.',
-						'- `get_quota` reads the quota snapshot (populated by the bootstrap',
-						'  layer in a later slice).',
+						'- `discover_providers` runs a parallel PATH probe for the known',
+						'  provider CLIs and reports installed vs missing (with install hints).',
+						'- `bootstrap_providers` runs the wizard: probe + best-effort auth',
+						'  RPC, writes a draft roster to the cache, and returns a prose brief',
+						'  plus an RFC 6902 JSON Patch for the user to confirm into',
+						'  `mcp-vertex.config.json#providers`. It never writes the confirmed',
+						'  config itself.',
+						'- `get_quota` reads the quota snapshot (the 3-source quota merge in',
+						'  `quota.ts` writes it; S6 feeds it live header/RPC samples).',
 						'- Requires the `usage-tracking` plugin so every advised route is',
 						'  recorded for spend auditing.',
 					].join('\n'),
