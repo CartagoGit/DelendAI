@@ -102,6 +102,22 @@ const SECRET_GENERATORS: ReadonlyArray<{
 		name: 'assignment',
 		gen: (rng) => `api_key: ${randomString(rng, 10)}`,
 	},
+	// f00067 S8 — hyphenated provider keys + prefixed env-var assignments.
+	{
+		name: 'anthropic-key',
+		gen: (rng) => `sk-ant-api03-${randomString(rng, 24)}`,
+	},
+	{
+		name: 'openrouter-key',
+		gen: (rng) => `sk-or-v1-${randomString(rng, 24)}`,
+	},
+	{
+		// A prefixed UPPER_ENV_STYLE_API_KEY = value that the generic
+		// (`\bapi_key\b`) rule misses because the `_` before `API` denies the
+		// leading word boundary.
+		name: 'env-assignment',
+		gen: (rng) => `ANTHROPIC_API_KEY=${randomString(rng, 16)}`,
+	},
 ];
 
 const TRIALS = 50;
