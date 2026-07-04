@@ -462,7 +462,7 @@ highest-risk).
   - "i18n: 12 langs × 3 new tools. `bun run lint:cli:i18n` passes."
 
 ---
-
+- status: done
 ### S6 — orchestrator-runner plugin: subprocess invocation (Option E core)
 
 - **Status**: ready
