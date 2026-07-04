@@ -44,11 +44,13 @@ describe('orchestrator-runner plugin', () => {
 		expect(plugin.dependsOn).toContain('usage-tracking');
 	});
 
-	it('registers exactly the 3 headless tools + the routing knowledge entry', async () => {
+	it('registers exactly the 5 tools (S4 + S5) + the routing knowledge entry', async () => {
 		const regs = await plugin.register(makeCtx(dir));
 		const ids = (regs.tools ?? []).map((t) => t.id).sort();
 		expect(ids).toEqual([
 			'advise_routing',
+			'bootstrap_providers',
+			'discover_providers',
 			'get_quota',
 			'healthcheck_providers',
 		]);
