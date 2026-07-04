@@ -165,4 +165,94 @@ export const BootstrapProvidersOutputSchema = z.object({
 	note: z.string(),
 });
 
+// ─── S6: invocation, cancellation, handoff, models, provider-state ──────────
+
+const UsageSchema = z.object({
+	inputTokens: z.number(),
+	outputTokens: z.number(),
+	totalTokens: z.number(),
+});
+
+const InvokeResultSchema = z.object({
+	text: z.string(),
+	structuredContent: z.unknown().optional(),
+	usage: UsageSchema.optional(),
+	costUsd: z.number().optional(),
+});
+
+const TriedProviderSchema = z.object({
+	provider: z.string(),
+	failure: z.string(),
+	at: z.string(),
+});
+
+const InvokeErrorSchema = z.object({
+	code: z.enum([
+		'no-providers',
+		'all-providers-failed',
+		'execution-disabled',
+		'confirmation-required',
+		'timeout-exceeded',
+		'cancelled',
+	]),
+	tried: z.array(TriedProviderSchema),
+	nextAvailableAt: z
+		.object({ provider: z.string(), resetAt: z.string() })
+		.nullable(),
+});
+
+export const InvokeOutputSchema = z.object({
+	decision: RoutingDecisionSchema,
+	sessionId: z.string(),
+	invocationId: z.string().optional(),
+	result: InvokeResultSchema.optional(),
+	error: InvokeErrorSchema.optional(),
+	userMessage: z.string().optional(),
+});
+
+export const CancelInvocationOutputSchema = z.object({
+	invocationId: z.string(),
+	cancelled: z.boolean(),
+	note: z.string(),
+});
+
+export const FormatHandoffOutputSchema = z.object({
+	kind: z.enum(['cli', 'curl', 'mcp-tool', 'passthrough', 'none']),
+	command: z.string(),
+	note: z.string(),
+});
+
+const ModelSummarySchema = z.object({
+	id: z.string(),
+	kind: z.enum(['api', 'subscription', 'cli', 'mcp-server']),
+	modelId: z.string(),
+	costTier: CostTierSchema,
+	contextWindow: z.number(),
+	strengths: z.array(CapabilityTagSchema),
+	weaknesses: z.array(CapabilityTagSchema),
+	state: ProviderStateSchema,
+	reachable: z.boolean(),
+	until: z.string().optional(),
+	reason: z.string().optional(),
+});
+
+export const ListModelsOutputSchema = z.object({
+	models: z.array(ModelSummarySchema),
+	summary: z.object({
+		total: z.number(),
+		reachable: z.number(),
+	}),
+});
+
+export const SetProviderStateOutputSchema = z.object({
+	providerId: z.string(),
+	applied: z.object({
+		id: z.string(),
+		state: ProviderStateSchema,
+		until: z.string().optional(),
+		reason: z.string().optional(),
+	}),
+	note: z.string(),
+});
+
 export { CapabilityTagSchema };
