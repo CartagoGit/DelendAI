@@ -3,7 +3,16 @@
 // The base nav rules live in _nav.scss. Keep this file to media queries only
 // so stylelint does not re-lint a compiled copy of the base selectors.
 
-@media (max-width: 680px) {
+// Collapse to the hamburger below 820px. The desktop row (brand + 4 section
+// links + divider + "More" + GitHub + search + gear) only fits from ~820px up
+// — that's the documented safe floor in SiteNav.astro. The previous 680px
+// cutoff left the 681–820px band (where a 768px tablet lands) rendering the
+// full row, which wrapped onto a second line and overlapped the hero/
+// page-header below. Collapsing at ≤820px gives that band the clean mobile
+// header (brand + search + gear + hamburger) instead. Widths ≥821px keep the
+// full nav; `.nav__inner`'s `min-height` (see _nav.scss) is the belt for any
+// residual wrap from a long translated label at desktop widths.
+@media (max-width: 820px) {
 	.nav__links {
 		gap: 0.5rem;
 	}
