@@ -79,6 +79,8 @@ export type {
 export { proposalGlossaryByLang, recoveryByLang } from '#I18N/proposals';
 export { proposalBoardByLang } from '#I18N/proposals-board';
 export type { IProposalBoardTranslations } from '#I18N/proposals-board';
+export { installDummiesByLang } from '#I18N/install-ecosystems';
+export type { IInstallDummiesTranslations } from '#I18N/install-ecosystems';
 export { logsByLang } from '#I18N/logs';
 export { default as en } from '#I18N/langs/en';
 export { default as es } from '#I18N/langs/es';
