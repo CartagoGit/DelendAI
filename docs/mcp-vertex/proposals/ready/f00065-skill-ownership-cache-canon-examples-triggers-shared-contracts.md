@@ -407,7 +407,7 @@ Each slice below becomes its own sub-proposal, executed and closed in order.
 - **Acceptance**:
   - Sub-proposals are created one at a time, in order A -> B -> C -> D -> E -> F.
   - Each closes (status flipped, lock released) before its successor opens.
-
+- status: done
 ## Dependency graph
 
 S1(A) -> S2(B) -> S5(E)
