@@ -426,7 +426,31 @@ highest-risk).
 - status: done
 ### S5 — orchestrator-runner plugin: bootstrap wizard + quota tracking (the discovery layer)
 
-- **Status**: ready
+- **Status**: done
+- **Landed (2026-07-04)**: added the discovery layer + quota tracker, reusing
+  the merged S4 code (`probeCli`, `install-hints`, `read-quota`). Two new tools
+  (plugin now registers **5**): `discover_providers` (parallel `command -v`
+  probe of claude/codex/copilot/aider/cn/agent → `{detected[], missing[] with
+  installHint}`, effects `spawn`) and `bootstrap_providers` (wizard: PATH probe
+  → best-effort auth RPC → durable `roster.draft.json` → prose brief + an
+  **RFC 6902 JSON Patch** returned to the caller, effects `spawn`+`write`).
+  CRITICAL invariants: (I13) `buildProvidersPatch` emits non-destructive `add`
+  ops only (creates `/providers`, appends `/providers/-`, skips already-confirmed
+  ids) and is RETURNED, never applied by the plugin — the host applies it via
+  elicitation/CLI (no `mcp-vertex.config.json` write from the plugin); (I3)
+  `quota.ts` merges 3 sources in priority `http-header > auth-rpc > local-count`,
+  keyed per `(provider, window)` with the window MANDATORY and never averaged
+  across windows (tested); durable `roster.draft.json`/`quotas.json` writes go
+  through `withFileMutex` + `writeFileAtomic` + `redactSecrets` in the exact
+  shape `read-quota.ts` parses; all paths via `ctx.pluginCacheDir`. Both tools
+  ship Zod `outputSchema` + 12-lang i18n. **Verified green:**
+  `tsc -p plugins/orchestrator-runner` 0, plugin vitest **56/56** (+18 new),
+  root `bun run typecheck` 0, `lint:cli:i18n` 0, web `check:i18n` 0, `astro
+  check` 0 errors in the new i18n files. **Deferred (out of S5 scope):**
+  `quota.ts` is exported + fully unit-tested but its live header/RPC samples are
+  fed by S6's subprocess/HTTP layer (mirrors how `read-quota` shipped standalone
+  in S4 — not dead: `get_quota` already reads what it writes); real per-vendor
+  `account/read` structured parsing is S6.
 - **Files**: `plugins/orchestrator-runner/src/lib/bootstrap.ts` (NEW), `plugins/orchestrator-runner/src/lib/quota.ts` (NEW), `plugins/orchestrator-runner/src/lib/tools/bootstrap.tool.ts` (NEW), `plugins/orchestrator-runner/src/lib/tools/discover.tool.ts` (NEW), `plugins/orchestrator-runner/src/lib/tools/get-quota.tool.ts` (NEW), tests, i18n.
 - **Gate**: `bun run test plugins/orchestrator-runner && bun run typecheck && bun run lint:cli:i18n`
 - **Acceptance**:

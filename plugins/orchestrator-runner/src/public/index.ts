@@ -37,6 +37,42 @@ export {
 	type IQuotaSnapshot,
 } from '../lib/quota/read-quota';
 export {
+	mergeQuotaSources,
+	buildQuotaSnapshot,
+	httpHeaderSample,
+	writeQuotaSnapshot,
+	type QuotaWindow,
+	type QuotaSource,
+	type IQuotaObservation,
+	type IProviderQuotaSample,
+	type IQuotaSnapshotFile,
+} from '../lib/quota';
+export {
+	DISCOVERABLE_CLIS,
+	discoverProviders,
+	parseAuthTier,
+	probeAuthTier,
+	buildRosterDraft,
+	writeRosterDraft,
+	readConfirmedProviders,
+	draftProviderEntry,
+	buildProvidersPatch,
+	composeBootstrapBrief,
+	ROSTER_DRAFT_SCHEMA,
+	type DiscoverableCli,
+	type IDiscoveredProvider,
+	type IMissingProvider,
+	type IDiscoveryResult,
+	type IRosterDraft,
+	type IJsonPatchOp,
+} from '../lib/bootstrap';
+export {
+	buildDiscoverProvidersRegistration,
+	buildBootstrapProvidersRegistration,
+	type IDiscoverProvidersToolOptions,
+	type IBootstrapProvidersToolOptions,
+} from '../lib/tools';
+export {
 	assertUsageTrackingLoaded,
 	USAGE_TRACKING_PLUGIN,
 } from '../lib/guard';
