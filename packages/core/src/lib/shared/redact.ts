@@ -4,9 +4,10 @@
  * Any store that is durable and re-surfaced (memory notes, proposal documents)
  * must never persist a credential an agent happened to see. `redactSecrets`
  * scrubs values that match HIGH-CONFIDENCE secret shapes (well-known token
- * prefixes, PEM private keys, JWTs, and `key = value` assignments for
- * secret-ish names) before content is written. The patterns favour precision
- * over recall: better to miss an exotic secret than to mangle a legitimate note.
+ * prefixes, PEM private keys, JWTs, `key = value` assignments for secret-ish
+ * names, and `UPPER_ENV_STYLE_API_KEY = value` env-var assignments) before
+ * content is written. The patterns favour precision over recall: better to miss
+ * an exotic secret than to mangle a legitimate note.
  *
  * Lives in core so every persistent plugin shares one redactor (memory,
  * proposals, …) instead of each rolling its own.
@@ -43,6 +44,11 @@ const RULES: readonly IRule[] = [
 	{ name: 'slack-token', re: /\bxox[baprs]-[A-Za-z0-9-]{10,}\b/g },
 	// Stripe secret key.
 	{ name: 'stripe-key', re: /\bsk_(?:live|test)_[0-9A-Za-z]{16,}\b/g },
+	// Anthropic + OpenRouter keys — hyphenated bodies (`sk-ant-api03-…`,
+	// `sk-or-v1-…`) the alnum-only `openai-key` rule below stops short of.
+	// Listed first so the more specific prefix wins. (f00067 S8)
+	{ name: 'anthropic-key', re: /\bsk-ant-[A-Za-z0-9-]{16,}/g },
+	{ name: 'openrouter-key', re: /\bsk-or-[A-Za-z0-9-]{16,}/g },
 	// OpenAI-style secret key.
 	{ name: 'openai-key', re: /\bsk-[A-Za-z0-9]{20,}\b/g },
 	// `Authorization: Bearer <token>` headers.
@@ -57,6 +63,18 @@ const RULES: readonly IRule[] = [
 		name: 'assignment',
 		re: /\b(api[_-]?key|secret|token|password|passwd|pwd|access[_-]?key|client[_-]?secret)\b(\s*[:=]\s*)["']?([A-Za-z0-9._\-/+]{8,})["']?/gi,
 		replace: (_m, key: string, sep: string) => `${key}${sep}${REDACTED}`,
+	},
+	// UPPER-CASE env-var assignments whose name ENDS in a secret-ish suffix
+	// (`OPENAI_API_KEY=…`, `ANTHROPIC_API_KEY=…`, `AWS_SECRET_ACCESS_KEY=…`,
+	// `DATABASE_PASSWORD=…`). The generic rule above misses these because the
+	// `_` before `API_KEY`/`SECRET` denies the leading `\b`, so a prefixed
+	// provider key in a config/log the agent read could otherwise persist
+	// cleartext. The uppercase-name + suffix + assignment shape keeps the
+	// false-positive risk low. (f00067 S8)
+	{
+		name: 'env-assignment',
+		re: /\b([A-Z][A-Z0-9_]*(?:API[_-]?KEY|ACCESS[_-]?KEY|SECRET|TOKEN|PASSWORD|PASSWD))(\s*[:=]\s*)["']?([A-Za-z0-9._\-/+]{8,})["']?/g,
+		replace: (_m, name: string, sep: string) => `${name}${sep}${REDACTED}`,
 	},
 ];
 
