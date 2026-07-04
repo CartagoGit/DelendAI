@@ -181,8 +181,20 @@ the digest recallable because it is a normal note.
   + specced — fires when the carried tail crosses `tokenThreshold` (default 8k)
   OR `turnThreshold` (default 25) turns elapse, token pressure winning the reason
   tie-break; returns an agent-readable `hint`. Types live in `contracts/interfaces/`
-  per the repo convention. The one-call embedding into `overview`/`auto_work` is the
-  remaining integration touchpoint (same mechanism/wiring split S1 used).
+  per the repo convention.
+- **Integration wired (2026-07-04)**: the pure heuristic was previously UNWIRED
+  (zero live callers). Rather than couple it into core `overview` (core must not
+  depend on a plugin) or overload `memory_recall` (SRP: the trigger reasons over
+  agent-RUNTIME state, not the note store), it now has a dedicated read-only tool
+  `memory_compaction_check` (`plugins/memory/src/lib/tools/compaction-check.tool.ts`):
+  the agent passes `{carriedTailTokens, turnsSinceLastCompaction}` (+ optional
+  threshold overrides) and gets the deterministic decision + `hint` back — no
+  store I/O, no `effects`, safe to call "cada cierto tiempo". This completes the
+  loop **check → compact → recall** (all under `memory_*`, one mental model), and
+  the knowledge entry now documents it. New spec in `memory.spec.ts`; memory suite
+  72 green; `tsc -p plugins/memory` exit 0; agent-catalog regenerated;
+  `catalog:check` + `catalog:hints:check` green. (memory_compact-style tools stay
+  opt-out of the per-tool web i18n catalogue, so `check:i18n` is unaffected.)
 
 ### S3 — auto-recall latest session digest into orientation
 - **Status**: done
