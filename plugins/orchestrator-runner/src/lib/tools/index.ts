@@ -19,6 +19,7 @@ import type { InvocationManager } from '../invoke/manager';
 import type { SessionStore } from '../router/session';
 import type { CostPreference, ILoopDetectionSeam } from '../types';
 import { buildAdviseRoutingRegistration } from './advise-routing.tool';
+import { buildAdviseSpendRegistration } from './advise-spend.tool';
 import { buildBootstrapProvidersRegistration } from './bootstrap.tool';
 import { buildCancelInvocationRegistration } from './cancel-invocation.tool';
 import { buildDiscoverProvidersRegistration } from './discover.tool';
@@ -31,6 +32,21 @@ import { buildSetProviderStateRegistration } from './set-provider-state.tool';
 
 export { buildAdviseRoutingRegistration } from './advise-routing.tool';
 export type { IAdviseRoutingToolOptions } from './advise-routing.tool';
+export {
+	buildAdviseSpendRegistration,
+	buildSpendAdvice,
+	readSpendState,
+	emptyCurrentState,
+} from './advise-spend.tool';
+export type {
+	IAdviseSpendToolOptions,
+	ISpendAdvice,
+	ISpendCurrentState,
+	IUsageBucket,
+	ILimitsStatusView,
+	IRecommendation,
+	RiskLevel,
+} from './advise-spend.tool';
 export { buildBootstrapProvidersRegistration } from './bootstrap.tool';
 export type { IBootstrapProvidersToolOptions } from './bootstrap.tool';
 export { buildCancelInvocationRegistration } from './cancel-invocation.tool';
@@ -61,12 +77,14 @@ export interface IOrchestratorRunnerToolOptions {
 	readonly quotasPath: string;
 	readonly rosterDraftPath: string;
 	readonly configPath: string;
+	/** Sibling usage-tracking `usage-summary.json` (for `advise_spend`, S7). */
+	readonly usageSummaryPath: string;
 	readonly workspaceRoot: string;
 	readonly runner: ProbeRunner;
 	readonly loopDetector?: ILoopDetectionSeam | undefined;
 }
 
-/** The 10 tools this plugin ships (S4 + S5 + S6), in a stable order. */
+/** The 11 tools this plugin ships (S4 + S5 + S6 + S7), in a stable order. */
 export const buildOrchestratorRunnerToolRegistrations = (
 	options: IOrchestratorRunnerToolOptions,
 ): readonly IToolRegistration[] => [
@@ -122,5 +140,9 @@ export const buildOrchestratorRunnerToolRegistrations = (
 		namespacePrefix: options.namespacePrefix,
 		health: options.health,
 		healthcheckPath: options.healthcheckPath,
+	}),
+	buildAdviseSpendRegistration({
+		namespacePrefix: options.namespacePrefix,
+		usageSummaryPath: options.usageSummaryPath,
 	}),
 ];
