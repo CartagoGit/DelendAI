@@ -560,10 +560,11 @@ highest-risk).
   - "**Circuit breaker** lives at `plugins/usage-tracking/src/lib/circuit-breaker.ts` (not in `orchestrator-runner`): it observes `invocations.jsonl`, computes rolling `sessionSpendUsd` (since session start) and `monthlySpendUsd` (calendar-month window), and writes a `limitsStatus: { sessionSpendUsd, sessionLimitUsd, sessionLimitPct, monthlySpendUsd, monthlyLimitUsd, monthlyLimitPct, breached: 'session'|'monthly'|null }` block into `usage-summary.json`. When `breached` is set, `<prefix>_invoke` returns `{ error: { code: 'spend-limit-exceeded', scope, limitUsd, observedUsd, message } }` **before** spawning any subprocess or HTTP call."
   - "**Integration with the fallback chain** (from `06`): when the circuit breaker breaches, the runner does **not** surface a hard error if `fallbackStrategy: 'rerank'` is set and there exists at least one provider at `costTier <= 1`. In that case the runner degrades automatically to the cheapest available provider and logs the degradation in `usage-summary.json#degradations`. With `fallbackStrategy: 'tier-down'` (or no cheap tier available), the hard error fires."
   - "**Configuration** adds two fields to `plugins.usage-tracking.options`: `maxSessionSpendUsd?: number` (default undefined = unlimited) and `maxMonthlySpendUsd?: number` (default undefined). When either is set, the breaker is active. JSON schema gain is a single `{type:'object', properties: {maxSessionSpendUsd: {type:'number', minimum:0}, maxMonthlySpendUsd: {type:'number', minimum:0}}, additionalProperties:false}` block — no global schema touch needed (per-plugin options)."
-  - "**`<prefix>_advise_spend` surfaces `limitsStatus`** in its `currentState` output, so the LLM-as-cost-analyst can recommend *\"you have $12 of your $50 monthly cap left; consider switching to Sonnet for the rest of the week\"* before the user hits the wall."
+  - "**`<prefix>_advise_spend` surfaces `limitsStatus`** in its `currentState` output, so the LLM-as-cost-analyst can recommend *\"you have ### S7 — usage-tracking extension: auto-bypass accounting + advise_spend
+2 of your $50 monthly cap left; consider switching to Sonnet for the rest of the week\"* before the user hits the wall."
 
 ---
-
+- status: done
 ### S8 — Lint + secrets posture
 
 - **Status**: ready (redact half landed — see note)
