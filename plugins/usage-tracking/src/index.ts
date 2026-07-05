@@ -47,6 +47,19 @@ const OptionsSchema = z
 		 * 300_000 (5 min).
 		 */
 		summaryIntervalMs: z.number().int().min(1000).optional(),
+		/**
+		 * S7 circuit breaker — session spend cap (USD). `undefined` (default)
+		 * = unlimited. When set (with `maxMonthlySpendUsd`), the breaker
+		 * computes rolling spend and writes `usage-summary.json#limitsStatus`;
+		 * the orchestrator refuses to spend past the cap.
+		 */
+		maxSessionSpendUsd: z.number().min(0).optional(),
+		/**
+		 * S7 circuit breaker — calendar-month spend cap (USD). `undefined`
+		 * (default) = unlimited. Evaluated on its own window, never averaged
+		 * with the session window.
+		 */
+		maxMonthlySpendUsd: z.number().min(0).optional(),
 	})
 	.strict();
 
@@ -85,6 +98,20 @@ export default definePlugin({
 		const summaryIntervalMs =
 			options.summaryIntervalMs ?? DEFAULT_OPTIONS.summaryIntervalMs;
 		const clientMap = options.clientMap;
+
+		// S7 circuit-breaker config. The session anchor is boot time; the
+		// breaker is inert until at least one cap is set (limitsStatus then
+		// carries null limits and never breaches).
+		const sessionStartMs = Date.now();
+		const limits = {
+			sessionStartMs,
+			...(options.maxSessionSpendUsd !== undefined
+				? { maxSessionSpendUsd: options.maxSessionSpendUsd }
+				: {}),
+			...(options.maxMonthlySpendUsd !== undefined
+				? { maxMonthlySpendUsd: options.maxMonthlySpendUsd }
+				: {}),
+		};
 
 		const invocationsPath = ctx.workspace.resolve(
 			joinRel(ctx.pluginCacheDir, 'invocations.jsonl'),
@@ -127,6 +154,16 @@ export default definePlugin({
 			return computeCostUsd(pricingTable, model?.modelId, usage);
 		};
 
+		// Prime the summary once at boot so `limitsStatus` (S7) is available
+		// to the orchestrator's spend guard well before the first 5-min tick.
+		void regenerateSummary(
+			invocationsPath,
+			summaryPath,
+			windowDays,
+			Date.now(),
+			limits,
+		).catch(() => undefined);
+
 		// Periodic 5-min rollup regeneration from the log (unref'd so it
 		// never keeps the process alive).
 		const summaryTimer = setInterval(() => {
@@ -134,6 +171,8 @@ export default definePlugin({
 				invocationsPath,
 				summaryPath,
 				windowDays,
+				Date.now(),
+				limits,
 			).catch(() => undefined);
 		}, summaryIntervalMs);
 		summaryTimer.unref?.();

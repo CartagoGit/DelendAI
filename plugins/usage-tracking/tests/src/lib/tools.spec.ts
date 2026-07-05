@@ -60,6 +60,7 @@ const rec = (over: Partial<IInvocationRecord>): IInvocationRecord => ({
 	outcome: 'success',
 	fallbackFrom: null,
 	error: null,
+	autoBypassed: false,
 	...over,
 });
 
