@@ -491,6 +491,16 @@ export interface McpVertexMemoryCompactOutput {
 	redactedSecrets: number;
 }
 
+export interface McpVertexMemoryCompactionCheckOutput {
+	shouldCompact: boolean;
+	reason: "token-threshold" | "turn-threshold" | "below-threshold";
+	carriedTailTokens: number;
+	tokenThreshold: number;
+	turnsSinceLastCompaction: number;
+	turnThreshold: number;
+	hint: string;
+}
+
 export interface McpVertexMemoryExportOutput {
 	ok: true;
 	format: "json" | "ndjson";
@@ -534,6 +544,12 @@ export interface McpVertexMemoryRecallOutput {
 		updatedAt: string;
 		expiresAt?: string;
 	}[];
+	sessionDigest?: {
+		title: string;
+		topic: string;
+		body: string;
+		createdAt: string;
+	};
 }
 
 export interface McpVertexMemorySaveOutput {
@@ -1930,6 +1946,7 @@ export interface McpVertexToolOutputs {
 	"mcp-vertex_logs_subscribe": McpVertexLogsSubscribeOutput;
 	"mcp-vertex_logs_tail": McpVertexLogsTailOutput;
 	"mcp-vertex_memory_compact": McpVertexMemoryCompactOutput;
+	"mcp-vertex_memory_compaction_check": McpVertexMemoryCompactionCheckOutput;
 	"mcp-vertex_memory_export": McpVertexMemoryExportOutput;
 	"mcp-vertex_memory_forget": McpVertexMemoryForgetOutput;
 	"mcp-vertex_memory_import": McpVertexMemoryImportOutput;

@@ -44,15 +44,20 @@ describe('orchestrator-runner plugin', () => {
 		expect(plugin.dependsOn).toContain('usage-tracking');
 	});
 
-	it('registers exactly the 5 tools (S4 + S5) + the routing knowledge entry', async () => {
+	it('registers all 10 tools (S4 + S5 + S6) + the routing knowledge entry', async () => {
 		const regs = await plugin.register(makeCtx(dir));
 		const ids = (regs.tools ?? []).map((t) => t.id).sort();
 		expect(ids).toEqual([
 			'advise_routing',
 			'bootstrap_providers',
+			'cancel_invocation',
 			'discover_providers',
+			'format_handoff',
 			'get_quota',
 			'healthcheck_providers',
+			'invoke',
+			'list_models',
+			'set_provider_state',
 		]);
 		expect(regs.knowledge?.[0]?.id).toBe('orchestrator-runner-routing');
 	});

@@ -83,6 +83,30 @@ export default definePlugin({
 		const sessions = new SessionStore({ ttlSeconds });
 		sessions.startPruneTimer();
 
+		const manager = buildDefaultInvocationManager({
+			providers,
+			health,
+			defaultCostPreference,
+			invokeTimeoutMs:
+				options.invokeTimeoutMs ?? DEFAULT_OPTIONS.invokeTimeoutMs,
+			subprocessPoolSize:
+				options.subprocessPoolSize ??
+				DEFAULT_OPTIONS.subprocessPoolSize,
+			concurrencyLimit:
+				options.concurrencyLimit ?? DEFAULT_OPTIONS.concurrencyLimit,
+			maxFallbackDepth:
+				options.maxFallbackDepth ?? DEFAULT_OPTIONS.maxFallbackDepth,
+			fallbackStrategy:
+				options.fallbackStrategy ?? DEFAULT_OPTIONS.fallbackStrategy,
+			executeApi: options.executeApi ?? DEFAULT_OPTIONS.executeApi,
+			confirmBeforeExecute:
+				options.confirmBeforeExecute ??
+				DEFAULT_OPTIONS.confirmBeforeExecute,
+			autoBypassConfirmed:
+				options.autoBypassConfirmed ??
+				DEFAULT_OPTIONS.autoBypassConfirmed,
+		});
+
 		// Loop detection reuses the ONE detector (AGENTS.md rule 1) via an
 		// injected seam — never a second detector, never a cross-plugin import.
 		const loopDetector = resolveLoopDetectionSeam(ctx.options);
@@ -93,6 +117,7 @@ export default definePlugin({
 				providers,
 				health,
 				sessions,
+				manager,
 				defaultCostPreference,
 				healthcheckPath,
 				quotasPath,

@@ -185,9 +185,9 @@ describe('e2e: agent catalog', async () => {
 		);
 
 		// A core tool with an underscore id is present under its full name.
-		expect(tools.some((tool) => tool.name === 'mcp-vertex_agent_catalog')).toBe(
-			true,
-		);
+		expect(
+			tools.some((tool) => tool.name === 'mcp-vertex_agent_catalog'),
+		).toBe(true);
 
 		// Regression: `plugin` used to be the host segment (`mcp-vertex`) for
 		// EVERY plugin tool. It must now be the real owning plugin.
