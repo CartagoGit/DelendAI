@@ -20,10 +20,13 @@ import type {
 	IProviderCapabilities,
 } from '@mcp-vertex/core/public';
 
+import type { IRoutingDecision } from '@mcp-vertex/core/public';
+
 import type { HealthStore } from '../healthcheck/store';
 import type { CostPreference } from '../types';
 import type { FallbackStrategy } from './fallback';
 import { InvocationManager } from './manager';
+import type { SpendCheckOutcome } from './spend-guard';
 import type { IKindInvoker } from './types';
 import {
 	createApiInvoker,
@@ -90,6 +93,11 @@ export interface IBuildManagerOptions {
 	readonly executeApi: boolean;
 	readonly confirmBeforeExecute: boolean;
 	readonly autoBypassConfirmed: boolean;
+	/** S7 circuit-breaker seam (see {@link InvocationManager}). */
+	readonly checkSpend?: (
+		decision: IRoutingDecision,
+		strategy: FallbackStrategy,
+	) => SpendCheckOutcome;
 }
 
 export const buildDefaultInvocationManager = (
@@ -115,5 +123,8 @@ export const buildDefaultInvocationManager = (
 		executeApi: options.executeApi,
 		confirmBeforeExecute: options.confirmBeforeExecute,
 		autoBypassConfirmed: options.autoBypassConfirmed,
+		...(options.checkSpend !== undefined
+			? { checkSpend: options.checkSpend }
+			: {}),
 	});
 };

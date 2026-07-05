@@ -18,8 +18,15 @@ import {
 	writeFileAtomic,
 } from '@mcp-vertex/core/public';
 
+import { countAutoBypassed } from './auto-bypass';
+import {
+	computeLimitsStatus,
+	emptyLimitsStatus,
+	type ILimitsConfig,
+} from './circuit-breaker';
 import type {
 	GroupByAxis,
+	IDegradation,
 	IInvocationRecord,
 	IRollupBucket,
 	IRollupTotals,
@@ -97,6 +104,7 @@ export const bucketBy = (
 				totalTokens: 0,
 				costUsd: 0,
 				errors: 0,
+				autoBypassed: 0,
 			} satisfies IRollupBucket);
 		map.set(key, {
 			key,
@@ -106,6 +114,7 @@ export const bucketBy = (
 			totalTokens: prev.totalTokens + (record.usage?.totalTokens ?? 0),
 			costUsd: prev.costUsd + (record.costUsd ?? 0),
 			errors: prev.errors + (record.outcome === 'success' ? 0 : 1),
+			autoBypassed: prev.autoBypassed + (record.autoBypassed ? 1 : 0),
 		});
 	}
 	return [...map.values()].sort((a, b) => b[sortBy] - a[sortBy]);
@@ -120,6 +129,7 @@ export const computeTotals = (
 	let totalTokens = 0;
 	let costUsd = 0;
 	let errors = 0;
+	let autoBypassed = 0;
 	for (const record of records) {
 		calls += 1;
 		inputTokens += record.usage?.inputTokens ?? 0;
@@ -127,15 +137,37 @@ export const computeTotals = (
 		totalTokens += record.usage?.totalTokens ?? 0;
 		costUsd += record.costUsd ?? 0;
 		if (record.outcome !== 'success') errors += 1;
+		if (record.autoBypassed) autoBypassed += 1;
 	}
-	return { calls, inputTokens, outputTokens, totalTokens, costUsd, errors };
+	return {
+		calls,
+		inputTokens,
+		outputTokens,
+		totalTokens,
+		costUsd,
+		errors,
+		autoBypassed,
+	};
 };
 
-/** Build the full `usage-summary.json` document from the raw log. */
+/** Extra inputs the summary needs beyond the raw window (S7). */
+export interface IBuildSummaryOptions {
+	/** When set, the circuit breaker's rolling spend status is computed. */
+	readonly limits?: ILimitsConfig | undefined;
+	/** Prior degradations to carry forward (the log is append-only). */
+	readonly degradations?: readonly IDegradation[] | undefined;
+}
+
+/**
+ * Build the full `usage-summary.json` document from the raw log. The rolling
+ * limit windows (S7) are computed over ALL records — never the display window
+ * — so a short `windowDays` for the report never hides a monthly-cap breach.
+ */
 export const buildSummary = (
 	records: readonly IInvocationRecord[],
 	windowDays: number,
 	now: number = Date.now(),
+	options: IBuildSummaryOptions = {},
 ): IUsageSummary => {
 	const windowed = withinWindow(records, windowDays, now);
 	return {
@@ -146,6 +178,11 @@ export const buildSummary = (
 		byPlugin: bucketBy(windowed, 'plugin', 'costUsd'),
 		byAgent: bucketBy(windowed, 'agent', 'costUsd'),
 		byExtension: bucketBy(windowed, 'extension', 'costUsd'),
+		autoBypassed: countAutoBypassed(windowed),
+		limitsStatus: options.limits
+			? computeLimitsStatus(records, options.limits, now)
+			: emptyLimitsStatus(),
+		degradations: options.degradations ?? [],
 	};
 };
 
@@ -158,15 +195,37 @@ export const writeSummary = async (
 	await withFileMutex(absPath, () => writeFileAtomic(absPath, text));
 };
 
-/** Read + rebuild + persist the summary in one shot (the 5-min tick). */
+/** Best-effort read of the persisted summary (missing/corrupt → null). */
+export const readSummary = async (
+	summaryPath: string,
+): Promise<IUsageSummary | null> => {
+	try {
+		const raw = await readFile(summaryPath, 'utf8');
+		return JSON.parse(raw) as IUsageSummary;
+	} catch {
+		return null;
+	}
+};
+
+/**
+ * Read + rebuild + persist the summary in one shot (the 5-min tick). Carries
+ * forward the append-only `degradations` log from the prior file so a
+ * regeneration never drops a recorded degradation, and folds in the S7
+ * circuit-breaker limits when a cap is configured.
+ */
 export const regenerateSummary = async (
 	invocationsPath: string,
 	summaryPath: string,
 	windowDays: number,
 	now: number = Date.now(),
+	limits?: ILimitsConfig | undefined,
 ): Promise<IUsageSummary> => {
 	const records = await readInvocations(invocationsPath);
-	const summary = buildSummary(records, windowDays, now);
+	const prior = await readSummary(summaryPath);
+	const summary = buildSummary(records, windowDays, now, {
+		limits,
+		degradations: prior?.degradations ?? [],
+	});
 	await writeSummary(summaryPath, summary);
 	return summary;
 };

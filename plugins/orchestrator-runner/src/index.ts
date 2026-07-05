@@ -13,11 +13,19 @@
  * Load with `mcp-vertex --plugins=usage-tracking,orchestrator-runner`.
  */
 import { definePlugin, joinRel, runCommand } from '@mcp-vertex/core/public';
-import type { IProviderCapabilities } from '@mcp-vertex/core/public';
+import type {
+	IProviderCapabilities,
+	IRoutingDecision,
+} from '@mcp-vertex/core/public';
 
 import { assertUsageTrackingLoaded, USAGE_TRACKING_PLUGIN } from './lib/guard';
 import { HealthStore } from './lib/healthcheck/store';
 import { buildDefaultInvocationManager } from './lib/invoke/build-manager';
+import { SpendLimitsStore } from './lib/invoke/limits-store';
+import {
+	decideSpendGuard,
+	spendCheckForDecision,
+} from './lib/invoke/spend-guard';
 import { resolveLoopDetectionSeam } from './lib/loop-detection-seam';
 import { DEFAULT_OPTIONS, OptionsSchema } from './lib/options';
 import { SessionStore } from './lib/router/session';
@@ -71,6 +79,15 @@ export default definePlugin({
 		// the user's to own (CRITICAL I13 — patch is returned, applied on
 		// confirm via elicitation / a CLI prompt).
 		const configPath = ctx.workspace.resolve('mcp-vertex.config.json');
+		// The usage-tracking sibling writes `limitsStatus` + the spend rollup
+		// into its own cache dir; the runner reads that file (no cross-plugin
+		// import) for the S7 spend guard and `advise_spend`.
+		const usageSummaryPath = ctx.workspace.resolve(
+			joinRel(
+				joinRel(ctx.cacheDir, USAGE_TRACKING_PLUGIN),
+				'usage-summary.json',
+			),
+		);
 
 		// In-memory availability mirror (CRITICAL rule 3: never a per-decision
 		// fs read). Hydrated best-effort from the last on-disk snapshot; a
@@ -83,7 +100,31 @@ export default definePlugin({
 		const sessions = new SessionStore({ ttlSeconds });
 		sessions.startPruneTimer();
 
+		// S7 circuit-breaker seam. The runner never computes spend — it mirrors
+		// the breaker's `limitsStatus` (written by usage-tracking) in memory and
+		// consults it before every spend (no per-decision fs read, AGENTS.md
+		// rule 3). The degrade-vs-hard-error decision is the pure
+		// `decideSpendGuard`; the manager fires the hard error BEFORE any
+		// subprocess/HTTP call.
+		const spendLimits = new SpendLimitsStore();
+		void spendLimits.loadFrom(usageSummaryPath).catch(() => undefined);
+		spendLimits.startRefreshTimer(usageSummaryPath, 60_000);
+		const checkSpend = (
+			decision: IRoutingDecision,
+			strategy: 'rerank' | 'tier-down',
+		) =>
+			spendCheckForDecision(
+				decideSpendGuard({
+					limits: spendLimits.snapshot(),
+					fallbackStrategy: strategy,
+					providers,
+					availabilityOf: (id) => health.get(id),
+				}),
+				decision.targetProvider.id,
+			);
+
 		const manager = buildDefaultInvocationManager({
+			checkSpend,
 			providers,
 			health,
 			defaultCostPreference,
@@ -123,6 +164,7 @@ export default definePlugin({
 				quotasPath,
 				rosterDraftPath,
 				configPath,
+				usageSummaryPath,
 				workspaceRoot: ctx.workspace.root,
 				runner: runCommand,
 				loopDetector,

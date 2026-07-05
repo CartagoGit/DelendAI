@@ -12,6 +12,7 @@
 import type { ProviderKind } from '@mcp-vertex/core/public';
 
 import { attributeTool } from './attribute';
+import { extractAutoBypassed } from './auto-bypass';
 import type {
 	IAgentDescriptor,
 	IInvocationOutcome,
@@ -174,6 +175,7 @@ export const buildRecord = (input: IBuildRecordInput): IInvocationRecord => {
 		outcome,
 		fallbackFrom,
 		error: errorBlock,
+		autoBypassed: extractAutoBypassed(input.result),
 	};
 };
 

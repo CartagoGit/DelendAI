@@ -23,6 +23,7 @@ import type {
 
 import type { CapabilityTag } from '@mcp-vertex/core/public';
 import { planFallbackChain, type FallbackStrategy } from './fallback';
+import type { SpendBreachScope, SpendCheckOutcome } from './spend-guard';
 import {
 	ConfirmationSigner,
 	denyAllConfirmationGate,
@@ -43,7 +44,8 @@ export type InvokeErrorCode =
 	| 'execution-disabled'
 	| 'confirmation-required'
 	| 'timeout-exceeded'
-	| 'cancelled';
+	| 'cancelled'
+	| 'spend-limit-exceeded';
 
 export interface IInvokeArgs {
 	readonly task: string;
@@ -69,7 +71,13 @@ export interface IInvokeOutput {
 			readonly provider: string;
 			readonly resetAt: string;
 		} | null;
+		/** Present only on `spend-limit-exceeded` (S7). */
+		readonly scope?: SpendBreachScope;
+		readonly limitUsd?: number;
+		readonly observedUsd?: number;
 	};
+	/** True when the executed spend auto-bypassed confirmation (S7). */
+	readonly autoBypassed?: boolean;
 	readonly userMessage?: string;
 }
 
@@ -92,6 +100,17 @@ export interface IInvocationManagerOptions {
 	readonly signer?: ConfirmationSigner;
 	/** Records an auto-bypassed spend (S7 wires the real usage-summary sink). */
 	readonly recordBypass?: () => void;
+	/**
+	 * S7 circuit-breaker seam. Consulted BEFORE spending on an `api`/`cli`
+	 * decision: `block` fires the hard `spend-limit-exceeded` error before any
+	 * subprocess/HTTP call, `skip` degrades past this hop to a cheaper
+	 * provider, `proceed` spends as normal. Reads an in-memory limits mirror
+	 * (no per-decision fs read). Omitted → spend is never blocked (opt-in).
+	 */
+	readonly checkSpend?: (
+		decision: IRoutingDecision,
+		strategy: FallbackStrategy,
+	) => SpendCheckOutcome;
 	readonly now?: () => Date;
 	readonly newInvocationId?: () => string;
 	readonly setTimer?: (fn: () => void, ms: number) => ITimerHandle;
@@ -274,6 +293,7 @@ export class InvocationManager {
 
 		const tried: ITriedProvider[] = [];
 		let sawSpendBlocked = false;
+		let bypassed = false;
 		const primary = chain[0];
 
 		for (const decision of chain) {
@@ -281,7 +301,36 @@ export class InvocationManager {
 			const timeoutMs = args.timeoutMs ?? this.opts.invokeTimeoutMs;
 
 			if (SPEND_KINDS.has(kind)) {
+				// S7: consult the circuit breaker BEFORE any spend. A hard
+				// block returns before `runOne` (no subprocess/HTTP); a skip
+				// degrades to the next (cheaper) hop.
+				const spend = this.opts.checkSpend?.(decision, strategy);
+				if (spend?.outcome === 'block') {
+					return {
+						decision,
+						sessionId,
+						error: {
+							code: 'spend-limit-exceeded',
+							tried,
+							nextAvailableAt: this.nextAvailableAt(),
+							scope: spend.error.scope,
+							limitUsd: spend.error.limitUsd,
+							observedUsd: spend.error.observedUsd,
+						},
+						userMessage: spend.error.message,
+					};
+				}
+				if (spend?.outcome === 'skip') {
+					tried.push({
+						provider: decision.targetProvider.id,
+						failure: spend.note,
+						at: this.now().toISOString(),
+					});
+					continue;
+				}
+
 				const auth = await this.authoriseSpend(invocationId, decision);
+				if (auth.bypassed) bypassed = true;
 				if (!auth.ok) {
 					sawSpendBlocked = true;
 					if (!this.opts.executeApi) {
@@ -321,6 +370,7 @@ export class InvocationManager {
 					sessionId,
 					invocationId,
 					result: outcome.result,
+					autoBypassed: bypassed,
 				};
 			}
 			if (outcome.reason === 'timeout') {
