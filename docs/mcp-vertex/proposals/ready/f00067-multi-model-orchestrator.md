@@ -514,7 +514,7 @@ highest-risk).
   - "CLI commands added under `packages/cli/src/commands/groups/orchestrator-runner.ts` (consumes f00046 conventions): `mcpv orchestrator-runner invoke`, `cancel-invocation`, `format-handoff`, `list-models`, `set-provider-state`, `bootstrap`, `discover`, `get-quota`, `advise-routing`, `healthcheck`."
 
 ---
-
+- status: done
 ### S7 — usage-tracking extension: auto-bypass accounting + advise_spend
 
 - **Status**: ready
