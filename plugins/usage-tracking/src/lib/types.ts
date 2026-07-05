@@ -51,6 +51,14 @@ export interface IInvocationRecord {
 	readonly outcome: IInvocationOutcome;
 	readonly fallbackFrom: string | null;
 	readonly error: { readonly code: string; readonly message: string } | null;
+	/**
+	 * Whether this invocation auto-bypassed the `confirmBeforeExecute` prompt
+	 * (S6 I5 signed-token path). Stamped by the orchestrator on the invoke
+	 * result and lifted here so the counter cannot be circumvented (S7 —
+	 * "the counter increments inside the same code path that issues the
+	 * invocation; not opt-in"). Older rows omit the field (parsed as false).
+	 */
+	readonly autoBypassed: boolean;
 }
 
 /** One grouped bucket in a rollup (keyed by the active `groupBy` axis). */
@@ -62,6 +70,8 @@ export interface IRollupBucket {
 	readonly totalTokens: number;
 	readonly costUsd: number;
 	readonly errors: number;
+	/** How many of this bucket's calls auto-bypassed confirmation (S7). */
+	readonly autoBypassed: number;
 }
 
 export interface IRollupTotals {
@@ -71,6 +81,40 @@ export interface IRollupTotals {
 	readonly totalTokens: number;
 	readonly costUsd: number;
 	readonly errors: number;
+	readonly autoBypassed: number;
+}
+
+/** The scope a spend cap was breached in (S7 circuit breaker). */
+export type SpendBreachScope = 'session' | 'monthly';
+
+/**
+ * The circuit-breaker block written into `usage-summary.json#limitsStatus`
+ * (S7). Rolling `sessionSpendUsd` counts since session start; `monthlySpendUsd`
+ * counts a calendar-month window. The two windows are NEVER averaged into a
+ * single number — each is compared against its own cap independently.
+ */
+export interface ILimitsStatus {
+	readonly sessionSpendUsd: number;
+	readonly sessionLimitUsd: number | null;
+	readonly sessionLimitPct: number | null;
+	readonly monthlySpendUsd: number;
+	readonly monthlyLimitUsd: number | null;
+	readonly monthlyLimitPct: number | null;
+	readonly breached: SpendBreachScope | null;
+}
+
+/**
+ * A recorded automatic degradation to a cheaper provider when a spend cap
+ * breached under `fallbackStrategy:'rerank'` (S7 —
+ * `usage-summary.json#degradations`).
+ */
+export interface IDegradation {
+	readonly at: string;
+	readonly scope: SpendBreachScope;
+	readonly fromProvider: string;
+	readonly toProvider: string;
+	readonly observedUsd: number;
+	readonly limitUsd: number;
 }
 
 /** The persisted `usage-summary.json` document. */
@@ -82,6 +126,12 @@ export interface IUsageSummary {
 	readonly byPlugin: readonly IRollupBucket[];
 	readonly byAgent: readonly IRollupBucket[];
 	readonly byExtension: readonly IRollupBucket[];
+	/** Count of auto-bypassed invocations in the window (S7). */
+	readonly autoBypassed: number;
+	/** Rolling session/monthly spend vs the configured caps (S7). */
+	readonly limitsStatus: ILimitsStatus;
+	/** Automatic cheap-provider degradations, newest last (S7). */
+	readonly degradations: readonly IDegradation[];
 }
 
 export type GroupByAxis = 'provider' | 'plugin' | 'agent' | 'extension';

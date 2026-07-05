@@ -31,6 +31,7 @@ const rec = (
 	outcome: 'success',
 	fallbackFrom: null,
 	error: null,
+	autoBypassed: false,
 	...over,
 });
 
