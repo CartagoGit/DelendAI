@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-07-02T18:49:28.042Z",
+	"generatedAt": "2026-07-04T11:10:17.872Z",
 	"mode": "compact",
 	"tools": [
 		{
@@ -732,14 +732,6 @@
 				"date": "2026-06-30"
 			},
 			{
-				"id": "f00094",
-				"title": "f00094",
-				"track": "proposals+host-discovery+cli-onboarding",
-				"status": "ready",
-				"kind": "feat",
-				"date": "2026-07-01"
-			},
-			{
 				"id": "f00095",
 				"title": "f00095",
 				"track": "adoption-migration",
@@ -757,11 +749,11 @@
 			}
 		],
 		"byStatus": {
-			"ready": 10,
+			"ready": 9,
 			"in-progress": 0,
 			"review": 0,
 			"paused": 3,
-			"done": 173,
+			"done": 174,
 			"blocked": 0,
 			"retired": 0,
 			"unspecified": 0

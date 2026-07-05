@@ -44,10 +44,7 @@ export interface ICliInvokerOptions {
 	readonly setTimer?: (fn: () => void, ms: number) => { clear(): void };
 }
 
-const defaultSetTimer = (
-	fn: () => void,
-	ms: number,
-): { clear(): void } => {
+const defaultSetTimer = (fn: () => void, ms: number): { clear(): void } => {
 	const handle = setTimeout(fn, ms);
 	handle.unref?.();
 	return { clear: () => clearTimeout(handle) };
@@ -74,13 +71,15 @@ export const parseStreamJsonLine = (
 		typeof obj.text === 'string'
 			? obj.text
 			: typeof (obj.delta as { text?: unknown } | undefined)?.text ===
-				  'string'
+					'string'
 				? (obj.delta as { text: string }).text
 				: undefined;
 	if (text !== undefined) out.text = text;
 	const usageRaw = obj.usage as Record<string, unknown> | undefined;
 	if (usageRaw !== undefined) {
-		const input = Number(usageRaw.input_tokens ?? usageRaw.inputTokens ?? 0);
+		const input = Number(
+			usageRaw.input_tokens ?? usageRaw.inputTokens ?? 0,
+		);
 		const output = Number(
 			usageRaw.output_tokens ?? usageRaw.outputTokens ?? 0,
 		);
