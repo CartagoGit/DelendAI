@@ -66,9 +66,7 @@ const readToolResult = (result: unknown): IInvokeResult => {
 	};
 };
 
-export const createMcpInvoker = (
-	options: IMcpInvokerOptions,
-): IKindInvoker => {
+export const createMcpInvoker = (options: IMcpInvokerOptions): IKindInvoker => {
 	let nextId = 1;
 
 	return {

@@ -70,7 +70,7 @@ export const buildProviderHealth = (
 		auth: { authenticated: installed ? null : false, tier: null },
 		model: {
 			requested: provider.modelId,
-			available: installed ? true : false,
+			available: installed,
 		},
 		overall,
 	};

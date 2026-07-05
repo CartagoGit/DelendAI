@@ -20,8 +20,7 @@ export interface IFormattedHandoff {
 }
 
 /** Single-quote a shell argument, escaping embedded single quotes. */
-const shellQuote = (arg: string): string =>
-	`'${arg.replace(/'/g, `'\\''`)}'`;
+const shellQuote = (arg: string): string => `'${arg.replace(/'/g, `'\\''`)}'`;
 
 export const formatHandoff = (
 	decision: IRoutingDecision,

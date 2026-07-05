@@ -167,7 +167,11 @@ export class InvocationManager {
 		timeoutMs: number,
 	): Promise<
 		| { readonly ok: true; readonly result: IInvokeResult }
-		| { readonly ok: false; readonly reason: CancelReason | 'error'; readonly message: string }
+		| {
+				readonly ok: false;
+				readonly reason: CancelReason | 'error';
+				readonly message: string;
+		  }
 	> {
 		const kind = decision.targetProvider.kind;
 		const invoker = this.opts.invokers[kind];
@@ -181,7 +185,10 @@ export class InvocationManager {
 				: {}),
 			...(args.stream !== undefined ? { stream: args.stream } : {}),
 		});
-		const entry: IActiveEntry = { invocation: active, userCancelled: false };
+		const entry: IActiveEntry = {
+			invocation: active,
+			userCancelled: false,
+		};
 		this.active.set(invocationId, entry);
 
 		let timedOut = false;
@@ -361,7 +368,9 @@ export class InvocationManager {
 			decision: primary,
 			sessionId,
 			error: {
-				code: allBlocked ? 'execution-disabled' : 'all-providers-failed',
+				code: allBlocked
+					? 'execution-disabled'
+					: 'all-providers-failed',
 				tried,
 				nextAvailableAt: this.nextAvailableAt(),
 			},
