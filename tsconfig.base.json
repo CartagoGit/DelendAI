@@ -121,9 +121,7 @@
 			],
 			"@mcp-vertex/issues/*": ["./plugins/issues/src/*"],
 			"@mcp-vertex/cache": ["./plugins/cache/src/index.ts"],
-			"@mcp-vertex/cache/public": [
-				"./plugins/cache/src/public/index.ts"
-			],
+			"@mcp-vertex/cache/public": ["./plugins/cache/src/public/index.ts"],
 			"@mcp-vertex/cache/*": ["./plugins/cache/src/*"]
 		}
 	},
