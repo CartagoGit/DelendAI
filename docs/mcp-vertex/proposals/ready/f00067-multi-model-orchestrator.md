@@ -610,7 +610,7 @@ highest-risk).
   - "`bun run validate` includes the new lint."
 
 ---
-
+- status: done
 ### S9 — i18n + docs + plugin surface
 
 - **Status**: ready
