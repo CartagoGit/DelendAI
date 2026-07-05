@@ -465,7 +465,37 @@ highest-risk).
 - status: done
 ### S6 — orchestrator-runner plugin: subprocess invocation (Option E core)
 
-- **Status**: ready
+- **Status**: done
+- **Landed (2026-07-04/05)**: the subprocess-invocation layer (the plugin now
+  registers **10 tools**). Implemented by a concurrent session (committed
+  `0866f368` + a green refinement/catalog-wiring pass converged in `c9418dfa`);
+  the S6-level UNIT TESTS it lacked were added here to meet the acceptance bar.
+  Shipped: generic `SubprocessPool` (pool size 2 / concurrency 4 defaults,
+  exponential-backoff auto-restart, injectable timer seam, explicit `dispose()`
+  that zeroes workers/timers/waiters — the no-leak guarantee); per-kind invokers
+  `cli.ts`/`api.ts`/`mcp-client.ts`/`subscription.ts`; the `InvocationManager`
+  registering a cancel handle BEFORE awaiting so a racing cancel is never lost;
+  `planFallbackChain` (I7: `rerank` relaxes the cost-tier cap +1/hop, `tier-down`
+  walks strictly cheaper, both reusing the canonical `explainScore`); HMAC
+  `ConfirmationSigner` + `denyAllConfirmationGate` (I5: the LLM never sees the
+  per-process secret so it cannot mint its own spend token; a token is bound to
+  its invocation id so replay fails; default DENIES all spend). Tools `invoke`,
+  `cancel_invocation`, `format_handoff`, `list_models`, `set_provider_state`,
+  all with Zod `outputSchema` + 12-lang i18n; the execution tools are wired into
+  the generated agent-catalog (token-budget e2e budget bumped 8900→9100).
+  **Tests added this pass (18):** `token.spec` (mint/verify, replay/tamper
+  rejection, per-process secret isolation, default-deny), `fallback.spec`
+  (empty/all-unavailable → [], maxDepth bound, no repeats, tier-down strictly
+  decreasing, primary-only trace, availability exclusion), `pool.spec`
+  (lease/permit, concurrency-cap parking, **dispose zeroes every handle +
+  rejects parked waiters + clears backoff timers**, acquire-after-dispose throws,
+  crashed-worker prune). **Verified green:** `tsc -p plugins/orchestrator-runner`
+  0, plugin vitest **74/74** (12 files), root `bun run typecheck` 0,
+  `lint:cli:i18n` 0, `catalog:check` up-to-date. **Deferred to S10 (per the
+  proposal's own plan):** the real-subprocess e2e (`codex mcp-server` round-trip,
+  fallback-chain-with-clock, 1000-calls-latency) — S6's per-kind spawn/HTTP
+  paths use injected/mockable runners so no test spawns a real process or spends.
+  The `packages/cli` command surface is deferred to S9 (mirrors usage-tracking).
 - **Files**: `plugins/orchestrator-runner/src/lib/subprocess/pool.ts` (NEW), `cli.ts` (NEW), `mcp-client.ts` (NEW), `api.ts` (NEW), `plugins/orchestrator-runner/src/lib/tools/invoke.tool.ts` (NEW), `cancel-invocation.tool.ts` (NEW), `format-handoff.tool.ts` (NEW), `list-models.tool.ts` (NEW), `set-provider-state.tool.ts` (NEW), tests, i18n.
 - **Gate**: `bun run test plugins/orchestrator-runner && bun run typecheck && bun run lint:cli:i18n`
 - **Acceptance**:
