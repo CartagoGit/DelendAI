@@ -6,7 +6,10 @@
  * share. Nothing here redefines a core contract — the provider/decision
  * vocabulary stays canonical in `@mcp-vertex/core/public`.
  */
-import type { IProviderInvoke, IRoutingDecision } from '@mcp-vertex/core/public';
+import type {
+	IProviderInvoke,
+	IRoutingDecision,
+} from '@mcp-vertex/core/public';
 
 /** Token accounting for a single invocation, mirrored from the wiki shape. */
 export interface IInvokeUsage {

@@ -63,5 +63,14 @@ unique across the folder — enforced by `bun run lint:audit-ids`.
 | [a00039](a00039-24-06-2026-antigravity-deepmind-repositorio.md) | 2026-06-24 | antigravity | deepmind | repositorio | Auditoría Exhaustiva — Antigravity (DeepMind / Claude Opus 4.6 Thinking) |
 | [a00040](a00040-25-06-2026-copilot-minimax-m3-repositorio.md) | 2026-06-25 | copilot | minimax-m3 | repositorio | Auditoría Exhaustiva — Copilot (MiniMax-M3) — repositorio completo |
 | [a00041](a00041-24-06-2026-antigravity-deepmind-repositorio.md) | 2026-06-24 | antigravity | deepmind | repositorio | Auditoría Exhaustiva de Excelencia — Antigravity (DeepMind) |
+| [a00042](a00042-25-06-2026-antigravity-gemini-3-5-flash-repositorio.md) | 2026-06-25 | antigravity | gemini-3-5-flash-high | repositorio | Auditoría Exhaustiva — Antigravity (Gemini 3.5 Flash (High)) — repositorio completo |
+| [a00043](a00043-28-06-2026-antigravity-gemini-3-5-flash-repositorio.md) | 2026-06-28 | antigravity | gemini-3-5-flash-high | repositorio | Auditoría Exhaustiva — Antigravity (Gemini 3.5 Flash (High)) — repositorio completo |
+| [a00044](a00044-28-06-2026-copilot-minimax-m3-system-fragility-and-robustness-gaps.md) | 2026-06-28 | copilot | minimax-m3 | robustness-gaps | Robustez sistémica — el repo no falla en lo que hace, falla en lo que NO vigila |
+| [a00045](a00045-28-06-2026-copilot-minimax-m3-post-merge-exhaustive-audit.md) | 2026-06-28 | copilot | minimax-m3 | post-merge | Auditoría exahustiva post-merge — 6 agentes en paralelo, código y lifecycle |
+| [a00046](a00046-28-06-2026-antigravity-post-merge-exhaustive-audit.md) | 2026-06-28 | antigravity | — | post-merge | Auditoría exhaustiva post-merge — Antigravity, warnings y alineación de propuestas |
+| [a00047](a00047-29-06-2026-antigravity-exhaustive-operational-audit.md) | 2026-06-29 | antigravity | — | operational | Auditoría exhaustiva de alineación y estado operativo — Antigravity |
+| [a00048](a00048-01-07-2026-copilot-minimax-m3-completa-proyecto.md) | 2026-07-01 | copilot | minimax-m3 | completa-proyecto | Auditoría completa del proyecto — `@mcp-vertex/core` (modo general, 6 bandas, worstSeverity en inglés) |
+| [a00049](a00049-02-07-2026-antigravity-exhaustive-audit.md) | 2026-07-02 | antigravity | gemini-3-5-flash-high | repositorio | Auditoría completa del proyecto — `@mcp-vertex/core` (modo general, 6 bandas) |
+| [a00050](a00050-04-07-2026-antigravity-exhaustive-audit.md) | 2026-07-04 | antigravity | gemini-3-5-flash-high | repositorio | Auditoría completa del proyecto — `@mcp-vertex/core` (modo general, 6 bandas) |
 
-41 audits · f00050 S10.
+50 audits · f00050 S10.

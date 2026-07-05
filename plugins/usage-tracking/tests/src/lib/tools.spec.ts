@@ -91,7 +91,7 @@ describe('usage-tracking tools', () => {
 	it('usage_report rolls up by the requested axis + returns expensive calls', async () => {
 		writeFileSync(
 			invocationsPath,
-			[
+			`${[
 				rec({ plugin: 'proposals', costUsd: 1 }),
 				rec({ plugin: 'docs', costUsd: 4 }),
 				rec({
@@ -102,7 +102,7 @@ describe('usage-tracking tools', () => {
 				}),
 			]
 				.map((r) => JSON.stringify(r))
-				.join('\n') + '\n',
+				.join('\n')}\n`,
 			'utf8',
 		);
 		const report = await captureHandler(regs()[0]!);
@@ -120,12 +120,12 @@ describe('usage-tracking tools', () => {
 	it('usage_report honours the outcome filter', async () => {
 		writeFileSync(
 			invocationsPath,
-			[
+			`${[
 				rec({ outcome: 'success' }),
 				rec({ outcome: 'error', error: { code: 'x', message: 'y' } }),
 			]
 				.map((r) => JSON.stringify(r))
-				.join('\n') + '\n',
+				.join('\n')}\n`,
 			'utf8',
 		);
 		const report = await captureHandler(regs()[0]!);
