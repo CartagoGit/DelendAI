@@ -637,7 +637,7 @@ highest-risk).
   - "All e2e tests are CI-friendly: no network calls, no real API spend. Use `mocks/` directory under `tests/`."
 
 ---
-
+- status: done
 ## acceptance
 
 This section mirrors the frontmatter `acceptance:` array. Every
