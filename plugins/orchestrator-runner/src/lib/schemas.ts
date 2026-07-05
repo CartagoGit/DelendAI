@@ -194,11 +194,16 @@ const InvokeErrorSchema = z.object({
 		'confirmation-required',
 		'timeout-exceeded',
 		'cancelled',
+		'spend-limit-exceeded',
 	]),
 	tried: z.array(TriedProviderSchema),
 	nextAvailableAt: z
 		.object({ provider: z.string(), resetAt: z.string() })
 		.nullable(),
+	// Present only on `spend-limit-exceeded` (S7).
+	scope: z.enum(['session', 'monthly']).optional(),
+	limitUsd: z.number().optional(),
+	observedUsd: z.number().optional(),
 });
 
 export const InvokeOutputSchema = z.object({
@@ -207,6 +212,7 @@ export const InvokeOutputSchema = z.object({
 	invocationId: z.string().optional(),
 	result: InvokeResultSchema.optional(),
 	error: InvokeErrorSchema.optional(),
+	autoBypassed: z.boolean().optional(),
 	userMessage: z.string().optional(),
 });
 
@@ -253,6 +259,51 @@ export const SetProviderStateOutputSchema = z.object({
 		reason: z.string().optional(),
 	}),
 	note: z.string(),
+});
+
+// ─── S7: advise_spend (LLM-as-cost-analyst) ────────────────────────────────
+
+/** One grouped usage bucket, mirroring usage-tracking's `IRollupBucket`. */
+const UsageBucketSchema = z.object({
+	key: z.string(),
+	calls: z.number(),
+	inputTokens: z.number(),
+	outputTokens: z.number(),
+	totalTokens: z.number(),
+	costUsd: z.number(),
+	errors: z.number(),
+	autoBypassed: z.number(),
+});
+
+/** The circuit-breaker verdict surfaced to the analyst (usage `ILimitsStatus`). */
+export const LimitsStatusSchema = z.object({
+	sessionSpendUsd: z.number(),
+	sessionLimitUsd: z.number().nullable(),
+	sessionLimitPct: z.number().nullable(),
+	monthlySpendUsd: z.number(),
+	monthlyLimitUsd: z.number().nullable(),
+	monthlyLimitPct: z.number().nullable(),
+	breached: z.enum(['session', 'monthly']).nullable(),
+});
+
+const RecommendationSchema = z.object({
+	title: z.string(),
+	detail: z.string(),
+	riskLevel: z.enum(['low', 'medium', 'high']),
+});
+
+export const AdviseSpendOutputSchema = z.object({
+	windowDays: z.number(),
+	generatedAt: z.string(),
+	currentState: z.object({
+		byProvider: z.array(UsageBucketSchema),
+		byPlugin: z.array(UsageBucketSchema),
+		byAgent: z.array(UsageBucketSchema),
+		byExtension: z.array(UsageBucketSchema),
+		limitsStatus: LimitsStatusSchema,
+	}),
+	observations: z.array(z.string()),
+	recommendations: z.array(RecommendationSchema),
 });
 
 export { CapabilityTagSchema };

@@ -27,6 +27,7 @@ const BucketSchema = z.object({
 	totalTokens: z.number(),
 	costUsd: z.number(),
 	errors: z.number(),
+	autoBypassed: z.number(),
 });
 
 const ExpensiveCallSchema = z.object({
@@ -50,6 +51,7 @@ const OutputSchema = z.object({
 		totalTokens: z.number(),
 		costUsd: z.number(),
 		errors: z.number(),
+		autoBypassed: z.number(),
 	}),
 	buckets: z.array(BucketSchema),
 	expensiveCalls: z.array(ExpensiveCallSchema),

@@ -517,7 +517,39 @@ highest-risk).
 - status: done
 ### S7 — usage-tracking extension: auto-bypass accounting + advise_spend
 
-- **Status**: ready
+- **Status**: done
+- **Landed (2026-07-05)**: the spend-governance layer. **Circuit breaker lives
+  in usage-tracking** (`circuit-breaker.ts`, NOT the runner): it reads
+  `invocations.jsonl`, computes rolling `sessionSpendUsd` (since session start)
+  + `monthlySpendUsd` (calendar-month) INDEPENDENTLY (never averaged across
+  windows — tested: session 7 while monthly 12 for the same records, prior-month
+  excluded), and writes `limitsStatus{...breached: 'session'|'monthly'|null}`
+  into `usage-summary.json`. Config: per-plugin
+  `plugins.usage-tracking.options.{maxSessionSpendUsd, maxMonthlySpendUsd}` (no
+  global schema touch). **Auto-bypass accounting is non-opt-in:** the invoke
+  manager stamps `autoBypassed` on the same result it issues, `record.ts` lifts
+  it unconditionally, and it rolls up to `usage-summary.json#autoBypassed` + per
+  provider — no spend path can skip it. **`<prefix>_advise_spend {windowDays?}`**
+  (orchestrator now **11 tools**) → `{currentState{byProvider, byPlugin,
+  byAgent, byExtension, limitsStatus}, observations[], recommendations[]}` with
+  per-rec `riskLevel`, strictly non-destructive (never writes config/roster).
+  `usage_report` gains `autoBypassed` per provider + totals. **Spend guard fires
+  BEFORE any spend:** the manager consults `checkSpend`/`decideSpendGuard`
+  before authorising — a hard `{error:{code:'spend-limit-exceeded', scope,
+  limitUsd, observedUsd}}` fires before any invoker starts (`manager.spec`
+  asserts zero invoker starts on a block); `rerank` + a `costTier<=1` provider
+  degrades to the cheapest instead, `tier-down`/no-cheap-tier hard-errors. The
+  runner reads limits from an in-memory mirror on an unref'd timer (no
+  per-decision fs read) via `SpendLimitsStore` — no cross-plugin import. 12-lang
+  i18n for `advise_spend`. **Verified green:**
+  `tsc -p plugins/{orchestrator-runner,usage-tracking}` 0/0, orchestrator vitest
+  **99**, usage-tracking vitest **72**, root `bun run typecheck` 0,
+  `lint:cli:i18n` 0, web `check:i18n` 0, `astro check` clean on the new i18n.
+  **Deferred (documented, not dead):** the durable append of degrade events into
+  `usage-summary.json#degradations` from the LIVE invoke path — the field, the
+  `recordDegradation` helper (withFileMutex+writeFileAtomic+redactSecrets), and
+  its tests exist, but the manager's live loop doesn't call it yet (the degrade
+  is modeled by the pure tested `decideSpendGuard`); wire in a follow-up.
 - **Files**: `plugins/orchestrator-runner/src/lib/tools/advise-spend.tool.ts` (NEW), `plugins/usage-tracking/src/lib/auto-bypass.ts` (NEW), `usage-tracking/src/lib/tools/report.tool.ts` (EXT — adds `autoBypassed` field), i18n.
 - **Gate**: `bun run test plugins/orchestrator-runner plugins/usage-tracking && bun run typecheck && bun run lint:cli:i18n`
 - **Acceptance**:
