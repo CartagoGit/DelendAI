@@ -97,6 +97,8 @@ const EXPECTED_COMMANDS = [
 	'conventions apply',
 	'doctor',
 	'completion',
+	'usage-tracking report',
+	'usage-tracking clear',
 ] as const;
 
 describe('CLI command registry', async () => {
