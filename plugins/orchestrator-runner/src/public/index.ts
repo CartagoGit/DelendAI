@@ -76,6 +76,36 @@ export {
 	assertUsageTrackingLoaded,
 	USAGE_TRACKING_PLUGIN,
 } from '../lib/guard';
+export {
+	decideSpendGuard,
+	spendCheckForDecision,
+	cheapestAvailableProvider,
+	emptySpendLimitsView,
+	CHEAP_COST_TIER,
+	type ISpendLimitsView,
+	type ISpendGuardInput,
+	type ISpendLimitError,
+	type SpendGuardPlan,
+	type SpendCheckOutcome,
+	type SpendBreachScope,
+} from '../lib/invoke/spend-guard';
+export {
+	SpendLimitsStore,
+	normalizeLimitsView,
+} from '../lib/invoke/limits-store';
+export {
+	buildAdviseSpendRegistration,
+	buildSpendAdvice,
+	readSpendState,
+	emptyCurrentState,
+	type IAdviseSpendToolOptions,
+	type ISpendAdvice,
+	type ISpendCurrentState,
+	type IUsageBucket,
+	type ILimitsStatusView,
+	type IRecommendation,
+	type RiskLevel,
+} from '../lib/tools';
 export { resolveLoopDetectionSeam } from '../lib/loop-detection-seam';
 export {
 	OptionsSchema,

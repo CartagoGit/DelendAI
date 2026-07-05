@@ -28,10 +28,21 @@ export {
 	buildSummary,
 	computeTotals,
 	readInvocations,
+	readSummary,
 	regenerateSummary,
 	withinWindow,
 	writeSummary,
 } from '../lib/rollup';
+export type { IBuildSummaryOptions } from '../lib/rollup';
+export { extractAutoBypassed, countAutoBypassed } from '../lib/auto-bypass';
+export {
+	computeLimitsStatus,
+	emptyLimitsStatus,
+	isBreakerActive,
+	recordDegradation,
+	startOfCalendarMonth,
+	type ILimitsConfig,
+} from '../lib/circuit-breaker';
 export {
 	computeCostUsd,
 	fetchLiteLlmPricing,
@@ -57,12 +68,15 @@ export type {
 export type {
 	GroupByAxis,
 	IAgentDescriptor,
+	IDegradation,
 	IInvocationOutcome,
 	IInvocationRecord,
+	ILimitsStatus,
 	IModelDescriptor,
 	IRollupBucket,
 	IRollupTotals,
 	IUsageSummary,
 	IUsageTokens,
 	SortBy,
+	SpendBreachScope,
 } from '../lib/types';
