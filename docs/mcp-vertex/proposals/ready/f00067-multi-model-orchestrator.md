@@ -263,7 +263,20 @@ highest-risk).
 
 ### S1 — Canonical provider contract + schema extension (the foundation)
 
-- **Status**: in-progress
+- **Status**: done
+- status: done
+- **Reconciled (2026-07-05)**: RE-SCOPED to its contract half, which is shipped
+  + green. The canonical `provider-capabilities.interface.ts` (14-test guard)
+  landed and unblocked S2–S10 — the whole orchestrator + usage-tracking now ship
+  on it. The residual *schema + catalog* half (root-level `providers` block + Zod
+  mirror + `ICatalogSnapshot.providers`) plus the real mcp-server stdio transport
+  gap the S10 e2e surfaced are SPLIT OUT to tracking proposal **f00067a**
+  (`ready/f00067a-provider-schema-catalog-surface-f00067-s1-residual.md`, 3
+  slices). None of that residual is on the shipped orchestrator's critical path —
+  the plugin validates its `providers` roster via its own strict optionsSchema —
+  so f00067 is functionally complete; f00067a is an opt-in external-tooling
+  surface + one functional follow-up left for a fresh, wiki-loaded context
+  (cross-cutting catalog-regen risk).
 - **Landed (2026-07-01)**: the canonical contract file
   `packages/core/src/lib/contracts/interfaces/provider-capabilities.interface.ts`
   exports `CapabilityTag` (+ `CAPABILITY_TAGS`), `ProviderKind`,
