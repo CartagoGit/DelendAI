@@ -201,6 +201,108 @@ The `issues` plugin is part of `full` and is the repo-facing GitHub integration 
 
 Use [CROSS-PROJECT-SETUP.md](./CROSS-PROJECT-SETUP.md) for the canonical first-run flow. That guide covers the required `plugins.issues.options.repo` config, the `gh` versus `GITHUB_TOKEN` versus anonymous auth decision, and the matching `mcp.json` launch shape. The dedicated `setup-github` subcommand and MCP tool are scheduled in S2 of proposal `f00030`; until that lands, the markdown guide is the source of truth.
 
+## Provider orchestration plugins (opt-in)
+
+These two plugins are **opt-in**: they are in **no** preset (not `minimal`,
+`standard`, `swarm`, or `full`). Load them explicitly with
+`--plugins=usage-tracking,orchestrator-runner` (or a `plugins.<name>` block).
+See [CROSS-PROJECT-SETUP.md](./CROSS-PROJECT-SETUP.md#model-providers-and-the-orchestrator-opt-in)
+for the end-to-end `providers` config walkthrough.
+
+### orchestrator-runner
+
+The headless routing brain: it healthchecks the model-provider CLIs/APIs on the
+host, scores them against a task's capability hints with a pure deterministic
+scorer, advises which provider to route to, and — gated by `executeApi` + a
+signed confirmation token — can execute a task on the best provider with
+fallback.
+
+**Public tools** (11, all namespace-qualified as `<prefix>_<id>`):
+
+| Tool | Effects | Purpose |
+|---|---|---|
+| `healthcheck_providers` | `spawn`, `write` | Probe each provider; refresh the availability mirror + durable snapshot. |
+| `discover_providers` | `spawn` | Detect which provider CLIs are installed/authed on the host. |
+| `bootstrap_providers` | `write` | Interactive/opinionated wizard that writes the roster + quota snapshot. |
+| `advise_routing` | none | Score the roster for a task; return the winning decision, backups, trace. |
+| `advise_spend` | none | Advise whether/how to spend for a task given cost preference + quota. |
+| `get_quota` | none | Read the per-provider quota snapshot (tolerant of a missing file). |
+| `list_models` | none | Enumerate the merged roster with capability profiles + reachability. |
+| `invoke` | `spawn`, `spend` | Execute a task on the best provider (fallback chain); never spends without a signed token. |
+| `cancel_invocation` | none | Cancel an in-flight invocation via the per-kind cancellation ladder. |
+| `format_handoff` | none | Format a routing decision into a copy-pasteable cli/curl/tools-call command. |
+| `set_provider_state` | `write` | Manually override a provider's availability (durably persisted). |
+
+**Config schema** (`plugins.orchestrator-runner.options`): `providers[]` (roster;
+canonical home is the root-level `providers` block), `sessionStickinessTtlSeconds`
+(default `300`), `defaultCostPreference` (`minimize|balanced|maximize`, default
+`balanced`), `invokeTimeoutMs` (default `30000`), `subprocessPoolSize` (default
+`2`), `concurrencyLimit` (default `4`), `maxFallbackDepth` (default `3`),
+`fallbackStrategy` (`rerank|tier-down`, default `rerank`), `executeApi` (default
+`false` — never spends when off), `confirmBeforeExecute` (default `true`),
+`autoBypassConfirmed` (default `false`), `dependencies` (injected cross-plugin
+seams, e.g. the shared loop detector). Each provider carries `id`, `kind`
+(`api|subscription|cli|mcp-server`), `invoke` (kind-specific; `api` references its
+key by `envVar` **name**, never a cleartext key), `modelId`, `contextWindow`,
+`costTier` (`1`–`5`), `strengths[]`, `weaknesses[]`.
+
+**Cache layout**: all state under `${cacheDir}/orchestrator-runner/`
+(workspace-scoped, gitignored; writes go through `withFileMutex` +
+`writeFileAtomic` after `redactSecrets`). `healthcheck.json` — availability
+snapshot for next-boot recovery (the hot path reads the in-memory mirror, never
+this file); `quotas.json` — quota snapshot.
+
+**Dependencies**: hard `dependsOn` `usage-tracking` — the loader refuses the batch
+when `usage-tracking` is not also loaded (every advised/executed decision must be
+recorded). Reuses the single loop detector from the `proposals` plugin via an
+injected seam (`ctx.options.dependencies.loopDetector`), never a second detector
+or a cross-plugin import.
+
+**Kill switch**: opt-in (in no preset). The runner does not load unless you name
+it. Disable it by omitting it from `--plugins` and from the config's `plugins`
+map, or force it off with `--exclude-plugins=orchestrator-runner` (matched against
+the resolved plugin name). Do **not** try `options.enabled: false`: the plugin's
+option schema is `.strict()`, so an unknown key makes the whole options parse fail
+and silently fall back to empty defaults (dropping your roster) rather than
+disabling the plugin.
+
+### usage-tracking
+
+The observability plugin: it records **every** tool invocation across every
+loaded plugin to an append-only NDJSON log under the cache dir (metadata only —
+message content is never written, and each record is piped through `redactSecrets`
+first), and surfaces aggregate usage + cost rollups by provider, plugin, agent and
+extension.
+
+**Public tools** (2):
+
+| Tool | Effects | Purpose |
+|---|---|---|
+| `usage_report` | none | Totals + bucketed rollup for the chosen axis (`provider\|plugin\|agent\|extension`) + top-10 most expensive calls. |
+| `usage_clear` | `write`, `destructive` | Truncate the log + summary; requires `confirm: true`. |
+
+**Config schema** (`plugins.usage-tracking.options`): `clientMap`
+(`clientInfo.name` → `{kind, extension}` overrides for unknown hosts), `maxBatch`
+(default `64` — records buffered before a forced flush), `maxDelayMs` (default
+`250` — max ms a record waits before a flush), `windowDays` (default `7` — rollup
+window), `summaryIntervalMs` (default `300000` — how often the summary is
+regenerated).
+
+**Cache layout**: all state under `${cacheDir}/usage-tracking/`.
+`invocations.jsonl` — the append-only log (coalesced appends via `appendFile`
+under a shared `withFileMutex`, never a read-modify-write); `usage-summary.json` —
+the periodic rollup bucketed by provider/plugin/agent/extension;
+`pricing.json` — LiteLLM pricing refreshed with a 24h TTL (stale-while-revalidate,
+1s hard timeout, bundled snapshot as fallback).
+
+**Dependencies**: none — it is a standalone recorder. It is, however, the hard
+dependency of `orchestrator-runner` (above).
+
+**Kill switch**: opt-in (in no preset). Disable it by omitting it from
+`--plugins` and from the config's `plugins` map, or force it off with
+`--exclude-plugins=usage-tracking`. (There is no `options.enabled` flag; omission
+is the switch.)
+
 ## Rules for great, model-agnostic, low-token plugins
 
 1. **Strict schemas in, structured JSON out.** Don't return prose an LLM has to
