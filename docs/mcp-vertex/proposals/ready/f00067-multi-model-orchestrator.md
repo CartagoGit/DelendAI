@@ -624,7 +624,7 @@ highest-risk).
   - "**CLI surface for usage-tracking** is added under `packages/cli/src/commands/groups/usage-tracking.ts` (consumes f00046 conventions): `mcpv usage-tracking report --group-by=provider|plugin|agent|extension --window-days=7 --json` and `mcpv usage-tracking clear --confirm`. These wrap `<prefix>_usage_report` and `<prefix>_usage_clear` and let the user inspect spend from a terminal without an IDE — useful for CI dashboards and shell workflows."
 
 ---
-
+- status: done
 ### S10 — End-to-end smoke + benchmark
 
 - **Status**: ready
