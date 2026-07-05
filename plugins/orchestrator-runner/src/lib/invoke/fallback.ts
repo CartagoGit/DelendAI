@@ -107,8 +107,7 @@ export const planFallbackChain = (
 			// Relax the cap by 1 per hop; pick the best untried within it.
 			const cap = baseTier + hop;
 			candidate = ranked.find(
-				(r) =>
-					!tried.has(r.provider.id) && r.provider.costTier <= cap,
+				(r) => !tried.has(r.provider.id) && r.provider.costTier <= cap,
 			);
 		} else {
 			// tier-down: strictly cheaper than the last tried provider.
