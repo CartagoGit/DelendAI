@@ -567,8 +567,27 @@ highest-risk).
 - status: done
 ### S8 — Lint + secrets posture
 
-- **Status**: ready (redact half landed — see note)
-- **Partial landing (2026-07-04)**: the `redactSecrets` half is done ahead of
+- **Status**: done
+- **Landed (2026-07-05, lint half)**: the `no-cleartext-secrets.script.ts` gate
+  is in the tree and wired into `validate` (`lint:no-cleartext-secrets`). It
+  walks every tracked `mcp-vertex.config.json` / `*.config.json` EXCLUDING test
+  fixtures and `docs/mcp-vertex/examples/**`, and fails on any field whose NAME
+  ends (boundary-anchored) in a secret-ish word (`api[_-]?key`/`secret`/`token`/
+  `password`/`passwd`/`pwd`/`access[_-]?key`/`client[_-]?secret`) whose string
+  VALUE is neither a `${ENV_VAR}` reference nor a bare `ENV_VAR` name. It was NOT
+  in fact blocked on S1's providers schema: the lint scans real config JSON, not
+  the schema, so it stands alone (the providers block, when present, just gives
+  it more envVar-referenced fields to protect). Precision over recall — the
+  end-anchored match means `keywords`/`maxTokens`/`tokenBudget` never trip, and
+  env references/names are safe, so a well-formed config passes. Pure
+  `findCleartextSecrets` + `collectConfigFiles` exported; spec has 5 cases
+  (flags cleartext, allows `${ENV}`/`ENV_NAME`, ignores non-secret keys + nested
+  walk + non-string values). **Verified green:** `bun run lint:no-cleartext-secrets`
+  0 (1 config checked, 0 secrets), spec 5/5, root `bun run typecheck` 0. Wired
+  into `validate` right after `lint:cache`. (The `vitest.config.ts` "register"
+  note in the Files list was moot — lint specs under `tools/scripts/lint/` are
+  already in the root test glob, like `check-cache.script.spec.ts`.)
+- **Partial landing (2026-07-04, redact half)**: the `redactSecrets` half is done ahead of
   the rest because it is a **standalone core hardening** that benefits every
   durable write TODAY (memory notes, proposal docs, logs), independent of the
   orchestrator plugins. `packages/core/src/lib/shared/redact.ts` now redacts:
