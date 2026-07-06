@@ -1,6 +1,6 @@
 ---
 id: f00067
-status: ready
+status: done
 type: proposal
 track: core+plugins+config+i18n+docs+ui-extension
 date: 2026-06-25

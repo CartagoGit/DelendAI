@@ -1,6 +1,6 @@
 ---
 id: f00065
-status: ready
+status: done
 type: proposal
 track: umbrella+skills-ownership+cache+web-examples+slash-triggers+shared-contracts
 date: 2026-06-25
