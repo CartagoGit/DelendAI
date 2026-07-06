@@ -560,10 +560,28 @@ export const assembleCliConfig = async (
 	// `let` so the (lazily called) snapshot closure can read the final list.
 	let coreTools: IToolRegistration[] = [];
 	let catalogToolEntries: readonly IToolSummary[] = [];
+	// f00067a S2 — project the config roster to lean summaries for the
+	// catalog/overview. `reachable` is a request-time projection of live
+	// availability; without the runner's healthcheck wired into assembly it
+	// stays the conservative `false` (the orchestrator's
+	// `healthcheck_providers` tool is the live source of truth).
+	const providerSummaries: ReadonlyArray<IProviderSummary> = (
+		fileConfig.providers ?? []
+	).map((entry) => ({
+		id: entry.id,
+		kind: entry.kind,
+		modelId: entry.modelId,
+		costTier: entry.costTier,
+		reachable: false,
+		strengths: [...entry.strengths],
+	}));
 	const catalogSources = {
 		tools: () => catalogToolEntries,
 		skills: () => skillSummaries,
 		proposals: () => proposalSummaries,
+		...(providerSummaries.length > 0
+			? { providers: () => providerSummaries }
+			: {}),
 	};
 	const buildSnapshot = (): IOverviewSnapshot => ({
 		server: { name: args.serverName, version: args.serverVersion },
@@ -634,6 +652,9 @@ export const assembleCliConfig = async (
 			id: entry.id,
 			title: entry.title,
 		})),
+		...(providerSummaries.length > 0
+			? { providers: providerSummaries }
+			: {}),
 		recommendedNextAction,
 	});
 
