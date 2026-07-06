@@ -189,7 +189,32 @@ non-goal note (it stays paused).
 
 ### S1 — ratify the umbrella and route the five vision points
 
-- **Status**: ready
+- **Status**: done
+- status: done
+- **Reconciled (2026-07-07) — RATIFIED AS SHIPPED.** Every vision point
+  U1–U5 landed via the child proposals (all three init children are now in
+  `done/feats/`); this umbrella's routing job is complete. Evidence per point:
+  - **U1** foreign-proposal detection + adoption-plan emission:
+    `packages/cli/src/lib/init/init-foreign-detect.service.ts` +
+    `init-migrate-offer.service.ts` (+ specs). Proof it works end-to-end:
+    `f00095-adopt-mcp-vertex-mcp-vertex.md` was scaffolded by this very
+    machinery.
+  - **U2** skill migration + tool-namespace unification plan:
+    `packages/cli/src/lib/init/init-adoption-plan.builder.ts` +
+    `init-skill-inventory.constant.ts` (+ specs).
+  - **U3** single-source-of-truth consolidation:
+    `packages/cli/src/lib/init/init-host-instructions.service.ts` (+ spec).
+  - **U4** client plugin-author tool:
+    `packages/client/src/lib/scaffold/author-plugin.ts` +
+    `write-scaffolded-files.ts` (landed via f00087).
+  - **U5** native authorized-roots filesystem:
+    `filesystem.authorizedRoots` in
+    `packages/core/src/lib/plugins/config-file-schema.ts:56`, threaded through
+    `contain-path.ts` / `fs-read.ts` / `fs-write.ts` / `fs-tools-options.ts`.
+  - f00068 carries the default-filesystem non-goal note (line ~183). The
+    "children carry a vision note" acceptance item is moot — the children
+    closed to `done/feats/` with the work landed, which supersedes annotating
+    them. No orphaned vision point; no duplicated ownership.
 - **Files**: docs/mcp-vertex/proposals/ready/f00089-init-genera-plan-de-adopcion-completo-umbrella.md, docs/mcp-vertex/proposals/ready/f00084-bunx-mcp-vertex-core-init-cli.md, docs/mcp-vertex/proposals/ready/f00088-init-respeta-el-proyecto-destino.md, docs/mcp-vertex/proposals/ready/f00087-mejorar-carga-de-plugins-locales-y-client-scaffold-export.md, docs/mcp-vertex/proposals/paused/f00068-external-mcps-plugin-paused.md
 - **Gate**: bun run lint:proposals
 - **Acceptance**: the coverage matrix routes all five vision points to a child

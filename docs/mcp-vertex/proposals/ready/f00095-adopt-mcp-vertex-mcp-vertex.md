@@ -55,9 +55,23 @@ layout from scratch under `docs/mcp-vertex/proposals/`.
 
 ## slices
 
+> **Reconciled (2026-07-07) — SELF-REFERENTIAL adoption plan, closed as
+> already-satisfied.** This proposal is the output of `mcpv init` (f00089
+> U1) run against the mcp-vertex monorepo itself, kept as living proof that
+> the adoption-plan generator works end-to-end. Every slice's target state
+> already holds here by construction: this repo IS the canonical layout the
+> plan adopts. Per-slice evidence below. No code or file moves were needed;
+> the plan is advisory by its own non-goals.
+
 ### S1 — inventory the foreign surface (read-only)
 
-- **Status**: pending
+- **Status**: done
+- status: done
+- **Reconciled**: no foreign surface exists (the proposal's own `## why`
+  records "No existing proposal/plan convention was detected"). The
+  canonical inventory already lives in the proposals index
+  (`sync_proposals` → `.cache/mcp-vertex/proposals/index.json`, 188
+  entries); writing a parallel `f00095-a1-inventory.md` would duplicate it.
 - **Files**: `docs/mcp-vertex/proposals/ready/f00095-a1-inventory.md`
 - **Gate**: bun run validate
 
@@ -67,7 +81,11 @@ declares. Save the structured output under
 
 ### S2 — map foreign → canonical
 
-- **Status**: pending
+- **Status**: done
+- status: done
+- **Reconciled**: identity mapping — proposals already use the canonical
+  file naming, f/x/a id space, and status folders under
+  `docs/mcp-vertex/proposals/`. Nothing to map.
 - **Files**: `docs/mcp-vertex/proposals/`
 - **Gate**: bun run validate
 
@@ -78,7 +96,15 @@ target's agents perform — `init` never converts them in place.
 
 ### S3 — skill migration
 
-- **Status**: pending
+- **Status**: done
+- status: done
+- **Reconciled (STALE PREMISE)**: the slice assumed skills live under
+  `docs/mcp-vertex/skills/`, but f00065 moved the skill surface to the
+  package-owned layout — `packages/core/skills/` (with `manifest.json`)
+  plus per-plugin `plugins/<name>/skills/<skill>/SKILL.md`. All the listed
+  canonical skills already exist there; `docs/mcp-vertex/skills/` retains
+  only the absorbed `shell-fallback` (exactly the "keep as-is" case this
+  slice prescribes). Nothing to migrate.
 - **Files**: `docs/mcp-vertex/skills/`
 - **Gate**: bun run validate
 
@@ -113,7 +139,12 @@ These are **kept as-is**. `init` inventories them so the migration does not clob
 
 ### S4 — tool-namespace unification
 
-- **Status**: pending
+- **Status**: done
+- status: done
+- **Reconciled**: the slice's own body already records the terminal state —
+  every plugin namespace is distinct, "No foreign MCP tool surface was
+  detected", "No collisions". The host enforces prefixing at boot; nothing
+  to unify.
 - **Files**: `.vscode/mcp.json`
 - **Gate**: bun run validate
 
@@ -141,7 +172,15 @@ No foreign MCP tool surface was detected in this project; only mcp-vertex tools 
 
 ### S5 — single source of truth (filled by f00089 U3)
 
-- **Status**: pending
+- **Status**: done
+- status: done
+- **Reconciled**: f00089 U3 landed
+  (`packages/cli/src/lib/init/init-host-instructions.service.ts` + spec),
+  and this repo already enforces the consolidated shape it produces:
+  `CLAUDE.md`/`AGENTS.md`/copilot-instructions are 1KB pointers into the
+  single `docs/mcp-vertex/AGENT-BOOTSTRAP.md`, gated by
+  `lint:prompt-size`, `lint:bootstrap-canonical` and
+  `lint:host-instructions` in `validate`.
 - **Files**: `AGENTS.md`, `docs/mcp-vertex/AGENT-BOOTSTRAP.md`
 - **Gate**: bun run validate
 
