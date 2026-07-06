@@ -16,10 +16,15 @@ import { LOCAL_ALIASES, REPO_ROOT } from './scripts/lib/local-aliases.mjs';
 const SHARED_PUBLIC = resolve(REPO_ROOT, 'apps/shared/src/public/index.ts');
 const SHARED_STYLES = resolve(REPO_ROOT, 'apps/shared/src/styles/_index.scss');
 const SHARED_I18N = resolve(REPO_ROOT, 'apps/shared/src/i18n/index.ts');
+// ORDER MATTERS: vite's alias matcher tries entries in insertion order and
+// a bare `find` also prefix-matches `find + '/…'`, so the subpath aliases
+// MUST precede the bare package alias or `@mcp-vertex/shared/i18n` resolves
+// to `<public/index.ts>/i18n` → "Not a directory" at build time (astro
+// check does not catch this; only the real `site`/`site:strict` build does).
 const WORKSPACE_ALIASES = {
-	'@mcp-vertex/shared': SHARED_PUBLIC,
 	'@mcp-vertex/shared/styles': SHARED_STYLES,
 	'@mcp-vertex/shared/i18n': SHARED_I18N,
+	'@mcp-vertex/shared': SHARED_PUBLIC,
 };
 
 // Static build for GitHub Pages (project site → served under /mcp-vertex/).
