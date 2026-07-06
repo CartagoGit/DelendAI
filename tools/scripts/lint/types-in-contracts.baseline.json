@@ -257,6 +257,7 @@
 	"plugins/orchestrator-runner/src/lib/subprocess/cli.ts": 3,
 	"plugins/orchestrator-runner/src/lib/subprocess/mcp-client.ts": 3,
 	"plugins/orchestrator-runner/src/lib/subprocess/pool.ts": 4,
+	"plugins/orchestrator-runner/src/lib/subprocess/stdio-transport.ts": 4,
 	"plugins/orchestrator-runner/src/lib/tools/advise-routing.tool.ts": 1,
 	"plugins/orchestrator-runner/src/lib/tools/advise-spend.tool.ts": 7,
 	"plugins/orchestrator-runner/src/lib/tools/bootstrap.tool.ts": 1,
