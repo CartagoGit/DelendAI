@@ -4,9 +4,10 @@
  * Wires the four per-kind invokers to their real seams for production use:
  *  - `cli`  → `node:child_process.spawn` adapted to the CLI seam.
  *  - `api`  → the global `fetch` adapted to the HTTP seam.
- *  - `mcp-server` → DEFERRED to S10's live e2e (a real `codex mcp-server`
- *    subprocess + stdio transport). Until then it fails gracefully so the
- *    fallback chain routes past it rather than crashing.
+ *  - `mcp-server` → the real NDJSON stdio transport (f00067a S3): the
+ *    descriptor's `server` string is split into command + argv and spawned
+ *    per invocation; a malformed (empty) `server` answers with a JSON-RPC
+ *    error so the fallback chain routes past it rather than crashing.
  *  - `subscription` → the best-effort passthrough invoker.
  *
  * Tests never use this factory — they construct {@link InvocationManager}
@@ -27,7 +28,6 @@ import type { CostPreference } from '../types';
 import type { FallbackStrategy } from './fallback';
 import { InvocationManager } from './manager';
 import type { SpendCheckOutcome } from './spend-guard';
-import type { IKindInvoker } from './types';
 import {
 	createApiInvoker,
 	type HttpFetch,
@@ -38,6 +38,12 @@ import {
 	type CliSpawner,
 	type ICliChildProcess,
 } from '../subprocess/cli';
+import {
+	createMcpInvoker,
+	type IJsonRpcMessage,
+	type IJsonRpcTransport,
+} from '../subprocess/mcp-client';
+import { createStdioTransport } from '../subprocess/stdio-transport';
 import { createSubscriptionInvoker } from '../subprocess/subscription';
 
 const nodeCliSpawner: CliSpawner = (command, args): ICliChildProcess => {
@@ -69,16 +75,54 @@ const nodeCliSpawner: CliSpawner = (command, args): ICliChildProcess => {
 const globalHttpFetch: HttpFetch = (url, init) =>
 	fetch(url, init) as unknown as Promise<IHttpResponse>;
 
-/** mcp-server default: deferred to S10, fails gracefully (no crash). */
-const deferredMcpInvoker: IKindInvoker = {
-	start: () => ({
-		promise: Promise.reject(
-			new Error(
-				'mcp-server invocation is deferred to S10 (live codex mcp-server round-trip); inject an mcp invoker to use it now',
-			),
-		),
-		cancel: () => undefined,
-	}),
+/**
+ * A transport that answers every request with a JSON-RPC error. Used when
+ * the provider's `server` descriptor cannot be turned into a spawnable
+ * command: the invoker then rejects with a clear message (instead of
+ * crashing or hanging until the invoke timeout) and the fallback chain
+ * routes past the provider.
+ */
+const failingTransport = (reason: string): IJsonRpcTransport => {
+	let listener: ((message: IJsonRpcMessage) => void) | undefined;
+	return {
+		onMessage: (fn) => {
+			listener = fn;
+		},
+		send: (message) => {
+			if (message.id === undefined) return;
+			const id = message.id;
+			queueMicrotask(() => {
+				listener?.({
+					jsonrpc: '2.0',
+					id,
+					error: { code: -32602, message: reason },
+				});
+			});
+		},
+		close: () => undefined,
+	};
+};
+
+/**
+ * Map an `mcp-server` descriptor's `server` field to a spawnable command
+ * line. The descriptor carries one string (e.g. `codex mcp-server`), so it
+ * is split on whitespace: first token = command, rest = argv. Exported for
+ * the stdio-transport spec.
+ */
+export const mcpServerTransportFactory = (
+	server: string,
+): IJsonRpcTransport => {
+	const tokens = server
+		.trim()
+		.split(/\s+/u)
+		.filter((token) => token.length > 0);
+	const command = tokens[0];
+	if (command === undefined) {
+		return failingTransport(
+			"mcp-server provider has an empty 'server' command; fix the provider's invoke descriptor",
+		);
+	}
+	return createStdioTransport(command, tokens.slice(1));
 };
 
 export interface IBuildManagerOptions {
@@ -105,6 +149,9 @@ export const buildDefaultInvocationManager = (
 ): InvocationManager => {
 	const cliInvoker = createCliInvoker({ spawner: nodeCliSpawner });
 	const apiInvoker = createApiInvoker({ fetchFn: globalHttpFetch });
+	const mcpInvoker = createMcpInvoker({
+		transportFactory: mcpServerTransportFactory,
+	});
 	const subscriptionInvoker = createSubscriptionInvoker();
 
 	return new InvocationManager({
@@ -113,7 +160,7 @@ export const buildDefaultInvocationManager = (
 		invokers: {
 			cli: cliInvoker,
 			api: apiInvoker,
-			'mcp-server': deferredMcpInvoker,
+			'mcp-server': mcpInvoker,
 			subscription: subscriptionInvoker,
 		},
 		defaultCostPreference: options.defaultCostPreference,
