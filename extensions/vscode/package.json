@@ -196,6 +196,6 @@
 		"@types/vscode": "^1.90.0",
 		"@vscode/vsce": "^3.6.3",
 		"typescript": "6.0.3",
-		"vitest": "4.1.9"
+		"vitest": "4.1.10"
 	}
 }
