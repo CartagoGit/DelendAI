@@ -1,6 +1,6 @@
 ---
 id: f00069
-status: ready
+status: done
 type: proposal
 track: web+ui-extension+components+design-tokens+i18n+docs
 date: 2026-06-26

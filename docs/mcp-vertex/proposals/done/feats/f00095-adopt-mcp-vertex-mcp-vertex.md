@@ -1,6 +1,6 @@
 ---
 id: f00095
-status: ready
+status: done
 type: proposal
 track: adoption-migration
 date: 2026-07-01

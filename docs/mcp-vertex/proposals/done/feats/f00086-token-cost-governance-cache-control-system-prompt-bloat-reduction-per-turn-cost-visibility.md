@@ -1,6 +1,6 @@
 ---
 id: f00086
-status: ready
+status: done
 type: proposal
 track: core+orchestration+metrics
 date: 2026-06-28
