@@ -28,7 +28,7 @@ jobs:
 
       - name: Detectar último recordatorio
         id: last
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         with:
           script: |
             const { data: issues } = await github.rest.issues.listForRepo({
@@ -68,7 +68,7 @@ jobs:
 
       - name: Abrir issue recordatorio
         if: steps.decide.outputs.should_open == 'true'
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         env:
           LAST_URL: ${{ steps.last.outputs.last_url }}
         with:
