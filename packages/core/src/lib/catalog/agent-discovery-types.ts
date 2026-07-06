@@ -1,3 +1,4 @@
+import type { IProviderSummary } from '../contracts/interfaces/provider-capabilities.interface';
 import type { IToolEffect } from '../contracts/interfaces/tool-registration.interface';
 
 export type CatalogSection = 'tools' | 'skills' | 'proposals';
@@ -68,12 +69,25 @@ export interface ICatalogSnapshot {
 	readonly tools: readonly IToolSummary[];
 	readonly skills: readonly ISkillSummary[];
 	readonly proposals: readonly IProposalSummary[];
+	/**
+	 * Resolved provider roster (f00067a S2). Present only in `full` mode and
+	 * only when the host configured at least one provider — omitted (never
+	 * `[]`) otherwise so existing payloads do not churn, and pruned from
+	 * `compact` mode to keep it token-lean.
+	 */
+	readonly providers?: readonly IProviderSummary[];
 }
 
 export interface ICatalogSources {
 	readonly tools: () => readonly IToolSummary[];
 	readonly skills: () => readonly ISkillSummary[];
 	readonly proposals: () => readonly IProposalSummary[];
+	/**
+	 * Optional resolved provider roster. Hosts without a configured
+	 * `providers` array simply omit this source; returning `[]` is
+	 * equivalent (the snapshot field is omitted either way).
+	 */
+	readonly providers?: () => readonly IProviderSummary[];
 }
 
 export interface IBuildCatalogOptions {
