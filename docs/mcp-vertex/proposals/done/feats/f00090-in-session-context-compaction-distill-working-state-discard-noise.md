@@ -1,6 +1,6 @@
 ---
 id: f00090
-status: ready
+status: done
 type: proposal
 track: memory+orchestration+token-efficiency
 date: 2026-06-30

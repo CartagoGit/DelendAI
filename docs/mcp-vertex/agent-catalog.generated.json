@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-07-06T22:55:20.902Z",
+	"generatedAt": "2026-07-06T23:06:34.688Z",
 	"mode": "compact",
 	"tools": [
 		{
@@ -668,30 +668,6 @@
 				"date": "2026-06-23"
 			},
 			{
-				"id": "f00064",
-				"title": "f00064",
-				"track": "dogfood+repo-layout+contracts+web+agents",
-				"status": "ready",
-				"kind": "feat",
-				"date": "2026-06-25"
-			},
-			{
-				"id": "f00065",
-				"title": "f00065",
-				"track": "umbrella+skills-ownership+cache+web-examples+slash-triggers+shared-contracts",
-				"status": "ready",
-				"kind": "feat",
-				"date": "2026-06-25"
-			},
-			{
-				"id": "f00067",
-				"title": "f00067",
-				"track": "core+plugins+config+i18n+docs+ui-extension",
-				"status": "ready",
-				"kind": "feat",
-				"date": "2026-06-25"
-			},
-			{
 				"id": "f00067a",
 				"title": "f00067a",
 				"track": "general",
@@ -708,54 +684,6 @@
 				"date": "2026-06-26"
 			},
 			{
-				"id": "f00069",
-				"title": "f00069",
-				"track": "web+ui-extension+components+design-tokens+i18n+docs",
-				"status": "ready",
-				"kind": "feat",
-				"date": "2026-06-26"
-			},
-			{
-				"id": "f00086",
-				"title": "f00086",
-				"track": "core+orchestration+metrics",
-				"status": "ready",
-				"kind": "feat",
-				"date": "2026-06-28"
-			},
-			{
-				"id": "f00089",
-				"title": "f00089",
-				"track": "cli+bootstrap+onboarding+plugins+filesystem+migration",
-				"status": "ready",
-				"kind": "feat",
-				"date": "2026-06-30"
-			},
-			{
-				"id": "f00090",
-				"title": "f00090",
-				"track": "memory+orchestration+token-efficiency",
-				"status": "ready",
-				"kind": "feat",
-				"date": "2026-06-30"
-			},
-			{
-				"id": "f00095",
-				"title": "f00095",
-				"track": "adoption-migration",
-				"status": "ready",
-				"kind": "feat",
-				"date": "2026-07-01"
-			},
-			{
-				"id": "f00097",
-				"title": "f00097",
-				"track": "vscode-host+ui-extension+proposals+apps-web+i18n",
-				"status": "ready",
-				"kind": "feat",
-				"date": "2026-07-02"
-			},
-			{
 				"id": "f00098",
 				"title": "f00098",
 				"track": "ui-extension+vscode+web+cli-parity",
@@ -765,11 +693,11 @@
 			}
 		],
 		"byStatus": {
-			"ready": 11,
+			"ready": 2,
 			"in-progress": 0,
 			"review": 0,
 			"paused": 3,
-			"done": 175,
+			"done": 184,
 			"blocked": 0,
 			"retired": 0,
 			"unspecified": 0

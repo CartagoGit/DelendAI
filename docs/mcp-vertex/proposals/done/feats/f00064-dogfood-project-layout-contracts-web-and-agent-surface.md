@@ -1,6 +1,6 @@
 ---
 id: f00064
-status: ready
+status: done
 type: proposal
 track: dogfood+repo-layout+contracts+web+agents
 date: 2026-06-25

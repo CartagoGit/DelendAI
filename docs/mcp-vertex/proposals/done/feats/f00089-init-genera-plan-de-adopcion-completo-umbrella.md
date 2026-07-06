@@ -1,6 +1,6 @@
 ---
 id: f00089
-status: ready
+status: done
 type: proposal
 track: cli+bootstrap+onboarding+plugins+filesystem+migration
 date: 2026-06-30

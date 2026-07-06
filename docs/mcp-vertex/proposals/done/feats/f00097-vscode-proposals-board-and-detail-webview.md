@@ -1,6 +1,6 @@
 ---
 id: f00097
-status: ready
+status: done
 type: proposal
 kind: feat
 track: vscode-host+ui-extension+proposals+apps-web+i18n
