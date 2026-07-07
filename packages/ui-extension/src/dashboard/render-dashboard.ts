@@ -7,6 +7,7 @@
  */
 import type { IDashboardAllModels } from '@mcp-vertex/client';
 import type { ILangDict } from '@mcp-vertex/shared/i18n';
+import { dashboardCss } from '@mcp-vertex/shared/styles/dashboard/dashboard-css';
 
 import { componentCss, renderRuntime } from '../components';
 import { extensionText } from '../i18n/extension-text';
@@ -104,6 +105,7 @@ export const renderDashboard = (
 	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 	<title>${escapeHtml(text('dashboard.title'))}</title>
 	<style>${componentCss}</style>
+	<style>${dashboardCss}</style>
 </head>
 <body>
 	${header}
