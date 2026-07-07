@@ -1,7 +1,7 @@
 ---
 id: f00098
 kind: feat
-status: ready
+status: done
 type: proposal
 track: ui-extension+vscode+web+cli-parity
 date: 2026-07-06
@@ -102,7 +102,7 @@ already ratchets tool→CLI coverage.
   - "Webview renders the S1+S2 render-models (theme-aware, matches existing tool-detail/proposals-board webview styling); refresh via the notification bridge, no polling."
   - "Commands wrap set_provider_state (pause/resume with reason), healthcheck refresh, usage_clear (with modal confirm — parity with CLI --confirm), usage report open; registered in package.json contributes with strings following the extension i18n convention."
   - "When plugins absent the panel shows the opt-in hint with the exact config snippet, not an error."
-
+- status: done
 ### S4 — CLI↔UI parity contract + lint (the codependency ratchet)
 
 - **Status**: pending
