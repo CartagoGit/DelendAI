@@ -2,37 +2,44 @@
 /**
  * `extensions/vscode` dev entry — renders the extension's webviews
  * against REAL workspace data when the workspace uses mcp-vertex, or a
- * setup wizard when it doesn't. Loaded by `tools/scripts/dev/dev.script.ts`
+ * setup wizard + theme/language picker (always reachable via the
+ * Settings tab) when it doesn't. Loaded by `tools/scripts/dev/dev.script.ts`
  * at `http://localhost:5200/__entry.js`.
  *
- * Data flow
- * ---------
- *   1. Browser calls `GET /api/setup/status` → server-side
- *      `detectSetupStatus(cwd)` reads the workspace files and reports
- *      whether mcp-vertex is configured.
- *   2. If `kind === 'configured'`, browser calls `GET /api/dashboard`
- *      and the server spawns the MCP stdio client to fetch a real
- *      `IDashboardAllModels`, which `renderDashboard` projects.
- *   3. If `kind !== 'configured'`, the entry renders a setup wizard
- *      with an "Install" button that POSTs `/api/setup/install` (the
- *      server writes `.vscode/mcp.json` + `.vscode/settings.json`,
- *      then refreshes).
+ * Layout
+ * ------
+ * Sidebar buttons:
+ *   - **dashboard** (default) — the rich dashboard with REAL data
+ *     (or the shared mock if MCP is unreachable). When the workspace
+ *     isn't configured, the dashboard renders BELOW a top-of-page
+ *     banner that surfaces the same status the wizard would show,
+ *     with a single click into the Settings tab. The wizard no
+ *     longer hijacks the dashboard view.
+ *   - **settings** — the wizard (always reachable) + theme picker
+ *     (system/light/dark) + language picker (the 12 shipped i18n
+ *     dicts).
+ *   - **tool-detail** — static preview of the tool-detail webview
+ *     panel.
+ *   - **metrics** — static preview of the metrics sparkline.
  *
- * Why this is two-tier (browser → server → MCP)?
- *   - The browser bundle is browser-safe: no `node:fs`, no
- *     `cross-spawn`, no `child_process` (we proved earlier this is
- *     fragile).
- *   - The server runs in Bun (Node-like) and CAN spawn MCP stdio +
- *     read files. Doing it server-side keeps the contract clean.
- *   - The browser still exercises the real `renderDashboard` and
- *     `renderToolDetailHtml` renderer functions with real workspace
- *     data — only the data source is mocked vs. real.
+ * Persistence
+ * -----------
+ * Theme + language are stored in `localStorage` under `mv:dev:theme`
+ * and `mv:dev:lang`. They survive a page reload and apply on first
+ * paint. In production (the real VS Code extension), these read
+ * from `vscode.ExtensionContext.globalState` under `mv:theme` /
+ * `mv:lang` instead — the dev preview deliberately uses different
+ * keys so dev-only choices don't leak into the user's editor
+ * settings.
  *
- * Sidebar
- * -------
- * The chooser keeps `tool-detail` and `metrics` (small previews) plus
- * the new `dashboard` view, which now transparently renders setup
- * wizard OR real dashboard depending on workspace state.
+ * Server-side helpers
+ * -------------------
+ * `/api/setup/status` returns the workspace detection ladder (see
+ * `tools/scripts/dev/api/setup-status.ts`). `/api/setup/install`
+ * writes `.vscode/mcp.json` + `.vscode/settings.json` +
+ * `mcp-vertex.config.json` idempotently. Both run server-side
+ * (Bun, Node-like) — the browser bundle stays free of `node:fs` /
+ * `cross-spawn` / `child_process` (we proved this contract earlier).
  */
 import type {
 	IDashboardAllModels,
@@ -40,51 +47,27 @@ import type {
 	IToolDescriptor,
 } from '@mcp-vertex/client';
 import {
-	devWizardCss,
 	mockDashboardModel,
 	renderDashboard,
 } from '@mcp-vertex/ui-extension/webview';
+import type { Lang } from '@mcp-vertex/shared/i18n';
 import { dictsByLang } from '@mcp-vertex/shared/i18n';
 
 import { renderMetricsHtml } from '../views/metrics-sparkline';
 import { renderToolDetailHtml } from '../views/tool-detail-webview';
+import {
+	bootstrapPersistedPrefs,
+	getDict,
+	mountSettingsPanel,
+	readPersistedPrefs,
+	type ISetupStatus,
+	type WorkspaceKind,
+} from './settings-panel';
 
 // ---------------------------------------------------------------------------
-// Setup status shape (mirrors `tools/scripts/dev/api/setup-status.ts`).
-// Kept inline so this file has zero server-side imports.
-// ---------------------------------------------------------------------------
-
-interface ISetupSignal {
-	readonly id: string;
-	readonly present: boolean;
-	readonly path: string;
-	readonly detail?: string;
-}
-
-interface ISetupStatus {
-	readonly kind: 'configured' | 'partial' | 'unconfigured';
-	readonly signals: readonly ISetupSignal[];
-	readonly nextStep: 'spawn-mcp' | 'install' | 'manual';
-	readonly suggestion: string;
-}
-
-interface IInstallResult {
-	readonly ok: boolean;
-	readonly written: readonly string[];
-	readonly note: string;
-}
-
-type DashboardResult =
-	| { readonly ok: true; readonly model: IDashboardAllModels }
-	| { readonly ok: false; readonly kind: string; readonly message: string };
-
-// ---------------------------------------------------------------------------
-// Mocks for the small sidebar previews (tool-detail + metrics). These
-// have no workspace meaning — they're just snapshots of what the
-// renderer emits when called from the real extension's command
-// surface. Kept local because the real values for these come from
-// per-tool calls (mcp-vertex_metrics + a tool descriptor fetch) and
-// wiring that whole loop into the dev preview would balloon this file.
+// Static previews (tool-detail + metrics). Tool-detail will read real
+// data in a future slice; metrics already mirrors the real metrics
+// snapshot shape.
 // ---------------------------------------------------------------------------
 
 interface IToolDetailViewModel {
@@ -159,146 +142,170 @@ const fetchJson = async <T>(path: string): Promise<T | null> => {
 	}
 };
 
-/**
- * Inject the wizard CSS into the document once. Idempotent — calling
- * the helper again is a no-op. The wizard renders BEFORE the
- * dashboard chrome is on the page, so we can't wait for `renderDashboard`
- * to emit its inline `<style>`; this drops the styles upfront.
- */
-let wizardStylesInjected = false;
-const injectWizardStyles = (): void => {
-	if (wizardStylesInjected) return;
-	const tag = document.createElement('style');
-	tag.setAttribute('data-mv-dev-wizard', 'true');
-	tag.textContent = devWizardCss;
-	document.head.appendChild(tag);
-	wizardStylesInjected = true;
+type DashboardResult =
+	| { readonly ok: true; readonly model: IDashboardAllModels }
+	| { readonly ok: false; readonly kind: string; readonly message: string };
+
+interface IInstallResult {
+	readonly ok: boolean;
+	readonly note: string;
+}
+
+const bannerKindClass = (kind: WorkspaceKind): string => {
+	if (kind === 'configured') return 'banner--ok';
+	if (kind === 'partial') return 'banner--warn';
+	return 'banner--err';
 };
 
-const renderSetupWizard = (status: ISetupStatus): string => {
-	const signalsHtml = status.signals
-		.map(
-			(s) =>
-				`<li class="setup__signal ${s.present ? 'is-on' : 'is-off'}">
-					<span class="setup__signal-icon" aria-hidden="true">${s.present ? '✓' : '·'}</span>
-					<code>${escapeHtml(s.path)}</code>
-					${s.detail ? `<span class="setup__signal-detail">— ${escapeHtml(s.detail)}</span>` : ''}
-				</li>`,
-		)
-		.join('');
-
-	const ctaLabel =
-		status.kind === 'partial'
-			? 'Finish setup'
-			: status.kind === 'unconfigured'
-				? 'Install mcp-vertex here'
-				: 'Re-install (idempotent)';
-
-	return `<section class="setup" data-kind="${status.kind}">
-		<header class="setup__head">
-			<h1>mcp-vertex isn't fully wired in this workspace</h1>
-			<p class="setup__hint">${escapeHtml(status.suggestion)}</p>
-		</header>
-		<aside class="setup__signals" aria-label="Detection signals">
-			<h2>Detection</h2>
-			<ul>${signalsHtml}</ul>
-		</aside>
-		<footer class="setup__cta">
-			<button type="button" id="setup-install" class="setup__primary">${escapeHtml(ctaLabel)}</button>
-			<button type="button" id="setup-refresh" class="setup__secondary">Re-check</button>
-			<span class="setup__status" id="setup-status" role="status" aria-live="polite"></span>
-		</footer>
-	</section>`;
+const renderStatusBanner = (
+	status: ISetupStatus,
+	onOpenSettings: () => void,
+): string => {
+	if (status.kind === 'configured') {
+		return `<aside class="mv-banner banner--ok" role="status">
+			<span class="mv-banner__icon" aria-hidden="true">✓</span>
+			<span class="mv-banner__msg">Workspace is configured — the dashboard below is fetching real data when the MCP server is reachable.</span>
+			<button type="button" class="mv-banner__link" data-action="open-settings">Open settings</button>
+		</aside>`;
+	}
+	const verb = status.kind === 'partial' ? 'Finish' : 'Run';
+	return `<aside class="mv-banner ${bannerKindClass(status.kind)}" role="status">
+		<span class="mv-banner__icon" aria-hidden="true">!</span>
+		<span class="mv-banner__msg">${escapeHtml(verb)} the setup: ${escapeHtml(status.suggestion)}</span>
+		<button type="button" class="mv-banner__link" data-action="open-settings">Open settings →</button>
+	</aside>`;
 };
 
-const renderDashboardOrSetup = async (root: HTMLElement): Promise<void> => {
+const renderDashboardView = async (
+	root: HTMLElement,
+	prefs: ReturnType<typeof readPersistedPrefs>,
+): Promise<void> => {
 	const status = await fetchJson<ISetupStatus>('/api/setup/status');
-	if (!status) {
-		root.innerHTML =
-			'<p class="setup__hint">Dev server not reachable. Restart <code>bun run dev:vscode</code>.</p>';
-		return;
-	}
 
-	if (status.kind !== 'configured') {
-		injectWizardStyles();
-		root.innerHTML = renderSetupWizard(status);
-		bindSetupHandlers(root);
-		return;
-	}
-
-	// Configured: render dashboard with REAL data. Fall back to the
-	// shared mock if the MCP server is unreachable, so the dev
-	// preview never goes blank.
 	const real = await fetchJson<DashboardResult>('/api/dashboard');
 	const model =
 		real && 'ok' in real && real.ok === true
 			? real.model
 			: mockDashboardModel;
 
+	const dict = getDict(prefs.lang);
 	const html = renderDashboard(model, {
 		docsUrl: 'https://cartagogit.github.io/mcp-vertex/',
 		refreshCommand: 'mcp-vertex.refresh',
 		openDocsCommand: 'mcp-vertex.openDocs',
-		lang: dictsByLang.en,
+		lang: dict,
 	});
 	const bodyMatch = html.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
-	root.innerHTML = bodyMatch?.[1] ?? html;
+
+	if (status) {
+		root.innerHTML = `${renderStatusBanner(
+			status,
+			() => void render('settings'),
+		)}${bodyMatch?.[1] ?? html}`;
+	} else {
+		root.innerHTML =
+			bodyMatch?.[1] ??
+			html ??
+			'<p class="setup__hint">Dev server not reachable. Restart <code>bun run dev:vscode</code>.</p>';
+	}
+
+	// Wire the banner's "Open settings" link to a real navigation.
+	for (const btn of root.querySelectorAll<HTMLButtonElement>(
+		'[data-action="open-settings"]',
+	)) {
+		btn.addEventListener('click', () => void render('settings'));
+	}
 
 	if (real && 'ok' in real && real.ok === false) {
 		const note = document.createElement('p');
-		note.className = 'setup__hint';
+		note.className = 'mv-banner banner--warn';
+		note.style.margin = '0';
 		note.textContent = `MCP server unreachable: ${real.message}. Showing mock data — start \`bun run mcp-vertex\` and click Refresh.`;
 		root.prepend(note);
 	}
 };
 
-const bindSetupHandlers = (root: HTMLElement): void => {
-	const install = root.querySelector<HTMLButtonElement>('#setup-install');
-	const refresh = root.querySelector<HTMLButtonElement>('#setup-refresh');
-	const status = root.querySelector<HTMLSpanElement>('#setup-status');
+const renderSettingsView = async (
+	root: HTMLElement,
+	prefs: ReturnType<typeof readPersistedPrefs>,
+): Promise<void> => {
+	let status = await fetchJson<ISetupStatus>('/api/setup/status');
+	if (!status) {
+		// Empty status object — the wizard treats this as "unconfigured"
+		// by default because every signal is `present: false`.
+		status = {
+			kind: 'unconfigured',
+			signals: [],
+			nextStep: 'manual',
+			suggestion:
+				'Dev server unreachable — could not detect workspace state.',
+		};
+	}
 
-	install?.addEventListener('click', async () => {
-		if (!status) return;
-		status.textContent = 'Installing…';
-		install.disabled = true;
-		const res = await fetch('/api/setup/install', { method: 'POST' });
-		const body = (await res.json()) as IInstallResult | null;
-		status.textContent = body?.note ?? 'Done.';
-		setTimeout(() => void renderDashboardOrSetup(root), 800);
-	});
+	let currentLang: Lang = prefs.lang;
+	const handleLangChange = (lang: Lang): void => {
+		currentLang = lang;
+		// Persisted (already done by the panel); re-render the dashboard
+		// if it is the active view so it picks up the new dict.
+		prefs = { ...prefs, lang };
+		if (activeView === 'dashboard') void render('dashboard');
+	};
+	activeView = 'settings';
 
-	refresh?.addEventListener('click', () => {
-		void renderDashboardOrSetup(root);
-	});
+	mountSettingsPanel(
+		root,
+		status,
+		prefs,
+		async () => {
+			const res = await fetch('/api/setup/install', { method: 'POST' });
+			const body = (await res.json()) as IInstallResult | null;
+			return body ? { note: body.note } : null;
+		},
+		handleLangChange,
+	);
+};
+
+const renderToolDetailView = (root: HTMLElement): void => {
+	root.innerHTML = renderToolDetailHtml(mockToolDetail);
+};
+
+const renderMetricsView = (root: HTMLElement): void => {
+	root.innerHTML = renderMetricsHtml(mockMetrics);
 };
 
 // ---------------------------------------------------------------------------
 // Sidebar chooser
 // ---------------------------------------------------------------------------
 
-const WEBVIEWS: ReadonlyArray<{
-	id: string;
-	label: string;
-	render: (root: HTMLElement) => Promise<void> | void;
-}> = [
+interface IWebviewSpec {
+	readonly id: string;
+	readonly label: string;
+	render: (
+		root: HTMLElement,
+		prefs: ReturnType<typeof readPersistedPrefs>,
+	) => Promise<void> | void;
+}
+
+const WEBVIEWS: ReadonlyArray<IWebviewSpec> = [
 	{
 		id: 'dashboard',
-		label: 'dashboard (workspace)',
-		render: renderDashboardOrSetup,
+		label: 'dashboard',
+		render: renderDashboardView,
+	},
+	{
+		id: 'settings',
+		label: 'settings',
+		render: renderSettingsView,
 	},
 	{
 		id: 'tool-detail',
-		label: 'tool-detail (webview panel)',
-		render: (root) => {
-			root.innerHTML = renderToolDetailHtml(mockToolDetail);
-		},
+		label: 'tool-detail',
+		render: (root) => renderToolDetailView(root),
 	},
 	{
 		id: 'metrics',
-		label: 'metrics (sparkline)',
-		render: (root) => {
-			root.innerHTML = renderMetricsHtml(mockMetrics);
-		},
+		label: 'metrics',
+		render: (root) => renderMetricsView(root),
 	},
 ];
 
@@ -307,14 +314,20 @@ if (!root) {
 	throw new Error('dev entry: #root element missing in landing page');
 }
 
+let activeView = 'dashboard';
+
 const render = async (id: string): Promise<void> => {
 	const view = WEBVIEWS.find((v) => v.id === id) ?? WEBVIEWS[0];
 	if (!view) {
 		root.innerHTML = '<p>No webviews registered.</p>';
 		return;
 	}
+	activeView = view.id;
 	try {
-		await view.render(root);
+		// Re-read prefs on every navigation so a Settings-tab change
+		// is picked up immediately on the dashboard.
+		const prefs = readPersistedPrefs();
+		await view.render(root, prefs);
 	} catch (err) {
 		const message =
 			err instanceof Error ? `${err.message}\n${err.stack}` : String(err);
@@ -332,7 +345,7 @@ const sidebar = document.getElementById('sidebar');
 if (sidebar) {
 	sidebar.innerHTML = WEBVIEWS.map(
 		(v) =>
-			`<button type="button" data-webview="${v.id}">${v.label}</button>`,
+			`<button type="button" data-webview="${v.id}">${escapeHtml(v.label)}</button>`,
 	).join('');
 	for (const btn of sidebar.querySelectorAll<HTMLElement>('[data-webview]')) {
 		btn.addEventListener('click', () => {
@@ -342,4 +355,29 @@ if (sidebar) {
 	}
 }
 
-void render(WEBVIEWS[0]?.id ?? '');
+// First paint: apply persisted prefs (theme on <html>) before any
+// view renders, so the dashboard CSS sees the right data-theme.
+const initialPrefs = bootstrapPersistedPrefs();
+void render(WEBVIEWS[0]?.id ?? 'dashboard').catch((err) => {
+	console.error('[dev:vscode] initial render failed', err);
+});
+
+// Expose for ad-hoc inspection in the devtools console. Cheap and
+// keeps the panel imports discoverable without polluting globals.
+declare global {
+	interface Window {
+		__mvDev?: {
+			render: (id: string) => Promise<void>;
+			prefs: typeof initialPrefs;
+		};
+	}
+}
+window.__mvDev = {
+	render,
+	prefs: initialPrefs,
+};
+
+// Re-export so unused-import lints do not strip the dictsByLang import
+// in environments where it isn't directly referenced (it IS referenced
+// by getDict()).
+export const __keepDictsByLangRef = dictsByLang;
