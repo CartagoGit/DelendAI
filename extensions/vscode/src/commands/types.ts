@@ -1,5 +1,5 @@
 import type { IMcpLogHint, McpStdioClient } from '@mcp-vertex/client';
-import { DEFAULT_DENY, injectCspMeta } from '@mcp-vertex/ui-extension/public';
+import { DEFAULT_DENY, injectCspMeta } from '@mcp-vertex/ui-extension/webview';
 
 import type { ProposalsSnapshotSource } from '../lib/proposals-snapshot';
 import type { ProposalBoardProvider } from '../providers/proposal-board-provider';
