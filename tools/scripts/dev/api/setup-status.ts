@@ -9,24 +9,25 @@
  *   1. `.vscode/mcp.json` declares the `mcp-vertex` stdio server.
  *   2. `.vscode/settings.json` configures `mcp-vertex.server.command`.
  *   3. `mcp-vertex.config.json` is present at the workspace root.
- *   4. `.proposals/` directory exists (active workflow).
+ *
+ * Strict semantics: a workspace is **`configured`** only when the two
+ * `.vscode/*` files BOTH declare the mcp-vertex server. Anything
+ * less is `partial` — and the wizard should walk you through the
+ * missing pieces. We do NOT count `.proposals/` as a signal because
+ * that directory is workflow-agnostic (any repo can use a
+ * `pNNN-*.md` convention without mcp-vertex).
  *
  * We do NOT spawn the MCP server here — that's `real-data.ts`'s job
- * and it's expensive (several seconds cold). Setup status is a cheap
+ * and it is expensive (several seconds cold). Setup status is a cheap
  * file scan that runs on every page load.
  */
-import { existsSync, statSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 export type WorkspaceKind = 'configured' | 'partial' | 'unconfigured';
 
 export interface ISetupSignal {
-	readonly id:
-		| 'mcp-json'
-		| 'settings-server'
-		| 'mcp-vertex-config'
-		| 'proposals-dir'
-		| 'package-script';
+	readonly id: 'mcp-json' | 'settings-server' | 'mcp-vertex-config';
 	readonly present: boolean;
 	readonly path: string;
 	readonly detail?: string;
@@ -39,20 +40,43 @@ export interface ISetupStatus {
 	readonly suggestion: string;
 }
 
-const safeStat = (path: string): boolean => {
-	try {
-		return statSync(path).isDirectory();
-	} catch {
-		return false;
-	}
-};
-
 const safeExists = (path: string): boolean => {
 	try {
 		return existsSync(path);
 	} catch {
 		return false;
 	}
+};
+
+const hasJsoncKey = (path: string, dotted: string): boolean => {
+	if (!safeExists(path)) return false;
+	let raw: string;
+	try {
+		raw = readFileSync(path, 'utf8');
+	} catch {
+		return false;
+	}
+	// Strip js-style line comments and trailing commas, then parse.
+	// VS Code's `settings.json` is JSON-with-comments; plain
+	// JSON.parse would choke on `// foo` lines.
+	const cleaned = raw
+		.replace(/^\uFEFF/, '')
+		.replace(/\/\*[\s\S]*?\*\//g, '')
+		.replace(/(^|[^:])\/\/.*$/gm, '$1')
+		.replace(/,(\s*[}\]])/g, '$1');
+	let parsed: unknown;
+	try {
+		parsed = JSON.parse(cleaned);
+	} catch {
+		return false;
+	}
+	const parts = dotted.split('.');
+	let cursor: unknown = parsed;
+	for (const p of parts) {
+		if (cursor === null || typeof cursor !== 'object') return false;
+		cursor = (cursor as Record<string, unknown>)[p];
+	}
+	return cursor !== undefined;
 };
 
 const signal = (
@@ -72,7 +96,6 @@ export const detectSetupStatus = (cwd: string): ISetupStatus => {
 	const mcpJsonPath = join(cwd, '.vscode', 'mcp.json');
 	const settingsPath = join(cwd, '.vscode', 'settings.json');
 	const configPath = join(cwd, 'mcp-vertex.config.json');
-	const proposalsPath = join(cwd, '.proposals');
 
 	const signals: readonly ISetupSignal[] = [
 		signal(
@@ -90,21 +113,26 @@ export const detectSetupStatus = (cwd: string): ISetupStatus => {
 			configPath,
 			'mcp-vertex.config.json declares the plugin surface',
 		),
-		signal(
-			'proposals-dir',
-			proposalsPath,
-			'.proposals/ directory exists (workflow active)',
-		),
 	];
 
-	const hits = signals.filter((s) => s.present).length;
-	const proposals = safeStat(proposalsPath);
-	const kind: WorkspaceKind =
-		hits >= 2 || (hits >= 1 && proposals)
-			? 'configured'
-			: hits >= 1
-				? 'partial'
-				: 'unconfigured';
+	// Configure detection goes a step deeper than raw existence: the
+	// file must actually DECLARE the relevant section. A workspace can
+	// have an empty `mcp.json`; that's not "configured".
+	const mcpDeclares =
+		hasJsoncKey(mcpJsonPath, 'servers.mcp-vertex') ||
+		hasJsoncKey(mcpJsonPath, 'servers."mcp-vertex"');
+	const settingsDeclares = hasJsoncKey(settingsPath, 'mcp-vertex.server');
+	const configDeclares = safeExists(configPath);
+
+	const bothVscodeOk = mcpDeclares && settingsDeclares;
+	const anyVscodeOk = mcpDeclares || settingsDeclares;
+	const configOk = configDeclares;
+
+	const kind: WorkspaceKind = bothVscodeOk
+		? 'configured'
+		: anyVscodeOk || configOk
+			? 'partial'
+			: 'unconfigured';
 
 	const nextStep: ISetupStatus['nextStep'] =
 		kind === 'configured'
@@ -113,12 +141,17 @@ export const detectSetupStatus = (cwd: string): ISetupStatus => {
 				? 'install'
 				: 'manual';
 
+	const missing: string[] = [];
+	if (!mcpDeclares) missing.push('.vscode/mcp.json');
+	if (!settingsDeclares)
+		missing.push('.vscode/settings.json (mcp-vertex.server)');
+
 	const suggestion =
 		kind === 'configured'
-			? 'Workspace looks ready. The dev preview will try to spawn the MCP server on the first refresh.'
+			? 'Workspace looks ready. The dev preview will spawn the MCP server on the first refresh.'
 			: kind === 'partial'
-				? 'Some mcp-vertex files are present but the configuration is incomplete. Run "mcp-vertex: Set up GitHub issues" or click Install below to wire everything up.'
-				: 'This workspace does not look like it uses mcp-vertex yet. Click Install to drop a minimal .vscode/mcp.json + .vscode/settings.json pair so the preview can talk to a fresh MCP server.';
+				? `Partially wired: missing ${missing.join(' / ')}. Click Install to drop the missing piece (idempotent — existing content is preserved).`
+				: "This workspace doesn't use mcp-vertex yet. Click Install to drop a minimal .vscode/mcp.json + .vscode/settings.json (and a starter mcp-vertex.config.json if you want a preset plugin surface).";
 
 	return { kind, signals, nextStep, suggestion };
 };

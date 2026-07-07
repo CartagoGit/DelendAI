@@ -482,9 +482,15 @@ const handleApi = async (
 	url: URL,
 ): Promise<Response> => {
 	// Allow `?cwd=/abs/path` so a developer can preview how the
-	// extension would behave in any project on disk. Falls back to the
-	// target's own root (the package being edited) when no override is
-	// given. Path is path-contained: must be absolute and exist.
+	// extension would behave in any project on disk. The default cwd
+	// is whatever directory the developer launched `bun run dev:***`
+	// from (`process.cwd()` of the dev server), NOT the target's own
+	// root — when you fire up the dev server from `/path/to/your-app`
+	// the wizard should look at `/path/to/your-app/.vscode/`, not at
+	// `extensions/vscode/.vscode/` (which is where the extension
+	// package itself lives). The caller passes a `defaultCwd` (the
+	// repo root, where the dev server was launched) so it works the
+	// same way in CI and locally.
 	const cwd = resolveCwd(defaultCwd, url);
 	if ('error' in cwd)
 		return jsonResponse({ ok: false, message: cwd.error }, 400);
@@ -550,7 +556,7 @@ const startDevEntry = async (target: ITarget): Promise<void> => {
 				return buildEntry(entryAbs);
 			}
 			if (url.pathname.startsWith('/api/')) {
-				return handleApi(target.root, req, url);
+				return handleApi(process.cwd(), req, url);
 			}
 			// Co-located assets (CSS, JSON, etc.) the entry may import via
 			// a relative path. Anything else is 404.

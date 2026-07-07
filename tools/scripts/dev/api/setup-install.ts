@@ -152,6 +152,7 @@ export const runSetupInstall = (cwd: string): IInstallResult => {
 
 	const mcpPath = join(cwd, '.vscode', 'mcp.json');
 	const settingsPath = join(cwd, '.vscode', 'settings.json');
+	const configPath = join(cwd, 'mcp-vertex.config.json');
 
 	const mcpPatch = {
 		servers: {
@@ -165,6 +166,23 @@ export const runSetupInstall = (cwd: string): IInstallResult => {
 	const settingsPatch = {
 		command: 'bun',
 		args: ['run', 'mcp-vertex'],
+	};
+	// Mirror the repo's own `mcp-vertex.config.json` so a fresh install
+	// can launch a useful plugin surface (overview / metrics / memory
+	// / proposals / quality / rules). Users can edit this freely; the
+	// install is fully idempotent.
+	const configPatch = {
+		preset: 'core',
+		plugins: [
+			'core',
+			'memory',
+			'proposals',
+			'search',
+			'logs',
+			'quality',
+			'rules',
+		],
+		namespacePrefix: 'mcp-vertex',
 	};
 
 	const written: string[] = [];
@@ -209,9 +227,18 @@ export const runSetupInstall = (cwd: string): IInstallResult => {
 		}
 	}
 
+	// mcp-vertex.config.json — only create when missing. Existing
+	// configs (the user's curated preset) are left alone.
+	if (!existsSync(configPath)) {
+		writeNewFile(configPath, configPatch);
+		written.push(relative(cwd, configPath));
+	} else {
+		skipped.push(relative(cwd, configPath) + ' (already exists)');
+	}
+
 	const note =
 		skipped.length === 0
-			? 'Wrote the missing mcp-vertex blocks. Refresh the preview to start fetching real data.'
+			? 'Wrote the missing mcp-vertex files. Refresh the preview to start fetching real data.'
 			: `Some files were skipped: ${skipped.join(', ')}. No existing content was modified.`;
 
 	return { ok: true, written, skipped, note };
