@@ -1,0 +1,90 @@
+// `apps/shared/src/styles/components/_stepper.scss`
+//
+// BEM-nested styles for the `<ol class="mv-stepper">` block emitted
+// by `apps/shared/src/components/ui/stepper.ts` (renderStepper).
+// Reachable from any host that @uses the shared styles index.
+// Class namespace is `mv-stepper` / `mv-stepper__*`; a trailing
+// @extend block keeps the legacy `.ui-stepper*` selectors working
+// until the host renames its markup.
+//
+// This file migrated from the <style> block that lived inside
+// `apps/web/src/components/ui/Stepper.astro` (f00102 S2.3).
+
+.mv-stepper {
+	counter-reset: ui-step;
+	list-style: none;
+	padding: 0;
+	margin: var(--mv-s-4, 1rem) 0;
+	display: grid;
+	gap: var(--mv-s-4, 1rem);
+
+	&__item {
+		display: grid;
+		grid-template-columns: 2rem 1fr;
+		gap: 0.85rem;
+		position: relative;
+
+		&::before {
+			content: '';
+			position: absolute;
+			left: 0.95rem;
+			top: 1.8rem;
+			bottom: -1rem;
+			width: 2px;
+			background: color-mix(in srgb, var(--mv-fg, currentColor) 12%, transparent);
+			opacity: 0.5;
+		}
+
+		&:last-child::before {
+			display: none;
+		}
+	}
+
+	&__num {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 2rem;
+		height: 2rem;
+		border-radius: 999px;
+		background: color-mix(in srgb, var(--mv-fg, currentColor) 14%, transparent);
+		color: inherit;
+		font-weight: 600;
+		font-size: 0.9rem;
+		font-variant-numeric: tabular-nums;
+	}
+
+	&__body {
+		padding-top: 0.3rem;
+		min-width: 0;
+	}
+
+	&__text {
+		margin: 0 0 0.5rem;
+		line-height: 1.55;
+
+		& code {
+			font-family: var(--mv-font-mono, var(--font-mono, ui-monospace, SFMono-Regular, monospace));
+			font-size: 0.9em;
+			padding: 0.05em 0.35em;
+			background: color-mix(in srgb, var(--mv-fg, currentColor) 8%, transparent);
+			border-radius: 4px;
+		}
+	}
+
+	&__rich {
+		margin: 0.5rem 0;
+
+		& :global(pre) {
+			margin: 0.5rem 0;
+		}
+	}
+}
+
+// Legacy alias — kept so `apps/web` pages that still ship
+// `<ol class="ui-stepper">` keep working without a markup
+// change. Remove once the rename to `.mv-stepper*` lands.
+
+.ui-stepper {
+	@extend .mv-stepper;
+}
