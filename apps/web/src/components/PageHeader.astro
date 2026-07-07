@@ -1,55 +1,57 @@
 ---
 /**
- * PageHeader.astro — minimal page intro.
+ * `apps/web/src/components/PageHeader.astro` — wrapper around the
+ * host-agnostic `renderPageHeader()` from `@mcp-vertex/shared`
+ * (f00102 S3.1).
  *
- * Replaces the old `.subhero` block (removed in l105 slice s12) with a
- * tighter, BEM-compliant version that ONLY carries the breadcrumb + the
- * page <h1>. The <h1> keeps `transition:name="page-title"` so the
- * Astro View Transitions API still morphs the title between pages.
+ * The wrapper is the ONLY Astro-aware seam: it reads
+ * `import.meta.env.BASE_URL`, resolves the localized `homeLabel`
+ * from the i18n dictionary, and forwards both into the shared
+ * renderer. The renderer is pure string and is reusable from
+ * non-Astro hosts (the extension webview, JetBrains, etc.).
  *
- * Lead / meta / CTAs are intentionally NOT rendered here — pages
- * that need them put those elements inside their first section
- * (e.g. <section class="section">), where the existing design tokens
- * already style them.
+ * Astro View Transitions trade-off
+ * --------------------------------
+ * The previous incarnation attached `transition:name="page-title"`
+ * to the `<h1>` so the Astro ClientRouter morphed the heading
+ * across page navigations. The shared renderer can NOT emit
+ * `transition:name` directly because it is an Astro runtime
+ * directive other hosts can't honour, and Astro does not let
+ * `<Fragment set:html="…">` patch attributes post-render. The
+ * navigator morph falls back to the ClientRouter's default
+ * "fade" transition — visually consistent with the rest of the
+ * site. A future slice can reintroduce the named morph by
+ * switching the renderer to `set:html={...}` on raw markup
+ * typed as Astro templates (deferred to the Astro renderToString
+ * slice in the optional S5 of the proposal).
  */
-import { useTranslations, type Lang } from '#I18N/ui';
+import { renderPageHeader, type IPageHeaderProps } from '@mcp-vertex/shared/components/ui/page-header';
+import { useTranslations } from '#I18N/ui';
+
+interface ICrumb {
+	readonly label: string;
+	readonly href: string;
+}
 
 interface Props {
-	lang: Lang;
-	/** Localized title. Use the i18n key directly: `t.tools.title`. */
+	lang: Parameters<typeof useTranslations>[0];
 	title: string;
-	/** Optional breadcrumb trail. The last element is the current page
-	 * (rendered as <span aria-current="page">). Earlier items are
-	 * rendered as <a> elements. Pass empty array for no breadcrumb. */
-	crumbs?: ReadonlyArray<{ label: string; href: string }>;
-	/** Path prefix used to build the "Home" link. Defaults to `/`. */
+	crumbs?: ReadonlyArray<ICrumb>;
+	/**
+	 * Legacy alias for `baseHref`. The docs site pages still pass
+	 * `homeHref` to the wrapper; the wrapper forwards it as-is into
+	 * the shared renderer so the contract is symmetric.
+	 */
 	homeHref?: string;
 }
 
-const { lang, title, crumbs = [], homeHref: homeHrefProp } = Astro.props;
+const { lang, title, crumbs, homeHref } = Astro.props as Props;
 const t = useTranslations(lang);
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
-const homeHref = homeHrefProp ?? `${base}/`;
-
-const fullCrumbs = [{ label: t.nav.concept, href: homeHref }, ...crumbs];
+const baseHref = `${base}/`;
+const homeLabel = t.nav.concept;
 ---
 
-<header class="page-header">
-	<div class="container">
-		{fullCrumbs.length > 1 && (
-			<nav class="page-header__crumb" aria-label="breadcrumb">
-				{fullCrumbs.map((c, i) => (
-					<>
-						{i > 0 && <span aria-hidden="true">›</span>}
-						{i < fullCrumbs.length - 1 ? (
-							<a href={c.href}>{c.label}</a>
-						) : (
-							<span aria-current="page">{c.label}</span>
-						)}
-					</>
-				))}
-			</nav>
-		)}
-		<h1 transition:name="page-title" transition:animate="fade">{title}</h1>
-	</div>
+<header class="mv-page-header page-header">
+	<Fragment set:html={renderPageHeader({ lang, title, crumbs: crumbs as IPageHeaderProps['crumbs'] | undefined, baseHref: homeHref ?? baseHref, homeHref: homeHref ?? baseHref, homeLabel })} />
 </header>
