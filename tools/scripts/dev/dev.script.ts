@@ -249,36 +249,196 @@ const renderDevHtml = (target: ITarget, entryRel: string): string => {
 	const layout = target.sidebar
 		? `<aside id="sidebar" aria-label="Webviews"></aside><main id="root">Cargando renderers…</main>`
 		: `<main id="root">Cargando renderers…</main>`;
-	const gridCss = target.sidebar
-		? `#app { display: grid; grid-template-columns: 220px 1fr; gap: 1.5rem; align-items: start; }`
-		: '';
+	// The shell mirrors the real VS Code webview surface: full-bleed,
+	// no max-width, sidebar on the left at ≥800px that scrolls to a
+	// top tab strip below that. Theme follows `--vscode-*` tokens
+	// when the page is opened inside an embedded webview (rare for
+	// the dev entry, but cheap to support) and falls back to a
+	// GitHub-dark palette for the standalone browser preview.
+	const shellCss = `
+		:root {
+			color-scheme: light dark;
+			--mv-bg: var(--vscode-editor-background, #1e1e1e);
+			--mv-bg-soft: var(--vscode-sideBar-background, #252526);
+			--mv-bg-card: var(--vscode-editorWidget-background, #252526);
+			--mv-fg: var(--vscode-foreground, #d4d4d4);
+			--mv-fg-muted: var(--vscode-descriptionForeground, #858585);
+			--mv-border: var(--vscode-widget-border, #3c3c3c);
+			--mv-focus: var(--vscode-focusBorder, #007fd4);
+			--mv-link: var(--vscode-textLink-foreground, #3794ff);
+			--mv-font-prose: var(--vscode-font-family, system-ui, -apple-system, "Segoe WPC", "Segoe UI", sans-serif);
+			--mv-font-mono: var(--vscode-editor-font-family, ui-monospace, SFMono-Regular, Menlo, Consolas, monospace);
+		}
+		* { box-sizing: border-box; }
+		html, body {
+			margin: 0;
+			padding: 0;
+			background: var(--mv-bg);
+			color: var(--mv-fg);
+			font-family: var(--mv-font-prose);
+			font-size: 13px;
+			line-height: 1.5;
+			-webkit-font-smoothing: antialiased;
+		}
+		body { display: flex; flex-direction: column; min-height: 100vh; }
+		code, pre {
+			font-family: var(--mv-font-mono);
+			font-variant-numeric: tabular-nums;
+		}
+		.dev-header {
+			display: flex;
+			align-items: center;
+			flex-wrap: wrap;
+			gap: 8px 12px;
+			padding: 10px 16px;
+			background: var(--mv-bg-soft);
+			border-bottom: 1px solid var(--mv-border);
+		}
+		.dev-header__title {
+			font-weight: 600;
+			font-size: 13px;
+			letter-spacing: 0.01em;
+			margin: 0;
+			flex: 1 1 auto;
+			min-width: 0;
+			white-space: nowrap;
+			overflow: hidden;
+			text-overflow: ellipsis;
+		}
+		.dev-header__meta {
+			color: var(--mv-fg-muted);
+			font-size: 11px;
+			flex: 0 0 auto;
+		}
+		.dev-header__blurb {
+			flex: 1 1 100%;
+			color: var(--mv-fg-muted);
+			font-size: 12px;
+			margin: 0;
+			padding-top: 4px;
+			border-top: 1px solid var(--mv-border);
+			width: 100%;
+		}
+		.dev-header__blurb:empty { display: none; }
+		#app {
+			flex: 1 1 auto;
+			display: flex;
+			flex-direction: column;
+			min-height: 0;
+		}
+		${
+			target.sidebar
+				? `
+		#app { flex-direction: row; }
+		#sidebar {
+			width: 220px;
+			min-width: 220px;
+			max-width: 220px;
+			flex-shrink: 0;
+			background: var(--mv-bg-soft);
+			border-right: 1px solid var(--mv-border);
+			padding: 12px 8px;
+			display: flex;
+			flex-direction: column;
+			gap: 2px;
+			overflow-y: auto;
+			max-height: calc(100vh - 60px);
+		}
+		#sidebar button {
+			display: block;
+			width: 100%;
+			text-align: left;
+			padding: 6px 10px;
+			border-radius: 3px;
+			border: 1px solid transparent;
+			background: transparent;
+			color: var(--mv-fg-muted);
+			cursor: pointer;
+			font: inherit;
+			line-height: 1.4;
+			transition: background 60ms ease, color 60ms ease;
+		}
+		#sidebar button:hover {
+			background: var(--mv-bg-card);
+			color: var(--mv-fg);
+		}
+		#sidebar button[data-active='true'] {
+			background: var(--mv-bg-card);
+			color: var(--mv-fg);
+			border-color: var(--mv-border);
+			font-weight: 500;
+		}
+		#sidebar button:focus-visible {
+			outline: 1px solid var(--mv-focus);
+			outline-offset: -1px;
+		}
+		#root {
+			flex: 1 1 auto;
+			min-width: 0;
+			min-height: 0;
+			overflow: auto;
+		}
+		@media (max-width: 800px) {
+			#app { flex-direction: column; }
+			#sidebar {
+				width: 100%;
+				min-width: 0;
+				max-width: none;
+				max-height: none;
+				flex-direction: row;
+				flex-wrap: wrap;
+				border-right: 0;
+				border-bottom: 1px solid var(--mv-border);
+				padding: 6px;
+			}
+			#sidebar button {
+				width: auto;
+				flex: 0 0 auto;
+				padding: 4px 10px;
+				border-radius: 3px;
+			}
+		}
+		`
+				: `
+		#root { padding: 0; min-height: 0; }
+		`
+		}
+		#root > section, #root > div, #root > article {
+			margin-bottom: 16px;
+		}
+		pre {
+			background: var(--mv-bg-soft);
+			padding: 8px 10px;
+			border-radius: 3px;
+			border: 1px solid var(--mv-border);
+			overflow: auto;
+			font-size: 12px;
+		}
+		#error {
+			color: var(--mv-error, #f48771);
+			border-color: var(--mv-error, #f48771);
+		}
+		a { color: var(--mv-link); }
+		a:focus-visible { outline: 1px solid var(--mv-focus); outline-offset: 1px; }
+		@media (max-width: 600px) {
+			.dev-header { padding: 8px 10px; }
+			.dev-header__title { font-size: 12px; }
+			.dev-header__meta { font-size: 10px; }
+		}
+	`;
 	return `<!doctype html>
 <html lang="en">
 <head>
 	<meta charset="UTF-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-	<title>${target.title ?? `mcp-vertex ${target.name}`}</title>
-	<style>
-		:root { color-scheme: light dark; }
-		body { font: 14px/1.5 system-ui, -apple-system, sans-serif; max-width: 1100px; margin: 2rem auto; padding: 0 1rem; }
-		header { border-bottom: 1px solid #8884; padding-bottom: 1rem; margin-bottom: 1.5rem; }
-		h1 { margin: 0 0 .25rem; font-size: 1.4rem; }
-		.meta { color: #888; font-size: .9rem; }
-		${gridCss}
-		#sidebar { display: flex; flex-direction: column; gap: .5rem; position: sticky; top: 1rem; }
-		#sidebar button { padding: .5rem .75rem; border: 1px solid #8884; border-radius: 6px; background: transparent; color: inherit; cursor: pointer; text-align: left; font: inherit; }
-		#sidebar button[data-active="true"] { background: #8882; border-color: #8888; }
-		#root { min-width: 0; }
-		#root > section, #root > div, #root > article { margin-bottom: 1.5rem; padding: 1rem; border: 1px solid #8884; border-radius: 8px; }
-		pre { background: #8882; padding: .5rem; border-radius: 4px; overflow: auto; }
-		#error { color: #c33; border-color: #c334; }
-	</style>
+	<title>${escapeHtml(target.title ?? `mcp-vertex ${target.name}`)}</title>
+	<style>${shellCss}</style>
 </head>
 <body>
-	<header>
-		<h1>${target.title ?? `mcp-vertex ${target.name}`}</h1>
-		<div class="meta">${target.url} · dev entry: <code>${entryRel}</code></div>
-		<p>${target.blurb ?? ''}</p>
+	<header class="dev-header">
+		<h1 class="dev-header__title">${escapeHtml(target.title ?? `mcp-vertex ${target.name}`)}</h1>
+		<div class="dev-header__meta">${escapeHtml(target.url)} · <code>${escapeHtml(entryRel)}</code></div>
+		<p class="dev-header__blurb">${target.blurb ?? ''}</p>
 	</header>
 	<div id="app">${layout}</div>
 	<script type="module" src="/__entry.js"></script>
@@ -286,6 +446,13 @@ const renderDevHtml = (target: ITarget, entryRel: string): string => {
 </html>
 `;
 };
+
+const escapeHtml = (s: string): string =>
+	s
+		.replaceAll('&', '&amp;')
+		.replaceAll('<', '&lt;')
+		.replaceAll('>', '&gt;')
+		.replaceAll('"', '&quot;');
 
 // ---------------------------------------------------------------------------
 // /api/* routes — workspace-aware helpers (setup detection,
