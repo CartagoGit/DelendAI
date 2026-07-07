@@ -175,6 +175,72 @@ const renderDevHtml = (target: ITarget, entryRel: string): string => {
 };
 
 // ---------------------------------------------------------------------------
+// /api/* routes — workspace-aware helpers (setup detection,
+// auto-install, real-data fetch from the MCP server).
+//
+// Why server-side? The browser bundle cannot import `node:fs` or
+// `cross-spawn` (we proved this is fragile in earlier slices). All
+// filesystem reads, writes, and MCP stdio spawns happen here, in Bun
+// (Node-like), and the browser hits HTTP. This keeps the browser
+// bundle pure and lets the dev preview show REAL data from the
+// workspace it's pointed at — not just the shared mock.
+// ---------------------------------------------------------------------------
+
+import { detectSetupStatus, type ISetupStatus } from './api/setup-status';
+import { runSetupInstall } from './api/setup-install';
+import { fetchRealDashboard, type IApiError } from './api/real-data';
+
+const jsonResponse = (body: unknown, status = 200): Response =>
+	new Response(JSON.stringify(body, null, 2), {
+		status,
+		headers: { 'Content-Type': 'application/json; charset=utf-8' },
+	});
+
+const handleApi = async (
+	defaultCwd: string,
+	req: Request,
+	url: URL,
+): Promise<Response> => {
+	// Allow `?cwd=/abs/path` so a developer can preview how the
+	// extension would behave in any project on disk. Falls back to the
+	// target's own root (the package being edited) when no override is
+	// given. Path is path-contained: must be absolute and exist.
+	const cwd = resolveCwd(defaultCwd, url);
+	if ('error' in cwd)
+		return jsonResponse({ ok: false, message: cwd.error }, 400);
+
+	if (url.pathname === '/api/setup/status') {
+		const status: ISetupStatus = detectSetupStatus(cwd.path);
+		return jsonResponse(status);
+	}
+	if (url.pathname === '/api/setup/install' && req.method === 'POST') {
+		const result = runSetupInstall(cwd.path);
+		return jsonResponse(result);
+	}
+	if (url.pathname === '/api/dashboard') {
+		const result = await fetchRealDashboard(cwd.path);
+		if ('ok' in result && result.ok === false) {
+			return jsonResponse(result as IApiError, 502);
+		}
+		return jsonResponse(result);
+	}
+	return new Response('Not found', { status: 404 });
+};
+
+const resolveCwd = (
+	fallback: string,
+	url: URL,
+): { path: string } | { error: string } => {
+	const raw = url.searchParams.get('cwd');
+	if (!raw) return { path: fallback };
+	if (!raw.startsWith('/')) return { error: 'cwd must be absolute' };
+	if (raw.includes('..') || raw.includes('\0'))
+		return { error: 'cwd contains illegal characters' };
+	if (!existsSync(raw)) return { error: `cwd does not exist: ${raw}` };
+	return { path: raw };
+};
+
+// ---------------------------------------------------------------------------
 // Per-target dev server
 // ---------------------------------------------------------------------------
 
@@ -198,6 +264,9 @@ const startDevEntry = (target: ITarget): void => {
 			}
 			if (url.pathname === '/__entry.js') {
 				return buildEntry(entryAbs);
+			}
+			if (url.pathname.startsWith('/api/')) {
+				return handleApi(target.root, req, url);
 			}
 			// Co-located assets (CSS, JSON, etc.) the entry may import via
 			// a relative path. Anything else is 404.
