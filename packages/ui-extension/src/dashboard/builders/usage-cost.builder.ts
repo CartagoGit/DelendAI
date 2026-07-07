@@ -21,10 +21,7 @@ import type {
 	IUsageReportPayload,
 	IUsageTotalsPayload,
 } from '../../contracts/interfaces/usage-cost.interface';
-
-/** Exact opt-in snippet for the usage-tracking plugin. */
-export const USAGE_TRACKING_OPT_IN_SNIPPET =
-	'mcp-vertex --plugins=usage-tracking';
+import { USAGE_TRACKING_OPT_IN_SNIPPET } from '../../contracts/constants/opt-in-snippets.constant';
 
 const num = (v: unknown): number =>
 	typeof v === 'number' && Number.isFinite(v) ? v : 0;

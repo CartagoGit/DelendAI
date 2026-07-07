@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-07-06T23:06:34.688Z",
+	"generatedAt": "2026-07-07T14:10:31.593Z",
 	"mode": "compact",
 	"tools": [
 		{
@@ -668,14 +668,6 @@
 				"date": "2026-06-23"
 			},
 			{
-				"id": "f00067a",
-				"title": "f00067a",
-				"track": "general",
-				"status": "ready",
-				"kind": "feat",
-				"date": "2026-07-05"
-			},
-			{
 				"id": "f00068",
 				"title": "f00068",
 				"track": "core+plugins+host+config+i18n+docs+web+extensions/vscode",
@@ -693,11 +685,11 @@
 			}
 		],
 		"byStatus": {
-			"ready": 2,
+			"ready": 1,
 			"in-progress": 0,
 			"review": 0,
 			"paused": 3,
-			"done": 184,
+			"done": 186,
 			"blocked": 0,
 			"retired": 0,
 			"unspecified": 0

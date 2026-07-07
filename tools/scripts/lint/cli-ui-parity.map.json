@@ -87,7 +87,11 @@
 			"waiver": "test-convention scanner for agents; terminal-first, no UI story planned"
 		},
 		"usage-tracking": {
-			"waiver": "f00098 S3 pending: the provider dashboard + usage cost panel will map here once the S3 webview lands"
+			"ui": {
+				"kind": "vscode-command",
+				"id": "mcp-vertex.providers.openDashboard",
+				"note": "f00098 S3: the provider dashboard renders the usage-cost card (usage_report + advise_spend)"
+			}
 		},
 		"validate": {
 			"ui": { "kind": "vscode-command", "id": "mcp-vertex.runValidation" }
@@ -109,6 +113,24 @@
 			"note": "the agent catalog is the overview snapshot rendered as a webview"
 		},
 		"mcp-vertex.openDashboard": { "cli": "status" },
+		"mcp-vertex.providers.openDashboard": {
+			"cli": "usage-tracking report",
+			"note": "f00098 S3: the panel's usage card is the report; the provider half wraps agent tools (healthcheck_providers/get_quota) with no CLI group"
+		},
+		"mcp-vertex.providers.healthcheck": {
+			"waiver": "wraps the agent tool orchestrator-runner healthcheck_providers; the orchestrator has no CLI group (agent/MCP-first surface)"
+		},
+		"mcp-vertex.providers.pause": {
+			"waiver": "wraps the agent tool set_provider_state (manual availability override); no CLI group for the orchestrator yet"
+		},
+		"mcp-vertex.providers.resume": {
+			"waiver": "wraps the agent tool set_provider_state (manual availability override); no CLI group for the orchestrator yet"
+		},
+		"mcp-vertex.usage.report": { "cli": "usage-tracking report" },
+		"mcp-vertex.usage.clear": {
+			"cli": "usage-tracking clear",
+			"note": "both surfaces confirm: the CLI needs --confirm, the command shows a modal"
+		},
 		"mcp-vertex.showOverview": { "cli": "overview" },
 		"mcp-vertex.refresh": {
 			"waiver": "UI refresh affordance; re-running the corresponding CLI command is the scriptable equivalent"

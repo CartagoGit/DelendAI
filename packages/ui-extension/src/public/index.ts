@@ -19,9 +19,10 @@ export type {
 } from '../contracts/interfaces/host-adapter.interface';
 
 export {
-	buildProviderStatusModel,
 	ORCHESTRATOR_RUNNER_OPT_IN_SNIPPET,
-} from '../dashboard/builders/provider-status.builder';
+	USAGE_TRACKING_OPT_IN_SNIPPET,
+} from '../contracts/constants/opt-in-snippets.constant';
+export { buildProviderStatusModel } from '../dashboard/builders/provider-status.builder';
 export type {
 	IGetQuotaPayload,
 	IHealthcheckProvidersPayload,
@@ -36,10 +37,7 @@ export type {
 	ProviderState,
 	QuotaWindowName,
 } from '../contracts/interfaces/provider-status.interface';
-export {
-	buildUsageCostModel,
-	USAGE_TRACKING_OPT_IN_SNIPPET,
-} from '../dashboard/builders/usage-cost.builder';
+export { buildUsageCostModel } from '../dashboard/builders/usage-cost.builder';
 export type {
 	ILimitsStatusPayload,
 	ISpendMeter,

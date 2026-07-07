@@ -122,7 +122,7 @@ already ratchets tool→CLI coverage.
 - **Acceptance**:
   - "Web page documents the provider roster config (opt-in example, env-var-only secrets) and renders a static showcase of the dashboard render-model (reuses S1 vocabulary; no live server dependency on the static site)."
   - "12-lang i18n map follows the install-ecosystems pattern; registered in PAGES_AUDIT; astro check + build green."
-
+- status: done
 ## acceptance
 
 - `bun run typecheck` → exit 0.

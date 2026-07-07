@@ -3,10 +3,8 @@ import type {
 	ILimitsStatusPayload,
 	IUsageReportPayload,
 } from '../../src/contracts/interfaces/usage-cost.interface';
-import {
-	buildUsageCostModel,
-	USAGE_TRACKING_OPT_IN_SNIPPET,
-} from '../../src/dashboard/builders/usage-cost.builder';
+import { USAGE_TRACKING_OPT_IN_SNIPPET } from '../../src/contracts/constants/opt-in-snippets.constant';
+import { buildUsageCostModel } from '../../src/dashboard/builders/usage-cost.builder';
 
 const groupedReport: IUsageReportPayload = {
 	groupBy: 'provider',

@@ -3,10 +3,8 @@ import type {
 	IGetQuotaPayload,
 	IHealthcheckProvidersPayload,
 } from '../../src/contracts/interfaces/provider-status.interface';
-import {
-	buildProviderStatusModel,
-	ORCHESTRATOR_RUNNER_OPT_IN_SNIPPET,
-} from '../../src/dashboard/builders/provider-status.builder';
+import { ORCHESTRATOR_RUNNER_OPT_IN_SNIPPET } from '../../src/contracts/constants/opt-in-snippets.constant';
+import { buildProviderStatusModel } from '../../src/dashboard/builders/provider-status.builder';
 
 const healthyRoster: IHealthcheckProvidersPayload = {
 	checkedAt: '2026-07-07T10:00:00.000Z',
