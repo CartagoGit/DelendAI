@@ -140,7 +140,10 @@ export const renderSiteFooter = (props: ISiteFooterProps): string => {
 	const lang = props.lang;
 	const baseHref = props.baseHref;
 	const year = props.year;
-	const mergedLabels: ISiteFooterLabels = { ...DEFAULT_LABELS, ...props.labels };
+	const mergedLabels: ISiteFooterLabels = {
+		...DEFAULT_LABELS,
+		...props.labels,
+	};
 	const urls: ISiteFooterUrls = { ...DEFAULT_URLS, ...props.urls };
 	const sections = props.sections ?? DEFAULT_SECTIONS;
 
