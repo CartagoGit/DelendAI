@@ -244,7 +244,11 @@ export const walkConsumerFiles = async function* (
 	}
 };
 
-export type Waiver = { readonly file: string; readonly className: string; readonly reason: string };
+export type Waiver = {
+	readonly file: string;
+	readonly className: string;
+	readonly reason: string;
+};
 
 /**
  * Load and normalise the waivers file. Returns an empty map when
@@ -252,7 +256,10 @@ export type Waiver = { readonly file: string; readonly className: string; readon
  */
 export const loadWaivers = async (
 	waiversPath = DEFAULT_WAIVERS,
-): Promise<{ readonly waivers: ReadonlyArray<Waiver>; readonly invalid: ReadonlyArray<unknown> }> => {
+): Promise<{
+	readonly waivers: ReadonlyArray<Waiver>;
+	readonly invalid: ReadonlyArray<unknown>;
+}> => {
 	const abs = isAbsolute(waiversPath)
 		? waiversPath
 		: join(REPO_ROOT, waiversPath);
@@ -314,9 +321,7 @@ const renderReport = (
 ): string => {
 	const lines: string[] = [];
 	for (const v of violations) {
-		lines.push(
-			`${v.file}: forbidden ${v.kind} \`${v.className}\``,
-		);
+		lines.push(`${v.file}: forbidden ${v.kind} \`${v.className}\``);
 		lines.push(`  → ${v.note}`);
 	}
 	if (invalidWaivers.length > 0) {
