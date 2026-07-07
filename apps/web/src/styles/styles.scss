@@ -72,6 +72,10 @@
 @use "components/notfound";
 @use "components/proposal-badge";
 @use "components/proposals-board";
+// Fix (2026-07-07): `_markdown-page.scss` shipped with f00055 S5 but was
+// never imported — every generated markdown page (`[page].astro` →
+// MarkdownPage.astro `.md-page*`) rendered unstyled.
+@use "components/markdown-page";
 
 // 5. Component-local responsive overrides (kept last so they always win).
 @use "components/nav-media";
