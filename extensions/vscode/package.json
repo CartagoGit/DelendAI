@@ -123,6 +123,30 @@
 			{
 				"command": "mcp-vertex.setupGithub",
 				"title": "mcp-vertex: Set up GitHub issues"
+			},
+			{
+				"command": "mcp-vertex.providers.openDashboard",
+				"title": "mcp-vertex: Open Provider Dashboard"
+			},
+			{
+				"command": "mcp-vertex.providers.healthcheck",
+				"title": "mcp-vertex: Refresh Provider Healthcheck"
+			},
+			{
+				"command": "mcp-vertex.providers.pause",
+				"title": "mcp-vertex: Pause Provider"
+			},
+			{
+				"command": "mcp-vertex.providers.resume",
+				"title": "mcp-vertex: Resume Provider"
+			},
+			{
+				"command": "mcp-vertex.usage.report",
+				"title": "mcp-vertex: Open Usage Report"
+			},
+			{
+				"command": "mcp-vertex.usage.clear",
+				"title": "mcp-vertex: Clear Usage Log"
 			}
 		],
 		"menus": {
