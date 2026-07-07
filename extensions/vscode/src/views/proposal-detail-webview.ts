@@ -19,7 +19,7 @@
  * the editor / board (it would need `enableScripts` + command URIs); this card
  * is observational, matching the proposal's read-only contract.
  */
-import { DEFAULT_DENY, injectCspMeta } from '@mcp-vertex/ui-extension/public';
+import { DEFAULT_DENY, injectCspMeta } from '@mcp-vertex/ui-extension/webview';
 
 import type { IProposalDetail } from '../lib/proposals-snapshot';
 import { escapeHtml } from './render-output-schema';
