@@ -75,7 +75,10 @@ describe('f00067 S10 — 1000-call usage-tracking latency overhead', () => {
 	afterEach(() => rmSync(dir, { recursive: true, force: true }));
 
 	it('adds only a bounded, buffered (non-blocking) overhead across 1000 calls', async () => {
-		const buf = new RecordBuffer(logPath, { maxBatch: 64, maxDelayMs: 250 });
+		const buf = new RecordBuffer(logPath, {
+			maxBatch: 64,
+			maxDelayMs: 250,
+		});
 
 		// Warm up both paths so JIT/allocation noise does not skew the first
 		// samples (still deterministic — no timers, no I/O awaited here).
