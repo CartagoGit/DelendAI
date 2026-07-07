@@ -82,7 +82,7 @@ already ratchets tool→CLI coverage.
   - "Pure builder maps healthcheck_providers + get_quota tool payloads to a render-model (no host API imports); mirrors the IProviderSummary/IProviderAvailability vocabulary from core contracts — no re-invented types."
   - "Graceful degraded state when orchestrator-runner is not loaded (builder returns an explicit 'plugin not loaded — opt-in' model, never throws)."
   - "Spec covers: healthy roster, quota-exceeded provider, empty roster, plugin-absent."
-
+- status: done
 ### S2 — Usage cost-analyst card builder (ui-extension)
 
 - **Status**: pending
@@ -91,7 +91,7 @@ already ratchets tool→CLI coverage.
 - **Acceptance**:
   - "Builder maps usage_report (group-by provider/plugin/agent/extension) + advise_spend limitsStatus into a card render-model with spend-vs-limit meters; never averages session and monthly spend (matches circuit-breaker semantics)."
   - "Degrades gracefully when usage-tracking absent; spec covers grouped report, limits breach, empty log, plugin-absent."
-
+- status: done
 ### S3 — VS Code provider panel + commands (thin host adapter)
 
 - **Status**: pending
