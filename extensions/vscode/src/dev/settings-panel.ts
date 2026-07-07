@@ -88,6 +88,61 @@ const isLang = (v: string | null): v is Lang =>
 	typeof v === 'string' &&
 	languages.some((entry) => 'code' in entry && entry.code === v);
 
+/**
+ * Detect the user's preferred UI language from the surrounding host,
+ * falling back to `navigator.language` for the dev preview.
+ *
+ * Inside a real VS Code webview, `acquireVsCodeApi()` is injected by the
+ * extension host and exposes `vscode.env.language` (e.g. `"es-ES"`).
+ * The dev preview never gets that injection, so we fall back to the
+ * browser's `navigator.language`.
+ *
+ * Resolution order:
+ *   1. VS Code host language (if running inside a real webview).
+ *   2. Browser `navigator.language` (if running in the dev preview).
+ *   3. Exact match against the 12 supported codes → use it.
+ *   4. Sub-tag match (e.g. `es` from `es-ES`) → use it.
+ *   5. Nothing matches → `en`.
+ */
+const SUPPORTED_LANG_CODES = new Set<Lang>(
+	languages.flatMap((entry) =>
+		'code' in entry ? ([entry.code] as Lang[]) : [],
+	),
+);
+
+export const detectHostLang = (): Lang => {
+	let hostLocale = '';
+
+	try {
+		const api = (
+			globalThis as {
+				acquireVsCodeApi?: () => { env?: { language?: string } };
+			}
+		).acquireVsCodeApi;
+		if (typeof api === 'function') {
+			hostLocale = api().env?.language ?? '';
+		}
+	} catch {
+		// `acquireVsCodeApi` exists but throws outside a webview;
+		// fall through to navigator.
+	}
+
+	if (!hostLocale && typeof navigator !== 'undefined') {
+		hostLocale = navigator.language ?? '';
+	}
+
+	if (!hostLocale) return 'en';
+
+	const exact = hostLocale.toLowerCase();
+	if (SUPPORTED_LANG_CODES.has(exact as Lang)) return exact as Lang;
+
+	const primary = exact.split(/[-_]/)[0];
+	if (primary && SUPPORTED_LANG_CODES.has(primary as Lang))
+		return primary as Lang;
+
+	return 'en';
+};
+
 export interface IPersistedPrefs {
 	readonly theme: ThemeChoice;
 	readonly lang: Lang;
@@ -99,7 +154,7 @@ export const readPersistedPrefs = (): IPersistedPrefs => {
 	const theme: ThemeChoice = isThemeChoice(storedTheme)
 		? storedTheme
 		: 'system';
-	const lang: Lang = isLang(storedLang) ? storedLang : 'en';
+	const lang: Lang = isLang(storedLang) ? storedLang : detectHostLang();
 	return { theme, lang };
 };
 
@@ -290,6 +345,13 @@ export const bindSettingsHandlers = (
 export const bootstrapPersistedPrefs = (): IPersistedPrefs => {
 	const prefs = readPersistedPrefs();
 	applyTheme(prefs.theme);
+	// If the user has never picked a language (no `mv:dev:lang` stored),
+	// we resolved to `detectHostLang()`; persist that so the next load
+	// does not re-detect and a manual switch is a real, deliberate
+	// override from this point on.
+	if (safeRead(LANG_KEY) === null) {
+		safeWrite(LANG_KEY, prefs.lang);
+	}
 	return prefs;
 };
 
