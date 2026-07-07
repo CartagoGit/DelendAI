@@ -30,6 +30,119 @@ import { existsSync } from 'node:fs';
 import { dirname, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+// ---------------------------------------------------------------------------
+// Port reclaim — `Bun.serve({ port })` and `astro dev` both fail with
+// EADDRINUSE when a stale instance (a previous run, an aborted
+// `nohup`, a `bun run dev:vscode` left running in another terminal)
+// is still bound. Before claiming the port we read `/proc/net/tcp`
+// via `ss` and `SIGTERM` any PID we find listening on it. If the PID
+// doesn't exit within `PORT_RECLAIM_TIMEOUT_MS`, escalate to
+// `SIGKILL`. The whole dance is best-effort: if `ss` is missing or
+// returns nothing, the bind just proceeds and either succeeds (port
+// was free) or fails with EADDRINUSE (the user sees the usual error).
+//
+// We deliberately do NOT touch MCP host-server processes — those
+// listen on stdio (not TCP), so they cannot collide with dev ports.
+// And we don't kill arbitrary `bun` procs (only the specific PIDs
+// reported by `ss` as bound to our port) so a developer's unrelated
+// `bun run foo` survives.
+// ---------------------------------------------------------------------------
+
+const PORT_RECLAIM_TIMEOUT_MS = 1500;
+
+const readPortPids = async (port: number): Promise<readonly number[]> => {
+	// `ss -tlnp` outputs lines like
+	//   LISTEN 0  511  0.0.0.0:5200  0.0.0.0:*  users:(("bun",pid=148710,fd=19))
+	// We grep by `:PORT ` (note the trailing space — `5000` should not
+	// match `:50000`) and pull every `pid=N` out of the line. If
+	// there's no match (port already free) we return [].
+	const proc = spawn({
+		cmd: [
+			'bash',
+			'-c',
+			`ss -tlnp 2>/dev/null | grep -F ':${port} ' || true`,
+		],
+		stdin: 'ignore',
+		stdout: 'pipe',
+		stderr: 'ignore',
+	});
+	const text = proc.stdout
+		? await new Response(proc.stdout as ReadableStream<Uint8Array>).text()
+		: '';
+	const pids = new Set<number>();
+	for (const match of text.matchAll(/pid=(\d+)/g)) {
+		const pid = Number(match[1]);
+		if (Number.isFinite(pid) && pid > 0) pids.add(pid);
+	}
+	return [...pids];
+};
+
+const isAlive = (pid: number): boolean => {
+	try {
+		process.kill(pid, 0);
+		return true;
+	} catch {
+		return false;
+	}
+};
+
+const waitForExit = async (
+	pid: number,
+	timeoutMs: number,
+): Promise<boolean> => {
+	const deadline = Date.now() + timeoutMs;
+	while (Date.now() < deadline) {
+		if (!isAlive(pid)) return true;
+		await new Promise((r) => setTimeout(r, 50));
+	}
+	return !isAlive(pid);
+};
+
+/**
+ * Kill any process currently bound to `port`. Safe to call when the
+ * port is already free (no-op). Logs the killed PID so a developer
+ * who runs `bun run dev` from a fresh terminal can see that the
+ * previous instance was cleaned up. Used by both `Bun.serve` (the
+ * dev-entry path) and `spawn` (the Astro path).
+ */
+const freePort = async (port: number, label: string): Promise<void> => {
+	const pids = await readPortPids(port);
+	if (pids.length === 0) return;
+	console.log(
+		`[dev:${label}] port ${port} busy (pids: ${pids.join(', ')}) — reclaiming`,
+	);
+	for (const pid of pids) {
+		try {
+			process.kill(pid, 'SIGTERM');
+		} catch {
+			// already gone between ss and kill — fine
+		}
+	}
+	// Give them a moment, then escalate any survivors.
+	await new Promise((r) => setTimeout(r, 100));
+	const survivors = pids.filter(isAlive);
+	for (const pid of survivors) {
+		try {
+			process.kill(pid, 'SIGKILL');
+			console.log(
+				`[dev:${label}] SIGKILL pid=${pid} (did not exit on SIGTERM)`,
+			);
+		} catch {
+			// gone now
+		}
+	}
+	const allGone = await Promise.all(
+		pids.map((pid) => waitForExit(pid, PORT_RECLAIM_TIMEOUT_MS)),
+	);
+	if (allGone.every(Boolean)) {
+		console.log(`[dev:${label}] port ${port} reclaimed`);
+	} else {
+		console.warn(
+			`[dev:${label}] port ${port} still busy after SIGKILL — bind will likely fail`,
+		);
+	}
+};
+
 const HERE = dirname(fileURLToPath(import.meta.url));
 // tools/scripts/dev/ → repo root
 const ROOT = resolve(HERE, '..', '..', '..');
@@ -244,12 +357,16 @@ const resolveCwd = (
 // Per-target dev server
 // ---------------------------------------------------------------------------
 
-const startDevEntry = (target: ITarget): void => {
+const startDevEntry = async (target: ITarget): Promise<void> => {
 	if (!target.entry) {
 		throw new Error(`dev-entry target missing entry: ${target.name}`);
 	}
 	const entryAbs = join(target.root, target.entry);
 	const entryRel = relative(target.root, entryAbs);
+
+	// Reclaim the port BEFORE Bun.serve binds it, otherwise we'd race
+	// the kernel and get EADDRINUSE if an old run is still listening.
+	await freePort(target.port, target.name);
 
 	const server = Bun.serve({
 		port: target.port,
@@ -289,7 +406,11 @@ const startDevEntry = (target: ITarget): void => {
 	process.once('exit', () => server.stop(true));
 };
 
-const startAstro = (target: ITarget): Subprocess => {
+const startAstro = async (target: ITarget): Promise<Subprocess> => {
+	// Astro's dev server (`bun run dev --host`) does NOT crash with a
+	// nice EADDRINUSE message — it hangs trying to bind. Reclaim the
+	// port first so the developer never sees that hang.
+	await freePort(target.port, target.name);
 	const child = spawn({
 		cmd: ['bun', 'run', 'dev', '--', '--host'],
 		cwd: target.root,
@@ -329,19 +450,31 @@ const main = (selected: ReadonlySet<TargetName>): void => {
 	};
 	process.on('SIGINT', () => stop(130));
 	process.on('SIGTERM', () => stop(143));
-	for (const target of targets) {
-		if (target.kind === 'dev-entry') startDevEntry(target);
-		else children.push(startAstro(target));
-	}
-	console.log(
-		`[dev] up: ${targets.map((t) => `${t.name}=${t.url}`).join('  ')}`,
-	);
-	const astroChild = children[0];
-	if (astroChild) {
-		astroChild.exited.then((code) => stop(code ?? 0));
-	} else {
-		process.stdin.resume();
-	}
+	// `startDevEntry` / `startAstro` are both async (freePort is
+	// async). Start them in parallel; collect Astro children as they
+	// resolve so `stop()` has something to SIGKILL on shutdown. Dev-
+	// entry paths run in-process (Bun.serve) and stay alive until
+	// SIGINT.
+	void Promise.all(
+		targets.map(async (target) => {
+			if (target.kind === 'dev-entry') {
+				await startDevEntry(target);
+				return;
+			}
+			const child = await startAstro(target);
+			children.push(child);
+		}),
+	).then(() => {
+		console.log(
+			`[dev] up: ${targets.map((t) => `${t.name}=${t.url}`).join('  ')}`,
+		);
+		const astroChild = children[0];
+		if (astroChild) {
+			astroChild.exited.then((code) => stop(code ?? 0));
+		} else {
+			process.stdin.resume();
+		}
+	});
 };
 
 const argToTarget = (raw: string): TargetName | null => {
