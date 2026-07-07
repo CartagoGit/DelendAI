@@ -10,7 +10,10 @@
  * The runtime glue (initCopyButtons) stays in apps/web because it
  * depends on `navigator.clipboard`.
  */
-import { renderCopyButton, type ICopyButtonProps } from '@mcp-vertex/shared/components/ui/copy-button';
+import {
+	renderCopyButton,
+	type ICopyButtonProps,
+} from '@mcp-vertex/shared/components/ui/copy-button';
 import { useTranslations, type Lang } from '#I18N/ui';
 
 interface Props extends ICopyButtonProps {
