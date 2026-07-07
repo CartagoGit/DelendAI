@@ -45,10 +45,11 @@ const splitCodeSpans = (text: string): ITextPart[] =>
 	text
 		.split(/(`[^`]+`)/g)
 		.filter((p) => p.length > 0)
-		.map((part): ITextPart =>
-			part.startsWith('`') && part.endsWith('`')
-				? { code: part.slice(1, -1) }
-				: { text: part },
+		.map(
+			(part): ITextPart =>
+				part.startsWith('`') && part.endsWith('`')
+					? { code: part.slice(1, -1) }
+					: { text: part },
 		);
 
 const renderPart = (part: ITextPart): string =>
