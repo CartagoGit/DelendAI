@@ -257,7 +257,10 @@ describe('config-file-schema (Solid SRP extraction)', async () => {
 
 		it('rejects duplicate provider ids (superRefine)', async () => {
 			const res = CONFIG_FILE_SCHEMA.safeParse({
-				providers: [apiProvider, { ...cliProvider, id: apiProvider.id }],
+				providers: [
+					apiProvider,
+					{ ...cliProvider, id: apiProvider.id },
+				],
 			});
 			expect(res.success).toBe(false);
 			if (!res.success) {

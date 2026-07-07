@@ -65,7 +65,9 @@ export const findCleartextSecrets = (
 	const out: ICleartextFinding[] = [];
 	const walk = (node: unknown, path: string): void => {
 		if (Array.isArray(node)) {
-			node.forEach((el, i) => walk(el, `${path}[${i}]`));
+			for (let i = 0; i < node.length; i++) {
+				walk(node[i], `${path}[${i}]`);
+			}
 			return;
 		}
 		if (node === null || typeof node !== 'object') return;
