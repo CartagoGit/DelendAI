@@ -23,6 +23,7 @@ import {
 } from './commands/open-settings';
 
 import { registerOpenDashboardCommand } from './commands/open-dashboard';
+import { registerProviderActionCommands } from './commands/provider-actions';
 import {
 	OPEN_DOCS_COMMAND,
 	registerOpenDocsCommand,
@@ -378,6 +379,17 @@ export const activate = async (
 	track(registerRestartServerCommand(vscode));
 	track(registerMemorySaveCommand({ vscode, client, memoryTree }));
 	track(registerMemoryForgetCommand({ vscode, client, memoryTree }));
+	// f00098 S3: provider dashboard panel + its action commands (pause/
+	// resume/healthcheck/usage report/usage clear-with-modal-confirm).
+	// The panel repaints when these commands run — never by polling.
+	for (const reg of registerProviderActionCommands({
+		vscode,
+		client,
+		globalState: context.globalState,
+		...withPrefix,
+	})) {
+		track(reg);
+	}
 	// Fix #7: `openSettings` renders a webview that posts messages to
 	// `mcp-vertex.saveSettings` / `mcp-vertex.resetSettings`. Those
 	// handlers were never registered, so changes the user made in the

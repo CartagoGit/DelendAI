@@ -96,7 +96,10 @@ describe('VS Code extension smoke', async () => {
 		//   that drives the AgentCatalogService-backed webview.
 		// f00097 S4: +2 for mcp-vertex.proposals.refresh and
 		//   mcp-vertex.proposals.copyError (the board's local commands).
-		expect(subscriptions).toHaveLength(21);
+		// f00098 S3: +6 for the provider dashboard command set
+		//   (providers.openDashboard / healthcheck / pause / resume,
+		//   usage.report / usage.clear).
+		expect(subscriptions).toHaveLength(27);
 		expect(commands.has(REFRESH_COMMAND)).toBe(true);
 		expect(commands.has('mcp-vertex.proposals.refresh')).toBe(true);
 		expect(commands.has('mcp-vertex.proposals.copyError')).toBe(true);

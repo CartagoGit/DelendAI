@@ -18,10 +18,7 @@ import type {
 	IProviderStatusRow,
 	IQuotaWindowPayload,
 } from '../../contracts/interfaces/provider-status.interface';
-
-/** Exact opt-in snippet (both plugins: the runner hard-depends on usage-tracking). */
-export const ORCHESTRATOR_RUNNER_OPT_IN_SNIPPET =
-	'mcp-vertex --plugins=usage-tracking,orchestrator-runner';
+import { ORCHESTRATOR_RUNNER_OPT_IN_SNIPPET } from '../../contracts/constants/opt-in-snippets.constant';
 
 const num = (v: unknown): number =>
 	typeof v === 'number' && Number.isFinite(v) ? v : 0;
