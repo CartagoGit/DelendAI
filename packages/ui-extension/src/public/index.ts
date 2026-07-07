@@ -18,6 +18,41 @@ export type {
 	IWebviewViewProvider,
 } from '../contracts/interfaces/host-adapter.interface';
 
+export {
+	buildProviderStatusModel,
+	ORCHESTRATOR_RUNNER_OPT_IN_SNIPPET,
+} from '../dashboard/builders/provider-status.builder';
+export type {
+	IGetQuotaPayload,
+	IHealthcheckProvidersPayload,
+	IProviderHealthRowPayload,
+	IProviderInstallHintPayload,
+	IProviderQuotaMeter,
+	IProviderStatusAbsentModel,
+	IProviderStatusModel,
+	IProviderStatusReadyModel,
+	IProviderStatusRow,
+	IQuotaWindowPayload,
+	ProviderState,
+	QuotaWindowName,
+} from '../contracts/interfaces/provider-status.interface';
+export {
+	buildUsageCostModel,
+	USAGE_TRACKING_OPT_IN_SNIPPET,
+} from '../dashboard/builders/usage-cost.builder';
+export type {
+	ILimitsStatusPayload,
+	ISpendMeter,
+	IUsageBucketPayload,
+	IUsageCostAbsentModel,
+	IUsageCostCardModel,
+	IUsageCostReadyModel,
+	IUsageCostRow,
+	IUsageExpensiveCallPayload,
+	IUsageReportPayload,
+	IUsageTotalsPayload,
+	UsageGroupByAxis,
+} from '../contracts/interfaces/usage-cost.interface';
 export { renderDashboard } from '../dashboard/render-dashboard';
 export type { IRenderDashboardOptions } from '../dashboard/render-dashboard';
 export { renderPanelAgents } from '../dashboard/render-panel-agents';
