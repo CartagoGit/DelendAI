@@ -76,7 +76,10 @@ describe('shared-ui-ratchet / findForkedScss', () => {
 
 	it('does NOT flag the shared partial itself', () => {
 		const src = `.mv-callout { color: red; }`;
-		const out = findForkedScss('apps/shared/src/styles/components/callout.scss', src);
+		const out = findForkedScss(
+			'apps/shared/src/styles/components/callout.scss',
+			src,
+		);
 		expect(out).toHaveLength(0);
 	});
 
@@ -148,25 +151,32 @@ describe('shared-ui-ratchet / end-to-end (SCAN_ROOTS)', () => {
 		const violations: Violation[] = [];
 		const { join } = await import('node:path');
 		const isAbs = (p: string) => p.startsWith('/');
-		for (const root of ['apps/web', 'extensions/vscode', 'packages/ui-extension']) {
+		for (const root of [
+			'apps/web',
+			'extensions/vscode',
+			'packages/ui-extension',
+		]) {
 			const abs = isAbs(root) ? root : join(process.cwd(), root);
-			for await (const { absPath, relPath } of (await import(
-				'./shared-ui-ratchet.script'
-			)).walkConsumerFiles(abs)) {
-				const src = await (await import('node:fs/promises')).readFile(absPath, 'utf8');
+			for await (const { absPath, relPath } of (
+				await import('./shared-ui-ratchet.script')
+			).walkConsumerFiles(abs)) {
+				const src = await (await import('node:fs/promises')).readFile(
+					absPath,
+					'utf8',
+				);
 				violations.push(
-					...(await import('./shared-ui-ratchet.script')).findInlineClasses(
-						relPath,
-						src,
-					),
-					...(await import('./shared-ui-ratchet.script')).findForkedScss(
-						relPath,
-						src,
-					),
+					...(
+						await import('./shared-ui-ratchet.script')
+					).findInlineClasses(relPath, src),
+					...(
+						await import('./shared-ui-ratchet.script')
+					).findForkedScss(relPath, src),
 				);
 			}
 		}
-		const waiverKeys = new Set(waivers.map((w) => `${w.file}|${w.className}`));
+		const waiverKeys = new Set(
+			waivers.map((w) => `${w.file}|${w.className}`),
+		);
 		const live = violations.filter(
 			(v) => !waiverKeys.has(`${v.file}|${v.className}`),
 		);
