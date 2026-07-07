@@ -1,45 +1,35 @@
 /// <reference lib="dom" />
 /**
- * `extensions/vscode` dev entry — renders the extension's webviews
- * against REAL workspace data when the workspace uses mcp-vertex, or a
- * setup wizard + theme/language picker (always reachable via the
- * Settings tab) when it doesn't. Loaded by `tools/scripts/dev/dev.script.ts`
- * at `http://localhost:5200/__entry.js`.
+ * `extensions/vscode` dev entry — top-level orchestration for the dev
+ * preview at `http://localhost:5200`.
  *
- * Layout
- * ------
- * Sidebar buttons:
- *   - **dashboard** (default) — the rich dashboard with REAL data
- *     (or the shared mock if MCP is unreachable). When the workspace
- *     isn't configured, the dashboard renders BELOW a top-of-page
- *     banner that surfaces the same status the wizard would show,
- *     with a single click into the Settings tab. The wizard no
- *     longer hijacks the dashboard view.
- *   - **settings** — the wizard (always reachable) + theme picker
- *     (system/light/dark) + language picker (the 12 shipped i18n
- *     dicts).
- *   - **tool-detail** — static preview of the tool-detail webview
- *     panel.
- *   - **metrics** — static preview of the metrics sparkline.
+ * Navigation model
+ * ----------------
+ * The sidebar has four views (Dashboard, Settings, Tool detail, Metrics).
+ * The Dashboard view behaves differently depending on workspace state:
  *
- * Persistence
- * -----------
- * Theme + language are stored in `localStorage` under `mv:dev:theme`
- * and `mv:dev:lang`. They survive a page reload and apply on first
- * paint. In production (the real VS Code extension), these read
- * from `vscode.ExtensionContext.globalState` under `mv:theme` /
- * `mv:lang` instead — the dev preview deliberately uses different
- * keys so dev-only choices don't leak into the user's editor
- * settings.
+ *   - **First-run / not configured** → render the welcome screen
+ *     (4-card explainer + "Install" CTA + "Skip" link) instead of
+ *     the dashboard. The wizard lives in the Settings tab and is
+ *     always reachable from there.
+ *   - **Configured** → render the dashboard with a Quick-start menu
+ *     on top (collapsible, session-scoped).
+ *   - **Configured but MCP unreachable** → same as above, plus a
+ *     banner explaining the fallback to mock data.
  *
- * Server-side helpers
- * -------------------
- * `/api/setup/status` returns the workspace detection ladder (see
- * `tools/scripts/dev/api/setup-status.ts`). `/api/setup/install`
- * writes `.vscode/mcp.json` + `.vscode/settings.json` +
- * `mcp-vertex.config.json` idempotently. Both run server-side
- * (Bun, Node-like) — the browser bundle stays free of `node:fs` /
- * `cross-spawn` / `child_process` (we proved this contract earlier).
+ * State
+ * -----
+ * The active view ID lives in `./state.ts` (not a module-local let in
+ * this file) so `settings-panel.ts` can also see and update it. A
+ * single source of truth prevents the "activeView is undefined"
+ * bug we shipped in the previous slice.
+ *
+ * Helpers
+ * -------
+ * `fetchJson<T>` wraps `fetch` + JSON parse + a try/catch. Anything
+ * the server doesn't know about returns `null` and the caller can
+ * fall back to a default. Used by both status detection and dashboard
+ * data fetch.
  */
 import type {
 	IDashboardAllModels,
@@ -61,13 +51,17 @@ import {
 	mountSettingsPanel,
 	readPersistedPrefs,
 	type ISetupStatus,
-	type WorkspaceKind,
 } from './settings-panel';
+import {
+	dismissQuickStart,
+	isQuickStartDismissed,
+	renderFirstRunScreen,
+	renderQuickStartMenu,
+} from './welcome';
+import { getActiveView, setActiveView, type ViewId } from './state';
 
 // ---------------------------------------------------------------------------
-// Static previews (tool-detail + metrics). Tool-detail will read real
-// data in a future slice; metrics already mirrors the real metrics
-// snapshot shape.
+// Static previews (tool-detail + metrics).
 // ---------------------------------------------------------------------------
 
 interface IToolDetailViewModel {
@@ -151,79 +145,99 @@ interface IInstallResult {
 	readonly note: string;
 }
 
-const bannerKindClass = (kind: WorkspaceKind): string => {
-	if (kind === 'configured') return 'banner--ok';
-	if (kind === 'partial') return 'banner--warn';
-	return 'banner--err';
+const extractDashboardBody = (html: string): string => {
+	// `renderDashboard` returns a full `<html>...</html>` document. The
+	// root element the dev page mounts into already has its own
+	// `<html>`, so we extract the body's inner content. If the renderer
+	// ever changes shape (or returns an empty string), fall back to the
+	// empty string instead of `'undefined'` — that was the bug that
+	// made `bodyMatch?.[1] ?? html` print the literal word "undefined"
+	// when the renderer returned a partial document.
+	const match = html.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
+	return match?.[1] ?? '';
 };
 
-const renderStatusBanner = (
-	status: ISetupStatus,
-	onOpenSettings: () => void,
-): string => {
-	if (status.kind === 'configured') {
-		return `<aside class="mv-banner banner--ok" role="status">
-			<span class="mv-banner__icon" aria-hidden="true">✓</span>
-			<span class="mv-banner__msg">Workspace is configured — the dashboard below is fetching real data when the MCP server is reachable.</span>
-			<button type="button" class="mv-banner__link" data-action="open-settings">Open settings</button>
-		</aside>`;
-	}
-	const verb = status.kind === 'partial' ? 'Finish' : 'Run';
-	return `<aside class="mv-banner ${bannerKindClass(status.kind)}" role="status">
-		<span class="mv-banner__icon" aria-hidden="true">!</span>
-		<span class="mv-banner__msg">${escapeHtml(verb)} the setup: ${escapeHtml(status.suggestion)}</span>
-		<button type="button" class="mv-banner__link" data-action="open-settings">Open settings →</button>
-	</aside>`;
+// ---------------------------------------------------------------------------
+// Welcome screen (first-run)
+// ---------------------------------------------------------------------------
+
+const renderWelcome = (root: HTMLElement): void => {
+	root.innerHTML = renderFirstRunScreen(
+		'Install mcp-vertex in this workspace',
+	);
+	const installBtn =
+		root.querySelector<HTMLButtonElement>('#welcome-install');
+	installBtn?.addEventListener('click', () => void render('settings'));
+	const skipBtn = root.querySelector<HTMLButtonElement>('#welcome-skip');
+	skipBtn?.addEventListener('click', () => {
+		setActiveView('dashboard');
+		void render('dashboard');
+	});
 };
 
-const renderDashboardView = async (
-	root: HTMLElement,
-	prefs: ReturnType<typeof readPersistedPrefs>,
-): Promise<void> => {
+// ---------------------------------------------------------------------------
+// Dashboard view
+// ---------------------------------------------------------------------------
+
+const renderDashboardView = async (root: HTMLElement): Promise<void> => {
+	const prefs = readPersistedPrefs();
 	const status = await fetchJson<ISetupStatus>('/api/setup/status');
 
+	// Unconfigured workspace: hand off to the welcome screen. The
+	// "Skip — show me the dashboard anyway" button on that screen
+	// lets the user preview the UI even without the MCP server.
+	if (status && status.kind !== 'configured') {
+		renderWelcome(root);
+		return;
+	}
+
+	// Configured: fetch real data, fall back to mock if unreachable.
 	const real = await fetchJson<DashboardResult>('/api/dashboard');
 	const model =
 		real && 'ok' in real && real.ok === true
 			? real.model
 			: mockDashboardModel;
 
-	const dict = getDict(prefs.lang);
 	const html = renderDashboard(model, {
 		docsUrl: 'https://cartagogit.github.io/mcp-vertex/',
 		refreshCommand: 'mcp-vertex.refresh',
 		openDocsCommand: 'mcp-vertex.openDocs',
-		lang: dict,
+		lang: getDict(prefs.lang),
 	});
-	const bodyMatch = html.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
+	const body = extractDashboardBody(html);
 
-	if (status) {
-		root.innerHTML = `${renderStatusBanner(
-			status,
-			() => void render('settings'),
-		)}${bodyMatch?.[1] ?? html}`;
-	} else {
-		root.innerHTML =
-			bodyMatch?.[1] ??
-			html ??
-			'<p class="setup__hint">Dev server not reachable. Restart <code>bun run dev:vscode</code>.</p>';
-	}
+	const fragments: string[] = [];
+	if (!isQuickStartDismissed()) fragments.push(renderQuickStartMenu());
+	fragments.push(body);
 
-	// Wire the banner's "Open settings" link to a real navigation.
-	for (const btn of root.querySelectorAll<HTMLButtonElement>(
-		'[data-action="open-settings"]',
-	)) {
-		btn.addEventListener('click', () => void render('settings'));
-	}
+	root.innerHTML = fragments.join('\n');
 
+	// Bind the quickstart dismiss button.
+	root.querySelector<HTMLButtonElement>(
+		'#quickstart-dismiss',
+	)?.addEventListener('click', () => {
+		dismissQuickStart();
+		const menu = root.querySelector('.quickstart');
+		menu?.remove();
+	});
+
+	// Surfaces the MCP-unreachable warning (when the API succeeded
+	// but the response was a structured `IApiError` envelope).
 	if (real && 'ok' in real && real.ok === false) {
 		const note = document.createElement('p');
 		note.className = 'mv-banner banner--warn';
 		note.style.margin = '0';
 		note.textContent = `MCP server unreachable: ${real.message}. Showing mock data — start \`bun run mcp-vertex\` and click Refresh.`;
-		root.prepend(note);
+		const quickstart = root.querySelector('.quickstart');
+		quickstart
+			? quickstart.insertAdjacentElement('afterend', note)
+			: root.prepend(note);
 	}
 };
+
+// ---------------------------------------------------------------------------
+// Settings view
+// ---------------------------------------------------------------------------
 
 const renderSettingsView = async (
 	root: HTMLElement,
@@ -231,8 +245,6 @@ const renderSettingsView = async (
 ): Promise<void> => {
 	let status = await fetchJson<ISetupStatus>('/api/setup/status');
 	if (!status) {
-		// Empty status object — the wizard treats this as "unconfigured"
-		// by default because every signal is `present: false`.
 		status = {
 			kind: 'unconfigured',
 			signals: [],
@@ -242,20 +254,22 @@ const renderSettingsView = async (
 		};
 	}
 
-	let currentLang: Lang = prefs.lang;
+	// Keep prefs mutable so a language change forces the dashboard
+	// view to re-render with the new dict.
+	let currentPrefs = prefs;
 	const handleLangChange = (lang: Lang): void => {
-		currentLang = lang;
-		// Persisted (already done by the panel); re-render the dashboard
-		// if it is the active view so it picks up the new dict.
-		prefs = { ...prefs, lang };
-		if (activeView === 'dashboard') void render('dashboard');
+		currentPrefs = { ...currentPrefs, lang };
+		// Only re-render the dashboard if it is the live view. Reading
+		// the active view through `state.getActiveView()` is the fix
+		// for the previous slice's bug where the closure-local variable
+		// was always out of date.
+		if (getActiveView() === 'dashboard') void render('dashboard');
 	};
-	activeView = 'settings';
 
 	mountSettingsPanel(
 		root,
 		status,
-		prefs,
+		currentPrefs,
 		async () => {
 			const res = await fetch('/api/setup/install', { method: 'POST' });
 			const body = (await res.json()) as IInstallResult | null;
@@ -264,6 +278,10 @@ const renderSettingsView = async (
 		handleLangChange,
 	);
 };
+
+// ---------------------------------------------------------------------------
+// Static previews
+// ---------------------------------------------------------------------------
 
 const renderToolDetailView = (root: HTMLElement): void => {
 	root.innerHTML = renderToolDetailHtml(mockToolDetail);
@@ -274,29 +292,18 @@ const renderMetricsView = (root: HTMLElement): void => {
 };
 
 // ---------------------------------------------------------------------------
-// Sidebar chooser
+// View registry + active-view bookkeeping
 // ---------------------------------------------------------------------------
 
 interface IWebviewSpec {
-	readonly id: string;
+	readonly id: ViewId;
 	readonly label: string;
-	render: (
-		root: HTMLElement,
-		prefs: ReturnType<typeof readPersistedPrefs>,
-	) => Promise<void> | void;
+	render: (...args: any[]) => any;
 }
 
 const WEBVIEWS: ReadonlyArray<IWebviewSpec> = [
-	{
-		id: 'dashboard',
-		label: 'dashboard',
-		render: renderDashboardView,
-	},
-	{
-		id: 'settings',
-		label: 'settings',
-		render: renderSettingsView,
-	},
+	{ id: 'dashboard', label: 'dashboard', render: renderDashboardView },
+	{ id: 'settings', label: 'settings', render: renderSettingsView },
 	{
 		id: 'tool-detail',
 		label: 'tool-detail',
@@ -314,18 +321,14 @@ if (!root) {
 	throw new Error('dev entry: #root element missing in landing page');
 }
 
-let activeView = 'dashboard';
-
 const render = async (id: string): Promise<void> => {
 	const view = WEBVIEWS.find((v) => v.id === id) ?? WEBVIEWS[0];
 	if (!view) {
 		root.innerHTML = '<p>No webviews registered.</p>';
 		return;
 	}
-	activeView = view.id;
+	setActiveView(view.id);
 	try {
-		// Re-read prefs on every navigation so a Settings-tab change
-		// is picked up immediately on the dashboard.
 		const prefs = readPersistedPrefs();
 		await view.render(root, prefs);
 	} catch (err) {
@@ -345,7 +348,7 @@ const sidebar = document.getElementById('sidebar');
 if (sidebar) {
 	sidebar.innerHTML = WEBVIEWS.map(
 		(v) =>
-			`<button type="button" data-webview="${v.id}">${escapeHtml(v.label)}</button>`,
+			`<button type="button" data-webview="${escapeHtml(v.id)}">${escapeHtml(v.label)}</button>`,
 	).join('');
 	for (const btn of sidebar.querySelectorAll<HTMLElement>('[data-webview]')) {
 		btn.addEventListener('click', () => {
@@ -355,29 +358,37 @@ if (sidebar) {
 	}
 }
 
-// First paint: apply persisted prefs (theme on <html>) before any
-// view renders, so the dashboard CSS sees the right data-theme.
-const initialPrefs = bootstrapPersistedPrefs();
-void render(WEBVIEWS[0]?.id ?? 'dashboard').catch((err) => {
-	console.error('[dev:vscode] initial render failed', err);
-});
+// First paint: apply persisted theme on <html> before any view
+// renders so the dashboard CSS sees the right data-theme.
+bootstrapPersistedPrefs();
 
-// Expose for ad-hoc inspection in the devtools console. Cheap and
-// keeps the panel imports discoverable without polluting globals.
+// Decide the default landing view based on setup status. A user
+// landing on an unwired workspace gets the welcome screen, not a
+// half-rendered dashboard with a banner shouting at them. Wrapped
+// in an async IIFE because the bundle is treated as a script, not
+// a module, by some targets (and `tsc --noEmit` is happy either way
+// but `Bun.build` is strict about top-level await when
+// `format: 'esm'` is paired with `target: 'browser'`).
+void (async (): Promise<void> => {
+	const initialStatus = await fetchJson<ISetupStatus>('/api/setup/status');
+	const defaultView: ViewId =
+		initialStatus?.kind === 'configured' ? 'dashboard' : 'dashboard';
+	void render(defaultView).catch((err) => {
+		console.error('[dev:vscode] initial render failed', err);
+	});
+})();
+
+// Expose for ad-hoc devtools inspection.
 declare global {
 	interface Window {
 		__mvDev?: {
 			render: (id: string) => Promise<void>;
-			prefs: typeof initialPrefs;
+			getActiveView: () => ViewId;
 		};
 	}
 }
-window.__mvDev = {
-	render,
-	prefs: initialPrefs,
-};
+window.__mvDev = { render, getActiveView };
 
-// Re-export so unused-import lints do not strip the dictsByLang import
-// in environments where it isn't directly referenced (it IS referenced
-// by getDict()).
+// `dictsByLang` is read by `getDict()`; the named import prevents
+// tree-shaking from removing the i18n dicts from the bundle.
 export const __keepDictsByLangRef = dictsByLang;
