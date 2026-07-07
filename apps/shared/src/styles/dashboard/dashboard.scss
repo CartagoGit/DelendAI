@@ -1,0 +1,329 @@
+// `apps/shared/src/styles/dashboard/dashboard.scss`
+//
+// Dashboard surface styles for the webview (renderDashboard) consumed
+// inside an `<style>` block by both the dev preview at :5200 and the
+// real VS Code / JetBrains extension webviews.
+//
+// Compiled to CSS at build time by the SCSS Bun.build plugin in
+// `tools/scripts/dev/dev.script.ts` — see `apps/shared/src/styles/raw.d.ts`
+// for the type contract.
+//
+// Conventions
+// -----------
+// - Selectors are flat in CSS. SCSS gives us the choice; we choose
+//   **BEM with `&` nesting** so the source stays compact and the
+//   `.mv-card {...}` family reads as one block, not six loose rules.
+//   SCSS compiles `&__title` to `.mv-card__title`, exactly the class
+//   `renderCard(...)` emits.
+// - Selectors are still flat at the **runtime** level — no wrapper
+//   nesting — because callers (`renderDashboard`, `renderToolDetail`,
+//   `renderMetrics`) wrap panels differently across surfaces and
+//   none of them owns a `.mv-dashboard` parent.
+// - All values come from CSS custom properties published by
+//   `apps/shared/src/styles/_tokens.scss` and `_themes.scss`. No
+//   hardcoded px / `em` / fonts except in legacy fallbacks that
+//   already existed before this refactor (kept verbatim so the
+//   visual surface doesn't shift in this slice).
+// - No brand hex literals (`#58a6ff`, `#a371f7`). Use
+//   `var(--mv-brand-*)` only; the linter
+//   `tools/scripts/lint/no-duplicate-brand-hex.script.ts` enforces
+//   this across the source tree.
+
+@use '../breakpoints' as bp;
+
+// ---------------------------------------------------------------------------
+// Wrapper
+// ---------------------------------------------------------------------------
+
+.mv-main {
+	font-family: var(--mv-font-prose);
+	font-size: 14px;
+	color: var(--mv-fg, var(--vscode-foreground, #d4d4d4));
+	background: var(--mv-bg, var(--vscode-editor-background, transparent));
+	padding: var(--mv-s-4);
+	min-width: 0;
+}
+
+// ---------------------------------------------------------------------------
+// Header strip — `mv-header` + `&__logo`, `&__brand`, `&__name`,
+// `&__version`, `&__strip`. The block owns its children.
+// ---------------------------------------------------------------------------
+
+.mv-header {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: var(--mv-s-3);
+	padding: var(--mv-s-3) 0;
+	border-bottom: 1px solid var(--mv-border, var(--vscode-widget-border, transparent));
+	margin-bottom: var(--mv-s-4);
+
+	&__logo,
+	&__brand {
+		width: 28px;
+		height: 28px;
+		border-radius: var(--mv-radius-sm);
+		background: var(--mv-brand-gradient);
+	}
+
+	&__name {
+		font-size: 18px;
+		font-weight: 600;
+		margin: 0;
+	}
+
+	&__version {
+		font-size: 12px;
+		color: var(--mv-fg-muted, var(--vscode-descriptionForeground, #858585));
+	}
+
+	&__strip {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--mv-s-2);
+	}
+}
+
+// ---------------------------------------------------------------------------
+// Tab strip — `mv-tab` element. Selected / hover / focus variants as
+// `&[aria-selected]` / `&:hover` so the block reads top-to-bottom.
+// ---------------------------------------------------------------------------
+
+.mv-tabs {
+	display: flex;
+	flex-wrap: nowrap;
+	overflow-x: auto;
+	gap: var(--mv-s-1);
+	padding: var(--mv-s-2) 0;
+	border-bottom: 1px solid var(--mv-border, var(--vscode-widget-border, transparent));
+}
+
+.mv-tab {
+	appearance: none;
+	background: transparent;
+	border: none;
+	color: var(--mv-fg-muted, var(--vscode-tab-inactiveForeground, #858585));
+	padding: var(--mv-s-2) var(--mv-s-3);
+	font: inherit;
+	cursor: pointer;
+	border-bottom: 2px solid transparent;
+	white-space: nowrap;
+	transition:
+		color var(--mv-transition-fast),
+		border-color var(--mv-transition-fast);
+
+	&:hover,
+	&:focus-visible {
+		color: var(--mv-fg, var(--vscode-foreground, #d4d4d4));
+	}
+
+	&[aria-selected='true'] {
+		color: var(--mv-fg, var(--vscode-foreground, #d4d4d4));
+		border-bottom-color: var(--mv-brand-blue);
+	}
+}
+
+// ---------------------------------------------------------------------------
+// KPI grid — `mv-kpis` (the responsive grid) and `mv-kpi` (one cell).
+// ---------------------------------------------------------------------------
+
+.mv-kpis {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+	gap: var(--mv-gap);
+	margin-bottom: var(--mv-s-4);
+}
+
+.mv-kpi {
+	padding: var(--mv-s-3);
+	background: var(--mv-bg-card, var(--vscode-editorWidget-background, #252526));
+	border: 1px solid var(--mv-border, var(--vscode-widget-border, transparent));
+	border-radius: var(--mv-radius);
+
+	&__label {
+		display: block;
+		font-size: 12px;
+		color: var(--mv-fg-muted, var(--vscode-descriptionForeground, #858585));
+		text-transform: uppercase;
+		letter-spacing: 0.5px;
+	}
+
+	&__value {
+		display: block;
+		font-size: 20px;
+		font-weight: 600;
+		margin-top: var(--mv-s-1);
+	}
+
+	&__hint {
+		display: block;
+		margin-top: var(--mv-s-1);
+		font-size: 12px;
+		color: var(--mv-fg-muted, var(--vscode-descriptionForeground, #858585));
+	}
+}
+
+// ---------------------------------------------------------------------------
+// Panels + cards. `mv-panel` owns its title + grid; `mv-card` is a single
+// tile. Modifiers `&--half` / `&--third` resize the card inside the grid
+// without rewriting the parent.
+// ---------------------------------------------------------------------------
+
+.mv-panel {
+	margin-bottom: var(--mv-s-4);
+
+	&__title {
+		font-size: 13px;
+		font-weight: 600;
+		margin: 0 0 var(--mv-s-2);
+		text-transform: uppercase;
+		letter-spacing: 0.5px;
+		color: var(--mv-fg-muted, var(--vscode-descriptionForeground, #858585));
+	}
+
+	&__grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+		gap: var(--mv-gap);
+	}
+}
+
+.mv-card {
+	padding: var(--mv-s-3) var(--mv-s-4);
+	background: var(--mv-bg-card, var(--vscode-editorWidget-background, #252526));
+	border: 1px solid var(--mv-border, var(--vscode-widget-border, transparent));
+	border-radius: var(--mv-radius);
+
+	&__title {
+		font-size: 14px;
+		font-weight: 600;
+		margin: 0 0 var(--mv-s-1);
+	}
+
+	&--half {
+		grid-column: span 2;
+	}
+
+	&--third {
+		grid-column: span 1;
+	}
+}
+
+// ---------------------------------------------------------------------------
+// Tables, sparklines, bars, rows
+// ---------------------------------------------------------------------------
+
+.mv-table-wrap {
+	overflow-x: auto;
+	border: 1px solid var(--mv-border, var(--vscode-widget-border, transparent));
+	border-radius: var(--mv-radius);
+}
+
+.mv-table {
+	width: 100%;
+	border-collapse: collapse;
+	font-size: 13px;
+
+	& th,
+	& td {
+		padding: var(--mv-s-2) var(--mv-s-3);
+		text-align: left;
+		border-bottom: 1px solid var(--mv-border, var(--vscode-widget-border, transparent));
+		white-space: nowrap;
+	}
+
+	& th {
+		color: var(--mv-fg-muted, var(--vscode-descriptionForeground, #858585));
+		font-weight: 600;
+	}
+
+	& tr:last-child td {
+		border-bottom: none;
+	}
+}
+
+.mv-spark {
+	display: inline-block;
+	vertical-align: middle;
+	margin-right: var(--mv-s-1);
+}
+
+.mv-bar {
+	display: block;
+	height: 100%;
+	background: var(--mv-brand-blue);
+
+	&--ok {
+		background: var(--mv-ok);
+	}
+
+	&--warn {
+		background: var(--mv-warn);
+	}
+
+	&--err {
+		background: var(--mv-error);
+	}
+}
+
+.mv-bar-track {
+	display: inline-block;
+	width: 100%;
+	min-width: 80px;
+	max-width: 200px;
+	height: 6px;
+	background: var(--mv-bg-soft, var(--vscode-sideBar-background, #2d2d2d));
+	border-radius: 3px;
+	vertical-align: middle;
+	overflow: hidden;
+}
+
+.mv-row {
+	display: flex;
+	align-items: center;
+	gap: var(--mv-s-2);
+	padding: var(--mv-s-1) 0;
+	border-bottom: 1px solid var(--mv-border, var(--vscode-widget-border, transparent));
+
+	&:last-child {
+		border-bottom: none;
+	}
+
+	&__name {
+		flex: 0 0 auto;
+		min-width: 0;
+		max-width: 30%;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	&__bar-wrap {
+		flex: 1 1 auto;
+		min-width: 0;
+	}
+
+	&__bar-value {
+		flex: 0 0 auto;
+		font-variant-numeric: tabular-nums;
+		color: var(--mv-fg-muted, var(--vscode-descriptionForeground, #858585));
+	}
+}
+
+// ---------------------------------------------------------------------------
+// Responsive — bump to 2 / 3 columns at the breakpoints the marketing
+// site already uses (`_breakpoints.scss` SCSS vars, declared once for the
+// whole monorepo).
+// ---------------------------------------------------------------------------
+
+@media (min-width: bp.$mv-bp-sm) {
+	.mv-panel__grid {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}
+
+@media (min-width: bp.$mv-bp-md) {
+	.mv-panel__grid {
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+	}
+}
