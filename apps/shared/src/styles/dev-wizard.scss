@@ -35,6 +35,20 @@
 // class strings in lockstep.
 
 @use 'breakpoints' as bp;
+@use 'themes' as themes;
+
+// Loading `_themes.scss` here means the dev wizard inherits the same
+// brand colours and palette variables (`--bg`, `--fg`, `--accent`,
+// etc.) that the marketing site uses. Combined with the `--mv-*`
+// tokens declared by `_tokens.scss`, the four dev panels (setup /
+// welcome / settings / quickstart) live entirely on shared
+// design variables — there is no colour or font that the docs site
+// and the editor cannot share.
+//
+// The `--mv-fg`, `--mv-bg-soft`, `--mv-border`, etc. fallbacks
+// below remain so the wizard also works in contexts where the host
+// theme has not been loaded yet (e.g. the dev entry used as a
+// plain HTML page with no `<html data-theme="...">` attribute).
 
 // ===========================================================================
 // `setup` block — wizard CTA card shown on the dashboard view
