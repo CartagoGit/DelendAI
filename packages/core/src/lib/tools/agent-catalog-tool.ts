@@ -1,5 +1,6 @@
 import { z } from 'zod';
 
+import { CAPABILITY_TAGS } from '../contracts/interfaces/provider-capabilities.interface';
 import type { IToolRegistration } from '../contracts/interfaces/tool-registration.interface';
 import { toolOk } from '../shared/tool-response';
 import { buildCatalog } from '../catalog/agent-discovery-catalog';
@@ -70,6 +71,27 @@ const proposalSummarySchema = z.object({
 	date: z.string(),
 });
 
+// f00067a S2: lean projection of the config file's root `providers`
+// roster. Mirrors IProviderSummary — `reachable` here is the boot-time
+// conservative value; live availability is the orchestrator-runner's
+// `healthcheck_providers` tool.
+const providerSummarySchema = z.object({
+	id: z.string(),
+	kind: z.enum(['api', 'subscription', 'cli', 'mcp-server']),
+	modelId: z.string(),
+	// Literal union (not `.int().min(1).max(5)`) so the generated SDK type
+	// stays assignable to the contract's `CostTier` (1|2|3|4|5).
+	costTier: z.union([
+		z.literal(1),
+		z.literal(2),
+		z.literal(3),
+		z.literal(4),
+		z.literal(5),
+	]),
+	reachable: z.boolean(),
+	strengths: z.array(z.enum(CAPABILITY_TAGS)),
+});
+
 const snapshotSchema = z.object({
 	ok: z.boolean().optional(),
 	matches: z.number().int().nonnegative().optional(),
@@ -98,6 +120,8 @@ const snapshotSchema = z.object({
 	tools: z.array(toolSummarySchema),
 	skills: z.array(skillSummarySchema),
 	proposals: z.array(proposalSummarySchema),
+	// Present only when the workspace configures a provider roster.
+	providers: z.array(providerSummarySchema).optional(),
 });
 
 const lowerIncludes = (haystack: string | undefined, needle: string): boolean =>
