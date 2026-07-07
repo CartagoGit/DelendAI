@@ -108,3 +108,13 @@ export type {
  * ui-extension/webview` should import this.
  */
 export { mockDashboardModel } from '../dev/mock-model';
+
+/**
+ * Dev-only: the CSS string for the setup wizard rendered by the
+ * `:5200` entry when a workspace isn't wired up. Kept separate from
+ * `dashboardCss` because the wizard shows up *before* the dashboard
+ * chrome is on the page (the user sees the wizard, then clicks
+ * Install, then the dashboard renders). Both ship in the same
+ * browser bundle so the cost is one extra inline `<style>` block.
+ */
+export { devWizardCss } from '@mcp-vertex/shared/styles/dev-wizard-css';

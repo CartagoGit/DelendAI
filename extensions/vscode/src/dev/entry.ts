@@ -40,6 +40,7 @@ import type {
 	IToolDescriptor,
 } from '@mcp-vertex/client';
 import {
+	devWizardCss,
 	mockDashboardModel,
 	renderDashboard,
 } from '@mcp-vertex/ui-extension/webview';
@@ -158,6 +159,22 @@ const fetchJson = async <T>(path: string): Promise<T | null> => {
 	}
 };
 
+/**
+ * Inject the wizard CSS into the document once. Idempotent — calling
+ * the helper again is a no-op. The wizard renders BEFORE the
+ * dashboard chrome is on the page, so we can't wait for `renderDashboard`
+ * to emit its inline `<style>`; this drops the styles upfront.
+ */
+let wizardStylesInjected = false;
+const injectWizardStyles = (): void => {
+	if (wizardStylesInjected) return;
+	const tag = document.createElement('style');
+	tag.setAttribute('data-mv-dev-wizard', 'true');
+	tag.textContent = devWizardCss;
+	document.head.appendChild(tag);
+	wizardStylesInjected = true;
+};
+
 const renderSetupWizard = (status: ISetupStatus): string => {
 	const signalsHtml = status.signals
 		.map(
@@ -203,6 +220,7 @@ const renderDashboardOrSetup = async (root: HTMLElement): Promise<void> => {
 	}
 
 	if (status.kind !== 'configured') {
+		injectWizardStyles();
 		root.innerHTML = renderSetupWizard(status);
 		bindSetupHandlers(root);
 		return;
