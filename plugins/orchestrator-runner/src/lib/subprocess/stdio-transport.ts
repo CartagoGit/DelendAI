@@ -86,7 +86,7 @@ export const nodeStdioSpawner: StdioSpawner = (
 			child.on('error', listener);
 		},
 		write: (line) => {
-			if (child.stdin !== null && child.stdin.writable) {
+			if (child.stdin?.writable) {
 				child.stdin.write(line);
 			}
 		},

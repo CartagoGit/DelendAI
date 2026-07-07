@@ -47,6 +47,7 @@ import type {
 	ISkillSummary,
 	IToolSummary,
 } from '../catalog/agent-discovery-types';
+import type { IProviderSummary } from '../contracts/interfaces/provider-capabilities.interface';
 import { buildKnowledgeResourceRegistrations } from '../tools/knowledge-resources';
 import { buildKnowledgeToolRegistration } from '../tools/knowledge-tool';
 import { buildSkillToolRegistration } from '../tools/skill-tool';

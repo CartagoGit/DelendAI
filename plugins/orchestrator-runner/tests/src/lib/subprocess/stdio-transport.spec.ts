@@ -189,7 +189,9 @@ describe('createStdioTransport (f00067a S3 — production NDJSON stdio)', () => 
 		const reply = await inbox.next();
 		expect(reply.id).toBe(3);
 		expect(reply.result).toBeUndefined();
-		expect(reply.error?.message).toMatch(/exited \(code 3\) before replying/);
+		expect(reply.error?.message).toMatch(
+			/exited \(code 3\) before replying/,
+		);
 	});
 
 	it('close() kills the child, is idempotent, and send() after close is a no-op', async () => {
@@ -257,6 +259,8 @@ describe('mcpServerTransportFactory (build-manager wiring)', () => {
 		transport.send(callTool(9, 'x'));
 		const reply = await inbox.next();
 		expect(reply.id).toBe(9);
-		expect(reply.error?.message).toMatch(/exited \(code 0\) before replying/);
+		expect(reply.error?.message).toMatch(
+			/exited \(code 0\) before replying/,
+		);
 	});
 });
