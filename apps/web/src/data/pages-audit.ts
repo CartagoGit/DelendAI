@@ -335,6 +335,14 @@ export const PAGES_AUDIT: readonly IPageAuditEntry[] = Object.freeze([
 		why: 'The English proposals board is the default-locale read-only mirror of the VS Code host board (f00097 S5) and the canonical discovery surface for shipped proposals.',
 	},
 	{
+		path: 'apps/web/src/pages/providers.astro',
+		langCoverage: EN_ONLY,
+		kind: 'content',
+		lastMeaningfulEdit: '2026-07-07',
+		verdict: 'keep',
+		why: 'The providers page is the static web parity of the f00098 provider dashboard: it documents the root-level providers roster config (env-var-name secrets posture) and renders a frozen showcase of the S1 render-model with no live server dependency.',
+	},
+	{
 		path: 'apps/web/src/pages/resources.astro',
 		langCoverage: EN_ONLY,
 		kind: 'content',
