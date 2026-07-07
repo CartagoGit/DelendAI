@@ -11,7 +11,8 @@
 		"plugins/*",
 		"apps/*",
 		"extensions/*",
-		"docs/mcp-vertex/examples/*"
+		"docs/mcp-vertex/examples/*",
+		"tools"
 	],
 	"engines": {
 		"bun": ">=1.1.0"

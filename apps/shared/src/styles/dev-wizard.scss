@@ -1,0 +1,444 @@
+// `apps/shared/src/styles/dev-wizard.scss`
+//
+// Styles for the dev preview panels at :5200. Four BEM islands own one
+// page-level section each:
+//
+//   - `setup`       → "Finish setup" widget embedded inside the
+//                      dashboard when the workspace is partial.
+//   - `welcome`     → four-card explainer shown on first run when the
+//                      workspace is unconfigured.
+//   - `settings`    → the Settings tab (theme picker, language
+//                      picker, refresh control).
+//   - `quickstart`  → collapsible "where to start" menu on top of the
+//                      configured dashboard.
+//
+// Conventions
+// -----------
+// - BEM with `&` nesting: `.setup__head`, `.setup__primary` etc. read
+//   as children of the block, not as loose top-level rules.
+// - Selectors are still flat at the runtime level — no wrapper
+//   nesting — for the same reason as `dashboard/dashboard.scss`:
+//   renderers across surfaces place panels without a common parent.
+// - All values come from the CSS custom properties in
+//   `apps/shared/src/styles/_tokens.scss` and `_themes.scss`. Only
+//   legacy fallbacks that already existed before this refactor inline
+//   raw values; those stay verbatim so the visual surface doesn't
+//   shift in this slice.
+// - No brand hex literals; use `var(--mv-brand-*)` only.
+//
+// Future direction
+// ----------------
+// Renaming `.setup*` → `.mv-wizard*` (and friends) needs a
+// coordinated rename across renderers under
+// `extensions/vscode/src/dev/*` and `packages/ui-extension/`. The BEM
+// shape here already mirrors that; a dedicated slice will migrate the
+// class strings in lockstep.
+
+@use 'breakpoints' as bp;
+
+// ===========================================================================
+// `setup` block — wizard CTA card shown on the dashboard view
+// ===========================================================================
+
+.setup {
+	display: flex;
+	flex-direction: column;
+	gap: var(--mv-s-3);
+	padding: var(--mv-s-4);
+	font-family: var(--mv-font-prose);
+	font-size: 13px;
+	color: var(--mv-fg, #d4d4d4);
+	background: transparent;
+	min-width: 0;
+	max-width: 100%;
+
+	&__head {
+		display: flex;
+		flex-direction: column;
+		gap: 6px;
+		padding: var(--mv-s-3);
+		background: var(--mv-bg-soft, #252526);
+		border: 1px solid var(--mv-border, #3c3c3c);
+		border-radius: var(--mv-radius-sm);
+		border-left: 3px solid var(--mv-brand-blue);
+
+		& h1 {
+			font-size: 15px;
+			font-weight: 600;
+			margin: 0;
+		}
+
+		& p {
+			margin: 0;
+			color: var(--mv-fg-muted, #858585);
+		}
+	}
+
+	&__hint {
+		font-size: 12px;
+		color: var(--mv-fg-muted, #858585);
+		margin: 0;
+	}
+
+	&__signals {
+		margin: 0;
+		padding: 0;
+		list-style: none;
+		display: flex;
+		flex-direction: column;
+		gap: var(--mv-s-1);
+	}
+
+	&__signal {
+		display: flex;
+		align-items: center;
+		gap: var(--mv-s-2);
+		padding: var(--mv-s-1) var(--mv-s-2);
+		border-radius: var(--mv-radius-sm);
+		font-size: 12px;
+		color: var(--mv-fg-muted, #858585);
+
+		& code {
+			font-family: var(--mv-font-mono);
+			font-size: 11px;
+			color: var(--mv-fg, #d4d4d4);
+		}
+	}
+
+	&__cta {
+		display: flex;
+		gap: var(--mv-s-2);
+		flex-wrap: wrap;
+
+		& button {
+			appearance: none;
+			font: inherit;
+			font-weight: 600;
+			padding: var(--mv-s-2) var(--mv-s-3);
+			border-radius: var(--mv-radius-sm);
+			cursor: pointer;
+			border: 1px solid transparent;
+			transition: background-color var(--mv-transition-fast);
+		}
+	}
+
+	&__primary {
+		background: var(--mv-brand-blue);
+		color: #ffffff;
+		border-color: var(--mv-brand-blue);
+
+		&:hover,
+		&:focus-visible {
+			filter: brightness(1.1);
+		}
+	}
+
+	&__secondary {
+		background: transparent;
+		color: var(--mv-fg, #d4d4d4);
+		border-color: var(--mv-border, #3c3c3c);
+
+		&:hover,
+		&:focus-visible {
+			background: var(--mv-bg-soft, #252526);
+		}
+	}
+
+	&__status {
+		font-size: 12px;
+		color: var(--mv-fg-muted, #858585);
+		font-style: italic;
+	}
+}
+
+// ===========================================================================
+// `welcome` block — first-run screen
+// ===========================================================================
+
+.welcome {
+	display: flex;
+	flex-direction: column;
+	gap: var(--mv-s-4);
+	padding: var(--mv-s-5);
+	font-family: var(--mv-font-prose);
+	color: var(--mv-fg, #d4d4d4);
+	max-width: 100%;
+	min-width: 0;
+
+	&__head {
+		display: flex;
+		flex-direction: column;
+		gap: var(--mv-s-2);
+
+		& h1 {
+			font-size: 24px;
+			font-weight: 700;
+			margin: 0;
+			background: var(--mv-brand-gradient);
+			-webkit-background-clip: text;
+			background-clip: text;
+			color: transparent;
+		}
+
+		& p {
+			margin: 0;
+			font-size: 14px;
+			color: var(--mv-fg-muted, #858585);
+		}
+	}
+
+	&__lede {
+		margin: 0;
+		font-size: 14px;
+		color: var(--mv-fg-muted, #858585);
+	}
+
+	&__grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+		gap: var(--mv-gap);
+	}
+
+	&__card {
+		padding: var(--mv-s-4);
+		background: var(--mv-bg-card, #252526);
+		border: 1px solid var(--mv-border, #3c3c3c);
+		border-radius: var(--mv-radius);
+		display: flex;
+		flex-direction: column;
+		gap: var(--mv-s-2);
+		transition: border-color var(--mv-transition-fast);
+
+		&:hover {
+			border-color: var(--mv-brand-blue);
+		}
+
+		& h3 {
+			margin: 0;
+			font-size: 14px;
+			font-weight: 600;
+		}
+
+		& p {
+			margin: 0;
+			font-size: 12px;
+			color: var(--mv-fg-muted, #858585);
+			line-height: 1.5;
+		}
+	}
+
+	&__cta {
+		display: flex;
+		gap: var(--mv-s-2);
+		flex-wrap: wrap;
+		margin-top: var(--mv-s-3);
+	}
+
+	&__primary,
+	&__secondary {
+		appearance: none;
+		font: inherit;
+		font-weight: 600;
+		padding: var(--mv-s-3) var(--mv-s-4);
+		border-radius: var(--mv-radius-sm);
+		cursor: pointer;
+		border: 1px solid transparent;
+	}
+
+	&__primary {
+		background: var(--mv-brand-blue);
+		color: #ffffff;
+		border-color: var(--mv-brand-blue);
+
+		&:hover,
+		&:focus-visible {
+			filter: brightness(1.1);
+		}
+	}
+
+	&__secondary {
+		background: transparent;
+		color: var(--mv-fg, #d4d4d4);
+		border-color: var(--mv-border, #3c3c3c);
+
+		&:hover,
+		&:focus-visible {
+			background: var(--mv-bg-soft, #252526);
+		}
+	}
+}
+
+// ===========================================================================
+// `settings` block — Settings tab (theme picker, language picker, refresh)
+// ===========================================================================
+
+.settings {
+	display: flex;
+	flex-direction: column;
+	gap: var(--mv-s-4);
+	padding: var(--mv-s-4);
+	font-family: var(--mv-font-prose);
+	color: var(--mv-fg, #d4d4d4);
+	max-width: 100%;
+	min-width: 0;
+
+	&__form {
+		display: flex;
+		flex-direction: column;
+		gap: var(--mv-s-4);
+	}
+
+	&__field {
+		display: flex;
+		flex-direction: column;
+		gap: var(--mv-s-2);
+	}
+
+	&__hint {
+		margin: 0;
+		font-size: 12px;
+		color: var(--mv-fg-muted, #858585);
+	}
+
+	&__radios {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--mv-s-2);
+	}
+
+	&__radio {
+		display: inline-flex;
+		align-items: center;
+		gap: 6px;
+		padding: var(--mv-s-2) var(--mv-s-3);
+		background: var(--mv-bg-soft, #252526);
+		border: 1px solid var(--mv-border, #3c3c3c);
+		border-radius: var(--mv-radius-sm);
+		cursor: pointer;
+		font-size: 12px;
+
+		&.is-active {
+			border-color: var(--mv-brand-blue);
+		}
+
+		& input {
+			margin: 0;
+		}
+	}
+
+	&__status {
+		font-size: 12px;
+		color: var(--mv-fg-muted, #858585);
+		font-style: italic;
+	}
+}
+
+// ===========================================================================
+// `quickstart` block — collapsible menu pinned on top of the dashboard
+// ===========================================================================
+
+.quickstart {
+	display: flex;
+	flex-direction: column;
+	gap: var(--mv-s-2);
+	padding: var(--mv-s-3);
+	background: var(--mv-bg-soft, #252526);
+	border: 1px solid var(--mv-border, #3c3c3c);
+	border-radius: var(--mv-radius);
+	margin-bottom: var(--mv-s-4);
+	font-family: var(--mv-font-prose);
+
+	&__head {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: var(--mv-s-2);
+	}
+
+	&__lede {
+		margin: 0;
+		font-size: 12px;
+		color: var(--mv-fg-muted, #858585);
+	}
+
+	&__icon {
+		display: inline-flex;
+		width: 24px;
+		height: 24px;
+		align-items: center;
+		justify-content: center;
+		background: var(--mv-bg-card, #161b22);
+		border-radius: var(--mv-radius-sm);
+		font-size: 14px;
+	}
+
+	&__close {
+		appearance: none;
+		background: transparent;
+		border: none;
+		color: var(--mv-fg-muted, #858585);
+		font: inherit;
+		font-size: 12px;
+		cursor: pointer;
+		padding: var(--mv-s-1) var(--mv-s-2);
+		border-radius: var(--mv-radius-sm);
+
+		&:hover {
+			background: var(--mv-bg-card, #161b22);
+		}
+	}
+
+	&__list {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+		display: flex;
+		flex-direction: column;
+		gap: var(--mv-s-2);
+	}
+
+	&__item {
+		padding: var(--mv-s-2);
+		background: var(--mv-bg-card, #161b22);
+		border: 1px solid var(--mv-border, #3c3c3c);
+		border-radius: var(--mv-radius-sm);
+		display: flex;
+		flex-direction: column;
+		gap: var(--mv-s-1);
+
+		& h3 {
+			margin: 0;
+			font-size: 13px;
+			font-weight: 600;
+		}
+	}
+
+	&__desc {
+		color: var(--mv-fg-muted, #858585);
+		font-size: 12px;
+		display: block;
+		margin-top: 2px;
+	}
+}
+
+// ---------------------------------------------------------------------------
+// Responsive — welcome padding widens on the small breakpoint so the
+// four cards breathe on wider viewports.
+// ---------------------------------------------------------------------------
+
+@media (min-width: bp.$mv-bp-sm) {
+	.welcome {
+		padding: var(--mv-s-6);
+	}
+}
+
+// ---------------------------------------------------------------------------
+// Print sanity — CTAs collapse on paper so the layout doesn't overflow.
+// ---------------------------------------------------------------------------
+
+@media print {
+	.setup__cta,
+	.welcome__cta {
+		display: none;
+	}
+}
