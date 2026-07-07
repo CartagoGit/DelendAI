@@ -85,7 +85,10 @@ const renderCrumbs = (
 	homeHref: string,
 	homeLabel: string,
 ): string => {
-	const full: ReadonlyArray<ICrumb> = [{ label: homeLabel, href: homeHref }, ...crumbs];
+	const full: ReadonlyArray<ICrumb> = [
+		{ label: homeLabel, href: homeHref },
+		...crumbs,
+	];
 	if (full.length < 2) return '';
 
 	const items = full

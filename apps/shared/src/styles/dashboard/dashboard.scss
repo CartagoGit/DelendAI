@@ -30,6 +30,16 @@
 //   this across the source tree.
 
 @use '../breakpoints' as bp;
+@use '../themes' as themes;
+
+// Loading `_themes.scss` here means the dashboard panel surface
+// inherits the brand colours and palette variables (`--bg`, `--fg`,
+// `--accent`, etc.) that the marketing site uses — the same five
+// themes (dark, light, midnight, solarized, nord) and the same brand
+// hex literals. Combined with the `--mv-*` tokens declared by
+// `_tokens.scss`, every dashboard panel lives entirely on shared
+// design variables; there is no surface value that the docs site
+// and the editor cannot keep aligned.
 
 // ---------------------------------------------------------------------------
 // Wrapper
