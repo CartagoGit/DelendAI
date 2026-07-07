@@ -82,11 +82,11 @@
 	// sits on; tabs are square-cornered. Element rules nest inside the
 	// modifier so each resolved selector stays `.mv-tabs`-rooted.
 	&--underline {
-		.ui-tabs__bar {
+		.mv-tabs__bar {
 			border-bottom: 1px solid var(--mv-border, var(--line));
 		}
 
-		.ui-tabs__tab {
+		.mv-tabs__tab {
 			border-radius: 0;
 			border-bottom: 2px solid transparent;
 			margin-bottom: -1px;
@@ -104,7 +104,7 @@
 
 	// Pill variant: the active tab gets a soft tinted fill.
 	&--pill {
-		.ui-tabs__tab[aria-selected='true'] {
+		.mv-tabs__tab[aria-selected='true'] {
 			background: color-mix(in srgb, var(--mv-fg, currentColor) 12%, transparent);
 		}
 	}
@@ -113,7 +113,7 @@
 	// rounded tab, no border-bottom on the bar, padding 0.5rem 0.9rem,
 	// active label at 600 weight (f00069 S1).
 	&--plugin {
-		.ui-tabs__tab {
+		.mv-tabs__tab {
 			padding: 0.5rem 0.9rem;
 			border-radius: var(--radius);
 

@@ -89,7 +89,9 @@ describe('renderBrandMark', () => {
 			brandText: '<bad>',
 		});
 		expect(out).toContain('src="/logo.svg?x=&quot;&amp;&lt;&gt;"');
-		expect(out).toContain('<span class="mv-brand__text">&lt;bad&gt;</span>');
+		expect(out).toContain(
+			'<span class="mv-brand__text">&lt;bad&gt;</span>',
+		);
 	});
 
 	it('emits a valid empty alt by default', () => {

@@ -29,12 +29,14 @@ const CLIENT_SCRIPT = `
 (function () {
   const panels = document.querySelectorAll('.mv-panel');
   // Only real tabs participate in selection + the roving tabindex; the
-  // refresh button is an action (no role="tab"), so it is excluded.
+  // refresh button is an action (no role="tab"), so it is excluded
+  // by the [data-tab-trigger] selector (renderTabs only stamps that
+  // attribute on tab buttons — f00102 S4-real-extract).
   const tabs = Array.prototype.slice.call(
-    document.querySelectorAll('.mv-tabs [role="tab"]'),
+    document.querySelectorAll('[data-tab-trigger]'),
   );
   function selectTab(tab, moveFocus) {
-    const target = tab.getAttribute('data-target');
+    const target = tab.getAttribute('data-tab-trigger');
     tabs.forEach((t) => {
       const on = t === tab;
       t.setAttribute('aria-selected', on ? 'true' : 'false');

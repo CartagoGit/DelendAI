@@ -1,17 +1,1 @@
-[
-	{
-		"file": "packages/ui-extension/src/dashboard/builders/build-tabs-bar.ts",
-		"className": "mv-tabs",
-		"reason": "Pre-shared-UI emit (f00047 S4 left this here). Will be replaced by `renderTabs` from @mcp-vertex/shared/components/ui/tabs in f00102 S4-real-extract."
-	},
-	{
-		"file": "packages/ui-extension/src/dashboard/render-dashboard.ts",
-		"className": "mv-tabs",
-		"reason": "Pre-shared-UI selector in the dashboard renderer's querySelectorAll (lookups the .mv-tabs root from a pre-shared emit). Will be removed together with build-tabs-bar.ts in f00102 S4-real-extract."
-	},
-	{
-		"file": "packages/ui-extension/tests/dashboard/render-panel.spec.ts",
-		"className": "mv-tabs",
-		"reason": "Test asserts that build-tabs-bar.ts renders `mv-tabs` markup. Once S4-real-extract replaces the inline emit with renderTabs, the spec's CSS-class assertion will be replaced with a structural one (data-tabs-variant)."
-	}
-]
+[]

@@ -16,14 +16,18 @@ describe('buildTabsBar', () => {
 		const html = buildTabsBar(dictsByLang.en);
 		// tab-${id} must control panel-${id} (the panels render with the
 		// matching id in build-panels / render-panel-*).
+		// f00102 S4-real-extract: the button now carries
+		// `class="mv-tabs__tab"` and `data-tab-trigger="${id}"`
+		// between `id=` and `aria-controls` (emitted by the shared
+		// `renderTabs` in `@mcp-vertex/shared/components/ui/tabs`).
 		expect(html).toContain(
-			'id="tab-overview" role="tab" aria-controls="panel-overview"',
+			'id="tab-overview" class="mv-tabs__tab" data-tab-trigger="overview" aria-selected="true" aria-controls="panel-overview"',
 		);
 		expect(html).toContain(
-			'id="tab-health" role="tab" aria-controls="panel-health"',
+			'id="tab-health" class="mv-tabs__tab" data-tab-trigger="health" aria-selected="false" aria-controls="panel-health"',
 		);
 		expect(html).toContain(
-			'id="tab-docs" role="tab" aria-controls="panel-docs"',
+			'id="tab-docs" class="mv-tabs__tab" data-tab-trigger="docs" aria-selected="false" aria-controls="panel-docs"',
 		);
 	});
 

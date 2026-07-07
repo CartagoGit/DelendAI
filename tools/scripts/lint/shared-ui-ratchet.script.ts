@@ -118,6 +118,7 @@ const SHARED_SOURCE_DIR = 'apps/shared/src/components/';
 const SHARED_STYLES_SOURCE_DIR = 'apps/shared/src/styles/';
 const TRUSTED_WRAPPER_DIRS: ReadonlyArray<string> = Object.freeze([
 	'apps/web/src/components/',
+	'packages/ui-extension/src/dashboard/',
 ]);
 
 const SHARED_RENDERER_IMPORT = /from\s+['"]@mcp-vertex\/shared\/components\//;
@@ -146,6 +147,11 @@ export const findInlineClasses = (
 	) {
 		return [];
 	}
+	// Spec / test files are exempt — the literals are the
+	// contract the test pins. Trust model: when a `*.spec.ts`
+	// says `expect(html).toContain('mv-tabs')`, the spec is the
+	// source of truth for that string, not a fork to flag.
+	if (/\.spec\.[mc]?[jt]sx?$/.test(relPath)) return [];
 	// Docs-site wrappers: only trusted when they actually pull
 	// the shared renderer. Without the import, an inline
 	// `class="mv-callout"` in this folder IS a fork.
@@ -198,6 +204,9 @@ export const findForkedScss = (
 	) {
 		return [];
 	}
+	// Spec / test files are exempt — the literals are the contract
+	// the test pins, not a fork to flag.
+	if (/\.spec\.[mc]?[jt]sx?$/.test(relPath)) return [];
 	const out: Violation[] = [];
 	for (const token of SHARED_SCSS_TOKENS) {
 		const re = new RegExp(`(^|[\\s,.])${token}[\\s,{]`, 'g');
