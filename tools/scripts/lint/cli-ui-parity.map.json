@@ -1,0 +1,145 @@
+{
+	"$about": "f00098 S4 — CLI↔UI parity contract. Every CLI command group maps to a UI affordance ({ kind: vscode-command | vscode-view | web-route, id }) or carries a documented waiver; every contributed VS Code command maps to a CLI counterpart (command or group) or carries a waiver. Enforced by tools/scripts/lint/cli-ui-parity.script.ts (bun run lint:cli-ui-parity).",
+	"cliGroups": {
+		"audit": {
+			"waiver": "agent-workflow audit planner; terminal/agent surface only, no interactive UI story planned"
+		},
+		"completion": {
+			"waiver": "shell-only: prints bash/zsh/fish completion scripts, meaningless inside a UI host"
+		},
+		"config": {
+			"ui": { "kind": "vscode-command", "id": "mcp-vertex.openSettings" }
+		},
+		"conventions": {
+			"waiver": "repo-convention ratchet consumed by agents and lint gates; no interactive UI story planned"
+		},
+		"deps": {
+			"waiver": "dependency introspection for agents; terminal-first, no UI story planned"
+		},
+		"docs": {
+			"ui": { "kind": "vscode-command", "id": "mcp-vertex.openDocs" }
+		},
+		"doctor": {
+			"waiver": "sectioned terminal health report with exit codes for scripts/CI; the dashboard is the interactive equivalent"
+		},
+		"fs": {
+			"waiver": "IDE-native: the editor and file explorer supersede fs read/write inside a UI host"
+		},
+		"git": {
+			"waiver": "IDE-native: VS Code's built-in SCM view supersedes the read-only git group"
+		},
+		"init": {
+			"waiver": "workspace bootstrap runs before any UI host is configured; shell-only by design"
+		},
+		"init:default": {
+			"waiver": "non-interactive bootstrap for scripts and fresh checkouts; shell-only by design"
+		},
+		"knowledge": {
+			"ui": { "kind": "vscode-command", "id": "mcp-vertex.openKnowledge" }
+		},
+		"logs": {
+			"waiver": "log query/tail/correlate is terminal-first; no dedicated log view contributed yet"
+		},
+		"memory": {
+			"ui": { "kind": "vscode-view", "id": "mcp-vertex.memory" }
+		},
+		"metrics": {
+			"ui": { "kind": "vscode-command", "id": "mcp-vertex.showMetrics" }
+		},
+		"notification": {
+			"waiver": "agent-coordination primitive (status/await-lock); not a human UI affordance"
+		},
+		"overview": {
+			"ui": { "kind": "vscode-command", "id": "mcp-vertex.showOverview" }
+		},
+		"plugin": {
+			"ui": {
+				"kind": "vscode-command",
+				"id": "mcp-vertex.openDashboard",
+				"note": "the dashboard lists loaded plugins and their tools"
+			}
+		},
+		"project": {
+			"waiver": "project analyze/plan/create is an agent scaffolding surface; terminal-first, no UI story planned"
+		},
+		"proposals": {
+			"ui": { "kind": "vscode-view", "id": "mcp-vertex.proposals" }
+		},
+		"quality": {
+			"waiver": "quality scope runner is terminal-first; the validate group carries the UI affordance (runValidation)"
+		},
+		"rules": {
+			"waiver": "rules engine consumed by agents and lint gates; terminal-first, no UI story planned"
+		},
+		"scaffold": {
+			"waiver": "code generator that writes workspace files; terminal-first, no UI story planned"
+		},
+		"search": {
+			"waiver": "IDE-native: VS Code's built-in workspace search supersedes CLI text search"
+		},
+		"status": {
+			"ui": { "kind": "vscode-command", "id": "mcp-vertex.openDashboard" }
+		},
+		"status-marker": {
+			"waiver": "swarm status-marker protocol between agents; not a human UI affordance"
+		},
+		"test-convention": {
+			"waiver": "test-convention scanner for agents; terminal-first, no UI story planned"
+		},
+		"usage-tracking": {
+			"waiver": "f00098 S3 pending: the provider dashboard + usage cost panel will map here once the S3 webview lands"
+		},
+		"validate": {
+			"ui": { "kind": "vscode-command", "id": "mcp-vertex.runValidation" }
+		},
+		"validate-matrix": {
+			"ui": {
+				"kind": "vscode-command",
+				"id": "mcp-vertex.runValidation",
+				"note": "the validation command surfaces the configured matrix"
+			}
+		},
+		"web-fetch": {
+			"waiver": "agent web-fetch primitive; the IDE host has native browsing, no UI story planned"
+		}
+	},
+	"vscodeCommands": {
+		"mcp-vertex.openAgentCatalog": {
+			"cli": "overview",
+			"note": "the agent catalog is the overview snapshot rendered as a webview"
+		},
+		"mcp-vertex.openDashboard": { "cli": "status" },
+		"mcp-vertex.showOverview": { "cli": "overview" },
+		"mcp-vertex.refresh": {
+			"waiver": "UI refresh affordance; re-running the corresponding CLI command is the scriptable equivalent"
+		},
+		"mcp-vertex.runValidation": { "cli": "validate" },
+		"mcp-vertex.openProposal": { "cli": "proposals board" },
+		"mcp-vertex.proposals.refresh": {
+			"waiver": "view-title refresh button for the proposals view; UI mechanics only"
+		},
+		"mcp-vertex.proposals.copyError": {
+			"waiver": "clipboard affordance for the proposals view error state; UI mechanics only"
+		},
+		"mcp-vertex.showMetrics": { "cli": "metrics" },
+		"mcp-vertex.openDocs": { "cli": "docs list" },
+		"mcp-vertex.openDocsApi": { "cli": "docs read" },
+		"mcp-vertex.openKnowledge": { "cli": "knowledge" },
+		"mcp-vertex.toolSearch": {
+			"cli": "overview",
+			"note": "overview --full prints the complete tool map; fuzzy filtering is UI-side sugar"
+		},
+		"mcp-vertex.restartServer": {
+			"waiver": "extension-host process lifecycle; the CLI is a client of that server and cannot restart the host's instance"
+		},
+		"mcp-vertex.openSettings": { "cli": "config show" },
+		"mcp-vertex.openToolbar": {
+			"waiver": "UI navigation into the webview toolbar; no scriptable behaviour"
+		},
+		"mcp-vertex.memorySave": { "cli": "memory save" },
+		"mcp-vertex.memoryForget": { "cli": "memory forget" },
+		"mcp-vertex.setupGithub": {
+			"waiver": "guided IDE onboarding flow for GitHub issues; no CLI counterpart yet"
+		}
+	}
+}
