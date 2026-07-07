@@ -326,7 +326,13 @@ describe('renderDashboard', async () => {
 	it('embeds the tab-switching client script', async () => {
 		const html = renderDashboard(fixture, opts);
 		expect(html).toContain('<script>');
-		expect(html).toContain('.mv-tabs [role="tab"]');
+		// f00102 S4-real-extract: the client script now selects tabs
+		// via the shared `data-tab-trigger` attribute (stamped by
+		// `renderTabs` in `@mcp-vertex/shared/components/ui/tabs`)
+		// instead of the old `.mv-tabs [role="tab"]` selector. The
+		// attribute selector works for any host that delegates to
+		// the shared renderer.
+		expect(html).toContain('[data-tab-trigger]');
 	});
 
 	it('wires ArrowLeft/ArrowRight roving tabindex with wrapping (H27)', async () => {

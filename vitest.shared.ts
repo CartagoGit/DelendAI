@@ -68,8 +68,16 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 			replacement: resolve(shared, 'i18n/index.ts'),
 		},
 		{
+			find: /^@mcp-vertex\/shared\/styles\/(.*)$/,
+			replacement: resolve(shared, 'styles/$1'),
+		},
+		{
 			find: '@mcp-vertex/shared/styles',
 			replacement: resolve(shared, 'styles/_index.scss'),
+		},
+		{
+			find: /^@mcp-vertex\/shared\/components\/(.*)$/,
+			replacement: resolve(shared, 'components/$1'),
 		},
 		{
 			find: '@mcp-vertex/shared',
@@ -305,6 +313,13 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 			replacement: resolve(
 				workspaceRoot,
 				'packages/ui-extension/src/public/index.ts',
+			),
+		},
+		{
+			find: /^@mcp-vertex\/ui-extension\/(webview|components|dashboard|dev|brand)(?:\/(.*))?$/,
+			replacement: resolve(
+				workspaceRoot,
+				'packages/ui-extension/src/$1/index.ts',
 			),
 		},
 		{

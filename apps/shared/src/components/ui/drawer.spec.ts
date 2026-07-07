@@ -16,11 +16,7 @@
  */
 import { describe, expect, it } from 'vitest';
 
-import {
-	renderDrawer,
-	type IDrawerLink,
-	type IDrawerProps,
-} from './drawer';
+import { renderDrawer, type IDrawerLink, type IDrawerProps } from './drawer';
 
 const baseProps = (overrides: Partial<IDrawerProps> = {}): IDrawerProps => ({
 	id: 'nav-drawer',

@@ -473,53 +473,83 @@ describe('Tabs.astro — plugin variant DOM shape', () => {
 	);
 	const styles = readFileSync(tabsScssPath, 'utf8');
 
+	// f00102 S2.1 — the tablist markup moved from `Tabs.astro` into
+	// the shared `renderTabs()` at
+	// `apps/shared/src/components/ui/tabs.ts`. f00102 S4-real-extract
+	// also fixed a pre-existing bug in the shared SCSS where the
+	// `--underline` / `--pill` / `--plugin` variant modifiers applied
+	// to `.ui-tabs__*` (legacy alias) instead of `.mv-tabs__*` (the
+	// real BEM namespace emitted by `renderTabs`). The DOM-shape +
+	// variant + CSS-contract assertions below now read the SHARED
+	// source (renderer + SCSS) directly — `Tabs.astro` is just the
+	// docs-site wrapper that delegates to it.
+	const sharedHere = dirname(fileURLToPath(import.meta.url));
+	const sharedTabsTsPath = resolve(
+		sharedHere,
+		'../../../shared/src/components/ui/tabs.ts',
+	);
+	const sharedTabsScssPath = resolve(
+		sharedHere,
+		'../../../shared/src/styles/components/_tabs.scss',
+	);
+	const sharedSource = readFileSync(sharedTabsTsPath, 'utf8');
+	const sharedStyles = readFileSync(sharedTabsScssPath, 'utf8');
+
 	it('declares the `plugin` variant in the union', () => {
-		expect(source).toMatch(/variant\?: 'underline' \| 'pill' \| 'plugin'/);
+		// The shared renderer declares the variant as `TabsVariant`
+		// (a named alias) instead of an inline union literal, so
+		// the test matches the type-alias declaration instead.
+		expect(sharedSource).toMatch(
+			/export type TabsVariant = 'underline' \| 'pill' \| 'plugin'/,
+		);
+		expect(sharedSource).toMatch(/readonly variant\?: TabsVariant/);
 	});
 
-	it('renders a `<button class="ui-tabs__tab">` per entry', () => {
-		expect(source).toContain('class="ui-tabs__tab"');
-		expect(source).toContain('data-tab-trigger={t.id}');
+	it('renders a `<button class="mv-tabs__tab">` per entry', () => {
+		expect(sharedSource).toContain('class="mv-tabs__tab"');
+		expect(sharedSource).toContain('data-tab-trigger=');
 	});
 
 	it('keeps the tab styling in the `_tabs.scss` partial, not a scoped <style>', () => {
 		// The component must not re-grow a `<style>` block; the partial owns
-		// every `.ui-tabs__*` rule.
-		expect(source).not.toContain('.ui-tabs__tab {');
-		expect(styles).toContain('.ui-tabs');
+		// every `.mv-tabs__*` / `.ui-tabs__*` rule.
+		expect(source).not.toContain('.mv-tabs__tab {');
+		expect(sharedStyles).toContain('.mv-tabs');
 	});
 
-	it('emits `.ui-tabs--plugin` selector with the deleted PluginTabs look', () => {
-		// Authored as a nested modifier (`&--plugin { .ui-tabs__tab { … } }`)
-		// so the resolved selector is `.ui-tabs--plugin .ui-tabs__tab`.
-		expect(styles).toMatch(/&--plugin[\s\S]{0,80}\.ui-tabs__tab/);
-		expect(styles).toContain('padding: 0.5rem 0.9rem');
-		expect(styles).toContain('border-bottom: 2px solid currentColor');
+	it('emits `.mv-tabs--plugin` selector with the deleted PluginTabs look', () => {
+		// Authored as a nested modifier (`&--plugin { .mv-tabs__tab { … } }`)
+		// so the resolved selector is `.mv-tabs--plugin .mv-tabs__tab`.
+		expect(sharedStyles).toMatch(/&--plugin[\s\S]{0,80}\.mv-tabs__tab/);
+		expect(sharedStyles).toContain('padding: 0.5rem 0.9rem');
+		expect(sharedStyles).toContain('border-bottom: 2px solid currentColor');
 		// Active label gets 600 weight in the plugin variant.
-		expect(styles).toMatch(
+		expect(sharedStyles).toMatch(
 			/&--plugin[\s\S]{0,400}\[aria-selected='true'\][\s\S]{0,200}font-weight: 600/,
 		);
 	});
 
 	it('defines both `is-entering` and `is-leaving` panel classes for the cross-fade', () => {
-		expect(styles).toContain('[data-tab-panel]');
-		expect(styles).toContain('.is-entering');
-		expect(styles).toContain('.is-leaving');
+		expect(sharedStyles).toContain('[data-tab-panel]');
+		expect(sharedStyles).toContain('.is-entering');
+		expect(sharedStyles).toContain('.is-leaving');
 		// 220 ms with cubic-bezier(0.2, 0.7, 0.2, 1) is the explicit S1 contract.
-		expect(styles).toContain('220ms cubic-bezier(0.2, 0.7, 0.2, 1)');
-		expect(styles).toContain('@keyframes ui-tab-fade-in');
-		expect(styles).toContain('@keyframes ui-tab-fade-out');
+		expect(sharedStyles).toContain('220ms cubic-bezier(0.2, 0.7, 0.2, 1)');
+		expect(sharedStyles).toContain('@keyframes ui-tab-fade-in');
+		expect(sharedStyles).toContain('@keyframes ui-tab-fade-out');
 	});
 
 	it('disables the cross-fade under prefers-reduced-motion', () => {
-		expect(styles).toMatch(
+		expect(sharedStyles).toMatch(
 			/@media \(prefers-reduced-motion: reduce\)[\s\S]{0,400}animation: none/,
 		);
 	});
 
 	it('renders the optional icon before the label when `t.icon` is set', () => {
-		expect(source).toContain('t.icon &&');
-		expect(source).toContain('class="ui-tabs__icon"');
-		expect(source).toMatch(/<img[\s\S]{0,200}class="ui-tabs__icon"/);
+		expect(sharedSource).toContain('renderIcon');
+		expect(sharedSource).toContain('class="mv-tabs__icon"');
+		expect(sharedSource).toMatch(
+			/<img[\s\S]{0,200}class="mv-tabs__icon"/,
+		);
 	});
 });

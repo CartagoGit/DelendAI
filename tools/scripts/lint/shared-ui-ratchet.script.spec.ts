@@ -12,7 +12,7 @@
  * an inline tempfile fixture so the JSON-shape check doesn't
  * depend on the repo's actual waivers file.
  */
-import { afterEach, beforeEach, describe, expect, it } from 'bun:test';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { mkdtempSync } from 'node:fs';
 import { rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
