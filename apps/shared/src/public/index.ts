@@ -12,15 +12,14 @@
  *   @use '@mcp-vertex/shared/styles' as *;
  */
 
-export type { Lang, ILangDict, ILangMeta } from '../i18n/shared';
 export {
+	defaultLang,
+	flagFor,
 	languages,
 	rtlLangs,
-	defaultLang,
 	themes,
-	flagFor,
 } from '../i18n/shared';
-export type { Theme } from '../i18n/shared';
+export type { ILangDict, ILangMeta, Lang, Theme } from '../i18n/shared';
 
 // Host-agnostic UI primitives. The S6 slice (`f00047`) replaced the
 // site/extension hand-rolled "More" dropdowns with the shared
