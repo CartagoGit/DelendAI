@@ -44,7 +44,7 @@
 		"lint:types-in-contracts": "bun tools/scripts/lint/types-in-contracts.script.ts",
 		"lint:cli-shape": "bun tools/scripts/lint/cli-shape.script.ts",
 		"lint:cli-ui-parity": "bun tools/scripts/lint/cli-ui-parity.script.ts",
-			"lint:shared-ui-ratchet": "bun tools/scripts/lint/shared-ui-ratchet.script.ts",
+		"lint:shared-ui-ratchet": "bun tools/scripts/lint/shared-ui-ratchet.script.ts",
 		"lint:workflow": "bun tools/scripts/lint/workflow.script.ts --report",
 		"lint:brand-hex": "bun tools/scripts/lint/no-duplicate-brand-hex.script.ts",
 		"lint:skills": "bun tools/scripts/lint/skills-script.ts",
