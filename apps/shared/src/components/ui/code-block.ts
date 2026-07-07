@@ -66,8 +66,7 @@ const escapeHtml = (raw: string): string =>
 		.replace(/"/g, '&quot;')
 		.replace(/'/g, '&#39;');
 
-const stableSuffix = (): string =>
-	Math.random().toString(36).slice(2, 9);
+const stableSuffix = (): string => Math.random().toString(36).slice(2, 9);
 
 const renderHead = (
 	lang: string,

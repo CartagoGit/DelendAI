@@ -17,7 +17,10 @@
  * markup without a rename. The shared SCSS has a `@extend .mv-code`
  * alias for `.ui-code` while pages migrate.
  */
-import { renderCodeBlock, type ICodeBlockProps } from '@mcp-vertex/shared/components/ui/code-block';
+import {
+	renderCodeBlock,
+	type ICodeBlockProps,
+} from '@mcp-vertex/shared/components/ui/code-block';
 import { useTranslations, type Lang } from '#I18N/ui';
 
 interface Props extends ICodeBlockProps {
