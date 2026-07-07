@@ -1,7 +1,7 @@
 ---
 id: f00067a
 kind: feat
-status: ready
+status: done
 type: proposal
 track: general
 date: 2026-07-05
@@ -57,7 +57,7 @@ Complete the deferred *schema + catalog* half of f00067 S1. The canonical provid
   - "`ICatalogSnapshot.providers?: IProviderSummary[]` populated from the resolved provider roster and surfaced in `<prefix>_overview` and `<prefix>_agent_catalog`."
   - "Regenerate the committed agent-catalog artifact; the compact catalog stays token-lean (providers omitted from compact mode if it would bloat it)."
   - "Empty/absent providers → field omitted, not an empty array (no payload churn)."
-- status: pending
+- status: done
 
 ### S3 — Real mcp-server stdio transport (createStdioTransport)
 - files: plugins/orchestrator-runner/src/lib/subprocess/stdio-transport.ts
