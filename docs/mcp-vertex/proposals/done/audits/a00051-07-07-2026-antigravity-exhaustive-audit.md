@@ -1,5 +1,5 @@
 ---
-id: a00050
+id: a00051
 kind: audit
 title: "Auditoría completa del proyecto — `@mcp-vertex/core` (modo general, 10 bandas)"
 status: done

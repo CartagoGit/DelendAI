@@ -1,5 +1,7 @@
 import { z } from 'zod';
 
+import { CAPABILITY_TAGS } from '../contracts/interfaces/provider-capabilities.interface';
+import type { IProviderSummary } from '../contracts/interfaces/provider-capabilities.interface';
 import type {
 	IToolEffect,
 	IToolRegistration,
@@ -45,6 +47,15 @@ export interface IOverviewSnapshot {
 		readonly id: string;
 		readonly title: string;
 	}>;
+	/**
+	 * f00067a S2 — multi-model provider roster from the config file's
+	 * root `providers` block, projected to lean summaries. Absent when the
+	 * roster is empty/unconfigured so the common single-model setup pays
+	 * zero bytes. The compact overview also drops it (token economy); the
+	 * live availability source of truth stays the orchestrator-runner's
+	 * `healthcheck_providers` tool.
+	 */
+	readonly providers?: readonly IProviderSummary[] | undefined;
 	readonly recommendedNextAction: string;
 }
 
@@ -154,6 +165,33 @@ export const buildOverviewToolRegistration = (
 							z.object({ id: z.string(), title: z.string() }),
 						]),
 					),
+					// f00067a S2: provider roster summaries (full mode only;
+					// omitted entirely when no roster is configured).
+					providers: z
+						.array(
+							z.object({
+								id: z.string(),
+								kind: z.enum([
+									'api',
+									'subscription',
+									'cli',
+									'mcp-server',
+								]),
+								modelId: z.string(),
+								// Literal union: keeps the generated SDK type
+								// assignable to `CostTier`.
+								costTier: z.union([
+									z.literal(1),
+									z.literal(2),
+									z.literal(3),
+									z.literal(4),
+									z.literal(5),
+								]),
+								reachable: z.boolean(),
+								strengths: z.array(z.enum(CAPABILITY_TAGS)),
+							}),
+						)
+						.optional(),
 					recommendedNextAction: z.string(),
 				}),
 			},
@@ -240,6 +278,11 @@ export const buildOverviewToolRegistration = (
 						id: entry.id,
 						title: entry.title,
 					})),
+					// Roster only in full mode; compact mode drops it (the id
+					// list alone is not actionable without kind/costTier).
+					...(snap.providers !== undefined
+						? { providers: snap.providers }
+						: {}),
 					recommendedNextAction: snap.recommendedNextAction,
 				});
 			},

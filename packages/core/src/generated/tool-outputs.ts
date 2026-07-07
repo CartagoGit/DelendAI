@@ -61,6 +61,14 @@ export interface McpVertexAgentCatalogOutput {
 		kind: "feat" | "fix" | "refactor" | "chore" | "docs" | "plan" | "audit" | "unspecified";
 		date: string;
 	}>;
+	providers?: Array<{
+		id: string;
+		kind: "api" | "subscription" | "cli" | "mcp-server";
+		modelId: string;
+		costTier: 1 | 2 | 3 | 4 | 5;
+		reachable: boolean;
+		strengths: Array<"code-edit" | "long-context" | "very-long-context" | "architecture" | "security-audit" | "reasoning" | "vision" | "fast-iteration" | "json-strict" | "multilingual" | "agentic" | "summarization">;
+	}>;
 }
 
 export interface McpVertexAnalyzeProjectOutput {
@@ -635,6 +643,14 @@ export interface McpVertexOverviewOutput {
 	knowledge: Array<string | {
 		id: string;
 		title: string;
+	}>;
+	providers?: Array<{
+		id: string;
+		kind: "api" | "subscription" | "cli" | "mcp-server";
+		modelId: string;
+		costTier: 1 | 2 | 3 | 4 | 5;
+		reachable: boolean;
+		strengths: Array<"code-edit" | "long-context" | "very-long-context" | "architecture" | "security-audit" | "reasoning" | "vision" | "fast-iteration" | "json-strict" | "multilingual" | "agentic" | "summarization">;
 	}>;
 	recommendedNextAction: string;
 }
