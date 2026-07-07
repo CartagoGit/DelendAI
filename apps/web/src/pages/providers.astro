@@ -1,0 +1,344 @@
+---
+/**
+ * `/providers` — static parity page for the provider dashboard (f00098 S5).
+ *
+ * Documents the root-level `providers` roster config (f00067a S1), the
+ * S1 render-model vocabulary, and renders a frozen showcase of the exact
+ * model the VS Code host builds live. No live server dependency: the
+ * fixtures live in `#DATA/provider-dashboard` (f00098 non-goal).
+ */
+import Base from '#LAYOUTS/Base.astro';
+import { useTranslations, type Lang } from '#I18N/ui';
+import { providerDashboardByLang } from '#I18N/provider-dashboard';
+import {
+	ORCHESTRATOR_RUNNER_OPT_IN_SNIPPET,
+	PROVIDER_ROSTER_CONFIG_EXAMPLE,
+	PROVIDER_STATES,
+	PROVIDER_STATUS_ABSENT_SHOWCASE,
+	PROVIDER_STATUS_SHOWCASE,
+} from '#DATA/provider-dashboard';
+
+const lang: Lang = 'en';
+const t = useTranslations(lang);
+const pd = providerDashboardByLang[lang];
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const homeHref = `${base}/`;
+const model = PROVIDER_STATUS_SHOWCASE;
+const absent = PROVIDER_STATUS_ABSENT_SHOWCASE;
+---
+
+<Base lang={lang} title={`${pd.title} — @mcp-vertex/core`}>
+	<section class="page page--providers">
+		<header class="page__header">
+			<a class="page__back" href={homeHref}>← {t.nav.concept}</a>
+			<h1 class="page__title">{pd.title}</h1>
+			<p class="page__lead">{pd.lead}</p>
+		</header>
+
+		<aside class="pdash__note">
+			<strong>{pd.staticNote.title}</strong>
+			<p>{pd.staticNote.body}</p>
+		</aside>
+
+		<section class="pdash__section">
+			<h2>{pd.roster.title}</h2>
+			<p>{pd.roster.body}</p>
+			<pre class="pdash__code"><code>{PROVIDER_ROSTER_CONFIG_EXAMPLE}</code></pre>
+			<aside class="pdash__note pdash__note--secrets">
+				<strong>{pd.roster.secretsTitle}</strong>
+				<p>{pd.roster.secretsBody}</p>
+			</aside>
+		</section>
+
+		<section class="pdash__section">
+			<h2>{pd.optIn.title}</h2>
+			<p>{pd.optIn.body}</p>
+			<pre
+				class="pdash__code pdash__code--cmd"><code>{ORCHESTRATOR_RUNNER_OPT_IN_SNIPPET}</code></pre>
+		</section>
+
+		<section class="pdash__section">
+			<h2>{pd.showcase.title}</h2>
+			<p>{pd.showcase.body}</p>
+			<p class="pdash__meta">
+				{pd.showcase.checkedAt}: <time datetime={model.checkedAt}
+					>{model.checkedAt.replace('T', ' ').replace('.000Z', ' UTC')}</time
+				>
+				— {model.summary.total}
+				{pd.showcase.summary.total}, {model.summary.available}
+				{pd.showcase.summary.available}, {model.summary.unavailable}
+				{pd.showcase.summary.unavailable}
+			</p>
+			<div class="pdash__scroll">
+				<table class="pdash__table">
+					<thead>
+						<tr>
+							<th scope="col">{pd.showcase.table.provider}</th>
+							<th scope="col">{pd.showcase.table.state}</th>
+							<th scope="col">{pd.showcase.table.model}</th>
+							<th scope="col">{pd.showcase.table.cli}</th>
+							<th scope="col">{pd.showcase.table.auth}</th>
+							<th scope="col">{pd.showcase.table.quota}</th>
+						</tr>
+					</thead>
+					<tbody>
+						{model.rows.map((row) => (
+							<tr>
+								<th scope="row">
+									<code>{row.id}</code>
+									<span
+										class={`pdash__dot ${row.reachable ? 'pdash__dot--ok' : 'pdash__dot--down'}`}
+										title={
+											row.reachable
+												? pd.showcase.reachable
+												: pd.showcase.unreachable
+										}
+									/>
+								</th>
+								<td>
+									<span class={`pdash__chip pdash__chip--${row.state}`}>
+										{row.state}
+									</span>
+								</td>
+								<td>
+									<code>{row.modelId}</code>
+									{row.modelAvailable === false && ' ⚠'}
+								</td>
+								<td>
+									{row.cliInstalled
+										? `✓ ${row.cliVersion ?? ''}`
+										: '—'}
+									{row.installHint && (
+										<div class="pdash__hint">
+											{pd.showcase.installHint}:{' '}
+											<code>{row.installHint.command}</code>
+											{row.installHint.dangerous && ' ⚠'}
+										</div>
+									)}
+								</td>
+								<td>
+									{row.authenticated === null
+										? '—'
+										: row.authenticated
+											? `✓${row.authTier ? ` (${row.authTier})` : ''}`
+											: '✗'}
+								</td>
+								<td class="pdash__quota">
+									{row.quota.length === 0 && (
+										<span class="pdash__meta">{pd.showcase.noQuota}</span>
+									)}
+									{row.quota.map((q) => (
+										<div class="pdash__meter">
+											<span class="pdash__meter-label">
+												{q.window}: {q.used ?? '?'} / {q.limit ?? '?'}
+											</span>
+											{q.usedPct !== null && (
+												<span class="pdash__meter-track">
+													<span
+														class={`pdash__meter-fill${q.usedPct > 100 ? ' pdash__meter-fill--over' : ''}`}
+														style={`width:${Math.min(q.usedPct, 100)}%`}
+													/>
+												</span>
+											)}
+										</div>
+									))}
+								</td>
+							</tr>
+						))}
+					</tbody>
+				</table>
+			</div>
+		</section>
+
+		<section class="pdash__section">
+			<h2>{pd.statesTitle}</h2>
+			<dl class="pdash__states">
+				{PROVIDER_STATES.map((state) => (
+					<div class="pdash__state">
+						<dt>
+							<span class={`pdash__chip pdash__chip--${state}`}>{state}</span>
+						</dt>
+						<dd>{pd.states[state]}</dd>
+					</div>
+				))}
+			</dl>
+		</section>
+
+		<section class="pdash__section">
+			<h2>{pd.absent.title}</h2>
+			<p>{pd.absent.body}</p>
+			<aside class="pdash__note">
+				<p>{absent.hint}</p>
+				<pre
+					class="pdash__code pdash__code--cmd"><code>{absent.configSnippet}</code></pre>
+			</aside>
+		</section>
+	</section>
+</Base>
+
+<style>
+	.page--providers {
+		max-width: 1100px;
+		margin: 0 auto;
+		padding: 2rem 1.5rem 4rem;
+	}
+	.page__header {
+		margin-bottom: 2rem;
+	}
+	.page__back {
+		display: inline-block;
+		margin-bottom: 1rem;
+		color: var(--color-muted, #888);
+		text-decoration: none;
+	}
+	.page__title {
+		font-size: 2rem;
+		margin: 0 0 0.5rem;
+	}
+	.page__lead {
+		margin: 0;
+		color: var(--color-muted, #888);
+	}
+	.pdash__section {
+		margin-bottom: 2.5rem;
+	}
+	.pdash__section h2 {
+		font-size: 1.3rem;
+		margin-bottom: 0.5rem;
+	}
+	.pdash__note {
+		border-left: 3px solid var(--color-accent, #7c5cff);
+		background: var(--color-bg-alt, #fafafa);
+		padding: 0.75rem 1rem;
+		margin: 1rem 0 2rem;
+		border-radius: 0 6px 6px 0;
+	}
+	.pdash__note p {
+		margin: 0.35rem 0 0;
+		color: var(--color-muted, #666);
+		font-size: 0.9rem;
+	}
+	.pdash__note--secrets {
+		border-left-color: var(--color-warning, #e0a800);
+	}
+	.pdash__code {
+		overflow-x: auto;
+		background: var(--color-bg-alt, #f6f6f6);
+		border: 1px solid var(--color-border, #e2e2e2);
+		border-radius: 6px;
+		padding: 0.85rem 1rem;
+		font-size: 0.8rem;
+		line-height: 1.5;
+	}
+	.pdash__code--cmd {
+		font-weight: 600;
+	}
+	.pdash__meta {
+		font-size: 0.85rem;
+		color: var(--color-muted, #888);
+	}
+	.pdash__scroll {
+		overflow-x: auto;
+	}
+	.pdash__table {
+		border-collapse: collapse;
+		width: 100%;
+		font-size: 0.85rem;
+	}
+	.pdash__table th,
+	.pdash__table td {
+		padding: 0.5rem 0.75rem;
+		text-align: left;
+		border-bottom: 1px solid var(--color-border, #e2e2e2);
+		vertical-align: top;
+	}
+	.pdash__dot {
+		display: inline-block;
+		width: 0.55rem;
+		height: 0.55rem;
+		border-radius: 50%;
+		margin-left: 0.4rem;
+	}
+	.pdash__dot--ok {
+		background: var(--color-success, #2a9d3f);
+	}
+	.pdash__dot--down {
+		background: var(--color-danger, #d64545);
+	}
+	.pdash__chip {
+		display: inline-block;
+		padding: 0.15rem 0.5rem;
+		border-radius: 999px;
+		font-size: 0.7rem;
+		font-weight: 600;
+		font-family: var(--font-mono, monospace);
+		background: var(--color-bg-alt, #eee);
+		color: var(--color-muted, #555);
+	}
+	.pdash__chip--available {
+		background: rgba(42, 157, 63, 0.15);
+		color: var(--color-success, #2a9d3f);
+	}
+	.pdash__chip--quota-exceeded,
+	.pdash__chip--rate-limited {
+		background: rgba(224, 168, 0, 0.15);
+		color: #856404;
+	}
+	.pdash__chip--unauthenticated,
+	.pdash__chip--not-installed,
+	.pdash__chip--model-unavailable,
+	.pdash__chip--error {
+		background: rgba(214, 69, 69, 0.12);
+		color: var(--color-danger, #b23a3a);
+	}
+	.pdash__hint {
+		margin-top: 0.35rem;
+		font-size: 0.75rem;
+		color: var(--color-muted, #888);
+	}
+	.pdash__quota {
+		min-width: 180px;
+	}
+	.pdash__meter {
+		margin-bottom: 0.4rem;
+	}
+	.pdash__meter-label {
+		display: block;
+		font-size: 0.72rem;
+		font-family: var(--font-mono, monospace);
+		color: var(--color-muted, #777);
+	}
+	.pdash__meter-track {
+		display: block;
+		height: 0.35rem;
+		border-radius: 999px;
+		background: var(--color-border, #e8e8e8);
+		overflow: hidden;
+	}
+	.pdash__meter-fill {
+		display: block;
+		height: 100%;
+		border-radius: 999px;
+		background: var(--color-success, #2a9d3f);
+	}
+	.pdash__meter-fill--over {
+		background: var(--color-danger, #d64545);
+	}
+	.pdash__states {
+		margin: 0;
+	}
+	.pdash__state {
+		display: flex;
+		gap: 0.75rem;
+		align-items: baseline;
+		margin-bottom: 0.6rem;
+	}
+	.pdash__state dt {
+		flex: 0 0 10rem;
+	}
+	.pdash__state dd {
+		margin: 0;
+		font-size: 0.9rem;
+		color: var(--color-muted, #666);
+	}
+</style>

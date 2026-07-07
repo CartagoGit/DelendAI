@@ -112,7 +112,7 @@ already ratchets tool→CLI coverage.
   - "Declarative map: every CLI command group → its UI affordance (vscode command id / view id / web route) or an explicit documented waiver (e.g. shell-only commands like completion); every contributed vscode command → its CLI counterpart or waiver."
   - "Script cross-checks the map against packages/cli registry groups AND extensions/vscode package.json contributes; fails on unmapped entries — new CLI groups can never silently lack a UI story again."
   - "Wired into `bun run validate` after lint:cli-shape; repo passes with the initial map (usage-tracking group maps to S3's panel)."
-
+- status: done
 ### S5 — Web parity (providers + usage docs surface)
 
 - **Status**: pending
