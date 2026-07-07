@@ -19,6 +19,10 @@
 			"types": "./src/public/index.ts",
 			"import": "./src/public/index.ts"
 		},
+		"./webview": {
+			"types": "./src/webview/index.ts",
+			"import": "./src/webview/index.ts"
+		},
 		"./legacy": {
 			"types": "./src/index.ts",
 			"import": "./src/index.ts"

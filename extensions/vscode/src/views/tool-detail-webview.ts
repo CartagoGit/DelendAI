@@ -1,5 +1,5 @@
 import type { IMetricsSnapshot, IToolDescriptor } from '@mcp-vertex/client';
-import { DEFAULT_DENY, injectCspMeta } from '@mcp-vertex/ui-extension/public';
+import { DEFAULT_DENY, injectCspMeta } from '@mcp-vertex/ui-extension/webview';
 
 import {
 	type IRenderableSchema,
