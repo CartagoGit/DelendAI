@@ -62,15 +62,13 @@ export interface IDrawerProps {
 	readonly label: string;
 	/** Brand mark rendered in the panel head. Pass-through to
 	 *  `renderBrandMark` — `null` to omit. */
-	readonly brand?:
-		| {
-				readonly href: string;
-				readonly logoSrc: string;
-				readonly brandText: string;
-				readonly logoWidth?: number;
-				readonly logoHeight?: number;
-		  }
-		| null;
+	readonly brand?: {
+		readonly href: string;
+		readonly logoSrc: string;
+		readonly brandText: string;
+		readonly logoWidth?: number;
+		readonly logoHeight?: number;
+	} | null;
 	/** Link list rendered in the panel body. */
 	readonly links: ReadonlyArray<IDrawerLink>;
 	/** Accessible label of the close button (`aria-label`). */

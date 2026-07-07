@@ -5,8 +5,10 @@
  *
  * Replaces the tab-trigger portion of
  * `apps/web/src/components/ui/Tabs.astro` (f00048 S1 / f00069 S2)
- * for any host that needs an accessible tab strip. The `.astro`
- * wrapper that calls into this module is now a 6-line shim; the
+ * and the dashboard tabbar in `packages/ui-extension/src/dashboard/
+ * builders/build-tabs-bar.ts` (f00102 S4-real-extract) for any host
+ * that needs an accessible tab strip. The `.astro` wrapper that
+ * calls into this module is now a 6-line shim; the
  * `<section class="mv-tabs">` wrapper + the `<slot name="panels">`
  * stay in the Astro world because Astro slots cannot be serialised
  * into a string by JS — only the markup that does NOT depend on
@@ -31,6 +33,15 @@
  *   a `<span class="mv-tabs__icon mv-tabs__icon--fallback">` with
  *   the first letter of the tab id, so broken icon URLs still show
  *   a meaningful affordance.
+ * - `idPrefix` lets the dashboard emit `id="tab-{id}"` /
+ *   `aria-controls="panel-{id}"` to keep its existing test
+ *   selectors and SCSS rules working without a rewrite. Default
+ *   is the docs-site convention (`mv-tab-` / `mv-panel-`).
+ * - `actionHtml` is a passthrough rendered inside the `<li>` list
+ *   AFTER the real tabs (e.g. the dashboard's refresh button).
+ *   It is intentionally NOT a tab (no `role="tab"`, no
+ *   `data-tab-trigger`) so it stays out of the roving-tabindex
+ *   keyboard navigation.
  * - Returns HTML only. No script. The runtime glue that wires the
  *   keyboard / roving tabindex lives in apps/web (see
  *   `_tabs-controller.ts`) and in `renderRuntime` from
@@ -55,6 +66,15 @@ export interface ITabsProps {
 	readonly variant?: TabsVariant;
 	/** Accessible label for the tablist (`aria-label`). */
 	readonly label?: string;
+	/** Override the default `mv-` id prefix. The docs site uses
+	 *  `mv-tab-{id}` / `mv-panel-{id}`; the dashboard uses
+	 *  `tab-{id}` / `panel-{id}` to keep its existing CSS +
+	 *  client-script selectors working. Default `mv-`. */
+	readonly idPrefix?: string;
+	/** Extra `<li>` content rendered after the real tabs. Used
+	 *  by the dashboard for the refresh button (action, not a
+	 *  tab). Default empty. */
+	readonly actionHtml?: string;
 }
 
 const escapeAttr = (raw: string): string =>
@@ -98,7 +118,13 @@ const renderBadge = (badge: string | undefined): string =>
  * these for the docs site. Other hosts bring their own glue.
  */
 export const renderTabs = (props: ITabsProps): string => {
-	const { tabs, defaultTab, label = 'Sections' } = props;
+	const {
+		tabs,
+		defaultTab,
+		label = 'Sections',
+		idPrefix = 'mv-',
+		actionHtml = '',
+	} = props;
 	const variant: TabsVariant = props.variant ?? 'underline';
 	const initial = defaultTab ?? tabs[0]?.id ?? '';
 
@@ -110,11 +136,11 @@ export const renderTabs = (props: ITabsProps): string => {
 			return (
 				`<li role="presentation">` +
 				`<button type="button" role="tab" ` +
-				`id="mv-tab-${escapeAttr(t.id)}" ` +
+				`id="${escapeAttr(idPrefix)}tab-${escapeAttr(t.id)}" ` +
 				`class="mv-tabs__tab" ` +
 				`data-tab-trigger="${escapeAttr(t.id)}" ` +
 				`aria-selected="${ariaSelected}" ` +
-				`aria-controls="mv-panel-${escapeAttr(t.id)}" ` +
+				`aria-controls="${escapeAttr(idPrefix)}panel-${escapeAttr(t.id)}" ` +
 				`tabindex="${tabindex}">` +
 				renderIcon(t.icon, t.id) +
 				`<span class="mv-tabs__label">${escapeText(t.label)}</span>` +
@@ -124,10 +150,13 @@ export const renderTabs = (props: ITabsProps): string => {
 			);
 		})
 		.join('');
+	const actionLi = actionHtml
+		? `<li role="presentation" class="mv-tabs__action">${actionHtml}</li>`
+		: '';
 
 	return (
 		`<nav class="mv-tabs__bar" aria-label="${escapeText(label)}" data-tabs-variant="${escapeAttr(variant)}">` +
-		`<ul role="tablist" class="mv-tabs__list">${tabButtons}</ul>` +
+		`<ul role="tablist" class="mv-tabs__list">${tabButtons}${actionLi}</ul>` +
 		`</nav>`
 	);
 };
