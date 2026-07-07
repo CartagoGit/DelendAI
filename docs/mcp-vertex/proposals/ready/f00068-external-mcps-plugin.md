@@ -1,6 +1,6 @@
 ---
 id: f00068
-status: paused
+status: ready
 paused-reason: Blocked on multi-model orchestrator and dependency prerequisites
 type: proposal
 track: core+plugins+host+config+i18n+docs+web+extensions/vscode
@@ -15,14 +15,17 @@ related:
     - AGENTS.md # the invariants this proposal must not break (no process.cwd in engines, plugin owns its namespace, durable writes go through the primitives)
 ---
 
-# f00068 — external-mcps plugin (paused)
+# f00068 — external-mcps plugin
 
-> **Status: paused.** The proposal captures the design we agreed on
-> during the 2026-06-26 session (filesystem + angular as the seed
-> servers, lazy boot, LLM-assisted config, `ext.*` namespace prefix).
-> The slice below is the **gate to unpause**, not work to do today.
-> Until the gate is met, no code under `plugins/external-mcps/` is
-> authored; no test fixtures are created; no host wiring is started.
+> **Status: UNPAUSED (2026-07-07).** The blocking prerequisite (the
+> f00067 multi-model orchestrator) shipped, and the user delegated
+> the eight gate decisions on 2026-07-07 ("crealo con todo lo que
+> creas que tiene más sentido y es más útil y gaste pocos tokens si
+> se usara — lo van a usar modelos como tú"). The resolved gate is
+> recorded in `## Unpause gate — RESOLVED`; the claimable slices
+> follow it. Design mandate: **token economy first** — the plugin is
+> consumed by LLMs, so nothing rides in the system prompt and every
+> payload is compact by default.
 
 ## Goal
 
@@ -908,106 +911,72 @@ for X?" and gets back a one-line summary per matching entry
 
 ## Slices
 
-### S1 — Resume external-mcps plugin after the unpause gate is met
+- global_gate: validate
 
-- **Status**: paused.
-- **Files**:
-  [`docs/mcp-vertex/proposals/paused/f00068-external-mcps-plugin-paused.md`](f00068-external-mcps-plugin-paused.md),
-  [`plugins/external-mcps/`](../../../plugins/external-mcps/) (new),
-  [`extensions/vscode/src/host-config.ts`](../../../extensions/vscode/src/host-config.ts).
-- **Gate**: `bun run validate`.
-- **Acceptance**: resume **only after** every precondition in the
-  list below is confirmed by the user and recorded in this slice's
-  `## Unpause gate` block:
+### S1 — Config schema + catalog tool (pure core of the plugin)
 
-  1. **Decision: scope of the curated tier (⭐).** The user
-     approves the curated catalog (~25 servers) that ships in the
-     system prompt. The defaults are listed in the §"Curated tier"
-     table above; the user may add, remove, or reorder before
-     unpausing P2.
-  2. **Decision: scope of the discoverable tier (🟡).** The user
-     confirms the discoverable catalog (~200+ servers, across 9
-     categories). Each 🟡 entry becomes claimable as a discrete
-     slice after P2 lands; none enter the system prompt. The user
-     may trim categories before unpausing.
-  3. **Decision: live search policy (⛔).** The user picks the
-     default for `allowDiscoverySearch` (recommended `false`; off
-     until explicitly enabled). If enabled, the rate-limit budget
-     (10 calls / 10 min) and per-candidate ack requirement are
-     accepted as the cost of breadth.
-  4. **Decision: namespace prefix taxonomy.** The user confirms
-     the `ext.<category>.<tool>` contract and the
-     `namespacePrefix` value for each curated entry. Collisions
-     (e.g. `ext.fs` for filesystem vs `ext.fs` for F#) are
-     resolved here — see the discoverable tier for renames
-     already applied.
-  5. **Decision: ack surface.** The user picks how
-     `external_mcp_ack` surfaces in the VS Code host:
-     notification + dashboard action, or host-modal dialog.
-  6. **Token budget green.** A benchmark run of `overview` plus
-     `external_mcp_catalog` plus the curated tier (~25 entries)
-     stays under the existing budget envelope; the
-     `packages/core/tests/src/lib/plugin-drift-budget.spec.ts`
-     suite still passes.
-  7. **Security review.** The user (or a designated reviewer) signs
-     off on the
-     [security risks table](#risks-and-mitigations) below and the
-     proposed mitigations (workspace containment via
-     `resolveWorkspaceContained`, `redactSecrets` middleware,
-     mandatory version pinning, rate-limit budget for live tier).
-  8. **No conflict with `f00067`.** The multi-model orchestrator's
-     `usage-tracking` plugin records the external tool calls; we
-     confirm the cost-tracking shape accepts `ext.*` tool prefixes
-     without changes.
+- **Status**: pending
+- **Files**: `plugins/external-mcps/src/index.ts`, `plugins/external-mcps/src/lib/options-schema.ts`, `plugins/external-mcps/src/lib/catalog/catalog-data.ts`, `plugins/external-mcps/src/lib/tools/catalog.tool.ts`, `plugins/external-mcps/src/lib/tools/validate-config.tool.ts`, `plugins/external-mcps/tests/src/lib/catalog.spec.ts`, `plugins/external-mcps/tests/src/lib/validate-config.spec.ts`
+- **Gate**: bun run typecheck && bun run test
+- **Acceptance**:
+  - "OptionsSchema (Zod): `servers.<name>` entries (pinned version required, command+args transport, namespacePrefix, optional detect rule) + the 3 autonomy knobs with the resolved defaults (llmDecidesActivation:true, requireHumanAckWhenLlmDecides:true, allowDiscoverySearch:false)."
+  - "`external_mcp_catalog`: compact by default (id/category/one-liner), `query` filter, max 10 matches, `detail:'<id>'` for one full entry; curated 10 + discoverable tier in catalog-data.ts; NOTHING enters the system prompt."
+  - "`external_mcp_validate_config`: dry-run a proposed servers patch against the schema (mandatory-pin + kebab-id + no-cleartext enforced), returns issues — never writes."
 
-  When all six are recorded as resolved in this section, the slice
-  is **promoted**: this file moves to `ready/` (or `in-progress/`
-  if the user wants to start P1 immediately) and S1 of the
-  unpaused version takes over.
+### S2 — Lazy subprocess registry + status + filesystem seed
 
-### Unpaused slices (preview — do not run while paused)
+- **Status**: pending
+- **Files**: `plugins/external-mcps/src/lib/subprocess/server-registry.ts`, `plugins/external-mcps/src/lib/tools/status.tool.ts`, `plugins/external-mcps/src/lib/tools/invoke-proxy.ts`, `plugins/external-mcps/tests/src/lib/server-registry.spec.ts`, `plugins/external-mcps/tests/e2e/filesystem-roundtrip.e2e.spec.ts`
+- **Depends on**: S1
+- **Gate**: bun run typecheck && bun run test
+- **Acceptance**:
+  - "Registry reuses the f00067a createStdioTransport pattern (NDJSON JSON-RPC, SIGTERM→SIGKILL close, timers unref'd, no process.cwd): declared servers spawn LAZILY on first `ext.<server>.*` call, child cached, `eager: true` opt-out per server."
+  - "`external_mcp_status`: per-server {declared, running, pid?, bootedAt?, lastError?} — compact. e2e drives a stub MCP child via process.execPath (CI-friendly, no npm dep) through declare→lazy-boot→call→close."
+  - "Spec proves an `ext.*`-named call round-trips usage-tracking record→report unchanged (gate decision 8)."
 
-These are the slices that **will** be claimed once S1 is promoted.
-They are documented here so the gate reviewer can audit the full
-shape of the work before approving.
+### S3 — Suggest + ack flow (LLM-assisted config, human-acked)
 
-- **P1 — Skeleton.** `plugins/external-mcps/` with OptionsSchema
-  (Zod) + 6 tool stubs + 6 specs + `external_mcp_*` validators.
-  Gate: `bun run typecheck && bun run lint && bun run test`.
-- **P2 — Catalog + lazy boot.** `external_mcp_catalog` +
-  `external_mcp_status` real implementations. Subprocess registry
-  with lazy boot and `eager` override. Seed server: filesystem.
-  Gate: `bun run validate` plus a manual e2e.
-- **P3 — Suggest + validate.** `external_mcp_suggest` +
-  `external_mcp_validate_config` with diff renderer against the
-  Zod schema, mandatory-pin enforcement. Gate: `bun run validate`.
-- **P4 — Angular + detection.** Second seed server (angular-mcp)
-  with `detect: package.json#dependencies['@angular/core']` and
-  the `external-mcps` skill documenting the LLM workflow. Gate:
-  `bun run validate`.
-- **P5 — Discovery (gated).** `allowDiscoverySearch: true` →
-  `external_mcp_discover` consults the npm registry. Off by
-  default; lint test asserts the off default. Gate: `bun run
-  validate`.
-- **P6 — Host integration.** `extensions/vscode/` wires the host
-  config, the ack notification, and the dashboard action. Gate:
-  `bun run validate` plus a manual VS Code reload.
+- **Status**: pending
+- **Files**: `plugins/external-mcps/src/lib/tools/suggest.tool.ts`, `plugins/external-mcps/src/lib/tools/ack.tool.ts`, `plugins/external-mcps/src/lib/ack/pending-acks.ts`, `plugins/external-mcps/tests/src/lib/suggest-ack.spec.ts`
+- **Depends on**: S1
+- **Gate**: bun run typecheck && bun run test
+- **Acceptance**:
+  - "`external_mcp_suggest` returns an RFC6902 patch proposal for the config (same convention as the f00067 bootstrap wizard) + the catalog rationale; it NEVER applies — writing config stays with the human/host."
+  - "`external_mcp_ack`: pending activations persist under the cache dir (redactSecrets, writeFileAtomic); when requireHumanAckWhenLlmDecides, first activation of a declared server requires a recorded ack; notification emitted via the standard notify bridge (non-modal, decision 5)."
+
+### S4 — Detection, skill, i18n + docs surface
+
+- **Status**: pending
+- **Files**: `plugins/external-mcps/src/lib/detect/detect-rules.ts`, `plugins/external-mcps/skills/external-mcps.skill.md`, `apps/web/src/i18n/tools/external-mcps.ts`, `docs/mcp-vertex/PLUGINS-MCP-VERTEX.md`
+- **Depends on**: S2, S3
+- **Gate**: bun run validate
+- **Acceptance**:
+  - "Angular seed detect rule (`package.json#dependencies['@angular/core']`) + generic detect engine; detection only ANNOTATES the catalog/suggest output (`detected: true`), never activates (knob semantics preserved)."
+  - "All 6 tools registered in the web i18n table (12-lang per convention); skill documents the LLM workflow (catalog→suggest→ack→call); plugin documented in PLUGINS-MCP-VERTEX; catalog artifacts regenerated; token-budget suite green (decision 6)."
+
+### S5 — Gated discovery + vscode ack surface
+
+- **Status**: pending
+- **Files**: `plugins/external-mcps/src/lib/tools/discover.tool.ts`, `plugins/external-mcps/tests/src/lib/discover-gate.spec.ts`, `extensions/vscode/src/commands/external-mcps-ack.ts`, `tools/scripts/lint/cli-ui-parity.map.json`
+- **Depends on**: S2, S3
+- **Gate**: bun run validate
+- **Acceptance**:
+  - "`external_mcp_discover` consults the npm registry ONLY when allowDiscoverySearch:true; spec asserts the off-default returns the structured opt-in hint (never a network call); 10/10min budget enforced in-memory."
+  - "vscode: pending-ack notification action + dashboard chip wired (thin adapter over `external_mcp_ack`); parity map updated."
 
 ## Acceptance
 
-- ✅ The proposal file exists at
-  `docs/mcp-vertex/proposals/paused/f00068-external-mcps-plugin-paused.md`
-  with `status: paused` and `kind: feat`.
-- ✅ Frontmatter is `lint:proposals`-clean (all six required
-  string fields present, id matches `^[a-z]\d{5}$`, folder
-  matches `paused/`).
-- ✅ Slice S1 satisfies the slice scaffold (Status, Files, Gate)
-  and the linter passes.
-- ✅ `bun run lint:proposals` reports 0 fatal errors.
-- ✅ The 6 unpaused slice previews (P1–P6) are documented for
-  reviewer audit and are explicitly not claimable while paused.
-- ✅ No code under `plugins/external-mcps/` exists yet (verified
-  via `find plugins -type d -name external-mcps`).
+- `bun run typecheck` → exit 0 (root globs `plugins/*/src`, so the new
+  plugin is auto-typechecked).
+- `bun run test` → exit 0.
+- `bun run validate` → exit 0 (i18n table, catalog artifacts,
+  no-cleartext-secrets, token-budget suite all green).
+- Zero system-prompt cost when the plugin is not loaded AND when it is
+  loaded but unused beyond the ~6 tool one-liners in the overview
+  (decisions 1 + 6).
+- `allowDiscoverySearch` defaults to `false` and a spec pins it.
+- Every activation under `requireHumanAckWhenLlmDecides: true` has a
+  recorded, durable ack (redacted, atomic).
 - ✅ No reference to `externalServers` exists yet in
   `extensions/vscode/src/host-config.ts` or in any other host
   config (verified via `grep -r externalServers extensions/`).
@@ -1067,6 +1036,48 @@ shape of the work before approving.
 | **Angular (and other ecosystems with no maintained MCP)**: LLM needs an Angular-specific tool that doesn't exist | Low–Medium | The frontend-frameworks discoverable table explicitly says "no maintained MCP exists" for Angular and recommends the universal stack (`context7` for docs + `mcp-language-server` against `angular-language-server` for symbols + `chrome-devtools-mcp` for runtime). Verified on 2026-06-26 that `cyanheads/angular-mcp-server`, `darioz-ms/angular-mcp`, and `Microcks/angular-mcp` all return 404. |
 
 ## Notes
+
+**Unpause gate — RESOLVED (2026-07-07, decisions delegated to the
+agent).** The user delegated all eight decisions with the mandate "lo
+más útil y que gaste pocos tokens — lo van a usar modelos como tú".
+Resolutions:
+
+1. **Curated tier: 10 entries, ZERO system-prompt bytes.** The curated
+   catalog is trimmed from ~25 to 10 high-signal servers (filesystem,
+   git, github, fetch, memory, sqlite, postgres, playwright, docker,
+   angular — the user's stack plus the universal ones) AND — overriding
+   the original design — it does NOT ship in the system prompt at all.
+   Discovery is one `external_mcp_catalog` call away, compact by
+   default (id + category + one-liner ≈ 15 tokens/entry). A cold
+   session pays 0 tokens; a session that needs an external server pays
+   ~150.
+2. **Discoverable tier: on-disk JSON, loaded on demand.** The ~200+
+   entry list lives in a data file inside the plugin, queried via
+   `external_mcp_catalog { query }` with filtering — never in the
+   prompt, never returned whole (max 10 matches per call).
+3. **Live search: `allowDiscoverySearch: false` default**, exactly as
+   recommended; when enabled, the 10 calls / 10 min budget and
+   per-candidate ack apply.
+4. **Namespace: `ext.<server>.<tool>` confirmed** (server id, not
+   category — unambiguous, no F#/filesystem collisions by
+   construction; ids are the roster keys, kebab-case, unique by Zod).
+5. **Ack surface: notification + dashboard action** (non-modal). A
+   modal blocks agent flows; the notification carries the accept
+   action and the pending ack is visible in the provider dashboard.
+   `requireHumanAckWhenLlmDecides` stays `true` by default.
+6. **Token budget: enforced by spec.** The plugin adds ~6 tools with
+   one-line summaries to the overview (≈120 tokens when loaded — it is
+   opt-in, so default deployments pay nothing); the budget regression
+   suite gates it.
+7. **Security: mitigations accepted as designed** — workspace
+   containment via `resolveWorkspaceContained`, `redactSecrets` before
+   every durable write, mandatory version pinning (no `latest`), env
+   secrets by NAME only (lint:no-cleartext-secrets), rate-limit budget
+   for the live tier.
+8. **usage-tracking compatibility: verified by spec in S2.** Tool
+   names are opaque strings in the NDJSON log; an `ext.*`-named call
+   must round-trip through record→report unchanged.
+
 
 - **External MCP dossier** (verified 2026-06-26 against canonical
   repos): see [`docs/external-mcps/`](../../../../external-mcps/README.md)
