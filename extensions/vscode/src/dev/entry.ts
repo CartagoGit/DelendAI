@@ -29,6 +29,11 @@
  * minimum-blast-radius fix.
  */
 import type { IMetricsSnapshot, IToolDescriptor } from '@mcp-vertex/client';
+import {
+	mockDashboardModel,
+	renderDashboard,
+} from '@mcp-vertex/ui-extension/webview';
+import { dictsByLang } from '@mcp-vertex/shared/i18n';
 
 import { renderMetricsHtml } from '../views/metrics-sparkline';
 import { renderToolDetailHtml } from '../views/tool-detail-webview';
@@ -136,6 +141,21 @@ const WEBVIEWS: ReadonlyArray<{
 	label: string;
 	render: () => string;
 }> = [
+	{
+		// The full dashboard — the same `renderDashboard` the extension's
+		// `mcp-vertex.openDashboard` command renders against a real
+		// `IDashboardAllModels` snapshot, but fed the shared mock for the
+		// dev preview so you can iterate on the UI without the MCP server.
+		id: 'dashboard',
+		label: 'dashboard (full UI)',
+		render: () =>
+			renderDashboard(mockDashboardModel, {
+				docsUrl: 'https://cartagogit.github.io/mcp-vertex/',
+				refreshCommand: 'mcp-vertex.refresh',
+				openDocsCommand: 'mcp-vertex.openDocs',
+				lang: dictsByLang.en,
+			}),
+	},
 	{
 		id: 'tool-detail',
 		label: 'tool-detail (webview panel)',
