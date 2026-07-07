@@ -60,22 +60,45 @@ export const dashboardCss: string = `
 	 * below starts a CSS custom property (which begins with
 	 * two hyphens) — keep that token separate from any text
 	 * the TS lexer could mistake for an expression. */
-	--mv-bg: var(--vscode-editor-background, #1e1e1e);
-	--mv-bg-soft: var(--vscode-sideBar-background, #252526);
-	--mv-bg-card: var(--vscode-editorWidget-background, #252526);
-	--mv-fg: var(--vscode-foreground, #d4d4d4);
-	--mv-fg-muted: var(--vscode-descriptionForeground, #858585);
-	--mv-border: var(--vscode-widget-border, #3c3c3c);
-	--mv-border-strong: var(
+	/*
+	 * Each MV color token reads from an MV-host indirection. That
+	 * indirection defaults to the host VS Code token when running
+	 * inside a real webview, and to a GitHub-dark fallback otherwise.
+	 * The data-theme selectors below OVERRIDE the MV-host indirection
+	 * — so a user's explicit theme choice always wins, even when the
+	 * host exposes VS Code tokens that would otherwise take
+	 * precedence (the user's intent beats the host's theme).
+	 */
+	--mv-bg-host: var(--vscode-editor-background, #1e1e1e);
+	--mv-bg-soft-host: var(--vscode-sideBar-background, #252526);
+	--mv-bg-card-host: var(--vscode-editorWidget-background, #252526);
+	--mv-fg-host: var(--vscode-foreground, #d4d4d4);
+	--mv-fg-muted-host: var(--vscode-descriptionForeground, #858585);
+	--mv-border-host: var(--vscode-widget-border, #3c3c3c);
+	--mv-border-strong-host: var(
 		--vscode-editorWidget-border,
 		var(--vscode-widget-border, #3c3c3c)
 	);
-	--mv-link: var(--vscode-textLink-foreground, var(--mv-brand-blue));
-	--mv-link-active: var(--vscode-textLink-activeForeground, #ff8c69);
-	--mv-focus: var(--vscode-focusBorder, #007fd4);
-	--mv-error: var(--vscode-errorForeground, #f48771);
-	--mv-warn: var(--vscode-editorWarning-foreground, #cca700);
-	--mv-ok: var(--vscode-terminal-ansiGreen, #89d185);
+	--mv-link-host: var(--vscode-textLink-foreground, var(--mv-brand-blue));
+	--mv-link-active-host: var(--vscode-textLink-activeForeground, #ff8c69);
+	--mv-focus-host: var(--vscode-focusBorder, #007fd4);
+	--mv-error-host: var(--vscode-errorForeground, #f48771);
+	--mv-warn-host: var(--vscode-editorWarning-foreground, #cca700);
+	--mv-ok-host: var(--vscode-terminal-ansiGreen, #89d185);
+
+	--mv-bg: var(--mv-bg-host);
+	--mv-bg-soft: var(--mv-bg-soft-host);
+	--mv-bg-card: var(--mv-bg-card-host);
+	--mv-fg: var(--mv-fg-host);
+	--mv-fg-muted: var(--mv-fg-muted-host);
+	--mv-border: var(--mv-border-host);
+	--mv-border-strong: var(--mv-border-strong-host);
+	--mv-link: var(--mv-link-host);
+	--mv-link-active: var(--mv-link-active-host);
+	--mv-focus: var(--mv-focus-host);
+	--mv-error: var(--mv-error-host);
+	--mv-warn: var(--mv-warn-host);
+	--mv-ok: var(--mv-ok-host);
 
 	/* Geometry — tight, native. Real VS Code panels use 12–16px padding
 	 * and 4px gaps; the dashboard mirrors that. */
@@ -552,6 +575,70 @@ select:focus-visible {
 	clip: rect(0 0 0 0);
 	white-space: nowrap;
 	border: 0;
+}
+
+/* ─── Theme overrides ────────────────────────────────────────────── */
+/*
+ * The dashboard inherits the host's theme via VS Code tokens. When
+ * the user picks theme light or dark from the Settings panel we
+ * set data-theme on the html element; the selectors below override
+ * the GitHub-dark fallbacks with explicit GitHub-light / GitHub-dark
+ * palettes so the dev entry (and any non-VS-Code host) actually
+ * reflects the user's choice instead of always showing dark.
+ *
+ * Priority order inside a token:
+ *   1. Explicit data-theme override (this block)
+ *   2. VS Code host value (real VS Code webview)
+ *   3. CSS fallback declared on the original property
+ *
+ * So the light/dark block wins when present, but a real
+ * VS Code background still wins when the host supplies one. We
+ * achieve that by overriding the MV-host indirection here.
+ */
+html[data-theme='light'] {
+	--mv-bg-host: var(--vscode-editor-background, #ffffff);
+	--mv-bg-soft-host: var(--vscode-sideBar-background, #f6f8fa);
+	--mv-bg-card-host: var(--vscode-editorWidget-background, #ffffff);
+	--mv-fg-host: var(--vscode-foreground, #1f2328);
+	--mv-fg-muted-host: var(--vscode-descriptionForeground, #59636e);
+	--mv-border-host: var(--vscode-widget-border, #d1d9e0);
+	--mv-link-host: var(--vscode-textLink-foreground, #0969da);
+	--mv-link-active-host: var(--vscode-textLink-activeForeground, #0969da);
+	--mv-focus-host: var(--vscode-focusBorder, #0969da);
+	--mv-error-host: var(--vscode-errorForeground, #cf222e);
+	--mv-warn-host: var(--vscode-editorWarning-foreground, #9a6700);
+	--mv-ok-host: var(--vscode-terminal-ansiGreen, #1a7f37);
+}
+
+html[data-theme='dark'] {
+	--mv-bg-host: var(--vscode-editor-background, #1e1e1e);
+	--mv-bg-soft-host: var(--vscode-sideBar-background, #252526);
+	--mv-bg-card-host: var(--vscode-editorWidget-background, #252526);
+	--mv-fg-host: var(--vscode-foreground, #d4d4d4);
+	--mv-fg-muted-host: var(--vscode-descriptionForeground, #858585);
+	--mv-border-host: var(--vscode-widget-border, #3c3c3c);
+	--mv-link-host: var(--vscode-textLink-foreground, #3794ff);
+	--mv-link-active-host: var(--vscode-textLink-activeForeground, #ff8c69);
+	--mv-focus-host: var(--vscode-focusBorder, #007fd4);
+	--mv-error-host: var(--vscode-errorForeground, #f48771);
+	--mv-warn-host: var(--vscode-editorWarning-foreground, #cca700);
+	--mv-ok-host: var(--vscode-terminal-ansiGreen, #89d185);
+}
+
+@media (prefers-color-scheme: light) {
+	html:not([data-theme]) {
+		--mv-bg-host: var(--vscode-editor-background, #ffffff);
+		--mv-bg-soft-host: var(--vscode-sideBar-background, #f6f8fa);
+		--mv-bg-card-host: var(--vscode-editorWidget-background, #ffffff);
+		--mv-fg-host: var(--vscode-foreground, #1f2328);
+		--mv-fg-muted-host: var(--vscode-descriptionForeground, #59636e);
+		--mv-border-host: var(--vscode-widget-border, #d1d9e0);
+		--mv-link-host: var(--vscode-textLink-foreground, #0969da);
+		--mv-focus-host: var(--vscode-focusBorder, #0969da);
+		--mv-error-host: var(--vscode-errorForeground, #cf222e);
+		--mv-warn-host: var(--vscode-editorWarning-foreground, #9a6700);
+		--mv-ok-host: var(--vscode-terminal-ansiGreen, #1a7f37);
+	}
 }
 
 @media (prefers-reduced-motion: reduce) {
