@@ -14,10 +14,11 @@ describe('renderOutputSchema', async () => {
 			},
 		});
 
-		expect(html).toContain(
-			'<strong>compact</strong> <span>optional</span>',
-		);
-		expect(html).toContain('<strong>name</strong> <span>required</span>');
+		expect(html).toContain('<strong>compact</strong>');
+		expect(html).toContain('<code>boolean</code>');
+		expect(html).toContain('<span>optional</span>');
+		expect(html).toContain('<strong>name</strong>');
+		expect(html).toContain('<span>required</span>');
 		expect(html).toContain('Tool name');
 	});
 

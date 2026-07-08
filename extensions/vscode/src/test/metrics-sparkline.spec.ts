@@ -47,7 +47,7 @@ describe('metrics sparkline', async () => {
 				{ label: 'b', value: 2 },
 			]),
 		).toBe(
-			'<svg viewBox="0 0 240 48" role="img" aria-label="a:0 b:2"><polyline fill="none" stroke="currentColor" stroke-width="2" points="0,48 240,0" /></svg>',
+			'<svg class="metrics__sparkline" viewBox="0 0 480 96" role="img" aria-label="a:0 b:2"><polyline fill="none" stroke="currentColor" stroke-width="2" points="0,96 480,0" /></svg>',
 		);
 	});
 
