@@ -14,10 +14,7 @@
  */
 import { describe, expect, it } from 'vitest';
 
-import {
-	renderThemePicker,
-	type ThemeChoice,
-} from './theme-picker';
+import { renderThemePicker, type ThemeChoice } from './theme-picker';
 
 describe('renderThemePicker', () => {
 	it('emits the canonical fieldset + radios', () => {
@@ -51,7 +48,9 @@ describe('renderThemePicker', () => {
 			current: 'system',
 			hint: 'Pick a theme',
 		});
-		expect(out).toContain('<p class="mv-theme-picker__hint">Pick a theme</p>');
+		expect(out).toContain(
+			'<p class="mv-theme-picker__hint">Pick a theme</p>',
+		);
 	});
 
 	it('omits the hint paragraph when hint is missing', () => {
@@ -66,7 +65,9 @@ describe('renderThemePicker', () => {
 
 	it('renders the inline variant without a fieldset', () => {
 		const out = renderThemePicker({ current: 'system', inline: true });
-		expect(out).toContain('<label class="mv-theme-picker mv-theme-picker--inline">');
+		expect(out).toContain(
+			'<label class="mv-theme-picker mv-theme-picker--inline">',
+		);
 		expect(out).not.toContain('<fieldset');
 		expect(out).not.toContain('<legend>');
 	});
