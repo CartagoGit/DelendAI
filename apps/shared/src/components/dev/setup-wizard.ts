@@ -93,8 +93,7 @@ export const renderSetupWizard = (
 		)
 		.join('');
 
-	return (
-		`<section class="mv-setup setup" data-kind="${status.kind}">
+	return `<section class="mv-setup setup" data-kind="${status.kind}">
 			<header class="mv-setup__head setup__head">
 				<h1>${escapeAttr(heading)}</h1>
 				<p class="mv-setup__hint setup__hint">${escapeAttr(status.suggestion)}</p>
@@ -108,8 +107,7 @@ export const renderSetupWizard = (
 				<button type="button" id="setup-refresh" class="mv-setup__secondary setup__secondary">Re-check</button>
 				<span class="mv-setup__status setup__status" id="setup-status" role="status" aria-live="polite"></span>
 			</footer>
-		</section>`
-	);
+		</section>`;
 };
 
 export interface IRenderStatusBannerOptions {
@@ -119,7 +117,8 @@ export interface IRenderStatusBannerOptions {
 	readonly warnPrefix?: string;
 }
 
-const DEFAULT_OK = 'Workspace is configured. The dashboard should be fetching real data on the <code>Dashboard</code> tab.';
+const DEFAULT_OK =
+	'Workspace is configured. The dashboard should be fetching real data on the <code>Dashboard</code> tab.';
 
 export const renderStatusBanner = (
 	status: ISetupWizardStatus,
@@ -135,7 +134,9 @@ export const renderStatusBanner = (
 		);
 	}
 	const verb = status.kind === 'partial' ? 'Finish' : 'Run';
-	const prefix = options.warnPrefix ?? `Workspace isn't fully wired (${status.kind}). ${verb} the setup below to drop the missing files.`;
+	const prefix =
+		options.warnPrefix ??
+		`Workspace isn't fully wired (${status.kind}). ${verb} the setup below to drop the missing files.`;
 	return (
 		`<p class="mv-status-banner mv-status-banner--warn settings__status settings__status--warn">` +
 		`<span class="mv-setup__signal-icon setup__signal-icon">!</span>` +
