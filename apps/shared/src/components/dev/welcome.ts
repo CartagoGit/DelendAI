@@ -92,8 +92,7 @@ export const renderFirstRunScreen = (installLabel: string): string => {
 			</article>`,
 	).join('');
 
-	return (
-		`<section class="mv-welcome welcome" data-first-run="true">
+	return `<section class="mv-welcome welcome" data-first-run="true">
 			<header class="mv-welcome__head welcome__head">
 				<h1>Welcome to mcp-vertex</h1>
 				<p class="mv-welcome__lede welcome__lede">This extension ships a dashboard, settings, and a tools panel for the <code>mcp-vertex</code> MCP server. The MCP server is not installed in this workspace yet — once it is, the dashboard will switch to fetching real data from it.</p>
@@ -105,8 +104,7 @@ export const renderFirstRunScreen = (installLabel: string): string => {
 				<button type="button" id="welcome-install" class="mv-welcome__primary welcome__primary" data-action="open-settings">${escapeAttr(installLabel)}</button>
 				<button type="button" id="welcome-skip" class="mv-welcome__secondary welcome__secondary" data-action="skip-to-dashboard">Skip — show me the dashboard anyway</button>
 			</footer>
-		</section>`
-	);
+		</section>`;
 };
 
 export const renderQuickStartMenu = (): string => {
@@ -121,14 +119,12 @@ export const renderQuickStartMenu = (): string => {
 			</li>`,
 	).join('');
 
-	return (
-		`<aside class="mv-quickstart quickstart" role="complementary">
+	return `<aside class="mv-quickstart quickstart" role="complementary">
 			<header class="mv-quickstart__head quickstart__head">
 				<h2>Quick start</h2>
 				<button type="button" id="quickstart-dismiss" class="mv-quickstart__close quickstart__close" aria-label="Dismiss quick start">×</button>
 			</header>
 			<p class="mv-quickstart__lede quickstart__lede">A one-time orientation. The workspace is wired and the dashboard is now pulling real data — here's what each tab does.</p>
 			<ul class="mv-quickstart__list quickstart__list">${itemsHtml}</ul>
-		</aside>`
-	);
+		</aside>`;
 };
