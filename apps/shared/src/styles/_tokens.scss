@@ -37,6 +37,14 @@
 	// --- transitions -----------------------------------------------------
 	--mv-transition-fast: 120ms ease-out;
 	--mv-transition-base: 180ms ease-out;
+
+	// --- brand-on-primary -------------------------------------------------
+	// Text colour that sits on top of a brand-coloured surface (e.g. the
+	// --mv-link/--mv-brand-blue primary buttons). Kept as a token so
+	// surfaces that opt in to a different brand fill (midnight, nord,
+	// ...) can swap just this var without re-editing every component
+	// partial. Invariant: always lighter than the brand fill.
+	--mv-fg-on-brand: #ffffff;
 }
 
 @media (prefers-reduced-motion: reduce) {
