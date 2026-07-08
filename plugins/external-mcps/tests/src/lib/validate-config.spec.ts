@@ -65,7 +65,12 @@ describe('validateServersPatch (pure dry-run)', () => {
 			}),
 			'my-github': entry({
 				command: 'docker',
-				args: ['run', '-i', '--rm', 'ghcr.io/github/github-mcp-server:v0.9.1'],
+				args: [
+					'run',
+					'-i',
+					'--rm',
+					'ghcr.io/github/github-mcp-server:v0.9.1',
+				],
 				env: ['GITHUB_PERSONAL_ACCESS_TOKEN'],
 			}),
 		});
