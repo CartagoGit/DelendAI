@@ -31,6 +31,10 @@ import { dictsByLang, languages } from '@mcp-vertex/shared/i18n';
 import { devWizardCss } from '@mcp-vertex/ui-extension/webview';
 import { renderLangPicker } from '@mcp-vertex/shared/components/dev/lang-picker';
 import { renderThemePicker } from '@mcp-vertex/shared/components/dev/theme-picker';
+import {
+	renderSetupWizard,
+	renderStatusBanner,
+} from '@mcp-vertex/shared/components/dev/setup-wizard';
 
 /**
  * Wire shape for `/api/setup/status`. Mirrors the server-side
@@ -186,41 +190,12 @@ export interface ISettingsPanelHandlers {
 	readonly onLanguageChange: (lang: Lang) => void;
 }
 
-const renderWizard = (status: ISetupStatus): string => {
-	const signalsHtml = status.signals
-		.map(
-			(s) =>
-				`<li class="setup__signal ${s.present ? 'is-on' : 'is-off'}">
-					<span class="setup__signal-icon" aria-hidden="true">${s.present ? '✓' : '·'}</span>
-					<code>${escapeHtml(s.path)}</code>
-					${s.detail ? `<span class="setup__signal-detail">— ${escapeHtml(s.detail)}</span>` : ''}
-				</li>`,
-		)
-		.join('');
-
-	const ctaLabel =
-		status.kind === 'partial'
-			? 'Finish setup'
-			: status.kind === 'unconfigured'
-				? 'Install mcp-vertex here'
-				: 'Re-install (idempotent)';
-
-	return `<section class="setup" data-kind="${status.kind}">
-		<header class="setup__head">
-			<h1>mcp-vertex isn't fully wired in this workspace</h1>
-			<p class="setup__hint">${escapeHtml(status.suggestion)}</p>
-		</header>
-		<aside class="setup__signals" aria-label="Detection signals">
-			<h2>Detection</h2>
-			<ul>${signalsHtml}</ul>
-		</aside>
-		<footer class="setup__cta">
-			<button type="button" id="setup-install" class="setup__primary">${escapeHtml(ctaLabel)}</button>
-			<button type="button" id="setup-refresh" class="setup__secondary">Re-check</button>
-			<span class="setup__status" id="setup-status" role="status" aria-live="polite"></span>
-		</footer>
-	</section>`;
-};
+const renderWizard = (status: ISetupStatus): string =>
+	renderSetupWizard({
+		kind: status.kind,
+		suggestion: status.suggestion,
+		signals: status.signals,
+	});
 
 // f00102 S4.5 — theme + language pickers are now the shared
 // `renderThemePicker` / `renderLangPicker` from
@@ -240,19 +215,12 @@ const renderThemePickerLocal = (current: ThemeChoice): string =>
 const renderLangPickerLocal = (current: Lang): string =>
 	renderLangPicker({ current, inline: true });
 
-const renderStatusBanner = (status: ISetupStatus): string => {
-	if (status.kind === 'configured') {
-		return `<p class="settings__status settings__status--ok">
-			<span class="setup__signal-icon">✓</span>
-			Workspace is configured. The dashboard should be fetching real data on the <code>Dashboard</code> tab.
-		</p>`;
-	}
-	const verb = status.kind === 'partial' ? 'Finish' : 'Run';
-	return `<p class="settings__status settings__status--warn">
-		<span class="setup__signal-icon">!</span>
-		Workspace isn't fully wired (${status.kind}). ${verb} the setup below to drop the missing files.
-	</p>`;
-};
+const renderStatusBannerLocal = (status: ISetupStatus): string =>
+	renderStatusBanner({
+		kind: status.kind,
+		suggestion: status.suggestion,
+		signals: status.signals,
+	});
 
 /**
  * Render the Settings panel. Caller is responsible for injecting the
@@ -264,7 +232,7 @@ export const renderSettingsPanel = (
 	prefs: IPersistedPrefs,
 ): string => {
 	return `<section class="settings">
-		${renderStatusBanner(status)}
+			${renderStatusBannerLocal(status)}
 		${renderWizard(status)}
 		<form class="settings__form" id="settings-form" autocomplete="off">
 			${renderThemePickerLocal(prefs.theme)}
