@@ -17,7 +17,11 @@ import { renderCallout, type CalloutVariant } from './callout';
 
 describe('renderCallout', () => {
 	it('emits the canonical aside root with the default title for each variant', () => {
-		const cases: ReadonlyArray<{ variant: CalloutVariant; title: string; icon: string }> = [
+		const cases: ReadonlyArray<{
+			variant: CalloutVariant;
+			title: string;
+			icon: string;
+		}> = [
 			{ variant: 'note', title: 'Note', icon: 'i' },
 			{ variant: 'tip', title: 'Tip', icon: '*' },
 			{ variant: 'warn', title: 'Warning', icon: '!' },

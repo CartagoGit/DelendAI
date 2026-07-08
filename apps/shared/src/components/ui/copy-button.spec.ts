@@ -24,7 +24,9 @@ describe('renderCopyButton', () => {
 
 	it('emits the icon glyph + label span', () => {
 		const out = renderCopyButton({ text: 'x' });
-		expect(out).toContain('<span class="mv-copybtn__icon" aria-hidden="true">⧉</span>');
+		expect(out).toContain(
+			'<span class="mv-copybtn__icon" aria-hidden="true">⧉</span>',
+		);
 		expect(out).toContain(
 			'<span class="mv-copybtn__label" data-copy-label="idle">Copy</span>',
 		);
