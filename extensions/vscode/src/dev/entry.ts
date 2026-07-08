@@ -41,7 +41,13 @@ import {
 	type ISetupStatus,
 } from './settings-panel';
 import { PageRegistry } from './pages/registry';
-import { getActiveView, setActiveView, type ViewId } from './state';
+import {
+	getActiveView,
+	isViewId,
+	knownViewIds,
+	setActiveView,
+	type ViewId,
+} from './state';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -68,20 +74,6 @@ interface IInstallResult {
 	readonly ok: boolean;
 	readonly note: string;
 }
-
-// ---------------------------------------------------------------------------
-// Page registry + active-view bookkeeping
-interface IWebviewSpec {
-	readonly id: ViewId;
-	readonly label: string;
-}
-
-const WEBVIEWS: ReadonlyArray<IWebviewSpec> = [
-	{ id: 'dashboard', label: 'dashboard' },
-	{ id: 'settings', label: 'settings' },
-	{ id: 'tool-detail', label: 'tool-detail' },
-	{ id: 'metrics', label: 'metrics' },
-];
 
 const root = document.getElementById('root');
 if (!root) {
@@ -135,9 +127,10 @@ const crossFade = (next: ViewId): Promise<void> => {
 };
 
 const render = async (id: string): Promise<void> => {
-	const viewId = WEBVIEWS.find((v) => v.id === id)
-		? (id as ViewId)
-		: 'dashboard';
+	// `isViewId` is the type guard exported from `state.ts`. An
+	// unknown id (e.g. a stale bookmark) falls back to the
+	// configured/dashboard view instead of crashing.
+	const viewId: ViewId = isViewId(id) ? id : 'dashboard';
 	setActiveView(viewId);
 	// Cross-fade out before mounting the new page; the
 	// function resolves once the new page is ready to be
@@ -163,10 +156,12 @@ const render = async (id: string): Promise<void> => {
 
 const sidebar = document.getElementById('sidebar');
 if (sidebar) {
-	sidebar.innerHTML = WEBVIEWS.map(
-		(v) =>
-			`<button type="button" data-webview="${escapeHtml(v.id)}">${escapeHtml(v.label)}</button>`,
-	).join('');
+	sidebar.innerHTML = knownViewIds()
+		.map(
+			(id) =>
+				`<button type="button" data-webview="${escapeHtml(id)}">${escapeHtml(id)}</button>`,
+		)
+		.join('');
 	for (const btn of sidebar.querySelectorAll<HTMLElement>('[data-webview]')) {
 		btn.addEventListener('click', () => {
 			const id = btn.dataset.webview;
@@ -177,18 +172,27 @@ if (sidebar) {
 
 bootstrapPersistedPrefs();
 
-// Decide the default landing view based on setup status. A user
-// landing on an unwired workspace gets the welcome screen, not a
-// half-rendered dashboard with a banner shouting at them. Wrapped
-// in an async IIFE because the bundle is treated as a script, not
-// a module, by some targets (and `tsc --noEmit` is happy either way
-// but `Bun.build` is strict about top-level await when
-// `format: 'esm'` is paired with `target: 'browser'`).
+// Decide the default landing view. We always land on
+// `dashboard` — the dashboard page itself inspects the setup
+// status and swaps in the welcome screen when the workspace
+// is unconfigured, so the orchestrator does not need to
+// duplicate that decision. A `settings` first paint would
+// skip the dashboard chrome entirely, which is the wrong
+// experience for a first-time visitor. The Settings tab is
+// always reachable from the sidebar.
 void (async (): Promise<void> => {
+	// Fire-and-forget; the user's first paint does not need
+	// to wait on the status fetch — the dashboard page
+	// re-fetches on mount. We still await the status here so
+	// the `__mvDev` global reflects the configured state by
+	// the time the user opens devtools.
 	const initialStatus = await fetchJson<ISetupStatus>('/api/setup/status');
-	const defaultView: ViewId =
-		initialStatus?.kind === 'configured' ? 'dashboard' : 'dashboard';
-	void render(defaultView).catch((err) => {
+	window.__mvDev = {
+		render,
+		getActiveView,
+		getInitialStatus: () => initialStatus,
+	};
+	void render('dashboard').catch((err) => {
 		console.error('[dev:vscode] initial render failed', err);
 	});
 })();
@@ -199,10 +203,10 @@ declare global {
 		__mvDev?: {
 			render: (id: string) => Promise<void>;
 			getActiveView: () => ViewId;
+			getInitialStatus: () => ISetupStatus | null;
 		};
 	}
 }
-window.__mvDev = { render, getActiveView };
 
 // `dictsByLang` is read by `getDict()`; the named import prevents
 // tree-shaking from removing the i18n dicts from the bundle.

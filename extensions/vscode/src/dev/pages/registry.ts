@@ -24,14 +24,25 @@
  *   - The cache is a single source of truth for "have I
  *     already loaded this page?" — second clicks are
  *     microtask-cheap.
+ *   - Labels and ids come from `knownViewIds()` /
+ *     `isViewId()` so adding a new tab is a one-line
+ *     change in `state.ts` (the union) plus a new
+ *     `import()` branch here.
  */
 import type { IPage } from './contract';
-import type { ViewId } from '../state';
+import { knownViewIds, type ViewId } from '../state';
 
 /**
  * Arguments the orchestrator hands to the registry. The
  * `navigate` callback is the same for every page; it lets a
  * page trigger a route change without importing `entry.ts`.
+ *
+ * Each page factory takes a narrower view of `navigate` (the
+ * settings page can only route to `'dashboard'`, the dashboard
+ * page can only route to `'settings' | 'dashboard'`, the
+ * tool-detail and metrics pages do not need it at all). The
+ * registry types this once and narrows per-page at the call
+ * site — see `#load`.
  */
 export interface IRegistryOptions {
 	readonly navigate: (id: ViewId) => Promise<void> | void;
@@ -60,7 +71,7 @@ export class PageRegistry {
 	}
 
 	ids(): ReadonlyArray<ViewId> {
-		return ['dashboard', 'settings', 'tool-detail', 'metrics'];
+		return knownViewIds();
 	}
 
 	label(id: ViewId): string {
@@ -80,30 +91,28 @@ export class PageRegistry {
 		// bundler can split them into separate chunks. The
 		// default branch throws; consumers narrow on `id` first
 		// so the unreachable branch is a build-time safety net.
-		let mod: Record<string, unknown>;
+		const opts = this.#options;
 		switch (id) {
-			case 'dashboard':
-				mod = await import('./dashboard');
-				return (
-					mod.createDashboardPage as (opts: IRegistryOptions) => IPage
-				)(this.#options);
-			case 'settings':
-				mod = await import('./settings');
-				return (
-					mod.createSettingsPage as (opts: IRegistryOptions) => IPage
-				)(this.#options);
-			case 'tool-detail':
-				mod = await import('./tool-detail');
-				return (
-					mod.createToolDetailPage as (
-						opts: IRegistryOptions,
-					) => IPage
-				)(this.#options);
-			case 'metrics':
-				mod = await import('./metrics');
-				return (
-					mod.createMetricsPage as (opts: IRegistryOptions) => IPage
-				)(this.#options);
+			case 'dashboard': {
+				const mod = await import('./dashboard');
+				return mod.createDashboardPage({
+					navigate: (next) => opts.navigate(next),
+				});
+			}
+			case 'settings': {
+				const mod = await import('./settings');
+				return mod.createSettingsPage({
+					navigate: (next) => opts.navigate(next),
+				});
+			}
+			case 'tool-detail': {
+				const mod = await import('./tool-detail');
+				return mod.createToolDetailPage();
+			}
+			case 'metrics': {
+				const mod = await import('./metrics');
+				return mod.createMetricsPage();
+			}
 		}
 	}
 }
