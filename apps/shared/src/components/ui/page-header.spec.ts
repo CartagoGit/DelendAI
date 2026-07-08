@@ -23,19 +23,29 @@ import { renderPageHeader } from './page-header';
 
 describe('renderPageHeader', () => {
 	it('emits the canonical mv-page-header__inner root', () => {
-		const out = renderPageHeader({ lang: 'en', title: 'Tools', baseHref: '/' });
+		const out = renderPageHeader({
+			lang: 'en',
+			title: 'Tools',
+			baseHref: '/',
+		});
 		expect(out).toContain('<div class="mv-page-header__inner">');
 	});
 
 	it('renders the title in an <h1 class="mv-page-header__title">', () => {
-		const out = renderPageHeader({ lang: 'en', title: 'Tools', baseHref: '/' });
-		expect(out).toContain(
-			'<h1 class="mv-page-header__title">Tools</h1>',
-		);
+		const out = renderPageHeader({
+			lang: 'en',
+			title: 'Tools',
+			baseHref: '/',
+		});
+		expect(out).toContain('<h1 class="mv-page-header__title">Tools</h1>');
 	});
 
 	it('omits the crumb nav when no crumbs are provided', () => {
-		const out = renderPageHeader({ lang: 'en', title: 'Tools', baseHref: '/' });
+		const out = renderPageHeader({
+			lang: 'en',
+			title: 'Tools',
+			baseHref: '/',
+		});
 		expect(out).not.toContain('mv-page-header__crumb');
 	});
 
@@ -51,9 +61,7 @@ describe('renderPageHeader', () => {
 		);
 		expect(out).toContain('href="/"');
 		expect(out).toContain('>Home</a>');
-		expect(out).toContain(
-			'<span aria-current="page">Tools</span>',
-		);
+		expect(out).toContain('<span aria-current="page">Tools</span>');
 	});
 
 	it('marks only the last crumb as aria-current="page"', () => {

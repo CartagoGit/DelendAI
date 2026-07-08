@@ -27,7 +27,10 @@ import { renderTabs } from './tabs';
 describe('renderTabs', () => {
 	it('emits the canonical nav + tablist root', () => {
 		const out = renderTabs({
-			tabs: [{ id: 'a', label: 'A' }, { id: 'b', label: 'B' }],
+			tabs: [
+				{ id: 'a', label: 'A' },
+				{ id: 'b', label: 'B' },
+			],
 		});
 		expect(out).toContain(
 			'<nav class="mv-tabs__bar" aria-label="Sections" data-tabs-variant="underline">',
@@ -48,7 +51,10 @@ describe('renderTabs', () => {
 
 	it('marks the first tab as the default (selected, tabindex=0)', () => {
 		const out = renderTabs({
-			tabs: [{ id: 'a', label: 'A' }, { id: 'b', label: 'B' }],
+			tabs: [
+				{ id: 'a', label: 'A' },
+				{ id: 'b', label: 'B' },
+			],
 		});
 		expect(out).toContain('id="mv-tab-a"');
 		expect(out).toMatch(
@@ -58,7 +64,10 @@ describe('renderTabs', () => {
 
 	it('marks non-default tabs as unselected (tabindex=-1)', () => {
 		const out = renderTabs({
-			tabs: [{ id: 'a', label: 'A' }, { id: 'b', label: 'B' }],
+			tabs: [
+				{ id: 'a', label: 'A' },
+				{ id: 'b', label: 'B' },
+			],
 		});
 		expect(out).toMatch(
 			/id="mv-tab-b"[^>]*aria-selected="false"[^>]*tabindex="-1"/,
@@ -67,7 +76,10 @@ describe('renderTabs', () => {
 
 	it('honours an explicit defaultTab', () => {
 		const out = renderTabs({
-			tabs: [{ id: 'a', label: 'A' }, { id: 'b', label: 'B' }],
+			tabs: [
+				{ id: 'a', label: 'A' },
+				{ id: 'b', label: 'B' },
+			],
 			defaultTab: 'b',
 		});
 		expect(out).toMatch(
@@ -93,7 +105,10 @@ describe('renderTabs', () => {
 
 	it('stamps data-tab-trigger on every tab button', () => {
 		const out = renderTabs({
-			tabs: [{ id: 'a', label: 'A' }, { id: 'b', label: 'B' }],
+			tabs: [
+				{ id: 'a', label: 'A' },
+				{ id: 'b', label: 'B' },
+			],
 		});
 		expect(out).toContain('data-tab-trigger="a"');
 		expect(out).toContain('data-tab-trigger="b"');

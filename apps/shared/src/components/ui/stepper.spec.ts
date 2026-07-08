@@ -25,7 +25,9 @@ describe('renderStepper', () => {
 
 	it('renders one <li class="mv-stepper__item"> per step', () => {
 		const out = renderStepper({ steps: ['A', 'B', 'C'] });
-		expect(out.match(/<li class="mv-stepper__item">/g) ?? []).toHaveLength(3);
+		expect(out.match(/<li class="mv-stepper__item">/g) ?? []).toHaveLength(
+			3,
+		);
 	});
 
 	it('numbers the items sequentially starting at the default', () => {
