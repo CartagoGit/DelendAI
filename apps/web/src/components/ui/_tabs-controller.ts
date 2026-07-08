@@ -33,6 +33,13 @@ const isButton = (n: EventTarget | null): n is HTMLButtonElement => {
 };
 
 export const initTabs = (root: ParentNode): void => {
+	// Bind the [data-mv-icon] fallback glue once per call, scoped
+	// to the current root. Any future surface (a different
+	// component that adopts the shared data-mv-icon pattern)
+	// automatically picks up the same behaviour without each
+	// host re-implementing the load/error listeners.
+	bindIconFallbacks(root);
+
 	const tabsRoots = root.querySelectorAll<HTMLElement>('[data-ui-tabs]');
 	for (const tabsRoot of tabsRoots) {
 		if (tabsRoot.dataset.tabsBound === '1') continue;
@@ -164,4 +171,26 @@ const bindOne = (root: HTMLElement): void => {
 	// Honour the SSR default if it differs from the first tab.
 	const initial = root.dataset.defaultTab ?? triggers[0]?.dataset.tabTrigger;
 	if (initial && idToTrigger.has(initial)) setActive(initial);
+};
+
+const bindIconFallbacks = (root: ParentNode): void => {
+	const wrappers = root.querySelectorAll<HTMLElement>('[data-mv-icon]');
+	for (const wrapper of wrappers) {
+		if (wrapper.dataset.mvIconBound === '1') continue;
+		wrapper.dataset.mvIconBound = '1';
+		const img = wrapper.querySelector('img');
+		if (!img) continue;
+		// Cover the case where the image already failed by the
+		// time we get here (lazy-loaded icon arrives after
+		// first paint, cache hit, etc.).
+		if (img.complete && img.naturalWidth === 0) {
+			wrapper.classList.add('is-broken');
+		}
+		img.addEventListener('error', () => {
+			wrapper.classList.add('is-broken');
+		});
+		img.addEventListener('load', () => {
+			wrapper.classList.remove('is-broken');
+		});
+	}
 };
