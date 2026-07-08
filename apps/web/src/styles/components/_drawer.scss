@@ -4,6 +4,14 @@
 // The `html[dir='rtl'] .drawer__panel` selector is allow-listed in stylelint.config.mjs
 // because it is rooted at a tag, not a class.
 
+// Thin wrapper SiteNav.astro puts around the shared drawer chrome purely
+// to carry Astro's `transition:persist`. `display: contents` removes it
+// from layout so the fixed-position .drawer behaves exactly as if it were
+// a direct <body> child (f00099 S1).
+.drawer-wrap {
+	display: contents;
+}
+
 .drawer {
 	position: fixed;
 	inset: 0;

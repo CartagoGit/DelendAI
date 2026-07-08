@@ -51,12 +51,19 @@
 @use "components/plugin-card";
 @use "components/plugin-details";
 @use "components/plugin-disclosure";
+// Plugin-page extras (f00099 S1): the configuration-tab snippet + copy
+// button, and the per-plugin tutorial tab.
+@use "components/config";
+@use "components/tutorial";
 @use "components/guide";
 @use "components/bench";
 @use "components/section";
 @use "components/tabs";
 @use "components/card";
 @use "components/tool";
+// Argument/flag reference tables (`table.args`) — ToolPage, PluginPage,
+// CLI guide (f00099 S1).
+@use "components/args";
 @use "components/pkg";
 @use "components/ns";
 @use "components/fx";
@@ -66,6 +73,8 @@
 @use "components/modal";
 @use "components/swatch";
 @use "components/lang-opt";
+// <noscript> locale fallback on the home page (f00099 S1).
+@use "components/locale-picker";
 @use "components/toggle";
 @use "components/prompt";
 @use "components/resources-table";

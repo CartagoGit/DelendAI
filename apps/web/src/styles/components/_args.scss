@@ -1,0 +1,40 @@
+// _args.scss — argument/flag reference tables (`<table class="args">`).
+//
+// Used by ToolPage.astro, PluginPage.astro (tools tab) and the CLI guide
+// (`pages/cli.astro` + `pages/[lang]/cli.astro`). Without this block the
+// tables rendered with raw browser defaults (f00099 S1). The treatment
+// mirrors the markdown-page table (_markdown-page.scss) mapped onto the
+// site's legacy tokens (--card / --line / --muted).
+
+.args {
+	width: 100%;
+	margin: 1rem 0 1.5rem;
+	border-collapse: collapse;
+	font-size: 0.88rem;
+	line-height: 1.5;
+
+	& caption {
+		caption-side: bottom;
+		padding-top: 0.5rem;
+		font-size: 0.78rem;
+		color: var(--muted);
+		text-align: left;
+	}
+
+	& th,
+	& td {
+		padding: 0.55rem 0.75rem;
+		border-bottom: 1px solid var(--line);
+		text-align: left;
+		vertical-align: top;
+	}
+
+	& th {
+		background: color-mix(in srgb, var(--card) 82%, transparent);
+		font-weight: 700;
+	}
+
+	& code {
+		overflow-wrap: anywhere;
+	}
+}
