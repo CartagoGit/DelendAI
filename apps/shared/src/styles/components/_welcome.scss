@@ -31,6 +31,16 @@
 	flex-direction: column;
 	gap: 1.5rem;
 	padding: 1.5rem;
+	// Cap the panel width on wide viewports (>=1024px) so the
+	// 2×2 grid does not stretch the cards past a readable
+	// line length. Below that the panel spans the full width.
+	max-width: 100%;
+	margin: 0 auto;
+	width: 100%;
+
+	@media (min-width: 1024px) {
+		max-width: 960px;
+	}
 }
 
 .mv-welcome__head {
