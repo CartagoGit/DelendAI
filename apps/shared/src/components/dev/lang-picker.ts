@@ -40,7 +40,11 @@ export interface IRenderLangPickerOptions {
 }
 
 const escapeAttr = (s: string): string =>
-	s.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+	s
+		.replace(/&/g, '&amp;')
+		.replace(/"/g, '&quot;')
+		.replace(/</g, '&lt;')
+		.replace(/>/g, '&gt;');
 
 const codeOf = (entry: (typeof languages)[number]): string =>
 	'code' in entry ? String(entry.code) : '';
@@ -48,9 +52,7 @@ const codeOf = (entry: (typeof languages)[number]): string =>
 const nameOf = (entry: (typeof languages)[number]): string =>
 	'name' in entry ? String(entry.name) : codeOf(entry);
 
-export const renderLangPicker = (
-	options: IRenderLangPickerOptions,
-): string => {
+export const renderLangPicker = (options: IRenderLangPickerOptions): string => {
 	const name = options.name ?? 'lang';
 	const caption = options.caption ?? 'Language';
 	const optionsHtml = languages
