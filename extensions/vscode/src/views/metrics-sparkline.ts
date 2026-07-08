@@ -18,8 +18,8 @@ export const metricsToPoints = (
 export const renderMetricsSparkline = (
 	points: readonly ISparklinePoint[],
 ): string => {
-	const width = 240;
-	const height = 48;
+	const width = 480;
+	const height = 96;
 	const max = Math.max(1, ...points.map((point) => point.value));
 	const step = points.length <= 1 ? width : width / (points.length - 1);
 	const coords = points.map((point, index) => {
@@ -30,7 +30,7 @@ export const renderMetricsSparkline = (
 	const labels = points
 		.map((point) => `${escapeXml(point.label)}:${point.value}`)
 		.join(' ');
-	return `<svg viewBox="0 0 ${width} ${height}" role="img" aria-label="${labels}"><polyline fill="none" stroke="currentColor" stroke-width="2" points="${coords.join(' ')}" /></svg>`;
+	return `<svg class="metrics__sparkline" viewBox="0 0 ${width} ${height}" role="img" aria-label="${labels}"><polyline fill="none" stroke="currentColor" stroke-width="2" points="${coords.join(' ')}" /></svg>`;
 };
 
 export const renderMetricsHtml = (snapshot: IMetricsSnapshot): string => {
@@ -56,14 +56,18 @@ export const renderMetricsHtml = (snapshot: IMetricsSnapshot): string => {
  * mount it inside their own `<main>` without parsing an `<html>`
  * inside an `<html>` (which the browser silently drops, leaving
  * the page visually empty).
+ *
+ * The body uses the `metrics` BEM block (defined in the dev
+ * preview SCSS) for typography + spacing; the sparkline keeps
+ * its inline viewBox so it scales without a separate stylesheet.
  */
 export const renderMetricsBody = (snapshot: IMetricsSnapshot): string => {
 	const points = metricsToPoints(snapshot);
-	return `
+	return `<section class="metrics">
 	<h1>mcp-vertex Metrics</h1>
 	${renderMetricsSparkline(points)}
-	<p>${snapshot.totals.calls} calls, ${snapshot.totals.errors} errors</p>
-`;
+	<p class="metrics__totals">${snapshot.totals.calls} calls, ${snapshot.totals.errors} errors</p>
+</section>`;
 };
 
 const escapeXml = (value: string): string =>

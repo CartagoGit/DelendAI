@@ -466,6 +466,172 @@
 	}
 }
 
+// ===========================================================================
+// `tool-detail` block — single-tool inspector
+// ===========================================================================
+
+.tool-detail {
+	display: flex;
+	flex-direction: column;
+	gap: var(--mv-s-4);
+	padding: var(--mv-s-4);
+	font-family: var(--mv-font-prose);
+	color: var(--mv-fg, #d4d4d4);
+	max-width: 100%;
+	min-width: 0;
+
+	&__head {
+		display: flex;
+		flex-direction: column;
+		gap: var(--mv-s-1);
+
+		& h1 {
+			margin: 0;
+			font-size: 18px;
+			font-weight: 600;
+			color: var(--mv-link, #3794ff);
+			font-family: var(--mv-font-mono, ui-monospace);
+		}
+
+		& p {
+			margin: 0;
+			font-size: 13px;
+			color: var(--mv-fg-muted, #858585);
+		}
+	}
+
+	&__section {
+		display: flex;
+		flex-direction: column;
+		gap: var(--mv-s-2);
+
+		& h2 {
+			margin: 0;
+			font-size: 13px;
+			font-weight: 600;
+			text-transform: uppercase;
+			letter-spacing: 0.04em;
+			color: var(--mv-fg-muted, #858585);
+		}
+	}
+
+	&__knowledge {
+		margin: 0;
+		padding: var(--mv-s-3);
+		background: var(--mv-bg-soft, #161b22);
+		border: 1px solid var(--mv-border, #3c3c3c);
+		border-radius: var(--mv-radius-sm);
+		font-family: var(--mv-font-mono, ui-monospace);
+		font-size: 12px;
+		line-height: 1.5;
+		color: var(--mv-fg, #d4d4d4);
+		white-space: pre-wrap;
+		overflow-wrap: anywhere;
+	}
+
+	&__schema-node {
+		margin-top: var(--mv-s-1);
+		font-size: 12px;
+		color: var(--mv-fg-muted, #858585);
+	}
+
+	&__schema-type {
+		display: inline-block;
+		padding: 1px 6px;
+		background: color-mix(in srgb, var(--mv-link, #3794ff) 12%, transparent);
+		color: var(--mv-link, #3794ff);
+		border-radius: 3px;
+		font-family: var(--mv-font-mono, ui-monospace);
+		font-size: 11px;
+		font-weight: 600;
+	}
+
+	&__schema-props {
+		list-style: none;
+		margin: 0;
+		padding: 0 0 0 var(--mv-s-3);
+		display: flex;
+		flex-direction: column;
+		gap: var(--mv-s-2);
+	}
+
+	&__schema-prop {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--mv-s-2);
+		align-items: baseline;
+
+		& strong {
+			font-family: var(--mv-font-mono, ui-monospace);
+			font-size: 12px;
+			color: var(--mv-fg, #d4d4d4);
+		}
+
+		& code {
+			font-family: var(--mv-font-mono, ui-monospace);
+			font-size: 11px;
+			padding: 1px 6px;
+			border-radius: 3px;
+			background: var(--mv-bg-soft, #161b22);
+			border: 1px solid var(--mv-border, #3c3c3c);
+		}
+
+		& span {
+			font-size: 11px;
+			color: var(--mv-fg-muted, #858585);
+		}
+	}
+}
+
+// ===========================================================================
+// `metrics` block — per-tool calls sparkline summary
+// ===========================================================================
+
+.metrics {
+	display: flex;
+	flex-direction: column;
+	gap: var(--mv-s-3);
+	padding: var(--mv-s-4);
+	font-family: var(--mv-font-prose);
+	color: var(--mv-fg, #d4d4d4);
+	max-width: 100%;
+	min-width: 0;
+
+	& h1 {
+		margin: 0;
+		font-size: 18px;
+		font-weight: 600;
+	}
+
+	& p {
+		margin: 0;
+		font-size: 13px;
+		color: var(--mv-fg-muted, #858585);
+	}
+
+	& svg {
+		max-width: 100%;
+		height: auto;
+		color: var(--mv-link, #3794ff);
+	}
+
+	&__sparkline {
+		display: block;
+		width: 100%;
+		max-width: 480px;
+		height: 96px;
+		padding: var(--mv-s-2);
+		background: var(--mv-bg-soft, #161b22);
+		border: 1px solid var(--mv-border, #3c3c3c);
+		border-radius: var(--mv-radius-sm);
+	}
+
+	&__totals {
+		font-family: var(--mv-font-mono, ui-monospace);
+		font-size: 12px;
+	}
+}
+
 // ---------------------------------------------------------------------------
 // Print sanity — CTAs collapse on paper so the layout doesn't overflow.
 // ---------------------------------------------------------------------------
