@@ -364,9 +364,57 @@ const buildBundle = async (entryAbs: string): Promise<BundleMap> => {
 		if (basename === 'entry.js') {
 			content = content.replace(/^import"([^"]+)";/gm, 'import "$1";');
 		}
+		// Bun.build with `splitting: true` sometimes emits
+		// **multiple** `export { foo, bar, ... };` blocks in
+		// the same chunk when several source modules re-export
+		// overlapping symbol sets (e.g. the `webview/index.ts`
+		// barrel AND `csp.ts` both live in the same chunk
+		// because of shared downstream consumers). The browser
+		// refuses to parse the result: `SyntaxError: Duplicate
+		// export of '<symbol>'`. The fix is to consolidate all
+		// top-level `export { … };` blocks into ONE block whose
+		// symbol set is the union of the originals. Identity,
+		// not union, is what we want: a symbol that appears in
+		// two blocks is the same declaration and only needs one
+		// entry in the merged block.
+		content = consolidateExports(content);
 		out.set(basename, content);
 	}
 	return out;
+};
+
+/**
+ * Merge every top-level `export { … };` block in `content` into
+ * a single block whose symbol list is the de-duplicated union
+ * of all originals.
+ *
+ * Only top-level export blocks are touched; named re-exports
+ * (`export { foo } from './bar.js'`) and any other export forms
+ * are left alone. The function is a dev-time transform — its
+ * only job is to scrub Bun.build output so browsers will accept
+ * the chunk.
+ */
+const consolidateExports = (content: string): string => {
+	const exportBlock = /^export\s*\{([\s\S]*?)\};/gm;
+	const matches = [...content.matchAll(exportBlock)];
+	if (matches.length === 0) return content;
+	const seen = new Set<string>();
+	const merged: string[] = [];
+	for (const m of matches) {
+		const symbols = m[1]
+			.split(',')
+			.map((s) => s.trim())
+			.filter((s) => s !== '');
+		for (const sym of symbols) {
+			if (!seen.has(sym)) {
+				seen.add(sym);
+				merged.push(sym);
+			}
+		}
+	}
+	if (merged.length === 0) return content;
+	const block = `export {\n  ${merged.join(',\n  ')},\n};`;
+	return `${content.replace(exportBlock, '').trimEnd()}\n\n${block}\n`;
 };
 
 const buildEntry = async (entryAbs: string): Promise<Response> => {
@@ -745,7 +793,10 @@ const startDevEntry = async (target: ITarget): Promise<void> => {
 			// is a chunk lookup. The basename is matched
 			// against the cached bundle so we never serve
 			// arbitrary workspace files.
-			if (url.pathname.startsWith('/chunk-') && url.pathname.endsWith('.js')) {
+			if (
+				url.pathname.startsWith('/chunk-') &&
+				url.pathname.endsWith('.js')
+			) {
 				const basename = url.pathname.slice(1);
 				return buildChunk(basename);
 			}

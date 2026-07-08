@@ -207,9 +207,17 @@
 		color: var(--mv-fg-muted, #858585);
 	}
 
+	// 2×2 grid at all common widths: the four cards describe the
+	// 4 webviews, and a 2×2 layout gives each card enough room for
+	// the prose body without horizontal scrolling. Below the small
+	// breakpoint the grid collapses to a single column. The legacy
+	// `auto-fit, minmax(220px, 1fr)` produced 4 narrow columns at
+	// 1280px viewports where the body text was wrapping at 6+ lines
+	// per card — readable but cramped; the 2×2 layout is the more
+	// balanced tradeoff.
 	&__grid {
 		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+		grid-template-columns: 1fr;
 		gap: var(--mv-gap);
 	}
 
@@ -222,6 +230,7 @@
 		flex-direction: column;
 		gap: var(--mv-s-2);
 		transition: border-color var(--mv-transition-fast);
+		min-width: 0;
 
 		&:hover {
 			border-color: var(--mv-brand-blue);
@@ -238,6 +247,12 @@
 			font-size: 12px;
 			color: var(--mv-fg-muted, #858585);
 			line-height: 1.5;
+			// Defensive: a single long word in a future card body
+			// (e.g. a versioned ID) must not overflow the card.
+			// `anywhere` is preferred over `break-word` because it
+			// does not preserve the unbreakable sequence even when
+			// the line is the first one of a paragraph.
+			overflow-wrap: anywhere;
 		}
 	}
 
@@ -436,13 +451,18 @@
 }
 
 // ---------------------------------------------------------------------------
-// Responsive — welcome padding widens on the small breakpoint so the
-// four cards breathe on wider viewports.
+// Responsive — welcome padding widens and the card grid steps up to
+// a 2×2 layout at the small breakpoint so the four cards breathe on
+// wider viewports.
 // ---------------------------------------------------------------------------
 
 @media (min-width: bp.$mv-bp-sm) {
 	.welcome {
 		padding: var(--mv-s-6);
+
+		&__grid {
+			grid-template-columns: repeat(2, 1fr);
+		}
 	}
 }
 

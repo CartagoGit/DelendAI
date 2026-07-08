@@ -12,7 +12,7 @@
  */
 import type { IMetricsSnapshot, IToolDescriptor } from '@mcp-vertex/client';
 
-import { renderToolDetailHtml } from '../../views/tool-detail-webview';
+import { renderToolDetailBody } from '../../views/tool-detail-webview';
 
 import type { IPage } from './contract';
 
@@ -74,6 +74,6 @@ export const createToolDetailPage = (): IPage => ({
 	id: 'tool-detail',
 	label: 'tool-detail',
 	render(root, _deps) {
-		root.innerHTML = renderToolDetailHtml(MOCK_VIEW_MODEL);
+		root.innerHTML = renderToolDetailBody(MOCK_VIEW_MODEL);
 	},
 });

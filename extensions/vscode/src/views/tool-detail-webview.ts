@@ -50,3 +50,25 @@ export const renderToolDetailHtml = (model: IToolDetailViewModel): string => {
 		DEFAULT_DENY,
 	);
 };
+
+/**
+ * `renderToolDetailBody` — same data the full HTML mode produces,
+ * but emits just the `<body>` content so the dev preview's lazy
+ * pages can mount it inside their own `<main>` without parsing
+ * an `<html>` inside an `<html>`.
+ *
+ * Inline styles are kept (the same SCSS-free, vscode-token-based
+ * inline `<style>` block above) because the dev preview is not
+ * served with a CSP that maps `style-src 'self'` to a bundled
+ * stylesheet — and the page is mounted outside a real `<head>`.
+ */
+export const renderToolDetailBody = (model: IToolDetailViewModel): string => {
+	const metric = model.metrics?.tools[model.tool.name];
+	return `${TOOL_DETAIL_STYLE}
+	<h1>${escapeHtml(model.tool.name)}</h1>
+	<p>${escapeHtml(model.tool.summary ?? model.tool.plugin)}</p>
+	${model.knowledgeBody === undefined ? '' : `<section><h2>Knowledge</h2><pre>${escapeHtml(model.knowledgeBody)}</pre></section>`}
+	<section><h2>Input schema</h2>${model.inputSchema === undefined ? '<p>No input schema.</p>' : renderOutputSchema(model.inputSchema)}</section>
+	<section><h2>Output schema</h2>${model.outputSchema === undefined ? '<p>No output schema.</p>' : renderOutputSchema(model.outputSchema)}</section>
+	<section><h2>Metrics</h2>${metric === undefined ? '<p>No calls recorded.</p>' : `<p>${metric.calls} calls, ${metric.errors} errors, max ${metric.maxMs}ms</p>`}</section>`;
+};

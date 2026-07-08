@@ -242,14 +242,22 @@ const renderStatusBannerLocal = (status: ISetupStatus): string =>
  * Render the Settings panel. Caller is responsible for injecting the
  * wizard CSS (`devPreviewCss`) once before this is called — typically
  * on first navigation to the Settings view.
+ *
+ * The setup wizard only renders when the workspace is **not**
+ * configured. A configured workspace lands on Settings to manage
+ * theme + language prefs — the wizard would be noise. This keeps
+ * the page honest: a configured workspace sees only the banner +
+ * preferences, an unconfigured one sees the full wizard to walk
+ * through the missing files.
  */
 export const renderSettingsPanel = (
 	status: ISetupStatus,
 	prefs: IPersistedPrefs,
 ): string => {
+	const wizardHtml = status.kind === 'configured' ? '' : renderWizard(status);
 	return `<section class="settings">
-			${renderStatusBannerLocal(status)}
-		${renderWizard(status)}
+		${renderStatusBannerLocal(status)}
+		${wizardHtml}
 		<form class="settings__form" id="settings-form" autocomplete="off">
 			${renderThemePickerLocal(prefs.theme)}
 			${renderLangPickerLocal(prefs.lang)}
