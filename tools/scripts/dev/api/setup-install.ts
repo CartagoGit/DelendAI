@@ -203,14 +203,22 @@ const spliceIntoNestedObject = (
 	const trimmedBefore = before.replace(/\s+$/, '');
 	const lastChar = trimmedBefore[trimmedBefore.length - 1] ?? '';
 	const needsComma = lastChar !== '{' && lastChar !== ',';
-	const serialized = `\n  ${JSON.stringify(entryKey)}: ${JSON.stringify(
-		entryValue,
-		null,
-		2,
-	)
-		.split('\n')
+	// Indent the value's nested lines one level deeper than the parent
+	// block. JSON.stringify(_, null, 2) emits the first line of an object
+	// flush-left (`{`); the rest already carry the 2-space indent from
+	// the second positional arg. We bump the inner lines by another 2
+	// spaces so they sit one level below the parent key (`\n  ${key}`).
+	// The first line is inlined right after `key: ` so it does not need
+	// extra leading whitespace.
+	const valueLines = JSON.stringify(entryValue, null, 2).split('\n');
+	const inlinedFirst = `${valueLines[0] ?? ''}`;
+	const restIndented = valueLines
+		.slice(1)
 		.map((l) => '  ' + l)
-		.join('\n')}\n`;
+		.join('\n');
+	const serialized = `\n  ${JSON.stringify(entryKey)}: ${inlinedFirst}${
+		restIndented.length > 0 ? '\n' + restIndented : ''
+	}\n`;
 	writeFileSync(
 		path,
 		`${trimmedBefore}${needsComma ? ',' : ''}${serialized}${after}`,
