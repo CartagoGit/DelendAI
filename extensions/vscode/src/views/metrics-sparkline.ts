@@ -50,6 +50,22 @@ export const renderMetricsHtml = (snapshot: IMetricsSnapshot): string => {
 </html>`;
 };
 
+/**
+ * `renderMetricsBody` — same shape the full HTML emits, but as a
+ * `<body>`-only fragment so the dev preview's lazy pages can
+ * mount it inside their own `<main>` without parsing an `<html>`
+ * inside an `<html>` (which the browser silently drops, leaving
+ * the page visually empty).
+ */
+export const renderMetricsBody = (snapshot: IMetricsSnapshot): string => {
+	const points = metricsToPoints(snapshot);
+	return `
+	<h1>mcp-vertex Metrics</h1>
+	${renderMetricsSparkline(points)}
+	<p>${snapshot.totals.calls} calls, ${snapshot.totals.errors} errors</p>
+`;
+};
+
 const escapeXml = (value: string): string =>
 	value
 		.replaceAll('&', '&amp;')
