@@ -57,6 +57,8 @@ describe('renderLangPicker', () => {
 		// the escape contract by verifying the output structure.
 		const out = renderLangPicker({ current: 'en' });
 		// The select root is always present + well-formed.
-		expect(out).toMatch(/<select [^>]+><option [^>]+>[^<]+<\/option>.*<\/select>/);
+		expect(out).toMatch(
+			/<select [^>]+><option [^>]+>[^<]+<\/option>.*<\/select>/,
+		);
 	});
 });
