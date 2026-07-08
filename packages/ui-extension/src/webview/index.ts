@@ -117,4 +117,4 @@ export { mockDashboardModel } from '../dev/mock-model';
  * Install, then the dashboard renders). Both ship in the same
  * browser bundle so the cost is one extra inline `<style>` block.
  */
-export { devWizardCss } from '@mcp-vertex/shared/styles/dev-wizard-css';
+export { devPreviewCss } from '@mcp-vertex/shared/styles/dev-preview-css';
