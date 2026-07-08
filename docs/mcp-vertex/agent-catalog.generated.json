@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-07-07T14:10:31.593Z",
+	"generatedAt": "2026-07-07T15:04:54.760Z",
 	"mode": "compact",
 	"tools": [
 		{
@@ -671,25 +671,41 @@
 				"id": "f00068",
 				"title": "f00068",
 				"track": "core+plugins+host+config+i18n+docs+web+extensions/vscode",
-				"status": "paused",
+				"status": "ready",
 				"kind": "feat",
 				"date": "2026-06-26"
 			},
 			{
-				"id": "f00098",
-				"title": "f00098",
-				"track": "ui-extension+vscode+web+cli-parity",
+				"id": "f00099",
+				"title": "f00099",
+				"track": "web+extensions/vscode+lint",
 				"status": "ready",
 				"kind": "feat",
-				"date": "2026-07-06"
+				"date": "2026-07-07"
+			},
+			{
+				"id": "f00100",
+				"title": "f00100",
+				"track": "extensions/vscode+ui-extension",
+				"status": "ready",
+				"kind": "feat",
+				"date": "2026-07-07"
+			},
+			{
+				"id": "f00101",
+				"title": "f00101",
+				"track": "ui-extension+client+docs+web",
+				"status": "ready",
+				"kind": "feat",
+				"date": "2026-07-07"
 			}
 		],
 		"byStatus": {
-			"ready": 1,
+			"ready": 4,
 			"in-progress": 0,
 			"review": 0,
-			"paused": 3,
-			"done": 186,
+			"paused": 2,
+			"done": 187,
 			"blocked": 0,
 			"retired": 0,
 			"unspecified": 0
