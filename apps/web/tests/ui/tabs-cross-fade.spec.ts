@@ -465,8 +465,10 @@ describe('initTabs — cross-fade (f00069 S1)', () => {
 		// here guards the wiring so a future refactor cannot
 		// silently drop the bindIconFallbacks call.
 		const { readFileSync } = require('node:fs') as typeof import('node:fs');
-		const { fileURLToPath } = require('node:url') as typeof import('node:url');
-		const { dirname, resolve } = require('node:path') as typeof import('node:path');
+		const { fileURLToPath } =
+			require('node:url') as typeof import('node:url');
+		const { dirname, resolve } =
+			require('node:path') as typeof import('node:path');
 		const here = dirname(fileURLToPath(import.meta.url));
 		const src = readFileSync(
 			resolve(here, '../../src/components/ui/_tabs-controller.ts'),

@@ -48,10 +48,13 @@ describe('renderThemePicker', () => {
 		let prev = -1;
 		for (const value of ALL_VALUES) {
 			const idx = out.indexOf(`value="${value}"`);
-			expect(idx, `option ${value} should be present`).toBeGreaterThan(-1);
-			expect(idx, `${value} should come after its predecessor`).toBeGreaterThan(
-				prev,
+			expect(idx, `option ${value} should be present`).toBeGreaterThan(
+				-1,
 			);
+			expect(
+				idx,
+				`${value} should come after its predecessor`,
+			).toBeGreaterThan(prev);
 			prev = idx;
 		}
 		// Sanity: THEME_ORDER is the in-code default and ALL_THEMES mirrors
