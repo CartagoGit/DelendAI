@@ -42,7 +42,7 @@
  *     rest of the IDE.
  */
 
-import compiledCss from './dashboard.scss';
+import { compiledCss } from './dashboard.scss';
 
 /**
  * Compiled CSS string.

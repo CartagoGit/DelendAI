@@ -240,10 +240,10 @@ const scssPlugin = {
 			const abs = cleanPath.startsWith('/')
 				? cleanPath
 				: `${args.resolveDir}/${cleanPath}`;
-			return { path: abs, namespace: 'scss' };
+			return { path: abs, namespace: 'mcp-scss' };
 		});
 		build.onLoad(
-			{ filter: /\.scss(\?raw)?$/, namespace: 'scss' },
+			{ filter: /\.scss(\?raw)?$/, namespace: 'mcp-scss' },
 			async (args) => {
 				const path = args.path.split('?')[0] ?? args.path;
 				const file = Bun.file(path);
@@ -268,7 +268,18 @@ const scssPlugin = {
 					};
 				}
 				return {
-					contents: `export default ${JSON.stringify(compiled)};`,
+					// Emit BOTH a default and a named export so
+					// consumers can use either:
+					//   import css from './foo.scss';
+					//   import { compiledCss } from './foo.scss';
+					// The named export is what `apps/shared`'s
+					// `*-css.ts` wrappers and the SCSS-aware
+					// consumers use; the default export is what
+					// Bun's built-in `.scss?raw` style imports
+					// would expect. With both, every shape
+					// resolves, and the chunk merger keeps a
+					// single binding per module.
+					contents: `const compiledCss = ${JSON.stringify(compiled)};\nexport { compiledCss };\nexport default compiledCss;`,
 					loader: 'js',
 				};
 			},
@@ -276,12 +287,39 @@ const scssPlugin = {
 	},
 };
 
-const buildEntry = async (entryAbs: string): Promise<Response> => {
+/**
+ * In-memory bundle + chunk cache. The dev server's first build
+ * resolves all dynamic imports (the lazy pages, the SCSS
+ * composition, etc.) into per-chunk outputs and indexes them
+ * by basename. The route handler then serves `/__entry.js`
+ * and `/<chunk>.js` from this map.
+ *
+ * Why a Map (and not a single Response that re-bundles per
+ * request)?
+ *   - A fresh Bun.build per request would defeat the
+ *     purpose of `splitting: true` — the entry's lazy
+ *     `import('./chunk-…')` only fetches the chunk from
+ *     the browser, but if the build is re-run on every
+ *     request the entry is a megabyte again because the
+ *     dev server has to "re-discover" the chunk graph.
+ *   - With `write: false` we get the built outputs as Blob
+ *     in memory, no temp dir to clean up. Caching the
+ *     outputs lets the dev server serve them with a
+ *     single Map lookup.
+ *   - The first cold load pays the build cost (~150ms).
+ *     Subsequent reloads during the same dev session
+ *     hit the cache. A future slice adds a "force
+ *     rebuild on file change" watch — for now the cache
+ *     is invalidated only on server restart.
+ */
+type BundleMap = ReadonlyMap<string, string>;
+let bundleCache: BundleMap | null = null;
+
+const buildBundle = async (entryAbs: string): Promise<BundleMap> => {
 	if (!existsSync(entryAbs)) {
-		return new Response(
+		throw new Error(
 			`Dev entry not found: ${entryAbs}\n` +
 				`Create it (see packages/ui-extension/src/dev/entry.ts for a template).`,
-			{ status: 500 },
 		);
 	}
 	const result = await Bun.build({
@@ -293,16 +331,77 @@ const buildEntry = async (entryAbs: string): Promise<Response> => {
 		plugins: [scssPlugin],
 		// Don't try to bundle Node-only or VS Code APIs in the browser bundle.
 		external: ['node:*', 'vscode'],
+		// Code-split the dynamic `import('./<page>')` calls in
+		// pages/registry.ts so each page becomes its own
+		// chunk. Without this Bun.build inlines the page
+		// modules into the entry, defeating the lazy load.
+		splitting: true,
+		// `write: false` keeps the bundle in memory — we
+		// serve the chunks via a Map lookup in the route
+		// handler, no tmp dir to clean up.
+		write: false,
 	});
 	if (!result.success) {
 		const messages = result.logs
 			.map((l) => `[${l.level}] ${l.message}`)
 			.join('\n');
-		return new Response(`Build failed:\n${messages}`, { status: 500 });
+		throw new Error(`Build failed:\n${messages}`);
 	}
-	const out = result.outputs[0];
-	if (!out) return new Response('Build produced no output', { status: 500 });
-	return new Response(await out.text(), {
+	const out = new Map<string, string>();
+	for (const output of result.outputs) {
+		// `output.path` is something like './entry.js' or
+		// './chunk-7d4f.js' (or a CSS asset path). We index
+		// by basename so the route handler can match
+		// `/<basename>` directly.
+		const basename = output.path.split('/').pop() ?? output.path;
+		let content = await output.text();
+		// Bun.build minifier emits side-effect imports as
+		// `import"./chunk-X.js";` (no space) which is a
+		// parse error in strict-mode browsers. Normalise to
+		// `import "..."` with the canonical space. Only the
+		// entry's top-level imports are at risk — chunk
+		// imports use `import("./…")` which is unaffected.
+		if (basename === 'entry.js') {
+			content = content.replace(/^import"([^"]+)";/gm, 'import "$1";');
+		}
+		out.set(basename, content);
+	}
+	return out;
+};
+
+const buildEntry = async (entryAbs: string): Promise<Response> => {
+	try {
+		if (!bundleCache) bundleCache = await buildBundle(entryAbs);
+	} catch (err) {
+		const message = err instanceof Error ? err.message : String(err);
+		return new Response(message, { status: 500 });
+	}
+	const entry = bundleCache.get('entry.js');
+	if (!entry) {
+		return new Response('Build produced no entry', { status: 500 });
+	}
+	return new Response(entry, {
+		headers: { 'Content-Type': 'application/javascript; charset=utf-8' },
+	});
+};
+
+/**
+ * Serve a chunk by basename. The dev server's route handler
+ * calls this for any `/<chunk>.js` request that the entry
+ * `import()`s. The browser's relative-path resolution means
+ * an entry at `/__entry.js` with `import('./chunk-X.js')`
+ * will fetch `/chunk-X.js`, which is exactly the URL this
+ * helper handles.
+ */
+const buildChunk = async (basename: string): Promise<Response> => {
+	if (!bundleCache) {
+		return new Response('Bundle not built yet', { status: 503 });
+	}
+	const chunk = bundleCache.get(basename);
+	if (!chunk) {
+		return new Response('Chunk not found', { status: 404 });
+	}
+	return new Response(chunk, {
 		headers: { 'Content-Type': 'application/javascript; charset=utf-8' },
 	});
 };
@@ -638,6 +737,17 @@ const startDevEntry = async (target: ITarget): Promise<void> => {
 			}
 			if (url.pathname === '/__entry.js') {
 				return buildEntry(entryAbs);
+			}
+			// Code-split chunks emitted by Bun.build with
+			// `splitting: true` and `write: false`. The entry's
+			// `import('./chunk-X.js')` resolves relative to
+			// `/__entry.js`, so a request for `/<basename>.js`
+			// is a chunk lookup. The basename is matched
+			// against the cached bundle so we never serve
+			// arbitrary workspace files.
+			if (url.pathname.startsWith('/chunk-') && url.pathname.endsWith('.js')) {
+				const basename = url.pathname.slice(1);
+				return buildChunk(basename);
 			}
 			if (url.pathname.startsWith('/api/')) {
 				return handleApi(process.cwd(), req, url);

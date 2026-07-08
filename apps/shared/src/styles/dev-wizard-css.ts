@@ -22,7 +22,7 @@
  *     surfaces, no body max-width (the wizard fills the panel).
  */
 
-import compiledCss from './dev-wizard.scss';
+import { compiledCss } from './dev-wizard.scss';
 
 /**
  * Compiled CSS string.
