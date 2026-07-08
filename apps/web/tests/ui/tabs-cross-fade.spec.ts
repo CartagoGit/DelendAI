@@ -447,6 +447,36 @@ describe('initTabs — cross-fade (f00069 S1)', () => {
 		initTabs(doc);
 		expect(root.dataset.tabsBound).toBe('1');
 	});
+
+	// f00099 audit follow-up: the shared `renderTabs` no longer
+	// emits inline `onerror=` JavaScript. The renderer stamps a
+	// `<span data-mv-icon>` wrapper around the icon; the
+	// controller (this file) wires `img.error` → wrapper
+	// `is-broken` so the shared SCSS reveals the first-letter
+	// fallback span. This test pins that the controller source
+	// contains the wiring (it is exercised end-to-end by the
+	// docs site — visit /install and watch the PM icon fall
+	// back to a circle with the first letter if the SVG 404s).
+	it('contains the [data-mv-icon] fallback wiring in source (f00099 audit follow-up)', () => {
+		// We can't easily inject a real <span data-mv-icon> via
+		// the bare-node DOM fake, so we read the controller
+		// source and pin the wiring contract. The same contract
+		// is exercised end-to-end on the docs site; the spec
+		// here guards the wiring so a future refactor cannot
+		// silently drop the bindIconFallbacks call.
+		const { readFileSync } = require('node:fs') as typeof import('node:fs');
+		const { fileURLToPath } = require('node:url') as typeof import('node:url');
+		const { dirname, resolve } = require('node:path') as typeof import('node:path');
+		const here = dirname(fileURLToPath(import.meta.url));
+		const src = readFileSync(
+			resolve(here, '../../src/components/ui/_tabs-controller.ts'),
+			'utf8',
+		);
+		expect(src).toContain('bindIconFallbacks');
+		expect(src).toContain('[data-mv-icon]');
+		expect(src).toContain('is-broken');
+		expect(src).toContain("img.addEventListener('error'");
+	});
 });
 
 // ─── Static DOM-shape check for the `plugin` variant (case (d)) ──────────────
