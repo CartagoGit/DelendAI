@@ -31,6 +31,8 @@
  *   attribute on the wrapper link.
  */
 
+import { escapeAttr } from '../../lib/escape';
+
 export type BrandMarkVariant = 'pill' | 'plain';
 
 export interface IBrandMarkProps {
@@ -52,13 +54,6 @@ export interface IBrandMarkProps {
 	 *  like the drawer head where the pill padding is unwanted. */
 	readonly variant?: BrandMarkVariant;
 }
-
-const escapeAttr = (s: string): string =>
-	s
-		.replace(/&/g, '&amp;')
-		.replace(/"/g, '&quot;')
-		.replace(/</g, '&lt;')
-		.replace(/>/g, '&gt;');
 
 export const renderBrandMark = (props: IBrandMarkProps): string => {
 	const variant = props.variant ?? 'pill';

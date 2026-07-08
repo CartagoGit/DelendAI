@@ -125,18 +125,38 @@
 	}
 
 	// Optional brand-mark icon (f00069 S3 populates this for PM tabs and
-	// section tabs). 18×18, never grow/shrink.
+	// section tabs). 18×18, never grow/shrink. The wrapper is a
+	// `<span data-mv-icon>` that contains both the `<img>` and a
+	// first-letter fallback span; the runtime glue (the host's
+	// tabs controller + `renderRuntime`) toggles the
+	// `is-broken` class on the wrapper when the image fails to
+	// load, and the SCSS below hides the broken image + reveals
+	// the fallback. The renderer no longer emits inline
+	// `onerror=` JavaScript (f00099 audit follow-up).
 	&__icon {
+		position: relative;
 		flex: 0 0 auto;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
 		width: 18px;
 		height: 18px;
-		display: block;
 
-		// Fallback badge (first letter of the tab id) when the brand-mark
-		// SVG 404s. The `onerror` handler swaps the <img> for a <span> with
-		// `--fallback`; sized identically so the label never reflows.
-		&--fallback {
-			display: inline-flex;
+		& > img {
+			display: block;
+			width: 18px;
+			height: 18px;
+		}
+
+		// Fallback badge (first letter of the tab id) when the
+		// brand-mark SVG 404s. Hidden by default; revealed when
+		// the wrapper is marked `is-broken` (runtime glue adds the
+		// class on `img.error`).
+		&__icon-fallback,
+		& .mv-tabs__icon-fallback {
+			position: absolute;
+			inset: 0;
+			display: none;
 			align-items: center;
 			justify-content: center;
 			width: 18px;
@@ -147,6 +167,14 @@
 			font-weight: 600;
 			text-transform: uppercase;
 			line-height: 1;
+		}
+
+		&.is-broken > img {
+			display: none;
+		}
+
+		&.is-broken > .mv-tabs__icon-fallback {
+			display: inline-flex;
 		}
 	}
 

@@ -26,6 +26,7 @@
  *   a CLI wizard that persists to disk) can wrap or override
  *   these helpers; the renderers themselves never touch storage.
  */
+import { escapeAttr } from '../../lib/escape';
 
 export interface IWelcomeCard {
 	readonly icon: string;
@@ -56,14 +57,6 @@ export const CARDS: ReadonlyArray<IWelcomeCard> = [
 	},
 ];
 
-const escapeAttr = (s: string): string =>
-	s
-		.replace(/&/g, '&amp;')
-		.replace(/</g, '&lt;')
-		.replace(/>/g, '&gt;')
-		.replace(/"/g, '&quot;')
-		.replace(/'/g, '&#39;');
-
 export const QUICK_START_KEY = 'mv:dev:quickstart-dismissed';
 
 export const isQuickStartDismissed = (): boolean => {
@@ -82,49 +75,92 @@ export const dismissQuickStart = (): void => {
 	}
 };
 
-export const renderFirstRunScreen = (installLabel: string): string => {
-	const cardsHtml = CARDS.map(
-		(card) =>
-			`<article class="mv-welcome__card welcome__card">
+export interface IRenderFirstRunScreenOptions {
+	/** Card grid to render. Default: `CARDS` (the canonical
+	 *  4-card explainer). Hosts that want a different surface
+	 *  (e.g. a CLI init wizard that explains the 3 commands
+	 *  the user will run) can pass a translated list. */
+	readonly cards?: ReadonlyArray<IWelcomeCard>;
+	/** Heading shown in the panel head. Default: "Welcome to mcp-vertex". */
+	readonly heading?: string;
+	/** Lede paragraph. Default: the canonical English copy. The
+	 *  string is HTML, so the host can include `<code>` etc.;
+	 *  pass already-escaped content. */
+	readonly ledeHtml?: string;
+	/** Label on the skip button. Default: "Skip — show me the dashboard anyway". */
+	readonly skipLabel?: string;
+}
+
+export const renderFirstRunScreen = (
+	installLabel: string,
+	options: IRenderFirstRunScreenOptions = {},
+): string => {
+	const cards = options.cards ?? CARDS;
+	const heading = options.heading ?? 'Welcome to mcp-vertex';
+	const ledeHtml =
+		options.ledeHtml ??
+		'This extension ships a dashboard, settings, and a tools panel for the <code>mcp-vertex</code> MCP server. The MCP server is not installed in this workspace yet — once it is, the dashboard will switch to fetching real data from it.';
+	const skipLabel =
+		options.skipLabel ?? 'Skip — show me the dashboard anyway';
+	const cardsHtml = cards
+		.map(
+			(card) =>
+				`<article class="mv-welcome__card welcome__card">
 				<div class="mv-welcome__card-icon welcome__card-icon" aria-hidden="true">${escapeAttr(card.icon)}</div>
 				<h3>${escapeAttr(card.title)}</h3>
 				<p>${escapeAttr(card.body)}</p>
 			</article>`,
-	).join('');
+		)
+		.join('');
 
 	return `<section class="mv-welcome welcome" data-first-run="true">
 			<header class="mv-welcome__head welcome__head">
-				<h1>Welcome to mcp-vertex</h1>
-				<p class="mv-welcome__lede welcome__lede">This extension ships a dashboard, settings, and a tools panel for the <code>mcp-vertex</code> MCP server. The MCP server is not installed in this workspace yet — once it is, the dashboard will switch to fetching real data from it.</p>
+				<h1>${escapeAttr(heading)}</h1>
+				<p class="mv-welcome__lede welcome__lede">${ledeHtml}</p>
 			</header>
 			<div class="mv-welcome__grid welcome__grid">
 				${cardsHtml}
 			</div>
 			<footer class="mv-welcome__cta welcome__cta">
 				<button type="button" id="welcome-install" class="mv-welcome__primary welcome__primary" data-action="open-settings">${escapeAttr(installLabel)}</button>
-				<button type="button" id="welcome-skip" class="mv-welcome__secondary welcome__secondary" data-action="skip-to-dashboard">Skip — show me the dashboard anyway</button>
+				<button type="button" id="welcome-skip" class="mv-welcome__secondary welcome__secondary" data-action="skip-to-dashboard">${escapeAttr(skipLabel)}</button>
 			</footer>
 		</section>`;
 };
 
-export const renderQuickStartMenu = (): string => {
-	const itemsHtml = CARDS.map(
-		(card) =>
-			`<li class="mv-quickstart__item quickstart__item">
+export interface IRenderQuickStartMenuOptions {
+	readonly cards?: ReadonlyArray<IWelcomeCard>;
+	readonly heading?: string;
+	readonly ledeHtml?: string;
+}
+
+export const renderQuickStartMenu = (
+	options: IRenderQuickStartMenuOptions = {},
+): string => {
+	const cards = options.cards ?? CARDS;
+	const heading = options.heading ?? 'Quick start';
+	const ledeHtml =
+		options.ledeHtml ??
+		"A one-time orientation. The workspace is wired and the dashboard is now pulling real data — here's what each tab does.";
+	const itemsHtml = cards
+		.map(
+			(card) =>
+				`<li class="mv-quickstart__item quickstart__item">
 				<span class="mv-quickstart__icon quickstart__icon" aria-hidden="true">${escapeAttr(card.icon)}</span>
 				<div>
 					<strong>${escapeAttr(card.title)}.</strong>
 					<span class="mv-quickstart__desc quickstart__desc">${escapeAttr(card.body)}</span>
 				</div>
 			</li>`,
-	).join('');
+		)
+		.join('');
 
 	return `<aside class="mv-quickstart quickstart" role="complementary">
 			<header class="mv-quickstart__head quickstart__head">
-				<h2>Quick start</h2>
+				<h2>${escapeAttr(heading)}</h2>
 				<button type="button" id="quickstart-dismiss" class="mv-quickstart__close quickstart__close" aria-label="Dismiss quick start">×</button>
 			</header>
-			<p class="mv-quickstart__lede quickstart__lede">A one-time orientation. The workspace is wired and the dashboard is now pulling real data — here's what each tab does.</p>
+			<p class="mv-quickstart__lede quickstart__lede">${ledeHtml}</p>
 			<ul class="mv-quickstart__list quickstart__list">${itemsHtml}</ul>
 		</aside>`;
 };

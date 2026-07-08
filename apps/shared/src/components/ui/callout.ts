@@ -42,6 +42,7 @@
  */
 
 import type { Lang } from '../../i18n/shared';
+import { escapeHtml } from '../../lib/escape';
 
 export type CalloutVariant = 'note' | 'tip' | 'warn' | 'danger';
 
@@ -73,14 +74,6 @@ const DEFAULT_TITLE: Readonly<Record<CalloutVariant, string>> = Object.freeze({
 	warn: 'Warning',
 	danger: 'Danger',
 });
-
-const escapeHtml = (raw: string): string =>
-	raw
-		.replace(/&/g, '&amp;')
-		.replace(/</g, '&lt;')
-		.replace(/>/g, '&gt;')
-		.replace(/"/g, '&quot;')
-		.replace(/'/g, '&#39;');
 
 /**
  * Render a callout `<aside>` element as a string.

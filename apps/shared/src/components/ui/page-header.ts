@@ -55,13 +55,6 @@ export interface IPageHeaderProps {
 	 */
 	readonly baseHref: string;
 	/**
-	 * Legacy alias for `baseHref` — the docs site pages still pass
-	 * `homeHref` to the wrapper. The wrapper forwards it into
-	 * `baseHref` (they are the same value). New code should use
-	 * `baseHref` directly.
-	 */
-	readonly homeHref?: string;
-	/**
 	 * Localized label for the "Home" crumb. The shared renderer
 	 * does not look up translations; the host passes the
 	 * already-translated string. Default: "Home".
@@ -69,16 +62,7 @@ export interface IPageHeaderProps {
 	readonly homeLabel?: string;
 }
 
-const escapeHtml = (raw: string): string =>
-	raw
-		.replace(/&/g, '&amp;')
-		.replace(/</g, '&lt;')
-		.replace(/>/g, '&gt;')
-		.replace(/"/g, '&quot;')
-		.replace(/'/g, '&#39;');
-
-const escapeAttr = (raw: string): string =>
-	raw.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+import { escapeAttr, escapeHtml } from '../../lib/escape';
 
 const renderCrumbs = (
 	crumbs: ReadonlyArray<ICrumb>,
@@ -126,10 +110,7 @@ const renderCrumbs = (
 export const renderPageHeader = (props: IPageHeaderProps): string => {
 	const homeLabel = props.homeLabel ?? 'Home';
 	const crumbs = props.crumbs ?? [];
-	// `homeHref` is the legacy alias the docs site pages still pass;
-	// it carries the same value as `baseHref`, so prefer `baseHref`
-	// when present and fall back to `homeHref` for older call sites.
-	const baseHref = props.baseHref ?? props.homeHref ?? '/';
+	const baseHref = props.baseHref;
 	const crumbsHtml = renderCrumbs(crumbs, baseHref, homeLabel);
 
 	return (

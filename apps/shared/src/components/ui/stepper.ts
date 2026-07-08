@@ -20,6 +20,7 @@
  *   order survives even when CSS hides the visual numbers (and
  *   so screen readers announce "1." … "N.").
  */
+import { escapeHtml } from '../../lib/escape';
 
 export interface IStepperProps {
 	/** Ordered list of step bodies. Each body may contain `code` backticks. */
@@ -27,14 +28,6 @@ export interface IStepperProps {
 	/** Number for the first step (default 1). */
 	readonly start?: number;
 }
-
-const escapeHtml = (raw: string): string =>
-	raw
-		.replace(/&/g, '&amp;')
-		.replace(/</g, '&lt;')
-		.replace(/>/g, '&gt;')
-		.replace(/"/g, '&quot;')
-		.replace(/'/g, '&#39;');
 
 interface ITextPart {
 	readonly text?: string;

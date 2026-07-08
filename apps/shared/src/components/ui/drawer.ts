@@ -41,6 +41,7 @@
  *   sign U+00D7 because no host ships a custom icon and the
  *   unicode char is the smallest possible cross-platform mark.
  */
+import { escapeAttr } from '../../lib/escape';
 
 export type DrawerSide = 'left' | 'right';
 
@@ -79,13 +80,6 @@ export interface IDrawerProps {
 	/** Side the panel slides in from. Default `right`. */
 	readonly side?: DrawerSide;
 }
-
-const escapeAttr = (s: string): string =>
-	s
-		.replace(/&/g, '&amp;')
-		.replace(/"/g, '&quot;')
-		.replace(/</g, '&lt;')
-		.replace(/>/g, '&gt;');
 
 const renderBrand = (b: NonNullable<IDrawerProps['brand']>): string => {
 	const w = b.logoWidth ?? 28;
