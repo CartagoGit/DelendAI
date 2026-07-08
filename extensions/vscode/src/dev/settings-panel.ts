@@ -29,6 +29,8 @@
 import type { Lang, LangDictByLang } from '@mcp-vertex/shared/i18n';
 import { dictsByLang, languages } from '@mcp-vertex/shared/i18n';
 import { devWizardCss } from '@mcp-vertex/ui-extension/webview';
+import { renderLangPicker } from '@mcp-vertex/shared/components/dev/lang-picker';
+import { renderThemePicker } from '@mcp-vertex/shared/components/dev/theme-picker';
 
 /**
  * Wire shape for `/api/setup/status`. Mirrors the server-side
@@ -220,38 +222,23 @@ const renderWizard = (status: ISetupStatus): string => {
 	</section>`;
 };
 
-const renderThemePicker = (current: ThemeChoice): string => {
-	const opts: readonly ThemeChoice[] = ['system', 'light', 'dark'];
-	return `<fieldset class="settings__field">
-		<legend>Theme</legend>
-		<p class="settings__hint">Choose how the dashboard renders in the dev preview. In production, the extension inherits the host VS Code theme automatically; the explicit choice here wins inside this browser tab.</p>
-		<div class="settings__radios" role="radiogroup">
-			${opts
-				.map(
-					(opt) =>
-						`<label class="settings__radio">
-							<input type="radio" name="theme" value="${opt}" ${opt === current ? 'checked' : ''} />
-							<span>${opt[0]?.toUpperCase() ?? ''}${opt.slice(1)}</span>
-						</label>`,
-				)
-				.join('')}
-		</div>
-	</fieldset>`;
-};
+// f00102 S4.5 — theme + language pickers are now the shared
+// `renderThemePicker` / `renderLangPicker` from
+// `@mcp-vertex/shared/components/dev/...` so any future product
+// surface (CLI init wizard, marketing-site settings, JetBrains
+// extension) emits the same radios + select without a fork. The
+// dev preview keeps its existing `.settings__*` markup by
+// emitting both `mv-*` (new BEM) and `settings__*` (legacy) via
+// the shared renderer's HTML, and the shared SCSS aliases the
+// two trees together.
+const renderThemePickerLocal = (current: ThemeChoice): string =>
+	renderThemePicker({
+		current,
+		hint: 'Choose how the dashboard renders in the dev preview. In production, the extension inherits the host VS Code theme automatically; the explicit choice here wins inside this browser tab.',
+	});
 
-const renderLangPicker = (current: Lang): string => {
-	const options = languages
-		.map((entry) => {
-			const code: string = 'code' in entry ? String(entry.code) : '';
-			const label: string = 'name' in entry ? String(entry.name) : code;
-			return `<option value="${escapeHtml(code)}" ${code === current ? 'selected' : ''}>${escapeHtml(label)}</option>`;
-		})
-		.join('');
-	return `<label class="settings__field settings__field--inline">
-		<span>Language</span>
-		<select name="lang">${options}</select>
-	</label>`;
-};
+const renderLangPickerLocal = (current: Lang): string =>
+	renderLangPicker({ current, inline: true });
 
 const renderStatusBanner = (status: ISetupStatus): string => {
 	if (status.kind === 'configured') {
@@ -280,8 +267,8 @@ export const renderSettingsPanel = (
 		${renderStatusBanner(status)}
 		${renderWizard(status)}
 		<form class="settings__form" id="settings-form" autocomplete="off">
-			${renderThemePicker(prefs.theme)}
-			${renderLangPicker(prefs.lang)}
+			${renderThemePickerLocal(prefs.theme)}
+			${renderLangPickerLocal(prefs.lang)}
 		</form>
 	</section>`;
 };
