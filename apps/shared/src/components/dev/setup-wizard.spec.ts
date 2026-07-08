@@ -53,9 +53,7 @@ describe('renderSetupWizard', () => {
 		expect(out).toContain(
 			'<section class="mv-setup setup" data-kind="unconfigured">',
 		);
-		expect(out).toContain(
-			'<header class="mv-setup__head setup__head">',
-		);
+		expect(out).toContain('<header class="mv-setup__head setup__head">');
 		expect(out).toContain(
 			'<aside class="mv-setup__signals setup__signals" aria-label="Detection signals">',
 		);
@@ -81,15 +79,15 @@ describe('renderSetupWizard', () => {
 	});
 
 	it('auto-derives the CTA label from kind', () => {
-		expect(renderSetupWizard({ ...baseStatus, kind: 'configured' })).toContain(
-			'Re-install (idempotent)',
-		);
+		expect(
+			renderSetupWizard({ ...baseStatus, kind: 'configured' }),
+		).toContain('Re-install (idempotent)');
 		expect(renderSetupWizard({ ...baseStatus, kind: 'partial' })).toContain(
 			'Finish setup',
 		);
-		expect(renderSetupWizard({ ...baseStatus, kind: 'unconfigured' })).toContain(
-			'Install mcp-vertex here',
-		);
+		expect(
+			renderSetupWizard({ ...baseStatus, kind: 'unconfigured' }),
+		).toContain('Install mcp-vertex here');
 	});
 
 	it('honours an explicit ctaLabel override', () => {

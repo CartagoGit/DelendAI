@@ -45,19 +45,13 @@ describe('renderFirstRunScreen', () => {
 		expect(out).toContain(
 			'<section class="mv-welcome welcome" data-first-run="true">',
 		);
-		expect(out).toContain('<header class="mv-welcome__head welcome__head">');
 		expect(out).toContain(
-			'<div class="mv-welcome__grid welcome__grid">',
+			'<header class="mv-welcome__head welcome__head">',
 		);
-		expect(out).toContain(
-			'<footer class="mv-welcome__cta welcome__cta">',
-		);
-		expect(out).toContain(
-			'<button type="button" id="welcome-install"',
-		);
-		expect(out).toContain(
-			'<button type="button" id="welcome-skip"',
-		);
+		expect(out).toContain('<div class="mv-welcome__grid welcome__grid">');
+		expect(out).toContain('<footer class="mv-welcome__cta welcome__cta">');
+		expect(out).toContain('<button type="button" id="welcome-install"');
+		expect(out).toContain('<button type="button" id="welcome-skip"');
 	});
 
 	it('renders all 4 cards with the canonical classes', () => {
@@ -84,9 +78,7 @@ describe('renderQuickStartMenu', () => {
 		expect(out).toContain(
 			'<ul class="mv-quickstart__list quickstart__list">',
 		);
-		expect(out).toContain(
-			'<button type="button" id="quickstart-dismiss"',
-		);
+		expect(out).toContain('<button type="button" id="quickstart-dismiss"');
 	});
 
 	it('renders all 4 list items', () => {
