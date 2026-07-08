@@ -34,6 +34,7 @@
  *     now the slider uses a tiny Math.random() suffix that
  *     duplicates < 1e-7 of the time.
  */
+import { escapeHtml } from '../../lib/escape';
 
 export interface ICodeBlockProps {
 	readonly code: string;
@@ -57,14 +58,6 @@ export interface ICodeBlockProps {
 	 */
 	readonly id?: string;
 }
-
-const escapeHtml = (raw: string): string =>
-	raw
-		.replace(/&/g, '&amp;')
-		.replace(/</g, '&lt;')
-		.replace(/>/g, '&gt;')
-		.replace(/"/g, '&quot;')
-		.replace(/'/g, '&#39;');
 
 const stableSuffix = (): string => Math.random().toString(36).slice(2, 9);
 

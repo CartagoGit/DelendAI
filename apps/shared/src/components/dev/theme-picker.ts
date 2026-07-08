@@ -25,6 +25,7 @@
  *   theme); explicit light/dark are escape hatches for
  *   embedders that want a fixed surface.
  */
+import { escapeAttr } from '../../lib/escape';
 
 export type ThemeChoice = 'system' | 'light' | 'dark';
 
@@ -39,14 +40,6 @@ export interface IRenderThemePickerOptions {
 	 *  single inline row. Default false. */
 	readonly inline?: boolean;
 }
-
-const escapeAttr = (s: string): string =>
-	s
-		.replace(/&/g, '&amp;')
-		.replace(/</g, '&lt;')
-		.replace(/>/g, '&gt;')
-		.replace(/"/g, '&quot;')
-		.replace(/'/g, '&#39;');
 
 const THEME_ORDER: ReadonlyArray<ThemeChoice> = ['system', 'light', 'dark'];
 
