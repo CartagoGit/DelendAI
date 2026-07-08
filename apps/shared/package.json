@@ -16,13 +16,17 @@
 			"types": "./src/styles/_index.scss",
 			"import": "./src/styles/_index.scss"
 		},
+		"./styles/*-css": {
+			"types": "./src/styles/*-css.ts",
+			"import": "./src/styles/*-css.ts"
+		},
 		"./styles/*": {
 			"types": "./src/styles/*",
 			"import": "./src/styles/*"
 		},
 		"./components/*": {
-			"types": "./src/components/*",
-			"import": "./src/components/*"
+			"types": "./src/components/*.ts",
+			"import": "./src/components/*.ts"
 		},
 		"./i18n": {
 			"types": "./src/i18n/index.ts",
