@@ -130,5 +130,12 @@
 		"./plugins/logs/skills": true,
 		"./plugins/rules/skills": true,
 		"./plugins/issues/skills": true
-	}
+	},
+"mcp-vertex.server": {
+    "command": "bun",
+    "args": [
+      "run",
+      "mcp-vertex"
+    ]
+  }
 }
