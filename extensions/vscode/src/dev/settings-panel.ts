@@ -28,7 +28,7 @@
  */
 import type { Lang, LangDictByLang } from '@mcp-vertex/shared/i18n';
 import { dictsByLang, languages } from '@mcp-vertex/shared/i18n';
-import { devWizardCss } from '@mcp-vertex/ui-extension/webview';
+import { devPreviewCss } from '@mcp-vertex/ui-extension/webview';
 import { renderLangPicker } from '@mcp-vertex/shared/components/dev/lang-picker';
 import { renderThemePicker } from '@mcp-vertex/shared/components/dev/theme-picker';
 import {
@@ -224,7 +224,7 @@ const renderStatusBannerLocal = (status: ISetupStatus): string =>
 
 /**
  * Render the Settings panel. Caller is responsible for injecting the
- * wizard CSS (`devWizardCss`) once before this is called — typically
+ * wizard CSS (`devPreviewCss`) once before this is called — typically
  * on first navigation to the Settings view.
  */
 export const renderSettingsPanel = (
@@ -314,7 +314,7 @@ export const ensureWizardStyles = (): void => {
 	if (document.head.querySelector('[data-mv-dev-wizard]')) return;
 	const tag = document.createElement('style');
 	tag.setAttribute('data-mv-dev-wizard', 'true');
-	tag.textContent = devWizardCss;
+	tag.textContent = devPreviewCss;
 	document.head.appendChild(tag);
 };
 

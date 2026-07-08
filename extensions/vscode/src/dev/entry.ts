@@ -47,6 +47,7 @@ import { renderMetricsHtml } from '../views/metrics-sparkline';
 import { renderToolDetailHtml } from '../views/tool-detail-webview';
 import {
 	bootstrapPersistedPrefs,
+	ensureWizardStyles,
 	getDict,
 	mountSettingsPanel,
 	readPersistedPrefs,
@@ -162,6 +163,7 @@ const extractDashboardBody = (html: string): string => {
 // ---------------------------------------------------------------------------
 
 const renderWelcome = (root: HTMLElement): void => {
+	ensureWizardStyles();
 	root.innerHTML = renderFirstRunScreen(
 		'Install mcp-vertex in this workspace',
 	);
