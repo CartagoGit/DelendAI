@@ -128,6 +128,14 @@ const { labels, events = [] } = Astro.props;
 		color: inherit;
 	}
 
+	.logs-table__empty {
+		/* Empty-state copy — muted like the plugin-disclosure empty note
+		   (f00099 S1). */
+		margin: 1rem 0;
+		color: var(--muted, #8b949e);
+		font-size: 0.9rem;
+	}
+
 	.logs-table__task {
 		border: 0;
 		padding: 0;

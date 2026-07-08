@@ -89,6 +89,11 @@ const defaultEco = ecosystems[0]?.id ?? '';
 		padding: 0;
 		list-style: none;
 	}
+	.install-eco__packager {
+		/* Grid-item guard: long init commands must shrink the item, not
+		   blow the column out (same pattern as .tool / .ide). */
+		min-width: 0;
+	}
 	.install-eco__head {
 		display: flex;
 		align-items: center;
