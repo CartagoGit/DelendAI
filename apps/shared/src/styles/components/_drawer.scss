@@ -86,6 +86,13 @@
 	min-width: 0;
 }
 
+.mv-drawer__logo {
+	// The renderer emits width/height attrs; keep the img rigid inside
+	// the flex brand row so a long brand text can never squash it.
+	display: block;
+	flex: 0 0 auto;
+}
+
 .mv-drawer__brand-text {
 	white-space: nowrap;
 	overflow: hidden;

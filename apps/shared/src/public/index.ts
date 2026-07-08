@@ -34,7 +34,11 @@ export type { ILangDict, ILangMeta, Lang, Theme } from '../i18n/shared';
 // `set:html` directive. See `packages/ui-extension/src/components/
 // dropdown.ts` for the implementation and `tests/components/dropdown
 // .spec.ts` for the contract.
-export { renderDropdown } from '@mcp-vertex/ui-extension';
+// DEEP import (not the package barrel): pulling the barrel drags the
+// whole ui-extension graph — dashboard renderers and their Bun-plugin
+// scss modules — into every consumer bundle; vite/astro cannot load
+// those and the site build breaks (found 2026-07-08).
+export { renderDropdown } from '@mcp-vertex/ui-extension/components/dropdown';
 
 // `renderRuntime` is the `<script>` that drives every `mv-dropdown`
 // (and other `[data-mv-toggle]` / `[data-mv-action]` host gestures)
@@ -44,4 +48,4 @@ export { renderDropdown } from '@mcp-vertex/ui-extension';
 // plain HTML page — the only host-specific piece is
 // `window.__MV_HOST__`, which the docs site leaves as the no-op
 // default since menu items now carry real `href`s.
-export { renderRuntime } from '@mcp-vertex/ui-extension';
+export { renderRuntime } from '@mcp-vertex/ui-extension/components/runtime';
