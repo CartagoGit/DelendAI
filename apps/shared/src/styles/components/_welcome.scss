@@ -1,0 +1,220 @@
+// `apps/shared/src/styles/components/_welcome.scss`
+//
+// BEM-nested styles for the `<section class="mv-welcome">` block
+// emitted by `renderFirstRunScreen` in
+// `apps/shared/src/components/dev/welcome.ts` (f00102 S4.6).
+// The companion `<aside class="mv-quickstart">` block (emitted by
+// `renderQuickStartMenu`) follows at the bottom.
+//
+// Class namespace is `mv-welcome` / `mv-welcome__*` and
+// `mv-quickstart` / `mv-quickstart__*`. The trailing @extend
+// block keeps the legacy `.welcome__*` and `.quickstart__*`
+// selectors working so the existing dev preview keeps matching
+// during the deprecation window.
+//
+// The real visual rules (grid, padding, cards) live in
+// `apps/shared/src/styles/dev-wizard.scss` and target the
+// legacy `welcome` / `quickstart` blocks. This partial only
+// adds the `mv-*` aliases via @extend — a future slice moves
+// the real rules to the new namespace.
+
+.mv-welcome {
+	display: flex;
+	flex-direction: column;
+	gap: 1.5rem;
+	padding: 1.5rem;
+}
+
+.mv-welcome__head {
+	display: flex;
+	flex-direction: column;
+	gap: 0.5rem;
+}
+
+.mv-welcome__lede {
+	color: var(--mv-fg-muted, var(--muted));
+	font-size: 0.95rem;
+	line-height: 1.45;
+	margin: 0;
+}
+
+.mv-welcome__grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+	gap: 0.75rem;
+}
+
+.mv-welcome__card {
+	display: flex;
+	flex-direction: column;
+	gap: 0.4rem;
+	padding: 1rem;
+	border: 1px solid var(--mv-border, var(--line));
+	border-radius: 12px;
+	background: color-mix(in srgb, var(--mv-bg, var(--bg)) 96%, transparent);
+}
+
+.mv-welcome__card-icon {
+	font-size: 1.4rem;
+	color: var(--mv-link, var(--accent));
+}
+
+.mv-welcome__cta {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+}
+
+.mv-welcome__primary,
+.mv-welcome__secondary {
+	appearance: none;
+	border: 1px solid var(--mv-border, var(--line));
+	border-radius: 8px;
+	padding: 0.5rem 0.9rem;
+	font: inherit;
+	cursor: pointer;
+	transition:
+		background 0.18s ease,
+		border-color 0.18s ease;
+}
+
+.mv-welcome__primary {
+	background: var(--mv-link, var(--accent));
+	color: var(--mv-bg, var(--bg));
+	border-color: transparent;
+	font-weight: 600;
+
+	&:hover {
+		filter: brightness(1.1);
+	}
+}
+
+.mv-welcome__secondary {
+	background: transparent;
+	color: var(--mv-fg, var(--fg));
+
+	&:hover {
+		background: color-mix(in srgb, var(--mv-link, var(--accent)) 12%, transparent);
+	}
+}
+
+// Quickstart
+
+.mv-quickstart {
+	display: flex;
+	flex-direction: column;
+	gap: 0.75rem;
+	padding: 1rem 1.25rem;
+	border: 1px solid var(--mv-border, var(--line));
+	border-radius: 12px;
+	background: color-mix(in srgb, var(--mv-link, var(--accent)) 4%, transparent);
+}
+
+.mv-quickstart__head {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 0.5rem;
+}
+
+.mv-quickstart__close {
+	appearance: none;
+	background: transparent;
+	border: 0;
+	color: var(--mv-fg-muted, var(--muted));
+	cursor: pointer;
+	font-size: 1.1rem;
+	padding: 0 0.4rem;
+
+	&:hover {
+		color: var(--mv-fg, var(--fg));
+	}
+}
+
+.mv-quickstart__lede {
+	margin: 0;
+	color: var(--mv-fg-muted, var(--muted));
+	font-size: 0.85rem;
+	line-height: 1.4;
+}
+
+.mv-quickstart__list {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	display: flex;
+	flex-direction: column;
+	gap: 0.5rem;
+}
+
+.mv-quickstart__item {
+	display: flex;
+	gap: 0.6rem;
+	font-size: 0.88rem;
+	line-height: 1.4;
+}
+
+.mv-quickstart__icon {
+	flex: 0 0 auto;
+	font-size: 1rem;
+	color: var(--mv-link, var(--accent));
+}
+
+.mv-quickstart__desc {
+	color: var(--mv-fg-muted, var(--muted));
+}
+
+// Legacy aliases — keep `.welcome__*` and `.quickstart__*`
+// selectors visually equivalent to the new `.mv-*` tree.
+.welcome {
+	@extend .mv-welcome;
+}
+.welcome__head {
+	@extend .mv-welcome__head;
+}
+.welcome__lede {
+	@extend .mv-welcome__lede;
+}
+.welcome__grid {
+	@extend .mv-welcome__grid;
+}
+.welcome__card {
+	@extend .mv-welcome__card;
+}
+.welcome__card-icon {
+	@extend .mv-welcome__card-icon;
+}
+.welcome__cta {
+	@extend .mv-welcome__cta;
+}
+.welcome__primary {
+	@extend .mv-welcome__primary;
+}
+.welcome__secondary {
+	@extend .mv-welcome__secondary;
+}
+
+.quickstart {
+	@extend .mv-quickstart;
+}
+.quickstart__head {
+	@extend .mv-quickstart__head;
+}
+.quickstart__close {
+	@extend .mv-quickstart__close;
+}
+.quickstart__lede {
+	@extend .mv-quickstart__lede;
+}
+.quickstart__list {
+	@extend .mv-quickstart__list;
+}
+.quickstart__item {
+	@extend .mv-quickstart__item;
+}
+.quickstart__icon {
+	@extend .mv-quickstart__icon;
+}
+.quickstart__desc {
+	@extend .mv-quickstart__desc;
+}

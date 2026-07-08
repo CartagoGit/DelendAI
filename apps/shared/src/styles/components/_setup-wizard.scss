@@ -1,0 +1,205 @@
+// `apps/shared/src/styles/components/_setup-wizard.scss`
+//
+// BEM-nested styles for the `<section class="mv-setup">` block
+// emitted by `renderSetupWizard` and the `<p class="mv-status-banner">`
+// block emitted by `renderStatusBanner` in
+// `apps/shared/src/components/dev/setup-wizard.ts` (f00102 S4.6).
+//
+// Class namespace is `mv-setup` / `mv-setup__*` and
+// `mv-status-banner` / `mv-status-banner--{ok,warn}`. The trailing
+// @extend block keeps the legacy `.setup__*` and `.settings__status*`
+// selectors working so the existing dev preview keeps matching
+// during the deprecation window.
+//
+// The real visual rules live in `apps/shared/src/styles/dev-wizard.scss`
+// and target the legacy `setup` / `settings__status` blocks. This
+// partial only adds the `mv-*` aliases.
+
+.mv-setup {
+	display: flex;
+	flex-direction: column;
+	gap: 1.25rem;
+	padding: 1.25rem 1.5rem;
+}
+
+.mv-setup__head {
+	display: flex;
+	flex-direction: column;
+	gap: 0.4rem;
+}
+
+.mv-setup__hint {
+	margin: 0;
+	color: var(--mv-fg-muted, var(--muted));
+	font-size: 0.9rem;
+	line-height: 1.4;
+}
+
+.mv-setup__signals {
+	display: flex;
+	flex-direction: column;
+	gap: 0.5rem;
+}
+
+.mv-setup__signals h2 {
+	margin: 0;
+	font-size: 0.78rem;
+	text-transform: uppercase;
+	letter-spacing: 0.08em;
+	color: var(--mv-fg-muted, var(--muted));
+}
+
+.mv-setup__signals ul {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	display: flex;
+	flex-direction: column;
+	gap: 0.25rem;
+}
+
+.mv-setup__signal {
+	display: flex;
+	gap: 0.4rem;
+	align-items: baseline;
+	font-size: 0.85rem;
+	font-family: var(--mv-font-mono, ui-monospace, monospace);
+
+	& code {
+		color: var(--mv-fg, var(--fg));
+	}
+
+	&.is-off {
+		color: var(--mv-fg-muted, var(--muted));
+	}
+
+	&.is-on {
+		color: var(--mv-fg, var(--fg));
+	}
+}
+
+.mv-setup__signal-icon {
+	display: inline-block;
+	width: 1ch;
+	color: var(--mv-fg-muted, var(--muted));
+
+	.is-on & {
+		color: var(--mv-link, var(--accent));
+	}
+}
+
+.mv-setup__signal-detail {
+	color: var(--mv-fg-muted, var(--muted));
+}
+
+.mv-setup__cta {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+	align-items: center;
+}
+
+.mv-setup__primary,
+.mv-setup__secondary {
+	appearance: none;
+	border: 1px solid var(--mv-border, var(--line));
+	border-radius: 8px;
+	padding: 0.5rem 0.9rem;
+	font: inherit;
+	cursor: pointer;
+	transition:
+		background 0.18s ease,
+		border-color 0.18s ease;
+}
+
+.mv-setup__primary {
+	background: var(--mv-link, var(--accent));
+	color: var(--mv-bg, var(--bg));
+	border-color: transparent;
+	font-weight: 600;
+
+	&:hover {
+		filter: brightness(1.1);
+	}
+}
+
+.mv-setup__secondary {
+	background: transparent;
+	color: var(--mv-fg, var(--fg));
+
+	&:hover {
+		background: color-mix(in srgb, var(--mv-link, var(--accent)) 12%, transparent);
+	}
+}
+
+.mv-setup__status {
+	color: var(--mv-fg-muted, var(--muted));
+	font-size: 0.85rem;
+}
+
+// Status banner
+
+.mv-status-banner {
+	display: flex;
+	gap: 0.5rem;
+	align-items: baseline;
+	margin: 0;
+	padding: 0.6rem 0.8rem;
+	border-radius: 8px;
+	font-size: 0.9rem;
+	line-height: 1.4;
+}
+
+.mv-status-banner--ok {
+	background: color-mix(in srgb, var(--mv-link, var(--accent)) 14%, transparent);
+	color: var(--mv-fg, var(--fg));
+}
+
+.mv-status-banner--warn {
+	background: color-mix(in srgb, var(--mv-fg-muted, var(--muted)) 14%, transparent);
+	color: var(--mv-fg, var(--fg));
+}
+
+// Legacy aliases — keep `.setup__*` and `.settings__status*`
+// selectors visually equivalent to the new `.mv-*` tree.
+.setup {
+	@extend .mv-setup;
+}
+.setup__head {
+	@extend .mv-setup__head;
+}
+.setup__hint {
+	@extend .mv-setup__hint;
+}
+.setup__signals {
+	@extend .mv-setup__signals;
+}
+.setup__signal {
+	@extend .mv-setup__signal;
+}
+.setup__signal-icon {
+	@extend .mv-setup__signal-icon;
+}
+.setup__signal-detail {
+	@extend .mv-setup__signal-detail;
+}
+.setup__cta {
+	@extend .mv-setup__cta;
+}
+.setup__primary {
+	@extend .mv-setup__primary;
+}
+.setup__secondary {
+	@extend .mv-setup__secondary;
+}
+.setup__status {
+	@extend .mv-setup__status;
+}
+.settings__status--ok {
+	@extend .mv-status-banner;
+	@extend .mv-status-banner--ok;
+}
+.settings__status--warn {
+	@extend .mv-status-banner;
+	@extend .mv-status-banner--warn;
+}
