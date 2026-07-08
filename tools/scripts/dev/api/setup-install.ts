@@ -147,6 +147,77 @@ const spliceKeyIntoFile = (
 	return true;
 };
 
+/**
+ * Insert `entryKey: entryValue` INSIDE the top-level object named
+ * `parentKey`, preserving everything else (comments, key order,
+ * sibling whitespace). Refuses (returns false) if `parentKey` is
+ * missing or not an object — the caller is expected to skip the
+ * file rather than overwrite it.
+ *
+ * The walker mirrors `spliceKeyIntoFile`'s approach: track brace
+ * depth + string literals so nested braces (e.g. inside a string
+ * `"foo": "}"}`) do not fool the depth counter. We find the FIRST
+ * `{` after `"parentKey":` (that's the parent object's opening),
+ * then balance braces to find the matching `}`. Insertion happens
+ * before that closing brace, with a comma if the parent object is
+ * not empty.
+ */
+const spliceIntoNestedObject = (
+	path: string,
+	parentKey: string,
+	entryKey: string,
+	entryValue: unknown,
+): boolean => {
+	const raw = readFileSync(path, 'utf8');
+	const needle = `"${parentKey}"`;
+	const idx = raw.indexOf(needle);
+	if (idx === -1) return false;
+	const afterKey = raw.indexOf('{', idx + needle.length);
+	if (afterKey === -1) return false;
+	let depth = 1;
+	let i = afterKey + 1;
+	let inString = false;
+	let escaped = false;
+	for (; i < raw.length; i++) {
+		const ch = raw[i];
+		if (inString) {
+			if (escaped) escaped = false;
+			else if (ch === '\\') escaped = true;
+			else if (ch === '"') inString = false;
+			continue;
+		}
+		if (ch === '"') {
+			inString = true;
+			continue;
+		}
+		if (ch === '{') depth++;
+		else if (ch === '}') {
+			depth--;
+			if (depth === 0) break;
+		}
+	}
+	if (depth !== 0) return false;
+	// `i` is the index of the matching closing `}` for the parent.
+	const before = raw.slice(0, i);
+	const after = raw.slice(i);
+	const trimmedBefore = before.replace(/\s+$/, '');
+	const lastChar = trimmedBefore[trimmedBefore.length - 1] ?? '';
+	const needsComma = lastChar !== '{' && lastChar !== ',';
+	const serialized = `\n  ${JSON.stringify(entryKey)}: ${JSON.stringify(
+		entryValue,
+		null,
+		2,
+	)
+		.split('\n')
+		.map((l) => '  ' + l)
+		.join('\n')}\n`;
+	writeFileSync(
+		path,
+		`${trimmedBefore}${needsComma ? ',' : ''}${serialized}${after}`,
+	);
+	return true;
+};
+
 export const runSetupInstall = (cwd: string): IInstallResult => {
 	ensureDir(join(cwd, '.vscode'));
 
@@ -199,10 +270,36 @@ export const runSetupInstall = (cwd: string): IInstallResult => {
 		} else if (hasKey(parsed, 'servers.mcp-vertex')) {
 			skipped.push(relative(cwd, mcpPath) + ' (already declared)');
 		} else {
-			// Whole mcp.json is small + usually JSON; safe to rewrite.
-			const next = { ...parsed, ...mcpPatch };
-			writeNewFile(mcpPath, next);
-			written.push(relative(cwd, mcpPath));
+			// Existing mcp.json without the mcp-vertex server, with valid
+			// JSON. Splice the new server entry inside the `servers` object
+			// instead of a full-file rewrite, so comments / sibling servers
+			// / formatting stay intact. Refuse to write anything if either:
+			//   - `servers` is not an object in the existing file, or
+			//   - the text-level brace walker cannot locate its closing `}`.
+			const serversObj = parsed.servers;
+			if (
+				typeof serversObj !== 'object' ||
+				serversObj === null ||
+				Array.isArray(serversObj)
+			) {
+				skipped.push(
+					relative(cwd, mcpPath) +
+						' (existing "servers" is missing or not an object; add the mcp-vertex entry manually)',
+				);
+			} else {
+				const ok = spliceIntoNestedObject(
+					mcpPath,
+					'servers',
+					'mcp-vertex',
+					mcpPatch.servers['mcp-vertex'],
+				);
+				if (ok) written.push(relative(cwd, mcpPath));
+				else
+					skipped.push(
+						relative(cwd, mcpPath) +
+							' (could not locate the servers object; add the mcp-vertex entry manually)',
+					);
+			}
 		}
 	}
 
