@@ -80,7 +80,7 @@
 
 .mv-welcome__primary {
 	background: var(--mv-link, var(--accent));
-	color: #ffffff;
+	color: var(--mv-fg-on-brand, #ffffff);
 	border-color: transparent;
 	font-weight: 600;
 

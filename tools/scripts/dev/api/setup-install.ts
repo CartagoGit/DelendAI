@@ -57,8 +57,26 @@ const tryParse = (raw: string): Record<string, unknown> | null => {
 	}
 };
 
+/**
+ * Check whether `obj` already exposes `dotted`. Two patterns:
+ *
+ *   - **flat key** — the whole string is one JSON key, with a dot
+ *     inside the name. E.g. `'mcp-vertex.server'` matches the
+ *     VS Code extension-prefix convention. We try the flat lookup
+ *     first.
+ *   - **nested path** — fall back to walking the segments. E.g.
+ *     `'servers.mcp-vertex'` matches `obj.servers['mcp-vertex']`.
+ *
+ * `spliceKeyIntoFile` (flat key) and `spliceIntoNestedObject`
+ * (nested object insertion) have to agree with this predicate —
+ * otherwise the install path re-adds a key the file already has,
+ * which is exactly the silent duplicate-injection the spec at
+ * `setup-install.spec.ts` pins.
+ */
 const hasKey = (obj: Record<string, unknown>, dotted: string): boolean => {
+	if (Object.prototype.hasOwnProperty.call(obj, dotted)) return true;
 	const parts = dotted.split('.');
+	if (parts.length < 2) return false;
 	let cursor: unknown = obj;
 	for (const p of parts) {
 		if (cursor === null || typeof cursor !== 'object') return false;
