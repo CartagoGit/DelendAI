@@ -27,7 +27,26 @@
  */
 import { escapeAttr } from '../../lib/escape';
 
-export type ThemeChoice = 'system' | 'light' | 'dark';
+export type ThemeChoice =
+	| 'system'
+	| 'light'
+	| 'dark'
+	| 'midnight'
+	| 'solarized'
+	| 'nord';
+
+/** All non-system theme values backed by `:root[data-theme="..."]`
+ * blocks in `apps/shared/src/styles/_themes.scss`. Hosts that want
+ * a smaller surface (e.g. a CLI wizard that only knows dark + light)
+ * can pass a custom `themes` option. */
+export const ALL_THEMES: ReadonlyArray<ThemeChoice> = [
+	'system',
+	'light',
+	'dark',
+	'midnight',
+	'solarized',
+	'nord',
+];
 
 export interface IRenderThemePickerOptions {
 	/** Currently selected theme. */
@@ -39,9 +58,26 @@ export interface IRenderThemePickerOptions {
 	/** When true, omit the `<fieldset>` wrapper and render as a
 	 *  single inline row. Default false. */
 	readonly inline?: boolean;
+	/** Restrict the picker to a subset of `ALL_THEMES`. Default
+	 * `ALL_THEMES` so every pick instance is a complete mirror of
+	 * what `apps/shared/src/styles/_themes.scss` declares. Hosts
+	 * that only support a fixed subset (e.g. a CLI that renders in a
+	 * terminal and cannot use the lighter palettes) can pass an
+	 * explicit list. */
+	readonly themes?: ReadonlyArray<ThemeChoice>;
 }
 
-const THEME_ORDER: ReadonlyArray<ThemeChoice> = ['system', 'light', 'dark'];
+/** Default render order. Pinned by the picker so the radio buttons
+ * do not shuffle between renders when callers accidentally rely on
+ * insertion order. */
+export const THEME_ORDER: ReadonlyArray<ThemeChoice> = [
+	'system',
+	'light',
+	'dark',
+	'midnight',
+	'solarized',
+	'nord',
+];
 
 const capitalise = (s: string): string =>
 	s.length === 0 ? s : s.charAt(0).toUpperCase() + s.slice(1);
@@ -50,14 +86,17 @@ export const renderThemePicker = (
 	options: IRenderThemePickerOptions,
 ): string => {
 	const name = options.name ?? 'theme';
-	const radios = THEME_ORDER.map(
-		(opt) =>
-			`<label class="mv-theme-picker__radio">` +
-			`<input type="radio" name="${escapeAttr(name)}" value="${escapeAttr(opt)}"` +
-			` ${opt === options.current ? 'checked' : ''} />` +
-			`<span>${escapeAttr(capitalise(opt))}</span>` +
-			`</label>`,
-	).join('');
+	const order = options.themes ?? THEME_ORDER;
+	const radios = order
+		.map(
+			(opt) =>
+				`<label class="mv-theme-picker__radio">` +
+				`<input type="radio" name="${escapeAttr(name)}" value="${escapeAttr(opt)}"` +
+				` ${opt === options.current ? 'checked' : ''} />` +
+				`<span>${escapeAttr(capitalise(opt))}</span>` +
+				`</label>`,
+		)
+		.join('');
 
 	if (options.inline) {
 		return (

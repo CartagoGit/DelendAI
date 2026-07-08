@@ -30,7 +30,11 @@ import type { Lang, LangDictByLang } from '@mcp-vertex/shared/i18n';
 import { dictsByLang, languages } from '@mcp-vertex/shared/i18n';
 import { devPreviewCss } from '@mcp-vertex/ui-extension/webview';
 import { renderLangPicker } from '@mcp-vertex/shared/components/dev/lang-picker';
-import { renderThemePicker } from '@mcp-vertex/shared/components/dev/theme-picker';
+import {
+	ALL_THEMES,
+	renderThemePicker,
+	type ThemeChoice,
+} from '@mcp-vertex/shared/components/dev/theme-picker';
 import {
 	renderSetupWizard,
 	renderStatusBanner,
@@ -61,7 +65,7 @@ export interface ISetupStatus {
 const THEME_KEY = 'mv:dev:theme';
 const LANG_KEY = 'mv:dev:lang';
 
-export type ThemeChoice = 'system' | 'light' | 'dark';
+export type { ThemeChoice };
 
 const escapeHtml = (s: string): string =>
 	s
@@ -88,7 +92,7 @@ const safeWrite = (key: string, value: string): void => {
 };
 
 const isThemeChoice = (v: string | null): v is ThemeChoice =>
-	v === 'system' || v === 'light' || v === 'dark';
+	v !== null && (ALL_THEMES as ReadonlyArray<string>).includes(v);
 
 const isLang = (v: string | null): v is Lang =>
 	typeof v === 'string' &&

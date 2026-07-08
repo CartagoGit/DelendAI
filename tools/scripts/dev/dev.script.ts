@@ -324,14 +324,19 @@ const renderDevHtml = (target: ITarget, entryRel: string): string => {
 	const shellCss = `
 		:root {
 			color-scheme: light dark;
-			--mv-bg: var(--vscode-editor-background, #1e1e1e);
-			--mv-bg-soft: var(--vscode-sideBar-background, #252526);
-			--mv-bg-card: var(--vscode-editorWidget-background, #252526);
-			--mv-fg: var(--vscode-foreground, #d4d4d4);
-			--mv-fg-muted: var(--vscode-descriptionForeground, #858585);
-			--mv-border: var(--vscode-widget-border, #3c3c3c);
+			/* Bridge the marketing site's theme vars (--bg/--fg/--card/--line/--
+accent, declared on :root[data-theme=...]) into the dev preview's --mv-* to
+kens, so the theme picker actually repaints the chrome. The non-theme
+fallbacks below keep the standalone-vscode preview legible when no
+data-theme attr is set (the picker default 'system' removes it). */
+			--mv-bg: var(--bg, var(--vscode-editor-background, #1e1e1e));
+			--mv-bg-soft: var(--bg-soft, var(--vscode-sideBar-background, #252526));
+			--mv-bg-card: var(--card, var(--vscode-editorWidget-background, #252526));
+			--mv-fg: var(--fg, var(--vscode-foreground, #d4d4d4));
+			--mv-fg-muted: var(--muted, var(--vscode-descriptionForeground, #858585));
+			--mv-border: var(--line, var(--vscode-widget-border, #3c3c3c));
 			--mv-focus: var(--vscode-focusBorder, #007fd4);
-			--mv-link: var(--vscode-textLink-foreground, #3794ff);
+			--mv-link: var(--accent, var(--vscode-textLink-foreground, #3794ff));
 			--mv-font-prose: var(--vscode-font-family, system-ui, -apple-system, "Segoe WPC", "Segoe UI", sans-serif);
 			--mv-font-mono: var(--vscode-editor-font-family, ui-monospace, SFMono-Regular, Menlo, Consolas, monospace);
 		}
