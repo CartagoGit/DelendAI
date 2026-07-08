@@ -51,10 +51,13 @@ interface Props {
 const { lang, title, crumbs, homeHref } = Astro.props as Props;
 const t = useTranslations(lang);
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
-const baseHref = `${base}/`;
+// `homeHref` is the legacy alias the docs site pages still pass;
+// the shared renderer accepts a single `baseHref` so we normalise
+// the value here. Both forms land on the same `baseHref` string.
+const baseHref = homeHref ?? `${base}/`;
 const homeLabel = t.nav.concept;
 ---
 
 <header class="mv-page-header page-header">
-	<Fragment set:html={renderPageHeader({ lang, title, crumbs: crumbs as IPageHeaderProps['crumbs'] | undefined, baseHref: homeHref ?? baseHref, homeHref: homeHref ?? baseHref, homeLabel })} />
+	<Fragment set:html={renderPageHeader({ lang, title, crumbs: crumbs as IPageHeaderProps['crumbs'] | undefined, baseHref, homeLabel })} />
 </header>

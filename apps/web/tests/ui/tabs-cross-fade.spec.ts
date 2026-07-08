@@ -548,6 +548,10 @@ describe('Tabs.astro — plugin variant DOM shape', () => {
 	it('renders the optional icon before the label when `t.icon` is set', () => {
 		expect(sharedSource).toContain('renderIcon');
 		expect(sharedSource).toContain('class="mv-tabs__icon"');
-		expect(sharedSource).toMatch(/<img[\s\S]{0,200}class="mv-tabs__icon"/);
+		// f00102 audit follow-up: the icon wrapper is now a
+		// `<span data-mv-icon>` containing the <img> + a
+		// first-letter fallback span. No inline `onerror=` JS.
+		expect(sharedSource).toContain('data-mv-icon');
+		expect(sharedSource).toContain('mv-tabs__icon-fallback');
 	});
 });

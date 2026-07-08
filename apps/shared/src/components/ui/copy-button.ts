@@ -29,16 +29,7 @@ export interface ICopyButtonProps {
 	readonly variant?: CopyButtonVariant;
 }
 
-const escapeHtml = (raw: string): string =>
-	raw
-		.replace(/&/g, '&amp;')
-		.replace(/</g, '&lt;')
-		.replace(/>/g, '&gt;')
-		.replace(/"/g, '&quot;')
-		.replace(/'/g, '&#39;');
-
-const escapeAttr = (raw: string): string =>
-	raw.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+import { escapeAttr, escapeHtml } from '../../lib/escape';
 
 /**
  * Render a standalone copy button as a string.

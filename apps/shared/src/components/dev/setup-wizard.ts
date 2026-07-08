@@ -37,6 +37,7 @@
  *   - `unconfigured`  → "Install mcp-vertex here"
  *   Hosts that want different copy pass an explicit `ctaLabel`.
  */
+import { escapeAttr } from '../../lib/escape';
 
 export type SetupStatusKind = 'configured' | 'partial' | 'unconfigured';
 
@@ -59,14 +60,6 @@ export interface IRenderSetupWizardOptions {
 	/** Override the wizard's heading text. */
 	readonly heading?: string;
 }
-
-const escapeAttr = (s: string): string =>
-	s
-		.replace(/&/g, '&amp;')
-		.replace(/</g, '&lt;')
-		.replace(/>/g, '&gt;')
-		.replace(/"/g, '&quot;')
-		.replace(/'/g, '&#39;');
 
 const DEFAULT_CTA: Readonly<Record<SetupStatusKind, string>> = {
 	configured: 'Re-install (idempotent)',

@@ -157,6 +157,24 @@ export const componentScript: string = `
       var ttl = parseInt(el.getAttribute('data-mv-toast-ttl') || '0', 10);
       if (ttl > 0) setTimeout(function () { if (el.parentNode) el.parentNode.removeChild(el); }, ttl);
     });
+
+    // f00099-style icon-fallback wiring: when a [data-mv-icon]
+    // wrapper's <img> fails to load, mark the wrapper as broken
+    // so the shared SCSS hides the image and reveals the
+    // first-letter fallback span. The renderer never emits
+    // inline onerror handlers — every host that injects
+    // renderRuntime() gets this behaviour for free.
+    document.querySelectorAll('[data-mv-icon] > img').forEach(function (img) {
+      if (img.complete && img.naturalWidth === 0) {
+        img.parentNode.classList.add('is-broken');
+      }
+      img.addEventListener('error', function () {
+        img.parentNode.classList.add('is-broken');
+      });
+      img.addEventListener('load', function () {
+        img.parentNode.classList.remove('is-broken');
+      });
+    });
   });
   // Also handle toasts that appear after DOMContentLoaded (rare).
   var observer = new MutationObserver(function (mutations) {
@@ -166,9 +184,33 @@ export const componentScript: string = `
           var ttl = parseInt(n.getAttribute('data-mv-toast-ttl') || '0', 10);
           if (ttl > 0) setTimeout(function () { if (n.parentNode) n.parentNode.removeChild(n); }, ttl);
         }
+        // Same wiring for icons that mount after DOMContentLoaded
+        // (e.g. tabs inserted by a dynamic view switch).
+        if (n instanceof Element && n.hasAttribute('data-mv-icon')) {
+          bindIconFallback(n);
+        }
+        if (n instanceof Element) {
+          var icons = n.querySelectorAll ? n.querySelectorAll('[data-mv-icon]') : [];
+          icons.forEach(bindIconFallback);
+        }
       });
     });
   });
+  function bindIconFallback(wrapper) {
+    if (!wrapper || wrapper.dataset.mvIconBound === '1') return;
+    wrapper.dataset.mvIconBound = '1';
+    var img = wrapper.querySelector('img');
+    if (!img) return;
+    if (img.complete && img.naturalWidth === 0) {
+      wrapper.classList.add('is-broken');
+    }
+    img.addEventListener('error', function () {
+      wrapper.classList.add('is-broken');
+    });
+    img.addEventListener('load', function () {
+      wrapper.classList.remove('is-broken');
+    });
+  }
   observer.observe(document.documentElement, { childList: true, subtree: true });
 })();
 `.trim();

@@ -26,6 +26,7 @@
  */
 
 import { languages, type Lang } from '../../i18n/shared';
+import { escapeAttr } from '../../lib/escape';
 
 export interface IRenderLangPickerOptions {
 	/** Currently selected language code. */
@@ -38,13 +39,6 @@ export interface IRenderLangPickerOptions {
 	 *  full-width field. Default false. */
 	readonly inline?: boolean;
 }
-
-const escapeAttr = (s: string): string =>
-	s
-		.replace(/&/g, '&amp;')
-		.replace(/"/g, '&quot;')
-		.replace(/</g, '&lt;')
-		.replace(/>/g, '&gt;');
 
 const codeOf = (entry: (typeof languages)[number]): string =>
 	'code' in entry ? String(entry.code) : '';

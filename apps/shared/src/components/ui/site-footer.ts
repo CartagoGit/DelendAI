@@ -26,6 +26,7 @@
  * SiteFooter.astro is an Astro runtime hint; the shared renderer
  * emits plain markup and the wrapper Astro applies the directive.
  */
+import { escapeHtml } from '../../lib/escape';
 
 export interface ISiteFooterLabels {
 	readonly tagline: string;
@@ -100,14 +101,6 @@ const DEFAULT_SECTIONS: ReadonlyArray<ISiteFooterSection> = [
 	{ id: 'resources', label: DEFAULT_LABELS.resources, href: '/resources' },
 	{ id: 'knowledge', label: DEFAULT_LABELS.knowledge, href: '/knowledge' },
 ];
-
-const escapeHtml = (raw: string): string =>
-	raw
-		.replace(/&/g, '&amp;')
-		.replace(/</g, '&lt;')
-		.replace(/>/g, '&gt;')
-		.replace(/"/g, '&quot;')
-		.replace(/'/g, '&#39;');
 
 const resolveHref = (baseHref: string, href: string): string => {
 	// The Astro caller passes `baseHref` already localised: `/` for

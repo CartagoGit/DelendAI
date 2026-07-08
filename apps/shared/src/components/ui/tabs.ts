@@ -47,6 +47,7 @@
  *   `_tabs-controller.ts`) and in `renderRuntime` from
  *   `@mcp-vertex/shared` for the data-mv-* gestures.
  */
+import { escapeAttr } from '../../lib/escape';
 
 export interface ITabItem {
 	readonly id: string;
@@ -77,9 +78,6 @@ export interface ITabsProps {
 	readonly actionHtml?: string;
 }
 
-const escapeAttr = (raw: string): string =>
-	raw.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
-
 const escapeText = (raw: string): string =>
 	raw
 		.replace(/&/g, '&amp;')
@@ -88,18 +86,29 @@ const escapeText = (raw: string): string =>
 		.replace(/"/g, '&quot;')
 		.replace(/'/g, '&#39;');
 
-const escapeJsString = (raw: string): string =>
-	raw.replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/\n/g, '\\n');
-
 const renderIcon = (icon: string | undefined, id: string): string => {
 	if (!icon) return '';
 	const safeIcon = escapeAttr(icon);
-	const safeId = escapeJsString(id);
+	// f00099-style audit follow-up (was inline `onerror=`): the
+	// renderer never emits executable JavaScript. Instead, it
+	// stamps a `data-tab-icon` wrapper around both the `<img>` and
+	// a text fallback span. The runtime glue (the host's tabs
+	// controller + `renderRuntime` from `@mcp-vertex/shared`) adds
+	// the `is-broken` class on `error`, and the companion SCSS
+	// hides the `<img>` + reveals the fallback. See
+	// `apps/web/src/components/ui/_tabs-controller.ts` and
+	// `packages/ui-extension/src/components/runtime.ts` for the
+	// glue (both already target `[data-mv-toggle]` /
+	// `[data-mv-action]`; this is the same pattern with a
+	// dedicated `data-mv-icon` selector).
+	const safeId = escapeAttr(id);
+	const firstLetter = id.charAt(0).toUpperCase();
 	return (
-		`<img class="mv-tabs__icon" src="${safeIcon}" width="18" height="18" alt="" ` +
-		`loading="lazy" decoding="async" data-tab-id="${escapeAttr(id)}" ` +
-		`onerror="this.replaceWith(Object.assign(document.createElement('span'),` +
-		`{className:'mv-tabs__icon mv-tabs__icon--fallback',textContent:(${safeId}).charAt(0)}))" />`
+		`<span class="mv-tabs__icon" data-mv-icon data-tab-id="${safeId}">` +
+		`<img src="${safeIcon}" width="18" height="18" alt=""` +
+		` loading="lazy" decoding="async" />` +
+		`<span class="mv-tabs__icon-fallback" aria-hidden="true">${escapeText(firstLetter)}</span>` +
+		`</span>`
 	);
 };
 
