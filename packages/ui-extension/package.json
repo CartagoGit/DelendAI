@@ -26,6 +26,10 @@
 		"./legacy": {
 			"types": "./src/index.ts",
 			"import": "./src/index.ts"
+		},
+		"./components/*": {
+			"types": "./src/components/*.ts",
+			"import": "./src/components/*.ts"
 		}
 	},
 	"dependencies": {
