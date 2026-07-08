@@ -548,8 +548,6 @@ describe('Tabs.astro — plugin variant DOM shape', () => {
 	it('renders the optional icon before the label when `t.icon` is set', () => {
 		expect(sharedSource).toContain('renderIcon');
 		expect(sharedSource).toContain('class="mv-tabs__icon"');
-		expect(sharedSource).toMatch(
-			/<img[\s\S]{0,200}class="mv-tabs__icon"/,
-		);
+		expect(sharedSource).toMatch(/<img[\s\S]{0,200}class="mv-tabs__icon"/);
 	});
 });
