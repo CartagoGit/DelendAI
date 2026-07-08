@@ -107,7 +107,15 @@ export type {
  * for hosts — only dev entries that already opt into `@mcp-vertex/
  * ui-extension/webview` should import this.
  */
-export { mockDashboardModel } from '../dev/mock-model';
+// `mockDashboardModel` is dev-only and lives at
+// `packages/ui-extension/src/dev/mock-model`. We deliberately
+// do NOT re-export it from the `webview` barrel because the
+// dev entry's own `pages/dashboard.ts` already imports it
+// directly from the source — going through the barrel would
+// cause Bun.build with `splitting: true` to merge the dev
+// entry's static import and the package's own `dev/entry.ts`
+// import into one chunk, emitting the same `var
+// mockDashboardModel` twice (Duplicate export at runtime).
 
 /**
  * Dev-only: the CSS string for the setup wizard rendered by the
