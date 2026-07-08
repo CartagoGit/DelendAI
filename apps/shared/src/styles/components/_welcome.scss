@@ -17,6 +17,14 @@
 // legacy `welcome` / `quickstart` blocks. This partial only
 // adds the `mv-*` aliases via @extend — a future slice moves
 // the real rules to the new namespace.
+//
+// Grid layout
+// -----------
+// The card grid is a 1-column stack on mobile and a 2×2 grid at
+// the small breakpoint and above. The legacy rule used
+// `auto-fit, minmax(220px, 1fr)`, which squeezed to 4 narrow
+// columns at 1280px viewports; the 2×2 layout is the more
+// balanced tradeoff for a 4-card explainer.
 
 .mv-welcome {
 	display: flex;
@@ -40,8 +48,14 @@
 
 .mv-welcome__grid {
 	display: grid;
-	grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+	grid-template-columns: 1fr;
 	gap: 0.75rem;
+}
+
+@media (min-width: 640px) {
+	.mv-welcome__grid {
+		grid-template-columns: repeat(2, 1fr);
+	}
 }
 
 .mv-welcome__card {
@@ -52,6 +66,11 @@
 	border: 1px solid var(--mv-border, var(--line));
 	border-radius: 12px;
 	background: color-mix(in srgb, var(--mv-bg, var(--bg)) 96%, transparent);
+	min-width: 0;
+}
+
+.mv-welcome__card p {
+	overflow-wrap: anywhere;
 }
 
 .mv-welcome__card-icon {

@@ -70,8 +70,18 @@ const hasJsoncKey = (path: string, dotted: string): boolean => {
 	} catch {
 		return false;
 	}
+	if (parsed === null || typeof parsed !== 'object') return false;
+	const root = parsed as Record<string, unknown>;
+	// VS Code's settings.json treats dotted keys as **flat** entries
+	// (e.g. `"mcp-vertex.server": { ... }` is a single top-level
+	// key, not a nested `{ mcp-vertex: { server: ... } }` object).
+	// mcp.json is the opposite — it uses true nested objects
+	// (e.g. `servers.mcp-vertex`). The lookup therefore tries the
+	// flat key first (covers settings.json), then walks the dotted
+	// path (covers mcp.json + any other nested JSONC).
+	if (root[dotted] !== undefined) return true;
 	const parts = dotted.split('.');
-	let cursor: unknown = parsed;
+	let cursor: unknown = root;
 	for (const p of parts) {
 		if (cursor === null || typeof cursor !== 'object') return false;
 		cursor = (cursor as Record<string, unknown>)[p];
