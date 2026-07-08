@@ -5,7 +5,10 @@
  * Contract pinned:
  *   - root is `<fieldset class="mv-theme-picker__field">` with a
  *     `<legend>Theme</legend>` and a `<div role="radiogroup">`
- *   - three radios: system / light / dark, in that order
+ *   - six radios by default (system / light / dark / midnight /
+ *     solarized / nord), in that order — mirrors
+ *     `apps/shared/src/styles/_themes.scss`
+ *   - hosts may pass `themes:` to restrict to a subset
  *   - the radio matching `current` carries `checked`
  *   - `hint` is rendered as `<p class="mv-theme-picker__hint">`
  *   - `inline: true` collapses to `<label class="mv-theme-picker
@@ -14,7 +17,21 @@
  */
 import { describe, expect, it } from 'vitest';
 
-import { renderThemePicker, type ThemeChoice } from './theme-picker';
+import {
+	ALL_THEMES,
+	renderThemePicker,
+	THEME_ORDER,
+	type ThemeChoice,
+} from './theme-picker';
+
+const ALL_VALUES: ReadonlyArray<ThemeChoice> = [
+	'system',
+	'light',
+	'dark',
+	'midnight',
+	'solarized',
+	'nord',
+];
 
 describe('renderThemePicker', () => {
 	it('emits the canonical fieldset + radios', () => {
@@ -26,21 +43,42 @@ describe('renderThemePicker', () => {
 		);
 	});
 
-	it('renders all three theme options in the canonical order', () => {
+	it('renders all six theme options in the canonical order by default', () => {
 		const out = renderThemePicker({ current: 'system' });
-		const sysIx = out.indexOf('value="system"');
-		const lightIx = out.indexOf('value="light"');
-		const darkIx = out.indexOf('value="dark"');
-		expect(sysIx).toBeGreaterThan(-1);
-		expect(lightIx).toBeGreaterThan(sysIx);
-		expect(darkIx).toBeGreaterThan(lightIx);
+		let prev = -1;
+		for (const value of ALL_VALUES) {
+			const idx = out.indexOf(`value="${value}"`);
+			expect(idx, `option ${value} should be present`).toBeGreaterThan(-1);
+			expect(idx, `${value} should come after its predecessor`).toBeGreaterThan(
+				prev,
+			);
+			prev = idx;
+		}
+		// Sanity: THEME_ORDER is the in-code default and ALL_THEMES mirrors
+		// the same set; they must stay in lockstep or this contract drifts.
+		expect(THEME_ORDER).toEqual(ALL_THEMES);
+	});
+
+	it('honours a `themes:` subset', () => {
+		const out = renderThemePicker({
+			current: 'light',
+			themes: ['system', 'light', 'dark'],
+		});
+		expect(out).toContain('value="system"');
+		expect(out).toContain('value="light"');
+		expect(out).toContain('value="dark"');
+		expect(out).not.toContain('value="midnight"');
+		expect(out).not.toContain('value="solarized"');
+		expect(out).not.toContain('value="nord"');
 	});
 
 	it('marks the current choice as checked', () => {
-		const out = renderThemePicker({ current: 'dark' });
-		expect(out).toContain('value="dark" checked');
+		const out = renderThemePicker({ current: 'midnight' });
+		expect(out).toContain('value="midnight" checked');
 		expect(out).not.toContain('value="system" checked');
 		expect(out).not.toContain('value="light" checked');
+		expect(out).not.toContain('value="solarized" checked');
+		expect(out).not.toContain('value="nord" checked');
 	});
 
 	it('emits a hint paragraph when hint is provided', () => {
