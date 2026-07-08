@@ -491,6 +491,19 @@ data-theme attr is set (the picker default 'system' removes it). */
 		}
 		a { color: var(--mv-link); }
 		a:focus-visible { outline: 1px solid var(--mv-focus); outline-offset: 1px; }
+
+		/* Cross-fade between page renders. The orchestrator
+		 * toggles data-fade='out' to fade the current page out,
+		 * mounts the new page, then sets data-fade='in' to
+		 * fade it back in. prefers-reduced-motion users get
+		 * an instant swap (no opacity animation).
+		 */
+		#root { transition: opacity 140ms ease-out; opacity: 1; }
+		#root[data-fade='out'] { opacity: 0; }
+		@media (prefers-reduced-motion: reduce) {
+			#root { transition: none; }
+		}
+
 		@media (max-width: 600px) {
 			.dev-header { padding: 8px 10px; }
 			.dev-header__title { font-size: 12px; }
