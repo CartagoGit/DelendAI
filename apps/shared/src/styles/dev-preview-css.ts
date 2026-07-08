@@ -29,7 +29,7 @@
  * helpers (`breakpoints`, `themes`, `tokens`); keeping them as
  * separate compilation units keeps the surface decomposed.
  */
-import compiledCss from './dev-preview.scss';
+import { compiledCss } from './dev-preview.scss';
 
 /**
  * Compiled CSS string.

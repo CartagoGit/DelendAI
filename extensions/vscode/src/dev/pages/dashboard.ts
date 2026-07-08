@@ -18,7 +18,14 @@
  *   - When the welcome is shown, the dashboard renderer is
  *     not needed; skipping it keeps the page bundle small.
  */
-import { mockDashboardModel } from '@mcp-vertex/ui-extension/webview';
+// `mockDashboardModel` is intentionally imported from the
+// source path (not via the `@mcp-vertex/ui-extension/webview`
+// barrel) — going through the barrel makes Bun.build with
+// `splitting: true` emit the same binding twice when the
+// dev entry also pulls in the package's own dev/entry.ts
+// chain (Duplicate export at runtime). Direct import keeps
+// the chunk merger happy.
+import { mockDashboardModel } from '@mcp-vertex/ui-extension/dev/mock-model';
 import { dictsByLang, type Lang } from '@mcp-vertex/shared/i18n';
 import { ensureWizardStyles } from '../settings-panel';
 

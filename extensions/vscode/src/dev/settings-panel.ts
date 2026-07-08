@@ -28,7 +28,19 @@
  */
 import type { Lang, LangDictByLang } from '@mcp-vertex/shared/i18n';
 import { dictsByLang, languages } from '@mcp-vertex/shared/i18n';
-import { devPreviewCss } from '@mcp-vertex/ui-extension/webview';
+// Import through the wrapper module. Going through the
+// wrapper (rather than the SCSS source directly) keeps the
+// consumer's contract surface as `devPreviewCss` (the
+// stable name) instead of `compiledCss` (the SCSS plugin's
+// internal name). Bun.build with `splitting: true` may
+// emit two `var devPreviewCss` bindings in the same chunk
+// when multiple files in that chunk import the same
+// wrapper — see commit message for the dedup history; the
+// current shape holds because the `mcp-scss` plugin's
+// namespace prevents Bun's built-in SCSS handler from
+// shadowing the import and emitting a default export that
+// would collide on re-export.
+import { devPreviewCss } from '@mcp-vertex/shared/styles/dev-preview-css';
 import { renderLangPicker } from '@mcp-vertex/shared/components/dev/lang-picker';
 import {
 	ALL_THEMES,
