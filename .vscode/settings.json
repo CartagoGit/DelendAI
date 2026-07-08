@@ -131,11 +131,8 @@
 		"./plugins/rules/skills": true,
 		"./plugins/issues/skills": true
 	},
-"mcp-vertex.server": {
-    "command": "bun",
-    "args": [
-      "run",
-      "mcp-vertex"
-    ]
-  }
+	"mcp-vertex.server": {
+		"command": "bun",
+		"args": ["run", "mcp-vertex"]
+	}
 }

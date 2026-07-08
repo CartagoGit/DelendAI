@@ -30,7 +30,14 @@ const EXACT_SEMVER_RE =
 	/^\d+\.\d+\.\d+(?:-[0-9A-Za-z][0-9A-Za-z.-]*)?(?:\+[0-9A-Za-z][0-9A-Za-z.-]*)?$/;
 
 /** Floating dist-tags that defeat pinning (all rejected). */
-const FLOATING_TAGS = new Set(['latest', 'next', 'canary', 'beta', 'alpha', '*']);
+const FLOATING_TAGS = new Set([
+	'latest',
+	'next',
+	'canary',
+	'beta',
+	'alpha',
+	'*',
+]);
 
 /**
  * Heuristic for a cleartext credential smuggled where a NAME belongs:

@@ -270,7 +270,8 @@ export const DISCOVERABLE_CATALOG: readonly ICatalogEntry[] = [
 		id: 'notion',
 		tier: 'discoverable',
 		category: 'productivity',
-		summary: 'Official Notion server: search, read and write pages and databases.',
+		summary:
+			'Official Notion server: search, read and write pages and databases.',
 		install: {
 			command: 'npx',
 			args: ['-y', '@notionhq/notion-mcp-server@1.8.1'],
@@ -357,7 +358,8 @@ export const DISCOVERABLE_CATALOG: readonly ICatalogEntry[] = [
 		id: 'neon',
 		tier: 'discoverable',
 		category: 'database',
-		summary: 'Official Neon serverless Postgres: branches, databases and SQL.',
+		summary:
+			'Official Neon serverless Postgres: branches, databases and SQL.',
 		install: {
 			command: 'npx',
 			args: ['-y', '@neondatabase/mcp-server-neon@0.4.0'],
@@ -408,7 +410,8 @@ export const DISCOVERABLE_CATALOG: readonly ICatalogEntry[] = [
 		id: 'sentry',
 		tier: 'discoverable',
 		category: 'observability',
-		summary: 'Sentry issues and events: inspect errors and analyse stack traces.',
+		summary:
+			'Sentry issues and events: inspect errors and analyse stack traces.',
 		install: {
 			command: 'uvx',
 			args: ['mcp-server-sentry==0.6.2'],
@@ -444,7 +447,8 @@ export const DISCOVERABLE_CATALOG: readonly ICatalogEntry[] = [
 		id: 'cloudflare',
 		tier: 'discoverable',
 		category: 'cloud',
-		summary: 'Official Cloudflare server: Workers, KV, R2, D1 and DNS management.',
+		summary:
+			'Official Cloudflare server: Workers, KV, R2, D1 and DNS management.',
 		install: {
 			command: 'npx',
 			args: ['-y', '@cloudflare/mcp-server-cloudflare@2.0.2'],
@@ -469,7 +473,8 @@ export const DISCOVERABLE_CATALOG: readonly ICatalogEntry[] = [
 		id: 'jira',
 		tier: 'discoverable',
 		category: 'productivity',
-		summary: 'Jira Cloud: search, read and transition issues with JQL support.',
+		summary:
+			'Jira Cloud: search, read and transition issues with JQL support.',
 		install: {
 			command: 'npx',
 			args: ['-y', '@aashari/mcp-server-atlassian-jira@1.24.1'],
@@ -497,7 +502,8 @@ export const DISCOVERABLE_CATALOG: readonly ICatalogEntry[] = [
 		id: 'linear',
 		tier: 'discoverable',
 		category: 'productivity',
-		summary: 'Linear issue tracking: issues, projects, cycles and comments.',
+		summary:
+			'Linear issue tracking: issues, projects, cycles and comments.',
 		install: {
 			command: 'npx',
 			args: ['-y', 'mcp-linear@0.1.9'],
@@ -544,7 +550,8 @@ export const DISCOVERABLE_CATALOG: readonly ICatalogEntry[] = [
 		id: 'semgrep',
 		tier: 'discoverable',
 		category: 'security',
-		summary: 'Semgrep static analysis: scan code for bugs and security findings.',
+		summary:
+			'Semgrep static analysis: scan code for bugs and security findings.',
 		install: {
 			command: 'uvx',
 			args: ['semgrep-mcp==0.4.0'],
@@ -555,7 +562,8 @@ export const DISCOVERABLE_CATALOG: readonly ICatalogEntry[] = [
 		id: 'vault',
 		tier: 'discoverable',
 		category: 'security',
-		summary: 'HashiCorp Vault: secret engines, policies and token management.',
+		summary:
+			'HashiCorp Vault: secret engines, policies and token management.',
 		install: {
 			command: 'uvx',
 			args: ['mcp-vault==0.2.1'],
