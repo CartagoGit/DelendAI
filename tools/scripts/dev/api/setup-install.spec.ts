@@ -138,7 +138,9 @@ describe('runSetupInstall', () => {
 		const before = readFileSync(mcpPath, 'utf8');
 		const result = runSetupInstall(cwd);
 		expect(result.written).not.toContain('.vscode/mcp.json');
-		expect(result.skipped.some((s) => s.includes('not an object'))).toBe(true);
+		expect(result.skipped.some((s) => s.includes('not an object'))).toBe(
+			true,
+		);
 		expect(readFileSync(mcpPath, 'utf8')).toBe(before);
 	});
 
@@ -148,7 +150,9 @@ describe('runSetupInstall', () => {
 		writeFileSync(mcpPath, before);
 		const result = runSetupInstall(cwd);
 		expect(result.written).not.toContain('.vscode/mcp.json');
-		expect(result.skipped.some((s) => s.includes('unparseable'))).toBe(true);
+		expect(result.skipped.some((s) => s.includes('unparseable'))).toBe(
+			true,
+		);
 		expect(readFileSync(mcpPath, 'utf8')).toBe(before);
 	});
 
@@ -158,15 +162,16 @@ describe('runSetupInstall', () => {
 		writeFileSync(configPath, before);
 		const result = runSetupInstall(cwd);
 		expect(result.written).not.toContain('mcp-vertex.config.json');
-		expect(result.skipped.some((s) => s.includes('mcp-vertex.config.json'))).toBe(
-			true,
-		);
+		expect(
+			result.skipped.some((s) => s.includes('mcp-vertex.config.json')),
+		).toBe(true);
 		expect(readFileSync(configPath, 'utf8')).toBe(before);
 	});
 
 	it('skips settings.json when mcp-vertex.server is already declared', () => {
 		const settingsPath = join(cwd, '.vscode', 'settings.json');
-		const before = '{ "mcp-vertex.server": { "command": "bun", "args": [] } }\n';
+		const before =
+			'{ "mcp-vertex.server": { "command": "bun", "args": [] } }\n';
 		writeFileSync(settingsPath, before);
 		const result = runSetupInstall(cwd);
 		expect(result.written).not.toContain('.vscode/settings.json');
