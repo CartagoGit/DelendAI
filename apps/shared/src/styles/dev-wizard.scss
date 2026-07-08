@@ -176,8 +176,19 @@
 	padding: var(--mv-s-5);
 	font-family: var(--mv-font-prose);
 	color: var(--mv-fg, #d4d4d4);
+	// Cap the panel width so the 2×2 grid does not stretch the
+	// cards past a readable line length on wide viewports
+	// (1920px+ would otherwise leave 800+px per card). The
+	// 1280px breakpoint lets the panel breathe on big screens
+	// without losing the 2×2 layout.
 	max-width: 100%;
 	min-width: 0;
+	margin: 0 auto;
+	width: 100%;
+
+	@media (min-width: bp.$mv-bp-md) {
+		max-width: 960px;
+	}
 
 	&__head {
 		display: flex;
