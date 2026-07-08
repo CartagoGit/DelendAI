@@ -166,9 +166,7 @@ describe('renderSiteFooter', () => {
 				creatorsRepo: 'GH',
 				creatorsNpm: 'npm',
 			},
-			sections: [
-				{ id: 'a', label: '<x>&"\'', href: '/?a=<b>' },
-			],
+			sections: [{ id: 'a', label: '<x>&"\'', href: '/?a=<b>' }],
 		});
 		expect(out).toContain('&lt;bad&gt;&amp;&quot;&#39;');
 		expect(out).toContain('&lt;x&gt;');

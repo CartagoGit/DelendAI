@@ -22,12 +22,8 @@ import { renderCodeBlock } from './code-block';
 describe('renderCodeBlock', () => {
 	it('emits the canonical figure + pre + code root', () => {
 		const out = renderCodeBlock({ code: 'const x = 1;' });
-		expect(out).toContain(
-			'<figure class="mv-code" data-lang="text">',
-		);
-		expect(out).toContain(
-			'<pre class="mv-code__pre"><code id="cb-',
-		);
+		expect(out).toContain('<figure class="mv-code" data-lang="text">');
+		expect(out).toContain('<pre class="mv-code__pre"><code id="cb-');
 		expect(out).toContain('class="language-text"');
 		expect(out).toContain('const x = 1;');
 	});
