@@ -109,7 +109,7 @@ describe('style-integrity.script', () => {
 			const parts = parseAstro(
 				[
 					'---',
-					"const x = 'class=\"frontmatter-only\"';",
+					'const x = \'class="frontmatter-only"\';',
 					'---',
 					'<div class="kept">',
 					'\t<style>.local { color: red; }</style>',
@@ -141,7 +141,9 @@ describe('style-integrity.script', () => {
 		});
 
 		it('skips tokens that are not plain class names', () => {
-			const used = extractUsedClasses('<div class="ok 2bad -also_bad {x}">');
+			const used = extractUsedClasses(
+				'<div class="ok 2bad -also_bad {x}">',
+			);
 			expect(used.map((entry) => entry.className)).toEqual(['ok']);
 		});
 	});
@@ -157,7 +159,9 @@ describe('style-integrity.script', () => {
 
 		it('matches ** across directories and * within one', () => {
 			const deep = globToRegExp('apps/web/src/**/*.astro');
-			expect(deep.test('apps/web/src/pages/status/logs.astro')).toBe(true);
+			expect(deep.test('apps/web/src/pages/status/logs.astro')).toBe(
+				true,
+			);
 			const shallow = globToRegExp('apps/web/src/pages/*.astro');
 			expect(shallow.test('apps/web/src/pages/presets.astro')).toBe(true);
 			expect(shallow.test('apps/web/src/pages/status/logs.astro')).toBe(
@@ -229,7 +233,12 @@ describe('style-integrity.script', () => {
 			};
 			const inScope = checkStyleIntegrity(
 				[],
-				[astro('apps/web/src/pages/a.astro', '<div class="bare-hook">')],
+				[
+					astro(
+						'apps/web/src/pages/a.astro',
+						'<div class="bare-hook">',
+					),
+				],
 				[waiver],
 			);
 			expect(inScope.findings).toEqual([]);
@@ -237,7 +246,12 @@ describe('style-integrity.script', () => {
 
 			const outOfScope = checkStyleIntegrity(
 				[],
-				[astro('apps/web/src/pages/b.astro', '<div class="bare-hook">')],
+				[
+					astro(
+						'apps/web/src/pages/b.astro',
+						'<div class="bare-hook">',
+					),
+				],
 				[waiver],
 			);
 			// One finding for the undefined class, one for the now-stale waiver.
@@ -249,7 +263,12 @@ describe('style-integrity.script', () => {
 		it('rejects placeholder waiver reasons', () => {
 			const report = checkStyleIntegrity(
 				[],
-				[astro('apps/web/src/pages/a.astro', '<div class="bare-hook">')],
+				[
+					astro(
+						'apps/web/src/pages/a.astro',
+						'<div class="bare-hook">',
+					),
+				],
 				[{ class: 'bare-hook', reason: 'TODO' }],
 			);
 			expect(

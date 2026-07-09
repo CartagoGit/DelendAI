@@ -144,11 +144,7 @@ export const buildAckToolRegistration = (
 					args.accept,
 					args.ackedBy,
 				);
-				await emitAckNotification(
-					server,
-					options.namespacePrefix,
-					ack,
-				);
+				await emitAckNotification(server, options.namespacePrefix, ack);
 				return toolJson({
 					ok: true,
 					mode: 'record',
