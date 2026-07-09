@@ -132,16 +132,35 @@ export interface IRenderQuickStartMenuOptions {
 	readonly cards?: ReadonlyArray<IWelcomeCard>;
 	readonly heading?: string;
 	readonly ledeHtml?: string;
+	/**
+	 * Per-language strings for the menu's chrome (heading, lede,
+	 * dismiss-button label). When omitted, the renderer falls back
+	 * to the canonical English copy so existing callers do not
+	 * have to learn a new contract. The dev preview supplies this
+	 * with the active `Lang`'s dict via the lazy page module so the
+	 * Quick start menu honours the user's chosen language.
+	 */
+	readonly dict?: {
+		readonly heading?: string;
+		readonly lede?: string;
+		readonly dismissLabel?: string;
+	};
 }
+
+const QUICK_START_HEADING_EN = 'Quick start';
+const QUICK_START_LEDE_EN =
+	"A one-time orientation. The workspace is wired and the dashboard is now pulling real data — here's what each tab does.";
+const QUICK_START_DISMISS_LABEL_EN = 'Dismiss quick start';
 
 export const renderQuickStartMenu = (
 	options: IRenderQuickStartMenuOptions = {},
 ): string => {
 	const cards = options.cards ?? CARDS;
-	const heading = options.heading ?? 'Quick start';
+	const heading = options.dict?.heading ?? QUICK_START_HEADING_EN;
 	const ledeHtml =
-		options.ledeHtml ??
-		"A one-time orientation. The workspace is wired and the dashboard is now pulling real data — here's what each tab does.";
+		options.dict?.lede ?? options.ledeHtml ?? QUICK_START_LEDE_EN;
+	const dismissLabel =
+		options.dict?.dismissLabel ?? QUICK_START_DISMISS_LABEL_EN;
 	const itemsHtml = cards
 		.map(
 			(card) =>
@@ -158,7 +177,7 @@ export const renderQuickStartMenu = (
 	return `<aside class="mv-quickstart quickstart" role="complementary">
 			<header class="mv-quickstart__head quickstart__head">
 				<h2>${escapeAttr(heading)}</h2>
-				<button type="button" id="quickstart-dismiss" class="mv-quickstart__close quickstart__close" aria-label="Dismiss quick start">×</button>
+				<button type="button" id="quickstart-dismiss" class="mv-quickstart__close quickstart__close" aria-label="${escapeAttr(dismissLabel)}">×</button>
 			</header>
 			<p class="mv-quickstart__lede quickstart__lede">${ledeHtml}</p>
 			<ul class="mv-quickstart__list quickstart__list">${itemsHtml}</ul>

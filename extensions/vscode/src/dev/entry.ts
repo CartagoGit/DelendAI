@@ -1,38 +1,3 @@
-/// <reference lib="dom" />
-/**
- * `extensions/vscode` dev entry — top-level orchestration for the dev
- * preview at `http://localhost:5200`.
- *
- * Navigation model
- * ----------------
- * The sidebar has four views (Dashboard, Settings, Tool detail, Metrics).
- * The Dashboard view behaves differently depending on workspace state:
- *
- *   - **First-run / not configured** → render the welcome screen
- *     (4-card explainer + "Install" CTA + "Skip" link) instead of
- *     the dashboard. The wizard lives in the Settings tab and is
- *     always reachable from there.
- *   - **Configured** → render the dashboard with a Quick-start menu
- *     on top (collapsible, session-scoped).
- *   - **Configured but MCP unreachable** → same as above, plus a
- *     banner explaining the fallback to mock data.
- *
- * State
- * -----
- * The active view ID lives in `./state.ts` (not a module-local let in
- * this file) so `settings-panel.ts` can also see and update it. A
- * single source of truth prevents the "activeView is undefined"
- * bug we shipped in the previous slice.
- *
- * Helpers
- * -------
- * `fetchJson<T>` wraps `fetch` + JSON parse + a try/catch. Anything
- * the server doesn't know about returns `null` and the caller can
- * fall back to a default. Used by both status detection and dashboard
- * data fetch.
- */
-import type { IDashboardAllModels } from '@mcp-vertex/client';
-import type { Lang } from '@mcp-vertex/shared/i18n';
 import { dictsByLang } from '@mcp-vertex/shared/i18n';
 
 import {
@@ -69,11 +34,6 @@ const fetchJson = async <T>(path: string): Promise<T | null> => {
 		return null;
 	}
 };
-
-interface IInstallResult {
-	readonly ok: boolean;
-	readonly note: string;
-}
 
 const root = document.getElementById('root');
 if (!root) {
@@ -171,6 +131,18 @@ if (sidebar) {
 }
 
 bootstrapPersistedPrefs();
+
+// `mv:dev:lang-changed` is dispatched from `pages/settings.ts`
+// when the user picks a new language. The settings page already
+// reflects the new `<option selected>` on its own re-render, but
+// the dashboard (if it is the active view) still has the old
+// dict baked into the renderer call. A soft re-render fixes
+// this without forcing a navigation away from settings. We listen
+// at the window level (the same target `pages/settings.ts`
+// dispatches to).
+window.addEventListener('mv:dev:lang-changed', () => {
+	if (getActiveView() === 'dashboard') void render('dashboard');
+});
 
 // Decide the default landing view. We always land on
 // `dashboard` — the dashboard page itself inspects the setup

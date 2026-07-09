@@ -517,9 +517,22 @@ const extension = {
 	setupGithub: 'mcp-vertex: GitHub issues सेट अप करें',
 };
 
+const dev = {
+	quickStartHeading: 'त्वरित शुरुआत',
+	quickStartLede:
+		'एक बार का मार्गदर्शन। वर्कस्पेस कॉन्फ़िगर हो गया है और डैशबोर्ड अब वास्तविक डेटा खींच रहा है — यहाँ देखें कि प्रत्येक टैब क्या करता है।',
+	quickStartDismiss: 'त्वरित शुरुआत बंद करें',
+	firstRunHeading: 'mcp-vertex में आपका स्वागत है',
+	firstRunLede:
+		'यह एक्सटेंशन mcp-vertex MCP सर्वर के लिए डैशबोर्ड, सेटिंग्स और टूल पैनल प्रदान करता है। MCP सर्वर अभी इस वर्कस्पेस में इंस्टॉल नहीं हुआ है — एक बार इंस्टॉल होने पर, डैशबोर्ड वास्तविक डेटा लाने पर स्विच हो जाएगा।',
+	firstRunSkip: 'छोड़ें — फिर भी डैशबोर्ड दिखाएँ',
+	firstRunInstall: 'इस वर्कस्पेस में mcp-vertex इंस्टॉल करें',
+};
+
 const dict: ILangDict = {
 	site: site as unknown as ILangDict['site'],
 	extension: extension as unknown as ILangDict['extension'],
+	dev: dev as unknown as ILangDict['dev'],
 	tools: {},
 };
 
