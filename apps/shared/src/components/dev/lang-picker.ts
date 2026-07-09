@@ -40,8 +40,8 @@ export interface IRenderLangPickerOptions {
 	readonly inline?: boolean;
 }
 
-const codeOf = (entry: (typeof languages)[number]): string =>
-	'code' in entry ? String(entry.code) : '';
+const codeOf = (entry: (typeof languages)[number]): Lang =>
+	'code' in entry ? (entry.code as Lang) : ('en' as Lang);
 
 const nameOf = (entry: (typeof languages)[number]): string =>
 	'name' in entry ? String(entry.name) : codeOf(entry);
@@ -64,4 +64,52 @@ export const renderLangPicker = (options: IRenderLangPickerOptions): string => {
 		`<select name="${escapeAttr(name)}">${optionsHtml}</select>` +
 		`</label>`
 	);
+};
+
+export interface IRenderLangLinksOptions {
+	/** Currently selected language code. */
+	readonly current: Lang;
+	/** Resolves a language code to the URL the link should point to.
+	 *  Defaults to `/${code}` (or `/` for the default `en` locale). */
+	readonly hrefFor?: (code: Lang) => string;
+	/** Container id (e.g. `cfg-languages`) so the host's listener can
+	 *  find the link list without rebinding per render. */
+	readonly id?: string;
+}
+
+/**
+ * Anchor-list language picker used by the docs site (one `<a>` per
+ * language, each linking to the equivalent page in that locale).
+ * Lives next to `renderLangPicker` so a host can pick the visual
+ * model that matches its surface without duplicating the canonical
+ * language registry or the SSR href convention.
+ *
+ * The output uses the same `data-lang-code` attribute the web's
+ * existing hydration listener reads, so existing handlers do not
+ * need to change.
+ */
+export const renderLangLinks = (options: IRenderLangLinksOptions): string => {
+	const idAttr = options.id ? ` id="${escapeAttr(options.id)}"` : '';
+	const hrefFor =
+		options.hrefFor ??
+		((code: Lang): string => (code === 'en' ? '/' : `/${code}`));
+	const links = languages
+		.map((entry) => {
+			const code = codeOf(entry);
+			const label = nameOf(entry);
+			const href = hrefFor(code);
+			const aria = code === options.current ? ' aria-current="true"' : '';
+			return (
+				`<a class="lang-opt"` +
+				` href="${escapeAttr(href)}"` +
+				` data-lang-code="${escapeAttr(code)}"` +
+				`${aria}` +
+				`>` +
+				`<span class="lang-opt__code">${escapeAttr(code)}</span>` +
+				`<span class="lang-opt__label">${escapeAttr(label)}</span>` +
+				`</a>`
+			);
+		})
+		.join('');
+	return `<div class="langs"${idAttr}>${links}</div>`;
 };

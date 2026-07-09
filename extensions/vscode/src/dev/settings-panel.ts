@@ -79,7 +79,7 @@ const LANG_KEY = 'mv:dev:lang';
 
 export type { ThemeChoice };
 
-const escapeHtml = (s: string): string =>
+const _escapeHtml = (s: string): string =>
 	s
 		.replaceAll('&', '&amp;')
 		.replaceAll('<', '&lt;')
@@ -189,6 +189,30 @@ export const applyTheme = (theme: ThemeChoice): void => {
 	}
 };
 
+/**
+ * Apply the user's chosen language to the document.
+ *
+ * Three DOM side-effects, all idempotent:
+ *   - `<html lang>` so screen readers + browser features (e.g. spell
+ *     check) pick up the right locale.
+ *   - `<html dir>` for RTL-aware layout (only `ar` flips it today;
+ *     if a future RTL language is added the `rtlLangs` array in
+ *     `@mcp-vertex/shared/i18n/shared` is the source of truth).
+ *   - the `lang` attribute on individual translatable elements
+ *     that opt in via `data-mv-lang-aware` — useful for mixed
+ *     snippets (e.g. an English `<code>` inside a Spanish paragraph).
+ */
+export const applyLang = (lang: Lang): void => {
+	const html = document.documentElement;
+	html.setAttribute('lang', lang);
+	const rtlLangs = new Set<Lang>(['ar']);
+	if (rtlLangs.has(lang)) {
+		html.setAttribute('dir', 'rtl');
+	} else {
+		html.removeAttribute('dir');
+	}
+};
+
 const persistTheme = (theme: ThemeChoice): void => {
 	safeWrite(THEME_KEY, theme);
 	applyTheme(theme);
@@ -196,6 +220,7 @@ const persistTheme = (theme: ThemeChoice): void => {
 
 const persistLang = (lang: Lang): void => {
 	safeWrite(LANG_KEY, lang);
+	applyLang(lang);
 };
 
 export const getDict = (lang: Lang): LangDictByLang[Lang] => dictsByLang[lang];
@@ -267,7 +292,7 @@ export const renderSettingsPanel = (
 
 export const bindSettingsHandlers = (
 	root: HTMLElement,
-	status: ISetupStatus,
+	_status: ISetupStatus,
 	prefs: IPersistedPrefs,
 	handlers: ISettingsPanelHandlers,
 ): void => {
@@ -324,6 +349,7 @@ export const bindSettingsHandlers = (
 export const bootstrapPersistedPrefs = (): IPersistedPrefs => {
 	const prefs = readPersistedPrefs();
 	applyTheme(prefs.theme);
+	applyLang(prefs.lang);
 	// If the user has never picked a language (no `mv:dev:lang` stored),
 	// we resolved to `detectHostLang()`; persist that so the next load
 	// does not re-detect and a manual switch is a real, deliberate
@@ -372,7 +398,7 @@ export const mountSettingsPanel = (
 				window.setTimeout(() => {
 					void (async (): Promise<void> => {
 						const r = await fetch(
-							'/api/setup/status' + window.location.search,
+							`/api/setup/status${window.location.search}`,
 						);
 						if (!r.ok) return;
 						const nextStatus = (await r.json()) as ISetupStatus;
@@ -382,7 +408,7 @@ export const mountSettingsPanel = (
 			},
 			onRecheck: async () => {
 				const r = await fetch(
-					'/api/setup/status' + window.location.search,
+					`/api/setup/status${window.location.search}`,
 				);
 				if (!r.ok) return;
 				rerender((await r.json()) as ISetupStatus);

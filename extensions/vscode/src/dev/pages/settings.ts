@@ -61,9 +61,9 @@ export const createSettingsPage = (options: ISettingsPageOptions): IPage => ({
 				// whether the route is allowed (it knows if the
 				// previous view was the welcome screen).
 				if (body?.note) void options.navigate('dashboard');
-				return body && body.note ? { note: body.note } : null;
+				return body?.note ? { note: body.note } : null;
 			},
-			(_lang: Lang) => {
+			(lang: Lang) => {
 				// Re-render the dashboard with the new dict if it's
 				// the live view. We deliberately do NOT navigate
 				// away from settings — the user is configuring
@@ -74,7 +74,7 @@ export const createSettingsPage = (options: ISettingsPageOptions): IPage => ({
 					// custom event the orchestrator listens to.
 					window.dispatchEvent(
 						new CustomEvent('mv:dev:lang-changed', {
-							detail: _lang,
+							detail: lang,
 						}),
 					);
 				}
