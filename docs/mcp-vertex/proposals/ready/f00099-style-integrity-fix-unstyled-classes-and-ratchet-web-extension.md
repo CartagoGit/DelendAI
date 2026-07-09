@@ -68,7 +68,7 @@ blocker per the user's 2026-07-07 direction.
 - **Acceptance**:
   - "Every class flagged by the nesting-aware sweep is triaged: real gaps get styles consistent with sibling components (Tutorial, LogTable, RecoveryTable, plugin-install, config__copy/config__snippet, args, install-eco__packager, drawer__logo, nav__github-icon, plugin-disc__empty, ui-callout__body, ui-code__copy-text, ui-copybtn__label, ui-tabs__label, locale-picker, muted, btn--small); dead hooks are removed from markup; intentional bare BEM bases are recorded for the S2 waivers file."
   - "Real `bun run site` build green; spot-check the affected routes render styled (tutorials, /logs recovery tables, plugin pages)."
-
+- status: done
 ### S2 — lint:style-integrity ratchet
 
 - **Status**: pending
