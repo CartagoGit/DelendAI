@@ -1,0 +1,37 @@
+[
+	{
+		"class": "logs-table",
+		"scope": "apps/web/src/components/logs/LogTable.astro",
+		"reason": "intentional bare BEM base/container whose elements or modifiers carry the styles"
+	},
+	{
+		"class": "recovery-table",
+		"scope": "apps/web/src/components/recovery/RecoveryTable.astro",
+		"reason": "intentional bare BEM base/container whose elements or modifiers carry the styles"
+	},
+	{
+		"class": "page",
+		"scope": "apps/web/src/pages/presets.astro",
+		"reason": "intentional bare BEM base/container whose elements or modifiers carry the styles"
+	},
+	{
+		"class": "page",
+		"scope": "apps/web/src/pages/providers.astro",
+		"reason": "intentional bare BEM base/container whose elements or modifiers carry the styles"
+	},
+	{
+		"class": "presets",
+		"scope": "apps/web/src/pages/presets.astro",
+		"reason": "intentional bare BEM base/container whose elements or modifiers carry the styles"
+	},
+	{
+		"class": "presets__cell",
+		"scope": "apps/web/src/pages/presets.astro",
+		"reason": "intentional bare BEM base/container whose elements or modifiers carry the styles"
+	},
+	{
+		"class": "presets__install",
+		"scope": "apps/web/src/pages/presets.astro",
+		"reason": "intentional bare BEM base/container whose elements or modifiers carry the styles"
+	}
+]

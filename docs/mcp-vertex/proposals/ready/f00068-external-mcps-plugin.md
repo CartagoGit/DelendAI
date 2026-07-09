@@ -922,7 +922,7 @@ for X?" and gets back a one-line summary per matching entry
   - "OptionsSchema (Zod): `servers.<name>` entries (pinned version required, command+args transport, namespacePrefix, optional detect rule) + the 3 autonomy knobs with the resolved defaults (llmDecidesActivation:true, requireHumanAckWhenLlmDecides:true, allowDiscoverySearch:false)."
   - "`external_mcp_catalog`: compact by default (id/category/one-liner), `query` filter, max 10 matches, `detail:'<id>'` for one full entry; curated 10 + discoverable tier in catalog-data.ts; NOTHING enters the system prompt."
   - "`external_mcp_validate_config`: dry-run a proposed servers patch against the schema (mandatory-pin + kebab-id + no-cleartext enforced), returns issues — never writes."
-
+- status: done
 ### S2 — Lazy subprocess registry + status + filesystem seed
 
 - **Status**: pending
