@@ -522,9 +522,22 @@ const extension = {
 	setupGithub: 'mcp-vertex: GitHub issues をセットアップ',
 };
 
+const dev = {
+	quickStartHeading: 'クイックスタート',
+	quickStartLede:
+		'一度きりのオリエンテーション。ワークスペースが設定され、ダッシュボードが実際のデータを取得するようになりました — 各タブの役割をご紹介します。',
+	quickStartDismiss: 'クイックスタートを閉じる',
+	firstRunHeading: 'mcp-vertex へようこそ',
+	firstRunLede:
+		'この拡張機能は、mcp-vertex MCP サーバーのダッシュボード、設定、ツールパネルを提供します。MCP サーバーはまだこのワークスペースにインストールされていません — インストールが完了すると、ダッシュボードは実際のデータの取得に切り替わります。',
+	firstRunSkip: 'スキップ — ダッシュボードを表示',
+	firstRunInstall: 'このワークスペースに mcp-vertex をインストール',
+};
+
 const dict: ILangDict = {
 	site: site as unknown as ILangDict['site'],
 	extension: extension as unknown as ILangDict['extension'],
+	dev: dev as unknown as ILangDict['dev'],
 	tools: {},
 };
 

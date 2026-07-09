@@ -163,6 +163,23 @@ export interface IExtensionTranslations {
 	readonly [key: string]: string;
 }
 
+/**
+ * Dev-preview chrome translations. Only consumed by the
+ * `extensions/vscode` dev entry (`:5200`) so the dashboard mock fallback,
+ * the welcome screen, the Quick start menu and the dev-only tool-detail
+ * + metrics panels render in the user's chosen language. Production
+ * webviews never reach these strings.
+ */
+export interface IDevTranslations {
+	readonly quickStartHeading: string;
+	readonly quickStartLede: string;
+	readonly quickStartDismiss: string;
+	readonly firstRunHeading: string;
+	readonly firstRunLede: string;
+	readonly firstRunSkip: string;
+	readonly firstRunInstall: string;
+}
+
 /** Placeholder for future tool-result translations (S5+). */
 export interface IToolTranslations {
 	readonly [toolName: string]: string | undefined;
@@ -175,6 +192,7 @@ export interface IToolTranslations {
 export interface ILangDict {
 	readonly site: ISiteTranslations;
 	readonly extension: IExtensionTranslations;
+	readonly dev: IDevTranslations;
 	readonly tools: IToolTranslations;
 }
 

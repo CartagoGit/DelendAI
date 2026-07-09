@@ -513,9 +513,22 @@ const extension = {
 	setupGithub: 'mcp-vertex: ตั้งค่า GitHub issues',
 };
 
+const dev = {
+	quickStartHeading: 'เริ่มต้นอย่างรวดเร็ว',
+	quickStartLede:
+		'การแนะนำครั้งเดียว พื้นที่ทำงานได้รับการตั้งค่าแล้วและแดชบอร์ดกำลังดึงข้อมูลจริง — นี่คือสิ่งที่แต่ละแท็บทำ',
+	quickStartDismiss: 'ปิดการเริ่มต้นอย่างรวดเร็ว',
+	firstRunHeading: 'ยินดีต้อนรับสู่ mcp-vertex',
+	firstRunLede:
+		'ส่วนขยายนี้มีแดชบอร์ด การตั้งค่า และแผงเครื่องมือสำหรับเซิร์ฟเวอร์ MCP ของ mcp-vertex เซิร์ฟเวอร์ MCP ยังไม่ได้ติดตั้งในพื้นที่ทำงานนี้ — เมื่อติดตั้งแล้ว แดชบอร์ดจะเปลี่ยนไปดึงข้อมูลจริง',
+	firstRunSkip: 'ข้าม — แสดงแดชบอร์ดต่อไป',
+	firstRunInstall: 'ติดตั้ง mcp-vertex ในพื้นที่ทำงานนี้',
+};
+
 const dict: ILangDict = {
 	site: site as unknown as ILangDict['site'],
 	extension: extension as unknown as ILangDict['extension'],
+	dev: dev as unknown as ILangDict['dev'],
 	tools: {},
 };
 

@@ -519,9 +519,22 @@ const extension = {
 	setupGithub: 'mcp-vertex: Thiết lập issues GitHub',
 };
 
+const dev = {
+	quickStartHeading: 'Bắt đầu nhanh',
+	quickStartLede:
+		'Một lần định hướng. Workspace đã được cấu hình và bảng điều khiển hiện đang lấy dữ liệu thực — đây là những gì mỗi tab làm.',
+	quickStartDismiss: 'Đóng bắt đầu nhanh',
+	firstRunHeading: 'Chào mừng đến với mcp-vertex',
+	firstRunLede:
+		'Tiện ích mở rộng này cung cấp bảng điều khiển, cài đặt và bảng công cụ cho máy chủ MCP của mcp-vertex. Máy chủ MCP chưa được cài đặt trong workspace này — khi được cài đặt, bảng điều khiển sẽ chuyển sang lấy dữ liệu thực.',
+	firstRunSkip: 'Bỏ qua — vẫn hiển thị bảng điều khiển',
+	firstRunInstall: 'Cài đặt mcp-vertex trong workspace này',
+};
+
 const dict: ILangDict = {
 	site: site as unknown as ILangDict['site'],
 	extension: extension as unknown as ILangDict['extension'],
+	dev: dev as unknown as ILangDict['dev'],
 	tools: {},
 };
 

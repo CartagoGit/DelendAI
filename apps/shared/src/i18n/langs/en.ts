@@ -610,9 +610,22 @@ const extension = {
 	setupGithub: 'mcp-vertex: Set up GitHub issues',
 };
 
+const dev = {
+	quickStartHeading: 'Quick start',
+	quickStartLede:
+		"A one-time orientation. The workspace is wired and the dashboard is now pulling real data — here's what each tab does.",
+	quickStartDismiss: 'Dismiss quick start',
+	firstRunHeading: 'Welcome to mcp-vertex',
+	firstRunLede:
+		'This extension ships a dashboard, settings, and a tools panel for the mcp-vertex MCP server. The MCP server is not installed in this workspace yet — once it is, the dashboard will switch to fetching real data from it.',
+	firstRunSkip: 'Skip — show me the dashboard anyway',
+	firstRunInstall: 'Install mcp-vertex in this workspace',
+};
+
 const dict: ILangDict = {
 	site: site as unknown as ILangDict['site'],
 	extension: extension as unknown as ILangDict['extension'],
+	dev: dev as unknown as ILangDict['dev'],
 	tools: {},
 };
 

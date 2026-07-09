@@ -513,9 +513,22 @@ const extension = {
 	setupGithub: 'mcp-vertex：配置 GitHub issues',
 };
 
+const dev = {
+	quickStartHeading: '快速开始',
+	quickStartLede:
+		'一次性导览。工作区已配置完成,仪表板现在正在拉取真实数据 — 每个标签页的作用如下。',
+	quickStartDismiss: '关闭快速开始',
+	firstRunHeading: '欢迎使用 mcp-vertex',
+	firstRunLede:
+		'此扩展为 mcp-vertex MCP 服务器提供仪表板、设置和工具面板。此工作区尚未安装 MCP 服务器 — 安装完成后,仪表板将切换为拉取真实数据。',
+	firstRunSkip: '跳过 — 仍然显示仪表板',
+	firstRunInstall: '在此工作区中安装 mcp-vertex',
+};
+
 const dict: ILangDict = {
 	site: site as unknown as ILangDict['site'],
 	extension: extension as unknown as ILangDict['extension'],
+	dev: dev as unknown as ILangDict['dev'],
 	tools: {},
 };
 

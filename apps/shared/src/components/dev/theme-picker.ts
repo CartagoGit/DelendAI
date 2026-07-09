@@ -79,6 +79,36 @@ export const THEME_ORDER: ReadonlyArray<ThemeChoice> = [
 	'nord',
 ];
 
+/**
+ * Preview swatch colours — the small inner dot on the swatch-style
+ * theme picker the docs site uses. Lives in the shared package so the
+ * dev preview extension, the marketing site, and any future product
+ * surface (CLI init wizard, JetBrains plugin settings) read the same
+ * canonical values. Values mirror the
+ * `:root[data-theme="..."] { --bg / --accent }` blocks in
+ * `apps/shared/src/styles/_themes.scss`; if you add a new theme, add
+ * an entry here AND a matching SCSS block.
+ */
+export const THEME_BG: Readonly<
+	Record<Exclude<ThemeChoice, 'system'>, string>
+> = {
+	dark: '#0d1117',
+	light: '#ffffff',
+	midnight: '#0b0f1a',
+	solarized: '#002b36',
+	nord: '#2e3440',
+};
+
+export const THEME_ACCENT: Readonly<
+	Record<Exclude<ThemeChoice, 'system'>, string>
+> = {
+	dark: '#58a6ff',
+	light: '#0969da',
+	midnight: '#7c93ff',
+	solarized: '#2aa198',
+	nord: '#88c0d0',
+};
+
 const capitalise = (s: string): string =>
 	s.length === 0 ? s : s.charAt(0).toUpperCase() + s.slice(1);
 
@@ -116,4 +146,54 @@ export const renderThemePicker = (
 		`<div class="mv-theme-picker__radios" role="radiogroup">${radios}</div>` +
 		`</fieldset>`
 	);
+};
+
+export interface IRenderThemeSwatchesOptions {
+	/** Currently selected theme. The matching swatch gets `aria-pressed="true"`. */
+	readonly current: ThemeChoice;
+	/** Form name. Default `theme`. */
+	readonly name?: string;
+	/** Container id (e.g. `cfg-themes`) so the host's existing
+	 *  mutation listener can find the swatches without needing to
+	 *  re-bind per render. */
+	readonly id?: string;
+	/** Restrict the picker to a subset of `ALL_THEMES`. Default
+	 *  `ALL_THEMES` minus the `system` choice (which has no swatch). */
+	readonly themes?: ReadonlyArray<ThemeChoice>;
+}
+
+/**
+ * Swatch-style theme picker used by the docs site (`.swatches` row of
+ * round chips, each with a small inner accent dot). Lives next to
+ * `renderThemePicker` so a host can pick the visual model that
+ * matches its surface without duplicating the canonical theme list
+ * or the preview swatch colours. The output markup uses the same
+ * `data-theme-value` contract the web's listener expects, so
+ * existing handlers do not need to change.
+ */
+export const renderThemeSwatches = (
+	options: IRenderThemeSwatchesOptions,
+): string => {
+	const order = (options.themes ?? THEME_ORDER).filter(
+		(t) => t !== 'system',
+	) as ReadonlyArray<Exclude<ThemeChoice, 'system'>>;
+	const idAttr = options.id ? ` id="${escapeAttr(options.id)}"` : '';
+	const name = options.name ?? 'theme';
+	const buttons = order
+		.map(
+			(t) =>
+				`<button` +
+				` class="swatch"` +
+				` type="button"` +
+				` data-theme-value="${escapeAttr(t)}"` +
+				` name="${escapeAttr(name)}"` +
+				` value="${escapeAttr(t)}"` +
+				` title="${escapeAttr(t)}"` +
+				` aria-label="${escapeAttr(t)}"` +
+				` aria-pressed="${t === options.current ? 'true' : 'false'}"` +
+				` style="background:${THEME_BG[t]}"` +
+				`><span style="background:${THEME_ACCENT[t]}"></span></button>`,
+		)
+		.join('');
+	return `<div class="swatches"${idAttr}>${buttons}</div>`;
 };

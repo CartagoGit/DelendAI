@@ -91,8 +91,15 @@ export const createDashboardPage = (options: IDashboardPageOptions): IPage => ({
 			const { renderFirstRunScreen } = await import(
 				'@mcp-vertex/shared/components/dev/welcome'
 			);
+			const devDict = dictsByLang[deps.lang]?.dev;
 			root.innerHTML = renderFirstRunScreen(
-				'Install mcp-vertex in this workspace',
+				devDict?.firstRunInstall ??
+					'Install mcp-vertex in this workspace',
+				{
+					heading: devDict?.firstRunHeading,
+					ledeHtml: devDict?.firstRunLede,
+					skipLabel: devDict?.firstRunSkip,
+				},
 			);
 			const installBtn =
 				root.querySelector<HTMLButtonElement>('#welcome-install');
@@ -114,8 +121,22 @@ export const createDashboardPage = (options: IDashboardPageOptions): IPage => ({
 		const { isQuickStartDismissed, renderQuickStartMenu } = await import(
 			'@mcp-vertex/shared/components/dev/welcome'
 		);
+		const devDict = dictsByLang[deps.lang]?.dev;
 		const fragments: string[] = [];
-		if (!isQuickStartDismissed()) fragments.push(renderQuickStartMenu());
+		if (!isQuickStartDismissed())
+			fragments.push(
+				renderQuickStartMenu(
+					devDict
+						? {
+								dict: {
+									heading: devDict.quickStartHeading,
+									lede: devDict.quickStartLede,
+									dismissLabel: devDict.quickStartDismiss,
+								},
+							}
+						: {},
+				),
+			);
 
 		let usedFallback = false;
 		if (real) {

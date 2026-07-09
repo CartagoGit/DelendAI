@@ -515,9 +515,22 @@ const extension = {
 	setupGithub: 'mcp-vertex: إعداد issues الخاصة بـ GitHub',
 };
 
+const dev = {
+	quickStartHeading: 'بداية سريعة',
+	quickStartLede:
+		'توجيه لمرة واحدة. مساحة العمل جاهزة ولوحة التحكم تسحب الآن البيانات الحقيقية — إليك ما تفعله كل علامة تبويب.',
+	quickStartDismiss: 'إغلاق البداية السريعة',
+	firstRunHeading: 'مرحبًا بك في mcp-vertex',
+	firstRunLede:
+		'توفر هذه الإضافة لوحة تحكم وإعدادات ولوحة أدوات لخادم MCP الخاص بـ mcp-vertex. خادم MCP غير مثبت في مساحة العمل هذه بعد — بمجرد تثبيته، ستتحول لوحة التحكم إلى جلب البيانات الحقيقية منه.',
+	firstRunSkip: 'تخطي — اعرض لوحة التحكم على أي حال',
+	firstRunInstall: 'تثبيت mcp-vertex في مساحة العمل هذه',
+};
+
 const dict: ILangDict = {
 	site: site as unknown as ILangDict['site'],
 	extension: extension as unknown as ILangDict['extension'],
+	dev: dev as unknown as ILangDict['dev'],
 	tools: {},
 };
 
