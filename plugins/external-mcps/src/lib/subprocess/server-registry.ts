@@ -355,7 +355,8 @@ export class ExternalServerRegistry {
 	constructor(private readonly options: IServerRegistryOptions) {
 		this.spawner = options.spawner ?? nodeStdioSpawner;
 		this.setTimer = options.setTimer ?? defaultSetTimer;
-		this.sigkillGraceMs = options.sigkillGraceMs ?? DEFAULT_SIGKILL_GRACE_MS;
+		this.sigkillGraceMs =
+			options.sigkillGraceMs ?? DEFAULT_SIGKILL_GRACE_MS;
 		this.callTimeoutMs = options.callTimeoutMs ?? DEFAULT_CALL_TIMEOUT_MS;
 		this.now = options.now ?? Date.now;
 	}
@@ -480,7 +481,9 @@ export class ExternalServerRegistry {
 
 		const entry = this.options.servers[id];
 		if (entry === undefined) {
-			throw new Error(`ensureBooted called for undeclared server "${id}"`);
+			throw new Error(
+				`ensureBooted called for undeclared server "${id}"`,
+			);
 		}
 		const state: IServerRuntime = {
 			transport: null,

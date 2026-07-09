@@ -83,7 +83,11 @@ class FakeChild implements IStdioChildProcess {
 	sent(index: number): { id: number; method: string; params: unknown } {
 		const line = this.written[index];
 		if (line === undefined) throw new Error(`nothing written at ${index}`);
-		return JSON.parse(line) as { id: number; method: string; params: unknown };
+		return JSON.parse(line) as {
+			id: number;
+			method: string;
+			params: unknown;
+		};
 	}
 
 	/** Frame + emit a JSON-RPC reply for the i-th request written. */
@@ -569,7 +573,10 @@ describe('call tool (the ext.<server>.<tool> invocation surface)', () => {
 				requireHumanAckWhenLlmDecides: false,
 			}),
 		);
-		const pending = tool.handler({ server: 'fs', tool: 'ext.fs.read_file' });
+		const pending = tool.handler({
+			server: 'fs',
+			tool: 'ext.fs.read_file',
+		});
 		expect(h.children[0]?.sent(0).params).toEqual({
 			name: 'read_file',
 			arguments: {},
