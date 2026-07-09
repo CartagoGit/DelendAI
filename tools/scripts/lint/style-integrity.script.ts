@@ -254,7 +254,9 @@ export const extractDefinedClasses = (scss: string): ReadonlySet<string> => {
 			i++;
 			if (prelude.startsWith('@')) {
 				const name = /^@([a-zA-Z-]+)/.exec(prelude)?.[1] ?? '';
-				stack.push(OPAQUE_AT_RULES.has(name) ? [] : (stack.at(-1) ?? []));
+				stack.push(
+					OPAQUE_AT_RULES.has(name) ? [] : (stack.at(-1) ?? []),
+				);
 				continue;
 			}
 			const resolved = resolveSelectors(

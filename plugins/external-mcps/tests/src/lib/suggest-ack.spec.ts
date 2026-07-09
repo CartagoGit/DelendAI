@@ -95,7 +95,9 @@ describe('suggest tool (proposes, never writes)', () => {
 
 	it('returns a valid RFC 6902 add-only patch targeting the servers block', async () => {
 		const tool = await captureTool(registration);
-		const result = await tool.handler({ need: 'query a postgres database' });
+		const result = await tool.handler({
+			need: 'query a postgres database',
+		});
 		const payload = SuggestOutputSchema.parse(result.structuredContent);
 		expect(payload.ok).toBe(true);
 		expect(payload.patch.length).toBeGreaterThan(0);
@@ -118,7 +120,10 @@ describe('suggest tool (proposes, never writes)', () => {
 		const servers = Object.fromEntries(
 			payload.patch
 				.filter((op) => op.path !== SERVERS_POINTER)
-				.map((op) => [op.path.slice(`${SERVERS_POINTER}/`.length), op.value]),
+				.map((op) => [
+					op.path.slice(`${SERVERS_POINTER}/`.length),
+					op.value,
+				]),
 		);
 		expect(Object.keys(servers).length).toBeGreaterThan(0);
 		expect(validateServersPatch(servers)).toEqual({ ok: true, issues: [] });
@@ -149,7 +154,10 @@ describe('suggest tool (proposes, never writes)', () => {
 					postgres: {
 						version: '0.6.2',
 						command: 'npx',
-						args: ['-y', '@modelcontextprotocol/server-postgres@0.6.2'],
+						args: [
+							'-y',
+							'@modelcontextprotocol/server-postgres@0.6.2',
+						],
 					},
 				},
 			},
@@ -158,12 +166,12 @@ describe('suggest tool (proposes, never writes)', () => {
 		const result = await tool.handler({ need: 'database' });
 		const payload = SuggestOutputSchema.parse(result.structuredContent);
 		expect(payload.candidates.map((c) => c.id)).not.toContain('postgres');
-		expect(
-			payload.patch.some((op) => op.path === SERVERS_POINTER),
-		).toBe(false);
-		expect(
-			payload.patch.some((op) => op.path.endsWith('/postgres')),
-		).toBe(false);
+		expect(payload.patch.some((op) => op.path === SERVERS_POINTER)).toBe(
+			false,
+		);
+		expect(payload.patch.some((op) => op.path.endsWith('/postgres'))).toBe(
+			false,
+		);
 	});
 
 	it('returns an empty proposal (not an error) when nothing matches', async () => {
@@ -240,7 +248,10 @@ describe('pending-acks ledger (durable, one entry per server)', () => {
 		const fresh = createPendingAcksStore(ledgerPath);
 		expect(await fresh.isAcked('github')).toBe(false);
 		const entries = await fresh.read();
-		expect(entries[0]).toMatchObject({ serverId: 'github', accepted: false });
+		expect(entries[0]).toMatchObject({
+			serverId: 'github',
+			accepted: false,
+		});
 		// Decided — no longer pending.
 		expect(listPending(entries)).toHaveLength(0);
 	});
@@ -290,7 +301,10 @@ describe('ack tool (records + lists, notifies via the host bridge)', () => {
 	});
 
 	it('{list:true} shows pending activations only', async () => {
-		await createPendingAcksStore(ledgerPath).request('filesystem', 'fs ops');
+		await createPendingAcksStore(ledgerPath).request(
+			'filesystem',
+			'fs ops',
+		);
 		await createPendingAcksStore(ledgerPath).record('github', true);
 		const tool = await captureTool(registration());
 		const result = await tool.handler({ list: true });
@@ -336,15 +350,18 @@ describe('ack tool (records + lists, notifies via the host bridge)', () => {
 		const logged: ILoggedMessage[] = [];
 		const tool = await captureTool(registration(), logged);
 		await tool.handler({ server: 'github', accept: false });
-		expect(
-			await createPendingAcksStore(ledgerPath).isAcked('github'),
-		).toBe(false);
+		expect(await createPendingAcksStore(ledgerPath).isAcked('github')).toBe(
+			false,
+		);
 		expect(logged[0]?.data['event']).toBe('external-mcp-ack-rejected');
 	});
 
 	it('works without a notification bridge (test double has none)', async () => {
 		const tool = await captureTool(registration());
-		const result = await tool.handler({ server: 'filesystem', accept: true });
+		const result = await tool.handler({
+			server: 'filesystem',
+			accept: true,
+		});
 		expect(result.isError).toBeUndefined();
 		expect(
 			await createPendingAcksStore(ledgerPath).isAcked('filesystem'),

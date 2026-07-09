@@ -189,7 +189,8 @@ export const createPendingAcksStore = (
 				// Pending or already accepted: idempotent, keep the record.
 				if (
 					existing !== undefined &&
-					(existing.ackedAt === undefined || existing.accepted === true)
+					(existing.ackedAt === undefined ||
+						existing.accepted === true)
 				) {
 					return existing;
 				}
