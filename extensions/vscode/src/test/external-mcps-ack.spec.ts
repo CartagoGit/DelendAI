@@ -114,7 +114,10 @@ describe('external-mcps ack command (f00068 S5)', () => {
 			pickServer: 'github',
 			pickDecision: 'accept',
 		});
-		registerExternalMcpsAckCommand({ vscode, client: createClient({ calls }) });
+		registerExternalMcpsAckCommand({
+			vscode,
+			client: createClient({ calls }),
+		});
 		await commands.get(EXTERNAL_MCPS_ACK_COMMAND)?.();
 		const records = calls.filter(
 			(c) =>
@@ -132,14 +135,20 @@ describe('external-mcps ack command (f00068 S5)', () => {
 			pickServer: 'filesystem',
 			pickDecision: 'reject',
 		});
-		registerExternalMcpsAckCommand({ vscode, client: createClient({ calls }) });
+		registerExternalMcpsAckCommand({
+			vscode,
+			client: createClient({ calls }),
+		});
 		await commands.get(EXTERNAL_MCPS_ACK_COMMAND)?.();
 		const records = calls.filter(
 			(c) =>
 				c.name.endsWith('external-mcps_ack') &&
 				(c.args as { list?: boolean }).list !== true,
 		);
-		expect(records[0]!.args).toEqual({ server: 'filesystem', accept: false });
+		expect(records[0]!.args).toEqual({
+			server: 'filesystem',
+			accept: false,
+		});
 	});
 
 	it('shows the empty-state toast and records nothing when nothing is pending', async () => {
@@ -151,9 +160,7 @@ describe('external-mcps ack command (f00068 S5)', () => {
 		});
 		await commands.get(EXTERNAL_MCPS_ACK_COMMAND)?.();
 		expect(
-			calls.filter(
-				(c) => (c.args as { list?: boolean }).list !== true,
-			),
+			calls.filter((c) => (c.args as { list?: boolean }).list !== true),
 		).toHaveLength(0);
 		expect(messages.length).toBe(1);
 	});

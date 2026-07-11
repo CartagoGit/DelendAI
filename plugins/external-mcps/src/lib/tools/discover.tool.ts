@@ -78,7 +78,10 @@ export const createDefaultNpmSearch = (): INpmSearchClient => {
 		for (const object of body.objects ?? []) {
 			const pkg = object.package;
 			if (pkg === undefined) continue;
-			if (typeof pkg.name !== 'string' || typeof pkg.version !== 'string') {
+			if (
+				typeof pkg.name !== 'string' ||
+				typeof pkg.version !== 'string'
+			) {
 				continue;
 			}
 			results.push({
@@ -246,7 +249,9 @@ export const buildDiscoverToolRegistration = (
 				return toolJson({
 					ok: true,
 					total: raw.length,
-					results: raw.slice(0, DISCOVER_MAX_RESULTS).map(compactResult),
+					results: raw
+						.slice(0, DISCOVER_MAX_RESULTS)
+						.map(compactResult),
 					budget: {
 						remaining: budget.remaining(),
 						limit: DISCOVER_BUDGET_LIMIT,

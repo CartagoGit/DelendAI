@@ -137,7 +137,9 @@ describe('external_mcp_discover — enabled', () => {
 		for (let i = 0; i < DISCOVER_BUDGET_LIMIT; i++) {
 			clock += 1000; // 1s apart — all inside the 10-min window
 			const ok = await tool.handler({ query: `q${i}` });
-			expect(DiscoverOutputSchema.parse(ok.structuredContent).ok).toBe(true);
+			expect(DiscoverOutputSchema.parse(ok.structuredContent).ok).toBe(
+				true,
+			);
 		}
 		expect(search).toHaveBeenCalledTimes(DISCOVER_BUDGET_LIMIT);
 		// The 11th call is refused BEFORE any network call.
@@ -158,7 +160,9 @@ describe('external_mcp_discover — enabled', () => {
 		// Advance past the window: the oldest hits expire.
 		clock += DISCOVER_BUDGET_WINDOW_MS + 1;
 		const after = await tool.handler({ query: 'fresh-window' });
-		expect(DiscoverOutputSchema.parse(after.structuredContent).ok).toBe(true);
+		expect(DiscoverOutputSchema.parse(after.structuredContent).ok).toBe(
+			true,
+		);
 		expect(search).toHaveBeenCalledTimes(DISCOVER_BUDGET_LIMIT + 1);
 	});
 });
