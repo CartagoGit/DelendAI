@@ -63,7 +63,9 @@ const hoistStyles = (renderedHtml: string): void => {
 		stale.remove();
 	}
 	for (const block of styleBlocks) {
-		const inner = block.replace(/^<style[^>]*>/i, '').replace(/<\/style>$/i, '');
+		const inner = block
+			.replace(/^<style[^>]*>/i, '')
+			.replace(/<\/style>$/i, '');
 		const el = document.createElement('style');
 		el.setAttribute('data-dev-hoisted', '');
 		el.textContent = inner;
