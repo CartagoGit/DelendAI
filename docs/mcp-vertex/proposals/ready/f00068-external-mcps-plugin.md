@@ -933,7 +933,7 @@ for X?" and gets back a one-line summary per matching entry
   - "Registry reuses the f00067a createStdioTransport pattern (NDJSON JSON-RPC, SIGTERM→SIGKILL close, timers unref'd, no process.cwd): declared servers spawn LAZILY on first `ext.<server>.*` call, child cached, `eager: true` opt-out per server."
   - "`external_mcp_status`: per-server {declared, running, pid?, bootedAt?, lastError?} — compact. e2e drives a stub MCP child via process.execPath (CI-friendly, no npm dep) through declare→lazy-boot→call→close."
   - "Spec proves an `ext.*`-named call round-trips usage-tracking record→report unchanged (gate decision 8)."
-
+- status: done
 ### S3 — Suggest + ack flow (LLM-assisted config, human-acked)
 
 - **Status**: pending
@@ -943,7 +943,7 @@ for X?" and gets back a one-line summary per matching entry
 - **Acceptance**:
   - "`external_mcp_suggest` returns an RFC6902 patch proposal for the config (same convention as the f00067 bootstrap wizard) + the catalog rationale; it NEVER applies — writing config stays with the human/host."
   - "`external_mcp_ack`: pending activations persist under the cache dir (redactSecrets, writeFileAtomic); when requireHumanAckWhenLlmDecides, first activation of a declared server requires a recorded ack; notification emitted via the standard notify bridge (non-modal, decision 5)."
-
+- status: done
 ### S4 — Detection, skill, i18n + docs surface
 
 - **Status**: pending
