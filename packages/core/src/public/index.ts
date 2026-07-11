@@ -168,6 +168,8 @@ export type {
 	IScaffoldPluginOptions,
 	IScaffoldedFile,
 } from '../lib/scaffold/scaffold-host';
+export { scaffoldExtensionHostFiles } from '../lib/scaffold/scaffold-extension-host';
+export type { IScaffoldExtensionHostOptions } from '../lib/contracts/interfaces/scaffold-extension-host-options.interface';
 export {
 	SCAFFOLD_INPUT_SCHEMA,
 	buildScaffoldReport,

@@ -87,7 +87,7 @@ export const SCAFFOLDED_FILE_SCHEMA = z.object({
  */
 export const CREATE_SCHEMA = z.object({
 	kind: z
-		.enum(['host', 'plugin', 'client'])
+		.enum(['host', 'plugin', 'client', 'extension-host'])
 		.optional()
 		.describe('What to scaffold.'),
 	projectName: z.string().optional(),
@@ -95,14 +95,18 @@ export const CREATE_SCHEMA = z.object({
 	projectPackageName: z.string().optional(),
 	pluginName: z.string().optional().describe('Plugin id (kind "plugin").'),
 	clientName: z.string().optional().describe('Client id (kind "client").'),
+	extensionHostName: z
+		.string()
+		.optional()
+		.describe('Host id (kind "extension-host").'),
 	description: z.string().optional(),
 });
 
 // r00002 S1 — `create_project`'s output: a dry-run skeleton of files to
-// write, discriminated by what was scaffolded (host/plugin/client).
+// write, discriminated by what was scaffolded.
 // r00001 S0 — exported so the golden snapshot test can pin the schema shape.
 export const MCP_PROJECT_SKELETON_SCHEMA = z.object({
-	kind: z.enum(['host', 'plugin', 'client']),
+	kind: z.enum(['host', 'plugin', 'client', 'extension-host']),
 	files: z.array(SCAFFOLDED_FILE_SCHEMA),
 });
 
