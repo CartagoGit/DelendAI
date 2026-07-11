@@ -1,7 +1,7 @@
 ---
 id: f00099
 kind: feat
-status: ready
+status: done
 type: proposal
 track: web+extensions/vscode+lint
 date: 2026-07-07
@@ -79,7 +79,7 @@ blocker per the user's 2026-07-07 direction.
   - "Script expands scss nesting (`&__x`/`&--x` under parent context) across apps/web + apps/shared styles plus component-local `<style>` blocks, extracts `class=\"…\"` literals from .astro markup (dynamic expressions skipped), and fails on used-but-undefined classes not covered by a documented waiver."
   - "Waivers need a reason (bare BEM namespace hooks, third-party classes like pagefind/markdown-body); repo passes with the initial waivers file."
   - "Wired into `bun run validate` after lint:scss; spec covers nesting expansion, waiver honouring, and a failing fixture."
-
+- status: done
 ## acceptance
 
 - `bun run validate` → exit 0 (including the new lint:style-integrity once

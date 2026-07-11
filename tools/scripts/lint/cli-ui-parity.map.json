@@ -162,6 +162,9 @@
 		"mcp-vertex.memoryForget": { "cli": "memory forget" },
 		"mcp-vertex.setupGithub": {
 			"waiver": "guided IDE onboarding flow for GitHub issues; no CLI counterpart yet"
+		},
+		"mcp-vertex.externalMcps.ack": {
+			"waiver": "f00068 S5: wraps the external-mcps plugin's external_mcp_ack tool (human accept/reject of an external-server activation); the external-mcps discovery/ack surface is agent/MCP-first with no CLI group"
 		}
 	}
 }

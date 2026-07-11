@@ -132,12 +132,13 @@ describe('external-mcps plugin manifest (token-lean)', () => {
 		},
 	} as unknown as Parameters<typeof plugin.register>[0];
 
-	it('registers the S1+S2 tools (catalog, suggest, ack, call, status, validate_config)', async () => {
+	it('registers the plugin tools (catalog, discover, suggest, ack, call, status, validate_config)', async () => {
 		const regs = await plugin.register(ctx);
 		expect((regs.tools ?? []).map((t) => t.id).sort()).toEqual([
 			'ack',
 			'call',
 			'catalog',
+			'discover',
 			'status',
 			'suggest',
 			'validate_config',

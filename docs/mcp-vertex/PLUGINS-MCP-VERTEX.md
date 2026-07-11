@@ -303,6 +303,62 @@ dependency of `orchestrator-runner` (above).
 `--exclude-plugins=usage-tracking`. (There is no `options.enabled` flag; omission
 is the switch.)
 
+## Composing third-party MCP servers (opt-in)
+
+### external-mcps
+
+The composition plugin (`@mcp-vertex/external-mcps`): it lets a workspace
+**compose published third-party MCP servers** alongside the mcp-vertex-native
+plugins, under a strict `ext.<server>.<tool>` namespace, with **lazy subprocess
+boot**, an **LLM-assisted config flow**, and a **mandatory human ack** before any
+external server runs. It is **opt-in** (in no preset) and **token-lean by
+design**: it contributes **zero system-prompt bytes** beyond its ~6 tool
+one-liners — nothing about the catalog rides in the prompt. A session that never
+composes an external server pays nothing; discovery is one compact `catalog`
+call away.
+
+**Public tools** (6, all namespace-qualified as `<prefix>_<id>`):
+
+| Tool | Effects | Purpose |
+|---|---|---|
+| `catalog` | none | Search the curated + discoverable seed catalog (compact `{id, category, summary}` rows, `total` count; `detail:<id>` for one full entry). Read-only + offline. |
+| `suggest` | none | Turn a free-text `need` into ≤3 candidates + an RFC 6902 JSON Patch that ADDS them to the config. Never writes. |
+| `validate_config` | none | Dry-run a proposed servers block against the Zod schema (exact version pins, kebab ids, env NAMES only). Never writes or boots. |
+| `ack` | `write` | Record/list human acks for LLM-decided activation (durable, redacted, one entry per server). The human gate. |
+| `status` | none | Report the lazy subprocess registry state (declared vs booted, pid, last boot error). Never boots or stops. |
+| `call` | `spawn`, `write` | Invoke `ext.<server>.<tool>`; boots the server lazily on first call, contained to the workspace, results redacted; blocked until human-acked when required. |
+
+**Token-lean catalog-on-demand design**: the catalog lives on disk in two tiers
+— **curated** (a small high-signal set) and **discoverable** (representative
+breadth) — and is **never** returned whole. `catalog` caps a list at 10 matches
+with a real `total`, so the LLM narrows `query` instead of paging. Detection
+rules (e.g. an Angular workspace, probed via
+`package.json#dependencies['@angular/core']`) only **annotate** matching entries
+with `detected: true`; detection is a hint and **never** activates a server.
+
+**The ack flow**: with `requireHumanAckWhenLlmDecides: true` (default), an
+LLM-decided activation is **blocked** until a human records an accepted `ack`.
+`suggest` → `validate_config` → apply patch on user confirm → `ack` →
+`call`. Each step before `call` is offline and reversible.
+
+**Config schema** (`plugins.external-mcps.options`): `servers` (record keyed by
+kebab-case id → `{ version` (mandatory **exact** semver pin — `latest` and
+ranges are rejected), `command`, `args`, `namespacePrefix?`, `detect?`, `env?`
+(variable **NAMES** only, never cleartext) `}`), plus the three autonomy knobs
+`llmDecidesActivation` (default `true`), `requireHumanAckWhenLlmDecides` (default
+`true`), `allowDiscoverySearch` (default `false` — the live npm/GitHub kill
+switch stays off until you opt in).
+
+**Secrets by name**: env entries in the config are variable **NAMES** only;
+values live in the host/shell secret store and are never written to
+`mcp-vertex.config.json`. The schema rejects `NAME=VALUE` assignments and
+cleartext-token-looking blobs, and every external result is piped through
+`redactSecrets` before anything durable is written.
+
+**Kill switch**: opt-in (in no preset). Disable it by omitting it from
+`--plugins` and from the config's `plugins` map, or force it off with
+`--exclude-plugins=external-mcps`.
+
 ## Rules for great, model-agnostic, low-token plugins
 
 1. **Strict schemas in, structured JSON out.** Don't return prose an LLM has to

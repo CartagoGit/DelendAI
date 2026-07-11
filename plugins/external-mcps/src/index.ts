@@ -17,6 +17,10 @@
  */
 import { definePlugin, joinRel } from '@mcp-vertex/core/public';
 
+import {
+	detectCatalogIds,
+	loadDetectEvidence,
+} from './lib/detect/detect-rules';
 import { OptionsSchema } from './lib/options-schema';
 import {
 	ExternalServerRegistry,
@@ -24,6 +28,7 @@ import {
 } from './lib/subprocess/server-registry';
 import { buildAckToolRegistration } from './lib/tools/ack.tool';
 import { buildCatalogToolRegistration } from './lib/tools/catalog.tool';
+import { buildDiscoverToolRegistration } from './lib/tools/discover.tool';
 import { buildCallToolRegistration } from './lib/tools/invoke-proxy';
 import { buildStatusToolRegistration } from './lib/tools/status.tool';
 import { buildSuggestToolRegistration } from './lib/tools/suggest.tool';
@@ -50,17 +55,35 @@ export default definePlugin({
 		});
 		// Lazy is the default; `eager: true` entries opt out and boot now.
 		registry.bootEager();
+		// Detection ANNOTATES catalog/suggest output (`detected: true`) — it
+		// never activates a server (S4). Evidence (the workspace package.json)
+		// is read lazily on first use and memoised; the workspace root comes
+		// from the context, never process.cwd().
+		let detectedCache: ReadonlySet<string> | undefined;
+		const detect = async (): Promise<ReadonlySet<string>> => {
+			if (detectedCache === undefined) {
+				const evidence = await loadDetectEvidence(ctx.workspace.root);
+				detectedCache = detectCatalogIds(evidence);
+			}
+			return detectedCache;
+		};
 		return {
 			tools: [
 				buildCatalogToolRegistration({
 					namespacePrefix: ctx.namespacePrefix,
+					detect,
 				}),
 				buildValidateConfigToolRegistration({
 					namespacePrefix: ctx.namespacePrefix,
 				}),
+				buildDiscoverToolRegistration({
+					namespacePrefix: ctx.namespacePrefix,
+					allowDiscoverySearch: options.allowDiscoverySearch,
+				}),
 				buildSuggestToolRegistration({
 					namespacePrefix: ctx.namespacePrefix,
 					options: ctx.options,
+					detect,
 				}),
 				buildAckToolRegistration({
 					namespacePrefix: ctx.namespacePrefix,

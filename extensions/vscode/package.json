@@ -147,6 +147,10 @@
 			{
 				"command": "mcp-vertex.usage.clear",
 				"title": "mcp-vertex: Clear Usage Log"
+			},
+			{
+				"command": "mcp-vertex.externalMcps.ack",
+				"title": "mcp-vertex: Review External Server Activations"
 			}
 		],
 		"menus": {
