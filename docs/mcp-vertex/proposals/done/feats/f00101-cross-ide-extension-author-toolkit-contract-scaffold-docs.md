@@ -1,7 +1,7 @@
 ---
 id: f00101
 kind: feat
-status: ready
+status: done
 type: proposal
 track: ui-extension+client+docs+web
 date: 2026-07-07
@@ -61,31 +61,34 @@ the same move for extension hosts.
 
 ### S1 — EXTENSION-AUTHORING guide (contract + wire protocol)
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `docs/mcp-vertex/EXTENSION-AUTHORING.md`
 - **Gate**: bun run lint:proposals
 - **Acceptance**:
   - "Documents the two authoring tiers: (A) TS host — implement IHostAdapter (every member annotated: required vs optional capability), reuse @mcp-vertex/ui-extension builders + @mcp-vertex/client services; (B) any language — speak MCP over stdio to the server, call the same tools (overview, agent_catalog, proposals_*, healthcheck_providers, usage_report…), render the documented JSON payloads; includes the CSP posture, i18n expectations (12-lang table pattern), and the cli-ui-parity duty (map your commands or waive them)."
   - "States the compatibility promise: IHostAdapter + tool output schemas are the versioned contract (generated tool-outputs.ts / outputSchema as source of truth); breaking changes follow toolSchemaVersion."
+- **Implementation note**: Added `docs/mcp-vertex/EXTENSION-AUTHORING.md` with the two-tier authoring model, the concrete `IHostAdapter` member groups, TypeScript public-barrel guidance, any-language MCP stdio guidance, outputSchema/tool-output compatibility notes, CSP posture, i18n expectations, CLI/UI parity duty, and the reserved `create_project { kind: "extension-host" }` scaffold contract for S2.
 
 ### S2 — create_project kind 'extension-host' scaffold (TS reference)
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/src/lib/scaffold/scaffold-extension-host.ts`, `packages/core/src/lib/bootstrap/create-tool.ts`, `packages/core/src/lib/bootstrap/schemas.ts`, `packages/core/tests/src/lib/scaffold/scaffold-extension-host.spec.ts`
 - **Depends on**: S1
 - **Gate**: bun run typecheck && bun run test
 - **Acceptance**:
   - "`create_project { kind: 'extension-host' }` returns a compiling skeleton: minimal IHostAdapter impl with TODO seams (registerCommand/createWebviewPanel/showInformationMessage required; the rest stubbed optional), one wired example command (overview → webview via renderJsonHtml-style helper), package.json + tsconfig + vitest + a passing example spec — same file-shape conventions as scaffoldPluginFiles."
   - "Scaffold output referenced from the S1 guide; catalog/tool-outputs regenerated for the schema change."
+- **Implementation note**: Added `scaffoldExtensionHostFiles` plus public exports, wired `create_project` to `kind: "extension-host"` with `extensionHostName`, widened create schemas/output schemas, regenerated `packages/core/src/generated/tool-outputs.ts`, and added scaffold/golden coverage. The generated skeleton includes package metadata, `tsconfig`, an inert-but-complete `IHostAdapter`, `openOverview` using `McpStdioClient` + `OverviewService`, `renderJsonHtml`, and a Vitest example spec.
 
 ### S3 — Web /extend page
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `apps/web/src/pages/extend.astro`, `apps/web/src/i18n/extend.ts`, `apps/web/src/data/pages-audit.ts`
 - **Depends on**: S1
 - **Gate**: bun run lint:web
 - **Acceptance**:
   - "Static page presenting the two tiers with the scaffold quickstart and a link to the guide; standalone byLang i18n map (en source, es translated, rest fallback); registered in PAGES_AUDIT; `bun run site` green."
+- **Implementation note**: Added `/extend` as a static authoring page with the two extension-host tiers, scaffold quickstart, compatibility-surface bullets, and a link to `EXTENSION-AUTHORING.md`; added `extendByLang` with English source, Spanish translation, and fallback locales; registered the page in `PAGES_AUDIT`.
 
 ## acceptance
 

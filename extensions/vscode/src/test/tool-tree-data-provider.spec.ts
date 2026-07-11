@@ -58,6 +58,16 @@ describe('ToolTreeDataProvider', async () => {
 			description: 'Show proposals',
 			tooltip: 'Show proposals',
 			collapsibleState: TreeItemCollapsibleState.None,
+			command: {
+				command: 'mcp-vertex.openToolDetail',
+				arguments: [
+					{
+						name: 'mcp-vertex_proposals_proposal_board',
+						plugin: 'proposals',
+						summary: 'Show proposals',
+					},
+				],
+			},
 		});
 	});
 

@@ -1,0 +1,171 @@
+---
+import Base from '#LAYOUTS/Base.astro';
+import { extendByLang } from '#I18N/extend';
+import { useTranslations, type Lang } from '#I18N/ui';
+
+const lang: Lang = 'en';
+const t = useTranslations(lang);
+const copy = extendByLang[lang];
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const homeHref = `${base}/`;
+---
+
+<Base lang={lang} title={`${copy.title} - @mcp-vertex/core`}>
+	<section class="extend-page">
+		<header class="extend-page__header">
+			<a class="extend-page__back" href={homeHref}>&larr; {t.nav.concept}</a>
+			<h1>{copy.title}</h1>
+			<p>{copy.lead}</p>
+		</header>
+
+		<section class="extend-page__band">
+			<div>
+				<h2>{copy.intro.title}</h2>
+				<p>{copy.intro.body}</p>
+			</div>
+			<a class="extend-page__link" href={copy.links.guideHref}>
+				{copy.links.guide}
+			</a>
+		</section>
+
+		<section class="extend-page__section">
+			<h2>{copy.tiers.title}</h2>
+			<div class="extend-page__tiers">
+				{copy.tiers.items.map((tier) => (
+					<article class="extend-page__tier">
+						<h3>{tier.title}</h3>
+						<p>{tier.body}</p>
+						<ul>
+							{tier.bullets.map((bullet) => <li>{bullet}</li>)}
+						</ul>
+					</article>
+				))}
+			</div>
+		</section>
+
+		<section class="extend-page__section extend-page__section--scaffold">
+			<div>
+				<h2>{copy.scaffold.title}</h2>
+				<p>{copy.scaffold.body}</p>
+			</div>
+			<pre><code>{copy.scaffold.command}</code></pre>
+		</section>
+
+		<section class="extend-page__section">
+			<h2>{copy.contract.title}</h2>
+			<p>{copy.contract.body}</p>
+			<ul class="extend-page__contract">
+				{copy.contract.items.map((item) => <li>{item}</li>)}
+			</ul>
+		</section>
+	</section>
+</Base>
+
+<style>
+	.extend-page {
+		max-width: 1060px;
+		margin: 0 auto;
+		padding: 2rem 1.5rem 4rem;
+	}
+
+	.extend-page__header {
+		margin-bottom: 2rem;
+	}
+
+	.extend-page__back,
+	.extend-page__link {
+		color: var(--color-accent, #3f6f5f);
+		text-decoration: none;
+		font-weight: 600;
+	}
+
+	.extend-page__header h1 {
+		margin: 0 0 0.75rem;
+		font-size: 2.25rem;
+		line-height: 1.1;
+	}
+
+	.extend-page__header p,
+	.extend-page__band p,
+	.extend-page__section p {
+		color: var(--color-muted, #5f6670);
+		line-height: 1.65;
+	}
+
+	.extend-page__band {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) auto;
+		gap: 1.25rem;
+		align-items: center;
+		padding: 1.25rem;
+		border: 1px solid var(--color-border, #d9e0df);
+		border-radius: 8px;
+		background: var(--color-bg-alt, #f7faf9);
+	}
+
+	.extend-page__band h2,
+	.extend-page__section h2 {
+		margin: 0 0 0.5rem;
+		font-size: 1.25rem;
+	}
+
+	.extend-page__section {
+		margin-top: 2rem;
+	}
+
+	.extend-page__tiers {
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: 1rem;
+	}
+
+	.extend-page__tier {
+		border: 1px solid var(--color-border, #d9e0df);
+		border-radius: 8px;
+		padding: 1rem;
+		background: var(--color-bg, #fff);
+	}
+
+	.extend-page__tier h3 {
+		margin: 0 0 0.5rem;
+		font-size: 1.05rem;
+	}
+
+	.extend-page__tier ul,
+	.extend-page__contract {
+		margin: 0.75rem 0 0;
+		padding-left: 1.2rem;
+		color: var(--color-muted, #5f6670);
+		line-height: 1.6;
+	}
+
+	.extend-page__section--scaffold {
+		display: grid;
+		grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+		gap: 1rem;
+		align-items: start;
+	}
+
+	.extend-page pre {
+		margin: 0;
+		padding: 1rem;
+		overflow-x: auto;
+		border-radius: 8px;
+		background: #10231f;
+		color: #f4fbf8;
+		font-size: 0.88rem;
+		line-height: 1.55;
+	}
+
+	@media (max-width: 760px) {
+		.extend-page__band,
+		.extend-page__section--scaffold,
+		.extend-page__tiers {
+			grid-template-columns: 1fr;
+		}
+
+		.extend-page__header h1 {
+			font-size: 1.8rem;
+		}
+	}
+</style>

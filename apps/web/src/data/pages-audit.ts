@@ -263,6 +263,14 @@ export const PAGES_AUDIT: readonly IPageAuditEntry[] = Object.freeze([
 		why: 'The English onboarding page is content-first and lines up directly with the planned PageSpec representation for long-form walkthroughs.',
 	},
 	{
+		path: 'apps/web/src/pages/extend.astro',
+		langCoverage: EN_ONLY,
+		kind: 'content',
+		lastMeaningfulEdit: '2026-07-11',
+		verdict: 'keep',
+		why: 'The extend page is the web entry point for f00101: it presents the two extension-host authoring tiers, links to the contract guide, and points authors at the extension-host scaffold.',
+	},
+	{
 		path: 'apps/web/src/pages/guide.astro',
 		langCoverage: EN_ONLY,
 		kind: 'content',

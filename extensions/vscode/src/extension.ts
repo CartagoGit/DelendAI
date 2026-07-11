@@ -68,6 +68,8 @@ import {
 	TOOL_SEARCH_COMMAND,
 	registerToolSearchCommand,
 } from './commands/tool-search';
+import { registerOpenToolDetailCommand } from './commands/open-tool-detail';
+import { OPEN_TOOL_DETAIL_COMMAND } from './contracts/constants/open-tool-detail-command.constant';
 import {
 	SETUP_GITHUB_COMMAND,
 	registerSetupGithubCommand,
@@ -96,6 +98,7 @@ export const SHOW_OVERVIEW_COMMAND = 'mcp-vertex.showOverview';
 export const TOOLS_VIEW_ID = 'mcp-vertex.tools';
 export const MEMORY_VIEW_ID = 'mcp-vertex.memory';
 export const PROPOSALS_VIEW_ID = 'mcp-vertex.proposals';
+export { OPEN_TOOL_DETAIL_COMMAND };
 
 export interface IDisposable {
 	dispose(): void;
@@ -378,6 +381,7 @@ export const activate = async (
 	// f00053 S6: surface the canonical docs/how-to-use/API from the IDE.
 	track(registerOpenDocsApiCommand({ vscode }));
 	track(registerOpenAgentCatalogCommand({ vscode, client }));
+	track(registerOpenToolDetailCommand({ vscode, client, ...withPrefix }));
 	track(registerOpenKnowledgeCommand({ vscode, client }));
 	track(registerToolSearchCommand({ vscode, client, ...withPrefix }));
 	track(registerRestartServerCommand(vscode));
