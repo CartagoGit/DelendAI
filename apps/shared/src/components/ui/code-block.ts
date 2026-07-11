@@ -22,7 +22,7 @@
  *     markup.
  * - The `<code>` content is escaped (HTML-special characters
  *     become entities) so the caller can pass raw source.
- * - Class namespace: `mv-code`, `mv-code__*`, `mv-code--inline`.
+ * - Class namespace: `mcpv-code`, `mcpv-code__*`, `mcpv-code--inline`.
  * - `id` on the `<code>` is auto-generated via a stable seed-based
  *     scheme: callers may override with `id`. The default is
  *     deterministic per call so consecutive renders with the same
@@ -73,31 +73,31 @@ const renderHead = (
 
 	const headL =
 		filename || (!filename && lang) || caption
-			? `<div class="mv-code__head-l">` +
+			? `<div class="mcpv-code__head-l">` +
 				(filename
-					? `<span class="mv-code__file">${escapeHtml(filename)}</span>`
+					? `<span class="mcpv-code__file">${escapeHtml(filename)}</span>`
 					: '') +
 				(!filename && lang
-					? `<span class="mv-code__lang">${escapeHtml(lang)}</span>`
+					? `<span class="mcpv-code__lang">${escapeHtml(lang)}</span>`
 					: '') +
 				(caption
-					? `<span class="mv-code__caption">${escapeHtml(caption)}</span>`
+					? `<span class="mcpv-code__caption">${escapeHtml(caption)}</span>`
 					: '') +
 				`</div>`
 			: '';
 
 	const copy = showCopy
-		? `<button type="button" class="mv-code__copy" data-copy-target="${escapeHtml(id)}" ` +
+		? `<button type="button" class="mcpv-code__copy" data-copy-target="${escapeHtml(id)}" ` +
 			`aria-label="${escapeHtml(copyLabel)}">` +
-			`<span class="mv-code__copy-text" data-copy-label="idle">${escapeHtml(copyLabel)}</span>` +
+			`<span class="mcpv-code__copy-text" data-copy-label="idle">${escapeHtml(copyLabel)}</span>` +
 			`</button>`
 		: '';
 
-	return `<header class="mv-code__head">${headL}${copy}</header>`;
+	return `<header class="mcpv-code__head">${headL}${copy}</header>`;
 };
 
 /**
- * Render a `<figure class="mv-code">` code block as a string.
+ * Render a `<figure class="mcpv-code">` code block as a string.
  *
  * @example
  *   renderCodeBlock({
@@ -117,12 +117,12 @@ export const renderCodeBlock = (props: ICodeBlockProps): string => {
 	const id = props.id ?? `cb-${stableSuffix()}`;
 	const copyLabel = props.copyLabel ?? 'Copy';
 
-	const cls = inline ? 'mv-code mv-code--inline' : 'mv-code';
+	const cls = inline ? 'mcpv-code mcpv-code--inline' : 'mcpv-code';
 
 	return (
 		`<figure class="${cls}" data-lang="${escapeHtml(lang)}">` +
 		renderHead(lang, filename, caption, showCopy, id, copyLabel) +
-		`<pre class="mv-code__pre"><code id="${escapeHtml(id)}" class="language-${escapeHtml(lang)}">${escapeHtml(code)}</code></pre>` +
+		`<pre class="mcpv-code__pre"><code id="${escapeHtml(id)}" class="language-${escapeHtml(lang)}">${escapeHtml(code)}</code></pre>` +
 		`</figure>`
 	);
 };

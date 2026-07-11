@@ -5,7 +5,7 @@ import { buildTabsBar } from '../../../src/dashboard/builders/build-tabs-bar';
 describe('buildTabsBar', () => {
 	it('renders tabs bar template correctly', () => {
 		const html = buildTabsBar(dictsByLang.en);
-		expect(html).toContain('mv-tabs');
+		expect(html).toContain('mcpv-tabs');
 		expect(html).toContain('tab-overview');
 		expect(html).toContain('tab-health');
 		expect(html).toContain('tab-docs');
@@ -17,17 +17,17 @@ describe('buildTabsBar', () => {
 		// tab-${id} must control panel-${id} (the panels render with the
 		// matching id in build-panels / render-panel-*).
 		// f00102 S4-real-extract: the button now carries
-		// `class="mv-tabs__tab"` and `data-tab-trigger="${id}"`
+		// `class="mcpv-tabs__tab"` and `data-tab-trigger="${id}"`
 		// between `id=` and `aria-controls` (emitted by the shared
 		// `renderTabs` in `@mcp-vertex/shared/components/ui/tabs`).
 		expect(html).toContain(
-			'id="tab-overview" class="mv-tabs__tab" data-tab-trigger="overview" aria-selected="true" aria-controls="panel-overview"',
+			'id="tab-overview" class="mcpv-tabs__tab" data-tab-trigger="overview" aria-selected="true" aria-controls="panel-overview"',
 		);
 		expect(html).toContain(
-			'id="tab-health" class="mv-tabs__tab" data-tab-trigger="health" aria-selected="false" aria-controls="panel-health"',
+			'id="tab-health" class="mcpv-tabs__tab" data-tab-trigger="health" aria-selected="false" aria-controls="panel-health"',
 		);
 		expect(html).toContain(
-			'id="tab-docs" class="mv-tabs__tab" data-tab-trigger="docs" aria-selected="false" aria-controls="panel-docs"',
+			'id="tab-docs" class="mcpv-tabs__tab" data-tab-trigger="docs" aria-selected="false" aria-controls="panel-docs"',
 		);
 	});
 

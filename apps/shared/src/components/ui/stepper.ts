@@ -12,9 +12,9 @@
  * -----------
  * - Each step's body may include `` `code` `` backticks. These
  *   are split out and rendered as `<code>` chips.
- * - Class namespace: `mv-stepper`, `mv-stepper__*`. The companion
+ * - Class namespace: `mcpv-stepper`, `mcpv-stepper__*`. The companion
  *   SCSS (`_stepper.scss`) carries a `@extend .ui-stepper ->
- *   .mv-stepper` alias so the docs site's existing markup keeps
+ *   .mcpv-stepper` alias so the docs site's existing markup keeps
  *   working without a rename.
  * - The list is rendered as `<ol start="…">` so the semantic
  *   order survives even when CSS hides the visual numbers (and
@@ -51,7 +51,7 @@ const renderPart = (part: ITextPart): string =>
 		: escapeHtml(part.text ?? '');
 
 /**
- * Render a `<ol class="mv-stepper">` stepper as a string.
+ * Render a `<ol class="mcpv-stepper">` stepper as a string.
  *
  * @example
  *   renderStepper({
@@ -68,14 +68,14 @@ export const renderStepper = (props: IStepperProps): string => {
 			const num = start + i;
 			const parts = splitCodeSpans(s).map(renderPart).join('');
 			return (
-				`<li class="mv-stepper__item">` +
-				`<span class="mv-stepper__num" aria-hidden="true">${num}</span>` +
-				`<div class="mv-stepper__body">` +
-				`<p class="mv-stepper__text">${parts}</p>` +
+				`<li class="mcpv-stepper__item">` +
+				`<span class="mcpv-stepper__num" aria-hidden="true">${num}</span>` +
+				`<div class="mcpv-stepper__body">` +
+				`<p class="mcpv-stepper__text">${parts}</p>` +
 				`</div>` +
 				`</li>`
 			);
 		})
 		.join('');
-	return `<ol class="mv-stepper" start="${start}">${items}</ol>`;
+	return `<ol class="mcpv-stepper" start="${start}">${items}</ol>`;
 };

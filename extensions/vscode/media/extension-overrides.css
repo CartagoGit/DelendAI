@@ -20,14 +20,14 @@
  */
 
 :root {
-	--mv-bg: var(--vscode-editor-background, #0d1117);
-	--mv-fg: var(--vscode-foreground, #c9d1d9);
-	--mv-fg-muted: var(--vscode-description-foreground, #8b949e);
-	--mv-line: var(--vscode-widget-border, #30363d);
-	--mv-bg-soft: var(--vscode-side-bar-background, #161b22);
-	--mv-card: var(--vscode-editorWidget-background, #1c2128);
-	--mv-font-prose: var(--vscode-font-family, system-ui, sans-serif);
-	--mv-font-mono: var(
+	--mcpv-bg: var(--vscode-editor-background, #0d1117);
+	--mcpv-fg: var(--vscode-foreground, #c9d1d9);
+	--mcpv-fg-muted: var(--vscode-description-foreground, #8b949e);
+	--mcpv-line: var(--vscode-widget-border, #30363d);
+	--mcpv-bg-soft: var(--vscode-side-bar-background, #161b22);
+	--mcpv-card: var(--vscode-editorWidget-background, #1c2128);
+	--mcpv-font-prose: var(--vscode-font-family, system-ui, sans-serif);
+	--mcpv-font-mono: var(
 		--vscode-editor-font-family,
 		ui-monospace,
 		SFMono-Regular,
@@ -44,7 +44,7 @@ body {
 }
 
 a {
-	color: var(--vscode-textLink-foreground, var(--mv-brand-blue));
+	color: var(--vscode-textLink-foreground, var(--mcpv-brand-blue));
 	text-decoration: none;
 }
 a:hover {
@@ -52,13 +52,13 @@ a:hover {
 }
 
 /* VS Code-specific: tabs use a translucent backdrop over the editor. */
-.mv-tabs {
+.mcpv-tabs {
 	background: var(
 		--vscode-editorGroupHeader-tabsBackground,
-		var(--mv-bg-soft)
+		var(--mcpv-bg-soft)
 	);
 }
-.mv-tab[aria-selected='true'] {
-	color: var(--vscode-tab-activeForeground, var(--mv-fg));
-	border-bottom-color: var(--vscode-tab-activeBorderTop, var(--mv-accent));
+.mcpv-tab[aria-selected='true'] {
+	color: var(--vscode-tab-activeForeground, var(--mcpv-fg));
+	border-bottom-color: var(--vscode-tab-activeBorderTop, var(--mcpv-accent));
 }

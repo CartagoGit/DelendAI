@@ -27,7 +27,7 @@ export interface IRenderDashboardOptions {
 
 const CLIENT_SCRIPT = `
 (function () {
-  const panels = document.querySelectorAll('.mv-panel');
+  const panels = document.querySelectorAll('.mcpv-panel');
   // Only real tabs participate in selection + the roving tabindex; the
   // refresh button is an action (no role="tab"), so it is excluded
   // by the [data-tab-trigger] selector (renderTabs only stamps that
@@ -57,7 +57,7 @@ const CLIENT_SCRIPT = `
       selectTab(tabs[next], true);
     });
   });
-  const toolsTable = document.querySelector('.mv-tools-table');
+  const toolsTable = document.querySelector('.mcpv-tools-table');
   if (toolsTable) {
     const tbody = toolsTable.querySelector('tbody');
     const headers = toolsTable.querySelectorAll('th[data-sort]');
@@ -113,7 +113,7 @@ export const renderDashboard = (
 	${header}
 	${kpiStrip}
 	${tabsBar}
-	<main class="mv-main">
+	<main class="mcpv-main">
 		${panels}
 	</main>
 	${footer}

@@ -199,8 +199,8 @@ apps/shared/
 ├── src/
 │   ├── public/index.ts    barrel
 │   ├── styles/
-│   │   ├── _tokens.scss   --mv-radius, --mv-gap, --mv-s-1..6, --mv-transition-*
-│   │   ├── _themes.scss   5 palettes + --mv-brand-blue/purple (canonical hex)
+│   │   ├── _tokens.scss   --mcpv-radius, --mcpv-gap, --mcpv-s-1..6, --mcpv-transition-*
+│   │   ├── _themes.scss   5 palettes + --mcpv-brand-blue/purple (canonical hex)
 │   │   ├── _index.scss    forwarder
 │   │   └── styles.scss
 │   ├── i18n/

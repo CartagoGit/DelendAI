@@ -28,23 +28,23 @@ export function buildTabsBar(lang: ILangDict): string {
 	// tab, so it stays out of the roving tabindex.
 	//
 	// f00102 S4-real-extract: this used to inline its own button
-	// markup with `class="mv-tabs"`. It now delegates to the shared
+	// markup with `class="mcpv-tabs"`. It now delegates to the shared
 	// `renderTabs` so the docs site, the extension dashboard, and
-	// every future surface emit the same `<nav class="mv-tabs__bar">`
+	// every future surface emit the same `<nav class="mcpv-tabs__bar">`
 	// tree. `idPrefix: ''` keeps the dashboard's existing
 	// `id="tab-{id}"` / `aria-controls="panel-{id}"` convention
 	// (which the client script + 9 panel builders already match
 	// against). The refresh button is rendered after the tabs as
-	// an `<li class="mv-tabs__action">` — no `role="tab"`, no
+	// an `<li class="mcpv-tabs__action">` — no `role="tab"`, no
 	// `data-tab-trigger`, so it stays out of the keyboard loop.
 	const tabItems = TABS.map((tab) => ({
 		id: tab.id,
 		label: text(tab.label),
 	}));
 	const docsTab = { id: 'docs', label: text('tabDocs') };
-	const refreshHtml = `<button class="mv-tabs__action-btn" id="tab-refresh" data-action="refresh" type="button" title="${text('refreshDashboard')}">⟳</button>`;
+	const refreshHtml = `<button class="mcpv-tabs__action-btn" id="tab-refresh" data-action="refresh" type="button" title="${text('refreshDashboard')}">⟳</button>`;
 	return (
-		`<section class="mv-tabs">` +
+		`<section class="mcpv-tabs">` +
 		renderTabs({
 			tabs: [...tabItems, docsTab],
 			variant: 'underline',

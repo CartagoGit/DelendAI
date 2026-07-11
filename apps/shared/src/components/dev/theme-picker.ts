@@ -9,8 +9,8 @@
  *
  * Conventions
  * -----------
- * - Class namespace: `mv-theme-picker` / `mv-theme-picker__*`
- *   with the optional `mv-theme-picker--inline` modifier. Legacy
+ * - Class namespace: `mcpv-theme-picker` / `mcpv-theme-picker__*`
+ *   with the optional `mcpv-theme-picker--inline` modifier. Legacy
  *   `.settings__*` selectors are kept via `@extend` in the
  *   companion SCSS so the existing dev preview keeps working
  *   without a markup rename.
@@ -120,7 +120,7 @@ export const renderThemePicker = (
 	const radios = order
 		.map(
 			(opt) =>
-				`<label class="mv-theme-picker__radio">` +
+				`<label class="mcpv-theme-picker__radio">` +
 				`<input type="radio" name="${escapeAttr(name)}" value="${escapeAttr(opt)}"` +
 				` ${opt === options.current ? 'checked' : ''} />` +
 				`<span>${escapeAttr(capitalise(opt))}</span>` +
@@ -130,20 +130,20 @@ export const renderThemePicker = (
 
 	if (options.inline) {
 		return (
-			`<label class="mv-theme-picker mv-theme-picker--inline">` +
+			`<label class="mcpv-theme-picker mcpv-theme-picker--inline">` +
 			`<span>Theme</span>` +
-			`<div class="mv-theme-picker__radios" role="radiogroup">${radios}</div>` +
+			`<div class="mcpv-theme-picker__radios" role="radiogroup">${radios}</div>` +
 			`</label>`
 		);
 	}
 	const hintHtml = options.hint
-		? `<p class="mv-theme-picker__hint">${escapeAttr(options.hint)}</p>`
+		? `<p class="mcpv-theme-picker__hint">${escapeAttr(options.hint)}</p>`
 		: '';
 	return (
-		`<fieldset class="mv-theme-picker__field">` +
+		`<fieldset class="mcpv-theme-picker__field">` +
 		`<legend>Theme</legend>` +
 		hintHtml +
-		`<div class="mv-theme-picker__radios" role="radiogroup">${radios}</div>` +
+		`<div class="mcpv-theme-picker__radios" role="radiogroup">${radios}</div>` +
 		`</fieldset>`
 	);
 };

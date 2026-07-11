@@ -17,8 +17,8 @@
  *
  * Conventions
  * -----------
- * - Class namespace: `mv-brand` plus `mv-brand__logo`,
- *   `mv-brand__text`, and the optional `mv-brand--{pill,plain}`
+ * - Class namespace: `mcpv-brand` plus `mcpv-brand__logo`,
+ *   `mcpv-brand__text`, and the optional `mcpv-brand--{pill,plain}`
  *   variant modifier. Legacy `.nav__brand` / `.drawer__logo`
  *   selectors are kept in the companion SCSS via `@extend`.
  * - The image is `loading="lazy"` and `decoding="async"` so the
@@ -60,13 +60,13 @@ export const renderBrandMark = (props: IBrandMarkProps): string => {
 	const width = props.logoWidth ?? 26;
 	const height = props.logoHeight ?? 26;
 	const alt = props.logoAlt ?? '';
-	const cls = `mv-brand mv-brand--${variant}`;
+	const cls = `mcpv-brand mcpv-brand--${variant}`;
 	return (
 		`<a class="${cls}" href="${escapeAttr(props.href)}">` +
-		`<img class="mv-brand__logo" src="${escapeAttr(props.logoSrc)}"` +
+		`<img class="mcpv-brand__logo" src="${escapeAttr(props.logoSrc)}"` +
 		` width="${width}" height="${height}" alt="${escapeAttr(alt)}"` +
 		` loading="lazy" decoding="async" />` +
-		`<span class="mv-brand__text">${escapeAttr(props.brandText)}</span>` +
+		`<span class="mcpv-brand__text">${escapeAttr(props.brandText)}</span>` +
 		`</a>`
 	);
 };

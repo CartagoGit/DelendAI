@@ -33,9 +33,9 @@ const isButton = (n: EventTarget | null): n is HTMLButtonElement => {
 };
 
 export const initTabs = (root: ParentNode): void => {
-	// Bind the [data-mv-icon] fallback glue once per call, scoped
+	// Bind the [data-mcpv-icon] fallback glue once per call, scoped
 	// to the current root. Any future surface (a different
-	// component that adopts the shared data-mv-icon pattern)
+	// component that adopts the shared data-mcpv-icon pattern)
 	// automatically picks up the same behaviour without each
 	// host re-implementing the load/error listeners.
 	bindIconFallbacks(root);
@@ -174,10 +174,10 @@ const bindOne = (root: HTMLElement): void => {
 };
 
 const bindIconFallbacks = (root: ParentNode): void => {
-	const wrappers = root.querySelectorAll<HTMLElement>('[data-mv-icon]');
+	const wrappers = root.querySelectorAll<HTMLElement>('[data-mcpv-icon]');
 	for (const wrapper of wrappers) {
-		if (wrapper.dataset.mvIconBound === '1') continue;
-		wrapper.dataset.mvIconBound = '1';
+		if (wrapper.dataset.mcpvIconBound === '1') continue;
+		wrapper.dataset.mcpvIconBound = '1';
 		const img = wrapper.querySelector('img');
 		if (!img) continue;
 		// Cover the case where the image already failed by the

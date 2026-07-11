@@ -3,10 +3,10 @@
  * `renderCallout` unit tests.
  *
  * Contract pinned:
- *   - root is `<aside class="mv-callout mv-callout--{variant}" role="note" data-mv-callout="{variant}">`
+ *   - root is `<aside class="mcpv-callout mcpv-callout--{variant}" role="note" data-mcpv-callout="{variant}">`
  *   - default title is the variant label (Note / Tip / Warning / Danger)
  *   - icon character is the variant's default glyph (i / * / ! / x)
- *   - body is inlined as-is inside `<div class="mv-callout__content">`
+ *   - body is inlined as-is inside `<div class="mcpv-callout__content">`
  *     (caller is responsible for escaping; the function does NOT
  *     escape `body` because callers may pass composed HTML)
  *   - title and lang_label are HTML-escaped
@@ -30,7 +30,7 @@ describe('renderCallout', () => {
 		for (const { variant, title, icon } of cases) {
 			const out = renderCallout({ variant }, '<p>x</p>');
 			expect(out).toContain(
-				`<aside class="mv-callout mv-callout--${variant}" role="note" data-mv-callout="${variant}">`,
+				`<aside class="mcpv-callout mcpv-callout--${variant}" role="note" data-mcpv-callout="${variant}">`,
 			);
 			expect(out).toContain(`>${title}</p>`);
 			expect(out).toContain(`>${icon}</span>`);
@@ -39,8 +39,8 @@ describe('renderCallout', () => {
 
 	it('defaults the variant to "note" when omitted', () => {
 		const out = renderCallout({}, '<p>x</p>');
-		expect(out).toContain('class="mv-callout mv-callout--note"');
-		expect(out).toContain('data-mv-callout="note"');
+		expect(out).toContain('class="mcpv-callout mcpv-callout--note"');
+		expect(out).toContain('data-mcpv-callout="note"');
 	});
 
 	it('honours an explicit title override', () => {
@@ -52,13 +52,13 @@ describe('renderCallout', () => {
 		expect(out).not.toContain('>Tip</p>');
 	});
 
-	it('inlines the body inside <div class="mv-callout__content">', () => {
+	it('inlines the body inside <div class="mcpv-callout__content">', () => {
 		const out = renderCallout(
 			{ variant: 'note' },
 			'<p>Use <code>--noEmit</code> for type-only checks.</p>',
 		);
 		expect(out).toContain(
-			'<div class="mv-callout__content"><p>Use <code>--noEmit</code> for type-only checks.</p></div>',
+			'<div class="mcpv-callout__content"><p>Use <code>--noEmit</code> for type-only checks.</p></div>',
 		);
 	});
 

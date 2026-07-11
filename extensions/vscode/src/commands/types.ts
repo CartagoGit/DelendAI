@@ -84,7 +84,7 @@ export interface ICommandDeps {
 	 * `mcp-vertex.proposals.refresh` invalidate its snapshot + repaint. */
 	readonly proposalsTree?: Pick<ProposalBoardProvider, 'refresh'>;
 	/** Optional host persistence layer (f00050 S7). Used by commands that
-	 * resolve the user's preferred language from `mv:lang`. */
+	 * resolve the user's preferred language from `mcpv:lang`. */
 	readonly globalState?: {
 		get<T>(key: string): T | undefined;
 		update(key: string, value: unknown): Thenable<void> | Promise<void>;

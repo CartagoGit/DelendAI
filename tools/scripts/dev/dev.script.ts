@@ -472,35 +472,35 @@ const renderDevHtml = (target: ITarget, entryRel: string): string => {
 		:root {
 			color-scheme: light dark;
 			/* Bridge the marketing site's theme vars (--bg/--fg/--card/--line/--
-accent, declared on :root[data-theme=...]) into the dev preview's --mv-* to
+accent, declared on :root[data-theme=...]) into the dev preview's --mcpv-* to
 kens, so the theme picker actually repaints the chrome. The non-theme
 fallbacks below keep the standalone-vscode preview legible when no
 data-theme attr is set (the picker default 'system' removes it). */
-			--mv-bg: var(--bg, var(--vscode-editor-background, #1e1e1e));
-			--mv-bg-soft: var(--bg-soft, var(--vscode-sideBar-background, #252526));
-			--mv-bg-card: var(--card, var(--vscode-editorWidget-background, #252526));
-			--mv-fg: var(--fg, var(--vscode-foreground, #d4d4d4));
-			--mv-fg-muted: var(--muted, var(--vscode-descriptionForeground, #858585));
-			--mv-border: var(--line, var(--vscode-widget-border, #3c3c3c));
-			--mv-focus: var(--vscode-focusBorder, #007fd4);
-			--mv-link: var(--accent, var(--vscode-textLink-foreground, #3794ff));
-			--mv-font-prose: var(--vscode-font-family, system-ui, -apple-system, "Segoe WPC", "Segoe UI", sans-serif);
-			--mv-font-mono: var(--vscode-editor-font-family, ui-monospace, SFMono-Regular, Menlo, Consolas, monospace);
+			--mcpv-bg: var(--bg, var(--vscode-editor-background, #1e1e1e));
+			--mcpv-bg-soft: var(--bg-soft, var(--vscode-sideBar-background, #252526));
+			--mcpv-bg-card: var(--card, var(--vscode-editorWidget-background, #252526));
+			--mcpv-fg: var(--fg, var(--vscode-foreground, #d4d4d4));
+			--mcpv-fg-muted: var(--muted, var(--vscode-descriptionForeground, #858585));
+			--mcpv-border: var(--line, var(--vscode-widget-border, #3c3c3c));
+			--mcpv-focus: var(--vscode-focusBorder, #007fd4);
+			--mcpv-link: var(--accent, var(--vscode-textLink-foreground, #3794ff));
+			--mcpv-font-prose: var(--vscode-font-family, system-ui, -apple-system, "Segoe WPC", "Segoe UI", sans-serif);
+			--mcpv-font-mono: var(--vscode-editor-font-family, ui-monospace, SFMono-Regular, Menlo, Consolas, monospace);
 		}
 		* { box-sizing: border-box; }
 		html, body {
 			margin: 0;
 			padding: 0;
-			background: var(--mv-bg);
-			color: var(--mv-fg);
-			font-family: var(--mv-font-prose);
+			background: var(--mcpv-bg);
+			color: var(--mcpv-fg);
+			font-family: var(--mcpv-font-prose);
 			font-size: 13px;
 			line-height: 1.5;
 			-webkit-font-smoothing: antialiased;
 		}
 		body { display: flex; flex-direction: column; min-height: 100vh; }
 		code, pre {
-			font-family: var(--mv-font-mono);
+			font-family: var(--mcpv-font-mono);
 			font-variant-numeric: tabular-nums;
 		}
 		.dev-header {
@@ -509,8 +509,8 @@ data-theme attr is set (the picker default 'system' removes it). */
 			flex-wrap: wrap;
 			gap: 8px 12px;
 			padding: 10px 16px;
-			background: var(--mv-bg-soft);
-			border-bottom: 1px solid var(--mv-border);
+			background: var(--mcpv-bg-soft);
+			border-bottom: 1px solid var(--mcpv-border);
 		}
 		.dev-header__title {
 			font-weight: 600;
@@ -524,17 +524,17 @@ data-theme attr is set (the picker default 'system' removes it). */
 			text-overflow: ellipsis;
 		}
 		.dev-header__meta {
-			color: var(--mv-fg-muted);
+			color: var(--mcpv-fg-muted);
 			font-size: 11px;
 			flex: 0 0 auto;
 		}
 		.dev-header__blurb {
 			flex: 1 1 100%;
-			color: var(--mv-fg-muted);
+			color: var(--mcpv-fg-muted);
 			font-size: 12px;
 			margin: 0;
 			padding-top: 4px;
-			border-top: 1px solid var(--mv-border);
+			border-top: 1px solid var(--mcpv-border);
 			width: 100%;
 		}
 		.dev-header__blurb:empty { display: none; }
@@ -553,8 +553,8 @@ data-theme attr is set (the picker default 'system' removes it). */
 			min-width: 220px;
 			max-width: 220px;
 			flex-shrink: 0;
-			background: var(--mv-bg-soft);
-			border-right: 1px solid var(--mv-border);
+			background: var(--mcpv-bg-soft);
+			border-right: 1px solid var(--mcpv-border);
 			padding: 12px 8px;
 			display: flex;
 			flex-direction: column;
@@ -570,24 +570,24 @@ data-theme attr is set (the picker default 'system' removes it). */
 			border-radius: 3px;
 			border: 1px solid transparent;
 			background: transparent;
-			color: var(--mv-fg-muted);
+			color: var(--mcpv-fg-muted);
 			cursor: pointer;
 			font: inherit;
 			line-height: 1.4;
 			transition: background 60ms ease, color 60ms ease;
 		}
 		#sidebar button:hover {
-			background: var(--mv-bg-card);
-			color: var(--mv-fg);
+			background: var(--mcpv-bg-card);
+			color: var(--mcpv-fg);
 		}
 		#sidebar button[data-active='true'] {
-			background: var(--mv-bg-card);
-			color: var(--mv-fg);
-			border-color: var(--mv-border);
+			background: var(--mcpv-bg-card);
+			color: var(--mcpv-fg);
+			border-color: var(--mcpv-border);
 			font-weight: 500;
 		}
 		#sidebar button:focus-visible {
-			outline: 1px solid var(--mv-focus);
+			outline: 1px solid var(--mcpv-focus);
 			outline-offset: -1px;
 		}
 		#root {
@@ -606,7 +606,7 @@ data-theme attr is set (the picker default 'system' removes it). */
 				flex-direction: row;
 				flex-wrap: wrap;
 				border-right: 0;
-				border-bottom: 1px solid var(--mv-border);
+				border-bottom: 1px solid var(--mcpv-border);
 				padding: 6px;
 			}
 			#sidebar button {
@@ -625,19 +625,19 @@ data-theme attr is set (the picker default 'system' removes it). */
 			margin-bottom: 16px;
 		}
 		pre {
-			background: var(--mv-bg-soft);
+			background: var(--mcpv-bg-soft);
 			padding: 8px 10px;
 			border-radius: 3px;
-			border: 1px solid var(--mv-border);
+			border: 1px solid var(--mcpv-border);
 			overflow: auto;
 			font-size: 12px;
 		}
 		#error {
-			color: var(--mv-error, #f48771);
-			border-color: var(--mv-error, #f48771);
+			color: var(--mcpv-error, #f48771);
+			border-color: var(--mcpv-error, #f48771);
 		}
-		a { color: var(--mv-link); }
-		a:focus-visible { outline: 1px solid var(--mv-focus); outline-offset: 1px; }
+		a { color: var(--mcpv-link); }
+		a:focus-visible { outline: 1px solid var(--mcpv-focus); outline-offset: 1px; }
 
 		/* Cross-fade between page renders. The orchestrator
 		 * toggles data-fade='out' to fade the current page out,

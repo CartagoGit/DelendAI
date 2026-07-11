@@ -27,12 +27,12 @@
  *
  * Conventions
  * -----------
- * - Class namespace: `mv-drawer` plus `mv-drawer__*` and the
- *   `mv-drawer__panel--{left,right}` modifier. Legacy `.drawer*`
+ * - Class namespace: `mcpv-drawer` plus `mcpv-drawer__*` and the
+ *   `mcpv-drawer__panel--{left,right}` modifier. Legacy `.drawer*`
  *   selectors are kept in the companion SCSS via `@extend` so
  *   the docs site keeps emitting its existing markup without a
  *   rename (the wrapper Astro still wraps the result in
- *   `<div class="drawer mv-drawer" ...>` for the legacy alias
+ *   `<div class="drawer mcpv-drawer" ...>` for the legacy alias
  *   tree).
  * - All `href` values are pre-resolved by the caller — the
  *   renderer never sees `import.meta.env` or relative paths.
@@ -85,10 +85,10 @@ const renderBrand = (b: NonNullable<IDrawerProps['brand']>): string => {
 	const w = b.logoWidth ?? 28;
 	const h = b.logoHeight ?? 28;
 	return (
-		`<a class="mv-drawer__brand" href="${escapeAttr(b.href)}">` +
-		`<img class="mv-drawer__logo" src="${escapeAttr(b.logoSrc)}"` +
+		`<a class="mcpv-drawer__brand" href="${escapeAttr(b.href)}">` +
+		`<img class="mcpv-drawer__logo" src="${escapeAttr(b.logoSrc)}"` +
 		` width="${w}" height="${h}" alt="" loading="lazy" decoding="async" />` +
-		`<strong class="mv-drawer__brand-text">${escapeAttr(b.brandText)}</strong>` +
+		`<strong class="mcpv-drawer__brand-text">${escapeAttr(b.brandText)}</strong>` +
 		`</a>`
 	);
 };
@@ -114,7 +114,7 @@ export const renderDrawer = (
 ): string => {
 	const side = props.side ?? 'right';
 	const extraCls = options.className ? ` ${options.className}` : '';
-	const rootCls = `mv-drawer mv-drawer--${side}${extraCls}`;
+	const rootCls = `mcpv-drawer mcpv-drawer--${side}${extraCls}`;
 	const linksHtml = props.links
 		.map((l) => {
 			const dataAttrs: string[] = [];
@@ -129,14 +129,14 @@ export const renderDrawer = (
 		.join('');
 	const brandHtml = props.brand ? renderBrand(props.brand) : '';
 	const footHtml = props.footHtml
-		? `<div class="mv-drawer__foot">${props.footHtml}</div>`
+		? `<div class="mcpv-drawer__foot">${props.footHtml}</div>`
 		: '';
 	const body =
-		`<div class="mv-drawer__backdrop" data-drawer-close></div>` +
-		`<aside class="mv-drawer__panel mv-drawer__panel--${side}">` +
-		`<div class="mv-drawer__head">` +
+		`<div class="mcpv-drawer__backdrop" data-drawer-close></div>` +
+		`<aside class="mcpv-drawer__panel mcpv-drawer__panel--${side}">` +
+		`<div class="mcpv-drawer__head">` +
 		brandHtml +
-		`<button class="mv-drawer__close" data-drawer-close` +
+		`<button class="mcpv-drawer__close" data-drawer-close` +
 		` aria-label="${escapeAttr(props.closeLabel)}" type="button">` +
 		`<svg viewBox="0 0 24 24" width="22" height="22" fill="none"` +
 		` stroke="currentColor" stroke-width="2" stroke-linecap="round"` +
@@ -145,7 +145,7 @@ export const renderDrawer = (
 		`</svg>` +
 		`</button>` +
 		`</div>` +
-		`<nav class="mv-drawer__links" aria-label="${escapeAttr(props.label)}">` +
+		`<nav class="mcpv-drawer__links" aria-label="${escapeAttr(props.label)}">` +
 		linksHtml +
 		`</nav>` +
 		footHtml +

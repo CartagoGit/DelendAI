@@ -25,26 +25,26 @@ export const renderPanelPlugins = (
 		.map(
 			(p) => `<tr>
 				<td><code>${escapeHtml(p.plugin)}</code></td>
-				<td class="mv-num">${formatNumber(p.tools)}</td>
-				<td class="mv-num">${formatNumber(p.calls)}</td>
-				<td class="mv-num">${formatNumber(p.errors)}</td>
-				<td class="mv-num">${formatMs(p.avgMs)}</td>
-				<td class="mv-num">${formatTokens(p.tokens)}</td>
-				<td class="mv-num">${p.tokenSharePercent}%</td>
+				<td class="mcpv-num">${formatNumber(p.tools)}</td>
+				<td class="mcpv-num">${formatNumber(p.calls)}</td>
+				<td class="mcpv-num">${formatNumber(p.errors)}</td>
+				<td class="mcpv-num">${formatMs(p.avgMs)}</td>
+				<td class="mcpv-num">${formatTokens(p.tokens)}</td>
+				<td class="mcpv-num">${p.tokenSharePercent}%</td>
 			</tr>`,
 		)
 		.join('');
 	return `
-<section class="mv-panel" id="panel-plugins" role="tabpanel" aria-labelledby="tab-plugins">
-	<h2 class="mv-panel__title">${escapeHtml(text('tabPlugins'))}</h2>
-	<div class="mv-grid">
-		<div class="mv-card">
-			<h3 class="mv-card__title">${escapeHtml(text('dashboard.plugins.tokenShareByPlugin'))}</h3>
+<section class="mcpv-panel" id="panel-plugins" role="tabpanel" aria-labelledby="tab-plugins">
+	<h2 class="mcpv-panel__title">${escapeHtml(text('tabPlugins'))}</h2>
+	<div class="mcpv-grid">
+		<div class="mcpv-card">
+			<h3 class="mcpv-card__title">${escapeHtml(text('dashboard.plugins.tokenShareByPlugin'))}</h3>
 			${chart}
 		</div>
-		<div class="mv-card">
-			<h3 class="mv-card__title">${escapeHtml(text('dashboard.plugins.rollup'))}</h3>
-			<table class="mv-table">
+		<div class="mcpv-card">
+			<h3 class="mcpv-card__title">${escapeHtml(text('dashboard.plugins.rollup'))}</h3>
+			<table class="mcpv-table">
 				<thead><tr><th>${escapeHtml(text('common.plugin'))}</th><th>${escapeHtml(text('tabTools'))}</th><th>${escapeHtml(text('common.calls'))}</th><th>${escapeHtml(text('common.errors'))}</th><th>${escapeHtml(text('common.avg'))}</th><th>${escapeHtml(text('common.tokens'))}</th><th>${escapeHtml(text('common.share'))}</th></tr></thead>
 				<tbody>${rows}</tbody>
 			</table>

@@ -132,7 +132,7 @@ if (sidebar) {
 
 bootstrapPersistedPrefs();
 
-// `mv:dev:lang-changed` is dispatched from `pages/settings.ts`
+// `mcpv:dev:lang-changed` is dispatched from `pages/settings.ts`
 // when the user picks a new language. The settings page already
 // reflects the new `<option selected>` on its own re-render, but
 // the dashboard (if it is the active view) still has the old
@@ -140,7 +140,7 @@ bootstrapPersistedPrefs();
 // this without forcing a navigation away from settings. We listen
 // at the window level (the same target `pages/settings.ts`
 // dispatches to).
-window.addEventListener('mv:dev:lang-changed', () => {
+window.addEventListener('mcpv:dev:lang-changed', () => {
 	if (getActiveView() === 'dashboard') void render('dashboard');
 });
 
@@ -156,10 +156,10 @@ void (async (): Promise<void> => {
 	// Fire-and-forget; the user's first paint does not need
 	// to wait on the status fetch — the dashboard page
 	// re-fetches on mount. We still await the status here so
-	// the `__mvDev` global reflects the configured state by
+	// the `__mcpvDev` global reflects the configured state by
 	// the time the user opens devtools.
 	const initialStatus = await fetchJson<ISetupStatus>('/api/setup/status');
-	window.__mvDev = {
+	window.__mcpvDev = {
 		render,
 		getActiveView,
 		getInitialStatus: () => initialStatus,
@@ -172,7 +172,7 @@ void (async (): Promise<void> => {
 // Expose for ad-hoc devtools inspection.
 declare global {
 	interface Window {
-		__mvDev?: {
+		__mcpvDev?: {
 			render: (id: string) => Promise<void>;
 			getActiveView: () => ViewId;
 			getInitialStatus: () => ISetupStatus | null;

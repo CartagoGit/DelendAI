@@ -1,11 +1,11 @@
 /**
  * `Dropdown` — webview-agnostic dropdown menu with CSS-only transition
- * (`transform` + `opacity`, 180ms ease-out via `--mv-transition-base`).
+ * (`transform` + `opacity`, 180ms ease-out via `--mcpv-transition-base`).
  * Closes on outside-click and on `Esc` via the runtime (see
  * `components/runtime.ts`).
  *
  * Renders as a `<details>`-like structure with explicit `aria-*`
- * attributes for a11y. The menu items carry `data-mv-action` so the
+ * attributes for a11y. The menu items carry `data-mcpv-action` so the
  * runtime can delegate clicks to the host.
  */
 import { escapeHtml } from '../dashboard/format';
@@ -17,7 +17,7 @@ export interface IDropdownItem {
 	/**
 	 * Optional link target. When set, the item is rendered as an
 	 * `<a role="menuitem">` instead of a `<button>` so a left-click
-	 * navigates to the URL directly (the runtime's `data-mv-action`
+	 * navigates to the URL directly (the runtime's `data-mcpv-action`
 	 * dispatcher only fires for buttons, so anchors transparently
 	 * bypass it). Hosts that still want a callback can omit `href`
 	 * and listen to `host.dispatch(actionId)` from the runtime.
@@ -52,14 +52,14 @@ export interface IDropdownOptions {
 	readonly idPrefix?: string;
 	/**
 	 * Class prefix used for the wrapper / trigger / menu / item / label /
-	 * icon / caret. Defaults to `'mv-dropdown'` so the default
-	 * `mv-dropdown__*` BEM shape is preserved. The docs site passes
+	 * icon / caret. Defaults to `'mcpv-dropdown'` so the default
+	 * `mcpv-dropdown__*` BEM shape is preserved. The docs site passes
 	 * `classPrefix: 'nav__more'` so the emitted classes match its existing
 	 * `_nav.scss` (`.nav__more__trigger`, `.nav__more__menu`, …).
 	 *
 	 * NOTE: when a host overrides the class prefix it MUST also ship the
 	 * matching CSS — `@mcp-vertex/shared/styles` ships the default
-	 * `mv-dropdown__*` styles but nothing else.
+	 * `mcpv-dropdown__*` styles but nothing else.
 	 */
 	readonly classPrefix?: string;
 }
@@ -78,12 +78,12 @@ const iconHtml = (icon: string | undefined, classPrefix: string): string =>
  *
  * When called with no options beyond `id`/`label`/`items`/`align`, the
  * emitted HTML is byte-identical to the legacy shape (default
- * `idPrefix: 'mv'`, default `classPrefix: 'mv-dropdown'`), so every
+ * `idPrefix: 'mv'`, default `classPrefix: 'mcpv-dropdown'`), so every
  * existing caller keeps working without changes.
  */
 export const renderDropdown = (opts: IDropdownOptions): string => {
 	const align = opts.align ?? 'left';
-	const classPrefix = opts.classPrefix ?? 'mv-dropdown';
+	const classPrefix = opts.classPrefix ?? 'mcpv-dropdown';
 	// Ids: when an explicit `idPrefix` is given, the wrapper / trigger /
 	// menu ids are built from it. Otherwise we preserve the legacy shape
 	// (`opts.id` for the wrapper, `${opts.id}-menu` for the menu) so
@@ -98,8 +98,8 @@ export const renderDropdown = (opts: IDropdownOptions): string => {
 		aria-haspopup="true"
 		aria-expanded="false"
 		aria-controls="${escapeHtml(menuId)}"
-		data-mv-toggle="dropdown"
-		data-mv-dropdown-id="${escapeHtml(baseId)}"
+		data-mcpv-toggle="dropdown"
+		data-mcpv-dropdown-id="${escapeHtml(baseId)}"
 	>
 		${escapeHtml(opts.label)}
 		<span class="${classPrefix}__caret" aria-hidden="true">▾</span>
@@ -110,8 +110,8 @@ export const renderDropdown = (opts: IDropdownOptions): string => {
 			const label = `<span class="${classPrefix}__label">${escapeHtml(item.label)}</span>`;
 			// When an item carries an href, render an anchor so the
 			// browser navigates on click. The runtime's delegated
-			// click handler only acts on `[data-mv-action]`, so the
-			// anchor is left alone (its `data-mv-dropdown-id` is
+			// click handler only acts on `[data-mcpv-action]`, so the
+			// anchor is left alone (its `data-mcpv-dropdown-id` is
 			// still set so the runtime can close the panel on click,
 			// see `runtime.ts`).
 			if (item.href) {
@@ -124,8 +124,8 @@ export const renderDropdown = (opts: IDropdownOptions): string => {
 						role="menuitem"
 						class="${classPrefix}__item"
 						href="${escapeHtml(item.href)}"
-						data-mv-action="${escapeHtml(item.id)}"
-						data-mv-dropdown-id="${escapeHtml(baseId)}"${target}${rel}
+						data-mcpv-action="${escapeHtml(item.id)}"
+						data-mcpv-dropdown-id="${escapeHtml(baseId)}"${target}${rel}
 					>
 						${icon}${label}
 					</a>
@@ -136,8 +136,8 @@ export const renderDropdown = (opts: IDropdownOptions): string => {
 					type="button"
 					role="menuitem"
 					class="${classPrefix}__item"
-					data-mv-action="${escapeHtml(item.id)}"
-					data-mv-dropdown-id="${escapeHtml(baseId)}"
+					data-mcpv-action="${escapeHtml(item.id)}"
+					data-mcpv-dropdown-id="${escapeHtml(baseId)}"
 				>
 					${icon}${label}
 				</button>
@@ -154,6 +154,6 @@ export const renderDropdown = (opts: IDropdownOptions): string => {
 	return `<div
 		id="${escapeHtml(baseId)}"
 		class="${classPrefix}"
-		data-mv-dropdown="${escapeHtml(baseId)}"
+		data-mcpv-dropdown="${escapeHtml(baseId)}"
 	>${trigger}${menu}</div>`;
 };
