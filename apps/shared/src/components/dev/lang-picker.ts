@@ -12,8 +12,8 @@
  *
  * Conventions
  * -----------
- * - Class namespace: `mv-lang-picker` / `mv-lang-picker__*`
- *   with the optional `mv-lang-picker--inline` modifier.
+ * - Class namespace: `mcpv-lang-picker` / `mcpv-lang-picker__*`
+ *   with the optional `mcpv-lang-picker--inline` modifier.
  *   Legacy `.settings__*` aliases live in the companion
  *   SCSS via `@extend`.
  * - Renders a real `<label><span>{caption}</span><select>` for
@@ -59,7 +59,7 @@ export const renderLangPicker = (options: IRenderLangPickerOptions): string => {
 		.join('');
 
 	return (
-		`<label class="mv-lang-picker${options.inline ? ' mv-lang-picker--inline' : ''}">` +
+		`<label class="mcpv-lang-picker${options.inline ? ' mcpv-lang-picker--inline' : ''}">` +
 		`<span>${escapeAttr(caption)}</span>` +
 		`<select name="${escapeAttr(name)}">${optionsHtml}</select>` +
 		`</label>`

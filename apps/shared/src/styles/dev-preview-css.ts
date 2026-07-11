@@ -5,11 +5,11 @@
  *
  * Replaces `dev-wizard-css.ts` so the bundle sees BOTH the legacy
  * `.setup`/`.welcome`/`.settings`/`.quickstart` rules AND the new
- * shared `.mv-*` rules. The shared renderers from f00102 (S4.5 +
- * S4.6) emit dual-class markup (`class="mv-welcome welcome"`,
- * `class="mv-setup setup"`, …) so each island needs both
+ * shared `.mcpv-*` rules. The shared renderers from f00102 (S4.5 +
+ * S4.6) emit dual-class markup (`class="mcpv-welcome welcome"`,
+ * `class="mcpv-setup setup"`, …) so each island needs both
  * namespaces; compiling only the legacy block left the new
- * `.mv-*` selectors without rules.
+ * `.mcpv-*` selectors without rules.
  *
  * Constraints
  * ----------

@@ -6,14 +6,14 @@
  * `apps/web/src/components/ui/CopyButton.astro` (f00048 S1). The
  * button is rendered with `data-copy-text="..."` so the host's
  * existing runtime glue (`initCopyButtons` in apps/web, or the
- * `data-mv-*` glue from `renderRuntime` in the extension) picks the
+ * `data-mcpv-*` glue from `renderRuntime` in the extension) picks the
  * click up and copies the snippet to the clipboard. The runtime
  * then toggles `data-state="copied"` on the same element.
  *
  * Conventions
  * -----------
- * - Class namespace: `mv-copybtn`, `mv-copybtn__*`, and
- *   `mv-copybtn--{ghost,solid}` for the two variants. Trailing
+ * - Class namespace: `mcpv-copybtn`, `mcpv-copybtn__*`, and
+ *   `mcpv-copybtn--{ghost,solid}` for the two variants. Trailing
  *   `@extend` block in the companion SCSS keeps `.ui-copybtn*`
  *   valid for one slice.
  * - The icon glyph is a Unicode character (⧉ / U+29C9). Hosts
@@ -42,11 +42,11 @@ export const renderCopyButton = (props: ICopyButtonProps): string => {
 	const label = props.label ?? 'Copy';
 	return (
 		`<button type="button" ` +
-		`class="mv-copybtn mv-copybtn--${variant}" ` +
+		`class="mcpv-copybtn mcpv-copybtn--${variant}" ` +
 		`data-copy-text="${escapeAttr(props.text)}" ` +
 		`aria-label="${escapeHtml(label)}">` +
-		`<span class="mv-copybtn__icon" aria-hidden="true">⧉</span>` +
-		`<span class="mv-copybtn__label" data-copy-label="idle">${escapeHtml(label)}</span>` +
+		`<span class="mcpv-copybtn__icon" aria-hidden="true">⧉</span>` +
+		`<span class="mcpv-copybtn__label" data-copy-label="idle">${escapeHtml(label)}</span>` +
 		`</button>`
 	);
 };

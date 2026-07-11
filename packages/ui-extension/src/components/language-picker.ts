@@ -1,13 +1,13 @@
 /**
  * `LanguagePicker` — webview-agnostic language picker. Reads the
- * current language from `localStorage['mv:lang']` (or the
+ * current language from `localStorage['mcpv:lang']` (or the
  * `IHostAdapter` provided initial value), falls back to `'en'` if
  * neither is set. Calls `opts.onChange(lang)` and writes
- * `localStorage['mv:lang']` when the user picks a new language.
+ * `localStorage['mcpv:lang']` when the user picks a new language.
  *
  * Renders as a native `<select>` (with the MV brand chevron) so
  * the keyboard navigation is free and the CSP is happy. The
- * `data-mv-lang` attribute lets the runtime delegate change events.
+ * `data-mcpv-lang` attribute lets the runtime delegate change events.
  */
 import type { ILangMeta, Lang } from '@mcp-vertex/shared/i18n';
 
@@ -20,7 +20,7 @@ export interface ILanguagePickerOptions {
 	readonly onChange?: (lang: Lang) => void;
 }
 
-const STORAGE_KEY = 'mv:lang';
+const STORAGE_KEY = 'mcpv:lang';
 
 const isLang = (v: string, langs: readonly ILangMeta[]): v is Lang =>
 	langs.some((l) => l.code === v);
@@ -60,9 +60,9 @@ export const renderLanguagePicker = (opts: ILanguagePickerOptions): string => {
 				`<option value="${escapeHtml(l.code)}"${l.code === opts.current ? ' selected' : ''}>${escapeHtml(l.label)}</option>`,
 		)
 		.join('');
-	return `<label class="mv-lang-picker"${idAttr}>
-	<span class="mv-lang-picker__label" aria-hidden="true">🌐</span>
-	<select class="mv-lang-picker__select" data-mv-lang aria-label="Language">
+	return `<label class="mcpv-lang-picker"${idAttr}>
+	<span class="mcpv-lang-picker__label" aria-hidden="true">🌐</span>
+	<select class="mcpv-lang-picker__select" data-mcpv-lang aria-label="Language">
 		${options}
 	</select>
 </label>`;

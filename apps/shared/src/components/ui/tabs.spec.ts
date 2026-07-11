@@ -3,21 +3,21 @@
  * `renderTabs` unit tests.
  *
  * Contract pinned:
- *   - root is `<nav class="mv-tabs__bar" aria-label="...">` with
- *     `<ul role="tablist" class="mv-tabs__list">` inside
+ *   - root is `<nav class="mcpv-tabs__bar" aria-label="...">` with
+ *     `<ul role="tablist" class="mcpv-tabs__list">` inside
  *   - one `<li role="presentation"><button role="tab">` per tab
  *   - first tab is the default (aria-selected="true", tabindex=0)
  *   - non-default tabs are aria-selected="false", tabindex=-1
- *   - `id` defaults to `mv-tab-{id}`; `aria-controls` defaults to
- *     `mv-panel-{id}`. Override via `idPrefix`.
- *   - `actionHtml` renders as a non-tab `<li class="mv-tabs__action">`
+ *   - `id` defaults to `mcpv-tab-{id}`; `aria-controls` defaults to
+ *     `mcpv-panel-{id}`. Override via `idPrefix`.
+ *   - `actionHtml` renders as a non-tab `<li class="mcpv-tabs__action">`
  *   - `variant` is stamped as a `data-tabs-variant` attribute on
  *     the nav
- *   - the `icon` field renders as a `<span data-mv-icon>` wrapper
+ *   - the `icon` field renders as a `<span data-mcpv-icon>` wrapper
  *     containing both the `<img>` and a first-letter fallback
  *     span. NO inline `onerror=` JavaScript is emitted (f00099
  *     audit follow-up — fallback is wired by `renderRuntime`).
- *   - the `badge` field renders as `<span class="mv-tabs__badge">`
+ *   - the `badge` field renders as `<span class="mcpv-tabs__badge">`
  *   - all interpolations are HTML-escaped
  */
 import { describe, expect, it } from 'vitest';
@@ -33,9 +33,9 @@ describe('renderTabs', () => {
 			],
 		});
 		expect(out).toContain(
-			'<nav class="mv-tabs__bar" aria-label="Sections" data-tabs-variant="underline">',
+			'<nav class="mcpv-tabs__bar" aria-label="Sections" data-tabs-variant="underline">',
 		);
-		expect(out).toContain('<ul role="tablist" class="mv-tabs__list">');
+		expect(out).toContain('<ul role="tablist" class="mcpv-tabs__list">');
 	});
 
 	it('renders one <li role="presentation"> per tab', () => {
@@ -56,9 +56,9 @@ describe('renderTabs', () => {
 				{ id: 'b', label: 'B' },
 			],
 		});
-		expect(out).toContain('id="mv-tab-a"');
+		expect(out).toContain('id="mcpv-tab-a"');
 		expect(out).toMatch(
-			/id="mv-tab-a"[^>]*aria-selected="true"[^>]*tabindex="0"/,
+			/id="mcpv-tab-a"[^>]*aria-selected="true"[^>]*tabindex="0"/,
 		);
 	});
 
@@ -70,7 +70,7 @@ describe('renderTabs', () => {
 			],
 		});
 		expect(out).toMatch(
-			/id="mv-tab-b"[^>]*aria-selected="false"[^>]*tabindex="-1"/,
+			/id="mcpv-tab-b"[^>]*aria-selected="false"[^>]*tabindex="-1"/,
 		);
 	});
 
@@ -83,7 +83,7 @@ describe('renderTabs', () => {
 			defaultTab: 'b',
 		});
 		expect(out).toMatch(
-			/id="mv-tab-b"[^>]*aria-selected="true"[^>]*tabindex="0"/,
+			/id="mcpv-tab-b"[^>]*aria-selected="true"[^>]*tabindex="0"/,
 		);
 	});
 
@@ -91,7 +91,7 @@ describe('renderTabs', () => {
 		const out = renderTabs({
 			tabs: [{ id: 'overview', label: 'Overview' }],
 		});
-		expect(out).toContain('aria-controls="mv-panel-overview"');
+		expect(out).toContain('aria-controls="mcpv-panel-overview"');
 	});
 
 	it('honours a custom idPrefix', () => {
@@ -128,7 +128,7 @@ describe('renderTabs', () => {
 			actionHtml: '<button id="tab-refresh">⟳</button>',
 		});
 		expect(out).toContain(
-			'<li role="presentation" class="mv-tabs__action">',
+			'<li role="presentation" class="mcpv-tabs__action">',
 		);
 		expect(out).toContain('<button id="tab-refresh">⟳</button>');
 	});
@@ -141,7 +141,7 @@ describe('renderTabs', () => {
 		expect(out).toContain('data-tabs-variant="pill"');
 	});
 
-	it('renders the icon as a <span data-mv-icon> wrapper with NO inline onerror', () => {
+	it('renders the icon as a <span data-mcpv-icon> wrapper with NO inline onerror', () => {
 		const out = renderTabs({
 			tabs: [
 				{
@@ -151,21 +151,21 @@ describe('renderTabs', () => {
 				},
 			],
 		});
-		expect(out).toContain('<span class="mv-tabs__icon" data-mv-icon');
+		expect(out).toContain('<span class="mcpv-tabs__icon" data-mcpv-icon');
 		expect(out).toContain('src="/logos/a.svg"');
 		// Fallback span: first letter, in the same wrapper.
-		expect(out).toContain('<span class="mv-tabs__icon-fallback"');
+		expect(out).toContain('<span class="mcpv-tabs__icon-fallback"');
 		expect(out).toContain('>A</span>');
 		// f00099 audit: no inline onerror JavaScript.
 		expect(out).not.toContain('onerror=');
 		expect(out).not.toContain('this.replaceWith');
 	});
 
-	it('renders the badge as <span class="mv-tabs__badge">', () => {
+	it('renders the badge as <span class="mcpv-tabs__badge">', () => {
 		const out = renderTabs({
 			tabs: [{ id: 'a', label: 'A', badge: '3' }],
 		});
-		expect(out).toContain('<span class="mv-tabs__badge">3</span>');
+		expect(out).toContain('<span class="mcpv-tabs__badge">3</span>');
 	});
 
 	it('escapes HTML in tab labels and aria-label', () => {
@@ -177,10 +177,10 @@ describe('renderTabs', () => {
 		expect(out).toContain('aria-label="&quot;&amp;&lt;&gt;"');
 	});
 
-	it('emits the label inside a <span class="mv-tabs__label">', () => {
+	it('emits the label inside a <span class="mcpv-tabs__label">', () => {
 		const out = renderTabs({
 			tabs: [{ id: 'a', label: 'A' }],
 		});
-		expect(out).toContain('<span class="mv-tabs__label">A</span>');
+		expect(out).toContain('<span class="mcpv-tabs__label">A</span>');
 	});
 });

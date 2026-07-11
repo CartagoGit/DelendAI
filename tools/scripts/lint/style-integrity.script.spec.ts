@@ -294,7 +294,7 @@ describe('style-integrity.script', () => {
 				[
 					astro(
 						'apps/web/src/pages/a.astro',
-						'<div class="astro-island pagefind-ui markdown-body sr-only mv-callout">',
+						'<div class="astro-island pagefind-ui markdown-body sr-only mcpv-callout">',
 					),
 				],
 				[],

@@ -74,7 +74,7 @@ const tryParse = (raw: string): Record<string, unknown> | null => {
  * `setup-install.spec.ts` pins.
  */
 const hasKey = (obj: Record<string, unknown>, dotted: string): boolean => {
-	if (Object.prototype.hasOwnProperty.call(obj, dotted)) return true;
+	if (Object.hasOwn(obj, dotted)) return true;
 	const parts = dotted.split('.');
 	if (parts.length < 2) return false;
 	let cursor: unknown = obj;

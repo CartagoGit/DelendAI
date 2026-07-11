@@ -21,7 +21,7 @@
  *
  * Conventions
  * -----------
- * - Variant colours come from the `--mv-callout-{variant}` rule set
+ * - Variant colours come from the `--mcpv-callout-{variant}` rule set
  *   in the companion SCSS; the actual hex / colour-mix lives there,
  *   not here. The component stays palette-neutral.
  * - Default titles (`Note`, `Tip`, `Warning`, `Danger`) live in this
@@ -33,9 +33,9 @@
  * - The body is `string` (raw HTML). The caller is responsible for
  *   escaping untrusted input. This matches the `renderRuntime` /
  *   `renderDropdown` contract in this same workspace.
- * - The returned HTML uses class names `mv-callout`, `mv-callout__*`,
- *   `mv-callout--{note,tip,warn,danger}`. **Not** `ui-callout` —
- *   the rename aligns with the shared BEM namespace `mv-*`. Hosts
+ * - The returned HTML uses class names `mcpv-callout`, `mcpv-callout__*`,
+ *   `mcpv-callout--{note,tip,warn,danger}`. **Not** `ui-callout` —
+ *   the rename aligns with the shared BEM namespace `mcpv-*`. Hosts
  *   that previously used `ui-callout` get a `@extend` alias in the
  *   companion SCSS so the old markup keeps working until the rename
  *   lands across `apps/web`.
@@ -93,16 +93,16 @@ export const renderCallout = (props: ICalloutProps, body: string): string => {
 	const variant: CalloutVariant = props.variant ?? 'note';
 	const heading = props.title ?? DEFAULT_TITLE[variant];
 	const icon = DEFAULT_ICON[variant];
-	const cls = `mv-callout mv-callout--${variant}`;
+	const cls = `mcpv-callout mcpv-callout--${variant}`;
 
 	return [
-		`<aside class="${cls}" role="note" data-mv-callout="${variant}"`,
+		`<aside class="${cls}" role="note" data-mcpv-callout="${variant}"`,
 		props.lang_label ? ` lang="${escapeHtml(props.lang_label)}"` : '',
 		`>`,
-		`<span class="mv-callout__icon" aria-hidden="true">${escapeHtml(icon)}</span>`,
-		`<div class="mv-callout__body">`,
-		`<p class="mv-callout__title">${escapeHtml(heading)}</p>`,
-		`<div class="mv-callout__content">${body}</div>`,
+		`<span class="mcpv-callout__icon" aria-hidden="true">${escapeHtml(icon)}</span>`,
+		`<div class="mcpv-callout__body">`,
+		`<p class="mcpv-callout__title">${escapeHtml(heading)}</p>`,
+		`<div class="mcpv-callout__content">${body}</div>`,
 		`</div>`,
 		`</aside>`,
 	].join('');

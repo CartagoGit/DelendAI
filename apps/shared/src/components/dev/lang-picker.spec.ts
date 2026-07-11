@@ -3,7 +3,7 @@
  * `renderLangPicker` unit tests (f00102 S4.5).
  *
  * Contract pinned:
- *   - root is `<label class="mv-lang-picker">` with a `<span>{caption}</span>`
+ *   - root is `<label class="mcpv-lang-picker">` with a `<span>{caption}</span>`
  *     and a `<select name="...">`
  *   - one `<option>` per entry in the i18n `languages` registry
  *   - the option matching `current` carries `selected`
@@ -18,7 +18,7 @@ import { renderLangPicker } from './lang-picker';
 describe('renderLangPicker', () => {
 	it('emits the canonical label + select root', () => {
 		const out = renderLangPicker({ current: 'en' });
-		expect(out).toContain('<label class="mv-lang-picker">');
+		expect(out).toContain('<label class="mcpv-lang-picker">');
 		expect(out).toContain('<span>Language</span>');
 		expect(out).toContain('<select name="lang">');
 	});
@@ -49,7 +49,9 @@ describe('renderLangPicker', () => {
 
 	it('applies the inline modifier when requested', () => {
 		const out = renderLangPicker({ current: 'en', inline: true });
-		expect(out).toContain('class="mv-lang-picker mv-lang-picker--inline"');
+		expect(out).toContain(
+			'class="mcpv-lang-picker mcpv-lang-picker--inline"',
+		);
 	});
 
 	it('escapes HTML in language codes and labels', () => {

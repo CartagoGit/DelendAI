@@ -1,26 +1,26 @@
 // `apps/shared/src/styles/components/_theme-picker.scss`
 //
-// BEM-nested styles for the `<fieldset class="mv-theme-picker__field">`
+// BEM-nested styles for the `<fieldset class="mcpv-theme-picker__field">`
 // block emitted by `renderThemePicker` in
 // `apps/shared/src/components/dev/theme-picker.ts` (f00102 S4.5).
 // Reachable from any host that @uses the shared styles index.
 //
-// Class namespace is `mv-theme-picker` / `mv-theme-picker__*` with the
-// `mv-theme-picker--inline` modifier. The trailing @extend block keeps
+// Class namespace is `mcpv-theme-picker` / `mcpv-theme-picker__*` with the
+// `mcpv-theme-picker--inline` modifier. The trailing @extend block keeps
 // the legacy `.settings__*` selectors working so the docs site /
 // dev preview can keep emitting its existing markup during the
 // deprecation window (a future slice renames `.settings__*` →
-// `mv-theme-picker__*` in the dev preview and the alias is removed).
+// `mcpv-theme-picker__*` in the dev preview and the alias is removed).
 
-.mv-theme-picker {
+.mcpv-theme-picker {
 	display: flex;
 	flex-direction: column;
 	gap: 0.4rem;
 	min-width: 0;
 }
 
-.mv-theme-picker__field {
-	border: 1px solid var(--mv-border, var(--line));
+.mcpv-theme-picker__field {
+	border: 1px solid var(--mcpv-border, var(--line));
 	border-radius: 8px;
 	padding: 0.6rem 0.8rem;
 	display: flex;
@@ -30,25 +30,25 @@
 	min-width: 0;
 }
 
-.mv-theme-picker__hint {
+.mcpv-theme-picker__hint {
 	margin: 0;
-	color: var(--mv-fg-muted, var(--muted));
+	color: var(--mcpv-fg-muted, var(--muted));
 	font-size: 0.82rem;
 	line-height: 1.35;
 }
 
-.mv-theme-picker__radios {
+.mcpv-theme-picker__radios {
 	display: flex;
 	gap: 0.6rem;
 	flex-wrap: wrap;
 }
 
-.mv-theme-picker__radio {
+.mcpv-theme-picker__radio {
 	display: inline-flex;
 	align-items: center;
 	gap: 0.35rem;
 	padding: 0.25rem 0.55rem;
-	border: 1px solid var(--mv-border, var(--line));
+	border: 1px solid var(--mcpv-border, var(--line));
 	border-radius: 999px;
 	cursor: pointer;
 	font-size: 0.85rem;
@@ -57,12 +57,12 @@
 		border-color 0.18s ease;
 
 	&:hover {
-		background: color-mix(in srgb, var(--mv-link, var(--accent)) 10%, transparent);
+		background: color-mix(in srgb, var(--mcpv-link, var(--accent)) 10%, transparent);
 	}
 
 	&:has(input:checked) {
-		background: color-mix(in srgb, var(--mv-link, var(--accent)) 18%, transparent);
-		border-color: var(--mv-link, var(--accent));
+		background: color-mix(in srgb, var(--mcpv-link, var(--accent)) 18%, transparent);
+		border-color: var(--mcpv-link, var(--accent));
 		font-weight: 600;
 	}
 }
@@ -70,21 +70,21 @@
 // Inline modifier — collapses the fieldset wrapper so the picker
 // fits on a single row with the other form fields. Used by the
 // dev preview's "Language" row.
-.mv-theme-picker--inline {
+.mcpv-theme-picker--inline {
 	flex-direction: row;
 	align-items: center;
 	gap: 0.6rem;
 }
 
 // Legacy aliases — keep `.settings__*` selectors visually
-// equivalent to the new `.mv-theme-picker__*` tree so the
+// equivalent to the new `.mcpv-theme-picker__*` tree so the
 // existing dev preview markup keeps working.
 .settings__field {
-	@extend .mv-theme-picker__field;
+	@extend .mcpv-theme-picker__field;
 }
 .settings__radios {
-	@extend .mv-theme-picker__radios;
+	@extend .mcpv-theme-picker__radios;
 }
 .settings__radio {
-	@extend .mv-theme-picker__radio;
+	@extend .mcpv-theme-picker__radio;
 }

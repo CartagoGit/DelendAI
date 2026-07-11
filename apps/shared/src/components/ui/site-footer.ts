@@ -9,8 +9,8 @@
  *
  * Conventions
  * -----------
- * - Class namespace: `mv-sitefoot` plus `mv-sitefoot__*` and the
- *   `mv-sitefoot__col--brand` modifier. Legacy `.sitefoot*`
+ * - Class namespace: `mcpv-sitefoot` plus `mcpv-sitefoot__*` and the
+ *   `mcpv-sitefoot__col--brand` modifier. Legacy `.sitefoot*`
  *   selectors live in the companion SCSS via `@extend` so the
  *   docs site keeps emitting its existing markup without a
  *   rename.
@@ -115,7 +115,7 @@ const resolveHref = (baseHref: string, href: string): string => {
 
 /**
  * Render the site-footer block as a string. The host wraps the
- * result in `<footer class="mv-sitefoot sitefoot" transition:persist>`
+ * result in `<footer class="mcpv-sitefoot sitefoot" transition:persist>`
  * to keep the structural scope and the Astro view-transition
  * persistence hint.
  *
@@ -148,17 +148,17 @@ export const renderSiteFooter = (props: ISiteFooterProps): string => {
 		.join('');
 
 	return [
-		`<div class="mv-sitefoot__inner">`,
-		`<div class="mv-sitefoot__col mv-sitefoot__col--brand">`,
+		`<div class="mcpv-sitefoot__inner">`,
+		`<div class="mcpv-sitefoot__col mcpv-sitefoot__col--brand">`,
 		`<strong>@mcp-vertex</strong>`,
 		`<p data-footer-key="tagline">${escapeHtml(mergedLabels.tagline)}</p>`,
-		`<p class="mv-sitefoot__credit" data-footer-key="madeBy">${escapeHtml(mergedLabels.madeBy)}</p>`,
+		`<p class="mcpv-sitefoot__credit" data-footer-key="madeBy">${escapeHtml(mergedLabels.madeBy)}</p>`,
 		`</div>`,
-		`<nav class="mv-sitefoot__col" aria-label="Sections">`,
+		`<nav class="mcpv-sitefoot__col" aria-label="Sections">`,
 		`<strong data-footer-key="sections">${escapeHtml(mergedLabels.sections)}</strong>`,
 		sectionLinks,
 		`</nav>`,
-		`<nav class="mv-sitefoot__col" aria-label="Resources">`,
+		`<nav class="mcpv-sitefoot__col" aria-label="Resources">`,
 		`<strong data-footer-key="resources">${escapeHtml(mergedLabels.resources)}</strong>`,
 		`<a href="${escapeHtml(`${baseHref}/${urls.apiDocs}`)}">API (TypeDoc)</a>`,
 		`<a href="${escapeHtml(urls.repo)}" rel="external">@mcp-vertex · GitHub</a>`,
@@ -167,7 +167,7 @@ export const renderSiteFooter = (props: ISiteFooterProps): string => {
 		`<a data-footer-key="creatorsNpm" href="${escapeHtml(urls.creatorsNpm)}" rel="external">${escapeHtml(mergedLabels.creatorsNpm)}</a>`,
 		`</nav>`,
 		`</div>`,
-		`<div class="mv-sitefoot__base">`,
+		`<div class="mcpv-sitefoot__base">`,
 		`<span>© ${year} mcp-vertex · BSD-3-Clause · <span data-footer-key="built">${escapeHtml(mergedLabels.built)}</span></span>`,
 		`</div>`,
 	].join('');

@@ -18,8 +18,8 @@
  *
  * Conventions
  * -----------
- * - Class namespace: `mv-setup` / `mv-setup__*` for the wizard
- *   and `mv-status-banner` / `mv-status-banner--{ok,warn}` for
+ * - Class namespace: `mcpv-setup` / `mcpv-setup__*` for the wizard
+ *   and `mcpv-status-banner` / `mcpv-status-banner--{ok,warn}` for
  *   the status banner. Legacy `setup__*` / `settings__status*`
  *   selectors are kept in the companion SCSS via `@extend`, so
  *   the existing dev preview keeps matching during the
@@ -78,27 +78,27 @@ export const renderSetupWizard = (
 	const signalsHtml = status.signals
 		.map(
 			(s) =>
-				`<li class="mv-setup__signal setup__signal ${s.present ? 'is-on' : 'is-off'}">
-					<span class="mv-setup__signal-icon setup__signal-icon" aria-hidden="true">${s.present ? '✓' : '·'}</span>
+				`<li class="mcpv-setup__signal setup__signal ${s.present ? 'is-on' : 'is-off'}">
+					<span class="mcpv-setup__signal-icon setup__signal-icon" aria-hidden="true">${s.present ? '✓' : '·'}</span>
 					<code>${escapeAttr(s.path)}</code>
-					${s.detail ? `<span class="mv-setup__signal-detail setup__signal-detail">— ${escapeAttr(s.detail)}</span>` : ''}
+					${s.detail ? `<span class="mcpv-setup__signal-detail setup__signal-detail">— ${escapeAttr(s.detail)}</span>` : ''}
 				</li>`,
 		)
 		.join('');
 
-	return `<section class="mv-setup setup" data-kind="${status.kind}">
-			<header class="mv-setup__head setup__head">
+	return `<section class="mcpv-setup setup" data-kind="${status.kind}">
+			<header class="mcpv-setup__head setup__head">
 				<h1>${escapeAttr(heading)}</h1>
-				<p class="mv-setup__hint setup__hint">${escapeAttr(status.suggestion)}</p>
+				<p class="mcpv-setup__hint setup__hint">${escapeAttr(status.suggestion)}</p>
 			</header>
-			<aside class="mv-setup__signals setup__signals" aria-label="Detection signals">
+			<aside class="mcpv-setup__signals setup__signals" aria-label="Detection signals">
 				<h2>Detection</h2>
 				<ul>${signalsHtml}</ul>
 			</aside>
-			<footer class="mv-setup__cta setup__cta">
-				<button type="button" id="setup-install" class="mv-setup__primary setup__primary">${escapeAttr(ctaLabel)}</button>
-				<button type="button" id="setup-refresh" class="mv-setup__secondary setup__secondary">Re-check</button>
-				<span class="mv-setup__status setup__status" id="setup-status" role="status" aria-live="polite"></span>
+			<footer class="mcpv-setup__cta setup__cta">
+				<button type="button" id="setup-install" class="mcpv-setup__primary setup__primary">${escapeAttr(ctaLabel)}</button>
+				<button type="button" id="setup-refresh" class="mcpv-setup__secondary setup__secondary">Re-check</button>
+				<span class="mcpv-setup__status setup__status" id="setup-status" role="status" aria-live="polite"></span>
 			</footer>
 		</section>`;
 };
@@ -120,8 +120,8 @@ export const renderStatusBanner = (
 	const okLabel = options.okLabel ?? DEFAULT_OK;
 	if (status.kind === 'configured') {
 		return (
-			`<p class="mv-status-banner mv-status-banner--ok settings__status settings__status--ok">` +
-			`<span class="mv-setup__signal-icon setup__signal-icon">✓</span>` +
+			`<p class="mcpv-status-banner mcpv-status-banner--ok settings__status settings__status--ok">` +
+			`<span class="mcpv-setup__signal-icon setup__signal-icon">✓</span>` +
 			` ${okLabel}` +
 			`</p>`
 		);
@@ -131,8 +131,8 @@ export const renderStatusBanner = (
 		options.warnPrefix ??
 		`Workspace isn't fully wired (${status.kind}). ${verb} the setup below to drop the missing files.`;
 	return (
-		`<p class="mv-status-banner mv-status-banner--warn settings__status settings__status--warn">` +
-		`<span class="mv-setup__signal-icon setup__signal-icon">!</span>` +
+		`<p class="mcpv-status-banner mcpv-status-banner--warn settings__status settings__status--warn">` +
+		`<span class="mcpv-setup__signal-icon setup__signal-icon">!</span>` +
 		` ${escapeAttr(prefix)}` +
 		`</p>`
 	);

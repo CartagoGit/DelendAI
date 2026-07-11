@@ -43,9 +43,9 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 		    via `transition:persist`, so they never remount and never "jump". */}
 		<ClientRouter />
 		{/* Shared UI runtime from `@mcp-vertex/ui-extension`. Drives every
-		    `[data-mv-toggle="dropdown"]` and `[data-mv-action]` host
+		    `[data-mcpv-toggle="dropdown"]` and `[data-mcpv-action]` host
 		    gesture on the page (the "More" dropdown in the nav, any
-		    `[data-mv-toast-ttl]`, etc.). Without this, dropdowns are
+		    `[data-mcpv-toast-ttl]`, etc.). Without this, dropdowns are
 		    markup-only and never open. The script is idempotent and
 		    survives View Transitions because it binds once on
 		    `document`, not on the persisting element. */}

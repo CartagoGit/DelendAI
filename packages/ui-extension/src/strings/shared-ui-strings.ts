@@ -40,6 +40,6 @@ export type SharedUiStringKey = keyof typeof SHARED_UI_STRINGS;
  * the extension header render the same gradient from these tokens.
  */
 export const BRAND_TOKENS = {
-	blue: '--mv-brand-blue',
-	purple: '--mv-brand-purple',
+	blue: '--mcpv-brand-blue',
+	purple: '--mcpv-brand-purple',
 } as const;

@@ -38,10 +38,10 @@ export function buildPanels(
 	const healthPanel = renderPanelHealth(model.health, lang);
 
 	const docsPanel = `
-<section class="mv-panel" id="panel-docs" role="tabpanel" aria-labelledby="tab-docs">
-	<h2 class="mv-panel__title">${escapeHtml(text('dashboard.documentation'))}</h2>
-	<iframe class="mv-docs-frame" src="${escapeHtml(docsUrl)}" referrerpolicy="no-referrer" sandbox="allow-scripts allow-same-origin"></iframe>
-	<p class="mv-fg-muted">${escapeHtml(text('dashboard.docsEmbeddedFrom'))} <a href="${escapeHtml(docsUrl)}">${escapeHtml(docsUrl)}</a></p>
+<section class="mcpv-panel" id="panel-docs" role="tabpanel" aria-labelledby="tab-docs">
+	<h2 class="mcpv-panel__title">${escapeHtml(text('dashboard.documentation'))}</h2>
+	<iframe class="mcpv-docs-frame" src="${escapeHtml(docsUrl)}" referrerpolicy="no-referrer" sandbox="allow-scripts allow-same-origin"></iframe>
+	<p class="mcpv-fg-muted">${escapeHtml(text('dashboard.docsEmbeddedFrom'))} <a href="${escapeHtml(docsUrl)}">${escapeHtml(docsUrl)}</a></p>
 </section>
 `;
 
@@ -64,8 +64,8 @@ export function buildPanels(
 			const id = idMatch?.[1] ?? `panel-${ix}`;
 			const active = id === `panel-${firstActive}` ? 'true' : 'false';
 			return html.replace(
-				'<section class="mv-panel"',
-				`<section class="mv-panel" data-active="${active}"`,
+				'<section class="mcpv-panel"',
+				`<section class="mcpv-panel" data-active="${active}"`,
 			);
 		})
 		.join('');

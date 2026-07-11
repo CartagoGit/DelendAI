@@ -28,7 +28,7 @@
  *   - `cssImports` is the list of CSS module imports the page
  *     needs injected before it renders. The orchestrator
  *     `ensurePageStyles` helper deduplicates and appends a
- *     single `<style data-mv-page="<id>">` per page so the
+ *     single `<style data-mcpv-page="<id>">` per page so the
  *     page-specific styles only land when the page is
  *     mounted, not as part of the entry bundle.
  *

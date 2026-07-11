@@ -18,8 +18,8 @@
  * --------------------
  * Restored after `ee1f58d5` (f00047 S4) deleted it: the dashboard
  * panel/card/kpi/tabs/header rules. `componentCss` (shared
- * components) covers `.mv-header`, `.mv-dropdown`, `.mv-toast`,
- * `.mv-disclosure`, `.mv-lang-picker` etc.; this module fills the
+ * components) covers `.mcpv-header`, `.mcpv-dropdown`, `.mcpv-toast`,
+ * `.mcpv-disclosure`, `.mcpv-lang-picker` etc.; this module fills the
  * dashboard-specific gap (panels, cards, tabs, KPIs, sessions rows,
  * usage bars, time histogram).
  *
@@ -28,7 +28,7 @@
  *     `--vscode-*` theme variable so the dashboard inherits the
  *     editor's current theme (light, dark+, high-contrast, custom).
  *     Brand colours stay consistent (blue→purple gradient) by living
- *     in `--mv-brand-*`; everything else delegates to the host.
+ *     in `--mcpv-brand-*`; everything else delegates to the host.
  *   - **Responsive, mobile-first**: single column under 640px (the
  *     minimum sensible width for a tab bar); widens to 2-col cards
  *     at 640px, 3-col at 1024px, full grid at 1280px. Tabs scroll

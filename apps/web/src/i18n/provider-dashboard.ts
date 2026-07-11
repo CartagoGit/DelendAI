@@ -72,7 +72,8 @@ const en: IProviderDashboardTranslations = {
 		title: 'The provider roster',
 		body: 'Providers are declared once, in the root-level providers block of mcp-vertex.config.json. Each entry names the model, how to invoke it (api, cli, subscription, or mcp-server), its context window, a 1–5 cost tier, and capability strengths/weaknesses used by routing.',
 		secretsTitle: 'Secrets are env-var names, never keys',
-		secretsBody: 'The config file is committed, so it never carries a literal API key. An api provider declares only the NAME of the environment variable holding the key ("envVar": "OPENAI_API_KEY") — ${OPENAI_API_KEY}-style references by name, resolved by the runtime. A cleartext key in any config file fails the repo-wide lint:no-cleartext-secrets gate.',
+		secretsBody:
+			'The config file is committed, so it never carries a literal API key. An api provider declares only the NAME of the environment variable holding the key ("envVar": "OPENAI_API_KEY") — ${OPENAI_API_KEY}-style references by name, resolved by the runtime. A cleartext key in any config file fails the repo-wide lint:no-cleartext-secrets gate.',
 	},
 	optIn: {
 		title: 'Opt in',
@@ -102,12 +103,18 @@ const en: IProviderDashboardTranslations = {
 	},
 	statesTitle: 'Provider states',
 	states: {
-		available: 'CLI installed, authenticated, model reachable — the only state that counts as reachable.',
-		'quota-exceeded': 'A quota window is exhausted; routing skips this provider until the window resets.',
-		'rate-limited': 'The provider is temporarily throttling requests; it recovers on its own.',
-		unauthenticated: 'The CLI or API credential is missing or expired — re-authenticate to recover.',
-		'not-installed': 'The provider CLI is not on PATH; the row carries an install hint (dangerous pipe-to-shell installers are flagged).',
-		'model-unavailable': 'The CLI works but the requested model id is not available on this account or tier.',
+		available:
+			'CLI installed, authenticated, model reachable — the only state that counts as reachable.',
+		'quota-exceeded':
+			'A quota window is exhausted; routing skips this provider until the window resets.',
+		'rate-limited':
+			'The provider is temporarily throttling requests; it recovers on its own.',
+		unauthenticated:
+			'The CLI or API credential is missing or expired — re-authenticate to recover.',
+		'not-installed':
+			'The provider CLI is not on PATH; the row carries an install hint (dangerous pipe-to-shell installers are flagged).',
+		'model-unavailable':
+			'The CLI works but the requested model id is not available on this account or tier.',
 		error: 'The health probe failed in an unexpected way; details land in the healthcheck snapshot.',
 	},
 	absent: {
@@ -126,8 +133,10 @@ const es: IProviderDashboardTranslations = {
 	roster: {
 		title: 'El roster de proveedores',
 		body: 'Los proveedores se declaran una sola vez, en el bloque providers de nivel raíz de mcp-vertex.config.json. Cada entrada indica el modelo, cómo invocarlo (api, cli, subscription o mcp-server), su ventana de contexto, un nivel de coste de 1 a 5 y las fortalezas/debilidades de capacidad que usa el enrutado.',
-		secretsTitle: 'Los secretos son nombres de variables de entorno, nunca claves',
-		secretsBody: 'El archivo de configuración se versiona, así que nunca contiene una API key literal. Un proveedor api declara solo el NOMBRE de la variable de entorno que guarda la clave ("envVar": "OPENAI_API_KEY") — referencias por nombre al estilo ${OPENAI_API_KEY}, resueltas por el runtime. Una clave en texto claro en cualquier config falla el gate global lint:no-cleartext-secrets.',
+		secretsTitle:
+			'Los secretos son nombres de variables de entorno, nunca claves',
+		secretsBody:
+			'El archivo de configuración se versiona, así que nunca contiene una API key literal. Un proveedor api declara solo el NOMBRE de la variable de entorno que guarda la clave ("envVar": "OPENAI_API_KEY") — referencias por nombre al estilo ${OPENAI_API_KEY}, resueltas por el runtime. Una clave en texto claro en cualquier config falla el gate global lint:no-cleartext-secrets.',
 	},
 	optIn: {
 		title: 'Actívalo',
@@ -157,12 +166,18 @@ const es: IProviderDashboardTranslations = {
 	},
 	statesTitle: 'Estados de proveedor',
 	states: {
-		available: 'CLI instalada, autenticada y modelo accesible — el único estado que cuenta como alcanzable.',
-		'quota-exceeded': 'Una ventana de cuota está agotada; el enrutado omite este proveedor hasta que la ventana se reinicie.',
-		'rate-limited': 'El proveedor está limitando peticiones temporalmente; se recupera solo.',
-		unauthenticated: 'Falta o expiró la credencial de la CLI o la API — re-autentícate para recuperarlo.',
-		'not-installed': 'La CLI del proveedor no está en el PATH; la fila incluye una pista de instalación (los instaladores pipe-to-shell peligrosos van marcados).',
-		'model-unavailable': 'La CLI funciona pero el modelo solicitado no está disponible en esta cuenta o nivel.',
+		available:
+			'CLI instalada, autenticada y modelo accesible — el único estado que cuenta como alcanzable.',
+		'quota-exceeded':
+			'Una ventana de cuota está agotada; el enrutado omite este proveedor hasta que la ventana se reinicie.',
+		'rate-limited':
+			'El proveedor está limitando peticiones temporalmente; se recupera solo.',
+		unauthenticated:
+			'Falta o expiró la credencial de la CLI o la API — re-autentícate para recuperarlo.',
+		'not-installed':
+			'La CLI del proveedor no está en el PATH; la fila incluye una pista de instalación (los instaladores pipe-to-shell peligrosos van marcados).',
+		'model-unavailable':
+			'La CLI funciona pero el modelo solicitado no está disponible en esta cuenta o nivel.',
 		error: 'La sonda de salud falló de forma inesperada; los detalles quedan en la instantánea de healthcheck.',
 	},
 	absent: {
