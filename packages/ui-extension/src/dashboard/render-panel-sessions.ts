@@ -20,27 +20,27 @@ export const renderPanelSessions = (
 			const pills = model.rows
 				.filter((r) => r.status === status)
 				.map(
-					(r) => `<div class="mv-row">
-						<span class="mv-row__pill" data-status="${escapeHtml(r.status)}">${escapeHtml(r.status)}</span>
+					(r) => `<div class="mcpv-row">
+						<span class="mcpv-row__pill" data-status="${escapeHtml(r.status)}">${escapeHtml(r.status)}</span>
 						<a href="#" data-proposal="${escapeHtml(r.id)}"><code>${escapeHtml(r.id)}</code></a>
-						<span class="mv-fg-muted">${escapeHtml(r.title)}</span>
-						<span class="mv-fg-muted">${escapeHtml(r.track)}</span>
+						<span class="mcpv-fg-muted">${escapeHtml(r.title)}</span>
+						<span class="mcpv-fg-muted">${escapeHtml(r.track)}</span>
 					</div>`,
 				)
 				.join('');
-			return `<div class="mv-card">
-				<h3 class="mv-card__title">${escapeHtml(status)} (${formatNumber(count)})</h3>
+			return `<div class="mcpv-card">
+				<h3 class="mcpv-card__title">${escapeHtml(status)} (${formatNumber(count)})</h3>
 				${pills}
 			</div>`;
 		})
 		.join('');
 
 	return `
-<section class="mv-panel" id="panel-sessions" role="tabpanel" aria-labelledby="tab-sessions">
-	<h2 class="mv-panel__title">${escapeHtml(text('tabSessions'))}</h2>
+<section class="mcpv-panel" id="panel-sessions" role="tabpanel" aria-labelledby="tab-sessions">
+	<h2 class="mcpv-panel__title">${escapeHtml(text('tabSessions'))}</h2>
 	<p>${escapeHtml(text('dashboard.sessions.activeProposals', { count: formatNumber(model.total) }))}</p>
-	<div class="mv-grid">
-		${byStatus || `<p class="mv-fg-muted">${escapeHtml(text('dashboard.sessions.none'))}</p>`}
+	<div class="mcpv-grid">
+		${byStatus || `<p class="mcpv-fg-muted">${escapeHtml(text('dashboard.sessions.none'))}</p>`}
 	</div>
 </section>
 `;

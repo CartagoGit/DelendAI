@@ -4,7 +4,7 @@
  *
  * Contract pinned:
  *   - root is a sequence of <div>s the host wraps in
- *     `<footer class="mv-sitefoot sitefoot">`
+ *     `<footer class="mcpv-sitefoot sitefoot">`
  *   - 3 columns: brand (with tagline + madeBy), sections nav,
  *     resources nav (5 external/internal links)
  *   - the base row carries the year + the `built` label
@@ -30,15 +30,15 @@ describe('renderSiteFooter', () => {
 			year: 2026,
 			labels: {},
 		});
-		expect(out).toContain('<div class="mv-sitefoot__inner">');
-		expect(out).toContain('mv-sitefoot__col--brand');
+		expect(out).toContain('<div class="mcpv-sitefoot__inner">');
+		expect(out).toContain('mcpv-sitefoot__col--brand');
 		expect(out).toContain(
-			'<nav class="mv-sitefoot__col" aria-label="Sections">',
+			'<nav class="mcpv-sitefoot__col" aria-label="Sections">',
 		);
 		expect(out).toContain(
-			'<nav class="mv-sitefoot__col" aria-label="Resources">',
+			'<nav class="mcpv-sitefoot__col" aria-label="Resources">',
 		);
-		expect(out).toContain('<div class="mv-sitefoot__base">');
+		expect(out).toContain('<div class="mcpv-sitefoot__base">');
 		expect(out).toContain('© 2026 mcp-vertex');
 	});
 

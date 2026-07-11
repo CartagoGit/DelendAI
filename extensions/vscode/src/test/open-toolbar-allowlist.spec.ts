@@ -1,7 +1,7 @@
 /**
  * open-toolbar-allowlist.spec.ts — f00079 S2 (closes a00040 H3).
  *
- * The toolbar webview posts `{ command: 'mvAction', action, commandId }`
+ * The toolbar webview posts `{ command: 'mcpvAction', action, commandId }`
  * messages that the host turns into `vscode.commands.executeCommand(...)`
  * calls. Before the allow-list, any command id the message named was
  * dispatched verbatim — a crafted message (XSS / confused-deputy) could
@@ -107,7 +107,7 @@ describe('toolbar action allow-list (f00079 S2)', () => {
 		await openToolbar(ctx);
 
 		await ctx.invoke({
-			command: 'mvAction',
+			command: 'mcpvAction',
 			commandId: 'mcp-vertex.openProposal',
 		});
 
@@ -120,7 +120,7 @@ describe('toolbar action allow-list (f00079 S2)', () => {
 		await openToolbar(ctx);
 
 		await ctx.invoke({
-			command: 'mvAction',
+			command: 'mcpvAction',
 			commandId: 'workbench.action.openSettings',
 		});
 
@@ -133,7 +133,7 @@ describe('toolbar action allow-list (f00079 S2)', () => {
 		await openToolbar(ctx);
 
 		// No commandId → derived from the raw action → still gated.
-		await ctx.invoke({ command: 'mvAction', action: 'evilAction' });
+		await ctx.invoke({ command: 'mcpvAction', action: 'evilAction' });
 
 		expect(ctx.executed).toHaveLength(0);
 		expect(ctx.errors.some((m) => m.includes('not allowed'))).toBe(true);

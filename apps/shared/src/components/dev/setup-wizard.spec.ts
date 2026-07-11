@@ -5,7 +5,7 @@
  *
  * Contract pinned:
  *   - `renderSetupWizard({ kind: 'unconfigured', ... })` returns
- *     a `<section class="mv-setup setup" data-kind="unconfigured">`
+ *     a `<section class="mcpv-setup setup" data-kind="unconfigured">`
  *     with one `<li>` per signal + install + refresh CTAs
  *   - the CTA label is auto-derived from `kind`:
  *     configured → "Re-install (idempotent)"
@@ -13,7 +13,7 @@
  *     unconfigured → "Install mcp-vertex here"
  *   - `ctaLabel` option overrides the auto-derived copy
  *   - `renderStatusBanner({ kind: 'configured' })` returns the
- *     `<p class="mv-status-banner mv-status-banner--ok">` shape
+ *     `<p class="mcpv-status-banner mcpv-status-banner--ok">` shape
  *   - all interpolations are HTML-escaped
  */
 import { describe, expect, it } from 'vitest';
@@ -51,17 +51,17 @@ describe('renderSetupWizard', () => {
 			kind: 'unconfigured',
 		});
 		expect(out).toContain(
-			'<section class="mv-setup setup" data-kind="unconfigured">',
+			'<section class="mcpv-setup setup" data-kind="unconfigured">',
 		);
-		expect(out).toContain('<header class="mv-setup__head setup__head">');
+		expect(out).toContain('<header class="mcpv-setup__head setup__head">');
 		expect(out).toContain(
-			'<aside class="mv-setup__signals setup__signals" aria-label="Detection signals">',
-		);
-		expect(out).toContain(
-			'<button type="button" id="setup-install" class="mv-setup__primary setup__primary">',
+			'<aside class="mcpv-setup__signals setup__signals" aria-label="Detection signals">',
 		);
 		expect(out).toContain(
-			'<button type="button" id="setup-refresh" class="mv-setup__secondary setup__secondary">',
+			'<button type="button" id="setup-install" class="mcpv-setup__primary setup__primary">',
+		);
+		expect(out).toContain(
+			'<button type="button" id="setup-refresh" class="mcpv-setup__secondary setup__secondary">',
 		);
 	});
 
@@ -71,7 +71,7 @@ describe('renderSetupWizard', () => {
 			kind: 'partial',
 		});
 		const matches = out.match(
-			/<li class="mv-setup__signal setup__signal (is-on|is-off)">/g,
+			/<li class="mcpv-setup__signal setup__signal (is-on|is-off)">/g,
 		);
 		expect(matches).toHaveLength(2);
 		expect(out).toContain('is-on');
@@ -130,7 +130,7 @@ describe('renderStatusBanner', () => {
 	it('emits the ok variant for configured workspaces', () => {
 		const out = renderStatusBanner({ ...baseStatus, kind: 'configured' });
 		expect(out).toContain(
-			'<p class="mv-status-banner mv-status-banner--ok settings__status settings__status--ok">',
+			'<p class="mcpv-status-banner mcpv-status-banner--ok settings__status settings__status--ok">',
 		);
 		expect(out).toContain('Workspace is configured.');
 	});
@@ -138,10 +138,10 @@ describe('renderStatusBanner', () => {
 	it('emits the warn variant for partial + unconfigured', () => {
 		expect(
 			renderStatusBanner({ ...baseStatus, kind: 'partial' }),
-		).toContain('mv-status-banner--warn');
+		).toContain('mcpv-status-banner--warn');
 		expect(
 			renderStatusBanner({ ...baseStatus, kind: 'unconfigured' }),
-		).toContain('mv-status-banner--warn');
+		).toContain('mcpv-status-banner--warn');
 	});
 
 	it('honours okLabel and warnPrefix overrides', () => {

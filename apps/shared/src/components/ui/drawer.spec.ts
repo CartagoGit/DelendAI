@@ -3,9 +3,9 @@
  * `renderDrawer` unit tests (f00102 S3.3).
  *
  * Contract pinned:
- *   - root `<div class="mv-drawer mv-drawer--{side}" id role dialog
+ *   - root `<div class="mcpv-drawer mcpv-drawer--{side}" id role dialog
  *     aria-modal aria-label hidden>` is emitted by default
- *   - panel is `<aside class="mv-drawer__panel mv-drawer__panel--{side}">`
+ *   - panel is `<aside class="mcpv-drawer__panel mcpv-drawer__panel--{side}">`
  *   - backdrop carries `data-drawer-close`
  *   - close button carries `data-drawer-close` and `aria-label`
  *   - link list carries `data-drawer-link` by default; pass
@@ -32,33 +32,33 @@ const baseProps = (overrides: Partial<IDrawerProps> = {}): IDrawerProps => ({
 describe('renderDrawer', () => {
 	it('emits the canonical right-side root + panel', () => {
 		const out = renderDrawer(baseProps());
-		expect(out).toContain('class="mv-drawer mv-drawer--right"');
+		expect(out).toContain('class="mcpv-drawer mcpv-drawer--right"');
 		expect(out).toContain('id="nav-drawer"');
 		expect(out).toContain('role="dialog"');
 		expect(out).toContain('aria-modal="true"');
 		expect(out).toContain('aria-label="Primary menu"');
 		expect(out).toContain('hidden');
 		expect(out).toContain(
-			'<aside class="mv-drawer__panel mv-drawer__panel--right">',
+			'<aside class="mcpv-drawer__panel mcpv-drawer__panel--right">',
 		);
 	});
 
 	it('honours the left side modifier', () => {
 		const out = renderDrawer(baseProps({ side: 'left' }));
-		expect(out).toContain('mv-drawer--left');
-		expect(out).toContain('mv-drawer__panel--left');
+		expect(out).toContain('mcpv-drawer--left');
+		expect(out).toContain('mcpv-drawer__panel--left');
 	});
 
 	it('emits the backdrop with the close affordance hook', () => {
 		const out = renderDrawer(baseProps());
 		expect(out).toContain(
-			'<div class="mv-drawer__backdrop" data-drawer-close>',
+			'<div class="mcpv-drawer__backdrop" data-drawer-close>',
 		);
 	});
 
 	it('emits a close button with aria-label', () => {
 		const out = renderDrawer(baseProps());
-		expect(out).toContain('class="mv-drawer__close"');
+		expect(out).toContain('class="mcpv-drawer__close"');
 		expect(out).toContain('data-drawer-close');
 		expect(out).toContain('aria-label="Close menu"');
 	});
@@ -109,9 +109,9 @@ describe('renderDrawer', () => {
 				},
 			}),
 		);
-		expect(out).toContain('class="mv-drawer__brand"');
+		expect(out).toContain('class="mcpv-drawer__brand"');
 		expect(out).toContain(
-			'<strong class="mv-drawer__brand-text">@mcp-vertex</strong>',
+			'<strong class="mcpv-drawer__brand-text">@mcp-vertex</strong>',
 		);
 	});
 
@@ -120,25 +120,25 @@ describe('renderDrawer', () => {
 			baseProps({ footHtml: '<button>OK</button>' }),
 		);
 		expect(out).toContain(
-			'<div class="mv-drawer__foot"><button>OK</button></div>',
+			'<div class="mcpv-drawer__foot"><button>OK</button></div>',
 		);
 	});
 
 	it('panelOnly=true emits body only (no root div)', () => {
 		const out = renderDrawer(baseProps(), { panelOnly: true });
-		// The body still contains `mv-drawer__backdrop` /
-		// `mv-drawer__panel` / `mv-drawer__head`, so we pin the
-		// absence of the root specifically — no `mv-drawer--{side}`
+		// The body still contains `mcpv-drawer__backdrop` /
+		// `mcpv-drawer__panel` / `mcpv-drawer__head`, so we pin the
+		// absence of the root specifically — no `mcpv-drawer--{side}`
 		// root modifier and no `role="dialog"`.
 		expect(out).not.toContain('role="dialog"');
-		expect(out).not.toContain('mv-drawer--right"');
-		expect(out).toContain('<aside class="mv-drawer__panel');
+		expect(out).not.toContain('mcpv-drawer--right"');
+		expect(out).toContain('<aside class="mcpv-drawer__panel');
 		expect(out).toContain('data-drawer-close');
 	});
 
 	it('className option appends extra classes to the root', () => {
 		const out = renderDrawer(baseProps(), { className: 'drawer' });
-		expect(out).toContain('class="mv-drawer mv-drawer--right drawer"');
+		expect(out).toContain('class="mcpv-drawer mcpv-drawer--right drawer"');
 	});
 
 	it('escapes HTML in id, label, href, link label', () => {

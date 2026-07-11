@@ -31,6 +31,41 @@ import { ensureWizardStyles } from '../settings-panel';
 
 import type { IPage } from './contract';
 
+/**
+ * `renderDashboard` returns a COMPLETE `<html>` document whose
+ * component + dashboard CSS live in `<style>` blocks in its `<head>`.
+ * The dev page mounts only the `<body>` into `#root`, so without this
+ * the dashboard renders unstyled in the :5200 preview (the dev shell
+ * only ships chrome CSS, not the dashboard component styles). Hoist
+ * every rendered `<style>` block into the live document head, once —
+ * idempotent so a language re-render replaces rather than duplicates.
+ */
+const hoistDashboardStyles = (renderedHtml: string): void => {
+	const head =
+		renderedHtml.match(/<head[^>]*>([\s\S]*?)<\/head>/i)?.[1] ?? '';
+	const blocks = head.match(/<style[^>]*>[\s\S]*?<\/style>/gi) ?? [];
+	for (const stale of Array.from(
+		document.head.querySelectorAll('style[data-dashboard-hoisted]'),
+	)) {
+		stale.remove();
+	}
+	for (const block of blocks) {
+		const css = block
+			.replace(/^<style[^>]*>/i, '')
+			.replace(/<\/style>$/i, '');
+		const el = document.createElement('style');
+		el.setAttribute('data-dashboard-hoisted', 'true');
+		el.textContent = css;
+		document.head.appendChild(el);
+	}
+};
+
+/** Extract the `<body>` inner HTML and hoist the head `<style>` blocks. */
+const bodyWithHoistedStyles = (renderedHtml: string): string => {
+	hoistDashboardStyles(renderedHtml);
+	return renderedHtml.match(/<body[^>]*>([\s\S]*?)<\/body>/i)?.[1] ?? '';
+};
+
 const fetchDashboardBody = async (lang: Lang): Promise<string | null> => {
 	try {
 		const res = await fetch('/api/dashboard');
@@ -52,8 +87,7 @@ const fetchDashboardBody = async (lang: Lang): Promise<string | null> => {
 				lang: dictsByLang[lang],
 			},
 		);
-		const match = html.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
-		return match?.[1] ?? '';
+		return bodyWithHoistedStyles(html);
 	} catch {
 		return null;
 	}
@@ -71,8 +105,7 @@ const renderMockDashboardBody = async (
 		openDocsCommand: 'mcp-vertex.openDocs',
 		lang: dictsByLang[lang],
 	});
-	const match = html.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
-	return { body: match?.[1] ?? '', fallback: true };
+	return { body: bodyWithHoistedStyles(html), fallback: true };
 };
 
 export interface IDashboardPageOptions {
@@ -163,7 +196,7 @@ export const createDashboardPage = (options: IDashboardPageOptions): IPage => ({
 		// Surface the MCP-unreachable warning.
 		if (usedFallback) {
 			const note = document.createElement('p');
-			note.className = 'mv-banner banner--warn';
+			note.className = 'mcpv-banner banner--warn';
 			note.style.margin = '0';
 			note.textContent =
 				'MCP server unreachable. Showing mock data — start `bun run mcp-vertex` and click Refresh.';

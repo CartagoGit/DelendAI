@@ -50,11 +50,11 @@ const clientScript = (savedMessage: string, resetMessage: string): string =>
   }
 
   function flash(msg) {
-    let banner = document.getElementById('mv-settings-banner');
+    let banner = document.getElementById('mcpv-settings-banner');
     if (!banner) {
       banner = document.createElement('p');
-      banner.id = 'mv-settings-banner';
-      banner.className = 'mv-banner';
+      banner.id = 'mcpv-settings-banner';
+      banner.className = 'mcpv-banner';
       const form = document.querySelector('form');
       if (form) form.parentNode.insertBefore(banner, form);
     }
@@ -96,14 +96,14 @@ export const renderSettings = (options: IRenderSettingsOptions): string => {
 		body {
 			font-family: var(--vscode-font-family, system-ui);
 			padding: 16px;
-			color: var(--mv-fg-primary);
-			background: var(--mv-bg-primary);
+			color: var(--mcpv-fg-primary);
+			background: var(--mcpv-bg-primary);
 		}
 		h1 { font-size: 16px; margin: 0 0 16px; }
 		label {
 			display: block;
 			margin: 0 0 12px;
-			color: var(--mv-fg-primary);
+			color: var(--mcpv-fg-primary);
 			font-size: 12px;
 		}
 		/* FIX (S2): inputs and selects previously inherited the
@@ -134,8 +134,8 @@ export const renderSettings = (options: IRenderSettingsOptions): string => {
 			accent-color: var(--vscode-focusBorder, #007acc);
 			vertical-align: middle;
 		}
-		.mv-actions { display: flex; gap: 8px; margin-top: 16px; }
-		.mv-actions button {
+		.mcpv-actions { display: flex; gap: 8px; margin-top: 16px; }
+		.mcpv-actions button {
 			padding: 6px 14px;
 			font: inherit;
 			color: var(--vscode-button-foreground, #ffffff);
@@ -144,17 +144,17 @@ export const renderSettings = (options: IRenderSettingsOptions): string => {
 			border-radius: 4px;
 			cursor: pointer;
 		}
-		.mv-actions button:hover {
+		.mcpv-actions button:hover {
 			background: var(--vscode-button-hoverBackground, #1f8ad2);
 		}
-		.mv-actions button[type="reset"] {
+		.mcpv-actions button[type="reset"] {
 			color: var(--vscode-button-secondaryForeground, #c9d1d9);
 			background: var(--vscode-button-secondaryBackground, #3a3d41);
 		}
-		.mv-actions button[type="reset"]:hover {
+		.mcpv-actions button[type="reset"]:hover {
 			background: var(--vscode-button-secondaryHoverBackground, #45494e);
 		}
-		.mv-banner {
+		.mcpv-banner {
 			margin: 0 0 12px;
 			padding: 8px 12px;
 			font-size: 12px;
@@ -195,7 +195,7 @@ export const renderSettings = (options: IRenderSettingsOptions): string => {
 				<option value="dark"${selected(settings.theme, 'dark')}>${escapeHtml(text('settings.theme.dark'))}</option>
 			</select>
 		</label>
-		<div class="mv-actions">
+		<div class="mcpv-actions">
 			<button type="submit">${escapeHtml(text('settings.save'))}</button>
 			<button type="reset">${escapeHtml(text('settings.reset'))}</button>
 		</div>

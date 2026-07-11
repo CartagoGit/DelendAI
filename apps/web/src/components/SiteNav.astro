@@ -99,7 +99,7 @@ const drawerLinks = [
 			    outside-click + Esc from one place. We pass
 			    `classPrefix: 'nav__more'` so the BEM shape stays
 			    aligned with the existing `_nav.scss` rules instead
-			    of forcing a parallel `mv-dropdown__*` style layer. */}
+			    of forcing a parallel `mcpv-dropdown__*` style layer. */}
 			<Fragment set:html={renderDropdown({
 				id: 'nav-more',
 				idPrefix: 'nav-more',
@@ -247,7 +247,7 @@ const drawerLinks = [
 
 	// "More" dropdown. The runtime injected by `Base.astro` (the
 	// `componentScript` from `@mcp-vertex/ui-extension`) drives every
-	// `[data-mv-toggle="dropdown"]` panel on the page: click toggles,
+	// `[data-mcpv-toggle="dropdown"]` panel on the page: click toggles,
 	// outside click closes, Esc closes. We delegate open/close to that
 	// single source of truth so a future dropdown added anywhere on
 	// the site automatically picks up the same behaviour with zero

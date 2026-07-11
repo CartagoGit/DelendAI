@@ -6,18 +6,18 @@
  *      inside the dashboard navigates here).
  *   2. Theme picker (system / light / dark) — applies `data-theme` on
  *      <html> so the dashboard CSS takes over the `--vscode-*`
- *      fallbacks. Persisted to `localStorage` under `mv:dev:theme`.
+ *      fallbacks. Persisted to `localStorage` under `mcpv:dev:theme`.
  *   3. Language picker (the 12 i18n dicts already shipped via
  *      `@mcp-vertex/shared/i18n`). Persisted to `localStorage` under
- *      `mv:dev:lang`. When the dashboard re-renders, it picks the
+ *      `mcpv:dev:lang`. When the dashboard re-renders, it picks the
  *      stored dict so every panel translates consistently.
  *
- * Persistence keys are deliberately namespaced `mv:dev:*` so they
+ * Persistence keys are deliberately namespaced `mcpv:dev:*` so they
  * don't collide with the production extension's `vscode.ExtensionContext
- * .globalState` keys (those use `mv:theme`, `mv:lang`, etc., without
+ * .globalState` keys (those use `mcpv:theme`, `mcpv:lang`, etc., without
  * the `dev` infix). When the production extension reads its own
  * globalState, those values are wired in `extension.ts`; the dev
- * preview reads `mv:dev:*` only.
+ * preview reads `mcpv:dev:*` only.
  *
  * Why two separate key families? The dev preview is a BROWSER, not
  * the VS Code extension host. It cannot call `vscode.ExtensionContext
@@ -74,8 +74,8 @@ export interface ISetupStatus {
 	readonly suggestion: string;
 }
 
-const THEME_KEY = 'mv:dev:theme';
-const LANG_KEY = 'mv:dev:lang';
+const THEME_KEY = 'mcpv:dev:theme';
+const LANG_KEY = 'mcpv:dev:lang';
 
 export type { ThemeChoice };
 
@@ -199,7 +199,7 @@ export const applyTheme = (theme: ThemeChoice): void => {
  *     if a future RTL language is added the `rtlLangs` array in
  *     `@mcp-vertex/shared/i18n/shared` is the source of truth).
  *   - the `lang` attribute on individual translatable elements
- *     that opt in via `data-mv-lang-aware` — useful for mixed
+ *     that opt in via `data-mcpv-lang-aware` — useful for mixed
  *     snippets (e.g. an English `<code>` inside a Spanish paragraph).
  */
 export const applyLang = (lang: Lang): void => {
@@ -244,7 +244,7 @@ const renderWizard = (status: ISetupStatus): string =>
 // surface (CLI init wizard, marketing-site settings, JetBrains
 // extension) emits the same radios + select without a fork. The
 // dev preview keeps its existing `.settings__*` markup by
-// emitting both `mv-*` (new BEM) and `settings__*` (legacy) via
+// emitting both `mcpv-*` (new BEM) and `settings__*` (legacy) via
 // the shared renderer's HTML, and the shared SCSS aliases the
 // two trees together.
 const renderThemePickerLocal = (current: ThemeChoice): string =>
@@ -350,7 +350,7 @@ export const bootstrapPersistedPrefs = (): IPersistedPrefs => {
 	const prefs = readPersistedPrefs();
 	applyTheme(prefs.theme);
 	applyLang(prefs.lang);
-	// If the user has never picked a language (no `mv:dev:lang` stored),
+	// If the user has never picked a language (no `mcpv:dev:lang` stored),
 	// we resolved to `detectHostLang()`; persist that so the next load
 	// does not re-detect and a manual switch is a real, deliberate
 	// override from this point on.
@@ -361,9 +361,9 @@ export const bootstrapPersistedPrefs = (): IPersistedPrefs => {
 };
 
 export const ensureWizardStyles = (): void => {
-	if (document.head.querySelector('[data-mv-dev-wizard]')) return;
+	if (document.head.querySelector('[data-mcpv-dev-wizard]')) return;
 	const tag = document.createElement('style');
-	tag.setAttribute('data-mv-dev-wizard', 'true');
+	tag.setAttribute('data-mcpv-dev-wizard', 'true');
 	tag.textContent = devPreviewCss;
 	document.head.appendChild(tag);
 };

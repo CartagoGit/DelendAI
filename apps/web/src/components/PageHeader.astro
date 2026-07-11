@@ -58,6 +58,6 @@ const baseHref = homeHref ?? `${base}/`;
 const homeLabel = t.nav.concept;
 ---
 
-<header class="mv-page-header page-header">
+<header class="mcpv-page-header page-header">
 	<Fragment set:html={renderPageHeader({ lang, title, crumbs: crumbs as IPageHeaderProps['crumbs'] | undefined, baseHref, homeLabel })} />
 </header>

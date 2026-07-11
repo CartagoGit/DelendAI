@@ -3,7 +3,7 @@
 // BEM-nested styles for the `<nav role="tablist">` block emitted by
 // `apps/shared/src/components/ui/tabs.ts` (`renderTabs`). Reachable
 // from any host that @uses the shared styles index. Class namespace
-// is `mv-tabs` / `mv-tabs__*` / `mv-tabs--{underline,pill,plugin}`; a
+// is `mcpv-tabs` / `mcpv-tabs__*` / `mcpv-tabs--{underline,pill,plugin}`; a
 // trailing @extend block keeps the legacy `.ui-tabs*` selectors
 // working until the host renames its markup.
 //
@@ -22,10 +22,10 @@
 // 7-1 stylesheet owns every `.ui-tabs__*` rule (single source of truth)
 // and the component frontmatter stays markup-only.
 //
-// BEM root: `.mv-tabs` with `__bar`, `__list`, `__tab`, `__icon`,
+// BEM root: `.mcpv-tabs` with `__bar`, `__list`, `__tab`, `__icon`,
 // `__label`, `__badge`, `__panels`, and the `--underline` / `--pill` /
 // `--plugin` variant modifiers.  Variant + state rules are nested with
-// `&` so the linter validates a single `.mv-tabs`-rooted scope (no leaked
+// `&` so the linter validates a single `.mcpv-tabs`-rooted scope (no leaked
 // cross-block descendant selectors).
 //
 // Cross-fade (f00069 S1): the controller toggles `.is-leaving` on the
@@ -33,7 +33,7 @@
 // for 220 ms (`cubic-bezier(0.2, 0.7, 0.2, 1)`).  `prefers-reduced-motion:
 // reduce` short-circuits the animation so panels swap instantly.
 
-.mv-tabs {
+.mcpv-tabs {
 	&__bar {
 		position: relative;
 		margin-bottom: 1.5rem;
@@ -65,7 +65,7 @@
 			color 0.18s ease;
 
 		&:hover {
-			background: color-mix(in srgb, var(--mv-fg, currentColor) 8%, transparent);
+			background: color-mix(in srgb, var(--mcpv-fg, currentColor) 8%, transparent);
 		}
 
 		&:focus-visible {
@@ -80,20 +80,20 @@
 
 	// Underline variant: the bar carries a baseline rule the active tab
 	// sits on; tabs are square-cornered. Element rules nest inside the
-	// modifier so each resolved selector stays `.mv-tabs`-rooted.
+	// modifier so each resolved selector stays `.mcpv-tabs`-rooted.
 	&--underline {
-		.mv-tabs__bar {
-			border-bottom: 1px solid var(--mv-border, var(--line));
+		.mcpv-tabs__bar {
+			border-bottom: 1px solid var(--mcpv-border, var(--line));
 		}
 
-		.mv-tabs__tab {
+		.mcpv-tabs__tab {
 			border-radius: 0;
 			border-bottom: 2px solid transparent;
 			margin-bottom: -1px;
 
 			&:hover {
 				background: transparent;
-				color: var(--mv-fg, var(--fg));
+				color: var(--mcpv-fg, var(--fg));
 			}
 
 			&[aria-selected='true'] {
@@ -104,8 +104,8 @@
 
 	// Pill variant: the active tab gets a soft tinted fill.
 	&--pill {
-		.mv-tabs__tab[aria-selected='true'] {
-			background: color-mix(in srgb, var(--mv-fg, currentColor) 12%, transparent);
+		.mcpv-tabs__tab[aria-selected='true'] {
+			background: color-mix(in srgb, var(--mcpv-fg, currentColor) 12%, transparent);
 		}
 	}
 
@@ -113,7 +113,7 @@
 	// rounded tab, no border-bottom on the bar, padding 0.5rem 0.9rem,
 	// active label at 600 weight (f00069 S1).
 	&--plugin {
-		.mv-tabs__tab {
+		.mcpv-tabs__tab {
 			padding: 0.5rem 0.9rem;
 			border-radius: var(--radius);
 
@@ -126,7 +126,7 @@
 
 	// Optional brand-mark icon (f00069 S3 populates this for PM tabs and
 	// section tabs). 18×18, never grow/shrink. The wrapper is a
-	// `<span data-mv-icon>` that contains both the `<img>` and a
+	// `<span data-mcpv-icon>` that contains both the `<img>` and a
 	// first-letter fallback span; the runtime glue (the host's
 	// tabs controller + `renderRuntime`) toggles the
 	// `is-broken` class on the wrapper when the image fails to
@@ -153,7 +153,7 @@
 		// the wrapper is marked `is-broken` (runtime glue adds the
 		// class on `img.error`).
 		&__icon-fallback,
-		& .mv-tabs__icon-fallback {
+		& .mcpv-tabs__icon-fallback {
 			position: absolute;
 			inset: 0;
 			display: none;
@@ -162,7 +162,7 @@
 			width: 18px;
 			height: 18px;
 			border-radius: 999px;
-			background: color-mix(in srgb, var(--mv-fg, currentColor) 14%, transparent);
+			background: color-mix(in srgb, var(--mcpv-fg, currentColor) 14%, transparent);
 			font-size: 0.7em;
 			font-weight: 600;
 			text-transform: uppercase;
@@ -173,7 +173,7 @@
 			display: none;
 		}
 
-		&.is-broken > .mv-tabs__icon-fallback {
+		&.is-broken > .mcpv-tabs__icon-fallback {
 			display: inline-flex;
 		}
 	}
@@ -182,7 +182,7 @@
 		font-size: 0.7em;
 		padding: 0.1rem 0.4rem;
 		border-radius: 999px;
-		background: color-mix(in srgb, var(--mv-fg, currentColor) 14%, transparent);
+		background: color-mix(in srgb, var(--mcpv-fg, currentColor) 14%, transparent);
 		color: inherit;
 		opacity: 0.8;
 	}
@@ -250,8 +250,8 @@
 
 // Legacy alias — kept so `apps/web` pages that still ship
 // `<nav class="ui-tabs__bar">` keep working without a markup
-// change. Remove once the rename to `.mv-tabs*` lands in the site.
+// change. Remove once the rename to `.mcpv-tabs*` lands in the site.
 
 .ui-tabs {
-	@extend .mv-tabs;
+	@extend .mcpv-tabs;
 }

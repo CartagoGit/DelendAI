@@ -27,7 +27,7 @@ export const OPEN_TOOLBAR_COMMAND = 'mcp-vertex.openToolbar';
 /**
  * f00079 S2 (closes a00040 H3): allow-list of command ids the toolbar
  * webview may dispatch. The toolbar's host bridge posts an arbitrary
- * `{ command: 'mvAction', action, commandId }` message; without this
+ * `{ command: 'mcpvAction', action, commandId }` message; without this
  * gate a crafted message (XSS or confused-deputy) could run ANY
  * `vscode.commands.executeCommand(...)` with arbitrary arguments. We
  * derive the set from the toolbar's own canonical action catalog
@@ -117,9 +117,9 @@ export const registerOpenToolbarCommand = (deps: ICommandDeps) =>
 		// `script-src 'unsafe-inline'` while still denying frames/connect.
 		panel.webview.html = withCsp('toolbar', html);
 		// FIX (T1): wire the host bridge so toolbar card clicks
-		// dispatch their `data-mv-command`. The toolbar's
+		// dispatch their `data-mcpv-command`. The toolbar's
 		// `renderHostBridge()` script posts
-		// `{command:'mvAction', action, commandId}`. We prefer the
+		// `{command:'mcpvAction', action, commandId}`. We prefer the
 		// commandId embedded by the renderer (it's the canonical
 		// `mcp-vertex.*` command id) and fall back to a generic
 		// execution of the action id when missing. Without this
@@ -133,7 +133,7 @@ export const registerOpenToolbarCommand = (deps: ICommandDeps) =>
 				commandId?: unknown;
 				lang?: unknown;
 			};
-			if (m.command === 'mvAction') {
+			if (m.command === 'mcpvAction') {
 				const commandId = resolveToolbarCommandId(
 					m.commandId,
 					m.action,

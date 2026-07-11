@@ -1,7 +1,7 @@
 // _themes.scss — 5 colour palettes + brand hex literals.
 //
 // This file is the **single source of truth** for the brand colours
-// (`--mv-brand-blue` and `--mv-brand-purple`) and for the five palettes
+// (`--mcpv-brand-blue` and `--mcpv-brand-purple`) and for the five palettes
 // the docs site offers. The hex literals `#58a6ff` and `#a371f7` MUST
 // NOT appear in any other source file; this is enforced by
 // `tools/scripts/lint/no-duplicate-brand-hex.script.ts`.
@@ -19,8 +19,8 @@
 	--line: #2a3038;
 	--fg: #e6edf3;
 	--muted: #9aa4b2;
-	--accent: var(--mv-brand-blue);
-	--accent-2: var(--mv-brand-purple);
+	--accent: var(--mcpv-brand-blue);
+	--accent-2: var(--mcpv-brand-purple);
 }
 
 :root[data-theme='light'] {
@@ -71,14 +71,14 @@
 // `#58a6ff` (blue) and `#a371f7` (purple) are the brand palette primaries.
 // They are derived from `apps/shared/brand/logo.svg` (the gradient) and
 // exported here as the only definitions in source. Hosts reach for
-// `var(--mv-brand-blue)` / `var(--mv-brand-purple)` instead of using the
+// `var(--mcpv-brand-blue)` / `var(--mcpv-brand-purple)` instead of using the
 // literals themselves.
 :root {
-	--mv-brand-blue: #58a6ff;
-	--mv-brand-purple: #a371f7;
-	--mv-brand-gradient: linear-gradient(
+	--mcpv-brand-blue: #58a6ff;
+	--mcpv-brand-purple: #a371f7;
+	--mcpv-brand-gradient: linear-gradient(
 		135deg,
-		var(--mv-brand-blue),
-		var(--mv-brand-purple)
+		var(--mcpv-brand-blue),
+		var(--mcpv-brand-purple)
 	);
 }

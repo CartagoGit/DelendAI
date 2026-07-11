@@ -13,14 +13,14 @@
  *      that hand-rolls markup equivalent to a shared one. We catch
  *      this by looking for literal class names that the shared
  *      components own (e.g. `class="ui-callout"`,
- *      `class="mv-callout"`, `class="ui-tabs"`). The shared
+ *      `class="mcpv-callout"`, `class="ui-tabs"`). The shared
  *      component is the only place those strings should originate;
  *      consumers either import the renderer or — for the docs
  *      site's transitional period — use the .astro wrapper which
  *      forwards to the shared renderer.
  *
  *   2. **Forked CSS for a shared class.** A standalone .scss file
- *      that defines `.mv-callout` rules outside the shared partial,
+ *      that defines `.mcpv-callout` rules outside the shared partial,
  *      or that adds new selectors under the shared block. The
  *      shared SCSS is the only place BEM rules for shared
  *      components may live.
@@ -56,19 +56,19 @@ export const MIN_WAIVER_LENGTH = 12;
  * or styling these elsewhere is a ratchet violation.
  *
  * The list is hand-maintained; the alternative — auto-detecting it
- * by scanning the shared source for `class="...mv-*"` patterns —
- * misses the BEM-only uses (e.g. `.mv-callout__icon`) and adds
+ * by scanning the shared source for `class="...mcpv-*"` patterns —
+ * misses the BEM-only uses (e.g. `.mcpv-callout__icon`) and adds
  * runtime cost.
  */
 export const SHARED_BEM_ROOTS: ReadonlyArray<string> = Object.freeze([
 	// ui/* — every component from slices S1 + S2.
-	'mv-callout',
-	'mv-tabs',
-	'mv-code',
-	'mv-stepper',
-	'mv-copybtn',
-	'mv-page-header',
-	'mv-sitefoot',
+	'mcpv-callout',
+	'mcpv-tabs',
+	'mcpv-code',
+	'mcpv-stepper',
+	'mcpv-copybtn',
+	'mcpv-page-header',
+	'mcpv-sitefoot',
 ]);
 
 /**
@@ -88,7 +88,7 @@ const ASTRO_FILE = /\.astro$/;
 const SCSS_FILE = /\.scss$/;
 
 const FORBIDDEN_CLASSNAME = new RegExp(
-	`class(?:Name)?=[\`'"](?:[^\'"\`]*\\s)?(${SHARED_BEM_ROOTS.join('|')})`,
+	`class(?:Name)?=[\`'"](?:[^'"\`]*\\s)?(${SHARED_BEM_ROOTS.join('|')})`,
 	'g',
 );
 
@@ -149,12 +149,12 @@ export const findInlineClasses = (
 	}
 	// Spec / test files are exempt — the literals are the
 	// contract the test pins. Trust model: when a `*.spec.ts`
-	// says `expect(html).toContain('mv-tabs')`, the spec is the
+	// says `expect(html).toContain('mcpv-tabs')`, the spec is the
 	// source of truth for that string, not a fork to flag.
 	if (/\.spec\.[mc]?[jt]sx?$/.test(relPath)) return [];
 	// Docs-site wrappers: only trusted when they actually pull
 	// the shared renderer. Without the import, an inline
-	// `class="mv-callout"` in this folder IS a fork.
+	// `class="mcpv-callout"` in this folder IS a fork.
 	if (
 		TRUSTED_WRAPPER_DIRS.some((dir) => relPath.startsWith(dir)) &&
 		SHARED_RENDERER_IMPORT.test(source)
@@ -177,13 +177,13 @@ export const findInlineClasses = (
 };
 
 const SHARED_SCSS_TOKENS = new Set([
-	'mv-callout',
-	'mv-tabs',
-	'mv-code',
-	'mv-stepper',
-	'mv-copybtn',
-	'mv-page-header',
-	'mv-sitefoot',
+	'mcpv-callout',
+	'mcpv-tabs',
+	'mcpv-code',
+	'mcpv-stepper',
+	'mcpv-copybtn',
+	'mcpv-page-header',
+	'mcpv-sitefoot',
 ]);
 
 /**
