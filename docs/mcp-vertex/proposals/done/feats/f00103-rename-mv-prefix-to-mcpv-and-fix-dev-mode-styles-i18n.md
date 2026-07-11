@@ -1,7 +1,7 @@
 ---
 id: f00103
 kind: feat
-status: ready
+status: done
 type: proposal
 track: shared+ui-extension+web+extensions/vscode+dev+lint
 date: 2026-07-08
@@ -78,7 +78,7 @@ build`/`bun run site`).
 - **Acceptance**:
   - "Every dev entry hoists the rendered document's `<head>` `<style>` blocks into the live page head (idempotently, so a re-render on language change replaces rather than duplicates) instead of discarding them; the ui-extension entry resolves the preview language from `?lang=` (default en) so translations apply and are switchable."
   - "`bun run dev:ide` / `dev:vscode` visibly render the dashboard + webviews styled, in the selected language; a spot-check of the built dev bundle confirms the `<style>` blocks reach the page. (ui-extension entry already fixed in this branch — verify + extend to the vscode entry + any shared harness seam.)"
-
+- status: done
 ### S2 — Rename mv-* → mcpv-* codemod across all surfaces + ratchets
 
 - **Status**: pending
@@ -89,7 +89,7 @@ build`/`bun run site`).
   - "Scripted rename of every namespaced token, boundary-safe: CSS custom props `--mv-` → `--mcpv-`; BEM classes `mv-<x>` → `mcpv-<x>` (in scss selectors, .ts/.astro `class=` strings, and `@extend`); `data-mv-` → `data-mcpv-`; the `__MV_HOST__` global → `__MCPV_HOST__`; storage/event keys `mv:` → `mcpv:` (mv:lang, mv:dev:*). No stray `mv-` token remains (a grep gate in the ratchet asserts zero)."
   - "`shared-ui-ratchet` (its hardcoded token list + its scanner regex) and `style-integrity`'s built-in `mv-*` ignore both switch to `mcpv-*`; the waivers files update; both ratchets pass."
   - "`bun run validate` + `bun run build` + `bun run site` all green; the dev preview still renders (S1) with the new prefix."
-
+- status: done
 ## acceptance
 
 - `bun run validate` → exit 0.
