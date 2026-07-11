@@ -151,10 +151,22 @@
 			"cli": "overview",
 			"note": "overview --full prints the complete tool map; fuzzy filtering is UI-side sugar"
 		},
+		"mcp-vertex.openToolDetail": {
+			"cli": "overview",
+			"note": "tool leaf detail view combines overview/listTools schemas and metrics for one tool"
+		},
 		"mcp-vertex.restartServer": {
 			"waiver": "extension-host process lifecycle; the CLI is a client of that server and cannot restart the host's instance"
 		},
 		"mcp-vertex.openSettings": { "cli": "config show" },
+		"mcp-vertex.saveSettings": {
+			"cli": "config show",
+			"note": "internal settings-webview save handler; hidden from the command palette"
+		},
+		"mcp-vertex.resetSettings": {
+			"cli": "config show",
+			"note": "internal settings-webview reset handler; hidden from the command palette"
+		},
 		"mcp-vertex.openToolbar": {
 			"waiver": "UI navigation into the webview toolbar; no scriptable behaviour"
 		},

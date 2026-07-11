@@ -220,7 +220,7 @@ export interface McpVertexCacheCacheGcOutput {
 }
 
 export interface McpVertexCreateProjectOutput {
-	kind: "host" | "plugin" | "client";
+	kind: "host" | "plugin" | "client" | "extension-host";
 	files: {
 		path: string;
 		content: string;
