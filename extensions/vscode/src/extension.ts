@@ -22,6 +22,10 @@ import {
 	registerSaveSettingsCommand,
 } from './commands/open-settings';
 
+import {
+	registerExternalMcpsAckCommand,
+	surfaceExternalMcpsPendingAcks,
+} from './commands/external-mcps-ack';
 import { registerOpenDashboardCommand } from './commands/open-dashboard';
 import { registerProviderActionCommands } from './commands/provider-actions';
 import {
@@ -390,6 +394,17 @@ export const activate = async (
 	})) {
 		track(reg);
 	}
+	// f00068 S5: external-server activation ack surface (gate decision 5).
+	// The command lists pending acks → QuickPick → accept/reject via the
+	// external_mcp_ack tool; a NON-MODAL toast surfaces them at activation.
+	const externalMcpsAckDeps = {
+		vscode,
+		client,
+		globalState: context.globalState,
+		...withPrefix,
+	};
+	track(registerExternalMcpsAckCommand(externalMcpsAckDeps));
+	void surfaceExternalMcpsPendingAcks(externalMcpsAckDeps);
 	// Fix #7: `openSettings` renders a webview that posts messages to
 	// `mcp-vertex.saveSettings` / `mcp-vertex.resetSettings`. Those
 	// handlers were never registered, so changes the user made in the

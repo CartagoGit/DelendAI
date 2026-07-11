@@ -27,6 +27,13 @@ export const MAX_CATALOG_MATCHES = 10;
 
 export interface ICatalogToolOptions {
 	readonly namespacePrefix: string;
+	/**
+	 * Optional detection provider (f00068 S4). When present, its returned
+	 * catalog ids are annotated `detected: true` in the output — a signal
+	 * only (e.g. "this workspace uses Angular"); it NEVER activates a
+	 * server. Absent by default so the tool stays pure + offline in tests.
+	 */
+	readonly detect?: () => Promise<ReadonlySet<string>>;
 }
 
 const InputSchema = z.object({
@@ -42,6 +49,8 @@ const CompactEntrySchema = z.object({
 	id: z.string(),
 	category: CategorySchema,
 	summary: z.string(),
+	/** Present + true only when a detect rule matched this workspace (S4). */
+	detected: z.boolean().optional(),
 });
 
 const FullEntrySchema = z.object({
@@ -55,6 +64,8 @@ const FullEntrySchema = z.object({
 		pinExample: z.string(),
 	}),
 	envVars: z.array(z.string()).optional(),
+	/** Present + true only when a detect rule matched this workspace (S4). */
+	detected: z.boolean().optional(),
 });
 
 export const CatalogOutputSchema = z.object({
@@ -118,6 +129,9 @@ export const buildCatalogToolRegistration = (
 				outputSchema: CatalogOutputSchema,
 			},
 			async (args: z.infer<typeof InputSchema>) => {
+				const detected = options.detect
+					? await options.detect()
+					: new Set<string>();
 				const detailId = args.detail?.trim().toLowerCase() ?? '';
 				if (detailId !== '') {
 					const entry = FULL_CATALOG.find((e) => e.id === detailId);
@@ -127,11 +141,14 @@ export const buildCatalogToolRegistration = (
 							'Call the catalog without `detail` (optionally with `query`) to list valid ids.',
 						);
 					}
+					const full = toFullEntry(entry);
 					return toolJson({
 						ok: true,
 						mode: 'detail',
 						total: 1,
-						entry: toFullEntry(entry),
+						entry: detected.has(entry.id)
+							? { ...full, detected: true }
+							: full,
 					});
 				}
 				const matches = filterCatalog(args.query);
@@ -141,7 +158,12 @@ export const buildCatalogToolRegistration = (
 					total: matches.length,
 					entries: matches
 						.slice(0, MAX_CATALOG_MATCHES)
-						.map(toCompactEntry),
+						.map((entry) => {
+							const row = toCompactEntry(entry);
+							return detected.has(entry.id)
+								? { ...row, detected: true }
+								: row;
+						}),
 				});
 			},
 		);

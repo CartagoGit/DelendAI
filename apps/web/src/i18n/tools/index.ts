@@ -91,6 +91,12 @@ import { statusMarkerValidateI18n } from '#I18N/tools/mcp-vertex_status-marker_v
 import { testConventionGetConventionI18n } from '#I18N/tools/mcp-vertex_test-convention_get_convention';
 import { testConventionScanDriftI18n } from '#I18N/tools/mcp-vertex_test-convention_scan_drift';
 import { testConventionSuggestSpecPathI18n } from '#I18N/tools/mcp-vertex_test-convention_suggest_spec_path';
+import { externalMcpsAckI18n } from '#I18N/tools/external-mcps/mcp-vertex_external-mcps_ack';
+import { externalMcpsCallI18n } from '#I18N/tools/external-mcps/mcp-vertex_external-mcps_call';
+import { externalMcpsCatalogI18n } from '#I18N/tools/external-mcps/mcp-vertex_external-mcps_catalog';
+import { externalMcpsStatusI18n } from '#I18N/tools/external-mcps/mcp-vertex_external-mcps_status';
+import { externalMcpsSuggestI18n } from '#I18N/tools/external-mcps/mcp-vertex_external-mcps_suggest';
+import { externalMcpsValidateConfigI18n } from '#I18N/tools/external-mcps/mcp-vertex_external-mcps_validate_config';
 import { orchestratorRunnerAdviseRoutingI18n } from '#I18N/tools/orchestrator-runner/mcp-vertex_orchestrator-runner_advise_routing';
 import { orchestratorRunnerAdviseSpendI18n } from '#I18N/tools/orchestrator-runner/mcp-vertex_orchestrator-runner_advise_spend';
 import { orchestratorRunnerBootstrapProvidersI18n } from '#I18N/tools/orchestrator-runner/mcp-vertex_orchestrator-runner_bootstrap_providers';
@@ -299,6 +305,18 @@ registerToolI18n('test-convention_scan_drift', testConventionScanDriftI18n);
 registerToolI18n(
 	'test-convention_suggest_spec_path',
 	testConventionSuggestSpecPathI18n,
+);
+// external-mcps (f00068 S4): 6 tools. The plugin qualifies each as
+// `mcp-vertex_external-mcps_<toolId>` in assemble.ts; the catalogue is keyed on
+// that full name, matching each tool's `descriptionKey`.
+registerToolI18n('mcp-vertex_external-mcps_ack', externalMcpsAckI18n);
+registerToolI18n('mcp-vertex_external-mcps_call', externalMcpsCallI18n);
+registerToolI18n('mcp-vertex_external-mcps_catalog', externalMcpsCatalogI18n);
+registerToolI18n('mcp-vertex_external-mcps_status', externalMcpsStatusI18n);
+registerToolI18n('mcp-vertex_external-mcps_suggest', externalMcpsSuggestI18n);
+registerToolI18n(
+	'mcp-vertex_external-mcps_validate_config',
+	externalMcpsValidateConfigI18n,
 );
 // orchestrator-runner (f00067 S9): 11 tools. The plugin qualifies each as
 // `mcp-vertex_orchestrator-runner_<toolId>` in assemble.ts; the catalogue is

@@ -99,7 +99,10 @@ describe('VS Code extension smoke', async () => {
 		// f00098 S3: +6 for the provider dashboard command set
 		//   (providers.openDashboard / healthcheck / pause / resume,
 		//   usage.report / usage.clear).
-		expect(subscriptions).toHaveLength(27);
+		// f00068 S5 (2026-07-11): +1 for mcp-vertex.externalMcps.ack, the
+		//   external-server activation ack command. The non-modal
+		//   pending-ack notification is fire-and-forget (not tracked).
+		expect(subscriptions).toHaveLength(28);
 		expect(commands.has(REFRESH_COMMAND)).toBe(true);
 		expect(commands.has('mcp-vertex.proposals.refresh')).toBe(true);
 		expect(commands.has('mcp-vertex.proposals.copyError')).toBe(true);

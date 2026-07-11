@@ -41,6 +41,13 @@ export interface ISuggestToolOptions {
 	readonly namespacePrefix: string;
 	/** The plugin's raw `ctx.options` — used to skip declared ids. */
 	readonly options: Readonly<Record<string, unknown>>;
+	/**
+	 * Optional detection provider (f00068 S4). Candidates whose id is in
+	 * the returned set are annotated `detected: true` — a signal only
+	 * (e.g. "this workspace already uses Angular"); it NEVER activates a
+	 * server. Absent by default so the tool stays pure in tests.
+	 */
+	readonly detect?: () => Promise<ReadonlySet<string>>;
 }
 
 const InputSchema = z.object({
@@ -59,6 +66,8 @@ const CandidateSchema = z.object({
 	category: z.string(),
 	/** ONE line: tier + catalog summary. */
 	rationale: z.string(),
+	/** Present + true only when a detect rule matched this workspace (S4). */
+	detected: z.boolean().optional(),
 });
 
 export const SuggestOutputSchema = z.object({
@@ -213,6 +222,9 @@ export const buildSuggestToolRegistration = (
 				outputSchema: SuggestOutputSchema,
 			},
 			async (args: z.infer<typeof InputSchema>) => {
+				const detected = options.detect
+					? await options.detect()
+					: new Set<string>();
 				const matches = matchNeed(args.need);
 				const declared = declaredServerIds(options.options);
 				const candidates = rankCandidates(matches, declared);
@@ -227,6 +239,7 @@ export const buildSuggestToolRegistration = (
 						id: entry.id,
 						category: entry.category,
 						rationale: `${entry.tier}: ${entry.summary}`,
+						...(detected.has(entry.id) ? { detected: true } : {}),
 					})),
 					patch,
 					note:

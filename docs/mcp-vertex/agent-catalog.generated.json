@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-07-09T07:08:46.878Z",
+	"generatedAt": "2026-07-11T09:14:34.302Z",
 	"mode": "compact",
 	"tools": [
 		{
@@ -416,6 +416,22 @@
 				"versioning"
 			],
 			"bodyPath": "packages/core/skills/conventional-commits-and-release/SKILL.md"
+		},
+		{
+			"id": "mcp-vertex-external-mcps",
+			"version": "1.0.0",
+			"minCoreVersion": "0.1.0",
+			"summary": "Use when a workspace needs a capability native tools do not cover, to compose a third-party MCP server via catalog, suggest, validate_config, ack, and the lazy ext.<server>.<tool> call proxy.",
+			"appliesTo": [
+				"@mcp-vertex/external-mcps"
+			],
+			"tags": [
+				"composition",
+				"external-mcps",
+				"f00068",
+				"human-ack"
+			],
+			"bodyPath": "plugins/external-mcps/skills/external-mcps/SKILL.md"
 		},
 		{
 			"id": "mcp-vertex-failure-modes",
