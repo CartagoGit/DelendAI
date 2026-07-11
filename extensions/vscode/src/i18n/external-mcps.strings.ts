@@ -72,7 +72,8 @@ const fr: IExternalMcpsStrings = {
 
 const de: IExternalMcpsStrings = {
 	pickPending: 'Ausstehende Aktivierung eines externen Servers auswählen',
-	noPending: 'Keine Aktivierung eines externen Servers wartet auf Entscheidung.',
+	noPending:
+		'Keine Aktivierung eines externen Servers wartet auf Entscheidung.',
 	accept: 'Annehmen',
 	reject: 'Ablehnen',
 	decidePrompt: 'Diese Aktivierung annehmen oder ablehnen?',
