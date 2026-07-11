@@ -1,6 +1,6 @@
 ---
 id: f00068
-status: ready
+status: done
 paused-reason: Blocked on multi-model orchestrator and dependency prerequisites
 type: proposal
 track: core+plugins+host+config+i18n+docs+web+extensions/vscode
@@ -953,7 +953,7 @@ for X?" and gets back a one-line summary per matching entry
 - **Acceptance**:
   - "Angular seed detect rule (`package.json#dependencies['@angular/core']`) + generic detect engine; detection only ANNOTATES the catalog/suggest output (`detected: true`), never activates (knob semantics preserved)."
   - "All 6 tools registered in the web i18n table (12-lang per convention); skill documents the LLM workflow (catalog→suggest→ack→call); plugin documented in PLUGINS-MCP-VERTEX; catalog artifacts regenerated; token-budget suite green (decision 6)."
-
+- status: done
 ### S5 — Gated discovery + vscode ack surface
 
 - **Status**: pending
@@ -963,7 +963,7 @@ for X?" and gets back a one-line summary per matching entry
 - **Acceptance**:
   - "`external_mcp_discover` consults the npm registry ONLY when allowDiscoverySearch:true; spec asserts the off-default returns the structured opt-in hint (never a network call); 10/10min budget enforced in-memory."
   - "vscode: pending-ack notification action + dashboard chip wired (thin adapter over `external_mcp_ack`); parity map updated."
-
+- status: done
 ## Acceptance
 
 - `bun run typecheck` → exit 0 (root globs `plugins/*/src`, so the new
