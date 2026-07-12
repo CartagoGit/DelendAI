@@ -87,6 +87,23 @@ export interface IConfigurationCenterCopy {
 	readonly schemaUnavailable: string;
 	readonly unsupportedField: string;
 	readonly redacted: string;
+	readonly custom: string;
+	readonly enabled: string;
+	readonly enabledDescription: string;
+	readonly path: string;
+	readonly pathDescription: string;
+	readonly prefix: string;
+	readonly prefixDescription: string;
+	readonly options: string;
+	readonly pluginOptionsDescription: string;
+	readonly serverDefinition: string;
+	readonly serverDefinitionDescription: string;
+	readonly providerDefinition: string;
+	readonly preservedExtensionField: string;
+	readonly unknownOwner: string;
+	readonly capabilityTools: string;
+	readonly capabilityPrompts: string;
+	readonly capabilityResources: string;
 	readonly tabs: Readonly<Record<ConfigurationCenterTab, string>>;
 }
 

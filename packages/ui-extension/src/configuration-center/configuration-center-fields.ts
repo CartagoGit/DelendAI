@@ -86,6 +86,7 @@ const collectFields = (
 	schema: JsonObject,
 	value: JsonObject,
 	basePath: readonly ConfigurationPathSegment[],
+	unknownDescription: string,
 ): IConfigurationField[] => {
 	const properties = propertiesOf(schema);
 	const required = requiredOf(schema);
@@ -104,6 +105,7 @@ const collectFields = (
 					propertySchema,
 					objectOf(propertyValue) ?? {},
 					path,
+					unknownDescription,
 				),
 			);
 			continue;
@@ -125,7 +127,7 @@ const collectFields = (
 		fields.push(
 			scalarField(
 				key,
-				{ type: 'object', description: 'Preserved extension field' },
+				{ type: 'object', description: unknownDescription },
 				value[key],
 				path,
 				false,
@@ -140,4 +142,6 @@ export const buildConfigurationFields = (
 	schema: Readonly<Record<string, unknown>>,
 	value: Readonly<Record<string, unknown>>,
 	basePath: readonly ConfigurationPathSegment[] = [],
-): readonly IConfigurationField[] => collectFields(schema, value, basePath);
+	unknownDescription = 'Preserved extension field',
+): readonly IConfigurationField[] =>
+	collectFields(schema, value, basePath, unknownDescription);

@@ -52,7 +52,7 @@ const renderField = (
 		${
 			boolean
 				? ''
-				: `<label class="mcpv-config__field-label" for="${attr(field.id)}">${attr(field.label)}${field.required ? '<span class="mcpv-config__required" aria-hidden="true">*</span>' : ''}${!field.known ? '<span class="mcpv-config__badge">custom</span>' : ''}</label>`
+				: `<label class="mcpv-config__field-label" for="${attr(field.id)}">${attr(field.label)}${field.required ? '<span class="mcpv-config__required" aria-hidden="true">*</span>' : ''}${!field.known ? `<span class="mcpv-config__badge">${attr(model.copy.custom)}</span>` : ''}</label>`
 		}
 		${hint === undefined ? '' : `<p class="mcpv-config__description">${attr(hint)}</p>`}
 		${fieldControl(field)}
@@ -69,17 +69,22 @@ const renderFields = (
 		: fields.map((field) => renderField(field, model)).join('');
 
 const originLabel = (
-	origin: IConfigurationPluginModel['origin'],
+	origin:
+		| IConfigurationPluginModel['origin']
+		| IConfigurationArtifactModel['owner']['origin'],
 	model: IConfigurationCenterModel,
 ): string =>
 	origin === 'bundled'
 		? model.copy.bundled
 		: origin === 'user-local'
 			? model.copy.userLocal
-			: model.copy.external;
+			: origin === 'external'
+				? model.copy.external
+				: model.copy.unknownOwner;
 
 const builtinPluginFields = (
 	plugin: IConfigurationPluginModel,
+	model: IConfigurationCenterModel,
 ): readonly IConfigurationField[] => {
 	const externalServerId = plugin.id.startsWith('ext.')
 		? plugin.id.slice(4)
@@ -99,8 +104,8 @@ const builtinPluginFields = (
 		{
 			id: `field-plugin-${plugin.id}-enabled`,
 			path: enabledPath,
-			label: 'Enabled',
-			description: 'Enable this plugin on the next MCP server start.',
+			label: model.copy.enabled,
+			description: model.copy.enabledDescription,
 			kind: 'boolean',
 			value: plugin.active,
 			required: false,
@@ -112,9 +117,8 @@ const builtinPluginFields = (
 	fields.push({
 		id: `field-plugin-${plugin.id}-path`,
 		path: ['plugins', plugin.id, 'path'],
-		label: 'Path',
-		description:
-			'Module path for project-local or external plugin packages.',
+		label: model.copy.path,
+		description: model.copy.pathDescription,
 		kind: 'text',
 		value: plugin.path,
 		required: false,
@@ -124,8 +128,8 @@ const builtinPluginFields = (
 	fields.push({
 		id: `field-plugin-${plugin.id}-prefix`,
 		path: ['plugins', plugin.id, 'prefix'],
-		label: 'Prefix',
-		description: 'Optional tool namespace override.',
+		label: model.copy.prefix,
+		description: model.copy.prefixDescription,
 		kind: 'text',
 		value: plugin.prefix,
 		required: false,
@@ -137,13 +141,14 @@ const builtinPluginFields = (
 
 const opaqueOptionsField = (
 	plugin: IConfigurationPluginModel,
+	model: IConfigurationCenterModel,
 ): IConfigurationField => ({
 	id: `field-plugin-${plugin.id}-options`,
 	path: ['plugins', plugin.id, 'options'],
-	label: 'Options',
+	label: model.copy.options,
 	...(plugin.schemaStatus === 'unavailable'
 		? {}
-		: { description: 'Plugin options' }),
+		: { description: model.copy.pluginOptionsDescription }),
 	kind: 'json',
 	value: plugin.options,
 	required: false,
@@ -156,14 +161,14 @@ const renderPlugin = (
 	model: IConfigurationCenterModel,
 ): string => {
 	const fields = [
-		...builtinPluginFields(plugin),
+		...builtinPluginFields(plugin, model),
 		...(plugin.fields.length > 0
 			? plugin.fields
-			: [opaqueOptionsField(plugin)]),
+			: [opaqueOptionsField(plugin, model)]),
 	];
 	return `<article class="mcpv-config__card" data-config-search-text="${attr(`${plugin.id} ${plugin.origin} ${plugin.source}`)}">
 		<header class="mcpv-config__card-head">
-			<div><h3 class="mcpv-config__card-title">${attr(plugin.id)}</h3><p class="mcpv-config__card-meta">${plugin.capabilities.tools} tools · ${plugin.capabilities.prompts} prompts · ${plugin.capabilities.resources} resources</p></div>
+			<div><h3 class="mcpv-config__card-title">${attr(plugin.id)}</h3><p class="mcpv-config__card-meta">${plugin.capabilities.tools} ${attr(model.copy.capabilityTools)} · ${plugin.capabilities.prompts} ${attr(model.copy.capabilityPrompts)} · ${plugin.capabilities.resources} ${attr(model.copy.capabilityResources)}</p></div>
 			<div class="mcpv-config__badges"><span class="mcpv-config__badge">${attr(originLabel(plugin.origin, model))}</span><span class="mcpv-config__badge mcpv-config__badge--${plugin.active ? 'active' : 'inactive'}">${attr(plugin.active ? model.copy.active : model.copy.inactive)}</span></div>
 		</header>
 		${plugin.schemaStatus === 'unavailable' ? `<p class="mcpv-config__notice">${attr(model.copy.schemaUnavailable)}</p>` : ''}
@@ -173,9 +178,10 @@ const renderPlugin = (
 
 const renderArtifact = (
 	artifact: IConfigurationArtifactModel,
+	model: IConfigurationCenterModel,
 ): string => `<div class="mcpv-config__artifact" data-config-search-text="${attr(`${artifact.id} ${artifact.ownerLabel} ${artifact.owner.origin}`)}">
 	<span class="mcpv-config__artifact-id">${attr(artifact.id)}</span>
-	<span class="mcpv-config__badges"><span class="mcpv-config__badge">${attr(artifact.ownerLabel)}</span><span class="mcpv-config__badge">${attr(artifact.owner.origin)}</span></span>
+	<span class="mcpv-config__badges"><span class="mcpv-config__badge">${attr(artifact.ownerLabel)}</span><span class="mcpv-config__badge">${attr(originLabel(artifact.owner.origin, model))}</span></span>
 </div>`;
 
 const panel = (
@@ -227,7 +233,7 @@ export const renderConfigurationCenter = (
 			? `<p class="mcpv-config__notice">${attr(model.copy.unavailable)}</p>`
 			: model.artifacts[id].length === 0
 				? `<p class="mcpv-config__empty">${attr(model.copy.empty)}</p>`
-				: `<div class="mcpv-config__card">${model.artifacts[id].map(renderArtifact).join('')}</div>`;
+				: `<div class="mcpv-config__card">${model.artifacts[id].map((artifact) => renderArtifact(artifact, model)).join('')}</div>`;
 		return panel(id, model.copy.tabs[id], body, model);
 	};
 	return `<!doctype html>

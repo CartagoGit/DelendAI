@@ -39,6 +39,25 @@ const DEFAULT_COPY: IConfigurationCenterCopy = {
 	unsupportedField:
 		'This field uses raw JSON because its schema is not supported.',
 	redacted: 'Secret value hidden',
+	custom: 'Custom',
+	enabled: 'Enabled',
+	enabledDescription: 'Enable this plugin on the next MCP server start.',
+	path: 'Path',
+	pathDescription:
+		'Module path for project-local or external plugin packages.',
+	prefix: 'Prefix',
+	prefixDescription: 'Optional tool namespace override.',
+	options: 'Options',
+	pluginOptionsDescription: 'Plugin options',
+	serverDefinition: 'Server definition',
+	serverDefinitionDescription:
+		'External MCP command, arguments and enabled state.',
+	providerDefinition: 'Provider definition',
+	preservedExtensionField: 'Preserved extension field',
+	unknownOwner: 'Unknown owner',
+	capabilityTools: 'tools',
+	capabilityPrompts: 'prompts',
+	capabilityResources: 'resources',
 	tabs: {
 		general: 'General',
 		plugins: 'Plugins',
@@ -68,12 +87,13 @@ const artifactTabKind: Readonly<
 const artifactsOf = (
 	artifacts: readonly IConfigurationArtifact[],
 	kind: ConfigurationArtifactKind,
+	copy: IConfigurationCenterCopy,
 ): readonly IConfigurationArtifactModel[] =>
 	artifacts
 		.filter((entry) => entry.kind === kind)
 		.map((entry) => ({
 			...entry,
-			ownerLabel: entry.owner.id ?? 'Unknown owner',
+			ownerLabel: entry.owner.id ?? copy.unknownOwner,
 		}))
 		.sort(
 			(left, right) =>
@@ -83,6 +103,7 @@ const artifactsOf = (
 
 const providersOf = (
 	config: Readonly<Record<string, unknown>>,
+	copy: IConfigurationCenterCopy,
 ): readonly IConfigurationProviderModel[] => {
 	const providers = Array.isArray(config.providers) ? config.providers : [];
 	return providers.map((value, index) => {
@@ -102,7 +123,7 @@ const providersOf = (
 				id: `field-providers-${index}`,
 				path: ['providers', index],
 				label: id,
-				description: 'Provider definition',
+				description: copy.providerDefinition,
 				kind: 'json',
 				value,
 				required: true,
@@ -131,6 +152,7 @@ const externalServerOf = (
 
 const pluginModelsOf = (
 	source: IConfigurationCenterSource,
+	copy: IConfigurationCenterCopy,
 ): readonly IConfigurationPluginModel[] =>
 	[...source.plugins]
 		.sort((left, right) => left.id.localeCompare(right.id))
@@ -154,9 +176,8 @@ const pluginModelsOf = (
 									'servers',
 									externalServerId,
 								],
-								label: 'Server definition',
-								description:
-									'External MCP command, arguments and enabled state.',
+								label: copy.serverDefinition,
+								description: copy.serverDefinitionDescription,
 								kind: 'json' as const,
 								value: externalServer,
 								required: true,
@@ -170,6 +191,7 @@ const pluginModelsOf = (
 								plugin.optionsSchema,
 								plugin.options,
 								['plugins', plugin.id, 'options'],
+								copy.preservedExtensionField,
 							);
 			return {
 				...plugin,
@@ -188,15 +210,17 @@ export const buildConfigurationCenterModel = (
 	const rootFields = buildConfigurationFields(
 		source.configSchema,
 		config,
+		[],
+		copy.preservedExtensionField,
 	).filter(
 		(field) => field.path[0] !== 'plugins' && field.path[0] !== 'providers',
 	);
-	const plugins = pluginModelsOf(source);
-	const providers = providersOf(config);
+	const plugins = pluginModelsOf(source, copy);
+	const providers = providersOf(config, copy);
 	const artifacts = {
-		agents: artifactsOf(source.artifacts, artifactTabKind.agents),
-		skills: artifactsOf(source.artifacts, artifactTabKind.skills),
-		prompts: artifactsOf(source.artifacts, artifactTabKind.prompts),
+		agents: artifactsOf(source.artifacts, artifactTabKind.agents, copy),
+		skills: artifactsOf(source.artifacts, artifactTabKind.skills, copy),
+		prompts: artifactsOf(source.artifacts, artifactTabKind.prompts, copy),
 	};
 	const unavailable = new Set(source.unavailableArtifactKinds);
 	const counts: Readonly<Record<ConfigurationCenterTab, number>> = {
