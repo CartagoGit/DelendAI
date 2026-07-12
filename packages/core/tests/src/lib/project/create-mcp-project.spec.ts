@@ -181,9 +181,13 @@ describe('instrumented tool hooks (f00111 S1)', async () => {
 			const controller = new AbortController();
 			setTimeout(() => controller.abort(), 50);
 			await expect(
-				client.callTool({ name: 'spec_slow', arguments: { x: 1 } }, undefined, {
-					signal: controller.signal,
-				}),
+				client.callTool(
+					{ name: 'spec_slow', arguments: { x: 1 } },
+					undefined,
+					{
+						signal: controller.signal,
+					},
+				),
 			).rejects.toThrow();
 			// The handler is still sleeping; the abort listener has fired.
 			await new Promise((resolve) => setTimeout(resolve, 400));
