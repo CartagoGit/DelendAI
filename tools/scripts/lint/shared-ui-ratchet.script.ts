@@ -45,8 +45,6 @@ import { isAbsolute, join } from 'node:path';
 
 const REPO_ROOT = process.cwd();
 const DEFAULT_WAIVERS = 'tools/scripts/lint/shared-ui-ratchet.waivers.json';
-const SHARED_COMPONENTS_DIR = 'apps/shared/src/components';
-const SHARED_STYLES_DIR = 'apps/shared/src/styles';
 
 export const MIN_WAIVER_LENGTH = 12;
 
@@ -163,15 +161,16 @@ export const findInlineClasses = (
 	}
 
 	const out: Violation[] = [];
-	let m: RegExpExecArray | null;
 	FORBIDDEN_CLASSNAME.lastIndex = 0;
-	while ((m = FORBIDDEN_CLASSNAME.exec(source)) !== null) {
+	let m = FORBIDDEN_CLASSNAME.exec(source);
+	while (m !== null) {
 		out.push({
 			file: relPath,
 			kind: 'inline-class',
 			className: m[1] ?? '',
 			note: `inline \`${m[1]}\` class on \`${relPath}\` — use the shared renderer (apps/shared/src/components/...) instead`,
 		});
+		m = FORBIDDEN_CLASSNAME.exec(source);
 	}
 	return out;
 };
@@ -229,7 +228,7 @@ export const findForkedScss = (
 export const walkConsumerFiles = async function* (
 	root: string,
 ): AsyncGenerator<{ absPath: string; relPath: string }> {
-	const { readdir, stat } = await import('node:fs/promises');
+	const { readdir } = await import('node:fs/promises');
 	let entries: import('node:fs').Dirent[];
 	try {
 		entries = await readdir(root, { withFileTypes: true });

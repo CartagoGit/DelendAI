@@ -9,9 +9,8 @@ import {
 } from '@mcp-vertex/core/public';
 
 import type { McpStdioClient } from '../transport/mcp-stdio-client';
+import { formatToolName } from './_namespace';
 
-const AGENT_CATALOG_TOOL = 'mcp-vertex_agent_catalog';
-const SKILL_TOOL = 'mcp-vertex_skill';
 const DEFAULT_TTL_MS = 5 * 60 * 1000;
 
 type IAgentCatalogOutput = McpVertexToolOutputs['mcp-vertex_agent_catalog'];
@@ -26,6 +25,7 @@ export interface IAgentCatalogSearchResult {
 export interface IAgentCatalogServiceOptions {
 	readonly ttlMs?: number;
 	readonly now?: () => number;
+	readonly namespacePrefix?: string;
 }
 
 interface ICatalogCacheEntry {
@@ -173,6 +173,7 @@ export class AgentCatalogService {
 	private cache: ICatalogCacheEntry | undefined;
 	private readonly ttlMs: number;
 	private readonly now: () => number;
+	private readonly namespacePrefix: string | undefined;
 
 	constructor(
 		private readonly client: McpStdioClient,
@@ -180,6 +181,7 @@ export class AgentCatalogService {
 	) {
 		this.ttlMs = options.ttlMs ?? DEFAULT_TTL_MS;
 		this.now = options.now ?? (() => Date.now());
+		this.namespacePrefix = options.namespacePrefix;
 	}
 
 	async getTools(query?: string): Promise<readonly IToolSummary[]> {
@@ -218,7 +220,7 @@ export class AgentCatalogService {
 		const result = await this.client.request<
 			{ id: string },
 			ISkillToolOutput
-		>(SKILL_TOOL, { id });
+		>(formatToolName(this.namespacePrefix, 'skill'), { id });
 		if (typeof result.body !== 'string') {
 			throw new Error(`Skill "${id}" did not return a body`);
 		}
@@ -235,7 +237,9 @@ export class AgentCatalogService {
 		const snapshot = await this.client.request<
 			{ mode: 'full' },
 			IAgentCatalogOutput
-		>(AGENT_CATALOG_TOOL, { mode: 'full' });
+		>(formatToolName(this.namespacePrefix, 'agent_catalog'), {
+			mode: 'full',
+		});
 		this.cache = {
 			snapshot,
 			fetchedAt: this.now(),

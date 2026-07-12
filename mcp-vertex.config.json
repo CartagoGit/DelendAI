@@ -12,14 +12,7 @@
 		},
 		"search": {
 			"options": {
-				"roots": [
-					"packages",
-					"plugins",
-					"extensions",
-					"apps",
-					"tools",
-					"scripts"
-				],
+				"roots": ["packages", "plugins", "extensions", "apps", "tools"],
 				"extensions": [
 					".ts",
 					".tsx",
