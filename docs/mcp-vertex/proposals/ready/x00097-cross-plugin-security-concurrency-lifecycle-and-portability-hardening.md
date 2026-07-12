@@ -69,6 +69,19 @@ requieren cambios contractuales o tests de carrera más amplios que un quick fix
 - **Gate**: `bun run test`
 - **Status**: done
 
+### S3c — Deterministic host signal-readiness handshake
+- **Finding (2026-07-12)**: the full-suite gate reproduced a double-SIGTERM
+  failure where the child exited with the raw signal. The e2e assumed handlers
+  were installed after a fixed minimum uptime, but cold assembly can exceed
+  that interval under load.
+- **Resolution**: the host emits an opt-in, test-only readiness marker directly
+  after installing signal handlers; lifecycle e2e tests pipe stderr and await
+  that handshake before sending SIGINT/SIGTERM. No production banner is added.
+- **Files**: tools/scripts/host/host-server.script.ts
+- **Files**: packages/core/tests/src/lib/cli/host-graceful-shutdown.spec.ts
+- **Gate**: `bun run test`
+- **Status**: done
+
 ### S5 — Async portable process runners
 - **Files**: packages/core/src/lib/shared/run-command.ts
 - **Files**: plugins/quality/src/lib/services/runner.ts
