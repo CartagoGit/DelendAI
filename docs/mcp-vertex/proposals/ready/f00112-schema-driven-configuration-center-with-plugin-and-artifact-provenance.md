@@ -226,9 +226,15 @@ declared settings in the editor.
   - "Moved server command/args/prefix settings from the invalid manifest root
     into `contributes.configuration` and added a structural regression. VS Code
     typecheck, build and its complete 41-suite / 179-test gate pass."
-  - "Still pending before S4 can be marked done: route the renderer and host
-    chrome through typed 12-language copy, then visually inspect the real panel
-    in the Extension Development Host."
+  - "The renderer, document language and host chrome now resolve through a
+    typed, completeness-tested 12-language table using the extension's
+    persisted language. This includes workspace/validation messages, save and
+    restart acknowledgement, tab labels and every state/empty/error string;
+    the extension gate is now 41 suites / 180 tests."
+  - "Still pending before S4 can be marked done: visually inspect the real
+    panel in the Extension Development Host. The browser `dev:vscode` audit
+    also confirmed that its preview has no Configuration Center route yet;
+    that separate preview defect is recorded with the visual-extension work."
 - acceptance:
   - "A contributed command opens the center for an explicitly selected workspace folder in multi-root workspaces."
   - "Every inbound webview message is schema-validated and restricted to declared configuration operations."

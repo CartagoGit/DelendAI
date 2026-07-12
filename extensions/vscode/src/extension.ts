@@ -391,6 +391,7 @@ export const activate = async (
 		registerOpenConfigurationCenterCommand({
 			vscode,
 			client,
+			globalState: context.globalState,
 			...withPrefix,
 		}),
 	);
