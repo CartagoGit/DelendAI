@@ -121,7 +121,11 @@ describe('proposal authoring (create → board → close)', async () => {
 			goal: 'close final slice cleanly',
 			slices: [{ sliceId: 's1', files: ['src/a.ts'] }],
 		});
-		const file = join(opts.proposalsDirAbs, 'ready', 'p6-last-slice-close.md');
+		const file = join(
+			opts.proposalsDirAbs,
+			'ready',
+			'p6-last-slice-close.md',
+		);
 		const original = readFileSync(file, 'utf8');
 		const withAcceptance = original.replace(
 			/## Acceptance\n\n- \[ \] done\./,
@@ -216,7 +220,9 @@ describe('proposal authoring (create → board → close)', async () => {
 			}),
 		);
 		expect(changes.status).toBe('changes_requested');
-		expect(readFileSync(file, 'utf8')).not.toMatch(/^- \*\*Status\*\*: done/m);
+		expect(readFileSync(file, 'utf8')).not.toMatch(
+			/^- \*\*Status\*\*: done/m,
+		);
 
 		// Fixer resubmits; another agent approves the fix.
 		const resubmitted = parse(

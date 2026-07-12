@@ -62,9 +62,7 @@ const renderSlice = (s: z.infer<typeof SLICE_IN>): string => {
 	if (s.dependsOn && s.dependsOn.length > 0) {
 		lines.push(`- **DependsOn**: [${s.dependsOn.join(', ')}]`);
 	}
-	lines.push(
-		`- **Files**: ${s.files.map((f) => `\`${f}\``).join(', ')}`,
-	);
+	lines.push(`- **Files**: ${s.files.map((f) => `\`${f}\``).join(', ')}`);
 	lines.push(`- **Gate**: ${s.gate ?? 'none'}`);
 	if (s.acceptance && s.acceptance.length > 0) {
 		lines.push('- acceptance:');
@@ -810,12 +808,9 @@ export const buildProposalBoardRegistration = (
 				// the underscore spellings for indexes written before the
 				// vocabulary converged.
 				const actionable = index.proposals.filter((p) =>
-					[
-						'pending',
-						'ready',
-						'in_progress',
-						'in-progress',
-					].includes(p.status),
+					['pending', 'ready', 'in_progress', 'in-progress'].includes(
+						p.status,
+					),
 				);
 				const board = await Promise.all(
 					actionable.map(async (p) => {
