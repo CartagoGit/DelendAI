@@ -103,6 +103,25 @@ export type {
 	IPluginOriginInput,
 	PluginOrigin,
 } from '../lib/contracts/interfaces/plugin-origin.interface';
+export {
+	buildConfigurationCenterSnapshot,
+	readConfigurationCenterSection,
+	serializeConfigurationSchema,
+} from '../lib/configuration-center/configuration-center';
+export type {
+	ConfigurationArtifactKind,
+	ConfigurationCenterSection,
+	ConfigurationOwnerOrigin,
+	IConfigurationArtifact,
+	IConfigurationCenterInput,
+	IConfigurationCenterPage,
+	IConfigurationCenterResult,
+	IConfigurationCenterSnapshot,
+	IConfigurationCenterSummary,
+	IConfigurationOwner,
+	IConfigurationPlugin,
+	IConfigurationPluginCapabilities,
+} from '../lib/contracts/interfaces/configuration-center.interface';
 export { buildActivationReport } from '../lib/plugins/activation-report';
 export type {
 	ActivationSource,

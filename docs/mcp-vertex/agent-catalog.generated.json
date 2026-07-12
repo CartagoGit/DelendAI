@@ -11,6 +11,10 @@
 			"plugin": "mcp-vertex"
 		},
 		{
+			"name": "mcp-vertex_configuration_center",
+			"plugin": "mcp-vertex"
+		},
+		{
 			"name": "mcp-vertex_conventions_conventions_check",
 			"plugin": "conventions"
 		},
