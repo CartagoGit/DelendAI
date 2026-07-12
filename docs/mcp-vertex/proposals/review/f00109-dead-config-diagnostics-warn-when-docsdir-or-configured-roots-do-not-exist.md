@@ -2,7 +2,7 @@
 id: f00109
 title: "Dead-config diagnostics: warn when docsDir or configured roots do not exist"
 kind: feat
-status: in-progress
+status: review
 type: proposal
 track: general
 date: 2026-07-12
@@ -45,7 +45,7 @@ it anything was wrong.
 - **Status**: in-progress
 - **Files**: [packages/core/src/lib/plugins/diagnose-workspace-layout.ts, packages/core/tests/src/lib/plugins/diagnose-workspace-layout.spec.ts, packages/core/src/lib/cli/assemble.ts, packages/core/src/lib/tools/overview-tool.ts, packages/core/src/public/index.ts]
 - **Gate**: bun run validate
-
+- status: done
 ## acceptance
 
 - Pure `diagnoseWorkspaceLayout({ config, configPresent, docsDir, probe })`
