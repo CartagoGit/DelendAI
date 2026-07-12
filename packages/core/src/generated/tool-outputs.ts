@@ -39,7 +39,7 @@ export interface McpVertexAgentCatalogOutput {
 	};
 	tools: Array<{
 		name: string;
-		plugin: string;
+		plugin?: string;
 		summary?: string;
 		tags?: string[];
 		effects?: Array<"write" | "spawn" | "network" | "destructive">;
@@ -59,7 +59,7 @@ export interface McpVertexAgentCatalogOutput {
 		track: string;
 		status: "ready" | "in-progress" | "review" | "paused" | "done" | "blocked" | "retired" | "unspecified";
 		kind: "feat" | "fix" | "refactor" | "chore" | "docs" | "plan" | "audit" | "unspecified";
-		date: string;
+		date?: string;
 	}>;
 	providers?: Array<{
 		id: string;

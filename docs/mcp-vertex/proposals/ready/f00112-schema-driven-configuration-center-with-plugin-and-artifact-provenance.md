@@ -4,7 +4,7 @@ title: "Schema-driven Configuration Center with plugin and artifact provenance"
 kind: feat
 status: ready
 type: proposal
-track: core+config+client+ui-extension+vscode+plugins+i18n+docs
+track: configuration-center
 date: 2026-07-12
 ---
 
