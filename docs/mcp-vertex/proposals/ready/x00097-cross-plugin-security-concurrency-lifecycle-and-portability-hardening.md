@@ -56,7 +56,7 @@ requieren cambios contractuales o tests de carrera más amplios que un quick fix
 - **Files**: plugins/web-fetch/tests/src/lib/services/engine.spec.ts
 - **Gate**: `bun run test`
 - **Status**: pending
-
+- status: done
 ### S5 — Async portable process runners
 - **Files**: packages/core/src/lib/shared/run-command.ts
 - **Files**: plugins/quality/src/lib/services/runner.ts

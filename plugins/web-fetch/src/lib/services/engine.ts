@@ -18,57 +18,27 @@
  *   allow-list. A redirect to a non-allow-listed host is rejected, not
  *   silently followed — that is the documented mitigation for "allow-listed
  *   URL redirects to an internal/non-allow-listed host".
- * - Response size is capped at `maxBytes` (default 50 KiB); the body is
- *   truncated, never buffered beyond the cap.
+ * - Response size is capped at `maxBytes` (default 50 KiB) **while
+ *   streaming** (x00097 S4, audit a00052 #14): the cap counts real octets,
+ *   the reader is cancelled the moment it is crossed (memory stays
+ *   bounded, the download stops), and a `TextDecoder` decodes
+ *   incrementally so multi-byte UTF-8 sequences split across chunk — or
+ *   cap — boundaries never corrupt the text.
  */
+import type {
+	IFetchLike,
+	IWebFetchOptions,
+	IWebFetchResult,
+} from '../contracts/interfaces/fetch.interface';
 
-export type IWebFetchReason =
-	| 'blocked-host'
-	| 'invalid-url'
-	| 'redirect-blocked'
-	| 'too-many-redirects'
-	| 'timeout'
-	| 'fetch-error';
-
-export interface IWebFetchSuccess {
-	readonly ok: true;
-	readonly url: string;
-	readonly status: number;
-	readonly contentType: string | null;
-	readonly body: string;
-	readonly truncated: boolean;
-}
-
-export interface IWebFetchFailure {
-	readonly ok: false;
-	readonly reason: IWebFetchReason;
-	readonly detail?: string;
-}
-
-export type IWebFetchResult = IWebFetchSuccess | IWebFetchFailure;
-
-export interface IWebFetchOptions {
-	readonly url: string;
-	/** Hostnames (exact or `*.suffix` wildcard) this call is allowed to reach. */
-	readonly allowList: readonly string[];
-	/** Response cap in bytes. Default 50 KiB. */
-	readonly maxBytes?: number;
-	/** Per-request timeout in ms. Default 8000. */
-	readonly timeoutMs?: number;
-	/** Max redirect hops followed manually. Default 5. */
-	readonly maxRedirects?: number;
-}
-
-/** Injectable fetcher so tests never hit the real network. */
-export type IFetchLike = (
-	url: string,
-	init?: { readonly signal?: AbortSignal; readonly redirect?: 'manual' },
-) => Promise<{
-	readonly ok: boolean;
-	readonly status: number;
-	readonly headers: { get(name: string): string | null };
-	text(): Promise<string>;
-}>;
+export type {
+	IFetchLike,
+	IWebFetchFailure,
+	IWebFetchOptions,
+	IWebFetchReason,
+	IWebFetchResult,
+	IWebFetchSuccess,
+} from '../contracts/interfaces/fetch.interface';
 
 const DEFAULT_MAX_BYTES = 50 * 1024;
 const DEFAULT_TIMEOUT_MS = 8000;
@@ -99,6 +69,66 @@ const parseUrl = (raw: string): URL | undefined => {
 	} catch {
 		return undefined;
 	}
+};
+
+/**
+ * Consume a response body up to `maxBytes` REAL bytes. Streams when the
+ * fetcher exposes `body`, cancelling the reader as soon as the cap is
+ * crossed; falls back to `text()` for body-less fetchers (test doubles) —
+ * still capped in octets via an encode/slice round-trip. The incremental
+ * decoder replaces a cap-split multi-byte sequence with U+FFFD instead of
+ * emitting garbage.
+ */
+const readBodyCapped = async (
+	res: Awaited<ReturnType<IFetchLike>>,
+	maxBytes: number,
+): Promise<{ body: string; truncated: boolean }> => {
+	const stream = res.body;
+	if (stream === undefined || stream === null) {
+		const raw = await res.text();
+		const bytes = new TextEncoder().encode(raw);
+		if (bytes.byteLength <= maxBytes) {
+			return { body: raw, truncated: false };
+		}
+		return {
+			body: new TextDecoder('utf-8').decode(
+				bytes.subarray(0, maxBytes),
+			),
+			truncated: true,
+		};
+	}
+
+	const reader = stream.getReader();
+	const decoder = new TextDecoder('utf-8');
+	let received = 0;
+	let out = '';
+	let truncated = false;
+	try {
+		for (;;) {
+			const { done, value } = await reader.read();
+			if (done) break;
+			if (value === undefined || value.byteLength === 0) continue;
+			const remaining = maxBytes - received;
+			if (value.byteLength <= remaining) {
+				received += value.byteLength;
+				out += decoder.decode(value, { stream: true });
+				continue;
+			}
+			// Cap crossed mid-chunk: keep the fitting prefix, stop the
+			// download — the cancel is the memory/bandwidth bound.
+			out += decoder.decode(value.subarray(0, remaining), {
+				stream: true,
+			});
+			received = maxBytes;
+			truncated = true;
+			await reader.cancel();
+			break;
+		}
+	} finally {
+		reader.releaseLock();
+	}
+	out += decoder.decode(); // flush a trailing partial sequence (U+FFFD)
+	return { body: out, truncated };
 };
 
 /**
@@ -145,11 +175,13 @@ export const webFetch = async (
 				detail: String(err),
 			};
 		}
-		clearTimeout(timer);
 
 		// Manual redirect handling: re-validate the Location host before
 		// following it, instead of letting `fetch` auto-follow blindly.
 		if (res.status >= 300 && res.status < 400) {
+			clearTimeout(timer);
+			// Free the hop's connection; its body is never read.
+			void res.body?.cancel().catch(() => undefined);
 			const location = res.headers.get('location');
 			if (location === null) {
 				return {
@@ -167,16 +199,29 @@ export const webFetch = async (
 		}
 
 		const contentType = res.headers.get('content-type');
-		const raw = await res.text();
-		const truncated = raw.length > maxBytes;
-		const body = truncated ? raw.slice(0, maxBytes) : raw;
+		// x00097 S4: the abort timer stays armed through the BODY read — a
+		// server that returns headers fast and then trickles the body used
+		// to hang past the declared timeout.
+		let capped: { body: string; truncated: boolean };
+		try {
+			capped = await readBodyCapped(res, maxBytes);
+		} catch (err) {
+			const isAbort = err instanceof Error && err.name === 'AbortError';
+			return {
+				ok: false,
+				reason: isAbort ? 'timeout' : 'fetch-error',
+				detail: String(err),
+			};
+		} finally {
+			clearTimeout(timer);
+		}
 		return {
 			ok: true,
 			url: currentUrl.toString(),
 			status: res.status,
 			contentType,
-			body,
-			truncated,
+			body: capped.body,
+			truncated: capped.truncated,
 		};
 	}
 
