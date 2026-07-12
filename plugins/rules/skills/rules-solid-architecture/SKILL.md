@@ -7,7 +7,7 @@ description: How the `@mcp-vertex/rules` plugin applies SOLID — the contracts 
 # SOLID architecture of `@mcp-vertex/rules`
 
 This skill is the *ground truth* of the SOLID seams in the `rules`
-plugin. The proposal [f00051](../proposals/ready/f00051-multilanguage-rules-presets.md)
+plugin. The proposal [f00051](../../../../docs/mcp-vertex/proposals/done/feats/f00051-multilanguage-rules-presets.md)
 describes the *what* and *why*; this skill describes the *how* — the
 seams a contributor must respect to keep the plugin extensible.
 

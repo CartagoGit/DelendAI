@@ -42,12 +42,6 @@ deduplicates findings across reviewers via `seenBy`.
 
 ## Filename convention (AGENTS.md rule)
 
-```
-description: Thin pointer to mcp-vertex-audit-playbook. The canonical audit workflow now lives there.
-```
-
-# mcp-vertex audit runner
-
-The canonical audit workflow now lives in [audit-playbook](../audit-playbook/SKILL.md).
-Keep this skill only as a compatibility pointer for older manifests and links.
-
+Use the filename emitted by `audit_plan`; do not invent a second naming
+scheme. For the code-reading checklist, use
+[mcp-vertex-audit-playbook](../mcp-vertex-audit-playbook/SKILL.md).

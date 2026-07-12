@@ -21,7 +21,7 @@ import { buildCloseTools } from './lib/tools/close-tools';
  *
  *   `mcp-vertex --plugins=status-marker`
  *
- * See `docs/mcp-vertex/proposals/l104-feat-status-marker-plugin-de-cierre-obligatorio-coloreado.md`
+ * See the status-marker proposal in `docs/mcp-vertex/proposals/done/feats/`
  * for the design rationale and the §4 gap analysis (the core currently
  * exposes no `onBeforePrompt` / `onAfterRespond` hook, so enforcement
  * today is **agent-driven**: the table + helper are exposed, but the
