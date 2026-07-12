@@ -151,6 +151,30 @@ describe('external-mcps plugin manifest (token-lean)', () => {
 		expect(regs.skills).toBeUndefined();
 	});
 
+	it('contributes configured external servers to activation introspection', async () => {
+		const regs = await plugin.register({
+			...ctx,
+			options: {
+				servers: {
+					filesystem: {
+						version: '1.2.3',
+						command: 'npx',
+						args: ['@modelcontextprotocol/server-filesystem@1.2.3'],
+					},
+				},
+			},
+		});
+		expect(regs.activation).toEqual([
+			{
+				id: 'ext.filesystem',
+				origin: 'external',
+				source: 'config',
+				active: true,
+				toolCount: 0,
+			},
+		]);
+	});
+
 	it('every tool declares a summary + a namespaced descriptionKey', async () => {
 		const regs = await plugin.register(ctx);
 		for (const tool of regs.tools ?? []) {

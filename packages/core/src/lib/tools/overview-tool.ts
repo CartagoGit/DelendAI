@@ -1,5 +1,6 @@
 import { z } from 'zod';
 
+import type { IActivationReport } from '../contracts/interfaces/activation-report.interface';
 import { CAPABILITY_TAGS } from '../contracts/interfaces/provider-capabilities.interface';
 import type { IProviderSummary } from '../contracts/interfaces/provider-capabilities.interface';
 import type {
@@ -65,6 +66,11 @@ export interface IOverviewSnapshot {
 	 * `healthcheck_providers` tool.
 	 */
 	readonly providers?: readonly IProviderSummary[] | undefined;
+	/**
+	 * Opt-in plugin activation detail. The handler only emits this when the
+	 * caller passes `activation: true`, keeping the default overview lean.
+	 */
+	readonly activationReport?: IActivationReport | undefined;
 	readonly recommendedNextAction: string;
 }
 
@@ -111,6 +117,7 @@ export const buildOverviewToolRegistration = (
 				inputSchema: z.object({
 					compact: z.boolean().optional(),
 					tag: z.string().optional(),
+					activation: z.boolean().optional(),
 				}),
 				outputSchema: z.object({
 					server: z.object({ name: z.string(), version: z.string() }),
@@ -204,12 +211,40 @@ export const buildOverviewToolRegistration = (
 							}),
 						)
 						.optional(),
+					activationReport: z
+						.object({
+							entries: z.array(
+								z.object({
+									id: z.string(),
+									origin: z.enum([
+										'bundled',
+										'user-local',
+										'external',
+									]),
+									active: z.boolean(),
+									source: z.enum([
+										'preset',
+										'config',
+										'flag',
+									]),
+									toolCount: z.number(),
+								}),
+							),
+							counts: z.object({
+								bundled: z.number(),
+								'user-local': z.number(),
+								external: z.number(),
+							}),
+							totalTools: z.number(),
+						})
+						.optional(),
 					recommendedNextAction: z.string(),
 				}),
 			},
 			async (args: {
 				compact?: boolean | undefined;
 				tag?: string | undefined;
+				activation?: boolean | undefined;
 			}) => {
 				const snap = snapshot();
 				let tools = snap.tools;
@@ -258,6 +293,10 @@ export const buildOverviewToolRegistration = (
 						plugins: snap.plugins.map((p) => p.name),
 						tools: groupedTools,
 						knowledge: snap.knowledge.map((k) => k.id),
+						...(args.activation === true &&
+						snap.activationReport !== undefined
+							? { activationReport: snap.activationReport }
+							: {}),
 						recommendedNextAction: snap.recommendedNextAction,
 					});
 				}
@@ -303,6 +342,10 @@ export const buildOverviewToolRegistration = (
 					// list alone is not actionable without kind/costTier).
 					...(snap.providers !== undefined
 						? { providers: snap.providers }
+						: {}),
+					...(args.activation === true &&
+					snap.activationReport !== undefined
+						? { activationReport: snap.activationReport }
 						: {}),
 					recommendedNextAction: snap.recommendedNextAction,
 				});

@@ -46,8 +46,13 @@ export default definePlugin({
 		// test context with unknown keys from crashing registration).
 		const parsed = OptionsSchema.safeParse(ctx.options);
 		const options = parsed.success ? parsed.data : OptionsSchema.parse({});
+		const enabledServers = Object.fromEntries(
+			Object.entries(options.servers ?? {}).filter(
+				([, entry]) => entry.enabled !== false,
+			),
+		);
 		const registry = new ExternalServerRegistry({
-			servers: (options.servers ?? {}) as Readonly<
+			servers: enabledServers as Readonly<
 				Record<string, IRegistryServerEntry>
 			>,
 			// Invariant: workspace comes from the context, never process.cwd().
@@ -68,6 +73,17 @@ export default definePlugin({
 			return detectedCache;
 		};
 		return {
+			activation: Object.keys(options.servers ?? {})
+				.sort()
+				.map((id) => ({
+					id: `ext.${id}`,
+					origin: 'external' as const,
+					source: 'config' as const,
+					active: options.servers?.[id]?.enabled !== false,
+					// Child tools stay behind one shared `call` proxy, so each
+					// declared server adds zero direct tools to the host prompt.
+					toolCount: 0,
+				})),
 			tools: [
 				buildCatalogToolRegistration({
 					namespacePrefix: ctx.namespacePrefix,

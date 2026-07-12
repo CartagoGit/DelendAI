@@ -18,15 +18,22 @@ describe('parseConfigFile', async () => {
 		expect(parseConfigFile('[1,2]')).toEqual({});
 	});
 
-	it('reads per-plugin options and prefix', async () => {
+	it('reads per-plugin activation, options and prefix', async () => {
 		const config = parseConfigFile(
 			JSON.stringify({
 				docsDir: 'docs/x',
-				plugins: { proposals: { prefix: 'work', options: { a: 1 } } },
+				plugins: {
+					proposals: {
+						enabled: false,
+						prefix: 'work',
+						options: { a: 1 },
+					},
+				},
 			}),
 		);
 		expect(config.docsDir).toBe('docs/x');
 		expect(pluginConfigFor(config, 'proposals')).toEqual({
+			enabled: false,
 			prefix: 'work',
 			options: { a: 1 },
 		});
@@ -85,6 +92,34 @@ describe('assembleCliConfig + config file', async () => {
 			options: { k: 'v' },
 			keepLegacy: false,
 		});
+	});
+
+	it('an enabled:false config override suppresses a preset plugin', async () => {
+		const args = parseCliArgs(
+			['--preset=minimal', '--workspace=/ws'],
+			'/cwd',
+		);
+		const attempted: string[] = [];
+		const { loadResult } = await assembleCliConfig(args, {
+			import: async (specifier) => {
+				attempted.push(specifier);
+				return {
+					default: {
+						name: specifier.split('/').at(-1) ?? specifier,
+						register: () => ({ tools: [] }),
+					},
+				};
+			},
+			readFile: async (absolutePath) =>
+				absolutePath.endsWith('mcp-vertex.config.json')
+					? JSON.stringify({ plugins: { git: { enabled: false } } })
+					: undefined,
+		});
+
+		expect(loadResult.loaded.map((entry) => entry.plugin.name)).toEqual([
+			'search',
+		]);
+		expect(attempted).not.toContain('@mcp-vertex/git');
 	});
 
 	it('resolves keepLegacy false by default and propagates true to plugins and core scaffold', async () => {

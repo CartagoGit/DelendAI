@@ -28,6 +28,8 @@ import { diagnoseWorkspaceLayout } from '../plugins/diagnose-workspace-layout';
 import type { WorkspacePathStatus } from '../contracts/interfaces/workspace-layout.interface';
 import { loadPlugins, nodeDynamicImport } from '../plugins/load-plugins';
 import type { IPluginLoadResult } from '../plugins/load-plugins';
+import { buildActivationReport } from '../plugins/activation-report';
+import { classifyOrigin } from '../plugins/classify-origin';
 import type { IMcpPluginContext } from '../plugins/plugin-contract';
 import { createPeerPluginRegistry } from '../plugins/peer-plugin-registry';
 import { parseCliArgs } from '../plugins/parse-cli-args';
@@ -163,6 +165,11 @@ export const assembleCliConfig = async (
 		([name, entry]) => diagnosePluginPathConfig(entry ?? {}, name),
 	);
 	const configPluginNames = Object.keys(fileConfig.plugins ?? {});
+	const disabledConfigPlugins = new Set(
+		Object.entries(fileConfig.plugins ?? {})
+			.filter(([, entry]) => entry.enabled === false)
+			.map(([name]) => name),
+	);
 
 	// Precedence for roots: explicit CLI flag > config file > default.
 	const cacheDir =
@@ -345,9 +352,15 @@ export const assembleCliConfig = async (
 		});
 		if (matchedKey === undefined) {
 			// CLI-only specifier — cannot match any config key.
-			return !excludedPlugins.has(specifier);
+			return (
+				!excludedPlugins.has(specifier) &&
+				!disabledConfigPlugins.has(specifier)
+			);
 		}
-		return !excludedPlugins.has(matchedKey);
+		return (
+			!excludedPlugins.has(matchedKey) &&
+			!disabledConfigPlugins.has(matchedKey)
+		);
 	});
 
 	const loadResult = await loadPlugins({
@@ -435,6 +448,70 @@ export const assembleCliConfig = async (
 			});
 		}
 	}
+
+	const configNameBySpecifier = new Map(
+		configPluginNames.map((name, index) => [
+			resolvedConfigSpecifiers[index] ?? name,
+			name,
+		]),
+	);
+	const loadedNamesFor = (specifiers: ReadonlySet<string>): Set<string> =>
+		new Set(
+			loadResult.loaded
+				.filter(
+					(entry) =>
+						specifiers.has(entry.specifier) ||
+						specifiers.has(entry.plugin.name),
+				)
+				.map((entry) => entry.plugin.name),
+		);
+	const configSourceSpecifiers = new Set([
+		...configPluginNames,
+		...resolvedConfigSpecifiers,
+	]);
+	const activationReport = buildActivationReport(
+		loadResult.loaded.map((entry) => {
+			const configName = configNameBySpecifier.get(entry.specifier);
+			return {
+				name: entry.plugin.name,
+				resolvedSpecifier: entry.resolved,
+				hasExplicitPath:
+					configName !== undefined &&
+					pluginConfigFor(fileConfig, configName).path !== undefined,
+				isExternalServer: false,
+				toolCount: entry.registrations.tools?.length ?? 0,
+			};
+		}),
+		{
+			fromFlag: loadedNamesFor(new Set(args.flagPlugins)),
+			fromConfig: loadedNamesFor(configSourceSpecifiers),
+			fromPreset: loadedNamesFor(new Set(args.presetPlugins)),
+		},
+		loadResult.loaded
+			.flatMap((entry) => entry.registrations.activation ?? [])
+			.concat(
+				[...disabledConfigPlugins].map((name) => {
+					const entry = pluginConfigFor(fileConfig, name);
+					const resolvedSpecifier =
+						[...configNameBySpecifier.entries()].find(
+							([, configName]) => configName === name,
+						)?.[0] ?? `@mcp-vertex/${name}`;
+					return {
+						id: name,
+						origin:
+							entry.origin ??
+							classifyOrigin({
+								name,
+								resolvedSpecifier,
+								hasExplicitPath: entry.path !== undefined,
+							}),
+						source: 'config' as const,
+						active: false,
+						toolCount: 0,
+					};
+				}),
+			),
+	);
 
 	const validationMatrix = fileConfig.validationMatrix ?? { scopes: {} };
 	// Skill manifest location is defined once in `skill-paths.ts`
@@ -613,6 +690,7 @@ export const assembleCliConfig = async (
 		...(providerSummaries.length > 0
 			? { providers: providerSummaries }
 			: {}),
+		activationReport,
 		recommendedNextAction,
 	});
 

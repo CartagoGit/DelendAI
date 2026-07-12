@@ -653,6 +653,21 @@ export interface McpVertexOverviewOutput {
 		reachable: boolean;
 		strengths: Array<"code-edit" | "long-context" | "very-long-context" | "architecture" | "security-audit" | "reasoning" | "vision" | "fast-iteration" | "json-strict" | "multilingual" | "agentic" | "summarization">;
 	}>;
+	activationReport?: {
+		entries: Array<{
+			id: string;
+			origin: "bundled" | "user-local" | "external";
+			active: boolean;
+			source: "preset" | "config" | "flag";
+			toolCount: number;
+		}>;
+		counts: {
+			bundled: number;
+			"user-local": number;
+			external: number;
+		};
+		totalTools: number;
+	};
 	recommendedNextAction: string;
 }
 

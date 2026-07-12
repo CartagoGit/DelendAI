@@ -9,6 +9,14 @@ const fakePlugin = {
 	version: '9.9.9',
 	describe: 'demo plugin',
 	register: () => ({
+		activation: [
+			{
+				id: 'ext.demo-child',
+				origin: 'external' as const,
+				source: 'config' as const,
+				toolCount: 0,
+			},
+		],
 		tools: [
 			{
 				id: 'do',
@@ -74,6 +82,79 @@ describe('core meta-tools', async () => {
 			'demo-guide',
 		);
 		expect(typeof snap.recommendedNextAction).toBe('string');
+		expect(snap.activationReport).toBeUndefined();
+	});
+
+	it('overview exposes activation origin, source and tool count only on request', async () => {
+		const { byId } = await assemble();
+		const snap = await callTool(byId('overview'), { activation: true });
+		expect(snap.activationReport).toEqual({
+			entries: [
+				{
+					id: 'demo',
+					origin: 'bundled',
+					active: true,
+					source: 'flag',
+					toolCount: 2,
+				},
+				{
+					id: 'ext.demo-child',
+					origin: 'external',
+					active: true,
+					source: 'config',
+					toolCount: 0,
+				},
+			],
+			counts: { bundled: 1, 'user-local': 0, external: 1 },
+			totalTools: 2,
+		});
+	});
+
+	it('activation report reconciles preset and local-path config sources after loading', async () => {
+		const args = parseCliArgs(
+			['--preset=minimal', '--workspace=/ws'],
+			'/cwd',
+		);
+		const { config } = await assembleCliConfig(args, {
+			import: async (specifier) => ({
+				default: {
+					name: specifier.includes('local.js')
+						? 'my-local'
+						: (specifier.split('/').at(-1) ?? specifier),
+					register: () => ({ tools: [] }),
+				},
+			}),
+			readFile: async (absolutePath) =>
+				absolutePath.endsWith('mcp-vertex.config.json')
+					? JSON.stringify({
+							plugins: {
+								'my-local': { path: './local.js' },
+								rules: { enabled: false, origin: 'bundled' },
+							},
+						})
+					: undefined,
+		});
+		const overview = config.extraTools!.find(
+			(tool) => tool.id === 'overview',
+		)!;
+		const snap = await callTool(overview, { activation: true });
+
+		expect(
+			snap.activationReport.entries.map(
+				(entry: {
+					id: string;
+					origin: string;
+					source: string;
+					active: boolean;
+				}) =>
+					`${entry.id}:${entry.origin}:${entry.source}:${entry.active}`,
+			),
+		).toEqual([
+			'git:bundled:preset:true',
+			'rules:bundled:config:false',
+			'search:bundled:preset:true',
+			'my-local:user-local:config:true',
+		]);
 	});
 
 	it('knowledge lists ids and fetches a body by id', async () => {
@@ -109,6 +190,20 @@ describe('core meta-tools', async () => {
 			compact.tools.demo.every((s: string) => !s.includes('mcp-vertex_')),
 		).toBe(true);
 		expect(compact.plugins).toContain('demo');
+		expect(compact.activationReport).toBeUndefined();
+	});
+
+	it('compact overview can opt into the same activation report', async () => {
+		const { byId } = await assemble();
+		const compact = await callTool(byId('overview'), {
+			compact: true,
+			activation: true,
+		});
+		expect(compact.activationReport.entries[0]).toMatchObject({
+			id: 'demo',
+			source: 'flag',
+			toolCount: 2,
+		});
 	});
 
 	it('overview full bounds long tool summaries', async () => {

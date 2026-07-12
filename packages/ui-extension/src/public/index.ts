@@ -23,6 +23,19 @@ export {
 	USAGE_TRACKING_OPT_IN_SNIPPET,
 } from '../contracts/constants/opt-in-snippets.constant';
 export { buildProviderStatusModel } from '../dashboard/builders/provider-status.builder';
+export { buildPluginSwitchboardModel } from '../dashboard/builders/plugin-switchboard.builder';
+export type {
+	IPluginActivationOverviewPayload,
+	IPluginActivationPayloadEntry,
+	IPluginSwitchboardGroup,
+	IPluginSwitchboardModel,
+	IPluginSwitchboardReadyModel,
+	IPluginSwitchboardRow,
+	IPluginSwitchboardUnavailableModel,
+	PluginSwitchboardBadge,
+	PluginSwitchboardOrigin,
+	PluginSwitchboardSource,
+} from '../contracts/interfaces/plugin-switchboard.interface';
 export type {
 	IGetQuotaPayload,
 	IHealthcheckProvidersPayload,

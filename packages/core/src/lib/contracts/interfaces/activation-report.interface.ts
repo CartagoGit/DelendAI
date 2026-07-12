@@ -19,8 +19,8 @@ export interface IActivationEntry {
 	readonly id: string;
 	/** Ours / the user's own / an external server (see {@link PluginOrigin}). */
 	readonly origin: PluginOrigin;
-	/** Always `true` in the report — it lists what is ON. Present for a symmetric UI model. */
-	readonly active: true;
+	/** Current activation state; inactive config overrides remain visible for re-enabling. */
+	readonly active: boolean;
 	/** Why it is on. */
 	readonly source: ActivationSource;
 	/** How many tools this plugin contributes to the surface. */
@@ -34,6 +34,20 @@ export interface IActivationReport {
 	readonly counts: Readonly<Record<PluginOrigin, number>>;
 	/** Total tools across all active plugins — the size of the prompt-facing surface. */
 	readonly totalTools: number;
+}
+
+/**
+ * A nested activation surface contributed by a plugin. This keeps core
+ * agnostic of plugin-specific option schemas: a composition plugin can
+ * describe its configured children without core learning their vocabulary.
+ */
+export interface IActivationContribution {
+	readonly id: string;
+	readonly origin: PluginOrigin;
+	readonly source: ActivationSource;
+	readonly active?: boolean;
+	/** Direct tools added to the host surface (zero for proxy-only children). */
+	readonly toolCount: number;
 }
 
 /** One loaded plugin, reduced to exactly what {@link IActivationReport} needs. */
