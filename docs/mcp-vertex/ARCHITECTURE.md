@@ -92,10 +92,17 @@ The dependency arrow only ever points **plugin → core**, never the reverse.
 - **No drift** — the typed SDK, the site's `capabilities.json` and the config schema are
   all generated from the live registry; drift-guards fail the build.
 - **Single orchestrator contract** — `mcp-vertex` is the only source of truth for the
-  orchestrator workflow. Client adapters (`.github/agents/mcp-vertex.agent.md`,
-  `.claude/agents/mcp-vertex-orchestrator.cc.md`) are thin redirectors that load
-  `mcp-vertex_overview`'s `recommendedNextAction` instead of restating the workflow
-  in prose; `bun run lint:agents` warns on drift (f00031).
+  orchestrator workflow. The Copilot adapter (`.github/agents/mcp-vertex.agent.md`)
+  is a thin redirector that loads `mcp-vertex_overview`'s `recommendedNextAction`
+  instead of restating the workflow in prose; `bun run lint:agents` warns on drift
+  (f00031).
+- **Agent filenames are namespaced, slot ids are not** — bounded subagents live at
+  `.github/agents/mcp-vertex-<slot>.agent.md` (e.g. `mcp-vertex-proposal-guardian.agent.md`)
+  so the VS Code picker stays clean when the workspace hosts more than one MCP server.
+  The frontmatter `name:` field stays unprefixed (`proposal_guardian`) because that is
+  the key the swarm uses for `agent_lock`, `task_queue`, and the agent-registry store.
+  `SUBAGENT_FILE_BY_SLOT` in `tools/scripts/lint/agent-redirector-contract.script.ts`
+  is the canonical map and `bun run lint:agents` rejects any drift.
 
 ## Build, test, release
 

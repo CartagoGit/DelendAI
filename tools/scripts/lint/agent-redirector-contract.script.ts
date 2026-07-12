@@ -7,7 +7,7 @@
  *  1. a **redirector** — body is the canonical tiny contract that loads
  *     `mcp-vertex_overview` / `recommendedNextAction` and restates
  *     nothing else (the shape `.github/agents/mcp-vertex.agent.md`
- *     and `.claude/agents/mcp-vertex-orchestrator.cc.md` already use),
+ *     already uses),
  *     nor
  *  2. a **bounded subagent** — `name:` is one of the four scaffolded
  *     slots (`proposal_guardian`, `implementation_runner`,
@@ -28,9 +28,11 @@
  *
  * `.claude/agents/*.cc.md` files are excluded entirely from the scan:
  * the `.cc.md` suffix (vs. `.md`) is the project's own convention for
- * "this agent file is not meant to surface in the Claude Code /
- * Copilot per-folder agent index" — see
- * `.claude/agents/mcp-vertex-orchestrator.cc.md`.
+ * "this agent file is not meant to surface in the Claude Code
+ * per-folder agent index". (Note: VS Code Copilot does NOT honour the
+ * `.cc.md` suffix — it scans every `.md` under `.claude/agents/`, so
+ * the file deletion in commit 20629849 was necessary in addition to
+ * the suffix to keep VS Code's agent picker clean. See f00031.)
  *
  *   bun tools/scripts/lint/agent-redirector-contract.script.ts
  */
@@ -46,6 +48,21 @@ export const SUBAGENT_SLOTS = [
 
 export type ISubagentSlot = (typeof SUBAGENT_SLOTS)[number];
 
+/**
+ * Per-slot expected filename under `.github/agents/`. Bounded subagents
+ * in this repo are namespaced as `mcp-vertex-<slot>.agent.md` to avoid
+ * collisions in workspaces that host multiple MCP servers (e.g.
+ * `mcp-vertex` + `mcp-other`). The slot id (frontmatter `name:`) stays
+ * unprefixed because that is the key the swarm uses for agent_lock,
+ * task_queue, and the agent-registry store.
+ */
+export const SUBAGENT_FILE_BY_SLOT: Readonly<Record<ISubagentSlot, string>> = {
+	proposal_guardian: 'mcp-vertex-proposal-guardian.agent.md',
+	implementation_runner: 'mcp-vertex-implementation-runner.agent.md',
+	delivery_verifier: 'mcp-vertex-delivery-verifier.agent.md',
+	technical_investigator: 'mcp-vertex-technical-investigator.agent.md',
+};
+
 const SUBAGENT_DISCLAIMER =
 	'This file is only the Copilot adapter; the agent contract lives in';
 
@@ -54,7 +71,10 @@ const MAX_REDIRECTOR_PROSE_LINES = 12;
 
 export interface IAgentFileFinding {
 	readonly path: string;
-	readonly kind: 'not-a-redirector' | 'mcp-vertex-name-not-redirector';
+	readonly kind:
+		| 'not-a-redirector'
+		| 'mcp-vertex-name-not-redirector'
+		| 'subagent-filename-mismatch';
 	readonly detail: string;
 }
 
@@ -102,12 +122,34 @@ const isRedirectorBody = (body: string): boolean => {
 /**
  * Inspects one `.github/agents/*.agent.md` file. Pure over its text
  * input so it is unit-testable with fixtures instead of real files.
+ *
+ * For bounded subagents (name in SUBAGENT_SLOTS) the filename must
+ * match the namespaced shape `mcp-vertex-<slot>.agent.md` — see
+ * SUBAGENT_FILE_BY_SLOT. Filename drift is the historical regression
+ * that produced the 5+ duplicate entries in the VS Code agent
+ * picker; the lint keeps it from coming back.
  */
 export const checkGithubAgentFile = (
 	path: string,
 	text: string,
 ): IAgentFileFinding | undefined => {
 	const { frontmatter, body } = splitFrontmatter(text);
+	const name = frontmatterField(frontmatter, 'name');
+	const expectedFile = name === undefined
+		? undefined
+		: SUBAGENT_SLOTS.includes(name as ISubagentSlot)
+			? SUBAGENT_FILE_BY_SLOT[name as ISubagentSlot]
+			: undefined;
+	if (
+		expectedFile !== undefined &&
+		!path.endsWith(`.github/agents/${expectedFile}`)
+	) {
+		return {
+			path,
+			kind: 'subagent-filename-mismatch',
+			detail: `${path} has name: "${name}" (a bounded subagent slot) but the filename should be ".github/agents/${expectedFile}" (the namespaced shape)`,
+		};
+	}
 	if (isBoundedSubagent(frontmatter, body)) return undefined;
 	if (isRedirectorBody(body)) return undefined;
 	return {
