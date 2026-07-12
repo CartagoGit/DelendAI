@@ -17,10 +17,16 @@
  * `settings-panel.ts` never touch the underlying `current` field.
  */
 
-export type ViewId = 'dashboard' | 'settings' | 'tool-detail' | 'metrics';
+export type ViewId =
+	| 'dashboard'
+	| 'configuration'
+	| 'settings'
+	| 'tool-detail'
+	| 'metrics';
 
 const ALL_VIEWS: ReadonlyArray<ViewId> = [
 	'dashboard',
+	'configuration',
 	'settings',
 	'tool-detail',
 	'metrics',

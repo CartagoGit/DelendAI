@@ -15,7 +15,7 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
 	outline: 2px solid var(--vscode-focusBorder, #4daafc);
 	outline-offset: 2px;
 }
-.mcpv-config { min-height: 100vh; display: grid; grid-template-rows: auto 1fr auto; }
+.mcpv-config { height: 100vh; min-height: 0; overflow: hidden; display: grid; grid-template-rows: auto minmax(0, 1fr) auto; }
 .mcpv-config__header {
 	position: sticky; top: 0; z-index: 5;
 	display: flex; align-items: center; justify-content: space-between; gap: 20px;
@@ -32,7 +32,7 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
 	background: var(--vscode-input-background, #0d1117);
 	border: 1px solid var(--vscode-input-border, #30363d); border-radius: 7px;
 }
-.mcpv-config__body { display: grid; grid-template-columns: 220px minmax(0, 1fr); min-height: 0; }
+.mcpv-config__body { display: grid; grid-template-columns: 220px minmax(0, 1fr); min-height: 0; overflow: hidden; }
 .mcpv-config__nav {
 	padding: 18px 12px;
 	border-right: 1px solid var(--vscode-panel-border, #30363d);
