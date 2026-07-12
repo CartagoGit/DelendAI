@@ -70,12 +70,12 @@ token cost of every call the LLM makes.
 
 ### S1 — Plugin-origin taxonomy in core
 
-- **Status**: pending
-- **Files**: `packages/core/src/lib/contracts/interfaces/plugin-origin.interface.ts`, `packages/core/src/lib/plugins/classify-origin.ts`, `packages/core/src/lib/plugins/load-config-file.ts`, `packages/core/tests/src/lib/plugins/classify-origin.spec.ts`
+- **Status**: done
+- **Files**: `packages/core/src/lib/contracts/interfaces/plugin-origin.interface.ts`, `packages/core/src/lib/contracts/constants/first-party-scope.constant.ts`, `packages/core/src/lib/plugins/classify-origin.ts`, `packages/core/tests/src/lib/plugins/classify-origin.spec.ts`
 - **Gate**: bun run typecheck && bun run test
 - **Acceptance**:
-  - "A `PluginOrigin = 'bundled' | 'user-local' | 'external'` type + a pure `classifyOrigin(entry, resolvedSpecifier)`: bundled = a first-party `@mcp-vertex/*` plugin from the shipped set (a canonical list, cross-checked against PUBLISH_ORDER so it can't drift); user-local = a config entry with a `path`/relative specifier the user owns; external = an external-mcps `ext.*` server. A spec covers all three + an unknown-specifier fallback."
-  - "The classification is data-only (no I/O beyond the already-parsed config); AGENTS.md rule #1 (core stays vendor-agnostic) preserved — the bundled list is the first-party set, not vendor knowledge."
+  - "A `PluginOrigin = 'bundled' | 'user-local' | 'external'` type + a pure `classifyOrigin(input)`. **Design choice (scope-based, not a hardcoded list):** bundled = a plugin whose RESOLVED specifier is under the `@mcp-vertex/` scope — the same convention `resolvePluginSpecifier` already applies — so there is NO 20-name list to maintain and it cannot drift as plugins are added/removed (strictly better than the originally-proposed enumerated list; the user granted free rein to pick the most correct). user-local = an explicit `path` entry (precedence) or a third-party `mcp-*`/bare package; external = an external-mcps composed server (`isExternalServer`). Precedence external > path > scope > user-local."
+  - "Data-only (no I/O); AGENTS.md rule #1 preserved (no vendor vocabulary — the scope string is the maintainer's own npm scope). A drift-guard spec reuses the filesystem truth (the `plugins/` dirs) to assert every shipped plugin classifies bundled via its scoped specifier — so the convention and the shipped set can never disagree. Exported from `@mcp-vertex/core/public`. 8 specs green."
 
 ### S2 — Activation resolver: what is on, and why
 

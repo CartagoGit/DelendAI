@@ -95,6 +95,15 @@ export type {
 	IPluginLoadResult,
 } from '../lib/plugins/load-plugins';
 export {
+	classifyOrigin,
+	isFirstPartySpecifier,
+} from '../lib/plugins/classify-origin';
+export { FIRST_PARTY_SCOPE } from '../lib/contracts/constants/first-party-scope.constant';
+export type {
+	IPluginOriginInput,
+	PluginOrigin,
+} from '../lib/contracts/interfaces/plugin-origin.interface';
+export {
 	parseCliArgs,
 	DEFAULT_CLI_ARGS,
 	hasExplicitPluginSurfaceSelection,
