@@ -16,7 +16,13 @@ import {
 } from '@mcp-vertex/ui-extension/public';
 
 import { CONFIGURATION_CENTER_MESSAGE_SCHEMA } from '../contracts/constants/configuration-center-message-schema.constant';
+import { defaultLang, dictsByLang, type Lang } from '../i18n';
+import {
+	configurationCenterStringsByLang,
+	type IConfigurationCenterStrings,
+} from '../i18n/configuration-center.strings';
 import { RESTART_SERVER_COMMAND } from './restart-server';
+import { HOST_LANG_KEY } from './setup-github';
 import type { ICommandDeps } from './types';
 import { showCommandError } from './types';
 
@@ -41,12 +47,11 @@ const injectBridge = (html: string): string => {
 
 const selectWorkspace = async (
 	deps: ICommandDeps,
+	strings: IConfigurationCenterStrings,
 ): Promise<string | undefined> => {
 	const folders = deps.vscode.workspace?.workspaceFolders ?? [];
 	if (folders.length === 0) {
-		await deps.vscode.window.showErrorMessage?.(
-			'mcp-vertex: open a workspace before configuring the project.',
-		);
+		await deps.vscode.window.showErrorMessage?.(strings.workspaceRequired);
 		return undefined;
 	}
 	if (folders.length === 1) return folders[0]?.uri.fsPath;
@@ -83,7 +88,11 @@ const readAll = async <T>(
 	}
 };
 
-const loadModel = async (deps: ICommandDeps, workspaceRoot: string) => {
+const loadModel = async (
+	deps: ICommandDeps,
+	workspaceRoot: string,
+	strings: IConfigurationCenterStrings,
+) => {
 	const tool = formatToolName(deps.namespacePrefix, 'configuration_center');
 	const [document, config, summary, plugins, artifacts] = await Promise.all([
 		readConfigurationDocument({ workspaceRoot }),
@@ -107,6 +116,7 @@ const loadModel = async (deps: ICommandDeps, workspaceRoot: string) => {
 	}
 	return buildConfigurationCenterModel({
 		document,
+		copy: strings.copy,
 		configSchema: config.configSchema,
 		plugins,
 		artifacts,
@@ -119,37 +129,54 @@ const loadModel = async (deps: ICommandDeps, workspaceRoot: string) => {
 const renderPanel = async (
 	deps: ICommandDeps,
 	workspaceRoot: string,
+	lang: Lang,
+	strings: IConfigurationCenterStrings,
 ): Promise<string> =>
 	withCsp(
 		'configuration-center',
 		injectBridge(
 			renderConfigurationCenter({
-				model: await loadModel(deps, workspaceRoot),
+				model: await loadModel(deps, workspaceRoot, strings),
+				lang,
 			}),
 		),
 	);
+
+const resolveLang = (deps: ICommandDeps): Lang => {
+	const persisted = deps.globalState?.get<unknown>(HOST_LANG_KEY);
+	return typeof persisted === 'string' && persisted in dictsByLang
+		? (persisted as Lang)
+		: defaultLang;
+};
 
 export const registerOpenConfigurationCenterCommand = (deps: ICommandDeps) =>
 	deps.vscode.commands.registerCommand(
 		OPEN_CONFIGURATION_CENTER_COMMAND,
 		async () => {
-			const workspaceRoot = await selectWorkspace(deps);
+			const lang = resolveLang(deps);
+			const strings = configurationCenterStringsByLang[lang];
+			const workspaceRoot = await selectWorkspace(deps, strings);
 			if (workspaceRoot === undefined) return undefined;
 			try {
 				const panel = deps.vscode.window.createWebviewPanel(
 					'mcpVertexConfigurationCenter',
-					'mcp-vertex Configuration Center',
+					strings.panelTitle,
 					deps.vscode.ViewColumn.One,
 					{ enableScripts: true },
 				);
-				panel.webview.html = await renderPanel(deps, workspaceRoot);
+				panel.webview.html = await renderPanel(
+					deps,
+					workspaceRoot,
+					lang,
+					strings,
+				);
 				panel.webview.onDidReceiveMessage?.(async (raw: unknown) => {
 					try {
 						const parsed =
 							CONFIGURATION_CENTER_MESSAGE_SCHEMA.safeParse(raw);
 						if (!parsed.success) {
 							await deps.vscode.window.showErrorMessage?.(
-								'mcp-vertex: Configuration Center rejected an invalid message.',
+								strings.invalidMessage,
 							);
 							return;
 						}
@@ -157,6 +184,8 @@ export const registerOpenConfigurationCenterCommand = (deps: ICommandDeps) =>
 							panel.webview.html = await renderPanel(
 								deps,
 								workspaceRoot,
+								lang,
+								strings,
 							);
 							return;
 						}
@@ -183,11 +212,11 @@ export const registerOpenConfigurationCenterCommand = (deps: ICommandDeps) =>
 						if (!result.changed) return;
 						const action =
 							await deps.vscode.window.showInformationMessage?.(
-								'mcp-vertex: configuration saved. Restart the MCP server to apply runtime changes.',
-								'Restart server',
+								`${strings.savedMessage} ${strings.copy.restartRequired}`,
+								strings.restartAction,
 							);
 						if (
-							action === 'Restart server' &&
+							action === strings.restartAction &&
 							deps.vscode.commands.executeCommand !== undefined
 						) {
 							await deps.vscode.commands.executeCommand(
@@ -200,18 +229,14 @@ export const registerOpenConfigurationCenterCommand = (deps: ICommandDeps) =>
 						});
 						await showCommandError(
 							deps.vscode,
-							'update Configuration Center',
+							strings.saveAction,
 							error,
 						);
 					}
 				});
 				return panel;
 			} catch (error) {
-				await showCommandError(
-					deps.vscode,
-					'open Configuration Center',
-					error,
-				);
+				await showCommandError(deps.vscode, strings.panelTitle, error);
 				return undefined;
 			}
 		},
