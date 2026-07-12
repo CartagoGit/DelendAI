@@ -64,7 +64,7 @@ requieren cambios contractuales o tests de carrera más amplios que un quick fix
 - **Files**: plugins/rules/src/lib/tools/rules-tools.ts
 - **Gate**: `bun run test`
 - **Status**: pending
-
+- status: done
 ### S6 — Protected push destination and force policy
 - **Files**: plugins/git/src/lib/tools/write-tools.ts
 - **Files**: plugins/git/tests/src/lib/tools/write-tools.spec.ts
