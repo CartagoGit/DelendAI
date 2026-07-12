@@ -145,6 +145,12 @@
 				"icon": "$(gear)"
 			},
 			{
+				"command": "mcp-vertex.openConfigurationCenter",
+				"title": "Open Configuration Center",
+				"category": "MCP Vertex",
+				"icon": "$(settings-gear)"
+			},
+			{
 				"command": "mcp-vertex.saveSettings",
 				"title": "Save Settings",
 				"category": "MCP Vertex"
@@ -319,36 +325,36 @@
 					}
 				]
 			}
-		]
-	},
-	"configuration": {
-		"title": "MCP Vertex server",
-		"properties": {
-			"mcp-vertex.server.command": {
-				"type": "string",
-				"default": "bun",
-				"markdownDescription": "Executable used to spawn the MCP server. Override this when `bun` (or your replacement) is not on the `PATH` inherited by VS Code's extension host — e.g. WSL installs at `~/.bun/bin/bun`. Set to an absolute path to bypass `PATH` lookup entirely.",
-				"scope": "machine"
-			},
-			"mcp-vertex.server.args": {
-				"type": [
-					"array",
-					"string"
-				],
-				"items": {
-					"type": "string"
+		],
+		"configuration": {
+			"title": "MCP Vertex server",
+			"properties": {
+				"mcp-vertex.server.command": {
+					"type": "string",
+					"default": "bun",
+					"markdownDescription": "Executable used to spawn the MCP server. Override this when `bun` (or your replacement) is not on the `PATH` inherited by VS Code's extension host — e.g. WSL installs at `~/.bun/bin/bun`. Set to an absolute path to bypass `PATH` lookup entirely.",
+					"scope": "machine"
 				},
-				"default": [
-					"run",
-					"mcp-vertex"
-				],
-				"markdownDescription": "Arguments passed to `mcp-vertex.server.command`. Accepts either a JSON array of strings or a single space-separated string. Defaults to `[\"run\", \"mcp-vertex\"]`.",
-				"scope": "machine"
-			},
-			"mcp-vertex.server.prefix": {
-				"type": "string",
-				"markdownDescription": "Tool-name namespace prefix the server was started with (the value passed to the server's `--prefix` flag, e.g. `acme`). When set, every service call is namespaced as `<prefix>_<tool>`. Leave empty to use the default `mcp-vertex_` namespace.",
-				"scope": "machine"
+				"mcp-vertex.server.args": {
+					"type": [
+						"array",
+						"string"
+					],
+					"items": {
+						"type": "string"
+					},
+					"default": [
+						"run",
+						"mcp-vertex"
+					],
+					"markdownDescription": "Arguments passed to `mcp-vertex.server.command`. Accepts either a JSON array of strings or a single space-separated string. Defaults to `[\"run\", \"mcp-vertex\"]`.",
+					"scope": "machine"
+				},
+				"mcp-vertex.server.prefix": {
+					"type": "string",
+					"markdownDescription": "Tool-name namespace prefix the server was started with (the value passed to the server's `--prefix` flag, e.g. `acme`). When set, every service call is namespaced as `<prefix>_<tool>`. Leave empty to use the default `mcp-vertex_` namespace.",
+					"scope": "machine"
+				}
 			}
 		}
 	},
@@ -361,7 +367,8 @@
 	},
 	"dependencies": {
 		"@mcp-vertex/client": "workspace:*",
-		"@mcp-vertex/ui-extension": "workspace:*"
+		"@mcp-vertex/ui-extension": "workspace:*",
+		"zod": "^4.4.3"
 	},
 	"devDependencies": {
 		"@types/vscode": "^1.90.0",

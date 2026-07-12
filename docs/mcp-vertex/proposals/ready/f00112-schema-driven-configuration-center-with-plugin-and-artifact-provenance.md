@@ -206,10 +206,29 @@ declared settings in the editor.
   - "No vscode import or host-specific storage exists in the package."
 
 ### S4 — VS Code Configuration Center host and project adapters
-- **Status**: pending
+- **Status**: in-progress
 - **Files**: `extensions/vscode/src/commands/open-configuration-center.ts`, `extensions/vscode/src/views/configuration-center-webview.ts`, `extensions/vscode/src/contracts/interfaces/configuration-center-message.interface.ts`, `extensions/vscode/src/i18n/configuration-center.strings.ts`, `extensions/vscode/package.json`
 - **DependsOn**: [S3]
 - **Gate**: type
+- **Progress (2026-07-13)**:
+  - "Contributed and registered `Open Configuration Center`. The command
+    requires a workspace, explicitly picks a folder in multi-root windows,
+    reads the local digest-addressed document and exhausts the MCP's paginated
+    config/plugin/artifact sections with repeated-cursor protection."
+  - "The webview uses the shared renderer behind the centralized CSP policy.
+    Its bridge acquires the VS Code API once; every inbound save/discard message
+    passes a strict Zod discriminated-union schema with bounded edits and paths."
+  - "Save delegates to the merge-aware service, reports validation/conflict
+    back to the webview, waits for durable acknowledgement before showing
+    success, and offers restart only after a changed commit. Discard reloads
+    from disk and server without polling. Handler failures are caught and
+    surfaced rather than becoming unhandled webview promise rejections."
+  - "Moved server command/args/prefix settings from the invalid manifest root
+    into `contributes.configuration` and added a structural regression. VS Code
+    typecheck, build and its complete 41-suite / 179-test gate pass."
+  - "Still pending before S4 can be marked done: route the renderer and host
+    chrome through typed 12-language copy, then visually inspect the real panel
+    in the Extension Development Host."
 - acceptance:
   - "A contributed command opens the center for an explicitly selected workspace folder in multi-root workspaces."
   - "Every inbound webview message is schema-validated and restricted to declared configuration operations."
