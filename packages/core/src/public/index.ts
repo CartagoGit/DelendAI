@@ -141,6 +141,12 @@ export {
 	pluginConfigFor,
 	resolveConfigPluginSpecifiers,
 } from '../lib/plugins/load-config-file';
+export { diagnoseWorkspaceLayout } from '../lib/plugins/diagnose-workspace-layout';
+export type {
+	IWorkspaceLayoutArgs,
+	WorkspaceLayoutProbe,
+	WorkspacePathStatus,
+} from '../lib/contracts/interfaces/workspace-layout.interface';
 export {
 	assembleCliConfig,
 	runCli,
