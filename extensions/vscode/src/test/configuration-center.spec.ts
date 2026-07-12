@@ -9,6 +9,10 @@ import { McpStdioClient, readConfigurationDocument } from '@mcp-vertex/client';
 
 import { registerOpenConfigurationCenterCommand } from '../commands/open-configuration-center';
 import type { ICommandVscodeApi } from '../commands/types';
+import {
+	assertConfigurationCenterStringsComplete,
+	configurationCenterStringsByLang,
+} from '../i18n/configuration-center.strings';
 
 const OPEN_CONFIGURATION_CENTER_COMMAND = 'mcp-vertex.openConfigurationCenter';
 const roots: string[] = [];
@@ -61,6 +65,13 @@ const createClient = (): McpStdioClient =>
 	});
 
 describe('mcp-vertex.openConfigurationCenter', () => {
+	it('has complete typed copy for every supported language', () => {
+		expect(assertConfigurationCenterStringsComplete()).toEqual([]);
+		expect(configurationCenterStringsByLang.es.copy.title).toBe(
+			'Centro de configuración',
+		);
+	});
+
 	it('renders the real center and only persists schema-validated messages', async () => {
 		const root = await mkdtemp(join(tmpdir(), 'mcpv-vscode-config-'));
 		roots.push(root);
@@ -108,15 +119,24 @@ describe('mcp-vertex.openConfigurationCenter', () => {
 		registerOpenConfigurationCenterCommand({
 			vscode,
 			client: createClient(),
+			globalState: {
+				get<T>() {
+					return 'es' as T;
+				},
+				async update() {},
+			},
 		});
 
 		await commands.get(OPEN_CONFIGURATION_CENTER_COMMAND)?.();
 		expect(panel.webview.html).toContain('Content-Security-Policy');
 		expect(panel.webview.html).toContain('__MCPV_CONFIGURATION_HOST__');
-		expect(panel.webview.html).toContain('Configuration Center');
+		expect(panel.webview.html).toContain('Centro de configuración');
+		expect(panel.webview.html).toContain('<html lang="es">');
 
 		await receive?.({ command: 'saveConfiguration', edits: [] });
-		expect(errors).toHaveLength(1);
+		expect(errors).toEqual([
+			'mcp-vertex: el Centro de configuración rechazó un mensaje no válido.',
+		]);
 		expect(
 			(await readConfigurationDocument({ workspaceRoot: root })).exists,
 		).toBe(false);
