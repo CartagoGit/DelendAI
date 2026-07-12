@@ -193,7 +193,8 @@ export const assembleCliConfig = async (
 		probe: probeWorkspacePath,
 	});
 	const docsDirMissing =
-		baseConfigDiagnostic.present && probeWorkspacePath(docsDir) !== 'exists';
+		baseConfigDiagnostic.present &&
+		probeWorkspacePath(docsDir) !== 'exists';
 	const configDiagnostic = {
 		present: baseConfigDiagnostic.present,
 		issues: [

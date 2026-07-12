@@ -145,9 +145,8 @@ describe('assembleCliConfig — dead-config surfacing (f00109 S1)', () => {
 				name: 'mcp-vertex_overview',
 				arguments: { compact: true },
 			});
-			const text = (
-				res.content as ReadonlyArray<{ text?: string }>
-			)[0]?.text;
+			const text = (res.content as ReadonlyArray<{ text?: string }>)[0]
+				?.text;
 			const overview = JSON.parse(text ?? '{}') as {
 				readonly configIssues?: readonly string[];
 				readonly recommendedNextAction?: string;
