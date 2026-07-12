@@ -40,6 +40,15 @@ export interface IOverviewSnapshot {
 	readonly server: { readonly name: string; readonly version: string };
 	readonly namespacePrefix: string;
 	readonly corePaths: { readonly cacheDir: string; readonly docsDir: string };
+	/**
+	 * f00109 S1: config-file problems detected at boot — schema violations
+	 * plus dead-layout findings (a docsDir or plugin `options.roots` entry
+	 * that does not exist in this workspace). Absent when the config is
+	 * clean, so the healthy overview pays zero bytes. When present, the
+	 * agent must fix the config before doing any work: the listed paths
+	 * mean plugins are scanning directories that are not there.
+	 */
+	readonly configIssues?: readonly string[] | undefined;
 	readonly pluginDiagnostic?: IOverviewPluginDiagnostic | undefined;
 	readonly plugins: readonly IOverviewPlugin[];
 	readonly tools: readonly IOverviewToolEntry[];
@@ -109,6 +118,9 @@ export const buildOverviewToolRegistration = (
 					corePaths: z
 						.object({ cacheDir: z.string(), docsDir: z.string() })
 						.optional(),
+					// f00109 S1: boot-time config problems (schema violations,
+					// dead docsDir/roots). Omitted when the config is clean.
+					configIssues: z.array(z.string()).optional(),
 					pluginDiagnostic: z
 						.object({
 							requested: z.array(z.string()),
@@ -232,6 +244,12 @@ export const buildOverviewToolRegistration = (
 					return toolJson({
 						server: snap.server,
 						namespacePrefix: snap.namespacePrefix,
+						// f00109 S1: config problems survive compact mode — a
+						// dead config is exactly when orientation must not look
+						// healthy. Omitted when clean.
+						...(snap.configIssues !== undefined
+							? { configIssues: snap.configIssues }
+							: {}),
 						// Only when the requested plugin set diverged from what
 						// loaded (assemble.ts omits it on a clean boot).
 						...(snap.pluginDiagnostic !== undefined
@@ -246,6 +264,9 @@ export const buildOverviewToolRegistration = (
 				return toolJson({
 					server: snap.server,
 					namespacePrefix: snap.namespacePrefix,
+					...(snap.configIssues !== undefined
+						? { configIssues: snap.configIssues }
+						: {}),
 					pluginDiagnostic: snap.pluginDiagnostic,
 					plugins: snap.plugins.map((plugin) =>
 						plugin.version === undefined

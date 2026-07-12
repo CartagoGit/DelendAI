@@ -621,6 +621,7 @@ export interface McpVertexOverviewOutput {
 		cacheDir: string;
 		docsDir: string;
 	};
+	configIssues?: string[];
 	pluginDiagnostic?: {
 		requested: string[];
 		loaded: string[];
