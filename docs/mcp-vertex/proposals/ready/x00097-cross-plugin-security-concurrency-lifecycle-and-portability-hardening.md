@@ -49,7 +49,7 @@ requieren cambios contractuales o tests de carrera más amplios que un quick fix
 - **Files**: plugins/usage-tracking/tests/src/lib/lifecycle-races.spec.ts
 - **Gate**: `bun run test`
 - **Status**: pending
-
+- status: done
 ### S4 — Streaming byte cap
 - **Files**: plugins/web-fetch/src/lib/services/engine.ts
 - **Files**: plugins/web-fetch/src/lib/contracts/interfaces/fetch.interface.ts

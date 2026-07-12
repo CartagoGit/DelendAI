@@ -30,6 +30,30 @@ const DEFAULT_MAX_DELAY_MS = 250;
 const DEFAULT_MAX_BATCH = 64;
 
 /**
+ * x00097 S3 (audit a00052: "close desconectado"): every live buffer is
+ * tracked module-wide and drained once on `beforeExit`. The flush timer is
+ * deliberately unref'd (a pending record must never keep the host alive),
+ * which used to mean a natural exit silently dropped the tail of the log.
+ * Signal-driven `process.exit()` paths still cannot await async I/O — this
+ * covers the normal event-loop-drained exit.
+ */
+const liveBuffers = new Set<RecordBuffer>();
+let exitHookInstalled = false;
+
+/** Drain every live buffer to disk (wired to `beforeExit`; test seam). */
+export const drainLiveBuffers = async (): Promise<void> => {
+	await Promise.all([...liveBuffers].map((buffer) => buffer.close()));
+};
+
+const installExitHook = (): void => {
+	if (exitHookInstalled) return;
+	exitHookInstalled = true;
+	process.once('beforeExit', () => {
+		void drainLiveBuffers();
+	});
+};
+
+/**
  * Buffered append writer for one NDJSON file. One instance per plugin
  * boot; the flush is serialized on the file mutex so concurrent instances
  * (or a concurrent rollup read) never interleave a partial line.
@@ -48,6 +72,8 @@ export class RecordBuffer {
 	) {
 		this.maxDelayMs = options.maxDelayMs ?? DEFAULT_MAX_DELAY_MS;
 		this.maxBatch = options.maxBatch ?? DEFAULT_MAX_BATCH;
+		liveBuffers.add(this);
+		installExitHook();
 	}
 
 	/** Hot-path entry point. Synchronous, non-blocking, never awaits I/O. */
@@ -118,6 +144,19 @@ export class RecordBuffer {
 		do {
 			await this.flush();
 		} while (this.pending.length > 0);
+	}
+
+	/**
+	 * Drop the buffered records and wait out any in-flight drain
+	 * (x00097 S3: `usage_clear` support). Without this barrier a wipe of
+	 * `invocations.jsonl` raced the next flush, which re-appended the
+	 * supposedly-cleared records. Records pushed AFTER the barrier are new
+	 * history and stay buffered.
+	 */
+	async clear(): Promise<void> {
+		this.cancelTimer();
+		this.pending.length = 0;
+		if (this.flushPromise) await this.flushPromise;
 	}
 
 	/**
