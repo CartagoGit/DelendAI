@@ -2,7 +2,7 @@
 id: f00112
 title: "Schema-driven Configuration Center with plugin and artifact provenance"
 kind: feat
-status: ready
+status: done
 type: proposal
 track: configuration-center
 date: 2026-07-12
