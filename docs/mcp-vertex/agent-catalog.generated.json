@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-07-12T11:13:46.994Z",
+	"generatedAt": "2026-07-12T19:31:13.694Z",
 	"mode": "compact",
 	"tools": [
 		{
@@ -668,14 +668,6 @@
 	"proposals": {
 		"actionable": [
 			{
-				"id": "a00052",
-				"title": "a00052",
-				"track": "audit",
-				"status": "ready",
-				"kind": "audit",
-				"date": "2026-07-12"
-			},
-			{
 				"id": "c00002",
 				"title": "c00002",
 				"track": "docs+release",
@@ -757,14 +749,14 @@
 			}
 		],
 		"byStatus": {
-			"ready": 10,
+			"ready": 9,
 			"in-progress": 0,
 			"review": 1,
 			"paused": 1,
-			"done": 193,
+			"done": 194,
 			"blocked": 0,
 			"retired": 0,
-			"unspecified": 0
+			"unspecified": 1
 		}
 	}
 }

@@ -108,6 +108,19 @@ export interface IHostObservability {
 	readonly onToolStart?:
 		| ((toolName: string, args: unknown) => Promise<void> | void)
 		| undefined;
+	/**
+	 * f00111 S1: fired when the client aborts an in-flight tool call (the
+	 * SDK request `AbortSignal` fires while the handler is still running).
+	 * `elapsedMs` is the time since the handler started. At most once per
+	 * call; never fired after the handler settles.
+	 */
+	readonly onToolCancel?:
+		| ((
+				toolName: string,
+				args: unknown,
+				elapsedMs: number,
+		  ) => Promise<void> | void)
+		| undefined;
 	readonly isAgentStuck?:
 		| ((
 				toolName: string,
