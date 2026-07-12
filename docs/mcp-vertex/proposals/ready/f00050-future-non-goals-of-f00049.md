@@ -1,30 +1,37 @@
 ---
 id: f00050
-status: paused
-paused-reason: Deferred until prerequisites of f00049 land
+status: ready
 type: proposal
 track: lint+architecture+i18n+workflow+release
 date: 2026-06-23
-paused: 2026-06-23
 kind: feat
-title: Future work deferred from f00049 — the nine non-goals that will become a separate proposal when their prerequisites land
+title: Future work deferred from f00049 — triage the nine non-goals now that f00049 is done
 related:
-    - f00049 # the parent proposal that explicitly defers this work
+    - f00049 # the parent proposal (now done) whose non-goals this file parks
+recan:
+    - { at: 2026-07-12, by: opus, slice: all, status: rescanned, notes: "f00049 is DONE (done/feats/) and @mcp-vertex/core/public is stable — the COMMON precondition (item 1 of every S-*) is now MET. But every S-* also carries a SECOND, trigger precondition (a concrete user request / CVE / audit finding / community decision); as of this re-scan NONE of those triggers exist, so no item auto-promotes. This proposal is promoted to ready as the standing TRIAGE workstream: S0 assesses all nine against the live tree each pass and promotes any whose trigger has since fired." }
 ---
 
-# f00050 — Future work deferred from f00049
+# f00050 — Triage the nine non-goals deferred from f00049
 
 ## goal
 
-Capture the nine non-goals that [`f00049`](../ready/f00049-conventions-unification-r10-slices.md)
-explicitly chose **not** to do, so they survive past the unification's close. Each item
-gets its own S* slice with its own gate, but the proposal itself stays `paused` until
-its prerequisites are met (one per item, listed below). Moving this file to `ready/`
-requires a per-item decision recorded in this frontmatter (`preconditions-met:` array).
+f00049 (conventions unification) is **done**. This proposal parks the nine
+non-goals it explicitly refused to cross, each behind a precondition, and —
+now promoted to `ready/` — serves as the standing **triage workstream** for
+them: on each pass, re-scan every item against the live tree and promote any
+whose trigger has fired into its own `ready/<id>-…` proposal (per the
+`### how to unpause an item` procedure). It is deliberately conservative:
+executing a gated item **before** its trigger (a semantic rewrite, an ID
+renumber, a dep bump) would break the very discipline f00049 established, so
+S0's job is triage + promotion, never blind execution.
 
-This is a **parking lot**, not a workstream. Slices are not claimable while the
-proposal is `paused` — the slice gates below are the contract for the future
-proposal, not a TODO for today.
+**Re-scan 2026-07-12 (this promotion):** the common precondition — f00049
+done + public surface stable — is MET for every item. The per-item trigger
+status is the table under `## Re-scan outcome` below; today all nine remain
+trigger-blocked, so the actionable work is S0 (triage), and each item moves
+only when its concrete trigger appears (a user asks for the semantic rewrite,
+a CVE lands for S-I, an audit flags the audit-plugin vocab for S-B, etc.).
 
 ## why
 
@@ -47,11 +54,36 @@ Listing them in a single place, with preconditions, makes them:
 
 ## non-goals
 
-- Do not implement any of the nine slices while the proposal is `paused`.
-- Do not move this file to `ready/` until the `preconditions-met:` array records
-  which slices are now unblocked.
+- **Do not blind-execute a trigger-blocked item.** Promotion requires the
+  item's concrete trigger (a user request, a CVE, an audit finding, a
+  community decision) to have fired — the re-scan proves it, S0 records it.
+  Running a semantic rewrite / ID renumber / dep bump without its trigger
+  breaks the f00049 discipline this file exists to protect.
 - Do not link this proposal from `f00049` as a dependency of f00049's slices —
   f00049 explicitly does not depend on f00050.
+
+### Re-scan outcome (2026-07-12)
+
+Common precondition (f00049 done + `@mcp-vertex/core/public` stable): **MET**
+(2026-07-12). Per-item trigger status:
+
+| Item | Trigger precondition | 2026-07-12 status |
+|------|----------------------|-------------------|
+| S-A semantic rewrite | user request OR P0 audit flags an SRP violation | trigger-blocked (no such request/finding) |
+| S-B audit-plugin contract | audit finds a vocab leak / downstream host asks | trigger-blocked |
+| S-C public surface change | a public symbol must be removed/renamed | trigger-blocked (no removal pending) |
+| S-D non-TS profile | a consumer needs python/rust/go OR v1 commits multi-lang | trigger-blocked |
+| S-E new public types | a needed type can't be exported today | trigger-blocked |
+| S-F renumber IDs | a strict-order convention + git-filter-repo approval | trigger-blocked |
+| S-G fuse ID prefixes | a community decision on the prefix taxonomy | trigger-blocked |
+| S-H loop-detector contract | a new orchestrator proposal cites a prod loop | trigger-blocked |
+| S-I dep bump / bun.lock | a CVE OR an unmaintained-dep + alternative | trigger-blocked (run `deps_check` each pass) |
+
+**Consequence:** S0 (triage) is the only active slice; it re-runs this table
+each pass and promotes any row that flips to "trigger fired." The nine item
+blocks (`### S-A …` through `### S-I …`) below are the ready-to-copy contracts
+for that promotion — unchanged, still the source of truth for each item's
+files + gate.
 
 
 ### Re-scan before unpausing any S-* slice (pre-flight, mandatory)
@@ -108,12 +140,14 @@ Listing them in a single place, with preconditions, makes them:
   sync.
 
 ## slices
-### S0 — parking-lot placeholder (this proposal stays paused)
+### S0 — standing triage (re-scan + promote)
 
-- **Status**: paused
-- **Files**: docs/proposals/paused/f00050-future-non-goals-of-f00049.md (this file only).
-- **Gate**: none (paused — the proposal is a parking lot, not a workstream).
-- **Acceptance**: each item parked below (`### S-A — …`, `### S-B — …`, …) carries its own precondition; the proposal as a whole is `done` when all nine items have been moved out into their own `ready/<id>-…` proposals. Until then, the proposal stays `paused` and the slice below remains unclaimable.
+- **Status**: pending
+- **Files**: `docs/mcp-vertex/proposals/ready/f00050-future-non-goals-of-f00049.md` (this file), plus any `ready/<id>-…` a promotion creates.
+- **Gate**: `bun run lint:proposals` (the file stays lint-clean; any promoted child passes on its own).
+- **Acceptance**:
+  - "Each pass: re-run the `## Re-scan outcome` table against the live tree (f00049 slices, latest audits under `done/audits/`, `deps_check` for S-I, `proposals_compact_status`). Append a `recan:` frontmatter entry with the outcome. Any row whose trigger has fired is promoted per `### how to unpause an item` (copy its S-* block into a fresh `ready/<id>` proposal, remove it here, record `preconditions-met:`)."
+  - "The proposal is `done` only when all nine items have been either promoted out (trigger fired → own proposal) or explicitly retired by the user (trigger declared never-going-to-fire). Until then it stays `ready` as the live triage surface — no longer `paused`, because f00049 is done and the common precondition is met."
 
 
 ### S-A — Semantic rewrite of services and tools beyond renames
@@ -301,18 +335,19 @@ Listing them in a single place, with preconditions, makes them:
 
 ## acceptance
 
-The proposal closes when **all nine** of these are true:
+The proposal is `done` when **all nine** items have left this file — each
+either promoted into its own `ready/<id>-…` proposal (its trigger fired) or
+explicitly retired by the user. Until then it stays `ready` as the live
+triage surface. Concretely:
 
-- ✅ The 9 non-goals from f00049 §"non-goals (kept explicit per the user's
-  'todo esto también' request)" are captured below as S* slices with
-  preconditions.
-- ✅ `docs/proposals/index.json` lists this file under `paused/`.
-- ✅ `proposals_compact_status` shows `paused: 1` incrementing on this proposal's
-  creation.
-- ✅ `f00049` references this file from its own "see also" — done at the time
-  f00049 was written; the link is `paused/f00050-future-non-goals-of-f00049.md`.
-- ✅ The next agent who unblocks an item copies its slice out of this file into
-  a fresh `ready/f00051-…` (or appropriate id) and removes the slice from here.
+- The nine non-goals from f00049 are captured below as `### S-* …` blocks,
+  each with its precondition (the ready-to-copy promotion contract).
+- `docs/mcp-vertex/proposals/index.json` lists this file under `ready/`.
+- Each re-scan pass appends a `recan:` frontmatter entry (S0 acceptance).
+- A promotion copies the item's block into a fresh `ready/<id>` proposal,
+  removes it here, and records `preconditions-met:` — per `### how to
+  unpause an item`.
+- `bun run lint:proposals` stays green throughout.
 
 ## notes
 
