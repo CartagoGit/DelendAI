@@ -2,7 +2,7 @@
 id: x00097
 kind: fix
 title: Cross-plugin security, concurrency, lifecycle and portability hardening
-status: ready
+status: done
 type: proposal
 track: hardening
 date: 2026-07-12
