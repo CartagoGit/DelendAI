@@ -46,10 +46,7 @@ export interface IRunCommandOptions {
  * dialect this repo standardizes on (AGENT-BOOTSTRAP §6). Windows keeps
  * `shell: true` (no bash contract there).
  */
-const spawnShell = (
-	command: string,
-	cwd: string,
-): ReturnType<typeof spawn> =>
+const spawnShell = (command: string, cwd: string): ReturnType<typeof spawn> =>
 	process.platform === 'win32'
 		? spawn(command, {
 				cwd,
