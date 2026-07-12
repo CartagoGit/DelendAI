@@ -16,7 +16,7 @@ export interface IAgentCatalogViewModel {
 const renderToolRow = (tool: IToolSummary): string => `
 			<button class="row" data-command="callTool" data-id="${escapeHtml(tool.name)}">
 				<strong>${escapeHtml(tool.name)}</strong>
-				<span>${escapeHtml(tool.plugin)}</span>
+				<span>${escapeHtml(tool.plugin ?? 'mcp-vertex')}</span>
 				<span>${escapeHtml((tool.tags ?? []).join(', '))}</span>
 			</button>`;
 
