@@ -302,3 +302,55 @@ describe('deriveSliceStatuses + validateClaim', async () => {
 		);
 	});
 });
+
+describe('canonical **Files** lists (x00098 S1)', async () => {
+	const docWith = (filesLine: string): string =>
+		[
+			'## Slices',
+			'',
+			'- global_gate: none',
+			'',
+			'### S1 — canonical',
+			'- **Status**: pending',
+			filesLine,
+			'- **Gate**: bun run validate',
+			'',
+		].join('\n');
+
+	it('splits a backticked comma list into individual paths', async () => {
+		const plan = parseProposalSlicePlan(
+			'x1',
+			docWith('- **Files**: `a/b.ts`, `c/d.spec.ts`, `e.md`'),
+		);
+		expect(plan?.slices[0]?.files).toEqual([
+			'a/b.ts',
+			'c/d.spec.ts',
+			'e.md',
+		]);
+	});
+
+	it('splits a bracket-wrapped list into individual paths', async () => {
+		const plan = parseProposalSlicePlan(
+			'x1',
+			docWith('- **Files**: [a/b.ts, c/d.ts]'),
+		);
+		expect(plan?.slices[0]?.files).toEqual(['a/b.ts', 'c/d.ts']);
+	});
+
+	it('keeps single-path repeatable lines byte-identical', async () => {
+		const plan = parseProposalSlicePlan(
+			'x1',
+			[
+				'## Slices',
+				'',
+				'### S1 — legacy',
+				'- files: a/b.ts',
+				'- files: c/d.ts',
+				'- gate: none',
+				'- status: pending',
+				'',
+			].join('\n'),
+		);
+		expect(plan?.slices[0]?.files).toEqual(['a/b.ts', 'c/d.ts']);
+	});
+});

@@ -136,7 +136,9 @@ const parseCostTier = (raw: string | undefined): ISliceCostTier | undefined => {
  * single-slice document and the `plan`/`claim` modes do not apply.
  *
  * Recognised per-slice lines (inside `### <sliceId> — <title>`):
- *   - `- files: <path>` or `- **Files**: <path>` (repeatable)
+ *   - `- files: <path>` or `- **Files**: <list>` (repeatable; a line may
+ *     carry one path or a comma-separated list, optionally `[]`-wrapped,
+ *     each entry optionally backticked — x00098 S1)
  *   - `- depends_on: [a, b]` or `- **DependsOn**: [a, b]`
  *   - `- gate: lint|type|e2e|none` or `- **Gate**: ...`
  *   - `- status: done` or `- **Status**: done` (set by the executor when the slice closes)
@@ -169,10 +171,24 @@ export const parseProposalSlicePlan = (
 		const sliceId = block[1] ?? '';
 		const title = (block[2] ?? '').trim();
 		const body = block[3] ?? '';
+		// x00098 S1: a Files line may carry ONE path (`- files: a.ts`) or
+		// the canonical list every real proposal uses
+		// (`- **Files**: \`a.ts\`, \`b.ts\`` / `- **Files**: [a.ts, b.ts]`).
+		// Capture the whole rest of the line, strip an optional [] wrapper
+		// and split on commas — the single-path form degenerates to a
+		// one-element split, so legacy lines parse byte-identically.
 		const files = [
-			...body.matchAll(/^[-*]\s*(?:files|\*\*Files\*\*):\s*(\S+)/gm),
+			...body.matchAll(/^[-*]\s*(?:files|\*\*Files\*\*):\s*(.+)$/gm),
 		]
-			.map((m) => normalizeFileToken(m[1] ?? ''))
+			.flatMap((m) => {
+				const raw = (m[1] ?? '').trim();
+				const unwrapped =
+					raw.startsWith('[') && raw.endsWith(']')
+						? raw.slice(1, -1)
+						: raw;
+				return unwrapped.split(',');
+			})
+			.map((token) => normalizeFileToken(token.trim()))
 			.filter((f) => f.length > 0);
 		const dependsRaw =
 			body.match(
