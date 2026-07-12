@@ -122,9 +122,14 @@ declared settings in the editor.
 - global_gate: e2e
 
 ### S1 — Serializable configuration and provenance introspection
-- **Status**: pending
-- **Files**: `packages/core/src/lib/configuration-center/**`, `packages/core/src/lib/contracts/interfaces/configuration-center.interface.ts`, `packages/core/src/lib/tools/configuration-center.tool.ts`, `packages/core/src/public/index.ts`
+- **Status**: done
+- **Files**: `packages/core/src/lib/configuration-center/configuration-center.ts`, `packages/core/src/lib/contracts/interfaces/configuration-center.interface.ts`, `packages/core/src/lib/tools/configuration-center.tool.ts`, `packages/core/src/lib/cli/assemble.ts`, `packages/core/src/public/index.ts`, `packages/core/tests/src/lib/configuration-center/configuration-center.tool.spec.ts`, `packages/core/src/generated/tool-outputs.ts`, `docs/mcp-vertex/agent-catalog.generated.json`
 - **Gate**: type
+- **Evidence (2026-07-12)**:
+  - "Added the read-only `configuration_center` tool with summary/config/plugins/artifacts sections, numeric cursor pagination, a public outputSchema and lazy detail: the default summary contains counts only and does not embed config, schemas or lists."
+  - "The root Zod config schema is projected to JSON Schema on demand. Loaded and disabled plugin rows reconcile activation origin/source with path, prefix, redacted options, runtime-derived JSON Schema when serializable, examples and registration capability counts. Validators that cannot serialize report `schemaStatus: unavailable` instead of guessed forms."
+  - "Prompts, resources and knowledge retain their owning loaded plugin; skill ownership derives from the manifest's authored `appliesTo`; unavailable agent ownership is reported explicitly. Config and duplicated plugin options are redacted before any section can return them."
+  - "Verified: typecheck; Biome; 3 focused suites / 14 tests including real assembly, pagination, redaction and outputSchema; verify:tools 270/270; generated SDK and live catalog checks."
 - acceptance:
   - "Expose the canonical root config schema plus current redacted values without persisting or returning secrets."
   - "Each plugin reports id, origin, active state, activation source, path/prefix/options, serializable options schema/defaults/examples and capabilities."
@@ -184,7 +189,7 @@ declared settings in the editor.
 
 ### S6 — Configuration Center regressions and end-to-end safety
 - **Status**: pending
-- **Files**: `packages/core/tests/src/lib/configuration-center/**`, `packages/client/tests/services/configuration-center.service.spec.ts`, `packages/ui-extension/src/configuration-center/configuration-center.spec.ts`, `extensions/vscode/src/test/configuration-center.spec.ts`
+- **Files**: `packages/core/tests/src/lib/configuration-center/configuration-center.e2e.spec.ts`, `packages/client/tests/services/configuration-center.service.spec.ts`, `packages/ui-extension/src/configuration-center/configuration-center.spec.ts`, `extensions/vscode/src/test/configuration-center.spec.ts`
 - **DependsOn**: [S1, S2, S3, S4, S5]
 - **Gate**: e2e
 - acceptance:
