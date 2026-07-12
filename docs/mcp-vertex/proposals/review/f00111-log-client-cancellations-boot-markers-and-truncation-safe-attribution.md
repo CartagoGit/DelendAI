@@ -2,7 +2,7 @@
 id: f00111
 title: "Log client cancellations, boot markers and truncation-safe attribution"
 kind: feat
-status: in-progress
+status: review
 type: proposal
 track: general
 date: 2026-07-12
@@ -50,13 +50,13 @@ observability holes in one session log:
 - **Status**: in-progress
 - **Files**: [packages/core/src/lib/project/create-mcp-project.ts, packages/core/src/lib/contracts/interfaces/host-config.interface.ts, packages/core/src/lib/plugins/plugin-contract.ts, packages/core/src/lib/cli/assemble.ts, packages/core/tests/src/lib/project/create-mcp-project.spec.ts]
 - **Gate**: bun run validate
-
+- status: done
 ### S2 — Logs plugin: tool-cancelled event, server-started boot marker, truncation keeps attribution
 - **Status**: pending
 - **DependsOn**: S1
 - **Files**: [plugins/logs/src/index.ts, plugins/logs/src/lib/services/normalize-event.ts, plugins/logs/tests/normalize-event.spec.ts]
 - **Gate**: bun run validate
-
+- status: done
 ## acceptance
 
 - The instrumented wrapper finds the request `AbortSignal` among the handler
