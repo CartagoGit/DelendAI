@@ -33,7 +33,11 @@ const registerAll = async (
 ): Promise<Map<string, ToolHandler>> => {
 	const handlers = new Map<string, ToolHandler>();
 	const server = {
-		registerTool: (name: string, _config: unknown, handler: ToolHandler) => {
+		registerTool: (
+			name: string,
+			_config: unknown,
+			handler: ToolHandler,
+		) => {
 			handlers.set(name, handler);
 		},
 	} as unknown as Parameters<IToolRegistration['register']>[0];
@@ -103,9 +107,9 @@ describe('external-mcps ack ↔ call composition (x00097 S1)', () => {
 		const call = tools.get('external-mcps_call')!;
 		const ack = tools.get('external-mcps_ack')!;
 
-		expect(payload(await call({ server: 'demo', tool: 'ping' }))).toMatchObject(
-			{ ok: false, code: 'ack-required' },
-		);
+		expect(
+			payload(await call({ server: 'demo', tool: 'ping' })),
+		).toMatchObject({ ok: false, code: 'ack-required' });
 
 		const decision = payload(
 			await ack({ server: 'demo', accept: true, ackedBy: 'spec-human' }),
