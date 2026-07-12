@@ -78,7 +78,7 @@ session total.
 
 ### S1a — `usage_report` group-by model (spend + tokens; directly available)
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/usage-tracking/src/lib/types.ts`, `plugins/usage-tracking/src/lib/rollup.ts`, `plugins/usage-tracking/src/lib/tools/report.tool.ts`, `plugins/usage-tracking/tests/src/lib/rollup.spec.ts`
 - **Gate**: bun run typecheck && bun run test
 - **Acceptance**:
