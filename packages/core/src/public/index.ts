@@ -103,6 +103,14 @@ export type {
 	IPluginOriginInput,
 	PluginOrigin,
 } from '../lib/contracts/interfaces/plugin-origin.interface';
+export { buildActivationReport } from '../lib/plugins/activation-report';
+export type {
+	ActivationSource,
+	IActivationEntry,
+	IActivationReport,
+	IActivationSources,
+	ILoadedPluginFacts,
+} from '../lib/contracts/interfaces/activation-report.interface';
 export {
 	parseCliArgs,
 	DEFAULT_CLI_ARGS,
