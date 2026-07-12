@@ -398,6 +398,13 @@ export const assembleCliConfig = async (
 	const onToolStarts: Array<
 		(toolName: string, args: unknown) => Promise<void> | void
 	> = [];
+	const onToolCancels: Array<
+		(
+			toolName: string,
+			args: unknown,
+			elapsedMs: number,
+		) => Promise<void> | void
+	> = [];
 	let isAgentStuckFn: IMcpVertexHostConfig['isAgentStuck'];
 
 	for (const { plugin, registrations } of loadResult.loaded) {
@@ -410,6 +417,8 @@ export const assembleCliConfig = async (
 			onToolCalls.push(registrations.onToolCall);
 		if (registrations.onToolStart)
 			onToolStarts.push(registrations.onToolStart);
+		if (registrations.onToolCancel)
+			onToolCancels.push(registrations.onToolCancel);
 		if (registrations.isAgentStuck)
 			isAgentStuckFn = registrations.isAgentStuck;
 		for (const tool of registrations.tools ?? []) {
@@ -858,6 +867,21 @@ export const assembleCliConfig = async (
 							} catch (e) {
 								process.stderr.write(
 									`[mcp-vertex] onToolStart error: ${e instanceof Error ? e.message : String(e)}\n`,
+								);
+							}
+						}
+					},
+				}
+			: {}),
+		...(onToolCancels.length > 0
+			? {
+					onToolCancel: async (toolName, toolArgs, elapsedMs) => {
+						for (const handler of onToolCancels) {
+							try {
+								await handler(toolName, toolArgs, elapsedMs);
+							} catch (e) {
+								process.stderr.write(
+									`[mcp-vertex] onToolCancel error: ${e instanceof Error ? e.message : String(e)}\n`,
 								);
 							}
 						}

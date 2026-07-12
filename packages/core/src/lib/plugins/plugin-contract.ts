@@ -154,6 +154,17 @@ export interface IMcpPluginRegistrations {
 	readonly onToolStart?:
 		| ((toolName: string, args: unknown) => Promise<void> | void)
 		| undefined;
+	/**
+	 * f00111 S1: fired when the client aborts an in-flight tool call.
+	 * See `IHostObservability.onToolCancel` for the exact semantics.
+	 */
+	readonly onToolCancel?:
+		| ((
+				toolName: string,
+				args: unknown,
+				elapsedMs: number,
+		  ) => Promise<void> | void)
+		| undefined;
 	readonly isAgentStuck?:
 		| ((
 				toolName: string,
