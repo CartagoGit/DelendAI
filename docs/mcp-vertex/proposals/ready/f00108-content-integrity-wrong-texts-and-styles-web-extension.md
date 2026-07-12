@@ -72,7 +72,7 @@ and every gate stays green. For an npm-perfection bar, that is the gap.
 - **Gate**: bun run site
 - **Acceptance**:
   - "Sweep every render surface for: (a) hardcoded user-facing strings that should go through `text()`/`byLang`; (b) keys present but stale-English in a non-English dict; (c) strings placed in the wrong slot (label/aria/title mismatches). Each is fixed; a short report lists every change by file:line and category."
-  - "Verified Configuration Center copy finding (2026-07-13): its main chrome is localized, but generated plugin controls still hardcode `Enabled`, `Path`, `Prefix`, `Options`, `custom`, `Server definition`, capability nouns and their descriptions in English; artifact-origin values are also rendered as raw enum text. Extend the typed copy contract and the 12-language table before closing the content audit."
+  - "Resolved Configuration Center copy finding (2026-07-13): generated plugin controls had hardcoded `Enabled`, `Path`, `Prefix`, `Options`, `custom`, `Server definition`, capability nouns and descriptions, while artifact origins rendered raw enum text. All now use the typed 12-language copy contract; the Spanish live-DOM audit found none of the former English literals."
   - "Spot-check the fixed routes render the correct copy in en + es (the two fully-authored locales); `bun run site` green."
 
 ### S2 — Audit + fix style regressions

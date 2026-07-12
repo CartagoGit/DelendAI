@@ -58,7 +58,26 @@ const createClient = (): McpStdioClient =>
 								},
 							}
 						: section === 'plugins'
-							? { ...base, plugins: [] }
+							? {
+									...base,
+									plugins: [
+										{
+											id: 'audit',
+											origin: 'bundled',
+											active: true,
+											source: 'config',
+											options: {},
+											schemaStatus: 'unavailable',
+											capabilities: {
+												tools: 2,
+												prompts: 1,
+												resources: 3,
+												knowledge: 0,
+												skills: 0,
+											},
+										},
+									],
+								}
 							: { ...base, artifacts: [] };
 			return { structuredContent: payload };
 		},
@@ -132,6 +151,11 @@ describe('mcp-vertex.openConfigurationCenter', () => {
 		expect(panel.webview.html).toContain('__MCPV_CONFIGURATION_HOST__');
 		expect(panel.webview.html).toContain('Centro de configuración');
 		expect(panel.webview.html).toContain('<html lang="es">');
+		expect(panel.webview.html).toContain(
+			'2 herramientas · 1 prompts · 3 recursos',
+		);
+		expect(panel.webview.html).toContain('Activa este plugin');
+		expect(panel.webview.html).not.toContain('Enable this plugin');
 
 		await receive?.({ command: 'saveConfiguration', edits: [] });
 		expect(errors).toEqual([

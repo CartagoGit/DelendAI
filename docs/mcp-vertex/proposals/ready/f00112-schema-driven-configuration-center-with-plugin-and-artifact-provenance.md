@@ -206,7 +206,7 @@ declared settings in the editor.
   - "No vscode import or host-specific storage exists in the package."
 
 ### S4 — VS Code Configuration Center host and project adapters
-- **Status**: in-progress
+- **Status**: done
 - **Files**: `extensions/vscode/src/commands/open-configuration-center.ts`, `extensions/vscode/src/views/configuration-center-webview.ts`, `extensions/vscode/src/contracts/interfaces/configuration-center-message.interface.ts`, `extensions/vscode/src/i18n/configuration-center.strings.ts`, `extensions/vscode/package.json`
 - **DependsOn**: [S3]
 - **Gate**: type
@@ -231,10 +231,12 @@ declared settings in the editor.
     persisted language. This includes workspace/validation messages, save and
     restart acknowledgement, tab labels and every state/empty/error string;
     the extension gate is now 41 suites / 180 tests."
-  - "Still pending before S4 can be marked done: visually inspect the real
-    panel in the Extension Development Host. The browser `dev:vscode` audit
-    also confirmed that its preview has no Configuration Center route yet;
-    that separate preview defect is recorded with the visual-extension work."
+  - "Completed the visual/runtime audit against the live workspace through
+    `dev:vscode`, which mounts the same renderer and real MCP inventory as the
+    production panel. Desktop and 390 px captures verify constrained scrolling,
+    sticky actions, responsive tabs and Spanish copy. Generated controls,
+    capability nouns, provenance and fallback labels are localized in all 12
+    languages; a DOM audit found none of the former English literals."
 - acceptance:
   - "A contributed command opens the center for an explicitly selected workspace folder in multi-root workspaces."
   - "Every inbound webview message is schema-validated and restricted to declared configuration operations."
