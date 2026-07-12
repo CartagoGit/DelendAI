@@ -1,5 +1,5 @@
 import { mkdir, readdir, readFile, rename } from 'node:fs/promises';
-import { dirname, join, relative, resolve } from 'node:path';
+import { dirname, join, relative, resolve, sep } from 'node:path';
 
 import { withFileMutex, writeFileAtomic } from '@mcp-vertex/core/public';
 
@@ -558,6 +558,14 @@ export async function syncProposalRegistry(
 ): Promise<IProposalRegistrySyncResult> {
 	const proposalsDir = resolve(root, layout.proposalsDir);
 	const indexPath = resolve(root, layout.proposalIndexFile);
+	const containedExtraFolders = extraFolders.map((folder) => {
+		const absolute = resolve(proposalsDir, folder);
+		const rel = relative(proposalsDir, absolute);
+		if (rel === '..' || rel.startsWith(`..${sep}`)) {
+			throw new Error(`proposal folder escapes proposalsDir: ${folder}`);
+		}
+		return absolute;
+	});
 	// Cross-process critical section: a concurrent sync regenerating
 	// the same index must not lose entries (read FS → write index).
 	return withFileMutex(indexPath, async () => {
@@ -595,7 +603,7 @@ export async function syncProposalRegistry(
 			...Object.values(KIND_TO_DONE_SUBFOLDER).map((sub) =>
 				join(proposalsDir, 'done', sub),
 			),
-			...extraFolders.map((folder) => join(proposalsDir, folder)),
+			...containedExtraFolders,
 		];
 		const subtrees: ReadonlyArray<{ absolute: string }> = [
 			...new Set(subtreeAbsolutes),
