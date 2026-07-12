@@ -136,9 +136,13 @@ requieren cambios contractuales o tests de carrera más amplios que un quick fix
 - **Files**: plugins/proposals/src/lib/swarm/round-context-sources.ts
 - **Files**: plugins/rules/src/lib/frameworks/online-preset.ts
 - **Files**: plugins/proposals/tests/src/lib/proposals/proposal-folders-containment.spec.ts
-- **Files**: plugins/rules/tests/src/lib/frameworks/online-preset.spec.ts
+- **Files**: plugins/rules/tests/src/lib/online-preset.spec.ts
 - **Gate**: `bun run test`
-- **Status**: pending
+- **Status**: done
+- **Evidence**:
+  - "Custom proposal folders are resolved beneath proposalsDir before registry or live round-context scanning; traversal and absolute paths throw before filesystem enumeration."
+  - "Online preset lookups no longer fabricate version 1.0.0 for empty or unsupported registry responses. Missing published-version data fails closed while a real registry-supplied 1.0.0 remains valid."
+  - "Containment and online-registry regressions pass 24 tests and the repository typecheck passes."
 
 ## Acceptance
 
