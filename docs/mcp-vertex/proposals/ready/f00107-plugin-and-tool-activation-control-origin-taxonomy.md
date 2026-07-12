@@ -79,13 +79,13 @@ token cost of every call the LLM makes.
 
 ### S2 — Activation resolver: what is on, and why
 
-- **Status**: pending
-- **Files**: `packages/core/src/lib/plugins/activation-report.ts`, `packages/core/src/lib/tools/overview-tool.ts` (additive), `packages/core/tests/src/lib/plugins/activation-report.spec.ts`
+- **Status**: in-progress (pure builder done; overview wiring pending)
+- **Files**: `packages/core/src/lib/plugins/activation-report.ts` ✅, `packages/core/src/lib/contracts/interfaces/activation-report.interface.ts` ✅, `packages/core/tests/src/lib/plugins/activation-report.spec.ts` ✅, `packages/core/src/lib/plugins/parse-cli-args.ts` (source-tracking, pending), `packages/core/src/lib/tools/overview-tool.ts` + `assemble.ts` (additive wiring, pending)
 - **Depends on**: S1
 - **Gate**: bun run validate
 - **Acceptance**:
-  - "A pure `buildActivationReport({ requested, loaded, preset, config })` returns, per plugin: `{ id, origin, active, source: 'preset'|'config'|'flag', toolCount }` — the authoritative answer to 'which plugins/tools are on and why they're on.' Surfaced additively on `overview` (compact-safe: only when asked / non-default) so an agent can introspect its own active surface in one call (token-lean)."
-  - "A spec proves the report reconciles with the actual loaded set (no phantom/missing plugin), reusing the assemble.ts loaded-set (never string-parsing tool names — the carried-owner rule)."
+  - "DONE: pure `buildActivationReport(loaded, sources)` returns, per plugin, `{ id, origin, active, source: 'preset'|'config'|'flag', toolCount }` + per-origin `counts` + `totalTools` (the prompt-facing surface size), sorted origin-then-id. Source precedence flag > config > preset. Exported from `@mcp-vertex/core/public`; 4 specs (classify+attribute+tally, precedence, ordering, empty)."
+  - "PENDING (why it is a separate careful step): accurate `preset` vs `flag` attribution needs `parse-cli-args` to STOP collapsing them — `IMcpVertexCliArgs.plugins` today already merges `--preset` expansion + `--plugins` into one list, so assemble cannot tell them apart. S2's wiring adds a `presetMembers`/`flagPlugins` split to the parsed args (hot-path — done carefully), threads them + `configPluginNames` + the loaded set (with resolved specifier + `path` + tool count) into `buildActivationReport`, and surfaces it additively on `overview` (only when asked; token-lean). A spec then proves the report reconciles with the real loaded set."
 
 ### S3 — Extension selection UI (toggle + origin badges)
 
