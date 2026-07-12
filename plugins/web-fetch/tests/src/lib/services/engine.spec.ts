@@ -114,8 +114,7 @@ describe('webFetch streaming byte cap (x00097 S4)', () => {
 
 	it('a cap that lands inside a multi-byte char yields no mojibake', async () => {
 		// 'aa' + '€': cap at 3 bytes cuts the euro after its first byte.
-		const fetcher: IFetchLike = async () =>
-			streamResponse([encode('aa€')]);
+		const fetcher: IFetchLike = async () => streamResponse([encode('aa€')]);
 
 		const result = await webFetch(
 			{ url: URL_OK, allowList: ALLOW, maxBytes: 3 },
