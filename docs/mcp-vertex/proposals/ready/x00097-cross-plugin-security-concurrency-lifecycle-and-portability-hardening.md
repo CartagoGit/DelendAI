@@ -100,13 +100,19 @@ requieren cambios contractuales o tests de carrera más amplios que un quick fix
 
 ### S7 — Durable redaction quota and rejection handling
 - **Files**: plugins/issues/src/lib/tools/resolve-issue.tool.ts
+- **Files**: plugins/issues/tests/src/lib/tools/resolve-issue.tool.spec.ts
 - **Files**: plugins/memory/src/lib/tools/tools.ts
-- **Files**: plugins/memory/src/lib/store/store-records.ts
+- **Files**: plugins/memory/src/lib/tools/compact.tool.ts
+- **Files**: plugins/memory/src/lib/services/store-records.ts
 - **Files**: plugins/logs/src/lib/services/subscribe.ts
-- **Files**: plugins/memory/tests/src/lib/store/quota-concurrency.spec.ts
-- **Files**: plugins/logs/tests/src/lib/services/subscribe.spec.ts
+- **Files**: plugins/memory/tests/src/lib/store-concurrency.spec.ts
+- **Files**: plugins/logs/tests/subscribe.spec.ts
 - **Gate**: `bun run test`
-- **Status**: pending
+- **Status**: done
+- **Evidence**:
+  - "Memory quota admission now occurs inside the same store mutex as the read-modify-write for both ordinary saves and session compaction; a barrier regression proves two max-minus-one writers cannot exceed the limit."
+  - "Issue-resolution fields are redacted before serialization. Log subscriptions observe rejected appends, detach listeners first and await every in-flight write during async close, preventing unhandled rejections and post-close loss."
+  - "The issues, memory and logs suites pass 164 tests and the repository typecheck passes."
 
 ### S8 — Owner docs and skills drift ratchet
 - **Files**: plugins/audit/README.md

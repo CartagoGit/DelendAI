@@ -11,14 +11,13 @@ import type { IToolTextResult } from '@mcp-vertex/core/public';
 
 import {
 	exportNotes,
-	getMaxNotes,
-	deriveNoteId,
 	importNotes,
 	readStore,
 	recall,
 	removeNote,
 	saveNote,
 } from '../services/store';
+import { NoteQuotaExceededError } from '../services/store-records';
 import { selectLatestSessionDigest } from '../services/session-digest-recall';
 import { buildCompactToolRegistration } from './compact.tool';
 import { buildCompactionCheckToolRegistration } from './compaction-check.tool';
@@ -181,32 +180,35 @@ export const buildMemoryToolRegistrations = (
 							// Total-store quota: bound the note count so a runaway
 							// agent can't grow the store unboundedly. Updates to an
 							// existing note are always allowed.
-							const id = deriveNoteId(args.title);
-							const notes = await readStore(options.storePathAbs);
-							const isNew = !notes.some((note) => note.id === id);
-							if (
-								isNew &&
-								notes.length >= getMaxNotes(options.maxNotes)
-							) {
-								return toolError(
-									`note store is full (max ${getMaxNotes(options.maxNotes)} notes)`,
-									'Forget stale notes with memory_forget before adding new ones.',
+							let saved: Awaited<ReturnType<typeof saveNote>>;
+							try {
+								saved = await saveNote(
+									options.storePathAbs,
+									{
+										title: args.title,
+										body: args.body,
+										...(args.tags
+											? { tags: args.tags }
+											: {}),
+										...(args.ttlSeconds !== undefined
+											? { ttlSeconds: args.ttlSeconds }
+											: {}),
+									},
+									undefined,
+									options.maxNotes,
 								);
+							} catch (error) {
+								if (error instanceof NoteQuotaExceededError) {
+									return toolError(
+										error.message,
+										'Forget stale notes with memory_forget before adding new ones.',
+									);
+								}
+								throw error;
 							}
-							const { note, redactions } = await saveNote(
-								options.storePathAbs,
-								{
-									title: args.title,
-									body: args.body,
-									...(args.tags ? { tags: args.tags } : {}),
-									...(args.ttlSeconds !== undefined
-										? { ttlSeconds: args.ttlSeconds }
-										: {}),
-								},
-							);
 							return toolOk({
-								saved: note,
-								redactedSecrets: redactions,
+								saved: saved.note,
+								redactedSecrets: saved.redactions,
 							});
 						});
 					},
