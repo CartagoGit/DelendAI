@@ -81,6 +81,12 @@
 	// Don't prompt before running MCP server tools.
 	"chat.mcp.autoApprove": true,
 
+	// Auto-start the MCP servers declared in .vscode/mcp.json on the first
+	// chat request of the session — no manual "Start" click per window.
+	// "newAndOutdated" (the VS Code default) also restarts servers whose
+	// config changed; set explicitly so a user-level "never" cannot win.
+	"chat.mcp.autostart": "newAndOutdated",
+
 	// Don't prompt before file edits / writes from chat.
 	"chat.edit.autoApprove": true,
 

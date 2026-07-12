@@ -85,8 +85,22 @@ const CONVENTIONAL_COMMIT_RE = new RegExp(
 export const isConventionalCommitMessage = (message: string): boolean =>
 	CONVENTIONAL_COMMIT_RE.test(message);
 
-const branchOf = (ref: string | undefined): string | undefined =>
-	ref?.split('/').pop();
+/**
+ * x00097 S6 (audit a00052 #15): the protection check runs against the
+ * EFFECTIVE push destination, not a naive last-path-segment of whatever
+ * the caller typed. For a refspec (`src:dst`, e.g. `HEAD:main`) the
+ * destination is the part after the colon; a `refs/heads/` prefix is
+ * normalized away. The old `split('/').pop()` let `HEAD:main` sail past
+ * the guard (and misread `feature/main` as protected).
+ */
+const pushDestinationOf = (ref: string | undefined): string | undefined => {
+	if (ref === undefined) return undefined;
+	const colon = ref.indexOf(':');
+	const dst = colon >= 0 ? ref.slice(colon + 1) : ref;
+	return dst.startsWith('refs/heads/')
+		? dst.slice('refs/heads/'.length)
+		: dst;
+};
 
 const isProtectedBranch = (
 	branch: string | undefined,
@@ -203,7 +217,37 @@ export const runGitPush = async (
 	const repo = await checkRepo(run);
 	if (!repo.ok) return NOT_A_REPO(repo.reason);
 
-	const targetBranch = branchOf(args.branch);
+	// x00097 S6: a `+refspec` embeds a force push that would sidestep the
+	// force policy below — force intent must go through the `force` arg.
+	if (args.branch?.startsWith('+')) {
+		return toolError(
+			'refusing a "+" force refspec',
+			'Pass force:"with-lease" instead of a +refspec.',
+		);
+	}
+
+	// x00097 S6: plain --force is disabled — only --force-with-lease,
+	// which refuses to clobber commits this clone has never seen.
+	if (args.force === 'true') {
+		return toolError(
+			'plain --force is disabled',
+			'Use force:"with-lease" — it fails instead of overwriting work this clone has not fetched.',
+		);
+	}
+
+	// x00097 S6: with `branch` omitted, git pushes the CURRENT branch —
+	// which used to bypass the guard entirely. Resolve and check it.
+	let targetBranch = pushDestinationOf(args.branch);
+	if (targetBranch === undefined || targetBranch === 'HEAD') {
+		const head = await run(['rev-parse', '--abbrev-ref', 'HEAD']);
+		if (!head.ok) {
+			return toolError(
+				head.reason ?? 'cannot resolve the current branch',
+				'Pass an explicit branch to push.',
+			);
+		}
+		targetBranch = head.output.trim();
+	}
 	if (isProtectedBranch(targetBranch, protectedBranches)) {
 		return toolError(
 			`refusing to push directly to protected branch "${targetBranch}"`,
@@ -215,11 +259,7 @@ export const runGitPush = async (
 		'push',
 		...(args.remote !== undefined ? [args.remote] : []),
 		...(args.branch !== undefined ? [args.branch] : []),
-		...(args.force === 'with-lease'
-			? ['--force-with-lease']
-			: args.force === 'true'
-				? ['--force']
-				: []),
+		...(args.force === 'with-lease' ? ['--force-with-lease'] : []),
 	]);
 	if (!pushResult.ok) {
 		return toolError(
@@ -283,7 +323,7 @@ export const buildGitWriteToolRegistrations = (
 					`${prefix}_push`,
 					{
 						description:
-							'Pushes to `remote`/`branch` (defaults to the current branch\'s upstream). `force: "with-lease"` uses `--force-with-lease` (safe: fails if the remote moved); `force: "true"` uses plain `--force` (only when explicitly requested — never the default). Refuses to push directly to a protected branch (main/master). Write effect.',
+							'Pushes to `remote`/`branch` (defaults to the current branch\'s upstream). `force: "with-lease"` uses `--force-with-lease` (safe: fails if the remote moved); plain `force: "true"` is DISABLED and returns an error. Refuses to push to a protected branch (main/master) — including via a `src:dst` refspec, the implicit current branch, or a `+refspec`. Write effect.',
 						inputSchema: z.object({
 							remote: z.string().optional(),
 							branch: z.string().optional(),

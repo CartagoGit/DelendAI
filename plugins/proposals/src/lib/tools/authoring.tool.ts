@@ -21,7 +21,10 @@ import {
 	allocateNextProposalId,
 	prefixForKind,
 } from '../proposals/proposal-id-allocator';
-import { PROPOSAL_KIND_BY_PREFIX } from '../contracts/constants/proposal-glossary.constant';
+import {
+	PROPOSAL_KIND_BY_PREFIX,
+	STATUS_TO_FOLDER,
+} from '../contracts/constants/proposal-glossary.constant';
 import { readJsonOrNull, readTextOrNull } from '../proposals/index-reader';
 import { escapeRegExp, kebab } from '../shared/string-helpers';
 import {
@@ -50,19 +53,55 @@ const SLICE_IN = z.object({
 	acceptance: z.array(z.string()).optional(),
 });
 
+// x00098 S2: emit the canonical slice shape the repo linter validates
+// (`**Status**`/`**Files**`/`**Gate**` bullets); the plan parser reads
+// both this and the legacy lowercase form.
 const renderSlice = (s: z.infer<typeof SLICE_IN>): string => {
 	const lines = [`### ${s.sliceId} — ${s.title ?? s.sliceId}`];
-	for (const f of s.files) lines.push(`- files: ${f}`);
+	lines.push('- **Status**: pending');
 	if (s.dependsOn && s.dependsOn.length > 0) {
-		lines.push(`- depends_on: [${s.dependsOn.join(', ')}]`);
+		lines.push(`- **DependsOn**: [${s.dependsOn.join(', ')}]`);
 	}
-	lines.push(`- gate: ${s.gate ?? 'none'}`);
+	lines.push(`- **Files**: ${s.files.map((f) => `\`${f}\``).join(', ')}`);
+	lines.push(`- **Gate**: ${s.gate ?? 'none'}`);
 	if (s.acceptance && s.acceptance.length > 0) {
 		lines.push('- acceptance:');
 		for (const a of s.acceptance) lines.push(`  - "${a}"`);
 	}
-	lines.push('- status: pending');
 	return lines.join('\n');
+};
+
+/**
+ * x00098 S2: flip a slice block's status bullet to done, whichever of
+ * the two accepted spellings the document uses (`- **Status**:` is the
+ * canonical form the generator emits; `- status:` is the legacy one).
+ * Appends the canonical bullet when the block has neither.
+ */
+const flipSliceStatusDone = (block: string): string => {
+	if (/^[-*]\s*\*\*Status\*\*:/m.test(block)) {
+		return block.replace(
+			/^[-*]\s*\*\*Status\*\*:.*$/m,
+			'- **Status**: done',
+		);
+	}
+	if (/^[-*]\s*status:/m.test(block)) {
+		return block.replace(/^[-*]\s*status:.*$/m, '- status: done');
+	}
+	return `${block.replace(/\s*$/, '')}\n- **Status**: done\n`;
+};
+
+/**
+ * x00098 S2: the linter's status vocabulary is hyphenated and every
+ * status lives in its own folder. Accept the historical underscore
+ * spelling on input but never write it; `pending` (not a linter status)
+ * authors as `ready`.
+ */
+const canonicalStatus = (
+	status: string | undefined,
+): 'ready' | 'in-progress' => {
+	if (status === 'in_progress' || status === 'in-progress')
+		return 'in-progress';
+	return 'ready';
 };
 
 /**
@@ -125,9 +164,16 @@ export const buildCreateProposalRegistration = (
 					title: z.string(),
 					goal: z.string().optional(),
 					status: z
-						.enum(['pending', 'ready', 'in_progress'])
+						.enum([
+							'pending',
+							'ready',
+							'in_progress',
+							'in-progress',
+						])
 						.optional(),
 					track: z.string().optional(),
+					why: z.string().optional(),
+					nonGoals: z.array(z.string()).optional(),
 					globalGate: z
 						.enum(['lint', 'type', 'e2e', 'none'])
 						.optional(),
@@ -141,6 +187,8 @@ export const buildCreateProposalRegistration = (
 				goal?: string | undefined;
 				status?: string | undefined;
 				track?: string | undefined;
+				why?: string | undefined;
+				nonGoals?: string[] | undefined;
 				globalGate?: string | undefined;
 				slices?: Array<z.infer<typeof SLICE_IN>> | undefined;
 			}) => {
@@ -215,11 +263,20 @@ export const buildCreateProposalRegistration = (
 					args.kind ??
 					(PROPOSAL_KIND_BY_PREFIX[id[0] ?? ''] || 'feat');
 				const date = new Date().toISOString().slice(0, 10);
+				// x00098 S2: author the canonical, lint-valid document —
+				// frontmatter `title`, hyphenated status, the required
+				// why/non-goals/acceptance sections (scaffolded when the
+				// caller gave no content) and canonical slice bullets.
+				const status = canonicalStatus(args.status);
+				const acceptanceLines = slices.flatMap((s) =>
+					(s.acceptance ?? []).map((a) => `- ${a}`),
+				);
 				const body = [
 					'---',
 					`id: ${id}`,
+					`title: ${JSON.stringify(args.title)}`,
 					`kind: ${inferredKind}`,
-					`status: ${args.status ?? 'ready'}`,
+					`status: ${status}`,
 					'type: proposal',
 					`track: ${args.track ?? 'general'}`,
 					`date: ${date}`,
@@ -231,6 +288,16 @@ export const buildCreateProposalRegistration = (
 					'',
 					args.goal ?? 'TODO: describe the goal.',
 					'',
+					'## why',
+					'',
+					args.why ?? 'TODO: why this work matters now.',
+					'',
+					'## non-goals',
+					'',
+					...(args.nonGoals && args.nonGoals.length > 0
+						? args.nonGoals.map((g) => `- ${g}`)
+						: ['- TODO: what this proposal deliberately skips.']),
+					'',
 					'## Slices',
 					'',
 					`- global_gate: ${args.globalGate ?? 'none'}`,
@@ -239,14 +306,25 @@ export const buildCreateProposalRegistration = (
 						? slices.map(renderSlice).join('\n\n').split('\n')
 						: [
 								'### s1 — TODO',
-								'- files: TODO',
-								'- gate: none',
-								'- status: pending',
+								'- **Status**: pending',
+								'- **Files**: `TODO`',
+								'- **Gate**: none',
 							]),
 					'',
+					'## acceptance',
+					'',
+					...(acceptanceLines.length > 0
+						? acceptanceLines
+						: ['- TODO: observable acceptance criteria.']),
+					'',
 				].join('\n');
-				const fileRel = `${id}-${kebab(args.title)}.md`;
-				const absPath = join(options.proposalsDirAbs, fileRel);
+				// The linter requires every proposal to live in its status
+				// folder (`ready/`, `in-progress/`, …), not the dir root.
+				const fileRel = `${STATUS_TO_FOLDER[status]}/${id}-${kebab(args.title)}.md`;
+				const absPath = join(
+					options.proposalsDirAbs,
+					...fileRel.split('/'),
+				);
 				const { text: safeBody, redactions } = redactSecrets(body);
 				await writeFileAtomic(absPath, safeBody);
 				const sync = await syncProposalRegistry(
@@ -378,13 +456,7 @@ export const buildCloseSliceRegistration = (
 								`slice "${args.sliceId}" not found in ${entry.file}`,
 							);
 						}
-						let block = m[2] ?? '';
-						block = /^[-*]\s*status:/m.test(block)
-							? block.replace(
-									/^[-*]\s*status:.*$/m,
-									'- status: done',
-								)
-							: `${block.replace(/\s*$/, '')}\n- status: done\n`;
+						const block = flipSliceStatusDone(m[2] ?? '');
 						const nextContent = md.replace(
 							blockRe,
 							`${m[1]}${block}`,
@@ -637,12 +709,7 @@ export const buildReviewRegistration = (
 						);
 						block = `${block.replace(/\s*$/, '')}\n${renderReviewLines(next).join('\n')}\n`;
 						if (next.status === 'done') {
-							block = /^[-*]\s*status:/m.test(block)
-								? block.replace(
-										/^[-*]\s*status:.*$/m,
-										'- status: done',
-									)
-								: `${block.replace(/\s*$/, '')}\n- status: done\n`;
+							block = flipSliceStatusDone(block);
 						}
 						const updated = md.replace(blockRe, `${m[1]}${block}`);
 						await writeFileAtomic(docPath, updated);
@@ -737,8 +804,13 @@ export const buildProposalBoardRegistration = (
 					return toolJson({ proposals: [] });
 				}
 				const locks = await readActiveLocks(options.lockPathAbs);
+				// x00098 S2: real documents carry the hyphenated status; keep
+				// the underscore spellings for indexes written before the
+				// vocabulary converged.
 				const actionable = index.proposals.filter((p) =>
-					['pending', 'ready', 'in_progress'].includes(p.status),
+					['pending', 'ready', 'in_progress', 'in-progress'].includes(
+						p.status,
+					),
 				);
 				const board = await Promise.all(
 					actionable.map(async (p) => {
