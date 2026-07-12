@@ -91,9 +91,12 @@ requieren cambios contractuales o tests de carrera más amplios que un quick fix
 - **Status**: done
 ### S6 — Protected push destination and force policy
 - **Files**: plugins/git/src/lib/tools/write-tools.ts
-- **Files**: plugins/git/tests/src/lib/tools/write-tools.spec.ts
+- **Files**: plugins/git/tests/src/lib/write-tools.spec.ts
 - **Gate**: `bun run test`
-- **Status**: pending
+- **Status**: done
+- **Evidence**:
+  - "Push policy resolves the effective destination for explicit branches, `src:dst` refspecs and omitted/current branches before allowing the write; nested feature paths are not misclassified by their final segment."
+  - "Plain force and leading-plus force refspecs fail closed; only `--force-with-lease` is emitted. The git plugin gate passes 34 tests, including protected refspec, implicit branch and safe-force regressions."
 
 ### S7 — Durable redaction quota and rejection handling
 - **Files**: plugins/issues/src/lib/tools/resolve-issue.tool.ts
