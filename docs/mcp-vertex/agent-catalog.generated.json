@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-07-12T04:30:26.737Z",
+	"generatedAt": "2026-07-12T11:13:46.994Z",
 	"mode": "compact",
 	"tools": [
 		{
@@ -668,6 +668,14 @@
 	"proposals": {
 		"actionable": [
 			{
+				"id": "a00052",
+				"title": "a00052",
+				"track": "audit",
+				"status": "ready",
+				"kind": "audit",
+				"date": "2026-07-12"
+			},
+			{
 				"id": "c00002",
 				"title": "c00002",
 				"track": "docs+release",
@@ -722,17 +730,41 @@
 				"status": "ready",
 				"kind": "feat",
 				"date": "2026-07-08"
+			},
+			{
+				"id": "f00110",
+				"title": "f00110",
+				"track": "architecture",
+				"status": "ready",
+				"kind": "feat",
+				"date": "2026-07-12"
+			},
+			{
+				"id": "r00008",
+				"title": "r00008",
+				"track": "ui-architecture",
+				"status": "ready",
+				"kind": "refactor",
+				"date": "2026-07-12"
+			},
+			{
+				"id": "x00097",
+				"title": "x00097",
+				"track": "hardening",
+				"status": "ready",
+				"kind": "fix",
+				"date": "2026-07-12"
 			}
 		],
 		"byStatus": {
-			"ready": 6,
+			"ready": 10,
 			"in-progress": 0,
-			"review": 0,
+			"review": 1,
 			"paused": 1,
 			"done": 193,
 			"blocked": 0,
 			"retired": 0,
-			"unspecified": 1
+			"unspecified": 0
 		}
 	}
 }

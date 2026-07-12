@@ -110,6 +110,58 @@ describe('activate / deactivate lifecycle (reload-leak contract)', async () => {
 		expect(getRuntimeHandle()).toBeUndefined();
 	});
 
+	it('deactivate disposes tree registrations and config-watcher listeners', async () => {
+		__resetRuntimeHandle();
+		const tracked = makeTrackedClient();
+		let treeDisposals = 0;
+		let watcherListenerDisposals = 0;
+		const disposableListener = () => ({
+			dispose() {
+				watcherListenerDisposals += 1;
+			},
+		});
+		const vscode: IVscodeApi = {
+			...fakeVscode(),
+			window: {
+				...fakeVscode().window,
+				registerTreeDataProvider() {
+					return {
+						dispose() {
+							treeDisposals += 1;
+						},
+					};
+				},
+			},
+			workspace: {
+				createFileSystemWatcher() {
+					return {
+						onDidChange: disposableListener,
+						onDidCreate: disposableListener,
+						onDidDelete: disposableListener,
+					};
+				},
+			},
+		};
+		const context: IExtensionContext = {
+			subscriptions: [],
+			globalState: {
+				get<T>(): T | undefined {
+					return undefined;
+				},
+				async update() {},
+			},
+		};
+
+		await activate(context, {
+			vscode,
+			createClient: async () => tracked.client,
+		});
+		await deactivate();
+
+		expect(treeDisposals).toBe(3);
+		expect(watcherListenerDisposals).toBe(3);
+	});
+
 	it('failed activate clears the runtime handle (no stale slot)', async () => {
 		__resetRuntimeHandle();
 		const context: IExtensionContext = {

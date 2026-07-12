@@ -42,6 +42,8 @@
  *     rest of the IDE.
  */
 
+/// <reference path="../raw.d.ts" />
+
 import { compiledCss } from './dashboard.scss';
 
 /**
