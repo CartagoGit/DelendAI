@@ -219,6 +219,51 @@ export interface McpVertexCacheCacheGcOutput {
 	}[];
 }
 
+export interface McpVertexConfigurationCenterOutput {
+	section: "summary" | "config" | "plugins" | "artifacts";
+	page: {
+		cursor: number;
+		nextCursor: number | null;
+		total: number;
+	};
+	summary?: {
+		plugins: number;
+		activePlugins: number;
+		artifacts: number;
+		unavailableArtifactKinds: Array<"agent" | "skill" | "prompt" | "resource" | "knowledge">;
+	};
+	configSchema?: Record<string, unknown>;
+	config?: Record<string, unknown>;
+	redactions?: number;
+	plugins?: Array<{
+		id: string;
+		origin: "bundled" | "user-local" | "external";
+		active: boolean;
+		source: "preset" | "config" | "flag";
+		path?: string;
+		prefix?: string;
+		options: Record<string, unknown>;
+		optionsSchema?: Record<string, unknown>;
+		schemaStatus: "available" | "unavailable";
+		configExample?: Record<string, unknown>;
+		capabilities: {
+			tools: number;
+			prompts: number;
+			resources: number;
+			knowledge: number;
+			skills: number;
+		};
+	}>;
+	artifacts?: Array<{
+		id: string;
+		kind: "agent" | "skill" | "prompt" | "resource" | "knowledge";
+		owner: {
+			id: string | null;
+			origin: "bundled" | "user-local" | "external" | "unknown";
+		};
+	}>;
+}
+
 export interface McpVertexCreateProjectOutput {
 	kind: "host" | "plugin" | "client" | "extension-host";
 	files: {
@@ -1952,6 +1997,7 @@ export interface McpVertexToolOutputs {
 	"mcp-vertex_audit_audit_plan": McpVertexAuditAuditPlanOutput;
 	"mcp-vertex_audit_audit_run": McpVertexAuditAuditRunOutput;
 	"mcp-vertex_cache_cache_gc": McpVertexCacheCacheGcOutput;
+	"mcp-vertex_configuration_center": McpVertexConfigurationCenterOutput;
 	"mcp-vertex_create_project": McpVertexCreateProjectOutput;
 	"mcp-vertex_deps_deps_check": McpVertexDepsDepsCheckOutput;
 	"mcp-vertex_deps_deps_list": McpVertexDepsDepsListOutput;
