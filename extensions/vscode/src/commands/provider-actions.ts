@@ -226,13 +226,14 @@ const pickProviderId = async (
 			prompt: stringsFor(deps).pickProvider,
 		});
 	}
-	return deps.vscode.window.showQuickPick(
+	const picked = await deps.vscode.window.showQuickPick(
 		rows.map((row) => ({
 			id: row.id,
 			label: row.id,
 			description: row.overall,
 		})),
 	);
+	return picked?.id;
 };
 
 /**

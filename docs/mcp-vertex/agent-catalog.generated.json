@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-07-12T20:02:31.822Z",
+	"generatedAt": "2026-07-12T20:38:26.234Z",
 	"mode": "compact",
 	"tools": [
 		{
@@ -708,14 +708,6 @@
 				"date": "2026-07-08"
 			},
 			{
-				"id": "f00107",
-				"title": "f00107",
-				"track": "core+config+ui-extension+vscode+web",
-				"status": "ready",
-				"kind": "feat",
-				"date": "2026-07-08"
-			},
-			{
 				"id": "f00108",
 				"title": "f00108",
 				"track": "web+extensions/vscode+ui-extension+i18n+lint",
@@ -727,6 +719,14 @@
 				"id": "f00110",
 				"title": "f00110",
 				"track": "architecture",
+				"status": "ready",
+				"kind": "feat",
+				"date": "2026-07-12"
+			},
+			{
+				"id": "f00112",
+				"title": "f00112",
+				"track": "core+config+client+ui-extension+vscode+plugins+i18n+docs",
 				"status": "ready",
 				"kind": "feat",
 				"date": "2026-07-12"
@@ -751,12 +751,12 @@
 		"byStatus": {
 			"ready": 9,
 			"in-progress": 0,
-			"review": 2,
+			"review": 4,
 			"paused": 1,
 			"done": 194,
 			"blocked": 0,
 			"retired": 0,
-			"unspecified": 1
+			"unspecified": 0
 		}
 	}
 }

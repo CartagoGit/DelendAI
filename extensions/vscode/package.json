@@ -356,7 +356,7 @@
 		"type": "tsc --noEmit -p tsconfig.json",
 		"test": "vitest run",
 		"check:i18n": "bun scripts/check-i18n.ts",
-		"build": "bun build src/extension.ts --target=node --format=cjs --external=vscode --outdir=dist",
+		"build": "bun scripts/build.ts",
 		"package": "bun run build && bun scripts/package.script.ts"
 	},
 	"dependencies": {

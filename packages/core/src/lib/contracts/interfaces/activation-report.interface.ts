@@ -32,7 +32,7 @@ export interface IActivationReport {
 	readonly entries: readonly IActivationEntry[];
 	/** Per-origin tallies so a header can read "9 ours · 1 yours · 2 external" without re-counting. */
 	readonly counts: Readonly<Record<PluginOrigin, number>>;
-	/** Total tools across all active plugins — the size of the prompt-facing surface. */
+	/** Total tools contributed by active plugins (core tools are reported separately by overview). */
 	readonly totalTools: number;
 }
 
