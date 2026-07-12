@@ -24,6 +24,8 @@ import {
 	pluginConfigFor,
 	resolveConfigPluginSpecifiers,
 } from '../plugins/load-config-file';
+import { diagnoseWorkspaceLayout } from '../plugins/diagnose-workspace-layout';
+import type { WorkspacePathStatus } from '../contracts/interfaces/workspace-layout.interface';
 import { loadPlugins, nodeDynamicImport } from '../plugins/load-plugins';
 import type { IPluginLoadResult } from '../plugins/load-plugins';
 import type { IMcpPluginContext } from '../plugins/plugin-contract';
@@ -117,6 +119,11 @@ export interface IAssembleCliDeps {
 	readFile?: (absolutePath: string) => Promise<string | undefined>;
 	/** Provide a custom plugin module importer (default: dynamic import()) */
 	import?: (specifier: string) => Promise<{ default: unknown }>;
+	/**
+	 * f00109 S1: existence probe for the workspace-layout diagnostic
+	 * (default: node:fs.existsSync). Boot-time only, so sync is fine.
+	 */
+	exists?: (absolutePath: string) => boolean;
 }
 
 /**
@@ -155,10 +162,6 @@ export const assembleCliConfig = async (
 	const pluginPathIssues = Object.entries(fileConfig.plugins ?? {}).flatMap(
 		([name, entry]) => diagnosePluginPathConfig(entry ?? {}, name),
 	);
-	const configDiagnostic = {
-		present: baseConfigDiagnostic.present,
-		issues: [...baseConfigDiagnostic.issues, ...pluginPathIssues],
-	};
 	const configPluginNames = Object.keys(fileConfig.plugins ?? {});
 
 	// Precedence for roots: explicit CLI flag > config file > default.
@@ -169,6 +172,37 @@ export const assembleCliConfig = async (
 	const docsDir =
 		args.tokens.docsDir ?? fileConfig.docsDir ?? DEFAULT_CORE_PATHS.docsDir;
 	const corePaths = { cacheDir, docsDir };
+	// f00109 S1: dead-config detection. A config file whose docsDir or
+	// plugin `options.roots` point at paths that do not exist (the classic
+	// copied-from-another-repo config) used to boot silently — every
+	// plugin scanned an empty tree and the agent never found the docs,
+	// rules or proposals layout. Probe each configured path once at boot
+	// (sync is fine here) and fold the findings into the config
+	// diagnostic, so the doctor, the boot stderr log and the overview all
+	// surface the same issues.
+	const exists = deps.exists ?? existsSync;
+	const probeWorkspacePath = (relPath: string): WorkspacePathStatus => {
+		const contained = resolveWorkspaceContained(workspace.root, relPath);
+		if (!contained.ok) return 'escapes';
+		return exists(contained.abs) ? 'exists' : 'missing';
+	};
+	const layoutIssues = diagnoseWorkspaceLayout({
+		config: fileConfig,
+		configPresent: baseConfigDiagnostic.present,
+		docsDir,
+		probe: probeWorkspacePath,
+	});
+	const docsDirMissing =
+		baseConfigDiagnostic.present &&
+		probeWorkspacePath(docsDir) !== 'exists';
+	const configDiagnostic = {
+		present: baseConfigDiagnostic.present,
+		issues: [
+			...baseConfigDiagnostic.issues,
+			...pluginPathIssues,
+			...layoutIssues,
+		],
+	};
 	const corePrefix = args.namespacePrefix ?? 'mcp-vertex';
 	const keepLegacy = fileConfig.keepLegacy ?? false;
 	// f00089 U5: native authorized-roots filesystem allowlist. The config
@@ -463,11 +497,16 @@ export const assembleCliConfig = async (
 	const rulesClause = hasRules
 		? ' ALWAYS write new or modified code already compliant with the active rules (rules_get_rules) — it is the default, no need to be told.'
 		: '';
-	const recommendedNextAction =
-		(hasProposals
-			? `Call ${corePrefix}_overview, then ${corePrefix}_proposals_auto_work to start working.`
-			: `Call ${corePrefix}_analyze_project to see what this project needs.`) +
-		rulesClause;
+	// f00109 S1: when the config file's docsDir points nowhere, sending the
+	// agent into auto_work would have it "work" an empty proposals layout —
+	// the exact silent failure this diagnostic exists to prevent. Route it
+	// to fixing the config first instead.
+	const recommendedNextAction = docsDirMissing
+		? `Config mismatch: docsDir "${docsDir}" does not exist in this workspace (see configIssues). Fix mcp-vertex.config.json or scaffold the layout (mcp-vertex init) BEFORE starting work; do not hand-create proposals or docs outside the server workflow.`
+		: (hasProposals
+				? `Call ${corePrefix}_overview, then ${corePrefix}_proposals_auto_work to start working.`
+				: `Call ${corePrefix}_analyze_project to see what this project needs.`) +
+			rulesClause;
 
 	// Core meta-tools. `overview` first so it is the obvious entry point.
 	// `let` so the (lazily called) snapshot closure can read the final list.
@@ -500,6 +539,12 @@ export const assembleCliConfig = async (
 		server: { name: args.serverName, version: args.serverVersion },
 		namespacePrefix: corePrefix,
 		corePaths,
+		// f00109 S1: config problems (schema violations, dead docsDir/roots)
+		// belong in the agent's first orientation call. Omitted when clean
+		// so the healthy path pays zero bytes.
+		...(configDiagnostic.issues.length > 0
+			? { configIssues: configDiagnostic.issues }
+			: {}),
 		pluginDiagnostic: (() => {
 			const missingPlugins = effectivePlugins.filter(
 				(name) =>
@@ -1020,10 +1065,17 @@ export const runCli = async (
 		return;
 	}
 
-	const { config, loadResult } = await assembleCliConfig(args);
+	const { config, loadResult, configDiagnostic } =
+		await assembleCliConfig(args);
 	for (const error of loadResult.errors) {
 		// stderr only: stdout is the MCP stdio transport.
 		process.stderr.write(`[mcp-vertex] plugin error: ${error.message}\n`);
+	}
+	// f00109 S1: config issues (schema violations, dead docsDir/roots) are
+	// warnings, not boot failures — but they must be visible in the host's
+	// server log, not only behind an explicit `--check`.
+	for (const issue of configDiagnostic.issues) {
+		process.stderr.write(`[mcp-vertex] config warning: ${issue}\n`);
 	}
 	const assembled = await createMcpProject(config);
 	// `--verbose`: dump an assembly diagnostic to stderr before going live.
