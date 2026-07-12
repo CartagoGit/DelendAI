@@ -1,4 +1,7 @@
+import { Client } from '@modelcontextprotocol/sdk/client/index.js';
+import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
 import { describe, expect, it } from 'vitest';
+import { z } from 'zod';
 
 import {
 	createMcpProject,
@@ -119,5 +122,111 @@ describe('createMcpProject', async () => {
 		const assembled = await createMcpProject(hostConfig([]));
 		expect(assembled.server).toBeDefined();
 		expect(assembled.registrationOrder).toEqual([]);
+	});
+});
+
+describe('instrumented tool hooks (f00111 S1)', async () => {
+	const connect = async (config: IMcpVertexHostConfig) => {
+		const assembled = await createMcpProject(config);
+		const [clientTransport, serverTransport] =
+			InMemoryTransport.createLinkedPair();
+		await assembled.server.connect(serverTransport);
+		const client = new Client(
+			{ name: 'hooks-spec', version: '0' },
+			{ capabilities: {} },
+		);
+		await client.connect(clientTransport);
+		return {
+			client,
+			close: async () => {
+				await client.close();
+				await assembled.server.close();
+			},
+		};
+	};
+
+	it('fires onToolCancel once with elapsed ms when the client aborts mid-flight', async () => {
+		const cancels: Array<{
+			toolName: string;
+			args: unknown;
+			elapsedMs: number;
+		}> = [];
+		const slowTool: IToolRegistration = {
+			id: 'slow',
+			register: async (server) => {
+				server.registerTool(
+					'spec_slow',
+					{
+						description: 'sleeps 300ms',
+						inputSchema: z.object({ x: z.number() }),
+					},
+					async () => {
+						await new Promise((resolve) =>
+							setTimeout(resolve, 300),
+						);
+						return {
+							content: [{ type: 'text' as const, text: 'done' }],
+						};
+					},
+				);
+			},
+		};
+		const { client, close } = await connect({
+			...hostConfig([slowTool]),
+			onToolCancel: (toolName, args, elapsedMs) => {
+				cancels.push({ toolName, args, elapsedMs });
+			},
+		});
+		try {
+			const controller = new AbortController();
+			setTimeout(() => controller.abort(), 50);
+			await expect(
+				client.callTool(
+					{ name: 'spec_slow', arguments: { x: 1 } },
+					undefined,
+					{
+						signal: controller.signal,
+					},
+				),
+			).rejects.toThrow();
+			// The handler is still sleeping; the abort listener has fired.
+			await new Promise((resolve) => setTimeout(resolve, 400));
+			expect(cancels).toHaveLength(1);
+			expect(cancels[0]?.toolName).toBe('spec_slow');
+			expect(cancels[0]?.args).toEqual({ x: 1 });
+			expect(cancels[0]?.elapsedMs).toBeGreaterThan(0);
+			expect(cancels[0]?.elapsedMs).toBeLessThan(300);
+		} finally {
+			await close();
+		}
+	});
+
+	it('passes {} (never the RequestHandlerExtra) to hooks for schema-less tools', async () => {
+		const started: Array<{ toolName: string; args: unknown }> = [];
+		const bareTool: IToolRegistration = {
+			id: 'bare',
+			register: async (server) => {
+				server.registerTool(
+					'spec_bare',
+					{ description: 'no input schema' },
+					async () => ({
+						content: [{ type: 'text' as const, text: 'ok' }],
+					}),
+				);
+			},
+		};
+		const { client, close } = await connect({
+			...hostConfig([bareTool]),
+			onToolStart: (toolName, args) => {
+				started.push({ toolName, args });
+			},
+		});
+		try {
+			await client.callTool({ name: 'spec_bare', arguments: {} });
+			expect(started).toHaveLength(1);
+			expect(started[0]?.args).toEqual({});
+		} finally {
+			await close();
+		}
 	});
 });

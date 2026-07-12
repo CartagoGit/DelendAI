@@ -72,19 +72,61 @@ const instrumentToolHandlers = (
 ): void => {
 	type RegisterTool = McpServer['registerTool'];
 	const original = server.registerTool.bind(server) as RegisterTool;
+	// f00111 S1: the SDK hands the handler its `RequestHandlerExtra` — as
+	// the second arg for schema tools, as the FIRST (and only) arg for
+	// schema-less tools. Identify it by its `AbortSignal` so hooks receive
+	// the parsed tool arguments, never the extra (whose serialized form is
+	// the `{"signal":{},"_meta":…}` noise seen in older logs).
+	const findAbortSignal = (
+		args: readonly unknown[],
+	): AbortSignal | undefined => {
+		for (const arg of args) {
+			const signal = (arg as { signal?: unknown } | null)?.signal;
+			if (signal instanceof AbortSignal) return signal;
+		}
+		return undefined;
+	};
 	const wrap = (name: string, handler: unknown): unknown => {
 		if (typeof handler !== 'function') return handler;
 		const fn = handler as (...args: unknown[]) => unknown;
 		return async (...args: unknown[]): Promise<unknown> => {
 			const start = performance.now();
+			const signal = findAbortSignal(args);
+			const hookArgs =
+				args[0] !== undefined &&
+				(args[0] as { signal?: unknown } | null)?.signal instanceof
+					AbortSignal
+					? {}
+					: args[0];
 			let result: unknown;
 			let isError = false;
 			let error: unknown;
+			// f00111 S1: observe client cancellation while the handler is
+			// still in flight. Removed in `finally`, so a late abort (after
+			// the response settled) never fires the hook.
+			let onAbort: (() => void) | undefined;
+			if (signal !== undefined && config.onToolCancel) {
+				const onToolCancel = config.onToolCancel;
+				onAbort = () => {
+					try {
+						void Promise.resolve(
+							onToolCancel(
+								name,
+								hookArgs,
+								performance.now() - start,
+							),
+						).catch(() => {});
+					} catch {
+						// Ignored
+					}
+				};
+				signal.addEventListener('abort', onAbort, { once: true });
+			}
 			try {
 				if (config.onToolStart) {
 					try {
 						void Promise.resolve(
-							config.onToolStart(name, args[0]),
+							config.onToolStart(name, hookArgs),
 						).catch(() => {});
 					} catch {
 						// Ignored
@@ -99,7 +141,7 @@ const instrumentToolHandlers = (
 					result &&
 					typeof result === 'object'
 				) {
-					const stuckInfo = config.isAgentStuck(name, args[0]);
+					const stuckInfo = config.isAgentStuck(name, hookArgs);
 					if (stuckInfo) {
 						const resObj = result as Record<string, unknown>;
 						const structured =
@@ -134,6 +176,9 @@ const instrumentToolHandlers = (
 				error = err;
 				throw err;
 			} finally {
+				if (signal !== undefined && onAbort !== undefined) {
+					signal.removeEventListener('abort', onAbort);
+				}
 				const ms = performance.now() - start;
 				if (config.metricsRegistry) {
 					config.metricsRegistry.record(name, {
@@ -145,7 +190,7 @@ const instrumentToolHandlers = (
 				if (config.onToolCall) {
 					try {
 						void Promise.resolve(
-							config.onToolCall(name, args[0], result, error),
+							config.onToolCall(name, hookArgs, result, error),
 						).catch(() => {});
 					} catch {
 						// Ignored
