@@ -134,5 +134,10 @@ export interface IUsageSummary {
 	readonly degradations: readonly IDegradation[];
 }
 
-export type GroupByAxis = 'provider' | 'plugin' | 'agent' | 'extension';
+export type GroupByAxis =
+	| 'provider'
+	| 'plugin'
+	| 'agent'
+	| 'extension'
+	| 'model';
 export type SortBy = 'calls' | 'totalTokens' | 'costUsd';

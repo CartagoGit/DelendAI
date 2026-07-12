@@ -98,6 +98,48 @@ describe('rollup', () => {
 		expect(summary.byExtension[0]?.key).toBe('vscode-copilot');
 	});
 
+	it('groups by model (provider/modelId), unattributed for model: null (f00106 S1a)', () => {
+		const records = [
+			rec({
+				ts: '2026-06-25T11:00:00.000Z',
+				model: {
+					provider: 'openai',
+					modelId: 'gpt-5-codex',
+					kind: 'api',
+				},
+				usage: { inputTokens: 100, outputTokens: 50, totalTokens: 150 },
+				costUsd: 2,
+			}),
+			rec({
+				ts: '2026-06-25T11:30:00.000Z',
+				model: {
+					provider: 'anthropic',
+					modelId: 'claude-sonnet',
+					kind: 'cli',
+				},
+				usage: { inputTokens: 40, outputTokens: 10, totalTokens: 50 },
+				costUsd: 1,
+			}),
+			// No model → the explicit `unattributed` bucket, never dropped.
+			rec({ ts: '2026-06-25T11:45:00.000Z', costUsd: 3 }),
+		];
+		const byModel = bucketBy(records, 'model', 'costUsd');
+		const keys = byModel.map((b) => b.key).sort();
+		expect(keys).toEqual([
+			'anthropic/claude-sonnet',
+			'openai/gpt-5-codex',
+			'unattributed',
+		]);
+		// Per-model buckets + unattributed sum to the session totals (nothing lost).
+		const totalCalls = byModel.reduce((n, b) => n + b.calls, 0);
+		const totalCost = byModel.reduce((n, b) => n + b.costUsd, 0);
+		expect(totalCalls).toBe(3);
+		expect(totalCost).toBe(6);
+		expect(
+			byModel.find((b) => b.key === 'openai/gpt-5-codex')?.totalTokens,
+		).toBe(150);
+	});
+
 	it('windows out records older than windowDays', () => {
 		const now = Date.parse('2026-06-25T00:00:00.000Z');
 		const records = [
