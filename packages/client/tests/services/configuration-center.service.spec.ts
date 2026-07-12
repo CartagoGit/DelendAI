@@ -96,6 +96,64 @@ describe('configuration center document service', () => {
 		});
 	});
 
+	it('round-trips disabled external MCP definitions and custom arguments losslessly', async () => {
+		const root = await workspace();
+		const file = join(root, 'mcp-vertex.config.json');
+		const externalServer = {
+			enabled: false,
+			version: '1.2.3',
+			command: 'npx',
+			args: [
+				'-y',
+				'@example/mcp@1.2.3',
+				'--workspace',
+				'${workspaceFolder}',
+			],
+			namespacePrefix: 'ext.example',
+			detect: '@example/client',
+			env: ['EXAMPLE_TOKEN'],
+		};
+		await writeFile(
+			file,
+			JSON.stringify({
+				futureRoot: { retained: true },
+				plugins: {
+					'external-mcps': {
+						options: { servers: { example: externalServer } },
+					},
+					search: {
+						options: { roots: ['packages'], futureOption: 7 },
+					},
+				},
+			}),
+		);
+		const before = await readConfigurationDocument({ workspaceRoot: root });
+
+		const result = await saveConfigurationDocument({
+			workspaceRoot: root,
+			expectedDigest: before.digest,
+			edits: [
+				{
+					action: 'set',
+					path: ['plugins', 'search', 'options', 'maxResults'],
+					value: 25,
+				},
+			],
+		});
+
+		expect(result).toMatchObject({ ok: true, changed: true });
+		const persisted = JSON.parse(await readFile(file, 'utf8'));
+		expect(persisted.futureRoot).toEqual({ retained: true });
+		expect(
+			persisted.plugins['external-mcps'].options.servers.example,
+		).toEqual(externalServer);
+		expect(persisted.plugins.search.options).toEqual({
+			roots: ['packages'],
+			futureOption: 7,
+			maxResults: 25,
+		});
+	});
+
 	it('returns a conflict and the fresh document after an external edit', async () => {
 		const root = await workspace();
 		const file = join(root, 'mcp-vertex.config.json');

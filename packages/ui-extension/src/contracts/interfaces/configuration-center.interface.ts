@@ -13,7 +13,9 @@ export type ConfigurationCenterTab =
 	| 'providers'
 	| 'agents'
 	| 'skills'
-	| 'prompts';
+	| 'prompts'
+	| 'resources'
+	| 'knowledge';
 
 export type ConfigurationCenterState =
 	| 'ready'
@@ -131,7 +133,7 @@ export interface IConfigurationCenterModel {
 	readonly providers: readonly IConfigurationProviderModel[];
 	readonly artifacts: Readonly<
 		Record<
-			'agents' | 'skills' | 'prompts',
+			'agents' | 'skills' | 'prompts' | 'resources' | 'knowledge',
 			readonly IConfigurationArtifactModel[]
 		>
 	>;
