@@ -44,6 +44,7 @@ const source = (): IConfigurationCenterSource => ({
 				description: 'Keep legacy proposal folders.',
 			},
 			optionalText: { type: 'string' },
+			defaultText: { type: 'string', default: 'safe-default' },
 			plugins: { type: 'object' },
 			providers: { type: 'array' },
 		},
@@ -77,7 +78,15 @@ const source = (): IConfigurationCenterSource => ({
 			active: true,
 			source: 'flag',
 			options: { endpoint: 'https://example.test' },
-			schemaStatus: 'unavailable',
+			optionsSchema: {
+				type: 'object',
+				properties: {
+					enabled: { type: 'boolean' },
+					command: { type: 'string' },
+					args: { type: 'array', items: { type: 'string' } },
+				},
+			},
+			schemaStatus: 'available',
 			capabilities: {
 				tools: 1,
 				prompts: 0,
@@ -160,18 +169,24 @@ describe('Configuration Center model', () => {
 		expect(
 			model.generalFields.find((field) => field.label === 'optionalText'),
 		).toMatchObject({ value: undefined, readOnly: false });
+		expect(
+			model.generalFields.find((field) => field.label === 'defaultText'),
+		).toMatchObject({ value: 'safe-default', readOnly: false });
 		const external = model.plugins.find((plugin) =>
 			plugin.id.startsWith('ext.'),
 		)!;
-		expect(external.fields[0]).toMatchObject({
+		expect(
+			external.fields.find((field) => field.path.at(-1) === 'enabled'),
+		).toMatchObject({
 			path: [
 				'plugins',
 				'external-mcps',
 				'options',
 				'servers',
 				'<opaque-plugin>',
+				'enabled',
 			],
-			kind: 'json',
+			kind: 'boolean',
 		});
 	});
 });
@@ -203,8 +218,9 @@ describe('renderConfigurationCenter', () => {
 
 		expect(html).toContain('ext.&lt;opaque-plugin&gt;');
 		expect(html).not.toContain('ext.<opaque-plugin>');
-		expect(html).toContain('No editable schema advertised');
-		expect(html).toContain('&quot;command&quot;');
+		expect(html).toContain('field-plugins-external-mcps-options-servers');
+		expect(html).toContain('&quot;command&quot;]');
+		expect(html).not.toContain('Server definition');
 		expect(html).toContain(
 			'[&quot;plugins&quot;,&quot;external-mcps&quot;,&quot;options&quot;,&quot;servers&quot;,&quot;&lt;opaque-plugin&gt;&quot;,&quot;enabled&quot;]',
 		);

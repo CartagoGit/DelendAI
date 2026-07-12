@@ -49,6 +49,8 @@ const scalarField = (
 	required: boolean,
 	known: boolean,
 ): IConfigurationField => {
+	const resolvedValue =
+		value === undefined && 'default' in schema ? schema.default : value;
 	const choices = Array.isArray(schema.enum)
 		? schema.enum.filter(
 				(entry): entry is string => typeof entry === 'string',
@@ -74,10 +76,10 @@ const scalarField = (
 		label: labelOf(key, schema),
 		...(description === undefined ? {} : { description }),
 		kind,
-		value,
+		value: resolvedValue,
 		...(choices.length === 0 ? {} : { choices }),
 		required,
-		readOnly: containsRedactedValue(value),
+		readOnly: containsRedactedValue(resolvedValue),
 		known,
 	};
 };
