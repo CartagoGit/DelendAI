@@ -133,6 +133,12 @@
 				"category": "MCP Vertex"
 			},
 			{
+				"command": "mcp-vertex.plugins.activation",
+				"title": "Manage Plugin Activation",
+				"category": "MCP Vertex",
+				"icon": "$(extensions)"
+			},
+			{
 				"command": "mcp-vertex.openSettings",
 				"title": "Open Settings",
 				"category": "MCP Vertex",

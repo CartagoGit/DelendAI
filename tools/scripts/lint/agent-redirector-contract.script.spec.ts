@@ -84,7 +84,12 @@ describe('checkGithubAgentFile', async () => {
 
 	it('stays silent on a bounded subagent (name in SUBAGENT_SLOTS + Copilot-adapter disclaimer)', async () => {
 		const text = await readFile(
-			join(root, '.github', 'agents', 'mcp-vertex-implementation-runner.agent.md'),
+			join(
+				root,
+				'.github',
+				'agents',
+				'mcp-vertex-implementation-runner.agent.md',
+			),
 			'utf8',
 		);
 		expect(
@@ -97,7 +102,12 @@ describe('checkGithubAgentFile', async () => {
 
 	it('warns when a bounded subagent filename does not match the namespaced shape', async () => {
 		const text = await readFile(
-			join(root, '.github', 'agents', 'mcp-vertex-implementation-runner.agent.md'),
+			join(
+				root,
+				'.github',
+				'agents',
+				'mcp-vertex-implementation-runner.agent.md',
+			),
 			'utf8',
 		);
 		const finding = checkGithubAgentFile(

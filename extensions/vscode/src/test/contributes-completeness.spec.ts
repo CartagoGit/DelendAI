@@ -111,6 +111,7 @@ describe('f00100 S4 — contributes-completeness ratchet', () => {
 		// f00100 S3: 29 commands after adding category grouping + refresh icons
 		// + saveSettings/resetSettings (previously phantom — detected by ratchet).
 		// Update this number with a dated rationale when commands are added/removed.
-		expect(contributed.length).toBe(29);
+		// f00107 S3: + plugin activation switchboard.
+		expect(contributed.length).toBe(30);
 	});
 });

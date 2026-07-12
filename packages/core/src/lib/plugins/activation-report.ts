@@ -9,6 +9,7 @@
  */
 import type {
 	ActivationSource,
+	IActivationContribution,
 	IActivationEntry,
 	IActivationReport,
 	IActivationSources,
@@ -36,9 +37,10 @@ const ORIGIN_RANK: Readonly<Record<PluginOrigin, number>> = {
 export const buildActivationReport = (
 	loaded: readonly ILoadedPluginFacts[],
 	sources: IActivationSources,
+	contributions: readonly IActivationContribution[] = [],
 ): IActivationReport => {
-	const entries: IActivationEntry[] = loaded
-		.map(
+	const entries: IActivationEntry[] = [
+		...loaded.map(
 			(p): IActivationEntry => ({
 				id: p.name,
 				origin: classifyOrigin({
@@ -51,12 +53,18 @@ export const buildActivationReport = (
 				source: sourceFor(p.name, sources),
 				toolCount: p.toolCount,
 			}),
-		)
-		.sort(
-			(a, b) =>
-				ORIGIN_RANK[a.origin] - ORIGIN_RANK[b.origin] ||
-				a.id.localeCompare(b.id),
-		);
+		),
+		...contributions.map(
+			(entry): IActivationEntry => ({
+				...entry,
+				active: entry.active ?? true,
+			}),
+		),
+	].sort(
+		(a, b) =>
+			ORIGIN_RANK[a.origin] - ORIGIN_RANK[b.origin] ||
+			a.id.localeCompare(b.id),
+	);
 
 	const counts: Record<PluginOrigin, number> = {
 		bundled: 0,
@@ -65,6 +73,7 @@ export const buildActivationReport = (
 	};
 	let totalTools = 0;
 	for (const e of entries) {
+		if (!e.active) continue;
 		counts[e.origin] += 1;
 		totalTools += e.toolCount;
 	}

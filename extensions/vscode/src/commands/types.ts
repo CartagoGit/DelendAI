@@ -39,7 +39,10 @@ export interface ICommandVscodeApi {
 			showOptions: number,
 			options: { readonly enableScripts?: boolean },
 		): IWebviewPanel;
-		showInformationMessage?(message: string): Thenable<string | undefined>;
+		showInformationMessage?(
+			message: string,
+			...actions: readonly string[]
+		): Thenable<string | undefined>;
 		showErrorMessage?(
 			message: string,
 			...actions: readonly string[]
@@ -52,6 +55,11 @@ export interface ICommandVscodeApi {
 				readonly detail?: string;
 			}>,
 		): Thenable<string | undefined>;
+	};
+	readonly workspace?: {
+		readonly workspaceFolders?: ReadonlyArray<{
+			readonly uri: { readonly fsPath: string };
+		}>;
 	};
 	/** `vscode.env` subset — clipboard for the proposals "Copy error" action
 	 * (f00097 S4). Optional so test seams / alt hosts can omit it. */

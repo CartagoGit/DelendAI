@@ -28,6 +28,8 @@ import {
 } from './commands/external-mcps-ack';
 import { registerOpenDashboardCommand } from './commands/open-dashboard';
 import { registerProviderActionCommands } from './commands/provider-actions';
+import { registerPluginActivationCommand } from './commands/plugin-activation';
+import { PLUGIN_ACTIVATION_COMMAND } from './contracts/constants/plugin-activation-command.constant';
 import {
 	OPEN_DOCS_COMMAND,
 	registerOpenDocsCommand,
@@ -168,6 +170,9 @@ export interface IVscodeApi {
 	readonly workspace?: {
 		createFileSystemWatcher(pattern: string): IFileSystemWatcher;
 		getConfiguration?(section: string): IConfiguration;
+		readonly workspaceFolders?: ReadonlyArray<{
+			readonly uri: { readonly fsPath: string };
+		}>;
 	};
 }
 
@@ -385,6 +390,14 @@ export const activate = async (
 	track(registerOpenKnowledgeCommand({ vscode, client }));
 	track(registerToolSearchCommand({ vscode, client, ...withPrefix }));
 	track(registerRestartServerCommand(vscode));
+	track(
+		registerPluginActivationCommand({
+			vscode,
+			client,
+			globalState: context.globalState,
+			...withPrefix,
+		}),
+	);
 	track(registerMemorySaveCommand({ vscode, client, memoryTree }));
 	track(registerMemoryForgetCommand({ vscode, client, memoryTree }));
 	// f00098 S3: provider dashboard panel + its action commands (pause/
@@ -702,5 +715,6 @@ export {
 	MEMORY_FORGET_COMMAND,
 	MEMORY_SAVE_COMMAND,
 	TOOL_SEARCH_COMMAND,
+	PLUGIN_ACTIVATION_COMMAND,
 	SETUP_GITHUB_COMMAND,
 };

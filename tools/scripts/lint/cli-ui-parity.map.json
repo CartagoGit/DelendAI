@@ -158,6 +158,10 @@
 		"mcp-vertex.restartServer": {
 			"waiver": "extension-host process lifecycle; the CLI is a client of that server and cannot restart the host's instance"
 		},
+		"mcp-vertex.plugins.activation": {
+			"cli": "config show",
+			"note": "f00107 S3: overview activation report plus merge-aware config enabled toggles"
+		},
 		"mcp-vertex.openSettings": { "cli": "config show" },
 		"mcp-vertex.saveSettings": {
 			"cli": "config show",

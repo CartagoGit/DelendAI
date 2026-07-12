@@ -13,6 +13,7 @@ import type {
 } from '../contracts/interfaces/tool-registration.interface';
 import type { IWorkspacePathProvider } from '../contracts/interfaces/workspace-paths.interface';
 import type { ICacheEvictionRegistry } from '../contracts/interfaces/cache-eviction.interface';
+import type { IActivationContribution } from '../contracts/interfaces/activation-report.interface';
 
 /**
  * What the core hands a plugin at registration time. A plugin is
@@ -136,6 +137,8 @@ export interface IPeerPluginRegistry {
  */
 export interface IMcpPluginRegistrations {
 	readonly tools?: readonly IToolRegistration[];
+	/** Nested activation surfaces owned by this plugin, for host introspection. */
+	readonly activation?: readonly IActivationContribution[];
 	readonly prompts?: readonly IPromptRegistration[];
 	readonly resources?: readonly IResourceRegistration[];
 	readonly knowledge?: readonly IKnowledgeEntry[];

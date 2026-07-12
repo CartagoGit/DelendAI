@@ -105,7 +105,8 @@ describe('VS Code extension smoke', async () => {
 		//   pending-ack notification is fire-and-forget (not tracked).
 		// f00100 S1: +1 for mcp-vertex.openToolDetail, wired from tool-tree
 		//   leaves to the existing tool-detail webview renderer.
-		expect(subscriptions).toHaveLength(29);
+		// f00107 S3: +1 plugin activation switchboard command.
+		expect(subscriptions).toHaveLength(30);
 		expect(commands.has(REFRESH_COMMAND)).toBe(true);
 		expect(commands.has('mcp-vertex.proposals.refresh')).toBe(true);
 		expect(commands.has('mcp-vertex.proposals.copyError')).toBe(true);

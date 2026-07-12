@@ -261,10 +261,9 @@ or a cross-plugin import.
 **Kill switch**: opt-in (in no preset). The runner does not load unless you name
 it. Disable it by omitting it from `--plugins` and from the config's `plugins`
 map, or force it off with `--exclude-plugins=orchestrator-runner` (matched against
-the resolved plugin name). Do **not** try `options.enabled: false`: the plugin's
-option schema is `.strict()`, so an unknown key makes the whole options parse fail
-and silently fall back to empty defaults (dropping your roster) rather than
-disabling the plugin.
+the resolved plugin name). The persistent UI/config override is
+`plugins.orchestrator-runner.enabled: false` — `enabled` belongs beside `options`,
+never inside it, so the plugin's strict option schema remains unchanged.
 
 ### usage-tracking
 
@@ -300,8 +299,8 @@ dependency of `orchestrator-runner` (above).
 
 **Kill switch**: opt-in (in no preset). Disable it by omitting it from
 `--plugins` and from the config's `plugins` map, or force it off with
-`--exclude-plugins=usage-tracking`. (There is no `options.enabled` flag; omission
-is the switch.)
+`--exclude-plugins=usage-tracking`. The persistent equivalent is
+`plugins.usage-tracking.enabled: false` (not `options.enabled`).
 
 ## Composing third-party MCP servers (opt-in)
 
@@ -342,8 +341,9 @@ LLM-decided activation is **blocked** until a human records an accepted `ack`.
 `call`. Each step before `call` is offline and reversible.
 
 **Config schema** (`plugins.external-mcps.options`): `servers` (record keyed by
-kebab-case id → `{ version` (mandatory **exact** semver pin — `latest` and
-ranges are rejected), `command`, `args`, `namespacePrefix?`, `detect?`, `env?`
+kebab-case id → `{ enabled?` (default on; the switchboard persists this field),
+`version` (mandatory **exact** semver pin — `latest` and ranges are rejected),
+`command`, `args`, `namespacePrefix?`, `detect?`, `env?`
 (variable **NAMES** only, never cleartext) `}`), plus the three autonomy knobs
 `llmDecidesActivation` (default `true`), `requireHumanAckWhenLlmDecides` (default
 `true`), `allowDiscoverySearch` (default `false` — the live npm/GitHub kill
@@ -357,7 +357,10 @@ cleartext-token-looking blobs, and every external result is piped through
 
 **Kill switch**: opt-in (in no preset). Disable it by omitting it from
 `--plugins` and from the config's `plugins` map, or force it off with
-`--exclude-plugins=external-mcps`.
+`--exclude-plugins=external-mcps`. Disable one declared child without deleting
+its pinned definition via
+`plugins.external-mcps.options.servers.<id>.enabled: false`; disabled children
+remain visible in activation introspection so the IDE can turn them back on.
 
 ## Rules for great, model-agnostic, low-token plugins
 

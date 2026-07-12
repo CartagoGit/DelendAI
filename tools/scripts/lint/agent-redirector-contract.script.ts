@@ -135,11 +135,12 @@ export const checkGithubAgentFile = (
 ): IAgentFileFinding | undefined => {
 	const { frontmatter, body } = splitFrontmatter(text);
 	const name = frontmatterField(frontmatter, 'name');
-	const expectedFile = name === undefined
-		? undefined
-		: SUBAGENT_SLOTS.includes(name as ISubagentSlot)
-			? SUBAGENT_FILE_BY_SLOT[name as ISubagentSlot]
-			: undefined;
+	const expectedFile =
+		name === undefined
+			? undefined
+			: SUBAGENT_SLOTS.includes(name as ISubagentSlot)
+				? SUBAGENT_FILE_BY_SLOT[name as ISubagentSlot]
+				: undefined;
 	if (
 		expectedFile !== undefined &&
 		!path.endsWith(`.github/agents/${expectedFile}`)
