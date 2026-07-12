@@ -48,6 +48,7 @@ import type {
 	IToolSummary,
 } from '../catalog/agent-discovery-types';
 import type { IProviderSummary } from '../contracts/interfaces/provider-capabilities.interface';
+import { readProposalsIndex } from './read-proposals-index';
 import { buildKnowledgeResourceRegistrations } from '../tools/knowledge-resources';
 import { buildKnowledgeToolRegistration } from '../tools/knowledge-tool';
 import { buildSkillToolRegistration } from '../tools/skill-tool';
@@ -118,94 +119,7 @@ export interface IAssembleCliDeps {
 	import?: (specifier: string) => Promise<{ default: unknown }>;
 }
 
-interface IProposalIndexFileEntry {
-	readonly id?: string;
-	readonly title?: string;
-	readonly track?: string;
-	readonly status?: string;
-	readonly type?: string;
-	readonly kind?: string;
-	readonly date?: string;
-}
 
-interface IProposalIndexFile {
-	readonly proposals?: readonly IProposalIndexFileEntry[];
-}
-
-const proposalKindFromId = (id: string): IProposalSummary['kind'] => {
-	const prefix = id[0]?.toLowerCase();
-	if (prefix === 'f') return 'feat';
-	if (prefix === 'r') return 'refactor';
-	if (prefix === 'c') return 'chore';
-	if (prefix === 'd') return 'docs';
-	if (prefix === 'q') return 'plan';
-	if (prefix === 'a') return 'audit';
-	if (prefix === 'x') return 'fix';
-	return 'unspecified';
-};
-
-const normalizeProposalStatus = (
-	status: string | undefined,
-): IProposalSummary['status'] => {
-	if (
-		status === 'ready' ||
-		status === 'in-progress' ||
-		status === 'review' ||
-		status === 'paused' ||
-		status === 'done' ||
-		status === 'blocked' ||
-		status === 'retired'
-	) {
-		return status;
-	}
-	return 'unspecified';
-};
-
-const readProposalsIndex = async (
-	workspaceRoot: string,
-	cacheDir: string,
-	readWorkspaceFile: (absolutePath: string) => Promise<string | undefined>,
-): Promise<readonly IProposalSummary[]> => {
-	// x00052: the proposals registry index is a regenerable cache
-	// artefact, not a human-edited source file. It lives under
-	// `<cacheDir>/proposals/index.json` (where every other regenerable
-	// artefact already lives — see `default-path-layout.constant.ts#proposalIndexFile`).
-	const raw = await readWorkspaceFile(
-		join(workspaceRoot, cacheDir, 'proposals', 'index.json'),
-	);
-	if (raw === undefined) return [];
-	let parsed: IProposalIndexFile;
-	try {
-		parsed = JSON.parse(raw) as IProposalIndexFile;
-	} catch {
-		return [];
-	}
-	if (!Array.isArray(parsed.proposals)) return [];
-	return parsed.proposals
-		.filter(
-			(
-				entry,
-			): entry is Required<Pick<IProposalIndexFileEntry, 'id'>> &
-				IProposalIndexFileEntry => typeof entry.id === 'string',
-		)
-		.map((entry) => ({
-			id: entry.id,
-			title: entry.title ?? entry.id,
-			track: entry.track ?? 'unspecified',
-			status: normalizeProposalStatus(entry.status),
-			kind:
-				entry.kind === 'feat' ||
-				entry.kind === 'fix' ||
-				entry.kind === 'refactor' ||
-				entry.kind === 'chore' ||
-				entry.kind === 'docs' ||
-				entry.kind === 'plan' ||
-				entry.kind === 'audit'
-					? entry.kind
-					: proposalKindFromId(entry.id),
-			date: entry.date ?? '',
-		}));
-};
 
 /**
  * Build the full host config from parsed CLI args: resolve the
