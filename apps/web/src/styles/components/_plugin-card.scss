@@ -128,6 +128,48 @@
 	font-size: 0.74rem;
 	font-weight: 700;
 }
+.plugin-card__badges {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.4rem;
+}
+.plugin-card__badge--origin {
+	background: color-mix(in srgb, var(--accent-2) 12%, transparent);
+	color: var(--accent-2);
+}
+
+.plugin-origin-legend {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+	gap: 0.75rem;
+	padding: 0;
+	margin: 0 0 1.5rem;
+	list-style: none;
+}
+.plugin-origin-legend__intro {
+	color: var(--muted);
+}
+.plugin-origin-legend__item {
+	display: grid;
+	gap: 0.3rem;
+	padding: 0.75rem;
+	border: 1px solid var(--line);
+	border-radius: 0.75rem;
+	background: var(--card);
+	& span {
+		color: var(--muted);
+		font-size: 0.85rem;
+	}
+}
+.plugin-origin-legend__item--bundled {
+	border-color: color-mix(in srgb, var(--accent-2) 45%, var(--line));
+}
+.plugin-origin-legend__item--user-local {
+	border-color: color-mix(in srgb, var(--accent) 45%, var(--line));
+}
+.plugin-origin-legend__item--external {
+	border-color: color-mix(in srgb, var(--muted) 55%, var(--line));
+}
 .plugin-card__arrow {
 	font-size: 1.1rem;
 	color: var(--muted);

@@ -26,8 +26,10 @@ interface Props {
 	href: string;
 	/** Optional "requires <plugin>" note (e.g. issues → proposals). */
 	requires?: { label: string; href: string; name: string };
+	/** Localized origin badge; catalog packages are first-party/bundled. */
+	originLabel: string;
 }
-const { slug, name, version, href, requires } = Astro.props;
+const { slug, name, version, href, requires, originLabel } = Astro.props;
 
 const purpose = resolvePluginPurpose(slug);
 const tools = capabilityToolsFor(slug);
@@ -68,9 +70,12 @@ const onIconError =
 		</div>
 		<p class="plugin-card__desc">{purpose}</p>
 		<div class="plugin-card__foot">
-			<span class="plugin-card__badge">
-				{count} {count === 1 ? 'tool' : 'tools'}
-			</span>
+			<div class="plugin-card__badges">
+				<span class="plugin-card__badge plugin-card__badge--origin">{originLabel}</span>
+				<span class="plugin-card__badge">
+					{count} {count === 1 ? 'tool' : 'tools'}
+				</span>
+			</div>
 			<span class="plugin-disc__chevron" aria-hidden="true">▾</span>
 		</div>
 	</summary>

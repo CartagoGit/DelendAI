@@ -102,12 +102,14 @@ token cost of every call the LLM makes.
 
 ### S4 — Web catalog parity + docs
 
-- **Status**: pending
-- **Files**: `apps/web/src/pages/plugins.astro` (coordinate — web owner), `apps/web/src/data/plugin-origins.ts`, `docs/mcp-vertex/PLUGINS-MCP-VERTEX.md`
+- **Status**: done
+- **Files**: `apps/web/src/data/plugin-origins.ts`, `apps/web/src/components/PluginsSection.astro`, `apps/web/src/components/PluginDisclosure.astro`, `apps/web/src/styles/components/_plugin-card.scss`, `docs/mcp-vertex/PLUGINS-MCP-VERTEX.md` + specs
 - **Depends on**: S1
 - **Gate**: bun run lint:web
 - **Acceptance**:
-  - "The web plugins surface labels each plugin by origin (bundled/first-party) and documents how a consumer adds a user-local plugin (`path`) or an external server (external-mcps), so the ecosystem story — ours vs yours vs external — is visible without opening a config file. `bun run site` green."
+  - "The web plugins surface labels every canonical catalog package as bundled/first-party by deriving from `PLUGIN_CATALOG` (no second slug list), and shows a localized three-tier legend for ours / user-local / external. Origin copy is complete in all 12 languages."
+  - "The plugin guide documents the same three origins, persistent native and external-child `enabled` overrides, local `path` loading, preservation semantics, restart requirement and the fact that origin is visibility metadata rather than a security boundary."
+  - "Catalog origin specs, Astro check, style integrity and the full site/validate gates are green."
 
 ## acceptance
 
