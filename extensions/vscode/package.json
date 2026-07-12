@@ -18,6 +18,9 @@
 		"Other"
 	],
 	"main": "./dist/extension.js",
+	"activationEvents": [
+		"workspaceContains:**/mcp-vertex.config.json"
+	],
 	"contributes": {
 		"viewsContainers": {
 			"activitybar": [
