@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-07-11T09:54:13.962Z",
+	"generatedAt": "2026-07-12T04:30:26.737Z",
 	"mode": "compact",
 	"tools": [
 		{
@@ -679,44 +679,60 @@
 				"id": "f00050",
 				"title": "f00050",
 				"track": "lint+architecture+i18n+workflow+release",
-				"status": "paused",
+				"status": "ready",
 				"kind": "feat",
 				"date": "2026-06-23"
 			},
 			{
-				"id": "f00100",
-				"title": "f00100",
-				"track": "extensions/vscode+ui-extension",
+				"id": "f00104",
+				"title": "f00104",
+				"track": "cli+core+release+install+docs",
 				"status": "ready",
 				"kind": "feat",
-				"date": "2026-07-07"
+				"date": "2026-07-08"
 			},
 			{
-				"id": "f00101",
-				"title": "f00101",
-				"track": "ui-extension+client+docs+web",
+				"id": "f00105",
+				"title": "f00105",
+				"track": "config+install+dogfood+workflow",
 				"status": "ready",
 				"kind": "feat",
-				"date": "2026-07-07"
+				"date": "2026-07-08"
 			},
 			{
-				"id": "f00103",
-				"title": "f00103",
-				"track": "shared+ui-extension+web+extensions/vscode+dev+lint",
+				"id": "f00106",
+				"title": "f00106",
+				"track": "usage-tracking+ui-extension+vscode+web",
+				"status": "ready",
+				"kind": "feat",
+				"date": "2026-07-08"
+			},
+			{
+				"id": "f00107",
+				"title": "f00107",
+				"track": "core+config+ui-extension+vscode+web",
+				"status": "ready",
+				"kind": "feat",
+				"date": "2026-07-08"
+			},
+			{
+				"id": "f00108",
+				"title": "f00108",
+				"track": "web+extensions/vscode+ui-extension+i18n+lint",
 				"status": "ready",
 				"kind": "feat",
 				"date": "2026-07-08"
 			}
 		],
 		"byStatus": {
-			"ready": 3,
+			"ready": 6,
 			"in-progress": 0,
 			"review": 0,
-			"paused": 2,
-			"done": 190,
+			"paused": 1,
+			"done": 193,
 			"blocked": 0,
 			"retired": 0,
-			"unspecified": 0
+			"unspecified": 1
 		}
 	}
 }
