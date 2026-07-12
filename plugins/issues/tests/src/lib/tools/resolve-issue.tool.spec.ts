@@ -179,6 +179,24 @@ describe('issues_resolve', async () => {
 		expect(out.error.reason).toContain('dismissReason');
 	});
 
+	it('redacts secrets added while resolving before they reach disk', async () => {
+		const fileName = await seedScaffold(scaffoldDirAbs, 7, 'Secret report');
+		const secret = 'ghp_abcdefghijklmnopqrstuvwxyzABCDEFGHIJKL';
+
+		await runResolveIssue(
+			{
+				number: 7,
+				resolution: 'dismissed',
+				dismissReason: `credential ${secret}`,
+			},
+			buildOptions(),
+		);
+
+		const written = await readFile(join(scaffoldDirAbs, fileName), 'utf8');
+		expect(written).not.toContain(secret);
+		expect(written).toContain('[REDACTED]');
+	});
+
 	it('omits dismiss_reason when resolution is not "dismissed"', async () => {
 		const fileName = await seedScaffold(scaffoldDirAbs, 6, 'Clean promote');
 		await runResolveIssue(
