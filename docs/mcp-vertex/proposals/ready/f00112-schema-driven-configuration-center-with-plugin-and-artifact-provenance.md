@@ -174,10 +174,31 @@ declared settings in the editor.
   - "Secret-valued fields are redacted on reads and rejected from unsafe durable persistence paths."
 
 ### S3 — Host-agnostic Configuration Center model and renderer
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/ui-extension/src/configuration-center/**`, `packages/ui-extension/src/contracts/interfaces/configuration-center.interface.ts`, `packages/ui-extension/src/public/index.ts`
 - **DependsOn**: [S1, S2]
 - **Gate**: type
+- **Evidence (2026-07-12)**:
+  - "Added a public pure model builder and full HTML/CSS/vanilla-JS renderer
+    under `@mcp-vertex/ui-extension`; it imports no VS Code API and dispatches
+    typed edit payloads through an injected generic host or DOM event fallback."
+  - "Navigation covers General, Plugins, Providers, Agents, Skills and Prompts
+    with counts, search, owner/origin/active badges and an explicit unavailable
+    state instead of guessed agent ownership."
+  - "Root and plugin controls derive from advertised JSON Schema for scalar,
+    enum, nested object and JSON fields. Unknown keys remain visible as raw JSON;
+    opaque plugins get a preservation-safe options fallback. Any object that
+    contains a redacted value becomes read-only so a partial edit cannot replace
+    hidden credentials with placeholders."
+  - "External `ext.*` rows map activation and raw server edits to
+    `plugins.external-mcps.options.servers.<id>` rather than creating invalid
+    native-plugin blocks. Project-local plugin path/prefix/options retain their
+    native paths."
+  - "The renderer includes roving keyboard tabs, labels/ARIA live regions,
+    focus states, responsive layout, reduced-motion handling, dirty/JSON-invalid,
+    saving/acknowledged/conflict states and delete edits for cleared optional
+    fields. It never announces save success before host acknowledgement."
+  - "Verified: ui-extension typecheck and its complete 28-suite / 178-test gate."
 - acceptance:
   - "Navigation covers General, Plugins, Providers, Agents, Skills and Prompts with origin and owner badges plus searchable rows."
   - "Plugin forms derive controls from advertised schema and display unsupported or unknown fields without deleting them."
