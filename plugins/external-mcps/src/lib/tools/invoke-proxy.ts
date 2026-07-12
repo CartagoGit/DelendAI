@@ -110,7 +110,9 @@ export const buildCallToolRegistration = (
 					// predicate defers.
 					const recorded = hasRecordedAck(serverId);
 					const acked =
-						typeof recorded === 'boolean' ? recorded : await recorded;
+						typeof recorded === 'boolean'
+							? recorded
+							: await recorded;
 					if (options.requireHumanAckWhenLlmDecides && !acked) {
 						return toolJson({
 							ok: false,
