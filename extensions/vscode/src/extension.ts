@@ -21,6 +21,7 @@ import {
 	registerResetSettingsCommand,
 	registerSaveSettingsCommand,
 } from './commands/open-settings';
+import { registerOpenConfigurationCenterCommand } from './commands/open-configuration-center';
 
 import {
 	registerExternalMcpsAckCommand,
@@ -386,6 +387,13 @@ export const activate = async (
 	// f00053 S6: surface the canonical docs/how-to-use/API from the IDE.
 	track(registerOpenDocsApiCommand({ vscode }));
 	track(registerOpenAgentCatalogCommand({ vscode, client }));
+	track(
+		registerOpenConfigurationCenterCommand({
+			vscode,
+			client,
+			...withPrefix,
+		}),
+	);
 	track(registerOpenToolDetailCommand({ vscode, client, ...withPrefix }));
 	track(registerOpenKnowledgeCommand({ vscode, client }));
 	track(registerToolSearchCommand({ vscode, client, ...withPrefix }));
