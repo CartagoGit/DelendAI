@@ -84,15 +84,31 @@ describe('checkGithubAgentFile', async () => {
 
 	it('stays silent on a bounded subagent (name in SUBAGENT_SLOTS + Copilot-adapter disclaimer)', async () => {
 		const text = await readFile(
-			join(root, '.github', 'agents', 'implementation_runner.agent.md'),
+			join(root, '.github', 'agents', 'mcp-vertex-implementation-runner.agent.md'),
 			'utf8',
 		);
 		expect(
 			checkGithubAgentFile(
-				'.github/agents/implementation_runner.agent.md',
+				'.github/agents/mcp-vertex-implementation-runner.agent.md',
 				text,
 			),
 		).toBeUndefined();
+	});
+
+	it('warns when a bounded subagent filename does not match the namespaced shape', async () => {
+		const text = await readFile(
+			join(root, '.github', 'agents', 'mcp-vertex-implementation-runner.agent.md'),
+			'utf8',
+		);
+		const finding = checkGithubAgentFile(
+			'.github/agents/implementation_runner.agent.md',
+			text,
+		);
+		expect(finding).toBeDefined();
+		expect(finding?.kind).toBe('subagent-filename-mismatch');
+		expect(finding?.detail).toContain(
+			'.github/agents/mcp-vertex-implementation-runner.agent.md',
+		);
 	});
 
 	it('stays silent on a synthetic redirector fixture', async () => {
