@@ -125,7 +125,10 @@ describe('task-queue concurrent RMW (x00097 S2)', () => {
 		const queue = await parseQueue(queuePath, closedTasksPath, root);
 		const ids = queue.entries.map((e) => e.taskId).sort();
 		expect(ids).toEqual(
-			Array.from({ length: N }, (_, i) => `zombie-gc-event-task-${i}`).sort(),
+			Array.from(
+				{ length: N },
+				(_, i) => `zombie-gc-event-task-${i}`,
+			).sort(),
 		);
 	});
 
@@ -173,7 +176,9 @@ describe('task-queue concurrent RMW (x00097 S2)', () => {
 		// parseQueue itself enforces the invariant — it throws on duplicates.
 		const queue = await parseQueue(queuePath, closedTasksPath, root);
 		expect(
-			queue.entries.filter((e) => e.taskId === 'zombie-gc-event-task-dup'),
+			queue.entries.filter(
+				(e) => e.taskId === 'zombie-gc-event-task-dup',
+			),
 		).toHaveLength(1);
 	});
 });
