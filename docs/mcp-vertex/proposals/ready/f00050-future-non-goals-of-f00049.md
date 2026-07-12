@@ -10,6 +10,7 @@ related:
     - f00049 # the parent proposal (now done) whose non-goals this file parks
 recan:
     - { at: 2026-07-12, by: opus, slice: all, status: rescanned, notes: "f00049 is DONE (done/feats/) and @mcp-vertex/core/public is stable — the COMMON precondition (item 1 of every S-*) is now MET. But every S-* also carries a SECOND, trigger precondition (a concrete user request / CVE / audit finding / community decision); as of this re-scan NONE of those triggers exist, so no item auto-promotes. This proposal is promoted to ready as the standing TRIAGE workstream: S0 assesses all nine against the live tree each pass and promotes any whose trigger has since fired." }
+    - { at: 2026-07-13, by: codex-root, slice: S0, status: still-paused, notes: "Live re-scan found no qualifying trigger. The latest audits contain no requested public removal, prefix decision, approved history rewrite, non-TS consumer request or production orchestrator-loop finding. deps_check reports a Bun lockfile, zero findings and healthy=true. compact_status reports an empty task queue. All nine deferred items remain parked; S0 completed this pass." }
 ---
 
 # f00050 — Triage the nine non-goals deferred from f00049
@@ -62,12 +63,12 @@ Listing them in a single place, with preconditions, makes them:
 - Do not link this proposal from `f00049` as a dependency of f00049's slices —
   f00049 explicitly does not depend on f00050.
 
-### Re-scan outcome (2026-07-12)
+### Re-scan outcome (2026-07-13)
 
 Common precondition (f00049 done + `@mcp-vertex/core/public` stable): **MET**
 (2026-07-12). Per-item trigger status:
 
-| Item | Trigger precondition | 2026-07-12 status |
+| Item | Trigger precondition | 2026-07-13 status |
 |------|----------------------|-------------------|
 | S-A semantic rewrite | user request OR P0 audit flags an SRP violation | trigger-blocked (no such request/finding) |
 | S-B audit-plugin contract | audit finds a vocab leak / downstream host asks | trigger-blocked |
@@ -139,20 +140,23 @@ files + gate.
   the day a sibling slice is unblocked, so the two proposals stay in
   sync.
 
-## slices
+## Slices
 ### S0 — standing triage (re-scan + promote)
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `docs/mcp-vertex/proposals/ready/f00050-future-non-goals-of-f00049.md` (this file), plus any `ready/<id>-…` a promotion creates.
 - **Gate**: `bun run lint:proposals` (the file stays lint-clean; any promoted child passes on its own).
 - **Acceptance**:
   - "Each pass: re-run the `## Re-scan outcome` table against the live tree (f00049 slices, latest audits under `done/audits/`, `deps_check` for S-I, `proposals_compact_status`). Append a `recan:` frontmatter entry with the outcome. Any row whose trigger has fired is promoted per `### how to unpause an item` (copy its S-* block into a fresh `ready/<id>` proposal, remove it here, record `preconditions-met:`)."
   - "The proposal is `done` only when all nine items have been either promoted out (trigger fired → own proposal) or explicitly retired by the user (trigger declared never-going-to-fire). Until then it stays `ready` as the live triage surface — no longer `paused`, because f00049 is done and the common precondition is met."
+- **Evidence (2026-07-13)**:
+  - "The live dependency check returned `healthy: true`, a Bun lockfile and no findings; the proposal queue is empty and the complete repository validation passes."
+  - "Current audits and user requirements do not satisfy any item-specific destructive trigger, so no semantic rewrite, history migration, public removal or dependency churn was promoted."
 
 
 ### S-A — Semantic rewrite of services and tools beyond renames
 
-- **Status**: paused
+- **Status**: blocked
 - **Preconditions**:
   - f00049 is `done` and the public surface (`@mcp-vertex/core/public`) is
     verified byte-identical.
@@ -173,7 +177,7 @@ files + gate.
 
 ### S-B — Touch the audit plugin's agnostic contract
 
-- **Status**: paused
+- **Status**: blocked
 - **Preconditions**:
   - A specific finding in a post-f00049 audit (most likely an a0003x+ audit)
     calls out a remaining mcp-vertex-vocabulary leak in the audit plugin.
@@ -190,7 +194,7 @@ files + gate.
 
 ### S-C — Public surface change with deprecated aliases
 
-- **Status**: paused
+- **Status**: blocked
 - **Preconditions**:
   - A type/function/exporter in `@mcp-vertex/core/public` or any
     `src/public/index.ts` needs to be removed or renamed.
@@ -207,7 +211,7 @@ files + gate.
 
 ### S-D — Non-TypeScript surface (Python/Rust/Go profile)
 
-- **Status**: paused
+- **Status**: blocked
 - **Preconditions**:
   - A consumer host using the conventions plugin (currently
     `plugins/conventions/`) reports they need a non-TS profile.
@@ -227,7 +231,7 @@ files + gate.
 
 ### S-E — New public types
 
-- **Status**: paused
+- **Status**: blocked
 - **Preconditions**:
   - A post-f00049 audit (or an external host) needs a type that is not
     currently exported from `@mcp-vertex/core/public`.
@@ -245,7 +249,7 @@ files + gate.
 
 ### S-F — Re-number historical proposal / audit IDs
 
-- **Status**: paused
+- **Status**: blocked
 - **Preconditions**:
   - A new convention is adopted that strictly orders proposal IDs (e.g.
     "no gaps, every id a 5-digit zero-padded number, prefix = `kind`").
@@ -260,7 +264,7 @@ files + gate.
 
 ### S-G — Fuse proposal-ID prefixes
 
-- **Status**: paused
+- **Status**: blocked
 - **Preconditions**:
   - A community decision is made on which prefix represents what (today the
     table is implicit: f/x/r/c/d/t/l/a/n/u, with `u` unassigned).
@@ -278,7 +282,7 @@ files + gate.
 
 ### S-H — Touch the loop detector / idle-streak / lock-released contract
 
-- **Status**: paused
+- **Status**: blocked
 - **Preconditions**:
   - A new orchestrator proposal (most likely in
     `plugins/proposals/src/lib/tools/auto-work.tool.ts` or
@@ -299,7 +303,7 @@ files + gate.
 
 ### S-I — Bump / swap / remove dependencies (touch `bun.lock`)
 
-- **Status**: paused
+- **Status**: blocked
 - **Preconditions**:
   - A security advisory (CVE) is filed against a dep that the current
     `bun.lock` resolves.
