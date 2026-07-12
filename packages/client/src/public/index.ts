@@ -35,6 +35,10 @@ export { LogsService } from '../lib/services/logs.service';
 export { NotificationLogsBridge } from '../lib/services/notification-logs-bridge';
 export { SearchService } from '../lib/services/search.service';
 export { AgentCatalogService } from '../lib/services/agent-catalog-service';
+export {
+	readConfigurationDocument,
+	saveConfigurationDocument,
+} from '../lib/services/configuration-center.service';
 export { MemoryService } from '../lib/services/memory.service';
 export {
 	DEFAULT_EXTENSION_SETTINGS,
@@ -68,6 +72,15 @@ export type {
 	IAgentCatalogSearchResult,
 	IAgentCatalogServiceOptions,
 } from '../lib/services/agent-catalog-service';
+export type {
+	ConfigurationEdit,
+	ConfigurationPathSegment,
+	IConfigurationDocumentInput,
+	IConfigurationDocumentSnapshot,
+	IConfigurationValidationIssue,
+	ISaveConfigurationDocumentInput,
+	SaveConfigurationDocumentResult,
+} from '../lib/contracts/interfaces/configuration-edit.interface';
 export type {
 	IMemoryEntry,
 	IMemoryForgetResult,
