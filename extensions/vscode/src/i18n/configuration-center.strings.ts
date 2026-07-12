@@ -2,7 +2,7 @@ import type { IConfigurationCenterCopy } from '@mcp-vertex/ui-extension/public';
 
 import type { Lang } from './index';
 
-export interface IConfigurationCenterStrings {
+interface IConfigurationCenterStrings {
 	readonly copy: IConfigurationCenterCopy;
 	readonly panelTitle: string;
 	readonly workspaceRequired: string;

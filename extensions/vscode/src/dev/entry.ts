@@ -6,6 +6,7 @@ import {
 	type ISetupStatus,
 } from './settings-panel';
 import { PageRegistry } from './pages/registry';
+import { createLatestTaskQueue } from './render-queue';
 import {
 	getActiveView,
 	isViewId,
@@ -86,7 +87,7 @@ const crossFade = (next: ViewId): Promise<void> => {
 	});
 };
 
-const render = async (id: string): Promise<void> => {
+const renderNow = async (id: string): Promise<void> => {
 	// `isViewId` is the type guard exported from `state.ts`. An
 	// unknown id (e.g. a stale bookmark) falls back to the
 	// configured/dashboard view instead of crashing.
@@ -113,6 +114,12 @@ const render = async (id: string): Promise<void> => {
 		btn.dataset.active = btn.dataset.webview === viewId ? 'true' : 'false';
 	}
 };
+
+// The dashboard performs real MCP I/O and can still be resolving when the
+// user selects another page. Serialize paints and retain only the latest
+// pending destination so a late dashboard response cannot overwrite the
+// selected Configuration Center (and rapid clicks do not create a queue).
+const render = createLatestTaskQueue<string>(renderNow);
 
 const sidebar = document.getElementById('sidebar');
 if (sidebar) {
