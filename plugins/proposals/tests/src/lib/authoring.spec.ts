@@ -86,7 +86,7 @@ describe('proposal authoring (create → board → close)', async () => {
 			}),
 		);
 		expect(created.ok).toBe(true);
-		expect(created.file).toBe('p1-add-login.md');
+		expect(created.file).toBe('ready/p1-add-login.md');
 
 		const board = await capture(buildProposalBoardRegistration(opts));
 		const view = parse(await board({}));
@@ -107,10 +107,10 @@ describe('proposal authoring (create → board → close)', async () => {
 		);
 		expect(closed.closed).toBe(true);
 		const doc = readFileSync(
-			join(opts.proposalsDirAbs, 'p1-add-login.md'),
+			join(opts.proposalsDirAbs, 'ready', 'p1-add-login.md'),
 			'utf8',
 		);
-		expect(doc).toMatch(/### s1[\s\S]*?- status: done/);
+		expect(doc).toMatch(/### s1[\s\S]*?- \*\*Status\*\*: done/);
 	});
 
 	it('closes the last slice without appending the done marker outside the slice block', async () => {
@@ -121,7 +121,7 @@ describe('proposal authoring (create → board → close)', async () => {
 			goal: 'close final slice cleanly',
 			slices: [{ sliceId: 's1', files: ['src/a.ts'] }],
 		});
-		const file = join(opts.proposalsDirAbs, 'p6-last-slice-close.md');
+		const file = join(opts.proposalsDirAbs, 'ready', 'p6-last-slice-close.md');
 		const original = readFileSync(file, 'utf8');
 		const withAcceptance = original.replace(
 			/## Acceptance\n\n- \[ \] done\./,
@@ -144,9 +144,9 @@ describe('proposal authoring (create → board → close)', async () => {
 			doc.indexOf('### s1'),
 			doc.indexOf('## Acceptance'),
 		);
-		expect(sliceBlock).toMatch(/- status: done/);
+		expect(sliceBlock).toMatch(/- \*\*Status\*\*: done/);
 		expect(doc.slice(doc.indexOf('## Acceptance'))).not.toMatch(
-			/^- status: done/m,
+			/^- \*\*Status\*\*: done/m,
 		);
 	});
 
@@ -163,7 +163,7 @@ describe('proposal authoring (create → board → close)', async () => {
 		expect(created.ok).toBe(true);
 		expect(created.redactedSecrets).toBeGreaterThan(0);
 		const doc = readFileSync(
-			join(opts.proposalsDirAbs, 'p3-wire-api.md'),
+			join(opts.proposalsDirAbs, 'ready', 'p3-wire-api.md'),
 			'utf8',
 		);
 		expect(doc).not.toContain('s3cr3tValue123');
@@ -179,7 +179,7 @@ describe('proposal authoring (create → board → close)', async () => {
 			slices: [{ sliceId: 's1', files: ['src/a.ts'] }],
 		});
 		const review = await capture(buildReviewRegistration(opts));
-		const file = join(opts.proposalsDirAbs, 'p4-review-me.md');
+		const file = join(opts.proposalsDirAbs, 'ready', 'p4-review-me.md');
 
 		// Implementer submits for review.
 		const submitted = parse(
@@ -216,7 +216,7 @@ describe('proposal authoring (create → board → close)', async () => {
 			}),
 		);
 		expect(changes.status).toBe('changes_requested');
-		expect(readFileSync(file, 'utf8')).not.toMatch(/^- status: done/m);
+		expect(readFileSync(file, 'utf8')).not.toMatch(/^- \*\*Status\*\*: done/m);
 
 		// Fixer resubmits; another agent approves the fix.
 		const resubmitted = parse(
@@ -244,7 +244,7 @@ describe('proposal authoring (create → board → close)', async () => {
 
 		// The doc now carries the real done marker + the review log.
 		const doc = readFileSync(file, 'utf8');
-		expect(doc).toMatch(/^- status: done/m);
+		expect(doc).toMatch(/^- \*\*Status\*\*: done/m);
 		expect(doc).toMatch(
 			/review-log: requested_changes by eagle — add a test/,
 		);
@@ -275,7 +275,7 @@ describe('proposal authoring (create → board → close)', async () => {
 		);
 		expect(r.status).toBe('in_review');
 		const doc = readFileSync(
-			join(opts.proposalsDirAbs, 'p5-meta.md'),
+			join(opts.proposalsDirAbs, 'ready', 'p5-meta.md'),
 			'utf8',
 		);
 		// The literal a.b block got the review line; the earlier axb block did NOT.
@@ -358,7 +358,7 @@ describe('x00055: redactSecrets on reviewer note in proposal_review', () => {
 		expect(result.ok).toBe(true);
 		expect(result.redactedSecrets).toBeGreaterThan(0);
 		const doc = readFileSync(
-			join(opts.proposalsDirAbs, 'p1-review-me.md'),
+			join(opts.proposalsDirAbs, 'ready', 'p1-review-me.md'),
 			'utf8',
 		);
 		expect(doc).not.toContain('sk_live_abcdef0123456789');
