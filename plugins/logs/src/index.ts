@@ -38,6 +38,19 @@ export default definePlugin({
 			when: { kind: 'olderThanDays', days: retentionDays },
 		});
 
+		// f00111 S2: one boot marker per server process. Sessions from a
+		// stale host and the live one interleave in the same date file;
+		// this line is what tells them apart when debugging.
+		void (await store).appendEvent(
+			normalizeEvent('server-started', {
+				taskId: `pid-${process.pid}`,
+				pid: process.pid,
+				workspace: ctx.workspace.root,
+				namespacePrefix: ctx.namespacePrefix,
+				summary: `server-started: pid ${process.pid} @ ${ctx.workspace.root}`,
+			}),
+		);
+
 		return {
 			tools: buildLogToolRegistrations(ctx.namespacePrefix, await store),
 			knowledge: [
@@ -48,8 +61,8 @@ export default definePlugin({
 						'# Operational event log',
 						'',
 						'The logs plugin persists redacted JSONL events under `.cache/mcp-vertex/logs/`.',
-						'It captures tool start/completion/failure through core hooks and exposes read-only tools for query, tail and correlation.',
-						'Editor-side chat cancellation is not visible unless the client sends a server-side cancellation signal.',
+						'It captures tool start/completion/failure/cancellation through core hooks and exposes read-only tools for query, tail and correlation.',
+						'A `server-started` event marks each host boot (pid + workspace), and `tool-cancelled` records a client-side abort of an in-flight call with its elapsed ms.',
 					].join('\n'),
 				},
 			],
@@ -71,6 +84,20 @@ export default definePlugin({
 						result,
 						error: error instanceof Error ? error.message : error,
 						summary: `${error ? 'tool-failed' : 'tool-completed'}: ${toolName}`,
+					}),
+				),
+			// f00111 S2: client aborted the call while the handler was
+			// running. The handler's own completion/failure still logs
+			// separately when it settles — both lines together tell whether
+			// the cancel raced a fast tool or interrupted a slow one.
+			onToolCancel: async (toolName, args, elapsedMs) =>
+				(await store).appendEvent(
+					normalizeEvent('tool-cancelled', {
+						toolName,
+						taskId: toolName,
+						args,
+						elapsedMs: Math.round(elapsedMs),
+						summary: `tool-cancelled: ${toolName} after ${Math.round(elapsedMs)}ms`,
 					}),
 				),
 		};
