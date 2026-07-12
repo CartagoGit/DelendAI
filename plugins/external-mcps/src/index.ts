@@ -21,7 +21,7 @@ import {
 	detectCatalogIds,
 	loadDetectEvidence,
 } from './lib/detect/detect-rules';
-import { OptionsSchema } from './lib/options-schema';
+import { OptionsSchema, ServerEntrySchema } from './lib/options-schema';
 import { createPendingAcksStore } from './lib/ack/pending-acks';
 import {
 	ExternalServerRegistry,
@@ -41,6 +41,24 @@ export default definePlugin({
 	describe:
 		'Compose third-party MCP servers under the host: seed-catalog discovery, config dry-run validation, and lazy subprocess boot behind the ext.<server>.<tool> call proxy; human-acked activation lands in S3.',
 	optionsSchema: OptionsSchema,
+	configExample: {
+		summary:
+			'Declare a disabled, exactly pinned external MCP and enable it only after reviewing its command and environment-variable names.',
+		options: {
+			servers: {
+				'example-server': {
+					enabled: false,
+					version: '1.2.3',
+					command: 'npx',
+					args: ['-y', '@example/mcp-server@1.2.3'],
+					env: ['EXAMPLE_API_TOKEN'],
+				},
+			},
+			llmDecidesActivation: true,
+			requireHumanAckWhenLlmDecides: true,
+			allowDiscoverySearch: false,
+		},
+	},
 	register(ctx) {
 		// The loader already validated ctx.options against OptionsSchema;
 		// re-parse to apply the knob defaults (safeParse keeps a hand-built
@@ -93,6 +111,11 @@ export default definePlugin({
 					// Child tools stay behind one shared `call` proxy, so each
 					// declared server adds zero direct tools to the host prompt.
 					toolCount: 0,
+					configuration: {
+						options: options.servers?.[id] ?? {},
+						optionsSchema: ServerEntrySchema,
+						configExample: options.servers?.[id] ?? {},
+					},
 				})),
 			tools: [
 				buildCatalogToolRegistration({

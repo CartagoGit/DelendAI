@@ -533,22 +533,34 @@ export const assembleCliConfig = async (
 	const activationById = new Map(
 		activationReport.entries.map((entry) => [entry.id, entry]),
 	);
+	const configurationContributionById = new Map(
+		loadResult.loaded.flatMap((entry) =>
+			(entry.registrations.activation ?? [])
+				.filter((item) => item.configuration !== undefined)
+				.map((item) => [item.id, item.configuration!] as const),
+		),
+	);
 	const loadedByName = new Map(
 		loadResult.loaded.map((entry) => [entry.plugin.name, entry]),
 	);
 	const configurationPlugins: IConfigurationPlugin[] =
 		activationReport.entries.map((activation) => {
 			const loaded = loadedByName.get(activation.id);
+			const contributed = configurationContributionById.get(
+				activation.id,
+			);
 			const configName =
 				loaded === undefined
 					? activation.id
 					: (configNameBySpecifier.get(loaded.specifier) ??
 						activation.id);
 			const configEntry = pluginConfigFor(fileConfig, configName);
+			const runtimeSchema =
+				loaded?.plugin.optionsSchema ?? contributed?.optionsSchema;
 			const optionsSchema =
-				loaded?.plugin.optionsSchema === undefined
+				runtimeSchema === undefined
 					? undefined
-					: serializeConfigurationSchema(loaded.plugin.optionsSchema);
+					: serializeConfigurationSchema(runtimeSchema);
 			return {
 				id: activation.id,
 				origin: activation.origin,
@@ -560,13 +572,15 @@ export const assembleCliConfig = async (
 				...(configEntry.prefix === undefined
 					? {}
 					: { prefix: configEntry.prefix }),
-				options: configEntry.options ?? {},
+				options: contributed?.options ?? configEntry.options ?? {},
 				...(optionsSchema === undefined ? {} : { optionsSchema }),
 				schemaStatus:
 					optionsSchema === undefined ? 'unavailable' : 'available',
-				...(loaded?.plugin.configExample === undefined
-					? {}
-					: { configExample: loaded.plugin.configExample.options }),
+				...(loaded?.plugin.configExample !== undefined
+					? { configExample: loaded.plugin.configExample.options }
+					: contributed?.configExample === undefined
+						? {}
+						: { configExample: contributed.configExample }),
 				capabilities: {
 					tools: loaded?.registrations.tools?.length ?? 0,
 					prompts: loaded?.registrations.prompts?.length ?? 0,

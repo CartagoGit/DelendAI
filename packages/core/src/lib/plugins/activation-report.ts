@@ -59,8 +59,11 @@ export const buildActivationReport = (
 		),
 		...contributions.map(
 			(entry): IActivationEntry => ({
-				...entry,
+				id: entry.id,
+				origin: entry.origin,
 				active: entry.active ?? true,
+				source: entry.source,
+				toolCount: entry.toolCount,
 			}),
 		),
 	].sort(

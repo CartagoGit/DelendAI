@@ -244,10 +244,27 @@ declared settings in the editor.
   - "All copy exists in every language and server settings live under contributes.configuration with a manifest regression test."
 
 ### S5 — First-party and external plugin metadata adoption
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/*/src/configuration-metadata.ts`, `plugins/*/src/index.ts`, `plugins/*/README.md`
 - **DependsOn**: [S1]
 - **Gate**: type
+- **Evidence (2026-07-13)**:
+  - "A runtime-import regression walks every first-party plugin and requires an
+    `optionsSchema`; every declared `configExample` must parse through that
+    exact schema. JSON-schema defaults now populate absent controls without
+    writing them until the user changes a value."
+  - "Convention-compliant project-local plugins retain `user-local`
+    provenance and their loaded runtime schema in the Configuration Center;
+    the real CLI assembly regression covers this path."
+  - "The generic activation-contribution contract now carries optional child
+    configuration metadata without leaking it into the compact activation
+    report. `external-mcps` contributes each child's actual options,
+    `ServerEntrySchema` and safe example; core serializes them without knowing
+    external-plugin vocabulary. The UI renders individual enabled/version/
+    command/args/prefix/detect/env fields at the original nested config path
+    instead of an opaque blob. Cleartext env assignments remain rejected."
+  - "`external-mcps` itself now publishes a disabled, exactly pinned example
+    with environment-variable names only and explicit autonomy defaults."
 - acceptance:
   - "First-party plugins publish schemas/defaults/examples from their runtime source rather than duplicate hand-written property lists."
   - "User-local convention-compliant plugins appear automatically with declared metadata and user-local provenance."
