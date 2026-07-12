@@ -3,7 +3,7 @@ import { stat } from 'node:fs/promises';
 import { z } from 'zod';
 
 import type { IToolRegistration } from '@mcp-vertex/core/public';
-import { toolJson } from '@mcp-vertex/core/public';
+import { toolJson, withFileMutex } from '@mcp-vertex/core/public';
 
 import { runAgentLockEngine } from '../locks/agent-lock-engine';
 import { readJsonOrNull } from '../proposals/index-reader';
@@ -233,20 +233,28 @@ export const buildStateRepairRegistration = (
 					lockedBefore -
 					(await rawInFlightCount(options.lockPathAbs));
 
-				// 2) Expire due queue entries.
+				// 2) Expire due queue entries. x00097 S2 (audit a00052 #13):
+				// parse → sweep → persist is one transaction under the
+				// queue-file mutex, so the sweep's unconditional write can no
+				// longer clobber a concurrent enqueue.
 				let expiredCount = 0;
 				if (await fileExists(options.queuePathAbs)) {
-					const loaded = await parseQueue(
+					expiredCount = await withFileMutex(
 						options.queuePathAbs,
-						options.closedTasksPathAbs,
-						options.workspaceRoot,
+						async () => {
+							const loaded = await parseQueue(
+								options.queuePathAbs,
+								options.closedTasksPathAbs,
+								options.workspaceRoot,
+							);
+							const swept = await expireSweep(
+								loaded,
+								new Date().toISOString(),
+								options.queuePathAbs,
+							);
+							return swept.expiredCount;
+						},
 					);
-					const swept = await expireSweep(
-						loaded,
-						new Date().toISOString(),
-						options.queuePathAbs,
-					);
-					expiredCount = swept.expiredCount;
 				}
 
 				// 3) Force-release orphan agent assignments.

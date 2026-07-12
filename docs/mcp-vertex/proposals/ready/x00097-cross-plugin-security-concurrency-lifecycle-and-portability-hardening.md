@@ -41,7 +41,7 @@ requieren cambios contractuales o tests de carrera más amplios que un quick fix
 - **Files**: plugins/proposals/tests/src/lib/tools/queue-races.spec.ts
 - **Gate**: `bun run test`
 - **Status**: pending
-
+- status: done
 ### S3 — Usage rollup and shutdown lifecycle
 - **Files**: plugins/usage-tracking/src/lib/rollup.ts
 - **Files**: plugins/usage-tracking/src/lib/record-buffer.ts
