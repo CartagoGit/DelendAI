@@ -42,7 +42,7 @@ const ExpensiveCallSchema = z.object({
 });
 
 const OutputSchema = z.object({
-	groupBy: z.enum(['provider', 'plugin', 'agent', 'extension']),
+	groupBy: z.enum(['provider', 'plugin', 'agent', 'extension', 'model']),
 	windowDays: z.number(),
 	totals: z.object({
 		calls: z.number(),
@@ -88,17 +88,23 @@ export const buildReportToolRegistration = (
 	id: 'usage_report',
 	tags: ['usage-tracking', 'lazy'],
 	summary:
-		'Report usage/cost grouped by provider, plugin, agent or extension.',
+		'Report usage/cost grouped by provider, plugin, agent, extension or model.',
 	descriptionKey: 'usage-tracking_usage_report',
 	register: async (server) => {
 		server.registerTool(
 			`${options.namespacePrefix}_usage_report`,
 			{
 				description:
-					'Report recorded tool usage grouped by provider, plugin, agent or extension. Returns a totals block, the bucketed rollup for the chosen axis, and the top-10 most expensive calls (by cost, then duration) so you can inspect spend. Reads the append-only log on demand; no message content is ever recorded or returned.',
+					'Report recorded tool usage grouped by provider, plugin, agent, extension or model. Returns a totals block, the bucketed rollup for the chosen axis, and the top-10 most expensive calls (by cost, then duration) so you can inspect spend. Group by `model` to see which LLM spent what (calls with no model land in an `unattributed` bucket). Reads the append-only log on demand; no message content is ever recorded or returned.',
 				inputSchema: z.object({
 					groupBy: z
-						.enum(['provider', 'plugin', 'agent', 'extension'])
+						.enum([
+							'provider',
+							'plugin',
+							'agent',
+							'extension',
+							'model',
+						])
 						.optional(),
 					windowDays: z.number().positive().optional(),
 					filter: z
