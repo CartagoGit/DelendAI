@@ -137,18 +137,36 @@ declared settings in the editor.
   - "Default overview remains token-lean; detailed schemas and artifacts are lazy and paginated with outputSchema coverage."
 
 ### S2 — Safe merge-aware project config document service
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/client/src/lib/services/configuration-center.service.ts`, `packages/client/src/lib/contracts/interfaces/configuration-edit.interface.ts`, `packages/client/src/public/index.ts`
 - **DependsOn**: [S1]
 - **Gate**: type
-- **Progress (2026-07-12)**: the independent activation-writer safety finding is
-  hardened ahead of S1. `plugin-activation.service.ts` now treats only `ENOENT`
-  as an empty document; malformed/non-object JSON and read/permission failures
-  fail closed before mutation while the existing `withFileMutex` +
-  `writeFileAtomic` persistence path remains mandatory. Colocated regressions
-  cover absent-file creation, corrupt-byte preservation and I/O-error byte
-  preservation. The S2 document service, schema validation, optimistic digest,
-  secret policy and public contracts remain pending on S1.
+- **Evidence (2026-07-12)**:
+  - "Added a public host-neutral document contract and service with redacted
+    snapshots, exact-byte SHA-256 digests and path-based set/delete edits."
+  - "Each save re-reads under `withFileMutex`, compares the optimistic digest,
+    applies edits to the fresh document, validates core-owned fields with the
+    canonical schema and commits through `writeFileAtomic`; competing saves
+    deterministically produce one winner and one conflict."
+  - "Unknown root fields and untouched plugin path/prefix/options survive the
+    round trip. Missing-file deletion is a no-op; malformed/non-object JSON,
+    schema errors, invalid paths, non-JSON values and symlinked config files
+    fail closed without changing bytes."
+  - "Reads redact high-confidence credentials. Set operations reject
+    secret-named fields and secret-like values, while delete remains available
+    for removing an existing credential without surfacing it."
+  - "The earlier activation switchboard mutation remains hardened: only
+    `ENOENT` creates an empty document; parse and I/O failures preserve the
+    original file. Focused configuration/activation suites pass 18 tests and
+    root typecheck is green."
+  - "Incidental package-gate finding: the real-stdio client e2e resolved the
+    core CLI from `process.cwd()`, so `bun run --cwd packages/client test`
+    spawned a nonexistent path. It now resolves from `import.meta.url` and
+    passes from both repository and package working directories."
+  - "A clean dependency rebuild also exposed one stale compact-catalog
+    assumption in the web capability generator: core tools legitimately omit
+    their redundant plugin field. The generator now infers `core` from that
+    omission while preserving explicit external plugin ownership."
 - acceptance:
   - "ENOENT creates a new config; parse, permission and schema errors preserve original bytes and return actionable failures."
   - "Writes preserve unknown/unowned keys and untouched plugin path/prefix/options blocks, validate before commit, and use withFileMutex plus writeFileAtomic."
