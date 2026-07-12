@@ -49,8 +49,10 @@ describe('normalizeProposalStatus', () => {
 
 describe('readProposalsIndex', () => {
 	it('returns empty array when index does not exist', async () => {
-		const result = await readProposalsIndex('/workspace', 'cache', async () =>
-			undefined,
+		const result = await readProposalsIndex(
+			'/workspace',
+			'cache',
+			async () => undefined,
 		);
 		expect(result).toEqual([]);
 	});
@@ -138,11 +140,7 @@ describe('readProposalsIndex', () => {
 
 	it('derives kind from id prefix when kind is missing', async () => {
 		const index = {
-			proposals: [
-				{ id: 'f00100' },
-				{ id: 'r00003' },
-				{ id: 'x00052' },
-			],
+			proposals: [{ id: 'f00100' }, { id: 'r00003' }, { id: 'x00052' }],
 		};
 		const result = await readProposalsIndex(
 			'/workspace',
