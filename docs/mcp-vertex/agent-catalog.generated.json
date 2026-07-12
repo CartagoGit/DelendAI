@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-07-12T23:39:04.062Z",
+	"generatedAt": "2026-07-12T23:41:11.774Z",
 	"mode": "compact",
 	"tools": [
 		{
@@ -706,13 +706,6 @@
 				"kind": "feat"
 			},
 			{
-				"id": "f00112",
-				"title": "f00112",
-				"track": "configuration-center",
-				"status": "ready",
-				"kind": "feat"
-			},
-			{
 				"id": "r00008",
 				"title": "r00008",
 				"track": "ui-architecture",
@@ -728,11 +721,11 @@
 			}
 		],
 		"byStatus": {
-			"ready": 9,
+			"ready": 8,
 			"in-progress": 0,
 			"review": 4,
 			"paused": 1,
-			"done": 194,
+			"done": 195,
 			"blocked": 0,
 			"retired": 0,
 			"unspecified": 0
