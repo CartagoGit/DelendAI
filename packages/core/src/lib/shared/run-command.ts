@@ -1,7 +1,16 @@
 import { spawn } from 'node:child_process';
 
 import { killProcessGroup } from '../commands/process-group';
+import type {
+	IRunArgvOptions,
+	IRunArgvOutcome,
+} from '../contracts/interfaces/run-command.interface';
 import { withFileMutex } from './with-file-mutex';
+
+export type {
+	IRunArgvOptions,
+	IRunArgvOutcome,
+} from '../contracts/interfaces/run-command.interface';
 
 /**
  * Shared command runner for plugins that need to spawn a real process
@@ -106,23 +115,6 @@ export const runCommand = async (
 		? withFileMutex(options.lockPath, run)
 		: run();
 };
-
-/** Outcome of {@link runArgv}: stdout and stderr stay separate. */
-export interface IRunArgvOutcome {
-	readonly code: number;
-	readonly stdout: string;
-	readonly stderr: string;
-	readonly timedOut: boolean;
-}
-
-export interface IRunArgvOptions {
-	/** Working directory. Optional — argv tools are often cwd-agnostic. */
-	readonly cwd?: string;
-	/** Kill the process after this many ms. Default 600000 (10 min). */
-	readonly timeoutMs?: number;
-	/** Cap captured bytes per stream. Default 64KiB. */
-	readonly maxOutputBytes?: number;
-}
 
 /**
  * x00097 S5: argv-first async runner — NO shell, ever. The first element

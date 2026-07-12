@@ -27,6 +27,8 @@ export interface IRenderDashboardOptions {
 
 const CLIENT_SCRIPT = `
 (function () {
+	const host =
+		typeof acquireVsCodeApi === 'function' ? acquireVsCodeApi() : null;
   const panels = document.querySelectorAll('.mcpv-panel');
   // Only real tabs participate in selection + the roving tabindex; the
   // refresh button is an action (no role="tab"), so it is excluded
@@ -57,6 +59,19 @@ const CLIENT_SCRIPT = `
       selectTab(tabs[next], true);
     });
   });
+	const refresh = document.querySelector('[data-action="refresh"]');
+	refresh?.addEventListener('click', () => {
+		host?.postMessage({ command: 'action', action: 'refresh' });
+	});
+	document.addEventListener('click', (evt) => {
+		const target = evt.target;
+		if (!(target instanceof Element)) return;
+		const proposal = target.closest('[data-proposal]');
+		const id = proposal?.getAttribute('data-proposal');
+		if (!id) return;
+		evt.preventDefault();
+		host?.postMessage({ command: 'openProposal', id });
+	});
   const toolsTable = document.querySelector('.mcpv-tools-table');
   if (toolsTable) {
     const tbody = toolsTable.querySelector('tbody');

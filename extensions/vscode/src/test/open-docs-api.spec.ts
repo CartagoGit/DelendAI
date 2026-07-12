@@ -33,8 +33,8 @@ const createVscode = (pick?: string) => {
 				messages.push(message);
 				return undefined;
 			},
-			async showQuickPick() {
-				return pick;
+			async showQuickPick(items) {
+				return items.find((item) => item.id === pick);
 			},
 		},
 	};

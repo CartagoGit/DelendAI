@@ -107,11 +107,9 @@ export const registerOpenDocsApiCommand = (deps: {
 				detail: t.detail,
 			})),
 		);
-		// The quick-pick wrapper returns the selected id (or label). Fall
-		// back to the first target if the user dismissed the picker.
-		const target =
-			targets.find((t) => t.id === picked || t.label === picked) ??
-			targets[0];
+		// Object-item QuickPick returns the selected object. Fall back to the
+		// first target if the user dismissed the picker.
+		const target = targets.find((t) => t.id === picked?.id) ?? targets[0];
 		if (target === undefined) return undefined;
 
 		const embed = new EmbedService(deps.options ?? {});

@@ -57,8 +57,8 @@ describe('plugin activation command', () => {
 				},
 				window: {
 					createWebviewPanel: () => ({ webview: { html: '' } }),
-					async showQuickPick() {
-						return 'git';
+					async showQuickPick(items) {
+						return items[0];
 					},
 					async showInformationMessage(_message, action) {
 						return action;

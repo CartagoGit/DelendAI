@@ -76,10 +76,15 @@ and every gate stays green. For an npm-perfection bar, that is the gap.
 
 ### S2 — Audit + fix style regressions
 
-- **Status**: pending
+- **Status**: in-progress
 - **Files**: `apps/web/src/styles/**`, `apps/shared/src/styles/**`, `packages/ui-extension/src/**`, `extensions/vscode/src/**`
 - **Gate**: bun run site
 - **Acceptance**:
+	- "Verified runtime finding (2026-07-12): `bun run dev:vscode` remained on `Cargando renderers…` because the dev spawn resolver ignored the canonical `.vscode/mcp.json` declaration and fell through to the nonexistent `bun run mcp-vertex`; additionally, the successful `/api/dashboard` response was a direct model while the browser only read `data.model`. Repair resolves JSONC workspace settings first, then `.vscode/mcp.json`, expands `${workspaceFolder}`, accepts both additive response shapes, and pins command resolution with regression specs."
+	- "Verified visual/runtime findings (2026-07-12): dashboard markup emitted inactive panels and shared `mcpv-tabs__*` classes without the matching visibility/shared-tab CSS, omitted the token composition needed by the real extension webview, and rendered refresh/proposal actions without posting to the already-registered VS Code host bridge. Repair imports the canonical token/tab styles, hides inactive panels, restores the responsive grid/banner/header composition, injects quick-start styles, adds the missing action bridge, and pins tab markup + bridge output with specs."
+	- "Verified site-build finding (2026-07-12): shared `_stepper.scss` emitted Astro-only `:global(pre)` into ordinary compiled CSS; Lightning CSS rejected it as an invalid pseudo-class, so rich step code blocks could miss their spacing. Repair uses the real descendant selector and the production site build is the regression gate."
+	- "Verified routing finding (2026-07-12): `[lang]/plugins.astro` and `[lang]/plugins/index.astro` were byte-equivalent route owners for the same localized URL, making Astro discard one route for every non-default locale. Repair removes the duplicate index owner and keeps the repository's established top-level collection convention."
+	- "Verified extension-gate finding (2026-07-12): the VS Code package typecheck included browser preview sources but inherited the repo's server-only `ES2022` library, producing unresolved `document`, `window`, animation-frame and DOM element types throughout `src/dev`. Repair scopes DOM libraries to the VS Code package so its own `type` script becomes a meaningful green gate without polluting core packages."
   - "Visual audit of the web + extension surfaces for broken/mismatched styles (post f00102/f00103): wrong tokens, missing responsive rules, mcpv-* rename fallout, shared-vs-local class collisions. Each fixed to match the design; the f00099 style-integrity + f00102 shared-ui ratchets stay green."
   - "Real `bun run site` + a build of the extension dev preview (f00103 dev-mode) render the affected surfaces correctly."
 

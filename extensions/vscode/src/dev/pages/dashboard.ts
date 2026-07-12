@@ -70,16 +70,26 @@ const fetchDashboardBody = async (lang: Lang): Promise<string | null> => {
 	try {
 		const res = await fetch('/api/dashboard');
 		if (!res.ok) return null;
-		const data = (await res.json()) as
-			| { ok: true; model: unknown }
-			| { ok: false; kind: string; message: string };
-		if ('ok' in data && data.ok !== true) return null;
+		const data = (await res.json()) as unknown;
+		if (data === null || typeof data !== 'object') return null;
+		if ('ok' in data && (data as { ok?: unknown }).ok === false)
+			return null;
+		// `/api/dashboard` historically returned the model directly, while
+		// this consumer expected `{ ok: true, model }`. Accept both shapes so
+		// the preview works across the additive envelope migration instead of
+		// silently passing `undefined` to the renderer.
+		const model =
+			'ok' in data &&
+			(data as { ok?: unknown }).ok === true &&
+			'model' in data
+				? (data as { model: unknown }).model
+				: data;
 		const { renderDashboard } = await import(
 			'@mcp-vertex/ui-extension/webview'
 		);
 		const html = renderDashboard(
 			// eslint-disable-next-line @typescript-eslint/no-explicit-any
-			data.model as any,
+			model as any,
 			{
 				docsUrl: 'https://cartagogit.github.io/mcp-vertex/',
 				refreshCommand: 'mcp-vertex.refresh',
@@ -150,6 +160,7 @@ export const createDashboardPage = (options: IDashboardPageOptions): IPage => ({
 		// Configured: fetch the live dashboard body. Lazy-load
 		// the quick-start menu renderer (separate concern: it
 		// has its own sessionStorage helpers).
+		ensureWizardStyles();
 		const real = await fetchDashboardBody(deps.lang);
 		const { isQuickStartDismissed, renderQuickStartMenu } = await import(
 			'@mcp-vertex/shared/components/dev/welcome'

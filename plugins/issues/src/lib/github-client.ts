@@ -29,11 +29,14 @@
 
 import { spawn as nodeSpawn } from 'node:child_process';
 
+import type { ISpawn } from './contracts/interfaces/github-client.interface';
 import type {
 	IGithubComment,
 	IGithubIssueDetail,
 	IGithubIssueSummary,
 } from './contracts/issue.types';
+
+export type { ISpawn } from './contracts/interfaces/github-client.interface';
 
 export type IGithubClientTier = 'gh' | 'rest-authed' | 'rest-anon';
 
@@ -60,18 +63,6 @@ export type ISpawnSync = (cmd: readonly string[]) => {
 	readonly stdout: Uint8Array;
 	readonly stderr: Uint8Array;
 };
-
-/**
- * x00097 S5 (audit a00052 #16): the spawn seam is ASYNC and argv-first.
- * The old default (`Bun.spawnSync`) blocked the event loop for the whole
- * `gh api` round-trip and tied the plugin to one runtime; the default is
- * now `node:child_process.spawn`, portable across Bun and Node.
- */
-export type ISpawn = (cmd: readonly string[]) => Promise<{
-	readonly exitCode: number;
-	readonly stdout: Uint8Array;
-	readonly stderr: Uint8Array;
-}>;
 
 /** Injectable subset of the global `fetch` this module needs (testability). */
 export type IFetchFn = (
