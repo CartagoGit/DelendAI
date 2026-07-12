@@ -50,9 +50,19 @@ The data already exists but is not surfaced by model:
 
 So today you can see "the session saved N tokens" but never "gpt-5-codex
 saved X, claude-sonnet saved Y" — which is exactly the number that tells you
-whether routing a task to a given model through mcp-vertex paid off. The
-savings mechanic (compaction f00090, compact overview, grouped tool catalog)
-already tracks bytes-saved; this proposal joins that to the per-call model.
+whether routing a task to a given model through mcp-vertex paid off.
+
+**Reality check on savings (verified 2026-07-08):** per-model SPEND and
+TOKENS are directly available (`IInvocationRecord.model` + `.usage`). But
+`tokensSaved` is NOT stored per call — the dashboard computes it as a
+session-level heuristic, `estimateTokensSaved(totals.totalBytes)`
+(`packages/client/src/lib/services/dashboard.service.ts:177`), from the
+metrics registry's byte totals (compact overview / compaction). So
+attributing savings to a specific model requires **stamping a per-call
+`tokensSaved` at the moment the saving happens** (compaction/compact-overview
+knows the bytes it dropped and the model in the active session). S1 adds that
+field; without it, only spend/tokens are per-model and savings stays a
+session total.
 
 ## non-goals
 
@@ -66,15 +76,23 @@ already tracks bytes-saved; this proposal joins that to the per-call model.
 
 - global_gate: validate
 
-### S1 — `usage_report` group-by model + per-model savings
+### S1a — `usage_report` group-by model (spend + tokens; directly available)
 
 - **Status**: pending
 - **Files**: `plugins/usage-tracking/src/lib/types.ts`, `plugins/usage-tracking/src/lib/rollup.ts`, `plugins/usage-tracking/src/lib/tools/report.tool.ts`, `plugins/usage-tracking/tests/src/lib/rollup.spec.ts`
 - **Gate**: bun run typecheck && bun run test
 - **Acceptance**:
-  - "`GroupByAxis` gains `'model'` (keyed by `provider/modelId`); the rollup buckets calls whose `model` is known and reports `{ calls, tokens, costUsd, tokensSaved, savingsPercent }` per model. Calls with `model: null` (plain plugin/core calls) fall into an explicit `unattributed` bucket, never silently dropped."
-  - "`tokensSaved` per bucket is joined from the existing savings counters (compaction/compact-overview) by the same correlation key the log already carries; a spec pins that per-model savings sum to the session total (no double count)."
-  - "outputSchema literal-precise; `bun run types:generate` clean."
+  - "`GroupByAxis` gains `'model'` (keyed by `provider/modelId`); the rollup buckets calls whose `model` is known and reports `{ calls, tokens, costUsd }` per model. Calls with `model: null` fall into an explicit `unattributed` bucket, never silently dropped. A spec pins the model buckets sum to the session totals."
+  - "outputSchema literal-precise; `bun run types:generate` clean. This slice ships without touching the savings mechanic — spend/tokens per model is the immediately-available half."
+
+### S1b — Per-call `tokensSaved` stamp (makes savings attributable)
+
+- **Status**: pending
+- **Files**: `plugins/usage-tracking/src/lib/types.ts`, `plugins/usage-tracking/src/lib/record.ts`, the compaction/compact-overview save sites that know the dropped bytes, `plugins/usage-tracking/tests/src/lib/record.spec.ts`
+- **Depends on**: S1a
+- **Gate**: bun run typecheck && bun run test
+- **Acceptance**:
+  - "`IInvocationRecord` gains an optional `tokensSaved` (older rows parse as 0). The saving is stamped at the moment it happens (the compaction / compact-overview path that already knows the bytes dropped, converted via the same `estimateTokensSaved` heuristic), attributed to the active session's model. The model rollup then reports `{ …, tokensSaved, savingsPercent }`; a spec pins per-model savings sum to the session total (no double count vs the metrics-registry estimate — pick ONE source of truth and document it)."
 
 ### S2 — By-model savings/cost builder (ui-extension)
 

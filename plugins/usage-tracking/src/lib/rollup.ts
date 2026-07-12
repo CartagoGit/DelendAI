@@ -82,6 +82,14 @@ const axisKey = (record: IInvocationRecord, axis: GroupByAxis): string => {
 			return record.agent.id;
 		case 'extension':
 			return record.agent.extension;
+		case 'model':
+			// f00106 S1a: attribute spend/tokens to the LLM that handled the
+			// call. Only orchestrated calls carry a model; plain plugin/core
+			// calls (model: null) collect in an explicit `unattributed`
+			// bucket so nothing is silently dropped.
+			return record.model
+				? `${record.model.provider}/${record.model.modelId}`
+				: 'unattributed';
 	}
 };
 
