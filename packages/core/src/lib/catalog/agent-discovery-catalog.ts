@@ -16,16 +16,17 @@ const sortBy = <T>(items: readonly T[], select: (item: T) => string): T[] =>
 const cloneTool = (
 	tool: IToolSummary,
 	mode: 'compact' | 'full',
+	corePlugin: string,
 ): IToolSummary => {
 	if (mode === 'compact') {
 		return {
 			name: tool.name,
-			plugin: tool.plugin,
+			...(tool.plugin === corePlugin ? {} : { plugin: tool.plugin }),
 		};
 	}
 	return {
 		name: tool.name,
-		plugin: tool.plugin,
+		...(tool.plugin !== undefined ? { plugin: tool.plugin } : {}),
 		...(tool.summary !== undefined ? { summary: tool.summary } : {}),
 		...(tool.tags !== undefined ? { tags: [...tool.tags] } : {}),
 		...(tool.effects !== undefined ? { effects: [...tool.effects] } : {}),
@@ -55,13 +56,18 @@ const cloneProvider = (provider: IProviderSummary): IProviderSummary => ({
 	strengths: [...provider.strengths],
 });
 
-const cloneProposal = (proposal: IProposalSummary): IProposalSummary => ({
+const cloneProposal = (
+	proposal: IProposalSummary,
+	mode: 'compact' | 'full',
+): IProposalSummary => ({
 	id: proposal.id,
 	title: proposal.title,
 	track: proposal.track,
 	status: proposal.status,
 	kind: proposal.kind,
-	date: proposal.date,
+	...(mode === 'full' && proposal.date !== undefined
+		? { date: proposal.date }
+		: {}),
 });
 
 export const buildCatalog = (
@@ -86,9 +92,13 @@ export const buildCatalog = (
 				)
 			: allProposals;
 
-	const tools = allTools.map((tool) => cloneTool(tool, opts.mode));
+	const tools = allTools.map((tool) =>
+		cloneTool(tool, opts.mode, opts.server.namespacePrefix),
+	);
 	const skills = allSkills.map(cloneSkill);
-	const proposals = visibleProposals.map(cloneProposal);
+	const proposals = visibleProposals.map((proposal) =>
+		cloneProposal(proposal, opts.mode),
+	);
 
 	// Providers: omitted (not `[]`) when the roster is absent or empty so
 	// existing payloads never churn, and pruned from compact mode entirely —

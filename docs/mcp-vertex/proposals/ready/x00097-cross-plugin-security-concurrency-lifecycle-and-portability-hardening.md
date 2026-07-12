@@ -33,38 +33,49 @@ requieren cambios contractuales o tests de carrera más amplios que un quick fix
 - **Files**: plugins/external-mcps/src/lib/tools/invoke-proxy.ts
 - **Files**: plugins/external-mcps/tests/src/lib/plugin-composition.spec.ts
 - **Gate**: `bun run test`
-- **Status**: pending
-- status: done
+- **Status**: done
 ### S2 — Proposal queue RMW mutex coverage
 - **Files**: plugins/proposals/src/lib/tools/state-tools.tool.ts
 - **Files**: plugins/proposals/src/lib/tools/agent-names.tool.ts
 - **Files**: plugins/proposals/tests/src/lib/tools/queue-races.spec.ts
 - **Gate**: `bun run test`
-- **Status**: pending
-- status: done
+- **Status**: done
 ### S3 — Usage rollup and shutdown lifecycle
 - **Files**: plugins/usage-tracking/src/lib/rollup.ts
 - **Files**: plugins/usage-tracking/src/lib/record-buffer.ts
 - **Files**: plugins/usage-tracking/src/index.ts
 - **Files**: plugins/usage-tracking/tests/src/lib/lifecycle-races.spec.ts
 - **Gate**: `bun run test`
-- **Status**: pending
-- status: done
+- **Status**: done
+
+### S3b — Usage buffer registry and deterministic plugin cleanup
+- **Finding (2026-07-12)**: the full-suite gate reproduced an `ENOENT` where a
+  delayed append outlived the plugin test workspace. `RecordBuffer` retained
+  every constructed instance forever, including settled buffers, and the
+  plugin specs used wall-clock sleeps without awaiting the actual append.
+- **Resolution**: track a buffer only while it owns pending/in-flight work,
+  unregister it after a complete drain, and make plugin cleanup await
+  `drainLiveBuffers()` before deleting its workspace.
+- **Files**: plugins/usage-tracking/src/lib/record-buffer.ts
+- **Files**: plugins/usage-tracking/tests/src/lib/plugin.spec.ts
+- **Files**: plugins/usage-tracking/tests/src/lib/lifecycle-races.spec.ts
+- **Gate**: `bun run test`
+- **Status**: done
+
 ### S4 — Streaming byte cap
 - **Files**: plugins/web-fetch/src/lib/services/engine.ts
 - **Files**: plugins/web-fetch/src/lib/contracts/interfaces/fetch.interface.ts
 - **Files**: plugins/web-fetch/tests/src/lib/services/engine.spec.ts
 - **Gate**: `bun run test`
-- **Status**: pending
-- status: done
+- **Status**: done
+
 ### S5 — Async portable process runners
 - **Files**: packages/core/src/lib/shared/run-command.ts
 - **Files**: plugins/quality/src/lib/services/runner.ts
 - **Files**: plugins/issues/src/lib/github-client.ts
 - **Files**: plugins/rules/src/lib/tools/rules-tools.ts
 - **Gate**: `bun run test`
-- **Status**: pending
-- status: done
+- **Status**: done
 ### S6 — Protected push destination and force policy
 - **Files**: plugins/git/src/lib/tools/write-tools.ts
 - **Files**: plugins/git/tests/src/lib/tools/write-tools.spec.ts

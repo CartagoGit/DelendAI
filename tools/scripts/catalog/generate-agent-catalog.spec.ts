@@ -265,8 +265,8 @@ describe('generate-agent-catalog script', async () => {
 				},
 			);
 			expect(result.artifact.tools).toEqual([
-				{ name: 'mcp-vertex_git_status', plugin: 'mcp-vertex' },
-				{ name: 'mcp-vertex_overview', plugin: 'mcp-vertex' },
+				{ name: 'mcp-vertex_git_status' },
+				{ name: 'mcp-vertex_overview' },
 			]);
 		});
 	});

@@ -33,14 +33,14 @@ export const TOOL_SEARCH_COMMAND = 'mcp-vertex.toolSearch';
 const toolItemsOf = (
 	tools: ReadonlyArray<{
 		readonly name: string;
-		readonly plugin: string;
+		readonly plugin?: string;
 		readonly summary?: string;
 	}>,
 ): IQuickPickItem[] =>
 	tools.map((tool) => ({
 		id: `tool:${tool.name}`,
 		label: tool.name,
-		description: `Tools · ${tool.plugin}`,
+		description: `Tools · ${tool.plugin ?? 'mcp-vertex'}`,
 		...(tool.summary === undefined ? {} : { detail: tool.summary }),
 	}));
 

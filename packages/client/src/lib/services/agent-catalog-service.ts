@@ -60,7 +60,7 @@ const includesQuery = (fields: readonly string[], query: string): boolean => {
 const cloneTools = (tools: readonly IToolSummary[]): IToolSummary[] =>
 	tools.map((tool) => ({
 		name: tool.name,
-		plugin: tool.plugin,
+		...(tool.plugin === undefined ? {} : { plugin: tool.plugin }),
 		...(tool.summary === undefined ? {} : { summary: tool.summary }),
 		...(tool.tags === undefined ? {} : { tags: [...tool.tags] }),
 		...(tool.effects === undefined ? {} : { effects: [...tool.effects] }),
@@ -92,7 +92,7 @@ const filterTools = (
 			includesQuery(
 				[
 					tool.name,
-					tool.plugin,
+					tool.plugin ?? '',
 					tool.summary ?? '',
 					...(tool.tags ?? []),
 				],

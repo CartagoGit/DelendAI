@@ -155,4 +155,22 @@ describe('usage-tracking lifecycle races (x00097 S3)', () => {
 		expect(readLines(logPath)).toHaveLength(1);
 		expect(buffer.bufferedCount).toBe(0);
 	});
+
+	it('stops tracking a buffer after its queued work is durable', async () => {
+		let closeCalls = 0;
+		class ObservedBuffer extends RecordBuffer {
+			override async close(): Promise<void> {
+				closeCalls += 1;
+				await super.close();
+			}
+		}
+
+		const buffer = new ObservedBuffer(join(dir, 'settled.jsonl'));
+		buffer.push({ id: 'settled' });
+		await buffer.flush();
+		await drainLiveBuffers();
+
+		expect(closeCalls).toBe(0);
+		expect(readLines(join(dir, 'settled.jsonl'))).toHaveLength(1);
+	});
 });

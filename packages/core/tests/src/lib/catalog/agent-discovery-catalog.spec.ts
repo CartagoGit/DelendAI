@@ -186,10 +186,22 @@ describe('buildCatalog', async () => {
 			'c00002',
 			'f00056',
 		]);
+		expect(
+			compact.proposals.every((entry) => entry.date === undefined),
+		).toBe(true);
+		expect(compact.tools).toEqual([
+			{ name: 'mcp-vertex_agent_catalog' },
+			{ name: 'mcp-vertex_search_search', plugin: 'search' },
+		]);
 		expect(full.proposals.map((entry) => entry.id)).toEqual([
 			'a00001',
 			'c00002',
 			'f00056',
+		]);
+		expect(full.proposals.map((entry) => entry.date)).toEqual([
+			'2026-06-15',
+			'2026-06-21',
+			'2026-06-25',
 		]);
 	});
 

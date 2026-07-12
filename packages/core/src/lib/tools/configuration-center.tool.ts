@@ -25,15 +25,13 @@ export const buildConfigurationCenterToolRegistration = (
 	snapshot: () => IConfigurationCenterSnapshot,
 ): IToolRegistration => ({
 	id: 'configuration_center',
-	summary:
-		'Inspect project config, plugins and owned artifacts lazily with provenance.',
 	tags: ['configuration', 'lazy'],
 	register: async (server) => {
 		server.registerTool(
 			`${namespacePrefix}_configuration_center`,
 			{
 				description:
-					'Lazy, read-only Configuration Center introspection. Start with section=summary; request config, plugins or artifacts only when needed. Lists are paginated.',
+					'Read-only Configuration Center. Start with summary; other sections are lazy and paginated.',
 				inputSchema: z.object({
 					section: SECTION.optional(),
 					cursor: z.number().int().nonnegative().optional(),

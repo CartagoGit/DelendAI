@@ -5,7 +5,8 @@ export type CatalogSection = 'tools' | 'skills' | 'proposals';
 
 export interface IToolSummary {
 	readonly name: string;
-	readonly plugin: string;
+	/** Omitted for core tools in compact responses (infer from namespace). */
+	readonly plugin?: string;
 	readonly summary?: string;
 	readonly tags?: readonly string[];
 	readonly effects?: readonly IToolEffect[];
@@ -47,7 +48,8 @@ export interface IProposalSummary {
 		| 'plan'
 		| 'audit'
 		| 'unspecified';
-	readonly date: string;
+	/** Omitted from compact responses; full catalogs retain it. */
+	readonly date?: string;
 }
 
 export interface ICatalogCounts {
