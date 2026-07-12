@@ -288,8 +288,8 @@ describe('git_commit / git_push (S9)', async () => {
 
 			expect(result.isError).toBe(true);
 			expect(
-				(result.structuredContent as { error: { reason: string } }).error
-					.reason,
+				(result.structuredContent as { error: { reason: string } })
+					.error.reason,
 			).toContain('protected branch "main"');
 		});
 
