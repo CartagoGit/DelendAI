@@ -23,10 +23,7 @@ import type { IMcpPluginContext } from '@mcp-vertex/core/public';
 
 import plugin from '../../../src/index';
 import { recordDegradation } from '../../../src/lib/circuit-breaker';
-import {
-	drainLiveBuffers,
-	RecordBuffer,
-} from '../../../src/lib/record-buffer';
+import { drainLiveBuffers, RecordBuffer } from '../../../src/lib/record-buffer';
 import { regenerateSummary } from '../../../src/lib/rollup';
 import type { IDegradation, IUsageSummary } from '../../../src/lib/types';
 
