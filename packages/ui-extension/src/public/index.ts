@@ -97,6 +97,23 @@ export {
 export type { SharedUiStringKey } from '../strings/shared-ui-strings';
 export { renderKnowledgeNavigator } from '../knowledge/render-knowledge-navigator';
 export type { IRenderKnowledgeNavigatorOptions } from '../knowledge/render-knowledge-navigator';
+export { buildConfigurationCenterModel } from '../configuration-center/configuration-center-model';
+export { buildConfigurationFields } from '../configuration-center/configuration-center-fields';
+export { renderConfigurationCenter } from '../configuration-center/render-configuration-center';
+export type {
+	ConfigurationCenterState,
+	ConfigurationCenterTab,
+	ConfigurationFieldKind,
+	IConfigurationArtifactModel,
+	IConfigurationCenterCopy,
+	IConfigurationCenterModel,
+	IConfigurationCenterSource,
+	IConfigurationCenterTabModel,
+	IConfigurationField,
+	IConfigurationPluginModel,
+	IConfigurationProviderModel,
+	IRenderConfigurationCenterOptions,
+} from '../contracts/interfaces/configuration-center.interface';
 export { renderSettings } from '../settings/render-settings';
 export type { IRenderSettingsOptions } from '../settings/render-settings';
 export {
