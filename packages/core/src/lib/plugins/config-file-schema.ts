@@ -163,6 +163,10 @@ export const CONFIG_FILE_SCHEMA = z
 			.record(
 				z.string(),
 				z.object({
+					enabled: z.boolean().optional(),
+					origin: z
+						.enum(['bundled', 'user-local', 'external'])
+						.optional(),
 					prefix: z.string().optional(),
 					options: z.record(z.string(), z.unknown()).optional(),
 					// f00087 S1: explicit module path for a local plugin.

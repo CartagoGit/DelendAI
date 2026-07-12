@@ -108,4 +108,45 @@ describe('buildActivationReport (f00107 S2)', () => {
 			external: 0,
 		});
 	});
+
+	it('merges plugin-contributed child surfaces without plugin vocabulary in core', () => {
+		const report = buildActivationReport(
+			[facts({ name: 'external-mcps', toolCount: 7 })],
+			sources({ fromConfig: new Set(['external-mcps']) }),
+			[
+				{
+					id: 'ext.filesystem',
+					origin: 'external',
+					source: 'config',
+					toolCount: 0,
+				},
+			],
+		);
+
+		expect(report.entries.map((entry) => entry.id)).toEqual([
+			'external-mcps',
+			'ext.filesystem',
+		]);
+		expect(report.counts).toEqual({
+			bundled: 1,
+			'user-local': 0,
+			external: 1,
+		});
+		expect(report.totalTools).toBe(7);
+	});
+
+	it('keeps inactive contributions visible without counting their tools', () => {
+		const report = buildActivationReport([], sources({}), [
+			{
+				id: 'git',
+				origin: 'bundled',
+				source: 'config',
+				active: false,
+				toolCount: 9,
+			},
+		]);
+		expect(report.entries[0]?.active).toBe(false);
+		expect(report.counts.bundled).toBe(0);
+		expect(report.totalTools).toBe(0);
+	});
 });

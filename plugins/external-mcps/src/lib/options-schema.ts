@@ -95,6 +95,8 @@ const EnvVarNameSchema = z.string().superRefine((value, ctx) => {
 /** One declared external server (transport + pin + namespace + detect). */
 export const ServerEntrySchema = z
 	.object({
+		/** Config switchboard override; disabled entries stay visible but never boot. */
+		enabled: z.boolean().optional(),
 		/** REQUIRED exact semver pin (never `latest` — see VersionSchema). */
 		version: VersionSchema,
 		/** Executable that boots the server (e.g. `npx`, `uvx`, `docker`). */

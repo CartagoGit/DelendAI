@@ -182,6 +182,11 @@ export type {
 // mcp-vertex core or its internal plugins. Reuses the f00087 scaffold +
 // writer machinery.
 export { authorPlugin } from '../lib/scaffold/author-plugin';
+export { setPluginActivation } from '../lib/services/plugin-activation.service';
+export type {
+	ISetPluginActivationInput,
+	ISetPluginActivationResult,
+} from '../lib/contracts/interfaces/plugin-activation.interface';
 export type {
 	IAuthorPluginOptions,
 	IAuthorPluginRegistration,

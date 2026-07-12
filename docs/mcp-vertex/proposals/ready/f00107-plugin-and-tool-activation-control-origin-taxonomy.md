@@ -89,12 +89,16 @@ token cost of every call the LLM makes.
 
 ### S3 — Extension selection UI (toggle + origin badges)
 
-- **Status**: pending
-- **Files**: `packages/ui-extension/src/dashboard/builders/plugin-switchboard.builder.ts`, `packages/ui-extension/src/contracts/interfaces/plugin-switchboard.interface.ts`, `extensions/vscode/src/commands/plugin-activation.ts`, `extensions/vscode/src/i18n/plugin-switchboard.strings.ts`, `extensions/vscode/package.json`, `tools/scripts/lint/cli-ui-parity.map.json`
+- **Status**: done
+- **Files**: `packages/ui-extension/src/dashboard/builders/plugin-switchboard.builder.ts`, `packages/ui-extension/src/contracts/interfaces/plugin-switchboard.interface.ts`, `packages/client/src/lib/services/plugin-activation.service.ts`, `extensions/vscode/src/commands/plugin-activation.ts`, `extensions/vscode/src/i18n/plugin-switchboard.strings.ts`, `extensions/vscode/package.json`, `tools/scripts/lint/cli-ui-parity.map.json`, config/activation contracts + colocated specs
 - **Depends on**: S2
 - **Gate**: bun run lint && cd extensions/vscode && bun run test
 - **Acceptance**:
-  - "A switchboard render-model (pure builder, mcpv-* classes) grouped by origin with a per-plugin tool count + an on/off state; the vscode command writes the toggle into `mcp-vertex.config.json` (merge-aware) and prompts a restart. Each origin tier has a distinct badge (ours / yours / external). 12-lang strings; parity map updated; degrades to opt-in hint when the introspection surface is unavailable."
+  - "A pure host-agnostic switchboard builder groups stable rows by origin in ours / yours / external order, with tool count, source, current state and next toggle state. Missing activation introspection degrades to an actionable compatibility hint."
+  - "The VS Code `Manage Plugin Activation` QuickPick requests `overview { compact:true, activation:true }`, renders distinct origin/state badges, persists the selected inverse state, and offers a one-click MCP server restart. Copy is complete in all 12 languages; command/contribution and CLI↔UI parity ratchets are updated."
+  - "Persistent native overrides use `plugins.<id>.enabled`; `false` suppresses even preset/CLI selections and inactive entries stay in overview for re-enabling. The last known `origin` is stored beside the override so an unloaded bare package is never misclassified."
+  - "External children use `plugins.external-mcps.options.servers.<id>.enabled`; disabled children remain visible but are filtered from the lazy subprocess registry. Their pinned command/version/env definition is preserved."
+  - "Config writes live in reusable `@mcp-vertex/client` service code and use `withFileMutex` + `writeFileAtomic`; native entries preserve path/prefix/options, external entries preserve their full definition, and repeated writes are idempotent."
 
 ### S4 — Web catalog parity + docs
 

@@ -44,6 +44,7 @@ describe('config-file-schema (Solid SRP extraction)', async () => {
 			const res = CONFIG_FILE_SCHEMA.safeParse({
 				plugins: {
 					proposals: {
+						enabled: false,
 						prefix: 'work',
 						options: { validationCommand: 'bun run validate' },
 					},
@@ -366,6 +367,7 @@ describe('IMcpVertexConfigFile ISP segregation', async () => {
 
 	it('IMcpVertexPluginConfig keeps the per-plugin {prefix, options} contract', async () => {
 		const pc: IMcpVertexPluginConfig = {
+			enabled: false,
 			prefix: 'work',
 			options: { docsDir: '/x' },
 		};
@@ -373,6 +375,7 @@ describe('IMcpVertexConfigFile ISP segregation', async () => {
 			plugins: { proposals: pc },
 		};
 		expect(asConfig.plugins?.proposals?.prefix).toBe('work');
+		expect(asConfig.plugins?.proposals?.enabled).toBe(false);
 		expect(asConfig.plugins?.proposals?.options).toEqual({ docsDir: '/x' });
 	});
 
