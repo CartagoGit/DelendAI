@@ -160,33 +160,34 @@ export const registerToolSearchCommand = (deps: ICommandDeps) =>
 
 			const picked = await deps.vscode.window.showQuickPick?.(items);
 			if (picked === undefined) return;
+			const pickedId = picked.id;
 
-			if (picked.startsWith('tool:')) {
-				const toolName = picked.slice('tool:'.length);
+			if (pickedId.startsWith('tool:')) {
+				const toolName = pickedId.slice('tool:'.length);
 				const result = await deps.client.request(toolName, {});
 				await deps.vscode.window.showInformationMessage?.(
 					`mcp-vertex: ${toolName} → ${JSON.stringify(result).slice(0, 200)}`,
 				);
 				return;
 			}
-			if (picked.startsWith('skill:')) {
+			if (pickedId.startsWith('skill:')) {
 				await openSkillPreview(
 					deps,
 					catalog,
-					picked.slice('skill:'.length),
+					pickedId.slice('skill:'.length),
 				);
 				return;
 			}
-			if (picked.startsWith('proposal:')) {
+			if (pickedId.startsWith('proposal:')) {
 				await openProposalPreview(
 					deps,
-					picked.slice('proposal:'.length),
+					pickedId.slice('proposal:'.length),
 				);
 				return;
 			}
-			if (picked.startsWith('knowledge:')) {
+			if (pickedId.startsWith('knowledge:')) {
 				const knowledge = new KnowledgeService(deps.client);
-				const id = picked.slice('knowledge:'.length);
+				const id = pickedId.slice('knowledge:'.length);
 				const entry = await knowledge.getKnowledge(id);
 				await deps.vscode.window.showInformationMessage?.(
 					`mcp-vertex: ${entry.title}\n\n${entry.body.slice(0, 500)}`,

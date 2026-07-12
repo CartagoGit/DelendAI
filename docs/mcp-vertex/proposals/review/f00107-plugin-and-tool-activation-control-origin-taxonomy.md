@@ -1,7 +1,7 @@
 ---
 id: f00107
 kind: feat
-status: ready
+status: review
 type: proposal
 track: core+config+ui-extension+vscode+web
 date: 2026-07-08
@@ -79,13 +79,16 @@ token cost of every call the LLM makes.
 
 ### S2 — Activation resolver: what is on, and why
 
-- **Status**: in-progress (pure builder done; overview wiring pending)
-- **Files**: `packages/core/src/lib/plugins/activation-report.ts` ✅, `packages/core/src/lib/contracts/interfaces/activation-report.interface.ts` ✅, `packages/core/tests/src/lib/plugins/activation-report.spec.ts` ✅, `packages/core/src/lib/plugins/parse-cli-args.ts` (source-tracking, pending), `packages/core/src/lib/tools/overview-tool.ts` + `assemble.ts` (additive wiring, pending)
+- **Status**: done
+- **Files**: `packages/core/src/lib/plugins/activation-report.ts`, `packages/core/src/lib/contracts/interfaces/activation-report.interface.ts`, `packages/core/tests/src/lib/plugins/activation-report.spec.ts`, `packages/core/src/lib/plugins/parse-cli-args.ts`, `packages/core/src/lib/tools/overview-tool.ts`, `packages/core/src/lib/cli/assemble.ts`, `packages/core/tests/src/lib/plugins/parse-cli-args.spec.ts`, `packages/core/tests/src/lib/cli/core-meta-tools.spec.ts`
 - **Depends on**: S1
 - **Gate**: bun run validate
 - **Acceptance**:
-  - "DONE: pure `buildActivationReport(loaded, sources)` returns, per plugin, `{ id, origin, active, source: 'preset'|'config'|'flag', toolCount }` + per-origin `counts` + `totalTools` (the prompt-facing surface size), sorted origin-then-id. Source precedence flag > config > preset. Exported from `@mcp-vertex/core/public`; 4 specs (classify+attribute+tally, precedence, ordering, empty)."
-  - "PENDING (why it is a separate careful step): accurate `preset` vs `flag` attribution needs `parse-cli-args` to STOP collapsing them — `IMcpVertexCliArgs.plugins` today already merges `--preset` expansion + `--plugins` into one list, so assemble cannot tell them apart. S2's wiring adds a `presetMembers`/`flagPlugins` split to the parsed args (hot-path — done carefully), threads them + `configPluginNames` + the loaded set (with resolved specifier + `path` + tool count) into `buildActivationReport`, and surfaces it additively on `overview` (only when asked; token-lean). A spec then proves the report reconciles with the real loaded set."
+  - "Pure `buildActivationReport(loaded, sources)` returns, per plugin, `{ id, origin, active, source: 'preset'|'config'|'flag', toolCount }` + per-origin `counts` + `totalTools` (the prompt-facing surface size), sorted origin-then-id. Source precedence flag > config > preset. Exported from `@mcp-vertex/core/public`."
+  - "`parseCliArgs` preserves `presetPlugins` and `flagPlugins` separately while keeping the merged effective `plugins` list. `assemble` reconciles those sets with config entries and the loaded registry, including disabled native and external contributions, and exposes the report only when `overview` receives `activation: true` so the default orientation payload stays lean."
+  - "Verified 2026-07-12: the focused parser, report-builder and overview integration suites pass (32 tests)."
+  - "Review hardening: source reconciliation now fails closed when a loaded plugin is absent from every activation input instead of silently labelling it as preset. The total-tools contract explicitly describes plugin-contributed tools; core tools remain separately visible in overview."
+  - "Review finding and repair: VS Code object QuickPicks were typed and consumed as string ids, so real selections never toggled plugins and also broke tool search, provider selection, external-server acknowledgement and docs selection. The host seam now matches VS Code's selected-item contract and all affected callers extract `picked.id`; fakes return real item objects to prevent regression."
 
 ### S3 — Extension selection UI (toggle + origin badges)
 

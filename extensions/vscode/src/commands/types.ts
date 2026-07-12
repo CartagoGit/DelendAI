@@ -3,6 +3,7 @@ import { DEFAULT_DENY, injectCspMeta } from '@mcp-vertex/ui-extension/webview';
 
 import type { ProposalsSnapshotSource } from '../lib/proposals-snapshot';
 import type { ProposalBoardProvider } from '../providers/proposal-board-provider';
+import type { ICommandQuickPickItem } from '../contracts/interfaces/command-quick-pick-item.interface';
 
 import type { IDisposable, IWebviewPanel } from '../extension';
 import type { MemoryTreeDataProvider } from '../providers/memory-tree-data-provider';
@@ -48,13 +49,8 @@ export interface ICommandVscodeApi {
 			...actions: readonly string[]
 		): Thenable<string | undefined>;
 		showQuickPick?(
-			items: ReadonlyArray<{
-				readonly id: string;
-				readonly label: string;
-				readonly description?: string;
-				readonly detail?: string;
-			}>,
-		): Thenable<string | undefined>;
+			items: ReadonlyArray<ICommandQuickPickItem>,
+		): Thenable<ICommandQuickPickItem | undefined>;
 	};
 	readonly workspace?: {
 		readonly workspaceFolders?: ReadonlyArray<{

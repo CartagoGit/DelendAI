@@ -120,7 +120,7 @@ const createVscode = (opts?: {
 				return undefined;
 			},
 			async showQuickPick(items) {
-				return items[0]?.id;
+				return items[0];
 			},
 			async showInputBox() {
 				return opts?.inputAnswer ?? 'maintenance window';
