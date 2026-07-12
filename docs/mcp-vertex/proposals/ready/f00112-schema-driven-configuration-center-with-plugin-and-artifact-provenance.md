@@ -299,10 +299,14 @@ declared settings in the editor.
   - "No polling, recursive navigation or delayed work can repaint an unmounted center."
 
 ### S7 — Configuration Center user and author documentation
-- **Status**: pending
-- **Files**: `docs/mcp-vertex/CONFIGURATION-CENTER.md`, `docs/mcp-vertex/PLUGINS-MCP-VERTEX.md`, `apps/web/src/content/docs/configuration-center.md`
+- **Status**: done
+- **Files**: `docs/mcp-vertex/CONFIGURATION-CENTER.md`, `docs/mcp-vertex/PLUGINS-MCP-VERTEX.md`, `apps/web/src/data/pages/configuration-center/*.md`, `apps/web/src/data/manifests/pages.json`
 - **DependsOn**: [S6]
 - **Gate**: lint
+- **Evidence**:
+  - "The canonical guide distinguishes project configuration from VS Code host preferences and documents digest-based conflict detection, schema validation, atomic writes, preservation of unknown fields, fail-closed handling of corrupt JSON and symlinks, secret redaction, restart semantics and recovery actions."
+  - "The plugin author guide documents the runtime-owned `optionsSchema` and `configExample` convention, project-local provenance and generic composition metadata used by external MCP children."
+  - "The Configuration Center page is published in every supported locale; generated page manifests and Astro diagnostics complete with zero errors."
 - acceptance:
   - "Document ownership/provenance, safe-edit semantics, restart requirements, plugin metadata convention and external plugin behaviour."
   - "Explain project config versus VS Code host preferences and conflict/error recovery."
