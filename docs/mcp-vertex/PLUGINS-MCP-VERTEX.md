@@ -72,6 +72,21 @@ Users pass values to your plugin through the config file at the workspace root:
 Read them in `register` via `ctx.options.limit` etc. Validate them yourself
 (e.g. with zod) and apply defaults — treat `ctx.options` as untrusted JSON.
 
+### Activation and origin
+
+The activation switchboard and `overview { activation: true }` use three
+origins: **bundled** for first-party `@mcp-vertex/*` packages, **user-local**
+for a consumer plugin loaded with `plugins.<id>.path`, and **external** for a
+third-party MCP server declared through `external-mcps`. This is ownership and
+visibility metadata, not a permission boundary.
+
+Set `plugins.<id>.enabled: false` to persistently suppress a native plugin even
+when a preset or CLI flag selected it. The entry remains visible in activation
+introspection so the IDE can turn it back on; its `path`, `prefix` and `options`
+are preserved. External children use
+`plugins.external-mcps.options.servers.<id>.enabled` and likewise keep their
+pinned definition while disabled. Changes take effect after the host restarts.
+
 ### What `register` returns (`IMcpPluginRegistrations`)
 
 All optional: `tools`, `prompts`, `resources`, `knowledge`, `skills`.
