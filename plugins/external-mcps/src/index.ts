@@ -22,6 +22,7 @@ import {
 	loadDetectEvidence,
 } from './lib/detect/detect-rules';
 import { OptionsSchema } from './lib/options-schema';
+import { createPendingAcksStore } from './lib/ack/pending-acks';
 import {
 	ExternalServerRegistry,
 	type IRegistryServerEntry,
@@ -64,6 +65,15 @@ export default definePlugin({
 		// never activates a server (S4). Evidence (the workspace package.json)
 		// is read lazily on first use and memoised; the workspace root comes
 		// from the context, never process.cwd().
+		// x00097 S1: ONE durable pending-acks ledger backs both sides of the
+		// activation gate — the `ack` tool writes it, the `call` proxy reads
+		// it (same path, same file mutex). Accepting an ack therefore enables
+		// the call with defaults; without this composition the proxy's
+		// fail-closed default refused every call forever.
+		const pendingAcksPath = ctx.workspace.resolve(
+			joinRel(ctx.pluginCacheDir, 'pending-acks.json'),
+		);
+		const ackStore = createPendingAcksStore(pendingAcksPath);
 		let detectedCache: ReadonlySet<string> | undefined;
 		const detect = async (): Promise<ReadonlySet<string>> => {
 			if (detectedCache === undefined) {
@@ -103,9 +113,7 @@ export default definePlugin({
 				}),
 				buildAckToolRegistration({
 					namespacePrefix: ctx.namespacePrefix,
-					pendingAcksPath: ctx.workspace.resolve(
-						joinRel(ctx.pluginCacheDir, 'pending-acks.json'),
-					),
+					pendingAcksPath,
 				}),
 				buildStatusToolRegistration({
 					namespacePrefix: ctx.namespacePrefix,
@@ -116,6 +124,7 @@ export default definePlugin({
 					registry,
 					requireHumanAckWhenLlmDecides:
 						options.requireHumanAckWhenLlmDecides,
+					hasRecordedAck: (serverId) => ackStore.isAcked(serverId),
 				}),
 			],
 		};

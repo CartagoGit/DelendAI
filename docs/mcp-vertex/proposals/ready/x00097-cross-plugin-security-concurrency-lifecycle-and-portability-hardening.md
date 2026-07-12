@@ -34,7 +34,7 @@ requieren cambios contractuales o tests de carrera más amplios que un quick fix
 - **Files**: plugins/external-mcps/tests/src/lib/plugin-composition.spec.ts
 - **Gate**: `bun run test`
 - **Status**: pending
-
+- status: done
 ### S2 — Proposal queue RMW mutex coverage
 - **Files**: plugins/proposals/src/lib/tools/state-tools.tool.ts
 - **Files**: plugins/proposals/src/lib/tools/agent-names.tool.ts
