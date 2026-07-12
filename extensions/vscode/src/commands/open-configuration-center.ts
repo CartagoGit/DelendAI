@@ -163,76 +163,100 @@ export const registerOpenConfigurationCenterCommand = (deps: ICommandDeps) =>
 					deps.vscode.ViewColumn.One,
 					{ enableScripts: true },
 				);
-				panel.webview.html = await renderPanel(
+				let disposed = false;
+				let messageSubscription: { dispose(): void } | undefined;
+				const markDisposed = (): void => {
+					disposed = true;
+					messageSubscription?.dispose();
+				};
+				if (panel.onDidDispose !== undefined) {
+					panel.onDidDispose(markDisposed);
+				} else {
+					panel.webview.onDidDispose?.(markDisposed);
+				}
+				const initialHtml = await renderPanel(
 					deps,
 					workspaceRoot,
 					lang,
 					strings,
 				);
-				panel.webview.onDidReceiveMessage?.(async (raw: unknown) => {
-					try {
-						const parsed =
-							CONFIGURATION_CENTER_MESSAGE_SCHEMA.safeParse(raw);
-						if (!parsed.success) {
-							await deps.vscode.window.showErrorMessage?.(
-								strings.invalidMessage,
-							);
-							return;
-						}
-						if (parsed.data.command === 'discardConfiguration') {
-							panel.webview.html = await renderPanel(
-								deps,
+				if (disposed) return panel;
+				panel.webview.html = initialHtml;
+				messageSubscription = panel.webview.onDidReceiveMessage?.(
+					async (raw: unknown) => {
+						if (disposed) return;
+						try {
+							const parsed =
+								CONFIGURATION_CENTER_MESSAGE_SCHEMA.safeParse(
+									raw,
+								);
+							if (!parsed.success) {
+								await deps.vscode.window.showErrorMessage?.(
+									strings.invalidMessage,
+								);
+								return;
+							}
+							if (
+								parsed.data.command === 'discardConfiguration'
+							) {
+								const html = await renderPanel(
+									deps,
+									workspaceRoot,
+									lang,
+									strings,
+								);
+								if (!disposed) panel.webview.html = html;
+								return;
+							}
+							const result = await saveConfigurationDocument({
 								workspaceRoot,
-								lang,
-								strings,
+								expectedDigest: parsed.data.expectedDigest,
+								edits: parsed.data.edits,
+							});
+							if (disposed) return;
+							if (!result.ok) {
+								await panel.webview.postMessage?.(
+									result.reason === 'conflict'
+										? { command: 'configurationConflict' }
+										: {
+												command: 'configurationInvalid',
+												issues: result.issues,
+											},
+								);
+								return;
+							}
+							await panel.webview.postMessage?.({
+								command: 'configurationSaved',
+								digest: result.document.digest,
+							});
+							if (!result.changed) return;
+							const action =
+								await deps.vscode.window.showInformationMessage?.(
+									`${strings.savedMessage} ${strings.copy.restartRequired}`,
+									strings.restartAction,
+								);
+							if (
+								action === strings.restartAction &&
+								deps.vscode.commands.executeCommand !==
+									undefined
+							) {
+								await deps.vscode.commands.executeCommand(
+									RESTART_SERVER_COMMAND,
+								);
+							}
+						} catch (error) {
+							if (disposed) return;
+							await panel.webview.postMessage?.({
+								command: 'configurationInvalid',
+							});
+							await showCommandError(
+								deps.vscode,
+								strings.saveAction,
+								error,
 							);
-							return;
 						}
-						const result = await saveConfigurationDocument({
-							workspaceRoot,
-							expectedDigest: parsed.data.expectedDigest,
-							edits: parsed.data.edits,
-						});
-						if (!result.ok) {
-							await panel.webview.postMessage?.(
-								result.reason === 'conflict'
-									? { command: 'configurationConflict' }
-									: {
-											command: 'configurationInvalid',
-											issues: result.issues,
-										},
-							);
-							return;
-						}
-						await panel.webview.postMessage?.({
-							command: 'configurationSaved',
-							digest: result.document.digest,
-						});
-						if (!result.changed) return;
-						const action =
-							await deps.vscode.window.showInformationMessage?.(
-								`${strings.savedMessage} ${strings.copy.restartRequired}`,
-								strings.restartAction,
-							);
-						if (
-							action === strings.restartAction &&
-							deps.vscode.commands.executeCommand !== undefined
-						) {
-							await deps.vscode.commands.executeCommand(
-								RESTART_SERVER_COMMAND,
-							);
-						}
-					} catch (error) {
-						await panel.webview.postMessage?.({
-							command: 'configurationInvalid',
-						});
-						await showCommandError(
-							deps.vscode,
-							strings.saveAction,
-							error,
-						);
-					}
-				});
+					},
+				);
 				return panel;
 			} catch (error) {
 				await showCommandError(deps.vscode, strings.panelTitle, error);

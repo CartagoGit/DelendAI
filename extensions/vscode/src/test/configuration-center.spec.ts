@@ -101,7 +101,13 @@ describe('mcp-vertex.openConfigurationCenter', () => {
 		let receive: ((message: unknown) => void | Promise<void>) | undefined;
 		const outbound: unknown[] = [];
 		const errors: string[] = [];
+		const executed: string[] = [];
+		let disposePanel: (() => void) | undefined;
 		const panel = {
+			onDidDispose(callback: () => void) {
+				disposePanel = callback;
+				return { dispose() {} };
+			},
 			webview: {
 				html: '',
 				onDidReceiveMessage(callback: typeof receive) {
@@ -120,6 +126,9 @@ describe('mcp-vertex.openConfigurationCenter', () => {
 					commands.set(command, callback);
 					return { dispose() {} };
 				},
+				async executeCommand(command) {
+					executed.push(command);
+				},
 			},
 			window: {
 				createWebviewPanel() {
@@ -129,8 +138,8 @@ describe('mcp-vertex.openConfigurationCenter', () => {
 					errors.push(message);
 					return undefined;
 				},
-				async showInformationMessage() {
-					return undefined;
+				async showInformationMessage(_message, ...actions) {
+					return actions[0];
 				},
 			},
 			workspace: { workspaceFolders: [{ uri: { fsPath: root } }] },
@@ -183,6 +192,18 @@ describe('mcp-vertex.openConfigurationCenter', () => {
 		expect(outbound).toEqual([
 			expect.objectContaining({ command: 'configurationSaved' }),
 		]);
+		expect(executed).toEqual(['mcp-vertex.restartServer']);
+
+		const htmlBeforeDispose = panel.webview.html;
+		disposePanel?.();
+		await receive?.({ command: 'discardConfiguration' });
+		await receive?.({
+			command: 'saveConfiguration',
+			expectedDigest: snapshot.digest,
+			edits: [{ action: 'set', path: ['agentWorktree'], value: true }],
+		});
+		expect(panel.webview.html).toBe(htmlBeforeDispose);
+		expect(outbound).toHaveLength(1);
 	});
 
 	it('contributes the command and server settings at the valid manifest level', async () => {

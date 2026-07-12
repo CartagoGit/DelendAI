@@ -227,7 +227,9 @@ export const renderConfigurationCenter = (
 							`<article class="mcpv-config__card" data-config-search-text="${attr(`${provider.id} ${provider.kind} ${provider.modelId}`)}"><header class="mcpv-config__card-head"><div><h3 class="mcpv-config__card-title">${attr(provider.id)}</h3><p class="mcpv-config__card-meta">${attr(provider.kind)} · ${attr(provider.modelId)}</p></div></header>${renderField(provider.field, model)}</article>`,
 					)
 					.join('')}</div>`;
-	const artifactPanel = (id: 'agents' | 'skills' | 'prompts'): string => {
+	const artifactPanel = (
+		id: 'agents' | 'skills' | 'prompts' | 'resources' | 'knowledge',
+	): string => {
 		const tab = model.tabs.find((entry) => entry.id === id)!;
 		const body = tab.unavailable
 			? `<p class="mcpv-config__notice">${attr(model.copy.unavailable)}</p>`
@@ -249,7 +251,7 @@ export const renderConfigurationCenter = (
 					`<button class="mcpv-config__tab" id="config-tab-${tab.id}" type="button" role="tab" data-config-tab="${tab.id}" aria-controls="config-panel-${tab.id}" aria-selected="${model.activeTab === tab.id ? 'true' : 'false'}" tabindex="${model.activeTab === tab.id ? '0' : '-1'}"><span>${attr(tab.label)}</span>${tab.unavailable ? '<span class="mcpv-config__tab-warning" aria-hidden="true">!</span>' : ''}<span class="mcpv-config__tab-count">${tab.count}</span></button>`,
 			)
 			.join('')}</nav>
-		<div class="mcpv-config__content">${banner(model)}${panel('general', model.copy.tabs.general, renderFields(model.generalFields, model), model)}${panel('plugins', model.copy.tabs.plugins, pluginBody, model)}${panel('providers', model.copy.tabs.providers, providerBody, model)}${artifactPanel('agents')}${artifactPanel('skills')}${artifactPanel('prompts')}</div>
+		<div class="mcpv-config__content">${banner(model)}${panel('general', model.copy.tabs.general, renderFields(model.generalFields, model), model)}${panel('plugins', model.copy.tabs.plugins, pluginBody, model)}${panel('providers', model.copy.tabs.providers, providerBody, model)}${artifactPanel('agents')}${artifactPanel('skills')}${artifactPanel('prompts')}${artifactPanel('resources')}${artifactPanel('knowledge')}</div>
 	</div>
 	<footer class="mcpv-config__footer"><span class="mcpv-config__status" data-config-status aria-live="polite"></span><button class="mcpv-config__button mcpv-config__button--secondary" type="button" data-config-discard disabled>${attr(model.copy.discard)}</button><button class="mcpv-config__button mcpv-config__button--primary" type="button" data-config-save disabled>${attr(model.state === 'saving' ? model.copy.saving : model.copy.save)}</button></footer>
 </main>

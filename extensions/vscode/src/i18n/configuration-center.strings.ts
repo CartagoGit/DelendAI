@@ -67,6 +67,8 @@ const en = strings(
 			agents: 'Agents',
 			skills: 'Skills',
 			prompts: 'Prompts',
+			resources: 'Resources',
+			knowledge: 'Knowledge',
 		},
 	},
 	{
@@ -132,6 +134,8 @@ const es = strings(
 			agents: 'Agentes',
 			skills: 'Skills',
 			prompts: 'Prompts',
+			resources: 'Recursos',
+			knowledge: 'Conocimiento',
 		},
 	},
 	{
@@ -200,6 +204,8 @@ const fr = strings(
 			agents: 'Agents',
 			skills: 'Compétences',
 			prompts: 'Prompts',
+			resources: 'Ressources',
+			knowledge: 'Connaissances',
 		},
 	},
 	{
@@ -266,6 +272,8 @@ const de = strings(
 			agents: 'Agenten',
 			skills: 'Skills',
 			prompts: 'Prompts',
+			resources: 'Ressourcen',
+			knowledge: 'Wissen',
 		},
 	},
 	{
@@ -331,6 +339,8 @@ const it = strings(
 			agents: 'Agenti',
 			skills: 'Skill',
 			prompts: 'Prompt',
+			resources: 'Risorse',
+			knowledge: 'Conoscenza',
 		},
 	},
 	{
@@ -396,6 +406,8 @@ const pt = strings(
 			agents: 'Agentes',
 			skills: 'Skills',
 			prompts: 'Prompts',
+			resources: 'Recursos',
+			knowledge: 'Conhecimento',
 		},
 	},
 	{
@@ -461,6 +473,8 @@ const ja = strings(
 			agents: 'エージェント',
 			skills: 'スキル',
 			prompts: 'プロンプト',
+			resources: 'リソース',
+			knowledge: 'ナレッジ',
 		},
 	},
 	{
@@ -521,6 +535,8 @@ const zh = strings(
 			agents: '智能体',
 			skills: '技能',
 			prompts: '提示词',
+			resources: '资源',
+			knowledge: '知识',
 		},
 	},
 	{
@@ -581,6 +597,8 @@ const hi = strings(
 			agents: 'एजेंट',
 			skills: 'स्किल',
 			prompts: 'प्रॉम्प्ट',
+			resources: 'संसाधन',
+			knowledge: 'ज्ञान',
 		},
 	},
 	{
@@ -639,6 +657,8 @@ const ar = strings(
 			agents: 'الوكلاء',
 			skills: 'المهارات',
 			prompts: 'الموجّهات',
+			resources: 'الموارد',
+			knowledge: 'المعرفة',
 		},
 	},
 	{
@@ -697,6 +717,8 @@ const th = strings(
 			agents: 'เอเจนต์',
 			skills: 'สกิล',
 			prompts: 'พรอมต์',
+			resources: 'ทรัพยากร',
+			knowledge: 'ความรู้',
 		},
 	},
 	{
@@ -760,6 +782,8 @@ const vi = strings(
 			agents: 'Tác nhân',
 			skills: 'Kỹ năng',
 			prompts: 'Prompt',
+			resources: 'Tài nguyên',
+			knowledge: 'Kiến thức',
 		},
 	},
 	{

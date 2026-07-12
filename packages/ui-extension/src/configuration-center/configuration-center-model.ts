@@ -65,6 +65,8 @@ const DEFAULT_COPY: IConfigurationCenterCopy = {
 		agents: 'Agents',
 		skills: 'Skills',
 		prompts: 'Prompts',
+		resources: 'Resources',
+		knowledge: 'Knowledge',
 	},
 };
 
@@ -77,11 +79,16 @@ const mergeCopy = (
 });
 
 const artifactTabKind: Readonly<
-	Record<'agents' | 'skills' | 'prompts', ConfigurationArtifactKind>
+	Record<
+		'agents' | 'skills' | 'prompts' | 'resources' | 'knowledge',
+		ConfigurationArtifactKind
+	>
 > = {
 	agents: 'agent',
 	skills: 'skill',
 	prompts: 'prompt',
+	resources: 'resource',
+	knowledge: 'knowledge',
 };
 
 const artifactsOf = (
@@ -239,6 +246,16 @@ export const buildConfigurationCenterModel = (
 		agents: artifactsOf(source.artifacts, artifactTabKind.agents, copy),
 		skills: artifactsOf(source.artifacts, artifactTabKind.skills, copy),
 		prompts: artifactsOf(source.artifacts, artifactTabKind.prompts, copy),
+		resources: artifactsOf(
+			source.artifacts,
+			artifactTabKind.resources,
+			copy,
+		),
+		knowledge: artifactsOf(
+			source.artifacts,
+			artifactTabKind.knowledge,
+			copy,
+		),
 	};
 	const unavailable = new Set(source.unavailableArtifactKinds);
 	const counts: Readonly<Record<ConfigurationCenterTab, number>> = {
@@ -248,6 +265,8 @@ export const buildConfigurationCenterModel = (
 		agents: artifacts.agents.length,
 		skills: artifacts.skills.length,
 		prompts: artifacts.prompts.length,
+		resources: artifacts.resources.length,
+		knowledge: artifacts.knowledge.length,
 	};
 	const tabs = (
 		[
@@ -257,13 +276,19 @@ export const buildConfigurationCenterModel = (
 			'agents',
 			'skills',
 			'prompts',
+			'resources',
+			'knowledge',
 		] as const
 	).map((id) => ({
 		id,
 		label: copy.tabs[id],
 		count: counts[id],
 		unavailable:
-			id === 'agents' || id === 'skills' || id === 'prompts'
+			id === 'agents' ||
+			id === 'skills' ||
+			id === 'prompts' ||
+			id === 'resources' ||
+			id === 'knowledge'
 				? unavailable.has(artifactTabKind[id])
 				: false,
 	}));

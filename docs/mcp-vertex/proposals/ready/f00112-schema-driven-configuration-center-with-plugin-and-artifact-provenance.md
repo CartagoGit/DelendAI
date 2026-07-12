@@ -271,10 +271,28 @@ declared settings in the editor.
   - "External MCP children retain command/version/env definitions, expose only safe editable fields, and carry external provenance."
 
 ### S6 — Configuration Center regressions and end-to-end safety
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/tests/src/lib/configuration-center/configuration-center.e2e.spec.ts`, `packages/client/tests/services/configuration-center.service.spec.ts`, `packages/ui-extension/src/configuration-center/configuration-center.spec.ts`, `extensions/vscode/src/test/configuration-center.spec.ts`
 - **DependsOn**: [S1, S2, S3, S4, S5]
 - **Gate**: e2e
+- **Evidence (2026-07-13)**:
+  - "The real CLI assembly E2E joins the bundled composition plugin, a
+    convention-compliant project-local plugin and a disabled external child.
+    It verifies active states, path/prefix/custom options, the child's exact
+    command/version/args/env schema and prompt/resource/knowledge ownership."
+  - "The UI now exposes Resources and Knowledge alongside Agents, Skills and
+    Prompts; none of the artifact kinds returned by core are silently dropped.
+    Model/render regressions cover counts, unavailable states, owner labels,
+    origin badges, search markup and responsive panels."
+  - "The merge-aware client gate covers absent/corrupt/symlinked documents,
+    schema and secret rejection, external edits, simultaneous writers,
+    deletion and a lossless round trip retaining unknown roots, plugin
+    path/prefix/options and a disabled external definition with custom args."
+  - "The VS Code host regression validates the message boundary, durable
+    acknowledgement, restart action and panel disposal. Once disposed, late
+    discard/save work cannot repaint, post messages or display stale results;
+    the dev orchestrator's latest-task regression prevents navigation races
+    without polling or recursive repaint loops."
 - acceptance:
   - "Cover bundled, user-local and external plugins; active states; custom arguments/options; artifact provenance; corrupt JSON; concurrent conflict; acknowledgement and restart."
   - "Round-trip fixtures prove no unknown field, path/prefix/options block or disabled external definition is lost."
