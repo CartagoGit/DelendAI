@@ -125,7 +125,10 @@ requieren cambios contractuales o tests de carrera más amplios que un quick fix
 - **Files**: plugins/status-marker/src/index.ts
 - **Files**: tools/scripts/lint/skills-script.ts
 - **Gate**: `bun run lint:skills`
-- **Status**: pending
+- **Status**: done
+- **Evidence**:
+  - "Owner documentation now matches the registered conditional network/write surfaces, current tool arguments, redaction/quota guarantees and current proposal/skill paths."
+  - "The skills ratchet now verifies that every manifest id equals the referenced SKILL frontmatter name in addition to uniqueness and on-disk existence; lint, proposal lint and repository typecheck pass."
 
 ### S9 — Remaining plugin containment and online registry truth
 - **Files**: plugins/proposals/src/index.ts
