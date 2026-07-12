@@ -12,19 +12,24 @@
  *
  * Ack gate (gate decision 5, resolved defaults): when
  * `requireHumanAckWhenLlmDecides` is true and no ack is recorded for the
- * server, the call is refused with `code: 'ack-required'`. The ack STORE
- * ships in S3 — until it lands, the recorded-ack check is an injectable
- * predicate defaulting to "no acks recorded".
+ * server, the call is refused with `code: 'ack-required'`. The recorded-ack
+ * check is an injectable (possibly async) predicate; the plugin manifest
+ * composes it from the SAME durable pending-acks ledger the `ack` tool
+ * writes (x00097 S1), so an accepted ack enables the call across restarts.
  */
 import { toolJson, type IToolRegistration } from '@mcp-vertex/core/public';
 import { z } from 'zod';
 
 import type { ExternalServerRegistry } from '../subprocess/server-registry';
 
-/** True iff a human ack is recorded for `serverId` (real store: S3). */
-export type HasRecordedAck = (serverId: string) => boolean;
+/**
+ * True iff a human ack is recorded for `serverId`. Async-capable so the
+ * durable pending-acks ledger can back it directly (fresh read per call —
+ * an ack recorded mid-session is honoured without a restart).
+ */
+export type HasRecordedAck = (serverId: string) => boolean | Promise<boolean>;
 
-/** S2 default: the ack store does not exist yet, so no acks are recorded. */
+/** Fail-closed default when no ledger is composed: no acks are recorded. */
 export const noAcksRecorded: HasRecordedAck = () => false;
 
 export interface IInvokeProxyOptions {
@@ -100,10 +105,13 @@ export const buildCallToolRegistration = (
 							}) — validate a patch with validate_config, then declare it.`,
 						});
 					}
-					if (
-						options.requireHumanAckWhenLlmDecides &&
-						!hasRecordedAck(serverId)
-					) {
+					// Sync predicates stay synchronous (no microtask before the
+					// registry's sync spawn step); only a ledger-backed async
+					// predicate defers.
+					const recorded = hasRecordedAck(serverId);
+					const acked =
+						typeof recorded === 'boolean' ? recorded : await recorded;
+					if (options.requireHumanAckWhenLlmDecides && !acked) {
 						return toolJson({
 							ok: false,
 							code: 'ack-required',
