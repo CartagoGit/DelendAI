@@ -17,16 +17,15 @@ import {
 
 import { CONFIGURATION_CENTER_MESSAGE_SCHEMA } from '../contracts/constants/configuration-center-message-schema.constant';
 import { defaultLang, dictsByLang, type Lang } from '../i18n';
-import {
-	configurationCenterStringsByLang,
-	type IConfigurationCenterStrings,
-} from '../i18n/configuration-center.strings';
+import { configurationCenterStringsByLang } from '../i18n/configuration-center.strings';
 import { RESTART_SERVER_COMMAND } from './restart-server';
 import { HOST_LANG_KEY } from './setup-github';
 import type { ICommandDeps } from './types';
 import { showCommandError } from './types';
 
 const OPEN_CONFIGURATION_CENTER_COMMAND = 'mcp-vertex.openConfigurationCenter';
+type ConfigurationCenterStrings =
+	(typeof configurationCenterStringsByLang)[Lang];
 
 const bridgeScript = `<script>
 (function () {
@@ -47,7 +46,7 @@ const injectBridge = (html: string): string => {
 
 const selectWorkspace = async (
 	deps: ICommandDeps,
-	strings: IConfigurationCenterStrings,
+	strings: ConfigurationCenterStrings,
 ): Promise<string | undefined> => {
 	const folders = deps.vscode.workspace?.workspaceFolders ?? [];
 	if (folders.length === 0) {
@@ -91,7 +90,7 @@ const readAll = async <T>(
 const loadModel = async (
 	deps: ICommandDeps,
 	workspaceRoot: string,
-	strings: IConfigurationCenterStrings,
+	strings: ConfigurationCenterStrings,
 ) => {
 	const tool = formatToolName(deps.namespacePrefix, 'configuration_center');
 	const [document, config, summary, plugins, artifacts] = await Promise.all([
@@ -130,7 +129,7 @@ const renderPanel = async (
 	deps: ICommandDeps,
 	workspaceRoot: string,
 	lang: Lang,
-	strings: IConfigurationCenterStrings,
+	strings: ConfigurationCenterStrings,
 ): Promise<string> =>
 	withCsp(
 		'configuration-center',

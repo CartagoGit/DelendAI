@@ -43,6 +43,7 @@ const source = (): IConfigurationCenterSource => ({
 				type: 'boolean',
 				description: 'Keep legacy proposal folders.',
 			},
+			optionalText: { type: 'string' },
 			plugins: { type: 'object' },
 			providers: { type: 'array' },
 		},
@@ -156,6 +157,9 @@ describe('Configuration Center model', () => {
 		expect(
 			model.generalFields.find((field) => field.label === 'hiddenRoot'),
 		).toMatchObject({ readOnly: true });
+		expect(
+			model.generalFields.find((field) => field.label === 'optionalText'),
+		).toMatchObject({ value: undefined, readOnly: false });
 		const external = model.plugins.find((plugin) =>
 			plugin.id.startsWith('ext.'),
 		)!;
@@ -185,6 +189,8 @@ describe('renderConfigurationCenter', () => {
 		expect(html).toContain('saveConfiguration');
 		expect(html).toContain('configurationConflict');
 		expect(html).toContain('prefers-reduced-motion');
+		expect(html).toContain('height: 100vh');
+		expect(html).toContain('grid-template-rows: auto minmax(0, 1fr) auto');
 		expect(html).toContain("event.key !== 'ArrowDown'");
 		expect(html).toContain('mcpv-configuration-message');
 		expect(html).not.toContain('acquireVsCodeApi');

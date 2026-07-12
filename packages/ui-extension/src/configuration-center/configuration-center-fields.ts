@@ -35,7 +35,7 @@ const fieldId = (path: readonly ConfigurationPathSegment[]): string =>
 
 export const containsRedactedValue = (value: unknown): boolean => {
 	try {
-		return JSON.stringify(value).includes('"[REDACTED]"');
+		return JSON.stringify(value)?.includes('"[REDACTED]"') ?? false;
 	} catch {
 		return true;
 	}

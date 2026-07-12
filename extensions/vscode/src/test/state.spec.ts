@@ -39,14 +39,21 @@ describe('ActiveViewStore', () => {
 });
 
 describe('state module surface', () => {
-	it('exports the four canonical view ids', () => {
+	it('exports the canonical view ids', () => {
 		expect([...knownViewIds()].sort()).toEqual(
-			['dashboard', 'metrics', 'settings', 'tool-detail'].sort(),
+			[
+				'configuration',
+				'dashboard',
+				'metrics',
+				'settings',
+				'tool-detail',
+			].sort(),
 		);
 	});
 
 	it('isViewId narrows safely', () => {
 		expect(isViewId('dashboard')).toBe(true);
+		expect(isViewId('configuration')).toBe(true);
 		expect(isViewId('settings')).toBe(true);
 		expect(isViewId('tool-detail')).toBe(true);
 		expect(isViewId('metrics')).toBe(true);

@@ -416,6 +416,7 @@ data-theme attr is set (the picker default 'system' removes it). */
 		html, body {
 			margin: 0;
 			padding: 0;
+			height: 100%;
 			background: var(--mcpv-bg);
 			color: var(--mcpv-fg);
 			font-family: var(--mcpv-font-prose);
@@ -423,7 +424,7 @@ data-theme attr is set (the picker default 'system' removes it). */
 			line-height: 1.5;
 			-webkit-font-smoothing: antialiased;
 		}
-		body { display: flex; flex-direction: column; min-height: 100vh; }
+		body { display: flex; flex-direction: column; min-height: 0; overflow: hidden; }
 		code, pre {
 			font-family: var(--mcpv-font-mono);
 			font-variant-numeric: tabular-nums;
@@ -625,6 +626,11 @@ const escapeHtml = (s: string): string =>
 import { detectSetupStatus, type ISetupStatus } from './api/setup-status';
 import { runSetupInstall } from './api/setup-install';
 import { fetchRealDashboard, type IApiError } from './api/real-data';
+import {
+	fetchConfigurationCenterData,
+	isConfigurationCenterSaveRequest,
+	saveConfigurationCenterData,
+} from './api/configuration-center-data';
 
 const jsonResponse = (body: unknown, status = 200): Response =>
 	new Response(JSON.stringify(body, null, 2), {
@@ -665,6 +671,30 @@ const handleApi = async (
 			return jsonResponse(result as IApiError, 502);
 		}
 		return jsonResponse(result);
+	}
+	if (url.pathname === '/api/configuration-center' && req.method === 'GET') {
+		try {
+			return jsonResponse(await fetchConfigurationCenterData(cwd.path));
+		} catch (error) {
+			return jsonResponse(
+				{
+					ok: false,
+					message:
+						error instanceof Error ? error.message : String(error),
+				},
+				502,
+			);
+		}
+	}
+	if (url.pathname === '/api/configuration-center' && req.method === 'POST') {
+		const body = await req.json().catch(() => undefined);
+		if (!isConfigurationCenterSaveRequest(body)) {
+			return jsonResponse(
+				{ ok: false, message: 'Invalid configuration edit request.' },
+				400,
+			);
+		}
+		return jsonResponse(await saveConfigurationCenterData(cwd.path, body));
 	}
 	return new Response('Not found', { status: 404 });
 };
