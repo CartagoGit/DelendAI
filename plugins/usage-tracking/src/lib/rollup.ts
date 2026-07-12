@@ -194,13 +194,21 @@ export const buildSummary = (
 	};
 };
 
+/** Serialize + redact + atomic write. Caller must hold the file mutex. */
+const writeSummaryUnlocked = async (
+	absPath: string,
+	summary: IUsageSummary,
+): Promise<void> => {
+	const { text } = redactSecrets(`${JSON.stringify(summary, null, '\t')}\n`);
+	await writeFileAtomic(absPath, text);
+};
+
 /** Durably persist a rollup document (mutex + atomic + redact). */
 export const writeSummary = async (
 	absPath: string,
 	summary: IUsageSummary,
 ): Promise<void> => {
-	const { text } = redactSecrets(`${JSON.stringify(summary, null, '\t')}\n`);
-	await withFileMutex(absPath, () => writeFileAtomic(absPath, text));
+	await withFileMutex(absPath, () => writeSummaryUnlocked(absPath, summary));
 };
 
 /** Best-effort read of the persisted summary (missing/corrupt → null). */
@@ -229,11 +237,18 @@ export const regenerateSummary = async (
 	limits?: ILimitsConfig | undefined,
 ): Promise<IUsageSummary> => {
 	const records = await readInvocations(invocationsPath);
-	const prior = await readSummary(summaryPath);
-	const summary = buildSummary(records, windowDays, now, {
-		limits,
-		degradations: prior?.degradations ?? [],
+	// x00097 S3 (audit a00052 #13): prior-read → build → write is ONE
+	// transaction under the summary mutex. Reading the prior degradations
+	// outside it raced `recordDegradation` (which appends under the same
+	// mutex) — a degradation recorded between the read and the write was
+	// overwritten with the stale list and silently lost.
+	return withFileMutex(summaryPath, async () => {
+		const prior = await readSummary(summaryPath);
+		const summary = buildSummary(records, windowDays, now, {
+			limits,
+			degradations: prior?.degradations ?? [],
+		});
+		await writeSummaryUnlocked(summaryPath, summary);
+		return summary;
 	});
-	await writeSummary(summaryPath, summary);
-	return summary;
 };

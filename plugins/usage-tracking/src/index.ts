@@ -1,6 +1,10 @@
 import { randomUUID } from 'node:crypto';
 
-import { definePlugin, joinRel } from '@mcp-vertex/core/public';
+import {
+	definePlugin,
+	joinRel,
+	type IToolRegistration,
+} from '@mcp-vertex/core/public';
 import { z } from 'zod';
 
 import { deriveCorePrefix } from './lib/attribute';
@@ -177,12 +181,51 @@ export default definePlugin({
 		}, summaryIntervalMs);
 		summaryTimer.unref?.();
 
+		// x00097 S3 (audit a00052: "registros reaparecen"): `usage_clear`
+		// truncates the log file, but records still sitting in the flush
+		// buffer were re-appended by the next drain — the wipe silently
+		// undid itself. The manifest owns the composition (the clear tool
+		// stays buffer-agnostic): a confirmed clear first drops the pending
+		// records and waits out any in-flight drain, THEN truncates.
+		const withBufferWipeBarrier = (
+			reg: IToolRegistration,
+		): IToolRegistration => ({
+			...reg,
+			register: (server) => {
+				const intercepted = {
+					// The clear tool only touches `registerTool`; anything
+					// else it grows to use must be added here explicitly.
+					registerTool: (
+						name: string,
+						config: unknown,
+						handler: (args: unknown) => Promise<unknown>,
+					) =>
+						server.registerTool(
+							name,
+							config as never,
+							(async (args: unknown) => {
+								if (
+									(args as { confirm?: boolean }).confirm ===
+									true
+								) {
+									await buffer.clear();
+								}
+								return handler(args);
+							}) as never,
+						),
+				} as unknown as typeof server;
+				return reg.register(intercepted);
+			},
+		});
+
 		return {
 			tools: buildUsageTrackingToolRegistrations({
 				namespacePrefix: ctx.namespacePrefix,
 				invocationsPath,
 				summaryPath,
-			}),
+			}).map((reg) =>
+				reg.id === 'usage_clear' ? withBufferWipeBarrier(reg) : reg,
+			),
 			// Hot-path hooks. `onToolStart` stamps a start time; `onToolCall`
 			// builds the metadata record and enqueues it (non-blocking).
 			onToolStart: (toolName) => {
