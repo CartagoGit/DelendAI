@@ -91,9 +91,7 @@ const readBodyCapped = async (
 			return { body: raw, truncated: false };
 		}
 		return {
-			body: new TextDecoder('utf-8').decode(
-				bytes.subarray(0, maxBytes),
-			),
+			body: new TextDecoder('utf-8').decode(bytes.subarray(0, maxBytes)),
 			truncated: true,
 		};
 	}

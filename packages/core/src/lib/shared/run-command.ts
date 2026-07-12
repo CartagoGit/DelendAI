@@ -38,6 +38,30 @@ export interface IRunCommandOptions {
 	readonly lockPath?: string;
 }
 
+/**
+ * x00097 S5 (audit a00052 #16): shell commands run through an EXPLICIT
+ * `bash --noprofile --norc -c` instead of `shell: true`. The implicit
+ * shell is `/bin/sh` — dash on Debian/Ubuntu/WSL, ash on Alpine — so the
+ * same command string parsed differently per host; bash is the one shell
+ * dialect this repo standardizes on (AGENT-BOOTSTRAP §6). Windows keeps
+ * `shell: true` (no bash contract there).
+ */
+const spawnShell = (
+	command: string,
+	cwd: string,
+): ReturnType<typeof spawn> =>
+	process.platform === 'win32'
+		? spawn(command, {
+				cwd,
+				shell: true,
+				stdio: ['ignore', 'pipe', 'pipe'],
+			})
+		: spawn('/bin/bash', ['--noprofile', '--norc', '-c', command], {
+				cwd,
+				detached: true,
+				stdio: ['ignore', 'pipe', 'pipe'],
+			});
+
 const spawnOnce = (
 	command: string,
 	cwd: string,
@@ -47,12 +71,7 @@ const spawnOnce = (
 	new Promise<IRunCommandOutcome>((resolve) => {
 		let output = '';
 		let timedOut = false;
-		const child = spawn(command, {
-			cwd,
-			shell: true,
-			detached: true,
-			stdio: ['ignore', 'pipe', 'pipe'],
-		});
+		const child = spawnShell(command, cwd);
 		const capture = (chunk: Buffer): void => {
 			if (output.length < maxOutputBytes) output += chunk.toString();
 		};
@@ -90,3 +109,82 @@ export const runCommand = async (
 		? withFileMutex(options.lockPath, run)
 		: run();
 };
+
+/** Outcome of {@link runArgv}: stdout and stderr stay separate. */
+export interface IRunArgvOutcome {
+	readonly code: number;
+	readonly stdout: string;
+	readonly stderr: string;
+	readonly timedOut: boolean;
+}
+
+export interface IRunArgvOptions {
+	/** Working directory. Optional — argv tools are often cwd-agnostic. */
+	readonly cwd?: string;
+	/** Kill the process after this many ms. Default 600000 (10 min). */
+	readonly timeoutMs?: number;
+	/** Cap captured bytes per stream. Default 64KiB. */
+	readonly maxOutputBytes?: number;
+}
+
+/**
+ * x00097 S5: argv-first async runner — NO shell, ever. The first element
+ * is the binary, the rest are literal arguments, so no caller-supplied
+ * string is subject to shell parsing/injection and the event loop never
+ * blocks (audit a00052 #16 replaced `Bun.spawnSync` call sites with
+ * this). Missing binary resolves `{code: 127}`, mirroring the shell
+ * convention callers already branch on.
+ */
+export const runArgv = (
+	argv: readonly string[],
+	options: IRunArgvOptions = {},
+): Promise<IRunArgvOutcome> =>
+	new Promise<IRunArgvOutcome>((resolve) => {
+		const [binary, ...args] = argv;
+		if (binary === undefined) {
+			resolve({
+				code: 127,
+				stdout: '',
+				stderr: 'runArgv: empty argv',
+				timedOut: false,
+			});
+			return;
+		}
+		const timeoutMs = options.timeoutMs ?? 600_000;
+		const maxOutputBytes = options.maxOutputBytes ?? 64 * 1024;
+		let stdout = '';
+		let stderr = '';
+		let timedOut = false;
+		const child = spawn(binary, args, {
+			...(options.cwd !== undefined ? { cwd: options.cwd } : {}),
+			stdio: ['ignore', 'pipe', 'pipe'],
+		});
+		child.stdout?.on('data', (chunk: Buffer) => {
+			if (stdout.length < maxOutputBytes) stdout += chunk.toString();
+		});
+		child.stderr?.on('data', (chunk: Buffer) => {
+			if (stderr.length < maxOutputBytes) stderr += chunk.toString();
+		});
+		const timer = setTimeout(() => {
+			timedOut = true;
+			child.kill('SIGKILL');
+		}, timeoutMs);
+		child.on('close', (code) => {
+			clearTimeout(timer);
+			resolve({
+				code: timedOut ? 124 : (code ?? 1),
+				stdout,
+				stderr,
+				timedOut,
+			});
+		});
+		child.on('error', (error: NodeJS.ErrnoException) => {
+			clearTimeout(timer);
+			resolve({
+				code: error.code === 'ENOENT' ? 127 : 126,
+				stdout,
+				stderr: String(error),
+				timedOut: false,
+			});
+		});
+	});
