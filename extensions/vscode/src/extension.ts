@@ -116,6 +116,8 @@ export interface IExtensionContext {
 }
 
 export interface IWebviewPanel {
+	/** Native VS Code panel lifecycle hook. */
+	readonly onDidDispose?: (cb: () => void) => { dispose(): void };
 	readonly webview: {
 		html: string;
 		/**

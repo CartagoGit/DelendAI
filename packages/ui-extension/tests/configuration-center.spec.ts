@@ -107,6 +107,16 @@ const source = (): IConfigurationCenterSource => ({
 			kind: 'skill',
 			owner: { id: 'audit', origin: 'bundled' },
 		},
+		{
+			id: 'project-resource',
+			kind: 'resource',
+			owner: { id: 'local-plugin', origin: 'user-local' },
+		},
+		{
+			id: 'project-guide',
+			kind: 'knowledge',
+			owner: { id: 'local-plugin', origin: 'user-local' },
+		},
 	],
 	unavailableArtifactKinds: ['agent'],
 });
@@ -122,6 +132,8 @@ describe('Configuration Center model', () => {
 			'agents',
 			'skills',
 			'prompts',
+			'resources',
+			'knowledge',
 		]);
 		expect(model.tabs.find((tab) => tab.id === 'agents')).toMatchObject({
 			count: 0,
@@ -131,6 +143,14 @@ describe('Configuration Center model', () => {
 			id: 'codex',
 			kind: 'subscription',
 			modelId: 'gpt-5',
+		});
+		expect(model.artifacts.resources[0]).toMatchObject({
+			id: 'project-resource',
+			ownerLabel: 'local-plugin',
+		});
+		expect(model.artifacts.knowledge[0]).toMatchObject({
+			id: 'project-guide',
+			ownerLabel: 'local-plugin',
 		});
 	});
 
@@ -208,6 +228,8 @@ describe('renderConfigurationCenter', () => {
 		expect(html).toContain('grid-template-rows: auto minmax(0, 1fr) auto');
 		expect(html).toContain("event.key !== 'ArrowDown'");
 		expect(html).toContain('mcpv-configuration-message');
+		expect(html).toContain('config-panel-resources');
+		expect(html).toContain('config-panel-knowledge');
 		expect(html).not.toContain('acquireVsCodeApi');
 	});
 
