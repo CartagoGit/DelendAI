@@ -87,7 +87,7 @@ export const VersionSchema = z.string().superRefine((value, ctx) => {
 	}
 });
 
-const EnvVarNameSchema = z.string().superRefine((value, ctx) => {
+export const EnvVarNameSchema = z.string().superRefine((value, ctx) => {
 	const issue = envVarNameIssue(value);
 	if (issue !== null) ctx.addIssue({ code: 'custom', message: issue });
 });

@@ -165,34 +165,52 @@ const pluginModelsOf = (
 					? undefined
 					: externalServerOf(source, externalServerId);
 			const fields =
-				externalServerId !== undefined && externalServer !== undefined
-					? [
-							{
-								id: `field-external-server-${externalServerId}`,
-								path: [
-									'plugins',
-									'external-mcps',
-									'options',
-									'servers',
-									externalServerId,
-								],
-								label: copy.serverDefinition,
-								description: copy.serverDefinitionDescription,
-								kind: 'json' as const,
-								value: externalServer,
-								required: true,
-								readOnly: containsRedactedValue(externalServer),
-								known: false,
-							},
-						]
-					: plugin.optionsSchema === undefined
-						? []
-						: buildConfigurationFields(
-								plugin.optionsSchema,
-								plugin.options,
-								['plugins', plugin.id, 'options'],
-								copy.preservedExtensionField,
-							);
+				externalServerId !== undefined &&
+				externalServer !== undefined &&
+				plugin.optionsSchema !== undefined
+					? buildConfigurationFields(
+							plugin.optionsSchema,
+							recordOf(externalServer),
+							[
+								'plugins',
+								'external-mcps',
+								'options',
+								'servers',
+								externalServerId,
+							],
+							copy.preservedExtensionField,
+						)
+					: externalServerId !== undefined &&
+							externalServer !== undefined
+						? [
+								{
+									id: `field-external-server-${externalServerId}`,
+									path: [
+										'plugins',
+										'external-mcps',
+										'options',
+										'servers',
+										externalServerId,
+									],
+									label: copy.serverDefinition,
+									description:
+										copy.serverDefinitionDescription,
+									kind: 'json' as const,
+									value: externalServer,
+									required: true,
+									readOnly:
+										containsRedactedValue(externalServer),
+									known: false,
+								},
+							]
+						: plugin.optionsSchema === undefined
+							? []
+							: buildConfigurationFields(
+									plugin.optionsSchema,
+									plugin.options,
+									['plugins', plugin.id, 'options'],
+									copy.preservedExtensionField,
+								);
 			return {
 				...plugin,
 				fields,

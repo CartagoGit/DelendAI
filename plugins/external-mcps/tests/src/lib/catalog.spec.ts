@@ -164,15 +164,27 @@ describe('external-mcps plugin manifest (token-lean)', () => {
 				},
 			},
 		});
-		expect(regs.activation).toEqual([
+		expect(regs.activation).toMatchObject([
 			{
 				id: 'ext.filesystem',
 				origin: 'external',
 				source: 'config',
 				active: true,
 				toolCount: 0,
+				configuration: {
+					options: {
+						version: '1.2.3',
+						command: 'npx',
+						args: ['@modelcontextprotocol/server-filesystem@1.2.3'],
+					},
+				},
 			},
 		]);
+		expect(
+			regs.activation?.[0]?.configuration?.optionsSchema?.safeParse(
+				regs.activation[0]?.configuration?.options,
+			).success,
+		).toBe(true);
 	});
 
 	it('every tool declares a summary + a namespaced descriptionKey', async () => {
