@@ -136,6 +136,14 @@ declared settings in the editor.
 - **Files**: `packages/client/src/lib/services/configuration-center.service.ts`, `packages/client/src/lib/contracts/interfaces/configuration-edit.interface.ts`, `packages/client/src/public/index.ts`
 - **DependsOn**: [S1]
 - **Gate**: type
+- **Progress (2026-07-12)**: the independent activation-writer safety finding is
+  hardened ahead of S1. `plugin-activation.service.ts` now treats only `ENOENT`
+  as an empty document; malformed/non-object JSON and read/permission failures
+  fail closed before mutation while the existing `withFileMutex` +
+  `writeFileAtomic` persistence path remains mandatory. Colocated regressions
+  cover absent-file creation, corrupt-byte preservation and I/O-error byte
+  preservation. The S2 document service, schema validation, optimistic digest,
+  secret policy and public contracts remain pending on S1.
 - acceptance:
   - "ENOENT creates a new config; parse, permission and schema errors preserve original bytes and return actionable failures."
   - "Writes preserve unknown/unowned keys and untouched plugin path/prefix/options blocks, validate before commit, and use withFileMutex plus writeFileAtomic."
