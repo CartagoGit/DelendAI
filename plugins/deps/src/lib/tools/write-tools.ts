@@ -45,6 +45,14 @@ const INSTALL_COMMAND: Readonly<Record<IPackageEcosystem, string>> = {
 const SAFE_NAME = /^(@[a-z0-9][a-z0-9._-]*\/)?[a-z0-9][a-z0-9._-]*$/i;
 const SAFE_RANGE = /^[a-zA-Z0-9.^~<>=|*x \-+]*$/;
 
+/**
+ * Quote a value already validated by SAFE_NAME/SAFE_RANGE for the bash command
+ * string accepted by the shared runner. Neither allow-list admits a single
+ * quote, so shell operators that are valid semver syntax (`||`, `<`, `>`) stay
+ * package-manager data instead of becoming shell syntax.
+ */
+const quoteInstallSpec = (value: string): string => `'${value}'`;
+
 export interface IPackageInstallOptions {
 	readonly name: string;
 	readonly range?: string;
@@ -99,7 +107,7 @@ export const buildInstallCommand = (
 			? `${options.name}@${options.range}`
 			: options.name;
 	const flag = SECTION_FLAG[section];
-	const command = [INSTALL_COMMAND[ecosystem], spec, flag]
+	const command = [INSTALL_COMMAND[ecosystem], quoteInstallSpec(spec), flag]
 		.filter((part): part is string => part !== null)
 		.join(' ');
 	return { command };

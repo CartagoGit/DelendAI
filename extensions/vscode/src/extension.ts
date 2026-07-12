@@ -274,7 +274,10 @@ export const activate = async (
 	} catch {
 		loadedPlugins = undefined;
 	}
-	const catalog = new AgentCatalogService(client);
+	const catalog = new AgentCatalogService(
+		client,
+		namespacePrefix === undefined ? {} : { namespacePrefix },
+	);
 	const notifications = new NotificationsService(client, namespacePrefix);
 	const toolTree = new ToolTreeDataProvider(overview, catalog);
 	const memoryTree = new MemoryTreeDataProvider(new MemoryService(client));
@@ -310,14 +313,12 @@ export const activate = async (
 		TOOLS_VIEW_ID,
 		toolTree,
 	);
-	if (treeRegistration !== undefined)
-		context.subscriptions.push(treeRegistration);
+	if (treeRegistration !== undefined) track(treeRegistration);
 	const memoryRegistration = vscode.window.registerTreeDataProvider?.(
 		MEMORY_VIEW_ID,
 		memoryTree,
 	);
-	if (memoryRegistration !== undefined)
-		context.subscriptions.push(memoryRegistration);
+	if (memoryRegistration !== undefined) track(memoryRegistration);
 	// f00079 S4 (a00040 H5): `mcp-vertex.proposals` is declared in
 	// `contributes.views` but had no `TreeDataProvider`, so the view was
 	// permanently empty. Register the existing `ProposalBoardProvider`
@@ -339,8 +340,7 @@ export const activate = async (
 		PROPOSALS_VIEW_ID,
 		proposalsTree,
 	);
-	if (proposalsRegistration !== undefined)
-		context.subscriptions.push(proposalsRegistration);
+	if (proposalsRegistration !== undefined) track(proposalsRegistration);
 	// Fix #3: `createFileSystemWatcher` can be absent on stripped hosts
 	// (or in test fakes that omit `workspace`). Previously we silently
 	// skipped, leaving the tree permanently stale. Now we log and
@@ -351,7 +351,7 @@ export const activate = async (
 		'**/mcp-vertex.config.json',
 	);
 	if (watcher !== undefined) {
-		context.subscriptions.push(toolTree.bindConfigWatcher(watcher));
+		track(toolTree.bindConfigWatcher(watcher));
 	} else {
 		toolTree.refresh();
 	}

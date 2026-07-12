@@ -29,6 +29,8 @@
  * helpers (`breakpoints`, `themes`, `tokens`); keeping them as
  * separate compilation units keeps the surface decomposed.
  */
+/// <reference path="./raw.d.ts" />
+
 import { compiledCss } from './dev-preview.scss';
 
 /**
