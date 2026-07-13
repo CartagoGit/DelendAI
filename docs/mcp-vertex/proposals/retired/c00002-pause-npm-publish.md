@@ -1,6 +1,6 @@
 ---
 id: c00002
-status: paused
+status: retired
 paused-reason: Blocked on NPM_TOKEN and develop->main merge
 type: proposal
 track: docs+release
