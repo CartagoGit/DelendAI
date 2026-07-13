@@ -1,7 +1,7 @@
 ---
 id: f00105
 kind: feat
-status: ready
+status: done
 type: proposal
 track: config+install+dogfood+workflow
 date: 2026-07-08
