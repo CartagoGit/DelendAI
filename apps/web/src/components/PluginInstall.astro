@@ -13,19 +13,17 @@ import { pluginInstallCommands } from '#DATA/plugin-install';
 interface Props {
 	/** Plugin slug (e.g. `proposals`). */
 	slug: string;
-	/** Optional heading override. */
-	heading?: string;
+	/** Localized heading supplied by the host page. */
+	heading: string;
 }
 const { slug, heading } = Astro.props;
 const commands = pluginInstallCommands(slug);
 ---
 
 <section class="plugin-install">
-	<h2>{heading ?? `Install the ${slug} plugin`}</h2>
+	<h2>{heading}</h2>
 	<p>
-		Load only this plugin by adding <code>--plugins={slug}</code> to the
-		server command — same package managers, same order as the core
-		install:
+		{heading}: <code>--plugins={slug}</code>
 	</p>
 	<div class="install__cmd-grid">
 		{

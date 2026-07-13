@@ -11,7 +11,6 @@ import {
 	type IMcpVertexConfigFile,
 	type IMcpVertexPluginConfig,
 	type PluginOrigin,
-	parseConfigFile,
 	withFileMutex,
 	writeFileAtomic,
 } from '@mcp-vertex/core/public';
@@ -23,11 +22,34 @@ import type {
 const readConfig = async (
 	configFile: string,
 ): Promise<IMcpVertexConfigFile> => {
+	let raw: string;
 	try {
-		return parseConfigFile(await readFile(configFile, 'utf8'));
-	} catch {
-		return {};
+		raw = await readFile(configFile, 'utf8');
+	} catch (error) {
+		if ((error as NodeJS.ErrnoException).code === 'ENOENT') return {};
+		throw new Error(`Unable to read config file "${configFile}"`, {
+			cause: error,
+		});
 	}
+
+	let parsed: unknown;
+	try {
+		parsed = JSON.parse(raw);
+	} catch (error) {
+		throw new Error(`Invalid JSON in config file "${configFile}"`, {
+			cause: error,
+		});
+	}
+	if (
+		parsed === null ||
+		typeof parsed !== 'object' ||
+		Array.isArray(parsed)
+	) {
+		throw new Error(
+			`Config file "${configFile}" must contain a JSON object`,
+		);
+	}
+	return parsed as IMcpVertexConfigFile;
 };
 
 const setExternalServerActivation = (

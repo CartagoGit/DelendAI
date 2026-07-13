@@ -44,7 +44,7 @@ const proposalKindEnum = z.enum([
 
 const toolSummarySchema = z.object({
 	name: z.string(),
-	plugin: z.string(),
+	plugin: z.string().optional(),
 	summary: z.string().optional(),
 	tags: z.array(z.string()).optional(),
 	effects: z
@@ -68,7 +68,7 @@ const proposalSummarySchema = z.object({
 	track: z.string(),
 	status: proposalStatusEnum,
 	kind: proposalKindEnum,
-	date: z.string(),
+	date: z.string().optional(),
 });
 
 // f00067a S2: lean projection of the config file's root `providers`

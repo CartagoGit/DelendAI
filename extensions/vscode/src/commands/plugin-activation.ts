@@ -74,7 +74,9 @@ export const registerPluginActivationCommand = (deps: IPluginActivationDeps) =>
 					})),
 				);
 				if (selected === undefined) return;
-				const row = rows.find((candidate) => candidate.id === selected);
+				const row = rows.find(
+					(candidate) => candidate.id === selected.id,
+				);
 				if (row === undefined) return;
 				const workspaceRoot =
 					deps.vscode.workspace?.workspaceFolders?.[0]?.uri.fsPath;

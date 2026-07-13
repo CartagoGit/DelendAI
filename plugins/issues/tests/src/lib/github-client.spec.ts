@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
+import type { ISpawn } from '../../../src/lib/contracts';
 import { fetchIssue, listIssues } from '../../../src/lib/github-client';
 import type { IFetchFn, ISpawnSync } from '../../../src/lib/github-client';
 
@@ -69,6 +70,27 @@ const jsonFetch =
 	};
 
 describe('fetchIssue', async () => {
+	it('uses the preferred async argv spawn seam', async () => {
+		const spawn: ISpawn = async (cmd) =>
+			okJsonSpawn({
+				comments: [rawComment],
+				'issues/123': rawIssue,
+			})(cmd);
+
+		const result = await fetchIssue('o/r', 123, {
+			spawn,
+			spawnSync: () => {
+				throw new Error('legacy sync seam should not be called');
+			},
+			fetchFn: async () => {
+				throw new Error('fetch should not be called when gh succeeds');
+			},
+		});
+
+		expect(result.tier).toBe('gh');
+		expect(result.data.number).toBe(123);
+	});
+
 	it('uses the gh tier when gh succeeds', async () => {
 		const spawnSync = okJsonSpawn({
 			comments: [rawComment],

@@ -19,6 +19,7 @@ import {
 	injectCspMeta,
 	type IProviderStatusModel,
 	type IProviderStatusRow,
+	type IModelAttributionModel,
 	type IUsageCostCardModel,
 } from '@mcp-vertex/ui-extension/public';
 
@@ -182,9 +183,27 @@ const usageSectionHtml = (
 </table>`;
 };
 
+const modelAttributionHtml = (
+	model: IModelAttributionModel,
+	s: IProviderDashboardStrings,
+): string => {
+	if (model.kind === 'plugin-absent') {
+		return optInHtml(s.optInTitle, model.hint, model.configSnippet);
+	}
+	if (model.empty) return `<p class="muted">${escapeHtml(s.emptyLog)}</p>`;
+	const rows = model.rows
+		.map(
+			(row) =>
+				`<tr><th scope="row"><code>${escapeHtml(row.key)}</code></th><td>${row.calls}</td><td>${row.totalTokens}</td><td>$${row.costUsd.toFixed(4)}</td><td>${row.tokensSaved}</td><td>${row.savingsPercent}%</td><td>${meterHtml('', row.savingsBarPct, false)}</td></tr>`,
+		)
+		.join('');
+	return `<table><thead><tr><th>${escapeHtml(s.colModel)}</th><th>${escapeHtml(s.calls)}</th><th>${escapeHtml(s.tokens)}</th><th>$</th><th>${escapeHtml(s.tokens)} ↓</th><th>%</th><th>${escapeHtml(s.share)}</th></tr></thead><tbody>${rows}</tbody></table>`;
+};
+
 export interface IProviderDashboardViewModel {
 	readonly providers: IProviderStatusModel;
 	readonly usage: IUsageCostCardModel;
+	readonly modelAttribution: IModelAttributionModel;
 }
 
 export const renderProviderDashboardHtml = (
@@ -204,6 +223,7 @@ export const renderProviderDashboardHtml = (
 	<h1>${escapeHtml(s.title)}</h1>
 	<section><h2>${escapeHtml(s.providersTitle)}</h2>${providersSectionHtml(model.providers, s)}</section>
 	<section><h2>${escapeHtml(s.usageTitle)}</h2>${usageSectionHtml(model.usage, s)}</section>
+	<section><h2>${escapeHtml(s.usageTitle)} — ${escapeHtml(s.colModel)}</h2>${modelAttributionHtml(model.modelAttribution, s)}</section>
 </body>
 </html>`,
 		DEFAULT_DENY,

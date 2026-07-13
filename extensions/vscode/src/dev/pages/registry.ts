@@ -51,6 +51,7 @@ export interface IRegistryOptions {
 /** Human-readable label for the sidebar. */
 const LABELS: Readonly<Record<ViewId, string>> = {
 	dashboard: 'dashboard',
+	configuration: 'configuration',
 	settings: 'settings',
 	'tool-detail': 'tool-detail',
 	metrics: 'metrics',
@@ -104,6 +105,10 @@ export class PageRegistry {
 				return mod.createSettingsPage({
 					navigate: (next) => opts.navigate(next),
 				});
+			}
+			case 'configuration': {
+				const mod = await import('./configuration-center');
+				return mod.createConfigurationCenterPage();
 			}
 			case 'tool-detail': {
 				const mod = await import('./tool-detail');

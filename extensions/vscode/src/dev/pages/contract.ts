@@ -68,7 +68,12 @@ export interface IPageDeps {
  * `import()`s the module on demand and calls `render`.
  */
 export interface IPage {
-	readonly id: 'dashboard' | 'settings' | 'tool-detail' | 'metrics';
+	readonly id:
+		| 'dashboard'
+		| 'configuration'
+		| 'settings'
+		| 'tool-detail'
+		| 'metrics';
 	readonly label: string;
 	/** CSS module specifiers the page needs mounted. Optional;
 	 *  most pages share the global dev-preview bundle. */
@@ -80,6 +85,8 @@ export interface IPage {
 	 * await their own fetch.
 	 */
 	render: (root: HTMLElement, deps: IPageDeps) => Promise<void> | void;
+	/** Cancel timers, requests and listeners owned by the current mount. */
+	dispose?: () => void;
 }
 
 /**
@@ -90,6 +97,7 @@ export interface IPage {
  */
 export const isPageId = (s: string): s is IPage['id'] =>
 	s === 'dashboard' ||
+	s === 'configuration' ||
 	s === 'settings' ||
 	s === 'tool-detail' ||
 	s === 'metrics';

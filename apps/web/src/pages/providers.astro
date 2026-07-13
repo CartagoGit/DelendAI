@@ -25,6 +25,25 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 const homeHref = `${base}/`;
 const model = PROVIDER_STATUS_SHOWCASE;
 const absent = PROVIDER_STATUS_ABSENT_SHOWCASE;
+const attributionRows = [
+	{
+		key: 'openai/gpt-5-codex',
+		cost: 2.1,
+		used: 1200,
+		saved: 620,
+		pct: 52,
+		bar: 100,
+	},
+	{
+		key: 'anthropic/claude-sonnet',
+		cost: 0.8,
+		used: 700,
+		saved: 240,
+		pct: 34,
+		bar: 39,
+	},
+	{ key: 'unattributed', cost: 0, used: 90, saved: 0, pct: 0, bar: 0 },
+];
 ---
 
 <Base lang={lang} title={`${pd.title} — @mcp-vertex/core`}>
@@ -39,6 +58,14 @@ const absent = PROVIDER_STATUS_ABSENT_SHOWCASE;
 			<strong>{pd.staticNote.title}</strong>
 			<p>{pd.staticNote.body}</p>
 		</aside>
+
+		<section class="pdash__section">
+			<h2>{pd.modelAttribution.title}</h2>
+			<p>{pd.modelAttribution.body}</p>
+			<div class="pdash__scroll"><table class="pdash__table"><thead><tr><th>Model</th><th>Cost</th><th>Tokens</th><th>Saved</th><th>Savings</th></tr></thead><tbody>
+				{attributionRows.map((row) => <tr><th><code>{row.key}</code></th><td>${row.cost.toFixed(2)}</td><td>{row.used}</td><td>{row.saved}</td><td><div class="pdash__meter"><span class="pdash__meter-label">{row.pct}%</span><span class="pdash__meter-track"><span class="pdash__meter-fill" style={`width:${row.bar}%`} /></span></div></td></tr>)}
+			</tbody></table></div>
+		</section>
 
 		<section class="pdash__section">
 			<h2>{pd.roster.title}</h2>

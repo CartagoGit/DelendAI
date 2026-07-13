@@ -262,7 +262,9 @@ const buildClient = async (
 	const toolNamespaces = new Map<string, string>(
 		agentCatalogTools.map((tool) => [
 			tool.name,
-			tool.plugin === 'mcp-vertex' ? 'core' : tool.plugin,
+			tool.plugin === undefined || tool.plugin === 'mcp-vertex'
+				? 'core'
+				: tool.plugin,
 		]),
 	);
 	return {

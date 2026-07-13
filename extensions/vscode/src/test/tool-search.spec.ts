@@ -44,7 +44,7 @@ const createVscode = () => {
 				const first = items[0];
 				if (first === undefined) return undefined;
 				picks.push(first.id);
-				return first.id;
+				return first;
 			},
 		},
 	};

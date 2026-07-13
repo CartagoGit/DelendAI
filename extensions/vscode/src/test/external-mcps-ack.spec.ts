@@ -92,10 +92,11 @@ const createVscode = (opts?: {
 			async showQuickPick(items) {
 				quickPickCount += 1;
 				// First QuickPick = server; second = accept/reject decision.
-				if (quickPickCount === 1) {
-					return opts?.pickServer ?? items[0]?.id;
-				}
-				return opts?.pickDecision ?? items[0]?.id;
+				const id =
+					quickPickCount === 1
+						? opts?.pickServer
+						: opts?.pickDecision;
+				return items.find((item) => item.id === id) ?? items[0];
 			},
 		},
 	};

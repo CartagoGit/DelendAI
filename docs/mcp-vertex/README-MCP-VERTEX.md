@@ -54,20 +54,19 @@ This is the canonical reference. Other clients reuse the same args:
 	"servers": {
 		"mcp-vertex": {
 			"type": "stdio",
-			"command": "bun",
+			"command": "bunx",
 			"args": [
-				"${workspaceFolder}/tools/scripts/host/host-server.script.ts",
-				"--workspace=${workspaceFolder}",
-				"--config=${workspaceFolder}/mcp-vertex.config.json",
-				"--preset=swarm"
+				"--package", "@mcp-vertex/cli", "mcpv", "__serve",
+				"--workspace", "${workspaceFolder}",
+				"--preset", "swarm"
 			]
 		}
 	}
 }
 ```
 
-The `host-server.script.ts` entry point boots the **same** loader as the
-`mcpv` CLI. Plugins declared in `mcp-vertex.config.json` are loaded
+The published `mcpv __serve` entry point boots the core loader. Plugins
+declared in `mcp-vertex.config.json` are loaded
 automatically; `--preset` adds the curated swarm preset; missing
 plugins are skipped with a stderr warning — the rest still load.
 
@@ -79,7 +78,7 @@ If you are consuming mcp-vertex as a published package from npm:
 	"servers": {
 		"mcp-vertex": {
 			"command": "bunx",
-			"args": ["@mcp-vertex/core", "--workspace=${workspaceFolder}", "--preset=swarm"]
+			"args": ["--package", "@mcp-vertex/cli", "mcpv", "__serve", "--workspace", "${workspaceFolder}", "--preset", "swarm"]
 		}
 	}
 }
@@ -103,11 +102,11 @@ Claude Code wraps the same MCP server under a `mcpServers` key instead of
 {
 	"mcpServers": {
 		"mcp-vertex": {
-			"command": "bun",
+			"command": "bunx",
 			"args": [
-				"/absolute/path/to/your/repo/tools/scripts/host/host-server.script.ts",
-				"--config=/absolute/path/to/your/repo/mcp-vertex.config.json",
-				"--preset=swarm"
+				"--package", "@mcp-vertex/cli", "mcpv", "__serve",
+				"--workspace", "/absolute/path/to/your/repo",
+				"--preset", "swarm"
 			]
 		}
 	}
@@ -127,11 +126,11 @@ TOML array:
 ```toml
 # ~/.codex/config.toml
 [mcp_servers.mcp-vertex]
-command = "bun"
+command = "bunx"
 args = [
-  "/absolute/path/to/your/repo/tools/scripts/host/host-server.script.ts",
-  "--config=/absolute/path/to/your/repo/mcp-vertex.config.json",
-  "--preset=swarm",
+  "--package", "@mcp-vertex/cli", "mcpv", "__serve",
+  "--workspace", "/absolute/path/to/your/repo",
+  "--preset", "swarm",
 ]
 ```
 
@@ -168,7 +167,7 @@ If this is the first time you are wiring `mcp-vertex` into a repository, start w
 
 ```bash
 # Diagnose a setup before wiring it into a client:
-bunx @mcp-vertex/core --plugins=proposals --check
+bunx @mcp-vertex/cli --plugins=proposals validate
 ```
 
 ## Passing values to plugins — `mcp-vertex.config.json`
@@ -217,10 +216,7 @@ Concrete example: this repo's own launch shape
 
 ```bash
 # .vscode/mcp.json (the checked-in file in this repo)
-bun tools/scripts/host/host-server.script.ts \
-  --workspace=. \
-  --config=./mcp-vertex.config.json \
-  --preset=swarm
+bunx --package @mcp-vertex/cli mcpv __serve --workspace . --preset swarm
 ```
 
 combined with `mcp-vertex.config.json#plugins = { docs, search, git,

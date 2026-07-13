@@ -25,6 +25,8 @@ import {
 	dictsByLang as sharedDicts,
 	languages as sharedLanguages,
 } from '@mcp-vertex/shared/i18n';
+import rawSharedEn from '../../shared/src/i18n/langs/en';
+import rawSharedEs from '../../shared/src/i18n/langs/es';
 
 const strictMode = process.argv.includes('--strict');
 
@@ -40,6 +42,25 @@ const flattenKeys = (root: unknown, prefix = ''): string[] => {
 		} else {
 			out.push(next);
 		}
+	}
+	return out;
+};
+
+const flattenStrings = (
+	root: unknown,
+	prefix = '',
+): ReadonlyMap<string, string> => {
+	const out = new Map<string, string>();
+	if (root === null || typeof root !== 'object' || Array.isArray(root)) {
+		if (prefix && typeof root === 'string') out.set(prefix, root);
+		return out;
+	}
+	for (const [key, value] of Object.entries(
+		root as Record<string, unknown>,
+	)) {
+		const next = prefix ? `${prefix}.${key}` : key;
+		for (const [path, text] of flattenStrings(value, next))
+			out.set(path, text);
 	}
 	return out;
 };
@@ -162,4 +183,55 @@ if (sharedProblems.length) {
 
 console.log(
 	`\u2713 shared i18n complete: ${sharedLanguages.length} languages \u00d7 ${sharedEnKeys.length} keys.`,
+);
+
+// Runtime fallback keeps partially-authored extension dictionaries usable,
+// but it must not make the two fully-authored product locales look complete.
+// Compare the raw modules before `withExtensionFallback(...)` is applied.
+const authoredEnglish = flattenStrings(rawSharedEn.extension);
+const authoredSpanish = flattenStrings(rawSharedEs.extension);
+const spanishMissing = [...authoredEnglish.keys()].filter(
+	(key) => !authoredSpanish.has(key),
+);
+const spanishExtra = [...authoredSpanish.keys()].filter(
+	(key) => !authoredEnglish.has(key),
+);
+const allowedIdenticalSpanish = new Set([
+	'tabTokens',
+	'tabPlugins',
+	'tabDocs',
+	'kpiPlugins',
+	'kpiTokens',
+	'toolbarCategoryLogs',
+	'toolbarCategoryDocs',
+	'toolbarCategoryGit',
+	'dashboard.tokens.usedHint',
+	'settings.logLevel.error',
+	'common.plugin',
+	'common.id',
+]);
+const spanishStaleEnglish = [...authoredEnglish].flatMap(([key, value]) =>
+	authoredSpanish.get(key) === value && !allowedIdenticalSpanish.has(key)
+		? [key]
+		: [],
+);
+if (
+	spanishMissing.length > 0 ||
+	spanishExtra.length > 0 ||
+	spanishStaleEnglish.length > 0
+) {
+	console.error('\n✗ authored extension i18n incomplete for Spanish:');
+	if (spanishMissing.length > 0) {
+		console.error(`  missing: ${spanishMissing.join(', ')}`);
+	}
+	if (spanishExtra.length > 0) {
+		console.error(`  stale: ${spanishExtra.join(', ')}`);
+	}
+	if (spanishStaleEnglish.length > 0) {
+		console.error(`  untranslated: ${spanishStaleEnglish.join(', ')}`);
+	}
+	process.exit(1);
+}
+console.log(
+	`✓ authored extension i18n complete: en + es × ${authoredEnglish.size} keys.`,
 );

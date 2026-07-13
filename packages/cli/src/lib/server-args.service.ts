@@ -38,7 +38,14 @@
  */
 
 import type { ICliGlobalOptions } from '../contracts/interfaces/cli-command.interface';
-
+import {
+	CANONICAL_CLI_BIN,
+	CANONICAL_CLI_PACKAGE,
+} from '../contracts/constants/canonical-launch.constant';
+import type {
+	ICanonicalLaunch,
+	ICanonicalLaunchOptions,
+} from '../contracts/interfaces/canonical-launch.interface';
 import type { IAutoForwardRule } from '../contracts/interfaces/server-args.interface';
 
 // f00037/f00093: canonical home is contracts/interfaces/server-args.interface.ts.
@@ -150,9 +157,13 @@ export const SERVER_ARG_MAPPER: readonly IAutoForwardRule[] = [
 // `passthrough` rule without re-deriving the renderer.
 export { passthrough as passthroughRule };
 
-const forwardAll = (globals: ICliGlobalOptions): readonly string[] => {
+const forwardAll = (
+	globals: ICliGlobalOptions,
+	excluded: ReadonlySet<keyof ICliGlobalOptions> = new Set(),
+): readonly string[] => {
 	const out: string[] = [];
 	for (const rule of SERVER_ARG_MAPPER) {
+		if (excluded.has(rule.key)) continue;
 		const value = globals[rule.key];
 		out.push(...rule.argv(String(rule.key), value));
 	}
@@ -164,7 +175,8 @@ export const buildServerArgs = (
 	extraPlugins: readonly string[] = [],
 ): string[] => {
 	const args: string[] = ['__serve', '--workspace', globals.workspace];
-	args.push(...forwardAll(globals));
+	// Plugins are merged exactly once below with caller-supplied extras.
+	args.push(...forwardAll(globals, new Set(['plugins'])));
 
 	// `--plugins` is the only field where `extraPlugins` from the caller
 	// participates. We keep this final merge local so the mapper rule does
@@ -178,4 +190,32 @@ export const buildServerArgs = (
 	if (allPlugins.length > 0) args.push('--plugins', allPlugins.join(','));
 
 	return args;
+};
+
+/**
+ * The single external launch shape. Consumers install/run the published CLI
+ * package; the repository-only host script is never part of this result.
+ */
+export const buildCanonicalLaunch = (
+	options: ICanonicalLaunchOptions,
+): ICanonicalLaunch => {
+	const command = options.mode ?? 'bunx';
+	const serverArgs = buildServerArgs({
+		workspace: options.workspace,
+		json: false,
+		format: 'text',
+		lang: 'en',
+		noColor: false,
+		plugins: options.plugins ?? [],
+		...(options.preset !== undefined ? { preset: options.preset } : {}),
+	});
+	return {
+		command,
+		args: [
+			'--package',
+			CANONICAL_CLI_PACKAGE,
+			CANONICAL_CLI_BIN,
+			...serverArgs,
+		],
+	};
 };

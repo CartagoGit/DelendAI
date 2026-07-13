@@ -262,6 +262,58 @@ describe('git_commit / git_push (S9)', async () => {
 					.error.reason,
 			).toContain('protected branch');
 		});
+
+		it('refuses protected destinations expressed as refspecs', async () => {
+			for (const branch of ['HEAD:main', 'HEAD:refs/heads/main']) {
+				const result = await runGitPush(cloneRunner, {
+					remote: 'origin',
+					branch,
+				});
+				expect(result.isError).toBe(true);
+				expect(
+					(result.structuredContent as { error: { reason: string } })
+						.error.reason,
+				).toContain('protected branch');
+			}
+		});
+
+		it('checks the current branch when the branch argument is omitted', async () => {
+			await run(
+				'git',
+				['checkout', '-q', '-B', 'main', 'origin/main'],
+				cloneDir,
+			);
+
+			const result = await runGitPush(cloneRunner, { remote: 'origin' });
+
+			expect(result.isError).toBe(true);
+			expect(
+				(result.structuredContent as { error: { reason: string } })
+					.error.reason,
+			).toContain('protected branch "main"');
+		});
+
+		it('does not mistake a nested feature branch for a protected branch', async () => {
+			const result = await runGitPush(cloneRunner, {
+				remote: 'origin',
+				branch: 'HEAD:refs/heads/feature/main',
+			});
+
+			expect(result.isError).toBeUndefined();
+			expect(
+				(result.structuredContent as { pushed: boolean }).pushed,
+			).toBe(true);
+		});
+
+		it('rejects every plain-force spelling before invoking push', async () => {
+			for (const args of [
+				{ remote: 'origin', branch: 'agent/a', force: 'true' as const },
+				{ remote: 'origin', branch: '+HEAD:agent/a' },
+			]) {
+				const result = await runGitPush(cloneRunner, args);
+				expect(result.isError).toBe(true);
+			}
+		});
 	});
 
 	describe('commitAuthor policy (f00082)', () => {

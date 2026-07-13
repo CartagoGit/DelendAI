@@ -10,6 +10,7 @@ export interface IServerPlanOptions {
 	readonly namespacePrefix?: string;
 	readonly cacheDir?: string;
 	readonly docsDir?: string;
+	readonly targetDir?: string;
 	/**
 	 * Optional host-defined pattern overrides (see
 	 * `pattern-catalog-overrides.ts`). When omitted, the hardcoded
@@ -22,6 +23,7 @@ export interface IServerPlan {
 	readonly projectType: IProjectAnalysis['projectType'];
 	readonly serverName: string;
 	readonly namespacePrefix: string;
+	readonly targetDir: string;
 	/** mcp-vertex plugins to load via `--plugins`. */
 	readonly plugins: readonly string[];
 	/** Project-specific tools to scaffold. */
@@ -37,6 +39,7 @@ export interface IServerPlan {
 }
 
 const kebabHead = (name: string | undefined): string => {
+	if (name?.startsWith('@mcp-vertex/')) return 'mcp-vertex';
 	if (!name) return 'app';
 	const cleaned = name
 		.replace(/^@[^/]+\//, '')
@@ -45,6 +48,11 @@ const kebabHead = (name: string | undefined): string => {
 		.replace(/^-+|-+$/g, '');
 	const head = cleaned.split('-')[0];
 	return head && head.length > 0 ? head : 'app';
+};
+
+const defaultTargetDir = (analysis: IProjectAnalysis): string => {
+	if (analysis.name === '@mcp-vertex/core-monorepo') return 'packages/core';
+	return analysis.hasPackageJson ? '.' : 'libs/mcp-project';
 };
 
 const buildValidationCommands = (
@@ -74,6 +82,7 @@ export const recommendServerPlan = (
 	const pattern = catalog[analysis.projectType];
 	const namespacePrefix = options.namespacePrefix ?? kebabHead(analysis.name);
 	const serverName = options.serverName ?? `mcp-project-${namespacePrefix}`;
+	const targetDir = options.targetDir ?? defaultTargetDir(analysis);
 	const cacheDir = options.cacheDir ?? DEFAULT_CORE_PATHS.cacheDir;
 	const docsDir = options.docsDir ?? DEFAULT_CORE_PATHS.docsDir;
 	const plugins = pattern.recommendedPlugins;
@@ -97,6 +106,7 @@ export const recommendServerPlan = (
 		projectType: analysis.projectType,
 		serverName,
 		namespacePrefix,
+		targetDir,
 		plugins,
 		tools: pattern.recommendedTools,
 		validationCommands: buildValidationCommands(analysis),

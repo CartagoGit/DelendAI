@@ -234,7 +234,7 @@ const site = {
 		copy: 'คัดลอก',
 		copied: 'คัดลอกแล้ว!',
 		faqTitle: 'คำถามที่พบบ่อย',
-		faqQ1: 'ทำไม `deno run -A npm:@mcp-vertex/core` เริ่มต้นช้า?',
+		faqQ1: 'ทำไม `deno run -A npm:@mcp-vertex/cli` เริ่มต้นช้า?',
 		faqA1: 'Deno แก้และตรวจสอบแพ็กเกจ npm ในการใช้ครั้งแรก การรันครั้งถัดไปใช้แคชใน `~/.cache/deno` สำหรับการเริ่มต้นซ้ำ ๆ ควรใช้ bun หรือ npx',
 		faqQ2: 'IDE ของฉันไม่อยู่ในรายการ — ทำอย่างไร?',
 		faqA2: 'IDE ใดก็ตามที่รับเซิร์ฟเวอร์ MCP แบบ stdio ใช้ได้ทั้งนั้น นำ JSON จาก VS Code ไปเปลี่ยนพาธไฟล์ให้ตรงกับที่ IDE ของคุณต้องการ แล้วลงทะเบียนคำสั่งและอาร์กิวเมนต์เดิม',
@@ -274,6 +274,7 @@ const site = {
 	},
 	cfg: {
 		title: 'การตั้งค่า',
+		close: 'ปิดการตั้งค่า',
 		theme: 'ธีม',
 		language: 'ภาษา',
 		motion: 'การเคลื่อนไหว',
@@ -282,6 +283,10 @@ const site = {
 	search: {
 		title: 'ค้นหา',
 		placeholder: 'ค้นหาในไซต์...',
+		close: 'ปิดการค้นหา',
+		noMatches: 'ไม่พบผลลัพธ์',
+		indexUnavailable: 'ดัชนีการค้นหาไม่พร้อมใช้งาน',
+		buildRequired: 'การค้นหาสร้างด้วย bun run site โปรดรันการสร้างเพื่อเปิดใช้งาน',
 	},
 	footer: {
 		built: 'สร้างจากรีจิสทรีเครื่องมือที่มีชีวิต',
@@ -300,6 +305,7 @@ const site = {
 		tabTools: 'เครื่องมือ',
 		tabConfiguration: 'การตั้งค่า',
 		tabTutorial: 'บทเรียน',
+		tutorialFallback: 'กำลังแสดงภาษาอังกฤษและยังไม่ได้แปลเป็น {lang}',
 	},
 	plugin: {
 		proposals:
@@ -377,6 +383,8 @@ const site = {
 		nextSteps: 'ไปที่ไหนต่อ',
 		nextToolsCta: 'ดูเครื่องมือทั้งหมด',
 		nextTroubleshootingCta: 'มีอะไรไม่ทำงาน? การแก้ไขปัญหา',
+		overviewHint:
+			'หลังเซิร์ฟเวอร์เริ่มทำงาน ให้เรียก mcp-vertex_overview ด้วย compact: true; recommendedNextAction จะบอกเอเจนต์อย่างชัดเจนว่าต้องทำอะไรต่อไป',
 	},
 	troubleshooting: {
 		title: 'การแก้ไขปัญหา',

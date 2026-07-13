@@ -18,8 +18,8 @@ Mọi trình quản lý gói dưới đây đều chạy cùng một gói đã p
 Node Package Manager đi kèm với Node.js, nên đây là lựa chọn mặc định an toàn nhất khi bạn cần độ tương thích rộng nhất giữa nhiều máy và runner CI.
 
 ```bash
-npx -y @mcp-vertex/core init
-npx -y @mcp-vertex/core --check
+npx -y @mcp-vertex/cli init
+npx -y @mcp-vertex/cli validate
 ```
 
 ### pnpm
@@ -27,8 +27,8 @@ npx -y @mcp-vertex/core --check
 pnpm nhanh, tiết kiệm dung lượng đĩa và nghiêm ngặt trong việc resolve dependency, nên rất hợp với monorepo hoặc các nhóm đã chuẩn hóa pnpm.
 
 ```bash
-pnpm dlx @mcp-vertex/core init
-pnpm dlx @mcp-vertex/core --check
+pnpm dlx @mcp-vertex/cli init
+pnpm dlx @mcp-vertex/cli validate
 ```
 
 ### yarn
@@ -36,8 +36,8 @@ pnpm dlx @mcp-vertex/core --check
 Yarn vẫn là lựa chọn quen thuộc trong nhiều codebase JavaScript, nên con đường này phù hợp khi tooling và thói quen của nhóm đã xoay quanh Yarn.
 
 ```bash
-yarn dlx @mcp-vertex/core init
-yarn dlx @mcp-vertex/core --check
+yarn dlx @mcp-vertex/cli init
+yarn dlx @mcp-vertex/cli validate
 ```
 
 ### bun
@@ -45,8 +45,8 @@ yarn dlx @mcp-vertex/core --check
 bun gộp runtime và trình quản lý gói vào cùng một công cụ, và bản thân mcp-vertex cũng được build bằng bun, nên đây là con đường trực tiếp nhất khi máy đã có bun.
 
 ```bash
-bunx @mcp-vertex/core init
-bunx @mcp-vertex/core --check
+bunx @mcp-vertex/cli init
+bunx @mcp-vertex/cli validate
 ```
 
 ### deno
@@ -54,8 +54,8 @@ bunx @mcp-vertex/core --check
 Deno có thể chạy trực tiếp gói npm, điều này hữu ích nếu bạn thích một runtime an toàn mặc định, có hỗ trợ TypeScript hạng nhất và tương thích npm.
 
 ```bash
-deno run -A npm:@mcp-vertex/core init
-deno run -A npm:@mcp-vertex/core --check
+deno run -A npm:@mcp-vertex/cli init
+deno run -A npm:@mcp-vertex/cli validate
 ```
 
 ## Chọn IDE của bạn
@@ -74,8 +74,14 @@ Phạm vi: project
       "type": "stdio",
       "command": "bunx",
       "args": [
-        "@mcp-vertex/core",
-        "--preset=standard"
+        "--package",
+        "@mcp-vertex/cli",
+        "mcpv",
+        "__serve",
+        "--workspace",
+        ".",
+        "--preset",
+        "standard"
       ]
     }
   }
@@ -93,8 +99,14 @@ Phạm vi: project / global
     "mcp-vertex": {
       "command": "bunx",
       "args": [
-        "@mcp-vertex/core",
-        "--preset=standard"
+        "--package",
+        "@mcp-vertex/cli",
+        "mcpv",
+        "__serve",
+        "--workspace",
+        ".",
+        "--preset",
+        "standard"
       ]
     }
   }
@@ -112,8 +124,14 @@ Phạm vi: global
     "mcp-vertex": {
       "command": "bunx",
       "args": [
-        "@mcp-vertex/core",
-        "--preset=standard"
+        "--package",
+        "@mcp-vertex/cli",
+        "mcpv",
+        "__serve",
+        "--workspace",
+        ".",
+        "--preset",
+        "standard"
       ]
     }
   }
@@ -131,8 +149,14 @@ Phạm vi: project
     "mcp-vertex": {
       "command": "bunx",
       "args": [
-        "@mcp-vertex/core",
-        "--preset=standard"
+        "--package",
+        "@mcp-vertex/cli",
+        "mcpv",
+        "__serve",
+        "--workspace",
+        ".",
+        "--preset",
+        "standard"
       ]
     }
   }
@@ -150,8 +174,14 @@ Phạm vi: global
     "mcp-vertex": {
       "command": "bunx",
       "args": [
-        "@mcp-vertex/core",
-        "--preset=standard"
+        "--package",
+        "@mcp-vertex/cli",
+        "mcpv",
+        "__serve",
+        "--workspace",
+        ".",
+        "--preset",
+        "standard"
       ]
     }
   }
@@ -169,8 +199,14 @@ Phạm vi: global
     "mcp-vertex": {
       "command": "bunx",
       "args": [
-        "@mcp-vertex/core",
-        "--preset=standard"
+        "--package",
+        "@mcp-vertex/cli",
+        "mcpv",
+        "__serve",
+        "--workspace",
+        ".",
+        "--preset",
+        "standard"
       ]
     }
   }
@@ -188,8 +224,14 @@ Phạm vi: global
     "mcp-vertex": {
       "command": "bunx",
       "args": [
-        "@mcp-vertex/core",
-        "--preset=standard"
+        "--package",
+        "@mcp-vertex/cli",
+        "mcpv",
+        "__serve",
+        "--workspace",
+        ".",
+        "--preset",
+        "standard"
       ]
     }
   }
@@ -266,15 +308,15 @@ Kích thước: 15 plugin.
 Sau khi cấu hình đã vào đúng chỗ, hãy chạy self-check bằng chính trình quản lý gói mà bạn đã dùng để cài. Nếu không dùng bun, hãy thay `bunx` bằng `npx`, `pnpm dlx`, `yarn dlx` hoặc `deno run -A npm:`.
 
 ```bash
-bunx @mcp-vertex/core --check
-bunx @mcp-vertex/core --preset=swarm --exclude-plugins=notification --check
+bunx @mcp-vertex/cli validate
+bunx @mcp-vertex/cli --preset=swarm --exclude-plugins=notification validate
 ```
 
 Hãy dùng `--exclude-plugins=` khi bạn muốn bớt một plugin khỏi preset mà không cần fork preset đó, ví dụ giữ nguyên nền tảng swarm nhưng bỏ notification trong một phiên single-agent.
 
 ## Câu hỏi thường gặp
 
-### Vì sao `deno run -A npm:@mcp-vertex/core` khởi động chậm?
+### Vì sao `deno run -A npm:@mcp-vertex/cli` khởi động chậm?
 
 Deno sẽ resolve và verify gói npm ở lần dùng đầu tiên. Những lần sau nó tái sử dụng cache trong `~/.cache/deno`, nhưng với các lần khởi chạy lặp lại trên máy local thì bun hoặc npx vẫn nhanh hơn.
 

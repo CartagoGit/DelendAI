@@ -26,6 +26,8 @@ const BucketSchema = z.object({
 	outputTokens: z.number(),
 	totalTokens: z.number(),
 	costUsd: z.number(),
+	tokensSaved: z.number(),
+	savingsPercent: z.number(),
 	errors: z.number(),
 	autoBypassed: z.number(),
 });
@@ -50,6 +52,8 @@ const OutputSchema = z.object({
 		outputTokens: z.number(),
 		totalTokens: z.number(),
 		costUsd: z.number(),
+		tokensSaved: z.number(),
+		savingsPercent: z.number(),
 		errors: z.number(),
 		autoBypassed: z.number(),
 	}),
@@ -88,14 +92,14 @@ export const buildReportToolRegistration = (
 	id: 'usage_report',
 	tags: ['usage-tracking', 'lazy'],
 	summary:
-		'Report usage/cost grouped by provider, plugin, agent, extension or model.',
+		'Report usage, cost and attributable token savings by provider, plugin, agent, extension or model.',
 	descriptionKey: 'usage-tracking_usage_report',
 	register: async (server) => {
 		server.registerTool(
 			`${options.namespacePrefix}_usage_report`,
 			{
 				description:
-					'Report recorded tool usage grouped by provider, plugin, agent, extension or model. Returns a totals block, the bucketed rollup for the chosen axis, and the top-10 most expensive calls (by cost, then duration) so you can inspect spend. Group by `model` to see which LLM spent what (calls with no model land in an `unattributed` bucket). Reads the append-only log on demand; no message content is ever recorded or returned.',
+					'Report recorded tool usage grouped by provider, plugin, agent, extension or model. Returns spend, tokens used, attributable tokens saved and savings percent plus the top-10 most expensive calls. Group by `model` to see which LLM spent and saved what (calls with no model land in an `unattributed` bucket). Reads the append-only log on demand; no message content is ever recorded or returned.',
 				inputSchema: z.object({
 					groupBy: z
 						.enum([
@@ -123,7 +127,12 @@ export const buildReportToolRegistration = (
 						})
 						.optional(),
 					sortBy: z
-						.enum(['calls', 'totalTokens', 'costUsd'])
+						.enum([
+							'calls',
+							'totalTokens',
+							'tokensSaved',
+							'costUsd',
+						])
 						.optional(),
 					limit: z.number().int().positive().optional(),
 				}),

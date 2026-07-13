@@ -163,6 +163,10 @@
 			"note": "f00107 S3: overview activation report plus merge-aware config enabled toggles"
 		},
 		"mcp-vertex.openSettings": { "cli": "config show" },
+		"mcp-vertex.openConfigurationCenter": {
+			"cli": "config show",
+			"note": "schema-driven project configuration editor; config show is the read-only terminal counterpart"
+		},
 		"mcp-vertex.saveSettings": {
 			"cli": "config show",
 			"note": "internal settings-webview save handler; hidden from the command palette"

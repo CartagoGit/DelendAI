@@ -24,7 +24,10 @@ const sourceFor = (
 ): ActivationSource => {
 	if (sources.fromFlag.has(name)) return 'flag';
 	if (sources.fromConfig.has(name)) return 'config';
-	return 'preset';
+	if (sources.fromPreset.has(name)) return 'preset';
+	throw new Error(
+		`Activation source invariant violated: loaded plugin "${name}" is absent from flag, config, and preset inputs.`,
+	);
 };
 
 /** Stable ordering: origin bucket first (ours, then yours, then external), then id. */
@@ -56,8 +59,11 @@ export const buildActivationReport = (
 		),
 		...contributions.map(
 			(entry): IActivationEntry => ({
-				...entry,
+				id: entry.id,
+				origin: entry.origin,
 				active: entry.active ?? true,
+				source: entry.source,
+				toolCount: entry.toolCount,
 			}),
 		),
 	].sort(

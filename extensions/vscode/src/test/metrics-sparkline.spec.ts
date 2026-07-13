@@ -78,7 +78,7 @@ describe('metrics sparkline', async () => {
 		});
 
 		expect(body).toContain('mcp-vertex Metrics');
-		expect(body).toContain('7 calls, 1 errors');
+		expect(body).toContain('7 calls, 1 error');
 		// The body renderer must not wrap its output in an
 		// <html>/<head>/<body> shell — the dev preview mounts
 		// the fragment inside its own <main>.
