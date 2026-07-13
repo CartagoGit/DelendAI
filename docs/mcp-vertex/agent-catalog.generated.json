@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-07-13T02:49:53.478Z",
+	"generatedAt": "2026-07-13T02:57:16.690Z",
 	"mode": "compact",
 	"tools": [
 		{
@@ -657,13 +657,6 @@
 	"proposals": {
 		"actionable": [
 			{
-				"id": "c00002",
-				"title": "c00002",
-				"track": "docs+release",
-				"status": "paused",
-				"kind": "chore"
-			},
-			{
 				"id": "f00050",
 				"title": "f00050",
 				"track": "lint+architecture+i18n+workflow+release",
@@ -675,10 +668,10 @@
 			"ready": 0,
 			"in-progress": 0,
 			"review": 0,
-			"paused": 2,
+			"paused": 1,
 			"done": 206,
 			"blocked": 0,
-			"retired": 0,
+			"retired": 1,
 			"unspecified": 0
 		}
 	}
