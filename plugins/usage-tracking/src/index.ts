@@ -138,6 +138,18 @@ export default definePlugin({
 		// sessionId. Never sniffs process.env for vendor variables.
 		const agent = detectAgent(ctx.hostIdentity?.host, clientMap);
 		const bootSessionId = `s_${randomUUID()}`;
+		const lastModelBySession = new Map<string, IModelDescriptor>();
+		const rememberModel = (
+			sessionId: string,
+			model: IModelDescriptor,
+		): void => {
+			lastModelBySession.delete(sessionId);
+			lastModelBySession.set(sessionId, model);
+			if (lastModelBySession.size > 1024) {
+				const oldest = lastModelBySession.keys().next().value;
+				if (oldest !== undefined) lastModelBySession.delete(oldest);
+			}
+		};
 
 		// Pricing is resolved off the hot path: start with an empty table
 		// (cost = null) and swap in the stale-while-revalidate result when
@@ -235,19 +247,24 @@ export default definePlugin({
 				const endedAt = Date.now();
 				const startedAt = clock.take(toolName);
 				const peerPrefixes = ctx.peerPlugins?.list() ?? [];
+				const sessionId = resolveSessionId(args, bootSessionId);
 				const record = buildRecord({
 					toolName,
 					corePrefix,
 					peerPrefixes,
 					agent,
-					sessionId: resolveSessionId(args, bootSessionId),
+					sessionId,
 					args,
 					result,
 					error,
 					startedAt,
 					endedAt,
+					fallbackModel: lastModelBySession.get(sessionId),
 					costOf,
 				});
+				if (record.model !== null && record.usage !== null) {
+					rememberModel(sessionId, record.model);
+				}
 				buffer.push(record);
 			},
 			knowledge: [
@@ -263,8 +280,11 @@ export default definePlugin({
 						`  \`${joinRel(ctx.pluginCacheDir, 'invocations.jsonl')}\` (append-only,`,
 						'  metadata only — no message content, secrets redacted).',
 						'- `usage_report {groupBy, windowDays, filter, sortBy, limit}`',
-						'  groups spend by provider / plugin / agent / extension and',
-						'  lists the top-10 most expensive calls.',
+						'  groups spend and attributable savings by provider / plugin /',
+						'  agent / extension / model and lists the top-10 expensive calls.',
+						'- Saving tools stamp `tokensSaved` on the same append-only row;',
+						'  model attribution reuses only the last model observed in that',
+						'  session, while older/unattributed rows safely count as zero.',
 						'- `usage_clear {confirm:true}` wipes the log + summary.',
 						'- The 5-min rollup lives in',
 						`  \`${joinRel(ctx.pluginCacheDir, 'usage-summary.json')}\`.`,

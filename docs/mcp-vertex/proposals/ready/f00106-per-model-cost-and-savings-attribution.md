@@ -87,12 +87,14 @@ session total.
 
 ### S1b — Per-call `tokensSaved` stamp (makes savings attributable)
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/usage-tracking/src/lib/types.ts`, `plugins/usage-tracking/src/lib/record.ts`, the compaction/compact-overview save sites that know the dropped bytes, `plugins/usage-tracking/tests/src/lib/record.spec.ts`
 - **Depends on**: S1a
 - **Gate**: bun run typecheck && bun run test
 - **Acceptance**:
   - "`IInvocationRecord` gains an optional `tokensSaved` (older rows parse as 0). The saving is stamped at the moment it happens (the compaction / compact-overview path that already knows the bytes dropped, converted via the same `estimateTokensSaved` heuristic), attributed to the active session's model. The model rollup then reports `{ …, tokensSaved, savingsPercent }`; a spec pins per-model savings sum to the session total (no double count vs the metrics-registry estimate — pick ONE source of truth and document it)."
+- **Decision**: The append-only usage row is the sole source for per-model savings; the session-level metrics estimate remains legacy aggregate data and is never redistributed across models. Token-efficiency tools already return their exact estimate (for example `memory_compact.tokenAccounting.tokensSaved`), so usage-tracking stamps that value without estimating it a second time. A bounded session map supplies the last observed orchestrated model only to saving-bearing calls; ordinary plugin calls remain unattributed.
+- **Evidence**: Records accept optional `tokensSaved` with legacy `?? 0` folds; buckets/totals and the literal output schema expose saved tokens and savings percent, including an explicit unattributed bucket. Regressions pin extraction, model fallback only on saving calls, legacy zero behavior, per-model/session sum equality and sorting. The SDK generator now loads the publishable usage-tracking plugin and emits its typed report output instead of silently omitting the tool.
 
 ### S2 — By-model savings/cost builder (ui-extension)
 

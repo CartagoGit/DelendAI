@@ -1978,6 +1978,49 @@ export interface McpVertexTestConventionSuggestSpecPathOutput {
 	skeleton: string;
 }
 
+export interface McpVertexUsageTrackingUsageClearOutput {
+	ok: true;
+	cleared: string[];
+}
+
+export interface McpVertexUsageTrackingUsageReportOutput {
+	groupBy: "provider" | "plugin" | "agent" | "extension" | "model";
+	windowDays: number;
+	totals: {
+		calls: number;
+		inputTokens: number;
+		outputTokens: number;
+		totalTokens: number;
+		costUsd: number;
+		tokensSaved: number;
+		savingsPercent: number;
+		errors: number;
+		autoBypassed: number;
+	};
+	buckets: {
+		key: string;
+		calls: number;
+		inputTokens: number;
+		outputTokens: number;
+		totalTokens: number;
+		costUsd: number;
+		tokensSaved: number;
+		savingsPercent: number;
+		errors: number;
+		autoBypassed: number;
+	}[];
+	expensiveCalls: Array<{
+		ts: string;
+		plugin: string;
+		tool: string;
+		agent: string;
+		provider: string | null;
+		costUsd: number | null;
+		durationMs: number | null;
+		outcome: string;
+	}>;
+}
+
 export interface McpVertexWebFetchWebFetchOutput {
 	ok: boolean;
 	url?: string;
@@ -2083,5 +2126,7 @@ export interface McpVertexToolOutputs {
 	"mcp-vertex_test-convention_get_convention": McpVertexTestConventionGetConventionOutput;
 	"mcp-vertex_test-convention_scan_drift": McpVertexTestConventionScanDriftOutput;
 	"mcp-vertex_test-convention_suggest_spec_path": McpVertexTestConventionSuggestSpecPathOutput;
+	"mcp-vertex_usage-tracking_usage_clear": McpVertexUsageTrackingUsageClearOutput;
+	"mcp-vertex_usage-tracking_usage_report": McpVertexUsageTrackingUsageReportOutput;
 	"mcp-vertex_web-fetch_web_fetch": McpVertexWebFetchWebFetchOutput;
 }
