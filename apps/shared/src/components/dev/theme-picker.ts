@@ -26,7 +26,10 @@
  *   embedders that want a fixed surface.
  */
 import { escapeAttr } from '../../lib/escape';
-import { HOST_THEME_CHOICES, type HostTheme } from '@mcp-vertex/client/public';
+import {
+	HOST_THEME_CHOICES,
+	type HostTheme,
+} from '@mcp-vertex/client/lib/contracts/interfaces/settings.interface';
 
 export type ThemeChoice = HostTheme;
 

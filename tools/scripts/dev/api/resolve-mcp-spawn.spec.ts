@@ -73,4 +73,37 @@ describe('resolveMcpStdioSpawn', () => {
 			source: 'default',
 		});
 	});
+
+	it('uses the in-tree host when the self-host config points at the unpublished CLI', async () => {
+		const localHost = join(cwd, 'tools/scripts/host/host-server.script.ts');
+		mkdirSync(join(cwd, 'tools/scripts/host'), { recursive: true });
+		writeFileSync(localHost, '');
+		writeFileSync(join(cwd, 'mcp-vertex.config.json'), '{}');
+		writeFileSync(
+			join(cwd, '.vscode', 'mcp.json'),
+			JSON.stringify({
+				servers: {
+					'mcp-vertex': {
+						command: 'bunx',
+						args: [
+							'--package',
+							'@mcp-vertex/cli',
+							'mcpv',
+							'__serve',
+						],
+					},
+				},
+			}),
+		);
+
+		await expect(resolveMcpStdioSpawn(cwd)).resolves.toEqual({
+			command: 'bun',
+			args: [
+				localHost,
+				`--workspace=${cwd}`,
+				`--config=${join(cwd, 'mcp-vertex.config.json')}`,
+			],
+			source: 'workspace-local',
+		});
+	});
 });
