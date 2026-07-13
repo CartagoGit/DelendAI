@@ -540,7 +540,8 @@ const extension = {
 	'dashboard.overview.server': 'Servidor',
 	'dashboard.overview.namespacePrefix': 'Prefijo del espacio de nombres',
 	'dashboard.overview.recommendedNextAction': 'Siguiente acción recomendada',
-	'dashboard.overview.toolsMore': '... {count} más en la pestaña Herramientas.',
+	'dashboard.overview.toolsMore':
+		'... {count} más en la pestaña Herramientas.',
 	'dashboard.overview.knowledge': 'Conocimiento',
 	'dashboard.metrics.totalCalls': 'Llamadas totales',
 	'dashboard.metrics.totalErrors': 'Errores totales',
@@ -587,7 +588,8 @@ const extension = {
 	'settings.title': 'Ajustes de mcp-vertex',
 	'settings.docsUrl': 'URL de la documentación',
 	'settings.allowLocalhostDocsUrl': 'Permitir URL de documentación local',
-	'settings.allowPrivateIpsDocsUrl': 'Permitir URL de documentación en IP privadas',
+	'settings.allowPrivateIpsDocsUrl':
+		'Permitir URL de documentación en IP privadas',
 	'settings.logLevel': 'Nivel de registro',
 	'settings.logLevel.debug': 'depuración',
 	'settings.logLevel.info': 'información',
@@ -602,9 +604,11 @@ const extension = {
 	'settings.saved': 'Guardado.',
 	'settings.resetToDefaults': 'Restablecido a los valores predeterminados.',
 	'knowledge.title': 'Conocimiento de mcp-vertex',
-	'knowledge.searchPlaceholder': 'Buscar entradas por identificador o título…',
+	'knowledge.searchPlaceholder':
+		'Buscar entradas por identificador o título…',
 	'knowledge.empty': 'No hay entradas de conocimiento.',
-	'knowledge.previewEmpty': 'Selecciona una entrada de la izquierda para previsualizarla aquí.',
+	'knowledge.previewEmpty':
+		'Selecciona una entrada de la izquierda para previsualizarla aquí.',
 	'common.tool': 'Herramienta',
 	'common.plugin': 'Plugin',
 	'common.calls': 'Llamadas',
