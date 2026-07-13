@@ -46,6 +46,7 @@ export interface IBlueprintDefaults {
 export interface IServerBlueprint {
 	readonly serverName: string;
 	readonly namespacePrefix: string;
+	readonly targetDir: string;
 	readonly projectType: IProjectAnalysis['projectType'];
 	readonly plugins: readonly string[];
 	readonly tools: readonly IBlueprintArtifact[];
@@ -63,6 +64,7 @@ export interface IBlueprintOptions {
 	readonly serverName?: string;
 	readonly namespacePrefix?: string;
 	readonly tests?: boolean;
+	readonly targetDir?: string;
 	/** Optional free-form user request used only for migration-safety hints. */
 	readonly intent?: string;
 	readonly adoption?: unknown;
@@ -75,6 +77,7 @@ export interface IBlueprintOptions {
 }
 
 const kebabHead = (name: string | undefined): string => {
+	if (name?.startsWith('@mcp-vertex/')) return 'mcp-vertex';
 	if (!name) return 'app';
 	const head = name
 		.replace(/^@[^/]+\//, '')
@@ -83,6 +86,11 @@ const kebabHead = (name: string | undefined): string => {
 		.replace(/^-+|-+$/g, '')
 		.split('-')[0];
 	return head && head.length > 0 ? head : 'app';
+};
+
+const defaultTargetDir = (analysis: IProjectAnalysis): string => {
+	if (analysis.name === '@mcp-vertex/core-monorepo') return 'packages/core';
+	return analysis.hasPackageJson ? '.' : 'libs/mcp-project';
 };
 
 const uniqueByName = (
@@ -165,6 +173,7 @@ export const buildServerBlueprint = (
 	];
 	const namespacePrefix = options.namespacePrefix ?? kebabHead(analysis.name);
 	const serverName = options.serverName ?? `mcp-project-${namespacePrefix}`;
+	const targetDir = options.targetDir ?? defaultTargetDir(analysis);
 	const tests = options.tests ?? true;
 	const plugins = pattern.recommendedPlugins;
 	const defaults = buildBlueprintDefaults(analysis, options);
@@ -229,6 +238,7 @@ export const buildServerBlueprint = (
 	return {
 		serverName,
 		namespacePrefix,
+		targetDir,
 		projectType: analysis.projectType,
 		plugins,
 		tools,
@@ -243,14 +253,18 @@ export const buildServerBlueprint = (
 	};
 };
 
-const toolTestFile = (prefix: string, toolName: string): IScaffoldedFile => {
+const toolTestFile = (
+	prefix: string,
+	toolName: string,
+	targetDir: string,
+): IScaffoldedFile => {
 	const id = toolName.replace(/[^a-z0-9]+/gi, '-').toLowerCase();
 	const fn = id
 		.split('-')
 		.map((part) => part.charAt(0).toUpperCase() + part.slice(1))
 		.join('');
 	return {
-		path: `libs/mcp-project/tests/src/lib/tools/${prefix}-${id}.tool.spec.ts`,
+		path: `${targetDir === '.' ? '' : `${targetDir}/`}tests/src/lib/tools/${prefix}-${id}.tool.spec.ts`,
 		content: `import { describe, expect, it } from 'vitest';
 
 import { build${fn}Response } from '../../../../src/lib/tools/${prefix}-${id}.tool';
@@ -278,7 +292,7 @@ export const buildBlueprintFiles = (
 	const writesMcpConfig = blueprint.adoptionStrategy.operations.some(
 		(operation) =>
 			operation.capability === 'mcp-config' &&
-			operation.action !== 'preserve',
+			operation.action === 'replace',
 	);
 	const files: IScaffoldedFile[] = writesMcpConfig
 		? [
@@ -287,12 +301,21 @@ export const buildBlueprintFiles = (
 					namespacePrefix: prefix,
 					projectPackageName:
 						projectPackageName ?? `@${prefix}/mcp-project`,
+					targetDir: blueprint.targetDir,
 				}),
 			]
 		: [];
 	for (const tool of blueprint.tools) {
-		files.push(scaffoldToolFile(prefix, tool.name, tool.description));
-		if (blueprint.tests) files.push(toolTestFile(prefix, tool.name));
+		files.push(
+			scaffoldToolFile(
+				prefix,
+				tool.name,
+				tool.description,
+				blueprint.targetDir,
+			),
+		);
+		if (blueprint.tests)
+			files.push(toolTestFile(prefix, tool.name, blueprint.targetDir));
 	}
 	for (const prompt of blueprint.prompts) {
 		files.push(
@@ -301,6 +324,7 @@ export const buildBlueprintFiles = (
 				prompt.name,
 				prompt.description,
 				prompt.body,
+				blueprint.targetDir,
 			),
 		);
 	}
@@ -312,6 +336,7 @@ export const buildBlueprintFiles = (
 				skill.description,
 				skill.whenToUse ?? [],
 				skill.body,
+				blueprint.targetDir,
 			),
 		);
 	}

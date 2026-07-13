@@ -72,13 +72,38 @@ describe('buildServerBlueprint', async () => {
 			}),
 		);
 		const bp = buildServerBlueprint(analysis);
+		expect(bp.targetDir).toBe('.');
 		const files = buildBlueprintFiles(bp);
 		const paths = files.map((f) => f.path);
-		expect(paths).toContain('libs/mcp-project/src/server.ts');
+		expect(paths).toContain('src/server.ts');
 		expect(
 			paths.some((p) => p.includes('-check-project-state.tool.ts')),
 		).toBe(true);
 		expect(paths.some((p) => p.includes('.tool.spec.ts'))).toBe(true);
+	});
+
+	it('derives the canonical self-host namespace and package target', async () => {
+		const analysis = await analyzeProject(
+			reader({
+				'package.json': JSON.stringify({
+					name: '@mcp-vertex/core-monorepo',
+					workspaces: ['packages/*'],
+				}),
+				'.vscode/mcp.json': '{}',
+			}),
+		);
+		const bp = buildServerBlueprint(analysis);
+		expect(bp.namespacePrefix).toBe('mcp-vertex');
+		expect(bp.targetDir).toBe('packages/core');
+		const paths = buildBlueprintFiles(bp).map(({ path }) => path);
+		expect(paths.length).toBeGreaterThan(0);
+		expect(paths).not.toContain('packages/core/src/server.ts');
+		expect(paths).not.toContain(
+			'packages/core/src/lib/shared/host-config.ts',
+		);
+		expect(paths.every((path) => path.startsWith('packages/core/'))).toBe(
+			true,
+		);
 	});
 
 	it('recommends keepLegacy when host-config has custom extraTools', async () => {

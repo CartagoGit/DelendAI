@@ -59,6 +59,7 @@ export const buildAnalyzeToolRegistration = (
 								hasMcpProject: z.boolean(),
 								serverName: z.string(),
 								namespacePrefix: z.string(),
+								targetDir: z.string(),
 								pluginCount: z.number(),
 								toolCount: z.number(),
 							})
@@ -87,6 +88,9 @@ export const buildAnalyzeToolRegistration = (
 						...(args.docsDir !== undefined
 							? { docsDir: args.docsDir }
 							: {}),
+						...(args.targetDir !== undefined
+							? { targetDir: args.targetDir }
+							: {}),
 						...(deps.patternOverrides !== undefined
 							? { patternOverrides: deps.patternOverrides }
 							: {}),
@@ -105,6 +109,7 @@ export const buildAnalyzeToolRegistration = (
 								hasMcpProject: analysis.hasMcpProject,
 								serverName: plan.serverName,
 								namespacePrefix: plan.namespacePrefix,
+								targetDir: plan.targetDir,
 								pluginCount: plan.plugins.length,
 								toolCount: plan.tools.length,
 							},
