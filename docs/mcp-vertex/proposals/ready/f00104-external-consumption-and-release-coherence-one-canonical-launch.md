@@ -104,12 +104,14 @@ any of the documented or generated paths. This is the single most important
 
 ### S2 — Complete PUBLISH_ORDER + private flags
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `tools/scripts/release/release-plan.ts`, `packages/cli/package.json`, `plugins/*/package.json`, `packages/ui-extension/package.json`, `apps/shared/package.json`
 - **Gate**: bun run test
 - **Acceptance**:
   - "PUBLISH_ORDER includes `packages/cli` (dependency-ordered after core) and every plugin a preset or the docs reference (usage-tracking, orchestrator-runner, external-mcps, issues, cache). A test asserts: every plugin in preset-catalog + every plugin named in CROSS-PROJECT-SETUP is in PUBLISH_ORDER."
   - "Resolve the ui-extension/shared `private` question: either publish them (the extension consumes ui-extension) or document how the packaged extension bundles them; a test pins the decision so a private runtime dep can't silently break the published extension."
+- **Decision**: Publish core → client → CLI → every first-party plugin. Keep ui-extension/shared private because the VS Code build bundles every dependency except the `vscode` host API.
+- **Evidence**: The release regression enumerates the live `plugins/` directory, pins the first three dependency-ordered packages, verifies both private manifests and asserts the production build externalizes only `vscode`.
 
 ### S3 — Fix the mcpv init mcp.json writer
 
