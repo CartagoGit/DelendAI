@@ -12,6 +12,7 @@ export type {
 	ILangDict,
 	ISiteTranslations,
 	IExtensionTranslations,
+	ISettingsTranslations,
 	IToolTranslations,
 	LangDictByLang,
 } from './shared';
@@ -22,6 +23,7 @@ export {
 	themes,
 	flagFor,
 	t,
+	settingsTranslations,
 } from './shared';
 
 import type { ILangDict, Lang, LangDictByLang } from './shared';

@@ -586,10 +586,18 @@ const extension = {
 	'dashboard.memory.title': 'Memoria',
 	'dashboard.memory.durableNotes': '{count} notas persistentes',
 	'settings.title': 'Ajustes de mcp-vertex',
+	'settings.description':
+		'Preferencias de este host de extensión. La configuración del proyecto se gestiona por separado.',
 	'settings.docsUrl': 'URL de la documentación',
+	'settings.docsUrlDescription':
+		'La dirección HTTPS de documentación que abre esta extensión.',
 	'settings.allowLocalhostDocsUrl': 'Permitir URL de documentación local',
+	'settings.allowLocalhostDocsUrlDescription':
+		'Actívalo únicamente al desarrollar la documentación en local.',
 	'settings.allowPrivateIpsDocsUrl':
 		'Permitir URL de documentación en IP privadas',
+	'settings.allowPrivateIpsDocsUrlDescription':
+		'Permite documentación alojada en una dirección de red privada.',
 	'settings.logLevel': 'Nivel de registro',
 	'settings.logLevel.debug': 'depuración',
 	'settings.logLevel.info': 'información',
@@ -599,10 +607,22 @@ const extension = {
 	'settings.theme.system': 'sistema',
 	'settings.theme.light': 'claro',
 	'settings.theme.dark': 'oscuro',
+	'settings.theme.midnight': 'medianoche',
+	'settings.theme.solarized': 'solarizado',
+	'settings.theme.nord': 'Nord',
+	'settings.language': 'Idioma',
+	'settings.motion': 'Movimiento',
+	'settings.motion.system': 'Seguir la preferencia del sistema',
+	'settings.motion.full': 'Movimiento completo',
+	'settings.motion.reduced': 'Movimiento reducido',
 	'settings.save': 'Guardar',
 	'settings.reset': 'Restablecer',
+	'settings.saving': 'Guardando los ajustes…',
+	'settings.resetting': 'Restableciendo los ajustes…',
 	'settings.saved': 'Guardado.',
 	'settings.resetToDefaults': 'Restablecido a los valores predeterminados.',
+	'settings.saveError': 'No se han podido guardar los ajustes.',
+	'settings.resetError': 'No se han podido restablecer los ajustes.',
 	'knowledge.title': 'Conocimiento de mcp-vertex',
 	'knowledge.searchPlaceholder':
 		'Buscar entradas por identificador o título…',

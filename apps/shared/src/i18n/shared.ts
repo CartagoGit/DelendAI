@@ -154,6 +154,69 @@ export interface IExtensionTranslations {
 	readonly [key: string]: string;
 }
 
+/** Fully resolved copy consumed by the host-agnostic settings renderer. */
+export interface ISettingsTranslations {
+	readonly title: string;
+	readonly description: string;
+	readonly docsUrl: string;
+	readonly docsUrlDescription: string;
+	readonly allowLocalhostDocsUrl: string;
+	readonly allowLocalhostDocsUrlDescription: string;
+	readonly allowPrivateIpsDocsUrl: string;
+	readonly allowPrivateIpsDocsUrlDescription: string;
+	readonly logLevel: string;
+	readonly theme: string;
+	readonly language: string;
+	readonly motion: string;
+	readonly save: string;
+	readonly reset: string;
+	readonly saving: string;
+	readonly resetting: string;
+	readonly saved: string;
+	readonly resetToDefaults: string;
+	readonly saveError: string;
+	readonly resetError: string;
+	readonly option: (
+		group: 'logLevel' | 'theme' | 'motion',
+		value: string,
+	) => string;
+}
+
+/** Resolve settings copy through the normal dictionary fallback boundary. */
+export const settingsTranslations = (
+	dict: ILangDict,
+): ISettingsTranslations => {
+	const read = (key: string): string =>
+		t(dict, ['extension', `settings.${key}`]);
+	return {
+		title: read('title'),
+		description: read('description'),
+		docsUrl: read('docsUrl'),
+		docsUrlDescription: read('docsUrlDescription'),
+		allowLocalhostDocsUrl: read('allowLocalhostDocsUrl'),
+		allowLocalhostDocsUrlDescription: read(
+			'allowLocalhostDocsUrlDescription',
+		),
+		allowPrivateIpsDocsUrl: read('allowPrivateIpsDocsUrl'),
+		allowPrivateIpsDocsUrlDescription: read(
+			'allowPrivateIpsDocsUrlDescription',
+		),
+		logLevel: read('logLevel'),
+		theme: read('theme'),
+		language: read('language'),
+		motion: read('motion'),
+		save: read('save'),
+		reset: read('reset'),
+		saving: read('saving'),
+		resetting: read('resetting'),
+		saved: read('saved'),
+		resetToDefaults: read('resetToDefaults'),
+		saveError: read('saveError'),
+		resetError: read('resetError'),
+		option: (group, value) => read(`${group}.${value}`),
+	};
+};
+
 /**
  * Dev-preview chrome translations. Only consumed by the
  * `extensions/vscode` dev entry (`:5200`) so the dashboard mock fallback,
