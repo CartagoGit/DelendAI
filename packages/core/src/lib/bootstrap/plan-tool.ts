@@ -33,6 +33,7 @@ const json = (value: unknown) => toolJson(value);
 const compactSummarySchema = z.object({
 	serverName: z.string(),
 	namespacePrefix: z.string(),
+	targetDir: z.string(),
 	projectType: z.string(),
 	plugins: z.array(z.string()),
 	counts: z.object({
@@ -61,6 +62,7 @@ const compactResult = (
 	const summary = {
 		serverName: blueprint.serverName,
 		namespacePrefix: blueprint.namespacePrefix,
+		targetDir: blueprint.targetDir,
 		projectType: blueprint.projectType,
 		plugins: blueprint.plugins,
 		counts: {
@@ -127,6 +129,9 @@ export const buildPlanToolRegistration = (
 							: {}),
 						...(args.serverName !== undefined
 							? { serverName: args.serverName }
+							: {}),
+						...(args.targetDir !== undefined
+							? { targetDir: args.targetDir }
 							: {}),
 						...(args.adoption === undefined
 							? {}

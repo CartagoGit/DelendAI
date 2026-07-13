@@ -55,6 +55,7 @@ export const SERVER_PLAN_SCHEMA = z.object({
 	projectType: PROJECT_ANALYSIS_SCHEMA.shape.projectType,
 	serverName: z.string(),
 	namespacePrefix: z.string(),
+	targetDir: z.string(),
 	plugins: z.array(z.string()),
 	tools: z.array(z.object({ name: z.string(), description: z.string() })),
 	validationCommands: z.record(z.string(), z.string()),
@@ -83,6 +84,7 @@ export const BLUEPRINT_ARTIFACT_SCHEMA = z.object({
 export const SERVER_BLUEPRINT_SCHEMA = z.object({
 	serverName: z.string(),
 	namespacePrefix: z.string(),
+	targetDir: z.string(),
 	projectType: PROJECT_ANALYSIS_SCHEMA.shape.projectType,
 	plugins: z.array(z.string()),
 	tools: z.array(BLUEPRINT_ARTIFACT_SCHEMA),
@@ -144,6 +146,7 @@ export const ANALYZE_INPUT_SCHEMA = z.object({
 	namespacePrefix: z.string().optional(),
 	cacheDir: z.string().optional(),
 	docsDir: z.string().optional(),
+	targetDir: z.string().optional(),
 	adoption: ADOPTION_STRATEGY_INPUT_SCHEMA.optional(),
 	compact: z
 		.boolean()
@@ -174,6 +177,7 @@ export const PLAN_INPUT_SCHEMA = z.object({
 	tests: z.boolean().optional(),
 	namespacePrefix: z.string().optional(),
 	serverName: z.string().optional(),
+	targetDir: z.string().optional(),
 	adoption: ADOPTION_STRATEGY_INPUT_SCHEMA.optional(),
 	compact: z
 		.boolean()
