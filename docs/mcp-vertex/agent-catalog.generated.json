@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-07-13T06:12:07.611Z",
+	"generatedAt": "2026-07-13T23:11:02.683Z",
 	"mode": "compact",
 	"tools": [
 		{
@@ -664,19 +664,54 @@
 				"kind": "feat"
 			},
 			{
+				"id": "r00009",
+				"title": "r00009",
+				"track": "core",
+				"status": "ready",
+				"kind": "refactor"
+			},
+			{
+				"id": "t00002",
+				"title": "t00002",
+				"track": "tests",
+				"status": "ready",
+				"kind": "unspecified"
+			},
+			{
 				"id": "x00100",
 				"title": "x00100",
 				"track": "general",
+				"status": "in-progress",
+				"kind": "fix"
+			},
+			{
+				"id": "x00101",
+				"title": "x00101",
+				"track": "core",
+				"status": "in-progress",
+				"kind": "fix"
+			},
+			{
+				"id": "x00102",
+				"title": "x00102",
+				"track": "adoption",
+				"status": "ready",
+				"kind": "fix"
+			},
+			{
+				"id": "x00103",
+				"title": "x00103",
+				"track": "ui",
 				"status": "ready",
 				"kind": "fix"
 			}
 		],
 		"byStatus": {
-			"ready": 1,
-			"in-progress": 0,
+			"ready": 4,
+			"in-progress": 2,
 			"review": 0,
 			"paused": 1,
-			"done": 206,
+			"done": 207,
 			"blocked": 0,
 			"retired": 1,
 			"unspecified": 0
