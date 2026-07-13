@@ -11,9 +11,7 @@ import {
 	HOST_MOTION_CHOICES,
 	HOST_THEME_CHOICES,
 } from '../contracts/interfaces/settings.interface';
-
-export const EXTENSION_SETTINGS_STORAGE_KEY = 'mcp-vertex.host-settings';
-export const EXTENSION_SETTINGS_STORAGE_VERSION = 2 as const;
+import { EXTENSION_SETTINGS_STORAGE_VERSION } from '../contracts/constants/settings.constant';
 
 export const DEFAULT_EXTENSION_SETTINGS: IExtensionSettings = {
 	docsUrl: DEFAULT_DOCS_URL,

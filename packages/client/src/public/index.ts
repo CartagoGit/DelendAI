@@ -42,11 +42,13 @@ export {
 export { MemoryService } from '../lib/services/memory.service';
 export {
 	DEFAULT_EXTENSION_SETTINGS,
-	EXTENSION_SETTINGS_STORAGE_KEY,
-	EXTENSION_SETTINGS_STORAGE_VERSION,
 	SettingsService,
 	validateExtensionSettings,
 } from '../lib/services/settings.service';
+export {
+	EXTENSION_SETTINGS_STORAGE_KEY,
+	EXTENSION_SETTINGS_STORAGE_VERSION,
+} from '../lib/contracts/constants/settings.constant';
 export {
 	HOST_LANGUAGE_CHOICES,
 	HOST_LOG_LEVELS,

@@ -12,10 +12,10 @@ export type {
 	ILangDict,
 	ISiteTranslations,
 	IExtensionTranslations,
-	ISettingsTranslations,
 	IToolTranslations,
 	LangDictByLang,
 } from './shared';
+export type { ISettingsTranslations } from '../contracts/interfaces/settings-translations.interface';
 export {
 	languages,
 	rtlLangs,
