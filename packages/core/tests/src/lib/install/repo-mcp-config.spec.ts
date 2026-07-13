@@ -1,4 +1,4 @@
-import { existsSync, readFileSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -8,13 +8,19 @@ const ROOT = resolve(
 	dirname(fileURLToPath(import.meta.url)),
 	'../../../../../..',
 );
-const HOST_SCRIPT = 'tools/scripts/host/host-server.script.ts';
+const CANONICAL_ARGS = [
+	'--package',
+	'@mcp-vertex/cli',
+	'mcpv',
+	'__serve',
+	'--workspace',
+] as const;
 
 const readJson = (path: string): unknown =>
 	JSON.parse(readFileSync(join(ROOT, path), 'utf8')) as unknown;
 
 describe('repo MCP client configs', async () => {
-	it('points Claude-style .mcp.json at the real host script', async () => {
+	it('points Claude-style .mcp.json at the published CLI', async () => {
 		const config = readJson('.mcp.json') as {
 			readonly mcpServers?: {
 				readonly 'mcp-vertex'?: {
@@ -25,12 +31,11 @@ describe('repo MCP client configs', async () => {
 		};
 		const entry = config.mcpServers?.['mcp-vertex'];
 
-		expect(entry?.command).toBe('bun');
-		expect(entry?.args).toContain(HOST_SCRIPT);
-		expect(existsSync(join(ROOT, HOST_SCRIPT))).toBe(true);
+		expect(entry?.command).toBe('bunx');
+		expect(entry?.args).toEqual([...CANONICAL_ARGS, '.']);
 	});
 
-	it('points VS Code/Copilot mcp.json at the real host script', async () => {
+	it('points VS Code/Copilot mcp.json at the published CLI', async () => {
 		const config = readJson('.vscode/mcp.json') as {
 			readonly servers?: {
 				readonly 'mcp-vertex'?: {
@@ -43,22 +48,18 @@ describe('repo MCP client configs', async () => {
 		const entry = config.servers?.['mcp-vertex'];
 
 		expect(entry?.type).toBe('stdio');
-		expect(entry?.command).toBe('bun');
-		expect(entry?.args).toContain(
-			`\${workspaceFolder}/tools/scripts/host/host-server.script.ts`,
-		);
-		expect(existsSync(join(ROOT, HOST_SCRIPT))).toBe(true);
+		expect(entry?.command).toBe('bunx');
+		expect(entry?.args).toEqual([...CANONICAL_ARGS, '${workspaceFolder}']);
 	});
 
-	it('ships a project-scoped Codex config for the same host script', async () => {
+	it('ships a project-scoped Codex config for the same published CLI', async () => {
 		const config = readFileSync(join(ROOT, '.codex/config.toml'), 'utf8');
 
 		expect(config).toContain('[mcp_servers.mcp-vertex]');
-		expect(config).toContain('command = "bun"');
+		expect(config).toContain('command = "bunx"');
 		expect(config).toContain(
-			'args = ["tools/scripts/host/host-server.script.ts"]',
+			'args = ["--package", "@mcp-vertex/cli", "mcpv", "__serve", "--workspace", "."]',
 		);
 		expect(config).toContain('cwd = ".."');
-		expect(existsSync(join(ROOT, HOST_SCRIPT))).toBe(true);
 	});
 });

@@ -12,13 +12,15 @@ import { createNoopContext } from './lib/noop-context.factory';
 import { formatJson } from './lib/stable-json.service';
 
 export {
-	buildCanonicalLaunch,
 	CANONICAL_CLI_BIN,
 	CANONICAL_CLI_PACKAGE,
-	type ICanonicalLaunch,
-	type ICanonicalLaunchMode,
-	type ICanonicalLaunchOptions,
-} from './lib/server-args.service';
+} from './contracts/constants/canonical-launch.constant';
+export type {
+	ICanonicalLaunch,
+	ICanonicalLaunchMode,
+	ICanonicalLaunchOptions,
+} from './contracts/interfaces/canonical-launch.interface';
+export { buildCanonicalLaunch } from './lib/server-args.service';
 
 const commandMatches = (
 	command: ICliCommand,
