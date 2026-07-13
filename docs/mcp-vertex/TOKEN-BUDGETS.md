@@ -23,24 +23,45 @@ agent whether to delegate expensive inspection.
 
 ## Enforced budgets (regression guard)
 
-The benchmark spec fails if a change regresses these ceilings (measured against the standard test server baseline with `proposals,memory,search,docs,logs` plugins loaded):
+The benchmark spec (`token-budget.e2e.spec.ts`) fails if a change regresses
+these ceilings — these are the CURRENT values in the spec, refreshed 2026-07-14
+(x00101); the spec itself is always the source of truth:
 
-| Payload | Budget (bytes) |
+| Payload | Budget (bytes) | Notes |
+|---|---:|---|
+| `overview` full | 9 100 | grows with the toolset; compact is the promise |
+| `overview` compact | 1 200 | |
+| `agent_catalog` compact | 900 | default orientation projection (lean skills, no tool list) |
+| `agent_catalog` full | 6 800 | |
+| `auto_work` | 1 600 | |
+| `analyze_project` **default** | 1 800 | bare `{}` returns the summary since x00101; `full:true` opts in |
+| `plan_mcp_project` **default** | 2 000 | bare `{}` returns the summary since x00101; `full:true` opts in |
+
+Two structural invariants behind those numbers:
+
+- `compact < full × 0.7` (the compact mode must stay a real saving, not cosmetic).
+- **Compact is the default** on the tools whose full payload is unbounded on
+  real projects: `plan_mcp_project {}` measured 205 963 B (~51k tokens) against
+  this repo before x00101 flipped the default; the same call now returns the
+  ~900 B summary and `full:true` is the explicit opt-in. `rules_get_rules`
+  keeps its full default (orientation material) but exposes `compact: true`
+  (~12 KB → <1.5 KB).
+
+### Real-workspace scaling (this repo: 13 plugins, ~89 tools)
+
+Live measurements over stdio against `--workspace=.` (2026-07-14):
+
+| Call | Bytes |
 |---|---:|
-| `overview` full | 8 900 |
-| `overview` compact | 2 100 |
-| `auto_work` | 1 600 |
+| `overview { compact: true }` | 2 278 |
+| `agent_catalog { mode: "compact" }` | 2 321 (was 14 103 before the orientation projection) |
+| `analyze_project {}` | ~900 (was 12 933) |
+| `plan_mcp_project {}` | ~900 (was 205 963) |
 
-### Full Preset Scaling (13 plugins, 88 tools)
-
-In a live production workspace with all plugins loaded, the payloads scale due to the number of tool names and plugin registrations:
-* `overview` full: ~18,000 bytes (~4,500 tokens)
-* `overview` compact: ~4,100 bytes (~1,025 tokens)
-
-The compact mode still provides a **~4.4× saving** over the full mode, preserving the invariant that `compact < full × 0.7`.
-
-Plus an invariant: `compact < full × 0.7` (the compact mode must stay a real
-saving, not cosmetic).
+Beyond the e2e, the longitudinal metrics gate (`bun run metrics:gate`, CI job
+`metrics-gate`) diffs bytes/call per tool against the release baseline — or the
+repo-tracked fallback `config/metrics-baseline.json` before the first release —
+and fails on a >20 % regression.
 
 ## Additional read-only surfaces (tracked next)
 

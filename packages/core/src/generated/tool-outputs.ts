@@ -1888,7 +1888,7 @@ export interface McpVertexRulesGetRulesOutput {
 	areas: {
 		project: string;
 		area: string;
-		rules: {
+		rules?: {
 			framework: string;
 			presetId: string;
 			eslint: string[];
@@ -1896,9 +1896,10 @@ export interface McpVertexRulesGetRulesOutput {
 			typecheck: string[];
 			reason: string;
 		};
+		presetId?: string;
 	}[];
-	conventions: Record<string, string[]>;
-	dogmas: Record<string, {
+	conventions?: Record<string, string[]>;
+	dogmas?: Record<string, {
 		language: string;
 		displayName?: string;
 		version: string;
@@ -1913,7 +1914,7 @@ export interface McpVertexRulesGetRulesOutput {
 		testing: string;
 		bullets: string[];
 	}>;
-	renderedDogmas: Record<string, string>;
+	renderedDogmas?: Record<string, string>;
 }
 
 export interface McpVertexScaffoldOutput {
