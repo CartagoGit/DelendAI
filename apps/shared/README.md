@@ -18,8 +18,8 @@ apps/shared/
 └── src/
     ├── public/index.ts     # barrel — re-exports the contract
     ├── styles/
-    │   ├── _tokens.scss    # --mv-radius, --mv-maxw, --mv-gap, ...
-    │   ├── _themes.scss    # 5 palettes + --mv-brand-blue/purple (only hex)
+    │   ├── _tokens.scss    # --mcpv-radius, --mcpv-maxw, --mcpv-gap, ...
+    │   ├── _themes.scss    # 5 palettes + --mcpv-brand-blue/purple (only hex)
     │   ├── _index.scss     # @forward tokens + themes
     │   └── styles.scss     # placeholder for downstream consumers
     └── i18n/               # filled in S2
@@ -27,9 +27,9 @@ apps/shared/
 
 ## Tokens
 
-- `--mv-radius`, `--mv-maxw`, `--mv-gap`, `--mv-font-mono`, `--mv-font-prose`
-- Spacing scale `--mv-s-1` … `--mv-s-6`
-- Brand colors `--mv-brand-blue: #58a6ff`, `--mv-brand-purple: #a371f7`
+- `--mcpv-radius`, `--mcpv-maxw`, `--mcpv-gap`, `--mcpv-font-mono`, `--mcpv-font-prose`
+- Spacing scale `--mcpv-s-1` … `--mcpv-s-6`
+- Brand colors `--mcpv-brand-blue: #58a6ff`, `--mcpv-brand-purple: #a371f7`
   — the **only** literals of these hex codes in source files
   (enforced by `tools/scripts/lint/no-duplicate-brand-hex.script.ts`).
 

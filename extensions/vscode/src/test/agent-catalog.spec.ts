@@ -148,6 +148,26 @@ describe('AgentCatalogService', () => {
 
 		expect(calls).toBe(2);
 	});
+
+	it('uses the configured namespace for catalog and skill requests', async () => {
+		const snapshot = await createSnapshot();
+		const calls: string[] = [];
+		const service = new AgentCatalogService(
+			McpStdioClient.fromTransport({
+				async callTool(input) {
+					calls.push(input.name);
+					return input.name === 'acme_agent_catalog'
+						? { structuredContent: snapshot }
+						: { structuredContent: { body: '# Skill' } };
+				},
+			}),
+			{ namespacePrefix: 'acme' },
+		);
+
+		await service.getTools();
+		await expect(service.getSkillBody('demo')).resolves.toBe('# Skill');
+		expect(calls).toEqual(['acme_agent_catalog', 'acme_skill']);
+	});
 });
 
 describe('renderAgentCatalogWebview', () => {

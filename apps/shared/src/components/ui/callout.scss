@@ -1,0 +1,108 @@
+// `apps/shared/src/components/ui/callout.scss`
+//
+// BEM-nested styles for the `<aside class="mcpv-callout">` block emitted
+// by `callout.ts`. Reusable across web pages and editor webviews —
+// the variant comes from `data-mcpv-callout="<variant>"`, colour aliases
+// from the `--mcpv-*` tokens published by `_tokens.scss` / `_themes.scss`.
+//
+// The legacy `.ui-callout` selector is kept as a thin @extend for one
+// slice so the marketing site can migrate page-by-page without breaking
+// old `<aside class="ui-callout ...">` markup. New code should target
+// `.mcpv-callout` directly. Once the docs site migrates, the legacy alias
+// block at the bottom is removed in one commit.
+
+// No SCSS deps yet — callout is structural-only. Re-introduce
+// `@use '../../styles/breakpoints' as bp;` the moment we need a
+// breakpoint-driven responsive variant.
+
+$mcpv-callout-note: var(--mcpv-info, #3b82f6);
+$mcpv-callout-tip: var(--mcpv-ok, #16a34a);
+$mcpv-callout-warn: #f59e0b;
+$mcpv-callout-danger: #ef4444;
+
+.mcpv-callout {
+	display: grid;
+	grid-template-columns: auto 1fr;
+	gap: var(--mcpv-s-3, 0.75rem);
+	align-items: start;
+	padding: var(--mcpv-s-3, 0.9rem) var(--mcpv-s-4, 1rem);
+	margin: var(--mcpv-s-4, 1rem) 0;
+	border-radius: var(--mcpv-radius, var(--radius, 8px));
+	border: 1px solid var(--mcpv-border, var(--line, #2a3038));
+	background: color-mix(in srgb, var(--mcpv-bg-card, var(--card, #161b22)) 60%, transparent);
+
+	&__icon {
+		font-size: 1.1rem;
+		line-height: 1;
+		padding-top: 0.15rem;
+		font-weight: 700;
+	}
+
+	&__title {
+		margin: 0 0 0.2rem;
+		font-weight: 600;
+		font-size: 0.95rem;
+		letter-spacing: 0.01em;
+	}
+
+	&__content {
+		& p {
+			margin: 0.25rem 0;
+		}
+
+		& p + p {
+			margin-top: 0.4rem;
+		}
+	}
+
+	// Variant modifiers — BEM `--` namespace. Colours via custom
+	// properties so each host theme (dark / light / midnight / solarized
+	// / nord) can override just the variant palette without touching
+	// the structural rules above.
+
+	&--note {
+		border-color: color-mix(in srgb, #{$mcpv-callout-note} 30%, var(--mcpv-border, var(--line)));
+
+		& .mcpv-callout__icon {
+			color: $mcpv-callout-note;
+		}
+	}
+
+	&--tip {
+		border-color: color-mix(in srgb, #{$mcpv-callout-tip} 35%, var(--mcpv-border, var(--line)));
+
+		& .mcpv-callout__icon {
+			color: $mcpv-callout-tip;
+		}
+	}
+
+	&--warn {
+		border-color: color-mix(in srgb, #{$mcpv-callout-warn} 40%, var(--mcpv-border, var(--line)));
+
+		& .mcpv-callout__icon {
+			color: $mcpv-callout-warn;
+		}
+	}
+
+	&--danger {
+		border-color: color-mix(in srgb, #{$mcpv-callout-danger} 40%, var(--mcpv-border, var(--line)));
+
+		& .mcpv-callout__icon {
+			color: $mcpv-callout-danger;
+		}
+	}
+}
+
+// Legacy alias for `apps/web/src/components/ui/Callout.astro`, kept
+// until every page renders `mcpv-callout` instead of `ui-callout`. The
+// @extend shares every rule from `.mcpv-callout` (including the
+// variant modifiers), so the old markup keeps working without a
+// behaviour change. Remove this block once the rename is done.
+
+.ui-callout,
+.ui-callout--note,
+.ui-callout--tip,
+.ui-callout--warn,
+.ui-callout--danger {
+	@extend .mcpv-callout;
+}

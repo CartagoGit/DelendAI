@@ -11,6 +11,7 @@ import type { IToolRegistration } from '../contracts/interfaces/tool-registratio
 import type { IFileReader } from './analyze-project';
 import { analyzeProject } from './analyze-project';
 import { recommendServerPlan } from './recommend-plan';
+import { resolveAdoptionStrategy } from './adoption-strategy';
 import type { IPatternOverrides } from './pattern-catalog-overrides';
 import {
 	ANALYZE_INPUT_SCHEMA,
@@ -18,6 +19,7 @@ import {
 	SERVER_PLAN_SCHEMA,
 } from './schemas';
 import { toolJson } from '../shared/tool-response';
+import { ADOPTION_STRATEGY_SCHEMA } from '../contracts/constants/adoption-strategy-schema.constant';
 
 export interface IAnalyzeToolDeps {
 	readonly namespacePrefix: string;
@@ -41,8 +43,27 @@ export const buildAnalyzeToolRegistration = (
 				`${prefix}_analyze_project`,
 				{
 					outputSchema: z.object({
-						analysis: PROJECT_ANALYSIS_SCHEMA,
-						plan: SERVER_PLAN_SCHEMA,
+						analysis: PROJECT_ANALYSIS_SCHEMA.optional(),
+						plan: SERVER_PLAN_SCHEMA.optional(),
+						adoptionStrategy: ADOPTION_STRATEGY_SCHEMA,
+						summary: z
+							.object({
+								projectType:
+									PROJECT_ANALYSIS_SCHEMA.shape.projectType,
+								language:
+									PROJECT_ANALYSIS_SCHEMA.shape.language,
+								packageManager:
+									PROJECT_ANALYSIS_SCHEMA.shape
+										.packageManager,
+								framework: z.string().optional(),
+								hasMcpProject: z.boolean(),
+								serverName: z.string(),
+								namespacePrefix: z.string(),
+								targetDir: z.string(),
+								pluginCount: z.number(),
+								toolCount: z.number(),
+							})
+							.optional(),
 					}),
 					description:
 						'Read-only. Inspect this project and return a structured analysis plus a recommended MCP server plan (project type, tools, plugins, validation commands and a ready-to-paste mcp.json). Call this first; it never writes.',
@@ -50,6 +71,10 @@ export const buildAnalyzeToolRegistration = (
 				},
 				async (args: z.infer<typeof ANALYZE_INPUT_SCHEMA>) => {
 					const analysis = await analyzeProject(deps.reader);
+					const adoptionStrategy = resolveAdoptionStrategy(
+						args.adoption ?? {},
+						{ hasExistingMcpProject: analysis.hasMcpProject },
+					);
 					const planOptions = {
 						...(args.serverName !== undefined
 							? { serverName: args.serverName }
@@ -63,14 +88,34 @@ export const buildAnalyzeToolRegistration = (
 						...(args.docsDir !== undefined
 							? { docsDir: args.docsDir }
 							: {}),
+						...(args.targetDir !== undefined
+							? { targetDir: args.targetDir }
+							: {}),
 						...(deps.patternOverrides !== undefined
 							? { patternOverrides: deps.patternOverrides }
 							: {}),
 					};
-					return json({
-						analysis,
-						plan: recommendServerPlan(analysis, planOptions),
-					});
+					const plan = recommendServerPlan(analysis, planOptions);
+					if (args.compact === true) {
+						return json({
+							adoptionStrategy,
+							summary: {
+								projectType: analysis.projectType,
+								language: analysis.language,
+								packageManager: analysis.packageManager,
+								...(analysis.framework === undefined
+									? {}
+									: { framework: analysis.framework }),
+								hasMcpProject: analysis.hasMcpProject,
+								serverName: plan.serverName,
+								namespacePrefix: plan.namespacePrefix,
+								targetDir: plan.targetDir,
+								pluginCount: plan.plugins.length,
+								toolCount: plan.tools.length,
+							},
+						});
+					}
+					return json({ analysis, plan, adoptionStrategy });
 				},
 			);
 		},

@@ -16,7 +16,16 @@
 	display: flex;
 	align-items: center;
 	gap: 1rem;
-	height: 60px;
+	// `min-height` (not a fixed `height`) is the no-overlap guarantee: the
+	// row's right group (`.nav__links`) can `flex-wrap`, so on a tight width
+	// — or with a long translated label — it may spill onto a second line.
+	// With a fixed height that second row would overflow the header box and
+	// overlap the hero / page-header below it. `min-height` lets the header
+	// grow instead, and `padding-block` gives the wrapped rows breathing room.
+	// The common single-line case is visually unchanged (content < 60px, so
+	// `min-height` still resolves to 60px).
+	min-height: 60px;
+	padding-block: 0.35rem;
 }
 .nav__brand {
 	font-weight: 700;
@@ -271,8 +280,13 @@
 		outline-offset: 2px;
 	}
 }
+// The inline SVG inside the GitHub link: `block` removes the inline
+// baseline gap so the icon centres exactly in the 32px grid cell.
+.nav__github-icon {
+	display: block;
+}
 
-// Mobile hamburger (only visible at <= 680px — see _nav-media queries below)
+// Mobile hamburger (only visible at <= 820px — see _nav-media queries below)
 .hamburger {
 	display: none;
 	place-items: center;

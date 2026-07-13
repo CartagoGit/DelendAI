@@ -1,0 +1,205 @@
+// `apps/shared/src/styles/components/_setup-wizard.scss`
+//
+// BEM-nested styles for the `<section class="mcpv-setup">` block
+// emitted by `renderSetupWizard` and the `<p class="mcpv-status-banner">`
+// block emitted by `renderStatusBanner` in
+// `apps/shared/src/components/dev/setup-wizard.ts` (f00102 S4.6).
+//
+// Class namespace is `mcpv-setup` / `mcpv-setup__*` and
+// `mcpv-status-banner` / `mcpv-status-banner--{ok,warn}`. The trailing
+// @extend block keeps the legacy `.setup__*` and `.settings__status*`
+// selectors working so the existing dev preview keeps matching
+// during the deprecation window.
+//
+// The real visual rules live in `apps/shared/src/styles/dev-wizard.scss`
+// and target the legacy `setup` / `settings__status` blocks. This
+// partial only adds the `mcpv-*` aliases.
+
+.mcpv-setup {
+	display: flex;
+	flex-direction: column;
+	gap: 1.25rem;
+	padding: 1.25rem 1.5rem;
+}
+
+.mcpv-setup__head {
+	display: flex;
+	flex-direction: column;
+	gap: 0.4rem;
+}
+
+.mcpv-setup__hint {
+	margin: 0;
+	color: var(--mcpv-fg-muted, var(--muted));
+	font-size: 0.9rem;
+	line-height: 1.4;
+}
+
+.mcpv-setup__signals {
+	display: flex;
+	flex-direction: column;
+	gap: 0.5rem;
+}
+
+.mcpv-setup__signals h2 {
+	margin: 0;
+	font-size: 0.78rem;
+	text-transform: uppercase;
+	letter-spacing: 0.08em;
+	color: var(--mcpv-fg-muted, var(--muted));
+}
+
+.mcpv-setup__signals ul {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	display: flex;
+	flex-direction: column;
+	gap: 0.25rem;
+}
+
+.mcpv-setup__signal {
+	display: flex;
+	gap: 0.4rem;
+	align-items: baseline;
+	font-size: 0.85rem;
+	font-family: var(--mcpv-font-mono, ui-monospace, monospace);
+
+	& code {
+		color: var(--mcpv-fg, var(--fg));
+	}
+
+	&.is-off {
+		color: var(--mcpv-fg-muted, var(--muted));
+	}
+
+	&.is-on {
+		color: var(--mcpv-fg, var(--fg));
+	}
+}
+
+.mcpv-setup__signal-icon {
+	display: inline-block;
+	width: 1ch;
+	color: var(--mcpv-fg-muted, var(--muted));
+
+	.is-on & {
+		color: var(--mcpv-link, var(--accent));
+	}
+}
+
+.mcpv-setup__signal-detail {
+	color: var(--mcpv-fg-muted, var(--muted));
+}
+
+.mcpv-setup__cta {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+	align-items: center;
+}
+
+.mcpv-setup__primary,
+.mcpv-setup__secondary {
+	appearance: none;
+	border: 1px solid var(--mcpv-border, var(--line));
+	border-radius: 8px;
+	padding: 0.5rem 0.9rem;
+	font: inherit;
+	cursor: pointer;
+	transition:
+		background 0.18s ease,
+		border-color 0.18s ease;
+}
+
+.mcpv-setup__primary {
+	background: var(--mcpv-link, var(--accent));
+	color: var(--mcpv-fg-on-brand, #ffffff);
+	border-color: transparent;
+	font-weight: 600;
+
+	&:hover {
+		filter: brightness(1.1);
+	}
+}
+
+.mcpv-setup__secondary {
+	background: transparent;
+	color: var(--mcpv-fg, var(--fg));
+
+	&:hover {
+		background: color-mix(in srgb, var(--mcpv-link, var(--accent)) 12%, transparent);
+	}
+}
+
+.mcpv-setup__status {
+	color: var(--mcpv-fg-muted, var(--muted));
+	font-size: 0.85rem;
+}
+
+// Status banner
+
+.mcpv-status-banner {
+	display: flex;
+	gap: 0.5rem;
+	align-items: baseline;
+	margin: 0;
+	padding: 0.6rem 0.8rem;
+	border-radius: 8px;
+	font-size: 0.9rem;
+	line-height: 1.4;
+}
+
+.mcpv-status-banner--ok {
+	background: color-mix(in srgb, var(--mcpv-link, var(--accent)) 14%, transparent);
+	color: var(--mcpv-fg, var(--fg));
+}
+
+.mcpv-status-banner--warn {
+	background: color-mix(in srgb, var(--mcpv-fg-muted, var(--muted)) 14%, transparent);
+	color: var(--mcpv-fg, var(--fg));
+}
+
+// Legacy aliases — keep `.setup__*` and `.settings__status*`
+// selectors visually equivalent to the new `.mcpv-*` tree.
+.setup {
+	@extend .mcpv-setup;
+}
+.setup__head {
+	@extend .mcpv-setup__head;
+}
+.setup__hint {
+	@extend .mcpv-setup__hint;
+}
+.setup__signals {
+	@extend .mcpv-setup__signals;
+}
+.setup__signal {
+	@extend .mcpv-setup__signal;
+}
+.setup__signal-icon {
+	@extend .mcpv-setup__signal-icon;
+}
+.setup__signal-detail {
+	@extend .mcpv-setup__signal-detail;
+}
+.setup__cta {
+	@extend .mcpv-setup__cta;
+}
+.setup__primary {
+	@extend .mcpv-setup__primary;
+}
+.setup__secondary {
+	@extend .mcpv-setup__secondary;
+}
+.setup__status {
+	@extend .mcpv-setup__status;
+}
+.settings__status--ok {
+	@extend .mcpv-status-banner;
+	@extend .mcpv-status-banner--ok;
+}
+.settings__status--warn {
+	@extend .mcpv-status-banner;
+	@extend .mcpv-status-banner--warn;
+}

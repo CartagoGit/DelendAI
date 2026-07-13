@@ -44,15 +44,29 @@ const BUDGET_BYTES = {
 	// (in-session context compaction). Its summary is the only thing the full
 	// overview lists; full measured 8755B. Compact path unchanged (2079B), still
 	// the real promise.
-	overviewFull: 8_900,
-	overviewCompact: 2_100,
-	agentCatalogCompact: 1_300,
+	// Bumped 8900 → 9050 / 2100 → 2180 (2026-07-02): f00094 wired the
+	// inherit_host_instructions tool (host-instruction audit) into the proposals
+	// plugin; full measured 8964B, compact 2128B. Summary kept terse. Compact is
+	// still the real promise at < 24% of full.
+	// Bumped 8900 → 9100 (2026-07-04): added orchestrator-runner execution tools.
+	overviewFull: 9_100,
+	overviewCompact: 1_200,
+	// Bumped 1300 → 1450 (2026-07-03): CORRECTNESS fix in the catalog's
+	// tool-entry construction. Core tools whose id has an underscore
+	// (agent_catalog, fs_read, …) were advertised WITHOUT the `mcp-vertex_`
+	// prefix (a non-callable name), and every tool's `plugin` was mis-derived
+	// as the host segment. Now every name is fully qualified and `plugin` is
+	// the real owning plugin — both add bytes (compact 1290→1403B measured)
+	// but make the discovery catalog truthful.
+	agentCatalogCompact: 1_450,
 	agentCatalogFull: 6_800,
 	autoWork: 1_600,
 	search: 3_000,
 	docsList: 2_500,
 	roundContext: 3_000,
 	logsTail: 6_000,
+	analyzeCompact: 1_800,
+	planCompact: 2_000,
 } as const;
 
 describe('e2e: token budget (cold-start payloads)', async () => {
@@ -235,6 +249,21 @@ describe('e2e: token budget (cold-start payloads)', async () => {
 	it('auto_work returns a tight action plan, not prose', async () => {
 		const bytes = await textBytes('mcp-vertex_proposals_auto_work', {});
 		expect(bytes).toBeLessThan(BUDGET_BYTES.autoWork);
+	});
+
+	it('bootstrap discovery and planning expose bounded compact projections', async () => {
+		const analyze = await textBytes('mcp-vertex_analyze_project', {
+			compact: true,
+		});
+		const plan = await textBytes('mcp-vertex_plan_mcp_project', {
+			compact: true,
+		});
+		expect(analyze, `analyze compact = ${analyze}B`).toBeLessThan(
+			BUDGET_BYTES.analyzeCompact,
+		);
+		expect(plan, `plan compact = ${plan}B`).toBeLessThan(
+			BUDGET_BYTES.planCompact,
+		);
 	});
 
 	it('read-only long-session surfaces stay on bounded compact paths', async () => {

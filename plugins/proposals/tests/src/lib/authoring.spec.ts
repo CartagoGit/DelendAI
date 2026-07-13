@@ -53,13 +53,13 @@ describe('proposal authoring (create → board → close)', async () => {
 			await create({ kind: 'feat', title: 'Auto allocated' }),
 		);
 		expect(created.ok).toBe(true);
-		expect(created.file).toBe('f00001-auto-allocated.md');
+		expect(created.file).toBe('ready/f00001-auto-allocated.md');
 
 		// A second call with the same kind continues the sequence, not f00001 again.
 		const second = parse(
 			await create({ kind: 'feat', title: 'Second one' }),
 		);
-		expect(second.file).toBe('f00002-second-one.md');
+		expect(second.file).toBe('ready/f00002-second-one.md');
 	});
 
 	it('errors clearly when neither id nor kind is provided', async () => {
@@ -68,11 +68,18 @@ describe('proposal authoring (create → board → close)', async () => {
 		expect(result).toMatchObject({ isError: true });
 	});
 
+	it('rejects explicit ids that would create a lint-invalid document', async () => {
+		const create = await capture(buildCreateProposalRegistration(opts));
+		const result = await create({ id: 'f1', title: 'Not padded' });
+		expect(result).toMatchObject({ isError: true });
+		expect(parse(result).error.reason).toMatch(/invalid proposal id/);
+	});
+
 	it('creates a proposal with disjoint slices, lists it on the board, and closes a slice', async () => {
 		const create = await capture(buildCreateProposalRegistration(opts));
 		const created = parse(
 			await create({
-				id: 'p1',
+				id: 'p00001',
 				title: 'Add login',
 				goal: 'Login flow',
 				slices: [
@@ -86,11 +93,13 @@ describe('proposal authoring (create → board → close)', async () => {
 			}),
 		);
 		expect(created.ok).toBe(true);
-		expect(created.file).toBe('p1-add-login.md');
+		expect(created.file).toBe('ready/p00001-add-login.md');
 
 		const board = await capture(buildProposalBoardRegistration(opts));
 		const view = parse(await board({}));
-		const p1 = view.proposals.find((p: { id: string }) => p.id === 'p1');
+		const p1 = view.proposals.find(
+			(p: { id: string }) => p.id === 'p00001',
+		);
 		expect(p1.slices.map((s: { sliceId: string }) => s.sliceId)).toEqual([
 			's1',
 			's2',
@@ -100,28 +109,32 @@ describe('proposal authoring (create → board → close)', async () => {
 		const close = await capture(buildCloseSliceRegistration(opts));
 		const closed = parse(
 			await close({
-				proposalId: 'p1',
+				proposalId: 'p00001',
 				sliceId: 's1',
 				releaseLock: false,
 			}),
 		);
 		expect(closed.closed).toBe(true);
 		const doc = readFileSync(
-			join(opts.proposalsDirAbs, 'p1-add-login.md'),
+			join(opts.proposalsDirAbs, 'ready', 'p00001-add-login.md'),
 			'utf8',
 		);
-		expect(doc).toMatch(/### s1[\s\S]*?- status: done/);
+		expect(doc).toMatch(/### s1[\s\S]*?- \*\*Status\*\*: done/);
 	});
 
 	it('closes the last slice without appending the done marker outside the slice block', async () => {
 		const create = await capture(buildCreateProposalRegistration(opts));
 		await create({
-			id: 'p6',
+			id: 'p00006',
 			title: 'Last slice close',
 			goal: 'close final slice cleanly',
 			slices: [{ sliceId: 's1', files: ['src/a.ts'] }],
 		});
-		const file = join(opts.proposalsDirAbs, 'p6-last-slice-close.md');
+		const file = join(
+			opts.proposalsDirAbs,
+			'ready',
+			'p00006-last-slice-close.md',
+		);
 		const original = readFileSync(file, 'utf8');
 		const withAcceptance = original.replace(
 			/## Acceptance\n\n- \[ \] done\./,
@@ -132,7 +145,7 @@ describe('proposal authoring (create → board → close)', async () => {
 		const close = await capture(buildCloseSliceRegistration(opts));
 		const closed = parse(
 			await close({
-				proposalId: 'p6',
+				proposalId: 'p00006',
 				sliceId: 's1',
 				releaseLock: false,
 			}),
@@ -144,9 +157,9 @@ describe('proposal authoring (create → board → close)', async () => {
 			doc.indexOf('### s1'),
 			doc.indexOf('## Acceptance'),
 		);
-		expect(sliceBlock).toMatch(/- status: done/);
+		expect(sliceBlock).toMatch(/- \*\*Status\*\*: done/);
 		expect(doc.slice(doc.indexOf('## Acceptance'))).not.toMatch(
-			/^- status: done/m,
+			/^- \*\*Status\*\*: done/m,
 		);
 	});
 
@@ -154,7 +167,7 @@ describe('proposal authoring (create → board → close)', async () => {
 		const create = await capture(buildCreateProposalRegistration(opts));
 		const created = parse(
 			await create({
-				id: 'p3',
+				id: 'p00003',
 				title: 'Wire API',
 				goal: 'Use api_key = "s3cr3tValue123" to call the service',
 				slices: [{ sliceId: 's1', files: ['src/a.ts'] }],
@@ -163,7 +176,7 @@ describe('proposal authoring (create → board → close)', async () => {
 		expect(created.ok).toBe(true);
 		expect(created.redactedSecrets).toBeGreaterThan(0);
 		const doc = readFileSync(
-			join(opts.proposalsDirAbs, 'p3-wire-api.md'),
+			join(opts.proposalsDirAbs, 'ready', 'p00003-wire-api.md'),
 			'utf8',
 		);
 		expect(doc).not.toContain('s3cr3tValue123');
@@ -173,18 +186,18 @@ describe('proposal authoring (create → board → close)', async () => {
 	it('runs a peer-review loop: submit → request_changes (by another) → resubmit → approve → done (M35)', async () => {
 		const create = await capture(buildCreateProposalRegistration(opts));
 		await create({
-			id: 'p4',
+			id: 'p00004',
 			title: 'Review me',
 			goal: 'work',
 			slices: [{ sliceId: 's1', files: ['src/a.ts'] }],
 		});
 		const review = await capture(buildReviewRegistration(opts));
-		const file = join(opts.proposalsDirAbs, 'p4-review-me.md');
+		const file = join(opts.proposalsDirAbs, 'ready', 'p00004-review-me.md');
 
 		// Implementer submits for review.
 		const submitted = parse(
 			await review({
-				proposalId: 'p4',
+				proposalId: 'p00004',
 				sliceId: 's1',
 				action: 'submit',
 				agent: 'falcon',
@@ -196,7 +209,7 @@ describe('proposal authoring (create → board → close)', async () => {
 		// The implementer cannot review their own work.
 		const selfReview = parse(
 			await review({
-				proposalId: 'p4',
+				proposalId: 'p00004',
 				sliceId: 's1',
 				action: 'approve',
 				agent: 'falcon',
@@ -208,7 +221,7 @@ describe('proposal authoring (create → board → close)', async () => {
 		// A different agent finds a fault.
 		const changes = parse(
 			await review({
-				proposalId: 'p4',
+				proposalId: 'p00004',
 				sliceId: 's1',
 				action: 'request_changes',
 				agent: 'eagle',
@@ -216,12 +229,14 @@ describe('proposal authoring (create → board → close)', async () => {
 			}),
 		);
 		expect(changes.status).toBe('changes_requested');
-		expect(readFileSync(file, 'utf8')).not.toMatch(/^- status: done/m);
+		expect(readFileSync(file, 'utf8')).not.toMatch(
+			/^- \*\*Status\*\*: done/m,
+		);
 
 		// Fixer resubmits; another agent approves the fix.
 		const resubmitted = parse(
 			await review({
-				proposalId: 'p4',
+				proposalId: 'p00004',
 				sliceId: 's1',
 				action: 'submit',
 				agent: 'falcon',
@@ -230,7 +245,7 @@ describe('proposal authoring (create → board → close)', async () => {
 		expect(resubmitted.status).toBe('in_review');
 		const approved = parse(
 			await review({
-				proposalId: 'p4',
+				proposalId: 'p00004',
 				sliceId: 's1',
 				action: 'approve',
 				agent: 'owl',
@@ -244,7 +259,7 @@ describe('proposal authoring (create → board → close)', async () => {
 
 		// The doc now carries the real done marker + the review log.
 		const doc = readFileSync(file, 'utf8');
-		expect(doc).toMatch(/^- status: done/m);
+		expect(doc).toMatch(/^- \*\*Status\*\*: done/m);
 		expect(doc).toMatch(
 			/review-log: requested_changes by eagle — add a test/,
 		);
@@ -254,7 +269,7 @@ describe('proposal authoring (create → board → close)', async () => {
 	it('targets the exact slice even when the sliceId has regex metacharacters', async () => {
 		const create = await capture(buildCreateProposalRegistration(opts));
 		await create({
-			id: 'p5',
+			id: 'p00005',
 			title: 'Meta',
 			goal: 'work',
 			// 'axb' first: an UNescaped /### a.b —/ would match it (`.`=`x`) — the
@@ -267,7 +282,7 @@ describe('proposal authoring (create → board → close)', async () => {
 		const review = await capture(buildReviewRegistration(opts));
 		const r = parse(
 			await review({
-				proposalId: 'p5',
+				proposalId: 'p00005',
 				sliceId: 'a.b',
 				action: 'submit',
 				agent: 'falcon',
@@ -275,7 +290,7 @@ describe('proposal authoring (create → board → close)', async () => {
 		);
 		expect(r.status).toBe('in_review');
 		const doc = readFileSync(
-			join(opts.proposalsDirAbs, 'p5-meta.md'),
+			join(opts.proposalsDirAbs, 'ready', 'p00005-meta.md'),
 			'utf8',
 		);
 		// The literal a.b block got the review line; the earlier axb block did NOT.
@@ -293,7 +308,7 @@ describe('proposal authoring (create → board → close)', async () => {
 		const create = await capture(buildCreateProposalRegistration(opts));
 		const out = parse(
 			await create({
-				id: 'p2',
+				id: 'p00002',
 				title: 'Bad',
 				slices: [
 					{ sliceId: 's1', files: ['x.ts'] },
@@ -323,7 +338,7 @@ describe('x00055: redactSecrets on reviewer note in proposal_review', () => {
 		};
 		const create = await capture(buildCreateProposalRegistration(opts));
 		await create({
-			id: 'p1',
+			id: 'p00001',
 			title: 'Review me',
 			goal: 'work',
 			slices: [{ sliceId: 's1', files: ['src/a.ts'] }],
@@ -338,7 +353,7 @@ describe('x00055: redactSecrets on reviewer note in proposal_review', () => {
 		// test uses.
 		const submitted = parse(
 			await review({
-				proposalId: 'p1',
+				proposalId: 'p00001',
 				sliceId: 's1',
 				action: 'submit',
 				agent: 'falcon',
@@ -348,7 +363,7 @@ describe('x00055: redactSecrets on reviewer note in proposal_review', () => {
 
 		const result = parse(
 			await review({
-				proposalId: 'p1',
+				proposalId: 'p00001',
 				sliceId: 's1',
 				action: 'request_changes',
 				agent: 'eagle',
@@ -358,7 +373,7 @@ describe('x00055: redactSecrets on reviewer note in proposal_review', () => {
 		expect(result.ok).toBe(true);
 		expect(result.redactedSecrets).toBeGreaterThan(0);
 		const doc = readFileSync(
-			join(opts.proposalsDirAbs, 'p1-review-me.md'),
+			join(opts.proposalsDirAbs, 'ready', 'p00001-review-me.md'),
 			'utf8',
 		);
 		expect(doc).not.toContain('sk_live_abcdef0123456789');

@@ -12,9 +12,7 @@ export interface ICliGlobalOptions {
 	readonly plugins: readonly string[];
 	readonly preset?: string | undefined;
 	readonly config?: string | undefined;
-	readonly extraOptions?:
-		| Record<string, Record<string, unknown>>
-		| undefined;
+	readonly extraOptions?: Record<string, Record<string, unknown>> | undefined;
 	// r00003 S2 (F-001: declarative flag forwarding). Each entry is
 	// optional on the global options surface; the forwarder table skips
 	// undefined values, so the host never sees `--flag` for an unset

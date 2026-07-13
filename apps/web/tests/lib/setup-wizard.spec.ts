@@ -64,15 +64,23 @@ describe('setup-wizard', () => {
 
 	describe('emitted commands agree with the catalog / canonical guide', () => {
 		it('launch command uses --preset=full (not a hand-typed plugin list)', () => {
-			expect(launchCommand()).toBe('bunx @mcp-vertex/core --preset=full');
+			expect(launchCommand()).toBe(
+				'bunx --package @mcp-vertex/cli mcpv __serve --workspace . --preset full',
+			);
 		});
 
 		it('mcp.json snippet uses the same preset arg', () => {
 			const snippet = mcpJsonSnippet();
 			const parsed = JSON.parse(snippet);
 			expect(parsed.servers['mcp-vertex'].args).toEqual([
-				'@mcp-vertex/core',
-				'--preset=full',
+				'--package',
+				'@mcp-vertex/cli',
+				'mcpv',
+				'__serve',
+				'--workspace',
+				'.',
+				'--preset',
+				'full',
 			]);
 		});
 

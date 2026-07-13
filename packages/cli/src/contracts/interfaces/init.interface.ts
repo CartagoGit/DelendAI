@@ -262,13 +262,13 @@ export interface IToolUnification {
 	readonly collisions: readonly string[];
 }
 
-/** Sections an adoption plan can render (U2 A1..A4). */
+/** Sections an adoption plan can render (U2 S1..S4). */
 export interface IAdoptionSections {
-	/** Rendered `### A3 — skill migration` section (replaces the placeholder). */
+	/** Rendered `### S3 — skill migration` section (replaces the placeholder). */
 	readonly skillSection: string;
-	/** Rendered `### A4 — tool-namespace unification` section. */
+	/** Rendered `### S4 — tool-namespace unification` section. */
 	readonly toolSection: string;
-	/** The skill inventory the A3 section was built from (surfaced for `--json`). */
+	/** The skill inventory the S3 section was built from (surfaced for `--json`). */
 	readonly skillInventory: ISkillInventory;
 	/** The tool-unification map the A4 section was built from. */
 	readonly toolUnification: IToolUnification;

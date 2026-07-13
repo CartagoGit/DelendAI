@@ -52,7 +52,7 @@ describe('renderKnowledgeNavigator', async () => {
 			onOpenEntry: 'cmd',
 			onSearch: 'cmd',
 		});
-		expect(html).toContain('<span class="mv-kn-count">2</span>');
+		expect(html).toContain('<span class="mcpv-kn-count">2</span>');
 	});
 
 	it('renders a preview pane, even when empty', async () => {
@@ -62,7 +62,7 @@ describe('renderKnowledgeNavigator', async () => {
 			onOpenEntry: 'cmd',
 			onSearch: 'cmd',
 		});
-		expect(empty).toContain('mv-kn-preview--empty');
+		expect(empty).toContain('mcpv-kn-preview--empty');
 		expect(empty).toContain('Select an entry');
 
 		const previewed = renderKnowledgeNavigator({

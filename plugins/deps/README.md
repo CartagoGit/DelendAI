@@ -11,7 +11,8 @@ agnostic (no network, no CVE database).
 mcp-vertex --plugins=deps
 ```
 
-Registers `<prefix>_deps_list` and `<prefix>_deps_check`.
+Registers `<prefix>_deps_list`, `<prefix>_deps_check` and the offline
+`<prefix>_deps_polyglot` inventory.
 
 ## Tools
 
@@ -30,14 +31,14 @@ Registers `<prefix>_deps_list` and `<prefix>_deps_check`.
 { "plugins": { "deps": { "options": { "manifest": "package.json" } } } }
 ```
 
-## Scope
+## Optional network and write surfaces
 
-Intentionally **offline**: no network calls and no vulnerability database.
+The default remains **offline**: no network calls and no vulnerability database.
 Security/CVE scanning needs an external vuln source and is out of scope for an
 agnostic core plugin — use a dedicated tool (e.g. `npm audit`, `osv-scanner`)
 for that.
 
-Likewise there is **no `deps_outdated`**: checking for newer *published*
-versions requires hitting the registry (network), which would break the
-offline/agnostic contract. Run `npm outdated` / `bun outdated` when you need it.
-This is a deliberate design decision, not a missing feature.
+Set `allowNetwork: true` to register `deps_outdated` with a network effect.
+Set `allowWrite: true` to register `package_install` and
+`package_run_script`, both with write/spawn effects. These capabilities are
+absent unless explicitly enabled.

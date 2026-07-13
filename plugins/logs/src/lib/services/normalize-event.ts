@@ -13,6 +13,7 @@ export const LOG_OUTCOMES = [
 export type LogOutcome = (typeof LOG_OUTCOMES)[number];
 
 export type LogEventKind =
+	| 'server-started'
 	| 'tool-started'
 	| 'tool-completed'
 	| 'tool-failed'
@@ -72,7 +73,12 @@ export const outcomeForKind = (
 	if (kind.endsWith('dead')) return 'dead';
 	if (kind.endsWith('idle')) return 'idle';
 	if (kind.endsWith('completed') || kind.endsWith('finished')) return 'ok';
-	if (kind === 'tool-started' || kind === 'quality-run-started') return 'ok';
+	if (
+		kind === 'tool-started' ||
+		kind === 'quality-run-started' ||
+		kind === 'server-started'
+	)
+		return 'ok';
 	return 'unknown';
 };
 
@@ -118,18 +124,31 @@ export const serializeRedactedEvent = (
 	};
 	let text = JSON.stringify(redactValue(event));
 	if (Buffer.byteLength(text, 'utf8') <= maxLineBytes) return text;
+	// f00111 S2: truncation must not destroy attribution — keep the
+	// small identity fields so a truncated completion still pairs with
+	// its `tool-started` line in any per-tool analysis.
+	const metaTool = event.meta.toolName;
+	const metaTask = event.meta.taskId;
 	const compact = {
 		...event,
 		summary: `${event.summary.slice(0, 180)}…`,
 		meta: {
 			__truncated__: true,
 			originalBytes: Buffer.byteLength(text, 'utf8'),
+			...(typeof metaTool === 'string' ? { toolName: metaTool } : {}),
+			...(typeof metaTask === 'string' ? { taskId: metaTask } : {}),
 		},
 	};
 	text = JSON.stringify(redactValue(compact));
-	while (Buffer.byteLength(text, 'utf8') > maxLineBytes) {
+	while (
+		Buffer.byteLength(text, 'utf8') > maxLineBytes &&
+		compact.summary.length > 0
+	) {
 		compact.summary = compact.summary.slice(0, -16);
 		text = JSON.stringify(redactValue(compact));
 	}
+	// For a pathological cap smaller than the attribution envelope itself,
+	// returning that minimum envelope is safer than either losing tool/task
+	// identity or looping forever. Production uses the 8 KiB default.
 	return text;
 };

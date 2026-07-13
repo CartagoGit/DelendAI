@@ -93,7 +93,7 @@ export const stripLocale = (path: string): string => {
 		languages.some((l) => l.code === segs[0]) &&
 		segs[0] !== defaultLang
 	) {
-		return '/' + segs.slice(1).join('/');
+		return `/${segs.slice(1).join('/')}`;
 	}
 	return path || '/';
 };

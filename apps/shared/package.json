@@ -16,9 +16,17 @@
 			"types": "./src/styles/_index.scss",
 			"import": "./src/styles/_index.scss"
 		},
+		"./styles/*-css": {
+			"types": "./src/styles/*-css.ts",
+			"import": "./src/styles/*-css.ts"
+		},
 		"./styles/*": {
 			"types": "./src/styles/*",
 			"import": "./src/styles/*"
+		},
+		"./components/*": {
+			"types": "./src/components/*.ts",
+			"import": "./src/components/*.ts"
 		},
 		"./i18n": {
 			"types": "./src/i18n/index.ts",
@@ -37,6 +45,7 @@
 		"type": "tsc --noEmit -p tsconfig.json"
 	},
 	"dependencies": {
-		"@mcp-vertex/ui-extension": "workspace:*"
+		"@mcp-vertex/client": "workspace:*",
+		"sass": "^1.101.0"
 	}
 }

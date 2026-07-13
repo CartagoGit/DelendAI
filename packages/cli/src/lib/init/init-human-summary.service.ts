@@ -1,5 +1,4 @@
 /**
-import type { IInitHumanInput, IInitWrittenFile } from '../../contracts/interfaces/init.interface';
  * f00103 / f00088 — coloured human-readable summary for the
  * `init` and `init:default` commands.
  *
@@ -20,6 +19,8 @@ import type { IInitHumanInput, IInitWrittenFile } from '../../contracts/interfac
  *
  * Pure functions — no IO, no env reads outside the call site.
  */
+
+import type { IInitHumanInput } from '../../contracts/interfaces/init.interface';
 import {
 	arrow,
 	brand,
@@ -33,10 +34,6 @@ import {
 	success,
 	warn,
 } from '../helpers/cli-color.helper';
-
-
-
-
 
 const pad = (text: string, width: number): string =>
 	text.length >= width ? text : text + ' '.repeat(width - text.length);
@@ -266,7 +263,7 @@ export const renderInitHumanSummary = (input: IInitHumanInput): string => {
 		);
 	}
 
-	return lines.join('\n') + '\n';
+	return `${lines.join('\n')}\n`;
 };
 
 /**
@@ -295,5 +292,5 @@ export const renderInitFailureSummary = (
 	if (hintText !== undefined && hintText.length > 0) {
 		lines.push(hint(hintText));
 	}
-	return lines.join('\n') + '\n';
+	return `${lines.join('\n')}\n`;
 };

@@ -21,11 +21,18 @@ import {
 import { INIT_VALID_PLUGIN_IDS } from '../../contracts/constants/init-answers.constant';
 import type { IInitAnswers } from './init-answers.types';
 import { InitAnswers } from './init-answers.schema';
-import { c, heading, hint, brand, success, failure } from '../helpers/cli-color.helper';
+import {
+	c,
+	heading,
+	hint,
+	brand,
+	success,
+	failure,
+} from '../helpers/cli-color.helper';
 
 const numbered = (n: number, text: string): string =>
 	`${c.cyan(`${n})`)} ${text}`;
-const bullet = (text: string): string => `${c.gray('›')} ${text}`;
+const _bullet = (text: string): string => `${c.gray('›')} ${text}`;
 
 const ALL_PRESET_PLUGINS: ReadonlySet<string> = (() => {
 	const ids = new Set<string>();
@@ -217,6 +224,10 @@ export const collectInitAnswers = async (
 				{
 					label: 'minimal — git + search (read-only)',
 					value: 'minimal',
+				},
+				{
+					label: 'lean — the 4 essentials: git + search + memory + docs',
+					value: 'lean',
 				},
 				{ label: 'standard — single-agent toolkit', value: 'standard' },
 				{

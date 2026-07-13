@@ -171,6 +171,38 @@ describe('e2e: agent catalog', async () => {
 		).toBeGreaterThanOrEqual((compact.proposals as Array<unknown>).length);
 	});
 
+	it('lists every tool with a fully-qualified callable name and its real owning plugin', async () => {
+		const full = await callCatalog({ mode: 'full' });
+		const tools = full.tools as Array<{ name: string; plugin: string }>;
+
+		// Regression: core tools whose id contains `_` (agent_catalog,
+		// fs_read, get_validation_matrix, …) used to be advertised WITHOUT the
+		// `mcp-vertex_` prefix — a non-callable name that made the discovery
+		// catalog lie to the agent. Every name must be host-qualified.
+		expect(tools.length).toBeGreaterThan(0);
+		expect(tools.every((tool) => tool.name.startsWith('mcp-vertex_'))).toBe(
+			true,
+		);
+
+		// A core tool with an underscore id is present under its full name.
+		expect(
+			tools.some((tool) => tool.name === 'mcp-vertex_agent_catalog'),
+		).toBe(true);
+
+		// Regression: `plugin` used to be the host segment (`mcp-vertex`) for
+		// EVERY plugin tool. It must now be the real owning plugin.
+		const agentLock = tools.find(
+			(tool) => tool.name === 'mcp-vertex_proposals_agent_lock',
+		);
+		expect(agentLock?.plugin).toBe('proposals');
+
+		// Core tools keep the host namespace as their plugin.
+		const overview = tools.find(
+			(tool) => tool.name === 'mcp-vertex_overview',
+		);
+		expect(overview?.plugin).toBe('mcp-vertex');
+	});
+
 	it('finds the catalog tool itself through section-scoped querying', async () => {
 		const result = await callCatalog({
 			section: 'tools',

@@ -5,7 +5,6 @@ import { describe, expect, it } from 'vitest';
 
 import { INIT_VALID_PLUGIN_IDS } from '../../contracts/constants/init-answers.constant';
 import { InitAnswers } from './init-answers.schema';
-import type { IInitAnswers } from './init-answers.types';
 
 describe('InitAnswers schema (f00084 S1)', () => {
 	it('accepts the canonical defaults', () => {

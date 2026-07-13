@@ -14,20 +14,20 @@ background.
 
 ```
 mcp-vertex_overview { compact: true }
-  -> proposals_auto_work {}
-  -> proposals_continue_proposal { id, mode: "plan" }
-  -> proposals_delegate { taskId, slot, files }    # when the slice is non-trivial
+  -> mcp-vertex_proposals_auto_work {}
+  -> mcp-vertex_proposals_continue_proposal { id, mode: "plan" }
+  -> mcp-vertex_proposals_delegate { taskId, slot, files }    # when the slice is non-trivial
      (delegate assigns a name, claims the lock, and — when the host
       gate `agentWorktree: true` is on — creates the per-agent worktree
       + branch `agent/<assigned-name>` atomically; x00051)
   -> edit only the claimed files (inside the worktree path when present)
   -> run the slice gate, usually bun run validate
-  -> proposals_close_slice { id, sliceId }
-  -> proposals_sync_proposals after the final slice/status move
+  -> mcp-vertex_proposals_close_slice { id, sliceId }
+  -> mcp-vertex_proposals_sync_proposals after the final slice/status move
 ```
 
 The canonical path to spawn a subagent with isolation is
-`auto_work → delegate`. Manual `proposals_agent_worktree` is reserved for the
+`auto_work → delegate`. Manual `mcp-vertex_proposals_agent_worktree` is reserved for the
 rare case where the orchestrator wants a sidecar worktree without delegating
 (e.g. read-mostly investigation). You should **not** call `agent_worktree
 create` yourself before `delegate` — `delegate` does it for you when the
@@ -82,13 +82,13 @@ owns the files, wait for `notification_await_lock` or the
    used to be `docs/mcp-vertex/proposals/index.json`; moved to the
    cache root because it is a regenerable cache artefact, not a
    source file).
-4. Do not run `proposals_sync_proposals` as a substitute for closing the
+4. Do not run `mcp-vertex_proposals_sync_proposals` as a substitute for closing the
    current slice or moving the proposal file.
 
 ## Smoke
 
 `mcp-vertex_knowledge` with no `id` should list entries, and
-`proposals_auto_work` should either return a claimable slice/proposal or
+`mcp-vertex_proposals_auto_work` should either return a claimable slice/proposal or
 an explicit idle reason. A silent empty response is a host assembly bug,
 not a valid workflow state.
 
@@ -101,15 +101,15 @@ and own slice is `done` + peer-reviewed.
 
 ### Working with a plan
 
-1. Use `proposals_continue_proposal { planId: "q00001", mode: "plan" }`
+1. Use `mcp-vertex_proposals_continue_proposal { planId: "q00001", mode: "plan" }`
    to inspect its `## Slices` section and the `contains:` block.
 2. For each contained proposal, claim + close its slices as usual.
 3. For own slices, claim them via `agent_lock` like any other slice.
 4. When every child is done, call
-   `proposals_close_plan { planId: "q00001", reason: "..." }`. The tool
+   `mcp-vertex_proposals_close_plan { planId: "q00001", reason: "..." }`. The tool
    runs the closure preflight; if any child is still open, it returns a
    list of `blockers[]` you must resolve first.
-5. `proposals_proposal_transition { id: "q00001", to: "done" }` also
+5. `mcp-vertex_proposals_proposal_transition { id: "q00001", to: "done" }` also
    enforces the same rule (defence in depth) — both surfaces share the
    `evaluatePlanClosure` engine so they can never disagree.
 

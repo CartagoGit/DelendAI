@@ -39,7 +39,7 @@
 	"scripts": {
 		"test": "vitest run",
 		"typecheck": "tsc --noEmit",
-		"build": "bun ../../scripts/build.ts packages/core"
+		"build": "bun ../../tools/scripts/compile/build.script.ts packages/core"
 	},
 	"dependencies": {
 		"@modelcontextprotocol/sdk": "^1.29.0",
@@ -48,7 +48,7 @@
 	"devDependencies": {
 		"@types/bun": "latest",
 		"typescript": "6.0.3",
-		"vitest": "4.1.9"
+		"vitest": "4.1.10"
 	},
 	"publishConfig": {
 		"access": "public"

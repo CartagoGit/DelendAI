@@ -1,0 +1,374 @@
+// `apps/shared/src/styles/dashboard/dashboard.scss`
+//
+// Dashboard surface styles for the webview (renderDashboard) consumed
+// inside an `<style>` block by both the dev preview at :5200 and the
+// real VS Code / JetBrains extension webviews.
+//
+// Compiled to CSS at build time by the SCSS Bun.build plugin in
+// `tools/scripts/dev/dev.script.ts` — see `apps/shared/src/styles/raw.d.ts`
+// for the type contract.
+//
+// Conventions
+// -----------
+// - Selectors are flat in CSS. SCSS gives us the choice; we choose
+//   **BEM with `&` nesting** so the source stays compact and the
+//   `.mcpv-card {...}` family reads as one block, not six loose rules.
+//   SCSS compiles `&__title` to `.mcpv-card__title`, exactly the class
+//   `renderCard(...)` emits.
+// - Selectors are still flat at the **runtime** level — no wrapper
+//   nesting — because callers (`renderDashboard`, `renderToolDetail`,
+//   `renderMetrics`) wrap panels differently across surfaces and
+//   none of them owns a `.mcpv-dashboard` parent.
+// - All values come from CSS custom properties published by
+//   `apps/shared/src/styles/_tokens.scss` and `_themes.scss`. No
+//   hardcoded px / `em` / fonts except in legacy fallbacks that
+//   already existed before this refactor (kept verbatim so the
+//   visual surface doesn't shift in this slice).
+// - No brand hex literals (`#58a6ff`, `#a371f7`). Use
+//   `var(--mcpv-brand-*)` only; the linter
+//   `tools/scripts/lint/no-duplicate-brand-hex.script.ts` enforces
+//   this across the source tree.
+
+@use '../breakpoints' as bp;
+@use '../themes' as themes;
+@use '../tokens' as tokens;
+@use '../components/tabs' as tabs;
+
+// Loading `_themes.scss` here means the dashboard panel surface
+// inherits the brand colours and palette variables (`--bg`, `--fg`,
+// `--accent`, etc.) that the marketing site uses — the same five
+// themes (dark, light, midnight, solarized, nord) and the same brand
+// hex literals. Combined with the `--mcpv-*` tokens declared by
+// `_tokens.scss`, every dashboard panel lives entirely on shared
+// design variables; there is no surface value that the docs site
+// and the editor cannot keep aligned.
+
+// ---------------------------------------------------------------------------
+// Wrapper
+// ---------------------------------------------------------------------------
+
+.mcpv-main {
+	font-family: var(--mcpv-font-prose);
+	font-size: 14px;
+	color: var(--mcpv-fg, var(--vscode-foreground, #d4d4d4));
+	background: var(--mcpv-bg, var(--vscode-editor-background, transparent));
+	padding: var(--mcpv-s-4);
+	min-width: 0;
+}
+
+// ---------------------------------------------------------------------------
+// Header strip — `mcpv-header` + `&__logo`, `&__brand`, `&__name`,
+// `&__version`, `&__strip`. The block owns its children.
+// ---------------------------------------------------------------------------
+
+.mcpv-header {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: var(--mcpv-s-3);
+	padding: var(--mcpv-s-3) 0;
+	border-bottom: 1px solid var(--mcpv-border, var(--vscode-widget-border, transparent));
+	margin-bottom: var(--mcpv-s-4);
+
+	&__logo {
+		width: 28px;
+		height: 28px;
+		border-radius: var(--mcpv-radius-sm);
+		flex: 0 0 auto;
+	}
+
+	&__brand {
+		display: flex;
+		flex-direction: column;
+		min-width: 0;
+	}
+
+	&__name {
+		font-size: 18px;
+		font-weight: 600;
+		margin: 0;
+	}
+
+	&__version {
+		font-size: 12px;
+		color: var(--mcpv-fg-muted, var(--vscode-descriptionForeground, #858585));
+	}
+
+	&__strip {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--mcpv-s-2);
+	}
+}
+
+// ---------------------------------------------------------------------------
+// Tab strip — `mcpv-tab` element. Selected / hover / focus variants as
+// `&[aria-selected]` / `&:hover` so the block reads top-to-bottom.
+// ---------------------------------------------------------------------------
+
+.mcpv-tabs {
+	padding: 0 var(--mcpv-s-4);
+	overflow-x: auto;
+
+	&__bar {
+		min-width: max-content;
+		margin-bottom: 0;
+	}
+
+	&__action-btn {
+		appearance: none;
+		border: 0;
+		background: transparent;
+		color: inherit;
+		font: inherit;
+		padding: 0.6rem 0.75rem;
+		cursor: pointer;
+	}
+}
+
+.mcpv-tab {
+	appearance: none;
+	background: transparent;
+	border: none;
+	color: var(--mcpv-fg-muted, var(--vscode-tab-inactiveForeground, #858585));
+	padding: var(--mcpv-s-2) var(--mcpv-s-3);
+	font: inherit;
+	cursor: pointer;
+	border-bottom: 2px solid transparent;
+	white-space: nowrap;
+	transition:
+		color var(--mcpv-transition-fast),
+		border-color var(--mcpv-transition-fast);
+
+	&:hover,
+	&:focus-visible {
+		color: var(--mcpv-fg, var(--vscode-foreground, #d4d4d4));
+	}
+
+	&[aria-selected='true'] {
+		color: var(--mcpv-fg, var(--vscode-foreground, #d4d4d4));
+		border-bottom-color: var(--mcpv-brand-blue);
+	}
+}
+
+// ---------------------------------------------------------------------------
+// KPI grid — `mcpv-kpis` (the responsive grid) and `mcpv-kpi` (one cell).
+// ---------------------------------------------------------------------------
+
+.mcpv-kpis {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+	gap: var(--mcpv-gap);
+	margin-bottom: var(--mcpv-s-4);
+}
+
+.mcpv-kpi {
+	padding: var(--mcpv-s-3);
+	background: var(--mcpv-bg-card, var(--vscode-editorWidget-background, #252526));
+	border: 1px solid var(--mcpv-border, var(--vscode-widget-border, transparent));
+	border-radius: var(--mcpv-radius);
+
+	&__label {
+		display: block;
+		font-size: 12px;
+		color: var(--mcpv-fg-muted, var(--vscode-descriptionForeground, #858585));
+		text-transform: uppercase;
+		letter-spacing: 0.5px;
+	}
+
+	&__value {
+		display: block;
+		font-size: 20px;
+		font-weight: 600;
+		margin-top: var(--mcpv-s-1);
+	}
+
+	&__hint {
+		display: block;
+		margin-top: var(--mcpv-s-1);
+		font-size: 12px;
+		color: var(--mcpv-fg-muted, var(--vscode-descriptionForeground, #858585));
+	}
+}
+
+// ---------------------------------------------------------------------------
+// Panels + cards. `mcpv-panel` owns its title + grid; `mcpv-card` is a single
+// tile. Modifiers `&--half` / `&--third` resize the card inside the grid
+// without rewriting the parent.
+// ---------------------------------------------------------------------------
+
+.mcpv-panel {
+	margin-bottom: var(--mcpv-s-4);
+
+	&[data-active='false'] {
+		display: none;
+	}
+
+	&__title {
+		font-size: 13px;
+		font-weight: 600;
+		margin: 0 0 var(--mcpv-s-2);
+		text-transform: uppercase;
+		letter-spacing: 0.5px;
+		color: var(--mcpv-fg-muted, var(--vscode-descriptionForeground, #858585));
+	}
+
+	&__grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+		gap: var(--mcpv-gap);
+	}
+}
+
+.mcpv-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+	gap: var(--mcpv-gap);
+}
+
+.mcpv-banner {
+	padding: var(--mcpv-s-2) var(--mcpv-s-4);
+	border-block: 1px solid var(--mcpv-border, var(--vscode-widget-border, transparent));
+	background: var(--mcpv-bg-soft, var(--vscode-sideBar-background, transparent));
+	color: var(--mcpv-fg-muted, var(--vscode-descriptionForeground, currentColor));
+}
+
+.mcpv-card {
+	padding: var(--mcpv-s-3) var(--mcpv-s-4);
+	background: var(--mcpv-bg-card, var(--vscode-editorWidget-background, #252526));
+	border: 1px solid var(--mcpv-border, var(--vscode-widget-border, transparent));
+	border-radius: var(--mcpv-radius);
+
+	&__title {
+		font-size: 14px;
+		font-weight: 600;
+		margin: 0 0 var(--mcpv-s-1);
+	}
+
+	&--half {
+		grid-column: span 2;
+	}
+
+	&--third {
+		grid-column: span 1;
+	}
+}
+
+// ---------------------------------------------------------------------------
+// Tables, sparklines, bars, rows
+// ---------------------------------------------------------------------------
+
+.mcpv-table-wrap {
+	overflow-x: auto;
+	border: 1px solid var(--mcpv-border, var(--vscode-widget-border, transparent));
+	border-radius: var(--mcpv-radius);
+}
+
+.mcpv-table {
+	width: 100%;
+	border-collapse: collapse;
+	font-size: 13px;
+
+	& th,
+	& td {
+		padding: var(--mcpv-s-2) var(--mcpv-s-3);
+		text-align: left;
+		border-bottom: 1px solid var(--mcpv-border, var(--vscode-widget-border, transparent));
+		white-space: nowrap;
+	}
+
+	& th {
+		color: var(--mcpv-fg-muted, var(--vscode-descriptionForeground, #858585));
+		font-weight: 600;
+	}
+
+	& tr:last-child td {
+		border-bottom: none;
+	}
+}
+
+.mcpv-spark {
+	display: inline-block;
+	vertical-align: middle;
+	margin-right: var(--mcpv-s-1);
+}
+
+.mcpv-bar {
+	display: block;
+	height: 100%;
+	background: var(--mcpv-brand-blue);
+
+	&--ok {
+		background: var(--mcpv-ok);
+	}
+
+	&--warn {
+		background: var(--mcpv-warn);
+	}
+
+	&--err {
+		background: var(--mcpv-error);
+	}
+}
+
+.mcpv-bar-track {
+	display: inline-block;
+	width: 100%;
+	min-width: 80px;
+	max-width: 200px;
+	height: 6px;
+	background: var(--mcpv-bg-soft, var(--vscode-sideBar-background, #2d2d2d));
+	border-radius: 3px;
+	vertical-align: middle;
+	overflow: hidden;
+}
+
+.mcpv-row {
+	display: flex;
+	align-items: center;
+	gap: var(--mcpv-s-2);
+	padding: var(--mcpv-s-1) 0;
+	border-bottom: 1px solid var(--mcpv-border, var(--vscode-widget-border, transparent));
+
+	&:last-child {
+		border-bottom: none;
+	}
+
+	&__name {
+		flex: 0 0 auto;
+		min-width: 0;
+		max-width: 30%;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	&__bar-wrap {
+		flex: 1 1 auto;
+		min-width: 0;
+	}
+
+	&__bar-value {
+		flex: 0 0 auto;
+		font-variant-numeric: tabular-nums;
+		color: var(--mcpv-fg-muted, var(--vscode-descriptionForeground, #858585));
+	}
+}
+
+// ---------------------------------------------------------------------------
+// Responsive — bump to 2 / 3 columns at the breakpoints the marketing
+// site already uses (`_breakpoints.scss` SCSS vars, declared once for the
+// whole monorepo).
+// ---------------------------------------------------------------------------
+
+@media (min-width: bp.$mcpv-bp-sm) {
+	.mcpv-panel__grid {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}
+
+@media (min-width: bp.$mcpv-bp-md) {
+	.mcpv-panel__grid {
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+	}
+}

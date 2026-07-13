@@ -201,6 +201,17 @@
 	margin: 0;
 }
 
+// Per-plugin install section (PluginInstall.astro — the "install" tab on
+// /plugins/<slug>). The command cards are the shared .install__cmd-*
+// blocks below; this styles the intro copy above them, matching the
+// muted lead treatment of the core install page (f00099 S1).
+.plugin-install {
+	& p {
+		color: var(--muted);
+		max-width: 46rem;
+	}
+}
+
 // Install command cards (plugin pages) — used by PluginPage.astro
 .install__cmd-grid {
 	display: grid;

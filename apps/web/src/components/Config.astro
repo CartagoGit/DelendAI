@@ -1,5 +1,11 @@
 ---
-import { languages, themes, useTranslations, type Lang } from '#I18N/ui';
+import { languages, useTranslations, type Lang } from '#I18N/ui';
+import {
+	ALL_THEMES,
+	renderThemeSwatches,
+	type ThemeChoice,
+} from '@mcp-vertex/shared/components/dev/theme-picker';
+import { renderLangLinks } from '@mcp-vertex/shared/components/dev/lang-picker';
 
 interface Props {
 	lang: Lang;
@@ -33,20 +39,41 @@ const hrefFor = (code: Lang) => {
 	return `${base}/${code}${relative === '/' ? '/' : relative}`;
 };
 
-const THEME_BG: Record<string, string> = {
-	dark: '#0d1117',
-	light: '#ffffff',
-	midnight: '#0b0f1a',
-	solarized: '#002b36',
-	nord: '#2e3440',
-};
-const THEME_ACCENT: Record<string, string> = {
-	dark: '#58a6ff',
-	light: '#0969da',
-	midnight: '#7c93ff',
-	solarized: '#2aa198',
-	nord: '#88c0d0',
-};
+// Resolve the SSR-rendered theme so the swatch picker highlights the
+// active choice on first paint. The server-side SCSS reads the
+// cookie / data-theme attribute via Astro's middleware; here we
+// re-derive it from `Astro.cookies` so the SSR HTML matches what the
+// client picks up on hydration. Falls back to `dark` when the user
+// has not made an explicit choice yet.
+const COOKIE_THEME = 'mcpvertex-theme';
+const cookieTheme = Astro.cookies.get(COOKIE_THEME)?.value;
+const isThemeChoice = (v: unknown): v is ThemeChoice =>
+	typeof v === 'string' && (ALL_THEMES as readonly string[]).includes(v);
+const currentTheme: ThemeChoice = isThemeChoice(cookieTheme)
+	? cookieTheme
+	: 'dark';
+
+// `renderThemeSwatches` is the shared markup renderer used by every
+// product surface (CLI init wizard, JetBrains settings, this docs
+// site). The output keeps the same `data-theme-value` attribute the
+// existing listener expects, so the script below keeps working
+// without an edit.
+const themeSwatchesHtml = renderThemeSwatches({
+	current: currentTheme,
+	id: 'cfg-themes',
+});
+
+// `renderLangLinks` is the shared language picker used by every
+// product surface that wants anchor-style language switching (the
+// docs site). The host injects the canonical locale-aware `href`
+// resolver (the docs site's `hrefFor(l.code)` already follows the
+// `/<lang>/...` URL convention) so a future CLI init wizard or
+// JetBrains settings dialog gets the same markup for free.
+const langLinksHtml = renderLangLinks({
+	current: lang,
+	id: 'cfg-languages',
+	hrefFor,
+});
 ---
 
 <div class="modal" id="cfg-modal" role="dialog" aria-modal="true" aria-label={t.cfg.title} hidden transition:persist>
@@ -54,44 +81,17 @@ const THEME_ACCENT: Record<string, string> = {
 	<div class="modal__panel">
 		<div class="modal__head">
 			<h2>{t.cfg.title}</h2>
-			<button class="modal__close" data-cfg-close aria-label="Close">×</button>
+			<button class="modal__close" data-cfg-close aria-label={t.cfg.close}>×</button>
 		</div>
 
 		<div class="modal__group">
 			<h3>{t.cfg.theme}</h3>
-			<div class="swatches" id="cfg-themes">
-				{
-					themes.map((th) => (
-						<button
-							class="swatch"
-							data-theme-value={th}
-							style={`background:${THEME_BG[th]}`}
-							title={th}
-							aria-label={th}
-						>
-							<span style={`background:${THEME_ACCENT[th]}`} />
-						</button>
-					))
-				}
-			</div>
+			<Fragment set:html={themeSwatchesHtml} />
 		</div>
 
 		<div class="modal__group">
 			<h3>{t.cfg.language}</h3>
-			<div class="langs">
-				{
-					languages.map((l) => (
-						<a
-							class="lang-opt"
-							href={hrefFor(l.code)}
-							aria-current={l.code === lang ? 'true' : undefined}
-						>
-							<img class="flag" src={`${base}/flags/${l.flag}.svg`} alt="" width="22" height="16" loading="lazy" />
-							{l.label}
-						</a>
-					))
-				}
-			</div>
+			<Fragment set:html={langLinksHtml} />
 		</div>
 
 		<div class="modal__group">
@@ -112,6 +112,17 @@ const THEME_ACCENT: Record<string, string> = {
 	const KEY_MOTION = 'mcpvertex-motion';
 	const root = document.documentElement;
 	let cfgAbort: AbortController | undefined;
+	type WebMotion = 'system' | 'full' | 'reduced';
+	const readMotion = (): WebMotion => {
+		const stored = localStorage.getItem(KEY_MOTION);
+		if (stored === 'reduced' || stored === 'off') return 'reduced';
+		if (stored === 'full' || stored === 'on') return 'full';
+		return 'system';
+	};
+	const applyMotion = (motion: WebMotion) => {
+		if (motion === 'reduced') root.dataset.motion = 'off';
+		else root.removeAttribute('data-motion');
+	};
 
 	// Live re-sync helpers. They are declared at script scope (not inside
 	// `setupConfig`) so the `astro:after-swap` listener registered at the
@@ -162,7 +173,7 @@ const THEME_ACCENT: Record<string, string> = {
 		const open = () => {
 			modal?.removeAttribute('hidden');
 			modal?.classList.add('modal--open');
-			if (motion) motion.checked = root.dataset.motion !== 'off';
+			if (motion) motion.checked = readMotion() !== 'reduced';
 			markActiveTheme();
 			markActiveLang();
 		};
@@ -196,6 +207,13 @@ const THEME_ACCENT: Record<string, string> = {
 					const value = el.dataset.themeValue!;
 					root.dataset.theme = value;
 					localStorage.setItem(KEY_THEME, value);
+					// Persist in a cookie so the SSR-rendered HTML on the
+					// next request lands on the chosen theme on first paint
+					// (otherwise the cookie-less user always gets the dark
+					// theme highlighted because the SSR renders before the
+					// localStorage is read). 365 days is long enough to
+					// survive any reasonable session.
+					document.cookie = `${KEY_THEME}=${encodeURIComponent(value)}; path=/; max-age=${60 * 60 * 24 * 365}; SameSite=Lax`;
 					markActiveTheme();
 				},
 				{ signal }
@@ -205,13 +223,9 @@ const THEME_ACCENT: Record<string, string> = {
 		motion?.addEventListener(
 			'change',
 			() => {
-				if (motion.checked) {
-					root.removeAttribute('data-motion');
-					localStorage.setItem(KEY_MOTION, 'on');
-				} else {
-					root.dataset.motion = 'off';
-					localStorage.setItem(KEY_MOTION, 'off');
-				}
+				const value: WebMotion = motion.checked ? 'full' : 'reduced';
+				applyMotion(value);
+				localStorage.setItem(KEY_MOTION, value);
 			},
 			{ signal }
 		);

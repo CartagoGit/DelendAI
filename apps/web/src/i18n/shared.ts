@@ -217,6 +217,7 @@ export interface IPluginsTranslations {
 
 export interface ICfgTranslations {
 	readonly title: string;
+	readonly close: string;
 	readonly theme: string;
 	readonly language: string;
 	readonly motion: string;
@@ -226,6 +227,10 @@ export interface ICfgTranslations {
 export interface ISearchTranslations {
 	readonly title: string;
 	readonly placeholder: string;
+	readonly close: string;
+	readonly noMatches: string;
+	readonly indexUnavailable: string;
+	readonly buildRequired: string;
 }
 
 export interface IFooterTranslations {
@@ -247,6 +252,7 @@ export interface IPluginPageTranslations {
 	readonly tabTools: string;
 	readonly tabConfiguration: string;
 	readonly tabTutorial: string;
+	readonly tutorialFallback: string;
 }
 
 /** Per-tool detail page (`/tools/<plugin>/<tool>`, l030 S1). */
@@ -355,6 +361,7 @@ export interface IFirstFiveMinutesTranslations {
 	readonly nextSteps: string;
 	readonly nextToolsCta: string;
 	readonly nextTroubleshootingCta: string;
+	readonly overviewHint: string;
 }
 
 /** Troubleshooting index + case page (`/troubleshooting`, l030 S4). */

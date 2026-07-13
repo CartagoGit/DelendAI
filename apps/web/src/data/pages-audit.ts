@@ -123,8 +123,8 @@ export const PAGES_AUDIT: readonly IPageAuditEntry[] = Object.freeze([
 		langCoverage: NON_EN_LOCALES,
 		kind: 'content',
 		lastMeaningfulEdit: '2026-06-25',
-		verdict: 'merge-into-plugins-index',
-		why: 'This flat localized plugins page duplicates the localized plugins index route under [lang]/plugins/index.astro and should collapse into that canonical directory index.',
+		verdict: 'keep',
+		why: 'This localized plugins page is the canonical collection route and follows the same flat-file convention as tools, prompts, skills, and capabilities.',
 	},
 	{
 		path: 'apps/web/src/pages/[lang]/plugins/[plugin].astro',
@@ -133,14 +133,6 @@ export const PAGES_AUDIT: readonly IPageAuditEntry[] = Object.freeze([
 		lastMeaningfulEdit: '2026-06-21',
 		verdict: 'keep',
 		why: 'The localized plugin detail route is still the canonical per-plugin page because PluginPage owns install, tools, configuration, and tutorial tabs together.',
-	},
-	{
-		path: 'apps/web/src/pages/[lang]/plugins/index.astro',
-		langCoverage: NON_EN_LOCALES,
-		kind: 'content',
-		lastMeaningfulEdit: '2026-06-25',
-		verdict: 'keep',
-		why: 'This localized plugins index is the canonical directory form for plugin discovery and matches the same current PageShell recipe as the English route.',
 	},
 	{
 		path: 'apps/web/src/pages/[lang]/plugins/loop-detector.astro',
@@ -157,6 +149,14 @@ export const PAGES_AUDIT: readonly IPageAuditEntry[] = Object.freeze([
 		lastMeaningfulEdit: '2026-06-25',
 		verdict: 'keep',
 		why: 'This localized prompts index is still the clearest discovery surface for prompt capabilities and mirrors the live registry instead of stale hand-written copy.',
+	},
+	{
+		path: 'apps/web/src/pages/[lang]/proposals.astro',
+		langCoverage: NON_EN_LOCALES,
+		kind: 'content',
+		lastMeaningfulEdit: '2026-07-03',
+		verdict: 'keep',
+		why: 'The localized proposals board is the canonical static parity of the VS Code host board (f00097 S5), backed by the standalone proposalBoardByLang map, and has no other owner on the site.',
 	},
 	{
 		path: 'apps/web/src/pages/[lang]/resources.astro',
@@ -255,6 +255,14 @@ export const PAGES_AUDIT: readonly IPageAuditEntry[] = Object.freeze([
 		why: 'The English onboarding page is content-first and lines up directly with the planned PageSpec representation for long-form walkthroughs.',
 	},
 	{
+		path: 'apps/web/src/pages/extend.astro',
+		langCoverage: EN_ONLY,
+		kind: 'content',
+		lastMeaningfulEdit: '2026-07-11',
+		verdict: 'keep',
+		why: 'The extend page is the web entry point for f00101: it presents the two extension-host authoring tiers, links to the contract guide, and points authors at the extension-host scaffold.',
+	},
+	{
 		path: 'apps/web/src/pages/guide.astro',
 		langCoverage: EN_ONLY,
 		kind: 'content',
@@ -317,6 +325,22 @@ export const PAGES_AUDIT: readonly IPageAuditEntry[] = Object.freeze([
 		lastMeaningfulEdit: '2026-06-25',
 		verdict: 'keep',
 		why: 'The English prompts index is still the clearest dedicated entry point for prompt capabilities and mirrors the live registry.',
+	},
+	{
+		path: 'apps/web/src/pages/proposals.astro',
+		langCoverage: EN_ONLY,
+		kind: 'content',
+		lastMeaningfulEdit: '2026-07-03',
+		verdict: 'keep',
+		why: 'The English proposals board is the default-locale read-only mirror of the VS Code host board (f00097 S5) and the canonical discovery surface for shipped proposals.',
+	},
+	{
+		path: 'apps/web/src/pages/providers.astro',
+		langCoverage: EN_ONLY,
+		kind: 'content',
+		lastMeaningfulEdit: '2026-07-07',
+		verdict: 'keep',
+		why: 'The providers page is the static web parity of the f00098 provider dashboard: it documents the root-level providers roster config (env-var-name secrets posture) and renders a frozen showcase of the S1 render-model with no live server dependency.',
 	},
 	{
 		path: 'apps/web/src/pages/resources.astro',

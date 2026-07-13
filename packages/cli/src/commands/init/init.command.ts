@@ -20,23 +20,30 @@ import type {
 	ICliCommandContext,
 	ICliCommandResult,
 } from '../../contracts/interfaces/cli-command.interface';
+import type { IInitFlags } from '../../contracts/interfaces/init.interface';
+import type { ICanonicalLaunch } from '../../contracts/interfaces/canonical-launch.interface';
 import {
 	HostEntryNotFoundError,
 	resolveHostEntryPath,
 } from '../../lib/init/host-entry-resolver.service';
+import { InitAnswers } from '../../lib/init/init-answers.schema';
+import type { IInitAnswers } from '../../lib/init/init-answers.types';
 import { detectTargetProject } from '../../lib/init/init-detection.service';
+import { printInitHumanSummary } from '../../lib/init/init-human-summary.service';
 import { collectInitAnswers } from '../../lib/init/init-prompts.service';
 import { renderInitBundle } from '../../lib/init/init-render.service';
+import { buildCanonicalLaunch } from '../../lib/server-args.service';
 import {
+	writeGenericMcpJson,
 	writeMcpVertexConfig,
 	writeVscodeMcpJson,
 	writeWorkspaceText,
 } from '../../lib/init/init-writers.factory';
-import type { IInitAnswers } from '../../lib/init/init-answers.types';
-import { InitAnswers } from '../../lib/init/init-answers.schema';
-import { printInitHumanSummary } from '../../lib/init/init-human-summary.service';
-import { COLOR_ON } from '../../lib/helpers/cli-color.helper';
-import type { IInitFlags } from '../../contracts/interfaces/init.interface';
+
+// f00037/f00093: canonical home is contracts/interfaces/init.interface.ts.
+// Re-exported here for the init-default spec that imports the flag type.
+export type { IInitFlags } from '../../contracts/interfaces/init.interface';
+
 import { join } from 'node:path';
 
 const applyExtraOptions = (
@@ -157,29 +164,37 @@ export const runInitWithAnswers = async (
 	// consumer's workspace in priority order (node_modules, dist,
 	// sibling mcp-vertex/, sibling mcp-vertex-core/). A typed error
 	// surfaces the hint when nothing matches.
-	let hostEntryPath: string;
-	try {
-		const resolved = resolveHostEntryPath(
-			ctx.cwd,
-			flags.mcpVertexRoot !== undefined
-				? { explicitRoot: flags.mcpVertexRoot }
-				: {},
-		);
-		hostEntryPath = resolved.path;
-	} catch (error) {
-		if (error instanceof HostEntryNotFoundError) {
-			return {
-				code: EXIT_CODE.NOT_FOUND,
-				data: {
-					ok: false,
-					error: { reason: error.message, nextAction: 'retry' },
-					attempted: error.attempted,
-				},
+	let launch: ICanonicalLaunch = buildCanonicalLaunch({
+		workspace: '${workspaceFolder}',
+	});
+	if (flags.mcpVertexRoot !== undefined) {
+		try {
+			const resolved = resolveHostEntryPath(ctx.cwd, {
+				explicitRoot: flags.mcpVertexRoot,
+			});
+			launch = {
+				command: 'bun',
+				args: [
+					resolved.path,
+					'--workspace=${workspaceFolder}',
+					'--config=${workspaceFolder}/mcp-vertex.config.json',
+				],
 			};
+		} catch (error) {
+			if (error instanceof HostEntryNotFoundError) {
+				return {
+					code: EXIT_CODE.NOT_FOUND,
+					data: {
+						ok: false,
+						error: { reason: error.message, nextAction: 'retry' },
+						attempted: error.attempted,
+					},
+				};
+			}
+			throw error;
 		}
-		throw error;
 	}
-	const bundle = await renderInitBundle(answers, { hostEntryPath });
+	const bundle = await renderInitBundle(answers, { launch });
 
 	if (flags.dryRun) {
 		if (!ctx.globals.json) {
@@ -251,7 +266,7 @@ export const runInitWithAnswers = async (
 		if (file.relPath === '.vscode/mcp.json') {
 			const result = await writeVscodeMcpJson(
 				answers.workspaceRoot,
-				hostEntryPath,
+				launch,
 				answers.hostInstructions,
 			);
 			// The merge writer can return a `preserved` list alongside
@@ -272,6 +287,23 @@ export const runInitWithAnswers = async (
 			} else {
 				written.push({ path: result.path, kind: result.kind });
 			}
+			continue;
+		}
+		if (file.relPath === '.mcp.json') {
+			const result = await writeGenericMcpJson(
+				answers.workspaceRoot,
+				buildCanonicalLaunch({ workspace: '.' }),
+				answers.hostInstructions,
+			);
+			written.push(
+				result.kind === 'merged'
+					? {
+							path: result.path,
+							kind: result.kind,
+							preserved: result.preserved,
+						}
+					: { path: result.path, kind: result.kind },
+			);
 			continue;
 		}
 		const mode = answers.hostInstructions;

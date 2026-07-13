@@ -19,9 +19,17 @@
 			"types": "./src/public/index.ts",
 			"import": "./src/public/index.ts"
 		},
+		"./webview": {
+			"types": "./src/webview/index.ts",
+			"import": "./src/webview/index.ts"
+		},
 		"./legacy": {
 			"types": "./src/index.ts",
 			"import": "./src/index.ts"
+		},
+		"./components/*": {
+			"types": "./src/components/*.ts",
+			"import": "./src/components/*.ts"
 		}
 	},
 	"dependencies": {
@@ -34,6 +42,6 @@
 		"@types/bun": "latest",
 		"@types/node": "^26.1.0",
 		"typescript": "6.0.3",
-		"vitest": "4.1.9"
+		"vitest": "4.1.10"
 	}
 }

@@ -45,15 +45,15 @@ export const barChart = (
 			const labelY = padding + innerH - 2;
 			return `<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${barW.toFixed(
 				1,
-			)}" height="${h.toFixed(1)}" fill="var(--mv-brand-purple)" rx="2" /><text x="${labelX.toFixed(
+			)}" height="${h.toFixed(1)}" fill="var(--mcpv-brand-purple)" rx="2" /><text x="${labelX.toFixed(
 				1,
-			)}" y="${labelY.toFixed(1)}" text-anchor="middle" font-size="9" fill="var(--mv-fg-muted)">${escapeXml(
+			)}" y="${labelY.toFixed(1)}" text-anchor="middle" font-size="9" fill="var(--mcpv-fg-muted)">${escapeXml(
 				b.label,
 			)}</text>`;
 		})
 		.join('');
 
-	return `<svg class="mv-barchart" viewBox="0 0 ${width} ${height}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${escapeXml(options.ariaLabel)}">${barsSvg}</svg>`;
+	return `<svg class="mcpv-barchart" viewBox="0 0 ${width} ${height}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${escapeXml(options.ariaLabel)}">${barsSvg}</svg>`;
 };
 
 const escapeXml = (raw: string): string =>

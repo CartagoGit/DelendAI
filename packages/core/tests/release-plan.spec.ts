@@ -1,9 +1,13 @@
+import { readdir, readFile } from 'node:fs/promises';
+import { resolve } from 'node:path';
+
 import { describe, expect, it } from 'vitest';
 
 // The release tooling lives at the repo root (scripts/), not inside a package.
 // It is imported relatively so its pure planning logic is unit-tested and
 // typechecked alongside the rest of the monorepo.
 import {
+	BUNDLED_PRIVATE_PACKAGES,
 	PUBLISH_ORDER,
 	computeReleasePlan,
 	nextVersion,
@@ -75,9 +79,43 @@ describe('computeReleasePlan (lockstep + peer rewrite)', async () => {
 });
 
 describe('PUBLISH_ORDER', async () => {
-	it('publishes the core first, then the nine plugins', async () => {
-		expect(PUBLISH_ORDER[0]).toBe('packages/core');
-		expect(PUBLISH_ORDER).toHaveLength(10);
-		expect(new Set(PUBLISH_ORDER).size).toBe(10);
+	const root = resolve(import.meta.dirname, '../../..');
+
+	it('publishes core, client and the executable CLI in dependency order', () => {
+		expect(PUBLISH_ORDER.slice(0, 3)).toEqual([
+			'packages/core',
+			'packages/client',
+			'packages/cli',
+		]);
+		expect(new Set(PUBLISH_ORDER).size).toBe(PUBLISH_ORDER.length);
+	});
+
+	it('publishes every first-party plugin, covering every preset and documented plugin', async () => {
+		const plugins = (
+			await readdir(resolve(root, 'plugins'), {
+				withFileTypes: true,
+			})
+		)
+			.filter((entry) => entry.isDirectory())
+			.map((entry) => `plugins/${entry.name}`)
+			.sort();
+		expect(
+			PUBLISH_ORDER.filter((dir) => dir.startsWith('plugins/')).sort(),
+		).toEqual(plugins);
+	});
+
+	it('keeps VS Code source dependencies private because the extension bundles them', async () => {
+		for (const dir of BUNDLED_PRIVATE_PACKAGES) {
+			const manifest = JSON.parse(
+				await readFile(resolve(root, dir, 'package.json'), 'utf8'),
+			) as { private?: boolean };
+			expect(manifest.private, dir).toBe(true);
+			expect(PUBLISH_ORDER, dir).not.toContain(dir);
+		}
+		const build = await readFile(
+			resolve(root, 'extensions/vscode/scripts/build.ts'),
+			'utf8',
+		);
+		expect(build).toContain("external: ['vscode']");
 	});
 });

@@ -11,15 +11,16 @@ import type { IToolTextResult } from '@mcp-vertex/core/public';
 
 import {
 	exportNotes,
-	getMaxNotes,
-	deriveNoteId,
 	importNotes,
 	readStore,
 	recall,
 	removeNote,
 	saveNote,
 } from '../services/store';
+import { NoteQuotaExceededError } from '../services/store-records';
+import { selectLatestSessionDigest } from '../services/session-digest-recall';
 import { buildCompactToolRegistration } from './compact.tool';
+import { buildCompactionCheckToolRegistration } from './compaction-check.tool';
 
 // MCP modern outputSchema shapes (N16). Error envelopes are exempt from
 // SDK validation (isError:true), so these describe only the success path.
@@ -36,6 +37,15 @@ const NoteIndexEntrySchema = z.object({
 	id: z.string(),
 	title: z.string(),
 	tags: z.array(z.string()),
+});
+// f00090 S3: the newest `session-digest:*` note, surfaced on recall so a
+// resumed turn rehydrates the distilled working state instead of re-reading
+// the dropped raw tail. Omitted when no digest note exists.
+const SessionDigestSchema = z.object({
+	title: z.string(),
+	topic: z.string(),
+	body: z.string(),
+	createdAt: z.string(),
 });
 
 /**
@@ -104,6 +114,7 @@ export const buildMemoryToolRegistrations = (
 			storePathAbs: options.storePathAbs,
 			maxNotes: options.maxNotes,
 		}),
+		buildCompactionCheckToolRegistration({ namespacePrefix: prefix }),
 		{
 			id: 'save',
 			effects: ['write'],
@@ -169,32 +180,35 @@ export const buildMemoryToolRegistrations = (
 							// Total-store quota: bound the note count so a runaway
 							// agent can't grow the store unboundedly. Updates to an
 							// existing note are always allowed.
-							const id = deriveNoteId(args.title);
-							const notes = await readStore(options.storePathAbs);
-							const isNew = !notes.some((note) => note.id === id);
-							if (
-								isNew &&
-								notes.length >= getMaxNotes(options.maxNotes)
-							) {
-								return toolError(
-									`note store is full (max ${getMaxNotes(options.maxNotes)} notes)`,
-									'Forget stale notes with memory_forget before adding new ones.',
+							let saved: Awaited<ReturnType<typeof saveNote>>;
+							try {
+								saved = await saveNote(
+									options.storePathAbs,
+									{
+										title: args.title,
+										body: args.body,
+										...(args.tags
+											? { tags: args.tags }
+											: {}),
+										...(args.ttlSeconds !== undefined
+											? { ttlSeconds: args.ttlSeconds }
+											: {}),
+									},
+									undefined,
+									options.maxNotes,
 								);
+							} catch (error) {
+								if (error instanceof NoteQuotaExceededError) {
+									return toolError(
+										error.message,
+										'Forget stale notes with memory_forget before adding new ones.',
+									);
+								}
+								throw error;
 							}
-							const { note, redactions } = await saveNote(
-								options.storePathAbs,
-								{
-									title: args.title,
-									body: args.body,
-									...(args.tags ? { tags: args.tags } : {}),
-									...(args.ttlSeconds !== undefined
-										? { ttlSeconds: args.ttlSeconds }
-										: {}),
-								},
-							);
 							return toolOk({
-								saved: note,
-								redactedSecrets: redactions,
+								saved: saved.note,
+								redactedSecrets: saved.redactions,
 							});
 						});
 					},
@@ -211,22 +225,29 @@ export const buildMemoryToolRegistrations = (
 					`${prefix}_recall`,
 					{
 						description:
-							'Recall durable notes by query and/or tags. Use this before re-reading docs when the fact is likely to be a previously distilled reusable note. Low-token: returns only matches, newest first.',
+							'Recall durable notes by query and/or tags. Use this before re-reading docs when the fact is likely to be a previously distilled reusable note. Low-token: returns only matches, newest first. Also returns `sessionDigest` — the newest `session-digest:*` note written by memory_compact — so a resumed turn rehydrates the distilled working state instead of re-reading the dropped tail.',
 						inputSchema: z.object({
 							query: z.string().optional(),
 							tags: z.array(z.string()).optional(),
 							limit: z.number().optional(),
 						}),
-						outputSchema: z.object({ notes: z.array(NoteSchema) }),
+						outputSchema: z.object({
+							notes: z.array(NoteSchema),
+							sessionDigest: SessionDigestSchema.optional(),
+						}),
 					},
 					async (args: {
 						query?: string | undefined;
 						tags?: string[] | undefined;
 						limit?: number | undefined;
 					}) =>
-						guardCorrupt(async () =>
-							toolJson({
-								notes: await recall(options.storePathAbs, {
+						guardCorrupt(async () => {
+							// Recall matches (query/tags-ranked) and the full store
+							// in parallel; the digest is selected from ALL notes so
+							// it surfaces on any recall, not only when it matches the
+							// query. One extra read of the same small JSON file.
+							const [notes, all] = await Promise.all([
+								recall(options.storePathAbs, {
 									...(args.query !== undefined
 										? { query: args.query }
 										: {}),
@@ -242,8 +263,22 @@ export const buildMemoryToolRegistrations = (
 										),
 									),
 								}),
-							}),
-						),
+								readStore(options.storePathAbs),
+							]);
+							const sessionDigest = selectLatestSessionDigest(
+								all.map((note) => ({
+									title: note.title,
+									body: note.body,
+									createdAt: note.createdAt,
+								})),
+							);
+							return toolJson({
+								notes,
+								...(sessionDigest === null
+									? {}
+									: { sessionDigest }),
+							});
+						}),
 				);
 			},
 		},

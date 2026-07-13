@@ -74,10 +74,13 @@ describe('renderPanelHealth', async () => {
 	});
 
 	it('escapes user-provided strings (no XSS)', async () => {
-		const evil = renderPanelHealth({
-			...baseHealthy,
-			agents: ['<script>alert(1)</script>'],
-		}, dictsByLang.en);
+		const evil = renderPanelHealth(
+			{
+				...baseHealthy,
+				agents: ['<script>alert(1)</script>'],
+			},
+			dictsByLang.en,
+		);
 		expect(evil).not.toContain('<script>alert(1)</script>');
 		expect(evil).toContain('&lt;script&gt;');
 	});

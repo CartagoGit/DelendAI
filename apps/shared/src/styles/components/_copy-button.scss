@@ -1,0 +1,74 @@
+// `apps/shared/src/styles/components/_copy-button.scss`
+//
+// BEM-nested styles for the standalone <button class="mcpv-copybtn">
+// emitted by `apps/shared/src/components/ui/copy-button.ts`
+// (renderCopyButton). Reachable from any host that @uses the
+// shared styles index.
+//
+// This file migrated from the <style> block that lived inside
+// `apps/web/src/components/ui/CopyButton.astro` (f00102 S2.4).
+
+.mcpv-copybtn {
+	appearance: none;
+	font: inherit;
+	font-size: 0.85rem;
+	display: inline-flex;
+	align-items: center;
+	gap: 0.35rem;
+	padding: 0.4rem 0.7rem;
+	border-radius: var(--mcpv-radius, var(--radius));
+	cursor: pointer;
+	transition:
+		background-color var(--mcpv-transition-fast, 0.18s ease),
+		color var(--mcpv-transition-fast, 0.18s ease),
+		border-color var(--mcpv-transition-fast, 0.18s ease);
+
+	&:focus-visible {
+		outline: 2px solid currentColor;
+		outline-offset: 2px;
+	}
+
+	&[data-state='copied'] {
+		color: var(--mcpv-ok, #16a34a);
+		border-color: color-mix(in srgb, var(--mcpv-ok, #16a34a) 40%, transparent);
+	}
+
+	&--ghost {
+		border: 1px solid var(--mcpv-border, var(--line));
+		background: transparent;
+		color: inherit;
+
+		&:hover {
+			background: color-mix(in srgb, var(--mcpv-fg, currentColor) 8%, transparent);
+		}
+	}
+
+	&--solid {
+		border: 1px solid transparent;
+		background: var(--mcpv-link, var(--accent, currentColor));
+		color: var(--mcpv-bg, var(--accent-fg, var(--bg)));
+
+		&:hover {
+			filter: brightness(1.05);
+		}
+	}
+
+	&__icon {
+		font-size: 1.05em;
+		line-height: 1;
+	}
+}
+
+// Legacy alias — kept so `apps/web` pages that still ship
+// `<button class="ui-copybtn">` keep working without a markup
+// change. Remove once the rename to `.mcpv-copybtn*` lands.
+
+.ui-copybtn {
+	@extend .mcpv-copybtn;
+}
+.ui-copybtn--ghost {
+	@extend .mcpv-copybtn--ghost;
+}
+.ui-copybtn--solid {
+	@extend .mcpv-copybtn--solid;
+}

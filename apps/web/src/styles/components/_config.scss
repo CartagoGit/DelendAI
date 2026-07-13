@@ -1,0 +1,41 @@
+// _config.scss — the "configuration" tab snippet on /plugins/<slug>
+// (PluginPage.astro): a paste-ready JSON <pre> with a floating copy
+// button. The <pre> chrome comes from the global reset; this block
+// anchors the copy control, which mirrors the shared code-block copy
+// button (apps/shared `.mcpv-code__copy`) mapped onto the site's legacy
+// tokens (f00099 S1 — both classes previously had no styles).
+
+.config__snippet {
+	position: relative;
+	margin: 1rem 0 1.5rem;
+
+	& pre {
+		margin: 0;
+	}
+}
+.config__copy {
+	position: absolute;
+	top: 0.5rem;
+	right: 0.5rem;
+	z-index: 1;
+	appearance: none;
+	border: 1px solid var(--line);
+	border-radius: 6px;
+	background: var(--card);
+	color: var(--muted);
+	font: inherit;
+	font-size: 0.78rem;
+	padding: 0.25rem 0.55rem;
+	cursor: pointer;
+	transition: color 0.18s ease, background 0.18s ease,
+		border-color 0.18s ease;
+
+	&:hover {
+		color: var(--fg);
+		border-color: var(--accent);
+	}
+	&:focus-visible {
+		outline: 2px solid var(--accent);
+		outline-offset: 2px;
+	}
+}

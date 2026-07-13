@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { join } from 'node:path';
+import { delimiter, join } from 'node:path';
 import { stat } from 'node:fs/promises';
 
 import type {
@@ -193,14 +193,25 @@ const commandExists = async (cmd: string): Promise<boolean> => {
 	if (process.env.NODE_ENV === 'test' || process.env.VITEST) {
 		return true;
 	}
+	// x00097 S5 (audit a00052 #16): PATH parsing is host-portable — the
+	// separator is ';' on Windows (path.delimiter), and Windows binaries
+	// carry a PATHEXT extension (`eslint.CMD`), so a bare-name stat there
+	// always missed.
 	const pathEnv = process.env.PATH || '';
-	const dirs = pathEnv.split(':');
+	const dirs = pathEnv.split(delimiter);
+	const suffixes =
+		process.platform === 'win32'
+			? ['', ...(process.env.PATHEXT ?? '.COM;.EXE;.BAT;.CMD').split(';')]
+			: [''];
 	for (const dir of dirs) {
-		try {
-			await stat(join(dir, cmd));
-			return true;
-		} catch {
-			// ignore
+		if (dir === '') continue;
+		for (const suffix of suffixes) {
+			try {
+				await stat(join(dir, `${cmd}${suffix}`));
+				return true;
+			} catch {
+				// ignore
+			}
 		}
 	}
 	return false;

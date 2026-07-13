@@ -39,7 +39,9 @@ describe('slugify', () => {
 		expect(slugify('claude-3.5-sonnet:20240620')).toBe(
 			'claude-3-5-sonnet-20240620',
 		);
-		expect(slugify('  leading-and-trailing  ')).toBe('leading-and-trailing');
+		expect(slugify('  leading-and-trailing  ')).toBe(
+			'leading-and-trailing',
+		);
 	});
 
 	it('falls back to "unknown" on empty input', () => {
@@ -81,7 +83,9 @@ describe('slugifyModel / slugifyTaskId / slugifyAgentName', () => {
 
 	it('slugifyAgentName is required and always non-empty', () => {
 		expect(slugifyAgentName('orion')).toBe('orion');
-		expect(slugifyAgentName('copilot-minimax-m3')).toBe('copilot-minimax-m3');
+		expect(slugifyAgentName('copilot-minimax-m3')).toBe(
+			'copilot-minimax-m3',
+		);
 		// agent_name is the required field; even garbage normalises
 		// to something the engine can put in a branch.
 		expect(slugifyAgentName('!!!')).toBe('unknown');
@@ -175,7 +179,10 @@ describe('nextCollisionSuffix', () => {
 			nextCollisionSuffix(new Set(), 'copilot-m3-orion-f00078'),
 		).toBeNull();
 		expect(
-			nextCollisionSuffix(new Set(['other-branch']), 'copilot-m3-orion-f00078'),
+			nextCollisionSuffix(
+				new Set(['other-branch']),
+				'copilot-m3-orion-f00078',
+			),
 		).toBeNull();
 	});
 

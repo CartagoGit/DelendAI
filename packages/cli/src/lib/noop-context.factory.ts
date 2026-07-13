@@ -28,7 +28,7 @@ export const createNoopContext = (
 ): ICliCommandContext => ({
 	cwd,
 	globals,
-	request: <TOut>() => {
+	request: <_TOut>() => {
 		throw Object.assign(
 			new Error(
 				'this command does not invoke MCP tools; no client is wired',

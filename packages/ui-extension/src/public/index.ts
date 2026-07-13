@@ -18,6 +18,61 @@ export type {
 	IWebviewViewProvider,
 } from '../contracts/interfaces/host-adapter.interface';
 
+export {
+	ORCHESTRATOR_RUNNER_OPT_IN_SNIPPET,
+	USAGE_TRACKING_OPT_IN_SNIPPET,
+} from '../contracts/constants/opt-in-snippets.constant';
+export { buildProviderStatusModel } from '../dashboard/builders/provider-status.builder';
+export { buildPluginSwitchboardModel } from '../dashboard/builders/plugin-switchboard.builder';
+export type {
+	IPluginActivationOverviewPayload,
+	IPluginActivationPayloadEntry,
+	IPluginSwitchboardGroup,
+	IPluginSwitchboardModel,
+	IPluginSwitchboardReadyModel,
+	IPluginSwitchboardRow,
+	IPluginSwitchboardUnavailableModel,
+	PluginSwitchboardBadge,
+	PluginSwitchboardOrigin,
+	PluginSwitchboardSource,
+} from '../contracts/interfaces/plugin-switchboard.interface';
+export type {
+	IGetQuotaPayload,
+	IHealthcheckProvidersPayload,
+	IProviderHealthRowPayload,
+	IProviderInstallHintPayload,
+	IProviderQuotaMeter,
+	IProviderStatusAbsentModel,
+	IProviderStatusModel,
+	IProviderStatusReadyModel,
+	IProviderStatusRow,
+	IQuotaWindowPayload,
+	ProviderState,
+	QuotaWindowName,
+} from '../contracts/interfaces/provider-status.interface';
+export { buildUsageCostModel } from '../dashboard/builders/usage-cost.builder';
+export { buildModelAttributionModel } from '../dashboard/builders/model-attribution.builder';
+export type {
+	IModelAttributionAbsentModel,
+	IModelAttributionBucketPayload,
+	IModelAttributionModel,
+	IModelAttributionReadyModel,
+	IModelAttributionReportPayload,
+	IModelAttributionRow,
+} from '../contracts/interfaces/model-attribution.interface';
+export type {
+	ILimitsStatusPayload,
+	ISpendMeter,
+	IUsageBucketPayload,
+	IUsageCostAbsentModel,
+	IUsageCostCardModel,
+	IUsageCostReadyModel,
+	IUsageCostRow,
+	IUsageExpensiveCallPayload,
+	IUsageReportPayload,
+	IUsageTotalsPayload,
+	UsageGroupByAxis,
+} from '../contracts/interfaces/usage-cost.interface';
 export { renderDashboard } from '../dashboard/render-dashboard';
 export type { IRenderDashboardOptions } from '../dashboard/render-dashboard';
 export { renderPanelAgents } from '../dashboard/render-panel-agents';
@@ -51,8 +106,29 @@ export {
 export type { SharedUiStringKey } from '../strings/shared-ui-strings';
 export { renderKnowledgeNavigator } from '../knowledge/render-knowledge-navigator';
 export type { IRenderKnowledgeNavigatorOptions } from '../knowledge/render-knowledge-navigator';
+export { buildConfigurationCenterModel } from '../configuration-center/configuration-center-model';
+export { buildConfigurationFields } from '../configuration-center/configuration-center-fields';
+export { renderConfigurationCenter } from '../configuration-center/render-configuration-center';
+export type {
+	ConfigurationCenterState,
+	ConfigurationCenterTab,
+	ConfigurationFieldKind,
+	IConfigurationArtifactModel,
+	IConfigurationCenterCopy,
+	IConfigurationCenterModel,
+	IConfigurationCenterSource,
+	IConfigurationCenterTabModel,
+	IConfigurationField,
+	IConfigurationPluginModel,
+	IConfigurationProviderModel,
+	IRenderConfigurationCenterOptions,
+} from '../contracts/interfaces/configuration-center.interface';
 export { renderSettings } from '../settings/render-settings';
 export type { IRenderSettingsOptions } from '../settings/render-settings';
+export type {
+	SettingsHostResponse,
+	SettingsWebviewRequest,
+} from '../contracts/interfaces/settings-webview-message.interface';
 export {
 	ExtensionSettingsSchema,
 	LogLevelSchema,

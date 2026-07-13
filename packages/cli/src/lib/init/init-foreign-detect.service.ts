@@ -1,5 +1,4 @@
 /**
-import type { IForeignIdScheme, IForeignProposalInventory } from '../../contracts/interfaces/init.interface';
  * init-foreign-detect.ts — f00089 U1.
  *
  * When `init` runs inside a FOREIGN project, the migration offer must
@@ -24,7 +23,18 @@ import type { IForeignIdScheme, IForeignProposalInventory } from '../../contract
  *   - Pure data shaping over the reader; deterministic given a reader.
  *   - Advisory only: detection NEVER writes, deletes, or moves anything.
  */
+
+import type {
+	IForeignConvention,
+	IForeignConventionKind,
+	IForeignIdScheme,
+	IForeignProposalInventory,
+} from '../../contracts/interfaces/init.interface';
 import type { IFileReader } from './init-detection.service';
+
+// f00037/f00093: canonical home is contracts/interfaces/init.interface.ts.
+// Re-exported here for migrate-offer + specs that import from the detector.
+export type { IForeignProposalInventory } from '../../contracts/interfaces/init.interface';
 
 /**
  * Canonical id-numbering schemes a foreign proposal system can use.
@@ -35,9 +45,7 @@ import type { IFileReader } from './init-detection.service';
  *   - `none`        — markdown present but no numbering signal found.
  */
 
-
 /** Full inventory of every foreign proposal/plan convention found. */
-
 
 /**
  * The extensible table of candidate directories. Order matters: the
@@ -82,7 +90,11 @@ const classifyEntry = (
 ): { readonly scheme: IForeignIdScheme; readonly id: number } | null => {
 	const lower = name.toLowerCase();
 	if (!lower.endsWith('.md')) return null;
-	if (lower === 'readme.md' || lower === 'index.md' || lower === 'template.md')
+	if (
+		lower === 'readme.md' ||
+		lower === 'index.md' ||
+		lower === 'template.md'
+	)
 		return null;
 
 	const rfc = name.match(RFC_RE);
@@ -122,7 +134,10 @@ const dominantScheme = (
  */
 const scanDir = async (
 	reader: IFileReader,
-	candidate: { readonly location: string; readonly kind: IForeignConventionKind },
+	candidate: {
+		readonly location: string;
+		readonly kind: IForeignConventionKind;
+	},
 ): Promise<IForeignConvention | null> => {
 	const entries = await reader.listDir(candidate.location);
 	if (entries.length === 0) return null;

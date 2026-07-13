@@ -2,11 +2,22 @@
 	"servers": {
 		"mcp-vertex": {
 			"type": "stdio",
-			"command": "bun",
+			"command": "bunx",
 			"args": [
-				"${workspaceFolder}/tools/scripts/host/host-server.script.ts",
-				"--workspace=${workspaceFolder}",
-				"--config=${workspaceFolder}/mcp-vertex.config.json"
+				"--package",
+				"@mcp-vertex/cli",
+				"mcpv",
+				"__serve",
+				"--workspace",
+				"${workspaceFolder}"
+			]
+		},
+		"filesystem": {
+			"command": "bunx",
+			"args": [
+				"-y",
+				"@modelcontextprotocol/server-filesystem",
+				"${workspaceFolder}"
 			]
 		}
 	}

@@ -20,7 +20,84 @@
  * reported as a schema violation instead of being silently ignored.
  */
 import { z } from 'zod';
+import { CAPABILITY_TAGS } from '../contracts/interfaces/provider-capabilities.interface';
 import { COMMIT_AUTHOR_MODES } from '../shared/commit-author';
+
+/** Kebab-case provider id: `claude-sonnet`, `gpt-5-codex`, … */
+const PROVIDER_ID_PATTERN = /^[a-z][a-z0-9-]+$/;
+
+/**
+ * f00067a S1 — how the orchestrator reaches a provider. Structural mirror
+ * of `IProviderInvoke` (contracts/interfaces/provider-capabilities
+ * .interface.ts): a discriminated union on `kind` so a config cannot mix,
+ * e.g., an api `url` with a cli `command`. Kept field-for-field compatible
+ * with the runner plugin's own `InvokeSchema`
+ * (plugins/orchestrator-runner/src/lib/options.ts) so a roster is portable
+ * between the root block and `plugins.orchestrator-runner.options`.
+ */
+const PROVIDER_INVOKE_SCHEMA = z.discriminatedUnion('kind', [
+	z
+		.object({
+			kind: z.literal('api'),
+			url: z.string(),
+			method: z.enum(['GET', 'POST']).optional(),
+			envVar: z
+				.string()
+				.describe(
+					'NAME of the environment variable holding the API key (e.g. "OPENAI_API_KEY"). Never put a literal secret here — the config file is committed.',
+				),
+		})
+		.strict(),
+	z
+		.object({
+			kind: z.literal('subscription'),
+			tool: z.enum(['vscode-copilot', 'claude-code', 'codex', 'cursor']),
+		})
+		.strict(),
+	z
+		.object({
+			kind: z.literal('cli'),
+			command: z.string(),
+			args: z.array(z.string()).optional(),
+		})
+		.strict(),
+	z
+		.object({
+			kind: z.literal('mcp-server'),
+			server: z.string(),
+			tool: z.string(),
+			args: z.record(z.string(), z.unknown()),
+		})
+		.strict(),
+]);
+
+/**
+ * One provider in the roster — the config-file mirror of
+ * `IProviderCapabilities`. Capability tags are sourced from
+ * `CAPABILITY_TAGS` so the schema, the contract and the runner plugin
+ * never drift.
+ */
+const PROVIDER_ENTRY_SCHEMA = z
+	.object({
+		id: z
+			.string()
+			.regex(PROVIDER_ID_PATTERN)
+			.describe('Unique kebab-case provider id (e.g. "claude-sonnet").'),
+		kind: z.enum(['api', 'subscription', 'cli', 'mcp-server']),
+		invoke: PROVIDER_INVOKE_SCHEMA,
+		modelId: z.string().min(1),
+		contextWindow: z.number().int().nonnegative(),
+		costTier: z.union([
+			z.literal(1),
+			z.literal(2),
+			z.literal(3),
+			z.literal(4),
+			z.literal(5),
+		]),
+		strengths: z.array(z.enum(CAPABILITY_TAGS)),
+		weaknesses: z.array(z.enum(CAPABILITY_TAGS)),
+	})
+	.strict();
 
 /** Structural schema for the config file (used by `--check`). */
 export const CONFIG_FILE_SCHEMA = z
@@ -86,6 +163,10 @@ export const CONFIG_FILE_SCHEMA = z
 			.record(
 				z.string(),
 				z.object({
+					enabled: z.boolean().optional(),
+					origin: z
+						.enum(['bundled', 'user-local', 'external'])
+						.optional(),
 					prefix: z.string().optional(),
 					options: z.record(z.string(), z.unknown()).optional(),
 					// f00087 S1: explicit module path for a local plugin.
@@ -95,6 +176,33 @@ export const CONFIG_FILE_SCHEMA = z
 					path: z.string().optional(),
 				}),
 			)
+			.optional(),
+		// f00067a S1 — root-level provider roster for the multi-model
+		// orchestrator (wiki/07). Optional + additive: a config without
+		// it keeps validating. The canonical home is HERE so peer
+		// plugins (usage-tracking, …) can read the roster without
+		// coupling to the runner plugin, which today also accepts a
+		// copy under `plugins.orchestrator-runner.options.providers`.
+		providers: z
+			.array(PROVIDER_ENTRY_SCHEMA)
+			.superRefine((roster, ctx) => {
+				const seen = new Set<string>();
+				for (const [index, entry] of roster.entries()) {
+					if (seen.has(entry.id)) {
+						ctx.addIssue({
+							code: 'custom',
+							path: [index, 'id'],
+							message: `duplicate provider id "${entry.id}"`,
+						});
+					}
+					seen.add(entry.id);
+				}
+			})
+			// `uniqueItems` is the JSON-Schema projection of the
+			// unique-id refinement above (best effort: it compares
+			// whole entries; the Zod side compares ids and is the
+			// source of truth for `--check`).
+			.meta({ uniqueItems: true })
 			.optional(),
 		// f00072 S3 — cache eviction policy. Additive + backward
 		// compatible: a config without this block defaults to

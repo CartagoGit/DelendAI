@@ -201,14 +201,14 @@ describe('init:default (f00103)', () => {
 		const configOnDisk = JSON.parse(
 			await readFile(join(tmp, 'mcp-vertex.config.json'), 'utf8'),
 		) as { plugins: Record<string, unknown> };
-		expect(configOnDisk.plugins['git']).toBeDefined();
-		expect(configOnDisk.plugins['audit']).toBeDefined();
-		expect(configOnDisk.plugins['issues']).toBeDefined();
+		expect(configOnDisk.plugins.git).toBeDefined();
+		expect(configOnDisk.plugins.audit).toBeDefined();
+		expect(configOnDisk.plugins.issues).toBeDefined();
 		expect(configOnDisk.plugins['web-fetch']).toBeDefined();
-		expect(configOnDisk.plugins['conventions']).toBeDefined();
+		expect(configOnDisk.plugins.conventions).toBeDefined();
 		// Swarm-only plugins MUST NOT have been written.
-		expect(configOnDisk.plugins['proposals']).toBeUndefined();
-		expect(configOnDisk.plugins['memory']).toBeUndefined();
+		expect(configOnDisk.plugins.proposals).toBeUndefined();
+		expect(configOnDisk.plugins.memory).toBeUndefined();
 
 		// Host-instructions centralizer wrote the canonical block under
 		// overwrite semantics.
@@ -217,24 +217,26 @@ describe('init:default (f00103)', () => {
 		expect(agentsContent).toContain('<!-- mcp-vertex:end -->');
 	});
 
-	it('surfaces a HostEntryNotFoundError envelope when nothing matches and --mcp-vertex-root is absent', async () => {
+	it('uses the published canonical launcher when --mcp-vertex-root is absent', async () => {
 		const ctx = noopCtx(tmp, minimalGlobals());
 		const result = await initDefaultCommand.run([], ctx);
-		expect(result.code).toBe(EXIT_CODE.NOT_FOUND);
-		const data = result.data as {
-			ok: false;
-			error: { reason: string; nextAction: string };
-			attempted: string[];
+		expect(result.code).toBe(EXIT_CODE.OK);
+		const vscode = JSON.parse(
+			await readFile(join(tmp, '.vscode/mcp.json'), 'utf8'),
+		) as {
+			servers: { 'mcp-vertex': { command: string; args: string[] } };
 		};
-		expect(data.ok).toBe(false);
-		expect(data.error.reason).toMatch(
-			/could not locate the mcp-vertex host entry script/,
-		);
-		expect(data.error.nextAction).toBe('retry');
-		expect(data.attempted.length).toBeGreaterThan(0);
-		// The hint must mention the override flag so the operator knows
-		// how to recover without re-installing the package.
-		expect(data.error.reason).toContain('--mcp-vertex-root=');
+		expect(vscode.servers['mcp-vertex']).toMatchObject({
+			command: 'bunx',
+			args: [
+				'--package',
+				'@mcp-vertex/cli',
+				'mcpv',
+				'__serve',
+				'--workspace',
+				'${workspaceFolder}',
+			],
+		});
 	});
 
 	it('runInitWithAnswers passes through the force flag when --force is supplied by the caller', async () => {

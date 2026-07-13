@@ -1,3 +1,4 @@
+import type { IProviderSummary } from '../contracts/interfaces/provider-capabilities.interface';
 import {
 	ACTIONABLE_PROPOSAL_STATUSES,
 	type IBuildCatalogOptions,
@@ -15,16 +16,17 @@ const sortBy = <T>(items: readonly T[], select: (item: T) => string): T[] =>
 const cloneTool = (
 	tool: IToolSummary,
 	mode: 'compact' | 'full',
+	corePlugin: string,
 ): IToolSummary => {
 	if (mode === 'compact') {
 		return {
 			name: tool.name,
-			plugin: tool.plugin,
+			...(tool.plugin === corePlugin ? {} : { plugin: tool.plugin }),
 		};
 	}
 	return {
 		name: tool.name,
-		plugin: tool.plugin,
+		...(tool.plugin !== undefined ? { plugin: tool.plugin } : {}),
 		...(tool.summary !== undefined ? { summary: tool.summary } : {}),
 		...(tool.tags !== undefined ? { tags: [...tool.tags] } : {}),
 		...(tool.effects !== undefined ? { effects: [...tool.effects] } : {}),
@@ -41,13 +43,31 @@ const cloneSkill = (skill: ISkillSummary): ISkillSummary => ({
 	bodyPath: skill.bodyPath,
 });
 
-const cloneProposal = (proposal: IProposalSummary): IProposalSummary => ({
+/**
+ * Copies only the lean, secret-free summary fields — never invoke details
+ * or env-var names (the catalog is a discoverability artifact).
+ */
+const cloneProvider = (provider: IProviderSummary): IProviderSummary => ({
+	id: provider.id,
+	kind: provider.kind,
+	modelId: provider.modelId,
+	costTier: provider.costTier,
+	reachable: provider.reachable,
+	strengths: [...provider.strengths],
+});
+
+const cloneProposal = (
+	proposal: IProposalSummary,
+	mode: 'compact' | 'full',
+): IProposalSummary => ({
 	id: proposal.id,
 	title: proposal.title,
 	track: proposal.track,
 	status: proposal.status,
 	kind: proposal.kind,
-	date: proposal.date,
+	...(mode === 'full' && proposal.date !== undefined
+		? { date: proposal.date }
+		: {}),
 });
 
 export const buildCatalog = (
@@ -72,9 +92,26 @@ export const buildCatalog = (
 				)
 			: allProposals;
 
-	const tools = allTools.map((tool) => cloneTool(tool, opts.mode));
+	const tools = allTools.map((tool) =>
+		cloneTool(tool, opts.mode, opts.server.namespacePrefix),
+	);
 	const skills = allSkills.map(cloneSkill);
-	const proposals = visibleProposals.map(cloneProposal);
+	const proposals = visibleProposals.map((proposal) =>
+		cloneProposal(proposal, opts.mode),
+	);
+
+	// Providers: omitted (not `[]`) when the roster is absent or empty so
+	// existing payloads never churn, and pruned from compact mode entirely —
+	// `IProviderSummary` has no optional fields to strip, so unlike tools
+	// the compact prune is all-or-nothing (agents opt in via mode:"full").
+	const allProviders = sortBy(
+		sources.providers?.() ?? [],
+		(provider) => provider.id,
+	);
+	const providers =
+		opts.mode === 'full' && allProviders.length > 0
+			? allProviders.map(cloneProvider)
+			: undefined;
 
 	return {
 		server: {
@@ -93,5 +130,6 @@ export const buildCatalog = (
 		tools,
 		skills,
 		proposals,
+		...(providers !== undefined ? { providers } : {}),
 	};
 };

@@ -21,6 +21,7 @@ import { z } from 'zod';
 
 import type { IToolRegistration } from '@mcp-vertex/core/public';
 import {
+	redactSecrets,
 	toolError,
 	toolOk,
 	withFileMutex,
@@ -120,9 +121,11 @@ export const runResolveIssue = async (
 			const frontmatter = {
 				...scaffold.frontmatter,
 				resolution: args.resolution,
-				proposals: args.proposalIds ?? [],
+				proposals: (args.proposalIds ?? []).map(
+					(proposalId) => redactSecrets(proposalId).text,
+				),
 				...(dismissReason !== undefined && dismissReason !== ''
-					? { dismiss_reason: dismissReason }
+					? { dismiss_reason: redactSecrets(dismissReason).text }
 					: {}),
 			};
 			const updated = { ...scaffold, frontmatter };

@@ -6,42 +6,50 @@
 // (apps/web, @mcp-vertex/ui-extension, host extensions) reaches for the
 // same names.
 //
-// All names are `mv-` prefixed so they cannot collide with host theme
+// All names are `mcpv-` prefixed so they cannot collide with host theme
 // variables (e.g. `--vscode-editor-background`) or site legacy names
 // (`--bg`, `--fg`). Downstream surfaces that still want the legacy names
 // can alias them in their own partial.
 
 :root {
 	// --- radii ------------------------------------------------------------
-	--mv-radius: 8px;
-	--mv-radius-sm: 4px;
-	--mv-radius-lg: 12px;
+	--mcpv-radius: 8px;
+	--mcpv-radius-sm: 4px;
+	--mcpv-radius-lg: 12px;
 
 	// --- layout ----------------------------------------------------------
-	--mv-maxw: 68rem;
-	--mv-gap: 16px;
+	--mcpv-maxw: 68rem;
+	--mcpv-gap: 16px;
 
 	// --- typography ------------------------------------------------------
-	--mv-font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
-	--mv-font-prose: system-ui, -apple-system, BlinkMacSystemFont,
+	--mcpv-font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+	--mcpv-font-prose: system-ui, -apple-system, BlinkMacSystemFont,
 		'Segoe UI', Roboto, sans-serif;
 
 	// --- spacing scale ---------------------------------------------------
-	--mv-s-1: 4px;
-	--mv-s-2: 8px;
-	--mv-s-3: 12px;
-	--mv-s-4: 16px;
-	--mv-s-5: 24px;
-	--mv-s-6: 32px;
+	--mcpv-s-1: 4px;
+	--mcpv-s-2: 8px;
+	--mcpv-s-3: 12px;
+	--mcpv-s-4: 16px;
+	--mcpv-s-5: 24px;
+	--mcpv-s-6: 32px;
 
 	// --- transitions -----------------------------------------------------
-	--mv-transition-fast: 120ms ease-out;
-	--mv-transition-base: 180ms ease-out;
+	--mcpv-transition-fast: 120ms ease-out;
+	--mcpv-transition-base: 180ms ease-out;
+
+	// --- brand-on-primary -------------------------------------------------
+	// Text colour that sits on top of a brand-coloured surface (e.g. the
+	// --mcpv-link/--mcpv-brand-blue primary buttons). Kept as a token so
+	// surfaces that opt in to a different brand fill (midnight, nord,
+	// ...) can swap just this var without re-editing every component
+	// partial. Invariant: always lighter than the brand fill.
+	--mcpv-fg-on-brand: #ffffff;
 }
 
 @media (prefers-reduced-motion: reduce) {
 	:root {
-		--mv-transition-fast: 0ms;
-		--mv-transition-base: 0ms;
+		--mcpv-transition-fast: 0ms;
+		--mcpv-transition-base: 0ms;
 	}
 }

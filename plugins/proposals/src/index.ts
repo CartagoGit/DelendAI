@@ -1,4 +1,7 @@
-import { definePlugin } from '@mcp-vertex/core/public';
+import {
+	createWorkspaceFileReader,
+	definePlugin,
+} from '@mcp-vertex/core/public';
 import { AgentLoopDetectorService } from './lib/agents/loop-detector-service';
 import { z } from 'zod';
 
@@ -26,6 +29,7 @@ import {
 } from './lib/tools/authoring.tool';
 import type { IAuthoringToolOptions } from './lib/tools/authoring.tool';
 import { buildAdoptRegistration } from './lib/tools/adopt.tool';
+import { buildInheritHostInstructionsRegistration } from './lib/tools/inherit-host-instructions.tool';
 import type { IAgentNamesToolOptions } from './lib/tools/agent-names.tool';
 import { buildGetProposalWorkflowRegistration } from './lib/tools/get-proposal-workflow.tool';
 import { buildRoundContextRegistration } from './lib/tools/round-context.tool';
@@ -148,6 +152,17 @@ export default definePlugin({
 			...(Array.isArray(ctx.options.namePool)
 				? { pool: ctx.options.namePool as string[] }
 				: {}),
+			// f00082 S3: the boot-resolved host identity becomes the default
+			// host/model on `assign` (and, via `options.agentNames`, on
+			// `delegate`), so an orchestrator that declared itself once at boot
+			// no longer repeats it on every call. Absent → `null` fallback.
+			...(ctx.hostIdentity !== undefined
+				? { defaultIdentity: ctx.hostIdentity }
+				: {}),
+			// Solid-ISP adapter: when a name is released back to the pool, tell
+			// the loop detector to forget that name's window + stuck verdict so
+			// the next lease of the reusable name starts clean.
+			onAgentReleased: (name: string) => loopDetector.resetAgent(name),
 		};
 
 		const stateOptions: IStateToolOptions = {
@@ -193,6 +208,11 @@ export default definePlugin({
 					lockChangeListener: createCallbackLockListener(() =>
 						loopDetector.invalidateLockCache(),
 					),
+					// f00082 S3: default the echoed identity block from the
+					// boot-resolved host identity when a caller omits host/model.
+					...(ctx.hostIdentity !== undefined
+						? { defaultIdentity: ctx.hostIdentity }
+						: {}),
 				}),
 				buildAgentWorktreeRegistration({
 					namespacePrefix: ctx.namespacePrefix,
@@ -359,6 +379,22 @@ export default definePlugin({
 				buildReviewRegistration(authoringOptions),
 				buildProposalBoardRegistration(authoringOptions),
 				buildAdoptRegistration(authoringOptions),
+				// f00094: on-demand audit of the host-instruction files
+				// (in-repo always; opt-in user-home via `scope: 'all'`).
+				// Shares the authoring layout/allocator so an emitted audit
+				// proposal never collides with `create_proposal` or f00093.
+				buildInheritHostInstructionsRegistration({
+					namespacePrefix: ctx.namespacePrefix,
+					workspaceRoot: ctx.workspace.root,
+					reader: createWorkspaceFileReader(ctx.workspace),
+					proposalsDirAbs: abs(layout.proposalsDir),
+					counterPathAbs: abs(layout.proposalIdCountersFile),
+					layout: {
+						proposalsDir: layout.proposalsDir,
+						proposalIndexFile: layout.proposalIndexFile,
+					},
+					extraFolders: extraProposalFolders,
+				}),
 				buildStateHealthRegistration(stateOptions),
 				buildStateRepairRegistration(stateOptions),
 				buildCompactStatusRegistration({

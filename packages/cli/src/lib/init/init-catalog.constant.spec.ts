@@ -42,7 +42,9 @@ describe('loadAgentDescriptors (f00088 S3)', () => {
 		});
 		const orchestrator = descriptors.find((d) => d.role === 'orchestrator');
 		expect(orchestrator?.tools[0]).toBe('acme_proposals_auto_work');
-		expect(orchestrator?.tools.every((t) => t.startsWith('acme_'))).toBe(true);
+		expect(orchestrator?.tools.every((t) => t.startsWith('acme_'))).toBe(
+			true,
+		);
 	});
 
 	it('preserves tools that do not start with PROP_ (already-prefixed catalog entries)', async () => {

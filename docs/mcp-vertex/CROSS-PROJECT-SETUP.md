@@ -51,13 +51,13 @@ The source of truth for preset membership is [../packages/core/src/lib/plugins/p
 Preferred launch:
 
 ```bash
-bunx @mcp-vertex/core --preset=full
+bunx --package @mcp-vertex/cli mcpv __serve --workspace . --preset full
 ```
 
 Explicit minimal alternative for just proposals plus issues:
 
 ```bash
-bunx @mcp-vertex/core --plugins=proposals,issues
+bunx --package @mcp-vertex/cli mcpv __serve --workspace . --plugins proposals,issues
 ```
 
 The server block is the same across VS Code, Cursor, and Claude Code; only the host-specific `mcp.json` location changes:
@@ -67,13 +67,82 @@ The server block is the same across VS Code, Cursor, and Claude Code; only the h
 	"servers": {
 		"mcp-vertex": {
 			"command": "bunx",
-			"args": ["@mcp-vertex/core", "--preset=full"]
+			"args": ["--package", "@mcp-vertex/cli", "mcpv", "__serve", "--workspace", ".", "--preset", "full"]
 		}
 	}
 }
 ```
 
 If you intentionally avoid `full`, keep the config file and launch shape aligned: a repo that declares `plugins.issues.options.repo` still needs either `--preset=full` or `--plugins=proposals,issues` so the host actually loads the issues tools.
+
+## Model providers and the orchestrator (opt-in)
+
+The `orchestrator-runner` (headless routing brain) and `usage-tracking`
+(spend/usage observability) plugins are **opt-in**. They are **not** part of any
+preset — `minimal`, `standard`, `swarm`, and `full` all leave them out — so you
+only pay their cost when you deliberately load them. `orchestrator-runner` has a
+hard dependency on `usage-tracking`: the loader refuses the batch unless both are
+present, because every routing decision it advises (and, once execution is
+enabled, every call it runs) must be recorded for spend auditing.
+
+Load them alongside a preset by adding both to `--plugins`:
+
+```bash
+bunx --package @mcp-vertex/cli mcpv __serve --workspace . --preset swarm --plugins usage-tracking,orchestrator-runner
+```
+
+The router needs a **provider roster**. The canonical home is a root-level
+`providers` block in `mcp-vertex.config.json`; the two plugins stay opt-in under
+`plugins` and are **never** folded into the `swarm` preset. A worked example with
+one `api` provider:
+
+```jsonc
+{
+	// Root-level roster the router scores against. API keys are referenced by
+	// ENV-VAR NAME (read at call time) — never embed a cleartext key here.
+	"providers": [
+		{
+			"id": "openai-gpt-4o",
+			"kind": "api",
+			"modelId": "gpt-4o",
+			"contextWindow": 128000,
+			"costTier": 3,
+			"strengths": ["reasoning", "json-strict"],
+			"weaknesses": ["very-long-context"],
+			"invoke": {
+				"kind": "api",
+				"url": "https://api.openai.com/v1/chat/completions",
+				"method": "POST",
+				"envVar": "OPENAI_API_KEY"
+			}
+		}
+	],
+	// Opt-in plugins — NOT in the swarm preset. Kill either by omitting it here
+	// (or with `--exclude-plugins=<name>`); there is no `options.enabled` flag.
+	// `orchestrator-runner` requires `usage-tracking` to also be loaded.
+	"plugins": {
+		"usage-tracking": {},
+		"orchestrator-runner": {
+			"options": {
+				"defaultCostPreference": "balanced",
+				"executeApi": false
+			}
+		}
+	}
+}
+```
+
+Export the referenced env var in the shell that launches the host
+(`export OPENAI_API_KEY=…`) and keep the literal key out of version control — the
+`no-cleartext-secrets` gate fails any tracked config that inlines a secret rather
+than referencing a `${ENV_VAR}` / `ENV_VAR` name. With `executeApi: false` (the
+safe default) the runner **advises and hands off** but never spends; flipping it
+to `true` still requires a per-invocation signed confirmation token.
+
+Until core surfaces the root-level `providers` block on the plugin context, the
+runner also reads a roster from its own
+`plugins.orchestrator-runner.options.providers` as a pragmatic, fully-typed
+fallback with the identical shape.
 
 ## Troubleshooting
 
