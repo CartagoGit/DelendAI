@@ -50,6 +50,6 @@
 		"@types/markdown-it": "^14.1.2",
 		"@modelcontextprotocol/sdk": "1.29.0",
 		"pagefind": "^1.5.2",
-		"typescript": "^6.0.3"
+		"typescript": "^7.0.2"
 	}
 }
