@@ -65,7 +65,9 @@ const run = (command: string, args: readonly string[], cwd: string): string => {
 			`${command} ${args.join(' ')} failed (${result.status ?? 'signal'}):\n${result.stderr || result.stdout}`,
 		);
 	}
-	return result.stdout;
+	// stderr carries the human recap (init's "What's next" block) —
+	// return both streams so callers can assert on operator-facing copy.
+	return `${result.stdout}\n${result.stderr}`;
 };
 
 const withTimeout = async <T>(
@@ -151,7 +153,25 @@ const main = async (): Promise<void> => {
 		);
 
 		const installedBin = join(project, 'node_modules', '.bin', 'mcpv');
-		run('bun', [installedBin, 'init', '--force'], project);
+		const initOutput = run(
+			'bun',
+			[installedBin, 'init', '--force'],
+			project,
+		);
+
+		// x00102 S3: the recap's "What's next" must give runnable steps —
+		// regression guard for the `.gitkeep`-instead-of-proposal bug and
+		// the invalid `bun mcpv …` hint.
+		if (initOutput.includes('open .gitkeep')) {
+			throw new Error(
+				"init What's-next linked .gitkeep instead of the adoption proposal",
+			);
+		}
+		if (initOutput.includes('bun mcpv ')) {
+			throw new Error(
+				"init What's-next suggested the non-runnable `bun mcpv …` form",
+			);
+		}
 
 		const config = readJson<IWrittenMcpConfig>(join(project, '.mcp.json'));
 		const written = config.mcpServers?.['mcp-vertex'];

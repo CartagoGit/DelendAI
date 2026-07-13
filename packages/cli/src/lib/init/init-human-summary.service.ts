@@ -188,8 +188,11 @@ export const renderInitHumanSummary = (input: IInitHumanInput): string => {
 		nextActions.push(
 			`review ${brand('mcp-vertex.config.json')} (cacheDir, docsDir, plugin set)`,
 		);
+		// x00102 S2: not every consumer has a `validate` script — phrase
+		// the gate hint conditionally instead of prescribing a command
+		// that may not exist in their package.json.
 		nextActions.push(
-			`run ${brand('bun run validate')} to gate the workspace`,
+			`run your quality gate if you have one (e.g. ${brand('bun run validate')})`,
 		);
 	}
 	if (written.some((w) => w.path.endsWith('.vscode/mcp.json'))) {
@@ -215,24 +218,27 @@ export const renderInitHumanSummary = (input: IInitHumanInput): string => {
 			);
 		}
 	}
-	if (
-		written.some((w) =>
-			w.path.includes('/docs/mcp-vertex/proposals/ready/'),
-		)
-	) {
-		const f = written.find((w) =>
-			w.path.includes('/docs/mcp-vertex/proposals/ready/'),
+	// x00102 S2: pick the adoption PROPOSAL (.md), never the `.gitkeep`
+	// folder seeds that are also written under ready/ — the previous
+	// first-match told the operator to "open .gitkeep".
+	const adoptionProposal = written.find(
+		(w) =>
+			w.path.includes('/docs/mcp-vertex/proposals/ready/') &&
+			w.path.endsWith('.md'),
+	);
+	if (adoptionProposal !== undefined) {
+		const id =
+			adoptionProposal.path.split('/').pop()?.replace('.md', '') ??
+			'f00001';
+		nextActions.push(
+			`open ${brand(id)} and walk the agent ownership table`,
 		);
-		if (f !== undefined) {
-			const id = f.path.split('/').pop()?.replace('.md', '') ?? 'f00001';
-			nextActions.push(
-				`open ${brand(id)} and walk the agent ownership table`,
-			);
-		}
 	}
 	if (answers.migrateFromLegacy) {
+		// `mcpv` is a binary (from `bunx --package @mcp-vertex/cli mcpv` or
+		// a global install) — `bun mcpv …` was not a runnable command.
 		nextActions.push(
-			`if you had a foreign proposals layout, run ${brand(`bun mcpv scaffold ${answers.preset}`)} to migrate`,
+			`if you had a foreign proposals layout, run ${brand(`mcpv scaffold ${answers.preset}`)} to migrate`,
 		);
 	}
 	if (nextActions.length === 0) {
