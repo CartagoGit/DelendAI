@@ -42,9 +42,17 @@ export {
 export { MemoryService } from '../lib/services/memory.service';
 export {
 	DEFAULT_EXTENSION_SETTINGS,
+	EXTENSION_SETTINGS_STORAGE_KEY,
+	EXTENSION_SETTINGS_STORAGE_VERSION,
 	SettingsService,
 	validateExtensionSettings,
 } from '../lib/services/settings.service';
+export {
+	HOST_LANGUAGE_CHOICES,
+	HOST_LOG_LEVELS,
+	HOST_MOTION_CHOICES,
+	HOST_THEME_CHOICES,
+} from '../lib/contracts/interfaces/settings.interface';
 export type {
 	ILogCorrelateResult,
 	ILogEvent,
@@ -94,8 +102,14 @@ export type {
 export type {
 	IExtensionSettings,
 	IExtensionSettingsPatch,
+	IHostPreferences,
 	ISettingsStore,
+	IStoredExtensionSettings,
 	ISettingsValidationResult,
+	HostLanguage,
+	HostLogLevel,
+	HostMotion,
+	HostTheme,
 } from '../lib/contracts/interfaces/settings.interface';
 export {
 	DashboardService,

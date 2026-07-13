@@ -137,6 +137,8 @@ describe('mcp-vertex.saveSettings (f00062 S3: boundary parse)', () => {
 			allowPrivateIps: 'false',
 			logLevel: 'info',
 			theme: 'system',
+			language: 'en',
+			motion: 'system',
 		});
 		expect(errors.length).toBeGreaterThan(0);
 		expect(store.writes.length).toBe(0);
@@ -154,6 +156,8 @@ describe('mcp-vertex.saveSettings (f00062 S3: boundary parse)', () => {
 			allowPrivateIps: false,
 			logLevel: 'info',
 			theme: 'system',
+			language: 'en',
+			motion: 'system',
 		};
 		await save?.(valid);
 		expect(messages).toContain('mcp-vertex: settings saved.');
