@@ -93,12 +93,14 @@ any of the documented or generated paths. This is the single most important
 
 ### S1 — Pick + implement THE canonical external launch command
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/cli/src/lib/init/host-entry-resolver.service.ts`, `packages/cli/src/lib/server-args.service.ts`, `docs/mcp-vertex/proposals/ready/f00104-external-consumption-and-release-coherence-one-canonical-launch.md`
 - **Gate**: bun run typecheck && bun run test
 - **Acceptance**:
   - "Decide + document the canonical command. RECOMMENDED: `{ command: 'bunx'|'npx', args: ['@mcp-vertex/cli','__serve','--workspace','<root>', ...presets/plugins] }` — the cli bin is the only thing that runs a server and it already parses `__serve`. The host-entry-resolver's monorepo/dev path stays as a dev-only fallback (behind an explicit flag), not the default external output."
   - "A single exported `buildCanonicalLaunch({ workspace, preset, plugins, mode })` returns the `{command,args}` used by BOTH init and the docs generator, so they cannot drift again."
+- **Decision**: The canonical external shape is `{ command: "bunx", args: ["@mcp-vertex/cli", "__serve", "--workspace", workspace, ...] }`; callers may select `npx` without changing argv. Repository host-script discovery is development-only and is not emitted by the builder.
+- **Evidence**: Co-located regressions pin the package, subcommand, workspace, preset/plugin forwarding, npx parity and absence of `host-server.script.ts`.
 
 ### S2 — Complete PUBLISH_ORDER + private flags
 
