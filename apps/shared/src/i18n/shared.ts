@@ -23,7 +23,7 @@
 import {
 	HOST_LANGUAGE_CHOICES,
 	type HostLanguage,
-} from '@mcp-vertex/client/public';
+} from '@mcp-vertex/client/lib/contracts/interfaces/settings.interface';
 import type { ISettingsTranslations } from '../contracts/interfaces/settings-translations.interface';
 
 export const languageCodes = HOST_LANGUAGE_CHOICES;

@@ -30,7 +30,11 @@ import { join } from 'node:path';
 export interface IMcpSpawn {
 	readonly command: string;
 	readonly args: readonly string[];
-	readonly source: 'workspace-settings' | 'workspace-mcp' | 'default';
+	readonly source:
+		| 'workspace-settings'
+		| 'workspace-mcp'
+		| 'workspace-local'
+		| 'default';
 }
 
 const DEFAULTS: IMcpSpawn = {
@@ -101,7 +105,37 @@ export const resolveMcpStdioSpawn = async (cwd: string): Promise<IMcpSpawn> => {
 			? (servers as Record<string, unknown>)['mcp-vertex']
 			: undefined;
 	const canonical = spawnFromSection(declared, cwd, 'workspace-mcp');
-	if (canonical) return canonical;
+	if (canonical) {
+		// This repository intentionally declares the future published CLI in
+		// `.vscode/mcp.json`. During local development that package may not exist
+		// on npm yet, while the current host entrypoint is available in-tree.
+		// Prefer the local server only for that exact self-host declaration;
+		// consumer projects and custom commands keep their configured process.
+		const localHost = join(
+			cwd,
+			'tools',
+			'scripts',
+			'host',
+			'host-server.script.ts',
+		);
+		if (
+			existsSync(localHost) &&
+			canonical.command === 'bunx' &&
+			canonical.args.includes('@mcp-vertex/cli')
+		) {
+			const config = join(cwd, 'mcp-vertex.config.json');
+			return {
+				command: 'bun',
+				args: [
+					localHost,
+					`--workspace=${cwd}`,
+					...(existsSync(config) ? [`--config=${config}`] : []),
+				],
+				source: 'workspace-local',
+			};
+		}
+		return canonical;
+	}
 
 	const settings = await parseJsonc(join(cwd, '.vscode', 'settings.json'));
 	return (
