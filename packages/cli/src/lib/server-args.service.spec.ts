@@ -27,6 +27,7 @@ import type { ICliGlobalOptions } from '../contracts/interfaces/cli-command.inte
 import {
 	buildCanonicalLaunch,
 	buildServerArgs,
+	CANONICAL_CLI_BIN,
 	CANONICAL_CLI_PACKAGE,
 	type IAutoForwardRule,
 	passthroughRule,
@@ -44,7 +45,9 @@ describe('buildCanonicalLaunch', () => {
 		).toEqual({
 			command: 'bunx',
 			args: [
+				'--package',
 				CANONICAL_CLI_PACKAGE,
+				CANONICAL_CLI_BIN,
 				'__serve',
 				'--workspace',
 				'/consumer',

@@ -99,7 +99,7 @@ any of the documented or generated paths. This is the single most important
 - **Acceptance**:
   - "Decide + document the canonical command. RECOMMENDED: `{ command: 'bunx'|'npx', args: ['@mcp-vertex/cli','__serve','--workspace','<root>', ...presets/plugins] }` — the cli bin is the only thing that runs a server and it already parses `__serve`. The host-entry-resolver's monorepo/dev path stays as a dev-only fallback (behind an explicit flag), not the default external output."
   - "A single exported `buildCanonicalLaunch({ workspace, preset, plugins, mode })` returns the `{command,args}` used by BOTH init and the docs generator, so they cannot drift again."
-- **Decision**: The canonical external shape is `{ command: "bunx", args: ["@mcp-vertex/cli", "__serve", "--workspace", workspace, ...] }`; callers may select `npx` without changing argv. Repository host-script discovery is development-only and is not emitted by the builder.
+- **Decision**: The canonical external shape is `{ command: "bunx", args: ["--package", "@mcp-vertex/cli", "mcpv", "__serve", "--workspace", workspace, ...] }`; callers may select `npx` without changing argv. The explicit package/bin pair is required because the package publishes two aliases and npm cannot infer one unambiguously. Repository host-script discovery is development-only and is not emitted by the builder.
 - **Evidence**: Co-located regressions pin the package, subcommand, workspace, preset/plugin forwarding, npx parity and absence of `host-server.script.ts`.
 
 ### S2 — Complete PUBLISH_ORDER + private flags
@@ -115,13 +115,14 @@ any of the documented or generated paths. This is the single most important
 
 ### S3 — Fix the mcpv init mcp.json writer
 
-- **Status**: pending
-- **Files**: `packages/cli/src/commands/init/init.command.ts`, `packages/cli/src/lib/init/init-render.service.ts`, `packages/core/src/lib/install/merge-config.ts`
+- **Status**: done
+- **Files**: `packages/cli/src/commands/init/init.command.ts`, `packages/cli/src/lib/init/init-render.service.ts`, `packages/cli/src/lib/init/init-writers.factory.ts`, `packages/core/src/lib/install/merge-config.ts`
 - **Depends on**: S1
 - **Gate**: bun run test
 - **Acceptance**:
   - "`mcpv init` writes the S1 canonical command into `.vscode/mcp.json` (and the generic `.mcp.json`), not the host-server.script path. The merge-aware writer still preserves other servers. A spec asserts the generated command matches `buildCanonicalLaunch` output exactly."
   - "The dev/monorepo host-server path is only emitted when `--mcp-vertex-root` (or a detected sibling checkout) is explicitly present."
+- **Evidence**: Default init writes builder-identical published CLI entries to both `.vscode/mcp.json` and `.mcp.json`, preserving sibling servers with merge-aware atomic writers. An explicit `--mcp-vertex-root` still selects the repository host script; absence no longer probes or fails on local checkout paths. The CLI gate passes 235 tests.
 
 ### S4 — Reconcile every doc + self-host config to the one command
 

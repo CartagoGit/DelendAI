@@ -51,11 +51,12 @@ export interface ICanonicalLaunchOptions {
 }
 
 export interface ICanonicalLaunch {
-	readonly command: ICanonicalLaunchMode;
+	readonly command: string;
 	readonly args: readonly string[];
 }
 
 export const CANONICAL_CLI_PACKAGE = '@mcp-vertex/cli';
+export const CANONICAL_CLI_BIN = 'mcpv';
 
 // f00037/f00093: canonical home is contracts/interfaces/server-args.interface.ts.
 // Re-exported here for the spec that imports the rule type from this module.
@@ -220,6 +221,11 @@ export const buildCanonicalLaunch = (
 	});
 	return {
 		command,
-		args: [CANONICAL_CLI_PACKAGE, ...serverArgs],
+		args: [
+			'--package',
+			CANONICAL_CLI_PACKAGE,
+			CANONICAL_CLI_BIN,
+			...serverArgs,
+		],
 	};
 };
