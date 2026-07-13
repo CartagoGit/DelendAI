@@ -61,7 +61,7 @@ reemplazar, complementar o adoptar solo capacidades seleccionadas.
 - **Files**: docs/mcp-vertex/examples/adoption-modes/README.md
 - depends_on: [S2, S3]
 - **Gate**: `bun run test`
-- **Status**: in-progress
+- **Status**: done
 - **Verified coverage (2026-07-13)**: a real filesystem consumer fixture now proves replace is consent-sensitive and may own the full host config, while augment/partial never return existing MCP, agent, instruction or source paths; partial tools-only adoption emits no prompts, skills or agents. A second dogfood fixture pins the repository's own `packages/core` + `mcp-vertex` target and rejects the former `libs/mcp-project` path and invalid hyphenated symbols. The documented examples cover all modes and compact pagination.
 
 ## Acceptance
