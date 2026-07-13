@@ -239,7 +239,7 @@ const site = {
 		copy: 'Copier',
 		copied: 'Copié !',
 		faqTitle: 'Questions fréquentes',
-		faqQ1: 'Pourquoi `deno run -A npm:@mcp-vertex/core` est-il lent au démarrage ?',
+		faqQ1: 'Pourquoi `deno run -A npm:@mcp-vertex/cli` est-il lent au démarrage ?',
 		faqA1: 'Deno résout et vérifie le paquet npm à la première utilisation. Les exécutions suivantes réutilisent le cache dans `~/.cache/deno`. Pour des démarrages répétés, préférez bun ou npx.',
 		faqQ2: 'Mon IDE n’est pas listé — que faire ?',
 		faqA2: 'Tout IDE qui accepte un serveur MCP stdio fonctionne. Prenez le JSON de VS Code, changez le chemin du fichier pour celui attendu par votre IDE, et enregistrez la même commande + arguments.',
@@ -279,6 +279,7 @@ const site = {
 	},
 	cfg: {
 		title: 'Réglages',
+		close: 'Fermer les réglages',
 		theme: 'Thème',
 		language: 'Langue',
 		motion: 'Animation',
@@ -287,6 +288,11 @@ const site = {
 	search: {
 		title: 'Rechercher',
 		placeholder: 'Rechercher sur le site...',
+		close: 'Fermer la recherche',
+		noMatches: 'Aucun résultat.',
+		indexUnavailable: 'Index de recherche indisponible.',
+		buildRequired:
+			'La recherche est générée avec bun run site. Exécutez la compilation pour l’activer.',
 	},
 	footer: {
 		built: 'Généré à partir du registre vivant des outils.',
@@ -306,6 +312,7 @@ const site = {
 		tabTools: 'Outils',
 		tabConfiguration: 'Configuration',
 		tabTutorial: 'Tutoriel',
+		tutorialFallback: 'affiché en anglais, pas encore traduit en {lang}',
 	},
 	plugin: {
 		proposals:
@@ -385,6 +392,8 @@ const site = {
 		nextSteps: 'Où aller ensuite',
 		nextToolsCta: 'Parcourir tous les outils',
 		nextTroubleshootingCta: 'Quelque chose ne fonctionne pas ? Dépannage',
+		overviewHint:
+			'Après le démarrage du serveur, appelez mcp-vertex_overview avec compact: true ; recommendedNextAction indique précisément la prochaine action à l’agent.',
 	},
 	troubleshooting: {
 		title: 'Dépannage',
@@ -523,9 +532,22 @@ const extension = {
 	setupGithub: 'mcp-vertex : Configurer les issues GitHub',
 };
 
+const dev = {
+	quickStartHeading: 'Démarrage rapide',
+	quickStartLede:
+		'Une orientation unique. Le workspace est configuré et le tableau de bord récupère maintenant les données réelles — voici ce que fait chaque onglet.',
+	quickStartDismiss: 'Fermer le démarrage rapide',
+	firstRunHeading: 'Bienvenue dans mcp-vertex',
+	firstRunLede:
+		"Cette extension fournit un tableau de bord, des paramètres et un panneau d'outils pour le serveur MCP mcp-vertex. Le serveur MCP n'est pas encore installé dans ce workspace — une fois installé, le tableau de bord passera à la récupération de données réelles.",
+	firstRunSkip: 'Ignorer — afficher quand même le tableau de bord',
+	firstRunInstall: 'Installer mcp-vertex dans ce workspace',
+};
+
 const dict: ILangDict = {
 	site: site as unknown as ILangDict['site'],
 	extension: extension as unknown as ILangDict['extension'],
+	dev: dev as unknown as ILangDict['dev'],
 	tools: {},
 };
 

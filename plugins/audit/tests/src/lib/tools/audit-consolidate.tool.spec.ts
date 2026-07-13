@@ -5,13 +5,18 @@
  * This spec pins the fix: `resolveWorkspaceContained` rejects escapes
  * before any `readdir`/`readFile` happens.
  */
-import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, readdir, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import { buildConsolidateRegistration } from '../../../../src/lib/tools/audit-consolidate.tool';
+
+const peerPlugins = {
+	list: () => ['audit', 'proposals'],
+	has: (name: string) => name === 'audit' || name === 'proposals',
+} as never;
 
 const invoke = async (
 	reg: ReturnType<typeof buildConsolidateRegistration>,
@@ -58,6 +63,11 @@ describe('audit_consolidate auditDir containment (l00008 s3)', async () => {
 			[
 				'# Audit',
 				'',
+				'## 🔴 FATAL',
+				'',
+				'### 1. Contained proposal fixture',
+				'**Fichero**: `src/example.ts`',
+				'',
 				'## Scoreboard',
 				'',
 				'| Dimension | Score |',
@@ -87,6 +97,7 @@ describe('audit_consolidate auditDir containment (l00008 s3)', async () => {
 			namespacePrefix: 'audit',
 			workspaceRoot,
 			defaultAuditDir: 'docs/mcp-vertex/proposals/done/audits',
+			peerPlugins,
 		});
 
 	it('accepts a normal relative path inside the workspace', async () => {
@@ -121,5 +132,46 @@ describe('audit_consolidate auditDir containment (l00008 s3)', async () => {
 		// error — both confirm it never silently reads workspace-external
 		// content. The containment check runs first in the implementation.
 		expect(out.auditsFound).toBeUndefined();
+	});
+
+	it('rejects an absolute proposalsDir without writing outside the workspace', async () => {
+		const outside = join(workspaceRoot, '..', 'outside-fixture');
+		const out = parse(
+			await invoke(buildReg(), {
+				proposalsDir: outside,
+				autoScaffoldProposals: true,
+			}),
+		);
+		expect(out.proposals).toEqual({
+			skipped: 'proposals-dir-out-of-workspace',
+		});
+		expect(await readdir(outside)).toEqual([]);
+	});
+
+	it('rejects a proposalsDir traversal without writing outside the workspace', async () => {
+		const outside = join(workspaceRoot, '..', 'outside-fixture');
+		const out = parse(
+			await invoke(buildReg(), {
+				proposalsDir: '../outside-fixture',
+				autoScaffoldProposals: true,
+			}),
+		);
+		expect(out.proposals).toEqual({
+			skipped: 'proposals-dir-out-of-workspace',
+		});
+		expect(await readdir(outside)).toEqual([]);
+	});
+
+	it('scaffolds into a valid workspace-relative proposalsDir', async () => {
+		const proposalsDir = 'generated/proposals';
+		const out = parse(
+			await invoke(buildReg(), {
+				proposalsDir,
+				autoScaffoldProposals: true,
+			}),
+		);
+		expect(out.proposals.scaffolded).toHaveLength(1);
+		const written = await readdir(join(workspaceRoot, proposalsDir));
+		expect(written).toEqual([out.proposals.scaffolded[0].filename]);
 	});
 });

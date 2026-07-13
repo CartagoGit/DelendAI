@@ -1,9 +1,12 @@
 /**
  * host-entry-resolver.ts — f00088 S2 + f00103 sibling-walk.
  *
- * Resolve the absolute path to the mcp-vertex host-server entry
+ * Resolve the absolute path to the repository-only mcp-vertex host-server entry
  * script (`tools/scripts/host/host-server.script.ts`) for the
- * consumer's environment. Replaces the previous hardcoded
+ * for explicit development/local-checkout mode. External consumers use
+ * `buildCanonicalLaunch` from `server-args.service.ts`; this resolver must
+ * never be used to construct the default published-package launch shape.
+ * Replaces the previous hardcoded
  * `/home/cartago/_proyectos/propios/mcp-vertex/tools/scripts/...`
  * that shipped in every generated `.vscode/mcp.json`.
  *
@@ -31,10 +34,20 @@
 import { existsSync, readdirSync } from 'node:fs';
 import { dirname, isAbsolute, join, resolve } from 'node:path';
 
+import type {
+	IPathProbe,
+	IResolvedHostEntry,
+	THostEntrySource,
+} from '../../contracts/interfaces/host-entry.interface';
 
-
-/** A minimal reader interface so tests can inject a fake filesystem. */
-
+// Re-export so existing importers (and the co-located spec) keep resolving
+// these from the service while the canonical definitions live in
+// `contracts/interfaces/host-entry.interface.ts` per repo convention.
+export type {
+	IPathProbe,
+	IResolvedHostEntry,
+	THostEntrySource,
+} from '../../contracts/interfaces/host-entry.interface';
 
 const realProbe: IPathProbe = {
 	exists: (path) => existsSync(path),

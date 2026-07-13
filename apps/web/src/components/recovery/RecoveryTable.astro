@@ -52,3 +52,13 @@ const { labels, zombies = [] } = Astro.props;
 	)}
 </section>
 
+<style>
+	.recovery-table__empty {
+		/* Empty-state copy — muted, same treatment as LogTable.astro's
+		   .logs-table__empty (f00099 S1). */
+		margin: 1rem 0;
+		color: var(--muted, #8b949e);
+		font-size: 0.9rem;
+	}
+</style>
+

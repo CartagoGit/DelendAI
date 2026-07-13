@@ -1,6 +1,8 @@
 ---
 import { useTranslations, type Lang } from '#I18N/ui';
-import { renderDropdown } from '@mcp-vertex/shared';
+import { renderDropdown } from '@mcp-vertex/ui-extension/components/dropdown';
+import { renderBrandMark } from '@mcp-vertex/shared/components/ui/brand-mark';
+import { renderDrawer } from '@mcp-vertex/shared/components/ui/drawer';
 
 interface Props {
 	lang: Lang;
@@ -78,12 +80,13 @@ const drawerLinks = [
     on every navigation, and the nav contents (hrefs, labels) change with
     the language, producing a visible flicker. The `aria-label` and the
     script below are the accessibility + binding source of truth. */}
-<nav class="nav" transition:persist aria-label="Primary">
+<nav class="nav" transition:persist aria-label={t.nav.menu}>
 	<div class="container nav__inner">
-		<a class="nav__brand" href={homeHref}>
-			<img class="nav__logo" src={`${base}/logo.svg`} width="26" height="26" alt="" />
-			<span class="nav__brand-text">@mcp-vertex</span>
-		</a>
+		<Fragment set:html={renderBrandMark({
+			href: homeHref,
+			logoSrc: `${base}/logo.svg`,
+			brandText: '@mcp-vertex',
+		})} />
 		<div class="nav__links" role="navigation">
 			{navSections.map((l) => (
 				<a class="nav__link" href={l.href} data-nav-key={l.key}>{l.label}</a>
@@ -96,7 +99,7 @@ const drawerLinks = [
 			    outside-click + Esc from one place. We pass
 			    `classPrefix: 'nav__more'` so the BEM shape stays
 			    aligned with the existing `_nav.scss` rules instead
-			    of forcing a parallel `mv-dropdown__*` style layer. */}
+			    of forcing a parallel `mcpv-dropdown__*` style layer. */}
 			<Fragment set:html={renderDropdown({
 				id: 'nav-more',
 				idPrefix: 'nav-more',
@@ -136,7 +139,7 @@ const drawerLinks = [
 					<path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
 				</svg>
 			</button>
-			{/* Hamburger only on mobile; CSS hides it on >=680px. */}
+			{/* Hamburger only on mobile/tablet; CSS hides it at >=821px. */}
 			<button class="hamburger" id="nav-open" aria-label={t.nav.menu} aria-expanded="false" aria-controls="nav-drawer">
 				<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
 					<path d="M3 6h18M3 12h18M3 18h18"></path>
@@ -147,37 +150,38 @@ const drawerLinks = [
 </nav>
 
 {/* Drawer (mobile). Persists across navigations: its open/closed state is
-    managed per-page so a View Transition swap doesn't lose scroll-lock. */}
-<div
-	class="drawer"
-	id="nav-drawer"
-	role="dialog"
-	aria-modal="true"
-	aria-label={t.nav.menu}
-	hidden
-	transition:persist
->
-	<div class="drawer__backdrop" data-drawer-close></div>
-	<aside class="drawer__panel">
-		<div class="drawer__head">
-			<img class="drawer__logo" src={`${base}/logo.svg`} width="28" height="28" alt="" />
-			<strong>@mcp-vertex</strong>
-			<button class="drawer__close" data-drawer-close aria-label={t.nav.menu}>
-				<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
-					<path d="M6 6l12 12M18 6L6 18"></path>
-				</svg>
-			</button>
-		</div>
-		<nav class="drawer__links" aria-label={t.nav.menu}>
-			{drawerLinks.map((l) => (
-				<a href={l.href} data-drawer-link data-nav-key={l.key}>{l.label}</a>
-			))}
-			<a href={repo} rel="external" data-drawer-link>{t.nav.github}</a>
-		</nav>
-		<div class="drawer__foot">
-			<button class="btn btn--ghost drawer__cfg" id="drawer-cfg-open">{t.cfg.title}</button>
-		</div>
-	</aside>
+    managed per-page so a View Transition swap doesn't lose scroll-lock.
+    The chrome (panel + backdrop + close + brand + links + foot) is
+    the shared `renderDrawer()` from @mcp-vertex/shared (f00102 S3.3)
+    — only the link list and the footer CTA are site-specific.
+    `transition:persist` (an Astro directive) is applied via a thin
+    wrapper div around the renderer's output. */}
+<div class="drawer-wrap" transition:persist>
+	<Fragment
+		set:html={renderDrawer(
+			{
+				id: 'nav-drawer',
+				label: t.nav.menu,
+				side: 'right',
+				brand: {
+					href: homeHref,
+					logoSrc: `${base}/logo.svg`,
+					brandText: '@mcp-vertex',
+				},
+				links: [
+					...drawerLinks.map((l) => ({
+						key: l.key,
+						label: l.label,
+						href: l.href,
+					})),
+					{ key: 'github', label: t.nav.github, href: repo, external: true },
+				],
+				closeLabel: t.nav.menu,
+				footHtml: `<button class="btn btn--ghost drawer__cfg" id="drawer-cfg-open">${t.cfg.title}</button>`,
+			},
+			{ className: 'drawer' },
+		)}
+	/>
 </div>
 
 <script>
@@ -243,7 +247,7 @@ const drawerLinks = [
 
 	// "More" dropdown. The runtime injected by `Base.astro` (the
 	// `componentScript` from `@mcp-vertex/ui-extension`) drives every
-	// `[data-mv-toggle="dropdown"]` panel on the page: click toggles,
+	// `[data-mcpv-toggle="dropdown"]` panel on the page: click toggles,
 	// outside click closes, Esc closes. We delegate open/close to that
 	// single source of truth so a future dropdown added anywhere on
 	// the site automatically picks up the same behaviour with zero

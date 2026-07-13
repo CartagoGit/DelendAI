@@ -5,8 +5,8 @@ import { renderDisclosure } from '../../src/components/disclosure';
 describe('renderDisclosure', async () => {
 	it('renders a <details> with a <summary> and the given label', async () => {
 		const html = renderDisclosure({ summary: 'Settings' });
-		expect(html).toMatch(/<details class="mv-disclosure"/);
-		expect(html).toContain('<summary class="mv-disclosure__summary">');
+		expect(html).toMatch(/<details class="mcpv-disclosure"/);
+		expect(html).toContain('<summary class="mcpv-disclosure__summary">');
 		expect(html).toContain('Settings');
 	});
 
@@ -25,9 +25,9 @@ describe('renderDisclosure', async () => {
 		expect(html).toContain('id="settings-section"');
 	});
 
-	it('includes a body slot with data-mv-disclosure-body', async () => {
+	it('includes a body slot with data-mcpv-disclosure-body', async () => {
 		const html = renderDisclosure({ summary: 'S' });
-		expect(html).toContain('data-mv-disclosure-body');
+		expect(html).toContain('data-mcpv-disclosure-body');
 	});
 
 	it('escapes the summary', async () => {

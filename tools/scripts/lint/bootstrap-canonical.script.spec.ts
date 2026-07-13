@@ -40,20 +40,21 @@ afterEach(() => {
 });
 
 /** A fixture that mimics the canonical shape. */
-const cleanBootstrap = (): string => [
-	'# Universal agent bootstrap',
-	'',
-	`> ${ANCHOR}.`,
-	'',
-	'---',
-	'',
-	...CANONICAL_SECTIONS.map((s) => `${s}\n\nBody for ${s}.`),
-	'',
-	'## 8.1 Copilot appendix (allowed sub-heading inside §8)',
-	'',
-	'Body of the appendix.',
-	'',
-].join('\n');
+const cleanBootstrap = (): string =>
+	[
+		'# Universal agent bootstrap',
+		'',
+		`> ${ANCHOR}.`,
+		'',
+		'---',
+		'',
+		...CANONICAL_SECTIONS.map((s) => `${s}\n\nBody for ${s}.`),
+		'',
+		'## 8.1 Copilot appendix (allowed sub-heading inside §8)',
+		'',
+		'Body of the appendix.',
+		'',
+	].join('\n');
 
 describe('bootstrap-canonical lint', () => {
 	it('exports the canonical anchor and the canonical section list', () => {
@@ -75,7 +76,9 @@ describe('bootstrap-canonical lint', () => {
 		// `out-of-order` for whatever section happens to follow.
 		const body = cleanBootstrap().replace(/## 8\. Host appendices\n/, '');
 		const out = lintBootstrap(body);
-		const missing = out.violations.filter((v) => v.kind === 'missing-section');
+		const missing = out.violations.filter(
+			(v) => v.kind === 'missing-section',
+		);
 		expect(missing).toHaveLength(1);
 		expect(missing[0]?.message).toContain('## 8. Host appendices');
 		expect(missing[0]?.nextAction).toContain('Restore the missing H2');
@@ -85,7 +88,10 @@ describe('bootstrap-canonical lint', () => {
 		// Swap §1 and §2 by replacing their heading lines in place.
 		const body = cleanBootstrap()
 			.replace('## 1. Orient first — one cheap call', '__SECTION_1__')
-			.replace('## 2. Route work — ask the server', '## 1. Orient first — one cheap call')
+			.replace(
+				'## 2. Route work — ask the server',
+				'## 1. Orient first — one cheap call',
+			)
 			.replace('__SECTION_1__', '## 2. Route work — ask the server');
 		const out = lintBootstrap(body);
 		const ooo = out.violations.filter((v) => v.kind === 'out-of-order');
@@ -97,7 +103,9 @@ describe('bootstrap-canonical lint', () => {
 		// Duplicate `## Table of contents` after §8.
 		const body = `${cleanBootstrap()}\n## Table of contents\n\nstray\n`;
 		const out = lintBootstrap(body);
-		const dups = out.violations.filter((v) => v.kind === 'duplicate-section');
+		const dups = out.violations.filter(
+			(v) => v.kind === 'duplicate-section',
+		);
 		expect(dups).toHaveLength(1);
 		expect(dups[0]?.line).toBeGreaterThan(0);
 		expect(dups[0]?.message).toContain('Table of contents');
@@ -106,7 +114,9 @@ describe('bootstrap-canonical lint', () => {
 	it('missing anchor string fails with kind=missing-anchor', () => {
 		const body = cleanBootstrap().replace(ANCHOR, 'a different sentence');
 		const out = lintBootstrap(body);
-		const anchors = out.violations.filter((v) => v.kind === 'missing-anchor');
+		const anchors = out.violations.filter(
+			(v) => v.kind === 'missing-anchor',
+		);
 		expect(anchors).toHaveLength(1);
 		expect(anchors[0]?.nextAction).toContain('Restore the anchor sentence');
 	});
@@ -125,7 +135,9 @@ describe('bootstrap-canonical lint', () => {
 		const realPath = resolve(REPO_ROOT, BOOTSTRAP_PATH);
 		const out = lintBootstrapFromDisk(realPath);
 		expect(out.violations).toEqual([]);
-		expect(out.headingCount).toBeGreaterThanOrEqual(CANONICAL_SECTIONS.length);
+		expect(out.headingCount).toBeGreaterThanOrEqual(
+			CANONICAL_SECTIONS.length,
+		);
 	});
 
 	it('lintBootstrapForWorkspace returns one missing-anchor violation when the file does not exist', () => {
@@ -136,7 +148,9 @@ describe('bootstrap-canonical lint', () => {
 	});
 
 	it('lintBootstrapForWorkspace with a fixture bootstrap returns zero violations', () => {
-		mkdirSync(resolve(workspaceRoot, 'docs/mcp-vertex'), { recursive: true });
+		mkdirSync(resolve(workspaceRoot, 'docs/mcp-vertex'), {
+			recursive: true,
+		});
 		writeFileSync(resolve(workspaceRoot, BOOTSTRAP_PATH), cleanBootstrap());
 		const out = lintBootstrapForWorkspace(workspaceRoot);
 		expect(out).toHaveLength(1);

@@ -2,7 +2,7 @@
 	"name": "@mcp-vertex/audit",
 	"version": "0.1.0",
 	"type": "module",
-	"description": "Plugin de auditoría multi-modelo (alcance A, l99): genera el brief canónico que el agente copia/pega en cada modelo (`audit_plan`) y consolida N auditorías en una sola hoja de ruta unificada (`audit_consolidate`). Sin red, sin secretos. Load with `mcp-vertex --plugins=audit`.",
+	"description": "Multi-model audit planning and consolidation, plus explicit provider-backed audit_run with network/write effects and optional proposal scaffolding. Load with mcp-vertex --plugins=audit.",
 	"author": "Cartago",
 	"license": "BSD-3-Clause",
 	"keywords": [
@@ -40,7 +40,7 @@
 	"scripts": {
 		"test": "vitest run",
 		"typecheck": "tsc --noEmit",
-		"build": "bun ../../scripts/build.ts plugins/audit"
+		"build": "bun ../../tools/scripts/compile/build.script.ts plugins/audit"
 	},
 	"peerDependencies": {
 		"@mcp-vertex/core": "^0.1.0"
@@ -53,7 +53,7 @@
 		"@mcp-vertex/core": "workspace:*",
 		"@types/bun": "latest",
 		"typescript": "6.0.3",
-		"vitest": "4.1.9"
+		"vitest": "4.1.10"
 	},
 	"publishConfig": {
 		"access": "public"

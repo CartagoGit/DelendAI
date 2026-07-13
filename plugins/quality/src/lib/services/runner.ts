@@ -73,12 +73,27 @@ export const createCommandRunner =
 		new Promise<IRunOutcome>((resolve) => {
 			let output = '';
 			let timedOut = false;
-			const child = spawn(command, {
-				cwd,
-				shell: true,
-				detached: true, // own process group → `quality_cancel`/timeout reap the whole tree
-				stdio: ['ignore', 'pipe', 'pipe'],
-			});
+			// x00097 S5 (audit a00052 #16): explicit bash instead of
+			// `shell: true` — the implicit shell is /bin/sh (dash/ash on
+			// many hosts), so the same command parsed differently per OS.
+			// Bash is the repo's one shell dialect (AGENT-BOOTSTRAP §6);
+			// Windows keeps `shell: true` (no bash contract there).
+			const child =
+				process.platform === 'win32'
+					? spawn(command, {
+							cwd,
+							shell: true,
+							stdio: ['ignore', 'pipe', 'pipe'],
+						})
+					: spawn(
+							'/bin/bash',
+							['--noprofile', '--norc', '-c', command],
+							{
+								cwd,
+								detached: true, // own process group → `quality_cancel`/timeout reap the whole tree
+								stdio: ['ignore', 'pipe', 'pipe'],
+							},
+						);
 			activeChildren.add(child);
 			const done = (outcome: IRunOutcome): void => {
 				activeChildren.delete(child);

@@ -5,7 +5,7 @@ import Config from '#COMPONENTS/Config.astro';
 import Search from '#COMPONENTS/Search.astro';
 import '../styles/styles.scss';
 import { ClientRouter } from 'astro:transitions';
-import { renderRuntime } from '@mcp-vertex/shared';
+import { renderRuntime } from '@mcp-vertex/ui-extension/components/runtime';
 import { rtlLangs, type Lang } from '#I18N/ui';
 
 interface Props {
@@ -43,9 +43,9 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 		    via `transition:persist`, so they never remount and never "jump". */}
 		<ClientRouter />
 		{/* Shared UI runtime from `@mcp-vertex/ui-extension`. Drives every
-		    `[data-mv-toggle="dropdown"]` and `[data-mv-action]` host
+		    `[data-mcpv-toggle="dropdown"]` and `[data-mcpv-action]` host
 		    gesture on the page (the "More" dropdown in the nav, any
-		    `[data-mv-toast-ttl]`, etc.). Without this, dropdowns are
+		    `[data-mcpv-toast-ttl]`, etc.). Without this, dropdowns are
 		    markup-only and never open. The script is idempotent and
 		    survives View Transitions because it binds once on
 		    `document`, not on the persisting element. */}
@@ -64,7 +64,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 					const t = localStorage.getItem(KEY_THEME);
 					if (t) document.documentElement.dataset.theme = t;
 					const m = localStorage.getItem(KEY_MOTION);
-					if (m === 'off') document.documentElement.dataset.motion = 'off';
+					if (m === 'off' || m === 'reduced') document.documentElement.dataset.motion = 'off';
 					else document.documentElement.removeAttribute('data-motion');
 				} catch {}
 			};

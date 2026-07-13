@@ -25,11 +25,50 @@ import { describe, expect, it } from 'vitest';
 
 import type { ICliGlobalOptions } from '../contracts/interfaces/cli-command.interface';
 import {
+	CANONICAL_CLI_BIN,
+	CANONICAL_CLI_PACKAGE,
+} from '../contracts/constants/canonical-launch.constant';
+import {
+	buildCanonicalLaunch,
 	buildServerArgs,
 	type IAutoForwardRule,
 	passthroughRule,
 	SERVER_ARG_MAPPER,
 } from './server-args.service';
+
+describe('buildCanonicalLaunch', () => {
+	it('launches the published CLI package through bunx by default', () => {
+		expect(
+			buildCanonicalLaunch({
+				workspace: '/consumer',
+				preset: 'full',
+				plugins: ['memory', 'proposals'],
+			}),
+		).toEqual({
+			command: 'bunx',
+			args: [
+				'--package',
+				CANONICAL_CLI_PACKAGE,
+				CANONICAL_CLI_BIN,
+				'__serve',
+				'--workspace',
+				'/consumer',
+				'--preset',
+				'full',
+				'--plugins',
+				'memory,proposals',
+			],
+		});
+	});
+
+	it('supports npx without changing the server argv contract', () => {
+		const bun = buildCanonicalLaunch({ workspace: '/repo' });
+		const npm = buildCanonicalLaunch({ workspace: '/repo', mode: 'npx' });
+		expect(npm.command).toBe('npx');
+		expect(npm.args).toEqual(bun.args);
+		expect(npm.args).not.toContain('host-server.script.ts');
+	});
+});
 
 const ruleFor = (key: keyof ICliGlobalOptions): IAutoForwardRule => {
 	const rule = SERVER_ARG_MAPPER.find((r) => r.key === key);
@@ -41,7 +80,10 @@ describe('SERVER_ARG_MAPPER — rule shapes', async () => {
 	it("renders an 'option' rule as --flag value when non-empty, [] otherwise", async () => {
 		const rule = ruleFor('config');
 		expect(rule.kind).toBe('option');
-		expect(rule.argv('config', 'cfg.json')).toEqual(['--config', 'cfg.json']);
+		expect(rule.argv('config', 'cfg.json')).toEqual([
+			'--config',
+			'cfg.json',
+		]);
 		expect(rule.argv('config', '')).toEqual([]);
 		expect(rule.argv('config', undefined)).toEqual([]);
 	});
@@ -49,7 +91,9 @@ describe('SERVER_ARG_MAPPER — rule shapes', async () => {
 	it("renders a 'flag' rule as bare --flag only when true", async () => {
 		const rule = ruleFor('mcpProjectCreate');
 		expect(rule.kind).toBe('flag');
-		expect(rule.argv('mcpProjectCreate', true)).toEqual(['--mcpProjectCreate']);
+		expect(rule.argv('mcpProjectCreate', true)).toEqual([
+			'--mcpProjectCreate',
+		]);
 		expect(rule.argv('mcpProjectCreate', false)).toEqual([]);
 		expect(rule.argv('mcpProjectCreate', undefined)).toEqual([]);
 	});
@@ -57,7 +101,10 @@ describe('SERVER_ARG_MAPPER — rule shapes', async () => {
 	it("renders a 'repeatable' rule as a comma-joined, de-duplicated list", async () => {
 		const rule = ruleFor('plugins');
 		expect(rule.kind).toBe('repeatable');
-		expect(rule.argv('plugins', ['a', 'b', 'a'])).toEqual(['--plugins', 'a,b']);
+		expect(rule.argv('plugins', ['a', 'b', 'a'])).toEqual([
+			'--plugins',
+			'a,b',
+		]);
 		expect(rule.argv('plugins', [])).toEqual([]);
 	});
 

@@ -10,8 +10,12 @@ import {
  * never touch `process.argv` directly.
  */
 export interface IMcpVertexCliArgs {
-	/** Plugin specifiers from `--plugins=a,b` (comma or repeated flag). */
+	/** Effective plugin specifiers after merging preset + flag and exclusions. */
 	readonly plugins: readonly string[];
+	/** Preset members that remain active after `--exclude-plugins`. */
+	readonly presetPlugins: readonly string[];
+	/** Explicit `--plugins` entries that remain active after exclusions. */
+	readonly flagPlugins: readonly string[];
 	/** Plugins to subtract from the resolved set (`--exclude-plugins=a,b`). */
 	readonly excludePlugins: readonly string[];
 	/** Scratch/state root (`--cacheDir`). */
@@ -179,14 +183,17 @@ export const parseCliArgs = (
 		...splitList(tokens['exclude-plugins']),
 		...splitList(tokens.excludePlugins),
 	]);
-	const plugins = [
-		...new Set([
-			...resolvePreset(tokens.preset),
-			...splitList(tokens.plugins),
-		]),
-	].filter((name) => !exclude.has(name));
+	const presetPlugins = resolvePreset(tokens.preset).filter(
+		(name) => !exclude.has(name),
+	);
+	const flagPlugins = splitList(tokens.plugins).filter(
+		(name) => !exclude.has(name),
+	);
+	const plugins = [...new Set([...presetPlugins, ...flagPlugins])];
 	return {
 		plugins,
+		presetPlugins,
+		flagPlugins,
 		excludePlugins: [...exclude],
 		cacheDir: tokens.cacheDir ?? DEFAULT_CLI_ARGS.cacheDir,
 		docsDir: tokens.docsDir ?? DEFAULT_CLI_ARGS.docsDir,

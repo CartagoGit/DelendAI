@@ -1,0 +1,70 @@
+{
+	"name": "@mcp-vertex/orchestrator-runner",
+	"version": "0.1.0",
+	"type": "module",
+	"description": "The routing brain for @mcp-vertex/core: healthchecks installed model providers, scores them against a task's capability hints, and advises which provider to route to. Headless (no subprocess spawning). Depends on the usage-tracking plugin. Load with `mcp-vertex --plugins=usage-tracking,orchestrator-runner`.",
+	"author": "Cartago",
+	"license": "BSD-3-Clause",
+	"keywords": [
+		"mcp",
+		"model-context-protocol",
+		"orchestrator",
+		"routing",
+		"multi-model",
+		"provider",
+		"agent",
+		"ai",
+		"cartago",
+		"plugin"
+	],
+	"main": "./dist/index.js",
+	"files": [
+		"dist",
+		"resources",
+		"README.md",
+		"LICENSE"
+	],
+	"exports": {
+		".": {
+			"@mcp-vertex/source": {
+				"types": "./src/index.ts"
+			},
+			"types": "./dist/index.d.ts",
+			"import": "./dist/index.js"
+		},
+		"./public": {
+			"@mcp-vertex/source": {
+				"types": "./src/public/index.ts"
+			},
+			"types": "./dist/public/index.d.ts",
+			"import": "./dist/public/index.js"
+		}
+	},
+	"scripts": {
+		"test": "vitest run",
+		"typecheck": "tsc --noEmit",
+		"build": "bun ../../tools/scripts/compile/build.script.ts plugins/orchestrator-runner"
+	},
+	"peerDependencies": {
+		"@mcp-vertex/core": "^0.1.0"
+	},
+	"dependencies": {
+		"@modelcontextprotocol/sdk": "^1.29.0",
+		"zod": "^4.4.3"
+	},
+	"devDependencies": {
+		"@mcp-vertex/core": "workspace:*",
+		"@types/bun": "latest",
+		"typescript": "6.0.3",
+		"vitest": "4.1.9"
+	},
+	"publishConfig": {
+		"access": "public"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/CartagoGit/mcp-vertex"
+	},
+	"module": "./dist/index.js",
+	"types": "./dist/index.d.ts"
+}

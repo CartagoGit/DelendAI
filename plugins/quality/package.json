@@ -42,7 +42,7 @@
 	"scripts": {
 		"test": "vitest run",
 		"typecheck": "tsc --noEmit",
-		"build": "bun ../../scripts/build.ts plugins/quality"
+		"build": "bun ../../tools/scripts/compile/build.script.ts plugins/quality"
 	},
 	"peerDependencies": {
 		"@mcp-vertex/core": "^0.1.0"
@@ -55,7 +55,7 @@
 		"@mcp-vertex/core": "workspace:*",
 		"@types/bun": "latest",
 		"typescript": "6.0.3",
-		"vitest": "4.1.9"
+		"vitest": "4.1.10"
 	},
 	"publishConfig": {
 		"access": "public"

@@ -46,9 +46,7 @@ export interface IUserMarkersLintResult {
  * Lint a parsed `mcp-vertex.config.json` object. Pure: no I/O, so tests
  * can pass a literal. Reads only `plugins.status-marker.options.markers`.
  */
-export const lintUserMarkers = (
-	config: unknown,
-): IUserMarkersLintResult => {
+export const lintUserMarkers = (config: unknown): IUserMarkersLintResult => {
 	const markersBlock = readMarkersBlock(config);
 	if (markersBlock === undefined) {
 		return { ok: true, declared: false };

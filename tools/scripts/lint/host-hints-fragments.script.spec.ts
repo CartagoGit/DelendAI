@@ -76,15 +76,23 @@ describe('host-hints-fragments lint (f00092 single fragment)', () => {
 
 	it('fragment without BEGIN/END markers fails with a regenerate fix', async () => {
 		const tampered = cleanFragment()
-			.replace('<!-- BEGIN GENERATED: f00056 S4 (agnostic bootstrap). -->', '')
-			.replace('<!-- END GENERATED: f00056 S4 (agnostic bootstrap). -->', '');
+			.replace(
+				'<!-- BEGIN GENERATED: f00056 S4 (agnostic bootstrap). -->',
+				'',
+			)
+			.replace(
+				'<!-- END GENERATED: f00056 S4 (agnostic bootstrap). -->',
+				'',
+			);
 		writeFragment(HOST_HINT_FRAGMENTS[0] ?? '', tampered);
 		const out = await lintHostHintFragment(
 			HOST_HINT_FRAGMENTS[0] ?? '',
 			workspaceRoot,
 		);
 		expect(out.violations.length).toBeGreaterThan(0);
-		expect(out.violations.some((v) => v.fix.includes('catalog:hints'))).toBe(true);
+		expect(
+			out.violations.some((v) => v.fix.includes('catalog:hints')),
+		).toBe(true);
 	});
 
 	it('fragment enumerating a skill id fails (delegated to S1)', async () => {

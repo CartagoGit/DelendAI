@@ -1,10 +1,15 @@
 import { z } from 'zod';
 
 import type {
+	IResolvedHostIdentity,
 	IToolRegistration,
 	IToolTextResult,
 } from '@mcp-vertex/core/public';
-import { CorruptFileError, toolJson } from '@mcp-vertex/core/public';
+import {
+	CorruptFileError,
+	toolJson,
+	withFileMutex,
+} from '@mcp-vertex/core/public';
 
 import {
 	enqueue,
@@ -36,6 +41,24 @@ export interface IAgentNamesToolOptions {
 	readonly workspaceRoot: string;
 	/** Symbolic name pool (defaults to the constellation pool). */
 	readonly pool?: readonly string[];
+	/**
+	 * f00082 S3: the boot-resolved host identity from `ctx.hostIdentity`.
+	 * Used as the DEFAULT `host`/`model` on `assign` when the caller omits
+	 * them, so an orchestrator that declared itself once at boot no longer
+	 * repeats its identity on every call. Absent → the pre-f00082-S3
+	 * behaviour (host/model fall back to `null`).
+	 */
+	readonly defaultIdentity?: IResolvedHostIdentity;
+	/**
+	 * Optional hook fired for each agent NAME whose task is released back to
+	 * the pool (the `release` action, including cascaded children). The loop
+	 * detector uses it to forget that name's sliding window + stuck verdict,
+	 * so the next lease of the reusable name starts clean instead of
+	 * inheriting the previous holder's state. Kept as a narrow callback
+	 * (Solid-ISP): this tool knows nothing about the loop detector; the
+	 * adapter in `index.ts` bridges the two.
+	 */
+	readonly onAgentReleased?: (agentName: string) => void;
 }
 
 export interface IAgentNamesArgs {
@@ -245,25 +268,30 @@ const runAgentNamesImpl = async (
 
 	const emitQueueEvent = async (taskId: string, priority: number) => {
 		try {
-			const queue = await parseQueue(
-				options.queuePathAbs,
-				options.closedTasksPathAbs,
-				options.workspaceRoot,
-			);
-			const updated = enqueue(queue, {
-				taskId,
-				enqueuedAt: at,
-				priority: priority as 1 | 2 | 3 | 4 | 5,
-				waitFor: [],
-				owner: {
+			// x00097 S2 (audit a00052 #13): the whole read-modify-write is one
+			// transaction under the queue-file mutex — a concurrent writer
+			// between parse and persist used to lose entries silently.
+			await withFileMutex(options.queuePathAbs, async () => {
+				const queue = await parseQueue(
+					options.queuePathAbs,
+					options.closedTasksPathAbs,
+					options.workspaceRoot,
+				);
+				const updated = enqueue(queue, {
 					taskId,
-					agentName: 'watchdog',
-					agentSlot: 'orchestrator',
-				},
-				observe: [],
-				status: 'queued',
+					enqueuedAt: at,
+					priority: priority as 1 | 2 | 3 | 4 | 5,
+					waitFor: [],
+					owner: {
+						taskId,
+						agentName: 'watchdog',
+						agentSlot: 'orchestrator',
+					},
+					observe: [],
+					status: 'queued',
+				});
+				await persistQueue(updated, options.queuePathAbs);
 			});
-			await persistQueue(updated, options.queuePathAbs);
 		} catch {
 			// Queue is optional coordination; never fail the registry op.
 		}
@@ -372,6 +400,16 @@ const runAgentNamesImpl = async (
 				}
 			}
 			await store.write(r);
+			// Let the loop detector forget every released name (this task +
+			// cascaded children) so a future lease of the same pooled name
+			// starts from a clean window with no inherited stuck verdict.
+			if (options.onAgentReleased) {
+				for (const a of r.assignments) {
+					if (released.has(a.task_id)) {
+						options.onAgentReleased(a.agent_name);
+					}
+				}
+			}
 			return json({ released: [...released] });
 		}
 
@@ -514,8 +552,8 @@ const runAgentNamesImpl = async (
 				last_seen: at,
 				cooldown_until: null,
 				status: 'active',
-				host: coerceHost(args.host),
-				model: args.model ?? null,
+				host: coerceHost(args.host ?? options.defaultIdentity?.host),
+				model: args.model ?? options.defaultIdentity?.model ?? null,
 			};
 			await store.upsert(assignment);
 			return json(assignment);

@@ -120,7 +120,8 @@ export const validationTableFrom = (
 	table: IEffectiveMarkerTable,
 ): IValidationTable => ({
 	emojiToState: table.emojiToState,
-	requiresReason: (state) => table.markers.get(state)?.requiresReason ?? false,
+	requiresReason: (state) =>
+		table.markers.get(state)?.requiresReason ?? false,
 });
 
 /**

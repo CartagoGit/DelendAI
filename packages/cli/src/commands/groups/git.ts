@@ -13,10 +13,7 @@
  *   - `mcp-vertex_git_worktree` (no args)
  */
 import { EXIT_CODE } from '../../contracts/constants/exit-code.constant';
-import type {
-	ICliCommand,
-	ICliCommandResult,
-} from '../../contracts/interfaces/cli-command.interface';
+import type { ICliCommand } from '../../contracts/interfaces/cli-command.interface';
 import { data, hasFlag, request, scalarArg } from './group-helpers';
 
 export const gitStatusCommand: ICliCommand = {

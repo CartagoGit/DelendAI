@@ -13,12 +13,18 @@ import {
 } from '@mcp-vertex/core/public';
 
 import { runAgentLockEngine } from '../locks/agent-lock-engine';
+import type { IGitRunner } from '../shared/git-runner';
+import { createPendingIntegrationStore } from '../shared/pending-integration-store';
+import { AGENT_BRANCH_PREFIX } from '../contracts/constants/agent-branch-convention.constant';
 import { syncProposalRegistry } from '../proposals/sync-proposal-registry';
 import {
 	allocateNextProposalId,
 	prefixForKind,
 } from '../proposals/proposal-id-allocator';
-import { PROPOSAL_KIND_BY_PREFIX } from '../contracts/constants/proposal-glossary.constant';
+import {
+	PROPOSAL_KIND_BY_PREFIX,
+	STATUS_TO_FOLDER,
+} from '../contracts/constants/proposal-glossary.constant';
 import { readJsonOrNull, readTextOrNull } from '../proposals/index-reader';
 import { escapeRegExp, kebab } from '../shared/string-helpers';
 import {
@@ -47,19 +53,55 @@ const SLICE_IN = z.object({
 	acceptance: z.array(z.string()).optional(),
 });
 
+// x00098 S2: emit the canonical slice shape the repo linter validates
+// (`**Status**`/`**Files**`/`**Gate**` bullets); the plan parser reads
+// both this and the legacy lowercase form.
 const renderSlice = (s: z.infer<typeof SLICE_IN>): string => {
 	const lines = [`### ${s.sliceId} — ${s.title ?? s.sliceId}`];
-	for (const f of s.files) lines.push(`- files: ${f}`);
+	lines.push('- **Status**: pending');
 	if (s.dependsOn && s.dependsOn.length > 0) {
-		lines.push(`- depends_on: [${s.dependsOn.join(', ')}]`);
+		lines.push(`- **DependsOn**: [${s.dependsOn.join(', ')}]`);
 	}
-	lines.push(`- gate: ${s.gate ?? 'none'}`);
+	lines.push(`- **Files**: ${s.files.map((f) => `\`${f}\``).join(', ')}`);
+	lines.push(`- **Gate**: ${s.gate ?? 'none'}`);
 	if (s.acceptance && s.acceptance.length > 0) {
 		lines.push('- acceptance:');
 		for (const a of s.acceptance) lines.push(`  - "${a}"`);
 	}
-	lines.push('- status: pending');
 	return lines.join('\n');
+};
+
+/**
+ * x00098 S2: flip a slice block's status bullet to done, whichever of
+ * the two accepted spellings the document uses (`- **Status**:` is the
+ * canonical form the generator emits; `- status:` is the legacy one).
+ * Appends the canonical bullet when the block has neither.
+ */
+const flipSliceStatusDone = (block: string): string => {
+	if (/^[-*]\s*\*\*Status\*\*:/m.test(block)) {
+		return block.replace(
+			/^[-*]\s*\*\*Status\*\*:.*$/m,
+			'- **Status**: done',
+		);
+	}
+	if (/^[-*]\s*status:/m.test(block)) {
+		return block.replace(/^[-*]\s*status:.*$/m, '- status: done');
+	}
+	return `${block.replace(/\s*$/, '')}\n- **Status**: done\n`;
+};
+
+/**
+ * x00098 S2: the linter's status vocabulary is hyphenated and every
+ * status lives in its own folder. Accept the historical underscore
+ * spelling on input but never write it; `pending` (not a linter status)
+ * authors as `ready`.
+ */
+const canonicalStatus = (
+	status: string | undefined,
+): 'ready' | 'in-progress' => {
+	if (status === 'in_progress' || status === 'in-progress')
+		return 'in-progress';
+	return 'ready';
 };
 
 /**
@@ -122,9 +164,16 @@ export const buildCreateProposalRegistration = (
 					title: z.string(),
 					goal: z.string().optional(),
 					status: z
-						.enum(['pending', 'ready', 'in_progress'])
+						.enum([
+							'pending',
+							'ready',
+							'in_progress',
+							'in-progress',
+						])
 						.optional(),
 					track: z.string().optional(),
+					why: z.string().optional(),
+					nonGoals: z.array(z.string()).optional(),
 					globalGate: z
 						.enum(['lint', 'type', 'e2e', 'none'])
 						.optional(),
@@ -138,12 +187,20 @@ export const buildCreateProposalRegistration = (
 				goal?: string | undefined;
 				status?: string | undefined;
 				track?: string | undefined;
+				why?: string | undefined;
+				nonGoals?: string[] | undefined;
 				globalGate?: string | undefined;
 				slices?: Array<z.infer<typeof SLICE_IN>> | undefined;
 			}) => {
 				let id: string;
 				if (args.id !== undefined) {
 					id = args.id;
+					if (!/^[a-z]\d{5}$/u.test(id)) {
+						return toolError(
+							`invalid proposal id "${id}"`,
+							'Use one lowercase family prefix followed by exactly five digits (for example f00001), or omit id and pass kind for race-safe allocation.',
+						);
+					}
 					const prefix = id[0] ?? '';
 					const inferredKind = PROPOSAL_KIND_BY_PREFIX[prefix];
 					if (inferredKind === undefined) {
@@ -212,11 +269,20 @@ export const buildCreateProposalRegistration = (
 					args.kind ??
 					(PROPOSAL_KIND_BY_PREFIX[id[0] ?? ''] || 'feat');
 				const date = new Date().toISOString().slice(0, 10);
+				// x00098 S2: author the canonical, lint-valid document —
+				// frontmatter `title`, hyphenated status, the required
+				// why/non-goals/acceptance sections (scaffolded when the
+				// caller gave no content) and canonical slice bullets.
+				const status = canonicalStatus(args.status);
+				const acceptanceLines = slices.flatMap((s) =>
+					(s.acceptance ?? []).map((a) => `- ${a}`),
+				);
 				const body = [
 					'---',
 					`id: ${id}`,
+					`title: ${JSON.stringify(args.title)}`,
 					`kind: ${inferredKind}`,
-					`status: ${args.status ?? 'ready'}`,
+					`status: ${status}`,
 					'type: proposal',
 					`track: ${args.track ?? 'general'}`,
 					`date: ${date}`,
@@ -228,6 +294,16 @@ export const buildCreateProposalRegistration = (
 					'',
 					args.goal ?? 'TODO: describe the goal.',
 					'',
+					'## why',
+					'',
+					args.why ?? 'TODO: why this work matters now.',
+					'',
+					'## non-goals',
+					'',
+					...(args.nonGoals && args.nonGoals.length > 0
+						? args.nonGoals.map((g) => `- ${g}`)
+						: ['- TODO: what this proposal deliberately skips.']),
+					'',
 					'## Slices',
 					'',
 					`- global_gate: ${args.globalGate ?? 'none'}`,
@@ -236,14 +312,25 @@ export const buildCreateProposalRegistration = (
 						? slices.map(renderSlice).join('\n\n').split('\n')
 						: [
 								'### s1 — TODO',
-								'- files: TODO',
-								'- gate: none',
-								'- status: pending',
+								'- **Status**: pending',
+								'- **Files**: `TODO`',
+								'- **Gate**: none',
 							]),
 					'',
+					'## acceptance',
+					'',
+					...(acceptanceLines.length > 0
+						? acceptanceLines
+						: ['- TODO: observable acceptance criteria.']),
+					'',
 				].join('\n');
-				const fileRel = `${id}-${kebab(args.title)}.md`;
-				const absPath = join(options.proposalsDirAbs, fileRel);
+				// The linter requires every proposal to live in its status
+				// folder (`ready/`, `in-progress/`, …), not the dir root.
+				const fileRel = `${STATUS_TO_FOLDER[status]}/${id}-${kebab(args.title)}.md`;
+				const absPath = join(
+					options.proposalsDirAbs,
+					...fileRel.split('/'),
+				);
 				const { text: safeBody, redactions } = redactSecrets(body);
 				await writeFileAtomic(absPath, safeBody);
 				const sync = await syncProposalRegistry(
@@ -251,9 +338,14 @@ export const buildCreateProposalRegistration = (
 					options.layout,
 					options.extraFolders ?? [],
 				);
+				const syncEntry = sync.proposals.find((p) => p.id === id);
+				const finalFileRel = syncEntry ? syncEntry.file : fileRel;
+				const finalAbsPath = syncEntry
+					? join(options.proposalsDirAbs, ...finalFileRel.split('/'))
+					: absPath;
 				return toolOk({
-					file: fileRel,
-					path: absPath,
+					file: finalFileRel,
+					path: finalAbsPath,
 					disjointnessIssues: issues,
 					indexCount: sync.count,
 					redactedSecrets: redactions,
@@ -262,6 +354,26 @@ export const buildCreateProposalRegistration = (
 		);
 	},
 });
+
+/**
+ * f00091 S2: resolve the current branch and, if it is an `agent/*`
+ * branch, return it (else `null`). Read-only (`git rev-parse`); never a
+ * git mutation. Any failure degrades to `null` so `close_slice` never
+ * throws over a branch-integration detail.
+ */
+const resolveAgentBranch = async (run: IGitRunner): Promise<string | null> => {
+	const result = await run(['rev-parse', '--abbrev-ref', 'HEAD']);
+	if (!result.ok) return null;
+	const branch = result.output.trim();
+	if (branch.length === 0 || branch === 'HEAD') return null;
+	return branch.startsWith(AGENT_BRANCH_PREFIX) ? branch : null;
+};
+
+/** f00091 S2: resolve the worktree top-level dir (read-only). */
+const resolveWorktreeTopLevel = async (run: IGitRunner): Promise<string> => {
+	const result = await run(['rev-parse', '--show-toplevel']);
+	return result.ok ? result.output.trim() : '';
+};
 
 /**
  * `close_slice` — mark a slice `done` in the proposal doc AND release its
@@ -286,9 +398,16 @@ export const buildCloseSliceRegistration = (
 					sliceId: z.string(),
 					closed: z.boolean(),
 					lockReleased: z.boolean(),
+					// f00091 S2: the branch (if any) recorded for deliberate
+					// integration by the non-destructive branch-integration
+					// step. `null` when agentWorktree is off, the active
+					// branch is not an `agent/*` branch, or the branch could
+					// not be resolved — in all those cases nothing is
+					// recorded and behaviour is byte-identical to pre-f00091.
+					pendingIntegrationBranch: z.string().nullable(),
 				}),
 				description:
-					'Mark a slice as done in its proposal document and release its agent lock atomically, then re-sync. Use it the moment a slice passes its acceptance.',
+					'Mark a slice as done in its proposal document and release its agent lock atomically, then re-sync. When per-agent worktrees are on and the slice was closed on an agent/* branch, records that branch for deliberate integration (non-destructive: runs no git write). Use it the moment a slice passes its acceptance.',
 				inputSchema: z.object({
 					proposalId: z.string(),
 					sliceId: z.string(),
@@ -343,13 +462,7 @@ export const buildCloseSliceRegistration = (
 								`slice "${args.sliceId}" not found in ${entry.file}`,
 							);
 						}
-						let block = m[2] ?? '';
-						block = /^[-*]\s*status:/m.test(block)
-							? block.replace(
-									/^[-*]\s*status:.*$/m,
-									'- status: done',
-								)
-							: `${block.replace(/\s*$/, '')}\n- status: done\n`;
+						const block = flipSliceStatusDone(m[2] ?? '');
 						const nextContent = md.replace(
 							blockRe,
 							`${m[1]}${block}`,
@@ -361,6 +474,38 @@ export const buildCloseSliceRegistration = (
 						err.message,
 						'Call proposal_board to list slices.',
 					);
+				}
+
+				// f00091 S2: non-destructive branch-integration step. When
+				// per-agent worktrees are on and the slice was closed on an
+				// `agent/*` branch, record that branch for deliberate
+				// integration. This runs BEFORE releasing the lock so the
+				// finished-branch fact is captured while the agent is still
+				// the owner. It performs NO git write — it only *reads* the
+				// current branch (via `git rev-parse`) and writes a registry
+				// entry. When the gate is off it is a no-op (byte-identical).
+				let pendingIntegrationBranch: string | null = null;
+				if (
+					options.agentWorktreeEnabled === true &&
+					options.pendingIntegrationPathAbs !== undefined &&
+					options.run !== undefined
+				) {
+					const branch = await resolveAgentBranch(options.run);
+					if (branch !== null) {
+						const worktreePath = await resolveWorktreeTopLevel(
+							options.run,
+						);
+						await createPendingIntegrationStore(
+							options.pendingIntegrationPathAbs,
+						).record({
+							branch,
+							worktreePath,
+							sliceId: args.sliceId,
+							proposalId: entry.id,
+							recordedAt: new Date().toISOString(),
+						});
+						pendingIntegrationBranch = branch;
+					}
 				}
 
 				let lockReleased = false;
@@ -384,6 +529,7 @@ export const buildCloseSliceRegistration = (
 					sliceId: args.sliceId,
 					closed: true,
 					lockReleased,
+					pendingIntegrationBranch,
 				});
 			},
 		);
@@ -569,12 +715,7 @@ export const buildReviewRegistration = (
 						);
 						block = `${block.replace(/\s*$/, '')}\n${renderReviewLines(next).join('\n')}\n`;
 						if (next.status === 'done') {
-							block = /^[-*]\s*status:/m.test(block)
-								? block.replace(
-										/^[-*]\s*status:.*$/m,
-										'- status: done',
-									)
-								: `${block.replace(/\s*$/, '')}\n- status: done\n`;
+							block = flipSliceStatusDone(block);
 						}
 						const updated = md.replace(blockRe, `${m[1]}${block}`);
 						await writeFileAtomic(docPath, updated);
@@ -669,8 +810,13 @@ export const buildProposalBoardRegistration = (
 					return toolJson({ proposals: [] });
 				}
 				const locks = await readActiveLocks(options.lockPathAbs);
+				// x00098 S2: real documents carry the hyphenated status; keep
+				// the underscore spellings for indexes written before the
+				// vocabulary converged.
 				const actionable = index.proposals.filter((p) =>
-					['pending', 'ready', 'in_progress'].includes(p.status),
+					['pending', 'ready', 'in_progress', 'in-progress'].includes(
+						p.status,
+					),
 				);
 				const board = await Promise.all(
 					actionable.map(async (p) => {

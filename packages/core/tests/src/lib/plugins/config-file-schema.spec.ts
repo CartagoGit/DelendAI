@@ -44,6 +44,7 @@ describe('config-file-schema (Solid SRP extraction)', async () => {
 			const res = CONFIG_FILE_SCHEMA.safeParse({
 				plugins: {
 					proposals: {
+						enabled: false,
 						prefix: 'work',
 						options: { validationCommand: 'bun run validate' },
 					},
@@ -162,6 +163,149 @@ describe('config-file-schema (Solid SRP extraction)', async () => {
 			expect(res.success).toBe(false);
 		});
 	});
+
+	describe('root-level providers roster (f00067a S1)', async () => {
+		/** A valid entry per invoke kind — mirrors IProviderCapabilities. */
+		const apiProvider = {
+			id: 'gpt-5-api',
+			kind: 'api',
+			invoke: {
+				kind: 'api',
+				url: 'https://api.openai.com/v1/responses',
+				envVar: 'OPENAI_API_KEY',
+			},
+			modelId: 'gpt-5',
+			contextWindow: 400_000,
+			costTier: 4,
+			strengths: ['reasoning', 'json-strict'],
+			weaknesses: ['fast-iteration'],
+		};
+		const cliProvider = {
+			id: 'claude-cli',
+			kind: 'cli',
+			invoke: { kind: 'cli', command: 'claude', args: ['-p'] },
+			modelId: 'claude-sonnet',
+			contextWindow: 200_000,
+			costTier: 3,
+			strengths: ['code-edit', 'agentic'],
+			weaknesses: [],
+		};
+		const subscriptionProvider = {
+			id: 'copilot-sub',
+			kind: 'subscription',
+			invoke: { kind: 'subscription', tool: 'vscode-copilot' },
+			modelId: 'gpt-5-mini',
+			contextWindow: 128_000,
+			costTier: 1,
+			strengths: ['fast-iteration'],
+			weaknesses: ['very-long-context'],
+		};
+		const mcpProvider = {
+			id: 'codex-mcp',
+			kind: 'mcp-server',
+			invoke: {
+				kind: 'mcp-server',
+				server: 'codex',
+				tool: 'codex-exec',
+				args: { sandbox: 'read-only' },
+			},
+			modelId: 'gpt-5-codex',
+			contextWindow: 272_000,
+			costTier: 2,
+			strengths: ['code-edit'],
+			weaknesses: [],
+		};
+
+		it('is optional: an absent providers key still validates', async () => {
+			const res = CONFIG_FILE_SCHEMA.safeParse({ cacheDir: '.cache' });
+			expect(res.success).toBe(true);
+		});
+
+		it('accepts an empty roster', async () => {
+			const res = CONFIG_FILE_SCHEMA.safeParse({ providers: [] });
+			expect(res.success).toBe(true);
+		});
+
+		it('accepts a roster covering all four invoke kinds', async () => {
+			const res = CONFIG_FILE_SCHEMA.safeParse({
+				providers: [
+					apiProvider,
+					cliProvider,
+					subscriptionProvider,
+					mcpProvider,
+				],
+			});
+			expect(res.success).toBe(true);
+		});
+
+		it('rejects a non-kebab-case id', async () => {
+			for (const badId of ['GPT-5', '5-gpt', 'gpt_5', 'g']) {
+				const res = CONFIG_FILE_SCHEMA.safeParse({
+					providers: [{ ...apiProvider, id: badId }],
+				});
+				expect(res.success, `id "${badId}" should be rejected`).toBe(
+					false,
+				);
+			}
+		});
+
+		it('rejects an unknown kind', async () => {
+			const res = CONFIG_FILE_SCHEMA.safeParse({
+				providers: [{ ...apiProvider, kind: 'webhook' }],
+			});
+			expect(res.success).toBe(false);
+		});
+
+		it('rejects duplicate provider ids (superRefine)', async () => {
+			const res = CONFIG_FILE_SCHEMA.safeParse({
+				providers: [
+					apiProvider,
+					{ ...cliProvider, id: apiProvider.id },
+				],
+			});
+			expect(res.success).toBe(false);
+			if (!res.success) {
+				expect(
+					res.error.issues.some((issue) =>
+						issue.message.includes('duplicate provider id'),
+					),
+				).toBe(true);
+			}
+		});
+
+		it('rejects a mixed invoke shape (api url + cli command)', async () => {
+			const res = CONFIG_FILE_SCHEMA.safeParse({
+				providers: [
+					{
+						...apiProvider,
+						invoke: { ...apiProvider.invoke, command: 'claude' },
+					},
+				],
+			});
+			expect(res.success).toBe(false);
+		});
+
+		it('rejects an out-of-range costTier', async () => {
+			const res = CONFIG_FILE_SCHEMA.safeParse({
+				providers: [{ ...apiProvider, costTier: 6 }],
+			});
+			expect(res.success).toBe(false);
+		});
+
+		it('rejects an unknown capability tag in strengths', async () => {
+			const res = CONFIG_FILE_SCHEMA.safeParse({
+				providers: [{ ...apiProvider, strengths: ['clairvoyance'] }],
+			});
+			expect(res.success).toBe(false);
+		});
+
+		it('rejects unknown keys inside a provider entry (.strict)', async () => {
+			const res = CONFIG_FILE_SCHEMA.safeParse({
+				providers: [{ ...apiProvider, apiKey: 'sk-nope' }],
+			});
+			expect(res.success).toBe(false);
+		});
+	});
 });
 
 describe('IMcpVertexConfigFile ISP segregation', async () => {
@@ -223,6 +367,7 @@ describe('IMcpVertexConfigFile ISP segregation', async () => {
 
 	it('IMcpVertexPluginConfig keeps the per-plugin {prefix, options} contract', async () => {
 		const pc: IMcpVertexPluginConfig = {
+			enabled: false,
 			prefix: 'work',
 			options: { docsDir: '/x' },
 		};
@@ -230,6 +375,7 @@ describe('IMcpVertexConfigFile ISP segregation', async () => {
 			plugins: { proposals: pc },
 		};
 		expect(asConfig.plugins?.proposals?.prefix).toBe('work');
+		expect(asConfig.plugins?.proposals?.enabled).toBe(false);
 		expect(asConfig.plugins?.proposals?.options).toEqual({ docsDir: '/x' });
 	});
 

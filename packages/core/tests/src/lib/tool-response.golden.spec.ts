@@ -251,11 +251,13 @@ describe('r00001 S0 — core outputSchema golden snapshot', async () => {
 		 */
 		const EXPECTED_FINGERPRINTS: Readonly<Record<string, string>> = {
 			analyze_project:
-				'afb4f23f259e2ceb6ec3e0091f4857e004f85176988d9180c0c1f933ab589ee3',
+				'd31363fcbbdba0f0dcaea08ad4d6098874d9ea63d832980f8a2987331376b1cd',
 			create_project:
-				'0ef14e05c9f07f6ea95efd1c315e9b5ad182aebbd83b6d6c065e638e8c294bb3',
+				'43761bcac35e09be864140f7f36191a84eb71ff45f8374e358e5e16dc5a4b6f3',
 			plan_mcp_project:
-				'ffe1d51d4f7942f62f1cd16d4e4a940fb1960278aada04fbb38fc0673d9f6b73',
+				// f00110: blueprint now carries the explicit per-capability
+				// replace/merge/preserve adoption contract.
+				'd3770218e20b5d5454bb07f120926352217ea3fac9ea3af94828ab8d9211b36d',
 			scaffold:
 				'd2f13f06246544b123f1b3dcc98c68e0159ed91002df748df86ad72343a49ffc',
 			metrics:

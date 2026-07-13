@@ -1,0 +1,65 @@
+// `apps/shared/src/styles/components/_brand-mark.scss`
+//
+// BEM-nested styles for the `<a class="mcpv-brand">` block emitted
+// by `renderBrandMark` in
+// `apps/shared/src/components/ui/brand-mark.ts` (f00102 S3.3).
+// Reachable from any host that @uses the shared styles index.
+//
+// Class namespace is `mcpv-brand` / `mcpv-brand__*` with the
+// `mcpv-brand--{pill,plain}` modifiers. The trailing @extend block
+// keeps the legacy `.nav__brand` and `.drawer__logo` selectors
+// working until the host renames its markup (the SiteNav.astro
+// already renders the new shared class).
+
+.mcpv-brand {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.5rem;
+	font-weight: 700;
+	letter-spacing: -0.02em;
+	color: var(--mcpv-fg, var(--fg));
+	text-decoration: none;
+
+	&:hover {
+		text-decoration: none;
+	}
+}
+
+.mcpv-brand__logo {
+	display: block;
+	flex: 0 0 auto;
+}
+
+.mcpv-brand__text {
+	white-space: nowrap;
+}
+
+// Pill variant — rounded background that brightens on hover.
+// Used in the top nav (`.nav__brand`) and in any surface that
+// wants the same affordance.
+.mcpv-brand--pill {
+	padding: 0.25rem 0.55rem 0.25rem 0.25rem;
+	border-radius: 999px;
+	transition: background 0.18s ease;
+
+	&:hover {
+		background: color-mix(in srgb, var(--mcpv-link, var(--accent)) 12%, transparent);
+	}
+}
+
+// Plain variant — no padding, no hover background. Used in
+// the mobile drawer head where vertical space is tight and the
+// pill background would compete with the close button.
+.mcpv-brand--plain {
+	padding: 0;
+}
+
+// Legacy aliases: keep `.nav__brand` and `.drawer__logo`
+// visually equivalent until the host markup is renamed.
+.nav__brand {
+	@extend .mcpv-brand;
+	@extend .mcpv-brand--pill;
+}
+.drawer__logo {
+	@extend .mcpv-brand__logo;
+}

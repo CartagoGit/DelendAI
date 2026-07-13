@@ -1,5 +1,6 @@
 ---
 import type { Lang } from '#I18N/shared';
+import { useTranslations } from '#I18N/ui';
 import type { ITutorial } from '#SCRIPTS/lib/discover-tutorials';
 
 interface Props {
@@ -16,6 +17,7 @@ interface Props {
  * markdown because every dev tool reads it.
  */
 const { tutorials, plugin, lang } = Astro.props;
+const t = useTranslations(lang);
 const active = tutorials.find((t) => t.lang === lang);
 const fallback = tutorials.find((t) => t.lang === 'en');
 const selected = active ?? fallback;
@@ -23,11 +25,11 @@ const selected = active ?? fallback;
 
 {selected && (
 	<section class="tutorial" data-tutorial={plugin}>
-		<h2>Tutorial</h2>
+		<h2>{t.pluginpage.tabTutorial}</h2>
 		<p class="tutorial__meta">
 			<strong>{selected.title}</strong>
 			{selected.lang !== lang && (
-				<span class="tutorial__fallback">(showing English, not yet translated to {lang})</span>
+				<span class="tutorial__fallback">({t.pluginpage.tutorialFallback.replace('{lang}', lang)})</span>
 			)}
 		</p>
 		<pre class="tutorial__body"><code>{selected.body}</code></pre>

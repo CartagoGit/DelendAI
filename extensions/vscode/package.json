@@ -18,6 +18,9 @@
 		"Other"
 	],
 	"main": "./dist/extension.js",
+	"activationEvents": [
+		"workspaceContains:**/mcp-vertex.config.json"
+	],
 	"contributes": {
 		"viewsContainers": {
 			"activitybar": [
@@ -37,128 +40,321 @@
 				},
 				{
 					"id": "mcp-vertex.proposals",
-					"name": "Proposals"
+					"name": "Proposals",
+					"icon": "media/logo.svg"
 				},
 				{
 					"id": "mcp-vertex.memory",
-					"name": "Memory"
+					"name": "Memory",
+					"icon": "media/logo.svg"
 				}
 			]
 		},
 		"commands": [
 			{
 				"command": "mcp-vertex.openAgentCatalog",
-				"title": "mcp-vertex: Open the unified agent catalog"
+				"title": "Open Agent Catalog",
+				"category": "MCP Vertex",
+				"icon": "$(list-tree)"
 			},
 			{
 				"command": "mcp-vertex.openDashboard",
-				"title": "mcp-vertex: Open Dashboard"
+				"title": "Open Dashboard",
+				"category": "MCP Vertex",
+				"icon": "$(dashboard)"
 			},
 			{
 				"command": "mcp-vertex.showOverview",
-				"title": "mcp-vertex: Show Overview"
+				"title": "Show Overview",
+				"category": "MCP Vertex"
 			},
 			{
 				"command": "mcp-vertex.refresh",
-				"title": "mcp-vertex: Refresh"
+				"title": "Refresh",
+				"category": "MCP Vertex",
+				"icon": "$(refresh)"
 			},
 			{
 				"command": "mcp-vertex.runValidation",
-				"title": "mcp-vertex: Run Validation"
+				"title": "Run Validation",
+				"category": "MCP Vertex"
 			},
 			{
 				"command": "mcp-vertex.openProposal",
-				"title": "mcp-vertex: Open Proposal Board"
+				"title": "Open Proposal Board",
+				"category": "MCP Vertex"
+			},
+			{
+				"command": "mcp-vertex.proposals.refresh",
+				"title": "Refresh Proposals",
+				"category": "MCP Vertex",
+				"icon": "$(refresh)"
+			},
+			{
+				"command": "mcp-vertex.proposals.copyError",
+				"title": "Copy Proposals Error",
+				"category": "MCP Vertex"
 			},
 			{
 				"command": "mcp-vertex.showMetrics",
-				"title": "mcp-vertex: Show Metrics"
+				"title": "Show Metrics",
+				"category": "MCP Vertex"
 			},
 			{
 				"command": "mcp-vertex.openDocs",
-				"title": "mcp-vertex: Open Documentation"
+				"title": "Open Documentation",
+				"category": "MCP Vertex",
+				"icon": "$(book)"
 			},
 			{
 				"command": "mcp-vertex.openDocsApi",
-				"title": "mcp-vertex: Open Docs / API / How-to-use"
+				"title": "Open Docs / API / How-to-use",
+				"category": "MCP Vertex"
 			},
 			{
 				"command": "mcp-vertex.openKnowledge",
-				"title": "mcp-vertex: Open Knowledge Navigator"
+				"title": "Open Knowledge Navigator",
+				"category": "MCP Vertex"
 			},
 			{
 				"command": "mcp-vertex.toolSearch",
-				"title": "mcp-vertex: Search Tools"
+				"title": "Search Tools",
+				"category": "MCP Vertex",
+				"icon": "$(search)"
+			},
+			{
+				"command": "mcp-vertex.openToolDetail",
+				"title": "Open Tool Detail",
+				"category": "MCP Vertex"
 			},
 			{
 				"command": "mcp-vertex.restartServer",
-				"title": "mcp-vertex: Restart MCP Server"
+				"title": "Restart MCP Server",
+				"category": "MCP Vertex"
+			},
+			{
+				"command": "mcp-vertex.plugins.activation",
+				"title": "Manage Plugin Activation",
+				"category": "MCP Vertex",
+				"icon": "$(extensions)"
 			},
 			{
 				"command": "mcp-vertex.openSettings",
-				"title": "mcp-vertex: Open Settings"
+				"title": "Open Settings",
+				"category": "MCP Vertex",
+				"icon": "$(gear)"
+			},
+			{
+				"command": "mcp-vertex.openConfigurationCenter",
+				"title": "Open Configuration Center",
+				"category": "MCP Vertex",
+				"icon": "$(settings-gear)"
+			},
+			{
+				"command": "mcp-vertex.saveSettings",
+				"title": "Save Settings",
+				"category": "MCP Vertex"
+			},
+			{
+				"command": "mcp-vertex.resetSettings",
+				"title": "Reset Settings",
+				"category": "MCP Vertex"
 			},
 			{
 				"command": "mcp-vertex.openToolbar",
-				"title": "mcp-vertex: Open Toolbar"
+				"title": "Open Toolbar",
+				"category": "MCP Vertex"
 			},
 			{
 				"command": "mcp-vertex.memorySave",
-				"title": "mcp-vertex: Save Memory Note"
+				"title": "Save Memory Note",
+				"category": "MCP Vertex"
 			},
 			{
 				"command": "mcp-vertex.memoryForget",
-				"title": "mcp-vertex: Forget Memory Note"
+				"title": "Forget Memory Note",
+				"category": "MCP Vertex"
 			},
 			{
 				"command": "mcp-vertex.setupGithub",
-				"title": "mcp-vertex: Set up GitHub issues"
+				"title": "Set up GitHub Issues",
+				"category": "MCP Vertex"
+			},
+			{
+				"command": "mcp-vertex.providers.openDashboard",
+				"title": "Open Provider Dashboard",
+				"category": "MCP Vertex",
+				"icon": "$(dashboard)"
+			},
+			{
+				"command": "mcp-vertex.providers.healthcheck",
+				"title": "Refresh Provider Healthcheck",
+				"category": "MCP Vertex",
+				"icon": "$(refresh)"
+			},
+			{
+				"command": "mcp-vertex.providers.pause",
+				"title": "Pause Provider",
+				"category": "MCP Vertex"
+			},
+			{
+				"command": "mcp-vertex.providers.resume",
+				"title": "Resume Provider",
+				"category": "MCP Vertex"
+			},
+			{
+				"command": "mcp-vertex.usage.report",
+				"title": "Open Usage Report",
+				"category": "MCP Vertex"
+			},
+			{
+				"command": "mcp-vertex.usage.clear",
+				"title": "Clear Usage Log",
+				"category": "MCP Vertex"
+			},
+			{
+				"command": "mcp-vertex.externalMcps.ack",
+				"title": "Review External Server Activations",
+				"category": "MCP Vertex"
 			}
 		],
 		"menus": {
 			"view/title": [
 				{
+					"command": "mcp-vertex.refresh",
+					"when": "view == mcp-vertex.tools",
+					"group": "navigation"
+				},
+				{
 					"command": "mcp-vertex.openAgentCatalog",
 					"when": "view == mcp-vertex.tools",
 					"group": "navigation"
+				},
+				{
+					"command": "mcp-vertex.toolSearch",
+					"when": "view == mcp-vertex.tools",
+					"group": "navigation"
+				},
+				{
+					"command": "mcp-vertex.providers.openDashboard",
+					"when": "view == mcp-vertex.tools",
+					"group": "navigation"
+				},
+				{
+					"command": "mcp-vertex.providers.healthcheck",
+					"when": "view == mcp-vertex.tools",
+					"group": "navigation"
+				},
+				{
+					"command": "mcp-vertex.proposals.refresh",
+					"when": "view == mcp-vertex.proposals",
+					"group": "navigation"
+				},
+				{
+					"command": "mcp-vertex.openProposal",
+					"when": "view == mcp-vertex.proposals",
+					"group": "navigation"
+				},
+				{
+					"command": "mcp-vertex.refresh",
+					"when": "view == mcp-vertex.memory",
+					"group": "navigation"
+				},
+				{
+					"command": "mcp-vertex.openToolDetail",
+					"when": "view == mcp-vertex.tools && viewItem == mcpVertexTool",
+					"group": "inline"
 				}
 			],
 			"commandPalette": [
 				{
 					"command": "mcp-vertex.openAgentCatalog",
 					"when": "true"
+				},
+				{
+					"command": "mcp-vertex.proposals.copyError",
+					"when": "false"
+				},
+				{
+					"command": "mcp-vertex.saveSettings",
+					"when": "false"
+				},
+				{
+					"command": "mcp-vertex.resetSettings",
+					"when": "false"
 				}
 			]
-		}
-	},
-	"configuration": {
-		"title": "MCP Vertex server",
-		"properties": {
-			"mcp-vertex.server.command": {
-				"type": "string",
-				"default": "bun",
-				"markdownDescription": "Executable used to spawn the MCP server. Override this when `bun` (or your replacement) is not on the `PATH` inherited by VS Code's extension host — e.g. WSL installs at `~/.bun/bin/bun`. Set to an absolute path to bypass `PATH` lookup entirely.",
-				"scope": "machine"
-			},
-			"mcp-vertex.server.args": {
-				"type": [
-					"array",
-					"string"
-				],
-				"items": {
-					"type": "string"
+		},
+		"walkthroughs": [
+			{
+				"id": "mcp-vertex.gettingStarted",
+				"title": "Get Started with MCP Vertex",
+				"description": "Connect the MCP server, explore your tools, and start coordinating agent work.",
+				"steps": [
+					{
+						"id": "mcp-vertex.gettingStarted.connect",
+						"title": "Connect the MCP Server",
+						"description": "Ensure the mcp-vertex server is running. Check the status bar for the connection indicator.\n\n[Restart Server](command:mcp-vertex.restartServer)",
+						"media": {
+							"markdown": "media/walkthrough/connect.md"
+						}
+					},
+					{
+						"id": "mcp-vertex.gettingStarted.overview",
+						"title": "View the Overview",
+						"description": "Get a compact map of all loaded plugins, tools, and knowledge entries.\n\n[Show Overview](command:mcp-vertex.showOverview)",
+						"media": {
+							"markdown": "media/walkthrough/overview.md"
+						}
+					},
+					{
+						"id": "mcp-vertex.gettingStarted.dashboard",
+						"title": "Open the Dashboard",
+						"description": "The dashboard shows provider status, routing decisions, and usage metrics at a glance.\n\n[Open Dashboard](command:mcp-vertex.providers.openDashboard)",
+						"media": {
+							"markdown": "media/walkthrough/dashboard.md"
+						}
+					},
+					{
+						"id": "mcp-vertex.gettingStarted.proposals",
+						"title": "Explore Proposals",
+						"description": "Browse and manage proposals — the units of work that agents claim, implement, and close.\n\n[Open Proposals](command:mcp-vertex.openProposal)",
+						"media": {
+							"markdown": "media/walkthrough/proposals.md"
+						}
+					}
+				]
+			}
+		],
+		"configuration": {
+			"title": "MCP Vertex server",
+			"properties": {
+				"mcp-vertex.server.command": {
+					"type": "string",
+					"default": "bun",
+					"markdownDescription": "Executable used to spawn the MCP server. Override this when `bun` (or your replacement) is not on the `PATH` inherited by VS Code's extension host — e.g. WSL installs at `~/.bun/bin/bun`. Set to an absolute path to bypass `PATH` lookup entirely.",
+					"scope": "machine"
 				},
-				"default": [
-					"run",
-					"mcp-vertex"
-				],
-				"markdownDescription": "Arguments passed to `mcp-vertex.server.command`. Accepts either a JSON array of strings or a single space-separated string. Defaults to `[\"run\", \"mcp-vertex\"]`.",
-				"scope": "machine"
-			},
-			"mcp-vertex.server.prefix": {
-				"type": "string",
-				"markdownDescription": "Tool-name namespace prefix the server was started with (the value passed to the server's `--prefix` flag, e.g. `acme`). When set, every service call is namespaced as `<prefix>_<tool>`. Leave empty to use the default `mcp-vertex_` namespace.",
-				"scope": "machine"
+				"mcp-vertex.server.args": {
+					"type": [
+						"array",
+						"string"
+					],
+					"items": {
+						"type": "string"
+					},
+					"default": [
+						"run",
+						"mcp-vertex"
+					],
+					"markdownDescription": "Arguments passed to `mcp-vertex.server.command`. Accepts either a JSON array of strings or a single space-separated string. Defaults to `[\"run\", \"mcp-vertex\"]`.",
+					"scope": "machine"
+				},
+				"mcp-vertex.server.prefix": {
+					"type": "string",
+					"markdownDescription": "Tool-name namespace prefix the server was started with (the value passed to the server's `--prefix` flag, e.g. `acme`). When set, every service call is namespaced as `<prefix>_<tool>`. Leave empty to use the default `mcp-vertex_` namespace.",
+					"scope": "machine"
+				}
 			}
 		}
 	},
@@ -166,17 +362,18 @@
 		"type": "tsc --noEmit -p tsconfig.json",
 		"test": "vitest run",
 		"check:i18n": "bun scripts/check-i18n.ts",
-		"build": "bun build src/extension.ts --target=node --format=cjs --external=vscode --outdir=dist",
+		"build": "bun scripts/build.ts",
 		"package": "bun run build && bun scripts/package.script.ts"
 	},
 	"dependencies": {
 		"@mcp-vertex/client": "workspace:*",
-		"@mcp-vertex/ui-extension": "workspace:*"
+		"@mcp-vertex/ui-extension": "workspace:*",
+		"zod": "^4.4.3"
 	},
 	"devDependencies": {
 		"@types/vscode": "^1.90.0",
 		"@vscode/vsce": "^3.6.3",
 		"typescript": "6.0.3",
-		"vitest": "4.1.9"
+		"vitest": "4.1.10"
 	}
 }

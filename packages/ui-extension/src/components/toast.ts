@@ -16,7 +16,7 @@ export interface IToastOptions {
 	readonly action?: { id: string; label: string };
 }
 
-const kindClass = (kind: ToastKind): string => `mv-toast--${kind}`;
+const kindClass = (kind: ToastKind): string => `mcpv-toast--${kind}`;
 
 /**
  * `renderToast` — returns the HTML string for a toast. The host
@@ -31,22 +31,22 @@ export const renderToast = (opts: IToastOptions): string => {
 	// so it MUST give the user a way out (close button + Esc), otherwise
 	// it is a permanent obstruction (H25).
 	const sticky = ttl <= 0;
-	const ttlAttr = ttl > 0 ? ` data-mv-toast-ttl="${ttl}"` : '';
-	const stickyAttr = sticky ? ' data-mv-toast-sticky="true"' : '';
+	const ttlAttr = ttl > 0 ? ` data-mcpv-toast-ttl="${ttl}"` : '';
+	const stickyAttr = sticky ? ' data-mcpv-toast-sticky="true"' : '';
 	const action = opts.action
-		? `<button type="button" class="mv-toast__action" data-mv-action="${escapeHtml(opts.action.id)}" data-mv-toast-id="${escapeHtml(opts.id)}">${escapeHtml(opts.action.label)}</button>`
+		? `<button type="button" class="mcpv-toast__action" data-mcpv-action="${escapeHtml(opts.action.id)}" data-mcpv-toast-id="${escapeHtml(opts.id)}">${escapeHtml(opts.action.label)}</button>`
 		: '';
 	const close = sticky
-		? `<button type="button" class="mv-toast__close" aria-label="Close" data-mv-toast-close="${escapeHtml(opts.id)}">×</button>`
+		? `<button type="button" class="mcpv-toast__close" aria-label="Close" data-mcpv-toast-close="${escapeHtml(opts.id)}">×</button>`
 		: '';
 	return `<div
 	id="${escapeHtml(opts.id)}"
-	class="mv-toast ${kindClass(kind)}"
+	class="mcpv-toast ${kindClass(kind)}"
 	role="status"
 	aria-live="polite"${ttlAttr}${stickyAttr}
-	data-mv-toast="${escapeHtml(opts.id)}"
+	data-mcpv-toast="${escapeHtml(opts.id)}"
 >
-	<span class="mv-toast__message">${escapeHtml(opts.message)}</span>
+	<span class="mcpv-toast__message">${escapeHtml(opts.message)}</span>
 	${action}
 	${close}
 </div>`;

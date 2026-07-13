@@ -27,6 +27,13 @@
 		box-shadow: 0 6px 22px color-mix(in srgb, var(--accent) 45%, transparent);
 	}
 }
+// Compact size modifier — table-row actions (e.g. the recovery table's
+// release-lock / force-ready buttons) where the default pill is too tall
+// (f00099 S1).
+.btn--small {
+	padding: 0.35rem 0.85rem;
+	font-size: 0.82rem;
+}
 .btn--ghost {
 	border-color: var(--line);
 	color: var(--fg);

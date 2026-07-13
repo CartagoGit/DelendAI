@@ -222,7 +222,7 @@ describe('renderPanelTokens', async () => {
 describe('renderPanelTools', async () => {
 	it('renders a sortable table with data-* attributes for client-side sort', async () => {
 		const html = renderPanelTools(baseTools, dictsByLang.en);
-		expect(html).toContain('mv-tools-table');
+		expect(html).toContain('mcpv-tools-table');
 		expect(html).toContain('data-calls="12"');
 		expect(html).toContain('data-calls="4"');
 	});
@@ -266,7 +266,10 @@ describe('renderPanelAgents', async () => {
 	});
 
 	it('shows the empty-state row when no agents', async () => {
-		const html = renderPanelAgents({ agents: [], totalActive: 0 }, dictsByLang.en);
+		const html = renderPanelAgents(
+			{ agents: [], totalActive: 0 },
+			dictsByLang.en,
+		);
 		expect(html).toContain('No active agents.');
 	});
 });
@@ -274,9 +277,9 @@ describe('renderPanelAgents', async () => {
 describe('renderDashboard', async () => {
 	it('composes header, KPI strip, 8 tabs + 8 panels + Docs + footer', async () => {
 		const html = renderDashboard(fixture, opts);
-		expect(html).toMatch(/<header class="mv-header">/);
-		expect(html).toContain('mv-kpis');
-		expect(html).toContain('mv-tabs');
+		expect(html).toMatch(/<header class="mcpv-header">/);
+		expect(html).toContain('mcpv-kpis');
+		expect(html).toContain('mcpv-tabs');
 		expect(html).toContain('tab-overview');
 		expect(html).toContain('tab-metrics');
 		expect(html).toContain('tab-tokens');
@@ -291,19 +294,19 @@ describe('renderDashboard', async () => {
 		expect(html).toContain('panel-overview');
 		expect(html).toContain('panel-metrics');
 		expect(html).toContain('panel-docs');
-		expect(html).toContain('mv-footer');
+		expect(html).toContain('mcpv-footer');
 		expect(html).toContain('https://mcp-vertex.dev');
 	});
 
-	it('inlines the brand logo SVG in the header (via shared --mv-brand-* tokens)', async () => {
+	it('inlines the brand logo SVG in the header (via shared --mcpv-brand-* tokens)', async () => {
 		const html = renderDashboard(fixture, opts);
-		expect(html).toContain('mv-header__logo');
+		expect(html).toContain('mcpv-header__logo');
 		expect(html).toContain('linearGradient');
 		// f00047 S3: brand hex literals moved to apps/shared; the webview
 		// references them via CSS variables so there is exactly one source
 		// of truth. Asserting the variable names keeps the test honest.
-		expect(html).toContain('--mv-brand-blue');
-		expect(html).toContain('--mv-brand-purple');
+		expect(html).toContain('--mcpv-brand-blue');
+		expect(html).toContain('--mcpv-brand-purple');
 	});
 
 	it('sets the first tab as active by default', async () => {
@@ -323,7 +326,24 @@ describe('renderDashboard', async () => {
 	it('embeds the tab-switching client script', async () => {
 		const html = renderDashboard(fixture, opts);
 		expect(html).toContain('<script>');
-		expect(html).toContain('.mv-tabs [role="tab"]');
+		// f00102 S4-real-extract: the client script now selects tabs
+		// via the shared `data-tab-trigger` attribute (stamped by
+		// `renderTabs` in `@mcp-vertex/shared/components/ui/tabs`)
+		// instead of the old `.mcpv-tabs [role="tab"]` selector. The
+		// attribute selector works for any host that delegates to
+		// the shared renderer.
+		expect(html).toContain('[data-tab-trigger]');
+	});
+
+	it('posts refresh and proposal-link actions through the VS Code bridge', async () => {
+		const html = renderDashboard(fixture, opts);
+		expect(html).toContain(
+			"host?.postMessage({ command: 'action', action: 'refresh' })",
+		);
+		expect(html).toContain(
+			"host?.postMessage({ command: 'openProposal', id })",
+		);
+		expect(html).toContain("target.closest('[data-proposal]')");
 	});
 
 	it('wires ArrowLeft/ArrowRight roving tabindex with wrapping (H27)', async () => {

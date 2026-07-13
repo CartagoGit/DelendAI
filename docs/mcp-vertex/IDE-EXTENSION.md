@@ -226,11 +226,11 @@ extensions/vscode/             mcp-vertex-vscode          the VS Code host (only
   dependency at runtime).
 - **Language picker** — a `renderLanguagePicker` is rendered in
   the header strip; `IHostAdapter.setLanguage(lang)` + a
-  `globalState['mv:lang']` persist the choice. The shared
-  `localStorage['mv:lang']` is the cross-host fallback.
+  `globalState['mcpv:lang']` persist the choice. The shared
+  `localStorage['mcpv:lang']` is the cross-host fallback.
 - **Dropdown** — `renderDropdown` is a CSS-transition (180ms
   ease-out) dropdown with outside-click + `Esc` close, driven by
-  the runtime's `data-mv-action` delegation.
+  the runtime's `data-mcpv-action` delegation.
 - **Disclosure** — `<details>`/`<summary>` for collapsible
   sections; works without the runtime attached.
 - **Toast** — for the in-extension notification surface.

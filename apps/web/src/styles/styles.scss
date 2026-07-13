@@ -16,7 +16,7 @@
 // 1. Tokens & themes — define design variables first so everything below
 //    can reference them.
 //
-// The shared package (`apps/shared`) owns the brand tokens (`--mv-*`),
+// The shared package (`apps/shared`) owns the brand tokens (`--mcpv-*`),
 // the brand hex literals and the canonical 5 palettes. We re-export them
 // here as the base layer; the local `tokens` / `themes` partials (right
 // below) keep the existing legacy names (`--bg`, `--fg`, `--accent`, …)
@@ -51,12 +51,19 @@
 @use "components/plugin-card";
 @use "components/plugin-details";
 @use "components/plugin-disclosure";
+// Plugin-page extras (f00099 S1): the configuration-tab snippet + copy
+// button, and the per-plugin tutorial tab.
+@use "components/config";
+@use "components/tutorial";
 @use "components/guide";
 @use "components/bench";
 @use "components/section";
 @use "components/tabs";
 @use "components/card";
 @use "components/tool";
+// Argument/flag reference tables (`table.args`) — ToolPage, PluginPage,
+// CLI guide (f00099 S1).
+@use "components/args";
 @use "components/pkg";
 @use "components/ns";
 @use "components/fx";
@@ -66,11 +73,18 @@
 @use "components/modal";
 @use "components/swatch";
 @use "components/lang-opt";
+// <noscript> locale fallback on the home page (f00099 S1).
+@use "components/locale-picker";
 @use "components/toggle";
 @use "components/prompt";
 @use "components/resources-table";
 @use "components/notfound";
 @use "components/proposal-badge";
+@use "components/proposals-board";
+// Fix (2026-07-07): `_markdown-page.scss` shipped with f00055 S5 but was
+// never imported — every generated markdown page (`[page].astro` →
+// MarkdownPage.astro `.md-page*`) rendered unstyled.
+@use "components/markdown-page";
 
 // 5. Component-local responsive overrides (kept last so they always win).
 @use "components/nav-media";

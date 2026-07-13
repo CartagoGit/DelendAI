@@ -37,18 +37,18 @@ const CLIENT_SCRIPT = `
     ? window.acquireVsCodeApi()
     : null;
 
-  const search = document.getElementById('mv-kn-search');
+  const search = document.getElementById('mcpv-kn-search');
   if (search) {
     search.addEventListener('input', () => {
       const q = (search.value || '').toLowerCase();
-      document.querySelectorAll('.mv-kn-entry').forEach((el) => {
+      document.querySelectorAll('.mcpv-kn-entry').forEach((el) => {
         const text = (el.getAttribute('data-search') || '').toLowerCase();
-        const cat = el.closest('.mv-kn-category');
+        const cat = el.closest('.mcpv-kn-category');
         if (!cat) return;
         const visible = text.includes(q);
         el.style.display = visible ? '' : 'none';
         // Show / hide category headers when all children are hidden.
-        const any = Array.from(cat.querySelectorAll('.mv-kn-entry')).some(
+        const any = Array.from(cat.querySelectorAll('.mcpv-kn-entry')).some(
           (e) => e.style.display !== 'none',
         );
         cat.style.display = any ? '' : 'none';
@@ -75,11 +75,11 @@ const CLIENT_SCRIPT = `
   window.addEventListener('message', (e) => {
     const msg = e && e.data;
     if (!msg || msg.command !== 'preview' || !msg.entry) return;
-    const preview = document.querySelector('.mv-kn-preview');
+    const preview = document.querySelector('.mcpv-kn-preview');
     if (!preview) return;
 
     // Reset classes & content (the preview pane is rebuilt every time).
-    preview.classList.remove('mv-kn-preview--empty');
+    preview.classList.remove('mcpv-kn-preview--empty');
     while (preview.firstChild) preview.removeChild(preview.firstChild);
 
     const header = document.createElement('header');
@@ -107,17 +107,17 @@ const renderCategory = (
 	const rows = entries
 		.map((e) => {
 			const data = `${e.id} ${e.title} ${category}`;
-			return `<li class="mv-kn-entry" data-search="${escapeHtml(data)}">
+			return `<li class="mcpv-kn-entry" data-search="${escapeHtml(data)}">
 				<a href="#" data-entry="${escapeHtml(e.id)}" data-title="${escapeHtml(e.title)}">
 					<code>${escapeHtml(e.id)}</code>
-					<span class="mv-kn-title">${escapeHtml(e.title)}</span>
+					<span class="mcpv-kn-title">${escapeHtml(e.title)}</span>
 				</a>
 			</li>`;
 		})
 		.join('');
-	return `<section class="mv-kn-category" data-category="${escapeHtml(category)}">
-		<h3 class="mv-kn-cat">${escapeHtml(category)} <span class="mv-kn-count">${entries.length}</span></h3>
-		<ul class="mv-kn-list">${rows}</ul>
+	return `<section class="mcpv-kn-category" data-category="${escapeHtml(category)}">
+		<h3 class="mcpv-kn-cat">${escapeHtml(category)} <span class="mcpv-kn-count">${entries.length}</span></h3>
+		<ul class="mcpv-kn-list">${rows}</ul>
 	</section>`;
 };
 
@@ -126,11 +126,11 @@ const renderPreview = (
 	lang: ILangDict,
 ): string => {
 	if (entry === undefined) {
-		return `<aside class="mv-kn-preview mv-kn-preview--empty">
+		return `<aside class="mcpv-kn-preview mcpv-kn-preview--empty">
 			<p>${escapeHtml(extensionText(lang, 'knowledge.previewEmpty'))}</p>
 		</aside>`;
 	}
-	return `<aside class="mv-kn-preview">
+	return `<aside class="mcpv-kn-preview">
 		<header>
 			<h2>${escapeHtml(entry.title)}</h2>
 			<code>${escapeHtml(entry.id)}</code>
@@ -160,102 +160,102 @@ export const renderKnowledgeNavigator = (
 	<style>
 		${renderComponentCssTokenRootCss()}
 		:root {
-			--mv-fg: var(--mv-fg-primary);
-			--mv-bg: var(--mv-bg-primary);
-			--mv-border: var(--vscode-widget-border, #30363d);
-			--mv-surface: var(--vscode-side-bar-background, #161b22);
-			/* FIX (K5): --mv-brand-purple was undefined inside this
+			--mcpv-fg: var(--mcpv-fg-primary);
+			--mcpv-bg: var(--mcpv-bg-primary);
+			--mcpv-border: var(--vscode-widget-border, #30363d);
+			--mcpv-surface: var(--vscode-side-bar-background, #161b22);
+			/* FIX (K5): --mcpv-brand-purple was undefined inside this
 			   webview (only the shared componentCss defines it). The
-			   .mv-kn-count badge now falls back to the brand hex
+			   .mcpv-kn-count badge now falls back to the brand hex
 			   inline so the category counts render visibly even when
 			   componentCss is not injected by the host. */
-			--mv-brand-purple: #7c3aed;
-			--mv-accent: var(--mv-brand-purple, #7c3aed);
+			--mcpv-brand-purple: #7c3aed;
+			--mcpv-accent: var(--mcpv-brand-purple, #7c3aed);
 		}
 		* { box-sizing: border-box; }
 		body {
 			margin: 0;
 			font-family: var(--vscode-font-family, system-ui);
-			color: var(--mv-fg);
-			background: var(--mv-bg);
+			color: var(--mcpv-fg);
+			background: var(--mcpv-bg);
 			display: grid;
 			grid-template-columns: 320px 1fr;
 			grid-template-rows: 48px 1fr;
 			height: 100vh;
 		}
-		header.mv-kn-top {
+		header.mcpv-kn-top {
 			grid-column: 1 / 3;
 			display: flex;
 			align-items: center;
 			gap: 12px;
 			padding: 0 16px;
-			border-bottom: 1px solid var(--mv-border);
-			background: var(--mv-surface);
+			border-bottom: 1px solid var(--mcpv-border);
+			background: var(--mcpv-surface);
 		}
-		header.mv-kn-top h1 {
+		header.mcpv-kn-top h1 {
 			font-size: 13px;
 			margin: 0;
 			font-weight: 700;
 		}
-		header.mv-kn-top input {
+		header.mcpv-kn-top input {
 			flex: 1;
 			padding: 6px 10px;
-			background: var(--mv-bg);
-			color: var(--mv-fg);
-			border: 1px solid var(--mv-border);
+			background: var(--mcpv-bg);
+			color: var(--mcpv-fg);
+			border: 1px solid var(--mcpv-border);
 			border-radius: 4px;
 			font: inherit;
 		}
-		aside.mv-kn-list-pane {
+		aside.mcpv-kn-list-pane {
 			overflow-y: auto;
 			padding: 8px 12px;
-			border-right: 1px solid var(--mv-border);
+			border-right: 1px solid var(--mcpv-border);
 		}
-		.mv-kn-category { margin: 0 0 16px; }
-		.mv-kn-cat {
+		.mcpv-kn-category { margin: 0 0 16px; }
+		.mcpv-kn-cat {
 			font-size: 11px;
 			text-transform: uppercase;
 			letter-spacing: 0.06em;
-			color: var(--mv-fg-muted, #8b949e);
+			color: var(--mcpv-fg-muted, #8b949e);
 			margin: 0 0 4px;
 			display: flex;
 			gap: 6px;
 			align-items: center;
 		}
-		.mv-kn-count {
+		.mcpv-kn-count {
 			font-size: 10px;
 			padding: 0 6px;
 			border-radius: 999px;
-			background: var(--mv-accent);
+			background: var(--mcpv-accent);
 			color: #fff;
 		}
-		.mv-kn-list { list-style: none; padding: 0; margin: 0; }
-		.mv-kn-entry a {
+		.mcpv-kn-list { list-style: none; padding: 0; margin: 0; }
+		.mcpv-kn-entry a {
 			display: block;
 			padding: 6px 8px;
 			border-radius: 4px;
-			color: var(--mv-fg);
+			color: var(--mcpv-fg);
 			text-decoration: none;
 		}
-		.mv-kn-entry a:hover { background: var(--mv-surface); }
-		.mv-kn-entry code {
+		.mcpv-kn-entry a:hover { background: var(--mcpv-surface); }
+		.mcpv-kn-entry code {
 			font-size: 10px;
-			color: var(--mv-fg-muted, #8b949e);
+			color: var(--mcpv-fg-muted, #8b949e);
 			display: block;
 		}
-		.mv-kn-title { font-size: 12px; }
-		.mv-kn-preview {
+		.mcpv-kn-title { font-size: 12px; }
+		.mcpv-kn-preview {
 			overflow-y: auto;
 			padding: 24px 32px;
 		}
-		.mv-kn-preview--empty { color: var(--mv-fg-muted, #8b949e); }
-		.mv-kn-preview header { margin-bottom: 16px; }
-		.mv-kn-preview h2 { margin: 0 0 4px; font-size: 18px; }
-		.mv-kn-preview code {
+		.mcpv-kn-preview--empty { color: var(--mcpv-fg-muted, #8b949e); }
+		.mcpv-kn-preview header { margin-bottom: 16px; }
+		.mcpv-kn-preview h2 { margin: 0 0 4px; font-size: 18px; }
+		.mcpv-kn-preview code {
 			font-size: 11px;
-			color: var(--mv-fg-muted, #8b949e);
+			color: var(--mcpv-fg-muted, #8b949e);
 		}
-		.mv-kn-preview pre {
+		.mcpv-kn-preview pre {
 			white-space: pre-wrap;
 			word-wrap: break-word;
 			font-family: var(--vscode-editor-font-family, monospace);
@@ -265,11 +265,11 @@ export const renderKnowledgeNavigator = (
 	</style>
 </head>
 <body>
-	<header class="mv-kn-top">
+	<header class="mcpv-kn-top">
 		<h1>${escapeHtml(text('knowledge.title'))}</h1>
-		<input id="mv-kn-search" type="text" placeholder="${escapeHtml(text('knowledge.searchPlaceholder'))}" />
+		<input id="mcpv-kn-search" type="text" placeholder="${escapeHtml(text('knowledge.searchPlaceholder'))}" />
 	</header>
-	<aside class="mv-kn-list-pane">
+	<aside class="mcpv-kn-list-pane">
 		${left || `<p>${escapeHtml(text('knowledge.empty'))}</p>`}
 	</aside>
 	${renderPreview(options.preview, options.lang)}

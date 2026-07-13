@@ -1,5 +1,4 @@
 /**
-import type { IRenderedBundle, IRenderedFile } from '../../contracts/interfaces/init.interface';
  * f00084 S2 + S3 + S4 + S5 — render the bootstrap bundle.
  *
  * Pure functions: each `render*` takes the answers and returns a list
@@ -7,14 +6,22 @@ import type { IRenderedBundle, IRenderedFile } from '../../contracts/interfaces/
  * command is the only place that touches the file system.
  */
 
+import type {
+	IRenderedBundle,
+	IRenderedFile,
+} from '../../contracts/interfaces/init.interface';
+
 import {
+	createWorkspaceFileReader,
+	createWorkspacePathProvider,
 	resolvePluginOptions,
 	resolvePresetMembers,
 	type IFileReader,
-	createWorkspaceFileReader,
-	createWorkspacePathProvider,
 } from '@mcp-vertex/core/public';
 
+import type { IInitAnswers } from './init-answers.types';
+import type { ICanonicalLaunch } from '../../contracts/interfaces/canonical-launch.interface';
+import { buildCanonicalLaunch } from '../server-args.service';
 import { loadAgentDescriptors } from './init-catalog.constant';
 import {
 	computeHostInstructionsWrite,
@@ -22,11 +29,6 @@ import {
 } from './init-host-instructions.service';
 import { renderSnapshotHostInstructionsProposal } from './init-host-snapshot.service';
 import { renderAdoptionPlan } from './init-migrate-offer.service';
-import type { IInitAnswers } from './init-answers.types';
-
-;
-
-;
 
 // Single source of truth for preset membership lives in
 // `@mcp-vertex/core`'s preset catalog. We delegate to
@@ -125,15 +127,15 @@ export const renderMcpVertexConfig = (
  * for any consumer checkout.
  */
 export const renderMcpVertexServerEntry = (
-	hostEntryPath: string,
-): { readonly type: 'stdio'; readonly command: 'bun'; readonly args: readonly string[] } => ({
+	launch: ICanonicalLaunch,
+): {
+	readonly type: 'stdio';
+	readonly command: string;
+	readonly args: readonly string[];
+} => ({
 	type: 'stdio',
-	command: 'bun',
-	args: [
-		hostEntryPath,
-		'--workspace=${workspaceFolder}',
-		'--config=${workspaceFolder}/mcp-vertex.config.json',
-	],
+	command: launch.command,
+	args: launch.args,
 });
 
 /**
@@ -141,15 +143,11 @@ export const renderMcpVertexServerEntry = (
  * object (mutable-typed for the merge step below).
  */
 const renderMcpVertexServerEntryRaw = (
-	hostEntryPath: string,
+	launch: ICanonicalLaunch,
 ): { type: string; command: string; args: string[] } => ({
 	type: 'stdio',
-	command: 'bun',
-	args: [
-		hostEntryPath,
-		'--workspace=${workspaceFolder}',
-		'--config=${workspaceFolder}/mcp-vertex.config.json',
-	],
+	command: launch.command,
+	args: [...launch.args],
 });
 
 /**
@@ -178,8 +176,9 @@ const renderMcpVertexServerEntryRaw = (
  * themselves; `init` should never silently destroy tool wiring.
  */
 export const mergeMcpVertexServerEntry = (
-	hostEntryPath: string,
+	launch: ICanonicalLaunch,
 	existingContent: string,
+	kind: 'servers' | 'mcpServers' = 'servers',
 ): string | undefined => {
 	let parsed: unknown;
 	try {
@@ -187,12 +186,16 @@ export const mergeMcpVertexServerEntry = (
 	} catch {
 		return undefined;
 	}
-	if (parsed === null || typeof parsed !== 'object' || Array.isArray(parsed)) {
+	if (
+		parsed === null ||
+		typeof parsed !== 'object' ||
+		Array.isArray(parsed)
+	) {
 		return undefined;
 	}
 	const doc = parsed as Record<string, unknown>;
-	const incoming = renderMcpVertexServerEntryRaw(hostEntryPath);
-	const existingServers = doc.servers;
+	const incoming = renderMcpVertexServerEntryRaw(launch);
+	const existingServers = doc[kind];
 	const nextServers: Record<string, unknown> =
 		existingServers !== undefined &&
 		existingServers !== null &&
@@ -207,15 +210,17 @@ export const mergeMcpVertexServerEntry = (
 	// freshly-resolved path — that's the point of running `init`
 	// again: it brings the launcher up to date.
 	nextServers['mcp-vertex'] = incoming;
-	const next = { ...doc, servers: nextServers };
+	const next = { ...doc, [kind]: nextServers };
 	return `${JSON.stringify(next, null, '\t')}\n`;
 };
 
 /** Renders `.vscode/mcp.json` with the canonical launch shape. */
-export const renderVscodeMcpJson = (hostEntryPath: string): IRenderedFile => {
+export const renderVscodeMcpJson = (
+	launch: ICanonicalLaunch,
+): IRenderedFile => {
 	const content = {
 		servers: {
-			'mcp-vertex': renderMcpVertexServerEntry(hostEntryPath),
+			'mcp-vertex': renderMcpVertexServerEntry(launch),
 		},
 	};
 	return {
@@ -223,6 +228,17 @@ export const renderVscodeMcpJson = (hostEntryPath: string): IRenderedFile => {
 		content: `${JSON.stringify(content, null, '\t')}\n`,
 	};
 };
+
+export const renderGenericMcpJson = (
+	launch: ICanonicalLaunch,
+): IRenderedFile => ({
+	relPath: '.mcp.json',
+	content: `${JSON.stringify(
+		{ mcpServers: { 'mcp-vertex': renderMcpVertexServerEntry(launch) } },
+		null,
+		'\t',
+	)}\n`,
+});
 
 const renderAgentFile = (descriptor: {
 	role: string;
@@ -279,7 +295,8 @@ const HOST_INSTRUCTIONS_TARGETS: ReadonlyArray<{
 // the rest of the host file already lives.
 const HOST_FOOTNOTE: Readonly<Record<'copilot' | 'claude' | 'agents', string>> =
 	{
-		copilot: '- Bootstrap §8.1 (Copilot close-marker contract) is in effect.',
+		copilot:
+			'- Bootstrap §8.1 (Copilot close-marker contract) is in effect.',
 		claude: '- Bootstrap §8.2 (keep the main thread cheap) is in effect.',
 		agents: '- Bootstrap §7 (repo-level rules) is in effect.',
 	};
@@ -337,9 +354,9 @@ export const renderMigrationProposalIfRequested = async (
 export const renderInitBundle = async (
 	answers: IInitAnswers,
 	options: {
-		readonly hostEntryPath: string;
+		readonly launch?: ICanonicalLaunch;
 		readonly reader?: IFileReader;
-	} = { hostEntryPath: '' },
+	} = {},
 ): Promise<IRenderedBundle> => {
 	const reader: IFileReader =
 		options.reader ??
@@ -347,9 +364,13 @@ export const renderInitBundle = async (
 			createWorkspacePathProvider(answers.workspaceRoot),
 		);
 	const resolvedPlugins = resolvePluginSet(answers);
+	const launch =
+		options.launch ??
+		buildCanonicalLaunch({ workspace: '${workspaceFolder}' });
 	const files: IRenderedFile[] = [
 		renderMcpVertexConfig(answers, resolvedPlugins),
-		renderVscodeMcpJson(options.hostEntryPath),
+		renderVscodeMcpJson(launch),
+		renderGenericMcpJson(buildCanonicalLaunch({ workspace: '.' })),
 	];
 	if (answers.generateAgentMd) {
 		files.push(

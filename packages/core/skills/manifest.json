@@ -178,6 +178,15 @@
 			"bodyPath": "packages/core/skills/tabs-component/SKILL.md",
 			"tags": ["tabs", "brand-logo", "iconography", "f00069"],
 			"appliesTo": ["@mcp-vertex/*"]
+		},
+		{
+			"id": "mcp-vertex-external-mcps",
+			"version": "1.0.0",
+			"minCoreVersion": "0.1.0",
+			"summary": "Use when a workspace needs a capability native tools do not cover, to compose a third-party MCP server via catalog, suggest, validate_config, ack, and the lazy ext.<server>.<tool> call proxy.",
+			"bodyPath": "plugins/external-mcps/skills/external-mcps/SKILL.md",
+			"tags": ["external-mcps", "composition", "human-ack", "f00068"],
+			"appliesTo": ["@mcp-vertex/external-mcps"]
 		}
 	]
 }

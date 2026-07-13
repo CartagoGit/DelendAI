@@ -18,24 +18,16 @@
 
 // ─── Language codes (the `Lang` literal type) ────────────────────────
 //
-// Defined first, with no dependency on `ILangMeta`, to break the cycle
-// `ILangMeta → Lang → languages satisfies ILangMeta → ILangMeta`.
-export const languageCodes = [
-	'ar',
-	'de',
-	'en',
-	'es',
-	'fr',
-	'hi',
-	'it',
-	'ja',
-	'pt',
-	'th',
-	'vi',
-	'zh',
-] as const;
+// Re-exported from the publishable host-preference contract so language
+// choices cannot drift between the client, shared renderers and host adapters.
+import {
+	HOST_LANGUAGE_CHOICES,
+	type HostLanguage,
+} from '@mcp-vertex/client/lib/contracts/interfaces/settings.interface';
+import type { ISettingsTranslations } from '../contracts/interfaces/settings-translations.interface';
 
-export type Lang = (typeof languageCodes)[number];
+export const languageCodes = HOST_LANGUAGE_CHOICES;
+export type Lang = HostLanguage;
 
 // ─── Language metadata (depends on `Lang` but `Lang` no longer depends on it) ─
 export interface ILangMeta {
@@ -163,6 +155,58 @@ export interface IExtensionTranslations {
 	readonly [key: string]: string;
 }
 
+/** Resolve settings copy through the normal dictionary fallback boundary. */
+export const settingsTranslations = (
+	dict: ILangDict,
+): ISettingsTranslations => {
+	const read = (key: string): string =>
+		t(dict, ['extension', `settings.${key}`]);
+	return {
+		title: read('title'),
+		description: read('description'),
+		docsUrl: read('docsUrl'),
+		docsUrlDescription: read('docsUrlDescription'),
+		allowLocalhostDocsUrl: read('allowLocalhostDocsUrl'),
+		allowLocalhostDocsUrlDescription: read(
+			'allowLocalhostDocsUrlDescription',
+		),
+		allowPrivateIpsDocsUrl: read('allowPrivateIpsDocsUrl'),
+		allowPrivateIpsDocsUrlDescription: read(
+			'allowPrivateIpsDocsUrlDescription',
+		),
+		logLevel: read('logLevel'),
+		theme: read('theme'),
+		language: read('language'),
+		motion: read('motion'),
+		save: read('save'),
+		reset: read('reset'),
+		saving: read('saving'),
+		resetting: read('resetting'),
+		saved: read('saved'),
+		resetToDefaults: read('resetToDefaults'),
+		saveError: read('saveError'),
+		resetError: read('resetError'),
+		option: (group, value) => read(`${group}.${value}`),
+	};
+};
+
+/**
+ * Dev-preview chrome translations. Only consumed by the
+ * `extensions/vscode` dev entry (`:5200`) so the dashboard mock fallback,
+ * the welcome screen, the Quick start menu and the dev-only tool-detail
+ * + metrics panels render in the user's chosen language. Production
+ * webviews never reach these strings.
+ */
+export interface IDevTranslations {
+	readonly quickStartHeading: string;
+	readonly quickStartLede: string;
+	readonly quickStartDismiss: string;
+	readonly firstRunHeading: string;
+	readonly firstRunLede: string;
+	readonly firstRunSkip: string;
+	readonly firstRunInstall: string;
+}
+
 /** Placeholder for future tool-result translations (S5+). */
 export interface IToolTranslations {
 	readonly [toolName: string]: string | undefined;
@@ -175,6 +219,7 @@ export interface IToolTranslations {
 export interface ILangDict {
 	readonly site: ISiteTranslations;
 	readonly extension: IExtensionTranslations;
+	readonly dev: IDevTranslations;
 	readonly tools: IToolTranslations;
 }
 

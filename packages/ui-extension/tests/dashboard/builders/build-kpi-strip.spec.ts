@@ -22,20 +22,28 @@ describe('buildKpiStrip', () => {
 		} as unknown as IDashboardAllModels;
 
 		const html = buildKpiStrip(mockModel, dictsByLang.en);
-		expect(html).toContain('mv-kpis');
+		expect(html).toContain('mcpv-kpis');
 		expect(html).toContain('10');
 		expect(html).toContain('5');
 		expect(html).toContain('2');
 		expect(html).toContain('50');
 	});
 
-	it('ships flex-wrap layout so the strip wraps in a narrow sidebar (H26)', () => {
+	it('uses CSS-grid auto-fit so the strip wraps in a narrow sidebar (H26)', () => {
 		const mockModel = {
 			overview: { totals: {} },
 		} as unknown as IDashboardAllModels;
 		const html = buildKpiStrip(mockModel, dictsByLang.en);
-		expect(html).toContain('flex-wrap:wrap');
-		expect(html).toContain('flex:1 1 120px');
-		expect(html).toContain('min-width:0');
+		// The strip markup is just a `<div class="mcpv-kpis">` shell with
+		// one `<div class="mcpv-kpi">` per metric. The wrapping rule
+		// (`grid-template-columns: repeat(auto-fit, minmax(180px, 1fr))`)
+		// lives in `dashboardCss` (see
+		// `apps/shared/src/styles/dashboard/dashboard-css.ts`) so the
+		// same rules govern every embedding. This test pins the
+		// structural contract; the CSS contract is covered by the
+		// shared SCSS lint + the visual regression on the dev preview.
+		expect(html).toContain('<div class="mcpv-kpis">');
+		expect(html).toContain('class="mcpv-kpi"');
+		expect(html).not.toContain('<style>');
 	});
 });

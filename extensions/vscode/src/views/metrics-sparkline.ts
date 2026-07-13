@@ -1,4 +1,7 @@
 import type { IMetricsSnapshot } from '@mcp-vertex/client';
+import { escapeHtml } from './render-output-schema';
+import type { IViewCopy } from '../contracts/interfaces/view-copy.interface';
+import { viewCopyFor } from '../i18n/view-copy.strings';
 
 export interface ISparklinePoint {
 	readonly label: string;
@@ -18,8 +21,8 @@ export const metricsToPoints = (
 export const renderMetricsSparkline = (
 	points: readonly ISparklinePoint[],
 ): string => {
-	const width = 240;
-	const height = 48;
+	const width = 480;
+	const height = 96;
 	const max = Math.max(1, ...points.map((point) => point.value));
 	const step = points.length <= 1 ? width : width / (points.length - 1);
 	const coords = points.map((point, index) => {
@@ -30,24 +33,53 @@ export const renderMetricsSparkline = (
 	const labels = points
 		.map((point) => `${escapeXml(point.label)}:${point.value}`)
 		.join(' ');
-	return `<svg viewBox="0 0 ${width} ${height}" role="img" aria-label="${labels}"><polyline fill="none" stroke="currentColor" stroke-width="2" points="${coords.join(' ')}" /></svg>`;
+	return `<svg class="metrics__sparkline" viewBox="0 0 ${width} ${height}" role="img" aria-label="${labels}"><polyline fill="none" stroke="currentColor" stroke-width="2" points="${coords.join(' ')}" /></svg>`;
 };
 
-export const renderMetricsHtml = (snapshot: IMetricsSnapshot): string => {
+const countLabel = (value: number, singular: string, plural: string): string =>
+	`${value} ${value === 1 ? singular : plural}`;
+
+export const renderMetricsHtml = (
+	snapshot: IMetricsSnapshot,
+	copy: IViewCopy = viewCopyFor('en'),
+): string => {
 	const points = metricsToPoints(snapshot);
 	return `<!DOCTYPE html>
-<html lang="en">
+<html lang="${copy.lang}">
 <head>
 	<meta charset="UTF-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-	<title>mcp-vertex Metrics</title>
+	<title>mcp-vertex ${escapeHtml(copy.metrics)}</title>
 </head>
 <body>
-	<h1>mcp-vertex Metrics</h1>
+	<h1>mcp-vertex ${escapeHtml(copy.metrics)}</h1>
 	${renderMetricsSparkline(points)}
-	<p>${snapshot.totals.calls} calls, ${snapshot.totals.errors} errors</p>
+	<p>${escapeHtml(countLabel(snapshot.totals.calls, copy.callSingular, copy.calls))}, ${escapeHtml(countLabel(snapshot.totals.errors, copy.errorSingular, copy.errors))}</p>
 </body>
 </html>`;
+};
+
+/**
+ * `renderMetricsBody` — same shape the full HTML emits, but as a
+ * `<body>`-only fragment so the dev preview's lazy pages can
+ * mount it inside their own `<main>` without parsing an `<html>`
+ * inside an `<html>` (which the browser silently drops, leaving
+ * the page visually empty).
+ *
+ * The body uses the `metrics` BEM block (defined in the dev
+ * preview SCSS) for typography + spacing; the sparkline keeps
+ * its inline viewBox so it scales without a separate stylesheet.
+ */
+export const renderMetricsBody = (
+	snapshot: IMetricsSnapshot,
+	copy: IViewCopy = viewCopyFor('en'),
+): string => {
+	const points = metricsToPoints(snapshot);
+	return `<section class="metrics">
+	<h1>mcp-vertex ${escapeHtml(copy.metrics)}</h1>
+	${renderMetricsSparkline(points)}
+	<p class="metrics__totals">${escapeHtml(countLabel(snapshot.totals.calls, copy.callSingular, copy.calls))}, ${escapeHtml(countLabel(snapshot.totals.errors, copy.errorSingular, copy.errors))}</p>
+</section>`;
 };
 
 const escapeXml = (value: string): string =>

@@ -1,5 +1,4 @@
 /**
-import type { ICanonicalSkill, ISkillConventionKind, ISkillInventory } from '../../contracts/interfaces/init.interface';
  * init-skill-inventory.ts — f00089 U2 (slice U2, points 2a + 2b).
  *
  * The adoption plan's `A3` section answers two questions:
@@ -26,7 +25,22 @@ import type { ICanonicalSkill, ISkillConventionKind, ISkillInventory } from '../
  *     no ordering by disk enumeration that the renderer can't sort).
  *   - Advisory only: detection NEVER writes, deletes, or moves a skill.
  */
+
+import type {
+	ICanonicalSkill,
+	ISkillConventionKind,
+	ISkillInventory,
+	ITargetSkill,
+} from '../../contracts/interfaces/init.interface';
 import type { IFileReader } from './init-detection.service';
+
+// f00037/f00093: canonical home is contracts/interfaces/init.interface.ts.
+// Re-exported here for consumers (adoption-plan builder + specs) that import
+// these types from the module that produces them.
+export type {
+	ISkillInventory,
+	ITargetSkill,
+} from '../../contracts/interfaces/init.interface';
 
 /**
  * The convention family a detected skill location belongs to. Coarser
@@ -34,12 +48,9 @@ import type { IFileReader } from './init-detection.service';
  * style" entries regardless of nesting depth.
  */
 
-
 /** One of OUR canonical skills to migrate into the target (point 2a). */
 
-
 /** Full inventory consumed by the A3 renderer. */
-
 
 /**
  * OUR canonical skills to migrate (point 2a). Embedded statically and
@@ -91,8 +102,14 @@ export const CANONICAL_SKILLS: readonly ICanonicalSkill[] = [
 		id: 'mcp-vertex-status-marker-and-closure',
 		appliesTo: '@mcp-vertex/status-marker',
 	},
-	{ id: 'mcp-vertex-quality-and-rules-gates', appliesTo: '@mcp-vertex/quality' },
-	{ id: 'mcp-vertex-rules-solid-architecture', appliesTo: '@mcp-vertex/rules' },
+	{
+		id: 'mcp-vertex-quality-and-rules-gates',
+		appliesTo: '@mcp-vertex/quality',
+	},
+	{
+		id: 'mcp-vertex-rules-solid-architecture',
+		appliesTo: '@mcp-vertex/rules',
+	},
 	{ id: 'mcp-vertex-rules-dogma-priority', appliesTo: '@mcp-vertex/rules' },
 	{ id: 'mcp-vertex-audit-runner', appliesTo: '@mcp-vertex/audit' },
 	{ id: 'mcp-vertex-audit-playbook', appliesTo: '@mcp-vertex/audit' },
@@ -136,9 +153,7 @@ const isIgnoredSkillEntry = (name: string): boolean => {
 };
 
 /** Scan the per-directory skill conventions (skill-per-subdir). */
-const scanSkillDirs = async (
-	reader: IFileReader,
-): Promise<ITargetSkill[]> => {
+const scanSkillDirs = async (reader: IFileReader): Promise<ITargetSkill[]> => {
 	const out: ITargetSkill[] = [];
 	for (const dir of SKILL_DIRS) {
 		const entries = await reader.listDir(dir.location);
@@ -158,9 +173,7 @@ const scanSkillDirs = async (
 };
 
 /** Scan for loose `*.skill.md` files one level under known roots. */
-const scanSkillFiles = async (
-	reader: IFileReader,
-): Promise<ITargetSkill[]> => {
+const scanSkillFiles = async (reader: IFileReader): Promise<ITargetSkill[]> => {
 	const out: ITargetSkill[] = [];
 	for (const dir of SKILL_FILE_DIRS) {
 		const entries = await reader.listDir(dir);

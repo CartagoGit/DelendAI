@@ -1,5 +1,4 @@
 /**
-import type { IAdoptionSections, IToolNamespace, IToolUnification } from '../../contracts/interfaces/init.interface';
  * init-adoption-plan.ts — f00089 U2 (slice U2, point 2c + A3/A4 renderers).
  *
  * This module owns:
@@ -24,6 +23,12 @@ import type { IAdoptionSections, IToolNamespace, IToolUnification } from '../../
  *     timestamps) so the bundle re-render stays byte-identical.
  *   - Advisory only: never rewrites the target's tools or config.
  */
+
+import type {
+	IAdoptionSections,
+	IToolNamespace,
+	IToolUnification,
+} from '../../contracts/interfaces/init.interface';
 import type { IFileReader } from './init-detection.service';
 import {
 	detectSkillInventory,
@@ -35,9 +40,7 @@ export const DEFAULT_TOOL_PREFIX = 'mcp-vertex';
 
 /** One tool namespace owned by a side of the unification (ours/theirs). */
 
-
 /** The collision-free unification map (point 2c). */
-
 
 /**
  * Read the target's own MCP server/plugin ids from a pre-existing
@@ -167,7 +170,10 @@ export const renderSkillMigrationSection = (
 			`scratch.\n\n`;
 
 	return (
-		`### A3 — skill migration\n\n` +
+		`### S3 — skill migration\n\n` +
+		`- **Status**: pending\n` +
+		`- **Files**: \`docs/mcp-vertex/skills/\`\n` +
+		`- **Gate**: bun run validate\n\n` +
 		`Bring the project's skill surface onto the canonical layout. This is ` +
 		`**advisory**: \`init\` never writes, deletes, or moves a skill here — the ` +
 		`target's own agents execute the migration.\n\n` +
@@ -187,14 +193,20 @@ export const renderToolUnificationSection = (
 	unification: IToolUnification,
 ): string => {
 	const oursLines = unification.ours
-		.map((n) => `- ${code(n.namespace)}_* — mcp-vertex \`${n.plugin}\` plugin`)
+		.map(
+			(n) =>
+				`- ${code(n.namespace)}_* — mcp-vertex \`${n.plugin}\` plugin`,
+		)
 		.join('\n');
 
 	const theirsBlock =
 		unification.theirs.length > 0
 			? `**The target's own tools** (kept under their own namespace):\n\n` +
 				`${unification.theirs
-					.map((n) => `- ${code(`${n.namespace}_*`)} — target server \`${n.plugin}\``)
+					.map(
+						(n) =>
+							`- ${code(`${n.namespace}_*`)} — target server \`${n.plugin}\``,
+					)
 					.join('\n')}\n\n`
 			: `No foreign MCP tool surface was detected in this project; only ` +
 				`mcp-vertex tools are registered.\n\n`;
@@ -209,7 +221,10 @@ export const renderToolUnificationSection = (
 				`the target's tools coexist without renaming either side.\n\n`;
 
 	return (
-		`### A4 — tool-namespace unification\n\n` +
+		`### S4 — tool-namespace unification\n\n` +
+		`- **Status**: pending\n` +
+		`- **Files**: \`.vscode/mcp.json\`\n` +
+		`- **Gate**: bun run validate\n\n` +
 		`Unify the tool surface under the **prefix-per-plugin** contract: every ` +
 		`mcp-vertex tool is exposed as \`<prefix>_<plugin>_<tool>\`, so plugins ` +
 		`never collide with each other or with the target's own tools. This is ` +
@@ -223,7 +238,6 @@ export const renderToolUnificationSection = (
 };
 
 /** Result of composing the U2 sections for `renderAdoptionPlan`. */
-
 
 /**
  * Compose the U2 (A3 + A4) sections. Called by `renderAdoptionPlan`; the

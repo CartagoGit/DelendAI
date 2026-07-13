@@ -48,6 +48,12 @@ const run = async (): Promise<void> => {
 	process.on('SIGTERM', () => onSignal(143));
 	process.on('SIGINT', () => onSignal(130));
 	process.on('SIGHUP', () => onSignal(129));
+	// Deterministic e2e handshake. Tests opt in explicitly so production hosts
+	// do not gain banner noise, and signals are never sent based on a timer that
+	// can expire before cold plugin assembly reaches this point.
+	if (process.env.MCP_VERTEX_TEST_READY === '1') {
+		process.stderr.write('[mcp-vertex] signal-handlers-ready\n');
+	}
 	process.on('beforeExit', () => {
 		// beforeExit fires when the event loop drains naturally;
 		// gracefulShutdown's idempotent guard makes the no-op safe

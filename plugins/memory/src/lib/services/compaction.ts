@@ -98,16 +98,17 @@ export interface IContextDigest {
  * `discard` items are dropped from the tail (the agent stops carrying them).
  * Overridden per item by `pin` / `drop`.
  */
-const DEFAULT_DISPOSITION: Readonly<Record<IContextItemKind, 'keep' | 'discard'>> =
-	{
-		decision: 'keep',
-		open: 'keep',
-		fact: 'keep',
-		pointer: 'keep',
-		output: 'discard',
-		exploration: 'discard',
-		superseded: 'discard',
-	};
+const DEFAULT_DISPOSITION: Readonly<
+	Record<IContextItemKind, 'keep' | 'discard'>
+> = {
+	decision: 'keep',
+	open: 'keep',
+	fact: 'keep',
+	pointer: 'keep',
+	output: 'discard',
+	exploration: 'discard',
+	superseded: 'discard',
+};
 
 /**
  * Stable render order for kind sections — high-signal first. Independent of

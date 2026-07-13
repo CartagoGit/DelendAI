@@ -1,3 +1,5 @@
+import type { IProviderCapabilities } from '../contracts/interfaces/provider-capabilities.interface';
+import type { PluginOrigin } from '../contracts/interfaces/plugin-origin.interface';
 import type { CommitAuthorMode } from '../shared/commit-author';
 import { CONFIG_FILE_SCHEMA } from './config-file-schema';
 
@@ -121,6 +123,13 @@ export interface IMcpVertexCommitAuthorConfig {
  * ```
  */
 export interface IMcpVertexPluginConfig {
+	/**
+	 * Explicit activation override. `false` suppresses the plugin even when a
+	 * preset or `--plugins` selected it; `true` keeps/activates the entry.
+	 */
+	readonly enabled?: boolean;
+	/** Last known origin, persisted by activation UIs for disabled entries. */
+	readonly origin?: PluginOrigin;
 	readonly prefix?: string;
 	readonly options?: Readonly<Record<string, unknown>>;
 	/**
@@ -237,6 +246,14 @@ export interface IMcpVertexConfigFile extends IMcpVertexCorePathsConfig {
 	 */
 	readonly commitAuthor?: IMcpVertexCommitAuthorConfig;
 	readonly plugins?: Readonly<Record<string, IMcpVertexPluginConfig>>;
+	/**
+	 * f00067a S1: root-level multi-model provider roster. Entries mirror
+	 * `IProviderCapabilities` field-for-field (the Zod schema in
+	 * `config-file-schema.ts` is the validating source of truth; ids are
+	 * kebab-case and unique). Canonical home here so peer plugins can read
+	 * the roster without coupling to the orchestrator-runner plugin.
+	 */
+	readonly providers?: ReadonlyArray<IProviderCapabilities>;
 	/**
 	 * f00089 U5: native default filesystem allowlist (authorized roots).
 	 * See {@link IFilesystemConfig}.

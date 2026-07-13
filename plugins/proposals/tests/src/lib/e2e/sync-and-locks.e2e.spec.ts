@@ -257,12 +257,15 @@ Seed for the sync e2e.
 		});
 		expect(again.structured.taskId).toBe('follow-up-1');
 
-		// report exposes the queue stats over the wire.
+		// report exposes the queue stats over the wire. Idempotency must be
+		// observable here: the double-enqueue leaves exactly ONE queued entry,
+		// not two (a duplicate would also make the file parseQueue-invalid).
 		const report = await harness.callTool<{ queuedCount?: number }>(
 			'mcp-vertex_proposals_task_queue',
 			{ action: 'report', params: {} },
 		);
 		expect(report.ok).toBe(true);
+		expect(report.structured.queuedCount).toBe(1);
 	});
 
 	it('a successful lock claim satisfies the outputSchema parity invariant', async () => {

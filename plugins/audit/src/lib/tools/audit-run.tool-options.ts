@@ -11,9 +11,7 @@
  * as `IRunToolOptions`) keeps compiling unchanged.
  */
 
-import type {
-	ILayerConfig,
-} from '../services/audit-brief.service';
+import type { ILayerConfig } from '../services/audit-brief.service';
 import type { IHttpTransport } from '../services/llm-client.service';
 
 /**

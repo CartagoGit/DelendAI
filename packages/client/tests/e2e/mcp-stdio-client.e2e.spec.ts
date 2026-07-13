@@ -1,6 +1,7 @@
 import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join, resolve } from 'node:path';
+import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 import { afterEach, describe, expect, it } from 'vitest';
 
@@ -11,6 +12,9 @@ import {
 
 describe('e2e: McpStdioClient over a real mcp-vertex stdio server', async () => {
 	const workspaces: string[] = [];
+	const coreCli = fileURLToPath(
+		new URL('../../../core/src/cli.ts', import.meta.url),
+	);
 
 	afterEach(() => {
 		for (const workspace of workspaces.splice(0)) {
@@ -23,11 +27,7 @@ describe('e2e: McpStdioClient over a real mcp-vertex stdio server', async () => 
 		workspaces.push(workspace);
 		const client = await McpStdioClient.connect({
 			command: 'bun',
-			args: [
-				resolve('packages/core/src/cli.ts'),
-				'--plugins=',
-				`--workspace=${workspace}`,
-			],
+			args: [coreCli, '--plugins=', `--workspace=${workspace}`],
 			// Silence the spawned CLI's stderr so its status banner
 			// ("[mcp-vertex] wrote a project MCP server blueprint...")
 			// does not leak into the validate output stream.
@@ -45,7 +45,13 @@ describe('e2e: McpStdioClient over a real mcp-vertex stdio server', async () => 
 				McpVertexToolOutputs['mcp-vertex_overview']
 			>('mcp-vertex_overview', { compact: true });
 			expect(overview.server.name).toBe('mcp-vertex');
-			expect(overview.tools.length).toBeGreaterThan(0);
+			// compact `tools` is grouped by plugin ({ core: [...], … }); assert
+			// the groups exist and carry stems (the flat count comes via
+			// client.listTools() above).
+			expect(Array.isArray(overview.tools)).toBe(false);
+			const toolGroups = overview.tools as Record<string, string[]>;
+			expect(Object.keys(toolGroups).length).toBeGreaterThan(0);
+			expect(toolGroups.core).toContain('overview');
 		} finally {
 			await client.close();
 		}

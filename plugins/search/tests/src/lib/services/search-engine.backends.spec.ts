@@ -63,6 +63,32 @@ describe('search-engine dispatcher (Solid Strategy)', async () => {
 			const available = await defaultRgAvailableProbe();
 			expect(typeof available).toBe('boolean');
 		});
+
+		it('fails closed like in-house when every explicit root escapes', async () => {
+			const call = {
+				workspaceRootAbs: '/workspace',
+				query: 'secret',
+				options: { roots: ['../outside', '/absolute'] },
+			} as const;
+			const rg = await createRgBackend({ rgAvailable: async () => true });
+			const inHouse = await createInHouseBackend();
+
+			const [rgResult, inHouseResult] = await Promise.all([
+				rg.execute(call),
+				inHouse.execute(call),
+			]);
+
+			expect(rgResult).toMatchObject({
+				hits: [],
+				truncated: false,
+				scanned: 0,
+			});
+			expect(inHouseResult).toMatchObject({
+				hits: [],
+				truncated: false,
+				scanned: 0,
+			});
+		});
 	});
 
 	describe('createInHouseBackend (Solid-OCP)', async () => {

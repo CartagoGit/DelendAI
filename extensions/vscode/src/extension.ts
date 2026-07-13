@@ -21,8 +21,20 @@ import {
 	registerResetSettingsCommand,
 	registerSaveSettingsCommand,
 } from './commands/open-settings';
+import {
+	LEGACY_SETTINGS_STATE_KEY,
+	SETTINGS_STATE_KEY,
+} from './contracts/constants/settings-state-key.constant';
+import { registerOpenConfigurationCenterCommand } from './commands/open-configuration-center';
 
+import {
+	registerExternalMcpsAckCommand,
+	surfaceExternalMcpsPendingAcks,
+} from './commands/external-mcps-ack';
 import { registerOpenDashboardCommand } from './commands/open-dashboard';
+import { registerProviderActionCommands } from './commands/provider-actions';
+import { registerPluginActivationCommand } from './commands/plugin-activation';
+import { PLUGIN_ACTIVATION_COMMAND } from './contracts/constants/plugin-activation-command.constant';
 import {
 	OPEN_DOCS_COMMAND,
 	registerOpenDocsCommand,
@@ -37,6 +49,10 @@ import {
 	OPEN_PROPOSAL_COMMAND,
 	registerOpenProposalCommand,
 } from './commands/open-proposal';
+import {
+	registerProposalsCopyErrorCommand,
+	registerProposalsRefreshCommand,
+} from './commands/proposals-commands';
 import {
 	RESTART_SERVER_COMMAND,
 	registerRestartServerCommand,
@@ -59,6 +75,8 @@ import {
 	TOOL_SEARCH_COMMAND,
 	registerToolSearchCommand,
 } from './commands/tool-search';
+import { registerOpenToolDetailCommand } from './commands/open-tool-detail';
+import { OPEN_TOOL_DETAIL_COMMAND } from './contracts/constants/open-tool-detail-command.constant';
 import {
 	SETUP_GITHUB_COMMAND,
 	registerSetupGithubCommand,
@@ -70,6 +88,8 @@ import {
 } from './providers/tool-tree-data-provider';
 import { MemoryTreeDataProvider } from './providers/memory-tree-data-provider';
 import { ProposalBoardProvider } from './providers/proposal-board-provider';
+import { createProposalFilterStore } from './host/proposal-filter-store';
+import { ProposalsSnapshotSource } from './lib/proposals-snapshot';
 import {
 	type IStatusBarItem,
 	McpVertexStatusBar,
@@ -85,6 +105,7 @@ export const SHOW_OVERVIEW_COMMAND = 'mcp-vertex.showOverview';
 export const TOOLS_VIEW_ID = 'mcp-vertex.tools';
 export const MEMORY_VIEW_ID = 'mcp-vertex.memory';
 export const PROPOSALS_VIEW_ID = 'mcp-vertex.proposals';
+export { OPEN_TOOL_DETAIL_COMMAND };
 
 export interface IDisposable {
 	dispose(): void;
@@ -99,6 +120,8 @@ export interface IExtensionContext {
 }
 
 export interface IWebviewPanel {
+	/** Native VS Code panel lifecycle hook. */
+	readonly onDidDispose?: (cb: () => void) => { dispose(): void };
 	readonly webview: {
 		html: string;
 		/**
@@ -154,6 +177,9 @@ export interface IVscodeApi {
 	readonly workspace?: {
 		createFileSystemWatcher(pattern: string): IFileSystemWatcher;
 		getConfiguration?(section: string): IConfiguration;
+		readonly workspaceFolders?: ReadonlyArray<{
+			readonly uri: { readonly fsPath: string };
+		}>;
 	};
 }
 
@@ -260,7 +286,10 @@ export const activate = async (
 	} catch {
 		loadedPlugins = undefined;
 	}
-	const catalog = new AgentCatalogService(client);
+	const catalog = new AgentCatalogService(
+		client,
+		namespacePrefix === undefined ? {} : { namespacePrefix },
+	);
 	const notifications = new NotificationsService(client, namespacePrefix);
 	const toolTree = new ToolTreeDataProvider(overview, catalog);
 	const memoryTree = new MemoryTreeDataProvider(new MemoryService(client));
@@ -296,27 +325,34 @@ export const activate = async (
 		TOOLS_VIEW_ID,
 		toolTree,
 	);
-	if (treeRegistration !== undefined)
-		context.subscriptions.push(treeRegistration);
+	if (treeRegistration !== undefined) track(treeRegistration);
 	const memoryRegistration = vscode.window.registerTreeDataProvider?.(
 		MEMORY_VIEW_ID,
 		memoryTree,
 	);
-	if (memoryRegistration !== undefined)
-		context.subscriptions.push(memoryRegistration);
+	if (memoryRegistration !== undefined) track(memoryRegistration);
 	// f00079 S4 (a00040 H5): `mcp-vertex.proposals` is declared in
 	// `contributes.views` but had no `TreeDataProvider`, so the view was
 	// permanently empty. Register the existing `ProposalBoardProvider`
 	// (it mirrors `mcp-vertex_proposals_proposal_board`) so the view
 	// renders the live board and each node can route to its proposal via
 	// `mcp-vertex.openProposal` (S5).
-	const proposalsTree = new ProposalBoardProvider(client);
+	// f00097 S2/S3: one shared read-only snapshot source backs BOTH the
+	// sidebar board and the detail webview, so opening a proposal reuses the
+	// board's cached fetch (one TTL cache, fewer tool calls).
+	const proposalsSource = new ProposalsSnapshotSource({
+		client,
+		...(namespacePrefix === undefined ? {} : { namespacePrefix }),
+	});
+	const proposalsTree = new ProposalBoardProvider(client, {
+		snapshotSource: proposalsSource,
+		filterStore: createProposalFilterStore(context.globalState),
+	});
 	const proposalsRegistration = vscode.window.registerTreeDataProvider?.(
 		PROPOSALS_VIEW_ID,
 		proposalsTree,
 	);
-	if (proposalsRegistration !== undefined)
-		context.subscriptions.push(proposalsRegistration);
+	if (proposalsRegistration !== undefined) track(proposalsRegistration);
 	// Fix #3: `createFileSystemWatcher` can be absent on stripped hosts
 	// (or in test fakes that omit `workspace`). Previously we silently
 	// skipped, leaving the tree permanently stale. Now we log and
@@ -327,16 +363,27 @@ export const activate = async (
 		'**/mcp-vertex.config.json',
 	);
 	if (watcher !== undefined) {
-		context.subscriptions.push(toolTree.bindConfigWatcher(watcher));
+		track(toolTree.bindConfigWatcher(watcher));
 	} else {
 		toolTree.refresh();
 	}
 
 	const withPrefix = namespacePrefix === undefined ? {} : { namespacePrefix };
 	track(registerShowOverviewCommand({ vscode, client, ...withPrefix }));
-	track(registerRefreshCommand({ vscode, client, toolTree }));
+	track(registerRefreshCommand({ vscode, client, toolTree, proposalsTree }));
 	track(registerRunValidationCommand({ vscode, client }));
-	track(registerOpenProposalCommand({ vscode, client }));
+	track(
+		registerOpenProposalCommand({
+			vscode,
+			client,
+			proposalsSource,
+			...withPrefix,
+		}),
+	);
+	// f00097 S4: the board's own refresh (also on the view title bar) and the
+	// banner's "Copy error" action.
+	track(registerProposalsRefreshCommand({ vscode, client, proposalsTree }));
+	track(registerProposalsCopyErrorCommand({ vscode, client }));
 	track(registerShowMetricsCommand({ vscode, client }));
 	// Fix #6: `openDocs` was declared in package.json but never wired up
 	// in `activate()`, so the command was unreachable from the UI. It is
@@ -346,11 +393,50 @@ export const activate = async (
 	// f00053 S6: surface the canonical docs/how-to-use/API from the IDE.
 	track(registerOpenDocsApiCommand({ vscode }));
 	track(registerOpenAgentCatalogCommand({ vscode, client }));
+	track(
+		registerOpenConfigurationCenterCommand({
+			vscode,
+			client,
+			globalState: context.globalState,
+			...withPrefix,
+		}),
+	);
+	track(registerOpenToolDetailCommand({ vscode, client, ...withPrefix }));
 	track(registerOpenKnowledgeCommand({ vscode, client }));
 	track(registerToolSearchCommand({ vscode, client, ...withPrefix }));
 	track(registerRestartServerCommand(vscode));
+	track(
+		registerPluginActivationCommand({
+			vscode,
+			client,
+			globalState: context.globalState,
+			...withPrefix,
+		}),
+	);
 	track(registerMemorySaveCommand({ vscode, client, memoryTree }));
 	track(registerMemoryForgetCommand({ vscode, client, memoryTree }));
+	// f00098 S3: provider dashboard panel + its action commands (pause/
+	// resume/healthcheck/usage report/usage clear-with-modal-confirm).
+	// The panel repaints when these commands run — never by polling.
+	for (const reg of registerProviderActionCommands({
+		vscode,
+		client,
+		globalState: context.globalState,
+		...withPrefix,
+	})) {
+		track(reg);
+	}
+	// f00068 S5: external-server activation ack surface (gate decision 5).
+	// The command lists pending acks → QuickPick → accept/reject via the
+	// external_mcp_ack tool; a NON-MODAL toast surfaces them at activation.
+	const externalMcpsAckDeps = {
+		vscode,
+		client,
+		globalState: context.globalState,
+		...withPrefix,
+	};
+	track(registerExternalMcpsAckCommand(externalMcpsAckDeps));
+	void surfaceExternalMcpsPendingAcks(externalMcpsAckDeps);
 	// Fix #7: `openSettings` renders a webview that posts messages to
 	// `mcp-vertex.saveSettings` / `mcp-vertex.resetSettings`. Those
 	// handlers were never registered, so changes the user made in the
@@ -361,7 +447,7 @@ export const activate = async (
 	// reload instead of living in module-scope memory.
 	const settingsStore = createExtensionSettingsStore(context.globalState);
 	const openSettingsReg = registerOpenSettingsCommand(
-		{ vscode, client },
+		{ vscode, client, globalState: context.globalState },
 		settingsStore,
 	);
 	const saveSettingsReg = registerSaveSettingsCommand(vscode, settingsStore);
@@ -405,17 +491,12 @@ export const activate = async (
 			registerOpenDashboardCommand({
 				host,
 				client,
+				globalState: context.globalState,
 				...withPrefix,
-				getConfig: () => {
-					try {
-						const section = host.getConfiguration<{
-							readonly extension?: { readonly docsUrl?: string };
-						}>('mcp-vertex');
-						return section ?? {};
-					} catch {
-						return {};
-					}
-				},
+				getConfig: () =>
+					context.globalState.get(SETTINGS_STATE_KEY) ??
+					context.globalState.get(LEGACY_SETTINGS_STATE_KEY) ??
+					{},
 			}),
 		);
 	} else {
@@ -427,24 +508,12 @@ export const activate = async (
 			registerOpenDashboardCommand({
 				host,
 				client,
+				globalState: context.globalState,
 				...withPrefix,
-				getConfig: () => {
-					try {
-						return (
-							(
-								deps.vscode as unknown as {
-									workspace?: {
-										getConfiguration?: (
-											section: string,
-										) => unknown;
-									};
-								}
-							).workspace?.getConfiguration?.('mcp-vertex') ?? {}
-						);
-					} catch {
-						return {};
-					}
-				},
+				getConfig: () =>
+					context.globalState.get(SETTINGS_STATE_KEY) ??
+					context.globalState.get(LEGACY_SETTINGS_STATE_KEY) ??
+					{},
 			}),
 		);
 	}
@@ -644,5 +713,6 @@ export {
 	MEMORY_FORGET_COMMAND,
 	MEMORY_SAVE_COMMAND,
 	TOOL_SEARCH_COMMAND,
+	PLUGIN_ACTIVATION_COMMAND,
 	SETUP_GITHUB_COMMAND,
 };

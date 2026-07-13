@@ -105,6 +105,55 @@ describe('AgentLoopDetectorService', async () => {
 		expect(existsSync(handoffDirAbs)).toBe(true);
 	});
 
+	it('clears a stuck agent once it recovers (falling-edge self-heal)', async () => {
+		const service = new AgentLoopDetectorService(mockCtx);
+		for (let i = 0; i < 9; i++) {
+			await service.onToolCall(
+				'read_file',
+				{ path: 'foo.ts', agent: 'a1' },
+				undefined,
+				new Error('loop'),
+			);
+		}
+		expect(
+			service.isAgentStuck('read_file', { agent: 'a1' }),
+		).not.toBeNull();
+
+		// Recovery: enough distinct successful calls to slide the offending
+		// repeats out of the 50-entry ring. The live verdict then flips to
+		// not-stuck and the sticky flag must clear (previously it latched
+		// forever).
+		for (let i = 0; i < 50; i++) {
+			await service.onToolCall(
+				'read_file',
+				{ path: `distinct-${i}.ts`, agent: 'a1' },
+				{ ok: true },
+			);
+		}
+		expect(service.isAgentStuck('read_file', { agent: 'a1' })).toBeNull();
+	});
+
+	it('resetAgent forgets the window + stuck flag so a reused name starts clean', async () => {
+		const service = new AgentLoopDetectorService(mockCtx);
+		for (let i = 0; i < 9; i++) {
+			await service.onToolCall(
+				'read_file',
+				{ path: 'foo.ts', agent: 'a1' },
+				undefined,
+				new Error('loop'),
+			);
+		}
+		expect(
+			service.isAgentStuck('read_file', { agent: 'a1' }),
+		).not.toBeNull();
+
+		// The name is released back to the pool → the lifecycle owner resets
+		// it. A subsequent lease of the same name must not inherit the stuck
+		// verdict.
+		service.resetAgent('a1');
+		expect(service.isAgentStuck('read_file', { agent: 'a1' })).toBeNull();
+	});
+
 	it('redacts secrets in the written handoff packet recent calls', async () => {
 		const service = new AgentLoopDetectorService(mockCtx);
 

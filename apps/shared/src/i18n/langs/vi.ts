@@ -238,7 +238,7 @@ const site = {
 		copy: 'Sao chép',
 		copied: 'Đã sao chép!',
 		faqTitle: 'Câu hỏi thường gặp',
-		faqQ1: 'Sao `deno run -A npm:@mcp-vertex/core` khởi động chậm?',
+		faqQ1: 'Sao `deno run -A npm:@mcp-vertex/cli` khởi động chậm?',
 		faqA1: 'Deno giải và xác minh gói npm ở lần dùng đầu. Các lần sau dùng lại cache trong `~/.cache/deno`. Cho khởi động lặp lại, hãy ưu tiên bun hoặc npx.',
 		faqQ2: 'IDE của tôi không có trong danh sách — giờ sao?',
 		faqA2: 'Bất kỳ IDE nào chấp nhận MCP server stdio đều chạy được. Lấy JSON từ VS Code, đổi đường dẫn tệp cho khớp IDE của bạn, rồi đăng ký cùng lệnh + đối số.',
@@ -278,6 +278,7 @@ const site = {
 	},
 	cfg: {
 		title: 'Cài đặt',
+		close: 'Đóng cài đặt',
 		theme: 'Giao diện',
 		language: 'Ngôn ngữ',
 		motion: 'Chuyển động',
@@ -286,6 +287,11 @@ const site = {
 	search: {
 		title: 'Tìm kiếm',
 		placeholder: 'Tìm kiếm trên trang...',
+		close: 'Đóng tìm kiếm',
+		noMatches: 'Không có kết quả phù hợp.',
+		indexUnavailable: 'Chỉ mục tìm kiếm không khả dụng.',
+		buildRequired:
+			'Tìm kiếm được tạo bằng bun run site. Hãy chạy bản dựng để bật tính năng này.',
 	},
 	footer: {
 		built: 'Sinh từ registry công cụ sống.',
@@ -304,6 +310,7 @@ const site = {
 		tabTools: 'Công cụ',
 		tabConfiguration: 'Cấu hình',
 		tabTutorial: 'Hướng dẫn',
+		tutorialFallback: 'đang hiển thị tiếng Anh, chưa được dịch sang {lang}',
 	},
 	plugin: {
 		proposals:
@@ -383,6 +390,8 @@ const site = {
 		nextSteps: 'Tiếp theo nên đi đâu',
 		nextToolsCta: 'Xem tất cả công cụ',
 		nextTroubleshootingCta: 'Có gì không hoạt động? Khắc phục sự cố',
+		overviewHint:
+			'Sau khi máy chủ khởi động, hãy gọi mcp-vertex_overview với compact: true; recommendedNextAction cho tác nhân biết chính xác việc cần làm tiếp theo.',
 	},
 	troubleshooting: {
 		title: 'Khắc phục sự cố',
@@ -519,9 +528,22 @@ const extension = {
 	setupGithub: 'mcp-vertex: Thiết lập issues GitHub',
 };
 
+const dev = {
+	quickStartHeading: 'Bắt đầu nhanh',
+	quickStartLede:
+		'Một lần định hướng. Workspace đã được cấu hình và bảng điều khiển hiện đang lấy dữ liệu thực — đây là những gì mỗi tab làm.',
+	quickStartDismiss: 'Đóng bắt đầu nhanh',
+	firstRunHeading: 'Chào mừng đến với mcp-vertex',
+	firstRunLede:
+		'Tiện ích mở rộng này cung cấp bảng điều khiển, cài đặt và bảng công cụ cho máy chủ MCP của mcp-vertex. Máy chủ MCP chưa được cài đặt trong workspace này — khi được cài đặt, bảng điều khiển sẽ chuyển sang lấy dữ liệu thực.',
+	firstRunSkip: 'Bỏ qua — vẫn hiển thị bảng điều khiển',
+	firstRunInstall: 'Cài đặt mcp-vertex trong workspace này',
+};
+
 const dict: ILangDict = {
 	site: site as unknown as ILangDict['site'],
 	extension: extension as unknown as ILangDict['extension'],
+	dev: dev as unknown as ILangDict['dev'],
 	tools: {},
 };
 

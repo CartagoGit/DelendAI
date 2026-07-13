@@ -1,0 +1,182 @@
+// `apps/shared/src/styles/components/_drawer.scss`
+//
+// BEM-nested styles for the modal `<div class="mcpv-drawer">` block
+// emitted by `renderDrawer` in
+// `apps/shared/src/components/ui/drawer.ts` (f00102 S3.3).
+// Reachable from any host that @uses the shared styles index.
+//
+// Class namespace is `mcpv-drawer` / `mcpv-drawer__*` with the
+// `mcpv-drawer__panel--{left,right}` modifier. The trailing
+// @extend block keeps the legacy `.drawer*` selectors working
+// for the SiteNav.astro wrapper (which keeps emitting `class="drawer"`
+// alongside `class="mcpv-drawer"` until the legacy markup is
+// dropped in a future cleanup slice).
+
+.mcpv-drawer {
+	position: fixed;
+	inset: 0;
+	z-index: 50;
+	pointer-events: none;
+}
+
+.mcpv-drawer__backdrop {
+	position: absolute;
+	inset: 0;
+	background: color-mix(in srgb, var(--mcpv-bg, var(--bg)) 60%, transparent);
+	opacity: 0;
+	transition: opacity 0.22s ease;
+}
+
+.mcpv-drawer__panel {
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	width: min(86vw, 360px);
+	display: flex;
+	flex-direction: column;
+	gap: 1rem;
+	padding: 1rem 1.25rem 1.25rem;
+	background: var(--mcpv-bg, var(--bg));
+	border: 1px solid var(--mcpv-border, var(--line));
+	box-shadow: -8px 0 32px color-mix(in srgb, var(--mcpv-bg, var(--bg)) 70%, transparent);
+	transform: translateX(100%);
+	transition: transform 0.22s ease;
+	pointer-events: auto;
+}
+
+.mcpv-drawer--left .mcpv-drawer__panel {
+	left: 0;
+	right: auto;
+	transform: translateX(-100%);
+	box-shadow: 8px 0 32px color-mix(in srgb, var(--mcpv-bg, var(--bg)) 70%, transparent);
+}
+
+.mcpv-drawer--right .mcpv-drawer__panel {
+	right: 0;
+	left: auto;
+}
+
+.mcpv-drawer[data-open='true'] {
+	pointer-events: auto;
+}
+
+.mcpv-drawer[data-open='true'] .mcpv-drawer__backdrop {
+	opacity: 1;
+}
+
+.mcpv-drawer[data-open='true'] .mcpv-drawer__panel {
+	transform: translateX(0);
+}
+
+.mcpv-drawer__head {
+	display: flex;
+	align-items: center;
+	gap: 0.6rem;
+	padding-bottom: 0.5rem;
+	border-bottom: 1px solid var(--mcpv-border, var(--line));
+}
+
+.mcpv-drawer__brand {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.5rem;
+	text-decoration: none;
+	color: inherit;
+	flex: 1 1 auto;
+	min-width: 0;
+}
+
+.mcpv-drawer__logo {
+	// The renderer emits width/height attrs; keep the img rigid inside
+	// the flex brand row so a long brand text can never squash it.
+	display: block;
+	flex: 0 0 auto;
+}
+
+.mcpv-drawer__brand-text {
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.mcpv-drawer__close {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 32px;
+	height: 32px;
+	padding: 0;
+	background: transparent;
+	border: 1px solid transparent;
+	border-radius: 8px;
+	color: var(--mcpv-fg-muted, var(--muted));
+	cursor: pointer;
+	transition: background 0.18s ease;
+
+	&:hover {
+		background: color-mix(in srgb, var(--mcpv-link, var(--accent)) 14%, transparent);
+		color: var(--mcpv-fg, var(--fg));
+	}
+}
+
+.mcpv-drawer__links {
+	display: flex;
+	flex-direction: column;
+	gap: 0.1rem;
+	flex: 1 1 auto;
+	overflow-y: auto;
+
+	& a {
+		display: block;
+		padding: 0.6rem 0.5rem;
+		border-radius: 8px;
+		color: var(--mcpv-fg, var(--fg));
+		text-decoration: none;
+		font-size: 0.95rem;
+
+		&:hover {
+			background: color-mix(in srgb, var(--mcpv-link, var(--accent)) 12%, transparent);
+			text-decoration: none;
+		}
+	}
+}
+
+.mcpv-drawer__foot {
+	padding-top: 0.75rem;
+	border-top: 1px solid var(--mcpv-border, var(--line));
+}
+
+// Legacy aliases: keep the existing `.drawer*` selectors
+// visually equivalent to the new `.mcpv-drawer*` tree so the
+// wrapper Astro can keep its `class="drawer"` markup during
+// the deprecation window.
+.drawer {
+	@extend .mcpv-drawer;
+}
+.drawer__backdrop {
+	@extend .mcpv-drawer__backdrop;
+}
+.drawer__panel {
+	@extend .mcpv-drawer__panel;
+}
+.drawer__head {
+	@extend .mcpv-drawer__head;
+}
+.drawer__brand {
+	@extend .mcpv-drawer__brand;
+}
+.drawer__logo {
+	@extend .mcpv-drawer__logo;
+}
+.drawer__brand-text {
+	@extend .mcpv-drawer__brand-text;
+}
+.drawer__close {
+	@extend .mcpv-drawer__close;
+}
+.drawer__links {
+	@extend .mcpv-drawer__links;
+}
+.drawer__foot {
+	@extend .mcpv-drawer__foot;
+}

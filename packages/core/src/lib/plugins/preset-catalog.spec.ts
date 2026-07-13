@@ -6,25 +6,50 @@ import {
 } from './preset-catalog';
 
 describe('PRESET_CATALOG', async () => {
-	it('lists presets in ⊇ order: minimal, standard, swarm, full, vertex', async () => {
+	it('lists presets in ⊇ order: minimal, lean, standard, swarm, full, vertex', async () => {
 		expect(PRESET_CATALOG.map((def) => def.id)).toEqual([...PRESET_KIND]);
+		expect([...PRESET_KIND]).toEqual([
+			'minimal',
+			'lean',
+			'standard',
+			'swarm',
+			'full',
+			'vertex',
+		]);
 	});
 
 	it('stores deltas, not full membership lists', async () => {
 		// minimal: 2 members (the base)
 		expect(PRESET_CATALOG[0]?.members.length).toBe(2);
+		// lean: 4 members, independent essentials preset
+		expect(PRESET_CATALOG[1]?.members.length).toBe(4);
 		// standard: adds 5 on top of minimal
-		expect(PRESET_CATALOG[1]?.members.length).toBe(5);
+		expect(PRESET_CATALOG[2]?.members.length).toBe(5);
 		// swarm: adds 6 on top of standard
-		expect(PRESET_CATALOG[2]?.members.length).toBe(6);
+		expect(PRESET_CATALOG[3]?.members.length).toBe(6);
 		// full: adds 2 host-only on top of swarm
-		expect(PRESET_CATALOG[3]?.members.length).toBe(2);
+		expect(PRESET_CATALOG[4]?.members.length).toBe(2);
 		// vertex: 10 members, mirrors mcp-vertex.config.json (independent)
-		expect(PRESET_CATALOG[4]?.members.length).toBe(10);
+		expect(PRESET_CATALOG[5]?.members.length).toBe(10);
+	});
+
+	it('defines `lean` as an independent essentials preset', async () => {
+		const lean = PRESET_CATALOG[1];
+		expect(lean?.id).toBe('lean');
+		expect(lean?.independent).toBe(true);
+		expect(lean?.members.map((m) => m.plugin)).toEqual([
+			'git',
+			'search',
+			'memory',
+			'docs',
+		]);
+		for (const member of lean?.members ?? []) {
+			expect(member.hostOnly).toBeUndefined();
+		}
 	});
 
 	it('marks every full-preset member as hostOnly', async () => {
-		const full = PRESET_CATALOG[3];
+		const full = PRESET_CATALOG[4];
 		expect(full).toBeDefined();
 		if (full === undefined) return;
 		for (const member of full.members) {
@@ -32,22 +57,24 @@ describe('PRESET_CATALOG', async () => {
 		}
 	});
 
-	it('forbids hostOnly in minimal, standard, swarm', async () => {
-		for (const def of PRESET_CATALOG.slice(0, 3)) {
-			for (const member of def.members) {
+	it('forbids hostOnly in minimal, lean, standard, swarm', async () => {
+		for (const id of ['minimal', 'lean', 'standard', 'swarm']) {
+			const def = PRESET_CATALOG.find((d) => d.id === id);
+			expect(def).toBeDefined();
+			for (const member of def?.members ?? []) {
 				expect(member.hostOnly).toBeUndefined();
 			}
 		}
 	});
 
 	it('marks `vertex` as an independent preset', async () => {
-		const vertex = PRESET_CATALOG[4];
+		const vertex = PRESET_CATALOG[5];
 		expect(vertex).toBeDefined();
 		expect(vertex?.independent).toBe(true);
 	});
 
 	it('vertex membership mirrors mcp-vertex.config.json (10 plugins, 2 hostOnly)', async () => {
-		const vertex = PRESET_CATALOG[4];
+		const vertex = PRESET_CATALOG[5];
 		expect(vertex).toBeDefined();
 		if (vertex === undefined) return;
 		const ids = vertex.members.map((m) => m.plugin);
@@ -116,6 +143,39 @@ describe('resolvePresetMembers', async () => {
 
 	it('resolves minimal = [git, search]', async () => {
 		expect(resolvePresetMembers('minimal')).toEqual(['git', 'search']);
+	});
+
+	it('resolves lean to EXACTLY [git, search, memory, docs] (independent, no chain)', async () => {
+		expect(resolvePresetMembers('lean')).toEqual([
+			'git',
+			'search',
+			'memory',
+			'docs',
+		]);
+		// Independent: never accumulates standard/swarm plugins.
+		const resolved = resolvePresetMembers('lean');
+		expect(resolved).not.toContain('rules');
+		expect(resolved).not.toContain('quality');
+		expect(resolved).not.toContain('deps');
+		expect(resolved).not.toContain('proposals');
+	});
+
+	it('lean (independent) does NOT alter standard/swarm/full membership', async () => {
+		// standard still resolves via the chain (minimal + its delta),
+		// unaffected by the independent `lean` def sitting between them.
+		expect(resolvePresetMembers('standard')).toEqual([
+			'git',
+			'search',
+			'memory',
+			'docs',
+			'rules',
+			'quality',
+			'deps',
+		]);
+		expect(resolvePresetMembers('swarm').length).toBe(13);
+		expect(resolvePresetMembers('full').length).toBe(15);
+		// The independent `lean` members do not leak into the chain.
+		expect(resolvePresetMembers('swarm')).not.toContain('lean');
 	});
 
 	it('resolves standard = minimal + memory/docs/rules/quality/deps', async () => {
