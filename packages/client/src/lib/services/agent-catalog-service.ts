@@ -234,12 +234,28 @@ export class AgentCatalogService {
 		) {
 			return this.cache.snapshot;
 		}
-		const snapshot = await this.client.request<
+		const result = await this.client.request<
 			{ mode: 'full' },
 			IAgentCatalogOutput
 		>(formatToolName(this.namespacePrefix, 'agent_catalog'), {
 			mode: 'full',
 		});
+		// The wire type marks skill detail fields optional because the
+		// compact orientation projection omits them; mode:"full" always
+		// carries them, so normalise with safe fallbacks for the strict
+		// ICatalogSnapshot shape.
+		const snapshot: ICatalogSnapshot = {
+			...result,
+			skills: result.skills.map((skill) => ({
+				id: skill.id,
+				version: skill.version ?? '0.0.0',
+				minCoreVersion: skill.minCoreVersion ?? '0.0.0',
+				summary: skill.summary ?? '',
+				appliesTo: skill.appliesTo ?? [],
+				tags: skill.tags,
+				bodyPath: skill.bodyPath ?? '',
+			})),
+		};
 		this.cache = {
 			snapshot,
 			fetchedAt: this.now(),
