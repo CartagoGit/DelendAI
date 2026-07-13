@@ -1,10 +1,12 @@
 name: CI
 
+# develop is the integration branch (agents push there daily); without it
+# in the triggers, breakage only surfaces when a main release is attempted.
 on:
   push:
-    branches: [main]
+    branches: [main, develop]
   pull_request:
-    branches: [main]
+    branches: [main, develop]
 
 # Cancel superseded runs on the same ref to save CI minutes.
 concurrency:
