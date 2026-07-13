@@ -5,7 +5,10 @@ import {
 	SettingsService,
 	validateExtensionSettings,
 } from '../../src/lib/services/settings.service';
-import type { ISettingsStore } from '../../src/lib/contracts/interfaces/settings.interface';
+import {
+	HOST_THEME_CHOICES,
+	type ISettingsStore,
+} from '../../src/lib/contracts/interfaces/settings.interface';
 
 const createStore = (
 	initial: unknown = {},
@@ -34,12 +37,37 @@ describe('SettingsService', async () => {
 		expect(next.theme).toBe('dark');
 		expect(store.value).toEqual({
 			other: true,
+			version: 2,
 			extension: {
 				...DEFAULT_EXTENSION_SETTINGS,
 				logLevel: 'debug',
 				theme: 'dark',
 			},
 		});
+	});
+
+	it('migrates legacy unversioned settings with explicit defaults', async () => {
+		const store = createStore({
+			extension: { theme: 'dark', language: 'unknown', motion: 'off' },
+		});
+		const service = new SettingsService(store);
+		await expect(service.get()).resolves.toMatchObject({
+			theme: 'dark',
+			language: 'en',
+			motion: 'system',
+		});
+		await service.set({ language: 'es', motion: 'reduced' });
+		expect(store.value).toMatchObject({
+			version: 2,
+			extension: { language: 'es', motion: 'reduced' },
+		});
+	});
+
+	it('accepts every canonical shared theme', async () => {
+		const service = new SettingsService(createStore({}));
+		for (const theme of HOST_THEME_CHOICES) {
+			await expect(service.set({ theme })).resolves.toMatchObject({ theme });
+		}
 	});
 
 	it('rejects invalid docs URLs before writing', async () => {
