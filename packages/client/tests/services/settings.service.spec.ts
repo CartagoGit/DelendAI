@@ -66,7 +66,9 @@ describe('SettingsService', async () => {
 	it('accepts every canonical shared theme', async () => {
 		const service = new SettingsService(createStore({}));
 		for (const theme of HOST_THEME_CHOICES) {
-			await expect(service.set({ theme })).resolves.toMatchObject({ theme });
+			await expect(service.set({ theme })).resolves.toMatchObject({
+				theme,
+			});
 		}
 	});
 
