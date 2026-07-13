@@ -237,7 +237,7 @@ describe('e2e: outputSchema validation over the protocol (N16)', async () => {
 		const created = await client.callTool({
 			name: 'mcp-vertex_proposals_create_proposal',
 			arguments: {
-				id: 'p1',
+				id: 'p00001',
 				title: 'demo',
 				slices: [{ sliceId: 's1', files: ['src/a.ts'] }],
 			},
@@ -245,11 +245,11 @@ describe('e2e: outputSchema validation over the protocol (N16)', async () => {
 		expect(created.isError, 'create_proposal').toBeFalsy();
 		const cs = created.structuredContent as { ok: boolean; file: string };
 		expect(cs.ok).toBe(true);
-		expect(cs.file).toContain('p1');
+		expect(cs.file).toContain('p00001');
 
 		const closed = await client.callTool({
 			name: 'mcp-vertex_proposals_close_slice',
-			arguments: { proposalId: 'p1', sliceId: 's1' },
+			arguments: { proposalId: 'p00001', sliceId: 's1' },
 		});
 		expect(closed.isError, 'close_slice').toBeFalsy();
 		expect((closed.structuredContent as { closed: boolean }).closed).toBe(
