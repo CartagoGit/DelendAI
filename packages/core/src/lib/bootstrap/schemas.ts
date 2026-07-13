@@ -11,6 +11,7 @@
 // tools should add their schema here, not in `bootstrap-tool.ts`.
 
 import { z } from 'zod';
+import { ADOPTION_STRATEGY_INPUT_SCHEMA } from '../contracts/constants/adoption-strategy-schema.constant';
 
 // r00002 S1 — mirrors `IProjectAnalysis` (analyze-project.ts).
 // r00001 S0 — exported so the golden snapshot test can pin the schema shape.
@@ -139,6 +140,7 @@ export const ANALYZE_INPUT_SCHEMA = z.object({
 	namespacePrefix: z.string().optional(),
 	cacheDir: z.string().optional(),
 	docsDir: z.string().optional(),
+	adoption: ADOPTION_STRATEGY_INPUT_SCHEMA.optional(),
 });
 
 export const CREATE_INPUT_SCHEMA = z.object({
@@ -162,6 +164,7 @@ export const PLAN_INPUT_SCHEMA = z.object({
 	tests: z.boolean().optional(),
 	namespacePrefix: z.string().optional(),
 	serverName: z.string().optional(),
+	adoption: ADOPTION_STRATEGY_INPUT_SCHEMA.optional(),
 });
 
 export const DRIFT_INPUT_SCHEMA = z.object({
