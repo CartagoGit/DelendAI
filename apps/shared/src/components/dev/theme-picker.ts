@@ -26,27 +26,18 @@
  *   embedders that want a fixed surface.
  */
 import { escapeAttr } from '../../lib/escape';
+import {
+	HOST_THEME_CHOICES,
+	type HostTheme,
+} from '@mcp-vertex/client/lib/contracts/interfaces/settings.interface';
 
-export type ThemeChoice =
-	| 'system'
-	| 'light'
-	| 'dark'
-	| 'midnight'
-	| 'solarized'
-	| 'nord';
+export type ThemeChoice = HostTheme;
 
 /** All non-system theme values backed by `:root[data-theme="..."]`
  * blocks in `apps/shared/src/styles/_themes.scss`. Hosts that want
  * a smaller surface (e.g. a CLI wizard that only knows dark + light)
  * can pass a custom `themes` option. */
-export const ALL_THEMES: ReadonlyArray<ThemeChoice> = [
-	'system',
-	'light',
-	'dark',
-	'midnight',
-	'solarized',
-	'nord',
-];
+export const ALL_THEMES: readonly ThemeChoice[] = HOST_THEME_CHOICES;
 
 export interface IRenderThemePickerOptions {
 	/** Currently selected theme. */
@@ -70,14 +61,7 @@ export interface IRenderThemePickerOptions {
 /** Default render order. Pinned by the picker so the radio buttons
  * do not shuffle between renders when callers accidentally rely on
  * insertion order. */
-export const THEME_ORDER: ReadonlyArray<ThemeChoice> = [
-	'system',
-	'light',
-	'dark',
-	'midnight',
-	'solarized',
-	'nord',
-];
+export const THEME_ORDER: readonly ThemeChoice[] = HOST_THEME_CHOICES;
 
 /**
  * Preview swatch colours — the small inner dot on the swatch-style

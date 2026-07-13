@@ -86,6 +86,7 @@ const dict: LangDict = {
 	},
 	cfg: {
 		title: 'الإعدادات',
+		close: 'إغلاق الإعدادات',
 		theme: 'السمة',
 		language: 'اللغة',
 		motion: 'الحركة',
@@ -94,6 +95,11 @@ const dict: LangDict = {
 	search: {
 		title: 'بحث',
 		placeholder: 'البحث في الموقع...',
+		close: 'إغلاق البحث',
+		noMatches: 'لا توجد نتائج مطابقة.',
+		indexUnavailable: 'فهرس البحث غير متاح.',
+		buildRequired:
+			'يُنشأ البحث بواسطة bun run site. شغّل عملية البناء لتفعيله.',
 	},
 	footer: {
 		built: 'مُولّد من السجل الحي للأدوات.',
@@ -112,6 +118,7 @@ const dict: LangDict = {
 		tabTools: 'الأدوات',
 		tabConfiguration: 'الإعداد',
 		tabTutorial: 'دليل',
+		tutorialFallback: 'يُعرض بالإنجليزية ولم يُترجم بعد إلى {lang}',
 	},
 	plugin: {
 		proposals:
@@ -196,6 +203,8 @@ const dict: LangDict = {
 		nextSteps: 'إلى أين بعد ذلك',
 		nextToolsCta: 'تصفّح جميع الأدوات',
 		nextTroubleshootingCta: 'هل هناك شيء لا يعمل؟ حل المشكلات',
+		overviewHint:
+			'بعد بدء الخادم، استدعِ mcp-vertex_overview مع compact: true؛ تخبر recommendedNextAction الوكيل بما يجب فعله تالياً بدقة.',
 	},
 	troubleshooting: {
 		title: 'حل المشكلات',

@@ -46,6 +46,24 @@ describe('serializeRedactedEvent truncation (f00111 S2)', () => {
 		expect(parsed.meta.__truncated__).toBeUndefined();
 		expect(parsed.meta.toolName).toBe('t');
 	});
+
+	it('terminates when the cap is smaller than the attribution envelope', () => {
+		const event = normalizeEvent('tool-completed', {
+			toolName: 'mcp-vertex_agent_catalog',
+			taskId: 'task-1',
+			result: 'x'.repeat(2_000),
+		});
+		const parsed = JSON.parse(serializeRedactedEvent(event, 16)) as {
+			meta: {
+				toolName?: string;
+				taskId?: string;
+				__truncated__?: boolean;
+			};
+		};
+		expect(parsed.meta.__truncated__).toBe(true);
+		expect(parsed.meta.toolName).toBe('mcp-vertex_agent_catalog');
+		expect(parsed.meta.taskId).toBe('task-1');
+	});
 });
 
 describe('new event kinds (f00111 S2)', () => {

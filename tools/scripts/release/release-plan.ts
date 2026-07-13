@@ -9,19 +9,40 @@
 
 /**
  * Publish order: `@mcp-vertex/core` FIRST (every plugin declares it as a
- * `peerDependency`), then the nine plugins. Mirrors docs/mcp-vertex/NPM_PUBLISH.md §2.
+ * `peerDependency`), then the transport/client and executable CLI, then every
+ * first-party plugin. Publishing every plugin keeps presets and documentation
+ * from referring to packages absent from the release.
  */
 export const PUBLISH_ORDER: readonly string[] = [
 	'packages/core',
-	'plugins/proposals',
-	'plugins/rules',
-	'plugins/memory',
-	'plugins/git',
-	'plugins/quality',
-	'plugins/search',
-	'plugins/notification',
-	'plugins/docs',
+	'packages/client',
+	'packages/cli',
+	'plugins/audit',
+	'plugins/cache',
+	'plugins/conventions',
 	'plugins/deps',
+	'plugins/docs',
+	'plugins/external-mcps',
+	'plugins/git',
+	'plugins/issues',
+	'plugins/logs',
+	'plugins/memory',
+	'plugins/notification',
+	'plugins/orchestrator-runner',
+	'plugins/proposals',
+	'plugins/quality',
+	'plugins/rules',
+	'plugins/search',
+	'plugins/status-marker',
+	'plugins/test-convention',
+	'plugins/usage-tracking',
+	'plugins/web-fetch',
+];
+
+/** Private source packages bundled into the VS Code artifact, never npm-published. */
+export const BUNDLED_PRIVATE_PACKAGES: readonly string[] = [
+	'packages/ui-extension',
+	'apps/shared',
 ];
 
 /** The peerDependency the plugins pin to the core version. */

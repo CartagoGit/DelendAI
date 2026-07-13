@@ -1,6 +1,7 @@
 ---
 import { languages, useTranslations, type Lang } from '#I18N/ui';
 import {
+	ALL_THEMES,
 	renderThemeSwatches,
 	type ThemeChoice,
 } from '@mcp-vertex/shared/components/dev/theme-picker';
@@ -47,10 +48,7 @@ const hrefFor = (code: Lang) => {
 const COOKIE_THEME = 'mcpvertex-theme';
 const cookieTheme = Astro.cookies.get(COOKIE_THEME)?.value;
 const isThemeChoice = (v: unknown): v is ThemeChoice =>
-	typeof v === 'string' &&
-	(
-		['system', 'light', 'dark', 'midnight', 'solarized', 'nord'] as const
-	).includes(v as ThemeChoice);
+	typeof v === 'string' && (ALL_THEMES as readonly string[]).includes(v);
 const currentTheme: ThemeChoice = isThemeChoice(cookieTheme)
 	? cookieTheme
 	: 'dark';
@@ -83,7 +81,7 @@ const langLinksHtml = renderLangLinks({
 	<div class="modal__panel">
 		<div class="modal__head">
 			<h2>{t.cfg.title}</h2>
-			<button class="modal__close" data-cfg-close aria-label="Close">×</button>
+			<button class="modal__close" data-cfg-close aria-label={t.cfg.close}>×</button>
 		</div>
 
 		<div class="modal__group">
@@ -114,6 +112,17 @@ const langLinksHtml = renderLangLinks({
 	const KEY_MOTION = 'mcpvertex-motion';
 	const root = document.documentElement;
 	let cfgAbort: AbortController | undefined;
+	type WebMotion = 'system' | 'full' | 'reduced';
+	const readMotion = (): WebMotion => {
+		const stored = localStorage.getItem(KEY_MOTION);
+		if (stored === 'reduced' || stored === 'off') return 'reduced';
+		if (stored === 'full' || stored === 'on') return 'full';
+		return 'system';
+	};
+	const applyMotion = (motion: WebMotion) => {
+		if (motion === 'reduced') root.dataset.motion = 'off';
+		else root.removeAttribute('data-motion');
+	};
 
 	// Live re-sync helpers. They are declared at script scope (not inside
 	// `setupConfig`) so the `astro:after-swap` listener registered at the
@@ -164,7 +173,7 @@ const langLinksHtml = renderLangLinks({
 		const open = () => {
 			modal?.removeAttribute('hidden');
 			modal?.classList.add('modal--open');
-			if (motion) motion.checked = root.dataset.motion !== 'off';
+			if (motion) motion.checked = readMotion() !== 'reduced';
 			markActiveTheme();
 			markActiveLang();
 		};
@@ -214,13 +223,9 @@ const langLinksHtml = renderLangLinks({
 		motion?.addEventListener(
 			'change',
 			() => {
-				if (motion.checked) {
-					root.removeAttribute('data-motion');
-					localStorage.setItem(KEY_MOTION, 'on');
-				} else {
-					root.dataset.motion = 'off';
-					localStorage.setItem(KEY_MOTION, 'off');
-				}
+				const value: WebMotion = motion.checked ? 'full' : 'reduced';
+				applyMotion(value);
+				localStorage.setItem(KEY_MOTION, value);
 			},
 			{ signal }
 		);

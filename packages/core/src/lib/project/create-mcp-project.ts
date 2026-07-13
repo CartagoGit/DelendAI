@@ -107,7 +107,10 @@ const instrumentToolHandlers = (
 			let onAbort: (() => void) | undefined;
 			if (signal !== undefined && config.onToolCancel) {
 				const onToolCancel = config.onToolCancel;
+				let cancelReported = false;
 				onAbort = () => {
+					if (cancelReported) return;
+					cancelReported = true;
 					try {
 						void Promise.resolve(
 							onToolCancel(
@@ -121,6 +124,10 @@ const instrumentToolHandlers = (
 					}
 				};
 				signal.addEventListener('abort', onAbort, { once: true });
+				// `addEventListener` does not replay an abort that happened just
+				// before registration. The idempotence guard also closes the tiny
+				// race where abort fires between registration and this check.
+				if (signal.aborted) onAbort();
 			}
 			try {
 				if (config.onToolStart) {

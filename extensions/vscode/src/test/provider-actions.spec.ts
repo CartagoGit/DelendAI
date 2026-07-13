@@ -62,6 +62,27 @@ const REPORT_PAYLOAD = {
 	expensiveCalls: [],
 };
 
+const MODEL_REPORT_PAYLOAD = {
+	groupBy: 'model',
+	totals: {
+		calls: 4,
+		totalTokens: 150,
+		costUsd: 0.25,
+		tokensSaved: 75,
+		savingsPercent: 50,
+	},
+	buckets: [
+		{
+			key: 'anthropic/claude-sonnet',
+			calls: 4,
+			totalTokens: 150,
+			costUsd: 0.25,
+			tokensSaved: 75,
+			savingsPercent: 50,
+		},
+	],
+};
+
 /** Fake transport routing by tool name; `absent` simulates unloaded plugins. */
 const createClient = (opts: {
 	readonly absent?: boolean;
@@ -77,7 +98,13 @@ const createClient = (opts: {
 				return { structuredContent: HEALTHCHECK_PAYLOAD };
 			}
 			if (request.name.endsWith('usage_report')) {
-				return { structuredContent: REPORT_PAYLOAD };
+				return {
+					structuredContent:
+						(request.arguments as { groupBy?: string })?.groupBy ===
+						'model'
+							? MODEL_REPORT_PAYLOAD
+							: REPORT_PAYLOAD,
+				};
 			}
 			if (request.name.endsWith('usage_clear')) {
 				return { structuredContent: { ok: true, cleared: [] } };
@@ -120,7 +147,7 @@ const createVscode = (opts?: {
 				return undefined;
 			},
 			async showQuickPick(items) {
-				return items[0]?.id;
+				return items[0];
 			},
 			async showInputBox() {
 				return opts?.inputAnswer ?? 'maintenance window';
@@ -150,6 +177,8 @@ describe('provider dashboard commands (f00098 S3)', () => {
 		expect(html).toContain('claude-sonnet');
 		expect(html).toContain('available');
 		expect(html).toContain('$0.2500');
+		expect(html).toContain('anthropic/claude-sonnet');
+		expect(html).toContain('75');
 		// Script-free webview: the default-deny CSP is embedded.
 		expect(html).toContain('Content-Security-Policy');
 	});

@@ -1,14 +1,15 @@
 {
-	"generatedAt": "2026-07-12T20:02:31.822Z",
+	"generatedAt": "2026-07-13T02:57:16.690Z",
 	"mode": "compact",
 	"tools": [
 		{
-			"name": "mcp-vertex_agent_catalog",
-			"plugin": "mcp-vertex"
+			"name": "mcp-vertex_agent_catalog"
 		},
 		{
-			"name": "mcp-vertex_analyze_project",
-			"plugin": "mcp-vertex"
+			"name": "mcp-vertex_analyze_project"
+		},
+		{
+			"name": "mcp-vertex_configuration_center"
 		},
 		{
 			"name": "mcp-vertex_conventions_conventions_check",
@@ -19,8 +20,7 @@
 			"plugin": "conventions"
 		},
 		{
-			"name": "mcp-vertex_create_project",
-			"plugin": "mcp-vertex"
+			"name": "mcp-vertex_create_project"
 		},
 		{
 			"name": "mcp-vertex_deps_deps_check",
@@ -47,20 +47,16 @@
 			"plugin": "docs"
 		},
 		{
-			"name": "mcp-vertex_drift_check",
-			"plugin": "mcp-vertex"
+			"name": "mcp-vertex_drift_check"
 		},
 		{
-			"name": "mcp-vertex_fs_read",
-			"plugin": "mcp-vertex"
+			"name": "mcp-vertex_fs_read"
 		},
 		{
-			"name": "mcp-vertex_fs_write",
-			"plugin": "mcp-vertex"
+			"name": "mcp-vertex_fs_write"
 		},
 		{
-			"name": "mcp-vertex_get_validation_matrix",
-			"plugin": "mcp-vertex"
+			"name": "mcp-vertex_get_validation_matrix"
 		},
 		{
 			"name": "mcp-vertex_git_blame",
@@ -91,8 +87,7 @@
 			"plugin": "git"
 		},
 		{
-			"name": "mcp-vertex_knowledge",
-			"plugin": "mcp-vertex"
+			"name": "mcp-vertex_knowledge"
 		},
 		{
 			"name": "mcp-vertex_logs_correlate",
@@ -147,8 +142,7 @@
 			"plugin": "memory"
 		},
 		{
-			"name": "mcp-vertex_metrics",
-			"plugin": "mcp-vertex"
+			"name": "mcp-vertex_metrics"
 		},
 		{
 			"name": "mcp-vertex_notification_await_lock",
@@ -159,12 +153,10 @@
 			"plugin": "notification"
 		},
 		{
-			"name": "mcp-vertex_overview",
-			"plugin": "mcp-vertex"
+			"name": "mcp-vertex_overview"
 		},
 		{
-			"name": "mcp-vertex_plan_mcp_project",
-			"plugin": "mcp-vertex"
+			"name": "mcp-vertex_plan_mcp_project"
 		},
 		{
 			"name": "mcp-vertex_proposals_agent_lock",
@@ -315,20 +307,17 @@
 			"plugin": "rules"
 		},
 		{
-			"name": "mcp-vertex_scaffold",
-			"plugin": "mcp-vertex"
+			"name": "mcp-vertex_scaffold"
 		},
 		{
 			"name": "mcp-vertex_search_search",
 			"plugin": "search"
 		},
 		{
-			"name": "mcp-vertex_skill",
-			"plugin": "mcp-vertex"
+			"name": "mcp-vertex_skill"
 		},
 		{
-			"name": "mcp-vertex_status",
-			"plugin": "mcp-vertex"
+			"name": "mcp-vertex_status"
 		},
 		{
 			"name": "mcp-vertex_status-marker_close",
@@ -668,95 +657,22 @@
 	"proposals": {
 		"actionable": [
 			{
-				"id": "c00002",
-				"title": "c00002",
-				"track": "docs+release",
-				"status": "paused",
-				"kind": "chore",
-				"date": "2026-06-21"
-			},
-			{
 				"id": "f00050",
 				"title": "f00050",
 				"track": "lint+architecture+i18n+workflow+release",
-				"status": "ready",
-				"kind": "feat",
-				"date": "2026-06-23"
-			},
-			{
-				"id": "f00104",
-				"title": "f00104",
-				"track": "cli+core+release+install+docs",
-				"status": "ready",
-				"kind": "feat",
-				"date": "2026-07-08"
-			},
-			{
-				"id": "f00105",
-				"title": "f00105",
-				"track": "config+install+dogfood+workflow",
-				"status": "ready",
-				"kind": "feat",
-				"date": "2026-07-08"
-			},
-			{
-				"id": "f00106",
-				"title": "f00106",
-				"track": "usage-tracking+ui-extension+vscode+web",
-				"status": "ready",
-				"kind": "feat",
-				"date": "2026-07-08"
-			},
-			{
-				"id": "f00107",
-				"title": "f00107",
-				"track": "core+config+ui-extension+vscode+web",
-				"status": "ready",
-				"kind": "feat",
-				"date": "2026-07-08"
-			},
-			{
-				"id": "f00108",
-				"title": "f00108",
-				"track": "web+extensions/vscode+ui-extension+i18n+lint",
-				"status": "ready",
-				"kind": "feat",
-				"date": "2026-07-08"
-			},
-			{
-				"id": "f00110",
-				"title": "f00110",
-				"track": "architecture",
-				"status": "ready",
-				"kind": "feat",
-				"date": "2026-07-12"
-			},
-			{
-				"id": "r00008",
-				"title": "r00008",
-				"track": "ui-architecture",
-				"status": "ready",
-				"kind": "refactor",
-				"date": "2026-07-12"
-			},
-			{
-				"id": "x00097",
-				"title": "x00097",
-				"track": "hardening",
-				"status": "ready",
-				"kind": "fix",
-				"date": "2026-07-12"
+				"status": "paused",
+				"kind": "feat"
 			}
 		],
 		"byStatus": {
-			"ready": 9,
+			"ready": 0,
 			"in-progress": 0,
-			"review": 2,
+			"review": 0,
 			"paused": 1,
-			"done": 194,
+			"done": 206,
 			"blocked": 0,
-			"retired": 0,
-			"unspecified": 1
+			"retired": 1,
+			"unspecified": 0
 		}
 	}
 }

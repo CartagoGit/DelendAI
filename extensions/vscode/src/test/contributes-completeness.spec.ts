@@ -112,6 +112,7 @@ describe('f00100 S4 — contributes-completeness ratchet', () => {
 		// + saveSettings/resetSettings (previously phantom — detected by ratchet).
 		// Update this number with a dated rationale when commands are added/removed.
 		// f00107 S3: + plugin activation switchboard.
-		expect(contributed.length).toBe(30);
+		// Configuration Center is the 31st intentionally contributed command.
+		expect(contributed.length).toBe(31);
 	});
 });

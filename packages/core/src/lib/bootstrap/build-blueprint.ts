@@ -10,6 +10,7 @@ import { matchPromptArtifacts } from './prompt-artifact-rules';
 import { resolvePatternCatalog } from './pattern-catalog-overrides';
 import { matchSkillArtifacts } from './skill-artifact-rules';
 import { matchNotes } from './note-rules';
+import { resolveAdoptionStrategy } from './adoption-strategy';
 
 export interface IBlueprintArtifact {
 	readonly name: string;
@@ -45,6 +46,7 @@ export interface IBlueprintDefaults {
 export interface IServerBlueprint {
 	readonly serverName: string;
 	readonly namespacePrefix: string;
+	readonly targetDir: string;
 	readonly projectType: IProjectAnalysis['projectType'];
 	readonly plugins: readonly string[];
 	readonly tools: readonly IBlueprintArtifact[];
@@ -53,6 +55,7 @@ export interface IServerBlueprint {
 	readonly agents: ReadonlyArray<{ slot: string; description: string }>;
 	readonly tests: boolean;
 	readonly hasExistingServer: boolean;
+	readonly adoptionStrategy: ReturnType<typeof resolveAdoptionStrategy>;
 	readonly defaults: IBlueprintDefaults;
 	readonly notes: readonly string[];
 }
@@ -61,8 +64,10 @@ export interface IBlueprintOptions {
 	readonly serverName?: string;
 	readonly namespacePrefix?: string;
 	readonly tests?: boolean;
+	readonly targetDir?: string;
 	/** Optional free-form user request used only for migration-safety hints. */
 	readonly intent?: string;
+	readonly adoption?: unknown;
 	/**
 	 * Optional host-defined pattern overrides (see
 	 * `pattern-catalog-overrides.ts`). When omitted, the hardcoded
@@ -72,6 +77,7 @@ export interface IBlueprintOptions {
 }
 
 const kebabHead = (name: string | undefined): string => {
+	if (name?.startsWith('@mcp-vertex/')) return 'mcp-vertex';
 	if (!name) return 'app';
 	const head = name
 		.replace(/^@[^/]+\//, '')
@@ -80,6 +86,11 @@ const kebabHead = (name: string | undefined): string => {
 		.replace(/^-+|-+$/g, '')
 		.split('-')[0];
 	return head && head.length > 0 ? head : 'app';
+};
+
+const defaultTargetDir = (analysis: IProjectAnalysis): string => {
+	if (analysis.name === '@mcp-vertex/core-monorepo') return 'packages/core';
+	return analysis.hasPackageJson ? '.' : 'libs/mcp-project';
 };
 
 const uniqueByName = (
@@ -162,9 +173,19 @@ export const buildServerBlueprint = (
 	];
 	const namespacePrefix = options.namespacePrefix ?? kebabHead(analysis.name);
 	const serverName = options.serverName ?? `mcp-project-${namespacePrefix}`;
+	const targetDir = options.targetDir ?? defaultTargetDir(analysis);
 	const tests = options.tests ?? true;
 	const plugins = pattern.recommendedPlugins;
 	const defaults = buildBlueprintDefaults(analysis, options);
+	const adoptionStrategy = resolveAdoptionStrategy(options.adoption ?? {}, {
+		hasExistingMcpProject: analysis.hasMcpProject,
+	});
+	const adopts = (capability: string): boolean =>
+		adoptionStrategy.operations.some(
+			(operation) =>
+				operation.capability === capability &&
+				operation.action !== 'preserve',
+		);
 
 	// Tools: catalog baseline + one runner per quality script the repo has.
 	const scriptTools: IBlueprintArtifact[] = Object.keys(analysis.scripts).map(
@@ -173,29 +194,37 @@ export const buildServerBlueprint = (
 			description: `Run the project's ${role} command and return a structured pass/fail report.`,
 		}),
 	);
-	const tools = uniqueByName([
-		...pattern.recommendedTools.map((tool) => ({
-			name: tool.name,
-			description: tool.description,
-		})),
-		...scriptTools,
-	]);
+	const tools = adopts('tools')
+		? uniqueByName([
+				...pattern.recommendedTools.map((tool) => ({
+					name: tool.name,
+					description: tool.description,
+				})),
+				...scriptTools,
+			])
+		: [];
 
-	const prompts = matchPromptArtifacts({
-		analysis,
-		namespacePrefix,
-		plugins,
-	});
+	const prompts = adopts('prompts')
+		? matchPromptArtifacts({
+				analysis,
+				namespacePrefix,
+				plugins,
+			})
+		: [];
 
-	const skills = matchSkillArtifacts({ analysis, serverName });
+	const skills = adopts('skills')
+		? matchSkillArtifacts({ analysis, serverName })
+		: [];
 
-	const agents = [
-		{
-			slot: 'orchestrator',
-			description: 'Root orchestrator for this project.',
-		},
-		...(plugins.includes('proposals') ? SUBAGENT_SLOTS : []),
-	];
+	const agents = adopts('agents')
+		? [
+				{
+					slot: 'orchestrator',
+					description: 'Root orchestrator for this project.',
+				},
+				...(plugins.includes('proposals') ? SUBAGENT_SLOTS : []),
+			]
+		: [];
 
 	const notes = matchNotes({
 		analysis,
@@ -209,6 +238,7 @@ export const buildServerBlueprint = (
 	return {
 		serverName,
 		namespacePrefix,
+		targetDir,
 		projectType: analysis.projectType,
 		plugins,
 		tools,
@@ -217,19 +247,24 @@ export const buildServerBlueprint = (
 		agents,
 		tests,
 		hasExistingServer: analysis.hasMcpProject,
+		adoptionStrategy,
 		defaults,
 		notes,
 	};
 };
 
-const toolTestFile = (prefix: string, toolName: string): IScaffoldedFile => {
+const toolTestFile = (
+	prefix: string,
+	toolName: string,
+	targetDir: string,
+): IScaffoldedFile => {
 	const id = toolName.replace(/[^a-z0-9]+/gi, '-').toLowerCase();
 	const fn = id
 		.split('-')
 		.map((part) => part.charAt(0).toUpperCase() + part.slice(1))
 		.join('');
 	return {
-		path: `libs/mcp-project/tests/src/lib/tools/${prefix}-${id}.tool.spec.ts`,
+		path: `${targetDir === '.' ? '' : `${targetDir}/`}tests/src/lib/tools/${prefix}-${id}.tool.spec.ts`,
 		content: `import { describe, expect, it } from 'vitest';
 
 import { build${fn}Response } from '../../../../src/lib/tools/${prefix}-${id}.tool';
@@ -254,16 +289,33 @@ export const buildBlueprintFiles = (
 	projectPackageName?: string,
 ): readonly IScaffoldedFile[] => {
 	const prefix = blueprint.namespacePrefix;
-	const files: IScaffoldedFile[] = [
-		...scaffoldHostProject({
-			projectName: blueprint.serverName,
-			namespacePrefix: prefix,
-			projectPackageName: projectPackageName ?? `@${prefix}/mcp-project`,
-		}),
-	];
+	const writesMcpConfig = blueprint.adoptionStrategy.operations.some(
+		(operation) =>
+			operation.capability === 'mcp-config' &&
+			operation.action === 'replace',
+	);
+	const files: IScaffoldedFile[] = writesMcpConfig
+		? [
+				...scaffoldHostProject({
+					projectName: blueprint.serverName,
+					namespacePrefix: prefix,
+					projectPackageName:
+						projectPackageName ?? `@${prefix}/mcp-project`,
+					targetDir: blueprint.targetDir,
+				}),
+			]
+		: [];
 	for (const tool of blueprint.tools) {
-		files.push(scaffoldToolFile(prefix, tool.name, tool.description));
-		if (blueprint.tests) files.push(toolTestFile(prefix, tool.name));
+		files.push(
+			scaffoldToolFile(
+				prefix,
+				tool.name,
+				tool.description,
+				blueprint.targetDir,
+			),
+		);
+		if (blueprint.tests)
+			files.push(toolTestFile(prefix, tool.name, blueprint.targetDir));
 	}
 	for (const prompt of blueprint.prompts) {
 		files.push(
@@ -272,6 +324,7 @@ export const buildBlueprintFiles = (
 				prompt.name,
 				prompt.description,
 				prompt.body,
+				blueprint.targetDir,
 			),
 		);
 	}
@@ -283,6 +336,7 @@ export const buildBlueprintFiles = (
 				skill.description,
 				skill.whenToUse ?? [],
 				skill.body,
+				blueprint.targetDir,
 			),
 		);
 	}

@@ -15,6 +15,7 @@ export type {
 	IToolTranslations,
 	LangDictByLang,
 } from './shared';
+export type { ISettingsTranslations } from '../contracts/interfaces/settings-translations.interface';
 export {
 	languages,
 	rtlLangs,
@@ -22,6 +23,7 @@ export {
 	themes,
 	flagFor,
 	t,
+	settingsTranslations,
 } from './shared';
 
 import type { ILangDict, Lang, LangDictByLang } from './shared';

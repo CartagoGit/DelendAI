@@ -36,19 +36,19 @@ const profiles = [
 		id: 'bun-node',
 		label: t.firstFiveMinutes.profileTabBunNode,
 		data: t.firstFiveMinutes.bunNode,
-		cmd: 'bunx @mcp-vertex/core --preset=standard',
+		cmd: 'bunx --package @mcp-vertex/cli mcpv __serve --workspace . --preset standard',
 	},
 	{
 		id: 'vscode',
 		label: t.firstFiveMinutes.profileTabVscode,
 		data: t.firstFiveMinutes.vscode,
-		cmd: 'bunx @mcp-vertex/core init',
+		cmd: 'bunx @mcp-vertex/cli init',
 	},
 	{
 		id: 'claude',
 		label: t.firstFiveMinutes.profileTabClaude,
 		data: t.firstFiveMinutes.claude,
-		cmd: 'bunx @mcp-vertex/core init',
+		cmd: 'bunx @mcp-vertex/cli init',
 	},
 ] as const;
 ---
@@ -96,9 +96,7 @@ const profiles = [
 				</li>
 			</ul>
 			<Callout variant="tip" lang_label={lang}>
-				Run <code>mcp-vertex_overview</code> with <code>compact: true</code> after the
-				server boots — the <code>recommendedNextAction</code> field tells the agent exactly
-				what to do next.
+				{t.firstFiveMinutes.overviewHint}
 			</Callout>
 		</section>
 	</div>

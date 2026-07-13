@@ -25,6 +25,7 @@ import {
 } from './init-migrate-offer.service';
 import { renderInitBundle, resolvePluginSet } from './init-render.service';
 import { writeMcpVertexConfig } from './init-writers.factory';
+import { buildCanonicalLaunch } from '../server-args.service';
 
 const parseAnswers = (
 	partial: Partial<IInitAnswers> = {},
@@ -39,6 +40,7 @@ describe('renderInitBundle (f00084 S2-S5)', () => {
 		const rels = bundle.files.map((f) => f.relPath);
 		expect(rels).toContain('mcp-vertex.config.json');
 		expect(rels).toContain('.vscode/mcp.json');
+		expect(rels).toContain('.mcp.json');
 		expect(rels.some((r) => r.startsWith('.github/agents/'))).toBe(true);
 		expect(rels).toContain('AGENTS.md');
 		expect(rels).toContain('CLAUDE.md');
@@ -47,6 +49,27 @@ describe('renderInitBundle (f00084 S2-S5)', () => {
 		// is allocated against the canonical layout (empty here → f00001),
 		// not a hardcoded `f00001-migrate-legacy` stub.
 		expect(rels.some((r) => r.includes('adopt-mcp-vertex'))).toBe(true);
+	});
+
+	it('renders both MCP config entries from the canonical launch builder', async () => {
+		const bundle = await renderInitBundle(parseAnswers());
+		const vscode = JSON.parse(
+			bundle.files.find((file) => file.relPath === '.vscode/mcp.json')
+				?.content ?? '{}',
+		) as { servers: { 'mcp-vertex': { command: string; args: string[] } } };
+		const generic = JSON.parse(
+			bundle.files.find((file) => file.relPath === '.mcp.json')
+				?.content ?? '{}',
+		) as {
+			mcpServers: { 'mcp-vertex': { command: string; args: string[] } };
+		};
+
+		expect(vscode.servers['mcp-vertex']).toMatchObject(
+			buildCanonicalLaunch({ workspace: '${workspaceFolder}' }),
+		);
+		expect(generic.mcpServers['mcp-vertex']).toMatchObject(
+			buildCanonicalLaunch({ workspace: '.' }),
+		);
 	});
 
 	it('skips .agent.md when generateAgentMd=false', async () => {

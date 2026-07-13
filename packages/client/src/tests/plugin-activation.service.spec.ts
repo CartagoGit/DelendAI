@@ -1,4 +1,4 @@
-import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { chmod, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 
@@ -20,6 +20,23 @@ afterEach(async () => {
 });
 
 describe('setPluginActivation', () => {
+	it('creates a new config only when the file is absent', async () => {
+		const root = await workspace();
+		const file = join(root, 'mcp-vertex.config.json');
+
+		const result = await setPluginActivation({
+			workspaceRoot: root,
+			id: 'git',
+			origin: 'bundled',
+			active: true,
+		});
+
+		expect(result.changed).toBe(true);
+		expect(JSON.parse(await readFile(file, 'utf8'))).toEqual({
+			plugins: { git: { enabled: true, origin: 'bundled' } },
+		});
+	});
+
 	it('merges a native enabled override without losing its path/options', async () => {
 		const root = await workspace();
 		const file = join(root, 'mcp-vertex.config.json');
@@ -100,5 +117,45 @@ describe('setPluginActivation', () => {
 		});
 		expect(first.changed).toBe(true);
 		expect(second.changed).toBe(false);
+	});
+
+	it('fails closed on corrupt JSON and preserves the original bytes', async () => {
+		const root = await workspace();
+		const file = join(root, 'mcp-vertex.config.json');
+		const original = '{\n\t"plugins": { "git": true }\n';
+		await writeFile(file, original);
+
+		await expect(
+			setPluginActivation({
+				workspaceRoot: root,
+				id: 'git',
+				origin: 'bundled',
+				active: false,
+			}),
+		).rejects.toThrow('Invalid JSON in config file');
+		expect(await readFile(file, 'utf8')).toBe(original);
+	});
+
+	it('fails closed on read errors and preserves the original bytes', async () => {
+		const root = await workspace();
+		const file = join(root, 'mcp-vertex.config.json');
+		const original = '{"plugins":{"git":{"enabled":true}}}\n';
+		await writeFile(file, original);
+		await chmod(file, 0o000);
+
+		try {
+			await expect(
+				setPluginActivation({
+					workspaceRoot: root,
+					id: 'git',
+					origin: 'bundled',
+					active: false,
+				}),
+			).rejects.toThrow('Unable to read config file');
+		} finally {
+			await chmod(file, 0o600);
+		}
+
+		expect(await readFile(file, 'utf8')).toBe(original);
 	});
 });

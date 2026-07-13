@@ -1,9 +1,10 @@
 # @mcp-vertex/git
 
-Read-only **git orientation** plugin for
+Git orientation plugin for
 [`@mcp-vertex/core`](../../docs/mcp-vertex/README-MCP-VERTEX.md). Status, changed files, diff
 stat and recent log as structured JSON, so agents cheaply see what changed —
-agnostic of language or framework. It never modifies the repo.
+agnostic of language or framework. It is read-only by default; write tools are
+registered only with `plugins.git.options.allowWrite: true`.
 
 ## Enable
 
@@ -26,7 +27,12 @@ agnostic of language or framework. It never modifies the repo.
 | `git_changed` | Just the changed file paths (cheapest orientation). |
 | `git_diff` | `git diff --stat` (optionally staged or path-scoped). |
 | `git_log` | Recent commits (hash + subject). |
+| `git_blame` | Attribution for a file or line range. |
+| `git_show` | Commit metadata and stat without a full patch. |
+| `git_worktree` | List worktrees. |
 
-All read-only — no add/commit/push.
+With `allowWrite`, `git_commit` and `git_push` are added. Commits require a
+Conventional Commit message; protected destinations are refused and the only
+force mode is `with-lease`.
 
 BSD-3-Clause © Cartago

@@ -12,7 +12,7 @@
  */
 
 import { readFile, readdir } from 'node:fs/promises';
-import { join } from 'node:path';
+import { join, relative, resolve, sep } from 'node:path';
 
 import { DEFAULT_PATH_LAYOUT } from '../contracts/constants/default-path-layout.constant';
 import type { IHostPathLayout } from '../contracts/interfaces/swarm-path-layout.interface';
@@ -163,10 +163,15 @@ const scanLiveProposalEntries = async (
 	extraFolders: readonly string[] = [],
 ): Promise<IScannedProposalEntry[]> => {
 	const proposalsDir = join(monorepoRoot, layout.proposalsDir);
-	const roots = [
-		proposalsDir,
-		...extraFolders.map((folder) => join(proposalsDir, folder)),
-	];
+	const containedExtraFolders = extraFolders.map((folder) => {
+		const absolute = resolve(proposalsDir, folder);
+		const rel = relative(proposalsDir, absolute);
+		if (rel === '..' || rel.startsWith(`..${sep}`)) {
+			throw new Error(`proposal folder escapes proposalsDir: ${folder}`);
+		}
+		return absolute;
+	});
+	const roots = [proposalsDir, ...containedExtraFolders];
 	const entries: IScannedProposalEntry[] = [];
 	for (const root of roots) {
 		let names: string[];

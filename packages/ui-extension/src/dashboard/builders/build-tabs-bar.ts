@@ -44,7 +44,7 @@ export function buildTabsBar(lang: ILangDict): string {
 	const docsTab = { id: 'docs', label: text('tabDocs') };
 	const refreshHtml = `<button class="mcpv-tabs__action-btn" id="tab-refresh" data-action="refresh" type="button" title="${text('refreshDashboard')}">⟳</button>`;
 	return (
-		`<section class="mcpv-tabs">` +
+		`<section class="mcpv-tabs mcpv-tabs--underline">` +
 		renderTabs({
 			tabs: [...tabItems, docsTab],
 			variant: 'underline',

@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { z } from 'zod';
 
 import { assembleCliConfig } from '@mcp-vertex/core/lib/cli/assemble';
 import { parseCliArgs } from '@mcp-vertex/core/lib/plugins/parse-cli-args';
@@ -15,6 +16,14 @@ const fakePlugin = {
 				origin: 'external' as const,
 				source: 'config' as const,
 				toolCount: 0,
+				configuration: {
+					options: { enabled: true, command: 'demo-child' },
+					optionsSchema: z.object({
+						enabled: z.boolean().optional(),
+						command: z.string(),
+					}),
+					configExample: { enabled: false, command: 'demo-child' },
+				},
 			},
 		],
 		tools: [
@@ -110,6 +119,27 @@ describe('core meta-tools', async () => {
 		});
 	});
 
+	it('configuration center preserves schema metadata from composed children', async () => {
+		const { byId } = await assemble();
+		const page = await callTool(byId('configuration_center'), {
+			section: 'plugins',
+			limit: 100,
+		});
+		const child = page.plugins.find(
+			(entry: { id: string }) => entry.id === 'ext.demo-child',
+		);
+		expect(child).toMatchObject({
+			origin: 'external',
+			schemaStatus: 'available',
+			options: { enabled: true, command: 'demo-child' },
+			configExample: { enabled: false, command: 'demo-child' },
+		});
+		expect(child.optionsSchema.properties).toMatchObject({
+			enabled: { type: 'boolean' },
+			command: { type: 'string' },
+		});
+	});
+
 	it('activation report reconciles preset and local-path config sources after loading', async () => {
 		const args = parseCliArgs(
 			['--preset=minimal', '--workspace=/ws'],
@@ -121,6 +151,9 @@ describe('core meta-tools', async () => {
 					name: specifier.includes('local.js')
 						? 'my-local'
 						: (specifier.split('/').at(-1) ?? specifier),
+					optionsSchema: z.object({
+						mode: z.enum(['safe', 'fast']).optional(),
+					}),
 					register: () => ({ tools: [] }),
 				},
 			}),
@@ -155,6 +188,19 @@ describe('core meta-tools', async () => {
 			'search:bundled:preset:true',
 			'my-local:user-local:config:true',
 		]);
+
+		const center = config.extraTools!.find(
+			(tool) => tool.id === 'configuration_center',
+		)!;
+		const plugins = await callTool(center, {
+			section: 'plugins',
+			limit: 100,
+		});
+		expect(
+			plugins.plugins.find(
+				(entry: { id: string }) => entry.id === 'my-local',
+			),
+		).toMatchObject({ origin: 'user-local', schemaStatus: 'available' });
 	});
 
 	it('knowledge lists ids and fetches a body by id', async () => {

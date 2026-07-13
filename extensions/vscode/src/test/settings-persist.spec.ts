@@ -16,19 +16,23 @@ import { describe, expect, it } from 'vitest';
 
 import {
 	DEFAULT_EXTENSION_SETTINGS,
+	SettingsService,
 	type ISettingsStore,
 } from '@mcp-vertex/client';
 
 import {
 	RESET_SETTINGS_COMMAND,
 	SAVE_SETTINGS_COMMAND,
-	SETTINGS_STATE_KEY,
 	createExtensionSettingsStore,
 	createGlobalStateSettingsStore,
 	registerResetSettingsCommand,
 	registerSaveSettingsCommand,
 	type ISettingsMemento,
 } from '../commands/open-settings';
+import {
+	LEGACY_SETTINGS_STATE_KEY,
+	SETTINGS_STATE_KEY,
+} from '../contracts/constants/settings-state-key.constant';
 import type { ICommandVscodeApi } from '../commands/types';
 
 const createVscode = () => {
@@ -155,6 +159,58 @@ const createMemento = (
 });
 
 describe('settings persistence to globalState', async () => {
+	it('reads the legacy blob and language until the canonical envelope is written', async () => {
+		const backing = new Map<string, unknown>([
+			[
+				LEGACY_SETTINGS_STATE_KEY,
+				{
+					extension: {
+						...DEFAULT_EXTENSION_SETTINGS,
+						language: 'en',
+						theme: 'dark',
+					},
+				},
+			],
+			['mcpv:lang', 'es'],
+		]);
+		const store = createGlobalStateSettingsStore(createMemento(backing));
+		await expect(store.read()).resolves.toMatchObject({
+			extension: { language: 'es', theme: 'dark' },
+		});
+		await new SettingsService(store).set({
+			theme: 'nord',
+		});
+		expect(backing.has(SETTINGS_STATE_KEY)).toBe(true);
+		await expect(store.read()).resolves.toMatchObject({
+			version: 2,
+			extension: { language: 'es', theme: 'nord' },
+		});
+	});
+
+	it('preserves the last valid cache value when durable storage rejects', async () => {
+		let reject = false;
+		const backing = new Map<string, unknown>();
+		const memento: ISettingsMemento = {
+			get<T>(key: string) {
+				return backing.get(key) as T | undefined;
+			},
+			async update(key, value) {
+				if (reject) throw new Error('storage unavailable');
+				backing.set(key, value);
+			},
+		};
+		const store = createGlobalStateSettingsStore(memento);
+		const valid = { extension: DEFAULT_EXTENSION_SETTINGS };
+		await store.write(valid);
+		reject = true;
+		await expect(
+			store.write({
+				extension: { ...DEFAULT_EXTENSION_SETTINGS, theme: 'nord' },
+			}),
+		).rejects.toThrow('storage unavailable');
+		await expect(store.read()).resolves.toEqual(valid);
+	});
+
 	it('persists a written value to the backing globalState key', async () => {
 		const backing = new Map<string, unknown>();
 		const store = createGlobalStateSettingsStore(createMemento(backing));

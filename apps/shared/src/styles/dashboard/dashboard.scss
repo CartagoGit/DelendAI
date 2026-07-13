@@ -31,6 +31,8 @@
 
 @use '../breakpoints' as bp;
 @use '../themes' as themes;
+@use '../tokens' as tokens;
+@use '../components/tabs' as tabs;
 
 // Loading `_themes.scss` here means the dashboard panel surface
 // inherits the brand colours and palette variables (`--bg`, `--fg`,
@@ -68,12 +70,17 @@
 	border-bottom: 1px solid var(--mcpv-border, var(--vscode-widget-border, transparent));
 	margin-bottom: var(--mcpv-s-4);
 
-	&__logo,
-	&__brand {
+	&__logo {
 		width: 28px;
 		height: 28px;
 		border-radius: var(--mcpv-radius-sm);
-		background: var(--mcpv-brand-gradient);
+		flex: 0 0 auto;
+	}
+
+	&__brand {
+		display: flex;
+		flex-direction: column;
+		min-width: 0;
 	}
 
 	&__name {
@@ -100,12 +107,23 @@
 // ---------------------------------------------------------------------------
 
 .mcpv-tabs {
-	display: flex;
-	flex-wrap: nowrap;
+	padding: 0 var(--mcpv-s-4);
 	overflow-x: auto;
-	gap: var(--mcpv-s-1);
-	padding: var(--mcpv-s-2) 0;
-	border-bottom: 1px solid var(--mcpv-border, var(--vscode-widget-border, transparent));
+
+	&__bar {
+		min-width: max-content;
+		margin-bottom: 0;
+	}
+
+	&__action-btn {
+		appearance: none;
+		border: 0;
+		background: transparent;
+		color: inherit;
+		font: inherit;
+		padding: 0.6rem 0.75rem;
+		cursor: pointer;
+	}
 }
 
 .mcpv-tab {
@@ -182,6 +200,10 @@
 .mcpv-panel {
 	margin-bottom: var(--mcpv-s-4);
 
+	&[data-active='false'] {
+		display: none;
+	}
+
 	&__title {
 		font-size: 13px;
 		font-weight: 600;
@@ -196,6 +218,19 @@
 		grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
 		gap: var(--mcpv-gap);
 	}
+}
+
+.mcpv-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+	gap: var(--mcpv-gap);
+}
+
+.mcpv-banner {
+	padding: var(--mcpv-s-2) var(--mcpv-s-4);
+	border-block: 1px solid var(--mcpv-border, var(--vscode-widget-border, transparent));
+	background: var(--mcpv-bg-soft, var(--vscode-sideBar-background, transparent));
+	color: var(--mcpv-fg-muted, var(--vscode-descriptionForeground, currentColor));
 }
 
 .mcpv-card {

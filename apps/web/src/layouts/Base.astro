@@ -5,7 +5,7 @@ import Config from '#COMPONENTS/Config.astro';
 import Search from '#COMPONENTS/Search.astro';
 import '../styles/styles.scss';
 import { ClientRouter } from 'astro:transitions';
-import { renderRuntime } from '@mcp-vertex/shared';
+import { renderRuntime } from '@mcp-vertex/ui-extension/components/runtime';
 import { rtlLangs, type Lang } from '#I18N/ui';
 
 interface Props {
@@ -64,7 +64,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 					const t = localStorage.getItem(KEY_THEME);
 					if (t) document.documentElement.dataset.theme = t;
 					const m = localStorage.getItem(KEY_MOTION);
-					if (m === 'off') document.documentElement.dataset.motion = 'off';
+					if (m === 'off' || m === 'reduced') document.documentElement.dataset.motion = 'off';
 					else document.documentElement.removeAttribute('data-motion');
 				} catch {}
 			};

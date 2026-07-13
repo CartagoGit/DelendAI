@@ -5,6 +5,34 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 describe('no-preset-drift.script', async () => {
+	it('flags package-manager attempts to execute the library-only core package', async () => {
+		const root = await makeTmpTree({
+			'docs/install.md': [
+				'bunx @mcp-vertex/core init',
+				'npx -y @mcp-vertex/core --check',
+				'deno run -A npm:@mcp-vertex/core init',
+			].join('\n'),
+		});
+		const findings = await detectDrift([root]);
+		expect(findings).toHaveLength(3);
+		expect(
+			findings.every((finding) => finding.kind === 'broken-core-launch'),
+		).toBe(true);
+		await rm(root, { recursive: true });
+	});
+
+	it('accepts the published CLI and the canonical explicit package/bin launch', async () => {
+		const root = await makeTmpTree({
+			'docs/install.md': [
+				'bunx @mcp-vertex/cli init',
+				'bunx --package @mcp-vertex/cli mcpv __serve --workspace . --preset full',
+			].join('\n'),
+		});
+		const findings = await detectDrift([root]);
+		expect(findings).toHaveLength(0);
+		await rm(root, { recursive: true });
+	});
+
 	it('flags an unknown preset name', async () => {
 		const root = await makeTmpTree({
 			'docs/install.md': 'Use --preset=foo to load foo.\n',

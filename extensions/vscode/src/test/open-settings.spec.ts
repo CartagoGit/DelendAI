@@ -70,6 +70,87 @@ describe('mcp-vertex.openSettings', async () => {
 		expect(panels[0]?.webview.html).toContain('mcp-vertex Settings');
 		expect(panels[0]?.webview.html).toContain('https://example.com/docs');
 	});
+
+	it('acknowledges successful writes and reports host failures', async () => {
+		const commands = new Map<
+			string,
+			(...args: readonly unknown[]) => unknown
+		>();
+		let receive: ((message: unknown) => Promise<void> | void) | undefined;
+		const outbound: unknown[] = [];
+		const vscode: ICommandVscodeApi = {
+			ViewColumn: { One: 1 },
+			commands: {
+				registerCommand(command, callback) {
+					commands.set(command, callback);
+					return { dispose() {} };
+				},
+			},
+			window: {
+				createWebviewPanel() {
+					return {
+						webview: {
+							html: '',
+							onDidReceiveMessage(callback) {
+								receive = callback;
+								return { dispose() {} };
+							},
+							async postMessage(message) {
+								outbound.push(message);
+							},
+						},
+					};
+				},
+				async showErrorMessage() {
+					return undefined;
+				},
+			},
+		};
+		let rejectWrite = false;
+		let value: unknown = { extension: DEFAULT_EXTENSION_SETTINGS };
+		const store: ISettingsStore = {
+			async read() {
+				return value;
+			},
+			async write(next) {
+				if (rejectWrite) throw new Error('disk unavailable');
+				value = next;
+			},
+		};
+		registerOpenSettingsCommand(
+			{
+				vscode,
+				client: McpStdioClient.fromTransport({
+					async callTool() {
+						return { structuredContent: {} };
+					},
+				}),
+			},
+			store,
+		);
+		await commands.get(OPEN_SETTINGS_COMMAND)?.();
+		await receive?.({
+			command: 'save',
+			requestId: 'save-1',
+			settings: { ...DEFAULT_EXTENSION_SETTINGS, language: 'es' },
+		});
+		expect(outbound.at(-1)).toMatchObject({
+			command: 'settingsSaved',
+			requestId: 'save-1',
+			settings: { language: 'es' },
+		});
+
+		rejectWrite = true;
+		await receive?.({
+			command: 'reset',
+			requestId: 'reset-2',
+		});
+		expect(outbound.at(-1)).toMatchObject({
+			command: 'settingsError',
+			requestId: 'reset-2',
+			message: 'disk unavailable',
+		});
+	});
 });
 
 describe('mcp-vertex.saveSettings (f00062 S3: boundary parse)', () => {
@@ -137,6 +218,8 @@ describe('mcp-vertex.saveSettings (f00062 S3: boundary parse)', () => {
 			allowPrivateIps: 'false',
 			logLevel: 'info',
 			theme: 'system',
+			language: 'en',
+			motion: 'system',
 		});
 		expect(errors.length).toBeGreaterThan(0);
 		expect(store.writes.length).toBe(0);
@@ -154,6 +237,8 @@ describe('mcp-vertex.saveSettings (f00062 S3: boundary parse)', () => {
 			allowPrivateIps: false,
 			logLevel: 'info',
 			theme: 'system',
+			language: 'en',
+			motion: 'system',
 		};
 		await save?.(valid);
 		expect(messages).toContain('mcp-vertex: settings saved.');

@@ -135,12 +135,18 @@ Three supported paths, in increasing order of intrusiveness:
    {
      "servers": {
        "mcp-vertex": {
-         "command": "bun",
+         "command": "bunx",
          "args": [
-           "/abs/path/to/mcp-vertex/tools/scripts/host/host-server.script.ts",
-           "--workspace=${workspaceFolder}",
-           "--config=${workspaceFolder}/mcp-vertex.config.json",
-           "--plugins=${workspaceFolder}/libs/plugins/lx-app/dist/index.js"
+           "--package",
+           "@mcp-vertex/cli",
+           "mcpv",
+           "__serve",
+           "--workspace",
+           "${workspaceFolder}",
+           "--config",
+           "${workspaceFolder}/mcp-vertex.config.json",
+           "--plugins",
+           "${workspaceFolder}/libs/plugins/lx-app/dist/index.js"
          ]
        }
      }
@@ -378,6 +384,31 @@ its pinned definition via
 remain visible in activation introspection so the IDE can turn them back on.
 
 ## Rules for great, model-agnostic, low-token plugins
+
+### Configuration Center metadata
+
+Every first-party plugin and every convention-compliant project-local plugin
+must expose `optionsSchema` on its `definePlugin(...)` object. The loader uses
+that exact schema both to reject invalid `ctx.options` and to generate the
+Configuration Center fields. Schema defaults are displayed when a project has
+not overridden them. If the plugin declares `configExample`, keep its `options`
+valid against the same schema; the repository test gate imports every
+first-party plugin and enforces both requirements.
+
+Project-local plugins need no UI registration. Declare `plugins.<id>.path`
+and optional `prefix`; their schema, options, capabilities and `user-local`
+provenance appear automatically.
+
+Composition plugins can describe a child through
+`IActivationContribution.configuration`: current `options`, a runtime
+`optionsSchema`, and an optional safe `configExample`. Core serializes this
+generic metadata but deliberately omits it from the compact activation report.
+`external-mcps` uses the convention to expose each child's enabled state,
+exact version, command, arguments, namespace, detection rule and environment
+variable names without teaching core external-MCP vocabulary.
+
+See [`CONFIGURATION-CENTER.md`](CONFIGURATION-CENTER.md) for the user workflow,
+safe-save semantics, conflict recovery and the complete author example.
 
 1. **Strict schemas in, structured JSON out.** Don't return prose an LLM has to
    parse — return data. This is what keeps a plugin reliable across models.

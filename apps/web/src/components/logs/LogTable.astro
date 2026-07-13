@@ -26,7 +26,7 @@ const { labels, events = [] } = Astro.props;
 		<label>
 			<span>{labels.filter_outcome}</span>
 			<select data-log-filter="outcome">
-				<option value="">All</option>
+				<option value="">{labels.filter_outcome}</option>
 				{Object.entries(labels.outcomes).map(([value, label]) => (
 					<option value={value}>{label}</option>
 				))}

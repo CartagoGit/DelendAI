@@ -73,6 +73,7 @@ describe('buildActivationReport (f00107 S2)', () => {
 	});
 
 	it('sorts by origin bucket (ours, yours, external) then id', () => {
+		const names = ['zeta-ext', 'search', 'alpha-local', 'audit'];
 		const report = buildActivationReport(
 			[
 				facts({
@@ -88,7 +89,7 @@ describe('buildActivationReport (f00107 S2)', () => {
 				}),
 				facts({ name: 'audit' }), // bundled
 			],
-			sources({}),
+			sources({ fromPreset: new Set(names) }),
 		);
 		expect(report.entries.map((e) => e.id)).toEqual([
 			'audit',
@@ -96,6 +97,17 @@ describe('buildActivationReport (f00107 S2)', () => {
 			'alpha-local',
 			'zeta-ext',
 		]);
+	});
+
+	it('fails closed when a loaded plugin has no activation source', () => {
+		expect(() =>
+			buildActivationReport(
+				[facts({ name: 'unattributed' })],
+				sources({}),
+			),
+		).toThrowError(
+			'Activation source invariant violated: loaded plugin "unattributed" is absent from flag, config, and preset inputs.',
+		);
 	});
 
 	it('empty load → zeroed report', () => {

@@ -32,7 +32,7 @@ export interface IActivationReport {
 	readonly entries: readonly IActivationEntry[];
 	/** Per-origin tallies so a header can read "9 ours · 1 yours · 2 external" without re-counting. */
 	readonly counts: Readonly<Record<PluginOrigin, number>>;
-	/** Total tools across all active plugins — the size of the prompt-facing surface. */
+	/** Total tools contributed by active plugins (core tools are reported separately by overview). */
 	readonly totalTools: number;
 }
 
@@ -48,6 +48,25 @@ export interface IActivationContribution {
 	readonly active?: boolean;
 	/** Direct tools added to the host surface (zero for proxy-only children). */
 	readonly toolCount: number;
+	/** Optional schema-driven configuration for a composed child. Core keeps
+	 * this generic so composition plugins can expose safe fields without core
+	 * learning their domain vocabulary. */
+	readonly configuration?:
+		| {
+				readonly options: Readonly<Record<string, unknown>>;
+				readonly optionsSchema?:
+					| {
+							safeParse(value: unknown): {
+								success: boolean;
+								error?: unknown;
+							};
+					  }
+					| undefined;
+				readonly configExample?:
+					| Readonly<Record<string, unknown>>
+					| undefined;
+		  }
+		| undefined;
 }
 
 /** One loaded plugin, reduced to exactly what {@link IActivationReport} needs. */

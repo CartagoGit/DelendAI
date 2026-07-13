@@ -19,7 +19,7 @@ export interface ISkillManifest {
 }
 
 export interface ISkillIssue {
-	readonly kind: 'missing-on-disk' | 'duplicate-id';
+	readonly kind: 'missing-on-disk' | 'duplicate-id' | 'frontmatter-id-drift';
 	readonly detail: string;
 }
 
@@ -48,10 +48,23 @@ export const lintSkillsManifest = async (
 			});
 		}
 
-		if (!(await stat(join(rootDir, skill.bodyPath)).catch(() => null))) {
+		const bodyPath = join(rootDir, skill.bodyPath);
+		if (!(await stat(bodyPath).catch(() => null))) {
 			issues.push({
 				kind: 'missing-on-disk',
 				detail: `"${skill.id}" declares bodyPath "${skill.bodyPath}" but the file does not exist`,
+			});
+			continue;
+		}
+		const body = await readFile(bodyPath, 'utf8');
+		const declaredName =
+			/^---\s*$[\s\S]*?^name:\s*['"]?([^'"\n]+)['"]?\s*$/m
+				.exec(body)?.[1]
+				?.trim();
+		if (declaredName !== skill.id) {
+			issues.push({
+				kind: 'frontmatter-id-drift',
+				detail: `"${skill.id}" points to ${skill.bodyPath}, whose frontmatter name is ${JSON.stringify(declaredName)}`,
 			});
 		}
 	}
@@ -64,7 +77,7 @@ export const main = async (): Promise<number> => {
 		const issues = await lintSkillsManifest();
 		if (issues.length === 0) {
 			console.log(
-				'✓ skills-script: manifest ids are unique and body paths resolve.',
+				'✓ skills-script: manifest ids, body paths and frontmatter names agree.',
 			);
 			return 0;
 		}

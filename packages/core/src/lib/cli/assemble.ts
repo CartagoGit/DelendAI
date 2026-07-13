@@ -17,6 +17,7 @@ import type {
 	IToolRegistration,
 } from '../contracts/interfaces/tool-registration.interface';
 import {
+	CONFIG_FILE_SCHEMA,
 	DEFAULT_CONFIG_FILENAME,
 	diagnoseConfigFile,
 	diagnosePluginPathConfig,
@@ -47,7 +48,6 @@ import {
 	type IBlueprintWriter,
 } from '../shared/blueprint-writer';
 import type {
-	IProposalSummary,
 	ISkillSummary,
 	IToolSummary,
 } from '../catalog/agent-discovery-types';
@@ -82,6 +82,15 @@ import type {
 } from '../contracts/interfaces/cache-eviction.interface';
 import { createCacheEvictionRegistry } from '../cache/eviction-registry';
 import { resolveWorkspaceContained } from '../shared/contain-path';
+import {
+	buildConfigurationCenterSnapshot,
+	serializeConfigurationSchema,
+} from '../configuration-center/configuration-center';
+import type {
+	IConfigurationArtifact,
+	IConfigurationPlugin,
+} from '../contracts/interfaces/configuration-center.interface';
+import { buildConfigurationCenterToolRegistration } from '../tools/configuration-center.tool';
 
 export interface IAssembledCliConfig {
 	readonly config: IMcpVertexHostConfig;
@@ -521,6 +530,91 @@ export const assembleCliConfig = async (
 				}),
 			),
 	);
+	const activationById = new Map(
+		activationReport.entries.map((entry) => [entry.id, entry]),
+	);
+	const configurationContributionById = new Map(
+		loadResult.loaded.flatMap((entry) =>
+			(entry.registrations.activation ?? [])
+				.filter((item) => item.configuration !== undefined)
+				.map((item) => [item.id, item.configuration!] as const),
+		),
+	);
+	const loadedByName = new Map(
+		loadResult.loaded.map((entry) => [entry.plugin.name, entry]),
+	);
+	const configurationPlugins: IConfigurationPlugin[] =
+		activationReport.entries.map((activation) => {
+			const loaded = loadedByName.get(activation.id);
+			const contributed = configurationContributionById.get(
+				activation.id,
+			);
+			const configName =
+				loaded === undefined
+					? activation.id
+					: (configNameBySpecifier.get(loaded.specifier) ??
+						activation.id);
+			const configEntry = pluginConfigFor(fileConfig, configName);
+			const runtimeSchema =
+				loaded?.plugin.optionsSchema ?? contributed?.optionsSchema;
+			const optionsSchema =
+				runtimeSchema === undefined
+					? undefined
+					: serializeConfigurationSchema(runtimeSchema);
+			return {
+				id: activation.id,
+				origin: activation.origin,
+				active: activation.active,
+				source: activation.source,
+				...(configEntry.path === undefined
+					? {}
+					: { path: configEntry.path }),
+				...(configEntry.prefix === undefined
+					? {}
+					: { prefix: configEntry.prefix }),
+				options: contributed?.options ?? configEntry.options ?? {},
+				...(optionsSchema === undefined ? {} : { optionsSchema }),
+				schemaStatus:
+					optionsSchema === undefined ? 'unavailable' : 'available',
+				...(loaded?.plugin.configExample !== undefined
+					? { configExample: loaded.plugin.configExample.options }
+					: contributed?.configExample === undefined
+						? {}
+						: { configExample: contributed.configExample }),
+				capabilities: {
+					tools: loaded?.registrations.tools?.length ?? 0,
+					prompts: loaded?.registrations.prompts?.length ?? 0,
+					resources: loaded?.registrations.resources?.length ?? 0,
+					knowledge: loaded?.registrations.knowledge?.length ?? 0,
+					skills: loaded?.registrations.skills?.length ?? 0,
+				},
+			};
+		});
+	const configurationArtifacts: IConfigurationArtifact[] =
+		loadResult.loaded.flatMap((entry) => {
+			const activation = activationById.get(entry.plugin.name);
+			const owner = {
+				id: entry.plugin.name,
+				origin: activation?.origin ?? ('unknown' as const),
+			};
+			return [
+				...(entry.registrations.prompts ?? []).map((item) => ({
+					id: item.id,
+					kind: 'prompt' as const,
+					owner,
+				})),
+				...(entry.registrations.resources ?? []).map((item) => ({
+					id: item.id,
+					kind: 'resource' as const,
+					owner,
+				})),
+				...(entry.registrations.knowledge ?? []).map((item) => ({
+					id: item.id,
+					kind: 'knowledge' as const,
+					owner,
+				})),
+			];
+		});
 
 	const validationMatrix = fileConfig.validationMatrix ?? { scopes: {} };
 	// Skill manifest location is defined once in `skill-paths.ts`
@@ -571,6 +665,22 @@ export const assembleCliConfig = async (
 			bodyPath: entry.bodyPath,
 		}),
 	);
+	for (const skill of skillCatalog.entries) {
+		const ownerId = skill.appliesTo[0] ?? null;
+		configurationArtifacts.push({
+			id: skill.id,
+			kind: 'skill',
+			owner: {
+				id: ownerId,
+				origin:
+					ownerId === null
+						? 'unknown'
+						: ownerId.startsWith('@mcp-vertex/')
+							? 'bundled'
+							: 'user-local',
+			},
+		});
+	}
 	const proposalSummaries = await readProposalsIndex(
 		args.workspace,
 		cacheDir,
@@ -613,6 +723,15 @@ export const assembleCliConfig = async (
 		reachable: false,
 		strengths: [...entry.strengths],
 	}));
+	const configurationSnapshot = buildConfigurationCenterSnapshot({
+		configSchema: serializeConfigurationSchema(CONFIG_FILE_SCHEMA) ?? {
+			unavailable: true,
+		},
+		config: fileConfig as Readonly<Record<string, unknown>>,
+		plugins: configurationPlugins,
+		artifacts: configurationArtifacts,
+		unavailableArtifactKinds: ['agent'],
+	});
 	const catalogSources = {
 		tools: () => catalogToolEntries,
 		skills: () => skillSummaries,
@@ -724,6 +843,10 @@ export const assembleCliConfig = async (
 
 	coreTools = [
 		buildOverviewToolRegistration(corePrefix, buildSnapshot),
+		buildConfigurationCenterToolRegistration(
+			corePrefix,
+			() => configurationSnapshot,
+		),
 		buildAgentCatalogToolRegistration(corePrefix, {
 			sources: catalogSources,
 			server: {

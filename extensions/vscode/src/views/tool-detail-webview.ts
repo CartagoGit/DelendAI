@@ -6,6 +6,8 @@ import {
 	escapeHtml,
 	renderOutputSchema,
 } from './render-output-schema';
+import type { IViewCopy } from '../contracts/interfaces/view-copy.interface';
+import { viewCopyFor } from '../i18n/view-copy.strings';
 
 // Inline twin of `tool-detail.css` (which stays for the dev harness's
 // static shell). A `<link href="./tool-detail.css">` NEVER loads inside a
@@ -25,13 +27,18 @@ export interface IToolDetailViewModel {
 	readonly outputSchema?: IRenderableSchema;
 	readonly knowledgeBody?: string;
 	readonly metrics?: IMetricsSnapshot;
+	readonly copy?: IViewCopy;
 }
+
+const countLabel = (value: number, singular: string, plural: string): string =>
+	`${value} ${value === 1 ? singular : plural}`;
 
 export const renderToolDetailHtml = (model: IToolDetailViewModel): string => {
 	const metric = model.metrics?.tools[model.tool.name];
+	const copy = model.copy ?? viewCopyFor('en');
 	return injectCspMeta(
 		`<!DOCTYPE html>
-<html lang="en">
+<html lang="${copy.lang}">
 <head>
 	<meta charset="UTF-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -41,10 +48,10 @@ export const renderToolDetailHtml = (model: IToolDetailViewModel): string => {
 <body>
 	<h1>${escapeHtml(model.tool.name)}</h1>
 	<p>${escapeHtml(model.tool.summary ?? model.tool.plugin)}</p>
-	${model.knowledgeBody === undefined ? '' : `<section><h2>Knowledge</h2><pre>${escapeHtml(model.knowledgeBody)}</pre></section>`}
-	<section><h2>Input schema</h2>${model.inputSchema === undefined ? '<p>No input schema.</p>' : renderOutputSchema(model.inputSchema)}</section>
-	<section><h2>Output schema</h2>${model.outputSchema === undefined ? '<p>No output schema.</p>' : renderOutputSchema(model.outputSchema)}</section>
-	<section><h2>Metrics</h2>${metric === undefined ? '<p>No calls recorded.</p>' : `<p>${metric.calls} calls, ${metric.errors} errors, max ${metric.maxMs}ms</p>`}</section>
+	${model.knowledgeBody === undefined ? '' : `<section><h2>${escapeHtml(copy.knowledge)}</h2><pre>${escapeHtml(model.knowledgeBody)}</pre></section>`}
+	<section><h2>${escapeHtml(copy.inputSchema)}</h2>${model.inputSchema === undefined ? `<p>${escapeHtml(copy.noInputSchema)}</p>` : renderOutputSchema(model.inputSchema, copy)}</section>
+	<section><h2>${escapeHtml(copy.outputSchema)}</h2>${model.outputSchema === undefined ? `<p>${escapeHtml(copy.noOutputSchema)}</p>` : renderOutputSchema(model.outputSchema, copy)}</section>
+	<section><h2>${escapeHtml(copy.metrics)}</h2>${metric === undefined ? `<p>${escapeHtml(copy.noCalls)}</p>` : `<p>${escapeHtml(countLabel(metric.calls, copy.callSingular, copy.calls))}, ${escapeHtml(countLabel(metric.errors, copy.errorSingular, copy.errors))}, ${escapeHtml(copy.max)} ${metric.maxMs}ms</p>`}</section>
 </body>
 </html>`,
 		DEFAULT_DENY,
@@ -65,14 +72,15 @@ export const renderToolDetailHtml = (model: IToolDetailViewModel): string => {
  */
 export const renderToolDetailBody = (model: IToolDetailViewModel): string => {
 	const metric = model.metrics?.tools[model.tool.name];
+	const copy = model.copy ?? viewCopyFor('en');
 	return `<section class="tool-detail">
 		<header class="tool-detail__head">
 			<h1>${escapeHtml(model.tool.name)}</h1>
 			<p>${escapeHtml(model.tool.summary ?? model.tool.plugin)}</p>
 		</header>
-		${model.knowledgeBody === undefined ? '' : `<section class="tool-detail__section"><h2>Knowledge</h2><pre class="tool-detail__knowledge">${escapeHtml(model.knowledgeBody)}</pre></section>`}
-		<section class="tool-detail__section"><h2>Input schema</h2>${model.inputSchema === undefined ? '<p>No input schema.</p>' : renderOutputSchema(model.inputSchema)}</section>
-		<section class="tool-detail__section"><h2>Output schema</h2>${model.outputSchema === undefined ? '<p>No output schema.</p>' : renderOutputSchema(model.outputSchema)}</section>
-		<section class="tool-detail__section"><h2>Metrics</h2>${metric === undefined ? '<p>No calls recorded.</p>' : `<p>${metric.calls} calls, ${metric.errors} errors, max ${metric.maxMs}ms</p>`}</section>
+		${model.knowledgeBody === undefined ? '' : `<section class="tool-detail__section"><h2>${escapeHtml(copy.knowledge)}</h2><pre class="tool-detail__knowledge">${escapeHtml(model.knowledgeBody)}</pre></section>`}
+		<section class="tool-detail__section"><h2>${escapeHtml(copy.inputSchema)}</h2>${model.inputSchema === undefined ? `<p>${escapeHtml(copy.noInputSchema)}</p>` : renderOutputSchema(model.inputSchema, copy)}</section>
+		<section class="tool-detail__section"><h2>${escapeHtml(copy.outputSchema)}</h2>${model.outputSchema === undefined ? `<p>${escapeHtml(copy.noOutputSchema)}</p>` : renderOutputSchema(model.outputSchema, copy)}</section>
+		<section class="tool-detail__section"><h2>${escapeHtml(copy.metrics)}</h2>${metric === undefined ? `<p>${escapeHtml(copy.noCalls)}</p>` : `<p>${escapeHtml(countLabel(metric.calls, copy.callSingular, copy.calls))}, ${escapeHtml(countLabel(metric.errors, copy.errorSingular, copy.errors))}, ${escapeHtml(copy.max)} ${metric.maxMs}ms</p>`}</section>
 	</section>`;
 };

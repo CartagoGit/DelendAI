@@ -51,13 +51,13 @@ The source of truth for preset membership is [../packages/core/src/lib/plugins/p
 Preferred launch:
 
 ```bash
-bunx @mcp-vertex/core --preset=full
+bunx --package @mcp-vertex/cli mcpv __serve --workspace . --preset full
 ```
 
 Explicit minimal alternative for just proposals plus issues:
 
 ```bash
-bunx @mcp-vertex/core --plugins=proposals,issues
+bunx --package @mcp-vertex/cli mcpv __serve --workspace . --plugins proposals,issues
 ```
 
 The server block is the same across VS Code, Cursor, and Claude Code; only the host-specific `mcp.json` location changes:
@@ -67,7 +67,7 @@ The server block is the same across VS Code, Cursor, and Claude Code; only the h
 	"servers": {
 		"mcp-vertex": {
 			"command": "bunx",
-			"args": ["@mcp-vertex/core", "--preset=full"]
+			"args": ["--package", "@mcp-vertex/cli", "mcpv", "__serve", "--workspace", ".", "--preset", "full"]
 		}
 	}
 }
@@ -88,7 +88,7 @@ enabled, every call it runs) must be recorded for spend auditing.
 Load them alongside a preset by adding both to `--plugins`:
 
 ```bash
-bunx @mcp-vertex/core --preset=swarm --plugins=usage-tracking,orchestrator-runner
+bunx --package @mcp-vertex/cli mcpv __serve --workspace . --preset swarm --plugins usage-tracking,orchestrator-runner
 ```
 
 The router needs a **provider roster**. The canonical home is a root-level

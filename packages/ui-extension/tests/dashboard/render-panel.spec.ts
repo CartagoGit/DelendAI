@@ -335,6 +335,17 @@ describe('renderDashboard', async () => {
 		expect(html).toContain('[data-tab-trigger]');
 	});
 
+	it('posts refresh and proposal-link actions through the VS Code bridge', async () => {
+		const html = renderDashboard(fixture, opts);
+		expect(html).toContain(
+			"host?.postMessage({ command: 'action', action: 'refresh' })",
+		);
+		expect(html).toContain(
+			"host?.postMessage({ command: 'openProposal', id })",
+		);
+		expect(html).toContain("target.closest('[data-proposal]')");
+	});
+
 	it('wires ArrowLeft/ArrowRight roving tabindex with wrapping (H27)', async () => {
 		const html = renderDashboard(fixture, opts);
 		// ArrowRight advances (wrapping via modulo); ArrowLeft wraps to the

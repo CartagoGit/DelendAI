@@ -31,13 +31,23 @@ const t = useTranslations(lang);
 	<div class="modal__panel modal__panel--search">
 		<div class="modal__head">
 			<h2>{t.search.title}</h2>
-			<button class="modal__close" data-search-close aria-label="Close">×</button>
+			<button class="modal__close" data-search-close aria-label={t.search.close}>×</button>
 		</div>
 		<div id="search-pagefind" data-pf-lang={lang} data-pf-placeholder={t.search.placeholder}></div>
 	</div>
 </div>
 
-<script is:inline define:vars={{ base: import.meta.env.BASE_URL.replace(/\/$/, ''), isDev: import.meta.env.DEV }}>
+<script
+	is:inline
+	define:vars={{
+		base: import.meta.env.BASE_URL.replace(/\/$/, ''),
+		isDev: import.meta.env.DEV,
+		searchPlaceholder: t.search.placeholder,
+		noMatches: t.search.noMatches,
+		indexUnavailable: t.search.indexUnavailable,
+		buildRequired: t.search.buildRequired,
+	}}
+>
 	// Settings-modal pattern (Config.astro): re-runs after every Astro view
 	// transition, AbortController revokes the previous listener batch.
 	let searchAbort;
@@ -84,7 +94,7 @@ const t = useTranslations(lang);
 		const input = document.createElement('input');
 		input.type = 'search';
 		input.className = 'dev-search__input';
-		input.placeholder = mount.dataset.pfPlaceholder || 'Search…';
+		input.placeholder = mount.dataset.pfPlaceholder || searchPlaceholder;
 		const list = document.createElement('ul');
 		list.className = 'dev-search__list';
 
@@ -117,7 +127,7 @@ const t = useTranslations(lang);
 			if (filtered.length === 0) {
 				const li = document.createElement('li');
 				li.className = 'dev-search__empty';
-				li.textContent = 'No matches.';
+				li.textContent = noMatches;
 				list.append(li);
 			}
 		};
@@ -174,13 +184,17 @@ const t = useTranslations(lang);
 					renderDevResults(mount, items);
 				} catch {
 					if (mount) {
-						mount.innerHTML =
-							'<p class="dev-search__empty">Search index not available.</p>';
+						const message = document.createElement('p');
+						message.className = 'dev-search__empty';
+						message.textContent = indexUnavailable;
+						mount.replaceChildren(message);
 					}
 				}
 			} else if (mount) {
-				mount.innerHTML =
-					'<p class="dev-search__empty">Search is built at <code>bun run site</code>. Run the build to enable it.</p>';
+				const message = document.createElement('p');
+				message.className = 'dev-search__empty';
+				message.textContent = buildRequired;
+				mount.replaceChildren(message);
 			}
 		};
 		const close = () => {

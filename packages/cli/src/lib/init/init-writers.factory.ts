@@ -12,11 +12,15 @@ import type {
 	IInitWrite,
 	IMcpJsonWriteResult,
 } from '../../contracts/interfaces/init.interface';
+import type { ICanonicalLaunch } from '../../contracts/interfaces/canonical-launch.interface';
 import {
 	writeConfigSafely,
 	writeWorkspaceFileSafely,
 } from '../config-file.service';
-import { mergeMcpVertexServerEntry } from './init-render.service';
+import {
+	mergeMcpVertexServerEntry,
+	renderMcpVertexServerEntry,
+} from './init-render.service';
 
 export type { IInitWrite, IMcpJsonWriteResult };
 
@@ -81,12 +85,14 @@ export const writeMcpVertexConfig = async (
  *     servers were preserved or the file was left untouched
  *     because it was unparseable.
  */
-export const writeVscodeMcpJson = async (
+const writeMcpJson = async (
 	workspace: string,
-	hostEntryPath: string,
+	relPath: '.vscode/mcp.json' | '.mcp.json',
+	kind: 'servers' | 'mcpServers',
+	launch: ICanonicalLaunch,
 	mode: 'append' | 'overwrite' | 'skip',
 ): Promise<IMcpJsonWriteResult> => {
-	const path = `${workspace}/.vscode/mcp.json`;
+	const path = `${workspace}/${relPath}`;
 	if (mode === 'skip') return { kind: 'skipped', path };
 
 	const probe = existsSync(path);
@@ -95,25 +101,13 @@ export const writeVscodeMcpJson = async (
 		// `mcp-vertex` server. The merge would have nothing to merge
 		// against, so we skip it.
 		const content = `${JSON.stringify(
-			{
-				servers: {
-					'mcp-vertex': {
-						type: 'stdio',
-						command: 'bun',
-						args: [
-							hostEntryPath,
-							'--workspace=${workspaceFolder}',
-							'--config=${workspaceFolder}/mcp-vertex.config.json',
-						],
-					},
-				},
-			},
+			{ [kind]: { 'mcp-vertex': renderMcpVertexServerEntry(launch) } },
 			null,
 			'\t',
 		)}\n`;
 		const written = await writeWorkspaceFileSafely(
 			workspace,
-			'.vscode/mcp.json',
+			relPath,
 			content,
 		);
 		return { kind: 'written', path: written };
@@ -121,7 +115,7 @@ export const writeVscodeMcpJson = async (
 
 	// File exists — read, merge, write.
 	const existing = await readFile(path, 'utf8');
-	const merged = mergeMcpVertexServerEntry(hostEntryPath, existing);
+	const merged = mergeMcpVertexServerEntry(launch, existing, kind);
 	if (merged === undefined) {
 		// Refused to merge: existing content isn't a JSON object.
 		// Leave it alone and surface `exists` so the operator knows
@@ -140,11 +134,10 @@ export const writeVscodeMcpJson = async (
 	// hint like "preserved 2 server(s): filesystem, github".
 	let preserved: readonly string[] = [];
 	try {
-		const parsed = JSON.parse(merged) as {
-			servers?: Record<string, unknown>;
-		};
-		if (parsed.servers !== undefined) {
-			preserved = Object.keys(parsed.servers).filter(
+		const parsed = JSON.parse(merged) as Record<string, unknown>;
+		const servers = parsed[kind];
+		if (servers !== null && typeof servers === 'object') {
+			preserved = Object.keys(servers as Record<string, unknown>).filter(
 				(name) => name !== 'mcp-vertex',
 			);
 		}
@@ -155,6 +148,20 @@ export const writeVscodeMcpJson = async (
 	}
 	return { kind: 'merged', path: written, preserved };
 };
+
+export const writeVscodeMcpJson = (
+	workspace: string,
+	launch: ICanonicalLaunch,
+	mode: 'append' | 'overwrite' | 'skip',
+): Promise<IMcpJsonWriteResult> =>
+	writeMcpJson(workspace, '.vscode/mcp.json', 'servers', launch, mode);
+
+export const writeGenericMcpJson = (
+	workspace: string,
+	launch: ICanonicalLaunch,
+	mode: 'append' | 'overwrite' | 'skip',
+): Promise<IMcpJsonWriteResult> =>
+	writeMcpJson(workspace, '.mcp.json', 'mcpServers', launch, mode);
 
 /** Append-or-overwrite semantics for a generic file inside the workspace. */
 export const writeWorkspaceText = async (
