@@ -349,7 +349,7 @@ export default definePlugin({
 	name: 'audit',
 	version: '0.1.0',
 	describe:
-		'Multi-model audit plugin (l99 alcance A): canonical brief generator + consolidation across N model reports. Read-only, no network, no secrets.',
+		'Multi-model audit planning and consolidation, plus explicit provider-backed audit_run with network/write effects and optional proposal scaffolding.',
 	optionsSchema: OptionsSchema,
 	register(ctx) {
 		const optionsResult = OptionsSchema.safeParse(ctx.options);

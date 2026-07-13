@@ -384,38 +384,61 @@ export const mountSettingsPanel = (
 	prefs: IPersistedPrefs,
 	installHandler: () => Promise<IInstallOutcome | null>,
 	onLanguageChange: (lang: Lang) => void,
-): { rerender: (status: ISetupStatus) => void } => {
+): { rerender: (status: ISetupStatus) => void; dispose: () => void } => {
 	ensureWizardStyles();
+	let mounted = true;
+	let generation = 0;
+	let statusTimer: number | undefined;
 	const rerender = (next: ISetupStatus): void => {
+		if (!mounted) return;
+		generation += 1;
+		const renderGeneration = generation;
 		root.innerHTML = renderSettingsPanel(next, prefs);
 		bindSettingsHandlers(root, next, prefs, {
 			onInstall: async () => {
 				const result = await installHandler();
+				if (!mounted || renderGeneration !== generation) return;
 				const statusSpan =
 					root.querySelector<HTMLSpanElement>('#setup-status');
 				if (statusSpan)
 					statusSpan.textContent = result?.note ?? 'Done.';
-				window.setTimeout(() => {
+				statusTimer = window.setTimeout(() => {
 					void (async (): Promise<void> => {
+						if (!mounted || renderGeneration !== generation) return;
 						const r = await fetch(
 							`/api/setup/status${window.location.search}`,
 						);
-						if (!r.ok) return;
+						if (
+							!r.ok ||
+							!mounted ||
+							renderGeneration !== generation
+						)
+							return;
 						const nextStatus = (await r.json()) as ISetupStatus;
+						if (!mounted || renderGeneration !== generation) return;
 						rerender(nextStatus);
 					})();
 				}, 800);
 			},
 			onRecheck: async () => {
+				const requestGeneration = generation;
 				const r = await fetch(
 					`/api/setup/status${window.location.search}`,
 				);
-				if (!r.ok) return;
+				if (!r.ok || !mounted || requestGeneration !== generation)
+					return;
 				rerender((await r.json()) as ISetupStatus);
 			},
 			onLanguageChange,
 		});
 	};
 	rerender(status);
-	return { rerender };
+	return {
+		rerender,
+		dispose: () => {
+			mounted = false;
+			generation += 1;
+			if (statusTimer !== undefined) window.clearTimeout(statusTimer);
+		},
+	};
 };

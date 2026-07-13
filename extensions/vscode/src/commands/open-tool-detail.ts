@@ -10,6 +10,7 @@ import {
 
 import type { IRenderableSchema } from '../views/render-output-schema';
 import { renderToolDetailHtml } from '../views/tool-detail-webview';
+import { resolveViewLang, viewCopyFor } from '../i18n/view-copy.strings';
 import { OPEN_TOOL_DETAIL_COMMAND } from '../contracts/constants/open-tool-detail-command.constant';
 import type { ICommandDeps } from './types';
 import { showCommandError } from './types';
@@ -104,7 +105,7 @@ const loadKnowledgeBody = async (
 };
 
 export const buildToolDetailHtml = async (
-	deps: Pick<ICommandDeps, 'client' | 'namespacePrefix'>,
+	deps: Pick<ICommandDeps, 'client' | 'namespacePrefix' | 'globalState'>,
 	arg: IToolDetailArgument,
 ): Promise<string> => {
 	const fromArg = descriptorFromArgument(arg);
@@ -134,6 +135,9 @@ export const buildToolDetailHtml = async (
 			: {}),
 		...(knowledgeBody === undefined ? {} : { knowledgeBody }),
 		...(metrics === undefined ? {} : { metrics }),
+		copy: viewCopyFor(
+			resolveViewLang(deps.globalState?.get<unknown>('mcpv:lang')),
+		),
 	});
 };
 

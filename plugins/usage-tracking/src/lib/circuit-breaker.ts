@@ -168,6 +168,8 @@ export const recordDegradation = async (
 							outputTokens: 0,
 							totalTokens: 0,
 							costUsd: 0,
+							tokensSaved: 0,
+							savingsPercent: 0,
 							errors: 0,
 							autoBypassed: 0,
 						},

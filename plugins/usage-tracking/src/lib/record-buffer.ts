@@ -72,12 +72,12 @@ export class RecordBuffer {
 	) {
 		this.maxDelayMs = options.maxDelayMs ?? DEFAULT_MAX_DELAY_MS;
 		this.maxBatch = options.maxBatch ?? DEFAULT_MAX_BATCH;
-		liveBuffers.add(this);
 		installExitHook();
 	}
 
 	/** Hot-path entry point. Synchronous, non-blocking, never awaits I/O. */
 	push(record: unknown): void {
+		liveBuffers.add(this);
 		this.pending.push(record);
 		if (this.pending.length >= this.maxBatch) {
 			this.cancelTimer();
@@ -118,6 +118,7 @@ export class RecordBuffer {
 		if (this.pending.length === 0) return Promise.resolve();
 		this.flushPromise = this.drain().finally(() => {
 			this.flushPromise = null;
+			if (this.pending.length === 0) liveBuffers.delete(this);
 		});
 		return this.flushPromise;
 	}
@@ -141,9 +142,13 @@ export class RecordBuffer {
 
 	/** Flush any remaining records, draining fully (call on shutdown). */
 	async close(): Promise<void> {
-		do {
-			await this.flush();
-		} while (this.pending.length > 0);
+		try {
+			do {
+				await this.flush();
+			} while (this.pending.length > 0);
+		} finally {
+			liveBuffers.delete(this);
+		}
 	}
 
 	/**
@@ -157,6 +162,7 @@ export class RecordBuffer {
 		this.cancelTimer();
 		this.pending.length = 0;
 		if (this.flushPromise) await this.flushPromise;
+		if (this.pending.length === 0) liveBuffers.delete(this);
 	}
 
 	/**

@@ -29,6 +29,7 @@ import { spawn, type Subprocess } from 'bun';
 import { existsSync } from 'node:fs';
 import { dirname, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { scssPlugin } from '../compile/scss-plugin';
 
 // ---------------------------------------------------------------------------
 // Port reclaim — `Bun.serve({ port })` and `astro dev` both fail with
@@ -210,82 +211,6 @@ const TARGETS: readonly ITarget[] = [
 // Bun build: transform TS on-the-fly, resolve @mcp-vertex/* via workspace
 // symlinks + tsconfig paths (both understood by Bun's resolver).
 // ---------------------------------------------------------------------------
-
-// ---------------------------------------------------------------------------
-// SCSS plugin — turns `import css from './foo.scss'` (and
-// `./foo.scss?raw`) into a string module emitting the *compiled* CSS.
-// Uses the same `sass` package that `apps/web` uses for the Astro
-// site, so the dev preview and the production webview pull from the
-// same `.scss` files and end up with identical CSS.
-//
-// Plugin responsibilities:
-//   - Resolve `./foo.scss` and `./foo.scss?raw` to a real file path.
-//   - Load the file source.
-//   - Compile with `sass.compileString` and emit a string module so
-//     consumers can `import css from './foo.scss'` (no `sass` import
-//     in the browser bundle — that would pull in ~19MB of compiler).
-//
-// The companion ambient module declarations in
-// `apps/shared/src/styles/raw.d.ts` give TypeScript the string type
-// so editor IntelliSense works without pulling `sass` types.
-// ---------------------------------------------------------------------------
-import { compileString as sassCompile } from 'sass';
-import { pathToFileURL } from 'node:url';
-
-const scssPlugin = {
-	name: 'mcp-vertex-scss',
-	async setup(build: import('bun').Build): Promise<void> {
-		build.onResolve({ filter: /\.scss(\?raw)?$/ }, (args) => {
-			const cleanPath = args.path.split('?')[0] ?? '';
-			const abs = cleanPath.startsWith('/')
-				? cleanPath
-				: `${args.resolveDir}/${cleanPath}`;
-			return { path: abs, namespace: 'mcp-scss' };
-		});
-		build.onLoad(
-			{ filter: /\.scss(\?raw)?$/, namespace: 'mcp-scss' },
-			async (args) => {
-				const path = args.path.split('?')[0] ?? args.path;
-				const file = Bun.file(path);
-				const source = await file.text();
-				let compiled: string;
-				try {
-					// `sass.compileString` resolves `@use './tokens'` style
-					// imports relative to the `url` we pass. Without a
-					// file:// URL, sass falls back to the CWD and the
-					// `@use` resolver can't find siblings in
-					// `apps/shared/src/styles/_*.scss`.
-					compiled = sassCompile(source, {
-						url: pathToFileURL(path).href,
-						loadPaths: [dirname(path)],
-					}).css;
-				} catch (err) {
-					const msg =
-						err instanceof Error ? err.message : String(err);
-					return {
-						contents: `throw new Error(${JSON.stringify(`SCSS compile failed in ${path}: ${msg}`)});`,
-						loader: 'js',
-					};
-				}
-				return {
-					// Emit BOTH a default and a named export so
-					// consumers can use either:
-					//   import css from './foo.scss';
-					//   import { compiledCss } from './foo.scss';
-					// The named export is what `apps/shared`'s
-					// `*-css.ts` wrappers and the SCSS-aware
-					// consumers use; the default export is what
-					// Bun's built-in `.scss?raw` style imports
-					// would expect. With both, every shape
-					// resolves, and the chunk merger keeps a
-					// single binding per module.
-					contents: `const compiledCss = ${JSON.stringify(compiled)};\nexport { compiledCss };\nexport default compiledCss;`,
-					loader: 'js',
-				};
-			},
-		);
-	},
-};
 
 /**
  * In-memory bundle + chunk cache. The dev server's first build
@@ -491,6 +416,7 @@ data-theme attr is set (the picker default 'system' removes it). */
 		html, body {
 			margin: 0;
 			padding: 0;
+			height: 100%;
 			background: var(--mcpv-bg);
 			color: var(--mcpv-fg);
 			font-family: var(--mcpv-font-prose);
@@ -498,7 +424,7 @@ data-theme attr is set (the picker default 'system' removes it). */
 			line-height: 1.5;
 			-webkit-font-smoothing: antialiased;
 		}
-		body { display: flex; flex-direction: column; min-height: 100vh; }
+		body { display: flex; flex-direction: column; min-height: 0; overflow: hidden; }
 		code, pre {
 			font-family: var(--mcpv-font-mono);
 			font-variant-numeric: tabular-nums;
@@ -700,6 +626,11 @@ const escapeHtml = (s: string): string =>
 import { detectSetupStatus, type ISetupStatus } from './api/setup-status';
 import { runSetupInstall } from './api/setup-install';
 import { fetchRealDashboard, type IApiError } from './api/real-data';
+import {
+	fetchConfigurationCenterData,
+	isConfigurationCenterSaveRequest,
+	saveConfigurationCenterData,
+} from './api/configuration-center-data';
 
 const jsonResponse = (body: unknown, status = 200): Response =>
 	new Response(JSON.stringify(body, null, 2), {
@@ -740,6 +671,30 @@ const handleApi = async (
 			return jsonResponse(result as IApiError, 502);
 		}
 		return jsonResponse(result);
+	}
+	if (url.pathname === '/api/configuration-center' && req.method === 'GET') {
+		try {
+			return jsonResponse(await fetchConfigurationCenterData(cwd.path));
+		} catch (error) {
+			return jsonResponse(
+				{
+					ok: false,
+					message:
+						error instanceof Error ? error.message : String(error),
+				},
+				502,
+			);
+		}
+	}
+	if (url.pathname === '/api/configuration-center' && req.method === 'POST') {
+		const body = await req.json().catch(() => undefined);
+		if (!isConfigurationCenterSaveRequest(body)) {
+			return jsonResponse(
+				{ ok: false, message: 'Invalid configuration edit request.' },
+				400,
+			);
+		}
+		return jsonResponse(await saveConfigurationCenterData(cwd.path, body));
 	}
 	return new Response('Not found', { status: 404 });
 };

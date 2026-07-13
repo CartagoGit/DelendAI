@@ -93,6 +93,9 @@ const axisKey = (record: IInvocationRecord, axis: GroupByAxis): string => {
 	}
 };
 
+const savingsPercentOf = (tokensSaved: number, tokensUsed: number): number =>
+	tokensUsed === 0 ? 0 : Math.round((100 * tokensSaved) / tokensUsed);
+
 /** Fold records into buckets keyed by `axis`, sorted by `sortBy` desc. */
 export const bucketBy = (
 	records: readonly IInvocationRecord[],
@@ -111,16 +114,22 @@ export const bucketBy = (
 				outputTokens: 0,
 				totalTokens: 0,
 				costUsd: 0,
+				tokensSaved: 0,
+				savingsPercent: 0,
 				errors: 0,
 				autoBypassed: 0,
 			} satisfies IRollupBucket);
+		const totalTokens = prev.totalTokens + (record.usage?.totalTokens ?? 0);
+		const tokensSaved = prev.tokensSaved + (record.tokensSaved ?? 0);
 		map.set(key, {
 			key,
 			calls: prev.calls + 1,
 			inputTokens: prev.inputTokens + (record.usage?.inputTokens ?? 0),
 			outputTokens: prev.outputTokens + (record.usage?.outputTokens ?? 0),
-			totalTokens: prev.totalTokens + (record.usage?.totalTokens ?? 0),
+			totalTokens,
 			costUsd: prev.costUsd + (record.costUsd ?? 0),
+			tokensSaved,
+			savingsPercent: savingsPercentOf(tokensSaved, totalTokens),
 			errors: prev.errors + (record.outcome === 'success' ? 0 : 1),
 			autoBypassed: prev.autoBypassed + (record.autoBypassed ? 1 : 0),
 		});
@@ -136,6 +145,7 @@ export const computeTotals = (
 	let outputTokens = 0;
 	let totalTokens = 0;
 	let costUsd = 0;
+	let tokensSaved = 0;
 	let errors = 0;
 	let autoBypassed = 0;
 	for (const record of records) {
@@ -144,6 +154,7 @@ export const computeTotals = (
 		outputTokens += record.usage?.outputTokens ?? 0;
 		totalTokens += record.usage?.totalTokens ?? 0;
 		costUsd += record.costUsd ?? 0;
+		tokensSaved += record.tokensSaved ?? 0;
 		if (record.outcome !== 'success') errors += 1;
 		if (record.autoBypassed) autoBypassed += 1;
 	}
@@ -153,6 +164,8 @@ export const computeTotals = (
 		outputTokens,
 		totalTokens,
 		costUsd,
+		tokensSaved,
+		savingsPercent: savingsPercentOf(tokensSaved, totalTokens),
 		errors,
 		autoBypassed,
 	};

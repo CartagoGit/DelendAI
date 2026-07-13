@@ -21,6 +21,11 @@ import {
 	registerResetSettingsCommand,
 	registerSaveSettingsCommand,
 } from './commands/open-settings';
+import {
+	LEGACY_SETTINGS_STATE_KEY,
+	SETTINGS_STATE_KEY,
+} from './contracts/constants/settings-state-key.constant';
+import { registerOpenConfigurationCenterCommand } from './commands/open-configuration-center';
 
 import {
 	registerExternalMcpsAckCommand,
@@ -115,6 +120,8 @@ export interface IExtensionContext {
 }
 
 export interface IWebviewPanel {
+	/** Native VS Code panel lifecycle hook. */
+	readonly onDidDispose?: (cb: () => void) => { dispose(): void };
 	readonly webview: {
 		html: string;
 		/**
@@ -386,6 +393,14 @@ export const activate = async (
 	// f00053 S6: surface the canonical docs/how-to-use/API from the IDE.
 	track(registerOpenDocsApiCommand({ vscode }));
 	track(registerOpenAgentCatalogCommand({ vscode, client }));
+	track(
+		registerOpenConfigurationCenterCommand({
+			vscode,
+			client,
+			globalState: context.globalState,
+			...withPrefix,
+		}),
+	);
 	track(registerOpenToolDetailCommand({ vscode, client, ...withPrefix }));
 	track(registerOpenKnowledgeCommand({ vscode, client }));
 	track(registerToolSearchCommand({ vscode, client, ...withPrefix }));
@@ -432,7 +447,7 @@ export const activate = async (
 	// reload instead of living in module-scope memory.
 	const settingsStore = createExtensionSettingsStore(context.globalState);
 	const openSettingsReg = registerOpenSettingsCommand(
-		{ vscode, client },
+		{ vscode, client, globalState: context.globalState },
 		settingsStore,
 	);
 	const saveSettingsReg = registerSaveSettingsCommand(vscode, settingsStore);
@@ -476,17 +491,12 @@ export const activate = async (
 			registerOpenDashboardCommand({
 				host,
 				client,
+				globalState: context.globalState,
 				...withPrefix,
-				getConfig: () => {
-					try {
-						const section = host.getConfiguration<{
-							readonly extension?: { readonly docsUrl?: string };
-						}>('mcp-vertex');
-						return section ?? {};
-					} catch {
-						return {};
-					}
-				},
+				getConfig: () =>
+					context.globalState.get(SETTINGS_STATE_KEY) ??
+					context.globalState.get(LEGACY_SETTINGS_STATE_KEY) ??
+					{},
 			}),
 		);
 	} else {
@@ -498,24 +508,12 @@ export const activate = async (
 			registerOpenDashboardCommand({
 				host,
 				client,
+				globalState: context.globalState,
 				...withPrefix,
-				getConfig: () => {
-					try {
-						return (
-							(
-								deps.vscode as unknown as {
-									workspace?: {
-										getConfiguration?: (
-											section: string,
-										) => unknown;
-									};
-								}
-							).workspace?.getConfiguration?.('mcp-vertex') ?? {}
-						);
-					} catch {
-						return {};
-					}
-				},
+				getConfig: () =>
+					context.globalState.get(SETTINGS_STATE_KEY) ??
+					context.globalState.get(LEGACY_SETTINGS_STATE_KEY) ??
+					{},
 			}),
 		);
 	}

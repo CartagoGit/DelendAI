@@ -84,6 +84,7 @@ describe('rollup', () => {
 		expect(totals.costUsd).toBe(3);
 		expect(totals.errors).toBe(1);
 		expect(totals.totalTokens).toBe(120);
+		expect(totals.tokensSaved).toBe(0);
 
 		const byPlugin = bucketBy(records, 'plugin', 'costUsd');
 		expect(byPlugin[0]?.key).toBe('docs');
@@ -138,6 +139,40 @@ describe('rollup', () => {
 		expect(
 			byModel.find((b) => b.key === 'openai/gpt-5-codex')?.totalTokens,
 		).toBe(150);
+	});
+
+	it('sums per-model savings to the session total without double counting', () => {
+		const records = [
+			rec({
+				ts: '2026-06-25T11:00:00.000Z',
+				model: { provider: 'openai', modelId: 'gpt-5', kind: 'api' },
+				usage: { totalTokens: 100 },
+				tokensSaved: 25,
+			}),
+			rec({
+				ts: '2026-06-25T11:30:00.000Z',
+				model: {
+					provider: 'anthropic',
+					modelId: 'sonnet',
+					kind: 'api',
+				},
+				usage: { totalTokens: 50 },
+				tokensSaved: 10,
+			}),
+			rec({ ts: '2026-06-25T11:45:00.000Z', tokensSaved: 5 }),
+		];
+		const buckets = bucketBy(records, 'model', 'tokensSaved');
+		const totals = computeTotals(records);
+		expect(
+			buckets.reduce((sum, bucket) => sum + bucket.tokensSaved, 0),
+		).toBe(totals.tokensSaved);
+		expect(totals.tokensSaved).toBe(40);
+		expect(totals.savingsPercent).toBe(27);
+		expect(buckets[0]).toMatchObject({
+			key: 'openai/gpt-5',
+			tokensSaved: 25,
+			savingsPercent: 25,
+		});
 	});
 
 	it('windows out records older than windowDays', () => {

@@ -53,34 +53,49 @@ const HOST_SERVER_ENTRY = join(
 );
 
 /**
- * Wait until the spawned child has installed its signal handlers
- * (i.e. the `await assembled.start()` line in host-server.ts has
- * returned and the `process.on('SIGTERM', ...)` calls have been
- * registered). We can't observe that directly from outside, so we
- * poll: while the child is still running AND has been alive for at
- * least `minMs`, we assume readiness.
- *
- * This is more robust than a fixed `setTimeout(500)` when the test
- * suite is under load (the host may need >500ms to boot the
- * swarm preset; if SIGTERM arrives before the handler is wired,
- * the process dies with the signal still set, not via
- * `process.exit(143)`).
+ * Wait for the explicit test-only marker emitted immediately after the child
+ * installs its signal handlers. A prior minimum-uptime heuristic still raced
+ * cold assembly under full-suite load and could send SIGTERM too early.
  */
 const waitForHostReady = async (
 	child: ReturnType<typeof spawn>,
-	minMs = 1500,
 	timeoutMs = 15_000,
 ): Promise<void> => {
-	const t0 = Date.now();
-	while (Date.now() - t0 < timeoutMs) {
-		if (child.exitCode !== null || child.signalCode !== null) {
-			throw new Error(
-				`host exited prematurely with code=${child.exitCode} signal=${child.signalCode} before handlers were ready`,
+	if (child.stderr === null) throw new Error('host stderr must be piped');
+	const stderrStream = child.stderr;
+	await new Promise<void>((resolveReady, rejectReady) => {
+		let stderr = '';
+		const cleanupListeners = (): void => {
+			clearTimeout(timeout);
+			stderrStream.off('data', onData);
+			child.off('exit', onExit);
+		};
+		const onData = (chunk: Buffer): void => {
+			stderr += chunk.toString('utf8');
+			if (!stderr.includes('[mcp-vertex] signal-handlers-ready')) return;
+			cleanupListeners();
+			resolveReady();
+		};
+		const onExit = (
+			code: number | null,
+			signal: NodeJS.Signals | null,
+		): void => {
+			cleanupListeners();
+			rejectReady(
+				new Error(
+					`host exited prematurely with code=${code} signal=${signal} before handlers were ready`,
+				),
 			);
-		}
-		if (Date.now() - t0 >= minMs) return;
-		await new Promise((r) => setTimeout(r, 100));
-	}
+		};
+		const timeout = setTimeout(() => {
+			cleanupListeners();
+			rejectReady(
+				new Error(`host readiness timed out after ${timeoutMs}ms`),
+			);
+		}, timeoutMs);
+		stderrStream.on('data', onData);
+		child.once('exit', onExit);
+	});
 };
 
 /**
@@ -260,13 +275,11 @@ describe('gracefulShutdown — e2e (scripts/host-server.ts SIGTERM)', async () =
 			[HOST_SERVER_ENTRY, `--workspace=${workspace}`],
 			{
 				cwd: REPO_ROOT,
-				// stdout/stderr ignored: this test asserts only on the
-				// exit code + signal, not on what the child logs. The
-				// child writes to stderr during normal startup
-				// (graceful-shutdown banner, plugin errors), which
-				// would otherwise leak into the validate output.
-				stdio: ['ignore', 'ignore', 'ignore'],
+				// stderr is piped for the readiness handshake and never
+				// forwarded, so normal startup diagnostics stay out of validate.
+				stdio: ['ignore', 'ignore', 'pipe'],
 				detached: false,
+				env: { ...process.env, MCP_VERTEX_TEST_READY: '1' },
 			},
 		);
 
@@ -299,10 +312,10 @@ describe('gracefulShutdown — e2e (scripts/host-server.ts SIGTERM)', async () =
 			[HOST_SERVER_ENTRY, `--workspace=${workspace}`],
 			{
 				cwd: REPO_ROOT,
-				// See SIGTERM test for rationale: drop stdout/stderr
-				// so the child does not pollute the validate output.
-				stdio: ['ignore', 'ignore', 'ignore'],
+				// See SIGTERM test for rationale: stderr stays local to the test.
+				stdio: ['ignore', 'ignore', 'pipe'],
 				detached: false,
+				env: { ...process.env, MCP_VERTEX_TEST_READY: '1' },
 			},
 		);
 
@@ -338,6 +351,7 @@ describe('gracefulShutdown — e2e (scripts/host-server.ts SIGTERM)', async () =
 				// so the host's startup banner does not leak.
 				stdio: ['ignore', 'ignore', 'pipe'],
 				detached: false,
+				env: { ...process.env, MCP_VERTEX_TEST_READY: '1' },
 			},
 		);
 

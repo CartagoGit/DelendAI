@@ -20,10 +20,12 @@
 import { formatToolName, type McpStdioClient } from '@mcp-vertex/client';
 import {
 	buildProviderStatusModel,
+	buildModelAttributionModel,
 	buildUsageCostModel,
 	type IGetQuotaPayload,
 	type IHealthcheckProvidersPayload,
 	type ILimitsStatusPayload,
+	type IModelAttributionReportPayload,
 	type IUsageReportPayload,
 } from '@mcp-vertex/ui-extension/public';
 
@@ -104,7 +106,7 @@ const fetchViewModel = async (
 	deps: IProviderActionsDeps,
 ): Promise<IProviderDashboardViewModel> => {
 	const { client, namespacePrefix: prefix } = deps;
-	const [healthcheck, quota, report, spend] = await Promise.all([
+	const [healthcheck, quota, report, modelReport, spend] = await Promise.all([
 		tryTool<IHealthcheckProvidersPayload>(
 			client,
 			prefix,
@@ -125,6 +127,12 @@ const fetchViewModel = async (
 				groupBy: 'provider',
 			},
 		),
+		tryTool<IModelAttributionReportPayload>(
+			client,
+			prefix,
+			'usage-tracking_usage_report',
+			{ groupBy: 'model', sortBy: 'tokensSaved' },
+		),
 		tryTool<{ readonly limitsStatus: ILimitsStatusPayload }>(
 			client,
 			prefix,
@@ -135,6 +143,7 @@ const fetchViewModel = async (
 	return {
 		providers: buildProviderStatusModel(healthcheck, quota ?? null),
 		usage: buildUsageCostModel(report, spend?.limitsStatus ?? null),
+		modelAttribution: buildModelAttributionModel(modelReport),
 	};
 };
 
@@ -226,13 +235,14 @@ const pickProviderId = async (
 			prompt: stringsFor(deps).pickProvider,
 		});
 	}
-	return deps.vscode.window.showQuickPick(
+	const picked = await deps.vscode.window.showQuickPick(
 		rows.map((row) => ({
 			id: row.id,
 			label: row.id,
 			description: row.overall,
 		})),
 	);
+	return picked?.id;
 };
 
 /**

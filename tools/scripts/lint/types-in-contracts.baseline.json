@@ -50,7 +50,7 @@
 	"extensions/vscode/src/commands/open-docs.ts": 2,
 	"extensions/vscode/src/commands/open-knowledge.ts": 1,
 	"extensions/vscode/src/commands/open-proposal.ts": 3,
-	"extensions/vscode/src/commands/open-settings.ts": 5,
+	"extensions/vscode/src/commands/open-settings.ts": 4,
 	"extensions/vscode/src/commands/open-toolbar.ts": 2,
 	"extensions/vscode/src/commands/proposals-commands.ts": 2,
 	"extensions/vscode/src/commands/provider-actions.ts": 8,
@@ -115,7 +115,6 @@
 	"packages/core/src/lib/bootstrap/alias-strategy.ts": 3,
 	"packages/core/src/lib/bootstrap/analyze-project.ts": 5,
 	"packages/core/src/lib/bootstrap/analyze-tool.ts": 1,
-	"packages/core/src/lib/bootstrap/bootstrap-schemas.ts": 9,
 	"packages/core/src/lib/bootstrap/bootstrap-tool.ts": 1,
 	"packages/core/src/lib/bootstrap/build-blueprint.ts": 4,
 	"packages/core/src/lib/bootstrap/capability-diff-views.ts": 8,
@@ -567,6 +566,5 @@
 	"plugins/usage-tracking/src/lib/tools/index.ts": 1,
 	"plugins/usage-tracking/src/lib/tools/report.tool.ts": 1,
 	"plugins/usage-tracking/src/lib/types.ts": 13,
-	"plugins/web-fetch/src/lib/services/engine.ts": 6,
 	"plugins/web-fetch/src/lib/tools/tools.ts": 1
 }

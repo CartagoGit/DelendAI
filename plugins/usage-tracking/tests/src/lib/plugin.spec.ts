@@ -15,6 +15,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import type { IMcpPluginContext } from '@mcp-vertex/core/public';
 
 import plugin from '../../../src/index';
+import { drainLiveBuffers } from '../../../src/lib/record-buffer';
 import type { IInvocationRecord } from '../../../src/lib/types';
 
 const readLog = (path: string): IInvocationRecord[] =>
@@ -28,7 +29,10 @@ describe('usage-tracking plugin (register + hooks)', () => {
 	beforeEach(() => {
 		dir = mkdtempSync(join(tmpdir(), 'ut-plugin-'));
 	});
-	afterEach(() => rmSync(dir, { recursive: true, force: true }));
+	afterEach(async () => {
+		await drainLiveBuffers();
+		rmSync(dir, { recursive: true, force: true });
+	});
 
 	const makeCtx = (): IMcpPluginContext =>
 		({
@@ -69,8 +73,8 @@ describe('usage-tracking plugin (register + hooks)', () => {
 			{ ok: true },
 			undefined,
 		);
-		// maxBatch:2 not reached (1 record) → wait for the 20ms window flush.
-		await new Promise((r) => setTimeout(r, 80));
+		// Drain explicitly: wall-clock sleeps race async append under suite load.
+		await drainLiveBuffers();
 
 		const logPath = join(dir, 'usage-tracking', 'invocations.jsonl');
 		const rows = readLog(logPath);
@@ -94,7 +98,7 @@ describe('usage-tracking plugin (register + hooks)', () => {
 			undefined,
 			new Error('nope'),
 		);
-		await new Promise((r) => setTimeout(r, 80));
+		await drainLiveBuffers();
 		const rows = readLog(join(dir, 'usage-tracking', 'invocations.jsonl'));
 		expect(rows[0]?.outcome).toBe('error');
 		expect(rows[0]?.error?.message).toBe('nope');

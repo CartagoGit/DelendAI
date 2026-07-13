@@ -67,6 +67,6 @@ describe('renderToolDetailHtml', async () => {
 		});
 
 		expect(html).toContain('&lt;unsafe&gt;');
-		expect(html).toContain('2 calls, 1 errors, max 9ms');
+		expect(html).toContain('2 calls, 1 error, max 9ms');
 	});
 });

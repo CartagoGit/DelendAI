@@ -35,12 +35,26 @@ export { LogsService } from '../lib/services/logs.service';
 export { NotificationLogsBridge } from '../lib/services/notification-logs-bridge';
 export { SearchService } from '../lib/services/search.service';
 export { AgentCatalogService } from '../lib/services/agent-catalog-service';
+export {
+	readConfigurationDocument,
+	saveConfigurationDocument,
+} from '../lib/services/configuration-center.service';
 export { MemoryService } from '../lib/services/memory.service';
 export {
 	DEFAULT_EXTENSION_SETTINGS,
 	SettingsService,
 	validateExtensionSettings,
 } from '../lib/services/settings.service';
+export {
+	EXTENSION_SETTINGS_STORAGE_KEY,
+	EXTENSION_SETTINGS_STORAGE_VERSION,
+} from '../lib/contracts/constants/settings.constant';
+export {
+	HOST_LANGUAGE_CHOICES,
+	HOST_LOG_LEVELS,
+	HOST_MOTION_CHOICES,
+	HOST_THEME_CHOICES,
+} from '../lib/contracts/interfaces/settings.interface';
 export type {
 	ILogCorrelateResult,
 	ILogEvent,
@@ -69,6 +83,15 @@ export type {
 	IAgentCatalogServiceOptions,
 } from '../lib/services/agent-catalog-service';
 export type {
+	ConfigurationEdit,
+	ConfigurationPathSegment,
+	IConfigurationDocumentInput,
+	IConfigurationDocumentSnapshot,
+	IConfigurationValidationIssue,
+	ISaveConfigurationDocumentInput,
+	SaveConfigurationDocumentResult,
+} from '../lib/contracts/interfaces/configuration-edit.interface';
+export type {
 	IMemoryEntry,
 	IMemoryForgetResult,
 	IMemoryListEntry,
@@ -81,8 +104,14 @@ export type {
 export type {
 	IExtensionSettings,
 	IExtensionSettingsPatch,
+	IHostPreferences,
 	ISettingsStore,
+	IStoredExtensionSettings,
 	ISettingsValidationResult,
+	HostLanguage,
+	HostLogLevel,
+	HostMotion,
+	HostTheme,
 } from '../lib/contracts/interfaces/settings.interface';
 export {
 	DashboardService,

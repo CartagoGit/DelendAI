@@ -120,18 +120,18 @@ const title = pkg?.name ?? `@mcp-vertex/${slug}`;
 								{(tool.effects ?? []).map((e) => (
 									<span class={`fx fx--${e}`}>{e}</span>
 								))}
-								{(tool.effects ?? []).length === 0 && <span class="fx fx--read">read-only</span>}
+								{(tool.effects ?? []).length === 0 && <span class="fx fx--read">{t.toolpage.effectReadOnly}</span>}
 							</div>
 							<p>{toolDesc(tool)}</p>
 							{(tool.inputSchema?.fields.length ?? 0) && (
 								<table class="args">
-									<caption>{tool.name} arguments</caption>
+									<caption>{tool.name} {t.toolpage.arguments}</caption>
 									<thead>
 										<tr>
-											<th scope="col">Argument</th>
-											<th scope="col">Type</th>
-											<th scope="col">Required</th>
-											<th scope="col">Description</th>
+											<th scope="col">{t.toolpage.argName}</th>
+											<th scope="col">{t.toolpage.argType}</th>
+											<th scope="col">{t.toolpage.argRequired}</th>
+											<th scope="col">{t.toolpage.argDescription}</th>
 										</tr>
 									</thead>
 									<tbody>
@@ -139,7 +139,7 @@ const title = pkg?.name ?? `@mcp-vertex/${slug}`;
 											<tr>
 												<td><code>{field.name}</code></td>
 												<td><code>{field.type}</code></td>
-												<td>{field.required ? 'yes' : 'no'}</td>
+												<td>{field.required ? t.toolpage.argRequiredYes : t.toolpage.argRequiredNo}</td>
 												<td>{field.description ?? '—'}</td>
 											</tr>
 										))}
@@ -161,7 +161,7 @@ const title = pkg?.name ?? `@mcp-vertex/${slug}`;
 							class="config__copy"
 							data-copy-target={`cfg-${slug}`}
 						>
-							Copy
+							{t.ui.codeCopy}
 						</button>
 						<pre id={`cfg-${slug}`}><code>{
 							// The outer object mirrors the user's mcp-vertex.config.json

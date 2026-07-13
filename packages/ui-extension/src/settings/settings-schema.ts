@@ -1,5 +1,9 @@
 import {
 	DEFAULT_EXTENSION_SETTINGS,
+	HOST_LANGUAGE_CHOICES,
+	HOST_LOG_LEVELS,
+	HOST_MOTION_CHOICES,
+	HOST_THEME_CHOICES,
 	type IExtensionSettings,
 } from '@mcp-vertex/client';
 import { z } from 'zod';
@@ -18,8 +22,10 @@ import { z } from 'zod';
  * `SettingsService.validateExtensionSettings` because the URL check is
  * contextual on `allowLocalhost` / `allowPrivateIps`.
  */
-export const LogLevelSchema = z.enum(['debug', 'info', 'warn', 'error']);
-export const ThemeSchema = z.enum(['system', 'light', 'dark']);
+export const LogLevelSchema = z.enum(HOST_LOG_LEVELS);
+export const ThemeSchema = z.enum(HOST_THEME_CHOICES);
+export const LanguageSchema = z.enum(HOST_LANGUAGE_CHOICES);
+export const MotionSchema = z.enum(HOST_MOTION_CHOICES);
 
 export const ExtensionSettingsSchema = z.object({
 	docsUrl: z.string().min(1).url(),
@@ -27,6 +33,10 @@ export const ExtensionSettingsSchema = z.object({
 	allowPrivateIps: z.boolean(),
 	logLevel: LogLevelSchema,
 	theme: ThemeSchema,
+	// Added in storage v2. Defaults preserve v1 webview/command payloads while
+	// the parsed result is always the complete canonical settings contract.
+	language: LanguageSchema.default(DEFAULT_EXTENSION_SETTINGS.language),
+	motion: MotionSchema.default(DEFAULT_EXTENSION_SETTINGS.motion),
 });
 
 export type ExtensionSettings = z.infer<typeof ExtensionSettingsSchema>;

@@ -61,8 +61,10 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 	const issues = resolve(workspaceRoot, 'plugins/issues/src');
 	const cache = resolve(workspaceRoot, 'plugins/cache/src');
 	const client = resolve(workspaceRoot, 'packages/client/src');
+	const cli = resolve(workspaceRoot, 'packages/cli/src');
 	const shared = resolve(workspaceRoot, 'apps/shared/src');
 	return [
+		{ find: '@mcp-vertex/cli', replacement: resolve(cli, 'index.ts') },
 		{
 			find: '@mcp-vertex/shared/i18n',
 			replacement: resolve(shared, 'i18n/index.ts'),

@@ -11,6 +11,10 @@
 // tools should add their schema here, not in `bootstrap-tool.ts`.
 
 import { z } from 'zod';
+import {
+	ADOPTION_STRATEGY_INPUT_SCHEMA,
+	ADOPTION_STRATEGY_SCHEMA,
+} from '../contracts/constants/adoption-strategy-schema.constant';
 
 // r00002 S1 — mirrors `IProjectAnalysis` (analyze-project.ts).
 // r00001 S0 — exported so the golden snapshot test can pin the schema shape.
@@ -51,6 +55,7 @@ export const SERVER_PLAN_SCHEMA = z.object({
 	projectType: PROJECT_ANALYSIS_SCHEMA.shape.projectType,
 	serverName: z.string(),
 	namespacePrefix: z.string(),
+	targetDir: z.string(),
 	plugins: z.array(z.string()),
 	tools: z.array(z.object({ name: z.string(), description: z.string() })),
 	validationCommands: z.record(z.string(), z.string()),
@@ -79,6 +84,7 @@ export const BLUEPRINT_ARTIFACT_SCHEMA = z.object({
 export const SERVER_BLUEPRINT_SCHEMA = z.object({
 	serverName: z.string(),
 	namespacePrefix: z.string(),
+	targetDir: z.string(),
 	projectType: PROJECT_ANALYSIS_SCHEMA.shape.projectType,
 	plugins: z.array(z.string()),
 	tools: z.array(BLUEPRINT_ARTIFACT_SCHEMA),
@@ -87,6 +93,7 @@ export const SERVER_BLUEPRINT_SCHEMA = z.object({
 	agents: z.array(z.object({ slot: z.string(), description: z.string() })),
 	tests: z.boolean(),
 	hasExistingServer: z.boolean(),
+	adoptionStrategy: ADOPTION_STRATEGY_SCHEMA,
 	defaults: z.object({
 		keepLegacy: z.boolean(),
 		reasons: z.array(z.string()),
@@ -139,6 +146,14 @@ export const ANALYZE_INPUT_SCHEMA = z.object({
 	namespacePrefix: z.string().optional(),
 	cacheDir: z.string().optional(),
 	docsDir: z.string().optional(),
+	targetDir: z.string().optional(),
+	adoption: ADOPTION_STRATEGY_INPUT_SCHEMA.optional(),
+	compact: z
+		.boolean()
+		.optional()
+		.describe(
+			'Return a bounded summary instead of the full analysis and plan.',
+		),
 });
 
 export const CREATE_INPUT_SCHEMA = z.object({
@@ -162,6 +177,20 @@ export const PLAN_INPUT_SCHEMA = z.object({
 	tests: z.boolean().optional(),
 	namespacePrefix: z.string().optional(),
 	serverName: z.string().optional(),
+	targetDir: z.string().optional(),
+	adoption: ADOPTION_STRATEGY_INPUT_SCHEMA.optional(),
+	compact: z
+		.boolean()
+		.optional()
+		.describe(
+			'Return a bounded summary with an optional paginated detail.',
+		),
+	section: z
+		.enum(['tools', 'prompts', 'skills', 'agents', 'files', 'notes'])
+		.optional()
+		.describe('Compact mode only: lazily project one detail collection.'),
+	cursor: z.number().int().min(0).optional(),
+	limit: z.number().int().min(1).max(50).optional(),
 });
 
 export const DRIFT_INPUT_SCHEMA = z.object({

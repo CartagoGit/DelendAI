@@ -406,4 +406,43 @@ synopsis:           Source code suggestions
 			expect(result.version).toBe('0.27.0');
 		}
 	});
+
+	it('fails closed when a known registry omits its version', async () => {
+		const result = await fetchOnlinePresetInfo('angular', async () => ({
+			ok: true,
+			status: 200,
+			body: JSON.stringify({ homepage: 'https://example.invalid' }),
+		}));
+
+		expect(result.ok).toBe(false);
+		if (!result.ok) {
+			expect(result.reason).toContain(
+				'did not contain a published version',
+			);
+		}
+	});
+
+	it('does not fabricate versions for unparsed registry response shapes', async () => {
+		const result = await fetchOnlinePresetInfo('proto-buf', async () => ({
+			ok: true,
+			status: 200,
+			body: JSON.stringify({ releases: [] }),
+		}));
+
+		expect(result).toEqual({
+			ok: false,
+			package: 'bufbuild/buf',
+			reason: 'registry response did not contain a published version',
+		});
+	});
+
+	it('preserves a real 1.0.0 version returned by a registry', async () => {
+		const result = await fetchOnlinePresetInfo('angular', async () => ({
+			ok: true,
+			status: 200,
+			body: JSON.stringify({ version: '1.0.0' }),
+		}));
+
+		expect(result).toMatchObject({ ok: true, version: '1.0.0' });
+	});
 });

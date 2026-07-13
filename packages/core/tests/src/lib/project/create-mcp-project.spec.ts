@@ -201,6 +201,48 @@ describe('instrumented tool hooks (f00111 S1)', async () => {
 		}
 	});
 
+	it('reports an immediate abort at most once', async () => {
+		const cancels: string[] = [];
+		const slowTool: IToolRegistration = {
+			id: 'immediate-abort',
+			register: async (server) => {
+				server.registerTool(
+					'spec_immediate_abort',
+					{
+						description: 'waits briefly',
+						inputSchema: z.object({}),
+					},
+					async () => {
+						await new Promise((resolve) => setTimeout(resolve, 80));
+						return {
+							content: [{ type: 'text' as const, text: 'done' }],
+						};
+					},
+				);
+			},
+		};
+		const { client, close } = await connect({
+			...hostConfig([slowTool]),
+			onToolCancel: (toolName) => {
+				cancels.push(toolName);
+			},
+		});
+		try {
+			const controller = new AbortController();
+			const pending = client.callTool(
+				{ name: 'spec_immediate_abort', arguments: {} },
+				undefined,
+				{ signal: controller.signal },
+			);
+			controller.abort();
+			await expect(pending).rejects.toThrow();
+			await new Promise((resolve) => setTimeout(resolve, 120));
+			expect(cancels).toEqual(['spec_immediate_abort']);
+		} finally {
+			await close();
+		}
+	});
+
 	it('passes {} (never the RequestHandlerExtra) to hooks for schema-less tools', async () => {
 		const started: Array<{ toolName: string; args: unknown }> = [];
 		const bareTool: IToolRegistration = {

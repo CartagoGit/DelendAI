@@ -13,7 +13,9 @@
 			"#SCRIPTS/*": ["./scripts/*"],
 			"#UI/*": ["./src/components/ui/*"],
 			"@mcp-vertex/shared": ["../../apps/shared/src/public/index.ts"],
-			"@mcp-vertex/shared/*": ["../../apps/shared/src/*"]
+			"@mcp-vertex/shared/*": ["../../apps/shared/src/*"],
+			"@mcp-vertex/cli": ["../../packages/cli/src/index.ts"],
+			"@mcp-vertex/cli/*": ["../../packages/cli/src/*"]
 		}
 	}
 }

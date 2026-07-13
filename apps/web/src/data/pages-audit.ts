@@ -123,8 +123,8 @@ export const PAGES_AUDIT: readonly IPageAuditEntry[] = Object.freeze([
 		langCoverage: NON_EN_LOCALES,
 		kind: 'content',
 		lastMeaningfulEdit: '2026-06-25',
-		verdict: 'merge-into-plugins-index',
-		why: 'This flat localized plugins page duplicates the localized plugins index route under [lang]/plugins/index.astro and should collapse into that canonical directory index.',
+		verdict: 'keep',
+		why: 'This localized plugins page is the canonical collection route and follows the same flat-file convention as tools, prompts, skills, and capabilities.',
 	},
 	{
 		path: 'apps/web/src/pages/[lang]/plugins/[plugin].astro',
@@ -133,14 +133,6 @@ export const PAGES_AUDIT: readonly IPageAuditEntry[] = Object.freeze([
 		lastMeaningfulEdit: '2026-06-21',
 		verdict: 'keep',
 		why: 'The localized plugin detail route is still the canonical per-plugin page because PluginPage owns install, tools, configuration, and tutorial tabs together.',
-	},
-	{
-		path: 'apps/web/src/pages/[lang]/plugins/index.astro',
-		langCoverage: NON_EN_LOCALES,
-		kind: 'content',
-		lastMeaningfulEdit: '2026-06-25',
-		verdict: 'keep',
-		why: 'This localized plugins index is the canonical directory form for plugin discovery and matches the same current PageShell recipe as the English route.',
 	},
 	{
 		path: 'apps/web/src/pages/[lang]/plugins/loop-detector.astro',

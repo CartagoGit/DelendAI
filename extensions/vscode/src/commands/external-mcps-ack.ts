@@ -119,18 +119,20 @@ const runAckFlow = async (deps: IExternalMcpsAckDeps): Promise<void> => {
 		);
 		return;
 	}
-	const serverId = await deps.vscode.window.showQuickPick?.(
+	const serverPick = await deps.vscode.window.showQuickPick?.(
 		pending.map((entry) => ({
 			id: entry.serverId,
 			label: entry.serverId,
 			description: entry.reason ?? entry.requestedAt,
 		})),
 	);
+	const serverId = serverPick?.id;
 	if (serverId === undefined || serverId.length === 0) return;
-	const decision = await deps.vscode.window.showQuickPick?.([
+	const decisionPick = await deps.vscode.window.showQuickPick?.([
 		{ id: 'accept', label: s.accept, description: s.decidePrompt },
 		{ id: 'reject', label: s.reject, description: s.decidePrompt },
 	]);
+	const decision = decisionPick?.id;
 	if (decision !== 'accept' && decision !== 'reject') return;
 	const accept = decision === 'accept';
 	await deps.client.request(

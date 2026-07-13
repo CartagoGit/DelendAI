@@ -239,7 +239,7 @@ const site = {
 		copy: 'Copia',
 		copied: 'Copiato!',
 		faqTitle: 'Domande frequenti',
-		faqQ1: 'Perché `deno run -A npm:@mcp-vertex/core` è lento ad avviarsi?',
+		faqQ1: 'Perché `deno run -A npm:@mcp-vertex/cli` è lento ad avviarsi?',
 		faqA1: 'Deno risolve e verifica il pacchetto npm al primo utilizzo. Le esecuzioni successive riutilizzano la cache in `~/.cache/deno`. Per avvii ripetuti, preferisci bun o npx.',
 		faqQ2: 'Il mio IDE non è elencato — cosa faccio?',
 		faqA2: 'Qualsiasi IDE che accetta un server MCP stdio funziona. Prendi il JSON da VS Code, cambia il percorso a quello atteso dal tuo IDE e registra lo stesso comando + argomenti.',
@@ -279,6 +279,7 @@ const site = {
 	},
 	cfg: {
 		title: 'Impostazioni',
+		close: 'Chiudi impostazioni',
 		theme: 'Tema',
 		language: 'Lingua',
 		motion: 'Movimento',
@@ -287,6 +288,11 @@ const site = {
 	search: {
 		title: 'Cerca',
 		placeholder: 'Cerca nel sito...',
+		close: 'Chiudi ricerca',
+		noMatches: 'Nessun risultato.',
+		indexUnavailable: 'Indice di ricerca non disponibile.',
+		buildRequired:
+			'La ricerca viene generata con bun run site. Esegui la build per abilitarla.',
 	},
 	footer: {
 		built: 'Generato dal registro vivo degli strumenti.',
@@ -306,6 +312,7 @@ const site = {
 		tabTools: 'Strumenti',
 		tabConfiguration: 'Configurazione',
 		tabTutorial: 'Tutorial',
+		tutorialFallback: 'mostrato in inglese, non ancora tradotto in {lang}',
 	},
 	plugin: {
 		proposals:
@@ -386,6 +393,8 @@ const site = {
 		nextToolsCta: 'Esplora tutti gli strumenti',
 		nextTroubleshootingCta:
 			'Qualcosa non funziona? Risoluzione dei problemi',
+		overviewHint:
+			'Dopo l’avvio del server, chiama mcp-vertex_overview con compact: true; recommendedNextAction indica esattamente all’agente cosa fare dopo.',
 	},
 	troubleshooting: {
 		title: 'Risoluzione dei problemi',

@@ -195,6 +195,12 @@ export const buildCreateProposalRegistration = (
 				let id: string;
 				if (args.id !== undefined) {
 					id = args.id;
+					if (!/^[a-z]\d{5}$/u.test(id)) {
+						return toolError(
+							`invalid proposal id "${id}"`,
+							'Use one lowercase family prefix followed by exactly five digits (for example f00001), or omit id and pass kind for race-safe allocation.',
+						);
+					}
 					const prefix = id[0] ?? '';
 					const inferredKind = PROPOSAL_KIND_BY_PREFIX[prefix];
 					if (inferredKind === undefined) {

@@ -2,7 +2,9 @@
 
 Multi-model audit plugin (l99, alcance A). Estandariza el formato de
 auditoría del repo y consolida N auditorías en una sola hoja de ruta
-unificada. **Sin red, sin secretos.**
+unificada. La planificación y consolidación son locales; `audit_run` es una
+superficie de red explícita que usa únicamente los proveedores y credenciales
+entregados por el host.
 
 ## Activate
 
@@ -64,18 +66,12 @@ El parser es **permisivo**: secciones desconocidas se ignoran, campos
 vacíos no rompen. El formato del brief es la **convención recomendada**
 pero el parser tolera variantes razonables.
 
-## Alcance A (este plugin) vs B (futuro)
+## Efectos
 
-| | A (este plugin) | B (l99 B, propuesta separada) |
-|---|---|---|
-| Red | ❌ | ✅ (OpenRouter, etc.) |
-| Secretos | ❌ | ✅ (claves API) |
-| Descubrimiento de modelos | ❌ (declarado en el brief) | ✅ (`/models` API) |
-| Disparo | manual (pegar el brief) | automático (`audit_run`) |
-| Consolidación | ✅ | ✅ |
-
-A y B son ortogonales: A es la **infraestructura portable**, B es
-**una automatización por encima**.
+`audit_plan` es puro y `audit_consolidate` lee informes locales. `audit_run`
+declara red y puede escribir informes/propuestas cuando así se solicita y el
+plugin `proposals` está disponible. La respuesta informa cualquier escritura
+omitida; no existe un modo silencioso de fingir que se materializó.
 
 ## Configuración
 
@@ -83,17 +79,23 @@ A y B son ortogonales: A es la **infraestructura portable**, B es
 // mcp-vertex.config.json
 {
   "plugins": {
-    "audit": { "options": {} }
+    "audit": { "options": { "topActions": 5, "autoScaffoldProposals": true } }
   }
 }
 ```
 
-Sin opciones hoy. Futuras opciones: `auditDir`, `dimensions`,
-`topActions`.
+También admite `auditDir`, `proposalsDir`, `dimensions`, `layers`,
+`projectName`, `configFileName` y `crossCuttingAdditions`; el schema runtime
+es la fuente autoritativa de tipos y límites.
 
 ## Ver también
 
-- [`docs/mcp-vertex/proposals/l99-feat-multi-model-audit-plugin.md`](../../docs/mcp-vertex/proposals/l99-feat-multi-model-audit-plugin.md)
-  — la propuesta completa.
 - `docs/mcp-vertex/proposals/done/audits/` — los archivos `.md` de auditorías individuales
   que este plugin parsea.
+
+### `audit_run { scope, targets, ... }` — ejecuta revisores configurados
+
+Contacta los proveedores solicitados y por ello declara efecto de red. Las
+claves se suministran en la petición/entorno y nunca se escriben en los
+informes. Si el plugin `proposals` está cargado, puede materializar propuestas;
+si no, devuelve explícitamente que ese paso fue omitido.

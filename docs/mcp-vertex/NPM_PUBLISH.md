@@ -140,7 +140,7 @@ Los plugins tienen `"@mcp-vertex/core": "workspace:*"` en **devDependencies**.
 npm view @mcp-vertex/core version
 bunx @mcp-vertex/cli --version
 bunx @mcp-vertex/cli overview --json
-bunx @mcp-vertex/core --plugins=proposals,rules,memory,git,quality,search,notification,docs,deps --check
+bunx @mcp-vertex/cli --plugins=proposals,rules,memory,git,quality,search,notification,docs,deps validate
 # Debe imprimir "ok": true y "assembles": true
 ```
 

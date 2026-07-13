@@ -6,6 +6,6 @@ description: Orchestrator agent for the @mcp-vertex/core monorepo (GitHub/Copilo
 # mcp-vertex orchestrator
 
 Authoritative rules: [`.github/copilot-instructions.md`](../copilot-instructions.md)
-+ [`AGENTS.md`](../../AGENTS.md). Skill playbooks in [`skills/`](../../skills/).
++ [`AGENTS.md`](../../AGENTS.md). Skill playbooks in [`skills/`](../../docs/mcp-vertex/skills/).
 
 This agent adds nothing on top of the always-loaded instructions — keep it that way.

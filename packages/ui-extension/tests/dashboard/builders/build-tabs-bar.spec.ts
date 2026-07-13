@@ -5,7 +5,7 @@ import { buildTabsBar } from '../../../src/dashboard/builders/build-tabs-bar';
 describe('buildTabsBar', () => {
 	it('renders tabs bar template correctly', () => {
 		const html = buildTabsBar(dictsByLang.en);
-		expect(html).toContain('mcpv-tabs');
+		expect(html).toContain('class="mcpv-tabs mcpv-tabs--underline"');
 		expect(html).toContain('tab-overview');
 		expect(html).toContain('tab-health');
 		expect(html).toContain('tab-docs');

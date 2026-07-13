@@ -89,6 +89,7 @@ const dict: LangDict = {
 	},
 	cfg: {
 		title: 'Settings',
+		close: 'Close settings',
 		theme: 'Theme',
 		language: 'Language',
 		motion: 'Motion',
@@ -97,6 +98,11 @@ const dict: LangDict = {
 	search: {
 		title: 'Search',
 		placeholder: 'Search the site...',
+		close: 'Close search',
+		noMatches: 'No matches.',
+		indexUnavailable: 'Search index not available.',
+		buildRequired:
+			'Search is built by bun run site. Run the build to enable it.',
 	},
 	footer: {
 		built: 'Generated from the live tool registry.',
@@ -115,6 +121,7 @@ const dict: LangDict = {
 		tabTools: 'Tools',
 		tabConfiguration: 'Configuration',
 		tabTutorial: 'Tutorial',
+		tutorialFallback: 'showing English, not yet translated to {lang}',
 	},
 	plugin: {
 		proposals:
@@ -199,6 +206,8 @@ const dict: LangDict = {
 		nextSteps: 'Where to go next',
 		nextToolsCta: 'Browse every tool',
 		nextTroubleshootingCta: 'Something not working? Troubleshooting',
+		overviewHint:
+			'After the server starts, call mcp-vertex_overview with compact: true; recommendedNextAction tells the agent exactly what to do next.',
 	},
 	troubleshooting: {
 		title: 'Troubleshooting',

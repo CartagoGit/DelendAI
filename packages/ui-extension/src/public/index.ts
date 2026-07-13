@@ -51,6 +51,15 @@ export type {
 	QuotaWindowName,
 } from '../contracts/interfaces/provider-status.interface';
 export { buildUsageCostModel } from '../dashboard/builders/usage-cost.builder';
+export { buildModelAttributionModel } from '../dashboard/builders/model-attribution.builder';
+export type {
+	IModelAttributionAbsentModel,
+	IModelAttributionBucketPayload,
+	IModelAttributionModel,
+	IModelAttributionReadyModel,
+	IModelAttributionReportPayload,
+	IModelAttributionRow,
+} from '../contracts/interfaces/model-attribution.interface';
 export type {
 	ILimitsStatusPayload,
 	ISpendMeter,
@@ -97,8 +106,29 @@ export {
 export type { SharedUiStringKey } from '../strings/shared-ui-strings';
 export { renderKnowledgeNavigator } from '../knowledge/render-knowledge-navigator';
 export type { IRenderKnowledgeNavigatorOptions } from '../knowledge/render-knowledge-navigator';
+export { buildConfigurationCenterModel } from '../configuration-center/configuration-center-model';
+export { buildConfigurationFields } from '../configuration-center/configuration-center-fields';
+export { renderConfigurationCenter } from '../configuration-center/render-configuration-center';
+export type {
+	ConfigurationCenterState,
+	ConfigurationCenterTab,
+	ConfigurationFieldKind,
+	IConfigurationArtifactModel,
+	IConfigurationCenterCopy,
+	IConfigurationCenterModel,
+	IConfigurationCenterSource,
+	IConfigurationCenterTabModel,
+	IConfigurationField,
+	IConfigurationPluginModel,
+	IConfigurationProviderModel,
+	IRenderConfigurationCenterOptions,
+} from '../contracts/interfaces/configuration-center.interface';
 export { renderSettings } from '../settings/render-settings';
 export type { IRenderSettingsOptions } from '../settings/render-settings';
+export type {
+	SettingsHostResponse,
+	SettingsWebviewRequest,
+} from '../contracts/interfaces/settings-webview-message.interface';
 export {
 	ExtensionSettingsSchema,
 	LogLevelSchema,

@@ -18,8 +18,8 @@ mcp-vertex をワークフローに追加し、MCP クライアントをバイ�
 Node Package Manager は Node.js と一緒に提供されるため、マシンや CI runner をまたいで最も広い互換性が必要なときの安全な共通デフォルトです。
 
 ```bash
-npx -y @mcp-vertex/core init
-npx -y @mcp-vertex/core --check
+npx -y @mcp-vertex/cli init
+npx -y @mcp-vertex/cli validate
 ```
 
 ### pnpm
@@ -27,8 +27,8 @@ npx -y @mcp-vertex/core --check
 pnpm は高速でディスク効率がよく、依存解決も厳格なので、monorepo や pnpm をすでに標準化しているチームに向いています。
 
 ```bash
-pnpm dlx @mcp-vertex/core init
-pnpm dlx @mcp-vertex/core --check
+pnpm dlx @mcp-vertex/cli init
+pnpm dlx @mcp-vertex/cli validate
 ```
 
 ### yarn
@@ -36,8 +36,8 @@ pnpm dlx @mcp-vertex/core --check
 Yarn は多くの JavaScript コードベースで今も馴染みのある選択肢です。チームのツールや習慣がすでに Yarn を中心にしているなら、この経路が自然です。
 
 ```bash
-yarn dlx @mcp-vertex/core init
-yarn dlx @mcp-vertex/core --check
+yarn dlx @mcp-vertex/cli init
+yarn dlx @mcp-vertex/cli validate
 ```
 
 ### bun
@@ -45,8 +45,8 @@ yarn dlx @mcp-vertex/core --check
 bun は runtime と package manager を 1 つのツールにまとめており、mcp-vertex 自体も bun でビルドされています。マシンに bun があるなら、これが最も直接的な経路です。
 
 ```bash
-bunx @mcp-vertex/core init
-bunx @mcp-vertex/core --check
+bunx @mcp-vertex/cli init
+bunx @mcp-vertex/cli validate
 ```
 
 ### deno
@@ -54,8 +54,8 @@ bunx @mcp-vertex/core --check
 Deno は npm パッケージを直接実行できます。secure-by-default な runtime と first-class な TypeScript サポート、npm 互換性を重視する場合に便利です。
 
 ```bash
-deno run -A npm:@mcp-vertex/core init
-deno run -A npm:@mcp-vertex/core --check
+deno run -A npm:@mcp-vertex/cli init
+deno run -A npm:@mcp-vertex/cli validate
 ```
 
 ## IDE を選ぶ
@@ -74,8 +74,14 @@ deno run -A npm:@mcp-vertex/core --check
       "type": "stdio",
       "command": "bunx",
       "args": [
-        "@mcp-vertex/core",
-        "--preset=standard"
+        "--package",
+        "@mcp-vertex/cli",
+        "mcpv",
+        "__serve",
+        "--workspace",
+        ".",
+        "--preset",
+        "standard"
       ]
     }
   }
@@ -93,8 +99,14 @@ deno run -A npm:@mcp-vertex/core --check
     "mcp-vertex": {
       "command": "bunx",
       "args": [
-        "@mcp-vertex/core",
-        "--preset=standard"
+        "--package",
+        "@mcp-vertex/cli",
+        "mcpv",
+        "__serve",
+        "--workspace",
+        ".",
+        "--preset",
+        "standard"
       ]
     }
   }
@@ -112,8 +124,14 @@ deno run -A npm:@mcp-vertex/core --check
     "mcp-vertex": {
       "command": "bunx",
       "args": [
-        "@mcp-vertex/core",
-        "--preset=standard"
+        "--package",
+        "@mcp-vertex/cli",
+        "mcpv",
+        "__serve",
+        "--workspace",
+        ".",
+        "--preset",
+        "standard"
       ]
     }
   }
@@ -131,8 +149,14 @@ deno run -A npm:@mcp-vertex/core --check
     "mcp-vertex": {
       "command": "bunx",
       "args": [
-        "@mcp-vertex/core",
-        "--preset=standard"
+        "--package",
+        "@mcp-vertex/cli",
+        "mcpv",
+        "__serve",
+        "--workspace",
+        ".",
+        "--preset",
+        "standard"
       ]
     }
   }
@@ -150,8 +174,14 @@ deno run -A npm:@mcp-vertex/core --check
     "mcp-vertex": {
       "command": "bunx",
       "args": [
-        "@mcp-vertex/core",
-        "--preset=standard"
+        "--package",
+        "@mcp-vertex/cli",
+        "mcpv",
+        "__serve",
+        "--workspace",
+        ".",
+        "--preset",
+        "standard"
       ]
     }
   }
@@ -169,8 +199,14 @@ deno run -A npm:@mcp-vertex/core --check
     "mcp-vertex": {
       "command": "bunx",
       "args": [
-        "@mcp-vertex/core",
-        "--preset=standard"
+        "--package",
+        "@mcp-vertex/cli",
+        "mcpv",
+        "__serve",
+        "--workspace",
+        ".",
+        "--preset",
+        "standard"
       ]
     }
   }
@@ -188,8 +224,14 @@ deno run -A npm:@mcp-vertex/core --check
     "mcp-vertex": {
       "command": "bunx",
       "args": [
-        "@mcp-vertex/core",
-        "--preset=standard"
+        "--package",
+        "@mcp-vertex/cli",
+        "mcpv",
+        "__serve",
+        "--workspace",
+        ".",
+        "--preset",
+        "standard"
       ]
     }
   }
@@ -266,15 +308,15 @@ deno run -A npm:@mcp-vertex/core --check
 設定を配置したら、インストールに使ったのと同じパッケージマネージャで self-check を実行します。bun 以外を使う場合は、`bunx` を `npx`、`pnpm dlx`、`yarn dlx`、または `deno run -A npm:` に置き換えてください。
 
 ```bash
-bunx @mcp-vertex/core --check
-bunx @mcp-vertex/core --preset=swarm --exclude-plugins=notification --check
+bunx @mcp-vertex/cli validate
+bunx @mcp-vertex/cli --preset=swarm --exclude-plugins=notification validate
 ```
 
 `--exclude-plugins=` は、プリセットを fork せずにそこから 1 つのプラグインを差し引きたいときに使います。たとえば swarm の基線は保ちつつ、single-agent セッションでは notification を外す場合です。
 
 ## FAQ
 
-### なぜ `deno run -A npm:@mcp-vertex/core` は起動が遅いのですか？
+### なぜ `deno run -A npm:@mcp-vertex/cli` は起動が遅いのですか？
 
 Deno は初回実行時に npm パッケージを解決して検証します。以後の実行では `~/.cache/deno` のキャッシュを再利用しますが、ローカルで繰り返し起動するなら bun や npx のほうが依然として速いです。
 

@@ -59,6 +59,10 @@ export interface IProviderDashboardTranslations {
 	readonly statesTitle: string;
 	readonly states: Readonly<Record<ProviderState, string>>;
 	readonly absent: { readonly title: string; readonly body: string };
+	readonly modelAttribution: {
+		readonly title: string;
+		readonly body: string;
+	};
 }
 
 const en: IProviderDashboardTranslations = {
@@ -120,6 +124,10 @@ const en: IProviderDashboardTranslations = {
 	absent: {
 		title: 'When the plugins are not loaded',
 		body: 'Every host view degrades to this hint — never an error state. The builder returns an explicit plugin-absent model with the exact opt-in command:',
+	},
+	modelAttribution: {
+		title: 'Savings by model',
+		body: 'The same frozen render-model used by the IDE: spend, tokens used and tokens saved, sorted by savings.',
 	},
 };
 
@@ -183,6 +191,10 @@ const es: IProviderDashboardTranslations = {
 	absent: {
 		title: 'Cuando los plugins no están cargados',
 		body: 'Toda vista del host degrada a esta pista — nunca a un estado de error. El builder devuelve un modelo plugin-absent explícito con el comando exacto de activación:',
+	},
+	modelAttribution: {
+		title: 'Ahorro por modelo',
+		body: 'El mismo render-model congelado que usa el IDE: coste, tokens usados y tokens ahorrados, ordenado por ahorro.',
 	},
 };
 

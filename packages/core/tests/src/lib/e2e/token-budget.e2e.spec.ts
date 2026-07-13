@@ -65,6 +65,8 @@ const BUDGET_BYTES = {
 	docsList: 2_500,
 	roundContext: 3_000,
 	logsTail: 6_000,
+	analyzeCompact: 1_800,
+	planCompact: 2_000,
 } as const;
 
 describe('e2e: token budget (cold-start payloads)', async () => {
@@ -247,6 +249,21 @@ describe('e2e: token budget (cold-start payloads)', async () => {
 	it('auto_work returns a tight action plan, not prose', async () => {
 		const bytes = await textBytes('mcp-vertex_proposals_auto_work', {});
 		expect(bytes).toBeLessThan(BUDGET_BYTES.autoWork);
+	});
+
+	it('bootstrap discovery and planning expose bounded compact projections', async () => {
+		const analyze = await textBytes('mcp-vertex_analyze_project', {
+			compact: true,
+		});
+		const plan = await textBytes('mcp-vertex_plan_mcp_project', {
+			compact: true,
+		});
+		expect(analyze, `analyze compact = ${analyze}B`).toBeLessThan(
+			BUDGET_BYTES.analyzeCompact,
+		);
+		expect(plan, `plan compact = ${plan}B`).toBeLessThan(
+			BUDGET_BYTES.planCompact,
+		);
 	});
 
 	it('read-only long-session surfaces stay on bounded compact paths', async () => {

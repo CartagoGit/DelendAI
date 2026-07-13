@@ -25,11 +25,50 @@ import { describe, expect, it } from 'vitest';
 
 import type { ICliGlobalOptions } from '../contracts/interfaces/cli-command.interface';
 import {
+	CANONICAL_CLI_BIN,
+	CANONICAL_CLI_PACKAGE,
+} from '../contracts/constants/canonical-launch.constant';
+import {
+	buildCanonicalLaunch,
 	buildServerArgs,
 	type IAutoForwardRule,
 	passthroughRule,
 	SERVER_ARG_MAPPER,
 } from './server-args.service';
+
+describe('buildCanonicalLaunch', () => {
+	it('launches the published CLI package through bunx by default', () => {
+		expect(
+			buildCanonicalLaunch({
+				workspace: '/consumer',
+				preset: 'full',
+				plugins: ['memory', 'proposals'],
+			}),
+		).toEqual({
+			command: 'bunx',
+			args: [
+				'--package',
+				CANONICAL_CLI_PACKAGE,
+				CANONICAL_CLI_BIN,
+				'__serve',
+				'--workspace',
+				'/consumer',
+				'--preset',
+				'full',
+				'--plugins',
+				'memory,proposals',
+			],
+		});
+	});
+
+	it('supports npx without changing the server argv contract', () => {
+		const bun = buildCanonicalLaunch({ workspace: '/repo' });
+		const npm = buildCanonicalLaunch({ workspace: '/repo', mode: 'npx' });
+		expect(npm.command).toBe('npx');
+		expect(npm.args).toEqual(bun.args);
+		expect(npm.args).not.toContain('host-server.script.ts');
+	});
+});
 
 const ruleFor = (key: keyof ICliGlobalOptions): IAutoForwardRule => {
 	const rule = SERVER_ARG_MAPPER.find((r) => r.key === key);

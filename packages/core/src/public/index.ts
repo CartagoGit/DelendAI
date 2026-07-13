@@ -103,6 +103,25 @@ export type {
 	IPluginOriginInput,
 	PluginOrigin,
 } from '../lib/contracts/interfaces/plugin-origin.interface';
+export {
+	buildConfigurationCenterSnapshot,
+	readConfigurationCenterSection,
+	serializeConfigurationSchema,
+} from '../lib/configuration-center/configuration-center';
+export type {
+	ConfigurationArtifactKind,
+	ConfigurationCenterSection,
+	ConfigurationOwnerOrigin,
+	IConfigurationArtifact,
+	IConfigurationCenterInput,
+	IConfigurationCenterPage,
+	IConfigurationCenterResult,
+	IConfigurationCenterSnapshot,
+	IConfigurationCenterSummary,
+	IConfigurationOwner,
+	IConfigurationPlugin,
+	IConfigurationPluginCapabilities,
+} from '../lib/contracts/interfaces/configuration-center.interface';
 export { buildActivationReport } from '../lib/plugins/activation-report';
 export type {
 	ActivationSource,
@@ -278,11 +297,15 @@ export type { IWalkAllowedFilesOptions } from '../lib/shared/walk-allowed-files'
 export { redactSecrets } from '../lib/shared/redact';
 export type { IRedactResult } from '../lib/shared/redact';
 export { killProcessGroup } from '../lib/commands/process-group';
-export { runCommand } from '../lib/shared/run-command';
+export { runArgv, runCommand } from '../lib/shared/run-command';
 export type {
 	IRunCommandOptions,
 	IRunCommandOutcome,
 } from '../lib/shared/run-command';
+export type {
+	IRunArgvOptions,
+	IRunArgvOutcome,
+} from '../lib/contracts/interfaces/run-command.interface';
 export {
 	fsRead,
 	fsWrite,

@@ -1,16 +1,25 @@
 import {
 	DEFAULT_EXTENSION_SETTINGS,
+	HOST_LANGUAGE_CHOICES,
 	SettingsService,
 	type IExtensionSettings,
 	type ISettingsStore,
 } from '@mcp-vertex/client';
-import { ExtensionSettingsSchema } from '@mcp-vertex/ui-extension/public';
+import {
+	ExtensionSettingsSchema,
+	type SettingsHostResponse,
+	type SettingsWebviewRequest,
+} from '@mcp-vertex/ui-extension/public';
 import { defaultLang, dictsByLang, type Lang } from '../i18n';
 import { renderSettings, withCsp } from '@mcp-vertex/ui-extension/public';
 
 import type { ICommandDeps, ICommandVscodeApi } from './types';
 import { HOST_LANG_KEY } from './setup-github';
 import { showCommandError } from './types';
+import {
+	LEGACY_SETTINGS_STATE_KEY,
+	SETTINGS_STATE_KEY,
+} from '../contracts/constants/settings-state-key.constant';
 
 export const OPEN_SETTINGS_COMMAND = 'mcp-vertex.openSettings';
 
@@ -39,9 +48,6 @@ const createInMemorySettingsStore = (): ISettingsStore => {
 	};
 };
 
-/** Key under which the extension settings blob lives in `globalState`. */
-export const SETTINGS_STATE_KEY = 'mcp-vertex.settings';
-
 /**
  * Minimal `globalState` surface this store needs. Mirrors
  * `vscode.Memento` (`get`/`update`) so the real extension context and
@@ -65,18 +71,53 @@ export interface ISettingsMemento {
 export const createGlobalStateSettingsStore = (
 	globalState: ISettingsMemento,
 ): ISettingsStore => {
-	const seeded = globalState.get<unknown>(SETTINGS_STATE_KEY);
+	const canonicalSeed = globalState.get<unknown>(SETTINGS_STATE_KEY);
+	const seeded =
+		canonicalSeed ?? globalState.get<unknown>(LEGACY_SETTINGS_STATE_KEY);
+	let preferLegacyLanguage = canonicalSeed === undefined;
 	let cache: unknown =
 		seeded !== undefined
 			? seeded
 			: { extension: DEFAULT_EXTENSION_SETTINGS };
 	return {
 		async read() {
-			return cache;
+			const language = preferLegacyLanguage
+				? globalState.get<unknown>(HOST_LANG_KEY)
+				: undefined;
+			if (
+				typeof language !== 'string' ||
+				!(HOST_LANGUAGE_CHOICES as readonly string[]).includes(language)
+			) {
+				return cache;
+			}
+			const root =
+				typeof cache === 'object' && cache !== null
+					? (cache as Record<string, unknown>)
+					: {};
+			const extension =
+				typeof root.extension === 'object' && root.extension !== null
+					? (root.extension as Record<string, unknown>)
+					: {};
+			return { ...root, extension: { ...extension, language } };
 		},
 		async write(next) {
-			cache = next;
+			// Commit durable state first. If VS Code rejects the update, reads keep
+			// returning the last valid value and the webview receives settingsError.
+			const language = (
+				next as { readonly extension?: { readonly language?: unknown } }
+			).extension?.language;
 			await globalState.update(SETTINGS_STATE_KEY, next);
+			cache = next;
+			preferLegacyLanguage = false;
+			// Keep the established host-wide language key in sync for older
+			// webviews. It is a compatibility mirror, not authoritative storage.
+			if (typeof language === 'string') {
+				try {
+					await globalState.update(HOST_LANG_KEY, language);
+				} catch {
+					// The canonical versioned envelope was already committed.
+				}
+			}
 		},
 	};
 };
@@ -132,32 +173,72 @@ export const registerOpenSettingsCommand = (
 		// the form on reset so the visible fields update too.
 		panel.webview.onDidReceiveMessage?.(async (msg: unknown) => {
 			if (typeof msg !== 'object' || msg === null) return;
-			const m = msg as { command?: unknown; settings?: unknown };
+			const m = msg as Partial<SettingsWebviewRequest>;
+			if (typeof m.requestId !== 'string' || m.requestId.length === 0)
+				return;
+			const respond = async (
+				response: SettingsHostResponse,
+			): Promise<void> => {
+				await panel.webview.postMessage?.(response);
+			};
 			if (m.command === 'save') {
 				const patch = parseSettingsInput(m.settings);
 				if (patch === undefined) {
+					await respond({
+						command: 'settingsError',
+						requestId: m.requestId,
+						message: 'Invalid settings payload.',
+					});
 					await deps.vscode.window.showErrorMessage?.(
 						'mcp-vertex: saveSettings received an invalid payload.',
 					);
 					return;
 				}
-				const svc = new SettingsService(store);
-				await svc.set(patch);
+				try {
+					const saved = await new SettingsService(store).set(patch);
+					await respond({
+						command: 'settingsSaved',
+						requestId: m.requestId,
+						settings: saved,
+					});
+				} catch (error) {
+					await respond({
+						command: 'settingsError',
+						requestId: m.requestId,
+						message:
+							error instanceof Error
+								? error.message
+								: String(error),
+					});
+					await showCommandError(deps.vscode, 'save settings', error);
+				}
 				return;
 			}
 			if (m.command === 'reset') {
-				const svc = new SettingsService(store);
-				await svc.set(DEFAULT_EXTENSION_SETTINGS);
-				const fresh = await svc.get();
-				panel.webview.html = withCsp(
-					'settings',
-					renderSettings({
+				try {
+					const fresh = await new SettingsService(store).set(
+						DEFAULT_EXTENSION_SETTINGS,
+					);
+					await respond({
+						command: 'settingsSaved',
+						requestId: m.requestId,
 						settings: fresh,
-						saveCommand: SAVE_SETTINGS_COMMAND,
-						resetCommand: RESET_SETTINGS_COMMAND,
-						lang: dictsByLang[lang],
-					}),
-				);
+					});
+				} catch (error) {
+					await respond({
+						command: 'settingsError',
+						requestId: m.requestId,
+						message:
+							error instanceof Error
+								? error.message
+								: String(error),
+					});
+					await showCommandError(
+						deps.vscode,
+						'reset settings',
+						error,
+					);
+				}
 			}
 		});
 		return panel;

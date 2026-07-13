@@ -19,6 +19,8 @@
  * Pure: ids + i18n strings in, an ordered step list out. No DOM, no I/O.
  */
 
+import { buildCanonicalLaunch } from '@mcp-vertex/cli';
+
 /** Stable ids for the 7 canonical steps. Match the guide's table order. */
 export const SETUP_STEP_IDS = [
 	'detect-repo',
@@ -76,22 +78,34 @@ export const exampleConfigJson = (repo = 'owner/name'): string =>
  * it stays in lockstep with the catalog (and the `lint:setup` drift gate).
  */
 export const launchCommand = (presetId = 'full'): string =>
-	`bunx @mcp-vertex/core --preset=${presetId}`;
+	(() => {
+		const launch = buildCanonicalLaunch({
+			workspace: '.',
+			preset: presetId,
+		});
+		return [launch.command, ...launch.args].join(' ');
+	})();
 
 /** The `mcp.json` server block step 6 prints (host-agnostic shape). */
 export const mcpJsonSnippet = (presetId = 'full'): string =>
-	JSON.stringify(
-		{
-			servers: {
-				'mcp-vertex': {
-					command: 'bunx',
-					args: ['@mcp-vertex/core', `--preset=${presetId}`],
+	(() => {
+		const launch = buildCanonicalLaunch({
+			workspace: '.',
+			preset: presetId,
+		});
+		return JSON.stringify(
+			{
+				servers: {
+					'mcp-vertex': {
+						command: launch.command,
+						args: launch.args,
+					},
 				},
 			},
-		},
-		null,
-		'\t',
-	);
+			null,
+			'\t',
+		);
+	})();
 
 /**
  * Build the ordered 7-step wizard for one language. The shape mirrors the

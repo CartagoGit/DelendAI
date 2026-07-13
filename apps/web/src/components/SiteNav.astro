@@ -1,6 +1,6 @@
 ---
 import { useTranslations, type Lang } from '#I18N/ui';
-import { renderDropdown } from '@mcp-vertex/shared';
+import { renderDropdown } from '@mcp-vertex/ui-extension/components/dropdown';
 import { renderBrandMark } from '@mcp-vertex/shared/components/ui/brand-mark';
 import { renderDrawer } from '@mcp-vertex/shared/components/ui/drawer';
 
@@ -80,7 +80,7 @@ const drawerLinks = [
     on every navigation, and the nav contents (hrefs, labels) change with
     the language, producing a visible flicker. The `aria-label` and the
     script below are the accessibility + binding source of truth. */}
-<nav class="nav" transition:persist aria-label="Primary">
+<nav class="nav" transition:persist aria-label={t.nav.menu}>
 	<div class="container nav__inner">
 		<Fragment set:html={renderBrandMark({
 			href: homeHref,
