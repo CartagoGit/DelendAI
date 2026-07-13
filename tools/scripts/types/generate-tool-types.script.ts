@@ -82,10 +82,7 @@ const PLUGIN_LIST =
 export const harvestToolSchemas = async (): Promise<IHarvestedTool[]> => {
 	const harvestWorkspace = mkdtempSync(join(tmpdir(), 'mcp-vertex-types-'));
 	const args = parseCliArgs(
-		[
-			`--plugins=${PLUGIN_LIST}`,
-			`--workspace=${harvestWorkspace}`,
-		],
+		[`--plugins=${PLUGIN_LIST}`, `--workspace=${harvestWorkspace}`],
 		REPO_ROOT,
 	);
 	const { config } = await assembleCliConfig(args, {
