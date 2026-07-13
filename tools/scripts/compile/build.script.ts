@@ -136,19 +136,26 @@ const buildPackage = (rel: string): void => {
 	const dtsConfig = join(dtsTempDir, 'tsconfig.json');
 	// Cross-package `@mcp-vertex/*` types resolve to each dependency's BUILT
 	// `dist/*.d.ts` (declaration inputs — not pulled into this package's
-	// program, so no `rootDir` violation). Core is the only shared dependency;
-	// it is built first. Core itself imports no sibling package.
-	const corePaths =
-		rel === 'packages/core'
-			? {}
-			: {
-					'@mcp-vertex/core': [
-						join(ROOT, 'packages/core/dist/index.d.ts'),
-					],
-					'@mcp-vertex/core/public': [
-						join(ROOT, 'packages/core/dist/public/index.d.ts'),
-					],
-				};
+	// program, so no `rootDir` violation). Build order guarantees the
+	// dependency's dist exists: core first, then packages/* in rank order.
+	const builtDepPaths = (pkg: string): Record<string, string[]> => ({
+		[`@mcp-vertex/${pkg}`]: [join(ROOT, `packages/${pkg}/dist/index.d.ts`)],
+		[`@mcp-vertex/${pkg}/public`]: [
+			join(ROOT, `packages/${pkg}/dist/public/index.d.ts`),
+		],
+		// Deep imports (e.g. apps/shared → @mcp-vertex/client/lib/contracts/…)
+		// resolve file-by-file against the built declarations.
+		[`@mcp-vertex/${pkg}/lib/*`]: [
+			join(ROOT, `packages/${pkg}/dist/lib/*`),
+		],
+	});
+	const corePaths = {
+		...(rel === 'packages/core' ? {} : builtDepPaths('core')),
+		// apps/shared (compiled into the ui-extension dts program) imports
+		// @mcp-vertex/client deep paths; client's dist is built before
+		// ui-extension (alphabetical within rank 1).
+		...(rel === 'packages/ui-extension' ? builtDepPaths('client') : {}),
+	};
 	writeFileSync(
 		dtsConfig,
 		JSON.stringify(
