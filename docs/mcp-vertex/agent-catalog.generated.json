@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-07-13T02:35:42.676Z",
+	"generatedAt": "2026-07-13T02:37:22.941Z",
 	"mode": "compact",
 	"tools": [
 		{
@@ -669,21 +669,14 @@
 				"track": "lint+architecture+i18n+workflow+release",
 				"status": "paused",
 				"kind": "feat"
-			},
-			{
-				"id": "r00008",
-				"title": "r00008",
-				"track": "ui-architecture",
-				"status": "ready",
-				"kind": "refactor"
 			}
 		],
 		"byStatus": {
-			"ready": 1,
+			"ready": 0,
 			"in-progress": 0,
 			"review": 4,
 			"paused": 2,
-			"done": 201,
+			"done": 202,
 			"blocked": 0,
 			"retired": 0,
 			"unspecified": 0
