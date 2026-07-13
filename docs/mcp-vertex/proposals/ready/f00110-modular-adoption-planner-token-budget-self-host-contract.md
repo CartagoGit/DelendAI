@@ -44,7 +44,7 @@ reemplazar, complementar o adoptar solo capacidades seleccionadas.
 - **Files**: packages/core/tests/src/lib/bootstrap/plan-tool.spec.ts
 - depends_on: [S1]
 - **Gate**: `bun run test`
-- **Status**: in-progress
+- **Status**: done
 - **Verified finding (2026-07-13)**: production still registered a second, monolithic implementation from `bootstrap-tool.ts`; the split `analyze-tool.ts` / `plan-tool.ts` modules targeted by this proposal were never used by the real server, which is why a locally correct compact path still returned the legacy 21 KB payload over MCP. The aggregate is now composition-only, the old schema module is a compatibility re-export, compact analyze/plan results are measured, plan detail is lazy and paginated, and partial adoption filters blueprint/file materialization without emitting a replacement host config.
 
 ### S3 — Target layout and self-host correctness
@@ -53,7 +53,8 @@ reemplazar, complementar o adoptar solo capacidades seleccionadas.
 - **Files**: packages/core/tests/src/lib/scaffold/scaffold-host.spec.ts
 - depends_on: [S1]
 - **Gate**: `bun run typecheck`
-- **Status**: pending
+- **Status**: in-progress
+- **Verified finding (2026-07-13)**: host generation hardcoded every source/test and VS Code cwd to `libs/mcp-project`, while namespace derivation reduced the self-host package to `core`; using the real `mcp-vertex` prefix also emitted invalid TypeScript identifiers such as `MCP-VERTEX_*`. Plans now carry a target directory, existing consumers default to their root, the real monorepo resolves to `packages/core` + `mcp-vertex`, scaffold paths/cwd follow that target, augment mode never emits replacement host/config files, and generated symbols sanitize hyphenated namespaces without changing runtime tool names.
 
 ### S4 — Consumer migration and coexistence e2e
 - **Files**: packages/core/tests/src/lib/bootstrap/adoption-modes.e2e.spec.ts
