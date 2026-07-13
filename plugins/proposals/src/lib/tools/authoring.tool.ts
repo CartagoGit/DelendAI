@@ -56,11 +56,30 @@ const SLICE_IN = z.object({
 // x00098 S2: emit the canonical slice shape the repo linter validates
 // (`**Status**`/`**Files**`/`**Gate**` bullets); the plan parser reads
 // both this and the legacy lowercase form.
+// The repo linter only accepts uppercase slice headings (`### S1 — …`),
+// so normalise whatever case the caller passed (a00053: callers passing
+// `s1` produced documents the linter rejected).
+const canonicalSliceId = (id: string): string => id.replace(/^s(?=\d)/, 'S');
+
+/**
+ * Regex fragment matching a slice id in either case (`s1`/`S1`), so
+ * close_slice keeps finding blocks in legacy lowercase documents and in
+ * the canonical uppercase form regardless of how the caller spelled it.
+ */
+const sliceIdPattern = (id: string): string =>
+	/^[sS]\d+$/.test(id)
+		? `[sS]${escapeRegExp(id.slice(1))}`
+		: escapeRegExp(id);
+
 const renderSlice = (s: z.infer<typeof SLICE_IN>): string => {
-	const lines = [`### ${s.sliceId} — ${s.title ?? s.sliceId}`];
+	const lines = [
+		`### ${canonicalSliceId(s.sliceId)} — ${s.title ?? s.sliceId}`,
+	];
 	lines.push('- **Status**: pending');
 	if (s.dependsOn && s.dependsOn.length > 0) {
-		lines.push(`- **DependsOn**: [${s.dependsOn.join(', ')}]`);
+		lines.push(
+			`- **DependsOn**: [${s.dependsOn.map(canonicalSliceId).join(', ')}]`,
+		);
 	}
 	lines.push(`- **Files**: ${s.files.map((f) => `\`${f}\``).join(', ')}`);
 	lines.push(`- **Gate**: ${s.gate ?? 'none'}`);
@@ -311,7 +330,7 @@ export const buildCreateProposalRegistration = (
 					...(slices.length > 0
 						? slices.map(renderSlice).join('\n\n').split('\n')
 						: [
-								'### s1 — TODO',
+								'### S1 — TODO',
 								'- **Status**: pending',
 								'- **Files**: `TODO`',
 								'- **Gate**: none',
@@ -453,7 +472,7 @@ export const buildCloseSliceRegistration = (
 						}
 						// Flip the slice block's status to done (add or replace).
 						const blockRe = new RegExp(
-							`(^### ${escapeRegExp(args.sliceId)}\\s+—[^\\n]*\\n)([\\s\\S]*?)(?=^### |^## (?!#)|\\n*$(?![\\s\\S]))`,
+							`(^### ${sliceIdPattern(args.sliceId)}\\s+—[^\\n]*\\n)([\\s\\S]*?)(?=^### |^## (?!#)|\\n*$(?![\\s\\S]))`,
 							'm',
 						);
 						const m = md.match(blockRe);
@@ -635,7 +654,7 @@ export const buildReviewRegistration = (
 					if (md === null)
 						return toolError(`proposal file missing: ${docPath}`);
 					const blockRe = new RegExp(
-						`(^### ${escapeRegExp(args.sliceId)}\\s+—[^\\n]*\\n)([\\s\\S]*?)(?=^### |^## (?!#)|\\n*$(?![\\s\\S]))`,
+						`(^### ${sliceIdPattern(args.sliceId)}\\s+—[^\\n]*\\n)([\\s\\S]*?)(?=^### |^## (?!#)|\\n*$(?![\\s\\S]))`,
 						'm',
 					);
 					const m = md.match(blockRe);
@@ -678,7 +697,7 @@ export const buildReviewRegistration = (
 							);
 
 						const blockRe = new RegExp(
-							`(^### ${escapeRegExp(args.sliceId)}\\s+—[^\\n]*\\n)([\\s\\S]*?)(?=^### |^## (?!#)|\\n*$(?![\\s\\S]))`,
+							`(^### ${sliceIdPattern(args.sliceId)}\\s+—[^\\n]*\\n)([\\s\\S]*?)(?=^### |^## (?!#)|\\n*$(?![\\s\\S]))`,
 							'm',
 						);
 						const m = md.match(blockRe);
