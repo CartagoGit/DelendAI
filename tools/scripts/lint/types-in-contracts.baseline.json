@@ -50,7 +50,7 @@
 	"extensions/vscode/src/commands/open-docs.ts": 2,
 	"extensions/vscode/src/commands/open-knowledge.ts": 1,
 	"extensions/vscode/src/commands/open-proposal.ts": 3,
-	"extensions/vscode/src/commands/open-settings.ts": 5,
+	"extensions/vscode/src/commands/open-settings.ts": 4,
 	"extensions/vscode/src/commands/open-toolbar.ts": 2,
 	"extensions/vscode/src/commands/proposals-commands.ts": 2,
 	"extensions/vscode/src/commands/provider-actions.ts": 8,

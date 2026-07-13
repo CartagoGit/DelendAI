@@ -85,6 +85,8 @@ export interface IPage {
 	 * await their own fetch.
 	 */
 	render: (root: HTMLElement, deps: IPageDeps) => Promise<void> | void;
+	/** Cancel timers, requests and listeners owned by the current mount. */
+	dispose?: () => void;
 }
 
 /**

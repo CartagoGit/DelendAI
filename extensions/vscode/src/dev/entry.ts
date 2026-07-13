@@ -87,21 +87,26 @@ const crossFade = (next: ViewId): Promise<void> => {
 	});
 };
 
+let mountedPage: Awaited<ReturnType<PageRegistry['resolve']>> | undefined;
+
 const renderNow = async (id: string): Promise<void> => {
 	// `isViewId` is the type guard exported from `state.ts`. An
 	// unknown id (e.g. a stale bookmark) falls back to the
 	// configured/dashboard view instead of crashing.
 	const viewId: ViewId = isViewId(id) ? id : 'dashboard';
-	setActiveView(viewId);
 	// Cross-fade out before mounting the new page; the
 	// function resolves once the new page is ready to be
 	// shown (just before the fade-in starts).
 	await crossFade(viewId);
+	mountedPage?.dispose?.();
+	mountedPage = undefined;
+	setActiveView(viewId);
 	try {
 		const page = await pages.resolve(viewId);
 		const status = await fetchJson<ISetupStatus>('/api/setup/status');
 		const prefs = readPersistedPrefs();
 		await page.render(root, { status, lang: prefs.lang });
+		mountedPage = page;
 	} catch (err) {
 		const message =
 			err instanceof Error ? `${err.message}\n${err.stack}` : String(err);

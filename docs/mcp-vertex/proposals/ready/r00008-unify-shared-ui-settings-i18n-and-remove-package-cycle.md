@@ -141,7 +141,7 @@ install→navigate regression.
 - **Files**: apps/shared/src/i18n/shared.ts
 - depends_on: [S1, S2]
 - **Gate**: `bun run test`
-- **Status**: pending
+- **Status**: done
 - **Verified finding (2026-07-13)**: the renderer exposed only three theme choices, omitted language and motion, used English as the document language, and flashed success immediately after posting an uncorrelated message. It now renders the complete canonical catalogs with resolved per-language copy, descriptions and accessible relationships, responsive/focus/reduced-motion states, and a session-scoped request/ack state machine that disables submission while pending, ignores stale replies and announces host errors without injecting host text as HTML.
 - **Acceptance**:
   - Renderer copy is injected for every supported language and interactive controls expose labels, descriptions, focus states and reduced-motion behaviour.
@@ -162,6 +162,7 @@ install→navigate regression.
   - Project `mcp-vertex.config.json` is not shadowed by the extension-global settings blob.
   - Host sends explicit saved/error acknowledgements and preserves the last valid value on failure.
   - Navigation owns cancellation/generation state so delayed install/status work cannot repaint an unmounted view; e2e covers install→dashboard.
+- **Verified finding (2026-07-13)**: the VS Code webview had no host acknowledgement, durable writes updated the in-memory cache before persistence succeeded, the dashboard read its docs URL from a configuration section that never owned the settings blob, web stored a separate `on/off` motion vocabulary, and the dev router set the active view before calculating its transition while leaving settings timers alive after navigation. The host adapter now migrates to the versioned host-only key, commits before caching, mirrors the established language preference for compatibility, feeds the dashboard from that canonical state and replies with correlated saved/error messages. Web migrates legacy motion values to the canonical vocabulary. Dev pages have an explicit dispose contract, generation guards and timer cancellation; an install→dashboard regression proves the old view cannot repaint.
 
 ## Acceptance
 
