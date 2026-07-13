@@ -128,7 +128,7 @@ install→navigate regression.
 - **Files**: packages/client/src/lib/services/settings.service.ts
 - **Files**: apps/shared/src/components/dev/theme-picker.ts
 - **Gate**: `bun run typecheck`
-- **Status**: pending
+- **Status**: done
 - **Verified finding (2026-07-13)**: the client accepted only three themes and had no language, motion, storage version or migration contract, while shared rendered six themes and twelve languages. The publishable client contract now owns the literal catalogs and a versioned host-only envelope; shared renderers derive their unions from those catalogs, legacy payloads receive explicit defaults, and project configuration remains outside this storage boundary.
 - **Acceptance**:
   - One contract covers theme, language, motion and extension-host preferences without pretending that project config lives in globalState.
