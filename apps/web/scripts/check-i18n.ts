@@ -55,9 +55,12 @@ const flattenStrings = (
 		if (prefix && typeof root === 'string') out.set(prefix, root);
 		return out;
 	}
-	for (const [key, value] of Object.entries(root as Record<string, unknown>)) {
+	for (const [key, value] of Object.entries(
+		root as Record<string, unknown>,
+	)) {
 		const next = prefix ? `${prefix}.${key}` : key;
-		for (const [path, text] of flattenStrings(value, next)) out.set(path, text);
+		for (const [path, text] of flattenStrings(value, next))
+			out.set(path, text);
 	}
 	return out;
 };
