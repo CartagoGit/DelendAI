@@ -1,6 +1,6 @@
 ---
 id: f00050
-status: ready
+status: paused
 paused-reason: "The 2026-07-13 live triage found every destructive item-specific trigger still blocked; resume only when one fires."
 type: proposal
 track: lint+architecture+i18n+workflow+release

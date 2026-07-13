@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-07-12T23:57:31.452Z",
+	"generatedAt": "2026-07-13T00:00:52.671Z",
 	"mode": "compact",
 	"tools": [
 		{
@@ -667,7 +667,7 @@
 				"id": "f00050",
 				"title": "f00050",
 				"track": "lint+architecture+i18n+workflow+release",
-				"status": "ready",
+				"status": "paused",
 				"kind": "feat"
 			},
 			{
@@ -711,21 +711,14 @@
 				"track": "ui-architecture",
 				"status": "ready",
 				"kind": "refactor"
-			},
-			{
-				"id": "x00097",
-				"title": "x00097",
-				"track": "hardening",
-				"status": "ready",
-				"kind": "fix"
 			}
 		],
 		"byStatus": {
-			"ready": 8,
+			"ready": 6,
 			"in-progress": 0,
 			"review": 4,
-			"paused": 1,
-			"done": 195,
+			"paused": 2,
+			"done": 196,
 			"blocked": 0,
 			"retired": 0,
 			"unspecified": 0
