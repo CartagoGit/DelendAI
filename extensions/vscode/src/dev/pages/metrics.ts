@@ -12,6 +12,7 @@
 import type { IMetricsSnapshot } from '@mcp-vertex/client';
 
 import { renderMetricsBody } from '../../views/metrics-sparkline';
+import { viewCopyFor } from '../../i18n/view-copy.strings';
 
 import type { IPage } from './contract';
 
@@ -38,7 +39,10 @@ const MOCK_METRICS: IMetricsSnapshot = {
 export const createMetricsPage = (): IPage => ({
 	id: 'metrics',
 	label: 'metrics',
-	render(root, _deps) {
-		root.innerHTML = renderMetricsBody(MOCK_METRICS);
+	render(root, deps) {
+		root.innerHTML = renderMetricsBody(
+			MOCK_METRICS,
+			viewCopyFor(deps.lang),
+		);
 	},
 });

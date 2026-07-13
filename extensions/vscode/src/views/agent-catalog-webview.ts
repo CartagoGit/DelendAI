@@ -5,12 +5,14 @@ import type {
 } from '@mcp-vertex/core/public';
 
 import { escapeHtml } from '../commands/types';
+import { viewCopyFor, type IViewCopy } from '../i18n/view-copy.strings';
 
 export interface IAgentCatalogViewModel {
 	readonly bootstrapPrompt: string;
 	readonly tools: readonly IToolSummary[];
 	readonly skills: readonly ISkillSummary[];
 	readonly proposals: readonly IProposalSummary[];
+	readonly copy?: IViewCopy;
 }
 
 const renderToolRow = (tool: IToolSummary): string => `
@@ -36,12 +38,14 @@ const renderProposalRow = (proposal: IProposalSummary): string => `
 
 export const renderAgentCatalogWebview = (
 	model: IAgentCatalogViewModel,
-): string => `<!DOCTYPE html>
-<html lang="en">
+): string => {
+	const copy = model.copy ?? viewCopyFor('en');
+	return `<!DOCTYPE html>
+<html lang="${copy.lang}">
 <head>
 	<meta charset="UTF-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-	<title>mcp-vertex Agent Catalog</title>
+	<title>mcp-vertex · ${escapeHtml(copy.agentCatalogTitle)}</title>
 	<style>
 		:root {
 			color-scheme: light dark;
@@ -127,25 +131,25 @@ export const renderAgentCatalogWebview = (
 <body>
 	<header>
 		<div>
-			<h1>Unified agent catalog</h1>
-			<div class="badge">One entrypoint for tools, skills, and actionable proposals</div>
+			<h1>${escapeHtml(copy.agentCatalogTitle)}</h1>
+			<div class="badge">${escapeHtml(copy.agentCatalogLead)}</div>
 		</div>
 		<div class="actions">
-			<button class="action" data-command="copyBootstrap">Copy bootstrap prompt</button>
-			<button class="action" data-command="refresh">Refresh</button>
+			<button class="action" data-command="copyBootstrap">${escapeHtml(copy.copyBootstrap)}</button>
+			<button class="action" data-command="refresh">${escapeHtml(copy.refresh)}</button>
 		</div>
 	</header>
 	<textarea id="bootstrapPrompt">${escapeHtml(model.bootstrapPrompt)}</textarea>
 	<details data-section="tools" open>
-		<summary>Tools (${model.tools.length})</summary>
+		<summary>${escapeHtml(copy.tools)} (${model.tools.length})</summary>
 		<div class="rows">${model.tools.map(renderToolRow).join('')}</div>
 	</details>
 	<details data-section="skills" open>
-		<summary>Skills (${model.skills.length})</summary>
+		<summary>${escapeHtml(copy.skills)} (${model.skills.length})</summary>
 		<div class="rows">${model.skills.map(renderSkillRow).join('')}</div>
 	</details>
 	<details data-section="proposals" open>
-		<summary>Proposals (${model.proposals.length})</summary>
+		<summary>${escapeHtml(copy.proposals)} (${model.proposals.length})</summary>
 		<div class="rows">${model.proposals.map(renderProposalRow).join('')}</div>
 	</details>
 	<script>
@@ -172,3 +176,4 @@ export const renderAgentCatalogWebview = (
 	</script>
 </body>
 </html>`;
+};

@@ -274,6 +274,7 @@ const site = {
 	},
 	cfg: {
 		title: '设置',
+		close: '关闭设置',
 		theme: '主题',
 		language: '语言',
 		motion: '动画',
@@ -282,6 +283,10 @@ const site = {
 	search: {
 		title: '搜索',
 		placeholder: '搜索本站...',
+		close: '关闭搜索',
+		noMatches: '没有匹配结果。',
+		indexUnavailable: '搜索索引不可用。',
+		buildRequired: '搜索由 bun run site 生成。请运行构建以启用搜索。',
 	},
 	footer: {
 		built: '取自实时工具注册表生成。',
@@ -300,6 +305,7 @@ const site = {
 		tabTools: '工具',
 		tabConfiguration: '配置',
 		tabTutorial: '教程',
+		tutorialFallback: '当前显示英文，尚未翻译为 {lang}',
 	},
 	plugin: {
 		proposals:
@@ -377,6 +383,8 @@ const site = {
 		nextSteps: '接下来去哪里',
 		nextToolsCta: '浏览所有工具',
 		nextTroubleshootingCta: '有什么不工作？故障排查',
+		overviewHint:
+			'服务器启动后，以 compact: true 调用 mcp-vertex_overview；recommendedNextAction 会准确告诉代理下一步该做什么。',
 	},
 	troubleshooting: {
 		title: '故障排查',

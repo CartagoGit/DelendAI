@@ -1,4 +1,6 @@
 import type { IMetricsSnapshot } from '@mcp-vertex/client';
+import { escapeHtml } from './render-output-schema';
+import { viewCopyFor, type IViewCopy } from '../i18n/view-copy.strings';
 
 export interface ISparklinePoint {
 	readonly label: string;
@@ -33,19 +35,25 @@ export const renderMetricsSparkline = (
 	return `<svg class="metrics__sparkline" viewBox="0 0 ${width} ${height}" role="img" aria-label="${labels}"><polyline fill="none" stroke="currentColor" stroke-width="2" points="${coords.join(' ')}" /></svg>`;
 };
 
-export const renderMetricsHtml = (snapshot: IMetricsSnapshot): string => {
+const countLabel = (value: number, singular: string, plural: string): string =>
+	`${value} ${value === 1 ? singular : plural}`;
+
+export const renderMetricsHtml = (
+	snapshot: IMetricsSnapshot,
+	copy: IViewCopy = viewCopyFor('en'),
+): string => {
 	const points = metricsToPoints(snapshot);
 	return `<!DOCTYPE html>
-<html lang="en">
+<html lang="${copy.lang}">
 <head>
 	<meta charset="UTF-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-	<title>mcp-vertex Metrics</title>
+	<title>mcp-vertex ${escapeHtml(copy.metrics)}</title>
 </head>
 <body>
-	<h1>mcp-vertex Metrics</h1>
+	<h1>mcp-vertex ${escapeHtml(copy.metrics)}</h1>
 	${renderMetricsSparkline(points)}
-	<p>${snapshot.totals.calls} calls, ${snapshot.totals.errors} errors</p>
+	<p>${escapeHtml(countLabel(snapshot.totals.calls, copy.callSingular, copy.calls))}, ${escapeHtml(countLabel(snapshot.totals.errors, copy.errorSingular, copy.errors))}</p>
 </body>
 </html>`;
 };
@@ -61,12 +69,15 @@ export const renderMetricsHtml = (snapshot: IMetricsSnapshot): string => {
  * preview SCSS) for typography + spacing; the sparkline keeps
  * its inline viewBox so it scales without a separate stylesheet.
  */
-export const renderMetricsBody = (snapshot: IMetricsSnapshot): string => {
+export const renderMetricsBody = (
+	snapshot: IMetricsSnapshot,
+	copy: IViewCopy = viewCopyFor('en'),
+): string => {
 	const points = metricsToPoints(snapshot);
 	return `<section class="metrics">
-	<h1>mcp-vertex Metrics</h1>
+	<h1>mcp-vertex ${escapeHtml(copy.metrics)}</h1>
 	${renderMetricsSparkline(points)}
-	<p class="metrics__totals">${snapshot.totals.calls} calls, ${snapshot.totals.errors} errors</p>
+	<p class="metrics__totals">${escapeHtml(countLabel(snapshot.totals.calls, copy.callSingular, copy.calls))}, ${escapeHtml(countLabel(snapshot.totals.errors, copy.errorSingular, copy.errors))}</p>
 </section>`;
 };
 

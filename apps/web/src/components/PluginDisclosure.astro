@@ -28,8 +28,13 @@ interface Props {
 	requires?: { label: string; href: string; name: string };
 	/** Localized origin badge; catalog packages are first-party/bundled. */
 	originLabel: string;
+	labels: {
+		readonly tools: string;
+		readonly install: string;
+	};
 }
-const { slug, name, version, href, requires, originLabel } = Astro.props;
+const { slug, name, version, href, requires, originLabel, labels } =
+	Astro.props;
 
 const purpose = resolvePluginPurpose(slug);
 const tools = capabilityToolsFor(slug);
@@ -73,7 +78,7 @@ const onIconError =
 			<div class="plugin-card__badges">
 				<span class="plugin-card__badge plugin-card__badge--origin">{originLabel}</span>
 				<span class="plugin-card__badge">
-					{count} {count === 1 ? 'tool' : 'tools'}
+					{count} {labels.tools}
 				</span>
 			</div>
 			<span class="plugin-disc__chevron" aria-hidden="true">▾</span>
@@ -94,17 +99,17 @@ const onIconError =
 				</ul>
 			) : (
 				<p class="plugin-disc__empty">
-					Load this plugin (<code>--plugins={slug}</code>) to expose its tools.
+					{labels.install}: <code>--plugins={slug}</code>
 				</p>
 			)
 		}
 		{
 			requires && (
 				<p class="plugin-disc__requires">
-					Requires <a href={requires.href}>{requires.name}</a> ({requires.label}).
+					{requires.label} <a href={requires.href}>{requires.name}</a>.
 				</p>
 			)
 		}
-		<a class="plugin-disc__link" href={href}>Open the {slug} plugin page →</a>
+		<a class="plugin-disc__link" href={href}><code>{slug}</code> →</a>
 	</div>
 </details>
