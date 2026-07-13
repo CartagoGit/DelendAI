@@ -66,7 +66,7 @@ export const buildAnalyzeToolRegistration = (
 							.optional(),
 					}),
 					description:
-						'Read-only. Inspect this project and return a structured analysis plus a recommended MCP server plan (project type, tools, plugins, validation commands and a ready-to-paste mcp.json). Call this first; it never writes.',
+						'Read-only. Inspect this project and recommend an MCP server plan. Returns a bounded summary by DEFAULT; pass full:true for the complete analysis and plan (project type, tools, plugins, validation commands and a ready-to-paste mcp.json). Call this first; it never writes.',
 					inputSchema: ANALYZE_INPUT_SCHEMA,
 				},
 				async (args: z.infer<typeof ANALYZE_INPUT_SCHEMA>) => {
@@ -96,7 +96,12 @@ export const buildAnalyzeToolRegistration = (
 							: {}),
 					};
 					const plan = recommendServerPlan(analysis, planOptions);
-					if (args.compact === true) {
+					// x00101: compact is the DEFAULT (12 933 B full vs 873 B
+					// summary measured against this repo); `full: true` (or
+					// legacy `compact: false`) opts in to the whole payload.
+					const wantsFull =
+						args.full === true || args.compact === false;
+					if (!wantsFull) {
 						return json({
 							adoptionStrategy,
 							summary: {

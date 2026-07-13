@@ -148,11 +148,17 @@ export const ANALYZE_INPUT_SCHEMA = z.object({
 	docsDir: z.string().optional(),
 	targetDir: z.string().optional(),
 	adoption: ADOPTION_STRATEGY_INPUT_SCHEMA.optional(),
+	full: z
+		.boolean()
+		.optional()
+		.describe(
+			'Opt in to the full analysis and plan payload. Default is the bounded summary.',
+		),
 	compact: z
 		.boolean()
 		.optional()
 		.describe(
-			'Return a bounded summary instead of the full analysis and plan.',
+			'Deprecated (compact is the default since x00101). compact:false behaves like full:true.',
 		),
 });
 
@@ -179,11 +185,17 @@ export const PLAN_INPUT_SCHEMA = z.object({
 	serverName: z.string().optional(),
 	targetDir: z.string().optional(),
 	adoption: ADOPTION_STRATEGY_INPUT_SCHEMA.optional(),
+	full: z
+		.boolean()
+		.optional()
+		.describe(
+			'Opt in to the EXHAUSTIVE payload (hundreds of KB on real projects). Default is the bounded compact summary.',
+		),
 	compact: z
 		.boolean()
 		.optional()
 		.describe(
-			'Return a bounded summary with an optional paginated detail.',
+			'Deprecated (compact is the default since x00101). compact:false behaves like full:true.',
 		),
 	section: z
 		.enum(['tools', 'prompts', 'skills', 'agents', 'files', 'notes'])
