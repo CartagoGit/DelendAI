@@ -255,7 +255,9 @@ describe('r00001 S0 — core outputSchema golden snapshot', async () => {
 			create_project:
 				'43761bcac35e09be864140f7f36191a84eb71ff45f8374e358e5e16dc5a4b6f3',
 			plan_mcp_project:
-				'ffe1d51d4f7942f62f1cd16d4e4a940fb1960278aada04fbb38fc0673d9f6b73',
+				// f00110: blueprint now carries the explicit per-capability
+				// replace/merge/preserve adoption contract.
+				'740d069bf4c348433ebe6b64596903b8b8cebf2888163ecc6f50d0c64ab838c6',
 			scaffold:
 				'd2f13f06246544b123f1b3dcc98c68e0159ed91002df748df86ad72343a49ffc',
 			metrics:
