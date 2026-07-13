@@ -53,7 +53,7 @@ reemplazar, complementar o adoptar solo capacidades seleccionadas.
 - **Files**: packages/core/tests/src/lib/scaffold/scaffold-host.spec.ts
 - depends_on: [S1]
 - **Gate**: `bun run typecheck`
-- **Status**: in-progress
+- **Status**: done
 - **Verified finding (2026-07-13)**: host generation hardcoded every source/test and VS Code cwd to `libs/mcp-project`, while namespace derivation reduced the self-host package to `core`; using the real `mcp-vertex` prefix also emitted invalid TypeScript identifiers such as `MCP-VERTEX_*`. Plans now carry a target directory, existing consumers default to their root, the real monorepo resolves to `packages/core` + `mcp-vertex`, scaffold paths/cwd follow that target, augment mode never emits replacement host/config files, and generated symbols sanitize hyphenated namespaces without changing runtime tool names.
 
 ### S4 — Consumer migration and coexistence e2e
@@ -61,7 +61,8 @@ reemplazar, complementar o adoptar solo capacidades seleccionadas.
 - **Files**: docs/mcp-vertex/examples/adoption-modes/README.md
 - depends_on: [S2, S3]
 - **Gate**: `bun run test`
-- **Status**: pending
+- **Status**: in-progress
+- **Verified coverage (2026-07-13)**: a real filesystem consumer fixture now proves replace is consent-sensitive and may own the full host config, while augment/partial never return existing MCP, agent, instruction or source paths; partial tools-only adoption emits no prompts, skills or agents. A second dogfood fixture pins the repository's own `packages/core` + `mcp-vertex` target and rejects the former `libs/mcp-project` path and invalid hyphenated symbols. The documented examples cover all modes and compact pagination.
 
 ## Acceptance
 
