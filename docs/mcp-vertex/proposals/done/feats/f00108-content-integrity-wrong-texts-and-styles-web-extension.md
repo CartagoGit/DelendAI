@@ -1,7 +1,7 @@
 ---
 id: f00108
 kind: feat
-status: ready
+status: done
 type: proposal
 track: web+extensions/vscode+ui-extension+i18n+lint
 date: 2026-07-08
@@ -67,7 +67,7 @@ and every gate stays green. For an npm-perfection bar, that is the gap.
 
 ### S1 — Audit + fix wrong/missing/hardcoded text
 
-- **Status**: in-progress
+- **Status**: done
 - **Files**: `apps/web/src/**`, `packages/ui-extension/src/**`, `extensions/vscode/src/**` (coordinate — concurrent agents hold parts of web/extension; sequence after they land)
 - **Gate**: bun run site
 - **Acceptance**:
@@ -80,7 +80,7 @@ and every gate stays green. For an npm-perfection bar, that is the gap.
 
 ### S2 — Audit + fix style regressions
 
-- **Status**: in-progress
+- **Status**: done
 - **Files**: `apps/web/src/styles/**`, `apps/shared/src/styles/**`, `packages/ui-extension/src/**`, `extensions/vscode/src/**`
 - **Gate**: bun run site
 - **Acceptance**:
@@ -97,7 +97,7 @@ and every gate stays green. For an npm-perfection bar, that is the gap.
 
 ### S3 — lint:content-integrity ratchet
 
-- **Status**: in-progress
+- **Status**: done
 - **Files**: `tools/scripts/lint/content-integrity.script.ts`, `tools/scripts/lint/content-integrity.waivers.json`, `tools/scripts/lint/content-integrity.script.spec.ts`, `package.json`
 - **Depends on**: S1
 - **Gate**: bun run lint:proposals
