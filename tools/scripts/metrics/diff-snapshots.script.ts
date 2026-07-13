@@ -202,18 +202,31 @@ if (isMainModule()) {
 		process.env.METRICS_BASELINE_PATH ?? 'metrics-baseline.json';
 	const candidatePath =
 		process.env.METRICS_CANDIDATE_PATH ?? 'metrics-candidate.json';
+	// Repo-tracked fallback so the token-budget gate is armed even before
+	// the first GitHub release publishes a baseline snapshot. Promote a
+	// fresh candidate with `cp metrics-candidate.json config/metrics-baseline.json`.
+	const fallbackBaselinePath = 'config/metrics-baseline.json';
 	const summaryPath = process.env.GITHUB_STEP_SUMMARY;
 
 	const main = async (): Promise<void> => {
 		const { readFile, appendFile } = await import('node:fs/promises');
 		let baselineRaw: string;
+		let usingFallbackBaseline = false;
 		try {
 			baselineRaw = await readFile(baselinePath, 'utf8');
 		} catch {
-			console.log(
-				`ℹ diff-snapshots: no baseline at ${baselinePath} — skipping gate (first release).`,
-			);
-			return;
+			try {
+				baselineRaw = await readFile(fallbackBaselinePath, 'utf8');
+				usingFallbackBaseline = true;
+				console.log(
+					`ℹ diff-snapshots: no release baseline at ${baselinePath} — using repo fallback ${fallbackBaselinePath} (bytes/call gate only; latency not comparable across machines).`,
+				);
+			} catch {
+				console.log(
+					`ℹ diff-snapshots: no baseline at ${baselinePath} nor ${fallbackBaselinePath} — skipping gate (first release).`,
+				);
+				return;
+			}
 		}
 
 		let baseline: IMetricsSnapshotFile;
@@ -239,11 +252,13 @@ if (isMainModule()) {
 			return;
 		}
 
-		const report = diffSnapshots(
-			baseline,
-			candidate,
-			readThresholdsFromEnv(),
-		);
+		const thresholds = readThresholdsFromEnv();
+		const effectiveThresholds: IThresholds =
+			usingFallbackBaseline &&
+			process.env.METRICS_LATENCY_DELTA_PCT === undefined
+				? { ...thresholds, latencyDeltaPct: Number.POSITIVE_INFINITY }
+				: thresholds;
+		const report = diffSnapshots(baseline, candidate, effectiveThresholds);
 		const markdown = renderMarkdownReport(report);
 		console.log(markdown);
 		if (summaryPath !== undefined) {

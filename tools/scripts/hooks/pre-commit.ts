@@ -2,11 +2,12 @@
 /**
  * pre-commit.ts — staged-file formatter (Biome, prettier-like).
  *
- * Runs as a real Git `pre-commit` hook (installed by
- * `tools/scripts/install-formatter-hook.script.ts`). For every staged
- * file supported by Biome, runs `biome format --write` and re-stages
- * the formatted bytes back into the index so the commit always lands
- * canonical formatting (indent, quotes, trailing commas, line endings).
+ * Runs as the `format-staged` lefthook pre-commit command (see
+ * `lefthook.yml`; it used to be a raw `.git/hooks/pre-commit` that
+ * clobbered lefthook's hook). For every staged file supported by
+ * Biome, runs `biome format --write` and re-stages the formatted
+ * bytes back into the index so the commit always lands canonical
+ * formatting (indent, quotes, trailing commas, line endings).
  *
  * POLICY: this hook NEVER blocks a commit. If Biome fails on a file
  * it prints the diagnostic and proceeds (Biome's CI mode runs in
@@ -17,7 +18,7 @@
  * (x00080). Claims are now advisory only — see
  * `bun run lint:agent-claims` and `docs/mcp-vertex/AGENT-BOOTSTRAP.md`.
  */
-import { execSync } from 'node:child_process';
+import { spawnSync } from 'node:child_process';
 
 const BIOME_EXTENSIONS = [
 	'ts',
@@ -48,18 +49,18 @@ const isBiomeSupported = (path: string): boolean => {
 	return (BIOME_EXTENSIONS as readonly string[]).includes(ext);
 };
 
-let stagedFilesStr = '';
-try {
-	stagedFilesStr = execSync(
-		'git diff --cached --name-only --diff-filter=ACMR',
-		{ encoding: 'utf8' },
-	);
-} catch {
+const diff = spawnSync(
+	'git',
+	['diff', '--cached', '--name-only', '--diff-filter=ACMR'],
+	{ encoding: 'utf8' },
+);
+if (diff.status !== 0) {
 	console.error(
 		'pre-commit: failed to run git diff --cached. Proceeding without formatting.',
 	);
 	process.exit(0);
 }
+const stagedFilesStr = diff.stdout;
 
 const stagedFiles = stagedFilesStr
 	.split('\n')
@@ -79,20 +80,19 @@ console.log(
 );
 
 let biomeFailed = false;
-try {
-	execSync(
-		[
-			'bun',
-			'x',
-			'@biomejs/biome',
-			'format',
-			'--write',
-			'--no-errors-on-unmatched',
-			...formattable,
-		].join(' '),
-		{ stdio: 'inherit' },
-	);
-} catch {
+const format = spawnSync(
+	'bun',
+	[
+		'x',
+		'@biomejs/biome',
+		'format',
+		'--write',
+		'--no-errors-on-unmatched',
+		...formattable,
+	],
+	{ stdio: 'inherit' },
+);
+if (format.status !== 0) {
 	biomeFailed = true;
 	console.warn(
 		'pre-commit: Biome reported an error on at least one file. Proceeding with the commit; CI will re-check.',
@@ -101,12 +101,12 @@ try {
 
 if (!biomeFailed) {
 	// Re-stage the formatted bytes so the commit carries them.
-	try {
-		execSync('git add --', formattable, { stdio: 'ignore' });
-	} catch (e) {
+	const add = spawnSync('git', ['add', '--', ...formattable], {
+		stdio: 'ignore',
+	});
+	if (add.status !== 0) {
 		console.warn(
 			'pre-commit: failed to re-stage formatted files. Continuing — the commit may carry unformatted bytes.',
-			e instanceof Error ? e.message : '',
 		);
 	}
 }

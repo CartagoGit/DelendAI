@@ -46,12 +46,12 @@ export interface McpVertexAgentCatalogOutput {
 	}>;
 	skills: {
 		id: string;
-		version: string;
-		minCoreVersion: string;
-		summary: string;
-		appliesTo: string[];
+		version?: string;
+		minCoreVersion?: string;
+		summary?: string;
+		appliesTo?: string[];
 		tags: string[];
-		bodyPath: string;
+		bodyPath?: string;
 	}[];
 	proposals: Array<{
 		id: string;
