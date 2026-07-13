@@ -126,12 +126,13 @@ any of the documented or generated paths. This is the single most important
 
 ### S4 — Reconcile every doc + self-host config to the one command
 
-- **Status**: pending
-- **Files**: `docs/mcp-vertex/CROSS-PROJECT-SETUP.md`, `apps/web/src/**` (setup/install surfaces — coordinate: another agent may hold these), `extensions/vscode/src/webviews/setup-github.ts`
+- **Status**: done
+- **Files**: `README.md`, `.mcp.json`, `.vscode/mcp.json`, `docs/mcp-vertex/{CROSS-PROJECT-SETUP.md,CROSS-IDE.md,README-MCP-VERTEX.md,PLUGINS-MCP-VERTEX.md,NPM_PUBLISH.md,examples/**}`, `apps/web/src/**`, `apps/shared/src/i18n/langs/**`, `extensions/vscode/src/{webviews/setup-github.ts,test/setup-github.spec.ts}`, `tools/scripts/lint/no-preset-drift.script.ts`, `packages/cli/src/index.ts`
 - **Depends on**: S1
 - **Gate**: bun run lint
 - **Acceptance**:
   - "Every user-facing install instruction (canonical guide, web setup page, vscode setup wizard) prints the S1 command. A lint/test greps the docs + wizard strings and fails if `bunx @mcp-vertex/core` (the broken form) reappears."
+- **Evidence**: Root/self-host configs, canonical docs, examples, every localized install page, the web quick-start/guide/setup wizard and the VS Code setup wizard now emit the published CLI launch. The web wizard imports `buildCanonicalLaunch` from the CLI public entry, so its shell and JSON renderings share init's source of truth. `lint:setup` scans docs, web, shared i18n and VS Code for attempts to execute the library-only core package; focused lint/tests, Astro check, VS Code typecheck/build and diff hygiene pass.
 
 ### S5 — End-to-end external-install smoke gate
 

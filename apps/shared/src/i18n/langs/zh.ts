@@ -234,7 +234,7 @@ const site = {
 		copy: '复制',
 		copied: '已复制！',
 		faqTitle: '常见问题',
-		faqQ1: '为什么 `deno run -A npm:@mcp-vertex/core` 启动慢？',
+		faqQ1: '为什么 `deno run -A npm:@mcp-vertex/cli` 启动慢？',
 		faqA1: 'Deno 在首次使用时解析并验证 npm 包。后续运行会复用 `~/.cache/deno` 中的缓存。若频繁启动，建议使用 bun 或 npx。',
 		faqQ2: '我的 IDE 不在列表中——怎么办？',
 		faqA2: '任何接受 stdio MCP 服务器的 IDE 都可以使用。复制 VS Code 的 JSON，把文件路径改成你的 IDE 期望的，再注册相同的命令与参数即可。',

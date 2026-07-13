@@ -15,7 +15,7 @@ tools so every agent writes and audits specs the same way) on top of
   "servers": {
     "mcp-vertex": {
       "command": "bunx",
-      "args": ["@mcp-vertex/core", "--preset=swarm"]
+      "args": ["--package", "@mcp-vertex/cli", "mcpv", "__serve", "--workspace", ".", "--preset", "swarm"]
     }
   }
 }
@@ -32,9 +32,16 @@ subtract one or more plugins from the resolved set:
     "mcp-vertex": {
       "command": "bunx",
       "args": [
-        "@mcp-vertex/core",
-        "--preset=swarm",
-        "--exclude-plugins=notification,quality"
+		"--package",
+		"@mcp-vertex/cli",
+		"mcpv",
+		"__serve",
+		"--workspace",
+		".",
+		"--preset",
+		"swarm",
+		"--exclude-plugins",
+		"notification,quality"
       ]
     }
   }

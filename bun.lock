@@ -48,6 +48,7 @@
       "devDependencies": {
         "@astrojs/check": "^0.9.9",
         "@mcp-vertex/audit": "workspace:*",
+        "@mcp-vertex/cli": "workspace:*",
         "@mcp-vertex/core": "workspace:*",
         "@mcp-vertex/deps": "workspace:*",
         "@mcp-vertex/docs": "workspace:*",

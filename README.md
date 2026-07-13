@@ -63,8 +63,10 @@ root; Claude Code and Codex read equivalents from `~/.claude.json` and
 | Claude Code | `~/.claude.json` | user home (`mcpServers.<name>`) |
 | Codex | `~/.codex/config.toml` | user home (`[mcp_servers.<name>]`) |
 
-The launch path is `tools/scripts/host/host-server.script.ts` with
-`--workspace`, `--config` and `--preset=swarm`. The host uses the same
+The canonical launch is `bunx --package @mcp-vertex/cli mcpv __serve`
+with `--workspace` and optional preset/plugin flags. Repository-only work may
+still pass `--mcp-vertex-root` to `mcpv init` for an explicit local checkout.
+The host uses the same
 loader as the CLI, so plugins declared in `mcp-vertex.config.json` are
 loaded automatically in addition to the preset unless excluded with
 `--exclude-plugins`. See [`docs/mcp-vertex/README-MCP-VERTEX.md`](./docs/mcp-vertex/README-MCP-VERTEX.md)

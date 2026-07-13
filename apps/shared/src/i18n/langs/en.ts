@@ -238,7 +238,7 @@ const site = {
 		copy: 'Copy',
 		copied: 'Copied!',
 		faqTitle: 'Frequently asked',
-		faqQ1: 'Why is `deno run -A npm:@mcp-vertex/core` slow to start?',
+		faqQ1: 'Why is `deno run -A npm:@mcp-vertex/cli` slow to start?',
 		faqA1: 'Deno resolves and verifies the npm package on first use. Subsequent runs reuse the cache in `~/.cache/deno`. For repeated runs, prefer bun or npx.',
 		faqQ2: 'My IDE is not listed — what now?',
 		faqA2: 'Any IDE that accepts a stdio MCP server works. Take the JSON from VS Code, change the file path to whatever your IDE expects, and register the same command + args.',

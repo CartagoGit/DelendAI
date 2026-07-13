@@ -106,14 +106,14 @@ const sections: ReadonlyArray<{ id: string; title: string }> = [
 							matrix (every package manager × every IDE). TL;DR:
 						</p>
 						<CodeBlock
-							code="bunx @mcp-vertex/core init"
+							code="bunx @mcp-vertex/cli init"
 							lang="bash"
 							caption="One-command installer (auto-detects your IDE)"
 							filename="terminal"
 							lang_label={lang}
 						/>
 						<CodeBlock
-							code="bunx @mcp-vertex/core --check"
+							code="bunx @mcp-vertex/cli validate"
 							lang="bash"
 							caption="Self-diagnose the install"
 							filename="verify"
@@ -314,7 +314,7 @@ const sections: ReadonlyArray<{ id: string; title: string }> = [
 						<h2>10. Extending mcp-vertex</h2>
 						<Stepper
 							steps={[
-								'Scaffold a plugin package (`bunx @mcp-vertex/core scaffold-plugin my-plugin`).',
+								'Copy the custom-plugin example into your workspace and rename its package.',
 								'Export `IMcpPlugin` from `src/index.ts` — declare your tools, prompts, knowledge, skills.',
 								'Add the package to `mcp-vertex.config.json` under `plugins.<id>`.',
 								'Run `bun run check` to validate the plugin shape and the i18n gate.',
