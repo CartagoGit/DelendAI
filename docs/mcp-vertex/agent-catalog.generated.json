@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-07-13T23:11:02.683Z",
+	"generatedAt": "2026-07-13T23:43:21.143Z",
 	"mode": "compact",
 	"tools": [
 		{
@@ -685,20 +685,6 @@
 				"kind": "fix"
 			},
 			{
-				"id": "x00101",
-				"title": "x00101",
-				"track": "core",
-				"status": "in-progress",
-				"kind": "fix"
-			},
-			{
-				"id": "x00102",
-				"title": "x00102",
-				"track": "adoption",
-				"status": "ready",
-				"kind": "fix"
-			},
-			{
 				"id": "x00103",
 				"title": "x00103",
 				"track": "ui",
@@ -707,11 +693,11 @@
 			}
 		],
 		"byStatus": {
-			"ready": 4,
-			"in-progress": 2,
+			"ready": 3,
+			"in-progress": 1,
 			"review": 0,
 			"paused": 1,
-			"done": 207,
+			"done": 209,
 			"blocked": 0,
 			"retired": 1,
 			"unspecified": 0
