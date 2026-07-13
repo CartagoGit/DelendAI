@@ -51,6 +51,15 @@ export type {
 	QuotaWindowName,
 } from '../contracts/interfaces/provider-status.interface';
 export { buildUsageCostModel } from '../dashboard/builders/usage-cost.builder';
+export { buildModelAttributionModel } from '../dashboard/builders/model-attribution.builder';
+export type {
+	IModelAttributionAbsentModel,
+	IModelAttributionBucketPayload,
+	IModelAttributionModel,
+	IModelAttributionReadyModel,
+	IModelAttributionReportPayload,
+	IModelAttributionRow,
+} from '../contracts/interfaces/model-attribution.interface';
 export type {
 	ILimitsStatusPayload,
 	ISpendMeter,
