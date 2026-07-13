@@ -72,7 +72,7 @@ export interface McpVertexAgentCatalogOutput {
 }
 
 export interface McpVertexAnalyzeProjectOutput {
-	analysis: {
+	analysis?: {
 		hasPackageJson: boolean;
 		name?: string;
 		projectType: "library" | "cli" | "webapp" | "game" | "monorepo" | "generic";
@@ -88,10 +88,11 @@ export interface McpVertexAnalyzeProjectOutput {
 		scripts: Record<string, string>;
 		signals: string[];
 	};
-	plan: {
+	plan?: {
 		projectType: "library" | "cli" | "webapp" | "game" | "monorepo" | "generic";
 		serverName: string;
 		namespacePrefix: string;
+		targetDir: string;
 		plugins: string[];
 		tools: {
 			name: string;
@@ -102,6 +103,28 @@ export interface McpVertexAnalyzeProjectOutput {
 		docsDir: string;
 		mcpJson: Record<string, unknown>;
 		notes: string[];
+	};
+	adoptionStrategy: {
+		mode: "replace" | "augment" | "partial";
+		selectedCapabilities: Array<"tools" | "prompts" | "resources" | "knowledge" | "skills" | "agents" | "mcp-config" | "proposal-workflow">;
+		operations: Array<{
+			capability: "tools" | "prompts" | "resources" | "knowledge" | "skills" | "agents" | "mcp-config" | "proposal-workflow";
+			action: "preserve" | "merge" | "replace";
+		}>;
+		protectedCapabilities: Array<"tools" | "prompts" | "resources" | "knowledge" | "skills" | "agents" | "mcp-config" | "proposal-workflow">;
+		requiresExplicitReplacementConsent: boolean;
+	};
+	summary?: {
+		projectType: "library" | "cli" | "webapp" | "game" | "monorepo" | "generic";
+		language: "typescript" | "javascript" | "python" | "go" | "rust" | "unknown";
+		packageManager: "bun" | "pnpm" | "yarn" | "npm" | "unknown";
+		framework?: string;
+		hasMcpProject: boolean;
+		serverName: string;
+		namespacePrefix: string;
+		targetDir: string;
+		pluginCount: number;
+		toolCount: number;
 	};
 }
 
@@ -717,9 +740,10 @@ export interface McpVertexOverviewOutput {
 }
 
 export interface McpVertexPlanMcpProjectOutput {
-	blueprint: {
+	blueprint?: {
 		serverName: string;
 		namespacePrefix: string;
+		targetDir: string;
 		projectType: "library" | "cli" | "webapp" | "game" | "monorepo" | "generic";
 		plugins: string[];
 		tools: {
@@ -740,6 +764,16 @@ export interface McpVertexPlanMcpProjectOutput {
 		}[];
 		tests: boolean;
 		hasExistingServer: boolean;
+		adoptionStrategy: {
+			mode: "replace" | "augment" | "partial";
+			selectedCapabilities: Array<"tools" | "prompts" | "resources" | "knowledge" | "skills" | "agents" | "mcp-config" | "proposal-workflow">;
+			operations: Array<{
+				capability: "tools" | "prompts" | "resources" | "knowledge" | "skills" | "agents" | "mcp-config" | "proposal-workflow";
+				action: "preserve" | "merge" | "replace";
+			}>;
+			protectedCapabilities: Array<"tools" | "prompts" | "resources" | "knowledge" | "skills" | "agents" | "mcp-config" | "proposal-workflow">;
+			requiresExplicitReplacementConsent: boolean;
+		};
 		defaults: {
 			keepLegacy: boolean;
 			reasons: string[];
@@ -747,10 +781,42 @@ export interface McpVertexPlanMcpProjectOutput {
 		};
 		notes: string[];
 	};
-	files: {
+	files?: {
 		path: string;
 		content: string;
 	}[];
+	summary?: {
+		serverName: string;
+		namespacePrefix: string;
+		targetDir: string;
+		projectType: string;
+		plugins: string[];
+		counts: {
+			tools: number;
+			prompts: number;
+			skills: number;
+			agents: number;
+		};
+		tests: boolean;
+		hasExistingServer: boolean;
+		adoptionStrategy: {
+			mode: "replace" | "augment" | "partial";
+			selectedCapabilities: Array<"tools" | "prompts" | "resources" | "knowledge" | "skills" | "agents" | "mcp-config" | "proposal-workflow">;
+			operations: Array<{
+				capability: "tools" | "prompts" | "resources" | "knowledge" | "skills" | "agents" | "mcp-config" | "proposal-workflow";
+				action: "preserve" | "merge" | "replace";
+			}>;
+			protectedCapabilities: Array<"tools" | "prompts" | "resources" | "knowledge" | "skills" | "agents" | "mcp-config" | "proposal-workflow">;
+			requiresExplicitReplacementConsent: boolean;
+		};
+	};
+	detail?: {
+		section: "tools" | "prompts" | "skills" | "agents" | "files" | "notes";
+		cursor: number;
+		nextCursor: number | null;
+		total: number;
+		items: unknown[];
+	};
 }
 
 export interface McpVertexProposalsAgentLockOutput {
