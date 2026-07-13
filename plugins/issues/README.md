@@ -38,7 +38,7 @@ need it.
 | `issues_fetch` | Fetch a single issue (cached, redacted). | `src/lib/tools/fetch-issue.tool.ts` |
 | `issues_ingest` | Fetch + write a scaffold file under `docs/mcp-vertex/proposals/retired/issues/`. | `src/lib/tools/ingest-issue.tool.ts` |
 | `issues_analyze` | Mechanical pre-analysis (labels, linked PRs, comments count). | `src/lib/tools/analyze-issue.tool.ts` |
-| `issues_resolve` | Mark an ingested issue as resolved (move/remove the scaffold file). | `src/lib/tools/resolve-issue.tool.ts` |
+| `issues_resolve` | Record promotion or dismissal in scaffold frontmatter. | `src/lib/tools/resolve-issue.tool.ts` |
 
 See `docs/mcp-vertex/proposals/done/feats/f00029-github-issues-plugin-ingest-and-propose.md`
 for the full design.
@@ -172,11 +172,11 @@ commentCount, summary, suggestedNextAction }`.
 ### `issues_resolve` — mark an issue as resolved
 
 ```ts
-{ scaffoldPath: string; resolution: "completed" | "rejected" | "duplicate" }
+{ number: number; resolution: "promoted" | "promoted-multiple" | "dismissed"; proposalIds?: string[]; dismissReason?: string }
 ```
 
-Removes (or moves to `scaffoldDir/resolved/`) the scaffold file.
-Returns `{ removed: boolean, movedTo?: string }`.
+Updates the existing scaffold atomically. Dismissal requires a reason, and all
+new persisted strings are secret-redacted before serialization.
 
 ## See also
 

@@ -57,16 +57,29 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 		'plugins/test-convention/src',
 	);
 	const webFetch = resolve(workspaceRoot, 'plugins/web-fetch/src');
+	const conventions = resolve(workspaceRoot, 'plugins/conventions/src');
+	const issues = resolve(workspaceRoot, 'plugins/issues/src');
+	const cache = resolve(workspaceRoot, 'plugins/cache/src');
 	const client = resolve(workspaceRoot, 'packages/client/src');
+	const cli = resolve(workspaceRoot, 'packages/cli/src');
 	const shared = resolve(workspaceRoot, 'apps/shared/src');
 	return [
+		{ find: '@mcp-vertex/cli', replacement: resolve(cli, 'index.ts') },
 		{
 			find: '@mcp-vertex/shared/i18n',
 			replacement: resolve(shared, 'i18n/index.ts'),
 		},
 		{
+			find: /^@mcp-vertex\/shared\/styles\/(.*)$/,
+			replacement: resolve(shared, 'styles/$1'),
+		},
+		{
 			find: '@mcp-vertex/shared/styles',
 			replacement: resolve(shared, 'styles/_index.scss'),
+		},
+		{
+			find: /^@mcp-vertex\/shared\/components\/(.*)$/,
+			replacement: resolve(shared, 'components/$1'),
 		},
 		{
 			find: '@mcp-vertex/shared',
@@ -250,6 +263,42 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 			replacement: resolve(webFetch, 'index.ts'),
 		},
 		{
+			find: '@mcp-vertex/conventions/public',
+			replacement: resolve(conventions, 'public/index.ts'),
+		},
+		{
+			find: /^@mcp-vertex\/conventions\/lib\/(.*)$/,
+			replacement: `${resolve(conventions, 'lib')}/$1`,
+		},
+		{
+			find: '@mcp-vertex/conventions',
+			replacement: resolve(conventions, 'index.ts'),
+		},
+		{
+			find: '@mcp-vertex/issues/public',
+			replacement: resolve(issues, 'public/index.ts'),
+		},
+		{
+			find: /^@mcp-vertex\/issues\/lib\/(.*)$/,
+			replacement: `${resolve(issues, 'lib')}/$1`,
+		},
+		{
+			find: '@mcp-vertex/issues',
+			replacement: resolve(issues, 'index.ts'),
+		},
+		{
+			find: '@mcp-vertex/cache/public',
+			replacement: resolve(cache, 'public/index.ts'),
+		},
+		{
+			find: /^@mcp-vertex\/cache\/lib\/(.*)$/,
+			replacement: `${resolve(cache, 'lib')}/$1`,
+		},
+		{
+			find: '@mcp-vertex/cache',
+			replacement: resolve(cache, 'index.ts'),
+		},
+		{
 			find: '@mcp-vertex/client/public',
 			replacement: resolve(client, 'public/index.ts'),
 		},
@@ -266,6 +315,13 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 			replacement: resolve(
 				workspaceRoot,
 				'packages/ui-extension/src/public/index.ts',
+			),
+		},
+		{
+			find: /^@mcp-vertex\/ui-extension\/(webview|components|dashboard|dev|brand)(?:\/(.*))?$/,
+			replacement: resolve(
+				workspaceRoot,
+				'packages/ui-extension/src/$1/index.ts',
 			),
 		},
 		{

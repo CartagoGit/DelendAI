@@ -57,6 +57,7 @@ export const WEBVIEW_CSP_OVERRIDES: ReadonlyMap<
 	['settings', { scriptSrc: ["'unsafe-inline'"] }],
 	['dashboard', { scriptSrc: ["'unsafe-inline'"], connectSrc: ["'self'"] }],
 	['knowledge', { scriptSrc: ["'unsafe-inline'"] }],
+	['configuration-center', { scriptSrc: ["'unsafe-inline'"] }],
 ]);
 
 /**

@@ -1,4 +1,8 @@
-import { definePlugin, joinRel } from '@mcp-vertex/core/public';
+import {
+	definePlugin,
+	joinRel,
+	resolveWorkspaceContained,
+} from '@mcp-vertex/core/public';
 import { z } from 'zod';
 
 import {
@@ -48,12 +52,27 @@ export default definePlugin({
 			typeof ctx.options.watchHandoffDir === 'string'
 				? (ctx.options.watchHandoffDir as string)
 				: joinRel(ctx.cacheDir, 'handoff');
+		const lockPath = resolveWorkspaceContained(ctx.workspace.root, lockRel);
+		if (!lockPath.ok) {
+			throw new Error(
+				`notification: invalid watchLockFile: ${lockPath.reason ?? lockRel}`,
+			);
+		}
+		const handoffPath = resolveWorkspaceContained(
+			ctx.workspace.root,
+			handoffRel,
+		);
+		if (!handoffPath.ok) {
+			throw new Error(
+				`notification: invalid watchHandoffDir: ${handoffPath.reason ?? handoffRel}`,
+			);
+		}
 
 		const toolOptions = {
 			namespacePrefix: ctx.namespacePrefix,
-			lockFileAbs: ctx.workspace.resolve(lockRel),
-			handoffDirAbs: ctx.workspace.resolve(handoffRel),
-			handoffDirRel: handoffRel,
+			lockFileAbs: lockPath.abs,
+			handoffDirAbs: handoffPath.abs,
+			handoffDirRel: handoffPath.rel,
 			...(typeof ctx.options.intervalMs === 'number'
 				? { intervalMs: ctx.options.intervalMs as number }
 				: {}),

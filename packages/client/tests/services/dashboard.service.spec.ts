@@ -66,6 +66,14 @@ describe('DashboardService', async () => {
 		);
 	});
 
+	it('reports the same savingsPercent in overview totals and tokens model', async () => {
+		const { service } = makeService();
+		const { overview, tokens } = await service.getAllModels();
+		// One shared `savingsPercentOf` — the two figures must never diverge
+		// (they once used different denominators: saved/used vs saved/(saved+used)).
+		expect(overview.totals.savingsPercent).toBe(tokens.savingsPercent);
+	});
+
 	it('requests compact overview for dashboard totals', async () => {
 		const { service, calls } = makeService();
 		await service.getOverviewModel();
@@ -169,6 +177,78 @@ describe('DashboardService', async () => {
 		const model = await service.getOverviewModel();
 		expect(model.totals.proposals).toBe(0);
 		expect(model.totals.agents).toBe(0);
+	});
+
+	it('attributes core tools with an underscore id to the host, not a fake plugin', async () => {
+		// Regression: `mcp-vertex_fs_read` is a CORE tool (id `fs_read`), not a
+		// tool of a plugin called `fs`. The old code parsed the plugin out of
+		// the qualified name and mis-bucketed every core-underscore tool
+		// (fs_read→fs, agent_catalog→agent, …). The compact overview carries
+		// the real owner (core tools live under the `core` group), so the
+		// dashboard must trust it over name parsing.
+		const groupedOverview = {
+			server: { name: 'mcp-vertex', version: '0.1.0' },
+			namespacePrefix: 'mcp-vertex',
+			plugins: [{ name: 'proposals', version: '0.1.0' }],
+			// Compact (grouped-by-plugin) shape — the production overview form.
+			tools: {
+				core: ['overview', 'fs_read', 'agent_catalog'],
+				proposals: ['agent_lock'],
+			},
+			knowledge: [],
+			recommendedNextAction: 'orient',
+		};
+		const metrics = {
+			tools: {
+				'mcp-vertex_fs_read': {
+					calls: 5,
+					errors: 0,
+					totalMs: 50,
+					maxMs: 20,
+					totalBytes: 500,
+				},
+				'mcp-vertex_agent_catalog': {
+					calls: 3,
+					errors: 0,
+					totalMs: 30,
+					maxMs: 15,
+					totalBytes: 300,
+				},
+				'mcp-vertex_proposals_agent_lock': {
+					calls: 2,
+					errors: 0,
+					totalMs: 20,
+					maxMs: 10,
+					totalBytes: 200,
+				},
+			},
+			totals: { calls: 10, errors: 0, totalMs: 100, totalBytes: 1000 },
+		};
+		const { transport } = createFakeTransport({
+			'mcp-vertex_overview': groupedOverview,
+			'mcp-vertex_metrics': metrics,
+		});
+		const service = new DashboardService({
+			client: McpStdioClient.fromTransport(transport),
+		});
+
+		const plugins = await service.getPluginsModel();
+		const buckets = plugins.rows.map((r) => r.plugin);
+		// Both core tools collapse into the single host bucket…
+		expect(buckets).toContain('mcp-vertex');
+		expect(buckets).toContain('proposals');
+		// …and the fabricated `fs` / `agent` buckets are gone.
+		expect(buckets).not.toContain('fs');
+		expect(buckets).not.toContain('agent');
+		const core = plugins.rows.find((r) => r.plugin === 'mcp-vertex');
+		expect(core?.tools).toBe(2); // fs_read + agent_catalog
+
+		// The per-tool metrics rows carry the authoritative plugin too.
+		const metricsModel = await service.getMetricsModel();
+		const fsRow = metricsModel.rows.find(
+			(r) => r.tool === 'mcp-vertex_fs_read',
+		);
+		expect(fsRow?.plugin).toBe('mcp-vertex');
 	});
 
 	it('respects injected OverviewService + MetricsService when provided', async () => {

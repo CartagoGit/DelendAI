@@ -6,10 +6,9 @@ import {
 import { z } from 'zod';
 
 import { buildApplyingRulesKnowledge } from './lib/knowledge/applying-rules';
-import {
-	buildRulesManifest,
-	ensureRulesCache,
-} from './lib/frameworks/manifest';
+import { ensureRulesCache } from './lib/frameworks/manifest';
+import { buildManifestViaComposition } from './lib/frameworks/manifest-via-composition';
+import { buildDefaultComposition } from './lib/frameworks/registry/factory';
 import { PRESET_BY_ID } from './lib/frameworks/presets';
 import type { IRulesMode } from './lib/frameworks/types';
 import { RULES_MODES } from './lib/frameworks/types';
@@ -121,13 +120,14 @@ export default definePlugin({
 		// On boot: materialise the default presets and generate the
 		// manifest if it does not exist yet. Never fail boot over this.
 		try {
-			const manifest = await buildRulesManifest({
+			const manifest = await buildManifestViaComposition(
 				reader,
 				projectName,
 				cacheRelDir,
 				mode,
-				...(Object.keys(overrides).length > 0 ? { overrides } : {}),
-			});
+				buildDefaultComposition(),
+				overrides,
+			);
 			await ensureRulesCache({
 				resolve: (rel) => ctx.workspace.resolve(rel),
 				cacheRelDir,

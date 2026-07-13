@@ -7,7 +7,7 @@
  * from GitHub, through three tiers of deterministic precedence (see the
  * proposal's "### 3.4 GitHub client strategy" section):
  *
- *   1. `gh` CLI (`Bun.spawnSync(['gh', 'api', ...])`) — honours the
+ *   1. `gh` CLI (async argv spawn of `['gh', 'api', ...]`) — honours the
  *      user's `gh auth login`, 5000/h rate limit. Preferred path.
  *   2. REST API authenticated via `GITHUB_TOKEN` env — plain `fetch` to
  *      `api.github.com`, 5000/h rate limit.
@@ -24,14 +24,19 @@
  *
  * No `octokit` dependency — deliberately, per the proposal's non-goals
  * (`packages/core` stays agnostic, and this plugin keeps its surface
- * area to `Bun.spawnSync` + native `fetch`).
+ * area to an async argv spawn + native `fetch`).
  */
 
+import { spawn as nodeSpawn } from 'node:child_process';
+
+import type { ISpawn } from './contracts/interfaces/github-client.interface';
 import type {
 	IGithubComment,
 	IGithubIssueDetail,
 	IGithubIssueSummary,
 } from './contracts/issue.types';
+
+export type { ISpawn } from './contracts/interfaces/github-client.interface';
 
 export type IGithubClientTier = 'gh' | 'rest-authed' | 'rest-anon';
 
@@ -52,7 +57,7 @@ export interface IListIssuesResult {
 	readonly tier: IGithubClientTier;
 }
 
-/** Injectable subset of `Bun.spawnSync` this module needs (testability). */
+/** Legacy sync spawn seam — kept so existing test doubles keep working. */
 export type ISpawnSync = (cmd: readonly string[]) => {
 	readonly exitCode: number;
 	readonly stdout: Uint8Array;
@@ -70,18 +75,54 @@ export type IFetchFn = (
 }>;
 
 export interface IGithubClientDeps {
+	/** Preferred async seam. */
+	readonly spawn?: ISpawn;
+	/** Legacy sync seam; adapted to async when `spawn` is absent. */
 	readonly spawnSync?: ISpawnSync;
 	readonly fetchFn?: IFetchFn;
 	readonly env?: Readonly<Record<string, string | undefined>>;
 }
 
-const defaultSpawnSync: ISpawnSync = (cmd) => {
-	const result = Bun.spawnSync(cmd as string[]);
-	return {
-		exitCode: result.exitCode,
-		stdout: result.stdout,
-		stderr: result.stderr,
-	};
+const defaultSpawn: ISpawn = (cmd) =>
+	new Promise((resolve) => {
+		const [binary, ...args] = cmd;
+		if (binary === undefined) {
+			resolve({
+				exitCode: 127,
+				stdout: new Uint8Array(),
+				stderr: new TextEncoder().encode('empty argv'),
+			});
+			return;
+		}
+		const child = nodeSpawn(binary, args, {
+			stdio: ['ignore', 'pipe', 'pipe'],
+		});
+		const out: Buffer[] = [];
+		const err: Buffer[] = [];
+		child.stdout?.on('data', (chunk: Buffer) => out.push(chunk));
+		child.stderr?.on('data', (chunk: Buffer) => err.push(chunk));
+		child.on('error', (error: NodeJS.ErrnoException) => {
+			resolve({
+				exitCode: error.code === 'ENOENT' ? 127 : 126,
+				stdout: new Uint8Array(),
+				stderr: new TextEncoder().encode(String(error)),
+			});
+		});
+		child.on('close', (code) => {
+			resolve({
+				exitCode: code ?? 1,
+				stdout: new Uint8Array(Buffer.concat(out)),
+				stderr: new Uint8Array(Buffer.concat(err)),
+			});
+		});
+	});
+
+/** Resolve the effective async spawn from the injected deps. */
+const resolveSpawn = (deps: IGithubClientDeps): ISpawn => {
+	if (deps.spawn !== undefined) return deps.spawn;
+	const legacy = deps.spawnSync;
+	if (legacy !== undefined) return (cmd) => Promise.resolve(legacy(cmd));
+	return defaultSpawn;
 };
 
 const decode = (bytes: Uint8Array): string => new TextDecoder().decode(bytes);
@@ -154,8 +195,11 @@ const toComment = (raw: IRawComment): IGithubComment => ({
 // ---------------------------------------------------------------------------
 
 /** Returns `null` when the `gh` binary is not available; throws on a real `gh` failure. */
-const tryGhApi = (spawnSync: ISpawnSync, path: string): unknown | null => {
-	const result = spawnSync(['gh', 'api', path]);
+const tryGhApi = async (
+	spawnFn: ISpawn,
+	path: string,
+): Promise<unknown | null> => {
+	const result = await spawnFn(['gh', 'api', path]);
 	if (result.exitCode === 127) return null; // command not found
 	const stderr = decode(result.stderr);
 	if (
@@ -172,15 +216,18 @@ const tryGhApi = (spawnSync: ISpawnSync, path: string): unknown | null => {
 	return JSON.parse(decode(result.stdout));
 };
 
-const tryGhFetchIssue = (
-	spawnSync: ISpawnSync,
+const tryGhFetchIssue = async (
+	spawnFn: ISpawn,
 	repo: string,
 	number: number,
-): { data: IGithubIssueDetail; comments: readonly IGithubComment[] } | null => {
-	const issueRaw = tryGhApi(spawnSync, `repos/${repo}/issues/${number}`);
+): Promise<{
+	data: IGithubIssueDetail;
+	comments: readonly IGithubComment[];
+} | null> => {
+	const issueRaw = await tryGhApi(spawnFn, `repos/${repo}/issues/${number}`);
 	if (issueRaw === null) return null;
-	const commentsRaw = tryGhApi(
-		spawnSync,
+	const commentsRaw = await tryGhApi(
+		spawnFn,
 		`repos/${repo}/issues/${number}/comments`,
 	);
 	const comments = Array.isArray(commentsRaw)
@@ -189,11 +236,11 @@ const tryGhFetchIssue = (
 	return { data: toDetail(issueRaw as IRawIssue, comments), comments };
 };
 
-const tryGhListIssues = (
-	spawnSync: ISpawnSync,
+const tryGhListIssues = async (
+	spawnFn: ISpawn,
 	repo: string,
 	opts: IListIssuesOptions,
-): readonly IGithubIssueSummary[] | null => {
+): Promise<readonly IGithubIssueSummary[] | null> => {
 	const params = new URLSearchParams();
 	params.set('state', opts.state ?? 'open');
 	if (opts.labels && opts.labels.length > 0) {
@@ -201,7 +248,7 @@ const tryGhListIssues = (
 	}
 	params.set('per_page', String(opts.limit ?? 30));
 	const path = `repos/${repo}/issues?${params.toString()}`;
-	const raw = tryGhApi(spawnSync, path);
+	const raw = await tryGhApi(spawnFn, path);
 	if (raw === null) return null;
 	if (!Array.isArray(raw)) return [];
 	return (raw as IRawIssue[])
@@ -293,11 +340,11 @@ export const fetchIssue = async (
 	number: number,
 	deps: IGithubClientDeps = {},
 ): Promise<IFetchIssueResult> => {
-	const spawnSync = deps.spawnSync ?? defaultSpawnSync;
+	const spawnFn = resolveSpawn(deps);
 	const fetchFn = deps.fetchFn ?? (fetch as unknown as IFetchFn);
 	const env = deps.env ?? process.env;
 
-	const viaGh = tryGhFetchIssue(spawnSync, repo, number);
+	const viaGh = await tryGhFetchIssue(spawnFn, repo, number);
 	if (viaGh !== null) return { ...viaGh, tier: 'gh' };
 
 	const token = env.GITHUB_TOKEN;
@@ -319,11 +366,11 @@ export const listIssues = async (
 	opts: IListIssuesOptions = {},
 	deps: IGithubClientDeps = {},
 ): Promise<IListIssuesResult> => {
-	const spawnSync = deps.spawnSync ?? defaultSpawnSync;
+	const spawnFn = resolveSpawn(deps);
 	const fetchFn = deps.fetchFn ?? (fetch as unknown as IFetchFn);
 	const env = deps.env ?? process.env;
 
-	const viaGh = tryGhListIssues(spawnSync, repo, opts);
+	const viaGh = await tryGhListIssues(spawnFn, repo, opts);
 	if (viaGh !== null) return { issues: viaGh, tier: 'gh' };
 
 	const token = env.GITHUB_TOKEN;

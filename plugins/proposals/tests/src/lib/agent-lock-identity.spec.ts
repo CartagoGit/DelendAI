@@ -84,4 +84,51 @@ describe('agent_lock — f00082 identity echo', () => {
 		});
 		expect(res.structuredContent?.identity).toBeUndefined();
 	});
+
+	it('f00082 S3: defaults host/model from options.defaultIdentity when the caller omits them', async () => {
+		const handler = await capture(
+			buildAgentLockRegistration({
+				namespacePrefix: 'proposals',
+				lockPathAbs: lockPath,
+				lockFileLabel: 'agents.lock.json',
+				defaultIdentity: { host: 'claude-code', model: 'opus' },
+			}),
+		);
+		const res = await handler({
+			action: 'claim',
+			task_id: 'f00082',
+			agent: 'orion',
+			files: ['src/a.ts'],
+		});
+		expect(res.isError).not.toBe(true);
+		expect(res.structuredContent?.identity).toEqual({
+			host: 'claude-code',
+			model: 'opus',
+			agent_name: 'orion',
+			task_id: 'f00082',
+		});
+	});
+
+	it('f00082 S3: an explicit host/model arg overrides options.defaultIdentity', async () => {
+		const handler = await capture(
+			buildAgentLockRegistration({
+				namespacePrefix: 'proposals',
+				lockPathAbs: lockPath,
+				lockFileLabel: 'agents.lock.json',
+				defaultIdentity: { host: 'claude-code', model: 'opus' },
+			}),
+		);
+		const res = await handler({
+			action: 'claim',
+			task_id: 'f00082',
+			agent: 'orion',
+			files: ['src/a.ts'],
+			host: 'vscode-copilot',
+			model: 'm3',
+		});
+		expect(res.structuredContent?.identity).toMatchObject({
+			host: 'vscode-copilot',
+			model: 'm3',
+		});
+	});
 });

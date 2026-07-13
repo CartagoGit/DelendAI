@@ -1,350 +1,347 @@
 {
-	"generatedAt": "2026-07-01T00:04:02.028Z",
+	"generatedAt": "2026-07-13T02:57:16.690Z",
 	"mode": "compact",
 	"tools": [
 		{
-			"name": "mcp-vertex_agent_catalog",
-			"plugin": "mcp-vertex"
+			"name": "mcp-vertex_agent_catalog"
 		},
 		{
-			"name": "mcp-vertex_analyze_project",
-			"plugin": "mcp-vertex"
+			"name": "mcp-vertex_analyze_project"
+		},
+		{
+			"name": "mcp-vertex_configuration_center"
 		},
 		{
 			"name": "mcp-vertex_conventions_conventions_check",
-			"plugin": "mcp-vertex"
+			"plugin": "conventions"
 		},
 		{
 			"name": "mcp-vertex_conventions_conventions_classify",
-			"plugin": "mcp-vertex"
+			"plugin": "conventions"
 		},
 		{
-			"name": "mcp-vertex_create_project",
-			"plugin": "mcp-vertex"
+			"name": "mcp-vertex_create_project"
 		},
 		{
 			"name": "mcp-vertex_deps_deps_check",
-			"plugin": "mcp-vertex"
+			"plugin": "deps"
 		},
 		{
 			"name": "mcp-vertex_deps_deps_list",
-			"plugin": "mcp-vertex"
+			"plugin": "deps"
 		},
 		{
 			"name": "mcp-vertex_deps_deps_polyglot",
-			"plugin": "mcp-vertex"
+			"plugin": "deps"
 		},
 		{
 			"name": "mcp-vertex_docs_docs_list",
-			"plugin": "mcp-vertex"
+			"plugin": "docs"
 		},
 		{
 			"name": "mcp-vertex_docs_docs_read",
-			"plugin": "mcp-vertex"
+			"plugin": "docs"
 		},
 		{
 			"name": "mcp-vertex_docs_docs_search",
-			"plugin": "mcp-vertex"
+			"plugin": "docs"
 		},
 		{
-			"name": "mcp-vertex_drift_check",
-			"plugin": "mcp-vertex"
+			"name": "mcp-vertex_drift_check"
 		},
 		{
-			"name": "mcp-vertex_fs_read",
-			"plugin": "mcp-vertex"
+			"name": "mcp-vertex_fs_read"
 		},
 		{
-			"name": "mcp-vertex_fs_write",
-			"plugin": "mcp-vertex"
+			"name": "mcp-vertex_fs_write"
 		},
 		{
-			"name": "mcp-vertex_get_validation_matrix",
-			"plugin": "mcp-vertex"
+			"name": "mcp-vertex_get_validation_matrix"
 		},
 		{
 			"name": "mcp-vertex_git_blame",
-			"plugin": "mcp-vertex"
+			"plugin": "git"
 		},
 		{
 			"name": "mcp-vertex_git_changed",
-			"plugin": "mcp-vertex"
+			"plugin": "git"
 		},
 		{
 			"name": "mcp-vertex_git_diff",
-			"plugin": "mcp-vertex"
+			"plugin": "git"
 		},
 		{
 			"name": "mcp-vertex_git_log",
-			"plugin": "mcp-vertex"
+			"plugin": "git"
 		},
 		{
 			"name": "mcp-vertex_git_show",
-			"plugin": "mcp-vertex"
+			"plugin": "git"
 		},
 		{
 			"name": "mcp-vertex_git_status",
-			"plugin": "mcp-vertex"
+			"plugin": "git"
 		},
 		{
 			"name": "mcp-vertex_git_worktree",
-			"plugin": "mcp-vertex"
+			"plugin": "git"
 		},
 		{
-			"name": "mcp-vertex_knowledge",
-			"plugin": "mcp-vertex"
+			"name": "mcp-vertex_knowledge"
 		},
 		{
 			"name": "mcp-vertex_logs_correlate",
-			"plugin": "mcp-vertex"
+			"plugin": "logs"
 		},
 		{
 			"name": "mcp-vertex_logs_query",
-			"plugin": "mcp-vertex"
+			"plugin": "logs"
 		},
 		{
 			"name": "mcp-vertex_logs_redact_test",
-			"plugin": "mcp-vertex"
+			"plugin": "logs"
 		},
 		{
 			"name": "mcp-vertex_logs_subscribe",
-			"plugin": "mcp-vertex"
+			"plugin": "logs"
 		},
 		{
 			"name": "mcp-vertex_logs_tail",
-			"plugin": "mcp-vertex"
+			"plugin": "logs"
 		},
 		{
 			"name": "mcp-vertex_memory_compact",
-			"plugin": "mcp-vertex"
+			"plugin": "memory"
+		},
+		{
+			"name": "mcp-vertex_memory_compaction_check",
+			"plugin": "memory"
 		},
 		{
 			"name": "mcp-vertex_memory_export",
-			"plugin": "mcp-vertex"
+			"plugin": "memory"
 		},
 		{
 			"name": "mcp-vertex_memory_forget",
-			"plugin": "mcp-vertex"
+			"plugin": "memory"
 		},
 		{
 			"name": "mcp-vertex_memory_import",
-			"plugin": "mcp-vertex"
+			"plugin": "memory"
 		},
 		{
 			"name": "mcp-vertex_memory_list",
-			"plugin": "mcp-vertex"
+			"plugin": "memory"
 		},
 		{
 			"name": "mcp-vertex_memory_recall",
-			"plugin": "mcp-vertex"
+			"plugin": "memory"
 		},
 		{
 			"name": "mcp-vertex_memory_save",
-			"plugin": "mcp-vertex"
+			"plugin": "memory"
 		},
 		{
-			"name": "mcp-vertex_metrics",
-			"plugin": "mcp-vertex"
+			"name": "mcp-vertex_metrics"
 		},
 		{
 			"name": "mcp-vertex_notification_await_lock",
-			"plugin": "mcp-vertex"
+			"plugin": "notification"
 		},
 		{
 			"name": "mcp-vertex_notification_notify_status",
-			"plugin": "mcp-vertex"
+			"plugin": "notification"
 		},
 		{
-			"name": "mcp-vertex_overview",
-			"plugin": "mcp-vertex"
+			"name": "mcp-vertex_overview"
 		},
 		{
-			"name": "mcp-vertex_plan_mcp_project",
-			"plugin": "mcp-vertex"
+			"name": "mcp-vertex_plan_mcp_project"
 		},
 		{
 			"name": "mcp-vertex_proposals_agent_lock",
-			"plugin": "mcp-vertex"
+			"plugin": "proposals"
 		},
 		{
 			"name": "mcp-vertex_proposals_agent_lock_release_orphan",
-			"plugin": "mcp-vertex"
+			"plugin": "proposals"
 		},
 		{
 			"name": "mcp-vertex_proposals_agent_names",
-			"plugin": "mcp-vertex"
+			"plugin": "proposals"
 		},
 		{
 			"name": "mcp-vertex_proposals_agent_worktree",
-			"plugin": "mcp-vertex"
+			"plugin": "proposals"
 		},
 		{
 			"name": "mcp-vertex_proposals_auto_work",
-			"plugin": "mcp-vertex"
+			"plugin": "proposals"
 		},
 		{
 			"name": "mcp-vertex_proposals_branch_gc",
-			"plugin": "mcp-vertex"
+			"plugin": "proposals"
 		},
 		{
 			"name": "mcp-vertex_proposals_branch_status",
-			"plugin": "mcp-vertex"
+			"plugin": "proposals"
 		},
 		{
 			"name": "mcp-vertex_proposals_close_slice",
-			"plugin": "mcp-vertex"
+			"plugin": "proposals"
 		},
 		{
 			"name": "mcp-vertex_proposals_compact_status",
-			"plugin": "mcp-vertex"
+			"plugin": "proposals"
 		},
 		{
 			"name": "mcp-vertex_proposals_continue_proposal",
-			"plugin": "mcp-vertex"
+			"plugin": "proposals"
 		},
 		{
 			"name": "mcp-vertex_proposals_create_proposal",
-			"plugin": "mcp-vertex"
+			"plugin": "proposals"
 		},
 		{
 			"name": "mcp-vertex_proposals_delegate",
-			"plugin": "mcp-vertex"
+			"plugin": "proposals"
 		},
 		{
 			"name": "mcp-vertex_proposals_get_proposal_workflow",
-			"plugin": "mcp-vertex"
+			"plugin": "proposals"
+		},
+		{
+			"name": "mcp-vertex_proposals_inherit_host_instructions",
+			"plugin": "proposals"
 		},
 		{
 			"name": "mcp-vertex_proposals_plan",
-			"plugin": "mcp-vertex"
+			"plugin": "proposals"
 		},
 		{
 			"name": "mcp-vertex_proposals_proposal_adopt",
-			"plugin": "mcp-vertex"
+			"plugin": "proposals"
 		},
 		{
 			"name": "mcp-vertex_proposals_proposal_board",
-			"plugin": "mcp-vertex"
+			"plugin": "proposals"
 		},
 		{
 			"name": "mcp-vertex_proposals_proposal_diagnose",
-			"plugin": "mcp-vertex"
+			"plugin": "proposals"
 		},
 		{
 			"name": "mcp-vertex_proposals_proposal_force_transition",
-			"plugin": "mcp-vertex"
+			"plugin": "proposals"
 		},
 		{
 			"name": "mcp-vertex_proposals_proposal_reconcile_folder",
-			"plugin": "mcp-vertex"
+			"plugin": "proposals"
 		},
 		{
 			"name": "mcp-vertex_proposals_proposal_review",
-			"plugin": "mcp-vertex"
+			"plugin": "proposals"
 		},
 		{
 			"name": "mcp-vertex_proposals_proposal_stale_list",
-			"plugin": "mcp-vertex"
+			"plugin": "proposals"
 		},
 		{
 			"name": "mcp-vertex_proposals_proposal_transition",
-			"plugin": "mcp-vertex"
+			"plugin": "proposals"
 		},
 		{
 			"name": "mcp-vertex_proposals_proposals_close_plan",
-			"plugin": "mcp-vertex"
+			"plugin": "proposals"
 		},
 		{
 			"name": "mcp-vertex_proposals_round_context",
-			"plugin": "mcp-vertex"
+			"plugin": "proposals"
 		},
 		{
 			"name": "mcp-vertex_proposals_state_health",
-			"plugin": "mcp-vertex"
+			"plugin": "proposals"
 		},
 		{
 			"name": "mcp-vertex_proposals_state_repair",
-			"plugin": "mcp-vertex"
+			"plugin": "proposals"
 		},
 		{
 			"name": "mcp-vertex_proposals_swarm_hygiene",
-			"plugin": "mcp-vertex"
+			"plugin": "proposals"
 		},
 		{
 			"name": "mcp-vertex_proposals_sync_proposals",
-			"plugin": "mcp-vertex"
+			"plugin": "proposals"
 		},
 		{
 			"name": "mcp-vertex_proposals_task_queue",
-			"plugin": "mcp-vertex"
+			"plugin": "proposals"
 		},
 		{
 			"name": "mcp-vertex_quality_get_quality_scopes",
-			"plugin": "mcp-vertex"
+			"plugin": "quality"
 		},
 		{
 			"name": "mcp-vertex_quality_quality_cancel",
-			"plugin": "mcp-vertex"
+			"plugin": "quality"
 		},
 		{
 			"name": "mcp-vertex_quality_quality_run_all",
-			"plugin": "mcp-vertex"
+			"plugin": "quality"
 		},
 		{
 			"name": "mcp-vertex_quality_run_quality",
-			"plugin": "mcp-vertex"
+			"plugin": "quality"
 		},
 		{
 			"name": "mcp-vertex_rules_apply_rules",
-			"plugin": "mcp-vertex"
+			"plugin": "rules"
 		},
 		{
 			"name": "mcp-vertex_rules_check_rules",
-			"plugin": "mcp-vertex"
+			"plugin": "rules"
 		},
 		{
 			"name": "mcp-vertex_rules_get_rules",
-			"plugin": "mcp-vertex"
+			"plugin": "rules"
 		},
 		{
-			"name": "mcp-vertex_scaffold",
-			"plugin": "mcp-vertex"
+			"name": "mcp-vertex_scaffold"
 		},
 		{
 			"name": "mcp-vertex_search_search",
-			"plugin": "mcp-vertex"
+			"plugin": "search"
 		},
 		{
-			"name": "mcp-vertex_skill",
-			"plugin": "mcp-vertex"
+			"name": "mcp-vertex_skill"
 		},
 		{
-			"name": "mcp-vertex_status",
-			"plugin": "mcp-vertex"
+			"name": "mcp-vertex_status"
 		},
 		{
 			"name": "mcp-vertex_status-marker_close",
-			"plugin": "mcp-vertex"
+			"plugin": "status-marker"
 		},
 		{
 			"name": "mcp-vertex_status-marker_ping",
-			"plugin": "mcp-vertex"
+			"plugin": "status-marker"
 		},
 		{
 			"name": "mcp-vertex_status-marker_validate",
-			"plugin": "mcp-vertex"
+			"plugin": "status-marker"
 		},
 		{
 			"name": "mcp-vertex_test-convention_get_convention",
-			"plugin": "mcp-vertex"
+			"plugin": "test-convention"
 		},
 		{
 			"name": "mcp-vertex_test-convention_scan_drift",
-			"plugin": "mcp-vertex"
+			"plugin": "test-convention"
 		},
 		{
 			"name": "mcp-vertex_test-convention_suggest_spec_path",
-			"plugin": "mcp-vertex"
+			"plugin": "test-convention"
 		}
 	],
 	"skills": [
@@ -408,6 +405,22 @@
 				"versioning"
 			],
 			"bodyPath": "packages/core/skills/conventional-commits-and-release/SKILL.md"
+		},
+		{
+			"id": "mcp-vertex-external-mcps",
+			"version": "1.0.0",
+			"minCoreVersion": "0.1.0",
+			"summary": "Use when a workspace needs a capability native tools do not cover, to compose a third-party MCP server via catalog, suggest, validate_config, ack, and the lazy ext.<server>.<tool> call proxy.",
+			"appliesTo": [
+				"@mcp-vertex/external-mcps"
+			],
+			"tags": [
+				"composition",
+				"external-mcps",
+				"f00068",
+				"human-ack"
+			],
+			"bodyPath": "plugins/external-mcps/skills/external-mcps/SKILL.md"
 		},
 		{
 			"id": "mcp-vertex-failure-modes",
@@ -644,206 +657,21 @@
 	"proposals": {
 		"actionable": [
 			{
-				"id": "c00002",
-				"title": "c00002",
-				"track": "docs+release",
-				"status": "paused",
-				"kind": "chore",
-				"date": "2026-06-21"
-			},
-			{
 				"id": "f00050",
 				"title": "f00050",
 				"track": "lint+architecture+i18n+workflow+release",
 				"status": "paused",
-				"kind": "feat",
-				"date": "2026-06-23"
-			},
-			{
-				"id": "f00064",
-				"title": "f00064",
-				"track": "dogfood+repo-layout+contracts+web+agents",
-				"status": "ready",
-				"kind": "feat",
-				"date": "2026-06-25"
-			},
-			{
-				"id": "f00065",
-				"title": "f00065",
-				"track": "umbrella+skills-ownership+cache+web-examples+slash-triggers+shared-contracts",
-				"status": "ready",
-				"kind": "feat",
-				"date": "2026-06-25"
-			},
-			{
-				"id": "f00067",
-				"title": "f00067",
-				"track": "core+plugins+config+i18n+docs+ui-extension",
-				"status": "ready",
-				"kind": "feat",
-				"date": "2026-06-25"
-			},
-			{
-				"id": "f00068",
-				"title": "f00068",
-				"track": "core+plugins+host+config+i18n+docs+web+extensions/vscode",
-				"status": "paused",
-				"kind": "feat",
-				"date": "2026-06-26"
-			},
-			{
-				"id": "f00069",
-				"title": "f00069",
-				"track": "web+ui-extension+components+design-tokens+i18n+docs",
-				"status": "ready",
-				"kind": "feat",
-				"date": "2026-06-26"
-			},
-			{
-				"id": "f00070",
-				"title": "f00070",
-				"track": "i18n+l10n+plugins/status-marker+token-budget",
-				"status": "ready",
-				"kind": "feat",
-				"date": "2026-06-26"
-			},
-			{
-				"id": "f00071",
-				"title": "f00071",
-				"track": "plugins/status-marker+configuration+i18n+agent-contract",
-				"status": "ready",
-				"kind": "feat",
-				"date": "2026-06-26"
-			},
-			{
-				"id": "f00072",
-				"title": "f00072",
-				"track": "infra+cache-eviction",
-				"status": "ready",
-				"kind": "feat",
-				"date": "2026-06-27"
-			},
-			{
-				"id": "f00079",
-				"title": "f00079",
-				"track": "security+webview+extension-ux",
-				"status": "ready",
-				"kind": "feat",
-				"date": "2026-06-25"
-			},
-			{
-				"id": "f00081",
-				"title": "f00081",
-				"track": "packages/client+host-integration",
-				"status": "ready",
-				"kind": "feat",
-				"date": "2026-06-28"
-			},
-			{
-				"id": "f00082",
-				"title": "f00082",
-				"track": "swarm+coordination+governance+observability",
-				"status": "ready",
-				"kind": "feat",
-				"date": "2026-06-28"
-			},
-			{
-				"id": "f00084",
-				"title": "f00084",
-				"track": "cli+bootstrap+onboarding",
-				"status": "ready",
-				"kind": "feat",
-				"date": "2026-06-29"
-			},
-			{
-				"id": "f00085",
-				"title": "f00085",
-				"track": "core+agents+ci",
-				"status": "ready",
-				"kind": "feat",
-				"date": "2026-06-28"
-			},
-			{
-				"id": "f00086",
-				"title": "f00086",
-				"track": "core+orchestration+metrics",
-				"status": "ready",
-				"kind": "feat",
-				"date": "2026-06-28"
-			},
-			{
-				"id": "f00087",
-				"title": "f00087",
-				"track": "dogfood+plugins+scaffold+client",
-				"status": "ready",
-				"kind": "feat",
-				"date": "2026-06-29"
-			},
-			{
-				"id": "f00088",
-				"title": "f00088",
-				"track": "cli+bootstrap+onboarding+conventions",
-				"status": "ready",
-				"kind": "feat",
-				"date": "2026-06-29"
-			},
-			{
-				"id": "f00089",
-				"title": "f00089",
-				"track": "cli+bootstrap+onboarding+plugins+filesystem+migration",
-				"status": "ready",
-				"kind": "feat",
-				"date": "2026-06-30"
-			},
-			{
-				"id": "f00090",
-				"title": "f00090",
-				"track": "memory+orchestration+token-efficiency",
-				"status": "ready",
-				"kind": "feat",
-				"date": "2026-06-30"
-			},
-			{
-				"id": "r00005",
-				"title": "r00005",
-				"track": "i18n+l10n+utils",
-				"status": "ready",
-				"kind": "refactor",
-				"date": "2026-06-25"
-			},
-			{
-				"id": "r00006",
-				"title": "r00006",
-				"track": "solid+architecture+extension-ux",
-				"status": "ready",
-				"kind": "refactor",
-				"date": "2026-06-25"
-			},
-			{
-				"id": "r00007",
-				"title": "r00007",
-				"track": "repo-layout+tooling+dx",
-				"status": "ready",
-				"kind": "refactor",
-				"date": "2026-06-30"
-			},
-			{
-				"id": "x00091",
-				"title": "x00091",
-				"track": "refactor",
-				"status": "ready",
-				"kind": "fix",
-				"date": "2026-07-01"
+				"kind": "feat"
 			}
 		],
 		"byStatus": {
-			"ready": 21,
+			"ready": 0,
 			"in-progress": 0,
 			"review": 0,
-			"paused": 3,
-			"done": 141,
+			"paused": 1,
+			"done": 206,
 			"blocked": 0,
-			"retired": 0,
+			"retired": 1,
 			"unspecified": 0
 		}
 	}

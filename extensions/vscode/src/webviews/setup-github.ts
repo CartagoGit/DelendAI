@@ -30,13 +30,22 @@ export const SETUP_GITHUB_COMMANDS: readonly string[] = [
 		null,
 		'\t',
 	),
-	'bunx @mcp-vertex/core --preset=full',
+	'bunx --package @mcp-vertex/cli mcpv __serve --workspace . --preset full',
 	JSON.stringify(
 		{
 			servers: {
 				'mcp-vertex': {
 					command: 'bunx',
-					args: ['@mcp-vertex/core', '--preset=full'],
+					args: [
+						'--package',
+						'@mcp-vertex/cli',
+						'mcpv',
+						'__serve',
+						'--workspace',
+						'.',
+						'--preset',
+						'full',
+					],
 				},
 			},
 		},

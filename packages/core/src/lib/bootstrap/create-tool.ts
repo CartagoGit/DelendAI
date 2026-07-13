@@ -14,6 +14,7 @@ import {
 	scaffoldHostProject,
 	scaffoldPluginFiles,
 } from '../scaffold/scaffold-host';
+import { scaffoldExtensionHostFiles } from '../scaffold/scaffold-extension-host';
 import { CREATE_INPUT_SCHEMA, MCP_PROJECT_SKELETON_SCHEMA } from './schemas';
 import { toolJson } from '../shared/tool-response';
 
@@ -61,6 +62,18 @@ export const buildCreateToolRegistration = (
 								'TODO: describe this MCP client.',
 						});
 						return json({ kind: 'client', files });
+					}
+					if (args.kind === 'extension-host') {
+						const files = scaffoldExtensionHostFiles({
+							hostName:
+								args.extensionHostName ??
+								args.clientName ??
+								'example',
+							description:
+								args.description ??
+								'TODO: describe this extension host.',
+						});
+						return json({ kind: 'extension-host', files });
 					}
 					const files = scaffoldHostProject({
 						projectName: args.projectName ?? namespacePrefix,

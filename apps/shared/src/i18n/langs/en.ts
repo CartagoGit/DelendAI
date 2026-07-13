@@ -238,7 +238,7 @@ const site = {
 		copy: 'Copy',
 		copied: 'Copied!',
 		faqTitle: 'Frequently asked',
-		faqQ1: 'Why is `deno run -A npm:@mcp-vertex/core` slow to start?',
+		faqQ1: 'Why is `deno run -A npm:@mcp-vertex/cli` slow to start?',
 		faqA1: 'Deno resolves and verifies the npm package on first use. Subsequent runs reuse the cache in `~/.cache/deno`. For repeated runs, prefer bun or npx.',
 		faqQ2: 'My IDE is not listed — what now?',
 		faqA2: 'Any IDE that accepts a stdio MCP server works. Take the JSON from VS Code, change the file path to whatever your IDE expects, and register the same command + args.',
@@ -278,6 +278,7 @@ const site = {
 	},
 	cfg: {
 		title: 'Settings',
+		close: 'Close settings',
 		theme: 'Theme',
 		language: 'Language',
 		motion: 'Motion',
@@ -286,6 +287,11 @@ const site = {
 	search: {
 		title: 'Search',
 		placeholder: 'Search the site...',
+		close: 'Close search',
+		noMatches: 'No matches.',
+		indexUnavailable: 'Search index not available.',
+		buildRequired:
+			'Search is built by bun run site. Run the build to enable it.',
 	},
 	footer: {
 		built: 'Generated from the live tool registry.',
@@ -304,6 +310,7 @@ const site = {
 		tabTools: 'Tools',
 		tabConfiguration: 'Configuration',
 		tabTutorial: 'Tutorial',
+		tutorialFallback: 'showing English, not yet translated to {lang}',
 	},
 	plugin: {
 		proposals:
@@ -382,6 +389,8 @@ const site = {
 		nextSteps: 'Where to go next',
 		nextToolsCta: 'Browse every tool',
 		nextTroubleshootingCta: 'Something not working? Troubleshooting',
+		overviewHint:
+			'After the server starts, call mcp-vertex_overview with compact: true; recommendedNextAction tells the agent exactly what to do next.',
 	},
 	troubleshooting: {
 		title: 'Troubleshooting',
@@ -571,9 +580,17 @@ const extension = {
 	'dashboard.memory.title': 'Memory',
 	'dashboard.memory.durableNotes': '{count} durable note(s)',
 	'settings.title': 'mcp-vertex Settings',
+	'settings.description':
+		'Preferences for this extension host. Project configuration is managed separately.',
 	'settings.docsUrl': 'Docs URL',
+	'settings.docsUrlDescription':
+		'The HTTPS documentation address opened by this extension.',
 	'settings.allowLocalhostDocsUrl': 'Allow localhost docs URL',
+	'settings.allowLocalhostDocsUrlDescription':
+		'Only enable this while developing documentation locally.',
 	'settings.allowPrivateIpsDocsUrl': 'Allow private IP docs URL',
+	'settings.allowPrivateIpsDocsUrlDescription':
+		'Allow documentation hosted on a private network address.',
 	'settings.logLevel': 'Log level',
 	'settings.logLevel.debug': 'debug',
 	'settings.logLevel.info': 'info',
@@ -583,10 +600,22 @@ const extension = {
 	'settings.theme.system': 'system',
 	'settings.theme.light': 'light',
 	'settings.theme.dark': 'dark',
+	'settings.theme.midnight': 'midnight',
+	'settings.theme.solarized': 'solarized',
+	'settings.theme.nord': 'Nord',
+	'settings.language': 'Language',
+	'settings.motion': 'Motion',
+	'settings.motion.system': 'Follow system preference',
+	'settings.motion.full': 'Full motion',
+	'settings.motion.reduced': 'Reduced motion',
 	'settings.save': 'Save',
 	'settings.reset': 'Reset',
+	'settings.saving': 'Saving settings…',
+	'settings.resetting': 'Resetting settings…',
 	'settings.saved': 'Saved.',
 	'settings.resetToDefaults': 'Reset to defaults.',
+	'settings.saveError': 'Settings could not be saved.',
+	'settings.resetError': 'Settings could not be reset.',
 	'knowledge.title': 'mcp-vertex Knowledge',
 	'knowledge.searchPlaceholder': 'Search entries (id or title)…',
 	'knowledge.empty': 'No knowledge entries.',
@@ -610,9 +639,22 @@ const extension = {
 	setupGithub: 'mcp-vertex: Set up GitHub issues',
 };
 
+const dev = {
+	quickStartHeading: 'Quick start',
+	quickStartLede:
+		"A one-time orientation. The workspace is wired and the dashboard is now pulling real data — here's what each tab does.",
+	quickStartDismiss: 'Dismiss quick start',
+	firstRunHeading: 'Welcome to mcp-vertex',
+	firstRunLede:
+		'This extension ships a dashboard, settings, and a tools panel for the mcp-vertex MCP server. The MCP server is not installed in this workspace yet — once it is, the dashboard will switch to fetching real data from it.',
+	firstRunSkip: 'Skip — show me the dashboard anyway',
+	firstRunInstall: 'Install mcp-vertex in this workspace',
+};
+
 const dict: ILangDict = {
 	site: site as unknown as ILangDict['site'],
 	extension: extension as unknown as ILangDict['extension'],
+	dev: dev as unknown as ILangDict['dev'],
 	tools: {},
 };
 

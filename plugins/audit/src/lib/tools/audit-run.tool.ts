@@ -24,14 +24,17 @@
  * Not idempotent across runs (new date prefix, new proposal ids).
  */
 
-import { toolJson, writeFileAtomic, type IToolRegistration } from '@mcp-vertex/core/public';
+import {
+	toolJson,
+	writeFileAtomic,
+	type IToolRegistration,
+} from '@mcp-vertex/core/public';
 import path from 'node:path';
 
 import {
 	SCORE_DIMENSIONS,
 	UNIVERSAL_SCOPES,
 	type AuditMode,
-	type ILayerConfig,
 } from '../services/audit-brief.service';
 import { runPipelinePrelude } from '../services/run-pipeline-prelude.service';
 import {
@@ -39,7 +42,6 @@ import {
 	auditFilename,
 	callLlmFanOut,
 	isoDate,
-	type IHttpTransport,
 	type ILlmCallOutcome,
 	type IModelTarget,
 	type LlmProvider,
@@ -53,12 +55,7 @@ import {
 	resolveAutoScaffold,
 	type IAutoScaffoldOptions,
 } from '../services/auto-scaffold-proposals.service';
-import {
-	RunInputSchema,
-	RunOutputSchema,
-	type TargetSchema,
-	type LlmProviderSchema,
-} from './audit-run.schemas';
+import { RunInputSchema, RunOutputSchema } from './audit-run.schemas';
 import type { IRunToolOptions } from './audit-run.tool-options';
 
 // ---------------------------------------------------------------------------
@@ -346,4 +343,7 @@ export const buildRunRegistration = (
 // working, and so the audit plugin's public barrel can keep
 // re-exporting them unchanged.
 
-export { probeAudits, probeProposals } from '../services/audit-run-probes.service';
+export {
+	probeAudits,
+	probeProposals,
+} from '../services/audit-run-probes.service';

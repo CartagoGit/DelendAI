@@ -1,0 +1,14 @@
+// `_breakpoints.scss` — SCSS-level (not CSS-level) responsive thresholds.
+//
+// CSS custom properties (`--mcpv-*`) cannot be used inside `@media` query
+// expressions because the media query engine resolves at parse time,
+// long before the runtime values are known. For media queries we need
+// plain SCSS variables, declared here.
+//
+// Each value mirrors a breakpoint the marketing site (`apps/web`)
+// already uses, so dashboards, the docs site, and any future product
+// surface hit the same column-widening boundaries.
+
+$mcpv-bp-sm: 640px;
+$mcpv-bp-md: 1024px;
+$mcpv-bp-lg: 1280px;

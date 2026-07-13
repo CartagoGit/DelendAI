@@ -39,6 +39,23 @@ describe('scaffold-host generators', () => {
 		);
 	});
 
+	it('sanitizes hyphenated namespaces for generated TypeScript symbols', () => {
+		const file = scaffoldToolFile(
+			'mcp-vertex',
+			'project state',
+			'State.',
+			'packages/core',
+		);
+		expect(file.path).toBe(
+			'packages/core/src/lib/tools/mcp-vertex-project-state.tool.ts',
+		);
+		expect(file.content).toContain(
+			'export const MCP_VERTEX_PROJECT_STATE_TOOL',
+		);
+		expect(file.content).toContain("name: 'mcp-vertex_project_state'");
+		expect(file.content).not.toContain('MCP-VERTEX');
+	});
+
 	it('generates skills with canonical frontmatter', () => {
 		const file = scaffoldSkillFile('acme', 'level design', 'Rooms.', [
 			'Before editing rooms.',
@@ -128,6 +145,24 @@ describe('scaffold-host generators', () => {
 		for (const file of files) {
 			expect(file.content, file.path).not.toContain('mcp-vertex_');
 		}
+	});
+
+	it('places host sources and VS Code cwd under an explicit target', () => {
+		const files = scaffoldHostProject({
+			...HOST,
+			namespacePrefix: 'mcp-vertex',
+			targetDir: 'packages/core',
+		});
+		const paths = files.map(({ path }) => path);
+		expect(paths).toContain('packages/core/src/server.ts');
+		expect(paths).toContain('packages/core/src/lib/shared/host-config.ts');
+		expect(paths).not.toContain('libs/mcp-project/src/server.ts');
+		const editorConfig = files.find(
+			({ path }) => path === '.vscode/mcp.json',
+		);
+		expect(editorConfig?.content).toContain(
+			'${workspaceFolder}/packages/core',
+		);
 	});
 });
 

@@ -14,10 +14,11 @@ describe('renderOutputSchema', async () => {
 			},
 		});
 
-		expect(html).toContain(
-			'<strong>compact</strong> <span>optional</span>',
-		);
-		expect(html).toContain('<strong>name</strong> <span>required</span>');
+		expect(html).toContain('<strong>compact</strong>');
+		expect(html).toContain('<code>boolean</code>');
+		expect(html).toContain('<span>optional</span>');
+		expect(html).toContain('<strong>name</strong>');
+		expect(html).toContain('<span>required</span>');
 		expect(html).toContain('Tool name');
 	});
 
@@ -66,6 +67,6 @@ describe('renderToolDetailHtml', async () => {
 		});
 
 		expect(html).toContain('&lt;unsafe&gt;');
-		expect(html).toContain('2 calls, 1 errors, max 9ms');
+		expect(html).toContain('2 calls, 1 error, max 9ms');
 	});
 });

@@ -111,7 +111,11 @@ describe('parseGitPushArgs', () => {
 		// The lefthook argv passed to the pre-push hook is
 		// {1} {2} {3} = remote remote_url refs.
 		const parsed = parseGitPushArgs(
-			['origin', 'git@github.com:x/y.git', 'refs/heads/develop:refs/heads/develop'],
+			[
+				'origin',
+				'git@github.com:x/y.git',
+				'refs/heads/develop:refs/heads/develop',
+			],
 			null,
 		);
 		expect(parsed.remote).toBe('origin');

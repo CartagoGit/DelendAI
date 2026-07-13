@@ -15,7 +15,7 @@ export interface ILogEventBus {
 }
 
 export interface ILogBusSubscription {
-	close(): void;
+	close(): Promise<void>;
 }
 
 const KIND_MAP: Readonly<Record<LogBusEventKind, LogEventKind>> = {
@@ -32,19 +32,26 @@ export const subscribeToBus = (
 	store: Pick<ILogStore, 'appendEvent'>,
 ): ILogBusSubscription => {
 	const listeners = new Map<LogBusEventKind, (payload: unknown) => void>();
+	const pending = new Set<Promise<void>>();
 	for (const event of Object.keys(KIND_MAP) as LogBusEventKind[]) {
 		const listener = (payload: unknown): void => {
-			void store.appendEvent(normalizeEvent(KIND_MAP[event], payload));
+			const write = store
+				.appendEvent(normalizeEvent(KIND_MAP[event], payload))
+				.catch(() => undefined)
+				.finally(() => pending.delete(write));
+			pending.add(write);
 		};
 		listeners.set(event, listener);
 		bus.on(event, listener);
 	}
 	return {
-		close() {
-			if (!bus.off) return;
-			for (const [event, listener] of listeners) {
-				bus.off(event, listener);
+		async close() {
+			if (bus.off) {
+				for (const [event, listener] of listeners) {
+					bus.off(event, listener);
+				}
 			}
+			await Promise.all([...pending]);
 		},
 	};
 };

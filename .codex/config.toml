@@ -3,12 +3,12 @@
 # available without each Codex user hand-editing `~/.codex/config.toml`.
 #
 # Paths are relative to this `.codex/` directory; `cwd = ".."` starts the MCP
-# server from the repo root and lets the host script resolve the workspace from
-# `process.cwd()`.
+# server from the repo root so the published CLI resolves the workspace from
+# the same relative path as the other checked-in MCP clients.
 
 [mcp_servers.mcp-vertex]
-command = "bun"
-args = ["tools/scripts/host/host-server.script.ts"]
+command = "bunx"
+args = ["--package", "@mcp-vertex/cli", "mcpv", "__serve", "--workspace", "."]
 cwd = ".."
 startup_timeout_sec = 30
 tool_timeout_sec = 120

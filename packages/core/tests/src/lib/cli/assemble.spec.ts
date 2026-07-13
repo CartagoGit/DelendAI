@@ -84,3 +84,67 @@ describe('assembleCliConfig — agentWorktree gate (f00052 S4)', async () => {
 		expect(sink.ctx?.agentWorktreeEnabled).toBe(false);
 	});
 });
+
+describe('assembleCliConfig — hostIdentity projection (f00082 S3)', async () => {
+	it('omits hostIdentity when neither config nor args declare an identity', async () => {
+		const sink: { ctx?: IMcpPluginContext } = {};
+		await assembleCliConfig(baseArgs(), {
+			readFile: fileReader(undefined),
+			import: captureImport(sink),
+		});
+		// Absent → consumers keep their null/legacy fallback (byte-identical).
+		expect(sink.ctx?.hostIdentity).toBeUndefined();
+	});
+
+	it('projects hostIdentity from the config commitAuthor client/model names', async () => {
+		const sink: { ctx?: IMcpPluginContext } = {};
+		await assembleCliConfig(baseArgs(), {
+			readFile: fileReader(
+				'{"commitAuthor": {"clientName": "copilot", "modelName": "m3"}}',
+			),
+			import: captureImport(sink),
+		});
+		expect(sink.ctx?.hostIdentity).toEqual({
+			host: 'copilot',
+			model: 'm3',
+		});
+	});
+
+	it('projects hostIdentity from the agent-client/agent-model args', async () => {
+		const sink: { ctx?: IMcpPluginContext } = {};
+		await assembleCliConfig(
+			baseArgs(['--agent-client=claude-code', '--agent-model=opus']),
+			{ readFile: fileReader(undefined), import: captureImport(sink) },
+		);
+		expect(sink.ctx?.hostIdentity).toEqual({
+			host: 'claude-code',
+			model: 'opus',
+		});
+	});
+
+	it('lets the config commitAuthor take precedence over the args', async () => {
+		const sink: { ctx?: IMcpPluginContext } = {};
+		await assembleCliConfig(
+			baseArgs(['--agent-client=args-host', '--agent-model=args-model']),
+			{
+				readFile: fileReader(
+					'{"commitAuthor": {"clientName": "cfg-host", "modelName": "cfg-model"}}',
+				),
+				import: captureImport(sink),
+			},
+		);
+		expect(sink.ctx?.hostIdentity).toEqual({
+			host: 'cfg-host',
+			model: 'cfg-model',
+		});
+	});
+
+	it('populates only the declared half when just one of host/model is given', async () => {
+		const sink: { ctx?: IMcpPluginContext } = {};
+		await assembleCliConfig(baseArgs(['--agent-client=solo-host']), {
+			readFile: fileReader(undefined),
+			import: captureImport(sink),
+		});
+		expect(sink.ctx?.hostIdentity).toEqual({ host: 'solo-host' });
+	});
+});

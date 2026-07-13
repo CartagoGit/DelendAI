@@ -162,7 +162,15 @@ const buildPackage = (rel: string): void => {
 					rootDir: join(dir, 'src'),
 					paths: corePaths,
 				},
-				include: [join(dir, 'src/**/*')],
+				include: [
+					join(dir, 'src/**/*'),
+					// Ambient `*.scss` module declarations for the shared
+					// package's style .ts modules (dev-preview-css & co.).
+					// A dependency's ambient d.ts is not auto-loaded, and it
+					// emits nothing, so including it here is safe for every
+					// package.
+					join(ROOT, 'apps/shared/src/styles/raw.d.ts'),
+				],
 				exclude: [
 					join(dir, 'src/**/*.spec.ts'),
 					join(dir, 'src/**/*.test.ts'),

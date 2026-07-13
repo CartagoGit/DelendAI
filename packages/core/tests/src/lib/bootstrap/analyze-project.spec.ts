@@ -75,6 +75,20 @@ describe('analyzeProject', async () => {
 		expect(analysis.monorepoTool).toBe('turbo');
 		expect(analysis.projectType).toBe('monorepo');
 	});
+
+	it('derives the self-host prefix and target from the real workspace identity', async () => {
+		const analysis = await analyzeProject(
+			reader({
+				'package.json': JSON.stringify({
+					name: '@mcp-vertex/core-monorepo',
+					workspaces: ['packages/*'],
+				}),
+			}),
+		);
+		const plan = await recommendServerPlan(analysis);
+		expect(plan.namespacePrefix).toBe('mcp-vertex');
+		expect(plan.targetDir).toBe('packages/core');
+	});
 });
 
 describe('recommendServerPlan', async () => {

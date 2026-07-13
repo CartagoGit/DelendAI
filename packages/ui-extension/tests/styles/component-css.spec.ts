@@ -30,14 +30,14 @@ describe('componentCss token contract', async () => {
 		).toMatchInlineSnapshot(`
 				"{
 				  "tokenKeys": [
-				    "--mv-bg-primary",
-				    "--mv-fg-primary"
+				    "--mcpv-bg-primary",
+				    "--mcpv-fg-primary"
 				  ],
 				  "migrationMap": {
-				    "--vscode-editor-background": "--mv-bg-primary",
-				    "--vscode-editor-foreground": "--mv-fg-primary"
+				    "--vscode-editor-background": "--mcpv-bg-primary",
+				    "--vscode-editor-foreground": "--mcpv-fg-primary"
 				  },
-				  "rootCss": ":root {\\n\\t--mv-bg-primary: var(--vscode-editor-background, #0d1117);\\n\\t--mv-fg-primary: var(--vscode-editor-foreground, #c9d1d9);\\n}"
+				  "rootCss": ":root {\\n\\t--mcpv-bg-primary: var(--vscode-editor-background, #0d1117);\\n\\t--mcpv-fg-primary: var(--vscode-editor-foreground, #c9d1d9);\\n}"
 				}"
 			`);
 	});
@@ -52,8 +52,8 @@ describe('componentCss token contract', async () => {
 			JSON.stringify(
 				{
 					settingsUsesComponentTokens:
-						settingsSource.includes('var(--mv-bg-primary)') &&
-						settingsSource.includes('var(--mv-fg-primary)'),
+						settingsSource.includes('var(--mcpv-bg-primary)') &&
+						settingsSource.includes('var(--mcpv-fg-primary)'),
 					settingsHasDirectVscodeEditorTokens:
 						settingsSource.includes(
 							'var(--vscode-editor-background',
@@ -62,8 +62,8 @@ describe('componentCss token contract', async () => {
 							'var(--vscode-editor-foreground',
 						),
 					knowledgeUsesComponentTokens:
-						knowledgeSource.includes('var(--mv-bg-primary)') &&
-						knowledgeSource.includes('var(--mv-fg-primary)'),
+						knowledgeSource.includes('var(--mcpv-bg-primary)') &&
+						knowledgeSource.includes('var(--mcpv-fg-primary)'),
 					knowledgeHasDirectVscodeEditorTokens:
 						knowledgeSource.includes(
 							'var(--vscode-editor-background',

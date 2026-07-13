@@ -21,6 +21,8 @@ export interface IScaffoldHostOptions {
 	readonly namespacePrefix: string;
 	/** Package that will hold the host server, e.g. `@acme/mcp-project`. */
 	readonly projectPackageName: string;
+	/** Workspace-relative package/root that receives generated host sources. */
+	readonly targetDir?: string;
 	/** Default agent model id. */
 	readonly defaultModel?: string;
 	/**
@@ -57,6 +59,19 @@ const pascal = (value: string): string =>
 		.map((part) => part.charAt(0).toUpperCase() + part.slice(1))
 		.join('');
 
+const normalizeTargetDir = (value: string | undefined): string => {
+	const normalized = (value ?? 'libs/mcp-project')
+		.replaceAll('\\', '/')
+		.replace(/^\.\//, '')
+		.replace(/\/+$/, '');
+	return normalized === '' ? '.' : normalized;
+};
+
+const targetPath = (targetDir: string | undefined, path: string): string => {
+	const root = normalizeTargetDir(targetDir);
+	return root === '.' ? path : `${root}/${path}`;
+};
+
 // ---------------------------------------------------------------------------
 // Single-artefact generators
 // ---------------------------------------------------------------------------
@@ -65,23 +80,25 @@ export const scaffoldToolFile = (
 	prefix: string,
 	name: string,
 	description: string,
+	targetDir?: string,
 ): IScaffoldedFile => {
 	const id = kebab(name);
 	const fn = pascal(name);
 	const toolName = `${prefix}_${id.replace(/-/g, '_')}`;
+	const toolSymbol = toolName.replace(/[^a-z0-9]+/gi, '_').toUpperCase();
 	return {
-		path: `libs/mcp-project/src/lib/tools/${prefix}-${id}.tool.ts`,
+		path: targetPath(targetDir, `src/lib/tools/${prefix}-${id}.tool.ts`),
 		content: `import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 
-export const ${toolName.toUpperCase()}_TOOL = {
+export const ${toolSymbol}_TOOL = {
 	name: '${toolName}',
 	description: '${description.replace(/'/g, '')}',
 } as const;
 
-export const ${toolName.toUpperCase()}_INPUT_SCHEMA = z.object({});
+export const ${toolSymbol}_INPUT_SCHEMA = z.object({});
 
-export type I${fn}Args = z.infer<typeof ${toolName.toUpperCase()}_INPUT_SCHEMA>;
+export type I${fn}Args = z.infer<typeof ${toolSymbol}_INPUT_SCHEMA>;
 
 export function build${fn}Response(_args: I${fn}Args): {
 	content: Array<{ type: 'text'; text: string }>;
@@ -98,10 +115,10 @@ export function build${fn}Response(_args: I${fn}Args): {
 
 export async function register${fn}Tool(server: McpServer): Promise<void> {
 	server.registerTool(
-		${toolName.toUpperCase()}_TOOL.name,
+		${toolSymbol}_TOOL.name,
 		{
-			description: ${toolName.toUpperCase()}_TOOL.description,
-			inputSchema: ${toolName.toUpperCase()}_INPUT_SCHEMA,
+			description: ${toolSymbol}_TOOL.description,
+			inputSchema: ${toolSymbol}_INPUT_SCHEMA,
 		},
 		async (args: I${fn}Args) => build${fn}Response(args)
 	);
@@ -115,10 +132,14 @@ export const scaffoldPromptFile = (
 	name: string,
 	description: string,
 	body?: string,
+	targetDir?: string,
 ): IScaffoldedFile => {
 	const id = kebab(name);
 	const fn = pascal(name);
 	const promptName = `${prefix}-${id}`;
+	const promptSymbol = `${prefix}_${id}`
+		.replace(/[^a-z0-9]+/gi, '_')
+		.toUpperCase();
 	const safeDescription = description.replace(/'/g, '');
 	const safeBody = (body ?? '').replace(/`/g, '\\`').replace(/\$/g, '\\$');
 	const userText =
@@ -126,10 +147,13 @@ export const scaffoldPromptFile = (
 			? safeBody
 			: `Wrapper: call the ${prefix} MCP tools; the server is the source of truth.`;
 	return {
-		path: `libs/mcp-project/src/lib/prompts/${prefix}-${id}.prompt.ts`,
+		path: targetPath(
+			targetDir,
+			`src/lib/prompts/${prefix}-${id}.prompt.ts`,
+		),
 		content: `import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 
-export const ${prefix.toUpperCase()}_${id.replace(/-/g, '_').toUpperCase()}_PROMPT = {
+export const ${promptSymbol}_PROMPT = {
 	name: '${promptName}',
 	description: '${safeDescription}',
 } as const;
@@ -161,6 +185,7 @@ export const scaffoldSkillFile = (
 	description: string,
 	whenToUse: readonly string[] = [],
 	body?: string,
+	targetDir?: string,
 ): IScaffoldedFile => {
 	const id = kebab(name);
 	const bullets =
@@ -172,7 +197,7 @@ export const scaffoldSkillFile = (
 			? body
 			: '2. TODO: the skill body.';
 	return {
-		path: `libs/mcp-project/src/lib/skills/${prefix}-${id}.md`,
+		path: targetPath(targetDir, `src/lib/skills/${prefix}-${id}.md`),
 		content: `---
 id: ${prefix}-${id}
 name: ${name}
@@ -275,7 +300,7 @@ export const scaffoldHostConfigFile = (
 ): IScaffoldedFile => {
 	const prefix = options.namespacePrefix;
 	return {
-		path: 'libs/mcp-project/src/lib/shared/host-config.ts',
+		path: targetPath(options.targetDir, 'src/lib/shared/host-config.ts'),
 		content: `import {
 	buildScaffoldToolRegistration,
 	createWorkspacePathProvider,
@@ -322,7 +347,7 @@ export const scaffoldServerEntryFiles = (
 	options: IScaffoldHostOptions,
 ): readonly IScaffoldedFile[] => [
 	{
-		path: 'libs/mcp-project/src/server.ts',
+		path: targetPath(options.targetDir, 'src/server.ts'),
 		content: `import { createMcpProject } from '@mcp-vertex/core/public';
 
 import { buildHostConfig } from './lib/shared/host-config';
@@ -337,7 +362,7 @@ export async function startServer(workspaceRoot = process.cwd()): Promise<void> 
 `,
 	},
 	{
-		path: 'libs/mcp-project/src/index.ts',
+		path: targetPath(options.targetDir, 'src/index.ts'),
 		content: `import { startServer } from './server';
 
 void startServer();
@@ -351,8 +376,10 @@ void startServer();
 					[`mcp-project-${options.namespacePrefix}`]: {
 						command: 'bun',
 						args: ['--watch', 'run', 'src/index.ts'],
-						// biome-ignore lint/suspicious/noTemplateCurlyInString: literal VSCode ${workspaceFolder} variable, not a JS template
-						cwd: '${workspaceFolder}/libs/mcp-project',
+						cwd:
+							normalizeTargetDir(options.targetDir) === '.'
+								? '${workspaceFolder}'
+								: `\${workspaceFolder}/${normalizeTargetDir(options.targetDir)}`,
 					},
 				},
 			},
@@ -380,6 +407,9 @@ export const scaffoldHostProject = (
 		options.namespacePrefix,
 		'project-standards',
 		`Closed stack and conventions of ${options.projectName}.`,
+		[],
+		undefined,
+		options.targetDir,
 	),
 ];
 

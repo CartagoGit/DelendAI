@@ -25,7 +25,9 @@ import {
 	type IContextItem,
 	type IContextItemKind,
 } from '../services/compaction';
-import { getMaxNotes, readStore, saveNote } from '../services/store';
+import { SESSION_DIGEST_TITLE_PREFIX } from '../contracts/constants/session-digest.constant';
+import { saveNote } from '../services/store';
+import { NoteQuotaExceededError } from '../services/store-records';
 
 const CONTEXT_ITEM_KINDS = [
 	'decision',
@@ -106,7 +108,12 @@ export const buildCompactToolRegistration = (
 					inputSchema: z.object({
 						topic: z.string().min(1).max(120),
 						items: z.array(ContextItemSchema).max(MAX_ITEMS),
-						detailMaxChars: z.number().int().min(20).max(2000).optional(),
+						detailMaxChars: z
+							.number()
+							.int()
+							.min(20)
+							.max(2000)
+							.optional(),
 						persist: z.boolean().optional(),
 						ttlSeconds: z.number().int().positive().optional(),
 					}),
@@ -149,8 +156,12 @@ export const buildCompactToolRegistration = (
 							...(item.tokensEstimate !== undefined
 								? { tokensEstimate: item.tokensEstimate }
 								: {}),
-							...(item.pin !== undefined ? { pin: item.pin } : {}),
-							...(item.drop !== undefined ? { drop: item.drop } : {}),
+							...(item.pin !== undefined
+								? { pin: item.pin }
+								: {}),
+							...(item.drop !== undefined
+								? { drop: item.drop }
+								: {}),
 						}),
 					);
 					const result = distillContextDigest(
@@ -172,40 +183,41 @@ export const buildCompactToolRegistration = (
 					}
 
 					return guardCorrupt(async () => {
-						const title = `session-digest:${args.topic}`;
+						const title = `${SESSION_DIGEST_TITLE_PREFIX}${args.topic}`;
 						// Reuse the durable-store quota; a session digest is one
 						// upserted note per topic, so this only trips when the
 						// store is already full of OTHER notes.
-						const limit = getMaxNotes(options.maxNotes);
-						const existing = await readStore(options.storePathAbs);
-						const id = title
-							.toLowerCase()
-							.replace(/[^a-z0-9]+/g, '-')
-							.replace(/^-+|-+$/g, '');
-						const isNew = !existing.some((note) => note.id === id);
-						if (isNew && existing.length >= limit) {
-							return toolError(
-								`note store is full (max ${limit} notes)`,
-								'Forget stale notes with memory_forget before compacting.',
+						let saved: Awaited<ReturnType<typeof saveNote>>;
+						try {
+							saved = await saveNote(
+								options.storePathAbs,
+								{
+									title,
+									body: result.digest,
+									tags: ['session-digest'],
+									ttlSeconds:
+										args.ttlSeconds ??
+										DEFAULT_SESSION_TTL_SECONDS,
+								},
+								undefined,
+								options.maxNotes,
 							);
+						} catch (error) {
+							if (error instanceof NoteQuotaExceededError) {
+								return toolError(
+									error.message,
+									'Forget stale notes with memory_forget before compacting.',
+								);
+							}
+							throw error;
 						}
-						const { note, redactions } = await saveNote(
-							options.storePathAbs,
-							{
-								title,
-								body: result.digest,
-								tags: ['session-digest'],
-								ttlSeconds:
-									args.ttlSeconds ?? DEFAULT_SESSION_TTL_SECONDS,
-							},
-						);
 						return toolJson({
-							digest: note.body,
+							digest: saved.note.body,
 							sections: result.sections,
 							tokenAccounting: result.tokenAccounting,
 							persisted: true,
-							noteId: note.id,
-							redactedSecrets: redactions,
+							noteId: saved.note.id,
+							redactedSecrets: saved.redactions,
 						});
 					});
 				},

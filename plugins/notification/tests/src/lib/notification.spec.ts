@@ -228,6 +228,72 @@ describe('handoff watcher', async () => {
 });
 
 describe('notification plugin', async () => {
+	const contextWithPaths = (
+		root: string,
+		options: Readonly<Record<string, unknown>>,
+	): IMcpPluginContext => ({
+		workspace: { root, resolve: (p: string) => join(root, p) },
+		corePaths: {
+			cacheDir: '.cache/mcp-vertex',
+			docsDir: 'docs/mcp-vertex',
+		},
+		cacheDir: '.cache/mcp-vertex',
+		docsDir: 'docs/mcp-vertex',
+		keepLegacy: false,
+		pluginCacheDir: '.cache/mcp-vertex/notification',
+		pluginDocsDir: 'docs/mcp-vertex/notification',
+		namespacePrefix: 'notification',
+		options,
+		args: {},
+	});
+
+	it('accepts contained custom watch paths', async () => {
+		const dir = mkdtempSync(join(tmpdir(), 'notify-paths-'));
+		expect(() =>
+			plugin.register(
+				contextWithPaths(dir, {
+					watchLockFile: 'custom/agents.lock.json',
+					watchHandoffDir: 'custom/handoff',
+				}),
+			),
+		).not.toThrow();
+		rmSync(dir, { recursive: true, force: true });
+	});
+
+	it('rejects watch path traversal outside the workspace', async () => {
+		const dir = mkdtempSync(join(tmpdir(), 'notify-paths-'));
+		expect(() =>
+			plugin.register(
+				contextWithPaths(dir, { watchLockFile: '../agents.lock.json' }),
+			),
+		).toThrow(/invalid watchLockFile: path escapes workspace/);
+		expect(() =>
+			plugin.register(
+				contextWithPaths(dir, { watchHandoffDir: '../../handoff' }),
+			),
+		).toThrow(/invalid watchHandoffDir: path escapes workspace/);
+		rmSync(dir, { recursive: true, force: true });
+	});
+
+	it('rejects absolute watch paths', async () => {
+		const dir = mkdtempSync(join(tmpdir(), 'notify-paths-'));
+		expect(() =>
+			plugin.register(
+				contextWithPaths(dir, {
+					watchLockFile: join(dir, 'lock.json'),
+				}),
+			),
+		).toThrow(/invalid watchLockFile: absolute path not allowed/);
+		expect(() =>
+			plugin.register(
+				contextWithPaths(dir, {
+					watchHandoffDir: join(dir, 'handoff'),
+				}),
+			),
+		).toThrow(/invalid watchHandoffDir: absolute path not allowed/);
+		rmSync(dir, { recursive: true, force: true });
+	});
+
 	it('registers notify_status + knowledge and emits on release and handoff', async () => {
 		const dir = mkdtempSync(join(tmpdir(), 'notify-plug-'));
 		const ctx = {

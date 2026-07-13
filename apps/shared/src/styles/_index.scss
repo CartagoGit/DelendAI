@@ -10,7 +10,7 @@
 // the palette defaults — both files expose independent `:root` blocks
 // so load order does not affect outcome.
 //
-// f00055 / S2 — also `@forward` the `mv-dropdown__*` component partial
+// f00055 / S2 — also `@forward` the `mcpv-dropdown__*` component partial
 // so any host that consumes `@mcp-vertex/shared/styles` (a new IDE
 // extension, a future product surface) gets a working dropdown without
 // duplicating SCSS. The docs site (`apps/web`) deliberately does NOT
@@ -20,4 +20,18 @@
 
 @forward 'tokens';
 @forward 'themes';
+@forward 'breakpoints';
 @forward 'dropdown';
+@forward '../components/ui/callout' show callout;
+@forward 'components/tabs';
+@forward 'components/code';
+@forward 'components/stepper';
+@forward 'components/copy-button';
+@forward 'components/page-header';
+@forward 'components/site-footer';
+@forward 'components/brand-mark';
+@forward 'components/drawer';
+@forward 'components/theme-picker';
+@forward 'components/lang-picker';
+@forward 'components/welcome';
+@forward 'components/setup-wizard';

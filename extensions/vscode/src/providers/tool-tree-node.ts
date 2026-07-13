@@ -20,6 +20,11 @@ export interface IToolTreeNode {
 	readonly contextValue?: string;
 	readonly plugin?: string;
 	readonly tool?: IToolDescriptor;
+	readonly command?: {
+		readonly command: string;
+		readonly title: string;
+		readonly arguments?: readonly unknown[];
+	};
 	/** Codicon id for the node's icon (f00053 S3). */
 	readonly iconId?: string;
 }
@@ -57,5 +62,10 @@ export const toolNode = (tool: IToolDescriptor): IToolTreeNode => ({
 	contextValue: 'mcpVertexTool',
 	plugin: tool.plugin,
 	tool,
+	command: {
+		command: 'mcp-vertex.openToolDetail',
+		title: 'Open Tool Detail',
+		arguments: [tool],
+	},
 	iconId: iconIdForPlugin(tool.plugin),
 });

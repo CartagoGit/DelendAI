@@ -8,6 +8,7 @@ import {
 	createWorkspaceFileReader,
 } from '../bootstrap/index';
 import { DEFAULT_CORE_PATHS } from '../contracts/interfaces/core-paths.interface';
+import type { IResolvedHostIdentity } from '../contracts/interfaces/resolved-host-identity.interface';
 import type { IKnowledgeEntry } from '../contracts/interfaces/knowledge.interface';
 import type { IMcpVertexHostConfig } from '../contracts/interfaces/host-config.interface';
 import type {
@@ -16,6 +17,7 @@ import type {
 	IToolRegistration,
 } from '../contracts/interfaces/tool-registration.interface';
 import {
+	CONFIG_FILE_SCHEMA,
 	DEFAULT_CONFIG_FILENAME,
 	diagnoseConfigFile,
 	diagnosePluginPathConfig,
@@ -23,8 +25,12 @@ import {
 	pluginConfigFor,
 	resolveConfigPluginSpecifiers,
 } from '../plugins/load-config-file';
+import { diagnoseWorkspaceLayout } from '../plugins/diagnose-workspace-layout';
+import type { WorkspacePathStatus } from '../contracts/interfaces/workspace-layout.interface';
 import { loadPlugins, nodeDynamicImport } from '../plugins/load-plugins';
 import type { IPluginLoadResult } from '../plugins/load-plugins';
+import { buildActivationReport } from '../plugins/activation-report';
+import { classifyOrigin } from '../plugins/classify-origin';
 import type { IMcpPluginContext } from '../plugins/plugin-contract';
 import { createPeerPluginRegistry } from '../plugins/peer-plugin-registry';
 import { parseCliArgs } from '../plugins/parse-cli-args';
@@ -42,10 +48,11 @@ import {
 	type IBlueprintWriter,
 } from '../shared/blueprint-writer';
 import type {
-	IProposalSummary,
 	ISkillSummary,
 	IToolSummary,
 } from '../catalog/agent-discovery-types';
+import type { IProviderSummary } from '../contracts/interfaces/provider-capabilities.interface';
+import { readProposalsIndex } from './read-proposals-index';
 import { buildKnowledgeResourceRegistrations } from '../tools/knowledge-resources';
 import { buildKnowledgeToolRegistration } from '../tools/knowledge-tool';
 import { buildSkillToolRegistration } from '../tools/skill-tool';
@@ -75,6 +82,15 @@ import type {
 } from '../contracts/interfaces/cache-eviction.interface';
 import { createCacheEvictionRegistry } from '../cache/eviction-registry';
 import { resolveWorkspaceContained } from '../shared/contain-path';
+import {
+	buildConfigurationCenterSnapshot,
+	serializeConfigurationSchema,
+} from '../configuration-center/configuration-center';
+import type {
+	IConfigurationArtifact,
+	IConfigurationPlugin,
+} from '../contracts/interfaces/configuration-center.interface';
+import { buildConfigurationCenterToolRegistration } from '../tools/configuration-center.tool';
 
 export interface IAssembledCliConfig {
 	readonly config: IMcpVertexHostConfig;
@@ -96,6 +112,17 @@ export interface IAssembledCliConfig {
 	 */
 	readonly cacheEvictionRegistry: ICacheEvictionRegistry;
 	readonly cacheEvictionBootReport: ICacheEvictionReport;
+	/**
+	 * The discovery catalog's tool entries, each carrying its fully-qualified
+	 * callable `name` and its real owning `plugin` — the SAME authoritative
+	 * values the `agent_catalog` tool and the `overview` snapshot expose.
+	 * Surfaced so offline consumers (the static catalog generator, the web
+	 * capabilities page) reuse this single source of truth instead of
+	 * re-deriving the plugin by string-parsing the qualified name, which is
+	 * unreliable for core tools whose id contains an underscore
+	 * (`fs_read`, `agent_catalog`, …).
+	 */
+	readonly agentCatalogTools: readonly IToolSummary[];
 }
 
 export interface IAssembleCliDeps {
@@ -103,101 +130,12 @@ export interface IAssembleCliDeps {
 	readFile?: (absolutePath: string) => Promise<string | undefined>;
 	/** Provide a custom plugin module importer (default: dynamic import()) */
 	import?: (specifier: string) => Promise<{ default: unknown }>;
+	/**
+	 * f00109 S1: existence probe for the workspace-layout diagnostic
+	 * (default: node:fs.existsSync). Boot-time only, so sync is fine.
+	 */
+	exists?: (absolutePath: string) => boolean;
 }
-
-interface IProposalIndexFileEntry {
-	readonly id?: string;
-	readonly title?: string;
-	readonly track?: string;
-	readonly status?: string;
-	readonly type?: string;
-	readonly kind?: string;
-	readonly date?: string;
-}
-
-interface IProposalIndexFile {
-	readonly proposals?: readonly IProposalIndexFileEntry[];
-}
-
-const namespaceFromToolName = (name: string): string => {
-	const idx = name.indexOf('_');
-	return idx === -1 ? name : name.slice(0, idx);
-};
-
-const proposalKindFromId = (id: string): IProposalSummary['kind'] => {
-	const prefix = id[0]?.toLowerCase();
-	if (prefix === 'f') return 'feat';
-	if (prefix === 'r') return 'refactor';
-	if (prefix === 'c') return 'chore';
-	if (prefix === 'd') return 'docs';
-	if (prefix === 'q') return 'plan';
-	if (prefix === 'a') return 'audit';
-	if (prefix === 'x') return 'fix';
-	return 'unspecified';
-};
-
-const normalizeProposalStatus = (
-	status: string | undefined,
-): IProposalSummary['status'] => {
-	if (
-		status === 'ready' ||
-		status === 'in-progress' ||
-		status === 'review' ||
-		status === 'paused' ||
-		status === 'done' ||
-		status === 'blocked' ||
-		status === 'retired'
-	) {
-		return status;
-	}
-	return 'unspecified';
-};
-
-const readProposalsIndex = async (
-	workspaceRoot: string,
-	cacheDir: string,
-	readWorkspaceFile: (absolutePath: string) => Promise<string | undefined>,
-): Promise<readonly IProposalSummary[]> => {
-	// x00052: the proposals registry index is a regenerable cache
-	// artefact, not a human-edited source file. It lives under
-	// `<cacheDir>/proposals/index.json` (where every other regenerable
-	// artefact already lives — see `default-path-layout.constant.ts#proposalIndexFile`).
-	const raw = await readWorkspaceFile(
-		join(workspaceRoot, cacheDir, 'proposals', 'index.json'),
-	);
-	if (raw === undefined) return [];
-	let parsed: IProposalIndexFile;
-	try {
-		parsed = JSON.parse(raw) as IProposalIndexFile;
-	} catch {
-		return [];
-	}
-	if (!Array.isArray(parsed.proposals)) return [];
-	return parsed.proposals
-		.filter(
-			(
-				entry,
-			): entry is Required<Pick<IProposalIndexFileEntry, 'id'>> &
-				IProposalIndexFileEntry => typeof entry.id === 'string',
-		)
-		.map((entry) => ({
-			id: entry.id,
-			title: entry.title ?? entry.id,
-			track: entry.track ?? 'unspecified',
-			status: normalizeProposalStatus(entry.status),
-			kind:
-				entry.kind === 'feat' ||
-				entry.kind === 'fix' ||
-				entry.kind === 'refactor' ||
-				entry.kind === 'chore' ||
-				entry.kind === 'docs' ||
-				entry.kind === 'plan' ||
-				entry.kind === 'audit'
-					? entry.kind
-					: proposalKindFromId(entry.id),
-			date: entry.date ?? '',
-		}));
-};
 
 /**
  * Build the full host config from parsed CLI args: resolve the
@@ -235,11 +173,12 @@ export const assembleCliConfig = async (
 	const pluginPathIssues = Object.entries(fileConfig.plugins ?? {}).flatMap(
 		([name, entry]) => diagnosePluginPathConfig(entry ?? {}, name),
 	);
-	const configDiagnostic = {
-		present: baseConfigDiagnostic.present,
-		issues: [...baseConfigDiagnostic.issues, ...pluginPathIssues],
-	};
 	const configPluginNames = Object.keys(fileConfig.plugins ?? {});
+	const disabledConfigPlugins = new Set(
+		Object.entries(fileConfig.plugins ?? {})
+			.filter(([, entry]) => entry.enabled === false)
+			.map(([name]) => name),
+	);
 
 	// Precedence for roots: explicit CLI flag > config file > default.
 	const cacheDir =
@@ -249,6 +188,37 @@ export const assembleCliConfig = async (
 	const docsDir =
 		args.tokens.docsDir ?? fileConfig.docsDir ?? DEFAULT_CORE_PATHS.docsDir;
 	const corePaths = { cacheDir, docsDir };
+	// f00109 S1: dead-config detection. A config file whose docsDir or
+	// plugin `options.roots` point at paths that do not exist (the classic
+	// copied-from-another-repo config) used to boot silently — every
+	// plugin scanned an empty tree and the agent never found the docs,
+	// rules or proposals layout. Probe each configured path once at boot
+	// (sync is fine here) and fold the findings into the config
+	// diagnostic, so the doctor, the boot stderr log and the overview all
+	// surface the same issues.
+	const exists = deps.exists ?? existsSync;
+	const probeWorkspacePath = (relPath: string): WorkspacePathStatus => {
+		const contained = resolveWorkspaceContained(workspace.root, relPath);
+		if (!contained.ok) return 'escapes';
+		return exists(contained.abs) ? 'exists' : 'missing';
+	};
+	const layoutIssues = diagnoseWorkspaceLayout({
+		config: fileConfig,
+		configPresent: baseConfigDiagnostic.present,
+		docsDir,
+		probe: probeWorkspacePath,
+	});
+	const docsDirMissing =
+		baseConfigDiagnostic.present &&
+		probeWorkspacePath(docsDir) !== 'exists';
+	const configDiagnostic = {
+		present: baseConfigDiagnostic.present,
+		issues: [
+			...baseConfigDiagnostic.issues,
+			...pluginPathIssues,
+			...layoutIssues,
+		],
+	};
 	const corePrefix = args.namespacePrefix ?? 'mcp-vertex';
 	const keepLegacy = fileConfig.keepLegacy ?? false;
 	// f00089 U5: native authorized-roots filesystem allowlist. The config
@@ -304,15 +274,30 @@ export const assembleCliConfig = async (
 	// — the only two places a programmatic host can inject it today
 	// without plumbing a new channel); the named bits from the config
 	// file. Defaults: mode `'git'`, clientName `'agent'`.
+	// f00082 S3: the RAW host/model the host actually declared (config file
+	// first, then the programmatic `agent-client`/`agent-model` args). Kept
+	// separate from the sentinel-defaulted commit-author identity below so the
+	// plugin-context `hostIdentity` is populated ONLY when a real identity was
+	// provided — never the `'agent'`/`'unknown-model'` fallbacks.
+	const providedHost =
+		fileConfig.commitAuthor?.clientName ?? args.extra['agent-client'];
+	const providedModel =
+		fileConfig.commitAuthor?.modelName ?? args.extra['agent-model'];
+	const hostIdentity: IResolvedHostIdentity | undefined =
+		providedHost !== undefined || providedModel !== undefined
+			? {
+					...(providedHost !== undefined
+						? { host: providedHost }
+						: {}),
+					...(providedModel !== undefined
+						? { model: providedModel }
+						: {}),
+				}
+			: undefined;
+
 	const commitAuthorIdentity = {
-		clientName:
-			fileConfig.commitAuthor?.clientName ??
-			args.extra['agent-client'] ??
-			'agent',
-		modelName:
-			fileConfig.commitAuthor?.modelName ??
-			args.extra['agent-model'] ??
-			'unknown-model',
+		clientName: providedHost ?? 'agent',
+		modelName: providedModel ?? 'unknown-model',
 	};
 	const commitAuthorNamed = {
 		humanName: fileConfig.commitAuthor?.humanName ?? '',
@@ -342,6 +327,7 @@ export const assembleCliConfig = async (
 			keepLegacy,
 			agentWorktreeEnabled,
 			commitAuthor: commitAuthorResolution,
+			...(hostIdentity !== undefined ? { hostIdentity } : {}),
 			pluginCacheDir: joinRel(corePaths.cacheDir, pluginName),
 			pluginDocsDir: joinRel(corePaths.docsDir, pluginName),
 			namespacePrefix: `${corePrefix}_${pluginConfig.prefix ?? pluginName}`,
@@ -375,9 +361,15 @@ export const assembleCliConfig = async (
 		});
 		if (matchedKey === undefined) {
 			// CLI-only specifier — cannot match any config key.
-			return !excludedPlugins.has(specifier);
+			return (
+				!excludedPlugins.has(specifier) &&
+				!disabledConfigPlugins.has(specifier)
+			);
 		}
-		return !excludedPlugins.has(matchedKey);
+		return (
+			!excludedPlugins.has(matchedKey) &&
+			!disabledConfigPlugins.has(matchedKey)
+		);
 	});
 
 	const loadResult = await loadPlugins({
@@ -415,6 +407,13 @@ export const assembleCliConfig = async (
 	const onToolStarts: Array<
 		(toolName: string, args: unknown) => Promise<void> | void
 	> = [];
+	const onToolCancels: Array<
+		(
+			toolName: string,
+			args: unknown,
+			elapsedMs: number,
+		) => Promise<void> | void
+	> = [];
 	let isAgentStuckFn: IMcpVertexHostConfig['isAgentStuck'];
 
 	for (const { plugin, registrations } of loadResult.loaded) {
@@ -427,6 +426,8 @@ export const assembleCliConfig = async (
 			onToolCalls.push(registrations.onToolCall);
 		if (registrations.onToolStart)
 			onToolStarts.push(registrations.onToolStart);
+		if (registrations.onToolCancel)
+			onToolCancels.push(registrations.onToolCancel);
 		if (registrations.isAgentStuck)
 			isAgentStuckFn = registrations.isAgentStuck;
 		for (const tool of registrations.tools ?? []) {
@@ -438,6 +439,11 @@ export const assembleCliConfig = async (
 			const qualifiedId = `${corePrefix}_${ns}_${tool.id}`;
 			pluginToolEntries.push({
 				name: qualifiedId,
+				// plugin + unqualified id let the compact overview group tools
+				// by plugin without re-parsing the qualified name (plugin names
+				// may contain `-`, tool ids `_`).
+				plugin: ns,
+				id: tool.id,
 				summary: tool.summary,
 				tags: tool.tags,
 				...(tool.effects ? { effects: tool.effects } : {}),
@@ -460,6 +466,155 @@ export const assembleCliConfig = async (
 			});
 		}
 	}
+
+	const configNameBySpecifier = new Map(
+		configPluginNames.map((name, index) => [
+			resolvedConfigSpecifiers[index] ?? name,
+			name,
+		]),
+	);
+	const loadedNamesFor = (specifiers: ReadonlySet<string>): Set<string> =>
+		new Set(
+			loadResult.loaded
+				.filter(
+					(entry) =>
+						specifiers.has(entry.specifier) ||
+						specifiers.has(entry.plugin.name),
+				)
+				.map((entry) => entry.plugin.name),
+		);
+	const configSourceSpecifiers = new Set([
+		...configPluginNames,
+		...resolvedConfigSpecifiers,
+	]);
+	const activationReport = buildActivationReport(
+		loadResult.loaded.map((entry) => {
+			const configName = configNameBySpecifier.get(entry.specifier);
+			return {
+				name: entry.plugin.name,
+				resolvedSpecifier: entry.resolved,
+				hasExplicitPath:
+					configName !== undefined &&
+					pluginConfigFor(fileConfig, configName).path !== undefined,
+				isExternalServer: false,
+				toolCount: entry.registrations.tools?.length ?? 0,
+			};
+		}),
+		{
+			fromFlag: loadedNamesFor(new Set(args.flagPlugins)),
+			fromConfig: loadedNamesFor(configSourceSpecifiers),
+			fromPreset: loadedNamesFor(new Set(args.presetPlugins)),
+		},
+		loadResult.loaded
+			.flatMap((entry) => entry.registrations.activation ?? [])
+			.concat(
+				[...disabledConfigPlugins].map((name) => {
+					const entry = pluginConfigFor(fileConfig, name);
+					const resolvedSpecifier =
+						[...configNameBySpecifier.entries()].find(
+							([, configName]) => configName === name,
+						)?.[0] ?? `@mcp-vertex/${name}`;
+					return {
+						id: name,
+						origin:
+							entry.origin ??
+							classifyOrigin({
+								name,
+								resolvedSpecifier,
+								hasExplicitPath: entry.path !== undefined,
+							}),
+						source: 'config' as const,
+						active: false,
+						toolCount: 0,
+					};
+				}),
+			),
+	);
+	const activationById = new Map(
+		activationReport.entries.map((entry) => [entry.id, entry]),
+	);
+	const configurationContributionById = new Map(
+		loadResult.loaded.flatMap((entry) =>
+			(entry.registrations.activation ?? [])
+				.filter((item) => item.configuration !== undefined)
+				.map((item) => [item.id, item.configuration!] as const),
+		),
+	);
+	const loadedByName = new Map(
+		loadResult.loaded.map((entry) => [entry.plugin.name, entry]),
+	);
+	const configurationPlugins: IConfigurationPlugin[] =
+		activationReport.entries.map((activation) => {
+			const loaded = loadedByName.get(activation.id);
+			const contributed = configurationContributionById.get(
+				activation.id,
+			);
+			const configName =
+				loaded === undefined
+					? activation.id
+					: (configNameBySpecifier.get(loaded.specifier) ??
+						activation.id);
+			const configEntry = pluginConfigFor(fileConfig, configName);
+			const runtimeSchema =
+				loaded?.plugin.optionsSchema ?? contributed?.optionsSchema;
+			const optionsSchema =
+				runtimeSchema === undefined
+					? undefined
+					: serializeConfigurationSchema(runtimeSchema);
+			return {
+				id: activation.id,
+				origin: activation.origin,
+				active: activation.active,
+				source: activation.source,
+				...(configEntry.path === undefined
+					? {}
+					: { path: configEntry.path }),
+				...(configEntry.prefix === undefined
+					? {}
+					: { prefix: configEntry.prefix }),
+				options: contributed?.options ?? configEntry.options ?? {},
+				...(optionsSchema === undefined ? {} : { optionsSchema }),
+				schemaStatus:
+					optionsSchema === undefined ? 'unavailable' : 'available',
+				...(loaded?.plugin.configExample !== undefined
+					? { configExample: loaded.plugin.configExample.options }
+					: contributed?.configExample === undefined
+						? {}
+						: { configExample: contributed.configExample }),
+				capabilities: {
+					tools: loaded?.registrations.tools?.length ?? 0,
+					prompts: loaded?.registrations.prompts?.length ?? 0,
+					resources: loaded?.registrations.resources?.length ?? 0,
+					knowledge: loaded?.registrations.knowledge?.length ?? 0,
+					skills: loaded?.registrations.skills?.length ?? 0,
+				},
+			};
+		});
+	const configurationArtifacts: IConfigurationArtifact[] =
+		loadResult.loaded.flatMap((entry) => {
+			const activation = activationById.get(entry.plugin.name);
+			const owner = {
+				id: entry.plugin.name,
+				origin: activation?.origin ?? ('unknown' as const),
+			};
+			return [
+				...(entry.registrations.prompts ?? []).map((item) => ({
+					id: item.id,
+					kind: 'prompt' as const,
+					owner,
+				})),
+				...(entry.registrations.resources ?? []).map((item) => ({
+					id: item.id,
+					kind: 'resource' as const,
+					owner,
+				})),
+				...(entry.registrations.knowledge ?? []).map((item) => ({
+					id: item.id,
+					kind: 'knowledge' as const,
+					owner,
+				})),
+			];
+		});
 
 	const validationMatrix = fileConfig.validationMatrix ?? { scopes: {} };
 	// Skill manifest location is defined once in `skill-paths.ts`
@@ -510,6 +665,22 @@ export const assembleCliConfig = async (
 			bodyPath: entry.bodyPath,
 		}),
 	);
+	for (const skill of skillCatalog.entries) {
+		const ownerId = skill.appliesTo[0] ?? null;
+		configurationArtifacts.push({
+			id: skill.id,
+			kind: 'skill',
+			owner: {
+				id: ownerId,
+				origin:
+					ownerId === null
+						? 'unknown'
+						: ownerId.startsWith('@mcp-vertex/')
+							? 'bundled'
+							: 'user-local',
+			},
+		});
+	}
 	const proposalSummaries = await readProposalsIndex(
 		args.workspace,
 		cacheDir,
@@ -522,25 +693,63 @@ export const assembleCliConfig = async (
 	const rulesClause = hasRules
 		? ' ALWAYS write new or modified code already compliant with the active rules (rules_get_rules) — it is the default, no need to be told.'
 		: '';
-	const recommendedNextAction =
-		(hasProposals
-			? `Call ${corePrefix}_overview, then ${corePrefix}_proposals_auto_work to start working.`
-			: `Call ${corePrefix}_analyze_project to see what this project needs.`) +
-		rulesClause;
+	// f00109 S1: when the config file's docsDir points nowhere, sending the
+	// agent into auto_work would have it "work" an empty proposals layout —
+	// the exact silent failure this diagnostic exists to prevent. Route it
+	// to fixing the config first instead.
+	const recommendedNextAction = docsDirMissing
+		? `Config mismatch: docsDir "${docsDir}" does not exist in this workspace (see configIssues). Fix mcp-vertex.config.json or scaffold the layout (mcp-vertex init) BEFORE starting work; do not hand-create proposals or docs outside the server workflow.`
+		: (hasProposals
+				? `Call ${corePrefix}_overview, then ${corePrefix}_proposals_auto_work to start working.`
+				: `Call ${corePrefix}_analyze_project to see what this project needs.`) +
+			rulesClause;
 
 	// Core meta-tools. `overview` first so it is the obvious entry point.
 	// `let` so the (lazily called) snapshot closure can read the final list.
 	let coreTools: IToolRegistration[] = [];
 	let catalogToolEntries: readonly IToolSummary[] = [];
+	// f00067a S2 — project the config roster to lean summaries for the
+	// catalog/overview. `reachable` is a request-time projection of live
+	// availability; without the runner's healthcheck wired into assembly it
+	// stays the conservative `false` (the orchestrator's
+	// `healthcheck_providers` tool is the live source of truth).
+	const providerSummaries: ReadonlyArray<IProviderSummary> = (
+		fileConfig.providers ?? []
+	).map((entry) => ({
+		id: entry.id,
+		kind: entry.kind,
+		modelId: entry.modelId,
+		costTier: entry.costTier,
+		reachable: false,
+		strengths: [...entry.strengths],
+	}));
+	const configurationSnapshot = buildConfigurationCenterSnapshot({
+		configSchema: serializeConfigurationSchema(CONFIG_FILE_SCHEMA) ?? {
+			unavailable: true,
+		},
+		config: fileConfig as Readonly<Record<string, unknown>>,
+		plugins: configurationPlugins,
+		artifacts: configurationArtifacts,
+		unavailableArtifactKinds: ['agent'],
+	});
 	const catalogSources = {
 		tools: () => catalogToolEntries,
 		skills: () => skillSummaries,
 		proposals: () => proposalSummaries,
+		...(providerSummaries.length > 0
+			? { providers: () => providerSummaries }
+			: {}),
 	};
 	const buildSnapshot = (): IOverviewSnapshot => ({
 		server: { name: args.serverName, version: args.serverVersion },
 		namespacePrefix: corePrefix,
 		corePaths,
+		// f00109 S1: config problems (schema violations, dead docsDir/roots)
+		// belong in the agent's first orientation call. Omitted when clean
+		// so the healthy path pays zero bytes.
+		...(configDiagnostic.issues.length > 0
+			? { configIssues: configDiagnostic.issues }
+			: {}),
 		pluginDiagnostic: (() => {
 			const missingPlugins = effectivePlugins.filter(
 				(name) =>
@@ -560,6 +769,16 @@ export const assembleCliConfig = async (
 				.filter(
 					(entry): entry is [string, string] => entry !== undefined,
 				);
+			// Token economy: the diagnostic only earns its bytes when the
+			// requested plugin set diverged from what actually loaded. In the
+			// healthy case (nothing missing, no errors) it repeats the plugin
+			// name list three times (requested/loaded/configPlugins) on every
+			// cold-start `overview` — pure noise, since `plugins` already
+			// conveys the active set. Omit it when clean so the divergence, when
+			// it happens, is the ONLY reason this block appears.
+			if (missingPlugins.length === 0 && loadResult.errors.length === 0) {
+				return undefined;
+			}
 			return {
 				requested: effectivePlugins,
 				loaded: loadResult.loaded.map((entry) => entry.plugin.name),
@@ -583,6 +802,9 @@ export const assembleCliConfig = async (
 		tools: [
 			...coreTools.map((reg) => ({
 				name: `${corePrefix}_${reg.id}`,
+				// No plugin (core tool) → grouped under `core` in the compact
+				// overview; the stem is the unqualified id.
+				id: reg.id,
 				summary: reg.summary,
 				tags: reg.tags,
 				...(reg.effects ? { effects: reg.effects } : {}),
@@ -593,6 +815,10 @@ export const assembleCliConfig = async (
 			id: entry.id,
 			title: entry.title,
 		})),
+		...(providerSummaries.length > 0
+			? { providers: providerSummaries }
+			: {}),
+		activationReport,
 		recommendedNextAction,
 	});
 
@@ -617,6 +843,10 @@ export const assembleCliConfig = async (
 
 	coreTools = [
 		buildOverviewToolRegistration(corePrefix, buildSnapshot),
+		buildConfigurationCenterToolRegistration(
+			corePrefix,
+			() => configurationSnapshot,
+		),
 		buildAgentCatalogToolRegistration(corePrefix, {
 			sources: catalogSources,
 			server: {
@@ -662,20 +892,34 @@ export const assembleCliConfig = async (
 	// Core tools keep their bare id (single namespace); plugin tools are
 	// already qualified above so the uniqueness check is per-namespace.
 	const tools: IToolRegistration[] = [...coreTools, ...qualifiedPluginTools];
-	catalogToolEntries = tools.map((tool) => {
-		const name = tool.id.includes('_')
-			? tool.id
-			: `${corePrefix}_${tool.id}`;
-		return {
-			name,
-			plugin: namespaceFromToolName(name),
-			...(tool.summary !== undefined ? { summary: tool.summary } : {}),
-			...(tool.tags !== undefined ? { tags: [...tool.tags] } : {}),
-			...(tool.effects !== undefined
-				? { effects: [...tool.effects] }
+	// The discovery catalog reuses the SAME name+plugin the overview snapshot
+	// carries, rather than re-deriving them from the qualified id string. The
+	// old parse-the-name approach was doubly wrong: `id.includes('_')` treated
+	// every core tool with an underscore in its id (`agent_catalog`,
+	// `fs_read`, `get_validation_matrix`, …) as already-qualified and dropped
+	// the `mcp-vertex_` prefix — so the catalog advertised a NON-CALLABLE name
+	// — and `namespaceFromToolName` split on the FIRST `_`, reporting the host
+	// segment (`mcp-vertex`) as the plugin for every plugin tool. Carrying the
+	// values explicitly (core tools → the host prefix; plugin tools → their
+	// resolved `ns`) makes both correct by construction.
+	catalogToolEntries = [
+		...coreTools.map((reg) => ({
+			name: `${corePrefix}_${reg.id}`,
+			plugin: corePrefix,
+			...(reg.summary !== undefined ? { summary: reg.summary } : {}),
+			...(reg.tags !== undefined ? { tags: [...reg.tags] } : {}),
+			...(reg.effects !== undefined ? { effects: [...reg.effects] } : {}),
+		})),
+		...pluginToolEntries.map((entry) => ({
+			name: entry.name,
+			plugin: entry.plugin ?? corePrefix,
+			...(entry.summary !== undefined ? { summary: entry.summary } : {}),
+			...(entry.tags !== undefined ? { tags: [...entry.tags] } : {}),
+			...(entry.effects !== undefined
+				? { effects: [...entry.effects] }
 				: {}),
-		};
-	});
+		})),
+	];
 
 	// Surface knowledge as native MCP resources too (list/read/cache).
 	resources.push(...buildKnowledgeResourceRegistrations(knowledge));
@@ -752,6 +996,21 @@ export const assembleCliConfig = async (
 					},
 				}
 			: {}),
+		...(onToolCancels.length > 0
+			? {
+					onToolCancel: async (toolName, toolArgs, elapsedMs) => {
+						for (const handler of onToolCancels) {
+							try {
+								await handler(toolName, toolArgs, elapsedMs);
+							} catch (e) {
+								process.stderr.write(
+									`[mcp-vertex] onToolCancel error: ${e instanceof Error ? e.message : String(e)}\n`,
+								);
+							}
+						}
+					},
+				}
+			: {}),
 		...(onToolCalls.length > 0
 			? {
 					onToolCall: async (toolName, toolArgs, result, error) => {
@@ -815,6 +1074,7 @@ export const assembleCliConfig = async (
 		configPath,
 		cacheEvictionRegistry,
 		cacheEvictionBootReport,
+		agentCatalogTools: catalogToolEntries,
 	};
 };
 
@@ -1030,10 +1290,17 @@ export const runCli = async (
 		return;
 	}
 
-	const { config, loadResult } = await assembleCliConfig(args);
+	const { config, loadResult, configDiagnostic } =
+		await assembleCliConfig(args);
 	for (const error of loadResult.errors) {
 		// stderr only: stdout is the MCP stdio transport.
 		process.stderr.write(`[mcp-vertex] plugin error: ${error.message}\n`);
+	}
+	// f00109 S1: config issues (schema violations, dead docsDir/roots) are
+	// warnings, not boot failures — but they must be visible in the host's
+	// server log, not only behind an explicit `--check`.
+	for (const issue of configDiagnostic.issues) {
+		process.stderr.write(`[mcp-vertex] config warning: ${issue}\n`);
 	}
 	const assembled = await createMcpProject(config);
 	// `--verbose`: dump an assembly diagnostic to stderr before going live.

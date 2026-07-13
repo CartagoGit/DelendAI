@@ -37,7 +37,7 @@
 	"scripts": {
 		"test": "vitest run",
 		"typecheck": "tsc --noEmit",
-		"build": "bun ../../scripts/build.ts packages/client"
+		"build": "bun ../../tools/scripts/compile/build.script.ts packages/client"
 	},
 	"dependencies": {
 		"@mcp-vertex/core": "workspace:*",
@@ -46,7 +46,7 @@
 	"devDependencies": {
 		"@types/bun": "latest",
 		"typescript": "6.0.3",
-		"vitest": "4.1.9"
+		"vitest": "4.1.10"
 	},
 	"publishConfig": {
 		"access": "public"

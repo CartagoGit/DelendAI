@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { z } from 'zod';
 
 import { assembleCliConfig } from '@mcp-vertex/core/lib/cli/assemble';
 import { parseCliArgs } from '@mcp-vertex/core/lib/plugins/parse-cli-args';
@@ -9,6 +10,22 @@ const fakePlugin = {
 	version: '9.9.9',
 	describe: 'demo plugin',
 	register: () => ({
+		activation: [
+			{
+				id: 'ext.demo-child',
+				origin: 'external' as const,
+				source: 'config' as const,
+				toolCount: 0,
+				configuration: {
+					options: { enabled: true, command: 'demo-child' },
+					optionsSchema: z.object({
+						enabled: z.boolean().optional(),
+						command: z.string(),
+					}),
+					configExample: { enabled: false, command: 'demo-child' },
+				},
+			},
+		],
 		tools: [
 			{
 				id: 'do',
@@ -74,6 +91,116 @@ describe('core meta-tools', async () => {
 			'demo-guide',
 		);
 		expect(typeof snap.recommendedNextAction).toBe('string');
+		expect(snap.activationReport).toBeUndefined();
+	});
+
+	it('overview exposes activation origin, source and tool count only on request', async () => {
+		const { byId } = await assemble();
+		const snap = await callTool(byId('overview'), { activation: true });
+		expect(snap.activationReport).toEqual({
+			entries: [
+				{
+					id: 'demo',
+					origin: 'bundled',
+					active: true,
+					source: 'flag',
+					toolCount: 2,
+				},
+				{
+					id: 'ext.demo-child',
+					origin: 'external',
+					active: true,
+					source: 'config',
+					toolCount: 0,
+				},
+			],
+			counts: { bundled: 1, 'user-local': 0, external: 1 },
+			totalTools: 2,
+		});
+	});
+
+	it('configuration center preserves schema metadata from composed children', async () => {
+		const { byId } = await assemble();
+		const page = await callTool(byId('configuration_center'), {
+			section: 'plugins',
+			limit: 100,
+		});
+		const child = page.plugins.find(
+			(entry: { id: string }) => entry.id === 'ext.demo-child',
+		);
+		expect(child).toMatchObject({
+			origin: 'external',
+			schemaStatus: 'available',
+			options: { enabled: true, command: 'demo-child' },
+			configExample: { enabled: false, command: 'demo-child' },
+		});
+		expect(child.optionsSchema.properties).toMatchObject({
+			enabled: { type: 'boolean' },
+			command: { type: 'string' },
+		});
+	});
+
+	it('activation report reconciles preset and local-path config sources after loading', async () => {
+		const args = parseCliArgs(
+			['--preset=minimal', '--workspace=/ws'],
+			'/cwd',
+		);
+		const { config } = await assembleCliConfig(args, {
+			import: async (specifier) => ({
+				default: {
+					name: specifier.includes('local.js')
+						? 'my-local'
+						: (specifier.split('/').at(-1) ?? specifier),
+					optionsSchema: z.object({
+						mode: z.enum(['safe', 'fast']).optional(),
+					}),
+					register: () => ({ tools: [] }),
+				},
+			}),
+			readFile: async (absolutePath) =>
+				absolutePath.endsWith('mcp-vertex.config.json')
+					? JSON.stringify({
+							plugins: {
+								'my-local': { path: './local.js' },
+								rules: { enabled: false, origin: 'bundled' },
+							},
+						})
+					: undefined,
+		});
+		const overview = config.extraTools!.find(
+			(tool) => tool.id === 'overview',
+		)!;
+		const snap = await callTool(overview, { activation: true });
+
+		expect(
+			snap.activationReport.entries.map(
+				(entry: {
+					id: string;
+					origin: string;
+					source: string;
+					active: boolean;
+				}) =>
+					`${entry.id}:${entry.origin}:${entry.source}:${entry.active}`,
+			),
+		).toEqual([
+			'git:bundled:preset:true',
+			'rules:bundled:config:false',
+			'search:bundled:preset:true',
+			'my-local:user-local:config:true',
+		]);
+
+		const center = config.extraTools!.find(
+			(tool) => tool.id === 'configuration_center',
+		)!;
+		const plugins = await callTool(center, {
+			section: 'plugins',
+			limit: 100,
+		});
+		expect(
+			plugins.plugins.find(
+				(entry: { id: string }) => entry.id === 'my-local',
+			),
+		).toMatchObject({ origin: 'user-local', schemaStatus: 'available' });
 	});
 
 	it('knowledge lists ids and fetches a body by id', async () => {
@@ -94,12 +221,35 @@ describe('core meta-tools', async () => {
 		expect(matrix.scopes.full[0].command).toBe('bun test');
 	});
 
-	it('overview compact:true returns only names (low-token)', async () => {
+	it('overview compact:true groups tool stems by plugin (low-token)', async () => {
 		const { byId } = await assemble();
 		const compact = await callTool(byId('overview'), { compact: true });
-		expect(Array.isArray(compact.tools)).toBe(true);
-		expect(typeof compact.tools[0]).toBe('string'); // names, not objects
+		// Grouped record { <plugin>: [stem, …], core: [stem, …] }: the shared
+		// `<prefix>_<plugin>_` is stated once per group, not per tool.
+		expect(Array.isArray(compact.tools)).toBe(false);
+		expect(typeof compact.tools).toBe('object');
+		// core tools (e.g. overview) are grouped under `core` as bare stems.
+		expect(compact.tools.core).toContain('overview');
+		// the demo plugin's tools are stems (no `mcp-vertex_demo_` prefix).
+		expect(Array.isArray(compact.tools.demo)).toBe(true);
+		expect(
+			compact.tools.demo.every((s: string) => !s.includes('mcp-vertex_')),
+		).toBe(true);
 		expect(compact.plugins).toContain('demo');
+		expect(compact.activationReport).toBeUndefined();
+	});
+
+	it('compact overview can opt into the same activation report', async () => {
+		const { byId } = await assemble();
+		const compact = await callTool(byId('overview'), {
+			compact: true,
+			activation: true,
+		});
+		expect(compact.activationReport.entries[0]).toMatchObject({
+			id: 'demo',
+			source: 'flag',
+			toolCount: 2,
+		});
 	});
 
 	it('overview full bounds long tool summaries', async () => {

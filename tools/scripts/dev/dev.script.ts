@@ -29,6 +29,120 @@ import { spawn, type Subprocess } from 'bun';
 import { existsSync } from 'node:fs';
 import { dirname, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { scssPlugin } from '../compile/scss-plugin';
+
+// ---------------------------------------------------------------------------
+// Port reclaim — `Bun.serve({ port })` and `astro dev` both fail with
+// EADDRINUSE when a stale instance (a previous run, an aborted
+// `nohup`, a `bun run dev:vscode` left running in another terminal)
+// is still bound. Before claiming the port we read `/proc/net/tcp`
+// via `ss` and `SIGTERM` any PID we find listening on it. If the PID
+// doesn't exit within `PORT_RECLAIM_TIMEOUT_MS`, escalate to
+// `SIGKILL`. The whole dance is best-effort: if `ss` is missing or
+// returns nothing, the bind just proceeds and either succeeds (port
+// was free) or fails with EADDRINUSE (the user sees the usual error).
+//
+// We deliberately do NOT touch MCP host-server processes — those
+// listen on stdio (not TCP), so they cannot collide with dev ports.
+// And we don't kill arbitrary `bun` procs (only the specific PIDs
+// reported by `ss` as bound to our port) so a developer's unrelated
+// `bun run foo` survives.
+// ---------------------------------------------------------------------------
+
+const PORT_RECLAIM_TIMEOUT_MS = 1500;
+
+const readPortPids = async (port: number): Promise<readonly number[]> => {
+	// `ss -tlnp` outputs lines like
+	//   LISTEN 0  511  0.0.0.0:5200  0.0.0.0:*  users:(("bun",pid=148710,fd=19))
+	// We grep by `:PORT ` (note the trailing space — `5000` should not
+	// match `:50000`) and pull every `pid=N` out of the line. If
+	// there's no match (port already free) we return [].
+	const proc = spawn({
+		cmd: [
+			'bash',
+			'-c',
+			`ss -tlnp 2>/dev/null | grep -F ':${port} ' || true`,
+		],
+		stdin: 'ignore',
+		stdout: 'pipe',
+		stderr: 'ignore',
+	});
+	const text = proc.stdout
+		? await new Response(proc.stdout as ReadableStream<Uint8Array>).text()
+		: '';
+	const pids = new Set<number>();
+	for (const match of text.matchAll(/pid=(\d+)/g)) {
+		const pid = Number(match[1]);
+		if (Number.isFinite(pid) && pid > 0) pids.add(pid);
+	}
+	return [...pids];
+};
+
+const isAlive = (pid: number): boolean => {
+	try {
+		process.kill(pid, 0);
+		return true;
+	} catch {
+		return false;
+	}
+};
+
+const waitForExit = async (
+	pid: number,
+	timeoutMs: number,
+): Promise<boolean> => {
+	const deadline = Date.now() + timeoutMs;
+	while (Date.now() < deadline) {
+		if (!isAlive(pid)) return true;
+		await new Promise((r) => setTimeout(r, 50));
+	}
+	return !isAlive(pid);
+};
+
+/**
+ * Kill any process currently bound to `port`. Safe to call when the
+ * port is already free (no-op). Logs the killed PID so a developer
+ * who runs `bun run dev` from a fresh terminal can see that the
+ * previous instance was cleaned up. Used by both `Bun.serve` (the
+ * dev-entry path) and `spawn` (the Astro path).
+ */
+const freePort = async (port: number, label: string): Promise<void> => {
+	const pids = await readPortPids(port);
+	if (pids.length === 0) return;
+	console.log(
+		`[dev:${label}] port ${port} busy (pids: ${pids.join(', ')}) — reclaiming`,
+	);
+	for (const pid of pids) {
+		try {
+			process.kill(pid, 'SIGTERM');
+		} catch {
+			// already gone between ss and kill — fine
+		}
+	}
+	// Give them a moment, then escalate any survivors.
+	await new Promise((r) => setTimeout(r, 100));
+	const survivors = pids.filter(isAlive);
+	for (const pid of survivors) {
+		try {
+			process.kill(pid, 'SIGKILL');
+			console.log(
+				`[dev:${label}] SIGKILL pid=${pid} (did not exit on SIGTERM)`,
+			);
+		} catch {
+			// gone now
+		}
+	}
+	const allGone = await Promise.all(
+		pids.map((pid) => waitForExit(pid, PORT_RECLAIM_TIMEOUT_MS)),
+	);
+	if (allGone.every(Boolean)) {
+		console.log(`[dev:${label}] port ${port} reclaimed`);
+	} else {
+		console.warn(
+			`[dev:${label}] port ${port} still busy after SIGKILL — bind will likely fail`,
+		);
+	}
+};
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 // tools/scripts/dev/ → repo root
@@ -98,12 +212,39 @@ const TARGETS: readonly ITarget[] = [
 // symlinks + tsconfig paths (both understood by Bun's resolver).
 // ---------------------------------------------------------------------------
 
-const buildEntry = async (entryAbs: string): Promise<Response> => {
+/**
+ * In-memory bundle + chunk cache. The dev server's first build
+ * resolves all dynamic imports (the lazy pages, the SCSS
+ * composition, etc.) into per-chunk outputs and indexes them
+ * by basename. The route handler then serves `/__entry.js`
+ * and `/<chunk>.js` from this map.
+ *
+ * Why a Map (and not a single Response that re-bundles per
+ * request)?
+ *   - A fresh Bun.build per request would defeat the
+ *     purpose of `splitting: true` — the entry's lazy
+ *     `import('./chunk-…')` only fetches the chunk from
+ *     the browser, but if the build is re-run on every
+ *     request the entry is a megabyte again because the
+ *     dev server has to "re-discover" the chunk graph.
+ *   - With `write: false` we get the built outputs as Blob
+ *     in memory, no temp dir to clean up. Caching the
+ *     outputs lets the dev server serve them with a
+ *     single Map lookup.
+ *   - The first cold load pays the build cost (~150ms).
+ *     Subsequent reloads during the same dev session
+ *     hit the cache. A future slice adds a "force
+ *     rebuild on file change" watch — for now the cache
+ *     is invalidated only on server restart.
+ */
+type BundleMap = ReadonlyMap<string, string>;
+let bundleCache: BundleMap | null = null;
+
+const buildBundle = async (entryAbs: string): Promise<BundleMap> => {
 	if (!existsSync(entryAbs)) {
-		return new Response(
+		throw new Error(
 			`Dev entry not found: ${entryAbs}\n` +
 				`Create it (see packages/ui-extension/src/dev/entry.ts for a template).`,
-			{ status: 500 },
 		);
 	}
 	const result = await Bun.build({
@@ -112,18 +253,128 @@ const buildEntry = async (entryAbs: string): Promise<Response> => {
 		format: 'esm',
 		minify: false,
 		sourcemap: 'inline',
+		plugins: [scssPlugin],
 		// Don't try to bundle Node-only or VS Code APIs in the browser bundle.
 		external: ['node:*', 'vscode'],
+		// Code-split the dynamic `import('./<page>')` calls in
+		// pages/registry.ts so each page becomes its own
+		// chunk. Without this Bun.build inlines the page
+		// modules into the entry, defeating the lazy load.
+		splitting: true,
+		// `write: false` keeps the bundle in memory — we
+		// serve the chunks via a Map lookup in the route
+		// handler, no tmp dir to clean up.
+		write: false,
 	});
 	if (!result.success) {
 		const messages = result.logs
 			.map((l) => `[${l.level}] ${l.message}`)
 			.join('\n');
-		return new Response(`Build failed:\n${messages}`, { status: 500 });
+		throw new Error(`Build failed:\n${messages}`);
 	}
-	const out = result.outputs[0];
-	if (!out) return new Response('Build produced no output', { status: 500 });
-	return new Response(await out.text(), {
+	const out = new Map<string, string>();
+	for (const output of result.outputs) {
+		// `output.path` is something like './entry.js' or
+		// './chunk-7d4f.js' (or a CSS asset path). We index
+		// by basename so the route handler can match
+		// `/<basename>` directly.
+		const basename = output.path.split('/').pop() ?? output.path;
+		let content = await output.text();
+		// Bun.build minifier emits side-effect imports as
+		// `import"./chunk-X.js";` (no space) which is a
+		// parse error in strict-mode browsers. Normalise to
+		// `import "..."` with the canonical space. Only the
+		// entry's top-level imports are at risk — chunk
+		// imports use `import("./…")` which is unaffected.
+		if (basename === 'entry.js') {
+			content = content.replace(/^import"([^"]+)";/gm, 'import "$1";');
+		}
+		// Bun.build with `splitting: true` sometimes emits
+		// **multiple** `export { foo, bar, ... };` blocks in
+		// the same chunk when several source modules re-export
+		// overlapping symbol sets (e.g. the `webview/index.ts`
+		// barrel AND `csp.ts` both live in the same chunk
+		// because of shared downstream consumers). The browser
+		// refuses to parse the result: `SyntaxError: Duplicate
+		// export of '<symbol>'`. The fix is to consolidate all
+		// top-level `export { … };` blocks into ONE block whose
+		// symbol set is the union of the originals. Identity,
+		// not union, is what we want: a symbol that appears in
+		// two blocks is the same declaration and only needs one
+		// entry in the merged block.
+		content = consolidateExports(content);
+		out.set(basename, content);
+	}
+	return out;
+};
+
+/**
+ * Merge every top-level `export { … };` block in `content` into
+ * a single block whose symbol list is the de-duplicated union
+ * of all originals.
+ *
+ * Only top-level export blocks are touched; named re-exports
+ * (`export { foo } from './bar.js'`) and any other export forms
+ * are left alone. The function is a dev-time transform — its
+ * only job is to scrub Bun.build output so browsers will accept
+ * the chunk.
+ */
+const consolidateExports = (content: string): string => {
+	const exportBlock = /^export\s*\{([\s\S]*?)\};/gm;
+	const matches = [...content.matchAll(exportBlock)];
+	if (matches.length === 0) return content;
+	const seen = new Set<string>();
+	const merged: string[] = [];
+	for (const m of matches) {
+		const symbols = m[1]
+			.split(',')
+			.map((s) => s.trim())
+			.filter((s) => s !== '');
+		for (const sym of symbols) {
+			if (!seen.has(sym)) {
+				seen.add(sym);
+				merged.push(sym);
+			}
+		}
+	}
+	if (merged.length === 0) return content;
+	const block = `export {\n  ${merged.join(',\n  ')},\n};`;
+	return `${content.replace(exportBlock, '').trimEnd()}\n\n${block}\n`;
+};
+
+const buildEntry = async (entryAbs: string): Promise<Response> => {
+	try {
+		if (!bundleCache) bundleCache = await buildBundle(entryAbs);
+	} catch (err) {
+		const message = err instanceof Error ? err.message : String(err);
+		return new Response(message, { status: 500 });
+	}
+	const entry = bundleCache.get('entry.js');
+	if (!entry) {
+		return new Response('Build produced no entry', { status: 500 });
+	}
+	return new Response(entry, {
+		headers: { 'Content-Type': 'application/javascript; charset=utf-8' },
+	});
+};
+
+/**
+ * Serve a chunk by basename. The dev server's route handler
+ * calls this for any `/<chunk>.js` request that the entry
+ * `import()`s. The browser's relative-path resolution means
+ * an entry at `/__entry.js` with `import('./chunk-X.js')`
+ * will fetch `/chunk-X.js`, which is exactly the URL this
+ * helper handles.
+ */
+const buildChunk = async (basename: string): Promise<Response> => {
+	if (!bundleCache) {
+		return new Response('Bundle not built yet', { status: 503 });
+	}
+	const chunk = bundleCache.get(basename);
+	if (!chunk) {
+		return new Response('Chunk not found', { status: 404 });
+	}
+	return new Response(chunk, {
 		headers: { 'Content-Type': 'application/javascript; charset=utf-8' },
 	});
 };
@@ -136,36 +387,215 @@ const renderDevHtml = (target: ITarget, entryRel: string): string => {
 	const layout = target.sidebar
 		? `<aside id="sidebar" aria-label="Webviews"></aside><main id="root">Cargando renderers…</main>`
 		: `<main id="root">Cargando renderers…</main>`;
-	const gridCss = target.sidebar
-		? `#app { display: grid; grid-template-columns: 220px 1fr; gap: 1.5rem; align-items: start; }`
-		: '';
+	// The shell mirrors the real VS Code webview surface: full-bleed,
+	// no max-width, sidebar on the left at ≥800px that scrolls to a
+	// top tab strip below that. Theme follows `--vscode-*` tokens
+	// when the page is opened inside an embedded webview (rare for
+	// the dev entry, but cheap to support) and falls back to a
+	// GitHub-dark palette for the standalone browser preview.
+	const shellCss = `
+		:root {
+			color-scheme: light dark;
+			/* Bridge the marketing site's theme vars (--bg/--fg/--card/--line/--
+accent, declared on :root[data-theme=...]) into the dev preview's --mcpv-* to
+kens, so the theme picker actually repaints the chrome. The non-theme
+fallbacks below keep the standalone-vscode preview legible when no
+data-theme attr is set (the picker default 'system' removes it). */
+			--mcpv-bg: var(--bg, var(--vscode-editor-background, #1e1e1e));
+			--mcpv-bg-soft: var(--bg-soft, var(--vscode-sideBar-background, #252526));
+			--mcpv-bg-card: var(--card, var(--vscode-editorWidget-background, #252526));
+			--mcpv-fg: var(--fg, var(--vscode-foreground, #d4d4d4));
+			--mcpv-fg-muted: var(--muted, var(--vscode-descriptionForeground, #858585));
+			--mcpv-border: var(--line, var(--vscode-widget-border, #3c3c3c));
+			--mcpv-focus: var(--vscode-focusBorder, #007fd4);
+			--mcpv-link: var(--accent, var(--vscode-textLink-foreground, #3794ff));
+			--mcpv-font-prose: var(--vscode-font-family, system-ui, -apple-system, "Segoe WPC", "Segoe UI", sans-serif);
+			--mcpv-font-mono: var(--vscode-editor-font-family, ui-monospace, SFMono-Regular, Menlo, Consolas, monospace);
+		}
+		* { box-sizing: border-box; }
+		html, body {
+			margin: 0;
+			padding: 0;
+			height: 100%;
+			background: var(--mcpv-bg);
+			color: var(--mcpv-fg);
+			font-family: var(--mcpv-font-prose);
+			font-size: 13px;
+			line-height: 1.5;
+			-webkit-font-smoothing: antialiased;
+		}
+		body { display: flex; flex-direction: column; min-height: 0; overflow: hidden; }
+		code, pre {
+			font-family: var(--mcpv-font-mono);
+			font-variant-numeric: tabular-nums;
+		}
+		.dev-header {
+			display: flex;
+			align-items: center;
+			flex-wrap: wrap;
+			gap: 8px 12px;
+			padding: 10px 16px;
+			background: var(--mcpv-bg-soft);
+			border-bottom: 1px solid var(--mcpv-border);
+		}
+		.dev-header__title {
+			font-weight: 600;
+			font-size: 13px;
+			letter-spacing: 0.01em;
+			margin: 0;
+			flex: 1 1 auto;
+			min-width: 0;
+			white-space: nowrap;
+			overflow: hidden;
+			text-overflow: ellipsis;
+		}
+		.dev-header__meta {
+			color: var(--mcpv-fg-muted);
+			font-size: 11px;
+			flex: 0 0 auto;
+		}
+		.dev-header__blurb {
+			flex: 1 1 100%;
+			color: var(--mcpv-fg-muted);
+			font-size: 12px;
+			margin: 0;
+			padding-top: 4px;
+			border-top: 1px solid var(--mcpv-border);
+			width: 100%;
+		}
+		.dev-header__blurb:empty { display: none; }
+		#app {
+			flex: 1 1 auto;
+			display: flex;
+			flex-direction: column;
+			min-height: 0;
+		}
+		${
+			target.sidebar
+				? `
+		#app { flex-direction: row; }
+		#sidebar {
+			width: 220px;
+			min-width: 220px;
+			max-width: 220px;
+			flex-shrink: 0;
+			background: var(--mcpv-bg-soft);
+			border-right: 1px solid var(--mcpv-border);
+			padding: 12px 8px;
+			display: flex;
+			flex-direction: column;
+			gap: 2px;
+			overflow-y: auto;
+			max-height: calc(100vh - 60px);
+		}
+		#sidebar button {
+			display: block;
+			width: 100%;
+			text-align: left;
+			padding: 6px 10px;
+			border-radius: 3px;
+			border: 1px solid transparent;
+			background: transparent;
+			color: var(--mcpv-fg-muted);
+			cursor: pointer;
+			font: inherit;
+			line-height: 1.4;
+			transition: background 60ms ease, color 60ms ease;
+		}
+		#sidebar button:hover {
+			background: var(--mcpv-bg-card);
+			color: var(--mcpv-fg);
+		}
+		#sidebar button[data-active='true'] {
+			background: var(--mcpv-bg-card);
+			color: var(--mcpv-fg);
+			border-color: var(--mcpv-border);
+			font-weight: 500;
+		}
+		#sidebar button:focus-visible {
+			outline: 1px solid var(--mcpv-focus);
+			outline-offset: -1px;
+		}
+		#root {
+			flex: 1 1 auto;
+			min-width: 0;
+			min-height: 0;
+			overflow: auto;
+		}
+		@media (max-width: 800px) {
+			#app { flex-direction: column; }
+			#sidebar {
+				width: 100%;
+				min-width: 0;
+				max-width: none;
+				max-height: none;
+				flex-direction: row;
+				flex-wrap: wrap;
+				border-right: 0;
+				border-bottom: 1px solid var(--mcpv-border);
+				padding: 6px;
+			}
+			#sidebar button {
+				width: auto;
+				flex: 0 0 auto;
+				padding: 4px 10px;
+				border-radius: 3px;
+			}
+		}
+		`
+				: `
+		#root { padding: 0; min-height: 0; }
+		`
+		}
+		#root > section, #root > div, #root > article {
+			margin-bottom: 16px;
+		}
+		pre {
+			background: var(--mcpv-bg-soft);
+			padding: 8px 10px;
+			border-radius: 3px;
+			border: 1px solid var(--mcpv-border);
+			overflow: auto;
+			font-size: 12px;
+		}
+		#error {
+			color: var(--mcpv-error, #f48771);
+			border-color: var(--mcpv-error, #f48771);
+		}
+		a { color: var(--mcpv-link); }
+		a:focus-visible { outline: 1px solid var(--mcpv-focus); outline-offset: 1px; }
+
+		/* Cross-fade between page renders. The orchestrator
+		 * toggles data-fade='out' to fade the current page out,
+		 * mounts the new page, then sets data-fade='in' to
+		 * fade it back in. prefers-reduced-motion users get
+		 * an instant swap (no opacity animation).
+		 */
+		#root { transition: opacity 140ms ease-out; opacity: 1; }
+		#root[data-fade='out'] { opacity: 0; }
+		@media (prefers-reduced-motion: reduce) {
+			#root { transition: none; }
+		}
+
+		@media (max-width: 600px) {
+			.dev-header { padding: 8px 10px; }
+			.dev-header__title { font-size: 12px; }
+			.dev-header__meta { font-size: 10px; }
+		}
+	`;
 	return `<!doctype html>
 <html lang="en">
 <head>
 	<meta charset="UTF-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-	<title>${target.title ?? `mcp-vertex ${target.name}`}</title>
-	<style>
-		:root { color-scheme: light dark; }
-		body { font: 14px/1.5 system-ui, -apple-system, sans-serif; max-width: 1100px; margin: 2rem auto; padding: 0 1rem; }
-		header { border-bottom: 1px solid #8884; padding-bottom: 1rem; margin-bottom: 1.5rem; }
-		h1 { margin: 0 0 .25rem; font-size: 1.4rem; }
-		.meta { color: #888; font-size: .9rem; }
-		${gridCss}
-		#sidebar { display: flex; flex-direction: column; gap: .5rem; position: sticky; top: 1rem; }
-		#sidebar button { padding: .5rem .75rem; border: 1px solid #8884; border-radius: 6px; background: transparent; color: inherit; cursor: pointer; text-align: left; font: inherit; }
-		#sidebar button[data-active="true"] { background: #8882; border-color: #8888; }
-		#root { min-width: 0; }
-		#root > section, #root > div, #root > article { margin-bottom: 1.5rem; padding: 1rem; border: 1px solid #8884; border-radius: 8px; }
-		pre { background: #8882; padding: .5rem; border-radius: 4px; overflow: auto; }
-		#error { color: #c33; border-color: #c334; }
-	</style>
+	<title>${escapeHtml(target.title ?? `mcp-vertex ${target.name}`)}</title>
+	<style>${shellCss}</style>
 </head>
 <body>
-	<header>
-		<h1>${target.title ?? `mcp-vertex ${target.name}`}</h1>
-		<div class="meta">${target.url} · dev entry: <code>${entryRel}</code></div>
-		<p>${target.blurb ?? ''}</p>
+	<header class="dev-header">
+		<h1 class="dev-header__title">${escapeHtml(target.title ?? `mcp-vertex ${target.name}`)}</h1>
+		<div class="dev-header__meta">${escapeHtml(target.url)} · <code>${escapeHtml(entryRel)}</code></div>
+		<p class="dev-header__blurb">${target.blurb ?? ''}</p>
 	</header>
 	<div id="app">${layout}</div>
 	<script type="module" src="/__entry.js"></script>
@@ -174,16 +604,128 @@ const renderDevHtml = (target: ITarget, entryRel: string): string => {
 `;
 };
 
+const escapeHtml = (s: string): string =>
+	s
+		.replaceAll('&', '&amp;')
+		.replaceAll('<', '&lt;')
+		.replaceAll('>', '&gt;')
+		.replaceAll('"', '&quot;');
+
+// ---------------------------------------------------------------------------
+// /api/* routes — workspace-aware helpers (setup detection,
+// auto-install, real-data fetch from the MCP server).
+//
+// Why server-side? The browser bundle cannot import `node:fs` or
+// `cross-spawn` (we proved this is fragile in earlier slices). All
+// filesystem reads, writes, and MCP stdio spawns happen here, in Bun
+// (Node-like), and the browser hits HTTP. This keeps the browser
+// bundle pure and lets the dev preview show REAL data from the
+// workspace it's pointed at — not just the shared mock.
+// ---------------------------------------------------------------------------
+
+import { detectSetupStatus, type ISetupStatus } from './api/setup-status';
+import { runSetupInstall } from './api/setup-install';
+import { fetchRealDashboard, type IApiError } from './api/real-data';
+import {
+	fetchConfigurationCenterData,
+	isConfigurationCenterSaveRequest,
+	saveConfigurationCenterData,
+} from './api/configuration-center-data';
+
+const jsonResponse = (body: unknown, status = 200): Response =>
+	new Response(JSON.stringify(body, null, 2), {
+		status,
+		headers: { 'Content-Type': 'application/json; charset=utf-8' },
+	});
+
+const handleApi = async (
+	defaultCwd: string,
+	req: Request,
+	url: URL,
+): Promise<Response> => {
+	// Allow `?cwd=/abs/path` so a developer can preview how the
+	// extension would behave in any project on disk. The default cwd
+	// is whatever directory the developer launched `bun run dev:***`
+	// from (`process.cwd()` of the dev server), NOT the target's own
+	// root — when you fire up the dev server from `/path/to/your-app`
+	// the wizard should look at `/path/to/your-app/.vscode/`, not at
+	// `extensions/vscode/.vscode/` (which is where the extension
+	// package itself lives). The caller passes a `defaultCwd` (the
+	// repo root, where the dev server was launched) so it works the
+	// same way in CI and locally.
+	const cwd = resolveCwd(defaultCwd, url);
+	if ('error' in cwd)
+		return jsonResponse({ ok: false, message: cwd.error }, 400);
+
+	if (url.pathname === '/api/setup/status') {
+		const status: ISetupStatus = detectSetupStatus(cwd.path);
+		return jsonResponse(status);
+	}
+	if (url.pathname === '/api/setup/install' && req.method === 'POST') {
+		const result = runSetupInstall(cwd.path);
+		return jsonResponse(result);
+	}
+	if (url.pathname === '/api/dashboard') {
+		const result = await fetchRealDashboard(cwd.path);
+		if ('ok' in result && result.ok === false) {
+			return jsonResponse(result as IApiError, 502);
+		}
+		return jsonResponse(result);
+	}
+	if (url.pathname === '/api/configuration-center' && req.method === 'GET') {
+		try {
+			return jsonResponse(await fetchConfigurationCenterData(cwd.path));
+		} catch (error) {
+			return jsonResponse(
+				{
+					ok: false,
+					message:
+						error instanceof Error ? error.message : String(error),
+				},
+				502,
+			);
+		}
+	}
+	if (url.pathname === '/api/configuration-center' && req.method === 'POST') {
+		const body = await req.json().catch(() => undefined);
+		if (!isConfigurationCenterSaveRequest(body)) {
+			return jsonResponse(
+				{ ok: false, message: 'Invalid configuration edit request.' },
+				400,
+			);
+		}
+		return jsonResponse(await saveConfigurationCenterData(cwd.path, body));
+	}
+	return new Response('Not found', { status: 404 });
+};
+
+const resolveCwd = (
+	fallback: string,
+	url: URL,
+): { path: string } | { error: string } => {
+	const raw = url.searchParams.get('cwd');
+	if (!raw) return { path: fallback };
+	if (!raw.startsWith('/')) return { error: 'cwd must be absolute' };
+	if (raw.includes('..') || raw.includes('\0'))
+		return { error: 'cwd contains illegal characters' };
+	if (!existsSync(raw)) return { error: `cwd does not exist: ${raw}` };
+	return { path: raw };
+};
+
 // ---------------------------------------------------------------------------
 // Per-target dev server
 // ---------------------------------------------------------------------------
 
-const startDevEntry = (target: ITarget): void => {
+const startDevEntry = async (target: ITarget): Promise<void> => {
 	if (!target.entry) {
 		throw new Error(`dev-entry target missing entry: ${target.name}`);
 	}
 	const entryAbs = join(target.root, target.entry);
 	const entryRel = relative(target.root, entryAbs);
+
+	// Reclaim the port BEFORE Bun.serve binds it, otherwise we'd race
+	// the kernel and get EADDRINUSE if an old run is still listening.
+	await freePort(target.port, target.name);
 
 	const server = Bun.serve({
 		port: target.port,
@@ -198,6 +740,23 @@ const startDevEntry = (target: ITarget): void => {
 			}
 			if (url.pathname === '/__entry.js') {
 				return buildEntry(entryAbs);
+			}
+			// Code-split chunks emitted by Bun.build with
+			// `splitting: true` and `write: false`. The entry's
+			// `import('./chunk-X.js')` resolves relative to
+			// `/__entry.js`, so a request for `/<basename>.js`
+			// is a chunk lookup. The basename is matched
+			// against the cached bundle so we never serve
+			// arbitrary workspace files.
+			if (
+				url.pathname.startsWith('/chunk-') &&
+				url.pathname.endsWith('.js')
+			) {
+				const basename = url.pathname.slice(1);
+				return buildChunk(basename);
+			}
+			if (url.pathname.startsWith('/api/')) {
+				return handleApi(process.cwd(), req, url);
 			}
 			// Co-located assets (CSS, JSON, etc.) the entry may import via
 			// a relative path. Anything else is 404.
@@ -220,7 +779,11 @@ const startDevEntry = (target: ITarget): void => {
 	process.once('exit', () => server.stop(true));
 };
 
-const startAstro = (target: ITarget): Subprocess => {
+const startAstro = async (target: ITarget): Promise<Subprocess> => {
+	// Astro's dev server (`bun run dev --host`) does NOT crash with a
+	// nice EADDRINUSE message — it hangs trying to bind. Reclaim the
+	// port first so the developer never sees that hang.
+	await freePort(target.port, target.name);
 	const child = spawn({
 		cmd: ['bun', 'run', 'dev', '--', '--host'],
 		cwd: target.root,
@@ -260,19 +823,31 @@ const main = (selected: ReadonlySet<TargetName>): void => {
 	};
 	process.on('SIGINT', () => stop(130));
 	process.on('SIGTERM', () => stop(143));
-	for (const target of targets) {
-		if (target.kind === 'dev-entry') startDevEntry(target);
-		else children.push(startAstro(target));
-	}
-	console.log(
-		`[dev] up: ${targets.map((t) => `${t.name}=${t.url}`).join('  ')}`,
-	);
-	const astroChild = children[0];
-	if (astroChild) {
-		astroChild.exited.then((code) => stop(code ?? 0));
-	} else {
-		process.stdin.resume();
-	}
+	// `startDevEntry` / `startAstro` are both async (freePort is
+	// async). Start them in parallel; collect Astro children as they
+	// resolve so `stop()` has something to SIGKILL on shutdown. Dev-
+	// entry paths run in-process (Bun.serve) and stay alive until
+	// SIGINT.
+	void Promise.all(
+		targets.map(async (target) => {
+			if (target.kind === 'dev-entry') {
+				await startDevEntry(target);
+				return;
+			}
+			const child = await startAstro(target);
+			children.push(child);
+		}),
+	).then(() => {
+		console.log(
+			`[dev] up: ${targets.map((t) => `${t.name}=${t.url}`).join('  ')}`,
+		);
+		const astroChild = children[0];
+		if (astroChild) {
+			astroChild.exited.then((code) => stop(code ?? 0));
+		} else {
+			process.stdin.resume();
+		}
+	});
 };
 
 const argToTarget = (raw: string): TargetName | null => {

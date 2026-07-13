@@ -15,6 +15,10 @@
 import { useTranslations, type Lang } from '#I18N/ui';
 import capabilities from '#MANIFESTS/capabilities.json';
 import { PLUGIN_CATALOG, PLUGIN_SLUGS } from '#DATA/plugin-catalog';
+import {
+	pluginOriginCopyFor,
+	pluginOriginForCatalogSlug,
+} from '#DATA/plugin-origins';
 import PluginDisclosure from '#COMPONENTS/PluginDisclosure.astro';
 
 interface Props {
@@ -24,6 +28,7 @@ interface Props {
 }
 const { lang } = Astro.props;
 const t = useTranslations(lang);
+const originCopy = pluginOriginCopyFor(lang);
 
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 const packages = capabilities.packages as Array<{
@@ -43,6 +48,17 @@ const pluginHref = (slug: string) =>
 <section id="plugins" class="section">
 	<div class="container">
 		<p class="lead">{t.plugins.lead}</p>
+		<p class="plugin-origin-legend__intro">{originCopy.intro}</p>
+		<ul class="plugin-origin-legend">
+			{
+				(['bundled', 'user-local', 'external'] as const).map((origin) => (
+					<li class={`plugin-origin-legend__item plugin-origin-legend__item--${origin}`}>
+						<strong>{originCopy[origin].label}</strong>
+						<span>{originCopy[origin].description}</span>
+					</li>
+				))
+			}
+		</ul>
 		<div class="plugins-grid">
 			{
 				PLUGIN_SLUGS.map((slug) => {
@@ -61,6 +77,13 @@ const pluginHref = (slug: string) =>
 							name={`@mcp-vertex/${entry.slug}`}
 							version={versionFor(slug)}
 							href={pluginHref(slug)}
+							originLabel={
+								originCopy[pluginOriginForCatalogSlug(slug) ?? 'bundled'].label
+							}
+							labels={{
+								tools: t.pluginpage.tools,
+								install: t.pluginpage.install,
+							}}
 							requires={requires}
 						/>
 					);

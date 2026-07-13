@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import {
 	metricsToPoints,
+	renderMetricsBody,
 	renderMetricsHtml,
 	renderMetricsSparkline,
 } from '../views/metrics-sparkline';
@@ -46,7 +47,7 @@ describe('metrics sparkline', async () => {
 				{ label: 'b', value: 2 },
 			]),
 		).toBe(
-			'<svg viewBox="0 0 240 48" role="img" aria-label="a:0 b:2"><polyline fill="none" stroke="currentColor" stroke-width="2" points="0,48 240,0" /></svg>',
+			'<svg class="metrics__sparkline" viewBox="0 0 480 96" role="img" aria-label="a:0 b:2"><polyline fill="none" stroke="currentColor" stroke-width="2" points="0,96 480,0" /></svg>',
 		);
 	});
 
@@ -63,5 +64,26 @@ describe('metrics sparkline', async () => {
 
 		expect(html).toContain('mcp-vertex Metrics');
 		expect(html).toContain('0 calls, 0 errors');
+	});
+
+	it('renders a body fragment without an outer <html> wrapper', async () => {
+		const body = renderMetricsBody({
+			tools: {},
+			totals: {
+				calls: 7,
+				errors: 1,
+				totalMs: 42,
+				totalBytes: 0,
+			},
+		});
+
+		expect(body).toContain('mcp-vertex Metrics');
+		expect(body).toContain('7 calls, 1 error');
+		// The body renderer must not wrap its output in an
+		// <html>/<head>/<body> shell — the dev preview mounts
+		// the fragment inside its own <main>.
+		expect(body).not.toContain('<!DOCTYPE');
+		expect(body).not.toContain('<html');
+		expect(body).not.toMatch(/<head>/);
 	});
 });

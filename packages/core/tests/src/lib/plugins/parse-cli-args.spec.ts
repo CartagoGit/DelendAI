@@ -9,6 +9,8 @@ describe('parseCliArgs', async () => {
 	it('applies defaults when nothing is passed', async () => {
 		const args = parseCliArgs([], '/cwd');
 		expect(args.plugins).toEqual([]);
+		expect(args.presetPlugins).toEqual([]);
+		expect(args.flagPlugins).toEqual([]);
 		expect(args.cacheDir).toBe('.cache/mcp-vertex');
 		expect(args.docsDir).toBe('docs/mcp-vertex');
 		expect(args.workspace).toBe('/cwd');
@@ -72,6 +74,8 @@ describe('parseCliArgs', async () => {
 		);
 		// minimal = [git, search]; + memory (git de-duped)
 		expect(args.plugins).toEqual(['git', 'search', 'memory']);
+		expect(args.presetPlugins).toEqual(['git', 'search']);
+		expect(args.flagPlugins).toEqual(['memory', 'git']);
 	});
 
 	it('ignores an unknown preset', async () => {
@@ -89,6 +93,7 @@ describe('parseCliArgs', async () => {
 		expect(args.plugins).toContain('proposals');
 		expect(args.plugins).toContain('status-marker');
 		expect(args.plugins).not.toContain('notification');
+		expect(args.presetPlugins).not.toContain('notification');
 		expect(args.excludePlugins).toEqual(['notification']);
 	});
 
@@ -120,6 +125,7 @@ describe('parseCliArgs', async () => {
 			'/cwd',
 		);
 		expect(args.plugins).toEqual(['git', 'search']);
+		expect(args.flagPlugins).toEqual(['git', 'search']);
 	});
 
 	it('swarm preset now includes status-marker (close-marker convention)', async () => {

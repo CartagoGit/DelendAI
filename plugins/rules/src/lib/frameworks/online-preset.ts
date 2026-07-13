@@ -175,7 +175,7 @@ export type IOnlinePresetInfo =
  * Fetch the latest published version + homepage for a preset's upstream
  * package from its canonical registry.
  */
-export const fetchOnlinePresetInfo = async (
+const fetchOnlinePresetInfoUnchecked = async (
 	presetId: string,
 	fetcher: IOnlineFetcher = defaultOnlineFetcher,
 ): Promise<IOnlinePresetInfo> => {
@@ -246,7 +246,7 @@ export const fetchOnlinePresetInfo = async (
 			return {
 				ok: true,
 				package: pkg,
-				version: meta.version || '1.0.0',
+				version: meta.version || '',
 				homepage: meta.homepage,
 			};
 		}
@@ -257,7 +257,7 @@ export const fetchOnlinePresetInfo = async (
 			return {
 				ok: true,
 				package: pkg,
-				version: meta.info?.version || '1.0.0',
+				version: meta.info?.version || '',
 				homepage: meta.info?.home_page,
 			};
 		}
@@ -268,13 +268,13 @@ export const fetchOnlinePresetInfo = async (
 			return {
 				ok: true,
 				package: pkg,
-				version: meta.crate?.max_version || '1.0.0',
+				version: meta.crate?.max_version || '',
 				homepage: meta.crate?.homepage,
 			};
 		}
 		if (registry === 'goproxy') {
 			const meta = JSON.parse(res.body) as { Version?: string };
-			return { ok: true, package: pkg, version: meta.Version || '1.0.0' };
+			return { ok: true, package: pkg, version: meta.Version || '' };
 		}
 		if (registry === 'rubygems') {
 			const meta = JSON.parse(res.body) as {
@@ -284,7 +284,7 @@ export const fetchOnlinePresetInfo = async (
 			return {
 				ok: true,
 				package: pkg,
-				version: meta.version || '1.0.0',
+				version: meta.version || '',
 				homepage: meta.homepage_uri,
 			};
 		}
@@ -295,7 +295,7 @@ export const fetchOnlinePresetInfo = async (
 			return {
 				ok: true,
 				package: pkg,
-				version: meta.response?.docs?.[0]?.latestVersion || '1.0.0',
+				version: meta.response?.docs?.[0]?.latestVersion || '',
 			};
 		}
 		if (registry === 'nuget') {
@@ -304,7 +304,7 @@ export const fetchOnlinePresetInfo = async (
 			return {
 				ok: true,
 				package: pkg,
-				version: versions[versions.length - 1] || '1.0.0',
+				version: versions[versions.length - 1] || '',
 			};
 		}
 		if (registry === 'terraform_registry') {
@@ -315,7 +315,7 @@ export const fetchOnlinePresetInfo = async (
 			return {
 				ok: true,
 				package: pkg,
-				version: versions[versions.length - 1]?.version || '1.0.0',
+				version: versions[versions.length - 1]?.version || '',
 			};
 		}
 		if (registry === 'homebrew') {
@@ -325,39 +325,39 @@ export const fetchOnlinePresetInfo = async (
 			return {
 				ok: true,
 				package: pkg,
-				version: meta.versions?.stable || '1.0.0',
+				version: meta.versions?.stable || '',
 			};
 		}
 		if (registry === 'winget') {
 			const meta = JSON.parse(res.body) as { version?: string };
-			return { ok: true, package: pkg, version: meta.version || '1.0.0' };
+			return { ok: true, package: pkg, version: meta.version || '' };
 		}
 		if (registry === 'clojars') {
 			const meta = JSON.parse(res.body) as { latest_version?: string };
 			return {
 				ok: true,
 				package: pkg,
-				version: meta.latest_version || '1.0.0',
+				version: meta.latest_version || '',
 			};
 		}
 		if (registry === 'cpan') {
 			const meta = JSON.parse(res.body) as { version?: string };
-			return { ok: true, package: pkg, version: meta.version || '1.0.0' };
+			return { ok: true, package: pkg, version: meta.version || '' };
 		}
 		if (registry === 'julia_registry') {
 			const meta = JSON.parse(res.body) as { version?: string };
-			return { ok: true, package: pkg, version: meta.version || '1.0.0' };
+			return { ok: true, package: pkg, version: meta.version || '' };
 		}
 		if (registry === 'r_cran') {
 			const meta = JSON.parse(res.body) as { Version?: string };
-			return { ok: true, package: pkg, version: meta.Version || '1.0.0' };
+			return { ok: true, package: pkg, version: meta.Version || '' };
 		}
 		if (registry === 'elm_pkg') {
 			const meta = JSON.parse(res.body) as string[];
 			return {
 				ok: true,
 				package: pkg,
-				version: Array.isArray(meta) ? meta[0] || '1.0.0' : '1.0.0',
+				version: Array.isArray(meta) ? meta[0] || '' : '',
 			};
 		}
 
@@ -368,7 +368,7 @@ export const fetchOnlinePresetInfo = async (
 			return {
 				ok: true,
 				package: pkg,
-				version: meta.releases?.[0]?.version || '1.0.0',
+				version: meta.releases?.[0]?.version || '',
 			};
 		}
 		if (registry === 'composer') {
@@ -378,7 +378,7 @@ export const fetchOnlinePresetInfo = async (
 			return {
 				ok: true,
 				package: pkg,
-				version: meta.packages?.[pkg]?.[0]?.version || '1.0.0',
+				version: meta.packages?.[pkg]?.[0]?.version || '',
 			};
 		}
 		if (registry === 'luarocks') {
@@ -387,7 +387,7 @@ export const fetchOnlinePresetInfo = async (
 				repository?: Record<string, Array<{ version?: string }>>;
 			};
 			const version =
-				meta.version || meta.repository?.[pkg]?.[0]?.version || '1.0.0';
+				meta.version || meta.repository?.[pkg]?.[0]?.version || '';
 			return {
 				ok: true,
 				package: pkg,
@@ -406,7 +406,7 @@ export const fetchOnlinePresetInfo = async (
 			}
 		}
 
-		return { ok: true, package: pkg, version: '1.0.0' };
+		return { ok: true, package: pkg, version: '' };
 	} catch (err: any) {
 		return {
 			ok: false,
@@ -414,4 +414,22 @@ export const fetchOnlinePresetInfo = async (
 			reason: `failed to parse response: ${err.message}`,
 		};
 	}
+};
+
+/**
+ * Return registry data only when the response actually contains a version.
+ * Older code fabricated `1.0.0` for missing or unsupported response shapes,
+ * which made stale/invalid upstream metadata look authoritative.
+ */
+export const fetchOnlinePresetInfo = async (
+	presetId: string,
+	fetcher: IOnlineFetcher = defaultOnlineFetcher,
+): Promise<IOnlinePresetInfo> => {
+	const result = await fetchOnlinePresetInfoUnchecked(presetId, fetcher);
+	if (!result.ok || result.version.trim() !== '') return result;
+	return {
+		ok: false,
+		package: result.package,
+		reason: 'registry response did not contain a published version',
+	};
 };

@@ -8,14 +8,16 @@ export function buildFooter(
 	options: { readonly refreshCommand: string; readonly docsUrl: string },
 	lang: ILangDict,
 ): string {
-	const text = (key: string, vars?: Readonly<Record<string, string | number>>) =>
-		extensionText(lang, key, vars);
+	const text = (
+		key: string,
+		vars?: Readonly<Record<string, string | number>>,
+	) => extensionText(lang, key, vars);
 	return `
-	<footer class="mv-footer">
+	<footer class="mcpv-footer">
 		<span>${escapeHtml(text('dashboard.footerRefresh'))}: <code>${escapeHtml(options.refreshCommand)}</code></span>
-		<span class="mv-footer__sep">·</span>
+		<span class="mcpv-footer__sep">·</span>
 		<span>${escapeHtml(text('dashboard.footerDocs'))}: <code>${escapeHtml(options.docsUrl)}</code></span>
-		<span class="mv-footer__sep">·</span>
+		<span class="mcpv-footer__sep">·</span>
 		<span>${escapeHtml(text('dashboard.footerFetched'))}: <code>${escapeHtml(model.server.fetchedAt)}</code></span>
 	</footer>
 `.trim();

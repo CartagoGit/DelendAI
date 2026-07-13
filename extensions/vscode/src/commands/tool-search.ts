@@ -19,6 +19,7 @@
 import {
 	AgentCatalogService,
 	KnowledgeService,
+	normalizeCompactTools,
 	OverviewService,
 	SearchService,
 } from '@mcp-vertex/client';
@@ -32,14 +33,14 @@ export const TOOL_SEARCH_COMMAND = 'mcp-vertex.toolSearch';
 const toolItemsOf = (
 	tools: ReadonlyArray<{
 		readonly name: string;
-		readonly plugin: string;
+		readonly plugin?: string;
 		readonly summary?: string;
 	}>,
 ): IQuickPickItem[] =>
 	tools.map((tool) => ({
 		id: `tool:${tool.name}`,
 		label: tool.name,
-		description: `Tools · ${tool.plugin}`,
+		description: `Tools · ${tool.plugin ?? 'mcp-vertex'}`,
 		...(tool.summary === undefined ? {} : { detail: tool.summary }),
 	}));
 
@@ -81,24 +82,21 @@ const fallbackItems = async (
 
 	const ov = await overview.getOverview({ compact: true });
 	const knowledgeList = await knowledge.listKnowledge().catch(() => []);
-	const allTools = (ov.tools ?? []).map((tool) =>
-		typeof tool === 'string'
-			? { name: tool, tags: [] as readonly string[] }
-			: {
-					name: tool.name,
-					tags: tool.tags ?? [],
-					...(tool.summary === undefined
-						? {}
-						: { summary: tool.summary }),
-				},
-	);
+	// Compact `tools` is grouped by plugin; the helper flattens it into
+	// qualified descriptors (and still accepts the full array form).
+	const descriptors = normalizeCompactTools(ov.tools, ov.namespacePrefix);
+	const allTools = descriptors.map((tool) => ({
+		name: tool.name,
+		tags: tool.tags,
+		plugin: tool.plugin,
+	}));
 
 	const toolItems: IQuickPickItem[] =
 		query.length === 0
 			? allTools.map((tool) => ({
 					id: `tool:${tool.name}`,
 					label: tool.name,
-					description: `tool · ${tool.name.split('_', 1)[0] ?? ''}`,
+					description: `tool · ${tool.plugin}`,
 				}))
 			: search.searchTools(query, allTools, 200).map((hit) => ({
 					id: `tool:${hit.name}`,
@@ -162,33 +160,34 @@ export const registerToolSearchCommand = (deps: ICommandDeps) =>
 
 			const picked = await deps.vscode.window.showQuickPick?.(items);
 			if (picked === undefined) return;
+			const pickedId = picked.id;
 
-			if (picked.startsWith('tool:')) {
-				const toolName = picked.slice('tool:'.length);
+			if (pickedId.startsWith('tool:')) {
+				const toolName = pickedId.slice('tool:'.length);
 				const result = await deps.client.request(toolName, {});
 				await deps.vscode.window.showInformationMessage?.(
 					`mcp-vertex: ${toolName} → ${JSON.stringify(result).slice(0, 200)}`,
 				);
 				return;
 			}
-			if (picked.startsWith('skill:')) {
+			if (pickedId.startsWith('skill:')) {
 				await openSkillPreview(
 					deps,
 					catalog,
-					picked.slice('skill:'.length),
+					pickedId.slice('skill:'.length),
 				);
 				return;
 			}
-			if (picked.startsWith('proposal:')) {
+			if (pickedId.startsWith('proposal:')) {
 				await openProposalPreview(
 					deps,
-					picked.slice('proposal:'.length),
+					pickedId.slice('proposal:'.length),
 				);
 				return;
 			}
-			if (picked.startsWith('knowledge:')) {
+			if (pickedId.startsWith('knowledge:')) {
 				const knowledge = new KnowledgeService(deps.client);
-				const id = picked.slice('knowledge:'.length);
+				const id = pickedId.slice('knowledge:'.length);
 				const entry = await knowledge.getKnowledge(id);
 				await deps.vscode.window.showInformationMessage?.(
 					`mcp-vertex: ${entry.title}\n\n${entry.body.slice(0, 500)}`,

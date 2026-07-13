@@ -148,4 +148,21 @@ describe('memory store concurrency (M32, l111 s4)', async () => {
 		// Total = (N/2 surviving seeds) + (N/2 new notes) = N.
 		expect(after).toHaveLength(N);
 	});
+
+	it('enforces the note quota inside the writer lock', async () => {
+		await saveNote(store, { title: 'seed', body: 'seed' }, undefined, 2);
+
+		const results = await Promise.allSettled([
+			saveNote(store, { title: 'racer-a', body: 'a' }, undefined, 2),
+			saveNote(store, { title: 'racer-b', body: 'b' }, undefined, 2),
+		]);
+
+		expect(
+			results.filter((result) => result.status === 'fulfilled'),
+		).toHaveLength(1);
+		expect(
+			results.filter((result) => result.status === 'rejected'),
+		).toHaveLength(1);
+		expect(await readStore(store)).toHaveLength(2);
+	});
 });

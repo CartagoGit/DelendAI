@@ -146,6 +146,10 @@ const ENGLISH_COMMAND_SUMMARIES: Readonly<Record<string, string>> = {
 		'Guarded apply: reports outstanding violations (no blind rename).',
 	doctor: 'Sectioned health report (env, config, plugins, tools) + exit code.',
 	completion: 'Print a shell-completion script (bash|zsh|fish) for mcpv.',
+	'usage-tracking report':
+		'Report recorded tool usage/cost grouped by provider, plugin, agent or extension.',
+	'usage-tracking clear':
+		'Clear the recorded usage log + summary (destructive; requires --confirm).',
 };
 
 export const HELP_TRANSLATIONS: Readonly<Record<string, IHelpTranslation>> = {

@@ -26,7 +26,7 @@ const { labels, events = [] } = Astro.props;
 		<label>
 			<span>{labels.filter_outcome}</span>
 			<select data-log-filter="outcome">
-				<option value="">All</option>
+				<option value="">{labels.filter_outcome}</option>
 				{Object.entries(labels.outcomes).map(([value, label]) => (
 					<option value={value}>{label}</option>
 				))}
@@ -126,6 +126,14 @@ const { labels, events = [] } = Astro.props;
 		padding: 0.45rem 0.6rem;
 		background: var(--surface, transparent);
 		color: inherit;
+	}
+
+	.logs-table__empty {
+		/* Empty-state copy — muted like the plugin-disclosure empty note
+		   (f00099 S1). */
+		margin: 1rem 0;
+		color: var(--muted, #8b949e);
+		font-size: 0.9rem;
 	}
 
 	.logs-table__task {

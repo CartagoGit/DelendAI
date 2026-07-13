@@ -3,8 +3,8 @@
  * `mcp-vertex.toolbar` activity-bar entry).
  *
  * Renders the shared `HeaderBar` + a 3-column grid of action cards
- * grouped by category. Each card carries `data-mv-action="<id>"`
- * and `data-mv-command="<command>"` so the runtime dispatches the
+ * grouped by category. Each card carries `data-mcpv-action="<id>"`
+ * and `data-mcpv-command="<command>"` so the runtime dispatches the
  * right command to the host.
  *
  * Pure string. The host injects it via
@@ -75,12 +75,12 @@ const groupByCategory = (
 
 const renderCard = (action: QuickAction, label: string): string => `<button
 	type="button"
-	class="mv-toolbar__card"
-	data-mv-action="${escapeHtml(action.id)}"
-	data-mv-command="${escapeHtml(action.command)}"
+	class="mcpv-toolbar__card"
+	data-mcpv-action="${escapeHtml(action.id)}"
+	data-mcpv-command="${escapeHtml(action.command)}"
 >
-	<span class="mv-toolbar__card-icon" aria-hidden="true">${escapeHtml(action.icon)}</span>
-	<span class="mv-toolbar__card-label">${escapeHtml(label)}</span>
+	<span class="mcpv-toolbar__card-icon" aria-hidden="true">${escapeHtml(action.icon)}</span>
+	<span class="mcpv-toolbar__card-label">${escapeHtml(label)}</span>
 </button>`;
 
 const renderCategory = (
@@ -89,9 +89,9 @@ const renderCategory = (
 	dict: ILangDict,
 ): string => {
 	if (actions.length === 0) return '';
-	return `<section class="mv-toolbar__group" data-category="${escapeHtml(cat)}">
-		<h2 class="mv-toolbar__group-title">${escapeHtml(categoryLabel(cat, dict))}</h2>
-		<div class="mv-toolbar__grid">
+	return `<section class="mcpv-toolbar__group" data-category="${escapeHtml(cat)}">
+		<h2 class="mcpv-toolbar__group-title">${escapeHtml(categoryLabel(cat, dict))}</h2>
+		<div class="mcpv-toolbar__grid">
 			${actions.map((a) => renderCard(a, actionLabel(a, dict))).join('')}
 		</div>
 	</section>`;
@@ -100,7 +100,7 @@ const renderCategory = (
 /**
  * `renderToolbar` — returns the HTML for the toolbar webview.
  * The host injects this verbatim; the runtime (from S3) handles
- * `data-mv-action` clicks.
+ * `data-mcpv-action` clicks.
  */
 export const renderToolbar = (options: IRenderToolbarOptions): string => {
 	const all = [
@@ -117,7 +117,7 @@ export const renderToolbar = (options: IRenderToolbarOptions): string => {
 	const header = renderHeaderBar({
 		brandName: 'mcp-vertex',
 		version: options.version,
-		actions: `<span class="mv-toolbar__host" data-host="${escapeHtml(options.host)}">${escapeHtml(options.host)}</span>`,
+		actions: `<span class="mcpv-toolbar__host" data-host="${escapeHtml(options.host)}">${escapeHtml(options.host)}</span>`,
 	});
 	const groups = QUICK_ACTION_CATEGORIES.map((cat) =>
 		renderCategory(cat, grouped.get(cat) ?? [], options.lang),
@@ -130,37 +130,37 @@ export const renderToolbar = (options: IRenderToolbarOptions): string => {
 	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 	<title>${escapeHtml(text('toolbar.title'))}</title>
 	<style>${componentCss}
-	.mv-toolbar__host {
-		font-size: 11px; color: var(--mv-fg-muted, #9aa4b2);
-		padding: 4px 8px; border: 1px solid var(--mv-line, #2a3038);
-		border-radius: var(--mv-radius-sm, 4px);
+	.mcpv-toolbar__host {
+		font-size: 11px; color: var(--mcpv-fg-muted, #9aa4b2);
+		padding: 4px 8px; border: 1px solid var(--mcpv-line, #2a3038);
+		border-radius: var(--mcpv-radius-sm, 4px);
 	}
-	.mv-toolbar__group { margin: 16px 20px; }
-	.mv-toolbar__group-title {
+	.mcpv-toolbar__group { margin: 16px 20px; }
+	.mcpv-toolbar__group-title {
 		font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em;
-		color: var(--mv-fg-muted, #9aa4b2); margin: 0 0 8px;
+		color: var(--mcpv-fg-muted, #9aa4b2); margin: 0 0 8px;
 	}
-	.mv-toolbar__grid {
+	.mcpv-toolbar__grid {
 		display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
 	}
-	.mv-toolbar__card {
+	.mcpv-toolbar__card {
 		display: flex; flex-direction: column; align-items: flex-start; gap: 6px;
 		padding: 12px;
-		background: var(--mv-bg-soft, #11161d);
-		color: var(--mv-fg, #e6edf3);
-		border: 1px solid var(--mv-line, #2a3038);
-		border-radius: var(--mv-radius, 8px);
+		background: var(--mcpv-bg-soft, #11161d);
+		color: var(--mcpv-fg, #e6edf3);
+		border: 1px solid var(--mcpv-line, #2a3038);
+		border-radius: var(--mcpv-radius, 8px);
 		font: inherit; text-align: left; cursor: pointer;
-		transition: border-color var(--mv-transition-fast, 120ms ease-out);
+		transition: border-color var(--mcpv-transition-fast, 120ms ease-out);
 	}
-	.mv-toolbar__card:hover { border-color: var(--mv-brand-blue); }
-	.mv-toolbar__card-icon { font-size: 18px; }
-	.mv-toolbar__card-label { font-size: 12px; }
+	.mcpv-toolbar__card:hover { border-color: var(--mcpv-brand-blue); }
+	.mcpv-toolbar__card-icon { font-size: 18px; }
+	.mcpv-toolbar__card-label { font-size: 12px; }
 	</style>
 </head>
 <body>
 	${header}
-	<main class="mv-toolbar__main">
+	<main class="mcpv-toolbar__main">
 		${groups}
 	</main>
 	${renderHostBridge()}

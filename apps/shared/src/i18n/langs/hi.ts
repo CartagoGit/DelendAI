@@ -237,7 +237,7 @@ const site = {
 		copy: 'कॉपी करें',
 		copied: 'कॉपी हो गया!',
 		faqTitle: 'अक्सर पूछे जाने वाले प्रश्न',
-		faqQ1: '`deno run -A npm:@mcp-vertex/core` धीमे क्यों शुरू होता है?',
+		faqQ1: '`deno run -A npm:@mcp-vertex/cli` धीमे क्यों शुरू होता है?',
 		faqA1: 'Deno पहले उपयोग पर npm पैकेज हल और सत्यापित करता है। बाद के रन `~/.cache/deno` में कैश का पुनः उपयोग करते हैं। बार-बार शुरू करने के लिए bun या npx बेहतर है।',
 		faqQ2: 'मेरा IDE सूची में नहीं है — अब क्या?',
 		faqA2: 'कोई भी IDE जो stdio MCP सर्वर स्वीकार करता है, काम करता है। VS Code का JSON लें, फ़ाइल पथ अपने IDE की अपेक्षा के अनुसार बदलें, और वही कमांड + तर्क पंजीकृत करें।',
@@ -277,6 +277,7 @@ const site = {
 	},
 	cfg: {
 		title: 'सेटिंग्स',
+		close: 'सेटिंग्स बंद करें',
 		theme: 'थीम',
 		language: 'भाषा',
 		motion: 'एनिमेशन',
@@ -285,6 +286,10 @@ const site = {
 	search: {
 		title: 'खोजें',
 		placeholder: 'साइट में खोजें...',
+		close: 'खोज बंद करें',
+		noMatches: 'कोई मिलान नहीं मिला।',
+		indexUnavailable: 'खोज अनुक्रमणिका उपलब्ध नहीं है।',
+		buildRequired: 'खोज bun run site से बनती है। इसे चालू करने के लिए बिल्ड चलाएँ।',
 	},
 	footer: {
 		built: 'जीवित टूल रजिस्ट्री से जनित।',
@@ -303,6 +308,7 @@ const site = {
 		tabTools: 'टूल',
 		tabConfiguration: 'कॉन्फ़िगरेशन',
 		tabTutorial: 'ट्यूटोरियल',
+		tutorialFallback: 'अंग्रेज़ी में दिखाया जा रहा है; अभी {lang} में अनुवादित नहीं है',
 	},
 	plugin: {
 		proposals:
@@ -381,6 +387,8 @@ const site = {
 		nextSteps: 'आगे कहाँ जाएँ',
 		nextToolsCta: 'सभी टूल देखें',
 		nextTroubleshootingCta: 'कुछ काम नहीं कर रहा? समस्या निवारण',
+		overviewHint:
+			'सर्वर शुरू होने के बाद compact: true के साथ mcp-vertex_overview कॉल करें; recommendedNextAction एजेंट को अगला कदम ठीक-ठीक बताता है।',
 	},
 	troubleshooting: {
 		title: 'समस्या निवारण',
@@ -517,9 +525,22 @@ const extension = {
 	setupGithub: 'mcp-vertex: GitHub issues सेट अप करें',
 };
 
+const dev = {
+	quickStartHeading: 'त्वरित शुरुआत',
+	quickStartLede:
+		'एक बार का मार्गदर्शन। वर्कस्पेस कॉन्फ़िगर हो गया है और डैशबोर्ड अब वास्तविक डेटा खींच रहा है — यहाँ देखें कि प्रत्येक टैब क्या करता है।',
+	quickStartDismiss: 'त्वरित शुरुआत बंद करें',
+	firstRunHeading: 'mcp-vertex में आपका स्वागत है',
+	firstRunLede:
+		'यह एक्सटेंशन mcp-vertex MCP सर्वर के लिए डैशबोर्ड, सेटिंग्स और टूल पैनल प्रदान करता है। MCP सर्वर अभी इस वर्कस्पेस में इंस्टॉल नहीं हुआ है — एक बार इंस्टॉल होने पर, डैशबोर्ड वास्तविक डेटा लाने पर स्विच हो जाएगा।',
+	firstRunSkip: 'छोड़ें — फिर भी डैशबोर्ड दिखाएँ',
+	firstRunInstall: 'इस वर्कस्पेस में mcp-vertex इंस्टॉल करें',
+};
+
 const dict: ILangDict = {
 	site: site as unknown as ILangDict['site'],
 	extension: extension as unknown as ILangDict['extension'],
+	dev: dev as unknown as ILangDict['dev'],
 	tools: {},
 };
 

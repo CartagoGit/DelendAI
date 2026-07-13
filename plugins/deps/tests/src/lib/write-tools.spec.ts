@@ -16,7 +16,7 @@ describe('buildInstallCommand (pure, no spawn)', async () => {
 	it('builds a simple dependencies install command', async () => {
 		const result = buildInstallCommand({ name: 'left-pad' });
 		expect(result.error).toBeUndefined();
-		expect(result.command).toBe('bun add left-pad');
+		expect(result.command).toBe("bun add 'left-pad'");
 	});
 
 	it('builds a devDependencies install command with the --dev flag', async () => {
@@ -26,7 +26,17 @@ describe('buildInstallCommand (pure, no spawn)', async () => {
 			section: 'devDependencies',
 		});
 		expect(result.error).toBeUndefined();
-		expect(result.command).toBe('bun add vitest@^4.0.0 --dev');
+		expect(result.command).toBe("bun add 'vitest@^4.0.0' --dev");
+	});
+
+	it('quotes semver operators so they cannot become shell syntax', async () => {
+		const result = buildInstallCommand({
+			name: 'safe-package',
+			range: '1 | id',
+			ecosystem: 'npm',
+		});
+		expect(result.error).toBeUndefined();
+		expect(result.command).toBe("npm install 'safe-package@1 | id'");
 	});
 
 	it('rejects an invalid/unsafe version range', async () => {

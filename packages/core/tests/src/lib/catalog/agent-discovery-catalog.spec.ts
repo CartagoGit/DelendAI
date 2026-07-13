@@ -7,6 +7,7 @@ import type {
 	ISkillSummary,
 	IToolSummary,
 } from '@mcp-vertex/core/lib/catalog/agent-discovery-types';
+import type { IProviderSummary } from '@mcp-vertex/core/lib/contracts/interfaces/provider-capabilities.interface';
 import { buildAgentCatalogToolRegistration } from '@mcp-vertex/core/lib/tools/agent-catalog-tool';
 
 const server = {
@@ -85,6 +86,30 @@ const sources: ICatalogSources = {
 	proposals: () => proposals,
 };
 
+const providers: readonly IProviderSummary[] = [
+	{
+		id: 'gpt-codex',
+		kind: 'cli',
+		modelId: 'gpt-5-codex',
+		costTier: 2,
+		reachable: true,
+		strengths: ['code-edit', 'agentic'],
+	},
+	{
+		id: 'claude-sonnet',
+		kind: 'subscription',
+		modelId: 'claude-sonnet-4-5',
+		costTier: 3,
+		reachable: false,
+		strengths: ['reasoning', 'long-context'],
+	},
+];
+
+const sourcesWithProviders: ICatalogSources = {
+	...sources,
+	providers: () => providers,
+};
+
 const fixedNow = () => new Date('2026-06-25T00:00:00.000Z');
 
 const parseTextResult = (result: unknown): Record<string, unknown> => {
@@ -161,10 +186,22 @@ describe('buildCatalog', async () => {
 			'c00002',
 			'f00056',
 		]);
+		expect(
+			compact.proposals.every((entry) => entry.date === undefined),
+		).toBe(true);
+		expect(compact.tools).toEqual([
+			{ name: 'mcp-vertex_agent_catalog' },
+			{ name: 'mcp-vertex_search_search', plugin: 'search' },
+		]);
 		expect(full.proposals.map((entry) => entry.id)).toEqual([
 			'a00001',
 			'c00002',
 			'f00056',
+		]);
+		expect(full.proposals.map((entry) => entry.date)).toEqual([
+			'2026-06-15',
+			'2026-06-21',
+			'2026-06-25',
 		]);
 	});
 
@@ -223,6 +260,92 @@ describe('buildCatalog', async () => {
 		expect(result.skills).toEqual([]);
 		expect(result.proposals).toEqual([]);
 		expect(result.counts).toEqual({ tools: 2, skills: 2, proposals: 2 });
+	});
+
+	it('surfaces the provider roster in full mode, sorted by id with lean fields only', async () => {
+		const snapshot = buildCatalog(sourcesWithProviders, {
+			mode: 'full',
+			now: fixedNow,
+			server,
+		});
+
+		// Exact object equality proves both the mapping (sorted by id) and
+		// that no extra fields (invoke details, env vars) leak through.
+		expect(snapshot.providers).toEqual([
+			{
+				id: 'claude-sonnet',
+				kind: 'subscription',
+				modelId: 'claude-sonnet-4-5',
+				costTier: 3,
+				reachable: false,
+				strengths: ['reasoning', 'long-context'],
+			},
+			{
+				id: 'gpt-codex',
+				kind: 'cli',
+				modelId: 'gpt-5-codex',
+				costTier: 2,
+				reachable: true,
+				strengths: ['code-edit', 'agentic'],
+			},
+		]);
+	});
+
+	it('omits providers entirely in compact mode even when a roster is configured', async () => {
+		const snapshot = buildCatalog(sourcesWithProviders, {
+			mode: 'compact',
+			now: fixedNow,
+			server,
+		});
+
+		expect(snapshot).not.toHaveProperty('providers');
+	});
+
+	it('omits the providers field when the source is absent or returns an empty roster', async () => {
+		const absent = buildCatalog(sources, {
+			mode: 'full',
+			now: fixedNow,
+			server,
+		});
+		const empty = buildCatalog(
+			{ ...sources, providers: () => [] },
+			{ mode: 'full', now: fixedNow, server },
+		);
+
+		expect(absent).not.toHaveProperty('providers');
+		expect(empty).not.toHaveProperty('providers');
+	});
+
+	it('returns provider clones, immune to mutation of the first result', async () => {
+		const first = buildCatalog(sourcesWithProviders, {
+			mode: 'full',
+			now: fixedNow,
+			server,
+		});
+		(first.providers as IProviderSummary[])[0] = {
+			id: 'broken',
+			kind: 'api',
+			modelId: 'broken',
+			costTier: 1,
+			reachable: false,
+			strengths: [],
+		};
+		(first.providers?.[1]?.strengths as string[])[0] = 'broken';
+
+		const second = buildCatalog(sourcesWithProviders, {
+			mode: 'full',
+			now: fixedNow,
+			server,
+		});
+
+		expect(second.providers?.map((entry) => entry.id)).toEqual([
+			'claude-sonnet',
+			'gpt-codex',
+		]);
+		expect(second.providers?.[1]?.strengths).toEqual([
+			'code-edit',
+			'agentic',
+		]);
 	});
 
 	it('stays pure across calls even if the first returned arrays are mutated', async () => {

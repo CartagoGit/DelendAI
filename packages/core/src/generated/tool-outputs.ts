@@ -39,7 +39,7 @@ export interface McpVertexAgentCatalogOutput {
 	};
 	tools: Array<{
 		name: string;
-		plugin: string;
+		plugin?: string;
 		summary?: string;
 		tags?: string[];
 		effects?: Array<"write" | "spawn" | "network" | "destructive">;
@@ -59,12 +59,20 @@ export interface McpVertexAgentCatalogOutput {
 		track: string;
 		status: "ready" | "in-progress" | "review" | "paused" | "done" | "blocked" | "retired" | "unspecified";
 		kind: "feat" | "fix" | "refactor" | "chore" | "docs" | "plan" | "audit" | "unspecified";
-		date: string;
+		date?: string;
+	}>;
+	providers?: Array<{
+		id: string;
+		kind: "api" | "subscription" | "cli" | "mcp-server";
+		modelId: string;
+		costTier: 1 | 2 | 3 | 4 | 5;
+		reachable: boolean;
+		strengths: Array<"code-edit" | "long-context" | "very-long-context" | "architecture" | "security-audit" | "reasoning" | "vision" | "fast-iteration" | "json-strict" | "multilingual" | "agentic" | "summarization">;
 	}>;
 }
 
 export interface McpVertexAnalyzeProjectOutput {
-	analysis: {
+	analysis?: {
 		hasPackageJson: boolean;
 		name?: string;
 		projectType: "library" | "cli" | "webapp" | "game" | "monorepo" | "generic";
@@ -80,10 +88,11 @@ export interface McpVertexAnalyzeProjectOutput {
 		scripts: Record<string, string>;
 		signals: string[];
 	};
-	plan: {
+	plan?: {
 		projectType: "library" | "cli" | "webapp" | "game" | "monorepo" | "generic";
 		serverName: string;
 		namespacePrefix: string;
+		targetDir: string;
 		plugins: string[];
 		tools: {
 			name: string;
@@ -94,6 +103,28 @@ export interface McpVertexAnalyzeProjectOutput {
 		docsDir: string;
 		mcpJson: Record<string, unknown>;
 		notes: string[];
+	};
+	adoptionStrategy: {
+		mode: "replace" | "augment" | "partial";
+		selectedCapabilities: Array<"tools" | "prompts" | "resources" | "knowledge" | "skills" | "agents" | "mcp-config" | "proposal-workflow">;
+		operations: Array<{
+			capability: "tools" | "prompts" | "resources" | "knowledge" | "skills" | "agents" | "mcp-config" | "proposal-workflow";
+			action: "preserve" | "merge" | "replace";
+		}>;
+		protectedCapabilities: Array<"tools" | "prompts" | "resources" | "knowledge" | "skills" | "agents" | "mcp-config" | "proposal-workflow">;
+		requiresExplicitReplacementConsent: boolean;
+	};
+	summary?: {
+		projectType: "library" | "cli" | "webapp" | "game" | "monorepo" | "generic";
+		language: "typescript" | "javascript" | "python" | "go" | "rust" | "unknown";
+		packageManager: "bun" | "pnpm" | "yarn" | "npm" | "unknown";
+		framework?: string;
+		hasMcpProject: boolean;
+		serverName: string;
+		namespacePrefix: string;
+		targetDir: string;
+		pluginCount: number;
+		toolCount: number;
 	};
 }
 
@@ -211,8 +242,53 @@ export interface McpVertexCacheCacheGcOutput {
 	}[];
 }
 
+export interface McpVertexConfigurationCenterOutput {
+	section: "summary" | "config" | "plugins" | "artifacts";
+	page: {
+		cursor: number;
+		nextCursor: number | null;
+		total: number;
+	};
+	summary?: {
+		plugins: number;
+		activePlugins: number;
+		artifacts: number;
+		unavailableArtifactKinds: Array<"agent" | "skill" | "prompt" | "resource" | "knowledge">;
+	};
+	configSchema?: Record<string, unknown>;
+	config?: Record<string, unknown>;
+	redactions?: number;
+	plugins?: Array<{
+		id: string;
+		origin: "bundled" | "user-local" | "external";
+		active: boolean;
+		source: "preset" | "config" | "flag";
+		path?: string;
+		prefix?: string;
+		options: Record<string, unknown>;
+		optionsSchema?: Record<string, unknown>;
+		schemaStatus: "available" | "unavailable";
+		configExample?: Record<string, unknown>;
+		capabilities: {
+			tools: number;
+			prompts: number;
+			resources: number;
+			knowledge: number;
+			skills: number;
+		};
+	}>;
+	artifacts?: Array<{
+		id: string;
+		kind: "agent" | "skill" | "prompt" | "resource" | "knowledge";
+		owner: {
+			id: string | null;
+			origin: "bundled" | "user-local" | "external" | "unknown";
+		};
+	}>;
+}
+
 export interface McpVertexCreateProjectOutput {
-	kind: "host" | "plugin" | "client";
+	kind: "host" | "plugin" | "client" | "extension-host";
 	files: {
 		path: string;
 		content: string;
@@ -491,6 +567,16 @@ export interface McpVertexMemoryCompactOutput {
 	redactedSecrets: number;
 }
 
+export interface McpVertexMemoryCompactionCheckOutput {
+	shouldCompact: boolean;
+	reason: "token-threshold" | "turn-threshold" | "below-threshold";
+	carriedTailTokens: number;
+	tokenThreshold: number;
+	turnsSinceLastCompaction: number;
+	turnThreshold: number;
+	hint: string;
+}
+
 export interface McpVertexMemoryExportOutput {
 	ok: true;
 	format: "json" | "ndjson";
@@ -534,6 +620,12 @@ export interface McpVertexMemoryRecallOutput {
 		updatedAt: string;
 		expiresAt?: string;
 	}[];
+	sessionDigest?: {
+		title: string;
+		topic: string;
+		body: string;
+		createdAt: string;
+	};
 }
 
 export interface McpVertexMemorySaveOutput {
@@ -597,6 +689,7 @@ export interface McpVertexOverviewOutput {
 		cacheDir: string;
 		docsDir: string;
 	};
+	configIssues?: string[];
 	pluginDiagnostic?: {
 		requested: string[];
 		loaded: string[];
@@ -615,18 +708,42 @@ export interface McpVertexOverviewOutput {
 		summary?: string;
 		tags?: string[];
 		effects?: Array<"write" | "spawn" | "network" | "destructive">;
-	}>;
+	}> | Record<string, string[]>;
 	knowledge: Array<string | {
 		id: string;
 		title: string;
 	}>;
+	providers?: Array<{
+		id: string;
+		kind: "api" | "subscription" | "cli" | "mcp-server";
+		modelId: string;
+		costTier: 1 | 2 | 3 | 4 | 5;
+		reachable: boolean;
+		strengths: Array<"code-edit" | "long-context" | "very-long-context" | "architecture" | "security-audit" | "reasoning" | "vision" | "fast-iteration" | "json-strict" | "multilingual" | "agentic" | "summarization">;
+	}>;
+	activationReport?: {
+		entries: Array<{
+			id: string;
+			origin: "bundled" | "user-local" | "external";
+			active: boolean;
+			source: "preset" | "config" | "flag";
+			toolCount: number;
+		}>;
+		counts: {
+			bundled: number;
+			"user-local": number;
+			external: number;
+		};
+		totalTools: number;
+	};
 	recommendedNextAction: string;
 }
 
 export interface McpVertexPlanMcpProjectOutput {
-	blueprint: {
+	blueprint?: {
 		serverName: string;
 		namespacePrefix: string;
+		targetDir: string;
 		projectType: "library" | "cli" | "webapp" | "game" | "monorepo" | "generic";
 		plugins: string[];
 		tools: {
@@ -647,6 +764,16 @@ export interface McpVertexPlanMcpProjectOutput {
 		}[];
 		tests: boolean;
 		hasExistingServer: boolean;
+		adoptionStrategy: {
+			mode: "replace" | "augment" | "partial";
+			selectedCapabilities: Array<"tools" | "prompts" | "resources" | "knowledge" | "skills" | "agents" | "mcp-config" | "proposal-workflow">;
+			operations: Array<{
+				capability: "tools" | "prompts" | "resources" | "knowledge" | "skills" | "agents" | "mcp-config" | "proposal-workflow";
+				action: "preserve" | "merge" | "replace";
+			}>;
+			protectedCapabilities: Array<"tools" | "prompts" | "resources" | "knowledge" | "skills" | "agents" | "mcp-config" | "proposal-workflow">;
+			requiresExplicitReplacementConsent: boolean;
+		};
 		defaults: {
 			keepLegacy: boolean;
 			reasons: string[];
@@ -654,10 +781,42 @@ export interface McpVertexPlanMcpProjectOutput {
 		};
 		notes: string[];
 	};
-	files: {
+	files?: {
 		path: string;
 		content: string;
 	}[];
+	summary?: {
+		serverName: string;
+		namespacePrefix: string;
+		targetDir: string;
+		projectType: string;
+		plugins: string[];
+		counts: {
+			tools: number;
+			prompts: number;
+			skills: number;
+			agents: number;
+		};
+		tests: boolean;
+		hasExistingServer: boolean;
+		adoptionStrategy: {
+			mode: "replace" | "augment" | "partial";
+			selectedCapabilities: Array<"tools" | "prompts" | "resources" | "knowledge" | "skills" | "agents" | "mcp-config" | "proposal-workflow">;
+			operations: Array<{
+				capability: "tools" | "prompts" | "resources" | "knowledge" | "skills" | "agents" | "mcp-config" | "proposal-workflow";
+				action: "preserve" | "merge" | "replace";
+			}>;
+			protectedCapabilities: Array<"tools" | "prompts" | "resources" | "knowledge" | "skills" | "agents" | "mcp-config" | "proposal-workflow">;
+			requiresExplicitReplacementConsent: boolean;
+		};
+	};
+	detail?: {
+		section: "tools" | "prompts" | "skills" | "agents" | "files" | "notes";
+		cursor: number;
+		nextCursor: number | null;
+		total: number;
+		items: unknown[];
+	};
 }
 
 export interface McpVertexProposalsAgentLockOutput {
@@ -969,6 +1128,7 @@ export interface McpVertexProposalsCloseSliceOutput {
 	sliceId: string;
 	closed: boolean;
 	lockReleased: boolean;
+	pendingIntegrationBranch: string | null;
 }
 
 export interface McpVertexProposalsCompactStatusOutput {
@@ -1092,6 +1252,18 @@ export interface McpVertexProposalsGetProposalWorkflowOutput {
 	naming: string;
 	rules: string[];
 	template: string;
+}
+
+export interface McpVertexProposalsInheritHostInstructionsOutput {
+	ok: true;
+	scope: "repo" | "all";
+	files: string[];
+	totalNonCanonical: number;
+	id: string | null;
+	file?: string;
+	path?: string;
+	indexCount?: number;
+	redactedSecrets?: number;
 }
 
 export interface McpVertexProposalsPlanOutput {
@@ -1543,10 +1715,33 @@ export interface McpVertexProposalsSwarmHygieneOutput {
 		head: string;
 		lastCommitMinutesAgo: number;
 	}[];
+	pendingIntegration?: {
+		branch: string;
+		worktreePath: string;
+		sliceId: string;
+		proposalId: string;
+		recordedAt: string;
+	}[];
+	nonConformingBranches?: {
+		path: string;
+		branch: string;
+		head: string;
+		reason: "non-agent-prefix";
+	}[];
+	staleUnmerged?: {
+		path: string;
+		branch: string;
+		ahead: number;
+		behind: number;
+		lastCommitMinutesAgo: number;
+	}[];
 	summary?: {
 		rescueCandidatesCount: number;
 		gcEligibleCount: number;
 		outOfCacheCount: number;
+		pendingIntegrationCount: number;
+		nonConformingBranchesCount: number;
+		staleUnmergedCount: number;
 	};
 }
 
@@ -1849,6 +2044,49 @@ export interface McpVertexTestConventionSuggestSpecPathOutput {
 	skeleton: string;
 }
 
+export interface McpVertexUsageTrackingUsageClearOutput {
+	ok: true;
+	cleared: string[];
+}
+
+export interface McpVertexUsageTrackingUsageReportOutput {
+	groupBy: "provider" | "plugin" | "agent" | "extension" | "model";
+	windowDays: number;
+	totals: {
+		calls: number;
+		inputTokens: number;
+		outputTokens: number;
+		totalTokens: number;
+		costUsd: number;
+		tokensSaved: number;
+		savingsPercent: number;
+		errors: number;
+		autoBypassed: number;
+	};
+	buckets: {
+		key: string;
+		calls: number;
+		inputTokens: number;
+		outputTokens: number;
+		totalTokens: number;
+		costUsd: number;
+		tokensSaved: number;
+		savingsPercent: number;
+		errors: number;
+		autoBypassed: number;
+	}[];
+	expensiveCalls: Array<{
+		ts: string;
+		plugin: string;
+		tool: string;
+		agent: string;
+		provider: string | null;
+		costUsd: number | null;
+		durationMs: number | null;
+		outcome: string;
+	}>;
+}
+
 export interface McpVertexWebFetchWebFetchOutput {
 	ok: boolean;
 	url?: string;
@@ -1868,6 +2106,7 @@ export interface McpVertexToolOutputs {
 	"mcp-vertex_audit_audit_plan": McpVertexAuditAuditPlanOutput;
 	"mcp-vertex_audit_audit_run": McpVertexAuditAuditRunOutput;
 	"mcp-vertex_cache_cache_gc": McpVertexCacheCacheGcOutput;
+	"mcp-vertex_configuration_center": McpVertexConfigurationCenterOutput;
 	"mcp-vertex_create_project": McpVertexCreateProjectOutput;
 	"mcp-vertex_deps_deps_check": McpVertexDepsDepsCheckOutput;
 	"mcp-vertex_deps_deps_list": McpVertexDepsDepsListOutput;
@@ -1894,6 +2133,7 @@ export interface McpVertexToolOutputs {
 	"mcp-vertex_logs_subscribe": McpVertexLogsSubscribeOutput;
 	"mcp-vertex_logs_tail": McpVertexLogsTailOutput;
 	"mcp-vertex_memory_compact": McpVertexMemoryCompactOutput;
+	"mcp-vertex_memory_compaction_check": McpVertexMemoryCompactionCheckOutput;
 	"mcp-vertex_memory_export": McpVertexMemoryExportOutput;
 	"mcp-vertex_memory_forget": McpVertexMemoryForgetOutput;
 	"mcp-vertex_memory_import": McpVertexMemoryImportOutput;
@@ -1918,6 +2158,7 @@ export interface McpVertexToolOutputs {
 	"mcp-vertex_proposals_create_proposal": McpVertexProposalsCreateProposalOutput;
 	"mcp-vertex_proposals_delegate": McpVertexProposalsDelegateOutput;
 	"mcp-vertex_proposals_get_proposal_workflow": McpVertexProposalsGetProposalWorkflowOutput;
+	"mcp-vertex_proposals_inherit_host_instructions": McpVertexProposalsInheritHostInstructionsOutput;
 	"mcp-vertex_proposals_plan": McpVertexProposalsPlanOutput;
 	"mcp-vertex_proposals_proposal_adopt": McpVertexProposalsProposalAdoptOutput;
 	"mcp-vertex_proposals_proposal_board": McpVertexProposalsProposalBoardOutput;
@@ -1951,5 +2192,7 @@ export interface McpVertexToolOutputs {
 	"mcp-vertex_test-convention_get_convention": McpVertexTestConventionGetConventionOutput;
 	"mcp-vertex_test-convention_scan_drift": McpVertexTestConventionScanDriftOutput;
 	"mcp-vertex_test-convention_suggest_spec_path": McpVertexTestConventionSuggestSpecPathOutput;
+	"mcp-vertex_usage-tracking_usage_clear": McpVertexUsageTrackingUsageClearOutput;
+	"mcp-vertex_usage-tracking_usage_report": McpVertexUsageTrackingUsageReportOutput;
 	"mcp-vertex_web-fetch_web_fetch": McpVertexWebFetchWebFetchOutput;
 }

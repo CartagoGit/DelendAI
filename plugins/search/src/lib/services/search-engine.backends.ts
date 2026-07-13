@@ -127,14 +127,30 @@ export const createRgBackend = async (
 			const context = clampContext(opts.context);
 			const caseSensitive = opts.caseSensitive ?? false;
 
-			const roots = (
-				opts.roots && opts.roots.length > 0 ? opts.roots : ['.']
-			)
+			const hasExplicitRoots =
+				opts.roots !== undefined && opts.roots.length > 0;
+			const requestedRoots = hasExplicitRoots
+				? (opts.roots ?? [])
+				: ['.'];
+			const roots = requestedRoots
 				.map((root) =>
 					resolveWorkspaceContained(workspaceRootAbs, root),
 				)
 				.filter((c) => c.ok)
 				.map((c) => c.abs);
+			// Explicit roots are an allow-list. If containment rejects every
+			// requested root, fail closed instead of silently widening the search
+			// back to the entire workspace (`.`). This also keeps the rg backend
+			// aligned with the in-house backend's containment contract.
+			if (hasExplicitRoots && roots.length === 0) {
+				return {
+					query,
+					hits: [],
+					truncated: false,
+					scanned: 0,
+					usedRg: true,
+				};
+			}
 
 			const rgArgs: string[] = ['--json', '--line-number'];
 			rgArgs.push(caseSensitive ? '--case-sensitive' : '--ignore-case');
@@ -148,7 +164,7 @@ export const createRgBackend = async (
 				rgArgs.push('--glob', `!${glob}`);
 			if (context > 0) rgArgs.push('--context', String(context));
 			rgArgs.push('--max-count', String(maxResults));
-			rgArgs.push('--', trimmed, ...(roots.length > 0 ? roots : ['.']));
+			rgArgs.push('--', trimmed, ...roots);
 
 			const { stdout } = await execFileAsync('rg', rgArgs, {
 				cwd: workspaceRootAbs,

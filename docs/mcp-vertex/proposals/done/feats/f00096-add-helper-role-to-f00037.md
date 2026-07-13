@@ -1,0 +1,247 @@
+---
+id: f00096
+status: done
+type: proposal
+track: repo-layout+contracts
+date: 2026-07-01
+closed: 2026-07-02
+kind: feat
+title: Add `helper` role + lift exported types into `contracts/interfaces/` (f00037 SRP fix)
+shipped-in: [aa7f66b9, 0b9f7a1c, c9a531ba, da311611, fcd63b50]
+recan: []
+related:
+    - f00037 # original file-convention proposal
+    - f00057 # skill unification + plugin coverage
+ownership:
+    - { agent: implementation_runner, task: 'S1: extend Role union + add HelperRule to file-conventions.contract.ts' }
+    - { agent: implementation_runner, task: 'S2: migrate the two CLI helpers that today use .service.ts but should be .helper.ts' }
+    - { agent: implementation_runner, task: 'S3: extend the contract spec + the parity spec to lock the new role' }
+globalGate: validate
+acceptance:
+    - { command: bun run typecheck, expect: exit0 }
+    - { command: bun run lint:tools, expect: exit0 }
+    - { command: bun tools/scripts/lint/file-conventions.script.ts, expect: "4 unmatched (unchanged baseline, all outside packages/cli/)" }
+    - { command: bunx vitest run --config packages/cli/vitest.config.ts, expect: "26 files / 214 tests / 100% green" }
+---
+
+# f00096 — Add `helper` role to the f00037 file-convention contract
+
+> **Closed 2026-07-02 — all three slices verified landed.** The deliverable is
+> objectively present in the tree and validate is green:
+> - **S1**: `packages/core/src/lib/contracts/file-conventions.contract.ts` exposes
+>   `'helper'` in the `Role` union and `HelperRule` in `DEFAULT_TS_RULES`, ordered
+>   BEFORE `ServiceRule` (chain invariant).
+> - **S2**: `packages/cli/src/lib/cli-helpers.service.ts` → `lib/helpers/cli-command.helper.ts`
+>   and `color.service.ts` → `lib/helpers/cli-color.helper.ts` (old files gone; the
+>   `group-helpers.ts` shim points at the new location); the 7 lifted
+>   `contracts/interfaces/*.interface.ts` files (agent-descriptor, completion,
+>   exit-code, help-translation, init, plugin-defaults, server-args) all exist.
+> - **S3**: `file-conventions.contract.spec.ts` locks the six `helper`-role
+>   assertions; the conventions plugin re-imports `classifyPath`/`DEFAULT_TS_RULES`/
+>   `Role` directly from the core contract, so parity is structural (one source).
+>
+> **ID-collision note:** parts of this work were committed under an `f00093`
+> label before the numbering collision was resolved (commit `5a798d3d`), so some
+> code comments and the spec `describe('helper role (f00093)')` still carry the
+> old id. `f00093` is a *separate* proposal (init host-instruction snapshots) that
+> remains open; only this helper-role deliverable is closed here.
+
+## goal
+
+Two changes land together because they share the same root cause — the
+f00037 contract was being honoured literally but violated in spirit:
+
+1. **Add a `helper` role** to the canonical f00037 file-convention table.
+
+   | Role    | Folder     | Suffix         | Example                    |
+   |---------|------------|----------------|----------------------------|
+   | helper  | `helpers/` | `*.helper.ts`  | `cli-command.helper.ts`    |
+
+   The new role classifies pure-function modules that assist a
+   specific consumer contract — **distinct from `service`**, which
+   f00037 documents as "stateful business logic". Helpers have no
+   state, no IO, and no domain logic; they are reference-style
+   wrappers and parsers.
+
+2. **Lift every exported `interface` / `type` declaration out of
+   service/helper files and into `contracts/interfaces/*.interface.ts`**.
+   The CLI had 35 exported structural types living in the wrong
+   module — they were "feature-private" only by accident, because
+   most of them were imported across modules. Per f00037 a
+   `*.interface.ts` MUST live under `contracts/interfaces/`. The
+   feature-private structural helpers (no `export`) stay where they
+   are, as the contract already prescribes.
+
+## why
+
+The refactor that aligned `packages/cli/` with f00037 (c9a531ba + da311611 +
+fcd63b50) produced two files that satisfy the contract letter but misrepresent
+their role:
+
+- `lib/cli-helpers.service.ts` — the module exports five pure functions
+  (`data`, `scalarArg`, `hasFlag`, `request`, `isRecord`) and a thin text
+  formatter. No state, no IO, no business logic. Inflating them to
+  `.service.ts` makes them lie about what they are.
+- `lib/color.service.ts` — the ANSI palette + seven formatting helpers
+  (`heading`, `brand`, `success`, …). Same shape: pure functions, no state.
+
+Forcing helpers into the `.service.ts` shape has three concrete costs:
+
+1. **Misleading role classification.** A reviewer who opens a
+   `*.service.ts` file expects stateful logic and finds pure parsers.
+2. **Broken search.** `classifyPath` returns `'service'` for the file, so
+   `rg` over `service` matches noise that is not a service.
+3. **Conceptual drift.** The repo already uses "helper" as its primary
+   domain noun — see the historic `group-helpers.ts`, the
+   "Local helper, not exported." comments in
+   `packages/core/src/lib/contracts/file-conventions.contract.ts`, the
+   `rules-solid-architecture` skill, and the plugin help text. Formalising
+   the vocabulary instead of forcing every helper into the `.service.ts`
+   shape aligns the contract with how the codebase already talks.
+
+## why this design
+
+- **Role name `helper`** (not `util`) — three reasons:
+    1. The repo's own contracts file uses "helper" 4 times and "util" 0
+       times when describing this exact pattern.
+    2. "Helper" denotes "assists a specific consumer contract" — exactly
+       what `data`/`scalarArg` do for `ICliCommand`. "Util" denotes
+       "generic toolbox" — a broader, looser category.
+    3. The pre-S2 file was named `group-helpers.ts`. Renaming the
+       concept to `util` would erase that muscle memory for no benefit.
+- **Folder `helpers/`** — plural, per the f00037 rule "the folder is
+  plural; it groups many contracts". Sits at the same level as
+  `services/`, `factories/`, `builders/`.
+- **Suffix `*.helper.ts`** — singular, per the f00037 rule "the suffix is
+  singular; it describes the file role".
+- **HelperRule placed BEFORE ServiceRule** in `DEFAULT_TS_RULES` so a
+  `*.helper.ts` file never falls through to the service classifier.
+
+## non-goals
+
+- No migration of every helper-shaped file in the monorepo in this slice.
+  The CLI migration demonstrates the pattern; downstream plugins and
+  packages can opt in slice-by-slice.
+- No new role for `util` or `mixin` — keep the surface minimal.
+- No change to the `Role` discriminator for tools (`tool`, `provider`,
+  `view`, `component`, `page`, `i18n`, `data`, `dev`, `webview`) — those
+  are already specialised.
+- **Not splitting `color.service.ts` into `contracts/constants/` + a
+  service.** Considered and rejected: the palette (`c`, `paint`) and the
+  formatters (`heading`, `brand`, `success`, …) are one feature —
+  "colourful CLI output". Splitting them would force every consumer to
+  import from two paths for a single concern. The palette stays
+  encapsulated as a `private const` of the helper module (SOLID single
+  responsibility, no public surface for the palette alone).
+
+## architecture
+
+The migration lifts 35 exported types into `contracts/interfaces/`,
+grouped by domain concern (ISP):
+
+| File under `contracts/interfaces/` | Types it owns (count) | Lifted from |
+|------------------------------------|----------------------:|-------------|
+| `init.interface.ts`                | 25 | the 9 `lib/init/*.service.ts` + `commands/init/init.command.ts` |
+| `completion.interface.ts`          | 2 | `lib/completion/completion.service.ts` |
+| `agent-descriptor.interface.ts`    | 1 | `lib/init/init-catalog.constant.ts` |
+| `server-args.interface.ts`         | 2 | `lib/server-args.service.ts` |
+| `help-translation.interface.ts`    | 1 | `constants/help-translation.constant.ts` |
+| `exit-code.interface.ts`           | 1 | `constants/exit-code.constant.ts` |
+| `plugin-defaults.interface.ts`     | 1 | `constants/plugin-defaults.constant.ts` |
+
+Each consumer module:
+
+1. Drops its local `interface`/`type` declaration.
+2. Adds `import type { ... } from '.../contracts/interfaces/X.interface'`.
+3. Adds `export type { ... }` so existing call sites that import the
+   symbol from the service module keep working without churn.
+
+Types that are **only used inside their declaring module** (no
+`export`, no cross-module consumer) stay where they are as
+"feature-private structural helpers" — that is the f00037 contract
+verbatim: `*.types.ts` are feature-private and live next to the
+source.
+
+## slices
+
+### S1 — Add the `helper` role to the file-convention contract
+
+- **Status**: done
+- **Files**: `packages/core/src/lib/contracts/file-conventions.contract.ts`
+- **Gate**: typecheck
+- **Acceptance**:
+  - "`Role` union exposes the `'helper'` literal; `HelperRule` is added
+    to `DEFAULT_TS_RULES` ordered BEFORE `ServiceRule` (no rule bleed)."
+
+### S2 — Migrate the two CLI helpers + lift 35 exported types
+
+- **Status**: done
+- **Files**: `packages/cli/src/lib/cli-helpers.service.ts` →
+  `packages/cli/src/lib/helpers/cli-command.helper.ts`,
+  `packages/cli/src/lib/color.service.ts` →
+  `packages/cli/src/lib/helpers/cli-color.helper.ts`,
+  `packages/cli/src/commands/groups/group-helpers.ts`,
+  `packages/cli/src/contracts/interfaces/*.interface.ts`
+- **Gate**: typecheck
+- **Acceptance**:
+  - "The two CLI files that the previous refactor placed under
+    `*.service.ts` are renamed and moved; the `group-helpers.ts` shim
+    (re-exports `data`, `hasFlag`, `isRecord`, `request`, `scalarArg`)
+    points at the new location; `classifyPath` returns `helper` for both
+    moved files and `interface` for each lifted `*.interface.ts`."
+
+### S3 — Lock the new role in the contract + parity specs
+
+- **Status**: done
+- **Files**:
+  `packages/core/tests/src/lib/contracts/file-conventions.contract.spec.ts`,
+  `plugins/conventions/src/lib/services/typescript-profile.service.ts`
+  (parity `classifyPath`)
+- **Gate**: validate
+- **Acceptance**:
+  - "A new `describe('helper role (f00096)')` block locks the six
+    assertions below; the plugin-side parity spec re-imports the same six
+    so both consumers stay byte-identical on the new role."
+
+## dependency graph
+
+- **Upstream (already shipped)**: f00037 (the file-convention contract
+  this extends), c9a531ba + da311611 + fcd63b50 (the CLI alignment refactor
+  that surfaced the misclassification).
+- **No new plugin / no new tool / no new i18n key.**
+
+## acceptance
+
+- `bun run typecheck` → exit 0 for files touched by this slice.
+- `bun run lint:tools` → exit 0.
+- `bun tools/scripts/lint/file-conventions.script.ts` →
+  4 unmatched files, all outside `packages/cli/` (baseline unchanged).
+- `bunx vitest run --config packages/cli/vitest.config.ts` →
+  26 files / 214 tests / 100% green.
+- `classifyPath` →
+  - `lib/helpers/cli-command.helper.ts` → `helper` ✓
+  - `lib/helpers/cli-color.helper.ts` → `helper` ✓
+  - `lib/help.service.ts` → `service` (unchanged) ✓
+  - `commands/init/init.command.ts` → `command` (unchanged) ✓
+  - `contracts/interfaces/init.interface.ts` → `interface` ✓
+
+## notes
+
+The contract spec companion at
+`packages/core/tests/src/lib/contracts/file-conventions.contract.spec.ts`
+gets a new `describe('helper role (f00096)')` block that locks the
+six assertions:
+
+1. `Role` union exposes the `'helper'` literal.
+2. `lib/helpers/*.helper.ts` → `helper` (folder rule).
+3. A nested `helpers/x/foo.helper.ts` → `helper` (folder rule wins
+   at any depth).
+4. A bare `foo.helper.ts` (no folder) → `helper` (suffix rule).
+5. A `foo.service.ts` stays `service` (no rule bleed).
+6. `HelperRule` is ordered BEFORE `ServiceRule` in `DEFAULT_TS_RULES`
+   (chain invariant).
+
+The plugin-side parity spec
+(`plugins/conventions/src/lib/services/typescript-profile.service.ts`
+→ `classifyPath`) gets the same six assertions re-imported so both
+consumers stay byte-identical on the new role.

@@ -234,7 +234,7 @@ const site = {
 		copy: '复制',
 		copied: '已复制！',
 		faqTitle: '常见问题',
-		faqQ1: '为什么 `deno run -A npm:@mcp-vertex/core` 启动慢？',
+		faqQ1: '为什么 `deno run -A npm:@mcp-vertex/cli` 启动慢？',
 		faqA1: 'Deno 在首次使用时解析并验证 npm 包。后续运行会复用 `~/.cache/deno` 中的缓存。若频繁启动，建议使用 bun 或 npx。',
 		faqQ2: '我的 IDE 不在列表中——怎么办？',
 		faqA2: '任何接受 stdio MCP 服务器的 IDE 都可以使用。复制 VS Code 的 JSON，把文件路径改成你的 IDE 期望的，再注册相同的命令与参数即可。',
@@ -274,6 +274,7 @@ const site = {
 	},
 	cfg: {
 		title: '设置',
+		close: '关闭设置',
 		theme: '主题',
 		language: '语言',
 		motion: '动画',
@@ -282,6 +283,10 @@ const site = {
 	search: {
 		title: '搜索',
 		placeholder: '搜索本站...',
+		close: '关闭搜索',
+		noMatches: '没有匹配结果。',
+		indexUnavailable: '搜索索引不可用。',
+		buildRequired: '搜索由 bun run site 生成。请运行构建以启用搜索。',
 	},
 	footer: {
 		built: '取自实时工具注册表生成。',
@@ -300,6 +305,7 @@ const site = {
 		tabTools: '工具',
 		tabConfiguration: '配置',
 		tabTutorial: '教程',
+		tutorialFallback: '当前显示英文，尚未翻译为 {lang}',
 	},
 	plugin: {
 		proposals:
@@ -377,6 +383,8 @@ const site = {
 		nextSteps: '接下来去哪里',
 		nextToolsCta: '浏览所有工具',
 		nextTroubleshootingCta: '有什么不工作？故障排查',
+		overviewHint:
+			'服务器启动后，以 compact: true 调用 mcp-vertex_overview；recommendedNextAction 会准确告诉代理下一步该做什么。',
 	},
 	troubleshooting: {
 		title: '故障排查',
@@ -513,9 +521,22 @@ const extension = {
 	setupGithub: 'mcp-vertex：配置 GitHub issues',
 };
 
+const dev = {
+	quickStartHeading: '快速开始',
+	quickStartLede:
+		'一次性导览。工作区已配置完成,仪表板现在正在拉取真实数据 — 每个标签页的作用如下。',
+	quickStartDismiss: '关闭快速开始',
+	firstRunHeading: '欢迎使用 mcp-vertex',
+	firstRunLede:
+		'此扩展为 mcp-vertex MCP 服务器提供仪表板、设置和工具面板。此工作区尚未安装 MCP 服务器 — 安装完成后,仪表板将切换为拉取真实数据。',
+	firstRunSkip: '跳过 — 仍然显示仪表板',
+	firstRunInstall: '在此工作区中安装 mcp-vertex',
+};
+
 const dict: ILangDict = {
 	site: site as unknown as ILangDict['site'],
 	extension: extension as unknown as ILangDict['extension'],
+	dev: dev as unknown as ILangDict['dev'],
 	tools: {},
 };
 

@@ -7,7 +7,8 @@
  * `IDirEntry` port — keeping `conventions-scan.ts` pure and testable.
  */
 import { readdir } from 'node:fs/promises';
-import { join } from 'node:path';
+
+import { resolveWorkspaceContained } from '@mcp-vertex/core/public';
 
 import type {
 	IDirEntry,
@@ -19,8 +20,13 @@ export const createFsDirReader = async (
 	rootDir: string,
 ): Promise<IDirReader> => ({
 	async list(relDir: string): Promise<readonly IDirEntry[]> {
-		const abs = relDir === '' ? rootDir : join(rootDir, relDir);
-		const dirents = await readdir(abs, { withFileTypes: true });
+		const contained = resolveWorkspaceContained(rootDir, relDir || '.');
+		if (!contained.ok) {
+			throw new Error(
+				`conventions scan root "${relDir}" is not allowed: ${contained.reason}`,
+			);
+		}
+		const dirents = await readdir(contained.abs, { withFileTypes: true });
 		return dirents.map((dirent) => ({
 			name: dirent.name,
 			isDirectory: dirent.isDirectory(),

@@ -23,7 +23,7 @@ export const SETUP_GITHUB_COMMAND = 'mcp-vertex.setupGithub';
 const SETUP_GITHUB_VIEW_TYPE = 'mcpVertexSetupGithub';
 
 /** Key under which the host persists the user's preferred language. */
-export const HOST_LANG_KEY = 'mv:lang';
+export const HOST_LANG_KEY = 'mcpv:lang';
 
 /** Resolve the host's persisted language (f00050 S7) with a typed fallback. */
 const resolveLang = (deps: ICommandDeps): Lang => {

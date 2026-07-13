@@ -121,7 +121,9 @@ describe('proposal review state machine (M35)', async () => {
 		// eagle already weighed in on the previous round — must NOT be allowed to verify the fix
 		const sameReviewerApprove = reviewTransition(s, 'approve', 'eagle');
 		expect(sameReviewerApprove.ok).toBe(false);
-		expect(sameReviewerApprove.reason).toMatch(/different agent than the previous reviewer/i);
+		expect(sameReviewerApprove.reason).toMatch(
+			/different agent than the previous reviewer/i,
+		);
 		// a fresh reviewer verifies
 		const freshApprove = reviewTransition(s, 'approve', 'owl');
 		expect(freshApprove.ok).toBe(true);

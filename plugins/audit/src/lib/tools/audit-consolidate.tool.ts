@@ -256,14 +256,15 @@ export const buildConsolidateRegistration = (
 						  }
 						| { skipped: string }
 						| { disabled: true };
-					if (
-						proposalsDirContained.ok ||
-						path.isAbsolute(proposalsDir)
-					) {
+					if (proposalsDirContained.ok) {
 						const scaffoldOptions: IAutoScaffoldOptions = {
 							enabled,
 							peerPlugins: options.peerPlugins,
-							proposalsDir,
+							// Pass the normalized workspace-relative path forward. The
+							// persistence helper must never receive an absolute or escaping
+							// tool input, even when that absolute path happens to point back
+							// inside the workspace.
+							proposalsDir: proposalsDirContained.rel,
 							workspaceRoot: options.workspaceRoot,
 						};
 						const outcome = await resolveAutoScaffold(

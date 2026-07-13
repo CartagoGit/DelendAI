@@ -10,17 +10,17 @@ plugins, loaded with the `minimal` preset (`git` + `search`).
   "servers": {
     "mcp-vertex": {
       "command": "bunx",
-      "args": ["@mcp-vertex/core", "--preset=minimal"]
+      "args": ["--package", "@mcp-vertex/cli", "mcpv", "__serve", "--workspace", ".", "--preset", "minimal"]
     }
   }
 }
 ```
 
 That's it — point your MCP client at it and call `mcp-vertex_overview` to map the
-server in one call. Add `--check` to self-diagnose without starting the server:
+server in one call. Use the CLI validation command to self-diagnose first:
 
 ```bash
-bunx @mcp-vertex/core --check --preset=minimal
+bunx @mcp-vertex/cli --preset=minimal validate
 ```
 
 ## Presets (additive)

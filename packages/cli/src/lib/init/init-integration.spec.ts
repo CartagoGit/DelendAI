@@ -5,10 +5,7 @@ import { join } from 'node:path';
 
 import { InitAnswers } from './init-answers.schema';
 import type { IInitAnswers } from './init-answers.types';
-import {
-	renderInitBundle,
-	resolvePluginSet,
-} from './init-render.service';
+import { renderInitBundle, resolvePluginSet } from './init-render.service';
 import {
 	writeMcpVertexConfig,
 	writeWorkspaceText,
@@ -40,8 +37,15 @@ describe('init integration (f00084 S10)', () => {
 
 		for (const file of first.files) {
 			if (file.relPath === 'mcp-vertex.config.json') {
-				const parsed = JSON.parse(file.content) as Record<string, unknown>;
-				const result = await writeMcpVertexConfig(workspace, parsed, false);
+				const parsed = JSON.parse(file.content) as Record<
+					string,
+					unknown
+				>;
+				const result = await writeMcpVertexConfig(
+					workspace,
+					parsed,
+					false,
+				);
 				expect(result.kind).toBe('written');
 				continue;
 			}
@@ -66,7 +70,9 @@ describe('init integration (f00084 S10)', () => {
 		for (const pluginId of resolvedPlugins) {
 			expect(parsedConfig.plugins[pluginId]).toBeDefined();
 			expect(parsedConfig.plugins[pluginId]?.options).toBeDefined();
-			expect(typeof parsedConfig.plugins[pluginId]?.options).toBe('object');
+			expect(typeof parsedConfig.plugins[pluginId]?.options).toBe(
+				'object',
+			);
 		}
 
 		if ('audit' in parsedConfig.plugins) {
@@ -88,8 +94,12 @@ describe('init integration (f00084 S10)', () => {
 		}
 
 		const second = await renderInitBundle(answers);
-		const firstByPath = new Map(first.files.map((file) => [file.relPath, file.content]));
-		const secondByPath = new Map(second.files.map((file) => [file.relPath, file.content]));
+		const firstByPath = new Map(
+			first.files.map((file) => [file.relPath, file.content]),
+		);
+		const secondByPath = new Map(
+			second.files.map((file) => [file.relPath, file.content]),
+		);
 
 		expect(secondByPath).toEqual(firstByPath);
 	});

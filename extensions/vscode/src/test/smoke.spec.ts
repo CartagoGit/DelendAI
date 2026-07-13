@@ -10,6 +10,7 @@ import {
 	getRuntimeHandle,
 	OPEN_PROPOSAL_COMMAND,
 	OPEN_SETTINGS_COMMAND,
+	OPEN_TOOL_DETAIL_COMMAND,
 	renderOverviewHtml,
 	REFRESH_COMMAND,
 	RUN_VALIDATION_COMMAND,
@@ -94,10 +95,25 @@ describe('VS Code extension smoke', async () => {
 		// f00053 S6: +1 for the new mcp-vertex.openDocsApi command.
 		// f00056 S3: +1 for the new mcp-vertex.openAgentCatalog command
 		//   that drives the AgentCatalogService-backed webview.
-		expect(subscriptions).toHaveLength(19);
+		// f00097 S4: +2 for mcp-vertex.proposals.refresh and
+		//   mcp-vertex.proposals.copyError (the board's local commands).
+		// f00098 S3: +6 for the provider dashboard command set
+		//   (providers.openDashboard / healthcheck / pause / resume,
+		//   usage.report / usage.clear).
+		// f00068 S5 (2026-07-11): +1 for mcp-vertex.externalMcps.ack, the
+		//   external-server activation ack command. The non-modal
+		//   pending-ack notification is fire-and-forget (not tracked).
+		// f00100 S1: +1 for mcp-vertex.openToolDetail, wired from tool-tree
+		//   leaves to the existing tool-detail webview renderer.
+		// f00107 S3: +1 plugin activation switchboard command.
+		// Configuration Center host command adds one lifecycle-tracked registration.
+		expect(subscriptions).toHaveLength(31);
 		expect(commands.has(REFRESH_COMMAND)).toBe(true);
+		expect(commands.has('mcp-vertex.proposals.refresh')).toBe(true);
+		expect(commands.has('mcp-vertex.proposals.copyError')).toBe(true);
 		expect(commands.has(RUN_VALIDATION_COMMAND)).toBe(true);
 		expect(commands.has(OPEN_PROPOSAL_COMMAND)).toBe(true);
+		expect(commands.has(OPEN_TOOL_DETAIL_COMMAND)).toBe(true);
 		expect(commands.has(SHOW_METRICS_COMMAND)).toBe(true);
 		expect(commands.has(OPEN_SETTINGS_COMMAND)).toBe(true);
 		expect(commands.has(SETUP_GITHUB_COMMAND)).toBe(true);

@@ -1,3 +1,6 @@
+import { ProposalsSnapshotSource } from '../lib/proposals-snapshot';
+import { renderProposalDetailHtml } from '../views/proposal-detail-webview';
+import { resolveViewLang, viewCopyFor } from '../i18n/view-copy.strings';
 import type { ICommandDeps } from './types';
 import { renderJsonHtml, showCommandError } from './types';
 
@@ -67,16 +70,32 @@ export const registerOpenProposalCommand = (deps: ICommandDeps) =>
 				return;
 			}
 			try {
-				const board = await deps.client.request<
-					Record<string, never>,
-					IProposalBoardOutput
-				>('mcp-vertex_proposals_proposal_board', {});
-
 				if (check.kind === 'valid') {
-					const match = board.proposals.find(
-						(p) => p.id === check.proposalId,
+					// f00097 S3: render the rich read-only detail webview
+					// (Header / Slices / Diagnose / Logs) instead of a raw
+					// JSON dump. Reuse the shared snapshot source when the
+					// host provides one so the detail draws from the same
+					// TTL cache as the sidebar board.
+					const source =
+						deps.proposalsSource ??
+						new ProposalsSnapshotSource({
+							client: deps.client,
+							...(deps.namespacePrefix === undefined
+								? {}
+								: { namespacePrefix: deps.namespacePrefix }),
+						});
+					const detail = await source.fetchProposalDetail(
+						check.proposalId,
 					);
-					if (match === undefined) {
+					// Not found ⟺ it is neither on the actionable board nor
+					// known to `proposal_diagnose` (absent bag, or an explicit
+					// `ok:false`). A done/retired proposal is off the board but
+					// still diagnosable, so it renders.
+					if (
+						detail.summary === undefined &&
+						(detail.diagnose === undefined ||
+							detail.diagnose.ok === false)
+					) {
 						await deps.vscode.window.showErrorMessage?.(
 							`mcp-vertex: proposal "${check.proposalId}" not found.`,
 						);
@@ -88,13 +107,23 @@ export const registerOpenProposalCommand = (deps: ICommandDeps) =>
 						deps.vscode.ViewColumn.One,
 						{ enableScripts: false },
 					);
-					panel.webview.html = renderJsonHtml(
-						`mcp-vertex Proposal ${check.proposalId}`,
-						match,
+					panel.webview.html = renderProposalDetailHtml(
+						detail,
+						viewCopyFor(
+							resolveViewLang(
+								deps.globalState?.get<unknown>('mcpv:lang'),
+							),
+						),
 					);
 					return;
 				}
 
+				// Absent id (command palette) → the whole board, still a
+				// script-free JSON dump. The sidebar tree is the rich board.
+				const board = await deps.client.request<
+					Record<string, never>,
+					IProposalBoardOutput
+				>('mcp-vertex_proposals_proposal_board', {});
 				const panel = deps.vscode.window.createWebviewPanel(
 					'mcpVertexProposals',
 					'mcp-vertex Proposals',

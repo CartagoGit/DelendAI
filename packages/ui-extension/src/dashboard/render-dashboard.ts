@@ -7,6 +7,7 @@
  */
 import type { IDashboardAllModels } from '@mcp-vertex/client';
 import type { ILangDict } from '@mcp-vertex/shared/i18n';
+import { dashboardCss } from '@mcp-vertex/shared/styles/dashboard/dashboard-css';
 
 import { componentCss, renderRuntime } from '../components';
 import { extensionText } from '../i18n/extension-text';
@@ -26,14 +27,18 @@ export interface IRenderDashboardOptions {
 
 const CLIENT_SCRIPT = `
 (function () {
-  const panels = document.querySelectorAll('.mv-panel');
+	const host =
+		typeof acquireVsCodeApi === 'function' ? acquireVsCodeApi() : null;
+  const panels = document.querySelectorAll('.mcpv-panel');
   // Only real tabs participate in selection + the roving tabindex; the
-  // refresh button is an action (no role="tab"), so it is excluded.
+  // refresh button is an action (no role="tab"), so it is excluded
+  // by the [data-tab-trigger] selector (renderTabs only stamps that
+  // attribute on tab buttons — f00102 S4-real-extract).
   const tabs = Array.prototype.slice.call(
-    document.querySelectorAll('.mv-tabs [role="tab"]'),
+    document.querySelectorAll('[data-tab-trigger]'),
   );
   function selectTab(tab, moveFocus) {
-    const target = tab.getAttribute('data-target');
+    const target = tab.getAttribute('data-tab-trigger');
     tabs.forEach((t) => {
       const on = t === tab;
       t.setAttribute('aria-selected', on ? 'true' : 'false');
@@ -54,7 +59,20 @@ const CLIENT_SCRIPT = `
       selectTab(tabs[next], true);
     });
   });
-  const toolsTable = document.querySelector('.mv-tools-table');
+	const refresh = document.querySelector('[data-action="refresh"]');
+	refresh?.addEventListener('click', () => {
+		host?.postMessage({ command: 'action', action: 'refresh' });
+	});
+	document.addEventListener('click', (evt) => {
+		const target = evt.target;
+		if (!(target instanceof Element)) return;
+		const proposal = target.closest('[data-proposal]');
+		const id = proposal?.getAttribute('data-proposal');
+		if (!id) return;
+		evt.preventDefault();
+		host?.postMessage({ command: 'openProposal', id });
+	});
+  const toolsTable = document.querySelector('.mcpv-tools-table');
   if (toolsTable) {
     const tbody = toolsTable.querySelector('tbody');
     const headers = toolsTable.querySelectorAll('th[data-sort]');
@@ -86,8 +104,10 @@ export const renderDashboard = (
 	model: IDashboardAllModels,
 	options: IRenderDashboardOptions,
 ): string => {
-	const text = (key: string, vars?: Readonly<Record<string, string | number>>) =>
-		extensionText(options.lang, key, vars);
+	const text = (
+		key: string,
+		vars?: Readonly<Record<string, string | number>>,
+	) => extensionText(options.lang, key, vars);
 
 	const header = buildHeader(model);
 	const kpiStrip = buildKpiStrip(model, options.lang);
@@ -102,12 +122,13 @@ export const renderDashboard = (
 	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 	<title>${escapeHtml(text('dashboard.title'))}</title>
 	<style>${componentCss}</style>
+	<style>${dashboardCss}</style>
 </head>
 <body>
 	${header}
 	${kpiStrip}
 	${tabsBar}
-	<main class="mv-main">
+	<main class="mcpv-main">
 		${panels}
 	</main>
 	${footer}

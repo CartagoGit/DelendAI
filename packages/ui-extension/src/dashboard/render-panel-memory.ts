@@ -8,11 +8,13 @@ export const renderPanelMemory = (
 	model: IMemoryListResult,
 	lang: ILangDict,
 ): string => {
-	const text = (key: string, vars?: Readonly<Record<string, string | number>>) =>
-		extensionText(lang, key, vars);
+	const text = (
+		key: string,
+		vars?: Readonly<Record<string, string | number>>,
+	) => extensionText(lang, key, vars);
 	const rows =
 		model.notes.length === 0
-			? `<tr><td colspan="3" class="mv-fg-muted">${escapeHtml(text('dashboard.memory.none'))}</td></tr>`
+			? `<tr><td colspan="3" class="mcpv-fg-muted">${escapeHtml(text('dashboard.memory.none'))}</td></tr>`
 			: model.notes
 					.map(
 						(note) => `<tr>
@@ -23,10 +25,10 @@ export const renderPanelMemory = (
 					)
 					.join('');
 	return `
-<section class="mv-panel" id="panel-memory" role="tabpanel" aria-labelledby="tab-memory">
-	<h2 class="mv-panel__title">${escapeHtml(text('dashboard.memory.title'))}</h2>
-	<p class="mv-fg-muted">${escapeHtml(text('dashboard.memory.durableNotes', { count: formatNumber(model.total) }))}</p>
-	<table class="mv-table">
+<section class="mcpv-panel" id="panel-memory" role="tabpanel" aria-labelledby="tab-memory">
+	<h2 class="mcpv-panel__title">${escapeHtml(text('dashboard.memory.title'))}</h2>
+	<p class="mcpv-fg-muted">${escapeHtml(text('dashboard.memory.durableNotes', { count: formatNumber(model.total) }))}</p>
+	<table class="mcpv-table">
 		<thead><tr><th>${escapeHtml(text('common.id'))}</th><th>${escapeHtml(text('common.title'))}</th><th>${escapeHtml(text('common.tags'))}</th></tr></thead>
 		<tbody>${rows}</tbody>
 	</table>

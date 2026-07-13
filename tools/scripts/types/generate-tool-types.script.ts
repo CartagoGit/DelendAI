@@ -15,7 +15,8 @@
  * checked-in files against a fresh in-memory generation.
  */
 
-import { mkdirSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -42,6 +43,7 @@ import statusMarkerPlugin from '@mcp-vertex/status-marker';
 import testConventionPlugin from '@mcp-vertex/test-convention';
 import webFetchPlugin from '@mcp-vertex/web-fetch';
 import cachePlugin from '@mcp-vertex/cache';
+import usageTrackingPlugin from '../../../plugins/usage-tracking/src/index';
 
 import {
 	buildPackageModules,
@@ -66,10 +68,11 @@ const PLUGIN_SPECIFIERS: Readonly<Record<string, unknown>> = {
 	'mcp-test-convention': testConventionPlugin,
 	'mcp-web-fetch': webFetchPlugin,
 	'mcp-cache': cachePlugin,
+	'mcp-usage-tracking': usageTrackingPlugin,
 };
 
 const PLUGIN_LIST =
-	'proposals,rules,memory,git,quality,search,notification,docs,deps,logs,audit,status-marker,test-convention,web-fetch,cache';
+	'proposals,rules,memory,git,quality,search,notification,docs,deps,logs,audit,status-marker,test-convention,web-fetch,cache,usage-tracking';
 
 /**
  * Assemble the reference server with every plugin and harvest each
@@ -77,8 +80,9 @@ const PLUGIN_LIST =
  * background watcher keeps the process (or the test runner) alive.
  */
 export const harvestToolSchemas = async (): Promise<IHarvestedTool[]> => {
+	const harvestWorkspace = mkdtempSync(join(tmpdir(), 'mcp-vertex-types-'));
 	const args = parseCliArgs(
-		[`--plugins=${PLUGIN_LIST}`, `--workspace=${REPO_ROOT}`],
+		[`--plugins=${PLUGIN_LIST}`, `--workspace=${harvestWorkspace}`],
 		REPO_ROOT,
 	);
 	const { config } = await assembleCliConfig(args, {
@@ -118,6 +122,7 @@ export const harvestToolSchemas = async (): Promise<IHarvestedTool[]> => {
 		return tools;
 	} finally {
 		await assembled.server.close();
+		rmSync(harvestWorkspace, { recursive: true, force: true });
 	}
 };
 

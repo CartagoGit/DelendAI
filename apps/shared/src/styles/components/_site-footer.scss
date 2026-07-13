@@ -1,0 +1,91 @@
+// `apps/shared/src/styles/components/_site-footer.scss`
+//
+// BEM-nested styles for the `<footer class="mcpv-sitefoot">` block
+// emitted by `renderSiteFooter` in
+// `apps/shared/src/components/ui/site-footer.ts` (f00102 S3.2).
+// Reachable from any host that @uses the shared styles index.
+// Class namespace is `mcpv-sitefoot` / `mcpv-sitefoot__*`; a trailing
+// @extend block keeps the legacy `.sitefoot*` selectors working
+// until the host renames its markup.
+
+// _sitefoot.scss — multi-column site footer.
+//
+// BEM root: .mcpv-sitefoot with __inner, __col (and --brand modifier), __base.
+
+.mcpv-sitefoot {
+	border-top: 1px solid var(--mcpv-border, var(--line));
+	padding: 2.5rem 0 1.2rem;
+	color: var(--mcpv-fg-muted, var(--muted));
+	background: linear-gradient(180deg, transparent, color-mix(in srgb, var(--mcpv-link, var(--accent)) 4%, transparent));
+}
+.sitefoot__inner {
+	display: grid;
+	grid-template-columns: 1fr 1fr 1fr;
+	gap: 2rem;
+}
+.sitefoot__col {
+	display: flex;
+	flex-direction: column;
+	gap: 0.35rem;
+	min-width: 0;
+
+	& strong {
+		color: var(--mcpv-fg, var(--fg));
+		font-size: 0.78rem;
+		text-transform: uppercase;
+		letter-spacing: 0.1em;
+		margin-bottom: 0.4rem;
+	}
+	& a {
+		color: var(--mcpv-fg-muted, var(--muted));
+		font-size: 0.92rem;
+	}
+	& a:hover {
+		color: var(--mcpv-fg, var(--fg));
+		text-decoration: none;
+	}
+}
+.sitefoot__col--brand {
+	& p {
+		margin: 0.3rem 0 0;
+		max-width: 22rem;
+		font-size: 0.88rem;
+		line-height: 1.5;
+	}
+	& .sitefoot__credit {
+		margin-top: 0.7rem;
+		font-size: 0.78rem;
+		letter-spacing: 0.02em;
+		color: var(--mcpv-fg, var(--fg));
+		opacity: 0.78;
+	}
+}
+.sitefoot__base {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	padding-top: 1.4rem;
+	margin-top: 1.6rem;
+	border-top: 1px solid var(--mcpv-border, var(--line));
+	color: var(--mcpv-fg-muted, var(--muted));
+	font-size: 0.78rem;
+}
+@media (max-width: 720px) {
+	.sitefoot__inner {
+		grid-template-columns: 1fr;
+		gap: 1.4rem;
+	}
+	.sitefoot__base {
+		flex-direction: column;
+		gap: 0.4rem;
+		text-align: center;
+	}
+}
+
+// Legacy alias — kept so `apps/web` pages that still ship
+// `<footer class="sitefoot">` keep working without a markup
+// change. Remove once the rename to `.mcpv-sitefoot*` lands.
+
+.sitefoot {
+	@extend .mcpv-sitefoot;
+}

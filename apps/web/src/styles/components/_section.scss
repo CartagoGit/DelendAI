@@ -18,6 +18,14 @@
 		margin: 0 0 2rem;
 	}
 }
+// Muted helper text — secondary descriptions inside tables/cards where
+// the parent block has no dedicated element class (e.g. CapabilityGrid's
+// resource rows). Companion utility to `.section .lead` above (f00099 S1).
+.muted {
+	margin: 0.2rem 0 0;
+	color: var(--muted);
+	font-size: 0.88rem;
+}
 .grid {
 	display: grid;
 	gap: 1rem;

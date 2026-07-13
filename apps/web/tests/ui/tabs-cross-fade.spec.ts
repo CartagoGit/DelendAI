@@ -227,7 +227,7 @@ const buildTabsDom = (
 		makeEl('SECTION', {
 			id: `ui-panel-${t.id}`,
 			dataset: { tabPanel: t.id },
-			hidden: initialHidden.includes(t.id) ? false : true,
+			hidden: !initialHidden.includes(t.id),
 		}),
 	);
 	return makeEl('SECTION', {
@@ -447,6 +447,38 @@ describe('initTabs — cross-fade (f00069 S1)', () => {
 		initTabs(doc);
 		expect(root.dataset.tabsBound).toBe('1');
 	});
+
+	// f00099 audit follow-up: the shared `renderTabs` no longer
+	// emits inline `onerror=` JavaScript. The renderer stamps a
+	// `<span data-mcpv-icon>` wrapper around the icon; the
+	// controller (this file) wires `img.error` → wrapper
+	// `is-broken` so the shared SCSS reveals the first-letter
+	// fallback span. This test pins that the controller source
+	// contains the wiring (it is exercised end-to-end by the
+	// docs site — visit /install and watch the PM icon fall
+	// back to a circle with the first letter if the SVG 404s).
+	it('contains the [data-mcpv-icon] fallback wiring in source (f00099 audit follow-up)', () => {
+		// We can't easily inject a real <span data-mcpv-icon> via
+		// the bare-node DOM fake, so we read the controller
+		// source and pin the wiring contract. The same contract
+		// is exercised end-to-end on the docs site; the spec
+		// here guards the wiring so a future refactor cannot
+		// silently drop the bindIconFallbacks call.
+		const { readFileSync } = require('node:fs') as typeof import('node:fs');
+		const { fileURLToPath } =
+			require('node:url') as typeof import('node:url');
+		const { dirname, resolve } =
+			require('node:path') as typeof import('node:path');
+		const here = dirname(fileURLToPath(import.meta.url));
+		const src = readFileSync(
+			resolve(here, '../../src/components/ui/_tabs-controller.ts'),
+			'utf8',
+		);
+		expect(src).toContain('bindIconFallbacks');
+		expect(src).toContain('[data-mcpv-icon]');
+		expect(src).toContain('is-broken');
+		expect(src).toContain("img.addEventListener('error'");
+	});
 });
 
 // ─── Static DOM-shape check for the `plugin` variant (case (d)) ──────────────
@@ -473,53 +505,85 @@ describe('Tabs.astro — plugin variant DOM shape', () => {
 	);
 	const styles = readFileSync(tabsScssPath, 'utf8');
 
+	// f00102 S2.1 — the tablist markup moved from `Tabs.astro` into
+	// the shared `renderTabs()` at
+	// `apps/shared/src/components/ui/tabs.ts`. f00102 S4-real-extract
+	// also fixed a pre-existing bug in the shared SCSS where the
+	// `--underline` / `--pill` / `--plugin` variant modifiers applied
+	// to `.ui-tabs__*` (legacy alias) instead of `.mcpv-tabs__*` (the
+	// real BEM namespace emitted by `renderTabs`). The DOM-shape +
+	// variant + CSS-contract assertions below now read the SHARED
+	// source (renderer + SCSS) directly — `Tabs.astro` is just the
+	// docs-site wrapper that delegates to it.
+	const sharedHere = dirname(fileURLToPath(import.meta.url));
+	const sharedTabsTsPath = resolve(
+		sharedHere,
+		'../../../shared/src/components/ui/tabs.ts',
+	);
+	const sharedTabsScssPath = resolve(
+		sharedHere,
+		'../../../shared/src/styles/components/_tabs.scss',
+	);
+	const sharedSource = readFileSync(sharedTabsTsPath, 'utf8');
+	const sharedStyles = readFileSync(sharedTabsScssPath, 'utf8');
+
 	it('declares the `plugin` variant in the union', () => {
-		expect(source).toMatch(/variant\?: 'underline' \| 'pill' \| 'plugin'/);
+		// The shared renderer declares the variant as `TabsVariant`
+		// (a named alias) instead of an inline union literal, so
+		// the test matches the type-alias declaration instead.
+		expect(sharedSource).toMatch(
+			/export type TabsVariant = 'underline' \| 'pill' \| 'plugin'/,
+		);
+		expect(sharedSource).toMatch(/readonly variant\?: TabsVariant/);
 	});
 
-	it('renders a `<button class="ui-tabs__tab">` per entry', () => {
-		expect(source).toContain('class="ui-tabs__tab"');
-		expect(source).toContain('data-tab-trigger={t.id}');
+	it('renders a `<button class="mcpv-tabs__tab">` per entry', () => {
+		expect(sharedSource).toContain('class="mcpv-tabs__tab"');
+		expect(sharedSource).toContain('data-tab-trigger=');
 	});
 
 	it('keeps the tab styling in the `_tabs.scss` partial, not a scoped <style>', () => {
 		// The component must not re-grow a `<style>` block; the partial owns
-		// every `.ui-tabs__*` rule.
-		expect(source).not.toContain('.ui-tabs__tab {');
-		expect(styles).toContain('.ui-tabs');
+		// every `.mcpv-tabs__*` / `.ui-tabs__*` rule.
+		expect(source).not.toContain('.mcpv-tabs__tab {');
+		expect(sharedStyles).toContain('.mcpv-tabs');
 	});
 
-	it('emits `.ui-tabs--plugin` selector with the deleted PluginTabs look', () => {
-		// Authored as a nested modifier (`&--plugin { .ui-tabs__tab { … } }`)
-		// so the resolved selector is `.ui-tabs--plugin .ui-tabs__tab`.
-		expect(styles).toMatch(/&--plugin[\s\S]{0,80}\.ui-tabs__tab/);
-		expect(styles).toContain('padding: 0.5rem 0.9rem');
-		expect(styles).toContain('border-bottom: 2px solid currentColor');
+	it('emits `.mcpv-tabs--plugin` selector with the deleted PluginTabs look', () => {
+		// Authored as a nested modifier (`&--plugin { .mcpv-tabs__tab { … } }`)
+		// so the resolved selector is `.mcpv-tabs--plugin .mcpv-tabs__tab`.
+		expect(sharedStyles).toMatch(/&--plugin[\s\S]{0,80}\.mcpv-tabs__tab/);
+		expect(sharedStyles).toContain('padding: 0.5rem 0.9rem');
+		expect(sharedStyles).toContain('border-bottom: 2px solid currentColor');
 		// Active label gets 600 weight in the plugin variant.
-		expect(styles).toMatch(
+		expect(sharedStyles).toMatch(
 			/&--plugin[\s\S]{0,400}\[aria-selected='true'\][\s\S]{0,200}font-weight: 600/,
 		);
 	});
 
 	it('defines both `is-entering` and `is-leaving` panel classes for the cross-fade', () => {
-		expect(styles).toContain('[data-tab-panel]');
-		expect(styles).toContain('.is-entering');
-		expect(styles).toContain('.is-leaving');
+		expect(sharedStyles).toContain('[data-tab-panel]');
+		expect(sharedStyles).toContain('.is-entering');
+		expect(sharedStyles).toContain('.is-leaving');
 		// 220 ms with cubic-bezier(0.2, 0.7, 0.2, 1) is the explicit S1 contract.
-		expect(styles).toContain('220ms cubic-bezier(0.2, 0.7, 0.2, 1)');
-		expect(styles).toContain('@keyframes ui-tab-fade-in');
-		expect(styles).toContain('@keyframes ui-tab-fade-out');
+		expect(sharedStyles).toContain('220ms cubic-bezier(0.2, 0.7, 0.2, 1)');
+		expect(sharedStyles).toContain('@keyframes ui-tab-fade-in');
+		expect(sharedStyles).toContain('@keyframes ui-tab-fade-out');
 	});
 
 	it('disables the cross-fade under prefers-reduced-motion', () => {
-		expect(styles).toMatch(
+		expect(sharedStyles).toMatch(
 			/@media \(prefers-reduced-motion: reduce\)[\s\S]{0,400}animation: none/,
 		);
 	});
 
 	it('renders the optional icon before the label when `t.icon` is set', () => {
-		expect(source).toContain('t.icon &&');
-		expect(source).toContain('class="ui-tabs__icon"');
-		expect(source).toMatch(/<img[\s\S]{0,200}class="ui-tabs__icon"/);
+		expect(sharedSource).toContain('renderIcon');
+		expect(sharedSource).toContain('class="mcpv-tabs__icon"');
+		// f00102 audit follow-up: the icon wrapper is now a
+		// `<span data-mcpv-icon>` containing the <img> + a
+		// first-letter fallback span. No inline `onerror=` JS.
+		expect(sharedSource).toContain('data-mcpv-icon');
+		expect(sharedSource).toContain('mcpv-tabs__icon-fallback');
 	});
 });

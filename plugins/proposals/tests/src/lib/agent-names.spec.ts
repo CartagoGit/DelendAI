@@ -83,6 +83,27 @@ describe('agent_names (covers the orchestrator, not only subagents)', async () =
 		expect(list.summary.active).toBe(2);
 	});
 
+	it('fires onAgentReleased for the released name (loop-detector reset seam)', async () => {
+		const releasedNames: string[] = [];
+		const opts: IAgentNamesToolOptions = {
+			...options,
+			onAgentReleased: (name) => releasedNames.push(name),
+		};
+		const assigned = parse(
+			await runAgentNames(
+				{
+					action: 'assign',
+					task_id: 'root',
+					agent_slot: 'orchestrator',
+				},
+				opts,
+			),
+		) as { agent_name: string };
+
+		await runAgentNames({ action: 'release', task_id: 'root' }, opts);
+		expect(releasedNames).toContain(assigned.agent_name);
+	});
+
 	it('f00082 S3: persists host/model on assign (unknown host coerced)', async () => {
 		const known = parse(
 			await runAgentNames(
@@ -130,6 +151,62 @@ describe('agent_names (covers the orchestrator, not only subagents)', async () =
 		) as { host: string | null; model: string | null };
 		expect(a.host).toBeNull();
 		expect(a.model).toBeNull();
+	});
+
+	it('f00082 S3: defaults host/model from options.defaultIdentity when the caller omits them', async () => {
+		const a = parse(
+			await runAgentNames(
+				{
+					action: 'assign',
+					task_id: 'boot',
+					agent_slot: 'orchestrator',
+				},
+				{
+					...options,
+					defaultIdentity: { host: 'claude-code', model: 'opus' },
+				},
+			),
+		) as { host: string; model: string };
+		expect(a.host).toBe('claude-code');
+		expect(a.model).toBe('opus');
+	});
+
+	it('f00082 S3: an explicit host/model arg overrides options.defaultIdentity', async () => {
+		const a = parse(
+			await runAgentNames(
+				{
+					action: 'assign',
+					task_id: 'override',
+					agent_slot: 'orchestrator',
+					host: 'cursor',
+					model: 'sonnet',
+				},
+				{
+					...options,
+					defaultIdentity: { host: 'claude-code', model: 'opus' },
+				},
+			),
+		) as { host: string; model: string };
+		expect(a.host).toBe('cursor');
+		expect(a.model).toBe('sonnet');
+	});
+
+	it('f00082 S3: an unknown default host coerces to `unknown` (same rule as an explicit arg)', async () => {
+		const a = parse(
+			await runAgentNames(
+				{
+					action: 'assign',
+					task_id: 'coerce',
+					agent_slot: 'orchestrator',
+				},
+				{
+					...options,
+					defaultIdentity: { host: 'some-cli', model: 'x' },
+				},
+			),
+		) as { host: string; model: string };
+		expect(a.host).toBe('unknown');
+		expect(a.model).toBe('x');
 	});
 
 	it('honours a custom name pool from options', async () => {

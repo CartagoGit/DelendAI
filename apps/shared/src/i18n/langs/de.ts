@@ -238,7 +238,7 @@ const site = {
 		copy: 'Kopieren',
 		copied: 'Kopiert!',
 		faqTitle: 'Häufige Fragen',
-		faqQ1: 'Warum startet `deno run -A npm:@mcp-vertex/core` langsam?',
+		faqQ1: 'Warum startet `deno run -A npm:@mcp-vertex/cli` langsam?',
 		faqA1: 'Deno löst das npm-Paket bei der ersten Verwendung auf und verifiziert es. Folgeaufrufe nutzen den Cache in `~/.cache/deno`. Für wiederholte Starts sind bun oder npx besser.',
 		faqQ2: 'Meine IDE ist nicht gelistet — was nun?',
 		faqA2: 'Jede IDE, die einen stdio-MCP-Server akzeptiert, funktioniert. Nimm das JSON aus VS Code, ändere den Dateipfad auf den von deiner IDE erwarteten und registriere denselben Befehl + Argumente.',
@@ -278,6 +278,7 @@ const site = {
 	},
 	cfg: {
 		title: 'Einstellungen',
+		close: 'Einstellungen schließen',
 		theme: 'Thema',
 		language: 'Sprache',
 		motion: 'Animation',
@@ -286,6 +287,11 @@ const site = {
 	search: {
 		title: 'Suchen',
 		placeholder: 'Seite durchsuchen...',
+		close: 'Suche schließen',
+		noMatches: 'Keine Treffer.',
+		indexUnavailable: 'Suchindex nicht verfügbar.',
+		buildRequired:
+			'Die Suche wird mit bun run site erstellt. Führe den Build aus, um sie zu aktivieren.',
 	},
 	footer: {
 		built: 'Aus dem Live-Tool-Registry generiert.',
@@ -304,6 +310,8 @@ const site = {
 		tabTools: 'Tools',
 		tabConfiguration: 'Konfiguration',
 		tabTutorial: 'Anleitung',
+		tutorialFallback:
+			'wird auf Englisch angezeigt; noch nicht in {lang} übersetzt',
 	},
 	plugin: {
 		proposals:
@@ -382,6 +390,8 @@ const site = {
 		nextSteps: 'Wie geht es weiter',
 		nextToolsCta: 'Alle Tools durchsuchen',
 		nextTroubleshootingCta: 'Funktioniert etwas nicht? Fehlerbehebung',
+		overviewHint:
+			'Rufe nach dem Serverstart mcp-vertex_overview mit compact: true auf; recommendedNextAction sagt dem Agenten genau, was als Nächstes zu tun ist.',
 	},
 	troubleshooting: {
 		title: 'Fehlerbehebung',
@@ -520,9 +530,22 @@ const extension = {
 	setupGithub: 'mcp-vertex: GitHub-Issues einrichten',
 };
 
+const dev = {
+	quickStartHeading: 'Schnellstart',
+	quickStartLede:
+		'Eine einmalige Orientierung. Der Workspace ist verkabelt und das Dashboard zieht jetzt echte Daten — hier ist, was jeder Tab tut.',
+	quickStartDismiss: 'Schnellstart schließen',
+	firstRunHeading: 'Willkommen bei mcp-vertex',
+	firstRunLede:
+		'Diese Erweiterung liefert ein Dashboard, Einstellungen und ein Werkzeug-Panel für den mcp-vertex MCP-Server. Der MCP-Server ist in diesem Workspace noch nicht installiert — sobald er es ist, wechselt das Dashboard zum Abruf echter Daten.',
+	firstRunSkip: 'Überspringen — Dashboard trotzdem zeigen',
+	firstRunInstall: 'mcp-vertex in diesem Workspace installieren',
+};
+
 const dict: ILangDict = {
 	site: site as unknown as ILangDict['site'],
 	extension: extension as unknown as ILangDict['extension'],
+	dev: dev as unknown as ILangDict['dev'],
 	tools: {},
 };
 

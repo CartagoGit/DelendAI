@@ -35,6 +35,16 @@ const kebab = (value: string): string =>
 export const getMaxNotes = (override?: number): number =>
 	typeof override === 'number' && override > 0 ? override : DEFAULT_MAX_NOTES;
 
+export class NoteQuotaExceededError extends Error {
+	readonly limit: number;
+
+	constructor(limit: number) {
+		super(`note store is full (max ${limit} notes)`);
+		this.name = 'NoteQuotaExceededError';
+		this.limit = limit;
+	}
+}
+
 /**
  * Derive a note's stable id from its title (so saves upsert by title).
  * Titles are therefore part of the durable memory contract: the store
@@ -57,6 +67,7 @@ export const saveNote = (
 		ttlSeconds?: number;
 	},
 	now: () => string = () => new Date().toISOString(),
+	maxNotes?: number,
 ): Promise<ISaveResult> =>
 	withStoreLock(absPath, async () => {
 		// Scrub secrets BEFORE anything touches disk: memory is durable.
@@ -71,6 +82,10 @@ export const saveNote = (
 		const id = deriveNoteId(titleR.text);
 		const notes = await readStore(absPath);
 		const existing = notes.find((note) => note.id === id);
+		const limit = getMaxNotes(maxNotes);
+		if (existing === undefined && notes.length >= limit) {
+			throw new NoteQuotaExceededError(limit);
+		}
 		const stamp = now();
 		// A fresh ttl wins; otherwise an update keeps the prior expiry.
 		const expiresAt =

@@ -1,5 +1,9 @@
 import type { IMcpLogHint, McpStdioClient } from '@mcp-vertex/client';
-import { DEFAULT_DENY, injectCspMeta } from '@mcp-vertex/ui-extension/public';
+import { DEFAULT_DENY, injectCspMeta } from '@mcp-vertex/ui-extension/webview';
+
+import type { ProposalsSnapshotSource } from '../lib/proposals-snapshot';
+import type { ProposalBoardProvider } from '../providers/proposal-board-provider';
+import type { ICommandQuickPickItem } from '../contracts/interfaces/command-quick-pick-item.interface';
 
 import type { IDisposable, IWebviewPanel } from '../extension';
 import type { MemoryTreeDataProvider } from '../providers/memory-tree-data-provider';
@@ -36,19 +40,27 @@ export interface ICommandVscodeApi {
 			showOptions: number,
 			options: { readonly enableScripts?: boolean },
 		): IWebviewPanel;
-		showInformationMessage?(message: string): Thenable<string | undefined>;
+		showInformationMessage?(
+			message: string,
+			...actions: readonly string[]
+		): Thenable<string | undefined>;
 		showErrorMessage?(
 			message: string,
 			...actions: readonly string[]
 		): Thenable<string | undefined>;
 		showQuickPick?(
-			items: ReadonlyArray<{
-				readonly id: string;
-				readonly label: string;
-				readonly description?: string;
-				readonly detail?: string;
-			}>,
-		): Thenable<string | undefined>;
+			items: ReadonlyArray<ICommandQuickPickItem>,
+		): Thenable<ICommandQuickPickItem | undefined>;
+	};
+	readonly workspace?: {
+		readonly workspaceFolders?: ReadonlyArray<{
+			readonly uri: { readonly fsPath: string };
+		}>;
+	};
+	/** `vscode.env` subset — clipboard for the proposals "Copy error" action
+	 * (f00097 S4). Optional so test seams / alt hosts can omit it. */
+	readonly env?: {
+		readonly clipboard: { writeText(value: string): Thenable<void> };
 	};
 }
 
@@ -72,8 +84,11 @@ export interface ICommandDeps {
 	readonly client: McpStdioClient;
 	readonly toolTree?: Pick<ToolTreeDataProvider, 'refresh'>;
 	readonly memoryTree?: Pick<MemoryTreeDataProvider, 'refresh'>;
+	/** Proposals board provider (f00097 S4). `mcp-vertex.refresh` and
+	 * `mcp-vertex.proposals.refresh` invalidate its snapshot + repaint. */
+	readonly proposalsTree?: Pick<ProposalBoardProvider, 'refresh'>;
 	/** Optional host persistence layer (f00050 S7). Used by commands that
-	 * resolve the user's preferred language from `mv:lang`. */
+	 * resolve the user's preferred language from `mcpv:lang`. */
 	readonly globalState?: {
 		get<T>(key: string): T | undefined;
 		update(key: string, value: unknown): Thenable<void> | Promise<void>;
@@ -88,6 +103,14 @@ export interface ICommandDeps {
 	 * service so a deployment started with `--prefix=acme` calls
 	 * `acme_*` tools. Omitted → the default `mcp-vertex_` is used. */
 	readonly namespacePrefix?: string;
+	/** Shared read-only proposals snapshot source (f00097 S3). When present,
+	 * the open-proposal command reuses it so the detail webview draws from the
+	 * same TTL cache as the sidebar board instead of refetching. Omitted → a
+	 * private source is built from `client` + `namespacePrefix`. */
+	readonly proposalsSource?: Pick<
+		ProposalsSnapshotSource,
+		'fetchProposalDetail'
+	>;
 }
 
 export const showCommandError = async (

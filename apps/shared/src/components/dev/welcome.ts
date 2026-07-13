@@ -1,0 +1,185 @@
+/**
+ * `apps/shared/src/components/dev/welcome.ts` — host-agnostic
+ * first-run + quick-start menu renderers. Return HTML strings.
+ *
+ * Replaces the inline `renderFirstRunScreen` / `renderQuickStartMenu`
+ * in `extensions/vscode/src/dev/welcome.ts` (f00102 S4.6) so any
+ * surface that wants the same "4 cards + CTA" welcome + the
+ * "where to start" dismissible menu can import the same markup
+ * without forking the SCSS or the strings.
+ *
+ * Conventions
+ * -----------
+ * - Class namespace: `mcpv-welcome` / `mcpv-welcome__*` /
+ *   `mcpv-quickstart` / `mcpv-quickstart__*`. Legacy `welcome__*` /
+ *   `quickstart__*` selectors are kept in the companion SCSS via
+ *   `@extend`, so the existing dev preview keeps matching during
+ *   the deprecation window (a future slice renames the legacy
+ *   selectors to `mcpv-*` and drops the aliases).
+ * - `CARDS` is the canonical 4-card explainer used by both
+ *   `renderFirstRunScreen` and `renderQuickStartMenu`. The dev
+ *   preview's "Welcome" and "Quick start" surfaces differ only
+ *   in chrome (heading + CTA) — the card body is identical.
+ * - `isQuickStartDismissed` / `dismissQuickStart` are exported
+ *   alongside so the host's runtime glue does not need to know
+ *   the sessionStorage key. Hosts that want a different key (e.g.
+ *   a CLI wizard that persists to disk) can wrap or override
+ *   these helpers; the renderers themselves never touch storage.
+ */
+import { escapeAttr } from '../../lib/escape';
+
+export interface IWelcomeCard {
+	readonly icon: string;
+	readonly title: string;
+	readonly body: string;
+}
+
+export const CARDS: ReadonlyArray<IWelcomeCard> = [
+	{
+		icon: '⊞',
+		title: 'Dashboard',
+		body: 'Real-time metrics for the workspace: token spend, call counts, plugin health, agents working on proposals, slow tools. The single-glance view of how the project is doing.',
+	},
+	{
+		icon: '⚙',
+		title: 'Settings',
+		body: 'Install the MCP server into this workspace (writes .vscode/mcp.json + .vscode/settings.json + a starter mcp-vertex.config.json). Also lets you pick the dashboard theme and language.',
+	},
+	{
+		icon: '◇',
+		title: 'Tool detail',
+		body: 'What a single MCP tool looks like when invoked from VS Code: input schema, output schema, knowledge body, last-call metrics. Useful for debugging an integration.',
+	},
+	{
+		icon: '~',
+		title: 'Metrics',
+		body: 'A sparkline of per-tool call counts over time. Compare tools side-by-side to spot regressions.',
+	},
+];
+
+export const QUICK_START_KEY = 'mcpv:dev:quickstart-dismissed';
+
+export const isQuickStartDismissed = (): boolean => {
+	try {
+		return sessionStorage.getItem(QUICK_START_KEY) === '1';
+	} catch {
+		return false;
+	}
+};
+
+export const dismissQuickStart = (): void => {
+	try {
+		sessionStorage.setItem(QUICK_START_KEY, '1');
+	} catch {
+		// sessionStorage disabled — fine, the menu just shows again next load.
+	}
+};
+
+export interface IRenderFirstRunScreenOptions {
+	/** Card grid to render. Default: `CARDS` (the canonical
+	 *  4-card explainer). Hosts that want a different surface
+	 *  (e.g. a CLI init wizard that explains the 3 commands
+	 *  the user will run) can pass a translated list. */
+	readonly cards?: ReadonlyArray<IWelcomeCard>;
+	/** Heading shown in the panel head. Default: "Welcome to mcp-vertex". */
+	readonly heading?: string;
+	/** Lede paragraph. Default: the canonical English copy. The
+	 *  string is HTML, so the host can include `<code>` etc.;
+	 *  pass already-escaped content. */
+	readonly ledeHtml?: string;
+	/** Label on the skip button. Default: "Skip — show me the dashboard anyway". */
+	readonly skipLabel?: string;
+}
+
+export const renderFirstRunScreen = (
+	installLabel: string,
+	options: IRenderFirstRunScreenOptions = {},
+): string => {
+	const cards = options.cards ?? CARDS;
+	const heading = options.heading ?? 'Welcome to mcp-vertex';
+	const ledeHtml =
+		options.ledeHtml ??
+		'This extension ships a dashboard, settings, and a tools panel for the <code>mcp-vertex</code> MCP server. The MCP server is not installed in this workspace yet — once it is, the dashboard will switch to fetching real data from it.';
+	const skipLabel =
+		options.skipLabel ?? 'Skip — show me the dashboard anyway';
+	const cardsHtml = cards
+		.map(
+			(card) =>
+				`<article class="mcpv-welcome__card welcome__card">
+				<div class="mcpv-welcome__card-icon welcome__card-icon" aria-hidden="true">${escapeAttr(card.icon)}</div>
+				<h3>${escapeAttr(card.title)}</h3>
+				<p>${escapeAttr(card.body)}</p>
+			</article>`,
+		)
+		.join('');
+
+	return `<section class="mcpv-welcome welcome" data-first-run="true">
+			<header class="mcpv-welcome__head welcome__head">
+				<h1>${escapeAttr(heading)}</h1>
+				<p class="mcpv-welcome__lede welcome__lede">${ledeHtml}</p>
+			</header>
+			<div class="mcpv-welcome__grid welcome__grid">
+				${cardsHtml}
+			</div>
+			<footer class="mcpv-welcome__cta welcome__cta">
+				<button type="button" id="welcome-install" class="mcpv-welcome__primary welcome__primary" data-action="open-settings">${escapeAttr(installLabel)}</button>
+				<button type="button" id="welcome-skip" class="mcpv-welcome__secondary welcome__secondary" data-action="skip-to-dashboard">${escapeAttr(skipLabel)}</button>
+			</footer>
+		</section>`;
+};
+
+export interface IRenderQuickStartMenuOptions {
+	readonly cards?: ReadonlyArray<IWelcomeCard>;
+	readonly heading?: string;
+	readonly ledeHtml?: string;
+	/**
+	 * Per-language strings for the menu's chrome (heading, lede,
+	 * dismiss-button label). When omitted, the renderer falls back
+	 * to the canonical English copy so existing callers do not
+	 * have to learn a new contract. The dev preview supplies this
+	 * with the active `Lang`'s dict via the lazy page module so the
+	 * Quick start menu honours the user's chosen language.
+	 */
+	readonly dict?: {
+		readonly heading?: string;
+		readonly lede?: string;
+		readonly dismissLabel?: string;
+	};
+}
+
+const QUICK_START_HEADING_EN = 'Quick start';
+const QUICK_START_LEDE_EN =
+	"A one-time orientation. The workspace is wired and the dashboard is now pulling real data — here's what each tab does.";
+const QUICK_START_DISMISS_LABEL_EN = 'Dismiss quick start';
+
+export const renderQuickStartMenu = (
+	options: IRenderQuickStartMenuOptions = {},
+): string => {
+	const cards = options.cards ?? CARDS;
+	const heading = options.dict?.heading ?? QUICK_START_HEADING_EN;
+	const ledeHtml =
+		options.dict?.lede ?? options.ledeHtml ?? QUICK_START_LEDE_EN;
+	const dismissLabel =
+		options.dict?.dismissLabel ?? QUICK_START_DISMISS_LABEL_EN;
+	const itemsHtml = cards
+		.map(
+			(card) =>
+				`<li class="mcpv-quickstart__item quickstart__item">
+				<span class="mcpv-quickstart__icon quickstart__icon" aria-hidden="true">${escapeAttr(card.icon)}</span>
+				<div>
+					<strong>${escapeAttr(card.title)}.</strong>
+					<span class="mcpv-quickstart__desc quickstart__desc">${escapeAttr(card.body)}</span>
+				</div>
+			</li>`,
+		)
+		.join('');
+
+	return `<aside class="mcpv-quickstart quickstart" role="complementary">
+			<header class="mcpv-quickstart__head quickstart__head">
+				<h2>${escapeAttr(heading)}</h2>
+				<button type="button" id="quickstart-dismiss" class="mcpv-quickstart__close quickstart__close" aria-label="${escapeAttr(dismissLabel)}">×</button>
+			</header>
+			<p class="mcpv-quickstart__lede quickstart__lede">${ledeHtml}</p>
+			<ul class="mcpv-quickstart__list quickstart__list">${itemsHtml}</ul>
+		</aside>`;
+};

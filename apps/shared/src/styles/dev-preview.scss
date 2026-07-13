@@ -1,0 +1,72 @@
+// `apps/shared/src/styles/dev-preview.scss`
+//
+// Composition root for the dev preview bundle (`extensions/vscode`'s
+// entry on :5200 plus the `packages/ui-extension`'s dev entry).
+//
+// Why this file exists
+// --------------------
+// The dev preview renders four BEM islands:
+//   - `setup` / `welcome`       — emitted by `renderSetupWizard` /
+//                                   `renderFirstRunScreen` (the
+//                                   shared renderers from f00102 S4.6)
+//   - `settings`                — emitted by `renderSettingsPanel`
+//                                   in `extensions/vscode/src/dev/settings-panel.ts`
+//   - `quickstart`              — emitted by `renderQuickStartMenu`
+//                                   from the same shared renderer
+//
+// The shared renderers emit **dual-class** markup
+// (`class="mcpv-setup setup"`, `class="mcpv-welcome welcome"`, etc.) so
+// both the new shared namespace AND the legacy dev-preview
+// selectors match. That means every selector needs a rule in the
+// same compilation unit as the renderer's strings — otherwise the
+// markup paints without its CSS.
+//
+// Previously: `dev-wizard.scss` carried the legacy `.setup`/`.welcome`/
+// `.settings`/`.quickstart` rules and was compiled alone (via
+// `dev-wizard-css.ts`). The new `.mcpv-*` partials in
+// `components/_welcome.scss` / `_setup-wizard.scss` /
+// `_theme-picker.scss` / `_lang-picker.scss` were only registered on
+// the docs site's `_index.scss` — so the **dev preview bundle
+// missed every `.mcpv-*` rule**, and surfaces that lean on the new
+// namespace (theme picker radios, status banner, mcpv-lang-picker
+// select styling, …) painted unstyled.
+//
+// What this file does
+// -------------------
+// Pulls the four new component partials **and** the legacy
+// `dev-wizard.scss` rules into one compilation unit so the bundle
+// sees both namespaces. Each new partial does its own
+// `@extend .mcpv-* → .legacy-*` so legacy selectors share the new
+// visual rules without forking the source.
+//
+// Themes / tokens are NOT re-imported here — `dev-wizard.scss`
+// already `@use` themes + tokens; we just `@use` it as a module
+// so the `:root` selectors get emitted exactly once.
+//
+// Order
+// -----
+// 1. `dev-wizard` first: legacy rules are concrete (no @extend
+//    inside), so emitting them first means subsequent @extends in
+//    the new partials target the right selectors.
+// 2. New partials second: each one defines `.mcpv-*` rules and then
+//    does `.legacy { @extend .mcpv-*; }`. Because the legacy SCSS
+//    rules are already emitted, the @extend collapses the legacy
+//    selector onto the .mcpv-* selector list at compile time.
+//
+// Future direction
+// ----------------
+// A dedicated slice renames the legacy `setup`/`welcome`/
+// `settings`/`quickstart` classes in
+// `extensions/vscode/src/dev/*` and the shared renderers to
+// the new `.mcpv-*` namespace; once that lands, the legacy rules in
+// `dev-wizard.scss` can be deleted and the `dev-preview.scss`
+// composition drops the `@use './dev-wizard'` line.
+
+@use './tokens';
+@use './themes';
+@use './breakpoints' as bp;
+@use './dev-wizard' as *;
+@use './components/welcome' as *;
+@use './components/setup-wizard' as *;
+@use './components/theme-picker' as *;
+@use './components/lang-picker' as *;

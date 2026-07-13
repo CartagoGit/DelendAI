@@ -1,0 +1,655 @@
+// `apps/shared/src/styles/dev-wizard.scss`
+//
+// Styles for the dev preview panels at :5200. Four BEM islands own one
+// page-level section each:
+//
+//   - `setup`       → "Finish setup" widget embedded inside the
+//                      dashboard when the workspace is partial.
+//   - `welcome`     → four-card explainer shown on first run when the
+//                      workspace is unconfigured.
+//   - `settings`    → the Settings tab (theme picker, language
+//                      picker, refresh control).
+//   - `quickstart`  → collapsible "where to start" menu on top of the
+//                      configured dashboard.
+//
+// Conventions
+// -----------
+// - BEM with `&` nesting: `.setup__head`, `.setup__primary` etc. read
+//   as children of the block, not as loose top-level rules.
+// - Selectors are still flat at the runtime level — no wrapper
+//   nesting — for the same reason as `dashboard/dashboard.scss`:
+//   renderers across surfaces place panels without a common parent.
+// - All values come from the CSS custom properties in
+//   `apps/shared/src/styles/_tokens.scss` and `_themes.scss`. Only
+//   legacy fallbacks that already existed before this refactor inline
+//   raw values; those stay verbatim so the visual surface doesn't
+//   shift in this slice.
+// - No brand hex literals; use `var(--mcpv-brand-*)` only.
+//
+// Future direction
+// ----------------
+// Renaming `.setup*` → `.mcpv-wizard*` (and friends) needs a
+// coordinated rename across renderers under
+// `extensions/vscode/src/dev/*` and `packages/ui-extension/`. The BEM
+// shape here already mirrors that; a dedicated slice will migrate the
+// class strings in lockstep.
+
+@use 'breakpoints' as bp;
+@use 'themes' as themes;
+
+// Loading `_themes.scss` here means the dev wizard inherits the same
+// brand colours and palette variables (`--bg`, `--fg`, `--accent`,
+// etc.) that the marketing site uses. Combined with the `--mcpv-*`
+// tokens declared by `_tokens.scss`, the four dev panels (setup /
+// welcome / settings / quickstart) live entirely on shared
+// design variables — there is no colour or font that the docs site
+// and the editor cannot share.
+//
+// The `--mcpv-fg`, `--mcpv-bg-soft`, `--mcpv-border`, etc. fallbacks
+// below remain so the wizard also works in contexts where the host
+// theme has not been loaded yet (e.g. the dev entry used as a
+// plain HTML page with no `<html data-theme="...">` attribute).
+
+// ===========================================================================
+// `setup` block — wizard CTA card shown on the dashboard view
+// ===========================================================================
+
+.setup {
+	display: flex;
+	flex-direction: column;
+	gap: var(--mcpv-s-3);
+	padding: var(--mcpv-s-4);
+	font-family: var(--mcpv-font-prose);
+	font-size: 13px;
+	color: var(--mcpv-fg, #d4d4d4);
+	background: transparent;
+	min-width: 0;
+	max-width: 100%;
+
+	&__head {
+		display: flex;
+		flex-direction: column;
+		gap: 6px;
+		padding: var(--mcpv-s-3);
+		background: var(--mcpv-bg-soft, #252526);
+		border: 1px solid var(--mcpv-border, #3c3c3c);
+		border-radius: var(--mcpv-radius-sm);
+		border-left: 3px solid var(--mcpv-brand-blue);
+
+		& h1 {
+			font-size: 15px;
+			font-weight: 600;
+			margin: 0;
+		}
+
+		& p {
+			margin: 0;
+			color: var(--mcpv-fg-muted, #858585);
+		}
+	}
+
+	&__hint {
+		font-size: 12px;
+		color: var(--mcpv-fg-muted, #858585);
+		margin: 0;
+	}
+
+	&__signals {
+		margin: 0;
+		padding: 0;
+		list-style: none;
+		display: flex;
+		flex-direction: column;
+		gap: var(--mcpv-s-1);
+	}
+
+	&__signal {
+		display: flex;
+		align-items: center;
+		gap: var(--mcpv-s-2);
+		padding: var(--mcpv-s-1) var(--mcpv-s-2);
+		border-radius: var(--mcpv-radius-sm);
+		font-size: 12px;
+		color: var(--mcpv-fg-muted, #858585);
+
+		& code {
+			font-family: var(--mcpv-font-mono);
+			font-size: 11px;
+			color: var(--mcpv-fg, #d4d4d4);
+		}
+	}
+
+	&__cta {
+		display: flex;
+		gap: var(--mcpv-s-2);
+		flex-wrap: wrap;
+
+		& button {
+			appearance: none;
+			font: inherit;
+			font-weight: 600;
+			padding: var(--mcpv-s-2) var(--mcpv-s-3);
+			border-radius: var(--mcpv-radius-sm);
+			cursor: pointer;
+			border: 1px solid transparent;
+			transition: background-color var(--mcpv-transition-fast);
+		}
+	}
+
+	&__primary {
+		background: var(--mcpv-brand-blue);
+		color: #ffffff;
+		border-color: var(--mcpv-brand-blue);
+
+		&:hover,
+		&:focus-visible {
+			filter: brightness(1.1);
+		}
+	}
+
+	&__secondary {
+		background: transparent;
+		color: var(--mcpv-fg, #d4d4d4);
+		border-color: var(--mcpv-border, #3c3c3c);
+
+		&:hover,
+		&:focus-visible {
+			background: var(--mcpv-bg-soft, #252526);
+		}
+	}
+
+	&__status {
+		font-size: 12px;
+		color: var(--mcpv-fg-muted, #858585);
+		font-style: italic;
+	}
+}
+
+// ===========================================================================
+// `welcome` block — first-run screen
+// ===========================================================================
+
+.welcome {
+	display: flex;
+	flex-direction: column;
+	gap: var(--mcpv-s-4);
+	padding: var(--mcpv-s-5);
+	font-family: var(--mcpv-font-prose);
+	color: var(--mcpv-fg, #d4d4d4);
+	// Cap the panel width so the 2×2 grid does not stretch the
+	// cards past a readable line length on wide viewports
+	// (1920px+ would otherwise leave 800+px per card). The
+	// 1280px breakpoint lets the panel breathe on big screens
+	// without losing the 2×2 layout.
+	max-width: 100%;
+	min-width: 0;
+	margin: 0 auto;
+	width: 100%;
+
+	@media (min-width: bp.$mcpv-bp-md) {
+		max-width: 960px;
+	}
+
+	&__head {
+		display: flex;
+		flex-direction: column;
+		gap: var(--mcpv-s-2);
+
+		& h1 {
+			font-size: 24px;
+			font-weight: 700;
+			margin: 0;
+			background: var(--mcpv-brand-gradient);
+			-webkit-background-clip: text;
+			background-clip: text;
+			color: transparent;
+		}
+
+		& p {
+			margin: 0;
+			font-size: 14px;
+			color: var(--mcpv-fg-muted, #858585);
+		}
+	}
+
+	&__lede {
+		margin: 0;
+		font-size: 14px;
+		color: var(--mcpv-fg-muted, #858585);
+	}
+
+	// 2×2 grid at all common widths: the four cards describe the
+	// 4 webviews, and a 2×2 layout gives each card enough room for
+	// the prose body without horizontal scrolling. Below the small
+	// breakpoint the grid collapses to a single column. The legacy
+	// `auto-fit, minmax(220px, 1fr)` produced 4 narrow columns at
+	// 1280px viewports where the body text was wrapping at 6+ lines
+	// per card — readable but cramped; the 2×2 layout is the more
+	// balanced tradeoff.
+	&__grid {
+		display: grid;
+		grid-template-columns: 1fr;
+		gap: var(--mcpv-gap);
+	}
+
+	&__card {
+		padding: var(--mcpv-s-4);
+		background: var(--mcpv-bg-card, #252526);
+		border: 1px solid var(--mcpv-border, #3c3c3c);
+		border-radius: var(--mcpv-radius);
+		display: flex;
+		flex-direction: column;
+		gap: var(--mcpv-s-2);
+		transition: border-color var(--mcpv-transition-fast);
+		min-width: 0;
+
+		&:hover {
+			border-color: var(--mcpv-brand-blue);
+		}
+
+		& h3 {
+			margin: 0;
+			font-size: 14px;
+			font-weight: 600;
+		}
+
+		& p {
+			margin: 0;
+			font-size: 12px;
+			color: var(--mcpv-fg-muted, #858585);
+			line-height: 1.5;
+			// Defensive: a single long word in a future card body
+			// (e.g. a versioned ID) must not overflow the card.
+			// `anywhere` is preferred over `break-word` because it
+			// does not preserve the unbreakable sequence even when
+			// the line is the first one of a paragraph.
+			overflow-wrap: anywhere;
+		}
+	}
+
+	&__cta {
+		display: flex;
+		gap: var(--mcpv-s-2);
+		flex-wrap: wrap;
+		margin-top: var(--mcpv-s-3);
+	}
+
+	&__primary,
+	&__secondary {
+		appearance: none;
+		font: inherit;
+		font-weight: 600;
+		padding: var(--mcpv-s-3) var(--mcpv-s-4);
+		border-radius: var(--mcpv-radius-sm);
+		cursor: pointer;
+		border: 1px solid transparent;
+	}
+
+	&__primary {
+		background: var(--mcpv-brand-blue);
+		color: #ffffff;
+		border-color: var(--mcpv-brand-blue);
+
+		&:hover,
+		&:focus-visible {
+			filter: brightness(1.1);
+		}
+	}
+
+	&__secondary {
+		background: transparent;
+		color: var(--mcpv-fg, #d4d4d4);
+		border-color: var(--mcpv-border, #3c3c3c);
+
+		&:hover,
+		&:focus-visible {
+			background: var(--mcpv-bg-soft, #252526);
+		}
+	}
+}
+
+// ===========================================================================
+// `settings` block — Settings tab (theme picker, language picker, refresh)
+// ===========================================================================
+
+.settings {
+	display: flex;
+	flex-direction: column;
+	gap: var(--mcpv-s-4);
+	padding: var(--mcpv-s-4);
+	font-family: var(--mcpv-font-prose);
+	color: var(--mcpv-fg, #d4d4d4);
+	max-width: 100%;
+	min-width: 0;
+
+	&__form {
+		display: flex;
+		flex-direction: column;
+		gap: var(--mcpv-s-4);
+	}
+
+	&__field {
+		display: flex;
+		flex-direction: column;
+		gap: var(--mcpv-s-2);
+	}
+
+	&__hint {
+		margin: 0;
+		font-size: 12px;
+		color: var(--mcpv-fg-muted, #858585);
+	}
+
+	&__radios {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--mcpv-s-2);
+	}
+
+	&__radio {
+		display: inline-flex;
+		align-items: center;
+		gap: 6px;
+		padding: var(--mcpv-s-2) var(--mcpv-s-3);
+		background: var(--mcpv-bg-soft, #252526);
+		border: 1px solid var(--mcpv-border, #3c3c3c);
+		border-radius: var(--mcpv-radius-sm);
+		cursor: pointer;
+		font-size: 12px;
+
+		&.is-active {
+			border-color: var(--mcpv-brand-blue);
+		}
+
+		& input {
+			margin: 0;
+		}
+	}
+
+	&__status {
+		font-size: 12px;
+		color: var(--mcpv-fg-muted, #858585);
+		font-style: italic;
+	}
+}
+
+// ===========================================================================
+// `quickstart` block — collapsible menu pinned on top of the dashboard
+// ===========================================================================
+
+.quickstart {
+	display: flex;
+	flex-direction: column;
+	gap: var(--mcpv-s-2);
+	padding: var(--mcpv-s-3);
+	background: var(--mcpv-bg-soft, #252526);
+	border: 1px solid var(--mcpv-border, #3c3c3c);
+	border-radius: var(--mcpv-radius);
+	margin-bottom: var(--mcpv-s-4);
+	font-family: var(--mcpv-font-prose);
+
+	&__head {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: var(--mcpv-s-2);
+	}
+
+	&__lede {
+		margin: 0;
+		font-size: 12px;
+		color: var(--mcpv-fg-muted, #858585);
+	}
+
+	&__icon {
+		display: inline-flex;
+		width: 24px;
+		height: 24px;
+		align-items: center;
+		justify-content: center;
+		background: var(--mcpv-bg-card, #161b22);
+		border-radius: var(--mcpv-radius-sm);
+		font-size: 14px;
+	}
+
+	&__close {
+		appearance: none;
+		background: transparent;
+		border: none;
+		color: var(--mcpv-fg-muted, #858585);
+		font: inherit;
+		font-size: 12px;
+		cursor: pointer;
+		padding: var(--mcpv-s-1) var(--mcpv-s-2);
+		border-radius: var(--mcpv-radius-sm);
+
+		&:hover {
+			background: var(--mcpv-bg-card, #161b22);
+		}
+	}
+
+	&__list {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+		display: flex;
+		flex-direction: column;
+		gap: var(--mcpv-s-2);
+	}
+
+	&__item {
+		padding: var(--mcpv-s-2);
+		background: var(--mcpv-bg-card, #161b22);
+		border: 1px solid var(--mcpv-border, #3c3c3c);
+		border-radius: var(--mcpv-radius-sm);
+		display: flex;
+		flex-direction: column;
+		gap: var(--mcpv-s-1);
+
+		& h3 {
+			margin: 0;
+			font-size: 13px;
+			font-weight: 600;
+		}
+	}
+
+	&__desc {
+		color: var(--mcpv-fg-muted, #858585);
+		font-size: 12px;
+		display: block;
+		margin-top: 2px;
+	}
+}
+
+// ---------------------------------------------------------------------------
+// Responsive — welcome padding widens and the card grid steps up to
+// a 2×2 layout at the small breakpoint so the four cards breathe on
+// wider viewports.
+// ---------------------------------------------------------------------------
+
+@media (min-width: bp.$mcpv-bp-sm) {
+	.welcome {
+		padding: var(--mcpv-s-6);
+
+		&__grid {
+			grid-template-columns: repeat(2, 1fr);
+		}
+	}
+}
+
+// ===========================================================================
+// `tool-detail` block — single-tool inspector
+// ===========================================================================
+
+.tool-detail {
+	display: flex;
+	flex-direction: column;
+	gap: var(--mcpv-s-4);
+	padding: var(--mcpv-s-4);
+	font-family: var(--mcpv-font-prose);
+	color: var(--mcpv-fg, #d4d4d4);
+	max-width: 100%;
+	min-width: 0;
+
+	&__head {
+		display: flex;
+		flex-direction: column;
+		gap: var(--mcpv-s-1);
+
+		& h1 {
+			margin: 0;
+			font-size: 18px;
+			font-weight: 600;
+			color: var(--mcpv-link, #3794ff);
+			font-family: var(--mcpv-font-mono, ui-monospace);
+		}
+
+		& p {
+			margin: 0;
+			font-size: 13px;
+			color: var(--mcpv-fg-muted, #858585);
+		}
+	}
+
+	&__section {
+		display: flex;
+		flex-direction: column;
+		gap: var(--mcpv-s-2);
+
+		& h2 {
+			margin: 0;
+			font-size: 13px;
+			font-weight: 600;
+			text-transform: uppercase;
+			letter-spacing: 0.04em;
+			color: var(--mcpv-fg-muted, #858585);
+		}
+	}
+
+	&__knowledge {
+		margin: 0;
+		padding: var(--mcpv-s-3);
+		background: var(--mcpv-bg-soft, #161b22);
+		border: 1px solid var(--mcpv-border, #3c3c3c);
+		border-radius: var(--mcpv-radius-sm);
+		font-family: var(--mcpv-font-mono, ui-monospace);
+		font-size: 12px;
+		line-height: 1.5;
+		color: var(--mcpv-fg, #d4d4d4);
+		white-space: pre-wrap;
+		overflow-wrap: anywhere;
+	}
+
+	&__schema-node {
+		margin-top: var(--mcpv-s-1);
+		font-size: 12px;
+		color: var(--mcpv-fg-muted, #858585);
+	}
+
+	&__schema-type {
+		display: inline-block;
+		padding: 1px 6px;
+		background: color-mix(in srgb, var(--mcpv-link, #3794ff) 12%, transparent);
+		color: var(--mcpv-link, #3794ff);
+		border-radius: 3px;
+		font-family: var(--mcpv-font-mono, ui-monospace);
+		font-size: 11px;
+		font-weight: 600;
+	}
+
+	&__schema-props {
+		list-style: none;
+		margin: 0;
+		padding: 0 0 0 var(--mcpv-s-3);
+		display: flex;
+		flex-direction: column;
+		gap: var(--mcpv-s-2);
+	}
+
+	&__schema-prop {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--mcpv-s-2);
+		align-items: baseline;
+
+		& strong {
+			font-family: var(--mcpv-font-mono, ui-monospace);
+			font-size: 12px;
+			color: var(--mcpv-fg, #d4d4d4);
+		}
+
+		& code {
+			font-family: var(--mcpv-font-mono, ui-monospace);
+			font-size: 11px;
+			padding: 1px 6px;
+			border-radius: 3px;
+			background: var(--mcpv-bg-soft, #161b22);
+			border: 1px solid var(--mcpv-border, #3c3c3c);
+		}
+
+		& span {
+			font-size: 11px;
+			color: var(--mcpv-fg-muted, #858585);
+		}
+	}
+}
+
+// ===========================================================================
+// `metrics` block — per-tool calls sparkline summary
+// ===========================================================================
+
+.metrics {
+	display: flex;
+	flex-direction: column;
+	gap: var(--mcpv-s-3);
+	padding: var(--mcpv-s-4);
+	font-family: var(--mcpv-font-prose);
+	color: var(--mcpv-fg, #d4d4d4);
+	max-width: 100%;
+	min-width: 0;
+
+	& h1 {
+		margin: 0;
+		font-size: 18px;
+		font-weight: 600;
+	}
+
+	& p {
+		margin: 0;
+		font-size: 13px;
+		color: var(--mcpv-fg-muted, #858585);
+	}
+
+	& svg {
+		max-width: 100%;
+		height: auto;
+		color: var(--mcpv-link, #3794ff);
+	}
+
+	&__sparkline {
+		display: block;
+		width: 100%;
+		max-width: 480px;
+		height: 96px;
+		padding: var(--mcpv-s-2);
+		background: var(--mcpv-bg-soft, #161b22);
+		border: 1px solid var(--mcpv-border, #3c3c3c);
+		border-radius: var(--mcpv-radius-sm);
+	}
+
+	&__totals {
+		font-family: var(--mcpv-font-mono, ui-monospace);
+		font-size: 12px;
+	}
+}
+
+// ---------------------------------------------------------------------------
+// Print sanity — CTAs collapse on paper so the layout doesn't overflow.
+// ---------------------------------------------------------------------------
+
+@media print {
+	.setup__cta,
+	.welcome__cta {
+		display: none;
+	}
+}

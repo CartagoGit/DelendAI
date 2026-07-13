@@ -1,5 +1,6 @@
 import type { ICorePaths } from '../contracts/interfaces/core-paths.interface';
 import type { ICommitAuthorResolution } from '../shared/commit-author';
+import type { IResolvedHostIdentity } from '../contracts/interfaces/resolved-host-identity.interface';
 import type { IPluginConfigExample } from '../contracts/interfaces/plugin-config-example.interface';
 import type {
 	IKnowledgeEntry,
@@ -12,6 +13,7 @@ import type {
 } from '../contracts/interfaces/tool-registration.interface';
 import type { IWorkspacePathProvider } from '../contracts/interfaces/workspace-paths.interface';
 import type { ICacheEvictionRegistry } from '../contracts/interfaces/cache-eviction.interface';
+import type { IActivationContribution } from '../contracts/interfaces/activation-report.interface';
 
 /**
  * What the core hands a plugin at registration time. A plugin is
@@ -78,6 +80,22 @@ export interface IMcpPluginContext {
 	/** Resolved commit-author policy (f00082). */
 	readonly commitAuthor?: ICommitAuthorResolution | undefined;
 	/**
+	 * Boot-resolved host identity (f00082 S3): the client/IDE (`host`) and
+	 * `model` driving this process, resolved once at assembly from the same
+	 * source as {@link commitAuthor} (`mcp-vertex.config.json#commitAuthor` or
+	 * the `agent-client`/`agent-model` args). A plugin that records who did a
+	 * piece of work (the proposals swarm registry) uses this as the DEFAULT
+	 * identity when a per-call `host`/`model` argument is absent, so an
+	 * orchestrator declares itself once at boot instead of on every call.
+	 *
+	 * Present ONLY when the host actually declared an identity; absent
+	 * otherwise, so consumers keep their `null`/legacy fallback and behaviour
+	 * stays byte-identical for hosts that declare nothing. Optional on the
+	 * contract for backward-compat with test fixtures that build a context
+	 * literal by hand.
+	 */
+	readonly hostIdentity?: IResolvedHostIdentity | undefined;
+	/**
 	 * Names of every plugin that successfully registered in the same
 	 * boot (the "peer plugins"). The value is **lazy**: at register
 	 * time this is `[]` (the load happens after register), but the
@@ -119,6 +137,8 @@ export interface IPeerPluginRegistry {
  */
 export interface IMcpPluginRegistrations {
 	readonly tools?: readonly IToolRegistration[];
+	/** Nested activation surfaces owned by this plugin, for host introspection. */
+	readonly activation?: readonly IActivationContribution[];
 	readonly prompts?: readonly IPromptRegistration[];
 	readonly resources?: readonly IResourceRegistration[];
 	readonly knowledge?: readonly IKnowledgeEntry[];
@@ -133,6 +153,17 @@ export interface IMcpPluginRegistrations {
 		| undefined;
 	readonly onToolStart?:
 		| ((toolName: string, args: unknown) => Promise<void> | void)
+		| undefined;
+	/**
+	 * f00111 S1: fired when the client aborts an in-flight tool call.
+	 * See `IHostObservability.onToolCancel` for the exact semantics.
+	 */
+	readonly onToolCancel?:
+		| ((
+				toolName: string,
+				args: unknown,
+				elapsedMs: number,
+		  ) => Promise<void> | void)
 		| undefined;
 	readonly isAgentStuck?:
 		| ((
