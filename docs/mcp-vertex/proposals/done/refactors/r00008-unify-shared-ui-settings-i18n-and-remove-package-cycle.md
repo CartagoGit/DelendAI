@@ -2,7 +2,7 @@
 id: r00008
 kind: refactor
 title: Unify shared UI settings and i18n, remove package cycle
-status: ready
+status: done
 type: proposal
 track: ui-architecture
 date: 2026-07-12
@@ -153,7 +153,7 @@ install→navigate regression.
 - **Files**: extensions/vscode/src/i18n/strings.ts
 - depends_on: [S3]
 - **Gate**: `bun run test`
-- **Status**: pending
+- **Status**: done
 - **Files**: extensions/vscode/src/dev/settings-panel.ts
 - **Files**: extensions/vscode/src/dev/pages/settings.ts
 - **Files**: extensions/vscode/src/dev/entry.ts
