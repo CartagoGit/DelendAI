@@ -24,6 +24,7 @@ import {
 	HOST_LANGUAGE_CHOICES,
 	type HostLanguage,
 } from '@mcp-vertex/client/public';
+import type { ISettingsTranslations } from '../contracts/interfaces/settings-translations.interface';
 
 export const languageCodes = HOST_LANGUAGE_CHOICES;
 export type Lang = HostLanguage;
@@ -152,34 +153,6 @@ export interface IExtensionTranslations {
 	readonly serverRestartHint: string;
 	// S5 adds toolbar categories here.
 	readonly [key: string]: string;
-}
-
-/** Fully resolved copy consumed by the host-agnostic settings renderer. */
-export interface ISettingsTranslations {
-	readonly title: string;
-	readonly description: string;
-	readonly docsUrl: string;
-	readonly docsUrlDescription: string;
-	readonly allowLocalhostDocsUrl: string;
-	readonly allowLocalhostDocsUrlDescription: string;
-	readonly allowPrivateIpsDocsUrl: string;
-	readonly allowPrivateIpsDocsUrlDescription: string;
-	readonly logLevel: string;
-	readonly theme: string;
-	readonly language: string;
-	readonly motion: string;
-	readonly save: string;
-	readonly reset: string;
-	readonly saving: string;
-	readonly resetting: string;
-	readonly saved: string;
-	readonly resetToDefaults: string;
-	readonly saveError: string;
-	readonly resetError: string;
-	readonly option: (
-		group: 'logLevel' | 'theme' | 'motion',
-		value: string,
-	) => string;
 }
 
 /** Resolve settings copy through the normal dictionary fallback boundary. */
