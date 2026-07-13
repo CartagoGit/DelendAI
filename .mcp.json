@@ -2,12 +2,14 @@
 	"mcpServers": {
 		"mcp-vertex": {
 			"type": "stdio",
-			"command": "bun",
+			"command": "bunx",
 			"args": [
-				"tools/scripts/host/host-server.script.ts",
-				"--workspace=.",
-				"--config=mcp-vertex.config.json",
-				"--preset=swarm"
+				"--package",
+				"@mcp-vertex/cli",
+				"mcpv",
+				"__serve",
+				"--workspace",
+				"."
 			]
 		}
 	}

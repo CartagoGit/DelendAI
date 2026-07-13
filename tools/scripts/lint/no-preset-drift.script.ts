@@ -12,6 +12,8 @@
  * if any of them disagrees with the catalog.
  *
  * What it checks:
+ *   - Published launch instructions execute `@mcp-vertex/cli`, never the
+ *     library-only `@mcp-vertex/core` package.
  *   - `--preset=<kind>` is one of the `PRESET_KIND` ids. If a doc
  *     mentions `--preset=foo` and `foo` is not a known preset, fail.
  *   - `--plugins=A,B,C` lists must not be a verbatim copy of any
@@ -43,6 +45,7 @@ const PRESET_KIND = [
 
 const SCAN_ROOTS: readonly string[] = [
 	'docs',
+	'apps/shared/src',
 	'apps/web/src',
 	'extensions/vscode/src',
 ];
@@ -106,7 +109,10 @@ export interface IDriftFinding {
 	readonly absPath: string;
 	readonly relPath: string;
 	readonly line: number;
-	readonly kind: 'unknown-preset' | 'verbatim-preset-list';
+	readonly kind:
+		| 'broken-core-launch'
+		| 'unknown-preset'
+		| 'verbatim-preset-list';
 	readonly detail: string;
 }
 
@@ -135,6 +141,21 @@ const scanText = (
 	const lines = text.split('\n');
 	for (let i = 0; i < lines.length; i += 1) {
 		const line = lines[i] ?? '';
+
+		if (
+			/\b(?:bunx|npx(?:\s+-y)?|pnpm\s+dlx|yarn\s+dlx)\s+@mcp-vertex\/core\b/.test(
+				line,
+			) ||
+			/\bdeno\s+run\s+-A\s+npm:@mcp-vertex\/core\b/.test(line)
+		) {
+			findings.push({
+				absPath,
+				relPath,
+				line: i + 1,
+				kind: 'broken-core-launch',
+				detail: '@mcp-vertex/core is a library package and has no executable. Run @mcp-vertex/cli (or use the canonical explicit package/bin MCP launch) instead.',
+			});
+		}
 
 		const presetMatch = line.match(/--preset=([a-z][a-z0-9-]*)/);
 		if (presetMatch && presetMatch[1] !== undefined) {

@@ -36,19 +36,19 @@ const profiles = [
 		id: 'bun-node',
 		label: t.firstFiveMinutes.profileTabBunNode,
 		data: t.firstFiveMinutes.bunNode,
-		cmd: 'bunx @mcp-vertex/core --preset=standard',
+		cmd: 'bunx --package @mcp-vertex/cli mcpv __serve --workspace . --preset standard',
 	},
 	{
 		id: 'vscode',
 		label: t.firstFiveMinutes.profileTabVscode,
 		data: t.firstFiveMinutes.vscode,
-		cmd: 'bunx @mcp-vertex/core init',
+		cmd: 'bunx @mcp-vertex/cli init',
 	},
 	{
 		id: 'claude',
 		label: t.firstFiveMinutes.profileTabClaude,
 		data: t.firstFiveMinutes.claude,
-		cmd: 'bunx @mcp-vertex/core init',
+		cmd: 'bunx @mcp-vertex/cli init',
 	},
 ] as const;
 ---

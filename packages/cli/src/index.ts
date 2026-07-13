@@ -11,6 +11,15 @@ import { createStdioContext } from './lib/stdio-context.factory';
 import { createNoopContext } from './lib/noop-context.factory';
 import { formatJson } from './lib/stable-json.service';
 
+export {
+	buildCanonicalLaunch,
+	CANONICAL_CLI_BIN,
+	CANONICAL_CLI_PACKAGE,
+	type ICanonicalLaunch,
+	type ICanonicalLaunchMode,
+	type ICanonicalLaunchOptions,
+} from './lib/server-args.service';
+
 const commandMatches = (
 	command: ICliCommand,
 	path: readonly string[],

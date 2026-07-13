@@ -18,8 +18,8 @@ Todos los gestores de paquetes de abajo ejecutan el mismo paquete publicado. Eli
 Node Package Manager viene con Node.js, así que es la opción universal más segura cuando necesitas la compatibilidad más amplia entre máquinas y runners de CI.
 
 ```bash
-npx -y @mcp-vertex/core init
-npx -y @mcp-vertex/core --check
+npx -y @mcp-vertex/cli init
+npx -y @mcp-vertex/cli validate
 ```
 
 ### pnpm
@@ -27,8 +27,8 @@ npx -y @mcp-vertex/core --check
 pnpm es rápido, eficiente en disco y estricto con la resolución de dependencias, por lo que encaja muy bien en monorepos o equipos que ya estandarizan pnpm.
 
 ```bash
-pnpm dlx @mcp-vertex/core init
-pnpm dlx @mcp-vertex/core --check
+pnpm dlx @mcp-vertex/cli init
+pnpm dlx @mcp-vertex/cli validate
 ```
 
 ### yarn
@@ -36,8 +36,8 @@ pnpm dlx @mcp-vertex/core --check
 Yarn sigue siendo una alternativa familiar en muchos proyectos JavaScript, así que esta ruta funciona bien cuando tus herramientas y hábitos del equipo ya giran alrededor de Yarn.
 
 ```bash
-yarn dlx @mcp-vertex/core init
-yarn dlx @mcp-vertex/core --check
+yarn dlx @mcp-vertex/cli init
+yarn dlx @mcp-vertex/cli validate
 ```
 
 ### bun
@@ -45,8 +45,8 @@ yarn dlx @mcp-vertex/core --check
 bun agrupa runtime y gestor de paquetes en una sola herramienta, y mcp-vertex está construido con bun, así que es la ruta más directa cuando bun ya está disponible en la máquina.
 
 ```bash
-bunx @mcp-vertex/core init
-bunx @mcp-vertex/core --check
+bunx @mcp-vertex/cli init
+bunx @mcp-vertex/cli validate
 ```
 
 ### deno
@@ -54,8 +54,8 @@ bunx @mcp-vertex/core --check
 Deno puede ejecutar el paquete npm directamente, lo cual viene bien si prefieres un runtime seguro por defecto con soporte de TypeScript de primera clase y compatibilidad con npm.
 
 ```bash
-deno run -A npm:@mcp-vertex/core init
-deno run -A npm:@mcp-vertex/core --check
+deno run -A npm:@mcp-vertex/cli init
+deno run -A npm:@mcp-vertex/cli validate
 ```
 
 ## Elige tu IDE
@@ -74,8 +74,14 @@ Alcance: proyecto
       "type": "stdio",
       "command": "bunx",
       "args": [
-        "@mcp-vertex/core",
-        "--preset=standard"
+        "--package",
+        "@mcp-vertex/cli",
+        "mcpv",
+        "__serve",
+        "--workspace",
+        ".",
+        "--preset",
+        "standard"
       ]
     }
   }
@@ -93,8 +99,14 @@ Alcance: proyecto / global
     "mcp-vertex": {
       "command": "bunx",
       "args": [
-        "@mcp-vertex/core",
-        "--preset=standard"
+        "--package",
+        "@mcp-vertex/cli",
+        "mcpv",
+        "__serve",
+        "--workspace",
+        ".",
+        "--preset",
+        "standard"
       ]
     }
   }
@@ -112,8 +124,14 @@ Alcance: global
     "mcp-vertex": {
       "command": "bunx",
       "args": [
-        "@mcp-vertex/core",
-        "--preset=standard"
+        "--package",
+        "@mcp-vertex/cli",
+        "mcpv",
+        "__serve",
+        "--workspace",
+        ".",
+        "--preset",
+        "standard"
       ]
     }
   }
@@ -131,8 +149,14 @@ Alcance: proyecto
     "mcp-vertex": {
       "command": "bunx",
       "args": [
-        "@mcp-vertex/core",
-        "--preset=standard"
+        "--package",
+        "@mcp-vertex/cli",
+        "mcpv",
+        "__serve",
+        "--workspace",
+        ".",
+        "--preset",
+        "standard"
       ]
     }
   }
@@ -150,8 +174,14 @@ Alcance: global
     "mcp-vertex": {
       "command": "bunx",
       "args": [
-        "@mcp-vertex/core",
-        "--preset=standard"
+        "--package",
+        "@mcp-vertex/cli",
+        "mcpv",
+        "__serve",
+        "--workspace",
+        ".",
+        "--preset",
+        "standard"
       ]
     }
   }
@@ -169,8 +199,14 @@ Alcance: global
     "mcp-vertex": {
       "command": "bunx",
       "args": [
-        "@mcp-vertex/core",
-        "--preset=standard"
+        "--package",
+        "@mcp-vertex/cli",
+        "mcpv",
+        "__serve",
+        "--workspace",
+        ".",
+        "--preset",
+        "standard"
       ]
     }
   }
@@ -188,8 +224,14 @@ Alcance: global
     "mcp-vertex": {
       "command": "bunx",
       "args": [
-        "@mcp-vertex/core",
-        "--preset=standard"
+        "--package",
+        "@mcp-vertex/cli",
+        "mcpv",
+        "__serve",
+        "--workspace",
+        ".",
+        "--preset",
+        "standard"
       ]
     }
   }
@@ -266,15 +308,15 @@ Tamaño: 15 plugins.
 Cuando la configuración ya esté en su sitio, ejecuta un self-check con el mismo gestor de paquetes que usaste para instalar. Sustituye `bunx` por `npx`, `pnpm dlx`, `yarn dlx` o `deno run -A npm:` si esa es tu ruta elegida.
 
 ```bash
-bunx @mcp-vertex/core --check
-bunx @mcp-vertex/core --preset=swarm --exclude-plugins=notification --check
+bunx @mcp-vertex/cli validate
+bunx @mcp-vertex/cli --preset=swarm --exclude-plugins=notification validate
 ```
 
 Usa `--exclude-plugins=` cuando quieras restar un plugin de un preset sin hacer fork del preset, por ejemplo para conservar la base swarm pero quitar notification en una sesión de un solo agente.
 
 ## FAQ
 
-### ¿Por qué `deno run -A npm:@mcp-vertex/core` tarda en arrancar?
+### ¿Por qué `deno run -A npm:@mcp-vertex/cli` tarda en arrancar?
 
 Deno resuelve y verifica el paquete npm en el primer uso. Las siguientes ejecuciones reutilizan la caché en `~/.cache/deno`, pero para lanzamientos locales repetidos bun o npx siguen arrancando más rápido.
 
