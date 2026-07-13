@@ -94,6 +94,19 @@ export const extractModel = (result: unknown): IModelDescriptor | null => {
 	};
 };
 
+/** Pull a saving stamped by token-efficiency tools (legacy rows omit it). */
+export const extractTokensSaved = (result: unknown): number => {
+	const structured = structuredOf(result);
+	const accounting = asRecord(structured?.tokenAccounting);
+	const savings = asRecord(structured?.savings);
+	const value = asNumber(
+		structured?.tokensSaved ??
+			accounting?.tokensSaved ??
+			savings?.tokensSaved,
+	);
+	return value === undefined ? 0 : Math.max(0, value);
+};
+
 const extractError = (
 	result: unknown,
 	error: unknown,
@@ -134,6 +147,8 @@ export interface IBuildRecordInput {
 	readonly error?: unknown;
 	readonly startedAt?: number | undefined;
 	readonly endedAt: number;
+	/** Last model observed for this session; used only for a saving-only call. */
+	readonly fallbackModel?: IModelDescriptor | null | undefined;
 	/** Injected cost function (bound to the resolved pricing table). */
 	readonly costOf: (
 		model: IModelDescriptor | null,
@@ -149,7 +164,10 @@ export const buildRecord = (input: IBuildRecordInput): IInvocationRecord => {
 		input.peerPrefixes,
 	);
 	const usage = extractUsage(input.result);
-	const model = extractModel(input.result);
+	const tokensSaved = extractTokensSaved(input.result);
+	const model =
+		extractModel(input.result) ??
+		(tokensSaved > 0 ? (input.fallbackModel ?? null) : null);
 	const errorBlock = extractError(input.result, input.error);
 	const structured = structuredOf(input.result);
 	const fallbackFrom = asString(structured?.fallbackFrom) ?? null;
@@ -171,6 +189,7 @@ export const buildRecord = (input: IBuildRecordInput): IInvocationRecord => {
 		model,
 		usage,
 		costUsd: input.costOf(model, usage),
+		tokensSaved,
 		durationMs,
 		outcome,
 		fallbackFrom,

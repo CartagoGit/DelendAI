@@ -47,6 +47,8 @@ export interface IInvocationRecord {
 	readonly model: IModelDescriptor | null;
 	readonly usage: IUsageTokens | null;
 	readonly costUsd: number | null;
+	/** Saving reported by this call; absent on legacy rows and treated as 0. */
+	readonly tokensSaved?: number;
 	readonly durationMs: number | null;
 	readonly outcome: IInvocationOutcome;
 	readonly fallbackFrom: string | null;
@@ -69,6 +71,8 @@ export interface IRollupBucket {
 	readonly outputTokens: number;
 	readonly totalTokens: number;
 	readonly costUsd: number;
+	readonly tokensSaved: number;
+	readonly savingsPercent: number;
 	readonly errors: number;
 	/** How many of this bucket's calls auto-bypassed confirmation (S7). */
 	readonly autoBypassed: number;
@@ -80,6 +84,8 @@ export interface IRollupTotals {
 	readonly outputTokens: number;
 	readonly totalTokens: number;
 	readonly costUsd: number;
+	readonly tokensSaved: number;
+	readonly savingsPercent: number;
 	readonly errors: number;
 	readonly autoBypassed: number;
 }
@@ -140,4 +146,4 @@ export type GroupByAxis =
 	| 'agent'
 	| 'extension'
 	| 'model';
-export type SortBy = 'calls' | 'totalTokens' | 'costUsd';
+export type SortBy = 'calls' | 'totalTokens' | 'tokensSaved' | 'costUsd';
