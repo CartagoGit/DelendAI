@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-07-13T00:42:12.868Z",
+	"generatedAt": "2026-07-13T00:47:13.765Z",
 	"mode": "compact",
 	"tools": [
 		{
@@ -671,13 +671,6 @@
 				"kind": "feat"
 			},
 			{
-				"id": "f00105",
-				"title": "f00105",
-				"track": "config+install+dogfood+workflow",
-				"status": "ready",
-				"kind": "feat"
-			},
-			{
 				"id": "f00106",
 				"title": "f00106",
 				"track": "usage-tracking+ui-extension+vscode+web",
@@ -707,11 +700,11 @@
 			}
 		],
 		"byStatus": {
-			"ready": 5,
+			"ready": 4,
 			"in-progress": 0,
 			"review": 4,
 			"paused": 2,
-			"done": 197,
+			"done": 198,
 			"blocked": 0,
 			"retired": 0,
 			"unspecified": 0
