@@ -2,7 +2,7 @@
 id: x00098
 title: "Align proposal authoring, teaching and parsing with the canonical format"
 kind: fix
-status: review
+status: done
 type: proposal
 track: general
 date: 2026-07-12
@@ -45,18 +45,18 @@ status folder, and `get_proposal_workflow` must teach the real format.
 - global_gate: e2e
 
 ### S1 — Parser: canonical **Files** lists (brackets, commas, backticks)
-- **Status**: in-progress
+- **Status**: done
 - **Files**: `plugins/proposals/src/lib/swarm/proposal-slice-plan.ts`, `plugins/proposals/tests/src/lib/swarm/proposal-slice-plan.spec.ts`
 - **Gate**: bun run validate
 - status: done
 ### S2 — Generator: lint-canonical documents, hyphen statuses, status folder, board filter
-- **Status**: pending
+- **Status**: done
 - **DependsOn**: S1
 - **Files**: `plugins/proposals/src/lib/tools/authoring.tool.ts`, `plugins/proposals/tests/src/lib/authoring.spec.ts`
 - **Gate**: bun run validate
 - status: done
 ### S3 — Teacher: get_proposal_workflow returns the real canonical template and rules
-- **Status**: pending
+- **Status**: done
 - **DependsOn**: S2
 - **Files**: `plugins/proposals/src/lib/knowledge/proposal-workflow.ts`, `plugins/proposals/tests/src/lib/knowledge/proposal-workflow.spec.ts`
 - **Gate**: bun run validate
