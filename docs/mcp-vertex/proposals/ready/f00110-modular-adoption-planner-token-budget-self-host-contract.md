@@ -34,7 +34,8 @@ reemplazar, complementar o adoptar solo capacidades seleccionadas.
 - **Files**: packages/core/src/lib/bootstrap/schemas.ts
 - **Files**: packages/core/tests/src/lib/bootstrap/adoption-strategy.spec.ts
 - **Gate**: `bun run typecheck`
-- **Status**: pending
+- **Status**: in-progress
+- **Verified finding (2026-07-13)**: the analyze/plan wire inputs had no adoption choice, so downstream code could only infer a destructive/non-destructive policy from `hasMcpProject`. The shared contract now accepts `replace`, `augment` or a non-empty partial capability selection; resolution is deterministic, rejects ambiguous selections, defaults existing projects to merge-only augmentation, preserves unselected capabilities and marks replacement of an existing MCP project as consent-sensitive.
 
 ### S2 — Bounded analyze and plan projections
 - **Files**: packages/core/src/lib/bootstrap/analyze-tool.ts
