@@ -17,6 +17,8 @@ describe('ExtensionSettingsSchema (f00062 S1)', () => {
 		allowPrivateIps: false,
 		logLevel: 'info',
 		theme: 'system',
+		language: 'en',
+		motion: 'system',
 	};
 
 	it('accepts the canonical DEFAULT_EXTENSION_SETTINGS shape', () => {
@@ -96,8 +98,15 @@ describe('ExtensionSettingsSchema (f00062 S1)', () => {
 		expect(LogLevelSchema.safeParse('verbose').success).toBe(false);
 	});
 
-	it('ThemeSchema matches the IExtensionSettings theme union', () => {
-		for (const theme of ['system', 'light', 'dark'] as const) {
+	it('ThemeSchema matches the complete canonical theme union', () => {
+		for (const theme of [
+			'system',
+			'light',
+			'dark',
+			'midnight',
+			'solarized',
+			'nord',
+		] as const) {
 			expect(ThemeSchema.safeParse(theme).success).toBe(true);
 		}
 		expect(ThemeSchema.safeParse('high-contrast').success).toBe(false);

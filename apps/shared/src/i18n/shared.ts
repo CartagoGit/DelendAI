@@ -18,24 +18,15 @@
 
 // ─── Language codes (the `Lang` literal type) ────────────────────────
 //
-// Defined first, with no dependency on `ILangMeta`, to break the cycle
-// `ILangMeta → Lang → languages satisfies ILangMeta → ILangMeta`.
-export const languageCodes = [
-	'ar',
-	'de',
-	'en',
-	'es',
-	'fr',
-	'hi',
-	'it',
-	'ja',
-	'pt',
-	'th',
-	'vi',
-	'zh',
-] as const;
+// Re-exported from the publishable host-preference contract so language
+// choices cannot drift between the client, shared renderers and host adapters.
+import {
+	HOST_LANGUAGE_CHOICES,
+	type HostLanguage,
+} from '@mcp-vertex/client/public';
 
-export type Lang = (typeof languageCodes)[number];
+export const languageCodes = HOST_LANGUAGE_CHOICES;
+export type Lang = HostLanguage;
 
 // ─── Language metadata (depends on `Lang` but `Lang` no longer depends on it) ─
 export interface ILangMeta {

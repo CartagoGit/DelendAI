@@ -120,7 +120,7 @@ install→navigate regression.
 - **Files**: apps/shared/src/public/index.ts
 - **Files**: packages/ui-extension/package.json
 - **Gate**: `bun run typecheck`
-- **Status**: in-progress
+- **Status**: done
 - **Verified finding (2026-07-13)**: `@mcp-vertex/shared` re-exported dropdown/runtime implementations from `@mcp-vertex/ui-extension`, while ui-extension imported shared i18n/styles, creating a real workspace package cycle hidden by TypeScript path aliases. Shared is now a dependency-only foundation; web declares and deep-imports the UI runtime it actually consumes, and ui-extension remains the sole upper-layer consumer of shared.
 
 ### S2 — Canonical settings and theme contract
@@ -129,6 +129,7 @@ install→navigate regression.
 - **Files**: apps/shared/src/components/dev/theme-picker.ts
 - **Gate**: `bun run typecheck`
 - **Status**: pending
+- **Verified finding (2026-07-13)**: the client accepted only three themes and had no language, motion, storage version or migration contract, while shared rendered six themes and twelve languages. The publishable client contract now owns the literal catalogs and a versioned host-only envelope; shared renderers derive their unions from those catalogs, legacy payloads receive explicit defaults, and project configuration remains outside this storage boundary.
 - **Acceptance**:
   - One contract covers theme, language, motion and extension-host preferences without pretending that project config lives in globalState.
   - Theme choices derive from the shared catalog; web and VS Code cannot publish different unions.
