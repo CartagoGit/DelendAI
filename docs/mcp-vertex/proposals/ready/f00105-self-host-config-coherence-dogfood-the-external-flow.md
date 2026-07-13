@@ -83,13 +83,14 @@ Evidence (2026-07-08):
 
 ### S2 — Dogfood gate: self-host configs must equal `mcpv init` output
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `tools/scripts/lint/self-host-dogfood.script.ts`, `tools/scripts/lint/self-host-dogfood.script.spec.ts`, `package.json`
 - **Depends on**: S1, f00104 S1
 - **Gate**: bun run validate
 - **Acceptance**:
   - "A lint asserts the repo's own `.vscode/mcp.json` + `.mcp.json` launch entry equals what `buildCanonicalLaunch` / `mcpv init` would generate for this workspace (allowing the documented dev-mode host-server override). So the repo cannot ship an external flow it does not itself run — a break in the installer fails the repo's own gate."
   - "Wired into `bun run validate`. Passes once S1 + f00104 S1 land."
+- **Evidence**: `lint:self-host-dogfood` reads both checked-in clients, derives each host's expected argv through `buildCanonicalLaunch`, and rejects missing/invalid JSON, non-stdio entries, command drift or argument drift while preserving unrelated sibling servers. Three focused regressions cover parity, independent command/argv failures and malformed/missing configs; the gate is wired immediately after setup drift checks in `validate`.
 
 ## acceptance
 
