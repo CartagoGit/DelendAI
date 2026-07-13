@@ -72,12 +72,14 @@ Evidence (2026-07-08):
 
 ### S1 — Unify the two self-host launch configs
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `.mcp.json`, `.vscode/mcp.json`
 - **Gate**: bun run test
 - **Acceptance**:
   - "Both configs launch with the SAME resolved plugin set (same `--preset` and/or explicit `--plugins`), so the repo presents one tool surface regardless of host. The chosen preset is documented inline with a one-line rationale."
   - "If the pinned `plugins` block in `mcp-vertex.config.json` is the intended source of truth, drop the divergent `--preset` from `.mcp.json` (or add the matching one to `.vscode/mcp.json`) — decide and make them equal."
+- **Decision**: The checked-in `mcp-vertex.config.json#plugins` block is the one plugin-set source of truth. Both clients therefore use the canonical published CLI launch without a preset overlay; their only intentional difference is the host-specific workspace placeholder and VS Code's unrelated filesystem server sibling.
+- **Evidence**: The preceding external-launch work migrated both files to `bunx --package @mcp-vertex/cli mcpv __serve --workspace …` and removed the old asymmetric preset/script arguments. The core repo-config regression now pins the exact canonical argv for both host shapes.
 
 ### S2 — Dogfood gate: self-host configs must equal `mcpv init` output
 
