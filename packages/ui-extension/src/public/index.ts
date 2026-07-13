@@ -124,7 +124,11 @@ export type {
 	IRenderConfigurationCenterOptions,
 } from '../contracts/interfaces/configuration-center.interface';
 export { renderSettings } from '../settings/render-settings';
-export type { IRenderSettingsOptions } from '../settings/render-settings';
+export type {
+	IRenderSettingsOptions,
+	SettingsHostResponse,
+	SettingsWebviewRequest,
+} from '../settings/render-settings';
 export {
 	ExtensionSettingsSchema,
 	LogLevelSchema,

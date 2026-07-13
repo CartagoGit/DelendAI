@@ -142,6 +142,7 @@ install→navigate regression.
 - depends_on: [S1, S2]
 - **Gate**: `bun run test`
 - **Status**: pending
+- **Verified finding (2026-07-13)**: the renderer exposed only three theme choices, omitted language and motion, used English as the document language, and flashed success immediately after posting an uncorrelated message. It now renders the complete canonical catalogs with resolved per-language copy, descriptions and accessible relationships, responsive/focus/reduced-motion states, and a session-scoped request/ack state machine that disables submission while pending, ignores stale replies and announces host errors without injecting host text as HTML.
 - **Acceptance**:
   - Renderer copy is injected for every supported language and interactive controls expose labels, descriptions, focus states and reduced-motion behaviour.
   - Save/reset use a request/ack protocol; success is rendered only after `settingsSaved`, failures after `settingsError`, and submit is disabled while pending.
