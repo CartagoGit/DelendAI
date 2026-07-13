@@ -2,7 +2,7 @@
 id: f00111
 title: "Log client cancellations, boot markers and truncation-safe attribution"
 kind: feat
-status: review
+status: done
 type: proposal
 track: general
 date: 2026-07-12
@@ -47,12 +47,12 @@ observability holes in one session log:
 - global_gate: e2e
 
 ### S1 — Core: onToolCancel hook wired from the instrumented wrapper AbortSignal
-- **Status**: in-progress
+- **Status**: done
 - **Files**: [packages/core/src/lib/project/create-mcp-project.ts, packages/core/src/lib/contracts/interfaces/host-config.interface.ts, packages/core/src/lib/plugins/plugin-contract.ts, packages/core/src/lib/cli/assemble.ts, packages/core/tests/src/lib/project/create-mcp-project.spec.ts]
 - **Gate**: bun run validate
 - status: done
 ### S2 — Logs plugin: tool-cancelled event, server-started boot marker, truncation keeps attribution
-- **Status**: pending
+- **Status**: done
 - **DependsOn**: S1
 - **Files**: [plugins/logs/src/index.ts, plugins/logs/src/lib/services/normalize-event.ts, plugins/logs/tests/normalize-event.spec.ts]
 - **Gate**: bun run validate
