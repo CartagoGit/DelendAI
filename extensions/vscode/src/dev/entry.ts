@@ -145,15 +145,15 @@ if (sidebar) {
 bootstrapPersistedPrefs();
 
 // `mcpv:dev:lang-changed` is dispatched from `pages/settings.ts`
-// when the user picks a new language. The settings page already
-// reflects the new `<option selected>` on its own re-render, but
-// the dashboard (if it is the active view) still has the old
-// dict baked into the renderer call. A soft re-render fixes
-// this without forcing a navigation away from settings. We listen
-// at the window level (the same target `pages/settings.ts`
-// dispatches to).
+// when the user picks a new language. Every page bakes the dict
+// into its render call, so re-render whatever view is active —
+// x00100 S2 acceptance: "changing the language selector re-renders
+// every section in that language" (the previous version only
+// refreshed the dashboard, leaving configuration/tool-detail/
+// metrics in the old language). Re-rendering the settings page
+// itself is an idempotent repaint of the same content.
 window.addEventListener('mcpv:dev:lang-changed', () => {
-	if (getActiveView() === 'dashboard') void render('dashboard');
+	void render(getActiveView());
 });
 
 // Decide the default landing view. We always land on
