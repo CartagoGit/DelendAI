@@ -20,6 +20,7 @@ import {
 	SERVER_BLUEPRINT_SCHEMA,
 } from './schemas';
 import { toolJson } from '../shared/tool-response';
+import { ADOPTION_STRATEGY_SCHEMA } from '../contracts/constants/adoption-strategy-schema.constant';
 
 export interface IPlanToolDeps {
 	readonly namespacePrefix: string;
@@ -28,6 +29,69 @@ export interface IPlanToolDeps {
 }
 
 const json = (value: unknown) => toolJson(value);
+
+const compactSummarySchema = z.object({
+	serverName: z.string(),
+	namespacePrefix: z.string(),
+	projectType: z.string(),
+	plugins: z.array(z.string()),
+	counts: z.object({
+		tools: z.number(),
+		prompts: z.number(),
+		skills: z.number(),
+		agents: z.number(),
+	}),
+	tests: z.boolean(),
+	hasExistingServer: z.boolean(),
+	adoptionStrategy: ADOPTION_STRATEGY_SCHEMA,
+});
+
+const compactDetailSchema = z.object({
+	section: z.enum(['tools', 'prompts', 'skills', 'agents', 'files', 'notes']),
+	cursor: z.number(),
+	nextCursor: z.number().nullable(),
+	total: z.number(),
+	items: z.array(z.unknown()),
+});
+
+const compactResult = (
+	blueprint: ReturnType<typeof buildServerBlueprint>,
+	args: z.infer<typeof PLAN_INPUT_SCHEMA>,
+) => {
+	const summary = {
+		serverName: blueprint.serverName,
+		namespacePrefix: blueprint.namespacePrefix,
+		projectType: blueprint.projectType,
+		plugins: blueprint.plugins,
+		counts: {
+			tools: blueprint.tools.length,
+			prompts: blueprint.prompts.length,
+			skills: blueprint.skills.length,
+			agents: blueprint.agents.length,
+		},
+		tests: blueprint.tests,
+		hasExistingServer: blueprint.hasExistingServer,
+		adoptionStrategy: blueprint.adoptionStrategy,
+	};
+	if (args.section === undefined) return { summary };
+	const collection: readonly unknown[] =
+		args.section === 'files'
+			? buildBlueprintFiles(blueprint)
+			: blueprint[args.section];
+	const cursor = Math.min(args.cursor ?? 0, collection.length);
+	const limit = args.limit ?? 20;
+	const end = Math.min(cursor + limit, collection.length);
+	return {
+		summary,
+		detail: {
+			section: args.section,
+			cursor,
+			nextCursor: end < collection.length ? end : null,
+			total: collection.length,
+			items: collection.slice(cursor, end),
+		},
+	};
+};
 
 export const buildPlanToolRegistration = (
 	deps: IPlanToolDeps,
@@ -43,18 +107,16 @@ export const buildPlanToolRegistration = (
 				`${prefix}_plan_mcp_project`,
 				{
 					outputSchema: z.object({
-						blueprint: SERVER_BLUEPRINT_SCHEMA,
-						files: z.array(SCAFFOLDED_FILE_SCHEMA),
+						blueprint: SERVER_BLUEPRINT_SCHEMA.optional(),
+						files: z.array(SCAFFOLDED_FILE_SCHEMA).optional(),
+						summary: compactSummarySchema.optional(),
+						detail: compactDetailSchema.optional(),
 					}),
 					description:
 						'Read-only. Analyze this project and return an EXHAUSTIVE blueprint for a project-specific MCP server — every tool, prompt, skill and agent worth creating (with tests by default), plus the files to write. If a server already exists, the notes explain how to integrate it with mcp-vertex instead of replacing it.',
 					inputSchema: PLAN_INPUT_SCHEMA,
 				},
-				async (args: {
-					tests?: boolean | undefined;
-					namespacePrefix?: string | undefined;
-					serverName?: string | undefined;
-				}) => {
+				async (args: z.infer<typeof PLAN_INPUT_SCHEMA>) => {
 					const analysis = await analyzeProject(deps.reader);
 					const blueprint = buildServerBlueprint(analysis, {
 						...(args.tests !== undefined
@@ -66,10 +128,15 @@ export const buildPlanToolRegistration = (
 						...(args.serverName !== undefined
 							? { serverName: args.serverName }
 							: {}),
+						...(args.adoption === undefined
+							? {}
+							: { adoption: args.adoption }),
 						...(deps.patternOverrides !== undefined
 							? { patternOverrides: deps.patternOverrides }
 							: {}),
 					});
+					if (args.compact === true)
+						return json(compactResult(blueprint, args));
 					return json({
 						blueprint,
 						files: buildBlueprintFiles(blueprint),

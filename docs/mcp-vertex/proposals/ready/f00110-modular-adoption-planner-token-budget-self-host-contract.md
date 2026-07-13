@@ -44,7 +44,8 @@ reemplazar, complementar o adoptar solo capacidades seleccionadas.
 - **Files**: packages/core/tests/src/lib/bootstrap/plan-tool.spec.ts
 - depends_on: [S1]
 - **Gate**: `bun run test`
-- **Status**: pending
+- **Status**: in-progress
+- **Verified finding (2026-07-13)**: production still registered a second, monolithic implementation from `bootstrap-tool.ts`; the split `analyze-tool.ts` / `plan-tool.ts` modules targeted by this proposal were never used by the real server, which is why a locally correct compact path still returned the legacy 21 KB payload over MCP. The aggregate is now composition-only, the old schema module is a compatibility re-export, compact analyze/plan results are measured, plan detail is lazy and paginated, and partial adoption filters blueprint/file materialization without emitting a replacement host config.
 
 ### S3 — Target layout and self-host correctness
 - **Files**: packages/core/src/lib/scaffold/scaffold-host.ts
