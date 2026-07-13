@@ -61,6 +61,7 @@ status folder, and `get_proposal_workflow` must teach the real format.
 - **Files**: `plugins/proposals/src/lib/knowledge/proposal-workflow.ts`, `plugins/proposals/tests/src/lib/knowledge/proposal-workflow.spec.ts`
 - **Gate**: bun run validate
 - status: done
+- **Review hardening (2026-07-13)**: explicit ids are now held to the same lowercase-prefix plus five-digit contract as allocated ids, so `create_proposal` cannot write a document that immediately fails the canonical frontmatter linter.
 ## acceptance
 
 - `parseProposalSlicePlan` splits `- **Files**: `a`, `b`` and
