@@ -546,32 +546,92 @@ export const deactivate = async (): Promise<void> => {
 };
 
 /**
- * Read `mcp-vertex.server.command` / `mcp-vertex.server.args` from the
- * workspace configuration and fall back to `bun run mcp-vertex` when
- * the host does not expose a configuration surface or the values are
- * unset. This unblocks environments where `bun` lives outside the
- * `PATH` inherited by VS Code's extension host (e.g. WSL with bun
- * installed at `~/.bun/bin/bun` but not exported to the system PATH).
+ * Resolve the server launch, in precedence order (x00102 S1):
  *
- * `args` accepts either a JSON array (typed verbatim in settings.json)
- * or a space-separated string — the latter is friendlier for the
- * common single-script case while still letting power users pass flags
- * via `["run", "mcp-vertex", "--preset=swarm"]`.
+ *   1. Explicit `mcp-vertex.server.command` / `mcp-vertex.server.args`
+ *      workspace settings — the operator always wins.
+ *   2. The workspace's checked-in `.mcp.json` `mcpServers.mcp-vertex`
+ *      entry — the file `mcpv init` writes, so a freshly-initialised
+ *      consumer connects with zero extra configuration (before this,
+ *      the default assumed a `"mcp-vertex"` package.json script that
+ *      init never creates, and the extension died on connect).
+ *   3. `bun run mcp-vertex` — the legacy fallback for workspaces that
+ *      wire the server through a package.json script.
+ *
+ * `args` in the settings accept either a JSON array (typed verbatim in
+ * settings.json) or a space-separated string — the latter is friendlier
+ * for the common single-script case while still letting power users
+ * pass flags via `["run", "mcp-vertex", "--preset=swarm"]`.
  */
-const resolveServerCommand = (
+const resolveServerCommand = async (
 	vscode: IVscodeApi,
-): { command: string; args: readonly string[] } => {
+): Promise<{ command: string; args: readonly string[]; cwd?: string }> => {
 	const defaults = { command: 'bun', args: ['run', 'mcp-vertex'] } as const;
+	const root = vscode.workspace?.workspaceFolders?.[0]?.uri.fsPath;
 	const config = vscode.workspace?.getConfiguration?.('mcp-vertex.server');
-	const command = config?.get<string>('command') ?? defaults.command;
+	const command = config?.get<string>('command');
 	const rawArgs = config?.get<unknown>('args');
 	const args =
 		Array.isArray(rawArgs) && rawArgs.every((a) => typeof a === 'string')
 			? (rawArgs as readonly string[])
 			: typeof rawArgs === 'string' && rawArgs.trim().length > 0
 				? rawArgs.trim().split(/\s+/)
-				: defaults.args;
-	return { command, args };
+				: undefined;
+	if (
+		(typeof command === 'string' && command.length > 0) ||
+		args !== undefined
+	) {
+		return {
+			command: command ?? defaults.command,
+			args: args ?? defaults.args,
+			...(root === undefined ? {} : { cwd: root }),
+		};
+	}
+	const fromMcpJson =
+		root === undefined ? undefined : await readWorkspaceMcpJsonLaunch(root);
+	if (fromMcpJson !== undefined) {
+		return { ...fromMcpJson, cwd: root as string };
+	}
+	return {
+		...defaults,
+		...(root === undefined ? {} : { cwd: root }),
+	};
+};
+
+/**
+ * Read the `mcpServers.mcp-vertex` launch from `<workspace>/.mcp.json`.
+ * Relative args in that file (e.g. the repo-local host script) resolve
+ * against the workspace root, so the caller must spawn with `cwd: root`.
+ */
+const readWorkspaceMcpJsonLaunch = async (
+	root: string,
+): Promise<{ command: string; args: readonly string[] } | undefined> => {
+	try {
+		const { readFile } = await import('node:fs/promises');
+		const { join } = await import('node:path');
+		const raw = await readFile(join(root, '.mcp.json'), 'utf8');
+		const parsed = JSON.parse(raw) as {
+			readonly mcpServers?: Readonly<
+				Record<
+					string,
+					{ readonly command?: unknown; readonly args?: unknown }
+				>
+			>;
+		};
+		const entry = parsed.mcpServers?.['mcp-vertex'];
+		if (
+			entry !== undefined &&
+			typeof entry.command === 'string' &&
+			entry.command.length > 0 &&
+			Array.isArray(entry.args) &&
+			entry.args.every((a) => typeof a === 'string')
+		) {
+			return { command: entry.command, args: entry.args as string[] };
+		}
+	} catch {
+		// Missing or malformed .mcp.json → fall through to the default.
+	}
+	return undefined;
 };
 
 /**
@@ -596,8 +656,12 @@ export const createDefaultClient = async (
 	vscode?: IVscodeApi,
 ): Promise<McpStdioClient> => {
 	const api = vscode ?? (await loadVscodeApi());
-	const { command, args } = resolveServerCommand(api);
-	return McpStdioClient.connect({ command, args });
+	const { command, args, cwd } = await resolveServerCommand(api);
+	return McpStdioClient.connect({
+		command,
+		args,
+		...(cwd === undefined ? {} : { cwd }),
+	});
 };
 
 export const renderOverviewHtml = (overview: IOverview): string => {
