@@ -6,6 +6,7 @@ import { describe, expect, it } from 'vitest';
 import {
 	buildRecord,
 	extractModel,
+	extractTokensSaved,
 	extractUsage,
 	resolveSessionId,
 } from '../../../src/lib/record';
@@ -51,6 +52,15 @@ describe('extractUsage / extractModel', () => {
 
 	it('returns null when no model info is present', () => {
 		expect(extractModel({ structuredContent: {} })).toBeNull();
+	});
+
+	it('extracts savings from compaction token accounting', () => {
+		expect(
+			extractTokensSaved({
+				structuredContent: { tokenAccounting: { tokensSaved: 375 } },
+			}),
+		).toBe(375);
+		expect(extractTokensSaved({ structuredContent: {} })).toBe(0);
 	});
 });
 
@@ -150,5 +160,36 @@ describe('buildRecord', () => {
 		});
 		expect(record.costUsd).toBe(0.42);
 		expect(record.model?.provider).toBe('p');
+	});
+
+	it('attributes a saving-only call to the last model in its session', () => {
+		const fallbackModel: IModelDescriptor = {
+			provider: 'openai',
+			modelId: 'gpt-5-codex',
+			kind: 'api',
+		};
+		const record = buildRecord({
+			...base,
+			toolName: 'mcp-vertex_memory_compact',
+			result: { tokenAccounting: { tokensSaved: 240 } },
+			fallbackModel,
+		});
+		expect(record.tokensSaved).toBe(240);
+		expect(record.model).toEqual(fallbackModel);
+	});
+
+	it('does not attribute ordinary plugin calls to the last model', () => {
+		const record = buildRecord({
+			...base,
+			toolName: 'mcp-vertex_docs_docs_list',
+			result: { ok: true },
+			fallbackModel: {
+				provider: 'openai',
+				modelId: 'gpt-5-codex',
+				kind: 'api',
+			},
+		});
+		expect(record.tokensSaved).toBe(0);
+		expect(record.model).toBeNull();
 	});
 });
