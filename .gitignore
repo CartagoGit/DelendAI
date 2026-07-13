@@ -94,5 +94,5 @@ mcp-vertex-session-*.md
 # caught instead of silently ignored. Run mcp-vertex tools from the repo root.
 
 # metrics gate run artifacts (the tracked fallback baseline lives in config/)
-metrics-candidate.json
-metrics-baseline.json
+/metrics-candidate.json
+/metrics-baseline.json
