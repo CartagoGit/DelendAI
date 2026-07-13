@@ -257,13 +257,12 @@ describe('e2e: token budget (cold-start payloads)', async () => {
 		expect(bytes).toBeLessThan(BUDGET_BYTES.autoWork);
 	});
 
-	it('bootstrap discovery and planning expose bounded compact projections', async () => {
-		const analyze = await textBytes('mcp-vertex_analyze_project', {
-			compact: true,
-		});
-		const plan = await textBytes('mcp-vertex_plan_mcp_project', {
-			compact: true,
-		});
+	it('bootstrap discovery and planning are bounded BY DEFAULT (x00101)', async () => {
+		// Bare calls — the compact summary is the default since x00101;
+		// the exhaustive payload (205 963 B measured against this repo)
+		// requires full:true.
+		const analyze = await textBytes('mcp-vertex_analyze_project', {});
+		const plan = await textBytes('mcp-vertex_plan_mcp_project', {});
 		expect(analyze, `analyze compact = ${analyze}B`).toBeLessThan(
 			BUDGET_BYTES.analyzeCompact,
 		);

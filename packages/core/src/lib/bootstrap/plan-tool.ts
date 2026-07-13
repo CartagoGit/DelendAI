@@ -115,7 +115,7 @@ export const buildPlanToolRegistration = (
 						detail: compactDetailSchema.optional(),
 					}),
 					description:
-						'Read-only. Analyze this project and return an EXHAUSTIVE blueprint for a project-specific MCP server — every tool, prompt, skill and agent worth creating (with tests by default), plus the files to write. If a server already exists, the notes explain how to integrate it with mcp-vertex instead of replacing it.',
+						'Read-only. Analyze this project and plan a project-specific MCP server. Returns a bounded compact summary by DEFAULT (page detail with section/cursor/limit over tools, prompts, skills, agents, files or notes); pass full:true only when you need the EXHAUSTIVE blueprint plus every file to write (hundreds of KB on real projects). If a server already exists, the notes explain how to integrate it with mcp-vertex instead of replacing it.',
 					inputSchema: PLAN_INPUT_SCHEMA,
 				},
 				async (args: z.infer<typeof PLAN_INPUT_SCHEMA>) => {
@@ -140,8 +140,13 @@ export const buildPlanToolRegistration = (
 							? { patternOverrides: deps.patternOverrides }
 							: {}),
 					});
-					if (args.compact === true)
-						return json(compactResult(blueprint, args));
+					// x00101: compact is the DEFAULT — the exhaustive payload
+					// measured 205 963 B (~51k tokens) against this repo, so
+					// it must be an explicit opt-in (`full: true`; legacy
+					// `compact: false` behaves the same).
+					const wantsFull =
+						args.full === true || args.compact === false;
+					if (!wantsFull) return json(compactResult(blueprint, args));
 					return json({
 						blueprint,
 						files: buildBlueprintFiles(blueprint),

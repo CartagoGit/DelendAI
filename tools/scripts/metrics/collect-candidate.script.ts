@@ -27,6 +27,8 @@ const REPEATS = 3;
 const compactArgsFor = (toolName: string): Record<string, unknown> => {
 	if (toolName.endsWith('_overview')) return { compact: true };
 	if (toolName.endsWith('_agent_catalog')) return { mode: 'compact' };
+	if (toolName.endsWith('_analyze_project')) return {};
+	if (toolName.endsWith('_plan_mcp_project')) return {};
 	if (toolName.endsWith('_auto_work')) return {};
 	if (toolName.endsWith('_compact_status')) return {};
 	if (toolName.endsWith('_docs_list')) return { limit: 10 };
@@ -40,6 +42,8 @@ const compactArgsFor = (toolName: string): Record<string, unknown> => {
 const isTrackedReadOnlyTool = (toolName: string): boolean =>
 	toolName.endsWith('_overview') ||
 	toolName.endsWith('_agent_catalog') ||
+	toolName.endsWith('_analyze_project') ||
+	toolName.endsWith('_plan_mcp_project') ||
 	toolName.endsWith('_auto_work') ||
 	toolName.endsWith('_compact_status') ||
 	toolName.endsWith('_docs_list') ||

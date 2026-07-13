@@ -117,4 +117,29 @@ describe('plan_mcp_project compact projection', () => {
 		expect(paths).not.toContain('libs/mcp-project/src/server.ts');
 		expect(paths.every((path) => path.includes('/tools/'))).toBe(true);
 	});
+
+	it('x00101: compact summary is the DEFAULT; full:true opts in to the exhaustive payload', async () => {
+		const invoke = await registerHandler({
+			'package.json': JSON.stringify({
+				name: 'consumer',
+				scripts: { test: 'vitest' },
+			}),
+		});
+
+		const bare = await invoke({});
+		expect(bare).toHaveProperty('summary');
+		expect(bare).not.toHaveProperty('blueprint');
+		expect(bare).not.toHaveProperty('files');
+		expect(Buffer.byteLength(JSON.stringify(bare), 'utf8')).toBeLessThan(
+			2_000,
+		);
+
+		const full = await invoke({ full: true });
+		expect(full).toHaveProperty('blueprint');
+		expect(full).toHaveProperty('files');
+
+		// Legacy escape hatch: compact:false behaves like full:true.
+		const legacy = await invoke({ compact: false });
+		expect(legacy).toHaveProperty('blueprint');
+	});
 });

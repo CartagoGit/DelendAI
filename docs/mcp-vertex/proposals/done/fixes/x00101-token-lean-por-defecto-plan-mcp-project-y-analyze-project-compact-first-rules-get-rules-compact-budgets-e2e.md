@@ -2,7 +2,7 @@
 id: x00101
 title: "Token-lean por defecto: plan_mcp_project y analyze_project compact-first, rules_get_rules compact, budgets e2e"
 kind: fix
-status: ready
+status: done
 type: proposal
 track: core
 date: 2026-07-13
@@ -29,7 +29,7 @@ Finding 1 y 11 de a00053 (re-verificación del finding diferido de a00052): el m
 - global_gate: e2e
 
 ### S1 — plan_mcp_project y analyze_project compact por defecto con full:true opt-in + SDK regenerado
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/src/lib/bootstrap/plan-tool.ts`, `packages/core/src/lib/bootstrap/analyze-tool.ts`, `packages/core/src/generated/tool-outputs.ts`
 - **Gate**: e2e
 - acceptance:
@@ -38,7 +38,7 @@ Finding 1 y 11 de a00053 (re-verificación del finding diferido de a00052): el m
   - "las descripciones de ambos tools documentan el default y el opt-in"
 
 ### S2 — rules_get_rules modo compact
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/rules/src/lib/tools/rules-tools.ts`
 - **Gate**: e2e
 - acceptance:
@@ -46,7 +46,7 @@ Finding 1 y 11 de a00053 (re-verificación del finding diferido de a00052): el m
   - "el default queda documentado en la descripción del tool"
 
 ### S3 — Presupuestos e2e para plan/analyze/get_rules + refresh de TOKEN-BUDGETS.md + baseline de métricas
-- **Status**: pending
+- **Status**: done
 - **DependsOn**: [S1, S2]
 - **Files**: `packages/core/tests/src/lib/e2e/token-budget.e2e.spec.ts`, `docs/mcp-vertex/TOKEN-BUDGETS.md`, `tools/scripts/metrics/collect-candidate.script.ts`, `config/metrics-baseline.json`
 - **Gate**: e2e
