@@ -2,7 +2,7 @@
 id: x00102
 title: "Adopción out-of-the-box: spawn canónico en la extensión VS Code y What's next correcto en mcpv init"
 kind: fix
-status: ready
+status: done
 type: proposal
 track: adoption
 date: 2026-07-13
@@ -29,7 +29,7 @@ Findings 3, 4 y 5 de a00053: hoy la primera experiencia de un adoptante es una e
 - global_gate: e2e
 
 ### S1 — Extensión: default spawn vía launch canónico dual (reutilizando host-entry-resolver)
-- **Status**: pending
+- **Status**: done
 - **Files**: `extensions/vscode/src/extension.ts`, `extensions/vscode/src/host/spawn-resolver.ts`
 - **Gate**: e2e
 - acceptance:
@@ -38,7 +38,7 @@ Findings 3, 4 y 5 de a00053: hoy la primera experiencia de un adoptante es una e
   - "sin script mcp-vertex en package.json la extensión ya no muere con bun run mcp-vertex"
 
 ### S2 — init What's next: propuesta real en vez de .gitkeep, validate condicionado, comando scaffold válido
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/cli/src/lib/init/init-human-summary.service.ts`, `packages/cli/src/lib/init/init-human-summary.service.spec.ts`
 - **Gate**: e2e
 - acceptance:
@@ -47,7 +47,7 @@ Findings 3, 4 y 5 de a00053: hoy la primera experiencia de un adoptante es una e
   - "el hint de migración usa un comando mcpv válido"
 
 ### S3 — Smoke de consumidor: external-install cubre spawn de extensión y What's next
-- **Status**: pending
+- **Status**: done
 - **DependsOn**: [S1, S2]
 - **Files**: `tools/scripts/verify/external-install-smoke.script.ts`
 - **Gate**: e2e
