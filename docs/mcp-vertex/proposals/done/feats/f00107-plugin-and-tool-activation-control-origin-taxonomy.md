@@ -1,7 +1,7 @@
 ---
 id: f00107
 kind: feat
-status: review
+status: done
 type: proposal
 track: core+config+ui-extension+vscode+web
 date: 2026-07-08
