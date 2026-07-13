@@ -1,7 +1,7 @@
 ---
 id: f00106
 kind: feat
-status: ready
+status: done
 type: proposal
 track: usage-tracking+ui-extension+vscode+web
 date: 2026-07-08

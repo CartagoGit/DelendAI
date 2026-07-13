@@ -15,7 +15,8 @@
  * checked-in files against a fresh in-memory generation.
  */
 
-import { mkdirSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -79,8 +80,12 @@ const PLUGIN_LIST =
  * background watcher keeps the process (or the test runner) alive.
  */
 export const harvestToolSchemas = async (): Promise<IHarvestedTool[]> => {
+	const harvestWorkspace = mkdtempSync(join(tmpdir(), 'mcp-vertex-types-'));
 	const args = parseCliArgs(
-		[`--plugins=${PLUGIN_LIST}`, `--workspace=${REPO_ROOT}`],
+		[
+			`--plugins=${PLUGIN_LIST}`,
+			`--workspace=${harvestWorkspace}`,
+		],
 		REPO_ROOT,
 	);
 	const { config } = await assembleCliConfig(args, {
@@ -120,6 +125,7 @@ export const harvestToolSchemas = async (): Promise<IHarvestedTool[]> => {
 		return tools;
 	} finally {
 		await assembled.server.close();
+		rmSync(harvestWorkspace, { recursive: true, force: true });
 	}
 };
 
