@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-07-13T00:47:13.765Z",
+	"generatedAt": "2026-07-13T00:59:50.851Z",
 	"mode": "compact",
 	"tools": [
 		{
@@ -671,13 +671,6 @@
 				"kind": "feat"
 			},
 			{
-				"id": "f00106",
-				"title": "f00106",
-				"track": "usage-tracking+ui-extension+vscode+web",
-				"status": "ready",
-				"kind": "feat"
-			},
-			{
 				"id": "f00108",
 				"title": "f00108",
 				"track": "web+extensions/vscode+ui-extension+i18n+lint",
@@ -700,11 +693,11 @@
 			}
 		],
 		"byStatus": {
-			"ready": 4,
+			"ready": 3,
 			"in-progress": 0,
 			"review": 4,
 			"paused": 2,
-			"done": 198,
+			"done": 199,
 			"blocked": 0,
 			"retired": 0,
 			"unspecified": 0
