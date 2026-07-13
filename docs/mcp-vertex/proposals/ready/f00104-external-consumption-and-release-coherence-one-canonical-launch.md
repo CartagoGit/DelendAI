@@ -136,12 +136,13 @@ any of the documented or generated paths. This is the single most important
 
 ### S5 — End-to-end external-install smoke gate
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `tools/scripts/verify/external-install-smoke.script.ts`, `package.json`
 - **Depends on**: S1, S2, S3
 - **Gate**: bun run validate
 - **Acceptance**:
   - "A CI-friendly smoke: pack the publishable packages (`bun pm pack` or a tarball dry-run), install them into a scratch temp project, run `mcpv init`, then start the written command and assert the server responds to an `overview` call (or a `--help`/handshake if a full stdio round-trip is too heavy). Wired into validate (or a `verify:` target) so the external path can never silently break again."
+- **Evidence**: `verify:external-install` compiles and packs all 23 release targets with Bun's publish rewrite, installs only those tarballs into a fresh npm consumer, runs the installed `mcpv init --force`, asserts its `.mcp.json` entry equals `buildCanonicalLaunch`, starts that exact entry and completes a real `mcp-vertex_overview` MCP call. The smoke is part of the root `validate` chain and cleans its temporary project on success or failure.
 
 ## acceptance
 

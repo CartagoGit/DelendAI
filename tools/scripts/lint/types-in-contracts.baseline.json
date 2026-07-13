@@ -567,6 +567,5 @@
 	"plugins/usage-tracking/src/lib/tools/index.ts": 1,
 	"plugins/usage-tracking/src/lib/tools/report.tool.ts": 1,
 	"plugins/usage-tracking/src/lib/types.ts": 13,
-	"plugins/web-fetch/src/lib/services/engine.ts": 6,
 	"plugins/web-fetch/src/lib/tools/tools.ts": 1
 }
