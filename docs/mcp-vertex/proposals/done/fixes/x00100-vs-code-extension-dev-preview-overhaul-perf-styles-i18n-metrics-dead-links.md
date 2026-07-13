@@ -2,7 +2,7 @@
 id: x00100
 title: "VS Code extension dev-preview overhaul: perf, styles, i18n, metrics, dead links"
 kind: fix
-status: in-progress
+status: done
 type: proposal
 track: general
 date: 2026-07-13
@@ -37,14 +37,14 @@ not); docsUrl is hardcoded in 3 call sites.
 - global_gate: e2e
 
 ### S1 — Dev harness: prebuild/warm all section bundles + single render path with head styles and ?lang
-- **Status**: pending
+- **Status**: done
 - **Files**: `tools/scripts/dev/dev.script.ts`, `extensions/vscode/src/dev/pages/registry.ts`, `extensions/vscode/src/dev/pages/contract.ts`
 - **Gate**: e2e
 - acceptance:
   - "switching sections in dev:vscode responds warm (no per-section cold Bun.build)"
   - "every section shows its styles on first paint"
 ### S2 — i18n: ?lang switcher applies to every vscode dev page + docsUrl single constant
-- **Status**: pending
+- **Status**: done
 - **DependsOn**: [S1]
 - **Files**: `extensions/vscode/src/dev/pages/dashboard.ts`, `extensions/vscode/src/dev/pages/settings.ts`, `extensions/vscode/src/dev/pages/configuration-center.ts`, `extensions/vscode/src/dev/pages/tool-detail.ts`, `extensions/vscode/src/i18n/index.ts`, `packages/ui-extension/src/dev/entry.ts`
 - **Gate**: e2e
@@ -52,7 +52,7 @@ not); docsUrl is hardcoded in 3 call sites.
   - "changing the language selector re-renders every section in that language"
   - "no 404 link in the dev dashboard; docsUrl defined once"
 ### S3 — Metrics page: working data wiring and layout in dev preview
-- **Status**: pending
+- **Status**: done
 - **DependsOn**: [S1]
 - **Files**: `extensions/vscode/src/dev/pages/metrics.ts`, `extensions/vscode/src/views/metrics-sparkline.ts`, `extensions/vscode/src/views/metrics-sparkline.html`
 - **Gate**: e2e
