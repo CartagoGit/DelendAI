@@ -2,7 +2,7 @@
 id: x00100
 title: "VS Code extension dev-preview overhaul: perf, styles, i18n, metrics, dead links"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: general
 date: 2026-07-13

@@ -1,5 +1,17 @@
 #!/usr/bin/env bun
-/** Keep checked-in MCP clients identical to the launch emitted by `mcpv init`. */
+/**
+ * Keep checked-in MCP clients on one of the two canonical launches:
+ *
+ *   1. the published-package launch `mcpv init` emits for external
+ *      consumers (`bunx --package @mcp-vertex/cli mcpv __serve …`), or
+ *   2. the repo-local dogfood launch that runs the host from source
+ *      (`bun tools/scripts/host/host-server.script.ts --workspace=…`)
+ *      — required while `@mcp-vertex/cli` is not published to npm
+ *      (see commit "fix(launch): workspace mcp.json launches the local
+ *      host source, not the unpublished npm package").
+ *
+ * Anything else is drift and fails the gate.
+ */
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
@@ -21,6 +33,13 @@ interface IClientConfig {
 	readonly servers?: Readonly<Record<string, IServerEntry>>;
 }
 
+interface ILaunchShape {
+	readonly command: string;
+	readonly args: readonly string[];
+}
+
+const HOST_SCRIPT_REL = 'tools/scripts/host/host-server.script.ts';
+
 const CONFIGS = [
 	{ file: '.mcp.json', collection: 'mcpServers', workspace: '.' },
 	{
@@ -30,10 +49,21 @@ const CONFIGS = [
 	},
 ] as const;
 
+const localDogfoodLaunch = (workspace: string): ILaunchShape => ({
+	command: 'bun',
+	args: [HOST_SCRIPT_REL, `--workspace=${workspace}`],
+});
+
 const sameArgs = (actual: unknown, expected: readonly string[]): boolean =>
 	Array.isArray(actual) &&
 	actual.every((value) => typeof value === 'string') &&
 	JSON.stringify(actual) === JSON.stringify(expected);
+
+const matchesLaunch = (entry: IServerEntry, launch: ILaunchShape): boolean =>
+	entry.command === launch.command && sameArgs(entry.args, launch.args);
+
+const describeLaunch = (launch: ILaunchShape): string =>
+	`${JSON.stringify(launch.command)} ${JSON.stringify(launch.args)}`;
 
 export const detectSelfHostDogfoodDrift = async (
 	root: string,
@@ -55,7 +85,6 @@ export const detectSelfHostDogfoodDrift = async (
 
 		const entries = config[target.collection];
 		const entry = entries?.['mcp-vertex'];
-		const expected = buildCanonicalLaunch({ workspace: target.workspace });
 		if (entry === undefined) {
 			findings.push({
 				file: target.file,
@@ -69,16 +98,16 @@ export const detectSelfHostDogfoodDrift = async (
 				detail: 'mcp-vertex entry must use type "stdio"',
 			});
 		}
-		if (entry.command !== expected.command) {
+		const accepted: readonly ILaunchShape[] = [
+			buildCanonicalLaunch({ workspace: target.workspace }),
+			localDogfoodLaunch(target.workspace),
+		];
+		if (!accepted.some((launch) => matchesLaunch(entry, launch))) {
 			findings.push({
 				file: target.file,
-				detail: `command drift: expected ${JSON.stringify(expected.command)}, got ${JSON.stringify(entry.command)}`,
-			});
-		}
-		if (!sameArgs(entry.args, expected.args)) {
-			findings.push({
-				file: target.file,
-				detail: `args drift: expected ${JSON.stringify(expected.args)}, got ${JSON.stringify(entry.args)}`,
+				detail: `launch drift: got ${JSON.stringify(entry.command)} ${JSON.stringify(entry.args)}; accepted: ${accepted
+					.map(describeLaunch)
+					.join(' OR ')}`,
 			});
 		}
 	}
