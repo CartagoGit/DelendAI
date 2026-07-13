@@ -1,6 +1,7 @@
 import { MetricsService } from '@mcp-vertex/client';
 
 import { renderMetricsHtml } from '../views/metrics-sparkline';
+import { resolveViewLang, viewCopyFor } from '../i18n/view-copy.strings';
 import type { ICommandDeps } from './types';
 import { showCommandError } from './types';
 
@@ -16,7 +17,14 @@ export const registerShowMetricsCommand = (deps: ICommandDeps) =>
 				deps.vscode.ViewColumn.One,
 				{ enableScripts: false },
 			);
-			panel.webview.html = renderMetricsHtml(snapshot);
+			panel.webview.html = renderMetricsHtml(
+				snapshot,
+				viewCopyFor(
+					resolveViewLang(
+						deps.globalState?.get<unknown>('mcpv:lang'),
+					),
+				),
+			);
 		} catch (err) {
 			await showCommandError(deps.vscode, 'show metrics', err);
 		}

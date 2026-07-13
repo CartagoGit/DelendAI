@@ -278,6 +278,7 @@ const site = {
 	},
 	cfg: {
 		title: 'Cài đặt',
+		close: 'Đóng cài đặt',
 		theme: 'Giao diện',
 		language: 'Ngôn ngữ',
 		motion: 'Chuyển động',
@@ -286,6 +287,11 @@ const site = {
 	search: {
 		title: 'Tìm kiếm',
 		placeholder: 'Tìm kiếm trên trang...',
+		close: 'Đóng tìm kiếm',
+		noMatches: 'Không có kết quả phù hợp.',
+		indexUnavailable: 'Chỉ mục tìm kiếm không khả dụng.',
+		buildRequired:
+			'Tìm kiếm được tạo bằng bun run site. Hãy chạy bản dựng để bật tính năng này.',
 	},
 	footer: {
 		built: 'Sinh từ registry công cụ sống.',
@@ -304,6 +310,7 @@ const site = {
 		tabTools: 'Công cụ',
 		tabConfiguration: 'Cấu hình',
 		tabTutorial: 'Hướng dẫn',
+		tutorialFallback: 'đang hiển thị tiếng Anh, chưa được dịch sang {lang}',
 	},
 	plugin: {
 		proposals:
@@ -383,6 +390,8 @@ const site = {
 		nextSteps: 'Tiếp theo nên đi đâu',
 		nextToolsCta: 'Xem tất cả công cụ',
 		nextTroubleshootingCta: 'Có gì không hoạt động? Khắc phục sự cố',
+		overviewHint:
+			'Sau khi máy chủ khởi động, hãy gọi mcp-vertex_overview với compact: true; recommendedNextAction cho tác nhân biết chính xác việc cần làm tiếp theo.',
 	},
 	troubleshooting: {
 		title: 'Khắc phục sự cố',

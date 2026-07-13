@@ -22,12 +22,13 @@
 import { DEFAULT_DENY, injectCspMeta } from '@mcp-vertex/ui-extension/webview';
 
 import type { IProposalDetail } from '../lib/proposals-snapshot';
+import { viewCopyFor, type IViewCopy } from '../i18n/view-copy.strings';
 import { escapeHtml } from './render-output-schema';
 
 const badge = (status: string): string =>
 	`<span class="badge badge--${escapeHtml(status.replace(/[^a-z0-9]+/gi, '-').toLowerCase())}">${escapeHtml(status)}</span>`;
 
-const headerCard = (detail: IProposalDetail): string => {
+const headerCard = (detail: IProposalDetail, copy: IViewCopy): string => {
 	const status =
 		detail.summary?.status ?? asText(detail.diagnose?.status) ?? '—';
 	const folder = asText(detail.diagnose?.folder);
@@ -40,17 +41,17 @@ const headerCard = (detail: IProposalDetail): string => {
 	return `<section class="card">
 		<h1>${escapeHtml(detail.id)} ${badge(status)}</h1>
 		<dl>
-			${folder === undefined ? '' : `<dt>Folder</dt><dd>${escapeHtml(folder)}</dd>`}
-			<dt>Slices</dt><dd>${detail.summary?.slices.length ?? 0} (${claimable} claimable now)</dd>
-			${owners.length === 0 ? '' : `<dt>Lock owners</dt><dd>${escapeHtml(owners.join(', '))}</dd>`}
+			${folder === undefined ? '' : `<dt>${escapeHtml(copy.folder)}</dt><dd>${escapeHtml(folder)}</dd>`}
+			<dt>${escapeHtml(copy.slices)}</dt><dd>${detail.summary?.slices.length ?? 0} (${claimable} ${escapeHtml(copy.claimableNow)})</dd>
+			${owners.length === 0 ? '' : `<dt>${escapeHtml(copy.lockOwners)}</dt><dd>${escapeHtml(owners.join(', '))}</dd>`}
 		</dl>
 	</section>`;
 };
 
-const slicesCard = (detail: IProposalDetail): string => {
+const slicesCard = (detail: IProposalDetail, copy: IViewCopy): string => {
 	const slices = detail.summary?.slices ?? [];
 	if (detail.summary === undefined) {
-		return `<section class="card"><h2>Slices</h2><p class="muted">This proposal is not on the actionable board (done / retired / blocked), so per-slice status is not projected here.</p></section>`;
+		return `<section class="card"><h2>${escapeHtml(copy.slices)}</h2><p class="muted">${escapeHtml(copy.notActionable)}</p></section>`;
 	}
 	const rows = slices
 		.map(
@@ -62,14 +63,14 @@ const slicesCard = (detail: IProposalDetail): string => {
 		)
 		.join('');
 	return `<section class="card">
-		<h2>Slices (${slices.length})</h2>
-		${slices.length === 0 ? '<p class="muted">No slices.</p>' : `<table><thead><tr><th>Slice</th><th>Status</th><th>Owner</th></tr></thead><tbody>${rows}</tbody></table>`}
+		<h2>${escapeHtml(copy.slices)} (${slices.length})</h2>
+		${slices.length === 0 ? `<p class="muted">${escapeHtml(copy.noSlices)}</p>` : `<table><thead><tr><th>${escapeHtml(copy.slice)}</th><th>${escapeHtml(copy.status)}</th><th>${escapeHtml(copy.owner)}</th></tr></thead><tbody>${rows}</tbody></table>`}
 	</section>`;
 };
 
-const diagnoseCard = (detail: IProposalDetail): string => {
+const diagnoseCard = (detail: IProposalDetail, copy: IViewCopy): string => {
 	if (detail.diagnose === undefined) {
-		return '<section class="card"><h2>Diagnose</h2><p class="muted">No diagnosis available.</p></section>';
+		return `<section class="card"><h2>${escapeHtml(copy.diagnose)}</h2><p class="muted">${escapeHtml(copy.noDiagnosis)}</p></section>`;
 	}
 	const rows = Object.entries(detail.diagnose)
 		.filter(([, value]) => value !== undefined && value !== null)
@@ -80,14 +81,14 @@ const diagnoseCard = (detail: IProposalDetail): string => {
 		)
 		.join('');
 	return `<section class="card">
-		<h2>Diagnose</h2>
-		${rows === '' ? '<p class="muted">Empty diagnosis.</p>' : `<table class="kv"><tbody>${rows}</tbody></table>`}
+		<h2>${escapeHtml(copy.diagnose)}</h2>
+		${rows === '' ? `<p class="muted">${escapeHtml(copy.emptyDiagnosis)}</p>` : `<table class="kv"><tbody>${rows}</tbody></table>`}
 	</section>`;
 };
 
-const logsCard = (detail: IProposalDetail): string => {
+const logsCard = (detail: IProposalDetail, copy: IViewCopy): string => {
 	if (detail.logs.length === 0) {
-		return '<section class="card"><h2>Logs</h2><p class="muted">No matching log lines.</p></section>';
+		return `<section class="card"><h2>${escapeHtml(copy.logs)}</h2><p class="muted">${escapeHtml(copy.noLogs)}</p></section>`;
 	}
 	const rows = detail.logs
 		.map(
@@ -100,15 +101,18 @@ const logsCard = (detail: IProposalDetail): string => {
 		)
 		.join('');
 	return `<section class="card">
-		<h2>Logs (${detail.logs.length})</h2>
-		<table><thead><tr><th>Time</th><th>Kind</th><th>Agent</th><th>Summary</th></tr></thead><tbody>${rows}</tbody></table>
+		<h2>${escapeHtml(copy.logs)} (${detail.logs.length})</h2>
+		<table><thead><tr><th>${escapeHtml(copy.time)}</th><th>${escapeHtml(copy.kind)}</th><th>${escapeHtml(copy.agent)}</th><th>${escapeHtml(copy.summary)}</th></tr></thead><tbody>${rows}</tbody></table>
 	</section>`;
 };
 
-export const renderProposalDetailHtml = (detail: IProposalDetail): string =>
+export const renderProposalDetailHtml = (
+	detail: IProposalDetail,
+	copy: IViewCopy = viewCopyFor('en'),
+): string =>
 	injectCspMeta(
 		`<!DOCTYPE html>
-<html lang="en">
+<html lang="${copy.lang}">
 <head>
 	<meta charset="UTF-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -116,10 +120,10 @@ export const renderProposalDetailHtml = (detail: IProposalDetail): string =>
 	<style>${DETAIL_CSS}</style>
 </head>
 <body>
-	${headerCard(detail)}
-	${slicesCard(detail)}
-	${diagnoseCard(detail)}
-	${logsCard(detail)}
+	${headerCard(detail, copy)}
+	${slicesCard(detail, copy)}
+	${diagnoseCard(detail, copy)}
+	${logsCard(detail, copy)}
 </body>
 </html>`,
 		DEFAULT_DENY,

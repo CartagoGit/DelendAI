@@ -279,6 +279,7 @@ const site = {
 	},
 	cfg: {
 		title: 'Réglages',
+		close: 'Fermer les réglages',
 		theme: 'Thème',
 		language: 'Langue',
 		motion: 'Animation',
@@ -287,6 +288,11 @@ const site = {
 	search: {
 		title: 'Rechercher',
 		placeholder: 'Rechercher sur le site...',
+		close: 'Fermer la recherche',
+		noMatches: 'Aucun résultat.',
+		indexUnavailable: 'Index de recherche indisponible.',
+		buildRequired:
+			'La recherche est générée avec bun run site. Exécutez la compilation pour l’activer.',
 	},
 	footer: {
 		built: 'Généré à partir du registre vivant des outils.',
@@ -306,6 +312,7 @@ const site = {
 		tabTools: 'Outils',
 		tabConfiguration: 'Configuration',
 		tabTutorial: 'Tutoriel',
+		tutorialFallback: 'affiché en anglais, pas encore traduit en {lang}',
 	},
 	plugin: {
 		proposals:
@@ -385,6 +392,8 @@ const site = {
 		nextSteps: 'Où aller ensuite',
 		nextToolsCta: 'Parcourir tous les outils',
 		nextTroubleshootingCta: 'Quelque chose ne fonctionne pas ? Dépannage',
+		overviewHint:
+			'Après le démarrage du serveur, appelez mcp-vertex_overview avec compact: true ; recommendedNextAction indique précisément la prochaine action à l’agent.',
 	},
 	troubleshooting: {
 		title: 'Dépannage',

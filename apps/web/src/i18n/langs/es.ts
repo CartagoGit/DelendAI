@@ -90,6 +90,7 @@ const dict: LangDict = {
 	},
 	cfg: {
 		title: 'Ajustes',
+		close: 'Cerrar ajustes',
 		theme: 'Tema',
 		language: 'Idioma',
 		motion: 'Movimiento',
@@ -98,6 +99,11 @@ const dict: LangDict = {
 	search: {
 		title: 'Buscar',
 		placeholder: 'Buscar en el sitio...',
+		close: 'Cerrar búsqueda',
+		noMatches: 'No hay resultados.',
+		indexUnavailable: 'El índice de búsqueda no está disponible.',
+		buildRequired:
+			'La búsqueda se genera con bun run site. Ejecuta la compilación para activarla.',
 	},
 	footer: {
 		built: 'Generado a partir del registro vivo de herramientas.',
@@ -117,6 +123,8 @@ const dict: LangDict = {
 		tabTools: 'Herramientas',
 		tabConfiguration: 'Configuración',
 		tabTutorial: 'Tutorial',
+		tutorialFallback:
+			'se muestra en inglés; todavía no está traducido a {lang}',
 	},
 	plugin: {
 		proposals:
@@ -202,6 +210,8 @@ const dict: LangDict = {
 		nextSteps: 'Hacia dónde seguir',
 		nextToolsCta: 'Ver todas las herramientas',
 		nextTroubleshootingCta: '¿Algo no funciona? Solución de problemas',
+		overviewHint:
+			'Cuando arranque el servidor, llama a mcp-vertex_overview con compact: true; recommendedNextAction indica al agente exactamente qué hacer después.',
 	},
 	troubleshooting: {
 		title: 'Solución de problemas',

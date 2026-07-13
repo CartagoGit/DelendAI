@@ -2,6 +2,11 @@ import { AgentCatalogService } from '@mcp-vertex/client';
 import type { McpVertexToolOutputs } from '@mcp-vertex/core/public';
 
 import { renderAgentCatalogWebview } from '../views/agent-catalog-webview';
+import {
+	resolveViewLang,
+	viewCopyFor,
+	type IViewCopy,
+} from '../i18n/view-copy.strings';
 
 import type { ICommandDeps, ICommandVscodeApi } from './types';
 import { escapeHtml, renderJsonHtml, showCommandError } from './types';
@@ -51,6 +56,7 @@ const executeToolPreview = async (
 
 const loadCatalogHtml = async (
 	service: AgentCatalogService,
+	copy: IViewCopy,
 ): Promise<string> => {
 	const [tools, skills, proposals, bootstrapPrompt] = await Promise.all([
 		service.getTools(),
@@ -63,6 +69,7 @@ const loadCatalogHtml = async (
 		skills,
 		proposals,
 		bootstrapPrompt,
+		copy,
 	});
 };
 
@@ -113,6 +120,9 @@ export const registerOpenAgentCatalogCommand = (deps: ICommandDeps) =>
 		OPEN_AGENT_CATALOG_COMMAND,
 		async () => {
 			const service = new AgentCatalogService(deps.client);
+			const copy = viewCopyFor(
+				resolveViewLang(deps.globalState?.get<unknown>('mcpv:lang')),
+			);
 			try {
 				const panel = deps.vscode.window.createWebviewPanel(
 					'mcpVertexAgentCatalog',
@@ -120,7 +130,7 @@ export const registerOpenAgentCatalogCommand = (deps: ICommandDeps) =>
 					deps.vscode.ViewColumn.One,
 					{ enableScripts: true },
 				);
-				panel.webview.html = await loadCatalogHtml(service);
+				panel.webview.html = await loadCatalogHtml(service, copy);
 				panel.webview.onDidReceiveMessage?.(
 					async (message: unknown) => {
 						if (typeof message !== 'object' || message === null)
@@ -129,7 +139,10 @@ export const registerOpenAgentCatalogCommand = (deps: ICommandDeps) =>
 							.command;
 						if (command === 'refresh') {
 							service.invalidate();
-							panel.webview.html = await loadCatalogHtml(service);
+							panel.webview.html = await loadCatalogHtml(
+								service,
+								copy,
+							);
 							return;
 						}
 						if (command === 'copied') {
