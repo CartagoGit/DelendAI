@@ -1,7 +1,7 @@
 ---
 id: f00104
 kind: feat
-status: ready
+status: done
 type: proposal
 track: cli+core+release+install+docs
 date: 2026-07-08
