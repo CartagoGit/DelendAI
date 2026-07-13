@@ -22,7 +22,8 @@
 import { DEFAULT_DENY, injectCspMeta } from '@mcp-vertex/ui-extension/webview';
 
 import type { IProposalDetail } from '../lib/proposals-snapshot';
-import { viewCopyFor, type IViewCopy } from '../i18n/view-copy.strings';
+import type { IViewCopy } from '../contracts/interfaces/view-copy.interface';
+import { viewCopyFor } from '../i18n/view-copy.strings';
 import { escapeHtml } from './render-output-schema';
 
 const badge = (status: string): string =>

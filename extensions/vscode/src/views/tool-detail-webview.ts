@@ -6,7 +6,8 @@ import {
 	escapeHtml,
 	renderOutputSchema,
 } from './render-output-schema';
-import { viewCopyFor, type IViewCopy } from '../i18n/view-copy.strings';
+import type { IViewCopy } from '../contracts/interfaces/view-copy.interface';
+import { viewCopyFor } from '../i18n/view-copy.strings';
 
 // Inline twin of `tool-detail.css` (which stays for the dev harness's
 // static shell). A `<link href="./tool-detail.css">` NEVER loads inside a

@@ -1,6 +1,7 @@
 import type { IMetricsSnapshot } from '@mcp-vertex/client';
 import { escapeHtml } from './render-output-schema';
-import { viewCopyFor, type IViewCopy } from '../i18n/view-copy.strings';
+import type { IViewCopy } from '../contracts/interfaces/view-copy.interface';
+import { viewCopyFor } from '../i18n/view-copy.strings';
 
 export interface ISparklinePoint {
 	readonly label: string;

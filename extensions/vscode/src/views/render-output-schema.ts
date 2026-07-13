@@ -1,3 +1,5 @@
+import type { IViewCopy } from '../contracts/interfaces/view-copy.interface';
+
 export interface IRenderableSchema {
 	readonly type?: string;
 	readonly description?: string;
@@ -73,4 +75,3 @@ export const escapeHtml = (value: string): string =>
 		.replaceAll('<', '&lt;')
 		.replaceAll('>', '&gt;')
 		.replaceAll('"', '&quot;');
-import type { IViewCopy } from '../i18n/view-copy.strings';
