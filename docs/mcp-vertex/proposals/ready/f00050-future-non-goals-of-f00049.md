@@ -1,6 +1,7 @@
 ---
 id: f00050
 status: ready
+paused-reason: "The 2026-07-13 live triage found every destructive item-specific trigger still blocked; resume only when one fires."
 type: proposal
 track: lint+architecture+i18n+workflow+release
 date: 2026-06-23
@@ -148,7 +149,7 @@ files + gate.
 - **Gate**: `bun run lint:proposals` (the file stays lint-clean; any promoted child passes on its own).
 - **Acceptance**:
   - "Each pass: re-run the `## Re-scan outcome` table against the live tree (f00049 slices, latest audits under `done/audits/`, `deps_check` for S-I, `proposals_compact_status`). Append a `recan:` frontmatter entry with the outcome. Any row whose trigger has fired is promoted per `### how to unpause an item` (copy its S-* block into a fresh `ready/<id>` proposal, remove it here, record `preconditions-met:`)."
-  - "The proposal is `done` only when all nine items have been either promoted out (trigger fired → own proposal) or explicitly retired by the user (trigger declared never-going-to-fire). Until then it stays `ready` as the live triage surface — no longer `paused`, because f00049 is done and the common precondition is met."
+  - "The proposal is `done` only when all nine items have been either promoted out (trigger fired → own proposal) or explicitly retired by the user (trigger declared never-going-to-fire). Between triage passes it stays `paused` so trigger-blocked work cannot starve executable proposals; a fired trigger resumes it."
 - **Evidence (2026-07-13)**:
   - "The live dependency check returned `healthy: true`, a Bun lockfile and no findings; the proposal queue is empty and the complete repository validation passes."
   - "Current audits and user requirements do not satisfy any item-specific destructive trigger, so no semantic rewrite, history migration, public removal or dependency churn was promoted."
