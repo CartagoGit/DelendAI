@@ -92,3 +92,7 @@ mcp-vertex-session-*.md
 # default: `bun run lint:cache` (tools/scripts/lint/check-cache.script.ts)
 # FAILS if any `.cache` appears outside the root, so a stray per-folder cache is
 # caught instead of silently ignored. Run mcp-vertex tools from the repo root.
+
+# metrics gate run artifacts (the tracked fallback baseline lives in config/)
+metrics-candidate.json
+metrics-baseline.json

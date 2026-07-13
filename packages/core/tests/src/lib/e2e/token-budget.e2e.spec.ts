@@ -58,7 +58,13 @@ const BUDGET_BYTES = {
 	// as the host segment. Now every name is fully qualified and `plugin` is
 	// the real owning plugin — both add bytes (compact 1290→1403B measured)
 	// but make the discovery catalog truthful.
-	agentCatalogCompact: 1_450,
+	// Tightened 1450 → 900 (2026-07-13): the default compact orientation
+	// call now drops the tool list (overview already carries every name)
+	// and trims skills to {id, tags}. Against the real repo (20 skills,
+	// 89 tools) this cut the live payload 14 103B → 2 321B; in this
+	// synthetic workspace it measured 356B. section/query calls keep the
+	// full entries and are budgeted by agentCatalogFull.
+	agentCatalogCompact: 900,
 	agentCatalogFull: 6_800,
 	autoWork: 1_600,
 	search: 3_000,

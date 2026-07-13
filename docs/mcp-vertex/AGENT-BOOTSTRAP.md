@@ -53,8 +53,10 @@ mcp-vertex_agent_catalog { mode: "compact" }
 ````
 
 - `mode: "compact"` (default) returns the actionable proposal list plus
-  counts per status, plus the first skills/tools pages. Stays under the
-  measured 1 300-byte token budget.
+  counts per status, plus lean skill ids. Tool names are NOT repeated
+  here — `mcp-vertex_overview { compact: true }` already lists them all,
+  grouped by plugin. Measured ~2.3 KB against this repo (was 14 KB
+  before the orientation projection).
 - `mode: "full"` returns the whole catalog.
 - `section: "tools" | "skills" | "proposals"` narrows to one slice.
 - `query: "..."` filters by id / name / tag / title.

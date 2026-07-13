@@ -52,14 +52,17 @@ const toolSummarySchema = z.object({
 		.optional(),
 });
 
+// version / minCoreVersion / summary / appliesTo / bodyPath are optional
+// because the default compact orientation call returns a lean {id, tags}
+// projection; section:"skills" or a query returns the full entries.
 const skillSummarySchema = z.object({
 	id: z.string(),
-	version: z.string(),
-	minCoreVersion: z.string(),
-	summary: z.string(),
-	appliesTo: z.array(z.string()),
+	version: z.string().optional(),
+	minCoreVersion: z.string().optional(),
+	summary: z.string().optional(),
+	appliesTo: z.array(z.string()).optional(),
 	tags: z.array(z.string()),
-	bodyPath: z.string(),
+	bodyPath: z.string().optional(),
 });
 
 const proposalSummarySchema = z.object({
@@ -167,6 +170,31 @@ const applySection = (
 const countMatches = (snapshot: ICatalogSnapshot): number =>
 	snapshot.tools.length + snapshot.skills.length + snapshot.proposals.length;
 
+/** Lean skill projection returned by the default orientation call. */
+type TLeanSkill = Pick<ISkillSummary, 'id' | 'tags'>;
+
+type TCatalogPayload = Omit<ICatalogSnapshot, 'skills'> & {
+	readonly skills: readonly (ISkillSummary | TLeanSkill)[];
+};
+
+/**
+ * Token-budget projection for the default orientation call
+ * (compact mode, no section, no query): drop the tool list — `overview`
+ * already returns every tool name, grouped by plugin, for fewer bytes —
+ * and trim skills to {id, tags}. `counts` still reports the real totals,
+ * and any section/query call keeps the full entries.
+ */
+const applyOrientationProjection = (
+	snapshot: ICatalogSnapshot,
+): TCatalogPayload => ({
+	...snapshot,
+	tools: [],
+	skills: snapshot.skills.map((skill) => ({
+		id: skill.id,
+		tags: [...skill.tags],
+	})),
+});
+
 const applyQuery = (
 	snapshot: ICatalogSnapshot,
 	query: string | undefined,
@@ -200,7 +228,7 @@ export const buildAgentCatalogToolRegistration = (
 			`${namespacePrefix}_agent_catalog`,
 			{
 				description:
-					'Unified discovery catalog for this MCP server. Returns loaded tools, versioned skills and actionable proposals from one canonical snapshot. Read-only. Use mode:"compact" to minimise bytes, section to focus one slice, and query to filter by name, id, summary, title or tag.',
+					'Unified discovery catalog for this MCP server: tools, versioned skills and actionable proposals from one canonical snapshot. Read-only. The default compact orientation call returns counts, actionable proposals and lean skill ids (tool names come from overview). Use section to fetch one full slice, query to filter by name, id, summary, title or tag, and mode:"full" for everything.',
 				inputSchema: z.object({
 					mode: z.enum(['compact', 'full']).optional(),
 					section: sectionEnum.optional(),
@@ -220,9 +248,17 @@ export const buildAgentCatalogToolRegistration = (
 				});
 				const narrowed = applySection(base, args.section);
 				const { snapshot, matches } = applyQuery(narrowed, args.query);
+				const isDefaultOrientation =
+					(args.mode ?? 'compact') === 'compact' &&
+					args.section === undefined &&
+					(args.query === undefined ||
+						args.query.trim().length === 0);
+				const payload: TCatalogPayload = isDefaultOrientation
+					? applyOrientationProjection(snapshot)
+					: snapshot;
 				return toolOk({
 					...(matches !== undefined ? { matches } : {}),
-					...snapshot,
+					...payload,
 				});
 			},
 		);

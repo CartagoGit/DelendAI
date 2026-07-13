@@ -10,11 +10,12 @@
 # output (including errors) is still printed, so violations are visible
 # and `bun run validate` / CI are still the source of truth.
 #
-# x00088: the actual Biome formatter for staged files lives in the
-# REAL `.git/hooks/pre-commit` (installed by
-# `tools/scripts/install-formatter-hook.script.ts`, see `tools/scripts/hooks/pre-commit.ts`).
-# This file only carries the remaining drift/discipline checks; formatting
-# itself is no longer duplicated here.
+# Lefthook is the ONLY owner of `.git/hooks/*` in this repo. The staged-file
+# Biome formatter runs as the `format-staged` command below
+# (`tools/scripts/hooks/pre-commit.ts`); it used to be a raw
+# `.git/hooks/pre-commit` that silently clobbered lefthook's hook and
+# disabled every check in this file. `tools/scripts/sync-git-hooks.script.ts`
+# (run by `prepare` before `lefthook install`) removes those legacy raw hooks.
 
 min_version: 1.7.0
 no_tty: false
@@ -23,6 +24,13 @@ colors: true
 pre-commit:
   parallel: true
   commands:
+    # Staged-file Biome formatter (x00088). The script filters staged
+    # files itself and re-stages the formatted bytes; it NEVER blocks
+    # the commit (Biome CI mode in `bun run validate` is the gate).
+    format-staged:
+      run: bun tools/scripts/hooks/pre-commit.ts || true
+      stage_fixed: false
+
     # Validate BEM + nested SCSS rules on staged SCSS files. Advisory:
     # violations are printed but do NOT block the commit; the same
     # check runs in `bun run validate` and CI.
