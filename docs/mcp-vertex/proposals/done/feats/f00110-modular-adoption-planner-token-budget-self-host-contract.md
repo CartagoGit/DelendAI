@@ -2,7 +2,7 @@
 id: f00110
 kind: feat
 title: Modular adoption planner, token budget and self-host contract
-status: ready
+status: done
 type: proposal
 track: architecture
 date: 2026-07-12
