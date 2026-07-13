@@ -20,10 +20,8 @@ import {
 } from '@mcp-vertex/core/public';
 
 import type { IInitAnswers } from './init-answers.types';
-import {
-	buildCanonicalLaunch,
-	type ICanonicalLaunch,
-} from '../server-args.service';
+import type { ICanonicalLaunch } from '../../contracts/interfaces/canonical-launch.interface';
+import { buildCanonicalLaunch } from '../server-args.service';
 import { loadAgentDescriptors } from './init-catalog.constant';
 import {
 	computeHostInstructionsWrite,

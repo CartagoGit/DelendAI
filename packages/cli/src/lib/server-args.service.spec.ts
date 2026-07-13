@@ -25,10 +25,12 @@ import { describe, expect, it } from 'vitest';
 
 import type { ICliGlobalOptions } from '../contracts/interfaces/cli-command.interface';
 import {
-	buildCanonicalLaunch,
-	buildServerArgs,
 	CANONICAL_CLI_BIN,
 	CANONICAL_CLI_PACKAGE,
+} from '../contracts/constants/canonical-launch.constant';
+import {
+	buildCanonicalLaunch,
+	buildServerArgs,
 	type IAutoForwardRule,
 	passthroughRule,
 	SERVER_ARG_MAPPER,

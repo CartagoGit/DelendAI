@@ -21,6 +21,7 @@ import type {
 	ICliCommandResult,
 } from '../../contracts/interfaces/cli-command.interface';
 import type { IInitFlags } from '../../contracts/interfaces/init.interface';
+import type { ICanonicalLaunch } from '../../contracts/interfaces/canonical-launch.interface';
 import {
 	HostEntryNotFoundError,
 	resolveHostEntryPath,
@@ -31,10 +32,7 @@ import { detectTargetProject } from '../../lib/init/init-detection.service';
 import { printInitHumanSummary } from '../../lib/init/init-human-summary.service';
 import { collectInitAnswers } from '../../lib/init/init-prompts.service';
 import { renderInitBundle } from '../../lib/init/init-render.service';
-import {
-	buildCanonicalLaunch,
-	type ICanonicalLaunch,
-} from '../../lib/server-args.service';
+import { buildCanonicalLaunch } from '../../lib/server-args.service';
 import {
 	writeGenericMcpJson,
 	writeMcpVertexConfig,

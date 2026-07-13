@@ -12,11 +12,11 @@ import type {
 	IInitWrite,
 	IMcpJsonWriteResult,
 } from '../../contracts/interfaces/init.interface';
+import type { ICanonicalLaunch } from '../../contracts/interfaces/canonical-launch.interface';
 import {
 	writeConfigSafely,
 	writeWorkspaceFileSafely,
 } from '../config-file.service';
-import type { ICanonicalLaunch } from '../server-args.service';
 import {
 	mergeMcpVertexServerEntry,
 	renderMcpVertexServerEntry,

@@ -38,25 +38,15 @@
  */
 
 import type { ICliGlobalOptions } from '../contracts/interfaces/cli-command.interface';
-
+import {
+	CANONICAL_CLI_BIN,
+	CANONICAL_CLI_PACKAGE,
+} from '../contracts/constants/canonical-launch.constant';
+import type {
+	ICanonicalLaunch,
+	ICanonicalLaunchOptions,
+} from '../contracts/interfaces/canonical-launch.interface';
 import type { IAutoForwardRule } from '../contracts/interfaces/server-args.interface';
-
-export type ICanonicalLaunchMode = 'bunx' | 'npx';
-
-export interface ICanonicalLaunchOptions {
-	readonly workspace: string;
-	readonly preset?: string | undefined;
-	readonly plugins?: readonly string[] | undefined;
-	readonly mode?: ICanonicalLaunchMode | undefined;
-}
-
-export interface ICanonicalLaunch {
-	readonly command: string;
-	readonly args: readonly string[];
-}
-
-export const CANONICAL_CLI_PACKAGE = '@mcp-vertex/cli';
-export const CANONICAL_CLI_BIN = 'mcpv';
 
 // f00037/f00093: canonical home is contracts/interfaces/server-args.interface.ts.
 // Re-exported here for the spec that imports the rule type from this module.
