@@ -98,12 +98,13 @@ session total.
 
 ### S2 — By-model savings/cost builder (ui-extension)
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/ui-extension/src/dashboard/builders/model-attribution.builder.ts`, `packages/ui-extension/src/contracts/interfaces/model-attribution.interface.ts`, `packages/ui-extension/tests/dashboard/model-attribution.builder.spec.ts`
 - **Depends on**: S1
 - **Gate**: bun run lint:cross-ide
 - **Acceptance**:
   - "Pure builder maps the S1 group-by-model payload to a render-model: one row per model with spend, tokens, tokens-saved, savings %, and a savings bar; sorted by savings desc. Degrades to the opt-in hint when usage-tracking is absent (f00098 pattern). Spec covers multi-model, unattributed bucket, empty log, plugin-absent."
+- **Evidence**: The host-agnostic builder and contracts are exported from the UI package. It sanitizes malformed numeric input, sorts deterministically by savings/cost/key, normalizes bars to the largest saver, flags unattributed rows, distinguishes an empty loaded log from an absent plugin, and reuses the canonical opt-in snippet. Four regressions cover multi-model bars/order, unattributed data, empty logs and plugin absence; all 182 UI-extension tests pass.
 
 ### S3 — Dashboard panel (vscode) + web parity
 
