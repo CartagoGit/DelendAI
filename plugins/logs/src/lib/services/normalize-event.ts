@@ -140,9 +140,15 @@ export const serializeRedactedEvent = (
 		},
 	};
 	text = JSON.stringify(redactValue(compact));
-	while (Buffer.byteLength(text, 'utf8') > maxLineBytes) {
+	while (
+		Buffer.byteLength(text, 'utf8') > maxLineBytes &&
+		compact.summary.length > 0
+	) {
 		compact.summary = compact.summary.slice(0, -16);
 		text = JSON.stringify(redactValue(compact));
 	}
+	// For a pathological cap smaller than the attribution envelope itself,
+	// returning that minimum envelope is safer than either losing tool/task
+	// identity or looping forever. Production uses the 8 KiB default.
 	return text;
 };
