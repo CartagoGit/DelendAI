@@ -57,6 +57,7 @@ observability holes in one session log:
 - **Files**: [plugins/logs/src/index.ts, plugins/logs/src/lib/services/normalize-event.ts, plugins/logs/tests/normalize-event.spec.ts]
 - **Gate**: bun run validate
 - status: done
+- **Review hardening (2026-07-13)**: cancellation reporting is idempotent and also observes a signal already aborted before listener registration. Truncation now terminates when a caller supplies a cap smaller than the minimum attribution envelope, preserving `toolName` and `taskId` instead of looping forever.
 ## acceptance
 
 - The instrumented wrapper finds the request `AbortSignal` among the handler
