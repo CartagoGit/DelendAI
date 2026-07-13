@@ -67,12 +67,15 @@ and every gate stays green. For an npm-perfection bar, that is the gap.
 
 ### S1 — Audit + fix wrong/missing/hardcoded text
 
-- **Status**: pending
+- **Status**: in-progress
 - **Files**: `apps/web/src/**`, `packages/ui-extension/src/**`, `extensions/vscode/src/**` (coordinate — concurrent agents hold parts of web/extension; sequence after they land)
 - **Gate**: bun run site
 - **Acceptance**:
   - "Sweep every render surface for: (a) hardcoded user-facing strings that should go through `text()`/`byLang`; (b) keys present but stale-English in a non-English dict; (c) strings placed in the wrong slot (label/aria/title mismatches). Each is fixed; a short report lists every change by file:line and category."
   - "Resolved Configuration Center copy finding (2026-07-13): generated plugin controls had hardcoded `Enabled`, `Path`, `Prefix`, `Options`, `custom`, `Server definition`, capability nouns and descriptions, while artifact origins rendered raw enum text. All now use the typed 12-language copy contract; the Spanish live-DOM audit found none of the former English literals."
+  - "Resolved site render-copy findings (2026-07-13): search/settings close labels, search dev empty/error states, resource table headings, plugin install/disclosure controls, tool argument tables, tutorial fallback copy, onboarding guidance, navigation labeling and log-filter defaults bypassed the typed dictionaries. They now resolve through the 12-language site contract; `check:i18n` covers 304 authored site keys."
+  - "Resolved extension fallback finding (2026-07-13): the shared dictionary merger filled 91 absent Spanish extension keys from English before the completeness check inspected them, so the gate reported Spanish complete while dashboard/settings/knowledge/common labels were not authored. Spanish now authors all 150 extension keys, and `check:i18n` compares the raw en/es modules before fallback plus rejects unapproved byte-identical English."
+  - "Resolved secondary-webview finding (2026-07-13): agent catalog, metrics, proposal detail, tool detail and nested schema views embedded English text and hardcoded `<html lang=\"en\">`. They now consume the persisted host language through a typed copy model; Spanish regressions cover headings, empty states, metric grammar and document language."
   - "Spot-check the fixed routes render the correct copy in en + es (the two fully-authored locales); `bun run site` green."
 
 ### S2 — Audit + fix style regressions
@@ -94,13 +97,14 @@ and every gate stays green. For an npm-perfection bar, that is the gap.
 
 ### S3 — lint:content-integrity ratchet
 
-- **Status**: pending
+- **Status**: in-progress
 - **Files**: `tools/scripts/lint/content-integrity.script.ts`, `tools/scripts/lint/content-integrity.waivers.json`, `tools/scripts/lint/content-integrity.script.spec.ts`, `package.json`
 - **Depends on**: S1
 - **Gate**: bun run lint:proposals
 - **Acceptance**:
   - "A lint that flags hardcoded user-facing strings in `.astro`/render `.ts` (string literals in visible-text positions — `>{...}<` text nodes, `title=`/`aria-label=`/`alt=` attrs — not going through a `text()`/`byLang`/`dict` accessor), with a documented waivers file for legitimate literals (brand names, code samples, single symbols). Follows the f00099 style-integrity script shape."
   - "Optional correctness heuristic: flag non-English dict entries byte-identical to English beyond a small allowlist (likely untranslated) as WARN, not fail. Wired into `bun run validate` after lint:style-integrity; repo passes with the initial waivers."
+  - "Implemented finding (2026-07-13): `lint:content-integrity` scans 68 Astro/webview render files for static visible text and accessibility attributes, strips code-bearing regions, rejects invalid/stale waivers and is wired immediately after style-integrity. The baseline contains only two documented product-wordmark literals; extraction and line-preservation behavior are covered by focused tests."
 
 ## acceptance
 
