@@ -108,12 +108,13 @@ session total.
 
 ### S3 — Dashboard panel (vscode) + web parity
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `extensions/vscode/src/views/provider-dashboard-webview.ts` (coordinate — f00098 owner), `extensions/vscode/src/i18n/provider-dashboard.strings.ts`, `apps/web/src/pages/providers.astro`, `apps/web/src/i18n/provider-dashboard.ts`
 - **Depends on**: S2
 - **Gate**: bun run validate
 - **Acceptance**:
   - "The provider dashboard renders the by-model attribution table under the usage card (theme-aware, mcpv-* classes, 12-lang strings). The static web /providers page shows the same render-model with a frozen fixture. `bun run site` green."
+- **Evidence**: The VS Code adapter requests a second `usage_report` grouped by model and sorted by savings, maps it through the shared builder, and renders spend, used/saved tokens, savings percent and a theme-aware bar beneath the aggregate usage card. It reuses the existing complete 12-language dashboard vocabulary. The web providers page carries the same ordered frozen row shape with an English/Spanish explanation. Focused host/UI tests, VS Code typecheck and Astro check pass, including live HTML assertions for the model and saved-token value.
 
 ## acceptance
 
