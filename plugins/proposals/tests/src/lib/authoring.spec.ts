@@ -100,11 +100,13 @@ describe('proposal authoring (create → board → close)', async () => {
 		const p1 = view.proposals.find(
 			(p: { id: string }) => p.id === 'p00001',
 		);
+		// The generator canonicalises slice ids to uppercase (`S1`), while
+		// close_slice below still accepts the caller's lowercase spelling.
 		expect(p1.slices.map((s: { sliceId: string }) => s.sliceId)).toEqual([
-			's1',
-			's2',
+			'S1',
+			'S2',
 		]);
-		expect(p1.claimableSliceIds).toContain('s1');
+		expect(p1.claimableSliceIds).toContain('S1');
 
 		const close = await capture(buildCloseSliceRegistration(opts));
 		const closed = parse(
@@ -119,7 +121,7 @@ describe('proposal authoring (create → board → close)', async () => {
 			join(opts.proposalsDirAbs, 'ready', 'p00001-add-login.md'),
 			'utf8',
 		);
-		expect(doc).toMatch(/### s1[\s\S]*?- \*\*Status\*\*: done/);
+		expect(doc).toMatch(/### S1[\s\S]*?- \*\*Status\*\*: done/);
 	});
 
 	it('closes the last slice without appending the done marker outside the slice block', async () => {
@@ -154,7 +156,7 @@ describe('proposal authoring (create → board → close)', async () => {
 
 		const doc = readFileSync(file, 'utf8');
 		const sliceBlock = doc.slice(
-			doc.indexOf('### s1'),
+			doc.indexOf('### S1'),
 			doc.indexOf('## Acceptance'),
 		);
 		expect(sliceBlock).toMatch(/- \*\*Status\*\*: done/);
