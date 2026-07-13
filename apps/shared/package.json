@@ -45,7 +45,6 @@
 		"type": "tsc --noEmit -p tsconfig.json"
 	},
 	"dependencies": {
-		"@mcp-vertex/ui-extension": "workspace:*",
 		"sass": "^1.101.0"
 	}
 }
