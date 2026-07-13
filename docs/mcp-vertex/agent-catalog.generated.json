@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-07-13T01:58:36.641Z",
+	"generatedAt": "2026-07-13T02:04:18.711Z",
 	"mode": "compact",
 	"tools": [
 		{
@@ -671,13 +671,6 @@
 				"kind": "feat"
 			},
 			{
-				"id": "f00110",
-				"title": "f00110",
-				"track": "architecture",
-				"status": "ready",
-				"kind": "feat"
-			},
-			{
 				"id": "r00008",
 				"title": "r00008",
 				"track": "ui-architecture",
@@ -686,11 +679,11 @@
 			}
 		],
 		"byStatus": {
-			"ready": 2,
+			"ready": 1,
 			"in-progress": 0,
 			"review": 4,
 			"paused": 2,
-			"done": 200,
+			"done": 201,
 			"blocked": 0,
 			"retired": 0,
 			"unspecified": 0
