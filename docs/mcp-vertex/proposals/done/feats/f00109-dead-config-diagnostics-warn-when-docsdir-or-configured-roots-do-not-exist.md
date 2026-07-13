@@ -2,7 +2,7 @@
 id: f00109
 title: "Dead-config diagnostics: warn when docsDir or configured roots do not exist"
 kind: feat
-status: review
+status: done
 type: proposal
 track: general
 date: 2026-07-12
@@ -42,7 +42,7 @@ it anything was wrong.
 - global_gate: e2e
 
 ### S1 — Boot-time workspace-layout diagnostics + overview surfacing
-- **Status**: in-progress
+- **Status**: done
 - **Files**: [packages/core/src/lib/plugins/diagnose-workspace-layout.ts, packages/core/tests/src/lib/plugins/diagnose-workspace-layout.spec.ts, packages/core/src/lib/cli/assemble.ts, packages/core/src/lib/tools/overview-tool.ts, packages/core/src/public/index.ts]
 - **Gate**: bun run validate
 - status: done
