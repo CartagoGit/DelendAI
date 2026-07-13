@@ -5,7 +5,8 @@ import type {
 } from '@mcp-vertex/core/public';
 
 import { escapeHtml } from '../commands/types';
-import { viewCopyFor, type IViewCopy } from '../i18n/view-copy.strings';
+import type { IViewCopy } from '../contracts/interfaces/view-copy.interface';
+import { viewCopyFor } from '../i18n/view-copy.strings';
 
 export interface IAgentCatalogViewModel {
 	readonly bootstrapPrompt: string;

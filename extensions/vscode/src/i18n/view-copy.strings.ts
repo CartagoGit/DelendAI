@@ -1,50 +1,6 @@
 import { t } from '@mcp-vertex/shared/i18n';
+import type { IViewCopy } from '../contracts/interfaces/view-copy.interface';
 import { defaultLang, dictsByLang, type Lang } from './index';
-
-export interface IViewCopy {
-	readonly lang: Lang;
-	readonly agentCatalogTitle: string;
-	readonly agentCatalogLead: string;
-	readonly copyBootstrap: string;
-	readonly refresh: string;
-	readonly tools: string;
-	readonly skills: string;
-	readonly proposals: string;
-	readonly metrics: string;
-	readonly calls: string;
-	readonly callSingular: string;
-	readonly errors: string;
-	readonly errorSingular: string;
-	readonly max: string;
-	readonly folder: string;
-	readonly slices: string;
-	readonly lockOwners: string;
-	readonly claimableNow: string;
-	readonly notActionable: string;
-	readonly noSlices: string;
-	readonly slice: string;
-	readonly status: string;
-	readonly owner: string;
-	readonly diagnose: string;
-	readonly noDiagnosis: string;
-	readonly emptyDiagnosis: string;
-	readonly logs: string;
-	readonly noLogs: string;
-	readonly time: string;
-	readonly kind: string;
-	readonly agent: string;
-	readonly summary: string;
-	readonly knowledge: string;
-	readonly inputSchema: string;
-	readonly noInputSchema: string;
-	readonly outputSchema: string;
-	readonly noOutputSchema: string;
-	readonly noCalls: string;
-	readonly items: string;
-	readonly required: string;
-	readonly optional: string;
-	readonly enumLabel: string;
-}
 
 const englishUnique = {
 	agentCatalogTitle: 'Unified agent catalog',

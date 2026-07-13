@@ -2,11 +2,8 @@ import { AgentCatalogService } from '@mcp-vertex/client';
 import type { McpVertexToolOutputs } from '@mcp-vertex/core/public';
 
 import { renderAgentCatalogWebview } from '../views/agent-catalog-webview';
-import {
-	resolveViewLang,
-	viewCopyFor,
-	type IViewCopy,
-} from '../i18n/view-copy.strings';
+import type { IViewCopy } from '../contracts/interfaces/view-copy.interface';
+import { resolveViewLang, viewCopyFor } from '../i18n/view-copy.strings';
 
 import type { ICommandDeps, ICommandVscodeApi } from './types';
 import { escapeHtml, renderJsonHtml, showCommandError } from './types';
