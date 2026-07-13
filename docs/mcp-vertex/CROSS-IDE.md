@@ -30,9 +30,9 @@ not import IDE adapters or plugin internals. See
 
 ## mcp.json Plugin Parity
 
-This repo's `.vscode/mcp.json` launches
-`tools/scripts/host/host-server.script.ts` with `--workspace` and
-`--preset=swarm`. The host script uses the same core assembly path as the CLI:
+This repo's `.vscode/mcp.json` launches the published CLI via
+`bunx --package @mcp-vertex/cli mcpv __serve --workspace …`. The executable
+uses the same core assembly path as every host:
 it resolves preset plugins, explicit `--plugins`, plugins declared in
 `mcp-vertex.config.json`, and finally subtracts `--exclude-plugins`.
 

@@ -238,7 +238,7 @@ const site = {
 		copy: 'Sao chép',
 		copied: 'Đã sao chép!',
 		faqTitle: 'Câu hỏi thường gặp',
-		faqQ1: 'Sao `deno run -A npm:@mcp-vertex/core` khởi động chậm?',
+		faqQ1: 'Sao `deno run -A npm:@mcp-vertex/cli` khởi động chậm?',
 		faqA1: 'Deno giải và xác minh gói npm ở lần dùng đầu. Các lần sau dùng lại cache trong `~/.cache/deno`. Cho khởi động lặp lại, hãy ưu tiên bun hoặc npx.',
 		faqQ2: 'IDE của tôi không có trong danh sách — giờ sao?',
 		faqA2: 'Bất kỳ IDE nào chấp nhận MCP server stdio đều chạy được. Lấy JSON từ VS Code, đổi đường dẫn tệp cho khớp IDE của bạn, rồi đăng ký cùng lệnh + đối số.',

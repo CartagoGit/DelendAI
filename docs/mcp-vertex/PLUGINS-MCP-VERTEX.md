@@ -135,12 +135,18 @@ Three supported paths, in increasing order of intrusiveness:
    {
      "servers": {
        "mcp-vertex": {
-         "command": "bun",
+         "command": "bunx",
          "args": [
-           "/abs/path/to/mcp-vertex/tools/scripts/host/host-server.script.ts",
-           "--workspace=${workspaceFolder}",
-           "--config=${workspaceFolder}/mcp-vertex.config.json",
-           "--plugins=${workspaceFolder}/libs/plugins/lx-app/dist/index.js"
+           "--package",
+           "@mcp-vertex/cli",
+           "mcpv",
+           "__serve",
+           "--workspace",
+           "${workspaceFolder}",
+           "--config",
+           "${workspaceFolder}/mcp-vertex.config.json",
+           "--plugins",
+           "${workspaceFolder}/libs/plugins/lx-app/dist/index.js"
          ]
        }
      }
