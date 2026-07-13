@@ -120,7 +120,8 @@ install→navigate regression.
 - **Files**: apps/shared/src/public/index.ts
 - **Files**: packages/ui-extension/package.json
 - **Gate**: `bun run typecheck`
-- **Status**: pending
+- **Status**: in-progress
+- **Verified finding (2026-07-13)**: `@mcp-vertex/shared` re-exported dropdown/runtime implementations from `@mcp-vertex/ui-extension`, while ui-extension imported shared i18n/styles, creating a real workspace package cycle hidden by TypeScript path aliases. Shared is now a dependency-only foundation; web declares and deep-imports the UI runtime it actually consumes, and ui-extension remains the sole upper-layer consumer of shared.
 
 ### S2 — Canonical settings and theme contract
 - **Files**: packages/client/src/lib/contracts/interfaces/settings.interface.ts
