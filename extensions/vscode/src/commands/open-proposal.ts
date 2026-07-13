@@ -1,5 +1,6 @@
 import { ProposalsSnapshotSource } from '../lib/proposals-snapshot';
 import { renderProposalDetailHtml } from '../views/proposal-detail-webview';
+import { resolveViewLang, viewCopyFor } from '../i18n/view-copy.strings';
 import type { ICommandDeps } from './types';
 import { renderJsonHtml, showCommandError } from './types';
 
@@ -106,7 +107,14 @@ export const registerOpenProposalCommand = (deps: ICommandDeps) =>
 						deps.vscode.ViewColumn.One,
 						{ enableScripts: false },
 					);
-					panel.webview.html = renderProposalDetailHtml(detail);
+					panel.webview.html = renderProposalDetailHtml(
+						detail,
+						viewCopyFor(
+							resolveViewLang(
+								deps.globalState?.get<unknown>('mcpv:lang'),
+							),
+						),
+					);
 					return;
 				}
 

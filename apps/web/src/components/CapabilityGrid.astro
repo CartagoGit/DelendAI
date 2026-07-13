@@ -78,6 +78,11 @@ interface Props {
 		readonly empty: string;
 		readonly namespaceTitle?: string;
 	};
+	readonly resourceLabels?: {
+		readonly uri: string;
+		readonly mime: string;
+		readonly title: string;
+	};
 	/** Optional per-item override: `(item) => string`. Used by the
 	 * caller to surface localised descriptions from the i18n tables
 	 * (`describeTool`, `describePrompt`, `describeResource`,
@@ -119,6 +124,7 @@ const {
 	kind,
 	items,
 	labels,
+	resourceLabels,
 	describe,
 	displayName,
 	argDescription,
@@ -184,9 +190,9 @@ const isEmpty = items.length === 0;
 							<table class="resources-table">
 								<thead>
 									<tr>
-										<th>URI</th>
-										<th>MIME</th>
-										<th>Title</th>
+										<th>{resourceLabels?.uri ?? ''}</th>
+										<th>{resourceLabels?.mime ?? ''}</th>
+										<th>{resourceLabels?.title ?? labels.stat}</th>
 									</tr>
 								</thead>
 								<tbody>

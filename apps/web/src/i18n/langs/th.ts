@@ -86,6 +86,7 @@ const dict: LangDict = {
 	},
 	cfg: {
 		title: 'การตั้งค่า',
+		close: 'ปิดการตั้งค่า',
 		theme: 'ธีม',
 		language: 'ภาษา',
 		motion: 'การเคลื่อนไหว',
@@ -94,6 +95,10 @@ const dict: LangDict = {
 	search: {
 		title: 'ค้นหา',
 		placeholder: 'ค้นหาในไซต์...',
+		close: 'ปิดการค้นหา',
+		noMatches: 'ไม่พบผลลัพธ์',
+		indexUnavailable: 'ดัชนีการค้นหาไม่พร้อมใช้งาน',
+		buildRequired: 'การค้นหาสร้างด้วย bun run site โปรดรันการสร้างเพื่อเปิดใช้งาน',
 	},
 	footer: {
 		built: 'สร้างจากรีจิสทรีเครื่องมือที่มีชีวิต',
@@ -112,6 +117,7 @@ const dict: LangDict = {
 		tabTools: 'เครื่องมือ',
 		tabConfiguration: 'การตั้งค่า',
 		tabTutorial: 'บทเรียน',
+		tutorialFallback: 'กำลังแสดงภาษาอังกฤษและยังไม่ได้แปลเป็น {lang}',
 	},
 	plugin: {
 		proposals:
@@ -195,6 +201,8 @@ const dict: LangDict = {
 		nextSteps: 'ไปที่ไหนต่อ',
 		nextToolsCta: 'ดูเครื่องมือทั้งหมด',
 		nextTroubleshootingCta: 'มีอะไรไม่ทำงาน? การแก้ไขปัญหา',
+		overviewHint:
+			'หลังเซิร์ฟเวอร์เริ่มทำงาน ให้เรียก mcp-vertex_overview ด้วย compact: true; recommendedNextAction จะบอกเอเจนต์อย่างชัดเจนว่าต้องทำอะไรต่อไป',
 	},
 	troubleshooting: {
 		title: 'การแก้ไขปัญหา',

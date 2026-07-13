@@ -277,6 +277,7 @@ const site = {
 	},
 	cfg: {
 		title: 'सेटिंग्स',
+		close: 'सेटिंग्स बंद करें',
 		theme: 'थीम',
 		language: 'भाषा',
 		motion: 'एनिमेशन',
@@ -285,6 +286,10 @@ const site = {
 	search: {
 		title: 'खोजें',
 		placeholder: 'साइट में खोजें...',
+		close: 'खोज बंद करें',
+		noMatches: 'कोई मिलान नहीं मिला।',
+		indexUnavailable: 'खोज अनुक्रमणिका उपलब्ध नहीं है।',
+		buildRequired: 'खोज bun run site से बनती है। इसे चालू करने के लिए बिल्ड चलाएँ।',
 	},
 	footer: {
 		built: 'जीवित टूल रजिस्ट्री से जनित।',
@@ -303,6 +308,7 @@ const site = {
 		tabTools: 'टूल',
 		tabConfiguration: 'कॉन्फ़िगरेशन',
 		tabTutorial: 'ट्यूटोरियल',
+		tutorialFallback: 'अंग्रेज़ी में दिखाया जा रहा है; अभी {lang} में अनुवादित नहीं है',
 	},
 	plugin: {
 		proposals:
@@ -381,6 +387,8 @@ const site = {
 		nextSteps: 'आगे कहाँ जाएँ',
 		nextToolsCta: 'सभी टूल देखें',
 		nextTroubleshootingCta: 'कुछ काम नहीं कर रहा? समस्या निवारण',
+		overviewHint:
+			'सर्वर शुरू होने के बाद compact: true के साथ mcp-vertex_overview कॉल करें; recommendedNextAction एजेंट को अगला कदम ठीक-ठीक बताता है।',
 	},
 	troubleshooting: {
 		title: 'समस्या निवारण',

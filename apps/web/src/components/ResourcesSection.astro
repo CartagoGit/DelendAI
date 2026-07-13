@@ -41,6 +41,11 @@ const resources = (capabilities.resources ?? []) as IResource[];
 			kind="resource"
 			items={resources}
 			labels={{ stat: t.resources.count, empty: t.resources.lead }}
+			resourceLabels={{
+				uri: t.resources.uri,
+				mime: t.resources.mime,
+				title: t.resources.title,
+			}}
 			describe={(r) => {
 				const it = r as IResource;
 				return describeResource(it.uri, lang) ?? it.description;

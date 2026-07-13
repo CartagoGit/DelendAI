@@ -80,6 +80,10 @@ const pluginHref = (slug: string) =>
 							originLabel={
 								originCopy[pluginOriginForCatalogSlug(slug) ?? 'bundled'].label
 							}
+							labels={{
+								tools: t.pluginpage.tools,
+								install: t.pluginpage.install,
+							}}
 							requires={requires}
 						/>
 					);

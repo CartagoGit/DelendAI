@@ -90,6 +90,7 @@ const dict: LangDict = {
 	},
 	cfg: {
 		title: '設定',
+		close: '設定を閉じる',
 		theme: 'テーマ',
 		language: '言語',
 		motion: 'アニメーション',
@@ -98,6 +99,11 @@ const dict: LangDict = {
 	search: {
 		title: '検索',
 		placeholder: 'サイト内を検索...',
+		close: '検索を閉じる',
+		noMatches: '一致する結果はありません。',
+		indexUnavailable: '検索インデックスを利用できません。',
+		buildRequired:
+			'検索は bun run site で生成されます。有効にするにはビルドを実行してください。',
 	},
 	footer: {
 		built: 'ライブツールレジストリから生成。',
@@ -117,6 +123,7 @@ const dict: LangDict = {
 		tabTools: 'ツール',
 		tabConfiguration: '設定',
 		tabTutorial: 'チュートリアル',
+		tutorialFallback: '英語で表示中です。{lang} にはまだ翻訳されていません',
 	},
 	plugin: {
 		proposals:
@@ -202,6 +209,8 @@ const dict: LangDict = {
 		nextSteps: '次に進む先',
 		nextToolsCta: 'すべてのツールを見る',
 		nextTroubleshootingCta: '何か動かない？トラブルシューティング',
+		overviewHint:
+			'サーバー起動後に compact: true で mcp-vertex_overview を呼び出すと、recommendedNextAction が次の操作をエージェントに正確に示します。',
 	},
 	troubleshooting: {
 		title: 'トラブルシューティング',
