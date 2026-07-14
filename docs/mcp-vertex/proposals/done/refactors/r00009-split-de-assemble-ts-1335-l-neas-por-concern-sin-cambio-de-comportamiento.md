@@ -2,7 +2,7 @@
 id: r00009
 title: "Split de assemble.ts (1335 líneas) por concern, sin cambio de comportamiento"
 kind: refactor
-status: ready
+status: done
 type: proposal
 track: core
 date: 2026-07-13
@@ -28,7 +28,7 @@ Finding 12 de a00053: cada cambio de CLI toca un archivo gigante con radio de ex
 - global_gate: e2e
 
 ### S1 — Extraer wiring de presets y composición de plugins a módulos propios; assemble.ts queda como orquestador fino
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/src/lib/cli/assemble.ts`, `packages/core/src/lib/cli/assemble-presets.ts`, `packages/core/src/lib/cli/assemble-plugins.ts`
 - **Gate**: e2e
 - acceptance:

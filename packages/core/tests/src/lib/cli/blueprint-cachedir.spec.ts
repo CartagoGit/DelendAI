@@ -13,7 +13,7 @@ import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import { parseCliArgs } from '@mcp-vertex/core/lib/plugins/parse-cli-args';
-import { prepareServerBlueprintOnStart } from '@mcp-vertex/core/lib/cli/assemble';
+import { prepareServerBlueprintOnStart } from '@mcp-vertex/core/lib/cli/run-cli';
 
 describe('prepareServerBlueprintOnStart cacheDir (M15/H5)', async () => {
 	let ws = '';
