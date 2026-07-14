@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-07-14T08:54:31.099Z",
+	"generatedAt": "2026-07-14T12:40:48.440Z",
 	"mode": "compact",
 	"tools": [
 		{
@@ -682,21 +682,14 @@
 				"id": "f00114",
 				"title": "f00114",
 				"track": "proposals+lint",
-				"status": "ready",
-				"kind": "feat"
-			},
-			{
-				"id": "f00115",
-				"title": "f00115",
-				"track": "plugins+presets",
-				"status": "ready",
+				"status": "in-progress",
 				"kind": "feat"
 			}
 		],
 		"byStatus": {
-			"ready": 3,
-			"in-progress": 0,
-			"review": 0,
+			"ready": 1,
+			"in-progress": 1,
+			"review": 1,
 			"paused": 1,
 			"done": 213,
 			"blocked": 0,

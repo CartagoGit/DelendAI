@@ -14,6 +14,10 @@ import type { IToolRegistration } from '@mcp-vertex/core/public';
 import { toolError, toolOk } from '@mcp-vertex/core/public';
 
 import {
+	CONVENTION_PROFILE_IDS,
+	resolveProfile,
+} from '../profiles/profile-registry';
+import {
 	scanConventions,
 	type IDirReader,
 } from '../services/conventions-scan.service';
@@ -49,6 +53,8 @@ export interface ICheckConventionsToolOptions {
 
 export interface ICheckConventionsArgs {
 	readonly roots?: readonly string[] | undefined;
+	/** Language profile id (f00113); omitted = `typescript`. */
+	readonly profile?: string | undefined;
 }
 
 export const runCheckConventions = async (
@@ -60,7 +66,18 @@ export const runCheckConventions = async (
 			args.roots && args.roots.length > 0
 				? args.roots
 				: (options.defaultRoots ?? DEFAULT_SCAN_ROOTS);
-		const result = await scanConventions(options.reader, roots);
+		const resolution = resolveProfile(args.profile);
+		if (!resolution.ok) {
+			return toolError(
+				resolution.reason,
+				`Pass one of: ${resolution.supported.join(', ')} (or omit profile for typescript).`,
+			);
+		}
+		const result = await scanConventions(
+			options.reader,
+			roots,
+			resolution.profile,
+		);
 		return toolOk({
 			total: result.total,
 			unmatchedCount: result.unmatched.length,
@@ -89,9 +106,10 @@ export const buildCheckConventionsRegistration = (
 			{
 				outputSchema: CHECK_OUTPUT_SCHEMA,
 				description:
-					'Scan the workspace TypeScript files and report f00037 file-convention drift: total scanned, per-role counts, and the list of paths with no canonical role (`unmatched`, capped at 100; `unmatchedCount` is exact). Pass `roots` to narrow the scan.',
+					'Scan the workspace source files and report f00037 file-convention drift: total scanned, per-role counts, and the list of paths with no canonical role (`unmatched`, capped at 100; `unmatchedCount` is exact). Pass `roots` to narrow the scan and `profile` (typescript | python | rust | go, default typescript) to pick the language rule table (f00113).',
 				inputSchema: z.object({
 					roots: z.array(z.string()).optional(),
+					profile: z.enum(CONVENTION_PROFILE_IDS).optional(),
 				}),
 			},
 			async (args: ICheckConventionsArgs) =>
