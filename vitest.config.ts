@@ -53,11 +53,15 @@ export default defineConfig({
 				'**/*.script.ts',
 			],
 			reporter: ['text-summary'],
+			// t00004: re-measured after widening the scope — the global
+			// numbers ROSE (83.45/70.78/82.63/84.90 on 2026-07-14) because
+			// apps/shared and the extension are well covered. Floors sit a
+			// few points under the measured values, as always.
 			thresholds: {
-				statements: 72,
-				branches: 55,
-				functions: 75,
-				lines: 73,
+				statements: 80,
+				branches: 67,
+				functions: 79,
+				lines: 81,
 			},
 		},
 	},
