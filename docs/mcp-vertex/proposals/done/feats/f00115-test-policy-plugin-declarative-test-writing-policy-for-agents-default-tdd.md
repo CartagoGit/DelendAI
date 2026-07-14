@@ -2,7 +2,7 @@
 id: f00115
 title: "test-policy plugin — declarative test-writing policy for agents (default TDD)"
 kind: feat
-status: review
+status: done
 type: proposal
 track: plugins+presets
 date: 2026-07-14

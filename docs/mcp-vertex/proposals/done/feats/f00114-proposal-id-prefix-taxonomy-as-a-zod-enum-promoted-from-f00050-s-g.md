@@ -2,7 +2,7 @@
 id: f00114
 title: "Proposal-ID prefix taxonomy as a Zod enum — promoted from f00050 S-G"
 kind: feat
-status: review
+status: done
 type: proposal
 track: proposals+lint
 date: 2026-07-14
