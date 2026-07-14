@@ -2,7 +2,7 @@
 id: t00002
 title: "Cobertura de branches en engines de concurrencia y fix del PARSE_ERROR del coverage V8"
 kind: test
-status: ready
+status: done
 type: proposal
 track: tests
 date: 2026-07-13
@@ -28,21 +28,21 @@ Finding 9 de a00053: las ramas menos testeadas son exactamente las que corren cu
 - global_gate: e2e
 
 ### S1 — Specs de ramas de error para agent-lock-engine (corrupción, re-claim, expiración, release huérfano)
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/proposals/tests/src/lib/locks/agent-lock-engine.spec.ts`
 - **Gate**: e2e
 - acceptance:
   - "branches de agent-lock-engine.ts por encima del 80% en el reporte v8"
 
 ### S2 — Specs de ramas de error para continuity-enforcer y zombie-reconcile
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/proposals/tests/src/lib/agents/continuity-enforcer.spec.ts`, `plugins/proposals/tests/src/lib/agents/zombie-reconcile.spec.ts`
 - **Gate**: e2e
 - acceptance:
   - "branches de ambos engines por encima del 80% en el reporte v8"
 
 ### S3 — Identificar y arreglar el archivo que revienta el V8CoverageProvider
-- **Status**: pending
+- **Status**: done
 - **Files**: `vitest.shared.ts`
 - **Gate**: e2e
 - acceptance:
