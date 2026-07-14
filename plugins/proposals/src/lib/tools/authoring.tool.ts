@@ -25,6 +25,10 @@ import {
 	PROPOSAL_KIND_BY_PREFIX,
 	STATUS_TO_FOLDER,
 } from '../contracts/constants/proposal-glossary.constant';
+import {
+	kindMatchesId,
+	newProposalIdSchema,
+} from '../contracts/schemas/proposal-kind.schema';
 import { readJsonOrNull, readTextOrNull } from '../proposals/index-reader';
 import { escapeRegExp, kebab } from '../shared/string-helpers';
 import {
@@ -214,25 +218,24 @@ export const buildCreateProposalRegistration = (
 				let id: string;
 				if (args.id !== undefined) {
 					id = args.id;
-					if (!/^[a-z]\d{5}$/u.test(id)) {
+					// f00114: the WRITE-seam schema owns the shape rule
+					// (strict 5 digits, canonical prefix, no `p` alias)…
+					const idResult = newProposalIdSchema.safeParse(id);
+					if (!idResult.success) {
 						return toolError(
-							`invalid proposal id "${id}"`,
+							`invalid proposal id "${id}" — ${idResult.error.issues[0]?.message ?? 'malformed'}`,
 							'Use one lowercase family prefix followed by exactly five digits (for example f00001), or omit id and pass kind for race-safe allocation.',
 						);
 					}
-					const prefix = id[0] ?? '';
-					const inferredKind = PROPOSAL_KIND_BY_PREFIX[prefix];
-					if (inferredKind === undefined) {
-						return toolError(
-							`invalid id prefix "${prefix}"`,
-							'ID prefix must correspond to a known proposal kind.',
-						);
-					}
-					if (args.kind !== undefined && args.kind !== inferredKind) {
-						return toolError(
-							`id prefix "${prefix}" (kind=${inferredKind}) does not match specified kind "${args.kind}"`,
-							'Ensure the ID prefix matches the specified kind.',
-						);
+					// …and kindMatchesId owns prefix↔kind coherence.
+					if (args.kind !== undefined) {
+						const match = kindMatchesId(args.kind, id);
+						if (!match.ok) {
+							return toolError(
+								match.reason,
+								'Ensure the ID prefix matches the specified kind.',
+							);
+						}
 					}
 				} else if (args.kind !== undefined) {
 					const prefix = prefixForKind(args.kind);

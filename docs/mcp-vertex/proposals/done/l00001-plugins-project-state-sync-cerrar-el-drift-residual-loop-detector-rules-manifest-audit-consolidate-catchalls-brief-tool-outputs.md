@@ -4,7 +4,7 @@ status: done
 type: proposal
 track: plugins+core+audit
 date: 2026-06-21
-kind: chore
+kind: legacy
 legacy: true
 ---
 

@@ -49,7 +49,7 @@ const expectParseError = async (
 };
 
 const VALID_FIXTURE = `---
-id: l99-test
+id: l99
 type: meta
 status: pending
 track: meta
@@ -80,7 +80,7 @@ describe('parseProposalDocument', async () => {
 		expect(doc.path).toBe(path);
 
 		// frontmatter scalars
-		expect(doc.frontmatter.id).toBe('l99-test');
+		expect(doc.frontmatter.id).toBe('l99');
 		expect(doc.frontmatter.type).toBe('meta');
 		expect(doc.frontmatter.status).toBe('pending');
 		expect(doc.frontmatter.track).toBe('meta');

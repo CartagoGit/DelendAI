@@ -1,6 +1,6 @@
 ---
 id: f00102
-kind: refactor
+kind: feat
 status: done
 type: proposal
 track: apps/shared+apps/web+extensions/vscode+tools/scripts
