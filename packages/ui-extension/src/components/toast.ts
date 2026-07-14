@@ -14,6 +14,12 @@ export interface IToastOptions {
 	readonly message: string;
 	readonly ttl?: number; // ms; 0 = sticky
 	readonly action?: { id: string; label: string };
+	/**
+	 * x00103: accessible name for the sticky toast's close button.
+	 * Pass `extensionText(dict, 'a11yCloseToast')` so screen readers
+	 * announce it in the active language; defaults to English.
+	 */
+	readonly closeLabel?: string;
 }
 
 const kindClass = (kind: ToastKind): string => `mcpv-toast--${kind}`;
@@ -37,7 +43,7 @@ export const renderToast = (opts: IToastOptions): string => {
 		? `<button type="button" class="mcpv-toast__action" data-mcpv-action="${escapeHtml(opts.action.id)}" data-mcpv-toast-id="${escapeHtml(opts.id)}">${escapeHtml(opts.action.label)}</button>`
 		: '';
 	const close = sticky
-		? `<button type="button" class="mcpv-toast__close" aria-label="Close" data-mcpv-toast-close="${escapeHtml(opts.id)}">×</button>`
+		? `<button type="button" class="mcpv-toast__close" aria-label="${escapeHtml(opts.closeLabel ?? 'Close')}" data-mcpv-toast-close="${escapeHtml(opts.id)}">×</button>`
 		: '';
 	return `<div
 	id="${escapeHtml(opts.id)}"

@@ -2,7 +2,7 @@
 id: x00103
 title: "i18n de aria-labels en ui-extension: toast, language-picker y barrido de strings de accesibilidad"
 kind: fix
-status: ready
+status: done
 type: proposal
 track: ui
 date: 2026-07-13
@@ -28,7 +28,7 @@ Finding 7 de a00053: lectores de pantalla en 11 de los 12 idiomas soportados anu
 - global_gate: e2e
 
 ### S1 — toast y language-picker con aria-labels i18n + barrido del resto de componentes
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/ui-extension/src/components/toast.ts`, `packages/ui-extension/src/components/language-picker.ts`, `packages/ui-extension/src/i18n/ui.ts`
 - **Gate**: e2e
 - acceptance:
@@ -36,7 +36,7 @@ Finding 7 de a00053: lectores de pantalla en 11 de los 12 idiomas soportados anu
   - "un grep de aria-label=" con literal ASCII en src/ no devuelve hardcodes fuera del sistema i18n"
 
 ### S2 — Guard: lint que falla ante aria-label/title/alt literales fuera de i18n en ui-extension
-- **Status**: pending
+- **Status**: done
 - **DependsOn**: [S1]
 - **Files**: `tools/scripts/lint/shared-ui-ratchet.script.ts`
 - **Gate**: e2e
