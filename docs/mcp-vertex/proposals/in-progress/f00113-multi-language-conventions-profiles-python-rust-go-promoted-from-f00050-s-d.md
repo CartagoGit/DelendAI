@@ -2,7 +2,7 @@
 id: f00113
 title: "Multi-language conventions profiles (python/rust/go) — promoted from f00050 S-D"
 kind: feat
-status: ready
+status: in-progress
 type: proposal
 track: conventions+plugins
 date: 2026-07-14

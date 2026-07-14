@@ -93,4 +93,27 @@ describe('scanConventions', async () => {
 		// The unreadable subdir is skipped; the rest still classified.
 		expect(res.counts.tool).toBe(1);
 	});
+
+	it('scans with a non-TS profile: python extensions, roles and skip dirs (f00113 S5)', async () => {
+		const { PYTHON_PROFILE } = await import(
+			'../../../../src/lib/profiles/python.profile'
+		);
+		const reader = memoryReader({
+			pkg: [
+				file('__init__.py'),
+				file('service.py'),
+				file('ignored.ts'), // wrong extension for this profile
+				dir('tests'),
+				dir('__pycache__'),
+			],
+			'pkg/tests': [file('test_service.py')],
+			'pkg/__pycache__': [file('service.cpython-312.py')],
+		});
+		const res = await scanConventions(reader, ['pkg'], PYTHON_PROFILE);
+		expect(res.total).toBe(3);
+		expect(res.counts['package-marker']).toBe(1);
+		expect(res.counts.module).toBe(1);
+		expect(res.counts.test).toBe(1);
+		expect(res.unmatched).toEqual([]);
+	});
 });

@@ -2,7 +2,7 @@
 id: f00114
 title: "Proposal-ID prefix taxonomy as a Zod enum — promoted from f00050 S-G"
 kind: feat
-status: in-progress
+status: review
 type: proposal
 track: proposals+lint
 date: 2026-07-14
@@ -29,7 +29,7 @@ Parked non-goal S-G of f00049 (via f00050). Today the taxonomy lives as typed co
 - global_gate: e2e
 
 ### S1 — Zod enum + id schema derived from PROPOSAL_KINDS, exported from the plugin barrel
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/proposals/src/lib/contracts/schemas/proposal-kind.schema.ts`, `plugins/proposals/src/public/index.ts`, `plugins/proposals/tests/src/lib/contracts/schemas/proposal-kind.schema.spec.ts`
 - **Gate**: e2e
 - acceptance:
@@ -38,7 +38,7 @@ Parked non-goal S-G of f00049 (via f00050). Today the taxonomy lives as typed co
   - "Spec: every kind round-trips kind→prefix→kind; invalid prefix 'z00001' and mismatched pair (kind: feat, id: x00001) are rejected with the reason."
 
 ### S2 — Enforce at the seams: document parse + authoring validate against the schema
-- **Status**: pending
+- **Status**: done
 - **DependsOn**: [S1]
 - **Files**: `plugins/proposals/src/lib/proposals/proposal-document.ts`, `plugins/proposals/src/lib/tools/authoring.tool.ts`
 - **Gate**: e2e
@@ -48,7 +48,7 @@ Parked non-goal S-G of f00049 (via f00050). Today the taxonomy lives as typed co
   - "Existing specs stay green — behaviour-preserving for valid inputs."
 
 ### S3 — Repo-wide verification pass (the 'migration' proves itself a no-op)
-- **Status**: pending
+- **Status**: done
 - **DependsOn**: [S1]
 - **Files**: `plugins/proposals/tests/src/lib/proposals/prefix-taxonomy-verification.spec.ts`
 - **Gate**: e2e
