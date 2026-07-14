@@ -32,8 +32,26 @@ export default defineConfig({
 			// (`plugins/issues/src/.gitkeep` starts with `#`), which the
 			// v8 provider tried to parse as JS and crashed with a
 			// PARSE_ERROR at pos 1 on every `test:coverage` run.
-			include: ['packages/*/src/**/*.ts', 'plugins/*/src/**/*.ts'],
-			exclude: ['**/*.spec.ts', '**/*.test.ts', '**/index.ts'],
+			// t00004: the gate covers the WHOLE runtime surface, not only
+			// packages+plugins — apps/shared (12-language i18n source),
+			// the VS Code extension and the tools/scripts library code
+			// participate too. Pure `*.script.ts` entrypoints stay out
+			// (process.exit orchestrators, exercised by the validate
+			// gates that run them for real); apps/web stays out until
+			// the v8 provider maps .astro sanely.
+			include: [
+				'packages/*/src/**/*.ts',
+				'plugins/*/src/**/*.ts',
+				'apps/shared/src/**/*.ts',
+				'extensions/vscode/src/**/*.ts',
+				'tools/scripts/lib/**/*.ts',
+			],
+			exclude: [
+				'**/*.spec.ts',
+				'**/*.test.ts',
+				'**/index.ts',
+				'**/*.script.ts',
+			],
 			reporter: ['text-summary'],
 			thresholds: {
 				statements: 72,
