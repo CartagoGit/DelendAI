@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-07-14T07:27:03.907Z",
+	"generatedAt": "2026-07-14T08:54:31.099Z",
 	"mode": "compact",
 	"tools": [
 		{
@@ -342,6 +342,14 @@
 		{
 			"name": "mcp-vertex_test-convention_suggest_spec_path",
 			"plugin": "test-convention"
+		},
+		{
+			"name": "mcp-vertex_test-policy_get_test_policy",
+			"plugin": "test-policy"
+		},
+		{
+			"name": "mcp-vertex_test-policy_set_test_policy",
+			"plugin": "test-policy"
 		}
 	],
 	"skills": [
@@ -664,19 +672,33 @@
 				"kind": "feat"
 			},
 			{
-				"id": "r00009",
-				"title": "r00009",
-				"track": "core",
-				"status": "in-progress",
-				"kind": "refactor"
+				"id": "f00113",
+				"title": "f00113",
+				"track": "conventions+plugins",
+				"status": "ready",
+				"kind": "feat"
+			},
+			{
+				"id": "f00114",
+				"title": "f00114",
+				"track": "proposals+lint",
+				"status": "ready",
+				"kind": "feat"
+			},
+			{
+				"id": "f00115",
+				"title": "f00115",
+				"track": "plugins+presets",
+				"status": "ready",
+				"kind": "feat"
 			}
 		],
 		"byStatus": {
-			"ready": 0,
-			"in-progress": 1,
+			"ready": 3,
+			"in-progress": 0,
 			"review": 0,
 			"paused": 1,
-			"done": 212,
+			"done": 213,
 			"blocked": 0,
 			"retired": 1,
 			"unspecified": 0

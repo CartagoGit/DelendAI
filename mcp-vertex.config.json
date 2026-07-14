@@ -85,6 +85,9 @@
 		"test-convention": {
 			"options": {}
 		},
+		"test-policy": {
+			"options": {}
+		},
 		"conventions": {
 			"options": {
 				"roots": ["packages", "plugins", "extensions", "apps", "tools"]

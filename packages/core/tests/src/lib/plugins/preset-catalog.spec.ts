@@ -24,14 +24,14 @@ describe('PRESET_CATALOG', async () => {
 		expect(PRESET_CATALOG[0]?.members.length).toBe(2);
 		// lean: 4 members, independent essentials preset
 		expect(PRESET_CATALOG[1]?.members.length).toBe(4);
-		// standard: adds 5 on top of minimal
-		expect(PRESET_CATALOG[2]?.members.length).toBe(5);
+		// standard: adds 6 on top of minimal (f00115 added test-policy)
+		expect(PRESET_CATALOG[2]?.members.length).toBe(6);
 		// swarm: adds 6 on top of standard
 		expect(PRESET_CATALOG[3]?.members.length).toBe(6);
 		// full: adds 2 host-only on top of swarm
 		expect(PRESET_CATALOG[4]?.members.length).toBe(2);
-		// vertex: 10 members, mirrors mcp-vertex.config.json (independent)
-		expect(PRESET_CATALOG[5]?.members.length).toBe(10);
+		// vertex: 11 members, mirrors mcp-vertex.config.json (independent)
+		expect(PRESET_CATALOG[5]?.members.length).toBe(11);
 	});
 
 	it('defines `lean` as an independent essentials preset', async () => {
@@ -137,13 +137,14 @@ describe('resolvePresetMembers', async () => {
 			'rules',
 			'quality',
 			'deps',
+			'test-policy',
 		]);
-		expect(resolvePresetMembers('swarm').length).toBe(13);
-		expect(resolvePresetMembers('full').length).toBe(15);
+		expect(resolvePresetMembers('swarm').length).toBe(14);
+		expect(resolvePresetMembers('full').length).toBe(16);
 		expect(resolvePresetMembers('swarm')).not.toContain('lean');
 	});
 
-	it('resolves standard = minimal + memory/docs/rules/quality/deps', async () => {
+	it('resolves standard = minimal + memory/docs/rules/quality/deps/test-policy', async () => {
 		const resolved = resolvePresetMembers('standard');
 		expect(resolved).toContain('git');
 		expect(resolved).toContain('search');
@@ -152,7 +153,8 @@ describe('resolvePresetMembers', async () => {
 		expect(resolved).toContain('rules');
 		expect(resolved).toContain('quality');
 		expect(resolved).toContain('deps');
-		expect(resolved.length).toBe(7);
+		expect(resolved).toContain('test-policy');
+		expect(resolved.length).toBe(8);
 	});
 
 	it('resolves swarm = standard + proposals/notification/logs/status-marker/test-convention', async () => {
@@ -178,7 +180,7 @@ describe('resolvePresetMembers', async () => {
 
 	it('resolves vertex to ONLY its declared members (independent, skips chain)', async () => {
 		const resolved = resolvePresetMembers('vertex');
-		expect(resolved.length).toBe(10);
+		expect(resolved.length).toBe(11);
 		for (const required of [
 			'conventions',
 			'docs',
@@ -187,6 +189,7 @@ describe('resolvePresetMembers', async () => {
 			'web-fetch',
 			'status-marker',
 			'test-convention',
+			'test-policy',
 			'quality',
 			'issues',
 			'audit',
