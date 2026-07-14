@@ -470,6 +470,9 @@ const site = {
 };
 
 const extension = {
+	// x00103: accessibility labels for the shared components
+	a11yCloseToast: 'Fermer',
+	a11yLanguageSelector: 'Langue',
 	overviewTitle: 'Vue d ensemble mcp-vertex',
 	refresh: 'mcp-vertex: Actualiser',
 	runValidation: 'mcp-vertex: Lancer la validation',

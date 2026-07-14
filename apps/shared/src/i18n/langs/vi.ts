@@ -466,6 +466,9 @@ const site = {
 };
 
 const extension = {
+	// x00103: accessibility labels for the shared components
+	a11yCloseToast: 'Đóng',
+	a11yLanguageSelector: 'Ngôn ngữ',
 	overviewTitle: 'Tong quan mcp-vertex',
 	refresh: 'mcp-vertex: Lam moi',
 	runValidation: 'mcp-vertex: Chay kiem dinh',
