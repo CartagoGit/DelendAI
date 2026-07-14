@@ -142,8 +142,8 @@ describe('renderInitBundle (f00084 S2-S5)', () => {
 		const config = JSON.parse(configFile?.content ?? '{}') as {
 			plugins: Record<string, unknown>;
 		};
-		// Exactly the 10 vertex members, no swarm inheritance.
-		expect(Object.keys(config.plugins).length).toBe(10);
+		// Exactly the 11 vertex members, no swarm inheritance.
+		expect(Object.keys(config.plugins).length).toBe(11);
 		for (const required of [
 			'conventions',
 			'docs',

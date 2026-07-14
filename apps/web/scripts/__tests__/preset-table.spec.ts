@@ -70,7 +70,7 @@ describe('preset-table', () => {
 			expect(full?.effective).toContain('issues');
 			// `vertex` is independent — its effective membership equals
 			// its 10 declared members, NOT swarm + a delta.
-			expect(vertex?.effective.length).toBe(10);
+			expect(vertex?.effective.length).toBe(11);
 			expect(vertex?.effective).toContain('audit');
 			expect(vertex?.effective).toContain('issues');
 			expect(vertex?.effective).toContain('web-fetch');
