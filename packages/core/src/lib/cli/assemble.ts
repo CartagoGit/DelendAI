@@ -3,20 +3,13 @@ import { join, resolve } from 'node:path';
 
 import { DEFAULT_CORE_PATHS } from '../contracts/interfaces/core-paths.interface';
 import type { IResolvedHostIdentity } from '../contracts/interfaces/resolved-host-identity.interface';
-import type { IKnowledgeEntry } from '../contracts/interfaces/knowledge.interface';
 import type { IMcpVertexHostConfig } from '../contracts/interfaces/host-config.interface';
-import type {
-	IPromptRegistration,
-	IResourceRegistration,
-	IToolRegistration,
-} from '../contracts/interfaces/tool-registration.interface';
 import {
 	DEFAULT_CONFIG_FILENAME,
 	diagnoseConfigFile,
 	diagnosePluginPathConfig,
 	parseConfigFile,
 	pluginConfigFor,
-	resolveConfigPluginSpecifiers,
 } from '../plugins/load-config-file';
 import { diagnoseWorkspaceLayout } from '../plugins/diagnose-workspace-layout';
 import type { WorkspacePathStatus } from '../contracts/interfaces/workspace-layout.interface';
@@ -24,17 +17,13 @@ import type { IPluginLoadResult } from '../plugins/load-plugins';
 import type { IMcpPluginContext } from '../plugins/plugin-contract';
 import { createPeerPluginRegistry } from '../plugins/peer-plugin-registry';
 import type { IMcpVertexCliArgs } from '../plugins/parse-cli-args';
-import { createMcpProject } from '../project/create-mcp-project';
 import { joinRel } from '../shared/paths';
 import {
 	createGitConfigReader,
 	resolveCommitAuthor,
 } from '../shared/commit-author';
 import { createGitRunner } from '../shared/git-write';
-import type {
-	ISkillSummary,
-	IToolSummary,
-} from '../catalog/agent-discovery-types';
+import type { IToolSummary } from '../catalog/agent-discovery-types';
 import { createWorkspacePathProvider } from '../workspace/create-workspace-path-provider';
 import type {
 	ICacheEvictionReport,
@@ -42,10 +31,6 @@ import type {
 } from '../contracts/interfaces/cache-eviction.interface';
 import { createCacheEvictionRegistry } from '../cache/eviction-registry';
 import { resolveWorkspaceContained } from '../shared/contain-path';
-import type {
-	IConfigurationArtifact,
-	IConfigurationPlugin,
-} from '../contracts/interfaces/configuration-center.interface';
 import { assemblePlugins } from './assemble-plugins';
 import { assembleCoreTools } from './assemble-core-tools';
 import { assembleSkills } from './assemble-skills';
@@ -309,7 +294,6 @@ export const assembleCliConfig = async (
 		onToolCancels,
 		isAgentStuckFn,
 		activationReport,
-		activationById,
 		configurationPlugins,
 		configurationArtifacts,
 	} = await assemblePlugins({
@@ -325,7 +309,6 @@ export const assembleCliConfig = async (
 
 	const {
 		validationMatrix,
-		skillBundles,
 		skillCatalog,
 		skillSummaries,
 		proposalSummaries,

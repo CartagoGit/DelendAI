@@ -477,7 +477,7 @@ export class ExternalServerRegistry {
 	 */
 	private ensureBooted(id: string): IServerRuntime {
 		const cached = this.runtime.get(id);
-		if (cached !== undefined && cached.running) return cached;
+		if (cached?.running) return cached;
 
 		const entry = this.options.servers[id];
 		if (entry === undefined) {

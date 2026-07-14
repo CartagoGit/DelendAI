@@ -503,7 +503,7 @@ describe('Tabs.astro — plugin variant DOM shape', () => {
 		here,
 		'../../src/styles/components/_tabs.scss',
 	);
-	const styles = readFileSync(tabsScssPath, 'utf8');
+	const _styles = readFileSync(tabsScssPath, 'utf8');
 
 	// f00102 S2.1 — the tablist markup moved from `Tabs.astro` into
 	// the shared `renderTabs()` at

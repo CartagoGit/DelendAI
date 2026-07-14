@@ -130,7 +130,7 @@ const resolveHref = (baseHref: string, href: string): string => {
  *   <Fragment set:html={renderSiteFooter({ lang, baseHref, year, labels })} />
  */
 export const renderSiteFooter = (props: ISiteFooterProps): string => {
-	const lang = props.lang;
+	const _lang = props.lang;
 	const baseHref = props.baseHref;
 	const year = props.year;
 	const mergedLabels: ISiteFooterLabels = {
