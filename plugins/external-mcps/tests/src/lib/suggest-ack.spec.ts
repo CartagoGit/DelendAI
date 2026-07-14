@@ -313,7 +313,7 @@ describe('ack tool (records + lists, notifies via the host bridge)', () => {
 			mode: 'list',
 			total: 1,
 		});
-		const pending = result.structuredContent?.['pending'] as Array<{
+		const pending = result.structuredContent?.pending as Array<{
 			serverId: string;
 		}>;
 		expect(pending.map((p) => p.serverId)).toEqual(['filesystem']);
@@ -353,7 +353,7 @@ describe('ack tool (records + lists, notifies via the host bridge)', () => {
 		expect(await createPendingAcksStore(ledgerPath).isAcked('github')).toBe(
 			false,
 		);
-		expect(logged[0]?.data['event']).toBe('external-mcp-ack-rejected');
+		expect(logged[0]?.data.event).toBe('external-mcp-ack-rejected');
 	});
 
 	it('works without a notification bridge (test double has none)', async () => {

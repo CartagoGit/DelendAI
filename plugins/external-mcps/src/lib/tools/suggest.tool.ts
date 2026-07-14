@@ -199,7 +199,7 @@ export const buildSuggestPatch = (
 const declaredServerIds = (
 	options: Readonly<Record<string, unknown>>,
 ): ReadonlySet<string> => {
-	const servers = options['servers'];
+	const servers = options.servers;
 	if (typeof servers !== 'object' || servers === null) return new Set();
 	return new Set(Object.keys(servers));
 };
@@ -229,7 +229,7 @@ export const buildSuggestToolRegistration = (
 				const declared = declaredServerIds(options.options);
 				const candidates = rankCandidates(matches, declared);
 				const patch = buildSuggestPatch(
-					options.options['servers'] !== undefined,
+					options.options.servers !== undefined,
 					candidates,
 				);
 				return toolJson({
