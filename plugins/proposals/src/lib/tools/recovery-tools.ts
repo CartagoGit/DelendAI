@@ -304,10 +304,27 @@ const moveProposal = async (
 		await writeFileAtomic(found.absPath, updated);
 		if (newAbsPath !== found.absPath) {
 			await mkdir(dirname(newAbsPath), { recursive: true });
-			const result = await gitRunner(['mv', found.absPath, newAbsPath]);
-			if (!result.ok) {
+			// x00106 S2: untracked file → plain rename + stage, no warning
+			// (nothing to preserve); the warning is for tracked-file mv
+			// failures only. Mirrors proposal-transition.tool.ts.
+			const tracked = await gitRunner([
+				'ls-files',
+				'--error-unmatch',
+				found.absPath,
+			]);
+			if (!tracked.ok) {
 				await rename(found.absPath, newAbsPath);
-				warning = `git mv failed (${result.reason ?? 'unknown'}); used plain rename.`;
+				await gitRunner(['add', newAbsPath]);
+			} else {
+				const result = await gitRunner([
+					'mv',
+					found.absPath,
+					newAbsPath,
+				]);
+				if (!result.ok) {
+					await rename(found.absPath, newAbsPath);
+					warning = `git mv failed (${result.reason ?? 'unknown'}); used plain rename.`;
+				}
 			}
 		}
 	});
