@@ -371,14 +371,35 @@ const applyTransition = async (
 			// fresh, or a stray custom folder, might not have created the
 			// target yet — never fail the transition over a missing dir.
 			await mkdir(dirname(newAbsPath), { recursive: true });
-			const result = await gitRunner(['mv', found.absPath, newAbsPath]);
-			if (!result.ok) {
-				// Best-effort: git mv failing (no git, file untracked, dirty
-				// tree) must not strand the frontmatter mid-update. A plain
-				// rename still gets the folder/status pair consistent; blame
-				// preservation is lost, surfaced as a warning, not an error.
+			// x00106 S2: an UNTRACKED file (create_proposal writes without
+			// staging, so a fresh proposal's first transition always lands
+			// here) has no history for `git mv` to preserve — move it
+			// plainly, stage the new location (best-effort) so the NEXT
+			// transition can git mv, and emit no warning. The warning is
+			// reserved for the case that matters: git mv failing on a
+			// TRACKED file.
+			const tracked = await gitRunner([
+				'ls-files',
+				'--error-unmatch',
+				found.absPath,
+			]);
+			if (!tracked.ok) {
 				await rename(found.absPath, newAbsPath);
-				gitWarning = `git mv failed (${result.reason ?? 'unknown'}); fell back to a plain rename — blame history for this file was not preserved by git.`;
+				await gitRunner(['add', newAbsPath]);
+			} else {
+				const result = await gitRunner([
+					'mv',
+					found.absPath,
+					newAbsPath,
+				]);
+				if (!result.ok) {
+					// Best-effort: git mv failing (no git, dirty tree) must
+					// not strand the frontmatter mid-update. A plain rename
+					// still gets the folder/status pair consistent; blame
+					// preservation is lost, surfaced as a warning.
+					await rename(found.absPath, newAbsPath);
+					gitWarning = `git mv failed (${result.reason ?? 'unknown'}); fell back to a plain rename — blame history for this file was not preserved by git.`;
+				}
 			}
 		}
 	});

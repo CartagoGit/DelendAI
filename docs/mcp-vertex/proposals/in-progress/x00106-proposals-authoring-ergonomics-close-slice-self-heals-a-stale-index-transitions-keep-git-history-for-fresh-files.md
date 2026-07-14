@@ -2,7 +2,7 @@
 id: x00106
 title: "Proposals authoring ergonomics — close_slice self-heals a stale index; transitions keep git history for fresh files"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: proposals+dx
 date: 2026-07-14
