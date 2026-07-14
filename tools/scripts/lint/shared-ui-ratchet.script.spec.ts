@@ -199,7 +199,6 @@ describe('shared-ui-ratchet / findHardcodedAriaLabels (x00103 S2)', () => {
 
 	it('does NOT flag interpolated labels, aria-labelledby, or other packages', () => {
 		const interpolated =
-			// biome-ignore lint/suspicious/noTemplateCurlyInString: the literal under test
 			'const h = `<button aria-label="${escapeHtml(opts.closeLabel)}">x</button>`;';
 		expect(findHardcodedAriaLabels(file, interpolated)).toHaveLength(0);
 		expect(

@@ -111,29 +111,29 @@ const parseLedger = (raw: string): IPendingAck[] => {
 	} catch {
 		return [];
 	}
-	if (!isPlainObject(parsed) || !Array.isArray(parsed['acks'])) return [];
+	if (!isPlainObject(parsed) || !Array.isArray(parsed.acks)) return [];
 	const byId = new Map<string, IPendingAck>();
-	for (const entry of parsed['acks']) {
+	for (const entry of parsed.acks) {
 		if (!isPlainObject(entry)) continue;
-		const serverId = entry['serverId'];
-		const requestedAt = entry['requestedAt'];
+		const serverId = entry.serverId;
+		const requestedAt = entry.requestedAt;
 		if (typeof serverId !== 'string' || typeof requestedAt !== 'string') {
 			continue;
 		}
 		byId.set(serverId, {
 			serverId,
 			requestedAt,
-			...(typeof entry['reason'] === 'string'
-				? { reason: entry['reason'] }
+			...(typeof entry.reason === 'string'
+				? { reason: entry.reason }
 				: {}),
-			...(typeof entry['ackedAt'] === 'string'
-				? { ackedAt: entry['ackedAt'] }
+			...(typeof entry.ackedAt === 'string'
+				? { ackedAt: entry.ackedAt }
 				: {}),
-			...(typeof entry['ackedBy'] === 'string'
-				? { ackedBy: entry['ackedBy'] }
+			...(typeof entry.ackedBy === 'string'
+				? { ackedBy: entry.ackedBy }
 				: {}),
-			...(typeof entry['accepted'] === 'boolean'
-				? { accepted: entry['accepted'] }
+			...(typeof entry.accepted === 'boolean'
+				? { accepted: entry.accepted }
 				: {}),
 		});
 	}
