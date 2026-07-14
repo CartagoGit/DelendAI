@@ -42,7 +42,7 @@ import {
 	renderReviewLines,
 	reviewTransition,
 } from '../swarm/proposal-review';
-import { readActiveLocks } from './authoring-options';
+import { readActiveLocks, resolveIndexedDoc } from './authoring-options';
 import type { IAuthoringToolOptions } from './authoring-options';
 
 export type { IAuthoringToolOptions } from './authoring-options';
@@ -441,30 +441,17 @@ export const buildCloseSliceRegistration = (
 				sliceId: string;
 				releaseLock?: boolean | undefined;
 			}) => {
-				const index = await readJsonOrNull<{
-					proposals: Array<{ id: string; file: string }>;
-				}>(options.indexPathAbs);
-				if (index === null) {
-					return toolError(
-						'proposal index not found',
-						'Run sync_proposals first.',
-					);
-				}
-				const entry = index.proposals.find(
-					(p) =>
-						p.id === args.proposalId ||
-						p.id.startsWith(`${args.proposalId}-`),
+				// x00106 S1: index lookups self-heal a stale index once —
+				// transitions move files and leave the index pointing at
+				// the pre-move path until the next sync.
+				const resolved = await resolveIndexedDoc(
+					options,
+					args.proposalId,
 				);
-				if (entry === undefined) {
-					return toolError(
-						`proposal "${args.proposalId}" not in index`,
-						'Pass an existing proposalId.',
-					);
+				if (!resolved.ok) {
+					return toolError(resolved.reason, resolved.nextAction);
 				}
-				const docPath = join(
-					options.proposalsDirAbs ?? dirname(options.indexPathAbs),
-					entry.file,
-				);
+				const { entry, docPath } = resolved;
 				try {
 					await withFileMutex(docPath, async () => {
 						const md = await readTextOrNull(docPath);
@@ -623,30 +610,15 @@ export const buildReviewRegistration = (
 				agent: string;
 				note?: string | undefined;
 			}) => {
-				const index = await readJsonOrNull<{
-					proposals: Array<{ id: string; file: string }>;
-				}>(options.indexPathAbs);
-				if (index === null) {
-					return toolError(
-						'proposal index not found',
-						'Run sync_proposals first.',
-					);
-				}
-				const entry = index.proposals.find(
-					(p) =>
-						p.id === args.proposalId ||
-						p.id.startsWith(`${args.proposalId}-`),
+				// x00106 S1: same one-shot self-heal as close_slice.
+				const resolved = await resolveIndexedDoc(
+					options,
+					args.proposalId,
 				);
-				if (entry === undefined) {
-					return toolError(
-						`proposal "${args.proposalId}" not in index`,
-						'Pass an existing proposalId.',
-					);
+				if (!resolved.ok) {
+					return toolError(resolved.reason, resolved.nextAction);
 				}
-				const docPath = join(
-					options.proposalsDirAbs ?? dirname(options.indexPathAbs),
-					entry.file,
-				);
+				const { entry, docPath } = resolved;
 				// x00055 S2: redact the reviewer note...
 				const redactedNote = args.note
 					? redactSecrets(args.note)

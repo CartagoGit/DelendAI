@@ -2,7 +2,7 @@
 id: t00004
 title: "Coverage gate covers apps/shared, extensions and tools scripts — not only packages+plugins"
 kind: test
-status: in-progress
+status: review
 type: proposal
 track: tests+coverage
 date: 2026-07-14
@@ -28,7 +28,7 @@ Audit a00054 F-6. t00002 fixed the PARSE_ERROR by narrowing to *.ts, which was c
 - global_gate: e2e
 
 ### S1 — Widen include to apps/shared + extensions/vscode + tools/scripts/lib (*.ts), re-measure, honest thresholds, document exclusions
-- **Status**: pending
+- **Status**: done
 - **Files**: `vitest.config.ts`, `docs/mcp-vertex/TOKEN-BUDGETS.md`
 - **Gate**: e2e
 - acceptance:
