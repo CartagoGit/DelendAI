@@ -60,6 +60,7 @@ const PLUGIN_LIST = [
 	'search',
 	'status-marker',
 	'test-convention',
+	'test-policy',
 	'web-fetch',
 ] as const;
 

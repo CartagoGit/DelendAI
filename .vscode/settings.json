@@ -140,5 +140,23 @@
 	"mcp-vertex.server": {
 		"command": "bun",
 		"args": ["run", "mcp-vertex"]
+	},
+
+	// ──────────────────────────────────────────────────────────────────────
+	// Workspace-scoped visual identity — morado agradable
+	//
+	// Solo afecta a este workspace (`.vscode/settings.json` tiene precedencia
+	// sobre la configuración de usuario). Al abrir otro proyecto, el contorno
+	// vuelve al color por defecto.
+	//
+	// Paleta:
+	//   - #A78BFA  violet-400 (Tailwind) — contorno de la ventana activa
+	//   - #6D28D9  violet-700 (Tailwind) — contorno de la ventana inactiva
+	//   - #C4B5FD  violet-300 (Tailwind) — borde del elemento con foco
+	// ──────────────────────────────────────────────────────────────────────
+	"workbench.colorCustomizations": {
+		"window.activeBorder": "#A78BFA",
+		"window.inactiveBorder": "#6D28D9",
+		"focusBorder": "#C4B5FD"
 	}
 }
