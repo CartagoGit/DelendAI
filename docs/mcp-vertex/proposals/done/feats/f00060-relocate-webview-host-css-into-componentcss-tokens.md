@@ -4,7 +4,7 @@ status: done
 type: proposal
 track: design-tokens+css+extension-ux
 date: 2026-06-25
-kind: refactor
+kind: feat
 title: Relocate `--vscode-*` CSS custom properties from webviews into `componentCss` tokens
 shipped-in: [c7419269]
 recan: []

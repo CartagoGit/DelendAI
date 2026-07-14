@@ -2,7 +2,7 @@
 id: f00115
 title: "test-policy plugin — declarative test-writing policy for agents (default TDD)"
 kind: feat
-status: in-progress
+status: review
 type: proposal
 track: plugins+presets
 date: 2026-07-14
@@ -29,7 +29,7 @@ User request 2026-07-14: "un plugin activo por defecto para decir si queremos qu
 - global_gate: e2e
 
 ### S1 — Policy engine + durable override store
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/test-policy/src/lib/policy.ts`, `plugins/test-policy/src/lib/policy-store.ts`, `plugins/test-policy/tests/src/lib/policy.spec.ts`, `plugins/test-policy/tests/src/lib/policy-store.spec.ts`, `plugins/test-policy/package.json`, `plugins/test-policy/tsconfig.json`, `plugins/test-policy/vitest.config.ts`, `plugins/test-policy/LICENSE`
 - **Gate**: e2e
 - acceptance:
@@ -37,7 +37,7 @@ User request 2026-07-14: "un plugin activo por defecto para decir si queremos qu
   - "Store: read/write override under the plugin cache via withFileMutex + writeFileAtomic; corrupt file quarantined and treated as absent (corrupt ≠ empty), covered by a corruption spec per the repo rule for new persisted state."
 
 ### S2 — Tools (get/set) + knowledge + plugin entry + public barrel
-- **Status**: pending
+- **Status**: done
 - **DependsOn**: [S1]
 - **Files**: `plugins/test-policy/src/index.ts`, `plugins/test-policy/src/lib/tools/get-policy.tool.ts`, `plugins/test-policy/src/lib/tools/set-policy.tool.ts`, `plugins/test-policy/src/public/index.ts`, `plugins/test-policy/tests/src/lib/tools/policy-tools.spec.ts`, `plugins/test-policy/README.md`
 - **Gate**: e2e
@@ -47,7 +47,7 @@ User request 2026-07-14: "un plugin activo por defecto para decir si queremos qu
   - "Options parsed through the Zod schema with safeParse and a hard boot error on misconfig (test-convention idiom)."
 
 ### S3 — Default-on wiring: presets, project config, workspace symlink, generated artifacts
-- **Status**: pending
+- **Status**: done
 - **DependsOn**: [S2]
 - **Files**: `packages/core/src/lib/plugins/preset-catalog.ts`, `mcp-vertex.config.json`, `package.json`
 - **Gate**: e2e

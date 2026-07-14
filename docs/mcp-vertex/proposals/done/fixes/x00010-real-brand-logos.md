@@ -4,7 +4,7 @@ status: done
 type: proposal
 track: web+ui
 date: 2026-06-21
-kind: feat
+kind: fix
 title: Replace hand-drawn logo placeholders with real brand marks (npm, pnpm, yarn, bun, deno, git, github, vscode, cursor, claude, windsurf, antigravity, zed, modelcontextprotocol)
 shipped-in: pending
 ---
