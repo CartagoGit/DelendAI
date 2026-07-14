@@ -166,16 +166,13 @@ export type {
 	WorkspaceLayoutProbe,
 	WorkspacePathStatus,
 } from '../lib/contracts/interfaces/workspace-layout.interface';
-export {
-	assembleCliConfig,
-	runCli,
-	runDoctor,
-} from '../lib/cli/assemble';
+export { assembleCliConfig } from '../lib/cli/assemble';
 export type {
 	IAssembledCliConfig,
 	IAssembleCliDeps,
-	IDoctorReport,
 } from '../lib/cli/assemble';
+export { runCli, runDoctor } from '../lib/cli/run-cli';
+export type { IDoctorReport } from '../lib/cli/run-cli';
 export type {
 	IBootstrapPatternOverride,
 	IBootstrapPatternOverrides,
