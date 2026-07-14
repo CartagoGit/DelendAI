@@ -28,7 +28,11 @@ export default defineConfig({
 			// r00004 S1: keep coverage out of the root — write under .cache/.
 			reportsDirectory: '.cache/coverage',
 			all: true,
-			include: ['packages/*/src/**', 'plugins/*/src/**'],
+			// t00002 S3: `.ts` only — `src/**` also matched marker files
+			// (`plugins/issues/src/.gitkeep` starts with `#`), which the
+			// v8 provider tried to parse as JS and crashed with a
+			// PARSE_ERROR at pos 1 on every `test:coverage` run.
+			include: ['packages/*/src/**/*.ts', 'plugins/*/src/**/*.ts'],
 			exclude: ['**/*.spec.ts', '**/*.test.ts', '**/index.ts'],
 			reporter: ['text-summary'],
 			thresholds: {

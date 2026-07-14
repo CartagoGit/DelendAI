@@ -7,6 +7,7 @@
  * Dependency-Inversion seam), covering claim / refresh / conflict /
  * release / status / stale-GC / invalid-input without a server.
  */
+import { execSync } from 'node:child_process';
 import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -234,5 +235,103 @@ describe('runAgentLockEngine — stale GC', async () => {
 			task_id: string;
 		}>;
 		expect(inFlight.some((e) => e.task_id === 'old-task')).toBe(false);
+	});
+
+	// t00002 S1: error/edge branches that only the wire e2e touched.
+	describe('validation and needs-worktree branches', () => {
+		it('claim without files[] is an invalid-input error', async () => {
+			const res = await run({
+				action: 'claim',
+				task_id: 't1',
+				agent: 'a1',
+			} as IAgentLockArgs);
+			expect(res.isError).toBe(true);
+			expect(body(res).blockerType).toBe('invalid-input');
+		});
+
+		it('release without task_id is an invalid-input error', async () => {
+			const res = await run({ action: 'release' } as IAgentLockArgs);
+			expect(res.isError).toBe(true);
+			expect(body(res).blockerType).toBe('invalid-input');
+		});
+
+		it('unknown action falls through to the unreachable guard', async () => {
+			const res = await run({ action: 'bogus' } as never);
+			expect(res.isError).toBe(true);
+			expect(body(res).error).toBe('unreachable');
+		});
+
+		it('claim with the worktree gate on refuses a non-agent branch', async () => {
+			const res = await run(
+				{
+					action: 'claim',
+					task_id: 't1',
+					agent: 'a1',
+					files: ['src/a.ts'],
+				},
+				{
+					agentWorktreeEnabled: true,
+					currentBranchOverride: 'develop',
+				},
+			);
+			expect(res.isError).toBe(true);
+			expect(body(res).blockerType).toBe('needs-worktree');
+		});
+
+		it('claim with the gate on succeeds from an agent/<name> branch', async () => {
+			const res = await run(
+				{
+					action: 'claim',
+					task_id: 't1',
+					agent: 'a1',
+					files: ['src/a.ts'],
+				},
+				{
+					agentWorktreeEnabled: true,
+					currentBranchOverride: 'agent/a1',
+				},
+			);
+			expect(res.isError).not.toBe(true);
+			expect(readLockFile().in_flight).toHaveLength(1);
+		});
+
+		it('gate on + unreadable branch (no git repo) refuses with needs-worktree', async () => {
+			// The lock lives in a plain temp dir — `git rev-parse` fails, the
+			// engine resolves the branch to null and refuses the claim.
+			const res = await run(
+				{
+					action: 'claim',
+					task_id: 't1',
+					agent: 'a1',
+					files: ['src/a.ts'],
+				},
+				{ agentWorktreeEnabled: true },
+			);
+			expect(res.isError).toBe(true);
+			expect(body(res).blockerType).toBe('needs-worktree');
+			expect(body(res).summary).toContain('unreadable');
+		});
+
+		it('gate on + a REAL git branch is read via rev-parse (success path)', async () => {
+			// Init a real repo around the lock file so the execFile success
+			// branch runs; `main` is not an agent/ branch, so the claim is
+			// refused with the branch echoed back.
+			execSync(
+				'git init -q -b main && git -c user.email=t@t -c user.name=t commit -q --allow-empty -m x',
+				{ cwd: workspace },
+			);
+			const res = await run(
+				{
+					action: 'claim',
+					task_id: 't1',
+					agent: 'a1',
+					files: ['src/a.ts'],
+				},
+				{ agentWorktreeEnabled: true },
+			);
+			expect(res.isError).toBe(true);
+			expect(body(res).blockerType).toBe('needs-worktree');
+			expect(JSON.stringify(body(res))).toContain('main');
+		});
 	});
 });
