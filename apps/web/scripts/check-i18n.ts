@@ -209,6 +209,8 @@ const allowedIdenticalSpanish = new Set([
 	'settings.logLevel.error',
 	'common.plugin',
 	'common.id',
+	// "Nord" is the theme's proper name — identical in every language.
+	'settings.theme.nord',
 ]);
 const spanishStaleEnglish = [...authoredEnglish].flatMap(([key, value]) =>
 	authoredSpanish.get(key) === value && !allowedIdenticalSpanish.has(key)

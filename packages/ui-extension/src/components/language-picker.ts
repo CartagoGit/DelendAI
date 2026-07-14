@@ -18,6 +18,12 @@ export interface ILanguagePickerOptions {
 	readonly current: Lang;
 	readonly languages: readonly ILangMeta[];
 	readonly onChange?: (lang: Lang) => void;
+	/**
+	 * x00103: accessible name for the `<select>`. Pass
+	 * `extensionText(dict, 'a11yLanguageSelector')` so screen readers
+	 * announce it in the active language; defaults to English.
+	 */
+	readonly ariaLabel?: string;
 }
 
 const STORAGE_KEY = 'mcpv:lang';
@@ -62,7 +68,7 @@ export const renderLanguagePicker = (opts: ILanguagePickerOptions): string => {
 		.join('');
 	return `<label class="mcpv-lang-picker"${idAttr}>
 	<span class="mcpv-lang-picker__label" aria-hidden="true">🌐</span>
-	<select class="mcpv-lang-picker__select" data-mcpv-lang aria-label="Language">
+	<select class="mcpv-lang-picker__select" data-mcpv-lang aria-label="${escapeHtml(opts.ariaLabel ?? 'Language')}">
 		${options}
 	</select>
 </label>`;
