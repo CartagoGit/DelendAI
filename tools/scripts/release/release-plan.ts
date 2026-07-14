@@ -35,6 +35,7 @@ export const PUBLISH_ORDER: readonly string[] = [
 	'plugins/search',
 	'plugins/status-marker',
 	'plugins/test-convention',
+	'plugins/test-policy',
 	'plugins/usage-tracking',
 	'plugins/web-fetch',
 ];

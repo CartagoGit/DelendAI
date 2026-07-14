@@ -17,6 +17,7 @@
         "@mcp-vertex/external-mcps": "workspace:*",
         "@mcp-vertex/issues": "workspace:*",
         "@mcp-vertex/orchestrator-runner": "workspace:*",
+        "@mcp-vertex/test-policy": "workspace:*",
         "@mcp-vertex/usage-tracking": "workspace:*",
         "@modelcontextprotocol/sdk": "1.29.0",
         "@types/bun": "1.3.14",
@@ -464,6 +465,23 @@
         "@mcp-vertex/core": "^0.1.0",
       },
     },
+    "plugins/test-policy": {
+      "name": "@mcp-vertex/test-policy",
+      "version": "0.1.0",
+      "dependencies": {
+        "@modelcontextprotocol/sdk": "^1.29.0",
+        "zod": "^4.4.3",
+      },
+      "devDependencies": {
+        "@mcp-vertex/core": "workspace:*",
+        "@types/bun": "latest",
+        "typescript": "6.0.3",
+        "vitest": "4.1.10",
+      },
+      "peerDependencies": {
+        "@mcp-vertex/core": "^0.1.0",
+      },
+    },
     "plugins/usage-tracking": {
       "name": "@mcp-vertex/usage-tracking",
       "version": "0.1.0",
@@ -826,6 +844,8 @@
     "@mcp-vertex/status-marker": ["@mcp-vertex/status-marker@workspace:plugins/status-marker"],
 
     "@mcp-vertex/test-convention": ["@mcp-vertex/test-convention@workspace:plugins/test-convention"],
+
+    "@mcp-vertex/test-policy": ["@mcp-vertex/test-policy@workspace:plugins/test-policy"],
 
     "@mcp-vertex/ui-extension": ["@mcp-vertex/ui-extension@workspace:packages/ui-extension"],
 
