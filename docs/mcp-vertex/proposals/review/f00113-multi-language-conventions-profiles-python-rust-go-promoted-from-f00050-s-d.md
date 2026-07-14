@@ -2,7 +2,7 @@
 id: f00113
 title: "Multi-language conventions profiles (python/rust/go) — promoted from f00050 S-D"
 kind: feat
-status: in-progress
+status: review
 type: proposal
 track: conventions+plugins
 date: 2026-07-14
@@ -29,7 +29,7 @@ Parked non-goal S-D of f00049 (via f00050). The conventions plugin only understa
 - global_gate: e2e
 
 ### S1 — Profile contract + registry (open role vocabulary, typescript as default)
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/conventions/src/lib/profiles/profile.contract.ts`, `plugins/conventions/src/lib/profiles/profile-registry.ts`, `plugins/conventions/tests/src/lib/profiles/profile-registry.spec.ts`
 - **Gate**: e2e
 - acceptance:
@@ -38,7 +38,7 @@ Parked non-goal S-D of f00049 (via f00050). The conventions plugin only understa
   - "Registry spec proves typescript resolution is byte-identical in classification to the core contract on a fixture tree."
 
 ### S2 — Python profile
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/conventions/src/lib/profiles/python.profile.ts`, `plugins/conventions/tests/src/lib/profiles/python.profile.spec.ts`
 - **Gate**: e2e
 - acceptance:
@@ -46,7 +46,7 @@ Parked non-goal S-D of f00049 (via f00050). The conventions plugin only understa
   - "Spec runs the profile over an in-memory fixture repo and asserts per-role counts + unmatched list."
 
 ### S3 — Rust profile
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/conventions/src/lib/profiles/rust.profile.ts`, `plugins/conventions/tests/src/lib/profiles/rust.profile.spec.ts`
 - **Gate**: e2e
 - acceptance:
@@ -54,7 +54,7 @@ Parked non-goal S-D of f00049 (via f00050). The conventions plugin only understa
   - "Spec over an in-memory fixture crate asserts counts + unmatched."
 
 ### S4 — Go profile
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/conventions/src/lib/profiles/go.profile.ts`, `plugins/conventions/tests/src/lib/profiles/go.profile.spec.ts`
 - **Gate**: e2e
 - acceptance:
@@ -62,7 +62,7 @@ Parked non-goal S-D of f00049 (via f00050). The conventions plugin only understa
   - "Spec over an in-memory fixture module asserts counts + unmatched."
 
 ### S5 — Wire profile option into scan service + both tools + docs
-- **Status**: pending
+- **Status**: done
 - **DependsOn**: [S1, S2, S3, S4]
 - **Files**: `plugins/conventions/src/lib/services/conventions-scan.service.ts`, `plugins/conventions/src/lib/tools/check-conventions.tool.ts`, `plugins/conventions/src/lib/tools/classify-paths.tool.ts`, `plugins/conventions/README.md`
 - **Gate**: e2e
