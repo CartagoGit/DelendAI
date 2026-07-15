@@ -7,6 +7,7 @@ import { TABS } from './build-tabs-bar';
 import { renderPanelOverview } from '../render-panel-overview';
 import { renderPanelMetrics } from '../render-panel-metrics';
 import { renderPanelTokens } from '../render-panel-tokens';
+import { renderPanelSpend } from '../render-panel-spend';
 import { renderPanelTools } from '../render-panel-tools';
 import { renderPanelPlugins } from '../render-panel-plugins';
 import { renderPanelSessions } from '../render-panel-sessions';
@@ -26,6 +27,7 @@ export function buildPanels(
 	const overviewPanel = renderPanelOverview(model.overview, lang);
 	const metricsPanel = renderPanelMetrics(model.metrics, lang);
 	const tokensPanel = renderPanelTokens(model.tokens, lang);
+	const spendPanel = renderPanelSpend(model.spend, lang);
 	const toolsPanel = renderPanelTools(
 		model.tools,
 		lang,
@@ -51,6 +53,7 @@ export function buildPanels(
 		overviewPanel,
 		metricsPanel,
 		tokensPanel,
+		spendPanel,
 		toolsPanel,
 		pluginsPanel,
 		sessionsPanel,

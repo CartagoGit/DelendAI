@@ -2,7 +2,7 @@
 id: f00118
 title: "Extension live telemetry + control — real usage, savings, costs, top tools, and plugin enable/disable from the panel"
 kind: feat
-status: ready
+status: in-progress
 type: proposal
 track: extension+client+ui
 date: 2026-07-15

@@ -142,6 +142,7 @@ export type {
 	IDashboardSourceAgents,
 	IDashboardSourceOverview,
 	IDashboardSourceProposals,
+	IDashboardSpendModel,
 	IDashboardTimesModel,
 	IDashboardTokensModel,
 	IDashboardToolsModel,

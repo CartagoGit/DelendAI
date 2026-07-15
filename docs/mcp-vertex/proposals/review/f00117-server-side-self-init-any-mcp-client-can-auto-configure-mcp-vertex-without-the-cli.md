@@ -2,7 +2,7 @@
 id: f00117
 title: "Server-side self-init — any MCP client can auto-configure mcp-vertex without the CLI"
 kind: feat
-status: in-progress
+status: review
 type: proposal
 track: core+adoption
 date: 2026-07-15
@@ -29,7 +29,7 @@ User directive 2026-07-15: "que el mismo mcp fuera capaz de crear una autoconfig
 - global_gate: e2e
 
 ### S1 — Config derivation engine: analysis → recommended config (pure)
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/src/lib/bootstrap/derive-config.ts`, `packages/core/tests/src/lib/bootstrap/derive-config.spec.ts`
 - **Gate**: e2e
 - acceptance:
@@ -37,7 +37,7 @@ User directive 2026-07-15: "que el mismo mcp fuera capaz de crear una autoconfig
   - "Pure function over IProjectAnalysis — no I/O; spec drives fixtures for the 4 repo shapes."
 
 ### S2 — init_config core tool (dry-run default, atomic, overwrite-guarded) + boot orientation
-- **Status**: pending
+- **Status**: done
 - **DependsOn**: [S1]
 - **Files**: `packages/core/src/lib/bootstrap/init-config-tool.ts`, `packages/core/src/lib/cli/assemble-core-tools.ts`, `packages/core/tests/src/lib/bootstrap/init-config-tool.spec.ts`
 - **Gate**: e2e
