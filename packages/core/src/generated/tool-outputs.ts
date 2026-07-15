@@ -1295,6 +1295,21 @@ export interface McpVertexProposalsProposalAdoptOutput {
 	};
 	plan: string[];
 	ready: boolean;
+	applied: boolean;
+	created: string[];
+	skipped: string[];
+	migration?: {
+		migrated: {
+			source: string;
+			target: string;
+			id: string;
+			title: string;
+		}[];
+		skipped: {
+			source: string;
+			reason: string;
+		}[];
+	};
 }
 
 export interface McpVertexProposalsProposalBoardOutput {
