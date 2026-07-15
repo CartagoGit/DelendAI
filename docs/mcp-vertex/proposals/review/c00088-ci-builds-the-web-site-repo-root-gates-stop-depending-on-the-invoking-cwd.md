@@ -2,7 +2,7 @@
 id: c00088
 title: "CI builds the web site; repo-root gates stop depending on the invoking cwd"
 kind: chore
-status: in-progress
+status: review
 type: proposal
 track: ci+gates
 date: 2026-07-15
@@ -28,14 +28,14 @@ a00055 F-2/F-3. Evidence: .github/workflows/ci.yml runs lint/typecheck/test:cove
 - global_gate: e2e
 
 ### S1 — CI job: build the web site on push/PR to main+develop
-- **Status**: pending
+- **Status**: done
 - **Files**: `.github/workflows/ci.yml`
 - **Gate**: lint
 - acceptance:
   - "A `site` job (bun install --frozen-lockfile + bun run site) runs alongside validate for both branches; artifact upload optional."
 
 ### S2 — cwd-robust tools specs: resolve fixtures from the repo root helper
-- **Status**: pending
+- **Status**: done
 - **Files**: `tools/scripts/lint/style-integrity.script.spec.ts`, `tools/scripts/lint/system-prompt-size.script.spec.ts`
 - **Gate**: e2e
 - acceptance:
