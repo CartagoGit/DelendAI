@@ -2,7 +2,7 @@
 id: d00002
 title: "Release docs defer to the spec-guarded plan — no more hand-enumerated package lists"
 kind: docs
-status: review
+status: done
 type: proposal
 track: release+docs
 date: 2026-07-15
