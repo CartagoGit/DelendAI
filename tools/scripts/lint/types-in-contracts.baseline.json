@@ -383,7 +383,7 @@
 	"plugins/proposals/src/lib/tools/agent-lock.tool.ts": 1,
 	"plugins/proposals/src/lib/tools/agent-names.tool.ts": 2,
 	"plugins/proposals/src/lib/tools/agent-worktree.tool.ts": 2,
-	"plugins/proposals/src/lib/tools/authoring-options.ts": 1,
+	"plugins/proposals/src/lib/tools/authoring-options.ts": 2,
 	"plugins/proposals/src/lib/tools/auto-work-persist.ts": 3,
 	"plugins/proposals/src/lib/tools/auto-work.tool.ts": 7,
 	"plugins/proposals/src/lib/tools/branch-gc.tool.ts": 1,
