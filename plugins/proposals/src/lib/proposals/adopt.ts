@@ -160,3 +160,52 @@ export const analyzeProposals = (
 		ready,
 	};
 };
+
+// ---------------------------------------------------------------------------
+// f00116 S1 — bootstrap actions (pure): what `apply: true` must create.
+// ---------------------------------------------------------------------------
+
+/** One idempotent bootstrap step: a file to write if it does not exist. */
+export interface IBootstrapAction {
+	/** Path relative to the proposals dir (POSIX). */
+	readonly rel: string;
+	readonly content: string;
+}
+
+/** README the bootstrap seeds — short, pointing at the live tools. */
+export const BOOTSTRAP_README = [
+	'# Proposals',
+	'',
+	'This folder is the proposals store managed by the mcp-vertex',
+	'`proposals` plugin. Each proposal is one markdown file with',
+	'frontmatter (`id`, `kind`, `status`, `type`, `track`) and lives in',
+	'the folder matching its status:',
+	'',
+	'- `ready/` — executable now',
+	'- `in-progress/` — someone is on it',
+	'- `review/` — done, awaiting review',
+	'- `done/` — completed (mirrored into per-kind subfolders)',
+	'- `paused/`, `blocked/`, `retired/` — parked states',
+	'',
+	'Create proposals with the `create_proposal` tool (it allocates the',
+	'id and validates slices), move them with `proposal_transition`, and',
+	'ask `get_proposal_workflow` for the full convention. The registry',
+	'index is regenerable at any time via `sync_proposals`.',
+	'',
+].join('\n');
+
+/**
+ * Compute the bootstrap actions for a store rooted at the proposals
+ * dir: one `.gitkeep` per canonical status folder + the README. Pure —
+ * the caller checks existence and writes; existing files are SKIPPED,
+ * never overwritten (a hand-rolled README wins).
+ */
+export const buildBootstrapActions = (
+	statusFolders: readonly string[],
+): readonly IBootstrapAction[] => [
+	...statusFolders.map((folder) => ({
+		rel: `${folder}/.gitkeep`,
+		content: '',
+	})),
+	{ rel: 'README.md', content: BOOTSTRAP_README },
+];

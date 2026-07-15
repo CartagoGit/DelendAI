@@ -1,4 +1,4 @@
-import { readdir, readFile, stat } from 'node:fs/promises';
+import { access, readdir, readFile, stat } from 'node:fs/promises';
 import { join } from 'node:path';
 
 import { z } from 'zod';
@@ -8,9 +8,17 @@ import {
 	resolveWorkspaceContained,
 	toolError,
 	toolOk,
+	writeFileAtomic,
 } from '@mcp-vertex/core/public';
 
-import { analyzeProposals, type IScanEntry } from '../proposals/adopt';
+import {
+	analyzeProposals,
+	buildBootstrapActions,
+	type IScanEntry,
+} from '../proposals/adopt';
+import { STATUS_TO_FOLDER } from '../contracts/constants/proposal-glossary.constant';
+import { migrateForeign } from '../proposals/migrate-foreign';
+import { syncProposalRegistry } from '../proposals/sync-proposal-registry';
 import type { IAuthoringToolOptions } from './authoring.tool';
 
 // l00008 s4 — mirrors `PROPOSALS_LAYOUT` (proposals/adopt.ts): a static
@@ -65,25 +73,64 @@ const scanDir = async (dirAbs: string): Promise<IScanEntry[]> => {
 };
 
 /**
+ * f00116 S1: execute the bootstrap actions against `dirAbs`. Existing
+ * files are skipped (a hand-rolled README wins); missing ones are
+ * written atomically. Returns what happened, path by path.
+ */
+const applyBootstrap = async (
+	dirAbs: string,
+): Promise<{ created: string[]; skipped: string[] }> => {
+	const created: string[] = [];
+	const skipped: string[] = [];
+	for (const action of buildBootstrapActions(
+		Object.values(STATUS_TO_FOLDER),
+	)) {
+		const abs = join(dirAbs, ...action.rel.split('/'));
+		const exists = await access(abs).then(
+			() => true,
+			() => false,
+		);
+		if (exists) {
+			skipped.push(action.rel);
+			continue;
+		}
+		// writeFileAtomic creates the parent folder itself.
+		await writeFileAtomic(abs, action.content);
+		created.push(action.rel);
+	}
+	return { created, skipped };
+};
+
+/**
  * `proposal_adopt` — make an existing proposals folder followable. Returns the
  * canonical layout (so the agent knows the convention) plus a scan of the real
  * folder (which files are proposals/fixes, which are done, what's missing) and
- * an actionable plan to bring it in line. Read-only: it advises; the agent acts.
+ * an actionable plan to bring it in line. Analysis-only by default; with
+ * `apply: true` it EXECUTES the bootstrap (f00116 S1).
  */
 export const buildAdoptRegistration = (
 	options: IAuthoringToolOptions,
 ): IToolRegistration => ({
 	id: 'proposal_adopt',
 	summary:
-		'Analyze an existing proposals folder: canonical layout + scan + a plan to organize it for mcp-vertex.',
+		'Analyze an existing proposals folder — and with apply:true, bootstrap the canonical store (folders + README + index).',
 	tags: ['proposals', 'orientation'],
 	register: async (server) => {
 		server.registerTool(
 			`${options.namespacePrefix}_proposal_adopt`,
 			{
 				description:
-					'Make a proposals folder followable. Returns the canonical layout (index.json, README, p<N>/f<N> files, done/ + host buckets), a scan of the actual folder (proposals/fixes with status, subfolders, files without proposal frontmatter, missing index/README) and an ordered plan to organize it for mcp-vertex. Read-only — it advises; you run the steps. Pass `dir` (workspace-relative) to analyze a folder other than the configured proposals dir.',
-				inputSchema: z.object({ dir: z.string().optional() }),
+					'Make a proposals folder followable. Returns the canonical layout (index.json, README, status folders), a scan of the actual folder (proposals/fixes with status, subfolders, files without proposal frontmatter, missing index/README) and an ordered plan to organize it for mcp-vertex. Analysis-only by default; pass `apply: true` to EXECUTE the bootstrap: create the 7 status folders (+.gitkeep), seed a README (existing files are never overwritten) and rebuild the index — idempotent, atomic. Pass `dir` (workspace-relative) to target a folder other than the configured proposals dir.',
+				inputSchema: z.object({
+					dir: z.string().optional(),
+					apply: z.boolean().optional(),
+					// f00116 S3: convert foreign schemes (rfc docs, TODO
+					// checklists, ad-hoc frontmatter) from these
+					// workspace-relative roots into canonical proposals.
+					migrate: z
+						.object({ roots: z.array(z.string()).min(1) })
+						.optional(),
+				}),
 				outputSchema: z.object({
 					ok: z.literal(true),
 					root: z.string(),
@@ -105,9 +152,34 @@ export const buildAdoptRegistration = (
 					}),
 					plan: z.array(z.string()),
 					ready: z.boolean(),
+					applied: z.boolean(),
+					created: z.array(z.string()),
+					skipped: z.array(z.string()),
+					migration: z
+						.object({
+							migrated: z.array(
+								z.object({
+									source: z.string(),
+									target: z.string(),
+									id: z.string(),
+									title: z.string(),
+								}),
+							),
+							skipped: z.array(
+								z.object({
+									source: z.string(),
+									reason: z.string(),
+								}),
+							),
+						})
+						.optional(),
 				}),
 			},
-			async (args: { dir?: string | undefined }) => {
+			async (args: {
+				dir?: string | undefined;
+				apply?: boolean | undefined;
+				migrate?: { roots: string[] } | undefined;
+			}) => {
 				let dirAbs = options.proposalsDirAbs;
 				let root = options.proposalsDirAbs;
 				if (args.dir !== undefined && args.dir.length > 0) {
@@ -123,9 +195,46 @@ export const buildAdoptRegistration = (
 					dirAbs = contained.abs;
 					root = args.dir;
 				}
+
+				let created: string[] = [];
+				let skipped: string[] = [];
+				if (args.apply === true) {
+					({ created, skipped } = await applyBootstrap(dirAbs));
+				}
+
+				// f00116 S3: apply + migrate compose in one call — the
+				// bootstrap guarantees the folders the migration writes to.
+				let migration:
+					| Awaited<ReturnType<typeof migrateForeign>>
+					| undefined;
+				if (args.migrate !== undefined) {
+					migration = await migrateForeign({
+						workspaceRoot: options.workspaceRoot,
+						proposalsDirAbs: options.proposalsDirAbs,
+						counterPathAbs: options.counterPathAbs,
+						roots: args.migrate.roots,
+					});
+				}
+
+				if (args.apply === true || migration !== undefined) {
+					// The index is part of the canonical store — rebuild it
+					// as the last mutating step (idempotent by design).
+					await syncProposalRegistry(
+						options.workspaceRoot,
+						options.layout,
+						options.extraFolders ?? [],
+					);
+				}
+
 				const entries = await scanDir(dirAbs);
 				const report = analyzeProposals(root, entries);
-				return toolOk({ ...report });
+				return toolOk({
+					...report,
+					applied: args.apply === true,
+					created,
+					skipped,
+					...(migration !== undefined ? { migration } : {}),
+				});
 			},
 		);
 	},

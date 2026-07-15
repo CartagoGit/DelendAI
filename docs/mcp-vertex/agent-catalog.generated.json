@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-07-15T21:48:36.037Z",
+	"generatedAt": "2026-07-15T22:04:37.928Z",
 	"mode": "compact",
 	"tools": [
 		{
@@ -670,10 +670,38 @@
 				"track": "lint+architecture+i18n+workflow+release",
 				"status": "paused",
 				"kind": "feat"
+			},
+			{
+				"id": "f00116",
+				"title": "f00116",
+				"track": "proposals+adoption",
+				"status": "ready",
+				"kind": "feat"
+			},
+			{
+				"id": "f00117",
+				"title": "f00117",
+				"track": "core+adoption",
+				"status": "ready",
+				"kind": "feat"
+			},
+			{
+				"id": "f00118",
+				"title": "f00118",
+				"track": "extension+client+ui",
+				"status": "ready",
+				"kind": "feat"
+			},
+			{
+				"id": "q00002",
+				"title": "q00002",
+				"track": "adoption+extension",
+				"status": "ready",
+				"kind": "plan"
 			}
 		],
 		"byStatus": {
-			"ready": 0,
+			"ready": 4,
 			"in-progress": 0,
 			"review": 0,
 			"paused": 1,
