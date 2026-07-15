@@ -55,19 +55,15 @@ const AckEntrySchema = z.object({
 	accepted: z.boolean().optional(),
 });
 
-// x00105: `ok` is a boolean (not `literal(true)`) and the payload
-// fields are optional — the `toolError` envelope (`ok:false` + `error`)
-// used to violate this tool's own declared schema.
+// x00107: the outputSchema describes the SUCCESS shape only — the MCP
+// SDK skips schema validation for `isError` results (`toolError`), so
+// the strict `literal(true)` + required fields are correct and keep
+// the generated SDK types strong. (x00105 briefly loosened this based
+// on a probe that misread SDK semantics; reverted.)
 export const AckOutputSchema = z.object({
-	ok: z.boolean(),
-	error: z
-		.object({
-			reason: z.string(),
-			nextAction: z.string().optional(),
-		})
-		.optional(),
-	mode: z.enum(['list', 'record']).optional(),
-	total: z.number().int().nonnegative().optional(),
+	ok: z.literal(true),
+	mode: z.enum(['list', 'record']),
+	total: z.number().int().nonnegative(),
 	pending: z.array(AckEntrySchema).optional(),
 	ack: AckEntrySchema.optional(),
 });

@@ -48,3 +48,26 @@ a00055 F-1. Evidence: grep cross-reference of `z.literal(true)` outputSchemas vs
 - Every captured tool with an outputSchema gets a static envelope check: safeParse({ok:false, error:{reason:'probe'}}) must succeed; failures render as their own failed row with the zod issue.
 - Running the gate BEFORE the schema fixes lists the offenders (proves the detector works).
 - verify:tools 0 failed with the new probe active; per-plugin suites stay green; bun run types:generate regenerated in the same commit.
+
+## notes
+
+**RE-SCOPED during implementation (2026-07-15) — the original premise was
+wrong, and proving it wrong was the fix.** Implementing S1 red-first put
+91 tools in red, which smelled like a false premise; reading the MCP SDK
+settled it: `validateToolOutput` (mcp.js) explicitly SKIPS outputSchema
+validation when `result.isError` is set. Therefore:
+
+- The contract is: **outputSchema describes the SUCCESS shape**; failures
+  ride the `isError` channel and are never schema-validated. The "8
+  offender files" from a00055 F-1 are CORRECT as written — strict
+  `literal(true)` schemas keep the generated SDK types strong.
+- The REAL bug was in the verify harness: `captureToolRegistration`'s
+  `invoke` parsed the payload and DROPPED `isError`, so the empty-input
+  probe validated error envelopes against success schemas — that is what
+  made x00105 misread 3 correct tools (ack/correlate/close_plan) as drift
+  and loosen their schemas.
+- Shipped instead: `invokeRaw` preserving `isError` on the capture handle;
+  the empty-input probe now mirrors the SDK (isError ⇒ graceful `ok`, no
+  schema validation); the envelope-acceptance probe was deleted; the 3
+  x00105 schema loosenings were REVERTED to their strict success shapes;
+  types regenerated. verify:tools: 120 tools, 0 failed.

@@ -114,3 +114,16 @@ Overall: 8.0 → **8.3**.
 |---|---|---|---|
 | `x00107` | fix | F-1 error-envelope convention + gate + 8 offender files | ready |
 | `c00088` | chore | F-2/F-3 CI site build + cwd-robust specs | ready |
+
+## notes
+
+**CORRECTION (2026-07-15, recorded by the x00107 implementation):** F-1's
+premise was falsified during execution. The MCP SDK's
+`validateToolOutput` skips outputSchema validation for `isError` results,
+so an outputSchema is the SUCCESS contract only — the 8 "offender" files
+are correct as written, and no schema widening is needed (nor was the
+x00105 widening of ack/correlate/close_plan, which x00107 reverted). The
+real defect was the verify harness dropping `isError` before validating
+(fixed in x00107). F-2/F-3 stand unchanged. Scoreboard note: the 8.3 holds
+— the dimension moved for the harness fix, not for the (retracted) schema
+findings.
