@@ -9,6 +9,8 @@
  * registry the host config wires in.
  */
 import { buildBootstrapToolRegistrations } from '../bootstrap/index';
+import { buildInitConfigToolRegistration } from '../bootstrap/init-config-tool';
+import { createWorkspaceFileReader } from '../bootstrap/workspace-file-reader';
 import type {
 	ISkillSummary,
 	IToolSummary,
@@ -166,6 +168,24 @@ export const assembleCoreTools = (
 			? { providers: () => providerSummaries }
 			: {}),
 	};
+	// f00117 S2: when no config file exists at all, orientation names the
+	// one call that bootstraps it — the server-side self-init, for hosts
+	// with no CLI available. `configDiagnostic.present` is resolved once
+	// at boot from a real file read; no I/O here.
+	if (!configDiagnostic.present) {
+		knowledge.push({
+			id: 'no-config-file',
+			title: 'No mcp-vertex.config.json yet',
+			body: [
+				'# No mcp-vertex.config.json yet',
+				'',
+				'This workspace has no config file. Call',
+				`\`${corePrefix}_init_config\` to see a recommended config`,
+				'derived from this project (dry-run by default); pass',
+				'`write: true` to persist it — no CLI required.',
+			].join('\n'),
+		});
+	}
 	const buildSnapshot = (): IOverviewSnapshot => ({
 		server: { name: args.serverName, version: args.serverVersion },
 		namespacePrefix: corePrefix,
@@ -312,6 +332,14 @@ export const assembleCoreTools = (
 			keepLegacy,
 			projectName: args.serverName,
 			projectPackageName: '@mcp-vertex/core',
+		}),
+		// f00117 S2: the server-side self-init — any MCP client can derive
+		// (and, with write:true, persist) mcp-vertex.config.json without
+		// the CLI.
+		buildInitConfigToolRegistration({
+			namespacePrefix: corePrefix,
+			workspace,
+			reader: createWorkspaceFileReader(workspace),
 		}),
 	];
 

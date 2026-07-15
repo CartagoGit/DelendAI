@@ -2,7 +2,7 @@
 id: f00117
 title: "Server-side self-init — any MCP client can auto-configure mcp-vertex without the CLI"
 kind: feat
-status: ready
+status: in-progress
 type: proposal
 track: core+adoption
 date: 2026-07-15
