@@ -2,7 +2,7 @@
 id: c00088
 title: "CI builds the web site; repo-root gates stop depending on the invoking cwd"
 kind: chore
-status: ready
+status: in-progress
 type: proposal
 track: ci+gates
 date: 2026-07-15

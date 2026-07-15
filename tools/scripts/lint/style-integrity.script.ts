@@ -31,7 +31,12 @@
 import { readFile, readdir } from 'node:fs/promises';
 import { isAbsolute, join, relative } from 'node:path';
 
-const REPO_ROOT = process.cwd();
+import { repoRoot } from '../lib/monorepo-paths';
+
+// c00088: resolved from the git worktree, NOT process.cwd() — a
+// cwd-derived root relativized findings as `../apps/…` when the suite
+// ran from tools/, so they stopped matching the repo-relative waivers.
+const REPO_ROOT = repoRoot();
 const DEFAULT_STYLE_ROOTS = [
 	'apps/web/src/styles',
 	'apps/shared/src/styles',

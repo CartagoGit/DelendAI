@@ -2,7 +2,7 @@
 id: x00107
 title: "Every tool outputSchema accepts the canonical toolError envelope — convention + gate + fix the 8 offender files"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: tooling+gates
 date: 2026-07-15
@@ -28,7 +28,7 @@ a00055 F-1. Evidence: grep cross-reference of `z.literal(true)` outputSchemas vs
 - global_gate: e2e
 
 ### S1 — Error-envelope acceptance probe in verify:tools (red first over the current tree)
-- **Status**: pending
+- **Status**: done
 - **Files**: `tools/scripts/verify/verify-probes.ts`, `tools/scripts/verify/plugin-tool-verify.script.ts`
 - **Gate**: e2e
 - acceptance:
@@ -36,7 +36,7 @@ a00055 F-1. Evidence: grep cross-reference of `z.literal(true)` outputSchemas vs
   - "Running the gate BEFORE the schema fixes lists the offenders (proves the detector works)."
 
 ### S2 — Widen the offender schemas to model the error envelope + regen types
-- **Status**: pending
+- **Status**: done
 - **DependsOn**: [S1]
 - **Files**: `plugins/audit/src/lib/tools/audit-consolidate.tool.ts`, `plugins/external-mcps/src/lib/tools/catalog.tool.ts`, `plugins/external-mcps/src/lib/tools/status.tool.ts`, `plugins/external-mcps/src/lib/tools/suggest.tool.ts`, `plugins/git/src/lib/tools/write-tools.ts`, `plugins/memory/src/lib/tools/tools.ts`, `plugins/proposals/src/lib/tools/authoring.tool.ts`, `plugins/proposals/src/lib/tools/adopt.tool.ts`, `plugins/proposals/src/lib/tools/inherit-host-instructions.tool.ts`, `plugins/status-marker/src/lib/tools/close-tools.ts`, `plugins/usage-tracking/src/lib/tools/clear.tool.ts`
 - **Gate**: e2e
