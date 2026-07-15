@@ -2,7 +2,7 @@
 id: c00087
 title: "Zero-warning biome baseline — clear the 12 warnings + 31 infos and keep the gate at zero"
 kind: chore
-status: review
+status: done
 type: proposal
 track: lint
 date: 2026-07-14
