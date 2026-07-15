@@ -43,6 +43,7 @@ import { formatResultsTable } from './format-results-table';
 import {
 	HAPPY_PATH_PROBE_IDS,
 	runEmptyInputProbe,
+	runErrorEnvelopeProbe,
 	runHappyPathProbe,
 	type IProbeResult,
 	type IToolHandle,
@@ -203,6 +204,11 @@ const verifyPlugin = async (
 				});
 				continue;
 			}
+			// x00107: every declared outputSchema must accept the
+			// canonical toolError envelope — static, covers needs-input
+			// tools whose error path no invocation probe reaches.
+			const envelope = runErrorEnvelopeProbe(handle);
+			if (envelope !== null) results.push(probeToVerify(label, envelope));
 			const probe = await runEmptyInputProbe(handle);
 			results.push(probeToVerify(label, probe));
 		} catch (err) {

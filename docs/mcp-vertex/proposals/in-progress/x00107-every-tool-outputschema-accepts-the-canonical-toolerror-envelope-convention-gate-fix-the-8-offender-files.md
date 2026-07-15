@@ -2,7 +2,7 @@
 id: x00107
 title: "Every tool outputSchema accepts the canonical toolError envelope — convention + gate + fix the 8 offender files"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: tooling+gates
 date: 2026-07-15
