@@ -44,6 +44,14 @@ export interface ICapturedToolRegistration {
 	 * payload (or the raw text when the handler returned plain text).
 	 */
 	readonly invoke: (args: unknown) => Promise<unknown>;
+	/**
+	 * x00107: like `invoke`, but preserves the result's `isError` flag —
+	 * the SDK skips outputSchema validation for error results, so
+	 * SDK-faithful probes must be able to tell the two apart.
+	 */
+	readonly invokeRaw: (
+		args: unknown,
+	) => Promise<{ payload: unknown; isError: boolean }>;
 }
 
 /**
@@ -93,6 +101,7 @@ export const captureToolRegistration = async (
 			}
 			const out = (await invoke(a)) as {
 				content?: Array<{ text?: string }>;
+				isError?: boolean;
 			};
 			const text = out?.content?.[0]?.text;
 			if (text === undefined) return out;
@@ -101,6 +110,29 @@ export const captureToolRegistration = async (
 			} catch {
 				return text;
 			}
+		},
+		// x00107: the SDK skips outputSchema validation for isError
+		// results (see @modelcontextprotocol/sdk mcp.js
+		// validateToolOutput). Probes need the flag to mirror that
+		// semantic — the parsed payload alone lost it.
+		invokeRaw: async (a: unknown) => {
+			if (!invoke) {
+				throw new Error(`tool ${tool.id} did not register a handler`);
+			}
+			const out = (await invoke(a)) as {
+				content?: Array<{ text?: string }>;
+				isError?: boolean;
+			};
+			const text = out?.content?.[0]?.text;
+			let payload: unknown = out;
+			if (text !== undefined) {
+				try {
+					payload = JSON.parse(text);
+				} catch {
+					payload = text;
+				}
+			}
+			return { payload, isError: out?.isError === true };
 		},
 	};
 };
