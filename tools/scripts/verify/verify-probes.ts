@@ -61,6 +61,37 @@ export interface IProbeResult {
 }
 
 /**
+ * x00107: the canonical failure envelope every tool can emit
+ * (`toolError` in `@mcp-vertex/core`). Every declared outputSchema
+ * must ACCEPT it — a schema that rejects its own error path lies to
+ * schema-validating hosts and to the generated SDK. This is a static
+ * check over the schema; the handler is never invoked, so it covers
+ * the `needs-input` tools the empty-input probe cannot reach.
+ */
+export const CANONICAL_ERROR_ENVELOPE = {
+	ok: false,
+	error: { reason: 'verify:error-envelope probe' },
+} as const;
+
+/** Static probe: does the outputSchema accept the toolError envelope? */
+export const runErrorEnvelopeProbe = (
+	handle: IToolHandle,
+): IProbeResult | null => {
+	const { tool, outputSchema } = handle;
+	if (!outputSchema) return null; // documented catchall — rule 8 handles it
+	const parsed = outputSchema.safeParse(CANONICAL_ERROR_ENVELOPE);
+	if (parsed.success) return null; // fine — only failures produce a row
+	return {
+		tool: `${tool.id} (error-envelope)`,
+		outcome: 'failed',
+		handlerReturned: false,
+		detail: `outputSchema rejects the canonical toolError envelope: ${parsed.error.issues
+			.map((issue) => `${issue.path.join('.')}: ${issue.message}`)
+			.join('; ')}`,
+	};
+};
+
+/**
  * Solid-SRP: empty-input probe. "If the inputSchema accepts `{}`, the
  * tool MUST handle `{}` without crashing and return output that
  * matches the outputSchema (or be a documented catchall)."
