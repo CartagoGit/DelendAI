@@ -94,46 +94,34 @@ bun install
 bun run validate            # typecheck + tests (debe acabar en verde)
 ```
 
-## 2. Orden de publicación (IMPORTANTE)
-`@mcp-vertex/core` PRIMERO; después `@mcp-vertex/client` y `@mcp-vertex/cli`;
-finalmente los plugins en cualquier orden compatible con sus dependencias.
+## 2. Publicar (el comando es la fuente de verdad, NO esta guía)
+
+El plan de publicación vive en `tools/scripts/release/release-plan.ts`
+(`PUBLISH_ORDER`), y un spec (`release-plan.spec.ts`) lo deriva de los
+presets + docs para que no pueda quedarse corto. **Nunca enumeres los
+paquetes a mano** — una versión anterior de esta guía listaba 17 de los
+24 publicables y habría producido un publish parcial roto.
 
 ```bash
-# 1) núcleo
-cd packages/core        && npm publish && cd -
-# 2) cliente + CLI
-cd packages/client      && npm publish && cd -
-cd packages/cli         && npm publish && cd -
-# 3) plugins
-cd plugins/audit        && npm publish && cd -
-cd plugins/proposals    && npm publish && cd -
-cd plugins/rules        && npm publish && cd -
-cd plugins/memory       && npm publish && cd -
-cd plugins/git          && npm publish && cd -
-cd plugins/quality      && npm publish && cd -
-cd plugins/search       && npm publish && cd -
-cd plugins/notification && npm publish && cd -
-cd plugins/docs         && npm publish && cd -
-cd plugins/deps         && npm publish && cd -
-cd plugins/logs         && npm publish && cd -
-cd plugins/status-marker && npm publish && cd -
-cd plugins/test-convention && npm publish && cd -
-cd plugins/web-fetch    && npm publish && cd -
-```
-- `publishConfig.access=public` ya está, así que NO necesitas `--access public`.
-- Si usas 2FA te pedirá el OTP en cada uno (`npm publish --otp=123456`).
+# 1) Ver el plan (dry-run: versiones + orden de dependencias, sin publicar)
+bun run release
 
-### Nota sobre el protocolo `workspace:*`
-Los plugins tienen `"@mcp-vertex/core": "workspace:*"` en **devDependencies**.
-- Con **`bun publish`** se reescribe automáticamente a la versión real → usa
-  `bun publish` en lugar de `npm publish` si te da error el protocolo:
-  ```bash
-  cd packages/core && bun publish && cd -
-  cd plugins/proposals && bun publish && cd -    # ...y el resto igual
-  ```
-- Con `npm publish`, si se queja del `workspace:` en devDependencies, cámbialo a
-  `"@mcp-vertex/core": "^0.1.0"` en los 5 plugins antes de publicar (es solo
-  devDependency, no afecta a los consumidores).
+# 2) Publicar en orden (valida + build + publish de TODOS los paquetes)
+bun run release --publish                              # versiones actuales
+bun run release --bump=patch --write --publish          # o con bump lockstep
+```
+
+- El script publica en orden de dependencias (`core` → `client` → `cli` →
+  plugins) y reescribe los `peerDependencies` a rangos resueltos con
+  `--write`.
+- `publishConfig.access=public` ya está en cada paquete; no necesitas
+  `--access public`.
+- Con 2FA, npm pedirá OTP por paquete; el flujo recomendado es el
+  workflow de CI (`release.yml`), que usa `NPM_TOKEN` con Bypass 2FA y
+  provenance OIDC.
+- Los `"@mcp-vertex/core": "workspace:*"` viven solo en
+  **devDependencies** (nunca se publican), así que el protocolo
+  `workspace:` no llega a los consumidores.
 
 ## 3. Verificar lo publicado
 ```bash
