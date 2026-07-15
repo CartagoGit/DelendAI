@@ -2,7 +2,7 @@
 id: d00002
 title: "Release docs defer to the spec-guarded plan — no more hand-enumerated package lists"
 kind: docs
-status: in-progress
+status: review
 type: proposal
 track: release+docs
 date: 2026-07-15
@@ -28,7 +28,7 @@ a00055-adjacent npm-readiness review (2026-07-15): the user's publish decision i
 - global_gate: lint
 
 ### S1 — Guide + workflow prose defer to the canonical release command
-- **Status**: pending
+- **Status**: done
 - **Files**: `docs/mcp-vertex/NPM_PUBLISH.md`, `.github/workflows/release.yml`
 - **Gate**: lint
 - acceptance:
