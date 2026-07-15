@@ -248,30 +248,21 @@ export const buildLogToolRegistrations = (
 						since: z.string().optional(),
 						until: z.string().optional(),
 					}),
-					// x00105: success comes via `toolJson` (no `ok` field);
-					// failures via `toolError` (`ok:false` + `error`, none
-					// of the payload fields) — the schema models BOTH so an
-					// error response no longer violates its own contract.
+					// x00107: SUCCESS shape only — the SDK skips schema
+					// validation for `isError` results (`toolError`), so
+					// the strict required fields are correct. (x00105
+					// briefly loosened this; reverted.)
 					outputSchema: z.object({
-						ok: z.boolean().optional(),
-						error: z
-							.object({
-								reason: z.string(),
-								nextAction: z.string().optional(),
-							})
-							.optional(),
-						chain: z.array(LogEventSchema).optional(),
-						firstTs: z.string().nullable().optional(),
-						lastTs: z.string().nullable().optional(),
-						gaps: z
-							.array(
-								z.object({
-									startTs: z.string(),
-									endTs: z.string(),
-									durationMs: z.number(),
-								}),
-							)
-							.optional(),
+						chain: z.array(LogEventSchema),
+						firstTs: z.string().nullable(),
+						lastTs: z.string().nullable(),
+						gaps: z.array(
+							z.object({
+								startTs: z.string(),
+								endTs: z.string(),
+								durationMs: z.number(),
+							}),
+						),
 					}),
 				},
 				async (args: {

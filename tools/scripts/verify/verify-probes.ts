@@ -41,6 +41,14 @@ export interface IToolHandle {
 	readonly inputSchema: z.ZodTypeAny | undefined;
 	readonly outputSchema: z.ZodTypeAny | undefined;
 	readonly invoke: (args: unknown) => Promise<unknown>;
+	/**
+	 * x00107: invoke preserving the `isError` flag. Optional so
+	 * existing fake handles keep compiling; when absent the probe
+	 * falls back to `invoke` and treats the result as non-error.
+	 */
+	readonly invokeRaw?: (
+		args: unknown,
+	) => Promise<{ payload: unknown; isError: boolean }>;
 }
 
 /** Outcome of a probe — same shape the script used to build inline. */
@@ -59,37 +67,6 @@ export interface IProbeResult {
 	readonly handlerReturned: boolean;
 	readonly detail?: string;
 }
-
-/**
- * x00107: the canonical failure envelope every tool can emit
- * (`toolError` in `@mcp-vertex/core`). Every declared outputSchema
- * must ACCEPT it — a schema that rejects its own error path lies to
- * schema-validating hosts and to the generated SDK. This is a static
- * check over the schema; the handler is never invoked, so it covers
- * the `needs-input` tools the empty-input probe cannot reach.
- */
-export const CANONICAL_ERROR_ENVELOPE = {
-	ok: false,
-	error: { reason: 'verify:error-envelope probe' },
-} as const;
-
-/** Static probe: does the outputSchema accept the toolError envelope? */
-export const runErrorEnvelopeProbe = (
-	handle: IToolHandle,
-): IProbeResult | null => {
-	const { tool, outputSchema } = handle;
-	if (!outputSchema) return null; // documented catchall — rule 8 handles it
-	const parsed = outputSchema.safeParse(CANONICAL_ERROR_ENVELOPE);
-	if (parsed.success) return null; // fine — only failures produce a row
-	return {
-		tool: `${tool.id} (error-envelope)`,
-		outcome: 'failed',
-		handlerReturned: false,
-		detail: `outputSchema rejects the canonical toolError envelope: ${parsed.error.issues
-			.map((issue) => `${issue.path.join('.')}: ${issue.message}`)
-			.join('; ')}`,
-	};
-};
 
 /**
  * Solid-SRP: empty-input probe. "If the inputSchema accepts `{}`, the
@@ -121,14 +98,35 @@ export const runEmptyInputProbe = async (
 
 	// Input is acceptable empty; invoke and check the output.
 	let result: unknown;
+	let isError = false;
 	let handlerReturned = false;
 	let invocationError: string | undefined;
 	try {
-		result = await invoke({});
+		if (handle.invokeRaw !== undefined) {
+			const raw = await handle.invokeRaw({});
+			result = raw.payload;
+			isError = raw.isError;
+		} else {
+			result = await invoke({});
+		}
 		handlerReturned = true;
 	} catch (err) {
 		invocationError = (err as Error).message;
 		handlerReturned = true;
+	}
+
+	// x00107: SDK-faithful semantics — validateToolOutput SKIPS schema
+	// validation for isError results, so a structured `toolError` on
+	// empty input is a graceful, spec-conformant answer, not a failure.
+	// (The pre-x00107 probe validated the error envelope against the
+	// SUCCESS schema and misread 3 correct tools as drift.)
+	if (isError && invocationError === undefined) {
+		return {
+			tool: tool.id,
+			outcome: 'ok',
+			handlerReturned,
+			detail: 'returned a structured error (SDK skips outputSchema validation on isError)',
+		};
 	}
 
 	let outcome: ProbeOutcome = 'failed';
