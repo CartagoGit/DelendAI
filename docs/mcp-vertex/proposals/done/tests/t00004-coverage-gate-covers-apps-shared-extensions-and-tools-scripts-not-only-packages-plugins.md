@@ -2,7 +2,7 @@
 id: t00004
 title: "Coverage gate covers apps/shared, extensions and tools scripts — not only packages+plugins"
 kind: test
-status: review
+status: done
 type: proposal
 track: tests+coverage
 date: 2026-07-14
