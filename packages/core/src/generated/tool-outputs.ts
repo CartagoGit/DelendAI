@@ -480,7 +480,12 @@ export interface McpVertexKnowledgeOutput {
 }
 
 export interface McpVertexLogsCorrelateOutput {
-	chain: Array<{
+	ok?: boolean;
+	error?: {
+		reason: string;
+		nextAction?: string;
+	};
+	chain?: Array<{
 		ts: string;
 		kind: string;
 		agent: string | null;
@@ -490,9 +495,9 @@ export interface McpVertexLogsCorrelateOutput {
 		summary: string;
 		meta: Record<string, unknown>;
 	}>;
-	firstTs: string | null;
-	lastTs: string | null;
-	gaps: {
+	firstTs?: string | null;
+	lastTs?: string | null;
+	gaps?: {
 		startTs: string;
 		endTs: string;
 		durationMs: number;
@@ -1528,10 +1533,10 @@ export interface McpVertexProposalsProposalTransitionOutput {
 
 export interface McpVertexProposalsProposalsClosePlanOutput {
 	ok: boolean;
-	planId: string;
-	dryRun: boolean;
-	closable: boolean;
-	blockers: Array<{
+	planId?: string;
+	dryRun?: boolean;
+	closable?: boolean;
+	blockers?: Array<{
 		ref: string;
 		kind: "proposal" | "plan" | "slice";
 		code: "not-done" | "not-peer-reviewed" | "self-cycle" | "unknown-ref";

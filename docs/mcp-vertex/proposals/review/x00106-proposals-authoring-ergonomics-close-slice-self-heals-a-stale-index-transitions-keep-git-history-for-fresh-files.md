@@ -2,7 +2,7 @@
 id: x00106
 title: "Proposals authoring ergonomics — close_slice self-heals a stale index; transitions keep git history for fresh files"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: proposals+dx
 date: 2026-07-14
@@ -28,14 +28,14 @@ Audit a00054 F-2/F-3. Evidence: authoring.tool.ts:473,658,699 (three "proposal f
 - global_gate: e2e
 
 ### S1 — close_slice (and siblings reading the indexed path) re-sync once on missing file, then retry
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/proposals/src/lib/tools/authoring.tool.ts`, `plugins/proposals/tests/src/lib/authoring-stale-index.spec.ts`
 - **Gate**: e2e
 - acceptance:
   - "Spec: create → transition (index now stale) → close_slice succeeds without a manual sync_proposals; a genuinely missing proposal still errors with the same structured reason after the single re-sync."
 
 ### S2 — Transitions keep history for fresh files: stage on create or detect-untracked and adjust the fallback
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/proposals/src/lib/tools/proposal-transition.tool.ts`, `plugins/proposals/src/lib/tools/recovery-tools.ts`, `plugins/proposals/tests/src/lib/transition-untracked-file.spec.ts`
 - **Gate**: e2e
 - acceptance:

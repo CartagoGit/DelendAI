@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-07-14T13:19:26.476Z",
+	"generatedAt": "2026-07-15T00:02:54.101Z",
 	"mode": "compact",
 	"tools": [
 		{
@@ -665,13 +665,6 @@
 	"proposals": {
 		"actionable": [
 			{
-				"id": "c00087",
-				"title": "c00087",
-				"track": "lint",
-				"status": "ready",
-				"kind": "chore"
-			},
-			{
 				"id": "f00050",
 				"title": "f00050",
 				"track": "lint+architecture+i18n+workflow+release",
@@ -679,31 +672,17 @@
 				"kind": "feat"
 			},
 			{
-				"id": "t00004",
-				"title": "t00004",
-				"track": "tests+coverage",
-				"status": "ready",
-				"kind": "unspecified"
-			},
-			{
 				"id": "x00105",
 				"title": "x00105",
 				"track": "tooling+gates",
-				"status": "ready",
-				"kind": "fix"
-			},
-			{
-				"id": "x00106",
-				"title": "x00106",
-				"track": "proposals+dx",
-				"status": "ready",
+				"status": "in-progress",
 				"kind": "fix"
 			}
 		],
 		"byStatus": {
-			"ready": 4,
-			"in-progress": 0,
-			"review": 0,
+			"ready": 0,
+			"in-progress": 1,
+			"review": 3,
 			"paused": 1,
 			"done": 217,
 			"blocked": 0,

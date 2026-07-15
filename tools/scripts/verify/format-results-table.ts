@@ -28,6 +28,12 @@ export interface IFormatRow {
 	readonly tool: string;
 	readonly outcome: 'ok' | 'needs-input' | 'failed';
 	readonly handlerReturned: boolean;
+	/**
+	 * x00105: failure detail (probe error / load error). Rendered as an
+	 * indented continuation line under FAILED rows only, so a red gate
+	 * says WHY without a re-run under a debugger.
+	 */
+	readonly detail?: string;
 }
 
 /** Widths are chosen so the table is grep-friendly on 100-col terminals. */
@@ -83,6 +89,12 @@ export const formatResultsTable = (rows: readonly IFormatRow[]): string => {
 		lines.push(
 			`${pad(r.plugin, COL_PLUGIN)} ${pad(r.tool, COL_TOOL)} ${pad(outcomeMark(r), COL_OUTCOME)} ${pad(r.handlerReturned ? '✓' : '✗', COL_HANDLER)}`,
 		);
+		if (r.outcome === 'failed' && r.detail !== undefined) {
+			// Single continuation line, truncated: enough to act on,
+			// never a wall of stack trace.
+			const detail = r.detail.replace(/\s+/g, ' ').slice(0, 200);
+			lines.push(`  ↳ ${detail}`);
+		}
 		if (r.outcome === 'ok') totalOk += 1;
 		else if (r.outcome === 'needs-input') totalNeedsInput += 1;
 		else totalFailed += 1;

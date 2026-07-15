@@ -1,9 +1,15 @@
+import { resolve } from 'node:path';
+
 import { describe, expect, it } from 'vitest';
 
 import {
+	assemblePluginForTest,
 	createLocalPluginImporter,
 	type IPluginImporter,
 } from './plugin-test-bed';
+
+/** The real repo root (this file lives at tools/scripts/lib/). */
+const REPO_ROOT = resolve(__dirname, '../../..');
 
 /**
  * Solid-DRY tests for the shared plugin-test-bed factory. We do NOT
@@ -30,6 +36,40 @@ describe('plugin-test-bed (Solid DRY extraction)', async () => {
 			// here (it would need a real plugin on disk); the
 			// integration test does that.
 			expect(importer).toBeDefined();
+		});
+	});
+
+	describe('end-to-end: the bed loads PLUGIN-OWNED tools (x00105 S1)', async () => {
+		// The pre-x00105 importer ignored `workspaceRoot`, resolved a
+		// relative path that broke when this module moved into `lib/`,
+		// and received npm SPECIFIERS (`@mcp-vertex/x`) where it expected
+		// bare names — so every plugin load failed, the errors were
+		// swallowed, and verify:tools silently probed core tools only.
+		it('assembles status-marker with its own tools present', async () => {
+			const bed = await assemblePluginForTest({
+				workspaceRoot: REPO_ROOT,
+				pluginName: 'status-marker',
+				// Isolate from the repo's real mcp-vertex.config.json —
+				// only the plugin under test.
+				syntheticConfig: {},
+			});
+			expect(bed.loadErrors).toEqual([]);
+			const ids = bed.tools.map((t) => t.id);
+			expect(ids.some((id) => id.endsWith('status-marker_close'))).toBe(
+				true,
+			);
+			expect(ids.some((id) => id.endsWith('status-marker_ping'))).toBe(
+				true,
+			);
+		});
+
+		it('surfaces load errors instead of swallowing them', async () => {
+			const bed = await assemblePluginForTest({
+				workspaceRoot: REPO_ROOT,
+				pluginName: 'no-such-plugin-xyz',
+				syntheticConfig: {},
+			});
+			expect(bed.loadErrors.length).toBeGreaterThan(0);
 		});
 	});
 
