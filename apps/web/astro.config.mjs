@@ -39,6 +39,13 @@ const WORKSPACE_ALIASES = {
 	'@mcp-vertex/shared/i18n': SHARED_I18N,
 	'@mcp-vertex/shared/components': SHARED_COMPONENTS,
 	'@mcp-vertex/shared': SHARED_PUBLIC,
+	// c00088: apps/shared deep-imports browser-safe client contracts
+	// (`@mcp-vertex/client/lib/contracts/…`, since 0264f2a8). The client
+	// package only exports `.` and `./public`, so the production astro
+	// build cannot resolve the subpath through the exports map — alias
+	// the lib subtree to the source. MUST precede any bare
+	// `@mcp-vertex/client` alias if one is ever added (shadowing rule).
+	'@mcp-vertex/client/lib': resolve(REPO_ROOT, 'packages/client/src/lib'),
 };
 
 // Static build for GitHub Pages (project site → served under /mcp-vertex/).
