@@ -117,12 +117,18 @@ const classifyCacheEntry = async (
 	cacheRootAbs: string,
 	entryName: string,
 	isDirectory: boolean,
+	pluginNames: ReadonlySet<string>,
 ): Promise<IStrayCacheFile | null> => {
 	const abs = join(cacheRootAbs, entryName);
 	const rel = relative(cacheRootAbs, abs);
 
 	if (SANCTIONED_TOP_LEVEL.has(entryName)) return null;
 	if (SANCTIONED_TOP_LEVEL_FILES.has(entryName)) return null;
+	// x00105: `<cacheDir>/<plugin>/` is the documented pluginCacheDir
+	// contract (IMcpPluginContext) — every plugin that exists under
+	// `plugins/*` may own a cache dir named after itself. Derived from
+	// disk, never a hardcoded list.
+	if (isDirectory && pluginNames.has(entryName)) return null;
 
 	// Per-plugin exec subdirs (f00080) live as `<pluginCacheDir>/<plugin>/exec/`,
 	// but the cache-rooted view sees them as `mcp-vertex/<plugin>/exec/`.
@@ -209,6 +215,15 @@ export const findStrayCacheFiles = async (
 	cacheRootAbs: string,
 ): Promise<IStrayCacheFilesSummary> => {
 	const strays: IStrayCacheFile[] = [];
+	// Legit plugin cache dir names come from the plugins/ tree on disk.
+	const pluginDirs = await readdir(join(repoRoot(), 'plugins'), {
+		withFileTypes: true,
+	}).catch(() => []);
+	const pluginNames: ReadonlySet<string> = new Set(
+		pluginDirs
+			.filter((entry) => entry.isDirectory())
+			.map((entry) => entry.name),
+	);
 	const topEntries = await readdir(cacheRootAbs, {
 		withFileTypes: true,
 	}).catch(() => []);
@@ -217,6 +232,7 @@ export const findStrayCacheFiles = async (
 			cacheRootAbs,
 			entry.name,
 			entry.isDirectory(),
+			pluginNames,
 		);
 		if (stray !== null) {
 			strays.push(stray);
