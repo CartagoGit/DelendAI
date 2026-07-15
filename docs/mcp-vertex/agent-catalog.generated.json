@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-07-15T22:04:37.928Z",
+	"generatedAt": "2026-07-15T22:14:12.500Z",
 	"mode": "compact",
 	"tools": [
 		{
@@ -85,6 +85,9 @@
 		{
 			"name": "mcp-vertex_git_worktree",
 			"plugin": "git"
+		},
+		{
+			"name": "mcp-vertex_init_config"
 		},
 		{
 			"name": "mcp-vertex_knowledge"
@@ -675,7 +678,7 @@
 				"id": "f00116",
 				"title": "f00116",
 				"track": "proposals+adoption",
-				"status": "ready",
+				"status": "in-progress",
 				"kind": "feat"
 			},
 			{
@@ -696,13 +699,13 @@
 				"id": "q00002",
 				"title": "q00002",
 				"track": "adoption+extension",
-				"status": "ready",
+				"status": "in-progress",
 				"kind": "plan"
 			}
 		],
 		"byStatus": {
-			"ready": 4,
-			"in-progress": 0,
+			"ready": 2,
+			"in-progress": 2,
 			"review": 0,
 			"paused": 1,
 			"done": 225,

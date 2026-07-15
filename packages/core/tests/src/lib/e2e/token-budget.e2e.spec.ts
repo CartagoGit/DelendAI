@@ -49,8 +49,11 @@ const BUDGET_BYTES = {
 	// plugin; full measured 8964B, compact 2128B. Summary kept terse. Compact is
 	// still the real promise at < 24% of full.
 	// Bumped 8900 → 9100 (2026-07-04): added orchestrator-runner execution tools.
-	overviewFull: 9_100,
-	overviewCompact: 1_200,
+	// Bumped 9100 → 9500 / 1200 → 1250 (2026-07-16): f00117 S2 added the
+	// init_config core tool (server-side self-init); full measured 9416B,
+	// compact 1220B. Compact is still the real promise at < 13% of full.
+	overviewFull: 9_500,
+	overviewCompact: 1_250,
 	// Bumped 1300 → 1450 (2026-07-03): CORRECTNESS fix in the catalog's
 	// tool-entry construction. Core tools whose id has an underscore
 	// (agent_catalog, fs_read, …) were advertised WITHOUT the `mcp-vertex_`
