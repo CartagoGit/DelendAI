@@ -42,6 +42,7 @@ describe('buildPanels', () => {
 			},
 			tools: { rows: [], sortBy: 'calls', sortDir: 'desc' },
 			plugins: { rows: [] },
+			spend: null,
 			sessions: { total: 0, byStatus: {}, rows: [] },
 			times: {
 				totalWallMs: 0,

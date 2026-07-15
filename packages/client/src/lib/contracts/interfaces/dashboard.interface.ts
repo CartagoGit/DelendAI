@@ -102,6 +102,24 @@ export interface IDashboardPluginsModel {
 	}[];
 }
 
+/**
+ * Real spend/cost telemetry, sourced from usage-tracking's
+ * `usage_report` (f00118 S1) — `null` when the plugin is not loaded or
+ * the call fails (graceful degradation; the byte-based
+ * `IDashboardTokensModel` estimate stays the fallback everywhere).
+ */
+export interface IDashboardSpendModel {
+	readonly totalCostUsd: number;
+	readonly totalTokensSaved: number;
+	readonly savingsPercent: number;
+	readonly windowDays: number;
+	readonly byProvider: readonly {
+		readonly provider: string;
+		readonly costUsd: number;
+		readonly calls: number;
+	}[];
+}
+
 /** Active sessions — proposals in flight. */
 export interface IDashboardSessionsModel {
 	readonly total: number;
@@ -147,6 +165,8 @@ export interface IDashboardAllModels {
 	readonly tokens: IDashboardTokensModel;
 	readonly tools: IDashboardToolsModel;
 	readonly plugins: IDashboardPluginsModel;
+	/** `null` when usage-tracking is not loaded or unreachable. */
+	readonly spend: IDashboardSpendModel | null;
 	readonly sessions: IDashboardSessionsModel;
 	readonly times: IDashboardTimesModel;
 	readonly agents: IDashboardAgentsModel;
