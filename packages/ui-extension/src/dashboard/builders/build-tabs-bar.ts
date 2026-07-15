@@ -7,6 +7,7 @@ export const TABS: ReadonlyArray<{ id: string; label: string }> = [
 	{ id: 'overview', label: 'tabOverview' },
 	{ id: 'metrics', label: 'tabMetrics' },
 	{ id: 'tokens', label: 'tabTokens' },
+	{ id: 'spend', label: 'tabSpend' },
 	{ id: 'tools', label: 'tabTools' },
 	{ id: 'plugins', label: 'tabPlugins' },
 	{ id: 'sessions', label: 'tabSessions' },

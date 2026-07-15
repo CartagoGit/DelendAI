@@ -235,6 +235,19 @@ export const mockDashboardModel: IDashboardAllModels = {
 			},
 		],
 	},
+	// f00118 S1/S2: real spend telemetry, populated when usage-tracking is
+	// loaded (null otherwise). The dev preview exercises the populated case
+	// so the Spend panel always has something to render.
+	spend: {
+		totalCostUsd: 4.82,
+		totalTokensSaved: 214_000,
+		savingsPercent: 18,
+		windowDays: 7,
+		byProvider: [
+			{ provider: 'anthropic', costUsd: 3.1, calls: 260 },
+			{ provider: 'openai', costUsd: 1.72, calls: 94 },
+		],
+	},
 	sessions: {
 		total: 2,
 		byStatus: { in_progress: 2, ready: 4, done: 17 },
