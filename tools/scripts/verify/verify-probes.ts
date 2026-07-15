@@ -108,8 +108,11 @@ export const runEmptyInputProbe = async (
 		try {
 			outputSchema.parse(result);
 			outcome = 'ok';
-		} catch {
+		} catch (parseError) {
+			// x00105: record WHY the output violated its declared schema
+			// — a red row without the zod issue forces a debugger re-run.
 			outcome = 'failed';
+			invocationError = `output violates outputSchema: ${(parseError as Error).message}`;
 		}
 	} else if (!outputSchema) {
 		// catchall schemas are documented exceptions (AGENTS.md #8).
