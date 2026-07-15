@@ -2,7 +2,7 @@
 id: f00116
 title: "Proposals store self-bootstrap + foreign-scheme migration — consumer repos get the workflow just by using mcp-vertex"
 kind: feat
-status: in-progress
+status: review
 type: proposal
 track: proposals+adoption
 date: 2026-07-15
@@ -29,7 +29,7 @@ User directive 2026-07-15: "que el proyecto sea capaz de crear correctamente la 
 - global_gate: e2e
 
 ### S1 — proposal_adopt apply mode: execute the bootstrap plan (folders + README + gitkeeps + index)
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/proposals/src/lib/proposals/adopt.ts`, `plugins/proposals/src/lib/tools/adopt.tool.ts`, `plugins/proposals/tests/src/lib/adopt-apply.spec.ts`
 - **Gate**: e2e
 - acceptance:
@@ -37,7 +37,7 @@ User directive 2026-07-15: "que el proyecto sea capaz de crear correctamente la 
   - "outputSchema updated; spec covers bare repo, partial repo (some folders exist), and re-run."
 
 ### S2 — Foreign-scheme migration engine (classify → convert → report), opt-in
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/proposals/src/lib/proposals/migrate-foreign.ts`, `plugins/proposals/tests/src/lib/migrate-foreign.spec.ts`
 - **Gate**: e2e
 - acceptance:
@@ -45,7 +45,7 @@ User directive 2026-07-15: "que el proyecto sea capaz de crear correctamente la 
   - "The migration REPORT lists every source→target mapping and every skipped file with a reason; nothing outside the proposals dir is written; originals untouched."
 
 ### S3 — Wire migration into the adopt tool + orientation nudge when the store is missing
-- **Status**: pending
+- **Status**: done
 - **DependsOn**: [S1, S2]
 - **Files**: `plugins/proposals/src/index.ts`, `plugins/proposals/src/lib/tools/adopt-migrate-wiring.ts`, `plugins/proposals/tests/src/lib/adopt-orientation.spec.ts`
 - **Gate**: e2e

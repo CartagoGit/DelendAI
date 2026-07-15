@@ -469,6 +469,19 @@ export interface McpVertexGitWorktreeOutput {
 	}[];
 }
 
+export interface McpVertexInitConfigOutput {
+	ok: boolean;
+	error?: {
+		reason: string;
+		nextAction?: string;
+	};
+	preset?: "lean" | "standard" | "minimal";
+	config?: Record<string, unknown>;
+	rationale?: string[];
+	wrote?: boolean;
+	path?: string;
+}
+
 export interface McpVertexKnowledgeOutput {
 	entries?: {
 		id: string;
@@ -2142,6 +2155,7 @@ export interface McpVertexToolOutputs {
 	"mcp-vertex_git_show": McpVertexGitShowOutput;
 	"mcp-vertex_git_status": McpVertexGitStatusOutput;
 	"mcp-vertex_git_worktree": McpVertexGitWorktreeOutput;
+	"mcp-vertex_init_config": McpVertexInitConfigOutput;
 	"mcp-vertex_knowledge": McpVertexKnowledgeOutput;
 	"mcp-vertex_logs_correlate": McpVertexLogsCorrelateOutput;
 	"mcp-vertex_logs_query": McpVertexLogsQueryOutput;
