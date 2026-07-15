@@ -2,7 +2,7 @@
 id: x00105
 title: "verify:tools actually probes plugin-owned tools and derives the plugin list from disk"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: tooling+gates
 date: 2026-07-14
@@ -28,7 +28,7 @@ Audit a00054 F-1. Evidence: tools/scripts/verify/plugin-tool-verify.script.ts:48
 - global_gate: e2e
 
 ### S1 — Diagnose why plugin-owned registrations never reach the probe loop; fix the test-bed seam; probe assertions + disk-derived plugin discovery in the script
-- **Status**: pending
+- **Status**: done
 - **Files**: `tools/scripts/verify/plugin-tool-verify.script.ts`, `tools/scripts/lib/plugin-test-bed.ts`, `tools/scripts/verify/verify-probes.ts`
 - **Gate**: e2e
 - acceptance:
