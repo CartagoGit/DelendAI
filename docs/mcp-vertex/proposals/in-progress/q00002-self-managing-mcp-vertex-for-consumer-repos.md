@@ -1,6 +1,6 @@
 ---
 id: q00002
-status: ready
+status: in-progress
 type: plan
 track: adoption+extension
 date: 2026-07-15
