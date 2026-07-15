@@ -74,6 +74,10 @@ export const captureToolRegistration = async (
 			outputSchema = schema.outputSchema;
 			invoke = handler;
 		},
+		// x00105: the notification plugin chains `server.server.onclose`
+		// at register time (teardown wiring). Provide the inner-server
+		// seam so those registrations are capturable too.
+		server: { onclose: undefined as (() => void) | undefined },
 	};
 	await tool.register(fakeServer as never);
 	if (!invoke) {

@@ -2,7 +2,7 @@
 id: x00105
 title: "verify:tools actually probes plugin-owned tools and derives the plugin list from disk"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: tooling+gates
 date: 2026-07-14

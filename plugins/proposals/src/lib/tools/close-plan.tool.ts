@@ -58,24 +58,29 @@ const CLOSE_PLAN_INPUT_SCHEMA = z.object({
 	reason: z.string().optional(),
 });
 
+// x00105: the payload fields are optional because the `toolError`
+// envelope (`{ ok:false, error }`) carries none of them — the previous
+// required shape made every error response violate its own schema.
 const CLOSE_PLAN_OUTPUT_SCHEMA = z.object({
 	ok: z.boolean(),
-	planId: z.string(),
-	dryRun: z.boolean(),
-	closable: z.boolean(),
-	blockers: z.array(
-		z.object({
-			ref: z.string(),
-			kind: z.enum(['proposal', 'plan', 'slice']),
-			code: z.enum([
-				'not-done',
-				'not-peer-reviewed',
-				'self-cycle',
-				'unknown-ref',
-			]),
-			message: z.string(),
-		}),
-	),
+	planId: z.string().optional(),
+	dryRun: z.boolean().optional(),
+	closable: z.boolean().optional(),
+	blockers: z
+		.array(
+			z.object({
+				ref: z.string(),
+				kind: z.enum(['proposal', 'plan', 'slice']),
+				code: z.enum([
+					'not-done',
+					'not-peer-reviewed',
+					'self-cycle',
+					'unknown-ref',
+				]),
+				message: z.string(),
+			}),
+		)
+		.optional(),
 	preview: z
 		.object({
 			from: z.string(),

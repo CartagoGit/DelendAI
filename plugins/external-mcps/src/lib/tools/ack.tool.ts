@@ -55,10 +55,19 @@ const AckEntrySchema = z.object({
 	accepted: z.boolean().optional(),
 });
 
+// x00105: `ok` is a boolean (not `literal(true)`) and the payload
+// fields are optional — the `toolError` envelope (`ok:false` + `error`)
+// used to violate this tool's own declared schema.
 export const AckOutputSchema = z.object({
-	ok: z.literal(true),
-	mode: z.enum(['list', 'record']),
-	total: z.number().int().nonnegative(),
+	ok: z.boolean(),
+	error: z
+		.object({
+			reason: z.string(),
+			nextAction: z.string().optional(),
+		})
+		.optional(),
+	mode: z.enum(['list', 'record']).optional(),
+	total: z.number().int().nonnegative().optional(),
 	pending: z.array(AckEntrySchema).optional(),
 	ack: AckEntrySchema.optional(),
 });
