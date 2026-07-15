@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-07-15T00:02:54.101Z",
+	"generatedAt": "2026-07-15T00:09:46.747Z",
 	"mode": "compact",
 	"tools": [
 		{
@@ -670,19 +670,12 @@
 				"track": "lint+architecture+i18n+workflow+release",
 				"status": "paused",
 				"kind": "feat"
-			},
-			{
-				"id": "x00105",
-				"title": "x00105",
-				"track": "tooling+gates",
-				"status": "in-progress",
-				"kind": "fix"
 			}
 		],
 		"byStatus": {
 			"ready": 0,
-			"in-progress": 1,
-			"review": 3,
+			"in-progress": 0,
+			"review": 4,
 			"paused": 1,
 			"done": 217,
 			"blocked": 0,
