@@ -86,8 +86,19 @@ export const runHumanCli = async (
 		command.name === 'init' || command.name === 'init:default';
 	let ctx: Awaited<ReturnType<typeof createStdioContext>> | undefined;
 	try {
+		// a00061: `init`/`init:default` read ONLY `ctx.cwd` to resolve
+		// where to write (see noop-context.factory.ts) — they never look
+		// at `ctx.globals.workspace`. Passing the raw `cwd` (the CLI
+		// process's own process.cwd()) here silently ignored `--workspace`,
+		// so `mcpv init:default --workspace=<other-dir>` bootstrapped/
+		// overwrote files in whatever directory the command happened to
+		// be run from instead of the intended target — a real data-loss
+		// risk caught live. `parsed.globals.workspace` already resolves
+		// to `cwd` when `--workspace` is absent (parser.service.ts), so
+		// this is a no-op for the common case and a real fix for the
+		// override case.
 		ctx = isOffline
-			? createNoopContext(cwd, parsed.globals)
+			? createNoopContext(parsed.globals.workspace, parsed.globals)
 			: await createStdioContext(cwd, parsed.globals, extraPlugins);
 		const result = await command.run(
 			[
