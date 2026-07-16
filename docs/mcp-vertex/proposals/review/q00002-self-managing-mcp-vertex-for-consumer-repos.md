@@ -1,6 +1,6 @@
 ---
 id: q00002
-status: in-progress
+status: review
 type: plan
 track: adoption+extension
 date: 2026-07-15
@@ -67,7 +67,7 @@ organized, observable, self-tuning setup with zero out-of-band steps.
 
 ### S1 — Orchestrate the three children to done
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `docs/mcp-vertex/proposals/ready/q00002-self-managing-mcp-vertex-for-consumer-repos.md`
 - **Gate**: e2e
 - acceptance:
