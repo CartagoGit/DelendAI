@@ -30,7 +30,7 @@ Findings 3, 4 y 5 de a00053: hoy la primera experiencia de un adoptante es una e
 
 ### S1 — Extensión: default spawn vía launch canónico dual (reutilizando host-entry-resolver)
 - **Status**: done
-- **Files**: `extensions/vscode/src/extension.ts`, `extensions/vscode/src/host/spawn-resolver.ts`
+- **Files**: `extensions/vscode/src/extension.ts` (spawn resolution landed inline here, no separate resolver module)
 - **Gate**: e2e
 - acceptance:
   - "en un workspace con .mcp.json generado por init, la extensión conecta sin configurar mcp-vertex.server.command"

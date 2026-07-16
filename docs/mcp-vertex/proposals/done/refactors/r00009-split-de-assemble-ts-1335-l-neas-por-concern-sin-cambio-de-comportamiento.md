@@ -29,7 +29,7 @@ Finding 12 de a00053: cada cambio de CLI toca un archivo gigante con radio de ex
 
 ### S1 — Extraer wiring de presets y composición de plugins a módulos propios; assemble.ts queda como orquestador fino
 - **Status**: done
-- **Files**: `packages/core/src/lib/cli/assemble.ts`, `packages/core/src/lib/cli/assemble-presets.ts`, `packages/core/src/lib/cli/assemble-plugins.ts`
+- **Files**: `packages/core/src/lib/cli/assemble.ts`, `packages/core/src/lib/cli/run-cli.ts`, `packages/core/src/lib/cli/assemble-plugins.ts`, `packages/core/src/lib/cli/assemble-skills.ts`, `packages/core/src/lib/cli/assemble-core-tools.ts` (the split landed as these 4 modules, not a single `assemble-presets.ts` as originally sketched)
 - **Gate**: e2e
 - acceptance:
   - "assemble.ts por debajo de 500 líneas"
