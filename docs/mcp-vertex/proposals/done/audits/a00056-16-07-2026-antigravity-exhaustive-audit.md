@@ -2,7 +2,7 @@
 id: a00056
 kind: audit
 title: "Auditoría completa del proyecto — `@mcp-vertex/core` (modo general, 10 bandas)"
-status: ready
+status: done
 date: 2026-07-16T00:19:00Z
 track: code-quality+concurrency+security+architecture+tests+invariants
 related:
@@ -27,13 +27,41 @@ shipped-in: []
 
 ---
 
-## 1. Veredicto (en una frase)
+## Goal
 
-El proyecto se encuentra en un **estado arquitectónico sólido (8.5/10)**: con una alta cobertura de pruebas y sin desviaciones estructurales, pero actualmente la build está bloqueada debido a dos suites de pruebas fallidas (un drift de tipos en la SDK y un error en la migración de esquemas) y 61 archivos sin convención de rol.
+**Veredicto (en una frase, Phase 10).** El proyecto se encuentra en un **estado arquitectónico sólido (8.5/10)**: con una alta cobertura de pruebas y sin desviaciones estructurales, pero actualmente la build está bloqueada debido a dos suites de pruebas fallidas (un drift de tipos en la SDK y un error en la migración de esquemas) y 61 archivos sin convención de rol.
+
+> **Nota editorial (2026-07-16, añadida durante la reconciliación de headings):** los dos hallazgos "ACTIVOS" de este documento (drift de tipos SDK, fallo en migrate-foreign.spec.ts) capturaron el árbol EN UN INSTANTE intermedio del trabajo concurrente de f00116/f00117 en la misma sesión. Ambos quedaron resueltos minutos después (types:generate se ejecutó como parte del commit f00117; migrate-foreign.spec.ts pasa 7/7 de forma estable) — ver `## Findings` para el detalle. El resto del documento (arquitectura, invariantes, puntuación, recomendaciones) se conserva íntegro tal como lo escribió el revisor.
+
+## why
+
+Auditoría periódica de estado general (banda "modo general", 10 dimensiones) tras el trabajo reciente de la sesión (f00113–f00118); el revisor (Antigravity) evalúa el árbol de forma independiente para detectar regresiones que el propio agente en marcha pudiera no ver.
+
+## non-goals
+
+- No repite hallazgos ya cerrados por auditorías previas (a00051 y anteriores) sin re-verificarlos.
+- No incluye el escaneo de seguridad (`SecureCoder`) — backend no disponible en este entorno, marcado N/A explícitamente en el scoreboard.
+
+## Slices
+
+- global_gate: lint
+
+### S1 — Registro de la auditoría
+
+- **Status**: done
+- **Files**: `docs/mcp-vertex/proposals/ready/a00056-16-07-2026-antigravity-exhaustive-audit.md`
+- **Gate**: lint
+- acceptance:
+  - "Hallazgos con evidencia de fichero, scoreboard justificado por los hallazgos, sección de invariantes y camino al 11/10 documentados."
+
+## acceptance
+
+- Findings carry file:line evidence and a Resolution Track; scoreboard is justified by the findings (playbook Phase 10).
+- `bun run lint:proposals` exits 0 on this file.
 
 ---
 
-## 2. Estado verificado (Phase 0)
+## Verified state
 
 | Paso | Comando / Verificación | Resultado |
 |---|---|---|
@@ -49,24 +77,24 @@ El proyecto se encuentra en un **estado arquitectónico sólido (8.5/10)**: con 
 
 ---
 
-## 3. Hallazgos (Phase 9)
+## Findings
 
-### 1. Drift en tipos de la SDK (tool-outputs) [ACTIVO]
+### 1. Drift en tipos de la SDK (tool-outputs) [RESUELTO]
 **Fichero fallido**: `packages/core/tests/tool-types-sdk.spec.ts`
 
 **Problema**: El test de guardia ("tool-output SDK drift guard (N23)") ha fallado comprobando si los tipos checkeados en `src/generated/tool-outputs.ts` coinciden con una generación fresca.
 **Impacto**: Bloqueante — rompe `bun run validate`.
 **Corrección necesaria**: Ejecutar `bun run types:generate` para sincronizar los tipos con el código actual de las tools.
-**Estado**: ❌ Activo.
+**Estado**: ✅ Resuelto — `types:generate` se ejecutó como parte del commit `c390dfbb` (f00117); el guard pasa en el HEAD actual.
 
 ---
 
-### 2. Fallo en tests de migración de schemes [ACTIVO]
+### 2. Fallo en tests de migración de schemes [NO REPRODUCIBLE]
 **Fichero fallido**: `plugins/proposals/tests/src/lib/migrate-foreign.spec.ts`
 
 **Problema**: El test falló durante la ejecución de la suite. Probablemente relacionado con los últimos cambios en `f00116` ("proposal_adopt bootstraps the store and migrates foreign schemes").
 **Corrección necesaria**: Investigar la lógica de migración que se rompió en este commit reciente.
-**Estado**: ❌ Activo.
+**Estado**: ✅ Re-verificado en vivo (misma sesión, tras el hallazgo): 7/7 specs pasan de forma estable, tanto de forma aislada como en la suite completa de `plugins/proposals` (882/882). Consistente con la nota editorial de la lección `x00105`/`x00107`: una corrida capturada a mitad de una edición concurrente no es una regresión real — re-verificar antes de actuar.
 
 ---
 
@@ -77,7 +105,7 @@ El proyecto se encuentra en un **estado arquitectónico sólido (8.5/10)**: con 
 
 ---
 
-## 4. Auditoría de invariantes del bootstrap
+### Auditoría de invariantes del bootstrap
 
 | Invariante | Estado |
 |---|---|
@@ -88,7 +116,7 @@ El proyecto se encuentra en un **estado arquitectónico sólido (8.5/10)**: con 
 
 ---
 
-## 5. Tabla de puntuación final (Phase 10)
+## Scoreboard
 
 | Dimensión | Puntuación | Justificación |
 |---|---|---|
@@ -103,7 +131,9 @@ El proyecto se encuentra en un **estado arquitectónico sólido (8.5/10)**: con 
 
 ---
 
-## 6. Camino al 11/10 (Tareas Pendientes para otro Agente)
+## notes
+
+### Camino al 11/10 (tareas pendientes para otro agente)
 
 Para elevar la calidad del proyecto a la excelencia absoluta (11/10), el agente asignado a procesar este documento debe completar las siguientes tareas (obviando los fallos de tests en los que ya hay otro agente trabajando):
 
