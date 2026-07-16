@@ -47,7 +47,7 @@ User directive 2026-07-15: "que el proyecto sea capaz de crear correctamente la 
 ### S3 — Wire migration into the adopt tool + orientation nudge when the store is missing
 - **Status**: done
 - **DependsOn**: [S1, S2]
-- **Files**: `plugins/proposals/src/index.ts`, `plugins/proposals/src/lib/tools/adopt-migrate-wiring.ts`, `plugins/proposals/tests/src/lib/adopt-orientation.spec.ts`
+- **Files**: `plugins/proposals/src/index.ts`, `plugins/proposals/src/lib/tools/adopt.tool.ts` (migrate wiring lives inline here, not a separate wiring module), `plugins/proposals/tests/src/lib/adopt-orientation.spec.ts`
 - **Gate**: e2e
 - acceptance:
   - "proposal_adopt accepts migrate:{roots:[...]} and returns the migration report; apply+migrate compose in one call."

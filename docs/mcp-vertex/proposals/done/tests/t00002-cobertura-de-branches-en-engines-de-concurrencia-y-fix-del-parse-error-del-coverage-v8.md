@@ -36,7 +36,7 @@ Finding 9 de a00053: las ramas menos testeadas son exactamente las que corren cu
 
 ### S2 — Specs de ramas de error para continuity-enforcer y zombie-reconcile
 - **Status**: done
-- **Files**: `plugins/proposals/tests/src/lib/agents/continuity-enforcer.spec.ts`, `plugins/proposals/tests/src/lib/agents/zombie-reconcile.spec.ts`
+- **Files**: `plugins/proposals/tests/src/lib/swarm/continuity-enforcer.spec.ts`, `plugins/proposals/tests/src/lib/agents/zombie-reconcile.spec.ts`
 - **Gate**: e2e
 - acceptance:
   - "branches de ambos engines por encima del 80% en el reporte v8"
