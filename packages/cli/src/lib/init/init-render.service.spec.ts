@@ -511,25 +511,56 @@ describe('plugin defaults (f00087 S1 preview)', () => {
 		expect(parsed.plugins.memory.options.bm25B).toBe(0.75);
 	});
 
-	it('search initialises with sensible roots and extensions', async () => {
-		const bundle = await renderInitBundle(
-			parseAnswers({ preset: 'swarm' }),
-		);
-		const configFile = bundle.files.find(
-			(f) => f.relPath === 'mcp-vertex.config.json',
-		);
-		const parsed = JSON.parse(configFile?.content ?? '{}') as {
-			plugins: {
-				search: {
-					options: { roots?: string[]; extensions?: string[] };
+	it('a00063: search roots are derived from the REAL workspace layout, not stamped from the monorepo', async () => {
+		// An Angular-shaped app: src/ + e2e/, no packages/plugins/apps.
+		// Stamping mcp-vertex's own monorepo roots here made every
+		// search scan 0 files — the "agent went crazy" incident.
+		const ws = await mkdtemp(join(tmpdir(), 'init-angular-'));
+		try {
+			await mkdir(join(ws, 'src'), { recursive: true });
+			await mkdir(join(ws, 'e2e'), { recursive: true });
+			const bundle = await renderInitBundle(
+				parseAnswers({ preset: 'swarm' }, ws),
+			);
+			const configFile = bundle.files.find(
+				(f) => f.relPath === 'mcp-vertex.config.json',
+			);
+			const parsed = JSON.parse(configFile?.content ?? '{}') as {
+				plugins: {
+					search: {
+						options: { roots?: string[]; extensions?: string[] };
+					};
+					conventions?: { options: { roots?: string[] } };
 				};
 			};
-		};
-		expect(parsed.plugins.search.options.roots).toContain('packages');
-		// a00062: dot-less is the canonical form the search engine's
-		// extensionOf() actually compares against — a dot-prefixed
-		// default silently matched nothing.
-		expect(parsed.plugins.search.options.extensions).toContain('ts');
+			expect(parsed.plugins.search.options.roots).toContain('src');
+			expect(parsed.plugins.search.options.roots).not.toContain(
+				'packages',
+			);
+			// No extensions/ignoreDirs materialised: the engine's richer
+			// built-in defaults (incl. html/scss for frontend repos) apply.
+			expect(parsed.plugins.search.options.extensions).toBeUndefined();
+		} finally {
+			await rm(ws, { recursive: true, force: true });
+		}
+	});
+
+	it('a00063: search roots are OMITTED when no known source dir exists (engine walks "." safely)', async () => {
+		const ws = await mkdtemp(join(tmpdir(), 'init-bare-'));
+		try {
+			const bundle = await renderInitBundle(
+				parseAnswers({ preset: 'swarm' }, ws),
+			);
+			const configFile = bundle.files.find(
+				(f) => f.relPath === 'mcp-vertex.config.json',
+			);
+			const parsed = JSON.parse(configFile?.content ?? '{}') as {
+				plugins: { search: { options: { roots?: string[] } } };
+			};
+			expect(parsed.plugins.search.options.roots).toBeUndefined();
+		} finally {
+			await rm(ws, { recursive: true, force: true });
+		}
 	});
 
 	it('web-fetch is empty by default (fail closed)', async () => {

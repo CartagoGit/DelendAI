@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { mkdtemp, readFile, rm } from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -21,6 +21,13 @@ describe('init integration (f00084 S10)', () => {
 
 	beforeEach(async () => {
 		workspace = await mkdtemp(join(tmpdir(), 'mcpv-init-integration-'));
+		// a00063: seed stable top-level source dirs so the derived
+		// search/conventions roots are a fixed point across renders —
+		// init itself creates docs/ on write, and rendering from an
+		// empty dir vs. a post-init dir would otherwise legitimately
+		// differ (roots are derived from the REAL workspace layout now).
+		await mkdir(join(workspace, 'src'), { recursive: true });
+		await mkdir(join(workspace, 'docs'), { recursive: true });
 	});
 
 	afterEach(async () => {

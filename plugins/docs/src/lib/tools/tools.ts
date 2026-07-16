@@ -45,6 +45,7 @@ export const buildDocsToolRegistrations = (
 							offset: z.number(),
 							nextOffset: z.number().optional(),
 							truncated: z.boolean(),
+							diagnostic: z.string().optional(),
 							docs: z.array(
 								z.object({
 									path: z.string(),
@@ -58,7 +59,7 @@ export const buildDocsToolRegistrations = (
 						limit?: number | undefined;
 						offset?: number | undefined;
 					}) => {
-						const { docs, truncated } = await listDocs(
+						const { docs, truncated, diagnostic } = await listDocs(
 							options.workspaceRootAbs,
 							{
 								...defaults,
@@ -81,6 +82,7 @@ export const buildDocsToolRegistrations = (
 							offset,
 							...(nextOffset < docs.length ? { nextOffset } : {}),
 							truncated,
+							...(diagnostic !== undefined ? { diagnostic } : {}),
 							docs: page,
 						});
 					},
