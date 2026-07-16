@@ -2,7 +2,7 @@
 id: f00118
 title: "Extension live telemetry + control — real usage, savings, costs, top tools, and plugin enable/disable from the panel"
 kind: feat
-status: in-progress
+status: review
 type: proposal
 track: extension+client+ui
 date: 2026-07-15
@@ -29,7 +29,7 @@ User directive 2026-07-15: "que la extensión tuviera datos reales de cómo est�
 - global_gate: e2e
 
 ### S1 — TelemetryService (client): metrics × usage_report join with graceful degradation
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/client/src/lib/services/telemetry.service.ts`, `packages/client/src/tests/telemetry.service.spec.ts`, `packages/client/src/public/index.ts`
 - **Gate**: e2e
 - acceptance:
@@ -37,7 +37,7 @@ User directive 2026-07-15: "que la extensión tuviera datos reales de cómo est�
   - "Spec covers both shapes with a fake client; exported from the public barrel."
 
 ### S2 — Dashboard telemetry UI: sparklines, top-N, savings + spend tiles (12-lang i18n)
-- **Status**: pending
+- **Status**: done
 - **DependsOn**: [S1]
 - **Files**: `packages/ui-extension/src/components/telemetry-charts.ts`, `packages/ui-extension/src/dashboard/telemetry-section.ts`, `apps/shared/src/i18n/langs/en.ts`, `apps/shared/src/i18n/langs/es.ts`, `apps/shared/src/i18n/langs/de.ts`, `apps/shared/src/i18n/langs/fr.ts`, `apps/shared/src/i18n/langs/it.ts`, `apps/shared/src/i18n/langs/pt.ts`, `apps/shared/src/i18n/langs/ar.ts`, `apps/shared/src/i18n/langs/hi.ts`, `apps/shared/src/i18n/langs/ja.ts`, `apps/shared/src/i18n/langs/th.ts`, `apps/shared/src/i18n/langs/vi.ts`, `apps/shared/src/i18n/langs/zh.ts`, `apps/shared/src/i18n/shared.ts`
 - **Gate**: e2e
@@ -46,7 +46,7 @@ User directive 2026-07-15: "que la extensión tuviera datos reales de cómo est�
   - "check:i18n green: every new key in all 12 languages incl. the authored-es gate; shared-ui-ratchet green (no hardcoded aria)."
 
 ### S3 — Plugin enable/disable: config write action + panel toggles with confirm
-- **Status**: done (re-scoped — the feature already existed end-to-end; see notes)
+- **Status**: done
 - **DependsOn**: [S1]
 - **Files**: none (verification only; no code changed)
 - **Gate**: e2e
@@ -54,7 +54,7 @@ User directive 2026-07-15: "que la extensión tuviera datos reales de cómo est�
   - "VERIFIED (not built): `plugins.<id>.enabled: false` is read by `assemble.ts`'s `disabledConfigPlugins` and threaded into `assemblePlugins` — the loader genuinely suppresses the plugin. The configuration-center webview already renders a per-plugin `enabled` checkbox (`render-configuration-center.ts:104-113`) wired through the existing generic field-edit + `saveConfigurationDocument` flow (digest-checked optimistic concurrency, `withFileMutex` + atomic write), and the save flow already shows a restart-required banner with a working restart action (`open-configuration-center.ts`). Confirmed via direct code read + grep, cross-checked against the config schema (`IMcpVertexPluginConfig.enabled`)."
 
 ### S4 — Re-scoped: strengthen the S1 type contract (no separate e2e needed)
-- **Status**: done — folded into S1's commit
+- **Status**: done
 - **Files**: `packages/client/src/lib/services/dashboard.service.ts`
 - **Gate**: e2e
 - acceptance:
