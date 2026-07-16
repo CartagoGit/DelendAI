@@ -44,7 +44,10 @@ export interface ILoadPluginsOptions {
 	/** Absolute workspace root used to resolve relative plugin paths. */
 	readonly workspaceRoot?: string | undefined;
 	/** Build the per-plugin context once the plugin's name is known. */
-	readonly buildContext: (pluginName: string) => IMcpPluginContext;
+	readonly buildContext: (
+		pluginName: string,
+		cacheNamespace?: string,
+	) => IMcpPluginContext;
 	/**
 	 * Injectable importer. **Required** — the core never calls
 	 * `import(variable)` itself, so that Vite/Rollup can statically
@@ -288,7 +291,10 @@ export const loadPlugins = async (
 			continue;
 		}
 		try {
-			const ctx = options.buildContext(plugin.name);
+			const ctx = options.buildContext(
+				plugin.name,
+				plugin.cacheNamespace,
+			);
 			if (plugin.optionsSchema) {
 				const parsed = plugin.optionsSchema.safeParse(ctx.options);
 				if (!parsed.success) {

@@ -1,7 +1,7 @@
 # MCP logs
 
 The `@mcp-vertex/logs` plugin persists an append-only JSONL event log under
-`.cache/mcp-vertex/logs/<YYYY-MM-DD>.jsonl`.
+`.cache/mcp-vertex/results/logs/<YYYY-MM-DD>.jsonl`.
 
 Each line is a redacted event:
 

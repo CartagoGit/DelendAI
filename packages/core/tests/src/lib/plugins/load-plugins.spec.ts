@@ -9,13 +9,13 @@ import {
 } from '@mcp-vertex/core/lib/plugins/load-plugins';
 import type { IMcpPluginContext } from '@mcp-vertex/core/lib/plugins/plugin-contract';
 
-const ctx = (name: string): IMcpPluginContext => ({
+const ctx = (name: string, cacheNamespace?: string): IMcpPluginContext => ({
 	workspace: { root: '/ws', resolve: (p: string) => `/ws/${p}` },
 	corePaths: { cacheDir: '.cache/mcp-vertex', docsDir: 'docs/mcp-vertex' },
 	cacheDir: '.cache/mcp-vertex',
 	docsDir: 'docs/mcp-vertex',
 	keepLegacy: false,
-	pluginCacheDir: `.cache/mcp-vertex/${name}`,
+	pluginCacheDir: `.cache/mcp-vertex/${cacheNamespace ? `${cacheNamespace}/${name}` : name}`,
 	pluginDocsDir: `docs/mcp-vertex/${name}`,
 	namespacePrefix: name,
 	options: {},
@@ -52,6 +52,25 @@ describe('loadPlugins', async () => {
 		expect(result.errors).toEqual([]);
 		expect(result.loaded[0]?.plugin.name).toBe('demo');
 		expect(result.loaded[0]?.registrations.tools?.[0]?.id).toBe('demo_x');
+	});
+
+	it('a00063: threads a plugin-declared cacheNamespace into buildContext, nesting pluginCacheDir', async () => {
+		let seenPluginCacheDir = '';
+		const fakePlugin = {
+			name: 'logs',
+			cacheNamespace: 'results' as const,
+			register: (pluginCtx: IMcpPluginContext) => {
+				seenPluginCacheDir = pluginCtx.pluginCacheDir;
+				return { tools: [] };
+			},
+		};
+		const result = await loadPlugins({
+			specifiers: ['logs'],
+			buildContext: ctx,
+			import: async () => ({ default: fakePlugin }),
+		});
+		expect(result.errors).toEqual([]);
+		expect(seenPluginCacheDir).toBe('.cache/mcp-vertex/results/logs');
 	});
 
 	it('dedups a plugin requested twice (loads once, notes the dup)', async () => {

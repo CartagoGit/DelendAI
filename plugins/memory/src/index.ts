@@ -56,6 +56,9 @@ export default definePlugin({
 	version: '0.1.0',
 	describe:
 		'Persistent project notes (save/recall/list/forget) for cross-session continuity with minimal tokens.',
+	// Accumulated knowledge, not derivable cache — deleting it is amnesia,
+	// not a rebuild. See IMcpPlugin#cacheNamespace.
+	cacheNamespace: 'results',
 	optionsSchema: OptionsSchema,
 	register(ctx) {
 		const optionsResult = OptionsSchema.safeParse(ctx.options);
