@@ -360,6 +360,7 @@ export interface McpVertexDocsDocsListOutput {
 	offset: number;
 	nextOffset?: number;
 	truncated: boolean;
+	diagnostic?: string;
 	docs: {
 		path: string;
 		title: string;
@@ -1966,6 +1967,7 @@ export interface McpVertexSearchSearchOutput {
 	scanned: number;
 	usedRg: boolean;
 	rgFallbackReason?: string;
+	diagnostic?: string;
 	hits: {
 		file: string;
 		line: number;

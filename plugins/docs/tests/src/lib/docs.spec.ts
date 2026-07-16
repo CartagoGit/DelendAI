@@ -55,6 +55,22 @@ describe('docs engine', async () => {
 		expect(byPath['src/code.ts']).toBeUndefined(); // outside default roots
 	});
 
+	it('a00063: zero docs from nonexistent roots returns a diagnostic naming them', async () => {
+		const { docs, diagnostic } = await listDocs(root, {
+			roots: ['handbook', 'wiki'],
+		});
+		expect(docs).toEqual([]);
+		expect(diagnostic).toBeDefined();
+		expect(diagnostic).toContain('handbook');
+		expect(diagnostic).toContain('do not exist');
+	});
+
+	it('a00063: no diagnostic when docs were found', async () => {
+		const { docs, diagnostic } = await listDocs(root);
+		expect(docs.length).toBeGreaterThan(0);
+		expect(diagnostic).toBeUndefined();
+	});
+
 	it('a00062: matches when options.extensions is dot-prefixed (the config authoring convention)', async () => {
 		const { docs } = await listDocs(root, { extensions: ['.md'] });
 		const paths = docs.map((d) => d.path);

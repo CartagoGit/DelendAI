@@ -44,7 +44,26 @@ const ROOT_CANDIDATES = [
 	'extensions',
 	'tools',
 	'docs',
+	'e2e',
+	'test',
+	'tests',
 ] as const;
+
+/**
+ * Filter the workspace's real top-level dirs down to the source-ish
+ * candidates worth scanning. Shared by the `init_config` MCP tool and
+ * the CLI `init` renderer so BOTH bootstrap paths derive roots from the
+ * actual project layout (a00063: `init` used to stamp mcp-vertex's own
+ * monorepo roots into every adopter's config — an Angular app got
+ * `roots: ["packages", ...]`, none of which existed, so every search
+ * silently scanned 0 files). An empty result means "omit roots": the
+ * search engine then walks `.` (gitignore- and ignoreDirs-aware), which
+ * is correct for any project shape.
+ */
+export const deriveSourceRoots = (
+	topLevelDirs: readonly string[],
+): readonly string[] =>
+	ROOT_CANDIDATES.filter((dir) => topLevelDirs.includes(dir));
 
 const CONFIG_SCHEMA_URL =
 	'https://unpkg.com/@mcp-vertex/core/schema/mcp-vertex.config.schema.json';
@@ -58,9 +77,7 @@ export const deriveConfig = (
 	context: IDeriveConfigContext,
 ): IDerivedConfig => {
 	const rationale: string[] = [];
-	const roots = ROOT_CANDIDATES.filter((dir) =>
-		context.topLevelDirs.includes(dir),
-	);
+	const roots = deriveSourceRoots(context.topLevelDirs);
 
 	let preset: IDerivedConfig['preset'];
 	if (!isTsLike(analysis.language)) {

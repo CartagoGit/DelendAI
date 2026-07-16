@@ -74,7 +74,12 @@ const rel = (rootAbs: string, abs: string): string =>
 export const listDocs = async (
 	workspaceRootAbs: string,
 	options: IDocsOptions = {},
-): Promise<{ docs: IDocEntry[]; truncated: boolean }> => {
+): Promise<{
+	docs: IDocEntry[];
+	truncated: boolean;
+	/** Set ONLY when 0 docs were found — names the misconfigured roots (a00063). */
+	diagnostic?: string;
+}> => {
 	const roots =
 		options.roots && options.roots.length > 0
 			? options.roots
@@ -122,23 +127,57 @@ export const listDocs = async (
 			visitFile: addFile,
 		});
 
+	const rejectedRoots: string[] = [];
+	const missingRoots: string[] = [];
 	for (const root of roots) {
 		if (truncated) break;
 		// Containment: `docs_list` must apply the same guard as `docs_read` — a
 		// root that escapes the workspace (`..`, absolute) is skipped.
 		const contained = resolveWorkspaceContained(workspaceRootAbs, root);
-		if (!contained.ok) continue;
+		if (!contained.ok) {
+			rejectedRoots.push(root);
+			continue;
+		}
 		const abs = contained.abs;
 		try {
 			(await stat(abs)).isDirectory()
 				? await walk(abs)
 				: await addFile(abs);
 		} catch {
-			// missing or unreadable root: skip
+			// missing or unreadable root: record for the zero-result diagnostic.
+			missingRoots.push(root);
 		}
 	}
 	docs.sort((a, b) => a.path.localeCompare(b.path));
-	return { docs, truncated };
+
+	// a00063: an empty catalogue with no explanation reads as "this
+	// project has no docs" when the real cause is usually a config whose
+	// roots don't exist in this workspace. Same self-diagnosis as search.
+	let diagnostic: string | undefined;
+	if (docs.length === 0) {
+		const parts: string[] = [];
+		if (missingRoots.length > 0) {
+			parts.push(
+				`configured roots do not exist in this workspace: ${missingRoots.join(', ')}`,
+			);
+		}
+		if (rejectedRoots.length > 0) {
+			parts.push(
+				`roots must be workspace-relative (rejected: ${rejectedRoots.join(', ')})`,
+			);
+		}
+		if (parts.length === 0) {
+			parts.push(
+				`no files matched the extensions [${[...extensions].join(', ')}] under roots [${roots.join(', ')}]`,
+			);
+		}
+		diagnostic = `found 0 docs: ${parts.join('; ')}. Check plugins.docs.options.roots in mcp-vertex.config.json.`;
+	}
+	return {
+		docs,
+		truncated,
+		...(diagnostic !== undefined ? { diagnostic } : {}),
+	};
 };
 
 export interface IDocContent {

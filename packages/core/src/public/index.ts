@@ -140,6 +140,7 @@ export {
 	PLUGIN_DEFAULTS,
 	resolvePluginOptions,
 } from '../lib/plugins/plugin-defaults';
+export { deriveSourceRoots } from '../lib/bootstrap/derive-config';
 export {
 	PRESET_CATALOG,
 	PRESET_KIND,

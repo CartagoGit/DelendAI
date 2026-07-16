@@ -8,18 +8,15 @@ export const PLUGIN_DEFAULTS: Readonly<
 	Record<string, Readonly<Record<string, unknown>>>
 > = {
 	git: {},
-	search: {
-		roots: [
-			'packages',
-			'plugins',
-			'extensions',
-			'apps',
-			'tools',
-			'scripts',
-		],
-		extensions: ['ts', 'tsx', 'js', 'mjs', 'cjs', 'md', 'json'],
-		ignoreDirs: ['node_modules', '.cache', 'dist', 'build', '.git'],
-	},
+	// a00063: search ships NO materialised defaults. The old block
+	// stamped mcp-vertex's own monorepo roots (packages/plugins/...)
+	// and a NARROWER extension list than the engine's built-ins into
+	// every adopter's config — an Angular app got roots that don't
+	// exist and lost html/scss, so every search scanned 0 files. The
+	// engine's own defaults (walk `.`, rich extension list, gitignore
+	// + ignoreDirs aware) are correct for any project shape; `init`
+	// derives real roots per-workspace via `deriveSourceRoots`.
+	search: {},
 	memory: {
 		bm25K1: 1.5,
 		bm25B: 0.75,
@@ -52,9 +49,9 @@ export const PLUGIN_DEFAULTS: Readonly<
 	},
 	'status-marker': {},
 	'test-convention': {},
-	conventions: {
-		roots: ['packages', 'plugins', 'extensions', 'apps', 'tools'],
-	},
+	// a00063: same as search — no stamped monorepo roots; `init`
+	// derives the real ones per-workspace.
+	conventions: {},
 	'web-fetch': {
 		allowList: [],
 	},
