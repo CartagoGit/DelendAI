@@ -2,7 +2,7 @@
 id: f00116
 title: "Proposals store self-bootstrap + foreign-scheme migration — consumer repos get the workflow just by using mcp-vertex"
 kind: feat
-status: review
+status: done
 type: proposal
 track: proposals+adoption
 date: 2026-07-15
