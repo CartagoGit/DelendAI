@@ -1,6 +1,6 @@
 ---
 id: q00002
-status: review
+status: done
 type: plan
 track: adoption+extension
 date: 2026-07-15
@@ -72,7 +72,11 @@ organized, observable, self-tuning setup with zero out-of-band steps.
 - **Gate**: e2e
 - acceptance:
   - "f00116, f00117 and f00118 each reach done through the DFA with their own gates green; this plan tracks the roll-up and closes last (closureGate)."
-
+- review-state: done
+- review-implementer: claude-round-2
+- review-reviewer: independent-reviewer-a7efefaa
+- review-log: requested_changes by independent-reviewer-a48b3ed9 — Code/tests/validate all green (547 files, 4574 tests, typecheck/lint/i18n/catalog clean) and the f00118 re-scope claims (topSkills impossible, plugin enable/disable pre-existing) verified true against the live code. BUT f00118's own proposal doc is stale: S1 (line 33) and S2 (line 42) Files: lists reference telemetry.service.ts/telemetry.service.spec.ts/telemetry-charts.ts/telemetry-section.ts which were never created — real shipped files are dashboard.service.ts/render-panel-spend.ts/dashboard-spend.service.spec.ts/render-panel.spec.ts. S2 acceptance text also claims all-12-languages while the bottom acceptance block (accurate) says en+es only. Fix: rewrite S1/S2 Files/acceptance to match what was actually built before re-submitting.
+- review-log: approved by independent-reviewer-a7efefaa — Fresh reviewer (no prior involvement): verified every S1/S2 Files: path exists on disk, acceptance text consistent with bottom-level en+es-only i18n scope, lint:proposals green, and independently confirmed getSpendModel/buildSpendModel genuinely exist+export in dashboard.service.ts with graceful degradation. APPROVE.
 ## acceptance
 
 - All three contained proposals are `done` and peer-reviewed

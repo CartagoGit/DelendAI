@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-07-16T07:38:47.017Z",
+	"generatedAt": "2026-07-16T08:23:18.865Z",
 	"mode": "compact",
 	"tools": [
 		{
@@ -678,9 +678,9 @@
 		"byStatus": {
 			"ready": 0,
 			"in-progress": 0,
-			"review": 1,
+			"review": 0,
 			"paused": 1,
-			"done": 229,
+			"done": 230,
 			"blocked": 0,
 			"retired": 1,
 			"unspecified": 0
