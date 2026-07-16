@@ -17,7 +17,7 @@ export const PLUGIN_DEFAULTS: Readonly<
 			'tools',
 			'scripts',
 		],
-		extensions: ['.ts', '.tsx', '.js', '.mjs', '.cjs', '.md', '.json'],
+		extensions: ['ts', 'tsx', 'js', 'mjs', 'cjs', 'md', 'json'],
 		ignoreDirs: ['node_modules', '.cache', 'dist', 'build', '.git'],
 	},
 	memory: {
@@ -28,7 +28,7 @@ export const PLUGIN_DEFAULTS: Readonly<
 	},
 	docs: {
 		roots: ['docs/mcp-vertex', 'README.md'],
-		extensions: ['.md', '.mdx'],
+		extensions: ['md', 'mdx'],
 		ignoreDirs: ['node_modules', '.cache', 'dist'],
 	},
 	rules: {},

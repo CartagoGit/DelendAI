@@ -55,6 +55,13 @@ describe('docs engine', async () => {
 		expect(byPath['src/code.ts']).toBeUndefined(); // outside default roots
 	});
 
+	it('a00062: matches when options.extensions is dot-prefixed (the config authoring convention)', async () => {
+		const { docs } = await listDocs(root, { extensions: ['.md'] });
+		const paths = docs.map((d) => d.path);
+		expect(paths).toContain('README.md');
+		expect(paths).toContain('docs/guide.md');
+	});
+
 	it('honours injected roots', async () => {
 		const { docs } = await listDocs(root, { roots: ['docs'] });
 		expect(docs.every((d) => d.path.startsWith('docs/'))).toBe(true);
