@@ -20,15 +20,19 @@
  * Sanctioned cache layout (f00081, for reference):
  *
  *   .cache/mcp-vertex/
- *     bootstrap/      (engine boot snapshots)
- *     drift/          (drift-store snapshots)
- *     handoff/        (loop-detector handoff packets)
- *     logs/           (append-only JSONL event log)
- *     memory/         (agent memory store)
- *     proposals/      (regenerable index.json)
- *     rules/          (vendored framework rule packs)
- *     state/          (transient locks, registry snapshots)
+ *     bootstrap/      (engine boot snapshots — derivable, safe to delete)
+ *     drift/          (drift-store snapshots — derivable, safe to delete)
+ *     proposals/      (regenerable index.json — derivable, safe to delete)
+ *     rules/          (vendored framework rule packs — derivable)
+ *     state/          (transient locks, registry snapshots — safe to delete)
  *     verify/         (current scratch root for plugin-tool-verify)
+ *     handoff/        (loop-detector handoff packets — transient)
+ *     results/        (user-flagged 2026-07-17: accumulated RECORDS, not
+ *                      derivable cache — deleting these loses real
+ *                      information, unlike everything else above)
+ *       logs/            (append-only JSONL event log)
+ *       memory/          (agent memory store)
+ *       usage-tracking/  (accrued spend/usage history)
  *     <pluginCacheDir>/exec/ (f00080 ephemeral exec paths per plugin)
  *     .worktrees/<agent>/    (per-agent git worktrees, NOT code)
  *
@@ -50,12 +54,14 @@ const SANCTIONED_TOP_LEVEL: ReadonlySet<string> = new Set([
 	'bootstrap',
 	'drift',
 	'handoff',
-	'logs',
-	'memory',
 	'proposals',
 	'rules',
 	'state',
 	'verify',
+	// Accumulated records (see IMcpPlugin#cacheNamespace) — NOT derivable
+	// cache, but still under the one canonical ignored root. Nests
+	// logs/memory/usage-tracking (and any future opt-in plugin).
+	'results',
 	// Per-plugin ephemeral exec dir (f00080). Plugins add their own
 	// `<pluginCacheDir>/<plugin>/exec/` subtree at boot, so we whitelist
 	// the whole pattern generically below.
@@ -70,7 +76,9 @@ const SANCTIONED_TOP_LEVEL: ReadonlySet<string> = new Set([
 const SANCTIONED_SUBPATH_PREFIXES: readonly string[] = [
 	'verify/',
 	'handoff/',
-	'logs/',
+	'results/logs/',
+	'results/memory/',
+	'results/usage-tracking/',
 	'rules/',
 	'.worktrees/',
 ];

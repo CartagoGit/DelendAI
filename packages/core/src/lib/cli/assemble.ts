@@ -260,7 +260,10 @@ export const assembleCliConfig = async (
 		createGitConfigReader(createGitRunner(workspace.root)),
 	);
 
-	const buildContext = (pluginName: string): IMcpPluginContext => {
+	const buildContext = (
+		pluginName: string,
+		cacheNamespace?: string,
+	): IMcpPluginContext => {
 		const pluginConfig = pluginConfigFor(fileConfig, pluginName);
 		return {
 			workspace,
@@ -271,7 +274,10 @@ export const assembleCliConfig = async (
 			agentWorktreeEnabled,
 			commitAuthor: commitAuthorResolution,
 			...(hostIdentity !== undefined ? { hostIdentity } : {}),
-			pluginCacheDir: joinRel(corePaths.cacheDir, pluginName),
+			pluginCacheDir: joinRel(
+				corePaths.cacheDir,
+				cacheNamespace ? `${cacheNamespace}/${pluginName}` : pluginName,
+			),
 			pluginDocsDir: joinRel(corePaths.docsDir, pluginName),
 			namespacePrefix: `${corePrefix}_${pluginConfig.prefix ?? pluginName}`,
 			options: pluginConfig.options ?? {},

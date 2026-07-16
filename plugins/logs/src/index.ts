@@ -10,6 +10,9 @@ export default definePlugin({
 	version: '0.1.0',
 	describe:
 		'Persistent append-only, secret-redacted MCP event log with query, tail, subscribe, correlate and redaction audit tools.',
+	// The log is an accumulated record, not derivable cache — deleting it
+	// loses real history. See IMcpPlugin#cacheNamespace.
+	cacheNamespace: 'results',
 	optionsSchema: z.object({
 		retentionDays: z.number().optional(),
 	}),
@@ -60,7 +63,7 @@ export default definePlugin({
 					body: [
 						'# Operational event log',
 						'',
-						'The logs plugin persists redacted JSONL events under `.cache/mcp-vertex/logs/`.',
+						'The logs plugin persists redacted JSONL events under `.cache/mcp-vertex/results/logs/`.',
 						'It captures tool start/completion/failure/cancellation through core hooks and exposes read-only tools for query, tail and correlation.',
 						'A `server-started` event marks each host boot (pid + workspace), and `tool-cancelled` records a client-side abort of an in-flight call with its elapsed ms.',
 					].join('\n'),
