@@ -526,7 +526,10 @@ describe('plugin defaults (f00087 S1 preview)', () => {
 			};
 		};
 		expect(parsed.plugins.search.options.roots).toContain('packages');
-		expect(parsed.plugins.search.options.extensions).toContain('.ts');
+		// a00062: dot-less is the canonical form the search engine's
+		// extensionOf() actually compares against — a dot-prefixed
+		// default silently matched nothing.
+		expect(parsed.plugins.search.options.extensions).toContain('ts');
 	});
 
 	it('web-fetch is empty by default (fail closed)', async () => {

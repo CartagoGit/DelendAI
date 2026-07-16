@@ -56,6 +56,15 @@ describe('searchWorkspace', async () => {
 		).toEqual([]);
 	});
 
+	it('a00062: matches when options.extensions is dot-prefixed (the config authoring convention)', async () => {
+		const res = await searchWorkspace(root, 'foo', {
+			extensions: ['.ts', '.md'],
+		});
+		const files = res.hits.map((h) => h.file);
+		expect(files).toContain('src/a.ts');
+		expect(files).toContain('src/b.md');
+	});
+
 	it('returns empty for a blank query without scanning', async () => {
 		const res = await searchWorkspace(root, '   ');
 		expect(res.hits).toEqual([]);
