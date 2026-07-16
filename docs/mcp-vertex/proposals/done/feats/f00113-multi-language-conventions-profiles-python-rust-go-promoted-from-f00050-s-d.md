@@ -39,7 +39,7 @@ Parked non-goal S-D of f00049 (via f00050). The conventions plugin only understa
 
 ### S2 — Python profile
 - **Status**: done
-- **Files**: `plugins/conventions/src/lib/profiles/python.profile.ts`, `plugins/conventions/tests/src/lib/profiles/python.profile.spec.ts`
+- **Files**: `plugins/conventions/src/lib/profiles/python.profile.ts`, `plugins/conventions/tests/src/lib/profiles/language-profiles.spec.ts` (consolidated with S3/S4, not a standalone python.profile.spec.ts)
 - **Gate**: e2e
 - acceptance:
   - "Classifies at minimum: module (*.py), package-marker (__init__.py), test (test_*.py / *_test.py / tests/ dir), config (pyproject.toml/setup.cfg handled as config role for .py-adjacent scan), script (scripts/ dir), entry (__main__.py), generated (*_pb2.py)."
@@ -47,7 +47,7 @@ Parked non-goal S-D of f00049 (via f00050). The conventions plugin only understa
 
 ### S3 — Rust profile
 - **Status**: done
-- **Files**: `plugins/conventions/src/lib/profiles/rust.profile.ts`, `plugins/conventions/tests/src/lib/profiles/rust.profile.spec.ts`
+- **Files**: `plugins/conventions/src/lib/profiles/rust.profile.ts`, `plugins/conventions/tests/src/lib/profiles/language-profiles.spec.ts` (consolidated with S2/S4)
 - **Gate**: e2e
 - acceptance:
   - "Classifies at minimum: module (*.rs), module-root (mod.rs), crate-entry (main.rs/lib.rs), test (tests/ dir + *_test.rs), build-script (build.rs), example (examples/ dir), bench (benches/ dir)."
@@ -55,7 +55,7 @@ Parked non-goal S-D of f00049 (via f00050). The conventions plugin only understa
 
 ### S4 — Go profile
 - **Status**: done
-- **Files**: `plugins/conventions/src/lib/profiles/go.profile.ts`, `plugins/conventions/tests/src/lib/profiles/go.profile.spec.ts`
+- **Files**: `plugins/conventions/src/lib/profiles/go.profile.ts`, `plugins/conventions/tests/src/lib/profiles/language-profiles.spec.ts` (consolidated with S2/S3)
 - **Gate**: e2e
 - acceptance:
   - "Classifies at minimum: module (*.go), test (*_test.go), entry (main.go / cmd/ dir), internal (internal/ dir), generated (*.pb.go / *_gen.go), vendor skipped like node_modules."

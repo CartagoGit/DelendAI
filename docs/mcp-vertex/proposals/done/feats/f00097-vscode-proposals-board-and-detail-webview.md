@@ -358,10 +358,16 @@ state in the extension.
   (predates catalog commit `2353e5a0`), confirmed present on clean develop via
   `git stash`; orthogonal to S5, fixed by a full core type rebuild (see the
   `stale-core-dts-breaks-web-astro-check` memory).
-- **Files**: `apps/web/src/pages/[lang]/proposals/index.astro` (new),
-  `apps/web/src/data/pages/proposals/index.md` (new),
-  `apps/web/src/i18n/ui.ts` (9 new keys × 12 languages),
-  `apps/web/src/styles/_view-transitions.scss` (extend if needed)
+- **Files**: `apps/web/src/pages/[lang]/proposals.astro` (new),
+  `apps/web/src/pages/proposals.astro` (new),
+  `apps/web/src/components/ProposalsSection.astro` (new),
+  `apps/web/src/i18n/proposals-board.ts` (new — standalone
+  `proposalBoardByLang` map, en source of truth + es translated + 10-lang
+  en-fallback, matching `proposalGlossaryByLang`; NOT the
+  `ITranslations`/`dictsByLang` 12-lang gate as originally planned — see
+  the Done note above),
+  `apps/web/src/styles/components/_proposals-board.scss` (new, `@use`'d
+  from `styles.scss`)
 - **Agent**: implementation_runner
 - **Gate**: validate
 - **Acceptance**:

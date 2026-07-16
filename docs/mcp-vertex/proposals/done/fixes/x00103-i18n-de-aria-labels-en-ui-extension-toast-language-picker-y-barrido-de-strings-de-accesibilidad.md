@@ -29,7 +29,7 @@ Finding 7 de a00053: lectores de pantalla en 11 de los 12 idiomas soportados anu
 
 ### S1 — toast y language-picker con aria-labels i18n + barrido del resto de componentes
 - **Status**: done
-- **Files**: `packages/ui-extension/src/components/toast.ts`, `packages/ui-extension/src/components/language-picker.ts`, `packages/ui-extension/src/i18n/ui.ts`
+- **Files**: `packages/ui-extension/src/components/toast.ts`, `packages/ui-extension/src/components/language-picker.ts`, `apps/shared/src/i18n/langs/en.ts`, `apps/shared/src/i18n/langs/es.ts` (a11yCloseToast/a11yLanguagePicker keys land in the shared i18n dicts, not a package-local ui.ts)
 - **Gate**: e2e
 - acceptance:
   - "aria-label de cerrar toast y del selector de idioma se renderizan en el idioma activo en los 12 idiomas"

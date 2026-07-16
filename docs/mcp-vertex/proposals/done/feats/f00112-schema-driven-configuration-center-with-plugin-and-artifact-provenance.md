@@ -207,7 +207,7 @@ declared settings in the editor.
 
 ### S4 — VS Code Configuration Center host and project adapters
 - **Status**: done
-- **Files**: `extensions/vscode/src/commands/open-configuration-center.ts`, `extensions/vscode/src/views/configuration-center-webview.ts`, `extensions/vscode/src/contracts/interfaces/configuration-center-message.interface.ts`, `extensions/vscode/src/i18n/configuration-center.strings.ts`, `extensions/vscode/package.json`
+- **Files**: `extensions/vscode/src/commands/open-configuration-center.ts` (command + webview host in one module, not a separate `views/` file), `extensions/vscode/src/contracts/interfaces/configuration-center-message.interface.ts`, `extensions/vscode/src/contracts/constants/configuration-center-message-schema.constant.ts`, `extensions/vscode/src/i18n/configuration-center.strings.ts`, `extensions/vscode/package.json`
 - **DependsOn**: [S3]
 - **Gate**: type
 - **Progress (2026-07-13)**:
@@ -272,7 +272,7 @@ declared settings in the editor.
 
 ### S6 — Configuration Center regressions and end-to-end safety
 - **Status**: done
-- **Files**: `packages/core/tests/src/lib/configuration-center/configuration-center.e2e.spec.ts`, `packages/client/tests/services/configuration-center.service.spec.ts`, `packages/ui-extension/src/configuration-center/configuration-center.spec.ts`, `extensions/vscode/src/test/configuration-center.spec.ts`
+- **Files**: `packages/core/tests/src/lib/configuration-center/configuration-center.e2e.spec.ts`, `packages/client/tests/services/configuration-center.service.spec.ts`, `packages/ui-extension/tests/configuration-center.spec.ts`, `extensions/vscode/src/test/configuration-center.spec.ts`
 - **DependsOn**: [S1, S2, S3, S4, S5]
 - **Gate**: e2e
 - **Evidence (2026-07-13)**:
