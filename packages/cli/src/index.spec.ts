@@ -1,4 +1,8 @@
-import { describe, expect, it } from 'vitest';
+import { existsSync, mkdtempSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+
+import { afterEach, describe, expect, it } from 'vitest';
 
 import { runHumanCli } from './index';
 
@@ -55,6 +59,34 @@ describe('runHumanCli', async () => {
 			runHumanCli(['--lang=zz', '--help'], process.cwd()),
 		);
 		expect(fallback.text).toContain('Global flags:');
+	});
+});
+
+describe('init/init:default honor --workspace (a00061)', () => {
+	const scratchDirs: string[] = [];
+	const mktemp = (prefix: string): string => {
+		const dir = mkdtempSync(join(tmpdir(), prefix));
+		scratchDirs.push(dir);
+		return dir;
+	};
+
+	afterEach(() => {
+		for (const dir of scratchDirs.splice(0)) {
+			rmSync(dir, { recursive: true, force: true });
+		}
+	});
+
+	it('writes into --workspace, NOT the process cwd it was invoked from', async () => {
+		const fakeCwd = mktemp('mcpv-fake-cwd-');
+		const targetWorkspace = mktemp('mcpv-target-workspace-');
+		await runHumanCli(
+			['init:default', `--workspace=${targetWorkspace}`, '--json'],
+			fakeCwd,
+		);
+		expect(
+			existsSync(join(targetWorkspace, 'mcp-vertex.config.json')),
+		).toBe(true);
+		expect(existsSync(join(fakeCwd, 'mcp-vertex.config.json'))).toBe(false);
 	});
 });
 
