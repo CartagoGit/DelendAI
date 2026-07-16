@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-07-15T22:14:12.500Z",
+	"generatedAt": "2026-07-15T22:35:46.380Z",
 	"mode": "compact",
 	"tools": [
 		{
@@ -668,6 +668,13 @@
 	"proposals": {
 		"actionable": [
 			{
+				"id": "a00056",
+				"title": "a00056",
+				"track": "code-quality+concurrency+security+architecture+tests+invariants",
+				"status": "ready",
+				"kind": "audit"
+			},
+			{
 				"id": "f00050",
 				"title": "f00050",
 				"track": "lint+architecture+i18n+workflow+release",
@@ -675,17 +682,10 @@
 				"kind": "feat"
 			},
 			{
-				"id": "f00116",
-				"title": "f00116",
-				"track": "proposals+adoption",
-				"status": "in-progress",
-				"kind": "feat"
-			},
-			{
 				"id": "f00117",
 				"title": "f00117",
 				"track": "core+adoption",
-				"status": "ready",
+				"status": "in-progress",
 				"kind": "feat"
 			},
 			{
@@ -706,7 +706,7 @@
 		"byStatus": {
 			"ready": 2,
 			"in-progress": 2,
-			"review": 0,
+			"review": 1,
 			"paused": 1,
 			"done": 225,
 			"blocked": 0,

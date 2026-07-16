@@ -19,6 +19,8 @@
  * all eight models from it — the per-model public methods fetch their own
  * slices for standalone use, but the batch path never re-fetches.
  */
+import type { McpVertexToolOutputs } from '@mcp-vertex/core/public';
+
 import type { McpStdioClient } from '../transport/mcp-stdio-client';
 import { HealthService } from './health.service';
 import type { MetricsService } from './metrics.service';
@@ -305,22 +307,17 @@ const buildPluginsModel = (
 	};
 };
 
-/** The subset of `usage_report`'s output this model actually reads. */
-interface IUsageReportShape {
-	readonly windowDays: number;
-	readonly totals: {
-		readonly costUsd: number;
-		readonly tokensSaved: number;
-		readonly savingsPercent: number;
-	};
-	readonly buckets: readonly {
-		readonly key: string;
-		readonly costUsd: number;
-		readonly calls: number;
-	}[];
-}
+/**
+ * The real `usage_report` output type (generated SDK) — using it
+ * instead of a hand-rolled shape means a future field rename on the
+ * plugin side fails THIS file's typecheck instead of silently
+ * producing `undefined` at runtime (the exact class of drift x00105
+ * hardened the verify gate against).
+ */
+type IUsageReportOutput =
+	McpVertexToolOutputs['mcp-vertex_usage-tracking_usage_report'];
 
-const buildSpendModel = (report: IUsageReportShape): IDashboardSpendModel => ({
+const buildSpendModel = (report: IUsageReportOutput): IDashboardSpendModel => ({
 	totalCostUsd: report.totals.costUsd,
 	totalTokensSaved: report.totals.tokensSaved,
 	savingsPercent: report.totals.savingsPercent,
@@ -648,7 +645,7 @@ export class DashboardService {
 		try {
 			const report = await this.client.request<
 				Record<string, never>,
-				IUsageReportShape
+				IUsageReportOutput
 			>(
 				formatToolName(
 					this.namespacePrefix,
