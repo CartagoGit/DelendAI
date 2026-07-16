@@ -69,11 +69,22 @@ export const createInHouseBackend = async (): Promise<ISearchBackend> => ({
 
 		const roots =
 			options.roots && options.roots.length > 0 ? options.roots : ['.'];
+		// a00062: `extensionOf()` returns a bare, dot-less extension
+		// ("ts", not ".ts"), but `mcp-vertex.config.json`'s own committed
+		// `plugins.search.options.extensions` (and every host's natural
+		// authoring instinct, matching `path.extname()`) writes the
+		// dot-prefixed form (".ts"). A config-supplied list therefore
+		// NEVER matched `extensions.has(extensionOf(name))`, silently
+		// returning zero hits for every search on a repo that ever set
+		// this option — including this very repo's own config. Stripping
+		// a leading dot here makes the comparison tolerant of either
+		// spelling instead of requiring hosts to know the internal,
+		// undocumented dot-less convention.
 		const extensions = new Set(
 			(options.extensions && options.extensions.length > 0
 				? options.extensions
 				: DEFAULT_EXTENSIONS
-			).map((e) => e.toLowerCase()),
+			).map((e) => e.toLowerCase().replace(/^\./, '')),
 		);
 		const ignoreDirs = new Set(options.ignoreDirs ?? DEFAULT_IGNORE_DIRS);
 		const caseSensitive = options.caseSensitive ?? false;
