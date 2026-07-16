@@ -106,18 +106,18 @@
 		"dev:vscode": "bun tools/scripts/dev/dev.script.ts --vscode"
 	},
 	"devDependencies": {
-		"@biomejs/biome": "2.5.2",
+		"@biomejs/biome": "2.5.3",
 		"@modelcontextprotocol/sdk": "1.29.0",
 		"@types/bun": "1.3.14",
 		"@types/node": "^26.1.0",
 		"@vitest/coverage-v8": "4.1.10",
 		"lefthook": "^2.1.9",
-		"postcss": "8.5.16",
+		"postcss": "8.5.19",
 		"postcss-scss": "4.0.9",
 		"postcss-selector-parser": "7.1.4",
 		"stylelint": "17.14.0",
 		"typedoc": "^0.28.19",
-		"typescript": "^6.0.3",
+		"typescript": "^7.0.2",
 		"vitest": "4.1.10",
 		"zod": "^4.4.3"
 	},
