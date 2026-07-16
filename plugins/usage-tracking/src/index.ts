@@ -92,6 +92,9 @@ export default definePlugin({
 	version: '0.1.0',
 	describe:
 		'Records every tool call (agent/plugin/model/extension) to an append-only log and reports aggregate usage + cost.',
+	// Accrued spend/usage history, not derivable cache — deleting it
+	// loses real cost data. See IMcpPlugin#cacheNamespace.
+	cacheNamespace: 'results',
 	optionsSchema: OptionsSchema,
 	register(ctx) {
 		const parsed = OptionsSchema.safeParse(ctx.options);
