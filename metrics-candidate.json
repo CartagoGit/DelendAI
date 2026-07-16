@@ -1,0 +1,88 @@
+{
+  "at": "2026-07-14T07:26:35.817Z",
+  "tools": {
+    "mcp-vertex_agent_catalog": {
+      "calls": 3,
+      "errors": 0,
+      "totalMs": 1,
+      "maxMs": 1,
+      "totalBytes": 1068
+    },
+    "mcp-vertex_analyze_project": {
+      "calls": 3,
+      "errors": 0,
+      "totalMs": 16,
+      "maxMs": 6,
+      "totalBytes": 2487
+    },
+    "mcp-vertex_docs_docs_list": {
+      "calls": 3,
+      "errors": 0,
+      "totalMs": 2,
+      "maxMs": 1,
+      "totalBytes": 180
+    },
+    "mcp-vertex_docs_docs_search": {
+      "calls": 3,
+      "errors": 3,
+      "totalMs": 1,
+      "maxMs": 0,
+      "totalBytes": 0
+    },
+    "mcp-vertex_logs_tail": {
+      "calls": 3,
+      "errors": 0,
+      "totalMs": 109,
+      "maxMs": 79,
+      "totalBytes": 6250
+    },
+    "mcp-vertex_overview": {
+      "calls": 3,
+      "errors": 0,
+      "totalMs": 2,
+      "maxMs": 1,
+      "totalBytes": 6828
+    },
+    "mcp-vertex_plan_mcp_project": {
+      "calls": 3,
+      "errors": 0,
+      "totalMs": 13,
+      "maxMs": 5,
+      "totalBytes": 2508
+    },
+    "mcp-vertex_proposals_auto_work": {
+      "calls": 3,
+      "errors": 0,
+      "totalMs": 17,
+      "maxMs": 7,
+      "totalBytes": 598
+    },
+    "mcp-vertex_proposals_compact_status": {
+      "calls": 3,
+      "errors": 0,
+      "totalMs": 3,
+      "maxMs": 1,
+      "totalBytes": 441
+    },
+    "mcp-vertex_proposals_round_context": {
+      "calls": 3,
+      "errors": 0,
+      "totalMs": 4,
+      "maxMs": 1,
+      "totalBytes": 477
+    },
+    "mcp-vertex_search_search": {
+      "calls": 3,
+      "errors": 0,
+      "totalMs": 3,
+      "maxMs": 1,
+      "totalBytes": 255
+    }
+  },
+  "totals": {
+    "calls": 33,
+    "errors": 3,
+    "totalMs": 171,
+    "totalBytes": 21092
+  }
+}
