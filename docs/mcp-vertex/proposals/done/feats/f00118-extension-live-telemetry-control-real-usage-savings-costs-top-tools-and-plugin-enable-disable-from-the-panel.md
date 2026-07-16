@@ -28,22 +28,23 @@ User directive 2026-07-15: "que la extensión tuviera datos reales de cómo est�
 
 - global_gate: e2e
 
-### S1 — TelemetryService (client): metrics × usage_report join with graceful degradation
+### S1 — DashboardService.getSpendModel(): metrics-overview × usage_report join with graceful degradation
 - **Status**: done
-- **Files**: `packages/client/src/lib/services/telemetry.service.ts`, `packages/client/src/tests/telemetry.service.spec.ts`, `packages/client/src/public/index.ts`
+- **Files**: `packages/client/src/lib/services/dashboard.service.ts`, `packages/client/src/lib/contracts/interfaces/dashboard.interface.ts`, `packages/client/src/public/index.ts`, `packages/client/tests/services/dashboard-spend.service.spec.ts`
 - **Gate**: e2e
 - acceptance:
-  - "snapshot() returns {topTools[], topSkills[], tokens{used,saved,savingsPercent}, spend{total,byProvider[]}, perPlugin[]} joining metrics + usage_report; when usage-tracking is absent the spend section is null and everything else still fills from metrics."
-  - "Spec covers both shapes with a fake client; exported from the public barrel."
+  - "getSpendModel() / getAllModels().spend returns {totalCostUsd, totalTokensSaved, savingsPercent, windowDays, byProvider[]} built from usage-tracking's usage_report, typed against the generated SDK output; when usage-tracking is absent from overview.plugins (or the request throws) it returns null and the rest of getAllModels() still fills."
+  - "Covered by dashboard-spend.service.spec.ts: null-when-absent, real-join-when-present, graceful-degrade-on-error, standalone getSpendModel() call — exported IDashboardSpendModel from the public barrel."
+  - "(Note: this replaced the originally-planned standalone TelemetryService — see notes; top-tools/tokens/per-plugin rollups this slice originally targeted already existed pre-proposal.)"
 
-### S2 — Dashboard telemetry UI: sparklines, top-N, savings + spend tiles (12-lang i18n)
+### S2 — Dashboard Spend panel: KPI tiles + cost-by-provider chart (en+es i18n)
 - **Status**: done
 - **DependsOn**: [S1]
-- **Files**: `packages/ui-extension/src/components/telemetry-charts.ts`, `packages/ui-extension/src/dashboard/telemetry-section.ts`, `apps/shared/src/i18n/langs/en.ts`, `apps/shared/src/i18n/langs/es.ts`, `apps/shared/src/i18n/langs/de.ts`, `apps/shared/src/i18n/langs/fr.ts`, `apps/shared/src/i18n/langs/it.ts`, `apps/shared/src/i18n/langs/pt.ts`, `apps/shared/src/i18n/langs/ar.ts`, `apps/shared/src/i18n/langs/hi.ts`, `apps/shared/src/i18n/langs/ja.ts`, `apps/shared/src/i18n/langs/th.ts`, `apps/shared/src/i18n/langs/vi.ts`, `apps/shared/src/i18n/langs/zh.ts`, `apps/shared/src/i18n/shared.ts`
+- **Files**: `packages/ui-extension/src/dashboard/render-panel-spend.ts`, `packages/ui-extension/src/dashboard/builders/build-panels.ts`, `packages/ui-extension/src/dashboard/builders/build-tabs-bar.ts`, `packages/ui-extension/src/dev/mock-model.ts`, `packages/ui-extension/tests/dashboard/render-panel.spec.ts`, `packages/ui-extension/tests/dashboard/builders/build-panels.spec.ts`, `apps/shared/src/i18n/langs/en.ts`, `apps/shared/src/i18n/langs/es.ts`
 - **Gate**: e2e
 - acceptance:
-  - "Inline-SVG bar/sparkline components (escapeHtml everywhere, aria-labelled via i18n); dashboard gains a telemetry section fed by TelemetryService with top tools, savings %, accumulated spend."
-  - "check:i18n green: every new key in all 12 languages incl. the authored-es gate; shared-ui-ratchet green (no hardcoded aria)."
+  - "renderPanelSpend renders KPI tiles (total cost, tokens saved, savings %) plus the existing dependency-free barChart primitive and a per-provider table when spend is populated; a named unavailable message (naming usage-tracking) when spend is null. Wired into build-panels.ts and a new 'spend' tab in build-tabs-bar.ts."
+  - "check:i18n green: tabSpend + 6 dashboard.spend.* keys authored in en+es (the two strictly-gated locales, per check-i18n.ts); the other 10 locales fall back to English at runtime via withExtensionFallback, matching every other dashboard.*/tab* key already in this file — this was NOT translated into all 12 as originally planned (see notes)."
 
 ### S3 — Plugin enable/disable: config write action + panel toggles with confirm
 - **Status**: done
