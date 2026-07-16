@@ -30,6 +30,7 @@ import { existsSync } from 'node:fs';
 import { dirname, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { scssPlugin } from '../compile/scss-plugin';
+import { BROWSER_BUILD_EXTERNALS } from './browser-externals';
 
 // ---------------------------------------------------------------------------
 // Port reclaim — `Bun.serve({ port })` and `astro dev` both fail with
@@ -255,7 +256,7 @@ const buildBundle = async (entryAbs: string): Promise<BundleMap> => {
 		sourcemap: 'inline',
 		plugins: [scssPlugin],
 		// Don't try to bundle Node-only or VS Code APIs in the browser bundle.
-		external: ['node:*', 'vscode'],
+		external: BROWSER_BUILD_EXTERNALS,
 		// Code-split the dynamic `import('./<page>')` calls in
 		// pages/registry.ts so each page becomes its own
 		// chunk. Without this Bun.build inlines the page
