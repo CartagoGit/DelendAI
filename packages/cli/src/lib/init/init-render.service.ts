@@ -11,9 +11,12 @@ import type {
 	IRenderedFile,
 } from '../../contracts/interfaces/init.interface';
 
+import { readdirSync } from 'node:fs';
+
 import {
 	createWorkspaceFileReader,
 	createWorkspacePathProvider,
+	deriveSourceRoots,
 	resolvePluginOptions,
 	resolvePresetMembers,
 	type IFileReader,
@@ -42,12 +45,35 @@ const resolveOrderedPresetPlugins = (
 const dedupe = (items: readonly string[]): readonly string[] =>
 	Array.from(new Set(items));
 
+/**
+ * a00063: real top-level dirs of the TARGET workspace, so search/
+ * conventions roots reflect the adopter's actual layout instead of
+ * mcp-vertex's own monorepo shape. Missing/unreadable workspace →
+ * empty list → roots omitted → the engine walks `.` (safe anywhere).
+ */
+const readTopLevelDirs = (workspaceRoot: string): readonly string[] => {
+	try {
+		return readdirSync(workspaceRoot, { withFileTypes: true })
+			.filter((entry) => entry.isDirectory())
+			.map((entry) => entry.name);
+	} catch {
+		return [];
+	}
+};
+
 const resolvePluginOptionsWithAnswers = (
 	pluginId: string,
 	answers: IInitAnswers,
 	resolvedPlugins: ReadonlySet<string>,
+	derivedRoots: readonly string[],
 ): Record<string, unknown> => {
 	const resolved = resolvePluginOptions(pluginId);
+	if (
+		(pluginId === 'search' || pluginId === 'conventions') &&
+		derivedRoots.length > 0
+	) {
+		resolved.roots = [...derivedRoots];
+	}
 	if (
 		pluginId === 'issues' &&
 		resolvedPlugins.has('issues') &&
@@ -77,6 +103,9 @@ export const renderMcpVertexConfig = (
 	resolvedPlugins: readonly string[],
 ): IRenderedFile => {
 	const resolvedPluginSet = new Set(resolvedPlugins);
+	const derivedRoots = deriveSourceRoots(
+		readTopLevelDirs(answers.workspaceRoot),
+	);
 	const pluginsBlock: Record<string, { options: Record<string, unknown> }> =
 		{};
 	for (const plugin of resolvedPlugins) {
@@ -85,6 +114,7 @@ export const renderMcpVertexConfig = (
 				plugin,
 				answers,
 				resolvedPluginSet,
+				derivedRoots,
 			),
 		};
 	}
