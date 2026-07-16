@@ -50,6 +50,27 @@ const silentConsole: ConsoleLike = {
 	debug: () => {},
 };
 
+// a00060: the docstring above has always claimed this silences
+// `process.stdout.write`/`stderr.write` too, but until now only
+// `console.*` was ever patched — a real code/doc mismatch (the same
+// class a00057-a00059 found elsewhere). CLI commands that print their
+// own human recap directly via `process.stderr.write` (e.g. `doctor`,
+// `init`) leaked real output into the validate test stream with zero
+// warning. `write` keeps the real Node signature (optional encoding,
+// optional callback) so a caller awaiting the callback doesn't hang.
+type WriteMethod = typeof process.stdout.write;
+const realStdoutWrite = process.stdout.write.bind(process.stdout);
+const realStderrWrite = process.stderr.write.bind(process.stderr);
+const silentWrite: WriteMethod = ((
+	_chunk: unknown,
+	encodingOrCb?: unknown,
+	cb?: unknown,
+): boolean => {
+	const callback = typeof encodingOrCb === 'function' ? encodingOrCb : cb;
+	if (typeof callback === 'function') callback();
+	return true;
+}) as WriteMethod;
+
 let installed = false;
 let active = false;
 
@@ -63,6 +84,8 @@ const install = (): void => {
 	>) {
 		console[method] = silentConsole[method];
 	}
+	process.stdout.write = silentWrite;
+	process.stderr.write = silentWrite;
 };
 
 const uninstall = (): void => {
@@ -70,6 +93,8 @@ const uninstall = (): void => {
 	for (const method of Object.keys(realConsole) as Array<keyof ConsoleLike>) {
 		console[method] = realConsole[method];
 	}
+	process.stdout.write = realStdoutWrite;
+	process.stderr.write = realStderrWrite;
 };
 
 // Run before/after each test so an opt-in test can flip the switch
