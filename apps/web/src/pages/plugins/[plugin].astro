@@ -6,6 +6,7 @@
  * `useTranslations`); this file just wires up the routing.
  */
 import PluginPage from '#COMPONENTS/PluginPage.astro';
+import Base from '#LAYOUTS/Base.astro';
 import capabilities from '#MANIFESTS/capabilities.json';
 
 export function getStaticPaths() {
@@ -17,4 +18,6 @@ export function getStaticPaths() {
 const { plugin } = Astro.params;
 ---
 
-<PluginPage lang="en" slug={plugin!} />
+<Base lang="en">
+	<PluginPage lang="en" slug={plugin!} />
+</Base>
