@@ -11,6 +11,9 @@
  */
 import type { McpVertexToolOutputs } from '@mcp-vertex/core/public';
 
+import { existsSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
+
 import { EXIT_CODE } from '../../contracts/constants/exit-code.constant';
 import type {
 	ICliCommand,
@@ -20,6 +23,7 @@ import {
 	generateCompletion,
 	type Shell,
 } from '../../lib/completion/completion.service';
+import { analyzeConfigRoots } from '../../lib/doctor/analyze-config-roots.service';
 import { data, positionalArg, request, usage } from './group-helpers';
 
 type SectionStatus = 'ok' | 'warn' | 'error';
@@ -87,6 +91,11 @@ const CODE_BY_STATUS: Record<SectionStatus, ICliCommandResult['code']> = {
 	error: EXIT_CODE.RUNTIME,
 };
 
+// a00064: the config-vs-reality preflight lives in lib/ (pure,
+// fs-free) — see analyze-config-roots.service.ts for the rationale.
+// Re-exported so doctor's spec exercises it alongside the command.
+export { analyzeConfigRoots };
+
 const doctorCommand: ICliCommand = {
 	name: 'doctor',
 	summary:
@@ -100,6 +109,22 @@ const doctorCommand: ICliCommand = {
 			status: 'ok',
 			findings: [`workspace: ${ctx.globals.workspace}`],
 		});
+
+		// Config-vs-reality (a00064): configured roots must exist here.
+		try {
+			const configRaw = readFileSync(
+				join(ctx.globals.workspace, 'mcp-vertex.config.json'),
+				'utf8',
+			);
+			sections.push(
+				analyzeConfigRoots(JSON.parse(configRaw), (rel) =>
+					existsSync(join(ctx.globals.workspace, rel)),
+				),
+			);
+		} catch {
+			// No config file (defaults apply) or unparsable JSON — the
+			// server-side diagnostics cover the latter; skip the section.
+		}
 
 		// Plugins + tools — derived from the live server overview.
 		try {

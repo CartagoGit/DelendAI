@@ -33,6 +33,14 @@ export interface IConventionsScanResult {
 	readonly counts: Readonly<Record<string, number>>;
 	/** Repo-relative POSIX paths the profile maps to `'other'` (the drift). */
 	readonly unmatched: readonly string[];
+	/**
+	 * Scan roots whose OWN listing failed (nonexistent/unreadable), in
+	 * input order. a00064: a `total: 0` caused by roots that describe a
+	 * different project's layout must be distinguishable from a
+	 * genuinely empty tree — the same silent-zero class that sent an
+	 * adopter agent into a retry meltdown on search/docs (a00063).
+	 */
+	readonly missingRoots: readonly string[];
 }
 
 const emptyCounts = (profile: ILanguageProfile): Record<string, number> =>
@@ -59,12 +67,20 @@ export const scanConventions = async (
 	const counts = emptyCounts(profile);
 	const skipDirs = new Set([...SKIP_DIRS, ...(profile.skipDirs ?? [])]);
 	const unmatched: string[] = [];
+	const missingRoots: string[] = [];
+	const rootSet = new Set(scanRoots);
 	let total = 0;
 
 	const stack: string[] = [...scanRoots];
 	while (stack.length > 0) {
 		const dir = stack.pop() as string;
-		const entries = await reader.list(dir).catch(() => []);
+		const entries = await reader.list(dir).catch(() => {
+			// A failing TOP-LEVEL root is a config-vs-reality mismatch the
+			// caller must be able to surface; a failing nested dir is just
+			// filesystem churn and stays silently skipped as before.
+			if (rootSet.has(dir)) missingRoots.push(dir);
+			return [];
+		});
 		for (const entry of entries) {
 			const rel = dir === '' ? entry.name : `${dir}/${entry.name}`;
 			if (entry.isDirectory) {
@@ -80,5 +96,8 @@ export const scanConventions = async (
 	}
 
 	unmatched.sort((a, b) => a.localeCompare(b));
-	return { total, counts, unmatched };
+	// Preserve the caller's input order for actionable error messages
+	// (`missingRoots` collects in pop order, which reverses the stack).
+	missingRoots.sort((a, b) => scanRoots.indexOf(a) - scanRoots.indexOf(b));
+	return { total, counts, unmatched, missingRoots };
 };

@@ -248,12 +248,27 @@ export const searchDocs = async (
 	workspaceRootAbs: string,
 	query: string,
 	options: IDocsOptions & { readonly limit?: number } = {},
-): Promise<{ hits: IDocSearchHit[]; truncated: boolean }> => {
+): Promise<{
+	hits: IDocSearchHit[];
+	truncated: boolean;
+	/**
+	 * Set ONLY when the underlying catalogue itself was empty
+	 * (misconfigured roots — a00064). A legit "no doc matches the
+	 * query" over a real catalogue carries no diagnostic.
+	 */
+	diagnostic?: string;
+}> => {
 	const trimmed = query.trim();
 	if (trimmed.length === 0) return { hits: [], truncated: false };
 	const limit = clamp(options.limit, 10, 1, 100);
 
-	const { docs, truncated } = await listDocs(workspaceRootAbs, options);
+	const { docs, truncated, diagnostic } = await listDocs(
+		workspaceRootAbs,
+		options,
+	);
+	if (docs.length === 0 && diagnostic !== undefined) {
+		return { hits: [], truncated, diagnostic };
+	}
 	const needle = trimmed.toLowerCase();
 
 	const hits: IDocSearchHit[] = [];
