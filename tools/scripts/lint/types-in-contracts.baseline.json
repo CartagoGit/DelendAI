@@ -89,6 +89,7 @@
 	"extensions/vscode/src/views/render-output-schema.ts": 1,
 	"extensions/vscode/src/views/tool-detail-webview.ts": 1,
 	"extensions/vscode/src/webviews/setup-github.ts": 2,
+	"packages/cli/src/lib/doctor/analyze-config-roots.service.ts": 2,
 	"packages/cli/src/lib/helpers/cli-color.helper.ts": 1,
 	"packages/cli/src/lib/init/init-adoption-plan.builder.ts": 1,
 	"packages/cli/src/lib/init/init-answers.types.ts": 1,
