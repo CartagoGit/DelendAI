@@ -22,14 +22,15 @@ import {
 	type IDirReader,
 } from '../services/conventions-scan.service';
 
-/** Default roots to scan when the caller does not narrow the set. */
-export const DEFAULT_SCAN_ROOTS: readonly string[] = [
-	'packages',
-	'plugins',
-	'extensions',
-	'apps',
-	'tools',
-];
+/**
+ * Default roots to scan when the caller does not narrow the set.
+ * a00064: `''` = the workspace root itself (the scan's SKIP_DIRS keep
+ * node_modules/dist/.git out). The old default stamped mcp-vertex's own
+ * monorepo layout (packages/plugins/…) — on any repo shaped differently
+ * every scan silently classified 0 files, the same silent-zero class
+ * that caused the a00063 adopter-agent meltdown.
+ */
+export const DEFAULT_SCAN_ROOTS: readonly string[] = [''];
 
 const CHECK_OUTPUT_SCHEMA = z.object({
 	ok: z.boolean(),
@@ -40,6 +41,7 @@ const CHECK_OUTPUT_SCHEMA = z.object({
 	unmatchedCount: z.number().optional(),
 	counts: z.record(z.string(), z.number()).optional(),
 	unmatched: z.array(z.string()).optional(),
+	diagnostic: z.string().optional(),
 });
 
 /** A cap so the tool payload stays compact on a large drift backlog. */
@@ -78,12 +80,22 @@ export const runCheckConventions = async (
 			roots,
 			resolution.profile,
 		);
+		// a00064: a zero-file scan must explain itself — same
+		// anti-meltdown rail as search/docs (a00063).
+		let diagnostic: string | undefined;
+		if (result.total === 0) {
+			diagnostic =
+				result.missingRoots.length > 0
+					? `scanned 0 files: configured roots do not exist in this workspace: ${result.missingRoots.join(', ')}. Fix plugins.conventions.options.roots in mcp-vertex.config.json (omit roots to scan the whole workspace).`
+					: `scanned 0 files: no ${resolution.profile.id} files found under roots [${roots.map((r) => r || '.').join(', ')}] — check the profile or the roots.`;
+		}
 		return toolOk({
 			total: result.total,
 			unmatchedCount: result.unmatched.length,
 			counts: result.counts,
 			// Cap the inlined list; the count is always exact.
 			unmatched: result.unmatched.slice(0, MAX_UNMATCHED_IN_PAYLOAD),
+			...(diagnostic !== undefined ? { diagnostic } : {}),
 		});
 	} catch (error) {
 		return toolError(

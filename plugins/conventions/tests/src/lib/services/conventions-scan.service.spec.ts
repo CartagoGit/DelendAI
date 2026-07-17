@@ -117,3 +117,36 @@ describe('scanConventions', async () => {
 		expect(res.unmatched).toEqual([]);
 	});
 });
+
+describe('scanConventions — zero-scan self-diagnosis (a00064)', async () => {
+	/** A reader that throws for dirs missing from the tree (fs-like). */
+	const strictReader = (
+		tree: Record<string, readonly IDirEntry[]>,
+	): IDirReader => ({
+		async list(relDir) {
+			const entries = tree[relDir];
+			if (entries === undefined)
+				throw new Error(`ENOENT: ${relDir || '.'}`);
+			return entries;
+		},
+	});
+
+	it('reports roots whose own listing failed as missingRoots', async () => {
+		const reader = strictReader({
+			src: [file('a.service.ts')],
+		});
+		const res = await scanConventions(reader, [
+			'src',
+			'packages',
+			'plugins',
+		]);
+		expect(res.total).toBe(1);
+		expect(res.missingRoots).toEqual(['packages', 'plugins']);
+	});
+
+	it('missingRoots is empty when every root lists fine', async () => {
+		const reader = strictReader({ src: [file('a.service.ts')] });
+		const res = await scanConventions(reader, ['src']);
+		expect(res.missingRoots).toEqual([]);
+	});
+});

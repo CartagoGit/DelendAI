@@ -10,7 +10,11 @@ import type {
 	ICliCommand,
 	ICliCommandContext,
 } from '../../contracts/interfaces/cli-command.interface';
-import { doctorCommands, renderDoctorSummary } from './doctor';
+import {
+	analyzeConfigRoots,
+	doctorCommands,
+	renderDoctorSummary,
+} from './doctor';
 import {
 	buildCompletionModel,
 	generateCompletion,
@@ -77,6 +81,43 @@ describe('doctor (f00046 S10)', async () => {
 		const toolsSection = body.sections.find((s) => s.name === 'tools');
 		expect(toolsSection?.findings).toContain('3 tool(s) registered');
 		expect(body.status).toBe('ok');
+	});
+});
+
+describe('analyzeConfigRoots (a00064 — config-vs-reality preflight)', () => {
+	it('flags configured roots that do not exist in the workspace', () => {
+		const config = {
+			plugins: {
+				search: {
+					options: { roots: ['packages', 'src'] },
+				},
+				conventions: { options: { roots: ['plugins'] } },
+				git: { options: {} },
+			},
+		};
+		const section = analyzeConfigRoots(config, (rel) => rel === 'src');
+		expect(section.status).toBe('warn');
+		const joined = section.findings.join('\n');
+		expect(joined).toContain('plugins.search.options.roots');
+		expect(joined).toContain('packages');
+		expect(joined).not.toContain("'src'");
+		expect(joined).toContain('plugins.conventions.options.roots');
+	});
+
+	it('reports ok when every configured root exists (or none are declared)', () => {
+		const config = {
+			plugins: {
+				search: { options: { roots: ['src'] } },
+				git: { options: {} },
+			},
+		};
+		const section = analyzeConfigRoots(config, () => true);
+		expect(section.status).toBe('ok');
+	});
+
+	it('handles a config without plugins gracefully', () => {
+		const section = analyzeConfigRoots({}, () => false);
+		expect(section.status).toBe('ok');
 	});
 });
 
