@@ -247,11 +247,11 @@ describe('renderAdoptionPlan embeds U2 sections (f00089 U2)', () => {
 		expect(plan.content).toContain('mcp-vertex-operator');
 		expect(plan.content).toContain('mcp-vertex_proposals');
 		expect(plan.content).toContain('.claude/skills/foo');
-		// S5 (U3) untouched.
-		expect(plan.content).toContain(
-			'### S5 — single source of truth (filled by f00089 U3)',
-		);
-		expect(plan.content).toContain('_Pending f00089 U3._');
+		// a00066: S5 is now self-contained adopter guidance — no leaked
+		// internal roadmap id / `_Pending` placeholder in the adopter body.
+		expect(plan.content).toContain('### S5 — one agent source of truth');
+		expect(plan.content).not.toContain('_Pending f00089 U3._');
+		expect(plan.content).not.toContain('filled by f00089 U3');
 		// Canonical scaffold: lint-safe headings + slice bullets.
 		expect(plan.content).toContain('## non-goals');
 		expect(plan.content).toContain('## acceptance');
