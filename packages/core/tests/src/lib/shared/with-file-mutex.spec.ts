@@ -50,7 +50,29 @@ describe('withFileMutex — cross-process critical section', async () => {
 		expect(existsSync(lockPath)).toBe(true);
 	});
 
-	it('default (steal) still reclaims a live lock past the timeout', async () => {
+	it('a00065 S2: the DEFAULT (omitted onContention) now fails on a live holder instead of stealing', async () => {
+		writeFileSync(target, '{}');
+		writeFileSync(
+			`${target}.mutex`,
+			`${process.pid}\n${Date.now()}\nmanual`,
+		);
+		let ran = false;
+		await expect(
+			withFileMutex(
+				target,
+				async () => {
+					ran = true;
+				},
+				// onContention omitted: default must be 'fail'.
+				{ timeoutMs: 120, staleMs: 30_000, pollMs: 20 },
+			),
+		).rejects.toBeInstanceOf(LockContentionError);
+		expect(ran).toBe(false);
+		// The live holder's lock was left intact (not stolen).
+		expect(existsSync(`${target}.mutex`)).toBe(true);
+	});
+
+	it("a00065 S2: explicit onContention:'steal' still reclaims a live lock past the timeout", async () => {
 		writeFileSync(target, '{}');
 		writeFileSync(
 			`${target}.mutex`,
@@ -62,7 +84,32 @@ describe('withFileMutex — cross-process critical section', async () => {
 			async () => {
 				ran = true;
 			},
-			{ timeoutMs: 120, staleMs: 30_000, pollMs: 20 },
+			{
+				onContention: 'steal',
+				timeoutMs: 120,
+				staleMs: 30_000,
+				pollMs: 20,
+			},
+		);
+		expect(ran).toBe(true);
+	});
+
+	it('a00065 S2: a crashed (stale) holder is reclaimed regardless of the default fail', async () => {
+		writeFileSync(target, '{}');
+		// A stale sidecar: mtime far in the past simulates a holder that
+		// crashed and stopped its heartbeat. Must be reclaimed even though
+		// the default is now 'fail' (deadlock-avoidance is preserved).
+		const sidecar = `${target}.mutex`;
+		writeFileSync(sidecar, `${process.pid}\n${Date.now()}\ndead`);
+		const old = new Date(Date.now() - 60_000);
+		utimesSync(sidecar, old, old);
+		let ran = false;
+		await withFileMutex(
+			target,
+			async () => {
+				ran = true;
+			},
+			{ timeoutMs: 120, staleMs: 1_000, pollMs: 20 },
 		);
 		expect(ran).toBe(true);
 	});

@@ -181,3 +181,84 @@ describe('diffSnapshots', async () => {
 		expect(markdown).toContain('| overview |');
 	});
 });
+
+describe('diffSnapshots — a00065 S5: error-rate regression', async () => {
+	it('flags a tool that regressed to failing calls even when bytes/latency shrank', async () => {
+		// A tool that now errors on every call: shorter response (error
+		// envelope), "faster" (no real work) — but a regression, not an
+		// improvement. This is the docs_search (3/3 errors) failure mode.
+		const baseline = snapshot({
+			search: {
+				calls: 10,
+				errors: 0,
+				totalMs: 500,
+				maxMs: 60,
+				totalBytes: 5000,
+			},
+		});
+		const candidate = snapshot({
+			search: {
+				calls: 10,
+				errors: 10, // 100% error rate now
+				totalMs: 50, // "faster"
+				maxMs: 6,
+				totalBytes: 200, // "smaller"
+			},
+		});
+		const report = diffSnapshots(baseline, candidate, THRESHOLDS);
+		expect(report.ok).toBe(false);
+		const search = report.tools.find((t) => t.tool === 'search');
+		expect(search?.status).toBe('regression');
+		expect(search?.errorRateDelta).toBeGreaterThan(0);
+	});
+
+	it('tolerates a single one-off flake below the error-rate floor', async () => {
+		const baseline = snapshot({
+			git: {
+				calls: 100,
+				errors: 0,
+				totalMs: 100,
+				maxMs: 5,
+				totalBytes: 1000,
+			},
+		});
+		const candidate = snapshot({
+			git: {
+				calls: 100,
+				errors: 1,
+				totalMs: 100,
+				maxMs: 5,
+				totalBytes: 1000,
+			},
+		});
+		const report = diffSnapshots(baseline, candidate, THRESHOLDS);
+		// 1% error rate is below the floor — not a regression on its own.
+		expect(report.ok).toBe(true);
+	});
+
+	it('a bytes regression still fires even when errors are unchanged', async () => {
+		const baseline = snapshot({
+			docs: {
+				calls: 10,
+				errors: 0,
+				totalMs: 100,
+				maxMs: 5,
+				totalBytes: 1000,
+			},
+		});
+		const candidate = snapshot({
+			docs: {
+				calls: 10,
+				errors: 0,
+				totalMs: 100,
+				maxMs: 5,
+				totalBytes: 1400,
+			},
+		});
+		const report = diffSnapshots(baseline, candidate, THRESHOLDS);
+		expect(report.ok).toBe(false);
+		expect(report.tools.find((t) => t.tool === 'docs')?.status).toBe(
+			'regression',
+		);
+	});
+});

