@@ -19,10 +19,7 @@ import { initCommand } from '../../commands/init/init.command';
 import { InitAnswers } from './init-answers.schema';
 import type { IInitAnswers } from './init-answers.types';
 import { computeHostInstructionsWrite } from './init-host-instructions.service';
-import {
-	deriveScope,
-	renderMigrationProposal,
-} from './init-migrate-offer.service';
+import { deriveScope } from './init-migrate-offer.service';
 import { renderInitBundle, resolvePluginSet } from './init-render.service';
 import { writeMcpVertexConfig } from './init-writers.factory';
 import { buildCanonicalLaunch } from '../server-args.service';
@@ -414,17 +411,7 @@ describe('computeHostInstructionsWrite (f00084 S4)', () => {
 	});
 });
 
-describe('renderMigrationProposal (f00084 S5)', () => {
-	it('produces a valid frontmatter for the workspace scope', () => {
-		const out = renderMigrationProposal(
-			parseAnswers({ workspaceRoot: '/tmp/azur-lx' }),
-		);
-		expect(out.relPath).toContain('f00001-migrate-legacy-azur-lx');
-		expect(out.content).toMatch(/^---\nid: f00001/m);
-		expect(out.content).toMatch(/kind: feat/);
-		expect(out.content).toContain('mcp-vertex');
-	});
-
+describe('deriveScope (workspace → proposal scope slug)', () => {
 	it('derives a slugified scope from the workspace basename', () => {
 		expect(deriveScope('/tmp/AZUR LX--develop')).toMatch(
 			/^azur-lx-develop/,
