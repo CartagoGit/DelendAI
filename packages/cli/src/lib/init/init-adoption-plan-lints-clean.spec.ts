@@ -67,6 +67,23 @@ describe('generated adoption plan lints clean against the real proposal linter',
 		expectLintsClean(plan.relPath, plan.content);
 	});
 
+	it('does NOT leak mcp-vertex internal roadmap placeholders into the adopter body', () => {
+		// The plan lands in the ADOPTER's repo. Its body must be
+		// self-contained advisory content — never a dangling "_Pending
+		// f000NN._" / "filled by f000NN" / "<!-- f000NN … -->" reference to
+		// one of OUR internal proposals, which the adopter cannot resolve.
+		// (Provenance links in the `related:` frontmatter are fine.)
+		return renderAdoptionPlan(answers('/tmp/acme-clean'), {
+			reader: dirReader({ 'src/index.ts': '' }),
+			ourPlugins: ['proposals'],
+		}).then((plan) => {
+			const body = plan.content.split('\n---\n').slice(1).join('\n---\n');
+			expect(body).not.toMatch(/_Pending\s+f\d{5}/i);
+			expect(body).not.toMatch(/filled by f\d{5}/i);
+			expect(body).not.toMatch(/<!--\s*f\d{5}/i);
+		});
+	});
+
 	it('foreign migration (rfcs/ present) — the scaffolded plan passes lint:proposals', async () => {
 		const plan = await renderAdoptionPlan(answers('/tmp/acme-rfc'), {
 			reader: dirReader({

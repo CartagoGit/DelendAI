@@ -228,12 +228,16 @@ export const renderAdoptionPlan = async (
 		`target's agents perform — \`init\` never converts them in place.\n\n` +
 		sections.skillSection +
 		sections.toolSection +
-		`### S5 — single source of truth (filled by f00089 U3)\n\n` +
+		`### S5 — one agent source of truth\n\n` +
 		`- **Status**: pending\n` +
 		`- **Files**: \`AGENTS.md\`, \`docs/mcp-vertex/AGENT-BOOTSTRAP.md\`\n` +
 		`- **Gate**: bun run validate\n\n` +
-		`<!-- f00089 U3 embeds the AGENT-BOOTSTRAP + AGENTS consolidation. -->\n` +
-		`_Pending f00089 U3._\n\n` +
+		`Consolidate this project's agent guidance into ONE canonical source:\n` +
+		`\`docs/mcp-vertex/AGENT-BOOTSTRAP.md\` holds the rules; \`AGENTS.md\` and\n` +
+		`\`CLAUDE.md\` stay thin pointers to it. Fold any pre-existing agent\n` +
+		`instructions found in this repo (a \`CONTRIBUTING\` agent section, a\n` +
+		`custom \`.cursorrules\`, a hand-written \`CLAUDE.md\`) into the bootstrap so\n` +
+		`there is no second, drifting copy for agents to disagree over.\n\n` +
 		`## acceptance\n\n` +
 		`- \`bun run typecheck\` → exit 0.\n` +
 		`- \`bun run test\` → exit 0.\n` +
