@@ -20,12 +20,17 @@
  *                              (with a warning) when --tool=bun, since bun does not
  *                              support provenance attestations.
  *
- * Note on `workspace:*`: every package in this monorepo only references
- * `@mcp-vertex/core` as `workspace:*` in `devDependencies` (never in
- * `dependencies`/`peerDependencies`, which already carry a resolved `^X.Y.Z`
- * range via `applyPlan`). `npm publish` never installs devDependencies, so it
- * does not choke on the workspace protocol here — no pre-publish rewrite step
- * is needed for `--tool=npm` to work in this repo.
+ * Note on `workspace:*` (corrected a00065 S4): the plugins reference
+ * `@mcp-vertex/core` only via a resolved `peerDependency` range, BUT
+ * `packages/client` and `packages/cli` carry intra-repo deps
+ * (`@mcp-vertex/core`, `@mcp-vertex/client`) as `workspace:*` in real
+ * `dependencies`. `bun publish` (the default `--tool=bun`) rewrites those
+ * to the concrete version at publish time, so the default path is safe.
+ * `npm publish` does NOT — it would ship an uninstallable `workspace:*`
+ * dependency — so `--tool=npm` needs the same rewrite before it can
+ * publish client/cli. The pack smoke (`tools/scripts/smoke/pack.script.ts`)
+ * now proves the rewritten tarballs install under npm; run it before a
+ * `--tool=npm` release.
  *
  * Side-effect free planning lives in ./release-plan.ts; this file is the thin
  * fs + spawn shell around it (so it is intentionally not unit-tested).

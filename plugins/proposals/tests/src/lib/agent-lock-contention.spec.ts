@@ -64,7 +64,38 @@ describe('agent-lock — onContention forwarding (M28)', async () => {
 		expect(existsSync(sidecar)).toBe(true);
 	});
 
-	it("onContention:'steal' (default, omitted) still reclaims a live lock past the timeout", async () => {
+	it("a00065 S2: onContention omitted now DEFAULTS to 'fail' — a live holder's lock is NOT stolen", async () => {
+		const sidecar = `${lockPath}.mutex`;
+		// A fresh (non-stale) sidecar = a live holder that overran the
+		// tightened timeout. Before a00065 the omitted default was 'steal'
+		// and this claim succeeded by clobbering the holder. That was the
+		// "a mutex that stops being a mutex" bug (external review claim #1).
+		writeFileSync(sidecar, `${process.pid}\n${Date.now()}\nlive-holder`);
+
+		const res = await runAgentLockEngine(
+			{
+				action: 'claim',
+				task_id: 't-default',
+				agent: 'a1',
+				files: ['src/b.ts'],
+				// onContention omitted: must now default to 'fail'.
+			},
+			{
+				lockPath,
+				mutexTimeoutMs: 120,
+				mutexStaleMs: 30_000,
+				mutexPollMs: 20,
+			},
+		);
+
+		expect(res.isError).toBe(true);
+		const text = res.content[0]?.text ?? '';
+		expect(text).toContain('lock contention');
+		// The live holder's lock survives — the default no longer steals.
+		expect(existsSync(sidecar)).toBe(true);
+	});
+
+	it("a00065 S2: onContention:'steal' still reclaims a live lock, but ONLY when passed explicitly", async () => {
 		const sidecar = `${lockPath}.mutex`;
 		writeFileSync(sidecar, `${process.pid}\n${Date.now()}\nlive-holder`);
 
@@ -73,8 +104,8 @@ describe('agent-lock — onContention forwarding (M28)', async () => {
 				action: 'claim',
 				task_id: 't-steal',
 				agent: 'a1',
-				files: ['src/b.ts'],
-				// onContention omitted: must default to 'steal'.
+				files: ['src/c.ts'],
+				onContention: 'steal', // now REQUIRED to get the reclaim.
 			},
 			{
 				lockPath,

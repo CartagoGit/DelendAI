@@ -43,12 +43,19 @@ export interface IFileMutexOptions {
 	readonly heartbeatMs?: number;
 	/**
 	 * What to do when a **live** holder keeps the lock past `timeoutMs`:
-	 * - `'steal'` (default): reclaim the lock to avoid deadlock — the historical
-	 *   last-resort behaviour. Safe (the ownership token stops the old holder
-	 *   deleting ours) but it can clobber a slow-but-alive holder under heavy load.
-	 * - `'fail'`: throw `LockContentionError` instead, so the caller backs off
-	 *   (e.g. waits for a `lock-released` notification) rather than stealing.
-	 * An **abandoned** (stale) lock is always reclaimed regardless of this option.
+	 * - `'fail'` (default, a00065 S2): throw `LockContentionError` so the caller
+	 *   backs off (e.g. waits for a `lock-released` notification) rather than
+	 *   preempting a peer mid-write. This is the safe default — stealing a
+	 *   live holder lets both critical sections run at once, which is a
+	 *   lost-update / corruption hazard ("a mutex that stops being a mutex").
+	 * - `'steal'`: reclaim the lock anyway — the historical last-resort
+	 *   anti-deadlock behaviour. The ownership token stops the old holder from
+	 *   deleting ours, but it CAN clobber a slow-but-alive holder under load, so
+	 *   it must now be opted into EXPLICITLY, with an operational reason, per
+	 *   call site.
+	 * An **abandoned** (stale) lock — one whose holder crashed and stopped
+	 * refreshing the heartbeat past `staleMs` — is ALWAYS reclaimed regardless
+	 * of this option, so the deadlock-avoidance property is preserved either way.
 	 */
 	readonly onContention?: 'steal' | 'fail';
 }
@@ -75,7 +82,7 @@ export const withFileMutex = async <T>(
 ): Promise<T> => {
 	const timeoutMs = options.timeoutMs ?? 5_000;
 	const staleMs = options.staleMs ?? 30_000;
-	const onContention = options.onContention ?? 'steal';
+	const onContention = options.onContention ?? 'fail';
 	const pollMs = options.pollMs ?? 25;
 	const heartbeatMs =
 		options.heartbeatMs ?? Math.max(50, Math.floor(staleMs / 3));
@@ -113,9 +120,11 @@ export const withFileMutex = async <T>(
 			}
 			if (Date.now() >= deadline) {
 				// A live holder outlived the timeout (a stale one was already
-				// reclaimed above). 'fail' lets the caller back off; 'steal'
-				// reclaims to avoid deadlock — safe because the ownership token
-				// stops the old holder deleting the lock we create next.
+				// reclaimed above). Default 'fail' (a00065 S2) lets the caller
+				// back off rather than preempt a peer mid-write; explicit
+				// 'steal' reclaims to avoid deadlock — safe from self-deletion
+				// because the ownership token stops the old holder deleting the
+				// lock we create next, but able to clobber the peer's work.
 				if (onContention === 'fail') {
 					throw new LockContentionError(lockPath, timeoutMs);
 				}
