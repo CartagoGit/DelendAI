@@ -239,7 +239,7 @@ that fails instantly looks improved" hole (the a00064 `docs_search` 3/3
 case). Bytes/latency regressions still fire independently. Red-first specs;
 error-rate column added to the Markdown report.
 
-#### S6 — Partial (two claims verified + one fixed; rest deferred)
+#### S6 — Reliability sweep (5 fixed: bun-align + loader + web-fetch bounds + fsync durability; residuals deferred)
 - **CI does not run full `validate` [CONFIRMED]**: `.github/workflows/ci.yml`
   runs `lint`, `site`, `typecheck`, `test:coverage`, `build` — NOT
   `bun run validate` (which wires ~40 more gates: verify:tools, catalog:check,
@@ -251,10 +251,50 @@ error-rate column added to the Markdown report.
   vs CI `bun-version: 1.3.14`. This drift was the ROOT CAUSE of the broken
   build (1.3.14's `.scss` behaviour change). Aligned `packageManager` to
   `bun@1.3.14` — the version CI and local both actually use.
-- **Remaining claims** (Zod `.strict()` coverage, web-fetch SSRF/DNS/IP
-  bounds, plugin-loader three-pack, `writeFileAtomic` fsync durability, docs
-  drift, double-noun tool naming, symlink/TOCTOU containment, Actions
-  SHA-pinning) are **DEFERRED** to a dedicated follow-up audit — each needs a
-  focused read + decision and none is a live-corruption/security-boundary P0
-  like S2/S3. Left as PENDING rows in `## Verified State`; NOT acted on
-  unverified, per this proposal's own non-goal.
+- **Plugin-loader runs `register()` before checking `dependsOn`
+  [CONFIRMED + RESUELTO]** (opus session): `loadPlugins` imported +
+  registered every plugin and only *then* ran `checkPluginDependencies`,
+  so a plugin declaring `dependsOn: ['x']` (x absent) had already executed
+  its `register()` side effects (timers/sockets/file writes) before the
+  batch was rejected. Refactored into two phases in
+  `packages/core/src/lib/plugins/load-plugins.ts`: **(1)** resolve + import +
+  validate options for every specifier WITHOUT registering; **(2)** the
+  dependency gate runs over the *resolved* set — an unmet hard dependency
+  refuses the whole batch here, before **(3)** any `register()` runs.
+  Red-first spec asserts `register()` is never invoked for a plugin whose
+  `dependsOn` is unmet; a satisfied dependency still registers both.
+- **web-fetch numeric bounds unbounded [CONFIRMED + RESUELTO]** (opus
+  session): `maxBytes`/`timeoutMs` were `z.number().optional()` (accept `0`,
+  negative, `NaN`, `Infinity`) and the input object was not `.strict()`. A
+  `timeoutMs: 0` made `setTimeout(abort, 0)` fire and time out EVERY fetch;
+  an unbounded `maxBytes` defeated the streaming memory cap. Added
+  `sanitizeBounds` in `plugins/web-fetch/src/lib/services/engine.ts` (the
+  guaranteed net for direct library callers AND the redirect re-entry path):
+  invalid/non-finite → safe default, above-ceiling → clamped
+  (10 MiB / 120 s / 20 hops), never rejected. The tool `inputSchema` also now
+  `.int().positive().max(...)`-bounds both numerics + `.strict()` rejects
+  unknown keys, so an MCP client gets a clear early rejection. Red-first specs.
+- **`writeFileAtomic` promised "crash-safe" but never fsync'd
+  [CONFIRMED + RESUELTO]** (opus session): the header advertised "Crash-safe"
+  yet the async + sync writers did `write → rename` with no `fsync`, so a
+  power loss right after the rename could leave the target pointing at
+  still-buffered (zero-length) data — the ext4 rename-after-truncate hazard,
+  i.e. "atomic, but sometimes empty". Both variants now fsync the temp file's
+  DATA before the rename makes it visible, then fsync the parent directory
+  best-effort (portable: swallowed on Windows). New
+  `atomic-write.spec.ts` locks the observable contract (round-trip, no `.tmp`
+  litter, 20-way concurrent writers each land a whole document, nested-dir
+  creation) so the durability refactor is behaviour-preserving. 51 call sites
+  unchanged.
+- **Remaining claims** (Zod `.strict()` on the OTHER public tool schemas
+  beyond web-fetch, web-fetch DNS-rebinding / IP-literal SSRF, docs drift
+  `scripts/*`→`tools/scripts/`, double-noun tool ids `docs_docs_search`,
+  full symlink/TOCTOU write containment, Actions SHA-pinning, CI-runs-full-
+  validate) stay **DEFERRED**. Rationale recorded: DNS-rebinding needs a
+  custom resolver+connection-pinning (out of scope for a hostname allow-list
+  the operator explicitly curates); symlink TOCTOU defends against an
+  attacker who already holds workspace-write and carries an irreducible
+  TOCTOU window; double-noun renames are breaking changes for pinned
+  adopters; SHA-pinning + CI-full-validate are infra/owner decisions. None is
+  a live-corruption/boundary P0 like S2/S3. Left as PENDING rows in
+  `## Verified State`; NOT acted on unverified.
