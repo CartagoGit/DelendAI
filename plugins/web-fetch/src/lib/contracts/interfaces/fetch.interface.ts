@@ -46,6 +46,18 @@ export interface IWebFetchOptions {
 }
 
 /**
+ * The numeric options after `sanitizeBounds` has coerced them into
+ * guaranteed-safe ranges (a00065 S6): invalid/non-finite → the safe
+ * default, above-ceiling → clamped. Never contains `undefined`, `0`,
+ * negatives, `NaN` or `Infinity`.
+ */
+export interface ISanitizedBounds {
+	readonly maxBytes: number;
+	readonly timeoutMs: number;
+	readonly maxRedirects: number;
+}
+
+/**
  * Injectable fetcher so tests never hit the real network. `body` follows
  * the WHATWG fetch shape: when a fetcher provides it, the engine streams
  * and cancels past the cap; a body-less test double falls back to
