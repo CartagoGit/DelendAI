@@ -109,21 +109,25 @@ const buildPackage = (rel: string): void => {
 	rmSync(join(dir, 'dist'), { recursive: true, force: true });
 
 	// 1. JS bundles (deps external; bundler-style imports resolved here).
+	//    a00065: routed through `bundle-js.ts` (a `Bun.build()` wrapper)
+	//    instead of the `bun build` CLI so the repo's `scssPlugin` is
+	//    applied — the CLI does not load plugins, and Bun ≥1.3.x now
+	//    treats a bare `.scss` import as native CSS, which broke
+	//    `packages/ui-extension` (its `import { compiledCss }`) and with
+	//    it `bun run build` + the whole release/pack path.
 	run(
 		'bun',
 		[
-			'build',
-			...entries,
+			join(ROOT, 'tools/scripts/compile/bundle-js.ts'),
+			'--cwd',
+			dir,
 			'--target',
 			target,
-			'--format',
-			'esm',
-			'--packages',
-			'external',
-			'--outdir',
-			'dist',
 			'--root',
 			'src',
+			'--outdir',
+			'dist',
+			...entries.flatMap((e) => ['--entry', e]),
 		],
 		dir,
 	);
