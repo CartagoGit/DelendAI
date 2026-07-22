@@ -1,5 +1,5 @@
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
-import { existsSync } from 'node:fs';
+import { existsSync, realpathSync, symlinkSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -254,5 +254,88 @@ describe('fs_write public tool surface (F-003)', async () => {
 		expect(atomicSpy).toHaveBeenCalled();
 		mutexSpy.mockRestore();
 		atomicSpy.mockRestore();
+	});
+});
+
+describe('fsWrite — symlink escape containment (a00068)', async () => {
+	let workspace = '';
+	let outside = '';
+	beforeEach(() => {
+		// realpath both so the assertion compares symlink-resolved paths
+		// (macOS/tmp is itself often under a symlink).
+		workspace = realpathSync(mkdtempSync(join(tmpdir(), 'fs-sym-ws-')));
+		outside = realpathSync(mkdtempSync(join(tmpdir(), 'fs-sym-out-')));
+	});
+	afterEach(() => {
+		rmSync(workspace, { recursive: true, force: true });
+		rmSync(outside, { recursive: true, force: true });
+	});
+
+	it('rejects a write through a symlinked directory that escapes the workspace', async () => {
+		symlinkSync(outside, join(workspace, 'link')); // <ws>/link -> <outside>
+		const result = await fsWrite(workspace, 'link/evil.txt', 'pwned', {
+			createDirs: true,
+		});
+		expect(result.ok).toBe(false);
+		expect(result.error).toMatch(/symlink|escapes/i);
+		expect(existsSync(join(outside, 'evil.txt'))).toBe(false);
+	});
+
+	it('rejects overwriting an existing symlinked file that targets outside the workspace', async () => {
+		const target = join(outside, 'secret.txt');
+		writeFileSync(target, 'orig', 'utf8');
+		symlinkSync(target, join(workspace, 'alias.txt')); // <ws>/alias -> <outside>/secret
+		const result = await fsWrite(workspace, 'alias.txt', 'overwrite');
+		expect(result.ok).toBe(false);
+		expect(readFileSync(target, 'utf8')).toBe('orig'); // untouched
+	});
+
+	it('still writes a normal file inside the workspace (no regression)', async () => {
+		const result = await fsWrite(workspace, 'nested/ok.txt', 'fine', {
+			createDirs: true,
+		});
+		expect(result.ok).toBe(true);
+		expect(readFileSync(join(workspace, 'nested/ok.txt'), 'utf8')).toBe(
+			'fine',
+		);
+	});
+
+	it('still writes when the workspace ROOT itself is reached via a symlink', async () => {
+		const rootLink = join(outside, 'ws-link');
+		symlinkSync(workspace, rootLink); // rootLink -> <workspace>
+		const result = await fsWrite(rootLink, 'via-link.txt', 'ok');
+		expect(result.ok).toBe(true);
+		expect(readFileSync(join(workspace, 'via-link.txt'), 'utf8')).toBe(
+			'ok',
+		);
+	});
+
+	it('allows a write into an AUTHORIZED root reached via a workspace symlink', async () => {
+		symlinkSync(outside, join(workspace, 'ext')); // <ws>/ext -> <outside> (authorized)
+		const result = await fsWrite(
+			workspace,
+			'ext/note.txt',
+			'hi',
+			{ createDirs: true },
+			[outside],
+		);
+		expect(result.ok).toBe(true);
+		expect(readFileSync(join(outside, 'note.txt'), 'utf8')).toBe('hi');
+	});
+
+	it('fsRead: refuses to read a workspace symlink that targets outside (info-leak)', async () => {
+		const secret = join(outside, 'secret.txt');
+		writeFileSync(secret, 'TOPSECRET', 'utf8');
+		symlinkSync(secret, join(workspace, 'leak.txt')); // <ws>/leak -> <outside>/secret
+		const result = await fsRead(workspace, 'leak.txt');
+		expect(result.found).toBe(false);
+		expect(result.content).toBeNull();
+	});
+
+	it('fsRead: still reads a normal in-workspace file (no regression)', async () => {
+		writeFileSync(join(workspace, 'plain.txt'), 'hello', 'utf8');
+		const result = await fsRead(workspace, 'plain.txt');
+		expect(result.found).toBe(true);
+		expect(result.content).toBe('hello');
 	});
 });
