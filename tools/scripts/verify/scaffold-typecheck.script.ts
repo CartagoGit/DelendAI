@@ -34,6 +34,8 @@ import {
 	scaffoldExtensionHostFiles,
 	scaffoldHostProject,
 	scaffoldPluginFiles,
+	scaffoldPromptFile,
+	scaffoldToolFile,
 } from '@mcp-vertex/core/public';
 
 const ROOT = resolve(import.meta.dir, '../../..');
@@ -139,6 +141,16 @@ const KINDS: readonly IScaffoldKind[] = [
 			description: 'Example extension host.',
 		}),
 	},
+	// The live `scaffold` tool an agent calls to extend a project from 0:
+	// each generated tool/prompt file must also compile against the SDK.
+	{
+		name: 'tool',
+		files: [scaffoldToolFile('acme', 'do thing', 'Does a thing.')],
+	},
+	{
+		name: 'prompt',
+		files: [scaffoldPromptFile('acme', 'helper', 'Helps the agent.')],
+	},
 ];
 
 /** Write one kind's files, emit a tsconfig, and typecheck its production sources. */
@@ -207,11 +219,11 @@ const main = (): void => {
 		if (failed.length > 0) {
 			throw new Error(
 				`scaffold-typecheck: ${failed.length} scaffold kind(s) failed to compile against the shipped @mcp-vertex/* API: ${failed.join(', ')}. ` +
-					`The create_project template has drifted from the public API — fix the scaffold in packages/core/src/lib/scaffold/.`,
+					`A create_project / scaffold template has drifted from the public API — fix the generator in packages/core/src/lib/scaffold/.`,
 			);
 		}
 		process.stdout.write(
-			`✓ scaffold-typecheck: all ${KINDS.length} create_project kinds compile against the shipped declarations.\n`,
+			`✓ scaffold-typecheck: all ${KINDS.length} scaffold kinds compile against the shipped declarations.\n`,
 		);
 	} finally {
 		rmSync(scratch, { recursive: true, force: true });
