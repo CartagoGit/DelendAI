@@ -452,10 +452,19 @@ export const scaffoldPluginFiles = (
 					license: 'MIT',
 					main: './src/index.ts',
 					exports: { '.': './src/index.ts' },
+					// a00067: ship a runnable typecheck so the emitted
+					// tsconfig is usable out of the box (matches the
+					// extension-host scaffold; without it the tsconfig has no
+					// toolchain to run it).
+					scripts: { typecheck: 'tsc --noEmit -p tsconfig.json' },
 					peerDependencies: { '@mcp-vertex/core': '^0.1.0' },
 					dependencies: {
 						'@modelcontextprotocol/sdk': '^1.29.0',
 						zod: '^4.4.3',
+					},
+					devDependencies: {
+						'@types/node': '^26.1.0',
+						typescript: '^7.0.0',
 					},
 				},
 				null,
@@ -625,7 +634,13 @@ export const scaffoldClientFiles = (
 					license: 'MIT',
 					main: './src/index.ts',
 					exports: { '.': './src/index.ts' },
+					// a00067: runnable typecheck for the emitted tsconfig.
+					scripts: { typecheck: 'tsc --noEmit -p tsconfig.json' },
 					dependencies: { '@modelcontextprotocol/sdk': '^1.29.0' },
+					devDependencies: {
+						'@types/node': '^26.1.0',
+						typescript: '^7.0.0',
+					},
 				},
 				null,
 				'\t',

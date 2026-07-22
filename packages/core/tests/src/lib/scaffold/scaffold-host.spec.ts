@@ -343,6 +343,19 @@ describe('scaffold tool report', () => {
 			expect(tsconfig.extends).toBeUndefined();
 			expect(tsconfig.compilerOptions?.strict).toBe(true);
 			expect(tsconfig.compilerOptions?.target).toBe('ES2022');
+
+			// …and the tsconfig must be RUNNABLE del tirón: the package ships
+			// a typecheck script + the typescript toolchain to run it.
+			const pkgFile = report.files.find((f) =>
+				f.path.endsWith('/package.json'),
+			);
+			const pkg = JSON.parse(pkgFile?.content ?? '{}') as {
+				scripts?: Record<string, string>;
+				devDependencies?: Record<string, string>;
+			};
+			expect(pkg.scripts?.typecheck).toContain('tsc');
+			expect(pkg.devDependencies?.typescript).toMatch(/^\^7\./);
+			expect(pkg.devDependencies?.['@types/node']).toBeDefined();
 		}
 	});
 });
