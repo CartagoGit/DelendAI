@@ -320,4 +320,29 @@ describe('scaffold tool report', () => {
 		);
 		expect(entry?.content).toContain('createAcmeClient');
 	});
+
+	it('a00067: scaffolded plugin/client tsconfig is self-contained (no extends into a nonexistent monorepo base)', async () => {
+		for (const kind of ['plugin', 'client'] as const) {
+			const report = await buildScaffoldReport(options, {
+				kind,
+				name: 'pepe',
+				description: `Pepe ${kind}.`,
+				dryRun: true,
+			});
+			const tsconfigFile = report.files.find((f) =>
+				f.path.endsWith('/tsconfig.json'),
+			);
+			expect(tsconfigFile, `${kind} must emit a tsconfig`).toBeDefined();
+			const tsconfig = JSON.parse(tsconfigFile?.content ?? '{}') as {
+				extends?: string;
+				compilerOptions?: Record<string, unknown>;
+			};
+			// An adopter's repo has no `tsconfig.base.json`: extending one
+			// (or any path outside the package) makes `tsc` fail with TS5083
+			// on their first build. The scaffold must stand alone.
+			expect(tsconfig.extends).toBeUndefined();
+			expect(tsconfig.compilerOptions?.strict).toBe(true);
+			expect(tsconfig.compilerOptions?.target).toBe('ES2022');
+		}
+	});
 });

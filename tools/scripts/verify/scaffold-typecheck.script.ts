@@ -158,6 +158,7 @@ const typecheckKind = (scratch: string, kind: IScaffoldKind): boolean => {
 	const dir = join(scratch, kind.name);
 	mkdirSync(dir, { recursive: true });
 	const tsFiles: string[] = [];
+	let emittedTsconfig: string | undefined;
 	for (const file of kind.files) {
 		const abs = join(dir, file.path);
 		mkdirSync(dirname(abs), { recursive: true });
@@ -168,12 +169,22 @@ const typecheckKind = (scratch: string, kind: IScaffoldKind): boolean => {
 		if (file.path.endsWith('.ts') && !file.path.endsWith('.spec.ts')) {
 			tsFiles.push(abs);
 		}
+		if (file.path.endsWith('/tsconfig.json')) emittedTsconfig = abs;
 	}
 	const tsconfigPath = join(dir, 'tsconfig.verify.json');
+	// When the scaffold emits its OWN tsconfig, the verify config EXTENDS it
+	// so the adopter's real compilerOptions are exercised AND a broken
+	// `extends` (e.g. an a00067-style dangling `../../tsconfig.base.json`)
+	// fails here instead of in their terminal. Resolution of `@mcp-vertex/*`
+	// is pinned to the shipped `.d.ts` regardless. Kinds with no tsconfig
+	// (host, tool, prompt) get the standalone strict defaults.
 	writeFileSync(
 		tsconfigPath,
 		JSON.stringify(
 			{
+				...(emittedTsconfig !== undefined
+					? { extends: emittedTsconfig }
+					: {}),
 				compilerOptions: {
 					target: 'ES2022',
 					module: 'ESNext',
