@@ -527,9 +527,25 @@ export default definePlugin({
 		},
 		{
 			path: `plugins/${id}/tsconfig.json`,
+			// Self-contained (a00067): an adopter runs `create_project` in
+			// their OWN repo, which has no `tsconfig.base.json` two levels
+			// up — extending it made `tsc` fail with TS5083 on the very
+			// first build. These are the standard strict options; the
+			// package's own deps (@mcp-vertex/core, zod) resolve from
+			// node_modules, so no monorepo `paths` are needed.
 			content: `${JSON.stringify(
 				{
-					extends: '../../tsconfig.base.json',
+					compilerOptions: {
+						target: 'ES2022',
+						module: 'ESNext',
+						moduleResolution: 'bundler',
+						lib: ['ES2022'],
+						strict: true,
+						esModuleInterop: true,
+						skipLibCheck: true,
+						resolveJsonModule: true,
+						noEmit: true,
+					},
 					include: ['src/**/*', 'tests/**/*'],
 				},
 				null,
@@ -665,9 +681,22 @@ export const create${fn}Client = async (
 		},
 		{
 			path: `clients/${id}/tsconfig.json`,
+			// Self-contained (a00067) — see the plugin scaffold's note: an
+			// adopter's repo has no `tsconfig.base.json`, so extending it
+			// broke `tsc` on the first build (TS5083).
 			content: `${JSON.stringify(
 				{
-					extends: '../../tsconfig.base.json',
+					compilerOptions: {
+						target: 'ES2022',
+						module: 'ESNext',
+						moduleResolution: 'bundler',
+						lib: ['ES2022'],
+						strict: true,
+						esModuleInterop: true,
+						skipLibCheck: true,
+						resolveJsonModule: true,
+						noEmit: true,
+					},
 					include: ['src/**/*'],
 				},
 				null,
