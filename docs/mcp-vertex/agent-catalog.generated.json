@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-07-21T18:43:01.840Z",
+	"generatedAt": "2026-07-22T15:09:44.607Z",
 	"mode": "compact",
 	"tools": [
 		{
@@ -673,10 +673,17 @@
 				"track": "lint+architecture+i18n+workflow+release",
 				"status": "paused",
 				"kind": "feat"
+			},
+			{
+				"id": "f00119",
+				"title": "f00119",
+				"track": "plugin+orchestration+routing",
+				"status": "ready",
+				"kind": "feat"
 			}
 		],
 		"byStatus": {
-			"ready": 0,
+			"ready": 1,
 			"in-progress": 0,
 			"review": 0,
 			"paused": 1,
