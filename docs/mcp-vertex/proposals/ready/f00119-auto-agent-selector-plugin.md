@@ -24,9 +24,23 @@ Concretely, `mcpv --plugins=auto-agent-selector` (or adding it to
 
 - `auto_run { task: "…" }` to pick the cheapest capable provider, run it,
   check the result against the project's acceptance gate, and — if it fell
-  short — re-route **up** a tier and retry, all inside the spend guard; and
+  short — re-route **up** a tier and retry, all inside the spend guard;
+- `auto_recommend { taskType | task }` to **recommend** (never dictate) the
+  best provider per kind of work, with a transparent rationale (cost,
+  capability fit, measured win-rate) so the user can decide and **pin** a
+  choice; and
 - `auto_status` to report which providers are available, which are missing
   (with a one-command install hint), and how the roster was calibrated.
+
+**The user is always in control.** Cost is a first-class, user-controlled
+factor: each provider carries a cost model and the user sets a budget /
+cost preference (from "cheapest that works" to "always the strongest,
+cost no object"). The app **recommends with reasons; the user decides** and
+may pin a specific provider per task type. Because pricing shifts and better
+models keep appearing, the roster is **re-evaluated over time** — including
+newly-added API keys — optionally consulting the internet for current
+pricing/benchmarks, and the recommendation is surfaced in **both the CLI and
+the VS Code extension**.
 
 ## why
 
@@ -73,6 +87,13 @@ command with explicit consent), never done silently.
 - **No silent installs or key exfiltration.** A missing CLI is installed
   only on explicit consent; API keys are read from the environment and
   never written to a store or logged.
+- **Never dictates.** The plugin recommends with reasons; a user pin always
+  wins, and the user can veto/override any automatic choice. Cost preference
+  ranges from "cheapest that works" to "always strongest" — the app never
+  forces one end.
+- **No stale price/quality assumptions baked in.** Cost and capability
+  numbers are data (config + calibration + optional live lookup), refreshable
+  as models and prices change — never hardcoded constants the user can't move.
 
 ## architecture
 
@@ -91,14 +112,26 @@ Added by `auto-agent-selector` (new plugin, `dependsOn: ['orchestrator-runner']`
 - A **discovery aggregator** that unions the CLI probe with an **API-key
   probe** (`GEMINI_API_KEY`, `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, …) into
   one roster with per-provider availability + install/auth guidance.
+- A **cost model + preference layer**: each provider carries a cost estimate
+  (per-token or tier); the user sets a budget / cost preference and may
+  **pin** a provider per task type in `mcp-vertex.config.json`. A pin always
+  wins over the score; absent a pin, the score decides. Recommendations are
+  advisory — the runner never overrides a user pin.
 - An **escalation planner** that inverts the fallback direction: on an
   acceptance-gate *quality* failure (not just an availability error) it
-  re-routes to the next tier **up**, bounded by `maxDepth` + spend guard.
-- A **calibration store** in `pluginCacheDir` that reads `usage-tracking`
-  outcomes into per-`(provider, capability)` win-rates and blends them into
-  the scorer's currently-empty `strengths`.
-- Two prompt-facing tools — `auto_run` (discover → route → run → gate →
-  escalate) and `auto_status` (roster + calibration + install hints).
+  re-routes to the next tier **up**, bounded by the user's cost ceiling,
+  `maxDepth` + spend guard.
+- A **calibration + evaluation store** in `pluginCacheDir` that reads
+  `usage-tracking` outcomes into per-`(provider, capability)` win-rates,
+  blends them into the scorer's empty `strengths`, and **evaluates
+  newly-added providers** — optionally consulting the internet (via the
+  `web-fetch` plugin, allow-listed) for current pricing/benchmarks so a
+  new/cheaper/better model can be recommended as it appears.
+- Prompt-facing tools — `auto_run` (discover → route → run → gate →
+  escalate), `auto_recommend` (rank + rationale per task type, user
+  decides/pins), and `auto_status` (roster + costs + calibration + install
+  hints). The recommendation is surfaced in the **CLI** and a **VS Code
+  extension panel**.
 
 ## slices
 
@@ -115,7 +148,21 @@ an injected env + probe runner. `auto_status` surfaces it. This is the
 foundation the router picks from and the first proof of "add it → it sees
 everything," and it unblocks the Gemini/OpenAI/Anthropic API providers.
 
-### S2 — quality-based up-escalation
+### S2 — cost model + user preferences (recommend, never dictate)
+
+- **Status**: pending
+- **Files**: `plugins/auto-agent-selector/src/lib/prefs/`, `plugins/auto-agent-selector/src/lib/tools/auto-recommend.tool.ts`
+- **Gate**: bun run validate
+
+Give each provider a cost estimate (per-token or tier) and let the user set a
+budget / cost preference plus **per-task-type pins** in
+`mcp-vertex.config.json`. `auto_recommend` ranks the roster for a task type
+and returns each option with a transparent rationale (cost, capability fit,
+measured win-rate) — the user decides and may pin. A pin always overrides the
+score; the runner never contradicts it. Pure ranking over the roster +
+prefs; fully unit-tested.
+
+### S3 — quality-based up-escalation (within the user's cost ceiling)
 
 - **Status**: pending
 - **Files**: `plugins/auto-agent-selector/src/lib/escalate/`, `plugins/auto-agent-selector/src/lib/tools/auto-run.tool.ts`
@@ -124,23 +171,27 @@ everything," and it unblocks the Gemini/OpenAI/Anthropic API providers.
 Add an escalation planner: run the cheapest capable provider, evaluate the
 result against the project's acceptance gate (reuse the `quality` /
 validation-matrix seam), and on failure re-route to the next tier **up**
-(the inverse of `fallback.ts`'s `tier-down`), bounded by `maxDepth` and the
-spend guard. `auto_run` composes discover → advise_routing → invoke → gate →
-escalate. Pure planner, injected runner — fully unit-tested without spawning.
+(the inverse of `fallback.ts`'s `tier-down`), bounded by the user's cost
+ceiling, `maxDepth` and the spend guard. `auto_run` composes discover →
+recommend/route → invoke → gate → escalate, honouring pins. Pure planner,
+injected runner — fully unit-tested without spawning.
 
-### S3 — empirical calibration from recorded outcomes
+### S4 — empirical calibration + new-model evaluation (optional internet-informed)
 
 - **Status**: pending
-- **Files**: `plugins/auto-agent-selector/src/lib/calibrate/`
+- **Files**: `plugins/auto-agent-selector/src/lib/calibrate/`, `plugins/auto-agent-selector/src/lib/tools/auto-evaluate.tool.ts`
 - **Gate**: bun run validate
 
 Read `usage-tracking` outcome rows into a per-`(provider, capability)`
-win-rate table persisted in `pluginCacheDir`, and blend it into the scorer's
-empty `strengths` so routing improves from the project's own history. Falls
-back to the hand-declared tags when there is not enough data. Deterministic
-and explainable (no ML); the blend weight is a documented constant.
+win-rate table persisted in `pluginCacheDir`, blend it into the scorer's
+empty `strengths`, and **evaluate newly-added providers** as they appear (a
+new API key, a new model). `auto_evaluate` can optionally consult the
+internet for current pricing/benchmarks via the `web-fetch` plugin
+(allow-listed, opt-in) so cost/quality stay current as the market changes.
+Deterministic + explainable (no bundled ML); falls back to hand-declared
+tags when data is thin; blend weight is a documented constant.
 
-### S4 — auto-config on first use (the "add it and it just works" guarantee)
+### S5 — auto-config on first use (the "add it and it just works" guarantee)
 
 - **Status**: pending
 - **Files**: `plugins/auto-agent-selector/src/index.ts`, `plugins/auto-agent-selector/src/lib/tools/auto-run.tool.ts`
@@ -153,25 +204,33 @@ explicit `install: true` consent) rather than failing. An
 `external-install`-style smoke proves a fresh workspace that adds only this
 plugin can `auto_run` a trivial task end-to-end.
 
-### S5 — docs, wiki page, catalog + adopter surface
+### S6 — recommendation surface (CLI + extension) + docs, wiki, catalog
 
 - **Status**: pending
-- **Files**: `docs/mcp-vertex/wiki/`, `docs/mcp-vertex/host-hints/`, `plugins/auto-agent-selector/README.md`
+- **Files**: `packages/cli/src/commands/groups/`, `packages/ui-extension/src/`, `docs/mcp-vertex/wiki/`, `plugins/auto-agent-selector/README.md`
 - **Gate**: bun run validate
 
-Wiki page, README, host-hints, and catalog registration so the plugin is
-discoverable and `mcpv init` can offer it. Confirms `catalog:check`,
-`verify:tools`, and the site page render pass for the new plugin.
+Surface `auto_recommend`/`auto_status` in both the **CLI** (a command that
+prints the per-task-type recommendation table + rationale) and a **VS Code
+extension panel** (the user reviews and pins from the UI). Wiki page, README,
+host-hints, and catalog registration so the plugin is discoverable and
+`mcpv init` can offer it. Confirms `catalog:check`, `verify:tools`, and the
+site page render pass for the new plugin.
 
 ## acceptance
 
 - `bun run validate` → exit 0 (all ~40 gates, including `verify:tools`,
   `catalog:check`, `types-in-contracts`, `lint:proposals`).
 - `mcpv --plugins=auto-agent-selector __serve` boots and `overview` lists the
-  plugin with `auto_run` + `auto_status`.
+  plugin with `auto_run`, `auto_recommend`, `auto_evaluate` + `auto_status`.
 - With no config and at least one provider present (CLI or API key),
   `auto_run { task }` completes end-to-end; with a forced gate failure it
-  escalates up a tier within the spend guard.
+  escalates up a tier within the spend guard **and** within the user's cost
+  ceiling.
+- `auto_recommend` returns ranked options with a cost/capability/win-rate
+  rationale; a user pin (config) overrides the score and is never contradicted.
+- `auto_evaluate` folds a newly-added provider into the roster and (opt-in)
+  refreshes cost/quality from an allow-listed online source.
 - Adding the plugin to a fresh workspace requires zero manual config — proven
   by an external-install-style smoke.
 
