@@ -14,7 +14,16 @@
 import { readFile } from 'node:fs/promises';
 
 import { resolveAgainstRoots } from './contain-path';
+import { realpathContained } from './contain-realpath';
 import type { IFsReadResult } from './fs-tools-options';
+
+const notFound = (path: string): IFsReadResult => ({
+	path,
+	found: false,
+	content: null,
+	totalLines: null,
+	range: null,
+});
 
 /**
  * Read a workspace-contained file, optionally a 1-indexed inclusive
@@ -40,13 +49,18 @@ export const fsRead = async (
 		relativePath,
 	);
 	if (!contained.ok) {
-		return {
-			path: relativePath,
-			found: false,
-			content: null,
-			totalLines: null,
-			range: null,
-		};
+		return notFound(relativePath);
+	}
+	// a00068: reject a read whose resolved path escapes via a symlink
+	// (e.g. a workspace symlink pointing at /etc/passwd) — the lexical
+	// check above never follows links. Symmetric with fsWrite.
+	if (
+		!(await realpathContained(contained.abs, [
+			workspaceRootAbs,
+			...authorizedRoots,
+		]))
+	) {
+		return notFound(relativePath);
 	}
 	try {
 		const raw = await readFile(contained.abs, 'utf8');
