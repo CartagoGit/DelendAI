@@ -80,7 +80,14 @@ export const quarantineCorruptFile = async (
 	const renameFn = deps.rename ?? rename;
 	const sleep = deps.sleep ?? defaultSleep;
 	const backup = backupPathFor(absolutePath);
-	const MAX_ATTEMPTS = 4;
+	// a00070 (hardened): 6 attempts with EXPONENTIAL backoff (10→160ms,
+	// ~310ms worst case). Under a saturated event loop + fd table (the whole
+	// monorepo suite runs 4600+ tests in parallel) a single short retry
+	// window was not always enough for the transient EMFILE/EAGAIN to clear;
+	// the longer, growing window preserves the corrupt bytes reliably. Cost
+	// is paid only when a store is actually corrupt (rare), so it is free on
+	// the happy path.
+	const MAX_ATTEMPTS = 6;
 	for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt += 1) {
 		try {
 			await renameFn(absolutePath, backup);
@@ -94,7 +101,7 @@ export const quarantineCorruptFile = async (
 			) {
 				return null;
 			}
-			await sleep(5 * attempt); // 5ms, 10ms, 15ms — bounded, non-blocking
+			await sleep(10 * 2 ** (attempt - 1)); // 10,20,40,80,160ms — bounded
 		}
 	}
 	return null;
