@@ -117,6 +117,15 @@
 				"./plugins/web-fetch/src/public/index.ts"
 			],
 			"@mcp-vertex/web-fetch/*": ["./plugins/web-fetch/src/*"],
+			"@mcp-vertex/auto-agent-selector": [
+				"./plugins/auto-agent-selector/src/index.ts"
+			],
+			"@mcp-vertex/auto-agent-selector/public": [
+				"./plugins/auto-agent-selector/src/public/index.ts"
+			],
+			"@mcp-vertex/auto-agent-selector/*": [
+				"./plugins/auto-agent-selector/src/*"
+			],
 			"@mcp-vertex/issues": ["./plugins/issues/src/index.ts"],
 			"@mcp-vertex/issues/public": [
 				"./plugins/issues/src/public/index.ts"
