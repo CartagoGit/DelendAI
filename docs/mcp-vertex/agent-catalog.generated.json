@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-07-23T11:13:17.177Z",
+	"generatedAt": "2026-07-23T18:06:19.110Z",
 	"mode": "compact",
 	"tools": [
 		{
@@ -668,6 +668,13 @@
 	"proposals": {
 		"actionable": [
 			{
+				"id": "d00003",
+				"title": "d00003",
+				"track": "roadmap+plugins+ecosystem",
+				"status": "ready",
+				"kind": "docs"
+			},
+			{
 				"id": "f00050",
 				"title": "f00050",
 				"track": "lint+architecture+i18n+workflow+release",
@@ -680,10 +687,31 @@
 				"track": "plugin+orchestration+routing",
 				"status": "ready",
 				"kind": "feat"
+			},
+			{
+				"id": "f00120",
+				"title": "f00120",
+				"track": "plugin+scaffold+dx",
+				"status": "ready",
+				"kind": "feat"
+			},
+			{
+				"id": "r00011",
+				"title": "r00011",
+				"track": "refactor+config+dx",
+				"status": "ready",
+				"kind": "refactor"
+			},
+			{
+				"id": "r00012",
+				"title": "r00012",
+				"track": "refactor+core+plugins",
+				"status": "ready",
+				"kind": "refactor"
 			}
 		],
 		"byStatus": {
-			"ready": 1,
+			"ready": 5,
 			"in-progress": 0,
 			"review": 0,
 			"paused": 1,
