@@ -9,6 +9,18 @@
 			"name": "mcp-vertex_analyze_project"
 		},
 		{
+			"name": "mcp-vertex_auto-agent-selector_auto_recommend",
+			"plugin": "auto-agent-selector"
+		},
+		{
+			"name": "mcp-vertex_auto-agent-selector_auto_run",
+			"plugin": "auto-agent-selector"
+		},
+		{
+			"name": "mcp-vertex_auto-agent-selector_auto_status",
+			"plugin": "auto-agent-selector"
+		},
+		{
 			"name": "mcp-vertex_configuration_center"
 		},
 		{
@@ -154,6 +166,50 @@
 		{
 			"name": "mcp-vertex_notification_notify_status",
 			"plugin": "notification"
+		},
+		{
+			"name": "mcp-vertex_orchestrator-runner_advise_routing",
+			"plugin": "orchestrator-runner"
+		},
+		{
+			"name": "mcp-vertex_orchestrator-runner_advise_spend",
+			"plugin": "orchestrator-runner"
+		},
+		{
+			"name": "mcp-vertex_orchestrator-runner_bootstrap_providers",
+			"plugin": "orchestrator-runner"
+		},
+		{
+			"name": "mcp-vertex_orchestrator-runner_cancel_invocation",
+			"plugin": "orchestrator-runner"
+		},
+		{
+			"name": "mcp-vertex_orchestrator-runner_discover_providers",
+			"plugin": "orchestrator-runner"
+		},
+		{
+			"name": "mcp-vertex_orchestrator-runner_format_handoff",
+			"plugin": "orchestrator-runner"
+		},
+		{
+			"name": "mcp-vertex_orchestrator-runner_get_quota",
+			"plugin": "orchestrator-runner"
+		},
+		{
+			"name": "mcp-vertex_orchestrator-runner_healthcheck_providers",
+			"plugin": "orchestrator-runner"
+		},
+		{
+			"name": "mcp-vertex_orchestrator-runner_invoke",
+			"plugin": "orchestrator-runner"
+		},
+		{
+			"name": "mcp-vertex_orchestrator-runner_list_models",
+			"plugin": "orchestrator-runner"
+		},
+		{
+			"name": "mcp-vertex_orchestrator-runner_set_provider_state",
+			"plugin": "orchestrator-runner"
 		},
 		{
 			"name": "mcp-vertex_overview"
@@ -353,6 +409,14 @@
 		{
 			"name": "mcp-vertex_test-policy_set_test_policy",
 			"plugin": "test-policy"
+		},
+		{
+			"name": "mcp-vertex_usage-tracking_usage_clear",
+			"plugin": "usage-tracking"
+		},
+		{
+			"name": "mcp-vertex_usage-tracking_usage_report",
+			"plugin": "usage-tracking"
 		}
 	],
 	"skills": [
