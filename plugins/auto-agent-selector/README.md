@@ -37,10 +37,16 @@ or ad-hoc: `mcp-vertex --plugins=auto-agent-selector`.
   (a reachable pin always ranks first). Advisory — it never spends and never
   overrides your choice.
 
+- **`auto_run`** — plan the cheapest-capable → escalate-up route for a task:
+  an ordered ladder (run step 1; if its result fails the project's acceptance
+  gate, escalate to the next, stronger provider), never above your
+  `costCeiling`. The selector plans; the host executes each rung (via
+  orchestrator-runner's `invoke`) and runs the gate between. Headless,
+  spend-free.
+
 More tools land as the [f00119](../../docs/mcp-vertex/proposals/ready/f00119-auto-agent-selector-plugin.md)
-slices ship: `auto_run` (route → run → gate → escalate up on failure, within
-your cost ceiling), and `auto_evaluate` (fold in new/cheaper models,
-optionally from live pricing).
+slices ship: `auto_evaluate` (fold in new/cheaper models, optionally from
+live pricing).
 
 ## Philosophy
 

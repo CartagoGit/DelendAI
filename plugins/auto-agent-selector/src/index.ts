@@ -2,6 +2,7 @@ import { definePlugin } from '@mcp-vertex/core/public';
 import { z } from 'zod';
 
 import { buildAutoRecommendRegistration } from './lib/tools/auto-recommend.tool';
+import { buildAutoRunRegistration } from './lib/tools/auto-run.tool';
 import { buildAutoStatusRegistration } from './lib/tools/auto-status.tool';
 
 /** The dial default when the host does not set one (lean cheap, not the floor). */
@@ -54,6 +55,10 @@ export default definePlugin({
 					namespacePrefix: ctx.namespacePrefix,
 				}),
 				buildAutoRecommendRegistration({
+					namespacePrefix: ctx.namespacePrefix,
+					defaultTradeoff,
+				}),
+				buildAutoRunRegistration({
 					namespacePrefix: ctx.namespacePrefix,
 					defaultTradeoff,
 				}),
