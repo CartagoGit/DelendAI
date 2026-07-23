@@ -47,7 +47,7 @@
 		"deps": {
 			"options": {
 				"manifest": "package.json",
-				"allowNetwork": false,
+				"allowNetwork": true,
 				"allowWrite": false
 			}
 		},
