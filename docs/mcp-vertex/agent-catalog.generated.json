@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-07-23T18:06:19.110Z",
+	"generatedAt": "2026-07-23T18:50:03.485Z",
 	"mode": "compact",
 	"tools": [
 		{
@@ -760,6 +760,160 @@
 				"kind": "feat"
 			},
 			{
+				"id": "f00121",
+				"title": "f00121",
+				"track": "plugin+forge+collab",
+				"status": "ready",
+				"kind": "feat"
+			},
+			{
+				"id": "f00122",
+				"title": "f00122",
+				"track": "plugin+security+quality",
+				"status": "ready",
+				"kind": "feat"
+			},
+			{
+				"id": "f00123",
+				"title": "f00123",
+				"track": "plugin+refactor+reliability",
+				"status": "ready",
+				"kind": "feat"
+			},
+			{
+				"id": "f00124",
+				"title": "f00124",
+				"track": "plugin+search+navigation",
+				"status": "ready",
+				"kind": "feat"
+			},
+			{
+				"id": "f00125",
+				"title": "f00125",
+				"track": "plugin+browser+verification",
+				"status": "ready",
+				"kind": "feat"
+			},
+			{
+				"id": "f00126",
+				"title": "f00126",
+				"track": "plugin+perf+quality",
+				"status": "ready",
+				"kind": "feat"
+			},
+			{
+				"id": "f00127",
+				"title": "f00127",
+				"track": "plugin+eval+routing",
+				"status": "ready",
+				"kind": "feat"
+			},
+			{
+				"id": "f00128",
+				"title": "f00128",
+				"track": "plugin+database+data",
+				"status": "ready",
+				"kind": "feat"
+			},
+			{
+				"id": "f00129",
+				"title": "f00129",
+				"track": "plugin+observability+runtime",
+				"status": "ready",
+				"kind": "feat"
+			},
+			{
+				"id": "f00130",
+				"title": "f00130",
+				"track": "plugin+api+integration",
+				"status": "ready",
+				"kind": "feat"
+			},
+			{
+				"id": "f00131",
+				"title": "f00131",
+				"track": "plugin+release+automation",
+				"status": "ready",
+				"kind": "feat"
+			},
+			{
+				"id": "f00132",
+				"title": "f00132",
+				"track": "plugin+diagram+docs",
+				"status": "ready",
+				"kind": "feat"
+			},
+			{
+				"id": "f00133",
+				"title": "f00133",
+				"track": "plugin+container+runtime",
+				"status": "ready",
+				"kind": "feat"
+			},
+			{
+				"id": "f00134",
+				"title": "f00134",
+				"track": "plugin+i18n+quality",
+				"status": "ready",
+				"kind": "feat"
+			},
+			{
+				"id": "f00135",
+				"title": "f00135",
+				"track": "plugin+config+onboarding",
+				"status": "ready",
+				"kind": "feat"
+			},
+			{
+				"id": "f00136",
+				"title": "f00136",
+				"track": "plugin+tools+dx",
+				"status": "ready",
+				"kind": "feat"
+			},
+			{
+				"id": "f00137",
+				"title": "f00137",
+				"track": "plugin+skills+process",
+				"status": "ready",
+				"kind": "feat"
+			},
+			{
+				"id": "f00138",
+				"title": "f00138",
+				"track": "plugin+prompts+dx",
+				"status": "ready",
+				"kind": "feat"
+			},
+			{
+				"id": "f00139",
+				"title": "f00139",
+				"track": "plugin+audit+self-improvement",
+				"status": "ready",
+				"kind": "feat"
+			},
+			{
+				"id": "f00140",
+				"title": "f00140",
+				"track": "plugin+extension+routing",
+				"status": "ready",
+				"kind": "feat"
+			},
+			{
+				"id": "f00141",
+				"title": "f00141",
+				"track": "plugin+registry+dx",
+				"status": "ready",
+				"kind": "feat"
+			},
+			{
+				"id": "f00142",
+				"title": "f00142",
+				"track": "plugin+config+auto-selection",
+				"status": "ready",
+				"kind": "feat"
+			},
+			{
 				"id": "r00011",
 				"title": "r00011",
 				"track": "refactor+config+dx",
@@ -775,7 +929,7 @@
 			}
 		],
 		"byStatus": {
-			"ready": 5,
+			"ready": 27,
 			"in-progress": 0,
 			"review": 0,
 			"paused": 1,
