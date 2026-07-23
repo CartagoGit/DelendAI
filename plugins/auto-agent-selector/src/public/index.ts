@@ -10,6 +10,15 @@ export type {
 	IRankInput,
 	IRankedProvider,
 } from '../lib/contracts/interfaces/ranking.interface';
+export { buildEscalationLadder } from '../lib/escalate/build-ladder';
+export { runWithEscalation } from '../lib/escalate/run-with-escalation';
+export type {
+	IBuildLadderInput,
+	IEscalationOutcome,
+	IEscalationPlan,
+	IEscalationRung,
+	IRunEscalationDeps,
+} from '../lib/contracts/interfaces/escalation.interface';
 export {
 	KNOWN_APIS,
 	KNOWN_CLIS,
