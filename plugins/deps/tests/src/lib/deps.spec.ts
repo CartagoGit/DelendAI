@@ -187,9 +187,13 @@ describe('deps_outdated tool registration (M11, opt-in)', async () => {
 			'deps_list',
 			'deps_check',
 			'deps_outdated',
+			'deps_audit',
 			'deps_polyglot',
 		]);
 		expect(tools.find((t) => t.id === 'deps_outdated')?.effects).toEqual([
+			'network',
+		]);
+		expect(tools.find((t) => t.id === 'deps_audit')?.effects).toEqual([
 			'network',
 		]);
 	});
