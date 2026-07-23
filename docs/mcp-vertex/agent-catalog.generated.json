@@ -35,11 +35,19 @@
 			"name": "mcp-vertex_create_project"
 		},
 		{
+			"name": "mcp-vertex_deps_deps_audit",
+			"plugin": "deps"
+		},
+		{
 			"name": "mcp-vertex_deps_deps_check",
 			"plugin": "deps"
 		},
 		{
 			"name": "mcp-vertex_deps_deps_list",
+			"plugin": "deps"
+		},
+		{
+			"name": "mcp-vertex_deps_deps_outdated",
 			"plugin": "deps"
 		},
 		{

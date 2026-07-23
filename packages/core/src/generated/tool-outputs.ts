@@ -295,6 +295,32 @@ export interface McpVertexCreateProjectOutput {
 	}[];
 }
 
+export interface McpVertexDepsDepsAuditOutput {
+	tool: string;
+	findings: Array<{
+		ruleId: string;
+		severity: "critical" | "high" | "medium" | "low" | "info";
+		message: string;
+		fix?: string;
+		location?: {
+			file: string;
+			line?: number;
+			endLine?: number;
+		};
+	}>;
+	summary: {
+		critical: number;
+		high: number;
+		medium: number;
+		low: number;
+		info: number;
+	};
+	ranAt: string;
+	skipped?: boolean;
+	note?: string;
+	worst: string;
+}
+
 export interface McpVertexDepsDepsCheckOutput {
 	manifest: string;
 	lockfile: {
@@ -2139,6 +2165,7 @@ export interface McpVertexToolOutputs {
 	"mcp-vertex_cache_cache_gc": McpVertexCacheCacheGcOutput;
 	"mcp-vertex_configuration_center": McpVertexConfigurationCenterOutput;
 	"mcp-vertex_create_project": McpVertexCreateProjectOutput;
+	"mcp-vertex_deps_deps_audit": McpVertexDepsDepsAuditOutput;
 	"mcp-vertex_deps_deps_check": McpVertexDepsDepsCheckOutput;
 	"mcp-vertex_deps_deps_list": McpVertexDepsDepsListOutput;
 	"mcp-vertex_deps_deps_outdated": McpVertexDepsDepsOutdatedOutput;
