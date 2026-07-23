@@ -30,12 +30,17 @@ or ad-hoc: `mcp-vertex --plugins=auto-agent-selector`.
 - **`auto_status`** — list the providers reachable right now (cheapest-first)
   plus every known one that is missing, each with a single copy-paste command
   to enable it (install a CLI or export a key). Read-only.
+- **`auto_recommend`** — rank the reachable providers and recommend the
+  best-value one, with a plain-language rationale for every option. Pass
+  `costQualityTradeoff` (0 = always the strongest, 10 = the cheapest that
+  works) to override the default, and `pin` to force a provider you prefer
+  (a reachable pin always ranks first). Advisory — it never spends and never
+  overrides your choice.
 
 More tools land as the [f00119](../../docs/mcp-vertex/proposals/ready/f00119-auto-agent-selector-plugin.md)
-slices ship: `auto_recommend` (rank per task type — you decide and can pin),
-`auto_run` (route → run → gate → escalate up on failure, within your cost
-ceiling), and `auto_evaluate` (fold in new/cheaper models, optionally from
-live pricing).
+slices ship: `auto_run` (route → run → gate → escalate up on failure, within
+your cost ceiling), and `auto_evaluate` (fold in new/cheaper models,
+optionally from live pricing).
 
 ## Philosophy
 

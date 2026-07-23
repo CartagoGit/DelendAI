@@ -1,7 +1,11 @@
 import { definePlugin } from '@mcp-vertex/core/public';
 import { z } from 'zod';
 
+import { buildAutoRecommendRegistration } from './lib/tools/auto-recommend.tool';
 import { buildAutoStatusRegistration } from './lib/tools/auto-status.tool';
+
+/** The dial default when the host does not set one (lean cheap, not the floor). */
+const DEFAULT_TRADEOFF = 7;
 
 /**
  * `@mcp-vertex/auto-agent-selector` — zero-config multi-agent routing (f00119).
@@ -40,10 +44,18 @@ export default definePlugin({
 		options: { costQualityTradeoff: 7 },
 	},
 	async register(ctx) {
+		const parsed = OptionsSchema.safeParse(ctx.options ?? {});
+		const defaultTradeoff = parsed.success
+			? (parsed.data.costQualityTradeoff ?? DEFAULT_TRADEOFF)
+			: DEFAULT_TRADEOFF;
 		return {
 			tools: [
 				buildAutoStatusRegistration({
 					namespacePrefix: ctx.namespacePrefix,
+				}),
+				buildAutoRecommendRegistration({
+					namespacePrefix: ctx.namespacePrefix,
+					defaultTradeoff,
 				}),
 			],
 			knowledge: [
