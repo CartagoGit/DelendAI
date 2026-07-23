@@ -57,6 +57,10 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 		'plugins/test-convention/src',
 	);
 	const webFetch = resolve(workspaceRoot, 'plugins/web-fetch/src');
+	const autoAgentSelector = resolve(
+		workspaceRoot,
+		'plugins/auto-agent-selector/src',
+	);
 	const conventions = resolve(workspaceRoot, 'plugins/conventions/src');
 	const issues = resolve(workspaceRoot, 'plugins/issues/src');
 	const cache = resolve(workspaceRoot, 'plugins/cache/src');
@@ -261,6 +265,18 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 		{
 			find: '@mcp-vertex/web-fetch',
 			replacement: resolve(webFetch, 'index.ts'),
+		},
+		{
+			find: '@mcp-vertex/auto-agent-selector/public',
+			replacement: resolve(autoAgentSelector, 'public/index.ts'),
+		},
+		{
+			find: /^@mcp-vertex\/auto-agent-selector\/lib\/(.*)$/,
+			replacement: `${resolve(autoAgentSelector, 'lib')}/$1`,
+		},
+		{
+			find: '@mcp-vertex/auto-agent-selector',
+			replacement: resolve(autoAgentSelector, 'index.ts'),
 		},
 		{
 			find: '@mcp-vertex/conventions/public',
