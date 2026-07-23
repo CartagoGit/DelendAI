@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
-import type { IToolRegistration } from '@mcp-vertex/core/public';
-import { toolJson } from '@mcp-vertex/core/public';
+import type { IArgvExec, IToolRegistration } from '@mcp-vertex/core/public';
+import { toolJson, worstSeverity } from '@mcp-vertex/core/public';
 
 import {
 	listDeps,
@@ -11,6 +11,7 @@ import {
 } from '../services/engine';
 import type { ILatestVersionFetcher } from '../services/engine';
 import { listPolyglotDeps } from '../services/polyglot';
+import { runDepsAudit } from '../services/audit';
 
 export interface IDepsToolOptions {
 	readonly namespacePrefix: string;
@@ -25,6 +26,11 @@ export interface IDepsToolOptions {
 	readonly allowNetwork?: boolean;
 	/** Injectable for tests; defaults to a real npm registry fetch. */
 	readonly fetchLatest?: ILatestVersionFetcher;
+	/**
+	 * Injectable argv exec for `deps_audit` (tests pass a fake; production
+	 * uses the shared `runArgv` inside `runExternalTool`).
+	 */
+	readonly auditExec?: IArgvExec;
 }
 
 const OUTDATED_ENTRY = z.object({
@@ -42,6 +48,37 @@ const SECTION_COUNTS = z.object({
 	devDependencies: z.number(),
 	peerDependencies: z.number(),
 	optionalDependencies: z.number(),
+});
+
+// r00012 shared finding shape, projected as the `deps_audit` output.
+const AUDIT_FINDING = z.object({
+	ruleId: z.string(),
+	severity: z.enum(['critical', 'high', 'medium', 'low', 'info']),
+	message: z.string(),
+	fix: z.string().optional(),
+	location: z
+		.object({
+			file: z.string(),
+			line: z.number().optional(),
+			endLine: z.number().optional(),
+		})
+		.optional(),
+});
+
+const AUDIT_RESULT = z.object({
+	tool: z.string(),
+	findings: z.array(AUDIT_FINDING),
+	summary: z.object({
+		critical: z.number(),
+		high: z.number(),
+		medium: z.number(),
+		low: z.number(),
+		info: z.number(),
+	}),
+	ranAt: z.string(),
+	skipped: z.boolean().optional(),
+	note: z.string().optional(),
+	worst: z.string(),
 });
 
 /**
@@ -168,6 +205,45 @@ export const buildDepsToolRegistrations = (
 												fetchLatestFromNpm,
 										),
 									),
+							);
+						},
+					} satisfies IToolRegistration,
+					{
+						id: 'deps_audit',
+						summary:
+							'Scan dependencies for known CVEs via bun audit (normalized findings). Opt-in, network.',
+						tags: ['deps', 'security', 'network'],
+						effects: ['network'],
+						register: async (server) => {
+							server.registerTool(
+								`${prefix}_deps_audit`,
+								{
+									description:
+										"Scan the project's installed dependencies for known vulnerabilities using `bun audit`, returning normalized findings (severity critical..info, GHSA id, advisory url) and a per-severity summary. Opt-in (plugins.deps.options.allowNetwork:true) — queries the advisory registry. A missing bun binary yields a skipped result with an install hint, never an error.",
+									inputSchema: z.object({}),
+									outputSchema: AUDIT_RESULT,
+								},
+								async () => {
+									const result = await runDepsAudit(
+										options.workspaceRootAbs,
+										options.auditExec,
+									);
+									return toolJson({
+										tool: result.tool,
+										findings: result.findings,
+										summary: result.summary,
+										ranAt: result.ranAt,
+										...(result.skipped !== undefined
+											? { skipped: result.skipped }
+											: {}),
+										...(result.note !== undefined
+											? { note: result.note }
+											: {}),
+										worst:
+											worstSeverity(result.findings) ??
+											'none',
+									});
+								},
 							);
 						},
 					} satisfies IToolRegistration,
