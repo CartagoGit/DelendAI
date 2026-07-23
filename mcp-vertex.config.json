@@ -84,6 +84,17 @@
 			"options": {
 				"roots": ["packages", "plugins", "extensions", "apps", "tools"]
 			}
+		},
+		"usage-tracking": {
+			"options": {}
+		},
+		"orchestrator-runner": {
+			"options": {}
+		},
+		"auto-agent-selector": {
+			"options": {
+				"costQualityTradeoff": 8
+			}
 		}
 	}
 }
