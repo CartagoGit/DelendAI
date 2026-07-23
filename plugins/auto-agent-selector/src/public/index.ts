@@ -5,6 +5,11 @@
  */
 export { discoverRoster } from '../lib/discovery/discover-roster';
 export { realDiscoveryDeps } from '../lib/discovery/real-deps';
+export { rankProviders } from '../lib/routing/rank-providers';
+export type {
+	IRankInput,
+	IRankedProvider,
+} from '../lib/contracts/interfaces/ranking.interface';
 export {
 	KNOWN_APIS,
 	KNOWN_CLIS,
