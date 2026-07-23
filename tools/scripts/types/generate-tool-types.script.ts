@@ -92,14 +92,18 @@ export const harvestToolSchemas = async (): Promise<IHarvestedTool[]> => {
 			);
 			return { default: hit ? hit[1] : undefined };
 		},
-		// Synthetic config, harvest-only: turns on `deps`'s opt-in
-		// `allowNetwork` so `deps_outdated` is registered and its
-		// `outputSchema` gets harvested too — every other plugin still sees
-		// no config file (default options), matching the real CLI default.
+		// Synthetic config, harvest-only: turns on the opt-in surfaces so
+		// their `outputSchema`s get harvested too — `deps`'s `allowNetwork`
+		// (deps_outdated / deps_audit) and `git`'s `allowForge` (pr_list /
+		// pr_view). Every other plugin still sees no config file (default
+		// options), matching the real CLI default.
 		readFile: async (absolutePath: string) =>
 			absolutePath.endsWith('mcp-vertex.config.json')
 				? JSON.stringify({
-						plugins: { deps: { options: { allowNetwork: true } } },
+						plugins: {
+							deps: { options: { allowNetwork: true } },
+							git: { options: { allowForge: true } },
+						},
 					})
 				: undefined,
 	});
