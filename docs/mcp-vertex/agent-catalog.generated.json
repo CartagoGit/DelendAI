@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-07-23T18:50:03.485Z",
+	"generatedAt": "2026-07-23T23:17:42.047Z",
 	"mode": "compact",
 	"tools": [
 		{
@@ -92,6 +92,14 @@
 		},
 		{
 			"name": "mcp-vertex_git_log",
+			"plugin": "git"
+		},
+		{
+			"name": "mcp-vertex_git_pr_list",
+			"plugin": "git"
+		},
+		{
+			"name": "mcp-vertex_git_pr_view",
 			"plugin": "git"
 		},
 		{

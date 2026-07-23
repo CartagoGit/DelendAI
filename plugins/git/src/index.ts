@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { createGitRunner } from './lib/services/git';
 import { buildGitToolRegistrations } from './lib/tools';
 import { buildGitWriteToolRegistrations } from './lib/tools/write-tools';
+import { buildGitForgeToolRegistrations } from './lib/tools/forge-tools';
 
 /**
  * Read-only git orientation, PLUS opt-in write tools. Exposes
@@ -26,6 +27,7 @@ import { buildGitWriteToolRegistrations } from './lib/tools/write-tools';
  */
 const OptionsSchema = z.object({
 	allowWrite: z.boolean().optional(),
+	allowForge: z.boolean().optional(),
 });
 
 export default definePlugin({
@@ -43,6 +45,7 @@ export default definePlugin({
 		}
 		const run = createGitRunner(ctx.workspace.root);
 		const allowWrite = parsed.data.allowWrite === true;
+		const allowForge = parsed.data.allowForge === true;
 		const readTools = buildGitToolRegistrations({
 			namespacePrefix: ctx.namespacePrefix,
 			run,
@@ -54,8 +57,14 @@ export default definePlugin({
 					commitAuthor: ctx.commitAuthor,
 				})
 			: [];
+		const forgeTools = allowForge
+			? buildGitForgeToolRegistrations({
+					namespacePrefix: ctx.namespacePrefix,
+					workspaceRootAbs: ctx.workspace.root,
+				})
+			: [];
 		return {
-			tools: [...readTools, ...writeTools],
+			tools: [...readTools, ...writeTools, ...forgeTools],
 			knowledge: [
 				{
 					id: 'git-orientation',

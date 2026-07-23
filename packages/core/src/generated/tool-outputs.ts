@@ -469,6 +469,37 @@ export interface McpVertexGitLogOutput {
 	}[];
 }
 
+export interface McpVertexGitPrListOutput {
+	available: boolean;
+	note?: string;
+	prs: {
+		number: number;
+		title: string;
+		branch: string;
+		url: string;
+		draft: boolean;
+	}[];
+}
+
+export interface McpVertexGitPrViewOutput {
+	available: boolean;
+	note?: string;
+	pr?: {
+		number: number;
+		title: string;
+		state: string;
+		url: string;
+		mergeable: string;
+		reviewDecision: string;
+		checks: {
+			name: string;
+			status: string;
+			conclusion: string;
+			url: string;
+		}[];
+	};
+}
+
 export interface McpVertexGitShowOutput {
 	hash: string;
 	author: string;
@@ -2181,6 +2212,8 @@ export interface McpVertexToolOutputs {
 	"mcp-vertex_git_changed": McpVertexGitChangedOutput;
 	"mcp-vertex_git_diff": McpVertexGitDiffOutput;
 	"mcp-vertex_git_log": McpVertexGitLogOutput;
+	"mcp-vertex_git_pr_list": McpVertexGitPrListOutput;
+	"mcp-vertex_git_pr_view": McpVertexGitPrViewOutput;
 	"mcp-vertex_git_show": McpVertexGitShowOutput;
 	"mcp-vertex_git_status": McpVertexGitStatusOutput;
 	"mcp-vertex_git_worktree": McpVertexGitWorktreeOutput;
