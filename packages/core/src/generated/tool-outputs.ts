@@ -1378,12 +1378,20 @@ export interface McpVertexProposalsBranchStatusOutput {
 }
 
 export interface McpVertexProposalsCloseSliceOutput {
-	ok: true;
-	proposalId: string;
-	sliceId: string;
-	closed: boolean;
-	lockReleased: boolean;
-	pendingIntegrationBranch: string | null;
+	ok: boolean;
+	error?: {
+		reason: string;
+		nextAction?: string;
+		kind?: string;
+		output?: string;
+	};
+	proposalId?: string;
+	sliceId?: string;
+	closed?: boolean;
+	lockReleased?: boolean;
+	pendingIntegrationBranch?: string | null;
+	kind?: string;
+	validationOutput?: string;
 }
 
 export interface McpVertexProposalsCompactStatusOutput {
@@ -1786,6 +1794,7 @@ export interface McpVertexProposalsProposalTransitionOutput {
 	error?: {
 		reason: string;
 		nextAction?: string;
+		nextHops?: string[];
 	};
 	id?: string;
 	from?: string;
@@ -1794,6 +1803,8 @@ export interface McpVertexProposalsProposalTransitionOutput {
 	movedFrom?: string;
 	movedTo?: string;
 	warning?: string;
+	indexSynced?: boolean;
+	filesRewritten?: number;
 }
 
 export interface McpVertexProposalsProposalsClosePlanOutput {
