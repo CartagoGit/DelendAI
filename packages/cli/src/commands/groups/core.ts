@@ -12,7 +12,13 @@
  *   - `mcp-vertex_plan_mcp_project`({ serverName?, namespacePrefix?, tests? })
  *   - `mcp-vertex_create_project`  ({ kind, ... })
  */
+import {
+	createWorkspacePathProvider,
+	runCreatePlugin,
+} from '@mcp-vertex/core/public';
+
 import type { ICliCommand } from '../../contracts/interfaces/cli-command.interface';
+import { EXIT_CODE } from '../../contracts/constants/exit-code.constant';
 import {
 	data,
 	hasFlag,
@@ -150,6 +156,72 @@ const projectCreateCommand: ICliCommand = {
 	},
 };
 
+interface IPluginNewCommandDeps {
+	readonly createWorkspacePathProvider: typeof createWorkspacePathProvider;
+	readonly runCreatePlugin: typeof runCreatePlugin;
+}
+
+export const buildPluginNewCommand = (
+	deps: IPluginNewCommandDeps = {
+		createWorkspacePathProvider,
+		runCreatePlugin,
+	},
+): ICliCommand => ({
+	name: 'plugin new',
+	summary:
+		'Scaffold and wire a new first-party plugin, then run the wiring doctor.',
+	async run(args, ctx) {
+		const name = positionalArg(args);
+		if (name === undefined) {
+			return usage('plugin new <name> [--description=...] [--dry-run]');
+		}
+		const description = scalarArg(args, 'description');
+		if (description === undefined) {
+			return usage('plugin new <name> [--description=...] [--dry-run]');
+		}
+		try {
+			const report = await deps.runCreatePlugin(
+				{
+					name,
+					description,
+					...(hasFlag(args, 'dry-run') ? { dryRun: true } : {}),
+				},
+				{
+					workspace: deps.createWorkspacePathProvider(
+						ctx.globals.workspace,
+					),
+				},
+			);
+			if (ctx.globals.json) {
+				return data(
+					report,
+					report.doctor.fullyWired
+						? EXIT_CODE.OK
+						: EXIT_CODE.VALIDATION,
+				);
+			}
+			const lines = [
+				`plugin: ${report.pluginId}`,
+				`scaffolded: ${report.scaffolded.files.join(', ')}`,
+				`wired: ${report.wired.map((entry) => entry.pointId).join(', ')}`,
+				`doctor: ${report.doctor.fullyWired ? 'fully wired' : `missing ${report.doctor.missing.join(', ')}`}`,
+			];
+			return {
+				code: report.doctor.fullyWired
+					? EXIT_CODE.OK
+					: EXIT_CODE.VALIDATION,
+				text: `${lines.join('\n')}\n`,
+				data: report,
+			};
+		} catch (error) {
+			return {
+				code: EXIT_CODE.VALIDATION,
+				error: error instanceof Error ? error.message : String(error),
+			};
+		}
+	},
+});
+
 export const coreExtraCommands: readonly ICliCommand[] = [
 	fsReadCommand,
 	fsWriteCommand,
@@ -157,4 +229,5 @@ export const coreExtraCommands: readonly ICliCommand[] = [
 	projectAnalyzeCommand,
 	projectPlanCommand,
 	projectCreateCommand,
+	buildPluginNewCommand(),
 ];

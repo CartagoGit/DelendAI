@@ -224,6 +224,7 @@ export {
 	scaffoldSkillFile,
 	scaffoldToolFile,
 } from '../lib/scaffold/scaffold-host';
+export { extractPlugin } from '../lib/scaffold/extract-plugin';
 export type {
 	IScaffoldAgentSlot,
 	IScaffoldClientOptions,
@@ -236,6 +237,11 @@ export type {
 	IPluginBlueprintDeps,
 } from '../lib/scaffold/plugin-blueprint';
 export { renderPluginBlueprint } from '../lib/scaffold/plugin-blueprint';
+export type {
+	IExtractedTool,
+	IExtractPluginOptions,
+	IExtractPluginResult,
+} from '../lib/scaffold/extract-plugin';
 export { scaffoldExtensionHostFiles } from '../lib/scaffold/scaffold-extension-host';
 export type { IScaffoldExtensionHostOptions } from '../lib/contracts/interfaces/scaffold-extension-host-options.interface';
 export {
@@ -248,6 +254,18 @@ export type {
 	IScaffoldReport,
 	IScaffoldToolOptions,
 } from '../lib/scaffold/scaffold-tool';
+export {
+	CREATE_PLUGIN_INPUT_SCHEMA,
+	CREATE_PLUGIN_OUTPUT_SCHEMA,
+	buildCreatePluginToolRegistration,
+	runCreatePlugin,
+} from '../lib/scaffold/create-plugin.tool';
+export type {
+	ICreatePluginArgs,
+	ICreatePluginOutput,
+	ICreatePluginToolOptions,
+	IRegenerateCatalogArgs,
+} from '../lib/scaffold/create-plugin.tool';
 
 // --- shared filesystem helpers ---------------------------------------------
 export {

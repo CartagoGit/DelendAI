@@ -17,18 +17,16 @@
  */
 import { resolve } from 'node:path';
 
-import { readFile } from 'node:fs/promises';
+import { readdir, readFile, stat } from 'node:fs/promises';
 
 import {
-	PLUGIN_DEFAULTS,
-	PRESET_CATALOG,
+	diagnosePluginWiring,
 	type IPluginWiringFs,
-	type IPluginWiringPoint,
 	type IPluginWiringReport,
 } from '@mcp-vertex/core/public';
-import { PUBLISH_ORDER } from '../release/release-plan';
 
 const REPO_ROOT = resolve(import.meta.dir, '../../..');
+const PLUGINS_ROOT = resolve(REPO_ROOT, 'plugins');
 
 const realFs: IPluginWiringFs = {
 	async readFile(path) {
@@ -38,163 +36,30 @@ const realFs: IPluginWiringFs = {
 	async writeFile() {
 		throw new Error('plugin-wiring doctor is read-only');
 	},
-	async pathExists() {
-		return true;
+	async pathExists(path) {
+		const absolute = path.startsWith('/') ? path : resolve(REPO_ROOT, path);
+		try {
+			await stat(absolute);
+			return true;
+		} catch {
+			return false;
+		}
 	},
 };
 
-const TSCONFIG_PATHS = 'tsconfig.base.json';
-const VITEST_SHARED = 'vitest.shared.ts';
-const PLUGIN_DEFAULTS_FILE = 'packages/core/src/lib/plugins/plugin-defaults.ts';
-const RELEASE_PLAN_FILE = 'tools/scripts/release/release-plan.ts';
-const PRESET_CATALOG_FILE = 'packages/core/src/lib/plugins/preset-catalog.ts';
-const CATALOG_ARTIFACT = 'docs/mcp-vertex/agent-catalog.generated.json';
-
-const readSource = (path: string): Promise<string> => realFs.readFile(path);
-
-const checkTsconfigBase = async (
-	pluginId: string,
-): Promise<IPluginWiringPoint> => {
-	const text = await readSource(TSCONFIG_PATHS);
-	const scoped = `@mcp-vertex/${pluginId}`;
-	const ok =
-		text.includes(`"${scoped}":`) &&
-		text.includes(`"${scoped}/public":`) &&
-		text.includes(`"${scoped}/*":`);
-	return {
-		id: 'tsconfig-base',
-		path: TSCONFIG_PATHS,
-		wired: ok,
-		summary: `tsconfig.base.json compilerOptions.paths entries for "${scoped}"`,
-		...(ok
-			? {}
-			: {
-					remediation: `Add paths entries for "${scoped}", "${scoped}/public", "${scoped}/*" pointing under plugins/${pluginId}/src.`,
-				}),
-	};
-};
-
-const checkVitestShared = async (
-	pluginId: string,
-): Promise<IPluginWiringPoint> => {
-	const text = await readSource(VITEST_SHARED);
-	const scoped = `@mcp-vertex/${pluginId}`;
-	// Plain string match is enough: the regex literal in `vitest.shared.ts`
-	// is fixed-shape (`find: /^<scoped>\/lib\/(.*)$/,`), so a substring
-	// probe of the literal text is unambiguous.
-	const literalNeedle = `find: /^${scoped.replace(/\//gu, '\\/')}\\/lib\\/(.*)$/`;
-	const ok =
-		text.includes(`find: '${scoped}'`) &&
-		text.includes(`find: '${scoped}/public'`) &&
-		text.includes(literalNeedle);
-	return {
-		id: 'vitest-shared',
-		path: VITEST_SHARED,
-		wired: ok,
-		summary: `vitest.shared.ts workspaceAliases for "${scoped}"`,
-		...(ok
-			? {}
-			: {
-					remediation: `Add a const declaration + three alias entries to workspaceAliases() in vitest.shared.ts.`,
-				}),
-	};
-};
-
-const checkPluginDefaults = (pluginId: string): IPluginWiringPoint => {
-	const ok = Object.prototype.hasOwnProperty.call(PLUGIN_DEFAULTS, pluginId);
-	return {
-		id: 'plugin-defaults',
-		path: PLUGIN_DEFAULTS_FILE,
-		wired: ok,
-		summary: `PLUGIN_DEFAULTS entry for "${pluginId}"`,
-		...(ok
-			? {}
-			: {
-					remediation: `Add a "${pluginId}": {} entry to PLUGIN_DEFAULTS in packages/core/src/lib/plugins/plugin-defaults.ts.`,
-				}),
-	};
-};
-
-const checkPublishOrder = (pluginId: string): IPluginWiringPoint => {
-	const dir = `plugins/${pluginId}`;
-	const ok = PUBLISH_ORDER.includes(dir);
-	return {
-		id: 'publish-order',
-		path: RELEASE_PLAN_FILE,
-		wired: ok,
-		summary: `PUBLISH_ORDER entry for "${dir}"`,
-		...(ok
-			? {}
-			: {
-					remediation: `Add '${dir}' to PUBLISH_ORDER in tools/scripts/release/release-plan.ts.`,
-				}),
-	};
-};
-
-const checkPresetCatalog = (pluginId: string): IPluginWiringPoint => {
-	const inAny = Object.values(PRESET_CATALOG).some((preset) =>
-		preset.members.some((member) => member.plugin === pluginId),
+const listPluginIds = async (): Promise<readonly string[]> => {
+	const entries = await readdir(PLUGINS_ROOT, { withFileTypes: true });
+	const ids = await Promise.all(
+		entries
+			.filter((entry) => entry.isDirectory())
+			.map(async (entry) => {
+				const hasIndex = await realFs.pathExists(
+					`plugins/${entry.name}/src/index.ts`,
+				);
+				return hasIndex ? entry.name : undefined;
+			}),
 	);
-	return {
-		id: 'preset-catalog',
-		path: PRESET_CATALOG_FILE,
-		wired: inAny,
-		summary: `PRESET_CATALOG membership for "${pluginId}"`,
-		...(inAny
-			? {}
-			: {
-					remediation: `Add a { plugin: '${pluginId}' } entry to one of the presets in packages/core/src/lib/plugins/preset-catalog.ts.`,
-				}),
-	};
-};
-
-const checkCatalogRegen = async (
-	pluginId: string,
-): Promise<IPluginWiringPoint> => {
-	const text = await readSource(CATALOG_ARTIFACT);
-	// The catalog stores the plugin id under each tool entry as
-	// `"plugin": "<id>"`. A single hit is sufficient to prove the catalog
-	// has been regenerated against the plugin dir.
-	const ok = new RegExp(`"plugin":\\s*"${escapeRegex(pluginId)}"`, 'u').test(
-		text,
-	);
-	return {
-		id: 'catalog-regen',
-		path: CATALOG_ARTIFACT,
-		wired: ok,
-		summary: `agent catalog lists tools from "${pluginId}"`,
-		...(ok
-			? {}
-			: {
-					remediation: `Run \`bun run catalog:generate\` so the agent catalog picks up the new plugin.`,
-				}),
-	};
-};
-
-const escapeRegex = (value: string): string =>
-	value.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&');
-
-/** Run every checker for one plugin id and produce a verdict. */
-export const diagnosePluginWiring = async (
-	pluginId: string,
-): Promise<IPluginWiringReport> => {
-	const points: IPluginWiringPoint[] = [
-		await checkTsconfigBase(pluginId),
-		await checkVitestShared(pluginId),
-		checkPluginDefaults(pluginId),
-		checkPublishOrder(pluginId),
-		checkPresetCatalog(pluginId),
-		await checkCatalogRegen(pluginId),
-	];
-	const missing = points
-		.filter((point) => !point.wired)
-		.map((point) => point.id);
-	return {
-		pluginId,
-		points,
-		fullyWired: missing.length === 0,
-		missing,
-	};
+	return ids.filter((id): id is string => id !== undefined).sort();
 };
 
 const formatReport = (report: IPluginWiringReport): string => {
@@ -212,20 +77,38 @@ const formatReport = (report: IPluginWiringReport): string => {
 	return `${lines.join('\n')}\n`;
 };
 
+const formatAggregate = (reports: readonly IPluginWiringReport[]): string => {
+	const failing = reports.filter((report) => !report.fullyWired);
+	const lines = [
+		failing.length === 0
+			? `✓ plugin-wiring: ${reports.length} plugin(s) fully wired`
+			: `✗ plugin-wiring: ${failing.length}/${reports.length} plugin(s) failed`,
+	];
+	for (const report of reports) {
+		lines.push(formatReport(report).trimEnd());
+	}
+	return `${lines.join('\n')}\n`;
+};
+
 export type IDoctorPluginId = string;
 
 const main = async (argv: readonly string[]): Promise<void> => {
 	const pluginId = argv[0]?.replace(/^plugins\//u, '');
-	if (pluginId === undefined || pluginId.length === 0) {
-		process.stderr.write(
-			'usage: bun tools/scripts/verify/plugin-wiring.script.ts <plugin-id-or-plugins-dir>\n',
-		);
-		process.exitCode = 2;
+	if (pluginId !== undefined && pluginId.length > 0) {
+		const report = await diagnosePluginWiring(pluginId, realFs);
+		process.stdout.write(formatReport(report));
+		if (!report.fullyWired) {
+			process.exitCode = 1;
+		}
 		return;
 	}
-	const report = await diagnosePluginWiring(pluginId);
-	process.stdout.write(formatReport(report));
-	if (!report.fullyWired) {
+
+	const pluginIds = await listPluginIds();
+	const reports = await Promise.all(
+		pluginIds.map(async (id) => diagnosePluginWiring(id, realFs)),
+	);
+	process.stdout.write(formatAggregate(reports));
+	if (reports.some((report) => !report.fullyWired)) {
 		process.exitCode = 1;
 	}
 };

@@ -16,6 +16,7 @@ import {
 	type IBatchAtomicWriter,
 	type IBatchOperation,
 } from '../shared/batch-atomic-writer';
+import { buildCreatePluginToolRegistration } from './create-plugin.tool';
 import {
 	scaffoldAgentFile,
 	scaffoldClientFiles,
@@ -373,6 +374,11 @@ export const buildScaffoldToolRegistration = (
 					};
 				},
 			);
+			await buildCreatePluginToolRegistration({
+				namespacePrefix: options.namespacePrefix,
+				workspace: options.workspace,
+				batchWriter,
+			}).register(server);
 		},
 	};
 };

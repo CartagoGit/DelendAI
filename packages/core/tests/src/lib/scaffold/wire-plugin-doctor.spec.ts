@@ -188,4 +188,40 @@ describe('plugin-wiring doctor (in-memory)', () => {
 		expect(report.missing).toEqual([]);
 		expect(report.fullyWired).toBe(true);
 	});
+
+	it('recognises single-quoted PLUGIN_DEFAULTS keys (canonical form)', async () => {
+		// The real plugins/plugin-defaults.ts uses single-quoted keys
+		// (`'auto-agent-selector': {},`). The doctor must accept this form,
+		// not just the unquoted / double-quoted variants.
+		const candidatePath =
+			'packages/core/src/lib/plugins/plugin-defaults.ts';
+		const singleQuoted = `export const PLUGIN_DEFAULTS = {\n\t'auto-agent-selector': {},\n};\n`;
+		const unquoted = `export const PLUGIN_DEFAULTS = {\n\tauto-agent-selector: {},\n};\n`;
+		const doubleQuoted = `export const PLUGIN_DEFAULTS = {\n\t"auto-agent-selector": {},\n};\n`;
+		for (const text of [singleQuoted, unquoted, doubleQuoted]) {
+			const target = join(dir, candidatePath);
+			writeFileSync(target, text);
+			const report = await diagnosePluginWiring(
+				'auto-agent-selector',
+				fs,
+			);
+			const point = report.points.find((p) => p.id === 'plugin-defaults');
+			expect(point?.wired, `${text} should be wired`).toBe(true);
+		}
+	});
+
+	it('recognises the escaped-slash form in vitest.shared.ts', async () => {
+		// The real vitest.shared.ts carries JS RegExp literals with escaped
+		// slashes (`@mcp-vertex\/demo`). The doctor must accept both forms.
+		const candidatePath = 'vitest.shared.ts';
+		const escaped = `import { resolve } from 'node:path';\nexport const workspaceAliases = () => [\n\t{ find: '@mcp-vertex/demo', replacement: 'x' },\n\t{ find: '@mcp-vertex/demo/public', replacement: 'x' },\n\t{ find: /^@mcp-vertex\\/demo\\/lib\\/(.*)$/, replacement: 'x' },\n];\n`;
+		const canonical = `import { resolve } from 'node:path';\nexport const workspaceAliases = () => [\n\t{ find: '@mcp-vertex/demo', replacement: 'x' },\n\t{ find: '@mcp-vertex/demo/public', replacement: 'x' },\n\t{ find: /^@mcp-vertex/demo\\/lib\\/(.*)$/, replacement: 'x' },\n];\n`;
+		for (const text of [escaped, canonical]) {
+			const target = join(dir, candidatePath);
+			writeFileSync(target, text);
+			const report = await diagnosePluginWiring('demo', fs);
+			const point = report.points.find((p) => p.id === 'vitest-shared');
+			expect(point?.wired, `${text} should be wired`).toBe(true);
+		}
+	});
 });
