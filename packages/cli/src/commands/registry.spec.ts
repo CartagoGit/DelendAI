@@ -41,6 +41,8 @@ const EXPECTED_COMMANDS = [
 	'deps list',
 	'deps check',
 	'deps polyglot',
+	'deps licenses',
+	'deps audit',
 	'rules get',
 	'rules check',
 	'rules apply',

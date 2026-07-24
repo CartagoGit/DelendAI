@@ -47,12 +47,23 @@ const find = (group: readonly ICliCommand[], name: string): ICliCommand => {
 };
 
 describe('deps group (f00046 S3)', async () => {
-	it('exposes list/check/polyglot', async () => {
+	it('exposes list/check/polyglot/licenses/audit', async () => {
 		expect(depsCommands.map((c) => c.name)).toEqual([
 			'deps list',
 			'deps check',
 			'deps polyglot',
+			'deps licenses',
+			'deps audit',
 		]);
+	});
+
+	it('deps audit delegates with no args', async () => {
+		const { ctx, calls } = buildStubContext();
+		await find(depsCommands, 'deps audit').run([], ctx);
+		expect(calls[0]).toEqual({
+			tool: 'mcp-vertex_deps_deps_audit',
+			args: {},
+		});
 	});
 
 	it('deps list forwards an optional manifest', async () => {
