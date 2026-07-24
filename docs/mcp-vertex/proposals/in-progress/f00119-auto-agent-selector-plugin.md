@@ -2,7 +2,7 @@
 id: f00119
 kind: feat
 title: auto-agent-selector — zero-config multi-agent routing that picks the right LLM per task
-status: ready
+status: in-progress
 date: 2026-07-22
 track: plugin+orchestration+routing
 ---

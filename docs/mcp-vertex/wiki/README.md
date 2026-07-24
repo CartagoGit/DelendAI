@@ -42,6 +42,9 @@ a skill, or the code itself.
 - [`07-plugin-orchestrator-runner.md`](07-plugin-orchestrator-runner.md) — the new plugin; tools, contracts, subprocess pool, MCP-client for Codex.
 - [`08-usage-tracking-plugin.md`](08-usage-tracking-plugin.md) — the dedicated observability plugin (per-agent / per-plugin / per-model / per-extension).
 
+### 09–10 — User-facing routing (built on top of 05–08)
+- [`09-plugin-auto-agent-selector.md`](09-plugin-auto-agent-selector.md) — the prompt-facing orchestration layer; zero-config CLI + API-key discovery, cost model + per-task pins, quality up-escalation, empirical calibration from `usage-tracking`.
+
 ### `external/` — One page per tool in the wild
 - [`litellm.md`](external/litellm.md)
 - [`openrouter.md`](external/openrouter.md)
