@@ -49,6 +49,7 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 	const docs = resolve(workspaceRoot, 'plugins/docs/src');
 	const deps = resolve(workspaceRoot, 'plugins/deps/src');
 	const security = resolve(workspaceRoot, 'plugins/security/src');
+	const diagram = resolve(workspaceRoot, 'plugins/diagram/src');
 	const logs = resolve(workspaceRoot, 'plugins/logs/src');
 	const audit = resolve(workspaceRoot, 'plugins/audit/src');
 	const notification = resolve(workspaceRoot, 'plugins/notification/src');
@@ -218,6 +219,18 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 		{
 			find: '@mcp-vertex/security',
 			replacement: resolve(security, 'index.ts'),
+		},
+		{
+			find: '@mcp-vertex/diagram/public',
+			replacement: resolve(diagram, 'public/index.ts'),
+		},
+		{
+			find: /^@mcp-vertex\/diagram\/lib\/(.*)$/,
+			replacement: `${resolve(diagram, 'lib')}/$1`,
+		},
+		{
+			find: '@mcp-vertex/diagram',
+			replacement: resolve(diagram, 'index.ts'),
 		},
 		{
 			find: '@mcp-vertex/logs/public',
