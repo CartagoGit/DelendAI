@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-07-24T07:04:15.522Z",
+	"generatedAt": "2026-07-24T14:59:49.712Z",
 	"mode": "compact",
 	"tools": [
 		{
@@ -80,6 +80,10 @@
 		},
 		{
 			"name": "mcp-vertex_drift_check"
+		},
+		{
+			"name": "mcp-vertex_env_env_check",
+			"plugin": "env"
 		},
 		{
 			"name": "mcp-vertex_fs_read"

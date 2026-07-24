@@ -45,6 +45,7 @@ import webFetchPlugin from '@mcp-vertex/web-fetch';
 import cachePlugin from '@mcp-vertex/cache';
 import securityPlugin from '@mcp-vertex/security';
 import diagramPlugin from '@mcp-vertex/diagram';
+import envPlugin from '@mcp-vertex/env';
 import usageTrackingPlugin from '../../../plugins/usage-tracking/src/index';
 
 import {
@@ -72,11 +73,12 @@ const PLUGIN_SPECIFIERS: Readonly<Record<string, unknown>> = {
 	'mcp-cache': cachePlugin,
 	'mcp-security': securityPlugin,
 	'mcp-diagram': diagramPlugin,
+	'mcp-env': envPlugin,
 	'mcp-usage-tracking': usageTrackingPlugin,
 };
 
 const PLUGIN_LIST =
-	'proposals,rules,memory,git,quality,search,notification,docs,deps,logs,audit,status-marker,test-convention,web-fetch,cache,security,diagram,usage-tracking';
+	'proposals,rules,memory,git,quality,search,notification,docs,deps,logs,audit,status-marker,test-convention,web-fetch,cache,security,diagram,env,usage-tracking';
 
 /**
  * Assemble the reference server with every plugin and harvest each

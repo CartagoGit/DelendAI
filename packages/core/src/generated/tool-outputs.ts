@@ -454,6 +454,30 @@ export interface McpVertexDriftCheckOutput {
 	summary: string;
 }
 
+export interface McpVertexEnvEnvCheckOutput {
+	found: boolean;
+	path: string;
+	findings: Array<{
+		ruleId: string;
+		severity: "critical" | "high" | "medium" | "low" | "info";
+		message: string;
+		fix?: string;
+		location?: {
+			file: string;
+			line?: number;
+			endLine?: number;
+		};
+	}>;
+	summary: {
+		critical: number;
+		high: number;
+		medium: number;
+		low: number;
+		info: number;
+	};
+	worst: string;
+}
+
 export interface McpVertexFsReadOutput {
 	path: string;
 	found: boolean;
@@ -2305,6 +2329,7 @@ export interface McpVertexToolOutputs {
 	"mcp-vertex_docs_docs_read": McpVertexDocsDocsReadOutput;
 	"mcp-vertex_docs_docs_search": McpVertexDocsDocsSearchOutput;
 	"mcp-vertex_drift_check": McpVertexDriftCheckOutput;
+	"mcp-vertex_env_env_check": McpVertexEnvEnvCheckOutput;
 	"mcp-vertex_fs_read": McpVertexFsReadOutput;
 	"mcp-vertex_fs_write": McpVertexFsWriteOutput;
 	"mcp-vertex_get_validation_matrix": McpVertexGetValidationMatrixOutput;

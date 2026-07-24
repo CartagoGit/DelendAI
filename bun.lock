@@ -278,6 +278,23 @@
         "@mcp-vertex/core": "^0.1.0",
       },
     },
+    "plugins/env": {
+      "name": "@mcp-vertex/env",
+      "version": "0.1.0",
+      "dependencies": {
+        "@modelcontextprotocol/sdk": "^1.29.0",
+        "zod": "^4.4.3",
+      },
+      "devDependencies": {
+        "@mcp-vertex/core": "workspace:*",
+        "@types/bun": "latest",
+        "typescript": "7.0.2",
+        "vitest": "4.1.10",
+      },
+      "peerDependencies": {
+        "@mcp-vertex/core": "^0.1.0",
+      },
+    },
     "plugins/external-mcps": {
       "name": "@mcp-vertex/external-mcps",
       "version": "0.1.0",
@@ -869,6 +886,8 @@
     "@mcp-vertex/diagram": ["@mcp-vertex/diagram@workspace:plugins/diagram"],
 
     "@mcp-vertex/docs": ["@mcp-vertex/docs@workspace:plugins/docs"],
+
+    "@mcp-vertex/env": ["@mcp-vertex/env@workspace:plugins/env"],
 
     "@mcp-vertex/example-wordcount": ["@mcp-vertex/example-wordcount@workspace:docs/mcp-vertex/examples/custom-plugin"],
 
