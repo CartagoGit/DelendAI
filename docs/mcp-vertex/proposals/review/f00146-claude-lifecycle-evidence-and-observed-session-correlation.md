@@ -2,7 +2,7 @@
 id: f00146
 title: "Claude lifecycle evidence and observed-session correlation"
 kind: feat
-status: ready
+status: review
 type: proposal
 track: host-adapters+usage-tracking
 date: 2026-07-24

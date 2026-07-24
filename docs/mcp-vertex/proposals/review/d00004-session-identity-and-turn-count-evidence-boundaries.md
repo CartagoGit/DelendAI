@@ -2,7 +2,7 @@
 id: d00004
 title: "Session identity and turn-count evidence boundaries"
 kind: docs
-status: ready
+status: review
 type: proposal
 track: agent-discipline+host-adapters
 date: 2026-07-24

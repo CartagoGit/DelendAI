@@ -2,7 +2,7 @@
 id: f00143
 title: "Agent operating excellence and session governance program"
 kind: feat
-status: ready
+status: review
 type: proposal
 track: agent-discipline+session-governance
 date: 2026-07-24
