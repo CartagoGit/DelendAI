@@ -5,6 +5,9 @@ export type { IHelpTranslation };
 const ENGLISH_COMMAND_SUMMARIES: Readonly<Record<string, string>> = {
 	'git changelog':
 		'Build a conventional-commit changelog and infer the semver bump for a range.',
+	'git pr-list': 'List open pull requests via gh (read-only, opt-in).',
+	'git pr-view':
+		'View a pull request and its CI check rollup via gh (read-only).',
 	'deps licenses':
 		'Flag dependencies with copyleft/proprietary/unknown/missing licenses (offline).',
 	'deps audit':
