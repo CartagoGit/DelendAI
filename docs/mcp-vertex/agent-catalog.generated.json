@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-07-24T21:16:16.703Z",
+	"generatedAt": "2026-07-24T22:17:03.341Z",
 	"mode": "compact",
 	"tools": [
 		{
@@ -91,6 +91,42 @@
 		{
 			"name": "mcp-vertex_env_env_check",
 			"plugin": "env"
+		},
+		{
+			"name": "mcp-vertex_forge_ci_status",
+			"plugin": "forge"
+		},
+		{
+			"name": "mcp-vertex_forge_issue_create",
+			"plugin": "forge"
+		},
+		{
+			"name": "mcp-vertex_forge_issue_list",
+			"plugin": "forge"
+		},
+		{
+			"name": "mcp-vertex_forge_issue_show",
+			"plugin": "forge"
+		},
+		{
+			"name": "mcp-vertex_forge_pr_comment",
+			"plugin": "forge"
+		},
+		{
+			"name": "mcp-vertex_forge_pr_create",
+			"plugin": "forge"
+		},
+		{
+			"name": "mcp-vertex_forge_pr_list",
+			"plugin": "forge"
+		},
+		{
+			"name": "mcp-vertex_forge_pr_show",
+			"plugin": "forge"
+		},
+		{
+			"name": "mcp-vertex_forge_release",
+			"plugin": "forge"
 		},
 		{
 			"name": "mcp-vertex_fs_read"

@@ -12,6 +12,9 @@
 				"allowForge": true
 			}
 		},
+		"forge": {
+			"options": {}
+		},
 		"search": {
 			"options": {
 				"roots": ["packages", "plugins", "extensions", "apps", "tools"],
