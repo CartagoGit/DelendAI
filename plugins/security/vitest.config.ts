@@ -13,7 +13,7 @@ export default defineConfig({
 		testTimeout: 30000,
 		hookTimeout: 30000,
 		name: 'security',
-		include: ['tests/**/*.spec.ts'],
+		include: ['tests/**/*.spec.ts', 'src/**/*.spec.ts'],
 		exclude: ['**/node_modules/**', '**/dist/**'],
 		environment: 'node',
 		globals: false,
