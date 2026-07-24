@@ -6,7 +6,10 @@ import { toolJson } from '@mcp-vertex/core/public';
 import { discoverRoster } from '../discovery/discover-roster';
 import { realDiscoveryDeps } from '../discovery/real-deps';
 import { rankProviders } from '../routing/rank-providers';
+import { realCalibrationStore } from '../calibrate/store';
+import { winRateMap } from '../calibrate/win-rates';
 import type { IDiscoveryDeps } from '../contracts/interfaces/roster.interface';
+import type { ICalibrationStore } from '../contracts/interfaces/calibration.interface';
 
 const RANKED_SCHEMA = z.object({
 	id: z.string(),
@@ -27,12 +30,15 @@ const OUTPUT_SCHEMA = z.object({
 	costQualityTradeoff: z.number(),
 	/** Present + reachable pin id, or null. */
 	pinned: z.string().nullable(),
+	/** How many providers had enough measured samples to influence ranking. */
+	calibratedProviders: z.number(),
 });
 
 /**
  * `auto_recommend` — rank the reachable providers for a task and RECOMMEND the
  * best-value one, with a transparent rationale per option. It never spends and
- * never dictates: a reachable pin always wins, and the caller decides.
+ * never dictates: a reachable pin always wins, and the caller decides. When a
+ * calibration log exists, measured win-rates are blended into the ranking.
  */
 export const buildAutoRecommendRegistration = (options: {
 	readonly namespacePrefix: string;
@@ -40,19 +46,23 @@ export const buildAutoRecommendRegistration = (options: {
 	readonly defaultTradeoff: number;
 	/** Injectable for tests; defaults to the real PATH + env probe. */
 	readonly deps?: IDiscoveryDeps;
+	/** Absolute dir for the calibration log; omit to disable calibration. */
+	readonly calibrationDir?: string;
+	/** Injectable calibration store for tests; defaults to the JSONL store. */
+	readonly store?: ICalibrationStore;
 }): IToolRegistration => {
 	const prefix = options.namespacePrefix;
 	return {
 		id: 'auto_recommend',
 		summary:
-			'Rank reachable providers for a task and recommend the best-value one (cost↔quality dial + optional pin). Advisory: you decide.',
+			'Rank reachable providers for a task and recommend the best-value one (cost↔quality dial + optional pin, measured win-rates). Advisory: you decide.',
 		tags: ['orchestration'],
 		register: async (server) => {
 			server.registerTool(
 				`${prefix}_auto_recommend`,
 				{
 					description:
-						'Rank the reachable LLM/agent providers for a task and recommend the most cost-effective one, with a plain-language rationale for every option (cost tier, fit for your cost↔quality setting, pin). Pass `costQualityTradeoff` (0 = always the strongest model, 10 = the cheapest that works) to override the configured default, and `pin` to force a provider you prefer — a reachable pin always ranks first. Headless and advisory: it never spawns anything, never spends, and never overrides your choice.',
+						'Rank the reachable LLM/agent providers for a task and recommend the most cost-effective one, with a plain-language rationale for every option (cost tier, fit for your cost↔quality setting, measured win-rate, pin). Pass `costQualityTradeoff` (0 = always the strongest model, 10 = the cheapest that works) to override the configured default, and `pin` to force a provider you prefer — a reachable pin always ranks first. Headless and advisory: it never spawns anything, never spends, and never overrides your choice.',
 					inputSchema: z
 						.object({
 							costQualityTradeoff: z
@@ -75,10 +85,20 @@ export const buildAutoRecommendRegistration = (options: {
 					);
 					const tradeoff =
 						args.costQualityTradeoff ?? options.defaultTradeoff;
+					const store =
+						options.store ??
+						(options.calibrationDir !== undefined
+							? realCalibrationStore(options.calibrationDir)
+							: undefined);
+					const calibration =
+						store !== undefined
+							? winRateMap(await store.readAll())
+							: undefined;
 					const ranked = rankProviders({
 						available: roster.available,
 						costQualityTradeoff: tradeoff,
 						pinnedId: args.pin,
+						...(calibration !== undefined ? { calibration } : {}),
 					});
 					const rows = ranked.map((r) => ({
 						id: r.candidate.id,
@@ -95,6 +115,7 @@ export const buildAutoRecommendRegistration = (options: {
 						ranked: rows,
 						costQualityTradeoff: tradeoff,
 						pinned: pinnedRow?.id ?? null,
+						calibratedProviders: calibration?.size ?? 0,
 					});
 				},
 			);

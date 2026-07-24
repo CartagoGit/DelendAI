@@ -19,6 +19,7 @@
  * Capability/quality calibration refines the per-provider signal later
  * (f00119 S4); until then the cost tier is the honest axis.
  */
+import { CALIBRATION_WEIGHT } from '../contracts/constants/calibration.constant';
 import type { IProviderCandidate } from '../contracts/interfaces/roster.interface';
 import type {
 	IRankInput,
@@ -60,12 +61,22 @@ export const rankProviders = (
 	const ranked = input.available.map((candidate): IRankedProvider => {
 		const pinned = pinnedReachable && candidate.id === input.pinnedId;
 		const fitScore = candidate.costTier * (5 - dial);
+		// S4: blend the measured win-rate (when the provider has enough
+		// samples) so a proven winner is nudged up. Bounded + explainable.
+		const winRate = input.calibration?.get(candidate.id);
+		const calibrationBonus =
+			winRate !== undefined ? CALIBRATION_WEIGHT * (winRate - 0.5) : 0;
+		const baseScore = fitScore + calibrationBonus;
+		const calibrationNote =
+			winRate !== undefined
+				? ` · measured win-rate ${Math.round(winRate * 100)}%`
+				: '';
 		return {
 			candidate,
 			// A pin gets a large constant boost so it always sorts first,
 			// while keeping the underlying fit score visible for transparency.
-			score: pinned ? 1000 + fitScore : fitScore,
-			rationale: describe(candidate, dial, pinned),
+			score: pinned ? 1000 + baseScore : baseScore,
+			rationale: describe(candidate, dial, pinned) + calibrationNote,
 			pinned,
 		};
 	});
