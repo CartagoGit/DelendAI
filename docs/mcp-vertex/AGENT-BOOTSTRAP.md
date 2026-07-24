@@ -323,6 +323,22 @@ A Bun monorepo:
 - Tests colocate as `*.spec.ts`; protocol behaviour gets an e2e with a
   real in-memory MCP server.
 
+### Tooling posture
+
+- **Optional: relax `exactOptionalPropertyTypes` (c00123).** The
+  workspace typecheck is wrapped by `tools/scripts/typecheck.script.ts`
+  (since 2026-07-24). Default mode keeps
+  `exactOptionalPropertyTypes: true` (strict; the post-2026-06
+  baseline). To opt out — useful when an LLM keeps hitting the
+  `Type 'string | undefined' is not assignable to type 'string'`
+  cryptic error — set `MCP_VERTEX_RELAX_EXACT_OPTIONAL=1` before
+  running `bun run typecheck`. The wrapper switches to
+  `tsconfig.relax.json` (extends base, flips the flag off). Trade:
+  this removes ~3-7% of LLM fix cycles (a00067 F3 / DC5) at zero
+  runtime cost — the flag is a static check, not a runtime guard.
+  The default stays ON; do not flip the flag in
+  `tsconfig.base.json` directly.
+
 ### Proposal ID prefixes
 
 | Prefix | Meaning | Notes |
