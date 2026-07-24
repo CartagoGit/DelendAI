@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-07-23T23:30:10.107Z",
+	"generatedAt": "2026-07-24T00:31:21.401Z",
 	"mode": "compact",
 	"tools": [
 		{
@@ -387,6 +387,10 @@
 		{
 			"name": "mcp-vertex_search_search",
 			"plugin": "search"
+		},
+		{
+			"name": "mcp-vertex_security_security_audit",
+			"plugin": "security"
 		},
 		{
 			"name": "mcp-vertex_security_security_secrets",
