@@ -47,7 +47,7 @@ budgets into one operating model.
 
 ### S3 — Lean activation and regression budgets
 - **Status**: pending
-- **Files**: `docs/mcp-vertex/proposals/ready/v00001-lean-activation-and-full-preset-context-budgets.md`
+- **Files**: `docs/mcp-vertex/proposals/ready/c00089-lean-activation-and-full-preset-context-budgets.md`
 - **Gate**: token-budget e2e + validate
 
 ### S4 — Policy and adoption feedback loop
