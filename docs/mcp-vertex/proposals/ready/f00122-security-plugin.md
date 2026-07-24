@@ -69,7 +69,7 @@ spawns network commands. 9 positive tests across 3 files pass.
 
 ### S2 — dependency CVEs
 
-- **Status**: pending
+- **Status**: done (2026-07-24)
 - **Files**: `plugins/security/src/lib/deps/`, `plugins/security/src/lib/tools/security-deps.tool.ts`
 - **Gate**: bun run validate
 
