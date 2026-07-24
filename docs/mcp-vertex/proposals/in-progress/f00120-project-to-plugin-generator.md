@@ -81,7 +81,7 @@ and a passing sample spec — mirroring the shape of an existing internal plugin
 
 ### S2 — idempotent monorepo wiring writer
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/src/lib/scaffold/wire-plugin.ts`, `packages/core/src/lib/contracts/interfaces/plugin-wiring.interface.ts`
 - **Gate**: bun run validate
 
