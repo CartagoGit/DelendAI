@@ -56,6 +56,7 @@ export const PLUGIN_DEFAULTS: Readonly<
 		allowList: [],
 	},
 	'auto-agent-selector': {},
+	security: {},
 	issues: {
 		scaffoldDir: 'docs/mcp-vertex/proposals/retired/issues',
 	},
