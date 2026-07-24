@@ -9,6 +9,14 @@ export {
 	listIssues,
 	showIssue,
 } from '../lib/services/forge';
+export {
+	buildPrBody,
+	commentOnPr,
+	createIssue,
+	createPr,
+	listCommitSubjects,
+	readProposalMarkdown,
+} from '../lib/services/forge-write';
 export type {
 	IForgeCheck,
 	IForgeCiStatusResult,
@@ -28,6 +36,17 @@ export type {
 	IForgeWorkflowJob,
 	IForgeWorkflowRun,
 } from '../lib/contracts/interfaces/forge-read.interface';
+export type {
+	ICommentPrOptions,
+	ICreateIssueOptions,
+	ICreatePrOptions,
+	IIssueCreateResult,
+	IIssueCreateResultData,
+	IPrCommentResult,
+	IPrCommentResultData,
+	IPrCreateResult,
+	IPrCreateResultData,
+} from '../lib/contracts/interfaces/forge-write.interface';
 
 export {
 	buildForgeReadToolRegistrations,
@@ -37,6 +56,12 @@ export {
 	runForgePrList,
 	runForgePrShow,
 } from '../lib/tools/forge-read.tool';
+export {
+	buildForgeWriteToolRegistrations,
+	runForgeIssueCreate,
+	runForgePrComment,
+	runForgePrCreate,
+} from '../lib/tools/forge-write.tool';
 export type {
 	IForgeCiStatusArgs,
 	IForgeIssueListArgs,
@@ -44,3 +69,4 @@ export type {
 	IForgePrShowArgs,
 	IForgeReadToolOptions,
 } from '../lib/tools/forge-read.tool';
+export type { IForgeWriteToolOptions } from '../lib/tools/forge-write.tool';

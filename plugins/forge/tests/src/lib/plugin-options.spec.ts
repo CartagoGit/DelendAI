@@ -22,7 +22,16 @@ describe('@mcp-vertex/forge optionsSchema', async () => {
 		const regs = await plugin.register(
 			baseCtx({ defaultTimeoutMs: 15000 }),
 		);
-		expect(regs.tools?.length).toBe(5);
+		expect(regs.tools?.map((tool) => tool.id)).toEqual([
+			'pr_list',
+			'pr_show',
+			'ci_status',
+			'issue_list',
+			'issue_show',
+			'pr_create',
+			'pr_comment',
+			'issue_create',
+		]);
 	});
 
 	it('throws on invalid options', async () => {
