@@ -451,6 +451,7 @@
       "name": "@mcp-vertex/security",
       "version": "0.1.0",
       "dependencies": {
+        "@mcp-vertex/deps": "workspace:*",
         "@modelcontextprotocol/sdk": "^1.29.0",
         "zod": "^4.4.3",
       },
