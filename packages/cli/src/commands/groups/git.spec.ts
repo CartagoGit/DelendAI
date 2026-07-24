@@ -50,7 +50,7 @@ const findCommand = (name: string): ICliCommand | undefined =>
 	gitCommands.find((command) => command.name === name);
 
 describe('git group (f00046 S1)', async () => {
-	it('exposes the 8 canonical commands', async () => {
+	it('exposes the 10 canonical commands', async () => {
 		const expected = [
 			'git status',
 			'git changed',
@@ -60,6 +60,8 @@ describe('git group (f00046 S1)', async () => {
 			'git show',
 			'git worktree',
 			'git changelog',
+			'git pr-list',
+			'git pr-view',
 		];
 		const names = gitCommands.map((command) => command.name);
 		expect(names).toEqual(expected);
