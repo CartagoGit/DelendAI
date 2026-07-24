@@ -93,7 +93,12 @@ const formatAggregate = (reports: readonly IPluginWiringReport[]): string => {
 export type IDoctorPluginId = string;
 
 const main = async (argv: readonly string[]): Promise<void> => {
-	const pluginId = argv[0]?.replace(/^plugins\//u, '');
+	// Strip leading flags (e.g. `--report`) so they don't get treated as a
+	// plugin id further down.
+	const positional = argv.filter((arg) => !arg.startsWith('--'));
+	const isReport = argv.includes('--report');
+
+	const pluginId = positional[0]?.replace(/^plugins\//u, '');
 	if (pluginId !== undefined && pluginId.length > 0) {
 		const report = await diagnosePluginWiring(pluginId, realFs);
 		process.stdout.write(formatReport(report));
@@ -108,7 +113,12 @@ const main = async (argv: readonly string[]): Promise<void> => {
 		pluginIds.map(async (id) => diagnosePluginWiring(id, realFs)),
 	);
 	process.stdout.write(formatAggregate(reports));
-	if (reports.some((report) => !report.fullyWired)) {
+	// `--report` mode is advisory: it prints the per-plugin wiring state but
+	// never exits non-zero, so it can be embedded in the `validate` chain
+	// (and CI) without blocking unrelated work. The strict mode (no flag)
+	// still exits non-zero so `bun run verify:plugin-wiring plugins/<id>` is
+	// a hard gate for the per-plugin author / reviewer.
+	if (!isReport && reports.some((report) => !report.fullyWired)) {
 		process.exitCode = 1;
 	}
 };

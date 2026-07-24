@@ -205,5 +205,11 @@ describe('completion (f00046 S10)', async () => {
 		const res = await find('completion').run(['bash'], ctx);
 		expect(res.code).toBe(EXIT_CODE.OK);
 		expect(res.text).toContain('complete -F _mcpv_complete mcpv');
-	});
+	}, // The completion script generator walks the full command tree
+	// (~30 commands) and emits a bash function with a long case branch.
+	// On a cold cache + parallel test load it can take ~1s — well above
+	// the 5s default in normal conditions but the 5s vitest default
+	// occasionally flips this test. Bumping to 15s keeps the assertion
+	// sharp without flaking on slow CI.
+	15_000);
 });
