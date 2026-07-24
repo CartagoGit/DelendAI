@@ -1,6 +1,7 @@
 #!/usr/bin/env bun
 import { access, readFile } from 'node:fs/promises';
-import { join, resolve } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 import { summarizeFindings, type IFinding } from '@mcp-vertex/core/public';
 
@@ -12,10 +13,12 @@ import {
 } from '@mcp-vertex/security/public';
 import { realScanDeps, runSecretScan } from '@mcp-vertex/security/public';
 
-// Lazy REPO_ROOT: resolved on first access (and re-resolved when needed) so
-// that vitest can import this module without choking on `import.meta.dir`
-// resolution under the test harness.
-const repoRoot = (): string => resolve(import.meta.dir, '../../..');
+// Lazy REPO_ROOT: resolved on first access so vitest can import this
+// module without choking on `import.meta.dir` (bun extension) under the
+// test harness. We use `import.meta.url` + `fileURLToPath` so the script
+// behaves identically under bun, vitest, and node.
+const here = (): string => dirname(fileURLToPath(import.meta.url));
+const repoRoot = (): string => resolve(here(), '../..');
 const baselinePath = (): string =>
 	join(repoRoot(), '.cache/security/baseline.json');
 
