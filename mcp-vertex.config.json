@@ -99,6 +99,9 @@
 		"i18n": {
 			"options": {}
 		},
+		"perf": {
+			"options": {}
+		},
 		"usage-tracking": {
 			"options": {}
 		},

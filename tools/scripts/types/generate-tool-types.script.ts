@@ -47,6 +47,7 @@ import securityPlugin from '@mcp-vertex/security';
 import diagramPlugin from '@mcp-vertex/diagram';
 import envPlugin from '@mcp-vertex/env';
 import i18nPlugin from '@mcp-vertex/i18n';
+import perfPlugin from '@mcp-vertex/perf';
 import usageTrackingPlugin from '../../../plugins/usage-tracking/src/index';
 
 import {
@@ -76,11 +77,12 @@ const PLUGIN_SPECIFIERS: Readonly<Record<string, unknown>> = {
 	'mcp-diagram': diagramPlugin,
 	'mcp-env': envPlugin,
 	'mcp-i18n': i18nPlugin,
+	'mcp-perf': perfPlugin,
 	'mcp-usage-tracking': usageTrackingPlugin,
 };
 
 const PLUGIN_LIST =
-	'proposals,rules,memory,git,quality,search,notification,docs,deps,logs,audit,status-marker,test-convention,web-fetch,cache,security,diagram,env,i18n,usage-tracking';
+	'proposals,rules,memory,git,quality,search,notification,docs,deps,logs,audit,status-marker,test-convention,web-fetch,cache,security,diagram,env,i18n,perf,usage-tracking';
 
 /**
  * Assemble the reference server with every plugin and harvest each

@@ -430,6 +430,23 @@
         "@mcp-vertex/core": "^0.1.0",
       },
     },
+    "plugins/perf": {
+      "name": "@mcp-vertex/perf",
+      "version": "0.1.0",
+      "dependencies": {
+        "@modelcontextprotocol/sdk": "^1.29.0",
+        "zod": "^4.4.3",
+      },
+      "devDependencies": {
+        "@mcp-vertex/core": "workspace:*",
+        "@types/bun": "latest",
+        "typescript": "7.0.2",
+        "vitest": "4.1.10",
+      },
+      "peerDependencies": {
+        "@mcp-vertex/core": "^0.1.0",
+      },
+    },
     "plugins/proposals": {
       "name": "@mcp-vertex/proposals",
       "version": "0.1.0",
@@ -923,6 +940,8 @@
     "@mcp-vertex/notification": ["@mcp-vertex/notification@workspace:plugins/notification"],
 
     "@mcp-vertex/orchestrator-runner": ["@mcp-vertex/orchestrator-runner@workspace:plugins/orchestrator-runner"],
+
+    "@mcp-vertex/perf": ["@mcp-vertex/perf@workspace:plugins/perf"],
 
     "@mcp-vertex/proposals": ["@mcp-vertex/proposals@workspace:plugins/proposals"],
 
