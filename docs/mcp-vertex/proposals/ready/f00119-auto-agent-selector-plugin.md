@@ -137,7 +137,7 @@ Added by `auto-agent-selector` (new plugin, `dependsOn: ['orchestrator-runner']`
 
 ### S1 — unified zero-config provider discovery (CLI + API-key + guidance)
 
-- **Status**: done
+- **Status**: pending
 - **Files**: `plugins/auto-agent-selector/src/lib/discovery/`, `plugins/auto-agent-selector/src/lib/tools/auto-status.tool.ts`
 - **Gate**: bun run validate
 
@@ -176,6 +176,11 @@ ceiling, `maxDepth` and the spend guard. `auto_run` composes discover →
 recommend/route → invoke → gate → escalate, honouring pins. Pure planner,
 injected runner — fully unit-tested without spawning.
 
+The pure planner and its test seam are implemented, but the public plugin
+context has no peer-tool invocation service yet. Keep this slice open until
+`auto_run` can compose the runner invocation and quality gate at runtime,
+without duplicating either concern or weakening the spend/consent guard.
+
 ### S4 — empirical calibration + new-model evaluation (optional internet-informed)
 
 - **Status**: pending
@@ -193,7 +198,7 @@ tags when data is thin; blend weight is a documented constant.
 
 ### S5 — auto-config on first use (the "add it and it just works" guarantee)
 
-- **Status**: done
+- **Status**: pending
 - **Files**: `plugins/auto-agent-selector/src/index.ts`, `plugins/auto-agent-selector/src/lib/tools/auto-run.tool.ts`
 - **Gate**: bun run validate
 
@@ -203,6 +208,11 @@ absent, the tool returns the exact install command (and can run it on
 explicit `install: true` consent) rather than failing. An
 `external-install`-style smoke proves a fresh workspace that adds only this
 plugin can `auto_run` a trivial task end-to-end.
+
+Discovery snapshots and consent-gated, argv-only installs are implemented.
+The slice stays open because its end-to-end smoke depends on the same missing
+runtime composition seam as S3: planning a route is not yet equivalent to
+executing it through the runner and evaluating the project gate.
 
 ### S6 — recommendation surface (CLI + extension) + docs, wiki, catalog
 
