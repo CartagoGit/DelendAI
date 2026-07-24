@@ -2,7 +2,7 @@
 id: f00147
 title: "Host-aware checkpoint advisory and compaction freshness"
 kind: feat
-status: ready
+status: review
 type: proposal
 track: memory+host-adapters
 date: 2026-07-24
