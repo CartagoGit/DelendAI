@@ -137,7 +137,7 @@ Added by `auto-agent-selector` (new plugin, `dependsOn: ['orchestrator-runner']`
 
 ### S1 — unified zero-config provider discovery (CLI + API-key + guidance)
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/auto-agent-selector/src/lib/discovery/`, `plugins/auto-agent-selector/src/lib/tools/auto-status.tool.ts`
 - **Gate**: bun run validate
 
@@ -183,7 +183,7 @@ without duplicating either concern or weakening the spend/consent guard.
 
 ### S4 — empirical calibration + new-model evaluation (optional internet-informed)
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/auto-agent-selector/src/lib/calibrate/`, `plugins/auto-agent-selector/src/lib/tools/auto-evaluate.tool.ts`
 - **Gate**: bun run validate
 
