@@ -13,10 +13,12 @@ import type {
 	IMcpJsonWriteResult,
 } from '../../contracts/interfaces/init.interface';
 import type { ICanonicalLaunch } from '../../contracts/interfaces/canonical-launch.interface';
+import { mergeDerivedConfig } from '@mcp-vertex/core/public';
 import {
 	writeConfigSafely,
 	writeWorkspaceFileSafely,
 } from '../config-file.service';
+import { buildCoreSkillProjection } from './core-skill-projection.service';
 import {
 	mergeMcpVertexServerEntry,
 	renderMcpVertexServerEntry,
@@ -25,24 +27,136 @@ import {
 export type { IInitWrite, IMcpJsonWriteResult };
 
 /**
- * Writes the canonical `mcp-vertex.config.json` for the workspace. Refuses to
- * overwrite without `force=true` — when the file already exists and the user
- * has not opted in, returns `{ kind: 'exists', path }` and writes nothing.
- * The object is the parsed config; `writeConfigSafely` re-validates it
- * against `CONFIG_FILE_SCHEMA` and runs it through `redactSecrets`.
+ * Writes the canonical `mcp-vertex.config.json` for the workspace. A valid
+ * existing project configuration is merged by default: its values and plugin
+ * options win, while generated defaults only fill gaps. `force=true` is the
+ * deliberate replacement path. Invalid existing JSON is left untouched unless
+ * replacement was explicitly requested.
  */
 export const writeMcpVertexConfig = async (
 	workspace: string,
 	value: Record<string, unknown>,
 	force: boolean,
 ): Promise<
-	{ kind: 'written'; path: string } | { kind: 'exists'; path: string }
+	| { kind: 'written'; path: string }
+	| { kind: 'merged'; path: string }
+	| { kind: 'exists'; path: string }
 > => {
 	const path = `${workspace}/mcp-vertex.config.json`;
 	const probe = existsSync(path);
-	if (probe && !force) return { kind: 'exists', path };
-	const written = await writeConfigSafely(workspace, value);
-	return { kind: 'written', path: written };
+	if (!probe || force) {
+		const written = await writeConfigSafely(workspace, value);
+		return { kind: 'written', path: written };
+	}
+	let existing: unknown;
+	try {
+		existing = JSON.parse(await readFile(path, 'utf8'));
+	} catch {
+		return { kind: 'exists', path };
+	}
+	if (
+		existing === null ||
+		typeof existing !== 'object' ||
+		Array.isArray(existing)
+	) {
+		return { kind: 'exists', path };
+	}
+	const written = await writeConfigSafely(
+		workspace,
+		mergeDerivedConfig(value, existing as Record<string, unknown>),
+	);
+	return { kind: 'merged', path: written };
+};
+
+type ISkillProjectionWriteResult = {
+	readonly kind: 'written' | 'exists' | 'merged';
+	readonly path: string;
+};
+
+const mergeSkillManifest = (
+	existing: string,
+	incoming: string,
+): string | undefined => {
+	try {
+		const current = JSON.parse(existing) as {
+			skills?: Array<{ id?: unknown }>;
+		};
+		const next = JSON.parse(incoming) as { skills?: unknown[] };
+		if (!Array.isArray(current.skills) || !Array.isArray(next.skills))
+			return undefined;
+		const ids = new Set(
+			current.skills
+				.map((skill) => skill.id)
+				.filter((id): id is string => typeof id === 'string'),
+		);
+		return `${JSON.stringify(
+			{
+				...current,
+				skills: [
+					...current.skills,
+					...next.skills.filter((skill) => {
+						if (skill === null || typeof skill !== 'object')
+							return false;
+						const id = (skill as { id?: unknown }).id;
+						return typeof id === 'string' && !ids.has(id);
+					}),
+				],
+			},
+			null,
+			'\t',
+		)}\n`;
+	} catch {
+		return undefined;
+	}
+};
+
+/**
+ * Materialize the portable core skills in the consumer's configured docs
+ * directory. Existing bodies and manifest entries are the project's own and
+ * are preserved unless the caller deliberately selected replacement.
+ */
+export const writeCoreSkillProjection = async (
+	workspace: string,
+	docsDir: string,
+	force: boolean,
+): Promise<readonly ISkillProjectionWriteResult[]> => {
+	const projection = await buildCoreSkillProjection(docsDir);
+	const writes: ISkillProjectionWriteResult[] = [];
+	for (const file of projection) {
+		const path = `${workspace}/${file.relPath}`;
+		if (!existsSync(path) || force) {
+			writes.push({
+				kind: 'written',
+				path: await writeWorkspaceFileSafely(
+					workspace,
+					file.relPath,
+					file.content,
+				),
+			});
+			continue;
+		}
+		if (!file.relPath.endsWith('/skills/manifest.json')) {
+			writes.push({ kind: 'exists', path });
+			continue;
+		}
+		const merged = mergeSkillManifest(
+			await readFile(path, 'utf8'),
+			file.content,
+		);
+		if (merged === undefined) {
+			writes.push({ kind: 'exists', path });
+			continue;
+		}
+		writes.push({
+			kind: 'merged',
+			path: await writeWorkspaceFileSafely(
+				workspace,
+				file.relPath,
+				merged,
+			),
+		});
+	}
+	return writes;
 };
 
 /**
