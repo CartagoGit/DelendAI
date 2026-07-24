@@ -146,6 +146,7 @@ export const PRESET_CATALOG: readonly IPresetDefinition[] = [
 			{ plugin: 'status-marker' },
 			{ plugin: 'test-convention' },
 			{ plugin: 'conventions' },
+			{ plugin: 'forge' },
 		],
 	},
 	{
