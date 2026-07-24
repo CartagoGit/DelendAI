@@ -41,6 +41,13 @@ describe('proposal authoring (create → board → close)', async () => {
 			indexPathAbs: join(root, '.cache/mcp-vertex/proposals/index.json'),
 			lockPathAbs: join(root, '.cache/agents.lock.json'),
 			counterPathAbs: join(root, '.cache/proposal-id-counters.json'),
+			// a00069 S5: default stub so suites with acceptance that demand
+			// validate never shell out; focused S5 specs override this.
+			runValidation: async () => ({
+				ok: true,
+				output: 'ok',
+				exitCode: 0,
+			}),
 		};
 	});
 	afterEach(() => rmSync(root, { recursive: true, force: true }));

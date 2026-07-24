@@ -39,6 +39,11 @@ describe('proposal serialization withFileMutex', () => {
 			indexPathAbs: join(root, '.cache/mcp-vertex/proposals/index.json'),
 			lockPathAbs: join(root, '.cache/agents.lock.json'),
 			counterPathAbs: join(root, '.cache/proposal-id-counters.json'),
+			runValidation: async () => ({
+				ok: true,
+				output: 'ok',
+				exitCode: 0,
+			}),
 		};
 	});
 
