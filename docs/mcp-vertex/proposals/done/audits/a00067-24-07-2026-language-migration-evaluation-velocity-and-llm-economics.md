@@ -383,7 +383,8 @@ a language change sells.** The decision splits cleanly:
 
 - **Status**: pending (depends on S2)
 - **Files**: target is `bin/mcp-vertex-shim.{go,rs}` (~200-300 lines),
-  with stdio JSON-RPC to the existing `bun packages/cli/src/index.ts`
+  with stdio JSON-RPC to the existing `packages/cli/src/index.ts`
+  (deferred to proposal **f00148**)
 - **Gate**: install smoke + functional stdio smoke
 - **Acceptance**: a user can `curl -sSL install.sh | sh` and run
   `mcp-vertex` without a prior `node`/`bun` install. Existing
@@ -392,7 +393,8 @@ a language change sells.** The decision splits cleanly:
 ### S4 — Address the 4-call bootstrap (orthogonal to migration)
 
 - **Status**: pending (independent)
-- **Files**: `packages/core/src/lib/agents/auto-work.ts` (or equivalent)
+- **Files**: `plugins/proposals/src/lib/tools/auto-work.tool.ts`
+  (deferred to proposal **v00122**)
 - **Gate**: token-budget e2e (DC2 regression gate)
 - **Acceptance**: `auto_work` returns the next actionable proposal's
   claim-ready plan in 1 call instead of 4. Estimated saving: ~600
