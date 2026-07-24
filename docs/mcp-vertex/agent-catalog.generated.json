@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-07-24T16:01:43.061Z",
+	"generatedAt": "2026-07-24T16:31:45.856Z",
 	"mode": "compact",
 	"tools": [
 		{
@@ -796,6 +796,13 @@
 	"proposals": {
 		"actionable": [
 			{
+				"id": "a00067",
+				"title": "a00067",
+				"track": "research+architecture+economics+tooling",
+				"status": "ready",
+				"kind": "audit"
+			},
+			{
 				"id": "c00089",
 				"title": "c00089",
 				"track": "presets+metrics+token-efficiency",
@@ -1021,7 +1028,7 @@
 			}
 		],
 		"byStatus": {
-			"ready": 31,
+			"ready": 32,
 			"in-progress": 0,
 			"review": 0,
 			"paused": 1,
