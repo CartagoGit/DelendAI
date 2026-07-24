@@ -228,8 +228,10 @@ uno, con la disciplina `f00073`/`f00075`/`f00052` como referencia.
 ### S5 — `proposal_close_slice` exige `bun run validate` verde
 
 - **Status**: done
-- **Files**: `plugins/proposals/src/lib/tools/close-slice.tool.ts` (o el
-  módulo que ejecuta `close_slice`).
+- **Files**: `plugins/proposals/src/lib/tools/authoring.tool.ts`,
+  `plugins/proposals/src/lib/tools/authoring-options.ts`,
+  `plugins/proposals/src/index.ts`,
+  `plugins/proposals/tests/src/lib/tools/close-slice-validation.spec.ts`.
 - **Gate**: bun run validate
 - **Cambio**: después de las verificaciones actuales, ejecutar
   `bun run validate` (con timeout 5 min). Si falla exit≠0, devolver
@@ -238,7 +240,7 @@ uno, con la disciplina `f00073`/`f00075`/`f00052` como referencia.
 - **Excepción**: si el slice tiene `gate: "none"` o `gate: "lint"`
   (no `gate: "type"` ni `acceptance: bun run test`), omitir el gate.
 - **Verification**:
-  - Spec nuevo en `plugins/proposals/tests/src/lib/close-slice.spec.ts`:
+  - Spec nuevo en `plugins/proposals/tests/src/lib/tools/close-slice-validation.spec.ts`:
     dado un slice con `acceptance: bun run test` y un tree donde
     `bun run validate` falla, `close_slice` debe devolver
     `validation-error` y NO avanzar el estado del slice.
