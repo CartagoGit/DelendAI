@@ -126,7 +126,20 @@ const loadTsCompilerApi = (): Record<string, any> => {
 	);
 };
 
-const tsCompiler = loadTsCompilerApi();
+// f00120 S3: lazy-loaded TypeScript Compiler API. Loading eagerly at module
+// init breaks consumers that don't have `typescript` installed (it's only a
+// devDep of @mcp-vertex/core; the npm-installed binary tree in
+// `verify:external-install` doesn't carry it). The getter defers the
+// `require.resolve` call to the first call into `extractPlugin()`, which is
+// exactly when a plugin author wants to use the extractor. Tests that import
+// `extractPlugin` without ever invoking it stay side-effect free.
+let tsCompilerCache: Record<string, any> | undefined;
+const tsCompiler = (): Record<string, any> => {
+	if (tsCompilerCache === undefined) {
+		tsCompilerCache = loadTsCompilerApi();
+	}
+	return tsCompilerCache;
+};
 
 const defaultReadFile = (path: string): string | undefined => {
 	try {
@@ -273,23 +286,23 @@ const expandSourceGlobs = (
 
 const scriptKindForPath = (path: string): number => {
 	const extension = extname(path);
-	if (extension === '.tsx') return tsCompiler.ScriptKind.TSX;
-	if (extension === '.mts') return tsCompiler.ScriptKind.TS;
-	if (extension === '.cts') return tsCompiler.ScriptKind.TS;
-	return tsCompiler.ScriptKind.TS;
+	if (extension === '.tsx') return tsCompiler().ScriptKind.TSX;
+	if (extension === '.mts') return tsCompiler().ScriptKind.TS;
+	if (extension === '.cts') return tsCompiler().ScriptKind.TS;
+	return tsCompiler().ScriptKind.TS;
 };
 
 const hasExportModifier = (node: any): boolean =>
 	(node.modifiers ?? []).some(
 		(modifier: any) =>
-			modifier.kind === tsCompiler.SyntaxKind.ExportKeyword,
+			modifier.kind === tsCompiler().SyntaxKind.ExportKeyword,
 	);
 
 const collectFsImports = (sourceFile: any): IFsImportBindings => {
 	const namespaceImports = new Set<string>();
 	const namedImports = new Set<string>();
-	tsCompiler.forEachChild(sourceFile, (node: any) => {
-		if (!tsCompiler.isImportDeclaration(node)) {
+	tsCompiler().forEachChild(sourceFile, (node: any) => {
+		if (!tsCompiler().isImportDeclaration(node)) {
 			return;
 		}
 		const moduleName = node.moduleSpecifier
@@ -311,7 +324,7 @@ const collectFsImports = (sourceFile: any): IFsImportBindings => {
 		if (bindings === undefined) {
 			return;
 		}
-		if (tsCompiler.isNamespaceImport(bindings)) {
+		if (tsCompiler().isNamespaceImport(bindings)) {
 			namespaceImports.add(bindings.name.text);
 			return;
 		}
@@ -323,21 +336,21 @@ const collectFsImports = (sourceFile: any): IFsImportBindings => {
 };
 
 const rootIdentifierText = (expression: any): string | null => {
-	if (tsCompiler.isIdentifier(expression)) {
+	if (tsCompiler().isIdentifier(expression)) {
 		return expression.text;
 	}
-	if (tsCompiler.isPropertyAccessExpression(expression)) {
+	if (tsCompiler().isPropertyAccessExpression(expression)) {
 		return rootIdentifierText(expression.expression);
 	}
-	if (tsCompiler.isElementAccessExpression(expression)) {
+	if (tsCompiler().isElementAccessExpression(expression)) {
 		return rootIdentifierText(expression.expression);
 	}
 	return null;
 };
 
 const isConsoleCall = (expression: any): boolean =>
-	tsCompiler.isPropertyAccessExpression(expression) &&
-	tsCompiler.isIdentifier(expression.expression) &&
+	tsCompiler().isPropertyAccessExpression(expression) &&
+	tsCompiler().isIdentifier(expression.expression) &&
 	expression.expression.text === 'console';
 
 const functionHasSideEffects = (
@@ -352,9 +365,9 @@ const functionHasSideEffects = (
 		if (hasEffects) {
 			return;
 		}
-		if (tsCompiler.isCallExpression(node)) {
+		if (tsCompiler().isCallExpression(node)) {
 			const expression = node.expression;
-			if (tsCompiler.isIdentifier(expression)) {
+			if (tsCompiler().isIdentifier(expression)) {
 				if (
 					expression.text === 'require' ||
 					fsImports.namedImports.has(expression.text)
@@ -364,7 +377,7 @@ const functionHasSideEffects = (
 				}
 			}
 			if (isConsoleCall(expression)) {
-				tsCompiler.forEachChild(node, visit);
+				tsCompiler().forEachChild(node, visit);
 				return;
 			}
 			const root = rootIdentifierText(expression);
@@ -373,7 +386,7 @@ const functionHasSideEffects = (
 				return;
 			}
 		}
-		tsCompiler.forEachChild(node, visit);
+		tsCompiler().forEachChild(node, visit);
 	};
 	visit(body);
 	return hasEffects;
@@ -388,14 +401,14 @@ const analyzeTypeNode = (typeNode: any): IAnalyzedType => {
 			supported: true,
 		};
 	}
-	if (tsCompiler.isParenthesizedTypeNode(typeNode)) {
+	if (tsCompiler().isParenthesizedTypeNode(typeNode)) {
 		return analyzeTypeNode(typeNode.type);
 	}
-	if (tsCompiler.isTypeLiteralNode(typeNode)) {
+	if (tsCompiler().isTypeLiteralNode(typeNode)) {
 		const properties: string[] = [];
 		for (const member of typeNode.members) {
 			if (
-				!tsCompiler.isPropertySignature(member) ||
+				!tsCompiler().isPropertySignature(member) ||
 				member.type === undefined
 			) {
 				return {
@@ -406,8 +419,8 @@ const analyzeTypeNode = (typeNode: any): IAnalyzedType => {
 				};
 			}
 			const name =
-				tsCompiler.isIdentifier(member.name) ||
-				tsCompiler.isStringLiteral(member.name)
+				tsCompiler().isIdentifier(member.name) ||
+				tsCompiler().isStringLiteral(member.name)
 					? member.name.text
 					: null;
 			if (name === null) {
@@ -434,7 +447,7 @@ const analyzeTypeNode = (typeNode: any): IAnalyzedType => {
 			supported: true,
 		};
 	}
-	if (tsCompiler.isArrayTypeNode(typeNode)) {
+	if (tsCompiler().isArrayTypeNode(typeNode)) {
 		const element = analyzeTypeNode(typeNode.elementType);
 		return {
 			schema: `z.array(${element.schema})`,
@@ -443,7 +456,7 @@ const analyzeTypeNode = (typeNode: any): IAnalyzedType => {
 			supported: element.supported,
 		};
 	}
-	if (tsCompiler.isTupleTypeNode(typeNode)) {
+	if (tsCompiler().isTupleTypeNode(typeNode)) {
 		const items = typeNode.elements.map(
 			(element: any) => analyzeTypeNode(element).schema,
 		);
@@ -454,10 +467,10 @@ const analyzeTypeNode = (typeNode: any): IAnalyzedType => {
 			supported: true,
 		};
 	}
-	if (tsCompiler.isUnionTypeNode(typeNode)) {
+	if (tsCompiler().isUnionTypeNode(typeNode)) {
 		const remaining = typeNode.types.filter(
 			(member: any) =>
-				member.kind !== tsCompiler.SyntaxKind.UndefinedKeyword,
+				member.kind !== tsCompiler().SyntaxKind.UndefinedKeyword,
 		);
 		if (
 			remaining.length === 1 &&
@@ -476,8 +489,8 @@ const analyzeTypeNode = (typeNode: any): IAnalyzedType => {
 			supported: true,
 		};
 	}
-	if (tsCompiler.isLiteralTypeNode(typeNode)) {
-		if (tsCompiler.isStringLiteral(typeNode.literal)) {
+	if (tsCompiler().isLiteralTypeNode(typeNode)) {
+		if (tsCompiler().isStringLiteral(typeNode.literal)) {
 			return {
 				schema: `z.literal(${JSON.stringify(typeNode.literal.text)})`,
 				isObjectLiteral: false,
@@ -485,7 +498,7 @@ const analyzeTypeNode = (typeNode: any): IAnalyzedType => {
 				supported: true,
 			};
 		}
-		if (tsCompiler.isNumericLiteral(typeNode.literal)) {
+		if (tsCompiler().isNumericLiteral(typeNode.literal)) {
 			return {
 				schema: `z.literal(${typeNode.literal.text})`,
 				isObjectLiteral: false,
@@ -493,7 +506,7 @@ const analyzeTypeNode = (typeNode: any): IAnalyzedType => {
 				supported: true,
 			};
 		}
-		if (typeNode.literal.kind === tsCompiler.SyntaxKind.TrueKeyword) {
+		if (typeNode.literal.kind === tsCompiler().SyntaxKind.TrueKeyword) {
 			return {
 				schema: 'z.literal(true)',
 				isObjectLiteral: false,
@@ -501,7 +514,7 @@ const analyzeTypeNode = (typeNode: any): IAnalyzedType => {
 				supported: true,
 			};
 		}
-		if (typeNode.literal.kind === tsCompiler.SyntaxKind.FalseKeyword) {
+		if (typeNode.literal.kind === tsCompiler().SyntaxKind.FalseKeyword) {
 			return {
 				schema: 'z.literal(false)',
 				isObjectLiteral: false,
@@ -510,7 +523,7 @@ const analyzeTypeNode = (typeNode: any): IAnalyzedType => {
 			};
 		}
 	}
-	if (tsCompiler.isTypeReferenceNode(typeNode)) {
+	if (tsCompiler().isTypeReferenceNode(typeNode)) {
 		const typeName = typeNode.typeName.getText();
 		if (typeName === 'Array' || typeName === 'ReadonlyArray') {
 			const first = typeNode.typeArguments?.[0];
@@ -557,7 +570,7 @@ const analyzeTypeNode = (typeNode: any): IAnalyzedType => {
 			supported: true,
 		};
 	}
-	if (typeNode.kind === tsCompiler.SyntaxKind.StringKeyword) {
+	if (typeNode.kind === tsCompiler().SyntaxKind.StringKeyword) {
 		return {
 			schema: 'z.string()',
 			isObjectLiteral: false,
@@ -565,7 +578,7 @@ const analyzeTypeNode = (typeNode: any): IAnalyzedType => {
 			supported: true,
 		};
 	}
-	if (typeNode.kind === tsCompiler.SyntaxKind.NumberKeyword) {
+	if (typeNode.kind === tsCompiler().SyntaxKind.NumberKeyword) {
 		return {
 			schema: 'z.number()',
 			isObjectLiteral: false,
@@ -573,7 +586,7 @@ const analyzeTypeNode = (typeNode: any): IAnalyzedType => {
 			supported: true,
 		};
 	}
-	if (typeNode.kind === tsCompiler.SyntaxKind.BooleanKeyword) {
+	if (typeNode.kind === tsCompiler().SyntaxKind.BooleanKeyword) {
 		return {
 			schema: 'z.boolean()',
 			isObjectLiteral: false,
@@ -581,7 +594,7 @@ const analyzeTypeNode = (typeNode: any): IAnalyzedType => {
 			supported: true,
 		};
 	}
-	if (typeNode.kind === tsCompiler.SyntaxKind.BigIntKeyword) {
+	if (typeNode.kind === tsCompiler().SyntaxKind.BigIntKeyword) {
 		return {
 			schema: 'z.bigint()',
 			isObjectLiteral: false,
@@ -589,7 +602,7 @@ const analyzeTypeNode = (typeNode: any): IAnalyzedType => {
 			supported: true,
 		};
 	}
-	if (typeNode.kind === tsCompiler.SyntaxKind.VoidKeyword) {
+	if (typeNode.kind === tsCompiler().SyntaxKind.VoidKeyword) {
 		return {
 			schema: 'z.object({})',
 			isObjectLiteral: true,
@@ -598,8 +611,8 @@ const analyzeTypeNode = (typeNode: any): IAnalyzedType => {
 		};
 	}
 	if (
-		typeNode.kind === tsCompiler.SyntaxKind.AnyKeyword ||
-		typeNode.kind === tsCompiler.SyntaxKind.UnknownKeyword
+		typeNode.kind === tsCompiler().SyntaxKind.AnyKeyword ||
+		typeNode.kind === tsCompiler().SyntaxKind.UnknownKeyword
 	) {
 		return {
 			schema: 'z.unknown()',
@@ -619,10 +632,10 @@ const analyzeTypeNode = (typeNode: any): IAnalyzedType => {
 const analyzeReturnType = (typeNode: any): IReturnAnalysis => {
 	const isPromise =
 		typeNode !== undefined &&
-		tsCompiler.isTypeReferenceNode(typeNode) &&
+		tsCompiler().isTypeReferenceNode(typeNode) &&
 		typeNode.typeName.getText() === 'Promise';
 	const inner = analyzeTypeNode(
-		isPromise && tsCompiler.isTypeReferenceNode(typeNode)
+		isPromise && tsCompiler().isTypeReferenceNode(typeNode)
 			? typeNode.typeArguments?.[0]
 			: typeNode,
 	);
@@ -642,7 +655,7 @@ const analyzeReturnType = (typeNode: any): IReturnAnalysis => {
 			supported: true,
 		};
 	}
-	if (typeNode?.kind === tsCompiler.SyntaxKind.VoidKeyword) {
+	if (typeNode?.kind === tsCompiler().SyntaxKind.VoidKeyword) {
 		return {
 			awaitResult: false,
 			outputSchema: 'z.object({})',
@@ -662,9 +675,9 @@ const collectFunctionCandidates = (
 	sourceFile: any,
 ): readonly IFunctionCandidate[] => {
 	const candidates: IFunctionCandidate[] = [];
-	tsCompiler.forEachChild(sourceFile, (node: any) => {
+	tsCompiler().forEachChild(sourceFile, (node: any) => {
 		if (
-			tsCompiler.isFunctionDeclaration(node) &&
+			tsCompiler().isFunctionDeclaration(node) &&
 			hasExportModifier(node) &&
 			node.name !== undefined
 		) {
@@ -676,24 +689,27 @@ const collectFunctionCandidates = (
 			});
 			return;
 		}
-		if (!tsCompiler.isVariableStatement(node) || !hasExportModifier(node)) {
+		if (
+			!tsCompiler().isVariableStatement(node) ||
+			!hasExportModifier(node)
+		) {
 			return;
 		}
 		for (const declaration of node.declarationList.declarations) {
-			if (!tsCompiler.isIdentifier(declaration.name)) {
+			if (!tsCompiler().isIdentifier(declaration.name)) {
 				continue;
 			}
 			const initializer = declaration.initializer;
 			if (
 				initializer === undefined ||
-				(!tsCompiler.isArrowFunction(initializer) &&
-					!tsCompiler.isFunctionExpression(initializer))
+				(!tsCompiler().isArrowFunction(initializer) &&
+					!tsCompiler().isFunctionExpression(initializer))
 			) {
 				continue;
 			}
 			candidates.push({
 				exportName: declaration.name.text,
-				body: tsCompiler.isBlock(initializer.body)
+				body: tsCompiler().isBlock(initializer.body)
 					? initializer.body
 					: undefined,
 				parameters: initializer.parameters,
@@ -712,7 +728,7 @@ const buildInputSchema = (
 	const props: string[] = [];
 	const callArgs: string[] = [];
 	for (const parameter of parameters) {
-		if (!tsCompiler.isIdentifier(parameter.name)) {
+		if (!tsCompiler().isIdentifier(parameter.name)) {
 			return 'unsupported-shape';
 		}
 		if (parameter.type === undefined) {
@@ -894,10 +910,10 @@ export function extractPlugin(
 		if (content === undefined) {
 			continue;
 		}
-		const sourceFile = tsCompiler.createSourceFile(
+		const sourceFile = tsCompiler().createSourceFile(
 			sourcePath,
 			content,
-			tsCompiler.ScriptTarget.Latest,
+			tsCompiler().ScriptTarget.Latest,
 			true,
 			scriptKindForPath(sourcePath),
 		);
