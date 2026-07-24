@@ -231,6 +231,11 @@ export type {
 	IScaffoldPluginOptions,
 	IScaffoldedFile,
 } from '../lib/scaffold/scaffold-host';
+export type {
+	BlueprintFile,
+	IPluginBlueprintDeps,
+} from '../lib/scaffold/plugin-blueprint';
+export { renderPluginBlueprint } from '../lib/scaffold/plugin-blueprint';
 export { scaffoldExtensionHostFiles } from '../lib/scaffold/scaffold-extension-host';
 export type { IScaffoldExtensionHostOptions } from '../lib/contracts/interfaces/scaffold-extension-host-options.interface';
 export {
