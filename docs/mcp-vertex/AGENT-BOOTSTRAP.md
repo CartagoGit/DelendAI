@@ -106,6 +106,9 @@ warnings as authoritative and use this portable policy in every project:
 - At a host warning — or before roughly 100k tokens when it exposes a meter —
   checkpoint and start fresh. Compact related work; clear unrelated work, then
   re-orient and recall only the needed digest.
+- If a host pre-compaction advisory says the explicit digest is missing or
+  stale, create a semantic checkpoint from the actual work state; never ask a
+  hook to invent one from a transcript.
 - After two continuous hours, deliberately checkpoint and compact. End
   unattended or idle sessions; use notifications/events instead of waiting.
 - Start ordinary single-agent work lean; elevate to collaboration only for

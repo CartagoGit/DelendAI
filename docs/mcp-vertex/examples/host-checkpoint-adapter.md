@@ -7,9 +7,14 @@ substitute for an agent creating an explicit checkpoint.
 
 1. The agent uses `memory_compact` with decisions, open work, facts and
    pointers; raw output and exploration stay out of the digest.
-2. On a real resume or post-compaction boundary, the host (or the agent)
+2. At a real pre-compaction or session-end boundary, the host may invoke
+   `memory_checkpoint_packet` in its bounded advisory mode (`hostEvent`). If
+   it says the explicit digest is missing or stale, the active agent creates a
+   semantic checkpoint with its actual work state; the advisory never creates
+   one.
+3. On a real resume or post-compaction boundary, the host (or the agent)
    invokes `memory_checkpoint_packet`.
-3. The agent continues from the bounded packet: digest, pointers and the next
+4. The agent continues from the bounded packet: digest, pointers and the next
    open action. If no packet is available, it starts a fresh concise digest
    rather than recovering raw history.
 
@@ -23,6 +28,8 @@ host context count, subscription meter, credentials or an inferred lifecycle.
 - The adapter passes no transcript path or secret-bearing environment data.
 - A disconnected MCP server is non-blocking; the manual portable path remains
   usable.
+- A pre-compaction advisory contains only freshness metadata and an action;
+  it must never infer a digest from a host transcript.
 - The adapter has a smoke test that proves both packet-present and
   packet-absent behavior.
 

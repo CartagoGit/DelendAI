@@ -34,21 +34,21 @@ summary.
 - global_gate: validate
 
 ### S1 — Derive checkpoint freshness from durable memory metadata
-- **Status**: pending
-- **Files**: `plugins/memory/src/lib/services/checkpoint-freshness.ts`, `plugins/memory/src/lib/tools/checkpoint-packet.tool.ts`, `plugins/memory/tests/src/lib/checkpoint-freshness.spec.ts`
+- **Status**: done
+- **Files**: `plugins/memory/src/lib/services/checkpoint-freshness.ts`, `plugins/memory/src/public/index.ts`, `plugins/memory/tests/src/lib/checkpoint-freshness.spec.ts`
 - **Gate**: memory tests + typecheck
 - **Acceptance**: a pure helper reports missing/fresh/stale checkpoint state
   from the latest explicit digest timestamp, with a bounded configurable age.
 
 ### S2 — Surface a one-shot, host-event-aware advisory
-- **Status**: pending
-- **Files**: `plugins/memory/src/lib/tools/`, `plugins/memory/src/index.ts`, `plugins/memory/tests/src/lib/tools.spec.ts`, `config/external/claude-code/session-hygiene.hooks.json`, `config/external/claude-code/README.md`
+- **Status**: done
+- **Files**: `plugins/memory/src/lib/tools/checkpoint-packet.tool.ts`, `plugins/memory/tests/src/lib/checkpoint-packet.spec.ts`, `config/external/claude-code/session-hygiene.hooks.json`, `config/external/claude-code/README.md`
 - **Gate**: memory tests + hook JSON validation
 - **Acceptance**: a compaction boundary can request a small advisory; it
   reports only action/reason/freshness and never creates or overwrites memory.
 
 ### S3 — Make the semantic checkpoint responsibility explicit
-- **Status**: pending
+- **Status**: done
 - **Files**: `docs/mcp-vertex/examples/host-checkpoint-adapter.md`, `docs/mcp-vertex/AGENT-BOOTSTRAP.md`, `docs/mcp-vertex/wiki/external/claude-code.md`
 - **Gate**: docs/link checks + bootstrap budget check
 - **Acceptance**: hosts receive a short protocol for creating an explicit
