@@ -244,6 +244,23 @@
         "@mcp-vertex/core": "^0.1.0",
       },
     },
+    "plugins/diagram": {
+      "name": "@mcp-vertex/diagram",
+      "version": "0.1.0",
+      "dependencies": {
+        "@modelcontextprotocol/sdk": "^1.29.0",
+        "zod": "^4.4.3",
+      },
+      "devDependencies": {
+        "@mcp-vertex/core": "workspace:*",
+        "@types/bun": "latest",
+        "typescript": "7.0.2",
+        "vitest": "4.1.10",
+      },
+      "peerDependencies": {
+        "@mcp-vertex/core": "^0.1.0",
+      },
+    },
     "plugins/docs": {
       "name": "@mcp-vertex/docs",
       "version": "0.1.0",
@@ -848,6 +865,8 @@
     "@mcp-vertex/core": ["@mcp-vertex/core@workspace:packages/core"],
 
     "@mcp-vertex/deps": ["@mcp-vertex/deps@workspace:plugins/deps"],
+
+    "@mcp-vertex/diagram": ["@mcp-vertex/diagram@workspace:plugins/diagram"],
 
     "@mcp-vertex/docs": ["@mcp-vertex/docs@workspace:plugins/docs"],
 

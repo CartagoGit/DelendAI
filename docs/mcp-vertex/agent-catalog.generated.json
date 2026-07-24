@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-07-24T06:20:36.395Z",
+	"generatedAt": "2026-07-24T07:04:15.522Z",
 	"mode": "compact",
 	"tools": [
 		{
@@ -61,6 +61,10 @@
 		{
 			"name": "mcp-vertex_deps_deps_polyglot",
 			"plugin": "deps"
+		},
+		{
+			"name": "mcp-vertex_diagram_diagram_deps",
+			"plugin": "diagram"
 		},
 		{
 			"name": "mcp-vertex_docs_docs_list",
