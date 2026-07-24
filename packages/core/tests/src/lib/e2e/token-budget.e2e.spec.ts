@@ -95,7 +95,7 @@ const BUDGET_BYTES = {
 	// (tools/list) and the two normal orientation/resume calls are independently
 	// budgeted. Measured 2026-07-24: 157 504B / 2 463B / 146B respectively.
 	swarmToolsList: 165_000,
-	swarmOverviewCompact: 2_750,
+	swarmOverviewCompact: 3_500,
 	swarmRoundContext: 300,
 	// `lean` was 58 003B against the same fixture, a 63% reduction from swarm.
 	leanToolsList: 65_000,

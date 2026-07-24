@@ -198,7 +198,13 @@ describe('scaffoldPluginFiles (f00120 S1)', () => {
 		expect(index?.content).toContain('definePlugin');
 	});
 
-	it('emits a vitest config that mirrors the monorepo alias shape', () => {
+	it('emits a self-contained vitest config (no monorepo coupling)', () => {
+		// The scaffold's vitest config must NOT import `../../vitest.shared`
+		// — an adopter who runs `create_project` in their own repo has no
+		// monorepo at the root and the import would fail. The monorepo
+		// itself uses `verify:plugin-wiring` to swap this for a
+		// shared-aliases version after the wire step; outside the
+		// monorepo the inline config is what runs.
 		const files = scaffoldPluginFiles({
 			pluginName: 'demo',
 			description: 'demo.',
@@ -206,8 +212,11 @@ describe('scaffoldPluginFiles (f00120 S1)', () => {
 		const vitest = files.find(
 			(f) => f.path === 'plugins/demo/vitest.config.ts',
 		);
-		expect(vitest?.content).toContain('sharedSetupFiles(root)');
-		expect(vitest?.content).toContain('workspaceAliases(root)');
+		expect(vitest?.content).toContain('defineConfig');
+		expect(vitest?.content).not.toContain('vitest.shared');
+		expect(vitest?.content).not.toContain('sharedSetupFiles');
+		expect(vitest?.content).not.toContain('workspaceAliases');
+		expect(vitest?.content).toContain("'src/**/*.spec.ts'");
 		expect(vitest?.content).toContain("'tests/**/*.spec.ts'");
 	});
 
