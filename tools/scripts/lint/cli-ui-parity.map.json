@@ -1,6 +1,9 @@
 {
 	"$about": "f00098 S4 — CLI↔UI parity contract. Every CLI command group maps to a UI affordance ({ kind: vscode-command | vscode-view | web-route, id }) or carries a documented waiver; every contributed VS Code command maps to a CLI counterpart (command or group) or carries a waiver. Enforced by tools/scripts/lint/cli-ui-parity.script.ts (bun run lint:cli-ui-parity).",
 	"cliGroups": {
+		"agents": {
+			"waiver": "LLM/agent router recommendations (auto-agent-selector); terminal-first, the VS Code recommendation + spend panel is tracked in f00140"
+		},
 		"audit": {
 			"waiver": "agent-workflow audit planner; terminal/agent surface only, no interactive UI story planned"
 		},

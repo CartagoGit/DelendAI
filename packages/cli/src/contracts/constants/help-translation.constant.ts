@@ -3,6 +3,12 @@ import type { IHelpTranslation } from '../interfaces/help-translation.interface'
 export type { IHelpTranslation };
 
 const ENGLISH_COMMAND_SUMMARIES: Readonly<Record<string, string>> = {
+	'agents status':
+		'Show reachable LLM/agent providers (cheapest-first) and how to enable missing ones.',
+	'agents recommend':
+		'Recommend the best-value provider for a task (cost↔quality dial + measured win-rates).',
+	'agents record':
+		'Record a task outcome (success/failure) for a provider to calibrate recommendations.',
 	status: 'Show runtime status collectors.',
 	overview: 'Show loaded server map.',
 	'plugin list': 'List loaded plugins.',
