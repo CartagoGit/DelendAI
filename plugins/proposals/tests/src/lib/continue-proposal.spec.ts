@@ -1,4 +1,4 @@
-import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -107,6 +107,52 @@ describe('continue_proposal (serial cascade)', async () => {
 	it('errors clearly when a slice mode is used without a proposalId', async () => {
 		const out = parse(await runContinueProposal({ mode: 'plan' }, options));
 		expect(out.kind).toBe('slice-mode-error');
+	});
+
+	it('heals a stale index path via locate scan (a00069 S3)', async () => {
+		const proposalsDir = join(root, 'proposals');
+		mkdirSync(join(proposalsDir, 'done/feats'), { recursive: true });
+		const md = [
+			'---',
+			'id: f00050',
+			'status: done',
+			'---',
+			'',
+			'# f00050',
+			'',
+			'## Slices',
+			'',
+			'### S1 — one',
+			'',
+			'- files: a.ts',
+			'- status: done',
+			'',
+		].join('\n');
+		// Index still points at ready/, file already lives under done/feats/.
+		writeFileSync(
+			options.indexPathAbs,
+			JSON.stringify({
+				proposals: [
+					{
+						id: 'f00050',
+						file: 'ready/f00050-moved.md',
+						status: 'done',
+					},
+				],
+			}),
+		);
+		writeFileSync(join(proposalsDir, 'done/feats/f00050-moved.md'), md);
+		const out = parse(
+			await runContinueProposal(
+				{ mode: 'plan', proposalId: 'f00050' },
+				{
+					...options,
+					proposalsDirAbs: proposalsDir,
+				},
+			),
+		);
+		expect(out.kind).toBe('slice-plan');
+		expect(out.proposalId ?? out.id).toBeDefined();
 	});
 
 	it('skips in_progress proposals locked by another agent (anti-loop) [N9]', async () => {
