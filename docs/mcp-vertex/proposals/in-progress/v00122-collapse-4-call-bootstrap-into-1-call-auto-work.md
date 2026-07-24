@@ -2,7 +2,7 @@
 id: v00122
 title: "collapse 4-call bootstrap into 1-call `auto_work`"
 kind: perf
-status: ready
+status: in-progress
 type: proposal
 track: perf+token-budgets+agent-velocity
 date: 2026-07-24
@@ -30,7 +30,8 @@ Per F6 of a00067, the 4-call bootstrap costs ~1.2k tokens before the LLM execute
 
 ### S1 — Extend `auto_work` payload with claim-ready slice + lock hint
 - **Status**: pending
-- **Files**: `packages/core/src/lib/agents/auto-work.ts`
+- **Files**: `plugins/proposals/src/lib/tools/auto-work.tool.ts`,
+  `plugins/proposals/tests/src/lib/e2e/auto-work.e2e.spec.ts`
 - **Gate**: e2e
 - acceptance:
   - "`auto_work` (work state) response now includes `claimReady: { sliceId, files, gate, agent_lock_args }` next to the existing plan steps."
