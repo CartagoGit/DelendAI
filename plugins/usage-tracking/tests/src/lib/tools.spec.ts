@@ -69,10 +69,12 @@ describe('usage-tracking tools', () => {
 	let dir = '';
 	let invocationsPath = '';
 	let summaryPath = '';
+	let hostLifecyclePath = '';
 	beforeEach(() => {
 		dir = mkdtempSync(join(tmpdir(), 'ut-tools-'));
 		invocationsPath = join(dir, 'invocations.jsonl');
 		summaryPath = join(dir, 'usage-summary.json');
+		hostLifecyclePath = join(dir, 'host-lifecycle.claude-code.jsonl');
 	});
 	afterEach(() => rmSync(dir, { recursive: true, force: true }));
 
@@ -81,6 +83,7 @@ describe('usage-tracking tools', () => {
 			namespacePrefix: 'mcp-vertex_usage-tracking',
 			invocationsPath,
 			summaryPath,
+			hostLifecyclePath,
 			sessionHygiene: new SessionHygieneMonitor({
 				maxSessionAgeMs: 2 * 60 * 60 * 1000,
 				maxIdleGapMs: 30 * 60 * 1000,
@@ -170,6 +173,33 @@ describe('usage-tracking tools', () => {
 		expect(sessions[0]).toMatchObject({
 			sessionId: 's-hygiene',
 			responseBytes: 800,
+		});
+	});
+
+	it('session_hygiene reports host lifecycle data separately', async () => {
+		writeFileSync(
+			hostLifecyclePath,
+			`${JSON.stringify({
+				version: 1,
+				host: 'claude-code',
+				hostSessionId: 'claude-session',
+				event: 'turn',
+				at: '2026-07-24T10:00:00.000Z',
+			})}\n`,
+			'utf8',
+		);
+		const hygiene = await captureHandler(regs()[2]!);
+		const out = await parse(hygiene, {});
+		expect(out.hostLifecycle).toMatchObject({
+			observedHostOnly: true,
+			source: 'claude-code-command-hooks',
+			sessions: [
+				{
+					hostSessionId: 'claude-session',
+					turnCount: 1,
+					explicitMcpSessionIdMatch: false,
+				},
+			],
 		});
 	});
 

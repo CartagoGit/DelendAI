@@ -16,6 +16,10 @@ export {
 	SessionHygieneMonitor,
 } from '../lib/session-hygiene';
 export {
+	readHostLifecycleEvents,
+	summarizeHostLifecycle,
+} from '../lib/host-lifecycle';
+export {
 	attributeTool,
 	deriveCorePrefix,
 	CORE_PLUGIN_KEY,
@@ -76,6 +80,8 @@ export type {
 	IDegradation,
 	IInvocationOutcome,
 	IInvocationRecord,
+	IHostLifecycleEvent,
+	IObservedHostSession,
 	ILimitsStatus,
 	IModelDescriptor,
 	IRollupBucket,
@@ -86,6 +92,7 @@ export type {
 	ISessionHygienePolicy,
 	ISessionHygieneSnapshot,
 	SessionHygieneReason,
+	HostLifecycleEventKind,
 	SortBy,
 	SpendBreachScope,
 } from '../lib/types';
