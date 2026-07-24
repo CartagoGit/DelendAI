@@ -21,7 +21,7 @@
 	"scripts": {
 		"test": "vitest run",
 		"test:coverage": "vitest run --coverage",
-		"typecheck": "tsc --noEmit -p tsconfig.json",
+		"typecheck": "bun tools/scripts/typecheck.script.ts",
 		"lint": "biome ci extensions/vscode && bun run --cwd extensions/vscode check:i18n",
 		"check:i18n:ide": "cd extensions/vscode && bun run check:i18n",
 		"lint:brand": "cd extensions/vscode && bun scripts/sync-logo.ts",
