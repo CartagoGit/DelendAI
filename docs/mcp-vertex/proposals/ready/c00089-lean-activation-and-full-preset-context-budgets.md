@@ -1,14 +1,14 @@
 ---
-id: v00001
+id: c00089
 title: "Lean activation and full-preset context budgets"
-kind: perf
+kind: chore
 status: ready
 type: proposal
 track: presets+metrics+token-efficiency
 date: 2026-07-24
 ---
 
-# v00001 — Lean activation and full-preset context budgets
+# c00089 — Lean activation and full-preset context budgets
 
 ## Goal
 
