@@ -3,7 +3,7 @@ import { z } from 'zod';
 import type { IToolRegistration } from '@mcp-vertex/core/public';
 import { toolJson } from '@mcp-vertex/core/public';
 
-import { discoverRoster } from '../discovery/discover-roster';
+import { discoverAndPersistRoster } from '../discovery/discover-roster';
 import { realDiscoveryDeps } from '../discovery/real-deps';
 import { rankProviders } from '../routing/rank-providers';
 import { resolveTaskPin } from '../prefs/resolve-task-pin';
@@ -11,6 +11,7 @@ import { realCalibrationStore } from '../calibrate/store';
 import { winRateMap } from '../calibrate/win-rates';
 import type { IDiscoveryDeps } from '../contracts/interfaces/roster.interface';
 import type { ICalibrationStore } from '../contracts/interfaces/calibration.interface';
+import type { IRosterSnapshotStore } from '../discovery/roster-store';
 
 const RANKED_SCHEMA = z.object({
 	id: z.string(),
@@ -52,6 +53,7 @@ export const buildAutoRecommendRegistration = (options: {
 	/** Injectable calibration store for tests; defaults to the JSONL store. */
 	readonly store?: ICalibrationStore;
 	readonly taskPins?: Readonly<Record<string, string>>;
+	readonly rosterStore?: IRosterSnapshotStore;
 }): IToolRegistration => {
 	const prefix = options.namespacePrefix;
 	return {
@@ -84,8 +86,9 @@ export const buildAutoRecommendRegistration = (options: {
 					pin?: string | undefined;
 					taskType?: string | undefined;
 				}) => {
-					const roster = await discoverRoster(
+					const roster = await discoverAndPersistRoster(
 						options.deps ?? realDiscoveryDeps(),
+						options.rosterStore,
 					);
 					const tradeoff =
 						args.costQualityTradeoff ?? options.defaultTradeoff;

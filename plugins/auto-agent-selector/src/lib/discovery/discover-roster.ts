@@ -18,6 +18,7 @@ import type {
 	IMissingProvider,
 	IProviderCandidate,
 } from '../contracts/interfaces/roster.interface';
+import type { IRosterSnapshotStore } from './roster-store';
 
 /** The first env var in `api.envVars` that holds a non-empty value, or undefined. */
 const presentEnvVar = (
@@ -103,4 +104,20 @@ export const discoverRoster = async (
 		available: [...available].sort(byCostThenId),
 		missing,
 	};
+};
+
+/**
+ * Discover the live roster and persist a safe snapshot for first-use setup.
+ *
+ * The snapshot is observability/configuration state, not a cache used for
+ * routing: every request still probes the live PATH and environment so a new
+ * CLI or API key is available immediately.
+ */
+export const discoverAndPersistRoster = async (
+	deps: IDiscoveryDeps,
+	store: IRosterSnapshotStore | undefined,
+): Promise<IDiscoveredRoster> => {
+	const roster = await discoverRoster(deps);
+	if (store !== undefined) await store.save(roster);
+	return roster;
 };

@@ -3,9 +3,10 @@ import { z } from 'zod';
 import type { IToolRegistration } from '@mcp-vertex/core/public';
 import { toolJson } from '@mcp-vertex/core/public';
 
-import { discoverRoster } from '../discovery/discover-roster';
+import { discoverAndPersistRoster } from '../discovery/discover-roster';
 import { realDiscoveryDeps } from '../discovery/real-deps';
 import type { IDiscoveryDeps } from '../contracts/interfaces/roster.interface';
+import type { IRosterSnapshotStore } from '../discovery/roster-store';
 
 const CANDIDATE_SCHEMA = z.object({
 	id: z.string(),
@@ -28,6 +29,8 @@ const OUTPUT_SCHEMA = z.object({
 	available: z.array(CANDIDATE_SCHEMA),
 	missing: z.array(MISSING_SCHEMA),
 	availableCount: z.number(),
+	/** A live discovery has been saved for future host diagnostics. */
+	persisted: z.literal(true),
 });
 
 /**
@@ -40,6 +43,8 @@ export const buildAutoStatusRegistration = (options: {
 	readonly namespacePrefix: string;
 	/** Injectable for tests; defaults to the real PATH + env probe. */
 	readonly deps?: IDiscoveryDeps;
+	/** Durable first-use snapshot; production wires this from pluginCacheDir. */
+	readonly rosterStore?: IRosterSnapshotStore;
 }): IToolRegistration => {
 	const prefix = options.namespacePrefix;
 	return {
@@ -57,13 +62,15 @@ export const buildAutoStatusRegistration = (options: {
 					outputSchema: OUTPUT_SCHEMA,
 				},
 				async () => {
-					const roster = await discoverRoster(
+					const roster = await discoverAndPersistRoster(
 						options.deps ?? realDiscoveryDeps(),
+						options.rosterStore,
 					);
 					return toolJson({
 						available: roster.available,
 						missing: roster.missing,
 						availableCount: roster.available.length,
+						persisted: true,
 					});
 				},
 			);
