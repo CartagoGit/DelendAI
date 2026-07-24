@@ -59,6 +59,7 @@ export const PLUGIN_DEFAULTS: Readonly<
 	security: {},
 	diagram: {},
 	env: {},
+	i18n: {},
 	issues: {
 		scaffoldDir: 'docs/mcp-vertex/proposals/retired/issues',
 	},

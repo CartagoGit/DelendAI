@@ -328,6 +328,23 @@
         "@mcp-vertex/core": "^0.1.0",
       },
     },
+    "plugins/i18n": {
+      "name": "@mcp-vertex/i18n",
+      "version": "0.1.0",
+      "dependencies": {
+        "@modelcontextprotocol/sdk": "^1.29.0",
+        "zod": "^4.4.3",
+      },
+      "devDependencies": {
+        "@mcp-vertex/core": "workspace:*",
+        "@types/bun": "latest",
+        "typescript": "7.0.2",
+        "vitest": "4.1.10",
+      },
+      "peerDependencies": {
+        "@mcp-vertex/core": "^0.1.0",
+      },
+    },
     "plugins/issues": {
       "name": "@mcp-vertex/issues",
       "version": "0.1.0",
@@ -894,6 +911,8 @@
     "@mcp-vertex/external-mcps": ["@mcp-vertex/external-mcps@workspace:plugins/external-mcps"],
 
     "@mcp-vertex/git": ["@mcp-vertex/git@workspace:plugins/git"],
+
+    "@mcp-vertex/i18n": ["@mcp-vertex/i18n@workspace:plugins/i18n"],
 
     "@mcp-vertex/issues": ["@mcp-vertex/issues@workspace:plugins/issues"],
 

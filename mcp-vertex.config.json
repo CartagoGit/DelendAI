@@ -96,6 +96,9 @@
 		"env": {
 			"options": {}
 		},
+		"i18n": {
+			"options": {}
+		},
 		"usage-tracking": {
 			"options": {}
 		},
