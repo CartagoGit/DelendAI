@@ -150,7 +150,7 @@ everything," and it unblocks the Gemini/OpenAI/Anthropic API providers.
 
 ### S2 — cost model + user preferences (recommend, never dictate)
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/auto-agent-selector/src/lib/prefs/`, `plugins/auto-agent-selector/src/lib/tools/auto-recommend.tool.ts`
 - **Gate**: bun run validate
 

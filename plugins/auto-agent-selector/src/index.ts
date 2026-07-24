@@ -31,6 +31,8 @@ const OptionsSchema = z
 		 * Omitted = 7 (lean toward cheap but not the floor).
 		 */
 		costQualityTradeoff: z.number().int().min(0).max(10).optional(),
+		/** Optional provider pin per stable task type; explicit tool pins win. */
+		taskPins: z.record(z.string().min(1), z.string().min(1)).optional(),
 	})
 	.strict();
 
@@ -53,6 +55,7 @@ export default definePlugin({
 		const defaultTradeoff = parsed.success
 			? (parsed.data.costQualityTradeoff ?? DEFAULT_TRADEOFF)
 			: DEFAULT_TRADEOFF;
+		const taskPins = parsed.success ? parsed.data.taskPins : undefined;
 		const calibrationDir = ctx.workspace.resolve(ctx.pluginCacheDir);
 		return {
 			tools: [
@@ -63,6 +66,7 @@ export default definePlugin({
 					namespacePrefix: ctx.namespacePrefix,
 					defaultTradeoff,
 					calibrationDir,
+					...(taskPins !== undefined ? { taskPins } : {}),
 				}),
 				buildAutoRecordRegistration({
 					namespacePrefix: ctx.namespacePrefix,
@@ -71,6 +75,7 @@ export default definePlugin({
 				buildAutoRunRegistration({
 					namespacePrefix: ctx.namespacePrefix,
 					defaultTradeoff,
+					...(taskPins !== undefined ? { taskPins } : {}),
 				}),
 			],
 			knowledge: [
