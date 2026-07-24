@@ -61,7 +61,6 @@ export type {
 	IForgeSearchCodeResult,
 	IForgeSearchCodeSuccess,
 	IForgeSearchExec,
-	IForgeSearchKind,
 } from '../lib/contracts/interfaces/forge-search.interface';
 
 export {
