@@ -57,7 +57,7 @@ stays a thin adapter: map the CLI's JSON output into the shared shapes.
 
 ### S1 — read surface (PR / CI / issues)
 
-- **Status**: pending
+- **Status**: done (2026-07-24)
 - **Files**: `plugins/forge/src/lib/read/`, `plugins/forge/src/lib/tools/forge-read.tool.ts`
 - **Gate**: bun run validate
 
@@ -65,6 +65,10 @@ stays a thin adapter: map the CLI's JSON output into the shared shapes.
 `forge_issue_list`/`forge_issue_show` over `gh`/`glab --json`, via r00012's
 probe + runner. Pure parsers over an injected exec; provider auto-detected
 from the remote. Missing CLI → actionable install hint, never a crash.
+
+Close evidence: `plugins/forge/` now contains the read-only surface, schema
+coverage and stub-exec tests for provider detection, PR/CI parsing and issue
+reads, validated with plugin-local tests plus repo typecheck/lint gates.
 
 ### S2 — write surface (consented)
 
