@@ -102,6 +102,9 @@
 		"perf": {
 			"options": {}
 		},
+		"tech-debt": {
+			"options": {}
+		},
 		"usage-tracking": {
 			"options": {}
 		},

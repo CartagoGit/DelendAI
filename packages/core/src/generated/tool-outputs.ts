@@ -2264,6 +2264,31 @@ export type McpVertexStatusMarkerValidateOutput = {
 	violations?: string[];
 };
 
+export interface McpVertexTechDebtDebtScanOutput {
+	filesScanned: number;
+	total: number;
+	findings: Array<{
+		ruleId: string;
+		severity: "critical" | "high" | "medium" | "low" | "info";
+		message: string;
+		fix?: string;
+		location?: {
+			file: string;
+			line?: number;
+			endLine?: number;
+		};
+	}>;
+	truncated: boolean;
+	summary: {
+		critical: number;
+		high: number;
+		medium: number;
+		low: number;
+		info: number;
+	};
+	worst: string;
+}
+
 export interface McpVertexTestConventionGetConventionOutput {
 	convention: {
 		specExtension: string;
@@ -2464,6 +2489,7 @@ export interface McpVertexToolOutputs {
 	"mcp-vertex_status-marker_close": McpVertexStatusMarkerCloseOutput;
 	"mcp-vertex_status-marker_ping": McpVertexStatusMarkerPingOutput;
 	"mcp-vertex_status-marker_validate": McpVertexStatusMarkerValidateOutput;
+	"mcp-vertex_tech-debt_debt_scan": McpVertexTechDebtDebtScanOutput;
 	"mcp-vertex_test-convention_get_convention": McpVertexTestConventionGetConventionOutput;
 	"mcp-vertex_test-convention_scan_drift": McpVertexTestConventionScanDriftOutput;
 	"mcp-vertex_test-convention_suggest_spec_path": McpVertexTestConventionSuggestSpecPathOutput;

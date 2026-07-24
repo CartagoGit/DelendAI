@@ -40,6 +40,7 @@ export const PUBLISH_ORDER: readonly string[] = [
 	'plugins/search',
 	'plugins/security',
 	'plugins/status-marker',
+	'plugins/tech-debt',
 	'plugins/test-convention',
 	'plugins/test-policy',
 	'plugins/usage-tracking',
