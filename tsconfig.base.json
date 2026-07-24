@@ -64,6 +64,9 @@
 			"@mcp-vertex/git": ["./plugins/git/src/index.ts"],
 			"@mcp-vertex/git/public": ["./plugins/git/src/public/index.ts"],
 			"@mcp-vertex/git/*": ["./plugins/git/src/*"],
+			"@mcp-vertex/forge": ["./plugins/forge/src/index.ts"],
+			"@mcp-vertex/forge/public": ["./plugins/forge/src/public/index.ts"],
+			"@mcp-vertex/forge/*": ["./plugins/forge/src/*"],
 			"@mcp-vertex/quality": ["./plugins/quality/src/index.ts"],
 			"@mcp-vertex/quality/public": [
 				"./plugins/quality/src/public/index.ts"

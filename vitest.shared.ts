@@ -44,6 +44,7 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 	const rules = resolve(workspaceRoot, 'plugins/rules/src');
 	const memory = resolve(workspaceRoot, 'plugins/memory/src');
 	const git = resolve(workspaceRoot, 'plugins/git/src');
+	const forge = resolve(workspaceRoot, 'plugins/forge/src');
 	const quality = resolve(workspaceRoot, 'plugins/quality/src');
 	const search = resolve(workspaceRoot, 'plugins/search/src');
 	const docs = resolve(workspaceRoot, 'plugins/docs/src');
@@ -151,6 +152,18 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 		{
 			find: '@mcp-vertex/git',
 			replacement: resolve(git, 'index.ts'),
+		},
+		{
+			find: '@mcp-vertex/forge/public',
+			replacement: resolve(forge, 'public/index.ts'),
+		},
+		{
+			find: /^@mcp-vertex\/forge\/lib\/(.*)$/,
+			replacement: `${resolve(forge, 'lib')}/$1`,
+		},
+		{
+			find: '@mcp-vertex/forge',
+			replacement: resolve(forge, 'index.ts'),
 		},
 		{
 			find: '@mcp-vertex/quality/public',

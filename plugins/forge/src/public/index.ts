@@ -9,6 +9,8 @@ export {
 	listIssues,
 	showIssue,
 } from '../lib/services/forge';
+export { createRelease } from '../lib/services/forge-release';
+export { searchCode } from '../lib/services/forge-search';
 export {
 	buildPrBody,
 	commentOnPr,
@@ -47,6 +49,20 @@ export type {
 	IPrCreateResult,
 	IPrCreateResultData,
 } from '../lib/contracts/interfaces/forge-write.interface';
+export type {
+	IForgeReleaseExec,
+	IForgeReleaseOptions,
+	IForgeReleaseResult,
+	IForgeReleaseSuccess,
+} from '../lib/contracts/interfaces/forge-release.interface';
+export type {
+	IForgeCodeSearchHit,
+	IForgeSearchCodeOptions,
+	IForgeSearchCodeResult,
+	IForgeSearchCodeSuccess,
+	IForgeSearchExec,
+	IForgeSearchKind,
+} from '../lib/contracts/interfaces/forge-search.interface';
 
 export {
 	buildForgeReadToolRegistrations,
@@ -56,6 +72,14 @@ export {
 	runForgePrList,
 	runForgePrShow,
 } from '../lib/tools/forge-read.tool';
+export {
+	buildForgeReleaseToolRegistrations,
+	runForgeRelease,
+} from '../lib/tools/forge-release.tool';
+export {
+	buildForgeSearchToolRegistrations,
+	runForgeSearchCode,
+} from '../lib/tools/forge-search.tool';
 export {
 	buildForgeWriteToolRegistrations,
 	runForgeIssueCreate,
@@ -69,4 +93,6 @@ export type {
 	IForgePrShowArgs,
 	IForgeReadToolOptions,
 } from '../lib/tools/forge-read.tool';
+export type { IForgeReleaseToolOptions } from '../lib/tools/forge-release.tool';
+export type { IForgeSearchToolOptions } from '../lib/tools/forge-search.tool';
 export type { IForgeWriteToolOptions } from '../lib/tools/forge-write.tool';
