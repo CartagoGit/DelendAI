@@ -59,15 +59,22 @@ describe('init_config (f00117 S2)', () => {
 		expect(written.plugins).toBeDefined();
 	});
 
-	it('refuses to overwrite an existing config without overwrite:true', async () => {
+	it('merges an existing config without replacing project preferences', async () => {
 		writeFileSync(
 			join(root, 'mcp-vertex.config.json'),
-			'{"plugins":{}}',
+			JSON.stringify({
+				cacheDir: '.project-cache',
+				plugins: {
+					search: { enabled: false, options: { roots: ['app'] } },
+				},
+			}),
 			'utf8',
 		);
 		const result = parse(await init({ write: true }));
-		expect(result.ok).toBe(false);
-		expect(result.error.reason).toContain('mcp-vertex.config.json');
+		expect(result.ok).toBe(true);
+		expect(result.config.cacheDir).toBe('.project-cache');
+		expect(result.config.plugins.search.enabled).toBe(false);
+		expect(result.config.plugins.search.options.roots).toEqual(['app']);
 	});
 
 	it('overwrite:true replaces an existing config', async () => {
@@ -83,5 +90,12 @@ describe('init_config (f00117 S2)', () => {
 			await readFile(join(root, 'mcp-vertex.config.json'), 'utf8'),
 		);
 		expect(Object.keys(written.plugins).length).toBeGreaterThan(0);
+	});
+
+	it('refuses to merge a malformed config unless replacement is explicit', async () => {
+		writeFileSync(join(root, 'mcp-vertex.config.json'), '{nope', 'utf8');
+		const result = parse(await init({ write: true }));
+		expect(result.ok).toBe(false);
+		expect(result.error.reason).toContain('not valid JSON');
 	});
 });

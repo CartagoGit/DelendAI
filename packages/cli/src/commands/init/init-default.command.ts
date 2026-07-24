@@ -15,12 +15,11 @@
  *                                    quality, issues, audit)
  *   - extraPlugins:         []        (no additions on top of the preset)
  *   - excludedPlugins:      []        (nothing filtered out)
- *   - hostInstructions:     overwrite (replace existing AGENTS.md / CLAUDE.md /
- *                                    .github/copilot-instructions.md blocks)
+ *   - hostInstructions:     append (replace only the managed mcp-vertex block)
  *   - copyCoreSkills:       true      (publish core skills under docs/)
  *   - generateAgentMd:      true      (emit .github/agents/*.agent.md)
  *   - migrateFromLegacy:    true      (scaffold f00001 if proposals is loaded)
- *   - force:                true      (auto-yes for overwriting the config)
+ *   - force:                false     (merge project preferences safely)
  *
  * No interactive prompts — safe to run from a shell script, a CI
  * bootstrap, or a fresh checkout. The host-entry path resolution still
@@ -47,23 +46,20 @@ const INIT_DEFAULT_ANSWERS: Partial<IInitAnswers> = {
 	preset: 'vertex',
 	extraPlugins: [],
 	excludedPlugins: [],
-	hostInstructions: 'overwrite',
+	hostInstructions: 'append',
 	copyCoreSkills: true,
 	generateAgentMd: true,
 	migrateFromLegacy: true,
-	// `force` is the only knob `init:default` overrides away from the
-	// interactive command's default: the operator asked for "que todo
-	// se migre con un yes", so existing `mcp-vertex.config.json` files
-	// are overwritten without prompting. The CLI `--force` flag still
-	// controls nothing here (it stays true regardless); passing
-	// `--no-force` is intentionally not supported in this command.
-	force: true,
+	// The consumer repository owns its configuration. Defaults fill missing
+	// capabilities, but never replace a committed preference; an operator who
+	// truly wants replacement can still choose the explicit `--force` path.
+	force: false,
 };
 
 export const initDefaultCommand: ICliCommand = {
 	name: 'init:default',
 	summary:
-		'Non-interactive bootstrap with the operator defaults (vertex preset + overwrite + skills + agents + scaffold).',
+		'Non-interactive bootstrap with safe project-preserving defaults (vertex preset + managed instructions + skills + agents + scaffold).',
 	usage: 'init:default [--dry-run] [--mcp-vertex-root=<path>] [--plugin-paths-root=<path>]',
 	run: async (args, ctx): Promise<ICliCommandResult> => {
 		// Honour `--help` / `-h` as an early-return before any IO. The
@@ -86,7 +82,7 @@ export const initDefaultCommand: ICliCommand = {
 		// (The structured, coloured recap is rendered AFTER the run
 		// returns, see below; this banner is just a heartbeat.)
 		process.stderr.write(
-			'mcp-vertex › workspace bootstrap (defaults: vertex preset + overwrite + skills + agents + scaffold)\n',
+			'mcp-vertex › workspace bootstrap (defaults: vertex preset + managed instructions + skills + agents + scaffold)\n',
 		);
 
 		const answers = await detectAndDecorateAnswers(
