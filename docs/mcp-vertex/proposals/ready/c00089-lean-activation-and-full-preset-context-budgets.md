@@ -33,21 +33,21 @@ select a lighter surface for ordinary work without hand-curating plugin lists.
 - global_gate: validate
 
 ### S1 — Measure the real preset surface
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/tests/src/lib/e2e/token-budget.e2e.spec.ts`, `docs/mcp-vertex/TOKEN-BUDGETS.md`
 - **Gate**: token-budget e2e
 - **Acceptance**: `tools/list`, compact orientation and the main resume path
   are measured against the actual collaboration preset.
 
 ### S2 — Make lightweight activation discoverable
-- **Status**: pending
+- **Status**: done
 - **Files**: `tools/scripts/host/host-server.script.ts`, `docs/mcp-vertex/CROSS-IDE.md`, `docs/mcp-vertex/CROSS-PROJECT-SETUP.md`
 - **Gate**: host launch tests + docs checks
 - **Acceptance**: a user can explicitly choose the lightweight path for a
   simple task and elevate to collaboration only when needed.
 
 ### S3 — Budget regression and guidance loop
-- **Status**: pending
+- **Status**: done
 - **Files**: `config/metrics-baseline.json`, `docs/mcp-vertex/AGENT-BOOTSTRAP.md`
 - **Gate**: metrics gate + prompt-size
 - **Acceptance**: budget growth requires an intentional, evidence-backed
