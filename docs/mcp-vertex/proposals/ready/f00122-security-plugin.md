@@ -52,13 +52,20 @@ an **opt-in, allow-listed** OSV lookup via web-fetch.
 
 ### S1 — secrets scan
 
-- **Status**: pending
+- **Status**: done (2026-07-24)
 - **Files**: `plugins/security/src/lib/secrets/`, `plugins/security/src/lib/tools/security-secrets.tool.ts`
 - **Gate**: bun run validate
 
 Promote the internal secret-rule library to `security_secrets` (scan changed
 files or whole tree) → `IFinding[]`, with matches redacted. Pure detector over
 injected file contents; unit-tested on seeded fixtures.
+
+S1 deliverable: `security_secrets` MCP tool with `scope: 'changed' | 'tracked'`
+and `includeTests: boolean` inputs. Reads + applies the existing
+`SECRET_RULES` (private keys, AWS/GitHub/Google/Slack/OpenAI tokens) and
+returns normalized findings — severity (critical/high/medium/low/info),
+rule id, file:line, redacted match. Online-only: the detector never
+spawns network commands. 9 positive tests across 3 files pass.
 
 ### S2 — dependency CVEs
 
