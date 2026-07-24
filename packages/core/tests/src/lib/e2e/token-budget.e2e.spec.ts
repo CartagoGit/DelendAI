@@ -52,7 +52,9 @@ const BUDGET_BYTES = {
 	// Bumped 9100 → 9500 / 1200 → 1250 (2026-07-16): f00117 S2 added the
 	// init_config core tool (server-side self-init); full measured 9416B,
 	// compact 1220B. Compact is still the real promise at < 13% of full.
-	overviewFull: 9_500,
+	// Bumped 9500 → 9700 (2026-07-24): f00145 added the read-only memory
+	// checkpoint packet; full measured 9598B while compact stayed 1240B.
+	overviewFull: 9_700,
 	overviewCompact: 1_250,
 	// Bumped 1300 → 1450 (2026-07-03): CORRECTNESS fix in the catalog's
 	// tool-entry construction. Core tools whose id has an underscore

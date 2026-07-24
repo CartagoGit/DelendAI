@@ -1,0 +1,19 @@
+{
+	"hooks": {
+		"PostCompact": [
+			{
+				"matcher": "manual|auto",
+				"hooks": [
+					{
+						"type": "mcp_tool",
+						"server": "mcp-vertex",
+						"tool": "mcp-vertex_memory_checkpoint_packet",
+						"input": {
+							"maxDigestChars": 4000
+						}
+					}
+				]
+			}
+		]
+	}
+}
