@@ -894,12 +894,70 @@ agent/copilot-minimax-f00120-s1                ← no -m3- (vs agent/copilot-min
 agent/copilot-minimax-f00121-s2                ← no -m3-
 ````
 
+#### A6 — Duplicate ids on disk (2026-07-25)
+
+````text
+a00067
+  review/a00067-24-07-2026-...md          status: review
+  done/audits/a00067-24-07-2026-...md     status: ready
+  index → done/audits/… status: ready
+
+f00121
+  review/f00121-forge-plugin.md           status: review
+  done/feats/f00121-forge-plugin.md       status: done
+  index → done/feats/… status: done
+````
+
+#### A7 — proposal_review zero-use vs review/ population
+
+````text
+2026-07-24 tool-completed proposal_review : 0
+docs/mcp-vertex/proposals/review/*.md     : 14 files
+authoring.tool.ts registers proposal_review : yes (id: proposal_review)
+````
+
+#### A8 — agent_lock imbalance + payload without `ok`
+
+````text
+claim 29 / release 19 / status 4
+sample structuredContent keys:
+  tool, action, task_id, agent, path, lock_path, ownership_count,
+  claimed, summary, identity
+  # missing: ok
+notification_* / await_lock calls that day: 0
+````
+
+#### A9 — subagent-registry + round-context zombies
+
+````text
+assignments: 30 (adopted=false all)
+  orphan: 27 (last_seen from 2026-06-21 .. 2026-07-06)
+  active: 3  (f00067a-S2, f00098-S1-S2, f00098-S4; last_seen 2026-07-06)
+round-context.activeAgents: 14 (all adopted=false, lastSeen June)
+state_health/state_repair events ~5; orphans remain
+````
+
+#### A10 — plugins enabled vs tools used (2026-07-24)
+
+````text
+enabled plugins: 24
+tool prefixes used: proposals(427), status-marker(20), fs(10),
+  overview(6), git(4), status(2)
+never invoked that day despite enabled: 21 plugins
+  (notification, quality, security, memory, rules, …)
+server-started: 379  |  tool-started/completed: 238/238
+````
+
 ### appendix B — Concurrency table
 
 | Escenario | Riesgo | Mitigación hoy | Gap |
 |---|---|---|---|
-| Dos agentes cierran el mismo slice a la vez | Doble escritura del archivo | `agent_lock` antes de `close_slice` | ✅ |
+| Dos agentes cierran el mismo slice a la vez | Doble escritura del archivo | `agent_lock` antes de `close_slice` | ⚠ F9 — claim sin release simétrico |
 | Agente A mueve `f00122` a `done/feats/`, agente B hace `continue_proposal { id: f00122 }` antes de que el index se regenere | `slice-mode-error` falso | (ninguna — el "nextAction" sugiere `sync_proposals`, que es reactivo) | ❌ → **S3** |
+| Transition deja gemelo en `review/` y `done/` | Doble fuente de verdad | (ninguna) | ❌ → **S3/F7** |
 | Agente commitea con `bun run validate` en rojo | `develop` se queda roto | (ninguna en `close_slice`) | ❌ → **S5** |
 | Agente crea branch `agent/*` sin worktree | Pisarse entre agentes en el shared checkout | (ninguna — `branch_gc` borra silenciosamente) | ❌ → **S4** |
 | Agente A lee proposal index mientras agente B lo regenera | Torn read del `index.json` | `writeFileAtomic` (revisar si lo usa `proposal_reconcile_folder`) | ⚠ — no verificado en este pase |
+| Contención de lock | Busy-loop claim | `await_lock` + notification | ❌ 0 usos → **S8** |
+| Sesión muere con assignment active | Orientation miente | state_repair GC | ❌ 30 orphans → **S6** |
+| Item en `review/` sin peer | done sin calidad | proposal_review gate | ❌ 0 reviews → **S7** |
