@@ -133,11 +133,11 @@ Added by `auto-agent-selector` (new plugin, `dependsOn: ['orchestrator-runner']`
   hints). The recommendation is surfaced in the **CLI** and a **VS Code
   extension panel**.
 
-## slices
+## Slices
 
 ### S1 — unified zero-config provider discovery (CLI + API-key + guidance)
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/auto-agent-selector/src/lib/discovery/`, `plugins/auto-agent-selector/src/lib/tools/auto-status.tool.ts`
 - **Gate**: bun run validate
 
