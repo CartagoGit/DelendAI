@@ -87,6 +87,9 @@
 				"roots": ["packages", "plugins", "extensions", "apps", "tools"]
 			}
 		},
+		"security": {
+			"options": {}
+		},
 		"usage-tracking": {
 			"options": {}
 		},
