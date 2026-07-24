@@ -7,6 +7,12 @@ export { scanSecrets } from '../lib/secrets/scan-secrets';
 export { runSecretScan } from '../lib/secrets/run-scan';
 export { realScanDeps } from '../lib/secrets/real-deps';
 export { parseAuditJson, queryOsv, runAuditCommand } from '../lib/deps/exports';
+export {
+	detectStack,
+	parseSastJson,
+	runSastRunner,
+	SAST_RULES,
+} from '../lib/sast/exports';
 export { SECRET_RULES } from '../lib/contracts/constants/secret-rules.constant';
 export type {
 	ISecretRule,
@@ -24,3 +30,11 @@ export type {
 	IQueryOsvInput,
 	IRunAuditCommandInput,
 } from '../lib/deps/exports';
+export type {
+	IDetectedStack,
+	IRunSastRunnerInput,
+	ISastRule,
+	ISastRunResult,
+	SastLanguage,
+	SastRunnerKind,
+} from '../lib/sast/exports';
