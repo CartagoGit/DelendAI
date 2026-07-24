@@ -26,8 +26,8 @@ describe('PRESET_CATALOG', async () => {
 		expect(PRESET_CATALOG[1]?.members.length).toBe(4);
 		// standard: adds 6 on top of minimal (f00115 added test-policy)
 		expect(PRESET_CATALOG[2]?.members.length).toBe(6);
-		// swarm: adds 6 on top of standard
-		expect(PRESET_CATALOG[3]?.members.length).toBe(6);
+		// swarm: adds 7 on top of standard (f00121 S3 added forge)
+		expect(PRESET_CATALOG[3]?.members.length).toBe(7);
 		// full: adds 2 host-only on top of swarm
 		expect(PRESET_CATALOG[4]?.members.length).toBe(2);
 		// vertex: 12 members (f00119 S6 added auto-agent-selector,
@@ -140,8 +140,8 @@ describe('resolvePresetMembers', async () => {
 			'deps',
 			'test-policy',
 		]);
-		expect(resolvePresetMembers('swarm').length).toBe(14);
-		expect(resolvePresetMembers('full').length).toBe(16);
+		expect(resolvePresetMembers('swarm').length).toBe(15);
+		expect(resolvePresetMembers('full').length).toBe(17);
 		expect(resolvePresetMembers('swarm')).not.toContain('lean');
 	});
 

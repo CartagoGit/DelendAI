@@ -589,23 +589,22 @@ See \`PLUGINS-MCP-VERTEX.md\` at the docs folder for the full plugin guide.
 		// a passing sample spec). Each is a small, fixed template; the
 		// scaffolder stays pure over its inputs.
 		{
+			// Self-contained vitest config (a00067/f00120): the emitter used to
+			// import `../../vitest.shared`, which only resolves inside a real
+			// mcp-vertex monorepo. An adopter who runs `create_project` in their
+			// own repo has no `vitest.shared` at the root and tsc fails on the
+			// very first build. Drop the dependency and emit an inline, runnable
+			// vitest config that any project shape can boot. The mcp-vertex
+			// monorepo can still override `vitest.config.ts` after the wire step
+			// if it wants the shared aliases.
 			path: `plugins/${id}/vitest.config.ts`,
-			content: `import { resolve } from 'node:path';
-import { defineConfig } from 'vitest/config';
-
-import { sharedSetupFiles, workspaceAliases } from '../../vitest.shared';
-
-const root = resolve(__dirname, '../..');
+			content: `import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
-\ttest: {
-\t\tenvironment: 'node',
-\t\tinclude: ['tests/**/*.spec.ts'],
-\t\tsetupFiles: sharedSetupFiles(root),
-\t},
-\tresolve: {
-\t\talias: workspaceAliases(root),
-\t},
+	test: {
+		environment: 'node',
+		include: ['src/**/*.spec.ts', 'tests/**/*.spec.ts'],
+	},
 });
 `,
 		},
