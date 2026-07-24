@@ -60,6 +60,7 @@ export const PLUGIN_DEFAULTS: Readonly<
 	diagram: {},
 	env: {},
 	i18n: {},
+	perf: {},
 	issues: {
 		scaffoldDir: 'docs/mcp-vertex/proposals/retired/issues',
 	},

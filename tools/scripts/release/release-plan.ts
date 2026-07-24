@@ -33,6 +33,7 @@ export const PUBLISH_ORDER: readonly string[] = [
 	'plugins/memory',
 	'plugins/notification',
 	'plugins/orchestrator-runner',
+	'plugins/perf',
 	'plugins/proposals',
 	'plugins/quality',
 	'plugins/rules',
