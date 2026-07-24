@@ -9,11 +9,19 @@ type Handler = (args: {
 	maxDepth?: number;
 	costQualityTradeoff?: number;
 	pin?: string;
+	install?: boolean;
+	installProviderId?: string;
 }) => Promise<{ structuredContent?: Record<string, unknown> }>;
 
 const capture = async (
 	deps: IDiscoveryDeps,
 	rosterStore?: IRosterSnapshotStore,
+	installRunner?: (argv: readonly [string, ...string[]]) => Promise<{
+		code: number;
+		stdout: string;
+		stderr: string;
+		timedOut: boolean;
+	}>,
 ): Promise<Handler> => {
 	let handler: Handler | undefined;
 	const server = {
@@ -26,6 +34,7 @@ const capture = async (
 		defaultTradeoff: 10, // cheap-leaning so the ladder climbs up
 		deps,
 		...(rosterStore !== undefined ? { rosterStore } : {}),
+		...(installRunner !== undefined ? { installRunner } : {}),
 	});
 	await reg.register(server as unknown as Parameters<typeof reg.register>[0]);
 	if (!handler) throw new Error('auto_run did not register');
@@ -74,5 +83,53 @@ describe('auto_run tool', () => {
 		});
 		await handler({});
 		expect(saves).toBe(1);
+	});
+
+	it('returns a trusted install hint when no provider is reachable', async () => {
+		const handler = await capture({
+			commandExists: async () => false,
+			env: {},
+		});
+		const body = (await handler({})).structuredContent as {
+			nextInstall: { id: string; hint: string } | null;
+		};
+		expect(body.nextInstall).toEqual(
+			expect.objectContaining({
+				id: 'claude-cli',
+				hint: 'npm install -g @anthropic-ai/claude-code',
+			}),
+		);
+	});
+
+	it('runs only the catalogue argv after explicit install consent', async () => {
+		const received: Array<readonly [string, ...string[]]> = [];
+		const handler = await capture(
+			{ commandExists: async () => false, env: {} },
+			undefined,
+			async (argv) => {
+				received.push(argv);
+				return { code: 0, stdout: '', stderr: '', timedOut: false };
+			},
+		);
+		const body = (
+			await handler({
+				install: true,
+				installProviderId: 'codex-cli',
+			})
+		).structuredContent as {
+			installation: {
+				attempted: boolean;
+				ok: boolean;
+				providerId: string;
+			} | null;
+		};
+		expect(received).toEqual([['npm', 'install', '-g', '@openai/codex']]);
+		expect(body.installation).toEqual(
+			expect.objectContaining({
+				attempted: true,
+				ok: true,
+				providerId: 'codex-cli',
+			}),
+		);
 	});
 });
