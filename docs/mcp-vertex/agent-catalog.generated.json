@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-07-24T22:17:03.341Z",
+	"generatedAt": "2026-07-24T22:24:28.594Z",
 	"mode": "compact",
 	"tools": [
 		{
@@ -867,13 +867,6 @@
 				"kind": "feat"
 			},
 			{
-				"id": "f00121",
-				"title": "f00121",
-				"track": "plugin+forge+collab",
-				"status": "ready",
-				"kind": "feat"
-			},
-			{
 				"id": "f00122",
 				"title": "f00122",
 				"track": "plugin+security+quality",
@@ -1050,11 +1043,11 @@
 			}
 		],
 		"byStatus": {
-			"ready": 27,
+			"ready": 26,
 			"in-progress": 2,
 			"review": 5,
 			"paused": 1,
-			"done": 245,
+			"done": 246,
 			"blocked": 0,
 			"retired": 2,
 			"unspecified": 0
