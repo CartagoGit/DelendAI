@@ -84,7 +84,10 @@ const BUDGET_BYTES = {
 	// full entries and are budgeted by agentCatalogFull.
 	agentCatalogCompact: 900,
 	agentCatalogFull: 6_800,
-	autoWork: 1_600,
+	// Bumped 1 600 → 2 000 (2026-07-25): v00122 embeds a claim-ready
+	// slice and its exact lock arguments, eliminating the old extra planning
+	// call while preserving a bounded first response.
+	autoWork: 2_000,
 	search: 3_000,
 	docsList: 2_500,
 	roundContext: 3_000,
@@ -355,8 +358,46 @@ describe('e2e: token budget (cold-start payloads)', async () => {
 	});
 
 	it('auto_work returns a tight action plan, not prose', async () => {
+		const proposalDir = join(
+			workspace,
+			'docs',
+			'mcp-vertex',
+			'proposals',
+			'ready',
+		);
+		mkdirSync(proposalDir, { recursive: true });
+		writeFileSync(
+			join(proposalDir, 'p9000-token-budget.md'),
+			`---
+id: p9000
+status: ready
+type: proposal
+track: tests
+date: 2026-07-25
+kind: perf
+title: token budget fixture
+---
+
+# p9000 — token budget fixture
+
+## Slices
+
+- global_gate: type
+
+### S1 — bounded payload
+- **Files**: \`src/app.ts\`
+- **Gate**: type
+- **Status**: pending
+`,
+		);
+		await client.callTool({
+			name: 'mcp-vertex_proposals_sync_proposals',
+			arguments: {},
+		});
 		const bytes = await textBytes('mcp-vertex_proposals_auto_work', {});
-		expect(bytes).toBeLessThan(BUDGET_BYTES.autoWork);
+		expect(bytes, `auto_work claim-ready plan = ${bytes}B`).toBeLessThan(
+			BUDGET_BYTES.autoWork,
+		);
 	});
 
 	it('bootstrap discovery and planning are bounded BY DEFAULT (x00101)', async () => {

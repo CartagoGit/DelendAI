@@ -144,6 +144,73 @@ export interface IAutoWorkOrchestrationPolicy {
 	readonly policy: string;
 }
 
+/**
+ * The first currently-claimable slice, embedded in a work response so a host
+ * can claim it without a second planning round trip. `agent` is deliberately
+ * a placeholder: the host owns the session identity and must replace it with
+ * its resolved agent name before calling the write-side lock tool.
+ */
+export interface IAutoWorkClaimReady {
+	readonly sliceId: string;
+	readonly files: readonly string[];
+	readonly gate: 'lint' | 'type' | 'e2e' | 'none';
+	readonly agent_lock_args: {
+		readonly action: 'claim';
+		readonly task_id: string;
+		readonly agent: '<host-resolved-agent>';
+		readonly files: readonly string[];
+	};
+}
+
+interface IContinueProposalPlanPayload {
+	readonly kind: string;
+	readonly claimableSliceIds?: readonly string[];
+	readonly plan?: {
+		readonly slices: readonly {
+			readonly sliceId: string;
+			readonly files: readonly string[];
+			readonly gate: IAutoWorkClaimReady['gate'];
+		}[];
+	};
+}
+
+/**
+ * Resolve the first claimable slice through the existing planner instead of
+ * duplicating its dependency and overlap rules in `auto_work`. A legacy
+ * proposal without a `## Slices` plan remains a valid serial work response,
+ * just without a claim-ready shortcut.
+ */
+const resolveClaimReady = async (
+	proposalId: string,
+	options: IAutoWorkToolOptions,
+): Promise<IAutoWorkClaimReady | undefined> => {
+	const response = await runContinueProposal(
+		{ proposalId, mode: 'plan' },
+		options,
+	);
+	const payload = JSON.parse(
+		response.content[0]?.text ?? '{}',
+	) as IContinueProposalPlanPayload;
+	if (payload.kind !== 'slice-plan') return undefined;
+	const sliceId = payload.claimableSliceIds?.[0];
+	if (sliceId === undefined) return undefined;
+	const slice = payload.plan?.slices.find(
+		(candidate) => candidate.sliceId === sliceId,
+	);
+	if (slice === undefined || slice.files.length === 0) return undefined;
+	return {
+		sliceId,
+		files: [...slice.files],
+		gate: slice.gate,
+		agent_lock_args: {
+			action: 'claim',
+			task_id: `${proposalId}-${sliceId}`,
+			agent: '<host-resolved-agent>',
+			files: [...slice.files],
+		},
+	};
+};
+
 export const buildAutoWorkOrchestrationPolicy = (options: {
 	readonly namespacePrefix: string;
 	readonly proposalId: string;
@@ -377,6 +444,10 @@ export const runAutoWork = async (
 		proposalId: next.proposalId ?? 'unknown',
 		delegateAfterToolCalls: options.orchestration?.delegateAfterToolCalls,
 	});
+	const claimReady =
+		next.proposalId === undefined
+			? undefined
+			: await resolveClaimReady(next.proposalId, options);
 	const persistStep =
 		resolvedMode === 'none'
 			? []
@@ -450,6 +521,7 @@ export const runAutoWork = async (
 			? { validationCommand: options.validationCommand }
 			: {}),
 		persist: persistOut,
+		...(claimReady !== undefined ? { claimReady } : {}),
 		...(next.pickedFromPaused === true
 			? { pickedFromPaused: true as const }
 			: {}),
@@ -527,6 +599,18 @@ const AUTO_WORK_PERSIST_OUTPUT_SCHEMA = z.object({
 	pushTarget: z.string().optional(),
 });
 
+const AUTO_WORK_CLAIM_READY_OUTPUT_SCHEMA = z.object({
+	sliceId: z.string(),
+	files: z.array(z.string()),
+	gate: z.enum(['lint', 'type', 'e2e', 'none']),
+	agent_lock_args: z.object({
+		action: z.literal('claim'),
+		task_id: z.string(),
+		agent: z.literal('<host-resolved-agent>'),
+		files: z.array(z.string()),
+	}),
+});
+
 const AUTO_WORK_OUTPUT_SCHEMA = z.object({
 	state: z.enum(['idle', 'work']),
 	idleStreak: z.number().int().positive().optional(),
@@ -540,6 +624,7 @@ const AUTO_WORK_OUTPUT_SCHEMA = z.object({
 	orchestration: AUTO_WORK_ORCHESTRATION_OUTPUT_SCHEMA.optional(),
 	validationCommand: z.string().optional(),
 	persist: AUTO_WORK_PERSIST_OUTPUT_SCHEMA.optional(),
+	claimReady: AUTO_WORK_CLAIM_READY_OUTPUT_SCHEMA.optional(),
 	steps: z.array(z.string()).optional(),
 	// f00073: optional array of warnings about other agents' branch /
 	// worktree state. Empty when the swarm is clean.
