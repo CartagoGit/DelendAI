@@ -1277,6 +1277,17 @@ export interface McpVertexProposalsAutoWorkOutput {
 		messageTemplate?: string;
 		pushTarget?: string;
 	};
+	claimReady?: {
+		sliceId: string;
+		files: string[];
+		gate: "lint" | "type" | "e2e" | "none";
+		agent_lock_args: {
+			action: "claim";
+			task_id: string;
+			agent: "<host-resolved-agent>";
+			files: string[];
+		};
+	};
 	steps?: string[];
 	branchStatusWarnings?: string[];
 	executionMode?: "normal" | "confirm-required" | "blocked";
@@ -2235,6 +2246,33 @@ export interface McpVertexSecuritySecurityAuditOutput {
 	}[];
 }
 
+export interface McpVertexSecuritySecurityDepsOutput {
+	ok: boolean;
+	tool?: string;
+	scanned?: number;
+	findings?: Array<{
+		ruleId: string;
+		severity: "critical" | "high" | "medium" | "low" | "info";
+		message: string;
+		fix?: string;
+		location?: {
+			file: string;
+			line?: number;
+			endLine?: number;
+		};
+	}>;
+	summary?: {
+		critical: number;
+		high: number;
+		medium: number;
+		low: number;
+		info: number;
+	};
+	worst?: string;
+	error?: string;
+	hint?: string;
+}
+
 export interface McpVertexSecuritySecuritySecretsOutput {
 	tool: string;
 	scanned: number;
@@ -2586,6 +2624,7 @@ export interface McpVertexToolOutputs {
 	"mcp-vertex_scaffold": McpVertexScaffoldOutput;
 	"mcp-vertex_search_search": McpVertexSearchSearchOutput;
 	"mcp-vertex_security_security_audit": McpVertexSecuritySecurityAuditOutput;
+	"mcp-vertex_security_security_deps": McpVertexSecuritySecurityDepsOutput;
 	"mcp-vertex_security_security_secrets": McpVertexSecuritySecuritySecretsOutput;
 	"mcp-vertex_skill": McpVertexSkillOutput;
 	"mcp-vertex_status": McpVertexStatusOutput;

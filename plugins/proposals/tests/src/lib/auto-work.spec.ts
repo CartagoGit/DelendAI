@@ -84,6 +84,42 @@ describe('auto_work (one-call action plan)', async () => {
 		expect(Array.isArray(out.steps)).toBe(true);
 	});
 
+	it('embeds the first claimable slice and complete lock arguments', async () => {
+		writeFileSync(
+			options.indexPathAbs,
+			JSON.stringify({
+				proposals: [{ id: 'p1-x', file: 'p1.md', status: 'pending' }],
+			}),
+		);
+		writeFileSync(
+			join(root, 'p1.md'),
+			`# p1-x
+
+## Slices
+
+- global_gate: type
+
+### S1 — claim-ready
+- **Files**: \`src/one.ts\`, \`tests/one.spec.ts\`
+- **Gate**: type
+- **Status**: pending
+`,
+		);
+
+		const out = parse(await runAutoWork(options));
+		expect(out.claimReady).toEqual({
+			sliceId: 'S1',
+			files: ['src/one.ts', 'tests/one.spec.ts'],
+			gate: 'type',
+			agent_lock_args: {
+				action: 'claim',
+				task_id: 'p1-x-S1',
+				agent: '<host-resolved-agent>',
+				files: ['src/one.ts', 'tests/one.spec.ts'],
+			},
+		});
+	});
+
 	it('surfaces a compact orchestration policy for non-trivial slices', async () => {
 		writeFileSync(
 			options.indexPathAbs,
