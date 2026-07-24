@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-07-24T17:43:29.689Z",
+	"generatedAt": "2026-07-24T17:51:27.544Z",
 	"mode": "compact",
 	"tools": [
 		{
@@ -7,6 +7,10 @@
 		},
 		{
 			"name": "mcp-vertex_analyze_project"
+		},
+		{
+			"name": "mcp-vertex_auto-agent-selector_auto_evaluate",
+			"plugin": "auto-agent-selector"
 		},
 		{
 			"name": "mcp-vertex_auto-agent-selector_auto_recommend",
