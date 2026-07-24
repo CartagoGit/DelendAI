@@ -584,6 +584,116 @@ ${safeDescription}
 See \`PLUGINS-MCP-VERTEX.md\` at the docs folder for the full plugin guide.
 `,
 		},
+		// f00120 S1: complete the plugin scaffold with the four files the
+		// scaffolder was missing (vitest config + LICENSE + public barrel +
+		// a passing sample spec). Each is a small, fixed template; the
+		// scaffolder stays pure over its inputs.
+		{
+			path: `plugins/${id}/vitest.config.ts`,
+			content: `import { resolve } from 'node:path';
+import { defineConfig } from 'vitest/config';
+
+import { sharedSetupFiles, workspaceAliases } from '../../vitest.shared';
+
+const root = resolve(__dirname, '../..');
+
+export default defineConfig({
+\ttest: {
+\t\tenvironment: 'node',
+\t\tinclude: ['tests/**/*.spec.ts'],
+\t\tsetupFiles: sharedSetupFiles(root),
+\t},
+\tresolve: {
+\t\talias: workspaceAliases(root),
+\t},
+});
+`,
+		},
+		{
+			path: `plugins/${id}/LICENSE`,
+			content: `MIT License
+
+Copyright (c) ${new Date().getUTCFullYear()} ${options.pluginName} authors
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+`,
+		},
+		{
+			path: `plugins/${id}/src/public/index.ts`,
+			content: `/**
+ * \`@cartago-git/mcp-${id}/public\` — the plugin's public surface.
+ *
+ * Re-exports every value the rest of the workspace is allowed to import.
+ * Internal helpers stay in \`src/lib/\` and are not re-exported here, so
+ * the public contract is what \`mcp-vertex.config.json\` consumers see.
+ */
+export { default } from '../index';
+export type { IPluginOptions } from '../contracts/interfaces/plugin-options.interface';
+`,
+		},
+		{
+			path: `plugins/${id}/src/contracts/interfaces/plugin-options.interface.ts`,
+			content: `/**
+ * \`@cartago-git/mcp-${id}\` options schema. Plugins carry a typed
+ * \`options\` block that hosts materialise from \`mcp-vertex.config.json\`.
+ * Empty by default; a plugin with knobs extends this with \`zod\` and
+ * surfaces it via \`definePlugin({ options })\`.
+ */
+export interface IPluginOptions {
+	/** Reserved for future use. */
+	readonly _placeholder?: never;
+}
+`,
+		},
+		{
+			path: `plugins/${id}/tests/src/lib/ping.spec.ts`,
+			content: `import { describe, expect, it } from 'vitest';
+
+import plugin from '../../src/index';
+
+/**
+ * \`${id}\` — smoke test for the scaffolded plugin. Verifies that the
+ * plugin loads, declares the expected id, and ships a working ping
+ * tool. Real plugins replace this with feature specs.
+ */
+describe(\`${id} plugin (scaffolded smoke)\`, () => {
+\tit('declares the canonical plugin id', () => {
+\t\texpect(plugin.name).toBe('${id}');
+\t\texpect(plugin.version).toMatch(/^\\d+\\.\\d+\\.\\d+$/u);
+\t});
+
+\tit('exposes a \`ping\` tool through the register callback', async () => {
+\t\tconst ctx = {
+\t\t\tnamespacePrefix: '${id}',
+\t\t\tpluginCacheDir: '<cache>',
+\t\t\tpluginDocsDir: '<docs>',
+\t\t\toptions: {},
+\t\t\tlog: { info() {}, warn() {}, error() {}, debug() {} },
+\t\t} as const;
+\t\tconst registration = await plugin.register(ctx as never);
+\t\tconst tools = (registration as { tools: Array<{ id: string }> }).tools;
+\t\tconst ping = tools.find((t) => t.id === '${id}_ping');
+\t\texpect(ping).toBeDefined();
+\t});
+});
+`,
+		},
 	];
 };
 
