@@ -83,6 +83,20 @@ the reference integration because it runs at its documented `PostCompact`
 boundary; it lives in
 [`config/external/claude-code/`](../../config/external/claude-code/).
 
+### Cross-IDE: choose the smallest useful plugin surface
+
+The repository host keeps its collaboration preset as the default for existing
+users. For a focused, single-agent task, pass `--preset=lean` in the host's
+MCP launch arguments instead. It loads only git, search, memory and docs; move
+back to `--preset=swarm` when the work genuinely needs proposals, locks,
+notifications or the other collaboration services. Do not specify both presets
+at once: choose one explicit surface, then add an individual plugin only for a
+clear capability gap.
+
+This is a practical context-control lever, not an invisible behavior change.
+The exact static and runtime budgets for both surfaces are enforced in
+[TOKEN-BUDGETS.md](./TOKEN-BUDGETS.md).
+
 ## Launch shape — same args, four config files
 
 Every chat client listed in [README-MCP-VERTEX.md § Install / register](./README-MCP-VERTEX.md#install--register)

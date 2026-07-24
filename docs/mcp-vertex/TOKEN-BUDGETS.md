@@ -5,7 +5,7 @@ marketing. Numbers are **payload bytes** of the tool result text an agent sees
 (≈ 4 bytes/token), captured by driving the **real** assembled server over the MCP
 protocol (`packages/core/tests/src/lib/e2e/token-budget.e2e.spec.ts`).
 
-## Baseline (2026-06-21)
+## Baseline (2026-07-24)
 
 Server: `--plugins=proposals,memory` (26 tools registered).
 
@@ -29,13 +29,29 @@ these ceilings — these are the CURRENT values in the spec, refreshed 2026-07-1
 
 | Payload | Budget (bytes) | Notes |
 |---|---:|---|
-| `overview` full | 9 100 | grows with the toolset; compact is the promise |
-| `overview` compact | 1 200 | |
+| `overview` full | 9 700 | grows with the toolset; compact is the promise |
+| `overview` compact | 1 250 | |
 | `agent_catalog` compact | 900 | default orientation projection (lean skills, no tool list) |
 | `agent_catalog` full | 6 800 | |
 | `auto_work` | 1 600 | |
 | `analyze_project` **default** | 1 800 | bare `{}` returns the summary since x00101; `full:true` opts in |
 | `plan_mcp_project` **default** | 2 000 | bare `{}` returns the summary since x00101; `full:true` opts in |
+
+### Real host preset regression budgets
+
+The repository host defaults to the collaboration preset. Its static tool
+definitions are deliberately measured separately from tool-result payloads:
+
+| Surface (fixture server) | Baseline | Budget | Why |
+|---|---:|---:|---|
+| collaboration `tools/list` | 157 504 B | 165 000 B | The actual static MCP schema surface exposed by the default host. |
+| collaboration `overview { compact: true }` | 2 463 B | 2 750 B | The recommended first orientation call. |
+| collaboration resume digest | 146 B | 300 B | The normal continuation path. |
+| lightweight `tools/list` | 58 003 B | 65 000 B | The explicit simple-task surface; it must remain under 40% of collaboration's budget. |
+
+The benchmark assembles both presets over the in-memory MCP transport. It does
+not silently change the default collaboration preset: use `--preset=lean` when
+the task only needs version control, search, memory and docs.
 
 Two structural invariants behind those numbers:
 
