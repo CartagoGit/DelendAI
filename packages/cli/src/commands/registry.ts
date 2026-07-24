@@ -37,6 +37,7 @@ import { doctorCommands } from './groups/doctor';
 import {
 	gitBlameCommand,
 	gitChangedCommand,
+	gitChangelogCommand,
 	gitDiffCommand,
 	gitLogCommand,
 	gitShowCommand,
@@ -434,6 +435,7 @@ export const registerAllCommands = async (): Promise<
 	gitBlameCommand,
 	gitShowCommand,
 	gitWorktreeCommand,
+	gitChangelogCommand,
 	...agentsCommands,
 	...memoryCommands,
 	...depsCommands,

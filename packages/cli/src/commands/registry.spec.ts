@@ -28,6 +28,7 @@ const EXPECTED_COMMANDS = [
 	'git blame',
 	'git show',
 	'git worktree',
+	'git changelog',
 	'agents status',
 	'agents recommend',
 	'agents record',

@@ -60,6 +60,22 @@ export const gitLogCommand: ICliCommand = {
 	},
 };
 
+export const gitChangelogCommand: ICliCommand = {
+	name: 'git changelog',
+	summary:
+		'Conventional-commit changelog + inferred semver bump for a range.',
+	async run(args, ctx) {
+		const range = scalarArg(args, 'range');
+		const limit = scalarArg(args, 'limit');
+		return data(
+			await request(ctx, 'mcp-vertex_git_changelog', {
+				...(range !== undefined ? { range } : {}),
+				...(limit !== undefined ? { limit: Number(limit) } : {}),
+			}),
+		);
+	},
+};
+
 export const gitBlameCommand: ICliCommand = {
 	name: 'git blame',
 	summary:
@@ -119,4 +135,5 @@ export const gitCommands: readonly ICliCommand[] = [
 	gitBlameCommand,
 	gitShowCommand,
 	gitWorktreeCommand,
+	gitChangelogCommand,
 ];

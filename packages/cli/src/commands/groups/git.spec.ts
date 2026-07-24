@@ -50,7 +50,7 @@ const findCommand = (name: string): ICliCommand | undefined =>
 	gitCommands.find((command) => command.name === name);
 
 describe('git group (f00046 S1)', async () => {
-	it('exposes the 7 canonical commands', async () => {
+	it('exposes the 8 canonical commands', async () => {
 		const expected = [
 			'git status',
 			'git changed',
@@ -59,6 +59,7 @@ describe('git group (f00046 S1)', async () => {
 			'git blame',
 			'git show',
 			'git worktree',
+			'git changelog',
 		];
 		const names = gitCommands.map((command) => command.name);
 		expect(names).toEqual(expected);
@@ -87,6 +88,20 @@ describe('git group (f00046 S1)', async () => {
 		const result = await findCommand('git changed')!.run([], ctx);
 		expect(calls).toEqual([{ tool: 'mcp-vertex_git_changed', args: {} }]);
 		expect(result.code).toBe(EXIT_CODE.OK);
+	});
+
+	it('git changelog forwards range + limit', async () => {
+		const { ctx, calls } = buildStubContext();
+		await findCommand('git changelog')!.run(
+			['--range=v1..HEAD', '--limit=20'],
+			ctx,
+		);
+		expect(calls).toEqual([
+			{
+				tool: 'mcp-vertex_git_changelog',
+				args: { range: 'v1..HEAD', limit: 20 },
+			},
+		]);
 	});
 
 	it('git diff forwards --staged and --path', async () => {
