@@ -80,6 +80,9 @@
 		"search": {
 			"waiver": "IDE-native: VS Code's built-in workspace search supersedes CLI text search"
 		},
+		"security": {
+			"waiver": "secret + dependency-CVE + license posture scanning for agents and CI; terminal-first, a VS Code posture panel is future work"
+		},
 		"status": {
 			"ui": { "kind": "vscode-command", "id": "mcp-vertex.openDashboard" }
 		},

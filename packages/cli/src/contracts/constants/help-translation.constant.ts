@@ -5,6 +5,10 @@ export type { IHelpTranslation };
 const ENGLISH_COMMAND_SUMMARIES: Readonly<Record<string, string>> = {
 	'git changelog':
 		'Build a conventional-commit changelog and infer the semver bump for a range.',
+	'security secrets':
+		'Scan source for leaked secrets (keys, tokens, private keys). Offline, redacted.',
+	'security audit':
+		'Run every security scanner (secrets + dependency CVEs + licenses) and rank one backlog.',
 	'agents status':
 		'Show reachable LLM/agent providers (cheapest-first) and how to enable missing ones.',
 	'agents recommend':

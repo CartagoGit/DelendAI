@@ -50,6 +50,7 @@ import { notificationCommands } from './groups/notification';
 import { proposalsCommands } from './groups/proposals';
 import { qualityCommands } from './groups/quality';
 import { rulesCommands } from './groups/rules';
+import { securityCommands } from './groups/security';
 import { statusMarkerCommands } from './groups/status-marker';
 import { testConventionCommands } from './groups/test-convention';
 import { usageTrackingCommands } from './groups/usage-tracking';
@@ -453,4 +454,5 @@ export const registerAllCommands = async (): Promise<
 	...conventionsCommands,
 	...doctorCommands,
 	...usageTrackingCommands,
+	...securityCommands,
 ];
