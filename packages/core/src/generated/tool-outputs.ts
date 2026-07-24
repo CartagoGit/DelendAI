@@ -481,6 +481,20 @@ export interface McpVertexGitChangedOutput {
 	changed: string[];
 }
 
+export interface McpVertexGitChangelogOutput {
+	bump: "major" | "minor" | "patch" | "none";
+	total: number;
+	groups: {
+		type: string;
+		entries: {
+			hash: string;
+			scope?: string;
+			subject: string;
+			breaking: boolean;
+		}[];
+	}[];
+}
+
 export interface McpVertexGitDiffOutput {
 	stat: string;
 }
@@ -2286,6 +2300,7 @@ export interface McpVertexToolOutputs {
 	"mcp-vertex_get_validation_matrix": McpVertexGetValidationMatrixOutput;
 	"mcp-vertex_git_blame": McpVertexGitBlameOutput;
 	"mcp-vertex_git_changed": McpVertexGitChangedOutput;
+	"mcp-vertex_git_changelog": McpVertexGitChangelogOutput;
 	"mcp-vertex_git_diff": McpVertexGitDiffOutput;
 	"mcp-vertex_git_log": McpVertexGitLogOutput;
 	"mcp-vertex_git_pr_list": McpVertexGitPrListOutput;
