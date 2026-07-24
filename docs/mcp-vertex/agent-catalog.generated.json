@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-07-24T15:53:52.354Z",
+	"generatedAt": "2026-07-24T16:01:43.061Z",
 	"mode": "compact",
 	"tools": [
 		{
@@ -465,6 +465,10 @@
 		{
 			"name": "mcp-vertex_test-policy_set_test_policy",
 			"plugin": "test-policy"
+		},
+		{
+			"name": "mcp-vertex_usage-tracking_session_hygiene",
+			"plugin": "usage-tracking"
 		},
 		{
 			"name": "mcp-vertex_usage-tracking_usage_clear",
