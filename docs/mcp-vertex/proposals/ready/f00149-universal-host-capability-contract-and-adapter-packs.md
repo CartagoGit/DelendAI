@@ -43,7 +43,7 @@ cannot run hooks or resume work after a response.
 - global_gate: validate
 
 ### S1 — Host-neutral capability contract
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/src/lib/contracts/interfaces/host-capabilities.interface.ts`,
   `packages/core/src/lib/hosts/host-capability-profile.ts`,
   `packages/core/tests/src/lib/hosts/host-capability-profile.spec.ts`,
