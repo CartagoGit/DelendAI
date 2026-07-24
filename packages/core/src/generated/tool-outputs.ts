@@ -2273,6 +2273,30 @@ export interface McpVertexSecuritySecurityDepsOutput {
 	hint?: string;
 }
 
+export interface McpVertexSecuritySecuritySastOutput {
+	tool: "sast";
+	scanned: number;
+	findings: Array<{
+		ruleId: string;
+		severity: "critical" | "high" | "medium" | "low" | "info";
+		message: string;
+		fix?: string;
+		location?: {
+			file: string;
+			line?: number;
+			endLine?: number;
+		};
+	}>;
+	summary: {
+		critical: number;
+		high: number;
+		medium: number;
+		low: number;
+		info: number;
+	};
+	worst: string;
+}
+
 export interface McpVertexSecuritySecuritySecretsOutput {
 	tool: string;
 	scanned: number;
@@ -2625,6 +2649,7 @@ export interface McpVertexToolOutputs {
 	"mcp-vertex_search_search": McpVertexSearchSearchOutput;
 	"mcp-vertex_security_security_audit": McpVertexSecuritySecurityAuditOutput;
 	"mcp-vertex_security_security_deps": McpVertexSecuritySecurityDepsOutput;
+	"mcp-vertex_security_security_sast": McpVertexSecuritySecuritySastOutput;
 	"mcp-vertex_security_security_secrets": McpVertexSecuritySecuritySecretsOutput;
 	"mcp-vertex_skill": McpVertexSkillOutput;
 	"mcp-vertex_status": McpVertexStatusOutput;

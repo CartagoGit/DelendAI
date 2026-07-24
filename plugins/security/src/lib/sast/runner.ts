@@ -1,4 +1,4 @@
-import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { mkdtemp, readFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 
@@ -6,6 +6,7 @@ import {
 	probeTool,
 	realProbeDeps,
 	runExternalTool,
+	writeFileAtomic,
 	type IExternalTool,
 	type IExternalToolRun,
 	type IProbeDeps,
@@ -204,7 +205,7 @@ const runSemgrep = async (
 	const tempDir = await mkdtemp(join(tmpdir(), 'mcpv-semgrep-'));
 	try {
 		const configPath = join(tempDir, 'rules.json');
-		await writeFile(configPath, createSemgrepConfig(selectedRules), 'utf8');
+		await writeFileAtomic(configPath, createSemgrepConfig(selectedRules));
 		const run = await runCli(
 			SEMGREP_TOOL,
 			['--config', configPath, '--json', input.cwd],
@@ -236,10 +237,9 @@ const runAstGrep = async (
 			selectedRules
 				.filter((rule) => rule.language !== 'generic')
 				.map((rule) =>
-					writeFile(
+					writeFileAtomic(
 						join(tempDir, `${rule.id}.json`),
 						createAstGrepRule(rule),
-						'utf8',
 					),
 				),
 		);
