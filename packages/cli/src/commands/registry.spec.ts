@@ -28,6 +28,13 @@ const EXPECTED_COMMANDS = [
 	'git blame',
 	'git show',
 	'git worktree',
+	'git changelog',
+	'git pr-list',
+	'git pr-view',
+	'agents status',
+	'agents recommend',
+	'agents record',
+	'agents run',
 	'memory save',
 	'memory recall',
 	'memory list',
@@ -37,6 +44,8 @@ const EXPECTED_COMMANDS = [
 	'deps list',
 	'deps check',
 	'deps polyglot',
+	'deps licenses',
+	'deps audit',
 	'rules get',
 	'rules check',
 	'rules apply',
@@ -99,6 +108,8 @@ const EXPECTED_COMMANDS = [
 	'completion',
 	'usage-tracking report',
 	'usage-tracking clear',
+	'security secrets',
+	'security audit',
 ] as const;
 
 describe('CLI command registry', async () => {

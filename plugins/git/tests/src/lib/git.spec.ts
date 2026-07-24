@@ -276,6 +276,7 @@ describe('git plugin', async () => {
 			'blame',
 			'show',
 			'worktree',
+			'changelog',
 		]);
 		expect(reg.knowledge?.[0]?.id).toBe('git-orientation');
 	});

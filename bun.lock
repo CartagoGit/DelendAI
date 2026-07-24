@@ -176,6 +176,23 @@
         "@mcp-vertex/core": "^0.1.0",
       },
     },
+    "plugins/auto-agent-selector": {
+      "name": "@mcp-vertex/auto-agent-selector",
+      "version": "0.1.0",
+      "dependencies": {
+        "@modelcontextprotocol/sdk": "^1.29.0",
+        "zod": "^4.4.3",
+      },
+      "devDependencies": {
+        "@mcp-vertex/core": "workspace:*",
+        "@types/bun": "latest",
+        "typescript": "7.0.2",
+        "vitest": "4.1.10",
+      },
+      "peerDependencies": {
+        "@mcp-vertex/core": "^0.1.0",
+      },
+    },
     "plugins/cache": {
       "name": "@mcp-vertex/cache",
       "version": "0.1.0",
@@ -227,8 +244,42 @@
         "@mcp-vertex/core": "^0.1.0",
       },
     },
+    "plugins/diagram": {
+      "name": "@mcp-vertex/diagram",
+      "version": "0.1.0",
+      "dependencies": {
+        "@modelcontextprotocol/sdk": "^1.29.0",
+        "zod": "^4.4.3",
+      },
+      "devDependencies": {
+        "@mcp-vertex/core": "workspace:*",
+        "@types/bun": "latest",
+        "typescript": "7.0.2",
+        "vitest": "4.1.10",
+      },
+      "peerDependencies": {
+        "@mcp-vertex/core": "^0.1.0",
+      },
+    },
     "plugins/docs": {
       "name": "@mcp-vertex/docs",
+      "version": "0.1.0",
+      "dependencies": {
+        "@modelcontextprotocol/sdk": "^1.29.0",
+        "zod": "^4.4.3",
+      },
+      "devDependencies": {
+        "@mcp-vertex/core": "workspace:*",
+        "@types/bun": "latest",
+        "typescript": "7.0.2",
+        "vitest": "4.1.10",
+      },
+      "peerDependencies": {
+        "@mcp-vertex/core": "^0.1.0",
+      },
+    },
+    "plugins/env": {
+      "name": "@mcp-vertex/env",
       "version": "0.1.0",
       "dependencies": {
         "@modelcontextprotocol/sdk": "^1.29.0",
@@ -262,6 +313,23 @@
     },
     "plugins/git": {
       "name": "@mcp-vertex/git",
+      "version": "0.1.0",
+      "dependencies": {
+        "@modelcontextprotocol/sdk": "^1.29.0",
+        "zod": "^4.4.3",
+      },
+      "devDependencies": {
+        "@mcp-vertex/core": "workspace:*",
+        "@types/bun": "latest",
+        "typescript": "7.0.2",
+        "vitest": "4.1.10",
+      },
+      "peerDependencies": {
+        "@mcp-vertex/core": "^0.1.0",
+      },
+    },
+    "plugins/i18n": {
+      "name": "@mcp-vertex/i18n",
       "version": "0.1.0",
       "dependencies": {
         "@modelcontextprotocol/sdk": "^1.29.0",
@@ -362,6 +430,23 @@
         "@mcp-vertex/core": "^0.1.0",
       },
     },
+    "plugins/perf": {
+      "name": "@mcp-vertex/perf",
+      "version": "0.1.0",
+      "dependencies": {
+        "@modelcontextprotocol/sdk": "^1.29.0",
+        "zod": "^4.4.3",
+      },
+      "devDependencies": {
+        "@mcp-vertex/core": "workspace:*",
+        "@types/bun": "latest",
+        "typescript": "7.0.2",
+        "vitest": "4.1.10",
+      },
+      "peerDependencies": {
+        "@mcp-vertex/core": "^0.1.0",
+      },
+    },
     "plugins/proposals": {
       "name": "@mcp-vertex/proposals",
       "version": "0.1.0",
@@ -430,8 +515,43 @@
         "@mcp-vertex/core": "^0.1.0",
       },
     },
+    "plugins/security": {
+      "name": "@mcp-vertex/security",
+      "version": "0.1.0",
+      "dependencies": {
+        "@mcp-vertex/deps": "workspace:*",
+        "@modelcontextprotocol/sdk": "^1.29.0",
+        "zod": "^4.4.3",
+      },
+      "devDependencies": {
+        "@mcp-vertex/core": "workspace:*",
+        "@types/bun": "latest",
+        "typescript": "7.0.2",
+        "vitest": "4.1.10",
+      },
+      "peerDependencies": {
+        "@mcp-vertex/core": "^0.1.0",
+      },
+    },
     "plugins/status-marker": {
       "name": "@mcp-vertex/status-marker",
+      "version": "0.1.0",
+      "dependencies": {
+        "@modelcontextprotocol/sdk": "^1.29.0",
+        "zod": "^4.4.3",
+      },
+      "devDependencies": {
+        "@mcp-vertex/core": "workspace:*",
+        "@types/bun": "latest",
+        "typescript": "7.0.2",
+        "vitest": "4.1.10",
+      },
+      "peerDependencies": {
+        "@mcp-vertex/core": "^0.1.0",
+      },
+    },
+    "plugins/tech-debt": {
+      "name": "@mcp-vertex/tech-debt",
       "version": "0.1.0",
       "dependencies": {
         "@modelcontextprotocol/sdk": "^1.29.0",
@@ -800,6 +920,8 @@
 
     "@mcp-vertex/audit": ["@mcp-vertex/audit@workspace:plugins/audit"],
 
+    "@mcp-vertex/auto-agent-selector": ["@mcp-vertex/auto-agent-selector@workspace:plugins/auto-agent-selector"],
+
     "@mcp-vertex/cache": ["@mcp-vertex/cache@workspace:plugins/cache"],
 
     "@mcp-vertex/cli": ["@mcp-vertex/cli@workspace:packages/cli"],
@@ -812,13 +934,19 @@
 
     "@mcp-vertex/deps": ["@mcp-vertex/deps@workspace:plugins/deps"],
 
+    "@mcp-vertex/diagram": ["@mcp-vertex/diagram@workspace:plugins/diagram"],
+
     "@mcp-vertex/docs": ["@mcp-vertex/docs@workspace:plugins/docs"],
+
+    "@mcp-vertex/env": ["@mcp-vertex/env@workspace:plugins/env"],
 
     "@mcp-vertex/example-wordcount": ["@mcp-vertex/example-wordcount@workspace:docs/mcp-vertex/examples/custom-plugin"],
 
     "@mcp-vertex/external-mcps": ["@mcp-vertex/external-mcps@workspace:plugins/external-mcps"],
 
     "@mcp-vertex/git": ["@mcp-vertex/git@workspace:plugins/git"],
+
+    "@mcp-vertex/i18n": ["@mcp-vertex/i18n@workspace:plugins/i18n"],
 
     "@mcp-vertex/issues": ["@mcp-vertex/issues@workspace:plugins/issues"],
 
@@ -830,6 +958,8 @@
 
     "@mcp-vertex/orchestrator-runner": ["@mcp-vertex/orchestrator-runner@workspace:plugins/orchestrator-runner"],
 
+    "@mcp-vertex/perf": ["@mcp-vertex/perf@workspace:plugins/perf"],
+
     "@mcp-vertex/proposals": ["@mcp-vertex/proposals@workspace:plugins/proposals"],
 
     "@mcp-vertex/quality": ["@mcp-vertex/quality@workspace:plugins/quality"],
@@ -838,9 +968,13 @@
 
     "@mcp-vertex/search": ["@mcp-vertex/search@workspace:plugins/search"],
 
+    "@mcp-vertex/security": ["@mcp-vertex/security@workspace:plugins/security"],
+
     "@mcp-vertex/shared": ["@mcp-vertex/shared@workspace:apps/shared"],
 
     "@mcp-vertex/status-marker": ["@mcp-vertex/status-marker@workspace:plugins/status-marker"],
+
+    "@mcp-vertex/tech-debt": ["@mcp-vertex/tech-debt@workspace:plugins/tech-debt"],
 
     "@mcp-vertex/test-convention": ["@mcp-vertex/test-convention@workspace:plugins/test-convention"],
 

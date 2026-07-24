@@ -173,6 +173,7 @@ describe('deps_outdated tool registration (M11, opt-in)', async () => {
 		expect(tools.map((t) => t.id)).toEqual([
 			'deps_list',
 			'deps_check',
+			'deps_licenses',
 			'deps_polyglot',
 		]);
 	});
@@ -187,9 +188,14 @@ describe('deps_outdated tool registration (M11, opt-in)', async () => {
 			'deps_list',
 			'deps_check',
 			'deps_outdated',
+			'deps_audit',
+			'deps_licenses',
 			'deps_polyglot',
 		]);
 		expect(tools.find((t) => t.id === 'deps_outdated')?.effects).toEqual([
+			'network',
+		]);
+		expect(tools.find((t) => t.id === 'deps_audit')?.effects).toEqual([
 			'network',
 		]);
 	});
@@ -381,6 +387,7 @@ describe('deps plugin', async () => {
 		expect((reg.tools as IToolRegistration[]).map((t) => t.id)).toEqual([
 			'deps_list',
 			'deps_check',
+			'deps_licenses',
 			'deps_polyglot',
 		]);
 		expect(reg.knowledge?.[0]?.id).toBe('deps-usage');

@@ -14,6 +14,7 @@ import {
 	gitWorktreeList,
 } from '../services/git';
 import type { IGitRunner } from '../services/git';
+import { gitChangelog } from '../services/changelog';
 
 const NOT_A_REPO = (reason = 'not a git repository') =>
 	toolError(
@@ -290,6 +291,59 @@ export const buildGitToolRegistrations = (
 						return toolJson({
 							worktrees: await gitWorktreeList(options.run),
 						});
+					},
+				);
+			},
+		},
+		{
+			id: 'changelog',
+			summary:
+				'Conventional-commit changelog + inferred semver bump for a range.',
+			tags: ['git', 'orientation'],
+			register: async (server) => {
+				server.registerTool(
+					`${prefix}_changelog`,
+					{
+						description:
+							'Build a changelog from Conventional Commits and infer the semver bump (breaking → major, feat → minor, else patch). Pass `range` (e.g. "v1.0.0..HEAD") or `limit` (last N commits, default 100). Non-conventional and merge commits are ignored. Read-only, offline.',
+						inputSchema: z.object({
+							range: z.string().optional(),
+							limit: z.number().optional(),
+						}),
+						outputSchema: z.object({
+							bump: z.enum(['major', 'minor', 'patch', 'none']),
+							total: z.number(),
+							groups: z.array(
+								z.object({
+									type: z.string(),
+									entries: z.array(
+										z.object({
+											hash: z.string(),
+											scope: z.string().optional(),
+											subject: z.string(),
+											breaking: z.boolean(),
+										}),
+									),
+								}),
+							),
+						}),
+					},
+					async (args: {
+						range?: string | undefined;
+						limit?: number | undefined;
+					}) => {
+						const repo = await checkRepo(options.run);
+						if (!repo.ok) return NOT_A_REPO(repo.reason);
+						return toolJson(
+							await gitChangelog(options.run, {
+								...(args.range !== undefined
+									? { range: args.range }
+									: {}),
+								...(args.limit !== undefined
+									? { limit: args.limit }
+									: {}),
+							}),
+						);
 					},
 				);
 			},
