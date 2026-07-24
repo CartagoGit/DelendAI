@@ -29,7 +29,7 @@ Per F6 of a00067, the 4-call bootstrap costs ~1.2k tokens before the LLM execute
 - global_gate: e2e
 
 ### S1 — Extend `auto_work` payload with claim-ready slice + lock hint
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/proposals/src/lib/tools/auto-work.tool.ts`,
   `plugins/proposals/tests/src/lib/e2e/auto-work.e2e.spec.ts`
 - **Gate**: e2e
