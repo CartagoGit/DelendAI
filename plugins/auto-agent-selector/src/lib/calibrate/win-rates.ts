@@ -17,9 +17,11 @@ import type {
 export const computeWinRates = (
 	records: readonly IOutcomeRecord[],
 	minSamples: number = MIN_CALIBRATION_SAMPLES,
+	taskType?: string,
 ): IProviderWinRate[] => {
 	const agg = new Map<string, { success: number; total: number }>();
 	for (const record of records) {
+		if (taskType !== undefined && record.taskType !== taskType) continue;
 		const entry = agg.get(record.providerId) ?? { success: 0, total: 0 };
 		entry.total += 1;
 		if (record.success) entry.success += 1;
@@ -45,9 +47,10 @@ export const computeWinRates = (
 export const winRateMap = (
 	records: readonly IOutcomeRecord[],
 	minSamples: number = MIN_CALIBRATION_SAMPLES,
+	taskType?: string,
 ): Map<string, number> => {
 	const map = new Map<string, number>();
-	for (const rate of computeWinRates(records, minSamples)) {
+	for (const rate of computeWinRates(records, minSamples, taskType)) {
 		map.set(rate.providerId, rate.winRate);
 	}
 	return map;

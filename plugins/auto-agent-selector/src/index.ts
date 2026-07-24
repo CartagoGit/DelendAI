@@ -5,6 +5,7 @@ import { buildAutoRecommendRegistration } from './lib/tools/auto-recommend.tool'
 import { buildAutoRecordRegistration } from './lib/tools/auto-record.tool';
 import { buildAutoRunRegistration } from './lib/tools/auto-run.tool';
 import { buildAutoStatusRegistration } from './lib/tools/auto-status.tool';
+import { buildAutoEvaluateRegistration } from './lib/tools/auto-evaluate.tool';
 import { realRosterSnapshotStore } from './lib/discovery/roster-store';
 
 /** The dial default when the host does not set one (lean cheap, not the floor). */
@@ -78,6 +79,11 @@ export default definePlugin({
 				buildAutoRecordRegistration({
 					namespacePrefix: ctx.namespacePrefix,
 					calibrationDir,
+				}),
+				buildAutoEvaluateRegistration({
+					namespacePrefix: ctx.namespacePrefix,
+					calibrationDir,
+					rosterStore,
 				}),
 				buildAutoRunRegistration({
 					namespacePrefix: ctx.namespacePrefix,
