@@ -37,17 +37,17 @@ budgets into one operating model.
 
 ### S1 — Local evidence and bounded advice
 - **Status**: pending
-- **Proposal**: `f00144-session-hygiene-observability-and-advisory-alerts.md`
+- **Files**: `docs/mcp-vertex/proposals/ready/f00144-session-hygiene-observability-and-advisory-alerts.md`
 - **Gate**: plugin tests + typecheck
 
 ### S2 — Real host lifecycle boundaries
 - **Status**: pending
-- **Proposal**: `f00145-host-lifecycle-checkpoint-adapters.md`
+- **Files**: `docs/mcp-vertex/proposals/ready/f00145-host-lifecycle-checkpoint-adapters.md`
 - **Gate**: host-adapter contract tests
 
 ### S3 — Lean activation and regression budgets
 - **Status**: pending
-- **Proposal**: `v00001-lean-activation-and-full-preset-context-budgets.md`
+- **Files**: `docs/mcp-vertex/proposals/ready/v00001-lean-activation-and-full-preset-context-budgets.md`
 - **Gate**: token-budget e2e + validate
 
 ### S4 — Policy and adoption feedback loop
