@@ -2,7 +2,7 @@
 id: f00120
 kind: feat
 title: project→plugin generator + wiring-doctor — turn a project (or part of it) into a fully-wired mcp-vertex plugin, automatically
-status: done
+status: review
 date: 2026-07-23
 track: plugin+scaffold+dx
 closed-by: copilot-minimax-m3 (close pass 2026-07-24)
@@ -80,6 +80,8 @@ a pure extraction analyzer, and the `verify:plugin-wiring` checker.
 - **Status**: done (2026-07-24)
 - **Files**: `packages/core/src/lib/scaffold/scaffold-host.ts` (scaffoldPluginFiles), `packages/core/tests/src/lib/scaffold/scaffold-host.spec.ts`, `packages/core/src/public/index.ts` (scaffoldPluginFiles export)
 - **Gate**: bun run validate
+- review-state: in_review
+- review-implementer: copilot-minimax-m3
 
 From `{name, description, sampleToolId}`, render a complete plugin package:
 `src/index.ts` (`definePlugin`), a sample tool + its contract types, `public`
@@ -103,6 +105,8 @@ fidelity, README branding, and sample-tool wiring for `demo.echo`.
 - **Status**: done
 - **Files**: `packages/core/src/lib/scaffold/wire-plugin.ts`, `packages/core/src/lib/contracts/interfaces/plugin-wiring.interface.ts`
 - **Gate**: bun run validate
+- review-state: in_review
+- review-implementer: copilot-minimax-m3
 
 Six pure, idempotent editors over injected fs: `tsconfig.base` paths,
 `vitest.shared` aliases, `PLUGIN_DEFAULTS` entry, `release-plan`
@@ -114,6 +118,8 @@ regen hook. Re-running is a no-op. Each editor unit-tested on fixture files.
 - **Status**: done (2026-07-24)
 - **Files**: `packages/core/src/lib/scaffold/extract-plugin.ts`, `packages/core/tests/src/lib/scaffold/extract-plugin.spec.ts`, `packages/core/src/public/index.ts`
 - **Gate**: bun run validate
+- review-state: in_review
+- review-implementer: copilot-minimax-m3
 
 Given a folder/glob, find exported pure functions and emit tool stubs wrapping
 them (Zod in/out inferred from signatures where possible), each marked TODO
@@ -135,6 +141,8 @@ pass.
 - **Status**: done (2026-07-24)
 - **Files**: `packages/core/src/lib/scaffold/create-plugin.tool.ts`, `packages/core/src/lib/scaffold/scaffold-tool.ts`, `packages/core/src/lib/scaffold/diagnose-plugin-wiring.ts`, `packages/core/tests/src/lib/scaffold/create-plugin.tool.spec.ts`, `packages/core/src/public/index.ts`, `packages/core/src/generated/tool-outputs.ts`, `tools/scripts/verify/plugin-wiring.script.ts`, `tools/scripts/verify/plugin-wiring.script.ts` (doctor rewrite to use `diagnosePluginWiring`), `packages/cli/src/commands/groups/core.ts` (plugin new command), `packages/cli/src/contracts/constants/help-translation.constant.ts`, `packages/cli/src/commands/groups/core.spec.ts`, `packages/cli/src/commands/registry.spec.ts`, `packages/cli/src/commands/groups/plugin-new.spec.ts`, `package.json` (`verify:plugin-wiring` script + `validate` chain)
 - **Gate**: bun run validate
+- review-state: in_review
+- review-implementer: copilot-minimax-m3
 
 `verify:plugin-wiring` fails when any of the six points is missing or
 inconsistent for a plugin dir. `create_plugin` tool + `mcpv plugin new`

@@ -2,7 +2,7 @@
 id: a00068
 kind: audit
 title: "24-07-2026 · Auditoría exhaustiva del proyecto + recomendaciones concretas (mejoras, altas, bajas, cambios)"
-status: in-progress
+status: review
 date: 2026-07-24T18:37:00Z
 track: code-quality+concurrency+architecture+invariants+tests+dx
 related:
@@ -90,6 +90,8 @@ esta auditoría.
 - **Status**: done
 - **Files**: `docs/mcp-vertex/proposals/ready/a00068-24-07-2026-copilot-minimax-m3-auditoria-exhaustiva-recomendaciones.md`
 - **Gate**: lint
+- review-state: in_review
+- review-implementer: copilot-minimax-m3
 - acceptance:
   - "Hallazgos con evidencia file:line, scoreboard justificado, sección de
     recomendaciones con cuatro listas (añadir/quitar/modificar/reorganizar),

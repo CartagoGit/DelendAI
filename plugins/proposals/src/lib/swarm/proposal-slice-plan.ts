@@ -153,7 +153,13 @@ export const parseProposalSlicePlan = (
 	markdown: string,
 ): IProposalSlicePlan | null => {
 	const sectionMatch = markdown.match(
-		/^## Slices\s*$([\s\S]*?)(?=^## (?!#)|\n*$(?![\s\S]))/m,
+		// a00069 S1 — case-insensitive on the `Slices` keyword, plus
+		// a tolerant suffix (`(alias)` etc.) and the narrative variant
+		// `## 5. Slices (...)` that the proposal-scaffold-linter already
+		// accepts (see `proposal-scaffold-linter.ts:341`). Keeping this
+		// regex wide lets `continue_proposal { mode: "plan" }` see the
+		// slices that the linter and the doc writers all agree on.
+		/^##\s+\d+\.\s+)?Slices\b[^\n]*$/im,
 	);
 	if (sectionMatch === null) return null;
 	const section = sectionMatch[1] ?? '';

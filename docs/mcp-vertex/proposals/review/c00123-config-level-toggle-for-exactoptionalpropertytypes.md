@@ -2,7 +2,7 @@
 id: c00123
 title: "config-level toggle for `exactOptionalPropertyTypes`"
 kind: chore
-status: done
+status: review
 type: proposal
 track: tooling+llm-velocity+optional
 date: 2026-07-24
@@ -33,6 +33,8 @@ The flag adds friction for LLMs without lifting the runtime quality bar (a00067 
 - **Status**: done (closed 2026-07-24)
 - **Files**: `tsconfig.base.json`, `tsconfig.relax.json`, `tools/scripts/typecheck.script.ts`, `package.json`
 - **Gate**: type
+- review-state: in_review
+- review-implementer: copilot-minimax-m3
 - **Close evidence**:
   - `tsconfig.relax.json` extends `tsconfig.base.json` and overrides `exactOptionalPropertyTypes: false`.
   - `tools/scripts/typecheck.script.ts` dispatches to `tsconfig.json` (default, flag ON) or `tsconfig.relax.json` (env var set, flag OFF); uses `bunx tsc` so it works without `tsc` on PATH.
@@ -49,6 +51,8 @@ The flag adds friction for LLMs without lifting the runtime quality bar (a00067 
 - **Status**: done (closed 2026-07-24)
 - **Files**: `docs/mcp-vertex/AGENT-BOOTSTRAP.md`
 - **Gate**: type
+- review-state: in_review
+- review-implementer: copilot-minimax-m3
 - **Close evidence**:
   - New `### Tooling posture` subsection added under `## 7. Repo-level rules` (right after `### Repo-level conventions`), with the `MCP_VERTEX_RELAX_EXACT_OPTIONAL=1` knob, the trade (3-7% LLM fix-cycle cost, no runtime benefit), and a pointer to `a00067 F3 / DC5`.
   - `bun tools/scripts/lint/bootstrap-canonical.script.ts` → ✓ 9 H2 sections, all canonical.

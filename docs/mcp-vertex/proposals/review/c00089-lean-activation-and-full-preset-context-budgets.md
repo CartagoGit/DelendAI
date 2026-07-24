@@ -2,7 +2,7 @@
 id: c00089
 title: "Lean activation and full-preset context budgets"
 kind: chore
-status: done
+status: review
 type: proposal
 track: presets+metrics+token-efficiency
 date: 2026-07-24
@@ -41,6 +41,8 @@ select a lighter surface for ordinary work without hand-curating plugin lists.
 - **Status**: done
 - **Files**: `packages/core/tests/src/lib/e2e/token-budget.e2e.spec.ts`, `docs/mcp-vertex/TOKEN-BUDGETS.md`
 - **Gate**: token-budget e2e
+- review-state: in_review
+- review-implementer: copilot-minimax-m3
 - **Acceptance**: `tools/list`, compact orientation and the main resume path
   are measured against the actual collaboration preset.
 
@@ -48,6 +50,8 @@ select a lighter surface for ordinary work without hand-curating plugin lists.
 - **Status**: done
 - **Files**: `tools/scripts/host/host-server.script.ts`, `docs/mcp-vertex/CROSS-IDE.md`, `docs/mcp-vertex/CROSS-PROJECT-SETUP.md`
 - **Gate**: host launch tests + docs checks
+- review-state: in_review
+- review-implementer: copilot-minimax-m3
 - **Acceptance**: a user can explicitly choose the lightweight path for a
   simple task and elevate to collaboration only when needed.
 
@@ -55,6 +59,8 @@ select a lighter surface for ordinary work without hand-curating plugin lists.
 - **Status**: done
 - **Files**: `config/metrics-baseline.json`, `docs/mcp-vertex/AGENT-BOOTSTRAP.md`
 - **Gate**: metrics gate + prompt-size
+- review-state: in_review
+- review-implementer: copilot-minimax-m3
 - **Acceptance**: budget growth requires an intentional, evidence-backed
   decision; instructions remain below their static size cap.
 
