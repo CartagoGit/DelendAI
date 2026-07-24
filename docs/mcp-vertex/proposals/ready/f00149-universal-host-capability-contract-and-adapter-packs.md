@@ -56,7 +56,7 @@ cannot run hooks or resume work after a response.
     fabricating an unsupported continuation capability.
 
 ### S2 — Generated adapter-pack manifest
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/src/lib/hosts/host-adapter-pack.ts`,
   `packages/core/tests/src/lib/hosts/host-adapter-pack.spec.ts`,
   `packages/core/src/public/index.ts`

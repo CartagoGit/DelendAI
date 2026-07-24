@@ -49,6 +49,11 @@ export type {
 	IHostCapabilityAction,
 	IHostCapabilityPlan,
 } from '../lib/hosts/host-capability-profile';
+export { buildHostAdapterPack } from '../lib/hosts/host-adapter-pack';
+export type {
+	IHostAdapterPack,
+	IHostAdapterPackAction,
+} from '../lib/hosts/host-adapter-pack';
 export type { IStatusCollector } from '../lib/contracts/interfaces/status-collector.interface';
 export type {
 	IPromptRegistration,
