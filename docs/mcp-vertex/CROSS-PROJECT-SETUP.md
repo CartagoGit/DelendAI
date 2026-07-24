@@ -10,6 +10,22 @@ Use this page for the first run in a new project, for fixing an `issues` setup t
 - You want the `issues` plugin to read GitHub issues for the current repository without guessing which config key or auth path to use.
 - You need to debug a mismatch between what your host launches from `mcp.json` and what the repo declares in `mcp-vertex.config.json`.
 
+## Session and context hygiene
+
+Every adopted project should keep its host instruction file as a pointer to
+[`AGENT-BOOTSTRAP.md`](./AGENT-BOOTSTRAP.md). That shared policy is how
+`mcp-vertex` keeps session lifetime and context carry-over consistent across
+Claude Code, Codex, Copilot, and other hosts: checkpoint a completed slice,
+compact the relevant working state, and start fresh before the host's context
+warning rather than preserving an idle background chat.
+
+The server cannot read a host's private subscription meter. Use the host UI as
+the authority for quota/context, and use the `memory` compaction loop plus
+`usage-tracking` only for the local state and MCP activity they can actually
+observe. The `lean`, `standard`, and larger presets include `memory`; projects
+that deliberately use a smaller explicit plugin list should load it when they
+want the same compact-and-resume workflow.
+
 ## The 7 steps of `setup-github`
 
 | # | Step | What it does | Verifiable by |
@@ -47,6 +63,12 @@ The per-repo config written by step 4 is intentionally small:
 ## Plugin preset wiring
 
 The source of truth for preset membership is [../packages/core/src/lib/plugins/preset-catalog.ts](../packages/core/src/lib/plugins/preset-catalog.ts). Today `full` resolves to everything in `swarm` plus the host-only plugins that stay user-facing (`web-fetch`, `issues`); `audit` is opt-in via `--plugins=audit`. Prefer `--preset=full` when you want the whole user-facing surface. Use an explicit plugin list only when you intentionally want a smaller launch shape.
+
+For ordinary single-agent implementation work, prefer the explicit
+`--preset=lean` surface: git, search, memory and docs. It avoids registering
+the collaboration tools and their schemas until you actually need them. Switch
+to `--preset=swarm` for locks, proposals and coordination; use `full` only
+when the host-only integrations are also required.
 
 Preferred launch:
 

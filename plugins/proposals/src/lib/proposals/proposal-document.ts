@@ -13,6 +13,11 @@ import { readFile } from 'node:fs/promises';
 
 import { z } from 'zod';
 
+import {
+	PROPOSAL_KIND_VALUES,
+	proposalIdSchema,
+	proposalKindSchema,
+} from '../contracts/schemas/proposal-kind.schema';
 import { extractYamlBlock, parseFrontmatterBlock } from './frontmatter-parser';
 import type { IYamlValue } from './frontmatter-parser';
 import type { IProposalBudget } from './proposal-budget';
@@ -85,6 +90,12 @@ export interface IPlanClosureGate {
 
 export interface IProposalFrontmatter {
 	readonly id: string;
+	/**
+	 * Proposal kind (`feat`, `fix`, …), validated against the taxonomy
+	 * enum when present (f00114). Optional: legacy files may omit it —
+	 * the filename prefix then remains the only kind signal.
+	 */
+	readonly kind?: string;
 	readonly type: string;
 	readonly status: string;
 	readonly track: string;
@@ -323,8 +334,38 @@ export const parseProposalDocument = async (
 			)
 		: undefined;
 
+	// --- Taxonomy validation (f00114, promoted from f00050 S-G) ---
+	// `id` and `kind` were silent pass-throughs; both now validate
+	// against the derived schemas. The id check uses the READ-tolerant
+	// schema (legacy `p` alias + residual suffix stay loadable); an
+	// empty id stays allowed here — the registry linter owns that rule.
+	const idValue = String(parsed.id ?? '');
+	if (idValue !== '') {
+		const idResult = proposalIdSchema.safeParse(idValue);
+		if (!idResult.success) {
+			throw new ProposalParseError(
+				'INVALID_PROPOSAL_ID',
+				absolutePath,
+				`Invalid proposal id "${idValue}" in ${absolutePath}: ${idResult.error.issues[0]?.message ?? 'malformed'}`,
+			);
+		}
+	}
+	let kind: string | undefined;
+	if (parsed.kind !== undefined && parsed.kind !== null) {
+		const kindResult = proposalKindSchema.safeParse(String(parsed.kind));
+		if (!kindResult.success) {
+			throw new ProposalParseError(
+				'INVALID_FRONTMATTER',
+				absolutePath,
+				`Invalid kind "${String(parsed.kind)}" in ${absolutePath}: expected one of ${PROPOSAL_KIND_VALUES.join(', ')}`,
+			);
+		}
+		kind = kindResult.data;
+	}
+
 	const frontmatter: IProposalFrontmatter = {
-		id: String(parsed.id ?? ''),
+		id: idValue,
+		...(kind !== undefined ? { kind } : {}),
 		type: String(parsed.type ?? 'unspecified'),
 		status: String(parsed.status ?? 'pending'),
 		track: String(parsed.track ?? 'unspecified'),

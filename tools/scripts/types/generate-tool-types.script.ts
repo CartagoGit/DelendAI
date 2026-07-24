@@ -43,6 +43,12 @@ import statusMarkerPlugin from '@mcp-vertex/status-marker';
 import testConventionPlugin from '@mcp-vertex/test-convention';
 import webFetchPlugin from '@mcp-vertex/web-fetch';
 import cachePlugin from '@mcp-vertex/cache';
+import securityPlugin from '@mcp-vertex/security';
+import diagramPlugin from '@mcp-vertex/diagram';
+import envPlugin from '@mcp-vertex/env';
+import i18nPlugin from '@mcp-vertex/i18n';
+import perfPlugin from '@mcp-vertex/perf';
+import techDebtPlugin from '@mcp-vertex/tech-debt';
 import usageTrackingPlugin from '../../../plugins/usage-tracking/src/index';
 
 import {
@@ -68,11 +74,17 @@ const PLUGIN_SPECIFIERS: Readonly<Record<string, unknown>> = {
 	'mcp-test-convention': testConventionPlugin,
 	'mcp-web-fetch': webFetchPlugin,
 	'mcp-cache': cachePlugin,
+	'mcp-security': securityPlugin,
+	'mcp-diagram': diagramPlugin,
+	'mcp-env': envPlugin,
+	'mcp-i18n': i18nPlugin,
+	'mcp-perf': perfPlugin,
+	'mcp-tech-debt': techDebtPlugin,
 	'mcp-usage-tracking': usageTrackingPlugin,
 };
 
 const PLUGIN_LIST =
-	'proposals,rules,memory,git,quality,search,notification,docs,deps,logs,audit,status-marker,test-convention,web-fetch,cache,usage-tracking';
+	'proposals,rules,memory,git,quality,search,notification,docs,deps,logs,audit,status-marker,test-convention,web-fetch,cache,security,diagram,env,i18n,perf,tech-debt,usage-tracking';
 
 /**
  * Assemble the reference server with every plugin and harvest each
@@ -92,14 +104,18 @@ export const harvestToolSchemas = async (): Promise<IHarvestedTool[]> => {
 			);
 			return { default: hit ? hit[1] : undefined };
 		},
-		// Synthetic config, harvest-only: turns on `deps`'s opt-in
-		// `allowNetwork` so `deps_outdated` is registered and its
-		// `outputSchema` gets harvested too — every other plugin still sees
-		// no config file (default options), matching the real CLI default.
+		// Synthetic config, harvest-only: turns on the opt-in surfaces so
+		// their `outputSchema`s get harvested too — `deps`'s `allowNetwork`
+		// (deps_outdated / deps_audit) and `git`'s `allowForge` (pr_list /
+		// pr_view). Every other plugin still sees no config file (default
+		// options), matching the real CLI default.
 		readFile: async (absolutePath: string) =>
 			absolutePath.endsWith('mcp-vertex.config.json')
 				? JSON.stringify({
-						plugins: { deps: { options: { allowNetwork: true } } },
+						plugins: {
+							deps: { options: { allowNetwork: true } },
+							git: { options: { allowForge: true } },
+						},
 					})
 				: undefined,
 	});

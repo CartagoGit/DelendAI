@@ -452,10 +452,19 @@ export const scaffoldPluginFiles = (
 					license: 'MIT',
 					main: './src/index.ts',
 					exports: { '.': './src/index.ts' },
+					// a00067: ship a runnable typecheck so the emitted
+					// tsconfig is usable out of the box (matches the
+					// extension-host scaffold; without it the tsconfig has no
+					// toolchain to run it).
+					scripts: { typecheck: 'tsc --noEmit -p tsconfig.json' },
 					peerDependencies: { '@mcp-vertex/core': '^0.1.0' },
 					dependencies: {
 						'@modelcontextprotocol/sdk': '^1.29.0',
 						zod: '^4.4.3',
+					},
+					devDependencies: {
+						'@types/node': '^26.1.0',
+						typescript: '^7.0.0',
 					},
 				},
 				null,
@@ -527,9 +536,25 @@ export default definePlugin({
 		},
 		{
 			path: `plugins/${id}/tsconfig.json`,
+			// Self-contained (a00067): an adopter runs `create_project` in
+			// their OWN repo, which has no `tsconfig.base.json` two levels
+			// up — extending it made `tsc` fail with TS5083 on the very
+			// first build. These are the standard strict options; the
+			// package's own deps (@mcp-vertex/core, zod) resolve from
+			// node_modules, so no monorepo `paths` are needed.
 			content: `${JSON.stringify(
 				{
-					extends: '../../tsconfig.base.json',
+					compilerOptions: {
+						target: 'ES2022',
+						module: 'ESNext',
+						moduleResolution: 'bundler',
+						lib: ['ES2022'],
+						strict: true,
+						esModuleInterop: true,
+						skipLibCheck: true,
+						resolveJsonModule: true,
+						noEmit: true,
+					},
 					include: ['src/**/*', 'tests/**/*'],
 				},
 				null,
@@ -557,6 +582,115 @@ ${safeDescription}
 \`\`\`
 
 See \`PLUGINS-MCP-VERTEX.md\` at the docs folder for the full plugin guide.
+`,
+		},
+		// f00120 S1: complete the plugin scaffold with the four files the
+		// scaffolder was missing (vitest config + LICENSE + public barrel +
+		// a passing sample spec). Each is a small, fixed template; the
+		// scaffolder stays pure over its inputs.
+		{
+			// Self-contained vitest config (a00067/f00120): the emitter used to
+			// import `../../vitest.shared`, which only resolves inside a real
+			// mcp-vertex monorepo. An adopter who runs `create_project` in their
+			// own repo has no `vitest.shared` at the root and tsc fails on the
+			// very first build. Drop the dependency and emit an inline, runnable
+			// vitest config that any project shape can boot. The mcp-vertex
+			// monorepo can still override `vitest.config.ts` after the wire step
+			// if it wants the shared aliases.
+			path: `plugins/${id}/vitest.config.ts`,
+			content: `import { defineConfig } from 'vitest/config';
+
+export default defineConfig({
+	test: {
+		environment: 'node',
+		include: ['src/**/*.spec.ts', 'tests/**/*.spec.ts'],
+	},
+});
+`,
+		},
+		{
+			path: `plugins/${id}/LICENSE`,
+			content: `MIT License
+
+Copyright (c) ${new Date().getUTCFullYear()} ${options.pluginName} authors
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+`,
+		},
+		{
+			path: `plugins/${id}/src/public/index.ts`,
+			content: `/**
+ * \`@cartago-git/mcp-${id}/public\` — the plugin's public surface.
+ *
+ * Re-exports every value the rest of the workspace is allowed to import.
+ * Internal helpers stay in \`src/lib/\` and are not re-exported here, so
+ * the public contract is what \`mcp-vertex.config.json\` consumers see.
+ */
+export { default } from '../index';
+export type { IPluginOptions } from '../contracts/interfaces/plugin-options.interface';
+`,
+		},
+		{
+			path: `plugins/${id}/src/contracts/interfaces/plugin-options.interface.ts`,
+			content: `/**
+ * \`@cartago-git/mcp-${id}\` options schema. Plugins carry a typed
+ * \`options\` block that hosts materialise from \`mcp-vertex.config.json\`.
+ * Empty by default; a plugin with knobs extends this with \`zod\` and
+ * surfaces it via \`definePlugin({ options })\`.
+ */
+export interface IPluginOptions {
+	/** Reserved for future use. */
+	readonly _placeholder?: never;
+}
+`,
+		},
+		{
+			path: `plugins/${id}/tests/src/lib/ping.spec.ts`,
+			content: `import { describe, expect, it } from 'vitest';
+
+import plugin from '../../src/index';
+
+/**
+ * \`${id}\` — smoke test for the scaffolded plugin. Verifies that the
+ * plugin loads, declares the expected id, and ships a working ping
+ * tool. Real plugins replace this with feature specs.
+ */
+describe(\`${id} plugin (scaffolded smoke)\`, () => {
+\tit('declares the canonical plugin id', () => {
+\t\texpect(plugin.name).toBe('${id}');
+\t\texpect(plugin.version).toMatch(/^\\d+\\.\\d+\\.\\d+$/u);
+\t});
+
+\tit('exposes a \`ping\` tool through the register callback', async () => {
+\t\tconst ctx = {
+\t\t\tnamespacePrefix: '${id}',
+\t\t\tpluginCacheDir: '<cache>',
+\t\t\tpluginDocsDir: '<docs>',
+\t\t\toptions: {},
+\t\t\tlog: { info() {}, warn() {}, error() {}, debug() {} },
+\t\t} as const;
+\t\tconst registration = await plugin.register(ctx as never);
+\t\tconst tools = (registration as { tools: Array<{ id: string }> }).tools;
+\t\tconst ping = tools.find((t) => t.id === '${id}_ping');
+\t\texpect(ping).toBeDefined();
+\t});
+});
 `,
 		},
 	];
@@ -609,7 +743,13 @@ export const scaffoldClientFiles = (
 					license: 'MIT',
 					main: './src/index.ts',
 					exports: { '.': './src/index.ts' },
+					// a00067: runnable typecheck for the emitted tsconfig.
+					scripts: { typecheck: 'tsc --noEmit -p tsconfig.json' },
 					dependencies: { '@modelcontextprotocol/sdk': '^1.29.0' },
+					devDependencies: {
+						'@types/node': '^26.1.0',
+						typescript: '^7.0.0',
+					},
 				},
 				null,
 				'\t',
@@ -665,9 +805,22 @@ export const create${fn}Client = async (
 		},
 		{
 			path: `clients/${id}/tsconfig.json`,
+			// Self-contained (a00067) — see the plugin scaffold's note: an
+			// adopter's repo has no `tsconfig.base.json`, so extending it
+			// broke `tsc` on the first build (TS5083).
 			content: `${JSON.stringify(
 				{
-					extends: '../../tsconfig.base.json',
+					compilerOptions: {
+						target: 'ES2022',
+						module: 'ESNext',
+						moduleResolution: 'bundler',
+						lib: ['ES2022'],
+						strict: true,
+						esModuleInterop: true,
+						skipLibCheck: true,
+						resolveJsonModule: true,
+						noEmit: true,
+					},
 					include: ['src/**/*'],
 				},
 				null,

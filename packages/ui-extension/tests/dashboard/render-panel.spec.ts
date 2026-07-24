@@ -9,6 +9,7 @@ import { renderPanelMetrics } from '../../src/dashboard/render-panel-metrics';
 import { renderPanelOverview } from '../../src/dashboard/render-panel-overview';
 import { renderPanelPlugins } from '../../src/dashboard/render-panel-plugins';
 import { renderPanelSessions } from '../../src/dashboard/render-panel-sessions';
+import { renderPanelSpend } from '../../src/dashboard/render-panel-spend';
 import { renderPanelTimes } from '../../src/dashboard/render-panel-times';
 import { renderPanelTokens } from '../../src/dashboard/render-panel-tokens';
 import { renderPanelTools } from '../../src/dashboard/render-panel-tools';
@@ -162,6 +163,7 @@ const fixture: IDashboardAllModels = {
 	tokens: baseTokens,
 	tools: baseTools,
 	plugins: basePlugins,
+	spend: null,
 	sessions: baseSessions,
 	times: baseTimes,
 	agents: baseAgents,
@@ -234,6 +236,34 @@ describe('renderPanelPlugins', async () => {
 		expect(html).toContain('panel-plugins');
 		expect(html).toContain('<svg');
 		expect(html).toContain('Token share by plugin');
+	});
+});
+
+describe('renderPanelSpend (f00118 S2)', async () => {
+	it('renders total cost, real savings, and cost-by-provider table when spend is available', async () => {
+		const html = renderPanelSpend(
+			{
+				totalCostUsd: 4.82,
+				totalTokensSaved: 214_000,
+				savingsPercent: 18,
+				windowDays: 7,
+				byProvider: [
+					{ provider: 'anthropic', costUsd: 3.1, calls: 260 },
+					{ provider: 'openai', costUsd: 1.72, calls: 94 },
+				],
+			},
+			dictsByLang.en,
+		);
+		expect(html).toContain('panel-spend');
+		expect(html).toContain('<svg');
+		expect(html).toContain('anthropic');
+		expect(html).toContain('Cost by provider');
+	});
+
+	it('renders an unavailable message when spend is null (usage-tracking not loaded)', async () => {
+		const html = renderPanelSpend(null, dictsByLang.en);
+		expect(html).toContain('panel-spend');
+		expect(html).toContain('usage-tracking');
 	});
 });
 

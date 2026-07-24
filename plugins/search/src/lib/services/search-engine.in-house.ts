@@ -69,11 +69,22 @@ export const createInHouseBackend = async (): Promise<ISearchBackend> => ({
 
 		const roots =
 			options.roots && options.roots.length > 0 ? options.roots : ['.'];
+		// a00062: `extensionOf()` returns a bare, dot-less extension
+		// ("ts", not ".ts"), but `mcp-vertex.config.json`'s own committed
+		// `plugins.search.options.extensions` (and every host's natural
+		// authoring instinct, matching `path.extname()`) writes the
+		// dot-prefixed form (".ts"). A config-supplied list therefore
+		// NEVER matched `extensions.has(extensionOf(name))`, silently
+		// returning zero hits for every search on a repo that ever set
+		// this option — including this very repo's own config. Stripping
+		// a leading dot here makes the comparison tolerant of either
+		// spelling instead of requiring hosts to know the internal,
+		// undocumented dot-less convention.
 		const extensions = new Set(
 			(options.extensions && options.extensions.length > 0
 				? options.extensions
 				: DEFAULT_EXTENSIONS
-			).map((e) => e.toLowerCase()),
+			).map((e) => e.toLowerCase().replace(/^\./, '')),
 		);
 		const ignoreDirs = new Set(options.ignoreDirs ?? DEFAULT_IGNORE_DIRS);
 		const caseSensitive = options.caseSensitive ?? false;
@@ -195,19 +206,58 @@ export const createInHouseBackend = async (): Promise<ISearchBackend> => ({
 				},
 			});
 
+		const rejectedRoots: string[] = [];
+		const missingRoots: string[] = [];
 		for (const root of roots) {
 			if (truncated) break;
 			// Containment: a root that escapes the workspace (`..`,
 			// absolute) is skipped — a read-only search must not
 			// catalog outside what the host exposes.
 			const contained = resolveWorkspaceContained(workspaceRootAbs, root);
-			if (!contained.ok) continue;
+			if (!contained.ok) {
+				rejectedRoots.push(root);
+				continue;
+			}
 			const absRoot = contained.abs;
 			const st = await stat(absRoot).catch(() => null);
 			if (st?.isFile()) await visitFile(absRoot);
 			else if (st?.isDirectory()) await walk(absRoot);
+			else missingRoots.push(root);
 		}
 
-		return { query, hits, truncated, scanned, usedRg: false };
+		// a00063: a silent `scanned: 0` sent a real agent into a
+		// zero-result retry spiral (124 identical empty searches,
+		// absolute roots at other repos, blind file probing). When the
+		// walk touched NOTHING, say why — the usual cause is a config
+		// whose `roots` describe a different project's layout.
+		let diagnostic: string | undefined;
+		if (scanned === 0) {
+			const parts: string[] = [];
+			if (missingRoots.length > 0) {
+				parts.push(
+					`configured roots do not exist in this workspace: ${missingRoots.join(', ')}`,
+				);
+			}
+			if (rejectedRoots.length > 0) {
+				parts.push(
+					`roots must be workspace-relative (rejected: ${rejectedRoots.join(', ')})`,
+				);
+			}
+			if (parts.length === 0) {
+				parts.push(
+					`0 files matched the filters under roots [${roots.join(', ')}] — check plugins.search.options (extensions/include/exclude) in mcp-vertex.config.json`,
+				);
+			}
+			diagnostic = `scanned 0 files: ${parts.join('; ')}. Fix plugins.search.options.roots in mcp-vertex.config.json (omit roots to scan the whole workspace).`;
+		}
+
+		return {
+			query,
+			hits,
+			truncated,
+			scanned,
+			usedRg: false,
+			...(diagnostic !== undefined ? { diagnostic } : {}),
+		};
 	},
 });

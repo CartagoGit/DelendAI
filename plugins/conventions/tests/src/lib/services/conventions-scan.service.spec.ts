@@ -93,4 +93,60 @@ describe('scanConventions', async () => {
 		// The unreadable subdir is skipped; the rest still classified.
 		expect(res.counts.tool).toBe(1);
 	});
+
+	it('scans with a non-TS profile: python extensions, roles and skip dirs (f00113 S5)', async () => {
+		const { PYTHON_PROFILE } = await import(
+			'../../../../src/lib/profiles/python.profile'
+		);
+		const reader = memoryReader({
+			pkg: [
+				file('__init__.py'),
+				file('service.py'),
+				file('ignored.ts'), // wrong extension for this profile
+				dir('tests'),
+				dir('__pycache__'),
+			],
+			'pkg/tests': [file('test_service.py')],
+			'pkg/__pycache__': [file('service.cpython-312.py')],
+		});
+		const res = await scanConventions(reader, ['pkg'], PYTHON_PROFILE);
+		expect(res.total).toBe(3);
+		expect(res.counts['package-marker']).toBe(1);
+		expect(res.counts.module).toBe(1);
+		expect(res.counts.test).toBe(1);
+		expect(res.unmatched).toEqual([]);
+	});
+});
+
+describe('scanConventions — zero-scan self-diagnosis (a00064)', async () => {
+	/** A reader that throws for dirs missing from the tree (fs-like). */
+	const strictReader = (
+		tree: Record<string, readonly IDirEntry[]>,
+	): IDirReader => ({
+		async list(relDir) {
+			const entries = tree[relDir];
+			if (entries === undefined)
+				throw new Error(`ENOENT: ${relDir || '.'}`);
+			return entries;
+		},
+	});
+
+	it('reports roots whose own listing failed as missingRoots', async () => {
+		const reader = strictReader({
+			src: [file('a.service.ts')],
+		});
+		const res = await scanConventions(reader, [
+			'src',
+			'packages',
+			'plugins',
+		]);
+		expect(res.total).toBe(1);
+		expect(res.missingRoots).toEqual(['packages', 'plugins']);
+	});
+
+	it('missingRoots is empty when every root lists fine', async () => {
+		const reader = strictReader({ src: [file('a.service.ts')] });
+		const res = await scanConventions(reader, ['src']);
+		expect(res.missingRoots).toEqual([]);
+	});
 });

@@ -41,6 +41,14 @@ export interface IToolHandle {
 	readonly inputSchema: z.ZodTypeAny | undefined;
 	readonly outputSchema: z.ZodTypeAny | undefined;
 	readonly invoke: (args: unknown) => Promise<unknown>;
+	/**
+	 * x00107: invoke preserving the `isError` flag. Optional so
+	 * existing fake handles keep compiling; when absent the probe
+	 * falls back to `invoke` and treats the result as non-error.
+	 */
+	readonly invokeRaw?: (
+		args: unknown,
+	) => Promise<{ payload: unknown; isError: boolean }>;
 }
 
 /** Outcome of a probe — same shape the script used to build inline. */
@@ -90,14 +98,35 @@ export const runEmptyInputProbe = async (
 
 	// Input is acceptable empty; invoke and check the output.
 	let result: unknown;
+	let isError = false;
 	let handlerReturned = false;
 	let invocationError: string | undefined;
 	try {
-		result = await invoke({});
+		if (handle.invokeRaw !== undefined) {
+			const raw = await handle.invokeRaw({});
+			result = raw.payload;
+			isError = raw.isError;
+		} else {
+			result = await invoke({});
+		}
 		handlerReturned = true;
 	} catch (err) {
 		invocationError = (err as Error).message;
 		handlerReturned = true;
+	}
+
+	// x00107: SDK-faithful semantics — validateToolOutput SKIPS schema
+	// validation for isError results, so a structured `toolError` on
+	// empty input is a graceful, spec-conformant answer, not a failure.
+	// (The pre-x00107 probe validated the error envelope against the
+	// SUCCESS schema and misread 3 correct tools as drift.)
+	if (isError && invocationError === undefined) {
+		return {
+			tool: tool.id,
+			outcome: 'ok',
+			handlerReturned,
+			detail: 'returned a structured error (SDK skips outputSchema validation on isError)',
+		};
 	}
 
 	let outcome: ProbeOutcome = 'failed';
@@ -108,8 +137,11 @@ export const runEmptyInputProbe = async (
 		try {
 			outputSchema.parse(result);
 			outcome = 'ok';
-		} catch {
+		} catch (parseError) {
+			// x00105: record WHY the output violated its declared schema
+			// — a red row without the zod issue forces a debugger re-run.
 			outcome = 'failed';
+			invocationError = `output violates outputSchema: ${(parseError as Error).message}`;
 		}
 	} else if (!outputSchema) {
 		// catchall schemas are documented exceptions (AGENTS.md #8).

@@ -25,6 +25,10 @@ import {
 	PROPOSAL_KIND_BY_PREFIX,
 	STATUS_TO_FOLDER,
 } from '../contracts/constants/proposal-glossary.constant';
+import {
+	kindMatchesId,
+	newProposalIdSchema,
+} from '../contracts/schemas/proposal-kind.schema';
 import { readJsonOrNull, readTextOrNull } from '../proposals/index-reader';
 import { escapeRegExp, kebab } from '../shared/string-helpers';
 import {
@@ -38,7 +42,7 @@ import {
 	renderReviewLines,
 	reviewTransition,
 } from '../swarm/proposal-review';
-import { readActiveLocks } from './authoring-options';
+import { readActiveLocks, resolveIndexedDoc } from './authoring-options';
 import type { IAuthoringToolOptions } from './authoring-options';
 
 export type { IAuthoringToolOptions } from './authoring-options';
@@ -56,11 +60,30 @@ const SLICE_IN = z.object({
 // x00098 S2: emit the canonical slice shape the repo linter validates
 // (`**Status**`/`**Files**`/`**Gate**` bullets); the plan parser reads
 // both this and the legacy lowercase form.
+// The repo linter only accepts uppercase slice headings (`### S1 — …`),
+// so normalise whatever case the caller passed (a00053: callers passing
+// `s1` produced documents the linter rejected).
+const canonicalSliceId = (id: string): string => id.replace(/^s(?=\d)/, 'S');
+
+/**
+ * Regex fragment matching a slice id in either case (`s1`/`S1`), so
+ * close_slice keeps finding blocks in legacy lowercase documents and in
+ * the canonical uppercase form regardless of how the caller spelled it.
+ */
+const sliceIdPattern = (id: string): string =>
+	/^[sS]\d+$/.test(id)
+		? `[sS]${escapeRegExp(id.slice(1))}`
+		: escapeRegExp(id);
+
 const renderSlice = (s: z.infer<typeof SLICE_IN>): string => {
-	const lines = [`### ${s.sliceId} — ${s.title ?? s.sliceId}`];
+	const lines = [
+		`### ${canonicalSliceId(s.sliceId)} — ${s.title ?? s.sliceId}`,
+	];
 	lines.push('- **Status**: pending');
 	if (s.dependsOn && s.dependsOn.length > 0) {
-		lines.push(`- **DependsOn**: [${s.dependsOn.join(', ')}]`);
+		lines.push(
+			`- **DependsOn**: [${s.dependsOn.map(canonicalSliceId).join(', ')}]`,
+		);
 	}
 	lines.push(`- **Files**: ${s.files.map((f) => `\`${f}\``).join(', ')}`);
 	lines.push(`- **Gate**: ${s.gate ?? 'none'}`);
@@ -195,25 +218,24 @@ export const buildCreateProposalRegistration = (
 				let id: string;
 				if (args.id !== undefined) {
 					id = args.id;
-					if (!/^[a-z]\d{5}$/u.test(id)) {
+					// f00114: the WRITE-seam schema owns the shape rule
+					// (strict 5 digits, canonical prefix, no `p` alias)…
+					const idResult = newProposalIdSchema.safeParse(id);
+					if (!idResult.success) {
 						return toolError(
-							`invalid proposal id "${id}"`,
+							`invalid proposal id "${id}" — ${idResult.error.issues[0]?.message ?? 'malformed'}`,
 							'Use one lowercase family prefix followed by exactly five digits (for example f00001), or omit id and pass kind for race-safe allocation.',
 						);
 					}
-					const prefix = id[0] ?? '';
-					const inferredKind = PROPOSAL_KIND_BY_PREFIX[prefix];
-					if (inferredKind === undefined) {
-						return toolError(
-							`invalid id prefix "${prefix}"`,
-							'ID prefix must correspond to a known proposal kind.',
-						);
-					}
-					if (args.kind !== undefined && args.kind !== inferredKind) {
-						return toolError(
-							`id prefix "${prefix}" (kind=${inferredKind}) does not match specified kind "${args.kind}"`,
-							'Ensure the ID prefix matches the specified kind.',
-						);
+					// …and kindMatchesId owns prefix↔kind coherence.
+					if (args.kind !== undefined) {
+						const match = kindMatchesId(args.kind, id);
+						if (!match.ok) {
+							return toolError(
+								match.reason,
+								'Ensure the ID prefix matches the specified kind.',
+							);
+						}
 					}
 				} else if (args.kind !== undefined) {
 					const prefix = prefixForKind(args.kind);
@@ -311,7 +333,7 @@ export const buildCreateProposalRegistration = (
 					...(slices.length > 0
 						? slices.map(renderSlice).join('\n\n').split('\n')
 						: [
-								'### s1 — TODO',
+								'### S1 — TODO',
 								'- **Status**: pending',
 								'- **Files**: `TODO`',
 								'- **Gate**: none',
@@ -419,30 +441,17 @@ export const buildCloseSliceRegistration = (
 				sliceId: string;
 				releaseLock?: boolean | undefined;
 			}) => {
-				const index = await readJsonOrNull<{
-					proposals: Array<{ id: string; file: string }>;
-				}>(options.indexPathAbs);
-				if (index === null) {
-					return toolError(
-						'proposal index not found',
-						'Run sync_proposals first.',
-					);
-				}
-				const entry = index.proposals.find(
-					(p) =>
-						p.id === args.proposalId ||
-						p.id.startsWith(`${args.proposalId}-`),
+				// x00106 S1: index lookups self-heal a stale index once —
+				// transitions move files and leave the index pointing at
+				// the pre-move path until the next sync.
+				const resolved = await resolveIndexedDoc(
+					options,
+					args.proposalId,
 				);
-				if (entry === undefined) {
-					return toolError(
-						`proposal "${args.proposalId}" not in index`,
-						'Pass an existing proposalId.',
-					);
+				if (!resolved.ok) {
+					return toolError(resolved.reason, resolved.nextAction);
 				}
-				const docPath = join(
-					options.proposalsDirAbs ?? dirname(options.indexPathAbs),
-					entry.file,
-				);
+				const { entry, docPath } = resolved;
 				try {
 					await withFileMutex(docPath, async () => {
 						const md = await readTextOrNull(docPath);
@@ -453,7 +462,7 @@ export const buildCloseSliceRegistration = (
 						}
 						// Flip the slice block's status to done (add or replace).
 						const blockRe = new RegExp(
-							`(^### ${escapeRegExp(args.sliceId)}\\s+—[^\\n]*\\n)([\\s\\S]*?)(?=^### |^## (?!#)|\\n*$(?![\\s\\S]))`,
+							`(^### ${sliceIdPattern(args.sliceId)}\\s+—[^\\n]*\\n)([\\s\\S]*?)(?=^### |^## (?!#)|\\n*$(?![\\s\\S]))`,
 							'm',
 						);
 						const m = md.match(blockRe);
@@ -601,30 +610,15 @@ export const buildReviewRegistration = (
 				agent: string;
 				note?: string | undefined;
 			}) => {
-				const index = await readJsonOrNull<{
-					proposals: Array<{ id: string; file: string }>;
-				}>(options.indexPathAbs);
-				if (index === null) {
-					return toolError(
-						'proposal index not found',
-						'Run sync_proposals first.',
-					);
-				}
-				const entry = index.proposals.find(
-					(p) =>
-						p.id === args.proposalId ||
-						p.id.startsWith(`${args.proposalId}-`),
+				// x00106 S1: same one-shot self-heal as close_slice.
+				const resolved = await resolveIndexedDoc(
+					options,
+					args.proposalId,
 				);
-				if (entry === undefined) {
-					return toolError(
-						`proposal "${args.proposalId}" not in index`,
-						'Pass an existing proposalId.',
-					);
+				if (!resolved.ok) {
+					return toolError(resolved.reason, resolved.nextAction);
 				}
-				const docPath = join(
-					options.proposalsDirAbs ?? dirname(options.indexPathAbs),
-					entry.file,
-				);
+				const { entry, docPath } = resolved;
 				// x00055 S2: redact the reviewer note...
 				const redactedNote = args.note
 					? redactSecrets(args.note)
@@ -635,7 +629,7 @@ export const buildReviewRegistration = (
 					if (md === null)
 						return toolError(`proposal file missing: ${docPath}`);
 					const blockRe = new RegExp(
-						`(^### ${escapeRegExp(args.sliceId)}\\s+—[^\\n]*\\n)([\\s\\S]*?)(?=^### |^## (?!#)|\\n*$(?![\\s\\S]))`,
+						`(^### ${sliceIdPattern(args.sliceId)}\\s+—[^\\n]*\\n)([\\s\\S]*?)(?=^### |^## (?!#)|\\n*$(?![\\s\\S]))`,
 						'm',
 					);
 					const m = md.match(blockRe);
@@ -678,7 +672,7 @@ export const buildReviewRegistration = (
 							);
 
 						const blockRe = new RegExp(
-							`(^### ${escapeRegExp(args.sliceId)}\\s+—[^\\n]*\\n)([\\s\\S]*?)(?=^### |^## (?!#)|\\n*$(?![\\s\\S]))`,
+							`(^### ${sliceIdPattern(args.sliceId)}\\s+—[^\\n]*\\n)([\\s\\S]*?)(?=^### |^## (?!#)|\\n*$(?![\\s\\S]))`,
 							'm',
 						);
 						const m = md.match(blockRe);

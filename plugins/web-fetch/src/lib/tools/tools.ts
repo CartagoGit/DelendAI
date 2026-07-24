@@ -65,11 +65,27 @@ export const buildWebToolRegistrations = (
 					{
 						description:
 							'Fetch one URL and return its text body, capped at 50 KiB by default. The URL\'s hostname must match `plugins.web.options.allowList` (exact or `*.suffix` wildcard) or the call is rejected with reason "blocked-host". Redirects are followed manually and each hop is re-checked against the allow-list (reason "redirect-blocked" if a hop escapes it). Opt-in, `effects: ["network"]`.',
-						inputSchema: z.object({
-							url: z.string(),
-							maxBytes: z.number().optional(),
-							timeoutMs: z.number().optional(),
-						}),
+						// a00065 S6: bound the numeric options and reject unknown keys.
+						// The engine (`sanitizeBounds`) is the guaranteed net for
+						// direct library callers; these schema bounds give an MCP
+						// client a clear, early rejection instead of a silent clamp.
+						inputSchema: z
+							.object({
+								url: z.string().min(1),
+								maxBytes: z
+									.number()
+									.int()
+									.positive()
+									.max(10 * 1024 * 1024)
+									.optional(),
+								timeoutMs: z
+									.number()
+									.int()
+									.positive()
+									.max(120_000)
+									.optional(),
+							})
+							.strict(),
 						outputSchema: OUTPUT_SCHEMA,
 					},
 					async (args: {

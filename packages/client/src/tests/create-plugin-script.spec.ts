@@ -19,19 +19,27 @@ import { writeScaffoldedFiles } from '@mcp-vertex/client';
  */
 
 describe('tools/scripts/create-plugin.ts (f00087 S2 smoke)', () => {
-	it('generates the canonical four files for a fresh plugin', async () => {
+	it('generates the canonical nine files for a fresh plugin', async () => {
 		const files = scaffoldPluginFiles({
 			pluginName: 'smoke',
 			description: 'Smoke test plugin',
 		});
 		const relativePaths = files.map((f) => f.path).sort();
-		// The four canonical files produced by `scaffoldPluginFiles`.
+		// The nine canonical files produced by `scaffoldPluginFiles`
+		// (f00120 S1 added LICENSE, vitest.config.ts, the public barrel, the
+		// IPluginOptions contract, and a passing sample spec on top of
+		// the original four).
 		expect(relativePaths).toEqual(
 			[
+				'plugins/smoke/LICENSE',
 				'plugins/smoke/README.md',
 				'plugins/smoke/package.json',
+				'plugins/smoke/src/contracts/interfaces/plugin-options.interface.ts',
 				'plugins/smoke/src/index.ts',
+				'plugins/smoke/src/public/index.ts',
+				'plugins/smoke/tests/src/lib/ping.spec.ts',
 				'plugins/smoke/tsconfig.json',
+				'plugins/smoke/vitest.config.ts',
 			].sort(),
 		);
 	});

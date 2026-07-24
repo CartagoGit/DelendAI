@@ -248,6 +248,10 @@ export const buildLogToolRegistrations = (
 						since: z.string().optional(),
 						until: z.string().optional(),
 					}),
+					// x00107: SUCCESS shape only — the SDK skips schema
+					// validation for `isError` results (`toolError`), so
+					// the strict required fields are correct. (x00105
+					// briefly loosened this; reverted.)
 					outputSchema: z.object({
 						chain: z.array(LogEventSchema),
 						firstTs: z.string().nullable(),

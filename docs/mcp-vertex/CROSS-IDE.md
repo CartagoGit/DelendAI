@@ -71,6 +71,32 @@ and prints the diff; CI runs the same check on every push.
 
 When you need the GitHub issues tools in VS Code, Cursor, Claude Code, or another host, use [CROSS-PROJECT-SETUP.md](./CROSS-PROJECT-SETUP.md) as the canonical workflow. It keeps the per-repo `mcp-vertex.config.json` entry, the chosen preset or explicit plugin list, and the GitHub auth tier check aligned so every host launches the same effective `issues` surface.
 
+### Cross-IDE: lifecycle checkpoints without host guesses
+
+Hosts may add an adapter only when they expose a documented lifecycle event.
+The portable fallback for every other host is the explicit
+`memory_compact` → `memory_checkpoint_packet` flow described in the
+[checkpoint-adapter example](./examples/host-checkpoint-adapter.md). The
+adapter must remain opt-in, pass no transcript or secret-bearing data, and
+degrade safely when the MCP server is unavailable. The Claude Code fragment is
+the reference integration because it runs at its documented `PostCompact`
+boundary; it lives in
+[`config/external/claude-code/`](../../config/external/claude-code/).
+
+### Cross-IDE: choose the smallest useful plugin surface
+
+The repository host keeps its collaboration preset as the default for existing
+users. For a focused, single-agent task, pass `--preset=lean` in the host's
+MCP launch arguments instead. It loads only git, search, memory and docs; move
+back to `--preset=swarm` when the work genuinely needs proposals, locks,
+notifications or the other collaboration services. Do not specify both presets
+at once: choose one explicit surface, then add an individual plugin only for a
+clear capability gap.
+
+This is a practical context-control lever, not an invisible behavior change.
+The exact static and runtime budgets for both surfaces are enforced in
+[TOKEN-BUDGETS.md](./TOKEN-BUDGETS.md).
+
 ## Launch shape — same args, four config files
 
 Every chat client listed in [README-MCP-VERTEX.md § Install / register](./README-MCP-VERTEX.md#install--register)

@@ -44,7 +44,10 @@ export interface ILoadPluginsOptions {
 	/** Absolute workspace root used to resolve relative plugin paths. */
 	readonly workspaceRoot?: string | undefined;
 	/** Build the per-plugin context once the plugin's name is known. */
-	readonly buildContext: (pluginName: string) => IMcpPluginContext;
+	readonly buildContext: (
+		pluginName: string,
+		cacheNamespace?: string,
+	) => IMcpPluginContext;
 	/**
 	 * Injectable importer. **Required** — the core never calls
 	 * `import(variable)` itself, so that Vite/Rollup can statically
@@ -159,15 +162,20 @@ const asPlugin = (mod: unknown): IMcpPlugin | undefined => {
 };
 
 /**
- * Pure, single-pass dependency check: for every loaded plugin whose
- * `dependsOn` names a plugin id that is NOT also in the loaded set,
- * collect a `{ plugin, missing }` entry. Order matches `loadedPlugins`.
- * Does not mutate or import anything — a separate concern from the
- * import/register loop in `loadPlugins`, so it can be unit-tested and
- * reasoned about on its own (SOLID: one responsibility per function).
+ * Pure, single-pass dependency check: for every plugin whose
+ * `dependsOn` names a plugin id that is NOT also in the set, collect a
+ * `{ plugin, missing }` entry. Order matches the input. Does not mutate
+ * or import anything — a separate concern from the import/register loop
+ * in `loadPlugins`, so it can be unit-tested and reasoned about on its
+ * own (SOLID: one responsibility per function).
+ *
+ * Accepts anything carrying a `{ plugin }` — the RESOLVED set (before
+ * `register()`) as well as the fully-loaded set — so `loadPlugins` can
+ * gate registration on satisfied dependencies before running any
+ * plugin's side effects.
  */
 export const checkPluginDependencies = (
-	loadedPlugins: readonly ILoadedPlugin[],
+	loadedPlugins: ReadonlyArray<{ readonly plugin: IMcpPlugin }>,
 ): readonly IMissingPluginDependency[] => {
 	const loadedNames = new Set(
 		loadedPlugins.map((entry) => entry.plugin.name),
@@ -197,30 +205,48 @@ const formatMissingDependenciesError = (
 		)
 		.join('; ');
 
+/** A plugin that resolved + validated its options but has NOT yet run `register()`. */
+interface IResolvedPlugin {
+	readonly specifier: string;
+	readonly resolved: string;
+	readonly plugin: IMcpPlugin;
+	readonly ctx: IMcpPluginContext;
+}
+
 /**
  * Resolve, import and register each requested plugin. One bad plugin
  * never aborts the rest: failures are collected in `errors` and the
  * server still boots with whatever loaded. Deterministic: plugins are
  * processed in the order requested.
  *
- * After every plugin has attempted to load, a final dependency pass
- * (`checkPluginDependencies`) runs over the loaded set. If any loaded
- * plugin declares a `dependsOn` that is not satisfied by the rest of
- * the load set, the WHOLE batch is refused — `loaded` comes back empty
- * and a single combined error lists every missing dependency. This is
- * deliberately stricter than the per-plugin error handling above: a
- * plugin with an unmet hard dependency must never partially register.
+ * Two-phase by design (a00065 S6):
+ *  1. **Resolve** — import, dedup, and validate options for every
+ *     specifier WITHOUT calling `register()`. No plugin side effects
+ *     run yet.
+ *  2. **Dependency gate** — `checkPluginDependencies` runs over the
+ *     RESOLVED set. If any plugin declares a `dependsOn` not satisfied
+ *     by the rest of the set, the WHOLE batch is refused: `loaded`
+ *     comes back empty and a single combined error lists every missing
+ *     dependency. Because this runs *before* phase 3, a plugin with an
+ *     unmet hard dependency never executes its `register()` side
+ *     effects (timers, sockets, file writes) — the previous order ran
+ *     every register() first and only rejected afterwards, leaking
+ *     those effects.
+ *  3. **Register** — only once dependencies are satisfied, call each
+ *     resolved plugin's `register()` in request order. A register()
+ *     that throws is collected in `errors` without aborting the rest.
  */
 export const loadPlugins = async (
 	options: ILoadPluginsOptions,
 ): Promise<IPluginLoadResult> => {
 	const importer = options.import;
 	const timeoutMs = options.timeoutMs ?? 15_000;
-	const loaded: ILoadedPlugin[] = [];
 	const errors: Array<{ specifier: string; message: string }> = [];
-	const loadedNames = new Set<string>();
+	const resolvedPlugins: IResolvedPlugin[] = [];
+	const resolvedNames = new Set<string>();
 	const seenSpecifiers = new Set<string>();
 
+	// ── Phase 1: resolve + validate options (no register() side effects). ──
 	for (const specifier of options.specifiers) {
 		// Dedup identical specifiers up front (e.g. `--plugins=memory,memory`).
 		if (seenSpecifiers.has(specifier)) {
@@ -280,41 +306,40 @@ export const loadPlugins = async (
 			continue;
 		}
 		// Dedup by resolved plugin name (two specifiers → same plugin).
-		if (loadedNames.has(plugin.name)) {
+		if (resolvedNames.has(plugin.name)) {
 			errors.push({
 				specifier,
 				message: `plugin "${plugin.name}" already loaded (duplicate ignored).`,
 			});
 			continue;
 		}
+		let ctx: IMcpPluginContext;
 		try {
-			const ctx = options.buildContext(plugin.name);
-			if (plugin.optionsSchema) {
-				const parsed = plugin.optionsSchema.safeParse(ctx.options);
-				if (!parsed.success) {
-					errors.push({
-						specifier,
-						message: `plugin "${plugin.name}" rejected its options (mcp-vertex.config.json → plugins.${plugin.name}.options).`,
-					});
-					continue;
-				}
-			}
-			const registrations = await withTimeout(
-				Promise.resolve(plugin.register(ctx)),
-				timeoutMs,
-				`plugin "${plugin.name}" register()`,
-			);
-			loaded.push({ specifier, resolved, plugin, registrations });
-			loadedNames.add(plugin.name);
+			ctx = options.buildContext(plugin.name, plugin.cacheNamespace);
 		} catch (error) {
 			errors.push({
 				specifier,
-				message: `plugin "${plugin.name}" register() failed: ${error instanceof Error ? error.message : String(error)}`,
+				message: `plugin "${plugin.name}" context build failed: ${error instanceof Error ? error.message : String(error)}`,
 			});
+			continue;
 		}
+		if (plugin.optionsSchema) {
+			const parsed = plugin.optionsSchema.safeParse(ctx.options);
+			if (!parsed.success) {
+				errors.push({
+					specifier,
+					message: `plugin "${plugin.name}" rejected its options (mcp-vertex.config.json → plugins.${plugin.name}.options).`,
+				});
+				continue;
+			}
+		}
+		resolvedPlugins.push({ specifier, resolved, plugin, ctx });
+		resolvedNames.add(plugin.name);
 	}
 
-	const missingDependencies = checkPluginDependencies(loaded);
+	// ── Phase 2: dependency gate — refuse the whole batch BEFORE any
+	//    register() runs if a hard dependency is unmet. ──
+	const missingDependencies = checkPluginDependencies(resolvedPlugins);
 	if (missingDependencies.length > 0) {
 		return {
 			loaded: [],
@@ -327,6 +352,24 @@ export const loadPlugins = async (
 				},
 			],
 		};
+	}
+
+	// ── Phase 3: register (side effects) — dependencies are satisfied. ──
+	const loaded: ILoadedPlugin[] = [];
+	for (const { specifier, resolved, plugin, ctx } of resolvedPlugins) {
+		try {
+			const registrations = await withTimeout(
+				Promise.resolve(plugin.register(ctx)),
+				timeoutMs,
+				`plugin "${plugin.name}" register()`,
+			);
+			loaded.push({ specifier, resolved, plugin, registrations });
+		} catch (error) {
+			errors.push({
+				specifier,
+				message: `plugin "${plugin.name}" register() failed: ${error instanceof Error ? error.message : String(error)}`,
+			});
+		}
 	}
 
 	return { loaded, errors };

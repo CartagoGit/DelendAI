@@ -53,8 +53,10 @@ mcp-vertex_agent_catalog { mode: "compact" }
 ````
 
 - `mode: "compact"` (default) returns the actionable proposal list plus
-  counts per status, plus the first skills/tools pages. Stays under the
-  measured 1 300-byte token budget.
+  counts per status, plus lean skill ids. Tool names are NOT repeated
+  here — `mcp-vertex_overview { compact: true }` already lists them all,
+  grouped by plugin. Measured ~2.3 KB against this repo (was 14 KB
+  before the orientation projection).
 - `mode: "full"` returns the whole catalog.
 - `section: "tools" | "skills" | "proposals"` narrows to one slice.
 - `query: "..."` filters by id / name / tag / title.
@@ -62,6 +64,21 @@ mcp-vertex_agent_catalog { mode: "compact" }
 Do **not** hardcode tool names, skill names, or proposal ids in your
 answers. Ask the server every time. Skills/tools/proposals are added
 and removed every week; any hardcoded list will be wrong within days.
+
+### Execution path — one call first
+
+For an implementation task, call `mcp-vertex_proposals_auto_work` once. When
+its work response includes `claimReady`, claim exactly the returned files with
+the supplied lock arguments, implement that atomic slice, validate it, then
+close it. The payload is the canonical next action; do not spend extra calls
+reconstructing the proposal or slice plan.
+
+### Advanced / compatibility path
+
+Older hosts that do not expose `claimReady`, or a debugging session that needs
+to inspect dependencies or contention, can use the existing plan/claim tools
+after `auto_work`. This fallback is compatible by design, but it is not the
+normal bootstrap path.
 
 ## 3. Bootstrap prompt — insert when the host supports it
 
@@ -90,6 +107,33 @@ the equivalent and equally cheap.
 - **Re-read discipline.** Do not re-read a file whose digest hasn't
   changed. `round_context` and the docs tools expose digests for exactly
   this. Re-reading unchanged content is the #1 token waste.
+
+### 4.c Session hygiene — keep host usage intentional
+
+`mcp-vertex` can measure its own payloads and tool activity, but it cannot
+inspect a host's private context meter or subscription quota. Treat host
+warnings as authoritative and use this portable policy in every project:
+
+- One session is one coherent task. At a completed slice, write the smallest
+  handoff/digest needed next; never leave an idle or polling session running.
+- With `memory`, check after roughly 25 turns or 8k raw-tail tokens. If it
+  triggers, compact and recall the digest instead of carrying raw output.
+- At a host warning — or before roughly 100k tokens when it exposes a meter —
+  checkpoint and start fresh. Compact related work; clear unrelated work, then
+  re-orient and recall only the needed digest.
+- If a host pre-compaction advisory says the explicit digest is missing or
+  stale, create a semantic checkpoint from the actual work state; never ask a
+  hook to invent one from a transcript.
+- After two continuous hours, deliberately checkpoint and compact. End
+  unattended or idle sessions; use notifications/events instead of waiting.
+- Start ordinary single-agent work lean; elevate to collaboration only for
+  coordination, locks, notifications, or proposals, avoiding static schemas
+  until they are useful.
+
+These are guardrails, not a claim that the server can account for Claude,
+Codex, or another host's subscription usage. `usage-tracking` remains useful
+for local MCP activity, while the host dashboard remains the source of truth
+for host-level limits.
 
 ### 4.b Coexistence with parallel work (c00012)
 
@@ -294,6 +338,22 @@ A Bun monorepo:
 - Tests colocate as `*.spec.ts`; protocol behaviour gets an e2e with a
   real in-memory MCP server.
 
+### Tooling posture
+
+- **Optional: relax `exactOptionalPropertyTypes` (c00123).** The
+  workspace typecheck is wrapped by `tools/scripts/typecheck.script.ts`
+  (since 2026-07-24). Default mode keeps
+  `exactOptionalPropertyTypes: true` (strict; the post-2026-06
+  baseline). To opt out — useful when an LLM keeps hitting the
+  `Type 'string | undefined' is not assignable to type 'string'`
+  cryptic error — set `MCP_VERTEX_RELAX_EXACT_OPTIONAL=1` before
+  running `bun run typecheck`. The wrapper switches to
+  `tsconfig.relax.json` (extends base, flips the flag off). Trade:
+  this removes ~3-7% of LLM fix cycles (a00067 F3 / DC5) at zero
+  runtime cost — the flag is a static check, not a runtime guard.
+  The default stays ON; do not flip the flag in
+  `tsconfig.base.json` directly.
+
 ### Proposal ID prefixes
 
 | Prefix | Meaning | Notes |
@@ -431,6 +491,12 @@ for the rest of the session, so how you call these tools matters:
 - **`/compact` between unrelated tasks.** Once a slice/proposal is
   closed and before starting unrelated work, compact — don't carry its
   tool output forward for the rest of the session.
+- **Rotate before the danger zone.** At the host's context warning (or about
+  100k tokens when Claude exposes the meter), checkpoint with the memory
+  digest, then start a fresh session. Use `/compact` only to continue related
+  work; use `/clear` before unrelated work. Do not leave an idle Claude Code
+  session running in the background; a continuous session beyond two hours
+  needs an intentional checkpoint, and one approaching many hours should end.
 
 ### 8.3 Cursor / Aider / Continue — generic LLM hosts
 

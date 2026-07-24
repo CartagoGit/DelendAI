@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import {
 	buildAssemblyDiagnostics,
 	formatVerbose,
-} from '@mcp-vertex/core/lib/cli/assemble';
+} from '@mcp-vertex/core/lib/cli/run-cli';
 import { parseCliArgs } from '@mcp-vertex/core/lib/plugins/parse-cli-args';
 import type { IPluginLoadResult } from '@mcp-vertex/core/lib/plugins/load-plugins';
 import type { IMcpVertexHostConfig } from '@mcp-vertex/core/lib/contracts/interfaces/host-config.interface';

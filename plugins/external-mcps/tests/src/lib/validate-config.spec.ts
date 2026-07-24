@@ -101,7 +101,7 @@ describe('validateServersPatch (pure dry-run)', () => {
 
 	it('rejects an entry with no version at all', () => {
 		const bare = entry();
-		delete bare['version'];
+		delete bare.version;
 		const result = validateServersPatch({ filesystem: bare });
 		expect(result.ok).toBe(false);
 		expect(

@@ -22,6 +22,9 @@
  *   - **OCP**: new test fixtures (different synthetic config files,
  *     different plugin resolvers) extend the options, not the script.
  */
+import { join } from 'node:path';
+import { pathToFileURL } from 'node:url';
+
 import {
 	assembleCliConfig,
 	parseCliArgs,
@@ -30,12 +33,12 @@ import {
 } from '@mcp-vertex/core/public';
 
 /**
- * Solid-DIP: a tiny adapter that resolves a plugin name to its
+ * Solid-DIP: a tiny adapter that resolves a plugin SPECIFIER to its
  * default-exported plugin module. Production wires
  * `createLocalPluginImporter(workspaceRoot)` which loads
  * `plugins/<name>/src/index.ts` via dynamic import.
  *
- * Tests can pass any function `(name) => Promise<{default: ...}>`
+ * Tests can pass any function `(specifier) => Promise<{default: ...}>`
  * — no path strings, no fs imports.
  */
 export type IPluginImporter = (pluginName: string) => Promise<{
@@ -43,13 +46,45 @@ export type IPluginImporter = (pluginName: string) => Promise<{
 }>;
 
 /**
- * Production importer: dynamic-imports `plugins/<name>/src/index.ts`
- * relative to the workspace root.
+ * The loader tries each of `@mcp-vertex/<name>`, `mcp-<name>`, `<name>`
+ * (see core `load-plugins.ts`) — normalise any of them back to the
+ * bare plugin directory name.
+ */
+const pluginDirNameFor = (specifier: string): string => {
+	if (specifier.startsWith('@mcp-vertex/')) {
+		return specifier.slice('@mcp-vertex/'.length);
+	}
+	if (specifier.startsWith('mcp-')) return specifier.slice('mcp-'.length);
+	return specifier;
+};
+
+/**
+ * Production importer: dynamic-imports
+ * `<workspaceRoot>/plugins/<name>/src/index.ts`.
+ *
+ * x00105 S1 (the bug that made verify:tools lie): the previous
+ * implementation IGNORED `workspaceRoot` and imported
+ * `../../plugins/<specifier>/src/index.ts` — a relative path that
+ * stopped resolving when this module was extracted into
+ * `tools/scripts/lib/`, fed with npm specifiers instead of directory
+ * names. Every plugin load failed, the errors were swallowed
+ * downstream, and the "verified" tool list silently degraded to the
+ * core tools. The importer now builds an ABSOLUTE file URL from the
+ * workspace root and normalises the specifier.
  */
 export const createLocalPluginImporter =
-	(_workspaceRoot: string): IPluginImporter =>
+	(workspaceRoot: string): IPluginImporter =>
 	(pluginName) =>
-		import(`../../plugins/${pluginName}/src/index.ts`).then((mod) => ({
+		import(
+			pathToFileURL(
+				join(
+					workspaceRoot,
+					'plugins',
+					pluginDirNameFor(pluginName),
+					'src/index.ts',
+				),
+			).href
+		).then((mod) => ({
 			default: mod.default,
 		}));
 
@@ -77,6 +112,13 @@ export interface IPluginTestBedOptions {
 export interface IPluginTestBed {
 	readonly config: IAssembledCliConfig['config'];
 	readonly tools: readonly import('@mcp-vertex/core/public').IToolRegistration[];
+	/**
+	 * Plugin load failures (x00105 S1). The bed used to drop these on
+	 * the floor, which is exactly how verify:tools spent months
+	 * reporting green while probing zero plugin-owned tools. Callers
+	 * MUST surface a non-empty list as a failure.
+	 */
+	readonly loadErrors: readonly string[];
 }
 
 /**
@@ -109,9 +151,10 @@ export const assemblePluginForTest = async (
 			: {}),
 	};
 
-	const { config } = await assembleCliConfig(args, deps);
+	const { config, loadResult } = await assembleCliConfig(args, deps);
 	return {
 		config,
 		tools: config.extraTools ?? [],
+		loadErrors: loadResult.errors.map((error) => error.message),
 	};
 };

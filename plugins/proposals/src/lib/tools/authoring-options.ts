@@ -15,10 +15,13 @@
  *     `authoring.tool.ts`; the options + helpers are reused without
  *     re-declaration.
  */
+import { dirname, join } from 'node:path';
+
 import type { ILockSnapshotEntry } from '../swarm/proposal-slice-plan';
 import type { IHostPathLayout } from '../contracts/interfaces/swarm-path-layout.interface';
 import type { IGitRunner } from '../shared/git-runner';
-import { readJsonOrNull } from '../proposals/index-reader';
+import { readJsonOrNull, readTextOrNull } from '../proposals/index-reader';
+import { syncProposalRegistry } from '../proposals/sync-proposal-registry';
 
 export interface IAuthoringToolOptions {
 	readonly namespacePrefix: string;
@@ -80,6 +83,76 @@ export interface IAuthoringToolOptions {
 	 */
 	readonly run?: IGitRunner;
 }
+
+export type IIndexedDocResolution =
+	| {
+			readonly ok: true;
+			readonly entry: { readonly id: string; readonly file: string };
+			readonly docPath: string;
+	  }
+	| {
+			readonly ok: false;
+			readonly reason: string;
+			readonly nextAction: string;
+	  };
+
+/**
+ * Resolve a proposalId to its on-disk document through the index,
+ * self-healing a stale index ONCE (x00106 S1).
+ *
+ * Every `proposal_transition` moves the file to another status folder
+ * and leaves the index pointing at the old path until the next
+ * `sync_proposals`. The indexed-path tools (`close_slice`,
+ * `proposal_review`) used to surface that as "proposal file missing",
+ * forcing agents into a manual sync + retry. This helper runs that
+ * bounded loop internally: lookup → on miss, one `syncProposalRegistry`
+ * → retry → structured error if the proposal genuinely doesn't exist.
+ */
+export const resolveIndexedDoc = async (
+	options: Pick<
+		IAuthoringToolOptions,
+		| 'workspaceRoot'
+		| 'proposalsDirAbs'
+		| 'indexPathAbs'
+		| 'layout'
+		| 'extraFolders'
+	>,
+	proposalId: string,
+): Promise<IIndexedDocResolution> => {
+	const lookup = async (): Promise<IIndexedDocResolution | null> => {
+		const index = await readJsonOrNull<{
+			proposals: Array<{ id: string; file: string }>;
+		}>(options.indexPathAbs);
+		if (index === null) return null;
+		const entry = index.proposals.find(
+			(p) => p.id === proposalId || p.id.startsWith(`${proposalId}-`),
+		);
+		if (entry === undefined) return null;
+		const docPath = join(
+			options.proposalsDirAbs ?? dirname(options.indexPathAbs),
+			entry.file,
+		);
+		// A hit whose file vanished is exactly the stale-index symptom —
+		// treat it as a miss so the heal path re-syncs.
+		if ((await readTextOrNull(docPath)) === null) return null;
+		return { ok: true, entry, docPath };
+	};
+
+	const first = await lookup();
+	if (first !== null) return first;
+	await syncProposalRegistry(
+		options.workspaceRoot,
+		options.layout,
+		options.extraFolders ?? [],
+	);
+	const second = await lookup();
+	if (second !== null) return second;
+	return {
+		ok: false,
+		reason: `proposal "${proposalId}" not in index (checked again after a re-sync)`,
+		nextAction: 'Pass an existing proposalId.',
+	};
+};
 
 /** Async file helper (H2): never block the event loop on a tool call.
  *  Reads the lock file and returns the in-flight entries. */

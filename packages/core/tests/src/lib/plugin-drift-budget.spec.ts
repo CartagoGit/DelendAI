@@ -81,6 +81,11 @@ const SYNC_IO_ALLOWLIST = new Set<string>([
 	// in-code with a JSDoc on the method).
 	'plugins/proposals/src/lib/agents/loop-detector-service.ts:513',
 	'plugins/proposals/src/lib/agents/loop-detector-service.ts:514',
+	// f00116 S3: boot-time one-shot inside register(ctx) — decides whether
+	// to surface the "no proposals store" orientation nudge. Once per
+	// server start, not per-request.
+	'plugins/proposals/src/index.ts:5',
+	'plugins/proposals/src/index.ts:480',
 ]);
 
 const SYNC_IO_PATTERN =

@@ -1,5 +1,5 @@
 import {
-	McpStdioClient,
+	type McpStdioClient,
 	readConfigurationDocument,
 	saveConfigurationDocument,
 	type ConfigurationArtifactKind,
@@ -9,7 +9,7 @@ import {
 } from '@mcp-vertex/client/public';
 import type { IConfigurationCenterSource } from '@mcp-vertex/ui-extension/public';
 
-import { resolveMcpStdioSpawn } from './resolve-mcp-spawn';
+import { invalidateClient, leaseClient } from './client-pool';
 
 const configurationTool = async (client: McpStdioClient): Promise<string> => {
 	const names = (await client.listTools()).map((tool) => tool.name);
@@ -49,17 +49,25 @@ const readAll = async <T>(
 	}
 };
 
+// x00100 S1: reuse the shared per-cwd client (see client-pool.ts) —
+// spawning a fresh host per request made every section switch pay a
+// full plugin boot. On failure invalidate and retry once fresh.
 export const fetchConfigurationCenterData = async (
 	workspaceRoot: string,
 ): Promise<IConfigurationCenterSource> => {
-	const spawn = await resolveMcpStdioSpawn(workspaceRoot);
-	const client = await McpStdioClient.connect({
-		command: spawn.command,
-		args: spawn.args,
-		cwd: workspaceRoot,
-		stderr: 'pipe',
-	});
 	try {
+		return await fetchConfigurationCenterOnce(workspaceRoot);
+	} catch {
+		await invalidateClient(workspaceRoot);
+		return await fetchConfigurationCenterOnce(workspaceRoot);
+	}
+};
+
+const fetchConfigurationCenterOnce = async (
+	workspaceRoot: string,
+): Promise<IConfigurationCenterSource> => {
+	const client = await leaseClient(workspaceRoot);
+	{
 		const tool = await configurationTool(client);
 		const [document, config, summary, plugins, artifacts] =
 			await Promise.all([
@@ -101,8 +109,6 @@ export const fetchConfigurationCenterData = async (
 				summary.summary?.unavailableArtifactKinds ??
 				([] as readonly ConfigurationArtifactKind[]),
 		};
-	} finally {
-		await client.close().catch(() => undefined);
 	}
 };
 

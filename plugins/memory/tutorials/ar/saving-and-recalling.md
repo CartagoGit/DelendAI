@@ -13,7 +13,7 @@ generated: 2026-06-25T16:38:00Z
 # Saving and recalling memory notes
 
 This walkthrough shows the four `memory_*` tools in action. Notes
-are tiny JSON records under `.cache/mcp-vertex/memory/notes.json`
+are tiny JSON records under `.cache/mcp-vertex/results/memory/notes.json`
 — small enough to dump in full, indexed by id, retrievable by
 tag or full-text query.
 

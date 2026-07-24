@@ -36,6 +36,24 @@ export type {
 	IMcpVertexHostConfig,
 } from '../lib/contracts/interfaces/host-config.interface';
 export type { IMcpVertexProjectMetadata } from '../lib/contracts/interfaces/project-metadata.interface';
+export type {
+	IHostCapabilities,
+	IHostCapabilityProfile,
+	THostContinuationCapability,
+	THostInstructionCapability,
+	THostLifecycleCapability,
+	THostSkillCapability,
+} from '../lib/contracts/interfaces/host-capabilities.interface';
+export { buildHostCapabilityPlan } from '../lib/hosts/host-capability-profile';
+export type {
+	IHostCapabilityAction,
+	IHostCapabilityPlan,
+} from '../lib/hosts/host-capability-profile';
+export { buildHostAdapterPack } from '../lib/hosts/host-adapter-pack';
+export type {
+	IHostAdapterPack,
+	IHostAdapterPackAction,
+} from '../lib/hosts/host-adapter-pack';
 export type { IStatusCollector } from '../lib/contracts/interfaces/status-collector.interface';
 export type {
 	IPromptRegistration,
@@ -140,6 +158,7 @@ export {
 	PLUGIN_DEFAULTS,
 	resolvePluginOptions,
 } from '../lib/plugins/plugin-defaults';
+export { deriveSourceRoots } from '../lib/bootstrap/derive-config';
 export {
 	PRESET_CATALOG,
 	PRESET_KIND,
@@ -166,16 +185,36 @@ export type {
 	WorkspaceLayoutProbe,
 	WorkspacePathStatus,
 } from '../lib/contracts/interfaces/workspace-layout.interface';
+export { assembleCliConfig } from '../lib/cli/assemble';
+// f00120 S2: monorepo-wiring writer for first-party plugins.
 export {
-	assembleCliConfig,
-	runCli,
-	runDoctor,
-} from '../lib/cli/assemble';
+	wirePluginIntoMonorepo,
+	writeTsconfigBase,
+	writeVitestShared,
+	writePluginDefaults,
+	writePublishOrder,
+	writePresetCatalog,
+	writeCatalogRegen,
+	buildTsconfigPathsEntry,
+	pluginDir,
+} from '../lib/scaffold/wire-plugin';
+// f00120 S4: wiring-doctor (verifier) for first-party plugins.
+export { diagnosePluginWiring } from '../lib/scaffold/diagnose-plugin-wiring';
+export type {
+	IPluginWiringEdit,
+	IPluginWiringFs,
+	IPluginWiringPoint,
+	IPluginWiringReport,
+	IPluginWiringWrite,
+	IWirePluginOptions,
+	PluginWiringPointId,
+} from '../lib/contracts/interfaces/plugin-wiring.interface';
 export type {
 	IAssembledCliConfig,
 	IAssembleCliDeps,
-	IDoctorReport,
 } from '../lib/cli/assemble';
+export { runCli, runDoctor } from '../lib/cli/run-cli';
+export type { IDoctorReport } from '../lib/cli/run-cli';
 export type {
 	IBootstrapPatternOverride,
 	IBootstrapPatternOverrides,
@@ -203,6 +242,7 @@ export {
 	scaffoldSkillFile,
 	scaffoldToolFile,
 } from '../lib/scaffold/scaffold-host';
+export { extractPlugin } from '../lib/scaffold/extract-plugin';
 export type {
 	IScaffoldAgentSlot,
 	IScaffoldClientOptions,
@@ -210,6 +250,16 @@ export type {
 	IScaffoldPluginOptions,
 	IScaffoldedFile,
 } from '../lib/scaffold/scaffold-host';
+export type {
+	BlueprintFile,
+	IPluginBlueprintDeps,
+} from '../lib/scaffold/plugin-blueprint';
+export { renderPluginBlueprint } from '../lib/scaffold/plugin-blueprint';
+export type {
+	IExtractedTool,
+	IExtractPluginOptions,
+	IExtractPluginResult,
+} from '../lib/scaffold/extract-plugin';
 export { scaffoldExtensionHostFiles } from '../lib/scaffold/scaffold-extension-host';
 export type { IScaffoldExtensionHostOptions } from '../lib/contracts/interfaces/scaffold-extension-host-options.interface';
 export {
@@ -222,6 +272,18 @@ export type {
 	IScaffoldReport,
 	IScaffoldToolOptions,
 } from '../lib/scaffold/scaffold-tool';
+export {
+	CREATE_PLUGIN_INPUT_SCHEMA,
+	CREATE_PLUGIN_OUTPUT_SCHEMA,
+	buildCreatePluginToolRegistration,
+	runCreatePlugin,
+} from '../lib/scaffold/create-plugin.tool';
+export type {
+	ICreatePluginArgs,
+	ICreatePluginOutput,
+	ICreatePluginToolOptions,
+	IRegenerateCatalogArgs,
+} from '../lib/scaffold/create-plugin.tool';
 
 // --- shared filesystem helpers ---------------------------------------------
 export {
@@ -571,6 +633,49 @@ export type {
 	IShellToolPlan,
 	ShellFallbackRing,
 } from '../lib/agents/shell-fallback';
+
+// --- shared external-tool / scanner core (r00012) --------------------------
+// One runner + one probe + one finding shape that security, deps-audit,
+// perf, forge, browser and database all compose, so a scanner is a thin
+// adapter (raw tool output → IFinding[]) instead of re-implementing
+// subprocess + parse + presence + install-hint each time.
+export {
+	probeTool,
+	probeTools,
+	realProbeDeps,
+} from '../lib/external-tool/probe';
+export {
+	makeRedactor,
+	runExternalTool,
+} from '../lib/external-tool/run-external-tool';
+export {
+	renderFindingSummary,
+	renderFindingsTable,
+	sortFindings,
+	summarizeFindings,
+	toScanResult,
+	worstSeverity,
+} from '../lib/external-tool/render-findings';
+export { aggregateScans } from '../lib/external-tool/aggregate-scans';
+export { FINDING_SEVERITY_ORDER } from '../lib/contracts/constants/finding.constant';
+export type {
+	IArgvExec,
+	IExternalTool,
+	IExternalToolRun,
+	IInstallHint,
+	IProbeDeps,
+	IRunExternalToolInput,
+	IToolProbeResult,
+} from '../lib/contracts/interfaces/external-tool.interface';
+export type {
+	FindingSeverity,
+	IAggregatedScan,
+	IFinding,
+	IFindingCounts,
+	IFindingLocation,
+	IScanResult,
+	IScanSkip,
+} from '../lib/contracts/interfaces/finding.interface';
 
 // --- generated tool-output types (N23, see scripts/generate-tool-types.ts) ---
 export type * from '../generated/tool-outputs';

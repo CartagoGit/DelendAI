@@ -431,10 +431,19 @@ export const buildAgentCatalogArtifact = async (
 		outputPath,
 		warningsPath,
 		missingSummarySkillIds,
-		changed: current !== text,
+		// x00105: compare CONTENT, not the timestamp. `generatedAt`
+		// derives from the regenerable cache index's generated_at, which
+		// every sync_proposals (including the server boot inside
+		// validate's own external-install smoke) bumps — a byte-compare
+		// made catalog:check cry stale with zero substantive change.
+		changed: stripGeneratedAt(current ?? '') !== stripGeneratedAt(text),
 		generatedAt,
 	};
 };
+
+/** Normalize the volatile timestamp line out of a serialized artifact. */
+const stripGeneratedAt = (text: string): string =>
+	text.replace(/"generatedAt": "[^"]*"/u, '"generatedAt": "<normalized>"');
 
 const writeWarningsArtifact = async (
 	result: IGenerationResult,

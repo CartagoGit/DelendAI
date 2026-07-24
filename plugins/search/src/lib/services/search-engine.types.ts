@@ -35,6 +35,16 @@ export interface ISearchResult {
 	readonly usedRg: boolean;
 	/** Set when `preferRg: true` but `rg` wasn't used (e.g. not on `$PATH`). */
 	readonly rgFallbackReason?: string;
+	/**
+	 * Set ONLY when `scanned === 0` — a self-diagnosis of why the walk
+	 * touched no files, so an agent gets an actionable signal instead of
+	 * a silent empty result. a00063: an agent facing bare
+	 * `{count: 0, scanned: 0}` (misconfigured roots that don't exist in
+	 * the workspace) spiralled into 124 zero-result retries, absolute
+	 * roots pointing at other repos, and blind file probing. This field
+	 * turns that dead end into "your roots don't exist; fix the config".
+	 */
+	readonly diagnostic?: string;
 }
 
 export interface ISearchOptions {

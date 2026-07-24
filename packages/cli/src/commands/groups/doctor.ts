@@ -9,6 +9,11 @@
  * `completion <shell>` prints a shell-completion script derived
  * dynamically from `registerAllCommands()` so it can never drift.
  */
+import type { McpVertexToolOutputs } from '@mcp-vertex/core/public';
+
+import { existsSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
+
 import { EXIT_CODE } from '../../contracts/constants/exit-code.constant';
 import type {
 	ICliCommand,
@@ -18,6 +23,7 @@ import {
 	generateCompletion,
 	type Shell,
 } from '../../lib/completion/completion.service';
+import { analyzeConfigRoots } from '../../lib/doctor/analyze-config-roots.service';
 import { data, positionalArg, request, usage } from './group-helpers';
 
 type SectionStatus = 'ok' | 'warn' | 'error';
@@ -28,14 +34,24 @@ interface IDoctorSection {
 	readonly findings: readonly string[];
 }
 
-interface IOverviewish {
-	readonly plugins?: readonly unknown[];
-	readonly tools?: readonly unknown[];
-	readonly pluginDiagnostic?: {
-		readonly missing?: readonly string[];
-		readonly errors?: number;
-	};
-}
+type IOverviewish = McpVertexToolOutputs['mcp-vertex_overview'];
+
+/**
+ * a00060: `overview.tools` is a union (`Array<...> | Record<string,
+ * string[]>` — compact mode groups by plugin) per the GENERATED SDK
+ * type. The previous hand-rolled `IOverviewish.tools?: readonly
+ * unknown[]` only ever matched the array shape, so `overview.tools
+ * ?.length` silently read `undefined` (→ 0) against the Record shape
+ * `doctor` actually receives — `mcpv doctor` always reported "0
+ * tool(s) registered" / a false `warn`, regardless of how many tools
+ * were really loaded. This is the same drift class x00105/f00118 fixed
+ * elsewhere: use the generated type, don't hand-roll the shape.
+ */
+const countTools = (tools: IOverviewish['tools'] | undefined): number => {
+	if (tools === undefined) return 0;
+	if (Array.isArray(tools)) return tools.length;
+	return Object.values(tools).reduce((sum, names) => sum + names.length, 0);
+};
 
 /** Worst status wins: error > warn > ok. */
 const rollup = (sections: readonly IDoctorSection[]): SectionStatus => {
@@ -44,11 +60,41 @@ const rollup = (sections: readonly IDoctorSection[]): SectionStatus => {
 	return 'ok';
 };
 
+/**
+ * a00060: `doctor` returns its report via `data()`, which the CLI runner
+ * only prints to stdout in `--json` mode (by design, to avoid the
+ * duplicate-JSON-dump bug `init` used to have). Unlike `init`, `doctor`
+ * never grew its own human-readable recap, so running `mcpv doctor`
+ * without `--json` printed literally nothing — a "sectioned health
+ * report" a human can't actually read. `printDoctorSummary` closes that
+ * gap the same way `printInitHumanSummary` does for `init`: a pure
+ * renderer + a thin stderr-writing wrapper, gated on `!ctx.globals.json`
+ * so machine (`--json`) consumers still get exactly the structured
+ * envelope on stdout and nothing else.
+ */
+export const renderDoctorSummary = (
+	status: SectionStatus,
+	sections: readonly IDoctorSection[],
+): string => {
+	const lines = [`doctor: ${status}`, ''];
+	for (const section of sections) {
+		lines.push(`  ${section.name} (${section.status})`);
+		for (const finding of section.findings) lines.push(`    ${finding}`);
+	}
+	lines.push('');
+	return lines.join('\n');
+};
+
 const CODE_BY_STATUS: Record<SectionStatus, ICliCommandResult['code']> = {
 	ok: EXIT_CODE.OK,
 	warn: EXIT_CODE.VALIDATION,
 	error: EXIT_CODE.RUNTIME,
 };
+
+// a00064: the config-vs-reality preflight lives in lib/ (pure,
+// fs-free) — see analyze-config-roots.service.ts for the rationale.
+// Re-exported so doctor's spec exercises it alongside the command.
+export { analyzeConfigRoots };
 
 const doctorCommand: ICliCommand = {
 	name: 'doctor',
@@ -64,6 +110,22 @@ const doctorCommand: ICliCommand = {
 			findings: [`workspace: ${ctx.globals.workspace}`],
 		});
 
+		// Config-vs-reality (a00064): configured roots must exist here.
+		try {
+			const configRaw = readFileSync(
+				join(ctx.globals.workspace, 'mcp-vertex.config.json'),
+				'utf8',
+			);
+			sections.push(
+				analyzeConfigRoots(JSON.parse(configRaw), (rel) =>
+					existsSync(join(ctx.globals.workspace, rel)),
+				),
+			);
+		} catch {
+			// No config file (defaults apply) or unparsable JSON — the
+			// server-side diagnostics cover the latter; skip the section.
+		}
+
 		// Plugins + tools — derived from the live server overview.
 		try {
 			const overview = await request<IOverviewish>(
@@ -72,7 +134,7 @@ const doctorCommand: ICliCommand = {
 				{ compact: true },
 			);
 			const pluginCount = overview.plugins?.length ?? 0;
-			const toolCount = overview.tools?.length ?? 0;
+			const toolCount = countTools(overview.tools);
 			const missing = overview.pluginDiagnostic?.missing ?? [];
 			const loadErrors = overview.pluginDiagnostic?.errors ?? 0;
 			sections.push({
@@ -102,6 +164,9 @@ const doctorCommand: ICliCommand = {
 		}
 
 		const status = rollup(sections);
+		if (!ctx.globals.json) {
+			process.stderr.write(renderDoctorSummary(status, sections));
+		}
 		return data({ status, sections }, CODE_BY_STATUS[status]);
 	},
 };

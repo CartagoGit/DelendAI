@@ -12,7 +12,7 @@
 import { describe, expect, it } from 'vitest';
 
 import type { IFetchLike } from '../../../../src/lib/contracts/interfaces/fetch.interface';
-import { webFetch } from '../../../../src/lib/services/engine';
+import { sanitizeBounds, webFetch } from '../../../../src/lib/services/engine';
 
 const ALLOW = ['example.com'];
 const URL_OK = 'https://example.com/data';
@@ -207,4 +207,73 @@ describe('webFetch streaming byte cap (x00097 S4)', () => {
 			expect.objectContaining({ ok: false, reason: 'timeout' }),
 		);
 	}, 2000);
+});
+
+describe('webFetch numeric bounds sanitization (a00065 S6)', () => {
+	it('sanitizeBounds falls back to defaults for non-positive / non-finite input', () => {
+		// timeoutMs:0 previously made setTimeout(abort, 0) fire and every
+		// fetch time out; negative/NaN/Infinity are equally nonsensical.
+		expect(sanitizeBounds({ url: 'x', allowList: [] })).toEqual({
+			maxBytes: 50 * 1024,
+			timeoutMs: 8000,
+			maxRedirects: 5,
+		});
+		expect(
+			sanitizeBounds({
+				url: 'x',
+				allowList: [],
+				timeoutMs: 0,
+				maxBytes: 0,
+				maxRedirects: -3,
+			}),
+		).toEqual({ maxBytes: 50 * 1024, timeoutMs: 8000, maxRedirects: 5 });
+		expect(
+			sanitizeBounds({
+				url: 'x',
+				allowList: [],
+				timeoutMs: Number.NaN,
+				maxBytes: Number.POSITIVE_INFINITY,
+				maxRedirects: Number.NaN,
+			}),
+		).toEqual({ maxBytes: 50 * 1024, timeoutMs: 8000, maxRedirects: 5 });
+	});
+
+	it('sanitizeBounds honours valid small values and clamps to ceilings', () => {
+		expect(
+			sanitizeBounds({
+				url: 'x',
+				allowList: [],
+				maxBytes: 100,
+				timeoutMs: 250,
+				maxRedirects: 2,
+			}),
+		).toEqual({ maxBytes: 100, timeoutMs: 250, maxRedirects: 2 });
+		// Above ceilings → clamped, never rejected.
+		const huge = sanitizeBounds({
+			url: 'x',
+			allowList: [],
+			maxBytes: 1e12,
+			timeoutMs: 1e9,
+			maxRedirects: 1000,
+		});
+		expect(huge.maxBytes).toBe(10 * 1024 * 1024);
+		expect(huge.timeoutMs).toBe(120_000);
+		expect(huge.maxRedirects).toBe(20);
+	});
+
+	it('maxBytes:0 no longer empties the body — it uses the safe default', async () => {
+		const fetcher: IFetchLike = async () =>
+			streamResponse([encode('hello world')]);
+		const result = await webFetch(
+			{ url: URL_OK, allowList: ALLOW, maxBytes: 0 },
+			fetcher,
+		);
+		expect(result).toEqual(
+			expect.objectContaining({
+				ok: true,
+				body: 'hello world',
+				truncated: false,
+			}),
+		);
+	});
 });

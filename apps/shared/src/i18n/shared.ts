@@ -109,6 +109,10 @@ export interface ISiteTranslations {
 
 /** Flat extension translations — the existing `extensions/vscode/src/i18n/index.ts#IExtensionTranslations` shape, lifted verbatim. */
 export interface IExtensionTranslations {
+	/** x00103: aria-label for the shared toast's close button. */
+	readonly a11yCloseToast: string;
+	/** x00103: aria-label for the shared language picker's select. */
+	readonly a11yLanguageSelector: string;
 	readonly overviewTitle: string;
 	readonly refresh: string;
 	readonly runValidation: string;

@@ -30,6 +30,7 @@ import { existsSync } from 'node:fs';
 import { dirname, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { scssPlugin } from '../compile/scss-plugin';
+import { BROWSER_BUILD_EXTERNALS } from './browser-externals';
 
 // ---------------------------------------------------------------------------
 // Port reclaim — `Bun.serve({ port })` and `astro dev` both fail with
@@ -255,7 +256,7 @@ const buildBundle = async (entryAbs: string): Promise<BundleMap> => {
 		sourcemap: 'inline',
 		plugins: [scssPlugin],
 		// Don't try to bundle Node-only or VS Code APIs in the browser bundle.
-		external: ['node:*', 'vscode'],
+		external: BROWSER_BUILD_EXTERNALS,
 		// Code-split the dynamic `import('./<page>')` calls in
 		// pages/registry.ts so each page becomes its own
 		// chunk. Without this Bun.build inlines the page
@@ -346,8 +347,21 @@ const buildEntry = async (entryAbs: string): Promise<Response> => {
 	try {
 		if (!bundleCache) bundleCache = await buildBundle(entryAbs);
 	} catch (err) {
+		// Bun.build throws an AggregateError whose `message` is just
+		// "Bundle failed" — the actionable diagnostics live in `errors`.
+		// Surface them, or the browser (and the operator) sees nothing.
+		const details =
+			err instanceof AggregateError
+				? err.errors
+						.map((e) =>
+							e instanceof Error ? e.message : String(e),
+						)
+						.join('\n')
+				: '';
 		const message = err instanceof Error ? err.message : String(err);
-		return new Response(message, { status: 500 });
+		const body = details === '' ? message : `${message}\n${details}`;
+		console.error(`[dev] entry bundle failed:\n${body}`);
+		return new Response(body, { status: 500 });
 	}
 	const entry = bundleCache.get('entry.js');
 	if (!entry) {

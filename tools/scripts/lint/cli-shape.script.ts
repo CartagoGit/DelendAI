@@ -103,7 +103,13 @@ export const lintCliShape = async (
 	}
 	const findings: IShapeRuleFinding[] = [];
 	for (const entry of entries) {
-		if (!entry.isFile() || !entry.name.endsWith('.ts')) continue;
+		if (
+			!entry.isFile() ||
+			!entry.name.endsWith('.ts') ||
+			entry.name.endsWith('.spec.ts') ||
+			entry.name.endsWith('.test.ts')
+		)
+			continue;
 		const file = join(groupsDir, entry.name);
 		const source = await readFile(file, 'utf8');
 		const extracted = extractName(source);

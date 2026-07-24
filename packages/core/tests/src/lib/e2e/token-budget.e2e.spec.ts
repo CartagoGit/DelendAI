@@ -11,10 +11,19 @@ import { createMcpProject } from '@mcp-vertex/core/lib/project/create-mcp-projec
 import { parseCliArgs } from '@mcp-vertex/core/lib/plugins/parse-cli-args';
 import { SKILL_MANIFEST_REL } from '@mcp-vertex/core/lib/skills/skill-paths';
 import proposalsPlugin from '@mcp-vertex/proposals';
+import rulesPlugin from '@mcp-vertex/rules';
 import memoryPlugin from '@mcp-vertex/memory';
+import gitPlugin from '@mcp-vertex/git';
+import qualityPlugin from '@mcp-vertex/quality';
 import searchPlugin from '@mcp-vertex/search';
+import notificationPlugin from '@mcp-vertex/notification';
 import docsPlugin from '@mcp-vertex/docs';
+import depsPlugin from '@mcp-vertex/deps';
 import logsPlugin from '@mcp-vertex/logs';
+import statusMarkerPlugin from '@mcp-vertex/status-marker';
+import testConventionPlugin from '@mcp-vertex/test-convention';
+import testPolicyPlugin from '@mcp-vertex/test-policy';
+import conventionsPlugin from '@mcp-vertex/conventions';
 
 /**
  * Token budget benchmark [N23]. "Low-token" is a measurable promise, not
@@ -49,8 +58,17 @@ const BUDGET_BYTES = {
 	// plugin; full measured 8964B, compact 2128B. Summary kept terse. Compact is
 	// still the real promise at < 24% of full.
 	// Bumped 8900 → 9100 (2026-07-04): added orchestrator-runner execution tools.
-	overviewFull: 9_100,
-	overviewCompact: 1_200,
+	// Bumped 9100 → 9500 / 1200 → 1250 (2026-07-16): f00117 S2 added the
+	// init_config core tool (server-side self-init); full measured 9416B,
+	// compact 1220B. Compact is still the real promise at < 13% of full.
+	// Bumped 9500 → 9700 (2026-07-24): f00145 added the read-only memory
+	// checkpoint packet; full measured 9598B while compact stayed 1240B.
+	// Bumped 9700 → 9800 / 1250 → 1280 (2026-07-24): f00120 S4 added the
+	// `create_plugin` core tool (scaffold + wire + doctor). Full measured
+	// 9792B, compact measured 1256B — both well under their promised
+	// ceilings. The compact mode still saves 87% vs. full.
+	overviewFull: 9_800,
+	overviewCompact: 1_280,
 	// Bumped 1300 → 1450 (2026-07-03): CORRECTNESS fix in the catalog's
 	// tool-entry construction. Core tools whose id has an underscore
 	// (agent_catalog, fs_read, …) were advertised WITHOUT the `mcp-vertex_`
@@ -58,15 +76,32 @@ const BUDGET_BYTES = {
 	// as the host segment. Now every name is fully qualified and `plugin` is
 	// the real owning plugin — both add bytes (compact 1290→1403B measured)
 	// but make the discovery catalog truthful.
-	agentCatalogCompact: 1_450,
+	// Tightened 1450 → 900 (2026-07-13): the default compact orientation
+	// call now drops the tool list (overview already carries every name)
+	// and trims skills to {id, tags}. Against the real repo (20 skills,
+	// 89 tools) this cut the live payload 14 103B → 2 321B; in this
+	// synthetic workspace it measured 356B. section/query calls keep the
+	// full entries and are budgeted by agentCatalogFull.
+	agentCatalogCompact: 900,
 	agentCatalogFull: 6_800,
-	autoWork: 1_600,
+	// Bumped 1 600 → 2 000 (2026-07-25): v00122 embeds a claim-ready
+	// slice and its exact lock arguments, eliminating the old extra planning
+	// call while preserving a bounded first response.
+	autoWork: 2_000,
 	search: 3_000,
 	docsList: 2_500,
 	roundContext: 3_000,
 	logsTail: 6_000,
 	analyzeCompact: 1_800,
 	planCompact: 2_000,
+	// The repo host defaults to `swarm`, so its static MCP tool definitions
+	// (tools/list) and the two normal orientation/resume calls are independently
+	// budgeted. Measured 2026-07-24: 157 504B / 2 463B / 146B respectively.
+	swarmToolsList: 165_000,
+	swarmOverviewCompact: 3_500,
+	swarmRoundContext: 300,
+	// `lean` was 58 003B against the same fixture, a 63% reduction from swarm.
+	leanToolsList: 65_000,
 } as const;
 
 describe('e2e: token budget (cold-start payloads)', async () => {
@@ -76,17 +111,30 @@ describe('e2e: token budget (cold-start payloads)', async () => {
 
 	const connectClient = async (
 		pluginList: string,
+		preset = false,
 	): Promise<{ client: Client; close: () => Promise<void> }> => {
 		const args = parseCliArgs(
-			[`--plugins=${pluginList}`, `--workspace=${workspace}`],
+			[
+				`--${preset ? 'preset' : 'plugins'}=${pluginList}`,
+				`--workspace=${workspace}`,
+			],
 			workspace,
 		);
 		const plugins: Record<string, { default: unknown }> = {
 			'@mcp-vertex/proposals': { default: proposalsPlugin },
+			'@mcp-vertex/rules': { default: rulesPlugin },
 			'@mcp-vertex/memory': { default: memoryPlugin },
+			'@mcp-vertex/git': { default: gitPlugin },
+			'@mcp-vertex/quality': { default: qualityPlugin },
 			'@mcp-vertex/search': { default: searchPlugin },
+			'@mcp-vertex/notification': { default: notificationPlugin },
 			'@mcp-vertex/docs': { default: docsPlugin },
+			'@mcp-vertex/deps': { default: depsPlugin },
 			'@mcp-vertex/logs': { default: logsPlugin },
+			'@mcp-vertex/status-marker': { default: statusMarkerPlugin },
+			'@mcp-vertex/test-convention': { default: testConventionPlugin },
+			'@mcp-vertex/test-policy': { default: testPolicyPlugin },
+			'@mcp-vertex/conventions': { default: conventionsPlugin },
 		};
 		const { config } = await assembleCliConfig(args, {
 			import: async (specifier: string) => plugins[specifier]!,
@@ -212,6 +260,69 @@ describe('e2e: token budget (cold-start payloads)', async () => {
 		expect(compact).toBeLessThan(full * 0.7);
 	});
 
+	it('swarm preset keeps its real static and resume surfaces bounded', async () => {
+		const swarm = await connectClient('swarm', true);
+		try {
+			const toolList = await swarm.client.listTools();
+			const toolsListBytes = Buffer.byteLength(
+				JSON.stringify(toolList.tools),
+				'utf8',
+			);
+			const textBytesForSwarm = async (
+				name: string,
+				args: Record<string, unknown>,
+			): Promise<number> => {
+				const response = await swarm.client.callTool({
+					name,
+					arguments: args,
+				});
+				const text = (
+					response.content as Array<{ type: string; text: string }>
+				)[0]?.text;
+				return Buffer.byteLength(text ?? '', 'utf8');
+			};
+			const overviewCompact = await textBytesForSwarm(
+				'mcp-vertex_overview',
+				{ compact: true },
+			);
+			const roundContext = await textBytesForSwarm(
+				'mcp-vertex_proposals_round_context',
+				{},
+			);
+
+			expect(
+				toolsListBytes,
+				`swarm: tools/list = ${toolsListBytes}B, overview compact = ${overviewCompact}B, round context = ${roundContext}B`,
+			).toBeLessThan(BUDGET_BYTES.swarmToolsList);
+			expect(overviewCompact).toBeLessThan(
+				BUDGET_BYTES.swarmOverviewCompact,
+			);
+			expect(roundContext).toBeLessThan(BUDGET_BYTES.swarmRoundContext);
+		} finally {
+			await swarm.close();
+		}
+	});
+
+	it('lean preset remains materially smaller than the collaboration surface', async () => {
+		const lean = await connectClient('lean', true);
+		try {
+			const toolList = await lean.client.listTools();
+			const toolsListBytes = Buffer.byteLength(
+				JSON.stringify(toolList.tools),
+				'utf8',
+			);
+			expect(
+				toolsListBytes,
+				`lean tools/list = ${toolsListBytes}B`,
+			).toBeLessThan(BUDGET_BYTES.leanToolsList);
+			expect(toolsListBytes).toBeLessThan(
+				BUDGET_BYTES.swarmToolsList * 0.4,
+			);
+		} finally {
+			await lean.close();
+		}
+	});
+
 	it('agent catalog stays under budget; compact is materially cheaper than full', async () => {
 		const catalogOnly = await connectClient('');
 		const catalogTextBytes = async (
@@ -247,17 +358,54 @@ describe('e2e: token budget (cold-start payloads)', async () => {
 	});
 
 	it('auto_work returns a tight action plan, not prose', async () => {
+		const proposalDir = join(
+			workspace,
+			'docs',
+			'mcp-vertex',
+			'proposals',
+			'ready',
+		);
+		mkdirSync(proposalDir, { recursive: true });
+		writeFileSync(
+			join(proposalDir, 'p9000-token-budget.md'),
+			`---
+id: p9000
+status: ready
+type: proposal
+track: tests
+date: 2026-07-25
+kind: perf
+title: token budget fixture
+---
+
+# p9000 — token budget fixture
+
+## Slices
+
+- global_gate: type
+
+### S1 — bounded payload
+- **Files**: \`src/app.ts\`
+- **Gate**: type
+- **Status**: pending
+`,
+		);
+		await client.callTool({
+			name: 'mcp-vertex_proposals_sync_proposals',
+			arguments: {},
+		});
 		const bytes = await textBytes('mcp-vertex_proposals_auto_work', {});
-		expect(bytes).toBeLessThan(BUDGET_BYTES.autoWork);
+		expect(bytes, `auto_work claim-ready plan = ${bytes}B`).toBeLessThan(
+			BUDGET_BYTES.autoWork,
+		);
 	});
 
-	it('bootstrap discovery and planning expose bounded compact projections', async () => {
-		const analyze = await textBytes('mcp-vertex_analyze_project', {
-			compact: true,
-		});
-		const plan = await textBytes('mcp-vertex_plan_mcp_project', {
-			compact: true,
-		});
+	it('bootstrap discovery and planning are bounded BY DEFAULT (x00101)', async () => {
+		// Bare calls — the compact summary is the default since x00101;
+		// the exhaustive payload (205 963 B measured against this repo)
+		// requires full:true.
+		const analyze = await textBytes('mcp-vertex_analyze_project', {});
+		const plan = await textBytes('mcp-vertex_plan_mcp_project', {});
 		expect(analyze, `analyze compact = ${analyze}B`).toBeLessThan(
 			BUDGET_BYTES.analyzeCompact,
 		);
