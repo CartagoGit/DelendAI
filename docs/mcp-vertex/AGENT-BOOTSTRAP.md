@@ -99,19 +99,18 @@ the equivalent and equally cheap.
 inspect a host's private context meter or subscription quota. Treat host
 warnings as authoritative and use this portable policy in every project:
 
-- A session is for one coherent task. At a completed slice, write the small
-  handoff/digest that the next session needs; do not keep an idle or polling
-  session alive in the background.
-- When the `memory` plugin is loaded, run its compaction check after roughly
-  25 turns or 8k tokens of carried raw tail. If it triggers, compact the
-  working state and recall the digest instead of carrying raw output forward.
-- At a host context warning — or before roughly 100k tokens when the host
-  exposes a meter — checkpoint and start a fresh session. Compact for related
-  work; clear the conversation for unrelated work, then re-orient and recall
-  only the needed digest.
-- More than two hours of continuous work requires a deliberate checkpoint and
-  compaction. An unattended or idle session must never be allowed to run for
-  hours merely to wait for work; use notifications/events and end it.
+- One session is one coherent task. At a completed slice, write the smallest
+  handoff/digest needed next; never leave an idle or polling session running.
+- With `memory`, check after roughly 25 turns or 8k raw-tail tokens. If it
+  triggers, compact and recall the digest instead of carrying raw output.
+- At a host warning — or before roughly 100k tokens when it exposes a meter —
+  checkpoint and start fresh. Compact related work; clear unrelated work, then
+  re-orient and recall only the needed digest.
+- After two continuous hours, deliberately checkpoint and compact. End
+  unattended or idle sessions; use notifications/events instead of waiting.
+- Start ordinary single-agent work lean; elevate to collaboration only for
+  coordination, locks, notifications, or proposals, avoiding static schemas
+  until they are useful.
 
 These are guardrails, not a claim that the server can account for Claude,
 Codex, or another host's subscription usage. `usage-tracking` remains useful
