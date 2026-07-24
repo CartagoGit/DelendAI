@@ -403,6 +403,15 @@ export interface McpVertexDepsDepsPolyglotOutput {
 	}[];
 }
 
+export interface McpVertexDiagramDiagramDepsOutput {
+	mermaid: string;
+	nodes: string[];
+	edges: {
+		from: string;
+		to: string;
+	}[];
+}
+
 export interface McpVertexDocsDocsListOutput {
 	count: number;
 	total: number;
@@ -2291,6 +2300,7 @@ export interface McpVertexToolOutputs {
 	"mcp-vertex_deps_deps_list": McpVertexDepsDepsListOutput;
 	"mcp-vertex_deps_deps_outdated": McpVertexDepsDepsOutdatedOutput;
 	"mcp-vertex_deps_deps_polyglot": McpVertexDepsDepsPolyglotOutput;
+	"mcp-vertex_diagram_diagram_deps": McpVertexDiagramDiagramDepsOutput;
 	"mcp-vertex_docs_docs_list": McpVertexDocsDocsListOutput;
 	"mcp-vertex_docs_docs_read": McpVertexDocsDocsReadOutput;
 	"mcp-vertex_docs_docs_search": McpVertexDocsDocsSearchOutput;

@@ -90,6 +90,11 @@
 				"./plugins/security/src/public/index.ts"
 			],
 			"@mcp-vertex/security/*": ["./plugins/security/src/*"],
+			"@mcp-vertex/diagram": ["./plugins/diagram/src/index.ts"],
+			"@mcp-vertex/diagram/public": [
+				"./plugins/diagram/src/public/index.ts"
+			],
+			"@mcp-vertex/diagram/*": ["./plugins/diagram/src/*"],
 			"@mcp-vertex/logs": ["./plugins/logs/src/index.ts"],
 			"@mcp-vertex/logs/public": ["./plugins/logs/src/public/index.ts"],
 			"@mcp-vertex/logs/*": ["./plugins/logs/src/*"],
