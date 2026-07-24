@@ -4,7 +4,12 @@
  * without registering the plugin.
  */
 export { discoverRoster } from '../lib/discovery/discover-roster';
+export { discoverAndPersistRoster } from '../lib/discovery/discover-roster';
 export { realDiscoveryDeps } from '../lib/discovery/real-deps';
+export {
+	realRosterSnapshotStore,
+	type IRosterSnapshotStore,
+} from '../lib/discovery/roster-store';
 export { rankProviders } from '../lib/routing/rank-providers';
 export type {
 	IRankInput,

@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { buildAutoRunRegistration } from '../../../../src/lib/tools/auto-run.tool';
 import type { IDiscoveryDeps } from '../../../../src/lib/contracts/interfaces/roster.interface';
+import type { IRosterSnapshotStore } from '../../../../src/lib/discovery/roster-store';
 
 type Handler = (args: {
 	costCeiling?: number;
@@ -10,7 +11,10 @@ type Handler = (args: {
 	pin?: string;
 }) => Promise<{ structuredContent?: Record<string, unknown> }>;
 
-const capture = async (deps: IDiscoveryDeps): Promise<Handler> => {
+const capture = async (
+	deps: IDiscoveryDeps,
+	rosterStore?: IRosterSnapshotStore,
+): Promise<Handler> => {
 	let handler: Handler | undefined;
 	const server = {
 		registerTool(name: string, _c: unknown, fn: Handler): void {
@@ -21,6 +25,7 @@ const capture = async (deps: IDiscoveryDeps): Promise<Handler> => {
 		namespacePrefix: 'mcp',
 		defaultTradeoff: 10, // cheap-leaning so the ladder climbs up
 		deps,
+		...(rosterStore !== undefined ? { rosterStore } : {}),
 	});
 	await reg.register(server as unknown as Parameters<typeof reg.register>[0]);
 	if (!handler) throw new Error('auto_run did not register');
@@ -58,5 +63,16 @@ describe('auto_run tool', () => {
 		};
 		expect(body.ladder.map((r) => r.id)).toEqual(['groq-api']);
 		expect(body.ladder.every((r) => r.costTier <= 2)).toBe(true);
+	});
+
+	it('persists discovery before planning a route', async () => {
+		let saves = 0;
+		const handler = await capture(deps, {
+			save: async () => {
+				saves += 1;
+			},
+		});
+		await handler({});
+		expect(saves).toBe(1);
 	});
 });
