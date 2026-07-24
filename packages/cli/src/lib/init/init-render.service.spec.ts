@@ -21,7 +21,10 @@ import type { IInitAnswers } from './init-answers.types';
 import { computeHostInstructionsWrite } from './init-host-instructions.service';
 import { deriveScope } from './init-migrate-offer.service';
 import { renderInitBundle, resolvePluginSet } from './init-render.service';
-import { writeMcpVertexConfig } from './init-writers.factory';
+import {
+	writeCoreSkillProjection,
+	writeMcpVertexConfig,
+} from './init-writers.factory';
 import { buildCanonicalLaunch } from '../server-args.service';
 
 const parseAnswers = (
@@ -314,14 +317,19 @@ describe('writeMcpVertexConfig (f00084 S2)', () => {
 		expect(parsed.plugins.git).toEqual({ options: {} });
 	});
 
-	it('refuses to overwrite without --force', async () => {
+	it('merges generated defaults into a valid existing project config', async () => {
 		await writeMcpVertexConfig(workspace, { plugins: {} }, false);
 		const second = await writeMcpVertexConfig(
 			workspace,
-			{ plugins: { proposals: { options: {} } } },
+			{
+				cacheDir: '.generated-cache',
+				plugins: {
+					proposals: { options: { docsDir: 'docs/proposals' } },
+				},
+			},
 			false,
 		);
-		expect(second.kind).toBe('exists');
+		expect(second.kind).toBe('merged');
 		const onDisk = await readFile(
 			`${workspace}/mcp-vertex.config.json`,
 			'utf8',
@@ -329,7 +337,7 @@ describe('writeMcpVertexConfig (f00084 S2)', () => {
 		const parsed = JSON.parse(onDisk) as {
 			plugins: Record<string, unknown>;
 		};
-		expect(parsed.plugins.proposals).toBeUndefined();
+		expect(parsed.plugins.proposals).toBeDefined();
 	});
 
 	it('overwrites with --force', async () => {
@@ -348,6 +356,62 @@ describe('writeMcpVertexConfig (f00084 S2)', () => {
 			plugins: Record<string, unknown>;
 		};
 		expect(parsed.plugins.proposals).toBeDefined();
+	});
+
+	it('preserves an invalid existing config unless replacement is explicit', async () => {
+		await fsWriteFile(
+			`${workspace}/mcp-vertex.config.json`,
+			'{broken',
+			'utf8',
+		);
+		const result = await writeMcpVertexConfig(
+			workspace,
+			{ plugins: { git: { options: {} } } },
+			false,
+		);
+		expect(result.kind).toBe('exists');
+		expect(
+			await readFile(`${workspace}/mcp-vertex.config.json`, 'utf8'),
+		).toBe('{broken');
+	});
+});
+
+describe('writeCoreSkillProjection', () => {
+	let workspace: string;
+
+	beforeEach(async () => {
+		workspace = await mkdtemp(join(tmpdir(), 'mcpv-skill-writer-'));
+	});
+
+	afterEach(async () => {
+		await rm(workspace, { recursive: true, force: true });
+	});
+
+	it('writes a project-owned manifest and core bodies, then preserves them', async () => {
+		const first = await writeCoreSkillProjection(
+			workspace,
+			'docs/mcp-vertex',
+			false,
+		);
+		expect(first.length).toBeGreaterThan(1);
+		expect(first.every((write) => write.kind === 'written')).toBe(true);
+		const manifestPath = join(
+			workspace,
+			'docs/mcp-vertex/skills/manifest.json',
+		);
+		const manifest = JSON.parse(await readFile(manifestPath, 'utf8')) as {
+			skills: Array<{ bodyPath: string }>;
+		};
+		expect(manifest.skills[0]?.bodyPath).toContain(
+			'docs/mcp-vertex/skills/',
+		);
+
+		const second = await writeCoreSkillProjection(
+			workspace,
+			'docs/mcp-vertex',
+			false,
+		);
+		expect(second.some((write) => write.kind === 'exists')).toBe(true);
 	});
 });
 
