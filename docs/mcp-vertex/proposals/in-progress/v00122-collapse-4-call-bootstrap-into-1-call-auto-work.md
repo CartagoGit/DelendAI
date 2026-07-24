@@ -40,7 +40,7 @@ Per F6 of a00067, the 4-call bootstrap costs ~1.2k tokens before the LLM execute
   - "Token-budget regression gate (`packages/core/tests/src/lib/e2e/token-budget.e2e.spec.ts`) updated: `auto_work` budget moves from 1 600 B → 2 000 B to absorb the extra fields; idle stays at 159 B."
 
 ### S2 — Backward-compat: deprecation note for the old 4-call sequence
-- **Status**: pending
+- **Status**: done
 - **Files**: `docs/mcp-vertex/AGENT-BOOTSTRAP.md`
 - **Gate**: type
 - acceptance:
