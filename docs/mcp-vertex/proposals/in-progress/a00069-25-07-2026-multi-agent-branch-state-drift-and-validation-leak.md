@@ -227,7 +227,7 @@ uno, con la disciplina `f00073`/`f00075`/`f00052` como referencia.
 
 ### S5 — `proposal_close_slice` exige `bun run validate` verde
 
-- **Status**: done
+- **Status**: pending
 - **Files**: `plugins/proposals/src/lib/tools/close-slice.tool.ts` (o el
   módulo que ejecuta `close_slice`).
 - **Gate**: bun run validate
@@ -249,7 +249,7 @@ uno, con la disciplina `f00073`/`f00075`/`f00052` como referencia.
 
 ### S6 — GC de orphans en `subagent-registry` + `round-context`
 
-- **Status**: done
+- **Status**: pending
 - **Files**:
   - `plugins/proposals/src/lib/swarm/` (state_repair / zombie / registry GC)
   - tests bajo `plugins/proposals/tests/` para purge de assignments
