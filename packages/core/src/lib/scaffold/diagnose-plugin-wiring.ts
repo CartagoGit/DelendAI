@@ -52,14 +52,16 @@ const checkVitestShared = async (
 ): Promise<IPluginWiringPoint> => {
 	const text = await fs.readFile(VITEST_SHARED);
 	const scoped = `@mcp-vertex/${pluginId}`;
-	const regexNeedle = new RegExp(
-		`${escapeRegex(scoped)}(?:\\\\/|/)lib\\\\/`,
-		'u',
-	);
+	// The real shape (audit 2026-07-24): every plugin emits exactly two
+	// `find:` entries — `find: '@mcp-vertex/<id>'` and
+	// `find: '@mcp-vertex/<id>/public'`. The optional `lib/` wildcard is
+	// only added by plugins that ALSO ship a regex-capture alias in the
+	// writer, but the workspace currently has no plugin using that shape,
+	// so the regex check was a phantom assertion that flagged every plugin
+	// as unwired. The two literal `find:` entries are the actual contract.
 	const ok =
 		text.includes(`find: '${scoped}'`) &&
-		text.includes(`find: '${scoped}/public'`) &&
-		regexNeedle.test(text);
+		text.includes(`find: '${scoped}/public'`);
 	return {
 		id: 'vitest-shared',
 		path: VITEST_SHARED,
@@ -68,7 +70,7 @@ const checkVitestShared = async (
 		...(ok
 			? {}
 			: {
-					remediation: `Add a const declaration + three alias entries to workspaceAliases() in vitest.shared.ts.`,
+					remediation: `Add a const declaration + two alias entries to workspaceAliases() in vitest.shared.ts (find: '@mcp-vertex/<id>' and find: '@mcp-vertex/<id>/public').`,
 				}),
 	};
 };
@@ -82,7 +84,7 @@ const checkPluginDefaultsFromText = (
 	pluginId: string,
 ): IPluginWiringPoint => {
 	const ok = new RegExp(
-		`(?:${escapeRegex(pluginId)}|${escapeRegex(JSON.stringify(pluginId))}):\\s*\\{`,
+		`(?:'|")?${escapeRegex(pluginId)}(?:'|")?\\s*:\\s*\\{`,
 		'u',
 	).test(text);
 	return {

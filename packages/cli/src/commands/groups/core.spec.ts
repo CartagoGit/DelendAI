@@ -52,6 +52,7 @@ describe('core extra group (f00046 S5)', async () => {
 			'project analyze',
 			'project plan',
 			'project create',
+			'plugin new',
 		]);
 	});
 

@@ -102,6 +102,8 @@ const ENGLISH_COMMAND_SUMMARIES: Readonly<Record<string, string>> = {
 		'Return an exhaustive blueprint for a project-specific MCP server.',
 	'project create':
 		'Generate the files for a project MCP server, plugin, or client.',
+	'plugin new':
+		'Scaffold and wire a new first-party plugin, then run the wiring doctor.',
 	'docs search': 'Search project documentation by free text (ranked hits).',
 	'proposals auto-work':
 		'Resolve the next proposal and return a compact action plan.',

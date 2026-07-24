@@ -69,6 +69,7 @@ const EXPECTED_COMMANDS = [
 	'project analyze',
 	'project plan',
 	'project create',
+	'plugin new',
 	'docs search',
 	'proposals auto-work',
 	'proposals continue',
