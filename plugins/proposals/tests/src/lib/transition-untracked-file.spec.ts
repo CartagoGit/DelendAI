@@ -10,7 +10,13 @@
  * genuinely fails.
  */
 import { execFileSync } from 'node:child_process';
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import {
+	mkdirSync,
+	mkdtempSync,
+	readFileSync,
+	rmSync,
+	writeFileSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -157,5 +163,76 @@ describe('proposal_transition on fresh vs tracked files (x00106 S2)', () => {
 		);
 		expect(result.ok).toBe(true);
 		expect(String(result.warning)).toContain('git mv failed');
+	});
+
+	it('rewrites self **Files** paths and syncs the index (a00069 S3)', async () => {
+		mkdirSync(join(proposalsDirAbs, 'done/feats'), { recursive: true });
+		const indexPath = join(root, '.cache/proposals/index.json');
+		mkdirSync(join(root, '.cache/proposals'), { recursive: true });
+		writeFileSync(
+			indexPath,
+			JSON.stringify({
+				proposals: [
+					{
+						id: 'f00004',
+						file: 'review/f00004-self.md',
+						status: 'review',
+					},
+				],
+			}),
+		);
+		const body = [
+			'---',
+			'id: f00004',
+			'status: review',
+			'type: proposal',
+			'track: general',
+			'kind: feat',
+			'---',
+			'',
+			'# f00004',
+			'',
+			'## Slices',
+			'',
+			'### S1 — track self',
+			'',
+			'- **Files**: `review/f00004-self.md`',
+			'',
+		].join('\n');
+		mkdirSync(join(proposalsDirAbs, 'review'), { recursive: true });
+		writeFileSync(join(proposalsDirAbs, 'review/f00004-self.md'), body);
+		git(root, 'add', '.');
+		git(root, 'commit', '-m', 'add self-ref proposal');
+		const transition = await capture(
+			buildProposalTransitionRegistration({
+				namespacePrefix: 'proposals',
+				proposalsDirAbs,
+				workspaceRoot: root,
+				indexPathAbs: indexPath,
+			}),
+		);
+		const result = parse(
+			await transition({
+				id: 'f00004',
+				to: 'done',
+				reason: 'a00069 S3 close',
+			}),
+		);
+		expect(result.ok).toBe(true);
+		expect(result.filesRewritten).toBe(1);
+		expect(result.indexSynced).toBe(true);
+		expect(result.movedTo).toBe('done/feats/f00004-self.md');
+		const moved = readFileSync(
+			join(proposalsDirAbs, 'done/feats/f00004-self.md'),
+			'utf8',
+		);
+		expect(moved).toContain('status: done');
+		expect(moved).toContain('done/feats/f00004-self.md');
+		expect(moved).not.toContain('review/f00004-self.md');
+		const index = JSON.parse(readFileSync(indexPath, 'utf8')) as {
+			proposals: Array<{ id: string; file: string }>;
+		};
+		const entry = index.proposals.find((p) => p.id === 'f00004');
+		expect(entry?.file).toBe('done/feats/f00004-self.md');
 	});
 });
