@@ -11,10 +11,19 @@ import { createMcpProject } from '@mcp-vertex/core/lib/project/create-mcp-projec
 import { parseCliArgs } from '@mcp-vertex/core/lib/plugins/parse-cli-args';
 import { SKILL_MANIFEST_REL } from '@mcp-vertex/core/lib/skills/skill-paths';
 import proposalsPlugin from '@mcp-vertex/proposals';
+import rulesPlugin from '@mcp-vertex/rules';
 import memoryPlugin from '@mcp-vertex/memory';
+import gitPlugin from '@mcp-vertex/git';
+import qualityPlugin from '@mcp-vertex/quality';
 import searchPlugin from '@mcp-vertex/search';
+import notificationPlugin from '@mcp-vertex/notification';
 import docsPlugin from '@mcp-vertex/docs';
+import depsPlugin from '@mcp-vertex/deps';
 import logsPlugin from '@mcp-vertex/logs';
+import statusMarkerPlugin from '@mcp-vertex/status-marker';
+import testConventionPlugin from '@mcp-vertex/test-convention';
+import testPolicyPlugin from '@mcp-vertex/test-policy';
+import conventionsPlugin from '@mcp-vertex/conventions';
 
 /**
  * Token budget benchmark [N23]. "Low-token" is a measurable promise, not
@@ -78,6 +87,14 @@ const BUDGET_BYTES = {
 	logsTail: 6_000,
 	analyzeCompact: 1_800,
 	planCompact: 2_000,
+	// The repo host defaults to `swarm`, so its static MCP tool definitions
+	// (tools/list) and the two normal orientation/resume calls are independently
+	// budgeted. Measured 2026-07-24: 157 504B / 2 463B / 146B respectively.
+	swarmToolsList: 165_000,
+	swarmOverviewCompact: 2_750,
+	swarmRoundContext: 300,
+	// `lean` was 58 003B against the same fixture, a 63% reduction from swarm.
+	leanToolsList: 65_000,
 } as const;
 
 describe('e2e: token budget (cold-start payloads)', async () => {
@@ -87,17 +104,30 @@ describe('e2e: token budget (cold-start payloads)', async () => {
 
 	const connectClient = async (
 		pluginList: string,
+		preset = false,
 	): Promise<{ client: Client; close: () => Promise<void> }> => {
 		const args = parseCliArgs(
-			[`--plugins=${pluginList}`, `--workspace=${workspace}`],
+			[
+				`--${preset ? 'preset' : 'plugins'}=${pluginList}`,
+				`--workspace=${workspace}`,
+			],
 			workspace,
 		);
 		const plugins: Record<string, { default: unknown }> = {
 			'@mcp-vertex/proposals': { default: proposalsPlugin },
+			'@mcp-vertex/rules': { default: rulesPlugin },
 			'@mcp-vertex/memory': { default: memoryPlugin },
+			'@mcp-vertex/git': { default: gitPlugin },
+			'@mcp-vertex/quality': { default: qualityPlugin },
 			'@mcp-vertex/search': { default: searchPlugin },
+			'@mcp-vertex/notification': { default: notificationPlugin },
 			'@mcp-vertex/docs': { default: docsPlugin },
+			'@mcp-vertex/deps': { default: depsPlugin },
 			'@mcp-vertex/logs': { default: logsPlugin },
+			'@mcp-vertex/status-marker': { default: statusMarkerPlugin },
+			'@mcp-vertex/test-convention': { default: testConventionPlugin },
+			'@mcp-vertex/test-policy': { default: testPolicyPlugin },
+			'@mcp-vertex/conventions': { default: conventionsPlugin },
 		};
 		const { config } = await assembleCliConfig(args, {
 			import: async (specifier: string) => plugins[specifier]!,
@@ -221,6 +251,69 @@ describe('e2e: token budget (cold-start payloads)', async () => {
 		expect(compact).toBeLessThan(BUDGET_BYTES.overviewCompact);
 		// Compact must be a real saving, not cosmetic.
 		expect(compact).toBeLessThan(full * 0.7);
+	});
+
+	it('swarm preset keeps its real static and resume surfaces bounded', async () => {
+		const swarm = await connectClient('swarm', true);
+		try {
+			const toolList = await swarm.client.listTools();
+			const toolsListBytes = Buffer.byteLength(
+				JSON.stringify(toolList.tools),
+				'utf8',
+			);
+			const textBytesForSwarm = async (
+				name: string,
+				args: Record<string, unknown>,
+			): Promise<number> => {
+				const response = await swarm.client.callTool({
+					name,
+					arguments: args,
+				});
+				const text = (
+					response.content as Array<{ type: string; text: string }>
+				)[0]?.text;
+				return Buffer.byteLength(text ?? '', 'utf8');
+			};
+			const overviewCompact = await textBytesForSwarm(
+				'mcp-vertex_overview',
+				{ compact: true },
+			);
+			const roundContext = await textBytesForSwarm(
+				'mcp-vertex_proposals_round_context',
+				{},
+			);
+
+			expect(
+				toolsListBytes,
+				`swarm: tools/list = ${toolsListBytes}B, overview compact = ${overviewCompact}B, round context = ${roundContext}B`,
+			).toBeLessThan(BUDGET_BYTES.swarmToolsList);
+			expect(overviewCompact).toBeLessThan(
+				BUDGET_BYTES.swarmOverviewCompact,
+			);
+			expect(roundContext).toBeLessThan(BUDGET_BYTES.swarmRoundContext);
+		} finally {
+			await swarm.close();
+		}
+	});
+
+	it('lean preset remains materially smaller than the collaboration surface', async () => {
+		const lean = await connectClient('lean', true);
+		try {
+			const toolList = await lean.client.listTools();
+			const toolsListBytes = Buffer.byteLength(
+				JSON.stringify(toolList.tools),
+				'utf8',
+			);
+			expect(
+				toolsListBytes,
+				`lean tools/list = ${toolsListBytes}B`,
+			).toBeLessThan(BUDGET_BYTES.leanToolsList);
+			expect(toolsListBytes).toBeLessThan(
+				BUDGET_BYTES.swarmToolsList * 0.4,
+			);
+		} finally {
+			await lean.close();
+		}
 	});
 
 	it('agent catalog stays under budget; compact is materially cheaper than full', async () => {
