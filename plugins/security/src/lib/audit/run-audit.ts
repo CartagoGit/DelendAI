@@ -1,26 +1,18 @@
 /**
- * run-audit.ts — the security-posture aggregator: run every available scanner
- * and fold the results into one ranked backlog via the shared `aggregateScans`
- * (r00012). The two scanners are passed in as functions, so this stays pure and
- * unit-testable; the tool wires the real secret + dep-CVE runners.
+ * run-audit.ts — the security-posture aggregator: run a set of scanners and
+ * fold their results into one ranked backlog via the shared `aggregateScans`
+ * (r00012). Scanners are passed in as result-producing functions, so this
+ * stays pure and unit-testable and new scanners drop in without touching this
+ * file. The tool wires the real secret + dep-CVE + license runners.
  */
-import { aggregateScans, toScanResult } from '@mcp-vertex/core/public';
+import { aggregateScans } from '@mcp-vertex/core/public';
 import type { IAggregatedScan, IScanResult } from '@mcp-vertex/core/public';
 
-import type { ISecretScanOutcome } from '../contracts/interfaces/secrets.interface';
+/** A scanner: a function that produces one `IScanResult` when run. */
+type ScanRunner = () => Promise<IScanResult>;
 
-/** Aggregate a secret scan + a dependency-CVE scan into one ranked backlog. */
+/** Run every scanner and aggregate the results into one ranked backlog. */
 export const runSecurityAudit = async (
-	runSecrets: () => Promise<ISecretScanOutcome>,
-	runDeps: () => Promise<IScanResult>,
-): Promise<{ aggregate: IAggregatedScan; scanned: number }> => {
-	const secrets = await runSecrets();
-	const deps = await runDeps();
-	return {
-		aggregate: aggregateScans([
-			toScanResult('secrets', secrets.findings),
-			deps,
-		]),
-		scanned: secrets.scanned,
-	};
-};
+	scans: readonly ScanRunner[],
+): Promise<IAggregatedScan> =>
+	aggregateScans(await Promise.all(scans.map((run) => run())));

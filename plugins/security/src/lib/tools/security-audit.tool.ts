@@ -1,15 +1,19 @@
 /**
- * security-audit.tool.ts — the `security_audit` tool: run every security
- * scanner (leaked-secrets + dependency CVEs) and return ONE ranked backlog
- * (most-severe first) with a per-severity summary and the list of scanners
- * that were skipped. The self-improvement flywheel: one call → the highest-
- * value security fix for this project.
+ * security-audit.tool.ts — the `security_audit` tool: run every scanner
+ * (leaked-secrets + dependency CVEs + dependency licenses) and return ONE
+ * ranked backlog (most-severe first) with a per-severity summary and the list
+ * of scanners that were skipped. The self-improvement flywheel: one call →
+ * the highest-value posture fix for this project.
  */
 import { z } from 'zod';
 
 import type { IToolRegistration } from '@mcp-vertex/core/public';
-import { toolJson } from '@mcp-vertex/core/public';
-import { runDepsAudit } from '@mcp-vertex/deps/public';
+import { toScanResult, toolJson } from '@mcp-vertex/core/public';
+import {
+	realLicenseDeps,
+	runDepsAudit,
+	scanLicenses,
+} from '@mcp-vertex/deps/public';
 
 import type { ISecuritySecretsToolOptions } from '../contracts/interfaces/secrets.interface';
 import { runSecurityAudit } from '../audit/run-audit';
@@ -35,7 +39,7 @@ export const buildSecurityAuditRegistration = (
 ): IToolRegistration => ({
 	id: 'security_audit',
 	summary:
-		'Run every security scanner (secrets + dependency CVEs) and return one ranked backlog.',
+		'Run every scanner (secrets + dependency CVEs + licenses) and return one ranked backlog.',
 	tags: ['security', 'audit', 'network'],
 	effects: ['network'],
 	register: async (server) => {
@@ -43,7 +47,7 @@ export const buildSecurityAuditRegistration = (
 			`${options.namespacePrefix}_security_audit`,
 			{
 				description:
-					'Run all security scanners against the project — leaked-secrets (offline) + dependency CVEs (bun audit, network) — and return ONE ranked backlog: findings sorted most-severe first, a per-severity summary, the scanners that ran, and any that were skipped (with a hint). The self-audit flywheel for security posture. Scanners degrade gracefully when a tool is missing.',
+					'Run all scanners against the project — leaked-secrets (offline), dependency CVEs (bun audit, network) and dependency licenses (offline) — and return ONE ranked backlog: findings sorted most-severe first, a per-severity summary, the scanners that ran, and any that were skipped (with a hint). The self-audit flywheel for project posture. Scanners degrade gracefully when a tool is missing.',
 				inputSchema: z.object({}),
 				outputSchema: z.object({
 					scanned: z.number(),
@@ -67,16 +71,24 @@ export const buildSecurityAuditRegistration = (
 			},
 			async () => {
 				const workspace = options.workspaceRootAbs;
-				const { aggregate, scanned } = await runSecurityAudit(
-					() =>
-						runSecretScan(options.deps ?? realScanDeps(workspace), {
-							scope: 'tracked',
-							includeTests: false,
-						}),
-					() => runDepsAudit(workspace),
+				// Run the secret scan up front so we can report the file count.
+				const secrets = await runSecretScan(
+					options.deps ?? realScanDeps(workspace),
+					{ scope: 'tracked', includeTests: false },
 				);
+				const aggregate = await runSecurityAudit([
+					async () => toScanResult('secrets', secrets.findings),
+					() => runDepsAudit(workspace),
+					async () =>
+						toScanResult(
+							'licenses',
+							await scanLicenses(
+								realLicenseDeps(workspace, 'package.json'),
+							),
+						),
+				]);
 				return toolJson({
-					scanned,
+					scanned: secrets.scanned,
 					tools: aggregate.tools,
 					worst: aggregate.worst,
 					summary: aggregate.summary,
