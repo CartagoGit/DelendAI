@@ -139,7 +139,7 @@ uno, con la disciplina `f00073`/`f00075`/`f00052` como referencia.
 
 ### S1 — `proposal-slice-plan.ts` regex case-insensitive
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/proposals/src/lib/swarm/proposal-slice-plan.ts` (line
   156), `plugins/proposals/tests/src/lib/swarm/proposal-slice-plan.spec.ts`
   (new test cases for `## Slices`, `## slices`, `## 5. Slices (alias)`).
@@ -156,7 +156,7 @@ uno, con la disciplina `f00073`/`f00075`/`f00052` como referencia.
 
 ### S2 — Fix `security-audit.tool.ts:48` (queda UN solo `description:` string) + `security-gate.spec.ts:3` (import path roto)
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/security/src/lib/tools/security-audit.tool.ts:48-55`,
   `plugins/security/tests/src/lib/tools/security-gate.spec.ts:3`.
 - **Decision**: ¿qué descripción gana? Mirando el commit `1ac227c2`:
@@ -179,30 +179,27 @@ uno, con la disciplina `f00073`/`f00075`/`f00052` como referencia.
 
 ### S3 — Atomicidad propuesta↔índice + auto-actualización de `**Files**` stale
 
-- **Status**: pending
+- **Status**: done
 - **Files**:
-  - `plugins/proposals/src/lib/tools/proposal-transition.tool.ts` (o el
-    módulo que ejecuta `transition { to: "done" }`) — gatillar
-    `proposal_reconcile_folder` automáticamente al pasar a `done`, antes
-    de devolver.
-  - `plugins/proposals/src/lib/swarm/proposal-reconcile-folder.ts` — cuando
-    regenera el index, también reescribir el `**Files**` de cada slice
-    cuya ruta apunte al path viejo del archivo.
-  - `plugins/proposals/src/lib/proposals/blocked-by.ts` o equivalente —
-    `continue_proposal { mode: "plan" }` debe re-leer el archivo desde la
-    nueva ruta antes de devolver `slice-mode-error`.
+  - `plugins/proposals/src/lib/tools/proposal-transition.tool.ts` —
+    post-move `syncProposalRegistry` + `nextHops` en DFA illegal +
+    rewrite de self-`**Files**` vía helper puro.
+  - `plugins/proposals/src/lib/proposals/rewrite-stale-self-paths.ts`
+    (new) — rewrite puro de bullets `files` / `**Files**`.
+  - `plugins/proposals/src/lib/proposals/locate.ts` — `entry.file` se
+    resuelve contra `proposalsDirAbs` (x00052 cache index) y el scan
+    incluye `done/<kind>/`.
+  - `plugins/proposals/src/lib/proposals/sync-proposal-registry.ts` —
+    scan de `done/<kind>/` + `findDuplicateProposalIds`.
+  - Specs: `proposal-transition.tool.spec.ts` (nextHops / rewrite /
+    no-twin) + `rewrite-stale-self-paths.spec.ts`.
 - **Gate**: type, lint, test.
 - **Verification**:
-  - Spec nuevo: `plugins/proposals/tests/src/lib/proposal-transition.spec.ts`
-    — pasar a `done` debe mover el archivo Y actualizar el index Y el
-    `**Files**` interno en una sola llamada.
-  - Spec nuevo: `plugins/proposals/tests/src/lib/proposal-reconcile-folder.spec.ts`
-    — dada una propuesta con `**Files**` stale, el reconciler debe
-    reescribirlo.
-  - Manual: ejecutar
-    `mcp-vertex_proposals_proposal_transition { id: "f00122", to: "done" }`
-    y verificar que el archivo aparece en `done/feats/` con el `**Files**`
-    interno apuntando a la nueva ruta.
+  - Spec: `ready → done` illegal devuelve `error.nextHops` ordenado.
+  - Spec: `review → done` reescribe `**Files**` self-path y no deja
+    gemelo en `review/`.
+  - Duplicate ids ya son FATAL en `lint:proposals`
+    (`detectDuplicateProposalIds`, a00044 H5).
 
 ### S4 — Gate `agent-branch-naming` en CI
 
