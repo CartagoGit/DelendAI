@@ -2,9 +2,11 @@ import { randomUUID } from 'node:crypto';
 
 import {
 	definePlugin,
+	estimateResultBytes,
 	joinRel,
 	type IToolRegistration,
 } from '@mcp-vertex/core/public';
+import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 
 import { deriveCorePrefix } from './lib/attribute';
@@ -12,6 +14,10 @@ import { detectAgent } from './lib/detect-agent';
 import { buildRecord, resolveSessionId } from './lib/record';
 import { RecordBuffer } from './lib/record-buffer';
 import { regenerateSummary } from './lib/rollup';
+import {
+	DEFAULT_SESSION_HYGIENE_POLICY,
+	SessionHygieneMonitor,
+} from './lib/session-hygiene';
 import { StartClock } from './lib/start-clock';
 import {
 	computeCostUsd,
@@ -64,6 +70,19 @@ const OptionsSchema = z
 		 * with the session window.
 		 */
 		maxMonthlySpendUsd: z.number().min(0).optional(),
+		/**
+		 * Local MCP-session guardrails. They observe only tool activity and
+		 * output volume; host context/quota remains intentionally unknown.
+		 */
+		sessionHygiene: z
+			.object({
+				enabled: z.boolean().optional(),
+				maxSessionAgeMinutes: z.number().positive().optional(),
+				maxIdleGapMinutes: z.number().positive().optional(),
+				maxMcpOutputTokens: z.number().positive().optional(),
+			})
+			.strict()
+			.optional(),
 	})
 	.strict();
 
@@ -105,6 +124,22 @@ export default definePlugin({
 		const summaryIntervalMs =
 			options.summaryIntervalMs ?? DEFAULT_OPTIONS.summaryIntervalMs;
 		const clientMap = options.clientMap;
+		const hygieneOptions = options.sessionHygiene;
+		const sessionHygieneEnabled = hygieneOptions?.enabled ?? true;
+		const sessionHygiene = new SessionHygieneMonitor({
+			maxSessionAgeMs:
+				(hygieneOptions?.maxSessionAgeMinutes ??
+					DEFAULT_SESSION_HYGIENE_POLICY.maxSessionAgeMs / 60_000) *
+				60_000,
+			maxIdleGapMs:
+				(hygieneOptions?.maxIdleGapMinutes ??
+					DEFAULT_SESSION_HYGIENE_POLICY.maxIdleGapMs / 60_000) *
+				60_000,
+			maxMcpOutputTokens:
+				hygieneOptions?.maxMcpOutputTokens ??
+				DEFAULT_SESSION_HYGIENE_POLICY.maxMcpOutputTokens,
+		});
+		let notificationServer: McpServer | undefined;
 
 		// S7 circuit-breaker config. The session anchor is boot time; the
 		// breaker is inert until at least one cap is set (limitsStatus then
@@ -238,6 +273,10 @@ export default definePlugin({
 				namespacePrefix: ctx.namespacePrefix,
 				invocationsPath,
 				summaryPath,
+				sessionHygiene,
+				onServer: (server) => {
+					notificationServer = server;
+				},
 			}).map((reg) =>
 				reg.id === 'usage_clear' ? withBufferWipeBarrier(reg) : reg,
 			),
@@ -262,11 +301,31 @@ export default definePlugin({
 					error,
 					startedAt,
 					endedAt,
+					responseBytes: estimateResultBytes(result ?? {}),
 					fallbackModel: lastModelBySession.get(sessionId),
 					costOf,
 				});
 				if (record.model !== null && record.usage !== null) {
 					rememberModel(sessionId, record.model);
+				}
+				if (sessionHygieneEnabled) {
+					const advisory = sessionHygiene.observe({
+						sessionId,
+						at: endedAt,
+						responseBytes: record.responseBytes ?? 0,
+					});
+					if (advisory && notificationServer) {
+						void notificationServer
+							.sendLoggingMessage({
+								level: 'warning',
+								logger: `${ctx.namespacePrefix}_session_hygiene`,
+								data: {
+									event: 'session-hygiene',
+									...advisory,
+								},
+							})
+							.catch(() => undefined);
+					}
 				}
 				buffer.push(record);
 			},

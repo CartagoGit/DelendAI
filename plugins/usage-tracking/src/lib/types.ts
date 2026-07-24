@@ -46,6 +46,12 @@ export interface IInvocationRecord {
 	readonly tool: string;
 	readonly model: IModelDescriptor | null;
 	readonly usage: IUsageTokens | null;
+	/**
+	 * Bytes returned by the MCP tool. This is a local output-volume measure,
+	 * not an estimate of the host conversation or provider context.
+	 * Older rows omit it and are treated as zero.
+	 */
+	readonly responseBytes?: number;
 	readonly costUsd: number | null;
 	/** Saving reported by this call; absent on legacy rows and treated as 0. */
 	readonly tokensSaved?: number;
@@ -147,3 +153,36 @@ export type GroupByAxis =
 	| 'extension'
 	| 'model';
 export type SortBy = 'calls' | 'totalTokens' | 'tokensSaved' | 'costUsd';
+
+/** A threshold exceeded by an observed MCP session. */
+export type SessionHygieneReason =
+	| 'session-age'
+	| 'idle-gap'
+	| 'mcp-output-volume';
+
+/** Policy for local MCP-session observations. All values are positive. */
+export interface ISessionHygienePolicy {
+	readonly maxSessionAgeMs: number;
+	readonly maxIdleGapMs: number;
+	readonly maxMcpOutputTokens: number;
+}
+
+/** Bounded, host-honest snapshot derived from MCP invocation metadata only. */
+export interface ISessionHygieneSnapshot {
+	readonly sessionId: string;
+	readonly observedMcpOnly: true;
+	readonly firstActivityAt: string;
+	readonly lastActivityAt: string;
+	readonly observedElapsedMs: number;
+	readonly largestIdleGapMs: number;
+	readonly calls: number;
+	readonly responseBytes: number;
+	readonly estimatedMcpOutputTokens: number;
+	readonly reasons: readonly SessionHygieneReason[];
+}
+
+/** A one-shot advisory emitted when a local session first crosses a threshold. */
+export interface ISessionHygieneAdvisory extends ISessionHygieneSnapshot {
+	readonly newlyBreached: readonly SessionHygieneReason[];
+	readonly recommendedAction: 'checkpoint-and-compact' | 'resume-from-digest';
+}
