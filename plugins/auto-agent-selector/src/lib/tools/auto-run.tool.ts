@@ -1,7 +1,10 @@
 import { z } from 'zod';
 
-import type { IToolRegistration } from '@mcp-vertex/core/public';
-import { toolJson } from '@mcp-vertex/core/public';
+import type {
+	IRunArgvOutcome,
+	IToolRegistration,
+} from '@mcp-vertex/core/public';
+import { runArgv, toolJson } from '@mcp-vertex/core/public';
 
 import { discoverAndPersistRoster } from '../discovery/discover-roster';
 import { realDiscoveryDeps } from '../discovery/real-deps';
@@ -10,6 +13,7 @@ import { buildEscalationLadder } from '../escalate/build-ladder';
 import { resolveTaskPin } from '../prefs/resolve-task-pin';
 import type { IDiscoveryDeps } from '../contracts/interfaces/roster.interface';
 import type { IRosterSnapshotStore } from '../discovery/roster-store';
+import { installKnownCli } from '../discovery/install-provider';
 
 const RUNG_SCHEMA = z.object({
 	step: z.number(),
@@ -28,7 +32,26 @@ const OUTPUT_SCHEMA = z.object({
 	costQualityTradeoff: z.number(),
 	/** How to execute the plan (the selector plans; the host runs + gates). */
 	howToExecute: z.string(),
+	/** First safe install hint when the host cannot reach any provider. */
+	nextInstall: z
+		.object({ id: z.string(), label: z.string(), hint: z.string() })
+		.nullable(),
+	/** Present only after the caller explicitly requested an installation. */
+	installation: z
+		.object({
+			providerId: z.string(),
+			attempted: z.boolean(),
+			ok: z.boolean(),
+			code: z.number().nullable(),
+			timedOut: z.boolean(),
+			hint: z.string().nullable(),
+		})
+		.nullable(),
 });
+
+type IAutoRunInstallRunner = (
+	argv: readonly [string, ...string[]],
+) => Promise<IRunArgvOutcome>;
 
 /**
  * `auto_run` — plan the cheapest-capable → escalate-up route for a task.
@@ -47,6 +70,10 @@ export const buildAutoRunRegistration = (options: {
 	readonly deps?: IDiscoveryDeps;
 	readonly taskPins?: Readonly<Record<string, string>>;
 	readonly rosterStore?: IRosterSnapshotStore;
+	/** Production uses the argv-only core runner; tests inject a fake. */
+	readonly installRunner?: IAutoRunInstallRunner;
+	/** Explicit workspace root for the optional installer; never process.cwd(). */
+	readonly workspaceRoot?: string;
 }): IToolRegistration => {
 	const prefix = options.namespacePrefix;
 	return {
@@ -59,7 +86,7 @@ export const buildAutoRunRegistration = (options: {
 				`${prefix}_auto_run`,
 				{
 					description:
-						"Plan how to run a task cost-effectively with quality up-escalation. Returns an ordered ladder: run the first (best-value) provider for your cost↔quality dial; if its output fails the project's acceptance gate, escalate to the next (stronger) provider — never above your cost ceiling. Pass `costCeiling` (1…5, the priciest tier escalation may reach), `maxDepth` (how many rungs), `costQualityTradeoff` (0 strongest … 10 cheapest) and `pin`. The selector PLANS; you execute each rung (e.g. via the orchestrator-runner `invoke` tool) and run your acceptance gate between rungs. Headless and spend-free.",
+						"Plan how to run a task cost-effectively with quality up-escalation. Returns an ordered ladder: run the first (best-value) provider for your cost↔quality dial; if its output fails the project's acceptance gate, escalate to the next (stronger) provider — never above your cost ceiling. When none is reachable, `nextInstall` returns an exact trusted command. Set `install:true` plus `installProviderId` only to explicitly run that command; without that explicit consent this tool never installs or spends. The selector plans; you execute each rung (e.g. via orchestrator-runner `invoke`) and run the project's acceptance gate between rungs.",
 					inputSchema: z
 						.object({
 							task: z.string().min(1).optional(),
@@ -83,7 +110,15 @@ export const buildAutoRunRegistration = (options: {
 								.optional(),
 							pin: z.string().min(1).optional(),
 							taskType: z.string().min(1).max(80).optional(),
+							install: z.boolean().optional(),
+							installProviderId: z.string().min(1).optional(),
 						})
+						.refine(
+							(value) =>
+								!value.install ||
+								value.installProviderId !== undefined,
+							'installProviderId is required when install is true',
+						)
 						.strict(),
 					outputSchema: OUTPUT_SCHEMA,
 				},
@@ -94,7 +129,26 @@ export const buildAutoRunRegistration = (options: {
 					maxDepth?: number | undefined;
 					pin?: string | undefined;
 					taskType?: string | undefined;
+					install?: boolean | undefined;
+					installProviderId?: string | undefined;
 				}) => {
+					const installation =
+						args.install === true &&
+						args.installProviderId !== undefined
+							? await installKnownCli(
+									args.installProviderId,
+									options.installRunner ??
+										((argv) =>
+											runArgv(argv, {
+												...(options.workspaceRoot !==
+												undefined
+													? {
+															cwd: options.workspaceRoot,
+														}
+													: {}),
+											})),
+								)
+							: null;
 					const roster = await discoverAndPersistRoster(
 						options.deps ?? realDiscoveryDeps(),
 						options.rosterStore,
@@ -119,6 +173,9 @@ export const buildAutoRunRegistration = (options: {
 							? { maxDepth: args.maxDepth }
 							: {}),
 					});
+					const nextMissingCli = roster.missing.find(
+						(candidate) => candidate.source === 'cli',
+					);
 					return toolJson({
 						ladder: plan.ladder.map((rung) => ({
 							step: rung.step,
@@ -131,6 +188,16 @@ export const buildAutoRunRegistration = (options: {
 						costCeiling: plan.costCeiling,
 						maxDepth: plan.maxDepth,
 						costQualityTradeoff: tradeoff,
+						nextInstall:
+							roster.available.length === 0 &&
+							nextMissingCli !== undefined
+								? {
+										id: nextMissingCli.id,
+										label: nextMissingCli.label,
+										hint: nextMissingCli.hint,
+									}
+								: null,
+						installation,
 						howToExecute:
 							"Run step 1 via your provider (the orchestrator-runner `invoke` tool, or the CLI/API directly), then run the project's acceptance gate (`bun run validate` or the validation matrix). If it fails, run the next step; stop at the first pass or the end of the ladder.",
 					});

@@ -18,6 +18,8 @@ export interface IKnownCli {
 	readonly costTier: 1 | 2 | 3 | 4 | 5;
 	/** One command that installs it (shown when it is missing). */
 	readonly installHint: string;
+	/** Trusted argv for an explicit install request; never built from user text. */
+	readonly installArgv: readonly [string, ...string[]];
 }
 
 /** A known API provider, detected by the presence of any of `envVars` in env. */
@@ -42,6 +44,7 @@ export const KNOWN_CLIS: readonly IKnownCli[] = [
 		command: 'claude',
 		costTier: 4,
 		installHint: 'npm install -g @anthropic-ai/claude-code',
+		installArgv: ['npm', 'install', '-g', '@anthropic-ai/claude-code'],
 	},
 	{
 		id: 'codex-cli',
@@ -50,6 +53,7 @@ export const KNOWN_CLIS: readonly IKnownCli[] = [
 		command: 'codex',
 		costTier: 4,
 		installHint: 'npm install -g @openai/codex',
+		installArgv: ['npm', 'install', '-g', '@openai/codex'],
 	},
 	{
 		id: 'copilot-cli',
@@ -58,6 +62,7 @@ export const KNOWN_CLIS: readonly IKnownCli[] = [
 		command: 'copilot',
 		costTier: 3,
 		installHint: 'npm install -g @github/copilot',
+		installArgv: ['npm', 'install', '-g', '@github/copilot'],
 	},
 	{
 		id: 'gemini-cli',
@@ -66,6 +71,7 @@ export const KNOWN_CLIS: readonly IKnownCli[] = [
 		command: 'gemini',
 		costTier: 2,
 		installHint: 'npm install -g @google/gemini-cli',
+		installArgv: ['npm', 'install', '-g', '@google/gemini-cli'],
 	},
 	{
 		id: 'aider-cli',
@@ -73,7 +79,8 @@ export const KNOWN_CLIS: readonly IKnownCli[] = [
 		vendor: 'multi',
 		command: 'aider',
 		costTier: 2,
-		installHint: 'python -m pip install aider-install && aider-install',
+		installHint: 'python -m pip install aider-chat',
+		installArgv: ['python', '-m', 'pip', 'install', 'aider-chat'],
 	},
 ];
 

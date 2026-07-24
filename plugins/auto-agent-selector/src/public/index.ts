@@ -7,6 +7,10 @@ export { discoverRoster } from '../lib/discovery/discover-roster';
 export { discoverAndPersistRoster } from '../lib/discovery/discover-roster';
 export { realDiscoveryDeps } from '../lib/discovery/real-deps';
 export {
+	installKnownCli,
+	type IProviderInstallResult,
+} from '../lib/discovery/install-provider';
+export {
 	realRosterSnapshotStore,
 	type IRosterSnapshotStore,
 } from '../lib/discovery/roster-store';
