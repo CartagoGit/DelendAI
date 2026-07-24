@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-07-24T15:14:52.937Z",
+	"generatedAt": "2026-07-24T15:53:52.354Z",
 	"mode": "compact",
 	"tools": [
 		{
@@ -443,6 +443,10 @@
 			"plugin": "status-marker"
 		},
 		{
+			"name": "mcp-vertex_tech-debt_debt_scan",
+			"plugin": "tech-debt"
+		},
+		{
 			"name": "mcp-vertex_test-convention_get_convention",
 			"plugin": "test-convention"
 		},
@@ -784,6 +788,13 @@
 	"proposals": {
 		"actionable": [
 			{
+				"id": "c00089",
+				"title": "c00089",
+				"track": "presets+metrics+token-efficiency",
+				"status": "ready",
+				"kind": "chore"
+			},
+			{
 				"id": "d00003",
 				"title": "d00003",
 				"track": "roadmap+plugins+ecosystem",
@@ -966,6 +977,27 @@
 				"kind": "feat"
 			},
 			{
+				"id": "f00143",
+				"title": "f00143",
+				"track": "agent-discipline+session-governance",
+				"status": "ready",
+				"kind": "feat"
+			},
+			{
+				"id": "f00144",
+				"title": "f00144",
+				"track": "usage-tracking+memory+notification",
+				"status": "ready",
+				"kind": "feat"
+			},
+			{
+				"id": "f00145",
+				"title": "f00145",
+				"track": "host-adapters+memory",
+				"status": "ready",
+				"kind": "feat"
+			},
+			{
 				"id": "r00011",
 				"title": "r00011",
 				"track": "refactor+config+dx",
@@ -981,13 +1013,13 @@
 			}
 		],
 		"byStatus": {
-			"ready": 27,
+			"ready": 31,
 			"in-progress": 0,
 			"review": 0,
 			"paused": 1,
 			"done": 240,
 			"blocked": 0,
-			"retired": 1,
+			"retired": 2,
 			"unspecified": 0
 		}
 	}
