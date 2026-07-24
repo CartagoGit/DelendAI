@@ -32,14 +32,14 @@ turn count only where a host emits an explicit event.
 - global_gate: docs/link checks + bootstrap budget check
 
 ### S1 — Document identity and evidence boundaries for adopters
-- **Status**: pending
+- **Status**: done
 - **Files**: `docs/mcp-vertex/CROSS-IDE.md`, `config/external/claude-code/README.md`
 - **Gate**: docs/link checks
 - **Acceptance**: installation guidance distinguishes MCP-only observations,
   explicit host lifecycle observations, and literal id matching.
 
 ### S2 — Keep the operational rule compact and universal
-- **Status**: pending
+- **Status**: done
 - **Files**: `docs/mcp-vertex/AGENT-BOOTSTRAP.md`, `docs/mcp-vertex/TOKEN-BUDGETS.md`
 - **Gate**: bootstrap budget check
 - **Acceptance**: the bootstrap directs agents to checkpoint/compact on host

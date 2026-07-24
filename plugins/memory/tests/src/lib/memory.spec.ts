@@ -419,7 +419,7 @@ describe('memory store — corrupt ≠ empty (M10)', async () => {
 });
 
 describe('memory plugin', async () => {
-	it('registers the nine memory tools + knowledge', async () => {
+	it('registers the memory tools + knowledge', async () => {
 		const ctx = {
 			workspace: { root: '/ws', resolve: (p: string) => `/ws/${p}` },
 			corePaths: {

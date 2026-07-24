@@ -79,6 +79,12 @@ Beyond the e2e, the longitudinal metrics gate (`bun run metrics:gate`, CI job
 repo-tracked fallback `config/metrics-baseline.json` before the first release —
 and fails on a >20 % regression.
 
+Host lifecycle counters are intentionally not included in these MCP payload
+budgets. Claude's optional command-hook adapter appends only an opaque session
+id, event and timestamp locally; it returns no MCP result on ordinary user
+turns. Its pre-compaction advisory is a small, boundary-only result, not a
+per-turn context cost.
+
 ## Additional read-only surfaces (tracked next)
 
 The cold-start gate above is the **hard regression guard** today. The next

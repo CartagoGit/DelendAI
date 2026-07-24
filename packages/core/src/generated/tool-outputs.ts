@@ -720,6 +720,17 @@ export interface McpVertexMemoryCheckpointPacketOutput {
 		pointers: string[];
 		nextAction: string | null;
 	} | null;
+	advisory?: {
+		hostEvent: "pre-compact" | "session-end";
+		freshness: {
+			state: "missing" | "fresh" | "stale";
+			latestCheckpointAt: string | null;
+			ageMs: number | null;
+			maxAgeMs: number;
+		};
+		shouldCreateSemanticCheckpoint: boolean;
+		recommendedAction: "create-semantic-checkpoint" | "continue-with-current-checkpoint";
+	};
 }
 
 export interface McpVertexMemoryCompactOutput {
