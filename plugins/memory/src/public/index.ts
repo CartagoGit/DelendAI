@@ -34,6 +34,14 @@ export {
 	DEFAULT_CHECKPOINT_PACKET_MAX_DIGEST_CHARS,
 } from '../lib/services/checkpoint-packet';
 export type { ICheckpointPacket } from '../lib/services/checkpoint-packet';
+export {
+	assessCheckpointFreshness,
+	DEFAULT_CHECKPOINT_MAX_AGE_MS,
+} from '../lib/services/checkpoint-freshness';
+export type {
+	CheckpointFreshnessState,
+	ICheckpointFreshness,
+} from '../lib/services/checkpoint-freshness';
 
 // --- generated tool-output types (N23, see scripts/generate-tool-types.ts) ---
 export type * from '../generated/tool-outputs';

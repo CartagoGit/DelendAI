@@ -99,4 +99,60 @@ describe('checkpoint packet', () => {
 			}),
 		});
 	});
+
+	it('advises at a lifecycle boundary without writing a checkpoint', async () => {
+		const handler = await captureHandler(
+			buildCheckpointPacketToolRegistration({
+				namespacePrefix: 'memory',
+				storePathAbs: storePath,
+			}),
+		);
+		const missing = JSON.parse(
+			(await handler({ hostEvent: 'pre-compact' })).content[0]!.text,
+		) as {
+			advisory: {
+				recommendedAction: string;
+				freshness: { state: string };
+			};
+		};
+		expect(missing).toEqual({
+			available: false,
+			packet: null,
+			advisory: {
+				hostEvent: 'pre-compact',
+				freshness: expect.objectContaining({ state: 'missing' }),
+				shouldCreateSemanticCheckpoint: true,
+				recommendedAction: 'create-semantic-checkpoint',
+			},
+		});
+
+		await saveNote(storePath, {
+			title: 'session-digest:current',
+			body: '# Session digest\n\n## Open\n- Continue',
+			tags: ['session-digest'],
+		});
+		const fresh = JSON.parse(
+			(
+				await handler({
+					hostEvent: 'session-end',
+					maxCheckpointAgeMinutes: 60,
+				})
+			).content[0]!.text,
+		) as {
+			advisory: {
+				recommendedAction: string;
+				freshness: { state: string };
+			};
+		};
+		expect(fresh).toEqual({
+			available: true,
+			packet: null,
+			advisory: {
+				hostEvent: 'session-end',
+				freshness: expect.objectContaining({ state: 'fresh' }),
+				shouldCreateSemanticCheckpoint: false,
+				recommendedAction: 'continue-with-current-checkpoint',
+			},
+		});
+	});
 });

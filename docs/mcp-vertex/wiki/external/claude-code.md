@@ -117,6 +117,10 @@ digest, pointers and next open action. When there is no digest or no server
 connection, it is non-blocking and the normal manual memory flow remains the
 fallback.
 
+The same opt-in fragment uses a `PreCompact` checkpoint advisory before the
+packet is rehydrated. It can report only whether the newest explicit digest is
+missing, fresh or stale by timestamp; it never fabricates a semantic summary.
+
 Do not attach this hook to `SessionStart`: Claude Code documents that MCP
 servers may still be connecting at that point. Do not use `PreCompact` to
 invent a digest: lifecycle input does not contain the semantic working state

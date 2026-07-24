@@ -9,6 +9,10 @@ import {
 	buildCheckpointPacket,
 	DEFAULT_CHECKPOINT_PACKET_MAX_DIGEST_CHARS,
 } from '../services/checkpoint-packet';
+import {
+	assessCheckpointFreshness,
+	DEFAULT_CHECKPOINT_MAX_AGE_MS,
+} from '../services/checkpoint-freshness';
 import { selectLatestSessionDigest } from '../services/session-digest-recall';
 import { readStore } from '../services/store';
 
@@ -16,6 +20,20 @@ const PacketSchema = z.object({
 	digest: z.string(),
 	pointers: z.array(z.string()),
 	nextAction: z.string().nullable(),
+});
+const AdvisorySchema = z.object({
+	hostEvent: z.enum(['pre-compact', 'session-end']),
+	freshness: z.object({
+		state: z.enum(['missing', 'fresh', 'stale']),
+		latestCheckpointAt: z.string().nullable(),
+		ageMs: z.number().nullable(),
+		maxAgeMs: z.number(),
+	}),
+	shouldCreateSemanticCheckpoint: z.boolean(),
+	recommendedAction: z.enum([
+		'create-semantic-checkpoint',
+		'continue-with-current-checkpoint',
+	]),
 });
 
 export interface ICheckpointPacketToolOptions {
@@ -66,13 +84,27 @@ export const buildCheckpointPacketToolRegistration = (
 						.min(200)
 						.max(8_000)
 						.optional(),
+					hostEvent: z
+						.enum(['pre-compact', 'session-end'])
+						.optional(),
+					maxCheckpointAgeMinutes: z
+						.number()
+						.int()
+						.positive()
+						.max(24 * 60)
+						.optional(),
 				}),
 				outputSchema: z.object({
 					available: z.boolean(),
 					packet: PacketSchema.nullable(),
+					advisory: AdvisorySchema.optional(),
 				}),
 			},
-			async (args: { maxDigestChars?: number | undefined }) =>
+			async (args: {
+				maxDigestChars?: number | undefined;
+				hostEvent?: 'pre-compact' | 'session-end' | undefined;
+				maxCheckpointAgeMinutes?: number | undefined;
+			}) =>
 				guardCorrupt(async () => {
 					const notes = await readStore(options.storePathAbs);
 					const digest = selectLatestSessionDigest(
@@ -82,6 +114,30 @@ export const buildCheckpointPacketToolRegistration = (
 							createdAt: note.createdAt,
 						})),
 					);
+					if (args.hostEvent !== undefined) {
+						const freshness = assessCheckpointFreshness(
+							digest,
+							Date.now(),
+							(args.maxCheckpointAgeMinutes ??
+								DEFAULT_CHECKPOINT_MAX_AGE_MS / 60_000) *
+								60_000,
+						);
+						const shouldCreateSemanticCheckpoint =
+							freshness.state !== 'fresh';
+						return toolJson({
+							available: digest !== null,
+							packet: null,
+							advisory: {
+								hostEvent: args.hostEvent,
+								freshness,
+								shouldCreateSemanticCheckpoint,
+								recommendedAction:
+									shouldCreateSemanticCheckpoint
+										? 'create-semantic-checkpoint'
+										: 'continue-with-current-checkpoint',
+							},
+						});
+					}
 					if (digest === null) {
 						return toolJson({ available: false, packet: null });
 					}
