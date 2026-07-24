@@ -52,15 +52,14 @@ const checkVitestShared = async (
 ): Promise<IPluginWiringPoint> => {
 	const text = await fs.readFile(VITEST_SHARED);
 	const scoped = `@mcp-vertex/${pluginId}`;
-	// The literal `find:` line in vitest.shared.ts carries `\/` for the
-	// two slashes inside the JS RegExp literal pattern (the `/` after the
-	// scoped id, and the `/` after `lib`). The `/` between `@mcp-vertex`
-	// and the plugin id is plain text, not part of the regex pattern.
-	const literalNeedle = `find: /^${scoped}\\/lib\\/(.*)$/`;
+	const regexNeedle = new RegExp(
+		`${escapeRegex(scoped)}(?:\\\\/|/)lib\\\\/`,
+		'u',
+	);
 	const ok =
 		text.includes(`find: '${scoped}'`) &&
 		text.includes(`find: '${scoped}/public'`) &&
-		text.includes(literalNeedle);
+		regexNeedle.test(text);
 	return {
 		id: 'vitest-shared',
 		path: VITEST_SHARED,
@@ -83,7 +82,7 @@ const checkPluginDefaultsFromText = (
 	pluginId: string,
 ): IPluginWiringPoint => {
 	const ok = new RegExp(
-		`${escapeRegex(JSON.stringify(pluginId))}:\\s*\\{`,
+		`(?:${escapeRegex(pluginId)}|${escapeRegex(JSON.stringify(pluginId))}):\\s*\\{`,
 		'u',
 	).test(text);
 	return {
