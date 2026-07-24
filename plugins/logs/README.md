@@ -8,7 +8,7 @@ Load it with:
 mcp-vertex --plugins=logs
 ```
 
-The plugin writes redacted JSONL records under `.cache/mcp-vertex/logs/`,
+The plugin writes redacted JSONL records under `.cache/mcp-vertex/results/logs/`,
 captures tool start/completion/failure through the core instrumentation hooks,
 and exposes read-only tools for querying, tailing, correlating and auditing
 redaction.

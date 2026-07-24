@@ -156,7 +156,7 @@ const spliceKeyIntoFile = (
 	const serialized = nested
 		? `${JSON.stringify(dotted)}: ${JSON.stringify(value, null, 2)
 				.split('\n')
-				.map((l, i) => (i === 0 ? l : '  ' + l))
+				.map((l, i) => (i === 0 ? l : `  ${l}`))
 				.join('\n')}`
 		: `${JSON.stringify(topKey)}: ${JSON.stringify(value)}`;
 
@@ -232,10 +232,10 @@ const spliceIntoNestedObject = (
 	const inlinedFirst = `${valueLines[0] ?? ''}`;
 	const restIndented = valueLines
 		.slice(1)
-		.map((l) => '  ' + l)
+		.map((l) => `  ${l}`)
 		.join('\n');
 	const serialized = `\n  ${JSON.stringify(entryKey)}: ${inlinedFirst}${
-		restIndented.length > 0 ? '\n' + restIndented : ''
+		restIndented.length > 0 ? `\n${restIndented}` : ''
 	}\n`;
 	writeFileSync(
 		path,
@@ -292,9 +292,9 @@ export const runSetupInstall = (cwd: string): IInstallResult => {
 	} else {
 		const parsed = tryParse(readFileSync(mcpPath, 'utf8'));
 		if (parsed === null) {
-			skipped.push(relative(cwd, mcpPath) + ' (unparseable)');
+			skipped.push(`${relative(cwd, mcpPath)} (unparseable)`);
 		} else if (hasKey(parsed, 'servers.mcp-vertex')) {
-			skipped.push(relative(cwd, mcpPath) + ' (already declared)');
+			skipped.push(`${relative(cwd, mcpPath)} (already declared)`);
 		} else {
 			// Existing mcp.json without the mcp-vertex server, with valid
 			// JSON. Splice the new server entry inside the `servers` object
@@ -336,9 +336,9 @@ export const runSetupInstall = (cwd: string): IInstallResult => {
 	} else {
 		const parsed = tryParse(readFileSync(settingsPath, 'utf8'));
 		if (parsed === null) {
-			skipped.push(relative(cwd, settingsPath) + ' (unparseable)');
+			skipped.push(`${relative(cwd, settingsPath)} (unparseable)`);
 		} else if (hasKey(parsed, 'mcp-vertex.server')) {
-			skipped.push(relative(cwd, settingsPath) + ' (already declared)');
+			skipped.push(`${relative(cwd, settingsPath)} (already declared)`);
 		} else {
 			const ok = spliceKeyIntoFile(
 				settingsPath,
@@ -346,7 +346,7 @@ export const runSetupInstall = (cwd: string): IInstallResult => {
 				settingsPatch,
 			);
 			if (ok) written.push(relative(cwd, settingsPath));
-			else skipped.push(relative(cwd, settingsPath) + ' (splice failed)');
+			else skipped.push(`${relative(cwd, settingsPath)} (splice failed)`);
 		}
 	}
 
@@ -356,7 +356,7 @@ export const runSetupInstall = (cwd: string): IInstallResult => {
 		writeNewFile(configPath, configPatch);
 		written.push(relative(cwd, configPath));
 	} else {
-		skipped.push(relative(cwd, configPath) + ' (already exists)');
+		skipped.push(`${relative(cwd, configPath)} (already exists)`);
 	}
 
 	const note =

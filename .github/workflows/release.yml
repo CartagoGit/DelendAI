@@ -4,8 +4,11 @@ name: Release
 # reads the Conventional Commits since the last `vX.Y.Z` tag and decides the next
 # version (feat→minor, fix/perf→patch, BREAKING→major; only docs/chore → no
 # release; non-conventional with content → patch). If there is something to
-# release it validates, builds, publishes the 10 packages to npm (in dependency
-# order) at the derived version, tags `vX.Y.Z` and opens a GitHub Release.
+# release it validates, builds, publishes every PUBLISH_ORDER package to npm
+# in dependency order at the derived version, tags `vX.Y.Z` and opens a
+# GitHub Release. The package count derives from
+# tools/scripts/release/release-plan.ts (spec-guarded) — never hardcode it
+# here; a previous revision of this comment said "10" while 24 shipped.
 #
 # Tag-driven: the bump is NOT committed back to main (no CI loop, no fight with
 # branch protection) — the tag is the source of truth for the next derivation.
@@ -56,7 +59,7 @@ jobs:
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-      - name: Set version, validate, build and publish (10 packages, in order)
+      - name: Set version, validate, build and publish (PUBLISH_ORDER, in order)
         if: steps.decide.outputs.release == 'true'
         env:
           VERSION: ${{ steps.decide.outputs.version }}

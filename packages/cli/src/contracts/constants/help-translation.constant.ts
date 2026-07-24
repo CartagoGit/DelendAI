@@ -3,6 +3,27 @@ import type { IHelpTranslation } from '../interfaces/help-translation.interface'
 export type { IHelpTranslation };
 
 const ENGLISH_COMMAND_SUMMARIES: Readonly<Record<string, string>> = {
+	'git changelog':
+		'Build a conventional-commit changelog and infer the semver bump for a range.',
+	'git pr-list': 'List open pull requests via gh (read-only, opt-in).',
+	'git pr-view':
+		'View a pull request and its CI check rollup via gh (read-only).',
+	'deps licenses':
+		'Flag dependencies with copyleft/proprietary/unknown/missing licenses (offline).',
+	'deps audit':
+		'Scan dependencies for known CVEs via bun audit (opt-in via allowNetwork).',
+	'security secrets':
+		'Scan source for leaked secrets (keys, tokens, private keys). Offline, redacted.',
+	'security audit':
+		'Run every security scanner (secrets + dependency CVEs + licenses) and rank one backlog.',
+	'agents status':
+		'Show reachable LLM/agent providers (cheapest-first) and how to enable missing ones.',
+	'agents recommend':
+		'Recommend the best-value provider for a task (cost↔quality dial + measured win-rates).',
+	'agents record':
+		'Record a task outcome (success/failure) for a provider to calibrate recommendations.',
+	'agents run':
+		'Plan the cheapest-capable → escalate-up route for a task (ordered ladder).',
 	status: 'Show runtime status collectors.',
 	overview: 'Show loaded server map.',
 	'plugin list': 'List loaded plugins.',
@@ -81,6 +102,8 @@ const ENGLISH_COMMAND_SUMMARIES: Readonly<Record<string, string>> = {
 		'Return an exhaustive blueprint for a project-specific MCP server.',
 	'project create':
 		'Generate the files for a project MCP server, plugin, or client.',
+	'plugin new':
+		'Scaffold and wire a new first-party plugin, then run the wiring doctor.',
 	'docs search': 'Search project documentation by free text (ranked hits).',
 	'proposals auto-work':
 		'Resolve the next proposal and return a compact action plan.',

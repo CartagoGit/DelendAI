@@ -84,14 +84,16 @@ const fetchDashboardBody = async (lang: Lang): Promise<string | null> => {
 			'model' in data
 				? (data as { model: unknown }).model
 				: data;
-		const { renderDashboard } = await import(
+		const { renderDashboard, SHARED_UI_STRINGS } = await import(
 			'@mcp-vertex/ui-extension/webview'
 		);
 		const html = renderDashboard(
 			// eslint-disable-next-line @typescript-eslint/no-explicit-any
 			model as any,
 			{
-				docsUrl: 'https://cartagogit.github.io/mcp-vertex/',
+				// x00100 S2: one canonical constant (SHARED_UI_STRINGS.docsUrl) —
+				// the previous hardcoded GitHub Pages URL 404'd.
+				docsUrl: SHARED_UI_STRINGS.docsUrl,
 				refreshCommand: 'mcp-vertex.refresh',
 				openDocsCommand: 'mcp-vertex.openDocs',
 				lang: dictsByLang[lang],
@@ -106,11 +108,13 @@ const fetchDashboardBody = async (lang: Lang): Promise<string | null> => {
 const renderMockDashboardBody = async (
 	lang: Lang,
 ): Promise<{ body: string; fallback: boolean }> => {
-	const { renderDashboard } = await import(
+	const { renderDashboard, SHARED_UI_STRINGS } = await import(
 		'@mcp-vertex/ui-extension/webview'
 	);
 	const html = renderDashboard(mockDashboardModel, {
-		docsUrl: 'https://cartagogit.github.io/mcp-vertex/',
+		// x00100 S2: one canonical constant (SHARED_UI_STRINGS.docsUrl) —
+		// the previous hardcoded GitHub Pages URL 404'd.
+		docsUrl: SHARED_UI_STRINGS.docsUrl,
 		refreshCommand: 'mcp-vertex.refresh',
 		openDocsCommand: 'mcp-vertex.openDocs',
 		lang: dictsByLang[lang],

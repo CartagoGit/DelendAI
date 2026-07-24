@@ -216,6 +216,23 @@ export interface IMcpPlugin {
 	 * page. See l100 s6 and `IPluginConfigExample`.
 	 */
 	readonly configExample?: IPluginConfigExample;
+	/**
+	 * Opts this plugin's `pluginCacheDir` into a sub-namespace instead of
+	 * the default `<cacheDir>/<name>`. `.cache/mcp-vertex/` mixes two
+	 * genuinely different things under one "cache" label: derivable
+	 * scratch that is safe to delete and rebuild (bootstrap snapshots,
+	 * drift analysis, vendored rule packs, the proposals index) and
+	 * accumulated records that are NOT safe to delete — losing them loses
+	 * real information (the operational log, the agent's memory store,
+	 * accrued spend/usage history). `cacheNamespace: 'results'` is the
+	 * declared opt-in for the second kind: the plugin's dir becomes
+	 * `<cacheDir>/results/<name>` instead of `<cacheDir>/<name>`, still
+	 * under the SAME single ignored cache root (no new `.gitignore` entry,
+	 * no config schema change) but visibly separated from true cache.
+	 * User-flagged 2026-07-17; see `logs`/`memory`/`usage-tracking` for
+	 * the only three plugins that currently declare this.
+	 */
+	readonly cacheNamespace?: 'results';
 	register(
 		ctx: IMcpPluginContext,
 	): IMcpPluginRegistrations | Promise<IMcpPluginRegistrations>;

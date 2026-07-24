@@ -20,6 +20,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import type { IToolRegistration } from '@mcp-vertex/core/public';
 
+import { SessionHygieneMonitor } from '../../../src/lib/session-hygiene';
 import { buildUsageTrackingToolRegistrations } from '../../../src/lib/tools';
 import type { IInvocationRecord } from '../../../src/lib/types';
 
@@ -68,10 +69,12 @@ describe('usage-tracking tools', () => {
 	let dir = '';
 	let invocationsPath = '';
 	let summaryPath = '';
+	let hostLifecyclePath = '';
 	beforeEach(() => {
 		dir = mkdtempSync(join(tmpdir(), 'ut-tools-'));
 		invocationsPath = join(dir, 'invocations.jsonl');
 		summaryPath = join(dir, 'usage-summary.json');
+		hostLifecyclePath = join(dir, 'host-lifecycle.claude-code.jsonl');
 	});
 	afterEach(() => rmSync(dir, { recursive: true, force: true }));
 
@@ -80,12 +83,19 @@ describe('usage-tracking tools', () => {
 			namespacePrefix: 'mcp-vertex_usage-tracking',
 			invocationsPath,
 			summaryPath,
+			hostLifecyclePath,
+			sessionHygiene: new SessionHygieneMonitor({
+				maxSessionAgeMs: 2 * 60 * 60 * 1000,
+				maxIdleGapMs: 30 * 60 * 1000,
+				maxMcpOutputTokens: 8_000,
+			}),
 		});
 
-	it('registers exactly the two MVP tools', () => {
+	it('registers the report, clear and hygiene tools', () => {
 		expect(regs().map((r) => r.id)).toEqual([
 			'usage_report',
 			'usage_clear',
+			'session_hygiene',
 		]);
 	});
 
@@ -132,6 +142,65 @@ describe('usage-tracking tools', () => {
 		const report = await captureHandler(regs()[0]!);
 		const out = await parse(report, { filter: { outcome: 'error' } });
 		expect((out.totals as { calls: number }).calls).toBe(1);
+	});
+
+	it('session_hygiene reports durable MCP-only observations', async () => {
+		writeFileSync(
+			invocationsPath,
+			`${[
+				rec({
+					ts: '2026-07-24T10:00:00.000Z',
+					sessionId: 's-hygiene',
+					responseBytes: 400,
+				}),
+				rec({
+					ts: '2026-07-24T10:05:00.000Z',
+					sessionId: 's-hygiene',
+					responseBytes: 400,
+				}),
+			]
+				.map((row) => JSON.stringify(row))
+				.join('\n')}\n`,
+			'utf8',
+		);
+		const hygiene = await captureHandler(regs()[2]!);
+		const out = await parse(hygiene, {});
+		expect(out.observedMcpOnly).toBe(true);
+		const sessions = out.sessions as Array<{
+			sessionId: string;
+			responseBytes: number;
+		}>;
+		expect(sessions[0]).toMatchObject({
+			sessionId: 's-hygiene',
+			responseBytes: 800,
+		});
+	});
+
+	it('session_hygiene reports host lifecycle data separately', async () => {
+		writeFileSync(
+			hostLifecyclePath,
+			`${JSON.stringify({
+				version: 1,
+				host: 'claude-code',
+				hostSessionId: 'claude-session',
+				event: 'turn',
+				at: '2026-07-24T10:00:00.000Z',
+			})}\n`,
+			'utf8',
+		);
+		const hygiene = await captureHandler(regs()[2]!);
+		const out = await parse(hygiene, {});
+		expect(out.hostLifecycle).toMatchObject({
+			observedHostOnly: true,
+			source: 'claude-code-command-hooks',
+			sessions: [
+				{
+					hostSessionId: 'claude-session',
+					turnCount: 1,
+					explicitMcpSessionIdMatch: false,
+				},
+			],
+		});
 	});
 
 	it('usage_clear refuses without confirmation', async () => {

@@ -147,6 +147,8 @@ export interface IBuildRecordInput {
 	readonly error?: unknown;
 	readonly startedAt?: number | undefined;
 	readonly endedAt: number;
+	/** Byte size of the returned MCP text, measured by the core helper. */
+	readonly responseBytes?: number | undefined;
 	/** Last model observed for this session; used only for a saving-only call. */
 	readonly fallbackModel?: IModelDescriptor | null | undefined;
 	/** Injected cost function (bound to the resolved pricing table). */
@@ -188,6 +190,9 @@ export const buildRecord = (input: IBuildRecordInput): IInvocationRecord => {
 		tool,
 		model,
 		usage,
+		...(input.responseBytes !== undefined
+			? { responseBytes: Math.max(0, input.responseBytes) }
+			: {}),
 		costUsd: input.costOf(model, usage),
 		tokensSaved,
 		durationMs,

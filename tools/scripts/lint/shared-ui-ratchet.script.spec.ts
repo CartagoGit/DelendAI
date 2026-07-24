@@ -20,6 +20,7 @@ import { join } from 'node:path';
 
 import {
 	findForkedScss,
+	findHardcodedAriaLabels,
 	findInlineClasses,
 	loadWaivers,
 	type Violation,
@@ -183,4 +184,37 @@ describe('shared-ui-ratchet / end-to-end (SCAN_ROOTS)', () => {
 		expect(live).toHaveLength(0);
 		expect(invalid).toHaveLength(0);
 	}, 30_000);
+});
+
+describe('shared-ui-ratchet / findHardcodedAriaLabels (x00103 S2)', () => {
+	const file = 'packages/ui-extension/src/components/example.ts';
+
+	it('flags a literal aria-label in the shared UI package', () => {
+		const src = 'const h = `<button aria-label="Close">x</button>`;';
+		const out = findHardcodedAriaLabels(file, src);
+		expect(out).toHaveLength(1);
+		expect(out[0]?.kind).toBe('hardcoded-aria');
+		expect(out[0]?.className).toBe('aria-label:Close');
+	});
+
+	it('does NOT flag interpolated labels, aria-labelledby, or other packages', () => {
+		const interpolated =
+			'const h = `<button aria-label="${escapeHtml(opts.closeLabel)}">x</button>`;';
+		expect(findHardcodedAriaLabels(file, interpolated)).toHaveLength(0);
+		expect(
+			findHardcodedAriaLabels(file, '<section aria-labelledby="tab-x">'),
+		).toHaveLength(0);
+		expect(
+			findHardcodedAriaLabels(
+				'apps/web/src/components/example.ts',
+				'const h = `<button aria-label="Close">x</button>`;',
+			),
+		).toHaveLength(0);
+		expect(
+			findHardcodedAriaLabels(
+				'packages/ui-extension/src/components/example.spec.ts',
+				'expect(html).toContain(\'aria-label="Close"\');',
+			),
+		).toHaveLength(0);
+	});
 });

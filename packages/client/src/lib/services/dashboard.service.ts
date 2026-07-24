@@ -19,6 +19,8 @@
  * all eight models from it — the per-model public methods fetch their own
  * slices for standalone use, but the batch path never re-fetches.
  */
+import type { McpVertexToolOutputs } from '@mcp-vertex/core/public';
+
 import type { McpStdioClient } from '../transport/mcp-stdio-client';
 import { HealthService } from './health.service';
 import type { MetricsService } from './metrics.service';
@@ -36,6 +38,7 @@ import type {
 	IDashboardOverviewModel,
 	IDashboardPluginsModel,
 	IDashboardSessionsModel,
+	IDashboardSpendModel,
 	IDashboardTimesModel,
 	IDashboardTokensModel,
 	IDashboardToolsModel,
@@ -304,6 +307,28 @@ const buildPluginsModel = (
 	};
 };
 
+/**
+ * The real `usage_report` output type (generated SDK) — using it
+ * instead of a hand-rolled shape means a future field rename on the
+ * plugin side fails THIS file's typecheck instead of silently
+ * producing `undefined` at runtime (the exact class of drift x00105
+ * hardened the verify gate against).
+ */
+type IUsageReportOutput =
+	McpVertexToolOutputs['mcp-vertex_usage-tracking_usage_report'];
+
+const buildSpendModel = (report: IUsageReportOutput): IDashboardSpendModel => ({
+	totalCostUsd: report.totals.costUsd,
+	totalTokensSaved: report.totals.tokensSaved,
+	savingsPercent: report.totals.savingsPercent,
+	windowDays: report.windowDays,
+	byProvider: report.buckets.map((b) => ({
+		provider: b.key,
+		costUsd: b.costUsd,
+		calls: b.calls,
+	})),
+});
+
 const buildSessionsModel = (
 	proposals: readonly IProposalRow[],
 ): IDashboardSessionsModel => {
@@ -434,6 +459,17 @@ export class DashboardService {
 		return buildSessionsModel(await this.fetchProposalsSafe());
 	}
 
+	/**
+	 * Real spend/cost telemetry from usage-tracking's `usage_report`
+	 * (f00118 S1). `null` when the plugin is not loaded or the call
+	 * fails — never thrown, so a dashboard without usage-tracking still
+	 * renders everything else.
+	 */
+	async getSpendModel(): Promise<IDashboardSpendModel | null> {
+		const overview = await this.fetchOverview();
+		return this.fetchSpendSafe(overview);
+	}
+
 	async getTimesModel(): Promise<IDashboardTimesModel> {
 		return buildTimesModel(await this.snapshotMetrics());
 	}
@@ -465,6 +501,10 @@ export class DashboardService {
 					fetchedAt: new Date().toISOString(),
 				})),
 			]);
+		// Fetched AFTER overview resolves (needs it to detect the plugin);
+		// never blocks the rest of the dashboard on a slow/absent
+		// usage-tracking round-trip.
+		const spend = await this.fetchSpendSafe(overview);
 		const pluginOf = pluginResolverFrom(overview);
 		const overviewModel = buildOverviewModel(
 			overview,
@@ -478,6 +518,7 @@ export class DashboardService {
 			tokens: buildTokensModel(metrics, pluginOf),
 			tools: buildToolsModel(metrics, pluginOf),
 			plugins: buildPluginsModel(metrics, pluginOf),
+			spend,
 			sessions: buildSessionsModel(proposals),
 			times: buildTimesModel(metrics),
 			agents: buildAgentsModel(agents),
@@ -579,6 +620,42 @@ export class DashboardService {
 			}));
 		} catch {
 			return [];
+		}
+	}
+
+	/**
+	 * f00118 S1: real spend telemetry from usage-tracking, joined onto
+	 * the byte-based estimate everywhere else. `overview.plugins` is
+	 * ALREADY fetched by every caller — checking it here avoids a
+	 * doomed round-trip when the plugin was never loaded, and any
+	 * runtime failure (plugin loaded but the call still errors) also
+	 * degrades to `null` rather than throwing.
+	 */
+	private async fetchSpendSafe(
+		overview: IOverview,
+	): Promise<IDashboardSpendModel | null> {
+		// `overview.plugins` is `string[]` in compact mode (what this
+		// service always requests) or `{name, …}[]` in full mode.
+		const loaded = overview.plugins.some((p) =>
+			typeof p === 'string'
+				? p === 'usage-tracking'
+				: p.name === 'usage-tracking',
+		);
+		if (!loaded) return null;
+		try {
+			const report = await this.client.request<
+				Record<string, never>,
+				IUsageReportOutput
+			>(
+				formatToolName(
+					this.namespacePrefix,
+					'usage-tracking_usage_report',
+				),
+				{},
+			);
+			return buildSpendModel(report);
+		} catch {
+			return null;
 		}
 	}
 

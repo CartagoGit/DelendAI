@@ -100,3 +100,32 @@ $20 Pro / $100 Max / $200 Ultra per month; API via Anthropic Console.
   stickiness.
 - **Subagent frontmatter `model:`** — translates directly to our
   `requiresCapability` + `preferredProvider` on a slice.
+
+## Opt-in lifecycle checkpoint adapter
+
+Claude Code documents `PostCompact` hooks and MCP-tool hook handlers. The
+repository ships a deliberately narrow, opt-in fragment at
+[`config/external/claude-code/session-hygiene.hooks.json`](../../../../config/external/claude-code/session-hygiene.hooks.json).
+After a manual or automatic compaction it requests the latest
+`mcp-vertex_memory_checkpoint_packet` from the already-connected
+`mcp-vertex` server.
+
+The adapter does not claim to save a host transcript. Before a long task is
+compacted, the agent must explicitly create the working-state digest with
+`memory_compact`; the post-compaction hook can then rehydrate only its bounded
+digest, pointers and next open action. When there is no digest or no server
+connection, it is non-blocking and the normal manual memory flow remains the
+fallback.
+
+The same opt-in fragment uses a `PreCompact` checkpoint advisory before the
+packet is rehydrated. It can report only whether the newest explicit digest is
+missing, fresh or stale by timestamp; it never fabricates a semantic summary.
+
+Do not attach this hook to `SessionStart`: Claude Code documents that MCP
+servers may still be connecting at that point. Do not use `PreCompact` to
+invent a digest: lifecycle input does not contain the semantic working state
+needed for a truthful one. Installation and a focused smoke test are in the
+[adapter README](../../../../config/external/claude-code/README.md).
+
+Sources: [Claude Code hooks reference](https://code.claude.com/docs/en/hooks)
+and [MCP connection guidance](https://code.claude.com/docs/en/mcp).

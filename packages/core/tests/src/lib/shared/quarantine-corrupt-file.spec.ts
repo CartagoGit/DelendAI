@@ -64,6 +64,49 @@ describe('quarantineCorruptFile', async () => {
 		expect(b1).not.toBe(b2);
 		expect(backups()).toHaveLength(2);
 	});
+
+	it('a00070: retries a TRANSIENT rename failure instead of dropping the backup', async () => {
+		// Under heavy parallel fs load a rename can transiently fail with
+		// EAGAIN/EMFILE/EBUSY. The old code gave up on the FIRST error and
+		// returned null — silently losing the corrupt bytes exactly when a
+		// store is corrupt. It must retry.
+		writeFileSync(target, 'corrupt');
+		let calls = 0;
+		const realRename = (await import('node:fs/promises')).rename;
+		const flakyRename = async (from: string, to: string): Promise<void> => {
+			calls += 1;
+			if (calls <= 2) {
+				const e: NodeJS.ErrnoException = new Error('resource busy');
+				e.code = calls === 1 ? 'EAGAIN' : 'EMFILE';
+				throw e;
+			}
+			await realRename(from, to);
+		};
+		const backup = await quarantineCorruptFile(target, {
+			rename: flakyRename,
+			sleep: async () => {},
+		});
+		expect(calls).toBe(3);
+		expect(backup).not.toBeNull();
+		expect(existsSync(target)).toBe(false);
+		expect(readFileSync(backup!, 'utf8')).toBe('corrupt');
+	});
+
+	it('a00070: does NOT retry ENOENT (nothing to preserve → null, no wasted backoff)', async () => {
+		let calls = 0;
+		const goneRename = async (): Promise<void> => {
+			calls += 1;
+			const e: NodeJS.ErrnoException = new Error('gone');
+			e.code = 'ENOENT';
+			throw e;
+		};
+		const backup = await quarantineCorruptFile(target, {
+			rename: goneRename,
+			sleep: async () => {},
+		});
+		expect(calls).toBe(1);
+		expect(backup).toBeNull();
+	});
 });
 
 describe('CorruptFileError', async () => {

@@ -1,6 +1,13 @@
 {
 	"$about": "f00098 S4 — CLI↔UI parity contract. Every CLI command group maps to a UI affordance ({ kind: vscode-command | vscode-view | web-route, id }) or carries a documented waiver; every contributed VS Code command maps to a CLI counterpart (command or group) or carries a waiver. Enforced by tools/scripts/lint/cli-ui-parity.script.ts (bun run lint:cli-ui-parity).",
 	"cliGroups": {
+		"agents": {
+			"ui": {
+				"kind": "vscode-command",
+				"id": "mcp-vertex.openAutoAgentSelector",
+				"note": "f00119 S6: surfaces auto_status + (optional) auto_recommend; pin via the CLI or mcp-vertex.openConfigurationCenter"
+			}
+		},
 		"audit": {
 			"waiver": "agent-workflow audit planner; terminal/agent surface only, no interactive UI story planned"
 		},
@@ -77,6 +84,9 @@
 		"search": {
 			"waiver": "IDE-native: VS Code's built-in workspace search supersedes CLI text search"
 		},
+		"security": {
+			"waiver": "secret + dependency-CVE + license posture scanning for agents and CI; terminal-first, a VS Code posture panel is future work"
+		},
 		"status": {
 			"ui": { "kind": "vscode-command", "id": "mcp-vertex.openDashboard" }
 		},
@@ -108,6 +118,10 @@
 		}
 	},
 	"vscodeCommands": {
+		"mcp-vertex.openAutoAgentSelector": {
+			"cli": "agents",
+			"note": "f00119 S6: surfaces auto_status + (optional) auto_recommend; pin via the CLI or mcp-vertex.openConfigurationCenter"
+		},
 		"mcp-vertex.openAgentCatalog": {
 			"cli": "overview",
 			"note": "the agent catalog is the overview snapshot rendered as a webview"

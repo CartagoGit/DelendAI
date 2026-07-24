@@ -92,7 +92,7 @@ const FORBIDDEN_CLASSNAME = new RegExp(
 
 export type Violation = {
 	readonly file: string;
-	readonly kind: 'inline-class' | 'forked-scss';
+	readonly kind: 'inline-class' | 'forked-scss' | 'hardcoded-aria';
 	readonly className: string;
 	readonly note: string;
 };
@@ -171,6 +171,37 @@ export const findInlineClasses = (
 			note: `inline \`${m[1]}\` class on \`${relPath}\` — use the shared renderer (apps/shared/src/components/...) instead`,
 		});
 		m = FORBIDDEN_CLASSNAME.exec(source);
+	}
+	return out;
+};
+
+/**
+ * x00103 S2: literal `aria-label="…"` (or `title="…"`) text inside the
+ * shared UI package must come from an option or the i18n dict — a
+ * hardcoded English literal is announced verbatim by screen readers in
+ * the other 11 languages. Interpolated values (`aria-label="${…}"`) and
+ * attribute REFERENCES (`aria-labelledby`) are fine.
+ */
+const HARDCODED_A11Y_ATTR = /\b(aria-label|title)="([A-Za-z][A-Za-z .,'-]*)"/g;
+const A11Y_SCAN_DIR = 'packages/ui-extension/src/';
+
+export const findHardcodedAriaLabels = (
+	relPath: string,
+	source: string,
+): Violation[] => {
+	if (!relPath.startsWith(A11Y_SCAN_DIR)) return [];
+	if (/\.spec\.[mc]?[jt]sx?$/.test(relPath)) return [];
+	const out: Violation[] = [];
+	HARDCODED_A11Y_ATTR.lastIndex = 0;
+	let m = HARDCODED_A11Y_ATTR.exec(source);
+	while (m !== null) {
+		out.push({
+			file: relPath,
+			kind: 'hardcoded-aria',
+			className: `${m[1]}:${m[2] ?? ''}`,
+			note: `hardcoded ${m[1]} "${m[2]}" — thread it through an option default + extensionText(dict, …) so screen readers hear the active language`,
+		});
+		m = HARDCODED_A11Y_ATTR.exec(source);
 	}
 	return out;
 };
@@ -313,6 +344,7 @@ const findViolations = async (
 			out.push(
 				...findInlineClasses(relPath, source),
 				...findForkedScss(relPath, source),
+				...findHardcodedAriaLabels(relPath, source),
 			);
 		}
 	}

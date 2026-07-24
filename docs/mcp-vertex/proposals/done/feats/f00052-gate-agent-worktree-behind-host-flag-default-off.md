@@ -1,5 +1,5 @@
 ---
-id: u00002
+id: f00052
 status: done
 type: proposal
 track: proposals-plugin+core+cli+skills+workflow

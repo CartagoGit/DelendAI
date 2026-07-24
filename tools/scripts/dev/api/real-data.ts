@@ -17,9 +17,8 @@
  */
 import type { IDashboardAllModels } from '@mcp-vertex/client';
 import { DashboardService } from '@mcp-vertex/client/public';
-import { McpStdioClient } from '@mcp-vertex/client/public';
 
-import { resolveMcpStdioSpawn } from './resolve-mcp-spawn';
+import { invalidateClient, leaseClient } from './client-pool';
 
 /** Server-side error envelope surfaced to the browser. */
 export interface IApiError {
@@ -64,20 +63,22 @@ const wrap = async <T>(
 	}
 };
 
+// x00100 S1: lease the SHARED per-cwd client instead of spawning a
+// fresh host per request (a full plugin boot per section switch was the
+// dev preview's dominant latency). On failure invalidate the pooled
+// client — its process may have died — and retry once on a fresh one.
 const connectAndFetch = async (cwd: string): Promise<IDashboardAllModels> =>
 	wrap(async () => {
-		const spawn = await resolveMcpStdioSpawn(cwd);
-		const client = await McpStdioClient.connect({
-			command: spawn.command,
-			args: spawn.args,
-			cwd,
-			stderr: 'pipe',
-		});
-		try {
+		const fetchOnce = async (): Promise<IDashboardAllModels> => {
+			const client = await leaseClient(cwd);
 			const service = new DashboardService({ client });
 			return await service.getAllModels();
-		} finally {
-			await client.close?.().catch(() => undefined);
+		};
+		try {
+			return await fetchOnce();
+		} catch {
+			await invalidateClient(cwd);
+			return await fetchOnce();
 		}
 	}, 'tool-failed');
 

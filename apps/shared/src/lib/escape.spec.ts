@@ -32,7 +32,7 @@ describe('escapeHtml', () => {
 
 	it('escapes ampersand first so other escapes are not double-escaped', () => {
 		// `&amp;` should not become `&amp;amp;`.
-		expect(escapeHtml('&amp;')).toBe('&amp;amp;'.slice(0, 5) + 'amp;');
+		expect(escapeHtml('&amp;')).toBe(`${'&amp;amp;'.slice(0, 5)}amp;`);
 		expect(escapeHtml('&amp;').length).toBe(9);
 	});
 });

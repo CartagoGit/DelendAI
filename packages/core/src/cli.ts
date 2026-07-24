@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { runCli } from './lib/cli/assemble';
+import { runCli } from './lib/cli/run-cli';
 
 /**
  * Backward-compatible MCP server entrypoint.
@@ -8,10 +8,8 @@ import { runCli } from './lib/cli/assemble';
  * `@mcp-vertex/cli`; this file stays available for hosts that still
  * start the core MCP server entry directly.
  */
-export {
-	assembleCliConfig,
-	runCli,
-} from './lib/cli/assemble';
+export { assembleCliConfig } from './lib/cli/assemble';
+export { runCli } from './lib/cli/run-cli';
 export type {
 	IAssembleCliDeps,
 	IAssembledCliConfig,

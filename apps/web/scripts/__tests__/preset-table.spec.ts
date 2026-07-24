@@ -42,12 +42,18 @@ describe('preset-table', () => {
 			expect(ids[1]).toBe('search');
 			// The last ids are vertex's declared members (host-only tail):
 			// vertex adds `audit` (opt-in) plus the 2 host-only (issues,
-			// web-fetch) that vertex also carries. The exact tail order
-			// depends on vertex's member order, so we assert the set is
-			// exactly { issues, web-fetch, audit }.
-			const tail = ids.slice(-3);
+			// web-fetch) that vertex also carries, plus `auto-agent-selector`
+			// since f00119 S6. The exact tail order depends on vertex's
+			// member order, so we assert the set is exactly { issues,
+			// web-fetch, audit, auto-agent-selector }.
+			const tail = ids.slice(-4);
 			expect(new Set(tail)).toEqual(
-				new Set(['issues', 'web-fetch', 'audit']),
+				new Set([
+					'issues',
+					'web-fetch',
+					'audit',
+					'auto-agent-selector',
+				]),
 			);
 		});
 
@@ -69,11 +75,13 @@ describe('preset-table', () => {
 			// `issues` stays in `full` (host-only).
 			expect(full?.effective).toContain('issues');
 			// `vertex` is independent — its effective membership equals
-			// its 10 declared members, NOT swarm + a delta.
-			expect(vertex?.effective.length).toBe(10);
+			// its 12 declared members (f00119 S6 added auto-agent-selector),
+			// NOT swarm + a delta.
+			expect(vertex?.effective.length).toBe(12);
 			expect(vertex?.effective).toContain('audit');
 			expect(vertex?.effective).toContain('issues');
 			expect(vertex?.effective).toContain('web-fetch');
+			expect(vertex?.effective).toContain('auto-agent-selector');
 			expect(vertex?.effective).not.toContain('memory');
 			expect(vertex?.effective).not.toContain('proposals');
 		});

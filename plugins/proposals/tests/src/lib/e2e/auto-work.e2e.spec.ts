@@ -56,6 +56,17 @@ interface AutoWorkOutput {
 		readonly messageTemplate?: string;
 		readonly pushTarget?: string;
 	};
+	readonly claimReady?: {
+		readonly sliceId: string;
+		readonly files: string[];
+		readonly gate: 'lint' | 'type' | 'e2e' | 'none';
+		readonly agent_lock_args: {
+			readonly action: 'claim';
+			readonly task_id: string;
+			readonly agent: '<host-resolved-agent>';
+			readonly files: string[];
+		};
+	};
 	readonly steps?: string[];
 }
 
@@ -195,6 +206,44 @@ describe('e2e: proposals_auto_work over the real MCP protocol', async () => {
 		expect(stepsBlob).toMatch(/proposals_agent_lock/);
 		expect(stepsBlob).toMatch(/proposals_close_slice/);
 		expect(stepsBlob).toMatch(/proposals_sync_proposals/);
+	});
+
+	it('returns a claim-ready slice when the selected proposal has a slice plan', async () => {
+		const { file } = await seedReadyProposal(harness, {
+			id: 'p9996',
+			title: 'claim-ready payload',
+		});
+		writeFileSync(
+			file,
+			`${await (await import('node:fs/promises')).readFile(file, 'utf8')}
+## Slices
+
+- global_gate: e2e
+
+### S1 — one atomic change
+- **Files**: \`src/claim-ready.ts\`
+- **Gate**: e2e
+- **Status**: pending
+`,
+			'utf8',
+		);
+		await harness.callTool<{ ok: boolean }>(
+			'mcp-vertex_proposals_sync_proposals',
+			{},
+		);
+
+		const res = await callAutoWork(harness);
+		expect(res.structured.claimReady).toEqual({
+			sliceId: 'S1',
+			files: ['src/claim-ready.ts'],
+			gate: 'e2e',
+			agent_lock_args: {
+				action: 'claim',
+				task_id: 'p9996-S1',
+				agent: '<host-resolved-agent>',
+				files: ['src/claim-ready.ts'],
+			},
+		});
 	});
 
 	it('resets the idle streak after a work response (transactional)', async () => {

@@ -313,8 +313,16 @@ export const buildGetRulesRegistration = (
 			`${options.namespacePrefix}_get_rules`,
 			{
 				description:
-					'Returns the lint/type rules map: per project area its framework, configs, enforcement mode, supported presets, per-framework conventions, and language dogmas. Read-only.',
-				inputSchema: z.object({ area: z.string().optional() }),
+					"Returns the lint/type rules map: per project area its framework, configs, enforcement mode, supported presets, per-framework conventions, and language dogmas. Read-only. Pass compact:true for a lean projection (area ids + preset per area, no rule bodies, no dogmas) — ~12 KB full vs <1 KB compact on real repos; narrow with area for one area's full detail.",
+				inputSchema: z.object({
+					area: z.string().optional(),
+					compact: z
+						.boolean()
+						.optional()
+						.describe(
+							'Lean projection: area ids + presets only, no rule bodies or dogmas.',
+						),
+				}),
 				outputSchema: z.object({
 					mode: z.string(),
 					modeGuidance: z.string(),
@@ -323,11 +331,18 @@ export const buildGetRulesRegistration = (
 						z.object({
 							project: z.string(),
 							area: z.string(),
-							rules: AREA_RULES_SCHEMA,
+							// Optional because compact mode strips the body
+							// and projects presetId instead.
+							rules: AREA_RULES_SCHEMA.optional(),
+							presetId: z.string().optional(),
 						}),
 					),
-					conventions: z.record(z.string(), z.array(z.string())),
-					dogmas: z.record(z.string(), DOGMA_ADAPTER_SCHEMA),
+					conventions: z
+						.record(z.string(), z.array(z.string()))
+						.optional(),
+					dogmas: z
+						.record(z.string(), DOGMA_ADAPTER_SCHEMA)
+						.optional(),
 					/**
 					 * f00051 / S11 — agent-facing rendering of each
 					 * area's dogma. Produced by
@@ -337,16 +352,35 @@ export const buildGetRulesRegistration = (
 					 * `ToolUseDogmaPolicyProvider` can swap the
 					 * shape without touching the tool.
 					 */
-					renderedDogmas: z.record(z.string(), z.string()),
+					renderedDogmas: z.record(z.string(), z.string()).optional(),
 				}),
 			},
-			async (args: { area?: string | undefined }) => {
+			async (args: {
+				area?: string | undefined;
+				compact?: boolean | undefined;
+			}) => {
 				const manifest = await loadManifest(options);
 				const all = areasOf(manifest);
 				const selected =
 					args.area !== undefined
 						? all.filter((entry) => entry.area === args.area)
 						: all;
+
+				// x00101 S2: lean projection for orientation — area ids +
+				// preset per area, without rule bodies, conventions or
+				// dogmas (~12 KB full vs <1 KB compact on this repo).
+				if (args.compact === true) {
+					return toolJson({
+						mode: manifest.mode,
+						modeGuidance: RULES_MODE_GUIDANCE[manifest.mode],
+						supported: SUPPORTED_PRESET_IDS,
+						areas: selected.map((entry) => ({
+							project: entry.project,
+							area: entry.area,
+							presetId: entry.rules.presetId,
+						})),
+					});
+				}
 
 				const dogmaRegistry = new DogmaRegistry(DEFAULT_DOGMA_ADAPTERS);
 				const dogmaPolicyProvider =

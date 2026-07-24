@@ -12,9 +12,9 @@
  *   3. Single `.mjs` bundle dropped at the cache root → flagged as
  *      `orphan-compiled-bundle` (specific reason so the operator can
  *      tell it apart from a hand-written `.ts`).
- *   4. Sanctioned subdirs (`rules/`, `verify/`, `handoff/`, `logs/`,
- *      `.worktrees/`) are NEVER scanned for executable files inside
- *      them, even if a hypothetical `.ts` shows up there.
+ *   4. Sanctioned subdirs (`rules/`, `verify/`, `handoff/`,
+ *      `results/logs/`, `.worktrees/`) are NEVER scanned for executable
+ *      files inside them, even if a hypothetical `.ts` shows up there.
  *   5. The runtime's own top-level files
  *      (`proposal-id-counters.json`) are recognised and skipped.
  *
@@ -62,6 +62,13 @@ describe('findStrayCacheFiles (f00081)', () => {
 		writeFile(join(cacheRoot(), 'state', 'proposal-lock.json'), '{}');
 		writeFile(join(cacheRoot(), 'drift', 'last-analysis.json'), '{}');
 		writeFile(join(cacheRoot(), 'verify', 'probe.txt'), 'ok');
+		// a00063: accumulated records live nested under results/, not as
+		// their own top-level cache dirs.
+		writeFile(
+			join(cacheRoot(), 'results', 'logs', '2026-07-17.jsonl'),
+			'{}',
+		);
+		writeFile(join(cacheRoot(), 'results', 'memory', 'note.md'), '# x');
 		// Sanctioned runtime file at the root.
 		writeFile(join(cacheRoot(), 'proposal-id-counters.json'), '{"f":1}');
 		const summary = await findStrayCacheFiles(cacheRoot());
@@ -133,10 +140,10 @@ describe('findStrayCacheFiles (f00081)', () => {
 			join(cacheRoot(), 'rules', 'leaked-script.ts'),
 			'#!/usr/bin/env bun\nexport const x = 1;\n',
 		);
-		// A `.sh` accidentally dropped into `logs/` (an append-only event
-		// log dir) must not be flagged either.
+		// A `.sh` accidentally dropped into `results/logs/` (an
+		// append-only event log dir) must not be flagged either.
 		writeFile(
-			join(cacheRoot(), 'logs', 'broken-rotation.sh'),
+			join(cacheRoot(), 'results', 'logs', 'broken-rotation.sh'),
 			'#!/bin/sh\n',
 		);
 		// A `.py` accidentally dropped into a worktree — worktrees are

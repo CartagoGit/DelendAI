@@ -107,7 +107,8 @@ describe('VS Code extension smoke', async () => {
 		//   leaves to the existing tool-detail webview renderer.
 		// f00107 S3: +1 plugin activation switchboard command.
 		// Configuration Center host command adds one lifecycle-tracked registration.
-		expect(subscriptions).toHaveLength(31);
+		// f00119 S6: +1 auto-agent-selector panel command.
+		expect(subscriptions).toHaveLength(32);
 		expect(commands.has(REFRESH_COMMAND)).toBe(true);
 		expect(commands.has('mcp-vertex.proposals.refresh')).toBe(true);
 		expect(commands.has('mcp-vertex.proposals.copyError')).toBe(true);
@@ -243,6 +244,110 @@ describe('VS Code extension smoke', async () => {
 
 		expect(calls).toEqual([
 			{ command: 'bun', args: ['run', 'mcp-vertex'] },
+		]);
+	});
+
+	// x00102 S1: a consumer freshly initialised by `mcpv init` has no
+	// `mcp-vertex.server.*` settings and no `"mcp-vertex"` package.json
+	// script — but it DOES have the `.mcp.json` init wrote. The extension
+	// must reuse that launch (with cwd = the workspace root, so relative
+	// script paths resolve) instead of dying on `bun run mcp-vertex`.
+	it('createDefaultClient reuses the workspace .mcp.json launch when no settings exist', async () => {
+		const { mkdtemp, writeFile, rm } = await import('node:fs/promises');
+		const { tmpdir } = await import('node:os');
+		const { join } = await import('node:path');
+		const root = await mkdtemp(join(tmpdir(), 'mcpv-ext-spawn-'));
+		await writeFile(
+			join(root, '.mcp.json'),
+			JSON.stringify({
+				mcpServers: {
+					'mcp-vertex': {
+						type: 'stdio',
+						command: 'bunx',
+						args: [
+							'--package',
+							'@mcp-vertex/cli',
+							'mcpv',
+							'__serve',
+							'--workspace',
+							'.',
+						],
+					},
+				},
+			}),
+		);
+		const calls: Array<{
+			command: string;
+			args: readonly string[];
+			cwd?: string;
+		}> = [];
+		const vscode: IVscodeApi = {
+			ViewColumn: { One: 1 },
+			commands: {
+				registerCommand() {
+					return { dispose() {} };
+				},
+			},
+			window: {
+				createWebviewPanel() {
+					return { webview: { html: '' } };
+				},
+			},
+			workspace: {
+				createFileSystemWatcher() {
+					return {
+						onDidChange() {
+							return { dispose() {} };
+						},
+						onDidCreate() {
+							return { dispose() {} };
+						},
+						onDidDelete() {
+							return { dispose() {} };
+						},
+					};
+				},
+				workspaceFolders: [{ uri: { fsPath: root } }],
+			},
+		};
+		const originalConnect = McpStdioClient.connect;
+		McpStdioClient.connect = (async (opts: {
+			command: string;
+			args: readonly string[];
+			cwd?: string;
+		}) => {
+			calls.push({
+				command: opts.command,
+				args: opts.args,
+				...(opts.cwd === undefined ? {} : { cwd: opts.cwd }),
+			});
+			return McpStdioClient.fromTransport({
+				async callTool() {
+					return { structuredContent: overviewFixture };
+				},
+			});
+		}) as typeof McpStdioClient.connect;
+		try {
+			const { createDefaultClient } = await import('../extension');
+			await createDefaultClient(vscode);
+		} finally {
+			McpStdioClient.connect = originalConnect;
+			await rm(root, { recursive: true, force: true });
+		}
+
+		expect(calls).toEqual([
+			{
+				command: 'bunx',
+				args: [
+					'--package',
+					'@mcp-vertex/cli',
+					'mcpv',
+					'__serve',
+					'--workspace',
+					'.',
+				],
+				cwd: root,
+			},
 		]);
 	});
 

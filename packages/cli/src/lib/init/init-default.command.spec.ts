@@ -178,8 +178,9 @@ describe('init:default (f00103)', () => {
 		]) {
 			expect(config.plugins[excluded]).toBeUndefined();
 		}
-		// Exactly 10 vertex plugins rendered, no extras added.
-		expect(Object.keys(config.plugins).length).toBe(10);
+		// Exactly 12 vertex plugins rendered (f00119 S6 added
+		// auto-agent-selector), no extras added.
+		expect(Object.keys(config.plugins).length).toBe(12);
 	});
 
 	it('writes the bundle to disk when --dry-run is absent', async () => {

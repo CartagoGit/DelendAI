@@ -466,6 +466,9 @@ const site = {
 };
 
 const extension = {
+	// x00103: accessibility labels for the shared components
+	a11yCloseToast: 'Close',
+	a11yLanguageSelector: 'Language',
 	overviewTitle: 'mcp-vertex Overview',
 	refresh: 'mcp-vertex: Refresh',
 	runValidation: 'mcp-vertex: Run Validation',
@@ -479,6 +482,7 @@ const extension = {
 	tabOverview: 'Overview',
 	tabMetrics: 'Metrics',
 	tabTokens: 'Tokens',
+	tabSpend: 'Spend',
 	tabTools: 'Tools',
 	tabPlugins: 'Plugins',
 	tabSessions: 'Sessions',
@@ -550,6 +554,13 @@ const extension = {
 	'dashboard.tokens.topTools': 'Top tools by tokens',
 	'dashboard.plugins.tokenShareByPlugin': 'Token share by plugin',
 	'dashboard.plugins.rollup': 'Rollup',
+	'dashboard.spend.totalCost': 'Total cost',
+	'dashboard.spend.tokensSaved': 'Tokens saved (real)',
+	'dashboard.spend.savings': 'Savings',
+	'dashboard.spend.byProvider': 'Cost by provider',
+	'dashboard.spend.window': 'Last {days} days',
+	'dashboard.spend.unavailable':
+		'Load the usage-tracking plugin to see real cost and savings data.',
 	'dashboard.sessions.activeProposals': '{count} active proposals',
 	'dashboard.sessions.none': 'No active proposals.',
 	'dashboard.times.totalWall': 'Total wall',

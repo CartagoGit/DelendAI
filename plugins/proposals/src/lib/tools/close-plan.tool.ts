@@ -58,6 +58,9 @@ const CLOSE_PLAN_INPUT_SCHEMA = z.object({
 	reason: z.string().optional(),
 });
 
+// x00107: SUCCESS shape only — the SDK skips schema validation for
+// `isError` results (`toolError`), so the required fields are correct.
+// (x00105 briefly loosened this; reverted.)
 const CLOSE_PLAN_OUTPUT_SCHEMA = z.object({
 	ok: z.boolean(),
 	planId: z.string(),

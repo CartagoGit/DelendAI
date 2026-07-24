@@ -24,18 +24,13 @@ export type { IPluginDefaults };
  */
 export const PLUGIN_DEFAULTS: IPluginDefaults = {
 	git: {},
-	search: {
-		roots: [
-			'packages',
-			'plugins',
-			'extensions',
-			'apps',
-			'tools',
-			'scripts',
-		],
-		extensions: ['.ts', '.tsx', '.js', '.mjs', '.cjs', '.md', '.json'],
-		ignoreDirs: ['node_modules', '.cache', 'dist', 'build', '.git'],
-	},
+	// a00063: no materialised search defaults — the old block stamped
+	// mcp-vertex's own monorepo roots and a narrower-than-engine
+	// extension list into every adopter's config (an Angular app got
+	// roots that don't exist there → every search scanned 0 files).
+	// `init` derives real roots per-workspace (deriveSourceRoots); the
+	// engine's built-in defaults cover the rest for any project shape.
+	search: {},
 	memory: {
 		bm25K1: 1.5,
 		bm25B: 0.75,
@@ -44,7 +39,7 @@ export const PLUGIN_DEFAULTS: IPluginDefaults = {
 	},
 	docs: {
 		roots: ['docs/mcp-vertex', 'README.md'],
-		extensions: ['.md', '.mdx'],
+		extensions: ['md', 'mdx'],
 		ignoreDirs: ['node_modules', '.cache', 'dist'],
 	},
 	rules: {},
@@ -68,9 +63,8 @@ export const PLUGIN_DEFAULTS: IPluginDefaults = {
 	},
 	'status-marker': {},
 	'test-convention': {},
-	conventions: {
-		roots: ['packages', 'plugins', 'extensions', 'apps', 'tools'],
-	},
+	// a00063: same as search — real roots are derived per-workspace.
+	conventions: {},
 	'web-fetch': {
 		// Empty by default — fail closed until the user adds a host.
 		allowList: [],

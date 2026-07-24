@@ -12,6 +12,11 @@ related:
 recan:
     - { at: 2026-07-12, by: opus, slice: all, status: rescanned, notes: "f00049 is DONE (done/feats/) and @mcp-vertex/core/public is stable — the COMMON precondition (item 1 of every S-*) is now MET. But every S-* also carries a SECOND, trigger precondition (a concrete user request / CVE / audit finding / community decision); as of this re-scan NONE of those triggers exist, so no item auto-promotes. This proposal is promoted to ready as the standing TRIAGE workstream: S0 assesses all nine against the live tree each pass and promotes any whose trigger has since fired." }
     - { at: 2026-07-13, by: codex-root, slice: S0, status: still-paused, notes: "Live re-scan found no qualifying trigger. The latest audits contain no requested public removal, prefix decision, approved history rewrite, non-TS consumer request or production orchestrator-loop finding. deps_check reports a Bun lockfile, zero findings and healthy=true. compact_status reports an empty task queue. All nine deferred items remain parked; S0 completed this pass." }
+    - { at: 2026-07-14, by: claude-fable, slice: S-D, status: unblocked, notes: "Trigger fired: the user explicitly committed to mcp-vertex being adoptable in any project ('que se pueda usar facilmente en cualquier otro proyecto') and confirmed the S-D promotion when asked directly. Promoted to f00113 (profiles live plugin-side; core TS contract untouched)." }
+    - { at: 2026-07-14, by: claude-fable, slice: S-G, status: unblocked, notes: "Trigger fired: the user (project owner) confirmed the current prefix taxonomy as the agreed one — the community-decision precondition. Promoted to f00114 with one recorded expansion: the enum exports from @mcp-vertex/proposals' public barrel, NOT @mcp-vertex/core, because proposal vocabulary in the core would break AGENTS.md rule #1 (core agnostic). deps_check re-run this pass: healthy=true, zero findings — S-I stays parked; S-A/S-B/S-C/S-E/S-F/S-H unchanged, no trigger." }
+preconditions-met:
+    - { slice: S-D, id: f00113, on: 2026-07-14 }
+    - { slice: S-G, id: f00114, on: 2026-07-14 }
 ---
 
 # f00050 — Triage the nine non-goals deferred from f00049
@@ -74,10 +79,10 @@ Common precondition (f00049 done + `@mcp-vertex/core/public` stable): **MET**
 | S-A semantic rewrite | user request OR P0 audit flags an SRP violation | trigger-blocked (no such request/finding) |
 | S-B audit-plugin contract | audit finds a vocab leak / downstream host asks | trigger-blocked |
 | S-C public surface change | a public symbol must be removed/renamed | trigger-blocked (no removal pending) |
-| S-D non-TS profile | a consumer needs python/rust/go OR v1 commits multi-lang | trigger-blocked |
+| S-D non-TS profile | a consumer needs python/rust/go OR v1 commits multi-lang | **trigger FIRED 2026-07-14** → promoted to `f00113` |
 | S-E new public types | a needed type can't be exported today | trigger-blocked |
 | S-F renumber IDs | a strict-order convention + git-filter-repo approval | trigger-blocked |
-| S-G fuse ID prefixes | a community decision on the prefix taxonomy | trigger-blocked |
+| S-G fuse ID prefixes | a community decision on the prefix taxonomy | **trigger FIRED 2026-07-14** → promoted to `f00114` |
 | S-H loop-detector contract | a new orchestrator proposal cites a prod loop | trigger-blocked |
 | S-I dep bump / bun.lock | a CVE OR an unmaintained-dep + alternative | trigger-blocked (run `deps_check` each pass) |
 
@@ -212,23 +217,7 @@ files + gate.
 
 ### S-D — Non-TypeScript surface (Python/Rust/Go profile)
 
-- **Status**: blocked
-- **Preconditions**:
-  - A consumer host using the conventions plugin (currently
-    `plugins/conventions/`) reports they need a non-TS profile.
-  - OR: the mcp-vertex v1 release notes commit to multi-language support
-    (currently out of scope per AGENTS.md).
-- **Files**: a new `plugins/conventions/src/lib/profiles/{python,rust,go}.ts`
-  module per language, each extending the base classifier with the
-  language-native equivalents (`*.py` module, `__init__.py` package marker,
-  `mod.rs` for Rust, `go.mod` for Go). The plugin core stays agnostic
-  per AGENTS.md rule #1.
-- **Gate**: per-language `conventions check --profile=<lang>` exits 0 on a
-  fixture repo of the target language; `conventions check --profile=typescript`
-  on a TS repo still exits 0 (regression).
-- **Note**: the gate for *removing* the `tools/scripts/lint/no-shell-python.script.ts`
-  ban on Python in `tools/` is unrelated to this slice and lives in its own
-  proposal if/when it is ever filed.
+- **Status**: promoted → [`f00113`](../ready/f00113-multi-language-conventions-profiles-python-rust-go-promoted-from-f00050-s-d.md) (2026-07-14). The block moved there per `### how to unpause an item`.
 
 ### S-E — New public types
 
@@ -265,21 +254,7 @@ files + gate.
 
 ### S-G — Fuse proposal-ID prefixes
 
-- **Status**: blocked
-- **Preconditions**:
-  - A community decision is made on which prefix represents what (today the
-    table is implicit: f/x/r/c/d/t/l/a/n/u, with `u` unassigned).
-  - The prefix taxonomy is moved from prose in f00049 S9 to a Zod enum
-    (per f00049 S3's schema), with the union of allowed prefixes exported
-    from `@mcp-vertex/core`.
-- **Files**: the proposal ID Zod schema gains an enum over the agreed
-  prefixes; a migration script (one-shot, in the same PR) updates every
-  proposal's `id:` frontmatter to a valid prefix.
-- **Gate**: `bun run lint:proposals` exits 0; `proposals_compact_status`
-  reports the same count of proposals before and after (no file deleted);
-  the `index.json` regenerates identically.
-- **Note**: f00049 S9 documents the current taxonomy; this slice *changes*
-  it. Until then, the f00049 table is the only authority.
+- **Status**: promoted → [`f00114`](../ready/f00114-proposal-id-prefix-taxonomy-as-a-zod-enum-promoted-from-f00050-s-g.md) (2026-07-14). The block moved there per `### how to unpause an item`, with one recorded expansion: the enum exports from the proposals plugin's public barrel, not `@mcp-vertex/core` (rule #1, core agnostic).
 
 ### S-H — Touch the loop detector / idle-streak / lock-released contract
 

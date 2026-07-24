@@ -19,10 +19,7 @@ import { initCommand } from '../../commands/init/init.command';
 import { InitAnswers } from './init-answers.schema';
 import type { IInitAnswers } from './init-answers.types';
 import { computeHostInstructionsWrite } from './init-host-instructions.service';
-import {
-	deriveScope,
-	renderMigrationProposal,
-} from './init-migrate-offer.service';
+import { deriveScope } from './init-migrate-offer.service';
 import { renderInitBundle, resolvePluginSet } from './init-render.service';
 import { writeMcpVertexConfig } from './init-writers.factory';
 import { buildCanonicalLaunch } from '../server-args.service';
@@ -142,8 +139,9 @@ describe('renderInitBundle (f00084 S2-S5)', () => {
 		const config = JSON.parse(configFile?.content ?? '{}') as {
 			plugins: Record<string, unknown>;
 		};
-		// Exactly the 10 vertex members, no swarm inheritance.
-		expect(Object.keys(config.plugins).length).toBe(10);
+		// Exactly the 12 vertex members (f00119 S6 added auto-agent-selector),
+		// no swarm inheritance.
+		expect(Object.keys(config.plugins).length).toBe(12);
 		for (const required of [
 			'conventions',
 			'docs',
@@ -414,17 +412,7 @@ describe('computeHostInstructionsWrite (f00084 S4)', () => {
 	});
 });
 
-describe('renderMigrationProposal (f00084 S5)', () => {
-	it('produces a valid frontmatter for the workspace scope', () => {
-		const out = renderMigrationProposal(
-			parseAnswers({ workspaceRoot: '/tmp/azur-lx' }),
-		);
-		expect(out.relPath).toContain('f00001-migrate-legacy-azur-lx');
-		expect(out.content).toMatch(/^---\nid: f00001/m);
-		expect(out.content).toMatch(/kind: feat/);
-		expect(out.content).toContain('mcp-vertex');
-	});
-
+describe('deriveScope (workspace → proposal scope slug)', () => {
 	it('derives a slugified scope from the workspace basename', () => {
 		expect(deriveScope('/tmp/AZUR LX--develop')).toMatch(
 			/^azur-lx-develop/,
@@ -511,22 +499,56 @@ describe('plugin defaults (f00087 S1 preview)', () => {
 		expect(parsed.plugins.memory.options.bm25B).toBe(0.75);
 	});
 
-	it('search initialises with sensible roots and extensions', async () => {
-		const bundle = await renderInitBundle(
-			parseAnswers({ preset: 'swarm' }),
-		);
-		const configFile = bundle.files.find(
-			(f) => f.relPath === 'mcp-vertex.config.json',
-		);
-		const parsed = JSON.parse(configFile?.content ?? '{}') as {
-			plugins: {
-				search: {
-					options: { roots?: string[]; extensions?: string[] };
+	it('a00063: search roots are derived from the REAL workspace layout, not stamped from the monorepo', async () => {
+		// An Angular-shaped app: src/ + e2e/, no packages/plugins/apps.
+		// Stamping mcp-vertex's own monorepo roots here made every
+		// search scan 0 files — the "agent went crazy" incident.
+		const ws = await mkdtemp(join(tmpdir(), 'init-angular-'));
+		try {
+			await mkdir(join(ws, 'src'), { recursive: true });
+			await mkdir(join(ws, 'e2e'), { recursive: true });
+			const bundle = await renderInitBundle(
+				parseAnswers({ preset: 'swarm' }, ws),
+			);
+			const configFile = bundle.files.find(
+				(f) => f.relPath === 'mcp-vertex.config.json',
+			);
+			const parsed = JSON.parse(configFile?.content ?? '{}') as {
+				plugins: {
+					search: {
+						options: { roots?: string[]; extensions?: string[] };
+					};
+					conventions?: { options: { roots?: string[] } };
 				};
 			};
-		};
-		expect(parsed.plugins.search.options.roots).toContain('packages');
-		expect(parsed.plugins.search.options.extensions).toContain('.ts');
+			expect(parsed.plugins.search.options.roots).toContain('src');
+			expect(parsed.plugins.search.options.roots).not.toContain(
+				'packages',
+			);
+			// No extensions/ignoreDirs materialised: the engine's richer
+			// built-in defaults (incl. html/scss for frontend repos) apply.
+			expect(parsed.plugins.search.options.extensions).toBeUndefined();
+		} finally {
+			await rm(ws, { recursive: true, force: true });
+		}
+	});
+
+	it('a00063: search roots are OMITTED when no known source dir exists (engine walks "." safely)', async () => {
+		const ws = await mkdtemp(join(tmpdir(), 'init-bare-'));
+		try {
+			const bundle = await renderInitBundle(
+				parseAnswers({ preset: 'swarm' }, ws),
+			);
+			const configFile = bundle.files.find(
+				(f) => f.relPath === 'mcp-vertex.config.json',
+			);
+			const parsed = JSON.parse(configFile?.content ?? '{}') as {
+				plugins: { search: { options: { roots?: string[] } } };
+			};
+			expect(parsed.plugins.search.options.roots).toBeUndefined();
+		} finally {
+			await rm(ws, { recursive: true, force: true });
+		}
 	});
 
 	it('web-fetch is empty by default (fail closed)', async () => {

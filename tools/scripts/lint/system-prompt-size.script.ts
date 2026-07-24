@@ -60,6 +60,13 @@ export interface IPromptSizeBudget {
  * edits, tight enough that a real bloat (a re-enumerated catalog, a
  * pasted-in doc) trips the lint. Tightening is always welcome; loosening
  * needs a dated rationale line.
+ *
+ * 2026-07-24: AGENT-BOOTSTRAP.md grew to 25_959 B after the agent-session
+ * governance plan (03c3a11d) and the c00123 Tooling posture section
+ * (d234886a). Bumped the budget from 25_500 → 27_000 (~4 % headroom over
+ * the new measurement) — still tight enough to catch a real bloat, and
+ * any future growth beyond 27_000 B should either be trimmed or paired
+ * with a justified loosening rationale.
  */
 export const PROMPT_SIZE_BUDGETS: readonly IPromptSizeBudget[] = [
 	// 2026-07-01: host files are now minimal pointers to the bootstrap
@@ -69,7 +76,7 @@ export const PROMPT_SIZE_BUDGETS: readonly IPromptSizeBudget[] = [
 	{ file: 'AGENTS.md', maxBytes: 1_000 },
 	{ file: 'CLAUDE.md', maxBytes: 1_000 },
 	{ file: '.github/copilot-instructions.md', maxBytes: 1_000 },
-	{ file: 'docs/mcp-vertex/AGENT-BOOTSTRAP.md', maxBytes: 25_500 },
+	{ file: 'docs/mcp-vertex/AGENT-BOOTSTRAP.md', maxBytes: 27_000 },
 ] as const;
 
 export interface IPromptSizeResult {

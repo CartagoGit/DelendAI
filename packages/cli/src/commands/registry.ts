@@ -27,6 +27,7 @@ import {
 	scalarArg,
 } from '../lib/helpers/cli-command.helper';
 import { formatRows } from '../lib/text-format.service';
+import { agentsCommands } from './groups/agents';
 import { auditCommands } from './groups/audit';
 import { conventionsCommands } from './groups/conventions';
 import { coreExtraCommands } from './groups/core';
@@ -36,8 +37,11 @@ import { doctorCommands } from './groups/doctor';
 import {
 	gitBlameCommand,
 	gitChangedCommand,
+	gitChangelogCommand,
 	gitDiffCommand,
 	gitLogCommand,
+	gitPrListCommand,
+	gitPrViewCommand,
 	gitShowCommand,
 	gitStatusCommand,
 	gitWorktreeCommand,
@@ -48,6 +52,7 @@ import { notificationCommands } from './groups/notification';
 import { proposalsCommands } from './groups/proposals';
 import { qualityCommands } from './groups/quality';
 import { rulesCommands } from './groups/rules';
+import { securityCommands } from './groups/security';
 import { statusMarkerCommands } from './groups/status-marker';
 import { testConventionCommands } from './groups/test-convention';
 import { usageTrackingCommands } from './groups/usage-tracking';
@@ -433,6 +438,10 @@ export const registerAllCommands = async (): Promise<
 	gitBlameCommand,
 	gitShowCommand,
 	gitWorktreeCommand,
+	gitChangelogCommand,
+	gitPrListCommand,
+	gitPrViewCommand,
+	...agentsCommands,
 	...memoryCommands,
 	...depsCommands,
 	...rulesCommands,
@@ -449,4 +458,5 @@ export const registerAllCommands = async (): Promise<
 	...conventionsCommands,
 	...doctorCommands,
 	...usageTrackingCommands,
+	...securityCommands,
 ];

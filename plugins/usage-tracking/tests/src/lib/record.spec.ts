@@ -97,6 +97,7 @@ describe('buildRecord', () => {
 			...base,
 			toolName: 'mcp-vertex_proposals_auto_work',
 			result: { ok: true },
+			responseBytes: 123,
 		});
 		expect(record.plugin).toBe('proposals');
 		expect(record.tool).toBe('auto_work');
@@ -104,6 +105,7 @@ describe('buildRecord', () => {
 		expect(record.durationMs).toBe(450);
 		expect(record.error).toBeNull();
 		expect(record.agent.kind).toBe('copilot');
+		expect(record.responseBytes).toBe(123);
 	});
 
 	it('records an error outcome from a thrown error', () => {

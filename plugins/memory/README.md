@@ -30,7 +30,7 @@ continuity across sessions with minimal tokens.
 | `memory_compact` | Distil and optionally persist a session digest. |
 | `memory_compaction_check` | Decide whether context compaction is useful. |
 
-Notes persist in `.cache/mcp-vertex/memory/notes.json`.
+Notes persist in `.cache/mcp-vertex/results/memory/notes.json`.
 Writes redact secrets, use atomic replacement and enforce the configured note
 quota inside the store mutex.
 

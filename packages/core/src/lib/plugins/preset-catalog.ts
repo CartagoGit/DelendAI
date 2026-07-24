@@ -123,13 +123,14 @@ export const PRESET_CATALOG: readonly IPresetDefinition[] = [
 		id: 'standard',
 		title: 'standard',
 		summary:
-			'Single-agent toolkit: minimal + memory, docs, rules, quality, deps.',
+			'Single-agent toolkit: minimal + memory, docs, rules, quality, deps, test-policy.',
 		members: [
 			{ plugin: 'memory' },
 			{ plugin: 'docs' },
 			{ plugin: 'rules' },
 			{ plugin: 'quality' },
 			{ plugin: 'deps' },
+			{ plugin: 'test-policy' },
 		],
 	},
 	{
@@ -145,6 +146,7 @@ export const PRESET_CATALOG: readonly IPresetDefinition[] = [
 			{ plugin: 'status-marker' },
 			{ plugin: 'test-convention' },
 			{ plugin: 'conventions' },
+			{ plugin: 'forge' },
 		],
 	},
 	{
@@ -172,7 +174,7 @@ export const PRESET_CATALOG: readonly IPresetDefinition[] = [
 		id: 'vertex',
 		title: 'vertex',
 		summary:
-			'Snapshot of the mcp-vertex project itself: conventions, docs, search, git, web-fetch, status-marker, test-convention, quality, issues, audit. ' +
+			'Snapshot of the mcp-vertex project itself: conventions, docs, search, git, web-fetch, status-marker, test-convention, test-policy, quality, issues, audit. ' +
 			'Independent preset (does NOT accumulate swarm); use this for projects that want the exact set the core ships.',
 		members: [
 			{ plugin: 'conventions' },
@@ -182,9 +184,11 @@ export const PRESET_CATALOG: readonly IPresetDefinition[] = [
 			{ plugin: 'web-fetch', hostOnly: true },
 			{ plugin: 'status-marker' },
 			{ plugin: 'test-convention' },
+			{ plugin: 'test-policy' },
 			{ plugin: 'quality' },
 			{ plugin: 'issues', hostOnly: true },
 			{ plugin: 'audit' },
+			{ plugin: 'auto-agent-selector', hostOnly: true },
 		],
 		independent: true,
 	},

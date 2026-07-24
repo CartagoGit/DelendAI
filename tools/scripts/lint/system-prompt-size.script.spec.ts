@@ -1,6 +1,7 @@
 import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { dirname, join } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
@@ -76,9 +77,15 @@ describe('system-prompt-size lint (f00086 S3)', () => {
 
 	it('the real repo files are within their committed budgets', async () => {
 		// Guards against the baseline drifting: run the canonical budgets
-		// against the actual repo (cwd is the repo root under vitest).
+		// against the actual repo. c00088: resolved from this file's
+		// location, not process.cwd() — the verdict must not depend on
+		// WHERE vitest was invoked from (root vs tools/).
+		const specRepoRoot = resolve(
+			dirname(fileURLToPath(import.meta.url)),
+			'../../..',
+		);
 		const results = await measurePromptSizes(
-			process.cwd(),
+			specRepoRoot,
 			PROMPT_SIZE_BUDGETS,
 		);
 		for (const r of results) {

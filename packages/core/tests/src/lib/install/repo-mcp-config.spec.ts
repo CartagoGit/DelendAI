@@ -8,19 +8,60 @@ const ROOT = resolve(
 	dirname(fileURLToPath(import.meta.url)),
 	'../../../../../..',
 );
-const CANONICAL_ARGS = [
-	'--package',
-	'@mcp-vertex/cli',
-	'mcpv',
-	'__serve',
-	'--workspace',
-] as const;
+
+/**
+ * The checked-in MCP clients must use one of the two canonical launches
+ * (mirrors `tools/scripts/lint/self-host-dogfood.script.ts`):
+ *
+ *   1. published CLI: `bunx --package @mcp-vertex/cli mcpv __serve --workspace <ws>`
+ *   2. repo-local dogfood (while `@mcp-vertex/cli` is unpublished):
+ *      `bun tools/scripts/host/host-server.script.ts --workspace=<ws>`
+ */
+const publishedLaunch = (workspace: string) => ({
+	command: 'bunx',
+	args: [
+		'--package',
+		'@mcp-vertex/cli',
+		'mcpv',
+		'__serve',
+		'--workspace',
+		workspace,
+	],
+});
+
+const localDogfoodLaunch = (workspace: string) => ({
+	command: 'bun',
+	args: [
+		'tools/scripts/host/host-server.script.ts',
+		`--workspace=${workspace}`,
+	],
+});
+
+const expectCanonicalLaunch = (
+	entry: { command?: string; args?: readonly string[] } | undefined,
+	workspace: string,
+): void => {
+	expect(entry).toBeDefined();
+	const accepted = [
+		publishedLaunch(workspace),
+		localDogfoodLaunch(workspace),
+	];
+	const matches = accepted.some(
+		(launch) =>
+			entry?.command === launch.command &&
+			JSON.stringify(entry?.args) === JSON.stringify(launch.args),
+	);
+	expect(
+		matches,
+		`launch ${JSON.stringify(entry)} must match one of ${JSON.stringify(accepted)}`,
+	).toBe(true);
+};
 
 const readJson = (path: string): unknown =>
 	JSON.parse(readFileSync(join(ROOT, path), 'utf8')) as unknown;
 
 describe('repo MCP client configs', async () => {
-	it('points Claude-style .mcp.json at the published CLI', async () => {
+	it('points Claude-style .mcp.json at a canonical launch', async () => {
 		const config = readJson('.mcp.json') as {
 			readonly mcpServers?: {
 				readonly 'mcp-vertex'?: {
@@ -29,13 +70,10 @@ describe('repo MCP client configs', async () => {
 				};
 			};
 		};
-		const entry = config.mcpServers?.['mcp-vertex'];
-
-		expect(entry?.command).toBe('bunx');
-		expect(entry?.args).toEqual([...CANONICAL_ARGS, '.']);
+		expectCanonicalLaunch(config.mcpServers?.['mcp-vertex'], '.');
 	});
 
-	it('points VS Code/Copilot mcp.json at the published CLI', async () => {
+	it('points VS Code/Copilot mcp.json at a canonical launch', async () => {
 		const config = readJson('.vscode/mcp.json') as {
 			readonly servers?: {
 				readonly 'mcp-vertex'?: {
@@ -48,18 +86,27 @@ describe('repo MCP client configs', async () => {
 		const entry = config.servers?.['mcp-vertex'];
 
 		expect(entry?.type).toBe('stdio');
-		expect(entry?.command).toBe('bunx');
-		expect(entry?.args).toEqual([...CANONICAL_ARGS, '${workspaceFolder}']);
+		expectCanonicalLaunch(entry, '${workspaceFolder}');
 	});
 
-	it('ships a project-scoped Codex config for the same published CLI', async () => {
+	it('ships a project-scoped Codex config on the same canonical launch', async () => {
 		const config = readFileSync(join(ROOT, '.codex/config.toml'), 'utf8');
 
 		expect(config).toContain('[mcp_servers.mcp-vertex]');
-		expect(config).toContain('command = "bunx"');
-		expect(config).toContain(
-			'args = ["--package", "@mcp-vertex/cli", "mcpv", "__serve", "--workspace", "."]',
-		);
+		const published =
+			config.includes('command = "bunx"') &&
+			config.includes(
+				'args = ["--package", "@mcp-vertex/cli", "mcpv", "__serve", "--workspace", "."]',
+			);
+		const localDogfood =
+			config.includes('command = "bun"') &&
+			config.includes(
+				'args = ["tools/scripts/host/host-server.script.ts", "--workspace=."]',
+			);
+		expect(
+			published || localDogfood,
+			'.codex/config.toml must use the published bunx launch or the repo-local host-source launch',
+		).toBe(true);
 		expect(config).toContain('cwd = ".."');
 	});
 });

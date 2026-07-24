@@ -30,7 +30,10 @@
  * every other module to tolerate DOM types; scoping it to this dev-only
  * file is the minimum-blast-radius fix.
  */
-import { renderDashboard } from '@mcp-vertex/ui-extension/public';
+import {
+	renderDashboard,
+	SHARED_UI_STRINGS,
+} from '@mcp-vertex/ui-extension/public';
 import { dictsByLang } from '@mcp-vertex/shared/i18n';
 import type { Lang } from '@mcp-vertex/shared/i18n';
 
@@ -86,7 +89,9 @@ const resolveLang = (): Lang => {
 
 const renderInto = (lang: Lang): void => {
 	const html = renderDashboard(mockDashboardModel, {
-		docsUrl: 'https://cartagogit.github.io/mcp-vertex/',
+		// x00100 S2: one canonical constant — the previous hardcoded
+		// GitHub Pages URL 404'd.
+		docsUrl: SHARED_UI_STRINGS.docsUrl,
 		refreshCommand: 'mcp-vertex.refresh',
 		openDocsCommand: 'mcp-vertex.openDocs',
 		lang: dictsByLang[lang],

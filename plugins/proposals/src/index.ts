@@ -2,6 +2,8 @@ import {
 	createWorkspaceFileReader,
 	definePlugin,
 } from '@mcp-vertex/core/public';
+import { existsSync } from 'node:fs';
+
 import { AgentLoopDetectorService } from './lib/agents/loop-detector-service';
 import { z } from 'zod';
 
@@ -472,6 +474,29 @@ export default definePlugin({
 				},
 			],
 			knowledge: [
+				// f00116 S3: when the workspace has NO proposals store yet,
+				// orientation names the one call that bootstraps it. Boot-time
+				// existsSync is sanctioned (AGENTS.md rule 3); no writes here.
+				...(existsSync(abs(layout.proposalsDir))
+					? []
+					: [
+							{
+								id: 'proposals-store-missing',
+								title: 'Proposals store not bootstrapped yet',
+								body: [
+									'# Proposals store missing',
+									'',
+									`This workspace has no proposals store at \`${layout.proposalsDir}\`.`,
+									'Bootstrap it in one call:',
+									'',
+									'- `proposal_adopt { apply: true }` — creates the status folders,',
+									'  a README and the registry index (idempotent, atomic).',
+									'- Add `migrate: { roots: ["docs/rfcs", "TODO.md"] }` to convert an',
+									'  existing foreign scheme (rfc docs, TODO checklists, ad-hoc',
+									'  frontmatter) into canonical proposals with provenance.',
+								].join('\n'),
+							},
+						]),
 				{
 					id: 'multi-agent-loop',
 					title: 'Multi-agent slice loop',
