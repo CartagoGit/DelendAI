@@ -16,6 +16,7 @@ export type { ISessionHygieneToolOptions } from './session-hygiene.tool';
 export interface IUsageToolOptions {
 	readonly namespacePrefix: string;
 	readonly invocationsPath: string;
+	readonly hostLifecyclePath: string;
 	readonly summaryPath: string;
 	readonly sessionHygiene: SessionHygieneMonitor;
 	readonly onServer?: ((server: McpServer) => void) | undefined;
@@ -37,6 +38,7 @@ export const buildUsageTrackingToolRegistrations = (
 	buildSessionHygieneToolRegistration({
 		namespacePrefix: options.namespacePrefix,
 		invocationsPath: options.invocationsPath,
+		hostLifecyclePath: options.hostLifecyclePath,
 		policy: options.sessionHygiene.policy,
 		currentSessions: () => options.sessionHygiene.snapshots(),
 		...(options.onServer !== undefined
