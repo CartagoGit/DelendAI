@@ -19,6 +19,7 @@ const PLUGIN_DEFAULTS_FILE = 'packages/core/src/lib/plugins/plugin-defaults.ts';
 const RELEASE_PLAN_FILE = 'tools/scripts/release/release-plan.ts';
 const PRESET_CATALOG_FILE = 'packages/core/src/lib/plugins/preset-catalog.ts';
 const CATALOG_ARTIFACT = 'docs/mcp-vertex/agent-catalog.generated.json';
+const HOST_CONFIG_FILE = 'mcp-vertex.config.json';
 
 const escapeRegex = (value: string): string =>
 	value.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&');
@@ -159,10 +160,30 @@ const checkCatalogRegenFromText = (
 	};
 };
 
+const isPluginLoadedByHost = (
+	hostConfigText: string,
+	pluginId: string,
+): boolean => {
+	// The host config is JSON; the plugin list lives under `plugins.<id>`.
+	// We do a tolerant substring probe so the doctor doesn't choke on
+	// trailing commas, comments, or 4-space indents.
+	const probe = new RegExp(
+		`"plugins"\\s*:\\s*\\{[\\s\\S]*?"${escapeRegex(pluginId)}"\\s*:`,
+		'u',
+	);
+	return probe.test(hostConfigText);
+};
+
 /**
  * Run every checker for one plugin id and produce a verdict. The doctor
  * reads the three source files it owns (`tsconfig.base.json`,
  * `vitest.shared.ts`, the three core files) and the agent catalog.
+ *
+ * The catalog-regen check is **skipped** when the plugin is not in
+ * `mcp-vertex.config.json` (opt-in plugins like `web-fetch` or `audit`
+ * are not loaded by the host by default; the catalog reflects what the
+ * host loads). For an opt-in plugin, the catalog not listing it is the
+ * correct state.
  */
 export const diagnosePluginWiring = async (
 	pluginId: string,
@@ -179,13 +200,31 @@ export const diagnosePluginWiring = async (
 		fs.readFile(PRESET_CATALOG_FILE),
 		fs.readFile(CATALOG_ARTIFACT),
 	]);
+	// The catalog-regen check is **only** skipped when the host config
+	// explicitly opts the plugin out (the plugin is registered as a
+	// first-class plugin but not loaded — opt-in by the host). When
+	// the host config is absent (adopter repo, fresh plugin dir before
+	// `init`) every point is checked, including catalog-regen, because
+	// `create_plugin` is meant to leave a half-wired plugin only when
+	// `dryRun: true` is set.
+	const hostExists = await fs.pathExists(HOST_CONFIG_FILE);
+	const isOptIn = hostExists
+		? !isPluginLoadedByHost(await fs.readFile(HOST_CONFIG_FILE), pluginId)
+		: false;
 	const points: IPluginWiringPoint[] = [
 		await checkTsconfigBase(fs, pluginId),
 		await checkVitestShared(fs, pluginId),
 		checkPluginDefaultsFromText(pluginDefaultsText, pluginId),
 		checkPublishOrderFromText(releasePlanText, pluginId),
 		checkPresetCatalogFromText(presetCatalogText, pluginId),
-		checkCatalogRegenFromText(catalogText, pluginId),
+		isOptIn
+			? {
+					id: 'catalog-regen' as const,
+					path: CATALOG_ARTIFACT,
+					wired: true,
+					summary: `agent catalog lists tools from "${pluginId}" (skipped — opt-in plugin not in ${HOST_CONFIG_FILE})`,
+				}
+			: checkCatalogRegenFromText(catalogText, pluginId),
 	];
 	const missing = points
 		.filter((point) => !point.wired)
