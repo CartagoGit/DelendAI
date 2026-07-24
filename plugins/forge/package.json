@@ -2,7 +2,7 @@
 	"name": "@mcp-vertex/forge",
 	"version": "0.1.0",
 	"type": "module",
-	"description": "GitHub/GitLab PRs, remote issues and CI status via the host's authenticated gh/glab CLI. Read-only S1 surface for @mcp-vertex/core.",
+	"description": "GitHub/GitLab PRs, PR comments, remote issues and CI status via the host's authenticated gh/glab CLI.",
 	"author": "Cartago",
 	"license": "BSD-3-Clause",
 	"keywords": [
