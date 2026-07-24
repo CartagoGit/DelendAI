@@ -26,6 +26,7 @@ import {
 	HostEntryNotFoundError,
 	resolveHostEntryPath,
 } from '../../lib/init/host-entry-resolver.service';
+import { parseConfigFile } from '@mcp-vertex/core/public';
 import { InitAnswers } from '../../lib/init/init-answers.schema';
 import type { IInitAnswers } from '../../lib/init/init-answers.types';
 import { detectTargetProject } from '../../lib/init/init-detection.service';
@@ -33,7 +34,10 @@ import { printInitHumanSummary } from '../../lib/init/init-human-summary.service
 import { collectInitAnswers } from '../../lib/init/init-prompts.service';
 import { renderInitBundle } from '../../lib/init/init-render.service';
 import { buildCanonicalLaunch } from '../../lib/server-args.service';
+import { readConfigText } from '../../lib/config-file.service';
+import { buildCoreSkillProjection } from '../../lib/init/core-skill-projection.service';
 import {
+	writeCoreSkillProjection,
 	writeGenericMcpJson,
 	writeMcpVertexConfig,
 	writeVscodeMcpJson,
@@ -136,9 +140,12 @@ export const detectAndDecorateAnswers = async (
 	}
 	return InitAnswers.parse({
 		workspaceRoot,
-		force: flags.force,
 		...(detected !== undefined ? { detected } : {}),
 		...partial,
+		// A command-line replacement request is always intentional. The
+		// non-interactive defaults stay merge-safe, but `--force` remains the
+		// explicit escape hatch for a full replacement.
+		force: flags.force || partial.force === true,
 	});
 };
 
@@ -195,12 +202,20 @@ export const runInitWithAnswers = async (
 		}
 	}
 	const bundle = await renderInitBundle(answers, { launch });
+	const currentConfig = parseConfigFile(
+		await readConfigText(answers.workspaceRoot),
+	);
+	const skillProjection = answers.copyCoreSkills
+		? await buildCoreSkillProjection(
+				currentConfig.docsDir ?? 'docs/mcp-vertex',
+			)
+		: [];
 
 	if (flags.dryRun) {
 		if (!ctx.globals.json) {
 			printInitHumanSummary({
 				answers,
-				written: bundle.files.map((f) => ({
+				written: [...bundle.files, ...skillProjection].map((f) => ({
 					path: join(answers.workspaceRoot, f.relPath),
 					kind: 'written' as const,
 				})),
@@ -212,7 +227,7 @@ export const runInitWithAnswers = async (
 			data: {
 				ok: true,
 				dryRun: true,
-				files: bundle.files,
+				files: [...bundle.files, ...skillProjection],
 				summary: bundle.summary,
 			},
 		};
@@ -231,6 +246,7 @@ export const runInitWithAnswers = async (
 		kind: 'written' | 'exists' | 'merged' | 'skipped';
 		preserved?: readonly string[];
 	}> = [];
+	let configReadyForSkillProjection = true;
 	for (const file of bundle.files) {
 		if (file.relPath === 'mcp-vertex.config.json') {
 			const parsed = JSON.parse(file.content) as Record<string, unknown>;
@@ -244,6 +260,7 @@ export const runInitWithAnswers = async (
 				answers.force,
 			);
 			written.push({ path: result.path, kind: result.kind });
+			configReadyForSkillProjection = result.kind !== 'exists';
 			continue;
 		}
 		// `.vscode/mcp.json` is the only other file that needs a
@@ -314,6 +331,18 @@ export const runInitWithAnswers = async (
 			mode,
 		);
 		written.push({ path: result.path, kind: result.kind });
+	}
+
+	if (answers.copyCoreSkills && configReadyForSkillProjection) {
+		const config = parseConfigFile(
+			await readConfigText(answers.workspaceRoot),
+		);
+		const skillWrites = await writeCoreSkillProjection(
+			answers.workspaceRoot,
+			config.docsDir ?? 'docs/mcp-vertex',
+			answers.force,
+		);
+		written.push(...skillWrites);
 	}
 
 	if (!ctx.globals.json) {

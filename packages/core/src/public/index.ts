@@ -159,6 +159,7 @@ export {
 	resolvePluginOptions,
 } from '../lib/plugins/plugin-defaults';
 export { deriveSourceRoots } from '../lib/bootstrap/derive-config';
+export { mergeDerivedConfig } from '../lib/bootstrap/merge-derived-config';
 export {
 	PRESET_CATALOG,
 	PRESET_KIND,
