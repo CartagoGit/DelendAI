@@ -68,7 +68,7 @@ cannot run hooks or resume work after a response.
     instead of being presented as supported.
 
 ### S3 — Concrete packs and honest fallbacks
-- **Status**: pending
+- **Status**: done
 - **Files**: `config/external/README.md`, `config/external/codex/README.md`,
   `config/external/claude-code/README.md`, `docs/mcp-vertex/examples/host-capability-adapter.md`
 - **Gate**: docs + type
