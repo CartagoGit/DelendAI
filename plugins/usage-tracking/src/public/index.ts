@@ -11,6 +11,11 @@ export { RecordBuffer } from '../lib/record-buffer';
 export type { IRecordBufferOptions } from '../lib/record-buffer';
 export { StartClock } from '../lib/start-clock';
 export {
+	analyzeSessionHygiene,
+	DEFAULT_SESSION_HYGIENE_POLICY,
+	SessionHygieneMonitor,
+} from '../lib/session-hygiene';
+export {
 	attributeTool,
 	deriveCorePrefix,
 	CORE_PLUGIN_KEY,
@@ -77,6 +82,10 @@ export type {
 	IRollupTotals,
 	IUsageSummary,
 	IUsageTokens,
+	ISessionHygieneAdvisory,
+	ISessionHygienePolicy,
+	ISessionHygieneSnapshot,
+	SessionHygieneReason,
 	SortBy,
 	SpendBreachScope,
 } from '../lib/types';
