@@ -1,62 +1,63 @@
 # @mcp-vertex/forge
 
-Read-only forge surface for [@mcp-vertex/core](../../docs/mcp-vertex/README-MCP-VERTEX.md):
-GitHub/GitLab pull requests, remote issues and CI status through the host's
-already-authenticated `gh` or `glab` CLI.
+Forge plugin for @mcp-vertex/core. It auto-detects GitHub or GitLab from the
+origin remote, then drives the host's authenticated gh or glab CLI through the
+shared external-tool seam. No personal access token is stored, prompted, or
+logged by the plugin.
 
-## Load it
+## Overview
+
+The plugin covers three forge surfaces:
+
+- Pull requests and merge requests: list, show, create, comment.
+- Issues: list, show, create.
+- Delivery and discovery: CI status, remote code search, release creation.
+
+## Tools
+
+- forge_pr_list: list open pull requests or merge requests with compact CI summary.
+- forge_pr_show: show one pull request or merge request with checks and review state.
+- forge_ci_status: list recent workflow or pipeline runs, jobs, and failing logs.
+- forge_issue_list: list remote issues with state, labels, and author.
+- forge_issue_show: show one remote issue with body and comments.
+- forge_pr_create: create a pull request or merge request. Requires confirm: true.
+- forge_pr_comment: comment on a pull request or merge request. Requires confirm: true.
+- forge_issue_create: create a remote issue. Requires confirm: true.
+- forge_search_code: search remote code on the forge with optional language/repo filters.
+- forge_release: create a release from a tag. Requires confirm: true.
+
+## Usage
 
 ```bash
 mcp-vertex --plugins=forge
 ```
 
-The plugin auto-detects GitHub vs GitLab from the `origin` remote.
+```json
+{
+	"tool": "forge_search_code",
+	"arguments": {
+		"query": "definePlugin",
+		"language": "ts",
+		"repo": "CartagoGit/mcp-vertex",
+		"limit": 5
+	}
+}
+```
 
-## Tools
+```json
+{
+	"tool": "forge_release",
+	"arguments": {
+		"tag": "v0.1.0",
+		"notes": "Ship forge S3.",
+		"confirm": true
+	}
+}
+```
 
-- `forge_pr_list { cwd?, limit?, state?, timeoutMs? }`
-- `forge_pr_show { number, cwd?, timeoutMs? }`
-- `forge_ci_status { cwd?, headSha?, failingJobsOnly?, limit?, timeoutMs? }`
-- `forge_issue_list { cwd?, limit?, state?, timeoutMs? }`
-- `forge_issue_show { number, cwd?, timeoutMs? }`
+## Operational notes
 
-Each tool returns a structured `{ ok, provider, ... }` envelope and never asks
-for credentials.
-
-## Missing CLI
-
-When the required CLI is not installed, the tool returns an actionable hint
-instead of crashing.
-
-- GitHub: `brew install gh` or `sudo apt install gh`
-- GitLab: `brew install glab` or `sudo apt install glab`
-
-## Security contract
-
-- No PAT storage.
-- No auth prompts.
-- No token logging.
-- Every subprocess is bounded by a timeout (15s by default).
-- Stdout/stderr are redacted before surfacing back to the caller.
-
-## Scope
-
-S1 is read-only. Any future write actions must require `confirm: true`, but
-that contract is documented only here and is not implemented in this slice.
-
-BSD-3-Clause © Cartago# @mcp-vertex/forge
-
-Read-only forge plugin for @mcp-vertex/core. It auto-detects GitHub or GitLab
-from the origin remote and then uses the host's authenticated gh or glab CLI
-through the shared runExternalTool seam.
-
-S1 exposes:
-
-- forge_pr_list
-- forge_pr_show
-- forge_ci_status
-- forge_issue_list
-- forge_issue_show
-
-The plugin does not store tokens or read credentials directly. If gh or glab is
-missing, the tools return a structured remediation hint instead of throwing.
+- Provider detection comes from the origin remote, not from a hardcoded option.
+- Missing gh/glab returns a structured remediation hint instead of crashing.
+- Write actions never execute without confirm: true.
+- The plugin complements the local git plugin; it does not reimplement clone, diff, commit, or log.

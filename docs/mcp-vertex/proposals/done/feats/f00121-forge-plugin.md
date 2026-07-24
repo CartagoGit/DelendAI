@@ -2,7 +2,7 @@
 id: f00121
 kind: feat
 title: forge plugin — GitHub/GitLab PRs, remote issues, CI status and releases via the host's authenticated CLI
-status: ready
+status: done
 date: 2026-07-23
 track: plugin+forge+collab
 ---
@@ -58,7 +58,7 @@ stays a thin adapter: map the CLI's JSON output into the shared shapes.
 ### S1 — read surface (PR / CI / issues)
 
 - **Status**: done (2026-07-24)
-- **Files**: `plugins/forge/src/lib/read/`, `plugins/forge/src/lib/tools/forge-read.tool.ts`
+- **Files**: `plugins/forge/src/lib/services/forge.ts`, `plugins/forge/src/lib/tools/forge-read.tool.ts`
 - **Gate**: bun run validate
 
 `forge_pr_list`, `forge_pr_show`, `forge_ci_status` (+ failing-job logs) and
@@ -73,7 +73,7 @@ reads, validated with plugin-local tests plus repo typecheck/lint gates.
 ### S2 — write surface (consented)
 
 - **Status**: done (2026-07-24)
-- **Files**: `plugins/forge/src/lib/write/`, `plugins/forge/src/lib/tools/forge-write.tool.ts`
+- **Files**: `plugins/forge/src/lib/services/forge-write.ts`, `plugins/forge/src/lib/tools/forge-write.tool.ts`
 - **Gate**: bun run validate
 
 `forge_pr_create` (body assembled from the linked proposal/commits, honouring
@@ -87,13 +87,19 @@ registers the write tools alongside the landed S1 read surface.
 
 ### S3 — releases, remote code search, packaging
 
-- **Status**: pending
-- **Files**: `plugins/forge/src/lib/tools/forge-release.tool.ts`, `plugins/forge/README.md`, `docs/mcp-vertex/wiki/`
+- **Status**: done (2026-07-24)
+- **Files**: `plugins/forge/src/lib/tools/forge-release.tool.ts`, `plugins/forge/src/lib/tools/forge-search.tool.ts`, `plugins/forge/README.md`, `docs/mcp-vertex/wiki/forge.md`
 - **Gate**: bun run validate
 
 `forge_release` (consented) and `forge_search_code` (remote search). Full
 wiring (via f00120 when available), README, wiki, catalog registration, and
 membership in the collaboration-oriented packs (r00011).
+
+Close evidence: `plugins/forge/` now includes the release and remote code search
+surfaces with strict schemas, confirm-gated release coverage, injected-exec
+service tests, prefixed tool registrations, README documentation, a dedicated
+wiki page, and full monorepo wiring through tsconfig, vitest aliases, plugin
+defaults, preset membership, host config, and regenerated catalog output.
 
 ## acceptance
 
