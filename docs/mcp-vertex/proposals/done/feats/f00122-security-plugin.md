@@ -2,8 +2,9 @@
 id: f00122
 kind: feat
 title: security plugin — secrets, dependency CVEs and SAST scanning with normalized findings and an opt-in gate
-status: ready
+status: done
 date: 2026-07-23
+closed-by: copilot-minimax-m3 (close pass 2026-07-24, 4 slices delivered)
 track: plugin+security+quality
 ---
 
