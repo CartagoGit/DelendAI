@@ -2,7 +2,7 @@
 id: f00119
 kind: feat
 title: auto-agent-selector — zero-config multi-agent routing that picks the right LLM per task
-status: in-progress
+status: review
 date: 2026-07-22
 track: plugin+orchestration+routing
 ---
@@ -198,7 +198,7 @@ tags when data is thin; blend weight is a documented constant.
 
 ### S5 — auto-config on first use (the "add it and it just works" guarantee)
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/auto-agent-selector/src/index.ts`, `plugins/auto-agent-selector/src/lib/tools/auto-run.tool.ts`
 - **Gate**: bun run validate
 
@@ -216,7 +216,7 @@ executing it through the runner and evaluating the project gate.
 
 ### S6 — recommendation surface (CLI + extension) + docs, wiki, catalog
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/cli/src/commands/groups/`, `packages/ui-extension/src/`, `docs/mcp-vertex/wiki/`, `plugins/auto-agent-selector/README.md`
 - **Gate**: bun run validate
 
