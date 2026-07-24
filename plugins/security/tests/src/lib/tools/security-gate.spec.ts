@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { verifySecurityGate } from '../../../../../tools/scripts/verify/security.script';
+import { verifySecurityGate } from '../../../../../../tools/scripts/verify/security.script.ts';
 
 describe('verifySecurityGate', () => {
 	it('passes when every critical already exists in the baseline', async () => {
