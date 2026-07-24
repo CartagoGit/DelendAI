@@ -29,6 +29,11 @@ export { rankNotes, tokenize } from '../lib/services/rank';
 export type { IRankedNote } from '../lib/services/rank';
 export { buildMemoryToolRegistrations } from '../lib/tools';
 export type { IMemoryToolOptions } from '../lib/tools';
+export {
+	buildCheckpointPacket,
+	DEFAULT_CHECKPOINT_PACKET_MAX_DIGEST_CHARS,
+} from '../lib/services/checkpoint-packet';
+export type { ICheckpointPacket } from '../lib/services/checkpoint-packet';
 
 // --- generated tool-output types (N23, see scripts/generate-tool-types.ts) ---
 export type * from '../generated/tool-outputs';

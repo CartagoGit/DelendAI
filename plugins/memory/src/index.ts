@@ -112,7 +112,7 @@ export default definePlugin({
 					body: [
 						'# Project memory',
 						'',
-						`Tools: \`${ctx.namespacePrefix}_memory_save\` / \`_memory_recall\` / \`_memory_list\` / \`_memory_forget\` / \`_memory_compact\` / \`_memory_compaction_check\`.`,
+						`Tools: \`${ctx.namespacePrefix}_memory_save\` / \`_memory_recall\` / \`_memory_list\` / \`_memory_forget\` / \`_memory_compact\` / \`_memory_compaction_check\` / \`_memory_checkpoint_packet\`.`,
 						'',
 						'- Save durable facts an agent should remember next session: decisions, gotchas, where things live, conventions discovered.',
 						'- `memory_save` upserts by title (no duplicates).',
@@ -128,6 +128,9 @@ export default definePlugin({
 						'     self-expiring `session-digest:<topic>` note.',
 						'  3. `memory_recall` — surfaces that digest so you carry only the',
 						'     distilled core forward.',
+						'- `memory_checkpoint_packet` rehydrates the latest explicit digest as',
+						'  a bounded, redacted packet (digest, pointers and next action) after',
+						'  a host compaction or when resuming; it never reads host transcripts.',
 						`- Notes persist in \`${joinRel(ctx.pluginCacheDir, 'notes.json')}\`.`,
 						'- BM25 ranking parameters (k1, b, titleWeight) and the store',
 						'  size limit (maxNotes) are configurable via `<config-file>`',

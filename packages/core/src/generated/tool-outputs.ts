@@ -713,6 +713,15 @@ export interface McpVertexLogsTailOutput {
 	newestTs: string | null;
 }
 
+export interface McpVertexMemoryCheckpointPacketOutput {
+	available: boolean;
+	packet: {
+		digest: string;
+		pointers: string[];
+		nextAction: string | null;
+	} | null;
+}
+
 export interface McpVertexMemoryCompactOutput {
 	digest: string;
 	sections: Array<{
@@ -2462,6 +2471,7 @@ export interface McpVertexToolOutputs {
 	"mcp-vertex_logs_redact_test": McpVertexLogsRedactTestOutput;
 	"mcp-vertex_logs_subscribe": McpVertexLogsSubscribeOutput;
 	"mcp-vertex_logs_tail": McpVertexLogsTailOutput;
+	"mcp-vertex_memory_checkpoint_packet": McpVertexMemoryCheckpointPacketOutput;
 	"mcp-vertex_memory_compact": McpVertexMemoryCompactOutput;
 	"mcp-vertex_memory_compaction_check": McpVertexMemoryCompactionCheckOutput;
 	"mcp-vertex_memory_export": McpVertexMemoryExportOutput;
