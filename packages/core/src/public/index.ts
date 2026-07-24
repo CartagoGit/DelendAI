@@ -36,6 +36,24 @@ export type {
 	IMcpVertexHostConfig,
 } from '../lib/contracts/interfaces/host-config.interface';
 export type { IMcpVertexProjectMetadata } from '../lib/contracts/interfaces/project-metadata.interface';
+export type {
+	IHostCapabilities,
+	IHostCapabilityProfile,
+	THostContinuationCapability,
+	THostInstructionCapability,
+	THostLifecycleCapability,
+	THostSkillCapability,
+} from '../lib/contracts/interfaces/host-capabilities.interface';
+export { buildHostCapabilityPlan } from '../lib/hosts/host-capability-profile';
+export type {
+	IHostCapabilityAction,
+	IHostCapabilityPlan,
+} from '../lib/hosts/host-capability-profile';
+export { buildHostAdapterPack } from '../lib/hosts/host-adapter-pack';
+export type {
+	IHostAdapterPack,
+	IHostAdapterPackAction,
+} from '../lib/hosts/host-adapter-pack';
 export type { IStatusCollector } from '../lib/contracts/interfaces/status-collector.interface';
 export type {
 	IPromptRegistration,

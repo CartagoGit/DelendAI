@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-07-24T22:51:37.215Z",
+	"generatedAt": "2026-07-24T23:11:28.871Z",
 	"mode": "compact",
 	"tools": [
 		{
@@ -1029,6 +1029,13 @@
 				"kind": "feat"
 			},
 			{
+				"id": "f00149",
+				"title": "f00149",
+				"track": "host-adapters+plugins+adoption",
+				"status": "ready",
+				"kind": "feat"
+			},
+			{
 				"id": "r00011",
 				"title": "r00011",
 				"track": "refactor+config+dx",
@@ -1051,7 +1058,7 @@
 			}
 		],
 		"byStatus": {
-			"ready": 26,
+			"ready": 27,
 			"in-progress": 2,
 			"review": 5,
 			"paused": 1,

@@ -65,6 +65,21 @@ Do **not** hardcode tool names, skill names, or proposal ids in your
 answers. Ask the server every time. Skills/tools/proposals are added
 and removed every week; any hardcoded list will be wrong within days.
 
+### Execution path — one call first
+
+For an implementation task, call `mcp-vertex_proposals_auto_work` once. When
+its work response includes `claimReady`, claim exactly the returned files with
+the supplied lock arguments, implement that atomic slice, validate it, then
+close it. The payload is the canonical next action; do not spend extra calls
+reconstructing the proposal or slice plan.
+
+### Advanced / compatibility path
+
+Older hosts that do not expose `claimReady`, or a debugging session that needs
+to inspect dependencies or contention, can use the existing plan/claim tools
+after `auto_work`. This fallback is compatible by design, but it is not the
+normal bootstrap path.
+
 ## 3. Bootstrap prompt — insert when the host supports it
 
 The server exposes a bootstrap prompt (`mcp-vertex_agent_bootstrap`) that
