@@ -8,7 +8,9 @@
 	},
 	"plugins": {
 		"git": {
-			"options": {}
+			"options": {
+				"allowForge": true
+			}
 		},
 		"search": {
 			"options": {
@@ -47,7 +49,7 @@
 		"deps": {
 			"options": {
 				"manifest": "package.json",
-				"allowNetwork": false,
+				"allowNetwork": true,
 				"allowWrite": false
 			}
 		},
@@ -83,6 +85,35 @@
 		"conventions": {
 			"options": {
 				"roots": ["packages", "plugins", "extensions", "apps", "tools"]
+			}
+		},
+		"security": {
+			"options": {}
+		},
+		"diagram": {
+			"options": {}
+		},
+		"env": {
+			"options": {}
+		},
+		"i18n": {
+			"options": {}
+		},
+		"perf": {
+			"options": {}
+		},
+		"tech-debt": {
+			"options": {}
+		},
+		"usage-tracking": {
+			"options": {}
+		},
+		"orchestrator-runner": {
+			"options": {}
+		},
+		"auto-agent-selector": {
+			"options": {
+				"costQualityTradeoff": 8
 			}
 		}
 	}

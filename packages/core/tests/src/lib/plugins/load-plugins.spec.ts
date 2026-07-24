@@ -185,4 +185,61 @@ describe('loadPlugins', async () => {
 			/\/definitely\/missing\/plugin\.js/,
 		);
 	});
+
+	it('a00065 S6: does NOT call register() of a plugin whose dependsOn is unmet', async () => {
+		// A depends on B; B is not in the load set. register() has a
+		// side effect (a real third-party plugin might start a timer,
+		// open a socket, or write a file here). The dependency check
+		// must run BEFORE any register(), so A's side effect never fires
+		// when the batch is going to be rejected.
+		let aRegistered = false;
+		const A = {
+			name: 'a',
+			dependsOn: ['b'],
+			register: () => {
+				aRegistered = true;
+				return { tools: [] };
+			},
+		};
+		const result = await loadPlugins({
+			specifiers: ['a'],
+			buildContext: ctx,
+			import: async () => ({ default: A }),
+		});
+		expect(result.loaded).toEqual([]);
+		expect(
+			result.errors.some(
+				(e) =>
+					e.specifier === '(dependsOn)' ||
+					/requires|depend/i.test(e.message),
+			),
+		).toBe(true);
+		expect(aRegistered).toBe(false);
+	});
+
+	it('a00065 S6: a satisfied dependency still registers both plugins', async () => {
+		const B = { name: 'b', register: () => ({ tools: [] }) };
+		const A = {
+			name: 'a',
+			dependsOn: ['b'],
+			register: () => ({ tools: [] }),
+		};
+		const result = await loadPlugins({
+			specifiers: ['a', 'b'],
+			buildContext: ctx,
+			import: async (spec: string) => ({
+				default:
+					spec.includes('a') && !spec.includes('b')
+						? A
+						: spec.includes('b')
+							? B
+							: A,
+			}),
+		});
+		expect(result.errors).toEqual([]);
+		expect(result.loaded.map((l) => l.plugin.name).sort()).toEqual([
+			'a',
+			'b',
+		]);
+	});
 });

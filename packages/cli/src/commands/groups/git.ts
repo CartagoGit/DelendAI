@@ -60,6 +60,22 @@ export const gitLogCommand: ICliCommand = {
 	},
 };
 
+export const gitChangelogCommand: ICliCommand = {
+	name: 'git changelog',
+	summary:
+		'Conventional-commit changelog + inferred semver bump for a range.',
+	async run(args, ctx) {
+		const range = scalarArg(args, 'range');
+		const limit = scalarArg(args, 'limit');
+		return data(
+			await request(ctx, 'mcp-vertex_git_changelog', {
+				...(range !== undefined ? { range } : {}),
+				...(limit !== undefined ? { limit: Number(limit) } : {}),
+			}),
+		);
+	},
+};
+
 export const gitBlameCommand: ICliCommand = {
 	name: 'git blame',
 	summary:
@@ -111,6 +127,30 @@ export const gitWorktreeCommand: ICliCommand = {
 	},
 };
 
+export const gitPrListCommand: ICliCommand = {
+	name: 'git pr-list',
+	summary:
+		'List open pull requests via gh (opt-in via allowForge, read-only).',
+	async run(_args, ctx) {
+		return data(await request(ctx, 'mcp-vertex_git_pr_list', {}));
+	},
+};
+
+export const gitPrViewCommand: ICliCommand = {
+	name: 'git pr-view',
+	summary:
+		'View a pull request + CI check rollup via gh (number/branch/url, or current branch).',
+	async run(args, ctx) {
+		const pr =
+			args.find((arg) => !arg.startsWith('-')) ?? scalarArg(args, 'pr');
+		return data(
+			await request(ctx, 'mcp-vertex_git_pr_view', {
+				...(pr !== undefined ? { pr } : {}),
+			}),
+		);
+	},
+};
+
 export const gitCommands: readonly ICliCommand[] = [
 	gitStatusCommand,
 	gitChangedCommand,
@@ -119,4 +159,7 @@ export const gitCommands: readonly ICliCommand[] = [
 	gitBlameCommand,
 	gitShowCommand,
 	gitWorktreeCommand,
+	gitChangelogCommand,
+	gitPrListCommand,
+	gitPrViewCommand,
 ];

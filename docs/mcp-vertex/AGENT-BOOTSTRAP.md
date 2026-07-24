@@ -93,6 +93,31 @@ the equivalent and equally cheap.
   changed. `round_context` and the docs tools expose digests for exactly
   this. Re-reading unchanged content is the #1 token waste.
 
+### 4.c Session hygiene — keep host usage intentional
+
+`mcp-vertex` can measure its own payloads and tool activity, but it cannot
+inspect a host's private context meter or subscription quota. Treat host
+warnings as authoritative and use this portable policy in every project:
+
+- A session is for one coherent task. At a completed slice, write the small
+  handoff/digest that the next session needs; do not keep an idle or polling
+  session alive in the background.
+- When the `memory` plugin is loaded, run its compaction check after roughly
+  25 turns or 8k tokens of carried raw tail. If it triggers, compact the
+  working state and recall the digest instead of carrying raw output forward.
+- At a host context warning — or before roughly 100k tokens when the host
+  exposes a meter — checkpoint and start a fresh session. Compact for related
+  work; clear the conversation for unrelated work, then re-orient and recall
+  only the needed digest.
+- More than two hours of continuous work requires a deliberate checkpoint and
+  compaction. An unattended or idle session must never be allowed to run for
+  hours merely to wait for work; use notifications/events and end it.
+
+These are guardrails, not a claim that the server can account for Claude,
+Codex, or another host's subscription usage. `usage-tracking` remains useful
+for local MCP activity, while the host dashboard remains the source of truth
+for host-level limits.
+
 ### 4.b Coexistence with parallel work (c00012)
 
 This workspace is shared. Other agents, CI bots, and humans commit
@@ -433,6 +458,12 @@ for the rest of the session, so how you call these tools matters:
 - **`/compact` between unrelated tasks.** Once a slice/proposal is
   closed and before starting unrelated work, compact — don't carry its
   tool output forward for the rest of the session.
+- **Rotate before the danger zone.** At the host's context warning (or about
+  100k tokens when Claude exposes the meter), checkpoint with the memory
+  digest, then start a fresh session. Use `/compact` only to continue related
+  work; use `/clear` before unrelated work. Do not leave an idle Claude Code
+  session running in the background; a continuous session beyond two hours
+  needs an intentional checkpoint, and one approaching many hours should end.
 
 ### 8.3 Cursor / Aider / Continue — generic LLM hosts
 

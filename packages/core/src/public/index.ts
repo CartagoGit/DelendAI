@@ -570,5 +570,48 @@ export type {
 	ShellFallbackRing,
 } from '../lib/agents/shell-fallback';
 
+// --- shared external-tool / scanner core (r00012) --------------------------
+// One runner + one probe + one finding shape that security, deps-audit,
+// perf, forge, browser and database all compose, so a scanner is a thin
+// adapter (raw tool output → IFinding[]) instead of re-implementing
+// subprocess + parse + presence + install-hint each time.
+export {
+	probeTool,
+	probeTools,
+	realProbeDeps,
+} from '../lib/external-tool/probe';
+export {
+	makeRedactor,
+	runExternalTool,
+} from '../lib/external-tool/run-external-tool';
+export {
+	renderFindingSummary,
+	renderFindingsTable,
+	sortFindings,
+	summarizeFindings,
+	toScanResult,
+	worstSeverity,
+} from '../lib/external-tool/render-findings';
+export { aggregateScans } from '../lib/external-tool/aggregate-scans';
+export { FINDING_SEVERITY_ORDER } from '../lib/contracts/constants/finding.constant';
+export type {
+	IArgvExec,
+	IExternalTool,
+	IExternalToolRun,
+	IInstallHint,
+	IProbeDeps,
+	IRunExternalToolInput,
+	IToolProbeResult,
+} from '../lib/contracts/interfaces/external-tool.interface';
+export type {
+	FindingSeverity,
+	IAggregatedScan,
+	IFinding,
+	IFindingCounts,
+	IFindingLocation,
+	IScanResult,
+	IScanSkip,
+} from '../lib/contracts/interfaces/finding.interface';
+
 // --- generated tool-output types (N23, see scripts/generate-tool-types.ts) ---
 export type * from '../generated/tool-outputs';
