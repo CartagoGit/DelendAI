@@ -335,6 +335,29 @@ export interface McpVertexDepsDepsCheckOutput {
 	healthy: boolean;
 }
 
+export interface McpVertexDepsDepsLicensesOutput {
+	tool: string;
+	findings: Array<{
+		ruleId: string;
+		severity: "critical" | "high" | "medium" | "low" | "info";
+		message: string;
+		fix?: string;
+		location?: {
+			file: string;
+			line?: number;
+			endLine?: number;
+		};
+	}>;
+	summary: {
+		critical: number;
+		high: number;
+		medium: number;
+		low: number;
+		info: number;
+	};
+	worst: string;
+}
+
 export interface McpVertexDepsDepsListOutput {
 	manifest: string;
 	found: boolean;
@@ -2250,6 +2273,7 @@ export interface McpVertexToolOutputs {
 	"mcp-vertex_create_project": McpVertexCreateProjectOutput;
 	"mcp-vertex_deps_deps_audit": McpVertexDepsDepsAuditOutput;
 	"mcp-vertex_deps_deps_check": McpVertexDepsDepsCheckOutput;
+	"mcp-vertex_deps_deps_licenses": McpVertexDepsDepsLicensesOutput;
 	"mcp-vertex_deps_deps_list": McpVertexDepsDepsListOutput;
 	"mcp-vertex_deps_deps_outdated": McpVertexDepsDepsOutdatedOutput;
 	"mcp-vertex_deps_deps_polyglot": McpVertexDepsDepsPolyglotOutput;

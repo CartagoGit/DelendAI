@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-07-24T00:31:21.401Z",
+	"generatedAt": "2026-07-24T00:40:07.279Z",
 	"mode": "compact",
 	"tools": [
 		{
@@ -40,6 +40,10 @@
 		},
 		{
 			"name": "mcp-vertex_deps_deps_check",
+			"plugin": "deps"
+		},
+		{
+			"name": "mcp-vertex_deps_deps_licenses",
 			"plugin": "deps"
 		},
 		{
