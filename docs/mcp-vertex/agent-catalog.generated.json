@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-07-24T16:31:45.856Z",
+	"generatedAt": "2026-07-24T17:01:18.048Z",
 	"mode": "compact",
 	"tools": [
 		{
@@ -803,6 +803,13 @@
 				"kind": "audit"
 			},
 			{
+				"id": "a00068",
+				"title": "a00068",
+				"track": "code-quality+concurrency+architecture+invariants+tests+dx",
+				"status": "ready",
+				"kind": "audit"
+			},
+			{
 				"id": "c00089",
 				"title": "c00089",
 				"track": "presets+metrics+token-efficiency",
@@ -813,6 +820,13 @@
 				"id": "d00003",
 				"title": "d00003",
 				"track": "roadmap+plugins+ecosystem",
+				"status": "ready",
+				"kind": "docs"
+			},
+			{
+				"id": "d00004",
+				"title": "d00004",
+				"track": "agent-discipline+host-adapters",
 				"status": "ready",
 				"kind": "docs"
 			},
@@ -1013,6 +1027,20 @@
 				"kind": "feat"
 			},
 			{
+				"id": "f00146",
+				"title": "f00146",
+				"track": "host-adapters+usage-tracking",
+				"status": "ready",
+				"kind": "feat"
+			},
+			{
+				"id": "f00147",
+				"title": "f00147",
+				"track": "memory+host-adapters",
+				"status": "ready",
+				"kind": "feat"
+			},
+			{
 				"id": "r00011",
 				"title": "r00011",
 				"track": "refactor+config+dx",
@@ -1028,7 +1056,7 @@
 			}
 		],
 		"byStatus": {
-			"ready": 32,
+			"ready": 36,
 			"in-progress": 0,
 			"review": 0,
 			"paused": 1,
