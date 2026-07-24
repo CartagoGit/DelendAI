@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-07-24T17:51:27.544Z",
+	"generatedAt": "2026-07-24T19:39:18.805Z",
 	"mode": "compact",
 	"tools": [
 		{
@@ -800,13 +800,6 @@
 	"proposals": {
 		"actionable": [
 			{
-				"id": "a00067",
-				"title": "a00067",
-				"track": "research+architecture+economics+tooling",
-				"status": "ready",
-				"kind": "audit"
-			},
-			{
 				"id": "a00068",
 				"title": "a00068",
 				"track": "code-quality+concurrency+architecture+invariants+tests+dx",
@@ -817,6 +810,13 @@
 				"id": "c00089",
 				"title": "c00089",
 				"track": "presets+metrics+token-efficiency",
+				"status": "ready",
+				"kind": "chore"
+			},
+			{
+				"id": "c00123",
+				"title": "c00123",
+				"track": "tooling+llm-velocity+optional",
 				"status": "ready",
 				"kind": "chore"
 			},
@@ -835,17 +835,10 @@
 				"kind": "feat"
 			},
 			{
-				"id": "f00119",
-				"title": "f00119",
-				"track": "plugin+orchestration+routing",
-				"status": "ready",
-				"kind": "feat"
-			},
-			{
 				"id": "f00120",
 				"title": "f00120",
 				"track": "plugin+scaffold+dx",
-				"status": "ready",
+				"status": "in-progress",
 				"kind": "feat"
 			},
 			{
@@ -1017,6 +1010,13 @@
 				"kind": "feat"
 			},
 			{
+				"id": "f00148",
+				"title": "f00148",
+				"track": "infra+distribution+economics",
+				"status": "ready",
+				"kind": "feat"
+			},
+			{
 				"id": "r00011",
 				"title": "r00011",
 				"track": "refactor+config+dx",
@@ -1029,14 +1029,21 @@
 				"track": "refactor+core+plugins",
 				"status": "ready",
 				"kind": "refactor"
+			},
+			{
+				"id": "v00122",
+				"title": "v00122",
+				"track": "perf+token-budgets+agent-velocity",
+				"status": "ready",
+				"kind": "unspecified"
 			}
 		],
 		"byStatus": {
 			"ready": 32,
-			"in-progress": 0,
-			"review": 4,
+			"in-progress": 1,
+			"review": 5,
 			"paused": 1,
-			"done": 240,
+			"done": 241,
 			"blocked": 0,
 			"retired": 2,
 			"unspecified": 0
