@@ -1,853 +1,341 @@
 {
-	"generatedAt": "2026-07-24T20:08:45.257Z",
-	"mode": "full",
+	"generatedAt": "2026-07-24T20:13:19.491Z",
+	"mode": "compact",
 	"tools": [
 		{
-			"name": "mcp-vertex_agent_catalog",
-			"plugin": "mcp-vertex",
-			"summary": "Unified discovery catalog for loaded tools, versioned skills and actionable proposals. Read-only.",
-			"tags": [
-				"orientation"
-			]
+			"name": "mcp-vertex_agent_catalog"
 		},
 		{
-			"name": "mcp-vertex_analyze_project",
-			"plugin": "mcp-vertex",
-			"summary": "Read-only: inspect the project and recommend an MCP server plan (type, tools, plugins, mcp.json).",
-			"tags": [
-				"orientation",
-				"bootstrap"
-			]
+			"name": "mcp-vertex_analyze_project"
 		},
 		{
 			"name": "mcp-vertex_auto-agent-selector_auto_evaluate",
-			"plugin": "auto-agent-selector",
-			"summary": "Evaluate observed provider win-rates and flag newly reachable providers for review (no spend).",
-			"tags": [
-				"orchestration",
-				"evaluation"
-			]
+			"plugin": "auto-agent-selector"
 		},
 		{
 			"name": "mcp-vertex_auto-agent-selector_auto_recommend",
-			"plugin": "auto-agent-selector",
-			"summary": "Rank reachable providers for a task and recommend the best-value one (cost↔quality dial + optional pin, measured win-rates). Advisory: you decide.",
-			"tags": [
-				"orchestration"
-			]
+			"plugin": "auto-agent-selector"
 		},
 		{
 			"name": "mcp-vertex_auto-agent-selector_auto_record",
-			"plugin": "auto-agent-selector",
-			"summary": "Record a task outcome (success/failure) for a provider so future recommendations learn which one actually wins.",
-			"tags": [
-				"orchestration"
-			]
+			"plugin": "auto-agent-selector"
 		},
 		{
 			"name": "mcp-vertex_auto-agent-selector_auto_run",
-			"plugin": "auto-agent-selector",
-			"summary": "Plan the cheapest-capable → escalate-up route for a task (run step 1; on gate failure escalate to a stronger provider, within your cost ceiling).",
-			"tags": [
-				"orchestration"
-			]
+			"plugin": "auto-agent-selector"
 		},
 		{
 			"name": "mcp-vertex_auto-agent-selector_auto_status",
-			"plugin": "auto-agent-selector",
-			"summary": "List reachable LLM/agent providers (CLI + API keys), cheapest-first, plus missing ones with a one-command fix.",
-			"tags": [
-				"orchestration",
-				"orientation"
-			]
+			"plugin": "auto-agent-selector"
 		},
 		{
-			"name": "mcp-vertex_configuration_center",
-			"plugin": "mcp-vertex",
-			"tags": [
-				"configuration",
-				"lazy"
-			]
+			"name": "mcp-vertex_configuration_center"
 		},
 		{
 			"name": "mcp-vertex_conventions_conventions_check",
-			"plugin": "conventions",
-			"summary": "Scan the workspace and report file-convention drift (per-role counts + unmatched files).",
-			"tags": [
-				"conventions"
-			]
+			"plugin": "conventions"
 		},
 		{
 			"name": "mcp-vertex_conventions_conventions_classify",
-			"plugin": "conventions",
-			"summary": "Classify repo-relative paths into file-convention roles (pure, no scan).",
-			"tags": [
-				"conventions"
-			]
+			"plugin": "conventions"
 		},
 		{
-			"name": "mcp-vertex_create_project",
-			"plugin": "mcp-vertex",
-			"summary": "Generate files for a project-specific server, plugin or MCP client from a plan (returns files for you to write).",
-			"tags": [
-				"bootstrap"
-			]
+			"name": "mcp-vertex_create_project"
 		},
 		{
 			"name": "mcp-vertex_deps_deps_audit",
-			"plugin": "deps",
-			"summary": "Scan dependencies for known CVEs via bun audit (normalized findings). Opt-in, network.",
-			"tags": [
-				"deps",
-				"security",
-				"network"
-			],
-			"effects": [
-				"network"
-			]
+			"plugin": "deps"
 		},
 		{
 			"name": "mcp-vertex_deps_deps_check",
-			"plugin": "deps",
-			"summary": "Offline dependency health: missing lockfile, unpinned ranges, cross-section duplicates.",
-			"tags": [
-				"deps",
-				"lazy"
-			]
+			"plugin": "deps"
 		},
 		{
 			"name": "mcp-vertex_deps_deps_licenses",
-			"plugin": "deps",
-			"summary": "Flag dependencies with copyleft/proprietary/unknown/missing licenses (offline).",
-			"tags": [
-				"deps",
-				"security",
-				"lazy"
-			]
+			"plugin": "deps"
 		},
 		{
 			"name": "mcp-vertex_deps_deps_list",
-			"plugin": "deps",
-			"summary": "Inventory the manifest dependencies (name, range, section).",
-			"tags": [
-				"deps",
-				"orientation",
-				"lazy"
-			]
+			"plugin": "deps"
 		},
 		{
 			"name": "mcp-vertex_deps_deps_outdated",
-			"plugin": "deps",
-			"summary": "Resolve each dep's latest npm version and flag stale ones. Opt-in, network.",
-			"tags": [
-				"deps",
-				"network"
-			],
-			"effects": [
-				"network"
-			]
+			"plugin": "deps"
 		},
 		{
 			"name": "mcp-vertex_deps_deps_polyglot",
-			"plugin": "deps",
-			"summary": "List Python/Rust/Go dependencies (pyproject.toml, Cargo.toml, go.mod) if present.",
-			"tags": [
-				"deps",
-				"lazy"
-			]
+			"plugin": "deps"
 		},
 		{
 			"name": "mcp-vertex_diagram_diagram_deps",
-			"plugin": "diagram",
-			"summary": "Render the workspace internal dependency graph as a mermaid flowchart.",
-			"tags": [
-				"diagram",
-				"orientation"
-			]
+			"plugin": "diagram"
 		},
 		{
 			"name": "mcp-vertex_docs_docs_list",
-			"plugin": "docs",
-			"summary": "Catalogue the project markdown docs (path + title), low-token.",
-			"tags": [
-				"docs",
-				"orientation",
-				"lazy"
-			]
+			"plugin": "docs"
 		},
 		{
 			"name": "mcp-vertex_docs_docs_read",
-			"plugin": "docs",
-			"summary": "Read one project doc by its workspace-relative path.",
-			"tags": [
-				"docs",
-				"lazy"
-			]
+			"plugin": "docs"
 		},
 		{
 			"name": "mcp-vertex_docs_docs_search",
-			"plugin": "docs",
-			"summary": "[deprecated] Use search_search { roots: [\"docs\"] } instead.",
-			"tags": [
-				"docs",
-				"orientation",
-				"lazy",
-				"deprecated"
-			]
+			"plugin": "docs"
 		},
 		{
-			"name": "mcp-vertex_drift_check",
-			"plugin": "mcp-vertex",
-			"summary": "Diff the current project analysis against the last persisted snapshot — flags new scripts, dropped deps, framework changes and the missing tools they imply.",
-			"tags": [
-				"bootstrap",
-				"drift"
-			]
+			"name": "mcp-vertex_drift_check"
 		},
 		{
 			"name": "mcp-vertex_env_env_check",
-			"plugin": "env",
-			"summary": "Validate a .env file: duplicate/empty/malformed keys + missing required vars. Offline.",
-			"tags": [
-				"env",
-				"config"
-			]
+			"plugin": "env"
 		},
 		{
-			"name": "mcp-vertex_fs_read",
-			"plugin": "mcp-vertex",
-			"summary": "Read a workspace-contained file, optionally a 1-indexed line range.",
-			"tags": [
-				"fs",
-				"orientation"
-			]
+			"name": "mcp-vertex_fs_read"
 		},
 		{
-			"name": "mcp-vertex_fs_write",
-			"plugin": "mcp-vertex",
-			"summary": "Write a workspace-contained file (path containment + optional atomic+create-dirs).",
-			"tags": [
-				"fs"
-			],
-			"effects": [
-				"write"
-			]
+			"name": "mcp-vertex_fs_write"
 		},
 		{
-			"name": "mcp-vertex_get_validation_matrix",
-			"plugin": "mcp-vertex",
-			"summary": "Returns the quality-gate commands per scope (how to validate work in this project).",
-			"tags": [
-				"orientation"
-			]
+			"name": "mcp-vertex_get_validation_matrix"
 		},
 		{
 			"name": "mcp-vertex_git_blame",
-			"plugin": "git",
-			"summary": "Per-line authorship for a tracked file (optionally a line range).",
-			"tags": [
-				"git"
-			]
+			"plugin": "git"
 		},
 		{
 			"name": "mcp-vertex_git_changed",
-			"plugin": "git",
-			"summary": "List of changed file paths in the working tree.",
-			"tags": [
-				"git",
-				"orientation"
-			]
+			"plugin": "git"
 		},
 		{
 			"name": "mcp-vertex_git_changelog",
-			"plugin": "git",
-			"summary": "Conventional-commit changelog + inferred semver bump for a range.",
-			"tags": [
-				"git",
-				"orientation"
-			]
+			"plugin": "git"
 		},
 		{
 			"name": "mcp-vertex_git_diff",
-			"plugin": "git",
-			"summary": "Diff --stat (optionally staged or scoped to a path).",
-			"tags": [
-				"git"
-			]
+			"plugin": "git"
 		},
 		{
 			"name": "mcp-vertex_git_log",
-			"plugin": "git",
-			"summary": "Recent commits (hash + subject).",
-			"tags": [
-				"git",
-				"orientation"
-			]
+			"plugin": "git"
 		},
 		{
 			"name": "mcp-vertex_git_pr_list",
-			"plugin": "git",
-			"summary": "List open pull requests (number, title, branch, url) via gh. Opt-in, network.",
-			"tags": [
-				"git",
-				"forge",
-				"network"
-			],
-			"effects": [
-				"network"
-			]
+			"plugin": "git"
 		},
 		{
 			"name": "mcp-vertex_git_pr_view",
-			"plugin": "git",
-			"summary": "View a pull request with its CI check rollup via gh. Opt-in, network.",
-			"tags": [
-				"git",
-				"forge",
-				"network"
-			],
-			"effects": [
-				"network"
-			]
+			"plugin": "git"
 		},
 		{
 			"name": "mcp-vertex_git_show",
-			"plugin": "git",
-			"summary": "Commit metadata + --stat summary for a ref (no full patch).",
-			"tags": [
-				"git"
-			]
+			"plugin": "git"
 		},
 		{
 			"name": "mcp-vertex_git_status",
-			"plugin": "git",
-			"summary": "Branch + working-tree status (clean flag + entries).",
-			"tags": [
-				"git",
-				"orientation"
-			]
+			"plugin": "git"
 		},
 		{
 			"name": "mcp-vertex_git_worktree",
-			"plugin": "git",
-			"summary": "List existing git worktrees for this repo (read-only).",
-			"tags": [
-				"git",
-				"orientation"
-			]
+			"plugin": "git"
 		},
 		{
 			"name": "mcp-vertex_i18n_i18n_check",
-			"plugin": "i18n",
-			"summary": "Flag missing keys + placeholder mismatches across locale JSON files. Offline.",
-			"tags": [
-				"i18n",
-				"quality"
-			]
+			"plugin": "i18n"
 		},
 		{
-			"name": "mcp-vertex_init_config",
-			"plugin": "mcp-vertex",
-			"summary": "Derive (and optionally write) mcp-vertex.config.json from the live project — the self-init any MCP client can call.",
-			"tags": [
-				"orientation",
-				"bootstrap"
-			]
+			"name": "mcp-vertex_init_config"
 		},
 		{
-			"name": "mcp-vertex_knowledge",
-			"plugin": "mcp-vertex",
-			"summary": "List knowledge ids/titles, or fetch one entry by id. Lazy: read a doc only when needed.",
-			"tags": [
-				"orientation",
-				"lazy"
-			]
+			"name": "mcp-vertex_knowledge"
 		},
 		{
 			"name": "mcp-vertex_logs_correlate",
-			"plugin": "logs",
-			"summary": "Build a timeline for one taskId or agent and flag long gaps.",
-			"tags": [
-				"logs",
-				"observability"
-			]
+			"plugin": "logs"
 		},
 		{
 			"name": "mcp-vertex_logs_query",
-			"plugin": "logs",
-			"summary": "Query redacted append-only MCP log events with filters and cursor pagination.",
-			"tags": [
-				"logs",
-				"observability"
-			]
+			"plugin": "logs"
 		},
 		{
 			"name": "mcp-vertex_logs_redact_test",
-			"plugin": "logs",
-			"summary": "Audit how the shared secret redactor treats a sample payload.",
-			"tags": [
-				"logs",
-				"security"
-			]
+			"plugin": "logs"
 		},
 		{
 			"name": "mcp-vertex_logs_subscribe",
-			"plugin": "logs",
-			"summary": "Return recent events in the shape consumed by the logs SSE endpoint.",
-			"tags": [
-				"logs",
-				"observability"
-			]
+			"plugin": "logs"
 		},
 		{
 			"name": "mcp-vertex_logs_tail",
-			"plugin": "logs",
-			"summary": "Return the newest redacted MCP log events.",
-			"tags": [
-				"logs",
-				"observability"
-			]
+			"plugin": "logs"
 		},
 		{
 			"name": "mcp-vertex_memory_checkpoint_packet",
-			"plugin": "memory",
-			"summary": "Rehydrate the latest explicit session digest as a bounded continuation packet.",
-			"tags": [
-				"memory",
-				"token-efficiency",
-				"lazy"
-			]
+			"plugin": "memory"
 		},
 		{
 			"name": "mcp-vertex_memory_compact",
-			"plugin": "memory",
-			"summary": "Distil carried working-state into a compact session digest; drop the noisy tail.",
-			"tags": [
-				"memory",
-				"token-efficiency"
-			],
-			"effects": [
-				"write"
-			]
+			"plugin": "memory"
 		},
 		{
 			"name": "mcp-vertex_memory_compaction_check",
-			"plugin": "memory",
-			"summary": "Check whether the carried context tail is worth compacting now (deterministic).",
-			"tags": [
-				"memory",
-				"token-efficiency",
-				"lazy"
-			]
+			"plugin": "memory"
 		},
 		{
 			"name": "mcp-vertex_memory_export",
-			"plugin": "memory",
-			"summary": "Export the full note store as a JSON or NDJSON snapshot.",
-			"tags": [
-				"memory"
-			]
+			"plugin": "memory"
 		},
 		{
 			"name": "mcp-vertex_memory_forget",
-			"plugin": "memory",
-			"summary": "Delete a note by id.",
-			"tags": [
-				"memory"
-			],
-			"effects": [
-				"write",
-				"destructive"
-			]
+			"plugin": "memory"
 		},
 		{
 			"name": "mcp-vertex_memory_import",
-			"plugin": "memory",
-			"summary": "Import a previously exported snapshot (replace or merge).",
-			"tags": [
-				"memory"
-			],
-			"effects": [
-				"write",
-				"destructive"
-			]
+			"plugin": "memory"
 		},
 		{
 			"name": "mcp-vertex_memory_list",
-			"plugin": "memory",
-			"summary": "List note ids, titles and tags (cheap index; paginated).",
-			"tags": [
-				"memory",
-				"lazy"
-			]
+			"plugin": "memory"
 		},
 		{
 			"name": "mcp-vertex_memory_recall",
-			"plugin": "memory",
-			"summary": "Recall notes by free-text query and/or tags (newest first).",
-			"tags": [
-				"memory",
-				"lazy"
-			]
+			"plugin": "memory"
 		},
 		{
 			"name": "mcp-vertex_memory_save",
-			"plugin": "memory",
-			"summary": "Save (or update) a titled note with optional tags.",
-			"tags": [
-				"memory"
-			],
-			"effects": [
-				"write"
-			]
+			"plugin": "memory"
 		},
 		{
-			"name": "mcp-vertex_metrics",
-			"plugin": "mcp-vertex",
-			"summary": "Per-tool call metrics: calls, errors, latency (ms) and response bytes.",
-			"tags": [
-				"observability",
-				"lazy"
-			],
-			"effects": [
-				"write"
-			]
+			"name": "mcp-vertex_metrics"
 		},
 		{
 			"name": "mcp-vertex_notification_await_lock",
-			"plugin": "notification",
-			"summary": "Wait until a task lock is released (or timeout), so agents stop polling agent_lock status.",
-			"tags": [
-				"coordination",
-				"lazy"
-			]
+			"plugin": "notification"
 		},
 		{
 			"name": "mcp-vertex_notification_notify_status",
-			"plugin": "notification",
-			"summary": "Lock-release notifier: pushes notifications/message when a watched lock frees, so agents stop polling.",
-			"tags": [
-				"coordination",
-				"lazy"
-			]
+			"plugin": "notification"
 		},
 		{
 			"name": "mcp-vertex_orchestrator-runner_advise_routing",
-			"plugin": "orchestrator-runner",
-			"summary": "Score the provider roster for a task and advise which provider to route to (no spend).",
-			"tags": [
-				"orchestrator-runner",
-				"lazy",
-				"routing"
-			]
+			"plugin": "orchestrator-runner"
 		},
 		{
 			"name": "mcp-vertex_orchestrator-runner_advise_spend",
-			"plugin": "orchestrator-runner",
-			"summary": "Analyse recorded spend + limit status and recommend non-destructive cost actions (risk-graded).",
-			"tags": [
-				"orchestrator-runner",
-				"lazy",
-				"spend",
-				"analyst"
-			]
+			"plugin": "orchestrator-runner"
 		},
 		{
 			"name": "mcp-vertex_orchestrator-runner_bootstrap_providers",
-			"plugin": "orchestrator-runner",
-			"summary": "Run the provider bootstrap wizard: probe, draft a roster, and return a prose brief + config patch.",
-			"tags": [
-				"orchestrator-runner",
-				"lazy",
-				"bootstrap"
-			],
-			"effects": [
-				"spawn",
-				"write"
-			]
+			"plugin": "orchestrator-runner"
 		},
 		{
 			"name": "mcp-vertex_orchestrator-runner_cancel_invocation",
-			"plugin": "orchestrator-runner",
-			"summary": "Cancel an in-flight invocation by id, applying the per-kind cancellation ladder.",
-			"tags": [
-				"orchestrator-runner",
-				"lazy",
-				"invoke"
-			]
+			"plugin": "orchestrator-runner"
 		},
 		{
 			"name": "mcp-vertex_orchestrator-runner_discover_providers",
-			"plugin": "orchestrator-runner",
-			"summary": "Probe the host PATH for known provider CLIs and report which are installed vs missing.",
-			"tags": [
-				"orchestrator-runner",
-				"lazy",
-				"bootstrap"
-			],
-			"effects": [
-				"spawn"
-			]
+			"plugin": "orchestrator-runner"
 		},
 		{
 			"name": "mcp-vertex_orchestrator-runner_format_handoff",
-			"plugin": "orchestrator-runner",
-			"summary": "Format a routing decision into a ready-to-run CLI command or curl template (no spend).",
-			"tags": [
-				"orchestrator-runner",
-				"lazy",
-				"handoff"
-			]
+			"plugin": "orchestrator-runner"
 		},
 		{
 			"name": "mcp-vertex_orchestrator-runner_get_quota",
-			"plugin": "orchestrator-runner",
-			"summary": "Read the per-provider quota snapshot (populated by the bootstrap layer in a later slice).",
-			"tags": [
-				"orchestrator-runner",
-				"lazy",
-				"quota"
-			]
+			"plugin": "orchestrator-runner"
 		},
 		{
 			"name": "mcp-vertex_orchestrator-runner_healthcheck_providers",
-			"plugin": "orchestrator-runner",
-			"summary": "Probe each configured provider CLI on PATH and report install/auth/model availability.",
-			"tags": [
-				"orchestrator-runner",
-				"lazy",
-				"healthcheck"
-			],
-			"effects": [
-				"spawn",
-				"write"
-			]
+			"plugin": "orchestrator-runner"
 		},
 		{
 			"name": "mcp-vertex_orchestrator-runner_invoke",
-			"plugin": "orchestrator-runner",
-			"summary": "Execute a task on the best provider (with fallback). Gated by executeApi + a signed confirmation token — never spends silently.",
-			"tags": [
-				"orchestrator-runner",
-				"lazy",
-				"invoke",
-				"spend"
-			]
+			"plugin": "orchestrator-runner"
 		},
 		{
 			"name": "mcp-vertex_orchestrator-runner_list_models",
-			"plugin": "orchestrator-runner",
-			"summary": "Enumerate the merged provider roster with capability profiles and current reachability.",
-			"tags": [
-				"orchestrator-runner",
-				"lazy",
-				"routing"
-			]
+			"plugin": "orchestrator-runner"
 		},
 		{
 			"name": "mcp-vertex_orchestrator-runner_set_provider_state",
-			"plugin": "orchestrator-runner",
-			"summary": "Manually override a provider’s availability (e.g. force unavailable until a time).",
-			"tags": [
-				"orchestrator-runner",
-				"lazy",
-				"routing"
-			]
+			"plugin": "orchestrator-runner"
 		},
 		{
-			"name": "mcp-vertex_overview",
-			"plugin": "mcp-vertex",
-			"summary": "Cold-start map: server identity, plugins, all tools, knowledge ids and the recommended next action. Call this first.",
-			"tags": [
-				"orientation"
-			]
+			"name": "mcp-vertex_overview"
 		},
 		{
 			"name": "mcp-vertex_perf_perf_bundle",
-			"plugin": "perf",
-			"summary": "Measure files matching globs and flag those over per-file / total byte budgets. Offline.",
-			"tags": [
-				"perf",
-				"quality"
-			]
+			"plugin": "perf"
 		},
 		{
-			"name": "mcp-vertex_plan_mcp_project",
-			"plugin": "mcp-vertex",
-			"summary": "EXHAUSTIVE plan for a project-specific MCP server (all tools/prompts/skills/agents + tests) and the files to write.",
-			"tags": [
-				"bootstrap"
-			]
+			"name": "mcp-vertex_plan_mcp_project"
 		},
 		{
 			"name": "mcp-vertex_proposals_agent_lock",
-			"plugin": "proposals",
-			"summary": "Claim files before editing, release after (claim/release/status/gc). The write-ownership primitive.",
-			"tags": [
-				"coordination"
-			],
-			"effects": [
-				"write"
-			]
+			"plugin": "proposals"
 		},
 		{
 			"name": "mcp-vertex_proposals_agent_lock_release_orphan",
-			"plugin": "proposals",
-			"effects": [
-				"write"
-			]
+			"plugin": "proposals"
 		},
 		{
 			"name": "mcp-vertex_proposals_agent_names",
-			"plugin": "proposals",
-			"summary": "Name the whole agent tree (orchestrator included): assign/release/heartbeat/list/tree/who_uses/gc/reconcile.",
-			"tags": [
-				"coordination"
-			],
-			"effects": [
-				"write"
-			]
+			"plugin": "proposals"
 		},
 		{
 			"name": "mcp-vertex_proposals_agent_worktree",
-			"plugin": "proposals",
-			"summary": "Isolate a concurrent agent into its own git worktree + branch (create/list/remove). Required when 2+ agents share this repo.",
-			"tags": [
-				"coordination"
-			],
-			"effects": [
-				"write",
-				"spawn"
-			]
+			"plugin": "proposals"
 		},
 		{
 			"name": "mcp-vertex_proposals_auto_work",
-			"plugin": "proposals",
-			"summary": "One call → next proposal + a compact ordered action plan (claim → slice → validate → sync → [persist] → release).",
-			"tags": [
-				"work"
-			]
+			"plugin": "proposals"
 		},
 		{
 			"name": "mcp-vertex_proposals_branch_gc",
-			"plugin": "proposals",
-			"summary": "Remove worktrees whose branch is merged into base, clean, and idle (dry-run default; unmerged branches are sacred).",
-			"tags": [
-				"coordination"
-			],
-			"effects": [
-				"write"
-			]
+			"plugin": "proposals"
 		},
 		{
 			"name": "mcp-vertex_proposals_branch_status",
-			"plugin": "proposals",
-			"summary": "Snapshot every agent/* branch and every worktree: ahead/behind vs base, dirty/untracked counts, out-of-cache flag.",
-			"tags": [
-				"coordination"
-			]
+			"plugin": "proposals"
 		},
 		{
 			"name": "mcp-vertex_proposals_close_slice",
-			"plugin": "proposals",
-			"summary": "Mark a slice done in its proposal + release its agent lock, then re-sync.",
-			"tags": [
-				"proposals"
-			],
-			"effects": [
-				"write"
-			]
+			"plugin": "proposals"
 		},
 		{
 			"name": "mcp-vertex_proposals_compact_status",
-			"plugin": "proposals",
-			"summary": "One-call low-token snapshot of the swarm: active locks, queue backpressure and proposal board counts.",
-			"tags": [
-				"coordination",
-				"orientation",
-				"lazy"
-			]
+			"plugin": "proposals"
 		},
 		{
 			"name": "mcp-vertex_proposals_continue_proposal",
-			"plugin": "proposals",
-			"summary": "Next proposal by cascade (mode auto), or a parallel slice plan/claim (modes plan/claim).",
-			"tags": [
-				"work"
-			],
-			"effects": [
-				"write"
-			]
+			"plugin": "proposals"
 		},
 		{
 			"name": "mcp-vertex_proposals_create_proposal",
-			"plugin": "proposals",
-			"summary": "Author a proposal (.md with frontmatter + disjoint ## Slices), validate overlap, write + sync index.",
-			"tags": [
-				"proposals"
-			],
-			"effects": [
-				"write"
-			]
+			"plugin": "proposals"
 		},
 		{
 			"name": "mcp-vertex_proposals_delegate",
-			"plugin": "proposals",
-			"summary": "Hand a slice to a subagent: assign a name + claim its files, returning a handoff packet.",
-			"tags": [
-				"orchestration",
-				"coordination"
-			],
-			"effects": [
-				"write"
-			]
+			"plugin": "proposals"
 		},
 		{
 			"name": "mcp-vertex_proposals_get_proposal_workflow",
-			"plugin": "proposals",
-			"summary": "Returns families, locations, naming, rules and the proposal template (as JSON).",
-			"tags": [
-				"orientation",
-				"lazy"
-			]
+			"plugin": "proposals"
 		},
 		{
 			"name": "mcp-vertex_proposals_inherit_host_instructions",
-			"plugin": "proposals",
-			"summary": "Audit host-instruction files (in-repo + opt-in ~/ config) into a ready proposal.",
-			"tags": [
-				"proposals",
-				"host-discovery"
-			],
-			"effects": [
-				"write"
-			]
+			"plugin": "proposals"
 		},
 		{
 			"name": "mcp-vertex_proposals_plan",
-			"plugin": "proposals",
-			"summary": "Validate a set of work slices: file disjointness + which are claimable now (parallel plan).",
-			"tags": [
-				"orchestration"
-			]
+			"plugin": "proposals"
 		},
 		{
 			"name": "mcp-vertex_proposals_proposal_adopt",
-			"plugin": "proposals",
-			"summary": "Analyze an existing proposals folder — and with apply:true, bootstrap the canonical store (folders + README + index).",
-			"tags": [
-				"proposals",
-				"orientation"
-			]
+			"plugin": "proposals"
 		},
 		{
 			"name": "mcp-vertex_proposals_proposal_board",
-			"plugin": "proposals",
-			"summary": "Orchestrator view: actionable proposals × slices (status/owner) + claimable now.",
-			"tags": [
-				"proposals",
-				"orientation"
-			]
+			"plugin": "proposals"
 		},
 		{
 			"name": "mcp-vertex_proposals_proposal_diagnose",
@@ -855,28 +343,15 @@
 		},
 		{
 			"name": "mcp-vertex_proposals_proposal_force_transition",
-			"plugin": "proposals",
-			"effects": [
-				"write"
-			]
+			"plugin": "proposals"
 		},
 		{
 			"name": "mcp-vertex_proposals_proposal_reconcile_folder",
-			"plugin": "proposals",
-			"effects": [
-				"write"
-			]
+			"plugin": "proposals"
 		},
 		{
 			"name": "mcp-vertex_proposals_proposal_review",
-			"plugin": "proposals",
-			"summary": "Peer-review a slice: submit for review, approve, or request changes — until a reviewer has no objection.",
-			"tags": [
-				"proposals"
-			],
-			"effects": [
-				"write"
-			]
+			"plugin": "proposals"
 		},
 		{
 			"name": "mcp-vertex_proposals_proposal_stale_list",
@@ -884,325 +359,132 @@
 		},
 		{
 			"name": "mcp-vertex_proposals_proposal_transition",
-			"plugin": "proposals",
-			"summary": "Move a proposal to a new status; validated, folder+frontmatter kept in sync.",
-			"tags": [
-				"work"
-			],
-			"effects": [
-				"write"
-			]
+			"plugin": "proposals"
 		},
 		{
 			"name": "mcp-vertex_proposals_proposals_close_plan",
-			"plugin": "proposals",
-			"summary": "Close a `type: plan` proposal. Refuses with a list of blockers until every child proposal, sub-plan, and own slice is done + peer-reviewed.",
-			"tags": [
-				"work",
-				"plan"
-			],
-			"effects": [
-				"write"
-			]
+			"plugin": "proposals"
 		},
 		{
 			"name": "mcp-vertex_proposals_round_context",
-			"plugin": "proposals",
-			"summary": "Persisted multi-agent round digest + staleness (forceRefresh recomputes). For resumed swarm work.",
-			"tags": [
-				"coordination",
-				"lazy"
-			],
-			"effects": [
-				"write"
-			]
+			"plugin": "proposals"
 		},
 		{
 			"name": "mcp-vertex_proposals_state_health",
-			"plugin": "proposals",
-			"summary": "Read-only swarm health: active locks, queue backpressure (waiterOrphans/threshold) and orphan assignments.",
-			"tags": [
-				"coordination",
-				"lazy"
-			]
+			"plugin": "proposals"
 		},
 		{
 			"name": "mcp-vertex_proposals_state_repair",
-			"plugin": "proposals",
-			"summary": "Heal stale swarm state: GC stale locks, expire due queue entries, force-release orphan assignments. dry-run by default.",
-			"tags": [
-				"coordination"
-			],
-			"effects": [
-				"write"
-			]
+			"plugin": "proposals"
 		},
 		{
 			"name": "mcp-vertex_proposals_swarm_hygiene",
-			"plugin": "proposals",
-			"summary": "Read-only snapshot: rescue candidates (ahead + not merged), GC-eligible orphans, and out-of-cache worktrees.",
-			"tags": [
-				"coordination"
-			]
+			"plugin": "proposals"
 		},
 		{
 			"name": "mcp-vertex_proposals_sync_proposals",
-			"plugin": "proposals",
-			"summary": "Rebuild the proposal index from the .md files (run after creating/renaming proposals).",
-			"tags": [
-				"lazy"
-			],
-			"effects": [
-				"write"
-			]
+			"plugin": "proposals"
 		},
 		{
 			"name": "mcp-vertex_proposals_task_queue",
-			"plugin": "proposals",
-			"summary": "Multi-agent coordination queue: enqueue/dequeue/subscribe/report (waitFor, observe, backpressure).",
-			"tags": [
-				"coordination"
-			],
-			"effects": [
-				"write"
-			]
+			"plugin": "proposals"
 		},
 		{
 			"name": "mcp-vertex_quality_get_quality_scopes",
-			"plugin": "quality",
-			"summary": "List the available quality scopes and their commands.",
-			"tags": [
-				"quality",
-				"orientation"
-			]
+			"plugin": "quality"
 		},
 		{
 			"name": "mcp-vertex_quality_quality_cancel",
-			"plugin": "quality",
-			"summary": "Abort running quality commands (by PID or all) instead of waiting for the timeout.",
-			"tags": [
-				"quality"
-			],
-			"effects": [
-				"spawn"
-			]
+			"plugin": "quality"
 		},
 		{
 			"name": "mcp-vertex_quality_quality_run_all",
-			"plugin": "quality",
-			"summary": "Run every configured quality scope and return one aggregated pass/fail report.",
-			"tags": [
-				"quality"
-			],
-			"effects": [
-				"spawn"
-			]
+			"plugin": "quality"
 		},
 		{
 			"name": "mcp-vertex_quality_run_quality",
-			"plugin": "quality",
-			"summary": "Run a quality scope (lint/test/build/typecheck) and return structured pass/fail.",
-			"tags": [
-				"quality"
-			],
-			"effects": [
-				"spawn"
-			]
+			"plugin": "quality"
 		},
 		{
 			"name": "mcp-vertex_rules_apply_rules",
-			"plugin": "rules",
-			"summary": "Returns a mode-aware plan to make code comply.",
-			"tags": [
-				"rules"
-			]
+			"plugin": "rules"
 		},
 		{
 			"name": "mcp-vertex_rules_check_rules",
-			"plugin": "rules",
-			"summary": "Returns, per area, the linter command and resolved configs to validate compliance.",
-			"tags": [
-				"rules"
-			]
+			"plugin": "rules"
 		},
 		{
 			"name": "mcp-vertex_rules_get_rules",
-			"plugin": "rules",
-			"summary": "Returns the rules map (per area: framework, configs+typecheck configs project-first), the mode, conventions, and language dogmas.",
-			"tags": [
-				"rules",
-				"orientation"
-			]
+			"plugin": "rules"
 		},
 		{
-			"name": "mcp-vertex_scaffold",
-			"plugin": "mcp-vertex",
-			"summary": "Generate a tool / prompt / skill / agent / host project / plugin from templates (dry-run by default).",
-			"tags": [
-				"bootstrap"
-			],
-			"effects": [
-				"write"
-			]
+			"name": "mcp-vertex_scaffold"
 		},
 		{
 			"name": "mcp-vertex_search_search",
-			"plugin": "search",
-			"summary": "Search workspace text files for a query (grep-like, low-token).",
-			"tags": [
-				"search",
-				"lazy"
-			]
+			"plugin": "search"
 		},
 		{
 			"name": "mcp-vertex_security_security_audit",
-			"plugin": "security",
-			"summary": "Run every scanner (secrets + dependency CVEs + licenses) and return one ranked backlog.",
-			"tags": [
-				"security",
-				"audit",
-				"network"
-			],
-			"effects": [
-				"network"
-			]
+			"plugin": "security"
 		},
 		{
 			"name": "mcp-vertex_security_security_secrets",
-			"plugin": "security",
-			"summary": "Scan source for leaked secrets (keys, tokens, private keys) — offline, normalized findings.",
-			"tags": [
-				"security",
-				"secrets"
-			]
+			"plugin": "security"
 		},
 		{
-			"name": "mcp-vertex_skill",
-			"plugin": "mcp-vertex",
-			"summary": "List the project + active-plugin skills (id, when-to-use), or load one skill body by id. Lazy: read a skill only when you are about to use it.",
-			"tags": [
-				"orientation",
-				"lazy"
-			]
+			"name": "mcp-vertex_skill"
 		},
 		{
-			"name": "mcp-vertex_status",
-			"plugin": "mcp-vertex",
-			"summary": "Live runtime status from every registered status collector (host runtime + core).",
-			"tags": [
-				"orientation",
-				"lazy"
-			]
+			"name": "mcp-vertex_status"
 		},
 		{
 			"name": "mcp-vertex_status-marker_close",
-			"plugin": "status-marker",
-			"summary": "Return the canonical close-marker line for the given state (+ optional reason).",
-			"tags": [
-				"agent-contract"
-			]
+			"plugin": "status-marker"
 		},
 		{
 			"name": "mcp-vertex_status-marker_ping",
-			"plugin": "status-marker",
-			"summary": "Health check for the status-marker plugin.",
-			"tags": [
-				"health"
-			]
+			"plugin": "status-marker"
 		},
 		{
 			"name": "mcp-vertex_status-marker_validate",
-			"plugin": "status-marker",
-			"summary": "Audit a response: does its last line match the canonical close marker?",
-			"tags": [
-				"agent-contract"
-			]
+			"plugin": "status-marker"
 		},
 		{
 			"name": "mcp-vertex_tech-debt_debt_scan",
-			"plugin": "tech-debt",
-			"summary": "Find tech-debt markers (TODO/FIXME/HACK/XXX/BUG/DEPRECATED/NOTE) across the workspace, ranked by severity. Offline.",
-			"tags": [
-				"tech-debt",
-				"quality"
-			]
+			"plugin": "tech-debt"
 		},
 		{
 			"name": "mcp-vertex_test-convention_get_convention",
-			"plugin": "test-convention",
-			"summary": "Return the canonical test convention for the workspace (structured + markdown).",
-			"tags": [
-				"testing",
-				"convention"
-			]
+			"plugin": "test-convention"
 		},
 		{
 			"name": "mcp-vertex_test-convention_scan_drift",
-			"plugin": "test-convention",
-			"summary": "Audit specs and sources for violations of the test convention; returns { ok, counts, violations, scannedFiles }.",
-			"tags": [
-				"testing",
-				"convention",
-				"audit"
-			]
+			"plugin": "test-convention"
 		},
 		{
 			"name": "mcp-vertex_test-convention_suggest_spec_path",
-			"plugin": "test-convention",
-			"summary": "Given a source file path, return the spec path the convention requires + a starter skeleton.",
-			"tags": [
-				"testing",
-				"convention"
-			]
+			"plugin": "test-convention"
 		},
 		{
 			"name": "mcp-vertex_test-policy_get_test_policy",
-			"plugin": "test-policy",
-			"summary": "Return the active test-writing policy (tdd/tests-after/free/none) with its agent guidance.",
-			"tags": [
-				"testing",
-				"policy"
-			]
+			"plugin": "test-policy"
 		},
 		{
 			"name": "mcp-vertex_test-policy_set_test_policy",
-			"plugin": "test-policy",
-			"summary": "Override the test-writing policy for this workspace (durable), or clear the override.",
-			"tags": [
-				"testing",
-				"policy"
-			]
+			"plugin": "test-policy"
 		},
 		{
 			"name": "mcp-vertex_usage-tracking_session_hygiene",
-			"plugin": "usage-tracking",
-			"summary": "Report local MCP session age, idle gaps and response-volume pressure.",
-			"tags": [
-				"usage-tracking",
-				"token-efficiency",
-				"lazy"
-			]
+			"plugin": "usage-tracking"
 		},
 		{
 			"name": "mcp-vertex_usage-tracking_usage_clear",
-			"plugin": "usage-tracking",
-			"summary": "Clear the recorded usage log + summary (requires confirmation).",
-			"tags": [
-				"usage-tracking"
-			],
-			"effects": [
-				"write",
-				"destructive"
-			]
+			"plugin": "usage-tracking"
 		},
 		{
 			"name": "mcp-vertex_usage-tracking_usage_report",
-			"plugin": "usage-tracking",
-			"summary": "Report usage, cost and attributable token savings by provider, plugin, agent, extension or model.",
-			"tags": [
-				"usage-tracking",
-				"lazy"
-			]
+			"plugin": "usage-tracking"
 		}
 	],
 	"skills": [
@@ -1522,248 +804,217 @@
 				"title": "a00067",
 				"track": "research+architecture+economics+tooling",
 				"status": "ready",
-				"kind": "audit",
-				"date": "2026-07-24"
+				"kind": "audit"
 			},
 			{
 				"id": "a00068",
 				"title": "a00068",
 				"track": "code-quality+concurrency+architecture+invariants+tests+dx",
 				"status": "in-progress",
-				"kind": "audit",
-				"date": "2026-07-24T18:37:00Z"
+				"kind": "audit"
 			},
 			{
 				"id": "d00003",
 				"title": "d00003",
 				"track": "roadmap+plugins+ecosystem",
 				"status": "ready",
-				"kind": "docs",
-				"date": "2026-07-23"
+				"kind": "docs"
 			},
 			{
 				"id": "f00050",
 				"title": "f00050",
 				"track": "lint+architecture+i18n+workflow+release",
 				"status": "paused",
-				"kind": "feat",
-				"date": "2026-06-23"
+				"kind": "feat"
 			},
 			{
 				"id": "f00120",
 				"title": "f00120",
 				"track": "plugin+scaffold+dx",
 				"status": "in-progress",
-				"kind": "feat",
-				"date": "2026-07-23"
+				"kind": "feat"
 			},
 			{
 				"id": "f00121",
 				"title": "f00121",
 				"track": "plugin+forge+collab",
 				"status": "ready",
-				"kind": "feat",
-				"date": "2026-07-23"
+				"kind": "feat"
 			},
 			{
 				"id": "f00122",
 				"title": "f00122",
 				"track": "plugin+security+quality",
 				"status": "ready",
-				"kind": "feat",
-				"date": "2026-07-23"
+				"kind": "feat"
 			},
 			{
 				"id": "f00123",
 				"title": "f00123",
 				"track": "plugin+refactor+reliability",
 				"status": "ready",
-				"kind": "feat",
-				"date": "2026-07-23"
+				"kind": "feat"
 			},
 			{
 				"id": "f00124",
 				"title": "f00124",
 				"track": "plugin+search+navigation",
 				"status": "ready",
-				"kind": "feat",
-				"date": "2026-07-23"
+				"kind": "feat"
 			},
 			{
 				"id": "f00125",
 				"title": "f00125",
 				"track": "plugin+browser+verification",
 				"status": "ready",
-				"kind": "feat",
-				"date": "2026-07-23"
+				"kind": "feat"
 			},
 			{
 				"id": "f00126",
 				"title": "f00126",
 				"track": "plugin+perf+quality",
 				"status": "ready",
-				"kind": "feat",
-				"date": "2026-07-23"
+				"kind": "feat"
 			},
 			{
 				"id": "f00127",
 				"title": "f00127",
 				"track": "plugin+eval+routing",
 				"status": "ready",
-				"kind": "feat",
-				"date": "2026-07-23"
+				"kind": "feat"
 			},
 			{
 				"id": "f00128",
 				"title": "f00128",
 				"track": "plugin+database+data",
 				"status": "ready",
-				"kind": "feat",
-				"date": "2026-07-23"
+				"kind": "feat"
 			},
 			{
 				"id": "f00129",
 				"title": "f00129",
 				"track": "plugin+observability+runtime",
 				"status": "ready",
-				"kind": "feat",
-				"date": "2026-07-23"
+				"kind": "feat"
 			},
 			{
 				"id": "f00130",
 				"title": "f00130",
 				"track": "plugin+api+integration",
 				"status": "ready",
-				"kind": "feat",
-				"date": "2026-07-23"
+				"kind": "feat"
 			},
 			{
 				"id": "f00131",
 				"title": "f00131",
 				"track": "plugin+release+automation",
 				"status": "ready",
-				"kind": "feat",
-				"date": "2026-07-23"
+				"kind": "feat"
 			},
 			{
 				"id": "f00132",
 				"title": "f00132",
 				"track": "plugin+diagram+docs",
 				"status": "ready",
-				"kind": "feat",
-				"date": "2026-07-23"
+				"kind": "feat"
 			},
 			{
 				"id": "f00133",
 				"title": "f00133",
 				"track": "plugin+container+runtime",
 				"status": "ready",
-				"kind": "feat",
-				"date": "2026-07-23"
+				"kind": "feat"
 			},
 			{
 				"id": "f00134",
 				"title": "f00134",
 				"track": "plugin+i18n+quality",
 				"status": "ready",
-				"kind": "feat",
-				"date": "2026-07-23"
+				"kind": "feat"
 			},
 			{
 				"id": "f00135",
 				"title": "f00135",
 				"track": "plugin+config+onboarding",
 				"status": "ready",
-				"kind": "feat",
-				"date": "2026-07-23"
+				"kind": "feat"
 			},
 			{
 				"id": "f00136",
 				"title": "f00136",
 				"track": "plugin+tools+dx",
 				"status": "ready",
-				"kind": "feat",
-				"date": "2026-07-23"
+				"kind": "feat"
 			},
 			{
 				"id": "f00137",
 				"title": "f00137",
 				"track": "plugin+skills+process",
 				"status": "ready",
-				"kind": "feat",
-				"date": "2026-07-23"
+				"kind": "feat"
 			},
 			{
 				"id": "f00138",
 				"title": "f00138",
 				"track": "plugin+prompts+dx",
 				"status": "ready",
-				"kind": "feat",
-				"date": "2026-07-23"
+				"kind": "feat"
 			},
 			{
 				"id": "f00139",
 				"title": "f00139",
 				"track": "plugin+audit+self-improvement",
 				"status": "ready",
-				"kind": "feat",
-				"date": "2026-07-23"
+				"kind": "feat"
 			},
 			{
 				"id": "f00140",
 				"title": "f00140",
 				"track": "plugin+extension+routing",
 				"status": "ready",
-				"kind": "feat",
-				"date": "2026-07-23"
+				"kind": "feat"
 			},
 			{
 				"id": "f00141",
 				"title": "f00141",
 				"track": "plugin+registry+dx",
 				"status": "ready",
-				"kind": "feat",
-				"date": "2026-07-23"
+				"kind": "feat"
 			},
 			{
 				"id": "f00142",
 				"title": "f00142",
 				"track": "plugin+config+auto-selection",
 				"status": "ready",
-				"kind": "feat",
-				"date": "2026-07-23"
+				"kind": "feat"
 			},
 			{
 				"id": "f00148",
 				"title": "f00148",
 				"track": "infra+distribution+economics",
 				"status": "ready",
-				"kind": "feat",
-				"date": "2026-07-24"
+				"kind": "feat"
 			},
 			{
 				"id": "r00011",
 				"title": "r00011",
 				"track": "refactor+config+dx",
 				"status": "ready",
-				"kind": "refactor",
-				"date": "2026-07-23"
+				"kind": "refactor"
 			},
 			{
 				"id": "r00012",
 				"title": "r00012",
 				"track": "refactor+core+plugins",
 				"status": "ready",
-				"kind": "refactor",
-				"date": "2026-07-23"
+				"kind": "refactor"
 			},
 			{
 				"id": "v00122",
 				"title": "v00122",
 				"track": "perf+token-budgets+agent-velocity",
 				"status": "in-progress",
-				"kind": "unspecified",
-				"date": "2026-07-24"
+				"kind": "unspecified"
 			}
 		],
 		"byStatus": {
@@ -1775,2264 +1026,6 @@
 			"blocked": 0,
 			"retired": 2,
 			"unspecified": 0
-		},
-		"all": [
-			{
-				"id": "a00001",
-				"title": "a00001",
-				"track": "archive",
-				"status": "done",
-				"kind": "audit",
-				"date": "2026-06-21T04:23:51Z"
-			},
-			{
-				"id": "a00002",
-				"title": "a00002",
-				"track": "archive",
-				"status": "done",
-				"kind": "audit",
-				"date": "2026-06-15T23:13:30Z"
-			},
-			{
-				"id": "a00003",
-				"title": "a00003",
-				"track": "archive",
-				"status": "done",
-				"kind": "audit",
-				"date": "2026-06-21T04:23:51Z"
-			},
-			{
-				"id": "a00004",
-				"title": "a00004",
-				"track": "archive",
-				"status": "done",
-				"kind": "audit",
-				"date": "2026-06-21T04:23:51Z"
-			},
-			{
-				"id": "a00005",
-				"title": "a00005",
-				"track": "archive",
-				"status": "done",
-				"kind": "audit",
-				"date": "2026-06-16T23:35:52Z"
-			},
-			{
-				"id": "a00006",
-				"title": "a00006",
-				"track": "archive",
-				"status": "done",
-				"kind": "audit",
-				"date": "2026-06-21T04:23:51Z"
-			},
-			{
-				"id": "a00007",
-				"title": "a00007",
-				"track": "archive",
-				"status": "done",
-				"kind": "audit",
-				"date": "2026-06-15T01:56:05Z"
-			},
-			{
-				"id": "a00008",
-				"title": "a00008",
-				"track": "archive",
-				"status": "done",
-				"kind": "audit",
-				"date": "2026-06-16T23:43:13Z"
-			},
-			{
-				"id": "a00009",
-				"title": "a00009",
-				"track": "archive",
-				"status": "done",
-				"kind": "audit",
-				"date": "2026-06-16T23:43:13Z"
-			},
-			{
-				"id": "a00010",
-				"title": "a00010",
-				"track": "archive",
-				"status": "done",
-				"kind": "audit",
-				"date": "2026-06-16T23:43:13Z"
-			},
-			{
-				"id": "a00011",
-				"title": "a00011",
-				"track": "archive",
-				"status": "done",
-				"kind": "audit",
-				"date": "2026-06-16T23:43:13Z"
-			},
-			{
-				"id": "a00012",
-				"title": "a00012",
-				"track": "archive",
-				"status": "done",
-				"kind": "audit",
-				"date": "2026-06-16T23:43:13Z"
-			},
-			{
-				"id": "a00013",
-				"title": "a00013",
-				"track": "archive",
-				"status": "done",
-				"kind": "audit",
-				"date": "2026-06-21T01:23:10Z"
-			},
-			{
-				"id": "a00014",
-				"title": "a00014",
-				"track": "archive",
-				"status": "done",
-				"kind": "audit",
-				"date": "2026-06-16T23:43:13Z"
-			},
-			{
-				"id": "a00015",
-				"title": "a00015",
-				"track": "archive",
-				"status": "done",
-				"kind": "audit",
-				"date": "2026-06-16T23:43:13Z"
-			},
-			{
-				"id": "a00016",
-				"title": "a00016",
-				"track": "archive",
-				"status": "done",
-				"kind": "audit",
-				"date": "2026-06-17T12:51:25Z"
-			},
-			{
-				"id": "a00017",
-				"title": "a00017",
-				"track": "archive",
-				"status": "done",
-				"kind": "audit",
-				"date": "2026-06-17T18:18:00Z"
-			},
-			{
-				"id": "a00018",
-				"title": "a00018",
-				"track": "archive",
-				"status": "done",
-				"kind": "audit",
-				"date": "2026-06-18T08:39:00Z"
-			},
-			{
-				"id": "a00019",
-				"title": "a00019",
-				"track": "archive",
-				"status": "done",
-				"kind": "audit",
-				"date": "2026-06-18T08:39:00Z"
-			},
-			{
-				"id": "a00020",
-				"title": "a00020",
-				"track": "archive",
-				"status": "done",
-				"kind": "audit",
-				"date": "2026-06-18T08:39:00Z"
-			},
-			{
-				"id": "a00021",
-				"title": "a00021",
-				"track": "archive",
-				"status": "done",
-				"kind": "audit",
-				"date": "2026-06-21"
-			},
-			{
-				"id": "a00022",
-				"title": "a00022",
-				"track": "archive",
-				"status": "done",
-				"kind": "audit",
-				"date": "2026-06-21"
-			},
-			{
-				"id": "a00023",
-				"title": "a00023",
-				"track": "archive",
-				"status": "done",
-				"kind": "audit",
-				"date": "2026-06-21"
-			},
-			{
-				"id": "a00024",
-				"title": "a00024",
-				"track": "metrics+plugins+workflow",
-				"status": "done",
-				"kind": "audit",
-				"date": "2026-06-21"
-			},
-			{
-				"id": "a00025",
-				"title": "a00025",
-				"track": "archive",
-				"status": "done",
-				"kind": "audit",
-				"date": "2026-06-21"
-			},
-			{
-				"id": "a00026",
-				"title": "a00026",
-				"track": "archive",
-				"status": "done",
-				"kind": "audit",
-				"date": "2026-06-21"
-			},
-			{
-				"id": "a00027",
-				"title": "a00027",
-				"track": "archive",
-				"status": "done",
-				"kind": "audit",
-				"date": "2026-06-21"
-			},
-			{
-				"id": "a00028",
-				"title": "a00028",
-				"track": "workflow+core+plugins+apps+docs+memory",
-				"status": "done",
-				"kind": "audit",
-				"date": "2026-06-21"
-			},
-			{
-				"id": "a00029",
-				"title": "a00029",
-				"track": "archive",
-				"status": "done",
-				"kind": "audit",
-				"date": "2026-06-21"
-			},
-			{
-				"id": "a00030",
-				"title": "a00030",
-				"track": "archive",
-				"status": "done",
-				"kind": "audit",
-				"date": "2026-06-21"
-			},
-			{
-				"id": "a00031",
-				"title": "a00031",
-				"track": "archive",
-				"status": "done",
-				"kind": "audit",
-				"date": "2026-06-21"
-			},
-			{
-				"id": "a00032",
-				"title": "a00032",
-				"track": "audit+core+plugins+extensions+web+tools",
-				"status": "done",
-				"kind": "audit",
-				"date": "2026-06-22"
-			},
-			{
-				"id": "a00033",
-				"title": "a00033",
-				"track": "core+plugins+tools",
-				"status": "done",
-				"kind": "audit",
-				"date": "2026-06-22"
-			},
-			{
-				"id": "a00034",
-				"title": "a00034",
-				"track": "audit+concurrency+docs+testing",
-				"status": "done",
-				"kind": "audit",
-				"date": "2026-06-23"
-			},
-			{
-				"id": "a00035",
-				"title": "a00035",
-				"track": "master",
-				"status": "done",
-				"kind": "audit",
-				"date": "2026-06-23"
-			},
-			{
-				"id": "a00036",
-				"title": "a00036",
-				"track": "audit+core+plugins+extensions+web+tools+skills+concurrency",
-				"status": "done",
-				"kind": "audit",
-				"date": "2026-06-23"
-			},
-			{
-				"id": "a00037",
-				"title": "a00037",
-				"track": "quality",
-				"status": "done",
-				"kind": "audit",
-				"date": "2026-06-23"
-			},
-			{
-				"id": "a00038",
-				"title": "a00038",
-				"track": "archive",
-				"status": "done",
-				"kind": "audit",
-				"date": "2026-06-23"
-			},
-			{
-				"id": "a00039",
-				"title": "a00039",
-				"track": "archive",
-				"status": "done",
-				"kind": "audit",
-				"date": "2026-06-24T23:17:00Z"
-			},
-			{
-				"id": "a00040",
-				"title": "a00040",
-				"track": "archive",
-				"status": "done",
-				"kind": "audit",
-				"date": "2026-06-25T08:00:00Z"
-			},
-			{
-				"id": "a00041",
-				"title": "a00041",
-				"track": "archive",
-				"status": "done",
-				"kind": "audit",
-				"date": "2026-06-24T21:20:00Z"
-			},
-			{
-				"id": "a00042",
-				"title": "a00042",
-				"track": "archive",
-				"status": "done",
-				"kind": "audit",
-				"date": "2026-06-25T23:37:00Z"
-			},
-			{
-				"id": "a00043",
-				"title": "a00043",
-				"track": "archive",
-				"status": "done",
-				"kind": "audit",
-				"date": "2026-06-28T01:45:00Z"
-			},
-			{
-				"id": "a00044",
-				"title": "a00044",
-				"track": "governance+coordination+lint+worktree-lifecycle",
-				"status": "done",
-				"kind": "audit",
-				"date": "2026-06-28T02:15:00Z"
-			},
-			{
-				"id": "a00045",
-				"title": "a00045",
-				"track": "code-quality+concurrency+i18n+lifecycle+governance",
-				"status": "done",
-				"kind": "audit",
-				"date": "2026-06-28T19:30:00Z"
-			},
-			{
-				"id": "a00046",
-				"title": "a00046",
-				"track": "code-quality+concurrency+i18n+lifecycle+governance",
-				"status": "done",
-				"kind": "audit",
-				"date": "2026-06-28T19:00:00Z"
-			},
-			{
-				"id": "a00047",
-				"title": "a00047",
-				"track": "code-quality+concurrency+proposals+alignment",
-				"status": "done",
-				"kind": "audit",
-				"date": "2026-06-29T01:00:00Z"
-			},
-			{
-				"id": "a00048",
-				"title": "a00048",
-				"track": "code-quality+concurrency+security+proposals+alignment",
-				"status": "done",
-				"kind": "audit",
-				"date": "2026-07-01T01:00:00Z"
-			},
-			{
-				"id": "a00049",
-				"title": "a00049",
-				"track": "code-quality+concurrency+security+proposals+alignment",
-				"status": "done",
-				"kind": "audit",
-				"date": "2026-07-02T19:00:00Z"
-			},
-			{
-				"id": "a00050",
-				"title": "a00050",
-				"track": "code-quality+concurrency+security+proposals+alignment",
-				"status": "done",
-				"kind": "audit",
-				"date": "2026-07-04T13:30:00Z"
-			},
-			{
-				"id": "a00051",
-				"title": "a00051",
-				"track": "code-quality+concurrency+security+architecture+tests+invariants",
-				"status": "done",
-				"kind": "audit",
-				"date": "2026-07-07T01:19:00Z"
-			},
-			{
-				"id": "a00052",
-				"title": "a00052",
-				"track": "audit",
-				"status": "done",
-				"kind": "audit",
-				"date": "2026-07-12"
-			},
-			{
-				"id": "a00053",
-				"title": "a00053",
-				"track": "audit",
-				"status": "done",
-				"kind": "audit",
-				"date": "2026-07-14"
-			},
-			{
-				"id": "a00054",
-				"title": "a00054",
-				"track": "audit",
-				"status": "done",
-				"kind": "audit",
-				"date": "2026-07-14"
-			},
-			{
-				"id": "a00055",
-				"title": "a00055",
-				"track": "audit",
-				"status": "done",
-				"kind": "audit",
-				"date": "2026-07-15"
-			},
-			{
-				"id": "a00056",
-				"title": "a00056",
-				"track": "code-quality+concurrency+security+architecture+tests+invariants",
-				"status": "done",
-				"kind": "audit",
-				"date": "2026-07-16T00:19:00Z"
-			},
-			{
-				"id": "a00057",
-				"title": "a00057",
-				"track": "audit",
-				"status": "done",
-				"kind": "audit",
-				"date": "2026-07-16"
-			},
-			{
-				"id": "a00058",
-				"title": "a00058",
-				"track": "audit",
-				"status": "done",
-				"kind": "audit",
-				"date": "2026-07-16"
-			},
-			{
-				"id": "a00059",
-				"title": "a00059",
-				"track": "audit",
-				"status": "done",
-				"kind": "audit",
-				"date": "2026-07-16"
-			},
-			{
-				"id": "a00060",
-				"title": "a00060",
-				"track": "audit",
-				"status": "done",
-				"kind": "audit",
-				"date": "2026-07-16"
-			},
-			{
-				"id": "a00061",
-				"title": "a00061",
-				"track": "audit",
-				"status": "done",
-				"kind": "audit",
-				"date": "2026-07-16"
-			},
-			{
-				"id": "a00062",
-				"title": "a00062",
-				"track": "audit",
-				"status": "done",
-				"kind": "audit",
-				"date": "2026-07-16"
-			},
-			{
-				"id": "a00063",
-				"title": "a00063",
-				"track": "audit",
-				"status": "done",
-				"kind": "audit",
-				"date": "2026-07-16"
-			},
-			{
-				"id": "a00065",
-				"title": "a00065",
-				"track": "audit",
-				"status": "done",
-				"kind": "audit",
-				"date": "2026-07-18"
-			},
-			{
-				"id": "a00066",
-				"title": "a00066",
-				"track": "code-quality+concurrency+security+architecture+tests+invariants",
-				"status": "done",
-				"kind": "audit",
-				"date": "2026-07-22T17:27:00Z"
-			},
-			{
-				"id": "a00067",
-				"title": "a00067",
-				"track": "research+architecture+economics+tooling",
-				"status": "ready",
-				"kind": "audit",
-				"date": "2026-07-24"
-			},
-			{
-				"id": "a00068",
-				"title": "a00068",
-				"track": "code-quality+concurrency+architecture+invariants+tests+dx",
-				"status": "in-progress",
-				"kind": "audit",
-				"date": "2026-07-24T18:37:00Z"
-			},
-			{
-				"id": "c00001",
-				"title": "c00001",
-				"track": "plugins+security",
-				"status": "done",
-				"kind": "chore",
-				"date": "2026-06-21"
-			},
-			{
-				"id": "c00002",
-				"title": "c00002",
-				"track": "docs+release",
-				"status": "retired",
-				"kind": "chore",
-				"date": "2026-06-21"
-			},
-			{
-				"id": "c00012",
-				"title": "c00012",
-				"track": "governance",
-				"status": "done",
-				"kind": "chore",
-				"date": "2026-06-28"
-			},
-			{
-				"id": "c00075",
-				"title": "c00075",
-				"track": "governance",
-				"status": "done",
-				"kind": "chore",
-				"date": "2026-06-28"
-			},
-			{
-				"id": "c00086",
-				"title": "c00086",
-				"track": "swarm+coordination+governance",
-				"status": "done",
-				"kind": "chore",
-				"date": "2026-06-28"
-			},
-			{
-				"id": "c00087",
-				"title": "c00087",
-				"track": "lint",
-				"status": "done",
-				"kind": "chore",
-				"date": "2026-07-14"
-			},
-			{
-				"id": "c00088",
-				"title": "c00088",
-				"track": "ci+gates",
-				"status": "done",
-				"kind": "chore",
-				"date": "2026-07-15"
-			},
-			{
-				"id": "c00089",
-				"title": "c00089",
-				"track": "presets+metrics+token-efficiency",
-				"status": "done",
-				"kind": "chore",
-				"date": "2026-07-24"
-			},
-			{
-				"id": "c00123",
-				"title": "c00123",
-				"track": "tooling+llm-velocity+optional",
-				"status": "done",
-				"kind": "chore",
-				"date": "2026-07-24"
-			},
-			{
-				"id": "d00001",
-				"title": "d00001",
-				"track": "docs",
-				"status": "done",
-				"kind": "docs",
-				"date": "2026-06-22"
-			},
-			{
-				"id": "d00002",
-				"title": "d00002",
-				"track": "release+docs",
-				"status": "done",
-				"kind": "docs",
-				"date": "2026-07-15"
-			},
-			{
-				"id": "d00003",
-				"title": "d00003",
-				"track": "roadmap+plugins+ecosystem",
-				"status": "ready",
-				"kind": "docs",
-				"date": "2026-07-23"
-			},
-			{
-				"id": "d00004",
-				"title": "d00004",
-				"track": "agent-discipline+host-adapters",
-				"status": "review",
-				"kind": "docs",
-				"date": "2026-07-24"
-			},
-			{
-				"id": "f00001",
-				"title": "f00001",
-				"track": "proposals+core",
-				"status": "done",
-				"kind": "feat",
-				"date": "2026-06-21"
-			},
-			{
-				"id": "f00002",
-				"title": "f00002",
-				"track": "web",
-				"status": "done",
-				"kind": "feat",
-				"date": "2026-06-20"
-			},
-			{
-				"id": "f00003",
-				"title": "f00003",
-				"track": "plugin",
-				"status": "done",
-				"kind": "feat",
-				"date": "2026-06-20"
-			},
-			{
-				"id": "f00004",
-				"title": "f00004",
-				"track": "apps+client+docs",
-				"status": "done",
-				"kind": "feat",
-				"date": "2026-06-20"
-			},
-			{
-				"id": "f00005",
-				"title": "f00005",
-				"track": "plugins+notification+memory+web+docs",
-				"status": "done",
-				"kind": "feat",
-				"date": "2026-06-20"
-			},
-			{
-				"id": "f00006",
-				"title": "f00006",
-				"track": "audit",
-				"status": "done",
-				"kind": "feat",
-				"date": "2026-06-18"
-			},
-			{
-				"id": "f00007",
-				"title": "f00007",
-				"track": "proposals+core+web+notification",
-				"status": "done",
-				"kind": "feat",
-				"date": "2026-06-20"
-			},
-			{
-				"id": "f00008",
-				"title": "f00008",
-				"track": "agent-contract",
-				"status": "done",
-				"kind": "feat",
-				"date": "2026-06-18"
-			},
-			{
-				"id": "f00009",
-				"title": "f00009",
-				"track": "core+plugin+web",
-				"status": "done",
-				"kind": "feat",
-				"date": "2026-06-19"
-			},
-			{
-				"id": "f00010",
-				"title": "f00010",
-				"track": "core+scaffold",
-				"status": "done",
-				"kind": "feat",
-				"date": "2026-06-18"
-			},
-			{
-				"id": "f00011",
-				"title": "f00011",
-				"track": "runtime+coordination",
-				"status": "done",
-				"kind": "feat",
-				"date": "2026-06-18"
-			},
-			{
-				"id": "f00012",
-				"title": "f00012",
-				"track": "core+quality+web",
-				"status": "done",
-				"kind": "feat",
-				"date": "2026-06-19"
-			},
-			{
-				"id": "f00013",
-				"title": "f00013",
-				"track": "proposals+tooling",
-				"status": "done",
-				"kind": "feat",
-				"date": "2026-06-21"
-			},
-			{
-				"id": "f00014",
-				"title": "f00014",
-				"track": "proposals-plugin+docs",
-				"status": "done",
-				"kind": "feat",
-				"date": "2026-06-21"
-			},
-			{
-				"id": "f00015",
-				"title": "f00015",
-				"track": "web+i18n",
-				"status": "done",
-				"kind": "feat",
-				"date": "2026-06-20"
-			},
-			{
-				"id": "f00016",
-				"title": "f00016",
-				"track": "rules+quality",
-				"status": "done",
-				"kind": "feat",
-				"date": "2026-06-21"
-			},
-			{
-				"id": "f00017",
-				"title": "f00017",
-				"track": "web+i18n+docs",
-				"status": "done",
-				"kind": "feat",
-				"date": "2026-06-18"
-			},
-			{
-				"id": "f00018",
-				"title": "f00018",
-				"track": "web+i18n+docs",
-				"status": "done",
-				"kind": "feat",
-				"date": "2026-06-18"
-			},
-			{
-				"id": "f00019",
-				"title": "f00019",
-				"track": "release+ci",
-				"status": "done",
-				"kind": "feat",
-				"date": "2026-06-21"
-			},
-			{
-				"id": "f00020",
-				"title": "f00020",
-				"track": "plugins+skills+core",
-				"status": "done",
-				"kind": "feat",
-				"date": "2026-06-21"
-			},
-			{
-				"id": "f00021",
-				"title": "f00021",
-				"track": "core+build+release+proposals+lint+i18n+site",
-				"status": "done",
-				"kind": "feat",
-				"date": "2026-06-21"
-			},
-			{
-				"id": "f00022",
-				"title": "f00022",
-				"track": "notification-plugin",
-				"status": "done",
-				"kind": "feat",
-				"date": "2026-06-21"
-			},
-			{
-				"id": "f00023",
-				"title": "f00023",
-				"track": "plugins",
-				"status": "done",
-				"kind": "feat",
-				"date": "2026-06-21"
-			},
-			{
-				"id": "f00024",
-				"title": "f00024",
-				"track": "metrics+ci",
-				"status": "done",
-				"kind": "feat",
-				"date": "2026-06-21"
-			},
-			{
-				"id": "f00025",
-				"title": "f00025",
-				"track": "apps+monorepo+docs",
-				"status": "done",
-				"kind": "feat",
-				"date": "2026-06-21"
-			},
-			{
-				"id": "f00026",
-				"title": "f00026",
-				"track": "skills+plugins+docs",
-				"status": "done",
-				"kind": "feat",
-				"date": "2026-06-21"
-			},
-			{
-				"id": "f00027",
-				"title": "f00027",
-				"track": "web+docs",
-				"status": "done",
-				"kind": "feat",
-				"date": "2026-06-21"
-			},
-			{
-				"id": "f00028",
-				"title": "f00028",
-				"track": "apps+client+docs",
-				"status": "done",
-				"kind": "feat",
-				"date": "2026-06-21"
-			},
-			{
-				"id": "f00029",
-				"title": "f00029",
-				"track": "plugins/issues+docs",
-				"status": "done",
-				"kind": "feat",
-				"date": "2026-06-21"
-			},
-			{
-				"id": "f00030",
-				"title": "f00030",
-				"track": "docs+plugins/issues+apps/web+extensions/vscode",
-				"status": "done",
-				"kind": "feat",
-				"date": "2026-06-21"
-			},
-			{
-				"id": "f00031",
-				"title": "f00031",
-				"track": "core+agents+docs",
-				"status": "done",
-				"kind": "feat",
-				"date": "2026-06-21"
-			},
-			{
-				"id": "f00032",
-				"title": "f00032",
-				"track": "proposals-plugin",
-				"status": "done",
-				"kind": "feat",
-				"date": "2026-06-21"
-			},
-			{
-				"id": "f00033",
-				"title": "f00033",
-				"track": "proposals-plugin+workflow",
-				"status": "done",
-				"kind": "feat",
-				"date": "2026-06-21"
-			},
-			{
-				"id": "f00034",
-				"title": "f00034",
-				"track": "apps/web+docs+core+cli",
-				"status": "done",
-				"kind": "feat",
-				"date": "2026-06-21"
-			},
-			{
-				"id": "f00035",
-				"title": "f00035",
-				"track": "apps+client+docs",
-				"status": "done",
-				"kind": "feat",
-				"date": "2026-06-21"
-			},
-			{
-				"id": "f00036",
-				"title": "f00036",
-				"track": "proposals-plugin+workflow+skills+docs",
-				"status": "done",
-				"kind": "feat",
-				"date": "2026-06-21"
-			},
-			{
-				"id": "f00037",
-				"title": "f00037",
-				"track": "architecture+lint+repo-layout",
-				"status": "done",
-				"kind": "feat",
-				"date": "2026-06-21"
-			},
-			{
-				"id": "f00038",
-				"title": "f00038",
-				"track": "core+cli+client+workflow",
-				"status": "done",
-				"kind": "feat",
-				"date": "2026-06-21"
-			},
-			{
-				"id": "f00039",
-				"title": "f00039",
-				"track": "plugins/memory+skills+docs+workflow",
-				"status": "done",
-				"kind": "feat",
-				"date": "2026-06-21"
-			},
-			{
-				"id": "f00040",
-				"title": "f00040",
-				"track": "core+client+extensions/vscode+plugins+metrics+docs",
-				"status": "done",
-				"kind": "feat",
-				"date": "2026-06-21"
-			},
-			{
-				"id": "f00041",
-				"title": "f00041",
-				"track": "host+core+docs+workflow",
-				"status": "done",
-				"kind": "feat",
-				"date": "2026-06-21"
-			},
-			{
-				"id": "f00042",
-				"title": "f00042",
-				"track": "proposals",
-				"status": "done",
-				"kind": "feat",
-				"date": "2026-06-21"
-			},
-			{
-				"id": "f00043",
-				"title": "f00043",
-				"track": "host+core+docs+workflow",
-				"status": "done",
-				"kind": "feat",
-				"date": "2026-06-21"
-			},
-			{
-				"id": "f00044",
-				"title": "f00044",
-				"track": "plugins/proposals+tests+core",
-				"status": "done",
-				"kind": "feat",
-				"date": "2026-06-22"
-			},
-			{
-				"id": "f00045",
-				"title": "f00045",
-				"track": "core+client+extension+tests",
-				"status": "done",
-				"kind": "feat",
-				"date": "2026-06-21"
-			},
-			{
-				"id": "f00046",
-				"title": "f00046",
-				"track": "cli+core+plugins+i18n+docs",
-				"status": "done",
-				"kind": "feat",
-				"date": "2026-06-22"
-			},
-			{
-				"id": "f00047",
-				"title": "f00047",
-				"track": "ui-extension+web+vscode+scss+i18n",
-				"status": "done",
-				"kind": "feat",
-				"date": "2026-06-22"
-			},
-			{
-				"id": "f00048",
-				"title": "f00048",
-				"track": "web+ui+i18n",
-				"status": "done",
-				"kind": "feat",
-				"date": "2026-06-22"
-			},
-			{
-				"id": "f00049",
-				"title": "f00049",
-				"track": "lint+architecture+repo-layout+i18n+workflow",
-				"status": "done",
-				"kind": "feat",
-				"date": "2026-06-23"
-			},
-			{
-				"id": "f00050",
-				"title": "f00050",
-				"track": "lint+architecture+i18n+workflow+release",
-				"status": "paused",
-				"kind": "feat",
-				"date": "2026-06-23"
-			},
-			{
-				"id": "f00051",
-				"title": "f00051",
-				"track": "plugins/rules+lint+architecture+multi-language",
-				"status": "done",
-				"kind": "feat",
-				"date": "2026-06-23"
-			},
-			{
-				"id": "f00052",
-				"title": "f00052",
-				"track": "proposals-plugin+core+cli+skills+workflow",
-				"status": "done",
-				"kind": "feat",
-				"date": "2026-06-23"
-			},
-			{
-				"id": "f00053",
-				"title": "f00053",
-				"track": "apps/web+extensions/vscode+packages/ui-extension+docs+i18n+ux",
-				"status": "done",
-				"kind": "feat",
-				"date": "2026-06-24"
-			},
-			{
-				"id": "f00055",
-				"title": "f00055",
-				"track": "apps/web+packages/ui-extension+apps/shared+i18n+ux+tooling",
-				"status": "done",
-				"kind": "feat",
-				"date": "2026-06-24"
-			},
-			{
-				"id": "f00056",
-				"title": "f00056",
-				"track": "host+extension+skills+docs",
-				"status": "done",
-				"kind": "feat",
-				"date": "2026-06-25"
-			},
-			{
-				"id": "f00057",
-				"title": "f00057",
-				"track": "skills+plugins+tools+scripts+docs+workflow",
-				"status": "done",
-				"kind": "feat",
-				"date": "2026-06-25"
-			},
-			{
-				"id": "f00059",
-				"title": "f00059",
-				"track": "i18n+l10n+extension-ux+web",
-				"status": "done",
-				"kind": "feat",
-				"date": "2026-06-25"
-			},
-			{
-				"id": "f00060",
-				"title": "f00060",
-				"track": "design-tokens+css+extension-ux",
-				"status": "done",
-				"kind": "feat",
-				"date": "2026-06-25"
-			},
-			{
-				"id": "f00062",
-				"title": "f00062",
-				"track": "types+solid+extension-ux",
-				"status": "done",
-				"kind": "feat",
-				"date": "2026-06-25"
-			},
-			{
-				"id": "f00064",
-				"title": "f00064",
-				"track": "dogfood+repo-layout+contracts+web+agents",
-				"status": "done",
-				"kind": "feat",
-				"date": "2026-06-25"
-			},
-			{
-				"id": "f00065",
-				"title": "f00065",
-				"track": "umbrella+skills-ownership+cache+web-examples+slash-triggers+shared-contracts",
-				"status": "done",
-				"kind": "feat",
-				"date": "2026-06-25"
-			},
-			{
-				"id": "f00066",
-				"title": "f00066",
-				"track": "core+refactor+async",
-				"status": "done",
-				"kind": "feat",
-				"date": "2026-06-25"
-			},
-			{
-				"id": "f00067",
-				"title": "f00067",
-				"track": "core+plugins+config+i18n+docs+ui-extension",
-				"status": "done",
-				"kind": "feat",
-				"date": "2026-06-25"
-			},
-			{
-				"id": "f00067a",
-				"title": "f00067a",
-				"track": "general",
-				"status": "done",
-				"kind": "feat",
-				"date": "2026-07-05"
-			},
-			{
-				"id": "f00068",
-				"title": "f00068",
-				"track": "core+plugins+host+config+i18n+docs+web+extensions/vscode",
-				"status": "done",
-				"kind": "feat",
-				"date": "2026-06-26"
-			},
-			{
-				"id": "f00069",
-				"title": "f00069",
-				"track": "web+ui-extension+components+design-tokens+i18n+docs",
-				"status": "done",
-				"kind": "feat",
-				"date": "2026-06-26"
-			},
-			{
-				"id": "f00070",
-				"title": "f00070",
-				"track": "i18n+l10n+plugins/status-marker+token-budget",
-				"status": "done",
-				"kind": "feat",
-				"date": "2026-06-26"
-			},
-			{
-				"id": "f00071",
-				"title": "f00071",
-				"track": "plugins/status-marker+configuration+i18n+agent-contract",
-				"status": "done",
-				"kind": "feat",
-				"date": "2026-06-26"
-			},
-			{
-				"id": "f00072",
-				"title": "f00072",
-				"track": "infra+cache-eviction",
-				"status": "done",
-				"kind": "feat",
-				"date": "2026-06-27"
-			},
-			{
-				"id": "f00073",
-				"title": "f00073",
-				"track": "swarm+coordination",
-				"status": "done",
-				"kind": "feat",
-				"date": "2026-06-27"
-			},
-			{
-				"id": "f00075",
-				"title": "f00075",
-				"track": "swarm+coordination+governance",
-				"status": "done",
-				"kind": "feat",
-				"date": "2026-06-28"
-			},
-			{
-				"id": "f00077",
-				"title": "f00077",
-				"track": "plugins/audit+ci+docs",
-				"status": "done",
-				"kind": "feat",
-				"date": "2026-06-28"
-			},
-			{
-				"id": "f00078",
-				"title": "f00078",
-				"track": "swarm+coordination+governance",
-				"status": "done",
-				"kind": "feat",
-				"date": "2026-06-28"
-			},
-			{
-				"id": "f00079",
-				"title": "f00079",
-				"track": "security+webview+extension-ux",
-				"status": "done",
-				"kind": "feat",
-				"date": "2026-06-25"
-			},
-			{
-				"id": "f00080",
-				"title": "f00080",
-				"track": "core+plugins+lint+docs",
-				"status": "done",
-				"kind": "feat",
-				"date": "2026-06-28"
-			},
-			{
-				"id": "f00081",
-				"title": "f00081",
-				"track": "packages/client+host-integration",
-				"status": "done",
-				"kind": "feat",
-				"date": "2026-06-28"
-			},
-			{
-				"id": "f00082",
-				"title": "f00082",
-				"track": "swarm+coordination+governance+observability",
-				"status": "done",
-				"kind": "feat",
-				"date": "2026-06-28"
-			},
-			{
-				"id": "f00083",
-				"title": "f00083",
-				"track": "governance+lint+docs",
-				"status": "done",
-				"kind": "feat",
-				"date": "2026-06-28"
-			},
-			{
-				"id": "f00084",
-				"title": "f00084",
-				"track": "cli+bootstrap+onboarding",
-				"status": "done",
-				"kind": "feat",
-				"date": "2026-06-29"
-			},
-			{
-				"id": "f00085",
-				"title": "f00085",
-				"track": "core+agents+ci",
-				"status": "done",
-				"kind": "feat",
-				"date": "2026-06-28"
-			},
-			{
-				"id": "f00086",
-				"title": "f00086",
-				"track": "core+orchestration+metrics",
-				"status": "done",
-				"kind": "feat",
-				"date": "2026-06-28"
-			},
-			{
-				"id": "f00087",
-				"title": "f00087",
-				"track": "dogfood+plugins+scaffold+client",
-				"status": "done",
-				"kind": "feat",
-				"date": "2026-06-29"
-			},
-			{
-				"id": "f00088",
-				"title": "f00088",
-				"track": "cli+bootstrap+onboarding+conventions",
-				"status": "done",
-				"kind": "feat",
-				"date": "2026-06-29"
-			},
-			{
-				"id": "f00089",
-				"title": "f00089",
-				"track": "cli+bootstrap+onboarding+plugins+filesystem+migration",
-				"status": "done",
-				"kind": "feat",
-				"date": "2026-06-30"
-			},
-			{
-				"id": "f00090",
-				"title": "f00090",
-				"track": "memory+orchestration+token-efficiency",
-				"status": "done",
-				"kind": "feat",
-				"date": "2026-06-30"
-			},
-			{
-				"id": "f00091",
-				"title": "f00091",
-				"track": "swarm+coordination+git-integration",
-				"status": "done",
-				"kind": "feat",
-				"date": "2026-07-01"
-			},
-			{
-				"id": "f00092",
-				"title": "f00092",
-				"track": "agent-discovery+host-bootstrap+lint",
-				"status": "done",
-				"kind": "feat",
-				"date": "2026-07-01"
-			},
-			{
-				"id": "f00093",
-				"title": "f00093",
-				"track": "cli+bootstrap+proposals+host-discovery",
-				"status": "done",
-				"kind": "feat",
-				"date": "2026-07-01"
-			},
-			{
-				"id": "f00094",
-				"title": "f00094",
-				"track": "proposals+host-discovery+cli-onboarding",
-				"status": "done",
-				"kind": "feat",
-				"date": "2026-07-01"
-			},
-			{
-				"id": "f00095",
-				"title": "f00095",
-				"track": "adoption-migration",
-				"status": "done",
-				"kind": "feat",
-				"date": "2026-07-01"
-			},
-			{
-				"id": "f00096",
-				"title": "f00096",
-				"track": "repo-layout+contracts",
-				"status": "done",
-				"kind": "feat",
-				"date": "2026-07-01"
-			},
-			{
-				"id": "f00097",
-				"title": "f00097",
-				"track": "vscode-host+ui-extension+proposals+apps-web+i18n",
-				"status": "done",
-				"kind": "feat",
-				"date": "2026-07-02"
-			},
-			{
-				"id": "f00098",
-				"title": "f00098",
-				"track": "ui-extension+vscode+web+cli-parity",
-				"status": "done",
-				"kind": "feat",
-				"date": "2026-07-06"
-			},
-			{
-				"id": "f00099",
-				"title": "f00099",
-				"track": "web+extensions/vscode+lint",
-				"status": "done",
-				"kind": "feat",
-				"date": "2026-07-07"
-			},
-			{
-				"id": "f00100",
-				"title": "f00100",
-				"track": "extensions/vscode+ui-extension",
-				"status": "done",
-				"kind": "feat",
-				"date": "2026-07-07"
-			},
-			{
-				"id": "f00101",
-				"title": "f00101",
-				"track": "ui-extension+client+docs+web",
-				"status": "done",
-				"kind": "feat",
-				"date": "2026-07-07"
-			},
-			{
-				"id": "f00102",
-				"title": "f00102",
-				"track": "apps/shared+apps/web+extensions/vscode+tools/scripts",
-				"status": "done",
-				"kind": "feat",
-				"date": "2026-07-07"
-			},
-			{
-				"id": "f00103",
-				"title": "f00103",
-				"track": "shared+ui-extension+web+extensions/vscode+dev+lint",
-				"status": "done",
-				"kind": "feat",
-				"date": "2026-07-08"
-			},
-			{
-				"id": "f00104",
-				"title": "f00104",
-				"track": "cli+core+release+install+docs",
-				"status": "done",
-				"kind": "feat",
-				"date": "2026-07-08"
-			},
-			{
-				"id": "f00105",
-				"title": "f00105",
-				"track": "config+install+dogfood+workflow",
-				"status": "done",
-				"kind": "feat",
-				"date": "2026-07-08"
-			},
-			{
-				"id": "f00106",
-				"title": "f00106",
-				"track": "usage-tracking+ui-extension+vscode+web",
-				"status": "done",
-				"kind": "feat",
-				"date": "2026-07-08"
-			},
-			{
-				"id": "f00107",
-				"title": "f00107",
-				"track": "core+config+ui-extension+vscode+web",
-				"status": "done",
-				"kind": "feat",
-				"date": "2026-07-08"
-			},
-			{
-				"id": "f00108",
-				"title": "f00108",
-				"track": "web+extensions/vscode+ui-extension+i18n+lint",
-				"status": "done",
-				"kind": "feat",
-				"date": "2026-07-08"
-			},
-			{
-				"id": "f00109",
-				"title": "f00109",
-				"track": "general",
-				"status": "done",
-				"kind": "feat",
-				"date": "2026-07-12"
-			},
-			{
-				"id": "f00110",
-				"title": "f00110",
-				"track": "architecture",
-				"status": "done",
-				"kind": "feat",
-				"date": "2026-07-12"
-			},
-			{
-				"id": "f00111",
-				"title": "f00111",
-				"track": "general",
-				"status": "done",
-				"kind": "feat",
-				"date": "2026-07-12"
-			},
-			{
-				"id": "f00112",
-				"title": "f00112",
-				"track": "configuration-center",
-				"status": "done",
-				"kind": "feat",
-				"date": "2026-07-12"
-			},
-			{
-				"id": "f00113",
-				"title": "f00113",
-				"track": "conventions+plugins",
-				"status": "done",
-				"kind": "feat",
-				"date": "2026-07-14"
-			},
-			{
-				"id": "f00114",
-				"title": "f00114",
-				"track": "proposals+lint",
-				"status": "done",
-				"kind": "feat",
-				"date": "2026-07-14"
-			},
-			{
-				"id": "f00115",
-				"title": "f00115",
-				"track": "plugins+presets",
-				"status": "done",
-				"kind": "feat",
-				"date": "2026-07-14"
-			},
-			{
-				"id": "f00116",
-				"title": "f00116",
-				"track": "proposals+adoption",
-				"status": "done",
-				"kind": "feat",
-				"date": "2026-07-15"
-			},
-			{
-				"id": "f00117",
-				"title": "f00117",
-				"track": "core+adoption",
-				"status": "done",
-				"kind": "feat",
-				"date": "2026-07-15"
-			},
-			{
-				"id": "f00118",
-				"title": "f00118",
-				"track": "extension+client+ui",
-				"status": "done",
-				"kind": "feat",
-				"date": "2026-07-15"
-			},
-			{
-				"id": "f00119",
-				"title": "f00119",
-				"track": "plugin+orchestration+routing",
-				"status": "review",
-				"kind": "feat",
-				"date": "2026-07-22"
-			},
-			{
-				"id": "f00120",
-				"title": "f00120",
-				"track": "plugin+scaffold+dx",
-				"status": "in-progress",
-				"kind": "feat",
-				"date": "2026-07-23"
-			},
-			{
-				"id": "f00121",
-				"title": "f00121",
-				"track": "plugin+forge+collab",
-				"status": "ready",
-				"kind": "feat",
-				"date": "2026-07-23"
-			},
-			{
-				"id": "f00122",
-				"title": "f00122",
-				"track": "plugin+security+quality",
-				"status": "ready",
-				"kind": "feat",
-				"date": "2026-07-23"
-			},
-			{
-				"id": "f00123",
-				"title": "f00123",
-				"track": "plugin+refactor+reliability",
-				"status": "ready",
-				"kind": "feat",
-				"date": "2026-07-23"
-			},
-			{
-				"id": "f00124",
-				"title": "f00124",
-				"track": "plugin+search+navigation",
-				"status": "ready",
-				"kind": "feat",
-				"date": "2026-07-23"
-			},
-			{
-				"id": "f00125",
-				"title": "f00125",
-				"track": "plugin+browser+verification",
-				"status": "ready",
-				"kind": "feat",
-				"date": "2026-07-23"
-			},
-			{
-				"id": "f00126",
-				"title": "f00126",
-				"track": "plugin+perf+quality",
-				"status": "ready",
-				"kind": "feat",
-				"date": "2026-07-23"
-			},
-			{
-				"id": "f00127",
-				"title": "f00127",
-				"track": "plugin+eval+routing",
-				"status": "ready",
-				"kind": "feat",
-				"date": "2026-07-23"
-			},
-			{
-				"id": "f00128",
-				"title": "f00128",
-				"track": "plugin+database+data",
-				"status": "ready",
-				"kind": "feat",
-				"date": "2026-07-23"
-			},
-			{
-				"id": "f00129",
-				"title": "f00129",
-				"track": "plugin+observability+runtime",
-				"status": "ready",
-				"kind": "feat",
-				"date": "2026-07-23"
-			},
-			{
-				"id": "f00130",
-				"title": "f00130",
-				"track": "plugin+api+integration",
-				"status": "ready",
-				"kind": "feat",
-				"date": "2026-07-23"
-			},
-			{
-				"id": "f00131",
-				"title": "f00131",
-				"track": "plugin+release+automation",
-				"status": "ready",
-				"kind": "feat",
-				"date": "2026-07-23"
-			},
-			{
-				"id": "f00132",
-				"title": "f00132",
-				"track": "plugin+diagram+docs",
-				"status": "ready",
-				"kind": "feat",
-				"date": "2026-07-23"
-			},
-			{
-				"id": "f00133",
-				"title": "f00133",
-				"track": "plugin+container+runtime",
-				"status": "ready",
-				"kind": "feat",
-				"date": "2026-07-23"
-			},
-			{
-				"id": "f00134",
-				"title": "f00134",
-				"track": "plugin+i18n+quality",
-				"status": "ready",
-				"kind": "feat",
-				"date": "2026-07-23"
-			},
-			{
-				"id": "f00135",
-				"title": "f00135",
-				"track": "plugin+config+onboarding",
-				"status": "ready",
-				"kind": "feat",
-				"date": "2026-07-23"
-			},
-			{
-				"id": "f00136",
-				"title": "f00136",
-				"track": "plugin+tools+dx",
-				"status": "ready",
-				"kind": "feat",
-				"date": "2026-07-23"
-			},
-			{
-				"id": "f00137",
-				"title": "f00137",
-				"track": "plugin+skills+process",
-				"status": "ready",
-				"kind": "feat",
-				"date": "2026-07-23"
-			},
-			{
-				"id": "f00138",
-				"title": "f00138",
-				"track": "plugin+prompts+dx",
-				"status": "ready",
-				"kind": "feat",
-				"date": "2026-07-23"
-			},
-			{
-				"id": "f00139",
-				"title": "f00139",
-				"track": "plugin+audit+self-improvement",
-				"status": "ready",
-				"kind": "feat",
-				"date": "2026-07-23"
-			},
-			{
-				"id": "f00140",
-				"title": "f00140",
-				"track": "plugin+extension+routing",
-				"status": "ready",
-				"kind": "feat",
-				"date": "2026-07-23"
-			},
-			{
-				"id": "f00141",
-				"title": "f00141",
-				"track": "plugin+registry+dx",
-				"status": "ready",
-				"kind": "feat",
-				"date": "2026-07-23"
-			},
-			{
-				"id": "f00142",
-				"title": "f00142",
-				"track": "plugin+config+auto-selection",
-				"status": "ready",
-				"kind": "feat",
-				"date": "2026-07-23"
-			},
-			{
-				"id": "f00143",
-				"title": "f00143",
-				"track": "agent-discipline+session-governance",
-				"status": "review",
-				"kind": "feat",
-				"date": "2026-07-24"
-			},
-			{
-				"id": "f00144",
-				"title": "f00144",
-				"track": "usage-tracking+memory+notification",
-				"status": "done",
-				"kind": "feat",
-				"date": "2026-07-24"
-			},
-			{
-				"id": "f00145",
-				"title": "f00145",
-				"track": "host-adapters+memory",
-				"status": "done",
-				"kind": "feat",
-				"date": "2026-07-24"
-			},
-			{
-				"id": "f00146",
-				"title": "f00146",
-				"track": "host-adapters+usage-tracking",
-				"status": "review",
-				"kind": "feat",
-				"date": "2026-07-24"
-			},
-			{
-				"id": "f00147",
-				"title": "f00147",
-				"track": "memory+host-adapters",
-				"status": "review",
-				"kind": "feat",
-				"date": "2026-07-24"
-			},
-			{
-				"id": "f00148",
-				"title": "f00148",
-				"track": "infra+distribution+economics",
-				"status": "ready",
-				"kind": "feat",
-				"date": "2026-07-24"
-			},
-			{
-				"id": "l00001",
-				"title": "l00001",
-				"track": "plugins+core+audit",
-				"status": "done",
-				"kind": "unspecified",
-				"date": "2026-06-21"
-			},
-			{
-				"id": "n00001",
-				"title": "n00001",
-				"track": "general",
-				"status": "done",
-				"kind": "unspecified",
-				"date": "2026-06-15"
-			},
-			{
-				"id": "n00002",
-				"title": "n00002",
-				"track": "general",
-				"status": "done",
-				"kind": "unspecified",
-				"date": "2026-06-15"
-			},
-			{
-				"id": "n00003",
-				"title": "n00003",
-				"track": "general",
-				"status": "done",
-				"kind": "unspecified",
-				"date": "2026-06-15"
-			},
-			{
-				"id": "n00004",
-				"title": "n00004",
-				"track": "general",
-				"status": "done",
-				"kind": "unspecified",
-				"date": "2026-06-16"
-			},
-			{
-				"id": "n00005",
-				"title": "n00005",
-				"track": "general",
-				"status": "done",
-				"kind": "unspecified",
-				"date": "2026-06-16"
-			},
-			{
-				"id": "n00006",
-				"title": "n00006",
-				"track": "general",
-				"status": "done",
-				"kind": "unspecified",
-				"date": "2026-06-17"
-			},
-			{
-				"id": "n00007",
-				"title": "n00007",
-				"track": "proposals",
-				"status": "done",
-				"kind": "unspecified",
-				"date": "2026-06-21"
-			},
-			{
-				"id": "q00001",
-				"title": "q00001",
-				"track": "proposals-plugin",
-				"status": "done",
-				"kind": "plan",
-				"date": "2026-06-23"
-			},
-			{
-				"id": "q00002",
-				"title": "q00002",
-				"track": "adoption+extension",
-				"status": "done",
-				"kind": "plan",
-				"date": "2026-07-15"
-			},
-			{
-				"id": "r00001",
-				"title": "r00001",
-				"track": "core+plugins",
-				"status": "done",
-				"kind": "refactor",
-				"date": "2026-06-21"
-			},
-			{
-				"id": "r00002",
-				"title": "r00002",
-				"track": "plugins+core",
-				"status": "done",
-				"kind": "refactor",
-				"date": "2026-06-21"
-			},
-			{
-				"id": "r00003",
-				"title": "r00003",
-				"track": "core+cli+extensions+plugins+architecture+refactor",
-				"status": "done",
-				"kind": "refactor",
-				"date": "2026-06-23"
-			},
-			{
-				"id": "r00004",
-				"title": "r00004",
-				"track": "repo-layout+build+tooling+dx",
-				"status": "done",
-				"kind": "refactor",
-				"date": "2026-06-24"
-			},
-			{
-				"id": "r00005",
-				"title": "r00005",
-				"track": "i18n+l10n+utils",
-				"status": "done",
-				"kind": "refactor",
-				"date": "2026-06-25"
-			},
-			{
-				"id": "r00006",
-				"title": "r00006",
-				"track": "solid+architecture+extension-ux",
-				"status": "done",
-				"kind": "refactor",
-				"date": "2026-06-25"
-			},
-			{
-				"id": "r00007",
-				"title": "r00007",
-				"track": "repo-layout+tooling+dx",
-				"status": "done",
-				"kind": "refactor",
-				"date": "2026-06-30"
-			},
-			{
-				"id": "r00008",
-				"title": "r00008",
-				"track": "ui-architecture",
-				"status": "done",
-				"kind": "refactor",
-				"date": "2026-07-12"
-			},
-			{
-				"id": "r00009",
-				"title": "r00009",
-				"track": "core",
-				"status": "done",
-				"kind": "refactor",
-				"date": "2026-07-13"
-			},
-			{
-				"id": "r00010",
-				"title": "r00010",
-				"track": "core",
-				"status": "done",
-				"kind": "refactor",
-				"date": "2026-07-16"
-			},
-			{
-				"id": "r00011",
-				"title": "r00011",
-				"track": "refactor+config+dx",
-				"status": "ready",
-				"kind": "refactor",
-				"date": "2026-07-23"
-			},
-			{
-				"id": "r00012",
-				"title": "r00012",
-				"track": "refactor+core+plugins",
-				"status": "ready",
-				"kind": "refactor",
-				"date": "2026-07-23"
-			},
-			{
-				"id": "t00001",
-				"title": "t00001",
-				"track": "testing",
-				"status": "done",
-				"kind": "unspecified",
-				"date": "2026-06-22"
-			},
-			{
-				"id": "t00002",
-				"title": "t00002",
-				"track": "tests",
-				"status": "done",
-				"kind": "unspecified",
-				"date": "2026-07-13"
-			},
-			{
-				"id": "t00004",
-				"title": "t00004",
-				"track": "tests+coverage",
-				"status": "done",
-				"kind": "unspecified",
-				"date": "2026-07-14"
-			},
-			{
-				"id": "v00001",
-				"title": "v00001",
-				"track": "presets+metrics+token-efficiency",
-				"status": "retired",
-				"kind": "unspecified",
-				"date": "2026-07-24"
-			},
-			{
-				"id": "v00122",
-				"title": "v00122",
-				"track": "perf+token-budgets+agent-velocity",
-				"status": "in-progress",
-				"kind": "unspecified",
-				"date": "2026-07-24"
-			},
-			{
-				"id": "x00001",
-				"title": "x00001",
-				"track": "logs",
-				"status": "done",
-				"kind": "fix",
-				"date": "2026-06-22"
-			},
-			{
-				"id": "x00002",
-				"title": "x00002",
-				"track": "web",
-				"status": "done",
-				"kind": "fix",
-				"date": "2026-06-19"
-			},
-			{
-				"id": "x00003",
-				"title": "x00003",
-				"track": "core+host",
-				"status": "done",
-				"kind": "fix",
-				"date": "2026-06-21"
-			},
-			{
-				"id": "x00004",
-				"title": "x00004",
-				"track": "web+ui",
-				"status": "done",
-				"kind": "fix",
-				"date": "2026-06-21"
-			},
-			{
-				"id": "x00005",
-				"title": "x00005",
-				"track": "core+proposals",
-				"status": "done",
-				"kind": "fix",
-				"date": "2026-06-20"
-			},
-			{
-				"id": "x00006",
-				"title": "x00006",
-				"track": "web+i18n+docs",
-				"status": "done",
-				"kind": "fix",
-				"date": "2026-06-19"
-			},
-			{
-				"id": "x00007",
-				"title": "x00007",
-				"track": "web+ui",
-				"status": "done",
-				"kind": "fix",
-				"date": "2026-06-21"
-			},
-			{
-				"id": "x00008",
-				"title": "x00008",
-				"track": "web+ui",
-				"status": "done",
-				"kind": "fix",
-				"date": "2026-06-21"
-			},
-			{
-				"id": "x00009",
-				"title": "x00009",
-				"track": "web+ui",
-				"status": "done",
-				"kind": "fix",
-				"date": "2026-06-21"
-			},
-			{
-				"id": "x00010",
-				"title": "x00010",
-				"track": "web+ui",
-				"status": "done",
-				"kind": "fix",
-				"date": "2026-06-21"
-			},
-			{
-				"id": "x00050",
-				"title": "x00050",
-				"track": "repo-hygiene+ci+lint+docs+extensions/vscode",
-				"status": "done",
-				"kind": "fix",
-				"date": "2026-06-23"
-			},
-			{
-				"id": "x00051",
-				"title": "x00051",
-				"track": "plugins/proposals+git+orchestration",
-				"status": "done",
-				"kind": "fix",
-				"date": "2026-06-27"
-			},
-			{
-				"id": "x00052",
-				"title": "x00052",
-				"track": "plugins/proposals+repo-hygiene",
-				"status": "done",
-				"kind": "fix",
-				"date": "2026-06-27"
-			},
-			{
-				"id": "x00053",
-				"title": "x00053",
-				"track": "plugins/proposals+docs+repo-hygiene",
-				"status": "done",
-				"kind": "fix",
-				"date": "2026-06-27"
-			},
-			{
-				"id": "x00054",
-				"title": "x00054",
-				"track": "plugins/proposals+orchestration",
-				"status": "done",
-				"kind": "fix",
-				"date": "2026-06-27"
-			},
-			{
-				"id": "x00055",
-				"title": "x00055",
-				"track": "plugins/proposals+security",
-				"status": "done",
-				"kind": "fix",
-				"date": "2026-06-27"
-			},
-			{
-				"id": "x00074",
-				"title": "x00074",
-				"track": "swarm+coordination",
-				"status": "done",
-				"kind": "fix",
-				"date": "2026-06-28"
-			},
-			{
-				"id": "x00076",
-				"title": "x00076",
-				"track": "repo-hygiene+ci+lint+docs+plugins/rules",
-				"status": "done",
-				"kind": "fix",
-				"date": "2026-06-28"
-			},
-			{
-				"id": "x00078",
-				"title": "x00078",
-				"track": "plugins",
-				"status": "done",
-				"kind": "fix",
-				"date": "2026-06-20"
-			},
-			{
-				"id": "x00079",
-				"title": "x00079",
-				"track": "plugins/proposals+lint+i18n+tools+scripts",
-				"status": "done",
-				"kind": "fix",
-				"date": "2026-06-28"
-			},
-			{
-				"id": "x00080",
-				"title": "x00080",
-				"track": "core+agents+governance+plugins/proposals",
-				"status": "done",
-				"kind": "fix",
-				"date": "2026-06-28"
-			},
-			{
-				"id": "x00091",
-				"title": "x00091",
-				"track": "refactor",
-				"status": "done",
-				"kind": "fix",
-				"date": "2026-07-01"
-			},
-			{
-				"id": "x00096",
-				"title": "x00096",
-				"track": "cli-init-types+audit-merge-conflicts",
-				"status": "done",
-				"kind": "fix",
-				"date": "2026-07-01"
-			},
-			{
-				"id": "x00097",
-				"title": "x00097",
-				"track": "hardening",
-				"status": "done",
-				"kind": "fix",
-				"date": "2026-07-12"
-			},
-			{
-				"id": "x00098",
-				"title": "x00098",
-				"track": "general",
-				"status": "done",
-				"kind": "fix",
-				"date": "2026-07-12"
-			},
-			{
-				"id": "x00100",
-				"title": "x00100",
-				"track": "general",
-				"status": "done",
-				"kind": "fix",
-				"date": "2026-07-13"
-			},
-			{
-				"id": "x00101",
-				"title": "x00101",
-				"track": "core",
-				"status": "done",
-				"kind": "fix",
-				"date": "2026-07-13"
-			},
-			{
-				"id": "x00102",
-				"title": "x00102",
-				"track": "adoption",
-				"status": "done",
-				"kind": "fix",
-				"date": "2026-07-13"
-			},
-			{
-				"id": "x00103",
-				"title": "x00103",
-				"track": "ui",
-				"status": "done",
-				"kind": "fix",
-				"date": "2026-07-13"
-			},
-			{
-				"id": "x00105",
-				"title": "x00105",
-				"track": "tooling+gates",
-				"status": "done",
-				"kind": "fix",
-				"date": "2026-07-14"
-			},
-			{
-				"id": "x00106",
-				"title": "x00106",
-				"track": "proposals+dx",
-				"status": "done",
-				"kind": "fix",
-				"date": "2026-07-14"
-			},
-			{
-				"id": "x00107",
-				"title": "x00107",
-				"track": "tooling+gates",
-				"status": "done",
-				"kind": "fix",
-				"date": "2026-07-15"
-			}
-		]
+		}
 	}
 }
