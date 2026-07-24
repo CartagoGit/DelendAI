@@ -904,6 +904,35 @@ export interface McpVertexOverviewOutput {
 	recommendedNextAction: string;
 }
 
+export interface McpVertexPerfPerfBundleOutput {
+	globs: string[];
+	fileCount: number;
+	totalBytes: number;
+	largest: {
+		path: string;
+		bytes: number;
+	}[];
+	findings: Array<{
+		ruleId: string;
+		severity: "critical" | "high" | "medium" | "low" | "info";
+		message: string;
+		fix?: string;
+		location?: {
+			file: string;
+			line?: number;
+			endLine?: number;
+		};
+	}>;
+	summary: {
+		critical: number;
+		high: number;
+		medium: number;
+		low: number;
+		info: number;
+	};
+	worst: string;
+}
+
 export interface McpVertexPlanMcpProjectOutput {
 	blueprint?: {
 		serverName: string;
@@ -2387,6 +2416,7 @@ export interface McpVertexToolOutputs {
 	"mcp-vertex_notification_await_lock": McpVertexNotificationAwaitLockOutput;
 	"mcp-vertex_notification_notify_status": McpVertexNotificationNotifyStatusOutput;
 	"mcp-vertex_overview": McpVertexOverviewOutput;
+	"mcp-vertex_perf_perf_bundle": McpVertexPerfPerfBundleOutput;
 	"mcp-vertex_plan_mcp_project": McpVertexPlanMcpProjectOutput;
 	"mcp-vertex_proposals_agent_lock": McpVertexProposalsAgentLockOutput;
 	"mcp-vertex_proposals_agent_lock_release_orphan": McpVertexProposalsAgentLockReleaseOrphanOutput;

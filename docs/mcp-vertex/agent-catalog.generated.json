@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-07-24T15:08:06.086Z",
+	"generatedAt": "2026-07-24T15:14:52.937Z",
 	"mode": "compact",
 	"tools": [
 		{
@@ -253,6 +253,10 @@
 		},
 		{
 			"name": "mcp-vertex_overview"
+		},
+		{
+			"name": "mcp-vertex_perf_perf_bundle",
+			"plugin": "perf"
 		},
 		{
 			"name": "mcp-vertex_plan_mcp_project"
