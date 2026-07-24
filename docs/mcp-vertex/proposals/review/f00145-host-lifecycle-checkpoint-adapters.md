@@ -2,7 +2,7 @@
 id: f00145
 title: "Host lifecycle checkpoint adapters"
 kind: feat
-status: done
+status: review
 type: proposal
 track: host-adapters+memory
 date: 2026-07-24
@@ -38,6 +38,8 @@ the gap that a generic MCP server cannot safely infer from tool timestamps.
 - **Status**: done
 - **Files**: `plugins/memory/src/lib/services/`, `plugins/memory/src/lib/tools/`, `plugins/memory/tests/src/lib/`
 - **Gate**: memory tests
+- review-state: in_review
+- review-implementer: copilot-minimax-m3
 - **Acceptance**: a bounded, redacted packet contains only the current digest,
   pointers and next action; it is useful without a host adapter.
 
@@ -45,6 +47,8 @@ the gap that a generic MCP server cannot safely infer from tool timestamps.
 - **Status**: done
 - **Files**: `config/external/claude-code/`, `docs/mcp-vertex/wiki/external/claude-code.md`, host-adapter tests
 - **Gate**: documented host smoke test
+- review-state: in_review
+- review-implementer: copilot-minimax-m3
 - **Acceptance**: use only documented current lifecycle hooks; if no supported
   hook can invoke MCP, ship instructions rather than a fake integration.
 
@@ -52,6 +56,8 @@ the gap that a generic MCP server cannot safely infer from tool timestamps.
 - **Status**: done
 - **Files**: `docs/mcp-vertex/examples/`, `docs/mcp-vertex/CROSS-IDE.md`
 - **Gate**: docs/link checks
+- review-state: in_review
+- review-implementer: copilot-minimax-m3
 - **Acceptance**: each adapter is opt-in, names the exact lifecycle guarantee,
   and degrades to the portable checkpoint packet.
 
