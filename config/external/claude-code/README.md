@@ -50,3 +50,17 @@ If the MCP server is configured with a non-default `cacheDir`, set the command
 hook's `--lifecycle-path` to the corresponding path inside the project. The
 script rejects absolute and escaping destinations, and telemetry write failures
 are intentionally non-blocking.
+
+## Universal adapter profile
+
+Claude Code receives the same live MCP baseline as every compatible host. Its
+workspace instructions and native skills are optional host capabilities; the
+hook fragment is an optional lifecycle capability. None of those additions
+changes which mcp-vertex tools, prompts or resources the connected server
+exposes.
+
+This adapter records and advises at documented lifecycle boundaries but does
+not restart a completed Claude turn. It therefore uses the portable manual
+continuation fallback: persist a bounded handoff, then let the next real host
+turn consume it. Only an adapter that owns a documented, bounded host runner
+may declare automatic `host-loop` continuation.

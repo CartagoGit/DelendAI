@@ -31,3 +31,15 @@ Current root-discovered configs:
 
 Generated state does not belong here. Runtime state for this repo goes under
 `.cache/mcp-vertex/**`; other tool caches use `.cache/<tool>/**` when supported.
+
+## Universal adapter packs
+
+Every adapter starts with the same MCP baseline: the connected server exposes
+its live tools, prompts and resources, so it works for any compliant client.
+Host-native instructions, skills, lifecycle hooks and continuation are
+optional declared capabilities; an adapter must omit what its host cannot do
+and retain the portable handoff fallback.
+
+The concrete Codex and Claude Code profiles are documented beside their
+configuration. The generic contract and a template for another host are in
+[`docs/mcp-vertex/examples/host-capability-adapter.md`](../../docs/mcp-vertex/examples/host-capability-adapter.md).
