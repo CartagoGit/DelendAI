@@ -550,6 +550,23 @@
         "@mcp-vertex/core": "^0.1.0",
       },
     },
+    "plugins/tech-debt": {
+      "name": "@mcp-vertex/tech-debt",
+      "version": "0.1.0",
+      "dependencies": {
+        "@modelcontextprotocol/sdk": "^1.29.0",
+        "zod": "^4.4.3",
+      },
+      "devDependencies": {
+        "@mcp-vertex/core": "workspace:*",
+        "@types/bun": "latest",
+        "typescript": "7.0.2",
+        "vitest": "4.1.10",
+      },
+      "peerDependencies": {
+        "@mcp-vertex/core": "^0.1.0",
+      },
+    },
     "plugins/test-convention": {
       "name": "@mcp-vertex/test-convention",
       "version": "0.1.0",
@@ -956,6 +973,8 @@
     "@mcp-vertex/shared": ["@mcp-vertex/shared@workspace:apps/shared"],
 
     "@mcp-vertex/status-marker": ["@mcp-vertex/status-marker@workspace:plugins/status-marker"],
+
+    "@mcp-vertex/tech-debt": ["@mcp-vertex/tech-debt@workspace:plugins/tech-debt"],
 
     "@mcp-vertex/test-convention": ["@mcp-vertex/test-convention@workspace:plugins/test-convention"],
 
