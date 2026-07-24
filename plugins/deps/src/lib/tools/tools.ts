@@ -1,7 +1,11 @@
 import { z } from 'zod';
 
 import type { IArgvExec, IToolRegistration } from '@mcp-vertex/core/public';
-import { toolJson, worstSeverity } from '@mcp-vertex/core/public';
+import {
+	summarizeFindings,
+	toolJson,
+	worstSeverity,
+} from '@mcp-vertex/core/public';
 
 import {
 	listDeps,
@@ -12,6 +16,8 @@ import {
 import type { ILatestVersionFetcher } from '../services/engine';
 import { listPolyglotDeps } from '../services/polyglot';
 import { runDepsAudit } from '../services/audit';
+import { realLicenseDeps, scanLicenses } from '../services/licenses';
+import type { ILicenseScanDeps } from '../contracts/interfaces/licenses.interface';
 
 export interface IDepsToolOptions {
 	readonly namespacePrefix: string;
@@ -31,6 +37,8 @@ export interface IDepsToolOptions {
 	 * uses the shared `runArgv` inside `runExternalTool`).
 	 */
 	readonly auditExec?: IArgvExec;
+	/** Injectable license reader for `deps_licenses` (tests pass a fake). */
+	readonly licenseDeps?: ILicenseScanDeps;
 }
 
 const OUTDATED_ENTRY = z.object({
@@ -78,6 +86,19 @@ const AUDIT_RESULT = z.object({
 	ranAt: z.string(),
 	skipped: z.boolean().optional(),
 	note: z.string().optional(),
+	worst: z.string(),
+});
+
+const LICENSES_RESULT = z.object({
+	tool: z.string(),
+	findings: z.array(AUDIT_FINDING),
+	summary: z.object({
+		critical: z.number(),
+		high: z.number(),
+		medium: z.number(),
+		low: z.number(),
+		info: z.number(),
+	}),
 	worst: z.string(),
 });
 
@@ -249,6 +270,40 @@ export const buildDepsToolRegistrations = (
 					} satisfies IToolRegistration,
 				]
 			: []),
+		{
+			id: 'deps_licenses',
+			summary:
+				'Flag dependencies with copyleft/proprietary/unknown/missing licenses (offline).',
+			tags: ['deps', 'security', 'lazy'],
+			register: async (server) => {
+				server.registerTool(
+					`${prefix}_deps_licenses`,
+					{
+						description:
+							"Classify each declared dependency's license (read from node_modules) and flag the ones worth review: strong copyleft (GPL/AGPL, high), weak copyleft (LGPL/MPL/EPL/CDDL, medium), proprietary/UNLICENSED (high), missing (medium) or unrecognised (low). Permissive licenses (MIT/BSD/Apache/ISC/...) are not flagged. Offline, read-only.",
+						inputSchema: z.object({
+							manifest: z.string().optional(),
+						}),
+						outputSchema: LICENSES_RESULT,
+					},
+					async (args: { manifest?: string | undefined }) => {
+						const licenseDeps =
+							options.licenseDeps ??
+							realLicenseDeps(
+								options.workspaceRootAbs,
+								args.manifest ?? manifest,
+							);
+						const findings = await scanLicenses(licenseDeps);
+						return toolJson({
+							tool: 'licenses',
+							findings,
+							summary: summarizeFindings(findings),
+							worst: worstSeverity(findings) ?? 'none',
+						});
+					},
+				);
+			},
+		},
 		{
 			id: 'deps_polyglot',
 			summary:
