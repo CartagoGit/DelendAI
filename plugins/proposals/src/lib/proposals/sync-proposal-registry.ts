@@ -408,11 +408,26 @@ const isNewSystemFilename = (filename: string): boolean => {
 	return prefix !== 'p' && prefix in PROPOSAL_KIND_BY_PREFIX;
 };
 
+/**
+ * Folders to scan for new-system proposal files. Includes the 7 status
+ * folders, the proposals root (legacy flat layout), and every
+ * `done/<kind>/` sub-folder (f00042). Without the kind sub-folders,
+ * `reconcileFolders` would miss closed proposals and could not detect
+ * duplicate ids that live only under `done/feats/` (a00069 S3 / F7).
+ */
+const newSystemScanFolders = (): readonly string[] => {
+	const folders = new Set<string>(['', ...NEW_SYSTEM_FOLDERS]);
+	for (const sub of Object.values(KIND_TO_DONE_SUBFOLDER)) {
+		if (sub !== undefined) folders.add(join('done', sub));
+	}
+	return [...folders];
+};
+
 const scanNewSystemFiles = async (
 	proposalsDirAbs: string,
 ): Promise<INewSystemFile[]> => {
 	const out: INewSystemFile[] = [];
-	for (const folder of ['', ...NEW_SYSTEM_FOLDERS]) {
+	for (const folder of newSystemScanFolders()) {
 		const dirAbs =
 			folder === '' ? proposalsDirAbs : join(proposalsDirAbs, folder);
 		const dirents = await readdir(dirAbs, { withFileTypes: true }).catch(
@@ -445,6 +460,34 @@ const scanNewSystemFiles = async (
 			});
 		}
 	}
+	return out;
+};
+
+/**
+ * a00069 S3 / F7 — report every proposal id that appears in more than
+ * one path under `proposalsDirAbs`. Pure detection (no deletes); the
+ * lint gate (`lint:proposals`) and reconcile tooling both call this so
+ * a twin left behind after a half-applied transition is never silent.
+ */
+export const findDuplicateProposalIds = async (
+	proposalsDirAbs: string,
+): Promise<ReadonlyArray<{ id: string; paths: readonly string[] }>> => {
+	const files = await scanNewSystemFiles(proposalsDirAbs);
+	const byId = new Map<string, string[]>();
+	for (const file of files) {
+		const list = byId.get(file.id) ?? [];
+		list.push(relative(proposalsDirAbs, file.absPath));
+		byId.set(file.id, list);
+	}
+	const out: Array<{ id: string; paths: readonly string[] }> = [];
+	for (const [id, paths] of byId) {
+		if (paths.length < 2) continue;
+		out.push({
+			id,
+			paths: [...paths].sort((a, b) => a.localeCompare(b)),
+		});
+	}
+	out.sort((a, b) => a.id.localeCompare(b.id));
 	return out;
 };
 
@@ -619,6 +662,16 @@ export async function syncProposalRegistry(
 			result.entries.sort((a, b) => a.id.localeCompare(b.id));
 			entries.push(...result.entries);
 			warnings.push(...result.warnings);
+		}
+		// a00069 S3 / F7 — surface twin files that share an id (e.g. a
+		// half-applied transition left both ready/ and done/feats/).
+		// Detection only: we still write the index so agents can see both
+		// paths, but the error list is non-empty so lint/CI can fail.
+		const duplicates = await findDuplicateProposalIds(proposalsDir);
+		for (const dup of duplicates) {
+			warnings.push(
+				`duplicate proposal id "${dup.id}" on disk: ${dup.paths.join(' and ')}`,
+			);
 		}
 		const index = {
 			generated_at: new Date().toISOString(),

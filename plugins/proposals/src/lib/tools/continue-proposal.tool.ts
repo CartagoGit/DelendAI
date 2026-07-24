@@ -30,6 +30,7 @@ import {
 	readProposalIndex,
 	readTextOrNull,
 } from '../proposals/index-reader';
+import { locateProposal } from '../proposals/locate';
 import type {
 	ICascadePriorityResolver,
 	IProposalSummary,
@@ -312,14 +313,26 @@ const resolveDoc = async (
 			error: `proposal "${proposalId}" not found in the index`,
 			nextAction: 'Pass an existing proposalId.',
 		};
-	const docPath = join(proposalsDirAbs ?? dirname(indexPath), entry.file);
+	const proposalsRoot = proposalsDirAbs ?? dirname(indexPath);
+	const docPath = join(proposalsRoot, entry.file);
 	const md = await readTextOrNull(docPath);
-	if (md === null)
-		return {
-			error: `proposal file missing on disk: ${docPath}`,
-			nextAction: 'Run sync_proposals to reconcile the index.',
-		};
-	return { id: entry.id, markdown: md };
+	if (md !== null) return { id: entry.id, markdown: md };
+	// a00069 S3 — index can lag one transition behind the filesystem.
+	// Fall back to locateProposal (index + scan, including done/<kind>/)
+	// before surfacing slice-mode-error, matching resolveIndexedDoc's
+	// self-heal for close_slice / proposal_review.
+	const located = await locateProposal(proposalId, {
+		indexPathAbs: indexPath,
+		proposalsDirAbs: proposalsRoot,
+	});
+	if (located !== null) {
+		const healed = await readTextOrNull(located.absPath);
+		if (healed !== null) return { id: located.id, markdown: healed };
+	}
+	return {
+		error: `proposal file missing on disk: ${docPath}`,
+		nextAction: 'Run sync_proposals to reconcile the index.',
+	};
 };
 
 // q00001 helper extracted to `proposals/blocked-by.ts` (SRP).
