@@ -104,6 +104,11 @@
 			"@mcp-vertex/perf": ["./plugins/perf/src/index.ts"],
 			"@mcp-vertex/perf/public": ["./plugins/perf/src/public/index.ts"],
 			"@mcp-vertex/perf/*": ["./plugins/perf/src/*"],
+			"@mcp-vertex/tech-debt": ["./plugins/tech-debt/src/index.ts"],
+			"@mcp-vertex/tech-debt/public": [
+				"./plugins/tech-debt/src/public/index.ts"
+			],
+			"@mcp-vertex/tech-debt/*": ["./plugins/tech-debt/src/*"],
 			"@mcp-vertex/logs": ["./plugins/logs/src/index.ts"],
 			"@mcp-vertex/logs/public": ["./plugins/logs/src/public/index.ts"],
 			"@mcp-vertex/logs/*": ["./plugins/logs/src/*"],
