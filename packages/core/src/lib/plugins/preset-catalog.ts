@@ -187,6 +187,7 @@ export const PRESET_CATALOG: readonly IPresetDefinition[] = [
 			{ plugin: 'quality' },
 			{ plugin: 'issues', hostOnly: true },
 			{ plugin: 'audit' },
+			{ plugin: 'auto-agent-selector', hostOnly: true },
 		],
 		independent: true,
 	},

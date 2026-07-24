@@ -139,8 +139,9 @@ describe('renderInitBundle (f00084 S2-S5)', () => {
 		const config = JSON.parse(configFile?.content ?? '{}') as {
 			plugins: Record<string, unknown>;
 		};
-		// Exactly the 11 vertex members, no swarm inheritance.
-		expect(Object.keys(config.plugins).length).toBe(11);
+		// Exactly the 12 vertex members (f00119 S6 added auto-agent-selector),
+		// no swarm inheritance.
+		expect(Object.keys(config.plugins).length).toBe(12);
 		for (const required of [
 			'conventions',
 			'docs',

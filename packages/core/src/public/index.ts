@@ -168,6 +168,29 @@ export type {
 	WorkspacePathStatus,
 } from '../lib/contracts/interfaces/workspace-layout.interface';
 export { assembleCliConfig } from '../lib/cli/assemble';
+// f00120 S2: monorepo-wiring writer for first-party plugins.
+export {
+	wirePluginIntoMonorepo,
+	writeTsconfigBase,
+	writeVitestShared,
+	writePluginDefaults,
+	writePublishOrder,
+	writePresetCatalog,
+	writeCatalogRegen,
+	buildTsconfigPathsEntry,
+	pluginDir,
+} from '../lib/scaffold/wire-plugin';
+// f00120 S4: wiring-doctor (verifier) for first-party plugins.
+export { diagnosePluginWiring } from '../lib/scaffold/diagnose-plugin-wiring';
+export type {
+	IPluginWiringEdit,
+	IPluginWiringFs,
+	IPluginWiringPoint,
+	IPluginWiringReport,
+	IPluginWiringWrite,
+	IWirePluginOptions,
+	PluginWiringPointId,
+} from '../lib/contracts/interfaces/plugin-wiring.interface';
 export type {
 	IAssembledCliConfig,
 	IAssembleCliDeps,
