@@ -5,6 +5,10 @@ export type { IHelpTranslation };
 const ENGLISH_COMMAND_SUMMARIES: Readonly<Record<string, string>> = {
 	'git changelog':
 		'Build a conventional-commit changelog and infer the semver bump for a range.',
+	'deps licenses':
+		'Flag dependencies with copyleft/proprietary/unknown/missing licenses (offline).',
+	'deps audit':
+		'Scan dependencies for known CVEs via bun audit (opt-in via allowNetwork).',
 	'security secrets':
 		'Scan source for leaked secrets (keys, tokens, private keys). Offline, redacted.',
 	'security audit':
