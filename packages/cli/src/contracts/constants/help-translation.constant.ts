@@ -19,6 +19,8 @@ const ENGLISH_COMMAND_SUMMARIES: Readonly<Record<string, string>> = {
 		'Recommend the best-value provider for a task (cost↔quality dial + measured win-rates).',
 	'agents record':
 		'Record a task outcome (success/failure) for a provider to calibrate recommendations.',
+	'agents run':
+		'Plan the cheapest-capable → escalate-up route for a task (ordered ladder).',
 	status: 'Show runtime status collectors.',
 	overview: 'Show loaded server map.',
 	'plugin list': 'List loaded plugins.',

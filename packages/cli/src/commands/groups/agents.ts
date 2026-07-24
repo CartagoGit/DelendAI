@@ -76,8 +76,45 @@ const agentsRecordCommand: ICliCommand = {
 	},
 };
 
+const agentsRunCommand: ICliCommand = {
+	name: 'agents run',
+	summary:
+		'Plan the cheapest-capable → escalate-up route for a task (ordered ladder, within a cost ceiling).',
+	async run(args, ctx) {
+		const task = scalarArg(args, 'task');
+		const dial =
+			scalarArg(args, 'dial') ?? scalarArg(args, 'costQualityTradeoff');
+		const ceiling =
+			scalarArg(args, 'ceiling') ?? scalarArg(args, 'costCeiling');
+		const maxDepth =
+			scalarArg(args, 'max-depth') ?? scalarArg(args, 'maxDepth');
+		const pin = scalarArg(args, 'pin');
+		const num = (value: string | undefined): number | undefined =>
+			value !== undefined && Number.isFinite(Number(value))
+				? Number(value)
+				: undefined;
+		const payload: Record<string, unknown> = {};
+		if (task !== undefined) payload.task = task;
+		const dialN = num(dial);
+		if (dialN !== undefined) payload.costQualityTradeoff = dialN;
+		const ceilingN = num(ceiling);
+		if (ceilingN !== undefined) payload.costCeiling = ceilingN;
+		const depthN = num(maxDepth);
+		if (depthN !== undefined) payload.maxDepth = depthN;
+		if (pin !== undefined) payload.pin = pin;
+		return data(
+			await request(
+				ctx,
+				'mcp-vertex_auto-agent-selector_auto_run',
+				payload,
+			),
+		);
+	},
+};
+
 export const agentsCommands: readonly ICliCommand[] = [
 	agentsStatusCommand,
 	agentsRecommendCommand,
 	agentsRecordCommand,
+	agentsRunCommand,
 ];
