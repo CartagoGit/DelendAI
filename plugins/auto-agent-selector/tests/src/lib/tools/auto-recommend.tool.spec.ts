@@ -6,11 +6,13 @@ import type { IDiscoveryDeps } from '../../../../src/lib/contracts/interfaces/ro
 type Handler = (args: {
 	costQualityTradeoff?: number;
 	pin?: string;
+	taskType?: string;
 }) => Promise<{ structuredContent?: Record<string, unknown> }>;
 
 const capture = async (
 	deps: IDiscoveryDeps,
 	defaultTradeoff = 7,
+	taskPins?: Readonly<Record<string, string>>,
 ): Promise<Handler> => {
 	let handler: Handler | undefined;
 	const server = {
@@ -22,6 +24,7 @@ const capture = async (
 		namespacePrefix: 'mcp',
 		defaultTradeoff,
 		deps,
+		...(taskPins !== undefined ? { taskPins } : {}),
 	});
 	await reg.register(server as unknown as Parameters<typeof reg.register>[0]);
 	if (!handler) throw new Error('auto_recommend did not register');
@@ -70,6 +73,15 @@ describe('auto_recommend tool', () => {
 		};
 		expect(body.recommended?.id).toBe('claude-cli');
 		expect(body.pinned).toBe('claude-cli');
+	});
+
+	it('honours a configured pin for a task type', async () => {
+		const handler = await capture(deps, 10, { review: 'claude-cli' });
+		const body = (await handler({ taskType: 'review' }))
+			.structuredContent as {
+			recommended: { id: string } | null;
+		};
+		expect(body.recommended?.id).toBe('claude-cli');
 	});
 
 	it('falls back to the configured default dial when none is passed', async () => {

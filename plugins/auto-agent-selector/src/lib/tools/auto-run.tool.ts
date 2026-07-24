@@ -7,6 +7,7 @@ import { discoverRoster } from '../discovery/discover-roster';
 import { realDiscoveryDeps } from '../discovery/real-deps';
 import { rankProviders } from '../routing/rank-providers';
 import { buildEscalationLadder } from '../escalate/build-ladder';
+import { resolveTaskPin } from '../prefs/resolve-task-pin';
 import type { IDiscoveryDeps } from '../contracts/interfaces/roster.interface';
 
 const RUNG_SCHEMA = z.object({
@@ -43,6 +44,7 @@ export const buildAutoRunRegistration = (options: {
 	readonly namespacePrefix: string;
 	readonly defaultTradeoff: number;
 	readonly deps?: IDiscoveryDeps;
+	readonly taskPins?: Readonly<Record<string, string>>;
 }): IToolRegistration => {
 	const prefix = options.namespacePrefix;
 	return {
@@ -78,6 +80,7 @@ export const buildAutoRunRegistration = (options: {
 								.max(10)
 								.optional(),
 							pin: z.string().min(1).optional(),
+							taskType: z.string().min(1).max(80).optional(),
 						})
 						.strict(),
 					outputSchema: OUTPUT_SCHEMA,
@@ -88,6 +91,7 @@ export const buildAutoRunRegistration = (options: {
 					costCeiling?: number | undefined;
 					maxDepth?: number | undefined;
 					pin?: string | undefined;
+					taskType?: string | undefined;
 				}) => {
 					const roster = await discoverRoster(
 						options.deps ?? realDiscoveryDeps(),
@@ -97,7 +101,11 @@ export const buildAutoRunRegistration = (options: {
 					const ranked = rankProviders({
 						available: roster.available,
 						costQualityTradeoff: tradeoff,
-						pinnedId: args.pin,
+						pinnedId: resolveTaskPin(
+							args.pin,
+							args.taskType,
+							options.taskPins,
+						),
 					}).map((r) => r.candidate);
 					const plan = buildEscalationLadder({
 						ranked,

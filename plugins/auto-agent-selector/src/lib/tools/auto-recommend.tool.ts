@@ -6,6 +6,7 @@ import { toolJson } from '@mcp-vertex/core/public';
 import { discoverRoster } from '../discovery/discover-roster';
 import { realDiscoveryDeps } from '../discovery/real-deps';
 import { rankProviders } from '../routing/rank-providers';
+import { resolveTaskPin } from '../prefs/resolve-task-pin';
 import { realCalibrationStore } from '../calibrate/store';
 import { winRateMap } from '../calibrate/win-rates';
 import type { IDiscoveryDeps } from '../contracts/interfaces/roster.interface';
@@ -50,6 +51,7 @@ export const buildAutoRecommendRegistration = (options: {
 	readonly calibrationDir?: string;
 	/** Injectable calibration store for tests; defaults to the JSONL store. */
 	readonly store?: ICalibrationStore;
+	readonly taskPins?: Readonly<Record<string, string>>;
 }): IToolRegistration => {
 	const prefix = options.namespacePrefix;
 	return {
@@ -72,6 +74,7 @@ export const buildAutoRecommendRegistration = (options: {
 								.max(10)
 								.optional(),
 							pin: z.string().min(1).optional(),
+							taskType: z.string().min(1).max(80).optional(),
 						})
 						.strict(),
 					outputSchema: OUTPUT_SCHEMA,
@@ -79,6 +82,7 @@ export const buildAutoRecommendRegistration = (options: {
 				async (args: {
 					costQualityTradeoff?: number | undefined;
 					pin?: string | undefined;
+					taskType?: string | undefined;
 				}) => {
 					const roster = await discoverRoster(
 						options.deps ?? realDiscoveryDeps(),
@@ -97,7 +101,11 @@ export const buildAutoRecommendRegistration = (options: {
 					const ranked = rankProviders({
 						available: roster.available,
 						costQualityTradeoff: tradeoff,
-						pinnedId: args.pin,
+						pinnedId: resolveTaskPin(
+							args.pin,
+							args.taskType,
+							options.taskPins,
+						),
 						...(calibration !== undefined ? { calibration } : {}),
 					});
 					const rows = ranked.map((r) => ({
