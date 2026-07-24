@@ -46,8 +46,33 @@ const depsPolyglotCommand: ICliCommand = {
 	},
 };
 
+const depsLicensesCommand: ICliCommand = {
+	name: 'deps licenses',
+	summary:
+		'Flag dependencies with copyleft/proprietary/unknown/missing licenses (offline).',
+	async run(args, ctx) {
+		const manifest = scalarArg(args, 'manifest');
+		return data(
+			await request(ctx, 'mcp-vertex_deps_deps_licenses', {
+				...(manifest !== undefined ? { manifest } : {}),
+			}),
+		);
+	},
+};
+
+const depsAuditCommand: ICliCommand = {
+	name: 'deps audit',
+	summary:
+		'Scan dependencies for known CVEs via bun audit (opt-in via allowNetwork).',
+	async run(_args, ctx) {
+		return data(await request(ctx, 'mcp-vertex_deps_deps_audit', {}));
+	},
+};
+
 export const depsCommands: readonly ICliCommand[] = [
 	depsListCommand,
 	depsCheckCommand,
 	depsPolyglotCommand,
+	depsLicensesCommand,
+	depsAuditCommand,
 ];

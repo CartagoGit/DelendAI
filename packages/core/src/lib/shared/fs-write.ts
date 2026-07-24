@@ -14,6 +14,7 @@ import { mkdir, writeFile } from 'node:fs/promises';
 import { dirname } from 'node:path';
 
 import { resolveAgainstRoots } from './contain-path';
+import { realpathContained } from './contain-realpath';
 import { writeFileAtomic } from './atomic-write';
 import { withFileMutex } from './with-file-mutex';
 import type { IFsWriteOptions, IFsWriteResult } from './fs-tools-options';
@@ -50,6 +51,21 @@ export const fsWrite = async (
 			ok: false,
 			bytesWritten: 0,
 			error: contained.reason ?? 'path escapes workspace',
+		};
+	}
+	// a00068: after the lexical check, verify no symlink in the resolved
+	// path escapes the workspace / authorized roots before we touch disk.
+	if (
+		!(await realpathContained(contained.abs, [
+			workspaceRootAbs,
+			...authorizedRoots,
+		]))
+	) {
+		return {
+			path: relativePath,
+			ok: false,
+			bytesWritten: 0,
+			error: `path escapes workspace via symlink: ${relativePath}`,
 		};
 	}
 	const atomic = options.atomic ?? true;

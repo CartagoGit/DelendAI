@@ -27,12 +27,14 @@
  */
 import type {
 	IFetchLike,
+	ISanitizedBounds,
 	IWebFetchOptions,
 	IWebFetchResult,
 } from '../contracts/interfaces/fetch.interface';
 
 export type {
 	IFetchLike,
+	ISanitizedBounds,
 	IWebFetchFailure,
 	IWebFetchOptions,
 	IWebFetchReason,
@@ -43,6 +45,59 @@ export type {
 const DEFAULT_MAX_BYTES = 50 * 1024;
 const DEFAULT_TIMEOUT_MS = 8000;
 const DEFAULT_MAX_REDIRECTS = 5;
+
+/**
+ * Hard ceilings (a00065 S6). Even a caller that bypasses the tool schema
+ * (a direct library user, or the redirect re-entry path) cannot ask the
+ * engine to buffer more than this, hang longer than this, or chase more
+ * hops than this. Above the ceiling → clamped down; at/below zero, NaN or
+ * ±Infinity → the safe default (a `timeoutMs: 0` used to abort every
+ * fetch instantly; an unbounded `maxBytes` defeated the memory cap).
+ */
+const MAX_BYTES_CEILING = 10 * 1024 * 1024; // 10 MiB
+const TIMEOUT_MS_CEILING = 120_000; // 2 min
+const MAX_REDIRECTS_CEILING = 20;
+
+/** Clamp one numeric option: invalid (non-finite, or below `min`) → `fallback`; else floor and cap at `max`. */
+const clampBound = (
+	value: number | undefined,
+	fallback: number,
+	min: number,
+	max: number,
+): number => {
+	if (value === undefined || !Number.isFinite(value)) return fallback;
+	const floored = Math.floor(value);
+	if (floored < min) return fallback;
+	return Math.min(floored, max);
+};
+
+/**
+ * Coerce the caller-supplied numeric options into guaranteed-safe ranges
+ * BEFORE any of them reach `setTimeout`, the byte accounting, or the hop
+ * loop. Pure — exported so the bounds are unit-testable without a fetch.
+ */
+export const sanitizeBounds = (
+	options: IWebFetchOptions,
+): ISanitizedBounds => ({
+	maxBytes: clampBound(
+		options.maxBytes,
+		DEFAULT_MAX_BYTES,
+		1,
+		MAX_BYTES_CEILING,
+	),
+	timeoutMs: clampBound(
+		options.timeoutMs,
+		DEFAULT_TIMEOUT_MS,
+		1,
+		TIMEOUT_MS_CEILING,
+	),
+	maxRedirects: clampBound(
+		options.maxRedirects,
+		DEFAULT_MAX_REDIRECTS,
+		0,
+		MAX_REDIRECTS_CEILING,
+	),
+});
 
 /** True when `hostname` matches an allow-list entry (exact, or `*.suffix` wildcard). */
 export const isHostAllowed = (
@@ -138,9 +193,7 @@ export const webFetch = async (
 	options: IWebFetchOptions,
 	fetchImpl: IFetchLike = fetch as unknown as IFetchLike,
 ): Promise<IWebFetchResult> => {
-	const maxBytes = options.maxBytes ?? DEFAULT_MAX_BYTES;
-	const timeoutMs = options.timeoutMs ?? DEFAULT_TIMEOUT_MS;
-	const maxRedirects = options.maxRedirects ?? DEFAULT_MAX_REDIRECTS;
+	const { maxBytes, timeoutMs, maxRedirects } = sanitizeBounds(options);
 
 	let currentUrl = parseUrl(options.url);
 	if (currentUrl === undefined) {

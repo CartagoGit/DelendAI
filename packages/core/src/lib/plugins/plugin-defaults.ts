@@ -55,6 +55,13 @@ export const PLUGIN_DEFAULTS: Readonly<
 	'web-fetch': {
 		allowList: [],
 	},
+	'auto-agent-selector': {},
+	security: {},
+	diagram: {},
+	env: {},
+	i18n: {},
+	perf: {},
+	'tech-debt': {},
 	issues: {
 		scaffoldDir: 'docs/mcp-vertex/proposals/retired/issues',
 	},

@@ -48,6 +48,12 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 	const search = resolve(workspaceRoot, 'plugins/search/src');
 	const docs = resolve(workspaceRoot, 'plugins/docs/src');
 	const deps = resolve(workspaceRoot, 'plugins/deps/src');
+	const security = resolve(workspaceRoot, 'plugins/security/src');
+	const diagram = resolve(workspaceRoot, 'plugins/diagram/src');
+	const env = resolve(workspaceRoot, 'plugins/env/src');
+	const i18n = resolve(workspaceRoot, 'plugins/i18n/src');
+	const perf = resolve(workspaceRoot, 'plugins/perf/src');
+	const techDebt = resolve(workspaceRoot, 'plugins/tech-debt/src');
 	const logs = resolve(workspaceRoot, 'plugins/logs/src');
 	const audit = resolve(workspaceRoot, 'plugins/audit/src');
 	const notification = resolve(workspaceRoot, 'plugins/notification/src');
@@ -57,6 +63,10 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 		'plugins/test-convention/src',
 	);
 	const webFetch = resolve(workspaceRoot, 'plugins/web-fetch/src');
+	const autoAgentSelector = resolve(
+		workspaceRoot,
+		'plugins/auto-agent-selector/src',
+	);
 	const conventions = resolve(workspaceRoot, 'plugins/conventions/src');
 	const issues = resolve(workspaceRoot, 'plugins/issues/src');
 	const cache = resolve(workspaceRoot, 'plugins/cache/src');
@@ -203,6 +213,78 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 			replacement: resolve(deps, 'index.ts'),
 		},
 		{
+			find: '@mcp-vertex/security/public',
+			replacement: resolve(security, 'public/index.ts'),
+		},
+		{
+			find: /^@mcp-vertex\/security\/lib\/(.*)$/,
+			replacement: `${resolve(security, 'lib')}/$1`,
+		},
+		{
+			find: '@mcp-vertex/security',
+			replacement: resolve(security, 'index.ts'),
+		},
+		{
+			find: '@mcp-vertex/diagram/public',
+			replacement: resolve(diagram, 'public/index.ts'),
+		},
+		{
+			find: /^@mcp-vertex\/diagram\/lib\/(.*)$/,
+			replacement: `${resolve(diagram, 'lib')}/$1`,
+		},
+		{
+			find: '@mcp-vertex/diagram',
+			replacement: resolve(diagram, 'index.ts'),
+		},
+		{
+			find: '@mcp-vertex/env/public',
+			replacement: resolve(env, 'public/index.ts'),
+		},
+		{
+			find: /^@mcp-vertex\/env\/lib\/(.*)$/,
+			replacement: `${resolve(env, 'lib')}/$1`,
+		},
+		{
+			find: '@mcp-vertex/env',
+			replacement: resolve(env, 'index.ts'),
+		},
+		{
+			find: '@mcp-vertex/i18n/public',
+			replacement: resolve(i18n, 'public/index.ts'),
+		},
+		{
+			find: /^@mcp-vertex\/i18n\/lib\/(.*)$/,
+			replacement: `${resolve(i18n, 'lib')}/$1`,
+		},
+		{
+			find: '@mcp-vertex/i18n',
+			replacement: resolve(i18n, 'index.ts'),
+		},
+		{
+			find: '@mcp-vertex/perf/public',
+			replacement: resolve(perf, 'public/index.ts'),
+		},
+		{
+			find: /^@mcp-vertex\/perf\/lib\/(.*)$/,
+			replacement: `${resolve(perf, 'lib')}/$1`,
+		},
+		{
+			find: '@mcp-vertex/perf',
+			replacement: resolve(perf, 'index.ts'),
+		},
+		{
+			find: '@mcp-vertex/tech-debt/public',
+			replacement: resolve(techDebt, 'public/index.ts'),
+		},
+		{
+			find: /^@mcp-vertex\/tech-debt\/lib\/(.*)$/,
+			replacement: `${resolve(techDebt, 'lib')}/$1`,
+		},
+		{
+			find: '@mcp-vertex/tech-debt',
+			replacement: resolve(techDebt, 'index.ts'),
+		},
+		{
 			find: '@mcp-vertex/logs/public',
 			replacement: resolve(logs, 'public/index.ts'),
 		},
@@ -261,6 +343,18 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 		{
 			find: '@mcp-vertex/web-fetch',
 			replacement: resolve(webFetch, 'index.ts'),
+		},
+		{
+			find: '@mcp-vertex/auto-agent-selector/public',
+			replacement: resolve(autoAgentSelector, 'public/index.ts'),
+		},
+		{
+			find: /^@mcp-vertex\/auto-agent-selector\/lib\/(.*)$/,
+			replacement: `${resolve(autoAgentSelector, 'lib')}/$1`,
+		},
+		{
+			find: '@mcp-vertex/auto-agent-selector',
+			replacement: resolve(autoAgentSelector, 'index.ts'),
 		},
 		{
 			find: '@mcp-vertex/conventions/public',
