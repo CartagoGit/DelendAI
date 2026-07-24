@@ -1,6 +1,7 @@
 import { definePlugin } from '@mcp-vertex/core/public';
 import { z } from 'zod';
 
+import { buildSecurityAuditRegistration } from './lib/tools/security-audit.tool';
 import { buildSecuritySecretsRegistration } from './lib/tools/security-secrets.tool';
 
 /**
@@ -21,6 +22,10 @@ export default definePlugin({
 		return {
 			tools: [
 				buildSecuritySecretsRegistration({
+					namespacePrefix: ctx.namespacePrefix,
+					workspaceRootAbs: ctx.workspace.root,
+				}),
+				buildSecurityAuditRegistration({
 					namespacePrefix: ctx.namespacePrefix,
 					workspaceRootAbs: ctx.workspace.root,
 				}),

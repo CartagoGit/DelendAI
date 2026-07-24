@@ -38,6 +38,26 @@ export interface IFinding {
 /** Per-severity counts, one entry per band (zero-filled). */
 export type IFindingCounts = Readonly<Record<FindingSeverity, number>>;
 
+/** A scanner that was skipped (tool unavailable, etc.). */
+export interface IScanSkip {
+	readonly tool: string;
+	readonly note?: string;
+}
+
+/** The union of several scanner runs, ranked into one backlog. */
+export interface IAggregatedScan {
+	/** Tools that actually ran (skipped ones excluded). */
+	readonly tools: readonly string[];
+	/** All findings across the active scans, most severe first. */
+	readonly findings: readonly IFinding[];
+	/** Per-severity totals across every active scan. */
+	readonly summary: IFindingCounts;
+	/** The most severe band present, or 'none'. */
+	readonly worst: FindingSeverity | 'none';
+	/** Scans that were skipped and why. */
+	readonly skipped: readonly IScanSkip[];
+}
+
 /** The full result of one scanner run. */
 export interface IScanResult {
 	/** The scanner/tool id that produced this. */

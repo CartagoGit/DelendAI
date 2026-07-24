@@ -592,6 +592,7 @@ export {
 	toScanResult,
 	worstSeverity,
 } from '../lib/external-tool/render-findings';
+export { aggregateScans } from '../lib/external-tool/aggregate-scans';
 export { FINDING_SEVERITY_ORDER } from '../lib/contracts/constants/finding.constant';
 export type {
 	IArgvExec,
@@ -604,10 +605,12 @@ export type {
 } from '../lib/contracts/interfaces/external-tool.interface';
 export type {
 	FindingSeverity,
+	IAggregatedScan,
 	IFinding,
 	IFindingCounts,
 	IFindingLocation,
 	IScanResult,
+	IScanSkip,
 } from '../lib/contracts/interfaces/finding.interface';
 
 // --- generated tool-output types (N23, see scripts/generate-tool-types.ts) ---
