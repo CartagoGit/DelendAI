@@ -49,7 +49,25 @@ describe('agents group', () => {
 			'agents status',
 			'agents recommend',
 			'agents record',
+			'agents run',
 		]);
+	});
+
+	it('agents run forwards task + routing knobs', async () => {
+		const { ctx, calls } = buildStubContext();
+		await find('agents run').run(
+			['--task=refactor', '--dial=7', '--ceiling=4', '--max-depth=3'],
+			ctx,
+		);
+		expect(calls[0]).toEqual({
+			tool: 'mcp-vertex_auto-agent-selector_auto_run',
+			args: {
+				task: 'refactor',
+				costQualityTradeoff: 7,
+				costCeiling: 4,
+				maxDepth: 3,
+			},
+		});
 	});
 
 	it('agents status takes no args', async () => {
