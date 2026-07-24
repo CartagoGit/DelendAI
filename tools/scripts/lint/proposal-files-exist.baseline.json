@@ -61,10 +61,11 @@
 	"docs/mcp-vertex/proposals/done/feats/f00069-tabs-cross-fade-and-iconography.md": 2,
 	"docs/mcp-vertex/proposals/done/feats/f00021-tools-scripts-refactor-rename-scripts-to-tools.md": 34,
 	"docs/mcp-vertex/proposals/done/feats/f00027-web-deep-pages-and-search.md": 1,
-	"docs/mcp-vertex/proposals/done/chores/c00001-decide-and-close-m13-security-plugin.md": 11,
+	"docs/mcp-vertex/proposals/done/chores/c00001-decide-and-close-m13-security-plugin.md": 7,
 	"docs/mcp-vertex/proposals/done/chores/c00075-proposal-guardian-cannot-pause-without-user-consent.md": 4,
 	"docs/mcp-vertex/proposals/done/plans/q00001-plan-of-plans.md": 1,
 	"docs/mcp-vertex/proposals/done/refactors/r00001-harden-catchall-outputschemas-jsdoc-boot-only-en-primitivas-sync-del-core.md": 2,
 	"docs/mcp-vertex/proposals/done/refactors/r00002-harden-catchall-output-schemas.md": 5,
-	"docs/mcp-vertex/proposals/done/refactors/r00003-apply-solid-on-a00036-findings.md": 3
+	"docs/mcp-vertex/proposals/done/refactors/r00003-apply-solid-on-a00036-findings.md": 3,
+	"docs/mcp-vertex/proposals/in-progress/a00069-25-07-2026-multi-agent-branch-state-drift-and-validation-leak.md": 4
 }
