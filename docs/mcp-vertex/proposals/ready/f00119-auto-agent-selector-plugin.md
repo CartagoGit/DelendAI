@@ -164,7 +164,7 @@ prefs; fully unit-tested.
 
 ### S3 — quality-based up-escalation (within the user's cost ceiling)
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/auto-agent-selector/src/lib/escalate/`, `plugins/auto-agent-selector/src/lib/tools/auto-run.tool.ts`
 - **Gate**: bun run validate
 
