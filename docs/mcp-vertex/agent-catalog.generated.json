@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-07-24T14:59:49.712Z",
+	"generatedAt": "2026-07-24T15:08:06.086Z",
 	"mode": "compact",
 	"tools": [
 		{
@@ -133,6 +133,10 @@
 		{
 			"name": "mcp-vertex_git_worktree",
 			"plugin": "git"
+		},
+		{
+			"name": "mcp-vertex_i18n_i18n_check",
+			"plugin": "i18n"
 		},
 		{
 			"name": "mcp-vertex_init_config"
