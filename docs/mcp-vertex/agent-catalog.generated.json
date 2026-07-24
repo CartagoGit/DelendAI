@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-07-24T20:13:19.491Z",
+	"generatedAt": "2026-07-24T21:16:16.703Z",
 	"mode": "compact",
 	"tools": [
 		{
@@ -38,6 +38,9 @@
 		{
 			"name": "mcp-vertex_conventions_conventions_classify",
 			"plugin": "conventions"
+		},
+		{
+			"name": "mcp-vertex_create_plugin"
 		},
 		{
 			"name": "mcp-vertex_create_project"
@@ -828,13 +831,6 @@
 				"kind": "feat"
 			},
 			{
-				"id": "f00120",
-				"title": "f00120",
-				"track": "plugin+scaffold+dx",
-				"status": "in-progress",
-				"kind": "feat"
-			},
-			{
 				"id": "f00121",
 				"title": "f00121",
 				"track": "plugin+forge+collab",
@@ -1019,10 +1015,10 @@
 		],
 		"byStatus": {
 			"ready": 27,
-			"in-progress": 3,
+			"in-progress": 2,
 			"review": 5,
 			"paused": 1,
-			"done": 244,
+			"done": 245,
 			"blocked": 0,
 			"retired": 2,
 			"unspecified": 0
