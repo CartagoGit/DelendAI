@@ -70,14 +70,21 @@ a pure extraction analyzer, and the `verify:plugin-wiring` checker.
 
 ### S1 — plugin blueprint scaffolder
 
-- **Status**: pending
-- **Files**: scaffold-plugin module (not yet implemented — see S1 acceptance for the shape)
+- **Status**: done (2026-07-24)
+- **Files**: `packages/core/src/lib/scaffold/scaffold-host.ts` (scaffoldPluginFiles), `packages/core/tests/src/lib/scaffold/scaffold-host.spec.ts`, `packages/core/src/public/index.ts` (scaffoldPluginFiles export)
 - **Gate**: bun run validate
 
 From `{name, description, sampleToolId}`, render a complete plugin package:
 `src/index.ts` (`definePlugin`), a sample tool + its contract types, `public`
 barrel, `package.json`, `tsconfig.json`, `vitest.config.ts`, README, LICENSE,
 and a passing sample spec — mirroring the shape of an existing internal plugin.
+
+S1 deliverable (this commit): extended `scaffoldPluginFiles` in
+`scaffold-host.ts` to emit the four files the scaffolder was missing
+(vitest config + LICENSE + public barrel + a passing sample spec).
+Spec added with 4 positive cases (vitest config shape, sample spec
+id assertions, LICENSE current-year, scaffold report round-trip). The
+spec suite passes 20/20 from `bun test packages/core/tests/src/lib/scaffold/scaffold-host.spec.ts`.
 
 ### S2 — idempotent monorepo wiring writer
 

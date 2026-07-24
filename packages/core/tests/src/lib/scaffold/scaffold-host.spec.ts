@@ -15,6 +15,7 @@ import {
 	createWorkspacePathProvider,
 	scaffoldAgentFile,
 	scaffoldHostProject,
+	scaffoldPluginFiles,
 	scaffoldPromptFile,
 	scaffoldSkillFile,
 	scaffoldToolFile,
@@ -163,6 +164,73 @@ describe('scaffold-host generators', () => {
 		expect(editorConfig?.content).toContain(
 			'${workspaceFolder}/packages/core',
 		);
+	});
+});
+
+describe('scaffoldPluginFiles (f00120 S1)', () => {
+	it('emits the eight canonical plugin files', () => {
+		const files = scaffoldPluginFiles({
+			pluginName: 'demo',
+			description: 'A demo plugin scaffolded for testing.',
+		});
+		const paths = files.map((f) => f.path);
+		expect(paths).toEqual([
+			'plugins/demo/package.json',
+			'plugins/demo/src/index.ts',
+			'plugins/demo/tsconfig.json',
+			'plugins/demo/README.md',
+			'plugins/demo/vitest.config.ts',
+			'plugins/demo/LICENSE',
+			'plugins/demo/src/public/index.ts',
+			'plugins/demo/src/contracts/interfaces/plugin-options.interface.ts',
+			'plugins/demo/tests/src/lib/ping.spec.ts',
+		]);
+	});
+
+	it('emits a registerable plugin with a `ping` tool', () => {
+		const files = scaffoldPluginFiles({
+			pluginName: 'demo',
+			description: 'A demo plugin.',
+		});
+		const index = files.find((f) => f.path === 'plugins/demo/src/index.ts');
+		expect(index?.content).toContain("name: 'demo'");
+		expect(index?.content).toContain("id: 'demo_ping'");
+		expect(index?.content).toContain('definePlugin');
+	});
+
+	it('emits a vitest config that mirrors the monorepo alias shape', () => {
+		const files = scaffoldPluginFiles({
+			pluginName: 'demo',
+			description: 'demo.',
+		});
+		const vitest = files.find(
+			(f) => f.path === 'plugins/demo/vitest.config.ts',
+		);
+		expect(vitest?.content).toContain('sharedSetupFiles(root)');
+		expect(vitest?.content).toContain('workspaceAliases(root)');
+		expect(vitest?.content).toContain("'tests/**/*.spec.ts'");
+	});
+
+	it('emits a sample spec that asserts the plugin id + ping tool', () => {
+		const files = scaffoldPluginFiles({
+			pluginName: 'demo',
+			description: 'demo.',
+		});
+		const spec = files.find(
+			(f) => f.path === 'plugins/demo/tests/src/lib/ping.spec.ts',
+		);
+		expect(spec?.content).toContain("plugin.name).toBe('demo')");
+		expect(spec?.content).toContain('tools.find');
+	});
+
+	it('emits a LICENSE with the current year', () => {
+		const files = scaffoldPluginFiles({
+			pluginName: 'demo',
+			description: 'demo.',
+		});
+		const license = files.find((f) => f.path === 'plugins/demo/LICENSE');
+		const year = new Date().getUTCFullYear();
+		expect(license?.content).toContain(`Copyright (c) ${year} demo`);
 	});
 });
 
