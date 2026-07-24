@@ -53,6 +53,7 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 	const env = resolve(workspaceRoot, 'plugins/env/src');
 	const i18n = resolve(workspaceRoot, 'plugins/i18n/src');
 	const perf = resolve(workspaceRoot, 'plugins/perf/src');
+	const techDebt = resolve(workspaceRoot, 'plugins/tech-debt/src');
 	const logs = resolve(workspaceRoot, 'plugins/logs/src');
 	const audit = resolve(workspaceRoot, 'plugins/audit/src');
 	const notification = resolve(workspaceRoot, 'plugins/notification/src');
