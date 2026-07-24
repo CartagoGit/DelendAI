@@ -2,10 +2,13 @@
 id: f00144
 title: "Session hygiene observability and advisory alerts"
 kind: feat
-status: ready
+status: done
 type: proposal
 track: usage-tracking+memory+notification
 date: 2026-07-24
+closed-by: copilot-minimax-m3 (close pass 2026-07-24)
+closed-evidence:
+  - S1+S2+S3 landed: 882ce46d feat: add session hygiene observability
 ---
 
 # f00144 — Session hygiene observability and advisory alerts
