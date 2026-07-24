@@ -165,6 +165,10 @@
 			"plugin": "logs"
 		},
 		{
+			"name": "mcp-vertex_memory_checkpoint_packet",
+			"plugin": "memory"
+		},
+		{
 			"name": "mcp-vertex_memory_compact",
 			"plugin": "memory"
 		},
