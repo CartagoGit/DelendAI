@@ -114,6 +114,52 @@ const flipSliceStatusDone = (block: string): string => {
 };
 
 /**
+ * a00069 S5 — does this slice block require a green `bun run validate`
+ * (or the host's `validationCommand`) before close_slice may flip it?
+ *
+ * Require when gate is `type` / `e2e`. Skip bare `none` / `lint` unless
+ * the slice's acceptance section lists a full-suite command (`bun test`,
+ * `bun run validate`, or the host `validationCommand`).
+ */
+export const sliceRequiresValidation = (
+	block: string,
+	validationCommand = 'bun run validate',
+): boolean => {
+	const gateMatch = block.match(
+		/^[-*]\s*(?:\*\*Gate\*\*|gate):\s*([^\n]+)$/im,
+	);
+	const gate = (gateMatch?.[1] ?? 'none').trim().toLowerCase();
+	if (gate === 'type' || gate === 'e2e') return true;
+	// Free-form gates that explicitly demand full validate (proposal docs
+	// often write `- **Gate**: bun run validate`).
+	if (
+		gate !== 'none' &&
+		gate !== 'lint' &&
+		(gate.includes('validate') ||
+			gate.includes('bun run test') ||
+			gate === 'test')
+	) {
+		return true;
+	}
+
+	// Only the acceptance section (not Files/Status bullets).
+	const acceptSection = block.match(
+		/^[-*]\s*acceptance:\s*\n((?:\s+[-*].*\n?)*)/im,
+	);
+	const acceptBody = acceptSection?.[1] ?? '';
+	const lines = [
+		...acceptBody.matchAll(/^\s+[-*]\s+"?([^"\n]+)"?\s*$/gm),
+	].map((m) => (m[1] ?? '').trim().toLowerCase());
+	const needles = [
+		validationCommand.toLowerCase(),
+		'bun run validate',
+		'bun run test',
+		'bun test',
+	];
+	return lines.some((line) => needles.some((n) => line.includes(n)));
+};
+
+/**
  * x00098 S2: the linter's status vocabulary is hyphenated and every
  * status lives in its own folder. Accept the historical underscore
  * spelling on input but never write it; `pending` (not a linter status)
@@ -415,21 +461,32 @@ export const buildCloseSliceRegistration = (
 			`${options.namespacePrefix}_close_slice`,
 			{
 				outputSchema: z.object({
-					ok: z.literal(true),
-					proposalId: z.string(),
-					sliceId: z.string(),
-					closed: z.boolean(),
-					lockReleased: z.boolean(),
+					ok: z.boolean(),
+					error: z
+						.object({
+							reason: z.string(),
+							nextAction: z.string().optional(),
+							kind: z.string().optional(),
+							output: z.string().optional(),
+						})
+						.optional(),
+					proposalId: z.string().optional(),
+					sliceId: z.string().optional(),
+					closed: z.boolean().optional(),
+					lockReleased: z.boolean().optional(),
 					// f00091 S2: the branch (if any) recorded for deliberate
 					// integration by the non-destructive branch-integration
 					// step. `null` when agentWorktree is off, the active
 					// branch is not an `agent/*` branch, or the branch could
 					// not be resolved — in all those cases nothing is
 					// recorded and behaviour is byte-identical to pre-f00091.
-					pendingIntegrationBranch: z.string().nullable(),
+					pendingIntegrationBranch: z.string().nullable().optional(),
+					// a00069 S5
+					kind: z.string().optional(),
+					validationOutput: z.string().optional(),
 				}),
 				description:
-					'Mark a slice as done in its proposal document and release its agent lock atomically, then re-sync. When per-agent worktrees are on and the slice was closed on an agent/* branch, records that branch for deliberate integration (non-destructive: runs no git write). Use it the moment a slice passes its acceptance.',
+					'Mark a slice as done in its proposal document and release its agent lock atomically, then re-sync. When the slice gate/acceptance demands it (a00069 S5), runs the host validationCommand first and refuses to close on failure. When per-agent worktrees are on and the slice was closed on an agent/* branch, records that branch for deliberate integration (non-destructive: runs no git write). Use it the moment a slice passes its acceptance.',
 				inputSchema: z.object({
 					proposalId: z.string(),
 					sliceId: z.string(),
@@ -471,7 +528,79 @@ export const buildCloseSliceRegistration = (
 								`slice "${args.sliceId}" not found in ${entry.file}`,
 							);
 						}
-						const block = flipSliceStatusDone(m[2] ?? '');
+						const rawBlock = m[2] ?? '';
+						// a00069 S5 — gate validate BEFORE rewriting status so
+						// a red tree cannot leave the slice marked done.
+						const validationCommand =
+							options.validationCommand ?? 'bun run validate';
+						if (
+							sliceRequiresValidation(rawBlock, validationCommand)
+						) {
+							const run =
+								options.runValidation ??
+								(async () => {
+									const { spawn } = await import(
+										'node:child_process'
+									);
+									return await new Promise<{
+										ok: boolean;
+										output: string;
+										exitCode: number;
+									}>((resolve) => {
+										const child = spawn(validationCommand, {
+											cwd: options.workspaceRoot,
+											shell: true,
+											env: process.env,
+											stdio: ['ignore', 'pipe', 'pipe'],
+										});
+										let out = '';
+										const append = (d: Buffer) => {
+											if (out.length < 32_768)
+												out += d.toString('utf8');
+										};
+										child.stdout?.on('data', append);
+										child.stderr?.on('data', append);
+										const timer = setTimeout(() => {
+											child.kill('SIGTERM');
+											resolve({
+												ok: false,
+												output: `${out}\n[timeout after 5m]`,
+												exitCode: 124,
+											});
+										}, 5 * 60_000);
+										child.on('close', (code) => {
+											clearTimeout(timer);
+											const exitCode = code ?? 1;
+											resolve({
+												ok: exitCode === 0,
+												output: out,
+												exitCode,
+											});
+										});
+										child.on('error', (err) => {
+											clearTimeout(timer);
+											resolve({
+												ok: false,
+												output: err.message,
+												exitCode: 1,
+											});
+										});
+									});
+								});
+							const verdict = await run();
+							if (!verdict.ok) {
+								const err = new Error(
+									`validation-error: ${validationCommand} exited ${verdict.exitCode}`,
+								) as Error & {
+									kind: string;
+									output: string;
+								};
+								err.kind = 'validation-error';
+								err.output = verdict.output;
+								throw err;
+							}
+						}
+						const block = flipSliceStatusDone(rawBlock);
 						const nextContent = md.replace(
 							blockRe,
 							`${m[1]}${block}`,
@@ -479,6 +608,33 @@ export const buildCloseSliceRegistration = (
 						await writeFileAtomic(docPath, nextContent);
 					});
 				} catch (err: any) {
+					if (err?.kind === 'validation-error') {
+						const envelope = {
+							ok: false as const,
+							kind: 'validation-error',
+							error: {
+								reason: String(err.message),
+								nextAction:
+									'Fix the failing validate output, then retry close_slice.',
+								kind: 'validation-error',
+								output: String(err.output ?? ''),
+							},
+							proposalId: entry.id,
+							sliceId: args.sliceId,
+							closed: false,
+							validationOutput: String(err.output ?? ''),
+						};
+						return {
+							content: [
+								{
+									type: 'text' as const,
+									text: JSON.stringify(envelope),
+								},
+							],
+							structuredContent: envelope,
+							isError: true,
+						};
+					}
 					return toolError(
 						err.message,
 						'Call proposal_board to list slices.',

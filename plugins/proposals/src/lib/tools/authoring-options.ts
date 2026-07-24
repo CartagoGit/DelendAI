@@ -82,6 +82,22 @@ export interface IAuthoringToolOptions {
 	 * that fails the assertion if any write-shaped git verb is invoked.
 	 */
 	readonly run?: IGitRunner;
+	/**
+	 * a00069 S5: host validation command (default `bun run validate` from
+	 * `proposals.options.validationCommand`). When a slice's gate/acceptance
+	 * demands it, `close_slice` runs this before flipping status. Tests
+	 * inject `runValidation` instead so the suite never shells out.
+	 */
+	readonly validationCommand?: string;
+	/**
+	 * a00069 S5: injectable validation runner. Production path shells out
+	 * to `validationCommand`; tests pass a stub that returns ok/fail.
+	 */
+	readonly runValidation?: () => Promise<{
+		readonly ok: boolean;
+		readonly output: string;
+		readonly exitCode: number;
+	}>;
 }
 
 export type IIndexedDocResolution =
