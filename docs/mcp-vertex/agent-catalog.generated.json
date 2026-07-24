@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-07-24T19:39:18.805Z",
+	"generatedAt": "2026-07-24T19:56:20.417Z",
 	"mode": "compact",
 	"tools": [
 		{
@@ -800,10 +800,17 @@
 	"proposals": {
 		"actionable": [
 			{
+				"id": "a00067",
+				"title": "a00067",
+				"track": "research+architecture+economics+tooling",
+				"status": "ready",
+				"kind": "audit"
+			},
+			{
 				"id": "a00068",
 				"title": "a00068",
 				"track": "code-quality+concurrency+architecture+invariants+tests+dx",
-				"status": "ready",
+				"status": "in-progress",
 				"kind": "audit"
 			},
 			{
@@ -1034,16 +1041,16 @@
 				"id": "v00122",
 				"title": "v00122",
 				"track": "perf+token-budgets+agent-velocity",
-				"status": "ready",
+				"status": "in-progress",
 				"kind": "unspecified"
 			}
 		],
 		"byStatus": {
-			"ready": 32,
-			"in-progress": 1,
+			"ready": 31,
+			"in-progress": 3,
 			"review": 5,
 			"paused": 1,
-			"done": 241,
+			"done": 240,
 			"blocked": 0,
 			"retired": 2,
 			"unspecified": 0
