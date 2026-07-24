@@ -152,6 +152,11 @@ const buildSeed = (): Record<string, string> => ({
 	'tools/scripts/release/release-plan.ts': PUBLISH_ORDER_SEED,
 	'packages/core/src/lib/plugins/preset-catalog.ts': PRESET_CATALOG_SEED,
 	'docs/mcp-vertex/agent-catalog.generated.json': CATALOG_SEED,
+	// A minimal host config that loads the plugin under test — the doctor
+	// uses this to decide whether the catalog-regen check is required.
+	'mcp-vertex.config.json': JSON.stringify({
+		plugins: { demo: {} },
+	}),
 });
 
 describe('runCreatePlugin (f00120 S4)', () => {
