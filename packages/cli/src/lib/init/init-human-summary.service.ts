@@ -91,6 +91,18 @@ export const renderInitHumanSummary = (input: IInitHumanInput): string => {
 			enabled,
 		),
 	);
+	const skillFiles = written.filter((file) =>
+		file.path.replace(/\\/g, '/').includes('/skills/'),
+	);
+	if (answers.copyCoreSkills) {
+		lines.push(
+			renderKeyValue(
+				'skill projection',
+				`${skillFiles.length} file(s) ${dryRun ? 'planned' : 'handled'}`,
+				enabled,
+			),
+		);
+	}
 	lines.push(
 		renderKeyValue(
 			'generate .agent.md',
