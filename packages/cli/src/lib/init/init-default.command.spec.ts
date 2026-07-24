@@ -3,11 +3,11 @@
  *
  * Acceptance for `init:default`, the non-interactive counterpart of
  * `init`. The operator's repeat-use path: pre-baked defaults, no
- * prompts, auto-yes for the config overwrite.
+ * prompts, safe merging for project-owned configuration.
  *
  * Covered here:
  *   1. The default answers match the operator's selection
- *      (vertex preset + overwrite + skills + agents + scaffold + force=true).
+ *      (vertex preset + managed instructions + skills + agents + scaffold).
  *   2. The full pipeline (detection + render + write) runs end-to-end
  *      against a tmpdir, surfaces every file the bundle produces, and
  *      leaves the config + host-instructions on disk with the
@@ -63,11 +63,11 @@ const INIT_DEFAULT_ANSWERS: Partial<IInitAnswers> = {
 	preset: 'vertex',
 	extraPlugins: [],
 	excludedPlugins: [],
-	hostInstructions: 'overwrite',
+	hostInstructions: 'append',
 	copyCoreSkills: true,
 	generateAgentMd: true,
 	migrateFromLegacy: true,
-	force: true,
+	force: false,
 };
 
 describe('init:default (f00103)', () => {
@@ -97,11 +97,11 @@ describe('init:default (f00103)', () => {
 		expect(answers.preset).toBe('vertex');
 		expect(answers.extraPlugins).toEqual([]);
 		expect(answers.excludedPlugins).toEqual([]);
-		expect(answers.hostInstructions).toBe('overwrite');
+		expect(answers.hostInstructions).toBe('append');
 		expect(answers.copyCoreSkills).toBe(true);
 		expect(answers.generateAgentMd).toBe(true);
 		expect(answers.migrateFromLegacy).toBe(true);
-		expect(answers.force).toBe(true);
+		expect(answers.force).toBe(false);
 	});
 
 	it('parses the same flag surface as init', () => {
@@ -116,7 +116,7 @@ describe('init:default (f00103)', () => {
 		expect(flags.force).toBe(false);
 	});
 
-	it('runs the full pipeline end-to-end against a tmpdir (vertex preset + overwrite host-instructions)', async () => {
+	it('runs the full pipeline end-to-end against a tmpdir with managed host instructions', async () => {
 		const ctx = noopCtx(tmp, minimalGlobals());
 		const result = await initDefaultCommand.run(
 			['--dry-run', `--mcp-vertex-root=${fakeHostEntry}`],
@@ -140,6 +140,7 @@ describe('init:default (f00103)', () => {
 		expect(rels).toContain('CLAUDE.md');
 		expect(rels).toContain('.github/copilot-instructions.md');
 		expect(rels.some((r) => r.startsWith('.github/agents/'))).toBe(true);
+		expect(rels).toContain('docs/mcp-vertex/skills/manifest.json');
 
 		// The config must include every vertex member (10 plugins:
 		// conventions, docs, search, git, web-fetch, status-marker,
@@ -211,11 +212,22 @@ describe('init:default (f00103)', () => {
 		expect(configOnDisk.plugins.proposals).toBeUndefined();
 		expect(configOnDisk.plugins.memory).toBeUndefined();
 
-		// Host-instructions centralizer wrote the canonical block under
-		// overwrite semantics.
+		// Host-instructions centralizer wrote its managed canonical block.
 		const agentsContent = await readFile(join(tmp, 'AGENTS.md'), 'utf8');
 		expect(agentsContent).toContain('<!-- mcp-vertex:begin -->');
 		expect(agentsContent).toContain('<!-- mcp-vertex:end -->');
+	});
+
+	it('does not project skills when a malformed project config was preserved', async () => {
+		await writeFile(join(tmp, 'mcp-vertex.config.json'), '{broken', 'utf8');
+		const result = await initDefaultCommand.run(
+			[`--mcp-vertex-root=${fakeHostEntry}`],
+			noopCtx(tmp, minimalGlobals()),
+		);
+		expect(result.code).toBe(EXIT_CODE.OK);
+		await expect(
+			readFile(join(tmp, 'docs/mcp-vertex/skills/manifest.json'), 'utf8'),
+		).rejects.toThrow();
 	});
 
 	it('uses the published canonical launcher when --mcp-vertex-root is absent', async () => {
