@@ -2,7 +2,7 @@
 id: f00144
 title: "Session hygiene observability and advisory alerts"
 kind: feat
-status: done
+status: review
 type: proposal
 track: usage-tracking+memory+notification
 date: 2026-07-24
@@ -41,6 +41,8 @@ without a factual checkpoint prompt.
 - **Status**: done
 - **Files**: `plugins/usage-tracking/src/lib/types.ts`, `plugins/usage-tracking/src/lib/record.ts`, `plugins/usage-tracking/src/index.ts`, `plugins/usage-tracking/tests/src/lib/record.spec.ts`
 - **Gate**: usage-tracking tests
+- review-state: in_review
+- review-implementer: copilot-minimax-m3
 - **Acceptance**: each new metadata-only row includes response bytes; old rows
   remain readable as zero.
 
@@ -48,6 +50,8 @@ without a factual checkpoint prompt.
 - **Status**: done
 - **Files**: `plugins/usage-tracking/src/lib/session-hygiene.ts`, `plugins/usage-tracking/src/lib/tools/session-hygiene.tool.ts`, `plugins/usage-tracking/src/lib/tools/index.ts`, `plugins/usage-tracking/src/public/index.ts`, `plugins/usage-tracking/tests/src/lib/session-hygiene.spec.ts`, `plugins/usage-tracking/tests/src/lib/tools.spec.ts`
 - **Gate**: usage-tracking tests
+- review-state: in_review
+- review-implementer: copilot-minimax-m3
 - **Acceptance**: the report exposes observed MCP age, largest observed idle
   gap, estimated MCP-output tokens and explicit evidence boundaries.
 
@@ -55,6 +59,8 @@ without a factual checkpoint prompt.
 - **Status**: done
 - **Files**: `plugins/usage-tracking/src/index.ts`, `plugins/usage-tracking/src/lib/session-hygiene.ts`, `plugins/usage-tracking/README.md`
 - **Gate**: usage-tracking tests + typecheck
+- review-state: in_review
+- review-implementer: copilot-minimax-m3
 - **Acceptance**: age, idle-gap and output-volume breaches alert once per
   observed session/reason; the alert is advisory and bounded.
 
