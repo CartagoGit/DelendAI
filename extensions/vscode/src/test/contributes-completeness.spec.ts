@@ -113,6 +113,7 @@ describe('f00100 S4 — contributes-completeness ratchet', () => {
 		// Update this number with a dated rationale when commands are added/removed.
 		// f00107 S3: + plugin activation switchboard.
 		// Configuration Center is the 31st intentionally contributed command.
-		expect(contributed.length).toBe(31);
+		// f00119 S6: auto-agent-selector panel command is the 32nd.
+		expect(contributed.length).toBe(32);
 	});
 });

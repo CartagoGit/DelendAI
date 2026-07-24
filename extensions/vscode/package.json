@@ -58,6 +58,12 @@
 				"icon": "$(list-tree)"
 			},
 			{
+				"command": "mcp-vertex.openAutoAgentSelector",
+				"title": "Open Auto-agent Selector",
+				"category": "MCP Vertex",
+				"icon": "$(robot)"
+			},
+			{
 				"command": "mcp-vertex.openDashboard",
 				"title": "Open Dashboard",
 				"category": "MCP Vertex",
@@ -231,6 +237,11 @@
 					"group": "navigation"
 				},
 				{
+					"command": "mcp-vertex.openAutoAgentSelector",
+					"when": "view == mcp-vertex.tools",
+					"group": "navigation"
+				},
+				{
 					"command": "mcp-vertex.toolSearch",
 					"when": "view == mcp-vertex.tools",
 					"group": "navigation"
@@ -269,6 +280,10 @@
 			"commandPalette": [
 				{
 					"command": "mcp-vertex.openAgentCatalog",
+					"when": "true"
+				},
+				{
+					"command": "mcp-vertex.openAutoAgentSelector",
 					"when": "true"
 				},
 				{

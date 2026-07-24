@@ -107,7 +107,8 @@ describe('VS Code extension smoke', async () => {
 		//   leaves to the existing tool-detail webview renderer.
 		// f00107 S3: +1 plugin activation switchboard command.
 		// Configuration Center host command adds one lifecycle-tracked registration.
-		expect(subscriptions).toHaveLength(31);
+		// f00119 S6: +1 auto-agent-selector panel command.
+		expect(subscriptions).toHaveLength(32);
 		expect(commands.has(REFRESH_COMMAND)).toBe(true);
 		expect(commands.has('mcp-vertex.proposals.refresh')).toBe(true);
 		expect(commands.has('mcp-vertex.proposals.copyError')).toBe(true);
