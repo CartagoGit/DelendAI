@@ -142,21 +142,46 @@ export const sliceRequiresValidation = (
 		return true;
 	}
 
-	// Only the acceptance section (not Files/Status bullets).
-	const acceptSection = block.match(
-		/^[-*]\s*acceptance:\s*\n((?:\s+[-*].*\n?)*)/im,
-	);
-	const acceptBody = acceptSection?.[1] ?? '';
-	const lines = [
-		...acceptBody.matchAll(/^\s+[-*]\s+"?([^"\n]+)"?\s*$/gm),
-	].map((m) => (m[1] ?? '').trim().toLowerCase());
+	// Acceptance surfaces (any of):
+	//   - acceptance:
+	//       - bun run validate
+	//   - **Acceptance**: bun run test
+	//   - { command: bun run validate, expect: exit0 }
 	const needles = [
 		validationCommand.toLowerCase(),
 		'bun run validate',
 		'bun run test',
 		'bun test',
 	];
-	return lines.some((line) => needles.some((n) => line.includes(n)));
+	const blockLower = block.toLowerCase();
+	// YAML-style criterion objects anywhere in the slice block.
+	if (
+		needles.some(
+			(n) =>
+				blockLower.includes(`command: ${n}`) ||
+				blockLower.includes(`command:${n}`),
+		)
+	) {
+		return true;
+	}
+	// Narrative **Acceptance** / acceptance bullets.
+	const acceptLines = [
+		...block.matchAll(
+			/^[-*]\s*(?:\*\*Acceptance\*\*|acceptance):\s*([^\n]+)$/gim,
+		),
+	].map((m) => (m[1] ?? '').trim().toLowerCase());
+	if (acceptLines.some((line) => needles.some((n) => line.includes(n)))) {
+		return true;
+	}
+	// Nested acceptance list under a bare `acceptance:` header.
+	const acceptSection = block.match(
+		/^[-*]\s*acceptance:\s*\n((?:\s+[-*].*\n?)*)/im,
+	);
+	const acceptBody = acceptSection?.[1] ?? '';
+	const nested = [
+		...acceptBody.matchAll(/^\s+[-*]\s+"?([^"\n]+)"?\s*$/gm),
+	].map((m) => (m[1] ?? '').trim().toLowerCase());
+	return nested.some((line) => needles.some((n) => line.includes(n)));
 };
 
 /**
