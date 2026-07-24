@@ -12,6 +12,7 @@ import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import {
+	findDuplicateProposalIds,
 	reconcileBlocked,
 	reconcileFolders,
 	syncProposalRegistry,
@@ -281,6 +282,55 @@ describe('sync-proposal-registry reconciliation (f113 S5)', async () => {
 			);
 			const result = await reconcileBlocked(root, FAKE_GIT_MV);
 			expect(result.resolved).toEqual([{ id: 'f00404' }]);
+		});
+	});
+
+	describe('findDuplicateProposalIds (a00069 S3)', async () => {
+		it('reports twin files that share a frontmatter id', async () => {
+			await writeProposal(root, 'ready', 'f00900-twin.md', {
+				id: 'f00900',
+				status: 'ready',
+			});
+			await writeProposal(root, 'done/feats', 'f00900-twin.md', {
+				id: 'f00900',
+				status: 'done',
+			});
+			const dups = await findDuplicateProposalIds(root);
+			expect(dups).toEqual([
+				{
+					id: 'f00900',
+					paths: [
+						'done/feats/f00900-twin.md',
+						'ready/f00900-twin.md',
+					],
+				},
+			]);
+		});
+
+		it('surfaces duplicate ids in syncProposalRegistry errors', async () => {
+			await writeProposal(root, 'ready', 'f00901-twin.md', {
+				id: 'f00901',
+				status: 'ready',
+				track: 'proposals',
+				date: '2026-07-25',
+			});
+			await writeProposal(root, 'done/feats', 'f00901-twin.md', {
+				id: 'f00901',
+				status: 'done',
+				track: 'proposals',
+				date: '2026-07-25',
+			});
+			const result = await syncProposalRegistry(
+				root,
+				{ proposalsDir: '.', proposalIndexFile: 'index.json' },
+				[],
+				FAKE_GIT_MV,
+			);
+			expect(
+				result.errors.some((e) =>
+					e.includes('duplicate proposal id "f00901"'),
+				),
+			).toBe(true);
 		});
 	});
 
