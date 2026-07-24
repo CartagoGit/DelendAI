@@ -155,6 +155,43 @@ describe('parseProposalSlicePlan', async () => {
 			{ first: 'pX.S2', second: 'pX.S3', file: 'libs/a/tool.ts' },
 		]);
 	});
+
+	// a00069 S1 — the scaffold linter already accepts lowercase and
+	// narrative `## 5. Slices (...)` headers; the slice planner must
+	// see the same three forms so `continue_proposal { mode: "plan" }`
+	// does not return `has no ## Slices section`.
+	it('parses lowercase ## slices headers (a00069 S1)', async () => {
+		const lower = DOC.replace('## Slices', '## slices');
+		const plan = parseProposalSlicePlan('pX', lower);
+		expect(plan).not.toBeNull();
+		expect(plan?.globalGate).toBe('type');
+		expect(plan?.slices.map((slice) => slice.sliceId)).toEqual([
+			'pX.S1',
+			'pX.S2',
+			'pX.S3',
+		]);
+	});
+
+	it('parses narrative ## N. Slices (alias) headers (a00069 S1)', async () => {
+		const narrative = DOC.replace(
+			'## Slices',
+			'## 5. Slices (siguiendo el patrón disjoint)',
+		);
+		const plan = parseProposalSlicePlan('pX', narrative);
+		expect(plan).not.toBeNull();
+		expect(plan?.globalGate).toBe('type');
+		expect(plan?.slices).toHaveLength(3);
+		expect(plan?.slices[0]?.files).toEqual([
+			'libs/a/contract.ts',
+			'libs/a/contract.spec.ts',
+		]);
+	});
+
+	it('still parses the canonical ## Slices header (a00069 S1)', async () => {
+		const plan = parseProposalSlicePlan('pX', DOC);
+		expect(plan).not.toBeNull();
+		expect(plan?.slices).toHaveLength(3);
+	});
 });
 
 const DOC_WITH_ROUTING_HINTS = `---

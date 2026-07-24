@@ -5,11 +5,11 @@ type: proposal
 track: audit+multi-agent+state-consistency+proposals-plugin
 date: 2026-07-25
 kind: audit
-title: 'Auditoría fin-de-tarde 2026-07-24 — ramas colgadas, índice de propuestas desincronizado, parser `## slices` case-sensitive y bug TS post-cierre de f00122 S2'
+title: 'Auditoría + plan de fixes fin-de-tarde 2026-07-24 — ramas, índice, parser slices, validate roto, duplicados, orphans, review ausente y plugins activos no usados'
 shipped-in: []
 related:
     - a00067 # evaluación de migración de lenguaje (precedente de los mismos agentes)
-    - a00068 # auditoría exhaustiva previa del 2026-07-24 (sigue en ready por error de índice)
+    - a00068 # auditoría exhaustiva previa del 2026-07-24 (drift de carpeta/status)
     - f00036 # workflow governance — gates y disciplina multi-agente
     - f00073 # branch-status + worktree-gc (la rutina que debería detectar esto)
     - f00075 # swarm-hygiene routine (la que debería limpiarlo)
@@ -17,26 +17,44 @@ related:
     - c00086 # swarm commit discipline
     - c00012 # agents should not panic on peer commits
     - x00107 # every-tool outputSchema — gate fix the 8 offender files
+    - f00078 # coordination protocol enforcement
+    - x00080 # multi-agent control MVP
 ownership:
     - {
           agent: implementation_runner,
-          task: 'S1 — fix `plugins/proposals/src/lib/swarm/proposal-slice-plan.ts:156` regex case-insensitive (`/^## [Ss]lices/` o equivalente) + añadir un test que cubra tanto `## Slices` como `## slices`; verificar que `## 5. Slices (alias)` siga funcionando (no romper linter x00098 S1).',
+          task: 'S1 — fix proposal-slice-plan.ts regex case-insensitive + tests ## Slices / ## slices / alias.',
       }
     - {
           agent: implementation_runner,
-          task: 'S2 — corregir el bug TS de `plugins/security/src/lib/tools/security-audit.tool.ts:48` (dos `description` strings concatenados con `,`) introducido por `1ac227c2` "feat(security): security_audit covers full posture" (commit huérfano, fuera del slice S2 de f00122). Tras el fix, `bun run validate` debe volver a verde (4940/4941 tests + drift SDK).',
+          task: 'S2 — fix security-audit.tool.ts dual description + security-gate.spec.ts bad import path; validate green.',
       }
     - {
           agent: implementation_runner,
-          task: 'S3 — atomicidad propuesta↔índice: cuando `proposal_transition { to: "done" }` se ejecuta con éxito, debe (a) llamar `proposal_reconcile_folder` automáticamente antes de persistir, o (b) `proposal_reconcile_folder` debe regenerar el index y la próxima `continue_proposal` debe re-leer el archivo desde la nueva ruta antes de devolver `slice-mode-error`. Hoy los dos pasos están desacoplados y la cache `.cache/mcp-vertex/proposals/index.json` se desincroniza del filesystem.',
+          task: 'S3 — atomic transition↔reconcile↔index + rewrite stale **Files** + refuse/detect duplicate proposal ids on disk.',
       }
     - {
           agent: implementation_runner,
-          task: 'S4 — gate de naming de branches en CI: añadir `tools/scripts/lint/agent-branch-naming.script.ts` que falle si alguna branch `agent/*` local no cumple `^agent/[a-z][a-z0-9-]+-[a-z][a-z0-9-]+(-[a-z][a-z0-9-]+)?$` y que se queje si `git worktree list` está vacío pero hay branches `agent/*` locales (huérfanas).',
+          task: 'S4 — lint agent-branch-naming + ban agent/* branches when agentWorktree is false.',
       }
     - {
           agent: implementation_runner,
-          task: 'S5 — gate de cierre de slice: `proposal_close_slice` debe fallar si `bun run validate` no pasa en el HEAD del slice (hoy se puede cerrar con 1 test rojo). Referenciar a x00107 que arregla el outputSchema de 8 offender files.',
+          task: 'S5 — close_slice requires bun run validate when gate/acceptance demands it.',
+      }
+    - {
+          agent: implementation_runner,
+          task: 'S6 — GC orphans in subagent-registry + round-context; state_repair/zombie path must purge stale assignments.',
+      }
+    - {
+          agent: implementation_runner,
+          task: 'S7 — enforce proposal_review before review→done; auto_work must not skip peer-review when requirePeerReview.',
+      }
+    - {
+          agent: implementation_runner,
+          task: 'S8 — agent_lock outputSchema uses ok + claimed; claim/release balance telemetry; await_lock on contention.',
+      }
+    - {
+          agent: implementation_runner,
+          task: 'S9 — dogfood gate: active plugins must be reachable in session tool surface OR config must mark them dormant; surface unused-plugin warning in overview/auto_work.',
       }
 globalGate: lint
 acceptance:
@@ -64,8 +82,8 @@ acceptance:
 - **Methodology**: lectura del código + análisis del log
   `.cache/mcp-vertex/logs/2026-07-24.jsonl` (719858 B, 615 eventos de hoy) +
   inspección del `proposals` index en `.cache/mcp-vertex/proposals/index.json`
-  (282 entries). Slices accionables se numeran S1-S5 dentro de este mismo
-  documento.
+  (282 entries) + segunda pasada de logs/plugins/registry (2026-07-25).
+  Slices accionables se numeran S1-S9 dentro de este mismo documento.
 
 ## why
 
@@ -215,6 +233,7 @@ uno, con la disciplina `f00073`/`f00075`/`f00052` como referencia.
 - **Status**: pending
 - **Files**: `plugins/proposals/src/lib/tools/close-slice.tool.ts` (o el
   módulo que ejecuta `close_slice`).
+- **Gate**: bun run validate
 - **Cambio**: después de las verificaciones actuales, ejecutar
   `bun run validate` (con timeout 5 min). Si falla exit≠0, devolver
   `kind: "validation-error"` con el output del test runner, no cerrar
@@ -231,6 +250,87 @@ uno, con la disciplina `f00073`/`f00075`/`f00052` como referencia.
   - x00107 está en paralelo arreglando 8 tools sin `outputSchema`; este
     slice es **adicional** (no en conflicto con x00107).
 
+### S6 — GC de orphans en `subagent-registry` + `round-context`
+
+- **Status**: pending
+- **Files**:
+  - `plugins/proposals/src/lib/swarm/` (state_repair / zombie / registry GC)
+  - tests bajo `plugins/proposals/tests/` para purge de assignments
+    `status: orphan` y `active` con `last_seen` > TTL.
+- **Cambio**:
+  - `state_repair` / `state_health` deben listar y purgar assignments
+    huérfanos (hoy: 30/30 `adopted: false`, 27 `orphan` + 3 `active`
+    stale desde junio/julio temprano).
+  - `round-context.digest.json#activeAgents` no puede listar 14 agentes
+    todos `adopted: false` y `lastSeen` de junio como si estuvieran vivos.
+  - TTL configurable (default 7d) + dry-run en `state_health`.
+- **Gate**: type, test.
+- **Verification**:
+  - Tras `state_repair`, `assignments.length === 0` (o solo adopted vivos)
+    y `activeAgents` vacío o solo adopted=true con lastSeen reciente.
+  - Spec: fixture con 30 orphans → repair → 0.
+
+### S7 — `proposal_review` obligatorio antes de `review → done`
+
+- **Status**: pending
+- **Files**:
+  - `plugins/proposals/src/lib/tools/authoring.tool.ts` (`proposal_review`)
+  - `plugins/proposals/src/lib/tools/proposal-transition.tool.ts`
+  - `plugins/proposals/src/lib/tools/auto-work.tool.ts` (o equivalente)
+- **Cambio**:
+  - Transición `review → done` (y `force_transition` sin flag) debe
+    exigir al menos un `proposal_review { action: "approve" }` de un
+    agent ≠ implementer cuando `requirePeerReview` (default true en
+    swarm).
+  - `auto_work` / `continue_proposal` deben devolver
+    `next: proposal_review` cuando el archivo está en `review/` sin
+    approve.
+  - Detectar carpeta `review/` con 0 eventos `proposal_review` en la
+    sesión (telemetría / hygiene warning).
+- **Gate**: type, test.
+- **Verification**:
+  - Log del 2026-07-24: **0** `proposal_review` en tool-completed; 14
+    archivos en `review/`. Tras el fix, un harness que simula
+    transition sin review debe fallar.
+  - Spec: implementer submit → same agent approve → reject; other agent
+    approve → allow done.
+
+### S8 — `agent_lock` contrato `ok` + balance claim/release + await
+
+- **Status**: pending
+- **Files**: tool `agent_lock` + logging envelope + docs playbook.
+- **Cambio**:
+  - Todo response de `agent_lock` debe incluir `ok: boolean` (hoy el
+    payload usa `claimed`/`released` sin `ok`, y parsers de telemetría
+    ven `ok=None`).
+  - Contador de sesión claim vs release; `state_health` alerta si
+    claim − release > N o locks huérfanos.
+  - En contención, el envelope `nextAction` debe apuntar a
+    `await_lock` / notification channel (0 usos de notification_* el
+    2026-07-24 pese a plugin activo).
+- **Gate**: type, test.
+- **Verification**:
+  - Spec outputSchema incluye `ok`.
+  - Día 2026-07-24: claim 29 / release 19 → imbalance 10; tras GC +
+    contract, imbalance reportable.
+
+### S9 — Dogfood: plugins activos no ejercitados
+
+- **Status**: pending
+- **Files**: overview / auto_work advisory + opcional lint de config.
+- **Cambio**:
+  - Si un plugin está en `mcp-vertex.config.json` enabled pero 0 tool
+    invocations en la sesión de swarm y el preset no lo marca
+    `dormant`, overview/auto_work emiten warning compacto
+    `unused-active-plugins: [...]`.
+  - No deshabilita plugins; solo hace visible el gap de dogfood.
+- **Gate**: type, test.
+- **Verification**:
+  - 2026-07-24: 24 plugins activos en config; tool surface del día ≈
+    `proposals`, `status-marker`, `fs`, `overview`, `git`, `status`.
+    21 plugins activos sin una sola invocación (incl. `notification`,
+    `quality`, `security`, `memory`, `rules`, `test-policy`).
+
 ## acceptance
 
 Ver `## scoreboard` abajo. Las acceptance `commands` ya están en
@@ -241,16 +341,24 @@ frontmatter; este section documenta el flujo de cierre:
    `slice-mode-error`.
 2. **S2** (F2, bug TS): `bun run validate` exit 0 (4941/4941), el test
    "generated tool-output modules out of sync" vuelve a verde.
-3. **S3** (F3, atomicidad índice↔filesystem):
-   `mcp-vertex_proposals_proposal_transition { id: "f00122", to: "done" }`
-   mueve el archivo a `done/feats/`, actualiza el index **y** reescribe
-   el `**Files**` interno en una sola llamada.
+3. **S3** (F3+F7, atomicidad índice↔filesystem + anti-duplicados):
+   `proposal_transition` mueve archivo, index y `**Files**` en una
+   llamada; `lint:proposals` / reconcile fallan si el mismo id existe
+   en dos carpetas.
 4. **S4** (F4, naming + worktree gate):
    `bun tools/scripts/lint/agent-branch-naming.script.ts` exit 0 en
    `develop` (cero branches `agent/*`); contra un tree con las 12
    branches de F4 debe reportar 6 violations.
 5. **S5** (F5, close_slice con validate): spec
    `close-slice.spec.ts` cubre el caso "validate en rojo → rechaza".
+6. **S6** (F10): `state_repair` deja registry sin orphans stale;
+   `activeAgents` no lista zombies de junio.
+7. **S7** (F8): `review→done` sin `proposal_review approve` de peer
+   es rechazado.
+8. **S8** (F9): `agent_lock` siempre devuelve `ok`; health reporta
+   claim/release imbalance.
+9. **S9** (F13): overview/auto_work listan `unused-active-plugins`
+   cuando aplica.
 
 ## verified state
 
@@ -261,11 +369,21 @@ frontmatter; este section documenta el flujo de cierre:
 | Causa real del failing test | `plugins/security/src/lib/tools/security-audit.tool.ts:48` tiene **dos `description:` strings** concatenados con `,` (introducido por commit `1ac227c2`, fuera del scope S2 de f00122) | git blame + lectura del archivo |
 | Branches `agent/*` locales | 12 a 00:48 UTC, **0** a 01:00 UTC (borradas por `branch_gc`) | `git for-each-ref` |
 | Worktrees activas | 1 (solo `develop`) | `git worktree list` |
-| Proposals plugin index | 282 entries, **stale** para `a00068` (status in-progress vs. file done/audits/) | `.cache/mcp-vertex/proposals/index.json` |
+| Proposals plugin index | 282 entries, **stale** para varios ids en `review/` vs `done/` | `.cache/mcp-vertex/proposals/index.json` |
 | Eventos `slice-mode-error` hoy | **21** (a00068×3, f00119×3, f00120×6, f00121×3, f00122×3, f00142×3) | log `2026-07-24.jsonl` |
 | Transiciones a `done` hoy | **4** (vs 18 a `in-progress`, 17 a `review`, 3 a `retired`) | log `2026-07-24.jsonl` |
 | Proposals en `ready/` | 25 | `ls docs/mcp-vertex/proposals/ready/` |
 | Proposals en `done/` | 251 | `find docs/mcp-vertex/proposals/done -name '*.md' \| wc -l` |
+| Proposals en `review/` | **14** (varias con index status `done`/`ready`/`in-progress`) | `ls review/` + index |
+| IDs duplicados en disco | **2** (`a00067`, `f00121`) en `review/` **y** `done/` | `find` por id |
+| `proposal_review` tool-completed 2026-07-24 | **0** | log |
+| `agent_lock` claim/release | **29 claim / 19 release / 4 status** | log |
+| `subagent-registry` assignments | **30**, todos `adopted: false` (27 orphan + 3 active stale) | registry JSON |
+| `round-context.activeAgents` | **14**, todos orphan/not adopted, lastSeen junio | digest JSON |
+| Plugins enabled en config | **24** | `mcp-vertex.config.json` |
+| Prefijos de tools usados 2026-07-24 | `proposals`(427), `status-marker`(20), `fs`(10), `overview`(6), `git`(4), `status`(2) | log |
+| Plugins activos sin invocación ese día | **21** (casi todo menos proposals/status-marker/git) | diff config vs log |
+| `notification_*` invocaciones | **0** | log |
 | Commits del día con prefijo `agent/copilot-minimax-*` mergeados a `develop` | 5 (S1, S2, S2-polish, S3 de f00121; S1+S2 de f00122) | `git log --merges` |
 
 ## findings
@@ -476,6 +594,209 @@ anterior reportó y que esta auditoría descarta con evidencia:
 | `create-plugin.tool.spec.ts > surfaces doctor failures when the catalog point is still missing` falla | `bun test packages/core/tests/src/lib/scaffold/create-plugin.tool.spec.ts` → **4 pass / 0 fail** | FALSO POSITIVO — el commit `fcdca962` ("wiring-doctor skips catalog-regen for opt-in plugins") rompió el test en su día, pero el test fue arreglado en el mismo pase; ahora pasa. |
 | Bug de "agents haciendo trabajo en mismo lugar sin worktrees" | `git worktree list` muestra **solo el main worktree** durante toda la tarde, pero hay **12 branches `agent/*` creadas**. | PARCIAL — los agentes NO usan worktrees, pero la host config no las habilita (`agentWorktree: false` por f00052). El bug es que las branches se crean sin worktrees (= peor que no tener branches), no que falten worktrees. Cubierto por F4. |
 
+### F7 — Duplicados físicos del mismo `id` en `review/` y `done/` (FATAL)
+
+**Evidencia (2026-07-25, post-tarde)**:
+
+| ID | Copia A | status FM | Copia B | status FM | index.file / status |
+|---|---|---|---|---|---|
+| `f00121` | `review/f00121-forge-plugin.md` | `review` | `done/feats/f00121-forge-plugin.md` | `done` | `done/feats/...` / `done` |
+| `a00067` | `review/a00067-...md` | `review` | `done/audits/a00067-...md` | `ready` | `done/audits/...` / `ready` |
+
+Además, **14** archivos viven en `review/` mientras el index apunta a
+otra carpeta/status para varios de ellos:
+
+| ID | disk folder | index.file | index.status |
+|---|---|---|---|
+| `a00067` | review | done/audits/… | ready |
+| `a00068` | review | done/audits/… | in-progress |
+| `c00089` | review | done/chores/… | done |
+| `c00123` | review | done/chores/… | done |
+| `f00120` | review | done/feats/… | done |
+| `f00121` | review | done/feats/… | done |
+| `f00144` | review | done/feats/… | done |
+| `f00145` | review | done/feats/… | done |
+| `d00004` | review | review/… | review ✓ |
+| `f00119` | review | review/… | review ✓ |
+| `f00143` | review | review/… | review ✓ |
+| `f00146` | review | review/… | review ✓ |
+| `f00147` | review | review/… | review ✓ |
+
+**Por qué F7 es FATAL**: el contrato del monorepo es **un id → un
+archivo**. Dos copias con frontmatter distinto hacen que
+`continue_proposal`, linters y humanos lean realidades incompatibles.
+El index solo indexa **una** ruta; la otra es basura silenciosa que
+`sync_proposals` no elimina.
+
+**Esperado vs actual**:
+
+| Paso | Esperado | Actual |
+|---|---|---|
+| `proposal_transition { to: review }` | mueve **el** archivo a `review/`, actualiza FM + index | a menudo **copia** o deja residual en `done/`/`ready/` |
+| `proposal_transition { to: done }` | mueve desde `review/` a `done/<kind>/`, un solo path | deja gemelo en `review/` con `status: review` |
+| `lint:proposals` / reconcile | falla si id duplicado en disco | **no detecta** duplicados cross-folder |
+| Index rebuild | una entrada por id, path canónico | una entrada, path canónico, **ignora** el gemelo |
+
+**Slice**: S3 (ampliar anti-duplicados + reconcile destructivo del
+residual con dry-run).
+
+### F8 — `proposal_review` existe pero el swarm no lo usa (FATAL operativo)
+
+**Evidencia**:
+
+- Tool registrado en `plugins/proposals/src/lib/tools/authoring.tool.ts`
+  (`id: 'proposal_review'`).
+- Log `2026-07-24.jsonl`: **0** eventos `tool-completed` /
+  `tool-started` para `proposal_review`.
+- Carpeta `review/`: **14** propuestas.
+- Histórico reciente: casi cero uso de `proposal_review` en logs
+  2026-07-16…24.
+
+**Esperado vs actual**:
+
+| Paso | Esperado (playbook / tool contract) | Actual 2026-07-24 |
+|---|---|---|
+| Implementer termina slices | `transition → review` + handoff | a veces sí mueve a `review/` |
+| Peer distinto del implementer | `proposal_review` approve/request-changes | **nunca** |
+| Gate a `done` | requiere review-state done / peer approve | se puede marcar `done` o dejar en `review/` sin review |
+| `auto_work` sobre item en review | sugiere `proposal_review` | devuelve `work` / plan sobre el mismo id |
+
+**Slice**: S7.
+
+### F9 — `agent_lock` sin `ok` estable + claim/release desbalanceado (MUY MAL)
+
+**Evidencia**:
+
+- Payload real de claim (structuredContent):
+  `claimed: true`, `ownership_count`, `summary` — **sin campo `ok`**.
+- Conteos 2026-07-24: **claim 29 / release 19 / status 4** → imbalance
+  **+10 claims** sin release emparejado.
+- Plugin `notification` **enabled** en config; **0** llamadas
+  `notification_*` / `await_lock` en el log del día (los agentes
+  reintentan claim o siguen sin esperar).
+- Al final del día `agents.lock.json` / `proposal-lock` reportan
+  `in_flight: []` — los locks se “evaporan” o nunca se liberan de
+  forma observable en telemetría.
+
+**Esperado vs actual**:
+
+| Paso | Esperado | Actual |
+|---|---|---|
+| claim success/fail | `ok: true|false` + reason tipado | solo `claimed` / texto; parsers ven `ok=None` |
+| contención | `await_lock` / notify lock-released | **0** await; reclaims |
+| fin de tarea | release simétrico | 19/29 |
+| health | alerta imbalance / stale ownership | no reporta |
+
+**Slice**: S8.
+
+### F10 — Registry + round-context llenos de zombies (FATAL de orientación)
+
+**Evidencia**:
+
+- `.cache/mcp-vertex/subagent-registry.json`:
+  - `assignments`: **30**
+  - **30/30** `adopted: false`
+  - **27** `status: orphan`, **3** `status: active` con
+    `last_seen` ≤ 2026-07-06 (tareas `f00067a-*`, `f00098-*`)
+  - `last_seen` desde **2026-06-21**
+- `.cache/mcp-vertex/round-context.digest.json`:
+  - `activeAgents`: **14**, todos `adopted: false`, `lastSeen` junio
+  - digest de trabajo antiguo (`close-f00083` / junio) presentado como
+    contexto de ronda actual
+- `state_health` / `state_repair` aparecen poco (≈5 eventos el día);
+  **no** purgan este set.
+
+**Esperado vs actual**:
+
+| Paso | Esperado | Actual |
+|---|---|---|
+| agente muere / sesión acaba | assignment → orphan → GC por TTL | orphan **permanente** |
+| `state_repair` | limpia orphans + digests stale | no deja el registry vacío de basura |
+| orientation (`overview` / round digest) | agents vivos de **esta** sesión | lista carina/virgo/norma de junio como “active” |
+| cooldown | solo agents reales en cooldown | ruido de tareas muertas |
+
+**Slice**: S6.
+
+### F11 — Transiciones DFA / atajos `ready→done` y `ready→review` (MUY MAL)
+
+**Evidencia (sesión + logs)**: agentes intentan `proposal_transition`
+con saltos ilegales (`ready→done`, `ready→review`). El DFA los
+rechaza (correcto), pero:
+
+- el envelope de error no guía el multi-hop
+  `ready → in-progress → review → done` de forma accionable;
+- tras un rechazo, el agente a veces **edita a mano** carpeta/FM y
+  deja F3/F7;
+- `force_transition` / reconcile no se encadenan.
+
+**Esperado vs actual**:
+
+| Paso | Esperado | Actual |
+|---|---|---|
+| atajo ilegal | `ok:false` + `nextHops: [...]` + tool hint | `ok:false` genérico / kind error |
+| camino legal | un tool o flag `via: "auto"` multi-hop atómico | N llamadas manuales + drift |
+| post-hop | reconcile folder+index+FM | desacoplado (F3) |
+
+**Slice**: S3 (errores guiados + opcional multi-hop seguro) y docs en
+playbook; no abrir DFA a atajos sin reconcile.
+
+### F12 — `close_slice` “ok” no implica lifecycle sano (MEJORABLE→MUY MAL)
+
+**Evidencia**: tallies del día muestran muchos `close_slice` con
+`ok: true` y contadores de slices cerrados alineados con lo declarado
+en varias propuestas; **sin embargo**:
+
+- validate en rojo (F2/F5);
+- propuestas en `review/` sin peer review (F8);
+- index/disk drift (F3/F7);
+- agentes siguen `continue_proposal` sobre ids ya “cerrados”.
+
+**Esperado**: close_slice ok ⇒ slice acceptance real + propuesta en
+estado coherente. **Actual**: close_slice ok ⇒ markdown del slice
+marcado done localmente.
+
+**Slice**: S5 + S7 (gates compuestos).
+
+### F13 — 21/24 plugins activos nunca dogfoodeados en el swarm del día (MEJORABLE)
+
+**Evidencia**:
+
+- Config host: 24 plugins enabled (auto-agent-selector, conventions,
+  deps, diagram, docs, env, forge, git, i18n, logs, memory,
+  notification, orchestrator-runner, perf, proposals, quality, rules,
+  search, security, status-marker, tech-debt, test-convention,
+  test-policy, usage-tracking).
+- Log 2026-07-24 tool prefixes: casi solo `proposals` (427),
+  `status-marker` (20), `fs` (10), `overview` (6), `git` (4),
+  `status` (2).
+- **Nunca invocados ese día** pese a enabled: notification, quality,
+  rules, security, memory, search, deps, docs, env, forge, i18n,
+  logs, orchestrator-runner, perf, tech-debt, test-convention,
+  test-policy, usage-tracking, auto-agent-selector, conventions,
+  diagram, …
+
+**Esperado**: swarm que cierra feats de security/forge/session-hygiene
+**ejecuta** los tools de esos plugins en acceptance. **Actual**: el
+swarm opera como monoherramienta proposals + close marker.
+
+**Slice**: S9 (warning) + acceptance de cada feat debe citar el tool
+real (disciplina de propuesta, no solo código).
+
+### F14 — Observabilidad ruidosa: `server-started` domina el log (MEJORABLE)
+
+**Evidencia**: log 2026-07-24 kinds:
+`server-started` **379**, `tool-started` **238**, `tool-completed`
+**238**. Casi 1.6× más arranques de server que ciclos de tool.
+Dificulta auditar “qué hizo el swarm” y infla `.cache/mcp-vertex/logs/`.
+
+**Esperado**: un server-started por sesión host estable; tools
+dominan el log. **Actual**: reinicios MCP constantes (host/IDE) sin
+rollup.
+
+**Slice**: no bloqueante — candidata a chore de logs (rate-limit /
+session rollup). Anotar aquí; no S-bloqueante salvo que S8 necesite
+telemetría limpia.
+
 ## scoreboard
 
 > Rúbrica: **FATAL** (≤3) · **MUY MAL** (3-4.9) · **MEJORABLE** (5-6.9) ·
@@ -484,40 +805,38 @@ anterior reportó y que esta auditoría descarta con evidencia:
 
 | Dimension | Score | Comments |
 |---|---:|---|
-| Estado del gate (validate) | 2.5 | **FATAL.** `bun run validate` Y `bun run typecheck` en rojo: 1 test rojo (4940/4941, "generated tool-output modules out of sync") por F2 + 1 typecheck rojo (`TS2307` en `security-gate.spec.ts:3`, import path con `../` de más). Ambos del mismo pase huérfano `1ac227c2` que el agente autorizó fuera de su slice. |
-| Consistencia índice↔filesystem | 2.0 | **FATAL.** F3: el `proposals/index.json` cache tuvo `a00068` apuntando a `ready/` cuando el archivo ya estaba en `done/audits/`; 3 `slice-mode-error` consecutivos por el path stale. El reconciler es reactivo, no atómico. |
-| Disciplina multi-agente (branches/worktrees) | 2.0 | **FATAL.** F4: 12 branches `agent/*` creadas en 12h, 0 worktrees activas, 6 de 12 names no cumplen el convenio, branch_gc borró todo silenciosamente. `agentWorktree: false` por f00052 (decisión correcta del host), pero los agentes crean ramas sin worktree (= peor que no tener ramas). |
-| Estructura de proposals | 4.0 | **MUY MAL.** F1: parser `## Slices` case-sensitive; 5 proposals con `## slices` (lowercase) que rompen `continue_proposal { mode: "plan" }` aunque el linter (`proposal-scaffold-linter.ts:341`) ya acepta ambos. 21 `slice-mode-error` hoy. |
-| Slices close-acceptance gate | 5.5 | **MEJORABLE.** F5: `close_slice` no exige `bun run validate` verde; el commit `1ac227c2` se mergeó con 1 test rojo. Pasa porque la rúbrica confía en la disciplina del agente, no en un gate mecánico. |
-| Tools / scaffolding | 7.0 | **OK.** `fcdca962` arregla el wiring-doctor para opt-in plugins; `f00120` S1-S4 scaffoldean 9 archivos deterministas; todos los tests del slice (`packages/core/tests/src/lib/scaffold/`) pasan 47/47. |
-| Documentación / skills | 7.5 | **OK.** Playbooks de multi-agent y proposal-workflow vigentes; el usuario siguió las plantillas correctamente; los bugs son del lado parser/runtime, no de la documentación. |
-| Concurrencia / I/O durable | 8.5 | **MUY BIEN.** x00097 (cross-plugin hardening) cerró `withFileMutex` + `writeFileAtomic` en los plugins satélite. Los nuevos plugins (`auto-agent-selector`, `security`) los usan consistentemente. |
-| **Total (Average)** | **4.9** | **MUY MAL.** Tres FATALs (gate, índice↔filesystem, disciplina de branches) + 1 MEJORABLE (close_slice). Los 4 son mecánicamente accionables en los slices S1-S5 de este mismo documento, sin afectar a la arquitectura. Una vez cerrados, score proyectado **7.8/10 (OK)**. |
+| Estado del gate (validate) | 2.5 | **FATAL.** F2: validate + typecheck rojos por `security-audit` dual `description` + import roto en `security-gate.spec`. |
+| Consistencia índice↔filesystem | 1.5 | **FATAL.** F3+F7: index stale **y** ids duplicados en `review/`+`done/`; 8/14 review files desalineados del index. |
+| Disciplina multi-agente (branches/worktrees) | 2.0 | **FATAL.** F4: 12 branches sin worktree, naming roto, GC silencioso. |
+| Lifecycle review/done | 2.0 | **FATAL.** F8+F11+F12: 0 `proposal_review`, DFA atajos, close_slice ok ≠ done sano. |
+| Registry / orientation state | 2.0 | **FATAL.** F10: 30 orphans, 14 activeAgents zombie desde junio. |
+| Estructura de proposals | 4.0 | **MUY MAL.** F1: parser `## Slices` case-sensitive; 21 slice-mode-error. |
+| Locks / coordinación | 4.5 | **MUY MAL.** F9: sin `ok`, claim 29/release 19, 0 await_lock/notification. |
+| Slices close-acceptance gate | 5.0 | **MEJORABLE.** F5+F12: close sin validate; ok local no implica tree verde. |
+| Dogfood plugins activos | 5.0 | **MEJORABLE.** F13: 21/24 plugins enabled sin una invocación el día del swarm. |
+| Observabilidad logs | 5.5 | **MEJORABLE.** F14: 379 server-started vs 238 tool cycles. |
+| Tools / scaffolding | 7.0 | **OK.** scaffold/create-plugin tests verdes; F6 limpia FPs. |
+| Documentación / skills | 7.5 | **OK.** Playbooks correctos; falla el enforcement runtime. |
+| Concurrencia / I/O durable | 7.5 | **OK/MUY BIEN-.** primitives ok; locks/registry no GC (F9/F10). |
+| **Total (Average)** | **~4.0** | **MUY MAL.** Cinco FATALs operacionales. S1–S9 cierran el gap sin redesign. Proyección post-S1–S9: **~7.6–8.0 (OK/MUY BIEN)**. |
 
 ## notes
 
 ### verdict
 
-La tarde del 2026-07-24 dejó **`develop` en rojo** por **3 FATALs
-operacionales** que NO son de diseño sino de disciplina multi-agente:
+La tarde del 2026-07-24 dejó **`develop` en rojo** y el **estado de
+swarm incoherente** por FATALs de enforcement, no de arquitectura:
 
-- F1 (parser case-sensitive) y F3 (índice desincronizado) son del
-  proposals plugin: el parser y el reconciler no son atómicos con el
-  filesystem.
-- F2 (commit `1ac227c2` huérfano) y F4 (12 branches sin worktree
-  + naming inconsistente) son del **comportamiento del agente** que
-  commiteó fuera de slice y no validó antes de mergear.
-- F5 (close_slice sin validate gate) es la policy gap que **deja
-  pasar** los bugs F2 y F4 sin que el sistema los detecte.
+- **Parser/runtime proposals**: F1 (case), F3/F7 (index + duplicados),
+  F8 (review tool muerto en la práctica), F11 (DFA sin guía).
+- **Calidad merge**: F2 (TS huérfano), F5/F12 (close_slice débil).
+- **Multi-agente**: F4 (branches), F9 (locks), F10 (orphans), F13
+  (plugins enabled no usados), F14 (log ruido).
 
-El **camino a MUY BIEN** es cerrar los 5 slices S1-S5 de este
-documento (≤ 1 sesión de implementación por slice, todos con gate
-`type` o `lint` + tests). Score proyectado tras los 5: **7.8/10
-(OK)**. La arquitectura subyacente (proposals plugin, multi-agent
-playbook, branch_gc) está **sana y bien diseñada** — el problema es
-de enforcement, no de modelo. F6 (limpieza de falsos positivos) se
-añade para que la próxima auditoría no pierda turnos en los mismos
-fantasmas.
+El **camino a OK/MUY BIEN** es S1–S9 (S2 primero para desbloquear
+validate). F6 evita re-auditar fantasmas. No hace falta reescribir el
+plugin: hace falta **atomicidad, GC y gates** donde el playbook ya
+promete comportamiento.
 
 ### appendix A — Log evidence (verbatim)
 

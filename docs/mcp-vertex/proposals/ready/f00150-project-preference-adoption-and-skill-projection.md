@@ -26,7 +26,7 @@ configuration rather than merging it.  That makes repeated adoption unsafe and
 means a library or CLI consumer can look configured while its agents lack the
 skills that make the workflow effective.
 
-## Rules
+## Why this design
 
 - Existing valid project configuration wins over generated defaults.
 - Bootstrap is additive and idempotent; `--force`/`overwrite:true` is the only
@@ -34,6 +34,13 @@ skills that make the workflow effective.
 - Skills are copied with a manifest and content identity; existing target
   skills are never overwritten silently.
 - The MCP path and the CLI path share the same merge semantics.
+
+## Non-goals
+
+- No silent overwrite of consumer config or already-present project skills.
+- No host-specific skill formats beyond a portable projection + optional
+  native adapters.
+- No autonomous skill execution promises for hosts that only surface MCP tools.
 
 ## Slices
 
