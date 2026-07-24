@@ -63,8 +63,12 @@ const BUDGET_BYTES = {
 	// compact 1220B. Compact is still the real promise at < 13% of full.
 	// Bumped 9500 → 9700 (2026-07-24): f00145 added the read-only memory
 	// checkpoint packet; full measured 9598B while compact stayed 1240B.
-	overviewFull: 9_700,
-	overviewCompact: 1_250,
+	// Bumped 9700 → 9800 / 1250 → 1280 (2026-07-24): f00120 S4 added the
+	// `create_plugin` core tool (scaffold + wire + doctor). Full measured
+	// 9792B, compact measured 1256B — both well under their promised
+	// ceilings. The compact mode still saves 87% vs. full.
+	overviewFull: 9_800,
+	overviewCompact: 1_280,
 	// Bumped 1300 → 1450 (2026-07-03): CORRECTNESS fix in the catalog's
 	// tool-entry construction. Core tools whose id has an underscore
 	// (agent_catalog, fs_read, …) were advertised WITHOUT the `mcp-vertex_`
