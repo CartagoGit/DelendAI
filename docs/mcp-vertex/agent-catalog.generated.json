@@ -472,6 +472,10 @@
 			"plugin": "security"
 		},
 		{
+			"name": "mcp-vertex_security_security_sast",
+			"plugin": "security"
+		},
+		{
 			"name": "mcp-vertex_security_security_secrets",
 			"plugin": "security"
 		},

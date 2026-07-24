@@ -47,7 +47,8 @@
 	"scripts": {
 		"test": "vitest run",
 		"typecheck": "tsc --noEmit",
-		"build": "bun ../../tools/scripts/compile/build.script.ts plugins/security"
+		"build": "bun ../../tools/scripts/compile/build.script.ts plugins/security",
+		"verify:security": "bun ../../tools/scripts/verify/security.script.ts"
 	},
 	"peerDependencies": {
 		"@mcp-vertex/core": "^0.1.0"
