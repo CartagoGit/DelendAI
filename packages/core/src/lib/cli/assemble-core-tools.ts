@@ -43,6 +43,7 @@ import { buildAgentBootstrapPromptRegistration } from '../prompts/agent-bootstra
 import { buildSkillPromptRegistrations } from '../prompts/skill-prompts';
 import { buildAgentCatalogResourceRegistration } from '../resources/agent-catalog-resource';
 import { buildScaffoldToolRegistration } from '../scaffold/scaffold-tool';
+import { buildCreatePluginToolRegistration } from '../scaffold/create-plugin.tool';
 import { buildFsToolRegistrations } from '../shared/fs-tools';
 import { joinRel } from '../shared/paths';
 import type { buildSkillCatalog } from '../skills/skill-catalog';
@@ -332,6 +333,15 @@ export const assembleCoreTools = (
 			keepLegacy,
 			projectName: args.serverName,
 			projectPackageName: '@mcp-vertex/core',
+		}),
+		// f00120 S4: `create_plugin` is a SEPARATE IToolRegistration, not a
+		// nested call inside `scaffold.register`. The fake MCP server in
+		// `tools/scripts/lib/test-mcp-server.ts` captures schemas via a
+		// single closure per tool — a nested register would overwrite the
+		// `scaffold` schemas and break `bun run verify:tools`.
+		buildCreatePluginToolRegistration({
+			namespacePrefix: corePrefix,
+			workspace,
 		}),
 		// f00117 S2: the server-side self-init — any MCP client can derive
 		// (and, with write:true, persist) mcp-vertex.config.json without

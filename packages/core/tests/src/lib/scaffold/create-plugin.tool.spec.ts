@@ -185,7 +185,15 @@ describe('runCreatePlugin (f00120 S4)', () => {
 	});
 
 	it('surfaces doctor failures when the catalog point is still missing', async () => {
-		const fs = createMemoryFs(buildSeed());
+		const seed = buildSeed();
+		// The static seed only loads `demo` in the host config. To force the
+		// doctor to actually check the catalog-regen point for `doctor-miss`
+		// (rather than opt-in-skip it), the host config must list the plugin
+		// under test.
+		seed['mcp-vertex.config.json'] = JSON.stringify({
+			plugins: { demo: {}, 'doctor-miss': {} },
+		});
+		const fs = createMemoryFs(seed);
 		const report = await runCreatePlugin(
 			{
 				name: 'doctor-miss',
