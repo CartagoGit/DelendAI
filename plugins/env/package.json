@@ -1,0 +1,74 @@
+{
+	"name": "@mcp-vertex/env",
+	"version": "0.1.0",
+	"type": "module",
+	"description": "Env config validation plugin for @mcp-vertex/core: env_check flags duplicate/empty/malformed keys and missing required vars in a .env file. Offline, values never leaked. Load with `mcp-vertex --plugins=env`.",
+	"author": "Cartago",
+	"license": "BSD-3-Clause",
+	"keywords": [
+		"mcp",
+		"model-context-protocol",
+		"env",
+		"dotenv",
+		"config",
+		"agent",
+		"ai",
+		"cartago",
+		"plugin"
+	],
+	"main": "./dist/index.js",
+	"files": [
+		"dist",
+		"README.md",
+		"LICENSE"
+	],
+	"exports": {
+		".": {
+			"@mcp-vertex/source": {
+				"types": "./src/index.ts"
+			},
+			"types": "./dist/index.d.ts",
+			"import": "./dist/index.js"
+		},
+		"./public": {
+			"@mcp-vertex/source": {
+				"types": "./src/public/index.ts"
+			},
+			"types": "./dist/public/index.d.ts",
+			"import": "./dist/public/index.js"
+		},
+		"./lib/*": {
+			"@mcp-vertex/source": {
+				"types": "./src/lib/*"
+			},
+			"types": "./dist/lib/*"
+		}
+	},
+	"scripts": {
+		"test": "vitest run",
+		"typecheck": "tsc --noEmit",
+		"build": "bun ../../tools/scripts/compile/build.script.ts plugins/env"
+	},
+	"peerDependencies": {
+		"@mcp-vertex/core": "^0.1.0"
+	},
+	"dependencies": {
+		"@modelcontextprotocol/sdk": "^1.29.0",
+		"zod": "^4.4.3"
+	},
+	"devDependencies": {
+		"@mcp-vertex/core": "workspace:*",
+		"@types/bun": "latest",
+		"typescript": "7.0.2",
+		"vitest": "4.1.10"
+	},
+	"publishConfig": {
+		"access": "public"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/CartagoGit/mcp-vertex"
+	},
+	"module": "./dist/index.js",
+	"types": "./dist/index.d.ts"
+}

@@ -95,6 +95,9 @@
 				"./plugins/diagram/src/public/index.ts"
 			],
 			"@mcp-vertex/diagram/*": ["./plugins/diagram/src/*"],
+			"@mcp-vertex/env": ["./plugins/env/src/index.ts"],
+			"@mcp-vertex/env/public": ["./plugins/env/src/public/index.ts"],
+			"@mcp-vertex/env/*": ["./plugins/env/src/*"],
 			"@mcp-vertex/logs": ["./plugins/logs/src/index.ts"],
 			"@mcp-vertex/logs/public": ["./plugins/logs/src/public/index.ts"],
 			"@mcp-vertex/logs/*": ["./plugins/logs/src/*"],
