@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-07-24T17:01:18.048Z",
+	"generatedAt": "2026-07-24T17:43:29.689Z",
 	"mode": "compact",
 	"tools": [
 		{
@@ -824,13 +824,6 @@
 				"kind": "docs"
 			},
 			{
-				"id": "d00004",
-				"title": "d00004",
-				"track": "agent-discipline+host-adapters",
-				"status": "ready",
-				"kind": "docs"
-			},
-			{
 				"id": "f00050",
 				"title": "f00050",
 				"track": "lint+architecture+i18n+workflow+release",
@@ -1006,13 +999,6 @@
 				"kind": "feat"
 			},
 			{
-				"id": "f00143",
-				"title": "f00143",
-				"track": "agent-discipline+session-governance",
-				"status": "ready",
-				"kind": "feat"
-			},
-			{
 				"id": "f00144",
 				"title": "f00144",
 				"track": "usage-tracking+memory+notification",
@@ -1023,20 +1009,6 @@
 				"id": "f00145",
 				"title": "f00145",
 				"track": "host-adapters+memory",
-				"status": "ready",
-				"kind": "feat"
-			},
-			{
-				"id": "f00146",
-				"title": "f00146",
-				"track": "host-adapters+usage-tracking",
-				"status": "ready",
-				"kind": "feat"
-			},
-			{
-				"id": "f00147",
-				"title": "f00147",
-				"track": "memory+host-adapters",
 				"status": "ready",
 				"kind": "feat"
 			},
@@ -1056,9 +1028,9 @@
 			}
 		],
 		"byStatus": {
-			"ready": 36,
+			"ready": 32,
 			"in-progress": 0,
-			"review": 0,
+			"review": 4,
 			"paused": 1,
 			"done": 240,
 			"blocked": 0,
