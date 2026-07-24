@@ -188,6 +188,19 @@ export default definePlugin({
 				proposalIndexFile: layout.proposalIndexFile,
 			},
 			extraFolders: extraProposalFolders,
+			// a00069 S5: host validation command for close_slice gate.
+			...(typeof ctx.options.validationCommand === 'string'
+				? {
+						validationCommand: ctx.options
+							.validationCommand as string,
+					}
+				: { validationCommand: 'bun run validate' }),
+			...(typeof ctx.options.requirePeerReview === 'boolean'
+				? {
+						requirePeerReview: ctx.options
+							.requirePeerReview as boolean,
+					}
+				: {}),
 		};
 
 		return {

@@ -49,6 +49,11 @@ describe('indexed-path tools self-heal a stale index (x00106 S1)', () => {
 			indexPathAbs: join(root, '.cache/mcp-vertex/proposals/index.json'),
 			lockPathAbs: join(root, '.cache/agents.lock.json'),
 			counterPathAbs: join(root, '.cache/proposal-id-counters.json'),
+			runValidation: async () => ({
+				ok: true,
+				output: 'ok',
+				exitCode: 0,
+			}),
 		};
 	});
 	afterEach(() => rmSync(root, { recursive: true, force: true }));
