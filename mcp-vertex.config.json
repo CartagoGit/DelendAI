@@ -93,6 +93,9 @@
 		"diagram": {
 			"options": {}
 		},
+		"env": {
+			"options": {}
+		},
 		"usage-tracking": {
 			"options": {}
 		},
