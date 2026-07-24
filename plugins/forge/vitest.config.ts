@@ -19,4 +19,4 @@ export default defineConfig({
 		globals: false,
 		setupFiles: sharedSetupFiles(workspaceRoot),
 	},
-
+});
