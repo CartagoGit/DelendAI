@@ -4,8 +4,9 @@
  * `computeWinRates` stays pure over what `readAll` returns. Never throws
  * (a missing/corrupt log reads as an empty history).
  */
-import { appendFile, mkdir, readFile } from 'node:fs/promises';
+import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
+import { withFileMutex, writeFileAtomic } from '@mcp-vertex/core/public';
 
 import type {
 	ICalibrationStore,
@@ -21,33 +22,39 @@ const isRecord = (value: unknown): value is IOutcomeRecord =>
 /** Build a calibration store rooted at `dirAbs` (its `calibration.jsonl`). */
 export const realCalibrationStore = (dirAbs: string): ICalibrationStore => {
 	const file = join(dirAbs, 'calibration.jsonl');
+	const read = async (): Promise<IOutcomeRecord[]> => {
+		let raw: string;
+		try {
+			raw = await readFile(file, 'utf8');
+		} catch {
+			return [];
+		}
+		const out: IOutcomeRecord[] = [];
+		for (const line of raw.split('\n')) {
+			if (line.trim().length === 0) continue;
+			try {
+				const parsed: unknown = JSON.parse(line);
+				if (isRecord(parsed)) out.push(parsed);
+			} catch {
+				// Keep valid history when one append from an older build is malformed.
+			}
+		}
+		return out;
+	};
 	return {
 		append: async (record) => {
-			await mkdir(dirAbs, { recursive: true });
-			const line = JSON.stringify({
-				...record,
-				ts: record.ts ?? new Date().toISOString(),
+			await withFileMutex(file, async () => {
+				const history = await read();
+				const next = [
+					...history,
+					{ ...record, ts: record.ts ?? new Date().toISOString() },
+				];
+				await writeFileAtomic(
+					file,
+					`${next.map((entry) => JSON.stringify(entry)).join('\n')}\n`,
+				);
 			});
-			await appendFile(file, `${line}\n`, 'utf8');
 		},
-		readAll: async () => {
-			let raw: string;
-			try {
-				raw = await readFile(file, 'utf8');
-			} catch {
-				return [];
-			}
-			const out: IOutcomeRecord[] = [];
-			for (const line of raw.split('\n')) {
-				if (line.trim().length === 0) continue;
-				try {
-					const parsed: unknown = JSON.parse(line);
-					if (isRecord(parsed)) out.push(parsed);
-				} catch {
-					// skip a corrupt line, keep the rest
-				}
-			}
-			return out;
-		},
+		readAll: read,
 	};
 };
