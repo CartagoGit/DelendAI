@@ -99,7 +99,11 @@ export const buildAutoRecommendRegistration = (options: {
 							: undefined);
 					const calibration =
 						store !== undefined
-							? winRateMap(await store.readAll())
+							? winRateMap(
+									await store.readAll(),
+									undefined,
+									args.taskType,
+								)
 							: undefined;
 					const ranked = rankProviders({
 						available: roster.available,

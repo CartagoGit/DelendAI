@@ -21,6 +21,7 @@ export type {
 } from '../lib/contracts/interfaces/ranking.interface';
 export { buildEscalationLadder } from '../lib/escalate/build-ladder';
 export { runWithEscalation } from '../lib/escalate/run-with-escalation';
+export { buildAutoEvaluateRegistration } from '../lib/tools/auto-evaluate.tool';
 export type {
 	IBuildLadderInput,
 	IEscalationOutcome,
