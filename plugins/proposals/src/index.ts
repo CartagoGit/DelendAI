@@ -368,6 +368,8 @@ export default definePlugin({
 					namespacePrefix: ctx.namespacePrefix,
 					proposalsDirAbs: abs(layout.proposalsDir),
 					workspaceRoot: ctx.workspace.root,
+					// a00069 S3: indexPathAbs triggers post-move index sync
+					// + self-**Files** rewrite inside applyTransition.
 					indexPathAbs: abs(layout.proposalIndexFile),
 				}),
 				buildClosePlanRegistration({

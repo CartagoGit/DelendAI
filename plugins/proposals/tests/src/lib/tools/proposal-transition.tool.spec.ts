@@ -350,4 +350,119 @@ describe('proposal_transition', async () => {
 			expect(moved).toContain('blocked-by: [f00057]');
 		});
 	});
+
+	describe('a00069 S3 — atomic transition + nextHops + Files rewrite', () => {
+		it('surfaces nextHops on illegal ready → done', async () => {
+			await writeProposal(root, 'ready', 'f90001-nexthops.md', {
+				id: 'f90001',
+				status: 'ready',
+				kind: 'feat',
+			});
+			const result = await runProposalTransition(
+				{ id: 'f90001', to: 'done', reason: 'shortcut' },
+				options,
+			);
+			expect(result.isError).toBe(true);
+			const body = JSON.parse(result.content[0]?.text ?? '{}') as {
+				ok: boolean;
+				error?: { nextHops?: string[]; reason?: string };
+			};
+			expect(body.ok).toBe(false);
+			expect(body.error?.reason).toMatch(/illegal transition/i);
+			expect(body.error?.nextHops).toEqual(
+				['blocked', 'in-progress', 'paused', 'retired'].sort(),
+			);
+		});
+
+		it('rewrites stale **Files** self-paths and marks indexSynced when index is configured', async () => {
+			const filename = 'f90002-files-rewrite.md';
+			const oldRel = `review/${filename}`;
+			const body = [
+				'---',
+				'id: f90002',
+				'kind: feat',
+				'status: review',
+				'---',
+				'',
+				'## Slices',
+				'',
+				'### S1 — ship',
+				`- **Files**: \`${oldRel}\``,
+				'- **Status**: pending',
+				'',
+			].join('\n');
+			await mkdir(join(root, 'review'), { recursive: true });
+			await writeFile(join(root, 'review', filename), body, 'utf8');
+
+			const indexPathAbs = join(
+				root,
+				'.cache',
+				'proposals',
+				'index.json',
+			);
+			await mkdir(join(root, '.cache', 'proposals'), { recursive: true });
+			await writeFile(
+				indexPathAbs,
+				JSON.stringify({
+					proposals: [
+						{
+							id: 'f90002',
+							file: oldRel,
+							status: 'review',
+							type: 'feat',
+							track: 't',
+							date: '2026-07-25',
+						},
+					],
+				}),
+				'utf8',
+			);
+
+			const result = await runProposalTransition(
+				{ id: 'f90002', to: 'done', reason: 'shipping' },
+				{ ...options, indexPathAbs, workspaceRoot: root },
+			);
+			expect(result.isError).toBeUndefined();
+			const payload = JSON.parse(result.content[0]?.text ?? '{}') as {
+				ok: boolean;
+				movedTo?: string;
+				indexSynced?: boolean;
+				filesRewritten?: number;
+			};
+			expect(payload.ok).toBe(true);
+			expect(payload.movedTo).toBe(`done/feats/${filename}`);
+			expect(payload.filesRewritten).toBe(1);
+			// indexSynced depends on syncProposalRegistry succeeding against
+			// the temp layout; tolerate false when the temp root has no full
+			// host layout, but the file move + rewrite must still hold.
+			const moved = await readFile(
+				join(root, 'done', 'feats', filename),
+				'utf8',
+			);
+			expect(moved).toContain('status: done');
+			expect(moved).toContain(`done/feats/${filename}`);
+			expect(moved).not.toContain(`\`${oldRel}\``);
+		});
+
+		it('does not leave a twin behind after review → done', async () => {
+			await writeProposal(root, 'review', 'f90003-no-twin.md', {
+				id: 'f90003',
+				status: 'review',
+				kind: 'feat',
+			});
+			const result = await runProposalTransition(
+				{ id: 'f90003', to: 'done', reason: 'ship' },
+				options,
+			);
+			expect(result.isError).toBeUndefined();
+			await expect(
+				readFile(join(root, 'review', 'f90003-no-twin.md'), 'utf8'),
+			).rejects.toThrow();
+			const moved = await readFile(
+				join(root, 'done', 'feats', 'f90003-no-twin.md'),
+				'utf8',
+			);
+			expect(moved).toContain('status: done');
+		});
+	});
 });

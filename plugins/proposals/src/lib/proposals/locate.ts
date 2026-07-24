@@ -29,6 +29,7 @@
 
 import { join } from 'node:path';
 
+import { KIND_TO_DONE_SUBFOLDER } from '../contracts/constants/proposal-glossary.constant';
 import { extractYamlBlock, parseFrontmatterBlock } from './frontmatter-parser';
 import { DEFAULT_PROPOSAL_FS, type IProposalFs } from './locate-fs';
 
@@ -88,11 +89,18 @@ interface IIndexFile {
  * unparseable, or doesn't contain the id. Callers MUST be prepared
  * to fall back to `locateByScan` — the index can lag behind the
  * filesystem by one `sync_proposals` call.
+ *
+ * @param proposalsDirAbs Absolute proposals content root. Required for
+ *   correct path resolution since x00052 moved the index under
+ *   `cacheDir` — `entry.file` is always `proposalsDir`-relative, never
+ *   index-dir-relative. When omitted, falls back to `dirname(indexPathAbs)`
+ *   for legacy callers that still co-locate the index with the markdown.
  */
 export const locateByIndex = async (
 	indexPathAbs: string,
 	proposalId: string,
 	fs: IProposalFs = DEFAULT_PROPOSAL_FS,
+	proposalsDirAbs?: string,
 ): Promise<ILocatedProposal | null> => {
 	const raw = await fs.read(indexPathAbs);
 	if (raw === null) return null;
@@ -108,14 +116,18 @@ export const locateByIndex = async (
 	if (entry === undefined || typeof entry.file !== 'string') {
 		return null;
 	}
-	// The index records the path relative to the index file's directory
-	// (e.g. `ready/q00001-plan-of-plans.md`). `dirname(indexPathAbs)` is
-	// the proposals root; we absolute-ify only if the path is relative.
-	const proposalsDir = join(indexPathAbs, '..');
+	// x00052: `entry.file` is proposalsDir-relative (e.g.
+	// `done/feats/f00121-forge-plugin.md`). The index itself may live under
+	// `.cache/mcp-vertex/proposals/index.json`, so joining against the
+	// index parent would resolve to a non-existent cache path.
+	const proposalsDir = proposalsDirAbs ?? join(indexPathAbs, '..');
 	const absPath = entry.file.startsWith('/')
 		? entry.file
 		: join(proposalsDir, entry.file);
-	const folder = absPath.slice(proposalsDir.length + 1).split('/')[0] ?? '';
+	const relFromRoot = absPath.startsWith(proposalsDir)
+		? absPath.slice(proposalsDir.length + 1)
+		: entry.file;
+	const folder = relFromRoot.split('/')[0] ?? '';
 	// We deliberately do NOT re-read the markdown here — callers that
 	// need frontmatter fields beyond `id` should pair this with
 	// `parseProposalDocument(absPath)`. Returning the file alone keeps
@@ -134,21 +146,39 @@ export const locateByIndex = async (
 // ---------------------------------------------------------------------------
 
 /**
- * Walk the 7 status folders and find the file whose frontmatter `id`
- * matches. Slower than `locateByIndex` (one `readdir` + N reads per
- * folder) but resilient to index drift. Use this when the index is
- * known to be stale (e.g. immediately after `create_proposal`).
+ * Directories a proposal `.md` may live in under `proposalsDirAbs`.
+ * Includes the 7 status folders plus `done/<kind>/` sub-folders
+ * (f00042). Exported for tests.
+ */
+export const proposalScanDirs = (
+	proposalsDirAbs: string,
+): readonly string[] => {
+	const dirs: string[] = PROPOSAL_STATUS_FOLDERS.map((folder) =>
+		join(proposalsDirAbs, folder),
+	);
+	for (const sub of Object.values(KIND_TO_DONE_SUBFOLDER)) {
+		if (sub !== undefined) dirs.push(join(proposalsDirAbs, 'done', sub));
+	}
+	return dirs;
+};
+
+/**
+ * Walk the 7 status folders (+ `done/<kind>/` mirrors) and find the
+ * file whose frontmatter `id` matches. Slower than `locateByIndex`
+ * (one `readdir` + N reads per folder) but resilient to index drift.
+ * Use this when the index is known to be stale (e.g. immediately after
+ * `create_proposal` or `proposal_transition` before the next sync).
  */
 export const locateByScan = async (
 	proposalsDirAbs: string,
 	proposalId: string,
 	fs: IProposalFs = DEFAULT_PROPOSAL_FS,
 ): Promise<ILocatedProposal | null> => {
-	for (const folder of PROPOSAL_STATUS_FOLDERS) {
+	for (const dir of proposalScanDirs(proposalsDirAbs)) {
 		// Every status has its own subdirectory, including `ready`. The
 		// `ready/` folder is NOT the proposals root — proposals live
-		// inside it, sibling to `in-progress/`, `done/`, etc.
-		const dir = `${proposalsDirAbs}/${folder}`;
+		// inside it, sibling to `in-progress/`, `done/`, etc. Closed
+		// proposals may further nest under `done/feats/`, `done/fixes/`, …
 		const entries = await fs.list(dir);
 		for (const name of entries) {
 			if (!name.endsWith('.md')) continue;
@@ -167,6 +197,10 @@ export const locateByScan = async (
 			// `<id>-<slug>.md` convention (some test fixtures and
 			// hand-edited files do not).
 			if (fm.id === proposalId) {
+				const rel = path.startsWith(proposalsDirAbs)
+					? path.slice(proposalsDirAbs.length + 1)
+					: name;
+				const folder = rel.split('/')[0] ?? '';
 				return {
 					absPath: path,
 					folder,
@@ -199,7 +233,12 @@ export const locateProposal = async (
 	options: ILocateOptions,
 	fs: IProposalFs = DEFAULT_PROPOSAL_FS,
 ): Promise<ILocatedProposal | null> => {
-	const fromIndex = await locateByIndex(options.indexPathAbs, proposalId, fs);
+	const fromIndex = await locateByIndex(
+		options.indexPathAbs,
+		proposalId,
+		fs,
+		options.proposalsDirAbs,
+	);
 	if (fromIndex !== null) {
 		// Index hit — but we still need `type` + `status` for tools that
 		// branch on them (e.g. close-plan rejecting non-`plan` types).

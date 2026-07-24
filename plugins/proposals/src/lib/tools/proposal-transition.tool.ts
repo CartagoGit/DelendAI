@@ -62,9 +62,11 @@ import {
 	setFrontmatterField,
 } from '../proposals/proposal-frontmatter-writer';
 import { isPlanProposal } from '../proposals/proposal-type-detector';
+import { syncProposalRegistry } from '../proposals/sync-proposal-registry';
 import { runPlanClosureGuard } from '../swarm/plan-closure-guard';
 import { createGitRunner } from '../shared/git-runner';
 import type { IGitRunner } from '../shared/git-runner';
+import { rewriteStaleProposalSelfPaths } from '../proposals/rewrite-stale-self-paths';
 
 export interface IProposalTransitionToolOptions {
 	readonly namespacePrefix: string;
@@ -146,6 +148,8 @@ const resolveTargetFolder = async (
 const TOOL_ERROR_SCHEMA = z.object({
 	reason: z.string(),
 	nextAction: z.string().optional(),
+	/** a00069 S3 — legal DFA targets from the current status. */
+	nextHops: z.array(z.string()).optional(),
 });
 
 const PROPOSAL_TRANSITION_OUTPUT_SCHEMA = z.object({
@@ -158,6 +162,10 @@ const PROPOSAL_TRANSITION_OUTPUT_SCHEMA = z.object({
 	movedFrom: z.string().optional(),
 	movedTo: z.string().optional(),
 	warning: z.string().optional(),
+	/** True when the registry index was regenerated after the move. */
+	indexSynced: z.boolean().optional(),
+	/** Count of self-referential `**Files**` paths rewritten to the new location. */
+	filesRewritten: z.number().optional(),
 });
 
 export const runProposalTransition = async (
@@ -231,6 +239,8 @@ export const runProposalTransition = async (
 	);
 	if (guardRejection !== null) return guardRejection;
 
+	// a00069 S3: applyTransition rewrites self-`**Files**` paths and
+	// regenerates the index (when indexPathAbs is set) before returning.
 	return await applyTransition(
 		{ id: args.id, from, to: finalTo, reason: args.reason },
 		found,
@@ -288,12 +298,27 @@ const validateTransition = (
 ): ReturnType<typeof toolError> | null => {
 	const legalTargets = PROPOSAL_STATUS_TRANSITIONS[from];
 	if (legalTargets.has(to)) return null;
-	return toolError(
-		`illegal transition: "${from}" → "${to}"`,
-		legalTargets.size > 0
-			? `From "${from}", the only legal targets are: ${[...legalTargets].join(', ')}.`
-			: `"${from}" is terminal — no transitions out.`,
-	);
+	const nextHops = [...legalTargets].sort();
+	const nextAction =
+		nextHops.length > 0
+			? `From "${from}", the only legal targets are: ${nextHops.join(', ')}.`
+			: `"${from}" is terminal — no transitions out.`;
+	// a00069 S3: surface nextHops as a machine-readable field so agents do
+	// not have to re-parse the prose. toolError only takes reason/nextAction,
+	// so we build the envelope manually (same shape + structuredContent).
+	const envelope = {
+		ok: false as const,
+		error: {
+			reason: `illegal transition: "${from}" → "${to}"`,
+			nextAction,
+			nextHops,
+		},
+	};
+	return {
+		content: [{ type: 'text' as const, text: JSON.stringify(envelope) }],
+		structuredContent: envelope,
+		isError: true,
+	};
 };
 
 // ---------------------------------------------------------------------------
@@ -357,11 +382,25 @@ const applyTransition = async (
 	const moved = newAbsPath !== found.absPath;
 
 	let gitWarning: string | undefined;
+	let filesRewritten = 0;
+	const movedFromRel = relative(options.proposalsDirAbs, found.absPath);
+	const movedToRel = relative(options.proposalsDirAbs, newAbsPath);
 	await withFileMutex(found.absPath, async () => {
 		const current = await readFile(found.absPath, 'utf8');
 		let updated = setFrontmatterStatus(current, args.to);
 		if (args.to === 'blocked' && depId) {
 			updated = setFrontmatterField(updated, 'blocked-by', `[${depId}]`);
+		}
+		// a00069 S3: rewrite stale self-paths in `**Files**` / `files:` so
+		// slice plans do not keep pointing at the pre-transition location
+		// (e.g. ready/… after a move to done/feats/…).
+		if (moved) {
+			const rewritten = rewriteStaleProposalSelfPaths(updated, {
+				oldRelPath: movedFromRel,
+				newRelPath: movedToRel,
+			});
+			updated = rewritten.markdown;
+			filesRewritten = rewritten.replacements;
 		}
 		await writeFileAtomic(found.absPath, updated);
 
@@ -404,13 +443,50 @@ const applyTransition = async (
 		}
 	});
 
+	// a00069 S3: regenerate the proposals index so continue_proposal /
+	// locate no longer resolve the pre-move path. Best-effort — a sync
+	// failure must not roll back a successful file move; surface it as a
+	// warning instead.
+	let indexSynced = false;
+	if (options.indexPathAbs !== undefined) {
+		try {
+			const layout = {
+				proposalsDir: relative(
+					options.workspaceRoot,
+					options.proposalsDirAbs,
+				),
+				proposalIndexFile: relative(
+					options.workspaceRoot,
+					options.indexPathAbs,
+				),
+			};
+			await syncProposalRegistry(
+				options.workspaceRoot,
+				layout,
+				[],
+				gitRunner,
+			);
+			indexSynced = true;
+		} catch (err) {
+			const msg = err instanceof Error ? err.message : String(err);
+			gitWarning = [
+				gitWarning,
+				`index sync failed after transition (${msg}); run sync_proposals`,
+			]
+				.filter(Boolean)
+				.join('; ');
+		}
+	}
+
 	return toolOk({
 		id: args.id,
 		from: args.from,
 		to: args.to,
 		reason: args.reason,
-		movedFrom: relative(options.proposalsDirAbs, found.absPath),
-		movedTo: relative(options.proposalsDirAbs, newAbsPath),
+		movedFrom: movedFromRel,
+		movedTo: movedToRel,
+		indexSynced,
+		filesRewritten,
 		...(gitWarning ? { warning: gitWarning } : {}),
 	});
 };
