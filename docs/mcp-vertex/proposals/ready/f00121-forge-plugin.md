@@ -72,13 +72,18 @@ reads, validated with plugin-local tests plus repo typecheck/lint gates.
 
 ### S2 — write surface (consented)
 
-- **Status**: pending
+- **Status**: done (2026-07-24)
 - **Files**: `plugins/forge/src/lib/write/`, `plugins/forge/src/lib/tools/forge-write.tool.ts`
 - **Gate**: bun run validate
 
 `forge_pr_create` (body assembled from the linked proposal/commits, honouring
 branch discipline), `forge_pr_comment`, `forge_issue_create` — each requires an
 explicit `confirm: true`. Body/templating is pure; only the final call spawns.
+
+Close evidence: `plugins/forge/` now exposes the consented write surface with
+strict input/output schemas, confirm-gate tool coverage, stub-exec service
+tests for PR creation/commenting and issue creation, and the plugin entry now
+registers the write tools alongside the landed S1 read surface.
 
 ### S3 — releases, remote code search, packaging
 
