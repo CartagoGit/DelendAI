@@ -2,6 +2,7 @@ import { definePlugin } from '@mcp-vertex/core/public';
 import { z } from 'zod';
 
 import { buildAutoRecommendRegistration } from './lib/tools/auto-recommend.tool';
+import { buildAutoRecordRegistration } from './lib/tools/auto-record.tool';
 import { buildAutoRunRegistration } from './lib/tools/auto-run.tool';
 import { buildAutoStatusRegistration } from './lib/tools/auto-status.tool';
 
@@ -44,11 +45,15 @@ export default definePlugin({
 			'Añádelo y funciona sin configurar nada. Opcional: ajusta el dial coste↔calidad (0 = siempre el más potente, 10 = siempre el más barato).',
 		options: { costQualityTradeoff: 7 },
 	},
+	// Calibration outcomes are accumulated results (win-rate history), not
+	// derivable cache — keep them under `<cacheDir>/results/<name>`.
+	cacheNamespace: 'results',
 	async register(ctx) {
 		const parsed = OptionsSchema.safeParse(ctx.options ?? {});
 		const defaultTradeoff = parsed.success
 			? (parsed.data.costQualityTradeoff ?? DEFAULT_TRADEOFF)
 			: DEFAULT_TRADEOFF;
+		const calibrationDir = ctx.workspace.resolve(ctx.pluginCacheDir);
 		return {
 			tools: [
 				buildAutoStatusRegistration({
@@ -57,6 +62,11 @@ export default definePlugin({
 				buildAutoRecommendRegistration({
 					namespacePrefix: ctx.namespacePrefix,
 					defaultTradeoff,
+					calibrationDir,
+				}),
+				buildAutoRecordRegistration({
+					namespacePrefix: ctx.namespacePrefix,
+					calibrationDir,
 				}),
 				buildAutoRunRegistration({
 					namespacePrefix: ctx.namespacePrefix,

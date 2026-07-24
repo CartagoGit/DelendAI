@@ -107,4 +107,30 @@ describe('rankProviders', () => {
 			rankProviders({ available: roster, costQualityTradeoff: 3 }),
 		).toHaveLength(3);
 	});
+
+	it('at the neutral dial, a proven winner outranks an unproven cheaper one (S4)', () => {
+		const calibration = new Map([
+			['mid', 0.9],
+			['cheap', 0.2],
+		]);
+		const ranked = rankProviders({
+			available: roster,
+			costQualityTradeoff: 5,
+			calibration,
+		});
+		expect(ranked[0]?.candidate.id).toBe('mid');
+		expect(ranked[0]?.rationale).toContain('win-rate 90%');
+	});
+
+	it('calibration never overrides a reachable pin', () => {
+		const calibration = new Map([['strong', 0.99]]);
+		const ranked = rankProviders({
+			available: roster,
+			costQualityTradeoff: 10,
+			pinnedId: 'cheap',
+			calibration,
+		});
+		expect(ranked[0]?.candidate.id).toBe('cheap');
+		expect(ranked[0]?.pinned).toBe(true);
+	});
 });

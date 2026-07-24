@@ -37,4 +37,10 @@ export interface IRankInput {
 	 * reachable it is forced to the top; the user's choice always wins.
 	 */
 	readonly pinnedId?: string | undefined;
+	/**
+	 * Optional measured win-rate per provider id in [0, 1] (empirical
+	 * calibration, S4). Blended into the score so a provider that actually
+	 * wins is nudged up; absent for providers without enough samples.
+	 */
+	readonly calibration?: ReadonlyMap<string, number> | undefined;
 }
