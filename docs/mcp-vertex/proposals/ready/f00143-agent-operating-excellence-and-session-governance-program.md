@@ -36,22 +36,22 @@ budgets into one operating model.
 - global_gate: validate
 
 ### S1 — Local evidence and bounded advice
-- **Status**: pending
+- **Status**: done
 - **Files**: `docs/mcp-vertex/proposals/ready/f00144-session-hygiene-observability-and-advisory-alerts.md`
 - **Gate**: plugin tests + typecheck
 
 ### S2 — Real host lifecycle boundaries
-- **Status**: pending
+- **Status**: done
 - **Files**: `docs/mcp-vertex/proposals/ready/f00145-host-lifecycle-checkpoint-adapters.md`
 - **Gate**: host-adapter contract tests
 
 ### S3 — Lean activation and regression budgets
-- **Status**: pending
+- **Status**: done
 - **Files**: `docs/mcp-vertex/proposals/ready/c00089-lean-activation-and-full-preset-context-budgets.md`
 - **Gate**: token-budget e2e + validate
 
 ### S4 — Policy and adoption feedback loop
-- **Status**: pending
+- **Status**: done
 - **Files**: `docs/mcp-vertex/AGENT-BOOTSTRAP.md`, `docs/mcp-vertex/CROSS-PROJECT-SETUP.md`
 - **Gate**: prompt-size + docs checks
 - **Note**: keep the always-loaded policy short; detailed runbooks must remain

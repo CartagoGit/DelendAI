@@ -35,21 +35,21 @@ without a factual checkpoint prompt.
 - global_gate: validate
 
 ### S1 — Persist local response-volume evidence
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/usage-tracking/src/lib/types.ts`, `plugins/usage-tracking/src/lib/record.ts`, `plugins/usage-tracking/src/index.ts`, `plugins/usage-tracking/tests/src/lib/record.spec.ts`
 - **Gate**: usage-tracking tests
 - **Acceptance**: each new metadata-only row includes response bytes; old rows
   remain readable as zero.
 
 ### S2 — Pure session-hygiene analysis and report
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/usage-tracking/src/lib/session-hygiene.ts`, `plugins/usage-tracking/src/lib/tools/session-hygiene.tool.ts`, `plugins/usage-tracking/src/lib/tools/index.ts`, `plugins/usage-tracking/src/public/index.ts`, `plugins/usage-tracking/tests/src/lib/session-hygiene.spec.ts`, `plugins/usage-tracking/tests/src/lib/tools.spec.ts`
 - **Gate**: usage-tracking tests
 - **Acceptance**: the report exposes observed MCP age, largest observed idle
   gap, estimated MCP-output tokens and explicit evidence boundaries.
 
 ### S3 — One-shot advisory logging
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/usage-tracking/src/index.ts`, `plugins/usage-tracking/src/lib/session-hygiene.ts`, `plugins/usage-tracking/README.md`
 - **Gate**: usage-tracking tests + typecheck
 - **Acceptance**: age, idle-gap and output-volume breaches alert once per

@@ -32,21 +32,21 @@ the gap that a generic MCP server cannot safely infer from tool timestamps.
 - global_gate: validate
 
 ### S1 — Portable checkpoint packet contract
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/memory/src/lib/services/`, `plugins/memory/src/lib/tools/`, `plugins/memory/tests/src/lib/`
 - **Gate**: memory tests
 - **Acceptance**: a bounded, redacted packet contains only the current digest,
   pointers and next action; it is useful without a host adapter.
 
 ### S2 — Claude Code adapter research and implementation
-- **Status**: pending
+- **Status**: done
 - **Files**: `config/external/claude-code/`, `docs/mcp-vertex/wiki/external/claude-code.md`, host-adapter tests
 - **Gate**: documented host smoke test
 - **Acceptance**: use only documented current lifecycle hooks; if no supported
   hook can invoke MCP, ship instructions rather than a fake integration.
 
 ### S3 — Generic adapter seam and adoption samples
-- **Status**: pending
+- **Status**: done
 - **Files**: `docs/mcp-vertex/examples/`, `docs/mcp-vertex/CROSS-IDE.md`
 - **Gate**: docs/link checks
 - **Acceptance**: each adapter is opt-in, names the exact lifecycle guarantee,
