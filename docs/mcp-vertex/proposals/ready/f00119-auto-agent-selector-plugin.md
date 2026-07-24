@@ -193,7 +193,7 @@ tags when data is thin; blend weight is a documented constant.
 
 ### S5 — auto-config on first use (the "add it and it just works" guarantee)
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/auto-agent-selector/src/index.ts`, `plugins/auto-agent-selector/src/lib/tools/auto-run.tool.ts`
 - **Gate**: bun run validate
 

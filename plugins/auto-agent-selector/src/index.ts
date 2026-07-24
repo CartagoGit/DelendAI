@@ -83,6 +83,7 @@ export default definePlugin({
 					namespacePrefix: ctx.namespacePrefix,
 					defaultTradeoff,
 					rosterStore,
+					workspaceRoot: ctx.workspace.root,
 					...(taskPins !== undefined ? { taskPins } : {}),
 				}),
 			],
