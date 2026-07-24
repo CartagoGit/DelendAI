@@ -21,7 +21,7 @@ import { c, colorOn, heading, paint } from '../helpers/cli-color.helper';
  *   mcp-vertex › init:default
  *   ────────────────────────────────────────────────
  *     Non-interactive bootstrap with the operator defaults
- *     (vertex preset + overwrite + skills + agents + scaffold).
+ *     (vertex preset + managed instructions + skills + agents + scaffold).
  *
  *   Usage:
  *     init:default [--dry-run] [--mcp-vertex-root=<path>] [...]
@@ -49,14 +49,14 @@ export const renderInitDefaultHelp = (): string => {
 		dim(horiz),
 		'',
 		`  Non-interactive bootstrap with the operator defaults`,
-		`  (vertex preset + overwrite + skills + agents + scaffold).`,
+		`  (vertex preset + managed instructions + skills + agents + scaffold).`,
 		'',
 		bold('Usage:'),
 		`  ${cyan('init:default [--dry-run] [--mcp-vertex-root=<path>] [--plugin-paths-root=<path>]')}`,
 		'',
 		bold('Flags:'),
 		`  ${bold('--dry-run')}                       preview the bundle without writing`,
-		`  ${bold('--force')}                         auto-yes for existing files (default: true)`,
+		`  ${bold('--force')}                         intentionally replace project config/managed files`,
 		`  ${bold('--mcp-vertex-root=<path>')}        path to the mcp-vertex checkout to scaffold from`,
 		`  ${bold('--plugin-paths-root=<path>')}      override the detected plugin source root`,
 		`  ${bold('--options-<plugin>-<k>=<v>')}      override a plugin option (repeatable)`,
