@@ -2,13 +2,13 @@
 id: a00068
 kind: audit
 title: "24-07-2026 · Auditoría exhaustiva del proyecto + recomendaciones concretas (mejoras, altas, bajas, cambios)"
-status: ready
+status: in-progress
 date: 2026-07-24T18:37:00Z
 track: code-quality+concurrency+architecture+invariants+tests+dx
 related:
     - a00066 # última auditoría general (modo general)
     - a00056 # penúltima auditoría general
-    - a00067 # evaluación de migración de lenguaje (en ready, abierta)
+    - a00067 # evaluación de migración de lenguaje (done/audits)
 author: copilot-minimax-m3 (orchestrator)
 mode: general + recommendations
 ---
