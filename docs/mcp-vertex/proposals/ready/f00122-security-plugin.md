@@ -79,7 +79,7 @@ findings. Reuses the `deps` manifest parsing.
 
 ### S3 — SAST rule packs
 
-- **Status**: pending
+- **Status**: done (2026-07-24)
 - **Files**: `plugins/security/src/lib/sast/`, `plugins/security/src/lib/tools/security-sast.tool.ts`
 - **Gate**: bun run validate
 
@@ -89,7 +89,7 @@ mapper over injected exec.
 
 ### S4 — gate, pack membership, catalog
 
-- **Status**: pending
+- **Status**: done (2026-07-24)
 - **Files**: `tools/scripts/verify/security.script.ts`, `packages/core/src/lib/plugins/preset-catalog.ts`, `plugins/security/README.md`
 - **Gate**: bun run validate
 
