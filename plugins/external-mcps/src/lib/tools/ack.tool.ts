@@ -55,6 +55,11 @@ const AckEntrySchema = z.object({
 	accepted: z.boolean().optional(),
 });
 
+// x00107: the outputSchema describes the SUCCESS shape only — the MCP
+// SDK skips schema validation for `isError` results (`toolError`), so
+// the strict `literal(true)` + required fields are correct and keep
+// the generated SDK types strong. (x00105 briefly loosened this based
+// on a probe that misread SDK semantics; reverted.)
 export const AckOutputSchema = z.object({
 	ok: z.literal(true),
 	mode: z.enum(['list', 'record']),

@@ -102,4 +102,56 @@ describe('runCheckConventions', async () => {
 		expect(out.ok).toBe(true);
 		expect(out.total).toBe(0);
 	});
+
+	it('a00064: total 0 from nonexistent roots carries a diagnostic naming them', async () => {
+		const failing: IDirReader = {
+			async list(relDir: string) {
+				throw new Error(`ENOENT: ${relDir}`);
+			},
+		};
+		const out = parse(
+			await runCheckConventions(
+				{ roots: ['packages', 'plugins'] },
+				{ namespacePrefix: 'conventions', reader: failing },
+			),
+		);
+		expect(out.ok).toBe(true);
+		expect(out.total).toBe(0);
+		expect(out.diagnostic).toBeDefined();
+		expect(out.diagnostic).toContain('packages');
+		expect(out.diagnostic).toContain('do not exist');
+	});
+
+	it('a00064: the built-in default scans the WORKSPACE ROOT, not a stamped monorepo layout', async () => {
+		// A reader whose only content hangs off the workspace root ('').
+		const rootedReader: IDirReader = {
+			async list(relDir: string) {
+				const tree: Record<string, readonly IDirEntry[]> = {
+					'': [dir('src')],
+					src: [file('a.tool.ts')],
+				};
+				const entries = tree[relDir];
+				if (entries === undefined) throw new Error(`ENOENT: ${relDir}`);
+				return entries;
+			},
+		};
+		const out = parse(
+			await runCheckConventions(
+				{},
+				{ namespacePrefix: 'conventions', reader: rootedReader },
+			),
+		);
+		expect(out.ok).toBe(true);
+		expect(out.total).toBe(1);
+	});
+
+	it('a00064: no diagnostic when files were actually classified', async () => {
+		const out = parse(
+			await runCheckConventions(
+				{ roots: ['pkg'] },
+				{ namespacePrefix: 'conventions', reader },
+			),
+		);
+		expect(out.diagnostic).toBeUndefined();
+	});
 });

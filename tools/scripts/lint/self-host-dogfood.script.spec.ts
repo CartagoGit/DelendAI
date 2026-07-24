@@ -22,6 +22,15 @@ const canonicalEntry = (workspace: string) => ({
 	],
 });
 
+const localDogfoodEntry = (workspace: string) => ({
+	type: 'stdio',
+	command: 'bun',
+	args: [
+		'tools/scripts/host/host-server.script.ts',
+		`--workspace=${workspace}`,
+	],
+});
+
 const makeRoot = async (
 	generic = canonicalEntry('.'),
 	vscode = canonicalEntry('${workspaceFolder}'),
@@ -48,7 +57,7 @@ const makeRoot = async (
 };
 
 describe('self-host-dogfood', () => {
-	it('accepts both init-equivalent host shapes and ignores sibling servers', async () => {
+	it('accepts the published bunx launch and ignores sibling servers', async () => {
 		const root = await makeRoot();
 		try {
 			expect(await detectSelfHostDogfoodDrift(root)).toEqual([]);
@@ -57,23 +66,32 @@ describe('self-host-dogfood', () => {
 		}
 	});
 
-	it('reports command and argv drift independently', async () => {
+	it('accepts the repo-local host-source dogfood launch', async () => {
 		const root = await makeRoot(
-			{ ...canonicalEntry('.'), command: 'bun' },
+			localDogfoodEntry('.'),
+			localDogfoodEntry('${workspaceFolder}'),
+		);
+		try {
+			expect(await detectSelfHostDogfoodDrift(root)).toEqual([]);
+		} finally {
+			await rm(root, { recursive: true, force: true });
+		}
+	});
+
+	it('reports launch drift when neither canonical shape matches', async () => {
+		const root = await makeRoot(
+			{ ...canonicalEntry('.'), command: 'node' },
 			{
 				...canonicalEntry('${workspaceFolder}'),
-				args: ['local-script.ts'],
+				args: ['some-other-script.ts'],
 			},
 		);
 		try {
 			const findings = await detectSelfHostDogfoodDrift(root);
 			expect(findings).toHaveLength(2);
-			expect(formatSelfHostDogfoodReport(findings)).toContain(
-				'command drift',
-			);
-			expect(formatSelfHostDogfoodReport(findings)).toContain(
-				'args drift',
-			);
+			const report = formatSelfHostDogfoodReport(findings);
+			expect(report).toContain('launch drift');
+			expect(report).toContain('OR');
 		} finally {
 			await rm(root, { recursive: true, force: true });
 		}

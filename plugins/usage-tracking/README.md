@@ -55,6 +55,19 @@ Every 5 minutes the log is folded into
 plugin, agent and extension. The same fold powers the report tool
 on demand.
 
+## Session hygiene
+
+The plugin also observes each local MCP session: activity span, gaps between
+tool calls and MCP response volume. It is deliberately **not** a Claude/Codex
+conversation meter or subscription-quota estimate. A single advisory logging
+message is emitted per breached reason, so warnings do not create a tool-call
+loop or extra context churn.
+
+Defaults are a two-hour observed activity span, a 30-minute observed gap and
+8k estimated tokens of MCP output. Configure them under
+`plugins.usage-tracking.options.sessionHygiene`; set `enabled: false` to turn
+off advisory logging while retaining the read-only report.
+
 ## Pricing
 
 `${cacheDir}/usage-tracking/pricing.json` is refreshed from LiteLLM's
@@ -76,6 +89,9 @@ subscription is worth renewing*, not per-call spend.
   expensive calls.
 - **`<prefix>_usage_clear {confirm}`** — truncates the log + summary.
   Destructive; requires `confirm: true`.
+- **`<prefix>_session_hygiene {limit}`** — reports current and durable local
+  MCP-session observations plus the active thresholds. It explicitly labels
+  every result as MCP-only.
 
 ## Agent / extension detection
 
@@ -111,6 +127,10 @@ The plugin **never** sniffs `process.env` for vendor-specific variables.
 | `maxDelayMs` | `250` | max ms a record waits before a flush |
 | `windowDays` | `7` | rollup window for the periodic summary |
 | `summaryIntervalMs` | `300000` | how often the summary is regenerated |
+| `sessionHygiene.enabled` | `true` | emit one-shot local MCP-session advisories |
+| `sessionHygiene.maxSessionAgeMinutes` | `120` | observed MCP activity span before an advisory |
+| `sessionHygiene.maxIdleGapMinutes` | `30` | observed gap between MCP calls before an advisory |
+| `sessionHygiene.maxMcpOutputTokens` | `8000` | estimated MCP response volume before an advisory |
 
 ## License
 

@@ -64,6 +64,22 @@ describe('searchDocs (f00028 S3)', async () => {
 		expect(hits).toEqual([]);
 	});
 
+	it('a00064: propagates the empty-catalogue diagnostic (misconfigured roots)', async () => {
+		write(root, 'docs/a.md', '# A\n\nbody\n');
+		const { hits, diagnostic } = await searchDocs(root, 'body', {
+			roots: ['handbook', 'wiki'],
+		});
+		expect(hits).toEqual([]);
+		expect(diagnostic).toBeDefined();
+		expect(diagnostic).toContain('handbook');
+	});
+
+	it('a00064: no diagnostic on a legit no-match over a real catalogue', async () => {
+		write(root, 'docs/a.md', '# A\n\nbody\n');
+		const { diagnostic } = await searchDocs(root, 'nonexistent-term-xyz');
+		expect(diagnostic).toBeUndefined();
+	});
+
 	it('respects the limit cap', async () => {
 		for (let i = 0; i < 5; i += 1) {
 			write(

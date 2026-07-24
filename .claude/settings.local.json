@@ -23,7 +23,12 @@
       "mcp__mcp-vertex__proposals_proposal_transition",
       "mcp__mcp-vertex__audit_audit_plan",
       "mcp__mcp-vertex__audit_audit_consolidate",
-      "mcp__mcp-vertex__proposals_get_proposal_workflow"
+      "mcp__mcp-vertex__proposals_get_proposal_workflow",
+      "Bash(mkdir -p /tmp/mcpv-scratch-test)",
+      "Read(//tmp/**)",
+      "Bash(rm -rf * .*)",
+      "Bash(timeout 30 node packages/cli/dist/index.js init:default --workspace=/tmp/mcpv-scratch-test)",
+      "Bash(echo \"exit: $?\")"
     ],
     "deny": []
   },

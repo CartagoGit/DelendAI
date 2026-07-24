@@ -347,6 +347,13 @@ export const bindSettingsHandlers = (
  * unconditionally; that's the cheapest possible path).
  */
 export const bootstrapPersistedPrefs = (): IPersistedPrefs => {
+	// x00100 S2: `?lang=xx` is an explicit load-time override — persist it
+	// so every page (they all read the persisted prefs) renders in that
+	// language, exactly like a manual switch from the settings page.
+	const urlLang = new URLSearchParams(window.location.search).get('lang');
+	if (urlLang !== null && isLang(urlLang)) {
+		safeWrite(LANG_KEY, urlLang);
+	}
 	const prefs = readPersistedPrefs();
 	applyTheme(prefs.theme);
 	applyLang(prefs.lang);

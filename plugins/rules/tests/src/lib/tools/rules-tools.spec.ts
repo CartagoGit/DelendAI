@@ -119,4 +119,41 @@ describe('get_rules — areas[].rules outputSchema (l00008 s4)', async () => {
 		expect(out.dogmas.root.language).toBe('js');
 		expect(out.dogmas.root.ownership).toBe('gc');
 	});
+
+	it('x00101 S2: compact:true projects area ids + presets without rule bodies or dogmas', async () => {
+		const reg = buildGetRulesRegistration({
+			namespacePrefix: 'rules',
+			workspace,
+			reader: emptyReader,
+			projectName: 'demo',
+			cacheRelDir: '.cache/mcp-vertex/rules',
+			manifestRelPath: '.cache/mcp-vertex/rules/rules-map.json',
+			mode: 'mixed',
+		});
+
+		const result = await invoke(reg, { compact: true });
+		const out = result.structuredContent as {
+			mode: string;
+			areas: Array<Record<string, unknown>>;
+			dogmas?: unknown;
+			conventions?: unknown;
+			renderedDogmas?: unknown;
+		};
+
+		expect(out.mode).toBe('mixed');
+		expect(out.areas.length).toBeGreaterThan(0);
+		for (const area of out.areas) {
+			expect(Object.keys(area).sort()).toEqual([
+				'area',
+				'presetId',
+				'project',
+			]);
+		}
+		expect(out.dogmas).toBeUndefined();
+		expect(out.conventions).toBeUndefined();
+		expect(out.renderedDogmas).toBeUndefined();
+		expect(Buffer.byteLength(JSON.stringify(out), 'utf8')).toBeLessThan(
+			1_500,
+		);
+	});
 });

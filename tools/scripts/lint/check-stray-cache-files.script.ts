@@ -20,15 +20,19 @@
  * Sanctioned cache layout (f00081, for reference):
  *
  *   .cache/mcp-vertex/
- *     bootstrap/      (engine boot snapshots)
- *     drift/          (drift-store snapshots)
- *     handoff/        (loop-detector handoff packets)
- *     logs/           (append-only JSONL event log)
- *     memory/         (agent memory store)
- *     proposals/      (regenerable index.json)
- *     rules/          (vendored framework rule packs)
- *     state/          (transient locks, registry snapshots)
+ *     bootstrap/      (engine boot snapshots — derivable, safe to delete)
+ *     drift/          (drift-store snapshots — derivable, safe to delete)
+ *     proposals/      (regenerable index.json — derivable, safe to delete)
+ *     rules/          (vendored framework rule packs — derivable)
+ *     state/          (transient locks, registry snapshots — safe to delete)
  *     verify/         (current scratch root for plugin-tool-verify)
+ *     handoff/        (loop-detector handoff packets — transient)
+ *     results/        (user-flagged 2026-07-17: accumulated RECORDS, not
+ *                      derivable cache — deleting these loses real
+ *                      information, unlike everything else above)
+ *       logs/            (append-only JSONL event log)
+ *       memory/          (agent memory store)
+ *       usage-tracking/  (accrued spend/usage history)
  *     <pluginCacheDir>/exec/ (f00080 ephemeral exec paths per plugin)
  *     .worktrees/<agent>/    (per-agent git worktrees, NOT code)
  *
@@ -50,12 +54,14 @@ const SANCTIONED_TOP_LEVEL: ReadonlySet<string> = new Set([
 	'bootstrap',
 	'drift',
 	'handoff',
-	'logs',
-	'memory',
 	'proposals',
 	'rules',
 	'state',
 	'verify',
+	// Accumulated records (see IMcpPlugin#cacheNamespace) — NOT derivable
+	// cache, but still under the one canonical ignored root. Nests
+	// logs/memory/usage-tracking (and any future opt-in plugin).
+	'results',
 	// Per-plugin ephemeral exec dir (f00080). Plugins add their own
 	// `<pluginCacheDir>/<plugin>/exec/` subtree at boot, so we whitelist
 	// the whole pattern generically below.
@@ -70,7 +76,9 @@ const SANCTIONED_TOP_LEVEL: ReadonlySet<string> = new Set([
 const SANCTIONED_SUBPATH_PREFIXES: readonly string[] = [
 	'verify/',
 	'handoff/',
-	'logs/',
+	'results/logs/',
+	'results/memory/',
+	'results/usage-tracking/',
 	'rules/',
 	'.worktrees/',
 ];
@@ -117,12 +125,18 @@ const classifyCacheEntry = async (
 	cacheRootAbs: string,
 	entryName: string,
 	isDirectory: boolean,
+	pluginNames: ReadonlySet<string>,
 ): Promise<IStrayCacheFile | null> => {
 	const abs = join(cacheRootAbs, entryName);
 	const rel = relative(cacheRootAbs, abs);
 
 	if (SANCTIONED_TOP_LEVEL.has(entryName)) return null;
 	if (SANCTIONED_TOP_LEVEL_FILES.has(entryName)) return null;
+	// x00105: `<cacheDir>/<plugin>/` is the documented pluginCacheDir
+	// contract (IMcpPluginContext) — every plugin that exists under
+	// `plugins/*` may own a cache dir named after itself. Derived from
+	// disk, never a hardcoded list.
+	if (isDirectory && pluginNames.has(entryName)) return null;
 
 	// Per-plugin exec subdirs (f00080) live as `<pluginCacheDir>/<plugin>/exec/`,
 	// but the cache-rooted view sees them as `mcp-vertex/<plugin>/exec/`.
@@ -209,6 +223,15 @@ export const findStrayCacheFiles = async (
 	cacheRootAbs: string,
 ): Promise<IStrayCacheFilesSummary> => {
 	const strays: IStrayCacheFile[] = [];
+	// Legit plugin cache dir names come from the plugins/ tree on disk.
+	const pluginDirs = await readdir(join(repoRoot(), 'plugins'), {
+		withFileTypes: true,
+	}).catch(() => []);
+	const pluginNames: ReadonlySet<string> = new Set(
+		pluginDirs
+			.filter((entry) => entry.isDirectory())
+			.map((entry) => entry.name),
+	);
 	const topEntries = await readdir(cacheRootAbs, {
 		withFileTypes: true,
 	}).catch(() => []);
@@ -217,6 +240,7 @@ export const findStrayCacheFiles = async (
 			cacheRootAbs,
 			entry.name,
 			entry.isDirectory(),
+			pluginNames,
 		);
 		if (stray !== null) {
 			strays.push(stray);

@@ -4,10 +4,8 @@ import {
 	parseConfigFile,
 	pluginConfigFor,
 } from '@mcp-vertex/core/lib/plugins/load-config-file';
-import {
-	assembleCliConfig,
-	runDoctor,
-} from '@mcp-vertex/core/lib/cli/assemble';
+import { assembleCliConfig } from '@mcp-vertex/core/lib/cli/assemble';
+import { runDoctor } from '@mcp-vertex/core/lib/cli/run-cli';
 import { parseCliArgs } from '@mcp-vertex/core/lib/plugins/parse-cli-args';
 import { diagnoseConfigFile } from '@mcp-vertex/core/lib/plugins/load-config-file';
 

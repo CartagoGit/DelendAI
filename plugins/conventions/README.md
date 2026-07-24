@@ -16,8 +16,27 @@ mcp-vertex --plugins=conventions
 
 | Tool | What it does |
 |---|---|
-| `conventions_classify` | **Pure.** Given `{ paths: string[] }`, returns each path's role (`interface`/`constant`/`service`/`tool`/`registry`/`register`/`factory`/`builder`/`generated`/`barrel`/`other`) plus the `unmatched` list. Nothing is read from disk. |
-| `conventions_check` | Scans the workspace (`packages`, `plugins`, `extensions`, `apps`, `tools` by default, or `{ roots }`) and reports `{ total, counts, unmatched, unmatchedCount }`. The inlined `unmatched` list is capped at 100; `unmatchedCount` is exact. |
+| `conventions_classify` | **Pure.** Given `{ paths: string[] }`, returns each path's role plus the `unmatched` list. Nothing is read from disk. Optional `profile` picks the language rule table. |
+| `conventions_check` | Scans the workspace (`packages`, `plugins`, `extensions`, `apps`, `tools` by default, or `{ roots }`) and reports `{ total, counts, unmatched, unmatchedCount }`. The inlined `unmatched` list is capped at 100; `unmatchedCount` is exact. Optional `profile` picks the language rule table. |
+
+## Language profiles (f00113)
+
+Both tools accept `profile: "typescript" | "python" | "rust" | "go"`
+(default `typescript` — omitting it is byte-identical to the pre-f00113
+behaviour). `typescript` wraps the core's canonical `DEFAULT_TS_RULES`
+unchanged; the other profiles are plugin-local rule tables with
+language-native roles:
+
+- **python** — `module`, `package-marker` (`__init__.py`), `entry`
+  (`__main__.py`), `test` (`test_*.py`, `*_test.py`, `conftest.py`,
+  `tests/`), `script`, `migration`, `generated` (`*_pb2.py`); skips
+  `__pycache__`, `.venv`, `venv`, `.tox`, `.mypy_cache`.
+- **rust** — `crate-entry` (`main.rs`/`lib.rs`), `module-root`
+  (`mod.rs`), `module`, `build-script` (`build.rs`), `test`, `bench`,
+  `example`, `generated` (`*.pb.rs`, `*_generated.rs`); skips `target`.
+- **go** — `module`, `entry` (`main.go`, `cmd/`), `internal`, `test`
+  (`*_test.go`), `generated` (`*.pb.go`, `*_gen.go`, `zz_generated*`);
+  skips `vendor`.
 
 ## The TypeScript profile
 

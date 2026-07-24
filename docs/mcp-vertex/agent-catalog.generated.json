@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-07-13T02:57:16.690Z",
+	"generatedAt": "2026-07-24T23:11:28.871Z",
 	"mode": "compact",
 	"tools": [
 		{
@@ -7,6 +7,26 @@
 		},
 		{
 			"name": "mcp-vertex_analyze_project"
+		},
+		{
+			"name": "mcp-vertex_auto-agent-selector_auto_evaluate",
+			"plugin": "auto-agent-selector"
+		},
+		{
+			"name": "mcp-vertex_auto-agent-selector_auto_recommend",
+			"plugin": "auto-agent-selector"
+		},
+		{
+			"name": "mcp-vertex_auto-agent-selector_auto_record",
+			"plugin": "auto-agent-selector"
+		},
+		{
+			"name": "mcp-vertex_auto-agent-selector_auto_run",
+			"plugin": "auto-agent-selector"
+		},
+		{
+			"name": "mcp-vertex_auto-agent-selector_auto_status",
+			"plugin": "auto-agent-selector"
 		},
 		{
 			"name": "mcp-vertex_configuration_center"
@@ -20,10 +40,21 @@
 			"plugin": "conventions"
 		},
 		{
+			"name": "mcp-vertex_create_plugin"
+		},
+		{
 			"name": "mcp-vertex_create_project"
 		},
 		{
+			"name": "mcp-vertex_deps_deps_audit",
+			"plugin": "deps"
+		},
+		{
 			"name": "mcp-vertex_deps_deps_check",
+			"plugin": "deps"
+		},
+		{
+			"name": "mcp-vertex_deps_deps_licenses",
 			"plugin": "deps"
 		},
 		{
@@ -31,8 +62,16 @@
 			"plugin": "deps"
 		},
 		{
+			"name": "mcp-vertex_deps_deps_outdated",
+			"plugin": "deps"
+		},
+		{
 			"name": "mcp-vertex_deps_deps_polyglot",
 			"plugin": "deps"
+		},
+		{
+			"name": "mcp-vertex_diagram_diagram_deps",
+			"plugin": "diagram"
 		},
 		{
 			"name": "mcp-vertex_docs_docs_list",
@@ -48,6 +87,46 @@
 		},
 		{
 			"name": "mcp-vertex_drift_check"
+		},
+		{
+			"name": "mcp-vertex_env_env_check",
+			"plugin": "env"
+		},
+		{
+			"name": "mcp-vertex_forge_ci_status",
+			"plugin": "forge"
+		},
+		{
+			"name": "mcp-vertex_forge_issue_create",
+			"plugin": "forge"
+		},
+		{
+			"name": "mcp-vertex_forge_issue_list",
+			"plugin": "forge"
+		},
+		{
+			"name": "mcp-vertex_forge_issue_show",
+			"plugin": "forge"
+		},
+		{
+			"name": "mcp-vertex_forge_pr_comment",
+			"plugin": "forge"
+		},
+		{
+			"name": "mcp-vertex_forge_pr_create",
+			"plugin": "forge"
+		},
+		{
+			"name": "mcp-vertex_forge_pr_list",
+			"plugin": "forge"
+		},
+		{
+			"name": "mcp-vertex_forge_pr_show",
+			"plugin": "forge"
+		},
+		{
+			"name": "mcp-vertex_forge_release",
+			"plugin": "forge"
 		},
 		{
 			"name": "mcp-vertex_fs_read"
@@ -67,11 +146,23 @@
 			"plugin": "git"
 		},
 		{
+			"name": "mcp-vertex_git_changelog",
+			"plugin": "git"
+		},
+		{
 			"name": "mcp-vertex_git_diff",
 			"plugin": "git"
 		},
 		{
 			"name": "mcp-vertex_git_log",
+			"plugin": "git"
+		},
+		{
+			"name": "mcp-vertex_git_pr_list",
+			"plugin": "git"
+		},
+		{
+			"name": "mcp-vertex_git_pr_view",
 			"plugin": "git"
 		},
 		{
@@ -85,6 +176,13 @@
 		{
 			"name": "mcp-vertex_git_worktree",
 			"plugin": "git"
+		},
+		{
+			"name": "mcp-vertex_i18n_i18n_check",
+			"plugin": "i18n"
+		},
+		{
+			"name": "mcp-vertex_init_config"
 		},
 		{
 			"name": "mcp-vertex_knowledge"
@@ -108,6 +206,10 @@
 		{
 			"name": "mcp-vertex_logs_tail",
 			"plugin": "logs"
+		},
+		{
+			"name": "mcp-vertex_memory_checkpoint_packet",
+			"plugin": "memory"
 		},
 		{
 			"name": "mcp-vertex_memory_compact",
@@ -153,7 +255,55 @@
 			"plugin": "notification"
 		},
 		{
+			"name": "mcp-vertex_orchestrator-runner_advise_routing",
+			"plugin": "orchestrator-runner"
+		},
+		{
+			"name": "mcp-vertex_orchestrator-runner_advise_spend",
+			"plugin": "orchestrator-runner"
+		},
+		{
+			"name": "mcp-vertex_orchestrator-runner_bootstrap_providers",
+			"plugin": "orchestrator-runner"
+		},
+		{
+			"name": "mcp-vertex_orchestrator-runner_cancel_invocation",
+			"plugin": "orchestrator-runner"
+		},
+		{
+			"name": "mcp-vertex_orchestrator-runner_discover_providers",
+			"plugin": "orchestrator-runner"
+		},
+		{
+			"name": "mcp-vertex_orchestrator-runner_format_handoff",
+			"plugin": "orchestrator-runner"
+		},
+		{
+			"name": "mcp-vertex_orchestrator-runner_get_quota",
+			"plugin": "orchestrator-runner"
+		},
+		{
+			"name": "mcp-vertex_orchestrator-runner_healthcheck_providers",
+			"plugin": "orchestrator-runner"
+		},
+		{
+			"name": "mcp-vertex_orchestrator-runner_invoke",
+			"plugin": "orchestrator-runner"
+		},
+		{
+			"name": "mcp-vertex_orchestrator-runner_list_models",
+			"plugin": "orchestrator-runner"
+		},
+		{
+			"name": "mcp-vertex_orchestrator-runner_set_provider_state",
+			"plugin": "orchestrator-runner"
+		},
+		{
 			"name": "mcp-vertex_overview"
+		},
+		{
+			"name": "mcp-vertex_perf_perf_bundle",
+			"plugin": "perf"
 		},
 		{
 			"name": "mcp-vertex_plan_mcp_project"
@@ -314,6 +464,22 @@
 			"plugin": "search"
 		},
 		{
+			"name": "mcp-vertex_security_security_audit",
+			"plugin": "security"
+		},
+		{
+			"name": "mcp-vertex_security_security_deps",
+			"plugin": "security"
+		},
+		{
+			"name": "mcp-vertex_security_security_sast",
+			"plugin": "security"
+		},
+		{
+			"name": "mcp-vertex_security_security_secrets",
+			"plugin": "security"
+		},
+		{
 			"name": "mcp-vertex_skill"
 		},
 		{
@@ -332,6 +498,10 @@
 			"plugin": "status-marker"
 		},
 		{
+			"name": "mcp-vertex_tech-debt_debt_scan",
+			"plugin": "tech-debt"
+		},
+		{
 			"name": "mcp-vertex_test-convention_get_convention",
 			"plugin": "test-convention"
 		},
@@ -342,6 +512,26 @@
 		{
 			"name": "mcp-vertex_test-convention_suggest_spec_path",
 			"plugin": "test-convention"
+		},
+		{
+			"name": "mcp-vertex_test-policy_get_test_policy",
+			"plugin": "test-policy"
+		},
+		{
+			"name": "mcp-vertex_test-policy_set_test_policy",
+			"plugin": "test-policy"
+		},
+		{
+			"name": "mcp-vertex_usage-tracking_session_hygiene",
+			"plugin": "usage-tracking"
+		},
+		{
+			"name": "mcp-vertex_usage-tracking_usage_clear",
+			"plugin": "usage-tracking"
+		},
+		{
+			"name": "mcp-vertex_usage-tracking_usage_report",
+			"plugin": "usage-tracking"
 		}
 	],
 	"skills": [
@@ -657,21 +847,224 @@
 	"proposals": {
 		"actionable": [
 			{
+				"id": "a00067",
+				"title": "a00067",
+				"track": "research+architecture+economics+tooling",
+				"status": "ready",
+				"kind": "audit"
+			},
+			{
+				"id": "a00068",
+				"title": "a00068",
+				"track": "code-quality+concurrency+architecture+invariants+tests+dx",
+				"status": "in-progress",
+				"kind": "audit"
+			},
+			{
+				"id": "d00003",
+				"title": "d00003",
+				"track": "roadmap+plugins+ecosystem",
+				"status": "ready",
+				"kind": "docs"
+			},
+			{
 				"id": "f00050",
 				"title": "f00050",
 				"track": "lint+architecture+i18n+workflow+release",
 				"status": "paused",
 				"kind": "feat"
+			},
+			{
+				"id": "f00122",
+				"title": "f00122",
+				"track": "plugin+security+quality",
+				"status": "ready",
+				"kind": "feat"
+			},
+			{
+				"id": "f00123",
+				"title": "f00123",
+				"track": "plugin+refactor+reliability",
+				"status": "ready",
+				"kind": "feat"
+			},
+			{
+				"id": "f00124",
+				"title": "f00124",
+				"track": "plugin+search+navigation",
+				"status": "ready",
+				"kind": "feat"
+			},
+			{
+				"id": "f00125",
+				"title": "f00125",
+				"track": "plugin+browser+verification",
+				"status": "ready",
+				"kind": "feat"
+			},
+			{
+				"id": "f00126",
+				"title": "f00126",
+				"track": "plugin+perf+quality",
+				"status": "ready",
+				"kind": "feat"
+			},
+			{
+				"id": "f00127",
+				"title": "f00127",
+				"track": "plugin+eval+routing",
+				"status": "ready",
+				"kind": "feat"
+			},
+			{
+				"id": "f00128",
+				"title": "f00128",
+				"track": "plugin+database+data",
+				"status": "ready",
+				"kind": "feat"
+			},
+			{
+				"id": "f00129",
+				"title": "f00129",
+				"track": "plugin+observability+runtime",
+				"status": "ready",
+				"kind": "feat"
+			},
+			{
+				"id": "f00130",
+				"title": "f00130",
+				"track": "plugin+api+integration",
+				"status": "ready",
+				"kind": "feat"
+			},
+			{
+				"id": "f00131",
+				"title": "f00131",
+				"track": "plugin+release+automation",
+				"status": "ready",
+				"kind": "feat"
+			},
+			{
+				"id": "f00132",
+				"title": "f00132",
+				"track": "plugin+diagram+docs",
+				"status": "ready",
+				"kind": "feat"
+			},
+			{
+				"id": "f00133",
+				"title": "f00133",
+				"track": "plugin+container+runtime",
+				"status": "ready",
+				"kind": "feat"
+			},
+			{
+				"id": "f00134",
+				"title": "f00134",
+				"track": "plugin+i18n+quality",
+				"status": "ready",
+				"kind": "feat"
+			},
+			{
+				"id": "f00135",
+				"title": "f00135",
+				"track": "plugin+config+onboarding",
+				"status": "ready",
+				"kind": "feat"
+			},
+			{
+				"id": "f00136",
+				"title": "f00136",
+				"track": "plugin+tools+dx",
+				"status": "ready",
+				"kind": "feat"
+			},
+			{
+				"id": "f00137",
+				"title": "f00137",
+				"track": "plugin+skills+process",
+				"status": "ready",
+				"kind": "feat"
+			},
+			{
+				"id": "f00138",
+				"title": "f00138",
+				"track": "plugin+prompts+dx",
+				"status": "ready",
+				"kind": "feat"
+			},
+			{
+				"id": "f00139",
+				"title": "f00139",
+				"track": "plugin+audit+self-improvement",
+				"status": "ready",
+				"kind": "feat"
+			},
+			{
+				"id": "f00140",
+				"title": "f00140",
+				"track": "plugin+extension+routing",
+				"status": "ready",
+				"kind": "feat"
+			},
+			{
+				"id": "f00141",
+				"title": "f00141",
+				"track": "plugin+registry+dx",
+				"status": "ready",
+				"kind": "feat"
+			},
+			{
+				"id": "f00142",
+				"title": "f00142",
+				"track": "plugin+config+auto-selection",
+				"status": "ready",
+				"kind": "feat"
+			},
+			{
+				"id": "f00148",
+				"title": "f00148",
+				"track": "infra+distribution+economics",
+				"status": "ready",
+				"kind": "feat"
+			},
+			{
+				"id": "f00149",
+				"title": "f00149",
+				"track": "host-adapters+plugins+adoption",
+				"status": "ready",
+				"kind": "feat"
+			},
+			{
+				"id": "r00011",
+				"title": "r00011",
+				"track": "refactor+config+dx",
+				"status": "ready",
+				"kind": "refactor"
+			},
+			{
+				"id": "r00012",
+				"title": "r00012",
+				"track": "refactor+core+plugins",
+				"status": "ready",
+				"kind": "refactor"
+			},
+			{
+				"id": "v00122",
+				"title": "v00122",
+				"track": "perf+token-budgets+agent-velocity",
+				"status": "in-progress",
+				"kind": "unspecified"
 			}
 		],
 		"byStatus": {
-			"ready": 0,
-			"in-progress": 0,
-			"review": 0,
+			"ready": 27,
+			"in-progress": 2,
+			"review": 5,
 			"paused": 1,
-			"done": 206,
+			"done": 246,
 			"blocked": 0,
-			"retired": 1,
+			"retired": 2,
 			"unspecified": 0
 		}
 	}

@@ -53,11 +53,12 @@ describe('usage-tracking plugin (register + hooks)', () => {
 			args: {},
 		}) as unknown as IMcpPluginContext;
 
-	it('registers the two tools + knowledge + both hooks', async () => {
+	it('registers the usage tools + knowledge + both hooks', async () => {
 		const reg = await plugin.register(makeCtx());
 		expect(reg.tools?.map((t) => t.id)).toEqual([
 			'usage_report',
 			'usage_clear',
+			'session_hygiene',
 		]);
 		expect(reg.knowledge?.[0]?.id).toBe('usage-tracking-usage');
 		expect(typeof reg.onToolStart).toBe('function');
@@ -87,6 +88,7 @@ describe('usage-tracking plugin (register + hooks)', () => {
 		expect(row.sessionId).toBe('s_call');
 		expect(row.outcome).toBe('success');
 		expect(typeof row.durationMs).toBe('number');
+		expect(row.responseBytes).toBe(0);
 	});
 
 	it('records an error outcome when the hook carries an error', async () => {

@@ -57,6 +57,7 @@ export const buildSearchToolRegistrations = (
 							scanned: z.number(),
 							usedRg: z.boolean(),
 							rgFallbackReason: z.string().optional(),
+							diagnostic: z.string().optional(),
 							hits: z.array(
 								z.object({
 									file: z.string(),
@@ -122,6 +123,9 @@ export const buildSearchToolRegistrations = (
 											rgFallbackReason:
 												result.rgFallbackReason,
 										}
+									: {}),
+								...(result.diagnostic !== undefined
+									? { diagnostic: result.diagnostic }
 									: {}),
 								hits: result.hits,
 							});

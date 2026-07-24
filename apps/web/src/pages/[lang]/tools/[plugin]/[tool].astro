@@ -7,6 +7,7 @@
  * (it already speaks i18n via `useTranslations`).
  */
 import ToolPage from '#COMPONENTS/ToolPage.astro';
+import Base from '#LAYOUTS/Base.astro';
 import capabilities from '#MANIFESTS/capabilities.json';
 import { languages, resolveLang } from '#LIB/page';
 
@@ -35,4 +36,6 @@ const { lang, tool } = Astro.params;
 const langCode = resolveLang(lang);
 ---
 
-<ToolPage lang={langCode} toolName={tool!} />
+<Base lang={langCode}>
+	<ToolPage lang={langCode} toolName={tool!} />
+</Base>

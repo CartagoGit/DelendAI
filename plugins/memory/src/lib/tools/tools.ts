@@ -21,6 +21,7 @@ import { NoteQuotaExceededError } from '../services/store-records';
 import { selectLatestSessionDigest } from '../services/session-digest-recall';
 import { buildCompactToolRegistration } from './compact.tool';
 import { buildCompactionCheckToolRegistration } from './compaction-check.tool';
+import { buildCheckpointPacketToolRegistration } from './checkpoint-packet.tool';
 
 // MCP modern outputSchema shapes (N16). Error envelopes are exempt from
 // SDK validation (isError:true), so these describe only the success path.
@@ -115,6 +116,10 @@ export const buildMemoryToolRegistrations = (
 			maxNotes: options.maxNotes,
 		}),
 		buildCompactionCheckToolRegistration({ namespacePrefix: prefix }),
+		buildCheckpointPacketToolRegistration({
+			namespacePrefix: prefix,
+			storePathAbs: options.storePathAbs,
+		}),
 		{
 			id: 'save',
 			effects: ['write'],

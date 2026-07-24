@@ -15,6 +15,7 @@ import {
 	createWorkspacePathProvider,
 	scaffoldAgentFile,
 	scaffoldHostProject,
+	scaffoldPluginFiles,
 	scaffoldPromptFile,
 	scaffoldSkillFile,
 	scaffoldToolFile,
@@ -163,6 +164,82 @@ describe('scaffold-host generators', () => {
 		expect(editorConfig?.content).toContain(
 			'${workspaceFolder}/packages/core',
 		);
+	});
+});
+
+describe('scaffoldPluginFiles (f00120 S1)', () => {
+	it('emits the eight canonical plugin files', () => {
+		const files = scaffoldPluginFiles({
+			pluginName: 'demo',
+			description: 'A demo plugin scaffolded for testing.',
+		});
+		const paths = files.map((f) => f.path);
+		expect(paths).toEqual([
+			'plugins/demo/package.json',
+			'plugins/demo/src/index.ts',
+			'plugins/demo/tsconfig.json',
+			'plugins/demo/README.md',
+			'plugins/demo/vitest.config.ts',
+			'plugins/demo/LICENSE',
+			'plugins/demo/src/public/index.ts',
+			'plugins/demo/src/contracts/interfaces/plugin-options.interface.ts',
+			'plugins/demo/tests/src/lib/ping.spec.ts',
+		]);
+	});
+
+	it('emits a registerable plugin with a `ping` tool', () => {
+		const files = scaffoldPluginFiles({
+			pluginName: 'demo',
+			description: 'A demo plugin.',
+		});
+		const index = files.find((f) => f.path === 'plugins/demo/src/index.ts');
+		expect(index?.content).toContain("name: 'demo'");
+		expect(index?.content).toContain("id: 'demo_ping'");
+		expect(index?.content).toContain('definePlugin');
+	});
+
+	it('emits a self-contained vitest config (no monorepo coupling)', () => {
+		// The scaffold's vitest config must NOT import `../../vitest.shared`
+		// — an adopter who runs `create_project` in their own repo has no
+		// monorepo at the root and the import would fail. The monorepo
+		// itself uses `verify:plugin-wiring` to swap this for a
+		// shared-aliases version after the wire step; outside the
+		// monorepo the inline config is what runs.
+		const files = scaffoldPluginFiles({
+			pluginName: 'demo',
+			description: 'demo.',
+		});
+		const vitest = files.find(
+			(f) => f.path === 'plugins/demo/vitest.config.ts',
+		);
+		expect(vitest?.content).toContain('defineConfig');
+		expect(vitest?.content).not.toContain('vitest.shared');
+		expect(vitest?.content).not.toContain('sharedSetupFiles');
+		expect(vitest?.content).not.toContain('workspaceAliases');
+		expect(vitest?.content).toContain("'src/**/*.spec.ts'");
+		expect(vitest?.content).toContain("'tests/**/*.spec.ts'");
+	});
+
+	it('emits a sample spec that asserts the plugin id + ping tool', () => {
+		const files = scaffoldPluginFiles({
+			pluginName: 'demo',
+			description: 'demo.',
+		});
+		const spec = files.find(
+			(f) => f.path === 'plugins/demo/tests/src/lib/ping.spec.ts',
+		);
+		expect(spec?.content).toContain("plugin.name).toBe('demo')");
+		expect(spec?.content).toContain('tools.find');
+	});
+
+	it('emits a LICENSE with the current year', () => {
+		const files = scaffoldPluginFiles({
+			pluginName: 'demo',
+			description: 'demo.',
+		});
+		const license = files.find((f) => f.path === 'plugins/demo/LICENSE');
+		const year = new Date().getUTCFullYear();
+		expect(license?.content).toContain(`Copyright (c) ${year} demo`);
 	});
 });
 
@@ -319,5 +396,43 @@ describe('scaffold tool report', () => {
 			f.path.endsWith('clients/acme/src/index.ts'),
 		);
 		expect(entry?.content).toContain('createAcmeClient');
+	});
+
+	it('a00067: scaffolded plugin/client tsconfig is self-contained (no extends into a nonexistent monorepo base)', async () => {
+		for (const kind of ['plugin', 'client'] as const) {
+			const report = await buildScaffoldReport(options, {
+				kind,
+				name: 'pepe',
+				description: `Pepe ${kind}.`,
+				dryRun: true,
+			});
+			const tsconfigFile = report.files.find((f) =>
+				f.path.endsWith('/tsconfig.json'),
+			);
+			expect(tsconfigFile, `${kind} must emit a tsconfig`).toBeDefined();
+			const tsconfig = JSON.parse(tsconfigFile?.content ?? '{}') as {
+				extends?: string;
+				compilerOptions?: Record<string, unknown>;
+			};
+			// An adopter's repo has no `tsconfig.base.json`: extending one
+			// (or any path outside the package) makes `tsc` fail with TS5083
+			// on their first build. The scaffold must stand alone.
+			expect(tsconfig.extends).toBeUndefined();
+			expect(tsconfig.compilerOptions?.strict).toBe(true);
+			expect(tsconfig.compilerOptions?.target).toBe('ES2022');
+
+			// …and the tsconfig must be RUNNABLE del tirón: the package ships
+			// a typecheck script + the typescript toolchain to run it.
+			const pkgFile = report.files.find((f) =>
+				f.path.endsWith('/package.json'),
+			);
+			const pkg = JSON.parse(pkgFile?.content ?? '{}') as {
+				scripts?: Record<string, string>;
+				devDependencies?: Record<string, string>;
+			};
+			expect(pkg.scripts?.typecheck).toContain('tsc');
+			expect(pkg.devDependencies?.typescript).toMatch(/^\^7\./);
+			expect(pkg.devDependencies?.['@types/node']).toBeDefined();
+		}
 	});
 });

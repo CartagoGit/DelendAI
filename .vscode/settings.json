@@ -140,5 +140,65 @@
 	"mcp-vertex.server": {
 		"command": "bun",
 		"args": ["run", "mcp-vertex"]
+	},
+
+	// ──────────────────────────────────────────────────────────────────────
+	// Peacock — workspace-scoped visual identity (morado agradable)
+	//
+	// Peacock (`johnpapa.vscode-peacock`) lee estos ajustes al activar el
+	// workspace y aplica la paleta a los elementos seleccionados más abajo.
+	// Al cerrar este proyecto, el contorno vuelve al color por defecto de
+	// VS Code; al abrir otro, se aplican los ajustes de Peacock de ese
+	// workspace.
+	//
+	// Nota: Peacock no controla el borde del sistema operativo de la
+	// ventana (`window.activeBorder`). En su lugar, colorea los bordes
+	// internos de VS Code (editor / sidebar / panel) y la barra de título
+	// / actividad / estado, que es el "contorno" visible dentro del IDE.
+	//
+	// Paleta:
+	//   - #A78BFA  violet-400 (Tailwind) — color principal
+	//   - #6D28D9  violet-700 (Tailwind) — color remoto (SSH / devcontainer)
+	// ──────────────────────────────────────────────────────────────────────
+	"peacock.color": "#A78BFA",
+	"peacock.remoteColor": "#6D28D9",
+	"peacock.affectStatusBar": true,
+	"peacock.affectActivityBar": true,
+	"peacock.affectTitleBar": true,
+	"peacock.affectEditorGroupBorder": true,
+	"peacock.affectSideBarBorder": true,
+	"peacock.affectPanelBorder": true,
+	"peacock.affectTabActiveBorder": true,
+	"peacock.affectStatusAndTitleBorders": true,
+	"peacock.elementAdjustments": {
+		"titleBar": "darken",
+		"activityBar": "lighten",
+		"statusBar": "none"
+	},
+	"peacock.darkenLightenPercentage": 6,
+	"workbench.colorCustomizations": {
+		"activityBar.activeBackground": "#8a53e1",
+		"activityBar.background": "#8a53e1",
+		"activityBar.foreground": "#e7e7e7",
+		"activityBar.inactiveForeground": "#e7e7e799",
+		"activityBarBadge.background": "#6d3613",
+		"activityBarBadge.foreground": "#e7e7e7",
+		"commandCenter.border": "#e7e7e799",
+		"editorGroup.border": "#8a53e1",
+		"panel.border": "#8a53e1",
+		"sash.hoverBorder": "#8a53e1",
+		"sideBar.border": "#8a53e1",
+		"statusBar.background": "#6d28d9",
+		"statusBar.border": "#6d28d9",
+		"statusBar.foreground": "#e7e7e7",
+		"statusBarItem.hoverBackground": "#8a53e1",
+		"statusBarItem.remoteBackground": "#6d28d9",
+		"statusBarItem.remoteForeground": "#e7e7e7",
+		"tab.activeBorder": "#8a53e1",
+		"titleBar.activeBackground": "#571faf",
+		"titleBar.activeForeground": "#e7e7e7",
+		"titleBar.border": "#571faf",
+		"titleBar.inactiveBackground": "#571faf99",
+		"titleBar.inactiveForeground": "#e7e7e799"
 	}
 }

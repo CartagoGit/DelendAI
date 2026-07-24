@@ -29,6 +29,9 @@
  * Pure verification harness; no I/O, no network, no writes.
  */
 
+import { readdir, stat } from 'node:fs/promises';
+import { join } from 'node:path';
+
 import {
 	type IToolRegistration,
 	resolveWorkspaceContained,
@@ -45,23 +48,32 @@ import {
 	type IToolHandle,
 } from './verify-probes';
 
-const PLUGIN_LIST = [
-	'audit',
-	'cache',
-	'deps',
-	'docs',
-	'git',
-	'logs',
-	'memory',
-	'notification',
-	'proposals',
-	'quality',
-	'rules',
-	'search',
-	'status-marker',
-	'test-convention',
-	'web-fetch',
-] as const;
+/**
+ * x00105 S1: the plugin list is DERIVED from `plugins/*` on disk — the
+ * previous hardcoded array omitted 5 existing plugins and needed a
+ * hand edit for every new one (the exact anti-pattern the bootstrap
+ * bans). A plugin that genuinely cannot boot in the bed gets an entry
+ * here with the reason; everything else is verified automatically.
+ */
+const SKIPPED_PLUGINS: Readonly<Record<string, string>> = {};
+
+export const discoverPlugins = async (
+	workspaceRoot: string,
+): Promise<readonly string[]> => {
+	const pluginsDir = join(workspaceRoot, 'plugins');
+	const entries = await readdir(pluginsDir, { withFileTypes: true }).catch(
+		() => [],
+	);
+	const names: string[] = [];
+	for (const entry of entries) {
+		if (!entry.isDirectory()) continue;
+		const pkg = await stat(
+			join(pluginsDir, entry.name, 'package.json'),
+		).catch(() => null);
+		if (pkg?.isFile()) names.push(entry.name);
+	}
+	return names.sort();
+};
 
 /**
  * Capture the input/output zod schemas the tool registered with the
@@ -104,28 +116,98 @@ const probeToVerify = (
 const verifyPlugin = async (
 	pluginName: string,
 	workspaceRoot: string,
+	// x00105: the core tool surface is identical in every bed — probe it
+	// once (first plugin) instead of 20 times, and label those rows
+	// `core` so the table stops implying each plugin re-verified them.
+	includeCoreTools: boolean,
 ): Promise<readonly IVerifyResult[]> => {
-	const { tools } = await assemblePluginForTest({
-		workspaceRoot,
-		pluginName,
-		syntheticConfig: {
-			validationMatrix: {
-				scopes: {
-					full: [{ command: 'bun test', expect: 'exit0' }],
+	const assemble = (pluginNames: string) =>
+		assemblePluginForTest({
+			workspaceRoot,
+			pluginName: pluginNames,
+			syntheticConfig: {
+				validationMatrix: {
+					scopes: {
+						full: [{ command: 'bun test', expect: 'exit0' }],
+					},
 				},
 			},
-		},
-	});
+		});
 
+	// x00105: plugins may declare runtime dependencies ("plugin X
+	// requires Y (not in load set)"). Resolve the chain generically by
+	// parsing the structured load error and re-assembling with the
+	// missing peer prepended — bounded, no hardcoded dependency map.
+	let loadSet = pluginName;
+	let bed = await assemble(loadSet);
+	for (
+		let attempt = 0;
+		attempt < 4 && bed.loadErrors.length > 0;
+		attempt += 1
+	) {
+		const missing = bed.loadErrors
+			.map(
+				(message) =>
+					/requires "([^"]+)" \(not in load set\)/.exec(message)?.[1],
+			)
+			.find((name): name is string => name !== undefined);
+		if (missing === undefined || loadSet.split(',').includes(missing)) {
+			break;
+		}
+		loadSet = `${missing},${loadSet}`;
+		bed = await assemble(loadSet);
+	}
+	const { tools, loadErrors } = bed;
+
+	// x00105 S1: a plugin that failed to LOAD is a failed verification,
+	// not an invisible no-op — this exact swallow is how the gate spent
+	// months green while probing zero plugin-owned tools.
+	if (loadErrors.length > 0) {
+		return loadErrors.map((message) => ({
+			plugin: pluginName,
+			tool: '(plugin-load)',
+			schemaCompatible: 'failed' as const,
+			handlerReturned: false,
+			detail: message,
+		}));
+	}
+
+	// Plugin-owned registrations carry the qualified `<prefix>_<plugin>_…`
+	// id; core tools keep their bare id.
+	const pluginOwned = tools.filter((t) => t.id.includes(`_${pluginName}_`));
 	const results: IVerifyResult[] = [];
-	for (const t of tools) {
+	if (pluginOwned.length === 0) {
+		results.push({
+			plugin: pluginName,
+			tool: '(no-plugin-tools)',
+			schemaCompatible: 'failed',
+			handlerReturned: false,
+			detail: `plugin loaded but registered no plugin-owned tools (expected ids matching *_${pluginName}_*)`,
+		});
+	}
+
+	const probeSet = includeCoreTools ? tools : pluginOwned;
+	for (const t of probeSet) {
+		const label = pluginOwned.includes(t) ? pluginName : 'core';
 		try {
 			const handle = await captureSchemas(t);
+			// Repo hard rule #8: every public tool declares an
+			// outputSchema. A missing one is a failed row, not a shrug.
+			if (handle.outputSchema === undefined) {
+				results.push({
+					plugin: label,
+					tool: t.id,
+					schemaCompatible: 'failed',
+					handlerReturned: false,
+					detail: 'no outputSchema declared (AGENTS.md rule 8)',
+				});
+				continue;
+			}
 			const probe = await runEmptyInputProbe(handle);
-			results.push(probeToVerify(pluginName, probe));
+			results.push(probeToVerify(label, probe));
 		} catch (err) {
 			results.push({
-				plugin: pluginName,
+				plugin: label,
 				tool: t.id,
 				schemaCompatible: 'failed',
 				handlerReturned: false,
@@ -137,21 +219,24 @@ const verifyPlugin = async (
 	// Happy-path probe (Solid-OCP): the probe inputs live in
 	// verify-probes.ts; new tools extend the KNOWN_PROBE_INPUTS map
 	// and HAPPY_PATH_PROBE_IDS list, this orchestrator never changes.
-	for (const id of HAPPY_PATH_PROBE_IDS) {
-		const t = tools.find((tool) => tool.id === id);
-		if (!t) continue;
-		try {
-			const handle = await captureSchemas(t);
-			const probe = await runHappyPathProbe(handle);
-			if (probe) results.push(probeToVerify(pluginName, probe));
-		} catch (err) {
-			results.push({
-				plugin: pluginName,
-				tool: id,
-				schemaCompatible: 'failed',
-				handlerReturned: false,
-				detail: (err as Error).message,
-			});
+	// The known ids are all core tools, so this runs on the core pass.
+	if (includeCoreTools) {
+		for (const id of HAPPY_PATH_PROBE_IDS) {
+			const t = tools.find((tool) => tool.id === id);
+			if (!t) continue;
+			try {
+				const handle = await captureSchemas(t);
+				const probe = await runHappyPathProbe(handle);
+				if (probe) results.push(probeToVerify('core', probe));
+			} catch (err) {
+				results.push({
+					plugin: 'core',
+					tool: id,
+					schemaCompatible: 'failed',
+					handlerReturned: false,
+					detail: (err as Error).message,
+				});
+			}
 		}
 	}
 	return results;
@@ -250,29 +335,49 @@ export const createWorkspacePluginRootResolver = (
 
 const main = async (): Promise<number> => {
 	const options = parseVerifyCliArgs(process.argv.slice(2));
-	const list =
-		options.pluginFilter !== undefined
-			? [options.pluginFilter]
-			: [...PLUGIN_LIST];
 	// r00003 S5 (TS-01): the workspace root comes from `--workspace`, with
 	// `process.cwd()` as a boot-time fallback. Resolving it here (a single
 	// CLI entrypoint) is the one place a cwd read is acceptable; everything
 	// downstream takes the resolved root as an argument.
 	const workspaceRoot = options.workspace ?? process.cwd();
+	const discovered = await discoverPlugins(workspaceRoot);
+	const list =
+		options.pluginFilter !== undefined
+			? [options.pluginFilter]
+			: discovered.filter((name) => {
+					const reason = SKIPPED_PLUGINS[name];
+					if (reason !== undefined) {
+						console.error(`[${name}] skipped: ${reason}`);
+						return false;
+					}
+					return true;
+				});
 	const rootResolver = createWorkspacePluginRootResolver(workspaceRoot);
 
 	const all: IVerifyResult[] = [];
+	let includeCoreTools = true;
 	for (const name of list) {
 		try {
 			// Contain the plugin name before doing any I/O: a name that
 			// escapes the workspace is rejected here, not after a load.
 			rootResolver.resolve(name);
-			const res = await verifyPlugin(name, workspaceRoot);
+			const res = await verifyPlugin(
+				name,
+				workspaceRoot,
+				includeCoreTools,
+			);
+			includeCoreTools = false;
 			all.push(...res);
 		} catch (err) {
-			console.error(
-				`[${name}] plugin load failed: ${(err as Error).message}`,
-			);
+			// x00105 S1: a thrown load path is a FAILED result, not a
+			// console note the exit code ignores.
+			all.push({
+				plugin: name,
+				tool: '(plugin-load)',
+				schemaCompatible: 'failed',
+				handlerReturned: false,
+				detail: (err as Error).message,
+			});
 		}
 	}
 
@@ -284,6 +389,7 @@ const main = async (): Promise<number> => {
 		tool: r.tool,
 		outcome: r.schemaCompatible,
 		handlerReturned: r.handlerReturned,
+		...(r.detail !== undefined ? { detail: r.detail } : {}),
 	}));
 	process.stdout.write(formatResultsTable(rows));
 	const totalFailed = rows.filter((r) => r.outcome === 'failed').length;

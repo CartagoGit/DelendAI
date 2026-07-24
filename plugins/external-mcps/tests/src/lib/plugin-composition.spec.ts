@@ -118,8 +118,8 @@ describe('external-mcps ack ↔ call composition (x00097 S1)', () => {
 
 		// Same session, no re-registration: the gate reads the ledger fresh.
 		const after = payload(await call({ server: 'demo', tool: 'ping' }));
-		expect(after['ok']).toBe(false);
-		expect(after['code']).toBe('call-failed'); // past the gate, into the spawn
+		expect(after.ok).toBe(false);
+		expect(after.code).toBe('call-failed'); // past the gate, into the spawn
 	});
 
 	it('a recorded rejection keeps the gate closed', async () => {
@@ -151,7 +151,7 @@ describe('external-mcps ack ↔ call composition (x00097 S1)', () => {
 				tool: 'ping',
 			}),
 		);
-		expect(result['code']).toBe('call-failed');
+		expect(result.code).toBe('call-failed');
 	});
 
 	it('consumes the autonomy knob: requireHumanAckWhenLlmDecides=false skips the gate', async () => {
@@ -165,6 +165,6 @@ describe('external-mcps ack ↔ call composition (x00097 S1)', () => {
 				tool: 'ping',
 			}),
 		);
-		expect(result['code']).toBe('call-failed'); // no ack demanded
+		expect(result.code).toBe('call-failed'); // no ack demanded
 	});
 });

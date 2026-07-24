@@ -24,17 +24,20 @@ import type { IGitRunner } from '@mcp-vertex/proposals/lib/shared/git-runner';
 
 // A real `git mv` actually moves the file; the fake must too, or the tool's
 // post-move read (and every assertion on the new path) would silently pass
-// for the wrong reason (a no-op "success").
+// for the wrong reason (a no-op "success"). x00106 S2: the tool now asks
+// `ls-files --error-unmatch` first — both fakes answer it as TRACKED so
+// these specs keep exercising the git-mv path.
 const FAKE_GIT_MV: IGitRunner = async (args) => {
-	const [, from, to] = args;
-	if (from && to) await rename(from, to);
+	if (args[0] === 'mv') {
+		const [, from, to] = args;
+		if (from && to) await rename(from, to);
+	}
 	return { ok: true, output: '' };
 };
-const FAKE_GIT_FAIL: IGitRunner = async () => ({
-	ok: false,
-	output: '',
-	reason: 'not a git repository',
-});
+const FAKE_GIT_FAIL: IGitRunner = async (args) => {
+	if (args[0] === 'ls-files') return { ok: true, output: '' };
+	return { ok: false, output: '', reason: 'not a git repository' };
+};
 
 const writeProposal = async (
 	proposalsDirAbs: string,

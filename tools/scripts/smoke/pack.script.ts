@@ -13,7 +13,6 @@ import { execFileSync } from 'node:child_process';
 import {
 	existsSync,
 	mkdtempSync,
-	readdirSync,
 	readFileSync,
 	rmSync,
 	writeFileSync,
@@ -23,6 +22,8 @@ import { join, resolve } from 'node:path';
 
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
+
+import { PUBLISH_ORDER } from '../release/release-plan';
 
 const ROOT = resolve('.');
 
@@ -37,36 +38,60 @@ const readPackageJson = (dir: string): IPackageJson => {
 	return JSON.parse(raw) as IPackageJson;
 };
 
-const discoverPublishablePluginDirs = (): readonly string[] => {
-	const dirs: string[] = ['packages/core'];
-	for (const entry of readdirSync(join(ROOT, 'plugins'), {
-		withFileTypes: true,
-	})) {
-		if (!entry.isDirectory()) continue;
-		const dir = `plugins/${entry.name}`;
-		if (!existsSync(join(ROOT, dir, 'package.json'))) continue;
+/**
+ * a00065 S4: the set to pack is DERIVED from `PUBLISH_ORDER` — the single
+ * source of truth the real release uses — so the smoke can never again
+ * silently skip a published package. The old walker seeded only
+ * `packages/core` + `plugins/*`, which meant `packages/client` and
+ * `packages/cli` (the primary user-facing surface, both carrying
+ * `workspace:*` deps the release has to rewrite) were installed by nobody
+ * and proven by nothing. Filtering keeps it honest: a package that turns
+ * `private` or drops its `files` array falls out here AND fails the
+ * release-order assertion below.
+ */
+const discoverPublishablePackageDirs = (): readonly string[] =>
+	PUBLISH_ORDER.filter((dir) => {
+		if (!existsSync(join(ROOT, dir, 'package.json'))) return false;
 		const pkg = readPackageJson(dir);
-		if (
+		return (
 			typeof pkg.name === 'string' &&
 			pkg.private !== true &&
 			Array.isArray(pkg.files)
-		) {
-			dirs.push(dir);
-		}
-	}
-	return dirs.sort((a, b) => {
-		if (a === 'packages/core') return -1;
-		if (b === 'packages/core') return 1;
-		return a.localeCompare(b);
+		);
 	});
-};
 
-const PACKED_PACKAGE_DIRS = discoverPublishablePluginDirs();
+const PACKED_PACKAGE_DIRS = discoverPublishablePackageDirs();
+
+// Invariant: every publishable package in the release order must be packed.
+// A package that is in PUBLISH_ORDER but drops out of the publishable filter
+// is a release-vs-smoke drift — fail loudly here instead of shipping a
+// tarball nobody installed.
+const missingFromPack = PUBLISH_ORDER.filter((dir) => {
+	if (!existsSync(join(ROOT, dir, 'package.json'))) return false;
+	const pkg = readPackageJson(dir);
+	if (pkg.private === true) return false; // legitimately unpublished
+	return !PACKED_PACKAGE_DIRS.includes(dir);
+});
+if (missingFromPack.length > 0) {
+	throw new Error(
+		`pack smoke: publishable packages in PUBLISH_ORDER are not being packed: ${missingFromPack.join(', ')}`,
+	);
+}
+
 const PLUGIN_IDS = PACKED_PACKAGE_DIRS.filter((dir) =>
 	dir.startsWith('plugins/'),
 ).map((dir) => dir.slice('plugins/'.length));
 
-const REQUIRED_PLUGIN_TOOLS: Record<string, string> = {
+/**
+ * Optional per-plugin spot-check tool. When a plugin id appears here, the
+ * smoke additionally asserts that named tool is served — a stronger check
+ * than "the plugin loaded". a00065: this is a SPOT-CHECK, not an
+ * exhaustive registry: plugins absent here (cache — eviction-only, no MCP
+ * tools; opt-in plugins whose tool names carry their own prefix) are still
+ * proven to load via the `overview.plugins` assertion below, so adding a
+ * new plugin no longer forces an edit here to keep the smoke green.
+ */
+const SPOT_CHECK_PLUGIN_TOOLS: Record<string, string> = {
 	audit: 'mcp-vertex_audit_audit_plan',
 	deps: 'mcp-vertex_deps_deps_list',
 	docs: 'mcp-vertex_docs_docs_list',
@@ -81,19 +106,15 @@ const REQUIRED_PLUGIN_TOOLS: Record<string, string> = {
 	'status-marker': 'mcp-vertex_status-marker_ping',
 	'test-convention': 'mcp-vertex_test-convention_get_convention',
 	'web-fetch': 'mcp-vertex_web-fetch_web_fetch',
+	conventions: 'mcp-vertex_conventions_conventions_check',
+	'test-policy': 'mcp-vertex_test-policy_get_test_policy',
 };
 
 const REQUIRED_TOOLS = [
 	'mcp-vertex_overview',
-	...PLUGIN_IDS.map((id) => {
-		const tool = REQUIRED_PLUGIN_TOOLS[id];
-		if (tool === undefined) {
-			throw new Error(
-				`pack smoke has no required-tool mapping for plugin "${id}"`,
-			);
-		}
-		return tool;
-	}),
+	...PLUGIN_IDS.map((id) => SPOT_CHECK_PLUGIN_TOOLS[id]).filter(
+		(t): t is string => t !== undefined,
+	),
 ];
 
 const run = (cmd: string, args: string[], cwd: string): string =>
@@ -103,18 +124,62 @@ const run = (cmd: string, args: string[], cwd: string): string =>
 		stdio: ['ignore', 'pipe', 'inherit'],
 	});
 
+/** The monorepo version every intra-repo `workspace:*` dep resolves to. */
+const MONOREPO_VERSION = (readPackageJson('.') as { version?: string }).version;
+
+/**
+ * a00065 S4: `npm` cannot install a `workspace:*` dependency. `bun`
+ * rewrites it at publish time, but `packages/client` and `packages/cli`
+ * carry `@mcp-vertex/core`/`@mcp-vertex/client` as `workspace:*` in
+ * DEPENDENCIES (not just devDeps, contrary to the release script's own
+ * note) — so an `npm publish` of those two would ship an uninstallable
+ * package. This smoke replicates the publish-time rewrite so it proves
+ * the tarballs install under npm; the release script applies the same
+ * rewrite. Rewrites the source package.json in place, packs, then always
+ * restores it in `finally`.
+ */
+const packWithResolvedWorkspaceDeps = (
+	pkgDir: string,
+	proj: string,
+): string => {
+	const pkgPath = join(ROOT, pkgDir, 'package.json');
+	const original = readFileSync(pkgPath, 'utf8');
+	try {
+		const pkg = JSON.parse(original) as Record<string, unknown>;
+		for (const section of ['dependencies', 'peerDependencies']) {
+			const deps = pkg[section];
+			if (typeof deps !== 'object' || deps === null) continue;
+			for (const [name, range] of Object.entries(
+				deps as Record<string, unknown>,
+			)) {
+				if (
+					typeof range === 'string' &&
+					range.startsWith('workspace:')
+				) {
+					(deps as Record<string, string>)[name] =
+						MONOREPO_VERSION ?? '*';
+				}
+			}
+		}
+		writeFileSync(pkgPath, `${JSON.stringify(pkg, null, '\t')}\n`);
+		const out = run(
+			'npm',
+			['pack', resolve(ROOT, pkgDir), '--pack-destination', proj],
+			proj,
+		).trim();
+		return join(proj, out.split('\n').pop()!.trim());
+	} finally {
+		writeFileSync(pkgPath, original);
+	}
+};
+
 const main = async (): Promise<void> => {
 	const proj = mkdtempSync(join(tmpdir(), 'mcp-pack-'));
 	try {
-		// Pack each package into the throwaway project dir.
+		// Pack each package (with workspace:* deps resolved) into the project.
 		const tarballs: string[] = [];
 		for (const pkgDir of PACKED_PACKAGE_DIRS) {
-			const out = run(
-				'npm',
-				['pack', resolve(ROOT, pkgDir), '--pack-destination', proj],
-				proj,
-			).trim();
-			tarballs.push(join(proj, out.split('\n').pop()!.trim()));
+			tarballs.push(packWithResolvedWorkspaceDeps(pkgDir, proj));
 		}
 
 		// Clean project that installs the tarballs (peer dep @mcp-vertex/core is
@@ -125,12 +190,34 @@ const main = async (): Promise<void> => {
 		);
 		run('npm', ['install', '--no-audit', '--no-fund', ...tarballs], proj);
 
-		// Drive the INSTALLED CLI over stdio with real plugins.
+		// a00065 S4: prove the `@mcp-vertex/cli` package's `bin` entry
+		// (`mcpv`) resolves under plain node module resolution — the
+		// canonical launch path a real adopter uses, not just the direct
+		// `core/dist/cli.js` path. `npm install` links bins into
+		// `node_modules/.bin`; invoking it proves the shebang + main resolve
+		// and that `@mcp-vertex/cli` located `@mcp-vertex/core` from tarballs.
+		const mcpvBin = join(proj, 'node_modules/.bin/mcpv');
+		if (!existsSync(mcpvBin)) {
+			throw new Error(
+				'installed @mcp-vertex/cli did not link its `mcpv` bin — the cli tarball is missing or its bin field is broken',
+			);
+		}
+		const version = run(mcpvBin, ['--version'], proj).trim();
+		if (!/\d+\.\d+\.\d+/.test(version)) {
+			throw new Error(
+				`\`mcpv --version\` returned an unexpected value: ${JSON.stringify(version)}`,
+			);
+		}
+
+		// Drive the INSTALLED CLI over stdio with real plugins — via the
+		// `mcpv __serve` entry (the cli package), proving the whole
+		// cli→core→plugins chain resolves from tarballs under node.
 		const workspace = join(proj, 'ws');
 		const transport = new StdioClientTransport({
 			command: 'node',
 			args: [
-				join(proj, 'node_modules/@mcp-vertex/core/dist/cli.js'),
+				join(proj, 'node_modules/@mcp-vertex/cli/dist/index.js'),
+				'__serve',
 				`--plugins=${PLUGIN_IDS.join(',')}`,
 				`--workspace=${workspace}`,
 			],
@@ -150,10 +237,34 @@ const main = async (): Promise<void> => {
 					);
 				}
 			}
+			// a00065 S4: prove EVERY packed plugin actually loaded — not just
+			// the spot-checked ones. `overview.plugins` is the loaded set; a
+			// tarball that installed but failed to import (a bad workspace:*
+			// rewrite, a missing dep) would be absent here even if some other
+			// plugin's spot-check tool happened to be present.
+			const overviewRes = await client.callTool({
+				name: 'mcp-vertex_overview',
+				arguments: { compact: true },
+			});
+			const overview = JSON.parse(
+				(overviewRes.content as Array<{ text?: string }>)?.[0]?.text ??
+					'{}',
+			) as { plugins?: Array<string | { name: string }> };
+			const loaded = new Set(
+				(overview.plugins ?? []).map((p) =>
+					typeof p === 'string' ? p : p.name,
+				),
+			);
+			const notLoaded = PLUGIN_IDS.filter((id) => !loaded.has(id));
+			if (notLoaded.length > 0) {
+				throw new Error(
+					`installed-from-tarball plugins did not load under node: ${notLoaded.join(', ')} (packed but not in overview.plugins — a resolution/import failure)`,
+				);
+			}
 			console.log(
-				`✓ pack smoke: installed-from-tarball CLI serves ${tools.length} tools under node ` +
-					`(${PACKED_PACKAGE_DIRS.length} packed packages, ` +
-					`${PLUGIN_IDS.length} plugins resolved).`,
+				`✓ pack smoke: mcpv bin (${version}) + installed-from-tarball CLI serves ${tools.length} tools under node ` +
+					`(${PACKED_PACKAGE_DIRS.length} packed packages incl. client+cli, ` +
+					`all ${PLUGIN_IDS.length} plugins in overview.plugins).`,
 			);
 		} finally {
 			await client.close().catch(() => undefined);

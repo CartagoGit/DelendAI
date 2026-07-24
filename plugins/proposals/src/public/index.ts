@@ -149,6 +149,15 @@ export { analyzeProposals, PROPOSALS_LAYOUT } from '../lib/proposals/adopt';
 export type { IAdoptionReport, IScanEntry } from '../lib/proposals/adopt';
 export { buildProposalWorkflow } from '../lib/knowledge/proposal-workflow';
 export type { IProposalWorkflow } from '../lib/knowledge/proposal-workflow';
+// f00114 (f00050 S-G): the prefix taxonomy as executable schema.
+export {
+	kindMatchesId,
+	newProposalIdSchema,
+	PROPOSAL_KIND_VALUES,
+	proposalIdSchema,
+	proposalKindSchema,
+} from '../lib/contracts/schemas/proposal-kind.schema';
+export type { IKindIdMatch } from '../lib/contracts/schemas/proposal-kind.schema';
 
 // --- generated tool-output types (N23, see scripts/generate-tool-types.ts) ---
 export type * from '../generated/tool-outputs';

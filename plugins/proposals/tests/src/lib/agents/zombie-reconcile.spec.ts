@@ -434,4 +434,191 @@ describe('zombie-reconcile', async () => {
 		expect(report.orphans[0]!.reason).toBe('stale_with_orphaned_lock');
 		expect(report.orphans[0]!.recommendedAction).toBe('force_release');
 	});
+
+	// t00002 S2: error branches.
+	it('Case 7: lock corrupto (JSON inválido) se trata como sin claims — el orphan sigue detectándose', async () => {
+		const registryData: IAgentRegistry = {
+			version: 1,
+			adopted: [{ name: 'agent_zombie', task_id: 'task-1' }],
+			assignments: [
+				{
+					task_id: 'task-1',
+					agent_name: 'agent_zombie',
+					agent_slot: 'implementation_runner',
+					parent_task_id: null,
+					depth: 0,
+					topic: 'stale task',
+					adopted: true,
+					assigned_at: '2026-06-05T11:00:00.000Z',
+					last_seen: '2026-06-05T11:45:00.000Z',
+					cooldown_until: null,
+					status: 'cooldown',
+				},
+			],
+		};
+		const registryPath = createTempPath(
+			'reg-corrupt',
+			'subagent-registry.json',
+			JSON.stringify(registryData),
+		);
+		const lockPath = createTempPath(
+			'lock-corrupt',
+			'agents.lock.json',
+			'{ this is not json',
+		);
+		const queuePath = createTempPath('queue-corrupt', 'queue.json', '{}');
+
+		const report = await gcZombies(registryPath, lockPath, queuePath, {
+			dryRun: true,
+			staleAfterMinutes: 10,
+			now,
+		});
+		expect(report.orphans.length).toBe(1);
+	});
+
+	it('Case 8: assignment con last_seen no parseable se ignora sin reventar', async () => {
+		const registry: IAgentRegistry = {
+			version: 1,
+			adopted: [{ name: 'agent_x', task_id: 'task-x' }],
+			assignments: [
+				{
+					task_id: 'task-x',
+					agent_name: 'agent_x',
+					agent_slot: 'implementation_runner',
+					parent_task_id: null,
+					depth: 0,
+					topic: 'bad timestamp',
+					adopted: true,
+					assigned_at: '2026-06-05T11:00:00.000Z',
+					last_seen: 'not-a-date',
+					cooldown_until: null,
+					status: 'cooldown',
+				},
+			],
+		};
+		const report = classifyZombies(registry, { in_flight: [] }, now, 10);
+		expect(report.orphans).toEqual([]);
+		expect(report.threshold).toBe('green');
+	});
+
+	it('Case 9: lock con in_flight no-array se trata como vacío', async () => {
+		const registryPath = createTempPath(
+			'reg-noarr',
+			'subagent-registry.json',
+			JSON.stringify({
+				version: 1,
+				adopted: [{ name: 'agent_z', task_id: 'task-1' }],
+				assignments: [
+					{
+						task_id: 'task-1',
+						agent_name: 'agent_z',
+						agent_slot: 'implementation_runner',
+						parent_task_id: null,
+						depth: 0,
+						topic: 't',
+						adopted: true,
+						assigned_at: '2026-06-05T11:00:00.000Z',
+						last_seen: '2026-06-05T11:45:00.000Z',
+						cooldown_until: null,
+						status: 'cooldown',
+					},
+				],
+			}),
+		);
+		const lockPath = createTempPath(
+			'lock-noarr',
+			'agents.lock.json',
+			JSON.stringify({ in_flight: 5 }),
+		);
+		const queuePath = createTempPath('queue-noarr', 'queue.json', '{}');
+		const report = await gcZombies(registryPath, lockPath, queuePath, {
+			dryRun: true,
+			staleAfterMinutes: 10,
+			now,
+		});
+		expect(report.orphans.length).toBe(1);
+	});
+
+	it('Case 10: entradas de lock malformadas (task_id numérico, sin started_at) se normalizan', async () => {
+		const registryPath = createTempPath(
+			'reg-malf',
+			'subagent-registry.json',
+			JSON.stringify({
+				version: 1,
+				adopted: [{ name: 'agent_z', task_id: 'task-1' }],
+				assignments: [
+					{
+						task_id: 'task-1',
+						agent_name: 'agent_z',
+						agent_slot: 'implementation_runner',
+						parent_task_id: null,
+						depth: 0,
+						topic: 't',
+						adopted: true,
+						assigned_at: '2026-06-05T11:00:00.000Z',
+						last_seen: '2026-06-05T11:45:00.000Z',
+						cooldown_until: null,
+						status: 'cooldown',
+					},
+				],
+			}),
+		);
+		const lockPath = createTempPath(
+			'lock-malf',
+			'agents.lock.json',
+			JSON.stringify({
+				in_flight: [
+					{ task_id: 42, last_seen: '2026-06-05T11:00:00.000Z' },
+					{ agent: 7 },
+				],
+			}),
+		);
+		const queuePath = createTempPath('queue-malf', 'queue.json', '{}');
+		const report = await gcZombies(registryPath, lockPath, queuePath, {
+			dryRun: true,
+			staleAfterMinutes: 10,
+			now,
+		});
+		// The malformed lock entries do not match task-1, so it is a
+		// stale orphan without lock.
+		expect(report.orphans.length).toBe(1);
+		expect(report.orphans[0]!.reason).toBe('cooldown_null');
+	});
+
+	it('Case 11: gcZombies con opciones por defecto muta el registro sin queueEmitter', async () => {
+		const registryPath = createTempPath(
+			'reg-defaults',
+			'subagent-registry.json',
+			JSON.stringify({
+				version: 1,
+				adopted: [{ name: 'agent_old', task_id: 'task-old' }],
+				assignments: [
+					{
+						task_id: 'task-old',
+						agent_name: 'agent_old',
+						agent_slot: 'implementation_runner',
+						parent_task_id: null,
+						depth: 0,
+						topic: 'ancient',
+						adopted: true,
+						assigned_at: '2020-01-01T00:00:00.000Z',
+						last_seen: '2020-01-01T00:00:00.000Z',
+						cooldown_until: null,
+						status: 'cooldown',
+					},
+				],
+			}),
+		);
+		const lockPath = createTempPath(
+			'lock-defaults',
+			'agents.lock.json',
+			JSON.stringify({ in_flight: [] }),
+		);
+		const queuePath = createTempPath('queue-defaults', 'queue.json', '{}');
+		const report = await gcZombies(registryPath, lockPath, queuePath);
+		expect(report.orphans.length).toBe(1);
+		const store = createAgentRegistryStore(registryPath);
+		const updated = await store.read();
+		expect(updated.assignments).toHaveLength(0);
+	});
 });

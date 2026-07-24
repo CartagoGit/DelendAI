@@ -17,7 +17,12 @@
  */
 import { describe, expect, it } from 'vitest';
 
-import { renderCodeBlock } from './code-block';
+import { renderCodeBlock, resetCodeBlockIds } from './code-block';
+
+const codeIdOf = (html: string): string =>
+	html.match(/<code id="(cb-[^"]+)"/)?.[1] ?? '';
+const copyTargetOf = (html: string): string =>
+	html.match(/data-copy-target="(cb-[^"]+)"/)?.[1] ?? '';
 
 describe('renderCodeBlock', () => {
 	it('emits the canonical figure + pre + code root', () => {
@@ -26,6 +31,26 @@ describe('renderCodeBlock', () => {
 		expect(out).toContain('<pre class="mcpv-code__pre"><code id="cb-');
 		expect(out).toContain('class="language-text"');
 		expect(out).toContain('const x = 1;');
+	});
+
+	it('a00069: auto ids are UNIQUE per pass and DETERMINISTIC across passes (was Math.random)', () => {
+		// Two identical-args blocks on one page must NOT share a DOM id —
+		// duplicate ids are invalid HTML and make the copy button target the
+		// wrong block. And a reset makes a fresh pass reproduce the exact ids
+		// (the "stable HTML diff" property the doc always claimed but the old
+		// random suffix never delivered).
+		resetCodeBlockIds();
+		const a = renderCodeBlock({ code: 'same' });
+		const b = renderCodeBlock({ code: 'same' });
+		expect(codeIdOf(a)).not.toBe(codeIdOf(b)); // unique within a pass
+		// The copy button targets its OWN code id in each render.
+		expect(copyTargetOf(a)).toBe(codeIdOf(a));
+		expect(copyTargetOf(b)).toBe(codeIdOf(b));
+		resetCodeBlockIds();
+		const a2 = renderCodeBlock({ code: 'same' });
+		const b2 = renderCodeBlock({ code: 'same' });
+		expect(codeIdOf(a2)).toBe(codeIdOf(a)); // deterministic across passes
+		expect(codeIdOf(b2)).toBe(codeIdOf(b));
 	});
 
 	it('escapes HTML in the code body', () => {

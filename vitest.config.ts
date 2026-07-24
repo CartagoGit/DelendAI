@@ -28,14 +28,40 @@ export default defineConfig({
 			// r00004 S1: keep coverage out of the root — write under .cache/.
 			reportsDirectory: '.cache/coverage',
 			all: true,
-			include: ['packages/*/src/**', 'plugins/*/src/**'],
-			exclude: ['**/*.spec.ts', '**/*.test.ts', '**/index.ts'],
+			// t00002 S3: `.ts` only — `src/**` also matched marker files
+			// (`plugins/issues/src/.gitkeep` starts with `#`), which the
+			// v8 provider tried to parse as JS and crashed with a
+			// PARSE_ERROR at pos 1 on every `test:coverage` run.
+			// t00004: the gate covers the WHOLE runtime surface, not only
+			// packages+plugins — apps/shared (12-language i18n source),
+			// the VS Code extension and the tools/scripts library code
+			// participate too. Pure `*.script.ts` entrypoints stay out
+			// (process.exit orchestrators, exercised by the validate
+			// gates that run them for real); apps/web stays out until
+			// the v8 provider maps .astro sanely.
+			include: [
+				'packages/*/src/**/*.ts',
+				'plugins/*/src/**/*.ts',
+				'apps/shared/src/**/*.ts',
+				'extensions/vscode/src/**/*.ts',
+				'tools/scripts/lib/**/*.ts',
+			],
+			exclude: [
+				'**/*.spec.ts',
+				'**/*.test.ts',
+				'**/index.ts',
+				'**/*.script.ts',
+			],
 			reporter: ['text-summary'],
+			// t00004: re-measured after widening the scope — the global
+			// numbers ROSE (83.45/70.78/82.63/84.90 on 2026-07-14) because
+			// apps/shared and the extension are well covered. Floors sit a
+			// few points under the measured values, as always.
 			thresholds: {
-				statements: 72,
-				branches: 55,
-				functions: 75,
-				lines: 73,
+				statements: 80,
+				branches: 67,
+				functions: 79,
+				lines: 81,
 			},
 		},
 	},

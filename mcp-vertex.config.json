@@ -8,20 +8,17 @@
 	},
 	"plugins": {
 		"git": {
+			"options": {
+				"allowForge": true
+			}
+		},
+		"forge": {
 			"options": {}
 		},
 		"search": {
 			"options": {
 				"roots": ["packages", "plugins", "extensions", "apps", "tools"],
-				"extensions": [
-					".ts",
-					".tsx",
-					".js",
-					".mjs",
-					".cjs",
-					".md",
-					".json"
-				],
+				"extensions": ["ts", "tsx", "js", "mjs", "cjs", "md", "json"],
 				"ignoreDirs": [
 					"node_modules",
 					".cache",
@@ -42,7 +39,7 @@
 		"docs": {
 			"options": {
 				"roots": ["docs/mcp-vertex", "README.md"],
-				"extensions": [".md", ".mdx"],
+				"extensions": ["md", "mdx"],
 				"ignoreDirs": ["node_modules", ".cache", "dist"]
 			}
 		},
@@ -55,7 +52,7 @@
 		"deps": {
 			"options": {
 				"manifest": "package.json",
-				"allowNetwork": false,
+				"allowNetwork": true,
 				"allowWrite": false
 			}
 		},
@@ -85,9 +82,41 @@
 		"test-convention": {
 			"options": {}
 		},
+		"test-policy": {
+			"options": {}
+		},
 		"conventions": {
 			"options": {
 				"roots": ["packages", "plugins", "extensions", "apps", "tools"]
+			}
+		},
+		"security": {
+			"options": {}
+		},
+		"diagram": {
+			"options": {}
+		},
+		"env": {
+			"options": {}
+		},
+		"i18n": {
+			"options": {}
+		},
+		"perf": {
+			"options": {}
+		},
+		"tech-debt": {
+			"options": {}
+		},
+		"usage-tracking": {
+			"options": {}
+		},
+		"orchestrator-runner": {
+			"options": {}
+		},
+		"auto-agent-selector": {
+			"options": {
+				"costQualityTradeoff": 8
 			}
 		}
 	}
