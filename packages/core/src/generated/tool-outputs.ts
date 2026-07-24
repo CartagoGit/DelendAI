@@ -2332,6 +2332,39 @@ export interface McpVertexTestConventionSuggestSpecPathOutput {
 	skeleton: string;
 }
 
+export interface McpVertexUsageTrackingSessionHygieneOutput {
+	observedMcpOnly: true;
+	policy: {
+		maxSessionAgeMs: number;
+		maxIdleGapMs: number;
+		maxMcpOutputTokens: number;
+	};
+	current: Array<{
+		sessionId: string;
+		observedMcpOnly: true;
+		firstActivityAt: string;
+		lastActivityAt: string;
+		observedElapsedMs: number;
+		largestIdleGapMs: number;
+		calls: number;
+		responseBytes: number;
+		estimatedMcpOutputTokens: number;
+		reasons: Array<"session-age" | "idle-gap" | "mcp-output-volume">;
+	}>;
+	sessions: Array<{
+		sessionId: string;
+		observedMcpOnly: true;
+		firstActivityAt: string;
+		lastActivityAt: string;
+		observedElapsedMs: number;
+		largestIdleGapMs: number;
+		calls: number;
+		responseBytes: number;
+		estimatedMcpOutputTokens: number;
+		reasons: Array<"session-age" | "idle-gap" | "mcp-output-volume">;
+	}>;
+}
+
 export interface McpVertexUsageTrackingUsageClearOutput {
 	ok: true;
 	cleared: string[];
@@ -2493,6 +2526,7 @@ export interface McpVertexToolOutputs {
 	"mcp-vertex_test-convention_get_convention": McpVertexTestConventionGetConventionOutput;
 	"mcp-vertex_test-convention_scan_drift": McpVertexTestConventionScanDriftOutput;
 	"mcp-vertex_test-convention_suggest_spec_path": McpVertexTestConventionSuggestSpecPathOutput;
+	"mcp-vertex_usage-tracking_session_hygiene": McpVertexUsageTrackingSessionHygieneOutput;
 	"mcp-vertex_usage-tracking_usage_clear": McpVertexUsageTrackingUsageClearOutput;
 	"mcp-vertex_usage-tracking_usage_report": McpVertexUsageTrackingUsageReportOutput;
 	"mcp-vertex_web-fetch_web_fetch": McpVertexWebFetchWebFetchOutput;
