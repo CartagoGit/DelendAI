@@ -27,6 +27,7 @@ import {
 	scalarArg,
 } from '../lib/helpers/cli-command.helper';
 import { formatRows } from '../lib/text-format.service';
+import { agentsCommands } from './groups/agents';
 import { auditCommands } from './groups/audit';
 import { conventionsCommands } from './groups/conventions';
 import { coreExtraCommands } from './groups/core';
@@ -433,6 +434,7 @@ export const registerAllCommands = async (): Promise<
 	gitBlameCommand,
 	gitShowCommand,
 	gitWorktreeCommand,
+	...agentsCommands,
 	...memoryCommands,
 	...depsCommands,
 	...rulesCommands,
