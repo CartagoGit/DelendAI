@@ -86,6 +86,11 @@ Spec added with 4 positive cases (vitest config shape, sample spec
 id assertions, LICENSE current-year, scaffold report round-trip). The
 spec suite passes 20/20 from `bun test packages/core/tests/src/lib/scaffold/scaffold-host.spec.ts`.
 
+Close evidence: pure `plugin-blueprint` renderers now emit the 9-file plugin
+package under `plugins/<name>/`, expose the public scaffold surface from core,
+and the scaffold spec asserts package metadata, config inheritance, LICENSE
+fidelity, README branding, and sample-tool wiring for `demo.echo`.
+
 ### S2 — idempotent monorepo wiring writer
 
 - **Status**: done
