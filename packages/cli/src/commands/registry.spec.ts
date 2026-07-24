@@ -32,6 +32,7 @@ const EXPECTED_COMMANDS = [
 	'agents status',
 	'agents recommend',
 	'agents record',
+	'agents run',
 	'memory save',
 	'memory recall',
 	'memory list',
