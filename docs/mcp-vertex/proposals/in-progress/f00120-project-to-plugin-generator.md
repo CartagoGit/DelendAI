@@ -2,7 +2,7 @@
 id: f00120
 kind: feat
 title: project→plugin generator + wiring-doctor — turn a project (or part of it) into a fully-wired mcp-vertex plugin, automatically
-status: ready
+status: in-progress
 date: 2026-07-23
 track: plugin+scaffold+dx
 ---
@@ -71,7 +71,7 @@ a pure extraction analyzer, and the `verify:plugin-wiring` checker.
 ### S1 — plugin blueprint scaffolder
 
 - **Status**: pending
-- **Files**: `packages/core/src/lib/scaffold/scaffold-plugin.ts`, `packages/core/src/lib/contracts/interfaces/plugin-blueprint.interface.ts`
+- **Files**: scaffold-plugin module (not yet implemented — see S1 acceptance for the shape)
 - **Gate**: bun run validate
 
 From `{name, description, sampleToolId}`, render a complete plugin package:
@@ -93,7 +93,7 @@ regen hook. Re-running is a no-op. Each editor unit-tested on fixture files.
 ### S3 — project→plugin extraction analyzer
 
 - **Status**: pending
-- **Files**: `packages/core/src/lib/scaffold/extract-plugin.ts`, `packages/core/src/lib/contracts/interfaces/plugin-extraction.interface.ts`
+- **Files**: extract-plugin module (not yet implemented — see S3 acceptance for the shape)
 - **Gate**: bun run validate
 
 Given a folder/glob, find exported pure functions and emit tool stubs wrapping
@@ -104,7 +104,7 @@ pass; never emits business logic it didn't find.
 ### S4 — wiring-doctor gate + create_plugin tool + CLI command
 
 - **Status**: pending
-- **Files**: `tools/scripts/verify/plugin-wiring.script.ts`, `packages/core/src/lib/tools/create-plugin.tool.ts`, `packages/cli/src/commands/groups/`
+- **Files**: `tools/scripts/verify/plugin-wiring.script.ts` (already on disk); `create-plugin.tool.ts` and the `mcpv plugin new` CLI command are not yet implemented
 - **Gate**: bun run validate
 
 `verify:plugin-wiring` fails when any of the six points is missing or
