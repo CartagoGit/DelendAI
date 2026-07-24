@@ -3,6 +3,8 @@ import type { IHelpTranslation } from '../interfaces/help-translation.interface'
 export type { IHelpTranslation };
 
 const ENGLISH_COMMAND_SUMMARIES: Readonly<Record<string, string>> = {
+	'git changelog':
+		'Build a conventional-commit changelog and infer the semver bump for a range.',
 	'agents status':
 		'Show reachable LLM/agent providers (cheapest-first) and how to enable missing ones.',
 	'agents recommend':
