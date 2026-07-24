@@ -287,6 +287,36 @@ export interface McpVertexConfigurationCenterOutput {
 	}>;
 }
 
+export interface McpVertexCreatePluginOutput {
+	ok: boolean;
+	scaffolded: {
+		files: string[];
+	};
+	wired: Array<{
+		pointId: "tsconfig-base" | "vitest-shared" | "plugin-defaults" | "publish-order" | "preset-catalog" | "catalog-regen";
+		edits: {
+			path: string;
+			previous: string;
+			next: string;
+			noop: boolean;
+		}[];
+		wired: boolean;
+	}>;
+	doctor: {
+		pluginId: string;
+		points: Array<{
+			id: "tsconfig-base" | "vitest-shared" | "plugin-defaults" | "publish-order" | "preset-catalog" | "catalog-regen";
+			path: string;
+			wired: boolean;
+			summary: string;
+			remediation?: string;
+		}>;
+		fullyWired: boolean;
+		missing: Array<"tsconfig-base" | "vitest-shared" | "plugin-defaults" | "publish-order" | "preset-catalog" | "catalog-regen">;
+	};
+	pluginId: string;
+}
+
 export interface McpVertexCreateProjectOutput {
 	kind: "host" | "plugin" | "client" | "extension-host";
 	files: {
@@ -2466,6 +2496,7 @@ export interface McpVertexToolOutputs {
 	"mcp-vertex_audit_audit_run": McpVertexAuditAuditRunOutput;
 	"mcp-vertex_cache_cache_gc": McpVertexCacheCacheGcOutput;
 	"mcp-vertex_configuration_center": McpVertexConfigurationCenterOutput;
+	"mcp-vertex_create_plugin": McpVertexCreatePluginOutput;
 	"mcp-vertex_create_project": McpVertexCreateProjectOutput;
 	"mcp-vertex_deps_deps_audit": McpVertexDepsDepsAuditOutput;
 	"mcp-vertex_deps_deps_check": McpVertexDepsDepsCheckOutput;

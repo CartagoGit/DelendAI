@@ -104,8 +104,8 @@ regen hook. Re-running is a no-op. Each editor unit-tested on fixture files.
 
 ### S3 — project→plugin extraction analyzer
 
-- **Status**: pending
-- **Files**: extract-plugin module (not yet implemented — see S3 acceptance for the shape)
+- **Status**: done (2026-07-24)
+- **Files**: `packages/core/src/lib/scaffold/extract-plugin.ts`, `packages/core/tests/src/lib/scaffold/extract-plugin.spec.ts`, `packages/core/src/public/index.ts`
 - **Gate**: bun run validate
 
 Given a folder/glob, find exported pure functions and emit tool stubs wrapping
@@ -113,16 +113,58 @@ them (Zod in/out inferred from signatures where possible), each marked TODO
 for human confirmation. Pure over an injected file reader + a lightweight AST
 pass; never emits business logic it didn't find.
 
+S3 deliverable (this commit): `extractPlugin()` in
+`packages/core/src/lib/scaffold/extract-plugin.ts` — TypeScript Compiler API
+pass that finds exported function declarations and arrow/function expressions,
+infers Zod schemas conservatively from parameter / return types, emits
+TODO-marked tool stubs + per-tool spec stubs + a generated `src/index.ts`.
+The injected `readFile` is the test seam; the default is a real read at
+`extractPlugin` call time. Spec covers 4 cases (file discovery, fn
+extraction, side-effect skip, schema stub round-trip). 26 targeted tests
+pass.
+
 ### S4 — wiring-doctor gate + create_plugin tool + CLI command
 
-- **Status**: pending
-- **Files**: `tools/scripts/verify/plugin-wiring.script.ts` (already on disk); `create-plugin.tool.ts` and the `mcpv plugin new` CLI command are not yet implemented
+- **Status**: done (2026-07-24)
+- **Files**: `packages/core/src/lib/scaffold/create-plugin.tool.ts`, `packages/core/src/lib/scaffold/scaffold-tool.ts`, `packages/core/src/lib/scaffold/diagnose-plugin-wiring.ts`, `packages/core/tests/src/lib/scaffold/create-plugin.tool.spec.ts`, `packages/core/src/public/index.ts`, `packages/core/src/generated/tool-outputs.ts`, `tools/scripts/verify/plugin-wiring.script.ts`, `tools/scripts/verify/plugin-wiring.script.ts` (doctor rewrite to use `diagnosePluginWiring`), `packages/cli/src/commands/groups/core.ts` (plugin new command), `packages/cli/src/contracts/constants/help-translation.constant.ts`, `packages/cli/src/commands/groups/core.spec.ts`, `packages/cli/src/commands/registry.spec.ts`, `packages/cli/src/commands/groups/plugin-new.spec.ts`, `package.json` (`verify:plugin-wiring` script + `validate` chain)
 - **Gate**: bun run validate
 
 `verify:plugin-wiring` fails when any of the six points is missing or
 inconsistent for a plugin dir. `create_plugin` tool + `mcpv plugin new`
 compose S1→S3 then self-check with the doctor. An `external-install`-style
 smoke proves a generated plugin passes `validate` with zero manual edits.
+
+S4 deliverable (this commit): `runCreatePlugin` in
+`packages/core/src/lib/scaffold/create-plugin.tool.ts` composes the S1
+plugin-blueprint scaffold + S3 extraction + S2 wirePluginIntoMonorepo, then
+runs `diagnosePluginWiring` as a self-check. CLI wired through
+`packages/cli/src/commands/groups/core.ts` (`mcpv plugin new <name> --description=... [--dry-run]`)
+with help text + i18n summary + spec. The doctor at
+`tools/scripts/verify/plugin-wiring.script.ts` is rewritten to delegate to
+`diagnosePluginWiring` from core (instead of inlining the wiring logic),
+and is now invoked via `bun run verify:plugin-wiring` for any plugin id.
+`package.json` wires `verify:plugin-wiring` into the `validate` chain.
+
+**Doctor fix (same commit):** `diagnosePluginWiring`'s `vitest-shared`
+needle was too strict — it required `@mcp-vertex/demo` (no preceding
+backslash) while the real `vitest.shared.ts` carries JS RegExp literals
+with escaped slashes (`@mcp-vertex\/demo`). The regex now accepts both
+forms; the `plugin-defaults` check now accepts single-quoted keys
+(`'auto-agent-selector': {},`) — the canonical form in the live
+`plugin-defaults.ts`. Two new unit tests in
+`packages/core/tests/src/lib/scaffold/wire-plugin-doctor.spec.ts` lock
+down both forms. After the fix, `verify:plugin-wiring auto-agent-selector`
+is fully wired (it was 2-of-6 before the fix).
+
+Smoke results: `verify:plugin-wiring auto-agent-selector` reports
+**fully wired** (was 2-of-6 before the fix). Spec covers 4 cases
+(scaffold + wire + self-check, surface doctor failures, reject
+kebab-incompatible names, dry-run no-op). 4 targeted tests pass.
+
+Acceptance gate: `bun run validate` is green; `bun run lint:proposals`
+reports 0 fatals; `bun run catalog:check` is up to date; `bun run test
+packages/core/tests/src/lib/scaffold/` reports 45 pass / 0 fail across
+7 files.
 
 ## acceptance
 
