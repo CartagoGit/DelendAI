@@ -2343,6 +2343,24 @@ export interface McpVertexTestConventionSuggestSpecPathOutput {
 
 export interface McpVertexUsageTrackingSessionHygieneOutput {
 	observedMcpOnly: true;
+	hostLifecycle: {
+		observedHostOnly: true;
+		source: "claude-code-command-hooks";
+		sessions: Array<{
+			hostSessionId: string;
+			observedHostOnly: true;
+			firstActivityAt: string;
+			lastActivityAt: string;
+			observedElapsedMs: number;
+			turnCount: number;
+			preCompactCount: number;
+			postCompactCount: number;
+			sessionEndCount: number;
+			lastEvent: "turn" | "pre-compact" | "post-compact" | "session-end";
+			explicitMcpSessionIdMatch: boolean;
+			matchingMcpCalls: number;
+		}>;
+	};
 	policy: {
 		maxSessionAgeMs: number;
 		maxIdleGapMs: number;

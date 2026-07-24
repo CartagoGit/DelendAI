@@ -1,9 +1,34 @@
 {
 	"hooks": {
+		"UserPromptSubmit": [
+			{
+				"hooks": [
+					{
+						"type": "command",
+						"command": "bun \"${CLAUDE_PROJECT_DIR}/tools/scripts/host/record-claude-lifecycle.script.ts\" --workspace=\"${CLAUDE_PROJECT_DIR}\""
+					}
+				]
+			}
+		],
+		"PreCompact": [
+			{
+				"matcher": "manual|auto",
+				"hooks": [
+					{
+						"type": "command",
+						"command": "bun \"${CLAUDE_PROJECT_DIR}/tools/scripts/host/record-claude-lifecycle.script.ts\" --workspace=\"${CLAUDE_PROJECT_DIR}\""
+					}
+				]
+			}
+		],
 		"PostCompact": [
 			{
 				"matcher": "manual|auto",
 				"hooks": [
+					{
+						"type": "command",
+						"command": "bun \"${CLAUDE_PROJECT_DIR}/tools/scripts/host/record-claude-lifecycle.script.ts\" --workspace=\"${CLAUDE_PROJECT_DIR}\""
+					},
 					{
 						"type": "mcp_tool",
 						"server": "mcp-vertex",
@@ -11,6 +36,16 @@
 						"input": {
 							"maxDigestChars": 4000
 						}
+					}
+				]
+			}
+		],
+		"SessionEnd": [
+			{
+				"hooks": [
+					{
+						"type": "command",
+						"command": "bun \"${CLAUDE_PROJECT_DIR}/tools/scripts/host/record-claude-lifecycle.script.ts\" --workspace=\"${CLAUDE_PROJECT_DIR}\""
 					}
 				]
 			}

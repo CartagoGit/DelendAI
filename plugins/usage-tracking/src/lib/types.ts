@@ -186,3 +186,39 @@ export interface ISessionHygieneAdvisory extends ISessionHygieneSnapshot {
 	readonly newlyBreached: readonly SessionHygieneReason[];
 	readonly recommendedAction: 'checkpoint-and-compact' | 'resume-from-digest';
 }
+
+/** A transcript-free lifecycle event emitted by a host adapter. */
+export type HostLifecycleEventKind =
+	| 'turn'
+	| 'pre-compact'
+	| 'post-compact'
+	| 'session-end';
+
+/**
+ * One append-only host lifecycle row. `hostSessionId` is opaque metadata
+ * supplied by the host; it is not assumed to be an MCP or provider session.
+ */
+export interface IHostLifecycleEvent {
+	readonly version: 1;
+	readonly host: 'claude-code';
+	readonly hostSessionId: string;
+	readonly event: HostLifecycleEventKind;
+	readonly at: string;
+}
+
+/** A bounded summary of a host session derived from lifecycle events only. */
+export interface IObservedHostSession {
+	readonly hostSessionId: string;
+	readonly observedHostOnly: true;
+	readonly firstActivityAt: string;
+	readonly lastActivityAt: string;
+	readonly observedElapsedMs: number;
+	readonly turnCount: number;
+	readonly preCompactCount: number;
+	readonly postCompactCount: number;
+	readonly sessionEndCount: number;
+	readonly lastEvent: HostLifecycleEventKind;
+	/** Present only when the host explicitly supplied the same id to MCP. */
+	readonly explicitMcpSessionIdMatch: boolean;
+	readonly matchingMcpCalls: number;
+}

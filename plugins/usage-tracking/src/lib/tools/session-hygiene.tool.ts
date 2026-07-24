@@ -6,7 +6,15 @@ import { toolJson } from '@mcp-vertex/core/public';
 
 import { analyzeSessionHygiene } from '../session-hygiene';
 import { readInvocations } from '../rollup';
-import type { ISessionHygienePolicy, ISessionHygieneSnapshot } from '../types';
+import {
+	readHostLifecycleEvents,
+	summarizeHostLifecycle,
+} from '../host-lifecycle';
+import type {
+	IObservedHostSession,
+	ISessionHygienePolicy,
+	ISessionHygieneSnapshot,
+} from '../types';
 
 const ReasonSchema = z.enum(['session-age', 'idle-gap', 'mcp-output-volume']);
 const SnapshotSchema = z.object({
@@ -22,9 +30,25 @@ const SnapshotSchema = z.object({
 	reasons: z.array(ReasonSchema),
 });
 
+const HostSessionSchema = z.object({
+	hostSessionId: z.string(),
+	observedHostOnly: z.literal(true),
+	firstActivityAt: z.string(),
+	lastActivityAt: z.string(),
+	observedElapsedMs: z.number(),
+	turnCount: z.number(),
+	preCompactCount: z.number(),
+	postCompactCount: z.number(),
+	sessionEndCount: z.number(),
+	lastEvent: z.enum(['turn', 'pre-compact', 'post-compact', 'session-end']),
+	explicitMcpSessionIdMatch: z.boolean(),
+	matchingMcpCalls: z.number(),
+});
+
 export interface ISessionHygieneToolOptions {
 	readonly namespacePrefix: string;
 	readonly invocationsPath: string;
+	readonly hostLifecyclePath: string;
 	readonly policy: ISessionHygienePolicy;
 	readonly currentSessions: () => readonly ISessionHygieneSnapshot[];
 	readonly onServer?: ((server: McpServer) => void) | undefined;
@@ -51,6 +75,11 @@ export const buildSessionHygieneToolRegistration = (
 				}),
 				outputSchema: z.object({
 					observedMcpOnly: z.literal(true),
+					hostLifecycle: z.object({
+						observedHostOnly: z.literal(true),
+						source: z.literal('claude-code-command-hooks'),
+						sessions: z.array(HostSessionSchema),
+					}),
 					policy: z.object({
 						maxSessionAgeMs: z.number(),
 						maxIdleGapMs: z.number(),
@@ -62,9 +91,22 @@ export const buildSessionHygieneToolRegistration = (
 			},
 			async (args: { limit?: number | undefined }) => {
 				const limit = args.limit ?? 20;
-				const records = await readInvocations(options.invocationsPath);
+				const [records, lifecycleEvents] = await Promise.all([
+					readInvocations(options.invocationsPath),
+					readHostLifecycleEvents(options.hostLifecyclePath),
+				]);
+				const hostSessions: IObservedHostSession[] =
+					summarizeHostLifecycle(lifecycleEvents, records).slice(
+						0,
+						limit,
+					);
 				return toolJson({
 					observedMcpOnly: true as const,
+					hostLifecycle: {
+						observedHostOnly: true as const,
+						source: 'claude-code-command-hooks' as const,
+						sessions: hostSessions,
+					},
 					policy: options.policy,
 					current: options.currentSessions().slice(0, limit),
 					sessions: analyzeSessionHygiene(

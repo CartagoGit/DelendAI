@@ -161,6 +161,9 @@ export default definePlugin({
 		const summaryPath = ctx.workspace.resolve(
 			joinRel(ctx.pluginCacheDir, 'usage-summary.json'),
 		);
+		const hostLifecyclePath = ctx.workspace.resolve(
+			joinRel(ctx.pluginCacheDir, 'host-lifecycle.claude-code.jsonl'),
+		);
 		const pricingPath = ctx.workspace.resolve(
 			joinRel(ctx.pluginCacheDir, 'pricing.json'),
 		);
@@ -273,6 +276,7 @@ export default definePlugin({
 				namespacePrefix: ctx.namespacePrefix,
 				invocationsPath,
 				summaryPath,
+				hostLifecyclePath,
 				sessionHygiene,
 				onServer: (server) => {
 					notificationServer = server;
