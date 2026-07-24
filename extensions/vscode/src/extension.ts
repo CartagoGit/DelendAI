@@ -42,6 +42,10 @@ import {
 import { registerOpenDocsApiCommand } from './commands/open-docs-api';
 import { registerOpenAgentCatalogCommand } from './commands/open-agent-catalog';
 import {
+	OPEN_AUTO_AGENT_SELECTOR_COMMAND,
+	registerOpenAutoAgentSelectorCommand,
+} from './commands/open-auto-agent-selector';
+import {
 	OPEN_KNOWLEDGE_COMMAND,
 	registerOpenKnowledgeCommand,
 } from './commands/open-knowledge';
@@ -106,6 +110,7 @@ export const TOOLS_VIEW_ID = 'mcp-vertex.tools';
 export const MEMORY_VIEW_ID = 'mcp-vertex.memory';
 export const PROPOSALS_VIEW_ID = 'mcp-vertex.proposals';
 export { OPEN_TOOL_DETAIL_COMMAND };
+export { OPEN_AUTO_AGENT_SELECTOR_COMMAND };
 
 export interface IDisposable {
 	dispose(): void;
@@ -393,6 +398,12 @@ export const activate = async (
 	// f00053 S6: surface the canonical docs/how-to-use/API from the IDE.
 	track(registerOpenDocsApiCommand({ vscode }));
 	track(registerOpenAgentCatalogCommand({ vscode, client }));
+	// f00119 S6: surface the auto-agent-selector plugin's roster +
+	// recommendation so the user can review (and pin via the CLI /
+	// configuration-center) without leaving the IDE.
+	track(
+		registerOpenAutoAgentSelectorCommand({ vscode, client, ...withPrefix }),
+	);
 	track(
 		registerOpenConfigurationCenterCommand({
 			vscode,
