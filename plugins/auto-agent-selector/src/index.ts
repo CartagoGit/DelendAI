@@ -1,10 +1,11 @@
-import { definePlugin } from '@mcp-vertex/core/public';
+import { definePlugin, joinRel } from '@mcp-vertex/core/public';
 import { z } from 'zod';
 
 import { buildAutoRecommendRegistration } from './lib/tools/auto-recommend.tool';
 import { buildAutoRecordRegistration } from './lib/tools/auto-record.tool';
 import { buildAutoRunRegistration } from './lib/tools/auto-run.tool';
 import { buildAutoStatusRegistration } from './lib/tools/auto-status.tool';
+import { realRosterSnapshotStore } from './lib/discovery/roster-store';
 
 /** The dial default when the host does not set one (lean cheap, not the floor). */
 const DEFAULT_TRADEOFF = 7;
@@ -57,15 +58,21 @@ export default definePlugin({
 			: DEFAULT_TRADEOFF;
 		const taskPins = parsed.success ? parsed.data.taskPins : undefined;
 		const calibrationDir = ctx.workspace.resolve(ctx.pluginCacheDir);
+		const rosterStore = realRosterSnapshotStore(
+			ctx.workspace.resolve(joinRel(ctx.pluginCacheDir, 'roster.json')),
+			defaultTradeoff,
+		);
 		return {
 			tools: [
 				buildAutoStatusRegistration({
 					namespacePrefix: ctx.namespacePrefix,
+					rosterStore,
 				}),
 				buildAutoRecommendRegistration({
 					namespacePrefix: ctx.namespacePrefix,
 					defaultTradeoff,
 					calibrationDir,
+					rosterStore,
 					...(taskPins !== undefined ? { taskPins } : {}),
 				}),
 				buildAutoRecordRegistration({
@@ -75,6 +82,7 @@ export default definePlugin({
 				buildAutoRunRegistration({
 					namespacePrefix: ctx.namespacePrefix,
 					defaultTradeoff,
+					rosterStore,
 					...(taskPins !== undefined ? { taskPins } : {}),
 				}),
 			],

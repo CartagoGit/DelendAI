@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { buildAutoRecommendRegistration } from '../../../../src/lib/tools/auto-recommend.tool';
 import type { IDiscoveryDeps } from '../../../../src/lib/contracts/interfaces/roster.interface';
+import type { IRosterSnapshotStore } from '../../../../src/lib/discovery/roster-store';
 
 type Handler = (args: {
 	costQualityTradeoff?: number;
@@ -13,6 +14,7 @@ const capture = async (
 	deps: IDiscoveryDeps,
 	defaultTradeoff = 7,
 	taskPins?: Readonly<Record<string, string>>,
+	rosterStore?: IRosterSnapshotStore,
 ): Promise<Handler> => {
 	let handler: Handler | undefined;
 	const server = {
@@ -25,6 +27,7 @@ const capture = async (
 		defaultTradeoff,
 		deps,
 		...(taskPins !== undefined ? { taskPins } : {}),
+		...(rosterStore !== undefined ? { rosterStore } : {}),
 	});
 	await reg.register(server as unknown as Parameters<typeof reg.register>[0]);
 	if (!handler) throw new Error('auto_recommend did not register');
@@ -107,5 +110,16 @@ describe('auto_recommend tool', () => {
 		};
 		expect(body.recommended).toBeNull();
 		expect(body.ranked).toEqual([]);
+	});
+
+	it('persists discovery before producing a recommendation', async () => {
+		let saves = 0;
+		const handler = await capture(deps, 7, undefined, {
+			save: async () => {
+				saves += 1;
+			},
+		});
+		await handler({});
+		expect(saves).toBe(1);
 	});
 });

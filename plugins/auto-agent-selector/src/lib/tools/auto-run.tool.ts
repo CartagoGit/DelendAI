@@ -3,12 +3,13 @@ import { z } from 'zod';
 import type { IToolRegistration } from '@mcp-vertex/core/public';
 import { toolJson } from '@mcp-vertex/core/public';
 
-import { discoverRoster } from '../discovery/discover-roster';
+import { discoverAndPersistRoster } from '../discovery/discover-roster';
 import { realDiscoveryDeps } from '../discovery/real-deps';
 import { rankProviders } from '../routing/rank-providers';
 import { buildEscalationLadder } from '../escalate/build-ladder';
 import { resolveTaskPin } from '../prefs/resolve-task-pin';
 import type { IDiscoveryDeps } from '../contracts/interfaces/roster.interface';
+import type { IRosterSnapshotStore } from '../discovery/roster-store';
 
 const RUNG_SCHEMA = z.object({
 	step: z.number(),
@@ -45,6 +46,7 @@ export const buildAutoRunRegistration = (options: {
 	readonly defaultTradeoff: number;
 	readonly deps?: IDiscoveryDeps;
 	readonly taskPins?: Readonly<Record<string, string>>;
+	readonly rosterStore?: IRosterSnapshotStore;
 }): IToolRegistration => {
 	const prefix = options.namespacePrefix;
 	return {
@@ -93,8 +95,9 @@ export const buildAutoRunRegistration = (options: {
 					pin?: string | undefined;
 					taskType?: string | undefined;
 				}) => {
-					const roster = await discoverRoster(
+					const roster = await discoverAndPersistRoster(
 						options.deps ?? realDiscoveryDeps(),
+						options.rosterStore,
 					);
 					const tradeoff =
 						args.costQualityTradeoff ?? options.defaultTradeoff;
