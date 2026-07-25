@@ -149,6 +149,7 @@ export interface IMcpPluginRegistrations {
 				args: unknown,
 				result: unknown,
 				error?: unknown,
+				elapsedMs?: number,
 		  ) => Promise<void> | void)
 		| undefined;
 	readonly onToolStart?:

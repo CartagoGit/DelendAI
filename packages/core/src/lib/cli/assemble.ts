@@ -407,7 +407,13 @@ export const assembleCliConfig = async (
 			: {}),
 		...(onToolCalls.length > 0
 			? {
-					onToolCall: async (toolName, toolArgs, result, error) => {
+					onToolCall: async (
+						toolName,
+						toolArgs,
+						result,
+						error,
+						elapsedMs,
+					) => {
 						for (const handler of onToolCalls) {
 							try {
 								await handler(
@@ -415,6 +421,7 @@ export const assembleCliConfig = async (
 									toolArgs,
 									result,
 									error,
+									elapsedMs,
 								);
 							} catch (e) {
 								process.stderr.write(
