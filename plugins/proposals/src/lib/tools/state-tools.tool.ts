@@ -40,6 +40,12 @@ export interface IStateToolOptions {
 	readonly registryPathAbs: string;
 	/** Absolute workspace root — anchors `waitFor.file` resolution. */
 	readonly workspaceRoot: string;
+	/**
+	 * a00069 S6: TTL (minutes) for non-adopted registry assignments before
+	 * `state_repair` purges them. Default is 7 days (see
+	 * `DEFAULT_ORPHAN_TTL_MINUTES` in zombie-reconcile).
+	 */
+	readonly orphanTtlMinutes?: number;
 }
 
 interface IStateDiagnosis {
@@ -138,7 +144,12 @@ const diagnose = async (
 		options.registryPathAbs,
 		options.lockPathAbs,
 		options.queuePathAbs,
-		{ dryRun: true },
+		{
+			dryRun: true,
+			...(options.orphanTtlMinutes !== undefined
+				? { orphanTtlMinutes: options.orphanTtlMinutes }
+				: {}),
+		},
 	);
 
 	const healthy =
@@ -257,12 +268,18 @@ export const buildStateRepairRegistration = (
 					);
 				}
 
-				// 3) Force-release orphan agent assignments.
+				// 3) Force-release orphan agent assignments (a00069 S6:
+				// includes status:orphan + stale adopted:false past TTL).
 				const zombies = await gcZombies(
 					options.registryPathAbs,
 					options.lockPathAbs,
 					options.queuePathAbs,
-					{ dryRun: false },
+					{
+						dryRun: false,
+						...(options.orphanTtlMinutes !== undefined
+							? { orphanTtlMinutes: options.orphanTtlMinutes }
+							: {}),
+					},
 				);
 
 				return toolJson({
