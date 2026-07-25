@@ -179,3 +179,24 @@ export const renderReviewLines = (state: IReviewState): string[] => {
 	}
 	return lines;
 };
+
+/**
+ * a00069 S7 — true when the proposal markdown has at least one slice with a
+ * completed peer review: `review-state: done`, an implementer, a reviewer
+ * distinct from the implementer, and an `approved` review-log entry.
+ * Whole-doc scan (slice blocks separated by `### ` headings).
+ */
+export const hasPeerApprovedReview = (markdown: string): boolean => {
+	// Strip frontmatter so YAML cannot spoof review lines.
+	const body = markdown.replace(/^---[\s\S]*?---\s*/, '');
+	const blocks = body.split(/^### /m);
+	for (const block of blocks) {
+		const state = parseReviewState(block);
+		if (state.status !== 'done') continue;
+		if (state.implementer === null || state.reviewer === null) continue;
+		if (state.implementer === state.reviewer) continue;
+		if (!state.rounds.some((r) => r.verdict === 'approved')) continue;
+		return true;
+	}
+	return false;
+};
