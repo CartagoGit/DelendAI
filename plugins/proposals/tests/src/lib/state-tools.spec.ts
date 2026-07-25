@@ -7,6 +7,10 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import type { IToolRegistration } from '@mcp-vertex/core/public';
 
 import {
+	resetAgentLockSessionBalance,
+	runAgentLockEngine,
+} from '@mcp-vertex/proposals/lib/locks/agent-lock-engine';
+import {
 	buildStateHealthRegistration,
 	buildStateRepairRegistration,
 	type IStateToolOptions,
@@ -31,6 +35,7 @@ describe('state_health / state_repair [N15]', async () => {
 	let opts: IStateToolOptions;
 	beforeEach(() => {
 		dir = mkdtempSync(join(tmpdir(), 'state-'));
+		resetAgentLockSessionBalance();
 		opts = {
 			namespacePrefix: 'proposals',
 			lockPathAbs: join(dir, '.cache/agents.lock.json'),
@@ -50,7 +55,33 @@ describe('state_health / state_repair [N15]', async () => {
 		const out = parse(await handler({}));
 		expect(out.healthy).toBe(true);
 		expect(out.locks.active).toBe(0);
+		expect(out.locks.sessionClaims).toBe(0);
+		expect(out.locks.sessionReleases).toBe(0);
+		expect(out.locks.sessionImbalance).toBe(0);
 		expect(out.registry.orphans).toBe(0);
+	});
+
+	it('a00069 S8: surfaces claim/release session imbalance and fails health when > 5', async () => {
+		mkdirSync(dirname(opts.lockPathAbs), { recursive: true });
+		// Six successful claims without matching releases → imbalance 6 > 5.
+		for (let i = 0; i < 6; i += 1) {
+			const res = await runAgentLockEngine(
+				{
+					action: 'claim',
+					task_id: `t-s8-${i}`,
+					agent: 's8',
+					files: [`src/s8-${i}.ts`],
+				},
+				{ lockPath: opts.lockPathAbs },
+			);
+			expect(res.isError).not.toBe(true);
+		}
+		const handler = await capture(buildStateHealthRegistration(opts));
+		const out = parse(await handler({}));
+		expect(out.locks.sessionClaims).toBe(6);
+		expect(out.locks.sessionReleases).toBe(0);
+		expect(out.locks.sessionImbalance).toBe(6);
+		expect(out.healthy).toBe(false);
 	});
 
 	it('flags a stale lock and repairs it on execute', async () => {

@@ -96,34 +96,18 @@ acceptance:
   `copilot-minimax-m3` que trabajaron en paralelo sobre `develop` con
   `agentWorktree: false` (default), y la rúbrica de hygiene que el repo
   define para ese modo (`f00073` + `f00075`).
-- **Audited HEAD**: `47ed5747` (branch `develop`,
-  `fix(f00121): forge release consta11. **Re-audit 2026-07-25 tarde**
-  (HEAD `e37b21e3`+): S1–S7 landed in code; residual F15–F22 + S8–S11
-  abiertos.
-
-## progress (2026-07-25 re-audit)
-
-| Slice | Status código | Evidencia residual en disco/runtime |
-|---|---|---|
-| S1 | **done** (`## Slices` case-insensitive + alias) | parser ok |
-| S2 | **done** (description única; import security-gate resuelve) | validate path unblocked en tree actual |
-| S3 | **done** (transition+Files rewrite+dup scan) | **0** ids duplicados; review/ index-aligned (11 files) |
-| S4 | **done** (`lint:agent-branch-naming`) | 0 branches `agent/*` locales |
-| S5 | **done** (close_slice validation gate) | bypass legítimo `gate: none\|lint` sigue (F21) |
-| S6 | **done en código**, **NO aplicado al cache vivo** | registry sigue 30 orphans / 14 activeAgents hasta `state_repair` → **F15** |
-| S7 | **done** (transition + force_transition + auto_work) | bypass `force:true` / `skipPeerReview` sin audit trail → **F18** |
-| S8 | **pending** | engine claim success **sin** `ok` en payload; sin imbalance telemetry → **F9/F16/F17** |
-| S9 | **pending** | sin warning unused-active-plugins → **F13/F20** |
-| S10 | **pending** (nuevo) | auto-repair on boot/session → **F15** |
-| S11 | **pending** (nuevo) | handoff GC + force audit → **F18/F19** |
+- **Audited HEAD (pasada 1)**: `47ed5747` (branch `develop`,
+  `fix(f00121): forge release constant spec + catalog regen`).
+- **Re-audit HEAD (pasada 2, 2026-07-25)**: `e37b21e3`+ con S1–S7 mergeados;
+  residuales F15–F22 y slices S8–S11 abiertos (tabla en `## notes` →
+  Progress re-audit).
 - **Revisor / Model**: GitHub Copilot (MiniMax-M3) en VS Code, host
   `mcp-vertex-orchestrator` mode.
-- **Date**: 2026-07-25 (mañana siguiente a la sesión auditada).
+- **Date**: 2026-07-25 (pasada 1 mañana; pasada 2 tarde del mismo día).
 - **Methodology**: lectura del código + análisis del log
-  `.cache/mcp-vertex/logs/2026-07-24.jsonl` (719858 B, 615 eventos de hoy) +
-  inspección del `proposals` index en `.cache/mcp-vertex/proposals/index.json`
-  (282 entries) + segunda pasada de logs/plugins/registry (2026-07-25).
-  Slices accionables se numeran S1-S9 dentro de este mismo documento.
+  `.cache/mcp-vertex/logs/2026-07-24.jsonl` + index proposals + segunda
+  pasada logs/plugins/registry + verificación post-merge S1–S7 en disco.
+  Slices accionables: S1–S11. Hallazgos: F1–F22.
 
 ## why
 
@@ -364,7 +348,7 @@ uno, con la disciplina `f00073`/`f00075`/`f00052` como referencia.
 
 ### S9 — Dogfood: plugins activos no ejercitados
 
-- **Status**: pending
+- **Status**: done
 - **Files**: overview / auto_work advisory + opcional lint de config.
 - **Cambio**:
   - Si un plugin está en `mcp-vertex.config.json` enabled pero 0 tool
@@ -381,7 +365,7 @@ uno, con la disciplina `f00073`/`f00075`/`f00052` como referencia.
 
 ### S10 — Auto `state_repair` de orphans al boot / primera orientation (F15)
 
-- **Status**: pending
+- **Status**: done
 - **Files**:
   - `plugins/proposals/src/index.ts` o hook de register post-boot.
   - `plugins/proposals/src/lib/tools/state-tools.tool.ts` /
@@ -475,7 +459,7 @@ frontmatter; este section documenta el flujo de cierre:
 | Plugins activos sin invocación ese día | **21** | F13 |
 | `notification_*` / `await_lock` invocaciones 24 | **0** | F17 |
 | Commits a00069 en develop (re-audit) | **14+** (S1–S7) | `git log --grep=a00069` |
-| Slices código done / pending | S1–S7 done; S8–S11 pending | progress table |
+| Slices código done / pending | S1–S8 done; S9–S11 pending | progress table |
 
 ## findings
 
@@ -1081,16 +1065,32 @@ auto_work (refuerzo S8). No S nuevo si S8 health + disciplina bastan.
 | Lifecycle review/done | 7.0 | **OK.** S7 gate on; F18 bypass sin audit. |
 | Registry / orientation | 3.5 | **MUY MAL.** S6 código sí, cache vivo no (F15). |
 | Estructura de proposals | 8.5 | **MUY BIEN.** S1 parser. |
-| Locks / coordinación | 4.0 | **MUY MAL.** F9/F16/F17 abiertos (S8). |
+| Locks / coordinación | 8.0 | **BIEN.** S8: ok+session+await_lock; residual S9–S11. |
 | Close-acceptance gate | 7.5 | **OK.** S5 on; F21 gate lint bypass accepted. |
 | Dogfood plugins | 5.0 | **MEJORABLE.** F13/F20; S9 pending. |
 | Observabilidad logs | 5.5 | **MEJORABLE.** F14+F19 handoff. |
 | Tools / scaffolding | 7.5 | **OK.** |
 | Docs / skills / proposal self | 6.0 | **MEJORABLE.** F20 shipped-in drift (mitigado este pase). |
 | Concurrencia I/O | 7.0 | **OK.** |
-| **Total (Average)** | **~6.5** | **MEJORABLE.** Subió ~2.5 pts con S1–S7. Quedan S8–S11 para empujar a **~8.0 OK/MUY BIEN**. |
+| **Total (Average)** | **~6.5** | **MEJORABLE.** Subió ~2.5 pts con S1–S7. Quedan S9–S11 para empujar a **~8.0 OK/MUY BIEN**. |
 
 ## notes
+
+### Progress re-audit (2026-07-25)
+
+| Slice | Status código | Evidencia residual en disco/runtime |
+|---|---|---|
+| S1 | **done** (`## Slices` case-insensitive + alias) | parser ok |
+| S2 | **done** (description única; import security-gate resuelve) | validate path unblocked en tree actual |
+| S3 | **done** (transition+Files rewrite+dup scan) | **0** ids duplicados; review/ index-aligned (11 files) |
+| S4 | **done** (`lint:agent-branch-naming`) | 0 branches `agent/*` locales |
+| S5 | **done** (close_slice validation gate) | bypass legítimo `gate: none\|lint` sigue (F21) |
+| S6 | **done en código**, **NO aplicado al cache vivo** | registry sigue 30 orphans / 14 activeAgents hasta `state_repair` → **F15** |
+| S7 | **done** (transition + force_transition + auto_work) | bypass `force:true` / `skipPeerReview` sin audit trail → **F18** |
+| S8 | **done** (`ok` + session balance + await_lock nextAction) | claim/release counters + state_health imbalance gate |
+| S9 | **pending** | sin warning unused-active-plugins → **F13/F20** |
+| S10 | **pending** (nuevo) | auto-repair on boot/session → **F15** |
+| S11 | **pending** (nuevo) | handoff GC + force audit → **F18/F19** |
 
 ### verdict
 
@@ -1101,11 +1101,11 @@ auto_work (refuerzo S8). No S nuevo si S8 health + disciplina bastan.
 **No cierra** el incidente operativo:
 
 1. **F15** — GC de orphans no corre solo → orientation sigue mintiendo.
-2. **F16/F17/F9** — locks sin `ok` estable ni await dogfood → S8.
+2. **F16/F17/F9** — **cerrados en código por S8** (ok+session+await_lock nextAction).
 3. **F18/F19** — bypass peer + handoff basura → S11.
 4. **F13/F20** — dogfood + doc drift → S9 + disciplina shipped-in.
 
-Camino restante: **S8 → S10 → S11 → S9** (S8 desbloquea telemetría;
+Camino restante: **S10 → S11 → S9** (S8 desbloqueó telemetría;
 S10 hace real el S6; S11 cierra hygiene; S9 es advisory). F21 accepted.
 F22 proceso. No redesign.
 
