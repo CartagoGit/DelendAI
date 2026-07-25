@@ -1,5 +1,5 @@
 import { execFileSync } from 'node:child_process';
-import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -153,6 +153,47 @@ describe('auto_work (one-call action plan)', async () => {
 			'completed slice artifact is missing: S1: plugins/missing/src/index.ts',
 		);
 		expect(out.claimReady).toBeUndefined();
+	});
+
+	it('does not re-claim a pending slice whose declared artifacts are already tracked', async () => {
+		options = { ...options, workspaceRoot: root };
+		execFileSync('git', ['-C', root, 'init'], { stdio: 'ignore' });
+		mkdirSync(join(root, 'src'), { recursive: true });
+		writeFileSync(
+			join(root, 'src', 'implemented.ts'),
+			'export const done = true;\n',
+		);
+		writeFileSync(
+			options.indexPathAbs,
+			JSON.stringify({
+				proposals: [{ id: 'p3-x', file: 'p3.md', status: 'pending' }],
+			}),
+		);
+		writeFileSync(
+			join(root, 'p3.md'),
+			`# p3-x
+
+## Slices
+
+### S1 — already implemented
+- **Files**: \`src/implemented.ts\`
+- **Gate**: type
+- **Status**: pending
+`,
+		);
+		execFileSync('git', ['-C', root, 'add', 'src/implemented.ts'], {
+			stdio: 'ignore',
+		});
+
+		const out = parse(await runAutoWork(options));
+		expect(out).toMatchObject({
+			reason: 'pending-slice-verification-required',
+			executionMode: 'blocked',
+		});
+		expect(out.claimReady).toBeUndefined();
+		expect(out.hygieneBlockers).toContain(
+			'pending slice already has tracked artifacts: S1: src/implemented.ts',
+		);
 	});
 
 	it('surfaces a compact orchestration policy for non-trivial slices', async () => {

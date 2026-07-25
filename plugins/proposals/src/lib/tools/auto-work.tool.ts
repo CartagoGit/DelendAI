@@ -188,6 +188,8 @@ interface IContinueProposalPlanPayload {
 interface IClaimReadyResolution {
 	readonly claimReady?: IAutoWorkClaimReady | undefined;
 	readonly missingDoneArtifacts: readonly string[];
+	/** A pending slice with every declared artifact tracked needs verification, not re-execution. */
+	readonly pendingTrackedArtifacts: readonly string[];
 }
 
 const hasTrackedArtifact = async (
@@ -229,7 +231,7 @@ const resolveClaimReady = async (
 		response.content[0]?.text ?? '{}',
 	) as IContinueProposalPlanPayload;
 	if (payload.kind !== 'slice-plan') {
-		return { missingDoneArtifacts: [] };
+		return { missingDoneArtifacts: [], pendingTrackedArtifacts: [] };
 	}
 	const doneSlices = payload.plan?.slices.filter(
 		(slice) => slice.status === 'done',
@@ -260,15 +262,39 @@ const resolveClaimReady = async (
 					)
 				).flat();
 	const sliceId = payload.claimableSliceIds?.[0];
-	if (sliceId === undefined) return { missingDoneArtifacts };
+	if (sliceId === undefined) {
+		return { missingDoneArtifacts, pendingTrackedArtifacts: [] };
+	}
 	const slice = payload.plan?.slices.find(
 		(candidate) => candidate.sliceId === sliceId,
 	);
 	if (slice === undefined || slice.files.length === 0) {
-		return { missingDoneArtifacts };
+		return { missingDoneArtifacts, pendingTrackedArtifacts: [] };
+	}
+	const pendingTrackedArtifacts =
+		options.workspaceRoot === undefined || slice.status !== 'pending'
+			? []
+			: !slice.files.some((file) => !file.endsWith('.md'))
+				? []
+				: (
+							await Promise.all(
+								slice.files.map(async (file) => ({
+									file,
+									exists: await hasTrackedArtifact(
+										options.workspaceRoot!,
+										file,
+									),
+								})),
+							)
+						).every((artifact) => artifact.exists)
+					? slice.files.map((file) => `${slice.sliceId}: ${file}`)
+					: [];
+	if (pendingTrackedArtifacts.length > 0) {
+		return { missingDoneArtifacts, pendingTrackedArtifacts };
 	}
 	return {
 		missingDoneArtifacts,
+		pendingTrackedArtifacts,
 		claimReady: {
 			sliceId,
 			files: [...slice.files],
@@ -558,7 +584,7 @@ export const runAutoWork = async (
 	});
 	const claimReadyResolution =
 		next.proposalId === undefined
-			? { missingDoneArtifacts: [] }
+			? { missingDoneArtifacts: [], pendingTrackedArtifacts: [] }
 			: await resolveClaimReady(next.proposalId, options);
 	if (claimReadyResolution.missingDoneArtifacts.length > 0) {
 		return json({
@@ -574,6 +600,22 @@ export const runAutoWork = async (
 			),
 			nextAction:
 				'Repair the proposal state or restore the missing completed-slice artifacts before claiming new work. auto_work refuses to plan on top of unverifiable done slices.',
+		});
+	}
+	if (claimReadyResolution.pendingTrackedArtifacts.length > 0) {
+		return json({
+			state: 'work',
+			ok: false,
+			reason: 'pending-slice-verification-required',
+			executionMode: 'blocked',
+			proposalId: next.proposalId,
+			file: next.file,
+			hygieneBlockers: claimReadyResolution.pendingTrackedArtifacts.map(
+				(artifact) =>
+					`pending slice already has tracked artifacts: ${artifact}`,
+			),
+			nextAction:
+				'Run the declared validation gate and close the already-implemented slice. auto_work refuses to re-claim tracked pending artifacts because that would repeat completed work.',
 		});
 	}
 	const claimReady = claimReadyResolution.claimReady;
