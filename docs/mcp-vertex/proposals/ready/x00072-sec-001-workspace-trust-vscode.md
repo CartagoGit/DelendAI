@@ -62,9 +62,16 @@ workspaces untrusted.
 
 ### S1 — Bloqueo + capabilities.untrustedWorkspaces.supported=false
 
-- **Status**: pending
-- **Files**: `extensions/vscode/src/extension.ts`, `extensions/vscode/package.json`
+- **Status**: done
+- **Files**: `extensions/vscode/src/extension.ts`, `extensions/vscode/package.json`, `extensions/vscode/src/commands/start-server-untrusted.ts`, `extensions/vscode/src/test/contributes-completeness.spec.ts`
 - **Gate**: type
+- review-state: in_review
+- review-implementer: copilot-minimax-m3
+- implementation:
+  - `extensions/vscode/package.json` declares `capabilities.untrustedWorkspaces.supported: false` and adds the `mcp-vertex.startServerUntrusted` contributes.commands entry.
+  - `extensions/vscode/src/extension.ts` extends `IVscodeApi.workspace` with `isTrusted` and `IActivationDeps` with `trustOverride`. `activate()` checks `vscode.workspace.isTrusted` (with `trustOverride` bypass) before calling `createDefaultClient`; on `!isTrusted` it shows an informational message, registers the manual command, and returns early.
+  - `extensions/vscode/src/commands/start-server-untrusted.ts` re-runs the standard client creation with the trust override.
+  - `extensions/vscode/src/test/contributes-completeness.spec.ts` ratchet bumped 32 → 33.
 - acceptance:
   - "Comprobación `vscode.workspace.isTrusted` antes de `createDefaultClient`"
   - "Declaración `capabilities.untrustedWorkspaces.supported: false` en `package.json`"
