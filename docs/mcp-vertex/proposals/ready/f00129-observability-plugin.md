@@ -42,9 +42,42 @@ over injected fetch.
 
 ### S1 — error + issue read
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/observability/src/lib/errors/`, `plugins/observability/src/lib/tools/obs-errors.tool.ts`
 - **Gate**: bun run validate
+- implementation:
+  - `lib/errors/ierror-source.ts` declares the `IErrorSource` contract
+    (id, baseUrl, allowList, token, buildListUrl, parseList, optional
+    `fetch` seam), the vendor-agnostic `IObsIssue` shape, the
+    `authHeaderFor` map (Sentry Bearer / Datadog DD-API-KEY), the
+    `redactToken` defensive pass, and a `dispatchFetch` shim that the
+    test seam uses.
+  - `lib/errors/list-errors.ts` is the pure planner:
+    `listRecentErrors(source, input)` returns `{ source, issues,
+    nextCursor, redactions }`. Ships `sentryBuildListUrl` (clamped
+    limit, cursor passthrough, `is:unresolved` + `sort=lastSeen`)
+    and `sentryParseList` (Sentry `data` envelope → `IObsIssue[]`).
+    Fetches through the allow-listed `webFetch` engine in
+    production; in tests the source's injected `fetch` is used
+    directly. Token is redacted from the body before parsing
+    (defence in depth on top of `redactSecrets`).
+  - `lib/tools/obs-errors.tool.ts` registers `obs_errors` with
+    `tags: ['observability', 'network', 'effects']`. Strict zod
+    input (`project?`, `level?`, `cursor?`, `limit: 1..100`).
+    Returns a structured `toolError` envelope (with an
+    install-hint `nextAction`) when the source is absent OR the
+    token is empty — never a crash, never logs the token.
+  - `src/index.ts` resolves the source from
+    `SENTRY_AUTH_TOKEN` / `DATADOG_API_KEY` env (allow-list
+    pre-populated for `*.sentry.io` / `*.ingest.sentry.io` /
+    `api.datadoghq.{com,eu}`) OR from a host-injected option.
+  - 18 tests (12 list-errors + 6 tool): normalizeLevel, Sentry URL
+    builder (limit, cursor, clamping), Sentry parser (3 cases),
+    listRecentErrors (no-token empty, normalization, project
+    filter, level filter, token-redaction in body), tool
+    registration, happy path, install-hint on missing source,
+    install-hint on empty token, project filter via the tool,
+    limit-clamp.
 
 `obs_errors` lists recent issues/events (Sentry/Datadog) via web-fetch; token
 from env, redacted. Pure over injected fetch.
