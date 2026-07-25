@@ -73,7 +73,7 @@ including the "don't touch a same-named symbol in another scope" case.
 
 ### S3 — rule-based codemods + recipe library
 
-- **Status**: done
+- **Status**: pending
 - **Files**: `plugins/refactor/src/lib/codemod/`, `plugins/refactor/src/lib/tools/refactor-codemod.tool.ts`
 - **Gate**: bun run validate
 - implementation:
