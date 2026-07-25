@@ -119,6 +119,20 @@ describe('core meta-tools', async () => {
 		});
 	});
 
+	it('warns about active plugin tools not exercised in this session', async () => {
+		const { config, byId } = await assemble();
+		const first = await callTool(byId('overview'));
+		expect(first.unusedActivePlugins).toEqual(['demo']);
+
+		config.metricsRegistry?.record('mcp-vertex_demo_do', {
+			ms: 1,
+			bytes: 0,
+			isError: false,
+		});
+		const afterUse = await callTool(byId('overview'), { compact: true });
+		expect(afterUse.unusedActivePlugins).toBeUndefined();
+	});
+
 	it('configuration center preserves schema metadata from composed children', async () => {
 		const { byId } = await assemble();
 		const page = await callTool(byId('configuration_center'), {
