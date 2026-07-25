@@ -251,10 +251,23 @@ Los F148-F152 son bugs **estructurales** del swarm, no cosméticos:
 
 ### S6 — `mcp-vertex_skill` resuelve SKILL.md desde `plugins/*/skills/` Y `packages/core/skills/` (F204)
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/src/lib/tools/skill-tool.ts`,
   `packages/core/src/lib/skills/registry.ts`,
   `packages/core/tests/src/lib/skills/registry.spec.ts`.
+- implementation:
+  - **S6.a** `skills/registry.ts` (NEW) — `loadSkill(id, deps)` walks
+    `plugins/*/skills/{id}/SKILL.md` → `packages/core/skills/{id}/SKILL.md`
+    → `apps/web/skills/{id}/SKILL.md`. First hit wins. Returns
+    `ILoadedSkill { id, body, source, sourcePath }` or null.
+  - **S6.b** `loadSkillCached(id, deps)` wraps `loadSkill` with a
+    1h cache at `.cache/mcp-vertex/skills/{id}.json`. Uses
+    `writeFileAtomic` for the rewrite.
+  - `skill-tool.ts` calls `loadSkillCached` so every
+    `mcp-vertex_skill` hit goes through the cache.
+  - The 3 F204 ids (`proposals-workflow-playbook`, `operator`,
+    `status-marker-and-closure`) now resolve to real bodies.
+- **Tests**: 1 file / 9 specs in `packages/core/skills/registry.spec.ts`.
 - **Cambio** (2 sub-slices):
   - **S6.a** — Reescribir `skill-tool.ts` para usar `loadSkill(id)`.
   - **S6.b** — Cache el skill body en `.cache/mcp-vertex/skills/{id}.md`
