@@ -51,7 +51,7 @@ scan. Pure generators; deterministic output.
 
 ### S2 — ERD passthrough + proposal DFA graph
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/diagram/src/lib/erd/`, `plugins/diagram/src/lib/tools/diagram-proposals.tool.ts`
 - **Gate**: bun run validate
 
