@@ -403,7 +403,11 @@ export const runProposalTransition = async (
 							options.peerReviewLogPathAbs,
 							args.id,
 						)
-					: false;
+					: hasIndependentPeerApproval(
+							await readFile(found.absPath, 'utf8').catch(
+								() => '',
+							),
+						);
 			if (!approved) {
 				const envelope = {
 					ok: false as const,

@@ -704,16 +704,19 @@ export const runAutoWork = async (
 		`Open ${next.file} and pick the next atomic slice.`,
 		`If you do not already have an agent slot, call ${prefix}_agent_names before claiming files.`,
 		`If non-trivial: ${orchestration.next}; then ${prefix}_delegate one claimable slice to a subagent.`,
-		`Claim its files: ${prefix}_agent_lock { action: "claim", task_id, files }. On lock-conflict or all-claimed work, use ${prefix}_await_lock once (or wait for a lock-released notification) — do NOT poll status in a loop.`,
+		`Claim its files: ${prefix}_agent_lock { action: "claim", task_id, files }. On lock-conflict or all-claimed work, use notification_await_lock once (or wait for a lock-released notification) — do NOT poll status in a loop.`,
+		`Cycle boundary: re-check your agent slot with ${prefix}_agent_names before starting the claimed slice so the host wiring cannot skip identity resolution.`,
+		`Cycle boundary: if the logs plugin is loaded, run logs_query to inspect the latest append-only events for this proposal/claim before editing.`,
+		`Cycle boundary: if the notification plugin is loaded, subscribe with notification_notify_status { kind: 'lock-released' } before the work loop so the next claim reacts to releases instead of polling.`,
 		'Implement exactly that slice — nothing outside the claimed files.',
 		...(options.validationCommand
 			? [`Validate: run \`${options.validationCommand}\`.`]
 			: [
 					'Validate per the project gate (see get_validation_matrix if present).',
 				]),
-		`If the logs plugin is loaded, run ${prefix}_logs_tail { limit: 50 } to confirm the slice's append events landed.`,
+		`If the logs plugin is loaded, run logs_query again after validation/close to confirm the slice's append events landed.`,
 		`Mark progress in the proposal, then ${prefix}_close_slice { id, sliceId } to flip the slice status and release the lock atomically.`,
-		`If the notification plugin is loaded, subscribe to ${prefix}_notify_status { kind: 'lock-released' } before claiming the next slice.`,
+		`If the notification plugin is loaded, keep notification_notify_status { kind: 'lock-released' } active before claiming the next slice.`,
 		`If that was the last open slice for the proposal, run ${prefix}_sync_proposals once; otherwise do not sync mid-flight.`,
 		...persistStep,
 		`Repeat ${prefix}_auto_work for the next slice/proposal.`,
