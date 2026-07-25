@@ -41,12 +41,52 @@ network seam, no secret handling beyond web-fetch's.
 
 ### S1 — spec parse + request build
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/api/src/lib/spec/`, `plugins/api/src/lib/tools/api-call.tool.ts`
 - **Gate**: bun run validate
-
-Parse OpenAPI 3.x; `api_call` builds a request for an operationId from
-params/body and sends via web-fetch. Pure builder over the parsed spec.
+- implementation:
+  - `lib/spec/openapi.ts`:
+      - Pure OpenAPI 3.x parser (`parseOpenApi`) that returns an
+        `IOpenApiSpec`: title, version, servers, and an
+        `operations` map keyed by `operationId`. The parser never
+        throws on malformed input — `parseNote` carries the
+        diagnostic for the host's renderer.
+      - `IOperationParam` (path / query / header / cookie),
+        `IOperationResponse`, and a minimal `IJsonSchema` so
+        S2's contract validator and S3's mock generator can
+        share the same shape.
+      - `fetchAndParseSpec({ url, allowList, ... })` is a thin
+        allow-listed wrapper around `IFetchLike` that decodes
+        the body and feeds it to `parseOpenApi`. Honours
+        `maxBytes` + `timeoutMs` from `IWebFetchOptions`.
+  - `lib/spec/build-request.ts`:
+      - Pure `buildRequest({ operation, params, body, baseUrl?,
+        specServers? })` → `{ method, url, headers, body? }`.
+        Path-template substitution is URL-encoded; missing
+        required path params throw. `baseUrl` overrides
+        `specServers[0]` so the same spec can target
+        multiple environments without re-parsing.
+      - `coerceValue(schema, value)` is a best-effort
+        primitive-type coercer (number/integer/boolean).
+        Strict contract enforcement is S2.
+  - `lib/tools/api-call.tool.ts` registers `api_call` with
+    `tags: ['api', 'openapi', 'network', 'effects']`. Strict
+    zod input: `operationId`, `params?`, `body?`, `baseUrl?`,
+    `spec?`, `specUrl?`, `allowList?`, `timeoutMs?`, `maxBytes?`.
+    Always returns a structured `toolError` envelope (with an
+    actionable `nextAction`) when the spec is missing, the
+    `operationId` is unknown, `buildRequest` throws, or
+    `webFetch` rejects the URL — never a crash.
+  - 16 tests pass (10 spec+builder + 6 tool): parse-server,
+    parse-parameters, parse-requestBody, parse-soft-error,
+    path-template substitution, optional-query drop,
+    missing-required-path throws, JSON body stringification,
+    baseUrl override, tool registration, missing-spec
+    install-hint, unknown-operationId install-hint,
+    buildRequest-failure install-hint, success path, and
+    webFetch rejection path.
+  - Public barrel re-exports the parser, builder, type
+    shapes, and the tool registration for S2/S3.
 
 ### S2 — contract validation
 
