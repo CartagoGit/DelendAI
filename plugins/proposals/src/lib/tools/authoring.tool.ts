@@ -45,6 +45,11 @@ import {
 	reviewTransition,
 } from '../swarm/proposal-review';
 import { recordProposalReviewAction } from '../shared/peer-review-log';
+import {
+	resolveRecentValidateEvidence,
+	type IValidateEvidence,
+	type IValidateEvidenceDeps,
+} from './proposal-transition.tool';
 import { readActiveLocks, resolveIndexedDoc } from './authoring-options';
 import type { IAuthoringToolOptions } from './authoring-options';
 
@@ -574,6 +579,10 @@ const resolveWorktreeTopLevel = async (run: IGitRunner): Promise<string> => {
 	return result.ok ? result.output.trim() : '';
 };
 
+type ICloseSliceValidateOptions = IAuthoringToolOptions & {
+	readonly validateEvidenceDeps?: IValidateEvidenceDeps;
+};
+
 /**
  * `close_slice` — mark a slice `done` in the proposal doc AND release its
  * agent lock, atomically. Closes the loop crisply so the next agent sees
@@ -617,17 +626,27 @@ export const buildCloseSliceRegistration = (
 					validationOutput: z.string().optional(),
 				}),
 				description:
-					'Mark a slice as done in its proposal document and release its agent lock atomically, then re-sync. When the slice gate/acceptance demands it (a00069 S5), runs the host validationCommand first and refuses to close on failure. When per-agent worktrees are on and the slice was closed on an agent/* branch, records that branch for deliberate integration (non-destructive: runs no git write). Use it the moment a slice passes its acceptance.',
+					'Mark a slice as done in its proposal document and release its agent lock atomically, then re-sync. Requires recent validate evidence within the last 24h unless force:true is passed. When per-agent worktrees are on and the slice was closed on an agent/* branch, records that branch for deliberate integration (non-destructive: runs no git write). Use it the moment a slice passes its acceptance.',
 				inputSchema: z.object({
 					proposalId: z.string(),
 					sliceId: z.string(),
 					releaseLock: z.boolean().optional(),
+					force: z.boolean().optional(),
+					validateEvidence: z
+						.object({
+							timestamp: z.string().min(1),
+							exitCode: z.number().int(),
+							logPath: z.string().min(1).optional(),
+						})
+						.optional(),
 				}),
 			},
 			async (args: {
 				proposalId: string;
 				sliceId: string;
 				releaseLock?: boolean | undefined;
+				force?: boolean | undefined;
+				validateEvidence?: IValidateEvidence | undefined;
 			}) => {
 				// x00106 S1: index lookups self-heal a stale index once —
 				// transitions move files and leave the index pointing at
@@ -640,6 +659,38 @@ export const buildCloseSliceRegistration = (
 					return toolError(resolved.reason, resolved.nextAction);
 				}
 				const { entry, docPath } = resolved;
+				const closeSliceOptions = options as ICloseSliceValidateOptions;
+				if (args.force !== true) {
+					const validateEvidence =
+						await resolveRecentValidateEvidence({
+							workspaceRoot: options.workspaceRoot,
+							validateEvidence: args.validateEvidence,
+							deps: closeSliceOptions.validateEvidenceDeps,
+						});
+					if (validateEvidence === null) {
+						const envelope = {
+							ok: false as const,
+							blockerType: 'validate-required' as const,
+							error: {
+								reason: 'close_slice requires validate evidence from the last 24h',
+								nextAction: 'bun run validate',
+							},
+							proposalId: entry.id,
+							sliceId: args.sliceId,
+							closed: false,
+						};
+						return {
+							content: [
+								{
+									type: 'text' as const,
+									text: JSON.stringify(envelope),
+								},
+							],
+							structuredContent: envelope,
+							isError: true,
+						};
+					}
+				}
 				try {
 					await withFileMutex(docPath, async () => {
 						const md = await readTextOrNull(docPath);
@@ -660,30 +711,26 @@ export const buildCloseSliceRegistration = (
 							);
 						}
 						const rawBlock = m[2] ?? '';
-						// a00069 S5 — gate validate BEFORE rewriting status so
-						// a red tree cannot leave the slice marked done.
-						const validationCommand =
-							options.validationCommand ?? 'bun run validate';
-						if (
-							sliceRequiresValidation(rawBlock, validationCommand)
-						) {
-							const run =
-								options.runValidation ??
-								(() =>
-									runCloseSliceValidation(
-										validationCommand,
-										options.workspaceRoot,
-									));
-							const verdict = await run();
-							if (!verdict.ok) {
+						// a00072 S3.c — quality gate BEFORE flipping status.
+						// If the probe is wired and the worst severity is
+						// `critical` or `high`, refuse the close. Hosts
+						// that do not wire the quality plugin (no
+						// `runQuality`) skip this check entirely.
+						if (typeof options.runQuality === 'function') {
+							const quality = await options.runQuality();
+							if (
+								quality.ok === false &&
+								(quality.worst === 'critical' ||
+									quality.worst === 'high')
+							) {
 								const err = new Error(
-									`validation-error: ${validationCommand} exited ${verdict.exitCode}`,
+									`quality-failed: worst severity is ${quality.worst}`,
 								) as Error & {
 									kind: string;
 									output: string;
 								};
-								err.kind = 'validation-error';
-								err.output = verdict.output;
+								err.kind = 'quality-failed';
+								err.output = `worst=${quality.worst}`;
 								throw err;
 							}
 						}
@@ -710,6 +757,36 @@ export const buildCloseSliceRegistration = (
 							sliceId: args.sliceId,
 							closed: false,
 							validationOutput: String(err.output ?? ''),
+						};
+						return {
+							content: [
+								{
+									type: 'text' as const,
+									text: JSON.stringify(envelope),
+								},
+							],
+							structuredContent: envelope,
+							isError: true,
+						};
+					}
+					if (err?.kind === 'quality-failed') {
+						// a00072 S3.c: quality probe refused the close.
+						// The slice is NOT marked done; the agent must fix
+						// the worst-severity findings before retrying.
+						const envelope = {
+							ok: false as const,
+							kind: 'quality-failed',
+							blockerType: 'quality-failed' as const,
+							error: {
+								reason: String(err.message),
+								nextAction:
+									'Fix the worst-severity quality findings, then retry close_slice. The slice was NOT marked done.',
+								kind: 'quality-failed',
+								output: String(err.output ?? ''),
+							},
+							proposalId: entry.id,
+							sliceId: args.sliceId,
+							closed: false,
 						};
 						return {
 							content: [

@@ -250,3 +250,162 @@ describe('close_slice validation gate (a00069 S5)', () => {
 		expect(calls).toBe(1);
 	});
 });
+
+describe('close_slice quality gate (a00072 S3.c)', () => {
+	let root = '';
+	let optsBase: IAuthoringToolOptions;
+	let docPath = '';
+
+	beforeEach(async () => {
+		root = mkdtempSync(join(tmpdir(), 'close-quality-'));
+		const proposalsDir = join(root, 'docs/mcp-vertex/proposals');
+		mkdirSync(join(proposalsDir, 'in-progress'), { recursive: true });
+		mkdirSync(join(root, '.cache/mcp-vertex/proposals'), {
+			recursive: true,
+		});
+		docPath = join(proposalsDir, 'in-progress', 'f00999-s3-quality.md');
+		optsBase = {
+			namespacePrefix: 'proposals',
+			workspaceRoot: root,
+			proposalsDirAbs: proposalsDir,
+			indexPathAbs: join(root, '.cache/mcp-vertex/proposals/index.json'),
+			lockPathAbs: join(root, '.cache/agents.lock.json'),
+			counterPathAbs: join(root, '.cache/proposal-id-counters.json'),
+			validationCommand: 'bun run validate',
+		};
+	});
+	afterEach(() => rmSync(root, { recursive: true, force: true }));
+
+	const seed = async (md: string) => {
+		writeFileSync(docPath, md, 'utf8');
+		await syncProposalRegistry(root, {
+			proposalsDir: 'docs/mcp-vertex/proposals',
+			proposalIndexFile: '.cache/mcp-vertex/proposals/index.json',
+		});
+	};
+
+	it('returns quality-failed + blockerType when runQuality reports critical', async () => {
+		await seed(SLICE_DOC('type'));
+		const close = await capture(
+			buildCloseSliceRegistration({
+				...optsBase,
+				runValidation: async () => ({
+					ok: true,
+					output: 'green',
+					exitCode: 0,
+				}),
+				runQuality: async () => ({ ok: false, worst: 'critical' }),
+			}),
+		);
+		const result = await close({
+			proposalId: 'f00999',
+			sliceId: 's1',
+			releaseLock: false,
+		});
+		expect(result.isError).toBe(true);
+		const body = parse(result);
+		expect(body.ok).toBe(false);
+		expect(body.kind).toBe('quality-failed');
+		expect(body.blockerType).toBe('quality-failed');
+		expect(body.closed).toBe(false);
+		// The slice was NOT flipped — must still be pending.
+		expect(readFileSync(docPath, 'utf8')).toMatch(
+			/- \*\*Status\*\*: pending/,
+		);
+	});
+
+	it('returns quality-failed when runQuality reports high', async () => {
+		await seed(SLICE_DOC('type'));
+		const close = await capture(
+			buildCloseSliceRegistration({
+				...optsBase,
+				runValidation: async () => ({
+					ok: true,
+					output: 'green',
+					exitCode: 0,
+				}),
+				runQuality: async () => ({ ok: false, worst: 'high' }),
+			}),
+		);
+		const body = parse(
+			await close({
+				proposalId: 'f00999',
+				sliceId: 's1',
+				releaseLock: false,
+			}),
+		);
+		expect(body.ok).toBe(false);
+		expect(body.blockerType).toBe('quality-failed');
+	});
+
+	it('closes when runQuality reports worst=medium (below the gate)', async () => {
+		await seed(SLICE_DOC('type'));
+		const close = await capture(
+			buildCloseSliceRegistration({
+				...optsBase,
+				runValidation: async () => ({
+					ok: true,
+					output: 'green',
+					exitCode: 0,
+				}),
+				runQuality: async () => ({ ok: false, worst: 'medium' }),
+			}),
+		);
+		const body = parse(
+			await close({
+				proposalId: 'f00999',
+				sliceId: 's1',
+				releaseLock: false,
+			}),
+		);
+		expect(body.closed).toBe(true);
+		expect(readFileSync(docPath, 'utf8')).toMatch(/- \*\*Status\*\*: done/);
+	});
+
+	it('closes when runQuality reports ok=true', async () => {
+		await seed(SLICE_DOC('type'));
+		const close = await capture(
+			buildCloseSliceRegistration({
+				...optsBase,
+				runValidation: async () => ({
+					ok: true,
+					output: 'green',
+					exitCode: 0,
+				}),
+				runQuality: async () => ({ ok: true, worst: 'none' }),
+			}),
+		);
+		const body = parse(
+			await close({
+				proposalId: 'f00999',
+				sliceId: 's1',
+				releaseLock: false,
+			}),
+		);
+		expect(body.closed).toBe(true);
+	});
+
+	it('skips the quality probe when runQuality is not wired', async () => {
+		// The default `optsBase` has no runQuality — the close must
+		// succeed without invoking any quality check.
+		await seed(SLICE_DOC('type'));
+		const close = await capture(
+			buildCloseSliceRegistration({
+				...optsBase,
+				runValidation: async () => ({
+					ok: true,
+					output: 'green',
+					exitCode: 0,
+				}),
+			}),
+		);
+		const body = parse(
+			await close({
+				proposalId: 'f00999',
+				sliceId: 's1',
+				releaseLock: false,
+			}),
+		);
+		expect(body.closed).toBe(true);
+	});
+});
