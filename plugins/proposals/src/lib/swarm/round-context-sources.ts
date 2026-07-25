@@ -331,8 +331,17 @@ export const collectRoundContextSnapshot = async (
 			? { parentTaskId: entry.parent_task_id }
 			: {}),
 	}));
+	// a00069 S6: only live, adopted agents with a recent heartbeat appear
+	// as activeAgents. Never-adopted leftovers and stale rows used to bloat
+	// the digest (14 agents, all adopted:false, lastSeen from June).
 	const activeAgents = (registry.value?.assignments ?? [])
-		.filter((assignment) => assignment.status === 'active')
+		.filter((assignment) => {
+			if (assignment.status !== 'active') return false;
+			if (assignment.adopted !== true) return false;
+			const age = computeAgeMinutes(assignment.last_seen);
+			if (age === null) return false;
+			return age < AGENT_CONVENTIONS.heartbeat_ttl_minutes;
+		})
 		.map((assignment) => ({
 			agent: assignment.agent_name,
 			taskId: assignment.task_id,

@@ -621,4 +621,122 @@ describe('zombie-reconcile', async () => {
 		const updated = await store.read();
 		expect(updated.assignments).toHaveLength(0);
 	});
+
+	// a00069 S6: status:orphan always purges
+	it('a00069 S6: status:orphan is always classified for force_release', () => {
+		const registry: IAgentRegistry = {
+			version: 1,
+			adopted: [],
+			assignments: [
+				{
+					task_id: 'task-orphan',
+					agent_name: 'agent_orphan',
+					agent_slot: 'implementation_runner',
+					parent_task_id: null,
+					depth: 0,
+					topic: 'leftover',
+					adopted: false,
+					assigned_at: '2026-06-01T00:00:00.000Z',
+					last_seen: '2026-06-01T00:00:00.000Z',
+					cooldown_until: null,
+					status: 'orphan',
+				},
+			],
+		};
+		const report = classifyZombies(registry, { in_flight: [] }, now, 10);
+		expect(report.orphans).toHaveLength(1);
+		expect(report.orphans[0]!.reason).toBe('status_orphan');
+		expect(report.orphans[0]!.recommendedAction).toBe('force_release');
+	});
+
+	// a00069 S6: adopted:false past 7d TTL
+	it('a00069 S6: stale adopted:false past orphan TTL is force_release', () => {
+		const registry: IAgentRegistry = {
+			version: 1,
+			adopted: [],
+			assignments: [
+				{
+					task_id: 'task-stale-na',
+					agent_name: 'agent_stale_na',
+					agent_slot: 'implementation_runner',
+					parent_task_id: null,
+					depth: 0,
+					topic: 'never adopted',
+					adopted: false,
+					assigned_at: '2026-05-01T00:00:00.000Z',
+					last_seen: '2026-05-01T00:00:00.000Z', // ~35d before now
+					cooldown_until: null,
+					status: 'active',
+				},
+			],
+		};
+		const report = classifyZombies(registry, { in_flight: [] }, now, 10);
+		expect(report.orphans).toHaveLength(1);
+		expect(report.orphans[0]!.reason).toBe('stale_not_adopted');
+	});
+
+	// a00069 S6: recent adopted:false is kept
+	it('a00069 S6: recent adopted:false within TTL is kept', () => {
+		const registry: IAgentRegistry = {
+			version: 1,
+			adopted: [],
+			assignments: [
+				{
+					task_id: 'task-fresh-na',
+					agent_name: 'agent_fresh_na',
+					agent_slot: 'implementation_runner',
+					parent_task_id: null,
+					depth: 0,
+					topic: 'just assigned',
+					adopted: false,
+					assigned_at: '2026-06-05T11:55:00.000Z',
+					last_seen: '2026-06-05T11:55:00.000Z',
+					cooldown_until: null,
+					status: 'active',
+				},
+			],
+		};
+		const report = classifyZombies(registry, { in_flight: [] }, now, 10);
+		expect(report.orphans).toEqual([]);
+	});
+
+	// a00069 S6: bulk purge 30 orphans via gcZombies
+	it('a00069 S6: gcZombies purges a bulk of 30 orphan assignments', async () => {
+		const assignments = Array.from({ length: 30 }, (_, i) => ({
+			task_id: `task-o-${i}`,
+			agent_name: `agent_o_${i}`,
+			agent_slot: 'implementation_runner' as const,
+			parent_task_id: null,
+			depth: 0,
+			topic: 'bulk',
+			adopted: false,
+			assigned_at: '2026-05-01T00:00:00.000Z',
+			last_seen: '2026-05-01T00:00:00.000Z',
+			cooldown_until: null,
+			status: (i < 27 ? 'orphan' : 'active') as 'orphan' | 'active',
+		}));
+		const registryData: IAgentRegistry = {
+			version: 1,
+			adopted: [],
+			assignments,
+		};
+		const registryPath = createTempPath(
+			'reg-bulk',
+			'subagent-registry.json',
+			JSON.stringify(registryData),
+		);
+		const lockPath = createTempPath(
+			'lock-bulk',
+			'agents.lock.json',
+			JSON.stringify({ version: 1, in_flight: [] }),
+		);
+		const report = await gcZombies(registryPath, lockPath, '', {
+			dryRun: false,
+			now,
+		});
+		expect(report.orphans).toHaveLength(30);
+		const store = createAgentRegistryStore(registryPath);
+		const after = await store.read();
+		expect(after.assignments).toHaveLength(0);
+	});
 });

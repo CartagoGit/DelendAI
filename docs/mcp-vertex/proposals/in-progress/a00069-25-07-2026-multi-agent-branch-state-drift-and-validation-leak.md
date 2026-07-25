@@ -251,7 +251,7 @@ uno, con la disciplina `f00073`/`f00075`/`f00052` como referencia.
 
 ### S6 — GC de orphans en `subagent-registry` + `round-context`
 
-- **Status**: pending
+- **Status**: done
 - **Files**:
   - `plugins/proposals/src/lib/swarm/` (state_repair / zombie / registry GC)
   - tests bajo `plugins/proposals/tests/` para purge de assignments

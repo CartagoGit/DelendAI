@@ -82,4 +82,44 @@ describe('state_health / state_repair [N15]', async () => {
 		expect(exec.repaired.staleLocks).toBeGreaterThanOrEqual(1);
 		expect(exec.diagnosis.locks.active).toBe(0);
 	});
+
+	it('a00069 S6: dry-run lists orphan assignments; execute purges them', async () => {
+		mkdirSync(dirname(opts.registryPathAbs), { recursive: true });
+		const assignments = Array.from({ length: 5 }, (_, i) => ({
+			task_id: `t-o-${i}`,
+			agent_name: `agent_o_${i}`,
+			agent_slot: 'implementation_runner',
+			parent_task_id: null,
+			depth: 0,
+			topic: 'stale',
+			adopted: false,
+			assigned_at: '2020-01-01T00:00:00.000Z',
+			last_seen: '2020-01-01T00:00:00.000Z',
+			cooldown_until: null,
+			status: i % 2 === 0 ? 'orphan' : 'active',
+		}));
+		writeFileSync(
+			opts.registryPathAbs,
+			JSON.stringify({ version: 1, adopted: [], assignments }),
+		);
+
+		const health = await capture(buildStateHealthRegistration(opts));
+		const h = parse(await health({}));
+		expect(h.healthy).toBe(false);
+		expect(h.registry.orphans).toBe(5);
+
+		const repair = await capture(buildStateRepairRegistration(opts));
+		const dry = parse(await repair({ mode: 'dry-run' }));
+		expect(dry.wouldRepair.orphanAssignments).toBe(5);
+
+		const exec = parse(await repair({ mode: 'execute' }));
+		expect(exec.repaired.orphanAssignments).toBe(5);
+		expect(exec.diagnosis.registry.orphans).toBe(0);
+		expect(exec.diagnosis.healthy).toBe(true);
+
+		const after = JSON.parse(
+			require('node:fs').readFileSync(opts.registryPathAbs, 'utf8'),
+		);
+		expect(after.assignments).toEqual([]);
+	});
 });

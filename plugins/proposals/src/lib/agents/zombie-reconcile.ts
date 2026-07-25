@@ -27,7 +27,11 @@ export type IZombieThreshold = 'green' | 'yellow' | 'red';
 export type IZombieReason =
 	| 'cooldown_null' // cooldown_until: null + adopted: true
 	| 'stale_no_lock' // age > stale_after_minutes, no lock entry
-	| 'stale_with_orphaned_lock'; // age > stale_after_minutes, lock entry también rancia
+	| 'stale_with_orphaned_lock' // age > stale_after_minutes, lock entry también rancia
+	/** a00069 S6: assignment already marked `status: orphan`. */
+	| 'status_orphan'
+	/** a00069 S6: `adopted: false` past the orphan TTL (default 7d). */
+	| 'stale_not_adopted';
 
 export type IZombieRecommendedAction =
 	| 'force_release' // eliminar del registry + emitir evento
@@ -38,6 +42,9 @@ export type IQueueEventEmitter = (
 	taskId: string,
 	priority: number,
 ) => Promise<void>;
+
+/** a00069 S6: default TTL for non-adopted / leftover registry rows (7 days). */
+export const DEFAULT_ORPHAN_TTL_MINUTES = 7 * 24 * 60;
 
 const loadLockSnapshotLocal = async (
 	lockPath: string,
@@ -89,22 +96,60 @@ export function classifyZombies(
 	},
 	now?: Date,
 	staleAfterMinutes = 10,
+	/**
+	 * a00069 S6: TTL for non-adopted assignments (and how long a
+	 * `status: orphan` row may linger before force-release when last_seen
+	 * is unparseable). Default 7 days.
+	 */
+	orphanTtlMinutes: number = DEFAULT_ORPHAN_TTL_MINUTES,
 ): IZombieReconcileReport {
 	const checkTime = now || new Date();
 	const checkMs = checkTime.getTime();
 	const orphans: IZombieOrphanEntry[] = [];
 
 	for (const a of registry.assignments) {
-		if (a.adopted !== true) {
+		const lastSeenTime = Date.parse(a.last_seen);
+		const ageMinutes = Number.isNaN(lastSeenTime)
+			? Number.POSITIVE_INFINITY
+			: (checkMs - lastSeenTime) / 60_000;
+		const lastSeen =
+			typeof a.last_seen === 'string' && a.last_seen.length > 0
+				? a.last_seen
+				: 'unknown';
+
+		// a00069 S6: explicit orphan rows always purge.
+		if (a.status === 'orphan') {
+			orphans.push({
+				agentName: a.agent_name,
+				taskId: a.task_id,
+				agentSlot: a.agent_slot,
+				lastSeen,
+				ageMinutes: Number.isFinite(ageMinutes) ? ageMinutes : 0,
+				reason: 'status_orphan',
+				recommendedAction: 'force_release',
+			});
 			continue;
 		}
 
-		const lastSeenTime = Date.parse(a.last_seen);
+		// a00069 S6: never-adopted leftovers past the long TTL.
+		if (a.adopted !== true) {
+			if (ageMinutes > orphanTtlMinutes) {
+				orphans.push({
+					agentName: a.agent_name,
+					taskId: a.task_id,
+					agentSlot: a.agent_slot,
+					lastSeen,
+					ageMinutes: Number.isFinite(ageMinutes) ? ageMinutes : 0,
+					reason: 'stale_not_adopted',
+					recommendedAction: 'force_release',
+				});
+			}
+			continue;
+		}
+
 		if (Number.isNaN(lastSeenTime)) {
 			continue;
 		}
-
-		const ageMinutes = (checkMs - lastSeenTime) / 60_000;
 		if (ageMinutes <= staleAfterMinutes) {
 			continue;
 		}
@@ -151,7 +196,7 @@ export function classifyZombies(
 	const recommendation =
 		orphans.length === 0
 			? 'No zombies detected.'
-			: `${orphans.length} zombie(s) detected. Recommended action: run <prefix>_agent_names reconcile to clean up.`;
+			: `${orphans.length} zombie(s) detected. Recommended action: run <prefix>_state_repair { mode: "execute" } (or agent_names reconcile) to clean up.`;
 
 	return {
 		scannedAt: checkTime.toISOString(),
@@ -169,6 +214,8 @@ export async function gcZombies(
 	options?: {
 		dryRun?: boolean | undefined;
 		staleAfterMinutes?: number | undefined;
+		/** a00069 S6: TTL for non-adopted assignments (minutes). */
+		orphanTtlMinutes?: number | undefined;
 		now?: Date | undefined;
 		queueEmitter?: IQueueEventEmitter | undefined;
 	},
@@ -179,12 +226,15 @@ export async function gcZombies(
 
 	const now = options?.now || new Date();
 	const staleAfterMinutes = options?.staleAfterMinutes ?? 10;
+	const orphanTtlMinutes =
+		options?.orphanTtlMinutes ?? DEFAULT_ORPHAN_TTL_MINUTES;
 
 	const report = classifyZombies(
 		registry,
 		lockSnapshot,
 		now,
 		staleAfterMinutes,
+		orphanTtlMinutes,
 	);
 
 	if (options?.dryRun !== true && report.orphans.length > 0) {
