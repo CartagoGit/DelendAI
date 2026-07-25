@@ -25,3 +25,8 @@ export type {
 	IDiagramModuleDeps,
 } from '../lib/contracts/interfaces/graph.interface';
 export type { IDiagramGraphToolOptions } from '../lib/tools/diagram-graph.tool';
+export { buildMermaidEr } from '../lib/erd/build-erd';
+export { buildProposalDfaMermaid } from '../lib/erd/build-proposal-dfa';
+export type { IProposalStatusCounts } from '../lib/erd/build-proposal-dfa';
+export { buildDiagramProposalsToolRegistrations } from '../lib/tools/diagram-proposals.tool';
+export type { IDiagramProposalsToolOptions } from '../lib/tools/diagram-proposals.tool';
