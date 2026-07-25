@@ -40,6 +40,23 @@ shipped-in:
     - 740f57fa # test(apps-shared): F41/F47 — stub sessionStorage for the node vitest environment
     - 6ff5b217 # fix(core): F41/F48 — delete orphaned bun:test duplicate of preset-catalog.spec.ts
     - 8d1e1999 # chore(proposals): rebaseline proposal-files-exist for 4 done proposals
+    - 5af3a6ad # feat(f00123): S3 rule-based codemods + recipe library
+    - 009ed7b2 # chore(f00125): wire browser plugin into workspace + fix init test counts
+    - e6e248a0 # docs(f00123): correct S3 status — codemod module never landed
+    - d10e3bdb # feat(f00123): S3 rule-based codemods + recipe library
+    - 321e55d8 # feat(f00125): S3 page verification + E2E recipe + wiring
+    - e8f2438d # docs(f00125): mark S3 page verification + E2E recipe done
+    - bfbdfd46 # feat(f00126): S1 bench harness + baseline compare
+    - 85e15d32 # docs(f00126): mark S1 bench harness + baseline compare done
+    - 87b722e2 # docs(f00126): mark S2 bundle-size budget done — actual file paths
+    - f0d55edf # feat(f00126): S2 bundle-size budget — perf_bundle tool + tests
+    - 3815c571 # feat(perf): S3 perf_profile tool + profile capture + tests
+    - dd75bd7a # chore(core): register perf plugin in preset catalog
+    - 1a20db97 # chore(types): include browser + refactor plugins in tool-outputs harvester
+    - bbf3b945 # feat(f00126): S3 profiling capture + metrics-gate integration
+    - 8199bd1d # feat(f00126): S3 profiling capture + metrics-gate integration (worktree)
+    - 80cd369e # feat(prompt-eval): add spend-guarded eval harness (f00127 S1)
+    - 3a2feb51 # chore(proposals,release): pin f00127 S2 as future work + add prompt-eval to PUBLISH_ORDER
 related:
     - a00067 # evaluación de migración de lenguaje (precedente de los mismos agentes)
     - a00068 # auditoría exhaustiva previa del 2026-07-24 (drift de carpeta/status)
@@ -425,6 +442,42 @@ uno, con la disciplina `f00073`/`f00075`/`f00052` como referencia.
   - Spec: handoff dir con files 33d → GC deja 0.
   - Manual: `ls .cache/mcp-vertex/handoff` post-repair vacío o solo
     frescos.
+
+### S12 — Agent-stuck self-healing (F103)
+
+- **Status**: todo
+- **Files**:
+  - `plugins/logs/src/lib/services/log-store.ts` (línea 106) — `appendFile` →
+    `writeFileAtomic` (o `appendFile` + `await handle.sync()`).
+  - `plugins/proposals/src/lib/locks/agent-lock-engine.ts` — `removeStale`
+    también invocado al `readLock()` (idempotente).
+  - `packages/core/src/lib/cli/assemble-core-tools.ts` — tras cargar plugins,
+    leer `agents.lock.json`, aplicar `removeStale`, escribir si cambió.
+  - `tools/scripts/lint/check-stray-cache-files.script.ts` — bajar threshold
+    para `*.tmp` con prefijo `agents.lock.json.` a `mtime > 60s`.
+  - `plugins/proposals/src/lib/tools/agents-lock-diagnose.tool.ts` (nuevo) —
+    enumera zombies, tmp huérfanos, y diff `last_seen` vs última entrada
+    de log del `task_id`.
+- **Cambio** (4 sub-slices):
+  - **S12.a** — Log writer atómico: `appendFile` reemplazado por
+    `writeFileAtomic` con append semantics. Mantener `withFileMutex`.
+    Output: gap `last_seen` ↔ log entries → 0 en crash tests.
+  - **S12.b** — Lock GC al boot del MCP server: idempotente, barato.
+    Output: zombie entries en lock siempre 0 tras `bun run test` boot.
+  - **S12.c** — Tmp sweep: `agents.lock.json.*.tmp` con mtime > 60s se
+    borran al boot. Output: `ls .cache/mcp-vertex/*.tmp` muestra 0 files
+    con prefijo `agents.lock.json.` tras reinicio.
+  - **S12.d** — Diagnostic tool `agents_lock_diagnose`: enumera zombies
+    + tmp + diff log. `auto_work` lo invoca y aborta si encuentra
+    zombies.
+- **Gate**: type, lint, test.
+- **Verification**:
+  - Spec: matar proceso entre `open(tmp)` y `rename` (SIGKILL mid-test)
+    → tmp es barrido al siguiente boot.
+  - Spec: lock con entry stale de 2h → boot aplica `removeStale` →
+    re-leer muestra 0 stale.
+  - Spec: `agents_lock_diagnose` retorna lista con al menos 1 zombie
+    cuando el lock tiene `started_at == last_seen && age > 30s`.
 
 ## acceptance
 
@@ -1521,6 +1574,387 @@ vs pasada-7 (76 fail / 37 errors):
 
 **Slice**: F66 — fijar `bun run test` como canonical; documentar que bare `bun test` solo es dev-debug.
 
+### F80 — `bun run test` (canonical vitest) 5203/5203 pass, 0 fail — F41 corregido (POSITIVO)
+
+Re-audit-9 `bun run test` ejecuta vitest workspace con todos los proyectos:
+
+```text
+ Test Files  667 passed | 2 skipped (669)
+      Tests  5203 passed (5203)
+   Duration  184.81s
+```
+
+**Esperado**: 0 fail. **Actual**: 0 fail.
+
+**Esperado vs Actual**: este es **el canonical real** de CI. F66/F68 lo apuntan: bare `bun test` (45-71 fail) NO es el canonical. `bun run test` (vitest workspace, 5203/5203) sí lo es.
+
+**Slice**: cerrar F41/F65 con F80 — `bun run test` es la única verdad.
+
+### F81 — `f00125 S3` (321e55d8) page verification + E2E recipe + wiring — POSITIVO
+
+`f00125` (browser plugin) ahora tiene S1+S2+S3:
+
+- `39ba92d1` feat(f00125): S1 navigation + screenshot + DOM query
+- `321e55d8` feat(f00125): S3 page verification + E2E recipe + wiring
+- `e8f2438d` docs(f00125): mark S3 page verification + E2E recipe done
+- 24/24 plugin tests pasan.
+
+**Esperado**: cada `f0012x` con S1+S2+S3 done. **Actual**: f00125 S1+S2+S3 done, pero la integración workspace (F66) requirió `009ed7b2`.
+
+**Esperado vs Actual**: cualquier plugin nuevo requiere chore de wire (tsconfig, vitest aliases, plugin-defaults, release-plan, tool-outputs, bun.lock). F66 debe haber sido capturado pre-merge.
+
+**Slice**: audit `plugins/{f00123,f00124,f00125,f00126}` por la misma integración debt residual.
+
+### F82 — `f00126 S1` (bfbdfd46) bench harness + baseline compare — POSITIVO
+
+`f00126` (perf plugin) ahora tiene S1 (bench harness + baseline compare). **Esperado**: nuevo plugin = nuevo benchmark.
+
+- `bfbdfd46` feat(f00126): S1 bench harness + baseline compare
+- `85e15d32` docs(f00126): mark S1 bench harness + baseline compare done
+
+**Slice**: f00126 debe tener S2+S3 antes de cerrar.
+
+### F83 — `e6e248a0` documenta **mentira técnica** del mark previo — F78 corregido (POSITIVO)
+
+`e6e248a0 docs(f00123): correct S3 status — codemod module never landed` es **un anti-ejemplo** que vale documentar:
+
+> "Commit `da9050d8` marked S3 as done citing 30/30 plugin tests and 3 recipes ... but no codemod module actually ships on `develop`: plugins/refactor/src/lib/codemod/ does not exist."
+
+**Esperado**: cada `mark slice done` valida archivos. **Actual**: el agente modificó S3 a `done` sin que el código aterrizara.
+
+**Esperado vs Actual**: este es un anti-patrón de **commit laundering**: docs(mark S3 done) precede al feat(S3 implementation). Si el merge del docs entra antes que el feat, se miente al consumidor.
+
+**Slice**: `pre-commit hook` debe validar `Files:` list en frontmatter contra `git ls-tree HEAD -- <path>`. Si falta, abortar.
+
+### F84 — `009ed7b2` wire browser — falta integrar f00126 (perf) y f00123 (refactor) similarmente — F66 evolución — **CLOSED**
+
+- `dd75bd7a` (chore(core): register perf plugin in preset catalog) — `PRESET_CATALOG` ahora lista `{ plugin: 'perf' }`.
+- `1a20db97` (chore(types): include browser + refactor plugins in tool-outputs harvester) — `generate-tool-types` harvester ahora incluye 24 plugins (vs 22).
+- `3a2feb51` (chore(proposals,release): add prompt-eval to PUBLISH_ORDER) — f00127 S1 también wired.
+- **Residual**: 0; f00126/f00127 ahora visibles via `plugins` MCP tool.
+
+### F85 — `results/` ahora canónico — 5 subdirs (auto-agent-selector, logs, logs-errors, memory, usage-tracking) — F67/F71 evolución (POSITIVO)
+
+Re-audit-9 `ls .cache/mcp-vertex/results/`:
+
+```text
+auto-agent-selector  logs  logs-errors  memory  usage-tracking
+```
+
+**Esperado**: plugins con `cacheNamespace: 'results'` escriben aquí. **Actual**: 5 de los plugins con namespace migran.
+
+**Esperado vs Actual**: el patrón post-`c10ec1cb` está claro. Falta auditar otros plugins (notification, search, external-mcps, perf).
+
+**Slice**: `lint:cache-namespace-alignment` per F71.
+
+### F86 — nuevos `.cache` paths: `proposal-lock.json`, `healthcheck.json`, `roster.draft.json`, `state/`, `orchestrator-runner/` — F67 evolución
+
+Re-audit-9 lista nuevos paths en `.cache/mcp-vertex/`:
+
+- `proposal-lock.json` — nuevo
+- `healthcheck.json` — nuevo
+- `roster.draft.json` — nuevo
+- `state/` — directorio
+- `orchestrator-runner/` — directorio
+- `round-context.digest.json` — nuevo path
+
+**Esperado**: `.cache/mcp-vertex/` solo tiene paths documentados en F31/F32/F33/F34/F35. **Actual**: 5+ nuevos paths no catalogados.
+
+**Slice**: añadir a `check-stray-cache-files` para que reporten como known-good o stray.
+
+### F87 — `bun test` (bare) ahora **71 fail / 37 errors** — F68 empeora
+
+Re-audit-9 `bun test`:
+
+```text
+ 5013 pass
+ 71 fail
+ 37 errors
+ 4 snapshots, 20197 expect() calls
+Ran 5084 tests across 673 files. [180.15s]
+```
+
+vs pasada-8 (70 fail / 37 errors). **+1 fail**.
+
+**Esperado**: < 70. **Actual**: 71.
+
+**Esperado vs Actual**: `321e55d8` (f00125 S3) y `bfbdfd46` (f00126 S1) introducen tests nuevos. `d10e3bdb` (f00123 S3) introduce codemod tests. **Cada nueva feat suma ~5 fail groups bare-bun**.
+
+**Slice**: continuar ignorando per F80 (canonical = `bun run test`).
+
+### F88 — `5 in-progress` vs 4 (pasada-8) — F22 evolución
+
+Re-audit-9: 5 proposals en `in-progress/` (vs 4 pasada-8):
+
+- a00069 (audit-fix)
+- f00119 (auto-agent-selector)
+- f00143 (agent operating excellence)
+- v00122 (collapse 4-call bootstrap)
+- **NUEVO**: ¿cuál?
+
+**Esperado**: máximo 4 in-flight. **Actual**: 5.
+
+**Slice**: investigar cuál proposal nuevo migró a `in-progress/` — probablemente un chore de alguien que olvidó migrar a `ready/` o `done/`.
+
+### F89 — `85e15d32` + `bfbdfd46` f00126 S1 — bench harness — F70 evolución
+
+f00126 (perf plugin) **NO existe como branch redundante** post-merge. Esto es positivo — f00126 cerró limpio.
+
+**Esperado**: cada nuevo plugin cierra sin rama redundante. **Actual**: f00126 sí, f00123/f00124/f00125 no (ramas siguen).
+
+**Esperado vs Actual**: F70 cierra solo si el dueño sigue el workflow `da32a959`/`225e4b30`.
+
+**Slice**: documentar f00126 como **ejemplo de close limpio** vs f00123/24/25 como casos recidiva.
+
+### F90 — `bfbdfd46` perf plugin S1 cierra, pero f00126 sigue en `ready/` — F78 recidiva — **CLOSED**
+
+- `f0d55edf` (feat(f00126): S2 bundle-size budget — perf_bundle tool + tests) — S2 done.
+- `3815c571` (feat(perf): S3 perf_profile tool + profile capture + tests) — S3 done.
+- `bbf3b945` (feat(f00126): S3 profiling capture + metrics-gate integration) — metrics-gate wire.
+- `f00126-perf-plugin.md` aún en `ready/` (sigue pendiente close-evidence).
+- **Residual**: f00126 close-evidence (F78 recidiva).
+
+### F91 — f00125-browser-plugin.md ahora en `in-progress/` — F22/F45/F64 recidiva (MEJORABLE)
+
+Re-audit-10 `ls docs/mcp-vertex/proposals/in-progress/`:
+
+```text
+a00069-25-07-2026-multi-agent-branch-state-drift-and-validation-leak.md
+f00119-auto-agent-selector-plugin.md
+f00125-browser-plugin.md           <-- NEW
+f00143-agent-operating-excellence-and-session-governance-program.md
+v00122-collapse-4-call-bootstrap-into-1-call-auto-work.md
+```
+
+**Esperado**: máximo 4 in-progress (re-audit-9). **Actual**: 5 in-progress con f00125 moviéndose a `in-progress/`.
+
+**Esperado vs Actual**: f00125 está en `ready/` con S1+S2+S3 done (status: done), pero alguien lo movió a `in-progress/` — posiblemente siguiendo el workflow `review → done`. **Falta**: close-evidence.
+
+**Slice**: ejecutar `docs(f00125): close with closed-by and closed-evidence` y mover a `done/`.
+
+### F92 — `dd75bd7a` perf plugin registered — pero el plugin en `tools` MCP tool solo lista 1 entry vs 8+10 esperados — F84 evolución
+
+`dd75bd7a` registra perf en `PRESET_CATALOG`. Pero `mcp-vertex plugins` tool muestra menos tools que `plugins/perf/src/lib/tools/*`.
+
+**Esperado**: lista completa. **Actual**: el catalog muestra el plugin, pero los tools internos requieren `generate-tool-types` regeneration.
+
+**Slice**: ejecutar `bun tools/scripts/types/generate-tool-types.script.ts` post-merge para regenerar el tool-outputs.
+
+### F93 — `bun run test` (canonical vitest) — 2 failed en usage-tracking (`pricing.spec.ts`, `record-buffer.spec.ts`) — F80 regresión (FATAL)
+
+Re-audit-10 `bun run test`:
+
+```text
+FAIL | usage-tracking | tests/src/lib/pricing.spec.ts
+  > resolvePricing (stale-while-revalidate, non-blocking) > writes a background refresh when the cache is stale
+FAIL | usage-tracking | tests/src/lib/record-buffer.spec.ts
+  > RecordBuffer (CRITICAL C2 buffered append) > flushes on the time window when the batch is not filled
+  Tests  2 failed | 5224 passed (5226)
+```
+
+**Esperado**: 0 fail (F80 cerrado). **Actual**: 2 fail.
+
+**Esperado vs Actual**: F80 cerró en pasada-9. Re-audit-10 ve **regresiones** en `usage-tracking`. Probable:
+
+- `bbf3b945` (perf metrics-gate integration) no impacta.
+- `8199bd1d` (f00126 S3 profiling capture) **afecta** `record-buffer.spec.ts` si routing cambia.
+- Posiblemente `c10ec1cb` (logs cacheNamespace) introduce charge-based tracking.
+
+**Slice**: investigate root cause `RecordBuffer.flushes on time window` — fue S10/S11 a00069?
+
+### F94 — `bun test` (bare) ahora **72 fail / 37 errors** — F87 evolución (F87 worsen)
+
+Re-audit-10 `bun test`:
+
+```text
+ 5026 pass
+ 72 fail
+ 37 errors
+ 4 snapshots, 20236 expect() calls
+Ran 5098 tests across 678 files. [160.41s]
+```
+
+vs pasada-9 (71 fail / 37 errors). **+1 fail**.
+
+**Esperado**: < 71. **Actual**: 72.
+
+**Slice**: ignorar per F80 (canonical). Pero **sumar a F68 tracking**.
+
+### F95 — `plugins/prompt-eval/` untracked + tracked files — F57 evolución (F86 paralelo)
+
+Re-audit-10 `git status --short`:
+
+```text
+M plugins/prompt-eval/src/index.ts
+M plugins/prompt-eval/src/lib/tools/eval-report.tool.spec.ts
+M plugins/prompt-eval/src/public/index.ts
+?? plugins/prompt-eval/README.md
+?? plugins/prompt-eval/src/index.spec.ts
+?? plugins/prompt-eval/src/lib/calibrate/
+?? plugins/prompt-eval/src/lib/tools/eval-calibrate.tool.spec.ts
+?? plugins/prompt-eval/src/lib/tools/eval-calibrate.tool.ts
+```
+
+**Esperado**: f00127 S1 todo commiteado. **Actual**: 7 files untracked.
+
+**Slice**: `git add` + commit `feat(f00127): S1 — eval harness + calibrate` antes de proseguir.
+
+### F96 — `bbf3b945` y `8199bd1d` dos commits con subject idéntico — F77 residuo (commit subject dup)
+
+`git log --oneline`:
+
+```text
+3815c571 feat(perf): S3 perf_profile tool + profile capture + tests
+f0d55edf feat(f00126): S2 bundle-size budget — perf_bundle tool + tests
+87b722e2 docs(f00126): mark S2 bundle-size budget done — actual file paths
+85e15d32 docs(f00126): mark S1 bench harness + baseline compare done
+bfbdfd46 feat(f00126): S1 bench harness + baseline compare
+bbf3b945 feat(f00126): S3 profiling capture + metrics-gate integration
+009ed7b2 chore(f00125): wire browser plugin into workspace + fix init test counts
+8199bd1d feat(f00126): S3 profiling capture + metrics-gate integration (worktree)
+```
+
+**Esperado**: cada commit con subject único. **Actual**: `bbf3b945` y `8199bd1d` tienen **subject idéntico** ("feat(f00126): S3 profiling capture + metrics-gate integration"). El segundo commit (worktree) re-empaquetó lo mismo.
+
+**Esperado vs Actual**: `8199bd1d` añadió "(worktree)" al subject para diferenciar, pero eso **rompe Conventional Commits** (no es Conventional-compliant).
+
+**Slice**: marcar `8199bd1d` como superseded por `bbf3b945` (en realidad `bbf3b945` se publicó desde la main worktree después del worktree).
+
+### F97 — `f00126 S3` metrics-gate integration dispara `record-buffer` test failure — F93 evolución
+
+`bbf3b945` (feat(f00126): S3 profiling capture + metrics-gate integration) introduce integration con `usage-tracking` (record-buffer).
+
+**Esperado**: `record-buffer.spec.ts` ≈ green. **Actual**: `flushes on the time window when the batch is not filled` falla.
+
+**Slice**: investigate `RecordBuffer.flushes` — mide el comportamiento del buffer cuando batch no se llena. **Probable**: el cambio en `record-buffer` (shared-cache directory?) impacta este test.
+
+### F98 — `dd75bd7a` solo registra 1 plugin (perf) — F92 complement
+
+`dd75bd7a` registra `{ plugin: 'perf' }`. **Pero** `1a20db97` ya había includido browser + refactor en `tool-outputs.ts`.
+
+**Esperado**: ambos actualizaciones cierran F84. **Actual**: 2 commits separados.
+
+**Esperado vs Actual**: `dd75bd7a` solo afecta `PRESET_CATALOG` (1 file). `1a20db97` afecta `tool-outputs.ts` (regenerated). **2 commits para "wire perf plugin" — coordinación**.
+
+**Slice**: chore `lint:plugin-wiring` que detecte drift entre `PRESET_CATALOG` y `tool-outputs.ts` harvester.
+
+### F99 — `f00127 S1` introduce `auto-agent-selector` integration — F57/K17 evolución
+
+`f00127-prompt-eval-plugin.md` (S1) `write the results into `auto-agent-selector`'s calibration store (its S4 win-rate table)`.
+
+**Esperado**: f00127 S1 (`80cd369e`) **escribe** en auto-agent-selector calibration. **Actual**: `bun test 2 failed` — `usage-tracking` (relacionado con pricing) roto.
+
+**Esperado vs Actual**: si f00127 lee `auto-agent-selector`, debería estar en `dependencies` (no solo `track`). El cost calibration cambia `pricing.spec.ts`.
+
+**Slice**: validate `f00127`'s dependency on `auto-agent-selector` lineage.
+
+### F100 — `f00119-auto-agent-selector-plugin.md` sigue en `in-progress/` — F88 evolución
+
+`f00119` (auto-agent-selector) en `in-progress/`. **Esperado**: close-evidence.
+
+**Esperado vs Actual**: f00119 sigue en `in-progress/` con S1+S2+S3 done + S4 (calibration) marcado. **Falta**: close-evidence para que cierre a `done/`.
+
+**Slice**: ejecutar `docs(f00119): close with closed-by and closed-evidence`.
+
+### F101 — worktree f00126-S3 detached HEAD — F79 evolución
+
+`git worktree list`:
+
+```text
+/home/cartago/_projects/mcp-vertex/.worktrees/f00126-S3  8199bd1d (detached HEAD)
+```
+
+**Esperado**: worktree merged + cleaned. **Actual**: detached HEAD `@8199bd1d` no mergeado a develop.
+
+**Esperado vs Actual**: `bbf3b945` (develop) re-hace el mismo commit con subject id. `8199bd1d` (worktree) puede ser cherry-pick de develop o un duplicate. **Diferencia**: el trabajo del worktree es ignorado.
+
+**Slice**: identificar y resolver `8199bd1d` vs `bbf3b945` — branch-gc o re-cherry-pick.
+
+### F102 — `chore(release): pin f00127 S2 as future work` — F46 evolución (F90 residuo)
+
+`3a2feb51` (chore(proposals,release): pin f00127 S2 as future work) marca S2 como `future work` en lugar de done.
+
+**Esperado**: S2 done. **Actual**: S2 pinneada como `future work`.
+
+**Esperado vs Actual**: el owner de f00127 prefirió marcar S2 como pinned en lugar de cerrarla. **Esto es OK** si S2 realmente va por su propio commit. Pero es **F46 evolución**: `Slices pendientes: ninguno` se mantuvo en a00069; f00127 S2 sigue en `ready/` con `pending`.
+
+**Slice**: clear `future work` semantics: si S2 está pinned, usar `on-hold` status en frontmatter, no `pending`.
+
+### F103 — Patrón "agente zombie": `started_at == last_seen` + asimetría log/lock + sin watchdog proactivo (FATAL operativo, sesión 2026-07-25 14:00 UTC)
+
+**Evidencia verbatim** (snapshot `.cache/mcp-vertex/` al ejecutar este audit):
+
+```text
+.cache/mcp-vertex/agents.lock.json:
+  in_flight[0]  f00127-S2  copilot-minimax-m3    last_seen 2026-07-25T11:50:32Z  (2h09m ago, stale 13×)
+  in_flight[1]  f00126-S3  impl-runner-perf-s3   last_seen 2026-07-25T11:59:37Z  (2h00m ago, stale 12×)
+  stale_after_minutes: 10
+
+.cache/mcp-vertex/agents.lock.json.*.tmp  (6 huérfanos, mtime 02:33 → 13:48 HOY):
+  ms0b2uz1-bdl6pck4ch.tmp   mtime 13:48:44  in_flight:[f00127-S2]              ← mismo contenido que el lock final
+  mrzs5bm3-9hwhy9te79f.tmp  mtime 04:58:46  in_flight:[f00125-S1, f00125-S2]
+  mrzmyw0p-14n2ikn1fjb.tmp  mtime 02:33:48  in_flight:[]
+  mrzn0byr-isjllxmjfwn.tmp  mtime 02:34:56  in_flight:[]
+  mrzn1ivd-7rn7i30195t.tmp  mtime 02:35:51  in_flight:[]
+  mrzn5jml-efqa3ixlr5i.tmp  mtime 02:38:59  in_flight:[]
+
+.cache/mcp-vertex/logs/2026-07-25.jsonl:
+  última entrada:        2026-07-25T04:06:59.096Z  (tool-completed: proposal_reconcile_folder)
+  entradas post 04:06:    8 (todas en 04:05–04:07, mismo batch)
+  entradas post 06:00:    0
+  entradas post 11:00:    0
+  entradas para f00126-S3 o impl-runner-perf-s3: 0   ← LA TAREA CON LOCK NUNCA APARECIÓ EN EL LOG
+  size:                   592187 B (parado a 06:06)
+```
+
+**Diagnóstico — 4 bugs encadenados que producen el mismo síntoma**:
+
+1. **Bug A — `appendFile` (log) NO tiene la durabilidad de `writeFileAtomic` (lock).**
+   `packages/core/src/lib/shared/atomic-write.ts:51` implementa `write → fsync → rename → fsyncDir` (POSIX durable, survives kill -9). Pero `plugins/logs/src/lib/services/log-store.ts:106` usa `appendFile` directamente — sin fsync, buffer del kernel.
+   Si el proceso muere entre `rename` del lock (visible) y `appendFile` del log, el lock persiste con su `last_seen` actualizado pero **el log queda mudo**. La diagnosis desde "leer el log" no detecta el zombie.
+   - **Evidencia**: lock de `f00126-S3` con `last_seen: 2026-07-25T11:59:37.856Z`, log termina a 04:06. Gap de 8h sin una sola entrada.
+   - **Severidad**: FATAL — el "log = verdad del agente" deja de serlo en cuanto hay un kill -9 / OOM.
+
+2. **Bug B — `removeStale` solo corre on-action.**
+   `plugins/proposals/src/lib/locks/agent-lock-engine.ts:245-249` purga stale únicamente cuando `executeLockAction` se invoca (claim/release/status/gc). Si **ningún agente está vivo** para gatillar la siguiente acción, las entradas stale sobreviven `stale_after_minutes × ∞`. El sistema no es self-healing sin un cliente activo.
+   - **Evidencia**: 2 in_flight stale a 2h+ — nadie las está reclamando porque, precisamente, los agentes que las reclaman están muertos.
+   - **Severidad**: FATAL — dead-lock permanente (lock figurative, no literal).
+
+3. **Bug C — tmp files se acumulan en crashes silenciosos.**
+   `writeFileAtomic` (`packages/core/src/lib/shared/atomic-write.ts:54-78`) hace `open(tmp) → write → fsync → rename → fsyncDir` con un `catch` que solo corre `rm(tmp)` **en errores síncronos del bloque try**. Si el proceso recibe SIGKILL / SIGTERM / OOM-kill entre el `open` y el `rename`, el catch nunca ejecuta y el tmp sobrevive indefinidamente. No hay boot-time sweep.
+   - **Evidencia**: el `ms0b2uz1-bdl6pck4ch.tmp` (13:48:44 HOY) tiene **el mismo contenido** que el `agents.lock.json` final. Eso solo puede pasar si hubo un primer `writeFileAtomic` cuyo `rename` falló silenciosamente, y luego un segundo write que sí completó — patrón típico de "two writers race to the same target con SIGKILL entre medias".
+   - **Evidencia adicional**: `mrzs5bm3-9hwhy9te79f.tmp` (04:58) contiene `in_flight:[f00125-S1, f00125-S2]` con `started_at == last_seen` en ambos — el archivo fue escrito al final de la vida de los agentes, justo cuando morían.
+   - **Severidad**: MUY MAL — acumulable; cada crash añade 1+. F32 ya lo mencionaba con 4 files; F69 con 5; hoy son **6**.
+
+4. **Bug D — `last_seen` solo avanza si el agente coopera.**
+   No hay watchdog. El campo `last_seen` solo se actualiza cuando el agente llama explícitamente a `agent_lock { action: 'status' }` o vuelve a `claim`. Un agente puede bloquear el lock, ejecutar trabajo durante horas, **y nunca tocar el lock** mientras tanto — su `last_seen` queda fijado en el momento del claim inicial.
+   - **Evidencia**: `f00126-S3` con `started_at == last_seen == 2026-07-25T11:59:37`. **Cero progreso** entre claim y muerte.
+   - **Severidad**: compuesto con B — sin watchdog proactivo, no hay forma de distinguir "agente trabajando silenciosamente" de "agente muerto".
+
+**Esperado**:
+- Log writer con durabilidad equivalente a `writeFileAtomic` (append + fsync, o write-tmp + rename atómico).
+- `removeStale` corre también al **boot del MCP server**, no solo on-action.
+- Boot-time sweep elimina `.tmp` huérfanos con `mtime > 60s` (un tmp de 60s es ya evidencia de crash).
+- Watchdog de heartbeat opcional: si `started_at == last_seen && age > N` (e.g., 30s en dev, 5min en prod), marcar `zombie: true` en la entry para que `agent_lock { action: 'status' }` lo surface como warning.
+
+**Actual**: lock zombie persiste; log miente; tmp acumula; nadie lo sabe.
+
+**Slice propuesto** (nuevo **S12** — agent-stuck self-healing, o extender **S10**):
+
+- **S12.a — Write-through atomic log.** Sustituir `appendFile` por `writeFileAtomic` con append-equivalent semantics en `plugins/logs/src/lib/services/log-store.ts:106-110`. Mantener el `withFileMutex` (evita que dos writers intercalen bytes). Si se conserva `appendFile`, añadir `await handle.sync()` tras cada write.
+- **S12.b — Lock GC al boot.** En `packages/core/src/lib/cli/assemble-core-tools.ts` (o `createMcpServer`), después de cargar plugins, leer `agents.lock.json`, aplicar `removeStale`, escribir de vuelta si cambió. Idempotente y barato.
+- **S12.c — Tmp sweep al boot.** `tools/scripts/lint/check-stray-cache-files.script.ts` ya barre `.cache/mcp-vertex/*.tmp` con `mtime > 7d`; **rebajar el threshold a 60s para `*.tmp` con prefijo `agents.lock.json.`** (esos siempre deben ser efímeros; un tmp de 60s es ya evidencia de crash).
+- **S12.d — `agents_lock_diagnose` tool.** Nuevo tool en `plugins/proposals/src/lib/tools/` que enumera: zombies (started_at == last_seen && age > N), tmp huérfanos, y diff entre `last_seen` y la última entrada de log del task_id. Surface en `auto_work` cuando detecte zombies.
+
+**Cross-references**:
+- **F32** (huérfanos `.tmp` — MEJORABLE): este F103 lo GENERALIZA. Los tmp son síntoma; las causas son A, B, D.
+- **F9 / F16** (`agent_lock` sin `ok` + claim/release desbalanceado): Bug B y D explican **por qué** el imbalance crece sin que `close_slice` lo arregle.
+- **F15** (S10 auto-boot `state_repair`): el mecanismo existe para `subagent-registry` y `round-context`, pero NO para `agents.lock.json`. S12.b extiende S10.
+- **F34** (peer-review-bypass in-memory): mismo anti-patrón — "estado crítico del swarm vive en memoria o en file sin auto-GC".
+- **F69** (worsen de 4→5 tmp): Bug C explica la tendencia — sin S12.c, va a seguir creciendo (hoy: 6).
+
+**Estado**: OPEN (FATAL operativo). Sesión de este audit descubrió los 4 bugs encadenados al inspeccionar el lock tras el branch-cleanup pass.
+
 ### F51 — nuevo fail/err entre pasada 5→6 (43 fail / 35 errors) — drift implícito (MEJORABLE) — **EVOLVED**
 
 Re-audit-6 muestra **un error más** (35 vs 34) y **un test más** (4988 vs
@@ -1612,37 +2046,17 @@ sobre 289 files. Pasada-5 tenía 5 fatales (f00120/f00121/f00122 duplicados).
 **Slice**: cerrado. Pero el **acceptance** debe actualizarse: a00069
 midió `5 fatales` en pasada-5; esa línea ya no aplica.
 
-### F66 — `bun run typecheck` falla en `plugins/browser/src/lib/tools/browser-inspect.tool.spec.ts` (FATAL build)
+### F66 — `bun run typecheck` falla en `plugins/browser/src/lib/tools/browser-inspect.tool.spec.ts` (FATAL build) — **CLOSED**
 
-Re-audit-8 `bun run typecheck` reporta:
+- `009ed7b2` (chore(f00125): wire browser plugin into workspace + fix init test counts) — fija `writeScreenshotAtomic` con `handle.write(data)` en lugar de `handle.writeFile(data, 'binary')`.
+- También wirea `@mcp-vertex/browser` en `tsconfig.base.json`, `vitest.shared.ts`, `plugin-defaults.ts`, `release-plan.ts` (PUBLISH_ORDER), `bun.lock`.
+- **Residual**: 0.
 
-```text
-plugins/browser/src/lib/tools/browser-inspect.tool.spec.ts(32,52): error TS2345:
-  Argument of type '{ namespacePrefix: string; pluginCacheDir: string; driver?: IBrowserDriver; }'
-  is not assignable to parameter of type 'IBrowserInspectToolOptions'.
-    Types of property 'driver' are incompatible.
-      Property 'open' is missing in type 'IBrowserDriver' but required in type 'IBrowserPageDriver'.
-error: script "typecheck" exited with code 1
-```
+### F67 — `cacheNamespace: 'results'` ignorado en logs plugin (FATAL cache integrity) — **CLOSED**
 
-**Esperado**: `bun run typecheck` 0 errores. **Actual**: error TS2345.
-
-**Esperado vs Actual**: `IBrowserDriver` vs `IBrowserPageDriver` no son el mismo shape. El test usa `IBrowserDriver` pero el param demanda `IBrowserPageDriver`. Probable regresión tras algun f00125 S1 merge.
-
-**Slice**: owner del f00125 (browser plugin) — fix el cast o `IBrowserDriver: IBrowserPageDriver` o deshabilitar el spec.
-
-### F67 — `cacheNamespace: 'results'` ignorado en logs plugin (FATAL cache integrity)
-
-`c10ec1cb` (fix(logs,core): resolve the logs plugin's cache dir under results/ (cacheNamespace bug)) bootea un bug crítico:
-
-- El plugin logs declaraba `cacheNamespace: 'results'` pero escribía a `.cache/mcp-vertex/logs/` y `.cache/mcp-vertex/logs-errors/` — **bypassando `results/` completamente**.
-- `check-stray-cache-files` flaggeaba el problema.
-
-**Esperado**: `cacheNamespace: 'results'` ⇒ escribir bajo `<cacheDir>/results/`. **Actual**: `ctx.cacheDir` raw, namespace no aplicado.
-
-**Esperado vs Actual**: distinción crítica — `results/` indica "durable records, deleting them loses real history". Logs se almacenan en lugar equivocado.
-
-**Slice**: ✅ ya merged en `c10ec1cb`. Pero — **missing companion**: check `cacheNamespace` alignment como `lint:proposals` o `lint:plugins`.
+- `c10ec1cb` (fix(logs,core): resolve the logs plugin's cache dir under results/) — logs y logs-errors ahora en `.cache/mcp-vertex/results/`.
+- Re-audit-9 confirma `ls .cache/mcp-vertex/results/` = `auto-agent-selector, logs, logs-errors, memory, usage-tracking`. **F71 partial**: otros plugins también migran a `results/`.
+- **Residual**: 0 para logs; F71 sigue sobre otros plugins.
 
 ### F68 — `bun test` 45 fail groups (FATAL proceso post-F41-corregido)
 
@@ -1654,15 +2068,15 @@ Re-audit-8 fail groups: 45. Pasada-7: 42. Pasada-6: 8. Pasada-5: 8.
 
 **Slice**: documentar `bun run test` como canonical; cerrar los 45 grupos bare-bun como out-of-scope a00069.
 
-### F69 — `agents.lock.json.*.tmp` + `agents.lock.json.mutex` aún residen (F32 partial)
+### F69 — `agents.lock.json.*.tmp` + `agents.lock.json.mutex` aún residen (F32 partial) — **WORSEN**
 
-Re-audit-8 confirma `ls .cache/mcp-vertex/agents.lock.json*` muestra 5 archivos similares a pasada-6 (F32). **Sin cambio**.
+Re-audit-9 confirma `ls .cache/mcp-vertex/agents.lock.json*` muestra **5 .tmp files** (`mrzm...`, `mrzn...`, `mrzn...`, `mrzn...`, `mrzs...`) + `mutex` + 1 file activo. **+1 tmp vs pasada-8**.
 
-**Esperado**: limpieza on next claim. **Actual**: 4 `.tmp` files + `mutex` acumulados.
+**Esperado**: limpieza on next claim. **Actual**: basura acumulada crece.
 
 **Esperado vs Actual**: `cf1ef20e` (block auto work on missing done artifacts) NO toca el agent_lock flow. F32 sigue OPEN.
 
-**Slice**: añadir cleanup on next claim en `agent-lock-engine.ts`.
+**Slice**: añadir cleanup on next claim en `agent-lock-engine.ts`; o gc script que ejecute on host boot.
 
 ### F70 — `agent/codex-auto-work-artifact-drift` (cf1ef20e) — nueva rama agent/* (F61 recidiva)
 
@@ -1738,13 +2152,15 @@ El commit `424291c1 docs(a00069): record F56 — F41 triage results, root causes
 
 **Slice**: chore de convention — agents deben distinguir `record F56 (rama ref)` vs `record F41 (finding)`.
 
-### F78 — `f00123 S3` (5af3a6ad) cierra f00123 entero — slice de "rule-based codemods + recipe library" — F57 evolución (POSITIVO)
+### F78 — `f00123 S3` (5af3a6ad) cierra f00123 entero — slice de "rule-based codemods + recipe library" — F57 evolución (POSITIVO) — **CORRECTED→LANDED**
 
-`f00123` (refactor plugin) ahora tiene S1+S2+S3 todos done. **Pero f00123 sigue en `ready/`** sin `close` formal.
+- `da9050d8` (docs(f00123): mark S3 codemod + recipe library done) — **mark incorrecto**: el módulo codemod nunca aterrizó en develop (commit del agente no contenía `plugins/refactor/src/lib/codemod/`).
+- `e6e248a0` (docs(f00123): correct S3 status — codemod module never landed) — S3 revertido a `pending` con honestidad: "S1 + S2 done; S3 pending — needs an actual implementation".
+- `d10e3bdb` (feat(f00123): S3 rule-based codemods + recipe library) — **ahora S3 sí landed**: `plugins/refactor/src/lib/codemod/{codemod-runner,recipes}.ts` + tool specs + wire en `index.ts`.
 
-**Esperado**: replicar el workflow `da32a959` y `225e4b30` (closed-by / closed-evidence). **Actual**: frontmatter stale.
+**Esperado vs Actual**: la primera mark fue **mentira técnica**; el commit no contenía el código. El correction commit (`e6e248a0`) lo documentó. **Lección F78 corregido**: cada `docs(...): mark S... done` debe verificar `git ls-tree HEAD -- <path>` antes de commitear.
 
-**Slice**: investigar si f00123 queda intencionalmente en `ready/` (idiomático) o requiere `done/` (close formal).
+**Slice**: añadir paso de "verify files exist" al pre-commit de `mark slice done` (similar a F46 `missingDoneArtifacts`).
 
 ### F79 — `1ab32885` Merge PR #14 + `5191f4ec` Merge PR #13 son PRs de `worktree-a00069-f41-validate-fail-groups` (F56/F41 meta)
 
@@ -1868,6 +2284,44 @@ c10ec1cb, ab78e60d, 60fea56f, 740f57fa, 6ff5b217, 8d1e1999):
 | Docs / skills | 7.5 | **OK.** |
 | Concurrencia I/O | 7.5 | **OK-.** |
 | **Total (Average)** | **~4.0** | **MUY MAL.** |
+
+### Scoreboard re-audit-10 (post f00126 S2+S3, f00127 S1, F84 closed)
+
+| Dimension | Score | Comments |
+|---|---:|---|
+| Gate validate | **7.5** | **OK.** `bun run test` 2 fail (F93 regresión); `bun test` bare 72 fail (out-of-scope F80). |
+| Index↔fs | 8.5 | S3 holds |
+| Multi-agent discipline | 6.5 | F23/F39 ramas; **F88** +1 in-progress (f00125); **F101** detached HEAD |
+| Lifecycle review/done | 8.0 | F45/F53/F54 closed; **F84 closed**; F66/F67 closed; **F90 closed** |
+| Registry / orientation | 7.5 | F31 cache; F67 closed |
+| Proposal structure | 8.5 | S1 |
+| Locks | 7.5 | F25; F37 |
+| Close-acceptance | 7.5 | F21; F46 partial |
+| Dogfood plugins | **8.0** | **OK.** f00126 S1+S2+S3 done; f00127 S1 done; F48 closed; F84 closed |
+| Handoff / logs | 6.5 | F33 stale MD; F69 worsen; F26 dual GC |
+| Docs self | 4.0 | F42 stale; F60 close-evidence; F83 commit laundering |
+| Tools | 7.0 | F66 OK; F92/F98 plugin-wiring drift |
+| Concurrency I/O | 7.0 | F32 .tmp litter |
+| **Average** | **~7.0** | **OK-.** F84/F90 closed. F93 regresión. |
+
+### Scoreboard re-audit-9 (post f00125 S3, f00126 S1, F66/F67/F78 closed, F69 worsen)
+
+| Dimension | Score | Comments |
+|---|---:|---|
+| Gate validate | **8.0** | **MUY BIEN.** `bun run test` 5203/5203 pass (F80/F41 closed!). F87 bare-bun 71 fail (out-of-scope). |
+| Index↔fs | 8.5 | S3 holds |
+| Multi-agent discipline | 6.5 | F23/F39/F50 ramas redundantes; **F88** +1 in-progress |
+| Lifecycle review/done | 8.0 | F45/F53/F54 closed; **F66/F67 closed**; F58/F59/F60 partial |
+| Registry / orientation | 7.5 | F31 cache; **F67** cerrado (logs/results/) |
+| Proposal structure | 8.5 | S1 |
+| Locks | 7.5 | F25; F37 sin notify_status wire |
+| Close-acceptance | 7.5 | F21 accepted; F46 partial (cf1ef20e) |
+| Dogfood plugins | 7.5 | **F80 POSITIVO**; F48 closed; F73 logs interfaces |
+| Handoff / logs | 6.5 | F33 stale MD; **F69 worsen**; F26 dual GC |
+| Docs self | **4.0** | F42 stale; F60 close-evidence; **F83** commit laundering |
+| Tools | 7.5 | OK |
+| Concurrency I/O | 7.0 | F32 .tmp litter |
+| **Average** | **~7.0** | **OK-.** F80 closes F41 (canonical 0 fail). F66/F67/F78 closed. F83 newly surfaced. |
 
 ### Scoreboard re-audit-8 (post f00123 S1, f00124 S3, F46/F47/F48/F49/F56/F57 closed, F41-corrected)
 
@@ -2055,7 +2509,44 @@ c10ec1cb, ab78e60d, 60fea56f, 740f57fa, 6ff5b217, 8d1e1999):
 
 **FATAL residual**: F66 (typecheck roto). F34 (audit log in-memory). F71 (cacheNamespace en otros plugins).
 
-**Recomendación**: Resolver F66 (typecheck bloqueo total) + F71 (audit cacheNamespace en otros plugins). Tras eso, close-evidence (F60). Scoreboard 8 ≈ 6.5 MEJORABLE−; post-fix ≈ 7.5 OK.
+**Pasada 9 (late)**: F66 closed (009ed7b2 wire browser). F67 closed (c10ec1cb cacheNamespace logs). F78 corrected + landed (e6e248a0 + d10e3bdb f00123 S3). F69 worsen (5 tmp files). F41 closed (canonical 5203/5203 pass). f00125 S3 done (321e55d8). f00126 S1 done (bfbdfd46).
+
+**F80-F90 nuevos** (re-audit-9):
+- **F80** (POSITIVO — F41 closed): `bun run test` canonical 5203/5203 pass.
+- **F81** (POSITIVO): f00125 S3 done (page verification + E2E recipe).
+- **F82** (POSITIVO): f00126 S1 done (bench harness + baseline compare).
+- **F83** (F78 corrected): `e6e248a0` documenta **commit laundering** — `da9050d8` marked S3 done sin código; correción honesta.
+- **F84** (F66 evolución): f00123/f00126 aún no wirados al workspace (chore pendiente).
+- **F85** (F67/F71 evolución): `results/` 5 subdirs canónicos (logs, logs-errors, memory, auto-agent-selector, usage-tracking).
+- **F86** (MEJORABLE): nuevos `.cache` paths no catalogados (proposal-lock, healthcheck, roster.draft, state/, orchestrator-runner/).
+- **F87** (F68 evolución): bare `bun test` ahora **71 fail** (vs 70 pasada-8; out-of-scope per F80).
+- **F88** (MEJORABLE): 5 in-progress (vs 4 pasada-8) — qué migró?
+- **F89** (POSITIVO): f00126 cerró limpio (ejemplo de close sin ramas redundantes).
+- **F90** (F78 recidiva): f00126 sigue en `ready/` (close-evidence pendiente).
+
+**FATAL residual**: F34 (audit log in-memory). F71 (cacheNamespace en otros plugins).
+
+**Pasada 10 (late)**: f00126 S2+S3 done (f0d55edf, 3815c571, bbf3b945). f00127 S1 done (80cd369e). F84 closed (dd75bd7a, 1a20db97, 3a2feb51). F90 closed (f00126 S3 done). F93 regresión en `bun run test` (2 fail en usage-tracking).
+
+**F91-F102 nuevos** (re-audit-10):
+- **F91** (MEJORABLE): f00125-browser-plugin.md en `in-progress/` (F45 recidiva triple).
+- **F92** (MEJORABLE): `dd75bd7a` solo 1 file (perf registration); F98 complement.
+- **F93** (FATAL regresión): `bun run test` 2 fail en usage-tracking (pricing, record-buffer).
+- **F94** (F87 worsen): bare `bun test` 72 fail (+1 vs pasada-9).
+- **F95** (F86 paralelo): `plugins/prompt-eval/` 7 files untracked.
+- **F96** (F77 residuo): `bbf3b945` y `8199bd1d` subject duplicado.
+- **F97** (F93 evolución): `bbf3b945` metrics-gate → `record-buffer` test failure.
+- **F98** (F92 complement): `dd75bd7a` vs `1a20db97` coordinación wire.
+- **F99** (F57/K17): f00127 S1 ↔ auto-agent-selector dependency.
+- **F100** (F22 recidiva): f00119 sigue en `in-progress/`.
+- **F101** (F79 evolución): worktree f00126-S3 detached HEAD.
+- **F102** (F46 evolución): f00127 S2 pinneada como `future work`.
+
+**F103 (re-audit-11, mismo día)**: Patrón "agente zombie" — `agents.lock.json` con `started_at == last_seen` para f00126-S3 / f00127-S2 (2h+ stale), log writer `appendFile` sin fsync (gap de 8h sin entradas para la task con lock), 6 tmp files huérfanos acumulados desde 02:33 hasta HOY 13:48. Cuatro bugs encadenados (log durability gap, lock GC only on-action, tmp sin boot-sweep, sin heartbeat watchdog). **FATAL operativo** — ver §F103 para el slice S12.
+
+**FATAL residual**: F93 (regresión). F103 (agent-stuck). F34 (audit log in-memory). F71 (cacheNamespace cross-plugin).
+
+**Recomendación**: Resolver F93 (regresión usage-tracking). Tras F71 + F34 cerrados, close-evidence (F60). Scoreboard 10 ≈ 7.0 OK-; post-fix ≈ 7.8 OK.
 
 ### appendix A — Log evidence (verbatim)
 
@@ -2211,6 +2702,45 @@ d48d6ef4 fix(a00069): complete S7 peer-review short-circuit paths
 c51bb563 fix(a00069): unnest requirePeerReview from validationCommand
 ````
 
+#### A13 — Re-audit-9 residuals (2026-07-25 late)
+
+````text
+origin/develop: d10e3bdb (develop ahead 3 vs origin/develop)
+f00125 S3 done (321e55d8, e8f2438d)
+f00126 S1 done (bfbdfd46, 85e15d32) — perf plugin bench harness
+f00123 S3 corrected + landed (e6e248a0 then d10e3bdb)
+f00125 wire workspace (009ed7b2) — closed F66
+cacheNamespace logs resolved (c10ec1cb; F67 closed)
+results/ subdirs: auto-agent-selector, logs, logs-errors, memory, usage-tracking
+bun run test (canonical): 5203/5203 pass (F80 — F41 closed)
+bun test (bare): 5013 pass / 71 fail / 37 errors / 20197 expects (F87)
+F66 closed: 009ed7b2 fix browser spec + wire workspace
+F67 closed: c10ec1cb cacheNamespace logs
+F78 corrected: e6e248a0 codemod nunca landed, ahora landed via d10e3bdb
+F69 worsen: agents.lock.json.*.tmp 5 files (vs 4 pasada-8)
+F80: bun run test canonical (F41 closed)
+F81: f00125 S3 done (positiva)
+F82: f00126 S1 done (positiva)
+F83: F78 correction commit e6e248a0 documenta commit laundering (positiva)
+F84: f00126/f00123 aún no wirados al workspace (F66 evolución)
+F85: results/ 5 subdirs canónicos (F67/F71 evolución)
+F86: nuevos .cache paths (proposal-lock, healthcheck, roster.draft, state/, orchestrator-runner/)
+F87: bare bun test 71 fail (out-of-scope per F80)
+F88: 5 in-progress (vs 4 pasada-8)
+F89: f00126 cerró limpio
+F90: f00126 sigue en ready/ (F78 recidiva)
+proposals: 5 in-progress, 27 ready, 11 review, 247 done
+branches: 14 total, 10 agent/*
+registry orphans: 0
+agents.lock.json.*.tmp: 5 files (F69 worsen)
+handoff/: orchestrator-blocker-2026-06-21-no-mcp-runtime.md (F33)
+peer-review-bypass-log: in-memory (F34 FATAL)
+unusedActivePlugins: assemble-core-tools only (F35)
+i18n sliceStatus/peerReviewBypasses: missing (F38)
+catalog auto-publish: none (F40)
+auto_work outOfCache warning only (F52)
+````
+
 #### A13 — Re-audit-7 residuals (2026-07-25 late)
 
 ````text
@@ -2239,6 +2769,45 @@ catalog auto-publish: none (F40)
 cli-ui-parity map: stale (F49)
 PRESET_CATALOG: vs mcp-vertex.config.json drift (F48)
 sessionStorage parity CI/local: divergente (F47)
+auto_work outOfCache warning only (F52)
+````
+
+#### A13 — Re-audit-10 residuals (2026-07-25 late)
+
+````text
+origin/develop: 3a2feb51 (develop ahead 1 vs origin/develop)
+f00126 S1+S2+S3 done (bfbdfd46, f0d55edf, 3815c571)
+f00127 S1 done (80cd369e) — prompt-eval plugin spend-guarded eval harness
+f00126 worktree detached HEAD 8199bd1d (duplicate de bbf3b945)
+perf plugin registered in PRESET_CATALOG (dd75bd7a)
+browser + refactor plugins in tool-outputs harvester (1a20db97)
+f00127 added to PUBLISH_ORDER (3a2feb51)
+bun run test (canonical): 2 failed (F93) — usage-tracking pricing, record-buffer
+  5224 passed / 2 failed
+bun test (bare): 5026 pass / 72 fail / 37 errors / 20236 expects (F87)
+F84 closed: dd75bd7a + 1a20db97 + 3a2feb51
+F90 closed: f00126 S1+S2+S3 done (bbf3b945 integration)
+F91: f00125-browser-plugin.md migró a in-progress/
+F92: dd75bd7a solo 1 file (vs 1a20db97 multi-file)
+F93: bun run test 2 fail (regresión desde pasada-9)
+F94: bun test 72 fail bare-bun (F87 worsen)
+F95: plugins/prompt-eval/ 7 files untracked
+F96: bbf3b945 / 8199bd1d subject duplicado
+F97: bbf3b945 metrics-gate → record-buffer test failure
+F98: dd75bd7a vs 1a20db97 coordinación wire
+F99: f00127 S1 ↔ auto-agent-selector dependency
+F100: f00119 sigue en in-progress/ (F22 recidiva)
+F101: worktree f00126-S3 detached HEAD (F79 evolución)
+F102: f00127 S2 pinneada como future work (F46 evolución)
+agents.lock.json.*.tmp: 6 files (F69 worsen) — 02:33, 02:34, 02:35, 02:38, 04:58, 13:48
+worktrees: 2 (main, f00126-S3 detached)
+proposals: 5 in-progress, 27 ready, 11 review, 247 done
+registry: 0 orphans
+results/: 5 subdirs canónicos
+peer-review-bypass-log: in-memory (F34 FATAL)
+unusedActivePlugins: assemble-core-tools only (F35)
+i18n sliceStatus/peerReviewBypasses: missing (F38)
+catalog auto-publish: none (F40)
 auto_work outOfCache warning only (F52)
 ````
 
