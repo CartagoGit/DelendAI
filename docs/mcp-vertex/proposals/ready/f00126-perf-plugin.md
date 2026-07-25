@@ -43,9 +43,14 @@ numbers never block. Comparators are pure over injected measurements.
 
 ### S1 — bench harness + baseline compare
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/perf/src/lib/bench/`, `plugins/perf/src/lib/tools/perf-bench.tool.ts`
 - **Gate**: bun run validate
+- implementation:
+  - `bench/bench-runner.ts` exposes `runBench(name, samples)` returning ops/s, meanMs, p95Ms.
+  - `bench/bench-comparator.ts` exposes `compareToBaseline(baseline, current, threshold)` returning regressions.
+  - `perf-bench.tool.ts` exposes `perf_bench` with `benches`, optional `baseline`, optional `threshold`.
+  - Wired into the plugin registry; 11/11 plugin tests pass.
 
 Run named benches, record ops/s, compare to `perf-baseline.json`, flag
 regressions beyond a threshold. Pure comparator over injected samples.
