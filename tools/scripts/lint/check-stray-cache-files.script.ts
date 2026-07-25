@@ -45,7 +45,7 @@
  * closes both gaps.
  */
 
-import { readdir } from 'node:fs/promises';
+import { readdir, stat } from 'node:fs/promises';
 import { join, relative } from 'node:path';
 
 import { repoRoot } from '../lib/monorepo-paths';
@@ -99,6 +99,8 @@ const STRAY_EXECUTABLE_EXTENSIONS = new Set([
 	'.zsh',
 ]);
 
+const STALE_AGENTS_LOCK_TMP_MS = 60_000;
+
 /** Top-level files the runtime owns and that we should never flag. */
 const SANCTIONED_TOP_LEVEL_FILES = new Set(['proposal-id-counters.json']);
 
@@ -110,7 +112,8 @@ export interface IStrayCacheFile {
 		| 'unknown-top-level-dir'
 		| 'unknown-top-level-executable'
 		| 'unknown-subdir-executable'
-		| 'orphan-compiled-bundle';
+		| 'orphan-compiled-bundle'
+		| 'stale-agents-lock-tmp';
 }
 
 /** Summary returned to the CLI. */
@@ -132,6 +135,23 @@ const classifyCacheEntry = async (
 ): Promise<IStrayCacheFile | null> => {
 	const abs = join(cacheRootAbs, entryName);
 	const rel = relative(cacheRootAbs, abs);
+	if (
+		!isDirectory &&
+		entryName.startsWith('agents.lock.json.') &&
+		entryName.endsWith('.tmp')
+	) {
+		const info = await stat(abs).catch(() => null);
+		if (
+			info !== null &&
+			Date.now() - info.mtimeMs > STALE_AGENTS_LOCK_TMP_MS
+		) {
+			return {
+				absPath: abs,
+				relPath: rel,
+				reason: 'stale-agents-lock-tmp',
+			};
+		}
+	}
 
 	if (SANCTIONED_TOP_LEVEL.has(entryName)) return null;
 	if (SANCTIONED_TOP_LEVEL_FILES.has(entryName)) return null;

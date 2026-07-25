@@ -44,6 +44,8 @@ import {
 } from './lib/tools/state-tools.tool';
 import type { IStateToolOptions } from './lib/tools/state-tools.tool';
 import { buildCompactStatusRegistration } from './lib/tools/compact-status.tool';
+import { cleanupStaleAgentLockState } from './lib/locks/agent-lock-engine';
+import { buildAgentsLockDiagnoseRegistration } from './lib/tools/agents-lock-diagnose.tool';
 import { buildRecoveryToolRegistrations } from './lib/tools/recovery-tools';
 
 /**
@@ -189,6 +191,9 @@ export default definePlugin({
 
 		// a00069 S10: purge stale orphans at boot unless the host opts out.
 		// Fire-and-forget so register() stays sync-fast; errors never block tools.
+		void cleanupStaleAgentLockState({
+			lockPath: abs(layout.lockFile),
+		}).catch(() => undefined);
 		if (parsedOptions.data.autoRepairOrphans !== false) {
 			runAutoStateRepairOnBoot(stateOptions);
 		}
@@ -245,6 +250,11 @@ export default definePlugin({
 					...(ctx.hostIdentity !== undefined
 						? { defaultIdentity: ctx.hostIdentity }
 						: {}),
+				}),
+				buildAgentsLockDiagnoseRegistration({
+					namespacePrefix: ctx.namespacePrefix,
+					lockPathAbs: abs(layout.lockFile),
+					lockFileLabel: layout.lockFile,
 				}),
 				buildAgentWorktreeRegistration({
 					namespacePrefix: ctx.namespacePrefix,
