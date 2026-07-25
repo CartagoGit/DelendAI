@@ -30,7 +30,9 @@
  *     results/        (user-flagged 2026-07-17: accumulated RECORDS, not
  *                      derivable cache — deleting these loses real
  *                      information, unlike everything else above)
- *       logs/            (append-only JSONL event log)
+ *       logs/            (append-only JSONL event log — every outcome)
+ *       logs-errors/     (curated JSONL error stream — outcome != ok/idle
+ *                         only, full context; see plugins/logs)
  *       memory/          (agent memory store)
  *       usage-tracking/  (accrued spend/usage history)
  *     <pluginCacheDir>/exec/ (f00080 ephemeral exec paths per plugin)
@@ -77,6 +79,7 @@ const SANCTIONED_SUBPATH_PREFIXES: readonly string[] = [
 	'verify/',
 	'handoff/',
 	'results/logs/',
+	'results/logs-errors/',
 	'results/memory/',
 	'results/usage-tracking/',
 	'rules/',
