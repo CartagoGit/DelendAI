@@ -367,6 +367,7 @@ Los F148-F152 son bugs **estructurales** del swarm, no cosméticos:
   - `255020ee` — `docs(a00069): complete rename to done/audits (resolve stage conflict)`
   - `1787628c` — `docs(a00069): correct status from in-progress to done — final closure`
   - `5dcf04b7` — `docs(a00072): pasada-17 F201-F208 — branches stranded, log honest catalog, skill resolver, livelock` (S4-S7 slices proposed)
+  - `55c3fa5f` — **`fix(a00072): S2 — proposal_review mandatory pre-done gate (F149) — distinct reviewer check + transition gate`** (2 files, 268 insertions; tests 965/965 passing; **F149 CLOSED operativamente**)
 - F148-F152 documentados verbatim con logs.
 - 5 slices propuestos (S1.a-d, S2.a-c, S3.a-c).
 - Lint proposals pasa para a00072.
@@ -1718,9 +1719,133 @@ Re-audit-17 paralelo agent modificó el spec para invocar `quality_run` per revi
 
 **Severado**: INFO — F189 evolución.
 
+### F221 — `55c3fa5f` S2 closed F149 operativamente — peer-review gate enforces (POSITIVO)
+
+Re-audit-18 `grep -n "missing-peer-review" plugins/proposals/src/lib/tools/proposal-transition.tool.ts | head`:
+
+```text
+258:  code: 'missing-peer-review' as const,
+261:  blockerType: 'missing-peer-review' as const,
+271:  code: 'missing-peer-review',
+274:  blockerType: 'missing-peer-review',
+```
+
+Re-audit-18 `bun --cwd plugins/proposals test`:
+
+```text
+Test Files  107 passed (107)
+     Tests  965 passed (965)
+```
+
+**Esperado**: gate activo + tests cubriendo los 3 regressions. **Actual**: 4 referencias a `missing-peer-review` en el handler + 965/965 tests.
+
+**Esperado vs Actual**: **F149 closed operatively**. El gate rechaza transiciones `to: done` sin peer-review reciente. Distinct reviewer check (S2.b) rechaza self-review.
+
+**Severidad**: **POSITIVO**. 1/5 FATAL residual closed (F149).
+
+### F222 — `f00130-S3` claim activo en agents.lock — workflow paralelo (INFO)
+
+Re-audit-18 `cat .cache/mcp-vertex/agents.lock.json`:
+
+```text
+{
+  "task_id": "f00130-S3",
+  "agent": "copilot-minimax-m3",
+  "ownership": [
+    "plugins/api/src/lib/mock/",
+    "plugins/api/src/index.ts",
+    "plugins/api/src/public/index.ts"
+  ],
+  "started_at": "2026-07-25T19:42:24.364Z",
+  "last_seen": "2026-07-25T19:42:32.318Z"
+}
+```
+
+**Esperado**: workflow activo. **Actual**: f00130-S3 claim fresco.
+
+**Severado**: INFO — parallel agent working.
+
+### F223 — `f00130-api-openapi-plugin.md` modified in ready/ — close-evidence pendiente (MEJORABLE)
+
+Re-audit-18 `git status --short`:
+
+```text
+ M docs/mcp-vertex/proposals/ready/f00130-api-openapi-plugin.md
+```
+
+**Esperado**: f00130 cerrada. **Actual**: modified, status: ready (mismatch).
+
+**Esperado vs Actual**: F131/F139/F156/F159 reincidente. S1+S2+S3 ships, propuesta sigue en `ready/`.
+
+**Severidad**: MEJORABLE — close-evidence pendiente.
+
+### F224 — `27 archivos modified` en working tree — trabajo paralelo masivo (INFO)
+
+Re-audit-18 `git status --short | wc -l`:
+
+```text
+27
+```
+
+**Esperado**: ≤10 dirty (post-S2 commit). **Actual**: 27.
+
+**Esperado vs Actual**: parallel agent está modificando mucho (api, cli, core, presets, proposals, etc.) presumiblemente para cerrar varios slices de una pasada.
+
+**Severidad**: INFO — lots of work in flight.
+
+### F225 — `agents.lock.json` 2 in_flight simultáneos — coordination test (F206 precursor, INFO)
+
+Re-audit-18:
+
+```text
+in_flight:
+  - a00072-S2 (proposal-transition + authoring)
+  - f00130-S3 (api mock + index + README)
+```
+
+**Esperado**: 1 agente activo. **Actual**: 2 agentes claim simultáneos.
+
+**Esperado vs Actual**: hasta ahora no hemos visto livelock entre los 2 in_flight. F206 (livelock 5000ms) sigue sin reproducirse en este ciclo.
+
+**Severidad**: INFO — F206 precursor.
+
+### F226 — `packages/core/src/lib/plugins/preset-catalog.ts` modified — F121 evol (INFO)
+
+**Severado**: INFO — F121 evolución. Catalog updated.
+
+### F227 — `plugins/proposals/src/lib/tools/authoring-options.ts` modified — S2.b auto_work convention wiring (INFO)
+
+Re-audit-18: parallel agent implementó S2.b (auto_work invoca `proposal_review`).
+
+**Severado**: INFO — S2 closed en disco.
+
+### F228 — `plugins/api/src/lib/spec/openapi.ts` modified — F204 precursor (skill resolver interfaces, INFO)
+
+**Severado**: INFO — F204 precursor (skill resolver interfaces).
+
+### F229 — `plugins/api/README.md` modified — F204 docs precursor (INFO)
+
+**Severado**: INFO — F204 docs precursor.
+
+### F230 — Pasada-18: F149 closed (1/5 FATAL) + scoreboard sube — F149 era el 2do FATAL residual más impactante (MEJORABLE)
+
+Re-audit-18 scoreboard recovery:
+
+```text
+Pasada-16: 4.7 MUY MAL (F149 FATAL pendiente).
+Pasada-17: 5.0 (F149 + F201-F206 nuevos FATAL).
+Pasada-18: 5.5 (F149 closed, F127/F170/F186/F187/F188/F192/F221 POSITIVO).
+```
+
+**Esperado**: 1 FATAL closed/pasada. **Actual**: 1/5 (F149).
+
+**Esperado vs Actual**: el sistema cierra **un FATAL por cada pasada que agrega un commit funcional**. F149 = commit `55c3fa5f`. **Ritmo**: 1 FATAL / ~30min.
+
+**Severidad**: MEJORABLE proceso — ritmo sostenible. Post-S3 (F150/F152): scoreboard ~6.5 OK.
+
 ## scoreboard
 
-- **Locks**: 7.0 (MEJORABLE — **F127/F170/F186/F187/F188/F192 S12 + S1 verified**; F103 zombies detectados; F153 reincidente pero flaggeado por S1.a).
+- **Locks**: 7.5 (MEJORABLE — **F127/F170/F186/F187/F188/F192/F221 S12 + S1 + S2 verified**; F103 zombies detectados; F153 reincidente pero flaggeado por S1.a).
 - **Multi-agent discipline**: 4.0 (MUY MAL — **F172/F196 12 ramas agent/* activas reincidente F23/F39/F50/F133/F154**).
 - **Lifecycle review/done**: 5.0 (MEJORABLE — F149 peer-review bypassed; F156/F159/F184 cierre pendiente; **F184 closed por c1ce7ede**).
 - **Registry / orientation**: 6.5 (MEJORABLE — **F148/F151 closed via S1**).
