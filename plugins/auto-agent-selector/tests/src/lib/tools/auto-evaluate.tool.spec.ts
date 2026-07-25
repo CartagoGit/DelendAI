@@ -33,6 +33,16 @@ describe('auto_evaluate tool', () => {
 						success: false,
 						taskType: 'review',
 					},
+					{
+						providerId: 'claude-cli',
+						success: true,
+						taskType: 'review',
+					},
+					{
+						providerId: 'claude-cli',
+						success: true,
+						taskType: 'review',
+					},
 				],
 			},
 		});
@@ -53,7 +63,7 @@ describe('auto_evaluate tool', () => {
 			unseenProviders: string[];
 		};
 		expect(body.winRates).toEqual([
-			expect.objectContaining({ providerId: 'claude-cli', samples: 3 }),
+			expect.objectContaining({ providerId: 'claude-cli', samples: 5 }),
 		]);
 		expect(body.unseenProviders).toEqual([]);
 	});

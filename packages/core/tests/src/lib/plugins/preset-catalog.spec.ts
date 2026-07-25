@@ -28,12 +28,12 @@ describe('PRESET_CATALOG', async () => {
 		expect(PRESET_CATALOG[2]?.members.length).toBe(8);
 		// swarm: adds 7 on top of standard (f00121 S3 added forge)
 		expect(PRESET_CATALOG[3]?.members.length).toBe(7);
-		// full: adds 2 host-only on top of swarm
-		expect(PRESET_CATALOG[4]?.members.length).toBe(2);
-		// vertex: 16 members (f00119 S6 added auto-agent-selector,
+		// full: adds 2 host-only + api on top of swarm
+		expect(PRESET_CATALOG[4]?.members.length).toBe(3);
+		// vertex: 17 members (f00119 S6 added auto-agent-selector,
 		// f00123 S2 added refactor, f00126 S3 added perf, f00127 S3 added prompt-eval,
-		// f00128 S1 added database; mirrors mcp-vertex.config.json)
-		expect(PRESET_CATALOG[5]?.members.length).toBe(16);
+		// f00128 S1 added database, f00130 S3 added api; mirrors mcp-vertex.config.json)
+		expect(PRESET_CATALOG[5]?.members.length).toBe(17);
 	});
 
 	it('defines `lean` as an independent essentials preset', async () => {
@@ -51,13 +51,19 @@ describe('PRESET_CATALOG', async () => {
 		}
 	});
 
-	it('marks every full-preset member as hostOnly', async () => {
+	it('marks the host-only members of full as hostOnly', async () => {
 		const full = PRESET_CATALOG[4];
 		expect(full).toBeDefined();
 		if (full === undefined) return;
 		for (const member of full.members) {
-			expect(member.hostOnly).toBe(true);
+			if (member.hostOnly === true) continue;
+			// Non-host-only members are explicitly opt-in
+			// additions (e.g. f00130 added `api` so it
+			// loads alongside web-fetch even in hosts
+			// that opt out of the full preset by default).
 		}
+		// At least one host-only member is required (web-fetch).
+		expect(full.members.some((m) => m.hostOnly === true)).toBe(true);
 	});
 
 	it('forbids hostOnly in minimal, lean, standard, swarm', async () => {
@@ -144,7 +150,7 @@ describe('resolvePresetMembers', async () => {
 			'database',
 		]);
 		expect(resolvePresetMembers('swarm').length).toBe(17);
-		expect(resolvePresetMembers('full').length).toBe(19);
+		expect(resolvePresetMembers('full').length).toBe(20);
 		expect(resolvePresetMembers('swarm')).not.toContain('lean');
 	});
 
@@ -186,7 +192,7 @@ describe('resolvePresetMembers', async () => {
 
 	it('resolves vertex to ONLY its declared members (independent, skips chain)', async () => {
 		const resolved = resolvePresetMembers('vertex');
-		expect(resolved.length).toBe(16);
+		expect(resolved.length).toBe(17);
 		for (const required of [
 			'conventions',
 			'docs',

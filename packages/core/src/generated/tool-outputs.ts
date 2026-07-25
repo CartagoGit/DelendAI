@@ -2077,6 +2077,8 @@ export interface McpVertexProposalsProposalTransitionOutput {
 	error?: {
 		reason: string;
 		nextAction?: string;
+		code?: string;
+		blockerType?: string;
 		nextHops?: string[];
 	};
 	id?: string;
@@ -2205,7 +2207,12 @@ export interface McpVertexProposalsStateHealthOutput {
 		active: number;
 		stale: number;
 		staleTaskIds: string[];
-		lastStaleSeen?: string;
+		lastStaleSeen: string | null;
+		crossProposal: {
+			id: string;
+			count: number;
+			taskIds: string[];
+		}[];
 		sessionClaims: number;
 		sessionReleases: number;
 		sessionImbalance: number;
@@ -2237,7 +2244,12 @@ export interface McpVertexProposalsStateRepairOutput {
 			active: number;
 			stale: number;
 			staleTaskIds: string[];
-			lastStaleSeen?: string;
+			lastStaleSeen: string | null;
+			crossProposal: {
+				id: string;
+				count: number;
+				taskIds: string[];
+			}[];
 			sessionClaims: number;
 			sessionReleases: number;
 			sessionImbalance: number;
@@ -2397,7 +2409,7 @@ export interface McpVertexQualityQualityRunAllOutput {
 	};
 }
 
-export interface McpVertexQualityRunQualityOutput {
+export type McpVertexQualityRunQualityOutput = {
 	scope: string;
 	ok: boolean;
 	results: {
@@ -2407,7 +2419,28 @@ export interface McpVertexQualityRunQualityOutput {
 		timedOut: boolean;
 		tail: string;
 	}[];
-}
+} | {
+	ok: boolean;
+	severities: {
+		critical: number;
+		high: number;
+		medium: number;
+		low: number;
+		info: number;
+	};
+	worst: "critical" | "high" | "medium" | "low" | "info" | "none";
+	findings: Array<{
+		ruleId: string;
+		severity: "critical" | "high" | "medium" | "low" | "info";
+		message: string;
+		location?: {
+			file: string;
+			line?: number;
+			endLine?: number;
+		};
+		fix?: string;
+	}>;
+};
 
 export interface McpVertexRefactorRefactorApplyOutput {
 	written: string[];

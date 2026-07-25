@@ -160,6 +160,7 @@ export const PRESET_CATALOG: readonly IPresetDefinition[] = [
 		members: [
 			{ plugin: 'web-fetch', hostOnly: true },
 			{ plugin: 'issues', hostOnly: true },
+			{ plugin: 'api' },
 		],
 	},
 	{
@@ -191,6 +192,7 @@ export const PRESET_CATALOG: readonly IPresetDefinition[] = [
 			{ plugin: 'quality' },
 			{ plugin: 'refactor' },
 			{ plugin: 'issues', hostOnly: true },
+			{ plugin: 'api' },
 			{ plugin: 'audit' },
 			{ plugin: 'auto-agent-selector', hostOnly: true },
 			{ plugin: 'prompt-eval' },
