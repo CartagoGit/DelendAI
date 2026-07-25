@@ -146,14 +146,20 @@ describe('f00128 S3 build-mermaid-er', () => {
 		}
 
 		expect(
-			classifyForeignKeyRelationship(oneToOneTable, oneToOneForeignKey),
+			classifyForeignKeyRelationship(
+				oneToOneTable as ITableInfo,
+				oneToOneForeignKey,
+			),
 		).toBe('one-to-one');
 		expect(
-			classifyForeignKeyRelationship(oneToManyTable, oneToManyForeignKey),
+			classifyForeignKeyRelationship(
+				oneToManyTable as ITableInfo,
+				oneToManyForeignKey,
+			),
 		).toBe('one-to-many');
 		expect(
 			classifyForeignKeyRelationship(
-				manyToManyTable,
+				manyToManyTable as ITableInfo,
 				manyToManyForeignKey,
 			),
 		).toBe('many-to-many');
