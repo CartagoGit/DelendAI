@@ -92,7 +92,10 @@ const BUDGET_BYTES = {
 	// Bumped 2 000 → 2 050 (2026-07-25): a00072 S2.b added the F149
 	// peer-review gate surface to the delegation policy; the expanded
 	// next/policy text raised the live payload 2 036B → 2 036B measured.
-	autoWork: 2_050,
+	// Bumped 2 050 → 2 600 (2026-07-25): a00072 S2.b's expanded
+	// proposal_review surface (peer-review gate, reviewer agent, sliceId)
+	// raised the live payload 2 036B → 2 527B measured.
+	autoWork: 2_600,
 	search: 3_000,
 	docsList: 2_500,
 	roundContext: 3_000,
@@ -105,7 +108,10 @@ const BUDGET_BYTES = {
 	// Updated 2026-07-25: refactor plugin (f00123 S2) added to swarm via standard,
 	// increasing overview compact from 2 463B to ~3 568B.
 	// (f00127 prompt-eval + f00128 database added to swarm via standard.)
-	swarmToolsList: 170_000,
+	// Bumped 170 000 → 175 000 (2026-07-25): quality plugin gained
+	// buildRunQualityToolRegistration (a00072 S2.b peer-review gate), adding
+	// outputSchema metadata and bumping tools/list 168 938B → 171 174B.
+	swarmToolsList: 175_000,
 	swarmOverviewCompact: 4_000,
 	swarmRoundContext: 300,
 	// `lean` was 58 003B against the same fixture, a 63% reduction from swarm.

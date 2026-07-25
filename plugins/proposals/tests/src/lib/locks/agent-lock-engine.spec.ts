@@ -15,6 +15,7 @@ import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import {
+	claimWithFileLocks,
 	getAgentLockSessionBalance,
 	resetAgentLockSessionBalance,
 	runAgentLockEngine,
@@ -22,6 +23,10 @@ import {
 	type IAgentLockDeps,
 	type ILockFile,
 } from '../../../../src/lib/locks/agent-lock-engine';
+import {
+	deriveFileLockTablePath,
+	readFileLockTable,
+} from '../../../../src/lib/locks/file-lock-table';
 
 let workspace = '';
 let lockPath = '';
@@ -340,6 +345,69 @@ describe('runAgentLockEngine — stale GC', async () => {
 			expect(body(res).blockerType).toBe('needs-worktree');
 			expect(JSON.stringify(body(res))).toContain('main');
 		});
+	});
+});
+
+describe('runAgentLockEngine — file-level claims', async () => {
+	it('lets disjoint file claims succeed without reporting contention', async () => {
+		const started = Date.now();
+		const [first, second] = await Promise.all([
+			claimWithFileLocks(
+				{
+					taskId: 'task-A',
+					agentId: 'agent-A',
+					files: ['src/a.ts'],
+				},
+				deps(),
+			),
+			claimWithFileLocks(
+				{
+					taskId: 'task-B',
+					agentId: 'agent-B',
+					files: ['src/b.ts'],
+				},
+				deps(),
+			),
+		]);
+		expect(body(first).ok).toBe(true);
+		expect(body(second).ok).toBe(true);
+		expect(body(first).heldFiles).toEqual(['src/a.ts']);
+		expect(body(second).heldFiles).toEqual(['src/b.ts']);
+		expect(Date.now() - started).toBeLessThan(100);
+	});
+
+	it('keeps overlapping file claims in normal contention', async () => {
+		await run({
+			action: 'claim',
+			task_id: 'task-A',
+			agent: 'agent-A',
+			files: ['src/shared.ts'],
+		});
+		const res = await claimWithFileLocks(
+			{
+				taskId: 'task-B',
+				agentId: 'agent-B',
+				files: ['src/shared.ts'],
+			},
+			deps(),
+		);
+		expect(body(res).ok).toBe(false);
+		expect(body(res).blocked).toBe(true);
+		expect(body(res).overlapping_files).toEqual(['src/shared.ts']);
+	});
+
+	it('release also clears the file-lock table entries it held', async () => {
+		await run({
+			action: 'claim',
+			task_id: 'task-A',
+			agent: 'agent-A',
+			files: ['src/a.ts', 'src/b.ts'],
+		});
+		await run({ action: 'release', task_id: 'task-A' });
+		const table = await readFileLockTable({
+			tablePath: deriveFileLockTablePath(lockPath),
+		});
+		expect(table).toEqual({});
 	});
 });
 

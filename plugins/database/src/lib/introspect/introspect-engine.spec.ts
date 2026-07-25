@@ -47,14 +47,16 @@ describe('f00128 S1 introspect-engine', () => {
 	describe('redactDsn', () => {
 		it('strips user:password@ from postgres-style URLs', () => {
 			expect(
-				redactDsn('failed: connect ECONNREFUSED postgres://app:s3cret@db.local/app'),
+				redactDsn(
+					'failed: connect ECONNREFUSED postgres://app:s3cret@db.local/app',
+				),
 			).toBe('failed: connect ECONNREFUSED postgres://***@db.local/app');
 		});
 
 		it('strips user:password@ from mysql-style URLs', () => {
-			expect(
-				redactDsn('mysql://root:hunter2@tcp(127.0.0.1)/foo'),
-			).toBe('mysql://***@tcp(127.0.0.1)/foo');
+			expect(redactDsn('mysql://root:hunter2@tcp(127.0.0.1)/foo')).toBe(
+				'mysql://***@tcp(127.0.0.1)/foo',
+			);
 		});
 
 		it('redacts password= query params', () => {
@@ -64,7 +66,9 @@ describe('f00128 S1 introspect-engine', () => {
 		});
 
 		it('leaves non-credential messages alone', () => {
-			expect(redactDsn('no such table: users')).toBe('no such table: users');
+			expect(redactDsn('no such table: users')).toBe(
+				'no such table: users',
+			);
 		});
 	});
 
@@ -73,14 +77,24 @@ describe('f00128 S1 introspect-engine', () => {
 			const driver = buildFakeDriver(SAMPLE_FIXTURE);
 			const schema = await buildSchema(driver);
 			expect(schema.driver).toBe('sqlite');
-			expect(schema.tables.map((t) => t.name).sort()).toEqual(['orders', 'users']);
+			expect(schema.tables.map((t) => t.name).sort()).toEqual([
+				'orders',
+				'users',
+			]);
 
 			const users = schema.tables.find((t) => t.name === 'users');
-			expect(users?.columns.map((c) => c.name)).toEqual(['id', 'email', 'created_at']);
-			expect(users?.columns.find((c) => c.name === 'id')?.primaryKey).toBe(true);
-			expect(users?.columns.find((c) => c.name === 'created_at')?.defaultValue).toBe(
-				'CURRENT_TIMESTAMP',
-			);
+			expect(users?.columns.map((c) => c.name)).toEqual([
+				'id',
+				'email',
+				'created_at',
+			]);
+			expect(
+				users?.columns.find((c) => c.name === 'id')?.primaryKey,
+			).toBe(true);
+			expect(
+				users?.columns.find((c) => c.name === 'created_at')
+					?.defaultValue,
+			).toBe('CURRENT_TIMESTAMP');
 			expect(users?.indexes).toHaveLength(1);
 
 			const orders = schema.tables.find((t) => t.name === 'orders');
@@ -110,7 +124,9 @@ describe('f00128 S1 introspect-engine', () => {
 					return [];
 				},
 			};
-			await expect(buildSchema(broken)).rejects.toThrow(/permission denied.*\*\*\*@/);
+			await expect(buildSchema(broken)).rejects.toThrow(
+				/permission denied.*\*\*\*@/,
+			);
 		});
 	});
 });

@@ -99,11 +99,7 @@ export const normaliseColumnType = (raw: string): IColumnType => {
 	if (t.startsWith('bool')) {
 		return 'boolean';
 	}
-	if (
-		t.startsWith('timestamp') ||
-		t.startsWith('datetime') ||
-		t === 'date'
-	) {
+	if (t.startsWith('timestamp') || t.startsWith('datetime') || t === 'date') {
 		return 'datetime';
 	}
 	if (t === 'json' || t === 'jsonb') {
@@ -133,7 +129,9 @@ export const redactDsn = (message: string): string => {
  * message is run through `redactDsn` so a misconfigured DSN never
  * leaks out of the engine.
  */
-export const buildSchema = async (driver: IDatabaseDriver): Promise<IDatabaseSchema> => {
+export const buildSchema = async (
+	driver: IDatabaseDriver,
+): Promise<IDatabaseSchema> => {
 	let tableNames: string[];
 	try {
 		tableNames = await driver.listTables();

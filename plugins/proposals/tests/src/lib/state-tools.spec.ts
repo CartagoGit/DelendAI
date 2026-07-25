@@ -61,6 +61,8 @@ describe('state_health / state_repair [N15]', async () => {
 		expect(out.healthy).toBe(true);
 		expect(out.locks.active).toBe(0);
 		expect(out.locks.stale).toBe(0);
+		expect(out.locks.livelocks).toBe(0);
+		expect(out.locks.livelockPairs).toEqual([]);
 		expect(out.locks.staleTaskIds).toEqual([]);
 		expect(out.locks.sessionClaims).toBe(0);
 		expect(out.locks.sessionReleases).toBe(0);
@@ -140,9 +142,7 @@ describe('state_health / state_repair [N15]', async () => {
 		expect(healthOut.locks.active).toBe(1);
 		expect(healthOut.locks.stale).toBe(1);
 		expect(healthOut.locks.staleTaskIds).toEqual(['f00126-S3']);
-		expect(healthOut.locks.lastStaleSeen).toBe(
-			'2000-01-01T00:00:00.000Z',
-		);
+		expect(healthOut.locks.lastStaleSeen).toBe('2000-01-01T00:00:00.000Z');
 		expect(healthOut.stale).toEqual({
 			count: 1,
 			taskIds: ['f00126-S3'],
@@ -254,6 +254,56 @@ describe('state_health / state_repair [N15]', async () => {
 			require('node:fs').readFileSync(opts.registryPathAbs, 'utf8'),
 		);
 		expect(after.assignments).toEqual([]);
+	});
+
+	it('a00072 S8.c: state_health reports livelock pairs from overlapping claims', async () => {
+		mkdirSync(dirname(opts.lockPathAbs), { recursive: true });
+		writeFileSync(
+			opts.lockPathAbs,
+			JSON.stringify({
+				version: 1,
+				stale_after_minutes: 10,
+				in_flight: [
+					{
+						task_id: 't-a',
+						agent: 'alpha',
+						ownership: ['src/shared.ts'],
+						started_at: '2000-01-01T00:00:00.000Z',
+						last_seen: '2999-01-01T00:00:00.000Z',
+					},
+					{
+						task_id: 't-b',
+						agent: 'beta',
+						ownership: ['src/shared.ts'],
+						started_at: '2000-01-01T00:00:00.000Z',
+						last_seen: '2999-01-01T00:00:00.000Z',
+					},
+				],
+			}),
+		);
+		writeFileSync(
+			join(dirname(opts.lockPathAbs), 'file-locks.json'),
+			JSON.stringify({
+				'src/shared.ts': {
+					agentId: 'alpha',
+					mtime: '2000-01-01T00:00:00.000Z',
+					taskId: 't-a',
+				},
+			}),
+		);
+
+		const health = await capture(buildStateHealthRegistration(opts));
+		const out = parse(await health({}));
+		expect(out.locks.livelocks).toBe(1);
+		expect(out.locks.livelockPairs).toEqual([
+			{
+				agentA: 'alpha',
+				agentB: 'beta',
+				files: ['src/shared.ts'],
+				heldMs: expect.any(Number),
+			},
+		]);
+		expect(out.healthy).toBe(false);
 	});
 });
 

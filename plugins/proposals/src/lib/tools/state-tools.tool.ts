@@ -7,6 +7,11 @@ import { toolJson, withFileMutex } from '@mcp-vertex/core/public';
 
 import type { ILockEntry, ILockFile } from '../locks/agent-lock-engine';
 import {
+	detectContention,
+	type ILivelockPair,
+} from '../locks/contention-detector';
+import { deriveFileLockTablePath } from '../locks/file-lock-table';
+import {
 	getAgentLockSessionBalance,
 	runAgentLockEngine,
 } from '../locks/agent-lock-engine';
@@ -44,6 +49,7 @@ export interface IStateToolOptions {
 	readonly queuePathAbs: string;
 	readonly closedTasksPathAbs: string;
 	readonly registryPathAbs: string;
+	readonly fileLockTablePathAbs?: string;
 	/** Absolute workspace root — anchors `waitFor.file` resolution. */
 	readonly workspaceRoot: string;
 	/**
@@ -63,6 +69,8 @@ interface IStateDiagnosis {
 		readonly stale: number;
 		readonly staleTaskIds: readonly string[];
 		readonly lastStaleSeen: string | null;
+		readonly livelocks: number;
+		readonly livelockPairs: readonly ILivelockPair[];
 		readonly crossProposal: readonly {
 			readonly id: string;
 			readonly count: number;
@@ -106,6 +114,15 @@ const STATE_DIAGNOSIS_SCHEMA = z.object({
 		stale: z.number(),
 		staleTaskIds: z.array(z.string()),
 		lastStaleSeen: z.string().nullable(),
+		livelocks: z.number(),
+		livelockPairs: z.array(
+			z.object({
+				agentA: z.string(),
+				agentB: z.string(),
+				files: z.array(z.string()),
+				heldMs: z.number(),
+			}),
+		),
 		crossProposal: z.array(
 			z.object({
 				id: z.string(),
@@ -260,6 +277,12 @@ const diagnose = async (
 		taskIds: staleTaskIds,
 		lastStaleSeen: findLastStaleSeen(staleEntries),
 	};
+	const livelockState = await detectContention({
+		lockPath: options.lockPathAbs,
+		fileLockTablePath:
+			options.fileLockTablePathAbs ??
+			deriveFileLockTablePath(options.lockPathAbs),
+	});
 
 	let queue: IStateDiagnosis['queue'] = null;
 	if (await fileExists(options.queuePathAbs)) {
@@ -306,6 +329,7 @@ const diagnose = async (
 		(queue?.threshold ?? 'green') !== 'red' &&
 		zombies.orphans.length === 0 &&
 		(queue?.waiterOrphans ?? 0) === 0 &&
+		livelockState.livelocks.length === 0 &&
 		!claimReleaseImbalanceAlert &&
 		stale.count === 0;
 
@@ -315,6 +339,8 @@ const diagnose = async (
 			stale: stale.count,
 			staleTaskIds: stale.taskIds,
 			lastStaleSeen: stale.lastStaleSeen,
+			livelocks: livelockState.livelocks.length,
+			livelockPairs: livelockState.livelocks,
 			crossProposal: summarizeCrossProposal(cleanedLock.in_flight),
 			sessionClaims: balance.claims,
 			sessionReleases: balance.releases,
@@ -438,7 +464,7 @@ export const buildStateHealthRegistration = (
 ): IToolRegistration => ({
 	id: 'state_health',
 	summary:
-		'Read-only swarm health: active locks, stale locks, queue backpressure (waiterOrphans/threshold) and orphan assignments.',
+		'Read-only swarm health: active locks, stale locks, livelocks, queue backpressure (waiterOrphans/threshold) and orphan assignments.',
 	tags: ['coordination', 'lazy'],
 	register: async (server) => {
 		server.registerTool(
@@ -446,7 +472,7 @@ export const buildStateHealthRegistration = (
 			{
 				outputSchema: STATE_DIAGNOSIS_SCHEMA,
 				description:
-					'Diagnose swarm state without changing anything: active write lanes, stale locks, queue backpressure (waiterOrphans + threshold) and orphaned agent assignments. Returns { locks, stale, queue, registry, healthy }. Run state_repair to heal.',
+					'Diagnose swarm state without changing anything: active write lanes, stale locks, livelocks, queue backpressure (waiterOrphans + threshold) and orphaned agent assignments. Returns { locks, stale, queue, registry, healthy }. Run state_repair to heal.',
 			},
 			async () => toolJson(await diagnose(options)),
 		);

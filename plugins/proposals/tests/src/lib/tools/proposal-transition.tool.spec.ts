@@ -205,7 +205,7 @@ describe('proposal_transition', async () => {
 						id: `f200${from}${to}`.replace(/[^a-z0-9]/g, ''),
 						to,
 						reason: 'matrix test',
-						...((to === 'review' || to === 'done')
+						...(to === 'review' || to === 'done'
 							? { validateEvidence: RECENT_VALIDATE }
 							: {}),
 					},

@@ -18,6 +18,13 @@ import {
 } from '@mcp-vertex/core/public';
 
 import { DEFAULT_PATH_LAYOUT } from '../contracts/constants/default-path-layout.constant';
+import {
+	addFileLocks,
+	deriveFileLockTablePath,
+	findConflictingLocks,
+	readFileLockEntries,
+	removeFileLocksForTask,
+} from './file-lock-table';
 import { isLockEntryStale } from '../shared/purge-stale-locks';
 
 export type IAgentLockAction = 'claim' | 'release' | 'status' | 'gc';
@@ -64,35 +71,13 @@ export interface IAgentLockTmpFileInfo {
 export type IAgentLockDeps = {
 	lockPath?: string;
 	now?: () => string;
-	/** Tool name echoed in payloads (host injects e.g. `<prefix>_agent_lock`). */
 	toolName?: string;
-	/** Workspace-relative label echoed in payloads. */
 	lockFileLabel?: string;
-	/**
-	 * Internal `withFileMutex` timing overrides — NOT exposed on the tool's
-	 * inputSchema. Tests use these to exercise contention paths
-	 * without waiting out the production timeouts.
-	 */
 	mutexTimeoutMs?: number;
 	mutexStaleMs?: number;
 	mutexPollMs?: number;
-	/**
-	 * f00078 S4: when `true`, the engine refuses `action: 'claim'` if
-	 * the current branch (read from `git rev-parse --abbrev-ref HEAD`
-	 * in `cwd` if provided, or in `lockPath`'s directory otherwise) is
-	 * not of the form `agent/<name>`. This is the hard gate that
-	 * prevents any agent from bypassing the per-agent worktree
-	 * isolation by going directly through `agent_lock` without
-	 * calling `agent_worktree` first. Defaults to `false` so hosts
-	 * that run solo (no worktree gate in mcp-vertex.config.json) are
-	 * unaffected.
-	 */
+	fileLockTablePath?: string;
 	agentWorktreeEnabled?: boolean;
-	/**
-	 * Optional override for the active branch check. When provided,
-	 * the engine skips the `git rev-parse` and uses this value. Tests
-	 * use this to exercise the gate without a real repo.
-	 */
 	currentBranchOverride?: string;
 };
 
@@ -101,7 +86,6 @@ export type IAgentLockResponse = {
 	isError?: boolean;
 };
 
-/** a00069 S8 — process-local claim/release balance for telemetry. */
 let sessionClaimCount = 0;
 let sessionReleaseCount = 0;
 
@@ -115,7 +99,6 @@ export const getAgentLockSessionBalance = (): {
 	imbalance: sessionClaimCount - sessionReleaseCount,
 });
 
-/** Test-only reset. */
 export const resetAgentLockSessionBalance = (): void => {
 	sessionClaimCount = 0;
 	sessionReleaseCount = 0;
@@ -167,9 +150,6 @@ const lockResult = (
 };
 
 const getLockPath = (deps: IAgentLockDeps = {}): string => {
-	// Hermetic: the absolute lock path must be injected from the host's
-	// `ctx.workspace`. No `process.cwd()` fallback — an engine never guesses
-	// where the workspace is.
 	if (!deps.lockPath) {
 		throw new Error(
 			'agent-lock: deps.lockPath is required — inject the absolute lock path resolved from ctx.workspace.',
@@ -187,14 +167,28 @@ const getLockFileLabel = (deps: IAgentLockDeps = {}): string =>
 const getNow = (deps: IAgentLockDeps = {}): string =>
 	(deps.now ?? (() => new Date().toISOString()))();
 
-/**
- * f00078 S4 helper: returns the active branch name, or `null` if it
- * cannot be read. Honours `deps.currentBranchOverride` (tests) before
- * shelling out. When `lockPath` lives inside a worktree, the parent's
- * `.git` dir is queried (no checkout of a worktree file needed) — we
- * pass `lockPath`'s parent as `cwd` so the rev-parse resolves against
- * the worktree's HEAD.
- */
+const getFileLockTablePath = (deps: IAgentLockDeps = {}): string =>
+	deriveFileLockTablePath(getLockPath(deps), deps.fileLockTablePath);
+
+const getMutexOptions = (
+	args: Pick<IAgentLockArgs, 'onContention'>,
+	deps: IAgentLockDeps,
+): {
+	onContention?: 'steal' | 'fail';
+	timeoutMs?: number;
+	staleMs?: number;
+	pollMs?: number;
+} => ({
+	...(args.onContention !== undefined
+		? { onContention: args.onContention }
+		: {}),
+	...(deps.mutexTimeoutMs !== undefined
+		? { timeoutMs: deps.mutexTimeoutMs }
+		: {}),
+	...(deps.mutexStaleMs !== undefined ? { staleMs: deps.mutexStaleMs } : {}),
+	...(deps.mutexPollMs !== undefined ? { pollMs: deps.mutexPollMs } : {}),
+});
+
 const readCurrentBranchName = async (
 	deps: IAgentLockDeps,
 ): Promise<string | null> => {
@@ -228,11 +222,9 @@ const readCurrentBranchName = async (
 	}
 };
 
-/** f00078 S4: is the branch of the form `agent/<non-empty-name>`? */
 const isAgentBranchName = (branch: string): boolean =>
 	branch.startsWith('agent/') && branch.length > 'agent/'.length;
 
-/** Async existence check (H2): never blocks the event loop. */
 const fileExists = async (path: string): Promise<boolean> => {
 	try {
 		await stat(path);
@@ -280,32 +272,6 @@ export const sweepStaleAgentLockTmpFiles = async (
 	return staleTmpFiles;
 };
 
-export const cleanupStaleAgentLockState = async (
-	deps: IAgentLockDeps = {},
-	options: {
-		readonly staleTmpMs?: number;
-	} = {},
-): Promise<{
-	readonly droppedClaims: number;
-	readonly droppedTmpFiles: number;
-	readonly lock: ILockFile;
-}> => {
-	const raw = await loadLock(deps);
-	const cleaned = removeStale(raw);
-	if (cleaned.in_flight.length !== raw.in_flight.length) {
-		await writeLock(cleaned, deps);
-	}
-	const droppedTmpFiles = await sweepStaleAgentLockTmpFiles(
-		getLockPath(deps),
-		options.staleTmpMs,
-	);
-	return {
-		droppedClaims: raw.in_flight.length - cleaned.in_flight.length,
-		droppedTmpFiles: droppedTmpFiles.length,
-		lock: cleaned,
-	};
-};
-
 const loadLock = async (deps: IAgentLockDeps = {}): Promise<ILockFile> => {
 	const lockPath = getLockPath(deps);
 	let raw: string;
@@ -319,16 +285,6 @@ const loadLock = async (deps: IAgentLockDeps = {}): Promise<ILockFile> => {
 	return parsed;
 };
 
-export const readLock = async (
-	deps: IAgentLockDeps = {},
-): Promise<ILockFile> => {
-	const lockPath = getLockPath(deps);
-	const raw = await loadLock(deps);
-	const cleaned = removeStale(raw);
-	await sweepStaleAgentLockTmpFiles(lockPath);
-	return cleaned;
-};
-
 const writeLock = async (
 	lock: ILockFile,
 	deps: IAgentLockDeps = {},
@@ -340,13 +296,91 @@ const writeLock = async (
 export const removeStale = (lock: ILockFile): ILockFile => ({
 	...lock,
 	in_flight: lock.in_flight.filter(
-		(e) => !isLockEntryStale(e, lock.stale_after_minutes),
+		(entry) => !isLockEntryStale(entry, lock.stale_after_minutes),
 	),
 });
 
+const pruneFileLocksForTasks = async (
+	taskIds: readonly string[],
+	deps: IAgentLockDeps,
+): Promise<void> => {
+	const tablePath = getFileLockTablePath(deps);
+	for (const taskId of taskIds) {
+		await removeFileLocksForTask(taskId, { tablePath });
+	}
+};
+
+const readSynchronizedLock = async (
+	deps: IAgentLockDeps,
+): Promise<ILockFile> => {
+	const raw = await loadLock(deps);
+	const cleaned = removeStale(raw);
+	const activeTaskIds = new Set(
+		cleaned.in_flight.map((entry) => entry.task_id),
+	);
+	const staleTaskIds = raw.in_flight
+		.filter((entry) => !activeTaskIds.has(entry.task_id))
+		.map((entry) => entry.task_id);
+	if (staleTaskIds.length > 0) {
+		await pruneFileLocksForTasks(staleTaskIds, deps);
+		await writeLock(cleaned, deps);
+	}
+	return cleaned;
+};
+
+export const readLock = async (
+	deps: IAgentLockDeps = {},
+): Promise<ILockFile> => {
+	const lockPath = getLockPath(deps);
+	const raw = await loadLock(deps);
+	const cleaned = removeStale(raw);
+	await sweepStaleAgentLockTmpFiles(lockPath);
+	return cleaned;
+};
+
+export const cleanupStaleAgentLockState = async (
+	deps: IAgentLockDeps = {},
+	options: {
+		readonly staleTmpMs?: number;
+	} = {},
+): Promise<{
+	readonly droppedClaims: number;
+	readonly droppedTmpFiles: number;
+	readonly lock: ILockFile;
+}> =>
+	withFileMutex(
+		getFileLockTablePath(deps),
+		async () => {
+			const raw = await loadLock(deps);
+			const cleaned = removeStale(raw);
+			const staleTaskIds = raw.in_flight
+				.filter(
+					(entry) =>
+						!cleaned.in_flight.some(
+							(active) => active.task_id === entry.task_id,
+						),
+				)
+				.map((entry) => entry.task_id);
+			if (staleTaskIds.length > 0) {
+				await pruneFileLocksForTasks(staleTaskIds, deps);
+				await writeLock(cleaned, deps);
+			}
+			const droppedTmpFiles = await sweepStaleAgentLockTmpFiles(
+				getLockPath(deps),
+				options.staleTmpMs,
+			);
+			return {
+				droppedClaims: raw.in_flight.length - cleaned.in_flight.length,
+				droppedTmpFiles: droppedTmpFiles.length,
+				lock: cleaned,
+			};
+		},
+		getMutexOptions({}, deps),
+	);
+
 const findOverlap = (a: string[], b: string[]): string[] => {
 	const setB = new Set(b);
-	return a.filter((p) => setB.has(p));
+	return a.filter((path) => setB.has(path));
 };
 
 const validateArgs = (
@@ -363,10 +397,8 @@ const validateArgs = (
 			};
 		}
 	}
-	if (args.action === 'release') {
-		if (!args.task_id) {
-			return { ok: false, error: 'release requires task_id' };
-		}
+	if (args.action === 'release' && !args.task_id) {
+		return { ok: false, error: 'release requires task_id' };
 	}
 	return { ok: true, value: args };
 };
@@ -376,7 +408,6 @@ export async function runAgentLockEngine(
 	deps: IAgentLockDeps = {},
 ): Promise<IAgentLockResponse> {
 	const v = validateArgs(args);
-	const lockPath = getLockPath(deps);
 	const toolName = getToolName(deps);
 	const lockFileLabel = getLockFileLabel(deps);
 	if (!v.ok) {
@@ -395,14 +426,6 @@ export async function runAgentLockEngine(
 		);
 	}
 
-	// f00078 S4: needs-worktree gate. When the host has the
-	// `agentWorktree` gate on, claims are refused unless the active
-	// branch is `agent/<name>`. This is the only way to prevent an
-	// agent from bypassing the per-agent worktree isolation by going
-	// directly through `agent_lock claim` without first calling
-	// `agent_worktree create`. The check is a no-op when
-	// `agentWorktreeEnabled !== true`, so solo hosts (the default)
-	// are unaffected.
 	if (args.action === 'claim' && deps.agentWorktreeEnabled === true) {
 		const branch = await readCurrentBranchName(deps);
 		if (branch === null) {
@@ -439,33 +462,18 @@ export async function runAgentLockEngine(
 		}
 	}
 
-	// Cross-process critical section: the whole read → mutate → write runs
-	// under a file mutex so two concurrent agents can't lose each other's
-	// updates (atomic writes alone prevent torn files, not lost updates).
+	if (args.action === 'status') {
+		return executeLockAction(args, deps);
+	}
+
 	try {
 		return await withFileMutex(
-			lockPath,
+			getFileLockTablePath(deps),
 			() => executeLockAction(args, deps),
-			{
-				...(args.onContention !== undefined
-					? { onContention: args.onContention }
-					: {}),
-				...(deps.mutexTimeoutMs !== undefined
-					? { timeoutMs: deps.mutexTimeoutMs }
-					: {}),
-				...(deps.mutexStaleMs !== undefined
-					? { staleMs: deps.mutexStaleMs }
-					: {}),
-				...(deps.mutexPollMs !== undefined
-					? { pollMs: deps.mutexPollMs }
-					: {}),
-			},
+			getMutexOptions(args, deps),
 		);
 	} catch (error) {
 		if (error instanceof LockContentionError) {
-			// M28: under `onContention:'fail'` a live holder past the timeout
-			// rejects instead of being stolen — surface it as a clear tool
-			// error (not an uncaught exception) so the caller can back off.
 			return lockResult(
 				{
 					tool: toolName,
@@ -483,6 +491,32 @@ export async function runAgentLockEngine(
 	}
 }
 
+export const claimWithFileLocks = async (
+	args: {
+		readonly taskId: string;
+		readonly agentId: string;
+		readonly files: readonly string[];
+		readonly parentTaskId?: string;
+		readonly onContention?: 'steal' | 'fail';
+	},
+	deps: IAgentLockDeps = {},
+): Promise<IAgentLockResponse> =>
+	runAgentLockEngine(
+		{
+			action: 'claim',
+			task_id: args.taskId,
+			agent: args.agentId,
+			files: [...args.files],
+			...(args.parentTaskId !== undefined
+				? { parent_task_id: args.parentTaskId }
+				: {}),
+			...(args.onContention !== undefined
+				? { onContention: args.onContention }
+				: {}),
+		},
+		deps,
+	);
+
 async function executeLockAction(
 	args: IAgentLockArgs,
 	deps: IAgentLockDeps,
@@ -490,99 +524,140 @@ async function executeLockAction(
 	const lockPath = getLockPath(deps);
 	const toolName = getToolName(deps);
 	const lockFileLabel = getLockFileLabel(deps);
-	const lock = await readLock(deps);
+	const tablePath = getFileLockTablePath(deps);
 
 	if (args.action === 'claim') {
+		const lock = await readSynchronizedLock(deps);
 		const taskId = args.task_id as string;
 		const agent = args.agent as string;
-		const files = args.files as string[];
+		const files = [...new Set(args.files as string[])].sort();
+		const now = getNow(deps);
+		const tableEntries = await readFileLockEntries({ tablePath });
 
-		const existing = lock.in_flight.find((e) => e.task_id === taskId);
-		if (existing) {
-			existing.last_seen = getNow(deps);
-			// A re-claim is a heartbeat and must never fail. But if it carries
-			// files this task doesn't yet own, don't silently drop them (the
-			// caller would think the claim succeeded while not owning them):
-			// add the conflict-free ones to ownership and surface any that
-			// clash with another live task instead of swallowing them.
+		const existing = lock.in_flight.find(
+			(entry) => entry.task_id === taskId,
+		);
+		if (existing !== undefined) {
+			existing.last_seen = now;
 			const owned = new Set(existing.ownership);
-			const newFiles = files.filter((f) => !owned.has(f));
-			const notGranted: Array<{
-				file: string;
-				conflicting_task: string;
-			}> = [];
-			const added: string[] = [];
-			for (const f of newFiles) {
-				const holder = lock.in_flight.find(
-					(e) => e.task_id !== taskId && e.ownership.includes(f),
-				);
-				if (holder) {
-					notGranted.push({
-						file: f,
-						conflicting_task: holder.task_id,
-					});
-				} else {
-					existing.ownership.push(f);
-					added.push(f);
-				}
+			const candidate = files.filter((file) => !owned.has(file));
+			const conflicts = findConflictingLocks(
+				candidate,
+				tableEntries,
+			).filter((entry) => entry.taskId !== taskId);
+			const conflictMap = new Map(
+				conflicts.map((entry) => [entry.file, entry] as const),
+			);
+			const notGranted = candidate
+				.filter((file) => conflictMap.has(file))
+				.map((file) => ({
+					file,
+					conflicting_task: conflictMap.get(file)!.taskId,
+				}));
+			const added = candidate.filter((file) => !conflictMap.has(file));
+			if (added.length > 0) {
+				existing.ownership.push(...added);
+				existing.ownership.sort();
 			}
+			await removeFileLocksForTask(taskId, { tablePath });
+			await addFileLocks(
+				existing.ownership.map((file) => ({
+					file,
+					agent,
+					taskId,
+					mtimeIso: now,
+				})),
+				{ tablePath },
+			);
 			await writeLock(lock, deps);
 			const partial = notGranted.length > 0;
-			return lockResult(
-				{
-					tool: toolName,
-					action: 'claim',
-					task_id: taskId,
-					refreshed: true,
-					path: lockFileLabel,
-					lock_path: lockPath,
-					ownership_count: existing.ownership.length,
-					...(added.length > 0 ? { added_files: added } : {}),
-					...(partial
-						? { not_granted: notGranted, blocked: true }
-						: {}),
-					summary: partial
-						? `refreshed ${taskId}; ${notGranted.length} file(s) not granted (owned by another task)`
-						: `refreshed ${taskId}`,
-					...(partial
-						? {
-								blockerType: 'lock-conflict',
-								nextAction: CONTENTION_NEXT,
-							}
-						: {}),
-				},
-				// Heartbeat refresh is not a new claim; only first claim counts.
-				partial ? {} : {},
+			return lockResult({
+				tool: toolName,
+				action: 'claim',
+				task_id: taskId,
+				refreshed: true,
+				path: lockFileLabel,
+				lock_path: lockPath,
+				heldFiles: [...existing.ownership].sort(),
+				ownership_count: existing.ownership.length,
+				...(added.length > 0 ? { added_files: added } : {}),
+				...(partial ? { not_granted: notGranted, blocked: true } : {}),
+				summary: partial
+					? `refreshed ${taskId}; ${notGranted.length} file(s) not granted (owned by another task)`
+					: `refreshed ${taskId}`,
+				...(partial
+					? {
+							blockerType: 'lock-conflict',
+							nextAction: CONTENTION_NEXT,
+						}
+					: {}),
+			});
+		}
+
+		for (const entry of lock.in_flight) {
+			const overlap = findOverlap(files, entry.ownership);
+			if (overlap.length === 0) continue;
+			return lockResult({
+				tool: toolName,
+				action: 'claim',
+				task_id: taskId,
+				blocked: true,
+				blockerType: 'lock-conflict',
+				blocked_reason: `overlaps with ${entry.task_id}`,
+				conflicting_task: entry.task_id,
+				conflicting_agent: entry.agent,
+				overlapping_files: overlap,
+				path: lockFileLabel,
+				lock_path: lockPath,
+				nextAction: CONTENTION_NEXT,
+				summary: `lock-conflict: ${taskId} overlaps ${entry.task_id}`,
+			});
+		}
+
+		const conflicts = findConflictingLocks(files, tableEntries);
+		if (conflicts.length > 0) {
+			const conflictMap = new Map(
+				conflicts.map((entry) => [entry.file, entry] as const),
 			);
+			const overlappingFiles = files.filter((file) =>
+				conflictMap.has(file),
+			);
+			return lockResult({
+				tool: toolName,
+				action: 'claim',
+				task_id: taskId,
+				blocked: true,
+				blockerType: 'lock-conflict',
+				blocked_reason: `overlaps with ${conflicts[0]!.taskId}`,
+				conflicting_task: conflicts[0]!.taskId,
+				conflicting_agent: conflicts[0]!.agent,
+				overlapping_files: overlappingFiles,
+				not_granted: overlappingFiles.map((file) => ({
+					file,
+					conflicting_task: conflictMap.get(file)!.taskId,
+				})),
+				path: lockFileLabel,
+				lock_path: lockPath,
+				nextAction: CONTENTION_NEXT,
+				summary: `lock-conflict: ${taskId} overlaps ${conflicts[0]!.taskId}`,
+			});
 		}
 
-		for (const e of lock.in_flight) {
-			const overlap = findOverlap(files, e.ownership);
-			if (overlap.length > 0) {
-				return lockResult({
-					tool: toolName,
-					action: 'claim',
-					task_id: taskId,
-					blocked: true,
-					blockerType: 'lock-conflict',
-					blocked_reason: `overlaps with ${e.task_id}`,
-					conflicting_task: e.task_id,
-					conflicting_agent: e.agent,
-					overlapping_files: overlap,
-					path: lockFileLabel,
-					lock_path: lockPath,
-					nextAction: CONTENTION_NEXT,
-					summary: `lock-conflict: ${taskId} overlaps ${e.task_id}`,
-				});
-			}
-		}
-
+		await addFileLocks(
+			files.map((file) => ({
+				file,
+				agent,
+				taskId,
+				mtimeIso: now,
+			})),
+			{ tablePath },
+		);
 		lock.in_flight.push({
 			task_id: taskId,
 			agent,
 			ownership: files,
-			started_at: getNow(deps),
-			last_seen: getNow(deps),
+			started_at: now,
+			last_seen: now,
 			...(args.parent_task_id !== undefined
 				? { parent_task_id: args.parent_task_id }
 				: {}),
@@ -596,6 +671,7 @@ async function executeLockAction(
 				agent,
 				path: lockFileLabel,
 				lock_path: lockPath,
+				heldFiles: files,
 				ownership_count: files.length,
 				claimed: true,
 				summary: `claimed ${taskId} (${files.length} files)`,
@@ -605,9 +681,13 @@ async function executeLockAction(
 	}
 
 	if (args.action === 'release') {
+		const lock = await readSynchronizedLock(deps);
 		const taskId = args.task_id as string;
+		await removeFileLocksForTask(taskId, { tablePath });
 		const before = lock.in_flight.length;
-		lock.in_flight = lock.in_flight.filter((e) => e.task_id !== taskId);
+		lock.in_flight = lock.in_flight.filter(
+			(entry) => entry.task_id !== taskId,
+		);
 		const dropped = before - lock.in_flight.length;
 		await writeLock(lock, deps);
 		return lockResult(
@@ -629,6 +709,7 @@ async function executeLockAction(
 	}
 
 	if (args.action === 'status') {
+		const lock = await readLock(deps);
 		return lockResult({
 			tool: toolName,
 			action: 'status',
@@ -644,6 +725,15 @@ async function executeLockAction(
 	if (args.action === 'gc') {
 		const raw = await loadLock(deps);
 		const cleaned = removeStale(raw);
+		const staleTaskIds = raw.in_flight
+			.filter(
+				(entry) =>
+					!cleaned.in_flight.some(
+						(active) => active.task_id === entry.task_id,
+					),
+			)
+			.map((entry) => entry.task_id);
+		await pruneFileLocksForTasks(staleTaskIds, deps);
 		const dropped = raw.in_flight.length - cleaned.in_flight.length;
 		await writeLock(cleaned, deps);
 		await sweepStaleAgentLockTmpFiles(lockPath);

@@ -165,10 +165,32 @@ const buildRunQualityToolRegistration = (
 					dryRun: z.boolean().optional(),
 					severities: z.array(z.enum(FINDING_SEVERITIES)).optional(),
 				}),
-				outputSchema: z.union([
-					legacyRunQualityOutputSchema,
-					plannerOutputSchema,
-				]),
+				outputSchema: z.object({
+					scope: z.string().optional(),
+					ok: z.boolean(),
+					results: z
+						.array(
+							z.object({
+								command: z.string(),
+								ok: z.boolean(),
+								code: z.number(),
+								timedOut: z.boolean(),
+								tail: z.string(),
+							}),
+						)
+						.optional(),
+					severities: z
+						.object({
+							critical: z.number(),
+							high: z.number(),
+							medium: z.number(),
+							low: z.number(),
+							info: z.number(),
+						})
+						.optional(),
+					worst: z.enum([...FINDING_SEVERITIES, 'none']).optional(),
+					findings: z.array(qualityFindingSchema).optional(),
+				}),
 			},
 			async (args: {
 				scope?: string | undefined;
