@@ -2911,7 +2911,9 @@ Re-audit-23 scoreboard delta:
 - **Test quality**: 5.5 (FATAL — F261 peer-review-gate test FAILING post-refactor; F149 regresión silenciosa).
 - **Honestidad commit**: 5.0 (FATAL — F265 S2 commit mintió "distinct reviewer" — código committed NO lo tiene).
 - **Work-in-progress risk**: 4.5 (FATAL — F262 25 dirty files; F266 peer-review-log.ts untracked 3502 chars).
-- **Average**: ~5.5 (MUY MAL). **Recuperación parcial post S1 + S2**: F148/F149/F151 closed. Pasada-21: F261-F266 nuevos FATAL worsening. Post-S3-S7: ~7.5.
+- **Test quality**: 7.5 (POSITIVO — F261 cerrado con S5 validateEvidence; 979/979 tests pass).
+- **Enforcement**: 7.0 (POSITIVO — F289 `bun run validate` incluye `bun run quality:gate`).
+- **Average**: ~6.5 (MEJORABLE). **Recuperación sólida post S2/S3/S4**: F149/F150/F152/F201/F261 closed. Pasada-23: F281-F290 nuevos. Post-S5-S7: ~7.5.
 
 ## notes
 
@@ -2958,3 +2960,25 @@ Re-audit-23 scoreboard delta:
   movimiento. La regla "1 slice = 1 commit" debe ser
   **enforcement-level** (agent_lock release falla si hay
   untracked referenciados por modified).
+- Pasada-23 (post S2/S3/S4 commits) añade F281-F290. **F281**
+  (peer-review-gate 9/9 passing) cierra F261 (regresión del
+  refactor post-S2). **F282** (peer-review-log.ts en HEAD
+  `bcbf0601`) cierra F266 como **falsa alarma** — el paralelo
+  agente comiteó el archivo entre pasada-21 y pasada-23. **F283**
+  (log-honest.ts + log-honest.spec.ts UNTRACKED 5741 chars) es
+  **F266 reincidente** — código vivo sin respaldo, **sin caller
+  en producción**. **F284** (run-quality.script.ts UNTRACKED
+  pero wired desde authoring.tool.ts committed `f3134807`) es
+  **F266 reincidente con chicken-and-egg** — el commit S3.c
+  shells out a un script que NO incluyó. **Lección crítica**:
+  el patrón "untracked code + committed code references it" es
+  **endémico** y rompe atomicidad. La regla "1 slice = 1 commit"
+  debe ser **enforcement-level**: `agent_lock release` debe
+  fallar si hay archivos untracked (no solo modified) antes de
+  aceptar un slice close. Sin esto, F283/F284 reincidirán en
+  cada S5/S6 que introduzca helpers nuevos. **F288** (979 tests
+  pass) confirma que **5 FATAL cerrados** (F149/F150/F152/F201/
+  F261). **F289** (`bun run validate` ahora incluye
+  `bun run quality:gate`) **F152 enforcement-level real** —
+  cada validate ahora falla si quality fails. Scoreboard 5.5 →
+  6.5 (+1.0 recovery sólido, ratio 5 close : 2 new = 2.5:1).
