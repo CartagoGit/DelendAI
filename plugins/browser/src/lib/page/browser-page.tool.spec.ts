@@ -1,31 +1,37 @@
+import { mkdtemp, rm } from 'node:fs/promises';
+import { join } from 'node:path';
+import { tmpdir } from 'node:os';
+
 import { describe, expect, it } from 'vitest';
 
 import { captureToolRegistration } from '../../../../../tools/scripts/lib/test-mcp-server';
 import { buildBrowserInspectToolRegistrations } from '../tools/browser-inspect.tool';
 
 const driver = {
+	open: async ({ url }: { url: string }) => ({
+		url,
+		title: 'Example',
+		html: '<html><body>Hello</body></html>',
+	}),
 	navigate: async ({ url }: { url: string }) => ({
 		url,
 		title: 'Example',
-		status: 200,
+		html: '<html><body>Hello</body></html>',
 	}),
 	screenshot: async () => ({
-		path: '/cache/browser/screenshots/example.png',
-		bytes: 42,
-		format: 'png' as const,
-		width: 1_280,
-		height: 720,
+		data: Uint8Array.from([7, 8, 9]),
 	}),
 	query: async () => ({
 		url: 'https://example.test/',
-		hits: [{ selector: 'h1', text: 'Hello', tag: 'h1' }],
+		matches: ['Hello'],
 	}),
+	assert: async () => ({ passed: true }),
 };
 
-const registration = (id: string) => {
+const registration = (id: string, pluginCacheDir = '/cache/browser') => {
 	const found = buildBrowserInspectToolRegistrations({
 		namespacePrefix: 'mcp',
-		pluginCacheDir: '/cache/browser',
+		pluginCacheDir,
 		driver,
 	}).find((entry) => entry.id === id);
 	if (found === undefined) throw new Error(`missing registration: ${id}`);
@@ -39,24 +45,31 @@ describe('browser page tools', () => {
 		);
 		const output = (await captured.invoke({
 			url: 'https://example.test',
-		})) as { url: string; title: string; status: number };
+		})) as { url: string; title: string; html: string; status: string };
 		expect(output).toEqual({
-			tool: 'browser_open',
-			url: 'https://example.test',
+			url: 'https://example.test/',
 			title: 'Example',
-			status: 200,
+			html: '<html><body>Hello</body></html>',
+			status: 'ok',
 		});
 	});
 
-	it('returns a screenshot artifact from the injected driver', async () => {
-		const captured = await captureToolRegistration(
-			registration('browser_screenshot'),
-		);
-		const output = (await captured.invoke({
-			url: 'https://example.test/docs',
-		})) as { path: string; format: string };
-		expect(output.path).toBe('/cache/browser/screenshots/example.png');
-		expect(output.format).toBe('png');
+	it('returns a screenshot path from the injected driver write', async () => {
+		const cacheDir = await mkdtemp(join(tmpdir(), 'browser-page-tool-'));
+		try {
+			const captured = await captureToolRegistration(
+				registration('browser_screenshot', cacheDir),
+			);
+			const output = (await captured.invoke({
+				url: 'https://example.test/docs',
+			})) as { path: string; status: string };
+			expect(output.path).toMatch(
+				new RegExp(`^${cacheDir}/browser/\\d+\\.png$`),
+			);
+			expect(output.status).toBe('ok');
+		} finally {
+			await rm(cacheDir, { recursive: true, force: true });
+		}
 	});
 
 	it('passes bounded DOM queries to the injected driver', async () => {
@@ -66,11 +79,9 @@ describe('browser page tools', () => {
 		const output = (await captured.invoke({
 			url: 'https://example.test',
 			selector: 'h1',
-			limit: 3,
-		})) as { hits: Array<{ text: string }> };
-		expect(output.hits).toEqual([
-			{ selector: 'h1', text: 'Hello', tag: 'h1' },
-		]);
+		})) as { matches: string[]; status: string };
+		expect(output.matches).toEqual(['Hello']);
+		expect(output.status).toBe('ok');
 	});
 
 	it('returns an actionable install hint without a browser driver', async () => {
@@ -81,12 +92,12 @@ describe('browser page tools', () => {
 		if (found === undefined)
 			throw new Error('missing browser_open registration');
 		const captured = await captureToolRegistration(found);
-		const output = await captured.invokeRaw({
+		const output = (await captured.invoke({
 			url: 'https://example.test',
-		});
-		expect(output.isError).toBe(true);
-		expect(output.payload).toMatchObject({
-			error: { nextAction: expect.stringContaining('playwright') },
+		})) as { status: string; hint: string };
+		expect(output).toMatchObject({
+			status: 'install-missing',
+			hint: expect.stringContaining('playwright'),
 		});
 	});
 });

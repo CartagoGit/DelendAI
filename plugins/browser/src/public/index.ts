@@ -7,6 +7,8 @@
  */
 export type {
 	IBrowserDriver,
+	IOpenRequest,
+	IOpenResult,
 	INavigateRequest,
 	INavigateResult,
 	IScreenshotRequest,

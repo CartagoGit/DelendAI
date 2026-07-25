@@ -1,26 +1,26 @@
 /**
- * f00125 S1 — Driver interface (pure planner over an injected page).
+ * f00125 S1 — injected browser boundary.
  *
- * The plugin NEVER spawns Playwright implicitly. A real driver is
- * provided by the host (or by an opt-in `effects: ['network']` install
- * step); the production default is a probe that surfaces an
- * `installHint` when Playwright is missing. Every tool is a pure
- * planner over this interface, so the tool logic is unit-testable
- * without ever launching a real browser.
+ * The plugin never spawns Playwright implicitly. Hosts inject a concrete
+ * driver; tests inject a mock. The S1 inspect tools only depend on these
+ * narrow contracts.
  */
 export type IShotFormat = 'png' | 'jpeg';
 
-export interface INavigateRequest {
+export interface IOpenRequest {
 	readonly url: string;
-	readonly waitUntil?: 'load' | 'domcontentloaded' | 'networkidle';
-	readonly timeoutMs?: number;
+	readonly headless?: boolean;
 }
 
-export interface INavigateResult {
+export interface IOpenResult {
 	readonly url: string;
 	readonly title: string;
-	readonly status: number;
+	readonly html: string;
 }
+
+export type INavigateRequest = IOpenRequest;
+
+export type INavigateResult = IOpenResult;
 
 export interface IScreenshotRequest {
 	readonly url: string;
@@ -29,35 +29,42 @@ export interface IScreenshotRequest {
 }
 
 export interface IScreenshotResult {
-	readonly path: string;
-	readonly bytes: number;
-	readonly format: IShotFormat;
-	readonly width: number;
-	readonly height: number;
+	readonly data: Uint8Array;
+	readonly format?: IShotFormat;
 }
 
 export interface IQueryRequest {
 	readonly url: string;
-	/** CSS selector or `text=<exact>` matcher. */
 	readonly selector: string;
 	readonly limit?: number;
 }
 
-export interface IQueryHit {
-	readonly selector: string;
-	readonly text: string;
-	readonly tag: string;
-}
+export type IQueryHit = string;
 
 export interface IQueryResult {
 	readonly url: string;
-	readonly hits: readonly IQueryHit[];
+	readonly matches: readonly IQueryHit[];
+}
+
+export interface IAssertRequest {
+	readonly url: string;
+	readonly selector?: string;
+	readonly expected?: string;
+	readonly kind: string;
+}
+
+export interface IAssertResult {
+	readonly passed: boolean;
+	readonly observed?: string;
+	readonly message?: string;
 }
 
 export interface IBrowserDriver {
-	readonly navigate: (req: INavigateRequest) => Promise<INavigateResult>;
+	readonly open: (req: IOpenRequest) => Promise<IOpenResult>;
+	readonly navigate?: (req: INavigateRequest) => Promise<INavigateResult>;
 	readonly screenshot: (
 		req: IScreenshotRequest,
 	) => Promise<IScreenshotResult>;
 	readonly query: (req: IQueryRequest) => Promise<IQueryResult>;
+	readonly assert: (req: IAssertRequest) => Promise<IAssertResult>;
 }
