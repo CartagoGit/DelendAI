@@ -270,13 +270,18 @@ export const assembleCoreTools = (
 			? { providers: providerSummaries }
 			: {}),
 		activationReport,
-		unusedActivePlugins: findUnusedActivePlugins({
-			activationReport,
-			corePrefix,
-			metricsRegistry,
-			namespaceForPlugin: (pluginId) =>
-				pluginConfigFor(fileConfig, pluginId).prefix ?? pluginId,
-		}),
+		...(() => {
+			const unusedActivePlugins = findUnusedActivePlugins({
+				activationReport,
+				corePrefix,
+				metricsRegistry,
+				namespaceForPlugin: (pluginId) =>
+					pluginConfigFor(fileConfig, pluginId).prefix ?? pluginId,
+			});
+			return unusedActivePlugins.length > 0
+				? { unusedActivePlugins }
+				: {};
+		})(),
 		recommendedNextAction,
 	});
 

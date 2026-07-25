@@ -1,4 +1,8 @@
-import { describe, expect, it } from 'vitest';
+import { mkdtempSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import { runSastRunner } from './runner';
 import { SAST_RULES } from './rules';
@@ -9,9 +13,19 @@ const probeDeps = (available: Record<string, boolean>) => ({
 });
 
 describe('runSastRunner', () => {
+	let cwd = '';
+	let pluginCacheDir = '';
+
+	beforeEach(() => {
+		cwd = mkdtempSync(join(tmpdir(), 'sast-run-'));
+		pluginCacheDir = join(cwd, '.cache', 'mcp-vertex');
+	});
+	afterEach(() => rmSync(cwd, { recursive: true, force: true }));
+
 	it('uses semgrep when available', async () => {
 		const result = await runSastRunner({
-			cwd: '/repo',
+			cwd,
+			pluginCacheDir,
 			rules: SAST_RULES,
 			languages: ['typescript', 'generic'],
 			files: ['src/db.ts'],
@@ -44,7 +58,8 @@ describe('runSastRunner', () => {
 
 	it('uses ast-grep when semgrep is unavailable', async () => {
 		const result = await runSastRunner({
-			cwd: '/repo',
+			cwd,
+			pluginCacheDir,
 			rules: SAST_RULES,
 			languages: ['javascript', 'generic'],
 			files: ['src/eval.js'],
@@ -73,7 +88,8 @@ describe('runSastRunner', () => {
 
 	it('falls back to inline regex matching when no CLI is available', async () => {
 		const result = await runSastRunner({
-			cwd: '/repo',
+			cwd,
+			pluginCacheDir,
 			rules: SAST_RULES,
 			languages: ['python', 'generic'],
 			files: ['app.py'],
