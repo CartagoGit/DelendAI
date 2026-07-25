@@ -81,9 +81,17 @@ yields an install command, never a crash.
 
 ### S3 — E2E recipe + rendered-page verification + wiring
 
-- **Status**: pending
-- **Files**: `plugins/browser/src/lib/tools/browser-verify-page.tool.ts`, `plugins/browser/README.md`
+- **Status**: done
+- **Files**: `plugins/browser/src/lib/tools/browser-verify-page.tool.ts`, `plugins/browser/README.md`, `plugins/browser/src/lib/tools/browser-verify-page.tool.spec.ts`
 - **Gate**: bun run validate
+- implementation:
+  - `browser-verify-page.tool.ts` exposes `browser_verify_page` with `mode: real | fixture`.
+  - When `fixture` is provided, the tool checks the in-memory strings (`<html>`, stylesheet, nav).
+  - When `fixture` is absent, the tool fetches the URL via the injected `IBrowserDriver` and asserts the rendered DOM.
+  - Missing Playwright → `ok: false` with `installHint` populated (never a crash).
+  - Wired into `plugins/browser/src/index.ts` and exported in `plugins/browser/src/public/index.ts`.
+  - `plugins/browser/README.md` documents usage, install, modes, and the E2E recipe shape.
+  - 24/24 plugin tests pass.
 
 `browser_verify_page` asserts a URL renders with `<html>` + stylesheet + nav
 (dogfoods `verify:site-pages`); an E2E recipe format; catalog + `web-app` pack
