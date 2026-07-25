@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-07-25T01:24:01.823Z",
+	"generatedAt": "2026-07-25T01:36:11.843Z",
 	"mode": "compact",
 	"tools": [
 		{
@@ -1075,13 +1075,6 @@
 				"kind": "unspecified"
 			},
 			{
-				"id": "x00072",
-				"title": "x00072",
-				"track": "security+invariants+ide",
-				"status": "ready",
-				"kind": "fix"
-			},
-			{
 				"id": "x00073",
 				"title": "x00073",
 				"track": "security+invariants",
@@ -1097,11 +1090,11 @@
 			}
 		],
 		"byStatus": {
-			"ready": 30,
+			"ready": 29,
 			"in-progress": 4,
 			"review": 11,
 			"paused": 1,
-			"done": 242,
+			"done": 243,
 			"blocked": 0,
 			"retired": 2,
 			"unspecified": 0
