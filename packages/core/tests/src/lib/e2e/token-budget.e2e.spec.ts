@@ -99,8 +99,10 @@ const BUDGET_BYTES = {
 	// The repo host defaults to `swarm`, so its static MCP tool definitions
 	// (tools/list) and the two normal orientation/resume calls are independently
 	// budgeted. Measured 2026-07-24: 157 504B / 2 463B / 146B respectively.
+	// Updated 2026-07-25: refactor plugin (f00123 S2) added to swarm via standard,
+	// increasing overview compact from 2 463B to ~3 568B.
 	swarmToolsList: 165_000,
-	swarmOverviewCompact: 3_500,
+	swarmOverviewCompact: 3_600,
 	swarmRoundContext: 300,
 	// `lean` was 58 003B against the same fixture, a 63% reduction from swarm.
 	leanToolsList: 65_000,

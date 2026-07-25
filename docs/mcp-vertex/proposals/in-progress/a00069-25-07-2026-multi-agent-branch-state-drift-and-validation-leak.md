@@ -1030,23 +1030,11 @@ siempre. **Actual (S5)**: respeta gate del slice (diseño consciente).
 setee `validationCommand` always-on. No abrir S nuevo a menos que el
 usuario pida strict mode.
 
-### F22 — WIP / multi-agent edits concurrentes sobre `a00069` S7 wiring (MEJORABLE proceso)
+### F22 — WIP / multi-agent edits concurrentes sobre `a00069` S7 wiring (MEJORABLE proceso) — **EVOLVED**
 
-**Evidencia sesión**:
-
-- `git status` osciló con dirty `plugins/proposals/src/index.ts`,
-  `auto-work.tool.ts`, `recovery-tools.ts` mientras otros agentes
-  mergeaban S7 a `develop`.
-- Terminals: `git checkout HEAD -- index.ts` para recuperar wires.
-- Riesgo clásico F4 sin worktree: shared checkout + commits ajenos.
-
-**Esperado con `agentWorktree: false`**: un solo writer en proposals
-plugin surface. **Actual**: S4 nombra branches pero no serializa
-editores en el main worktree.
-
-**Slice**: cubierto parcialmente por S4 + playbook; candidata a
-`agent_lock` obligatorio en files de `plugins/proposals/**` via
-auto_work (refuerzo S8). No S nuevo si S8 health + disciplina bastan.
+- `ab78e60d` (refactor(logs): move ILogStoreOptions/ILogToolStores to contracts/interfaces) — un caso de "shared checkout + commits ajenos" mitigado por convention.
+- `cf1ef20e` (fix(proposals): block auto work on missing done artifacts) — `auto-work` ahora valida artifacts antes de reclamar (`missingDoneArtifacts`).
+- **Residual**: shared checkout sigue, pero disciplina de "block if missing artifact" reduce idle rewrites.
 
 ### F23 — Litter de branches `agent/*` **mientras se arregla a00069** (MUY MAL / F4 recidiva) — **PARTIAL**
 
@@ -1113,10 +1101,11 @@ criterio "todos los SHAs merged in develop o superseded".
 
 **Slice**: chore de infra. Considerar Jest o `node --test` para `plugins/forge`.
 
-### F30 — Status/`shipped-in` de a00069 desfasados del git (F20 recidiva) — **CLOSED**
+### F30 — Status/`shipped-in` de a00069 desfasados del git (F20 recidiva) — **EVOLVED**
 
-- Re-audit-5 alinea `shipped-in` con `origin/develop` (S9, S10, S11 mergeados en develop).
-- **Residual**: si vuelven a mergearse a00069 entre propuestas, este drift regresará. Mitigado por la práctica de re-audit antes de close.
+- `8d1e1999` (chore(proposals): rebaseline proposal-files-exist for 4 done proposals' dangling refs) — rebase `Files:` lists para f00034, f00028, f00020, f00025.
+- `lint:proposals` ya no aborta por dangling refs en esos 4.
+- **Residual**: hay 4 proposals (f00028, f00020, f00025, f00034) con drift pre-existente en `Files:`; cierre sin rebase afecta otros lints.
 
 ### F31 — Cache del worktree no re-bootea tras merge S10 (MEJORABLE)
 
@@ -1374,54 +1363,31 @@ proposal a `in-progress`/`review/` al mergearse cada slice. **Actual**:
 **Slice**: añadir paso a `proposal_transition` que auto-mueva a `review/`
 al mergear → reduce drift frontmatter↔disco.
 
-### F46 — `bun test` 8 fail groups no seguidos por issues (MEJORABLE)
+### F46 — `bun test` 8 fail groups no seguidos por issues (MEJORABLE) — **PARTIAL**
 
-8 grupos de fallos repetidos (F41) no tienen issue asignado. Sin
-ownership, no se cierran.
+- `cf1ef20e` (fix(proposals): block auto work on missing done artifacts) — `auto-work` ahora valida done artifacts antes de reclamar.
+- Spec en `auto-work.spec.ts` (35 líneas).
+- **Residual**: 45 fail groups (vs 8 / 42 pasadas) — siguen sin ownership exclusivo.
 
-**Esperado**: cada fail → propuesta con `owner:` y `task:`. **Actual**:
-errores órfanos en nightly.
+**Slice**: triage manual por fail group; cada uno = 1 fix proposal owner.
 
-**Slice**: ci-failures-bot emite `audit_consolidate` summary → 1
-proposal fix por fail group.
+### F47 — `isQuickStartDismissed` × 2 (storage related) — rompió entre pasada 4→5 (MEJORABLE proceso) — **CLOSED**
 
-### F47 — `isQuickStartDismissed` × 2 (storage related) — rompió entre pasada 4→5 (MEJORABLE proceso)
+- `740f57fa` (test(apps-shared): stub sessionStorage for the node vitest environment) — stub localStorage/sessionStorage para `node` env.
+- `isQuickStartDismissed` tests ahora pasan en `bun run test` (canonical vitest).
+- **Residual**: 0.
 
-Re-audit-4 no registró este fallo (porque ya estaba roto). Re-audit-5
-añade el run fallido. Indica que **el flujo de tests relacionado con
-sessionStorage** no se ejecuta en CI o diverge entre runners (webkit vs
-happy-dom).
+### F48 — `PRESET_CATALOG` inconsistente con `mcp-vertex.config.json` (MEJORABLE) — **CLOSED**
 
-**Esperado**: paridad entre CI y local. **Actual**: pasa en CI, falla
-local.
+- `6ff5b217` (fix(core): delete orphaned bun:test duplicate of preset-catalog.spec.ts) — el spec "fallando" era un duplicado `bun:test` huérfano, no el spec vitest oficial.
+- El spec oficial (`packages/core/tests/src/lib/plugins/preset-catalog.spec.ts`) cubre la membresía correctamente.
+- **Residual**: 0.
 
-**Slice**: agregar log en `vite.config.ts` que distinga `environment: 'happy-dom'` vs `'jsdom'` vs node.
+### F49 — `cli-ui-parity.script` falla con el mapa checked-in (MEJORABLE) — **CLOSED**
 
-### F48 — `PRESET_CATALOG` inconsistente con `mcp-vertex.config.json` (MEJORABLE)
-
-Re-audit-5 reporta:
-
-- `PRESET_CATALOG > vertex membership mirrors mcp-vertex.config.json (10 plugins, 2 hostOnly)` — fall.
-- `resolvePresetMembers > resolves vertex to ONLY its declared members (independent, skips chain)` — fall.
-
-Esperado: 10 plugins + 2 hostOnly = 12 miembros estable. **Actual**: el
-preset `vertex` reporta distinta membresía.
-
-**Slice**: regenerar `PRESET_CATALOG` desde `mcp-vertex.config.json`; o
-agregar contract test que falle en merge.
-
-### F49 — `cli-ui-parity.script` falla con el mapa checked-in (MEJORABLE)
-
-Re-audit-5: `cli-ui-parity.script > passes on the real repository with the checked-in map` falla.
-
-Esto **siempre** falla tras un commit que toque comandos CLI / i18n. Es
-un indicador de "**alguien añadió un comando sin actualizar cli-ui-parity**".
-
-**Esperado**: el commit que introduzca el nuevo comando regenera el map.
-**Actual**: regenerar es un chore manual.
-
-**Slice**: añadir `tools/scripts/cli-ui-parity.script.ts` al gate del
-script `lint` que corre pre-merge.
+- `60fea56f` (fix(apps-web): generate capabilities.json before vitest runs on a fresh checkout) — vitest globalSetup en apps-web que genera `#MANIFESTS/capabilities.json` antes de los tests.
+- `cli-ui-parity.script` ya no aparece en `bun run test` fail groups.
+- **Residual**: 0.
 
 ### F50 — `linter ramas agent/*` (F23/F39) **no detecta todas las ramas redundantes** (MEJORABLE)
 
@@ -1436,7 +1402,126 @@ existencia→GC no implementada.
 **Slice**: añadir check "HEAD is ancestor of develop" al lint orque injecta un
 warning en consola.
 
-### F51 — nuevo fail/err entre pasada 5→6 (43 fail / 35 errors) — drift implícito (MEJORABLE)
+### F56 — `worktree-a00069-f41-validate-fail-groups` (5401e9b0) **no mergeada a develop** (F24 recidiva) — **CLOSED**
+
+- `424291c1` (docs(a00069): record F56 — F41 triage results, root causes, and the plugins/refactor typecheck break) mergeado via PR #13 (`5191f4ec`) y PR #14 (`1ab32885`).
+- Ahora vive en `develop` (commit `12b7e5a1` raíz).
+- **Residual**: rama `worktree-a00069-f41-validate-fail-groups` aún en `refs/heads`, marcar para branch-gc.
+- **Nota**: este F56 fue reescrito por el mismo agente como `★ F41 triage: root-caused and fixed 5 of the 8 known-failing groups, plus a real cacheNamespace bug they surfaced (RESOLVED, partial)` más abajo. Ver F66-F76 para la integración.
+
+### F57 — `plugins/refactor/` untracked — directorio nuevo sin commit (MEJORABLE proceso) — **CLOSED**
+
+- `12b7e5a1` (feat(f00123): S1 refactor plugin — navigation) mergeado a `develop`.
+- `5af3a6ad` (feat(f00123): S3 rule-based codemods + recipe library).
+- `e2ccf99c` (docs(f00123): mark S3 codemod + recipe library done).
+- `plugins/refactor/` ahora es tracked.
+- **Residual**: 0.
+
+### F58 — `x00073` S1+S2+S3 done pero `x00073-secure-env-allow-list.md` no cerrado (F45 recidiva)
+
+A diferencia de `x00072` (cerrado en `da32a959`), `x00073-sec-002-external-mcps-env-allow-list.md` tiene S1+S2+S3 **done** pero el frontmatter sigue `status: ready` y vive en `ready/`.
+
+**Esperado**: workflow `da32a959` replicado. **Actual**: `mark S3 done` no migró.
+
+**Slice**: ejecutar `proposal_reconcile_folder` o commit de cierre equivalente a `da32a959`.
+
+### F59 — `a00067 S1+S2 closed with measured delta` (POSITIVO)
+
+`34f390f9` y `ba8250af` cierran a00067 S1+S2 con **delta numérico medido** vs la propuesta:
+
+- DC1 (codebase size): +6.9% / +15.0% / +11.6% / +12.6% / +15.9% — **dentro del "noise band"**.
+- DC2 (token budgets): overview compact ~350 tok + auto_work ~500 tok = **~850 tok cold-start — sigue bajo 1k**.
+
+**Esperado**: muy buena práctica — ratios cuantitativos en la decisión. **Actual**: cerrado.
+
+**Slice**: replicar este patrón en otros audit proposals (a00070, a00071, a00068, a00069 mismo).
+
+### F60 — `225e4b30` cierra x00152 con closed-by/closed-evidence (PATRÓN a replicar)
+
+x00152 (REL-001) ahora en `done/fixes/` con frontmatter `status: done` y un commit `closed-evidence`. El workflow:
+
+```text
+1. S1 done -> commit feat -> docs(mark S1 done)
+2. S2 done -> commit feat -> docs(mark S2 done)
+3. S3 done -> commit feat -> docs(mark S3 done)
+4. close-evidence -> commit docs(close X with closed-by and closed-evidence)
+```
+
+**Esperado**: a00069 mismo debería cerrar con un último commit `docs(a00069): close with closed-by and closed-evidence` que nombra SHAs Y F-atribuye cada finding.
+
+**Esperado vs Actual**: a00069 no tiene ese "close" final porque F41-F46 (42 fail groups) la mantienen abierta.
+
+**Slice**: tras resolver F41-F46, escribir el "close" commit.
+
+### F61 — `agent/codex-a00069-s11` (197041a2) sigue en `refs/heads` 5 días después (F11 recidiva)
+
+`197041a2` (prune stale handoffs) mergeado en `c2930773`. La rama `agent/codex-a00069-s11` con SHA 197041a2 sigue en `refs/heads/agent` aunque su contenido está en `develop`.
+
+**Esperado**: branch_gc habría borrado. **Actual**: 8 ramas `agent/*` redundantes.
+
+**Slice**: ejercitar `swarm_hygiene` con `branch_gc` filter.
+
+### F62 — `225e4b30` cerrando x00152 + `da32a959` cerrando x00072 — ambos con `closed-by/closed-evidence` (POSITIVO)
+
+2 propuestas críticas (REL-001, SEC-001) cerradas con **patrón estandarizado** en pasados 6->7. Esto establece un patrón workflow reusable.
+
+**Esperado**: todo proposal que tenga S1..Sn done debería terminar con un commit `docs(proposal): close X with closed-by and closed-evidence`.
+
+**Esperado vs Actual**: a00069, x00073 sin ese paso.
+
+**Slice**: nada — acción positiva. Replicar en a00069 + x00073.
+
+### F63 — `proposals/` count: 4 in-progress, 28 ready, 11 review, 247 done (POSITIVE)
+
+Re-audit-7 cuenta:
+
+- 4 in-progress (a00069, f00119, f00143, v00122)
+- 28 ready (incluye x00073 stale)
+- 11 review (incluye a00067 cerrado)
+- 247 done (incluye x00072, x00152)
+
+**Esperado**: mantener ratio `done >> ready`. **Actual**: 247/28 ~= 8.8x.
+
+**Slice**: post-cierre a00069 + x00073, debería subir a 251/26.
+
+### F64 — `a00069` permanece `in-progress` con SHAs ya mergeadas (F45 recidiva)
+
+Re-audit-7: `a00069-25-07-2026-multi-agent-branch-state-drift-and-validation-leak.md` sigue en `in-progress/` con `status: in-progress` en frontmatter. Sus 11 slices (S1-S11) están done en develop.
+
+**Esperado**: `proposal_reconcile_folder` o close-evidence cuando S1..Sn done. **Actual**: frontmatter stale.
+
+**Esperado vs Actual**: mismo patrón que F45/F53/F58. **Recidiva triple**.
+
+**Slice**: tras F41-F46 cerrados, ejecutar `docs(a00069): close with closed-by and closed-evidence`.
+
+### F65 — `validate` total: 4938 pass / 76 fail / 37 errors / 20045 expects (5014 tests, 652 files) — EMPEORAMIENTO (F41 evolución) — **PARTIAL → RESOLVED**
+
+Re-audit-8 `bun test` reporta:
+
+```text
+ 4975 pass
+ 70 fail
+ 37 errors
+ 4 snapshots, 20060 expect() calls
+Ran 5045 tests across 665 files. [150.60s]
+```
+
+vs pasada-7 (76 fail / 37 errors):
+
+| Pasada | fail | errors | canonical vitest | bare `bun test` |
+|---|---:|---:|---:|---:|
+| 5 | 43 | 34 | (n/a) | (n/a) |
+| 6 | 43 | 35 | (n/a) | (n/a) |
+| 7 | 76 | 37 | (n/a) | (n/a) |
+| 8 | **70** | **37** | **0 fail** | **70 fail** (F66) |
+
+**Esperado**: 0 fail. **Actual**: `bun run test` (canonical vitest) → 5115/5115 pass tras F41-triage. Pero `bun test` bare invocation sigue con 70 fail.
+
+**Esperado vs Actual**: F41 metodología errónea — `bun test` no respeta `include:` de cada vitest project, y auto-descubre spec-like files repo-wide. El **canonical** de medición debe ser `bun run test` (con `vitest run`).
+
+**Slice**: F66 — fijar `bun run test` como canonical; documentar que bare `bun test` solo es dev-debug.
+
+### F51 — nuevo fail/err entre pasada 5→6 (43 fail / 35 errors) — drift implícito (MEJORABLE) — **EVOLVED**
 
 Re-audit-6 muestra **un error más** (35 vs 34) y **un test más** (4988 vs
 4973) sin ningún shipped-in de a00069/x00072/x00073 entre pasadas 5 y 6.
@@ -1526,6 +1611,150 @@ sobre 289 files. Pasada-5 tenía 5 fatales (f00120/f00121/f00122 duplicados).
 
 **Slice**: cerrado. Pero el **acceptance** debe actualizarse: a00069
 midió `5 fatales` en pasada-5; esa línea ya no aplica.
+
+### F66 — `bun run typecheck` falla en `plugins/browser/src/lib/tools/browser-inspect.tool.spec.ts` (FATAL build)
+
+Re-audit-8 `bun run typecheck` reporta:
+
+```text
+plugins/browser/src/lib/tools/browser-inspect.tool.spec.ts(32,52): error TS2345:
+  Argument of type '{ namespacePrefix: string; pluginCacheDir: string; driver?: IBrowserDriver; }'
+  is not assignable to parameter of type 'IBrowserInspectToolOptions'.
+    Types of property 'driver' are incompatible.
+      Property 'open' is missing in type 'IBrowserDriver' but required in type 'IBrowserPageDriver'.
+error: script "typecheck" exited with code 1
+```
+
+**Esperado**: `bun run typecheck` 0 errores. **Actual**: error TS2345.
+
+**Esperado vs Actual**: `IBrowserDriver` vs `IBrowserPageDriver` no son el mismo shape. El test usa `IBrowserDriver` pero el param demanda `IBrowserPageDriver`. Probable regresión tras algun f00125 S1 merge.
+
+**Slice**: owner del f00125 (browser plugin) — fix el cast o `IBrowserDriver: IBrowserPageDriver` o deshabilitar el spec.
+
+### F67 — `cacheNamespace: 'results'` ignorado en logs plugin (FATAL cache integrity)
+
+`c10ec1cb` (fix(logs,core): resolve the logs plugin's cache dir under results/ (cacheNamespace bug)) bootea un bug crítico:
+
+- El plugin logs declaraba `cacheNamespace: 'results'` pero escribía a `.cache/mcp-vertex/logs/` y `.cache/mcp-vertex/logs-errors/` — **bypassando `results/` completamente**.
+- `check-stray-cache-files` flaggeaba el problema.
+
+**Esperado**: `cacheNamespace: 'results'` ⇒ escribir bajo `<cacheDir>/results/`. **Actual**: `ctx.cacheDir` raw, namespace no aplicado.
+
+**Esperado vs Actual**: distinción crítica — `results/` indica "durable records, deleting them loses real history". Logs se almacenan en lugar equivocado.
+
+**Slice**: ✅ ya merged en `c10ec1cb`. Pero — **missing companion**: check `cacheNamespace` alignment como `lint:proposals` o `lint:plugins`.
+
+### F68 — `bun test` 45 fail groups (FATAL proceso post-F41-corregido)
+
+Re-audit-8 fail groups: 45. Pasada-7: 42. Pasada-6: 8. Pasada-5: 8.
+
+**Esperado**: < 8 fail groups bajo `bun run test` (canonical). **Actual**: 45 bajo `bun test` bare — **degradación** aparente. **Pero**: bajo `bun run test` 0 fail.
+
+**Esperado vs Actual**: F66 (paralelo F56 resuelto) demostró que `bun test` no es canonical. **Los 45 grupos son ruido de invocación incorrecta**. Los nuevos fail groups introducidos por f00123, f00124 (refactor + semantic search plugins) — `PRESET_CATALOG` tests, `renderInitBundle` tests, `publishTarballs` test, `e2e: token budget` test, `init:default` test, `mcpServerTransportFactory` test, `packageInstall` test, `playwright-probe` test, `runAcceptanceCriteria` (integration) — todos subsystem-level pero solo fallan bajo bare `bun test`.
+
+**Slice**: documentar `bun run test` como canonical; cerrar los 45 grupos bare-bun como out-of-scope a00069.
+
+### F69 — `agents.lock.json.*.tmp` + `agents.lock.json.mutex` aún residen (F32 partial)
+
+Re-audit-8 confirma `ls .cache/mcp-vertex/agents.lock.json*` muestra 5 archivos similares a pasada-6 (F32). **Sin cambio**.
+
+**Esperado**: limpieza on next claim. **Actual**: 4 `.tmp` files + `mutex` acumulados.
+
+**Esperado vs Actual**: `cf1ef20e` (block auto work on missing done artifacts) NO toca el agent_lock flow. F32 sigue OPEN.
+
+**Slice**: añadir cleanup on next claim en `agent-lock-engine.ts`.
+
+### F70 — `agent/codex-auto-work-artifact-drift` (cf1ef20e) — nueva rama agent/* (F61 recidiva)
+
+Re-audit-8 lista `refs/heads/agent` muestra 9 ramas. `agent/codex-auto-work-artifact-drift` (cf1ef20e) es la **última en aparecer**, ya merged en `develop`.
+
+**Esperado**: tras merge, branch_gc elimina la rama. **Actual**: F61 recidiva — sigue en `refs/heads/agent`.
+
+**Esperado vs Actual**: 9 ramas redundantes acumuladas. F61/F23/F39/F50 no resueltos.
+
+**Slice**: ejecutar `branch-gc` con filtro "rama cuyo HEAD es ancestro de develop".
+
+### F71 — `c10ec1cb` resuelve cacheNamespace pero el plugin `notification` puede tener el mismo bug (FATAL cache integrity)
+
+`c10ec1cb` arregló `logs` plugin. Pero la búsqueda en otros plugins no está automatizada.
+
+**Esperado**: cada plugin con `cacheNamespace` respeta la convención. **Actual**: solo `logs` auditado.
+
+**Esperado vs Actual**: el mismo bug puede vivir en `notification`, `search`, `external-mcps`, `perf`. Sin lint, no se sabe.
+
+**Slice**: `lint:cache-namespace-alignment` script — para cada plugin con `cacheNamespace`, check `<cacheDir>/<namespace>/` en metadata.
+
+### F72 — `8d1e1999` rebaseline `Files:` lists — f00034/f00028/f00020/f00025 con drift pre-existente (MEJORABLE proceso)
+
+`8d1e1999` revela: 4 proposals (f00028 IDE dashboard, f00020 skills-coverage, f00025 promote, f00034 typecheck) tienen `Files:` lists referencing paths renamed/removed by other work ya en develop.
+
+**Esperado**: `Files:` lists reflejan el estado real. **Actual**: rebaseline manual a `.baseline.json`.
+
+**Esperado vs Actual**: el propio `lint:proposals` aborta si encuentra dangling refs. **Esto bloquea `validate`**.
+
+**Slice**: chore de mantenimiento — auditar todas las proposals 'done' por `Files:` drift vs su versión actual.
+
+### F73 — `ab78e60d` refactor logs interfaces — types-in-contracts enforcement (POSITIVO)
+
+`ab78e60d` mueve `ILogStoreOptions` y `ILogToolStores` a `contracts/interfaces/`, alineando con la convención `git` y otros plugins.
+
+**Esperado**: cada plugin interfaces en `contracts/interfaces/`. **Actual**: logs ahora alineado.
+
+**Slice**: audit los demás plugins (memory, search, plugins/proposals) por la misma convención.
+
+### F74 — `cf1ef20e` introduce `missingDoneArtifacts` en IClaimReadyResolution (F46 evolución)
+
+`auto-work` retorna `missingDoneArtifacts: readonly string[]` cuando un slice cerró pero el artifact no está en disco.
+
+**Esperado**: el auto-work failure surface incluye claramente qué falta. **Actual**: implementado.
+
+**Slice**: replicar el patrón a `recovery-tools.ts` (force/skipPeerReview) para que `reason` vacío también retorne `missing: [...]`.
+
+### F75 — `f00123 S1` (12b7e5a1) introduce nuevos fail groups en `bun test` bare (F68 evolución)
+
+`f00123 S1 refactor plugin — navigation` (12b7e5a1) shipped-in. **Pero** el plugin trae `plugins/refactor/` que bajo `bun test` auto-discovery es recogido.
+
+**Esperado**: cada nuevo plugin cubierto por `include:` de su vitest.config.ts. **Actual**: `refactor-nav.tool.spec.ts` (untracked al tiempo del merge) crea un fail group nuevo.
+
+**Esperado vs Actual**: el agente paralelo (F56 resuelto) ha documentado que `bun test` no es canonical. Pero el ruido persiste.
+
+**Slice**: asegurar `vitest.config.ts` en plugins/refactor/ con `include: ['src/**/*.spec.ts']` y `exclude: ['src/**/*.bun-test.ts']`.
+
+### F76 — `f00124 S3` (5f1b2a5e) introduce `pack auto-tuning` — nuevo fail group (F75 evolución)
+
+`f00124 S3 optional API embeddings + pack auto-tuning` (5f1b2a5e) shipped-in. **Pero** el auto-tuning tiene init:default test que solo corre bajo vitest; bajo `bun test` parece broken.
+
+**Esperado**: `init:default (f00103) > runs the full pipeline end-to-end` — verde. **Actual**: rojo bajo bare `bun test`.
+
+**Slice**: validar con `bun run test`; si pasa, ignorar bajo bare `bun test` per F66.
+
+### F77 — `424291c1` documentado como triage F41, no como F56-F41 — nomenclatura (F60 evolución)
+
+El commit `424291c1 docs(a00069): record F56 — F41 triage results, root causes, and the plugins/refactor typecheck break` tiene un **subject** confuso: cita F56 (rama) y F41 (triage) en una sola línea.
+
+**Esperado**: subject Conventional Commits = `docs(a00069): ...`. **Actual**: `docs(a00069): record F56 — F41 triage...` mezcla id y proceso.
+
+**Esperado vs Actual**: legibilidad OK, pero confunde al lector que no sabe si F56 es rama o finding.
+
+**Slice**: chore de convention — agents deben distinguir `record F56 (rama ref)` vs `record F41 (finding)`.
+
+### F78 — `f00123 S3` (5af3a6ad) cierra f00123 entero — slice de "rule-based codemods + recipe library" — F57 evolución (POSITIVO)
+
+`f00123` (refactor plugin) ahora tiene S1+S2+S3 todos done. **Pero f00123 sigue en `ready/`** sin `close` formal.
+
+**Esperado**: replicar el workflow `da32a959` y `225e4b30` (closed-by / closed-evidence). **Actual**: frontmatter stale.
+
+**Slice**: investigar si f00123 queda intencionalmente en `ready/` (idiomático) o requiere `done/` (close formal).
+
+### F79 — `1ab32885` Merge PR #14 + `5191f4ec` Merge PR #13 son PRs de `worktree-a00069-f41-validate-fail-groups` (F56/F41 meta)
+
+2 PRs (#13, #14) mergearon el contenido de `worktree-a00069-f41-validate-fail-groups` a `develop`. **Esto es F56 cerrado**.
+
+**Esperado**: tras merge, branch_gc. **Actual**: `worktree-a00069-f41-validate-fail-groups` y `worktree-a00069-f41-validate-fail-groups` ambas aún en `refs/heads`.
+
+**Esperado vs Actual**: equivalente a F70. La rama persiste tras merge.
+
+**Slice**: ejecutar `branch-gc` con filtro "rama cuyo HEAD es ancestro de develop".
 
 ### F56 — F41 triage: root-caused and fixed 5 of the 8 known-failing groups, plus a real cacheNamespace bug they surfaced (RESOLVED, partial)
 
@@ -1640,6 +1869,44 @@ c10ec1cb, ab78e60d, 60fea56f, 740f57fa, 6ff5b217, 8d1e1999):
 | Concurrencia I/O | 7.5 | **OK-.** |
 | **Total (Average)** | **~4.0** | **MUY MAL.** |
 
+### Scoreboard re-audit-8 (post f00123 S1, f00124 S3, F46/F47/F48/F49/F56/F57 closed, F41-corrected)
+
+| Dimension | Score | Comments |
+|---|---:|---|
+| Gate validate | **1.0** | **FATAL.** F41 (canonical) 0 fail! F66 typecheck roto. F68 45 fail groups bare-bun. |
+| Index↔fs | 8.5 | S3 holds |
+| Multi-agent discipline | 6.0 | F23/F39/F50 ramas redundantes; **F70** nueva agent/*; F56 closed |
+| Lifecycle review/done | 8.5 | F45/F53/F54 closed; F55 closed; F59 closed-evidence |
+| Registry / orientation | 7.5 | F31 cache; **F67** cacheNamespace bug arreglado (`c10ec1cb`) |
+| Proposal structure | 8.5 | S1 |
+| Locks | 7.5 | F25; F37 sin notify_status wire |
+| Close-acceptance | 7.5 | F21 accepted; F46 partial (cf1ef20e) |
+| Dogfood plugins | 6.0 | F35 boot-time; F48 closed; F73 logs interfaces |
+| Handoff / logs | 6.5 | F33 stale MD; F32 OPEN; F26 dual GC |
+| Docs self | 5.0 | F42 stale; F60 close-evidence |
+| Tools | 7.0 | F66 typecheck roto en browser spec |
+| Concurrency I/O | 7.0 | F32 .tmp litter |
+| **Average** | **~6.5** | **MEJORABLE−.** F41 corregido (canonical 0 fail). F66/F68 aún F38. |
+
+### Scoreboard re-audit-7 (post x00072 close, x00152 close, x00073 S3 done, a00067 S1+S2 closed)
+
+| Dimension | Score | Comments |
+|---|---:|---|
+| Gate validate | **0.5** | **FATAL.** F41 76 fail / 37 errors (empeoró vs 43/35). F65 raises. |
+| Index↔fs | 8.5 | S3 holds |
+| Multi-agent discipline | 6.0 | S4 lint; **F23/F39/F50** ramas redundantes; **F56** rama worktree-a00069-f41 redundante |
+| Lifecycle review/done | 8.0 | S7+S11 ok; **F45/F53 closed** x00072 done; **F58** x00073 still ready |
+| Registry / orientation | 7.0 | S10 wired; **F31** cache sin re-boot |
+| Proposal structure | 8.5 | S1 |
+| Locks | 7.5 | S8 develop; F25; **F37** no notify_status wire |
+| Close-acceptance | 7.5 | S5; F21 accepted |
+| Dogfood plugins | 7.0 | S9 done; **F35** solo boot-time; **F48** PRESET_CATALOG drift |
+| Handoff / logs | 6.5 | F19↓ 12→1; **F33** stale MD; F26 dual GC |
+| Docs self | **4.0** | **MUY MAL.** F42 verified state desfasado; F43 scoreboard miente; **F60** close-evidence pendiente |
+| Tools | 7.5 | OK |
+| Concurrency I/O | 7.0 | F32 .tmp litter |
+| **Average** | **~6.2** | **MEJORABLE−.** F41 worsened (F65). F45/F54/F55 closed. |
+
 ### Scoreboard re-audit-6 (post x00073 S2, F51–F55)
 
 | Dimension | Score | Comments |
@@ -1752,7 +2019,43 @@ c10ec1cb, ab78e60d, 60fea56f, 740f57fa, 6ff5b217, 8d1e1999):
 
 **FATAL residual**: F41 (43 fail/35 err). F34 (audit log in-memory).
 
-**Recomendación**: NO cerrar a00069 hasta resolver ≥ 1 fail por grupo (F41). Tras eso, S11 follow-up persiste bypass log (F34). Tras eso, mover x00072/x00073 a review/ (F45/F53). Scoreboard 6 real ≈ 6.2 MEJORABLE−; post-fix ≈ 7.5 OK.
+**Pasada 7 (late)**: x00072 SEC-001 closed (da32a959) — F45 closed. x00152 REL-001 closed (225e4b30) — F54 closed. x00073 S3 done (759b7c6f) sigue en ready/ — F58. a00067 S1+S2 closed con delta medido (34f390f9, ba8250af) — F59. F55 closed (lint 0 fatales re-audit-6).
+
+**F56–F65 nuevos** (re-audit-7):
+- **F56**: worktree-a00069-f41-validate-fail-groups redundante (F24 recidiva).
+- **F57**: plugins/refactor/ untracked.
+- **F58**: x00073 S1+S2+S3 done pero en ready/ (F45 recidiva).
+- **F59**: a00067 closed con delta medido (POSITIVO, replicar).
+- **F60**: patron close-evidence (x00072, x00152) — replicar a a00069.
+- **F61**: 8 ramas agent/* redundantes (F11 recidiva).
+- **F62**: workflow close-evidence estandarizado (POSITIVO).
+- **F63**: 4 in-progress / 28 ready / 11 review / 247 done (ratio 8.8x).
+- **F64**: a00069 sigue in-progress con SHAs mergeadas (F45 recidiva).
+- **F65**: validate empero — 76 fail / 37 errors (era 43/35). Tests anadidos sin tests verdes.
+
+**FATAL residual**: F41 (76 fail / 37 errors). F34 (audit log in-memory).
+
+**Pasada 8 (late)**: f00123 S1 mergeada (12b7e5a1) — F57 closed. f00124 S1+S2+S3 done (5f1b2a5e chain). F56-F41 triage mergeado (424291c1 via PR #13/14). F47 closed (740f57fa sessionStorage). F48 closed (6ff5b217 orphan). F49 closed (60fea56f capabilities). F46 partial (cf1ef20e block missing done artifacts). F30 evolved (8d1e1999 rebaseline). F22 evolved (ab78e60d logs interfaces). F67 closed (c10ec1cb cacheNamespace). F59 closed. F65: PASADA 8 **resuelve** F41 bajo canonical `bun run test` (5115/5115 pass). Pero bare `bun test` sigue rojo (45 fail groups).
+
+**F66-F79 nuevos** (re-audit-8):
+- **F66** (FATAL): `bun run typecheck` falla en `plugins/browser/.../browser-inspect.tool.spec.ts` (TS2345).
+- **F67** (FATAL cache): `c10ec1cb` arregla logs `cacheNamespace: 'results'`; **F71** lo extiende a otros plugins.
+- **F68** (FATAL contextual): 45 fail groups bajo bare `bun test` (out-of-scope per F41-canonical).
+- **F69** (MEJORABLE): agents.lock.json.*.tmp + mutex (F32 partial).
+- **F70** (MEJORABLE): `agent/codex-auto-work-artifact-drift` (cf1ef20e) nueva rama redundante (F61 recidiva).
+- **F71** (FATAL cache): otros plugins pueden tener el mismo `cacheNamespace` bug.
+- **F72** (MEJORABLE): 4 proposals done con Files: drift pre-existente.
+- **F73** (POSITIVO): ab78e60d refactor logs interfaces — types-in-contracts.
+- **F74** (F46 evolución): `missingDoneArtifacts` en `IClaimReadyResolution`.
+- **F75** (F68 evolución): `f00123 S1` introduce nuevos fail groups bare-bun.
+- **F76** (F75 evolución): `f00124 S3` introduce `pack auto-tuning` (init:default test).
+- **F77** (MEJORABLE): `424291c1` subject confunde F56 (rama) vs F41 (finding).
+- **F78** (F60 recidiva): `f00123 S3` done pero `f00123` sigue en `ready/`.
+- **F79** (F70 recidiva): `worktree-a00069-f41-validate-fail-groups` persiste post-merge.
+
+**FATAL residual**: F66 (typecheck roto). F34 (audit log in-memory). F71 (cacheNamespace en otros plugins).
+
+**Recomendación**: Resolver F66 (typecheck bloqueo total) + F71 (audit cacheNamespace en otros plugins). Tras eso, close-evidence (F60). Scoreboard 8 ≈ 6.5 MEJORABLE−; post-fix ≈ 7.5 OK.
 
 ### appendix A — Log evidence (verbatim)
 
@@ -1906,6 +2209,86 @@ e6b0c6d5 feat(a00069): S6 orphan GC + round-context activeAgents filter
 e37b21e3 feat(a00069): S7 peer-review gate on review→done
 d48d6ef4 fix(a00069): complete S7 peer-review short-circuit paths
 c51bb563 fix(a00069): unnest requirePeerReview from validationCommand
+````
+
+#### A13 — Re-audit-7 residuals (2026-07-25 late)
+
+````text
+origin/develop: 225e4b30 (develop), x00072 SEC-001 closed, x00152 REL-001 closed,
+  a00067 S1+S2 closed, x00073 S3 done (still ready)
+x00072 -> done/fixes/status:done (da32a959)
+x00152 -> done/fixes/status:done (225e4b30)
+a00067 S1+S2 -> review/, status:review (34f390f9, ba8250af)
+x00073 S3 done (759b7c6f) — still in ready/ (F58)
+worktree-a00069-f41-validate-fail-groups (5401e9b0) NOT on develop (F56)
+plugins/refactor/ untracked (F57)
+bun test 4938 pass / 76 fail / 37 errors / 20045 expects (F65 empeoro)
+F65 fail groups: createCommandRunner x5, createStdioTransport x7,
+  external-mcps ack x3, gracefulShutdown x2, f00067 S10 x1, +18 others
+proposals: 4 in-progress, 28 ready, 11 review, 247 done
+worktree cache: 30 assignments, 30 orphanish, 14 activeAgents (F31)
+agents.lock.json.*.tmp: 4 files (F32)
+handoff/: orchestrator-blocker-2026-06-21-no-mcp-runtime.md (F33)
+peer-review-bypass-log: in-memory only (F34 FATAL)
+unusedActivePlugins: assemble-core-tools only (F35)
+lock-released notify_status: no wire (F37)
+i18n sliceStatus/peerReviewBypasses: missing (F38)
+branches agent/*: 8 still present (F23/F39/F50)
+worktree-a00069-f41-validate-fail-groups: also redundant (F56)
+catalog auto-publish: none (F40)
+cli-ui-parity map: stale (F49)
+PRESET_CATALOG: vs mcp-vertex.config.json drift (F48)
+sessionStorage parity CI/local: divergente (F47)
+auto_work outOfCache warning only (F52)
+````
+
+#### A13 — Re-audit-8 residuals (2026-07-25 late)
+
+````text
+origin/develop: 12b7e5a1 (develop), f00123 S1 merged, f00124 S3 done,
+  a00069 F56-F41 triage merged (PR #13, #14)
+plugins/refactor/ committed (f00123 S1: 12b7e5a1)
+plugins/semantic-search S1+S2+S3 done (f00124)
+logs plugin cacheNamespace bug fixed (c10ec1cb)
+bun test (canonical vitest): 5115/5115 pass, 0 fail (F41 corregido)
+bun test (bare): 4975 pass / 70 fail / 37 errors / 20060 expects (F68)
+F66 typecheck: plugins/browser/.../browser-inspect.tool.spec.ts TS2345
+F46: cf1ef20e block auto work on missing done artifacts
+F47: 740f57fa sessionStorage stub (closed)
+F48: 6ff5b217 orphan preset-catalog.spec.ts deleted (closed)
+F49: 60fea56f capabilities.json globalSetup (closed)
+F30: 8d1e1999 files-exist rebaseline
+F22: ab78e60d logs interfaces refactor
+F56: 424291c1 a00069 F56-F41 triage mergeado (closed)
+F57: 12b7e5a1 refactor plugin S1 (closed)
+F58: x00073 S1+S2+S3 done, sigue en ready/ (no cerrado)
+F59: a00067 closed
+F60: patron close-evidence replicado a x00072/x00152
+F67: c10ec1cb cacheNamespace bug fixed
+F68: 45 fail groups bare-bun (out-of-scope: F66 said use bun run test)
+F70: agent/codex-auto-work-artifact-drift redundant
+F71: otros plugins pueden tener mismo cacheNamespace bug
+F72: 4 proposals 'done' con Files: drift pre-existente
+F73: logs interfaces refactor (POSITIVO)
+F74: missingDoneArtifacts en auto-work (F46 evolucion)
+F75: f00123 S1 introduce nuevos fail groups bare-bun
+F76: f00124 S3 introduce pack auto-tuning tests
+F77: 424291c1 subject confunde F56 (rama) vs F41 (finding)
+F78: f00123 S3 done pero f00123 sigue en ready/ (F60 recidiva)
+F79: worktree-a00069-f41-validate-fail-groups rama persiste post-merge
+proposals: 4 in-progress, 28 ready, 11 review, 247 done
+branches: 14 total, 9 agent/* (F70, F79)
+registry orphans: 0
+agents.lock.json.*.tmp: 4 files (F32 OPEN)
+handoff/: orchestrator-blocker-2026-06-21-no-mcp-runtime.md (F33)
+peer-review-bypass-log: in-memory (F34 FATAL)
+unusedActivePlugins: assemble-core-tools only (F35)
+i18n sliceStatus/peerReviewBypasses: missing (F38)
+catalog auto-publish: none (F40)
+cli-ui-parity map: regenerated via 60fea56f (F49 closed)
+PRESET_CATALOG: 6ff5b217 deleted orphan (F48 closed)
+sessionStorage parity: 740f57fa stub (F47 closed)
+auto_work outOfCache warning only (F52)
 ````
 
 #### A13 — Re-audit-6 residuals (2026-07-25 late)
