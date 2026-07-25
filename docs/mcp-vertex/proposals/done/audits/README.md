@@ -9,7 +9,7 @@ only; the index below is hand-maintained from the live frontmatter as of
 ## Naming contract
 
 Every file under this folder follows the contract declared in
-[`AGENTS.md`](../../../AGENTS.md) §"Audits File Naming":
+[`AGENTS.md`](../../../../../AGENTS.md) §"Audits File Naming":
 
 ```
 {numAuditoria}-{DD}-{MM}-{YYYY}-{controladorModelo}-{modelo}-{queSeHaAuditado}.md

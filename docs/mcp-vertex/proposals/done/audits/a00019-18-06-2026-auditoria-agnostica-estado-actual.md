@@ -117,7 +117,7 @@ los tests es uniforme (`deps.import`, `deps.readFile`).
   diagrama Mermaid debe existir y ser referenciado desde el README.
 - **El `IMcpVertexHostConfig` mezcla “campos requeridos” y “campos opcionales”
   con un orden heterogéneo**
-  ([host-config.interface.ts:9-49](../../../packages/core/src/lib/contracts/interfaces/host-config.interface.ts#L9))
+  ([host-config.interface.ts:9-49](../../../../../packages/core/src/lib/contracts/interfaces/host-config.interface.ts#L9))
   — el `metadata` está documentado como “the host provides” pero no tiene un
   tipo que lo diferencie de los campos puramente informativos (`corePaths`).
   Un `IHostEssentials` (requerido) y un `IHostExtensions` (opcional) separarían
@@ -126,11 +126,11 @@ los tests es uniforme (`deps.import`, `deps.readFile`).
 ### 3.2 Contrato de plugins
 
 **⭐⭐⭐⭐⭐ · Perfecta.** El contrato está **muy bien pensado**:
-[plugin-contract.ts:1-90](../../../packages/core/src/lib/plugins/plugin-contract.ts#L1)
+[plugin-contract.ts:1-90](../../../../../packages/core/src/lib/plugins/plugin-contract.ts#L1)
 define `IMcpPlugin`, `IMcpPluginRegistrations`, `definePlugin` como identity
 helper, y `IMcpPluginContext` con `workspace`, `corePaths`, `pluginCacheDir`,
 `pluginDocsDir`, `namespacePrefix`, `options` y `args`. El loader
-[load-plugins.ts:73-160](../../../packages/core/src/lib/plugins/load-plugins.ts#L73)
+[load-plugins.ts:73-160](../../../../../packages/core/src/lib/plugins/load-plugins.ts#L73)
 es **agnóstico de la resolución de nombres**, **deduplica por specifier y por
 nombre**, **captura errores** (timeout 15 s por import + por register) y nunca
 aborta el resto de la carga. La validación de `optionsSchema` se hace antes
@@ -147,15 +147,15 @@ de `register`.
 **⭐⭐⭐⭐⭐ · Perfecta.** El trabajo serio está aquí:
 
 - `withFileMutex` (cross-process, ownership token + heartbeat + steal-on-stale)
-  — [with-file-mutex.ts:25-110](../../../packages/core/src/lib/shared/with-file-mutex.ts#L25).
+  — [with-file-mutex.ts:25-110](../../../../../packages/core/src/lib/shared/with-file-mutex.ts#L25).
 - `writeFileAtomic` (tmp en mismo dir, rename) —
-  [atomic-write.ts:1-50](../../../packages/core/src/lib/shared/atomic-write.ts#L1).
+  [atomic-write.ts:1-50](../../../../../packages/core/src/lib/shared/atomic-write.ts#L1).
 - `quarantineCorruptFile` + `CorruptFileError` (corrupto ≠ vacío) —
-  [quarantine-corrupt-file.ts:1-65](../../../packages/core/src/lib/shared/quarantine-corrupt-file.ts#L1).
+  [quarantine-corrupt-file.ts:1-65](../../../../../packages/core/src/lib/shared/quarantine-corrupt-file.ts#L1).
 - `cumulative lock/queue/registry/memory` con file mutex
-  ([agent-lock-engine.ts:1-60](../../../plugins/proposals/src/lib/locks/agent-lock-engine.ts#L1),
-  [persistent-task-queue.ts:1-200](../../../plugins/proposals/src/lib/agents/persistent-task-queue.ts#L1),
-  [agent-registry-store.ts:1-160](../../../plugins/proposals/src/lib/shared/agent-registry-store.ts#L1)).
+  ([agent-lock-engine.ts:1-60](../../../../../plugins/proposals/src/lib/locks/agent-lock-engine.ts#L1),
+  [persistent-task-queue.ts:1-200](../../../../../plugins/proposals/src/lib/agents/persistent-task-queue.ts#L1),
+  [agent-registry-store.ts:1-160](../../../../../plugins/proposals/src/lib/shared/agent-registry-store.ts#L1)).
 - Comando allow/deny policy en `quality` antes del `spawn`
   ([command-policy.ts:1-65](../../../plugins/quality/src/lib/command-policy.ts#L1)).
 - `quality_cancel` mata el process group entero (no deja zombies en pipes).
@@ -175,7 +175,7 @@ de `register`.
 
 **⭐⭐⭐⭐½ · Muy bien.** Hay un presupuesto de tokens **medido sobre el
 protocolo real** (no marketing), con guardia de regresión
-([token-budget.e2e.spec.ts:1-100](../../../packages/core/tests/src/lib/e2e/token-budget.e2e.spec.ts#L1))
+([token-budget.e2e.spec.ts:1-100](../../../../../packages/core/tests/src/lib/e2e/token-budget.e2e.spec.ts#L1))
 y un test e2e de `outputSchema` por tool. La promesa “<300 tokens para
 orientarse” está documentada ([TOKEN-BUDGETS.md:1-50](../../../docs/TOKEN-BUDGETS.md))
 y se valida en cada cambio. Compacto + paginación + knowledge como recursos
@@ -183,7 +183,7 @@ MCP (no como carga) refuerzan el principio.
 
 **Lo mejorable:**
 
-- El `metrics` tool existe ([metrics-tool.ts:1-50](../../../packages/core/src/lib/metrics/metrics-tool.ts#L1)),
+- El `metrics` tool existe ([metrics-tool.ts:1-50](../../../../../packages/core/src/lib/metrics/metrics-tool.ts#L1)),
   pero **no hay un “cost snapshot” persistente** — los counters se reinician
   por proceso, así que un análisis de regresión de tokens entre releases
   requiere orquestar `bun run validate` y parsear el output. Un dump a
@@ -194,7 +194,7 @@ MCP (no como carga) refuerzan el principio.
 
 **⭐⭐⭐½ · Bien.** El diseño es **asíncrono de extremo a extremo** (cero
 `*Sync` en engines; `await Promise.all([...])` cuando aplica;
-[status-tool.ts:1-50](../../../packages/core/src/lib/tools/status-tool.ts#L1)
+[status-tool.ts:1-50](../../../../../packages/core/src/lib/tools/status-tool.ts#L1)
 acota cada `collect()` y captura su error en `errors[]` para no hundir la
 herramienta entera). El mutex de `withFileMutex` está **acotado por
 `timeoutMs`** con steal-on-stale, así que un waiter nunca se queda colgado
@@ -250,11 +250,11 @@ type *` del SDK generado.
 - **Caos concurrente** en `proposals/tests/src/lib/locks/concurrent-claims.spec.ts`
   y `chaos/coordination-chaos.spec.ts` (multi-proceso).
 - **e2e protocolo MCP** con `InMemoryTransport` para validar `outputSchema` y
-  payload bytes por tool ([outputschema.e2e.spec.ts](../../../packages/core/tests/src/lib/e2e/outputschema.e2e.spec.ts),
-  [token-budget.e2e.spec.ts](../../../packages/core/tests/src/lib/e2e/token-budget.e2e.spec.ts),
-  [server-client.e2e.spec.ts](../../../packages/core/tests/src/lib/e2e/server-client.e2e.spec.ts)).
+  payload bytes por tool ([outputschema.e2e.spec.ts](../../../../../packages/core/tests/src/lib/e2e/outputschema.e2e.spec.ts),
+  [token-budget.e2e.spec.ts](../../../../../packages/core/tests/src/lib/e2e/token-budget.e2e.spec.ts),
+  [server-client.e2e.spec.ts](../../../../../packages/core/tests/src/lib/e2e/server-client.e2e.spec.ts)).
 - **Drift-guard** del SDK generado
-  ([tool-types-sdk.spec.ts](../../../packages/core/tests/tool-types-sdk.spec.ts)).
+  ([tool-types-sdk.spec.ts](../../../../../packages/core/tests/tool-types-sdk.spec.ts)).
 
 `bun run test:coverage` con `@vitest/coverage-v8` y thresholds
 (`vitest.config.ts:14-21`) cierra la regresión cuantitativa.
@@ -423,8 +423,8 @@ clara entre “git no instalado” y “no es repo”, `maxBuffer` de 8 MiB. Bie
 
 - Reimplementa `createGitRunner` cuando el **core ya tiene un patrón de
   child-process con timeout y captura**
-  ([with-file-mutex.ts](../../packages/core/src/lib/shared/with-file-mutex.ts) +
-  [proposal-acceptance.ts](../../plugins/proposals/src/lib/proposals/proposal-acceptance.ts)).
+  ([with-file-mutex.ts](../../../../../packages/core/src/lib/shared/with-file-mutex.ts) +
+  [proposal-acceptance.ts](../../../../../plugins/proposals/src/lib/proposals/proposal-acceptance.ts)).
   Promover ese patrón a `core/lib/commands/runner.ts` y reusarlo desde
   `git`, `quality`, `proposal-acceptance` reduciría duplicación.
 - No soporta `git worktree` (un agente que trabaja en un worktree aislado

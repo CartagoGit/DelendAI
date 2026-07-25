@@ -81,7 +81,7 @@ matching test in the same slice.
 > Coordination with the parallel agent mid-flight on F1 — read this first.
 
 A **parallel agent** is already mid-flight on a SOLID refactor of
-[`plugins/proposals/src/lib/agents/loop-detector-service.ts`](plugins/proposals/src/lib/agents/loop-detector-service.ts).
+[`plugins/proposals/src/lib/agents/loop-detector-service.ts`](../../../../../plugins/proposals/src/lib/agents/loop-detector-service.ts).
 Their working tree (uncommitted, unmerged) contains:
 
 - A new file `plugins/proposals/src/lib/agents/loop-detector-config.ts`
@@ -106,7 +106,7 @@ Their working tree (uncommitted, unmerged) contains:
 
 ### S1 — `assemble.ts` blueprint write goes through a durable once-only primitive (F-002)
 
-- **Files**: [`packages/core/src/lib/cli/assemble.ts`](packages/core/src/lib/cli/assemble.ts) (lines 485-503),
+- **Files**: [`packages/core/src/lib/cli/assemble.ts`](../../../../../packages/core/src/lib/cli/assemble.ts) (lines 485-503),
   new `packages/core/src/lib/shared/blueprint-store.ts`.
 - **SOLID**: S (assemble no longer mixes analysis + idempotency policy +
   persistence); D (depends on `BlueprintStore` abstraction).
@@ -142,7 +142,7 @@ Their working tree (uncommitted, unmerged) contains:
 
 ### S3 — `fs-tools.ts` removes `atomic: false` from the public tool surface (F-003)
 
-- **Files**: [`packages/core/src/lib/shared/fs-tools.ts`](packages/core/src/lib/shared/fs-tools.ts#L96).
+- **Files**: [`packages/core/src/lib/shared/fs-tools.ts`](../../../../../packages/core/src/lib/shared/fs-tools.ts#L96).
 - **SOLID**: L (substitutability: the public tool contract does not
   expose a variant that breaks durability); I (the public `IFsWriteTool`
   no longer carries an `atomic` option).
@@ -159,7 +159,7 @@ Their working tree (uncommitted, unmerged) contains:
 
 ### S4 — `extension.ts` runtime handle + real `deactivate()` (EXT-01)
 
-- **Files**: [`extensions/vscode/src/extension.ts`](extensions/vscode/src/extension.ts) (lines 100-226),
+- **Files**: [`extensions/vscode/src/extension.ts`](../../../../../extensions/vscode/src/extension.ts) (lines 100-226),
   new `extensions/vscode/src/host/runtime-handle.ts`.
 - **SOLID**: S (activate composes, deactivate disposes — separate
   responsibilities); D (deactivate depends on `IRuntimeHandle`, not on
@@ -181,7 +181,7 @@ Their working tree (uncommitted, unmerged) contains:
 
 ### S5 — `plugin-tool-verify.script.ts` plugin loader via injected root (TS-01)
 
-- **Files**: [`tools/scripts/verify/plugin-tool-verify.script.ts`](tools/scripts/verify/plugin-tool-verify.script.ts) (line 58).
+- **Files**: [`tools/scripts/verify/plugin-tool-verify.script.ts`](../../../../../tools/scripts/verify/plugin-tool-verify.script.ts) (line 58).
 - **SOLID**: D (depends on `IPluginRootResolver`, not on relative paths).
 - **Status**: done.
 - **Gate**: `bun run test` (lint:tools + manual run).
@@ -196,7 +196,7 @@ Their working tree (uncommitted, unmerged) contains:
 
 ### S6 — `loop-detector-service.ts` residual hot-path sync I/O (F1 partial)
 
-- **Files**: [`plugins/proposals/src/lib/agents/loop-detector-service.ts`](plugins/proposals/src/lib/agents/loop-detector-service.ts) (lines 513-514).
+- **Files**: [`plugins/proposals/src/lib/agents/loop-detector-service.ts`](../../../../../plugins/proposals/src/lib/agents/loop-detector-service.ts) (lines 513-514).
 - **SOLID**: D (no more direct `node:fs` in the hot path).
 - **Status**: done. The parallel-agent F1 refactor (commit `410131b`,
   "update loop detector config to use async file reading") already
@@ -221,7 +221,7 @@ Their working tree (uncommitted, unmerged) contains:
 
 ### S7 — `proposal-scaffold-linter.ts` removes host-specific narrative from runtime (F2)
 
-- **Files**: [`plugins/proposals/src/lib/proposals/proposal-scaffold-linter.ts`](plugins/proposals/src/lib/proposals/proposal-scaffold-linter.ts) (line 124),
+- **Files**: [`plugins/proposals/src/lib/proposals/proposal-scaffold-linter.ts`](../../../../../plugins/proposals/src/lib/proposals/proposal-scaffold-linter.ts) (line 124),
   new `plugins/proposals/src/lib/proposals/proposal-narrative-patterns.ts`.
 - **SOLID**: S (linter validates structure, not history); O (new
   patterns extend by data); D (depends on `INarrativePatternProvider`,
@@ -253,7 +253,7 @@ Their working tree (uncommitted, unmerged) contains:
 
 ### S8 — `chat-titling-reminder.ts` host/version-agnostic reminder (F3)
 
-- **Files**: [`plugins/proposals/src/lib/swarm/chat-titling-reminder.ts`](plugins/proposals/src/lib/swarm/chat-titling-reminder.ts) (lines 149, 168),
+- **Files**: [`plugins/proposals/src/lib/swarm/chat-titling-reminder.ts`](../../../../../plugins/proposals/src/lib/swarm/chat-titling-reminder.ts) (lines 149, 168),
   new `plugins/proposals/src/lib/swarm/host-capabilities.ts`.
 - **SOLID**: O (new hosts extend by registering a `IHostCapabilities`
   entry); D (depends on capabilities, not on hardcoded literals).
@@ -279,12 +279,12 @@ Their working tree (uncommitted, unmerged) contains:
 ### S9 — six plugins get a real `OptionsSchema` (F4–F9)
 
 - **Files**:
-  - [`plugins/search/src/index.ts`](plugins/search/src/index.ts) (line 17)
-  - [`plugins/docs/src/index.ts`](plugins/docs/src/index.ts) (line 17)
-  - [`plugins/deps/src/index.ts`](plugins/deps/src/index.ts) (line 21)
-  - [`plugins/git/src/index.ts`](plugins/git/src/index.ts) (line 25)
-  - [`plugins/web-fetch/src/index.ts`](plugins/web-fetch/src/index.ts) (line 28)
-  - [`plugins/proposals/src/index.ts`](plugins/proposals/src/index.ts) (line 124) — add `proposalFolders` to schema
+  - [`plugins/search/src/index.ts`](../../../../../plugins/search/src/index.ts) (line 17)
+  - [`plugins/docs/src/index.ts`](../../../../../plugins/docs/src/index.ts) (line 17)
+  - [`plugins/deps/src/index.ts`](../../../../../plugins/deps/src/index.ts) (line 21)
+  - [`plugins/git/src/index.ts`](../../../../../plugins/git/src/index.ts) (line 25)
+  - [`plugins/web-fetch/src/index.ts`](../../../../../plugins/web-fetch/src/index.ts) (line 28)
+  - [`plugins/proposals/src/index.ts`](../../../../../plugins/proposals/src/index.ts) (line 124) — add `proposalFolders` to schema
 - **SOLID**: O (new options extend the schema, not the cast); L
   (configured and validated plugins are the same contract); I (each
   plugin's schema is its own narrow interface, not a `Record<string, unknown>`).
@@ -312,7 +312,7 @@ Their working tree (uncommitted, unmerged) contains:
 
 ### S10 — `agent-worktree-engine.ts` coordinator with syncProposalRegistry (CONC-1)
 
-- **Files**: [`plugins/proposals/src/lib/agents/agent-worktree-engine.ts`](plugins/proposals/src/lib/agents/agent-worktree-engine.ts) (line 172),
+- **Files**: [`plugins/proposals/src/lib/agents/agent-worktree-engine.ts`](../../../../../plugins/proposals/src/lib/agents/agent-worktree-engine.ts) (line 172),
   new `plugins/proposals/src/lib/agents/worktree-sync-coordinator.ts`.
 - **SOLID**: D (depends on `IWorktreeSyncCoordinator`, not on raw git +
   registry); S (engine focuses on git worktree mechanics).
@@ -332,7 +332,7 @@ Their working tree (uncommitted, unmerged) contains:
 
 ### S11 — `scaffold-tool.ts` transactional batch writer (CONC-2)
 
-- **Files**: [`packages/core/src/lib/scaffold/scaffold-tool.ts`](packages/core/src/lib/scaffold/scaffold-tool.ts) (line 276),
+- **Files**: [`packages/core/src/lib/scaffold/scaffold-tool.ts`](../../../../../packages/core/src/lib/scaffold/scaffold-tool.ts) (line 276),
   new `packages/core/src/lib/shared/batch-atomic-writer.ts`.
 - **SOLID**: S (scaffold plans, batch-writer persists); D (depends on
   `IBatchAtomicWriter`, default impl holds a single mutex for the

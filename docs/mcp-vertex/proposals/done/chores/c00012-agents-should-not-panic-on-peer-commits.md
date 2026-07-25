@@ -29,7 +29,7 @@ acceptance:
 ## Goal
 
 Codify, at the repo level, the rule that already exists buried inside
-[f00002](../done/feats/f00002-derive-site-manifests-and-local-aliases.md)
+[f00002](../feats/f00002-derive-site-manifests-and-local-aliases.md)
 ("do not panic, do not redo the work, read the commit") so every agent
 working in this workspace treats peer commits as **normal background
 activity**, not as a failure signal that triggers replanning, re-reading,

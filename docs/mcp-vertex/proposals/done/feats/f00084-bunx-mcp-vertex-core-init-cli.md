@@ -222,7 +222,7 @@ written. The CLI never tries to load a plugin that is not in `PRESET_CATALOG`.
 
 ### S2 — `init` command + interactive prompts
 
-- **Files**: [packages/cli/src/commands/init/init.command.ts](packages/cli/src/commands/init/init.command.ts),
+- **Files**: [packages/cli/src/commands/init/init.command.ts](../../../../../packages/cli/src/commands/init/init.command.ts),
   [packages/cli/src/commands/init/init-prompts.ts](packages/cli/src/commands/init/init-prompts.ts)
 - **Status**: done
 - **Gate**: bun run typecheck

@@ -61,7 +61,7 @@ User directive: keep pushing every dimension to 11/10. CLAUDE.md's own instructi
 ## Findings
 
 ### 1. Dev-preview browser bundles (`dev:ide`, `dev:vscode`) were silently broken (P0 · UI-verification blind spot)
-**File**: [`tools/scripts/dev/dev.script.ts#L258`](tools/scripts/dev/dev.script.ts#L258) (pre-fix), root cause in [`packages/client/src/public/index.ts#L1-L6`](packages/client/src/public/index.ts#L1-L6) + [`packages/ui-extension/src/settings/settings-schema.ts#L1-L9`](packages/ui-extension/src/settings/settings-schema.ts#L1-L9).
+**File**: [`tools/scripts/dev/dev.script.ts#L258`](../../../../../tools/scripts/dev/dev.script.ts#L258) (pre-fix), root cause in [`packages/client/src/public/index.ts#L1-L6`](../../../../../packages/client/src/public/index.ts#L1-L6) + [`packages/ui-extension/src/settings/settings-schema.ts#L1-L9`](../../../../../packages/ui-extension/src/settings/settings-schema.ts#L1-L9).
 **Impact**: CLAUDE.md requires visually verifying UI work in a browser before calling it done; with the dev server crashing at build time, that instruction was impossible to honor for an unknown span of sessions — every dashboard/webview change (including f00118's Spend panel, built entirely from specs this round) shipped unverified in an actual browser. This is very likely a contributing cause behind the class of proposal `Files:` drift a00057 found: authors couldn't easily preview their own work, so the written record and the shipped code diverged unchecked.
 **Resolution**: [RESUELTO] — `tools/scripts/dev/browser-externals.ts` (new) completes the `external` list with the full bare Node builtin set; `dev.script.ts` and the new `verify:dev-bundles` gate share the one constant. Verified live against both real entries (see Verified State).
 

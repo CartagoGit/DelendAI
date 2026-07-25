@@ -269,7 +269,7 @@ export default definePlugin({
 
 ## 4. Gap en el core (esto **sí** es trabajo previo)
 
-Hoy `IMcpPluginContext` ([packages/core/src/lib/plugins/plugin-contract.ts](../../packages/core/src/lib/plugins/plugin-contract.ts))
+Hoy `IMcpPluginContext` ([packages/core/src/lib/plugins/plugin-contract.ts](../../../../../packages/core/src/lib/plugins/plugin-contract.ts))
 expone:
 
 ````typescript
@@ -292,7 +292,7 @@ Eso significa que en el estado actual del core, el plugin solo puede:
 - ✅ Publicar **tools** que el agente llama (`close` / `validate`).
 - ✅ Publicar **knowledge** que el core sirve cuando el agente lo pide
   (`mcp-vertex_knowledge` ya existe en el core — ver
-  [packages/core/src/lib/tools/knowledge-tool.ts](../../packages/core/src/lib/tools/knowledge-tool.ts)).
+  [packages/core/src/lib/tools/knowledge-tool.ts](../../../../../packages/core/src/lib/tools/knowledge-tool.ts)).
 - ❌ **Inyectar** automáticamente el contrato en el system prompt.
 - ❌ **Hookear** la última línea de la respuesta.
 

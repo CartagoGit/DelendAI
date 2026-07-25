@@ -62,7 +62,7 @@ The per-repo config written by step 4 is intentionally small:
 
 ## Plugin preset wiring
 
-The source of truth for preset membership is [../packages/core/src/lib/plugins/preset-catalog.ts](../packages/core/src/lib/plugins/preset-catalog.ts). Today `full` resolves to everything in `swarm` plus the host-only plugins that stay user-facing (`web-fetch`, `issues`); `audit` is opt-in via `--plugins=audit`. Prefer `--preset=full` when you want the whole user-facing surface. Use an explicit plugin list only when you intentionally want a smaller launch shape.
+The source of truth for preset membership is [../packages/core/src/lib/plugins/preset-catalog.ts](../../packages/core/src/lib/plugins/preset-catalog.ts). Today `full` resolves to everything in `swarm` plus the host-only plugins that stay user-facing (`web-fetch`, `issues`); `audit` is opt-in via `--plugins=audit`. Prefer `--preset=full` when you want the whole user-facing surface. Use an explicit plugin list only when you intentionally want a smaller launch shape.
 
 For ordinary single-agent implementation work, prefer the explicit
 `--preset=lean` surface: git, search, memory and docs. It avoids registering

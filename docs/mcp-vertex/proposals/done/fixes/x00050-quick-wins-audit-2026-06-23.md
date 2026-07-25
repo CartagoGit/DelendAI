@@ -197,8 +197,8 @@ and claimable in parallel by separate worktrees once S1 is `done`.
 
 ### see also
 
-- [`f00049`](f00049-conventions-unification-r10-slices.md) — conventions unification; its
+- [`f00049`](../feats/f00049-conventions-unification-r10-slices.md) — conventions unification; its
   S1 also renumbers the duplicate `a00034` (coordinate with this proposal's S3).
-- [`AGENTS.md`](../../AGENTS.md) — §"Audit Proposal Lifecycle" + §"Audits File Naming".
-- [`skills/proposals-workflow-playbook/SKILL.md`](../../skills/proposals-workflow-playbook/SKILL.md)
+- [`AGENTS.md`](../../../../../AGENTS.md) — §"Audit Proposal Lifecycle" + §"Audits File Naming".
+- [`skills/proposals-workflow-playbook/SKILL.md`](../../../../../plugins/proposals/skills/proposals-workflow-playbook/SKILL.md)
   — the compact claim → implement → validate → close → sync workflow.

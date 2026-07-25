@@ -51,8 +51,8 @@ acceptance:
 
 ## goal
 
-Make the conventions declared in `AGENTS.md`, [`docs/FILE-CONVENTIONS.md`](../FILE-CONVENTIONS.md),
-[`docs/ARCHITECTURE.md`](../ARCHITECTURE.md), the `mcp-vertex-plugin-authoring` skill and the
+Make the conventions declared in `AGENTS.md`, [`docs/FILE-CONVENTIONS.md`](../../../FILE-CONVENTIONS.md),
+[`docs/ARCHITECTURE.md`](../../../ARCHITECTURE.md), the `mcp-vertex-plugin-authoring` skill and the
 `audit-playbook` skill actually hold across **every** package, plugin, app, extension, tool,
 script, skill, proposal, **type/interface/class name**, and **working form** (claim → implement
 → validate → close → sync) in the monorepo.
@@ -386,14 +386,14 @@ their own commit lands.
 ### S4 — Migrate 8 plugins to `lib/{services,tools,contracts}/`
 
 - **Status**: done
-- **Files**: [`plugins/memory/src/lib`](../../../plugins/memory/src/lib),
-  [`plugins/logs/src/lib`](../../../plugins/logs/src/lib),
-  [`plugins/notification/src/lib`](../../../plugins/notification/src/lib),
-  [`plugins/quality/src/lib`](../../../plugins/quality/src/lib),
-  [`plugins/git/src/lib`](../../../plugins/git/src/lib),
-  [`plugins/deps/src/lib`](../../../plugins/deps/src/lib),
-  [`plugins/docs/src/lib`](../../../plugins/docs/src/lib),
-  [`plugins/web-fetch/src/lib`](../../../plugins/web-fetch/src/lib).
+- **Files**: [`plugins/memory/src/lib`](../../../../../plugins/memory/src/lib),
+  [`plugins/logs/src/lib`](../../../../../plugins/logs/src/lib),
+  [`plugins/notification/src/lib`](../../../../../plugins/notification/src/lib),
+  [`plugins/quality/src/lib`](../../../../../plugins/quality/src/lib),
+  [`plugins/git/src/lib`](../../../../../plugins/git/src/lib),
+  [`plugins/deps/src/lib`](../../../../../plugins/deps/src/lib),
+  [`plugins/docs/src/lib`](../../../../../plugins/docs/src/lib),
+  [`plugins/web-fetch/src/lib`](../../../../../plugins/web-fetch/src/lib).
   Dependency order, claimable in parallel by worktree:
   - `plugins/memory/src/lib/{services,tools,contracts}/` created; flat files re-homed.
   - `plugins/logs/src/lib/{services,tools,contracts}/`.
@@ -464,7 +464,7 @@ their own commit lands.
 - **Decision**: drop the `mcp-vertex-` prefix on skill directory names (the manifest `id`
   keeps the prefix for backwards compatibility; only the directory basename changes).
 - **Files**: [`skills/`](../../../skills),
-  [`skills/manifest.json`](../../../skills/manifest.json).
+  [`skills/manifest.json`](../../../../../packages/core/skills/manifest.json).
   - `skills/mcp-vertex-failure-modes/` → `skills/failure-modes/`
   - `skills/mcp-vertex-operator/` → `skills/operator/`
   - `skills/mcp-vertex-multi-agent-coordination/` → `skills/multi-agent-coordination/`
@@ -595,18 +595,18 @@ independent and claimable in parallel by separate worktrees.
 
 - [`f00037`](../done/f00037-contracts-file-naming-and-folder-conventions.md) — the
   convention source of truth.
-- [`docs/FILE-CONVENTIONS.md`](../FILE-CONVENTIONS.md) — the human-readable reference.
+- [`docs/FILE-CONVENTIONS.md`](../../../FILE-CONVENTIONS.md) — the human-readable reference.
 - [`skills/audit-playbook/SKILL.md`](../../skills/audit-playbook/SKILL.md) — the methodology
   used to produce this proposal's evidence section (read it before claiming any slice).
-- [`skills/proposal-swarm-runner/SKILL.md`](../../skills/proposal-swarm-runner/SKILL.md) —
+- [`skills/proposal-swarm-runner/SKILL.md`](../../../../../plugins/proposals/skills/proposal-swarm-runner/SKILL.md) —
   the working-form contract S10 turns into a lint.
-- [`skills/proposals-workflow-playbook/SKILL.md`](../../skills/proposals-workflow-playbook/SKILL.md) —
+- [`skills/proposals-workflow-playbook/SKILL.md`](../../../../../plugins/proposals/skills/proposals-workflow-playbook/SKILL.md) —
   the compact workflow reference.
-- [`AGENTS.md`](../../AGENTS.md) — repo-wide invariants every slice must keep green.
+- [`AGENTS.md`](../../../../../AGENTS.md) — repo-wide invariants every slice must keep green.
 - `memories/repo/proposals-transition-index-drift.md` and
   `memories/repo/proposals-index-regenerator-race.md` — the historical evidence S10's
   workflow lint codifies.
-- [`f00050`](../paused/f00050-future-non-goals-of-f00049.md) — the parking lot for
+- [`f00050`](../../paused/f00050-future-non-goals-of-f00049.md) — the parking lot for
   the nine non-goals this proposal explicitly refuses to do. Each parked slice
   (S-A through S-I) lists the precondition that must be met before it can move
   from `paused/` to `ready/`.

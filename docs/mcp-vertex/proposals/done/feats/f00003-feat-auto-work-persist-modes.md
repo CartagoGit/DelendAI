@@ -34,7 +34,7 @@ de “one call → plan” y sin introducir automatismos peligrosos sobre `main`
 
 ### Hoy
 
-`auto_work` (en [plugins/proposals/src/lib/tools/auto-work.tool.ts](../../plugins/proposals/src/lib/tools/auto-work.tool.ts))
+`auto_work` (en [plugins/proposals/src/lib/tools/auto-work.tool.ts](../../../../../plugins/proposals/src/lib/tools/auto-work.tool.ts))
 devuelve un `steps` fijo:
 
 ```text
@@ -299,8 +299,8 @@ pasa a tener **JSON Schema** validado por
 
 ### Referencias
 
-- [plugins/proposals/src/lib/tools/auto-work.tool.ts](../../plugins/proposals/src/lib/tools/auto-work.tool.ts) — tool a extender.
-- [plugins/proposals/src/lib/shared/git-runner.ts](../../plugins/proposals/src/lib/shared/git-runner.ts) — runner async no-bloqueante a reusar.
-- [plugins/proposals/src/lib/tools/agent-worktree.tool.ts](../../plugins/proposals/src/lib/tools/agent-worktree.tool.ts) — `agent/<name>` por orquestador, evita colisiones.
-- [AGENTS.md](../../AGENTS.md) — invariante #6 ("no commit-back loop on main").
-- [docs/PLUGINS-MCP-VERTEX.md](../PLUGINS-MCP-VERTEX.md) — contrato de plugins (config tipada).
+- [plugins/proposals/src/lib/tools/auto-work.tool.ts](../../../../../plugins/proposals/src/lib/tools/auto-work.tool.ts) — tool a extender.
+- [plugins/proposals/src/lib/shared/git-runner.ts](../../../../../plugins/proposals/src/lib/shared/git-runner.ts) — runner async no-bloqueante a reusar.
+- [plugins/proposals/src/lib/tools/agent-worktree.tool.ts](../../../../../plugins/proposals/src/lib/tools/agent-worktree.tool.ts) — `agent/<name>` por orquestador, evita colisiones.
+- [AGENTS.md](../../../../../AGENTS.md) — invariante #6 ("no commit-back loop on main").
+- [docs/PLUGINS-MCP-VERTEX.md](../../../PLUGINS-MCP-VERTEX.md) — contrato de plugins (config tipada).
