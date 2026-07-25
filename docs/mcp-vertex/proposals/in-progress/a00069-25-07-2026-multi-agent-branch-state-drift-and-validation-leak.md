@@ -461,7 +461,7 @@ frontmatter; este section documenta el flujo de cierre:
 | Plugins activos sin invocación ese día | **21** | F13 |
 | `notification_*` / `await_lock` invocaciones 24 | **0** | F17 |
 | Commits a00069 en develop (re-audit) | **14+** (S1–S7) | `git log --grep=a00069` |
-| Slices código done / pending | S1–S8 done; S9–S11 pending | progress table |
+| Slices código done / pending | S1–S11 done on origin/develop | progress table |
 
 ## findings
 
@@ -1087,12 +1087,12 @@ auto_work (refuerzo S8). No S nuevo si S8 health + disciplina bastan.
 | S3 | **done** (transition+Files rewrite+dup scan) | **0** ids duplicados; review/ index-aligned (11 files) |
 | S4 | **done** (`lint:agent-branch-naming`) | 0 branches `agent/*` locales |
 | S5 | **done** (close_slice validation gate) | bypass legítimo `gate: none\|lint` sigue (F21) |
-| S6 | **done en código**, **NO aplicado al cache vivo** | registry sigue 30 orphans / 14 activeAgents hasta `state_repair` → **F15** |
-| S7 | **done** (transition + force_transition + auto_work) | bypass `force:true` / `skipPeerReview` sin audit trail → **F18** |
+| S6 | **done** (orphan GC + TTL) | S10 auto-applies purge on boot |
+| S7 | **done** (transition + force_transition + auto_work) | S11 audita force/skipPeerReview |
 | S8 | **done** (`ok` + session balance + await_lock nextAction) | claim/release counters + state_health imbalance gate |
-| S9 | **pending** | sin warning unused-active-plugins → **F13/F20** |
-| S10 | **pending** (nuevo) | auto-repair on boot/session → **F15** |
-| S11 | **pending** (nuevo) | handoff GC + force audit → **F18/F19** |
+| S9 | **done** (`unusedActivePlugins` en overview) | dogfood warning compacto |
+| S10 | **done** (`runAutoStateRepairOnBoot`) | autoRepairOrphans default true |
+| S11 | **done** (handoff GC + peer-review bypass audit) | state_health.peerReviewBypasses |
 
 ### verdict
 
@@ -1275,7 +1275,7 @@ c51bb563 fix(a00069): unnest requirePeerReview from validationCommand
 | Agente commitea con validate rojo | `develop` roto | **S5 done** close_slice gate | ⚠ F21 gate lint bypass |
 | Agente crea branch `agent/*` sin worktree | Pisarse / litter | **S4 done** lint | ⚠ F22 shared checkout WIP |
 | Contención de lock | Busy-loop claim | texto nextAction menciona await_lock | ❌ F17 0 usos → **S8** |
-| Sesión muere con assignment active | Orientation miente | S6 código purge | ❌ F15 no auto → **S10** |
+| Sesión muere con assignment active | Orientation miente | S6 + S10 auto boot purge | ✅ F15 mitigated |
 | Item en `review/` sin peer | done sin calidad | **S7 done** gate | ⚠ F18 force bypass → **S11** |
 | Handoff basura meses | Orientation ruido | (ninguna) | ❌ F19 → **S11** |
 | Plugins enabled nunca llamados | False confidence dogfood | (ninguna) | ❌ F13 → **S9** |
