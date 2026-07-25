@@ -131,6 +131,55 @@ describe('state_health / state_repair [N15]', async () => {
 		expect(exec.diagnosis.locks.active).toBe(0);
 	});
 
+	it('a00072 S1.a (F148/F151): state_health surfaces stale locks with taskIds + lastStaleSeen', async () => {
+		// Two stale entries + one fresh → diagnose must report
+		// stale.count === 2 and stale.taskIds matching both.
+		mkdirSync(dirname(opts.lockPathAbs), { recursive: true });
+		const freshTs = new Date().toISOString();
+		writeFileSync(
+			opts.lockPathAbs,
+			JSON.stringify({
+				version: 1,
+				stale_after_minutes: 10,
+				in_flight: [
+					{
+						task_id: 't-stale-1',
+						agent: 'zombie-1',
+						ownership: ['src/old-1.ts'],
+						started_at: '2000-01-01T00:00:00.000Z',
+						last_seen: '2000-01-01T00:00:00.000Z',
+					},
+					{
+						task_id: 't-fresh',
+						agent: 'alive',
+						ownership: ['src/new.ts'],
+						started_at: freshTs,
+						last_seen: freshTs,
+					},
+					{
+						task_id: 't-stale-2',
+						agent: 'zombie-2',
+						ownership: ['src/old-2.ts'],
+						started_at: '2001-06-15T12:00:00.000Z',
+						last_seen: '2001-06-15T12:00:00.000Z',
+					},
+				],
+			}),
+		);
+
+		const health = await capture(buildStateHealthRegistration(opts));
+		const out = parse(await health({}));
+		// The new a00072 S1.a smoke-detector surface.
+		expect(out.stale).toBeDefined();
+		expect(out.stale.count).toBe(2);
+		expect(out.stale.taskIds).toContain('t-stale-1');
+		expect(out.stale.taskIds).toContain('t-stale-2');
+		expect(out.stale.taskIds).not.toContain('t-fresh');
+		expect(out.stale.lastStaleSeen).toBe('2001-06-15T12:00:00.000Z'); // most recent of the two
+		// Stale entries must fail the health gate (F151 closed).
+		expect(out.healthy).toBe(false);
+	});
+
 	it('a00069 S6: dry-run lists orphan assignments; execute purges them', async () => {
 		mkdirSync(dirname(opts.registryPathAbs), { recursive: true });
 		const assignments = Array.from({ length: 5 }, (_, i) => ({
@@ -169,5 +218,133 @@ describe('state_health / state_repair [N15]', async () => {
 			require('node:fs').readFileSync(opts.registryPathAbs, 'utf8'),
 		);
 		expect(after.assignments).toEqual([]);
+	});
+});
+
+describe('state_health a00072 S1.a (F148/F151) [N15]', () => {
+	let dir = '';
+	let opts: IStateToolOptions;
+	beforeEach(() => {
+		dir = mkdtempSync(join(tmpdir(), 'state-s1a-'));
+		resetAgentLockSessionBalance();
+		resetPeerReviewBypassLog();
+		opts = {
+			namespacePrefix: 'proposals',
+			lockPathAbs: join(dir, '.cache/agents.lock.json'),
+			queuePathAbs: join(dir, '.cache/agent-queue/queue.json'),
+			closedTasksPathAbs: join(
+				dir,
+				'.cache/agent-queue/closed-tasks.json',
+			),
+			registryPathAbs: join(dir, '.cache/agent-registry.json'),
+			workspaceRoot: dir,
+		};
+	});
+	afterEach(() => {
+		rmSync(dir, { recursive: true, force: true });
+	});
+
+	it('surfaces stale locks the smoke detector sees right now (F148)', async () => {
+		// a00072 S1.a: state_health must report stale locks as part
+		// of the snapshot, without the host first having to call
+		// state_repair.
+		mkdirSync(dirname(opts.lockPathAbs), { recursive: true });
+		writeFileSync(
+			opts.lockPathAbs,
+			JSON.stringify({
+				version: 1,
+				stale_after_minutes: 10,
+				in_flight: [
+					{
+						task_id: 'f00126-S3',
+						agent: 'impl-runner-perf-s3',
+						ownership: ['src/a.ts'],
+						started_at: '2000-01-01T00:00:00.000Z',
+						last_seen: '2000-01-01T00:00:00.000Z',
+					},
+				],
+			}),
+		);
+
+		const health = await capture(buildStateHealthRegistration(opts));
+		const h = parse(await health({}));
+
+		expect(h.stale.count).toBe(1);
+		expect(h.stale.taskIds).toEqual(['f00126-S3']);
+		expect(h.stale.lastStaleSeen).toBe('2000-01-01T00:00:00.000Z');
+		// a00072 S1.a: the smoke detector must FAIL the health gate
+		// when stale locks exist (they would be GC'd by state_repair).
+		expect(h.healthy).toBe(false);
+		// The smoke detector must NOT have touched the lock file.
+		const after = JSON.parse(
+			require('node:fs').readFileSync(opts.lockPathAbs, 'utf8'),
+		);
+		expect(after.in_flight).toHaveLength(1);
+	});
+
+	it('reports zero stale when the lock file is empty (F148)', async () => {
+		const health = await capture(buildStateHealthRegistration(opts));
+		const h = parse(await health({}));
+		expect(h.stale.count).toBe(0);
+		expect(h.stale.taskIds).toEqual([]);
+		expect(h.stale.lastStaleSeen).toBe(null);
+	});
+
+	it('does not flag fresh locks as stale (F148)', async () => {
+		mkdirSync(dirname(opts.lockPathAbs), { recursive: true });
+		const freshNow = new Date().toISOString();
+		writeFileSync(
+			opts.lockPathAbs,
+			JSON.stringify({
+				version: 1,
+				stale_after_minutes: 10,
+				in_flight: [
+					{
+						task_id: 'live-task',
+						agent: 'copilot',
+						ownership: ['src/a.ts'],
+						started_at: freshNow,
+						last_seen: freshNow,
+					},
+				],
+			}),
+		);
+
+		const health = await capture(buildStateHealthRegistration(opts));
+		const h = parse(await health({}));
+		expect(h.stale.count).toBe(0);
+		expect(h.stale.taskIds).toEqual([]);
+	});
+
+	it('state_repair still GCs the same stale lock (compatibility, F151)', async () => {
+		// a00072 S1.a: state_health surfaces the smoke; state_repair
+		// is the only one that writes. Make sure the two still agree.
+		mkdirSync(dirname(opts.lockPathAbs), { recursive: true });
+		writeFileSync(
+			opts.lockPathAbs,
+			JSON.stringify({
+				version: 1,
+				stale_after_minutes: 10,
+				in_flight: [
+					{
+						task_id: 't-old',
+						agent: 'falcon',
+						ownership: ['src/a.ts'],
+						started_at: '2000-01-01T00:00:00.000Z',
+						last_seen: '2000-01-01T00:00:00.000Z',
+					},
+				],
+			}),
+		);
+
+		const health = await capture(buildStateHealthRegistration(opts));
+		const h = parse(await health({}));
+		expect(h.stale.count).toBe(1);
+
+		const repair = await capture(buildStateRepairRegistration(opts));
+		const exec = parse(await repair({ mode: 'execute' }));
+		expect(exec.repaired.staleLocks).toBeGreaterThanOrEqual(1);
+		expect(exec.diagnosis.stale.count).toBe(0);
+		expect(exec.diagnosis.healthy).toBe(true);
 	});
 });
