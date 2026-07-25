@@ -69,6 +69,7 @@ describe('runAgentLockEngine — claim', async () => {
 			files: ['src/a.ts', 'src/b.ts'],
 		});
 		expect(res.isError).not.toBe(true);
+		expect(body(res).ok).toBe(true);
 		expect(body(res).blocked).not.toBe(true);
 		const lock = readLockFile();
 		const entry = lock.in_flight.find((e) => e.task_id === 'task-A');
@@ -144,6 +145,7 @@ describe('runAgentLockEngine — claim', async () => {
 			files: ['src/a.ts', 'src/b.ts'],
 		});
 		expect(body(res).refreshed).toBe(true);
+		expect(body(res).ok).toBe(false);
 		expect(body(res).not_granted).toEqual([
 			{ file: 'src/b.ts', conflicting_task: 'task-B' },
 		]);
@@ -168,9 +170,11 @@ describe('runAgentLockEngine — claim', async () => {
 		});
 		const out = body(res);
 		expect(out.blocked).toBe(true);
+		expect(out.ok).toBe(false);
 		expect(out.blockerType).toBe('lock-conflict');
 		expect(out.conflicting_task).toBe('task-A');
 		expect(out.overlapping_files).toEqual(['src/a.ts']);
+		expect(out.nextAction).toContain('notification_await_lock');
 		// The blocked claim must NOT be persisted.
 		expect(
 			readLockFile().in_flight.some((e) => e.task_id === 'task-B'),
