@@ -78,6 +78,7 @@ export const PLUGIN_DEFAULTS: Readonly<
 	},
 	database: {},
 	api: {},
+	changelog: {},
 };
 
 export const resolvePluginOptions = (
