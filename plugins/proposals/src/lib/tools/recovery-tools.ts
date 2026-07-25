@@ -26,6 +26,7 @@ import { setFrontmatterStatus as sharedSetFrontmatterStatus } from '../proposals
 import { readJsonOrNull, readTextOrNull } from '../proposals/index-reader';
 import { createAgentRegistryStore } from '../shared/agent-registry-store';
 import { createGitRunner, type IGitRunner } from '../shared/git-runner';
+import { hasIndependentPeerApproval } from './proposal-transition.tool';
 
 export interface IRecoveryEvent {
 	readonly kind: 'agent-alive' | 'agent-idle' | 'agent-dead';
@@ -84,6 +85,8 @@ export interface IRecoveryToolOptions {
 	readonly workspaceRoot: string;
 	readonly eventBuffer?: IRecoveryEventBuffer;
 	readonly gitRunner?: IGitRunner;
+	/** a00069 S7: peer-review gate default on for force review→done. */
+	readonly requirePeerReview?: boolean;
 }
 
 interface ILocatedProposal {
@@ -385,6 +388,8 @@ export const runProposalForceTransition = async (
 		reason: string;
 		overrideLockOwner?: string | undefined;
 		taskId?: string | undefined;
+		/** a00069 S7: host-approved bypass of the peer-review gate. */
+		skipPeerReview?: boolean | undefined;
 	},
 	options: IRecoveryToolOptions,
 ) => {
@@ -400,6 +405,22 @@ export const runProposalForceTransition = async (
 	const found = await locateProposal(options.proposalsDirAbs, args.id);
 	if (!found) {
 		return toolError(`proposal "${args.id}" not found`, 'Check the id.');
+	}
+	// a00069 S7: force_transition without skipPeerReview still needs peer approve
+	// when moving review → done (same gate as proposal_transition).
+	const requirePeer = options.requirePeerReview !== false;
+	if (
+		requirePeer &&
+		args.to === 'done' &&
+		found.status === 'review' &&
+		args.skipPeerReview !== true
+	) {
+		if (!hasIndependentPeerApproval(found.raw)) {
+			return toolError(
+				`peer-review required before force_transition of "${args.id}" review → done`,
+				`Run ${options.namespacePrefix}_proposal_review { action: "approve", agent: "<reviewer≠implementer>" } first, or pass skipPeerReview:true only with host approval.`,
+			);
+		}
 	}
 	let lockReleased = false;
 	if (args.overrideLockOwner && args.taskId) {
@@ -556,7 +577,7 @@ export const buildRecoveryToolRegistrations = (
 					`${options.namespacePrefix}_proposal_force_transition`,
 					{
 						description:
-							'Force a proposal to a recovery status with a required reason and optional lock release.',
+							'Force a proposal to a recovery status with a required reason and optional lock release. a00069 S7: review→done still requires peer approve unless skipPeerReview:true.',
 						outputSchema: RECOVERY_OUTPUT_SCHEMA,
 						inputSchema: z.object({
 							id: z.string().min(1),
@@ -564,6 +585,7 @@ export const buildRecoveryToolRegistrations = (
 							reason: z.string().min(1),
 							overrideLockOwner: z.string().optional(),
 							taskId: z.string().optional(),
+							skipPeerReview: z.boolean().optional(),
 						}),
 					},
 					async (args) =>

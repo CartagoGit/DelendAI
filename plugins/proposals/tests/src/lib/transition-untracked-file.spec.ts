@@ -216,6 +216,8 @@ describe('proposal_transition on fresh vs tracked files (x00106 S2)', () => {
 				id: 'f00004',
 				to: 'done',
 				reason: 'a00069 S3 close',
+				// a00069 S7: this fixture has no peer-review log; force the DFA move.
+				force: true,
 			}),
 		);
 		expect(result.ok).toBe(true);
