@@ -40,6 +40,7 @@ import { buildTaskQueueRegistration } from './lib/tools/task-queue.tool';
 import {
 	buildStateHealthRegistration,
 	buildStateRepairRegistration,
+	runAutoStateRepairOnBoot,
 } from './lib/tools/state-tools.tool';
 import type { IStateToolOptions } from './lib/tools/state-tools.tool';
 import { buildCompactStatusRegistration } from './lib/tools/compact-status.tool';
@@ -100,6 +101,11 @@ const PROPOSALS_OPTIONS_SCHEMA = z.object({
 	 * Default true when omitted (wired at register time).
 	 */
 	requirePeerReview: z.boolean().optional(),
+	/**
+	 * a00069 S10: auto-purge orphan registry/queue/lock drift on plugin boot.
+	 * Default true. Set false to keep diagnose-only (manual state_repair).
+	 */
+	autoRepairOrphans: z.boolean().optional(),
 });
 
 export default definePlugin({
@@ -180,6 +186,12 @@ export default definePlugin({
 			registryPathAbs: abs(layout.agentRegistryFile),
 			workspaceRoot: ctx.workspace.root,
 		};
+
+		// a00069 S10: purge stale orphans at boot unless the host opts out.
+		// Fire-and-forget so register() stays sync-fast; errors never block tools.
+		if (parsedOptions.data.autoRepairOrphans !== false) {
+			runAutoStateRepairOnBoot(stateOptions);
+		}
 
 		const authoringOptions: IAuthoringToolOptions = {
 			namespacePrefix: ctx.namespacePrefix,
