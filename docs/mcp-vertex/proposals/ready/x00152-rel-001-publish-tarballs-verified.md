@@ -103,9 +103,13 @@ falsa verde y rompe el flujo de release.
 
 ### S3 — Test e2e: install + boot del tarball reescrito
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `tools/scripts/smoke/publish-tarballs.script.ts` (new)
 - **Gate**: e2e
+- implementation:
+  - `publish-tarballs.script.ts` creates a `mkdtemp`, packs `packages/cli` with `packRewrittenTarball`, runs `npm install ./<tgz>`, asserts the installed `package.json` has no `workspace:*`, then runs the CLI's `--help` checking for `Usage:`.
+  - Cleans up the temp dir after the run.
+  - Network/registry failure → exits 2 with explicit message; other failures → exit non-zero, gates release.
 - acceptance:
   - "Crea `mkdtemp`, `npm install ./tgz`, ejecuta el bin CLI"
   - "Verifica que el `package.json` del tarball NO contiene `workspace:*`"
