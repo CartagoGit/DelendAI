@@ -60,6 +60,7 @@ const EXPECTED_COMMANDS = [
 	'audit consolidate',
 	'logs query',
 	'logs tail',
+	'logs errors-tail',
 	'logs subscribe',
 	'logs correlate',
 	'logs redact-test',

@@ -7,6 +7,7 @@
  *   - `mcp-vertex_logs_tail`        ({ kindFilter?, outcomeFilter?, limit? })
  *   - `mcp-vertex_logs_subscribe`   ({ kindFilter?, outcomeFilter?, limit? })
  *   - `mcp-vertex_logs_correlate`   ({ taskId?, agent?, since?, until? })
+ *   - `mcp-vertex_logs_errors_tail` ({ kindFilter?, limit? })
  *   - `mcp-vertex_logs_redact_test` ({ text })
  */
 import type { ICliCommand } from '../../contracts/interfaces/cli-command.interface';
@@ -57,6 +58,21 @@ const logsTailCommand: ICliCommand = {
 			await request(ctx, 'mcp-vertex_logs_tail', {
 				...(kindFilter !== undefined ? { kindFilter } : {}),
 				...(outcomeFilter !== undefined ? { outcomeFilter } : {}),
+				...(limit !== undefined ? { limit } : {}),
+			}),
+		);
+	},
+};
+
+const logsErrorsTailCommand: ICliCommand = {
+	name: 'logs errors-tail',
+	summary: 'Show the newest curated error and anomaly log events.',
+	async run(args, ctx) {
+		const kindFilter = scalarArg(args, 'kind');
+		const limit = numberArg(args, 'limit') ?? numberArg(args, 'max');
+		return data(
+			await request(ctx, 'mcp-vertex_logs_errors_tail', {
+				...(kindFilter !== undefined ? { kindFilter } : {}),
 				...(limit !== undefined ? { limit } : {}),
 			}),
 		);
@@ -116,6 +132,7 @@ const logsRedactTestCommand: ICliCommand = {
 export const logsCommands: readonly ICliCommand[] = [
 	logsQueryCommand,
 	logsTailCommand,
+	logsErrorsTailCommand,
 	logsSubscribeCommand,
 	logsCorrelateCommand,
 	logsRedactTestCommand,
