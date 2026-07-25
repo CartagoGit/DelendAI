@@ -22,6 +22,7 @@ import {
 	type SetTimer,
 	type StdioSpawner,
 } from '../../../src/lib/subprocess/server-registry';
+import { BASE_ALLOW_LIST } from '../../../src/lib/subprocess/env-filter';
 import {
 	buildCallToolRegistration,
 	CallOutputSchema,
@@ -317,17 +318,34 @@ describe('ExternalServerRegistry — lazy boot + caching', () => {
 		expect(rows.find((r) => r.id === 'lazy')?.running).toBe(false);
 	});
 
-	it('entry.env:{} falls back to the base allow-list only', async () => {
+	it('snapshots the spawned env when entry.env is empty so only the base allow-list reaches the child', async () => {
 		const hostEnv = {
 			...BASE_HOST_ENV,
-			SECRET_DECOY: '***',
-			EXTRA: 'nope',
+			FOO_DECOY: 'should-not-leak',
+			BAR_DECOY: 'leak',
 		};
 		const h = makeHarness({ fs: entry({ env: {} }) }, { hostEnv });
 		const pending = h.registry.call('fs', 'ping', {});
 		h.children[0]?.reply(0, { result: { ok: true } });
 		await pending;
-		expect(h.spawnCalls[0]?.env).toEqual(BASE_HOST_ENV);
+		const spawnedEnv = h.spawnCalls[0]?.env;
+		expect(Object.keys(spawnedEnv ?? {}).sort()).toEqual(
+			[...BASE_ALLOW_LIST].sort(),
+		);
+		expect(spawnedEnv).not.toHaveProperty('FOO_DECOY');
+		expect(spawnedEnv).not.toHaveProperty('BAR_DECOY');
+		expect(spawnedEnv).toMatchInlineSnapshot(`
+			{
+			  "HOME": "/tmp/home",
+			  "LANG": "en_US.UTF-8",
+			  "LC_ALL": "en_US.UTF-8",
+			  "PATH": "/usr/bin",
+			  "SHELL": "/bin/bash",
+			  "TERM": "xterm-256color",
+			  "TMP": "/tmp",
+			  "TMPDIR": "/tmp",
+			}
+		`);
 	});
 
 	it('single-flights the spawn: two in-flight calls share ONE child', async () => {
