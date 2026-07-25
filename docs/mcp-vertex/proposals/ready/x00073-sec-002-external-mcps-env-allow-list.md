@@ -77,7 +77,7 @@ declarado + el set base seguro cruza el límite.
 
 ### S2 — server-registry usa buildSafeEnv antes del spawn
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/external-mcps/src/lib/subprocess/server-registry.ts`,
   `plugins/external-mcps/tests/src/lib/subprocess/server-registry.spec.ts`
 - **Gate**: type
