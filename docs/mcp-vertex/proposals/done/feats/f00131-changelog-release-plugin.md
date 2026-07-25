@@ -2,7 +2,7 @@
 id: f00131
 kind: feat
 title: changelog/release plugin — changelog generation and semver-bump inference from conventional commits, exposing the internal release-plan
-status: ready
+status: done
 date: 2026-07-23
 track: plugin+release+automation
 ---
