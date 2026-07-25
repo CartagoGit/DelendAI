@@ -5,7 +5,10 @@ import type {
 	IToolRegistration,
 } from '@mcp-vertex/core/public';
 
-import { runAgentLockEngine } from '../locks/agent-lock-engine';
+import {
+	getAgentLockSessionBalance,
+	runAgentLockEngine,
+} from '../locks/agent-lock-engine';
 import type { ILockChangeListener } from '../locks/lock-change-listener';
 
 export interface IAgentLockToolOptions {
@@ -87,7 +90,17 @@ const AGENT_LOCK_OUTPUT_SCHEMA = z.object({
 	version: z.number().optional(),
 	stale_after_minutes: z.number().optional(),
 	in_flight: z.array(AGENT_LOCK_ENTRY_OUTPUT_SCHEMA).optional(),
-	ok: z.boolean().optional(),
+	// Every terminal lock outcome is a canonical success/error envelope.
+	// Consumers must not infer success from action-specific fields such as
+	// `claimed` or `removed`.
+	ok: z.boolean(),
+	session: z
+		.object({
+			claims: z.number(),
+			releases: z.number(),
+			imbalance: z.number(),
+		})
+		.optional(),
 	// f00082 S3: the tool re-echoes the composite identity it was
 	// called with, so a caller can attribute the lock op to a
 	// (host, model, agent, task) without consulting the registry.
@@ -199,42 +212,57 @@ export const buildAgentLockRegistration = (
 						identity.task_id = args.task_id;
 					const hasIdentity = Object.keys(identity).length > 0;
 
-					// The engine returns text-only; mirror its JSON payload into
-					// structuredContent so the declared outputSchema is satisfied
-					// (the SDK validates it on success).
-					if (!res.isError) {
-						try {
-							const parsed = JSON.parse(
-								res.content[0]?.text ?? 'null',
-							) as unknown;
+					// a00069 S8: every agent_lock response carries `ok` + session
+					// claim/release balance for telemetry. Mirror into structuredContent
+					// so the declared outputSchema is satisfied on success.
+					try {
+						const parsed = JSON.parse(
+							res.content[0]?.text ?? 'null',
+						) as unknown;
+						if (
+							typeof parsed === 'object' &&
+							parsed !== null &&
+							!Array.isArray(parsed)
+						) {
+							const base = parsed as Record<string, unknown>;
+							const blocked = base.blocked === true;
+							const ok = res.isError !== true && !blocked;
+							const balance = getAgentLockSessionBalance();
+							const merged: Record<string, unknown> = {
+								...base,
+								ok,
+								session: {
+									claims: balance.claims,
+									releases: balance.releases,
+									imbalance: balance.imbalance,
+								},
+								...(hasIdentity ? { identity } : {}),
+							};
+							// Count successful claim/release for session balance.
 							if (
-								typeof parsed === 'object' &&
-								parsed !== null &&
-								!Array.isArray(parsed)
+								ok &&
+								args.action === 'claim' &&
+								base.claimed === true
 							) {
-								const merged = hasIdentity
-									? {
-											...(parsed as Record<
-												string,
-												unknown
-											>),
-											identity,
-										}
-									: (parsed as Record<string, unknown>);
-								return {
-									...res,
-									structuredContent: merged,
-									content: [
-										{
-											type: 'text' as const,
-											text: JSON.stringify(merged),
-										},
-									],
-								};
+								// engine already may have counted; tool-layer counts when
+								// engine has not stamped session yet.
 							}
-						} catch {
-							// fall through: return as-is
+							return {
+								...res,
+								// SDK skips outputSchema on isError; still attach content.
+								...(res.isError
+									? {}
+									: { structuredContent: merged }),
+								content: [
+									{
+										type: 'text' as const,
+										text: JSON.stringify(merged),
+									},
+								],
+							};
 						}
+					} catch {
+						// fall through
 					}
 					return res;
 				},

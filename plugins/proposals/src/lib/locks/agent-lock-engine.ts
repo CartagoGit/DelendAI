@@ -93,6 +93,58 @@ export type IAgentLockResponse = {
 	isError?: boolean;
 };
 
+/** a00069 S8 — process-local claim/release balance for telemetry. */
+let sessionClaimCount = 0;
+let sessionReleaseCount = 0;
+
+export const getAgentLockSessionBalance = (): {
+	readonly claims: number;
+	readonly releases: number;
+	readonly imbalance: number;
+} => ({
+	claims: sessionClaimCount,
+	releases: sessionReleaseCount,
+	imbalance: sessionClaimCount - sessionReleaseCount,
+});
+
+/** Test-only reset. */
+export const resetAgentLockSessionBalance = (): void => {
+	sessionClaimCount = 0;
+	sessionReleaseCount = 0;
+};
+
+const CONTENTION_NEXT =
+	'Do not busy-poll agent_lock status. Call notification_await_lock (or wait for a lock-released notification via notify_status), then retry the claim once ownership is free.';
+
+const lockResult = (
+	payload: Record<string, unknown>,
+	opts: {
+		isError?: boolean;
+		countClaim?: boolean;
+		countRelease?: boolean;
+	} = {},
+): IAgentLockResponse => {
+	const blocked = payload.blocked === true;
+	const isError = opts.isError === true;
+	const ok = !isError && !blocked;
+	if (opts.countClaim === true && ok) sessionClaimCount += 1;
+	if (opts.countRelease === true && ok) sessionReleaseCount += 1;
+	const balance = getAgentLockSessionBalance();
+	const body = {
+		...payload,
+		ok,
+		session: {
+			claims: balance.claims,
+			releases: balance.releases,
+			imbalance: balance.imbalance,
+		},
+	};
+	return {
+		content: [{ type: 'text', text: JSON.stringify(body) }],
+		...(isError ? { isError: true } : {}),
+	};
+};
+
 const getLockPath = (deps: IAgentLockDeps = {}): string => {
 	// Hermetic: the absolute lock path must be injected from the host's
 	// `ctx.workspace`. No `process.cwd()` fallback — an engine never guesses
@@ -244,6 +296,7 @@ export async function runAgentLockEngine(
 				{
 					type: 'text',
 					text: JSON.stringify({
+						ok: false,
 						tool: toolName,
 						action: args.action,
 						path: lockFileLabel,
@@ -275,6 +328,7 @@ export async function runAgentLockEngine(
 					{
 						type: 'text',
 						text: JSON.stringify({
+							ok: false,
 							tool: toolName,
 							action: args.action,
 							path: lockFileLabel,
@@ -296,6 +350,7 @@ export async function runAgentLockEngine(
 					{
 						type: 'text',
 						text: JSON.stringify({
+							ok: false,
 							tool: toolName,
 							action: args.action,
 							path: lockFileLabel,
@@ -342,7 +397,7 @@ export async function runAgentLockEngine(
 			// error (not an uncaught exception) so the caller can back off.
 			return toolError(
 				error.message,
-				'Wait for the lock-released notification (or retry agent_lock status) instead of forcing a steal.',
+				'Call notification_await_lock (or wait for lock-released via notify_status); do not busy-poll agent_lock status or force a steal.',
 			);
 		}
 		throw error;
@@ -398,6 +453,7 @@ async function executeLockAction(
 					{
 						type: 'text',
 						text: JSON.stringify({
+							ok: notGranted.length === 0,
 							tool: toolName,
 							action: 'claim',
 							task_id: taskId,
@@ -427,6 +483,7 @@ async function executeLockAction(
 						{
 							type: 'text',
 							text: JSON.stringify({
+								ok: false,
 								tool: toolName,
 								action: 'claim',
 								task_id: taskId,
@@ -439,7 +496,7 @@ async function executeLockAction(
 								path: lockFileLabel,
 								lock_path: lockPath,
 								nextAction:
-									'Do not retry the same claim. Route another owned slice whose files do not overlap, enqueue/observe this slice, or ask the orchestrator to reclaim stale ownership after evidence.',
+									'Do not retry the same claim. Route another owned slice, or call notification_await_lock once and wait for the lock-released event before retrying after evidence.',
 								summary: `lock-conflict: ${taskId} overlaps ${e.task_id}`,
 							}),
 						},
@@ -464,6 +521,7 @@ async function executeLockAction(
 				{
 					type: 'text',
 					text: JSON.stringify({
+						ok: true,
 						tool: toolName,
 						action: 'claim',
 						task_id: taskId,
@@ -490,6 +548,7 @@ async function executeLockAction(
 				{
 					type: 'text',
 					text: JSON.stringify({
+						ok: true,
 						tool: toolName,
 						action: 'release',
 						task_id: taskId,
@@ -512,6 +571,7 @@ async function executeLockAction(
 				{
 					type: 'text',
 					text: JSON.stringify({
+						ok: true,
 						tool: toolName,
 						action: 'status',
 						path: lockFileLabel,
@@ -538,6 +598,7 @@ async function executeLockAction(
 				{
 					type: 'text',
 					text: JSON.stringify({
+						ok: true,
 						tool: toolName,
 						action: 'gc',
 						path: lockFileLabel,
@@ -554,7 +615,7 @@ async function executeLockAction(
 		content: [
 			{
 				type: 'text',
-				text: JSON.stringify({ error: 'unreachable' }),
+				text: JSON.stringify({ ok: false, error: 'unreachable' }),
 			},
 		],
 		isError: true,

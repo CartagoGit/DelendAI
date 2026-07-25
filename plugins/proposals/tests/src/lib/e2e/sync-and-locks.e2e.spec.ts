@@ -35,6 +35,7 @@ import {
 const PROPOSALS_RELDIR = 'docs/mcp-vertex/proposals';
 
 interface LockOutput {
+	readonly ok?: boolean;
 	readonly action?: string;
 	readonly claimed?: boolean;
 	readonly blocked?: boolean;
@@ -99,6 +100,7 @@ describe('e2e: sync_proposals + agent_lock + agent_worktree + task_queue', async
 			},
 		);
 		expect(conflict.structured.blocked).toBe(true);
+		expect(conflict.structured.ok).toBe(false);
 		expect(conflict.structured.conflicting_task).toBe('task-A');
 		expect(conflict.structured.overlapping_files).toContain('src/a.ts');
 
