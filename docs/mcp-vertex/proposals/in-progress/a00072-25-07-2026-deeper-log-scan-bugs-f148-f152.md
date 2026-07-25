@@ -160,14 +160,10 @@ Los F148-F152 son bugs **estructurales** del swarm, no cosméticos:
 
 ### S3 — `auto_work` invoca logs/notification/quality en cada ciclo (F150/F152)
 
-- **Status**: todo
-- **Files**:
-  - `plugins/proposals/src/lib/tools/auto-work.tool.ts` — wiring
-    en el `step 4` del flow.
-  - `plugins/quality/src/index.ts` — `bun run validate` invoca
-    `quality_run_quality` post-vitest.
-  - `plugins/proposals/src/lib/agents/auto-work-engine.ts` —
-    `close_slice` post-condition invoca `quality_run`.
+- **Status**: pending
+- **Files**: `plugins/proposals/src/lib/tools/auto-work.tool.ts`,
+  `plugins/quality/src/index.ts`,
+  `plugins/proposals/src/lib/tools/auto-work-persist.ts`.
 - **Cambio** (3 sub-slices):
   - **S3.a** — `auto_work` invoca logs/notification/agent_names
     en cada ciclo. Wiring en el step 4. Si el LLM olvida,
@@ -368,6 +364,7 @@ Los F148-F152 son bugs **estructurales** del swarm, no cosméticos:
   - `1787628c` — `docs(a00069): correct status from in-progress to done — final closure`
   - `5dcf04b7` — `docs(a00072): pasada-17 F201-F208 — branches stranded, log honest catalog, skill resolver, livelock` (S4-S7 slices proposed)
   - `55c3fa5f` — **`fix(a00072): S2 — proposal_review mandatory pre-done gate (F149) — distinct reviewer check + transition gate`** (2 files, 268 insertions; tests 965/965 passing; **F149 CLOSED operativamente**)
+  - `ef3497c2` — `docs(a00072): mark S2 proposal_review mandatory pre-done gate done`
 - F148-F152 documentados verbatim con logs.
 - 5 slices propuestos (S1.a-d, S2.a-c, S3.a-c).
 - Lint proposals pasa para a00072.
@@ -1843,9 +1840,136 @@ Pasada-18: 5.5 (F149 closed, F127/F170/F186/F187/F188/F192/F221 POSITIVO).
 
 **Severidad**: MEJORABLE proceso — ritmo sostenible. Post-S3 (F150/F152): scoreboard ~6.5 OK.
 
+### F231 — `agents.lock.json` ahora 1 in_flight (`f00130-S3`) — a00072-S2 released limpio (POSITIVO)
+
+Re-audit-19 `cat .cache/mcp-vertex/agents.lock.json`:
+
+```text
+{
+  "version": 1,
+  "stale_after_minutes": 10,
+  "in_flight": [
+    {
+      "task_id": "f00130-S3",
+      "agent": "copilot-minimax-m3",
+      "ownership": ["plugins/api/src/lib/mock/", "plugins/api/README.md", "plugins/api/src/index.ts", "plugins/api/src/public/index.ts"],
+      "started_at": "2026-07-25T19:42:24.364Z",
+      "last_seen": "2026-07-25T19:42:32.318Z"
+    }
+  ]
+}
+```
+
+**Esperado**: lock activo de f00130-S3, sin zombies. **Actual**: exactamente eso.
+
+**Esperado vs Actual**: a00072-S2 release limpio (verificado en pasada-18). Sistema sigue healthy.
+
+**Severidad**: **POSITIVO**. F103/F127/F170/F186 mantiene.
+
+### F232 — `IHostPathLayout` interface añadida — S12.b S10 S6 contratos (INFO, POSITIVO arquitectura)
+
+Re-audit-19 `cat plugins/proposals/src/lib/contracts/interfaces/swarm-path-layout.interface.ts | head`:
+
+```ts
+export interface IHostPathLayout {
+  readonly lockFile: string;
+  readonly agentRegistryFile: string;
+  readonly roundContextDigestFile: string;
+  readonly taskQueueDir: string;
+  readonly taskQueueFile: string;
+  readonly taskQueueHeartbeatFile: string;
+  // ...
+}
+```
+
+**Esperado**: contratos centralizados para swarm paths. **Actual**: interface añadida en pasada-19 por parallel agent.
+
+**Severado**: **POSITIVO arquitectura**. SOLID/DRY — paths no son hardcoded.
+
+### F233 — `usage-tracking/usage-summary.json.*.tmp` 64 files **sin mitigación 7 PASADAS** — F218 evolución (FATAL persistente)
+
+Re-audit-19 `ls .cache/mcp-vertex/results/usage-tracking/*.tmp | wc -l`:
+
+```text
+64
+```
+
+**Esperado**: 0. **Actual**: 64.
+
+**Esperado vs Actual**: F104 → F128 → F155 → F171 → F195 → F218 → **F233**. **7 pasadas con el mismo FATAL**.
+
+**Severidad**: FATAL persistente — peor trend.
+
+### F234 — `apps/web/scripts/__tests__/preset-table.spec.ts` modified — F160 evol (INFO)
+
+**Severado**: INFO — F160 evolución. Test counts updated.
+
+### F235 — `packages/cli/src/lib/init/init-default.command.spec.ts` + `init-render.service.spec.ts` modified — plugin count update (INFO)
+
+**Severado**: INFO — plugin count updates parallel.
+
+### F236 — `plugins/api/src/lib/tools/api-mock.tool.ts` modified — f00130 S3 implementation (INFO)
+
+**Severado**: INFO — f00130 S3 implementation in progress.
+
+### F237 — `plugins/api/src/lib/spec/openapi.ts` modified — F204/F228 precursor (INFO)
+
+**Severado**: INFO — openapi spec interfaces para skill resolver.
+
+### F238 — `plugins/proposals/src/lib/contracts/constants/default-path-layout.constant.ts` modified — S12.b path defaults (INFO)
+
+**Severado**: INFO — default path layout for swarm.
+
+### F239 — `plugins/auto-agent-selector/tests/src/lib/tools/auto-evaluate.tool.spec.ts` modified — F152 precursor (INFO)
+
+**Severado**: INFO — F152 quality_run precursor.
+
+### F240 — `packages/core/src/generated/tool-outputs.ts` modified — 36 plugins regenerados (F213 evol, INFO)
+
+**Severado**: INFO — F213 evolución.
+
+### F241 — `packages/core/src/lib/plugins/plugin-defaults.ts` modified — F214 evol (INFO)
+
+**Severado**: INFO — F214 evolución.
+
+### F242 — `packages/core/tests/src/lib/e2e/token-budget.e2e.spec.ts` modified — F163 evol (INFO)
+
+Re-audit-19 `bunx vitest run packages/core/tests/src/lib/e2e/token-budget.e2e.spec.ts`:
+
+```text
+Test Files  1 passed (1)
+Tests  7 passed (7)
+```
+
+**Severado**: INFO — F163 evolución. 7/7 tests.
+
+### F243 — `packages/core/src/lib/plugins/preset-catalog.ts` modified — F121/F226 evol (INFO)
+
+**Severado**: INFO — F121/F226 evolución.
+
+### F244 — `packages/core/tests/src/lib/plugins/preset-catalog.spec.ts` modified — F121 evol test (INFO)
+
+**Severado**: INFO — F121 evolución test.
+
+### F245 — Pasada-19: F231 POSITIVO + 11 INFO + F233 FATAL persistente — scoreboard 5.5 sostenido (MEJORABLE proceso)
+
+Re-audit-19 scoreboard delta:
+
+```text
+- F231 POSITIVO agents.lock 1 in_flight healthy.
+- F232 POSITIVO arquitectura IHostPathLayout.
+- F233 FATAL persistente 64 tmp usage-tracking 7 PASADAS reincidente.
+- F234-F244 INFO 11 archivos modified plugins evolution.
+- F245 MEJORABLE proceso scoreboard 5.5 sostenido (recuperación F149 + S2 mantienen).
+```
+
+**Esperado**: scoreboard sube con S3-S8. **Actual**: 5.5 sostenido (depende de implementación de slices).
+
+**Severado**: MEJORABLE proceso — sistema maduro, próximo FATAL residual es F218 (tmp sweep S7) o F111 (log honest S13).
+
 ## scoreboard
 
-- **Locks**: 7.5 (MEJORABLE — **F127/F170/F186/F187/F188/F192/F221 S12 + S1 + S2 verified**; F103 zombies detectados; F153 reincidente pero flaggeado por S1.a).
+- **Locks**: 7.5 (MEJORABLE — **F127/F170/F186/F187/F188/F192/F221/F231 S12 + S1 + S2 verified**; F103 zombies detectados; F153 reincidente pero flaggeado por S1.a).
 - **Multi-agent discipline**: 4.0 (MUY MAL — **F172/F196 12 ramas agent/* activas reincidente F23/F39/F50/F133/F154**).
 - **Lifecycle review/done**: 5.0 (MEJORABLE — F149 peer-review bypassed; F156/F159/F184 cierre pendiente; **F184 closed por c1ce7ede**).
 - **Registry / orientation**: 6.5 (MEJORABLE — **F148/F151 closed via S1**).
