@@ -7,7 +7,10 @@ import { toolJson, withFileMutex } from '@mcp-vertex/core/public';
 
 import {
 	getAgentLockSessionBalance,
+	removeStale,
 	runAgentLockEngine,
+	type ILockEntry,
+	type ILockFile,
 } from '../locks/agent-lock-engine';
 import { readJsonOrNull } from '../proposals/index-reader';
 import { getPeerReviewBypassCount } from '../shared/peer-review-bypass-log';
@@ -63,6 +66,17 @@ interface IStateDiagnosis {
 		readonly sessionClaims: number;
 		readonly sessionReleases: number;
 	};
+	/**
+	 * a00072 S1.a (F148/F151): stale in-flight locks the engine would
+	 * drop if `state_repair` ran. Counted by running `removeStale`
+	 * against the lock file in-memory (no write) so the smoke
+	 * detector always reports what would be repaired.
+	 */
+	readonly stale: {
+		readonly count: number;
+		readonly taskIds: readonly string[];
+		readonly lastStaleSeen: string | null;
+	};
 	/** a00069 S11: peer-review bypasses (force/skipPeerReview) this session. */
 	readonly peerReviewBypasses: number;
 	readonly queue: {
@@ -85,6 +99,17 @@ const STATE_DIAGNOSIS_SCHEMA = z.object({
 		sessionClaims: z.number(),
 		sessionReleases: z.number(),
 		sessionImbalance: z.number(),
+	}),
+	/**
+	 * a00072 S1.a: stale locks the smoke detector sees right now.
+	 * When `stale.count > 0` the host should suggest `state_repair
+	 * { mode: "execute" }` (or the explicit `agent_lock_release_orphan`
+	 * tool for a targeted release).
+	 */
+	stale: z.object({
+		count: z.number(),
+		taskIds: z.array(z.string()),
+		lastStaleSeen: z.string().nullable(),
 	}),
 	/** a00069 S11: force/skipPeerReview peer-review bypasses this session. */
 	peerReviewBypasses: z.number(),
@@ -141,6 +166,31 @@ const diagnose = async (
 		active_write_lanes?: number;
 	};
 
+	// a00072 S1.a: surface stale locks as part of the snapshot so the
+	// smoke detector does not require a `state_repair` call to
+	// notice them. `removeStale` is pure (no write) so the lock file
+	// stays exactly as the swarm left it.
+	const liveLockFile = (await readJsonOrNull<ILockFile>(
+		options.lockPathAbs,
+	)) ?? {
+		version: 1,
+		stale_after_minutes: 10,
+		in_flight: [],
+	};
+	const cleaned = removeStale(liveLockFile);
+	const staleEntries: readonly ILockEntry[] = liveLockFile.in_flight.filter(
+		(e) => !cleaned.in_flight.includes(e),
+	);
+	const staleTaskIds = staleEntries.map((e) => e.task_id);
+	const lastStaleEntry = staleEntries
+		.map((e) => ({ id: e.task_id, ts: e.last_seen }))
+		.sort((a, b) => (a.ts < b.ts ? 1 : -1))[0];
+	const stale = {
+		count: staleEntries.length,
+		taskIds: staleTaskIds,
+		lastStaleSeen: lastStaleEntry?.ts ?? null,
+	};
+
 	let queue: IStateDiagnosis['queue'] = null;
 	if (await fileExists(options.queuePathAbs)) {
 		const loaded = await parseQueue(
@@ -185,7 +235,8 @@ const diagnose = async (
 		(queue?.threshold ?? 'green') !== 'red' &&
 		zombies.orphans.length === 0 &&
 		(queue?.waiterOrphans ?? 0) === 0 &&
-		!claimReleaseImbalanceAlert;
+		!claimReleaseImbalanceAlert &&
+		stale.count === 0;
 
 	return {
 		locks: {
@@ -200,6 +251,7 @@ const diagnose = async (
 			orphans: zombies.orphans.length,
 			threshold: zombies.threshold,
 		},
+		stale,
 		healthy,
 	};
 };
