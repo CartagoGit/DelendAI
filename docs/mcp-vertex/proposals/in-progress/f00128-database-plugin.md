@@ -58,22 +58,40 @@ from env, redacted. Pure formatter over injected driver results.
 
 ### S2 — guarded query + EXPLAIN
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/database/src/lib/query/`, `plugins/database/src/lib/tools/db-query.tool.ts`
 - **Gate**: bun run validate
+- **Closed-by**: 4fe7c307
 
 `db_query` (read-only; refuses DML/DDL unless `allowWrite` + `confirm`),
 `db_explain` for plans. Parameterized; write-guard unit-tested to reject
-mutations by default.
+mutations by default. Implemented with a pure SQL classifier/parameter flattener,
+SQLite query runner, redacted driver errors, and unit coverage for read, write,
+DDL, EXPLAIN, and DSN-redaction paths.
 
 ### S3 — ERD + pack + catalog
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/database/src/lib/erd/`, `plugins/database/README.md`
 - **Gate**: bun run validate
 
 `db_erd` emits a mermaid ERD from the introspected schema; `data` pack
 membership (r00011), catalog + wiki.
+- implementation:
+  - `erd/build-mermaid-er.ts` — pure formatter over an `IDatabaseSchema`;
+    classifies FK relationships (one-to-one / one-to-many / many-to-many)
+    and emits the `erDiagram` block. Empty schema → `'erDiagram\n'`.
+  - `erd/render-erd.ts` — driver-aware orchestrator: resolves DSN, calls
+    the introspect engine, runs the formatter. Filters by `tables` arg.
+  - `tools/db-erd.tool.ts` — registers `db_erd` with zod input
+    (`tables?`) and output (`mermaid`, `tableCount`, `relationshipCount`,
+    `summary`). Wired into `plugins/database/src/index.ts`.
+  - `erd/build-mermaid-er.spec.ts` + `erd/render-erd.spec.ts` +
+    `tools/db-erd.tool.spec.ts` — 33 ERD tests cover the formatter, the
+    driver seam, and the tool envelope.
+  - README updated with the new `db_erd` entry and ERD usage notes.
+  - 61/61 plugin tests pass; `verify:plugin-wiring:advisory` still
+    reports `database` fully wired.
 
 ## acceptance
 

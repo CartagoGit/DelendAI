@@ -33,6 +33,25 @@ export { buildFakeDriver, SAMPLE_FIXTURE } from '../lib/introspect/fake-driver';
 
 // Tool registrations
 export type { IDatabaseSchemaToolOptions } from '../lib/tools/db-schema.tool';
+export { buildDatabaseSchemaToolRegistrations } from '../lib/tools/db-schema.tool';
+// S2 — query guard + EXPLAIN
+export type { IDatabaseQueryToolOptions } from '../lib/tools/db-query.tool';
+export { buildDatabaseQueryToolRegistrations } from '../lib/tools/db-query.tool';
+
+// S3 — ERD rendering
+export type { IDatabaseErdToolOptions } from '../lib/tools/db-erd.tool';
+export { buildDatabaseErdToolRegistrations } from '../lib/tools/db-erd.tool';
+export type { IRelationshipKind } from '../lib/erd/build-mermaid-er';
 export {
-	buildDatabaseSchemaToolRegistrations,
-} from '../lib/tools/db-schema.tool';
+	buildMermaidEr,
+	classifyForeignKeyRelationship,
+	countRelationships,
+	filterSchemaTables,
+	isForeignKeyUnique,
+} from '../lib/erd/build-mermaid-er';
+export {
+	listEntityBlocks,
+	renderErd,
+	renderErdIntegrity,
+	safeEntityName,
+} from '../lib/erd/render-erd';
