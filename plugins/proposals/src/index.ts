@@ -28,6 +28,7 @@ import {
 	buildCreateProposalRegistration,
 	buildProposalBoardRegistration,
 	buildReviewRegistration,
+	runCloseSliceQualityGate,
 } from './lib/tools/authoring.tool';
 import type { IAuthoringToolOptions } from './lib/tools/authoring.tool';
 import { buildAdoptRegistration } from './lib/tools/adopt.tool';
@@ -222,6 +223,12 @@ export default definePlugin({
 				? {
 						requirePeerReview: ctx.options
 							.requirePeerReview as boolean,
+					}
+				: {}),
+			...((ctx.peerPlugins?.has('quality') ?? false)
+				? {
+						runQuality: () =>
+							runCloseSliceQualityGate(ctx.workspace.root),
 					}
 				: {}),
 		};

@@ -213,7 +213,10 @@ describe('auto_work (one-call action plan)', async () => {
 		expect(out.steps.join('\n')).toContain(
 			'proposals_delegate one claimable slice',
 		);
-		expect(out.steps.join('\n')).toContain('proposals_await_lock once');
+		expect(out.steps.join('\n')).toContain('notification_await_lock once');
+		expect(out.steps.join('\n')).toContain('proposals_agent_names');
+		expect(out.steps.join('\n')).toContain('logs_query');
+		expect(out.steps.join('\n')).toContain('notification_notify_status');
 		expect(out.steps.join('\n')).toContain(
 			'If that was the last open slice for the proposal, run proposals_sync_proposals once; otherwise do not sync mid-flight.',
 		);

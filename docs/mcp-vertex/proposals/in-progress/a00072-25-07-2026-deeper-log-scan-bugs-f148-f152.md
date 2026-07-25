@@ -153,26 +153,26 @@ Los F148-F152 son bugs **estructurales** del swarm, no cosméticos:
 
 - **Status**: done
 - **Files**: `plugins/proposals/src/lib/tools/auto-work.tool.ts`,
-  `plugins/quality/src/index.ts`,
-  `plugins/proposals/src/lib/tools/auto-work-persist.ts`,
-  `plugins/proposals/src/lib/tools/proposal-transition.tool.ts`.
-- implementation:
-  - **S3.a** `auto-work.tool.ts` — augmented steps array with
-    explicit dogfood advisories for `agent_names`,
-    `logs_tail`, and `notify_status { kind: 'lock-released' }`.
-  - **S3.b** `quality/src/index.ts` — new `quality_run_quality`
-    tool with severity filter; backward-compatible with the
-    legacy `scope`-based signature.
-  - **S3.c** `auto-work-persist.ts` — `IQualityProbeDeps` /
-    `IQualityProbeResult` / `shouldBlockCloseSliceOnQuality`
-    helpers exported for the close_slice pre-condition hook in
-    `authoring.tool.ts`.
-  - `proposal-transition.tool.ts` — S2.c peer-review gate falls
-    back to proposal frontmatter when `peerReviewLogPathAbs`
-    is undefined, so legacy f00888/peer-review-gate.spec.ts
-    contract keeps passing.
-- **Tests**: 107/107 / 968/968 in `plugins/proposals`; 5/5 / 28/28
-  in `plugins/quality`.
+  `plugins/proposals/src/lib/tools/authoring.tool.ts`,
+  `plugins/proposals/src/lib/tools/authoring-options.ts`,
+  `plugins/proposals/src/index.ts`,
+  `plugins/quality/src/public/index.ts`,
+  `tools/scripts/quality/quality-gate.script.ts`,
+  `tools/scripts/quality/run-quality.script.ts`,
+  `package.json`.
+- **Implementación**: `auto_work` ahora explicita el wiring de
+  `agent_names`, `logs_query` y `notification_notify_status` en el
+  ciclo de trabajo y usa `notification_await_lock` en vez de inventar
+  ids bajo el namespace de proposals. `bun run validate` ejecuta la
+  gate `quality:gate` inmediatamente después de vitest. `close_slice`
+  ganó un seam opcional `runQuality`; cuando quality está cargado,
+  proposals inyecta un runner que ejecuta la gate y, si reporta
+  `severity: "error"`, devuelve `ok:false`,
+  `blockerType: "quality-failed"` y el detalle estructurado de los
+  hallazgos sin marcar el slice como `done`.
+- **Tests**: specs focalizados para `auto_work`, `close_slice` y la
+  gate CLI de quality cubren el nuevo wiring y los bloques por
+  `quality-failed`.
 - **Cambio** (3 sub-slices):
   - **S3.a** — `auto_work` invoca logs/notification/agent_names
     en cada ciclo. Wiring en el step 4. Si el LLM olvida,
@@ -228,15 +228,10 @@ Los F148-F152 son bugs **estructurales** del swarm, no cosméticos:
 
 ### S5 — `proposal_transition` y `close_slice` ejecutan `bun run validate` automáticamente (F202/F203)
 
-- **Status**: todo
-- **Files**:
-  - `plugins/proposals/src/lib/tools/proposal-transition.tool.ts` —
-    pre-condition invoca `bun run validate` antes de aceptar la
-    transición. Si validate fails, retorna `ok:false`.
-  - `plugins/proposals/src/lib/tools/close-slice.tool.ts` — pre-condition
-    invoca `validateEvidence` parameter (F169 evolución).
-  - `plugins/proposals/src/lib/logging/log-honest.ts` — new helper
-    que **deriva** `outcome` del campo `meta.isError`, no del LLM.
+- **Status**: pending
+- **Files**: `plugins/proposals/src/lib/tools/proposal-transition.tool.ts`,
+  `plugins/proposals/src/lib/tools/authoring.tool.ts`,
+  `plugins/proposals/src/lib/logging/log-honest.ts`.
 - **Cambio** (3 sub-slices):
   - **S5.a** — `proposal_transition` rechaza transiciones a
     `done`/`review` si `bun run validate` no exit 0. El `reason`

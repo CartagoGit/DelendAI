@@ -159,6 +159,75 @@ export const runCloseSliceValidation = async (
 	};
 };
 
+export const runCloseSliceQualityGate = async (
+	cwd: string,
+	timeoutMs = CLOSE_SLICE_VALIDATION_TIMEOUT_MS,
+): Promise<{
+	readonly ok: boolean;
+	readonly severity: 'ok' | 'error';
+	readonly findings: readonly string[];
+	readonly summary?: {
+		readonly ok: boolean;
+		readonly scopes: number;
+	};
+}> => {
+	const result = await runAcceptanceCriteria(
+		[
+			{
+				command:
+					'bun tools/scripts/quality/run-quality.script.ts --json',
+				expect: 'exit0',
+				timeoutMs,
+			},
+		],
+		{ cwd },
+	);
+	const verdict = result.results[0];
+	const output = [verdict?.actual, verdict?.reason]
+		.filter(
+			(part): part is string =>
+				typeof part === 'string' && part.length > 0,
+		)
+		.join('\n')
+		.trim();
+	if (output.length > 0) {
+		try {
+			const parsed = JSON.parse(output) as {
+				ok?: boolean;
+				severity?: 'ok' | 'error';
+				findings?: readonly string[];
+				summary?: { ok?: boolean; scopes?: number };
+			};
+			return {
+				ok: parsed.ok === true,
+				severity: parsed.severity === 'error' ? 'error' : 'ok',
+				findings: [...(parsed.findings ?? [])],
+				...(parsed.summary !== undefined &&
+				typeof parsed.summary.ok === 'boolean' &&
+				typeof parsed.summary.scopes === 'number'
+					? {
+							summary: {
+								ok: parsed.summary.ok,
+								scopes: parsed.summary.scopes,
+							},
+						}
+					: {}),
+			};
+		} catch {
+			// fall through to a synthetic structured failure below
+		}
+	}
+	return {
+		ok: false,
+		severity: 'error',
+		findings: [
+			output.length > 0
+				? output
+				: 'quality gate failed without structured output',
+		],
+	};
+};
+
 const SLICE_IN = z.object({
 	sliceId: z.string(),
 	title: z.string().optional(),
@@ -602,6 +671,20 @@ export const buildCloseSliceRegistration = (
 			{
 				outputSchema: z.object({
 					ok: z.boolean(),
+					blockerType: z.string().optional(),
+					blockerDetail: z
+						.object({
+							ok: z.boolean(),
+							severity: z.enum(['ok', 'error']),
+							findings: z.array(z.string()),
+							summary: z
+								.object({
+									ok: z.boolean(),
+									scopes: z.number(),
+								})
+								.optional(),
+						})
+						.optional(),
 					error: z
 						.object({
 							reason: z.string(),
@@ -712,25 +795,28 @@ export const buildCloseSliceRegistration = (
 						}
 						const rawBlock = m[2] ?? '';
 						// a00072 S3.c — quality gate BEFORE flipping status.
-						// If the probe is wired and the worst severity is
-						// `critical` or `high`, refuse the close. Hosts
-						// that do not wire the quality plugin (no
-						// `runQuality`) skip this check entirely.
+						// If the probe is wired and reports severity=error,
+						// refuse the close. Hosts that do not wire the quality
+						// plugin skip this check entirely.
 						if (typeof options.runQuality === 'function') {
 							const quality = await options.runQuality();
-							if (
-								quality.ok === false &&
-								(quality.worst === 'critical' ||
-									quality.worst === 'high')
-							) {
+							if (quality.severity === 'error') {
 								const err = new Error(
-									`quality-failed: worst severity is ${quality.worst}`,
+									'quality gate reported severity=error',
 								) as Error & {
 									kind: string;
-									output: string;
+									detail: {
+										ok: boolean;
+										severity: 'ok' | 'error';
+										findings: readonly string[];
+										summary?: {
+											ok: boolean;
+											scopes: number;
+										};
+									};
 								};
 								err.kind = 'quality-failed';
-								err.output = `worst=${quality.worst}`;
+								err.detail = quality;
 								throw err;
 							}
 						}
@@ -770,19 +856,19 @@ export const buildCloseSliceRegistration = (
 						};
 					}
 					if (err?.kind === 'quality-failed') {
-						// a00072 S3.c: quality probe refused the close.
-						// The slice is NOT marked done; the agent must fix
-						// the worst-severity findings before retrying.
 						const envelope = {
 							ok: false as const,
 							kind: 'quality-failed',
 							blockerType: 'quality-failed' as const,
+							blockerDetail: err.detail,
 							error: {
 								reason: String(err.message),
 								nextAction:
-									'Fix the worst-severity quality findings, then retry close_slice. The slice was NOT marked done.',
+									'Fix the reported quality findings, then retry close_slice. The slice was NOT marked done.',
 								kind: 'quality-failed',
-								output: String(err.output ?? ''),
+								output: Array.isArray(err.detail?.findings)
+									? err.detail.findings.join('\n')
+									: '',
 							},
 							proposalId: entry.id,
 							sliceId: args.sliceId,
