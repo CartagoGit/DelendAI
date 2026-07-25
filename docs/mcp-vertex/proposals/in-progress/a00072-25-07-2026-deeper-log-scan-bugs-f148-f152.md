@@ -117,9 +117,27 @@ Los F148-F152 son bugs **estructurales** del swarm, no cosméticos:
 
 ### S2 — `proposal_review` mandatory pre-done gate (F149)
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/proposals/src/lib/tools/proposal-transition.tool.ts`,
   `plugins/proposals/src/lib/tools/authoring.tool.ts`.
+- implementation:
+  - **S2.a** `proposal-transition.tool.ts` — when `to === 'done'`,
+    the handler queries `.cache/mcp-vertex/results/logs/peer-review.jsonl`
+    for entries with `proposal_id === currentProposalId` and
+    `verdict === 'approved'` since the last `to: review`
+    transition. Zero matches → reject with
+    `{ ok: false, blockerType: 'missing-peer-review' }`. `force:true`
+    and `requirePeerReview:false` short-circuits preserved.
+  - **S2.b** `authoring.tool.ts` — `proposal_review` rejects when
+    `agent` matches any prior `proposal_review` entry for the
+    same `(proposal_id, slice_id)`; envelope
+    `{ ok: false, blockerType: 'self-review' }`. Approve path
+    appends to the log; request_changes also appends (the gate
+    counts any verdict, but the verification requires 'approved').
+  - **S2.c** 3 regression specs cover r00010 (no peer-review),
+    a00063 (self-review), a00065 (force:true still writes the
+    bypass log entry).
+  - Tests: 107/107 / 965/965 in `plugins/proposals`.
 - **Cambio** (3 sub-slices):
   - **S2.a** — Gate mandatory. `proposal_transition` rechaza
     `to: done` si la propuesta no tiene ≥1 entrada en
