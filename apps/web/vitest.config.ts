@@ -37,5 +37,6 @@ export default defineConfig({
 		environment: 'node',
 		globals: false,
 		setupFiles: sharedSetupFiles(workspaceRoot),
+		globalSetup: ['./scripts/lib/ensure-manifests.globalsetup.ts'],
 	},
 });
