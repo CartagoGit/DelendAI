@@ -3,11 +3,13 @@ import { z } from 'zod';
 
 import { buildPerfBenchRegistration } from './lib/tools/perf-bench.tool';
 import { buildPerfBundleRegistration } from './lib/tools/perf-bundle.tool';
+import { buildPerfProfileRegistration } from './lib/tools/perf-profile.tool';
 
 /**
  * Perf plugin. `perf_bench` derives ops/s from injected samples and compares
- * against an optional inline baseline; `perf_bundle` measures build output and
- * flags bundle-size budget regressions. Offline, read-only.
+ * against an optional inline baseline; `perf_bundle` measures build output;
+ * `perf_profile` captures bounded hotspot summaries when a profiler is
+ * available. Offline, read-only.
  */
 const OptionsSchema = z.object({});
 
@@ -15,7 +17,7 @@ export default definePlugin({
 	name: 'perf',
 	version: '0.1.0',
 	describe:
-		'Performance guards: perf_bench derives ops/s from benchmark samples and optional baselines, while perf_bundle flags bundle-size budget regressions. Offline.',
+		'Performance guards: perf_bench derives ops/s from benchmark samples and optional baselines, perf_bundle flags bundle-size budget regressions, and perf_profile captures bounded hotspot summaries. Offline.',
 	optionsSchema: OptionsSchema,
 	register(ctx) {
 		return {
@@ -25,6 +27,10 @@ export default definePlugin({
 					workspaceRootAbs: ctx.workspace.root,
 				}),
 				buildPerfBundleRegistration({
+					namespacePrefix: ctx.namespacePrefix,
+					workspaceRootAbs: ctx.workspace.root,
+				}),
+				buildPerfProfileRegistration({
 					namespacePrefix: ctx.namespacePrefix,
 					workspaceRootAbs: ctx.workspace.root,
 				}),
@@ -48,6 +54,12 @@ export default definePlugin({
 						'- Flags any file over `maxFileKb` (file-over-budget) and a total over `maxTotalKb` (total-over-budget).',
 						'- With no budgets it just reports sizes — useful for a quick "what got big?" check.',
 						'- Wire it into CI to fail the build when a bundle crosses its budget.',
+						'',
+						`Tool: \`${ctx.namespacePrefix}_perf_profile\` — capture a bounded hotspot summary when a profiler is available.`,
+						'',
+						'- Defaults to the workspace root and a short bounded timeout.',
+						'- Returns normalized hotspots plus summary/worst severity for metrics-style gates.',
+						'- If no profiler toolchain is present, it returns `ok: skipped` with an install hint instead of crashing.',
 					].join('\n'),
 				},
 			],
