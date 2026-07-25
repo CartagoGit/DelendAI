@@ -185,6 +185,8 @@ export interface IVscodeApi {
 		readonly workspaceFolders?: ReadonlyArray<{
 			readonly uri: { readonly fsPath: string };
 		}>;
+		/** x00072 SEC-001 S1: workspace trust flag from VS Code. */
+		readonly isTrusted?: boolean;
 	};
 }
 
@@ -202,7 +204,9 @@ export interface IConfiguration {
 
 export interface IActivationDeps {
 	readonly vscode?: IVscodeApi;
-	readonly createClient?: () => Promise<McpStdioClient>;
+	createClient?: () => Promise<McpStdioClient>;
+	/** x00072 SEC-001 S1: trust override for the manual start-server command. */
+	readonly trustOverride?: boolean;
 }
 
 export const activate = async (
@@ -223,11 +227,47 @@ export const activate = async (
 	// the next `activate()` starts from a clean slate.
 	const handle: IRuntimeHandle = createRuntimeHandle();
 	const vscode = deps.vscode ?? (await loadVscodeApi());
+	handle.register(
+		'command:mcp-vertex.startServerUntrusted',
+		vscode.commands.registerCommand(
+			'mcp-vertex.startServerUntrusted',
+			async () => {
+				try {
+					const { registerStartServerUntrusted } = await import(
+						'./commands/start-server-untrusted'
+					);
+					await registerStartServerUntrusted(context, vscode, {
+						...deps,
+						trustOverride: true,
+					});
+				} catch (err) {
+					await vscode.window.showErrorMessage?.(
+						`MCP-Vertex: start-server failed: ${(err as Error).message}`,
+					);
+				}
+			},
+		),
+	);
 	// f00081 S2: resolve the host's tool-name namespace from
 	// `mcp-vertex.server.prefix` once, and thread it into every service so
 	// a `--prefix=acme` deployment calls `acme_*` tools instead of silently
 	// failing. `undefined` keeps the default `mcp-vertex_` behaviour.
 	const namespacePrefix = resolveNamespacePrefix(vscode);
+	// x00072 SEC-001 S1: refuse to spawn the stdio child when the
+	// workspace is not trusted. The UI/services still register so the user
+	// can see the host; the manual `start-server` command bypasses the gate
+	// via `deps.trustOverride`.
+	const isTrusted =
+		deps.trustOverride === true
+			? true
+			: (vscode.workspace?.isTrusted ?? true);
+	if (!isTrusted) {
+		await vscode.window.showInformationMessage?.(
+			'MCP-Vertex: workspace is untrusted — child server NOT started. Run `MCP-Vertex: Start Server (Untrusted)` to start manually.',
+		);
+		setRuntimeHandle(handle);
+		return;
+	}
 	let client: McpStdioClient;
 	try {
 		client = await (deps.createClient ?? createDefaultClient)(vscode);
@@ -574,7 +614,7 @@ export const deactivate = async (): Promise<void> => {
  * for the common single-script case while still letting power users
  * pass flags via `["run", "mcp-vertex", "--preset=swarm"]`.
  */
-const resolveServerCommand = async (
+export const resolveServerCommand = async (
 	vscode: IVscodeApi,
 ): Promise<{ command: string; args: readonly string[]; cwd?: string }> => {
 	const defaults = { command: 'bun', args: ['run', 'mcp-vertex'] } as const;
@@ -582,12 +622,17 @@ const resolveServerCommand = async (
 	const config = vscode.workspace?.getConfiguration?.('mcp-vertex.server');
 	const command = config?.get<string>('command');
 	const rawArgs = config?.get<unknown>('args');
+	const configCwd = config?.get<string>('cwd');
 	const args =
 		Array.isArray(rawArgs) && rawArgs.every((a) => typeof a === 'string')
 			? (rawArgs as readonly string[])
 			: typeof rawArgs === 'string' && rawArgs.trim().length > 0
 				? rawArgs.trim().split(/\s+/)
 				: undefined;
+	const cwd =
+		typeof configCwd === 'string' && configCwd.trim().length > 0
+			? configCwd.trim()
+			: root;
 	if (
 		(typeof command === 'string' && command.length > 0) ||
 		args !== undefined
@@ -595,17 +640,17 @@ const resolveServerCommand = async (
 		return {
 			command: command ?? defaults.command,
 			args: args ?? defaults.args,
-			...(root === undefined ? {} : { cwd: root }),
+			...(cwd === undefined ? {} : { cwd }),
 		};
 	}
 	const fromMcpJson =
 		root === undefined ? undefined : await readWorkspaceMcpJsonLaunch(root);
 	if (fromMcpJson !== undefined) {
-		return { ...fromMcpJson, cwd: root as string };
+		return { ...fromMcpJson, ...(cwd === undefined ? {} : { cwd }) };
 	}
 	return {
 		...defaults,
-		...(root === undefined ? {} : { cwd: root }),
+		...(cwd === undefined ? {} : { cwd }),
 	};
 };
 

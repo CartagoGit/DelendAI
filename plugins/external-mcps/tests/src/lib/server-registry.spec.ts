@@ -144,6 +144,7 @@ interface IHarness {
 		command: string;
 		args: readonly string[];
 		cwd: string | undefined;
+		env: Readonly<Record<string, string>> | undefined;
 	}>;
 	readonly timers: IFakeTimer[];
 	readonly fireLast: () => void;
@@ -151,12 +152,21 @@ interface IHarness {
 
 const makeHarness = (
 	servers: Readonly<Record<string, IRegistryServerEntry>>,
-	over: { callTimeoutMs?: number; now?: () => number } = {},
+	over: {
+		callTimeoutMs?: number;
+		hostEnv?: Readonly<Record<string, string | undefined>>;
+		now?: () => number;
+	} = {},
 ): IHarness => {
 	const children: FakeChild[] = [];
 	const spawnCalls: IHarness['spawnCalls'] = [];
 	const spawner: StdioSpawner = (command, args, options) => {
-		spawnCalls.push({ command, args, cwd: options.cwd });
+		spawnCalls.push({
+			command,
+			args,
+			cwd: options.cwd,
+			env: options.env,
+		});
 		const child = new FakeChild(100 + children.length);
 		children.push(child);
 		return child;
@@ -165,6 +175,7 @@ const makeHarness = (
 	const registry = new ExternalServerRegistry({
 		servers,
 		workspaceRoot: '/fake/workspace',
+		...(over.hostEnv !== undefined ? { hostEnv: over.hostEnv } : {}),
 		spawner,
 		setTimer: timerHarness.setTimer,
 		...(over.callTimeoutMs !== undefined
@@ -211,6 +222,17 @@ const captureTool = async (reg: IToolRegistration): Promise<ICapturedTool> => {
 	return tool;
 };
 
+const BASE_HOST_ENV = {
+	PATH: '/usr/bin',
+	HOME: '/tmp/home',
+	TMPDIR: '/tmp',
+	TMP: '/tmp',
+	LANG: 'en_US.UTF-8',
+	LC_ALL: 'en_US.UTF-8',
+	TERM: 'xterm-256color',
+	SHELL: '/bin/bash',
+} satisfies Readonly<Record<string, string>>;
+
 // ─── registry: lazy boot + caching ───────────────────────────────────
 
 describe('ExternalServerRegistry — lazy boot + caching', () => {
@@ -237,15 +259,34 @@ describe('ExternalServerRegistry — lazy boot + caching', () => {
 	});
 
 	it('spawns with the declared command/args and the INJECTED workspace cwd (never process.cwd)', () => {
-		const h = makeHarness({
-			fs: entry({ command: 'npx', args: ['-y', 'pkg@1.4.2'] }),
-		});
+		const h = makeHarness(
+			{
+				fs: entry({ command: 'npx', args: ['-y', 'pkg@1.4.2'] }),
+			},
+			{ hostEnv: BASE_HOST_ENV },
+		);
 		void h.registry.call('fs', 'ping', {});
 		expect(h.spawnCalls[0]).toEqual({
 			command: 'npx',
 			args: ['-y', 'pkg@1.4.2'],
 			cwd: '/fake/workspace',
+			env: BASE_HOST_ENV,
 		});
+	});
+
+	it('filters host env before spawn so undeclared secrets never reach the child', async () => {
+		const previous = process.env.SECRET_DECOY;
+		process.env.SECRET_DECOY = '***';
+		try {
+			const h = makeHarness({ fs: entry({ env: {} }) });
+			const pending = h.registry.call('fs', 'ping', {});
+			h.children[0]?.reply(0, { result: { ok: true } });
+			await pending;
+			expect(h.spawnCalls[0]?.env).not.toHaveProperty('SECRET_DECOY');
+		} finally {
+			if (previous === undefined) delete process.env.SECRET_DECOY;
+			else process.env.SECRET_DECOY = previous;
+		}
 	});
 
 	it('forwards a JSON-RPC tools/call frame with the tool name + arguments', () => {
@@ -260,16 +301,33 @@ describe('ExternalServerRegistry — lazy boot + caching', () => {
 	});
 
 	it('bootEager boots ONLY the eager:true servers at init', () => {
-		const h = makeHarness({
-			lazy: entry(),
-			hot: entry({ eager: true, command: 'hot-cmd' }),
-		});
+		const h = makeHarness(
+			{
+				lazy: entry(),
+				hot: entry({ eager: true, command: 'hot-cmd' }),
+			},
+			{ hostEnv: BASE_HOST_ENV },
+		);
 		h.registry.bootEager();
 		expect(h.spawnCalls).toHaveLength(1);
 		expect(h.spawnCalls[0]?.command).toBe('hot-cmd');
+		expect(h.spawnCalls[0]?.env).toEqual(BASE_HOST_ENV);
 		const rows = h.registry.status();
 		expect(rows.find((r) => r.id === 'hot')?.running).toBe(true);
 		expect(rows.find((r) => r.id === 'lazy')?.running).toBe(false);
+	});
+
+	it('entry.env:{} falls back to the base allow-list only', async () => {
+		const hostEnv = {
+			...BASE_HOST_ENV,
+			SECRET_DECOY: '***',
+			EXTRA: 'nope',
+		};
+		const h = makeHarness({ fs: entry({ env: {} }) }, { hostEnv });
+		const pending = h.registry.call('fs', 'ping', {});
+		h.children[0]?.reply(0, { result: { ok: true } });
+		await pending;
+		expect(h.spawnCalls[0]?.env).toEqual(BASE_HOST_ENV);
 	});
 
 	it('single-flights the spawn: two in-flight calls share ONE child', async () => {
@@ -326,6 +384,28 @@ describe('ExternalServerRegistry — failure paths', () => {
 			message: expect.stringContaining('"nope" is not declared'),
 		});
 		expect(h.spawnCalls).toHaveLength(0);
+	});
+
+	it('missing required host env fails closed with code:missing-env and does not spawn', async () => {
+		const h = makeHarness(
+			{ fs: entry({ env: { LOG_LEVEL: 'info' } }) },
+			{ hostEnv: BASE_HOST_ENV },
+		);
+		const outcome = await h.registry.call('fs', 'read_file', {});
+		expect(outcome).toEqual({
+			ok: false,
+			code: 'missing-env',
+			message: expect.stringContaining('LOG_LEVEL'),
+		});
+		expect(h.spawnCalls).toHaveLength(0);
+		expect(h.registry.status()).toEqual([
+			{
+				id: 'fs',
+				declared: true,
+				running: false,
+				lastError: expect.stringContaining('LOG_LEVEL'),
+			},
+		]);
 	});
 
 	it('a JSON-RPC error reply → {ok:false, code:call-failed} with the child message', async () => {

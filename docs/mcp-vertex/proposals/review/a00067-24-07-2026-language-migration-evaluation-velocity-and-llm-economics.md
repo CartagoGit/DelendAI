@@ -89,6 +89,19 @@ proposal contains.
 - **Acceptance**: the next-agent reviewer confirms DC1-DC7 reproduce
   from the listed commands. If any number is off by >10%, the slice
   is reopened and the discrepancy is recorded here.
+- **Reviewer (2026-07-25, agent/copilot-minimax-m3-rescue-merge): partial
+  reproduce.** DC1 has drifted outside ±10% (LOC and file counts grow
+  organically). DC2 byte budgets have been bumped multiple times since
+  this proposal was written (today: overviewFull 10 000 / compact 1 400
+  / agentCatalogCompact 900 / agentCatalogFull 6 800 / autoWork 2 000 /
+  analyzeCompact 1 800 / planCompact 2 000). DC3 structurally verifies
+  (MAX_OVERVIEW_SUMMARY_CHARS = 96, compactSummary truncates).
+  DC7 references `install.sh` which exists only as the `ready/f00148`
+  proposal — the actual install surface today is `npm i -g
+  @mcp-vertex/cli` plus VS Code extension download. **Recommendation:
+  re-open S1 with a delta section that lists the measured values
+  against the proposed ones (DC1, DC2, DC7) and ratifies the qualitative
+  conclusions (DC3-DC6) only.**
 
 ### S2 — Decision ratification
 

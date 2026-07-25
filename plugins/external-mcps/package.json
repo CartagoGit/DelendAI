@@ -28,6 +28,13 @@
 			},
 			"types": "./dist/index.d.ts",
 			"import": "./dist/index.js"
+		},
+		"./lib/subprocess/env-filter": {
+			"@mcp-vertex/source": {
+				"types": "./src/lib/subprocess/env-filter.ts"
+			},
+			"types": "./dist/lib/subprocess/env-filter.d.ts",
+			"import": "./dist/lib/subprocess/env-filter.js"
 		}
 	},
 	"scripts": {

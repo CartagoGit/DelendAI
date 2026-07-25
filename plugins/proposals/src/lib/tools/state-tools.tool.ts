@@ -10,6 +10,7 @@ import {
 	runAgentLockEngine,
 } from '../locks/agent-lock-engine';
 import { readJsonOrNull } from '../proposals/index-reader';
+import { getPeerReviewBypassCount } from '../shared/peer-review-bypass-log';
 
 /** Async existence check (H2): never blocks the event loop. */
 const fileExists = async (path: string): Promise<boolean> => {
@@ -62,6 +63,8 @@ interface IStateDiagnosis {
 		readonly sessionClaims: number;
 		readonly sessionReleases: number;
 	};
+	/** a00069 S11: peer-review bypasses (force/skipPeerReview) this session. */
+	readonly peerReviewBypasses: number;
 	readonly queue: {
 		readonly queueLength: number;
 		readonly queuedCount: number;
@@ -83,6 +86,8 @@ const STATE_DIAGNOSIS_SCHEMA = z.object({
 		sessionReleases: z.number(),
 		sessionImbalance: z.number(),
 	}),
+	/** a00069 S11: force/skipPeerReview peer-review bypasses this session. */
+	peerReviewBypasses: z.number(),
 	queue: z
 		.object({
 			queueLength: z.number(),
@@ -189,6 +194,7 @@ const diagnose = async (
 			sessionReleases: balance.releases,
 			sessionImbalance: balance.imbalance,
 		},
+		peerReviewBypasses: getPeerReviewBypassCount(),
 		queue,
 		registry: {
 			orphans: zombies.orphans.length,
@@ -196,6 +202,106 @@ const diagnose = async (
 		},
 		healthy,
 	};
+};
+
+/**
+ * Shared execute-path for state_repair (manual tool + a00069 S10 auto boot).
+ * GC stale locks, expire due queue entries, force-release orphan assignments.
+ */
+export const runStateRepair = async (
+	options: IStateToolOptions,
+): Promise<{
+	readonly staleLocks: number;
+	readonly expiredQueueEntries: number;
+	readonly orphanAssignments: number;
+	readonly diagnosis: IStateDiagnosis;
+}> => {
+	const lockedBefore = await rawInFlightCount(options.lockPathAbs);
+	await runAgentLockEngine(
+		{ action: 'gc' },
+		{ lockPath: options.lockPathAbs },
+	);
+	const staleLocksCleaned =
+		lockedBefore - (await rawInFlightCount(options.lockPathAbs));
+
+	let expiredCount = 0;
+	if (await fileExists(options.queuePathAbs)) {
+		expiredCount = await withFileMutex(options.queuePathAbs, async () => {
+			const loaded = await parseQueue(
+				options.queuePathAbs,
+				options.closedTasksPathAbs,
+				options.workspaceRoot,
+			);
+			const swept = await expireSweep(
+				loaded,
+				new Date().toISOString(),
+				options.queuePathAbs,
+			);
+			return swept.expiredCount;
+		});
+	}
+
+	const zombies = await gcZombies(
+		options.registryPathAbs,
+		options.lockPathAbs,
+		options.queuePathAbs,
+		{
+			dryRun: false,
+			...(options.orphanTtlMinutes !== undefined
+				? { orphanTtlMinutes: options.orphanTtlMinutes }
+				: {}),
+		},
+	);
+
+	return {
+		staleLocks: staleLocksCleaned,
+		expiredQueueEntries: expiredCount,
+		orphanAssignments: zombies.orphans.length,
+		diagnosis: await diagnose(options),
+	};
+};
+
+/**
+ * a00069 S10: one-shot auto purge at plugin boot. Idempotent; logs a compact
+ * `state-repair-auto` line. Failures are swallowed so a corrupt cache never
+ * blocks tool registration.
+ */
+export const runAutoStateRepairOnBoot = (
+	options: IStateToolOptions,
+): Promise<void> => {
+	const run = async (): Promise<void> => {
+		try {
+			const before = await diagnose(options);
+			if (
+				before.registry.orphans === 0 &&
+				(before.queue?.waiterOrphans ?? 0) === 0 &&
+				before.locks.active === 0
+			) {
+				return;
+			}
+			const repaired = await runStateRepair(options);
+			console.info(
+				JSON.stringify({
+					event: 'state-repair-auto',
+					staleLocks: repaired.staleLocks,
+					expiredQueueEntries: repaired.expiredQueueEntries,
+					orphanAssignments: repaired.orphanAssignments,
+					healthy: repaired.diagnosis.healthy,
+				}),
+			);
+		} catch (err) {
+			console.info(
+				JSON.stringify({
+					event: 'state-repair-auto',
+					ok: false,
+					error: err instanceof Error ? err.message : String(err),
+				}),
+			);
+		}
+	};
+	const pending = run();
+	void pending;
+	return pending;
 };
 
 /** `<prefix>_state_health` — read-only swarm state diagnosis. */
@@ -260,66 +366,15 @@ export const buildStateRepairRegistration = (
 					});
 				}
 
-				// 1) GC stale write locks (engine drops entries past TTL). Count
-				// honestly via the on-disk file before/after, because the engine
-				// strips stale entries in-memory before its own `dropped` tally.
-				const lockedBefore = await rawInFlightCount(
-					options.lockPathAbs,
-				);
-				await runAgentLockEngine(
-					{ action: 'gc' },
-					{ lockPath: options.lockPathAbs },
-				);
-				const staleLocksCleaned =
-					lockedBefore -
-					(await rawInFlightCount(options.lockPathAbs));
-
-				// 2) Expire due queue entries. x00097 S2 (audit a00052 #13):
-				// parse → sweep → persist is one transaction under the
-				// queue-file mutex, so the sweep's unconditional write can no
-				// longer clobber a concurrent enqueue.
-				let expiredCount = 0;
-				if (await fileExists(options.queuePathAbs)) {
-					expiredCount = await withFileMutex(
-						options.queuePathAbs,
-						async () => {
-							const loaded = await parseQueue(
-								options.queuePathAbs,
-								options.closedTasksPathAbs,
-								options.workspaceRoot,
-							);
-							const swept = await expireSweep(
-								loaded,
-								new Date().toISOString(),
-								options.queuePathAbs,
-							);
-							return swept.expiredCount;
-						},
-					);
-				}
-
-				// 3) Force-release orphan agent assignments (a00069 S6:
-				// includes status:orphan + stale adopted:false past TTL).
-				const zombies = await gcZombies(
-					options.registryPathAbs,
-					options.lockPathAbs,
-					options.queuePathAbs,
-					{
-						dryRun: false,
-						...(options.orphanTtlMinutes !== undefined
-							? { orphanTtlMinutes: options.orphanTtlMinutes }
-							: {}),
-					},
-				);
-
+				const repaired = await runStateRepair(options);
 				return toolJson({
 					mode: 'execute',
 					repaired: {
-						staleLocks: staleLocksCleaned,
-						expiredQueueEntries: expiredCount,
-						orphanAssignments: zombies.orphans.length,
+						staleLocks: repaired.staleLocks,
+						expiredQueueEntries: repaired.expiredQueueEntries,
+						orphanAssignments: repaired.orphanAssignments,
 					},
-					diagnosis: await diagnose(options),
+					diagnosis: repaired.diagnosis,
 				});
 			},
 		);

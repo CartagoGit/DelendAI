@@ -49,6 +49,7 @@ export interface IRunSastRunnerInput {
 	readonly readTextFile?: (
 		absolutePath: string,
 	) => Promise<string | undefined>;
+	readonly pluginCacheDir?: string;
 }
 
 export interface ISastRunResult {
@@ -60,6 +61,7 @@ export interface ISastRunResult {
 export interface ISecuritySastToolOptions {
 	readonly namespacePrefix: string;
 	readonly workspaceRootAbs: string;
+	readonly pluginCacheDir?: string;
 	readonly detectStack?: (cwd: string) => Promise<IDetectedStack>;
 	readonly runSastRunner?: (
 		input: IRunSastRunnerInput,
