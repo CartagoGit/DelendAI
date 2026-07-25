@@ -185,6 +185,8 @@ export interface IVscodeApi {
 		readonly workspaceFolders?: ReadonlyArray<{
 			readonly uri: { readonly fsPath: string };
 		}>;
+		/** x00072 SEC-001 S1: workspace trust flag from VS Code. */
+		readonly isTrusted?: boolean;
 	};
 }
 
@@ -203,6 +205,8 @@ export interface IConfiguration {
 export interface IActivationDeps {
 	readonly vscode?: IVscodeApi;
 	readonly createClient?: () => Promise<McpStdioClient>;
+	/** x00072 SEC-001 S1: trust override for the manual start-server command. */
+	readonly trustOverride?: boolean;
 }
 
 export const activate = async (
@@ -223,11 +227,47 @@ export const activate = async (
 	// the next `activate()` starts from a clean slate.
 	const handle: IRuntimeHandle = createRuntimeHandle();
 	const vscode = deps.vscode ?? (await loadVscodeApi());
+	handle.register(
+		'command:mcp-vertex.startServerUntrusted',
+		vscode.commands.registerCommand(
+			'mcp-vertex.startServerUntrusted',
+			async () => {
+				try {
+					const { registerStartServerUntrusted } = await import(
+						'./commands/start-server-untrusted'
+					);
+					await registerStartServerUntrusted(context, vscode, {
+						...deps,
+						trustOverride: true,
+					});
+				} catch (err) {
+					await vscode.window.showErrorMessage?.(
+						`MCP-Vertex: start-server failed: ${(err as Error).message}`,
+					);
+				}
+			},
+		),
+	);
 	// f00081 S2: resolve the host's tool-name namespace from
 	// `mcp-vertex.server.prefix` once, and thread it into every service so
 	// a `--prefix=acme` deployment calls `acme_*` tools instead of silently
 	// failing. `undefined` keeps the default `mcp-vertex_` behaviour.
 	const namespacePrefix = resolveNamespacePrefix(vscode);
+	// x00072 SEC-001 S1: refuse to spawn the stdio child when the
+	// workspace is not trusted. The UI/services still register so the user
+	// can see the host; the manual `start-server` command bypasses the gate
+	// via `deps.trustOverride`.
+	const isTrusted =
+		deps.trustOverride === true
+			? true
+			: (vscode.workspace?.isTrusted ?? true);
+	if (!isTrusted) {
+		await vscode.window.showInformationMessage?.(
+			'MCP-Vertex: workspace is untrusted — child server NOT started. Run `MCP-Vertex: Start Server (Untrusted)` to start manually.',
+		);
+		setRuntimeHandle(handle);
+		return;
+	}
 	let client: McpStdioClient;
 	try {
 		client = await (deps.createClient ?? createDefaultClient)(vscode);
