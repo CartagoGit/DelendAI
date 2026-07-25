@@ -73,6 +73,7 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 		'plugins/auto-agent-selector/src',
 	);
 	const conventions = resolve(workspaceRoot, 'plugins/conventions/src');
+	const database = resolve(workspaceRoot, 'plugins/database/src');
 	const issues = resolve(workspaceRoot, 'plugins/issues/src');
 	const cache = resolve(workspaceRoot, 'plugins/cache/src');
 	const client = resolve(workspaceRoot, 'packages/client/src');
@@ -432,6 +433,18 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 		{
 			find: '@mcp-vertex/conventions',
 			replacement: resolve(conventions, 'index.ts'),
+		},
+		{
+			find: '@mcp-vertex/database/public',
+			replacement: resolve(database, 'public/index.ts'),
+		},
+		{
+			find: /^@mcp-vertex\/database\/lib\/(.*)$/,
+			replacement: `${resolve(database, 'lib')}/$1`,
+		},
+		{
+			find: '@mcp-vertex/database',
+			replacement: resolve(database, 'index.ts'),
 		},
 		{
 			find: '@mcp-vertex/issues/public',
