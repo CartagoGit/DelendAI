@@ -89,10 +89,15 @@ declarado + el set base seguro cruza el límite.
 
 ### S3 — Regresión: defaults seguros cuando `entry.env` está vacío
 
-- **Status**: pending
-- **Files**: `plugins/external-mcps/tests/src/lib/subprocess/env-filter.spec.ts`,
-  `plugins/external-mcps/tests/src/lib/subprocess/server-registry.spec.ts`
+- **Status**: done
+- **Files**: `plugins/external-mcps/src/lib/subprocess/env-filter.spec.ts`,
+  `plugins/external-mcps/tests/src/lib/server-registry.spec.ts`
 - **Gate**: type
+- implementation:
+  - `BASE_ALLOW_LIST` exported from `env-filter.ts` so the test is anchored to the source.
+  - Snapshot test: sets `FOO_DECOY`/`BAR_DECOY` in `process.env`, asserts the result has exactly the base keys and no decoys.
+  - Server-registry test: when `entry.env: {}`, the spawned child receives exactly the base set.
+  - 110 tests pass in the plugin suite.
 - acceptance:
   - "Con `entry.env` vacío, el child recibe exactamente el set base"
   - "No se filtra `process.env` completo en ningún test (snapshot test del set resultante)"
