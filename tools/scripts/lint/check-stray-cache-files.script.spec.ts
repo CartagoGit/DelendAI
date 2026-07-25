@@ -260,3 +260,94 @@ describe('findStrayRootFiles (f00082)', () => {
 		expect(summary.strays).toEqual([]);
 	});
 });
+
+describe('findStrayCacheFiles — a00072 S7.a zero-byte stale tmp detection', () => {
+	let root = '';
+	beforeEach(() => {
+		root = mkdtempSync(join(tmpdir(), 'stray-cache-files-s7-'));
+	});
+	afterEach(() => {
+		rmSync(root, { recursive: true, force: true });
+	});
+
+	// S7.a: a 0-byte .tmp file that has been sitting in the cache
+	// for >60s is a crashed mid-write. The lint must flag it as
+	// `stale-zero-byte-tmp` so the operator can clean it up. The
+	// test injects `mtimeMs` via a wrapper to bypass the 60s wait.
+	it('flags a 0-byte .tmp file older than the stale threshold', async () => {
+		// Create a tmp file at .cache/mcp-vertex/results/usage-tracking/
+		// with size 0 and an mtime that is 5 minutes in the past.
+		const usageDir = join(
+			root,
+			'.cache',
+			'mcp-vertex',
+			'results',
+			'usage-tracking',
+		);
+		mkdirSync(usageDir, { recursive: true });
+		const tmpPath = join(usageDir, 'summary.json.tmp');
+		writeFileSync(tmpPath, '', 'utf8');
+		// Backdate the mtime by 5 minutes. The walker reads mtimeMs
+		// via `stat` so we adjust the file's utimes directly.
+		const past = new Date(Date.now() - 5 * 60 * 1000);
+		const { utimes } = await import('node:fs/promises');
+		await utimes(tmpPath, past, past);
+
+		const summary = await findStrayCacheFiles(
+			join(root, '.cache', 'mcp-vertex'),
+		);
+		const zeroByte = summary.strays.filter(
+			(s) => s.reason === 'stale-zero-byte-tmp',
+		);
+		expect(zeroByte.length).toBe(1);
+		expect(zeroByte[0]?.relPath).toBe(
+			'results/usage-tracking/summary.json.tmp',
+		);
+		expect(summary.ok).toBe(false);
+	});
+
+	it('does NOT flag a fresh 0-byte tmp file (still in the write window)', async () => {
+		const usageDir = join(
+			root,
+			'.cache',
+			'mcp-vertex',
+			'results',
+			'usage-tracking',
+		);
+		mkdirSync(usageDir, { recursive: true });
+		const tmpPath = join(usageDir, 'summary.json.tmp');
+		writeFileSync(tmpPath, '', 'utf8');
+		// mtime is "now" — within the 60s window. Walker should skip.
+		const summary = await findStrayCacheFiles(
+			join(root, '.cache', 'mcp-vertex'),
+		);
+		const zeroByte = summary.strays.filter(
+			(s) => s.reason === 'stale-zero-byte-tmp',
+		);
+		expect(zeroByte.length).toBe(0);
+	});
+
+	it('does NOT flag a non-empty tmp file (still being written)', async () => {
+		const usageDir = join(
+			root,
+			'.cache',
+			'mcp-vertex',
+			'results',
+			'usage-tracking',
+		);
+		mkdirSync(usageDir, { recursive: true });
+		const tmpPath = join(usageDir, 'summary.json.tmp');
+		writeFileSync(tmpPath, '{"partial": true}', 'utf8');
+		const past = new Date(Date.now() - 5 * 60 * 1000);
+		const { utimes } = await import('node:fs/promises');
+		await utimes(tmpPath, past, past);
+
+		const summary = await findStrayCacheFiles(
+			join(root, '.cache', 'mcp-vertex'),
+		);
+		const zeroByte = summary.strays.filter(
+			(s) => s.reason === 'stale-zero-byte-tmp',
+		);
+		expect(zeroByte.length).toBe(0);
+	});
+});
