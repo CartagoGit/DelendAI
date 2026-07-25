@@ -38,6 +38,7 @@
 import { spawn } from 'node:child_process';
 
 import type { IServerEntry } from '../options-schema';
+import { buildSafeEnv } from './env-filter';
 
 /** A JSON-RPC message flowing in either direction (mirrors the source). */
 export interface IJsonRpcMessage {
@@ -138,6 +139,7 @@ interface IChildTransport {
 interface IChildTransportOptions {
 	readonly spawner: StdioSpawner;
 	readonly cwd: string;
+	readonly env: Readonly<Record<string, string>>;
 	readonly setTimer: SetTimer;
 	readonly sigkillGraceMs: number;
 	/**
@@ -158,7 +160,10 @@ const createChildTransport = (
 	args: readonly string[],
 	options: IChildTransportOptions,
 ): IChildTransport => {
-	const child = options.spawner(command, args, { cwd: options.cwd });
+	const child = options.spawner(command, args, {
+		cwd: options.cwd,
+		env: options.env,
+	});
 
 	let listener: ((message: IJsonRpcMessage) => void) | undefined;
 	const queued: IJsonRpcMessage[] = [];
@@ -279,7 +284,15 @@ const createChildTransport = (
  * accept the key yet — wiring it into the config contract is a follow-up
  * outside the S2 file set.
  */
-export interface IRegistryServerEntry extends IServerEntry {
+export interface IRegistryServerEntry extends Omit<IServerEntry, 'env'> {
+	/**
+	 * Host env projection for the child: either legacy NAME-only entries or
+	 * a registry-local map of childKey -> literal-or-$HOST_VAR.
+	 */
+	readonly env?:
+		| Readonly<Record<string, string>>
+		| readonly string[]
+		| undefined;
 	/** Boot at plugin init instead of on the first call (lazy default). */
 	readonly eager?: boolean;
 }
@@ -289,6 +302,8 @@ export interface IServerRegistryOptions {
 	readonly servers: Readonly<Record<string, IRegistryServerEntry>>;
 	/** Child cwd — `ctx.workspace.root`, NEVER `process.cwd()`. */
 	readonly workspaceRoot: string;
+	/** Injectable host env for child projections. Default: process.env. */
+	readonly hostEnv?: Readonly<Record<string, string | undefined>>;
 	/** Injectable spawner (tests observe the children). Default: real spawn. */
 	readonly spawner?: StdioSpawner;
 	/** Injectable timer (tests). Default real `setTimeout` (unref'd). */
@@ -313,6 +328,7 @@ export interface IServerStatusRow {
 
 export type ExternalCallFailureCode =
 	| 'unknown-server'
+	| 'missing-env'
 	| 'call-failed'
 	| 'call-timeout';
 
@@ -327,6 +343,34 @@ export type IExternalCallOutcome =
 
 const DEFAULT_SIGKILL_GRACE_MS = 2000;
 const DEFAULT_CALL_TIMEOUT_MS = 30_000;
+
+const formatMissingEnvMessage = (
+	server: string,
+	missing: readonly string[],
+): string => `"${server}" is missing required host env: ${missing.join(', ')}`;
+
+class MissingEnvError extends Error {
+	readonly code = 'missing-env';
+
+	constructor(
+		readonly server: string,
+		readonly missing: readonly string[],
+	) {
+		super(formatMissingEnvMessage(server, missing));
+		this.name = 'MissingEnvError';
+	}
+}
+
+const normalizeEntryEnv = (
+	entry: IRegistryServerEntry,
+): Readonly<Record<string, string>> | undefined => {
+	const entryEnv = entry.env;
+	if (entryEnv === undefined) return undefined;
+	if (Array.isArray(entryEnv)) {
+		return Object.fromEntries(entryEnv.map((name) => [name, `$${name}`]));
+	}
+	return entryEnv as Readonly<Record<string, string>>;
+};
 
 /** Mutable per-server runtime state behind the status rows. */
 interface IServerRuntime {
@@ -346,6 +390,7 @@ interface IServerRuntime {
 export class ExternalServerRegistry {
 	private readonly runtime = new Map<string, IServerRuntime>();
 	private readonly spawner: StdioSpawner;
+	private readonly hostEnv: Readonly<Record<string, string | undefined>>;
 	private readonly setTimer: SetTimer;
 	private readonly sigkillGraceMs: number;
 	private readonly callTimeoutMs: number;
@@ -354,6 +399,7 @@ export class ExternalServerRegistry {
 
 	constructor(private readonly options: IServerRegistryOptions) {
 		this.spawner = options.spawner ?? nodeStdioSpawner;
+		this.hostEnv = options.hostEnv ?? process.env;
 		this.setTimer = options.setTimer ?? defaultSetTimer;
 		this.sigkillGraceMs =
 			options.sigkillGraceMs ?? DEFAULT_SIGKILL_GRACE_MS;
@@ -417,7 +463,19 @@ export class ExternalServerRegistry {
 				})`,
 			};
 		}
-		const state = this.ensureBooted(server);
+		let state: IServerRuntime;
+		try {
+			state = this.ensureBooted(server);
+		} catch (error) {
+			if (error instanceof MissingEnvError) {
+				return {
+					ok: false,
+					code: error.code,
+					message: error.message,
+				};
+			}
+			throw error;
+		}
 		const transport = state.transport;
 		if (transport === null) {
 			return {
@@ -494,9 +552,20 @@ export class ExternalServerRegistry {
 			waiters: cached?.waiters ?? new Map(),
 		};
 		this.runtime.set(id, state);
+		const normalizedEnv = normalizeEntryEnv(entry);
+		const safeEnv = buildSafeEnv({
+			entry: normalizedEnv === undefined ? {} : { env: normalizedEnv },
+			hostEnv: this.hostEnv,
+			requiredKeys: Object.keys(normalizedEnv ?? {}),
+		});
+		if (!safeEnv.ok) {
+			state.lastError = formatMissingEnvMessage(id, safeEnv.missing);
+			throw new MissingEnvError(id, safeEnv.missing);
+		}
 		const transport = createChildTransport(entry.command, entry.args, {
 			spawner: this.spawner,
 			cwd: this.options.workspaceRoot,
+			env: safeEnv.env,
 			setTimer: this.setTimer,
 			sigkillGraceMs: this.sigkillGraceMs,
 			onClosed: (reason) => {
