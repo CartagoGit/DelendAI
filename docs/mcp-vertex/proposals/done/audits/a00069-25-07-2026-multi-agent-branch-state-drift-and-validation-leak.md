@@ -1,6 +1,6 @@
 ---
 id: a00069
-status: in-progress
+status: done
 type: proposal
 track: audit+multi-agent+state-consistency+proposals-plugin
 date: 2026-07-25
