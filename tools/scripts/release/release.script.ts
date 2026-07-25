@@ -36,7 +36,8 @@
  * fs + spawn shell around it (so it is intentionally not unit-tested).
  */
 import { execFileSync } from 'node:child_process';
-import { readFileSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -54,6 +55,15 @@ import {
 	createQuietLogger,
 	type IReleaseLogger,
 } from './release-logger';
+import {
+	assertTarballsProvided,
+	publishTarballs,
+	type IPublishTarballsInput,
+} from './publish-tarballs.ts';
+import {
+	packRewrittenTarball,
+	type IWorkspaceDepsPlan,
+} from '../publish/workspace-deps.ts';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../../..');
 
@@ -191,29 +201,88 @@ function run(cmd: string, args: readonly string[], cwd: string): void {
 	execFileSync(cmd, args as string[], { cwd, stdio: 'inherit' });
 }
 
-function publishAll(
+const readRegistryOverride = (): string | undefined =>
+	process.env.npm_config_registry ?? process.env.NPM_CONFIG_REGISTRY;
+
+const inspectTarball = (tarballPath: string): void => {
+	const packageJson = execFileSync(
+		'tar',
+		['-xOf', tarballPath, 'package/package.json'],
+		{ encoding: 'utf8' },
+	);
+	if (packageJson.includes('workspace:')) {
+		throw new Error(
+			`verified tarball still contains workspace: dependency ranges: ${tarballPath}`,
+		);
+	}
+};
+
+const createWorkspaceDepsPlan = (plan: IReleasePlan): IWorkspaceDepsPlan => ({
+	targetVersion: plan.to,
+	mcpVertexPackages: new Set(plan.entries.map((entry) => entry.name)),
+});
+
+async function publishAll(
 	tool: 'bun' | 'npm',
 	provenance: boolean,
+	plan: IReleasePlan,
 	logger: IReleaseLogger,
-): void {
+): Promise<void> {
 	if (provenance && tool === 'bun') {
 		logger.warn(
 			'--provenance has no effect with --tool=bun (bun publish does not ' +
 				'support provenance attestations); ignoring. Use --tool=npm.',
 		);
 	}
-	const args =
-		provenance && tool === 'npm'
-			? ['publish', '--provenance']
-			: ['publish'];
-	for (const dir of PUBLISH_ORDER) {
-		logger.info(`\n=== publishing ${dir} (${tool} ${args.join(' ')}) ===`);
-		run(tool, args, join(ROOT, dir));
+	if (tool === 'bun') {
+		const args = ['publish'];
+		for (const dir of PUBLISH_ORDER) {
+			logger.info(
+				`\n=== publishing ${dir} (${tool} ${args.join(' ')}) ===`,
+			);
+			run(tool, args, join(ROOT, dir));
+		}
+		logger.info('\nAll packages published.');
+		return;
 	}
-	logger.info('\nAll packages published.');
+
+	const tarballRoot = mkdtempSync(join(tmpdir(), 'mcp-vertex-release-'));
+	try {
+		const workspacePlan = createWorkspaceDepsPlan(plan);
+		const tarballPaths: string[] = [];
+		for (const dir of PUBLISH_ORDER) {
+			logger.info(`\n=== packing ${dir} for verified npm publish ===`);
+			const tarballPath = await packRewrittenTarball(
+				join(ROOT, dir),
+				workspacePlan,
+				{ outDir: tarballRoot },
+			);
+			inspectTarball(tarballPath);
+			tarballPaths.push(tarballPath);
+		}
+		const publishInput: IPublishTarballsInput = {
+			pkgDir: ROOT,
+			tarballPaths,
+			tool,
+			registry: readRegistryOverride(),
+		};
+		assertTarballsProvided(publishInput);
+		const results = await publishTarballs(publishInput);
+		const failure = results.find((result) => !result.ok);
+		if (failure !== undefined) {
+			throw new Error(
+				failure.stderr === undefined
+					? `npm publish failed for ${failure.tarballPath}`
+					: `npm publish failed for ${failure.tarballPath}: ${failure.stderr}`,
+			);
+		}
+		logger.info('\nAll packages published.');
+	} finally {
+		rmSync(tarballRoot, { recursive: true, force: true });
+	}
 }
 
-function main(): void {
+async function main(): Promise<void> {
 	const flags = parseFlags(process.argv.slice(2));
 	const pkgs = PUBLISH_ORDER.map((dir) => toReleasePkg(dir, readPkg(dir)));
 
@@ -259,18 +328,27 @@ function main(): void {
 		// types. `files: ["dist"]` is what ends up on the registry.
 		logger.info('Building dist before publish (bun run build)…\n');
 		run('bun', ['run', 'build'], ROOT);
-		publishAll(flags.tool, flags.provenance, logger);
+		await publishAll(flags.tool, flags.provenance, plan, logger);
 	} else {
 		logger.info('Pass --publish to publish in order:');
 		logger.info(`  ${PUBLISH_ORDER.join('\n  ')}\n`);
 	}
 }
 
-try {
-	main();
-} catch (err) {
+main().catch((err: unknown) => {
+	if (
+		typeof err === 'object' &&
+		err !== null &&
+		'code' in err &&
+		err.code === 'missing-tarballs'
+	) {
+		console.error(
+			'Refusing --tool=npm publish without verified tarballs. Generate and inspect rewritten tarballs before publishing.',
+		);
+		process.exit(2);
+	}
 	// Audit-h10-fix: surface the actual stack so a release failure is
 	// debuggable from the CI log without re-running locally.
 	console.error(err instanceof Error ? (err.stack ?? err.message) : err);
 	process.exit(1);
-}
+});
