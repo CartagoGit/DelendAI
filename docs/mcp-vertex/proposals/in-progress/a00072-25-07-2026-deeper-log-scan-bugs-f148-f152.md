@@ -305,7 +305,7 @@ Los F148-F152 son bugs **estructurales** del swarm, no cosméticos:
 
 ### S8 — `agent_lock` con claim granularity a file-level (F206)
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/proposals/src/lib/locks/agent-lock-engine.ts`,
   `plugins/proposals/src/lib/locks/file-lock-table.ts`,
   `plugins/proposals/src/lib/locks/contention-detector.ts`.
