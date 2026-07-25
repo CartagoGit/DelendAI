@@ -1,50 +1,52 @@
+/**
+ * f00130 S2 — `api_validate` tool.
+ *
+ * Validates a decoded JSON response against the selected success response
+ * schema for one OpenAPI operation. The tool is read-only; when `specUrl`
+ * is used it loads the spec through the allow-listed web-fetch engine or an
+ * injected fetch seam in tests.
+ */
 import { z } from 'zod';
 
 import type { IToolRegistration } from '@mcp-vertex/core/public';
-import { toolError, toolJson } from '@mcp-vertex/core/public';
+import {
+	summarizeFindings,
+	toolError,
+	toolJson,
+	worstSeverity,
+} from '@mcp-vertex/core/public';
+import {
+	webFetch,
+	type IFetchLike,
+	type IWebFetchResult,
+} from '@mcp-vertex/web-fetch/public';
 
-import { parseOpenApi } from '../spec/openapi';
+import { fetchAndParseSpec, parseOpenApi } from '../spec/openapi';
 import type { IOpenApiOperation, IOpenApiSpec } from '../spec/openapi';
-import { validateResponse } from '../validate';
+import {
+	resolveResponseSchema,
+	validateResponse,
+} from '../validate/response-validator';
 
 export interface IApiValidateToolOptions {
 	readonly namespacePrefix: string;
 	readonly spec?: IOpenApiSpec;
+	readonly defaultAllowList?: readonly string[];
+	readonly fetchImpl?: typeof webFetch;
+	readonly specFetch?: IFetchLike;
 }
 
 const INPUT = z
 	.object({
-		operationId: z.string().min(1).max(200).optional(),
-		method: z
-			.enum(['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'HEAD', 'OPTIONS'])
-			.optional(),
-		path: z.string().min(1).optional(),
-		responseBody: z.unknown(),
-		statusCode: z.number().int().min(100).max(599).optional(),
+		operationId: z.string().min(1).max(200),
+		response: z.unknown(),
 		spec: z.unknown().optional(),
+		specUrl: z.string().url().optional(),
+		allowList: z.array(z.string()).min(1).optional(),
+		timeoutMs: z.number().int().positive().optional(),
+		maxBytes: z.number().int().positive().optional(),
 	})
-	.strict()
-	.superRefine((value, ctx) => {
-		const hasOperationId = value.operationId !== undefined;
-		const hasMethodPath =
-			value.method !== undefined || value.path !== undefined;
-		if (
-			!hasOperationId &&
-			!(value.method !== undefined && value.path !== undefined)
-		) {
-			ctx.addIssue({
-				code: z.ZodIssueCode.custom,
-				message: 'Provide `operationId` or both `method` and `path`.',
-			});
-		}
-		if (hasOperationId && hasMethodPath) {
-			ctx.addIssue({
-				code: z.ZodIssueCode.custom,
-				message:
-					'Use either `operationId` or `method` + `path`, not both.',
-			});
-		}
-	});
+	.strict();
 
 const FINDING = z.object({
 	ruleId: z.string(),
@@ -60,19 +62,28 @@ const FINDING = z.object({
 	fix: z.string().optional(),
 });
 
-const OUTPUT = z.object({
-	ok: z.literal(true),
-	operationId: z.string(),
-	mismatches: z.array(FINDING),
-	summary: z.object({
-		critical: z.number().int().nonnegative(),
-		high: z.number().int().nonnegative(),
-		medium: z.number().int().nonnegative(),
-		low: z.number().int().nonnegative(),
-		info: z.number().int().nonnegative(),
+const OUTPUT = z.union([
+	z.object({
+		ok: z.literal(true),
+		operationId: z.string(),
+		findings: z.array(FINDING),
+		summary: z.object({
+			critical: z.number().int().nonnegative(),
+			high: z.number().int().nonnegative(),
+			medium: z.number().int().nonnegative(),
+			low: z.number().int().nonnegative(),
+			info: z.number().int().nonnegative(),
+		}),
+		worst: z.enum(['critical', 'high', 'medium', 'low', 'info', 'none']),
 	}),
-	worst: z.enum(['critical', 'high', 'medium', 'low', 'info', 'none']),
-});
+	z.object({
+		ok: z.literal(false),
+		error: z.object({
+			reason: z.string(),
+			nextAction: z.string().optional(),
+		}),
+	}),
+]);
 
 const isParsedSpec = (value: unknown): value is IOpenApiSpec => {
 	if (typeof value !== 'object' || value === null || Array.isArray(value)) {
@@ -81,17 +92,79 @@ const isParsedSpec = (value: unknown): value is IOpenApiSpec => {
 	return 'operations' in value;
 };
 
+const installHint = (reason: string, nextAction: string) =>
+	toolError(reason, nextAction);
+
+const resolveSpec = async (
+	args: z.infer<typeof INPUT>,
+	options: IApiValidateToolOptions,
+): Promise<
+	{ spec: IOpenApiSpec } | { error: ReturnType<typeof toolError> }
+> => {
+	if (args.spec !== undefined) {
+		return {
+			spec: isParsedSpec(args.spec)
+				? args.spec
+				: parseOpenApi(args.spec as object),
+		};
+	}
+	if (args.specUrl !== undefined) {
+		const allowList = args.allowList ?? options.defaultAllowList;
+		if (allowList === undefined || allowList.length === 0) {
+			return {
+				error: installHint(
+					'specUrl requires an allowList.',
+					'Pass `allowList: ["api.example.com"]` or pre-load `spec` inline.',
+				),
+			};
+		}
+		if (options.specFetch !== undefined) {
+			const loaded = await fetchAndParseSpec({
+				url: args.specUrl,
+				allowList,
+				fetch: options.specFetch,
+				...(args.timeoutMs === undefined
+					? {}
+					: { timeoutMs: args.timeoutMs }),
+				...(args.maxBytes === undefined
+					? {}
+					: { maxBytes: args.maxBytes }),
+			});
+			return { spec: loaded.spec };
+		}
+		const fetchResult: IWebFetchResult = await (
+			options.fetchImpl ?? webFetch
+		)({
+			url: args.specUrl,
+			allowList,
+			...(args.timeoutMs === undefined
+				? {}
+				: { timeoutMs: args.timeoutMs }),
+			...(args.maxBytes === undefined ? {} : { maxBytes: args.maxBytes }),
+		});
+		if (!fetchResult.ok) {
+			return {
+				error: installHint(
+					`specUrl fetch rejected: ${fetchResult.reason}${fetchResult.detail === undefined ? '' : ` (${fetchResult.detail})`}`,
+					'Check the `allowList` / `specUrl`, or pass `spec` inline.',
+				),
+			};
+		}
+		return { spec: parseOpenApi(fetchResult.body) };
+	}
+	if (options.spec !== undefined) return { spec: options.spec };
+	return {
+		error: installHint(
+			'api_validate needs a spec or specUrl.',
+			'Pass `spec` (inline object) or `specUrl` (URL + allowList).',
+		),
+	};
+};
+
 const findOperation = (
 	spec: IOpenApiSpec,
-	args: z.infer<typeof INPUT>,
-): IOpenApiOperation | undefined => {
-	if (args.operationId !== undefined)
-		return spec.operations[args.operationId];
-	return Object.values(spec.operations).find(
-		(operation) =>
-			operation.method === args.method && operation.path === args.path,
-	);
-};
+	operationId: string,
+): IOpenApiOperation | undefined => spec.operations[operationId];
 
 export const buildApiValidateToolRegistration = (
 	options: IApiValidateToolOptions,
@@ -104,47 +177,54 @@ export const buildApiValidateToolRegistration = (
 			`${options.namespacePrefix}_api_validate`,
 			{
 				description:
-					'Validate a parsed or stringified JSON response body against the matched OpenAPI response schema. Emits normalized findings for missing required fields, extra fields and type mismatches.',
+					'Validate a decoded JSON response against an OpenAPI success response schema. Accepts an inline spec or an allow-listed `specUrl`; returns normalized findings for required fields, type mismatches, enum drift, format errors and extra properties on closed objects.',
 				inputSchema: INPUT,
 				outputSchema: OUTPUT,
 			},
 			async (args: z.infer<typeof INPUT>) => {
-				const spec =
-					args.spec !== undefined
-						? isParsedSpec(args.spec)
-							? args.spec
-							: parseOpenApi(args.spec as object)
-						: options.spec;
-				if (spec === undefined) {
-					return toolError(
-						'api_validate needs a spec.',
-						'Pass `spec` inline or pre-load the spec in the plugin options.',
-					);
-				}
-				const operation = findOperation(spec, args);
+				const loaded = await resolveSpec(args, options);
+				if ('error' in loaded) return loaded.error;
+				const spec = loaded.spec;
+				const operation = findOperation(spec, args.operationId);
 				if (operation === undefined) {
-					return toolError(
-						'Could not match the requested OpenAPI operation.',
-						'Check `operationId`, or pass the exact `method` + `path` pair from the spec.',
+					return installHint(
+						`operationId "${args.operationId}" not in spec.`,
+						`Available operations: ${Object.keys(spec.operations).join(', ') || '(none)'}.`,
 					);
 				}
-				const statusCode = args.statusCode ?? 200;
-				const hasSchema = operation.responses.some(
-					(response) =>
-						(response.status === String(statusCode) ||
-							response.status === 'default') &&
-						response.schema !== undefined,
-				);
-				if (!hasSchema) {
-					return toolError(
-						`No response schema found for status ${statusCode}.`,
-						'Check the OpenAPI responses block or pass the expected `statusCode`.',
+				const schema = resolveResponseSchema(operation);
+				if (schema === undefined) {
+					return installHint(
+						`operationId "${args.operationId}" has no success response schema.`,
+						'Add a JSON success response schema to the OpenAPI spec or choose another operation.',
 					);
 				}
-				return toolJson(
-					validateResponse(operation, args.responseBody, statusCode),
-				);
+				try {
+					const findings = validateResponse(
+						operation,
+						args.response,
+						{
+							schema,
+						},
+					);
+					return toolJson({
+						ok: true,
+						operationId: operation.operationId,
+						findings,
+						summary: summarizeFindings(findings),
+						worst: worstSeverity(findings) ?? 'none',
+					});
+				} catch (error) {
+					return installHint(
+						(error as Error).message,
+						'Use a simpler schema surface or extend the validator before relying on oneOf/anyOf.',
+					);
+				}
 			},
 		);
 	},
 });
+
+export const buildApiValidateToolRegistrations = (
+	options: IApiValidateToolOptions,
+): readonly IToolRegistration[] => [buildApiValidateToolRegistration(options)];
