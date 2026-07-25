@@ -249,7 +249,7 @@ describe('e2e: outputSchema validation over the protocol (N16)', async () => {
 
 		const closed = await client.callTool({
 			name: 'mcp-vertex_proposals_close_slice',
-			arguments: { proposalId: 'f00001', sliceId: 's1' },
+			arguments: { proposalId: 'f00001', sliceId: 's1', force: true },
 		});
 		expect(closed.isError, 'close_slice').toBeFalsy();
 		expect((closed.structuredContent as { closed: boolean }).closed).toBe(
