@@ -49,7 +49,8 @@ export const generateMockFromSchema = (
 	const seedFactory = deps.nextSeed ?? (() => 0);
 	const ctx: IMockContext = {
 		randomize,
-		nextInt: (maxExclusive) => Math.abs(seedFactory()) % Math.max(1, maxExclusive),
+		nextInt: (maxExclusive) =>
+			Math.abs(seedFactory()) % Math.max(1, maxExclusive),
 	};
 	return generate(schema, ctx, '$');
 };
@@ -59,7 +60,11 @@ interface IMockContext {
 	readonly nextInt: (maxExclusive: number) => number;
 }
 
-const generate = (schema: IJsonSchema, ctx: IMockContext, path: string): unknown => {
+const generate = (
+	schema: IJsonSchema,
+	ctx: IMockContext,
+	path: string,
+): unknown => {
 	// 1. Honor explicit `example` first — the spec writer told us
 	//    what they want.
 	if (schema.example !== undefined) {
@@ -102,15 +107,32 @@ const inferType = (schema: IJsonSchema): IJsonSchema['type'] | null => {
 	return null;
 };
 
-const generateString = (schema: IJsonSchema, path: string, ctx: IMockContext): string => {
+const generateString = (
+	schema: IJsonSchema,
+	path: string,
+	ctx: IMockContext,
+): string => {
 	if (schema.format === 'date-time') {
-		return new Date(2024, 0, 1, ctx.nextInt(24), ctx.nextInt(60), ctx.nextInt(60)).toISOString();
+		// When `randomize: false` the host wants a fixed value
+		// (reproducible mocks); when true, mix the seed through
+		// hours/minutes/seconds.
+		if (!ctx.randomize) {
+			return '2024-01-01T00:00:00.000Z';
+		}
+		return new Date(
+			2024,
+			0,
+			1,
+			ctx.nextInt(24),
+			ctx.nextInt(60),
+			ctx.nextInt(60),
+		).toISOString();
 	}
 	if (schema.format === 'date') {
 		return '2024-01-01';
 	}
 	if (schema.format === 'email') {
-		return `${slug(path)}-${ctx.nextInt(1000)}@example.com`;
+		return `${slug(path)}-${ctx.randomize ? ctx.nextInt(1000) : 0}@example.com`;
 	}
 	if (schema.format === 'uuid') {
 		return '00000000-0000-0000-0000-000000000000';
@@ -126,7 +148,7 @@ const generateNumber = (schema: IJsonSchema, ctx: IMockContext): number => {
 	const max = schema.maximum ?? 100;
 	if (ctx.randomize) {
 		const span = Math.max(1, max - min);
-		return min + (ctx.nextInt(span * 100) / 100);
+		return min + ctx.nextInt(span * 100) / 100;
 	}
 	return min;
 };
@@ -141,7 +163,11 @@ const generateInteger = (schema: IJsonSchema, ctx: IMockContext): number => {
 	return min;
 };
 
-const generateArray = (schema: IJsonSchema, ctx: IMockContext, path: string): unknown[] => {
+const generateArray = (
+	schema: IJsonSchema,
+	ctx: IMockContext,
+	path: string,
+): unknown[] => {
 	if (schema.items === undefined) return [];
 	const minItems = schema.minItems ?? 1;
 	const maxItems = schema.maxItems ?? Math.max(minItems, 3);
@@ -153,16 +179,42 @@ const generateArray = (schema: IJsonSchema, ctx: IMockContext, path: string): un
 	);
 };
 
-const generateObject = (schema: IJsonSchema, ctx: IMockContext, path: string): Record<string, unknown> => {
+const generateObject = (
+	schema: IJsonSchema,
+	ctx: IMockContext,
+	path: string,
+): Record<string, unknown> => {
 	const out: Record<string, unknown> = {};
 	const properties = schema.properties ?? {};
 	const requiredKeys = new Set(schema.required ?? []);
 	const keys = Object.keys(properties);
-	// Always include required keys; optionally include optional ones.
+	// Behaviour:
+	//   - Required keys: always included.
+	//   - Optional keys: included when `randomize: true` AND the dice
+	//     says include, OR when `randomize: false` AND the test fixture
+	//     doesn't need them. The test above (`always includes required
+	//     object fields`) sets `randomize: false` and expects the
+	//     optional key to be EXCLUDED. So:
+	//     - randomize: false  → only required keys.
+	//     - randomize: true   → required + dice-rolled optional keys.
 	for (const key of keys) {
 		const isRequired = requiredKeys.has(key);
-		if (!isRequired && ctx.randomize && ctx.nextInt(2) === 0) continue;
-		out[key] = generate(properties[key] as IJsonSchema, ctx, `${path}.${key}`);
+		if (isRequired) {
+			out[key] = generate(
+				properties[key] as IJsonSchema,
+				ctx,
+				`${path}.${key}`,
+			);
+			continue;
+		}
+		// Optional field: include only when the dice says include.
+		if (ctx.randomize && ctx.nextInt(2) === 0) {
+			out[key] = generate(
+				properties[key] as IJsonSchema,
+				ctx,
+				`${path}.${key}`,
+			);
+		}
 	}
 	return out;
 };
@@ -208,11 +260,15 @@ export const generateOperationMock = (
 	const seedFactory = deps.nextSeed ?? ((): number => 0);
 	const ctx: IMockContext = {
 		randomize,
-		nextInt: (maxExclusive) => Math.abs(seedFactory()) % Math.max(1, maxExclusive),
+		nextInt: (maxExclusive) =>
+			Math.abs(seedFactory()) % Math.max(1, maxExclusive),
 	};
 	const responses: IMockedResponse[] = operation.responses.map((response) => {
 		const contentType = response.contentType ?? 'application/json';
-		const body = response.schema === undefined ? null : generate(response.schema, ctx, '$.');
+		const body =
+			response.schema === undefined
+				? null
+				: generate(response.schema, ctx, '$.');
 		return {
 			status: response.status,
 			contentType,
