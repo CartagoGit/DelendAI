@@ -158,6 +158,16 @@ export {
 	PLUGIN_DEFAULTS,
 	resolvePluginOptions,
 } from '../lib/plugins/plugin-defaults';
+export {
+	DEFAULT_SEARCH_HYBRID_WEIGHTS,
+	PACK_DEFAULTS,
+	resolveSearchHybridWeights,
+	STACK_SEARCH_HYBRID_WEIGHTS,
+} from '../lib/plugins/pack-defaults';
+export type {
+	IPackStackId,
+	ISearchHybridWeights,
+} from '../lib/plugins/pack-defaults';
 export { deriveSourceRoots } from '../lib/bootstrap/derive-config';
 export { mergeDerivedConfig } from '../lib/bootstrap/merge-derived-config';
 export {

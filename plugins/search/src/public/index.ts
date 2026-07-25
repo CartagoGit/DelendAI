@@ -23,6 +23,22 @@ export {
 } from '../lib/embed/embedder';
 export type { IEmbedder } from '../lib/embed/embedder';
 export {
+	buildApiEmbedder,
+	EmbedderUnavailableError,
+} from '../lib/embed/build-api-embedder';
+export type {
+	IApiEmbedderFetch,
+	IBuildApiEmbedderOptions,
+} from '../lib/embed/build-api-embedder';
+export {
+	discoverProviders,
+	resolveProviderApiKey,
+} from '../lib/embed/providers';
+export type {
+	IDiscoveredEmbedProvider,
+	IEmbedProviderId,
+} from '../lib/embed/providers';
+export {
 	createEmbedIndexStore,
 	resolveEmbedIndexPath,
 } from '../lib/embed/index-store';
