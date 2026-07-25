@@ -114,6 +114,7 @@ describe('f00100 S4 — contributes-completeness ratchet', () => {
 		// f00107 S3: + plugin activation switchboard.
 		// Configuration Center is the 31st intentionally contributed command.
 		// f00119 S6: auto-agent-selector panel command is the 32nd.
-		expect(contributed.length).toBe(32);
+		// x00072 SEC-001 S1: start-server-untrusted command is the 33rd.
+		expect(contributed.length).toBe(33);
 	});
 });
