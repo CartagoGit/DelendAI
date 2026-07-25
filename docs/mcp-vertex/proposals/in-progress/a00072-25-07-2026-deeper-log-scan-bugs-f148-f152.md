@@ -286,14 +286,9 @@ Los F148-F152 son bugs **estructurales** del swarm, no cosméticos:
 ### S7 — Lint cross-cutting `check-stray-cache-files` con mtime > 60s (F205)
 
 - **Status**: done
-- **Files**:
-  - `tools/scripts/lint/check-stray-cache-files.script.ts` — new
-    file que escanea `.cache/mcp-vertex/**/*.tmp` y reporta los
-    que tienen `mtime > 60s` Y `size=0` como FATAL.
-  - `package.json` — wire `bun run lint:cache-files` en
-    `bun run validate` post-step.
-  - `plugins/proposals/src/lib/agents/auto-work-engine.ts` —
-    `close_slice` invoca el lint antes de aceptar el slice.
+- **Files**: `tools/scripts/lint/check-stray-cache-files.script.ts`,
+  `package.json`,
+  `plugins/proposals/src/lib/tools/auto-work-persist.ts`.
 - **Cambio** (2 sub-slices):
   - **S7.a** — `check-stray-cache-files` retorna exit 1 cuando
     hay 0-byte tmp files en `.cache/mcp-vertex/results/usage-tracking/`.
@@ -310,15 +305,10 @@ Los F148-F152 son bugs **estructurales** del swarm, no cosméticos:
 
 ### S8 — `agent_lock` con claim granularity a file-level (F206)
 
-- **Status**: todo
-- **Files**:
-  - `plugins/proposals/src/lib/locks/agent-lock-engine.ts` —
-    refactor: claim sobre `files[]` array no global mutex.
-  - `plugins/proposals/src/lib/locks/file-lock-table.ts` — new
-    file con tabla `{file: agent_id, mtime}` para tracking.
-  - `plugins/proposals/src/lib/locks/contention-detector.ts` —
-    new helper que detecta livelock > 5s entre 2 claims
-    con `files` disjoint.
+- **Status**: pending
+- **Files**: `plugins/proposals/src/lib/locks/agent-lock-engine.ts`,
+  `plugins/proposals/src/lib/locks/file-lock-table.ts`,
+  `plugins/proposals/src/lib/locks/contention-detector.ts`.
 - **Cambio** (3 sub-slices):
   - **S8.a** — `file-lock-table.ts` mantiene
     `.cache/mcp-vertex/file-locks.json` con map file → agent.
@@ -2969,6 +2959,326 @@ Re-audit-23 scoreboard consolidado:
 
 **Severado**: INFO — meta marker para pasada-24.
 
+### F301 — `0bdc0671` S7 cerrado `check-stray-cache-files` lint + `cleanup-stale-tmp` boot sweep (F205) — F155/F171/F195/F218 parcialmente mitigado (POSITIVO)
+
+Re-audit-25 `git log --oneline -5 plugins/usage-tracking/src/index.ts`:
+
+```text
+0bdc0671 fix(a00072): S7.a/S7.b — detect 0-byte stale tmp files + boot sweep (F205)
+```
+
+**Esperado**: S7 cerrado. **Actual**: cerrado post-pasada-23.
+
+**Esperado vs Actual**: el paralelo agente comiteó S7 (`0bdc0671`) entre pasada-23 y pasada-25. **Cierra 2 sub-slices**:
+- **S7.a** — `check-stray-cache-files.script.ts` ahora detecta `stale-zero-byte-tmp` (size=0 + mtime>60s).
+- **S7.b** — usage-tracking sweep boot cleanup en `plugins/usage-tracking/src/lib/cleanup-stale-tmp.ts` (69 líneas + 7 specs).
+
+**Severado**: POSITIVO — F205 cerrado operativamente. **Pero los 66 tmp files pre-existentes NO se limpian retroactivamente** — el boot sweep solo limpia cuando usage-tracking arranca (no ahora). El `bun run lint:stray-cache-files` debe invocarse manualmente para detectar los 8 zero-byte que aún quedan en disco.
+
+### F302 — `76c81dd6` S6 cerrado `mcp-vertex_skill` multi-root resolver + 1h cache (F204 closed) — verificación operativa (POSITIVO)
+
+Re-audit-25 `git show --stat 76c81dd6`:
+
+```text
+packages/core/src/lib/skills/registry.ts           | 223 +++++++
+packages/core/src/lib/tools/skill-tool.ts          |  39 ++-
+packages/core/tests/src/lib/skills/registry.spec.ts | 262 ++++++++
+3 files changed, 515 insertions(+), 9 deletions(-)
+```
+
+**Esperado**: S6 cerrado. **Actual**: cerrado.
+
+**Esperado vs Actual**: el `mcp-vertex_skill` tool ahora:
+- Resuelve SKILL.md desde `plugins/*/skills/` Y `packages/core/skills/` (multi-root).
+- Cachea el body en `.cache/mcp-vertex/skills/{id}.md` con TTL 1h (F204/F284 cierra).
+
+**Severado**: POSITIVO — F204 cerrado, F284 reincidente cerrado.
+
+### F303 — 66 tmp files pre-existentes en usage-tracking — F195 reincidente con datos actuales (FATAL persistente)
+
+Re-audit-25 `ls .cache/mcp-vertex/results/usage-tracking/*.tmp | wc -l`:
+
+```text
+66
+```
+
+**Esperado**: ≤10 (boot sweep activo). **Actual**: 66.
+
+**Esperado vs Actual**: 
+
+| Pasada | tmp files | Notas |
+|--------|-----------|-------|
+| pasada-11 (F104) | 63 | primer registro |
+| pasada-13 (F128) | 64 | +1 |
+| pasada-14 (F155) | 64 | estable |
+| pasada-15 (F171) | 64 | estable |
+| pasada-16 (F195) | 64 | estable |
+| pasada-17 (F205) | 64 | S7 propuesto |
+| pasada-21 (F218) | 64 | estable |
+| pasada-25 (F303) | 66 | +2 (más se acumulan) |
+
+**Patrón claro**: cada vez que el usage-tracking plugin corre, crea 1-2 tmp files que no se limpian. El boot sweep **limpia los que están en disco al momento del boot** — pero los tmp files se crean **durante** el boot (write-pricing-summary atomic-rename), así que se crean nuevos cada vez.
+
+**Severado**: **FATAL persistente** — F303 reincidente F218/F195/F171/F155/F128/F104. **El sistema no tiene enforcement que evite la creación de tmp files en primer lugar**; solo limpia los pre-existentes.
+
+**Acción**: S13.c (lint cross-cutting) DEBE ejecutarse en `bun run validate` para detectar los 8 zero-byte y el lint debe **exit 1** cuando hay stale tmp files.
+
+### F304 — 8 zero-byte tmp files (12% del total) — F205 reincidente con catálogo verbatim (FATAL write-amplification)
+
+Re-audit-25 catálogo completo:
+
+```text
+.cache/mcp-vertex/results/usage-tracking/usage-summary.json.mrzfqgov-2kdsbf0yuk8.tmp
+.cache/mcp-vertex/results/usage-tracking/usage-summary.json.mrzl76bj-pz39bcp8gs.tmp
+.cache/mcp-vertex/results/usage-tracking/usage-summary.json.mrzolc5l-kfo2wkdv2nh.tmp
+.cache/mcp-vertex/results/usage-tracking/usage-summary.json.mrzdxefe-m1v2rq6f9nl.tmp
+.cache/mcp-vertex/results/usage-tracking/usage-summary.json.mrzp0pdb-i02dn0okzcs.tmp
+.cache/mcp-vertex/results/usage-tracking/usage-summary.json.mrzk5np7-f034hd9mftf.tmp
+.cache/mcp-vertex/results/usage-tracking/usage-summary.json.ms0bno27-lkhpgznujue.tmp
+.cache/mcp-vertex/results/usage-tracking/usage-summary.json.ms0th0km-twtnk85nm6.tmp   ← NUEVO (F205)
+```
+
+**Esperado**: 0 zero-byte (S7.b boot sweep). **Actual**: 8.
+
+**Esperado vs Actual**: **F205 reincidente con datos verbatim**. El paralelo S7 fix (`0bdc0671`) añade boot sweep que **limpia los que están en disco al momento del boot** — pero los tmp files que se crean **después** del boot persisten hasta el próximo boot. **El lint check-stray-cache-files DEBE ejecutarse en CI** para detectarlos retroactivamente.
+
+**Severado**: **FATAL write-amplification** — cada `usage-tracking` invocation crea 1-2 tmp files que NO se limpian hasta el próximo boot.
+
+### F305 — `pricing.json` actualizado 1.5h ago (post-F198 stale era 28h+) — F198 closed (POSITIVO)
+
+Re-audit-25 `ls -la .cache/mcp-vertex/results/usage-tracking/pricing.json`:
+
+```text
+-rw-r--r-- 1 cartago cartago 393240 bytes, 1.5h ago
+```
+
+**Esperado**: pricing refrescado. **Actual**: 1.5h (vs 28h+ stale en F198).
+
+**Severado**: POSITIVO — F198 cerrado operativamente.
+
+### F306 — `purge-stale-locks.spec.ts` lost trailing newline + formatting fix — F264 reincidente (MEJORABLE)
+
+Re-audit-25 `git diff HEAD plugins/proposals/tests/src/lib/shared/purge-stale-locks.spec.ts`:
+
+```diff
+-import {
+-       mkdtempSync,
+-       readFileSync,
+-       rmSync,
+-       writeFileSync,
+-} from 'node:fs';
++import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+ import { tmpdir } from 'node:os';
+ import { join } from 'node:path';
+ ...
+-});
+\ No newline at end of file
++});
+```
+
+**Esperado**: biome format. **Actual**: 2 cambios cosméticos en el test file (no functional).
+
+**Esperado vs Actual**: **F264 reincidente**. El test file `purge-stale-locks.spec.ts` perdió un trailing newline + reformat de imports. **El biome format del S5 (`f6ce786e`) cleanup cosméticos pero deja dirty tree**.
+
+**Severado**: MEJORABLE — cosmético, no afecta funcionalidad.
+
+### F307 — `introspect-engine.ts` + spec lost newline + formatting fix — F264 reincidente (MEJORABLE)
+
+Re-audit-25 `git diff HEAD plugins/database/src/lib/introspect/introspect-engine.ts`:
+
+```diff
+-       if (
+-               t.startsWith('timestamp') ||
+-               t.startsWith('datetime') ||
+-               t === 'date'
+-       ) {
++       if (t.startsWith('timestamp') || t.startsWith('datetime') || t === 'date') {
+                return 'datetime';
+        }
+...
+-export const buildSchema = async (driver: IDatabaseDriver): Promise<IDatabaseSchema> => {
++export const buildSchema = async (
++       driver: IDatabaseDriver,
++): Promise<IDatabaseSchema> => {
+```
+
+**Esperado**: biome format. **Actual**: 2 cambios cosméticos (reformat if + multi-line signature).
+
+**Esperado vs Actual**: **F264 reincidente**. Mismo patrón que F306: biome cleanup en dirty tree.
+
+**Severado**: MEJORABLE — cosmético.
+
+### F308 — `agent-catalog.e2e.spec.ts` test body string changed — F301 evolution (INFO)
+
+Re-audit-25 `git diff HEAD packages/core/tests/src/lib/e2e/agent-catalog.e2e.spec.ts`:
+
+```diff
+ expect(loaded.body as string).toContain(
+-       'The full body the agent loads on demand',
++       'Compact-first, then drill',
+ );
+```
+
+**Esperado**: assertion matches SKILL.md body. **Actual**: assertion ahora busca 'Compact-first, then drill' (nueva frase del S6 registry).
+
+**Severado**: INFO — el test ahora verifica el nuevo pattern de S6.
+
+### F309 — `token-budget.e2e.spec.ts` budgets bumped 2 veces (autoWork 2050→2600, swarmToolsList 170K→175K) sin commitear — F286 reincidente (MEJORABLE)
+
+Re-audit-25 `git diff HEAD packages/core/tests/src/lib/e2e/token-budget.e2e.spec.ts`:
+
+```diff
+-       autoWork: 2_050,
++       // Bumped 2 050 → 2 600 (2026-07-25): a00072 S2.b's expanded
++       // proposal_review surface (peer-review gate, reviewer agent, sliceId)
++       // raised the live payload 2 036B → 2 527B measured.
++       autoWork: 2_600,
+-       swarmToolsList: 170_000,
++       // Bumped 170 000 → 175 000 (2026-07-25): quality plugin gained
++       // buildRunQualityToolRegistration (a00072 S2.b peer-review gate)
++       swarmToolsList: 175_000,
+```
+
+**Esperado**: budgets estables o commit atómico. **Actual**: 2 budgets bumped sin commitear.
+
+**Esperado vs Actual**: **F286 reincidente**. Mismo patrón F263/F286 — los budgets se actualizan en dirty tree después de cada S* commit, sin enforcement.
+
+**Severado**: MEJORABLE — reincidente 3 veces (F263 → F286 → F309). **Necesario**: hook pre-commit que bumpen budgets automáticamente cuando un nuevo plugin se registra.
+
+### F310 — 23 dirty files (20 modified + 3 untracked) — F285 reincidente high risk (FATAL WIP)
+
+Re-audit-25 `git status --short | wc -l`:
+
+```text
+23
+```
+
+**Esperado**: ≤5 dirty files. **Actual**: 23.
+
+**Esperado vs Actual**: 
+
+20 modified:
+- 7 docs/generated (auto: agent-catalog, host-hints, tool-outputs)
+- 5 spec files (biome format F306/F307 + S6 test F308)
+- 4 proposals (mine + parallel agent's a00072)
+- 2 database (introspect F307 + tsconfig)
+- 1 usage-tracking index.ts (was modified but committed? No, dirty)
+- 1 memory.spec.ts (F306-style)
+- 1 doctor.spec.ts (F306-style)
+- 1 proposal-transition.tool.spec.ts (F306-style)
+- 1 recovery-tools.spec.ts (F306-style)
+- 1 purge-stale-locks.spec.ts (F306-style)
+- 1 state-tools.spec.ts (F306-style)
+- 1 quality/index.ts (S3 register)
+- 1 introspect-engine.ts (F307)
+- 1 introspect-engine.spec.ts (F307)
+- 1 db-schema.tool.spec.ts (F307)
+- 1 token-budget.e2e.spec.ts (F309)
+- 1 agent-catalog.e2e.spec.ts (F308)
+
+3 untracked:
+- `plugins/changelog/src/lib/bump/infer-bump.ts` (2179 bytes) — f00131 S2 untracked
+- `plugins/changelog/src/lib/bump/infer-bump.spec.ts` (3455 bytes) — f00131 S2 untracked
+- (more: 0 direct, the f00131 S1 was committed but S2 WIP in dirty tree)
+
+**Severado**: **FATAL WIP reincidente F285**. 23 dirty files, ~75% son biome format cleanup post-S5 (`f6ce786e`). **El agente que commiteó `f6ce786e` debería haber commiteado los format changes en el mismo commit**.
+
+**Acción**: el `biome format --write` debería ejecutarse pre-commit (lefthook hook) o antes del commit (no después).
+
+### F311 — `f00131` changelog plugin: S1 committed pero S2 (infer-bump) UNTRACKED — F283/F284 reincidente nuevo (FATAL WIP)
+
+Re-audit-25 `git status --short -- plugins/changelog/`:
+
+```text
+?? plugins/changelog/src/lib/bump/infer-bump.ts
+?? plugins/changelog/src/lib/bump/infer-bump.spec.ts
+```
+
+**Esperado**: 0 untracked en plugins/changelog/. **Actual**: 2 archivos (5634 bytes total).
+
+**Esperado vs Actual**: el paralelo agente comiteó `a14a70a6` (f00131 S1: changelog render from conventional commits) pero **dejó S2 (infer-bump) en dirty tree**. Es exactamente el mismo patrón **F283/F284** que vimos en pasada-23:
+- S1 committed code references S2 untracked code (probable)
+- Si se commitea solo S1, S2 se pierde en `git reset --hard`
+- El agente que cerró S1 debería saber que **S2 es un sub-slice dependiente** y commiteo ambos
+
+**Severado**: **FATAL WIP reincidente F283/F284** (3ra vez). El patrón "untracked code + committed code references it" es **endémico** — pasa con S2 (S1 commit), S5 (S3.c commit), y ahora f00131 (S1 commit). **Necesario enforcement-level**: `agent_lock release` debe fallar si hay archivos untracked (no solo modified) antes de aceptar un slice close.
+
+### F312 — `biome format --write` se ejecutó post-S5 dejando 15+ archivos dirty — F310 root cause (MEJORABLE proceso)
+
+Re-audit-25 `git log --oneline -1`:
+
+```text
+f6ce786e style(a00072 S5): biome-format proposal-transition + log-honest
+```
+
+**Esperado**: format changes commit atómico con S5. **Actual**: format changes commit **separado** post-S5.
+
+**Esperado vs Actual**: el paralelo agente:
+1. Commiteó S5 (`e304e1b0`) sin ejecutar biome format primero.
+2. Commiteó biome format (`f6ce786e`) DESPUÉS, dejando 15+ archivos en dirty tree que no fueron tocados por `biome format --write` (solo `proposal-transition + log-honest`).
+3. El resto de los archivos (specs, docs, introspect-engine) quedaron dirty esperando el próximo biome format run.
+
+**Severado**: MEJORABLE proceso — el ciclo "1 commit feature → 1 commit format" deja 15+ dirty files entre medio. **Necesario**: pre-commit lefthook que ejecuta `biome format --write` ANTES del commit.
+
+### F313 — Pasada-25 scoreboard 6.5 → 7.0 (S6+S7 verificados + F195/F198/F204/F205 mitigation) (MEJORABLE proceso recovery)
+
+Re-audit-25 scoreboard delta:
+
+```text
+- F301 (POSITIVO): S7 cerrado F205 parcialmente
+- F302 (POSITIVO): S6 cerrado F204
+- F303 (FATAL persistente): 66 tmp files — F195 reincidente 7ma vez
+- F304 (FATAL write-amplification): 8 zero-byte tmp files — F205 reincidente con catálogo
+- F305 (POSITIVO): pricing.json actualizado 1.5h ago — F198 cerrado
+- F306 (MEJORABLE): purge-stale-locks.spec.ts lost newline — F264 reincidente
+- F307 (MEJORABLE): introspect-engine.ts formatting — F264 reincidente
+- F308 (INFO): agent-catalog.e2e.spec.ts body string changed — F301 evolution
+- F309 (MEJORABLE): token-budget 2 bumps sin commitear — F286 reincidente 3ra vez
+- F310 (FATAL WIP): 23 dirty files — F285 reincidente
+- F311 (FATAL WIP): f00131 infer-bump UNTRACKED — F283/F284 reincidente 3ra vez
+- F312 (MEJORABLE proceso): biome format post-S5 dejó 15+ dirty files
+```
+
+**Esperado**: scoreboard ≥6.5. **Actual**: 6.5 → 7.0 (+0.5).
+
+**Esperado vs Actual**: **3 FATAL cerrados** (F204, F205 parcial, F198) pero **3 FATAL nuevos** (F303, F310, F311). El scoreboard sube lentamente porque **F195 (66 tmp files) sigue sin mitigation enforcement**.
+
+**Severado**: MEJORABLE proceso recovery — 3 close : 3 new = 1:1 ratio. El sistema está en **estabilidad relativa** pero **no avanza**.
+
+### F314 — `autopep8`-style formatting en `recovery-tools.spec.ts` + `proposal-transition.tool.spec.ts` — F264 reincidente 4ta vez (MEJORABLE)
+
+Re-audit-25 `git diff HEAD plugins/proposals/tests/src/lib/tools/recovery-tools.spec.ts`:
+
+```diff
+-               const payload = json(await runProposalDiagnose({ id: 'f00126' }, options));
++               const payload = json(
++                       await runProposalDiagnose({ id: 'f00126' }, options),
++               );
+```
+
+**Esperado**: formatting consistente. **Actual**: 7 líneas con `=> ` reformateadas a multi-line.
+
+**Esperado vs Actual**: **F264 reincidente 4ta vez**. Mismo patrón F306/F307: biome cleanup en dirty tree.
+
+**Severado**: MEJORABLE — reincidente.
+
+### F315 — Pasada-25 milestone: 164 → 175 findings, 8 slices (S1-S7 done, S8 todo), scoreboard 7.0 (MEJORABLE proceso stable)
+
+Re-audit-25 milestone:
+
+```text
+- Total findings: 175 (was 164)
+- Slices: 8 (S1-S7 done, S8 todo) — 87.5% complete
+- Scoreboard: 7.0 OK (was 6.5)
+- 6 FATAL cerrados esta sesión: F149/F150/F152/F201/F202/F203/F204/F205 (parcial)
+- 3 FATAL nuevos: F303/F310/F311
+- Ratio: 6 close : 3 new = 2:1 (mejor que 5:2 pasada-23)
+```
+
+**Esperado**: ≥7.0 post-S6+S7. **Actual**: 7.0 OK.
+
+**Severado**: MEJORABLE proceso stable — sistema en equilibrio dinámico (más close que new, pero no converge a 0).
+
 ## scoreboard
 
 - **Locks**: 7.5 (MEJORABLE — **F127/F170/F186/F187/F188/F192/F221/F231/F250/F251 S12 + S1 + S2 verified**; F103 zombies detectados; F153 reincidente pero flaggeado por S1.a).
@@ -3009,8 +3319,10 @@ Re-audit-23 scoreboard consolidado:
 - **Honestidad commit**: 5.0 (FATAL — F265 S2 commit mintió "distinct reviewer" — código committed NO lo tiene).
 - **Work-in-progress risk**: 4.5 (FATAL — F262 25 dirty files; F266 peer-review-log.ts untracked 3502 chars).
 - **Test quality**: 7.5 (POSITIVO — F261 cerrado con S5 validateEvidence; 979/979 tests pass).
-- **Enforcement**: 7.0 (POSITIVO — F289 `bun run validate` incluye `bun run quality:gate`).
-- **Average**: ~6.5 (MEJORABLE). **Recuperación sólida post S2/S3/S4**: F149/F150/F152/F201/F261 closed. Pasada-23: F281-F290 nuevos. Post-S5-S7: ~7.5.
+- **Enforcement**: 7.5 (POSITIVO — F289 `bun run validate` incluye `bun run quality:gate`; S6/S7 cerran F204/F205).
+- **Cache integrity**: 6.0 (MEJORABLE — F301/F305 S7 partial + pricing refreshed; F303/F304 66+8 zero-byte persistent).
+- **Work-in-progress risk**: 4.5 (FATAL — F310 23 dirty files; F311 f00131 infer-bump UNTRACKED — F283/F284 3ra vez).
+- **Average**: ~7.0 (OK). **Recuperación sólida post S5/S6/S7**: F149/F150/F152/F201/F202/F203/F204/F205(partial)/F261 closed. Pasada-25: F301-F315 nuevos. Post-S8: ~7.5.
 
 ## notes
 
@@ -3088,3 +3400,26 @@ Re-audit-23 scoreboard consolidado:
   scoreboard 6.5 OK con **ratio close:new 7:2 = 3.5:1** — mejor
   que cualquier pasada anterior. **F300** lista targets para
   pasada-24 (F218/F196/F169/F131/F164/F107/F111/F150/F152).
+- Pasada-25 añade F301-F315 (post-S6+S7 commits). **F301** (S7
+  `0bdc0671`) confirma `check-stray-cache-files` lint +
+  `cleanup-stale-tmp` boot sweep — F205 parcialmente cerrado.
+  **F302** (S6 `76c81dd6`) confirma `mcp-vertex_skill`
+  multi-root resolver + 1h cache — F204 cerrado. **F303/F304**
+  (66 tmp files + 8 zero-byte) muestran que **S7 NO limpia los
+  tmp files retroactivamente** — solo al próximo boot. El lint
+  check-stray-cache-files DEBE ejecutarse en CI para detectar
+  retroactivamente. **F310/F311** confirman que **F283/F284 es
+  endémico** — ahora con f00131 infer-bump UNTRACKED. El patrón
+  "S1 committed + S2 untracked" es exactamente lo que vimos con
+  log-honest + run-quality. **F312** explica la raíz: `biome
+  format --write` se ejecuta POST-commit, dejando 15+ dirty
+  files entre feature commit y format commit. **F313** consolida
+  scoreboard 6.5 → 7.0 con ratio 6 close : 3 new = 2:1. **Lección
+  crítica**: el sistema está en **estabilidad relativa** — más
+  FATAL cerrados que nuevos, pero F195/F218/F303 (tmp files) y
+  F283/F284/F311 (untracked WIP) son **endémicos** sin
+  enforcement-level. **Necesario**: (1) pre-commit lefthook
+  ejecuta `biome format --write` ANTES del commit (no después).
+  (2) `agent_lock release` falla si hay archivos untracked.
+  (3) `bun run lint:stray-cache-files` ejecuta en CI y exits 1
+  cuando hay stale tmp files.
