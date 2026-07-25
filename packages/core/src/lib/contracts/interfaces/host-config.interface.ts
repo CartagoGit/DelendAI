@@ -97,12 +97,20 @@ export interface IHostObservability {
 	 * `<prefix>_metrics` tool; programmatic hosts opt in by passing one.
 	 */
 	readonly metricsRegistry?: IMetricsRegistry | undefined;
+	/**
+	 * `elapsedMs` is the wall-clock duration of the handler call
+	 * (success or failure), always fired exactly once in the
+	 * handler's `finally` block. Distinct from `onToolCancel`'s
+	 * `elapsedMs`, which fires at most once and only when the
+	 * client aborts mid-flight.
+	 */
 	readonly onToolCall?:
 		| ((
 				toolName: string,
 				args: unknown,
 				result: unknown,
 				error?: unknown,
+				elapsedMs?: number,
 		  ) => Promise<void> | void)
 		| undefined;
 	readonly onToolStart?:

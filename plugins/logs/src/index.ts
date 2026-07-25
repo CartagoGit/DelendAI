@@ -1,50 +1,112 @@
+import { randomUUID } from 'node:crypto';
+
 import { joinRel, definePlugin } from '@mcp-vertex/core/public';
 import { z } from 'zod';
 
 import { createLogStore } from './lib/services/log-store';
-import { normalizeEvent } from './lib/services/normalize-event';
+import {
+	extractAgentHint,
+	extractFilesHint,
+	isErrorOutcome,
+	normalizeEvent,
+	type ILogEvent,
+} from './lib/services/normalize-event';
 import { buildLogToolRegistrations } from './lib/tools';
+
+// Error-stream lines are rarer and higher-value than the noisy main
+// timeline (they exist specifically to hold a full stack trace and
+// call context) — worth a bigger per-line budget before truncation
+// kicks in.
+const ERROR_STORE_MAX_LINE_BYTES = 32 * 1024;
+
+/** WeakMap requires an object key; a primitive/undefined args value
+ *  (rare — schema-less tools) just means no call-id correlation. */
+const asCorrelationKey = (value: unknown): object | null =>
+	typeof value === 'object' && value !== null ? value : null;
+
+const errorMessageOf = (error: unknown): string | undefined => {
+	if (error instanceof Error) return error.message;
+	if (typeof error === 'string') return error;
+	return undefined;
+};
 
 export default definePlugin({
 	name: 'logs',
 	version: '0.1.0',
 	describe:
-		'Persistent append-only, secret-redacted MCP event log with query, tail, subscribe, correlate and redaction audit tools.',
+		'Persistent append-only, secret-redacted MCP event log with query, tail, subscribe, correlate, curated error-stream and redaction audit tools.',
 	// The log is an accumulated record, not derivable cache — deleting it
 	// loses real history. See IMcpPlugin#cacheNamespace.
 	cacheNamespace: 'results',
 	optionsSchema: z.object({
-		retentionDays: z.number().optional(),
+		retentionCount: z.number().optional(),
 	}),
 	async register(ctx) {
 		const logsDir = ctx.workspace.resolve(joinRel(ctx.cacheDir, 'logs'));
-		const store = createLogStore(logsDir);
-		const retentionDays =
-			typeof ctx.options.retentionDays === 'number'
-				? ctx.options.retentionDays
-				: 30;
+		const errorLogsDir = ctx.workspace.resolve(
+			joinRel(ctx.cacheDir, 'logs-errors'),
+		);
+		const [mainStore, errorStore] = await Promise.all([
+			createLogStore(logsDir),
+			createLogStore(errorLogsDir, {
+				maxLineBytes: ERROR_STORE_MAX_LINE_BYTES,
+			}),
+		]);
+		const retentionCount =
+			typeof ctx.options.retentionCount === 'number'
+				? ctx.options.retentionCount
+				: 10;
 
-		// f00072 S4: register log retention as DATA against the shared
-		// cache-eviction registry instead of an inline one-shot `gc()`.
-		// The `logs/*.jsonl` files are date-named (`YYYY-MM-DD.jsonl`),
-		// so the registry's `olderThanDays` strategy reads the date from
-		// the filename — same 30-day default, now dry-run aware and run
-		// by the boot sweep / `cache_gc` rather than only once at boot.
-		// Backward compatible: hosts that DON'T load the `cache` plugin
-		// still get the sweep on boot (the core runs the registry once),
-		// and a host that wants the old eager behaviour keeps the same
-		// retention default.
+		// Pairs a `tool-started` line with its eventual `tool-completed`/
+		// `tool-failed`/`tool-cancelled` line via a per-invocation id.
+		// Without this, two concurrent calls to the SAME tool (routine in
+		// a multi-agent swarm) are indistinguishable in the log — both
+		// share the identical `taskId` (the tool name), so there is no
+		// way to tell which start belongs to which outcome. Keyed by the
+		// args object identity, which core hands to every hook for one
+		// invocation unchanged (confirmed against `create-mcp-project.ts`'s
+		// `wrap()`), so concurrent calls to the same tool never collide.
+		const inFlightCallIds = new WeakMap<object, string>();
+
+		// Every event lands in the main timeline (`logs/*.jsonl`); any
+		// event whose outcome didn't cleanly reach `ok`/`idle` ALSO lands
+		// in the curated error stream (`logs-errors/*.jsonl`) with full
+		// context (elapsedMs, error message + stack, args). The error
+		// stream is what an audit reads first to know where to look
+		// before opening a single source file — see the
+		// `mcp-vertex-audit-playbook` skill's pre-flight step.
+		const appendEvent = async (event: ILogEvent): Promise<void> => {
+			await mainStore.appendEvent(event);
+			if (isErrorOutcome(event.outcome)) {
+				await errorStore.appendEvent(event);
+			}
+		};
+
+		// f00072 S4 / rotation rework: register retention as DATA against
+		// the shared cache-eviction registry instead of an inline
+		// one-shot `gc()`. Both streams keep the newest N *files*
+		// (`keepLastN`, one file per day) rather than aging out by
+		// calendar date — a slow week doesn't lose last month's only
+		// failure, and a busy week doesn't keep 30 days of noise. Each
+		// stream is retained independently so a burst of errors can't
+		// starve the main timeline's retention window or vice versa.
 		ctx.cacheEvictionRegistry?.register({
 			id: 'logs-retention',
 			owner: 'logs',
 			path: 'logs/*',
-			when: { kind: 'olderThanDays', days: retentionDays },
+			when: { kind: 'keepLastN', n: retentionCount },
+		});
+		ctx.cacheEvictionRegistry?.register({
+			id: 'logs-errors-retention',
+			owner: 'logs',
+			path: 'logs-errors/*',
+			when: { kind: 'keepLastN', n: retentionCount },
 		});
 
 		// f00111 S2: one boot marker per server process. Sessions from a
 		// stale host and the live one interleave in the same date file;
 		// this line is what tells them apart when debugging.
-		void (await store).appendEvent(
+		await appendEvent(
 			normalizeEvent('server-started', {
 				taskId: `pid-${process.pid}`,
 				pid: process.pid,
@@ -55,7 +117,10 @@ export default definePlugin({
 		);
 
 		return {
-			tools: buildLogToolRegistrations(ctx.namespacePrefix, await store),
+			tools: buildLogToolRegistrations(ctx.namespacePrefix, {
+				main: mainStore,
+				errors: errorStore,
+			}),
 			knowledge: [
 				{
 					id: 'logs-operational-event-log',
@@ -63,46 +128,87 @@ export default definePlugin({
 					body: [
 						'# Operational event log',
 						'',
-						'The logs plugin persists redacted JSONL events under `.cache/mcp-vertex/results/logs/`.',
-						'It captures tool start/completion/failure/cancellation through core hooks and exposes read-only tools for query, tail and correlation.',
-						'A `server-started` event marks each host boot (pid + workspace), and `tool-cancelled` records a client-side abort of an in-flight call with its elapsed ms.',
+						'The logs plugin persists redacted JSONL events under `.cache/mcp-vertex/results/logs/` (every event) and ALSO under `.cache/mcp-vertex/results/logs-errors/` (only events whose outcome is not `ok`/`idle` — failed, timed-out, dead, cancelled or unknown).',
+						'It captures tool start/completion/failure/cancellation through core hooks with real detail: `elapsedMs` for every completed/failed call (not just cancellations), the error `.stack` when available, a `callId` in `meta` pairing a `tool-started` line to its eventual outcome even when the same tool runs concurrently (routine in a multi-agent swarm), and best-effort `agent`/`files` fields extracted from the call args (and result, for files) — populated whenever the tool itself takes an `agent`/`agentName` or `path`/`file`/`filePath`/`files`/`paths` argument.',
+						'`agent` and `files` are top-level fields on every event (not buried in `meta`), so `<prefix>_query`/`<prefix>_tail`/`<prefix>_correlate` can filter or scan by them even with `includeMeta:false` — and a `tool-failed` summary already reads e.g. `tool-failed: proposals_agent_lock — lock held by another agent (812ms)`, no second call needed just to see what broke.',
+						'Both streams are day-rotated JSONL, each retained independently to the newest `retentionCount` files (default 10, oldest dropped first) — history from earlier sessions survives as long as it fits that window.',
+						'A `server-started` event marks each host boot (pid + workspace).',
+						'`<prefix>_errors_tail` is the fast path for "where do I look for bugs": it reads ONLY the curated error stream, with full `meta` (args/result/error/stack/callId) included by default.',
 					].join('\n'),
 				},
 			],
-			onToolStart: async (toolName, args) =>
-				(await store).appendEvent(
+			onToolStart: async (toolName, args) => {
+				const callId = randomUUID();
+				const key = asCorrelationKey(args);
+				if (key) inFlightCallIds.set(key, callId);
+				return appendEvent(
 					normalizeEvent('tool-started', {
 						toolName,
 						taskId: toolName,
+						callId,
+						agent: extractAgentHint(args),
+						files: extractFilesHint(args, undefined),
 						args,
 						summary: `tool-started: ${toolName}`,
 					}),
-				),
-			onToolCall: async (toolName, args, result, error) =>
-				(await store).appendEvent(
+				);
+			},
+			onToolCall: async (toolName, args, result, error, elapsedMs) => {
+				const key = asCorrelationKey(args);
+				const callId = key ? inFlightCallIds.get(key) : undefined;
+				if (key) inFlightCallIds.delete(key);
+				const roundedElapsed =
+					typeof elapsedMs === 'number'
+						? Math.round(elapsedMs)
+						: undefined;
+				const durationSuffix =
+					roundedElapsed !== undefined
+						? ` (${roundedElapsed}ms)`
+						: '';
+				const message = errorMessageOf(error);
+				const summary = error
+					? `tool-failed: ${toolName}${message ? ` — ${message}` : ''}${durationSuffix}`
+					: `tool-completed: ${toolName}${durationSuffix}`;
+				return appendEvent(
 					normalizeEvent(error ? 'tool-failed' : 'tool-completed', {
 						toolName,
 						taskId: toolName,
+						callId,
+						agent: extractAgentHint(args),
+						files: extractFilesHint(args, result),
 						args,
 						result,
-						error: error instanceof Error ? error.message : error,
-						summary: `${error ? 'tool-failed' : 'tool-completed'}: ${toolName}`,
+						error:
+							error instanceof Error
+								? { message: error.message, stack: error.stack }
+								: error,
+						elapsedMs: roundedElapsed,
+						summary,
 					}),
-				),
+				);
+			},
 			// f00111 S2: client aborted the call while the handler was
 			// running. The handler's own completion/failure still logs
 			// separately when it settles — both lines together tell whether
-			// the cancel raced a fast tool or interrupted a slow one.
-			onToolCancel: async (toolName, args, elapsedMs) =>
-				(await store).appendEvent(
+			// the cancel raced a fast tool or interrupted a slow one. Does
+			// NOT clear `inFlightCallIds`: the completion/failure still
+			// needs the same `callId` when it settles later.
+			onToolCancel: async (toolName, args, elapsedMs) => {
+				const key = asCorrelationKey(args);
+				const callId = key ? inFlightCallIds.get(key) : undefined;
+				return appendEvent(
 					normalizeEvent('tool-cancelled', {
 						toolName,
 						taskId: toolName,
+						callId,
+						agent: extractAgentHint(args),
+						files: extractFilesHint(args, undefined),
 						args,
 						elapsedMs: Math.round(elapsedMs),
 						summary: `tool-cancelled: ${toolName} after ${Math.round(elapsedMs)}ms`,
 					}),
-				),
+				);
+			},
 		};
 	},
 });
