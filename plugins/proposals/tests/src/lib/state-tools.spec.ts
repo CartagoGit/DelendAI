@@ -11,6 +11,10 @@ import {
 	runAgentLockEngine,
 } from '@mcp-vertex/proposals/lib/locks/agent-lock-engine';
 import {
+	recordPeerReviewBypass,
+	resetPeerReviewBypassLog,
+} from '@mcp-vertex/proposals/lib/shared/peer-review-bypass-log';
+import {
 	buildStateHealthRegistration,
 	buildStateRepairRegistration,
 	type IStateToolOptions,
@@ -36,6 +40,7 @@ describe('state_health / state_repair [N15]', async () => {
 	beforeEach(() => {
 		dir = mkdtempSync(join(tmpdir(), 'state-'));
 		resetAgentLockSessionBalance();
+		resetPeerReviewBypassLog();
 		opts = {
 			namespacePrefix: 'proposals',
 			lockPathAbs: join(dir, '.cache/agents.lock.json'),
@@ -58,6 +63,7 @@ describe('state_health / state_repair [N15]', async () => {
 		expect(out.locks.sessionClaims).toBe(0);
 		expect(out.locks.sessionReleases).toBe(0);
 		expect(out.locks.sessionImbalance).toBe(0);
+		expect(out.peerReviewBypasses).toBe(0);
 		expect(out.registry.orphans).toBe(0);
 	});
 
@@ -82,6 +88,17 @@ describe('state_health / state_repair [N15]', async () => {
 		expect(out.locks.sessionReleases).toBe(0);
 		expect(out.locks.sessionImbalance).toBe(6);
 		expect(out.healthy).toBe(false);
+	});
+
+	it('a00069 S11: surfaces peerReviewBypasses session count', async () => {
+		recordPeerReviewBypass({
+			proposalId: 'f-s11',
+			reason: 'emergency',
+			via: 'force',
+		});
+		const handler = await capture(buildStateHealthRegistration(opts));
+		const out = parse(await handler({}));
+		expect(out.peerReviewBypasses).toBe(1);
 	});
 
 	it('flags a stale lock and repairs it on execute', async () => {

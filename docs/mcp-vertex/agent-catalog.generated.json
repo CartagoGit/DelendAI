@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-07-24T23:41:16.278Z",
+	"generatedAt": "2026-07-25T00:30:32.969Z",
 	"mode": "compact",
 	"tools": [
 		{
@@ -847,13 +847,6 @@
 	"proposals": {
 		"actionable": [
 			{
-				"id": "a00067",
-				"title": "a00067",
-				"track": "research+architecture+economics+tooling",
-				"status": "ready",
-				"kind": "audit"
-			},
-			{
 				"id": "a00069",
 				"title": "a00069",
 				"track": "audit+multi-agent+state-consistency+proposals-plugin",
@@ -872,6 +865,13 @@
 				"title": "f00050",
 				"track": "lint+architecture+i18n+workflow+release",
 				"status": "paused",
+				"kind": "feat"
+			},
+			{
+				"id": "f00119",
+				"title": "f00119",
+				"track": "plugin+orchestration+routing",
+				"status": "in-progress",
 				"kind": "feat"
 			},
 			{
@@ -1015,6 +1015,13 @@
 				"kind": "feat"
 			},
 			{
+				"id": "f00143",
+				"title": "f00143",
+				"track": "agent-discipline+session-governance",
+				"status": "in-progress",
+				"kind": "feat"
+			},
+			{
 				"id": "f00148",
 				"title": "f00148",
 				"track": "infra+distribution+economics",
@@ -1058,11 +1065,11 @@
 			}
 		],
 		"byStatus": {
-			"ready": 27,
-			"in-progress": 2,
+			"ready": 26,
+			"in-progress": 4,
 			"review": 11,
 			"paused": 1,
-			"done": 242,
+			"done": 241,
 			"blocked": 0,
 			"retired": 2,
 			"unspecified": 0
