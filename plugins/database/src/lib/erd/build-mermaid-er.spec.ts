@@ -103,7 +103,7 @@ describe('f00128 S3 build-mermaid-er', () => {
 					type: 'integer',
 					nullable: false,
 					primaryKey: true,
-					unique: true,
+					unique: false,
 					defaultValue: null,
 				},
 				{
@@ -111,7 +111,7 @@ describe('f00128 S3 build-mermaid-er', () => {
 					type: 'integer',
 					nullable: false,
 					primaryKey: true,
-					unique: true,
+					unique: false,
 					defaultValue: null,
 				},
 			],

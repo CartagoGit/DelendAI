@@ -189,6 +189,117 @@ describe('recovery tools (f00016 S9)', async () => {
 			movedTo: 'ready/f200-test.md',
 		});
 	});
+
+	it('proposal_diagnose matches stale slice locks for the requested proposal', async () => {
+		writeFileSync(
+			join(proposalsDir, 'ready', 'f00126-test.md'),
+			proposal('f00126', 'ready'),
+		);
+		writeFileSync(
+			lockPath,
+			JSON.stringify({
+				version: 1,
+				stale_after_minutes: 10,
+				in_flight: [
+					{
+						task_id: 'f00126-S3',
+						agent: 'impl-runner-perf-s3',
+						ownership: ['a.ts'],
+						started_at: '2000-01-01T00:00:00.000Z',
+						last_seen: '2000-01-01T00:00:00.000Z',
+					},
+				],
+			}),
+		);
+
+		const payload = json(await runProposalDiagnose({ id: 'f00126' }, options));
+
+		expect(payload).toMatchObject({
+			lockOwners: ['impl-runner-perf-s3'],
+			staleTaskIds: ['f00126-S3'],
+			suggestedActions: ['agent_lock_release_orphan'],
+		});
+	});
+
+	it('proposal_diagnose keeps direct calls strict to the requested proposal', async () => {
+		writeFileSync(
+			join(proposalsDir, 'ready', 'f00128-test.md'),
+			proposal('f00128', 'ready'),
+		);
+		writeFileSync(
+			lockPath,
+			JSON.stringify({
+				version: 1,
+				stale_after_minutes: 10,
+				in_flight: [
+					{
+						task_id: 'f00126-S3',
+						agent: 'impl-runner-perf-s3',
+						ownership: ['a.ts'],
+						started_at: '2000-01-01T00:00:00.000Z',
+						last_seen: '2000-01-01T00:00:00.000Z',
+					},
+					{
+						task_id: 'f00127-S2',
+						agent: 'impl-runner-b',
+						ownership: ['b.ts'],
+						started_at: '2000-01-01T00:00:00.000Z',
+						last_seen: '2000-01-01T00:00:00.000Z',
+					},
+				],
+			}),
+		);
+
+		const payload = json(await runProposalDiagnose({ id: 'f00128' }, options));
+
+		expect(payload.lockOwners).toEqual([]);
+		expect(payload.staleTaskIds).toEqual([]);
+		expect(payload.crossProposal).toBeUndefined();
+	});
+
+	it('proposal_diagnose reports cross-proposal zombies for auto_work', async () => {
+		writeFileSync(
+			join(proposalsDir, 'ready', 'f00128-test.md'),
+			proposal('f00128', 'ready'),
+		);
+		writeFileSync(
+			lockPath,
+			JSON.stringify({
+				version: 1,
+				stale_after_minutes: 10,
+				in_flight: [
+					{
+						task_id: 'f00126-S3',
+						agent: 'impl-runner-perf-s3',
+						ownership: ['a.ts'],
+						started_at: '2000-01-01T00:00:00.000Z',
+						last_seen: '2000-01-01T00:00:00.000Z',
+					},
+					{
+						task_id: 'f00127-S2',
+						agent: 'impl-runner-docs-s2',
+						ownership: ['b.ts'],
+						started_at: '2000-01-01T00:00:00.000Z',
+						last_seen: '2000-01-01T00:00:00.000Z',
+					},
+				],
+			}),
+		);
+
+		const payload = json(
+			await runProposalDiagnose({ id: 'f00128', caller: 'auto_work' }, options),
+		);
+
+		expect(payload).toMatchObject({
+			crossProposal: true,
+			staleTaskIds: ['f00126-S3', 'f00127-S2'],
+			suggestedActions: ['agent_lock_release_orphan'],
+		});
+		expect(payload.lockOwners).toEqual([
+			'impl-runner-perf-s3',
+			'impl-runner-docs-s2',
+		]);
+	});
 });
 describe('a00072 S1.a (F148) proposal_diagnose cross-proposal stale detection', () => {
 	let dir = '';
@@ -200,19 +311,15 @@ describe('a00072 S1.a (F148) proposal_diagnose cross-proposal stale detection', 
 	});
 
 	const baseOptions = (): IRecoveryToolOptions => ({
+		namespacePrefix: 'test',
 		proposalsDirAbs: join(dir, 'docs/mcp-vertex/proposals'),
 		lockPathAbs: join(dir, '.cache/mcp-vertex/agents.lock.json'),
-		queuePathAbs: join(dir, '.cache/mcp-vertex/agent-queue/queue.json'),
-		closedTasksPathAbs: join(
-			dir,
-			'.cache/mcp-vertex/agent-queue/closed-tasks.json',
-		),
-		registryPathAbs: join(dir, '.cache/mcp-vertex/agent-registry.json'),
+		agentRegistryPathAbs: join(dir, '.cache/mcp-vertex/agent-registry.json'),
 		workspaceRoot: dir,
 		eventBuffer: createRecoveryEventBuffer(),
 	});
 
-	it('proposal_diagnose surfaces cross-proposal stale locks and suggests agent_lock_release_orphan', async () => {
+	it('proposal_diagnose surfaces cross-proposal stale locks for auto_work and suggests agent_lock_release_orphan', async () => {
 		const opts = baseOptions();
 		mkdirSync(join(opts.proposalsDirAbs, 'ready'), { recursive: true });
 		writeFileSync(
@@ -244,7 +351,10 @@ describe('a00072 S1.a (F148) proposal_diagnose cross-proposal stale detection', 
 			}),
 		);
 
-		const result = await runProposalDiagnose({ id: 'f00128' }, opts);
+		const result = await runProposalDiagnose(
+			{ id: 'f00128', caller: 'auto_work' },
+			opts,
+		);
 		const parsed = JSON.parse(result.content[0]?.text ?? '{}');
 		expect(parsed.crossProposal).toBe(true);
 		expect(parsed.crossProposalStaleTaskIds).toEqual([
@@ -259,7 +369,7 @@ describe('a00072 S1.a (F148) proposal_diagnose cross-proposal stale detection', 
 		expect(parsed.suggestedActions).toContain('agent_lock_release_orphan');
 	});
 
-	it('proposal_diagnose suggests state_repair when many cross-proposal zombies are present', async () => {
+	it('proposal_diagnose suggests state_repair when auto_work sees many cross-proposal zombies', async () => {
 		const opts = baseOptions();
 		mkdirSync(join(opts.proposalsDirAbs, 'ready'), { recursive: true });
 		writeFileSync(
@@ -283,7 +393,10 @@ describe('a00072 S1.a (F148) proposal_diagnose cross-proposal stale detection', 
 			}),
 		);
 
-		const result = await runProposalDiagnose({ id: 'f00128' }, opts);
+		const result = await runProposalDiagnose(
+			{ id: 'f00128', caller: 'auto_work' },
+			opts,
+		);
 		const parsed = JSON.parse(result.content[0]?.text ?? '{}');
 		expect(parsed.crossProposal).toBe(true);
 		expect(parsed.crossProposalStaleTaskIds).toHaveLength(5);

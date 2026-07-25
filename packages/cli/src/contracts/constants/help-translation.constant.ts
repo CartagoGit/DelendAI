@@ -86,6 +86,7 @@ const ENGLISH_COMMAND_SUMMARIES: Readonly<Record<string, string>> = {
 	'logs query':
 		'Query redacted MCP log events with filters + cursor pagination.',
 	'logs tail': 'Show the newest redacted MCP log events.',
+	'logs errors-tail': 'Show the newest curated error and anomaly log events.',
 	'logs subscribe':
 		'Return recent log events matching outcome/kind filters (poll).',
 	'logs correlate':
