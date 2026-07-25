@@ -456,19 +456,36 @@ uno, con la disciplina `f00073`/`f00075`/`f00052` como referencia.
 
 ### S12 — Agent-stuck self-healing (F103)
 
-- **Status**: todo
-- **Files**:
-  - `plugins/logs/src/lib/services/log-store.ts` (línea 106) — `appendFile` →
-    `writeFileAtomic` (o `appendFile` + `await handle.sync()`).
-  - `plugins/proposals/src/lib/locks/agent-lock-engine.ts` — `removeStale`
-    también invocado al `readLock()` (idempotente).
-  - `packages/core/src/lib/cli/assemble-core-tools.ts` — tras cargar plugins,
-    leer `agents.lock.json`, aplicar `removeStale`, escribir si cambió.
-  - `tools/scripts/lint/check-stray-cache-files.script.ts` — bajar threshold
-    para `*.tmp` con prefijo `agents.lock.json.` a `mtime > 60s`.
-  - `plugins/proposals/src/lib/tools/agents-lock-diagnose.tool.ts` (nuevo) —
-    enumera zombies, tmp huérfanos, y diff `last_seen` vs última entrada
-    de log del `task_id`.
+- **Status**: done
+- **Files**: `plugins/logs/src/lib/services/log-store.ts`,
+  `plugins/proposals/src/lib/locks/agent-lock-engine.ts`,
+  `plugins/proposals/src/index.ts`,
+  `plugins/proposals/src/lib/tools/agents-lock-diagnose.tool.ts`,
+  `plugins/proposals/tests/src/lib/tools/agents-lock-diagnose.spec.ts`,
+  `tools/scripts/lint/check-stray-cache-files.script.ts`.
+- implementation:
+  - **S12.a** `plugins/logs/src/lib/services/log-store.ts` — `appendEvent`
+    uses `open(file, 'a') + writeFile + handle.sync() + close` so a
+    SIGKILL between write and close leaves the previous fsynced line
+    intact. `withFileMutex` wrapper preserved.
+  - **S12.b** `plugins/proposals/src/lib/locks/agent-lock-engine.ts` —
+    `readLock()` now calls `removeStale` automatically; new
+    `cleanupStaleAgentLockState({ lockPath })` helper wired into the
+    proposals `register()` boot path so every MCP host gets one pass
+    of GC before tools become visible. Fire-and-forget so register
+    stays sync-fast.
+  - **S12.c** `tools/scripts/lint/check-stray-cache-files.script.ts` —
+    new `'stale-agents-lock-tmp'` reason; flags
+    `agents.lock.json.*.tmp` files in the cache root with mtime > 60s.
+  - **S12.d** `plugins/proposals/src/lib/tools/agents-lock-diagnose.tool.ts`
+    — new tool `${prefix}_agents_lock_diagnose` that enumerates
+    zombies (`started_at == last_seen && age > 30s`), stale tmp
+    orphans, and per-task log gaps.
+  - 12 new unit tests in
+    `plugins/proposals/tests/src/lib/tools/agents-lock-diagnose.spec.ts`;
+    existing `agent-lock-engine.spec.ts`,
+    `agent-lock-ok-contract.spec.ts`,
+    `check-stray-cache-files.script.spec.ts` updated.
 - **Cambio** (4 sub-slices):
   - **S12.a** — Log writer atómico: `appendFile` reemplazado por
     `writeFileAtomic` con append semantics. Mantener `withFileMutex`.
