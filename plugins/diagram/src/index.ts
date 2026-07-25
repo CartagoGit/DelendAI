@@ -2,14 +2,18 @@ import { definePlugin } from '@mcp-vertex/core/public';
 import { z } from 'zod';
 
 import { buildDiagramGraphToolRegistrations } from './lib/tools/diagram-graph.tool';
+import { buildDiagramProposalsToolRegistrations } from './lib/tools/diagram-proposals.tool';
 
 /**
- * Diagram plugin. `diagram_deps` renders the workspace's internal
- * dependency graph as a mermaid flowchart, and `diagram_modules`
- * renders a single package's file-level module graph. Both render
- * natively in the docs site and in artifacts, so an agent can *see*
- * the project's structure. Offline, pure, no external tools. Load
- * with `mcp-vertex --plugins=diagram`.
+ * Diagram plugin. Four mermaid tools:
+ *   - `diagram_deps`     — workspace internal dependency graph.
+ *   - `diagram_modules`  — single-package file-level module graph.
+ *   - `diagram_erd`      — re-render an IDatabaseSchema as an erDiagram.
+ *   - `diagram_proposals`— the proposal status DFA + per-status counts.
+ *
+ * All four render natively in the docs site and in artifacts, so an
+ * agent can *see* the project's structure. Offline, pure, no
+ * external tools. Load with `mcp-vertex --plugins=diagram`.
  */
 const OptionsSchema = z.object({});
 
@@ -17,7 +21,7 @@ export default definePlugin({
 	name: 'diagram',
 	version: '0.1.0',
 	describe:
-		'Diagram generation: diagram_deps (workspace dependency graph) + diagram_modules (per-package module graph) as mermaid. Offline, pure.',
+		'Diagram generation: diagram_deps + diagram_modules (workspace/package structure) + diagram_erd (DB schema) + diagram_proposals (proposal DFA) as mermaid. Offline, pure.',
 	optionsSchema: OptionsSchema,
 	register(ctx) {
 		return {
@@ -25,6 +29,9 @@ export default definePlugin({
 				...buildDiagramGraphToolRegistrations({
 					namespacePrefix: ctx.namespacePrefix,
 					workspaceRootAbs: ctx.workspace.root,
+				}),
+				...buildDiagramProposalsToolRegistrations({
+					namespacePrefix: ctx.namespacePrefix,
 				}),
 			],
 			knowledge: [
@@ -36,8 +43,11 @@ export default definePlugin({
 						'',
 						`Tool: \`${ctx.namespacePrefix}_diagram_deps\` — workspace internal dependency graph as mermaid.`,
 						`Tool: \`${ctx.namespacePrefix}_diagram_modules\` — single package file-level module graph as mermaid. Pass \`packageRoot\` to override the default.`,
+						`Tool: \`${ctx.namespacePrefix}_diagram_erd\` — re-render an IDatabaseSchema (from the database plugin) as a mermaid erDiagram.`,
+						`Tool: \`${ctx.namespacePrefix}_diagram_proposals\` — the proposal status DFA, optionally annotated with per-status counts.`,
 						'',
-						'- Both return a `flowchart LR` mermaid string (renders in the docs site + artifacts) plus raw nodes/edges.',
+						'- All return a mermaid string (renders in the docs site + artifacts) plus raw nodes/edges/counts.',
+						'- `diagram_erd` and `diagram_proposals` are pure passthroughs: pass the data, get the mermaid. The diagram tool never reads the DB or the registry.',
 						'- Only edges between same-workspace packages / package files are drawn; external deps are dropped.',
 						'- Offline and pure — no external tools, no network.',
 					].join('\n'),
