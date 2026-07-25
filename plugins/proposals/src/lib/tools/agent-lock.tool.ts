@@ -212,9 +212,8 @@ export const buildAgentLockRegistration = (
 						identity.task_id = args.task_id;
 					const hasIdentity = Object.keys(identity).length > 0;
 
-					// a00069 S8: every agent_lock response carries `ok` + session
-					// claim/release balance for telemetry. Mirror into structuredContent
-					// so the declared outputSchema is satisfied on success.
+					// a00069 S8: engine already stamps ok + session; tool layer
+					// only merges identity and mirrors structuredContent.
 					try {
 						const parsed = JSON.parse(
 							res.content[0]?.text ?? 'null',
@@ -226,27 +225,26 @@ export const buildAgentLockRegistration = (
 						) {
 							const base = parsed as Record<string, unknown>;
 							const blocked = base.blocked === true;
-							const ok = res.isError !== true && !blocked;
+							const ok =
+								typeof base.ok === 'boolean'
+									? base.ok
+									: res.isError !== true && !blocked;
 							const balance = getAgentLockSessionBalance();
+							const session =
+								typeof base.session === 'object' &&
+								base.session !== null
+									? base.session
+									: {
+											claims: balance.claims,
+											releases: balance.releases,
+											imbalance: balance.imbalance,
+										};
 							const merged: Record<string, unknown> = {
 								...base,
 								ok,
-								session: {
-									claims: balance.claims,
-									releases: balance.releases,
-									imbalance: balance.imbalance,
-								},
+								session,
 								...(hasIdentity ? { identity } : {}),
 							};
-							// Count successful claim/release for session balance.
-							if (
-								ok &&
-								args.action === 'claim' &&
-								base.claimed === true
-							) {
-								// engine already may have counted; tool-layer counts when
-								// engine has not stamped session yet.
-							}
 							return {
 								...res,
 								// SDK skips outputSchema on isError; still attach content.

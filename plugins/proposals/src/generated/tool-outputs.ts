@@ -48,7 +48,18 @@ export interface ProposalsAgentLockOutput {
 		last_seen: string;
 		parent_task_id?: string;
 	}[];
-	ok?: boolean;
+	ok: boolean;
+	session?: {
+		claims: number;
+		releases: number;
+		imbalance: number;
+	};
+	identity?: {
+		host?: string;
+		model?: string;
+		agent_name?: string;
+		task_id?: string;
+	};
 }
 
 export interface ProposalsAgentLockReleaseOrphanOutput {
@@ -713,6 +724,9 @@ export interface ProposalsRoundContextOutput {
 export interface ProposalsStateHealthOutput {
 	locks: {
 		active: number;
+		sessionClaims: number;
+		sessionReleases: number;
+		sessionImbalance: number;
 	};
 	queue: {
 		queueLength: number;
@@ -733,6 +747,9 @@ export interface ProposalsStateRepairOutput {
 	diagnosis: {
 		locks: {
 			active: number;
+			sessionClaims: number;
+			sessionReleases: number;
+			sessionImbalance: number;
 		};
 		queue: {
 			queueLength: number;
