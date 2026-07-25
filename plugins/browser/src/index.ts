@@ -17,6 +17,7 @@ import { definePlugin } from '@mcp-vertex/core/public';
 
 import { buildBrowserInspectToolRegistrations } from './lib/tools/browser-inspect.tool';
 import { buildBrowserA11yToolRegistrations } from './lib/tools/browser-a11y.tool';
+import { buildBrowserVerifyPageToolRegistrations } from './lib/tools/browser-verify-page.tool';
 import type { IBrowserDriver } from './lib/page/ibrowser-driver';
 import type { IBrowserActionDriver } from './lib/interact/iaction-driver';
 
@@ -84,6 +85,12 @@ export default definePlugin({
 					...(interactDriver === undefined
 						? {}
 						: { driver: interactDriver }),
+				}),
+				...buildBrowserVerifyPageToolRegistrations({
+					namespacePrefix: ctx.namespacePrefix,
+					...(inspectDriver === undefined
+						? {}
+						: { driver: inspectDriver }),
 				}),
 			],
 		};

@@ -3,7 +3,7 @@
  *
  * The plugin is exposed for plugin-authors / tests; hosts should not
  * import this directly. Stable shape: driver interface + inspect
- * registrations. S3 (verify-page) will be appended here when shipped.
+ * registrations, interact/a11y helpers, and S3 verify-page wiring.
  */
 export type {
 	IBrowserDriver,
@@ -26,6 +26,8 @@ export {
 
 export { buildBrowserInspectToolRegistrations } from '../lib/tools/browser-inspect.tool';
 export type { IBrowserInspectToolOptions } from '../lib/tools/browser-inspect.tool';
+export { buildBrowserVerifyPageToolRegistrations } from '../lib/tools/browser-verify-page.tool';
+export type { IBrowserVerifyPageToolOptions } from '../lib/tools/browser-verify-page.tool';
 
 // S2 (interact + a11y)
 export type {
