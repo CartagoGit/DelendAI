@@ -1,8 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { writeFile, readFile } from 'node:fs/promises';
+import { writeFile, readFile, mkdtemp, rm } from 'node:fs/promises';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
-import { mkdtemp, rm } from 'node:fs/promises';
 
 import {
 	runAutoStateRepairOnBoot,
@@ -11,6 +10,20 @@ import {
 
 const emptyLock = { version: 1, in_flight: [] as unknown[] };
 const emptyQueue = { version: 1, entries: [] as unknown[] };
+
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+const waitUntil = async (
+	fn: () => Promise<boolean>,
+	timeoutMs = 3_000,
+): Promise<void> => {
+	const start = Date.now();
+	while (Date.now() - start < timeoutMs) {
+		if (await fn()) return;
+		await sleep(20);
+	}
+	throw new Error(`waitUntil timed out after ${timeoutMs}ms`);
+};
 
 describe('a00069 S10 auto state_repair on boot', () => {
 	let root = '';
@@ -97,12 +110,11 @@ describe('a00069 S10 auto state_repair on boot', () => {
 
 	it('runAutoStateRepairOnBoot logs state-repair-auto and heals', async () => {
 		runAutoStateRepairOnBoot(opts());
-		// allow fire-and-forget microtask/IO
-		await vi.waitFor(async () => {
+		await waitUntil(async () => {
 			const reg = JSON.parse(await readFile(registryPath, 'utf8')) as {
 				assignments: unknown[];
 			};
-			expect(reg.assignments).toHaveLength(0);
+			return reg.assignments.length === 0;
 		});
 		const autoLines = infoSpy.mock.calls
 			.map((c: unknown[]) => String(c[0] ?? ''))
