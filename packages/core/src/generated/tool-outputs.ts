@@ -1488,6 +1488,21 @@ export interface McpVertexProposalsAgentWorktreeOutput {
 	branch?: string;
 	created?: boolean;
 	removed?: boolean;
+	strandedPurge?: {
+		dryRun: boolean;
+		candidates: Array<{
+			branch: string;
+			ahead: number;
+			behind: number;
+			lastCommitIso: string;
+			worktreePath: string | null;
+		}>;
+		deleted: string[];
+		skipped: {
+			branch: string;
+			reason: string;
+		}[];
+	};
 	worktrees?: {
 		path: string;
 		head: string;
@@ -1622,6 +1637,13 @@ export interface McpVertexProposalsBranchStatusOutput {
 		lastCommitMinutesAgo: number;
 		worktreePath: string;
 	}[];
+	stranded?: Array<{
+		branch: string;
+		ahead: number;
+		behind: number;
+		lastCommitIso: string;
+		worktreePath: string | null;
+	}>;
 	worktrees?: {
 		path: string;
 		head: string;
@@ -1646,6 +1668,16 @@ export interface McpVertexProposalsBranchStatusOutput {
 
 export interface McpVertexProposalsCloseSliceOutput {
 	ok: boolean;
+	blockerType?: string;
+	blockerDetail?: {
+		ok: boolean;
+		severity: "ok" | "error";
+		findings: string[];
+		summary?: {
+			ok: boolean;
+			scopes: number;
+		};
+	};
 	error?: {
 		reason: string;
 		nextAction?: string;
@@ -2409,27 +2441,25 @@ export interface McpVertexQualityQualityRunAllOutput {
 	};
 }
 
-export type McpVertexQualityRunQualityOutput = {
-	scope: string;
+export interface McpVertexQualityRunQualityOutput {
+	scope?: string;
 	ok: boolean;
-	results: {
+	results?: {
 		command: string;
 		ok: boolean;
 		code: number;
 		timedOut: boolean;
 		tail: string;
 	}[];
-} | {
-	ok: boolean;
-	severities: {
+	severities?: {
 		critical: number;
 		high: number;
 		medium: number;
 		low: number;
 		info: number;
 	};
-	worst: "critical" | "high" | "medium" | "low" | "info" | "none";
-	findings: Array<{
+	worst?: "critical" | "high" | "medium" | "low" | "info" | "none";
+	findings?: Array<{
 		ruleId: string;
 		severity: "critical" | "high" | "medium" | "low" | "info";
 		message: string;
@@ -2440,7 +2470,7 @@ export type McpVertexQualityRunQualityOutput = {
 		};
 		fix?: string;
 	}>;
-};
+}
 
 export interface McpVertexRefactorRefactorApplyOutput {
 	written: string[];

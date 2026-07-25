@@ -134,11 +134,21 @@ export const buildReleasePlan = (
 	publishOrder: readonly IPublishOrderEntry[],
 	bump: IBumpInference,
 ): IReleasePlanOutput[] => {
+	// Lockstep: every package moves to the same target as the FIRST
+	// publish-order entry (the core anchor). Mirrors the canonical
+	// `computeReleasePlan` semantics in `tools/scripts/release/release-plan.ts`
+	// so the plugin's preview matches the engine that actually publishes the
+	// monorepo. Computing `to` per entry would silently break a 0.x release
+	// (e.g. an anchor bump-from-0.1.0 + a plugin pinned at 0.0.1 would
+	// otherwise land on 0.1.0 instead of 0.1.1).
+	const anchor = publishOrder[0];
+	if (anchor === undefined) return [];
+	const to = nextVersion(anchor.version, bump.kind);
 	return publishOrder.map((p) => ({
 		dir: p.dir,
 		name: p.name,
 		from: p.version,
-		to: nextVersion(p.version, bump.kind),
+		to,
 	}));
 };
 

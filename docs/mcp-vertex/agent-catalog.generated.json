@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-07-25T12:03:14.251Z",
+	"generatedAt": "2026-07-25T20:33:04.257Z",
 	"mode": "compact",
 	"tools": [
 		{
@@ -44,6 +44,26 @@
 		},
 		{
 			"name": "mcp-vertex_create_project"
+		},
+		{
+			"name": "mcp-vertex_database_db_erd",
+			"plugin": "database"
+		},
+		{
+			"name": "mcp-vertex_database_db_explain",
+			"plugin": "database"
+		},
+		{
+			"name": "mcp-vertex_database_db_probe",
+			"plugin": "database"
+		},
+		{
+			"name": "mcp-vertex_database_db_query",
+			"plugin": "database"
+		},
+		{
+			"name": "mcp-vertex_database_db_schema",
+			"plugin": "database"
 		},
 		{
 			"name": "mcp-vertex_deps_deps_audit",
@@ -338,6 +358,10 @@
 		},
 		{
 			"name": "mcp-vertex_proposals_agent_worktree",
+			"plugin": "proposals"
+		},
+		{
+			"name": "mcp-vertex_proposals_agents_lock_diagnose",
 			"plugin": "proposals"
 		},
 		{
@@ -887,9 +911,9 @@
 	"proposals": {
 		"actionable": [
 			{
-				"id": "a00069",
-				"title": "a00069",
-				"track": "audit+multi-agent+state-consistency+proposals-plugin",
+				"id": "a00072",
+				"title": "a00072",
+				"track": "audit+multi-agent+state-consistency+proposals-plugin+log-honesty",
 				"status": "in-progress",
 				"kind": "audit"
 			},
@@ -922,13 +946,6 @@
 				"kind": "feat"
 			},
 			{
-				"id": "f00123",
-				"title": "f00123",
-				"track": "plugin+refactor+reliability",
-				"status": "ready",
-				"kind": "feat"
-			},
-			{
 				"id": "f00124",
 				"title": "f00124",
 				"track": "plugin+search+navigation",
@@ -946,34 +963,6 @@
 				"id": "f00126",
 				"title": "f00126",
 				"track": "plugin+perf+quality",
-				"status": "ready",
-				"kind": "feat"
-			},
-			{
-				"id": "f00127",
-				"title": "f00127",
-				"track": "plugin+eval+routing",
-				"status": "ready",
-				"kind": "feat"
-			},
-			{
-				"id": "f00128",
-				"title": "f00128",
-				"track": "plugin+database+data",
-				"status": "ready",
-				"kind": "feat"
-			},
-			{
-				"id": "f00129",
-				"title": "f00129",
-				"track": "plugin+observability+runtime",
-				"status": "ready",
-				"kind": "feat"
-			},
-			{
-				"id": "f00130",
-				"title": "f00130",
-				"track": "plugin+api+integration",
 				"status": "ready",
 				"kind": "feat"
 			},
@@ -1119,11 +1108,11 @@
 			}
 		],
 		"byStatus": {
-			"ready": 27,
+			"ready": 22,
 			"in-progress": 5,
 			"review": 11,
 			"paused": 1,
-			"done": 244,
+			"done": 251,
 			"blocked": 0,
 			"retired": 2,
 			"unspecified": 0

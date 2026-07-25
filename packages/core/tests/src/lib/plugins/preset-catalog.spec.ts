@@ -28,8 +28,8 @@ describe('PRESET_CATALOG', async () => {
 		expect(PRESET_CATALOG[2]?.members.length).toBe(8);
 		// swarm: adds 7 on top of standard (f00121 S3 added forge)
 		expect(PRESET_CATALOG[3]?.members.length).toBe(7);
-		// full: adds 2 host-only + api on top of swarm
-		expect(PRESET_CATALOG[4]?.members.length).toBe(3);
+		// full: adds 2 host-only + api + changelog on top of swarm
+		expect(PRESET_CATALOG[4]?.members.length).toBe(4);
 		// vertex: 17 members (f00119 S6 added auto-agent-selector,
 		// f00123 S2 added refactor, f00126 S3 added perf, f00127 S3 added prompt-eval,
 		// f00128 S1 added database, f00130 S3 added api; mirrors mcp-vertex.config.json)
@@ -150,7 +150,7 @@ describe('resolvePresetMembers', async () => {
 			'database',
 		]);
 		expect(resolvePresetMembers('swarm').length).toBe(17);
-		expect(resolvePresetMembers('full').length).toBe(20);
+		expect(resolvePresetMembers('full').length).toBe(21);
 		expect(resolvePresetMembers('swarm')).not.toContain('lean');
 	});
 
