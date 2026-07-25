@@ -1,16 +1,35 @@
 # @mcp-vertex/observability
 
-Read-only observability helpers for recent remote issues plus local runtime correlation.
+Read-only observability for [`@mcp-vertex/core`](../../packages/core): recent
+remote error issues plus deterministic correlation against local agent logs.
 
-## S3 local correlation
+## Tools
 
-`obs_correlate` reads recent remote issues from the same source that powers `obs_errors`, then scans the local JSONL runtime logs under `.cache/mcp-vertex/results/logs/` and `.cache/mcp-vertex/results/logs-errors/` for lines that mention the same exception title or context.
+- **`obs_errors`** — lists recent Sentry or Datadog issues. Credentials come
+  only from `SENTRY_AUTH_TOKEN` or `DATADOG_API_KEY`; they are never emitted
+  in tool output or log records. Without a configured source the tool returns
+  an actionable setup hint.
+- **Trace and release-health tools** — summarize local trace records and
+  release crash-free rates when the traces capability is enabled.
+- **`obs_correlate`** — reads recent remote issues from the same source that
+  powers `obs_errors`, then scans local JSONL runtime logs under
+  `.cache/mcp-vertex/results/logs/` and
+  `.cache/mcp-vertex/results/logs-errors/` for lines that mention the same
+  exception title or context.
+
+## Local correlation
+
+`lib/correlate` is a pure, bounded adapter for a local log window returned by
+the logs capability. It reuses a time window around each issue, then applies
+the stricter S3 substring match on the issue title or context so unrelated
+events in the same window are not reported as matches.
 
 Flow, in prose:
 
 - remote issue: `TypeError: Cannot read properties of undefined`
 - local line: `tool-failed: TypeError Cannot read properties of undefined`
-- result: one correlation match pointing at the local JSONL file and line number
+- result: one correlation match pointing at the local JSONL file and line
+  number
 
 Sample output:
 
@@ -30,27 +49,8 @@ Sample output:
 }
 ```
 
-This keeps the remote vendor view and the local execution history in the same troubleshooting loop without requiring a vendor SDK or any write scope.# @mcp-vertex/observability
-
-Read-only observability for [`@mcp-vertex/core`](../../packages/core): recent
-remote error issues plus deterministic correlation against local agent logs.
-
-## Tools
-
-- **`obs_errors`** — lists recent Sentry or Datadog issues. Credentials come
-  only from `SENTRY_AUTH_TOKEN` or `DATADOG_API_KEY`; they are never emitted
-  in tool output or log records. Without a configured source the tool returns
-  an actionable setup hint.
-- **Trace and release-health tools** — summarize local trace records and
-  release crash-free rates when the traces capability is enabled.
-
-## Local correlation
-
-`lib/correlate` is a pure, bounded adapter for a local log window returned by
-the logs capability. It requires both time proximity and stable issue evidence
-(issue id, project, title, or context terms), so unrelated events in the same
-window are not reported as matches. This keeps remote-issue triage
-deterministic and testable without reading another plugin's private state.
+This keeps the remote vendor view and the local execution history in the same
+troubleshooting loop without requiring a vendor SDK or any write scope.
 
 ## Load
 
