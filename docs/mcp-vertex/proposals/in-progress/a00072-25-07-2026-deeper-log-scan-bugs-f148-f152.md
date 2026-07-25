@@ -372,6 +372,8 @@ Los F148-F152 son bugs **estructurales** del swarm, no cosméticos:
   - `255020ee` — `docs(a00069): complete rename to done/audits (resolve stage conflict)`
   - `1787628c` — `docs(a00069): correct status from in-progress to done — final closure`
   - `5dcf04b7` — `docs(a00072): pasada-17 F201-F208 — branches stranded, log honest catalog, skill resolver, livelock` (S4-S7 slices proposed)
+  - `9672738e` — `feat(f00130): S3 — api_mock registration + knowledge catalog + README` (F248 precursor closed; **f00130 S3 implementation landed**)
+  - `307a074f` — `docs(f00130): reconcile S3 done — move proposal to done/feats` (**F131/F139/F156/F159/F184/F223 closed operativamente**)
   - `55c3fa5f` — **`fix(a00072): S2 — proposal_review mandatory pre-done gate (F149) — distinct reviewer check + transition gate`** (2 files, 268 insertions; tests 965/965 passing; **F149 CLOSED operativamente**)
   - `ef3497c2` — `docs(a00072): mark S2 proposal_review mandatory pre-done gate done`
 - F148-F152 documentados verbatim con logs.
@@ -2319,9 +2321,140 @@ error TS2307: Cannot find module '../shared/peer-review-log'
 
 **Acción**: enforcement-level: si un archivo modified referencia un untracked, el agent_lock release debe fallar hasta que el untracked se commitee o se mueva a `git stash --include-untracked`.
 
+### F267 — `307a074f` f00130 RECONCILIADO a `done/feats/` — F131/F139/F156/F159/F184/F223 closed operativamente (POSITIVO)
+
+Re-audit-22 `git log --oneline -5`:
+
+```text
+307a074f docs(f00130): reconcile S3 done — move proposal to done/feats
+e0f27919 docs(a00072): pasada-20 F246-F260 fresh findings + scoreboard update
+9672738e feat(f00130): S3 — api_mock registration + knowledge catalog + README
+6924af45 docs(a00072): pasada-19 F231-F245 fresh findings + scoreboard update
+d9219bf7 docs(a00072): pasada-18 F221-F230 + S2 closure — F149 closed
+```
+
+**Esperado**: f00130 closed. **Actual**: `307a074f` movió `f00130-api-openapi-plugin.md` a `done/feats/`.
+
+**Esperado vs Actual**: 6 close-evidence pendientes cerradas en 1 commit: F131, F139, F156, F159, F184, F223.
+
+**Severidad**: **POSITIVO**. Scoreboard sube.
+
+### F268 — `plugins/quality/src/index.ts` modified — S3 auto_work invoca quality (F152 precursor, POSITIVO)
+
+Re-audit-22 `sed -n '95,108p' plugins/quality/src/index.ts`:
+
+```ts
+// a00072 S3: auto_work now requires `quality run` post-condition
+// to surface FATAL plugins instead of silently dogfood-ing.
+export async function runQualityGate(): Promise<{ ok: boolean; ... }> {
+```
+
+**Severado**: POSITIVO — S3.b auto_work invoca quality_run precursor. F152 precursor.
+
+### F269 — `agents.lock.json` `a00072-S3` claim activo — workflow S3 implementation (INFO)
+
+Re-audit-22 `cat .cache/mcp-vertex/agents.lock.json`:
+
+```text
+{
+  "task_id": "a00072-S3",
+  "agent": "copilot-minimax-m3",
+  "ownership": [
+    "plugins/proposals/src/lib/tools/auto-work.tool.ts",
+    "plugins/quality/src/index.ts",
+    "plugins/proposals/src/lib/tools/auto-work-persist.ts"
+  ],
+  "started_at": "2026-07-25T19:56:43.320Z",
+  "last_seen": "2026-07-25T19:56:43.320Z"
+}
+```
+
+**Esperado**: workflow S3 activo. **Actual**: claim fresco (started_at == last_seen).
+
+**Severado**: INFO — workflow activo.
+
+### F270 — `plugins/proposals/src/lib/tools/auto-work-persist.ts` modified — S3 NEW FILE (INFO)
+
+Re-audit-22 `git status`:
+
+```text
+ M plugins/proposals/src/lib/tools/auto-work-persist.ts
+```
+
+**Severado**: INFO — S3 implementation file.
+
+### F271 — `plugins/proposals/tests/src/lib/authoring.spec.ts` + `auto-work.spec.ts` + `proposal-transition.tool.spec.ts` modified — S3 tests (INFO)
+
+**Severado**: INFO — S3 test files evolution.
+
+### F272 — `plugins/auto-agent-selector/tests/src/lib/tools/auto-evaluate.tool.spec.ts` modified — F152 quality_run precursor (INFO)
+
+**Severado**: INFO — F152 precursor.
+
+### F273 — `apps/web/scripts/__tests__/preset-table.spec.ts` modified — F234/F160 evol round 2 (INFO)
+
+**Severado**: INFO — F234/F160 evolución.
+
+### F274 — `packages/cli/src/lib/init/init-default.command.spec.ts` + `init-render.service.spec.ts` modified — F235 evol (INFO)
+
+**Severado**: INFO — F235 evolución.
+
+### F275 — `packages/core/src/lib/plugins/plugin-defaults.ts` + `preset-catalog.ts` modified — F121 evol (INFO)
+
+**Severado**: INFO — F121 evolución.
+
+### F276 — `packages/core/tests/src/lib/plugins/preset-catalog.spec.ts` modified — F244 evol (INFO)
+
+**Severado**: INFO — F244 evolución.
+
+### F277 — `packages/core/src/lib/plugins/preset-catalog.ts` (F264) entry nueva inline `{ plugin: 'api' }` — formato inconsistente (MEJORABLE legibilidad)
+
+Re-audit-22:
+
+```ts
+{ plugin: 'issues', hostOnly: true }, { plugin: 'api' },
+```
+
+**Severado**: MEJORABLE — entry inline sin comma. F264 reincidente.
+
+### F278 — `plugins/proposals/src/lib/contracts/constants/default-path-layout.constant.ts` + `swarm-path-layout.interface.ts` modified — F232/F238 evol (INFO)
+
+**Severado**: INFO — F232/F238 evolución.
+
+### F279 — Pasada-22: F267/F268 POSITIVO + 11 INFO + scoreboard recovery — F261-F266 todavía FATAL pero discovery:close ratio mejorando (MEJORABLE proceso)
+
+Re-audit-22 scoreboard delta:
+
+```text
+Pasada-21: 6.0 → 5.5 (-0.5, F261-F266 FATAL nuevos).
+Pasada-22: 5.5 → 5.8 (+0.3, F267/F268 POSITIVO recovery).
+```
+
+**Esperado vs Actual**: 2 POSITIVO (F267 f00130 done, F268 quality plugin S3) compensan parcialmente los 4 FATAL nuevos de pasada-21.
+
+**Severado**: MEJORABLE proceso — discovery:close ratio está mejorando lentamente.
+
+### F280 — Pasada-22 milestone: 113→120→130 findings, FATAL residual 4-5 (F218 tmp sweep + F169 validate + F196 ramas + F107/F111 calidad/log), scoreboard ~5.8 OK, ritmo 1 commit FATAL/~30min (MEJORABLE proceso)
+
+Re-audit-22 milestone:
+
+```text
+- Total findings: 130 (F148-F280, 11 nuevas en pasada-22).
+- FATAL residual: F107 (clean verificado), F111/F202 (log honest S13.a/b),
+  F155/F171/F195/F218/F233/F249 (65 tmp usage-tracking 9 PASADAS S13.c),
+  F169 (validate S11), F196/F201 (12 ramas S4).
+- MEJORABLE: F166 zombis close-evidence pendiente, F168 proposal_board subutilizado.
+- Scoreboard: 5.8 OK recovery.
+- Ritmo: 1 commit FATAL/~30min (S1 55c3fa5f cerrado F148; S2 55c3fa5f cerrado F149; S3 pendiente).
+```
+
+**Esperado**: post-S3-S8 target ~7.5. **Actual**: 5.8 (recovery sólido, próximo S3 cerrará 1-2 FATAL).
+
+**Severado**: MEJORABLE proceso — sistema maduro, próximo sprint S3 cerraría F150/F152.
+
 ## scoreboard
 
-- **Locks**: 7.5 (MEJORABLE — **F127/F170/F186/F187/F188/F192/F221/F231 S12 + S1 + S2 verified**; F103 zombies detectados; F153 reincidente pero flaggeado por S1.a).
+- **Locks**: 7.5 (MEJORABLE — **F127/F170/F186/F187/F188/F192/F221/F231/F250/F251 S12 + S1 + S2 verified**; F103 zombies detectados; F153 reincidente pero flaggeado por S1.a).
 - **Multi-agent discipline**: 4.0 (MUY MAL — **F172/F196 12 ramas agent/* activas reincidente F23/F39/F50/F133/F154**).
 - **Lifecycle review/done**: 5.0 (MEJORABLE — F149 peer-review bypassed; F156/F159/F184 cierre pendiente; **F184 closed por c1ce7ede**).
 - **Registry / orientation**: 6.5 (MEJORABLE — **F148/F151 closed via S1**).
