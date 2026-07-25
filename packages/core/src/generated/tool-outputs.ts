@@ -1231,7 +1231,7 @@ export interface McpVertexProposalsAgentNamesOutput {
 		agentSlot: string;
 		lastSeen: string;
 		ageMinutes: number;
-		reason: "cooldown_null" | "stale_no_lock" | "stale_with_orphaned_lock";
+		reason: "cooldown_null" | "stale_no_lock" | "stale_with_orphaned_lock" | "status_orphan" | "stale_not_adopted";
 		recommendedAction: "force_release" | "extend_cooldown" | "escalate";
 	}>;
 	threshold?: "green" | "yellow" | "red";

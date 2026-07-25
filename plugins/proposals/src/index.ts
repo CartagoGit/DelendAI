@@ -95,6 +95,11 @@ const PROPOSALS_OPTIONS_SCHEMA = z.object({
 	proposalNarrativePatterns: z
 		.array(z.tuple([z.string(), z.string()]))
 		.optional(),
+	/**
+	 * a00069 S7: require independent peer approve before review→done.
+	 * Default true when omitted (wired at register time).
+	 */
+	requirePeerReview: z.boolean().optional(),
 });
 
 export default definePlugin({
@@ -340,7 +345,16 @@ export default definePlugin({
 								validationCommand: ctx.options
 									.validationCommand as string,
 							}
-						: {}),
+						: {
+								// a00069 S7
+								...(typeof ctx.options.requirePeerReview ===
+								'boolean'
+									? {
+											requirePeerReview: ctx.options
+												.requirePeerReview as boolean,
+										}
+									: { requirePeerReview: true }),
+							}),
 					...(ctx.options.persist !== undefined
 						? {
 								persist: ctx.options.persist as {
@@ -384,6 +398,13 @@ export default definePlugin({
 					// a00069 S3: indexPathAbs triggers post-move index sync
 					// + self-**Files** rewrite inside applyTransition.
 					indexPathAbs: abs(layout.proposalIndexFile),
+					// a00069 S7: peer-review gate on review→done (default on).
+					...(typeof ctx.options.requirePeerReview === 'boolean'
+						? {
+								requirePeerReview: ctx.options
+									.requirePeerReview as boolean,
+							}
+						: { requirePeerReview: true }),
 				}),
 				buildClosePlanRegistration({
 					namespacePrefix: ctx.namespacePrefix,
@@ -428,6 +449,13 @@ export default definePlugin({
 					lockPathAbs: abs(layout.lockFile),
 					agentRegistryPathAbs: abs(layout.agentRegistryFile),
 					workspaceRoot: ctx.workspace.root,
+					// a00069 S7: same peer-review default as proposal_transition.
+					...(typeof ctx.options.requirePeerReview === 'boolean'
+						? {
+								requirePeerReview: ctx.options
+									.requirePeerReview as boolean,
+							}
+						: { requirePeerReview: true }),
 				}),
 			],
 			prompts: [
