@@ -43,9 +43,21 @@ Publishing itself stays consent-gated and out of scope here.
 
 ### S1 — changelog render from conventional commits/PRs
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/changelog/src/lib/render/`, `plugins/changelog/src/lib/tools/changelog-generate.tool.ts`
 - **Gate**: bun run validate
+
+implementation:
+- `plugins/changelog/package.json`
+- `plugins/changelog/tsconfig.json`
+- `plugins/changelog/vitest.config.ts`
+- `plugins/changelog/src/index.ts`
+- `plugins/changelog/src/lib/render/conventional-commit.ts`
+- `plugins/changelog/src/lib/render/group-by-type.ts`
+- `plugins/changelog/src/lib/render/render-markdown.ts`
+- `plugins/changelog/src/lib/render/index.ts`
+- `plugins/changelog/src/lib/tools/changelog-generate.tool.ts`
+- `plugins/changelog/src/lib/tools/changelog-generate.tool.spec.ts`
 
 `changelog_generate` groups a commit range by type/scope into a changelog
 section. Pure over injected git log; reuses the conventional-commit parser.
