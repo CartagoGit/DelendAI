@@ -8,7 +8,7 @@
  * influence ranking. Below this, the measured signal is too noisy and the
  * router falls back to the pure cost↔quality dial.
  */
-export const MIN_CALIBRATION_SAMPLES = 3;
+export const MIN_CALIBRATION_SAMPLES = 5;
 
 /**
  * How strongly a measured win-rate nudges the score:
