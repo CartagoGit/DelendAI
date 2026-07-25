@@ -1267,7 +1267,6 @@ export interface McpVertexProposalsAutoWorkOutput {
 	reason?: string;
 	stop?: true;
 	handoffPath?: string;
-	next?: string;
 	nextAction?: string;
 	proposalId?: string;
 	file?: string;
