@@ -100,6 +100,7 @@ const STRAY_EXECUTABLE_EXTENSIONS = new Set([
 ]);
 
 const STALE_AGENTS_LOCK_TMP_MS = 60_000;
+const STALE_TMP_MS = 60_000;
 
 /** Top-level files the runtime owns and that we should never flag. */
 const SANCTIONED_TOP_LEVEL_FILES = new Set(['proposal-id-counters.json']);
@@ -113,7 +114,8 @@ export interface IStrayCacheFile {
 		| 'unknown-top-level-executable'
 		| 'unknown-subdir-executable'
 		| 'orphan-compiled-bundle'
-		| 'stale-agents-lock-tmp';
+		| 'stale-agents-lock-tmp'
+		| 'stale-zero-byte-tmp';
 }
 
 /** Summary returned to the CLI. */
@@ -239,6 +241,50 @@ const walkForStrayExecutables = async (
 };
 
 /**
+ * a00072 S7.a: walk the cache root and flag any `.tmp` file that is
+ * 0 bytes AND has mtime older than `STALE_TMP_MS` (60s). A 0-byte
+ * tmp is almost always a crashed write — the atomic-rename pattern
+ * leaves a stable-named file at the canonical path and a `.tmp` next
+ * to it only when the rename failed. Reporting these as FATAL kills
+ * the `usage-tracking` symptom where every validate-stamp leaves a
+ * dead `summary.json.tmp` stuck behind.
+ */
+const walkForZeroByteTmpFiles = async (
+	cacheRootAbs: string,
+	dirAbs: string,
+	collected: IStrayCacheFile[],
+): Promise<void> => {
+	const entries = await readdir(dirAbs, { withFileTypes: true }).catch(
+		() => [],
+	);
+	for (const entry of entries) {
+		const abs = join(dirAbs, entry.name);
+		const rel = relative(cacheRootAbs, abs);
+		if (entry.isDirectory()) {
+			// Recurse into the usage-tracking cache dir (the known
+			// hotspot) and any other sanctioned subdir that ends in
+			// `.tmp` siblings — the walker is read-only and safe.
+			await walkForZeroByteTmpFiles(cacheRootAbs, abs, collected);
+			continue;
+		}
+		if (!entry.isFile()) continue;
+		if (!entry.name.endsWith('.tmp')) continue;
+		const info = await stat(abs).catch(() => null);
+		if (info === null) continue;
+		// S7.a: only 0-byte AND stale tmp files are FATAL. A non-empty
+		// tmp is mid-write; a fresh 0-byte tmp is just-spawned. Anything
+		// older than 60s with size 0 means a crash mid-write.
+		if (info.size !== 0) continue;
+		if (Date.now() - info.mtimeMs < STALE_TMP_MS) continue;
+		collected.push({
+			absPath: abs,
+			relPath: rel,
+			reason: 'stale-zero-byte-tmp',
+		});
+	}
+};
+
+/**
  * Walk the cache root and return every stray file (top-level or nested).
  * Pure over the filesystem it is handed; pass an injected root for tests.
  */
@@ -270,6 +316,13 @@ export const findStrayCacheFiles = async (
 		}
 		if (entry.isDirectory()) {
 			await walkForStrayExecutables(
+				cacheRootAbs,
+				join(cacheRootAbs, entry.name),
+				strays,
+			);
+			// a00072 S7.a: also scan for 0-byte stale tmp files
+			// anywhere under the cache root (>60s old).
+			await walkForZeroByteTmpFiles(
 				cacheRootAbs,
 				join(cacheRootAbs, entry.name),
 				strays,

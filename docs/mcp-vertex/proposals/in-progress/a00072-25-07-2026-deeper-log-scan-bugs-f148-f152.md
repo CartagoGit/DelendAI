@@ -285,7 +285,7 @@ Los F148-F152 son bugs **estructurales** del swarm, no cosméticos:
 
 ### S7 — Lint cross-cutting `check-stray-cache-files` con mtime > 60s (F205)
 
-- **Status**: todo
+- **Status**: done
 - **Files**:
   - `tools/scripts/lint/check-stray-cache-files.script.ts` — new
     file que escanea `.cache/mcp-vertex/**/*.tmp` y reporta los

@@ -10,6 +10,7 @@ import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 
 import { deriveCorePrefix } from './lib/attribute';
+import { cleanupStaleTmpFiles } from './lib/cleanup-stale-tmp';
 import { detectAgent } from './lib/detect-agent';
 import { buildRecord, resolveSessionId } from './lib/record';
 import { RecordBuffer } from './lib/record-buffer';
@@ -167,6 +168,24 @@ export default definePlugin({
 		const pricingPath = ctx.workspace.resolve(
 			joinRel(ctx.pluginCacheDir, 'pricing.json'),
 		);
+
+		// a00072 S7.b: boot-time hygiene. A 0-byte `.tmp` file older
+		// than 60s is a crashed mid-write from `writeSummary`'s
+		// atomic-rename pattern. Sweep them so the next rollup
+		// tick does not trip over a stale sibling. The call is
+		// best-effort and never throws — boot hygiene must never
+		// fail the plugin.
+		const pluginCacheDirAbs = ctx.workspace.resolve(ctx.pluginCacheDir);
+		void cleanupStaleTmpFiles({ cacheDirAbs: pluginCacheDirAbs })
+			.then((result) => {
+				if (result.removed > 0) {
+					// Debug-only — the lint is the source of truth.
+					console.debug(
+						`[usage-tracking] boot sweep: removed ${result.removed} stale tmp file(s)`,
+					);
+				}
+			})
+			.catch(() => undefined);
 
 		const buffer = new RecordBuffer(invocationsPath, {
 			maxBatch,
