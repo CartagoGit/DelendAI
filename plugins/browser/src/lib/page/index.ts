@@ -1,5 +1,9 @@
 export type {
 	IBrowserDriver,
+	IAssertRequest,
+	IAssertResult,
+	IOpenRequest,
+	IOpenResult,
 	INavigateRequest,
 	INavigateResult,
 	IQueryHit,

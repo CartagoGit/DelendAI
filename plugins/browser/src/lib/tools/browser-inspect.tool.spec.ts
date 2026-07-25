@@ -1,124 +1,128 @@
+import { mkdtemp, readFile, rm } from 'node:fs/promises';
+import { join } from 'node:path';
+import { tmpdir } from 'node:os';
+
 import { describe, expect, it } from 'vitest';
 
+import { captureToolRegistration } from '../../../../../tools/scripts/lib/test-mcp-server';
+
 import { buildBrowserInspectToolRegistrations } from './browser-inspect.tool';
-import type {
-	IBrowserDriver,
-	INavigateResult,
-	IQueryHit,
-	IQueryResult,
-	IScreenshotResult,
-} from '../page/ibrowser-driver';
-
-class FakeServer {
-	tools: Record<string, { handler: (a: unknown) => Promise<unknown> }> = {};
-	registerTool(
-		name: string,
-		_meta: unknown,
-		handler: (a: unknown) => Promise<unknown>,
-	) {
-		this.tools[name] = { handler };
-	}
-}
-
-const parseOk = (r: unknown): Record<string, unknown> => {
-	const text =
-		(r as { content: Array<{ text: string }> }).content[0]?.text ?? '{}';
-	return JSON.parse(text) as Record<string, unknown>;
-};
-
-const parseError = (r: unknown): { reason: string; nextAction: string } => {
-	const text =
-		(r as { content: Array<{ text: string }> }).content[0]?.text ?? '{}';
-	return JSON.parse(text) as { reason: string; nextAction: string };
-};
-
-const buildTools = (
-	driver: IBrowserDriver | undefined,
-	cacheDir = '/cache',
-) => {
-	const regs = buildBrowserInspectToolRegistrations({
-		namespacePrefix: 'browser',
-		pluginCacheDir: cacheDir,
-		...(driver === undefined ? {} : { driver }),
-	});
-	const server = new FakeServer();
-	for (const r of regs) void r.register(server as never);
-	return server.tools;
-};
+import { PLAYWRIGHT_INSTALL_HINT } from '../page/playwright-probe';
+import type { IBrowserDriver } from '../page/ibrowser-driver';
 
 const fakeDriver = (): IBrowserDriver => ({
-	navigate: async (req): Promise<INavigateResult> => ({
-		url: req.url,
+	open: async ({ url }: { url: string }) => ({
+		url,
 		title: 'Example Domain',
-		status: 200,
+		html: '<html><body><h1>Example Domain</h1></body></html>',
 	}),
-	screenshot: async (req): Promise<IScreenshotResult> => ({
-		path: `/cache/browser/screenshot-${req.url.replace(/[^a-z0-9]+/gi, '_').slice(0, 64)}.${req.format ?? 'png'}`,
-		bytes: 1234,
-		format: req.format ?? 'png',
-		width: 1280,
-		height: 800,
+	navigate: async ({ url }: { url: string }) => ({
+		url,
+		title: 'Example Domain',
+		html: '<html><body><h1>Example Domain</h1></body></html>',
 	}),
-	query: async (req): Promise<IQueryResult> => {
-		const hits: IQueryHit[] = [
-			{ selector: req.selector, text: 'first match', tag: 'h1' },
-			{ selector: req.selector, text: 'second match', tag: 'h2' },
-		];
-		const limit = req.limit ?? hits.length;
-		return { url: req.url, hits: hits.slice(0, limit) };
-	},
+	screenshot: async () => ({
+		data: Uint8Array.from([1, 2, 3, 4]),
+		format: 'png',
+	}),
+	query: async ({ url, selector }: { url: string; selector: string }) => ({
+		url,
+		matches: [`${selector}:first`, `${selector}:second`],
+	}),
+	assert: async () => ({ passed: true }),
 });
 
+const registration = (
+	id: string,
+	options: Omit<
+		Parameters<typeof buildBrowserInspectToolRegistrations>[0],
+		'namespacePrefix'
+	>,
+) => {
+	const found = buildBrowserInspectToolRegistrations({
+		namespacePrefix: 'browser',
+		...options,
+	}).find((entry) => entry.id === id);
+	if (found === undefined) throw new Error(`missing registration: ${id}`);
+	return found;
+};
+
 describe('browser-inspect (f00125 S1)', () => {
-	it('registers all three tools under the namespace prefix', () => {
-		const tools = buildTools(fakeDriver());
-		const ids = Object.keys(tools).sort();
-		expect(ids).toEqual([
-			'browser_browser_open',
-			'browser_browser_query',
-			'browser_browser_screenshot',
-		]);
-	});
-
-	it('browser_open returns the page title and status via the driver', async () => {
-		const tools = buildTools(fakeDriver());
-		const handler = tools['browser_browser_open']?.handler as (
-			a: unknown,
-		) => Promise<unknown>;
-		const out = parseOk(await handler({ url: 'https://example.com' }));
-		expect(out['url']).toBe('https://example.com');
-		expect(out['title']).toBe('Example Domain');
-		expect(out['status']).toBe(200);
-	});
-
-	it('browser_screenshot returns the on-disk path + dimensions', async () => {
-		const tools = buildTools(fakeDriver());
-		const handler = tools['browser_browser_screenshot']?.handler as (
-			a: unknown,
-		) => Promise<unknown>;
-		const out = parseOk(
-			await handler({ url: 'https://example.com', format: 'jpeg' }),
+	it('browser_open happy path with a mock driver', async () => {
+		const captured = await captureToolRegistration(
+			registration('browser_open', { driver: fakeDriver() }),
 		);
-		expect(out['format']).toBe('jpeg');
-		expect(out['width']).toBe(1280);
-		expect(out['height']).toBe(800);
-		expect(out['bytes']).toBe(1234);
+		const output = (await captured.invoke({
+			url: 'https://example.com',
+			headless: true,
+		})) as { url: string; title: string; html: string; status: string };
+		expect(output).toEqual({
+			url: 'https://example.com/',
+			title: 'Example Domain',
+			html: '<html><body><h1>Example Domain</h1></body></html>',
+			status: 'ok',
+		});
 	});
 
-	it('browser_query respects the `limit` option', async () => {
-		const tools = buildTools(fakeDriver());
-		const handler = tools['browser_browser_query']?.handler as (
-			a: unknown,
-		) => Promise<unknown>;
-		const out = parseOk(
-			await handler({
+	it('browser_screenshot writes a file under the resolved cache dir', async () => {
+		const cacheDir = await mkdtemp(join(tmpdir(), 'browser-inspect-'));
+		try {
+			const captured = await captureToolRegistration(
+				registration('browser_screenshot', {
+					pluginCacheDir: cacheDir,
+					driver: fakeDriver(),
+				}),
+			);
+			const output = (await captured.invoke({
+				url: 'https://example.com/docs',
+				fullPage: true,
+			})) as { url: string; path: string; status: string };
+			expect(output.status).toBe('ok');
+			expect(output.path).toMatch(
+				new RegExp(`^${cacheDir}/browser/\\d+\\.png$`),
+			);
+			const bytes = await readFile(output.path);
+			expect([...bytes]).toEqual([1, 2, 3, 4]);
+		} finally {
+			await rm(cacheDir, { recursive: true, force: true });
+		}
+	});
+
+	it('browser_query returns the matched texts', async () => {
+		const captured = await captureToolRegistration(
+			registration('browser_query', { driver: fakeDriver() }),
+		);
+		const output = (await captured.invoke({
+			url: 'https://example.com',
+			selector: 'h1',
+		})) as { url: string; matches: readonly string[]; status: string };
+		expect(output).toEqual({
+			url: 'https://example.com/',
+			matches: ['h1:first', 'h1:second'],
+			status: 'ok',
+		});
+	});
+
+	it('missing Playwright returns install-missing for all three actions', async () => {
+		const probeTool = async () => ({
+			unavailable: true,
+			hint: PLAYWRIGHT_INSTALL_HINT,
+		});
+		for (const toolId of [
+			'browser_open',
+			'browser_screenshot',
+			'browser_query',
+		]) {
+			const captured = await captureToolRegistration(
+				registration(toolId, { probeTool }),
+			);
+			const output = (await captured.invoke({
 				url: 'https://example.com',
-				selector: 'h1',
-				limit: 1,
-			}),
-		);
-		const hits = out['hits'] as IQueryHit[];
-		expect(hits.length).toBe(1);
-		expect(hits[0]?.tag).toBe('h1');
+				...(toolId === 'browser_query' ? { selector: 'h1' } : {}),
+			})) as { url: string; status: string; hint: string };
+			expect(output.status).toBe('install-missing');
+			expect(output.url).toBe('https://example.com/');
+			expect(output.hint).toBe(PLAYWRIGHT_INSTALL_HINT);
+		}
 	});
 });

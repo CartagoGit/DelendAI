@@ -24,6 +24,7 @@ const OptionsSchema = z.object({
 	pluginCacheDir: z.string().optional(),
 	driver: z
 		.object({
+			open: z.any().optional(),
 			navigate: z.any(),
 			screenshot: z.any(),
 			query: z.any(),
@@ -54,9 +55,11 @@ export default definePlugin({
 			opts.driver === undefined
 				? undefined
 				: ({
+						open: opts.driver.open ?? opts.driver.navigate,
 						navigate: opts.driver.navigate,
 						screenshot: opts.driver.screenshot,
 						query: opts.driver.query,
+						assert: opts.driver.assert,
 					} as unknown as IBrowserDriver);
 		const interactDriver =
 			opts.driver === undefined
