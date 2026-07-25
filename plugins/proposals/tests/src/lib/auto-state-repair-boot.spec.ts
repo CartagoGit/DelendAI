@@ -11,20 +11,6 @@ import {
 const emptyLock = { version: 1, in_flight: [] as unknown[] };
 const emptyQueue = { version: 1, entries: [] as unknown[] };
 
-const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
-
-const waitUntil = async (
-	fn: () => Promise<boolean>,
-	timeoutMs = 3_000,
-): Promise<void> => {
-	const start = Date.now();
-	while (Date.now() - start < timeoutMs) {
-		if (await fn()) return;
-		await sleep(20);
-	}
-	throw new Error(`waitUntil timed out after ${timeoutMs}ms`);
-};
-
 describe('a00069 S10 auto state_repair on boot', () => {
 	let root = '';
 	let lockPath = '';
