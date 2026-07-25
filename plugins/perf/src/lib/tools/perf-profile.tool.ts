@@ -97,7 +97,12 @@ export const buildPerfProfileRegistration = (
 			}) => {
 				const deps =
 					options.deps ??
-					realPerfProfileDeps(options.workspaceRootAbs);
+					realPerfProfileDeps(
+						options.workspaceRootAbs,
+						options.pluginCacheDir !== undefined
+							? { pluginCacheDir: options.pluginCacheDir }
+							: {},
+					);
 				const input: IPerfProfileCaptureInput = {
 					cwd: args.cwd ?? options.workspaceRootAbs,
 					timeoutMs: args.timeoutMs ?? 2_500,

@@ -103,6 +103,8 @@ export interface IPerfProfileDeps {
 /** Optional seams for the production deps adapter tests. */
 export interface IRealPerfProfileDepsOptions {
 	readonly probeDeps?: IProbeDeps;
+	/** Override the scratch root (defaults to `<workspaceRootAbs>/.cache/mcp-vertex`). */
+	readonly pluginCacheDir?: string;
 }
 
 /** Options for the `perf_profile` tool builder. */
@@ -114,4 +116,6 @@ export interface IPerfProfileToolOptions {
 		input: IPerfProfileCaptureInput,
 		deps: IPerfProfileDeps,
 	) => Promise<IPerfProfileCaptureResult>;
+	/** Forwarded to the production deps as the scratch root. */
+	readonly pluginCacheDir?: string;
 }
