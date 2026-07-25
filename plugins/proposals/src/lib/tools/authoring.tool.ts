@@ -21,6 +21,7 @@ import {
 	allocateNextProposalId,
 	prefixForKind,
 } from '../proposals/proposal-id-allocator';
+import { runAcceptanceCriteria } from '../proposals/proposal-acceptance';
 import {
 	PROPOSAL_KIND_BY_PREFIX,
 	STATUS_TO_FOLDER,
@@ -47,6 +48,46 @@ import type { IAuthoringToolOptions } from './authoring-options';
 
 export type { IAuthoringToolOptions } from './authoring-options';
 export { readActiveLocks } from './authoring-options';
+
+// MCP hosts commonly cancel a tool call after one minute. Keep the
+// close-slice validation below that deadline so callers receive the
+// structured validation error and the document mutex is always released.
+const CLOSE_SLICE_VALIDATION_TIMEOUT_MS = 45_000;
+
+export const runCloseSliceValidation = async (
+	command: string,
+	cwd: string,
+	timeoutMs = CLOSE_SLICE_VALIDATION_TIMEOUT_MS,
+): Promise<{
+	readonly ok: boolean;
+	readonly output: string;
+	readonly exitCode: number;
+}> => {
+	const result = await runAcceptanceCriteria(
+		[{ command, expect: 'exit0', timeoutMs }],
+		{ cwd },
+	);
+	const verdict = result.results[0];
+	if (verdict === undefined) {
+		return {
+			ok: false,
+			output: 'validation command produced no result',
+			exitCode: 1,
+		};
+	}
+	return {
+		ok: verdict.passed,
+		output: [verdict.actual, verdict.reason]
+			.filter(
+				(part): part is string =>
+					typeof part === 'string' && part.length > 0,
+			)
+			.join('\n'),
+		exitCode:
+			verdict.exitCode ??
+			(verdict.reason?.startsWith('timeout:') ? 124 : 1),
+	};
+};
 
 const SLICE_IN = z.object({
 	sliceId: z.string(),
@@ -563,55 +604,11 @@ export const buildCloseSliceRegistration = (
 						) {
 							const run =
 								options.runValidation ??
-								(async () => {
-									const { spawn } = await import(
-										'node:child_process'
-									);
-									return await new Promise<{
-										ok: boolean;
-										output: string;
-										exitCode: number;
-									}>((resolve) => {
-										const child = spawn(validationCommand, {
-											cwd: options.workspaceRoot,
-											shell: true,
-											env: process.env,
-											stdio: ['ignore', 'pipe', 'pipe'],
-										});
-										let out = '';
-										const append = (d: Buffer) => {
-											if (out.length < 32_768)
-												out += d.toString('utf8');
-										};
-										child.stdout?.on('data', append);
-										child.stderr?.on('data', append);
-										const timer = setTimeout(() => {
-											child.kill('SIGTERM');
-											resolve({
-												ok: false,
-												output: `${out}\n[timeout after 5m]`,
-												exitCode: 124,
-											});
-										}, 5 * 60_000);
-										child.on('close', (code) => {
-											clearTimeout(timer);
-											const exitCode = code ?? 1;
-											resolve({
-												ok: exitCode === 0,
-												output: out,
-												exitCode,
-											});
-										});
-										child.on('error', (err) => {
-											clearTimeout(timer);
-											resolve({
-												ok: false,
-												output: err.message,
-												exitCode: 1,
-											});
-										});
-									});
-								});
+								(() =>
+									runCloseSliceValidation(
+										validationCommand,
+										options.workspaceRoot,
+									));
 							const verdict = await run();
 							if (!verdict.ok) {
 								const err = new Error(
