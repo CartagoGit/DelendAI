@@ -112,6 +112,11 @@
 			"@mcp-vertex/perf": ["./plugins/perf/src/index.ts"],
 			"@mcp-vertex/perf/public": ["./plugins/perf/src/public/index.ts"],
 			"@mcp-vertex/perf/*": ["./plugins/perf/src/*"],
+			"@mcp-vertex/prompt-eval": ["./plugins/prompt-eval/src/index.ts"],
+			"@mcp-vertex/prompt-eval/public": [
+				"./plugins/prompt-eval/src/public/index.ts"
+			],
+			"@mcp-vertex/prompt-eval/*": ["./plugins/prompt-eval/src/*"],
 			"@mcp-vertex/tech-debt": ["./plugins/tech-debt/src/index.ts"],
 			"@mcp-vertex/tech-debt/public": [
 				"./plugins/tech-debt/src/public/index.ts"

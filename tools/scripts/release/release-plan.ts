@@ -37,6 +37,7 @@ export const PUBLISH_ORDER: readonly string[] = [
 	'plugins/orchestrator-runner',
 	'plugins/perf',
 	'plugins/proposals',
+	'plugins/prompt-eval',
 	'plugins/quality',
 	'plugins/refactor',
 	'plugins/rules',

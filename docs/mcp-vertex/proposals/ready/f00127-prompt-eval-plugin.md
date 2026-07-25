@@ -46,19 +46,43 @@ tasks/fixtures, not a bundled benchmark.
 
 ### S1 — eval harness
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/prompt-eval/src/lib/eval/`, `plugins/prompt-eval/src/lib/tools/eval-run.tool.ts`
 - **Gate**: bun run validate
-
-`eval_run` executes a prompt across the ranked roster, runs the acceptance gate
-per provider, and records cost + pass/fail. Pure over injected run+gate seams;
-spend-guarded.
+- implementation:
+  - `eval-harness.ts` exports `runEvalHarness(input, deps)`, a pure
+    planner over an injected `IEvalHarnessDeps` triplet:
+    `allowSpend` (spend guard), `runProvider` (exec), and
+    `checkAcceptance` (project gate). A denied spend guard is a recorded
+    skip (`skipped: 'spend-denied'`), never a provider invocation.
+  - `eval-run.tool.ts` registers `eval_run` with `effects: ['network',
+    'spawn']` and a strict zod input requiring `consent: true` — spend
+    is opt-in. Returns `{ attempts, passed, totalCostUsd, winner }`:
+    `winner` is the cheapest passing provider (or `null` when none
+    passed).
+  - 2 unit tests cover: cheapest-passing wins; spend-denied providers
+    are never invoked.
+  - committed: `80cd369e feat(prompt-eval): add spend-guarded eval
+    harness`.
 
 ### S2 — scoring + report
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/prompt-eval/src/lib/score/`, `plugins/prompt-eval/src/lib/tools/eval-report.tool.ts`
 - **Gate**: bun run validate
+- implementation:
+  - `score/score.ts` is the pure scorer: `scoreProvider`, `scoreReport`, and `scorePerTaskType`. Composite score = `winRate * 100 - totalCostUsd` (cost-blended). Rank-by: composite desc, then cost asc, then tier asc.
+  - `tools/eval-report.tool.ts` registers `eval_report` (no I/O): takes a flat `IEvalAttempt[]`, returns `{ rows, winner, worst, totalCostUsd, totalPasses, markdown }`. The markdown table renders a fixed-width header + per-provider rows with win-rate %, cost, and composite score for the CLI. Pure planner; 4/4 tool tests pass.
+  - 15 score-spec tests cover null win-rate, skipped-attempt accounting, mix-of-pass/fail scoring, cross-provider isolation, ranking with passing tiers, tie-breaking by (composite → cost → tier), winner=null when nothing passes, "worst" = last row in the ranked report, per-task-type grouping with `_default` task-type fallback.
+- implementation:
+  - `score/score.ts` is the pure scorer. `scoreProvider`,
+    `scoreReport`, `scorePerTaskType`. `compositeScore =
+    winRate * 100 - totalCostUsd` so cost blends into the ranking.
+    Rank-by: composite desc, cost asc, tier asc.
+  - `tools/eval-report.tool.ts` registers `eval_report` (no I/O): takes
+    a flat `IEvalAttempt[]` and returns `{ rows, winner, worst,
+    totalCostUsd, totalPasses, markdown }` — the markdown table is a
+    fixed-width header + per-provider rows for the CLI. Pure planner.
 
 `eval_report` computes cost×quality + win-rate per (provider, task type) and
 surfaces a ranked table (CLI + extension). Pure scorer; fully unit-tested.
