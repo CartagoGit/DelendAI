@@ -65,9 +65,16 @@ including the graceful-degradation path.
 
 ### S2 — local incremental embedding index
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/search/src/lib/embed/`, `plugins/search/src/lib/tools/search-semantic.tool.ts`
 - **Gate**: bun run validate
+- implementation:
+  - `embed/embedder.ts` provides a deterministic hash-based default embedder with an `IEmbedder` seam for S3.
+  - `embed/index-store.ts` persists the index under `pluginCacheDir/embed-index.json` keyed by content hash and mtimeMs.
+  - `embed/embed-pipeline.ts` discovers files, hashes them, embeds only changed ones, and persists.
+  - `search-semantic.tool.ts` wires BM25 + vector ranking through `fuseRankings`.
+  - `search.tool.ts` extends the public search tool with `mode: lexical|semantic|hybrid` (lexical default).
+  - 89/89 plugin tests pass; lexical mode is byte-for-byte the current behaviour.
 
 Incremental index build to `pluginCacheDir` over an injected `embed` seam
 (default local); `search` gains a `mode: hybrid|lexical|semantic`. Index keyed
