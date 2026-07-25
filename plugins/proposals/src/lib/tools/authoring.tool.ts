@@ -44,6 +44,7 @@ import {
 	renderReviewLines,
 	reviewTransition,
 } from '../swarm/proposal-review';
+import { recordProposalReviewAction } from '../shared/peer-review-log';
 import { readActiveLocks, resolveIndexedDoc } from './authoring-options';
 import type { IAuthoringToolOptions } from './authoring-options';
 
@@ -1050,6 +1051,21 @@ export const buildReviewRegistration = (
 					options.layout,
 					options.extraFolders ?? [],
 				);
+				if (options.peerReviewLogPathAbs !== undefined) {
+					await recordProposalReviewAction({
+						logPathAbs: options.peerReviewLogPathAbs,
+						proposalId: entry.id,
+						sliceId: args.sliceId,
+						action: args.action,
+						implementer: nextImplementer,
+						reviewer: nextReviewer,
+						...(args.action === 'approve'
+							? { verdict: 'approved' as const }
+							: args.action === 'request_changes'
+								? { verdict: 'requested_changes' as const }
+								: {}),
+					}).catch(() => undefined);
+				}
 				return toolOk({
 					proposalId: entry.id,
 					sliceId: args.sliceId,

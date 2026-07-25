@@ -236,6 +236,49 @@ describe('auto_work (one-call action plan)', async () => {
 		expect(out.orchestration.policy).toContain('>1 tool calls');
 	});
 
+	it('surfaces proposal_review before proposal_transition for review-folder proposals (F149)', async () => {
+		options = {
+			...options,
+			proposalsDirAbs: root,
+			requirePeerReview: true,
+		};
+		writeFileSync(
+			options.indexPathAbs,
+			JSON.stringify({
+				proposals: [
+					{
+						id: 'a00063',
+						file: 'review/a00063-peer.md',
+						status: 'pending',
+					},
+				],
+			}),
+		);
+		mkdirSync(join(root, 'review'), { recursive: true });
+		writeFileSync(
+			join(root, 'review', 'a00063-peer.md'),
+			[
+				'---',
+				'id: a00063',
+				'status: review',
+				'---',
+				'',
+				'## Slices',
+				'',
+				'### S1 — pending review',
+				'- **Status**: done',
+				'',
+			].join('\n'),
+			'utf8',
+		);
+
+		const out = parse(await runAutoWork(options));
+		expect(out.next).toBe('proposals_proposal_review');
+		expect(out.nextAction).toContain('Peer-review gate (F149)');
+		expect(out.steps[1]).toContain('proposal_review');
+		expect(out.steps[2]).toContain('proposal_transition');
+	});
+
 	it('builds the orchestration policy as a standalone pure helper', async () => {
 		expect(
 			buildAutoWorkOrchestrationPolicy({

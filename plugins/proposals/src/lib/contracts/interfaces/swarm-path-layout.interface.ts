@@ -32,6 +32,8 @@ export interface IHostPathLayout {
 	readonly proposalsDir: string;
 	/** Machine-readable proposal index. */
 	readonly proposalIndexFile: string;
+	/** Append-only peer-review journal used by the pre-done gate. */
+	readonly peerReviewLogFile: string;
 	/** f00016 S13: per-kind sequential id counters (race-safe allocation). */
 	readonly proposalIdCountersFile: string;
 	/**

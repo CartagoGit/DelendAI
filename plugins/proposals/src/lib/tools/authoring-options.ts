@@ -30,6 +30,8 @@ export interface IAuthoringToolOptions {
 	readonly proposalsDirAbs: string;
 	readonly indexPathAbs: string;
 	readonly lockPathAbs: string;
+	/** Append-only peer-review journal used by proposal_review + done gate. */
+	readonly peerReviewLogPathAbs?: string;
 	/** f00016 S13: absolute path of the per-kind id counter file. */
 	readonly counterPathAbs: string;
 	/**

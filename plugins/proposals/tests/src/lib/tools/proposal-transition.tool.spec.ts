@@ -7,7 +7,7 @@ import {
 	writeFile,
 } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
@@ -54,6 +54,18 @@ const writeProposal = async (
 	await writeFile(join(dir, filename), raw, 'utf8');
 };
 
+const writePeerReviewLog = async (
+	logPathAbs: string,
+	entries: readonly Record<string, unknown>[],
+): Promise<void> => {
+	await mkdir(dirname(logPathAbs), { recursive: true });
+	await writeFile(
+		logPathAbs,
+		`${entries.map((entry) => JSON.stringify(entry)).join('\n')}\n`,
+		'utf8',
+	);
+};
+
 describe('proposal_transition', async () => {
 	let root = '';
 	let options: IProposalTransitionToolOptions;
@@ -65,6 +77,7 @@ describe('proposal_transition', async () => {
 			proposalsDirAbs: root,
 			workspaceRoot: root,
 			gitRunner: FAKE_GIT_MV,
+			peerReviewLogPathAbs: join(root, '.cache', 'peer-review.jsonl'),
 			// Pre-S7 DFA cases stay free of peer-review noise; S7 suite opts in.
 			requirePeerReview: false,
 		};
@@ -482,6 +495,12 @@ describe('a00069 S7 peer-review gate on review → done', () => {
 			proposalsDirAbs: root,
 			workspaceRoot: root,
 			gitRunner: FAKE_GIT_MV,
+			peerReviewLogPathAbs: join(
+				root,
+				'.cache',
+				'mcp-vertex',
+				'peer-review.jsonl',
+			),
 			requirePeerReview: true,
 		};
 	});
@@ -502,7 +521,7 @@ describe('a00069 S7 peer-review gate on review → done', () => {
 		expect(hasIndependentPeerApproval('no review lines')).toBe(false);
 	});
 
-	it('refuses review → done without peer approve', async () => {
+	it('r00010: refuses review → done without a peer-review journal entry', async () => {
 		await writeProposal(root, 'review', 'f00970-s7.md', {
 			id: 'f00970',
 			status: 'review',
@@ -514,10 +533,11 @@ describe('a00069 S7 peer-review gate on review → done', () => {
 		);
 		expect(result.isError).toBe(true);
 		const body = JSON.parse(result.content[0]?.text ?? '{}');
-		expect(body.error.reason).toMatch(/peer-review required/i);
+		expect(body.error.code).toBe('peer-review-missing');
+		expect(body.error.blockerType).toBe('missing-peer-review');
 	});
 
-	it('allows review → done after independent approve is recorded', async () => {
+	it('a00065: allows review → done after an independent approve is logged after review', async () => {
 		await writeProposal(
 			root,
 			'review',
@@ -535,6 +555,25 @@ describe('a00069 S7 peer-review gate on review → done', () => {
 				'',
 			].join('\n'),
 		);
+		await writePeerReviewLog(options.peerReviewLogPathAbs!, [
+			{
+				kind: 'transition',
+				ts: '2026-07-25T10:00:00.000Z',
+				proposalId: 'f00971',
+				from: 'in-progress',
+				to: 'review',
+			},
+			{
+				kind: 'review',
+				ts: '2026-07-25T10:01:00.000Z',
+				proposalId: 'f00971',
+				sliceId: 'S1',
+				action: 'approve',
+				implementer: 'alice',
+				reviewer: 'bob',
+				verdict: 'approved',
+			},
+		]);
 		const result = await runProposalTransition(
 			{ id: 'f00971', to: 'done', reason: 'peer approved' },
 			options,
@@ -543,6 +582,53 @@ describe('a00069 S7 peer-review gate on review → done', () => {
 		const body = JSON.parse(result.content[0]?.text ?? '{}');
 		expect(body.ok).toBe(true);
 		expect(body.to).toBe('done');
+	});
+
+	it('a00063: rejects review → done when the only approval is self-review', async () => {
+		await writeProposal(
+			root,
+			'review',
+			'f00974-s7.md',
+			{ id: 'f00974', status: 'review', type: 'feat' },
+			[
+				'## Slices',
+				'',
+				'### S1 — work',
+				'- **Status**: done',
+				'- review-state: done',
+				'- review-implementer: alice',
+				'- review-reviewer: alice',
+				'- review-log: approved by alice',
+				'',
+			].join('\n'),
+		);
+		await writePeerReviewLog(options.peerReviewLogPathAbs!, [
+			{
+				kind: 'transition',
+				ts: '2026-07-25T11:00:00.000Z',
+				proposalId: 'f00974',
+				from: 'in-progress',
+				to: 'review',
+			},
+			{
+				kind: 'review',
+				ts: '2026-07-25T11:01:00.000Z',
+				proposalId: 'f00974',
+				sliceId: 'S1',
+				action: 'approve',
+				implementer: 'alice',
+				reviewer: 'alice',
+				verdict: 'approved',
+			},
+		]);
+		const result = await runProposalTransition(
+			{ id: 'f00974', to: 'done', reason: 'self-reviewed' },
+			options,
+		);
+		expect(result.isError).toBe(true);
+		const body = JSON.parse(result.content[0]?.text ?? '{}');
+		expect(body.error.code).toBe('peer-review-missing');
+		expect(body.error.blockerType).toBe('missing-peer-review');
 	});
 
 	it('allows force:true bypass without peer approve', async () => {
@@ -574,5 +660,21 @@ describe('a00069 S7 peer-review gate on review → done', () => {
 		expect(result.isError).toBeUndefined();
 		const body = JSON.parse(result.content[0]?.text ?? '{}');
 		expect(body.ok).toBe(true);
+	});
+
+	it('does not apply the peer-review gate on transitions to review', async () => {
+		await writeProposal(root, 'in-progress', 'f00975-s7.md', {
+			id: 'f00975',
+			status: 'in-progress',
+			type: 'feat',
+		});
+		const result = await runProposalTransition(
+			{ id: 'f00975', to: 'review', reason: 'ready for review' },
+			options,
+		);
+		expect(result.isError).toBeUndefined();
+		const body = JSON.parse(result.content[0]?.text ?? '{}');
+		expect(body.ok).toBe(true);
+		expect(body.to).toBe('review');
 	});
 });
