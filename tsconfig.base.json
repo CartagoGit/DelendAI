@@ -122,6 +122,11 @@
 				"./plugins/tech-debt/src/public/index.ts"
 			],
 			"@mcp-vertex/tech-debt/*": ["./plugins/tech-debt/src/*"],
+			"@mcp-vertex/link-check": ["./plugins/link-check/src/index.ts"],
+			"@mcp-vertex/link-check/public": [
+				"./plugins/link-check/src/public/index.ts"
+			],
+			"@mcp-vertex/link-check/*": ["./plugins/link-check/src/*"],
 			"@mcp-vertex/logs": ["./plugins/logs/src/index.ts"],
 			"@mcp-vertex/logs/public": ["./plugins/logs/src/public/index.ts"],
 			"@mcp-vertex/logs/*": ["./plugins/logs/src/*"],

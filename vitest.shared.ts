@@ -56,6 +56,7 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 	const i18n = resolve(workspaceRoot, 'plugins/i18n/src');
 	const perf = resolve(workspaceRoot, 'plugins/perf/src');
 	const techDebt = resolve(workspaceRoot, 'plugins/tech-debt/src');
+	const linkCheck = resolve(workspaceRoot, 'plugins/link-check/src');
 	const logs = resolve(workspaceRoot, 'plugins/logs/src');
 	const audit = resolve(workspaceRoot, 'plugins/audit/src');
 	const browser = resolve(workspaceRoot, 'plugins/browser/src');
@@ -311,6 +312,18 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 		{
 			find: '@mcp-vertex/tech-debt',
 			replacement: resolve(techDebt, 'index.ts'),
+		},
+		{
+			find: '@mcp-vertex/link-check/public',
+			replacement: resolve(linkCheck, 'public/index.ts'),
+		},
+		{
+			find: /^@mcp-vertex\/link-check\/lib\/(.*)$/,
+			replacement: `${resolve(linkCheck, 'lib')}/$1`,
+		},
+		{
+			find: '@mcp-vertex/link-check',
+			replacement: resolve(linkCheck, 'index.ts'),
 		},
 		{
 			find: '@mcp-vertex/logs/public',

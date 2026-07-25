@@ -764,6 +764,31 @@ export interface McpVertexKnowledgeOutput {
 	body?: string;
 }
 
+export interface McpVertexLinkCheckLinkCheckOutput {
+	docsScanned: number;
+	total: number;
+	findings: Array<{
+		ruleId: string;
+		severity: "critical" | "high" | "medium" | "low" | "info";
+		message: string;
+		fix?: string;
+		location?: {
+			file: string;
+			line?: number;
+			endLine?: number;
+		};
+	}>;
+	truncated: boolean;
+	summary: {
+		critical: number;
+		high: number;
+		medium: number;
+		low: number;
+		info: number;
+	};
+	worst: string;
+}
+
 export interface McpVertexLogsCorrelateOutput {
 	chain: Array<{
 		ts: string;
@@ -2878,6 +2903,7 @@ export interface McpVertexToolOutputs {
 	"mcp-vertex_i18n_i18n_check": McpVertexI18nI18nCheckOutput;
 	"mcp-vertex_init_config": McpVertexInitConfigOutput;
 	"mcp-vertex_knowledge": McpVertexKnowledgeOutput;
+	"mcp-vertex_link-check_link_check": McpVertexLinkCheckLinkCheckOutput;
 	"mcp-vertex_logs_correlate": McpVertexLogsCorrelateOutput;
 	"mcp-vertex_logs_errors_tail": McpVertexLogsErrorsTailOutput;
 	"mcp-vertex_logs_query": McpVertexLogsQueryOutput;

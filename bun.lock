@@ -392,6 +392,23 @@
         "@mcp-vertex/core": "^0.1.0",
       },
     },
+    "plugins/link-check": {
+      "name": "@mcp-vertex/link-check",
+      "version": "0.1.0",
+      "dependencies": {
+        "@modelcontextprotocol/sdk": "^1.29.0",
+        "zod": "^4.4.3",
+      },
+      "devDependencies": {
+        "@mcp-vertex/core": "workspace:*",
+        "@types/bun": "latest",
+        "typescript": "7.0.2",
+        "vitest": "4.1.10",
+      },
+      "peerDependencies": {
+        "@mcp-vertex/core": "^0.1.0",
+      },
+    },
     "plugins/logs": {
       "name": "@mcp-vertex/logs",
       "version": "0.1.0",
@@ -1018,6 +1035,8 @@
     "@mcp-vertex/i18n": ["@mcp-vertex/i18n@workspace:plugins/i18n"],
 
     "@mcp-vertex/issues": ["@mcp-vertex/issues@workspace:plugins/issues"],
+
+    "@mcp-vertex/link-check": ["@mcp-vertex/link-check@workspace:plugins/link-check"],
 
     "@mcp-vertex/logs": ["@mcp-vertex/logs@workspace:plugins/logs"],
 

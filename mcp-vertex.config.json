@@ -108,6 +108,9 @@
 		"tech-debt": {
 			"options": {}
 		},
+		"link-check": {
+			"options": {}
+		},
 		"usage-tracking": {
 			"options": {}
 		},
