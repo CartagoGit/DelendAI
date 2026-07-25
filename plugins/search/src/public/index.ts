@@ -16,6 +16,38 @@ export type {
 } from '../lib/services/search-engine.service';
 export { buildSearchToolRegistrations } from '../lib/tools/search.tool';
 export type { ISearchToolOptions } from '../lib/tools/search.tool';
+export {
+	buildDeterministicHashEmbedder,
+	defaultEmbedder,
+	DEFAULT_EMBED_DIMENSIONS,
+} from '../lib/embed/embedder';
+export type { IEmbedder } from '../lib/embed/embedder';
+export {
+	createEmbedIndexStore,
+	resolveEmbedIndexPath,
+} from '../lib/embed/index-store';
+export type {
+	IEmbedIndex,
+	IEmbedIndexEntry,
+	IEmbedIndexStore,
+	IEmbedIndexStoreOptions,
+} from '../lib/embed/index-store';
+export {
+	discoverEmbeddableFiles,
+	hashContent,
+	runEmbedPipeline,
+} from '../lib/embed/embed-pipeline';
+export type {
+	IDiscoveredEmbedFile,
+	IEmbedPipelineOptions,
+	IEmbedPipelineResult,
+} from '../lib/embed/embed-pipeline';
+export { runSearchWithMode } from '../lib/tools/search-semantic.tool';
+export type {
+	ISearchSemanticToolOptions,
+	ISearchToolArgs,
+	SearchMode,
+} from '../lib/tools/search-semantic.tool';
 
 // --- generated tool-output types (N23, see scripts/generate-tool-types.ts) ---
 export type * from '../generated/tool-outputs';
