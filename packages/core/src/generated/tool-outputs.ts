@@ -1210,6 +1210,39 @@ export interface McpVertexPlanMcpProjectOutput {
 	};
 }
 
+export interface McpVertexPromptEvalEvalReportOutput {
+	tool: "eval_report";
+	rows: Array<{
+		providerId: string;
+		costTier: number;
+		attempts: number;
+		passes: number;
+		winRate: number | null;
+		totalCostUsd: number;
+		compositeScore: number;
+	}>;
+	winner: string | null;
+	worst: string | null;
+	totalCostUsd: number;
+	totalPasses: number;
+	markdown: string;
+}
+
+export interface McpVertexPromptEvalEvalRunOutput {
+	tool: "eval_run";
+	taskType: string | null;
+	attempts: {
+		providerId: string;
+		costTier: number;
+		costUsd: number;
+		passed: boolean;
+		skipped?: "spend-denied";
+	}[];
+	passed: number;
+	totalCostUsd: number;
+	winner: string | null;
+}
+
 export interface McpVertexProposalsAgentLockOutput {
 	tool?: string;
 	action?: "claim" | "release" | "status" | "gc";
@@ -2868,6 +2901,8 @@ export interface McpVertexToolOutputs {
 	"mcp-vertex_perf_perf_bundle": McpVertexPerfPerfBundleOutput;
 	"mcp-vertex_perf_perf_profile": McpVertexPerfPerfProfileOutput;
 	"mcp-vertex_plan_mcp_project": McpVertexPlanMcpProjectOutput;
+	"mcp-vertex_prompt-eval_eval_report": McpVertexPromptEvalEvalReportOutput;
+	"mcp-vertex_prompt-eval_eval_run": McpVertexPromptEvalEvalRunOutput;
 	"mcp-vertex_proposals_agent_lock": McpVertexProposalsAgentLockOutput;
 	"mcp-vertex_proposals_agent_lock_release_orphan": McpVertexProposalsAgentLockReleaseOrphanOutput;
 	"mcp-vertex_proposals_agent_names": McpVertexProposalsAgentNamesOutput;
