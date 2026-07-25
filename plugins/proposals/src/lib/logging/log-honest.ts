@@ -6,7 +6,10 @@ export interface IRawLogEntry {
 	readonly ts: string;
 	readonly tool: string;
 	readonly outcome?: 'ok' | 'idle' | 'error';
-	readonly meta?: { readonly isError?: boolean; readonly [k: string]: unknown };
+	readonly meta?: {
+		readonly isError?: boolean;
+		readonly [k: string]: unknown;
+	};
 	readonly [k: string]: unknown;
 }
 
@@ -15,9 +18,7 @@ export interface IHonestLogEntry extends IRawLogEntry {
 	readonly outcome: 'ok' | 'idle' | 'error';
 }
 
-const toOutcome = (
-	entry: IRawLogEntry,
-): 'ok' | 'idle' | 'error' => {
+const toOutcome = (entry: IRawLogEntry): 'ok' | 'idle' | 'error' => {
 	if (entry.meta?.isError === true) return 'error';
 	return entry.outcome ?? 'idle';
 };
@@ -27,7 +28,9 @@ export const honestEntry = (entry: IRawLogEntry): IHonestLogEntry => ({
 	outcome: toOutcome(entry),
 });
 
-const resolveSource = async (source: string): Promise<{
+const resolveSource = async (
+	source: string,
+): Promise<{
 	readonly content: string;
 	readonly sourcePath?: string;
 }> => {

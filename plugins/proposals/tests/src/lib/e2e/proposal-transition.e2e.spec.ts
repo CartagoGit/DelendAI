@@ -50,7 +50,16 @@ const RECENT_VALIDATE = {
 
 const callTransition = async (
 	server: IAssembledProposalsServer,
-	args: { id: string; to: string; reason: string; validateEvidence?: { timestamp: string; exitCode: number; logPath?: string } },
+	args: {
+		id: string;
+		to: string;
+		reason: string;
+		validateEvidence?: {
+			timestamp: string;
+			exitCode: number;
+			logPath?: string;
+		};
+	},
 ): Promise<IAssembledToolResult<TransitionOutput>> =>
 	server.callTool<TransitionOutput>(
 		'mcp-vertex_proposals_proposal_transition',
