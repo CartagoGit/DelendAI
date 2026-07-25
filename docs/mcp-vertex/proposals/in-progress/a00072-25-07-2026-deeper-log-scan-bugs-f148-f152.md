@@ -193,16 +193,10 @@ Los F148-F152 son bugs **estructurales** del swarm, no cosméticos:
 
 ### S4 — `agent_worktree` auto-detect stranded branches (F201)
 
-- **Status**: todo
-- **Files**:
-  - `plugins/proposals/src/lib/tools/branch-status.tool.ts` — new
-    helper `detectStrandedBranches()` en el tool.
-  - `plugins/proposals/src/lib/locks/branch-hygiene.ts` — new file
-    con `purgeStrandedBranches()` que detecta `ahead=0 && behind>10`
-    y propone delete via `git worktree remove` + `git branch -D`.
-  - `plugins/proposals/src/lib/tools/agent-worktree.tool.ts` —
-    wiring post-action `create` para invocar `purgeStrandedBranches()`
-    cada N días.
+- **Status**: pending
+- **Files**: `plugins/proposals/src/lib/tools/branch-status.tool.ts`,
+  `plugins/proposals/src/lib/tools/agent-worktree.tool.ts`,
+  `plugins/proposals/src/lib/locks/branch-hygiene.ts`.
 - **Cambio** (2 sub-slices):
   - **S4.a** — `detectStrandedBranches()` retorna lista de ramas
     con `{branch, ahead, behind}` para todas las agent/* branches.
