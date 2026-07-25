@@ -21,6 +21,9 @@ shipped-in:
     - e37b21e3 # feat(a00069): S7 peer-review gate on review→done
     - d48d6ef4 # fix(a00069): complete S7 peer-review short-circuit paths
     - c51bb563 # fix(a00069): unnest requirePeerReview from validationCommand
+    - c2930773 # a00069 land
+    - c7766ea6 # a00069 land
+    - 190e3a33 # a00069 land
 related:
     - a00067 # evaluación de migración de lenguaje (precedente de los mismos agentes)
     - a00068 # auditoría exhaustiva previa del 2026-07-24 (drift de carpeta/status)
