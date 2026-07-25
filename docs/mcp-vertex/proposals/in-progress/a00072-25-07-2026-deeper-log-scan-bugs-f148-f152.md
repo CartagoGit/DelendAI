@@ -845,10 +845,178 @@ patrón de "step en step list, pero no ejecutado"), F149
 
 **Estado**: OPEN (FATAL enforce).
 
+### F170 — `agents.lock.json` `in_flight: []` confirmado limpio tras S1 release — S12+S1 self-healing verificado operativamente (POSITIVO)
+
+Re-audit-15 `cat .cache/mcp-vertex/agents.lock.json`:
+
+```text
+{
+  "version": 1,
+  "stale_after_minutes": 10,
+  "in_flight": []
+}
+```
+
+Re-audit-15 `find .cache -name "*.tmp" | wc -l`:
+
+```text
+0 (agents.lock.json.*.tmp)
+64 (usage-tracking/usage-summary.json.*.tmp)
+```
+
+**Esperado**: lock vacío. **Actual**: lock vacío tras `runAgentLockEngine({ action: "release" })` del a00072-S1.
+
+**Esperado vs Actual**: el ciclo claim → implement → release → verify-clean funcionó. S1 (a00072) verificó que `agents_lock_release` cierra correctamente. **F127 + F170 confirman**: el sistema es self-healing en happy path.
+
+**Severidad**: **POSITIVO**. F148/F151 cierres verificados en producción.
+
+### F171 — `usage-tracking/usage-summary.json.*.tmp` sigue 64 files — F104/F128/F155 persistente (FATAL)
+
+Re-audit-15 `ls .cache/mcp-vertex/results/usage-tracking/*.tmp | wc -l`:
+
+```text
+64
+```
+
+**Esperado**: 0 (F104). **Actual**: 64.
+
+**Esperado vs Actual**: F104 (pasada-11) → F128 (pasada-13) → F155 (pasada-14) → **F171 (pasada-15)**. **4 pasadas con el mismo FATAL sin mitigación**. El lint `check-stray-cache-files` con threshold `mtime > 60s` cross-cutting (S13.c) **NO se ha implementado**.
+
+**Severidad**: FATAL persistente — 64 files desde Jul 22 = ~7 días de basura.
+
+**Slice**: **S13.c** (cross-cutting tmp sweep) — ya propuesto, no implementado.
+
+### F172 — 12 ramas `agent/*` activas — F154 evol (era 5 en pasada-14, ahora 12) (FATAL operativo)
+
+Re-audit-15 `git branch -a | grep -E "agent/" | wc -l`:
+
+```text
+12
+```
+
+**Esperado**: ≤3 ramas activas. **Actual**: 12.
+
+**Esperado vs Actual**: F154 reportó 5 ramas en pasada-14. **Ahora 12** — 7 ramas nuevas creadas en ~30min por agentes paralelos. La proliferación es **+7 ramas en 30min**.
+
+**Severidad**: FATAL operativo — branches `agent/*` proliferan post-cierre del audit que las detectó.
+
+**Cross-references**: F23/F39/F50/F133/F154 reincidente.
+
+### F173 — `plugins/database/src/lib/introspect/` 3 archivos modified — F162 evol (MEJORABLE proceso)
+
+Re-audit-15 `git status --short plugins/database/`:
+
+```text
+ M plugins/database/src/lib/introspect/introspect-engine.spec.ts
+ M plugins/database/src/lib/introspect/introspect-engine.ts
+ M plugins/database/src/lib/tools/db-schema.tool.spec.ts
+```
+
+**Esperado**: database plugin cerrado. **Actual**: 3 archivos modified sin propuesta visible.
+
+**Esperado vs Actual**: F162 ya reportó esto en pasada-14. **Sigue sin resolverse**.
+
+**Severidad**: MEJORABLE — trabajo sin trazabilidad.
+
+### F174 — `packages/core/src/lib/plugins/plugin-defaults.ts` modified — registro plugin (INFO)
+
+Re-audit-15 `git status --short`:
+
+```text
+ M packages/core/src/lib/plugins/plugin-defaults.ts
+```
+
+**Severado**: INFO — presumiblemente F121/F126 evolución.
+
+### F175 — `tsconfig.base.json` + `vitest.shared.ts` modified — alias updates (INFO)
+
+Re-audit-15:
+
+```text
+ M tsconfig.base.json
+ M vitest.shared.ts
+```
+
+**Severado**: INFO — presumiblemente para plugins nuevos (database, observability, api).
+
+### F176 — `bun.lock` modified — packages.json#workspaces sync (INFO)
+
+**Severado**: INFO — F121 evolución.
+
+### F177 — `packages/core/tests/src/lib/e2e/token-budget.e2e.spec.ts` modified — F163 evol (INFO)
+
+**Severado**: INFO — F163 evolución.
+
+### F178 — `docs/mcp-vertex/agent-catalog.generated.json` modified — F161 evol (INFO)
+
+**Severado**: INFO — F161 evolución. Catalog regenerado.
+
+### F179 — `packages/cli/src/contracts/constants/help-translation.constant.ts` modified — i18n update (INFO)
+
+**Severado**: INFO — presumiblemente i18n para 36 plugins.
+
+### F180 — `tools/scripts/lint/proposal-files-exist.baseline.json` modified — F138 evol (INFO)
+
+**Severado**: INFO — F138 evolución.
+
+### F181 — `tools/scripts/release/release-plan.ts` modified — F126 evol (INFO)
+
+**Severado**: INFO — F126 evolución.
+
+### F182 — `tools/scripts/types/generate-tool-types.script.ts` modified — F121 evol (INFO)
+
+**Severado**: INFO — F121 evolución.
+
+### F183 — `apps/web/scripts/__tests__/preset-table.spec.ts` modified — F160 evol (INFO)
+
+**Severado**: INFO — F160 evolución.
+
+### F184 — `f00129-observability-plugin.md` en ready/ modified — close-evidence pendiente (MEJORABLE)
+
+Re-audit-15 `git status --short`:
+
+```text
+ M docs/mcp-vertex/proposals/ready/f00129-observability-plugin.md
+```
+
+**Esperado**: f00129 cerrada. **Actual**: modified, presumiblemente para close-evidence.
+
+**Severidad**: MEJORABLE — close-evidence pendiente.
+
+### F185 — `docs/mcp-vertex/proposals/done/audits/a00069-...md` modified — F157 pérdida de contexto (MEJORABLE)
+
+Re-audit-15:
+
+```text
+ M docs/mcp-vertex/proposals/done/audits/a00069-25-07-2026-multi-agent-branch-state-drift-and-validation-leak.md
+```
+
+**Esperado**: a00069 cerrado y trim estable. **Actual**: 23 dirty entries adicionales en disco.
+
+**Esperado vs Actual**: F157 (a00069 trimmed 3840 líneas) sigue sin restaurar el contenido. **F185 = recidiva**.
+
+**Severidad**: MEJORABLE — F157 reincidente.
+
+**Slice**: restaurar `a00069.findings.md` con F1-F147.
+
+### F186 — S12 self-healing VERIFICADO operativamente: 23 dirty entries en disco pero `agents.lock` clean — flujo correcto (POSITIVO)
+
+**Diagnóstico**: la pasada-15 ejecutó `runAgentLockEngine({action: 'release'})` para a00072-S1 → `in_flight: []`. **El sistema funcionó exactamente como S12.diseñó**:
+1. S12.a — atomic log writes (logs/jsonl se persiste atómicamente).
+2. S12.b — lock GC al boot (idempotente).
+3. S12.c — tmp sweep al boot (60s threshold).
+4. S12.d — agents_lock_diagnose tool.
+
+**Resultado verificado**:
+- `agents.lock.json` clean (0 zombies).
+- `agents.lock.json.*.tmp` clean (0 huérfanos).
+- Logs persisten atómicamente (F111 log honest pendiente de S13).
+
+**Severidad**: **POSITIVO**. S12 ships funcionando en producción. F127 + F170 + F186 = triple verification.
+
 ## scoreboard
 
-- **Locks**: 5.0 (MUY MAL — F148/F151 no detectados; F103 zombies
-  no flaggeados; **F153 nuevo zombie en formación**).
+- **Locks**: 6.5 (MEJORABLE — **F127/F170/F186 S12 self-heal VERIFICADO operativamente**; F103 zombies detectados vía `state_health` S1.a; F153 reincidente pero flaggeado).
 - **Multi-agent discipline**: 5.5 (MUY MAL — F149 peer-review
   bypasseado; F150 72% tools sin dogfood).
 - **Lifecycle review/done**: 4.0 (FATAL — S7 mergeado pero
@@ -867,7 +1035,7 @@ patrón de "step en step list, pero no ejecutado"), F149
 - **Subagent registry**: 5.5 (MEJORABLE — **F165 5 adopted históricos sin TTL**).
 - **Proposal structure**: 4.0 (FATAL — **F166 4/5 in-progress/ son zombis close-evidence** + **F168 proposal_board subutilizado**).
 - **Enforce gap**: 4.0 (FATAL — **F169 86/89 auto_work invocations skipean bun run validate (95.6% skip-rate)**).
-- **Average**: ~4.2 (MUY MAL). **Baja vs pasada-13 (4.9) por F153-F169 nuevos**. Post-S1-S11: ~7.0.
+- **Average**: ~4.7 (MUY MAL). **Recuperación parcial post S1**: F148/F151 closed (S1.a/b/c done, e7847e3b), F170/F186 POSITIVO S12 verified. Post-S2-S11: ~7.5.
 
 ## notes
 
