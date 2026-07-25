@@ -33,6 +33,7 @@ export const PLUGIN_DEFAULTS: Readonly<
 	refactor: {},
 	browser: {},
 	'prompt-eval': {},
+	observability: {},
 	forge: {},
 	deps: {
 		manifest: 'package.json',
