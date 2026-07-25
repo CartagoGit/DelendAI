@@ -62,6 +62,7 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 	const browser = resolve(workspaceRoot, 'plugins/browser/src');
 	const promptEval = resolve(workspaceRoot, 'plugins/prompt-eval/src');
 	const notification = resolve(workspaceRoot, 'plugins/notification/src');
+	const observability = resolve(workspaceRoot, 'plugins/observability/src');
 	const statusMarker = resolve(workspaceRoot, 'plugins/status-marker/src');
 	const testConvention = resolve(
 		workspaceRoot,
@@ -217,6 +218,18 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 		{
 			find: '@mcp-vertex/notification',
 			replacement: resolve(notification, 'index.ts'),
+		},
+		{
+			find: '@mcp-vertex/observability/public',
+			replacement: resolve(observability, 'public/index.ts'),
+		},
+		{
+			find: /^@mcp-vertex\/observability\/lib\/(.*)$/,
+			replacement: `${resolve(observability, 'lib')}/$1`,
+		},
+		{
+			find: '@mcp-vertex/observability',
+			replacement: resolve(observability, 'index.ts'),
 		},
 		{
 			find: '@mcp-vertex/docs/public',
