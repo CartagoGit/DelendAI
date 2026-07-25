@@ -59,7 +59,7 @@ export const PLUGIN_DEFAULTS: IPluginDefaults = {
 		heartbeatMs: 30_000,
 	},
 	logs: {
-		retentionDays: 30,
+		retentionCount: 10,
 	},
 	'status-marker': {},
 	'test-convention': {},

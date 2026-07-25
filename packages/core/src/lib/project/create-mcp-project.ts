@@ -6,11 +6,14 @@ import type { IToolRegistration } from '../contracts/interfaces/tool-registratio
 import { estimateResultBytes } from '../metrics/metrics-registry';
 
 /**
- * Compute the absolute path of today's JSONL log file the
- * `logs` plugin writes to. Pure: no filesystem I/O. The path is
- * resolved against the host workspace and `corePaths.cacheDir`.
- * When either is missing, the hint is `null` and the wrapper
- * simply skips the injection.
+ * Compute the absolute path of today's JSONL entry in the `logs`
+ * plugin's curated error stream (`logs-errors/`, not the noisy
+ * mixed-outcome `logs/` stream — every event this hint fires for is
+ * an `isError` result, so it belongs in the focused file). Pure: no
+ * filesystem I/O. The path is resolved against the host workspace
+ * and `corePaths.cacheDir`. When either is missing, the hint is
+ * `null` and the wrapper simply skips the injection. Must stay in
+ * sync with the directory layout `plugins/logs/src/index.ts` writes.
  */
 const resolveLogFilePath = (
 	config: IMcpVertexHostConfig,
@@ -21,7 +24,7 @@ const resolveLogFilePath = (
 	if (!cacheDir) return null;
 	const dateStr = now.toISOString().slice(0, 10);
 	const sep = cacheDir.includes('\\') ? '\\' : '/';
-	return `${cacheDir}${sep}logs${sep}${dateStr}.jsonl`;
+	return `${cacheDir}${sep}logs-errors${sep}${dateStr}.jsonl`;
 };
 
 /**
@@ -197,7 +200,13 @@ const instrumentToolHandlers = (
 				if (config.onToolCall) {
 					try {
 						void Promise.resolve(
-							config.onToolCall(name, hookArgs, result, error),
+							config.onToolCall(
+								name,
+								hookArgs,
+								result,
+								error,
+								ms,
+							),
 						).catch(() => {});
 					} catch {
 						// Ignored

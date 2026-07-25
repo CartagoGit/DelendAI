@@ -73,7 +73,7 @@
 		},
 		"logs": {
 			"options": {
-				"retentionDays": 30
+				"retentionCount": 10
 			}
 		},
 		"status-marker": {
