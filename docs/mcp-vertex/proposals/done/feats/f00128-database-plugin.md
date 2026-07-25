@@ -2,9 +2,13 @@
 id: f00128
 kind: feat
 title: database plugin — schema introspection, read-only guarded queries, EXPLAIN and ERD for Postgres/SQLite/MySQL
-status: in-progress
+status: done
 date: 2026-07-23
 track: plugin+database+data
+shipped-in:
+  - 94b12ccc # feat(f00128): S1 database plugin — schema introspection + db_schema/db_probe tools
+  - 4fe7c307 # feat(f00128): S2 guarded query + EXPLAIN
+  - 550b8264 # feat(f00128): S3 ERD rendering + catalog (db_erd)
 ---
 
 # f00128 — database plugin
@@ -74,18 +78,26 @@ DDL, EXPLAIN, and DSN-redaction paths.
 - **Status**: done
 - **Files**: `plugins/database/src/lib/erd/`, `plugins/database/README.md`
 - **Gate**: bun run validate
+- **Closed-by**: 550b8264
 
 `db_erd` emits a mermaid ERD from the introspected schema; `data` pack
 membership (r00011), catalog + wiki.
 - implementation:
-  - `erd/build-mermaid-er.ts` — pure formatter over an `IDatabaseSchema`;
-    classifies FK relationships (one-to-one / one-to-many / many-to-many)
-    and emits the `erDiagram` block. Empty schema → `'erDiagram\n'`.
-  - `erd/render-erd.ts` — driver-aware orchestrator: resolves DSN, calls
-    the introspect engine, runs the formatter. Filters by `tables` arg.
-  - `tools/db-erd.tool.ts` — registers `db_erd` with zod input
-    (`tables?`) and output (`mermaid`, `tableCount`, `relationshipCount`,
-    `summary`). Wired into `plugins/database/src/index.ts`.
+  - `erd/build-mermaid-er.ts` — deterministic `erDiagram` builder over an
+    `IDatabaseSchema`; filters requested tables, classifies FK relationships
+    (one-to-one / one-to-many / many-to-many), and counts emitted edges.
+    Empty schema → `'erDiagram\n'`.
+  - `erd/render-erd.ts` — pure Mermaid-safe entity renderer and sanitization
+    layer (`safeEntityName`, `listEntityBlocks`, `renderErdIntegrity`) for
+    reserved keywords, leading digits, and stable entity blocks.
+  - `tools/db-erd.tool.ts` — resolves DSN, builds the schema, filters by
+    optional `tables`, and returns strict zod output
+    (`mermaid`, `tableCount`, `relationshipCount`, `summary`). Wired into
+    `plugins/database/src/index.ts`.
+  - `packages/core/src/lib/plugins/preset-catalog.ts` — `database` is present
+    in the current preset catalog (`standard` and `vertex`).
+  - `plugins/database/src/index.ts` publishes the `database-erd-usage`
+    knowledge entry for catalog/wiki discovery.
   - `erd/build-mermaid-er.spec.ts` + `erd/render-erd.spec.ts` +
     `tools/db-erd.tool.spec.ts` — 33 ERD tests cover the formatter, the
     driver seam, and the tool envelope.
