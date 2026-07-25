@@ -251,17 +251,10 @@ Los F148-F152 son bugs **estructurales** del swarm, no cosméticos:
 
 ### S6 — `mcp-vertex_skill` resuelve SKILL.md desde `plugins/*/skills/` Y `packages/core/skills/` (F204)
 
-- **Status**: todo
-- **Files**:
-  - `packages/core/src/lib/tools/skill-tool.ts` — reescribir el
-    resolver para cargar SKILL.md desde múltiples raíces.
-  - `packages/core/src/lib/skills/registry.ts` — new file con
-    `loadSkill(id)` que busca en orden:
-    1. `plugins/*/skills/{id}/SKILL.md`
-    2. `packages/core/skills/{id}/SKILL.md`
-    3. `apps/web/skills/{id}/SKILL.md` (futuro)
-  - `packages/core/tests/src/lib/skills/registry.spec.ts` — new
-    test que verifica que los 3 skills rotos en F204 ahora resuelven.
+- **Status**: pending
+- **Files**: `packages/core/src/lib/tools/skill-tool.ts`,
+  `packages/core/src/lib/skills/registry.ts`,
+  `packages/core/tests/src/lib/skills/registry.spec.ts`.
 - **Cambio** (2 sub-slices):
   - **S6.a** — Reescribir `skill-tool.ts` para usar `loadSkill(id)`.
   - **S6.b** — Cache el skill body en `.cache/mcp-vertex/skills/{id}.md`
@@ -2648,6 +2641,236 @@ FATAL. Eso es post-S13.c.
 
 
 **Severado**: MEJORABLE proceso — sistema maduro, próximo sprint S3 cerraría F150/F152.
+
+### F281 — `peer-review-gate.spec.ts` 9/9 PASSING post-S5 — F261 regresión cerrada (POSITIVO)
+
+Re-audit-23 `bun x vitest run plugins/proposals/tests/src/lib/peer-review-gate.spec.ts`:
+
+```text
+✓ |proposals| tests/src/lib/peer-review-gate.spec.ts > hasIndependentPeerApproval (a00069 S7) > rejects empty / self-only approve
+✓ |proposals| tests/src/lib/peer-review-gate.spec.ts > hasIndependentPeerApproval (a00069 S7) > accepts peer approve
+✓ |proposals| tests/src/lib/peer-review-gate.spec.ts > hasIndependentPeerApproval (a00069 S7) > accepts approve when no implementer recorded
+✓ |proposals| tests/src/lib/peer-review-gate.spec.ts > hasPeerApprovedReview (a00069 S7) > requires done + distinct reviewer + approved round
+✓ |proposals| tests/src/lib/peer-review-gate.spec.ts > hasPeerApprovedReview (a00069 S7) > blocks review→done without peer approve
+✓ |proposals| tests/src/lib/peer-review-gate.spec.ts > hasPeerApprovedReview (a00069 S7) > blocks self-approve even when review-state is done
+✓ |proposals| tests/src/lib/peer-review-gate.spec.ts > runProposalTransition peer-review gate (a00069 S7) > allows review→done after independent approve
+✓ |proposals| tests/src/lib/peer-review-gate.spec.ts > runProposalTransition peer-review gate (a00069 S7) > allows force:true bypass
+✓ |proposals| tests/src/lib/peer-review-gate.spec.ts > runProposalTransition peer-review gate (a00069 S7) > skips gate when requirePeerReview is false
+
+Test Files  1 passed (1)
+Tests  9 passed (9)
+```
+
+**Esperado**: 9/9 (tras S5 fix). **Actual**: 9/9.
+
+**Esperado vs Actual**: el refactor S5 (`validateEvidence` arg con `RECENT_VALIDATE` constant) **cierra F261**. Los 4 tests antes fallaban con `expected false to be true`; ahora pasan porque `validateEvidence: RECENT_VALIDATE` se pasa a `runProposalTransition` con `timestamp: new Date().toISOString()` + `exitCode: 0` (fresh window).
+
+**Severado**: POSITIVO — F261 regresión cerrada operativamente.
+
+### F282 — `peer-review-log.ts` ya en HEAD (bcbf0601) — F266 cerrado (POSITIVO)
+
+Re-audit-23 `git ls-files --error-unmatch plugins/proposals/src/lib/shared/peer-review-log.ts && git log --oneline plugins/proposals/src/lib/shared/peer-review-log.ts`:
+
+```text
+in HEAD: True
+git log:
+bcbf0601 fix(a00072): S2 peer-review mandatory pre-done gate (F149)
+```
+
+**Esperado**: tracked en HEAD. **Actual**: tracked, mismo size (3503 chars) que WT.
+
+**Esperado vs Actual**: el archivo que marqué como **untracked FATAL** (F266, pasada-21) en realidad YA ESTÁ EN HEAD. La razón: el paralelo agente comiteó `bcbf0601` entre mi pasada-21 y la actual pasada-23. **F266 fue una falsa alarma post-mortem**.
+
+**Severado**: POSITIVO — F266 cerrado.
+
+### F283 — `log-honest.ts` (2214 chars) + `log-honest.spec.ts` (3527 chars) UNTRACKED código vivo sin respaldo — F266 reincidente nuevo (FATAL WIP)
+
+Re-audit-23 `git ls-files --error-unmatch` + `git status --short`:
+
+```text
+?? plugins/proposals/src/lib/logging/log-honest.ts        (2214 bytes)
+?? plugins/proposals/tests/src/lib/logging/log-honest.spec.ts (3527 bytes)
+```
+
+**Esperado**: 0 untracked logging/. **Actual**: 2 archivos untracked = 5741 chars total.
+
+**Esperado vs Actual**: 
+
+1. **`log-honest.ts` NO está importado por ningún código de producción** (HEAD o WT). El único consumer es `log-honest.spec.ts` (que también está untracked). **Esto es código zombie**: tiene tests, tiene `.d.ts` generado por dist (huérfano), pero **NO se invoca desde ningún tool**.
+
+2. **Si se commitea sin uso, queda como código muerto**. Si nunca se commitea, queda como código perdido en dirty tree.
+
+3. **No hay un caller real** en plugins/proposals/src/lib/tools/, plugins/proposals/src/index.ts, ni plugins/proposals/src/public/index.ts. **El refactor S5.c planeado (reescribir logs para que outcome derive de meta.isError) NO se ha wired**.
+
+**Severado**: **FATAL WIP reincidente F266**. Mismo patrón: 5741 chars de código vivo sin respaldo en dirty tree. Si se hace `git reset --hard` se pierden ambos.
+
+**Acción**: o se commitea con un caller real (e.g., `mcp-vertex_proposals_log_rewrite` tool), o se mueve a un scratch directory hasta tener caller.
+
+### F284 — `tools/scripts/quality/run-quality.script.ts` (3891 chars) UNTRACKED pero referenced desde `authoring.tool.ts` — F266 reincidente (FATAL WIP)
+
+Re-audit-23 `git status --short`:
+
+```text
+?? tools/scripts/quality/run-quality.script.ts        (3891 bytes)
+?? tools/scripts/quality/run-quality.script.spec.ts   (936 bytes)
+```
+
+**Esperado**: en HEAD o no existente. **Actual**: UNTRACKED.
+
+**Esperado vs Actual**: 
+
+`authoring.tool.ts` (committed en S3.c `f3134807`) ejecuta:
+
+```typescript
+command: 'bun tools/scripts/quality/run-quality.script.ts --json',
+```
+
+Y el commit `f3134807` **NO incluye `run-quality.script.ts`** (es untracked). Esto significa:
+
+- Si se corre `bun tools/scripts/quality/run-quality.script.ts --json` **ahora mismo** desde CI: funciona (file exists).
+- Si se hace `git clone --depth 1` y se commitea `authoring.tool.ts` sin `run-quality.script.ts`: **CI runs bun run validate → bun run quality:gate → calls authoring.tool.ts → which shells out to run-quality.script.ts → ERROR 127 (command not found)**.
+
+El archivo `run-quality.script.ts` ya estaba en el repo (no se "introdujo" ahora), pero el commit `f3134807` lo dejó UNTRACKED por error. **El wiring está roto en atomicidad**.
+
+**Severado**: **FATAL WIP reincidente F266 con chicken-and-egg**: 
+
+- authored.tool.ts (committed) calls run-quality.script.ts (untracked)
+- Si el agente que cerró S3.c hace `git status --short`, ve run-quality.script.ts UNTRACKED y debería saber que **necesita commitearlo en el mismo slice**.
+- Pero como S3.c ya está committed, ahora run-quality.script.ts es **trabajo huérfano**.
+
+**Acción**: commit `run-quality.script.ts` + `run-quality.script.spec.ts` en el siguiente slice (puede ser un chore: `chore(quality): track run-quality.script.ts runner`).
+
+### F285 — 22 archivos dirty (14 modified + 8 untracked) — F262 reincidente (FATAL WIP)
+
+Re-audit-23 `git status --short | wc -l`:
+
+```text
+22
+```
+
+**Esperado**: ≤5 dirty files. **Actual**: 22.
+
+**Esperado vs Actual**: 
+
+14 modified:
+- docs/mcp-vertex/agent-catalog.generated.json (auto)
+- docs/mcp-vertex/proposals/in-progress/a00072-...md (mine)
+- packages/core/src/generated/tool-outputs.ts (auto)
+- packages/core/tests/src/lib/e2e/outputschema.e2e.spec.ts (cosmetic: `);` not `,` )
+- packages/core/tests/src/lib/e2e/token-budget.e2e.spec.ts (budgets bumped)
+- plugins/proposals/src/lib/tools/proposal-transition.tool.ts (S5 changes)
+- 8 spec files (S5 validateEvidence constant added)
+- plugins/quality/src/index.ts (new buildRunQualityToolRegistration)
+
+8 untracked:
+- plugins/proposals/src/lib/logging/log-honest.ts (F283)
+- plugins/proposals/tests/src/lib/logging/log-honest.spec.ts (F283)
+- tools/scripts/quality/run-quality.script.ts (F284)
+- tools/scripts/quality/run-quality.script.spec.ts (F284)
+- build/ (gitignored, 32K+ files)
+- 3 staging files (?)
+
+**Severado**: **FATAL WIP reincidente F262**. 22 dirty files es el segundo peak más alto después de pasada-21 (25). El sistema sigue sin enforcement "1 slice = 1 commit" y los agentes acumulan WIP sin commit.
+
+### F286 — `token-budget.e2e.spec.ts` budgets bumped 2 veces (autoWork 2050→2600, swarmToolsList 170K→175K) sin commitear — F263 reincidente (MEJORABLE)
+
+Re-audit-23 `git diff HEAD packages/core/tests/src/lib/e2e/token-budget.e2e.spec.ts`:
+
+```diff
+-       autoWork: 2_050,
++       // Bumped 2 050 → 2 600 (2026-07-25): a00072 S2.b's expanded
++       // proposal_review surface (peer-review gate, reviewer agent, sliceId)
++       // raised the live payload 2 036B → 2 527B measured.
++       autoWork: 2_600,
+-       swarmToolsList: 170_000,
++       // Bumped 170 000 → 175 000 (2026-07-25): quality plugin gained
++       // buildRunQualityToolRegistration (a00072 S2.b peer-review gate), adding
++       // outputSchema metadata and bumping tools/list 168 938B → 171 174B.
++       swarmToolsList: 175_000,
+```
+
+**Esperado**: budgets estables o commit atómico. **Actual**: 2 budgets bumped sin commitear.
+
+**Esperado vs Actual**: **F263 reincidente** (mismo patrón). Cada vez que un plugin gana una tool (S2.b quality plugin `buildRunQualityToolRegistration`), el overview crece y el token-budget spec debe ajustarse. **Pero el ajuste se hace en dirty tree**, no en commit atómico.
+
+**Severado**: MEJORABLE — el patrón reincide pero el sistema no tiene enforcement.
+
+### F287 — `outputschema.e2e.spec.ts` diff cosmético `);` vs `,` — F264 reincidente (MEJORABLE)
+
+Re-audit-23 `git diff HEAD packages/core/tests/src/lib/e2e/outputschema.e2e.spec.ts`:
+
+```diff
+                workspace,
+-       );
++       });
+        const { config } = await assembleCliConfig(args, {
+        ...
+        client = new Client(
+                { name: 'e2e', version: '0.0.0' },
+                { capabilities: {} },
+-       );
++       });
+```
+
+**Esperado**: formatting consistente. **Actual**: 2 líneas con `);` cambiadas a `});` (loose).
+
+**Esperado vs Actual**: **F264 reincidente**. Biome debería auto-formatear en el siguiente `bun run lint`. Si no, queda ruido visual.
+
+**Severado**: MEJORABLE — cosmético.
+
+### F288 — S2/S3 commits verificados operativamente (979 tests pass) — F149/F150/F152/F201/F261 closed (POSITIVO)
+
+Re-audit-23 `bun x vitest run plugins/proposals/tests/src/lib/`:
+
+```text
+Test Files  108 passed (108)
+Tests  979 passed (979)
+```
+
+**Esperado**: ≥972 tests (post-S2). **Actual**: 979.
+
+**Severado**: POSITIVO — 5 FATAL cerrados operativamente:
+- **F149** (S2 peer-review gate, `55c3fa5f` + `bcbf0601`)
+- **F150** (S3.b quality gate on validate, `f3134807`)
+- **F152** (S3.c quality gate on close_slice, `f3134807`)
+- **F201** (S4 auto-detect stranded branches, `ca51237e`)
+- **F261** (S5 validateEvidence for transition, post-pasada-21)
+
+### F289 — `bun run validate` ahora incluye `bun run quality:gate` (F152 enforcement real) — F152 evoluciona (POSITIVO)
+
+Re-audit-23 `grep validate package.json`:
+
+```text
+"validate": "bun run typecheck && bun run lint && ... && bun run test && bun run quality:gate && bun run verify:tools && ..."
+```
+
+**Esperado**: validate incluye quality gate. **Actual**: validate incluye `bun run quality:gate` después de `bun run test`.
+
+**Esperado vs Actual**: **F152 cerrado operativamente**. El quality:gate script corre después de los tests, lee `mcp-vertex.config.json` `plugins.quality.options.scopes`, ejecuta cada scope vía `resolveScopes + runScope + createCommandRunner`, y exits non-zero si algún scope falla. **3 exit codes**: 0 = clean, 1 = failed scope, 2 = no scopes configured (fails closed).
+
+**Severado**: POSITIVO — enforcement-level quality gate ahora corre en cada `bun run validate`.
+
+### F290 — Pasada-23 scoreboard 5.5 → 6.5 (S2+S3+S4 verificados + F261/F266 cerrados) (MEJORABLE proceso recovery)
+
+Re-audit-23 scoreboard delta:
+
+```text
+- F281 POSITIVO: peer-review-gate 9/9 PASSING (F261 closed)
+- F282 POSITIVO: peer-review-log.ts en HEAD bcbf0601 (F266 false alarm closed)
+- F283 FATAL: log-honest.ts + log-honest.spec.ts UNTRACKED 5741 chars (F266 reincidente)
+- F284 FATAL: run-quality.script.ts UNTRACKED pero wired desde authoring.tool.ts (F266 reincidente)
+- F285 FATAL: 22 dirty files (F262 reincidente)
+- F286 MEJORABLE: token-budget bumped 2 veces sin commitear (F263 reincidente)
+- F287 MEJORABLE: outputschema cosmetic `);` → `});` (F264 reincidente)
+- F288 POSITIVO: 979 tests pass — 5 FATAL cerrados (F149/F150/F152/F201/F261)
+- F289 POSITIVO: bun run validate incluye quality:gate (F152 enforcement real)
+```
+
+**Esperado**: scoreboard sube ≥6.5 post-S2/S3/S4. **Actual**: 5.5 → 6.5 (+1.0).
+
+**Esperado vs Actual**: **el sistema se recupera fuertemente** post-S2/S3/S4 — 5 FATAL cerrados (F149/F150/F152/F201/F261). Pero **2 nuevos FATAL reincidentes** (F283/F284 untracked code) compensan parcialmente. **Scoreboard sube +1.0 pero todavía NO ha llegado al target 7.5**.
+
+**Severado**: MEJORABLE proceso recovery — el ratio es 5 close : 2 new = 2.5:1, mejor que pasada-21 (1:4). Sistema en recuperación sólida.
 
 ## scoreboard
 
