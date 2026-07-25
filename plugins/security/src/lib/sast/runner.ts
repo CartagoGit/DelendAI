@@ -1,14 +1,16 @@
-import { mkdtemp, readFile, rm } from 'node:fs/promises';
-import { tmpdir } from 'node:os';
+import { randomUUID } from 'node:crypto';
+import { readFile, rm } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 
 import {
 	probeTool,
 	realProbeDeps,
+	resolveExecPath,
 	runExternalTool,
 	writeFileAtomic,
 	type IExternalTool,
 	type IExternalToolRun,
+	type IMcpPluginContext,
 	type IProbeDeps,
 	type IRunExternalToolInput,
 	type IFinding,
@@ -23,6 +25,12 @@ import type {
 	ISastRunResult,
 	SastLanguage,
 } from '../contracts/interfaces/sast.interface';
+
+const execCtxFor = (input: IRunSastRunnerInput): IMcpPluginContext =>
+	({
+		pluginCacheDir:
+			input.pluginCacheDir ?? join(input.cwd, '.cache', 'mcp-vertex'),
+	}) as IMcpPluginContext;
 
 const SEMGREP_TOOL: IExternalTool = {
 	id: 'semgrep',
@@ -202,9 +210,14 @@ const runSemgrep = async (
 	candidateFiles: readonly string[],
 	input: IRunSastRunnerInput,
 ): Promise<ISastRunResult> => {
-	const tempDir = await mkdtemp(join(tmpdir(), 'mcpv-semgrep-'));
+	const ctx = execCtxFor(input);
+	const stamp = randomUUID().slice(0, 8);
+	const folder = `sast-semgrep-${stamp}`;
+	const { abs: configPath } = await resolveExecPath(
+		ctx,
+		`${folder}/rules.json`,
+	);
 	try {
-		const configPath = join(tempDir, 'rules.json');
 		await writeFileAtomic(configPath, createSemgrepConfig(selectedRules));
 		const run = await runCli(
 			SEMGREP_TOOL,
@@ -222,7 +235,10 @@ const runSemgrep = async (
 			findings: parseSastJson(parsed, { source: 'semgrep' }),
 		};
 	} finally {
-		await rm(tempDir, { recursive: true, force: true });
+		await rm(join(ctx.pluginCacheDir, 'exec', folder), {
+			recursive: true,
+			force: true,
+		}).catch(() => undefined);
 	}
 };
 
@@ -231,21 +247,25 @@ const runAstGrep = async (
 	candidateFiles: readonly string[],
 	input: IRunSastRunnerInput,
 ): Promise<ISastRunResult> => {
-	const tempDir = await mkdtemp(join(tmpdir(), 'mcpv-ast-grep-'));
+	const ctx = execCtxFor(input);
+	const stamp = randomUUID().slice(0, 8);
+	const folder = `sast-ast-grep-${stamp}`;
+	await resolveExecPath(ctx, `${folder}/.keep`);
+	const configDir = join(ctx.pluginCacheDir, 'exec', folder);
 	try {
 		await Promise.all(
 			selectedRules
 				.filter((rule) => rule.language !== 'generic')
 				.map((rule) =>
 					writeFileAtomic(
-						join(tempDir, `${rule.id}.json`),
+						join(configDir, `${rule.id}.json`),
 						createAstGrepRule(rule),
 					),
 				),
 		);
 		const run = await runCli(
 			AST_GREP_TOOL,
-			['scan', '--config', tempDir, '--json', input.cwd],
+			['scan', '--config', configDir, '--json', input.cwd],
 			input,
 		);
 		if (run.unavailable) throw new MissingCliError('ast-grep');
@@ -276,7 +296,9 @@ const runAstGrep = async (
 			findings: [...findings, ...generic.findings],
 		};
 	} finally {
-		await rm(tempDir, { recursive: true, force: true });
+		await rm(configDir, { recursive: true, force: true }).catch(
+			() => undefined,
+		);
 	}
 };
 

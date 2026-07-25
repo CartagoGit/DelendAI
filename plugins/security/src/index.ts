@@ -34,6 +34,7 @@ export default definePlugin({
 				buildSecuritySastRegistration({
 					namespacePrefix: ctx.namespacePrefix,
 					workspaceRootAbs: ctx.workspace.root,
+					pluginCacheDir: ctx.pluginCacheDir,
 				}),
 				buildSecurityAuditRegistration({
 					namespacePrefix: ctx.namespacePrefix,
