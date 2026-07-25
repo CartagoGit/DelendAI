@@ -222,6 +222,11 @@
 				"command": "mcp-vertex.externalMcps.ack",
 				"title": "Review External Server Activations",
 				"category": "MCP Vertex"
+			},
+			{
+				"command": "mcp-vertex.startServerUntrusted",
+				"title": "MCP-Vertex: Start Server (Untrusted)",
+				"category": "MCP-Vertex"
 			}
 		],
 		"menus": {
@@ -333,7 +338,7 @@
 					{
 						"id": "mcp-vertex.gettingStarted.proposals",
 						"title": "Explore Proposals",
-						"description": "Browse and manage proposals — the units of work that agents claim, implement, and close.\n\n[Open Proposals](command:mcp-vertex.openProposal)",
+						"description": "Browse and manage proposals \u2014 the units of work that agents claim, implement, and close.\n\n[Open Proposals](command:mcp-vertex.openProposal)",
 						"media": {
 							"markdown": "media/walkthrough/proposals.md"
 						}
@@ -347,7 +352,7 @@
 				"mcp-vertex.server.command": {
 					"type": "string",
 					"default": "bun",
-					"markdownDescription": "Executable used to spawn the MCP server. Override this when `bun` (or your replacement) is not on the `PATH` inherited by VS Code's extension host — e.g. WSL installs at `~/.bun/bin/bun`. Set to an absolute path to bypass `PATH` lookup entirely.",
+					"markdownDescription": "Executable used to spawn the MCP server. Override this when `bun` (or your replacement) is not on the `PATH` inherited by VS Code's extension host \u2014 e.g. WSL installs at `~/.bun/bin/bun`. Set to an absolute path to bypass `PATH` lookup entirely.",
 					"scope": "machine"
 				},
 				"mcp-vertex.server.args": {
@@ -390,5 +395,10 @@
 		"@vscode/vsce": "^3.6.3",
 		"typescript": "7.0.2",
 		"vitest": "4.1.10"
+	},
+	"capabilities": {
+		"untrustedWorkspaces": {
+			"supported": false
+		}
 	}
 }

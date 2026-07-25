@@ -71,6 +71,8 @@ export interface IOverviewSnapshot {
 	 * caller passes `activation: true`, keeping the default overview lean.
 	 */
 	readonly activationReport?: IActivationReport | undefined;
+	/** Enabled plugins with tools that have not been invoked this session. */
+	readonly unusedActivePlugins?: readonly string[] | undefined;
 	readonly recommendedNextAction: string;
 }
 
@@ -238,6 +240,7 @@ export const buildOverviewToolRegistration = (
 							totalTools: z.number(),
 						})
 						.optional(),
+					unusedActivePlugins: z.array(z.string()).optional(),
 					recommendedNextAction: z.string(),
 				}),
 			},
@@ -297,6 +300,9 @@ export const buildOverviewToolRegistration = (
 						snap.activationReport !== undefined
 							? { activationReport: snap.activationReport }
 							: {}),
+						...(snap.unusedActivePlugins?.length
+							? { unusedActivePlugins: snap.unusedActivePlugins }
+							: {}),
 						recommendedNextAction: snap.recommendedNextAction,
 					});
 				}
@@ -346,6 +352,9 @@ export const buildOverviewToolRegistration = (
 					...(args.activation === true &&
 					snap.activationReport !== undefined
 						? { activationReport: snap.activationReport }
+						: {}),
+					...(snap.unusedActivePlugins?.length
+						? { unusedActivePlugins: snap.unusedActivePlugins }
 						: {}),
 					recommendedNextAction: snap.recommendedNextAction,
 				});

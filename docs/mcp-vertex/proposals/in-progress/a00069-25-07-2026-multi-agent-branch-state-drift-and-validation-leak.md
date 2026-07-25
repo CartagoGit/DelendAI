@@ -21,6 +21,19 @@ shipped-in:
     - e37b21e3 # feat(a00069): S7 peer-review gate on review→done
     - d48d6ef4 # fix(a00069): complete S7 peer-review short-circuit paths
     - c51bb563 # fix(a00069): unnest requirePeerReview from validationCommand
+    - c2930773 # a00069 land
+    - c7766ea6 # a00069 land
+    - 190e3a33 # a00069 land
+    - 5199dc11 # feat(a00069): S10 auto state_repair on proposals boot
+    - 7979b39d # fix(a00069): keep Independent peer gate on force_transition
+    - 89d9a490 # fix(a00069): regen tool-outputs and stabilize S10 boot test
+    - 35a6af1f # fix(a00069): make runAutoStateRepairOnBoot awaitable
+    - cabc42f7 # fix(a00069): adopt audit-fixes test variant for S10 boot
+    - 4dc01795 # docs(proposals): open SEC-001, SEC-002, REL-001 fix proposals from audits
+    - daab5199 # docs(audit): a00070 external GitHub-API intake + a00071 independent audit
+    - 183df88e # docs(a00067): record 2026-07-25 reviewer verification of DC1-DC7
+    - 333a55f9 # fix(x00072): SEC-001 S1 gate stdio child on workspace trust
+    - d6a88789 # fix(x00072): SEC-001 S1 gate stdio child on workspace trust
 related:
     - a00067 # evaluación de migración de lenguaje (precedente de los mismos agentes)
     - a00068 # auditoría exhaustiva previa del 2026-07-24 (drift de carpeta/status)
@@ -107,7 +120,7 @@ acceptance:
 - **Methodology**: lectura del código + análisis del log
   `.cache/mcp-vertex/logs/2026-07-24.jsonl` + index proposals + segunda
   pasada logs/plugins/registry + verificación post-merge S1–S7 en disco.
-  Slices accionables: S1–S11. Hallazgos: F1–F22.
+  Slices accionables: S1–S11 (todos done @ develop). Hallazgos: F1–F50 (re-audit-5). F41–F50 nuevos esta pasada.
 
 ## why
 
@@ -367,11 +380,10 @@ uno, con la disciplina `f00073`/`f00075`/`f00052` como referencia.
 
 - **Status**: done
 - **Files**:
-  - `plugins/proposals/src/index.ts` o hook de register post-boot.
-  - `plugins/proposals/src/lib/tools/state-tools.tool.ts` /
-    `zombie-reconcile.ts` (ya tienen purge; falta invocación automática).
-  - opcional: `packages/core` overview compact warning si registry
-    unhealthy.
+  - `plugins/proposals/src/index.ts` (`autoRepairOrphans`, default true)
+  - `plugins/proposals/src/lib/tools/state-tools.tool.ts`
+    (`runStateRepair`, `runAutoStateRepairOnBoot`)
+  - `plugins/proposals/src/lib/agents/zombie-reconcile.ts` (purge engine)
 - **Cambio**:
   - Tras cargar el plugin proposals (o en primer `overview` /
     `auto_work` de sesión), ejecutar purge de orphans con el TTL S6
@@ -388,7 +400,7 @@ uno, con la disciplina `f00073`/`f00075`/`f00052` como referencia.
 
 ### S11 — Handoff GC + audit trail de bypass peer-review (F18/F19)
 
-- **Status**: pending
+- **Status**: done
 - **Files**:
   - handoff writer/reader bajo `.cache/mcp-vertex/handoff/` (notification
     / proposals).
@@ -434,7 +446,7 @@ frontmatter; este section documenta el flujo de cierre:
 
 | Métrica | Valor | Fuente |
 |---|---|---|
-| `bun run validate` | **1 test fails** (4940/4941) | `bun test` salida |
+| `bun run validate` (re-audit-3) | **1 test fails** (4940/4941) | `bun test` salida |
 | Failing test | `packages/core/tests/tool-types-sdk.spec.ts` ("generated tool-output modules out of sync") | run output |
 | Causa real del failing test | `plugins/security/src/lib/tools/security-audit.tool.ts:48` tiene **dos `description:` strings** concatenados con `,` (introducido por commit `1ac227c2`, fuera del scope S2 de f00122) | git blame + lectura del archivo |
 | Branches `agent/*` locales | 12 a 00:48 UTC, **0** a 01:00 UTC (borradas por `branch_gc`) | `git for-each-ref` |
@@ -459,7 +471,7 @@ frontmatter; este section documenta el flujo de cierre:
 | Plugins activos sin invocación ese día | **21** | F13 |
 | `notification_*` / `await_lock` invocaciones 24 | **0** | F17 |
 | Commits a00069 en develop (re-audit) | **14+** (S1–S7) | `git log --grep=a00069` |
-| Slices código done / pending | S1–S8 done; S9–S11 pending | progress table |
+| Slices código done / pending | S1–S11 done on origin/develop | progress table |
 
 ## findings
 
@@ -1030,6 +1042,394 @@ editores en el main worktree.
 `agent_lock` obligatorio en files de `plugins/proposals/**` via
 auto_work (refuerzo S8). No S nuevo si S8 health + disciplina bastan.
 
+### F23 — Litter de branches `agent/*` **mientras se arregla a00069** (MUY MAL / F4 recidiva) — **PARTIAL**
+
+**Evidencia (re-audit-5)**:
+
+```text
+agent/codex-a00069-s8                b5ffe852  (superseded by 78f9d95a)
+agent/codex-a00069-s9                546a89a4  (superseded by c7766ea6)
+agent/codex-a00069-s11               197041a2  (merged via c2930773)
+agent/copilot-a00069-s11-bypass-audit 4710d2a4 (superseded)
+agent/copilot-a00069-s11-final       c2930773  (merged)
+agent/copilot-a00069-s9s10           a621cdd7  (docs, superseded)
+agent/copilot-a00069-s7h-sync        89d9a490  (merged)
+agent/copilot-a00069-sync            89d9a490  (merged)
+agent/copilot-audit-fixes            89d9a490  (merged)
+agent/copilot-minimax-m3-a00069-s7-force 4710d2a4 (merged)
+```
+
+`agentWorktree` false. S4 lint naming existe. **Slices cerradas, ramas
+huérfanas no**: 7+ branches con vida, todas `agent/*` redundantes.
+
+**Slice**: GC consolidado (F39/F50). Correr `branch-gc` sobre `agent/*` con
+criterio "todos los SHAs merged in develop o superseded".
+
+### F24 — S9 (`unusedActivePlugins`) **fuera de develop** (MEJORABLE→MUY MAL proceso) — **CLOSED**
+
+- `c7766ea6` (feat(core): surface unused active plugin warnings) mergeó a develop.
+- `findUnusedActivePlugins` wired en `assemble-core-tools.ts`.
+- branch `agent/codex-a00069-s9` (`546a89a4`) **redundante** post merge.
+
+### F25 — F17 mitigado: `CONTENTION_NEXT` → `notification_await_lock` (nota positiva) — **CLOSED (partial dogfood)**
+
+- STRING wired en develop (`agent-lock-engine.ts:115`).
+- `notification_await_lock` existe como tool.
+- **Residual**: 0 consumidores ejecutivos del canal `lock-released` (F37).
+
+### F26 — Eviction `handoff-stale` (notification) **dry-run by default** (MEJORABLE) — **PARTIAL**
+
+- `197041a2` (S11) pruneo on session start. Aplica al propio handoff escrito por la sesión.
+- `notification` registry rule sigue dry-run (comentario "dry-run by default" en f00072).
+- Jun 22 handoff MD encontrado (F33) — el prune no lo alcanza.
+
+**Slice (residual)**: S11 follow-up — unificar dueño / apply-mode en eviction.
+
+### F27 — S10 abierto: registry **30 orphans / 14 activeAgents** (FATAL = F15) — **CLOSED**
+
+- `5199dc11` (S10 auto state_repair on proposals boot) ya mergeado:
+  `runAutoStateRepairOnBoot` corre en register del plugin.
+- `35a6af1f` (make awaitable) refuerza.
+- **Residual**: el cache en este worktree (`30 orphanish / 14 activeAgents`) no se ha re-booteado desde la merge; F31 lo documenta.
+
+### F28 — S11 bypass-audit dirty/unmerged (`peer-review-bypass-log`) (MUY MAL proceso) — **CLOSED**
+
+- `c2930773` (S11 peer-review bypass audit trail) mergeado a develop.
+- `peer-review-bypass-log.ts` + spec presentes en `origin/develop`.
+- Wires `transition/recovery` confirmados: `recordPeerReviewBypass` llamado en `force:true` y `skipPeerReview:true` con `reason` non-empty.
+- **Residual**: in-memory `events[]`; F34.
+
+### F29 — `plugins/forge` `bun test` exit **132** SIGILL (MEJORABLE infra) — **OPEN**
+
+- Re-audit-5: `cd plugins/forge && bun test` → exit 132 (SIGILL).
+- No bloquea `bun run validate` porque ese subdir rara vez se corre solo.
+- Probable bug: `bun:test` matching LLVM JIT en CPU WSL.
+
+**Slice**: chore de infra. Considerar Jest o `node --test` para `plugins/forge`.
+
+### F30 — Status/`shipped-in` de a00069 desfasados del git (F20 recidiva) — **CLOSED**
+
+- Re-audit-5 alinea `shipped-in` con `origin/develop` (S9, S10, S11 mergeados en develop).
+- **Residual**: si vuelven a mergearse a00069 entre propuestas, este drift regresará. Mitigado por la práctica de re-audit antes de close.
+
+### F31 — Cache del worktree no re-bootea tras merge S10 (MEJORABLE)
+
+`re-audit-5` (post-merge S10) midió:
+
+```text
+assignments: 30  orphanish: 30  active: 3
+round-context.digest.activeAgents: 14
+```
+
+S10 (`5199dc11`) solo corre en `register()` de un host que cargue el
+plugin proposals. **Mi server local no lo ha hecho.** El cache en disco
+sigue con el F15 antes del merge.
+
+**Esperado**: cualquier sesión tras `bun install` + activación del plugin
+debería ver `orphans: 0` en `state_health`. **Actual**: 30.
+
+**Slice**: nope (operativo). Receta: arrancar el host MCP (`mcp-vertex`),
+`state_health` lee live; o `rm -rf .cache/mcp-vertex/subagent-registry.json*`
+para forzar re-purgado.
+
+### F32 — `.cache/mcp-vertex/agents.lock.json.*.tmp` huérfanos (MEJORABLE)
+
+```text
+agents.lock.json
+agents.lock.json.mrzmyw0p-14n2ikn1fjb.tmp
+agents.lock.json.mrzn0byr-isjllxmjfwn.tmp
+agents.lock.json.mrzn1ivd-7rn7i30195t.tmp
+agents.lock.json.mrzn5jml-efqa3ixlr5t.tmp
+agents.lock.json.mutex
+```
+
+4 `.tmp` files con timestamps 02:33–02:38 (parallel agent_locks), no
+purgados. Las rutinas de `agent_lock` crean tempfiles antes de rename
+atómico; el cleanup depende de que el proceso termine limpio. Cuando un
+agente muere a media escritura, los `.tmp` sobreviven.
+
+**Esperado**: lockfile mutex + cleanup on next claim. **Actual**: basura
+acumulada.
+
+**Slice**: añadir `agents.lock.json.*.tmp` al script `check-stray-cache-files`
+o cleanup al start de `agent-lock-engine.ts`.
+
+### F33 — handoff MD viejo retenido en `handoff/` (MEJORABLE)
+
+```text
+orchestrator-blocker-2026-06-21-no-mcp-runtime.md  (5300B, Jun 22)
+```
+
+`197041a2` prune lo introducido por la sesión de inicio, pero un handoff
+externo (escrito a mano el 2026-06-22 por `loop-detector`) sigue ahí.
+
+**Esperado**: prune por mtime > 7d aunque venga de fuera. **Actual**: TTL
+solo aplica a los creados por la sesión actual.
+
+**Slice**: el módulo `handoff` debe soportar prune cross-session (no solo
+session-local). Edit chico en `AgentLoopDetectorService.pruneOldHandoffs`.
+
+### F34 — `peer-review-bypass-log.ts`: **`events[]` solo en memoria** (FATAL proceso)
+
+```ts
+const events: IPeerReviewBypassEvent[] = [];
+// ... events.push(event); console.info(...)
+// export const getPeerReviewBypassCount = (): number => events.length;
+```
+
+- **No se persiste** a disco. Sobre restart ⇒ `peerReviewBypasses: 0`.
+- `listPeerReviewBypasses()` disponible para surfacing, pero ningún
+  tool lo invoca (la búsqueda confirma 0 usos).
+- Solo sobrevive como `console.info` line en stderr.
+
+**Esperado**: write through a `.cache/mcp-vertex/peer-review-bypasses.jsonl`
+con append + tail. **Actual**: FIFO in-process.
+
+**Slice**: S11 follow-up — `recordPeerReviewBypass` con append JSONL;
+`state_health.peers` lee + tails.
+
+### F35 — `unusedActivePlugins` solo se calcula en `assemble-core-tools` (MEJORABLE dogfood)
+
+```ts
+// packages/core/src/lib/cli/assemble-core-tools.ts:274
+const unusedActivePlugins = findUnusedActivePlugins({...})
+```
+
+Solo cuando el host arranca el CLI. **No se recalcula** cuando
+`enable_plugins` cambia en runtime o cuando nuevas métricas están
+disponibles. `auto_work` no lo lee.
+
+**Esperado**: aviso en `auto_work` si un plugin es activo pero no invocado
+en esa sesión. **Actual**: lectura 1×/boot.
+
+**Slice**: S9 follow-up — mover a `auto-work.tool.ts` warning, no hace
+falta re-correr metrics.
+
+### F36 — `state-status` (F14) ya no emite `server-started` noise — F14 closed (proceso)
+
+Re-audit-5 confirma que `state-tools.tool.ts` solo emite `healthy`, `queue`,
+`registry`, `peerReviewBypasses`, `locks`. Sin `server-started` info events.
+**F14 cerrado en S8; a00069 sigue listándolo**.
+
+**Slice**: actualizar scoreboard (abajo) — F14 closed.
+
+### F37 — `notify_status` `released` channel: 0 consumidores en proposals (MEJORABLE)
+
+F25/F17 cerraron el **string** `notification_await_lock`, pero no hay wires
+al receptor. Solo `notification_await_lock` existe (la notificación); no se
+llama desde `agent_lock` cuando un lock se libera.
+
+**Esperado**: la API lock-released debería publicar un `notify_status`
+evento para que `await_lock` retome. **Actual**: canal silenciado.
+
+**Slice**: S8 follow-up — `agent_lock.release()` → emit `notify_status`
+en channel `lock-released`.
+
+### F38 — i18n no cubre `sliceStatus` ni `peerReviewBypasses` (MEJORABLE)
+
+`apps/web/src/locales` y `packages/core/src` no tienen llaves para
+`slice.status.done`, `peerReviewBypasses` o `unusedActivePlugins`. Se
+renderizan en YSON crudo.
+
+**Slice**: añadir 12 idiomas (paridad actual). Chore pequeño.
+
+### F39 — `agent/copilot-a00069-s9s10` (a621cdd7) quedó redundante tras merges (MEJORABLE proceso)
+
+Después de `c7766ea6` + `5199dc11` mergeados, la rama `a00069-s9s10`
+con SHAs de shipped-in docs es histórica. Quedan 7+ ramas `agent/*` (F23)
+con vida; **branch-gc** debe correr.
+
+**Slice**: ejecutar `branch-gc` o equivalente; limpiar litter.
+
+### F40 — `audit_plan` regenera catálogo en cada ingress pero no lo publica (MEJORABLE)
+
+`audit_plan` (per f00069) genera `agent-catalog.generated.json` en cada
+boot del plugin. `a621cdd7` solo commitea manualmente. Sin `auto-publish`
+post-merge, el catálogo queda stale entre merges.
+
+**Esperado**: `chore(catalog): refresh` automático en `proposal_transition`
+con `to: 'done'`. **Actual**: humano.
+
+**Slice**: S11 follow-up o chore aparte.
+
+### F41 — `bun run validate` (re-audit-5) **43 fails / 34 errors / 20000 expects** sobre 646 files (FATAL proceso)
+
+Re-audit-5 `bun test` corriendo en `develop@d6a88789`:
+
+```text
+ 4929 pass
+ 43 fail
+ 34 errors
+ 2 snapshots, 20002 expect() calls
+Ran 4973 tests across 646 files. [68.27s]
+```
+
+Falsos conocidos (vistos en este pase):
+
+- `scssPlugin > compiles relative Sass modules…` (1)
+- `cli-ui-parity.script > passes on the real repository…` (1)
+- `isQuickStartDismissed > round-trips through sessionStorage` ×2
+- `PRESET_CATALOG > stores deltas, not full membership lists`
+- `PRESET_CATALOG > vertex membership mirrors mcp-vertex.config.json (10 plugins, 2 hostOnly)`
+- `resolvePresetMembers > lean (independent) does NOT alter standard/swarm/full membership`
+- `resolvePresetMembers > resolves standard = minimal + memory/docs/rules/quality/deps`
+- `resolvePresetMembers > resolves vertex to ONLY its declared members (independent, skips chain)`
+
+**Esperado**: 0 fail / 0 error. **Actual**: 43 fail + 34 error.
+
+**Esperado vs Actual verificado en a00069 §verified state**: a00069 *aún
+reza* "1 test fails (4940/4941)" — **F40 recidiva** en su peor versión
+para §verified state del propio doc.
+
+**Slice**: triage inmediato. Antes de cerrar a00069, el team debe
+resolver ≥ 1 test verde de cada uno de los 8 grupos. Sin eso, S5
+(close_slice validation) y S8 (agent_lock ok) no tienen evidence live
+de que `validate` corra verde.
+
+### F42 — `verified state` de a00069 miente (FATAL doc)
+
+a00069 §verified state, **incluso después de pasada 4**, dice:
+
+```text
+| `bun run validate` | 1 test fails (4940/4941) |
+| Proposals plugin index | 282 entries, stale |
+| Slice-mode-error eventos hoy | 21 |
+| Transiciones a `done` hoy | 4 |
+| Plugins enabled en config | 24 |
+| Commits a00069 (re-audit) | 14+ (S1–S7) |
+```
+
+**Hoy (re-audit-5)**:
+
+- 43 fails / 34 errors (no 1).
+- a00069 SHAs en develop: **15** (no 14).
+- Plugins active plugins: 28 (10 plugins + 2 hostOnly miembros).
+- Transiciones / slice-mode-error miden realizadas **ayer**, no hoy.
+
+**Esperado**: §verified state medido en el mismo momento del re-audit**.
+**Actual**: congelado en pasada 1/2.
+
+**Slice**: §verified state regenerado con `bun test` + `git log --grep=a00069` + `ls plugins/*/src/index.ts` cada vez. O derivar de un script. a00069 como **single source of truth** sobre sí misma no se mantiene.
+
+### F43 — scoreboard-4 subestima el coste: prescribe "~7.4 OK-" pero `validate` no corre verde (MUY MAL)
+
+El scoreboard re-audit-4 dio **~7.4 (OK-)** sobre la base de "S1–S11 done @ develop". Pero las dimensiones **Gate validate** (8.5) e **Index↔fs** (8.5) asumían `bun run validate` verde. Con F41 (43 fails) **no lo está**.
+
+**Esperado**: scoreboard refleja la realidad live. **Actual**: puntúa
+alto en dimensiones que el `bun test` de hoy viola.
+
+**Slice**: regenerar scoreboard-5 con la fórmula:
+
+```text
+Gate validate  =  max(0, 8.5 - 2 * fail_groups)     <-- 8 fail groups → 0.5
+Index↔fs       = 8.5
+Multi-agent    = 6.5
+Lifecycle      = 8.0
+Registry       = 7.0
+Proposal       = 8.5
+Locks          = 7.5
+Close          = 7.5
+Dogfood        = 7.0
+Handoff        = 6.5
+Docs self      = 4.0
+Tools          = 7.5
+Concurrency    = 7.0
+Average        ≈  6.2   (MEJORABLE−)
+```
+
+Con fallback honesto, **scoreboard-5 ≈ 6.2 (MEJORABLE−)**, no 7.4.
+
+### F44 — `a00070` (intake externo) y `a00071` (audit independiente) confirman **3 críticos** aún abiertos (FATAL)
+
+`a00070` externo (CartagoGit vía GitHub API) y `a00071` interno (LLM code reading) convergen en tres críticos que **no son a00069** pero escapan a su scope:
+
+- **C-01** — Ejecución de código al abrir workspace VS Code. **CONFIRMADO**.
+  - Mitigación parcial: `x00072 SEC-001 S1` mergeada (`d6a88789`) — gate stdio child on `workspace.isTrusted`. Pero falta la aprobación humana con huella de comando (S2 de x00072) y los tests de integración.
+- **C-02** — MCP externos heredan `process.env` completo. **CONFIRMADO**.
+  - Propuesta: `x00072` SEC-002 (pendiente).
+- **C-03** — `npm publish` sin reescribir `workspace:*`. **CONFIRMADO**.
+  - Propuesta: `x00072` REL-001 (pendiente).
+
+**Esperado**: a00069 referencia explícitamente que **no cierra a00070/a00071**: separa "branch-state drift" de "security invariants". **Actual**: a00069 los menciona solo en `related:` y no en findings.
+
+**Slice**: añadir F (F45) cross-link: a00069 = subset de a00071; no termina
+los C-*.
+
+### F45 — `x00072 SEC-001 S1` mergeada pero `x00072` sigue en `ready/` (MEJORABLE proceso)
+
+`x00072-sec-001-workspace-trust-vscode.md` (kind: fix, status: ready) tiene
+`S1` mergeada a develop (`d6a88789`, `333a55f9`). El proposal sigue en
+`ready/` con `status: ready` en el frontmatter.
+
+**Esperado**: el `i00069` (S10) y `x00072` workflow debería mover el
+proposal a `in-progress`/`review/` al mergearse cada slice. **Actual**:
+`status: ready` perpetuo.
+
+**Slice**: añadir paso a `proposal_transition` que auto-mueva a `review/`
+al mergear → reduce drift frontmatter↔disco.
+
+### F46 — `bun test` 8 fail groups no seguidos por issues (MEJORABLE)
+
+8 grupos de fallos repetidos (F41) no tienen issue asignado. Sin
+ownership, no se cierran.
+
+**Esperado**: cada fail → propuesta con `owner:` y `task:`. **Actual**:
+errores órfanos en nightly.
+
+**Slice**: ci-failures-bot emite `audit_consolidate` summary → 1
+proposal fix por fail group.
+
+### F47 — `isQuickStartDismissed` × 2 (storage related) — rompió entre pasada 4→5 (MEJORABLE proceso)
+
+Re-audit-4 no registró este fallo (porque ya estaba roto). Re-audit-5
+añade el run fallido. Indica que **el flujo de tests relacionado con
+sessionStorage** no se ejecuta en CI o diverge entre runners (webkit vs
+happy-dom).
+
+**Esperado**: paridad entre CI y local. **Actual**: pasa en CI, falla
+local.
+
+**Slice**: agregar log en `vite.config.ts` que distinga `environment: 'happy-dom'` vs `'jsdom'` vs node.
+
+### F48 — `PRESET_CATALOG` inconsistente con `mcp-vertex.config.json` (MEJORABLE)
+
+Re-audit-5 reporta:
+
+- `PRESET_CATALOG > vertex membership mirrors mcp-vertex.config.json (10 plugins, 2 hostOnly)` — fall.
+- `resolvePresetMembers > resolves vertex to ONLY its declared members (independent, skips chain)` — fall.
+
+Esperado: 10 plugins + 2 hostOnly = 12 miembros estable. **Actual**: el
+preset `vertex` reporta distinta membresía.
+
+**Slice**: regenerar `PRESET_CATALOG` desde `mcp-vertex.config.json`; o
+agregar contract test que falle en merge.
+
+### F49 — `cli-ui-parity.script` falla con el mapa checked-in (MEJORABLE)
+
+Re-audit-5: `cli-ui-parity.script > passes on the real repository with the checked-in map` falla.
+
+Esto **siempre** falla tras un commit que toque comandos CLI / i18n. Es
+un indicador de "**alguien añadió un comando sin actualizar cli-ui-parity**".
+
+**Esperado**: el commit que introduzca el nuevo comando regenera el map.
+**Actual**: regenerar es un chore manual.
+
+**Slice**: añadir `tools/scripts/cli-ui-parity.script.ts` al gate del
+script `lint` que corre pre-merge.
+
+### F50 — `linter ramas agent/*` (F23/F39) **no detecta todas las ramas redundantes** (MEJORABLE)
+
+`tools/scripts/lint/agent-branch-naming.script.ts` valida naming. Pero
+F23 enumera 9+ ramas `agent/*` con `merged in develop` o `superseded`
+que viven en `refs/heads` igual. El lint no detecta "rama cuyo HEAD es
+ancestro de `develop`".
+
+**Esperado**: branch_gc coverage > 0. **Actual**: cobertura
+existencia→GC no implementada.
+
+**Slice**: añadir check "HEAD is ancestor of develop" al lint orque injecta un
+warning en consola.
+
 ## scoreboard
 
 > Rúbrica: **FATAL** (≤3) · **MUY MAL** (3-4.9) · **MEJORABLE** (5-6.9) ·
@@ -1054,6 +1454,25 @@ auto_work (refuerzo S8). No S nuevo si S8 health + disciplina bastan.
 | Docs / skills | 7.5 | **OK.** |
 | Concurrencia I/O | 7.5 | **OK-.** |
 | **Total (Average)** | **~4.0** | **MUY MAL.** |
+
+### Scoreboard re-audit-5 (post F41–F50, validate roto)
+
+| Dimension | Score | Comments |
+|---|---:|---|
+| Gate validate | **0.5** | **FATAL.** F41 43 fail / 34 error. F2 cerrado pero nada se verifica. |
+| Index↔fs | 8.5 | S3 holds |
+| Multi-agent discipline | 6.5 | S4 lint; **F23/F39/F50** ramas redundantes |
+| Lifecycle review/done | 8.0 | S7+S11 ok; **F45** x00072 still ready |
+| Registry / orientation | 7.0 | S10 wired; **F31** cache sin re-boot |
+| Proposal structure | 8.5 | S1 |
+| Locks | 7.5 | S8 develop; F25; **F37** no notify_status wire |
+| Close-acceptance | 7.5 | S5; F21 accepted |
+| Dogfood plugins | 7.0 | S9 done; **F35** solo boot-time; **F48** PRESET_CATALOG drift |
+| Handoff / logs | 6.5 | F19↓ 12→1; **F33** stale MD; F26 dual GC |
+| Docs self | **4.0** | **MUY MAL.** F42 verified state desfasado; F43 scoreboard miente |
+| Tools | 7.5 | OK |
+| Concurrency I/O | 7.0 | F32 .tmp litter |
+| **Average** | **~6.2** | **MEJORABLE−.** F41+F42 hunden techo. Post-fix failures ≈ 7.5 |
 
 ### Scoreboard re-audit (2026-07-25, post S1–S7 en código)
 
@@ -1085,29 +1504,40 @@ auto_work (refuerzo S8). No S nuevo si S8 health + disciplina bastan.
 | S3 | **done** (transition+Files rewrite+dup scan) | **0** ids duplicados; review/ index-aligned (11 files) |
 | S4 | **done** (`lint:agent-branch-naming`) | 0 branches `agent/*` locales |
 | S5 | **done** (close_slice validation gate) | bypass legítimo `gate: none\|lint` sigue (F21) |
-| S6 | **done en código**, **NO aplicado al cache vivo** | registry sigue 30 orphans / 14 activeAgents hasta `state_repair` → **F15** |
-| S7 | **done** (transition + force_transition + auto_work) | bypass `force:true` / `skipPeerReview` sin audit trail → **F18** |
+| S6 | **done** (orphan GC + TTL) | S10 auto-applies purge on boot |
+| S7 | **done** (transition + force_transition + auto_work) | S11 audita force/skipPeerReview |
 | S8 | **done** (`ok` + session balance + await_lock nextAction) | claim/release counters + state_health imbalance gate |
-| S9 | **pending** | sin warning unused-active-plugins → **F13/F20** |
-| S10 | **pending** (nuevo) | auto-repair on boot/session → **F15** |
-| S11 | **pending** (nuevo) | handoff GC + force audit → **F18/F19** |
+| S9 | **done** (`unusedActivePlugins` en overview) | dogfood warning compacto |
+| S10 | **done** (`runAutoStateRepairOnBoot`) | autoRepairOrphans default true |
+| S11 | **done** (handoff GC + peer-review bypass audit) | state_health.peerReviewBypasses |
 
 ### verdict
 
 **Pasada 1 (2026-07-24)**: `develop` rojo + swarm incoherente — F1–F14.
 
-**Pasada 2 (2026-07-25)**: S1–S7 **implementados y mergeados** (ver
-`shipped-in`). Mitigan F1–F8, F10 (código), F11–F12 en gran parte.
-**No cierra** el incidente operativo:
+**Pasada 2 (2026-07-25)**: S1–S7 mergeados.
 
-1. **F15** — GC de orphans no corre solo → orientation sigue mintiendo.
-2. **F16/F17/F9** — **cerrados en código por S8** (ok+session+await_lock nextAction).
-3. **F18/F19** — bypass peer + handoff basura → S11.
-4. **F13/F20** — dogfood + doc drift → S9 + disciplina shipped-in.
+**Pasada 3 (late)**: S8 en develop. Handoff prune. S9 branch-only. S11 WIP. S10 P0.
 
-Camino restante: **S10 → S11 → S9** (S8 desbloqueó telemetría;
-S10 hace real el S6; S11 cierra hygiene; S9 es advisory). F21 accepted.
-F22 proceso. No redesign.
+**Pasada 4 (late)**: S9, S10, S11 **mergeados a develop** (`c7766ea6`, `5199dc11`, `c2930773`). F24/F27/F28/F30 cerrados. F23/F39 litter residual. shipped-in + Status real.
+
+**Pasada 5 (late)**: detenida por **F41** (`bun test` 43 fail / 34 error). F45 detecta x00072 stale. F42 a00069 verified state miente. F43 scoreboard-4 mentía.
+
+**F41–F50 nuevos** (re-audit-5):
+- **F41**: `bun test` 43 fail / 34 error. 8 fail groups.
+- **F42**: a00069 verified state desfasado (1 fail vs 43 real).
+- **F43**: scoreboard-4 subestimaba (7.4 vs 6.2 real).
+- **F44**: a00070/a00071 confirman C-01/C-02/C-03 sin cerrar (subset no-a00069).
+- **F45**: x00072 SEC-001 S1 mergeada, propuesta sigue en ready/.
+- **F46**: fail groups ñoños sin ownership.
+- **F47**: sessionStorage parity CI/local divergente.
+- **F48**: PRESET_CATALOG vs config drift.
+- **F49**: cli-ui-parity map stale.
+- **F50**: agent-branch-naming lint no cubre "ancestro de develop".
+
+**FATAL residual**: F41 (43 fail/34 error en validate). F34 (audit log in-memory).
+
+**Recomendación**: NO cerrar a00069 hasta resolver ≥ 1 fail por grupo (F41). Tras eso, S11 follow-up persiste bypass log (F34). Tras eso, mover x00072 a review/ (F45). Scoreboard 5 real ≈ 6.2 MEJORABLE−; post-fix ≈ 7.5 OK.
 
 ### appendix A — Log evidence (verbatim)
 
@@ -1263,6 +1693,35 @@ d48d6ef4 fix(a00069): complete S7 peer-review short-circuit paths
 c51bb563 fix(a00069): unnest requirePeerReview from validationCommand
 ````
 
+#### A13 — Re-audit-5 residuals (2026-07-25 late)
+
+````text
+origin/develop: d6a88789 (develop), S9/S10/S11 all merged
+a00069 SHAs now: 78f9d95a, 4710d2a4, 197041a2, c7766ea6, c2930773,
+  5199dc11, 7979b39d, 89d9a490, 35a6af1f, cabc42f7, 4dc01795, daab5199,
+  183df88e, 333a55f9, d6a88789 (15 commits)
+x00072 SEC-001 S1 mergeada (d6a88789, 333a55f9)
+a00070 (external) + a00071 (independent) en review/ con 3 C-* confirmados
+bun test 4929 pass / 43 fail / 34 error / 20000 expects (F41)
+8 fail groups: scssPlugin, cli-ui-parity, isQuickStartDismissed ×2,
+  PRESET_CATALOG ×2, resolvePresetMembers ×3
+a00069 verified state desfasado (F42)
+scoreboard-4 mentía (F43); re-audit-5 ≈ 6.2 NOT 7.4
+x00072 status: ready despite S1 merged (F45)
+worktree cache: 30 assignments, 30 orphanish, 14 activeAgents (F31 cache sin re-boot)
+agents.lock.json.*.tmp: 4 files (F32)
+handoff/: orchestrator-blocker-2026-06-21-no-mcp-runtime.md (F33)
+peer-review-bypass-log: in-memory only (F34 FATAL)
+unusedActivePlugins: assemble-core-tools only (F35)
+lock-released notify_status: no wire (F37)
+i18n sliceStatus/peerReviewBypasses: missing (F38)
+branches agent/*: 7+ still present (F23/F39/F50)
+catalog auto-publish: none (F40)
+cli-ui-parity map: stale (F49)
+PRESET_CATALOG: vs mcp-vertex.config.json drift (F48)
+sessionStorage parity CI/local: divergente (F47)
+````
+
 ### appendix B — Concurrency table
 
 | Escenario | Riesgo | Mitigación hoy | Gap |
@@ -1273,7 +1732,7 @@ c51bb563 fix(a00069): unnest requirePeerReview from validationCommand
 | Agente commitea con validate rojo | `develop` roto | **S5 done** close_slice gate | ⚠ F21 gate lint bypass |
 | Agente crea branch `agent/*` sin worktree | Pisarse / litter | **S4 done** lint | ⚠ F22 shared checkout WIP |
 | Contención de lock | Busy-loop claim | texto nextAction menciona await_lock | ❌ F17 0 usos → **S8** |
-| Sesión muere con assignment active | Orientation miente | S6 código purge | ❌ F15 no auto → **S10** |
+| Sesión muere con assignment active | Orientation miente | S6 + S10 auto boot purge | ✅ F15 mitigated |
 | Item en `review/` sin peer | done sin calidad | **S7 done** gate | ⚠ F18 force bypass → **S11** |
 | Handoff basura meses | Orientation ruido | (ninguna) | ❌ F19 → **S11** |
 | Plugins enabled nunca llamados | False confidence dogfood | (ninguna) | ❌ F13 → **S9** |

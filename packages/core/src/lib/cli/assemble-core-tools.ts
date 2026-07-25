@@ -35,7 +35,10 @@ import {
 } from '../configuration-center/configuration-center';
 import { createMetricsRegistry } from '../metrics/metrics-registry';
 import { buildMetricsToolRegistration } from '../metrics/metrics-tool';
-import { CONFIG_FILE_SCHEMA } from '../plugins/load-config-file';
+import {
+	CONFIG_FILE_SCHEMA,
+	pluginConfigFor,
+} from '../plugins/load-config-file';
 import type { IMcpVertexConfigFile } from '../plugins/load-config-file';
 import type { IPluginLoadResult } from '../plugins/load-plugins';
 import type { IMcpVertexCliArgs } from '../plugins/parse-cli-args';
@@ -59,6 +62,7 @@ import { buildOverviewToolRegistration } from '../tools/overview-tool';
 import { buildSkillToolRegistration } from '../tools/skill-tool';
 import { buildStartPromptRegistration } from '../tools/start-prompt';
 import { buildStatusToolRegistration } from '../tools/status-tool';
+import { findUnusedActivePlugins } from '../tools/unused-active-plugins';
 import { buildValidationMatrixToolRegistration } from '../tools/validation-matrix-tool';
 import type { assemblePlugins } from './assemble-plugins';
 import type { assembleSkills } from './assemble-skills';
@@ -266,6 +270,18 @@ export const assembleCoreTools = (
 			? { providers: providerSummaries }
 			: {}),
 		activationReport,
+		...(() => {
+			const unusedActivePlugins = findUnusedActivePlugins({
+				activationReport,
+				corePrefix,
+				metricsRegistry,
+				namespaceForPlugin: (pluginId) =>
+					pluginConfigFor(fileConfig, pluginId).prefix ?? pluginId,
+			});
+			return unusedActivePlugins.length > 0
+				? { unusedActivePlugins }
+				: {};
+		})(),
 		recommendedNextAction,
 	});
 

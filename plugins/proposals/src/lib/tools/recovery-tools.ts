@@ -27,6 +27,7 @@ import { readJsonOrNull, readTextOrNull } from '../proposals/index-reader';
 import { createAgentRegistryStore } from '../shared/agent-registry-store';
 import { createGitRunner, type IGitRunner } from '../shared/git-runner';
 import { hasIndependentPeerApproval } from './proposal-transition.tool';
+import { recordPeerReviewBypass } from '../shared/peer-review-bypass-log';
 
 export interface IRecoveryEvent {
 	readonly kind: 'agent-alive' | 'agent-idle' | 'agent-dead';
@@ -408,14 +409,19 @@ export const runProposalForceTransition = async (
 	}
 	// a00069 S7: force_transition without skipPeerReview still needs peer approve
 	// when moving review → done (same gate as proposal_transition).
+	// a00069 S11: skipPeerReview bypass is audited (reason already required).
 	const requirePeer = options.requirePeerReview !== false;
-	if (
-		requirePeer &&
-		args.to === 'done' &&
-		found.status === 'review' &&
-		args.skipPeerReview !== true
-	) {
-		if (!hasIndependentPeerApproval(found.raw)) {
+	if (requirePeer && args.to === 'done' && found.status === 'review') {
+		if (args.skipPeerReview === true) {
+			recordPeerReviewBypass({
+				proposalId: args.id,
+				reason: args.reason,
+				via: 'skipPeerReview',
+				...(args.overrideLockOwner
+					? { agent: args.overrideLockOwner }
+					: {}),
+			});
+		} else if (!hasIndependentPeerApproval(found.raw)) {
 			return toolError(
 				`peer-review required before force_transition of "${args.id}" review → done`,
 				`Run ${options.namespacePrefix}_proposal_review { action: "approve", agent: "<reviewer≠implementer>" } first, or pass skipPeerReview:true only with host approval.`,

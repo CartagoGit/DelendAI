@@ -966,6 +966,7 @@ export interface McpVertexOverviewOutput {
 		};
 		totalTools: number;
 	};
+	unusedActivePlugins?: string[];
 	recommendedNextAction: string;
 }
 
@@ -1944,6 +1945,7 @@ export interface McpVertexProposalsStateHealthOutput {
 		sessionReleases: number;
 		sessionImbalance: number;
 	};
+	peerReviewBypasses: number;
 	queue: {
 		queueLength: number;
 		queuedCount: number;
@@ -1967,6 +1969,7 @@ export interface McpVertexProposalsStateRepairOutput {
 			sessionReleases: number;
 			sessionImbalance: number;
 		};
+		peerReviewBypasses: number;
 		queue: {
 			queueLength: number;
 			queuedCount: number;

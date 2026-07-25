@@ -199,6 +199,9 @@
 		},
 		"mcp-vertex.externalMcps.ack": {
 			"waiver": "f00068 S5: wraps the external-mcps plugin's external_mcp_ack tool (human accept/reject of an external-server activation); the external-mcps discovery/ack surface is agent/MCP-first with no CLI group"
+		},
+		"mcp-vertex.startServerUntrusted": {
+			"waiver": "x00072 SEC-001 S1: manual override that spawns the stdio child in an untrusted workspace after the user reads the warning. No CLI counterpart (CLI refuses untrusted workspaces entirely); the gate is purely a VS Code affordance."
 		}
 	}
 }
