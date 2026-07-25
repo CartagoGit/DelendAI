@@ -150,6 +150,9 @@ const ZOMBIE_ORPHAN_SCHEMA = z.object({
 		'cooldown_null',
 		'stale_no_lock',
 		'stale_with_orphaned_lock',
+		// a00069 S6
+		'status_orphan',
+		'stale_not_adopted',
 	]),
 	recommendedAction: z.enum(['force_release', 'extend_cooldown', 'escalate']),
 });
