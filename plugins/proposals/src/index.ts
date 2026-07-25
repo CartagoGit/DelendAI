@@ -345,16 +345,14 @@ export default definePlugin({
 								validationCommand: ctx.options
 									.validationCommand as string,
 							}
-						: {
-								// a00069 S7
-								...(typeof ctx.options.requirePeerReview ===
-								'boolean'
-									? {
-											requirePeerReview: ctx.options
-												.requirePeerReview as boolean,
-										}
-									: { requirePeerReview: true }),
-							}),
+						: {}),
+					// a00069 S7: short-circuit review/ without peer approve.
+					...(typeof ctx.options.requirePeerReview === 'boolean'
+						? {
+								requirePeerReview: ctx.options
+									.requirePeerReview as boolean,
+							}
+						: { requirePeerReview: true }),
 					...(ctx.options.persist !== undefined
 						? {
 								persist: ctx.options.persist as {
