@@ -83,9 +83,15 @@ embedder is unavailable.
 
 ### S3 — optional API embeddings + pack auto-tuning
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/search/src/lib/embed/providers.ts`, `packages/core/src/lib/plugins/pack-defaults.ts`
 - **Gate**: bun run validate
+- implementation:
+  - `providers.ts` exposes `discoverProviders()` (key presence only; never logs the value) and `buildApiEmbedder({ providerId, apiKey, fetch })`.
+  - `buildApiEmbedder` throws `code: 'embedder-unavailable'` on network failures so the search tool falls back to lexical.
+  - API embedding is opt-in only when `discoverProviders` finds a key AND the caller passes `consent: true`.
+  - `pack-defaults.ts` tunes per-stack: typescript-heavy `{bm25:0.4, vector:0.6}`, docs-heavy `{bm25:0.7, vector:0.3}`, default `{bm25:0.5, vector:0.5}`.
+  - 92/92 search plugin tests + 3/3 pack-defaults specs pass.
 
 If a provider key is discovered (reuse `auto-agent-selector` discovery), offer
 opt-in API embeddings for higher quality; packs (r00011) tune the hybrid
