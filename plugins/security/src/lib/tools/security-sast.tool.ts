@@ -89,6 +89,9 @@ export const buildSecuritySastRegistration = (
 						rules: selectedRules,
 						languages: stack.languages,
 						files: stack.files,
+						...(options.pluginCacheDir !== undefined
+							? { pluginCacheDir: options.pluginCacheDir }
+							: {}),
 					});
 					return toolJson({
 						tool: 'sast',

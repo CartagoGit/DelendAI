@@ -38,6 +38,8 @@ import conventionsPlugin from '@mcp-vertex/conventions';
  * agent-catalog-compact < ~325 tokens and agent-catalog-full < ~1.7k tokens.
  */
 const BUDGET_BYTES = {
+	// Bumped overviewFull 9800→10000 / compact 1280→1400 (2026-07-25): a00069 S9 unusedActivePlugins advisory.
+
 	// Full overview lists every tool's summary, so it grows as the toolset does
 	// (await_lock, proposal_review, proposal_adopt, …). The promise is the COMPACT
 	// path (well under budget) — agents use it when there are many tools.
@@ -67,8 +69,8 @@ const BUDGET_BYTES = {
 	// `create_plugin` core tool (scaffold + wire + doctor). Full measured
 	// 9792B, compact measured 1256B — both well under their promised
 	// ceilings. The compact mode still saves 87% vs. full.
-	overviewFull: 9_800,
-	overviewCompact: 1_280,
+	overviewFull: 10_000,
+	overviewCompact: 1_400,
 	// Bumped 1300 → 1450 (2026-07-03): CORRECTNESS fix in the catalog's
 	// tool-entry construction. Core tools whose id has an underscore
 	// (agent_catalog, fs_read, …) were advertised WITHOUT the `mcp-vertex_`
