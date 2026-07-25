@@ -271,7 +271,7 @@ uno, con la disciplina `f00073`/`f00075`/`f00052` como referencia.
 
 ### S7 — `proposal_review` obligatorio antes de `review → done`
 
-- **Status**: pending
+- **Status**: done
 - **Files**:
   - `plugins/proposals/src/lib/tools/authoring.tool.ts` (`proposal_review`)
   - `plugins/proposals/src/lib/tools/proposal-transition.tool.ts`

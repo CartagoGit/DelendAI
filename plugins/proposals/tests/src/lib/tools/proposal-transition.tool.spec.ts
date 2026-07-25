@@ -12,6 +12,7 @@ import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import {
+	hasIndependentPeerApproval,
 	runProposalTransition,
 	type IProposalTransitionToolOptions,
 } from '@mcp-vertex/proposals/lib/tools/proposal-transition.tool';
@@ -44,11 +45,12 @@ const writeProposal = async (
 	folder: string,
 	filename: string,
 	frontmatter: Record<string, string>,
+	body = '## Goal\n\np.\n',
 ): Promise<void> => {
 	const dir = join(proposalsDirAbs, folder);
 	await mkdir(dir, { recursive: true });
 	const lines = Object.entries(frontmatter).map(([k, v]) => `${k}: ${v}`);
-	const raw = `---\n${lines.join('\n')}\n---\n\n## Goal\n\np.\n`;
+	const raw = `---\n${lines.join('\n')}\n---\n\n${body}`;
 	await writeFile(join(dir, filename), raw, 'utf8');
 };
 
@@ -63,6 +65,8 @@ describe('proposal_transition', async () => {
 			proposalsDirAbs: root,
 			workspaceRoot: root,
 			gitRunner: FAKE_GIT_MV,
+			// Pre-S7 DFA cases stay free of peer-review noise; S7 suite opts in.
+			requirePeerReview: false,
 		};
 	});
 
@@ -464,5 +468,111 @@ describe('proposal_transition', async () => {
 			);
 			expect(moved).toContain('status: done');
 		});
+	});
+});
+
+describe('a00069 S7 peer-review gate on review → done', () => {
+	let root = '';
+	let options: IProposalTransitionToolOptions;
+
+	beforeEach(async () => {
+		root = await mkdtemp(join(tmpdir(), 'transition-s7-'));
+		options = {
+			namespacePrefix: 'proposals',
+			proposalsDirAbs: root,
+			workspaceRoot: root,
+			gitRunner: FAKE_GIT_MV,
+			requirePeerReview: true,
+		};
+	});
+
+	afterEach(async () => rm(root, { recursive: true, force: true }));
+
+	it('hasIndependentPeerApproval requires a non-self approve', () => {
+		expect(
+			hasIndependentPeerApproval(
+				'- review-implementer: alice\n- review-log: approved by bob\n',
+			),
+		).toBe(true);
+		expect(
+			hasIndependentPeerApproval(
+				'- review-implementer: alice\n- review-log: approved by alice\n',
+			),
+		).toBe(false);
+		expect(hasIndependentPeerApproval('no review lines')).toBe(false);
+	});
+
+	it('refuses review → done without peer approve', async () => {
+		await writeProposal(root, 'review', 'f00970-s7.md', {
+			id: 'f00970',
+			status: 'review',
+			type: 'feat',
+		});
+		const result = await runProposalTransition(
+			{ id: 'f00970', to: 'done', reason: 'ship' },
+			options,
+		);
+		expect(result.isError).toBe(true);
+		const body = JSON.parse(result.content[0]?.text ?? '{}');
+		expect(body.error.reason).toMatch(/peer-review required/i);
+	});
+
+	it('allows review → done after independent approve is recorded', async () => {
+		await writeProposal(
+			root,
+			'review',
+			'f00971-s7.md',
+			{ id: 'f00971', status: 'review', type: 'feat' },
+			[
+				'## Slices',
+				'',
+				'### S1 — work',
+				'- **Status**: done',
+				'- review-state: done',
+				'- review-implementer: alice',
+				'- review-reviewer: bob',
+				'- review-log: approved by bob',
+				'',
+			].join('\n'),
+		);
+		const result = await runProposalTransition(
+			{ id: 'f00971', to: 'done', reason: 'peer approved' },
+			options,
+		);
+		expect(result.isError).toBeUndefined();
+		const body = JSON.parse(result.content[0]?.text ?? '{}');
+		expect(body.ok).toBe(true);
+		expect(body.to).toBe('done');
+	});
+
+	it('allows force:true bypass without peer approve', async () => {
+		await writeProposal(root, 'review', 'f00972-s7.md', {
+			id: 'f00972',
+			status: 'review',
+			type: 'feat',
+		});
+		const result = await runProposalTransition(
+			{ id: 'f00972', to: 'done', reason: 'emergency', force: true },
+			options,
+		);
+		expect(result.isError).toBeUndefined();
+		const body = JSON.parse(result.content[0]?.text ?? '{}');
+		expect(body.ok).toBe(true);
+		expect(body.to).toBe('done');
+	});
+
+	it('skips gate when requirePeerReview is false', async () => {
+		await writeProposal(root, 'review', 'f00973-s7.md', {
+			id: 'f00973',
+			status: 'review',
+			type: 'feat',
+		});
+		const result = await runProposalTransition(
+			{ id: 'f00973', to: 'done', reason: 'host opted out' },
+			{ ...options, requirePeerReview: false },
+		);
+		expect(result.isError).toBeUndefined();
+		const body = JSON.parse(result.content[0]?.text ?? '{}');
+		expect(body.ok).toBe(true);
 	});
 });

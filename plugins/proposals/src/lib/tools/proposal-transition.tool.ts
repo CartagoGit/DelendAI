@@ -67,6 +67,7 @@ import { runPlanClosureGuard } from '../swarm/plan-closure-guard';
 import { createGitRunner } from '../shared/git-runner';
 import type { IGitRunner } from '../shared/git-runner';
 import { rewriteStaleProposalSelfPaths } from '../proposals/rewrite-stale-self-paths';
+import { hasPeerApprovedReview } from '../swarm/proposal-review';
 
 export interface IProposalTransitionToolOptions {
 	readonly namespacePrefix: string;
@@ -85,13 +86,46 @@ export interface IProposalTransitionToolOptions {
 	readonly indexPathAbs?: string;
 	/** Injectable for tests; defaults to a real `git mv` in `workspaceRoot`. */
 	readonly gitRunner?: IGitRunner;
+	/**
+	 * a00069 S7: when true (default), `review → done` requires at least
+	 * one peer `proposal_review { action: "approve" }` recorded in the
+	 * doc (reviewer ≠ implementer). Hosts opt out via
+	 * `proposals.options.requirePeerReview: false`.
+	 */
+	readonly requirePeerReview?: boolean;
 }
 
 export interface IProposalTransitionArgs {
 	readonly id: string;
 	readonly to: string;
 	readonly reason: string;
+	/**
+	 * a00069 S7: skip the peer-review gate on `review → done`. Only for
+	 * emergency / host-approved bypass; default false.
+	 */
+	readonly force?: boolean | undefined;
 }
+
+/**
+ * a00069 S7 — true when the proposal markdown records at least one
+ * independent peer approval (`review-log: approved by <agent>` where
+ * agent ≠ `review-implementer` when both are present, or any approve
+ * when no implementer is recorded).
+ */
+export const hasIndependentPeerApproval = (markdown: string): boolean => {
+	const implementers = [
+		...markdown.matchAll(/^[-*]\s*review-implementer:\s*(\S+)/gim),
+	].map((m) => (m[1] ?? '').toLowerCase());
+	const approves = [
+		...markdown.matchAll(/^[-*]\s*review-log:\s*approved\s+by\s+(\S+)/gim),
+	].map((m) => (m[1] ?? '').toLowerCase());
+	if (approves.length === 0) return false;
+	if (implementers.length === 0) return true;
+	// At least one approver must differ from every implementer line, or
+	// from the matching slice's implementer — we accept any approver not
+	// equal to all implementers (i.e. not solely self-approvals).
+	return approves.some((a) => !implementers.includes(a));
+};
 
 const isKnownStatus = (value: string): value is IProposalStatus =>
 	value in PROPOSAL_STATUSES;
@@ -231,6 +265,24 @@ export const runProposalTransition = async (
 
 	const dfaRejection = validateTransition(args.id, from, finalTo);
 	if (dfaRejection !== null) return dfaRejection;
+
+	// a00069 S7: review → done requires an independent peer approve unless
+	// the host disabled requirePeerReview or the caller passed force:true.
+	const requirePeer = options.requirePeerReview !== false;
+	if (
+		requirePeer &&
+		from === 'review' &&
+		finalTo === 'done' &&
+		args.force !== true
+	) {
+		const raw = await readFile(found.absPath, 'utf8');
+		if (!hasPeerApprovedReview(raw)) {
+			return toolError(
+				`peer-review required before "${args.id}" can leave review → done`,
+				`Run ${options.namespacePrefix}_proposal_review { action: "approve", agent: "<reviewer≠implementer>" } on the finished slice(s), then retry. Emergency bypass: force:true (host-approved only).`,
+			);
+		}
+	}
 
 	const guardRejection = await maybeApplyPlanClosureGuard(
 		args,
@@ -515,6 +567,7 @@ export const buildProposalTransitionRegistration = (
 					id: z.string().min(1),
 					to: z.string().min(1),
 					reason: z.string().min(1),
+					force: z.boolean().optional(),
 				}),
 			},
 			async (args: IProposalTransitionArgs) =>

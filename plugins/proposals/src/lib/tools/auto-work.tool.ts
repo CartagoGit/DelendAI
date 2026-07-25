@@ -53,6 +53,12 @@ export interface IAutoWorkOrchestrationConfig {
 }
 
 export interface IAutoWorkToolOptions extends IContinueProposalToolOptions {
+	/**
+	 * a00069 S7: when true (default), auto_work short-circuits proposals in
+	 * `review/` without peer approve to `next: proposal_review`.
+	 */
+	readonly requirePeerReview?: boolean;
+
 	/** f00073: absolute workspace root, used by the branch-status warning pass. */
 	readonly workspaceRoot?: string;
 	/** Quality-gate command to run before closing a slice, if any. */
@@ -429,6 +435,41 @@ export const runAutoWork = async (
 
 	// Actionable work → reset the idle streak.
 	consecutiveIdle = 0;
+
+	// a00069 S7 short-circuit: proposal sitting in review/ without an
+	// independent peer approve must not get an implement/claim plan.
+	const requirePeer = options.requirePeerReview !== false;
+	const inReviewFolder =
+		typeof next.file === 'string' &&
+		(next.file.startsWith('review/') ||
+			next.file.includes('/review/') ||
+			next.status === 'review');
+	if (requirePeer && inReviewFolder && next.proposalId && next.file) {
+		const docPath = join(options.proposalsDirAbs ?? '', next.file);
+		let approved = false;
+		try {
+			const raw = await readFile(docPath, 'utf8');
+			approved = hasIndependentPeerApproval(raw);
+		} catch {
+			approved = false;
+		}
+		if (!approved) {
+			const prefix = options.namespacePrefix;
+			return json({
+				state: 'work',
+				proposalId: next.proposalId,
+				file: next.file,
+				next: `${prefix}_proposal_review`,
+				nextAction: `Peer-review required (a00069 S7). Call ${prefix}_proposal_review { action: "approve", proposalId: "${next.proposalId}", sliceId: "<finished-slice>", agent: "<reviewer≠implementer>" } before proposal_transition → done.`,
+				steps: [
+					`Open ${next.file} and identify finished slices awaiting review.`,
+					`Run ${prefix}_proposal_review { action: "approve" | "request_changes", proposalId: "${next.proposalId}", sliceId, agent: "<reviewer≠implementer>" }.`,
+					`Only after an independent approve: ${prefix}_proposal_transition { id: "${next.proposalId}", to: "done", reason }.`,
+					`Repeat ${prefix}_auto_work.`,
+				],
+			});
+		}
+	}
 
 	// Resolve the persist mode in priority order: tool input > config >
 	// hard default `'none'`. Keeping this resolver pure and inline keeps
