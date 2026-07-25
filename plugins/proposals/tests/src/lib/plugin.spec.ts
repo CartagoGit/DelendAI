@@ -30,6 +30,7 @@ describe('@mcp-vertex/proposals plugin', async () => {
 		const registrations = await plugin.register(ctx());
 		expect(registrations.tools?.map((tool) => tool.id)).toEqual([
 			'agent_lock',
+			'agents_lock_diagnose',
 			'agent_worktree',
 			'branch_status',
 			'branch_gc',
@@ -85,6 +86,7 @@ describe('@mcp-vertex/proposals plugin', async () => {
 		}
 		expect(names).toEqual([
 			'work_agent_lock',
+			'work_agents_lock_diagnose',
 			'work_agent_worktree',
 			'work_branch_status',
 			'work_branch_gc',

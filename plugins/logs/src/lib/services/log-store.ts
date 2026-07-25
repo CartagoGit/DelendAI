@@ -1,4 +1,4 @@
-import { appendFile, mkdir, readdir, readFile } from 'node:fs/promises';
+import { mkdir, open, readdir, readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
 import { withFileMutex } from '@mcp-vertex/core/public';
@@ -100,14 +100,18 @@ export const createLogStore = async (
 	return {
 		async appendEvent(event) {
 			const file = fileFor(event);
+			await mkdir(logsDir, { recursive: true });
+			const line = `${serializeRedactedEvent(event, options.maxLineBytes)}\n`;
 			await withFileMutex(
 				file,
 				async () => {
-					await appendFile(
-						file,
-						`${serializeRedactedEvent(event, options.maxLineBytes)}\n`,
-						'utf8',
-					);
+					const handle = await open(file, 'a');
+					try {
+						await handle.writeFile(line, 'utf8');
+						await handle.sync();
+					} finally {
+						await handle.close();
+					}
 				},
 				{ onContention: 'fail', timeoutMs: 10_000 },
 			);
