@@ -11,21 +11,33 @@ import { buildLogToolRegistrations } from '../src/lib/tools/tools';
 type Handler = (args: Record<string, unknown>) => Promise<unknown>;
 
 const registeredHandlers = async () => {
-	const store = createLogStore(
+	const store = await createLogStore(
 		await mkdtemp(join(tmpdir(), 'mcp-vertex-tools-')),
 	);
-	await (await store).appendEvent(
+	const errorStore = await createLogStore(
+		await mkdtemp(join(tmpdir(), 'mcp-vertex-tools-errors-')),
+	);
+	await store.appendEvent(
 		normalizeEvent(
 			'tool-started',
 			{ toolName: 'alpha', agent: 'a1' },
 			new Date('2026-06-20T10:00:00.000Z'),
 		),
 	);
-	await (await store).appendEvent(
+	await store.appendEvent(
 		normalizeEvent(
 			'tool-failed',
 			{ toolName: 'beta', agent: 'a1' },
 			new Date('2026-06-20T10:01:00.000Z'),
+		),
+	);
+	// Seeded independently of `store` — proves `errors_tail` reads its
+	// own curated stream, not the main timeline.
+	await errorStore.appendEvent(
+		normalizeEvent(
+			'tool-failed',
+			{ toolName: 'gamma', agent: 'a1', error: 'boom' },
+			new Date('2026-06-20T10:02:00.000Z'),
 		),
 	);
 	const handlers = new Map<string, Handler>();
@@ -34,7 +46,10 @@ const registeredHandlers = async () => {
 			handlers.set(name, handler);
 		},
 	};
-	for (const registration of buildLogToolRegistrations('logs', await store)) {
+	for (const registration of buildLogToolRegistrations('logs', {
+		main: store,
+		errors: errorStore,
+	})) {
 		await registration.register(server as never);
 	}
 	return handlers;
@@ -44,10 +59,11 @@ const structured = (value: unknown): Record<string, unknown> =>
 	(value as { structuredContent: Record<string, unknown> }).structuredContent;
 
 describe('log tools', async () => {
-	it('registers the five read-only tools', async () => {
+	it('registers the six read-only tools', async () => {
 		const handlers = await registeredHandlers();
 		expect([...handlers.keys()].sort()).toEqual([
 			'logs_correlate',
+			'logs_errors_tail',
 			'logs_query',
 			'logs_redact_test',
 			'logs_subscribe',
@@ -106,6 +122,31 @@ describe('log tools', async () => {
 			await handlers.get('logs_correlate')?.({ agent: 'a1' }),
 		);
 		expect(corr.firstTs).toBe('2026-06-20T10:00:00.000Z');
+	});
+
+	it('errors_tail reads only the curated error stream, with full meta by default', async () => {
+		const handlers = await registeredHandlers();
+		const errors = structured(await handlers.get('logs_errors_tail')?.({}));
+		const events = errors.events as Array<{
+			taskId: string | null;
+			meta: Record<string, unknown>;
+		}>;
+		expect(events).toHaveLength(1);
+		expect(events[0]?.taskId).toBe('gamma');
+		// Full context by default — no second call needed to see why it broke.
+		expect(events[0]?.meta.toolName).toBe('gamma');
+		expect(events[0]?.meta.error).toBe('boom');
+	});
+
+	it('errors_tail honors includeMeta:false to strip context', async () => {
+		const handlers = await registeredHandlers();
+		const errors = structured(
+			await handlers.get('logs_errors_tail')?.({ includeMeta: false }),
+		);
+		const events = errors.events as Array<{
+			meta: Record<string, unknown>;
+		}>;
+		expect(events[0]?.meta).toEqual({});
 	});
 
 	it('redacts canary payloads', async () => {

@@ -112,204 +112,260 @@ const correlateOptionsFrom = (args: {
 	...(args.until !== undefined ? { until: args.until } : {}),
 });
 
+export interface ILogToolStores {
+	readonly main: ILogStore;
+	readonly errors: ILogStore;
+}
+
 export const buildLogToolRegistrations = (
 	prefix: string,
-	store: ILogStore,
-): readonly IToolRegistration[] => [
-	{
-		id: 'query',
-		summary:
-			'Query redacted append-only MCP log events with filters and cursor pagination.',
-		tags: ['logs', 'observability'],
-		register: async (server) => {
-			server.registerTool(
-				`${prefix}_query`,
-				{
-					description:
-						'Query redacted append-only MCP log events. Filters: since, until, kind, agent, taskId, outcome; supports cursor pagination.',
-					inputSchema: QueryInputSchema,
-					outputSchema: z.object({
-						events: z.array(LogEventSchema),
-						cursor: z.string().nullable(),
-						hasMore: z.boolean(),
-					}),
-				},
-				async (args: z.infer<typeof QueryInputSchema>) => {
-					const limit = Math.max(
-						1,
-						Math.min(args.limit ?? 100, 1000),
-					);
-					const offset = parseCursor(args.cursor);
-					const events = await store.readRange(queryFilterFrom(args));
-					const page = events.slice(offset, offset + limit);
-					const nextOffset = offset + page.length;
-					const hasMore = nextOffset < events.length;
-					return toolJson({
-						events: page,
-						cursor: hasMore ? makeCursor(nextOffset) : null,
-						hasMore,
-					});
-				},
-			);
+	stores: ILogToolStores,
+): readonly IToolRegistration[] => {
+	const store = stores.main;
+	return [
+		{
+			id: 'query',
+			summary:
+				'Query redacted append-only MCP log events with filters and cursor pagination.',
+			tags: ['logs', 'observability'],
+			register: async (server) => {
+				server.registerTool(
+					`${prefix}_query`,
+					{
+						description:
+							'Query redacted append-only MCP log events. Filters: since, until, kind, agent, taskId, outcome; supports cursor pagination.',
+						inputSchema: QueryInputSchema,
+						outputSchema: z.object({
+							events: z.array(LogEventSchema),
+							cursor: z.string().nullable(),
+							hasMore: z.boolean(),
+						}),
+					},
+					async (args: z.infer<typeof QueryInputSchema>) => {
+						const limit = Math.max(
+							1,
+							Math.min(args.limit ?? 100, 1000),
+						);
+						const offset = parseCursor(args.cursor);
+						const events = await store.readRange(
+							queryFilterFrom(args),
+						);
+						const page = events.slice(offset, offset + limit);
+						const nextOffset = offset + page.length;
+						const hasMore = nextOffset < events.length;
+						return toolJson({
+							events: page,
+							cursor: hasMore ? makeCursor(nextOffset) : null,
+							hasMore,
+						});
+					},
+				);
+			},
 		},
-	},
-	{
-		id: 'tail',
-		summary: 'Return the newest redacted MCP log events.',
-		tags: ['logs', 'observability'],
-		register: async (server) => {
-			server.registerTool(
-				`${prefix}_tail`,
-				{
-					description:
-						'Return the newest redacted MCP log events, optionally filtered by outcome or kind. Omits verbose meta by default; pass includeMeta:true for the full stored event.',
-					inputSchema: z.object({
-						limit: z.number().optional(),
-						outcomeFilter: LogOutcomeSchema.optional(),
-						kindFilter: z.string().optional(),
-						includeMeta: z.boolean().optional(),
-					}),
-					outputSchema: z.object({
-						events: z.array(LogEventSchema),
-						oldestTs: z.string().nullable(),
-						newestTs: z.string().nullable(),
-					}),
-				},
-				async (args: {
-					limit?: number | undefined;
-					outcomeFilter?: LogOutcome | undefined;
-					kindFilter?: string | undefined;
-					includeMeta?: boolean | undefined;
-				}) => {
-					const events = compactEvents(
-						await store.tail(tailOptionsFrom(args)),
-						args.includeMeta,
-					);
-					return toolJson({
-						events,
-						oldestTs: events[0]?.ts ?? null,
-						newestTs: events.at(-1)?.ts ?? null,
-					});
-				},
-			);
+		{
+			id: 'tail',
+			summary: 'Return the newest redacted MCP log events.',
+			tags: ['logs', 'observability'],
+			register: async (server) => {
+				server.registerTool(
+					`${prefix}_tail`,
+					{
+						description:
+							'Return the newest redacted MCP log events, optionally filtered by outcome or kind. Omits verbose meta by default; pass includeMeta:true for the full stored event.',
+						inputSchema: z.object({
+							limit: z.number().optional(),
+							outcomeFilter: LogOutcomeSchema.optional(),
+							kindFilter: z.string().optional(),
+							includeMeta: z.boolean().optional(),
+						}),
+						outputSchema: z.object({
+							events: z.array(LogEventSchema),
+							oldestTs: z.string().nullable(),
+							newestTs: z.string().nullable(),
+						}),
+					},
+					async (args: {
+						limit?: number | undefined;
+						outcomeFilter?: LogOutcome | undefined;
+						kindFilter?: string | undefined;
+						includeMeta?: boolean | undefined;
+					}) => {
+						const events = compactEvents(
+							await store.tail(tailOptionsFrom(args)),
+							args.includeMeta,
+						);
+						return toolJson({
+							events,
+							oldestTs: events[0]?.ts ?? null,
+							newestTs: events.at(-1)?.ts ?? null,
+						});
+					},
+				);
+			},
 		},
-	},
-	{
-		id: 'subscribe',
-		summary:
-			'Return recent events in the shape consumed by the logs SSE endpoint.',
-		tags: ['logs', 'observability'],
-		register: async (server) => {
-			server.registerTool(
-				`${prefix}_subscribe`,
-				{
-					description:
-						'Return recent redacted log events matching optional outcome/kind filters. Web SSE endpoints poll this read-only tool.',
-					inputSchema: z.object({
-						outcomeFilter: LogOutcomeSchema.optional(),
-						kindFilter: z.string().optional(),
-						limit: z.number().optional(),
-					}),
-					outputSchema: z.object({
-						events: z.array(LogEventSchema),
-						stream: z.literal('logs'),
-					}),
-				},
-				async (args: {
-					outcomeFilter?: LogOutcome | undefined;
-					kindFilter?: string | undefined;
-					limit?: number | undefined;
-				}) =>
-					toolJson({
-						stream: 'logs' as const,
-						events: await store.tail(
-							tailOptionsFrom({
-								...args,
-								limit: args.limit ?? 50,
-							}),
-						),
-					}),
-			);
-		},
-	},
-	{
-		id: 'correlate',
-		summary: 'Build a timeline for one taskId or agent and flag long gaps.',
-		tags: ['logs', 'observability'],
-		register: async (server) => {
-			server.registerTool(
-				`${prefix}_correlate`,
-				{
-					description:
-						'Build a chronological chain for exactly one taskId or agent and return gap detection.',
-					inputSchema: z.object({
-						taskId: z.string().optional(),
-						agent: z.string().optional(),
-						since: z.string().optional(),
-						until: z.string().optional(),
-					}),
-					// x00107: SUCCESS shape only — the SDK skips schema
-					// validation for `isError` results (`toolError`), so
-					// the strict required fields are correct. (x00105
-					// briefly loosened this; reverted.)
-					outputSchema: z.object({
-						chain: z.array(LogEventSchema),
-						firstTs: z.string().nullable(),
-						lastTs: z.string().nullable(),
-						gaps: z.array(
-							z.object({
-								startTs: z.string(),
-								endTs: z.string(),
-								durationMs: z.number(),
-							}),
-						),
-					}),
-				},
-				async (args: {
-					taskId?: string | undefined;
-					agent?: string | undefined;
-					since?: string | undefined;
-					until?: string | undefined;
-				}) => {
-					try {
-						return toolJson(
-							await correlateEvents(
-								store,
-								correlateOptionsFrom(args),
+		{
+			id: 'errors_tail',
+			summary:
+				'Return the newest curated error/anomaly events — start here when auditing or debugging.',
+			tags: ['logs', 'observability', 'audit'],
+			register: async (server) => {
+				server.registerTool(
+					`${prefix}_errors_tail`,
+					{
+						description:
+							'Return the newest events from the curated error stream (outcome not ok/idle: failed, timed-out, dead, cancelled, unknown). Each entry carries full context by default (args, result, error message+stack, elapsedMs) — pass includeMeta:false to omit it. Read this BEFORE reading source when auditing or debugging: it points at exactly where execution did not reach the expected state.',
+						inputSchema: z.object({
+							limit: z.number().optional(),
+							kindFilter: z.string().optional(),
+							includeMeta: z.boolean().optional(),
+						}),
+						outputSchema: z.object({
+							events: z.array(LogEventSchema),
+							oldestTs: z.string().nullable(),
+							newestTs: z.string().nullable(),
+						}),
+					},
+					async (args: {
+						limit?: number | undefined;
+						kindFilter?: string | undefined;
+						includeMeta?: boolean | undefined;
+					}) => {
+						const events = compactEvents(
+							await stores.errors.tail(
+								tailOptionsFrom({
+									limit: args.limit,
+									kindFilter: args.kindFilter,
+								}),
 							),
+							args.includeMeta ?? true,
 						);
-					} catch (error) {
-						return toolError(
-							'Invalid correlation request',
-							error instanceof Error
-								? error.message
-								: String(error),
-						);
-					}
-				},
-			);
+						return toolJson({
+							events,
+							oldestTs: events[0]?.ts ?? null,
+							newestTs: events.at(-1)?.ts ?? null,
+						});
+					},
+				);
+			},
 		},
-	},
-	{
-		id: 'redact_test',
-		summary:
-			'Audit how the shared secret redactor treats a sample payload.',
-		tags: ['logs', 'security'],
-		register: async (server) => {
-			server.registerTool(
-				`${prefix}_redact_test`,
-				{
-					description:
-						'Run the shared redactor against a sample payload and list detected high-confidence secret pattern names.',
-					inputSchema: z.object({ text: z.string() }),
-					outputSchema: z.object({
-						detected: z.array(z.string()),
-						redacted: z.string(),
-					}),
-				},
-				async (args: { text: string }) =>
-					toolJson(redactTest(args.text)),
-			);
+		{
+			id: 'subscribe',
+			summary:
+				'Return recent events in the shape consumed by the logs SSE endpoint.',
+			tags: ['logs', 'observability'],
+			register: async (server) => {
+				server.registerTool(
+					`${prefix}_subscribe`,
+					{
+						description:
+							'Return recent redacted log events matching optional outcome/kind filters. Web SSE endpoints poll this read-only tool.',
+						inputSchema: z.object({
+							outcomeFilter: LogOutcomeSchema.optional(),
+							kindFilter: z.string().optional(),
+							limit: z.number().optional(),
+						}),
+						outputSchema: z.object({
+							events: z.array(LogEventSchema),
+							stream: z.literal('logs'),
+						}),
+					},
+					async (args: {
+						outcomeFilter?: LogOutcome | undefined;
+						kindFilter?: string | undefined;
+						limit?: number | undefined;
+					}) =>
+						toolJson({
+							stream: 'logs' as const,
+							events: await store.tail(
+								tailOptionsFrom({
+									...args,
+									limit: args.limit ?? 50,
+								}),
+							),
+						}),
+				);
+			},
 		},
-	},
-];
+		{
+			id: 'correlate',
+			summary:
+				'Build a timeline for one taskId or agent and flag long gaps.',
+			tags: ['logs', 'observability'],
+			register: async (server) => {
+				server.registerTool(
+					`${prefix}_correlate`,
+					{
+						description:
+							'Build a chronological chain for exactly one taskId or agent and return gap detection.',
+						inputSchema: z.object({
+							taskId: z.string().optional(),
+							agent: z.string().optional(),
+							since: z.string().optional(),
+							until: z.string().optional(),
+						}),
+						// x00107: SUCCESS shape only — the SDK skips schema
+						// validation for `isError` results (`toolError`), so
+						// the strict required fields are correct. (x00105
+						// briefly loosened this; reverted.)
+						outputSchema: z.object({
+							chain: z.array(LogEventSchema),
+							firstTs: z.string().nullable(),
+							lastTs: z.string().nullable(),
+							gaps: z.array(
+								z.object({
+									startTs: z.string(),
+									endTs: z.string(),
+									durationMs: z.number(),
+								}),
+							),
+						}),
+					},
+					async (args: {
+						taskId?: string | undefined;
+						agent?: string | undefined;
+						since?: string | undefined;
+						until?: string | undefined;
+					}) => {
+						try {
+							return toolJson(
+								await correlateEvents(
+									store,
+									correlateOptionsFrom(args),
+								),
+							);
+						} catch (error) {
+							return toolError(
+								'Invalid correlation request',
+								error instanceof Error
+									? error.message
+									: String(error),
+							);
+						}
+					},
+				);
+			},
+		},
+		{
+			id: 'redact_test',
+			summary:
+				'Audit how the shared secret redactor treats a sample payload.',
+			tags: ['logs', 'security'],
+			register: async (server) => {
+				server.registerTool(
+					`${prefix}_redact_test`,
+					{
+						description:
+							'Run the shared redactor against a sample payload and list detected high-confidence secret pattern names.',
+						inputSchema: z.object({ text: z.string() }),
+						outputSchema: z.object({
+							detected: z.array(z.string()),
+							redacted: z.string(),
+						}),
+					},
+					async (args: { text: string }) =>
+						toolJson(redactTest(args.text)),
+				);
+			},
+		},
+	];
+};

@@ -57,6 +57,15 @@ const asFiles = (value: unknown): readonly string[] =>
 		? value.filter((entry): entry is string => typeof entry === 'string')
 		: [];
 
+/**
+ * True for any outcome that didn't cleanly reach the state we
+ * expected — the definition of "worth a look" for the curated error
+ * stream (`logs-errors/`). `idle` is a normal steady-state signal,
+ * not an anomaly, so it's excluded alongside `ok`.
+ */
+export const isErrorOutcome = (outcome: LogOutcome): boolean =>
+	outcome !== 'ok' && outcome !== 'idle';
+
 export const outcomeForKind = (
 	kind: LogEventKind,
 	payload: Readonly<Record<string, unknown>>,
