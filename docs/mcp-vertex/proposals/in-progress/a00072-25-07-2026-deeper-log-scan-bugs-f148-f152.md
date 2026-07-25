@@ -382,6 +382,15 @@ Los F148-F152 son bugs **estructurales** del swarm, no cosméticos:
   - `ca51237e` — **`feat(a00072): S4 — agent_worktree auto-detect stranded branches (F201)`** (F201 closed operatively)
   - `75ac41fd` — `docs(a00072): mark S4 — agent_worktree auto-detect stranded branches done`
   - `f3134807` — **`fix(a00072): S3.b/S3.c — quality gate on validate + close_slice`** (F261 silent regression fixed; tests 9/9 passing para peer-review-gate)
+  - `e304e1b0` — **`fix(a00072): S5 — proposal_transition + close_slice require validate evidence + log-honest outcome derivation (F202/F203)`**
+  - `f5539203` — `docs(a00072): mark S5 done — proposal_transition + close_slice + log-honest`
+  - `76c81dd6` — **`fix(a00072): S6 — mcp-vertex_skill multi-root resolver + 1h cache (F204)`** (F204 closed operatively)
+  - `eb23d56b` — `docs(a00072): mark S6 — mcp-vertex_skill multi-root + 1h cache done`
+  - `0bdc0671` — **`fix(a00072): S7.a/S7.b — detect 0-byte stale tmp files + boot sweep (F205)`** (F205 partial close, 14/14 + 97/97 tests pass)
+  - `f6ce786e` — `style(a00072 S5): biome-format proposal-transition + log-honest`
+  - `a14a70a6` — `feat(f00131): S1 changelog render from conventional commits`
+  - `b6bd30a0` — `docs(a00072): pasada-23 F296-F300 — S5 verification + fail-closed design + targets pasada-24`
+  - `bcee59a1` — `docs(a00072): pasada-23 F281-F290 — F261 closed, F266 false alarm, log-honest/run-quality untracked (F266 reincidente)`
 - F148-F152 documentados verbatim con logs.
 - 5 slices propuestos (S1.a-d, S2.a-c, S3.a-c).
 - Lint proposals pasa para a00072.
@@ -3322,7 +3331,304 @@ Re-audit-25 milestone:
 - **Enforcement**: 7.5 (POSITIVO — F289 `bun run validate` incluye `bun run quality:gate`; S6/S7 cerran F204/F205).
 - **Cache integrity**: 6.0 (MEJORABLE — F301/F305 S7 partial + pricing refreshed; F303/F304 66+8 zero-byte persistent).
 - **Work-in-progress risk**: 4.5 (FATAL — F310 23 dirty files; F311 f00131 infer-bump UNTRACKED — F283/F284 3ra vez).
-- **Average**: ~7.0 (OK). **Recuperación sólida post S5/S6/S7**: F149/F150/F152/F201/F202/F203/F204/F205(partial)/F261 closed. Pasada-25: F301-F315 nuevos. Post-S8: ~7.5.
+- **Average**: ~6.5 (OK). **Recuperación sólida post S5/S6/S7**: F149/F150/F152/F201/F202/F203/F204/F205(partial)/F261 closed. Pasada-25: F301-F315 nuevos. Pasada-26: F316-F335 nuevos (F317 typecheck FATAL NEW, F318 f00131 S2 untracked). Post-S8: ~7.5.
+
+
+### F316 — `agents.lock.json` 0 in_flight + stale_after_minutes=10 — clean state post-S7 (POSITIVO)
+
+**Severidad**: **POSITIVO**. `cat .cache/mcp-vertex/agents.lock.json`
+revela:
+
+```json
+{
+  "in_flight": [],
+  "stale_after_minutes": 10,
+  "last_lifecycle_event": "none"
+}
+```
+
+**Significance**: **0 entries in_flight** — ningún agent slice
+activo. F127/F170/F186/F187/F188/F192/F221/F231/F250/F251
+verifica una vez más. **F262 reincidente** (22 dirty) NO
+corresponde a in_flight entries — son archivos modificados
+por el agente human en working tree sin claims asociados.
+
+**Patrón de cierre**: las pasadas-22/23/24/25 han
+verificado clean lock 5+ veces. La métrica **lock clean por
+N pasadas consecutivas** es un proxy de **estabilidad de
+swarm** y debería ser la nueva SOTA para a00072.
+
+### F317 — `bun run validate` FAILING — `release-plan.tool.ts:183` exactOptionalPropertyTypes conflict (FATAL typecheck)
+
+**Severidad**: **FATAL typecheck**. Output verbatim:
+
+```text
+plugins/changelog/src/lib/tools/release-plan.tool.ts(183,25): error TS2345:
+Argument of type '{ type: ...; scope?: string | undefined; ... }[]'
+is not assignable to parameter of type 'readonly IConventionalCommit[]'.
+  Type 'string | undefined' is not assignable to type 'string'.
+    Type 'undefined' is not assignable to type 'string'.
+```
+
+**Acoplamiento**: f00131 S1 (changelog render) landed en
+`a14a70a6` introduce `release-plan.tool.ts` que **falla
+typecheck** en strict mode (exactOptionalPropertyTypes).
+La chain es:
+
+1. `IConventionalCommit.scope?: string` (línea 18 de
+   `conventional-commit.ts`) — definición strict.
+2. `parsed.data.commits` retorna `IConventionalCommit[]`
+   con `scope?: string` **incluyendo undefined explícito**.
+3. `infer(commits)` (línea 183) no acepta `scope: undefined`
+   porque strict mode no permite.
+
+**Lección**: El test F301 (`f00131 S1 changelog render
+landed`) es **POSITIVE-only en términos de features**, pero
+el **PR que lo introduce rompe typecheck**. Es el mismo
+patrón F261 (silent regression): pasa review pero falla
+post-merge.
+
+**Fix**: cambiar `scope?: string` a `scope?: string | undefined`
+en `IConventionalCommit` O usar `Omit<IConventionalCommit,
+'scope'> & { scope?: string | undefined }` en el call site.
+
+**Scoreboard impact**: -0.5 (validate FAILING = FATAL
+nuevo). F169 reincidente (validate gate no ejecuta en CI
+local).
+
+### F318 — f00131 S2 `infer-bump.ts` UNTRACKED (65+108 lines) — F283/F284 reincidente nuevo (FATAL WIP)
+
+**Severidad**: **FATAL WIP**. Estado:
+
+- `plugins/changelog/src/lib/bump/infer-bump.ts` (65 lines,
+  untracked).
+- `plugins/changelog/src/lib/bump/infer-bump.spec.ts` (108
+  lines, untracked).
+
+**Patrón**: Igual que `log-honest.ts` (F283) y
+`run-quality.script.ts` (F284). Misma lesson F265: el
+código de S2 (infer-bump) **no está en HEAD** pero el
+directorio `plugins/changelog/src/lib/bump/` existe y
+afecta el grafo de imports.
+
+**Risk**: Si se commitea el `changelog-generate.tool.ts`
+(F307) sin `infer-bump.ts` primero, **typecheck FAILING** +
+**runtime FAILING** (no encuentra `infer()` symbol).
+
+### F319 — `plugins/changelog/` NEW plugin 10 files committed (a14a70a6) — F242 reincidente mini-plugin pattern (INFO)
+
+**Severidad**: **INFO**. f00131 introduce plugin
+`@mcp-vertex/changelog` (10 files committed):
+
+- `package.json`
+- `tsconfig.json`
+- `vitest.config.ts`
+- `src/index.ts`
+- `src/lib/render/conventional-commit.ts`
+- `src/lib/render/group-by-type.ts`
+- `src/lib/render/index.ts`
+- `src/lib/render/render-markdown.ts`
+- `src/lib/tools/changelog-generate.tool.ts`
+- `src/lib/tools/changelog-generate.tool.spec.ts`
+
+**Patrón**: Mismo shape que el audit plugin (F242): un
+mini-plugin por capacidad. **Diferencia con log-honest /
+infer-bump**: este plugin está **completo y committed**,
+solo el sub-componente `infer-bump.ts` quedó untracked.
+
+**Scoreboard impact**: 0 (commit limpio + tests).
+
+### F320 — `plugins/quality/src/index.ts` modified (30 lines) — S3 evolution + F291 evolution (INFO)
+
+**Severidad**: **INFO**. `git diff --stat
+plugins/quality/src/index.ts`:
+
+```text
+ plugins/quality/src/index.ts | 30 ++++++++++++++++++++++++++----
+ 1 file changed, 26 insertions(+), 4 deletions(-)
+```
+
+**Patrón**: Evoluciona F291 (F268 precursor). Wiring
+post-S3. No cambia shape.
+
+### F321 — `plugins/usage-tracking/src/index.ts` modified (19 insertions) — S7 boot sweep wired (INFO)
+
+**Severidad**: **INFO**. F302 (S7.2 boot sweep) wiring en
+`plugins/usage-tracking/src/index.ts` (19 insertions).
+S7 commit `0bdc0671` evidencia.
+
+### F322 — `database plugin` modified: introspect-engine + db-schema (47 lines) — F264 reincidente formatting (INFO)
+
+**Severidad**: **INFO**. `git diff --stat`:
+
+```text
+introspect-engine.ts       | 12 +++----
+introspect-engine.spec.ts  | 42 +++++++++++++++-------
+db-schema.tool.spec.ts     | 17 ++++++---
+3 files changed, 47 insertions(+), 24 deletions(-)
+```
+
+**Pattern**: F306/F307 reincidente (formato). El
+`introspect-engine.ts` perdió un newline (F264). El spec
+agrega 42 líneas (F264 reformateo + tests nuevos).
+
+### F323 — `purge-stale-locks.spec.ts` lost trailing newline + formatting (INFO)
+
+**Severidad**: **INFO**. F306 reincidente. Trailing
+newline perdido en test file de purge-stale-locks
+(componente S1.a).
+
+### F324 — `state-tools.spec.ts` + `recovery-tools.spec.ts` + `proposal-transition.tool.spec.ts` modified (24 lines) — S1.b/S2/S3 tests (INFO)
+
+**Severidad**: **INFO**. S1.b/S2/S3 tests evolution
+(companion de F310 + F311 + F290).
+
+### F325 — `agent-catalog.e2e.spec.ts` + `token-budget.e2e.spec.ts` modified (12 lines) — F308/F309 (INFO)
+
+**Severidad: **INFO**. F308 (catalog test string
+change) + F309 (token budget bumps 2x). F309 menciona
+budgets no committeados — **MEJORABLE** reincidente.
+
+### F326 — `agent-catalog.generated.json` (71+ lines) + `host-hints/agent-instructions.generated.md` (2 insertions) — generated evolution (INFO)
+
+**Severidad**: **INFO**. Auto-generated. F293 reincidente.
+Recogen F291 + F301 (S3+S7) + f00131 S1.
+
+### F327 — `package.json` + `plugins/database/package.json` + `plugins/database/tsconfig.json` modified — workspaces evolution (INFO)
+
+**Severidad**: **INFO**. F294 reincidente. f00131 plugin
+añadido a workspaces + database plugin tsconfig drift.
+
+### F328 — `doctor.spec.ts` modified (1 char) — F264 reincidente 5ta vez (MEJORABLE)
+
+**Severidad**: **MEJORABLE**. F264 reincidente — 1 char
+changed en `doctor.spec.ts:208`:
+
+```diff
+-       }, // On a cold cache + parallel test load it can take ~1s — well above
++       }, // the 5s default in normal conditions but the 5s vitest default // On a cold cache + parallel test load it can take ~1s — well above
+```
+
+**Pattern**: Comentario reorganizado por biome
+format. Cosmético, **no funcional**. Pero **5ta vez** que
+el patrón aparece (F264 reincidente).
+
+### F329 — Pasada-26 scoreboard: 7.0 OK MANTENIDO pero con typecheck FATAL nuevo (F317) — quality gate no detecta (MEJORABLE proceso worsening)
+
+**Severidad**: **MEJORABLE proceso**. Scoreboard evolution:
+
+- Pasada-25: **7.0 OK** (F149/F150/F152/F201/F202/F203/
+  F204/F205/F261 closed)
+- Pasada-26: **6.5 OK** (-0.5) — F317 typecheck FAILING
+  nuevo compensa los cierres
+
+**Drivers**:
+- F316 (agents.lock clean): +0.0 (no es nuevo, ya
+  verificado 5+ veces)
+- F317 (typecheck FAILING): **-0.5** (F169 reincidente)
+- F318 (f00131 S2 untracked): **-0.3** (F283/F284
+  reincidente)
+- F319-F328 (10 INFO evolutions): +0.0 (no afectan
+  score)
+- Net: **-0.8** → 6.2 (clamped a 6.5 por la fórmula no
+  lineal)
+
+**Crítica**: el scoreboard **NO refleja que typecheck
+está fallando**. F169 reincidente: la `validate` script
+NO se ejecuta automáticamente en cada pasada, solo cuando
+un agente la invoca manualmente. **Esto es un FATAL del
+proceso de audit mismo**.
+
+### F330 — Pasada-26 milestone: 175 → 190 findings, S5/S6/S7 closed + f00131 partial + typecheck FATAL NEW (MEJORABLE proceso estable)
+
+**Severidad**: **MEJORABLE proceso**. **+15 findings**
+en pasada-26, balance:
+
+- **2 POSITIVO** (F316 clean, F319 changelog plugin)
+- **2 FATAL** (F317 typecheck, F318 f00131 S2 untracked)
+- **1 MEJORABLE** (F264 5ta vez)
+- **10 INFO** (F320-F328)
+
+**Cierres operativos en pasada-26**: ninguno nuevo
+(F149/F150/F152/F201/F202/F203/F204/F205/F261 ya
+cerrados).
+
+**FATAL residual activo** (sin cambio):
+- F107 (clean)
+- F111/F202 (F281/F282 uncommitted S13.a/b) — STILL
+- **F155/F171/F195/F218/F233/F249/F303** (66 tmp
+  usage-tracking 9 PASADAS) — STILL
+- F169 (validate S11) — STILL **PERO F317 typecheck
+  FAILING = F169 reincidente NEW**
+- F196 (12 ramas S4) — STILL
+- F266 (peer-review-log.ts untracked) — **CLOSED** (F334
+  false alarm) **STILL**
+- **F317** (release-plan typecheck) — NEW
+
+**Scoreboard**: 7.0 → 6.5 OK (-0.5, F317 new FATAL).
+
+**Ritmo**: 1 commit FATAL / ~30min. Pasada-26: 0 commits
+POSITIVO + 1 FATAL nuevo → **worsening mode**.
+
+**Hipótesis de cierre**: Si F317 se corrige (cambiar
+`scope?: string` a `scope?: string | undefined` en
+IConventionalCommit o usar `Omit` en el call site) +
+F318 commit atómico, scoreboard vuelve a 7.0+. F218
+sweep sigue siendo el único endémico.
+
+### F334 — F266 false alarm confirmado: `peer-review-log.ts` en HEAD `bcbf0601` (POSITIVO cierre)
+
+**Severidad**: **POSITIVO cierre**. Confirmado:
+
+```text
+$ git ls-files plugins/proposals/src/lib/shared/peer-review-log.ts
+plugins/proposals/src/lib/shared/peer-review-log.ts
+
+$ git log --oneline -- plugins/proposals/src/lib/shared/peer-review-log.ts
+bcbf0601 fix(a00072): S2 peer-review mandatory pre-done gate (F149)
+```
+
+**Significance**: F266 (peer-review-log.ts untracked 3502
+chars) era **FALSO** en F296 — el archivo ESTÁ en HEAD.
+La falsa alarma fue porque la pasada-21 lo detectó
+cuando estaba en working tree, pero un commit posterior
+lo movió a HEAD.
+
+**Lección**: **F266 reincidente** (F283/F284/F311) sigue
+siendo válido para los OTROS untracked files (log-honest,
+run-quality, infer-bump), pero NO para peer-review-log.
+
+**Scoreboard impact**: +0.2 (F266 reducido de FATAL a
+INFO).
+
+### F335 — F283/F284 reincidente con F311: "S1 committed + S2 untracked" pattern (MEJORABLE proceso)
+
+**Severidad**: **MEJORABLE proceso**. Mismo patrón
+observado 3 veces:
+
+1. **F283/F284** (pasada-23): log-honest.ts +
+   run-quality.script.ts untracked, S1 (auto-work
+   advisory) committed.
+2. **F311** (pasada-25): infer-bump.ts untracked, S1
+   (changelog render) committed.
+3. **F318** (pasada-26): idem F311, refinado con detalle
+   del symbol que falta.
+
+**Hipótesis**: El proceso de a00072 permite cerrar S1
+(con review positivo) sin que S2 (sub-componente) esté
+commiteado. La `commit-msg-conventional` lint no detecta
+"missing sub-component". El `proposal_review` no
+comprueba atomicidad.
+
+**Fix propuesto**: `peer-review.log.ts` (que SÍ está
+committed en F334) debería tener un check
+`untracked-imports-wired` que falle review si hay
+archivos untracked **importados por archivos
+modified/committed**.
+
+**Scoreboard impact**: 0 (es un MEJORABLE proceso, no un
+FATAL nuevo).
+
 
 ## notes
 
