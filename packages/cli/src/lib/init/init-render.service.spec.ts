@@ -142,9 +142,9 @@ describe('renderInitBundle (f00084 S2-S5)', () => {
 		const config = JSON.parse(configFile?.content ?? '{}') as {
 			plugins: Record<string, unknown>;
 		};
-		// Exactly the 12 vertex members (f00119 S6 added auto-agent-selector),
-		// no swarm inheritance.
-		expect(Object.keys(config.plugins).length).toBe(12);
+		// Exactly the 13 vertex members (f00119 S6 added auto-agent-selector,
+		// f00123 S2 added refactor), no swarm inheritance.
+		expect(Object.keys(config.plugins).length).toBe(13);
 		for (const required of [
 			'conventions',
 			'docs',
@@ -154,6 +154,7 @@ describe('renderInitBundle (f00084 S2-S5)', () => {
 			'status-marker',
 			'test-convention',
 			'quality',
+			'refactor',
 			'issues',
 			'audit',
 		]) {

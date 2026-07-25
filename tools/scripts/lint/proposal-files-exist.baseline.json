@@ -24,7 +24,7 @@
 	"docs/mcp-vertex/proposals/done/audits/a00045-28-06-2026-copilot-minimax-m3-post-merge-exhaustive-audit.md": 12,
 	"docs/mcp-vertex/proposals/done/feats/f00015-residual-p100-web-and-i18n.md": 2,
 	"docs/mcp-vertex/proposals/done/feats/f00029-github-issues-plugin-ingest-and-propose.md": 20,
-	"docs/mcp-vertex/proposals/done/feats/f00028-ide-extension-multi-ide-brand-dashboard.md": 30,
+	"docs/mcp-vertex/proposals/done/feats/f00028-ide-extension-multi-ide-brand-dashboard.md": 29,
 	"docs/mcp-vertex/proposals/done/feats/f00030-cross-project-setup-and-github-config.md": 6,
 	"docs/mcp-vertex/proposals/done/feats/f00038-cli-mcp-vertex-single-binary-local-and-remote.md": 56,
 	"docs/mcp-vertex/proposals/done/feats/f00048-web-install-onboarding-guide-ux-overhaul.md": 2,
@@ -52,12 +52,12 @@
 	"docs/mcp-vertex/proposals/done/feats/f00046-cli-coverage-expand-the-cli-to-expose-every-public-mcp-tool-plus-bootstrap-commands.md": 5,
 	"docs/mcp-vertex/proposals/done/feats/f00068-external-mcps-plugin.md": 3,
 	"docs/mcp-vertex/proposals/done/feats/f00049-conventions-unification-r10-slices.md": 51,
-	"docs/mcp-vertex/proposals/done/feats/f00020-skills-and-tools-coverage.md": 19,
+	"docs/mcp-vertex/proposals/done/feats/f00020-skills-and-tools-coverage.md": 18,
 	"docs/mcp-vertex/proposals/done/feats/f00024-metrics-longitudinal-regression-gate.md": 5,
 	"docs/mcp-vertex/proposals/done/feats/f00080-canonical-ephemeral-exec-paths-in-plugin-cache.md": 3,
 	"docs/mcp-vertex/proposals/done/feats/f00031-single-orchestrator-client-adapters-redirect-to-mcp-vertex.md": 12,
 	"docs/mcp-vertex/proposals/done/feats/f00067-multi-model-orchestrator.md": 1,
-	"docs/mcp-vertex/proposals/done/feats/f00025-rename-ui-extension-extensions-folder-and-promote-ui-extension-to-package.md": 20,
+	"docs/mcp-vertex/proposals/done/feats/f00025-rename-ui-extension-extensions-folder-and-promote-ui-extension-to-package.md": 19,
 	"docs/mcp-vertex/proposals/done/feats/f00069-tabs-cross-fade-and-iconography.md": 2,
 	"docs/mcp-vertex/proposals/done/feats/f00021-tools-scripts-refactor-rename-scripts-to-tools.md": 34,
 	"docs/mcp-vertex/proposals/done/feats/f00027-web-deep-pages-and-search.md": 1,
@@ -67,5 +67,5 @@
 	"docs/mcp-vertex/proposals/done/refactors/r00001-harden-catchall-outputschemas-jsdoc-boot-only-en-primitivas-sync-del-core.md": 2,
 	"docs/mcp-vertex/proposals/done/refactors/r00002-harden-catchall-output-schemas.md": 5,
 	"docs/mcp-vertex/proposals/done/refactors/r00003-apply-solid-on-a00036-findings.md": 3,
-	"docs/mcp-vertex/proposals/in-progress/a00069-25-07-2026-multi-agent-branch-state-drift-and-validation-leak.md": 1
+	"docs/mcp-vertex/proposals/in-progress/f00125-browser-plugin.md": 2
 }

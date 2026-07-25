@@ -970,6 +970,23 @@ export interface McpVertexOverviewOutput {
 	recommendedNextAction: string;
 }
 
+export interface McpVertexPerfPerfBenchOutput {
+	results: {
+		name: string;
+		ops: number;
+		sampleCount: number;
+		meanMs: number;
+		p95Ms: number;
+	}[];
+	regressions: {
+		name: string;
+		baselineOps: number;
+		currentOps: number;
+		ratio: number;
+		threshold: number;
+	}[];
+}
+
 export interface McpVertexPerfPerfBundleOutput {
 	globs: string[];
 	fileCount: number;
@@ -2249,6 +2266,10 @@ export interface McpVertexSearchSearchOutput {
 	usedRg: boolean;
 	rgFallbackReason?: string;
 	diagnostic?: string;
+	availableProviders: Array<{
+		id: "openai" | "voyage" | "cohere";
+		present: boolean;
+	}>;
 	hits: {
 		file: string;
 		line: number;
@@ -2647,6 +2668,7 @@ export interface McpVertexToolOutputs {
 	"mcp-vertex_notification_await_lock": McpVertexNotificationAwaitLockOutput;
 	"mcp-vertex_notification_notify_status": McpVertexNotificationNotifyStatusOutput;
 	"mcp-vertex_overview": McpVertexOverviewOutput;
+	"mcp-vertex_perf_perf_bench": McpVertexPerfPerfBenchOutput;
 	"mcp-vertex_perf_perf_bundle": McpVertexPerfPerfBundleOutput;
 	"mcp-vertex_plan_mcp_project": McpVertexPlanMcpProjectOutput;
 	"mcp-vertex_proposals_agent_lock": McpVertexProposalsAgentLockOutput;
