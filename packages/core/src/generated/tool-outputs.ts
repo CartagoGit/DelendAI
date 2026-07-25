@@ -221,6 +221,96 @@ export interface McpVertexAuditAuditRunOutput {
 	projects: string[];
 }
 
+export interface McpVertexBrowserBrowserA11yOutput {
+	url: string;
+	findings: Array<{
+		ruleId: string;
+		severity: "critical" | "high" | "medium" | "low" | "info";
+		message: string;
+		location?: {
+			file: string;
+			line?: number;
+			endLine?: number;
+		};
+		fix?: string;
+	}>;
+	summary: Record<string, number>;
+	worst: "critical" | "high" | "medium" | "low" | "info" | "none";
+}
+
+export interface McpVertexBrowserBrowserAssertOutput {
+	url: string;
+	passed: boolean;
+	findings: Array<{
+		ruleId: string;
+		severity: "critical" | "high" | "medium" | "low" | "info";
+		message: string;
+		location?: {
+			file: string;
+			line?: number;
+			endLine?: number;
+		};
+		fix?: string;
+	}>;
+}
+
+export interface McpVertexBrowserBrowserClickOutput {
+	target: string;
+	action: "click" | "fill";
+	url: string;
+	matched: number;
+}
+
+export interface McpVertexBrowserBrowserFillOutput {
+	target: string;
+	action: "click" | "fill";
+	url: string;
+	matched: number;
+}
+
+export type McpVertexBrowserBrowserOpenOutput = {
+	url: string;
+	title: string;
+	html: string;
+	status: "ok";
+} | {
+	url: string;
+	status: "install-missing";
+	hint: string;
+};
+
+export type McpVertexBrowserBrowserQueryOutput = {
+	url: string;
+	matches: string[];
+	status: "ok";
+} | {
+	url: string;
+	status: "install-missing";
+	hint: string;
+};
+
+export type McpVertexBrowserBrowserScreenshotOutput = {
+	url: string;
+	path: string;
+	status: "ok";
+} | {
+	url: string;
+	status: "install-missing";
+	hint: string;
+};
+
+export interface McpVertexBrowserBrowserVerifyPageOutput {
+	url: string;
+	ok: boolean;
+	checks: {
+		html: boolean;
+		stylesheet: boolean;
+		nav: boolean;
+	};
+	mode: "real" | "fixture";
+	installHint?: string;
+}
+
 export interface McpVertexCacheCacheGcOutput {
 	dryRun: boolean;
 	appliedAt: string;
@@ -2148,6 +2238,80 @@ export interface McpVertexQualityRunQualityOutput {
 	}[];
 }
 
+export interface McpVertexRefactorRefactorApplyOutput {
+	written: string[];
+	gateCommand: string;
+}
+
+export interface McpVertexRefactorRefactorCodemodOutput {
+	files: {
+		path: string;
+		diff: string;
+	}[];
+	totalEdits: number;
+	language: string;
+}
+
+export interface McpVertexRefactorRefactorDefinitionOutput {
+	hit: {
+		file: string;
+		line: number;
+		column: number;
+		kind: string;
+		name: string;
+		isDefinition: boolean;
+	} | null;
+}
+
+export interface McpVertexRefactorRefactorReferencesOutput {
+	hits: {
+		file: string;
+		line: number;
+		column: number;
+		kind: string;
+		name: string;
+		isDefinition: boolean;
+	}[];
+}
+
+export interface McpVertexRefactorRefactorRenameOutput {
+	files: Array<{
+		path: string;
+		before: string;
+		after: string;
+		hunks: Array<{
+			oldStart: number;
+			oldLines: number;
+			newStart: number;
+			newLines: number;
+			lines: Array<{
+				kind: " " | "-" | "+";
+				text: string;
+			}>;
+		}>;
+	}>;
+	totalEdits: number;
+	ambiguous?: {
+		path: string;
+		line: number;
+		candidates: {
+			line: number;
+			scope: string;
+		}[];
+	}[];
+}
+
+export interface McpVertexRefactorRefactorSymbolsOutput {
+	hits: {
+		file: string;
+		line: number;
+		column: number;
+		kind: string;
+		name: string;
+		isDefinition: boolean;
+	}[];
+}
+
 export interface McpVertexRulesApplyRulesOutput {
 	mode: string;
 	modeGuidance: string;
@@ -2617,6 +2781,14 @@ export interface McpVertexToolOutputs {
 	"mcp-vertex_audit_audit_consolidate": McpVertexAuditAuditConsolidateOutput;
 	"mcp-vertex_audit_audit_plan": McpVertexAuditAuditPlanOutput;
 	"mcp-vertex_audit_audit_run": McpVertexAuditAuditRunOutput;
+	"mcp-vertex_browser_browser_a11y": McpVertexBrowserBrowserA11yOutput;
+	"mcp-vertex_browser_browser_assert": McpVertexBrowserBrowserAssertOutput;
+	"mcp-vertex_browser_browser_click": McpVertexBrowserBrowserClickOutput;
+	"mcp-vertex_browser_browser_fill": McpVertexBrowserBrowserFillOutput;
+	"mcp-vertex_browser_browser_open": McpVertexBrowserBrowserOpenOutput;
+	"mcp-vertex_browser_browser_query": McpVertexBrowserBrowserQueryOutput;
+	"mcp-vertex_browser_browser_screenshot": McpVertexBrowserBrowserScreenshotOutput;
+	"mcp-vertex_browser_browser_verify_page": McpVertexBrowserBrowserVerifyPageOutput;
 	"mcp-vertex_cache_cache_gc": McpVertexCacheCacheGcOutput;
 	"mcp-vertex_configuration_center": McpVertexConfigurationCenterOutput;
 	"mcp-vertex_create_plugin": McpVertexCreatePluginOutput;
@@ -2705,6 +2877,12 @@ export interface McpVertexToolOutputs {
 	"mcp-vertex_quality_quality_cancel": McpVertexQualityQualityCancelOutput;
 	"mcp-vertex_quality_quality_run_all": McpVertexQualityQualityRunAllOutput;
 	"mcp-vertex_quality_run_quality": McpVertexQualityRunQualityOutput;
+	"mcp-vertex_refactor_refactor_apply": McpVertexRefactorRefactorApplyOutput;
+	"mcp-vertex_refactor_refactor_codemod": McpVertexRefactorRefactorCodemodOutput;
+	"mcp-vertex_refactor_refactor_definition": McpVertexRefactorRefactorDefinitionOutput;
+	"mcp-vertex_refactor_refactor_references": McpVertexRefactorRefactorReferencesOutput;
+	"mcp-vertex_refactor_refactor_rename": McpVertexRefactorRefactorRenameOutput;
+	"mcp-vertex_refactor_refactor_symbols": McpVertexRefactorRefactorSymbolsOutput;
 	"mcp-vertex_rules_apply_rules": McpVertexRulesApplyRulesOutput;
 	"mcp-vertex_rules_check_rules": McpVertexRulesCheckRulesOutput;
 	"mcp-vertex_rules_get_rules": McpVertexRulesGetRulesOutput;
