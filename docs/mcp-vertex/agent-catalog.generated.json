@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-07-25T01:36:11.843Z",
+	"generatedAt": "2026-07-25T11:38:45.165Z",
 	"mode": "compact",
 	"tools": [
 		{
@@ -306,7 +306,15 @@
 			"name": "mcp-vertex_overview"
 		},
 		{
+			"name": "mcp-vertex_perf_perf_bench",
+			"plugin": "perf"
+		},
+		{
 			"name": "mcp-vertex_perf_perf_bundle",
+			"plugin": "perf"
+		},
+		{
+			"name": "mcp-vertex_perf_perf_profile",
 			"plugin": "perf"
 		},
 		{
@@ -447,6 +455,30 @@
 		{
 			"name": "mcp-vertex_quality_run_quality",
 			"plugin": "quality"
+		},
+		{
+			"name": "mcp-vertex_refactor_refactor_apply",
+			"plugin": "refactor"
+		},
+		{
+			"name": "mcp-vertex_refactor_refactor_codemod",
+			"plugin": "refactor"
+		},
+		{
+			"name": "mcp-vertex_refactor_refactor_definition",
+			"plugin": "refactor"
+		},
+		{
+			"name": "mcp-vertex_refactor_refactor_references",
+			"plugin": "refactor"
+		},
+		{
+			"name": "mcp-vertex_refactor_refactor_rename",
+			"plugin": "refactor"
+		},
+		{
+			"name": "mcp-vertex_refactor_refactor_symbols",
+			"plugin": "refactor"
 		},
 		{
 			"name": "mcp-vertex_rules_apply_rules",
@@ -903,7 +935,7 @@
 				"id": "f00125",
 				"title": "f00125",
 				"track": "plugin+browser+verification",
-				"status": "ready",
+				"status": "in-progress",
 				"kind": "feat"
 			},
 			{
@@ -1080,21 +1112,14 @@
 				"track": "security+invariants",
 				"status": "ready",
 				"kind": "fix"
-			},
-			{
-				"id": "x00152",
-				"title": "x00152",
-				"track": "release+supply-chain",
-				"status": "ready",
-				"kind": "fix"
 			}
 		],
 		"byStatus": {
-			"ready": 29,
-			"in-progress": 4,
+			"ready": 27,
+			"in-progress": 5,
 			"review": 11,
 			"paused": 1,
-			"done": 243,
+			"done": 244,
 			"blocked": 0,
 			"retired": 2,
 			"unspecified": 0
