@@ -10,6 +10,7 @@ import {
 	runAgentLockEngine,
 } from '../locks/agent-lock-engine';
 import { readJsonOrNull } from '../proposals/index-reader';
+import { getPeerReviewBypassCount } from '../shared/peer-review-bypass-log';
 
 /** Async existence check (H2): never blocks the event loop. */
 const fileExists = async (path: string): Promise<boolean> => {
@@ -62,6 +63,8 @@ interface IStateDiagnosis {
 		readonly sessionClaims: number;
 		readonly sessionReleases: number;
 	};
+	/** a00069 S11: peer-review bypasses (force/skipPeerReview) this session. */
+	readonly peerReviewBypasses: number;
 	readonly queue: {
 		readonly queueLength: number;
 		readonly queuedCount: number;
@@ -83,6 +86,8 @@ const STATE_DIAGNOSIS_SCHEMA = z.object({
 		sessionReleases: z.number(),
 		sessionImbalance: z.number(),
 	}),
+	/** a00069 S11: force/skipPeerReview peer-review bypasses this session. */
+	peerReviewBypasses: z.number(),
 	queue: z
 		.object({
 			queueLength: z.number(),
@@ -189,6 +194,7 @@ const diagnose = async (
 			sessionReleases: balance.releases,
 			sessionImbalance: balance.imbalance,
 		},
+		peerReviewBypasses: getPeerReviewBypassCount(),
 		queue,
 		registry: {
 			orphans: zombies.orphans.length,
