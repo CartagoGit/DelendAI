@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-07-25T00:31:16.197Z",
+	"generatedAt": "2026-07-25T01:20:09.660Z",
 	"mode": "compact",
 	"tools": [
 		{
@@ -189,6 +189,10 @@
 		},
 		{
 			"name": "mcp-vertex_logs_correlate",
+			"plugin": "logs"
+		},
+		{
+			"name": "mcp-vertex_logs_errors_tail",
 			"plugin": "logs"
 		},
 		{
@@ -875,6 +879,13 @@
 				"kind": "feat"
 			},
 			{
+				"id": "f00121",
+				"title": "f00121",
+				"track": "plugin+forge+collab",
+				"status": "ready",
+				"kind": "feat"
+			},
+			{
 				"id": "f00123",
 				"title": "f00123",
 				"track": "plugin+refactor+reliability",
@@ -1062,14 +1073,35 @@
 				"track": "perf+token-budgets+agent-velocity",
 				"status": "in-progress",
 				"kind": "unspecified"
+			},
+			{
+				"id": "x00072",
+				"title": "x00072",
+				"track": "security+invariants+ide",
+				"status": "ready",
+				"kind": "fix"
+			},
+			{
+				"id": "x00073",
+				"title": "x00073",
+				"track": "security+invariants",
+				"status": "ready",
+				"kind": "fix"
+			},
+			{
+				"id": "x00152",
+				"title": "x00152",
+				"track": "release+supply-chain",
+				"status": "ready",
+				"kind": "fix"
 			}
 		],
 		"byStatus": {
-			"ready": 26,
+			"ready": 30,
 			"in-progress": 4,
 			"review": 11,
 			"paused": 1,
-			"done": 241,
+			"done": 242,
 			"blocked": 0,
 			"retired": 2,
 			"unspecified": 0
