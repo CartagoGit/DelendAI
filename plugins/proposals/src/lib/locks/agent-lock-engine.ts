@@ -18,6 +18,7 @@ import {
 } from '@mcp-vertex/core/public';
 
 import { DEFAULT_PATH_LAYOUT } from '../contracts/constants/default-path-layout.constant';
+import { isLockEntryStale } from '../shared/purge-stale-locks';
 
 export type IAgentLockAction = 'claim' | 'release' | 'status' | 'gc';
 
@@ -336,16 +337,10 @@ const writeLock = async (
 	await writeFileAtomic(lockPath, `${JSON.stringify(lock, null, '\t')}\n`);
 };
 
-const isStale = (e: ILockEntry, thresholdMinutes: number): boolean => {
-	const t = new Date(e.last_seen).getTime();
-	if (Number.isNaN(t)) return true;
-	return Date.now() - t > thresholdMinutes * 60_000;
-};
-
 export const removeStale = (lock: ILockFile): ILockFile => ({
 	...lock,
 	in_flight: lock.in_flight.filter(
-		(e) => !isStale(e, lock.stale_after_minutes),
+		(e) => !isLockEntryStale(e, lock.stale_after_minutes),
 	),
 });
 

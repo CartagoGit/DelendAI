@@ -1379,6 +1379,7 @@ export interface McpVertexProposalsAgentLockReleaseOrphanOutput {
 	folder?: string;
 	status?: string;
 	lockOwners?: string[];
+	staleTaskIds?: string[];
 	lastHeartbeat?: string;
 	lastAgentDeadEvent?: {
 		kind: "agent-alive" | "agent-idle" | "agent-dead";
@@ -1390,6 +1391,9 @@ export interface McpVertexProposalsAgentLockReleaseOrphanOutput {
 	};
 	inconsistencies?: string[];
 	suggestedActions?: string[];
+	crossProposal?: boolean;
+	crossProposalStaleTaskIds?: string[];
+	crossProposalStaleAgents?: string[];
 }
 
 export interface McpVertexProposalsAgentNamesOutput {
@@ -1884,6 +1888,7 @@ export interface McpVertexProposalsProposalDiagnoseOutput {
 	folder?: string;
 	status?: string;
 	lockOwners?: string[];
+	staleTaskIds?: string[];
 	lastHeartbeat?: string;
 	lastAgentDeadEvent?: {
 		kind: "agent-alive" | "agent-idle" | "agent-dead";
@@ -1895,6 +1900,9 @@ export interface McpVertexProposalsProposalDiagnoseOutput {
 	};
 	inconsistencies?: string[];
 	suggestedActions?: string[];
+	crossProposal?: boolean;
+	crossProposalStaleTaskIds?: string[];
+	crossProposalStaleAgents?: string[];
 }
 
 export interface McpVertexProposalsProposalForceTransitionOutput {
@@ -1930,6 +1938,7 @@ export interface McpVertexProposalsProposalForceTransitionOutput {
 	folder?: string;
 	status?: string;
 	lockOwners?: string[];
+	staleTaskIds?: string[];
 	lastHeartbeat?: string;
 	lastAgentDeadEvent?: {
 		kind: "agent-alive" | "agent-idle" | "agent-dead";
@@ -1941,6 +1950,9 @@ export interface McpVertexProposalsProposalForceTransitionOutput {
 	};
 	inconsistencies?: string[];
 	suggestedActions?: string[];
+	crossProposal?: boolean;
+	crossProposalStaleTaskIds?: string[];
+	crossProposalStaleAgents?: string[];
 }
 
 export interface McpVertexProposalsProposalReconcileFolderOutput {
@@ -1976,6 +1988,7 @@ export interface McpVertexProposalsProposalReconcileFolderOutput {
 	folder?: string;
 	status?: string;
 	lockOwners?: string[];
+	staleTaskIds?: string[];
 	lastHeartbeat?: string;
 	lastAgentDeadEvent?: {
 		kind: "agent-alive" | "agent-idle" | "agent-dead";
@@ -1987,6 +2000,9 @@ export interface McpVertexProposalsProposalReconcileFolderOutput {
 	};
 	inconsistencies?: string[];
 	suggestedActions?: string[];
+	crossProposal?: boolean;
+	crossProposalStaleTaskIds?: string[];
+	crossProposalStaleAgents?: string[];
 }
 
 export interface McpVertexProposalsProposalReviewOutput {
@@ -2039,6 +2055,7 @@ export interface McpVertexProposalsProposalStaleListOutput {
 	folder?: string;
 	status?: string;
 	lockOwners?: string[];
+	staleTaskIds?: string[];
 	lastHeartbeat?: string;
 	lastAgentDeadEvent?: {
 		kind: "agent-alive" | "agent-idle" | "agent-dead";
@@ -2050,6 +2067,9 @@ export interface McpVertexProposalsProposalStaleListOutput {
 	};
 	inconsistencies?: string[];
 	suggestedActions?: string[];
+	crossProposal?: boolean;
+	crossProposalStaleTaskIds?: string[];
+	crossProposalStaleAgents?: string[];
 }
 
 export interface McpVertexProposalsProposalTransitionOutput {
@@ -2183,6 +2203,9 @@ export interface McpVertexProposalsRoundContextOutput {
 export interface McpVertexProposalsStateHealthOutput {
 	locks: {
 		active: number;
+		stale: number;
+		staleTaskIds: string[];
+		lastStaleSeen?: string;
 		sessionClaims: number;
 		sessionReleases: number;
 		sessionImbalance: number;
@@ -2212,6 +2235,9 @@ export interface McpVertexProposalsStateRepairOutput {
 	diagnosis: {
 		locks: {
 			active: number;
+			stale: number;
+			staleTaskIds: string[];
+			lastStaleSeen?: string;
 			sessionClaims: number;
 			sessionReleases: number;
 			sessionImbalance: number;

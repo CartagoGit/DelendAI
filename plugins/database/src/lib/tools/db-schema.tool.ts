@@ -44,7 +44,6 @@ const columnSchema = z.object({
 	type: z.string(),
 	nullable: z.boolean(),
 	primaryKey: z.boolean(),
-	unique: z.boolean(),
 	defaultValue: z.string().nullable(),
 });
 
@@ -95,7 +94,6 @@ const projectSchema = (
 				type: c.type,
 				nullable: c.nullable,
 				primaryKey: c.primaryKey,
-				unique: c.unique,
 				defaultValue: c.defaultValue,
 			})),
 			indexes: t.indexes.map((i) => ({

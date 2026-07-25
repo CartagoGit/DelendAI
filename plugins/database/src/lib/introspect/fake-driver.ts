@@ -58,7 +58,6 @@ export const SAMPLE_FIXTURE: IFakeDatabaseFixture = {
 					type: 'integer',
 					nullable: false,
 					primaryKey: true,
-					unique: true,
 					defaultValue: null,
 				},
 				{
@@ -66,7 +65,6 @@ export const SAMPLE_FIXTURE: IFakeDatabaseFixture = {
 					type: 'text',
 					nullable: false,
 					primaryKey: false,
-					unique: true,
 					defaultValue: null,
 				},
 				{
@@ -74,7 +72,6 @@ export const SAMPLE_FIXTURE: IFakeDatabaseFixture = {
 					type: 'datetime',
 					nullable: true,
 					primaryKey: false,
-					unique: false,
 					defaultValue: 'CURRENT_TIMESTAMP',
 				},
 			],
@@ -94,7 +91,6 @@ export const SAMPLE_FIXTURE: IFakeDatabaseFixture = {
 					type: 'integer',
 					nullable: false,
 					primaryKey: true,
-					unique: true,
 					defaultValue: null,
 				},
 				{
@@ -102,7 +98,6 @@ export const SAMPLE_FIXTURE: IFakeDatabaseFixture = {
 					type: 'integer',
 					nullable: false,
 					primaryKey: false,
-					unique: false,
 					defaultValue: null,
 				},
 				{
@@ -110,7 +105,6 @@ export const SAMPLE_FIXTURE: IFakeDatabaseFixture = {
 					type: 'integer',
 					nullable: false,
 					primaryKey: false,
-					unique: false,
 					defaultValue: '0',
 				},
 			],

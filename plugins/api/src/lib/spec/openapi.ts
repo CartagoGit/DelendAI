@@ -34,6 +34,19 @@ export interface IJsonSchema {
 	readonly items?: IJsonSchema;
 	readonly description?: string;
 	readonly example?: unknown;
+	/**
+	 * Numeric bounds (JSON Schema). Consumed by the S3 mock
+	 * generator; ignored by the request builder.
+	 */
+	readonly minimum?: number;
+	readonly maximum?: number;
+	readonly exclusiveMinimum?: number;
+	readonly exclusiveMaximum?: number;
+	/**
+	 * Array bounds (JSON Schema). Consumed by the S3 mock generator.
+	 */
+	readonly minItems?: number;
+	readonly maxItems?: number;
 }
 
 /** Where a parameter lives. */
@@ -133,6 +146,12 @@ const parseSchema = (raw: unknown): IJsonSchema => {
 		items?: IJsonSchema;
 		description?: string;
 		example?: unknown;
+		minimum?: number;
+		maximum?: number;
+		exclusiveMinimum?: number;
+		exclusiveMaximum?: number;
+		minItems?: number;
+		maxItems?: number;
 	} = {};
 	if (typeof raw.type === 'string') {
 		out.type = raw.type as IJsonSchemaPrimitive;
@@ -157,6 +176,12 @@ const parseSchema = (raw: unknown): IJsonSchema => {
 	}
 	if (typeof raw.description === 'string') out.description = raw.description;
 	if ('example' in raw) out.example = raw.example;
+	if (typeof raw.minimum === 'number') out.minimum = raw.minimum;
+	if (typeof raw.maximum === 'number') out.maximum = raw.maximum;
+	if (typeof raw.exclusiveMinimum === 'number') out.exclusiveMinimum = raw.exclusiveMinimum;
+	if (typeof raw.exclusiveMaximum === 'number') out.exclusiveMaximum = raw.exclusiveMaximum;
+	if (typeof raw.minItems === 'number') out.minItems = raw.minItems;
+	if (typeof raw.maxItems === 'number') out.maxItems = raw.maxItems;
 	return out as IJsonSchema;
 };
 
