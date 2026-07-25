@@ -1,0 +1,46 @@
+{
+	"name": "@mcp-vertex/api",
+	"version": "0.1.0",
+	"type": "module",
+	"description": "OpenAPI-aware request building, contract validation and mocking on top of the allow-listed web-fetch engine.",
+	"author": "Cartago",
+	"license": "BSD-3-Clause",
+	"keywords": [
+		"mcp",
+		"api",
+		"openapi",
+		"swagger",
+		"contract-testing",
+		"agent",
+		"ai",
+		"cartago",
+		"plugin"
+	],
+	"main": "./dist/index.js",
+	"files": [
+		"dist",
+		"README.md",
+		"LICENSE"
+	],
+	"exports": {
+		".": {
+			"@mcp-vertex/source": {
+				"types": "./src/index.ts"
+			},
+			"types": "./dist/index.d.ts",
+			"import": "./dist/index.js"
+		},
+		"./public": {
+			"types": "./src/public/index.ts"
+		}
+	},
+	"scripts": {
+		"build": "tsc -p tsconfig.json --emitDeclarationOnly false",
+		"check": "tsc --noEmit && biome check src",
+		"test": "vitest run"
+	},
+	"peerDependencies": {
+		"@mcp-vertex/core": "workspace:*",
+		"@mcp-vertex/web-fetch": "workspace:*"
+	}
+}
