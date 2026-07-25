@@ -22,8 +22,11 @@ import {
 	addFileLocks,
 	deriveFileLockTablePath,
 	findConflictingLocks,
+	noteFileLockContention,
 	readFileLockEntries,
 	removeFileLocksForTask,
+	resolveFileLockContentions,
+	tryAcquireFileLocks,
 } from './file-lock-table';
 import { isLockEntryStale } from '../shared/purge-stale-locks';
 
@@ -106,6 +109,10 @@ export const resetAgentLockSessionBalance = (): void => {
 
 const CONTENTION_NEXT =
 	'Do not busy-poll agent_lock status. Call notification_await_lock (or wait for a lock-released notification via notify_status), then retry the claim once ownership is free.';
+
+const LIVELOCK_THRESHOLD_MS = 5_000;
+const LIVELOCK_NEXT =
+	'Run proposals_state_health to inspect livelockPairs, then clear the stale file-lock state before retrying this claim.';
 
 export const AGENT_LOCK_TMP_STALE_MS = 60_000;
 
@@ -306,8 +313,108 @@ const pruneFileLocksForTasks = async (
 ): Promise<void> => {
 	const tablePath = getFileLockTablePath(deps);
 	for (const taskId of taskIds) {
-		await removeFileLocksForTask(taskId, { tablePath });
+		await removeFileLocksForTask({ taskId, tablePath });
 	}
+};
+
+const getFileLockDeps = (
+	deps: IAgentLockDeps,
+): {
+	tablePath: string;
+	now?: () => string;
+	mutexTimeoutMs?: number;
+	mutexStaleMs?: number;
+	mutexPollMs?: number;
+} => ({
+	tablePath: getFileLockTablePath(deps),
+	...(deps.now !== undefined ? { now: deps.now } : {}),
+	...(deps.mutexTimeoutMs !== undefined
+		? { mutexTimeoutMs: deps.mutexTimeoutMs }
+		: {}),
+	...(deps.mutexStaleMs !== undefined
+		? { mutexStaleMs: deps.mutexStaleMs }
+		: {}),
+	...(deps.mutexPollMs !== undefined
+		? { mutexPollMs: deps.mutexPollMs }
+		: {}),
+});
+
+const writeLockWithMutex = async (
+	lock: ILockFile,
+	args: Pick<IAgentLockArgs, 'onContention'>,
+	deps: IAgentLockDeps,
+): Promise<void> => {
+	await withFileMutex(
+		getLockPath(deps),
+		() => writeLock(lock, deps),
+		getMutexOptions(args, deps),
+	);
+};
+
+const resolveTrackedContentions = async (
+	filters: {
+		waitingTaskId?: string;
+		holderTaskId?: string;
+		holderAgentId?: string;
+		files?: readonly string[];
+	},
+	deps: IAgentLockDeps,
+): Promise<void> => {
+	await resolveFileLockContentions({
+		...filters,
+		...getFileLockDeps(deps),
+	});
+};
+
+const maybeEscalateContention = async (params: {
+	readonly taskId: string;
+	readonly agent: string;
+	readonly conflictingTaskId?: string;
+	readonly conflictingAgent: string;
+	readonly files: readonly string[];
+	readonly toolName: string;
+	readonly lockFileLabel: string;
+	readonly lockPath: string;
+	readonly deps: IAgentLockDeps;
+}): Promise<IAgentLockResponse | null> => {
+	const contention = await noteFileLockContention({
+		kind: 'disjoint',
+		waitingTaskId: params.taskId,
+		waitingAgentId: params.agent,
+		holderAgentId: params.conflictingAgent,
+		files: params.files,
+		...(params.conflictingTaskId !== undefined
+			? { holderTaskId: params.conflictingTaskId }
+			: {}),
+		...getFileLockDeps(params.deps),
+	});
+	if (contention.heldMs <= LIVELOCK_THRESHOLD_MS) return null;
+	return lockResult(
+		{
+			tool: params.toolName,
+			action: 'claim',
+			task_id: params.taskId,
+			agent: params.agent,
+			blocked: true,
+			blockerType: 'livelock-error',
+			reason: 'contention-exceeded-threshold',
+			path: params.lockFileLabel,
+			lock_path: params.lockPath,
+			conflicting_agent: params.conflictingAgent,
+			...(params.conflictingTaskId !== undefined
+				? { conflicting_task: params.conflictingTaskId }
+				: {}),
+			overlapping_files: [...params.files],
+			held_ms: contention.heldMs,
+			error: {
+				reason: 'livelock-error',
+				nextAction: LIVELOCK_NEXT,
+			},
+			nextAction: LIVELOCK_NEXT,
+			summary: `livelock-error: ${params.taskId} stayed blocked for ${contention.heldMs}ms`,
+		},
+		{ isError: true },
+	);
 };
 
 const readSynchronizedLock = async (
@@ -541,9 +648,10 @@ async function executeLockAction(
 			existing.last_seen = now;
 			const owned = new Set(existing.ownership);
 			const candidate = files.filter((file) => !owned.has(file));
-			const conflicts = findConflictingLocks(
-				candidate,
-				tableEntries,
+			const conflicts = (
+				await findConflictingLocks(taskId, candidate, {
+					...(tablePath !== undefined ? { tablePath } : {}),
+				})
 			).filter((entry) => entry.taskId !== taskId);
 			const conflictMap = new Map(
 				conflicts.map((entry) => [entry.file, entry] as const),
@@ -559,17 +667,16 @@ async function executeLockAction(
 				existing.ownership.push(...added);
 				existing.ownership.sort();
 			}
-			await removeFileLocksForTask(taskId, { tablePath });
-			await addFileLocks(
-				existing.ownership.map((file) => ({
-					file,
-					agent,
-					taskId,
-					mtimeIso: now,
-				})),
-				{ tablePath },
-			);
-			await writeLock(lock, deps);
+			await removeFileLocksForTask({ taskId, tablePath });
+			await addFileLocks({
+				agentId: agent,
+				files: existing.ownership,
+				taskId,
+				now: () => now,
+				...(tablePath !== undefined ? { tablePath } : {}),
+			});
+			await resolveTrackedContentions({ waitingTaskId: taskId }, deps);
+			await writeLockWithMutex(lock, args, deps);
 			const partial = notGranted.length > 0;
 			return lockResult({
 				tool: toolName,
@@ -597,6 +704,18 @@ async function executeLockAction(
 		for (const entry of lock.in_flight) {
 			const overlap = findOverlap(files, entry.ownership);
 			if (overlap.length === 0) continue;
+			const livelock = await maybeEscalateContention({
+				taskId,
+				agent,
+				conflictingTaskId: entry.task_id,
+				conflictingAgent: entry.agent,
+				files: overlap,
+				toolName,
+				lockFileLabel,
+				lockPath,
+				deps,
+			});
+			if (livelock !== null) return livelock;
 			return lockResult({
 				tool: toolName,
 				action: 'claim',
@@ -614,7 +733,9 @@ async function executeLockAction(
 			});
 		}
 
-		const conflicts = findConflictingLocks(files, tableEntries);
+		const conflicts = await findConflictingLocks(taskId, files, {
+			...(tablePath !== undefined ? { tablePath } : {}),
+		});
 		if (conflicts.length > 0) {
 			const conflictMap = new Map(
 				conflicts.map((entry) => [entry.file, entry] as const),
@@ -622,6 +743,19 @@ async function executeLockAction(
 			const overlappingFiles = files.filter((file) =>
 				conflictMap.has(file),
 			);
+			const firstConflict = conflicts[0]!;
+			const livelock = await maybeEscalateContention({
+				taskId,
+				agent,
+				conflictingTaskId: firstConflict.taskId,
+				conflictingAgent: firstConflict.agent,
+				files: overlappingFiles,
+				toolName,
+				lockFileLabel,
+				lockPath,
+				deps,
+			});
+			if (livelock !== null) return livelock;
 			return lockResult({
 				tool: toolName,
 				action: 'claim',
@@ -643,15 +777,32 @@ async function executeLockAction(
 			});
 		}
 
-		await addFileLocks(
-			files.map((file) => ({
-				file,
-				agent,
-				taskId,
-				mtimeIso: now,
-			})),
-			{ tablePath },
-		);
+		const acquired = await tryAcquireFileLocks({
+			agentId: agent,
+			files,
+			taskId,
+			now: () => now,
+			...(tablePath !== undefined ? { tablePath } : {}),
+		});
+		if (!acquired.ok) {
+			return lockResult({
+				tool: toolName,
+				action: 'claim',
+				task_id: taskId,
+				blocked: true,
+				blockerType: 'lock-conflict',
+				blocked_reason: `file lock held by ${acquired.heldBy}`,
+				conflicting_agent: acquired.heldBy,
+				...(acquired.heldTaskId !== undefined
+					? { conflicting_task: acquired.heldTaskId }
+					: {}),
+				overlapping_files: [acquired.conflictOn],
+				path: lockFileLabel,
+				lock_path: lockPath,
+				nextAction: CONTENTION_NEXT,
+				summary: `lock-conflict: ${taskId} overlaps file lock ${acquired.conflictOn}`,
+			});
+		}
 		lock.in_flight.push({
 			task_id: taskId,
 			agent,
@@ -662,7 +813,8 @@ async function executeLockAction(
 				? { parent_task_id: args.parent_task_id }
 				: {}),
 		});
-		await writeLock(lock, deps);
+		await resolveTrackedContentions({ waitingTaskId: taskId }, deps);
+		await writeLockWithMutex(lock, args, deps);
 		return lockResult(
 			{
 				tool: toolName,
@@ -683,13 +835,22 @@ async function executeLockAction(
 	if (args.action === 'release') {
 		const lock = await readSynchronizedLock(deps);
 		const taskId = args.task_id as string;
-		await removeFileLocksForTask(taskId, { tablePath });
+		const existing = lock.in_flight.find(
+			(entry) => entry.task_id === taskId,
+		);
+		await removeFileLocksForTask({ taskId, tablePath });
+		if (existing !== undefined) {
+			await resolveTrackedContentions(
+				{ holderTaskId: taskId, holderAgentId: existing.agent },
+				deps,
+			);
+		}
 		const before = lock.in_flight.length;
 		lock.in_flight = lock.in_flight.filter(
 			(entry) => entry.task_id !== taskId,
 		);
 		const dropped = before - lock.in_flight.length;
-		await writeLock(lock, deps);
+		await writeLockWithMutex(lock, args, deps);
 		return lockResult(
 			{
 				tool: toolName,
@@ -735,7 +896,7 @@ async function executeLockAction(
 			.map((entry) => entry.task_id);
 		await pruneFileLocksForTasks(staleTaskIds, deps);
 		const dropped = raw.in_flight.length - cleaned.in_flight.length;
-		await writeLock(cleaned, deps);
+		await writeLockWithMutex(cleaned, args, deps);
 		await sweepStaleAgentLockTmpFiles(lockPath);
 		return lockResult({
 			tool: toolName,

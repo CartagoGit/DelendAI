@@ -99,10 +99,7 @@ const withMutex = async <T>(
 	fn: () => Promise<T>,
 ): Promise<T> => {
 	const mutexOpts = getMutexOpts(opts);
-	if (mutexOpts.timeoutMs !== undefined) {
-		return withFileMutex({ filePath: _path, ...mutexOpts }, fn);
-	}
-	return withFileMutex({ filePath: _path }, fn);
+	return withFileMutex(_path, fn, mutexOpts);
 };
 
 const normalizeFiles = (files: readonly string[]): string[] =>
@@ -126,6 +123,55 @@ const normalizeEntries = (entries: readonly IFileLock[]): IFileLock[] =>
 			a.taskId.localeCompare(b.taskId) ||
 			a.agent.localeCompare(b.agent),
 	);
+
+const entriesToTable = (entries: readonly IFileLock[]): FileLockTable => {
+	const table: FileLockTable = {};
+	for (const entry of normalizeEntries(entries)) {
+		table[entry.file] = {
+			agentId: entry.agent,
+			mtime: entry.mtimeIso,
+			...(entry.taskId.length > 0 ? { taskId: entry.taskId } : {}),
+		};
+	}
+	return table;
+};
+
+const coerceTable = (parsed: unknown): FileLockTable => {
+	if (Array.isArray(parsed)) {
+		return entriesToTable(
+			parsed.filter((value): value is IFileLock => {
+				if (typeof value !== 'object' || value === null) return false;
+				const candidate = value as Record<string, unknown>;
+				return (
+					typeof candidate.file === 'string' &&
+					typeof candidate.agent === 'string' &&
+					typeof candidate.taskId === 'string' &&
+					typeof candidate.mtimeIso === 'string'
+				);
+			}),
+		);
+	}
+	if (parsed === null || typeof parsed !== 'object') return EMPTY_TABLE();
+	const table: FileLockTable = {};
+	for (const [file, value] of Object.entries(parsed)) {
+		if (typeof value !== 'object' || value === null) continue;
+		const candidate = value as Record<string, unknown>;
+		if (
+			typeof candidate.agentId !== 'string' ||
+			typeof candidate.mtime !== 'string'
+		) {
+			continue;
+		}
+		table[file] = {
+			agentId: candidate.agentId,
+			mtime: candidate.mtime,
+			...(typeof candidate.taskId === 'string'
+				? { taskId: candidate.taskId }
+				: {}),
+		};
+	}
+	return table;
+};
 
 const readDocument = async (
 	deps: Pick<IFileLockTableDeps, 'tablePath' | 'readTable'>,
@@ -154,7 +200,11 @@ const readDocument = async (
 				};
 			}
 		}
-		return EMPTY_DOCUMENT();
+		return {
+			version: 2,
+			locks: coerceTable(parsed),
+			contentionHistory: [],
+		};
 	} catch {
 		return EMPTY_DOCUMENT();
 	}
@@ -171,6 +221,21 @@ const writeDocument = async (
 const readContentions = async (
 	deps: IFileLockTableDeps,
 ): Promise<readonly IFileLockContention[]> => {
+	try {
+		const raw = await (deps.readTable ?? defaultReadTable)(
+			getContentionPath(deps),
+		);
+		if (raw.length > 0) {
+			const parsed = JSON.parse(raw) as unknown;
+			if (Array.isArray(parsed)) {
+				const nowMs = new Date(getNow(deps)).getTime();
+				return pruneContentions(
+					parsed as readonly IFileLockContention[],
+					Number.isNaN(nowMs) ? Date.now() : nowMs,
+				);
+			}
+		}
+	} catch {}
 	const current = await readDocument(deps);
 	const nowMs = new Date(getNow(deps)).getTime();
 	return pruneContentions(
@@ -218,7 +283,11 @@ export const readFileLockTable = async (
 	return doc.locks;
 };
 
-export const addFileLocks = async (opts: {
+export async function addFileLocks(
+	locks: readonly IFileLock[],
+	deps: IFileLockTableDeps,
+): Promise<void>;
+export async function addFileLocks(opts: {
 	readonly agentId: string;
 	readonly files: readonly string[];
 	readonly taskId?: string;
@@ -227,18 +296,59 @@ export const addFileLocks = async (opts: {
 	readonly mutexTimeoutMs?: number;
 	readonly mutexStaleMs?: number;
 	readonly mutexPollMs?: number;
-}): Promise<void> => {
-	const now = getNow(opts);
-	const files = normalizeFiles(opts.files);
-	if (files.length === 0) return;
-	await withMutex(getTablePath(opts), opts, async () => {
-		const current = await readDocument({ tablePath: opts.tablePath });
+}): Promise<void>;
+export async function addFileLocks(
+	first:
+		| readonly IFileLock[]
+		| {
+				readonly agentId: string;
+				readonly files: readonly string[];
+				readonly taskId?: string;
+				readonly tablePath?: string;
+				readonly now?: () => string;
+				readonly mutexTimeoutMs?: number;
+				readonly mutexStaleMs?: number;
+				readonly mutexPollMs?: number;
+		  },
+	second: IFileLockTableDeps = {},
+): Promise<void> {
+	let deps: IFileLockTableDeps;
+	let entries: readonly IFileLock[];
+	if (Array.isArray(first)) {
+		deps = second;
+		entries = first;
+	} else {
+		const options = first as {
+			readonly agentId: string;
+			readonly files: readonly string[];
+			readonly taskId?: string;
+			readonly tablePath?: string;
+			readonly now?: () => string;
+			readonly mutexTimeoutMs?: number;
+			readonly mutexStaleMs?: number;
+			readonly mutexPollMs?: number;
+		};
+		deps = options;
+		entries = normalizeFiles(options.files).map((file) => ({
+			file,
+			agent: options.agentId,
+			taskId: options.taskId ?? '',
+			mtimeIso: getNow(options),
+		}));
+	}
+	if (entries.length === 0) return;
+	await withMutex(getTablePath(deps), deps, async () => {
+		const current = await readDocument({
+			...(deps.tablePath !== undefined
+				? { tablePath: deps.tablePath }
+				: {}),
+		});
 		const next: FileLockTable = { ...current.locks };
-		for (const file of files) {
-			next[file] = {
-				agentId: opts.agentId,
-				mtime: now,
-				...(opts.taskId !== undefined ? { taskId: opts.taskId } : {}),
+		for (const entry of entries) {
+			next[entry.file] = {
+				agentId: entry.agent,
+				mtime: entry.mtimeIso,
+				...(entry.taskId.length > 0 ? { taskId: entry.taskId } : {}),
 			};
 		}
 		await writeDocument(
@@ -247,20 +357,52 @@ export const addFileLocks = async (opts: {
 				locks: next,
 				contentionHistory: current.contentionHistory,
 			},
-			{ tablePath: opts.tablePath },
+			{
+				...(deps.tablePath !== undefined
+					? { tablePath: deps.tablePath }
+					: {}),
+			},
 		);
 	});
-};
+}
 
-export const removeFileLocksForTask = async (opts: {
+export async function removeFileLocksForTask(
+	taskId: string,
+	deps?: Pick<
+		IFileLockTableDeps,
+		'tablePath' | 'mutexTimeoutMs' | 'mutexStaleMs' | 'mutexPollMs'
+	>,
+): Promise<void>;
+export async function removeFileLocksForTask(opts: {
 	readonly taskId: string;
 	readonly tablePath?: string;
 	readonly mutexTimeoutMs?: number;
 	readonly mutexStaleMs?: number;
 	readonly mutexPollMs?: number;
-}): Promise<void> => {
+}): Promise<void>;
+export async function removeFileLocksForTask(
+	first:
+		| string
+		| {
+				readonly taskId: string;
+				readonly tablePath?: string;
+				readonly mutexTimeoutMs?: number;
+				readonly mutexStaleMs?: number;
+				readonly mutexPollMs?: number;
+		  },
+	second: Pick<
+		IFileLockTableDeps,
+		'tablePath' | 'mutexTimeoutMs' | 'mutexStaleMs' | 'mutexPollMs'
+	> = {},
+): Promise<void> {
+	const opts =
+		typeof first === 'string' ? { taskId: first, ...second } : first;
 	await withMutex(getTablePath(opts), opts, async () => {
-		const current = await readDocument({ tablePath: opts.tablePath });
+		const current = await readDocument({
+			...(opts.tablePath !== undefined
+				? { tablePath: opts.tablePath }
+				: {}),
+		});
 		const next: FileLockTable = {};
 		for (const [file, entry] of Object.entries(current.locks)) {
 			if (entry.taskId !== opts.taskId) {
@@ -273,18 +415,41 @@ export const removeFileLocksForTask = async (opts: {
 				locks: next,
 				contentionHistory: current.contentionHistory,
 			},
-			{ tablePath: opts.tablePath },
+			{
+				...(opts.tablePath !== undefined
+					? { tablePath: opts.tablePath }
+					: {}),
+			},
 		);
 	});
-};
+}
 
-export const findConflictingLocks = (
+export function findConflictingLocks(
+	files: readonly string[],
+	entries: readonly IFileLock[],
+): readonly IFileLock[];
+export function findConflictingLocks(
 	currentTaskId: string,
 	files: readonly string[],
-	deps: Pick<IFileLockTableDeps, 'tablePath' | 'readTable'> = {},
-): Promise<readonly IFileLock[]> => {
+	deps?: Pick<IFileLockTableDeps, 'tablePath' | 'readTable'>,
+): Promise<readonly IFileLock[]>;
+export function findConflictingLocks(
+	first: string | readonly string[],
+	second: readonly string[] | readonly IFileLock[],
+	third: Pick<IFileLockTableDeps, 'tablePath' | 'readTable'> = {},
+): Promise<readonly IFileLock[]> | readonly IFileLock[] {
+	if (
+		Array.isArray(first) &&
+		Array.isArray(second) &&
+		typeof second[0] !== 'string'
+	) {
+		const wanted = new Set(first);
+		return second.filter((entry) => wanted.has(entry.file));
+	}
+	const currentTaskId = first as string;
+	const files = second as readonly string[];
 	return (async () => {
-		const doc = await readDocument(deps);
+		const doc = await readDocument(third);
 		const conflicts: IFileLock[] = [];
 		for (const file of files) {
 			const entry = doc.locks[file];
@@ -299,11 +464,11 @@ export const findConflictingLocks = (
 		}
 		return conflicts;
 	})();
-};
+}
 
 export const tryAcquireFileLocks = async (opts: {
 	readonly agentId: string;
-	readonly taskId: string;
+	readonly taskId?: string;
 	readonly files: readonly string[];
 	readonly tablePath?: string;
 	readonly now?: () => string;
@@ -311,38 +476,52 @@ export const tryAcquireFileLocks = async (opts: {
 	readonly mutexStaleMs?: number;
 	readonly mutexPollMs?: number;
 }): Promise<
-	| { ok: true; acquired: readonly string[] }
-	| { ok: false; conflictOn: readonly string[]; heldBy: readonly IFileLock[] }
+	| { ok: true }
+	| { ok: false; conflictOn: string; heldBy: string; heldTaskId?: string }
 > => {
 	const files = normalizeFiles(opts.files);
-	if (files.length === 0) return { ok: true, acquired: [] };
-	const conflicts = await findConflictingLocks(opts.taskId, files, {
-		tablePath: opts.tablePath,
+	if (files.length === 0) return { ok: true };
+	const conflicts = await findConflictingLocks(opts.taskId ?? '', files, {
+		...(opts.tablePath !== undefined ? { tablePath: opts.tablePath } : {}),
 	});
 	if (conflicts.length > 0) {
 		return {
 			ok: false,
-			conflictOn: conflicts.map((c) => c.file),
-			heldBy: conflicts,
+			conflictOn: conflicts[0]!.file,
+			heldBy: conflicts[0]!.agent,
+			...(conflicts[0]!.taskId.length > 0
+				? { heldTaskId: conflicts[0]!.taskId }
+				: {}),
 		};
 	}
-	await addFileLocks({
-		agentId: opts.agentId,
-		files,
-		taskId: opts.taskId,
-		...(opts.tablePath !== undefined ? { tablePath: opts.tablePath } : {}),
-		...(opts.now !== undefined ? { now: opts.now } : {}),
-		...(opts.mutexTimeoutMs !== undefined
-			? { mutexTimeoutMs: opts.mutexTimeoutMs }
-			: {}),
-		...(opts.mutexStaleMs !== undefined
-			? { mutexStaleMs: opts.mutexStaleMs }
-			: {}),
-		...(opts.mutexPollMs !== undefined
-			? { mutexPollMs: opts.mutexPollMs }
-			: {}),
+	await withMutex(getTablePath(opts), opts, async () => {
+		const current = await readDocument({
+			...(opts.tablePath !== undefined
+				? { tablePath: opts.tablePath }
+				: {}),
+		});
+		const next: FileLockTable = { ...current.locks };
+		for (const file of files) {
+			next[file] = {
+				agentId: opts.agentId,
+				mtime: getNow(opts),
+				...(opts.taskId !== undefined ? { taskId: opts.taskId } : {}),
+			};
+		}
+		await writeDocument(
+			{
+				version: 2,
+				locks: next,
+				contentionHistory: current.contentionHistory,
+			},
+			{
+				...(opts.tablePath !== undefined
+					? { tablePath: opts.tablePath }
+					: {}),
+			},
+		);
 	});
-	return { ok: true, acquired: files };
+	return { ok: true };
 };
 
 export const releaseFileLocks = async (opts: {
@@ -356,7 +535,11 @@ export const releaseFileLocks = async (opts: {
 	const files = [...new Set(opts.files)].sort();
 	if (files.length === 0) return;
 	await withMutex(getTablePath(opts), opts, async () => {
-		const current = await readDocument({ tablePath: opts.tablePath });
+		const current = await readDocument({
+			...(opts.tablePath !== undefined
+				? { tablePath: opts.tablePath }
+				: {}),
+		});
 		const next: FileLockTable = { ...current.locks };
 		let changed = false;
 		for (const file of files) {
@@ -371,7 +554,11 @@ export const releaseFileLocks = async (opts: {
 				locks: next,
 				contentionHistory: current.contentionHistory,
 			},
-			{ tablePath: opts.tablePath },
+			{
+				...(opts.tablePath !== undefined
+					? { tablePath: opts.tablePath }
+					: {}),
+			},
 		);
 	});
 };
