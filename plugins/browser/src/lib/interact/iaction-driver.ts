@@ -121,14 +121,5 @@ export interface IBrowserActionDriver {
  * Convenience composite — production drivers satisfy both halves; tests
  * can satisfy either independently.
  */
-export interface IFullBrowserDriver
-	extends IBrowserDriver,
-		IBrowserActionDriver {
-	readonly navigate: IBrowserDriver['navigate'];
-	readonly screenshot: IBrowserDriver['screenshot'];
-	readonly query: IBrowserDriver['query'];
-	readonly click: IBrowserActionDriver['click'];
-	readonly fill: IBrowserActionDriver['fill'];
-	readonly assert: IBrowserActionDriver['assert'];
-	readonly runAxe: IBrowserActionDriver['runAxe'];
-}
+export type IFullBrowserDriver = Omit<IBrowserDriver, 'assert'> &
+	IBrowserActionDriver;

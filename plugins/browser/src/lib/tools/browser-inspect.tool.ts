@@ -1,57 +1,170 @@
-import { isAbsolute, relative, resolve } from 'node:path';
+import { randomUUID } from 'node:crypto';
+import { mkdir, rename, rm, writeFile } from 'node:fs/promises';
+import { dirname, join, resolve } from 'node:path';
 
 import { z } from 'zod';
 
 import type { IToolRegistration } from '@mcp-vertex/core/public';
-import { toolError, toolJson } from '@mcp-vertex/core/public';
+import { toolJson } from '@mcp-vertex/core/public';
 
 import {
 	PLAYWRIGHT_INSTALL_HINT,
-	planPageRequest,
+	probePlaywright,
 	type IBrowserDriver,
 } from '../page';
 
 export interface IBrowserInspectToolOptions {
 	readonly namespacePrefix: string;
-	/** Private plugin cache directory supplied by the plugin context. */
-	readonly pluginCacheDir: string;
-	/** Injectable runtime adapter; omitted when the optional runtime is absent. */
-	readonly driver?: IBrowserDriver | undefined;
+	readonly pluginCacheDir?: string;
+	readonly driver?: IBrowserDriver;
+	readonly probeTool?: () => Promise<{
+		readonly unavailable?: boolean;
+		readonly hint?: string;
+	}>;
 }
 
 const URL_INPUT = z.object({ url: z.string().min(1).max(2_048) }).strict();
+const OPEN_INPUT = URL_INPUT.extend({
+	headless: z.boolean().optional(),
+}).strict();
 const QUERY_INPUT = URL_INPUT.extend({
 	selector: z.string().min(1).max(512),
-	limit: z.number().int().min(1).max(100).optional(),
 }).strict();
 const SCREENSHOT_INPUT = URL_INPUT.extend({
 	fullPage: z.boolean().optional(),
-	format: z.enum(['png', 'jpeg']).optional(),
 }).strict();
 
-const unavailable = () =>
-	toolError(
-		'Playwright is not available for this browser plugin.',
-		PLAYWRIGHT_INSTALL_HINT,
-	);
+const OPEN_OUTPUT = z.discriminatedUnion('status', [
+	z.object({
+		url: z.string(),
+		title: z.string(),
+		html: z.string(),
+		status: z.literal('ok'),
+	}),
+	z.object({
+		url: z.string(),
+		status: z.literal('install-missing'),
+		hint: z.string(),
+	}),
+]);
 
-const pageDriver = (
-	driver: IBrowserDriver | undefined,
-): IBrowserDriver | undefined => driver;
+const SCREENSHOT_OUTPUT = z.discriminatedUnion('status', [
+	z.object({
+		url: z.string(),
+		path: z.string(),
+		status: z.literal('ok'),
+	}),
+	z.object({
+		url: z.string(),
+		status: z.literal('install-missing'),
+		hint: z.string(),
+	}),
+]);
 
-const isCacheArtifact = (
-	pluginCacheDir: string,
-	artifactPath: string,
-): boolean => {
-	const pathFromCache = relative(
-		resolve(pluginCacheDir),
-		resolve(artifactPath),
-	);
-	return (
-		pathFromCache.length > 0 &&
-		!pathFromCache.startsWith('..') &&
-		!isAbsolute(pathFromCache)
-	);
+const QUERY_OUTPUT = z.discriminatedUnion('status', [
+	z.object({
+		url: z.string(),
+		matches: z.array(z.string()),
+		status: z.literal('ok'),
+	}),
+	z.object({
+		url: z.string(),
+		status: z.literal('install-missing'),
+		hint: z.string(),
+	}),
+]);
+
+const resolvePluginCacheDir = (pluginCacheDir?: string): string =>
+	resolve(pluginCacheDir ?? join(process.cwd(), '.cache', 'mcp-vertex'));
+
+const normalizeHttpUrl = (input: string): string => {
+	const parsed = new URL(input);
+	if (
+		(parsed.protocol !== 'http:' && parsed.protocol !== 'https:') ||
+		parsed.username !== '' ||
+		parsed.password !== ''
+	) {
+		throw new Error(
+			'url must be an absolute HTTP(S) URL without embedded credentials',
+		);
+	}
+	return parsed.toString();
+};
+
+const installMissing = (url: string, hint: string) =>
+	toolJson({
+		url,
+		status: 'install-missing' as const,
+		hint,
+	});
+
+const screenshotPathFor = (
+	pluginCacheDir?: string,
+	timestamp = Date.now(),
+): string =>
+	join(resolvePluginCacheDir(pluginCacheDir), 'browser', `${timestamp}.png`);
+
+const writeScreenshotAtomic = async (
+	path: string,
+	data: Uint8Array,
+): Promise<void> => {
+	await mkdir(dirname(path), { recursive: true });
+	const tempPath = `${path}.${randomUUID()}.tmp`;
+	try {
+		await writeFile(tempPath, data);
+		await rename(tempPath, path);
+	} catch (error) {
+		await rm(tempPath, { force: true }).catch(() => undefined);
+		throw error;
+	}
+};
+
+const defaultProbeTool = async (): Promise<{
+	readonly unavailable?: boolean;
+	readonly hint?: string;
+}> => {
+	const result = await probePlaywright();
+	return result.available
+		? {}
+		: {
+				unavailable: true,
+				hint: result.installHint,
+			};
+};
+
+const probeDriver = async (
+	options: IBrowserInspectToolOptions,
+): Promise<
+	| { readonly available: true; readonly driver: IBrowserDriver }
+	| { readonly available: false; readonly hint: string }
+> => {
+	if (options.driver !== undefined) {
+		return { available: true, driver: options.driver };
+	}
+	const probe = await (options.probeTool ?? defaultProbeTool)();
+	return {
+		available: false,
+		hint: probe.hint ?? PLAYWRIGHT_INSTALL_HINT,
+	};
+};
+
+const openWithDriver = async (
+	driver: IBrowserDriver,
+	args: { url: string; headless?: boolean },
+) => {
+	if (driver.open !== undefined) {
+		return driver.open({
+			url: args.url,
+			...(args.headless !== undefined ? { headless: args.headless } : {}),
+		});
+	}
+	if (driver.navigate !== undefined) {
+		return driver.navigate({
+			url: args.url,
+			...(args.headless !== undefined ? { headless: args.headless } : {}),
+		});
+	}
+	throw new Error('Browser driver does not implement open or navigate');
 };
 
 /**
@@ -73,34 +186,30 @@ export const buildBrowserInspectToolRegistrations = (
 				`${options.namespacePrefix}_browser_open`,
 				{
 					description:
-						'Open an HTTP(S) page through the injected browser driver and return its final URL and optional title. Missing Playwright returns an install hint without crashing.',
-					inputSchema: URL_INPUT,
-					outputSchema: z.object({
-						tool: z.literal('browser_open'),
-						url: z.string(),
-						title: z.string().optional(),
-						status: z.number().int(),
-					}),
+						'Open a page through the injected browser driver and return the resolved URL, title, and HTML. Missing Playwright returns an install hint without crashing.',
+					inputSchema: OPEN_INPUT,
+					outputSchema: OPEN_OUTPUT,
 				},
-				async (args: { url: string }) => {
-					const driver = pageDriver(options.driver);
-					if (driver === undefined) return unavailable();
-					try {
-						const request = planPageRequest(args);
-						const result = await driver.navigate({
-							url: request.url,
-						});
-						return toolJson({
-							tool: 'browser_open',
-							url: result.url,
-							...(result.title !== undefined
-								? { title: result.title }
-								: {}),
-							status: result.status,
-						});
-					} catch (error) {
-						return toolError((error as Error).message);
-					}
+				async (args: {
+					url: string;
+					headless?: boolean | undefined;
+				}) => {
+					const url = normalizeHttpUrl(args.url);
+					const probed = await probeDriver(options);
+					if (!probed.available)
+						return installMissing(url, probed.hint);
+					const result = await openWithDriver(probed.driver, {
+						url,
+						...(args.headless !== undefined
+							? { headless: args.headless }
+							: {}),
+					});
+					return toolJson({
+						url: result.url,
+						title: result.title,
+						html: result.html,
+						status: 'ok' as const,
+					});
 				},
 			);
 		},
@@ -115,57 +224,32 @@ export const buildBrowserInspectToolRegistrations = (
 				`${options.namespacePrefix}_browser_screenshot`,
 				{
 					description:
-						'Capture an HTTP(S) page screenshot using the injected browser driver. Artifacts are placed under the plugin cache; missing Playwright returns an install hint without crashing.',
+						'Capture a screenshot using the injected browser driver. Artifacts are written under the resolved plugin cache directory; missing Playwright returns an install hint without crashing.',
 					inputSchema: SCREENSHOT_INPUT,
-					outputSchema: z.object({
-						tool: z.literal('browser_screenshot'),
-						url: z.string(),
-						path: z.string(),
-						bytes: z.number().int().nonnegative(),
-						format: z.enum(['png', 'jpeg']),
-						width: z.number().int().positive(),
-						height: z.number().int().positive(),
-					}),
+					outputSchema: SCREENSHOT_OUTPUT,
 				},
 				async (args: {
 					url: string;
 					fullPage?: boolean | undefined;
-					format?: 'png' | 'jpeg' | undefined;
 				}) => {
-					const driver = pageDriver(options.driver);
-					if (driver === undefined) return unavailable();
-					try {
-						const request = planPageRequest(args);
-						const result = await driver.screenshot({
-							url: request.url,
-							fullPage: args.fullPage ?? true,
-							...(args.format !== undefined
-								? { format: args.format }
-								: {}),
-						});
-						if (
-							!isCacheArtifact(
-								options.pluginCacheDir,
-								result.path,
-							)
-						) {
-							return toolError(
-								'Browser driver returned a screenshot outside the plugin cache.',
-								'Configure the browser driver to write screenshots below pluginCacheDir.',
-							);
-						}
-						return toolJson({
-							tool: 'browser_screenshot',
-							url: request.url,
-							path: result.path,
-							bytes: result.bytes,
-							format: result.format,
-							width: result.width,
-							height: result.height,
-						});
-					} catch (error) {
-						return toolError((error as Error).message);
-					}
+					const url = normalizeHttpUrl(args.url);
+					const probed = await probeDriver(options);
+					if (!probed.available)
+						return installMissing(url, probed.hint);
+					const result = await probed.driver.screenshot({
+						url,
+						...(args.fullPage !== undefined
+							? { fullPage: args.fullPage }
+							: {}),
+						format: 'png',
+					});
+					const path = screenshotPathFor(options.pluginCacheDir);
+					await writeScreenshotAtomic(path, result.data);
+					return toolJson({
+						url,
+						path,
+						status: 'ok' as const,
+					});
 				},
 			);
 		},
@@ -181,48 +265,24 @@ export const buildBrowserInspectToolRegistrations = (
 				`${options.namespacePrefix}_browser_query`,
 				{
 					description:
-						'Query an HTTP(S) page with a CSS selector through the injected browser driver. Results are bounded by maxResults; missing Playwright returns an install hint without crashing.',
+						'Query a page with a CSS selector through the injected browser driver and return matched texts. Missing Playwright returns an install hint without crashing.',
 					inputSchema: QUERY_INPUT,
-					outputSchema: z.object({
-						tool: z.literal('browser_query'),
-						url: z.string(),
-						selector: z.string(),
-						hits: z.array(
-							z.object({
-								selector: z.string(),
-								text: z.string(),
-								tag: z.string(),
-							}),
-						),
-					}),
+					outputSchema: QUERY_OUTPUT,
 				},
-				async (args: {
-					url: string;
-					selector: string;
-					limit?: number | undefined;
-				}) => {
-					const driver = pageDriver(options.driver);
-					if (driver === undefined) return unavailable();
-					try {
-						const request = planPageRequest({
-							url: args.url,
-							selector: args.selector,
-							maxResults: args.limit,
-						});
-						const result = await driver.query({
-							url: request.url,
-							selector: request.selector ?? args.selector,
-							limit: request.maxResults ?? 20,
-						});
-						return toolJson({
-							tool: 'browser_query',
-							url: request.url,
-							selector: request.selector ?? args.selector,
-							hits: result.hits,
-						});
-					} catch (error) {
-						return toolError((error as Error).message);
-					}
+				async (args: { url: string; selector: string }) => {
+					const url = normalizeHttpUrl(args.url);
+					const probed = await probeDriver(options);
+					if (!probed.available)
+						return installMissing(url, probed.hint);
+					const result = await probed.driver.query({
+						url,
+						selector: args.selector,
+					});
+					return toolJson({
+						url: result.url,
+						matches: result.matches,
+						status: 'ok' as const,
+					});
 				},
 			);
 		},
