@@ -12,6 +12,7 @@ import { z } from 'zod';
 import { definePlugin } from '@mcp-vertex/core/public';
 
 import { buildApiCallToolRegistration } from './lib/tools/api-call.tool';
+import { buildApiValidateToolRegistrations } from './lib/tools/api-validate.tool';
 
 const OptionsSchema = z
 	.object({
@@ -41,6 +42,27 @@ export default definePlugin({
 						? {}
 						: { defaultAllowList: opts.defaultAllowList }),
 				}),
+				...buildApiValidateToolRegistrations({
+					namespacePrefix: ctx.namespacePrefix,
+					...(opts?.defaultAllowList === undefined
+						? {}
+						: { defaultAllowList: opts.defaultAllowList }),
+				}),
+			],
+			knowledge: [
+				{
+					id: 'api-validate-overview',
+					title: 'api_validate',
+					body: [
+						'# api_validate',
+						'',
+						'Validate a decoded JSON response against the OpenAPI success response schema for one operation.',
+						'',
+						'- Inputs: `operationId`, `response`, and either `spec` or `specUrl` + `allowList`.',
+						'- Output: normalized findings plus severity summary and worst severity.',
+						'- Coverage: required fields, type drift, enum drift, email/uri format checks, nullable fields, nested arrays/objects, and closed-object extra properties.',
+					].join('\n'),
+				},
 			],
 		};
 	},
