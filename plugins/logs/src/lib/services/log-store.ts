@@ -3,12 +3,15 @@ import { join } from 'node:path';
 
 import { withFileMutex } from '@mcp-vertex/core/public';
 
+import type { ILogStoreOptions } from '../contracts/interfaces/log-store.interface';
 import {
 	type ILogEvent,
 	type LogEventKind,
 	type LogOutcome,
 	serializeRedactedEvent,
 } from './normalize-event';
+
+export type { ILogStoreOptions } from '../contracts/interfaces/log-store.interface';
 
 export interface ILogStore {
 	appendEvent(event: ILogEvent): Promise<void>;
@@ -52,16 +55,6 @@ const matches = (event: ILogEvent, filter: ILogRangeFilter): boolean => {
 	if (filter.outcome && event.outcome !== filter.outcome) return false;
 	return true;
 };
-
-export interface ILogStoreOptions {
-	/**
-	 * Per-line byte cap passed to `serializeRedactedEvent`. The default
-	 * (8 KiB) suits the high-volume main timeline; a curated,
-	 * low-volume stream (e.g. the error log) can raise this so a full
-	 * stack trace survives instead of being truncated away.
-	 */
-	readonly maxLineBytes?: number;
-}
 
 export const createLogStore = async (
 	logsDir: string,
