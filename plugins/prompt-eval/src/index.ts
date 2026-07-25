@@ -17,8 +17,10 @@ import { z } from 'zod';
 
 import { definePlugin } from '@mcp-vertex/core/public';
 
+import { buildEvalCalibrateToolRegistration } from './lib/tools/eval-calibrate.tool';
 import { buildEvalRunRegistration } from './lib/tools/eval-run.tool';
 import { buildEvalReportToolRegistration } from './lib/tools/eval-report.tool';
+import { resolveAutoAgentSelectorCalibrationDir } from './lib/calibrate/write-through';
 
 const OptionsSchema = z.object({
 	providers: z
@@ -52,6 +54,9 @@ export default definePlugin({
 			);
 		}
 		const providers = parsed.data.providers ?? [];
+		const calibrationDir = ctx.workspace.resolve(
+			resolveAutoAgentSelectorCalibrationDir(ctx.cacheDir),
+		);
 		// Wiring is intentionally a no-op pass-through stub: the contract
 		// (`allowSpend`, `runProvider`, `checkAcceptance`) is provided by
 		// the host (auto-agent-selector + orchestrator-runner) at runtime.
@@ -73,6 +78,23 @@ export default definePlugin({
 				buildEvalReportToolRegistration({
 					namespacePrefix: ctx.namespacePrefix,
 				}),
+				buildEvalCalibrateToolRegistration({
+					namespacePrefix: ctx.namespacePrefix,
+					calibrationDir,
+				}),
+			],
+			knowledge: [
+				{
+					id: 'prompt-eval',
+					title: 'Prompt eval — benchmark prompts and feed routing calibration',
+					body: [
+						'Use this plugin to benchmark a prompt across the reachable provider roster.',
+						'',
+						'- Run `<prefix>_eval_run` to collect spend-guarded attempts.',
+						'- Run `<prefix>_eval_report` to rank the attempts on cost × quality.',
+						'- Run `<prefix>_eval_calibrate` to write the same outcomes into auto-agent-selector calibration.',
+					].join('\n'),
+				},
 			],
 		};
 	},
