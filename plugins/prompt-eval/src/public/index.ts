@@ -29,17 +29,14 @@ export {
 	scorePerTaskType,
 } from '../lib/score/score';
 export type {
-	ICalibrationWriteInput,
-	ICalibrationWriteResult,
+	IWriteOutcomesDeps,
+	IWriteOutcomesInput,
 } from '../lib/calibrate/write-through';
 export {
 	attemptsToOutcomeRecords,
-	readCalibrationWinRates,
-	realPromptEvalCalibrationStore,
-	resolveAutoAgentSelectorCalibrationDir,
-	writeCalibration,
+	MIN_PROMPT_EVAL_CALIBRATION_SAMPLES,
+	summarizeWinRates,
+	writeOutcomes,
 } from '../lib/calibrate/write-through';
 export { buildEvalReportToolRegistration } from '../lib/tools/eval-report.tool';
 export type { IEvalReportToolOptions } from '../lib/tools/eval-report.tool';
-export { buildEvalCalibrateToolRegistration } from '../lib/tools/eval-calibrate.tool';
-export type { IEvalCalibrateToolOptions } from '../lib/tools/eval-calibrate.tool';

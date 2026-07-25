@@ -2,16 +2,19 @@ import { z } from 'zod';
 
 import type { IToolRegistration } from '@mcp-vertex/core/public';
 import { toolError, toolJson } from '@mcp-vertex/core/public';
+import type { ICalibrationStore } from '@mcp-vertex/auto-agent-selector/public';
 
 import {
 	runEvalHarness,
 	type IEvalHarnessDeps,
 	type IEvalProvider,
 } from '../eval/eval-harness';
+import { writeOutcomes } from '../calibrate/write-through';
 
 export interface IEvalRunToolOptions extends IEvalHarnessDeps {
 	readonly namespacePrefix: string;
 	readonly providers: readonly IEvalProvider[];
+	readonly calibrationStore?: ICalibrationStore;
 }
 
 const INPUT = z
@@ -70,6 +73,18 @@ export const buildEvalRunRegistration = (
 					const result = await runEvalHarness(
 						{ prompt: args.prompt, providers: options.providers },
 						options,
+					);
+					await writeOutcomes(
+						{
+							attempts: result.attempts,
+							winner: result.winner,
+							...(args.taskType === undefined
+								? {}
+								: { taskType: args.taskType }),
+						},
+						options.calibrationStore === undefined
+							? {}
+							: { store: options.calibrationStore },
 					);
 					return toolJson({
 						tool: 'eval_run',
