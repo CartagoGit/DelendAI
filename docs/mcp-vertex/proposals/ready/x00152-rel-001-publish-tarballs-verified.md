@@ -68,11 +68,16 @@ falsa verde y rompe el flujo de release.
 
 ### S1 — Helper compartido + pack consume el helper
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `tools/scripts/publish/workspace-deps.ts` (new),
   `tools/scripts/smoke/pack.script.ts`,
   `tools/scripts/publish/workspace-deps.spec.ts` (new)
 - **Gate**: type
+- implementation:
+  - `workspace-deps.ts` exposes `rewriteWorkspaceDeps`, `findWorkspaceConsumers`, `packRewrittenTarball`.
+  - All three are idempotent and restore-on-`finally` (atomic temp-file + rename).
+  - `pack.script.ts` no longer contains its inline rewrite; it consumes the helper.
+  - 5 cases cover version-major, no-workspace, io-error, idempotence, workspace-consumer-finder.
 - acceptance:
   - "API única: `resolve(pkgDir, versionPlan) → rewrittenPkgJson`, idempotente, con restore en `finally`"
   - "`pack.script.ts` ya no contiene su copia; consume el helper compartido"
