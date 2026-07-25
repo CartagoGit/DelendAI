@@ -90,9 +90,24 @@ network seam, no secret handling beyond web-fetch's.
 
 ### S2 — contract validation
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/api/src/lib/validate/`, `plugins/api/src/lib/tools/api-validate.tool.ts`
 - **Gate**: bun run validate
+
+- implementation:
+  - `lib/validate/response-validator.ts` adds a pure JSON Schema walker over
+    the parsed OpenAPI response schema. It emits normalized r00012 findings
+    for missing required fields, type mismatches, enum drift, email/uri
+    format errors, nullable handling, nested array/object mismatches and
+    closed-object extra properties. Unsupported `oneOf` / `anyOf` surfaces
+    fail fast with a typed `unsupported-schema-feature` error so the host can
+    return a structured hint instead of crashing.
+  - `lib/tools/api-validate.tool.ts` registers `api_validate` with strict zod
+    input (`operationId`, `response`, `spec?`, `specUrl?`, `allowList?`,
+    `timeoutMs?`, `maxBytes?`). It reuses the S1 spec parser, returns the
+    standard `toolError` envelope for missing spec / unknown operation /
+    blocked specUrl fetches, and projects validation results as normalized
+    findings + summary + worst severity.
 
 `api_validate` checks a response against the schema → normalized findings
 (r00012) on mismatch. Pure validator.

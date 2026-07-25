@@ -23,3 +23,13 @@ export type {
 } from '../lib/spec/build-request';
 export { buildApiCallToolRegistration } from '../lib/tools/api-call.tool';
 export type { IApiCallToolOptions } from '../lib/tools/api-call.tool';
+export {
+	buildApiValidateToolRegistration,
+	buildApiValidateToolRegistrations,
+} from '../lib/tools/api-validate.tool';
+export type { IApiValidateToolOptions } from '../lib/tools/api-validate.tool';
+export {
+	resolveResponseSchema,
+	validateResponse,
+} from '../lib/validate/response-validator';
+export type { IValidateResponseOptions } from '../lib/validate/response-validator';
