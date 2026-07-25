@@ -1024,6 +1024,34 @@ export interface McpVertexNotificationNotifyStatusOutput {
 	agentEvents: number;
 }
 
+export interface McpVertexObservabilityObsCorrelateOutput {
+	matches: {
+		issueId: string;
+		logFile: string;
+		line: number;
+		summary: string;
+	}[];
+	totalIssues: number;
+	totalLogs: number;
+	summary: string;
+}
+
+export interface McpVertexObservabilityObsErrorsOutput {
+	source: "sentry" | "datadog" | "custom";
+	issues: Array<{
+		id: string;
+		title: string;
+		project: string;
+		level: "fatal" | "error" | "warning" | "info" | "debug" | "unknown";
+		lastSeen: string;
+		eventCount: number;
+		context: string;
+		url: string;
+	}>;
+	nextCursor: string | null;
+	redactions: number;
+}
+
 export interface McpVertexOverviewOutput {
 	server: {
 		name: string;
@@ -1463,6 +1491,31 @@ export interface McpVertexProposalsAgentWorktreeOutput {
 		detached: boolean;
 		locked: boolean;
 	}[];
+}
+
+export interface McpVertexProposalsAgentsLockDiagnoseOutput {
+	ok: true;
+	zombies: {
+		task_id: string;
+		agent: string;
+		ownership: string[];
+		started_at: string;
+		last_seen: string;
+		age_seconds: number;
+		parent_task_id?: string;
+	}[];
+	tmpOrphans: {
+		absPath: string;
+		relName: string;
+		mtime: string;
+		ageSeconds: number;
+	}[];
+	logGaps: Array<{
+		task_id: string;
+		lock_last_seen: string;
+		latest_log_ts: string | null;
+		gap_seconds: number | null;
+	}>;
 }
 
 export interface McpVertexProposalsAutoWorkOutput {
@@ -2134,6 +2187,11 @@ export interface McpVertexProposalsStateHealthOutput {
 		sessionReleases: number;
 		sessionImbalance: number;
 	};
+	stale: {
+		count: number;
+		taskIds: string[];
+		lastStaleSeen: string | null;
+	};
 	peerReviewBypasses: number;
 	queue: {
 		queueLength: number;
@@ -2157,6 +2215,11 @@ export interface McpVertexProposalsStateRepairOutput {
 			sessionClaims: number;
 			sessionReleases: number;
 			sessionImbalance: number;
+		};
+		stale: {
+			count: number;
+			taskIds: string[];
+			lastStaleSeen: string | null;
 		};
 		peerReviewBypasses: number;
 		queue: {
@@ -2922,6 +2985,8 @@ export interface McpVertexToolOutputs {
 	"mcp-vertex_metrics": McpVertexMetricsOutput;
 	"mcp-vertex_notification_await_lock": McpVertexNotificationAwaitLockOutput;
 	"mcp-vertex_notification_notify_status": McpVertexNotificationNotifyStatusOutput;
+	"mcp-vertex_observability_obs_correlate": McpVertexObservabilityObsCorrelateOutput;
+	"mcp-vertex_observability_obs_errors": McpVertexObservabilityObsErrorsOutput;
 	"mcp-vertex_overview": McpVertexOverviewOutput;
 	"mcp-vertex_perf_perf_bench": McpVertexPerfPerfBenchOutput;
 	"mcp-vertex_perf_perf_bundle": McpVertexPerfPerfBundleOutput;
@@ -2933,6 +2998,7 @@ export interface McpVertexToolOutputs {
 	"mcp-vertex_proposals_agent_lock_release_orphan": McpVertexProposalsAgentLockReleaseOrphanOutput;
 	"mcp-vertex_proposals_agent_names": McpVertexProposalsAgentNamesOutput;
 	"mcp-vertex_proposals_agent_worktree": McpVertexProposalsAgentWorktreeOutput;
+	"mcp-vertex_proposals_agents_lock_diagnose": McpVertexProposalsAgentsLockDiagnoseOutput;
 	"mcp-vertex_proposals_auto_work": McpVertexProposalsAutoWorkOutput;
 	"mcp-vertex_proposals_branch_gc": McpVertexProposalsBranchGcOutput;
 	"mcp-vertex_proposals_branch_status": McpVertexProposalsBranchStatusOutput;

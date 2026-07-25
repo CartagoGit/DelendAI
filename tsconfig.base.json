@@ -87,6 +87,13 @@
 				"./plugins/notification/src/public/index.ts"
 			],
 			"@mcp-vertex/notification/*": ["./plugins/notification/src/*"],
+			"@mcp-vertex/observability": [
+				"./plugins/observability/src/index.ts"
+			],
+			"@mcp-vertex/observability/public": [
+				"./plugins/observability/src/public/index.ts"
+			],
+			"@mcp-vertex/observability/*": ["./plugins/observability/src/*"],
 			"@mcp-vertex/docs": ["./plugins/docs/src/index.ts"],
 			"@mcp-vertex/docs/public": ["./plugins/docs/src/public/index.ts"],
 			"@mcp-vertex/docs/*": ["./plugins/docs/src/*"],

@@ -53,6 +53,8 @@ import linkCheckPlugin from '@mcp-vertex/link-check';
 import usageTrackingPlugin from '../../../plugins/usage-tracking/src/index';
 import browserPlugin from '@mcp-vertex/browser';
 import refactorPlugin from '@mcp-vertex/refactor';
+import promptEvalPlugin from '@mcp-vertex/prompt-eval';
+import observabilityPlugin from '@mcp-vertex/observability';
 
 import {
 	buildPackageModules,
@@ -87,10 +89,12 @@ const PLUGIN_SPECIFIERS: Readonly<Record<string, unknown>> = {
 	'mcp-usage-tracking': usageTrackingPlugin,
 	'mcp-browser': browserPlugin,
 	'mcp-refactor': refactorPlugin,
+	'mcp-prompt-eval': promptEvalPlugin,
+	'mcp-observability': observabilityPlugin,
 };
 
 const PLUGIN_LIST =
-	'proposals,rules,memory,git,quality,search,notification,docs,deps,logs,audit,status-marker,test-convention,web-fetch,cache,security,diagram,env,i18n,perf,tech-debt,link-check,usage-tracking,browser,refactor';
+	'proposals,rules,memory,git,quality,search,notification,docs,deps,logs,audit,status-marker,test-convention,web-fetch,cache,security,diagram,env,i18n,perf,tech-debt,link-check,usage-tracking,browser,refactor,prompt-eval,observability';
 
 /**
  * Assemble the reference server with every plugin and harvest each
