@@ -1,12 +1,233 @@
 import {
 	createWorkspaceFileReader,
 	definePlugin,
+	toolError,
+	toolJson,
+} from '@mcp-vertex/core/public';
+import type {
+	FindingSeverity,
+	IFinding,
+	IFindingCounts,
+	IToolRegistration,
 } from '@mcp-vertex/core/public';
 import { z } from 'zod';
 
 import { createCommandRunner } from './lib/services/runner';
 import { buildRunAllToolRegistration } from './lib/services/run-all';
 import { buildQualityToolRegistrations } from './lib/tools';
+import { runScope } from './lib/services/runner';
+import { resolveScopes } from './lib/services/scopes';
+
+const FINDING_SEVERITIES = [
+	'critical',
+	'high',
+	'medium',
+	'low',
+	'info',
+] as const satisfies readonly FindingSeverity[];
+
+const qualityFindingSchema = z.object({
+	ruleId: z.string(),
+	severity: z.enum(FINDING_SEVERITIES),
+	message: z.string(),
+	location: z
+		.object({
+			file: z.string(),
+			line: z.number().optional(),
+			endLine: z.number().optional(),
+		})
+		.optional(),
+	fix: z.string().optional(),
+});
+
+const plannerOutputSchema = z.object({
+	ok: z.boolean(),
+	severities: z.object({
+		critical: z.number(),
+		high: z.number(),
+		medium: z.number(),
+		low: z.number(),
+		info: z.number(),
+	}),
+	worst: z.enum([...FINDING_SEVERITIES, 'none']),
+	findings: z.array(qualityFindingSchema),
+});
+
+const legacyRunQualityOutputSchema = z.object({
+	scope: z.string(),
+	ok: z.boolean(),
+	results: z.array(
+		z.object({
+			command: z.string(),
+			ok: z.boolean(),
+			code: z.number(),
+			timedOut: z.boolean(),
+			tail: z.string(),
+		}),
+	),
+});
+
+export interface IValidateOutputSnapshot {
+	readonly findings?: readonly IFinding[];
+	readonly severities?: Partial<Record<FindingSeverity, number>>;
+	readonly worst?: FindingSeverity | 'none';
+}
+
+export interface IValidateOutputReader {
+	readRecentValidateOutput(): Promise<IValidateOutputSnapshot | string>;
+}
+
+interface IRunQualityPlannerArgs {
+	readonly severities?: readonly FindingSeverity[] | undefined;
+}
+
+interface IRunQualityPlannerDeps {
+	readonly validateOutputReader: IValidateOutputReader;
+}
+
+const emptyFindingCounts = (): IFindingCounts => ({
+	critical: 0,
+	high: 0,
+	medium: 0,
+	low: 0,
+	info: 0,
+});
+
+const normalizeFindingCounts = (
+	findings: readonly IFinding[],
+): IFindingCounts => {
+	const counts = { ...emptyFindingCounts() } as Record<
+		FindingSeverity,
+		number
+	>;
+	for (const finding of findings) counts[finding.severity] += 1;
+	return counts;
+};
+
+const resolveWorstSeverity = (
+	counts: IFindingCounts,
+): FindingSeverity | 'none' => {
+	for (const severity of FINDING_SEVERITIES) {
+		if (counts[severity] > 0) return severity;
+	}
+	return 'none';
+};
+
+const parseValidateOutputSnapshot = (
+	raw: IValidateOutputSnapshot | string,
+): IValidateOutputSnapshot => {
+	if (typeof raw !== 'string') return raw;
+	try {
+		const parsed = JSON.parse(raw) as IValidateOutputSnapshot;
+		return typeof parsed === 'object' && parsed !== null ? parsed : {};
+	} catch {
+		return {};
+	}
+};
+
+export const runQualityFromValidateOutput = async (
+	args: IRunQualityPlannerArgs,
+	deps: IRunQualityPlannerDeps,
+): Promise<z.infer<typeof plannerOutputSchema>> => {
+	const requested = new Set(args.severities ?? FINDING_SEVERITIES);
+	const snapshot = parseValidateOutputSnapshot(
+		await deps.validateOutputReader.readRecentValidateOutput(),
+	);
+	const findings = (snapshot.findings ?? []).filter((finding) =>
+		requested.has(finding.severity),
+	);
+	const severities = normalizeFindingCounts(findings);
+	return {
+		ok: findings.length === 0,
+		severities,
+		worst: resolveWorstSeverity(severities),
+		findings,
+	};
+};
+
+const buildRunQualityToolRegistration = (
+	qualityOptions: Parameters<typeof buildQualityToolRegistrations>[0],
+	validateOutputReader?: IValidateOutputReader,
+): IToolRegistration => ({
+	id: 'run_quality',
+	effects: ['spawn'],
+	summary:
+		'Run a quality scope or scan the most recent validate output for findings.',
+	tags: ['quality'],
+	register: async (server) => {
+		server.registerTool(
+			`${qualityOptions.namespacePrefix}_run_quality`,
+			{
+				description:
+					'With `scope`, execute a quality scope and return a structured pass/fail report. Without `scope`, and when a validate-output reader is injected, scan the most recent validate findings and return severity-filtered results.',
+				inputSchema: z.object({
+					scope: z.string().optional(),
+					dryRun: z.boolean().optional(),
+					severities: z.array(z.enum(FINDING_SEVERITIES)).optional(),
+				}),
+				outputSchema: z.union([
+					legacyRunQualityOutputSchema,
+					plannerOutputSchema,
+				]),
+			},
+			async (args: {
+				scope?: string | undefined;
+				dryRun?: boolean | undefined;
+				severities?: FindingSeverity[] | undefined;
+			}) => {
+				if (
+					validateOutputReader !== undefined &&
+					args.scope === undefined &&
+					args.dryRun !== true
+				) {
+					return toolJson(
+						await runQualityFromValidateOutput(
+							{
+								...(args.severities !== undefined
+									? { severities: args.severities }
+									: {}),
+							},
+							{ validateOutputReader },
+						),
+					);
+				}
+
+				const scopes = await resolveScopes(
+					qualityOptions.reader,
+					qualityOptions.optionScopes
+						? { scopes: qualityOptions.optionScopes }
+						: {},
+				);
+				const names = Object.keys(scopes);
+				if (names.length === 0) {
+					return toolError(
+						'no quality scopes configured',
+						'Add scripts to package.json, a validationMatrix to mcp-vertex.config.json, or `scopes` to the plugin options.',
+					);
+				}
+				const scope =
+					args.scope ??
+					(names.includes('all') ? 'all' : (names[0] as string));
+				const commands = scopes[scope];
+				if (commands === undefined) {
+					return toolError(
+						`unknown scope "${scope}"`,
+						`Available: ${names.join(', ')}.`,
+					);
+				}
+				return toolJson(
+					await runScope(
+						scope,
+						commands,
+						qualityOptions.workspaceRoot,
+						qualityOptions.run,
+						qualityOptions.commandPolicy,
+					),
+				);
+			},
+		);
+	},
+});
 
 /**
  * Quality-gate runner. Executes the project's validation commands
@@ -54,9 +275,26 @@ export default definePlugin({
 				? { commandPolicy: ctx.options.commandPolicy }
 				: {}),
 		};
+		const validateOutputReader = (
+			ctx.options as { validateOutputReader?: IValidateOutputReader }
+		).validateOutputReader;
+		const qualityTools = buildQualityToolRegistrations(qualityOptions);
+		const getQualityScopesTool = qualityTools.find(
+			(tool) => tool.id === 'get_quality_scopes',
+		);
+		const qualityCancelTool = qualityTools.find(
+			(tool) => tool.id === 'quality_cancel',
+		);
 		return {
 			tools: [
-				...buildQualityToolRegistrations(qualityOptions),
+				...(getQualityScopesTool !== undefined
+					? [getQualityScopesTool]
+					: []),
+				buildRunQualityToolRegistration(
+					qualityOptions,
+					validateOutputReader,
+				),
+				...(qualityCancelTool !== undefined ? [qualityCancelTool] : []),
 				buildRunAllToolRegistration(qualityOptions),
 			],
 			knowledge: [

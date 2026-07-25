@@ -37,10 +37,30 @@
  */
 import {
 	commitAndPush,
+	type FindingSeverity,
+	type IFinding,
+	type IFindingCounts,
 	type ICommitAuthorResolution,
 } from '@mcp-vertex/core/public';
 
 import type { IGitRunner } from '../shared/git-runner';
+
+export interface IQualityProbeResult {
+	readonly ok: boolean;
+	readonly severities: IFindingCounts;
+	readonly worst: FindingSeverity | 'none';
+	readonly findings: readonly IFinding[];
+}
+
+export interface IQualityProbeDeps {
+	readonly runQuality?: () => Promise<IQualityProbeResult>;
+}
+
+export const shouldBlockCloseSliceOnQuality = (
+	result: IQualityProbeResult,
+): boolean =>
+	result.ok === false &&
+	(result.worst === 'critical' || result.worst === 'high');
 
 /** How `auto_work` should persist the slice when it closes. */
 export type IAutoWorkPersistMode = 'none' | 'commit' | 'commit-and-push';

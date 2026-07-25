@@ -41,12 +41,17 @@ describe('preset-table', () => {
 			expect(ids[0]).toBe('git');
 			expect(ids[1]).toBe('search');
 			// The last ids include vertex-only additions beyond the chain:
-			// `perf` (f00126 S3), `audit` (opt-in), `issues` and
-			// `auto-agent-selector`. `web-fetch` is already introduced by
+			// `perf` (f00126 S3), `audit` (opt-in), `auto-agent-selector`,
+			// and `prompt-eval` (f00127). `web-fetch` is already introduced by
 			// `full`, so it no longer appears in the unique tail.
 			const tail = ids.slice(-4);
 			expect(new Set(tail)).toEqual(
-				new Set(['issues', 'perf', 'audit', 'auto-agent-selector']),
+				new Set([
+					'perf',
+					'audit',
+					'auto-agent-selector',
+					'prompt-eval',
+				]),
 			);
 		});
 
@@ -68,9 +73,10 @@ describe('preset-table', () => {
 			// `issues` stays in `full` (host-only).
 			expect(full?.effective).toContain('issues');
 			// `vertex` is independent — its effective membership equals
-			// its 14 declared members (f00119 S6 added auto-agent-selector,
-			// f00123 added refactor, f00126 S3 added perf), NOT swarm + a delta.
-			expect(vertex?.effective.length).toBe(14);
+			// its 17 declared members (f00119 S6 added auto-agent-selector,
+			// f00123 added refactor, f00126 S3 added perf, f00127 added prompt-eval,
+			// f00128 added database, f00130 added api), NOT swarm + a delta.
+			expect(vertex?.effective.length).toBe(17);
 			expect(vertex?.effective).toContain('perf');
 			expect(vertex?.effective).toContain('audit');
 			expect(vertex?.effective).toContain('refactor');
