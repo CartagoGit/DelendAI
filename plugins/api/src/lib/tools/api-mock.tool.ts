@@ -35,9 +35,12 @@ import type { IOpenApiOperation, IOpenApiSpec } from '../spec/openapi';
 export interface IApiMockToolOptions {
 	readonly namespacePrefix: string;
 	readonly defaultAllowList?: readonly string[];
-	readonly specFetch?: (
-		args: { url: string; allowList: readonly string[]; timeoutMs?: number; maxBytes?: number },
-	) => Promise<{ body: string }>;
+	readonly specFetch?: (args: {
+		url: string;
+		allowList: readonly string[];
+		timeoutMs?: number;
+		maxBytes?: number;
+	}) => Promise<{ body: string }>;
 }
 
 const INPUT = z
@@ -86,7 +89,8 @@ const findOperation = (
 	spec: IOpenApiSpec,
 	args: z.infer<typeof INPUT>,
 ): IOpenApiOperation | undefined => {
-	if (args.operationId !== undefined) return spec.operations[args.operationId];
+	if (args.operationId !== undefined)
+		return spec.operations[args.operationId];
 	return Object.values(spec.operations).find(
 		(operation) =>
 			operation.method === args.method && operation.path === args.path,
@@ -124,12 +128,16 @@ export const buildApiMockToolRegistration = (
 				if (!parsed.success) {
 					return toolError(
 						'invalid-arguments',
-						parsed.error.issues.map((i) => `${i.path.join('.')}: ${i.message}`).join('; ') ||
-							'Invalid input.',
+						parsed.error.issues
+							.map((i) => `${i.path.join('.')}: ${i.message}`)
+							.join('; ') || 'Invalid input.',
 					);
 				}
 				const input = parsed.data;
-				if (input.operationId === undefined && (input.method === undefined || input.path === undefined)) {
+				if (
+					input.operationId === undefined &&
+					(input.method === undefined || input.path === undefined)
+				) {
 					return toolError(
 						'invalid-arguments',
 						'Provide `operationId` or both `method` and `path`.',
@@ -142,7 +150,8 @@ export const buildApiMockToolRegistration = (
 						? input.spec
 						: parseOpenApi(input.spec as object);
 				} else if (input.specUrl !== undefined) {
-					const allowList = input.allowList ?? options.defaultAllowList;
+					const allowList =
+						input.allowList ?? options.defaultAllowList;
 					if (allowList === undefined || allowList.length === 0) {
 						return toolError(
 							'specUrl requires an allowList.',
@@ -158,8 +167,12 @@ export const buildApiMockToolRegistration = (
 					const loaded = await options.specFetch({
 						url: input.specUrl,
 						allowList,
-						...(input.timeoutMs === undefined ? {} : { timeoutMs: input.timeoutMs }),
-						...(input.maxBytes === undefined ? {} : { maxBytes: input.maxBytes }),
+						...(input.timeoutMs === undefined
+							? {}
+							: { timeoutMs: input.timeoutMs }),
+						...(input.maxBytes === undefined
+							? {}
+							: { maxBytes: input.maxBytes }),
 					});
 					spec = parseOpenApi(loaded.body);
 				} else {
@@ -189,8 +202,18 @@ export const buildApiMockToolRegistration = (
 				for (let i = 0; i < count; i++) {
 					const picked =
 						input.statusCode === undefined
-							? mockHappyPathWithSeed(operation, input.statusCode, randomize, i)
-							: mockResponseForStatusWithSeed(operation, input.statusCode, randomize, i);
+							? mockHappyPathWithSeed(
+									operation,
+									input.statusCode,
+									randomize,
+									i,
+								)
+							: mockResponseForStatusWithSeed(
+									operation,
+									input.statusCode,
+									randomize,
+									i,
+								);
 					if (picked !== undefined) samples.push(picked);
 				}
 				const selected = samples[0] ?? allResponsesRaw[0];
@@ -226,7 +249,11 @@ const mockHappyPathWithSeed = (
 	randomize: boolean,
 	index: number,
 ): IMockedResponse | undefined =>
-	mockHappyPath(operation, { randomize }, { nextSeed: deterministicIndexSeed(operation.operationId, index) });
+	mockHappyPath(
+		operation,
+		{ randomize },
+		{ nextSeed: deterministicIndexSeed(operation.operationId, index) },
+	);
 
 const mockResponseForStatusWithSeed = (
 	operation: IOpenApiOperation,
@@ -234,9 +261,14 @@ const mockResponseForStatusWithSeed = (
 	randomize: boolean,
 	index: number,
 ): IMockedResponse | undefined =>
-	mockResponseForStatus(operation, statusCode, { randomize }, {
-		nextSeed: deterministicIndexSeed(operation.operationId, index),
-	});
+	mockResponseForStatus(
+		operation,
+		statusCode,
+		{ randomize },
+		{
+			nextSeed: deterministicIndexSeed(operation.operationId, index),
+		},
+	);
 
 const deterministicIndexSeed = (operationId: string, index: number) => {
 	let counter = deterministicLabel(operationId, index);

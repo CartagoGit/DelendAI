@@ -22,7 +22,11 @@ interface IFakeTool {
 
 class FakeServer {
 	tools: Record<string, IFakeTool> = {};
-	registerTool(name: string, _desc: unknown, handler: (a: unknown) => Promise<unknown>) {
+	registerTool(
+		name: string,
+		_desc: unknown,
+		handler: (a: unknown) => Promise<unknown>,
+	) {
 		this.tools[name] = { name, handler };
 	}
 }
@@ -51,7 +55,10 @@ const fixtureSpec = {
 									type: 'object',
 									properties: {
 										id: { type: 'integer' },
-										email: { type: 'string', format: 'email' },
+										email: {
+											type: 'string',
+											format: 'email',
+										},
 									},
 									required: ['id', 'email'],
 								},
@@ -88,7 +95,8 @@ const mount = (options: Parameters<typeof buildApiMockToolRegistration>[0]) => {
 	const registration = buildApiMockToolRegistration(options);
 	const server = new FakeServer();
 	void registration.register(server as never);
-	const handler = server.tools[`${options.namespacePrefix}_api_mock`]?.handler;
+	const handler =
+		server.tools[`${options.namespacePrefix}_api_mock`]?.handler;
 	if (handler === undefined) {
 		throw new Error('api_mock tool not registered');
 	}
@@ -98,7 +106,9 @@ const mount = (options: Parameters<typeof buildApiMockToolRegistration>[0]) => {
 describe('api_mock tool (f00130 S3)', () => {
 	it('registers under the namespace prefix', () => {
 		const server = new FakeServer();
-		const registration = buildApiMockToolRegistration({ namespacePrefix: 'api' });
+		const registration = buildApiMockToolRegistration({
+			namespacePrefix: 'api',
+		});
 		void registration.register(server as never);
 		expect(Object.keys(server.tools)).toEqual(['api_api_mock']);
 	});
@@ -106,12 +116,19 @@ describe('api_mock tool (f00130 S3)', () => {
 	it('generates a happy-path mock for the first 2xx response', async () => {
 		const handler = mount({
 			namespacePrefix: 'api',
-			specFetch: async () => ({ body: JSON.stringify(fixtureSpec) }),
 		});
-		const body = await parseBody(handler({}));
+		const body = await parseBody(
+			handler({
+				operationId: 'getUser',
+				spec: JSON.parse(JSON.stringify(fixtureSpec)),
+			}),
+		);
 		expect(body['ok']).toBe(true);
 		expect(body['selectedStatus']).toBe('200');
-		const selectedBody = body['selectedBody'] as { id: number; email: string };
+		const selectedBody = body['selectedBody'] as {
+			id: number;
+			email: string;
+		};
 		expect(typeof selectedBody.id).toBe('number');
 		expect(selectedBody.email).toMatch(/@example\.com/);
 	});
@@ -119,10 +136,13 @@ describe('api_mock tool (f00130 S3)', () => {
 	it('generates a statusCode-pinned mock when statusCode is supplied', async () => {
 		const handler = mount({
 			namespacePrefix: 'api',
-			specFetch: async () => ({ body: JSON.stringify(fixtureSpec) }),
 		});
 		const body = await parseBody(
-			handler({ operationId: 'getUser', statusCode: 404 }),
+			handler({
+				operationId: 'getUser',
+				statusCode: 404,
+				spec: JSON.parse(JSON.stringify(fixtureSpec)),
+			}),
 		);
 		expect(body['selectedStatus']).toBe('404');
 		const sel = body['selectedBody'] as { message: string };
@@ -140,9 +160,13 @@ describe('api_mock tool (f00130 S3)', () => {
 	it('returns an operation-not-found envelope for unknown operationId', async () => {
 		const handler = mount({
 			namespacePrefix: 'api',
-			specFetch: async () => ({ body: JSON.stringify(fixtureSpec) }),
 		});
-		const body = await parseBody(handler({ operationId: 'unknown' }));
+		const body = await parseBody(
+			handler({
+				operationId: 'unknown',
+				spec: JSON.parse(JSON.stringify(fixtureSpec)),
+			}),
+		);
 		expect(body['error']).toEqual(
 			expect.objectContaining({ reason: 'operation-not-found' }),
 		);
@@ -151,9 +175,10 @@ describe('api_mock tool (f00130 S3)', () => {
 	it('returns an invalid-arguments envelope when neither operationId nor method+path is given', async () => {
 		const handler = mount({
 			namespacePrefix: 'api',
-			specFetch: async () => ({ body: JSON.stringify(fixtureSpec) }),
 		});
-		const body = await parseBody(handler({}));
+		const body = await parseBody(
+			handler({ spec: JSON.parse(JSON.stringify(fixtureSpec)) }),
+		);
 		expect(body['error']).toEqual(
 			expect.objectContaining({ reason: 'invalid-arguments' }),
 		);
@@ -165,10 +190,15 @@ describe('api_mock tool (f00130 S3)', () => {
 			specFetch: async () => ({ body: 'unused' }),
 		});
 		const body = await parseBody(
-			handler({ operationId: 'getUser', specUrl: 'https://api.example.com/openapi.json' }),
+			handler({
+				operationId: 'getUser',
+				specUrl: 'https://api.example.com/openapi.json',
+			}),
 		);
 		expect(body['error']).toEqual(
-			expect.objectContaining({ reason: expect.stringMatching(/allowList/i) }),
+			expect.objectContaining({
+				reason: expect.stringMatching(/allowList/i),
+			}),
 		);
 	});
 
@@ -189,9 +219,14 @@ describe('api_mock tool (f00130 S3)', () => {
 	it('returns N distinct samples when count > 1', async () => {
 		const handler = mount({
 			namespacePrefix: 'api',
-			specFetch: async () => ({ body: JSON.stringify(fixtureSpec) }),
 		});
-		const body = await parseBody(handler({ operationId: 'getUser', count: 3 }));
+		const body = await parseBody(
+			handler({
+				operationId: 'getUser',
+				count: 3,
+				spec: JSON.parse(JSON.stringify(fixtureSpec)),
+			}),
+		);
 		expect(body['count']).toBe(3);
 		const allResponses = body['allResponses'] as Array<{ status: string }>;
 		expect(allResponses).toHaveLength(2);
