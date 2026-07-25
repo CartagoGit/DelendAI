@@ -13,6 +13,7 @@
 import { definePlugin } from '@mcp-vertex/core/public';
 import { z } from 'zod';
 
+import { buildDatabaseQueryToolRegistrations } from './lib/tools/db-query.tool';
 import { buildDatabaseSchemaToolRegistrations } from './lib/tools/db-schema.tool';
 
 const OptionsSchema = z.object({
@@ -34,10 +35,20 @@ export default definePlugin({
 		}
 		const opts = parsed.data;
 		return {
-			tools: buildDatabaseSchemaToolRegistrations({
-				namespacePrefix: ctx.namespacePrefix,
-				...(opts.resolveDsn !== undefined ? { resolveDsn: opts.resolveDsn } : {}),
-			}),
+			tools: [
+				...buildDatabaseSchemaToolRegistrations({
+					namespacePrefix: ctx.namespacePrefix,
+					...(opts.resolveDsn !== undefined
+						? { resolveDsn: opts.resolveDsn }
+						: {}),
+				}),
+				...buildDatabaseQueryToolRegistrations({
+					namespacePrefix: ctx.namespacePrefix,
+					...(opts.resolveDsn !== undefined
+						? { resolveDsn: opts.resolveDsn }
+						: {}),
+				}),
+			],
 		};
 	},
 });
