@@ -1,10 +1,9 @@
 /**
- * close-slice-validation.spec.ts — a00069 S5.
+ * close-slice-validation.spec.ts — a00072 S5.
  *
- * `close_slice` must refuse to flip a slice to done when the slice's
- * gate/acceptance demands `bun run validate` (or the host's
- * `validationCommand`) and that command is red. Lightweight gates
- * (`none` / `lint`) skip the shell-out so docs-only slices stay cheap.
+ * `close_slice` now requires recent validate evidence (inline or from
+ * validate.jsonl) before it flips a slice to done. The old shell-out
+ * helper remains unit-tested separately because hosts may still reuse it.
  */
 import {
 	mkdirSync,
@@ -41,6 +40,16 @@ const capture = async (
 
 const parse = (r: { content: Array<{ text: string }> }): any =>
 	JSON.parse(r.content[0]?.text ?? '{}');
+
+const recentValidate = () => ({
+	timestamp: new Date().toISOString(),
+	exitCode: 0,
+});
+
+const staleValidate = () => ({
+	timestamp: new Date(Date.now() - 25 * 60 * 60 * 1000).toISOString(),
+	exitCode: 0,
+});
 
 const writeProposal = (
 	opts: IAuthoringToolOptions,
@@ -150,6 +159,19 @@ describe('close_slice validation gate (a00069 S5)', () => {
 		rmSync(root, { recursive: true, force: true });
 	});
 
+	const writeValidateLog = (entries: readonly Record<string, unknown>[]) => {
+		const logPath = join(
+			root,
+			'.cache/mcp-vertex/results/logs/validate.jsonl',
+		);
+		mkdirSync(join(logPath, '..'), { recursive: true });
+		writeFileSync(
+			logPath,
+			`${entries.map((entry) => JSON.stringify(entry)).join('\n')}\n`,
+			'utf8',
+		);
+	};
+
 	const docWithGate = (gate: string): string => `---
 id: f00001
 kind: feat
@@ -166,53 +188,86 @@ status: in-progress
 - **Gate**: ${gate}
 `;
 
-	it('refuses to close when validation fails and leaves status pending', async () => {
+	it('refuses to close without validate evidence and leaves status pending', async () => {
 		const abs = writeProposal(
 			opts,
 			'in-progress/f00001-fixture.md',
 			docWithGate('bun run validate'),
 		);
 		const close = await capture(
-			buildCloseSliceRegistration({
-				...opts,
-				runValidation: async () => ({
-					ok: false,
-					exitCode: 1,
-					output: '1 failed test',
-				}),
-			}),
+			buildCloseSliceRegistration(opts),
 		);
 		const result = parse(
 			await close({ proposalId: 'f00001', sliceId: 'S1' }),
 		);
 		expect(result.ok).toBe(false);
-		expect(result.kind ?? result.error?.kind ?? '').toMatch(
-			/validation-error/i,
-		);
-		expect(result.error?.reason ?? '').toMatch(
-			/validation-error|exited 1/i,
-		);
+		expect(result.blockerType).toBe('validate-required');
+		expect(result.error?.reason ?? '').toMatch(/validate evidence/i);
 		const body = readFileSync(abs, 'utf8');
 		expect(body).toContain('**Status**: pending');
 		expect(body).not.toMatch(/\*\*Status\*\*:\s*done/i);
 	});
 
-	it('closes when validation passes', async () => {
+	it('closes when inline validate evidence is recent', async () => {
 		const abs = writeProposal(
 			opts,
 			'in-progress/f00001-fixture.md',
 			docWithGate('type'),
 		);
-		const close = await capture(
-			buildCloseSliceRegistration({
-				...opts,
-				runValidation: async () => ({
-					ok: true,
-					exitCode: 0,
-					output: 'ok',
-				}),
+		const close = await capture(buildCloseSliceRegistration(opts));
+		const result = parse(
+			await close({
+				proposalId: 'f00001',
+				sliceId: 'S1',
+				validateEvidence: recentValidate(),
 			}),
 		);
+		expect(result.ok).toBe(true);
+		expect(result.closed).toBe(true);
+		const body = readFileSync(abs, 'utf8');
+		expect(body).toMatch(/\*\*Status\*\*:\s*done/i);
+	});
+
+	it('refuses stale inline validate evidence', async () => {
+		const abs = writeProposal(
+			opts,
+			'in-progress/f00001-fixture.md',
+			docWithGate('lint'),
+		);
+		const close = await capture(buildCloseSliceRegistration(opts));
+		const result = parse(
+			await close({
+				proposalId: 'f00001',
+				sliceId: 'S1',
+				validateEvidence: staleValidate(),
+			}),
+		);
+		expect(result.ok).toBe(false);
+		expect(result.blockerType).toBe('validate-required');
+		const body = readFileSync(abs, 'utf8');
+		expect(body).toMatch(/\*\*Status\*\*:\s*pending/i);
+	});
+
+	it('reads the most recent passing validate entry from disk and skips malformed lines', async () => {
+		const abs = writeProposal(
+			opts,
+			'in-progress/f00001-fixture.md',
+			docWithGate('lint'),
+		);
+		writeValidateLog([
+			{ invalid: 'yes' },
+			{
+				ts: new Date(Date.now() - 26 * 60 * 60 * 1000).toISOString(),
+				result: 'pass',
+				exitCode: 0,
+			},
+			{
+				ts: new Date().toISOString(),
+				result: 'pass',
+				exitCode: 0,
+			},
+		]);
+		const close = await capture(buildCloseSliceRegistration(opts));
 		const result = parse(
 			await close({ proposalId: 'f00001', sliceId: 'S1' }),
 		);
@@ -222,29 +277,18 @@ status: in-progress
 		expect(body).toMatch(/\*\*Status\*\*:\s*done/i);
 	});
 
-	it('skips validation for gate: lint and still closes', async () => {
-		let ran = false;
+	it('force:true bypasses missing validate evidence', async () => {
 		const abs = writeProposal(
 			opts,
 			'in-progress/f00001-fixture.md',
-			docWithGate('lint'),
+			docWithGate('none'),
 		);
-		const close = await capture(
-			buildCloseSliceRegistration({
-				...opts,
-				runValidation: async () => {
-					ran = true;
-					return { ok: false, exitCode: 1, output: 'should not run' };
-				},
-			}),
-		);
+		const close = await capture(buildCloseSliceRegistration(opts));
 		const result = parse(
-			await close({ proposalId: 'f00001', sliceId: 'S1' }),
+			await close({ proposalId: 'f00001', sliceId: 'S1', force: true }),
 		);
-		expect(ran).toBe(false);
 		expect(result.ok).toBe(true);
 		expect(result.closed).toBe(true);
-		const body = readFileSync(abs, 'utf8');
-		expect(body).toMatch(/\*\*Status\*\*:\s*done/i);
+		expect(readFileSync(abs, 'utf8')).toMatch(/\*\*Status\*\*:\s*done/i);
 	});
 });

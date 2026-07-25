@@ -43,9 +43,14 @@ interface TransitionOutput {
 
 const PROPOSALS_RELDIR = 'docs/mcp-vertex/proposals';
 
+const RECENT_VALIDATE = {
+	timestamp: new Date().toISOString(),
+	exitCode: 0,
+};
+
 const callTransition = async (
 	server: IAssembledProposalsServer,
-	args: { id: string; to: string; reason: string },
+	args: { id: string; to: string; reason: string; validateEvidence?: { timestamp: string; exitCode: number; logPath?: string } },
 ): Promise<IAssembledToolResult<TransitionOutput>> =>
 	server.callTool<TransitionOutput>(
 		'mcp-vertex_proposals_proposal_transition',
@@ -142,6 +147,7 @@ describe('e2e: proposals_proposal_transition over the real MCP protocol', async 
 			id: 'f08002',
 			to: 'review',
 			reason: 'ready for review',
+			validateEvidence: RECENT_VALIDATE,
 		});
 		expect(second.structured.ok).toBe(true);
 		expect(second.structured.from).toBe('in-progress');
