@@ -9,6 +9,7 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+	isErrorOutcome,
 	normalizeEvent,
 	serializeRedactedEvent,
 } from '../src/lib/services/normalize-event';
@@ -89,5 +90,20 @@ describe('new event kinds (f00111 S2)', () => {
 		expect(event.kind).toBe('tool-cancelled');
 		expect(event.outcome).toBe('cancelled');
 		expect(event.meta.elapsedMs).toBe(42);
+	});
+});
+
+describe('isErrorOutcome (error-stream routing predicate)', () => {
+	it('excludes ok and idle', () => {
+		expect(isErrorOutcome('ok')).toBe(false);
+		expect(isErrorOutcome('idle')).toBe(false);
+	});
+
+	it('includes every other outcome', () => {
+		expect(isErrorOutcome('failed')).toBe(true);
+		expect(isErrorOutcome('timed-out')).toBe(true);
+		expect(isErrorOutcome('cancelled')).toBe(true);
+		expect(isErrorOutcome('dead')).toBe(true);
+		expect(isErrorOutcome('unknown')).toBe(true);
 	});
 });

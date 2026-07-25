@@ -1,4 +1,4 @@
-import { appendFile, mkdir, readdir, readFile, rm } from 'node:fs/promises';
+import { appendFile, mkdir, readdir, readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
 import { withFileMutex } from '@mcp-vertex/core/public';
@@ -14,10 +14,6 @@ export interface ILogStore {
 	appendEvent(event: ILogEvent): Promise<void>;
 	readRange(filter?: ILogRangeFilter): Promise<readonly ILogEvent[]>;
 	tail(options?: ILogTailOptions): Promise<readonly ILogEvent[]>;
-	gc(options?: {
-		olderThanDays?: number;
-		now?: Date;
-	}): Promise<readonly string[]>;
 }
 
 export interface ILogRangeFilter {
@@ -57,7 +53,20 @@ const matches = (event: ILogEvent, filter: ILogRangeFilter): boolean => {
 	return true;
 };
 
-export const createLogStore = async (logsDir: string): Promise<ILogStore> => {
+export interface ILogStoreOptions {
+	/**
+	 * Per-line byte cap passed to `serializeRedactedEvent`. The default
+	 * (8 KiB) suits the high-volume main timeline; a curated,
+	 * low-volume stream (e.g. the error log) can raise this so a full
+	 * stack trace survives instead of being truncated away.
+	 */
+	readonly maxLineBytes?: number;
+}
+
+export const createLogStore = async (
+	logsDir: string,
+	options: ILogStoreOptions = {},
+): Promise<ILogStore> => {
 	const fileFor = (event: ILogEvent): string =>
 		join(logsDir, `${dayFromTs(event.ts)}.jsonl`);
 
@@ -103,7 +112,7 @@ export const createLogStore = async (logsDir: string): Promise<ILogStore> => {
 				async () => {
 					await appendFile(
 						file,
-						`${serializeRedactedEvent(event)}\n`,
+						`${serializeRedactedEvent(event, options.maxLineBytes)}\n`,
 						'utf8',
 					);
 				},
@@ -128,23 +137,6 @@ export const createLogStore = async (logsDir: string): Promise<ILogStore> => {
 							: true),
 				)
 				.slice(-limit);
-		},
-		async gc(options = {}) {
-			await mkdir(logsDir, { recursive: true });
-			const now = options.now ?? new Date();
-			const olderThanDays = options.olderThanDays ?? 30;
-			const threshold =
-				now.getTime() - olderThanDays * 24 * 60 * 60 * 1000;
-			const removed: string[] = [];
-			for (const name of await readdir(logsDir)) {
-				if (!DATE_RE.test(name)) continue;
-				const date = new Date(name.slice(0, 10));
-				if (date.getTime() >= threshold) continue;
-				const path = join(logsDir, name);
-				await rm(path, { force: true });
-				removed.push(path);
-			}
-			return removed;
 		},
 	};
 };

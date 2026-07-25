@@ -3,9 +3,11 @@ export { createLogStore } from '../lib/services/log-store';
 export type {
 	ILogRangeFilter,
 	ILogStore,
+	ILogStoreOptions,
 	ILogTailOptions,
 } from '../lib/services/log-store';
 export {
+	isErrorOutcome,
 	LOG_OUTCOMES,
 	normalizeEvent,
 	outcomeForKind,
