@@ -30,6 +30,7 @@ export const PLUGIN_DEFAULTS: Readonly<
 	},
 	rules: {},
 	quality: {},
+	refactor: {},
 	forge: {},
 	deps: {
 		manifest: 'package.json',
