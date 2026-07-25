@@ -89,9 +89,21 @@ surfaces a ranked table (CLI + extension). Pure scorer; fully unit-tested.
 
 ### S3 — calibration write-through
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/prompt-eval/src/lib/calibrate/`, `plugins/prompt-eval/README.md`
 - **Gate**: bun run validate
+- implementation:
+  - `lib/calibrate/write-through.ts` maps non-skipped `IEvalAttempt`s into
+    `auto-agent-selector`'s append-only `IOutcomeRecord` log and resolves the
+    exact shared store location under `.cache/mcp-vertex/results/auto-agent-selector`.
+  - `eval_calibrate` persists those records via the same JSONL store S4 reads,
+    then returns the public `{ providerId, winRate, samples }` summary computed
+    from that store. No parallel benchmark DB is introduced.
+  - `README.md` documents the three-tool flow (`eval_run` -> `eval_report` ->
+    `eval_calibrate`) and the write-through contract.
+  - 6 S3 tests cover file-format compatibility, S4 summary shape, round-trip
+    integrity, skipped-attempt filtering, tool behavior, and plugin registration
+    exposing the new calibration tool.
 
 Persist win-rates to `auto-agent-selector`'s calibration store so its ranking
 blends measured evidence (its S4). Catalog + wiki; membership in a routing pack.
