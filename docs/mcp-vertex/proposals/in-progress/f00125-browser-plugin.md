@@ -2,7 +2,7 @@
 id: f00125
 kind: feat
 title: browser plugin — Playwright-backed navigation, screenshots, DOM interaction, E2E assertions and accessibility scans
-status: ready
+status: in-progress
 date: 2026-07-23
 track: plugin+browser+verification
 ---
@@ -53,12 +53,29 @@ artifacts to `pluginCacheDir`. Missing Playwright → install hint.
 
 ### S2 — interaction + accessibility scan
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/browser/src/lib/interact/`, `plugins/browser/src/lib/tools/browser-a11y.tool.ts`
 - **Gate**: bun run validate
-
-`browser_click`/`browser_fill`/`browser_assert` and `browser_a11y` (axe) →
-normalized `IFinding`s (r00012). Pure planners; injected driver in tests.
+- implementation:
+  - `iaction-driver.ts` adds `IBrowserActionDriver` (click/fill/assert/runAxe) and a
+    `IFullBrowserDriver` composite; re-uses the S1 `IBrowserDriver` interface from
+    `lib/page/ibrowser-driver.ts` so production drivers implement both halves.
+  - `axe-mapper.ts` normalizes axe-core results to r00012 `IFinding[]` (one finding
+    per affected node, axe impact → scanner-standard severity, `file` is the
+    collapsed element HTML so the CLI/extension renderers show a precise location).
+  - `assertions.ts` converts failed `IAssertOutcome`s to `IFinding[]` (passes are
+    pass-through — no noise on success).
+  - `browser-a11y.tool.ts` registers four tools:
+      - `browser_click`, `browser_fill` → `IInteractionResult`
+      - `browser_assert` → `IFinding[]` (empty = all passed)
+      - `browser_a11y` → `IFinding[]` + per-severity summary + worst band
+  - Every tool probes Playwright when no driver is injected and returns a
+    structured `installHint` error instead of crashing.
+  - 10 unit tests (FakeServer + driver mocks); all 4 browser test files pass
+    (20 tests total: S1 + S2 + probe + page-planner).
+  - `plugins/browser/src/index.ts` wires S1 + S2 with a split driver (inspect
+    half vs interact half) and `plugins/browser/src/public/index.ts` re-exports
+    the S2 surface for plugin-authors/tests.
 
 ### S3 — E2E recipe + rendered-page verification + wiring
 

@@ -1,0 +1,54 @@
+{
+	"name": "@mcp-vertex/browser",
+	"version": "0.1.0",
+	"type": "module",
+	"description": "Playwright-backed browser plugin for @mcp-vertex/core: inspect (S1), interact + a11y (S2), verify-page (S3). Opt-in install; never bundles Chromium.",
+	"author": "Cartago",
+	"license": "BSD-3-Clause",
+	"keywords": [
+		"mcp",
+		"browser",
+		"playwright",
+		"screenshots",
+		"axe",
+		"agent",
+		"ai",
+		"cartago"
+	],
+	"main": "./dist/index.js",
+	"files": [
+		"dist",
+		"README.md",
+		"LICENSE"
+	],
+	"exports": {
+		".": {
+			"@mcp-vertex/source": {
+				"types": "./src/index.ts"
+			},
+			"types": "./dist/index.d.ts",
+			"import": "./dist/index.js"
+		},
+		"./public": {
+			"@mcp-vertex/source": {
+				"types": "./src/public/index.ts"
+			},
+			"types": "./dist/public/index.d.ts",
+			"import": "./dist/public/index.js"
+		}
+	},
+	"scripts": {
+		"build": "tsc -p tsconfig.json",
+		"check": "tsc --noEmit -p tsconfig.json",
+		"test": "vitest run"
+	},
+	"dependencies": {
+		"@mcp-vertex/core": "workspace:*"
+	},
+	"peerDependencies": {
+		"playwright": ">=1.40.0"
+	},
+	"devDependencies": {
+		"typescript": "7.0.2"
+	}
+}
