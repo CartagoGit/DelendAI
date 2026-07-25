@@ -311,6 +311,23 @@
         "@mcp-vertex/core": "^0.1.0",
       },
     },
+    "plugins/forge": {
+      "name": "@mcp-vertex/forge",
+      "version": "0.1.0",
+      "dependencies": {
+        "@modelcontextprotocol/sdk": "^1.29.0",
+        "zod": "^4.4.3",
+      },
+      "devDependencies": {
+        "@mcp-vertex/core": "workspace:*",
+        "@types/bun": "latest",
+        "typescript": "7.0.2",
+        "vitest": "4.1.10",
+      },
+      "peerDependencies": {
+        "@mcp-vertex/core": "^0.1.0",
+      },
+    },
     "plugins/git": {
       "name": "@mcp-vertex/git",
       "version": "0.1.0",
@@ -520,6 +537,7 @@
       "version": "0.1.0",
       "dependencies": {
         "@mcp-vertex/deps": "workspace:*",
+        "@mcp-vertex/web-fetch": "workspace:*",
         "@modelcontextprotocol/sdk": "^1.29.0",
         "zod": "^4.4.3",
       },
@@ -943,6 +961,8 @@
     "@mcp-vertex/example-wordcount": ["@mcp-vertex/example-wordcount@workspace:docs/mcp-vertex/examples/custom-plugin"],
 
     "@mcp-vertex/external-mcps": ["@mcp-vertex/external-mcps@workspace:plugins/external-mcps"],
+
+    "@mcp-vertex/forge": ["@mcp-vertex/forge@workspace:plugins/forge"],
 
     "@mcp-vertex/git": ["@mcp-vertex/git@workspace:plugins/git"],
 
