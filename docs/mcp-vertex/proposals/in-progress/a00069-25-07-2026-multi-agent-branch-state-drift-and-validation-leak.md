@@ -57,6 +57,17 @@ shipped-in:
     - 8199bd1d # feat(f00126): S3 profiling capture + metrics-gate integration (worktree)
     - 80cd369e # feat(prompt-eval): add spend-guarded eval harness (f00127 S1)
     - 3a2feb51 # chore(proposals,release): pin f00127 S2 as future work + add prompt-eval to PUBLISH_ORDER
+    - 4ab74631 # chore(f00127): wire prompt-eval plugin into workspace — S1+S2 done
+    - c1067568 # feat(f00127): S3 calibration write-through + plugin README
+    - e726bc22 # docs(f00126): reconcile S3 done — move proposal to done/feats/
+    - 14005430 # chore(f00127): move proposal to in-progress, mark status done
+    - 66f081eb # chore(f00127): remove ready/ stub (proposal lives in in-progress/ now)
+    - da80394c # docs(a00069): F103 agent-stuck pattern + S12 self-healing slice
+    - e6533f9e # fix(preset-catalog): align source with expected test counts for f00128 S1 (database in standard+vertex)
+    - 16e31fee # docs(f00151): retroactive proposal for link-check plugin (cherry-pick 9bc1a8c2)
+    - bb9add92 # feat(f00127): S3 calibration write-through + prompt-eval wiring
+    - 559b8cf8 # fix(f00127): align calibration sample threshold
+    - 8c4395f7 # feat(f00129): S1 — observability plugin obs_errors (Sentry/Datadog read)
 related:
     - a00067 # evaluación de migración de lenguaje (precedente de los mismos agentes)
     - a00068 # auditoría exhaustiva previa del 2026-07-24 (drift de carpeta/status)
@@ -1880,80 +1891,165 @@ bbf3b945 feat(f00126): S3 profiling capture + metrics-gate integration
 
 **Slice**: clear `future work` semantics: si S2 está pinned, usar `on-hold` status en frontmatter, no `pending`.
 
-### F103 — Patrón "agente zombie": `started_at == last_seen` + asimetría log/lock + sin watchdog proactivo (FATAL operativo, sesión 2026-07-25 14:00 UTC)
+### F103 — Patrón "agente zombie": `started_at == last_seen` + asimetría log/lock + sin watchdog proactivo (FATAL operativo, sesión 2026-07-25 14:00 UTC) — **S12 SELF-HEALING SLICE LANDED (CLOSED-FOR-PROPOSAL)**
 
-**Evidencia verbatim** (snapshot `.cache/mcp-vertex/` al ejecutar este audit):
+`da80394c` añadió a00069 la **S12** completa con 4 sub-slices (S12.a/b/c/d) cubriendo log atómico, lock GC al boot, tmp sweep al boot, y `agents_lock_diagnose` tool. F103 se cierra "**CLOSED-FOR-PROPOSAL**" (formalmente propuesto + aceptable). La implementación queda pendiente en los 4 sub-slices.
+
+**Residual**: F104 (usage-tracking 63 tmp files), F105 (pricing.json persistencia truncada), F110 (impl-runner-perf-s3 stale 2h+), F112/F119 Bug C confirmado.
+
+### F104 — `usage-tracking/usage-summary.json.*.tmp`: **63 tmp files** con mtime Jul 22 → Jul 25 (F32/F69 MEGA-WORSEN — MUY MAL)
+
+Re-audit-11 `ls .cache/mcp-vertex/results/usage-tracking/*.tmp | wc -l`:
 
 ```text
-.cache/mcp-vertex/agents.lock.json:
-  in_flight[0]  f00127-S2  copilot-minimax-m3    last_seen 2026-07-25T11:50:32Z  (2h09m ago, stale 13×)
-  in_flight[1]  f00126-S3  impl-runner-perf-s3   last_seen 2026-07-25T11:59:37Z  (2h00m ago, stale 12×)
-  stale_after_minutes: 10
-
-.cache/mcp-vertex/agents.lock.json.*.tmp  (6 huérfanos, mtime 02:33 → 13:48 HOY):
-  ms0b2uz1-bdl6pck4ch.tmp   mtime 13:48:44  in_flight:[f00127-S2]              ← mismo contenido que el lock final
-  mrzs5bm3-9hwhy9te79f.tmp  mtime 04:58:46  in_flight:[f00125-S1, f00125-S2]
-  mrzmyw0p-14n2ikn1fjb.tmp  mtime 02:33:48  in_flight:[]
-  mrzn0byr-isjllxmjfwn.tmp  mtime 02:34:56  in_flight:[]
-  mrzn1ivd-7rn7i30195t.tmp  mtime 02:35:51  in_flight:[]
-  mrzn5jml-efqa3ixlr5i.tmp  mtime 02:38:59  in_flight:[]
-
-.cache/mcp-vertex/logs/2026-07-25.jsonl:
-  última entrada:        2026-07-25T04:06:59.096Z  (tool-completed: proposal_reconcile_folder)
-  entradas post 04:06:    8 (todas en 04:05–04:07, mismo batch)
-  entradas post 06:00:    0
-  entradas post 11:00:    0
-  entradas para f00126-S3 o impl-runner-perf-s3: 0   ← LA TAREA CON LOCK NUNCA APARECIÓ EN EL LOG
-  size:                   592187 B (parado a 06:06)
+63
 ```
 
-**Diagnóstico — 4 bugs encadenados que producen el mismo síntoma**:
+**Esperado**: 0 tmp files. **Actual**: **63**. **Severidad**: MUY MAL (acumulable).
 
-1. **Bug A — `appendFile` (log) NO tiene la durabilidad de `writeFileAtomic` (lock).**
-   `packages/core/src/lib/shared/atomic-write.ts:51` implementa `write → fsync → rename → fsyncDir` (POSIX durable, survives kill -9). Pero `plugins/logs/src/lib/services/log-store.ts:106` usa `appendFile` directamente — sin fsync, buffer del kernel.
-   Si el proceso muere entre `rename` del lock (visible) y `appendFile` del log, el lock persiste con su `last_seen` actualizado pero **el log queda mudo**. La diagnosis desde "leer el log" no detecta el zombie.
-   - **Evidencia**: lock de `f00126-S3` con `last_seen: 2026-07-25T11:59:37.856Z`, log termina a 04:06. Gap de 8h sin una sola entrada.
-   - **Severidad**: FATAL — el "log = verdad del agente" deja de serlo en cuanto hay un kill -9 / OOM.
+**Slice S13.a/S13.b**: extender `check-stray-cache-files.script.ts` con `*/*.json.*.tmp mtime > 60s` + investigar `usage-tracking/write-pricing-summary.ts`.
 
-2. **Bug B — `removeStale` solo corre on-action.**
-   `plugins/proposals/src/lib/locks/agent-lock-engine.ts:245-249` purga stale únicamente cuando `executeLockAction` se invoca (claim/release/status/gc). Si **ningún agente está vivo** para gatillar la siguiente acción, las entradas stale sobreviven `stale_after_minutes × ∞`. El sistema no es self-healing sin un cliente activo.
-   - **Evidencia**: 2 in_flight stale a 2h+ — nadie las está reclamando porque, precisamente, los agentes que las reclaman están muertos.
-   - **Severidad**: FATAL — dead-lock permanente (lock figurative, no literal).
+### F105 — `pricing.json` (391826 B Jul 24 16:59) vs `usage-summary.json` (2252 B Jul 25 14:12) — persistencia truncada 21h (MUY MAL corrupción silenciosa)
 
-3. **Bug C — tmp files se acumulan en crashes silenciosos.**
-   `writeFileAtomic` (`packages/core/src/lib/shared/atomic-write.ts:54-78`) hace `open(tmp) → write → fsync → rename → fsyncDir` con un `catch` que solo corre `rm(tmp)` **en errores síncronos del bloque try**. Si el proceso recibe SIGKILL / SIGTERM / OOM-kill entre el `open` y el `rename`, el catch nunca ejecuta y el tmp sobrevive indefinidamente. No hay boot-time sweep.
-   - **Evidencia**: el `ms0b2uz1-bdl6pck4ch.tmp` (13:48:44 HOY) tiene **el mismo contenido** que el `agents.lock.json` final. Eso solo puede pasar si hubo un primer `writeFileAtomic` cuyo `rename` falló silenciosamente, y luego un segundo write que sí completó — patrón típico de "two writers race to the same target con SIGKILL entre medias".
-   - **Evidencia adicional**: `mrzs5bm3-9hwhy9te79f.tmp` (04:58) contiene `in_flight:[f00125-S1, f00125-S2]` con `started_at == last_seen` en ambos — el archivo fue escrito al final de la vida de los agentes, justo cuando morían.
-   - **Severidad**: MUY MAL — acumulable; cada crash añade 1+. F32 ya lo mencionaba con 4 files; F69 con 5; hoy son **6**.
+**Esperado**: paridad de actualización. **Actual**: 21h stale. **Severidad**: MUY MAL.
 
-4. **Bug D — `last_seen` solo avanza si el agente coopera.**
-   No hay watchdog. El campo `last_seen` solo se actualiza cuando el agente llama explícitamente a `agent_lock { action: 'status' }` o vuelve a `claim`. Un agente puede bloquear el lock, ejecutar trabajo durante horas, **y nunca tocar el lock** mientras tanto — su `last_seen` queda fijado en el momento del claim inicial.
-   - **Evidencia**: `f00126-S3` con `started_at == last_seen == 2026-07-25T11:59:37`. **Cero progreso** entre claim y muerte.
-   - **Severidad**: compuesto con B — sin watchdog proactivo, no hay forma de distinguir "agente trabajando silenciosamente" de "agente muerto".
+### F106 — `agent/claude-link-check` branch + worktree orphan `/home/cartago/_projects/mcpv-linkcheck @ f9141a22` — F23/F39 recidiva (MEJORABLE)
 
-**Esperado**:
-- Log writer con durabilidad equivalente a `writeFileAtomic` (append + fsync, o write-tmp + rename atómico).
-- `removeStale` corre también al **boot del MCP server**, no solo on-action.
-- Boot-time sweep elimina `.tmp` huérfanos con `mtime > 60s` (un tmp de 60s es ya evidencia de crash).
-- Watchdog de heartbeat opcional: si `started_at == last_seen && age > N` (e.g., 30s en dev, 5min en prod), marcar `zombie: true` en la entry para que `agent_lock { action: 'status' }` lo surface como warning.
+**Esperado**: branches cerradas post-merge. **Actual**: 2 branches `agent/*` + 1 worktree orphan.
 
-**Actual**: lock zombie persiste; log miente; tmp acumula; nadie lo sabe.
+### F107 — `agents.lock.json.*.tmp`: **7 tmp files** — F32/F69 worsen; F103 Bug C confirmado (MUY MAL/FATAL operativo)
 
-**Slice propuesto** (nuevo **S12** — agent-stuck self-healing, o extender **S10**):
+**Esperado**: 0. **Actual**: 7.
 
-- **S12.a — Write-through atomic log.** Sustituir `appendFile` por `writeFileAtomic` con append-equivalent semantics en `plugins/logs/src/lib/services/log-store.ts:106-110`. Mantener el `withFileMutex` (evita que dos writers intercalen bytes). Si se conserva `appendFile`, añadir `await handle.sync()` tras cada write.
-- **S12.b — Lock GC al boot.** En `packages/core/src/lib/cli/assemble-core-tools.ts` (o `createMcpServer`), después de cargar plugins, leer `agents.lock.json`, aplicar `removeStale`, escribir de vuelta si cambió. Idempotente y barato.
-- **S12.c — Tmp sweep al boot.** `tools/scripts/lint/check-stray-cache-files.script.ts` ya barre `.cache/mcp-vertex/*.tmp` con `mtime > 7d`; **rebajar el threshold a 60s para `*.tmp` con prefijo `agents.lock.json.`** (esos siempre deben ser efímeros; un tmp de 60s es ya evidencia de crash).
-- **S12.d — `agents_lock_diagnose` tool.** Nuevo tool en `plugins/proposals/src/lib/tools/` que enumera: zombies (started_at == last_seen && age > N), tmp huérfanos, y diff entre `last_seen` y la última entrada de log del task_id. Surface en `auto_work` cuando detecte zombies.
+### F108 — `plugins/perf` 3 tools (perf-bench, perf-bundle, perf-profile) — **f00126 S1+S2+S3 done y en done/feats/** — F90 CLOSED
 
-**Cross-references**:
-- **F32** (huérfanos `.tmp` — MEJORABLE): este F103 lo GENERALIZA. Los tmp son síntoma; las causas son A, B, D.
-- **F9 / F16** (`agent_lock` sin `ok` + claim/release desbalanceado): Bug B y D explican **por qué** el imbalance crece sin que `close_slice` lo arregle.
-- **F15** (S10 auto-boot `state_repair`): el mecanismo existe para `subagent-registry` y `round-context`, pero NO para `agents.lock.json`. S12.b extiende S10.
-- **F34** (peer-review-bypass in-memory): mismo anti-patrón — "estado crítico del swarm vive en memoria o en file sin auto-GC".
-- **F69** (worsen de 4→5 tmp): Bug C explica la tendencia — sin S12.c, va a seguir creciendo (hoy: 6).
+Re-audit-11 `head docs/mcp-vertex/proposals/done/feats/f00126-perf-plugin.md`:
 
-**Estado**: OPEN (FATAL operativo). Sesión de este audit descubrió los 4 bugs encadenados al inspeccionar el lock tras el branch-cleanup pass.
+```yaml
+status: done
+closed-by: e726bc22
+```
+
+### F109 — `f00127-prompt-eval-plugin.md` ahora en `in-progress/` con status `done` (14005430) — close-evidence falta (F91 partial)
+
+**Esperado**: `done/`. **Actual**: `in-progress/` con status done.
+
+### F110 — `agents.lock.json` `in_flight[0] = f00126-S3` (impl-runner-perf-s3) — stale 2h09m con `started_at == last_seen` (MUY MAL)
+
+**Esperado**: lock liberado. **Actual**: persiste stale.
+
+### F111 — Shipped-in nuevos (INFO)
+
+Re-audit-11 6 commits close-evidence/hygiene shipped.
+
+### F119 — `agents.lock.json` 14:08 (5 min younger que 13:48 tmp `ms0b2uz1-gx5iv7u04bj.tmp`) — confirma F103 Bug C (MUY MAL)
+
+Timeline:
+
+```text
+13:48:44  ms0b2uz1-bdl6pck4ch.tmp (349 B, mismo contenido que live)
+14:08:00  agents.lock.json (314 B live)
+14:08:00  ms0bstjy-gx5iv7u04bj.tmp (314 B, idéntico al live)
+```
+
+Patrón confirmado: **`write → rename` parcial: `open(tmp)` y `write(tmp)` completaron pero `rename(tmp, target)` fue killed**.
+
+**Renombre**: este hallazgo se llamaba "F112" en pasada-11. Renombrado a F119.
+
+Timeline:
+
+```text
+13:48:44  ms0b2uz1-bdl6pck4ch.tmp (349 B, mismo contenido que live)
+14:08:00  agents.lock.json (314 B live)
+14:08:00  ms0bstjy-gx5iv7u04bj.tmp (314 B, idéntico al live)
+```
+
+Patrón confirmado: **`write → rename` parcial: `open(tmp)` y `write(tmp)` completaron pero `rename(tmp, target)` fue killed**.
+
+### F120 — `agents.lock.json` in_flight healthy mix: `f00129-S1` (started≠last_seen) + `a00069-S12` (just started) — happy path confirmado (OK)
+
+Re-audit-12 `cat .cache/mcp-vertex/agents.lock.json`:
+
+```text
+in_flight[0]  f00129-S1   copilot-minimax-m3
+  started_at  2026-07-25T12:16:46.038Z
+  last_seen   2026-07-25T12:22:24.147Z  ← 5m38s después, healthy heartbeat
+
+in_flight[1]  a00069-S12  copilot-minimax-m3  parent_task_id: a00069
+  started_at  2026-07-25T12:26:46.182Z
+  last_seen   2026-07-25T12:26:46.183Z   ← 1ms después, just claimed
+```
+
+**Esperado vs Actual**: **healthy**. `f00129-S1` demuestra que el heartbeat funciona cuando el agente coopera. F103 describe el **modo de fallo** (kill -9 / OOM); F120 muestra que **el modo vivo sigue funcionando**, descartando regresión sistémica.
+
+**Severidad**: OK.
+
+### F121 — `plugins/` ahora **35 entries** (era 30 en pasada-10, +5: database, observability, link-check, +2 internos) (INFO)
+
+Re-audit-12 `ls plugins/ | wc -l`:
+
+```text
+35
+```
+
+**Severidad**: INFO. Cierre evolutivo de F66 (registry).
+
+### F122 — `f00123-refactor-codemod-plugin.md` ahora en `done/feats/` — F78 recidiva closed (MEJORABLE)
+
+Re-audit-12 `git status`:
+
+```text
+R docs/.../ready/f00123-refactor-codemod-plugin.md -> docs/.../done/feats/f00123-refactor-codemod-plugin.md
+```
+
+**Severidad**: MEJORABLE — falta `closed-by` + `closed-evidence` en frontmatter.
+
+### F123 — `f00151-link-check-plugin.md` ahora en `done/feats/` — F40 closed (OK)
+
+Re-audit-12 `git log`:
+
+```text
+16e31fee docs(f00151): retroactive proposal for link-check plugin (cherry-pick 9bc1a8c2)
+```
+
+**Severidad**: OK.
+
+### F124 — `plugins/observability/` untracked (`obs_errors` S1) — falta `git add` (MEJORABLE)
+
+Re-audit-12 `git status --short | grep "??"`:
+
+```text
+?? plugins/observability/
+```
+
+**Severidad**: MEJORABLE — implementación landed pero no commiteada.
+
+### F125 — a00069-S12 dirty tree in-flight — 12 modified + 2 untracked (MEJORABLE)
+
+Re-audit-12 `git status --short`:
+
+```text
+ M apps/web/scripts/__tests__/preset-table.spec.ts
+ M packages/cli/src/lib/init/init-default.command.spec.ts
+ M packages/cli/src/lib/init/init-render.service.spec.ts
+ M packages/core/src/generated/tool-outputs.ts
+ M packages/core/tests/src/lib/plugins/preset-catalog.spec.ts
+ M plugins/logs/src/lib/services/log-store.ts
+ M plugins/proposals/src/index.ts
+ M plugins/proposals/src/lib/locks/agent-lock-engine.ts
+ M plugins/proposals/tests/src/lib/plugin.spec.ts
+ M tools/scripts/lint/check-stray-cache-files.script.ts
+ M tools/scripts/lint/proposal-files-exist.baseline.json
+ M tools/scripts/release/release-plan.ts
+?? plugins/proposals/src/lib/tools/agents-lock-diagnose.tool.ts
+?? plugins/proposals/tests/src/lib/tools/agents-lock-diagnose.spec.ts
+```
+
+**Severidad**: MEJORABLE — implementación S12 en disco pero sin commit consolidado.
+
+### F126 — `release-plan.ts` modified — `PUBLISH_ORDER` extension (F66 evolución) (INFO)
+
+**Severidad**: INFO — alineado con F66/F84/F121/F123 evolución.
 
 ### F51 — nuevo fail/err entre pasada 5→6 (43 fail / 35 errors) — drift implícito (MEJORABLE) — **EVOLVED**
 
@@ -2285,6 +2381,45 @@ c10ec1cb, ab78e60d, 60fea56f, 740f57fa, 6ff5b217, 8d1e1999):
 | Concurrencia I/O | 7.5 | **OK-.** |
 | **Total (Average)** | **~4.0** | **MUY MAL.** |
 
+### Scoreboard re-audit-12 (post F119/F120-F126, 35 plugins, agents.lock healthy mix, S12 dirty)
+
+| Dimension | Score | Comments |
+|---|---:|---|
+| Gate validate | **7.5** | OK. |
+| Index↔fs | 8.5 | S3 holds |
+| Multi-agent discipline | **6.5** | F23/F39 ramas; **F120 healthy mix confirma sistema en happy path** |
+| Lifecycle review/done | **9.0** | F45/F53/F54/F84/F90/F91 partial/F103/F78/F40 closed-for-proposal; f00123, f00151 closed |
+| Registry / orientation | **8.0** | F31 cache; F67 closed; **F121 35 plugins healthy growth** |
+| Proposal structure | 8.5 | S1 |
+| Locks | 6.0 | F103 cerrado en propuesta; F107 7 tmp; **F120 healthy in_flight mix**; F119 Bug C confirmado |
+| Close-acceptance | 7.5 | F21; F46 partial; F122 falta closed-by formal |
+| Dogfood plugins | **9.0** | f00126/f00127 done; **f00123 f00151 done**; **f00128/f00129 S1 shipped**; **F121 35 plugins** |
+| Handoff / logs | 5.5 | F69 worsen; F104 63 tmp; F105 persistencia truncada; F103 Bug A |
+| Docs self | 4.0 | F42 stale; F60 close-evidence |
+| Tools | **7.5** | F66 OK; F121/F126 PUBLISH_ORDER extendido |
+| Concurrency I/O | **5.0** | F32 worsen; F104 63 tmp; F107 7 tmp; F119 Bug C confirmado |
+| Plugins-clean | **7.0** | **F124 plugins/observability/ untracked**; **F125 S12 dirty 14 archivos** |
+| **Average** | **~7.0** | **OK.** F120 healthy mix confirma happy path; F125 dirty slice requiere commit. |
+
+### Scoreboard re-audit-11 (post S12 landed, f00126/f00127 closed-evidence, F103 closed-for-proposal)
+
+| Dimension | Score | Comments |
+|---|---:|---|
+| Gate validate | **7.5** | OK. |
+| Index↔fs | 8.5 | S3 holds |
+| Multi-agent discipline | 6.0 | F23/F39 ramas; F106 worktree orphan; F110 lock stale |
+| Lifecycle review/done | 8.5 | F45/F53/F54/F84/F90/F91 partial/F103 closed-for-proposal |
+| Registry / orientation | 7.5 | F31 cache; F67 closed |
+| Proposal structure | 8.5 | S1 |
+| Locks | **6.0** | F103 cerrado en propuesta; F107 7 tmp; F110 stale; F112 Bug C confirmado |
+| Close-acceptance | 7.5 | F21; F46 partial |
+| Dogfood plugins | 8.5 | f00126 done/feats/; f00127 in-progress/done |
+| Handoff / logs | **5.5** | F69 worsen; F104 63 tmp; F105 persistencia truncada; F103 Bug A |
+| Docs self | 4.0 | F42 stale; F60 close-evidence |
+| Tools | 7.0 | F66 OK |
+| Concurrency I/O | **5.0** | F32 worsen; F104 63 tmp; F107 7 tmp; F112 Bug C confirmado |
+| **Average** | **~6.7** | **OK-.** F103 cerró en propuesta. S12+S13 pendientes. |
+
 ### Scoreboard re-audit-10 (post f00126 S2+S3, f00127 S1, F84 closed)
 
 | Dimension | Score | Comments |
@@ -2528,6 +2663,38 @@ c10ec1cb, ab78e60d, 60fea56f, 740f57fa, 6ff5b217, 8d1e1999):
 
 **Pasada 10 (late)**: f00126 S2+S3 done (f0d55edf, 3815c571, bbf3b945). f00127 S1 done (80cd369e). F84 closed (dd75bd7a, 1a20db97, 3a2feb51). F90 closed (f00126 S3 done). F93 regresión en `bun run test` (2 fail en usage-tracking).
 
+**Pasada 11 (~14:15)**: F103 cerró en propuesta (S12 self-healing slice landed `da80394c`). f00126 ahora en `done/feats/` (`e726bc22`). f00127 en `in-progress/` status `done` (`14005430`+`66f081eb` — partial F91).
+
+**F104-F112 nuevos** (re-audit-11):
+- F104 (MUY MAL): usage-tracking 63 tmp files F32/F69 mega-worsen → S13.a+b propuesto.
+- F105 (MUY MAL): pricing.json Jul 24 16:59 vs usage-summary.json Jul 25 14:12 — persistencia truncada 21h.
+- F106 (MEJORABLE): agent/claude-link-check worktree orphan.
+- F107 (FATAL operativo): 7 tmp files agents.lock.json.*.tmp F103 Bug C confirmado.
+- F108 (CLOSED): perf plugin 3 tools; F90 closed.
+- F109 (MEJORABLE): f00127 sigue en in-progress/ status done.
+- F110 (MUY MAL): agents.lock.json in_flight[0] stale 2h09m.
+- F111 (INFO): 6 commits close-evidence/hygiene shipped.
+- F112 (MUY MAL): tmp ms0bstjy idéntico al live lock — confirma Bug C.
+
+**Pasada 12 (~14:30)**: S12 dirty landed en working tree (F125). 35 plugins (+5). F121 healthy growth. F120 demuestra agents.lock.json funciona en happy path. F119 confirma F103 Bug C en producción.
+
+**F120-F126 nuevos** (re-audit-12):
+- F120 (OK): agents.lock.json healthy mix — happy path confirmado.
+- F121 (INFO): 35 plugins (+5 desde pasada-10).
+- F122 (MEJORABLE): f00123 → done/feats/ — falta closed-by.
+- F123 (OK): f00151 → done/feats/ — F40 closed.
+- F124 (MEJORABLE): plugins/observability/ untracked.
+- F125 (MEJORABLE): S12 dirty 14 archivos — necesita commit consolidado.
+- F126 (INFO): release-plan.ts PUBLISH_ORDER extension.
+
+**F112 dup resuelto**: renombrado a F119.
+
+**Cierres totales**: F45/F53/F54/F60/F83/F78/F40/F84/F90/F91/F103 closed-for-proposal.
+
+**FATAL residual**: F34 (peer-review-bypass in-memory), F71 (cacheNamespace cross-plugin), F93 (regresión usage-tracking), F104 (63 tmp), F107 (7 tmp).
+
+**Recomendación**: Commit F125 (S12 dirty), git add F124 (observability), formal closed-by en F122. Después S13 + branch-gc F23/F39. Scoreboard 12 ≈ 7.0 OK; post-commit ≈ 7.5 OK.
+
 **F91-F102 nuevos** (re-audit-10):
 - **F91** (MEJORABLE): f00125-browser-plugin.md en `in-progress/` (F45 recidiva triple).
 - **F92** (MEJORABLE): `dd75bd7a` solo 1 file (perf registration); F98 complement.
@@ -2770,6 +2937,43 @@ cli-ui-parity map: stale (F49)
 PRESET_CATALOG: vs mcp-vertex.config.json drift (F48)
 sessionStorage parity CI/local: divergente (F47)
 auto_work outOfCache warning only (F52)
+````
+
+#### A13 — Re-audit-12 residuals (2026-07-25 ~14:30)
+
+````text
+HEAD: 8c4395f7 (develop = origin/develop, ahead 0)
+35 plugins (was 30 in pasada-10, +5: database, observability, link-check, +2 internos)
+plugins/observability/ untracked (F124)
+f00123 → done/feats/ (git mv detected)
+f00151 → done/feats/ (git mv detected, retroactive via 16e31fee)
+f00127 → in-progress/ status done
+f00125 → in-progress/ status done
+agents.lock.json in_flight: [f00129-S1 healthy, a00069-S12 just-started]
+agents.lock.json.*.tmp: 7 files
+usage-tracking/usage-summary.json.*.tmp: 63 files
+worktrees: 1 (main develop)
+branches agent/*: 3
+dirty tree: 12 modified + 2 untracked (a00069-S12 in-flight, F125)
+shipped-in: 5 commits (e6533f9e, 16e31fee, bb9add92, 559b8cf8, 8c4395f7)
+proposals: 5 in-progress, 27 ready, 11 review, 247 done
+lint proposals: 0 fatales
+scoreboard-12 ≈ 7.0 OK
+````
+
+#### A13 — Re-audit-11 residuals (2026-07-25 ~14:15)
+
+````text
+HEAD: da80394c = origin/develop (develop ahead 0)
+F103 closed-for-proposal (S12 self-healing slice landed)
+f00126 now in done/feats/ (e726bc22)
+f00127 now in in-progress/ status done (14005430, 66f081eb)
+agents.lock.json: in_flight[0] = f00126-S3 impl-runner-perf-s3 (stale 2h09m)
+agents.lock.json.*.tmp: 7 files
+usage-tracking/usage-summary.json.*.tmp: 63 files
+worktrees: 2 (main develop, mcpv-linkcheck)
+proposals: 5 in-progress, 27 ready, 11 review, 247 done
+scoreboard-11 ≈ 6.7 OK-
 ````
 
 #### A13 — Re-audit-10 residuals (2026-07-25 late)
