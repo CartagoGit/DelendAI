@@ -109,20 +109,22 @@ describe('a00069 S10 auto state_repair on boot', () => {
 	});
 
 	it('runAutoStateRepairOnBoot logs state-repair-auto and heals', async () => {
-		runAutoStateRepairOnBoot(opts());
-		await waitUntil(async () => {
-			const reg = JSON.parse(await readFile(registryPath, 'utf8')) as {
-				assignments: unknown[];
-			};
-			return reg.assignments.length === 0;
-		});
+		// a00069 S10: the function returns the pending promise so tests can
+		// await it deterministically (no vi.waitFor — bun test has no
+		// vi.waitFor under the vitest shim). The boot path still fires it
+		// without awaiting by ignoring the returned promise.
+		await runAutoStateRepairOnBoot(opts());
+		const reg = JSON.parse(await readFile(registryPath, 'utf8')) as {
+			assignments: unknown[];
+		};
+		expect(reg.assignments).toHaveLength(0);
 		const autoLines = infoSpy.mock.calls
 			.map((c: unknown[]) => String(c[0] ?? ''))
 			.filter((s: string) => s.includes('state-repair-auto'));
 		expect(autoLines.length).toBeGreaterThan(0);
 		const payload = JSON.parse(autoLines[0] as string) as {
 			event: string;
-			orphanAssignments: number;
+			orphanAssignments?: number;
 		};
 		expect(payload.event).toBe('state-repair-auto');
 		expect(payload.orphanAssignments).toBeGreaterThan(0);
