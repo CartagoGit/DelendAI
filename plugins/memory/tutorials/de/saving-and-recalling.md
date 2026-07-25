@@ -99,7 +99,7 @@ The id is gone; the title is freed for a future `memory_save`.
 
 ## Next step
 
-- [How round_context (proposals) links memory notes to active proposals](../../proposals/tutorials/en/getting-started.md)
+- [How round_context (proposals) links memory notes to active proposals](../../../proposals/tutorials/en/getting-started.md)
 - [Secrets redaction contract](https://github.com/CartagoGit/mcp-vertex/blob/main/packages/core/src/lib/shared/redact.ts)
 
 

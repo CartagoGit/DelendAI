@@ -226,7 +226,7 @@ Status: shipped in commit `0d28715` (merged to develop via `77302d3`).
 |---|---|---|---|---|
 | H1 | P0 | `auto_work` returns `stuck-detected: true` after 3 no-args calls even when the cascade has a real next-proposal, trapping the orchestrator in a stop state. | [auto-work.tool.ts:116](file:///home/cartago/_projects/mcp-vertex/plugins/proposals/src/lib/tools/auto-work.tool.ts) | Resolved in this session (S3). |
 | H2 | P0 | Full test suite fails (3 specs) due to shared `process.cwd()`-relative `.cache/mcp-vertex/` resolution in `silence-console-setup.ts` + `agent-events-bridge`. | [silence-console-setup.ts](file:///home/cartago/_projects/mcp-vertex/tools/scripts/lib/silence-console-setup.ts), [agent-events-bridge.ts](file:///home/cartago/_projects/mcp-vertex/plugins/notification/src/lib/agent-events-bridge.ts) | Resolved in this session (S1+S2). |
-| H3 | P2 | `AGENTS.md` does not document the recovery contract for `auto_work → stuck-detected`. | [AGENTS.md](../AGENTS.md) | Resolved in this session (S4). |
+| H3 | P2 | `AGENTS.md` does not document the recovery contract for `auto_work → stuck-detected`. | [AGENTS.md](../../../../../AGENTS.md) | Resolved in this session (S4). |
 
 ## scoreboard
 

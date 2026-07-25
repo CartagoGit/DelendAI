@@ -93,7 +93,7 @@ concurrencia, scan de invariantes, scoreboard y recomendaciones accionables.
 
 ### 1. [P0] VS Code spawnea comando del workspace en activate sin Workspace Trust
 
-**File**: [`extensions/vscode/package.json#L21`](extensions/vscode/package.json#L21) · [`extensions/vscode/src/extension.ts#L208`](extensions/vscode/src/extension.ts#L208) · [`#L666`](extensions/vscode/src/extension.ts#L666)
+**File**: [`extensions/vscode/package.json#L21`](../../../../extensions/vscode/package.json#L21) · [`extensions/vscode/src/extension.ts#L208`](../../../../extensions/vscode/src/extension.ts#L208) · [`#L666`](../../../../extensions/vscode/src/extension.ts#L666)
 
 ```json
 "activationEvents": ["workspaceContains:**/mcp-vertex.config.json"]
@@ -112,7 +112,7 @@ con huella. Repo malicioso = RCE al abrir.
 
 ### 2. [P0] external-mcps: spawn sin env mínimo filtrado
 
-**File**: [`plugins/external-mcps/src/lib/subprocess/server-registry.ts#L83`](plugins/external-mcps/src/lib/subprocess/server-registry.ts#L83) · [`#L161`](plugins/external-mcps/src/lib/subprocess/server-registry.ts#L161)
+**File**: [`plugins/external-mcps/src/lib/subprocess/server-registry.ts#L83`](../../../../plugins/external-mcps/src/lib/subprocess/server-registry.ts#L83) · [`#L161`](../../../../plugins/external-mcps/src/lib/subprocess/server-registry.ts#L161)
 
 ```typescript
 const child = spawn(command, [...args], {
@@ -130,7 +130,7 @@ const child = spawn(command, [...args], {
 
 ### 3. [P1] npm publish path no reescribe `workspace:*`
 
-**File**: [`tools/scripts/release/release.script.ts#L17`](tools/scripts/release/release.script.ts#L17) · [`#L194`](tools/scripts/release/release.script.ts#L194) · [`tools/scripts/smoke/pack.script.ts#L127`](tools/scripts/smoke/pack.script.ts#L127)
+**File**: [`tools/scripts/release/release.script.ts#L17`](../../../../tools/scripts/release/release.script.ts#L17) · [`#L194`](../../../../tools/scripts/release/release.script.ts#L194) · [`tools/scripts/smoke/pack.script.ts#L127`](../../../../tools/scripts/smoke/pack.script.ts#L127)
 
 **Problem**: Driver documenta el hueco; `publishAll` solo ejecuta publish;
 smoke sí reescribe temporalmente → falsa señal verde.
@@ -141,7 +141,7 @@ smoke sí reescribe temporalmente → falsa señal verde.
 
 ### 4. [P1] CSP `script-src 'unsafe-inline'` en 5 webviews
 
-**File**: [`packages/ui-extension/src/webview/csp.ts`](packages/ui-extension/src/webview/csp.ts) (WEBVIEW_CSP_OVERRIDES: toolbar, settings, dashboard, knowledge, configuration-center)
+**File**: [`packages/ui-extension/src/webview/csp.ts`](../../../../packages/ui-extension/src/webview/csp.ts) (WEBVIEW_CSP_OVERRIDES: toolbar, settings, dashboard, knowledge, configuration-center)
 
 **Problem**: Anula defensa CSP si hay interpolación incorrecta futura.
 **Impact**: XSS → `acquireVsCodeApi` messaging.
@@ -151,7 +151,7 @@ smoke sí reescribe temporalmente → falsa señal verde.
 
 ### 5. [P1] Contención léxica sin realpath
 
-**File**: [`packages/core/src/lib/shared/contain-path.ts#L26`](packages/core/src/lib/shared/contain-path.ts#L26)
+**File**: [`packages/core/src/lib/shared/contain-path.ts#L26`](../../../../packages/core/src/lib/shared/contain-path.ts#L26)
 
 ```typescript
 // Note: containment is lexical (no `realpath`) ... symlink escape remains ...
@@ -165,7 +165,7 @@ smoke sí reescribe temporalmente → falsa señal verde.
 
 ### 6. [P1] `readDoc` ignora roots/extensiones del catálogo
 
-**File**: [`plugins/docs/src/lib/services/engine.ts#L297`](plugins/docs/src/lib/services/engine.ts#L297)
+**File**: [`plugins/docs/src/lib/services/engine.ts#L297`](../../../../plugins/docs/src/lib/services/engine.ts#L297)
 
 ```typescript
 export const readDoc = async (workspaceRootAbs, relPath) => {
@@ -183,7 +183,7 @@ lector genérico de cualquier path contenido.
 
 ### 7. [P1] `env_check` acepta rutas absolutas fuera del workspace
 
-**File**: [`plugins/env/src/lib/env/real-deps.ts#L12`](plugins/env/src/lib/env/real-deps.ts#L12)
+**File**: [`plugins/env/src/lib/env/real-deps.ts#L12`](../../../../plugins/env/src/lib/env/real-deps.ts#L12)
 
 ```typescript
 readEnv: async (path) => {
@@ -200,7 +200,7 @@ readEnv: async (path) => {
 
 ### 8. [P1] OSV: errores de red → lista vacía (falso “limpio”)
 
-**File**: [`plugins/security/src/lib/deps/osv.ts`](plugins/security/src/lib/deps/osv.ts) (`catch { return [] }`, `!response.ok → []`)
+**File**: [`plugins/security/src/lib/deps/osv.ts`](../../../../plugins/security/src/lib/deps/osv.ts) (`catch { return [] }`, `!response.ok → []`)
 
 **Problem**: Indistinguible de “0 vulns”; sin retry; sin status incomplete.
 **Impact**: CI/operador confían en señal falsa.
@@ -210,7 +210,7 @@ readEnv: async (path) => {
 
 ### 9. [P1] Plugin loader: timeout sin cancelación; dependsOn post-import; sin dispose
 
-**File**: [`packages/core/src/lib/plugins/load-plugins.ts`](packages/core/src/lib/plugins/load-plugins.ts) (`withTimeout`/`Promise.race`; `checkPluginDependencies` post-load)
+**File**: [`packages/core/src/lib/plugins/load-plugins.ts`](../../../../packages/core/src/lib/plugins/load-plugins.ts) (`withTimeout`/`Promise.race`; `checkPluginDependencies` post-load)
 
 **Problem**: Import/register siguen tras timeout; grafo no topológico; sin
 `dispose` en contrato.
@@ -221,7 +221,7 @@ readEnv: async (path) => {
 
 ### 10. [P2] CI no equivale al script raíz `validate`
 
-**File**: [`.github/workflows/ci.yml`](.github/workflows/ci.yml)
+**File**: [`.github/workflows/ci.yml`](../../../../.github/workflows/ci.yml)
 
 **Problem**: Jobs lint / typecheck / test:coverage / build / pack-smoke /
 metrics — no el monolito `bun run validate` (gates de arquitectura/docs/drift
@@ -233,7 +233,7 @@ pueden quedar fuera).
 
 ### 11. [P2] web-fetch: redirects sin detección de bucle; allow-list por hostname no IP
 
-**File**: [`plugins/web-fetch/src/lib/services/engine.ts`](plugins/web-fetch/src/lib/services/engine.ts)
+**File**: [`plugins/web-fetch/src/lib/services/engine.ts`](../../../../plugins/web-fetch/src/lib/services/engine.ts)
 
 **Problem**: maxRedirects sin Set de URLs visitadas; sin bloqueo RFC1918 post-DNS.
 **Impact**: DoS por loop; SSRF residual (M-02).
@@ -243,7 +243,7 @@ pueden quedar fuera).
 
 ### 12. [P2] stderr de MCP externo drenado y descartado
 
-**File**: [`plugins/external-mcps/src/lib/subprocess/server-registry.ts#L111`](plugins/external-mcps/src/lib/subprocess/server-registry.ts#L111)
+**File**: [`plugins/external-mcps/src/lib/subprocess/server-registry.ts#L111`](../../../../plugins/external-mcps/src/lib/subprocess/server-registry.ts#L111)
 
 ```typescript
 // stderr is drained ... but never parsed — it may carry secrets.
@@ -258,7 +258,7 @@ child.stderr?.on('data', () => undefined);
 
 ### 13. [P2] `process.cwd()` en entry/scaffold (Hard Rule 2 parcial)
 
-**File**: [`packages/core/src/cli.ts`](packages/core/src/cli.ts) · [`packages/core/src/lib/scaffold/scaffold-host.ts`](packages/core/src/lib/scaffold/scaffold-host.ts)
+**File**: [`packages/core/src/cli.ts`](../../../../packages/core/src/cli.ts) · [`packages/core/src/lib/scaffold/scaffold-host.ts`](../../../../packages/core/src/lib/scaffold/scaffold-host.ts)
 
 **Problem**: Entry points con cwd implícito; scaffold default argument contradice
 jsdoc “never read process.cwd here”.
@@ -269,7 +269,7 @@ jsdoc “never read process.cwd here”.
 
 ### 14. [P2] activationEvents `**/mcp-vertex.config.json` demasiado amplio
 
-**File**: [`extensions/vscode/package.json#L21`](extensions/vscode/package.json#L21)
+**File**: [`extensions/vscode/package.json#L21`](../../../../extensions/vscode/package.json#L21)
 
 **Problem**: Activa por config en subárboles (p.ej. node_modules de ejemplo).
 **Impact**: Overhead + superficie de spawn innecesaria.
@@ -279,7 +279,7 @@ jsdoc “never read process.cwd here”.
 
 ### 15. [P2] Session claim/release balance solo telemetría (a00069 S8)
 
-**File**: [`plugins/proposals/src/lib/locks/agent-lock-engine.ts`](plugins/proposals/src/lib/locks/agent-lock-engine.ts) (`getAgentLockSessionBalance`)
+**File**: [`plugins/proposals/src/lib/locks/agent-lock-engine.ts`](../../../../plugins/proposals/src/lib/locks/agent-lock-engine.ts) (`getAgentLockSessionBalance`)
 
 **Problem**: imbalance expuesto pero no fuerza fallo de cierre de sesión.
 **Impact**: locks stale hasta GC.

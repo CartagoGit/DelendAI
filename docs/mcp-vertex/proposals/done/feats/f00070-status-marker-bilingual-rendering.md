@@ -34,7 +34,7 @@ acceptance:
 ## goal
 
 Let hosts pick the language used to **render** the close-marker line emitted by
-[`<prefix>_close`](plugins/status-marker/src/lib/tools/close-tools.ts ) while keeping
+[`<prefix>_close`](../../../../../plugins/status-marker/src/lib/tools/close-tools.ts ) while keeping
 the wire-format state token (`state`) in Spanish. The Spanish rendering remains
 the default and is byte-identical to today's output, so this proposal is
 backwards-compatible with every existing consumer.
@@ -207,5 +207,5 @@ All five slices close when:
 ## notes
 
 1. Land S1–S5 as a single `feat:` commit (no version bump — additive).
-2. Update [apps/web/src/i18n/ui.ts](apps/web/src/i18n/ui.ts) so the docs site renders both spellings in the plugin table.
+2. Update [apps/web/src/i18n/ui.ts](../../../../../apps/web/src/i18n/ui.ts) so the docs site renders both spellings in the plugin table.
 3. Watch the `status-marker_metrics` event stream for 7 days; if more than 10% of close events use `{ locale: 'en' }`, fold the EN map into the default schema registration so future plugins inherit it for free.

@@ -158,7 +158,7 @@ proposal contains.
 
 - **Status**: done
 - **Files**: `tsconfig.base.json`, plus a doc note in
-  [`docs/mcp-vertex/AGENT-BOOTSTRAP.md`](../../../AGENT-BOOTSTRAP.md)
+  [`docs/mcp-vertex/AGENT-BOOTSTRAP.md`](../../AGENT-BOOTSTRAP.md)
 - **Gate**: typecheck + project test suite
 - review-state: done
 - review-implementer: copilot-minimax-m3
@@ -205,7 +205,7 @@ months-dev to re-implement fidelity-preserving.
 
 ### DC2 — Token economics (the user-decisive axis)
 
-Read from [`docs/mcp-vertex/TOKEN-BUDGETS.md`](../../../TOKEN-BUDGETS.md)
+Read from [`docs/mcp-vertex/TOKEN-BUDGETS.md`](../../TOKEN-BUDGETS.md)
 (real e2e benchmarks, not aspirational):
 
 | Payload | Bytes | ≈ tokens | Source |
@@ -393,7 +393,7 @@ project**, by token count.
 
 ### F7 — Documentation load is the silent killer
 
-[`docs/mcp-vertex/AGENT-BOOTSTRAP.md`](../../../AGENT-BOOTSTRAP.md) is
+[`docs/mcp-vertex/AGENT-BOOTSTRAP.md`](../../AGENT-BOOTSTRAP.md) is
 250 lines (~7.5 KB). Agents that read it cold before acting pay
 ~1.9k tokens. **The bootstrap prompt (`mcp-vertex_agent_bootstrap`)**
 is the design — agents that insert it save ~1.5k tokens per cold
@@ -519,7 +519,7 @@ a decision is the cardinal failure mode of "research" documents.
 
 ### Cross-references the next agent should read
 
-- [`docs/mcp-vertex/TOKEN-BUDGETS.md`](../../../TOKEN-BUDGETS.md) — the
+- [`docs/mcp-vertex/TOKEN-BUDGETS.md`](../../TOKEN-BUDGETS.md) — the
   measured baseline behind F1.
 - [`docs/mcp-vertex/ARCHITECTURE.md`](../../ARCHITECTURE.md) — the
   layers and the agnostic-core invariant (the plugin dynamic loading
@@ -527,5 +527,5 @@ a decision is the cardinal failure mode of "research" documents.
 - [`packages/core/src/lib/tools/overview-tool.ts`](../../../../packages/core/src/lib/tools/overview-tool.ts)
   — the 96-char summary truncation and the compactSummary projection
   that DC3 documents.
-- [`docs/mcp-vertex/AGENT-BOOTSTRAP.md`](../../../AGENT-BOOTSTRAP.md)
+- [`docs/mcp-vertex/AGENT-BOOTSTRAP.md`](../../AGENT-BOOTSTRAP.md)
   — the consume pattern that F7 critiques.

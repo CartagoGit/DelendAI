@@ -97,7 +97,7 @@ clean and the slice file lives in `ready/`.
 - **Gate**: `bun test tools/scripts/lint/commit-branch-discipline.script.spec.ts`
 
 Lives in
-[`tools/scripts/lint/commit-branch-discipline.script.ts`](../../../tools/scripts/lint/commit-branch-discipline.script.ts).
+[`tools/scripts/lint/commit-branch-discipline.script.ts`](../../../../../tools/scripts/lint/commit-branch-discipline.script.ts).
 
 Pure function over
 `(cwd, stagedFiles, currentBranch) → { ok: true } | { ok: false, blockers: string[] }`.
@@ -140,7 +140,7 @@ injects both inputs so the engine stays pure.
 - **Gate**: `bun test tools/scripts/lint/push-to-develop-discipline.script.spec.ts`
 
 Lives in
-[`tools/scripts/lint/push-to-develop-discipline.script.ts`](../../../tools/scripts/lint/push-to-develop-discipline.script.ts).
+[`tools/scripts/lint/push-to-develop-discipline.script.ts`](../../../../../tools/scripts/lint/push-to-develop-discipline.script.ts).
 
 Pure function over
 `(cwd, remote, remoteBranch, currentBranch) → { ok: true } | { ok: false, blockers: string[] }`.
@@ -168,7 +168,7 @@ The hook parses lefthook's positional args
 - **Files**: `tools/scripts/lint/commit-msg-conventional.script.ts`, `tools/scripts/lint/commit-msg-conventional.script.spec.ts`
 
 Lives in
-[`tools/scripts/lint/commit-msg-conventional.script.ts`](../../../tools/scripts/lint/commit-msg-conventional.script.ts).
+[`tools/scripts/lint/commit-msg-conventional.script.ts`](../../../../../tools/scripts/lint/commit-msg-conventional.script.ts).
 
 Pure function over `(message: string) → { ok: true } | { ok: false, blockers: string[] }`.
 

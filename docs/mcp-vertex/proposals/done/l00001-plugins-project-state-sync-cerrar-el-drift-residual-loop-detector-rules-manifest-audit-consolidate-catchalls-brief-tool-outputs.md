@@ -145,13 +145,13 @@ Consolidar el drift residual entre los 13 plugins y los invariantes del core (AG
 
 | ID | Severidad | Hallazgo | Archivos | Cubierto por |
 |---|---|---|---|---|
-| F-02 | P0 | Sync I/O en hot paths de `loop-detector-service.ts` | [loop-detector-service.ts:1,238,416,447,457,536](plugins/proposals/src/lib/agents/loop-detector-service.ts) | slice `s1` |
-| F-03 | P0 | `rules/manifest.ts` usa `writeFileSync` + `mkdirSync` sin primitiva atómica | [manifest.ts:139-140](plugins/rules/src/lib/frameworks/manifest.ts) | slice `s2` |
+| F-02 | P0 | Sync I/O en hot paths de `loop-detector-service.ts` | [loop-detector-service.ts:1,238,416,447,457,536](../../../../plugins/proposals/src/lib/agents/loop-detector-service.ts) | slice `s1` |
+| F-03 | P0 | `rules/manifest.ts` usa `writeFileSync` + `mkdirSync` sin primitiva atómica | [manifest.ts:139-140](../../../../plugins/rules/src/lib/frameworks/manifest.ts) | slice `s2` |
 | F-04 | P1 | `audit/consolidate-tool.ts` resuelve `auditDir` con `path.resolve` en vez de `resolveWorkspaceContained` | [consolidate-tool.ts](plugins/audit/src/lib/tools/consolidate-tool.ts) | slice `s3` |
-| F-05 | P1 | Catchall en `rules/get_rules.areas[].rules` | [rules-tools.ts:199](plugins/rules/src/lib/tools/rules-tools.ts) | slice `s4` |
-| F-06 | P1 | Catchall en `proposals/adopt.layout` (input shape) | [adopt.tool.ts:81](plugins/proposals/src/lib/tools/adopt.tool.ts) | slice `s4` |
+| F-05 | P1 | Catchall en `rules/get_rules.areas[].rules` | [rules-tools.ts:199](../../../../plugins/rules/src/lib/tools/rules-tools.ts) | slice `s4` |
+| F-06 | P1 | Catchall en `proposals/adopt.layout` (input shape) | [adopt.tool.ts:81](../../../../plugins/proposals/src/lib/tools/adopt.tool.ts) | slice `s4` |
 | F-07 | P2 | `audit/brief.ts` no menciona `mcp-vertex_metrics` | [brief.ts:130](plugins/audit/src/lib/brief.ts) | slice `s5` |
-| F-08 | P2 | `IMcpPluginContext.keepLegacy` no documentado en brief | [plugin-contract.ts:31](packages/core/src/lib/plugins/plugin-contract.ts) | slice `s5` |
+| F-08 | P2 | `IMcpPluginContext.keepLegacy` no documentado en brief | [plugin-contract.ts:31](../../../../packages/core/src/lib/plugins/plugin-contract.ts) | slice `s5` |
 | F-10 | P2 | `tool-outputs.ts` ausente en `audit`, `status-marker`, `test-convention` | `plugins/{audit,status-marker,test-convention}/src/generated/` | slice `s6` |
 | F-12 | P2 | No existe spec de no-regresión para los 3 anti-patrones | (nuevo en `packages/core/tests/`) | slice `s7` |
 

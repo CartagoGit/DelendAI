@@ -23,12 +23,12 @@ acceptance:
 
 ## goal
 
-Close audit `a00042` finding **H5** (sync I/O in bootstrap-tool) by refactoring `createWorkspaceFileReader` in [`packages/core/src/lib/bootstrap/bootstrap-tool.ts`](packages/core/src/lib/bootstrap/bootstrap-tool.ts) to use fully asynchronous filesystem primitives instead of synchronous ones.
+Close audit `a00042` finding **H5** (sync I/O in bootstrap-tool) by refactoring `createWorkspaceFileReader` in [`packages/core/src/lib/bootstrap/bootstrap-tool.ts`](../../../../../packages/core/src/lib/bootstrap/bootstrap-tool.ts) to use fully asynchronous filesystem primitives instead of synchronous ones.
 
 ## why
 
 `a00042` walked the core engine bootstrap surface and found:
-- **H5** — [`createWorkspaceFileReader`](packages/core/src/lib/bootstrap/bootstrap-tool.ts#L47-L52) implements synchronous `readFileSync` and `existsSync` calls internally under an `async` function signature.
+- **H5** — [`createWorkspaceFileReader`](../../../../../packages/core/src/lib/bootstrap/bootstrap-tool.ts#L47-L52) implements synchronous `readFileSync` and `existsSync` calls internally under an `async` function signature.
 Although this runs during the initialization/diagnostics phase (a boot-time exception), it is a best-practice violation of the core platform's non-blocking I/O principles, especially since the interface is already async-friendly.
 
 ## why this design

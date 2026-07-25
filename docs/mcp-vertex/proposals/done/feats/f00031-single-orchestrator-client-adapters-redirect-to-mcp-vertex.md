@@ -48,7 +48,7 @@ become pure redirectors that load mcp-vertex on first call.
   dogfooding. This proposal removes that price: the contract lives in
   mcp-vertex, and adapters only bind to it.
 - The scaffolder in
-  [`packages/core/src/lib/scaffold/scaffold-host.ts:30`](../scaffold/scaffold-host.ts#L30)
+  [`packages/core/src/lib/scaffold/scaffold-host.ts:30`](../../../../../packages/core/src/lib/scaffold/scaffold-host.ts#L30)
   already declares the subagent slots
   (`proposal_guardian`, `implementation_runner`, `delivery_verifier`,
   `technical_investigator`) and the orchestrator slot. We extend it so

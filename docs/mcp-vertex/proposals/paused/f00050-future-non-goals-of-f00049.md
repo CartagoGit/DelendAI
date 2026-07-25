@@ -336,9 +336,9 @@ triage surface. Concretely:
 - [`paused/c00002`](../paused/c00002-pause-npm-publish.md) — the canonical
   example of a `status: paused` proposal in this repo (checkpoint, not a
   workstream; this file follows the same shape).
-- [`skills/proposal-swarm-runner/SKILL.md`](../../skills/proposal-swarm-runner/SKILL.md)
+- [`skills/proposal-swarm-runner/SKILL.md`](../../../../plugins/proposals/skills/proposal-swarm-runner/SKILL.md)
   — the working-form contract S-H of this file would amend.
-- [`skills/state-repair-playbook/SKILL.md`](../../skills/state-repair-playbook/SKILL.md)
+- [`skills/state-repair-playbook/SKILL.md`](../../../../plugins/proposals/skills/state-repair-playbook/SKILL.md)
   — the failure-mode playbook that motivates the S-H precondition.
 - `AGENTS.md` rules #1 (core agnostic) and #10 (no shell/python in tools)
   — the rules S-B, S-D, and S-I explicitly preserve.

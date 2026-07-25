@@ -39,7 +39,7 @@ acceptance:
 
 Close audit `a00040` findings **H2, H3, H4, H5, H6** by hardening the 7 webviews shipped from
 [`packages/ui-extension/src/webviews/`](packages/ui-extension/src/webviews/ ) and their VS Code
-command surfaces in [`extensions/vscode/src/commands/`](extensions/vscode/src/commands/ ).
+command surfaces in [`extensions/vscode/src/commands/`](../../../../../extensions/vscode/src/commands ).
 
 The 5 slices are dependency-ordered: each slice is independently shippable, gated by
 `bun run validate`, and constrained to one webview/command surface so a parallel agent can
@@ -48,7 +48,7 @@ claim a single slice without blocking the rest.
 ## why
 
 `a00040` (independent exhaustive audit, 2026-06-25) read the activation surface of
-[`extensions/vscode/src/extension.ts`](extensions/vscode/src/extension.ts ) and found that:
+[`extensions/vscode/src/extension.ts`](../../../../../extensions/vscode/src/extension.ts ) and found that:
 
 - **H2** — 7 webviews are created with `enableScripts: true` and no `Content-Security-Policy`
   in their HTML options. The `index.html` sources inline `<script>` blocks plus their
@@ -112,7 +112,7 @@ extensions/vscode/src/
 
 ### S1 — CSP default-deny + 7 webviews opt-in (closes H2)
 
-- **Files**: [packages/ui-extension/src/webview/csp.ts](packages/ui-extension/src/webview/csp.ts)
+- **Files**: [packages/ui-extension/src/webview/csp.ts](../../../../../packages/ui-extension/src/webview/csp.ts)
 - **Status**: done (partial — additive CSP landed; baseline `enableScripts: false` flip deferred)
 - **Gate**: bun run validate
 - **Shipped**: fe608e47. Landed `IWebviewCspPolicy` + `DEFAULT_DENY` (frozen) +
@@ -164,7 +164,7 @@ inject the per-webview CSP via a `<meta http-equiv>` tag in the HTML it returns,
 
 ### S2 — `OPEN_TOOLBAR_COMMAND` action allow-list (closes H3)
 
-- **Files**: [extensions/vscode/src/commands/open-toolbar.ts](extensions/vscode/src/commands/open-toolbar.ts)
+- **Files**: [extensions/vscode/src/commands/open-toolbar.ts](../../../../../extensions/vscode/src/commands/open-toolbar.ts)
   (real path; the proposal's `*.command.ts` name never existed)
 - **Status**: done
 - **Gate**: bun run validate
@@ -198,7 +198,7 @@ new test sends a crafted `{ action: 'workbench.action.openSettings' }` and expec
 
 ### S3 — `openSettings` persists to `globalState` (closes H4)
 
-- **Files**: [extensions/vscode/src/commands/open-settings.ts](extensions/vscode/src/commands/open-settings.ts)
+- **Files**: [extensions/vscode/src/commands/open-settings.ts](../../../../../extensions/vscode/src/commands/open-settings.ts)
   (real path)
 - **Status**: done
 - **Gate**: bun run validate
@@ -219,7 +219,7 @@ extension context), read it back — it must equal what was written.
 
 ### S4 — `McpVertexProposalsView` `TreeDataProvider` (closes H5)
 
-- **Files**: [extensions/vscode/src/providers/proposal-board-provider.ts](extensions/vscode/src/providers/proposal-board-provider.ts)
+- **Files**: [extensions/vscode/src/providers/proposal-board-provider.ts](../../../../../extensions/vscode/src/providers/proposal-board-provider.ts)
   (real path; `ProposalBoardProvider` already existed but was never registered)
 - **Status**: done
 - **Gate**: bun run validate
@@ -258,7 +258,7 @@ correct labels and collapsible states.
 
 ### S5 — `OPEN_PROPOSAL_COMMAND` honors its argument (closes H6)
 
-- **Files**: [extensions/vscode/src/commands/open-proposal.ts](extensions/vscode/src/commands/open-proposal.ts)
+- **Files**: [extensions/vscode/src/commands/open-proposal.ts](../../../../../extensions/vscode/src/commands/open-proposal.ts)
   (real path)
 - **Status**: done
 - **Gate**: bun run validate

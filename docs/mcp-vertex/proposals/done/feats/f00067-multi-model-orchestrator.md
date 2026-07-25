@@ -27,7 +27,7 @@ acceptance:
 # f00067 — Multi-model orchestrator
 
 > **Status:** ready. The design is documented across
-> [`docs/mcp-vertex/wiki/00–08`](../../wiki/) (9 pages, ~2400 lines,
+> [`docs/mcp-vertex/wiki/00–08`](../../../wiki) (9 pages, ~2400 lines,
 > audited 2026-06-25). This proposal is the executive summary + the
 > slice breakdown that turns the design into shippable work.
 
@@ -93,7 +93,7 @@ recent sessions:
   `audit`): one plugin owns a concern, plugins consume each other
   via well-defined contracts.
 - **A single canonical contract file**
-  ([`packages/core/src/lib/contracts/interfaces/provider-capabilities.interface.ts`](../../../packages/core/src/lib/contracts/interfaces/provider-capabilities.interface.ts))
+  ([`packages/core/src/lib/contracts/interfaces/provider-capabilities.interface.ts`](../../../../../packages/core/src/lib/contracts/interfaces/provider-capabilities.interface.ts))
   exports `CapabilityTag`, `IProviderCapabilities`, `IProviderSummary`,
   `IProviderAvailability`, `IRoutingDecision`. All wiki pages and
   both plugins import from here. No drift between wiki text and
@@ -110,7 +110,7 @@ recent sessions:
   subprocesses with structured output.
 - **Cache lives inside the workspace, under per-plugin subfolders.**
   Matches AGENTS.md rule 5 + the existing
-  [`pluginCacheDir`](../../../packages/core/src/lib/cli/assemble.ts#L231)
+  [`pluginCacheDir`](../../../../../packages/core/src/lib/cli/assemble.ts#L231)
   convention. No `~/.cache/mcp-vertex/` anywhere.
 - **Safety defaults can be tightened, never silently relaxed.**
   `executeApi` and `confirmBeforeExecute` both default to
@@ -121,7 +121,7 @@ recent sessions:
   `auth status` / `model/list` RPCs; the user keeps the roster
   fresh in config; the LLM fills gaps via the bootstrap wizard.
 - **Borrowed primitives** (see
-  [`wiki/synthesis/patterns-to-borrow.md`](../../wiki/synthesis/patterns-to-borrow.md)):
+  [`wiki/synthesis/patterns-to-borrow.md`](../../../wiki/synthesis/patterns-to-borrow.md)):
   Aider's two-tier cascade, Claude Code's `opusplan` mode-keyed
   routing, OpenRouter's `session_id` stickiness, LiteLLM's
   three-source cost model.

@@ -133,7 +133,7 @@ Patrones **referencia** que cualquier mantenedor debe preservar:
 
 #### H1 · `bun run validate` está rojo en este HEAD por 5 errores BEM en `_nav.scss`
 
-**File**: [`apps/web/src/styles/components/_nav.scss#L141, 185, 189, 213, 232`](../../apps/web/src/styles/components/_nav.scss#L141)
+**File**: [`apps/web/src/styles/components/_nav.scss#L141, 185, 189, 213, 232`](../../../../../apps/web/src/styles/components/_nav.scss#L141)
 
 ```scss
 .nav__more__trigger { ... }   // L141 — 3 levels of __ (should be .nav__more-trigger or .nav__more__btn)
@@ -163,13 +163,13 @@ sección 5.1).
 #### H2 · 7 webviews de VS Code sin `Content-Security-Policy` con `enableScripts: true`
 
 **Files**:
-- [`extensions/vscode/src/commands/open-dashboard.ts#L49-L58`](../../extensions/vscode/src/commands/open-dashboard.ts#L49-L58)
-- [`extensions/vscode/src/commands/open-docs.ts#L24-L42`](../../extensions/vscode/src/commands/open-docs.ts#L24-L42)
-- [`extensions/vscode/src/commands/open-docs-api.ts#L83-L101`](../../extensions/vscode/src/commands/open-docs-api.ts#L83-L101)
-- [`extensions/vscode/src/commands/open-knowledge.ts#L29-L34`](../../extensions/vscode/src/commands/open-knowledge.ts#L29-L34)
-- [`extensions/vscode/src/commands/open-settings.ts#L55-L65`](../../extensions/vscode/src/commands/open-settings.ts#L55-L65)
-- [`extensions/vscode/src/commands/setup-github.ts`](../../extensions/vscode/src/commands/setup-github.ts)
-- [`extensions/vscode/src/views/tool-detail.html`](../../extensions/vscode/src/views/tool-detail.html)
+- [`extensions/vscode/src/commands/open-dashboard.ts#L49-L58`](../../../../../extensions/vscode/src/commands/open-dashboard.ts#L49-L58)
+- [`extensions/vscode/src/commands/open-docs.ts#L24-L42`](../../../../../extensions/vscode/src/commands/open-docs.ts#L24-L42)
+- [`extensions/vscode/src/commands/open-docs-api.ts#L83-L101`](../../../../../extensions/vscode/src/commands/open-docs-api.ts#L83-L101)
+- [`extensions/vscode/src/commands/open-knowledge.ts#L29-L34`](../../../../../extensions/vscode/src/commands/open-knowledge.ts#L29-L34)
+- [`extensions/vscode/src/commands/open-settings.ts#L55-L65`](../../../../../extensions/vscode/src/commands/open-settings.ts#L55-L65)
+- [`extensions/vscode/src/commands/setup-github.ts`](../../../../../extensions/vscode/src/commands/setup-github.ts)
+- [`extensions/vscode/src/views/tool-detail.html`](../../../../../extensions/vscode/src/views/tool-detail.html)
 
 **Problema:** Ninguno de los 7 webviews establece un `<meta
 http-equiv="Content-Security-Policy">`. Todos tienen `enableScripts: true`.
@@ -186,7 +186,7 @@ debería ser obligatoria. **Severidad alta** porque es estructural.
 
 #### H3 · `OPEN_TOOLBAR_COMMAND` dispatcha comandos derivados de `action` sin allow-list
 
-**File**: [`extensions/vscode/src/commands/open-toolbar.ts#L97-L112`](../../extensions/vscode/src/commands/open-toolbar.ts#L97-L112)
+**File**: [`extensions/vscode/src/commands/open-toolbar.ts#L97-L112`](../../../../../extensions/vscode/src/commands/open-toolbar.ts#L97-L112)
 
 ```typescript
 const commandId =
@@ -217,7 +217,7 @@ esperado).
 
 #### H4 · `openSettings` persiste en memoria — settings se pierden al recargar ventana
 
-**File**: [`extensions/vscode/src/commands/open-settings.ts#L31-L42`](../../extensions/vscode/src/commands/open-settings.ts#L31-L42)
+**File**: [`extensions/vscode/src/commands/open-settings.ts#L31-L42`](../../../../../extensions/vscode/src/commands/open-settings.ts#L31-L42)
 
 ```typescript
 const createInMemorySettingsStore = (): ISettingsStore => {
@@ -244,7 +244,7 @@ guardan. Falsa sensación de persistencia.
 
 #### H5 · `proposals` view declarada en `activationEvents` pero sin TreeDataProvider
 
-**File**: [`extensions/vscode/src/package.json#L17-L24`](../../extensions/vscode/src/package.json#L17-L24) y [`extension.ts#L264`](../../extensions/vscode/src/extension.ts#L264)
+**File**: [`extensions/vscode/src/package.json#L17-L24`](../../extensions/vscode/src/package.json#L17-L24) y [`extension.ts#L264`](../../../../../extensions/vscode/src/extension.ts#L264)
 
 ```json
 "activationEvents": [
@@ -270,7 +270,7 @@ webview, pero la actividad-bar entry del proposals es un árbol hueco.
 
 #### H6 · `OPEN_PROPOSAL_COMMAND` ignora su argumento — el id se descarta
 
-**File**: [`extensions/vscode/src/commands/open-proposal.ts#L20-L33`](../../extensions/vscode/src/commands/open-proposal.ts#L20-L33)
+**File**: [`extensions/vscode/src/commands/open-proposal.ts#L20-L33`](../../../../../extensions/vscode/src/commands/open-proposal.ts#L20-L33)
 
 ```typescript
 deps.vscode.commands.registerCommand(OPEN_PROPOSAL_COMMAND, async () => {
@@ -298,14 +298,14 @@ single-proposal hereda el input sin sanear (H3) — mismo proposal p126.
 
 #### H7 · `tab-refresh` del dashboard usa atributo incorrecto — el botón no hace nada
 
-**File**: [`packages/ui-extension/src/dashboard/render-dashboard.ts#L92`](../../packages/ui-extension/src/dashboard/render-dashboard.ts#L92)
+**File**: [`packages/ui-extension/src/dashboard/render-dashboard.ts#L92`](../../../../../packages/ui-extension/src/dashboard/render-dashboard.ts#L92)
 
 ```typescript
 const tabsBar = `<div class="mv-tabs" role="tablist">${tabsHtml}<button class="mv-tab" id="tab-refresh" role="tab" data-action="refresh" title="Refresh">⟳</button></div>`;
 ```
 
 **Problema:** El botón usa `data-action="refresh"`, pero el shared
-runtime ([`packages/ui-extension/src/components/runtime.ts#L74-L103`](../../packages/ui-extension/src/components/runtime.ts#L74-L103)) solo escucha
+runtime ([`packages/ui-extension/src/components/runtime.ts#L74-L103`](../../../../../packages/ui-extension/src/components/runtime.ts#L74-L103)) solo escucha
 `data-mv-action`, `data-mv-toggle`, `data-mv-lang`, `data-mv-toast-ttl`.
 `data-action` no se maneja. **El refresh es dead.** Adicionalmente, el
 botón tiene `role="tab"` que es incorrecto para una acción (debería
@@ -319,7 +319,7 @@ ser `role="button"` o vivir fuera del tablist).
 
 #### H8 · Hardcoded English en todos los renderers del UI (excepto toolbar)
 
-**File**: [`packages/ui-extension/src/dashboard/render-dashboard.ts#L97-L128`](../../packages/ui-extension/src/dashboard/render-dashboard.ts#L97-L128) y los 8 paneles, settings, knowledge navigator, language picker.
+**File**: [`packages/ui-extension/src/dashboard/render-dashboard.ts#L97-L128`](../../../../../packages/ui-extension/src/dashboard/render-dashboard.ts#L97-L128) y los 8 paneles, settings, knowledge navigator, language picker.
 
 **Problema:** Solo `renderToolbar` toma `ILangDict`; el resto de los
 renderers hardcodea English. `SHARED_UI_STRINGS.brandName` está
@@ -342,8 +342,8 @@ shared package).
 #### H9 · `--vscode-*` CSS custom properties hardcodeados en 2 webviews del shared package
 
 **Files**:
-- [`packages/ui-extension/src/knowledge/render-knowledge-navigator.ts#L154-L252`](../../packages/ui-extension/src/knowledge/render-knowledge-navigator.ts#L154-L252)
-- [`packages/ui-extension/src/settings/render-settings.ts#L85-L156`](../../packages/ui-extension/src/settings/render-settings.ts#L85-L156)
+- [`packages/ui-extension/src/knowledge/render-knowledge-navigator.ts#L154-L252`](../../../../../packages/ui-extension/src/knowledge/render-knowledge-navigator.ts#L154-L252)
+- [`packages/ui-extension/src/settings/render-settings.ts#L85-L156`](../../../../../packages/ui-extension/src/settings/render-settings.ts#L85-L156)
 
 ```css
 :root {
@@ -409,7 +409,7 @@ contra `en.ts`, no solo los 27.
 
 #### H11 · `<iframe>` docs panel: `sandbox="allow-scripts allow-same-origin"` rompe el sandbox
 
-**File**: [`packages/ui-extension/src/dashboard/render-dashboard.ts#L107`](../../packages/ui-extension/src/dashboard/render-dashboard.ts#L107)
+**File**: [`packages/ui-extension/src/dashboard/render-dashboard.ts#L107`](../../../../../packages/ui-extension/src/dashboard/render-dashboard.ts#L107)
 
 ```typescript
 <iframe class="mv-docs-frame" src="${escapeHtml(options.docsUrl)}" referrerpolicy="no-referrer" sandbox="allow-scripts allow-same-origin"></iframe>
@@ -431,7 +431,7 @@ podría ser `javascript:`.
 
 #### H12 · `renderToolbar` pasa `loadedPlugins: []` — botones que requieren plugins rotos en hosts sin ese plugin
 
-**File**: [`extensions/vscode/src/commands/open-toolbar.ts#L73-L80`](../../extensions/vscode/src/commands/open-toolbar.ts#L73-L80)
+**File**: [`extensions/vscode/src/commands/open-toolbar.ts#L73-L80`](../../../../../extensions/vscode/src/commands/open-toolbar.ts#L73-L80)
 
 ```typescript
 const html = renderToolbar({
@@ -457,7 +457,7 @@ issues plugin → toast "command not found".
 
 #### H13 · `renderSettings` envía booleanos como strings `'true'`/`'false'`
 
-**File**: [`packages/ui-extension/src/settings/render-settings.ts#L39-L44`](../../packages/ui-extension/src/settings/render-settings.ts#L39-L44)
+**File**: [`packages/ui-extension/src/settings/render-settings.ts#L39-L44`](../../../../../packages/ui-extension/src/settings/render-settings.ts#L39-L44)
 
 ```typescript
 out.allowLocalhost = form.querySelector('[name="allowLocalhost"]').checked ? 'true' : 'false';
@@ -478,7 +478,7 @@ round-trip silenciosamente.
 
 #### H14 · `formatBytes` exportado en public barrel pero nunca usado
 
-**File**: [`packages/ui-extension/src/dashboard/format.ts#L9-L16`](../../packages/ui-extension/src/dashboard/format.ts#L9-L16) y [`packages/ui-extension/src/public/index.ts#L38`](../../packages/ui-extension/src/public/index.ts#L38)
+**File**: [`packages/ui-extension/src/dashboard/format.ts#L9-L16`](../../../../../packages/ui-extension/src/dashboard/format.ts#L9-L16) y [`packages/ui-extension/src/public/index.ts#L38`](../../../../../packages/ui-extension/src/public/index.ts#L38)
 
 **Problema:** `formatBytes` está en la public API pero ningún panel ni
 toolbar lo llama. Dead code en la superficie pública.
@@ -492,7 +492,7 @@ toolbar lo llama. Dead code en la superficie pública.
 
 #### H15 · `STATUS_BAR_EVENTS` mezcla English + Spanish literal
 
-**File**: [`extensions/vscode/src/providers/status-bar.ts#L48`](../../extensions/vscode/src/providers/status-bar.ts#L48)
+**File**: [`extensions/vscode/src/providers/status-bar.ts#L48`](../../../../../extensions/vscode/src/providers/status-bar.ts#L48)
 
 ```typescript
 const STATUS_BAR_EVENTS = ['lock-released', 'cap', 'bloqueado'] as const;
@@ -512,7 +512,7 @@ plugin para confirmar qué nombres se emiten).
 
 #### H16 · `dev/entry.ts` rompe la regla "ES2022 only" del shared package
 
-**File**: [`packages/ui-extension/src/dev/entry.ts#L21-L25`](../../packages/ui-extension/src/dev/entry.ts#L21-L25)
+**File**: [`packages/ui-extension/src/dev/entry.ts#L21-L25`](../../../../../packages/ui-extension/src/dev/entry.ts#L21-L25)
 
 ```typescript
 /// <reference lib="dom" />
@@ -537,7 +537,7 @@ un `dev` exports entry.
 
 #### H17 · `formatRelativeTime` no honra `locale` y es no-determinista
 
-**File**: [`packages/ui-extension/src/dashboard/format.ts#L51-L60`](../../packages/ui-extension/src/dashboard/format.ts#L51-L60)
+**File**: [`packages/ui-extension/src/dashboard/format.ts#L51-L60`](../../../../../packages/ui-extension/src/dashboard/format.ts#L51-L60)
 
 ```typescript
 export const formatRelativeTime = (iso: string, _locale = 'en'): string => {
@@ -561,7 +561,7 @@ función no-determinista — snapshot tests imposibles.
 
 #### H18 · `renderSettings` form `<select>` con `border-color: #007acc` (VS-Code azul) hardcodeado
 
-**File**: [`packages/ui-extension/src/settings/render-settings.ts#L114-L153`](../../packages/ui-extension/src/settings/render-settings.ts#L114-L153)
+**File**: [`packages/ui-extension/src/settings/render-settings.ts#L114-L153`](../../../../../packages/ui-extension/src/settings/render-settings.ts#L114-L153)
 
 ```css
 input[type="text"]:focus,
@@ -608,7 +608,7 @@ está "clean".
 
 #### H20 · `renderKnowledgeNavigator` declara `onSearch` que nunca se invoca
 
-**File**: [`packages/ui-extension/src/knowledge/render-knowledge-navigator.ts#L17-L19`](../../packages/ui-extension/src/knowledge/render-knowledge-navigator.ts#L17-L19)
+**File**: [`packages/ui-extension/src/knowledge/render-knowledge-navigator.ts#L17-L19`](../../../../../packages/ui-extension/src/knowledge/render-knowledge-navigator.ts#L17-L19)
 
 **Problema:** Interface expone `onSearch: string` (command id para
 search box, "informational") que nunca se referencia en el archivo.
@@ -624,7 +624,7 @@ lo setea esperando debounced server-side filtering no recibe nada.
 
 #### H21 · Dropdown menu `aria-labelledby` apunta al id del menú en vez del trigger
 
-**File**: [`packages/ui-extension/src/components/dropdown.ts#L152-L156`](../../packages/ui-extension/src/components/dropdown.ts#L152-L156)
+**File**: [`packages/ui-extension/src/components/dropdown.ts#L152-L156`](../../../../../packages/ui-extension/src/components/dropdown.ts#L152-L156)
 
 ```typescript
 const menu = `<ul
@@ -647,7 +647,7 @@ no-op — screen readers anuncian "menu" en vez de "More actions menu".
 
 #### H22 · `render-panel-tools.ts` sparkline es un valor constante, no trend
 
-**File**: [`packages/ui-extension/src/dashboard/render-panel-tools.ts#L14-L18`](../../packages/ui-extension/src/dashboard/render-panel-tools.ts#L14-L18)
+**File**: [`packages/ui-extension/src/dashboard/render-panel-tools.ts#L14-L18`](../../../../../packages/ui-extension/src/dashboard/render-panel-tools.ts#L14-L18)
 
 ```typescript
 const samples = [
@@ -669,7 +669,7 @@ sparkline data y fakea una trend.**
 
 #### H23 · `McpVertexStatusBar` `package.json` `dist/extension.js` (1.3 MB) sin source maps
 
-**File**: [`extensions/vscode/package.json#L41`](../../extensions/vscode/package.json#L41)
+**File**: [`extensions/vscode/package.json#L41`](../../../../../extensions/vscode/package.json#L41)
 
 ```json
 "build": "bun build src/extension.ts --target=node --format=cjs --external=vscode --outdir=dist",
@@ -688,7 +688,7 @@ incluir source maps en `.vsix`).
 
 #### H24 · `barChart` sin `aria-label` configurable
 
-**File**: [`packages/ui-extension/src/dashboard/bar-chart.ts#L13-L44`](../../packages/ui-extension/src/dashboard/bar-chart.ts#L13-L44)
+**File**: [`packages/ui-extension/src/dashboard/bar-chart.ts#L13-L44`](../../../../../packages/ui-extension/src/dashboard/bar-chart.ts#L13-L44)
 
 **Problema:** SVG `aria-label="Bar chart"` hardcodeado. Cada chart
 debería poder tener label significativo ("Token share by plugin").
@@ -704,7 +704,7 @@ ni siquiera tiene `aria-label` (chart sin anuncio).
 
 #### H25 · `Toast` sticky mode sin close button ni Esc
 
-**File**: [`packages/ui-extension/src/components/toast.ts#L31-L44`](../../packages/ui-extension/src/components/toast.ts#L31-L44) y [`runtime.ts#L128-L144`](../../packages/ui-extension/src/components/runtime.ts#L128-L144)
+**File**: [`packages/ui-extension/src/components/toast.ts#L31-L44`](../../../../../packages/ui-extension/src/components/toast.ts#L31-L44) y [`runtime.ts#L128-L144`](../../../../../packages/ui-extension/src/components/runtime.ts#L128-L144)
 
 **Problema:** Cuando `ttl === 0` (sticky), el toast no se remueve
 nunca, no tiene close button, no tiene Esc-to-dismiss handler, y
@@ -720,7 +720,7 @@ nunca, no tiene close button, no tiene Esc-to-dismiss handler, y
 
 #### H26 · `kpiStrip` (8 KPIs) sin flex-wrap — se overflow en sidebar estrecha
 
-**File**: [`packages/ui-extension/src/dashboard/render-dashboard.ts#L135-L148`](../../packages/ui-extension/src/dashboard/render-dashboard.ts#L135-L148)
+**File**: [`packages/ui-extension/src/dashboard/render-dashboard.ts#L135-L148`](../../../../../packages/ui-extension/src/dashboard/render-dashboard.ts#L135-L148)
 
 **Problema:** `.mv-kpis` no tiene flex-wrap ni media query. En sidebar
 de 300px (típica en IDE), los 8 KPIs overflow horizontal sin wrap.
@@ -734,7 +734,7 @@ de 300px (típica en IDE), los 8 KPIs overflow horizontal sin wrap.
 
 #### H27 · Tabs sin `aria-controls` ni roving tabindex
 
-**File**: [`packages/ui-extension/src/dashboard/render-dashboard.ts#L89-L92`](../../packages/ui-extension/src/dashboard/render-dashboard.ts#L89-L92)
+**File**: [`packages/ui-extension/src/dashboard/render-dashboard.ts#L89-L92`](../../../../../packages/ui-extension/src/dashboard/render-dashboard.ts#L89-L92)
 
 **Problema:** Tab buttons declaran `role="tab"` + `aria-selected` pero
 sin `aria-controls="panel-${id}"`. SR no puede asociar tab con su
@@ -750,7 +750,7 @@ no mueven focus entre tabs (WAI-ARIA tab pattern requiere esto).
 
 #### H28 · `asWebviewUri` test stub usa scheme deprecated `vscode-resource:`
 
-**File**: [`extensions/vscode/src/extension.ts#L553-L555`](../../extensions/vscode/src/extension.ts#L553-L555)
+**File**: [`extensions/vscode/src/extension.ts#L553-L555`](../../../../../extensions/vscode/src/extension.ts#L553-L555)
 
 ```typescript
 asWebviewUri(relativePath) {
@@ -773,7 +773,7 @@ el path).
 
 #### H29 · SOLID: `renderDashboard` es una mega-función — SRP violation
 
-**File**: [`packages/ui-extension/src/dashboard/render-dashboard.ts`](../../packages/ui-extension/src/dashboard/render-dashboard.ts) (157 LOC)
+**File**: [`packages/ui-extension/src/dashboard/render-dashboard.ts`](../../../../../packages/ui-extension/src/dashboard/render-dashboard.ts) (157 LOC)
 
 **Problema:** Una sola función construye tabsBar + kpiStrip + panel
 + iframe + footer + scripts inline. Mezcla:
@@ -797,7 +797,7 @@ otros componentes.
 
 #### H30 · SOLID: `McpVertexStatusBar` `STATUS_BAR_EVENTS` viola OCP
 
-**File**: [`extensions/vscode/src/providers/status-bar.ts#L48`](../../extensions/vscode/src/providers/status-bar.ts#L48)
+**File**: [`extensions/vscode/src/providers/status-bar.ts#L48`](../../../../../extensions/vscode/src/providers/status-bar.ts#L48)
 
 **Problema:** `as const` literal array — añadir un nuevo evento
 requiere editar el literal y todos los call sites. Open/Closed

@@ -53,7 +53,7 @@ track: archive
 > **M10 (corrupto ≠ vacío) — HECHO con tests (sesión Opus):**
 > - Helper compartido `quarantineCorruptFile`/`quarantineCorruptFileSync` +
 >   clase `CorruptFileError` en `@cartago-git/mcp-vertex/public`
->   ([packages/core/src/lib/shared/quarantine-corrupt-file.ts](../../../packages/core/src/lib/shared/quarantine-corrupt-file.ts)),
+>   ([packages/core/src/lib/shared/quarantine-corrupt-file.ts](../../../../../packages/core/src/lib/shared/quarantine-corrupt-file.ts)),
 >   con sufijo `.corrupt-<ts>-<rand>` anti-colisión.
 > - **Estado crítico** (queue `parseQueue`/`loadOrEmptyQueue`, `subagent-registry-store.read`,
 >   `memory` store): JSON corrupto → preserva bytes + lanza error; la **capa de tool**
@@ -116,7 +116,7 @@ track: archive
 >   `lockPath`).
 > - **F3** — el plugin `proposals` deriva el layout de `ctx`:
 >   `const layout = buildSwarmPaths(ctx.cacheDir, ctx.docsDir)` en
->   [plugins/proposals/src/index.ts](../../../plugins/proposals/src/index.ts).
+>   [plugins/proposals/src/index.ts](../../../../../plugins/proposals/src/index.ts).
 >   Los 2 engines que horneaban `DEFAULT_PATH_LAYOUT` ahora aceptan `layout`
 >   opcional (default = DEFAULT para back-compat del consumidor original):
 >   `syncProposalRegistry(root, layout?)` y
@@ -124,7 +124,7 @@ track: archive
 >   `scanLiveProposalEntries`). Tools que lo propagan: `sync_proposals`,
 >   `round_context`, `authoring`. Spec: `tests/src/lib/swarm/layout-relocation.spec.ts`.
 > - **F4** — nuevo helper `withFileMutex(targetPath, fn, opts?)` en
->   [packages/core/src/lib/shared/with-file-mutex.ts](../../../packages/core/src/lib/shared/with-file-mutex.ts)
+>   [packages/core/src/lib/shared/with-file-mutex.ts](../../../../../packages/core/src/lib/shared/with-file-mutex.ts)
 >   (exportado en `@cartago-git/mcp-vertex/public`): sidecar `<target>.mutex` con
 >   `open('wx')` (O_EXCL), robo por staleness y por timeout (anti-deadlock).
 >   Envuelve el read-modify-write en: `agent-lock-engine` (extraído a

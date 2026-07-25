@@ -113,7 +113,7 @@ best-in-class.
 Estos patrones son **referencia** y los señalo para que el siguiente
 mantenedor no los deshaga al "limpiar":
 
-- **El contrato de plugin** ([`packages/core/src/lib/plugins/load-plugins.ts`](../../packages/core/src/lib/plugins/load-plugins.ts))
+- **El contrato de plugin** ([`packages/core/src/lib/plugins/load-plugins.ts`](../../../../../packages/core/src/lib/plugins/load-plugins.ts))
   — `withTimeout` en import **y** en `register()`, dedup por
   especificador y por nombre resuelto, aislamiento total (un plugin
   malo no tumba al resto), orden determinista. El tipo
@@ -121,11 +121,11 @@ mantenedor no los deshaga al "limpiar":
   pluginCacheDir, namespacePrefix, options, args** de una vez; los
   plugins no leen configuración por su cuenta.
 - **`planRegistrationOrder`**
-  ([`packages/core/src/lib/project/create-mcp-project.ts:26`](../../packages/core/src/lib/project/create-mcp-project.ts#L26))
+  ([`packages/core/src/lib/project/create-mcp-project.ts:26`](../../../../../packages/core/src/lib/project/create-mcp-project.ts#L26))
   — determinista, falla rápido ante ids duplicados y anchors
   desconocidos, soporta `registerAfter` con orden estable.
 - **`writeFileAtomic` + `withFileMutex`**
-  ([`packages/core/src/lib/shared/with-file-mutex.ts`](../../packages/core/src/lib/shared/with-file-mutex.ts))
+  ([`packages/core/src/lib/shared/with-file-mutex.ts`](../../../../../packages/core/src/lib/shared/with-file-mutex.ts))
   — temp en **el mismo dir** (sin EXDEV, rename atómico) +
   *advisory lock* con `O_CREAT|O_EXCL`, **token de propiedad**
   `pid\nts\nUUID` y **heartbeat** que refresca el `mtime`. El comentario
@@ -249,10 +249,10 @@ truncation, doc-no-encontrado).
 
 **H5 · M15 sigue abierto (drift de `cacheDir` en blueprint)** —
 (eco literal de **M15**)
-[`packages/core/src/lib/cli/assemble.ts:339`](../../packages/core/src/lib/cli/assemble.ts#L339)
+[`packages/core/src/lib/cli/assemble.ts:339`](../../../../../packages/core/src/lib/cli/assemble.ts#L339)
 hace `args.tokens.cacheDir ?? DEFAULT_CORE_PATHS.cacheDir`,
 ignorando `fileConfig.cacheDir` y la precedencia que `assembleCliConfig`
-ya resolvió en [`assemble.ts:94-99`](../../packages/core/src/lib/cli/assemble.ts#L94).
+ya resolvió en [`assemble.ts:94-99`](../../../../../packages/core/src/lib/cli/assemble.ts#L94).
 Si pasas `cacheDir` en `mcp-vertex.config.json` (sin flag CLI), el
 resto del store va a tu ruta y el blueprint a `.cache/mcp-vertex`.
 Es de **bajo impacto** (solo `--mcp-server-create=true` y solo la
@@ -262,7 +262,7 @@ primera vez), pero está mal y el grep lo encuentra en 1 minuto.
 o reusar `assembleCliConfig` directamente.
 
 **H6 · `rules` no detecta Next/Nuxt/Astro/Remix/Solid** — (eco de **M11**)
-[`plugins/rules/src/lib/frameworks/detect-framework.ts`](../../plugins/rules/src/lib/frameworks/detect-framework.ts))
+[`plugins/rules/src/lib/frameworks/detect-framework.ts`](../../../../../plugins/rules/src/lib/frameworks/detect-framework.ts))
 solo conoce `laravel`, `react(-ts/js)`, `vue`, `svelte`, `jquery` y
 fallback a `vanilla-ts/js`. Un proyecto Next.js cae a `react-ts` por
 `react` en deps, lo que emite un preset que **no** aplica las
@@ -301,7 +301,7 @@ claro.
 
 **H9 · `biome.json` con `linter.enabled` deprecado** — (nuevo,
 trivial)
-[`biome.json:20`](../../biome.json#L20)) usa la forma vieja
+[`biome.json:20`](../../../../../biome.json#L20)) usa la forma vieja
 (`"linter": { "enabled": true, "rules": { "recommended": true, ... } }`).
 Biome 2.5 ya recomienda `"linter": { "typeChecking": { ... },
 "rules": { ... } }` o el `preset` shorthand. La salida del lint
@@ -320,7 +320,7 @@ estar en el repo (cada desarrollador tiene el suyo). Una línea en
 
 **H11 · `deliveredDigests` persistido pero solo testeado
 unitariamente** — (eco de **M6**, no observado en código)
-[`plugins/proposals/src/lib/agents/task-queue-engine.ts:313`](../../plugins/proposals/src/lib/agents/task-queue-engine.ts#L313))
+[`plugins/proposals/src/lib/agents/task-queue-engine.ts:313`](../../../../../plugins/proposals/src/lib/agents/task-queue-engine.ts#L313))
 muta `.subscribe-delivered.json` bajo `withFileMutex`. Está
 correcto. Lo señalo porque el **test e2e** (reinicio del server y
 verificar que no re-entrega) no lo verifiqué en código (no

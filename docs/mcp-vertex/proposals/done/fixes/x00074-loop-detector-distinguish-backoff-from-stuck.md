@@ -59,20 +59,20 @@ This proposal fixes the detector so the next session with the same shape does no
 
 ## why this design
 
-The detector today ([`plugins/proposals/src/lib/agents/agent-loop-detector.ts`](plugins/proposals/src/lib/agents/agent-loop-detector.ts)) is a pure function:
+The detector today ([`plugins/proposals/src/lib/agents/agent-loop-detector.ts`](../../../../../plugins/proposals/src/lib/agents/agent-loop-detector.ts)) is a pure function:
 
 ```ts
 detectAgentLoop(window, { ringSize: 50, exactRepeatThreshold: 8 })
   → ILoopVerdict { isStuck, repeatCount, offendingTool, ... }
 ```
 
-It groups by `(agent, tool, argsHash)` and counts. The service ([`plugins/proposals/src/lib/agents/loop-detector-service.ts`](plugins/proposals/src/lib/agents/loop-detector-service.ts)) wraps it with sliding-window accumulation, progress detection, and the handoff-packet write.
+It groups by `(agent, tool, argsHash)` and counts. The service ([`plugins/proposals/src/lib/agents/loop-detector-service.ts`](../../../../../plugins/proposals/src/lib/agents/loop-detector-service.ts)) wraps it with sliding-window accumulation, progress detection, and the handoff-packet write.
 
 **Four guards** (one per slice) suppress the false positive without weakening real-loop detection:
 
 ### S1 — outcome-aware sliding window
 
-Each `IExtendedToolCall` ([line 31-38](plugins/proposals/src/lib/agents/loop-detector-service.ts#L31-L38)) gains a new field:
+Each `IExtendedToolCall` ([line 31-38](../../../../../plugins/proposals/src/lib/agents/loop-detector-service.ts#L31-L38)) gains a new field:
 
 ```ts
 readonly outcome: 'ok' | 'retryable-error' | 'permanent-error';
@@ -110,7 +110,7 @@ The cooldown value (30s) matches the rate-limit TTL on most LLM backends. A real
 
 ### S3 — progress-aware agent-class filter
 
-Today `isModifying(tool)` ([line 139](plugins/proposals/src/lib/agents/loop-detector-service.ts#L139)) only returns `true` for `edit_file`, `write_file`, `replace_string_in_file`, `multi_replace_string_in_file`. **Critical tools are missing**: `agent_lock`, `proposal_transition`, `auto_work`, `delegate`. The current `madeProgress` detection ([line 232](plugins/proposals/src/lib/agents/loop-detector-service.ts#L232)) assumes `madeProgress = true` for non-modifying tools, which means **a failed `agent_lock claim` never registers as no-progress**.
+Today `isModifying(tool)` ([line 139](../../../../../plugins/proposals/src/lib/agents/loop-detector-service.ts#L139)) only returns `true` for `edit_file`, `write_file`, `replace_string_in_file`, `multi_replace_string_in_file`. **Critical tools are missing**: `agent_lock`, `proposal_transition`, `auto_work`, `delegate`. The current `madeProgress` detection ([line 232](../../../../../plugins/proposals/src/lib/agents/loop-detector-service.ts#L232)) assumes `madeProgress = true` for non-modifying tools, which means **a failed `agent_lock claim` never registers as no-progress**.
 
 This slice adds:
 
@@ -138,7 +138,7 @@ if (SWARM_COORDINATION_TOOLS.includes(toolName)) {
 }
 ```
 
-This means a swarm agent whose `agent_lock claim` keeps failing without changing the lock file **does** register as no-progress, and the existing `noProgressThreshold: 3` ([line 119](plugins/proposals/src/lib/agents/loop-detector-config.ts#L119)) catches it within 3 attempts — **before** the 8-repeat threshold.
+This means a swarm agent whose `agent_lock claim` keeps failing without changing the lock file **does** register as no-progress, and the existing `noProgressThreshold: 3` ([line 119](../../../../../plugins/proposals/src/lib/agents/loop-detector-config.ts#L119)) catches it within 3 attempts — **before** the 8-repeat threshold.
 
 The two thresholds cooperate: `noProgressStuck` (3) catches "stuck on a single swarm op"; `exactRepeatStuck` (8) catches "stuck on any tool". A real stuck swarm agent trips no-progress long before it trips repeat.
 
@@ -243,7 +243,7 @@ The second test is the **load-bearing regression spec**: it pins the detector's 
 ## notes
 
 - `plugins/proposals/src/lib/agents/agent-loop-detector.ts`: add `outcome` field, `cooldownMs` option, `groupConsecutiveRepeats` helper. Pure module — easy to test.
-- `plugins/proposals/src/lib/agents/loop-detector-service.ts`: populate `outcome` in `onToolCall`, add swarm-coordination progress detection. Sync path (`isAgentStuck`) gets the same filters — already mirrors async path per [l00008 H1 fix comment](plugins/proposals/src/lib/agents/loop-detector-service.ts#L338-L373).
+- `plugins/proposals/src/lib/agents/loop-detector-service.ts`: populate `outcome` in `onToolCall`, add swarm-coordination progress detection. Sync path (`isAgentStuck`) gets the same filters — already mirrors async path per [l00008 H1 fix comment](../../../../../plugins/proposals/src/lib/agents/loop-detector-service.ts#L338-L373).
 - `plugins/proposals/src/lib/agents/loop-detector-config.ts`: add `cooldownMs` to defaults + CLI overrides + config-file parser. Precedence unchanged (CLI > file > defaults).
 - `plugins/proposals/tests/src/lib/agents/loop-detector-load.spec.ts`: new file, replays the 2026-06-27 session fixture + a synthetic tight-loop fixture.
 
@@ -251,7 +251,7 @@ The second test is the **load-bearing regression spec**: it pins the detector's 
 
 - Origin proposal: l103 / `docs/mcp-vertex/proposals/.../l103-loop-detection-and-handoff.md`
 - Detected false-positive case: `docs/mcp-vertex/handoff/copilot-minimax-m3-1782596736291.json` (2026-06-27, repeatCount: 8)
-- Detector pure module: [`plugins/proposals/src/lib/agents/agent-loop-detector.ts`](plugins/proposals/src/lib/agents/agent-loop-detector.ts)
-- Detector service: [`plugins/proposals/src/lib/agents/loop-detector-service.ts`](plugins/proposals/src/lib/agents/loop-detector-service.ts)
-- Detector config: [`plugins/proposals/src/lib/agents/loop-detector-config.ts`](plugins/proposals/src/lib/agents/loop-detector-config.ts)
+- Detector pure module: [`plugins/proposals/src/lib/agents/agent-loop-detector.ts`](../../../../../plugins/proposals/src/lib/agents/agent-loop-detector.ts)
+- Detector service: [`plugins/proposals/src/lib/agents/loop-detector-service.ts`](../../../../../plugins/proposals/src/lib/agents/loop-detector-service.ts)
+- Detector config: [`plugins/proposals/src/lib/agents/loop-detector-config.ts`](../../../../../plugins/proposals/src/lib/agents/loop-detector-config.ts)
 - f00056 session evidence: `/memories/session/auto-work-2026-06-27-turn2-f00056-S4-fix-and-S5-handoff.md`

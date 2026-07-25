@@ -9,7 +9,7 @@ Antigravity through the `IHostAdapter` seam. See
 
 The extension is a **branded observability cockpit** for any running
 `mcp-vertex` MCP server. It connects over stdio via
-[`@mcp-vertex/client`](../packages/client/) and surfaces:
+[`@mcp-vertex/client`](../../packages/client) and surfaces:
 
 - **Tool tree** — server → plugins → tools, with hover descriptions
   from `knowledge`.
@@ -89,13 +89,13 @@ The extension is a **branded observability cockpit** for any running
 ## Brand assets
 
 The extension uses the same logo as the docs site:
-[`apps/web/public/logo.svg`](../apps/web/public/logo.svg). The asset
+[`apps/web/public/logo.svg`](../../apps/web/public/logo.svg). The asset
 is **copied byte-identically** to
-[`extensions/vscode/media/logo.svg`](../extensions/vscode/media/logo.svg) and
+[`extensions/vscode/media/logo.svg`](../../extensions/vscode/media/logo.svg) and
 verified by `bun run lint:brand`.
 
 A monochrome variant
-([`extensions/vscode/media/logo-mono.svg`](../extensions/vscode/media/logo-mono.svg))
+([`extensions/vscode/media/logo-mono.svg`](../../extensions/vscode/media/logo-mono.svg))
 is shipped for low-contrast themes. The palette is defined as CSS
 custom properties in
 [`extensions/vscode/media/dashboard.css`](../extensions/vscode/media/dashboard.css)

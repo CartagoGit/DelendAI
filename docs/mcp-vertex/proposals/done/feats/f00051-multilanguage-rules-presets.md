@@ -153,8 +153,8 @@ the first line — not just *what linter to run*.
 
 ### The rules plugin is structurally language-agnostic, but actually JS/TS-only
 
-A read of [`plugins/rules/src/lib/frameworks/types.ts`](../../plugins/rules/src/lib/frameworks/types.ts)
-and [`presets.ts`](../../plugins/rules/src/lib/frameworks/presets.ts) shows the plugin
+A read of [`plugins/rules/src/lib/frameworks/types.ts`](../../../../../plugins/rules/src/lib/frameworks/types.ts)
+and [`presets.ts`](../../../../../plugins/rules/src/lib/frameworks/presets.ts) shows the plugin
 was *designed* to be language-agnostic from the start:
 
 - `IRulePreset` is `linter: 'eslint' | 'pint'` (the union says "any linter");
@@ -163,7 +163,7 @@ was *designed* to be language-agnostic from the start:
   the field is *named* `eslint` but is a `readonly string[]` of config paths, so it
   carries any linter config the project ships;
 - `lintCheckCommand` / `lintFixCommand` in
-  [`rules-tools.ts:108-127`](../../plugins/rules/src/lib/tools/rules-tools.ts#L108-L127)
+  [`rules-tools.ts:108-127`](../../../../../plugins/rules/src/lib/tools/rules-tools.ts#L108-L127)
   already branch by `preset.linter` (eslint vs pint) and emit per-linter commands;
 - the manifest writes one config + one tsconfig per preset under `.cache/mcp-vertex/rules/`,
   which is exactly the shape Python/Go/Rust/etc. need (ruff.toml, .golangci.yml,
@@ -172,7 +172,7 @@ was *designed* to be language-agnostic from the start:
 What is **not** general:
 
 1. **Detection is JS-only.** `detectPresetForArea` in
-   [`detect-framework.ts`](../../plugins/rules/src/lib/frameworks/detect-framework.ts)
+   [`detect-framework.ts`](../../../../../plugins/rules/src/lib/frameworks/detect-framework.ts)
    reads `package.json` first, then `composer.json` / `artisan` for Laravel, and
    returns one of 13 framework ids. A workspace with `apps/api-py/` (no package.json)
    and `apps/web/` (Next.js) in the same repo is currently classified as
@@ -198,7 +198,7 @@ What is **not** general:
 
 ### The plugin's own README admits the gap
 
-[`plugins/rules/README.md`](../../plugins/rules/README.md) ends the "Supported presets"
+[`plugins/rules/README.md`](../../../../../plugins/rules/README.md) ends the "Supported presets"
 section with:
 
 > `angular`, `react-ts`, `react-js`, `vue`, `svelte`, `vanilla-ts`, `vanilla-js`,
@@ -214,15 +214,15 @@ proposal pays it down for the nine language families above.
 `a00032`'s universal-scopes refactor proved the `audit` plugin could be loaded
 inside a non-mcp-vertex host with no leakage of `mcp-vertex_metrics` /
 `ctx.keepLegacy` / `tool-outputs.ts` (see
-[`docs/proposals/done/audits/a00032-…-plugins.md`](../../proposals/done/audits/)).
+[`docs/proposals/done/audits/a00032-…-plugins.md`](../audits)).
 The same proof applies to `rules`: every other surface in
-[`packages/core/`](../../packages/core/) accepts a workspace-relative root and a
+[`packages/core/`](../../../../../packages/core) accepts a workspace-relative root and a
 `FileReader` injection, and the rules plugin already does. **What is missing is
 the language surface, not the host surface.**
 
 A Python project (Django/FastAPI), a Go service, a Rust CLI, or a polyglot
 microservice repo (the kind mcp-vertex's "polyglot workspace" use case implies in
-[`docs/CROSS-PROJECT-SETUP.md`](../../CROSS-PROJECT-SETUP.md)) should be able to
+[`docs/CROSS-PROJECT-SETUP.md`](../../../CROSS-PROJECT-SETUP.md)) should be able to
 run the same `mcp-vertex --plugins=rules` and get useful defaults per area.
 Today it cannot.
 
@@ -613,7 +613,7 @@ joined only at the tool-output layer (S7 widens `get_rules` to
 emit `dogmas[area]` alongside `conventions[area]`).
 
 The full per-language dogmas live in
-[`plugins/rules/src/lib/frameworks/dogmas/`](../../plugins/rules/src/lib/frameworks/dogmas/).
+[`plugins/rules/src/lib/frameworks/dogmas/`](../../../../../plugins/rules/src/lib/frameworks/dogmas).
 A curated sample (the most-used 12 languages; `f00052` expands this
 with the remaining ~58):
 
@@ -1096,7 +1096,7 @@ What a non-Node host does **not** get automatically:
   non-Node host that wants IDE integration has to ship its own
   (the LSP/MCP host abstraction in `packages/core` does not depend on VS
   Code, but the `extensions/vscode` package does); this is documented in
-  [`docs/CROSS-IDE.md`](../../CROSS-IDE.md) and unchanged by this proposal
+  [`docs/CROSS-IDE.md`](../../../CROSS-IDE.md) and unchanged by this proposal
 - the CLI in `packages/cli/` is still Node (Bun) — a non-Node host
   invokes the MCP server over stdio, not via the CLI
 

@@ -42,10 +42,10 @@ It also includes the user's ratification on three earlier questions:
 
 > **Updated 2026-06-25 (audit fix, CRITICAL C1 + I10):** the cache
 > lives inside the workspace at `${corePaths.cacheDir}/${pluginName}/`
-> (per [`AGENTS.md` §"Repo root layout"](../../../../AGENTS.md) — "the
+> (per [`AGENTS.md` §"Repo root layout"](../../../AGENTS.md) — "the
 > cache is ALWAYS the root cache — never per-folder"). No file in this
 > proposal escapes the workspace. The per-plugin subfolder convention
-> matches [`packages/core/src/lib/cli/assemble.ts:231`](../../../../packages/core/src/lib/cli/assemble.ts#L231)
+> matches [`packages/core/src/lib/cli/assemble.ts:231`](../../../packages/core/src/lib/cli/assemble.ts#L231)
 > (`pluginCacheDir: joinRel(corePaths.cacheDir, pluginName)`).
 
 Two storage locations, two purposes:
