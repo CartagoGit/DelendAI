@@ -106,6 +106,18 @@ describe('logs group (f00046 S4)', async () => {
 		});
 	});
 
+	it('logs errors-tail forwards its supported filters', async () => {
+		const { ctx, calls } = buildStubContext();
+		await find(logsCommands, 'logs errors-tail').run(
+			['--kind=tool-cancelled', '--max=10'],
+			ctx,
+		);
+		expect(calls[0]).toEqual({
+			tool: 'mcp-vertex_logs_errors_tail',
+			args: { kindFilter: 'tool-cancelled', limit: 10 },
+		});
+	});
+
 	it('logs redact-test requires a text sample', async () => {
 		const { ctx, calls } = buildStubContext();
 		const missing = await find(logsCommands, 'logs redact-test').run(
