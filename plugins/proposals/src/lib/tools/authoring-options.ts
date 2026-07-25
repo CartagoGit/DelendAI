@@ -100,6 +100,25 @@ export interface IAuthoringToolOptions {
 		readonly output: string;
 		readonly exitCode: number;
 	}>;
+	/**
+	 * a00072 S3.c: optional quality probe. When present, `close_slice`
+	 * runs the probe before flipping the slice to `done`. A result whose
+	 * `worst` is `critical` or `high` is treated as a blocker (the slice
+	 * is not flipped and the tool returns `ok:false` with
+	 * `blockerType: 'quality-failed'`). The probe is opt-in: hosts that
+	 * do not wire the quality plugin fall back to the existing
+	 * validation-only path.
+	 */
+	readonly runQuality?: () => Promise<{
+		readonly ok: boolean;
+		readonly worst:
+			| 'critical'
+			| 'high'
+			| 'medium'
+			| 'low'
+			| 'info'
+			| 'none';
+	}>;
 }
 
 export type IIndexedDocResolution =
