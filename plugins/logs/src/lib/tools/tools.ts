@@ -6,12 +6,14 @@ import {
 	type IToolRegistration,
 } from '@mcp-vertex/core/public';
 
+import type { ILogToolStores } from '../contracts/interfaces/tools.interface';
 import { correlateEvents } from '../services/correlate';
-import type { ILogStore } from '../services/log-store';
 import { LOG_OUTCOMES, type LogEventKind } from '../services/normalize-event';
 import type { ILogEvent } from '../services/normalize-event';
 import type { LogOutcome } from '../services/normalize-event';
 import { redactTest } from '../services/redact-test';
+
+export type { ILogToolStores } from '../contracts/interfaces/tools.interface';
 
 const LogOutcomeSchema = z.enum(LOG_OUTCOMES);
 const LogEventSchema = z.object({
@@ -111,11 +113,6 @@ const correlateOptionsFrom = (args: {
 	...(args.since !== undefined ? { since: args.since } : {}),
 	...(args.until !== undefined ? { until: args.until } : {}),
 });
-
-export interface ILogToolStores {
-	readonly main: ILogStore;
-	readonly errors: ILogStore;
-}
 
 export const buildLogToolRegistrations = (
 	prefix: string,
