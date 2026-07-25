@@ -57,10 +57,18 @@ declarado + el set base seguro cruza el límite.
 
 ### S1 — Helper `buildSafeEnv` + tests
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/external-mcps/src/lib/subprocess/env-filter.ts` (new),
   `plugins/external-mcps/src/lib/subprocess/env-filter.spec.ts` (new)
 - **Gate**: type
+- implementation:
+  - `buildSafeEnv({ entry, hostEnv, requiredKeys?, optionalKeys? })` returns `{ ok: true, env }` or `{ ok: false, code: 'missing-env', missing }`.
+  - Base allow-list: PATH, HOME, TMPDIR, TMP, LANG, LC_ALL, TERM, SHELL.
+  - When `entry.env` is empty, only the base keys are returned (resolved from hostEnv; absent base keys are dropped, not reported).
+  - `entry.env` entries are literal hostEnv references (`$VAR`) or literal text; required missing vars fail-closed with `code: 'missing-env'`.
+  - Optional missing vars are silently omitted from the result and are NOT in `missing`.
+  - Errors never print values, only names.
+  - 5 spec cases cover base-only, base+declared, declared-missing-strict, declared-missing-optional, and `process.env` isolation.
 - acceptance:
   - "Allow-list base: `PATH`, `HOME` (Unix), `TMPDIR`/`TMP`, `LANG`, `LC_ALL`, `TERM`, `SHELL`"
   - "Variables en `entry.env` se interpolan desde `hostEnv` o fallan"
