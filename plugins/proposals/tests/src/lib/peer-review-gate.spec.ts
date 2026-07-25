@@ -93,6 +93,7 @@ describe('runProposalTransition peer-review gate (a00069 S7)', () => {
 	let root = '';
 	let opts: IProposalTransitionToolOptions;
 	let docPath = '';
+	let peerReviewLogPath = '';
 
 	beforeEach(() => {
 		root = mkdtempSync(join(tmpdir(), 'peer-gate-'));
@@ -100,17 +101,33 @@ describe('runProposalTransition peer-review gate (a00069 S7)', () => {
 		mkdirSync(join(proposalsDir, 'review'), { recursive: true });
 		mkdirSync(join(proposalsDir, 'done', 'feature'), { recursive: true });
 		docPath = join(proposalsDir, 'review', 'f00888-peer.md');
+		peerReviewLogPath = join(
+			root,
+			'.cache/mcp-vertex/proposals/peer-review.jsonl',
+		);
 		opts = {
 			namespacePrefix: 'proposals',
 			workspaceRoot: root,
 			proposalsDirAbs: proposalsDir,
 			gitRunner: FAKE_GIT,
+			peerReviewLogPathAbs: peerReviewLogPath,
 		};
 	});
 	afterEach(() => rmSync(root, { recursive: true, force: true }));
 
 	const parse = (r: { content: Array<{ text?: string }> }) =>
 		JSON.parse(r.content[0]?.text ?? '{}');
+
+	const writeJournal = (entries: readonly Record<string, unknown>[]) => {
+		mkdirSync(join(root, '.cache/mcp-vertex/proposals'), {
+			recursive: true,
+		});
+		writeFileSync(
+			peerReviewLogPath,
+			`${entries.map((entry) => JSON.stringify(entry)).join('\n')}\n`,
+			'utf8',
+		);
+	};
 
 	it('blocks review→done without peer approve', async () => {
 		writeFileSync(docPath, DOC('- review-implementer: alice\n'), 'utf8');
@@ -127,6 +144,25 @@ describe('runProposalTransition peer-review gate (a00069 S7)', () => {
 
 	it('blocks self-approve even when review-state is done', async () => {
 		writeFileSync(docPath, DOC(SELF_APPROVE), 'utf8');
+		writeJournal([
+			{
+				kind: 'transition',
+				ts: '2026-07-25T10:00:00.000Z',
+				proposalId: 'f00888',
+				from: 'in-progress',
+				to: 'review',
+			},
+			{
+				kind: 'review',
+				ts: '2026-07-25T10:01:00.000Z',
+				proposalId: 'f00888',
+				sliceId: 'S1',
+				action: 'approve',
+				implementer: 'alice',
+				reviewer: 'alice',
+				verdict: 'approved',
+			},
+		]);
 		const body = parse(
 			await runProposalTransition(
 				{ id: 'f00888', to: 'done', reason: 'self' },
@@ -138,6 +174,25 @@ describe('runProposalTransition peer-review gate (a00069 S7)', () => {
 
 	it('allows review→done after independent approve', async () => {
 		writeFileSync(docPath, DOC(PEER_OK), 'utf8');
+		writeJournal([
+			{
+				kind: 'transition',
+				ts: '2026-07-25T10:00:00.000Z',
+				proposalId: 'f00888',
+				from: 'in-progress',
+				to: 'review',
+			},
+			{
+				kind: 'review',
+				ts: '2026-07-25T10:01:00.000Z',
+				proposalId: 'f00888',
+				sliceId: 'S1',
+				action: 'approve',
+				implementer: 'alice',
+				reviewer: 'bob',
+				verdict: 'approved',
+			},
+		]);
 		const body = parse(
 			await runProposalTransition(
 				{ id: 'f00888', to: 'done', reason: 'peer ok' },

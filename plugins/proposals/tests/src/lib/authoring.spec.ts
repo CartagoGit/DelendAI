@@ -40,6 +40,10 @@ describe('proposal authoring (create → board → close)', async () => {
 			// x00052: indexPathAbs moved to the cache root.
 			indexPathAbs: join(root, '.cache/mcp-vertex/proposals/index.json'),
 			lockPathAbs: join(root, '.cache/agents.lock.json'),
+			peerReviewLogPathAbs: join(
+				root,
+				'.cache/mcp-vertex/proposals/peer-review.jsonl',
+			),
 			counterPathAbs: join(root, '.cache/proposal-id-counters.json'),
 			// a00069 S5: default stub so suites with acceptance that demand
 			// validate never shell out; focused S5 specs override this.
@@ -273,6 +277,10 @@ describe('proposal authoring (create → board → close)', async () => {
 			/review-log: requested_changes by eagle — add a test/,
 		);
 		expect(doc).toMatch(/review-log: approved by owl/);
+		const reviewLog = readFileSync(opts.peerReviewLogPathAbs!, 'utf8');
+		expect(reviewLog).toContain('"proposalId":"f00084"');
+		expect(reviewLog).toContain('"action":"approve"');
+		expect(reviewLog).toContain('"reviewer":"owl"');
 	});
 
 	it('targets the exact slice even when the sliceId has regex metacharacters', async () => {
@@ -343,6 +351,10 @@ describe('x00055: redactSecrets on reviewer note in proposal_review', () => {
 			proposalsDirAbs: join(root, 'docs/mcp-vertex/proposals'),
 			indexPathAbs: join(root, '.cache/mcp-vertex/proposals/index.json'),
 			lockPathAbs: join(root, '.cache/agents.lock.json'),
+			peerReviewLogPathAbs: join(
+				root,
+				'.cache/mcp-vertex/proposals/peer-review.jsonl',
+			),
 			counterPathAbs: join(root, '.cache/proposal-id-counters.json'),
 		};
 		const create = await capture(buildCreateProposalRegistration(opts));

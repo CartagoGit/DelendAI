@@ -21,6 +21,7 @@ import type { IRescueCandidate } from '../contracts/interfaces/swarm-hygiene.int
 import { runStashSnapshot, type IStashEntry } from '../shared/stash-snapshot';
 import { detectAgentLoop, type IToolCall } from '../agents/agent-loop-detector';
 import { hasPeerApprovedReview } from '../swarm/proposal-review';
+import { readJsonOrNull } from '../proposals/index-reader';
 
 /**
  * Optional persistence step the orchestrator can opt into at slice
@@ -148,6 +149,8 @@ export const __resetIdleStreakForTesting = (): void => {
 };
 
 export interface IAutoWorkOrchestrationPolicy {
+	// a00072 S2.b: proposal sitting in review/ without an independent
+	// peer approve must surface proposal_review before any done step.
 	readonly lane: 'inspect-then-delegate';
 	readonly delegateAfterToolCalls: number;
 	readonly next: string;
@@ -307,6 +310,53 @@ const resolveClaimReady = async (
 			},
 		},
 	};
+};
+
+const buildPeerReviewPlan = (input: {
+	readonly namespacePrefix: string;
+	readonly proposalId: string;
+	readonly file: string;
+}) => ({
+	state: 'work' as const,
+	proposalId: input.proposalId,
+	file: input.file,
+	next: `${input.namespacePrefix}_proposal_review`,
+	nextAction: `Peer-review gate (F149). Call ${input.namespacePrefix}_proposal_review { action: "approve", proposalId: "${input.proposalId}", sliceId: "<finished-slice>", agent: "<reviewer≠implementer>" } before ${input.namespacePrefix}_proposal_transition { id: "${input.proposalId}", to: "done", reason } .`,
+	steps: [
+		`Open ${input.file} and identify finished slices awaiting review.`,
+		`Peer-review gate (F149): run ${input.namespacePrefix}_proposal_review { action: "approve" | "request_changes", proposalId: "${input.proposalId}", sliceId, agent: "<reviewer≠implementer>" } for each finished slice before done.`,
+		`Only after an independent approve is logged: ${input.namespacePrefix}_proposal_transition { id: "${input.proposalId}", to: "done", reason }.`,
+		`Repeat ${input.namespacePrefix}_auto_work.`,
+	],
+});
+
+const findReviewPendingPeerApproval = async (
+	options: Pick<IAutoWorkToolOptions, 'indexPathAbs' | 'proposalsDirAbs'>,
+): Promise<{ proposalId: string; file: string } | null> => {
+	if (options.proposalsDirAbs === undefined) return null;
+	const index = await readJsonOrNull<{
+		proposals?: Array<{ id: string; file: string }>;
+	}>(options.indexPathAbs);
+	for (const entry of index?.proposals ?? []) {
+		if (
+			!entry.file.startsWith('review/') &&
+			!entry.file.includes('/review/')
+		) {
+			continue;
+		}
+		try {
+			const raw = await readFile(
+				join(options.proposalsDirAbs, entry.file),
+				'utf8',
+			);
+			if (!hasPeerApprovedReview(raw)) {
+				return { proposalId: entry.id, file: entry.file };
+			}
+		} catch {
+			continue;
+		}
+	}
+	return null;
 };
 
 export const buildAutoWorkOrchestrationPolicy = (options: {
@@ -502,6 +552,20 @@ export const runAutoWork = async (
 		nextAction?: string;
 		pickedFromPaused?: boolean;
 	};
+	const requirePeer = options.requirePeerReview !== false;
+	if (requirePeer) {
+		const pendingReview = await findReviewPendingPeerApproval(options);
+		if (pendingReview !== null) {
+			consecutiveIdle = 0;
+			return json(
+				buildPeerReviewPlan({
+					namespacePrefix: options.namespacePrefix,
+					proposalId: pendingReview.proposalId,
+					file: pendingReview.file,
+				}),
+			);
+		}
+	}
 
 	if (next.kind !== 'next-proposal') {
 		// `all-claimed`: every actionable proposal is in_progress under
@@ -531,7 +595,6 @@ export const runAutoWork = async (
 
 	// a00069 S7 short-circuit: proposal sitting in review/ without an
 	// independent peer approve must not get an implement/claim plan.
-	const requirePeer = options.requirePeerReview !== false;
 	const inReviewFolder =
 		typeof next.file === 'string' &&
 		(next.file.startsWith('review/') || next.file.includes('/review/'));
@@ -551,20 +614,13 @@ export const runAutoWork = async (
 			approved = false;
 		}
 		if (!approved) {
-			const prefix = options.namespacePrefix;
-			return json({
-				state: 'work',
-				proposalId: next.proposalId,
-				file: next.file,
-				next: `${prefix}_proposal_review`,
-				nextAction: `Peer-review required (a00069 S7). Call ${prefix}_proposal_review { action: "approve", proposalId: "${next.proposalId}", sliceId: "<finished-slice>", agent: "<reviewer≠implementer>" } before proposal_transition → done.`,
-				steps: [
-					`Open ${next.file} and identify finished slices awaiting review.`,
-					`Run ${prefix}_proposal_review { action: "approve" | "request_changes", proposalId: "${next.proposalId}", sliceId, agent: "<reviewer≠implementer>" }.`,
-					`Only after an independent approve: ${prefix}_proposal_transition { id: "${next.proposalId}", to: "done", reason }.`,
-					`Repeat ${prefix}_auto_work.`,
-				],
-			});
+			return json(
+				buildPeerReviewPlan({
+					namespacePrefix: options.namespacePrefix,
+					proposalId: next.proposalId,
+					file: next.file,
+				}),
+			);
 		}
 	}
 
@@ -646,6 +702,7 @@ export const runAutoWork = async (
 	const steps = [
 		...worktreeStep,
 		`Open ${next.file} and pick the next atomic slice.`,
+		`If you do not already have an agent slot, call ${prefix}_agent_names before claiming files.`,
 		`If non-trivial: ${orchestration.next}; then ${prefix}_delegate one claimable slice to a subagent.`,
 		`Claim its files: ${prefix}_agent_lock { action: "claim", task_id, files }. On lock-conflict or all-claimed work, use ${prefix}_await_lock once (or wait for a lock-released notification) — do NOT poll status in a loop.`,
 		'Implement exactly that slice — nothing outside the claimed files.',
@@ -654,7 +711,9 @@ export const runAutoWork = async (
 			: [
 					'Validate per the project gate (see get_validation_matrix if present).',
 				]),
+		`If the logs plugin is loaded, run ${prefix}_logs_tail { limit: 50 } to confirm the slice's append events landed.`,
 		`Mark progress in the proposal, then ${prefix}_close_slice { id, sliceId } to flip the slice status and release the lock atomically.`,
+		`If the notification plugin is loaded, subscribe to ${prefix}_notify_status { kind: 'lock-released' } before claiming the next slice.`,
 		`If that was the last open slice for the proposal, run ${prefix}_sync_proposals once; otherwise do not sync mid-flight.`,
 		...persistStep,
 		`Repeat ${prefix}_auto_work for the next slice/proposal.`,
