@@ -1,8 +1,10 @@
 import {
 	existsSync,
+	mkdirSync,
 	mkdtempSync,
 	readFileSync,
 	rmSync,
+	utimesSync,
 	writeFileSync,
 } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -55,6 +57,28 @@ describe('AgentLoopDetectorService', async () => {
 		const service = new AgentLoopDetectorService(mockCtx);
 		expect(service).toBeDefined();
 		expect(service.isAgentStuck('read_file', {})).toBeNull();
+	});
+
+	it('prunes expired handoffs on the first healthy tool call', async () => {
+		const handoffDir = mockCtx.workspace.resolve(
+			'.cache/mcp-vertex/handoff',
+		);
+		mkdirSync(handoffDir, { recursive: true });
+		const expired = join(handoffDir, 'expired.json');
+		const current = join(handoffDir, 'current.json');
+		writeFileSync(expired, '{}');
+		writeFileSync(current, '{}');
+		utimesSync(expired, new Date(), new Date(Date.now() - 8 * 86_400_000));
+
+		const service = new AgentLoopDetectorService(mockCtx);
+		await service.onToolCall(
+			'read_file',
+			{ path: 'healthy.ts', agent: 'a1' },
+			{ ok: true },
+		);
+
+		expect(existsSync(expired)).toBe(false);
+		expect(existsSync(current)).toBe(true);
 	});
 
 	it('disables loop detection when --no-loop-detector flag is passed', async () => {
