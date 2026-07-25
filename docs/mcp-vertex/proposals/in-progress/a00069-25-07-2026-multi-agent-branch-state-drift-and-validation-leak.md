@@ -367,11 +367,10 @@ uno, con la disciplina `f00073`/`f00075`/`f00052` como referencia.
 
 - **Status**: done
 - **Files**:
-  - `plugins/proposals/src/index.ts` o hook de register post-boot.
-  - `plugins/proposals/src/lib/tools/state-tools.tool.ts` /
-    `zombie-reconcile.ts` (ya tienen purge; falta invocación automática).
-  - opcional: `packages/core` overview compact warning si registry
-    unhealthy.
+  - `plugins/proposals/src/index.ts` (`autoRepairOrphans`, default true)
+  - `plugins/proposals/src/lib/tools/state-tools.tool.ts`
+    (`runStateRepair`, `runAutoStateRepairOnBoot`)
+  - `plugins/proposals/src/lib/agents/zombie-reconcile.ts` (purge engine)
 - **Cambio**:
   - Tras cargar el plugin proposals (o en primer `overview` /
     `auto_work` de sesión), ejecutar purge de orphans con el TTL S6
