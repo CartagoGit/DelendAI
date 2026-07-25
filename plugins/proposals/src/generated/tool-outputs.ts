@@ -728,6 +728,7 @@ export interface ProposalsStateHealthOutput {
 		sessionReleases: number;
 		sessionImbalance: number;
 	};
+	peerReviewBypasses: number;
 	queue: {
 		queueLength: number;
 		queuedCount: number;
@@ -751,6 +752,7 @@ export interface ProposalsStateRepairOutput {
 			sessionReleases: number;
 			sessionImbalance: number;
 		};
+		peerReviewBypasses: number;
 		queue: {
 			queueLength: number;
 			queuedCount: number;
