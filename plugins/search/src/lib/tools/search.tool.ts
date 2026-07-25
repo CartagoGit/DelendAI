@@ -4,8 +4,10 @@ import type { IToolRegistration } from '@mcp-vertex/core/public';
 import { toolError, toolJson } from '@mcp-vertex/core/public';
 
 import type { IEmbedder } from '../embed/embedder';
+import { discoverProviders, type IEmbedProviderId } from '../embed/providers';
 import { InvalidSearchPatternError } from '../services/search-engine.service';
 import type { ISearchOptions } from '../services/search-engine.service';
+import type { IApiEmbedderFetch } from '../embed/build-api-embedder';
 import { runSearchWithMode } from './search-semantic.tool';
 
 export interface ISearchToolOptions {
@@ -17,6 +19,12 @@ export interface ISearchToolOptions {
 	readonly cacheDir?: string;
 	readonly pluginCacheDir?: string;
 	readonly embedder?: IEmbedder;
+	readonly env?: Readonly<Record<string, string | undefined>>;
+	readonly fetch?: IApiEmbedderFetch;
+	readonly hybridWeights?: {
+		readonly bm25?: number;
+		readonly vector?: number;
+	};
 }
 
 /**
@@ -29,6 +37,7 @@ export const buildSearchToolRegistrations = (
 ): readonly IToolRegistration[] => {
 	const prefix = options.namespacePrefix;
 	const defaults = options.defaults ?? {};
+	const availableProviders = discoverProviders(options.env);
 	return [
 		{
 			id: 'search',
@@ -45,6 +54,10 @@ export const buildSearchToolRegistrations = (
 							query: z.string(),
 							mode: z
 								.enum(['lexical', 'semantic', 'hybrid'])
+								.optional(),
+							consent: z.boolean().optional(),
+							providerId: z
+								.enum(['openai', 'voyage', 'cohere'])
 								.optional(),
 							roots: z.array(z.string()).optional(),
 							maxResults: z.number().optional(),
@@ -63,6 +76,12 @@ export const buildSearchToolRegistrations = (
 							usedRg: z.boolean(),
 							rgFallbackReason: z.string().optional(),
 							diagnostic: z.string().optional(),
+							availableProviders: z.array(
+								z.object({
+									id: z.enum(['openai', 'voyage', 'cohere']),
+									present: z.boolean(),
+								}),
+							),
 							hits: z.array(
 								z.object({
 									file: z.string(),
@@ -77,6 +96,8 @@ export const buildSearchToolRegistrations = (
 					async (args: {
 						query: string;
 						mode?: 'lexical' | 'semantic' | 'hybrid' | undefined;
+						consent?: boolean | undefined;
+						providerId?: IEmbedProviderId | undefined;
 						roots?: string[] | undefined;
 						maxResults?: number | undefined;
 						caseSensitive?: boolean | undefined;
@@ -92,6 +113,12 @@ export const buildSearchToolRegistrations = (
 									query: args.query,
 									...(args.mode !== undefined
 										? { mode: args.mode }
+										: {}),
+									...(args.consent !== undefined
+										? { consent: args.consent }
+										: {}),
+									...(args.providerId !== undefined
+										? { providerId: args.providerId }
 										: {}),
 									...(args.roots !== undefined
 										? { roots: args.roots }
@@ -133,6 +160,18 @@ export const buildSearchToolRegistrations = (
 									...(options.embedder !== undefined
 										? { embedder: options.embedder }
 										: {}),
+									...(options.env !== undefined
+										? { env: options.env }
+										: {}),
+									...(options.fetch !== undefined
+										? { fetch: options.fetch }
+										: {}),
+									...(options.hybridWeights !== undefined
+										? {
+												hybridWeights:
+													options.hybridWeights,
+											}
+										: {}),
 								},
 							);
 							return toolJson({
@@ -141,6 +180,7 @@ export const buildSearchToolRegistrations = (
 								truncated: result.truncated,
 								scanned: result.scanned,
 								usedRg: result.usedRg,
+								availableProviders,
 								...(result.rgFallbackReason !== undefined
 									? {
 											rgFallbackReason:

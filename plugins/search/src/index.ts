@@ -24,6 +24,12 @@ const OptionsSchema = z.object({
 	extensions: z.array(z.string()).optional(),
 	ignoreDirs: z.array(z.string()).optional(),
 	maxResults: z.number().optional(),
+	hybridWeights: z
+		.object({
+			bm25: z.number().optional(),
+			vector: z.number().optional(),
+		})
+		.optional(),
 });
 
 export default definePlugin({
@@ -58,6 +64,14 @@ export default definePlugin({
 				? { maxResults: opts.maxResults }
 				: {}),
 		};
+		const hybridWeights = {
+			...(opts.hybridWeights?.bm25 !== undefined
+				? { bm25: opts.hybridWeights.bm25 }
+				: {}),
+			...(opts.hybridWeights?.vector !== undefined
+				? { vector: opts.hybridWeights.vector }
+				: {}),
+		};
 		return {
 			tools: buildSearchToolRegistrations({
 				namespacePrefix: ctx.namespacePrefix,
@@ -65,6 +79,9 @@ export default definePlugin({
 				defaults,
 				cacheDir,
 				pluginCacheDir,
+				...(Object.keys(hybridWeights).length > 0
+					? { hybridWeights }
+					: {}),
 			}),
 			knowledge: [
 				{

@@ -2,8 +2,17 @@ import { isAbsolute, join } from 'node:path';
 import { readFile } from 'node:fs/promises';
 
 import type { IRankedHit } from '../contracts/interfaces/hybrid-rank.interface';
+import {
+	buildApiEmbedder,
+	type IApiEmbedderFetch,
+} from '../embed/build-api-embedder';
 import { runEmbedPipeline } from '../embed/embed-pipeline';
 import { defaultEmbedder, type IEmbedder } from '../embed/embedder';
+import {
+	discoverProviders,
+	resolveProviderApiKey,
+	type IEmbedProviderId,
+} from '../embed/providers';
 import { fuseRankings } from '../rank/fuse';
 import { clampMaxResults, preview } from '../services/search-engine.constants';
 import {
@@ -21,12 +30,54 @@ export interface ISearchSemanticToolOptions {
 	readonly cacheDir?: string;
 	readonly pluginCacheDir?: string;
 	readonly embedder?: IEmbedder;
+	readonly env?: Readonly<Record<string, string | undefined>>;
+	readonly fetch?: IApiEmbedderFetch;
+	readonly hybridWeights?: {
+		readonly bm25?: number;
+		readonly vector?: number;
+	};
 }
 
 export interface ISearchToolArgs extends ISearchOptions {
 	readonly query: string;
 	readonly mode?: SearchMode;
+	readonly consent?: boolean;
+	readonly providerId?: IEmbedProviderId;
 }
+
+const resolveEmbedder = (
+	args: ISearchToolArgs,
+	options: ISearchSemanticToolOptions,
+): IEmbedder => {
+	if (options.embedder !== undefined) {
+		return options.embedder;
+	}
+	if (args.consent !== true) {
+		return defaultEmbedder;
+	}
+	const provider =
+		(args.providerId !== undefined
+			? discoverProviders(options.env).find(
+					(candidate) =>
+						candidate.id === args.providerId && candidate.present,
+				)
+			: discoverProviders(options.env).find(
+					(candidate) => candidate.present,
+				)) ?? undefined;
+	if (provider === undefined) {
+		return defaultEmbedder;
+	}
+	const apiKey = resolveProviderApiKey(provider.id, options.env);
+	if (apiKey === undefined) {
+		return defaultEmbedder;
+	}
+	return buildApiEmbedder({
+		providerId: provider.id,
+		apiKey,
+		...(options.fetch !== undefined ? { fetch: options.fetch } : {}),
+		inputType: 'query',
+	});
+};
 
 const resolvePluginCacheDir = (options: ISearchSemanticToolOptions): string => {
 	if (options.pluginCacheDir !== undefined) {
@@ -157,24 +208,24 @@ export const runSearchWithMode = async (
 		return lexicalResult;
 	}
 
-	const embedder = options.embedder ?? defaultEmbedder;
+	const embedder = resolveEmbedder(args, options);
 	if (!(await embedder.isAvailable())) {
 		return lexicalResult;
 	}
 
 	let queryVector: readonly number[];
+	let pipeline;
 	try {
 		queryVector = await embedder.embed(args.query);
+		pipeline = await runEmbedPipeline({
+			workspaceRootAbs: options.workspaceRootAbs,
+			searchOptions,
+			embedder,
+			pluginCacheDir: resolvePluginCacheDir(options),
+		});
 	} catch {
 		return lexicalResult;
 	}
-
-	const pipeline = await runEmbedPipeline({
-		workspaceRootAbs: options.workspaceRootAbs,
-		searchOptions,
-		embedder,
-		pluginCacheDir: resolvePluginCacheDir(options),
-	});
 	if (!pipeline.available) {
 		return lexicalResult;
 	}
@@ -200,6 +251,9 @@ export const runSearchWithMode = async (
 			: fuseRankings({
 					bm25: scoreToRankedHits(lexicalResult.hits),
 					vector: vectorRanking,
+					...(options.hybridWeights !== undefined
+						? { weights: options.hybridWeights }
+						: {}),
 				}).hits.map((entry) => entry.id);
 	const truncated = rankedIds.length > maxResults;
 	const hits = await toToolResult(
