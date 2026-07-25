@@ -23,6 +23,10 @@ import { join, resolve } from 'node:path';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
 
+import {
+	packRewrittenTarball,
+	type IWorkspaceDepsPlan,
+} from '../publish/workspace-deps.ts';
 import { PUBLISH_ORDER } from '../release/release-plan';
 
 const ROOT = resolve('.');
@@ -127,50 +131,13 @@ const run = (cmd: string, args: string[], cwd: string): string =>
 /** The monorepo version every intra-repo `workspace:*` dep resolves to. */
 const MONOREPO_VERSION = (readPackageJson('.') as { version?: string }).version;
 
-/**
- * a00065 S4: `npm` cannot install a `workspace:*` dependency. `bun`
- * rewrites it at publish time, but `packages/client` and `packages/cli`
- * carry `@mcp-vertex/core`/`@mcp-vertex/client` as `workspace:*` in
- * DEPENDENCIES (not just devDeps, contrary to the release script's own
- * note) — so an `npm publish` of those two would ship an uninstallable
- * package. This smoke replicates the publish-time rewrite so it proves
- * the tarballs install under npm; the release script applies the same
- * rewrite. Rewrites the source package.json in place, packs, then always
- * restores it in `finally`.
- */
-const packWithResolvedWorkspaceDeps = (
-	pkgDir: string,
-	proj: string,
-): string => {
-	const pkgPath = join(ROOT, pkgDir, 'package.json');
-	const original = readFileSync(pkgPath, 'utf8');
-	try {
-		const pkg = JSON.parse(original) as Record<string, unknown>;
-		for (const section of ['dependencies', 'peerDependencies']) {
-			const deps = pkg[section];
-			if (typeof deps !== 'object' || deps === null) continue;
-			for (const [name, range] of Object.entries(
-				deps as Record<string, unknown>,
-			)) {
-				if (
-					typeof range === 'string' &&
-					range.startsWith('workspace:')
-				) {
-					(deps as Record<string, string>)[name] =
-						MONOREPO_VERSION ?? '*';
-				}
-			}
-		}
-		writeFileSync(pkgPath, `${JSON.stringify(pkg, null, '\t')}\n`);
-		const out = run(
-			'npm',
-			['pack', resolve(ROOT, pkgDir), '--pack-destination', proj],
-			proj,
-		).trim();
-		return join(proj, out.split('\n').pop()!.trim());
-	} finally {
-		writeFileSync(pkgPath, original);
-	}
+const WORKSPACE_PLAN: IWorkspaceDepsPlan = {
+	targetVersion: MONOREPO_VERSION ?? '*',
+	mcpVertexPackages: new Set(
+		PACKED_PACKAGE_DIRS.map((dir) => readPackageJson(dir).name).filter(
+			(name): name is string => typeof name === 'string',
+		),
+	),
 };
 
 const main = async (): Promise<void> => {
@@ -179,7 +146,11 @@ const main = async (): Promise<void> => {
 		// Pack each package (with workspace:* deps resolved) into the project.
 		const tarballs: string[] = [];
 		for (const pkgDir of PACKED_PACKAGE_DIRS) {
-			tarballs.push(packWithResolvedWorkspaceDeps(pkgDir, proj));
+			tarballs.push(
+				await packRewrittenTarball(join(ROOT, pkgDir), WORKSPACE_PLAN, {
+					outDir: proj,
+				}),
+			);
 		}
 
 		// Clean project that installs the tarballs (peer dep @mcp-vertex/core is
