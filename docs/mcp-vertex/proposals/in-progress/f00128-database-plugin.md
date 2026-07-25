@@ -43,9 +43,15 @@ docs/site and pairs with the `diagram` plugin (f00132).
 
 ### S1 — connection + schema introspection (read-only)
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/database/src/lib/introspect/`, `plugins/database/src/lib/tools/db-schema.tool.ts`
 - **Gate**: bun run validate
+- **Closed-by**: 94b12ccc
+- **Closed-evidence**:
+  - `plugins/database/src/lib/introspect/{introspect-engine.ts,sqlite-driver.ts,fake-driver.ts}` — driver-agnostic engine with `redactDsn()` credential redaction.
+  - `plugins/database/src/lib/tools/db-schema.tool.ts` — `db_schema` + `db_probe` tools; better-sqlite3 missing → typed `install-required` envelope.
+  - Wired into `tsconfig.base.json`, `vitest.shared.ts`, `plugin-defaults.ts`, `preset-catalog.ts` (standard + vertex), `release-plan.ts` PUBLISH_ORDER.
+  - 28/28 plugin tests pass; `verify:plugin-wiring:advisory` reports `database` fully wired.
 
 `db_schema` lists tables/columns/indexes/relations over a probed driver; DSN
 from env, redacted. Pure formatter over injected driver results.
