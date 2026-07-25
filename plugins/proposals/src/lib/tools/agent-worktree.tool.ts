@@ -3,8 +3,10 @@ import { z } from 'zod';
 import type { IToolRegistration } from '@mcp-vertex/core/public';
 
 import { runAgentWorktreeEngine } from '../agents/agent-worktree-engine';
+import { purgeStrandedBranches } from '../locks/branch-hygiene';
 import { createGitRunner } from '../shared/git-runner';
 import type { IGitRunner } from '../shared/git-runner';
+import { listAgentBranchesWithGit } from './branch-status.tool';
 
 export interface IAgentWorktreeToolOptions {
 	/** Tool namespace, e.g. `proposals` → `proposals_agent_worktree`. */
@@ -49,6 +51,24 @@ const AGENT_WORKTREE_OUTPUT_SCHEMA = z.object({
 	branch: z.string().optional(),
 	created: z.boolean().optional(),
 	removed: z.boolean().optional(),
+	strandedPurge: z
+		.object({
+			dryRun: z.boolean(),
+			candidates: z.array(
+				z.object({
+					branch: z.string(),
+					ahead: z.number().int().nonnegative(),
+					behind: z.number().int().nonnegative(),
+					lastCommitIso: z.string(),
+					worktreePath: z.string().nullable(),
+				}),
+			),
+			deleted: z.array(z.string()),
+			skipped: z.array(
+				z.object({ branch: z.string(), reason: z.string() }),
+			),
+		})
+		.optional(),
 	worktrees: z.array(WORKTREE_ENTRY_OUTPUT_SCHEMA).optional(),
 });
 
@@ -154,18 +174,33 @@ export const buildAgentWorktreeRegistration = (
 							? { worktreesDirRel: options.worktreesDirRel }
 							: {}),
 					});
+					const response =
+						result.ok && result.action === 'create'
+							? {
+									...result,
+									strandedPurge: await purgeStrandedBranches({
+										workspaceRoot: options.workspaceRoot,
+										dryRun: true,
+										listAgentBranches: async () =>
+											listAgentBranchesWithGit(
+												run,
+												options.workspaceRoot,
+											),
+									}),
+								}
+							: result;
 					return {
 						content: [
 							{
 								type: 'text' as const,
-								text: JSON.stringify(result),
+								text: JSON.stringify(response),
 							},
 						],
-						structuredContent: result as unknown as Record<
+						structuredContent: response as unknown as Record<
 							string,
 							unknown
 						>,
-						...(result.ok ? {} : { isError: true }),
+						...(response.ok ? {} : { isError: true }),
 					};
 				},
 			);
