@@ -11,7 +11,7 @@ export default defineConfig({
 	resolve: { alias: workspaceAliases(workspaceRoot) },
 	test: {
 		name: 'external-mcps',
-		include: ['tests/**/*.spec.ts'],
+		include: ['tests/**/*.spec.ts', 'src/**/*.spec.ts'],
 		exclude: ['**/node_modules/**', '**/dist/**'],
 		environment: 'node',
 		globals: false,
