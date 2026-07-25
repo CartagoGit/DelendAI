@@ -50,6 +50,8 @@ import i18nPlugin from '@mcp-vertex/i18n';
 import perfPlugin from '@mcp-vertex/perf';
 import techDebtPlugin from '@mcp-vertex/tech-debt';
 import usageTrackingPlugin from '../../../plugins/usage-tracking/src/index';
+import browserPlugin from '@mcp-vertex/browser';
+import refactorPlugin from '@mcp-vertex/refactor';
 
 import {
 	buildPackageModules,
@@ -81,10 +83,12 @@ const PLUGIN_SPECIFIERS: Readonly<Record<string, unknown>> = {
 	'mcp-perf': perfPlugin,
 	'mcp-tech-debt': techDebtPlugin,
 	'mcp-usage-tracking': usageTrackingPlugin,
+	'mcp-browser': browserPlugin,
+	'mcp-refactor': refactorPlugin,
 };
 
 const PLUGIN_LIST =
-	'proposals,rules,memory,git,quality,search,notification,docs,deps,logs,audit,status-marker,test-convention,web-fetch,cache,security,diagram,env,i18n,perf,tech-debt,usage-tracking';
+	'proposals,rules,memory,git,quality,search,notification,docs,deps,logs,audit,status-marker,test-convention,web-fetch,cache,security,diagram,env,i18n,perf,tech-debt,usage-tracking,browser,refactor';
 
 /**
  * Assemble the reference server with every plugin and harvest each
