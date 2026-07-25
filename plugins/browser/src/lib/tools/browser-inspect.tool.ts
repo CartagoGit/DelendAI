@@ -1,5 +1,4 @@
-import { randomUUID } from 'node:crypto';
-import { mkdir, rename, rm, writeFile } from 'node:fs/promises';
+import { mkdir, open, rename, rm } from 'node:fs/promises';
 import { dirname, join, resolve } from 'node:path';
 
 import { z } from 'zod';
@@ -109,9 +108,17 @@ const writeScreenshotAtomic = async (
 	data: Uint8Array,
 ): Promise<void> => {
 	await mkdir(dirname(path), { recursive: true });
-	const tempPath = `${path}.${randomUUID()}.tmp`;
+	const tempPath = `${path}.${Date.now().toString(36)}-${Math.random()
+		.toString(36)
+		.slice(2)}.tmp`;
 	try {
-		await writeFile(tempPath, data);
+		const handle = await open(tempPath, 'w');
+		try {
+			await handle.write(data);
+			await handle.sync();
+		} finally {
+			await handle.close();
+		}
 		await rename(tempPath, path);
 	} catch (error) {
 		await rm(tempPath, { force: true }).catch(() => undefined);

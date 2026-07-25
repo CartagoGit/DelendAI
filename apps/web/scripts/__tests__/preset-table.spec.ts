@@ -75,10 +75,11 @@ describe('preset-table', () => {
 			// `issues` stays in `full` (host-only).
 			expect(full?.effective).toContain('issues');
 			// `vertex` is independent — its effective membership equals
-			// its 12 declared members (f00119 S6 added auto-agent-selector),
-			// NOT swarm + a delta.
-			expect(vertex?.effective.length).toBe(12);
+			// its 13 declared members (f00119 S6 added auto-agent-selector,
+			// f00123 added refactor), NOT swarm + a delta.
+			expect(vertex?.effective.length).toBe(13);
 			expect(vertex?.effective).toContain('audit');
+			expect(vertex?.effective).toContain('refactor');
 			expect(vertex?.effective).toContain('issues');
 			expect(vertex?.effective).toContain('web-fetch');
 			expect(vertex?.effective).toContain('auto-agent-selector');
