@@ -1,8 +1,12 @@
+import { randomUUID } from 'node:crypto';
+
 import { joinRel, definePlugin } from '@mcp-vertex/core/public';
 import { z } from 'zod';
 
 import { createLogStore } from './lib/services/log-store';
 import {
+	extractAgentHint,
+	extractFilesHint,
 	isErrorOutcome,
 	normalizeEvent,
 	type ILogEvent,
@@ -14,6 +18,17 @@ import { buildLogToolRegistrations } from './lib/tools';
 // call context) — worth a bigger per-line budget before truncation
 // kicks in.
 const ERROR_STORE_MAX_LINE_BYTES = 32 * 1024;
+
+/** WeakMap requires an object key; a primitive/undefined args value
+ *  (rare — schema-less tools) just means no call-id correlation. */
+const asCorrelationKey = (value: unknown): object | null =>
+	typeof value === 'object' && value !== null ? value : null;
+
+const errorMessageOf = (error: unknown): string | undefined => {
+	if (error instanceof Error) return error.message;
+	if (typeof error === 'string') return error;
+	return undefined;
+};
 
 export default definePlugin({
 	name: 'logs',
@@ -41,6 +56,17 @@ export default definePlugin({
 			typeof ctx.options.retentionCount === 'number'
 				? ctx.options.retentionCount
 				: 10;
+
+		// Pairs a `tool-started` line with its eventual `tool-completed`/
+		// `tool-failed`/`tool-cancelled` line via a per-invocation id.
+		// Without this, two concurrent calls to the SAME tool (routine in
+		// a multi-agent swarm) are indistinguishable in the log — both
+		// share the identical `taskId` (the tool name), so there is no
+		// way to tell which start belongs to which outcome. Keyed by the
+		// args object identity, which core hands to every hook for one
+		// invocation unchanged (confirmed against `create-mcp-project.ts`'s
+		// `wrap()`), so concurrent calls to the same tool never collide.
+		const inFlightCallIds = new WeakMap<object, string>();
 
 		// Every event lands in the main timeline (`logs/*.jsonl`); any
 		// event whose outcome didn't cleanly reach `ok`/`idle` ALSO lands
@@ -103,54 +129,86 @@ export default definePlugin({
 						'# Operational event log',
 						'',
 						'The logs plugin persists redacted JSONL events under `.cache/mcp-vertex/results/logs/` (every event) and ALSO under `.cache/mcp-vertex/results/logs-errors/` (only events whose outcome is not `ok`/`idle` — failed, timed-out, dead, cancelled or unknown).',
-						'It captures tool start/completion/failure/cancellation through core hooks, including `elapsedMs` for every completed/failed call (not just cancellations) and the error `.stack` when available.',
+						'It captures tool start/completion/failure/cancellation through core hooks with real detail: `elapsedMs` for every completed/failed call (not just cancellations), the error `.stack` when available, a `callId` in `meta` pairing a `tool-started` line to its eventual outcome even when the same tool runs concurrently (routine in a multi-agent swarm), and best-effort `agent`/`files` fields extracted from the call args (and result, for files) — populated whenever the tool itself takes an `agent`/`agentName` or `path`/`file`/`filePath`/`files`/`paths` argument.',
+						'`agent` and `files` are top-level fields on every event (not buried in `meta`), so `<prefix>_query`/`<prefix>_tail`/`<prefix>_correlate` can filter or scan by them even with `includeMeta:false` — and a `tool-failed` summary already reads e.g. `tool-failed: proposals_agent_lock — lock held by another agent (812ms)`, no second call needed just to see what broke.',
 						'Both streams are day-rotated JSONL, each retained independently to the newest `retentionCount` files (default 10, oldest dropped first) — history from earlier sessions survives as long as it fits that window.',
 						'A `server-started` event marks each host boot (pid + workspace).',
-						'`<prefix>_errors_tail` is the fast path for "where do I look for bugs": it reads ONLY the curated error stream, with full `meta` (args/result/error/stack) included by default.',
+						'`<prefix>_errors_tail` is the fast path for "where do I look for bugs": it reads ONLY the curated error stream, with full `meta` (args/result/error/stack/callId) included by default.',
 					].join('\n'),
 				},
 			],
-			onToolStart: async (toolName, args) =>
-				appendEvent(
+			onToolStart: async (toolName, args) => {
+				const callId = randomUUID();
+				const key = asCorrelationKey(args);
+				if (key) inFlightCallIds.set(key, callId);
+				return appendEvent(
 					normalizeEvent('tool-started', {
 						toolName,
 						taskId: toolName,
+						callId,
+						agent: extractAgentHint(args),
+						files: extractFilesHint(args, undefined),
 						args,
 						summary: `tool-started: ${toolName}`,
 					}),
-				),
-			onToolCall: async (toolName, args, result, error, elapsedMs) =>
-				appendEvent(
+				);
+			},
+			onToolCall: async (toolName, args, result, error, elapsedMs) => {
+				const key = asCorrelationKey(args);
+				const callId = key ? inFlightCallIds.get(key) : undefined;
+				if (key) inFlightCallIds.delete(key);
+				const roundedElapsed =
+					typeof elapsedMs === 'number'
+						? Math.round(elapsedMs)
+						: undefined;
+				const durationSuffix =
+					roundedElapsed !== undefined
+						? ` (${roundedElapsed}ms)`
+						: '';
+				const message = errorMessageOf(error);
+				const summary = error
+					? `tool-failed: ${toolName}${message ? ` — ${message}` : ''}${durationSuffix}`
+					: `tool-completed: ${toolName}${durationSuffix}`;
+				return appendEvent(
 					normalizeEvent(error ? 'tool-failed' : 'tool-completed', {
 						toolName,
 						taskId: toolName,
+						callId,
+						agent: extractAgentHint(args),
+						files: extractFilesHint(args, result),
 						args,
 						result,
 						error:
 							error instanceof Error
 								? { message: error.message, stack: error.stack }
 								: error,
-						elapsedMs:
-							typeof elapsedMs === 'number'
-								? Math.round(elapsedMs)
-								: undefined,
-						summary: `${error ? 'tool-failed' : 'tool-completed'}: ${toolName}`,
+						elapsedMs: roundedElapsed,
+						summary,
 					}),
-				),
+				);
+			},
 			// f00111 S2: client aborted the call while the handler was
 			// running. The handler's own completion/failure still logs
 			// separately when it settles — both lines together tell whether
-			// the cancel raced a fast tool or interrupted a slow one.
-			onToolCancel: async (toolName, args, elapsedMs) =>
-				appendEvent(
+			// the cancel raced a fast tool or interrupted a slow one. Does
+			// NOT clear `inFlightCallIds`: the completion/failure still
+			// needs the same `callId` when it settles later.
+			onToolCancel: async (toolName, args, elapsedMs) => {
+				const key = asCorrelationKey(args);
+				const callId = key ? inFlightCallIds.get(key) : undefined;
+				return appendEvent(
 					normalizeEvent('tool-cancelled', {
 						toolName,
 						taskId: toolName,
+						callId,
+						agent: extractAgentHint(args),
+						files: extractFilesHint(args, undefined),
 						args,
 						elapsedMs: Math.round(elapsedMs),
 						summary: `tool-cancelled: ${toolName} after ${Math.round(elapsedMs)}ms`,
 					}),
-				),
+				);
+			},
 		};
 	},
 });
