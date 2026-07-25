@@ -2,10 +2,15 @@
 id: x00152
 kind: fix
 title: "REL-001 · Publicar exactamente los tarballs verificados (rewrite workspace:* compartido)"
-status: ready
+status: done
 type: proposal
 track: release+supply-chain
 date: 2026-07-25
+closed-by: copilot-minimax-m3
+closed-evidence:
+  - S1: 7cbb8cfb feat(x00152): REL-001 S1 shared workspace-deps rewrite helper
+  - S2: 9416ae14 feat(x00152): REL-001 S2 publishTarballs with verified tarballs
+  - S3: dd10e992 test(x00152): REL-001 S3 e2e install + boot smoke for verified tarballs
 related:
   - a00070 # intake auditoría externa
   - a00071 # auditoría independiente
