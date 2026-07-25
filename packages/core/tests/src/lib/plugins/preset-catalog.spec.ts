@@ -30,9 +30,10 @@ describe('PRESET_CATALOG', async () => {
 		expect(PRESET_CATALOG[3]?.members.length).toBe(7);
 		// full: adds 2 host-only on top of swarm
 		expect(PRESET_CATALOG[4]?.members.length).toBe(2);
-		// vertex: 15 members (f00119 S6 added auto-agent-selector,
-		// f00123 S2 added refactor, f00126 S3 added perf, f00128 S1 added database; mirrors mcp-vertex.config.json)
-		expect(PRESET_CATALOG[5]?.members.length).toBe(15);
+		// vertex: 16 members (f00119 S6 added auto-agent-selector,
+		// f00123 S2 added refactor, f00126 S3 added perf, f00127 S3 added prompt-eval,
+		// f00128 S1 added database; mirrors mcp-vertex.config.json)
+		expect(PRESET_CATALOG[5]?.members.length).toBe(16);
 	});
 
 	it('defines `lean` as an independent essentials preset', async () => {
@@ -185,7 +186,7 @@ describe('resolvePresetMembers', async () => {
 
 	it('resolves vertex to ONLY its declared members (independent, skips chain)', async () => {
 		const resolved = resolvePresetMembers('vertex');
-		expect(resolved.length).toBe(15);
+		expect(resolved.length).toBe(16);
 		for (const required of [
 			'conventions',
 			'docs',
@@ -202,6 +203,7 @@ describe('resolvePresetMembers', async () => {
 			'issues',
 			'audit',
 			'auto-agent-selector',
+			'prompt-eval',
 		]) {
 			expect(resolved).toContain(required);
 		}

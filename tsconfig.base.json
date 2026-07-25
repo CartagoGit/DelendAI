@@ -159,6 +159,11 @@
 				"./plugins/conventions/src/public/index.ts"
 			],
 			"@mcp-vertex/conventions/*": ["./plugins/conventions/src/*"],
+			"@mcp-vertex/database": ["./plugins/database/src/index.ts"],
+			"@mcp-vertex/database/public": [
+				"./plugins/database/src/public/index.ts"
+			],
+			"@mcp-vertex/database/*": ["./plugins/database/src/*"],
 			"@mcp-vertex/web-fetch": ["./plugins/web-fetch/src/index.ts"],
 			"@mcp-vertex/web-fetch/public": [
 				"./plugins/web-fetch/src/public/index.ts"
