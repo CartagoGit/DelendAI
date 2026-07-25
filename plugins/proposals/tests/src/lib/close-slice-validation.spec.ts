@@ -1,7 +1,7 @@
 /**
- * a00069 S5 — close_slice must run the host validationCommand when the
- * slice gate/acceptance demands it, refuse to flip status on failure,
- * and skip validate for gate none/lint without demanding acceptance.
+ * a00072 S5 — close_slice requires recent validate evidence before it
+ * flips a slice to done. The shell-out helper remains unit-tested in
+ * tools/close-slice-validation.spec.ts.
  */
 import {
 	mkdirSync,
@@ -43,6 +43,16 @@ const capture = async (
 };
 const parse = (r: { content: Array<{ text: string }> }): any =>
 	JSON.parse(r.content[0]?.text ?? '{}');
+
+const recentValidate = () => ({
+	timestamp: new Date().toISOString(),
+	exitCode: 0,
+});
+
+const staleValidate = () => ({
+	timestamp: new Date(Date.now() - 25 * 60 * 60 * 1000).toISOString(),
+	exitCode: 0,
+});
 
 const SLICE_DOC = (gate: string, acceptance?: string[]): string => {
 	const accept =
@@ -116,6 +126,15 @@ describe('close_slice validation gate (a00069 S5)', () => {
 	});
 	afterEach(() => rmSync(root, { recursive: true, force: true }));
 
+	const writeValidateLog = (lines: readonly string[]) => {
+		const logPath = join(
+			root,
+			'.cache/mcp-vertex/results/logs/validate.jsonl',
+		);
+		mkdirSync(join(logPath, '..'), { recursive: true });
+		writeFileSync(logPath, `${lines.join('\n')}\n`, 'utf8');
+	};
+
 	const seed = async (md: string) => {
 		writeFileSync(docPath, md, 'utf8');
 		await syncProposalRegistry(root, {
@@ -124,22 +143,9 @@ describe('close_slice validation gate (a00069 S5)', () => {
 		});
 	};
 
-	it('returns validation-error and does not flip status when validate fails', async () => {
+	it('returns validate-required and does not flip status when evidence is missing', async () => {
 		await seed(SLICE_DOC('type'));
-		let calls = 0;
-		const close = await capture(
-			buildCloseSliceRegistration({
-				...optsBase,
-				runValidation: async () => {
-					calls += 1;
-					return {
-						ok: false,
-						output: 'FAIL: typecheck',
-						exitCode: 2,
-					};
-				},
-			}),
-		);
+		const close = await capture(buildCloseSliceRegistration(optsBase));
 		const result = await close({
 			proposalId: 'f00999',
 			sliceId: 's1',
@@ -148,74 +154,59 @@ describe('close_slice validation gate (a00069 S5)', () => {
 		expect(result.isError).toBe(true);
 		const body = parse(result);
 		expect(body.ok).toBe(false);
-		expect(body.kind).toBe('validation-error');
+		expect(body.blockerType).toBe('validate-required');
 		expect(body.closed).toBe(false);
-		expect(body.validationOutput).toMatch(/FAIL: typecheck/);
-		expect(calls).toBe(1);
 		const doc = readFileSync(docPath, 'utf8');
 		expect(doc).toMatch(/- \*\*Status\*\*: pending/);
 		expect(doc).not.toMatch(/- \*\*Status\*\*: done/);
 	});
 
-	it('closes after green validate when gate is type', async () => {
+	it('closes after recent inline validate evidence', async () => {
 		await seed(SLICE_DOC('type'));
-		let calls = 0;
-		const close = await capture(
-			buildCloseSliceRegistration({
-				...optsBase,
-				runValidation: async () => {
-					calls += 1;
-					return { ok: true, output: 'green', exitCode: 0 };
-				},
-			}),
-		);
+		const close = await capture(buildCloseSliceRegistration(optsBase));
 		const body = parse(
 			await close({
 				proposalId: 'f00999',
 				sliceId: 's1',
 				releaseLock: false,
+				validateEvidence: recentValidate(),
 			}),
 		);
 		expect(body.closed).toBe(true);
-		expect(calls).toBe(1);
 		expect(readFileSync(docPath, 'utf8')).toMatch(/- \*\*Status\*\*: done/);
 	});
 
-	it('skips validate for gate none without acceptance', async () => {
+	it('rejects stale inline validate evidence', async () => {
 		await seed(SLICE_DOC('none'));
-		let calls = 0;
-		const close = await capture(
-			buildCloseSliceRegistration({
-				...optsBase,
-				runValidation: async () => {
-					calls += 1;
-					return { ok: true, output: 'should-not-run', exitCode: 0 };
-				},
-			}),
-		);
+		const close = await capture(buildCloseSliceRegistration(optsBase));
 		const body = parse(
 			await close({
 				proposalId: 'f00999',
 				sliceId: 's1',
 				releaseLock: false,
+				validateEvidence: staleValidate(),
 			}),
 		);
-		expect(body.closed).toBe(true);
-		expect(calls).toBe(0);
+		expect(body.ok).toBe(false);
+		expect(body.blockerType).toBe('validate-required');
 	});
 
-	it('skips validate for gate lint without acceptance', async () => {
+	it('reads disk evidence and skips malformed JSON lines', async () => {
 		await seed(SLICE_DOC('lint'));
-		let calls = 0;
-		const close = await capture(
-			buildCloseSliceRegistration({
-				...optsBase,
-				runValidation: async () => {
-					calls += 1;
-					return { ok: false, output: 'nope', exitCode: 1 };
-				},
+		writeValidateLog([
+			'not-json',
+			JSON.stringify({
+				ts: new Date(Date.now() - 26 * 60 * 60 * 1000).toISOString(),
+				result: 'pass',
+				exitCode: 0,
 			}),
-		);
+			JSON.stringify({
+				ts: new Date().toISOString(),
+				result: 'pass',
+				exitCode: 0,
+			}),
+		]);
+		const close = await capture(buildCloseSliceRegistration(optsBase));
 		const body = parse(
 			await close({
 				proposalId: 'f00999',
@@ -224,30 +215,20 @@ describe('close_slice validation gate (a00069 S5)', () => {
 			}),
 		);
 		expect(body.closed).toBe(true);
-		expect(calls).toBe(0);
 	});
 
-	it('runs validate when acceptance lists bun test even if gate is none', async () => {
+	it('force:true suppresses the validate-required rejection', async () => {
 		await seed(SLICE_DOC('none', ['bun test']));
-		let calls = 0;
-		const close = await capture(
-			buildCloseSliceRegistration({
-				...optsBase,
-				runValidation: async () => {
-					calls += 1;
-					return { ok: true, output: 'ok', exitCode: 0 };
-				},
-			}),
-		);
+		const close = await capture(buildCloseSliceRegistration(optsBase));
 		const body = parse(
 			await close({
 				proposalId: 'f00999',
 				sliceId: 's1',
 				releaseLock: false,
+				force: true,
 			}),
 		);
 		expect(body.closed).toBe(true);
-		expect(calls).toBe(1);
 	});
 });
 
@@ -289,18 +270,18 @@ describe('close_slice quality gate (a00072 S3.c)', () => {
 		const close = await capture(
 			buildCloseSliceRegistration({
 				...optsBase,
-				runValidation: async () => ({
-					ok: true,
-					output: 'green',
-					exitCode: 0,
+				runQuality: async () => ({
+					ok: false,
+					severity: 'error',
+					findings: ['critical'],
 				}),
-				runQuality: async () => ({ ok: false, worst: 'critical' }),
 			}),
 		);
 		const result = await close({
 			proposalId: 'f00999',
 			sliceId: 's1',
 			releaseLock: false,
+			validateEvidence: recentValidate(),
 		});
 		expect(result.isError).toBe(true);
 		const body = parse(result);
@@ -314,17 +295,17 @@ describe('close_slice quality gate (a00072 S3.c)', () => {
 		);
 	});
 
-	it('returns quality-failed when runQuality reports high', async () => {
+	it('returns quality-failed with blockerDetail when runQuality reports severity=error', async () => {
 		await seed(SLICE_DOC('type'));
 		const close = await capture(
 			buildCloseSliceRegistration({
 				...optsBase,
-				runValidation: async () => ({
-					ok: true,
-					output: 'green',
-					exitCode: 0,
+				runQuality: async () => ({
+					ok: false,
+					severity: 'error',
+					findings: ['high'],
+					summary: { ok: false, scopes: 1 },
 				}),
-				runQuality: async () => ({ ok: false, worst: 'high' }),
 			}),
 		);
 		const body = parse(
@@ -332,23 +313,29 @@ describe('close_slice quality gate (a00072 S3.c)', () => {
 				proposalId: 'f00999',
 				sliceId: 's1',
 				releaseLock: false,
+				validateEvidence: recentValidate(),
 			}),
 		);
 		expect(body.ok).toBe(false);
 		expect(body.blockerType).toBe('quality-failed');
+		expect(body.blockerDetail).toEqual({
+			ok: false,
+			severity: 'error',
+			findings: ['high'],
+			summary: { ok: false, scopes: 1 },
+		});
 	});
 
-	it('closes when runQuality reports worst=medium (below the gate)', async () => {
+	it('closes when runQuality reports severity=ok (gate passes)', async () => {
 		await seed(SLICE_DOC('type'));
 		const close = await capture(
 			buildCloseSliceRegistration({
 				...optsBase,
-				runValidation: async () => ({
+				runQuality: async () => ({
 					ok: true,
-					output: 'green',
-					exitCode: 0,
+					severity: 'ok',
+					findings: [],
 				}),
-				runQuality: async () => ({ ok: false, worst: 'medium' }),
 			}),
 		);
 		const body = parse(
@@ -356,54 +343,24 @@ describe('close_slice quality gate (a00072 S3.c)', () => {
 				proposalId: 'f00999',
 				sliceId: 's1',
 				releaseLock: false,
+				validateEvidence: recentValidate(),
 			}),
 		);
 		expect(body.closed).toBe(true);
 		expect(readFileSync(docPath, 'utf8')).toMatch(/- \*\*Status\*\*: done/);
 	});
 
-	it('closes when runQuality reports ok=true', async () => {
-		await seed(SLICE_DOC('type'));
-		const close = await capture(
-			buildCloseSliceRegistration({
-				...optsBase,
-				runValidation: async () => ({
-					ok: true,
-					output: 'green',
-					exitCode: 0,
-				}),
-				runQuality: async () => ({ ok: true, worst: 'none' }),
-			}),
-		);
-		const body = parse(
-			await close({
-				proposalId: 'f00999',
-				sliceId: 's1',
-				releaseLock: false,
-			}),
-		);
-		expect(body.closed).toBe(true);
-	});
-
 	it('skips the quality probe when runQuality is not wired', async () => {
 		// The default `optsBase` has no runQuality — the close must
 		// succeed without invoking any quality check.
 		await seed(SLICE_DOC('type'));
-		const close = await capture(
-			buildCloseSliceRegistration({
-				...optsBase,
-				runValidation: async () => ({
-					ok: true,
-					output: 'green',
-					exitCode: 0,
-				}),
-			}),
-		);
+		const close = await capture(buildCloseSliceRegistration(optsBase));
 		const body = parse(
 			await close({
 				proposalId: 'f00999',
 				sliceId: 's1',
 				releaseLock: false,
+				validateEvidence: recentValidate(),
 			}),
 		);
 		expect(body.closed).toBe(true);
