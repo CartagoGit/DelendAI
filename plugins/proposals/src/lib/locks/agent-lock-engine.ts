@@ -8,7 +8,8 @@
  * `DEFAULT_PATH_LAYOUT`.
  */
 
-import { readFile, stat } from 'node:fs/promises';
+import { readFile, readdir, rm, stat } from 'node:fs/promises';
+import { basename, dirname, join } from 'node:path';
 
 import {
 	LockContentionError,
@@ -51,6 +52,13 @@ export type ILockFile = {
 	stale_after_minutes: number;
 	in_flight: ILockEntry[];
 };
+
+export interface IAgentLockTmpFileInfo {
+	readonly absPath: string;
+	readonly relName: string;
+	readonly mtime: string;
+	readonly ageSeconds: number;
+}
 
 export type IAgentLockDeps = {
 	lockPath?: string;
@@ -114,6 +122,19 @@ export const resetAgentLockSessionBalance = (): void => {
 
 const CONTENTION_NEXT =
 	'Do not busy-poll agent_lock status. Call notification_await_lock (or wait for a lock-released notification via notify_status), then retry the claim once ownership is free.';
+
+export const AGENT_LOCK_TMP_STALE_MS = 60_000;
+
+const EMPTY_LOCK = (): ILockFile => ({
+	version: 1,
+	stale_after_minutes: 10,
+	in_flight: [],
+});
+
+const isAgentLockTmpFile = (lockPath: string, candidate: string): boolean => {
+	const expectedPrefix = `${basename(lockPath)}.`;
+	return candidate.startsWith(expectedPrefix) && candidate.endsWith('.tmp');
+};
 
 const lockResult = (
 	payload: Record<string, unknown>,
@@ -220,17 +241,91 @@ const fileExists = async (path: string): Promise<boolean> => {
 	}
 };
 
-const readLock = async (deps: IAgentLockDeps = {}): Promise<ILockFile> => {
+export const listStaleAgentLockTmpFiles = async (
+	lockPath: string,
+	staleMs = AGENT_LOCK_TMP_STALE_MS,
+): Promise<readonly IAgentLockTmpFileInfo[]> => {
+	const dir = dirname(lockPath);
+	const nowMs = Date.now();
+	const entries = await readdir(dir, { withFileTypes: true }).catch(() => []);
+	const staleTmpFiles: IAgentLockTmpFileInfo[] = [];
+	for (const entry of entries) {
+		if (!entry.isFile()) continue;
+		if (!isAgentLockTmpFile(lockPath, entry.name)) continue;
+		const absPath = join(dir, entry.name);
+		const info = await stat(absPath).catch(() => null);
+		if (info === null) continue;
+		const ageMs = nowMs - info.mtimeMs;
+		if (ageMs <= staleMs) continue;
+		staleTmpFiles.push({
+			absPath,
+			relName: entry.name,
+			mtime: info.mtime.toISOString(),
+			ageSeconds: Math.floor(ageMs / 1000),
+		});
+	}
+	staleTmpFiles.sort((a, b) => a.absPath.localeCompare(b.absPath));
+	return staleTmpFiles;
+};
+
+export const sweepStaleAgentLockTmpFiles = async (
+	lockPath: string,
+	staleMs = AGENT_LOCK_TMP_STALE_MS,
+): Promise<readonly IAgentLockTmpFileInfo[]> => {
+	const staleTmpFiles = await listStaleAgentLockTmpFiles(lockPath, staleMs);
+	for (const tmpFile of staleTmpFiles) {
+		await rm(tmpFile.absPath, { force: true }).catch(() => undefined);
+	}
+	return staleTmpFiles;
+};
+
+export const cleanupStaleAgentLockState = async (
+	deps: IAgentLockDeps = {},
+	options: {
+		readonly staleTmpMs?: number;
+	} = {},
+): Promise<{
+	readonly droppedClaims: number;
+	readonly droppedTmpFiles: number;
+	readonly lock: ILockFile;
+}> => {
+	const raw = await loadLock(deps);
+	const cleaned = removeStale(raw);
+	if (cleaned.in_flight.length !== raw.in_flight.length) {
+		await writeLock(cleaned, deps);
+	}
+	const droppedTmpFiles = await sweepStaleAgentLockTmpFiles(
+		getLockPath(deps),
+		options.staleTmpMs,
+	);
+	return {
+		droppedClaims: raw.in_flight.length - cleaned.in_flight.length,
+		droppedTmpFiles: droppedTmpFiles.length,
+		lock: cleaned,
+	};
+};
+
+const loadLock = async (deps: IAgentLockDeps = {}): Promise<ILockFile> => {
 	const lockPath = getLockPath(deps);
 	let raw: string;
 	try {
 		raw = await readFile(lockPath, 'utf8');
 	} catch {
-		return { version: 1, stale_after_minutes: 10, in_flight: [] };
+		return EMPTY_LOCK();
 	}
 	const parsed = JSON.parse(raw) as ILockFile;
 	if (!Array.isArray(parsed.in_flight)) parsed.in_flight = [];
 	return parsed;
+};
+
+export const readLock = async (
+	deps: IAgentLockDeps = {},
+): Promise<ILockFile> => {
+	const lockPath = getLockPath(deps);
+	const raw = await loadLock(deps);
+	const cleaned = removeStale(raw);
+	await sweepStaleAgentLockTmpFiles(lockPath);
+	return cleaned;
 };
 
 const writeLock = async (
@@ -247,12 +342,12 @@ const isStale = (e: ILockEntry, thresholdMinutes: number): boolean => {
 	return Date.now() - t > thresholdMinutes * 60_000;
 };
 
-const removeStale = (lock: ILockFile): ILockFile => {
-	lock.in_flight = lock.in_flight.filter(
+export const removeStale = (lock: ILockFile): ILockFile => ({
+	...lock,
+	in_flight: lock.in_flight.filter(
 		(e) => !isStale(e, lock.stale_after_minutes),
-	);
-	return lock;
-};
+	),
+});
 
 const findOverlap = (a: string[], b: string[]): string[] => {
 	const setB = new Set(b);
@@ -400,7 +495,7 @@ async function executeLockAction(
 	const lockPath = getLockPath(deps);
 	const toolName = getToolName(deps);
 	const lockFileLabel = getLockFileLabel(deps);
-	const lock = removeStale(await readLock(deps));
+	const lock = await readLock(deps);
 
 	if (args.action === 'claim') {
 		const taskId = args.task_id as string;
@@ -552,12 +647,11 @@ async function executeLockAction(
 	}
 
 	if (args.action === 'gc') {
-		const before = lock.in_flight.length;
-		lock.in_flight = lock.in_flight.filter(
-			(e) => !isStale(e, lock.stale_after_minutes),
-		);
-		const dropped = before - lock.in_flight.length;
-		await writeLock(lock, deps);
+		const raw = await loadLock(deps);
+		const cleaned = removeStale(raw);
+		const dropped = raw.in_flight.length - cleaned.in_flight.length;
+		await writeLock(cleaned, deps);
+		await sweepStaleAgentLockTmpFiles(lockPath);
 		return lockResult({
 			tool: toolName,
 			action: 'gc',
