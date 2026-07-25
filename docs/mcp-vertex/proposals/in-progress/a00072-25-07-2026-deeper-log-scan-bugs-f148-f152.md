@@ -193,10 +193,25 @@ Los F148-F152 son bugs **estructurales** del swarm, no cosméticos:
 
 ### S4 — `agent_worktree` auto-detect stranded branches (F201)
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/proposals/src/lib/tools/branch-status.tool.ts`,
   `plugins/proposals/src/lib/tools/agent-worktree.tool.ts`,
   `plugins/proposals/src/lib/locks/branch-hygiene.ts`.
+- implementation:
+  - **S4.a** `branch-status.tool.ts` — new `detectStrandedBranches(deps)`
+    (pure, injectable) returns `IStrandedBranch[]` where
+    `ahead=0 && behind>=10` (threshold configurable). New
+    `stranded: IStrandedBranch[]` field on the `branch_status`
+    tool output (existing fields preserved).
+  - **S4.b** `locks/branch-hygiene.ts` (NEW) — `purgeStrandedBranches(deps)`
+    returns `{ dryRun, candidates, deleted, skipped }`. Defaults to
+    `dryRun: true`; `dryRun: false` actually runs `git branch -D`.
+    Skips branches with a registered worktree (safety) and
+    `behind < threshold`. `agent-worktree.tool.ts` fires the
+    `dryRun: true` call after every successful `create` and
+    surfaces the candidate list in the tool response.
+- **Tests**: 107/107 / 973/973 in `plugins/proposals` (was
+  107/107 / 968/968).
 - **Cambio** (2 sub-slices):
   - **S4.a** — `detectStrandedBranches()` retorna lista de ramas
     con `{branch, ahead, behind}` para todas las agent/* branches.
