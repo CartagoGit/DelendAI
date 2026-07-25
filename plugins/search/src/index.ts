@@ -1,5 +1,6 @@
 import { definePlugin } from '@mcp-vertex/core/public';
 import { z } from 'zod';
+import { isAbsolute } from 'node:path';
 
 import { buildSearchToolRegistrations } from './lib/tools/search.tool';
 import type { ISearchOptions } from './lib/services/search-engine.service';
@@ -39,6 +40,12 @@ export default definePlugin({
 			);
 		}
 		const opts = parsed.data;
+		const pluginCacheDir = isAbsolute(ctx.pluginCacheDir)
+			? ctx.pluginCacheDir
+			: ctx.workspace.resolve(ctx.pluginCacheDir);
+		const cacheDir = isAbsolute(ctx.cacheDir)
+			? ctx.cacheDir
+			: ctx.workspace.resolve(ctx.cacheDir);
 		const defaults: ISearchOptions = {
 			...(opts.roots !== undefined ? { roots: opts.roots } : {}),
 			...(opts.extensions !== undefined
@@ -56,6 +63,8 @@ export default definePlugin({
 				namespacePrefix: ctx.namespacePrefix,
 				workspaceRootAbs: ctx.workspace.root,
 				defaults,
+				cacheDir,
+				pluginCacheDir,
 			}),
 			knowledge: [
 				{

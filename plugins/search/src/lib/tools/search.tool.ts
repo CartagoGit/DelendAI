@@ -3,11 +3,10 @@ import { z } from 'zod';
 import type { IToolRegistration } from '@mcp-vertex/core/public';
 import { toolError, toolJson } from '@mcp-vertex/core/public';
 
-import {
-	InvalidSearchPatternError,
-	searchWorkspace,
-} from '../services/search-engine.service';
+import type { IEmbedder } from '../embed/embedder';
+import { InvalidSearchPatternError } from '../services/search-engine.service';
 import type { ISearchOptions } from '../services/search-engine.service';
+import { runSearchWithMode } from './search-semantic.tool';
 
 export interface ISearchToolOptions {
 	readonly namespacePrefix: string;
@@ -15,6 +14,9 @@ export interface ISearchToolOptions {
 	readonly workspaceRootAbs: string;
 	/** Host defaults (roots/extensions/ignoreDirs/maxResults) from config. */
 	readonly defaults?: ISearchOptions;
+	readonly cacheDir?: string;
+	readonly pluginCacheDir?: string;
+	readonly embedder?: IEmbedder;
 }
 
 /**
@@ -41,6 +43,9 @@ export const buildSearchToolRegistrations = (
 							'Search the workspace text files and return matching {file,line,text} hits. `query` is a substring by default, or a JS regex with regex:true. Narrow by path with `include`/`exclude` globs (e.g. "src/**/*.ts"). Pass `context: N` (0-10) for N lines before/after each hit. Pass `preferRg: true` to use the `rg` (ripgrep) binary when available — faster on huge repos; silently falls back to the built-in walker otherwise (see `usedRg`/`rgFallbackReason`). Low-token: results and per-line previews are capped.',
 						inputSchema: z.object({
 							query: z.string(),
+							mode: z
+								.enum(['lexical', 'semantic', 'hybrid'])
+								.optional(),
 							roots: z.array(z.string()).optional(),
 							maxResults: z.number().optional(),
 							caseSensitive: z.boolean().optional(),
@@ -71,6 +76,7 @@ export const buildSearchToolRegistrations = (
 					},
 					async (args: {
 						query: string;
+						mode?: 'lexical' | 'semantic' | 'hybrid' | undefined;
 						roots?: string[] | undefined;
 						maxResults?: number | undefined;
 						caseSensitive?: boolean | undefined;
@@ -81,12 +87,13 @@ export const buildSearchToolRegistrations = (
 						preferRg?: boolean | undefined;
 					}) => {
 						try {
-							const result = await searchWorkspace(
-								options.workspaceRootAbs,
-								args.query,
+							const result = await runSearchWithMode(
 								{
-									...defaults,
-									...(args.roots
+									query: args.query,
+									...(args.mode !== undefined
+										? { mode: args.mode }
+										: {}),
+									...(args.roots !== undefined
 										? { roots: args.roots }
 										: {}),
 									...(args.maxResults !== undefined
@@ -98,10 +105,10 @@ export const buildSearchToolRegistrations = (
 									...(args.regex !== undefined
 										? { regex: args.regex }
 										: {}),
-									...(args.include
+									...(args.include !== undefined
 										? { include: args.include }
 										: {}),
-									...(args.exclude
+									...(args.exclude !== undefined
 										? { exclude: args.exclude }
 										: {}),
 									...(args.context !== undefined
@@ -109,6 +116,22 @@ export const buildSearchToolRegistrations = (
 										: {}),
 									...(args.preferRg !== undefined
 										? { preferRg: args.preferRg }
+										: {}),
+								},
+								{
+									workspaceRootAbs: options.workspaceRootAbs,
+									defaults,
+									...(options.cacheDir !== undefined
+										? { cacheDir: options.cacheDir }
+										: {}),
+									...(options.pluginCacheDir !== undefined
+										? {
+												pluginCacheDir:
+													options.pluginCacheDir,
+											}
+										: {}),
+									...(options.embedder !== undefined
+										? { embedder: options.embedder }
 										: {}),
 								},
 							);
