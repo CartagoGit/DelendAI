@@ -1106,6 +1106,30 @@ export interface McpVertexPerfPerfBundleOutput {
 	worst: string;
 }
 
+export type McpVertexPerfPerfProfileOutput = {
+	ok: true;
+	profiler: string;
+	hotspots: Array<{
+		name: string;
+		message: string;
+		severity: "high" | "medium" | "low" | "info";
+		selfPercent: number;
+		totalPercent: number;
+		samples: number;
+	}>;
+	summary: {
+		critical: number;
+		high: number;
+		medium: number;
+		low: number;
+		info: number;
+	};
+	worst: string;
+} | {
+	ok: "skipped";
+	hint: string;
+};
+
 export interface McpVertexPlanMcpProjectOutput {
 	blueprint?: {
 		serverName: string;
@@ -2842,6 +2866,7 @@ export interface McpVertexToolOutputs {
 	"mcp-vertex_overview": McpVertexOverviewOutput;
 	"mcp-vertex_perf_perf_bench": McpVertexPerfPerfBenchOutput;
 	"mcp-vertex_perf_perf_bundle": McpVertexPerfPerfBundleOutput;
+	"mcp-vertex_perf_perf_profile": McpVertexPerfPerfProfileOutput;
 	"mcp-vertex_plan_mcp_project": McpVertexPlanMcpProjectOutput;
 	"mcp-vertex_proposals_agent_lock": McpVertexProposalsAgentLockOutput;
 	"mcp-vertex_proposals_agent_lock_release_orphan": McpVertexProposalsAgentLockReleaseOrphanOutput;
