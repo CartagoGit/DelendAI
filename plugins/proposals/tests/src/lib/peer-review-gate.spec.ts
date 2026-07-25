@@ -15,6 +15,11 @@ import {
 } from '@mcp-vertex/proposals/lib/tools/proposal-transition.tool';
 import { hasPeerApprovedReview } from '@mcp-vertex/proposals/lib/swarm/proposal-review';
 
+const RECENT_VALIDATE = {
+	timestamp: new Date().toISOString(),
+	exitCode: 0,
+};
+
 const DOC = (extra: string) => `---
 id: f00888
 title: peer review fixture
@@ -133,7 +138,12 @@ describe('runProposalTransition peer-review gate (a00069 S7)', () => {
 		writeFileSync(docPath, DOC('- review-implementer: alice\n'), 'utf8');
 		const body = parse(
 			await runProposalTransition(
-				{ id: 'f00888', to: 'done', reason: 'ship it' },
+				{
+					id: 'f00888',
+					to: 'done',
+					reason: 'ship it',
+					validateEvidence: RECENT_VALIDATE,
+				},
 				opts,
 			),
 		);
@@ -165,7 +175,12 @@ describe('runProposalTransition peer-review gate (a00069 S7)', () => {
 		]);
 		const body = parse(
 			await runProposalTransition(
-				{ id: 'f00888', to: 'done', reason: 'self' },
+				{
+					id: 'f00888',
+					to: 'done',
+					reason: 'self',
+					validateEvidence: RECENT_VALIDATE,
+				},
 				opts,
 			),
 		);
@@ -195,7 +210,12 @@ describe('runProposalTransition peer-review gate (a00069 S7)', () => {
 		]);
 		const body = parse(
 			await runProposalTransition(
-				{ id: 'f00888', to: 'done', reason: 'peer ok' },
+				{
+					id: 'f00888',
+					to: 'done',
+					reason: 'peer ok',
+					validateEvidence: RECENT_VALIDATE,
+				},
 				opts,
 			),
 		);
@@ -217,7 +237,12 @@ describe('runProposalTransition peer-review gate (a00069 S7)', () => {
 		writeFileSync(docPath, DOC(''), 'utf8');
 		const body = parse(
 			await runProposalTransition(
-				{ id: 'f00888', to: 'done', reason: 'host off' },
+				{
+					id: 'f00888',
+					to: 'done',
+					reason: 'host off',
+					validateEvidence: RECENT_VALIDATE,
+				},
 				{ ...opts, requirePeerReview: false },
 			),
 		);

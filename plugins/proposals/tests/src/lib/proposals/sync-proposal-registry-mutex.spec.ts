@@ -26,6 +26,11 @@ const capture = async (
 const parse = (r: { content: Array<{ text: string }> }): any =>
 	JSON.parse(r.content[0]?.text ?? '{}');
 
+const recentValidate = () => ({
+	timestamp: new Date().toISOString(),
+	exitCode: 0,
+});
+
 describe('proposal serialization withFileMutex', () => {
 	let root = '';
 	let opts: IAuthoringToolOptions;
@@ -68,8 +73,16 @@ describe('proposal serialization withFileMutex', () => {
 
 		// Run concurrent slice closure requests
 		const [r1, r2] = await Promise.all([
-			close({ proposalId: 'f00001', sliceId: 'S1' }),
-			close({ proposalId: 'f00001', sliceId: 'S2' }),
+			close({
+				proposalId: 'f00001',
+				sliceId: 'S1',
+				validateEvidence: recentValidate(),
+			}),
+			close({
+				proposalId: 'f00001',
+				sliceId: 'S2',
+				validateEvidence: recentValidate(),
+			}),
 		]);
 
 		expect(parse(r1).ok).toBe(true);

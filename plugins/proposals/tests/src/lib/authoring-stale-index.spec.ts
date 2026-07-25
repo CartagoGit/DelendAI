@@ -37,6 +37,11 @@ const capture = async (
 const parse = (r: { content: Array<{ text: string }> }): any =>
 	JSON.parse(r.content[0]?.text ?? '{}');
 
+const recentValidate = () => ({
+	timestamp: new Date().toISOString(),
+	exitCode: 0,
+});
+
 describe('indexed-path tools self-heal a stale index (x00106 S1)', () => {
 	let root = '';
 	let opts: IAuthoringToolOptions;
@@ -83,7 +88,11 @@ describe('indexed-path tools self-heal a stale index (x00106 S1)', () => {
 		await createThenMoveStale();
 		const close = await capture(buildCloseSliceRegistration(opts));
 		const closed = parse(
-			await close({ proposalId: 'f00001', sliceId: 'S1' }),
+			await close({
+				proposalId: 'f00001',
+				sliceId: 'S1',
+				validateEvidence: recentValidate(),
+			}),
 		);
 		expect(closed.ok).toBe(true);
 		expect(closed.closed).toBe(true);
@@ -107,7 +116,11 @@ describe('indexed-path tools self-heal a stale index (x00106 S1)', () => {
 		await createThenMoveStale();
 		const close = await capture(buildCloseSliceRegistration(opts));
 		const missing = parse(
-			await close({ proposalId: 'f09999', sliceId: 'S1' }),
+			await close({
+				proposalId: 'f09999',
+				sliceId: 'S1',
+				validateEvidence: recentValidate(),
+			}),
 		);
 		expect(missing.ok).toBe(false);
 		expect(missing.error.reason).toContain('f09999');
@@ -120,7 +133,11 @@ describe('indexed-path tools self-heal a stale index (x00106 S1)', () => {
 		rmSync(join(opts.proposalsDirAbs, 'in-progress/f00001-heal-me.md'));
 		const close = await capture(buildCloseSliceRegistration(opts));
 		const result = parse(
-			await close({ proposalId: 'f00001', sliceId: 'S1' }),
+			await close({
+				proposalId: 'f00001',
+				sliceId: 'S1',
+				validateEvidence: recentValidate(),
+			}),
 		);
 		expect(result.ok).toBe(false);
 	});
