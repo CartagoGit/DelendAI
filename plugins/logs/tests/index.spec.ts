@@ -49,6 +49,29 @@ const buildCtx = async (
 	return { ctx, rules };
 };
 
+type ToolHandler = (
+	args: Record<string, unknown>,
+) => Promise<{ structuredContent: Record<string, unknown> }>;
+
+const registerHandlers = async (
+	result: Registrations,
+): Promise<Map<string, ToolHandler>> => {
+	const handlers = new Map<string, ToolHandler>();
+	const server = {
+		registerTool: (
+			name: string,
+			_schema: unknown,
+			handler: ToolHandler,
+		) => {
+			handlers.set(name, handler);
+		},
+	};
+	for (const registration of result.tools ?? []) {
+		await registration.register(server as never);
+	}
+	return handlers;
+};
+
 describe('logs plugin — register()', () => {
 	it('registers the six tools plus the operational-log knowledge entry', async () => {
 		const { ctx } = await buildCtx();
@@ -90,46 +113,47 @@ describe('logs plugin — register()', () => {
 		expect(rules.map((r) => (r.when as { n: number }).n)).toEqual([3, 3]);
 	});
 
-	it('routes a failed tool call into BOTH the main and error streams', async () => {
+	it('routes a failed tool call into BOTH streams with agent/files/elapsedMs/stack and a diagnostic summary', async () => {
 		const { ctx } = await buildCtx();
 		const result: Registrations = await logsPlugin.register(ctx);
+		const args = { agent: 'copilot-a1', path: 'plugins/logs/src/index.ts' };
+		await result.onToolStart?.('x_broken', args);
 		await result.onToolCall?.(
 			'x_broken',
-			{ a: 1 },
+			args,
 			{ isError: true },
 			new Error('boom'),
 			123.4,
 		);
 
-		const handlers = new Map<
-			string,
-			(args: Record<string, unknown>) => Promise<{
-				structuredContent: Record<string, unknown>;
-			}>
-		>();
-		const server = {
-			registerTool: (
-				name: string,
-				_schema: unknown,
-				handler: (
-					args: Record<string, unknown>,
-				) => Promise<{ structuredContent: Record<string, unknown> }>,
-			) => {
-				handlers.set(name, handler);
-			},
-		};
-		for (const registration of result.tools ?? []) {
-			await registration.register(server as never);
-		}
-
+		const handlers = await registerHandlers(result);
 		const tail = await handlers.get('logs_tail')?.({ includeMeta: true });
 		const tailEvents = tail?.structuredContent.events as Array<{
+			kind: string;
 			taskId: string;
-			meta: { elapsedMs?: number; error?: { message?: string } };
+			agent: string | null;
+			files: string[];
+			summary: string;
+			meta: {
+				elapsedMs?: number;
+				error?: { message?: string; stack?: string };
+				callId?: string;
+			};
 		}>;
-		const failed = tailEvents.find((e) => e.taskId === 'x_broken');
+		const started = tailEvents.find(
+			(e) => e.taskId === 'x_broken' && e.kind === 'tool-started',
+		);
+		const failed = tailEvents.find(
+			(e) => e.taskId === 'x_broken' && e.kind === 'tool-failed',
+		);
 		expect(failed?.meta.elapsedMs).toBe(123);
 		expect(failed?.meta.error?.message).toBe('boom');
+		expect(failed?.meta.error?.stack).toContain('boom');
+		expect(failed?.agent).toBe('copilot-a1');
+		expect(failed?.files).toEqual(['plugins/logs/src/index.ts']);
+		expect(failed?.summary).toBe('tool-failed: x_broken — boom (123ms)');
+		expect(typeof failed?.meta.callId).toBe('string');
+		expect(failed?.meta.callId).toBe(started?.meta.callId);
 
 		const errors = await handlers.get('logs_errors_tail')?.({});
 		const errorEvents = errors?.structuredContent.events as Array<{
@@ -138,7 +162,7 @@ describe('logs plugin — register()', () => {
 		expect(errorEvents.map((e) => e.taskId)).toEqual(['x_broken']);
 	});
 
-	it('does NOT route a successful tool call into the error stream', async () => {
+	it('does NOT route a successful tool call into the error stream, and its summary carries elapsedMs', async () => {
 		const { ctx } = await buildCtx();
 		const result: Registrations = await logsPlugin.register(ctx);
 		await result.onToolCall?.(
@@ -149,27 +173,7 @@ describe('logs plugin — register()', () => {
 			10,
 		);
 
-		const handlers = new Map<
-			string,
-			(args: Record<string, unknown>) => Promise<{
-				structuredContent: Record<string, unknown>;
-			}>
-		>();
-		const server = {
-			registerTool: (
-				name: string,
-				_schema: unknown,
-				handler: (
-					args: Record<string, unknown>,
-				) => Promise<{ structuredContent: Record<string, unknown> }>,
-			) => {
-				handlers.set(name, handler);
-			},
-		};
-		for (const registration of result.tools ?? []) {
-			await registration.register(server as never);
-		}
-
+		const handlers = await registerHandlers(result);
 		const errors = await handlers.get('logs_errors_tail')?.({});
 		const errorEvents = errors?.structuredContent.events as unknown[];
 		expect(
@@ -177,5 +181,69 @@ describe('logs plugin — register()', () => {
 				(e) => (e as { taskId: string }).taskId === 'x_ok',
 			),
 		).toBe(false);
+
+		const tail = await handlers.get('logs_tail')?.({ includeMeta: true });
+		const tailEvents = tail?.structuredContent.events as Array<{
+			taskId: string;
+			summary: string;
+		}>;
+		expect(tailEvents.find((e) => e.taskId === 'x_ok')?.summary).toBe(
+			'tool-completed: x_ok (10ms)',
+		);
+	});
+
+	it('pairs concurrent calls to the SAME tool via callId, not just taskId', async () => {
+		const { ctx } = await buildCtx();
+		const result: Registrations = await logsPlugin.register(ctx);
+		// Two distinct in-flight invocations of the same tool — distinct
+		// args object identity is exactly what core hands each hook call.
+		const argsA = { agent: 'agent-a' };
+		const argsB = { agent: 'agent-b' };
+		await result.onToolStart?.('x_same', argsA);
+		await result.onToolStart?.('x_same', argsB);
+		// B finishes first, then A — out-of-order settlement is the whole
+		// point of the test.
+		await result.onToolCall?.(
+			'x_same',
+			argsB,
+			{ isError: false },
+			undefined,
+			5,
+		);
+		await result.onToolCall?.(
+			'x_same',
+			argsA,
+			{ isError: false },
+			undefined,
+			7,
+		);
+
+		const handlers = await registerHandlers(result);
+		const tail = await handlers.get('logs_tail')?.({
+			includeMeta: true,
+			limit: 10,
+		});
+		const events = tail?.structuredContent.events as Array<{
+			kind: string;
+			agent: string | null;
+			meta: { callId?: string };
+		}>;
+		const startedA = events.find(
+			(e) => e.kind === 'tool-started' && e.agent === 'agent-a',
+		);
+		const startedB = events.find(
+			(e) => e.kind === 'tool-started' && e.agent === 'agent-b',
+		);
+		const completedA = events.find(
+			(e) => e.kind === 'tool-completed' && e.agent === 'agent-a',
+		);
+		const completedB = events.find(
+			(e) => e.kind === 'tool-completed' && e.agent === 'agent-b',
+		);
+		expect(startedA?.meta.callId).toBeTruthy();
+		expect(startedB?.meta.callId).toBeTruthy();
+		expect(startedA?.meta.callId).not.toBe(startedB?.meta.callId);
+		expect(completedA?.meta.callId).toBe(startedA?.meta.callId);
+		expect(completedB?.meta.callId).toBe(startedB?.meta.callId);
 	});
 });
