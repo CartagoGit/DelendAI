@@ -182,6 +182,7 @@ export const PRESET_CATALOG: readonly IPresetDefinition[] = [
 			{ plugin: 'docs' },
 			{ plugin: 'search' },
 			{ plugin: 'git' },
+			{ plugin: 'perf' },
 			{ plugin: 'web-fetch', hostOnly: true },
 			{ plugin: 'status-marker' },
 			{ plugin: 'test-convention' },
