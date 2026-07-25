@@ -19,6 +19,11 @@ export type {
 	IRankInput,
 	IRankedProvider,
 } from '../lib/contracts/interfaces/ranking.interface';
+export type {
+	ICalibrationStore,
+	IOutcomeRecord,
+	IProviderWinRate,
+} from '../lib/contracts/interfaces/calibration.interface';
 export { buildEscalationLadder } from '../lib/escalate/build-ladder';
 export { runWithEscalation } from '../lib/escalate/run-with-escalation';
 export { buildAutoEvaluateRegistration } from '../lib/tools/auto-evaluate.tool';
