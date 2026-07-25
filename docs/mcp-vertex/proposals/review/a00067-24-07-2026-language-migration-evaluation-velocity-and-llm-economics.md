@@ -103,6 +103,17 @@ proposal contains.
   against the proposed ones (DC1, DC2, DC7) and ratifies the qualitative
   conclusions (DC3-DC6) only.**
 
+
+
+- **Reviewer (2026-07-25 #2, develop HEAD): measured delta vs proposed.**
+  - DC1 (codebase size): proposed 160 / 20 372 / 119 504 / 644 / 364, actual 171 / 23 427 / 133 366 / 725 / 422. Drift +6.9% / +15.0% / +11.6% / +12.6% / +15.9%. Inside the "codebase grows" noise band; the order-of-magnitude estimate (170k LOC, 1.2-2× rewrite) still holds.
+  - DC2 (token budgets): proposed 9 100 / 2 278 / 580 / 1 700 / 40 / 257 / ~225 / ~225, actual 10 000 / 1 400 / 900 / 6 800 / 2 000 / 1 800 / 2 000. Cold-start for a fresh agent is **overview compact (1 400B ≈ 350 tok) + auto_work (2 000B ≈ 500 tok) = ~850 tok to be productive**, still under 1k. The "below 1k tokens" claim survives the budget bump.
+  - DC3 (compact projection): `MAX_OVERVIEW_SUMMARY_CHARS = 96` and `compactSummary` still gate every on-the-wire summary. `IOverviewToolEntry` now has 7 fields (`name`, `summary?`, `tags?`, `effects?`, `plugin?`, `id?`, plus `namespacePrefix` post-rename); the compact projection drops 4 (`summary`, `tags`, `effects`, `namespacePrefix`) and groups by plugin. Architecture-level economisation intact.
+  - DC4–DC6 (qualitative): no direct changes; all three conclusions (Rust verbose vs TS, TS plugin dynamic loading, TS type feedback) remain valid.
+  - DC7 (distribution): `README.md` does not advertise `curl -sSL install.sh`. The shim is only in `ready/f00148-polyglot-shim-mvp-single-binary-install-for-end-users.md`. The qualitative table (TS = npm+node; Rust/Go = shim; Python = pipx) is still accurate; the "no shim today" column is reinforced.
+- **Decision**: ratify the qualitative recommendations (DC3–DC6) and the "below 1k tokens" claim. Update numerics (DC1, DC2) on next editorial pass. No code change needed.
+- **Status**: done.
+
 ### S2 — Decision ratification
 
 - **Status**: pending
