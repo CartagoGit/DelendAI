@@ -388,7 +388,7 @@ uno, con la disciplina `f00073`/`f00075`/`f00052` como referencia.
 
 ### S11 — Handoff GC + audit trail de bypass peer-review (F18/F19)
 
-- **Status**: pending
+- **Status**: done
 - **Files**:
   - handoff writer/reader bajo `.cache/mcp-vertex/handoff/` (notification
     / proposals).
