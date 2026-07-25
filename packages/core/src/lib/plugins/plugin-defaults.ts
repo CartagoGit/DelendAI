@@ -66,6 +66,7 @@ export const PLUGIN_DEFAULTS: Readonly<
 	i18n: {},
 	perf: {},
 	'tech-debt': {},
+	'link-check': {},
 	issues: {
 		scaffoldDir: 'docs/mcp-vertex/proposals/retired/issues',
 	},

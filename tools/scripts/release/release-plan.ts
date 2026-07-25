@@ -31,6 +31,7 @@ export const PUBLISH_ORDER: readonly string[] = [
 	'plugins/git',
 	'plugins/i18n',
 	'plugins/issues',
+	'plugins/link-check',
 	'plugins/logs',
 	'plugins/memory',
 	'plugins/notification',

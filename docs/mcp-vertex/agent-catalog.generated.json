@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-07-25T11:38:45.165Z",
+	"generatedAt": "2026-07-25T12:03:14.251Z",
 	"mode": "compact",
 	"tools": [
 		{
@@ -186,6 +186,10 @@
 		},
 		{
 			"name": "mcp-vertex_knowledge"
+		},
+		{
+			"name": "mcp-vertex_link-check_link_check",
+			"plugin": "link-check"
 		},
 		{
 			"name": "mcp-vertex_logs_correlate",
