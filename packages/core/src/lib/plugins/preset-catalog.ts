@@ -161,6 +161,7 @@ export const PRESET_CATALOG: readonly IPresetDefinition[] = [
 			{ plugin: 'web-fetch', hostOnly: true },
 			{ plugin: 'issues', hostOnly: true },
 			{ plugin: 'api' },
+			{ plugin: 'changelog' },
 		],
 	},
 	{

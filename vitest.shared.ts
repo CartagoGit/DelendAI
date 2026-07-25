@@ -78,6 +78,7 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 	const database = resolve(workspaceRoot, 'plugins/database/src');
 	const issues = resolve(workspaceRoot, 'plugins/issues/src');
 	const cache = resolve(workspaceRoot, 'plugins/cache/src');
+	const changelog = resolve(workspaceRoot, 'plugins/changelog/src');
 	const client = resolve(workspaceRoot, 'packages/client/src');
 	const cli = resolve(workspaceRoot, 'packages/cli/src');
 	const shared = resolve(workspaceRoot, 'apps/shared/src');
@@ -495,6 +496,18 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 		{
 			find: '@mcp-vertex/cache',
 			replacement: resolve(cache, 'index.ts'),
+		},
+		{
+			find: '@mcp-vertex/changelog/public',
+			replacement: resolve(changelog, 'public/index.ts'),
+		},
+		{
+			find: /^@mcp-vertex\/changelog\/lib\/(.*)$/,
+			replacement: `${resolve(changelog, 'lib')}/$1`,
+		},
+		{
+			find: '@mcp-vertex/changelog',
+			replacement: resolve(changelog, 'index.ts'),
 		},
 		{
 			find: '@mcp-vertex/client/public',

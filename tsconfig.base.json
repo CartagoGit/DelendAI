@@ -195,7 +195,12 @@
 			"@mcp-vertex/issues/*": ["./plugins/issues/src/*"],
 			"@mcp-vertex/cache": ["./plugins/cache/src/index.ts"],
 			"@mcp-vertex/cache/public": ["./plugins/cache/src/public/index.ts"],
-			"@mcp-vertex/cache/*": ["./plugins/cache/src/*"]
+			"@mcp-vertex/cache/*": ["./plugins/cache/src/*"],
+			"@mcp-vertex/changelog": ["./plugins/changelog/src/index.ts"],
+			"@mcp-vertex/changelog/public": [
+				"./plugins/changelog/src/public/index.ts"
+			],
+			"@mcp-vertex/changelog/*": ["./plugins/changelog/src/*"]
 		}
 	},
 	"exclude": ["node_modules", "dist", "build", ".cache"]
