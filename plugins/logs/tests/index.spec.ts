@@ -24,7 +24,8 @@ const buildCtx = async (
 		cacheDir: '.cache/mcp-vertex',
 		docsDir: 'docs/mcp-vertex',
 		keepLegacy: false,
-		pluginCacheDir: '.cache/mcp-vertex/logs',
+		// Matches the real loader: `joinRel(cacheDir, cacheNamespace + '/' + pluginName)`.
+		pluginCacheDir: '.cache/mcp-vertex/results/logs',
 		pluginDocsDir: 'docs/mcp-vertex/logs',
 		namespacePrefix: 'logs',
 		options,
@@ -88,20 +89,20 @@ describe('logs plugin — register()', () => {
 		expect(result.knowledge?.[0]?.body).toContain('logs-errors');
 	});
 
-	it('registers independent keepLastN retention rules for logs/* and logs-errors/*, default 10', async () => {
+	it('registers independent keepLastN retention rules for results/logs/* and results/logs-errors/*, default 10', async () => {
 		const { ctx, rules } = await buildCtx();
 		await logsPlugin.register(ctx);
 		expect(rules).toEqual([
 			{
 				id: 'logs-retention',
 				owner: 'logs',
-				path: 'logs/*',
+				path: 'results/logs/*',
 				when: { kind: 'keepLastN', n: 10 },
 			},
 			{
 				id: 'logs-errors-retention',
 				owner: 'logs',
-				path: 'logs-errors/*',
+				path: 'results/logs-errors/*',
 				when: { kind: 'keepLastN', n: 10 },
 			},
 		]);
