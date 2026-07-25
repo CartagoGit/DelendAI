@@ -3,9 +3,10 @@
  * real MCP protocol (f00045 S4, server side).
  *
  * The core `create-mcp-project` wrapper augments every `isError` result
- * with a `logHint { path, line, ts }` pointing at the per-day JSONL log
- * the `logs` plugin writes (S1). This spec drives a real failure — an
- * illegal `proposal_transition` — through the assembled server and
+ * with a `logHint { path, line, ts }` pointing at the per-day JSONL entry
+ * in the `logs` plugin's curated error stream (`logs-errors/`, not the
+ * noisy mixed-outcome `logs/` stream). This spec drives a real failure —
+ * an illegal `proposal_transition` — through the assembled server and
  * asserts the hint's shape over the wire.
  *
  * The client-side extraction (`logHintFromResult` →
@@ -98,7 +99,9 @@ describe('e2e: tool failure carries a logHint over the wire (f00045 S4)', async 
 		const hint = fromStructured ?? fromText;
 
 		expect(hint).toBeDefined();
-		expect(hint?.path).toMatch(/[/\\]logs[/\\]\d{4}-\d{2}-\d{2}\.jsonl$/);
+		expect(hint?.path).toMatch(
+			/[/\\]logs-errors[/\\]\d{4}-\d{2}-\d{2}\.jsonl$/,
+		);
 		// The hint points under THIS workspace's cache, never a shared path.
 		expect(hint?.path).toContain(harness.workspace);
 		expect(typeof hint?.line).toBe('number');
