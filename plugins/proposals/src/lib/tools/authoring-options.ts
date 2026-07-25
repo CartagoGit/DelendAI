@@ -111,13 +111,12 @@ export interface IAuthoringToolOptions {
 	 */
 	readonly runQuality?: () => Promise<{
 		readonly ok: boolean;
-		readonly worst:
-			| 'critical'
-			| 'high'
-			| 'medium'
-			| 'low'
-			| 'info'
-			| 'none';
+		readonly severity: 'ok' | 'error';
+		readonly findings: readonly string[];
+		readonly summary?: {
+			readonly ok: boolean;
+			readonly scopes: number;
+		};
 	}>;
 }
 

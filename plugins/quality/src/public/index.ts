@@ -17,6 +17,11 @@ export type {
 } from '../lib/services/runner';
 export { resolveScopes } from '../lib/services/scopes';
 export type { IScopeMap } from '../lib/services/scopes';
+export { runAllScopes } from '../lib/services/run-all';
+export type {
+	IQualityAllResult,
+	IQualityRunAllReport,
+} from '../lib/services/run-all';
 export {
 	evaluateCommandPolicy,
 	commandBinary,
