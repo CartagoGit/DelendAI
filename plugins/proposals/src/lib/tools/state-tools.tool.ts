@@ -5,15 +5,14 @@ import { z } from 'zod';
 import type { IToolRegistration } from '@mcp-vertex/core/public';
 import { toolJson, withFileMutex } from '@mcp-vertex/core/public';
 
+import type { ILockEntry, ILockFile } from '../locks/agent-lock-engine';
 import {
 	getAgentLockSessionBalance,
-	removeStale,
 	runAgentLockEngine,
-	type ILockEntry,
-	type ILockFile,
 } from '../locks/agent-lock-engine';
 import { readJsonOrNull } from '../proposals/index-reader';
 import { getPeerReviewBypassCount } from '../shared/peer-review-bypass-log';
+import { purgeStaleLocks } from '../shared/purge-stale-locks';
 
 /** Async existence check (H2): never blocks the event loop. */
 const fileExists = async (path: string): Promise<boolean> => {
@@ -61,6 +60,14 @@ const CLAIM_RELEASE_IMBALANCE_THRESHOLD = 5;
 interface IStateDiagnosis {
 	readonly locks: {
 		readonly active: number;
+		readonly stale: number;
+		readonly staleTaskIds: readonly string[];
+		readonly lastStaleSeen: string | null;
+		readonly crossProposal: readonly {
+			readonly id: string;
+			readonly count: number;
+			readonly taskIds: readonly string[];
+		}[];
 		/** a00069 S8: process-local claim−release imbalance (telemetry). */
 		readonly sessionImbalance: number;
 		readonly sessionClaims: number;
@@ -96,6 +103,16 @@ interface IStateDiagnosis {
 const STATE_DIAGNOSIS_SCHEMA = z.object({
 	locks: z.object({
 		active: z.number(),
+		stale: z.number(),
+		staleTaskIds: z.array(z.string()),
+		lastStaleSeen: z.string().nullable(),
+		crossProposal: z.array(
+			z.object({
+				id: z.string(),
+				count: z.number(),
+				taskIds: z.array(z.string()),
+			}),
+		),
 		sessionClaims: z.number(),
 		sessionReleases: z.number(),
 		sessionImbalance: z.number(),
@@ -149,6 +166,74 @@ const STATE_REPAIR_OUTPUT_SCHEMA = z.object({
 	nextAction: z.string().optional(),
 });
 
+const EMPTY_LOCK = (): ILockFile => ({
+	version: 1,
+	stale_after_minutes: 10,
+	in_flight: [],
+});
+
+const readLockSnapshot = async (lockPath: string): Promise<ILockFile> => {
+	const parsed = await readJsonOrNull<Partial<ILockFile>>(lockPath);
+	if (parsed === null) {
+		return EMPTY_LOCK();
+	}
+	return {
+		version: parsed.version ?? 1,
+		stale_after_minutes: parsed.stale_after_minutes ?? 10,
+		in_flight: Array.isArray(parsed.in_flight) ? parsed.in_flight : [],
+	};
+};
+
+const taskProposalId = (taskId: string): string => {
+	const sliceIndex = taskId.indexOf('-S');
+	return sliceIndex === -1 ? taskId : taskId.slice(0, sliceIndex);
+};
+
+const findStaleEntries = (lock: ILockFile): readonly ILockEntry[] => {
+	const thresholdMs = lock.stale_after_minutes * 60_000;
+	return lock.in_flight.filter((entry) => {
+		const lastSeenMs = new Date(entry.last_seen).getTime();
+		if (Number.isNaN(lastSeenMs)) {
+			return true;
+		}
+		return Date.now() - lastSeenMs > thresholdMs;
+	});
+};
+
+const findLastStaleSeen = (entries: readonly ILockEntry[]): string | null => {
+	let latest: number | null = null;
+	for (const entry of entries) {
+		const lastSeenMs = new Date(entry.last_seen).getTime();
+		if (Number.isNaN(lastSeenMs)) {
+			continue;
+		}
+		if (latest === null || lastSeenMs > latest) {
+			latest = lastSeenMs;
+		}
+	}
+	return latest === null ? null : new Date(latest).toISOString();
+};
+
+const summarizeCrossProposal = (
+	entries: readonly ILockEntry[],
+): IStateDiagnosis['locks']['crossProposal'] => {
+	const grouped = new Map<string, { count: number; taskIds: string[] }>();
+	for (const entry of entries) {
+		const id = taskProposalId(entry.task_id);
+		const current = grouped.get(id) ?? { count: 0, taskIds: [] };
+		current.count += 1;
+		current.taskIds.push(entry.task_id);
+		grouped.set(id, current);
+	}
+	return [...grouped.entries()]
+		.map(([id, value]) => ({
+			id,
+			count: value.count,
+			taskIds: value.taskIds,
+		}))
+		.sort((a, b) => a.id.localeCompare(b.id));
+};
+
 /**
  * Read-only health snapshot of the swarm state: how many write lanes are
  * held, queue backpressure (waiter orphans / threshold), and orphaned
@@ -158,6 +243,11 @@ const STATE_REPAIR_OUTPUT_SCHEMA = z.object({
 const diagnose = async (
 	options: IStateToolOptions,
 ): Promise<IStateDiagnosis> => {
+	const rawLock = await readLockSnapshot(options.lockPathAbs);
+	const staleEntries = findStaleEntries(rawLock);
+	const staleTaskIds = staleEntries.map((entry) => entry.task_id);
+	await purgeStaleLocks({ lockPath: options.lockPathAbs });
+	const cleanedLock = await readLockSnapshot(options.lockPathAbs);
 	const lockStatusRaw = await runAgentLockEngine(
 		{ action: 'status' },
 		{ lockPath: options.lockPathAbs },
@@ -165,30 +255,10 @@ const diagnose = async (
 	const lockStatus = JSON.parse(lockStatusRaw.content[0]?.text ?? '{}') as {
 		active_write_lanes?: number;
 	};
-
-	// a00072 S1.a: surface stale locks as part of the snapshot so the
-	// smoke detector does not require a `state_repair` call to
-	// notice them. `removeStale` is pure (no write) so the lock file
-	// stays exactly as the swarm left it.
-	const liveLockFile = (await readJsonOrNull<ILockFile>(
-		options.lockPathAbs,
-	)) ?? {
-		version: 1,
-		stale_after_minutes: 10,
-		in_flight: [],
-	};
-	const cleaned = removeStale(liveLockFile);
-	const staleEntries: readonly ILockEntry[] = liveLockFile.in_flight.filter(
-		(e) => !cleaned.in_flight.includes(e),
-	);
-	const staleTaskIds = staleEntries.map((e) => e.task_id);
-	const lastStaleEntry = staleEntries
-		.map((e) => ({ id: e.task_id, ts: e.last_seen }))
-		.sort((a, b) => (a.ts < b.ts ? 1 : -1))[0];
 	const stale = {
-		count: staleEntries.length,
+		count: staleTaskIds.length,
 		taskIds: staleTaskIds,
-		lastStaleSeen: lastStaleEntry?.ts ?? null,
+		lastStaleSeen: findLastStaleSeen(staleEntries),
 	};
 
 	let queue: IStateDiagnosis['queue'] = null;
@@ -229,7 +299,8 @@ const diagnose = async (
 	const balance = getAgentLockSessionBalance();
 	const claimReleaseImbalanceAlert =
 		balance.imbalance > CLAIM_RELEASE_IMBALANCE_THRESHOLD;
-	const activeLocks = lockStatus.active_write_lanes ?? 0;
+	const activeLocks =
+		lockStatus.active_write_lanes ?? cleanedLock.in_flight.length;
 
 	const healthy =
 		(queue?.threshold ?? 'green') !== 'red' &&
@@ -241,6 +312,10 @@ const diagnose = async (
 	return {
 		locks: {
 			active: activeLocks,
+			stale: stale.count,
+			staleTaskIds: stale.taskIds,
+			lastStaleSeen: stale.lastStaleSeen,
+			crossProposal: summarizeCrossProposal(cleanedLock.in_flight),
 			sessionClaims: balance.claims,
 			sessionReleases: balance.releases,
 			sessionImbalance: balance.imbalance,
@@ -327,6 +402,7 @@ export const runAutoStateRepairOnBoot = (
 			if (
 				before.registry.orphans === 0 &&
 				(before.queue?.waiterOrphans ?? 0) === 0 &&
+				before.stale.count === 0 &&
 				before.locks.active === 0
 			) {
 				return;
@@ -362,7 +438,7 @@ export const buildStateHealthRegistration = (
 ): IToolRegistration => ({
 	id: 'state_health',
 	summary:
-		'Read-only swarm health: active locks, queue backpressure (waiterOrphans/threshold) and orphan assignments.',
+		'Read-only swarm health: active locks, stale locks, queue backpressure (waiterOrphans/threshold) and orphan assignments.',
 	tags: ['coordination', 'lazy'],
 	register: async (server) => {
 		server.registerTool(
@@ -370,7 +446,7 @@ export const buildStateHealthRegistration = (
 			{
 				outputSchema: STATE_DIAGNOSIS_SCHEMA,
 				description:
-					'Diagnose swarm state without changing anything: active write lanes, queue backpressure (waiterOrphans + threshold) and orphaned agent assignments. Returns { locks, queue, registry, healthy }. Run state_repair to heal.',
+					'Diagnose swarm state without changing anything: active write lanes, stale locks, queue backpressure (waiterOrphans + threshold) and orphaned agent assignments. Returns { locks, stale, queue, registry, healthy }. Run state_repair to heal.',
 			},
 			async () => toolJson(await diagnose(options)),
 		);
@@ -409,7 +485,7 @@ export const buildStateRepairRegistration = (
 						mode: 'dry-run',
 						diagnosis: before,
 						wouldRepair: {
-							staleLocks: before.locks.active,
+							staleLocks: before.stale.count,
 							dueQueueEntries: before.queue?.queuedCount ?? 0,
 							orphanAssignments: before.registry.orphans,
 						},
