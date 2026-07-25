@@ -1,17 +1,11 @@
-import { mkdtemp, readFile, rm } from 'node:fs/promises';
-import { join } from 'node:path';
-import { tmpdir } from 'node:os';
-
 import { describe, expect, it } from 'vitest';
 
-import { computeWinRates } from '../../../../auto-agent-selector/src/lib/calibrate/win-rates';
-import { realCalibrationStore } from '../../../../auto-agent-selector/src/lib/calibrate/store';
+import type { IOutcomeRecord } from '@mcp-vertex/auto-agent-selector/public';
 import type { IEvalAttempt } from '../eval/eval-harness';
 import {
 	attemptsToOutcomeRecords,
-	readCalibrationWinRates,
-	resolveAutoAgentSelectorCalibrationDir,
-	writeCalibration,
+	summarizeWinRates,
+	writeOutcomes,
 } from './write-through';
 
 const attempt = (
@@ -29,121 +23,137 @@ const attempt = (
 });
 
 describe('prompt-eval calibration write-through (f00127 S3)', () => {
-	it('writes the auto-agent-selector JSONL format', async () => {
-		const cacheDir = await mkdtemp(join(tmpdir(), 'prompt-eval-cal-'));
-		try {
-			const store = realCalibrationStore(
-				resolveAutoAgentSelectorCalibrationDir(cacheDir),
-			);
-			await writeCalibration(
-				{
-					attempts: [
-						attempt('cheap', 1, 0.02, true),
-						attempt('quality', 4, 0.2, false),
-						attempt('skipped', 5, 0, false, 'spend-denied'),
-					],
-					taskType: 'implement',
+	it('writes one record per attempted provider per task', async () => {
+		const records: IOutcomeRecord[] = [];
+		await writeOutcomes(
+			{
+				attempts: [
+					attempt('cheap', 1, 0.02, true),
+					attempt('quality', 4, 0.2, false),
+					attempt('skipped', 5, 0, false, 'spend-denied'),
+				],
+				winner: 'cheap',
+				taskType: 'implement',
+			},
+			{
+				store: {
+					append: async (record) => {
+						records.push(record);
+					},
 				},
-				{ store },
-			);
-			const raw = await readFile(
-				join(
-					resolveAutoAgentSelectorCalibrationDir(cacheDir),
-					'calibration.jsonl',
-				),
-				'utf8',
-			);
-			expect(raw.trim().split('\n')).toHaveLength(2);
-			const parsed = raw
-				.trim()
-				.split('\n')
-				.map((line) => JSON.parse(line) as Record<string, unknown>);
-			expect(parsed).toEqual([
-				{
-					providerId: 'cheap',
-					success: true,
-					taskType: 'implement',
-					ts: expect.any(String),
-				},
-				{
-					providerId: 'quality',
-					success: false,
-					taskType: 'implement',
-					ts: expect.any(String),
-				},
-			]);
-		} finally {
-			await rm(cacheDir, { recursive: true, force: true });
-		}
-	});
-
-	it('reads win-rates in the same S4 contract shape', async () => {
-		const cacheDir = await mkdtemp(join(tmpdir(), 'prompt-eval-read-'));
-		try {
-			const store = realCalibrationStore(
-				resolveAutoAgentSelectorCalibrationDir(cacheDir),
-			);
-			await writeCalibration(
-				{
-					attempts: [
-						attempt('cheap', 1, 0.02, true),
-						attempt('cheap', 1, 0.02, true),
-						attempt('quality', 4, 0.2, false),
-					],
-					taskType: 'review',
-				},
-				{ store },
-			);
-			const readBack = await readCalibrationWinRates({
-				store,
-				taskType: 'review',
-			});
-			expect(readBack).toEqual([
-				{ providerId: 'cheap', winRate: 1, samples: 2 },
-				{ providerId: 'quality', winRate: 0, samples: 1 },
-			]);
-		} finally {
-			await rm(cacheDir, { recursive: true, force: true });
-		}
-	});
-
-	it('round-trips attempts into the same summary auto-agent-selector computes', async () => {
-		const cacheDir = await mkdtemp(
-			join(tmpdir(), 'prompt-eval-roundtrip-'),
+			},
 		);
-		try {
-			const store = realCalibrationStore(
-				resolveAutoAgentSelectorCalibrationDir(cacheDir),
-			);
-			const attempts = [
-				attempt('cheap', 1, 0.02, true),
-				attempt('cheap', 1, 0.02, false),
-				attempt('quality', 4, 0.2, true),
-			] as const;
-			const written = await writeCalibration(
-				{ attempts, taskType: 'implement' },
-				{ store },
-			);
-			const records = await store.readAll();
-			expect(written.winRates).toEqual(
-				computeWinRates(records, 1, 'implement'),
-			);
-		} finally {
-			await rm(cacheDir, { recursive: true, force: true });
-		}
+		expect(records).toEqual([
+			{ providerId: 'cheap', success: true, taskType: 'implement' },
+			{ providerId: 'quality', success: false, taskType: 'implement' },
+		]);
 	});
 
-	it('maps eval attempts to persisted outcomes without a parallel shape', () => {
+	it('is a no-op when input has no winner', async () => {
+		const records: IOutcomeRecord[] = [];
+		await writeOutcomes(
+			{
+				attempts: [
+					attempt('cheap', 1, 0.02, false),
+					attempt('quality', 4, 0.2, false),
+				],
+				winner: null,
+				taskType: 'review',
+			},
+			{
+				store: {
+					append: async (record) => {
+						records.push(record);
+					},
+				},
+			},
+		);
+		expect(records).toEqual([]);
+	});
+
+	it('is a no-op when no store is injected', async () => {
+		await expect(
+			writeOutcomes(
+				{
+					attempts: [
+						attempt('cheap', 1, 0.02, true),
+						attempt('quality', 4, 0.2, false),
+					],
+					winner: 'cheap',
+					taskType: 'implement',
+				},
+				{},
+			),
+		).resolves.toBeUndefined();
+	});
+
+	it('respects the samples threshold', () => {
+		expect(
+			summarizeWinRates([
+				{ providerId: 'cheap', success: true },
+				{ providerId: 'cheap', success: true },
+				{ providerId: 'cheap', success: false },
+				{ providerId: 'cheap', success: true },
+				{ providerId: 'cheap', success: false },
+				{ providerId: 'quality', success: true },
+				{ providerId: 'quality', success: true },
+				{ providerId: 'quality', success: false },
+				{ providerId: 'quality', success: true },
+			]),
+		).toEqual([{ providerId: 'cheap', winRate: 0.6, samples: 5 }]);
+	});
+
+	it('groups by taskType when present', () => {
+		const records: IOutcomeRecord[] = [
+			{ providerId: 'cheap', success: true, taskType: 'review' },
+			{ providerId: 'cheap', success: true, taskType: 'review' },
+			{ providerId: 'cheap', success: false, taskType: 'review' },
+			{ providerId: 'cheap', success: true, taskType: 'review' },
+			{ providerId: 'cheap', success: false, taskType: 'review' },
+			{ providerId: 'quality', success: true, taskType: 'review' },
+			{ providerId: 'quality', success: false, taskType: 'review' },
+			{ providerId: 'quality', success: true, taskType: 'review' },
+			{ providerId: 'quality', success: false, taskType: 'review' },
+			{ providerId: 'quality', success: true, taskType: 'review' },
+			{ providerId: 'cheap', success: false, taskType: 'implement' },
+			{ providerId: 'cheap', success: false, taskType: 'implement' },
+			{ providerId: 'cheap', success: false, taskType: 'implement' },
+			{ providerId: 'cheap', success: false, taskType: 'implement' },
+			{ providerId: 'cheap', success: true, taskType: 'implement' },
+		];
+		expect(summarizeWinRates(records, 'review')).toEqual([
+			{ providerId: 'cheap', winRate: 0.6, samples: 5 },
+			{ providerId: 'quality', winRate: 0.6, samples: 5 },
+		]);
+		expect(summarizeWinRates(records, 'implement')).toEqual([
+			{ providerId: 'cheap', winRate: 0.2, samples: 5 },
+		]);
+	});
+
+	it('returns empty when no records meet threshold', () => {
+		expect(
+			summarizeWinRates([
+				{ providerId: 'cheap', success: true },
+				{ providerId: 'cheap', success: false },
+				{ providerId: 'quality', success: true },
+			]),
+		).toEqual([]);
+	});
+
+	it('maps eval attempts to winner-based outcomes without a parallel shape', () => {
 		expect(
 			attemptsToOutcomeRecords({
 				attempts: [
 					attempt('cheap', 1, 0.02, true),
+					attempt('quality', 4, 0.2, false),
 					attempt('skipped', 5, 0, false, 'spend-denied'),
 				],
+				winner: 'cheap',
 				taskType: 'implement',
 			}),
 		).toEqual([
 			{ providerId: 'cheap', success: true, taskType: 'implement' },
+			{ providerId: 'quality', success: false, taskType: 'implement' },
 		]);
 	});
 });

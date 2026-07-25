@@ -1,84 +1,84 @@
-import { join } from 'node:path';
-
-import { joinRel } from '@mcp-vertex/core/public';
-
-import { computeWinRates } from '../../../../auto-agent-selector/src/lib/calibrate/win-rates';
-import { realCalibrationStore } from '../../../../auto-agent-selector/src/lib/calibrate/store';
 import type {
 	ICalibrationStore,
 	IOutcomeRecord,
 	IProviderWinRate,
-} from '../../../../auto-agent-selector/src/lib/contracts/interfaces/calibration.interface';
+} from '@mcp-vertex/auto-agent-selector/public';
 import type { IEvalAttempt } from '../eval/eval-harness';
 
-export interface ICalibrationWriteInput {
+export const MIN_PROMPT_EVAL_CALIBRATION_SAMPLES = 5;
+
+export interface IWriteOutcomesInput {
 	readonly attempts: readonly IEvalAttempt[];
-	readonly taskType?: string;
+	readonly winner: string | null;
+	readonly taskType?: string | null;
 }
 
-export interface ICalibrationWriteResult {
-	readonly recorded: number;
-	readonly taskType: string | null;
-	readonly winRates: readonly IProviderWinRate[];
+export interface IWriteOutcomesDeps {
+	readonly store?: Pick<ICalibrationStore, 'append'>;
 }
 
-export const AUTO_AGENT_SELECTOR_RESULTS_DIR = join(
-	'results',
-	'auto-agent-selector',
-);
+const normalizeTaskType = (taskType?: string | null): string | undefined => {
+	const trimmed = taskType?.trim();
+	return trimmed ? trimmed : undefined;
+};
 
-export const resolveAutoAgentSelectorCalibrationDir = (
-	cacheDir: string,
-): string => joinRel(cacheDir, AUTO_AGENT_SELECTOR_RESULTS_DIR);
-
-export const attemptsToOutcomeRecords = (
-	input: ICalibrationWriteInput,
-): readonly IOutcomeRecord[] =>
-	input.attempts
+export const attemptsToOutcomeRecords = (input: {
+	readonly attempts: readonly IEvalAttempt[];
+	readonly winner: string | null;
+	readonly taskType?: string | null;
+}): readonly IOutcomeRecord[] => {
+	if (input.winner === null) {
+		return [];
+	}
+	const taskType = normalizeTaskType(input.taskType);
+	return input.attempts
 		.filter((attempt) => attempt.skipped === undefined)
 		.map((attempt) => ({
 			providerId: attempt.providerId,
-			success: attempt.passed,
-			...(input.taskType !== undefined
-				? { taskType: input.taskType }
-				: {}),
+			success: attempt.providerId === input.winner,
+			...(taskType !== undefined ? { taskType } : {}),
 		}));
-
-export const readCalibrationWinRates = async (options: {
-	readonly store: ICalibrationStore;
-	readonly taskType?: string;
-	readonly minSamples?: number;
-}): Promise<readonly IProviderWinRate[]> => {
-	const records = await options.store.readAll();
-	return computeWinRates(records, options.minSamples ?? 1, options.taskType);
 };
 
-export const writeCalibration = async (
-	input: ICalibrationWriteInput,
-	options: {
-		readonly store: ICalibrationStore;
-		readonly minSamples?: number;
-	},
-): Promise<ICalibrationWriteResult> => {
-	const records = attemptsToOutcomeRecords(input);
-	for (const record of records) {
-		await options.store.append(record);
+export const writeOutcomes = async (
+	input: IWriteOutcomesInput,
+	deps: IWriteOutcomesDeps,
+): Promise<void> => {
+	if (deps.store === undefined) {
+		return;
 	}
-	const winRates = await readCalibrationWinRates({
-		store: options.store,
-		...(options.minSamples !== undefined
-			? { minSamples: options.minSamples }
-			: {}),
-		...(input.taskType !== undefined ? { taskType: input.taskType } : {}),
-	});
-	return {
-		recorded: records.length,
-		taskType: input.taskType ?? null,
-		winRates,
-	};
+	for (const record of attemptsToOutcomeRecords(input)) {
+		await deps.store.append(record);
+	}
 };
 
-export const realPromptEvalCalibrationStore = (
-	cacheDir: string,
-): ICalibrationStore =>
-	realCalibrationStore(resolveAutoAgentSelectorCalibrationDir(cacheDir));
+export const summarizeWinRates = (
+	records: readonly IOutcomeRecord[],
+	taskType?: string,
+	minSamples: number = MIN_PROMPT_EVAL_CALIBRATION_SAMPLES,
+): readonly IProviderWinRate[] => {
+	const taskFilter = normalizeTaskType(taskType);
+	const agg = new Map<string, { success: number; total: number }>();
+	for (const record of records) {
+		if (taskFilter !== undefined && record.taskType !== taskFilter)
+			continue;
+		const entry = agg.get(record.providerId) ?? { success: 0, total: 0 };
+		entry.total += 1;
+		if (record.success) entry.success += 1;
+		agg.set(record.providerId, entry);
+	}
+	const out: IProviderWinRate[] = [];
+	for (const [providerId, entry] of agg) {
+		if (entry.total < minSamples) continue;
+		out.push({
+			providerId,
+			winRate: entry.success / entry.total,
+			samples: entry.total,
+		});
+	}
+	return out.sort(
+		(left, right) =>
+			right.winRate - left.winRate ||
+			left.providerId.localeCompare(right.providerId),
+	);
+};

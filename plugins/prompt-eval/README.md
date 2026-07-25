@@ -1,5 +1,24 @@
 # @mcp-vertex/prompt-eval
 
+Benchmark a prompt across the reachable provider roster and feed the measured
+winner data back into routing calibration.
+
+## Calibration
+
+When eval_run completes with a winner, prompt-eval writes one outcome record per
+attempted provider into the auto-agent-selector calibration store. The winning
+provider is recorded with success=true; every other attempted provider is
+recorded with success=false. Providers skipped by the spend guard are omitted
+because they never ran.
+
+The routing blend only uses measured data after a provider has at least 5
+samples for the relevant task type. Until then, ranking falls back to the
+normal cost-quality heuristic.
+
+To enable persistence in production, pass calibrationStore in the plugin
+options. If you omit it, eval_run still works and calibration write-through is
+disabled.# @mcp-vertex/prompt-eval
+
 Benchmark a prompt or task across the providers discovered by auto-agent-selector, score the outcomes on cost x quality, and write the measured evidence back into auto-agent-selector's calibration store.
 
 ## Tools
