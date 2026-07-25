@@ -26,7 +26,7 @@ import { setFrontmatterStatus as sharedSetFrontmatterStatus } from '../proposals
 import { readJsonOrNull, readTextOrNull } from '../proposals/index-reader';
 import { createAgentRegistryStore } from '../shared/agent-registry-store';
 import { createGitRunner, type IGitRunner } from '../shared/git-runner';
-import { hasIndependentPeerApproval } from './proposal-transition.tool';
+import { hasPeerApprovedReview } from '../swarm/proposal-review';
 import { recordPeerReviewBypass } from '../shared/peer-review-bypass-log';
 
 export interface IRecoveryEvent {
@@ -421,7 +421,7 @@ export const runProposalForceTransition = async (
 					? { agent: args.overrideLockOwner }
 					: {}),
 			});
-		} else if (!hasIndependentPeerApproval(found.raw)) {
+		} else if (!hasPeerApprovedReview(found.raw)) {
 			return toolError(
 				`peer-review required before force_transition of "${args.id}" review → done`,
 				`Run ${options.namespacePrefix}_proposal_review { action: "approve", agent: "<reviewer≠implementer>" } first, or pass skipPeerReview:true only with host approval.`,
