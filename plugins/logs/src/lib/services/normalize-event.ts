@@ -58,6 +58,49 @@ const asFiles = (value: unknown): readonly string[] =>
 		: [];
 
 /**
+ * Best-effort agent identity from a tool call's own arguments. Every
+ * `onToolCall`/`onToolStart` hook only ever sees the raw args object —
+ * core threads no session/agent id of its own — so this is the only
+ * way `event.agent` (a first-class, filterable field on every query/
+ * tail/correlate tool) ever gets populated for real tool-call events
+ * instead of staying `null`. `agent`/`agentName` are the two parameter
+ * names actually used across the tool surface (proposals, agent-lock,
+ * etc.) — surveyed directly from the shipped Zod schemas.
+ */
+export const extractAgentHint = (args: unknown): string | null => {
+	if (!isRecord(args)) return null;
+	return asString(args.agent) ?? asString(args.agentName);
+};
+
+/**
+ * Best-effort file paths touched by a tool call, read from its args
+ * (the operation's target) and falling back to its result (for
+ * read/scan tools that discover paths rather than take them as
+ * input). Same rationale as {@link extractAgentHint}: `event.files`
+ * is a first-class field every log tool already returns, but nothing
+ * ever populated it. Parameter names surveyed from the shipped Zod
+ * schemas: `files`/`paths` (arrays), `path`/`file`/`filePath`
+ * (single strings).
+ */
+export const extractFilesHint = (
+	args: unknown,
+	result: unknown,
+): readonly string[] => {
+	const fromRecord = (record: unknown): readonly string[] => {
+		if (!isRecord(record)) return [];
+		const arrays = [...asFiles(record.files), ...asFiles(record.paths)];
+		const singles = [
+			asString(record.path),
+			asString(record.file),
+			asString(record.filePath),
+		].filter((entry): entry is string => entry !== null);
+		return [...arrays, ...singles];
+	};
+	const combined = [...fromRecord(args), ...fromRecord(result)];
+	return [...new Set(combined)];
+};
+
+/**
  * True for any outcome that didn't cleanly reach the state we
  * expected — the definition of "worth a look" for the curated error
  * stream (`logs-errors/`). `idle` is a normal steady-state signal,
@@ -135,9 +178,14 @@ export const serializeRedactedEvent = (
 	if (Buffer.byteLength(text, 'utf8') <= maxLineBytes) return text;
 	// f00111 S2: truncation must not destroy attribution — keep the
 	// small identity fields so a truncated completion still pairs with
-	// its `tool-started` line in any per-tool analysis.
+	// its `tool-started` line in any per-tool analysis. `callId` joins
+	// `toolName`/`taskId` here for the same reason: it is the ONLY
+	// field that disambiguates two concurrent calls to the same tool,
+	// and losing it on exactly the large-payload events most likely to
+	// need truncation would defeat its purpose.
 	const metaTool = event.meta.toolName;
 	const metaTask = event.meta.taskId;
+	const metaCallId = event.meta.callId;
 	const compact = {
 		...event,
 		summary: `${event.summary.slice(0, 180)}…`,
@@ -146,6 +194,7 @@ export const serializeRedactedEvent = (
 			originalBytes: Buffer.byteLength(text, 'utf8'),
 			...(typeof metaTool === 'string' ? { toolName: metaTool } : {}),
 			...(typeof metaTask === 'string' ? { taskId: metaTask } : {}),
+			...(typeof metaCallId === 'string' ? { callId: metaCallId } : {}),
 		},
 	};
 	text = JSON.stringify(redactValue(compact));
