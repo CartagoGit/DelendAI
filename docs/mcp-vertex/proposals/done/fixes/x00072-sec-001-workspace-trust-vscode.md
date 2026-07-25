@@ -2,13 +2,19 @@
 id: x00072
 kind: fix
 title: "SEC-001 · Workspace Trust + aprobación de comando para la extensión VS Code"
-status: ready
+status: done
 type: proposal
 track: security+invariants+ide
 date: 2026-07-25
 related:
   - a00070 # intake auditoría externa
   - a00071 # auditoría independiente
+closed-by: copilot-minimax-m3
+closed-evidence:
+  - S1: 333a55f9 fix(x00072): SEC-001 S1 gate stdio child on workspace trust
+  - S2: 42929268 fix(x00072): SEC-001 S2 trust fingerprint + QuickPick gate
+  - S3: ccc575f8 fix(x00072): type the S2/S3 trust-gate specs and unblock assign
+
 ---
 
 # x00072 — SEC-001 · Workspace Trust + aprobación de comando para la extensión VS Code
@@ -80,7 +86,7 @@ workspaces untrusted.
 ### S2 — Aprobación humana con huella (command+args+cwd) persistida e invalidable
 
 - **Status**: done
-- **Files**: `extensions/vscode/src/extension.ts`, `extensions/vscode/src/contracts/types.ts`, `extensions/vscode/tests/src/trust-gate.spec.ts`
+- **Files**: `extensions/vscode/src/extension.ts`, `extensions/vscode/src/commands/types.ts`, `extensions/vscode/src/test/trust-gate.spec.ts`
 - **Gate**: type
 - acceptance:
   - "Mostrar QuickPick con comando+args+cwd+resumen legible"
@@ -90,7 +96,7 @@ workspaces untrusted.
 ### S3 — Tests de integración (trusted, untrusted, modificado, cancelado)
 
 - **Status**: done
-- **Files**: `extensions/vscode/src/test/trust-gate.integration.spec.ts`, `extensions/vscode/src/test/mcp-json-change.integration.spec.ts`
+- **Files**: `extensions/vscode/src/test/trust-gate-integration.spec.ts`, `extensions/vscode/src/test/mcp-json-change.integration.spec.ts`
 - **Gate**: e2e
 - acceptance:
   - "Test 1: `isTrusted=false` → `createClient` NO invocado (mock spy)"
