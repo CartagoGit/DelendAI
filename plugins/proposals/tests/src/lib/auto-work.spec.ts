@@ -120,6 +120,41 @@ describe('auto_work (one-call action plan)', async () => {
 		});
 	});
 
+	it('blocks a new claim when a completed slice lost its declared artifacts', async () => {
+		options = { ...options, workspaceRoot: root };
+		writeFileSync(
+			options.indexPathAbs,
+			JSON.stringify({
+				proposals: [{ id: 'p2-x', file: 'p2.md', status: 'pending' }],
+			}),
+		);
+		writeFileSync(
+			join(root, 'p2.md'),
+			`# p2-x
+
+## Slices
+
+### S1 — previously shipped
+- **Files**: \`plugins/missing/src/index.ts\`
+- **Gate**: none
+- **Status**: done
+
+### S2 — next work
+- **Files**: \`plugins/missing/src/next.ts\`
+- **Gate**: none
+- **Status**: pending
+`,
+		);
+
+		const out = parse(await runAutoWork(options));
+		expect(out.reason).toBe('done-slice-artifact-drift');
+		expect(out.executionMode).toBe('blocked');
+		expect(out.hygieneBlockers).toContain(
+			'completed slice artifact is missing: S1: plugins/missing/src/index.ts',
+		);
+		expect(out.claimReady).toBeUndefined();
+	});
+
 	it('surfaces a compact orchestration policy for non-trivial slices', async () => {
 		writeFileSync(
 			options.indexPathAbs,

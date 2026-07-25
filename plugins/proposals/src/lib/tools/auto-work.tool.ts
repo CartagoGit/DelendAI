@@ -1,5 +1,5 @@
-import { readFile } from 'node:fs/promises';
-import { join } from 'node:path';
+import { readFile, stat } from 'node:fs/promises';
+import { join, relative, resolve } from 'node:path';
 
 import { z } from 'zod';
 
@@ -180,9 +180,36 @@ interface IContinueProposalPlanPayload {
 			readonly sliceId: string;
 			readonly files: readonly string[];
 			readonly gate: IAutoWorkClaimReady['gate'];
+			readonly status: string;
 		}[];
 	};
 }
+
+interface IClaimReadyResolution {
+	readonly claimReady?: IAutoWorkClaimReady | undefined;
+	readonly missingDoneArtifacts: readonly string[];
+}
+
+const hasTrackedArtifact = async (
+	workspaceRoot: string,
+	file: string,
+): Promise<boolean> => {
+	const abs = resolve(workspaceRoot, file);
+	const rel = relative(workspaceRoot, abs);
+	if (rel.startsWith('..') || rel === '..') return false;
+	try {
+		await stat(abs);
+	} catch {
+		return false;
+	}
+	const git = await createGitRunner(workspaceRoot)([
+		'ls-files',
+		'--error-unmatch',
+		'--',
+		file,
+	]);
+	return git.ok && git.output.trim() !== '';
+};
 
 /**
  * Resolve the first claimable slice through the existing planner instead of
@@ -193,7 +220,7 @@ interface IContinueProposalPlanPayload {
 const resolveClaimReady = async (
 	proposalId: string,
 	options: IAutoWorkToolOptions,
-): Promise<IAutoWorkClaimReady | undefined> => {
+): Promise<IClaimReadyResolution> => {
 	const response = await runContinueProposal(
 		{ proposalId, mode: 'plan' },
 		options,
@@ -201,22 +228,57 @@ const resolveClaimReady = async (
 	const payload = JSON.parse(
 		response.content[0]?.text ?? '{}',
 	) as IContinueProposalPlanPayload;
-	if (payload.kind !== 'slice-plan') return undefined;
+	if (payload.kind !== 'slice-plan') {
+		return { missingDoneArtifacts: [] };
+	}
+	const doneSlices = payload.plan?.slices.filter(
+		(slice) => slice.status === 'done',
+	);
+	const missingDoneArtifacts =
+		options.workspaceRoot === undefined
+			? []
+			: (
+					await Promise.all(
+						(doneSlices ?? []).flatMap(async (slice) =>
+							(
+								await Promise.all(
+									slice.files.map(async (file) => ({
+										file,
+										exists: await hasTrackedArtifact(
+											options.workspaceRoot!,
+											file,
+										),
+									})),
+								)
+							)
+								.filter((artifact) => !artifact.exists)
+								.map(
+									(artifact) =>
+										`${slice.sliceId}: ${artifact.file}`,
+								),
+						),
+					)
+				).flat();
 	const sliceId = payload.claimableSliceIds?.[0];
-	if (sliceId === undefined) return undefined;
+	if (sliceId === undefined) return { missingDoneArtifacts };
 	const slice = payload.plan?.slices.find(
 		(candidate) => candidate.sliceId === sliceId,
 	);
-	if (slice === undefined || slice.files.length === 0) return undefined;
+	if (slice === undefined || slice.files.length === 0) {
+		return { missingDoneArtifacts };
+	}
 	return {
-		sliceId,
-		files: [...slice.files],
-		gate: slice.gate,
-		agent_lock_args: {
-			action: 'claim',
-			task_id: `${proposalId}-${sliceId}`,
-			agent: '<host-resolved-agent>',
+		missingDoneArtifacts,
+		claimReady: {
+			sliceId,
 			files: [...slice.files],
+			gate: slice.gate,
+			agent_lock_args: {
+				action: 'claim',
+				task_id: `${proposalId}-${sliceId}`,
+				agent: '<host-resolved-agent>',
+				files: [...slice.files],
+			},
 		},
 	};
 };
@@ -494,10 +556,27 @@ export const runAutoWork = async (
 		proposalId: next.proposalId ?? 'unknown',
 		delegateAfterToolCalls: options.orchestration?.delegateAfterToolCalls,
 	});
-	const claimReady =
+	const claimReadyResolution =
 		next.proposalId === undefined
-			? undefined
+			? { missingDoneArtifacts: [] }
 			: await resolveClaimReady(next.proposalId, options);
+	if (claimReadyResolution.missingDoneArtifacts.length > 0) {
+		return json({
+			state: 'work',
+			ok: false,
+			reason: 'done-slice-artifact-drift',
+			executionMode: 'blocked',
+			proposalId: next.proposalId,
+			file: next.file,
+			hygieneBlockers: claimReadyResolution.missingDoneArtifacts.map(
+				(artifact) =>
+					`completed slice artifact is missing: ${artifact}`,
+			),
+			nextAction:
+				'Repair the proposal state or restore the missing completed-slice artifacts before claiming new work. auto_work refuses to plan on top of unverifiable done slices.',
+		});
+	}
+	const claimReady = claimReadyResolution.claimReady;
 	const persistStep =
 		resolvedMode === 'none'
 			? []
