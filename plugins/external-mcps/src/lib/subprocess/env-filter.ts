@@ -15,7 +15,7 @@ export type BuildSafeEnvResult =
 			readonly missing: readonly string[];
 	  };
 
-const BASE_ALLOW_LIST = [
+export const BASE_ALLOW_LIST = [
 	'PATH',
 	'HOME',
 	'TMPDIR',
