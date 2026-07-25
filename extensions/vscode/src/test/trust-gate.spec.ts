@@ -149,7 +149,10 @@ describe('registerStartServerUntrusted (x00072 S2)', () => {
 			commands: { registerCommand: () => ({ dispose: () => {} }) },
 			window: {
 				showInformationMessage: () => Promise.resolve(undefined),
-				showQuickPick: (items, options) => {
+				showQuickPick: (
+					items: ReadonlyArray<{ label: string; detail?: string }>,
+					options?: { detail?: string },
+				) => {
 					lastPickDetail = options?.detail;
 					return Promise.resolve(
 						typeof pickResult === 'string'

@@ -204,7 +204,7 @@ export interface IConfiguration {
 
 export interface IActivationDeps {
 	readonly vscode?: IVscodeApi;
-	readonly createClient?: () => Promise<McpStdioClient>;
+	createClient?: () => Promise<McpStdioClient>;
 	/** x00072 SEC-001 S1: trust override for the manual start-server command. */
 	readonly trustOverride?: boolean;
 }
