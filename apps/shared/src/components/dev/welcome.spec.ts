@@ -27,6 +27,36 @@ import {
 	renderQuickStartMenu,
 } from './welcome';
 
+// This vitest project runs with `environment: 'node'` (apps/shared has no
+// other DOM-touching specs), so `sessionStorage` is not a global here the
+// way it is in a browser/happy-dom/jsdom runtime. `isQuickStartDismissed`/
+// `dismissQuickStart` already guard real callers with try/catch (storage
+// can be disabled in private browsing), but that only protects against a
+// *throwing* accessor — it does nothing when the global itself is simply
+// undefined, which is a ReferenceError raised by THIS spec file reading
+// it directly (`sessionStorage.removeItem(...)`), not by the production
+// code under test. A minimal in-memory stand-in is enough: these tests
+// only exercise get/set/remove round-tripping, nothing DOM-specific.
+if (typeof globalThis.sessionStorage === 'undefined') {
+	const store = new Map<string, string>();
+	globalThis.sessionStorage = {
+		getItem: (key: string) => store.get(key) ?? null,
+		setItem: (key: string, value: string) => {
+			store.set(key, value);
+		},
+		removeItem: (key: string) => {
+			store.delete(key);
+		},
+		clear: () => {
+			store.clear();
+		},
+		key: (index: number) => [...store.keys()][index] ?? null,
+		get length() {
+			return store.size;
+		},
+	} as Storage;
+}
+
 describe('welcome — CARDS', () => {
 	it('has the canonical 4 entries in the canonical order', () => {
 		expect(CARDS).toHaveLength(4);
