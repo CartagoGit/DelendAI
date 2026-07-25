@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto';
+import { dirname, join } from 'node:path';
 
-import { joinRel, definePlugin } from '@mcp-vertex/core/public';
+import { definePlugin } from '@mcp-vertex/core/public';
 import { z } from 'zod';
 
 import { createLogStore } from './lib/services/log-store';
@@ -42,9 +43,16 @@ export default definePlugin({
 		retentionCount: z.number().optional(),
 	}),
 	async register(ctx) {
-		const logsDir = ctx.workspace.resolve(joinRel(ctx.cacheDir, 'logs'));
+		// `ctx.pluginCacheDir` (NOT `ctx.cacheDir`) already resolves to
+		// `results/logs` because of `cacheNamespace: 'results'` above —
+		// `ctx.cacheDir` is the raw, un-namespaced cache root, and using
+		// it directly here would silently write outside `results/`,
+		// where `check-stray-cache-files` and any tooling that treats
+		// `results/` as accumulated (non-derivable) records wouldn't
+		// recognize the log history as durable.
+		const logsDir = ctx.workspace.resolve(ctx.pluginCacheDir);
 		const errorLogsDir = ctx.workspace.resolve(
-			joinRel(ctx.cacheDir, 'logs-errors'),
+			join(dirname(ctx.pluginCacheDir), 'logs-errors'),
 		);
 		const [mainStore, errorStore] = await Promise.all([
 			createLogStore(logsDir),
@@ -93,13 +101,17 @@ export default definePlugin({
 		ctx.cacheEvictionRegistry?.register({
 			id: 'logs-retention',
 			owner: 'logs',
-			path: 'logs/*',
+			// Eviction rule paths are relative to the raw cacheDir root
+			// (NOT pluginCacheDir), so the `results/` namespace segment
+			// must be spelled out here to match where the store actually
+			// writes.
+			path: 'results/logs/*',
 			when: { kind: 'keepLastN', n: retentionCount },
 		});
 		ctx.cacheEvictionRegistry?.register({
 			id: 'logs-errors-retention',
 			owner: 'logs',
-			path: 'logs-errors/*',
+			path: 'results/logs-errors/*',
 			when: { kind: 'keepLastN', n: retentionCount },
 		});
 
