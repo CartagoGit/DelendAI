@@ -212,7 +212,12 @@ export const detectContention = async (
 	);
 	const lockPath = opts.lockPath ?? defaultLockPathFromTable(tablePath);
 	const table = await listLocks({ tablePath });
-	const history = await listRecentFileLockContentions({ tablePath });
+	const history = await listRecentFileLockContentions({
+		tablePath,
+		...(opts.now !== undefined
+			? { now: () => new Date(opts.now!()).toISOString() }
+			: {}),
+	});
 	const lock = await readLockSnapshot(lockPath);
 	const nowMs = (opts.now ?? Date.now)();
 	const livelocks: ILivelockPair[] = [];
@@ -275,7 +280,7 @@ export const detectContention = async (
 		if (
 			resolvedMs !== null &&
 			!Number.isNaN(resolvedMs) &&
-			nowMs - resolvedMs > DEFAULT_WINDOW_MS
+			nowMs - resolvedMs > (opts.windowMs ?? DEFAULT_WINDOW_MS)
 		) {
 			continue;
 		}
@@ -283,7 +288,7 @@ export const detectContention = async (
 			(resolvedMs === null || Number.isNaN(resolvedMs)
 				? nowMs
 				: resolvedMs) - startedMs;
-		if (heldMs <= DEFAULT_THRESHOLD_MS) continue;
+		if (heldMs <= (opts.windowMs ?? DEFAULT_THRESHOLD_MS)) continue;
 		const pair = [entry.holderAgentId, entry.waitingAgentId].sort();
 		const key = `${pair.join('::')}::${[...entry.files].sort().join(',')}`;
 		if (seen.has(key)) continue;
