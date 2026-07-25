@@ -12,7 +12,7 @@ export interface IPackageNode {
 	readonly internalDeps: readonly string[];
 }
 
-/** A directed edge `from → to` in the dependency graph. */
+/** A directed edge \`from → to\` in the dependency graph. */
 export interface IDependencyEdge {
 	readonly from: string;
 	readonly to: string;
@@ -36,4 +36,40 @@ export interface IWorkspacePackage {
 	readonly name: string;
 	/** Every declared dependency name (all sections). */
 	readonly dependencies: readonly string[];
+}
+
+/** A directed edge \`from → to\` in the module graph. */
+export interface IModuleEdge {
+	readonly from: string;
+	readonly to: string;
+}
+
+/** The resolved module graph for a single package. */
+export interface IModuleGraph {
+	readonly nodes: readonly string[];
+	readonly edges: readonly IModuleEdge[];
+}
+
+/**
+ * Injected I/O seam for the module-graph builder. The production
+ * adapter (realModules) walks the package src TS files, parses
+ * their import statements, and resolves every import to either
+ * an in-package relative path or drops it. Tests inject a static
+ * map to keep the unit test free of filesystem I/O.
+ */
+export interface IDiagramModuleDeps {
+	/**
+	 * List every \`.ts\` file in the package, relative to the package
+	 * root. The order is irrelevant; the builder sorts.
+	 */
+	readonly listPackageFiles: () => Promise<readonly string[]>;
+	/**
+	 * Read the \`import\` paths of a single file. The I/O layer
+	 * returns relative paths (or external paths the I/O layer
+	 * could not resolve to a package file); the builder drops the
+	 * ones not present in \`listPackageFiles()\`.
+	 */
+	readonly readFileImports: (
+		relativePath: string,
+	) => Promise<readonly string[]>;
 }

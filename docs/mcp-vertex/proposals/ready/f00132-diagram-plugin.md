@@ -42,7 +42,7 @@ than adding a new data source.
 
 ### S1 — dependency + module graph
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/diagram/src/lib/graph/`, `plugins/diagram/src/lib/tools/diagram-graph.tool.ts`
 - **Gate**: bun run validate
 
