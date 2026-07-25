@@ -1,14 +1,15 @@
 /**
- * f00123 S1 — `refactor` plugin entry point. S1 ships navigation
- * (references / definition / symbols) only. S2 (safe rename) and S3
- * (rule-based codemods) are tracked separately under `f00123` once
- * the AST walker lands.
+ * f00123 S1+S2 — `refactor` plugin entry point.
+ * S1: navigation (references / definition / symbols).
+ * S2: safe rename (scoped multi-file diffs + apply).
+ * S3 (rule-based codemods) tracked separately under `f00123`.
  */
 import { z } from 'zod';
 
 import { definePlugin } from '@mcp-vertex/core/public';
 
 import { buildRefactorNavToolRegistrations } from './lib/tools/refactor-nav.tool';
+import { buildRefactorRenameToolRegistrations } from './lib/tools/refactor-rename.tool';
 
 const OptionsSchema = z.object({
 	workspaceRootAbs: z.string().optional(),
@@ -17,7 +18,8 @@ const OptionsSchema = z.object({
 export default definePlugin({
 	name: 'refactor',
 	version: '0.1.0',
-	describe: 'AST-safe refactor: navigation (S1) — always dry-run-first.',
+	describe:
+		'AST-safe refactor: navigation (S1), rename (S2) — always dry-run-first.',
 	optionsSchema: OptionsSchema,
 	register(ctx) {
 		const parsed = OptionsSchema.safeParse(ctx.options ?? {});
@@ -27,11 +29,18 @@ export default definePlugin({
 			);
 		}
 		const opts = parsed.data;
+		const workspaceRoot = opts.workspaceRootAbs ?? ctx.workspace.root;
 		return {
-			tools: buildRefactorNavToolRegistrations({
-				namespacePrefix: ctx.namespacePrefix,
-				workspaceRootAbs: opts.workspaceRootAbs ?? ctx.workspace.root,
-			}),
+			tools: [
+				...buildRefactorNavToolRegistrations({
+					namespacePrefix: ctx.namespacePrefix,
+					workspaceRootAbs: workspaceRoot,
+				}),
+				...buildRefactorRenameToolRegistrations({
+					namespacePrefix: ctx.namespacePrefix,
+					workspaceRootAbs: workspaceRoot,
+				}),
+			],
 		};
 	},
 });

@@ -72,6 +72,11 @@
 				"./plugins/quality/src/public/index.ts"
 			],
 			"@mcp-vertex/quality/*": ["./plugins/quality/src/*"],
+			"@mcp-vertex/refactor": ["./plugins/refactor/src/index.ts"],
+			"@mcp-vertex/refactor/public": [
+				"./plugins/refactor/src/public/index.ts"
+			],
+			"@mcp-vertex/refactor/*": ["./plugins/refactor/src/*"],
 			"@mcp-vertex/search": ["./plugins/search/src/index.ts"],
 			"@mcp-vertex/search/public": [
 				"./plugins/search/src/public/index.ts"
