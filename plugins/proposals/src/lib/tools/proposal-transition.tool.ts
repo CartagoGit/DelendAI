@@ -81,6 +81,16 @@ const PEER_REVIEW_LOG_RELATIVE_PATH = join(
 	'peer-review.jsonl',
 );
 
+export const VALIDATE_LOG_RELATIVE_PATH = join(
+	'.cache',
+	'mcp-vertex',
+	'results',
+	'logs',
+	'validate.jsonl',
+);
+
+const VALIDATE_EVIDENCE_WINDOW_MS = 24 * 60 * 60 * 1000;
+
 export interface IPeerReviewLogEntry {
 	readonly ts: string;
 	readonly proposal_id: string;
@@ -94,6 +104,27 @@ export interface IPeerReviewGateDeps {
 	readonly readPeerReviewLog: (
 		logPathAbs: string,
 	) => Promise<readonly IPeerReviewLogEntry[]>;
+}
+
+export interface IValidateEvidence {
+	readonly timestamp: string;
+	readonly exitCode: number;
+	readonly logPath?: string | undefined;
+}
+
+interface IValidateLogEntry {
+	readonly timestamp?: string;
+	readonly ts?: string;
+	readonly result?: string;
+	readonly exitCode?: number;
+	readonly logPath?: string;
+	readonly [key: string]: unknown;
+}
+
+export interface IValidateEvidenceDeps {
+	readonly readValidateLog: (
+		logPathAbs: string,
+	) => Promise<readonly IValidateLogEntry[]>;
 }
 
 const readPeerReviewLogEntries = async (
@@ -118,6 +149,37 @@ const readPeerReviewLogEntries = async (
 		try {
 			const parsed = JSON.parse(trimmed) as IPeerReviewLogEntry;
 			entries.push(parsed);
+		} catch {
+			continue;
+		}
+	}
+	return entries;
+};
+
+const readValidateLogEntries = async (
+	logPathAbs: string,
+): Promise<readonly IValidateLogEntry[]> => {
+	const raw = await readFile(logPathAbs, 'utf8').catch((error: unknown) => {
+		if (
+			error &&
+			typeof error === 'object' &&
+			'code' in error &&
+			error.code === 'ENOENT'
+		) {
+			return '';
+		}
+		throw error;
+	});
+	if (raw.trim() === '') return [];
+	const entries: IValidateLogEntry[] = [];
+	for (const line of raw.split('\n')) {
+		const trimmed = line.trim();
+		if (trimmed === '') continue;
+		try {
+			const parsed = JSON.parse(trimmed);
+			if (parsed && typeof parsed === 'object') {
+				entries.push(parsed as IValidateLogEntry);
+			}
 		} catch {
 			continue;
 		}
@@ -152,6 +214,7 @@ export interface IProposalTransitionToolOptions {
 	 */
 	readonly requirePeerReview?: boolean;
 	readonly peerReviewGateDeps?: IPeerReviewGateDeps;
+	readonly validateEvidenceDeps?: IValidateEvidenceDeps;
 }
 
 export interface IProposalTransitionArgs {
@@ -163,6 +226,7 @@ export interface IProposalTransitionArgs {
 	 * emergency / host-approved bypass; default false.
 	 */
 	readonly force?: boolean | undefined;
+	readonly validateEvidence?: IValidateEvidence | undefined;
 }
 
 /**
@@ -321,6 +385,71 @@ const hasApprovedPeerReviewSince = (
 	});
 };
 
+const isFreshValidateEvidence = (
+	evidence: IValidateEvidence,
+	nowMs = Date.now(),
+): boolean => {
+	if (evidence.exitCode !== 0) return false;
+	const tsMs = Date.parse(evidence.timestamp);
+	if (Number.isNaN(tsMs)) return false;
+	return tsMs >= nowMs - VALIDATE_EVIDENCE_WINDOW_MS;
+};
+
+const toValidateEvidence = (
+	entry: IValidateLogEntry,
+	logPathAbs: string,
+): IValidateEvidence | null => {
+	if (entry.result !== 'pass') return null;
+	const timestamp =
+		typeof entry.timestamp === 'string'
+			? entry.timestamp
+			: typeof entry.ts === 'string'
+				? entry.ts
+				: null;
+	if (timestamp === null) return null;
+	const exitCode =
+		typeof entry.exitCode === 'number' ? entry.exitCode : 0;
+	return {
+		timestamp,
+		exitCode,
+		...(typeof entry.logPath === 'string'
+			? { logPath: entry.logPath }
+			: { logPath: logPathAbs }),
+	};
+};
+
+export const resolveRecentValidateEvidence = async (input: {
+	readonly workspaceRoot: string;
+	readonly validateEvidence?: IValidateEvidence | undefined;
+	readonly deps?: IValidateEvidenceDeps | undefined;
+}): Promise<IValidateEvidence | null> => {
+	if (input.validateEvidence !== undefined) {
+		return isFreshValidateEvidence(input.validateEvidence)
+			? input.validateEvidence
+			: null;
+	}
+	const logPathAbs = join(input.workspaceRoot, VALIDATE_LOG_RELATIVE_PATH);
+	const deps = input.deps ?? { readValidateLog: readValidateLogEntries };
+	const entries = await deps.readValidateLog(logPathAbs);
+	let latest: IValidateEvidence | null = null;
+	let latestMs = Number.NEGATIVE_INFINITY;
+	for (const entry of entries) {
+		const evidence = toValidateEvidence(entry, logPathAbs);
+		if (evidence === null || !isFreshValidateEvidence(evidence)) continue;
+		const tsMs = Date.parse(evidence.timestamp);
+		if (Number.isNaN(tsMs) || tsMs <= latestMs) continue;
+		latest = evidence;
+		latestMs = tsMs;
+	}
+	return latest;
+};
+
+const buildValidateRequiredEnvelope = () => ({
+	ok: false as const,
+	error: 'validate required' as const,
+	nextAction: 'bun run validate' as const,
+});
+
 export const runProposalTransition = async (
 	args: IProposalTransitionArgs,
 	options: IProposalTransitionToolOptions,
@@ -384,6 +513,30 @@ export const runProposalTransition = async (
 
 	const dfaRejection = validateTransition(args.id, from, finalTo);
 	if (dfaRejection !== null) return dfaRejection;
+
+	if (
+		args.force !== true &&
+		(finalTo === 'review' || finalTo === 'done')
+	) {
+		const validateEvidence = await resolveRecentValidateEvidence({
+			workspaceRoot: options.workspaceRoot,
+			validateEvidence: args.validateEvidence,
+			deps: options.validateEvidenceDeps,
+		});
+		if (validateEvidence === null) {
+			const envelope = buildValidateRequiredEnvelope();
+			return {
+				content: [
+					{
+						type: 'text' as const,
+						text: JSON.stringify(envelope),
+					},
+				],
+				structuredContent: envelope,
+				isError: true,
+			};
+		}
+	}
 
 	// a00069 S7: review → done requires an independent peer approve unless
 	// the host disabled requirePeerReview or the caller passed force:true.
@@ -728,6 +881,13 @@ export const buildProposalTransitionRegistration = (
 					to: z.string().min(1),
 					reason: z.string().min(1),
 					force: z.boolean().optional(),
+					validateEvidence: z
+						.object({
+							timestamp: z.string().min(1),
+							exitCode: z.number().int(),
+							logPath: z.string().min(1).optional(),
+						})
+						.optional(),
 				}),
 			},
 			async (args: IProposalTransitionArgs) =>

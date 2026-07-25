@@ -23,6 +23,11 @@ import {
 } from '@mcp-vertex/proposals/lib/contracts/constants/proposal-glossary.constant';
 import type { IGitRunner } from '@mcp-vertex/proposals/lib/shared/git-runner';
 
+const RECENT_VALIDATE = {
+	timestamp: new Date().toISOString(),
+	exitCode: 0,
+};
+
 // A real `git mv` actually moves the file; the fake must too, or the tool's
 // post-move read (and every assertion on the new path) would silently pass
 // for the wrong reason (a no-op "success"). x00106 S2: the tool now asks
@@ -200,6 +205,9 @@ describe('proposal_transition', async () => {
 						id: `f200${from}${to}`.replace(/[^a-z0-9]/g, ''),
 						to,
 						reason: 'matrix test',
+						...((to === 'review' || to === 'done')
+							? { validateEvidence: RECENT_VALIDATE }
+							: {}),
 					},
 					options,
 				);
@@ -244,7 +252,12 @@ describe('proposal_transition', async () => {
 					status: 'review',
 				});
 				const result = await runProposalTransition(
-					{ id, to: 'done', reason: 'shipping' },
+					{
+						id,
+						to: 'done',
+						reason: 'shipping',
+						validateEvidence: RECENT_VALIDATE,
+					},
 					options,
 				);
 				expect(result.isError).toBeUndefined();
@@ -266,7 +279,12 @@ describe('proposal_transition', async () => {
 				status: 'review',
 			});
 			const result = await runProposalTransition(
-				{ id: 'f70001', to: 'done', reason: 'no kind declared' },
+				{
+					id: 'f70001',
+					to: 'done',
+					reason: 'no kind declared',
+					validateEvidence: RECENT_VALIDATE,
+				},
 				options,
 			);
 			expect(result.isError).toBeUndefined();
@@ -284,7 +302,12 @@ describe('proposal_transition', async () => {
 				status: 'review',
 			});
 			const result = await runProposalTransition(
-				{ id: 'l70002', to: 'done', reason: 'legacy' },
+				{
+					id: 'l70002',
+					to: 'done',
+					reason: 'legacy',
+					validateEvidence: RECENT_VALIDATE,
+				},
 				options,
 			);
 			expect(result.isError).toBeUndefined();
@@ -436,7 +459,12 @@ describe('proposal_transition', async () => {
 			);
 
 			const result = await runProposalTransition(
-				{ id: 'f90002', to: 'done', reason: 'shipping' },
+				{
+					id: 'f90002',
+					to: 'done',
+					reason: 'shipping',
+					validateEvidence: RECENT_VALIDATE,
+				},
 				{ ...options, indexPathAbs, workspaceRoot: root },
 			);
 			expect(result.isError).toBeUndefined();
@@ -468,7 +496,12 @@ describe('proposal_transition', async () => {
 				kind: 'feat',
 			});
 			const result = await runProposalTransition(
-				{ id: 'f90003', to: 'done', reason: 'ship' },
+				{
+					id: 'f90003',
+					to: 'done',
+					reason: 'ship',
+					validateEvidence: RECENT_VALIDATE,
+				},
 				options,
 			);
 			expect(result.isError).toBeUndefined();
@@ -528,7 +561,12 @@ describe('a00069 S7 peer-review gate on review → done', () => {
 			type: 'feat',
 		});
 		const result = await runProposalTransition(
-			{ id: 'f00970', to: 'done', reason: 'ship' },
+			{
+				id: 'f00970',
+				to: 'done',
+				reason: 'ship',
+				validateEvidence: RECENT_VALIDATE,
+			},
 			options,
 		);
 		expect(result.isError).toBe(true);
@@ -575,7 +613,12 @@ describe('a00069 S7 peer-review gate on review → done', () => {
 			},
 		]);
 		const result = await runProposalTransition(
-			{ id: 'f00971', to: 'done', reason: 'peer approved' },
+			{
+				id: 'f00971',
+				to: 'done',
+				reason: 'peer approved',
+				validateEvidence: RECENT_VALIDATE,
+			},
 			options,
 		);
 		expect(result.isError).toBeUndefined();
@@ -622,7 +665,12 @@ describe('a00069 S7 peer-review gate on review → done', () => {
 			},
 		]);
 		const result = await runProposalTransition(
-			{ id: 'f00974', to: 'done', reason: 'self-reviewed' },
+			{
+				id: 'f00974',
+				to: 'done',
+				reason: 'self-reviewed',
+				validateEvidence: RECENT_VALIDATE,
+			},
 			options,
 		);
 		expect(result.isError).toBe(true);
@@ -654,7 +702,12 @@ describe('a00069 S7 peer-review gate on review → done', () => {
 			type: 'feat',
 		});
 		const result = await runProposalTransition(
-			{ id: 'f00973', to: 'done', reason: 'host opted out' },
+			{
+				id: 'f00973',
+				to: 'done',
+				reason: 'host opted out',
+				validateEvidence: RECENT_VALIDATE,
+			},
 			{ ...options, requirePeerReview: false },
 		);
 		expect(result.isError).toBeUndefined();
@@ -669,7 +722,12 @@ describe('a00069 S7 peer-review gate on review → done', () => {
 			type: 'feat',
 		});
 		const result = await runProposalTransition(
-			{ id: 'f00975', to: 'review', reason: 'ready for review' },
+			{
+				id: 'f00975',
+				to: 'review',
+				reason: 'ready for review',
+				validateEvidence: RECENT_VALIDATE,
+			},
 			options,
 		);
 		expect(result.isError).toBeUndefined();

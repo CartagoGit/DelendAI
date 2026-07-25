@@ -28,6 +28,11 @@ const capture = async (
 const parse = (r: { content: Array<{ text: string }> }): any =>
 	JSON.parse(r.content[0]?.text ?? '{}');
 
+const recentValidate = () => ({
+	timestamp: new Date().toISOString(),
+	exitCode: 0,
+});
+
 describe('proposal authoring (create → board → close)', async () => {
 	let root = '';
 	let opts: IAuthoringToolOptions;
@@ -125,6 +130,7 @@ describe('proposal authoring (create → board → close)', async () => {
 				proposalId: 'f00081',
 				sliceId: 's1',
 				releaseLock: false,
+				validateEvidence: recentValidate(),
 			}),
 		);
 		expect(closed.closed).toBe(true);
@@ -161,6 +167,7 @@ describe('proposal authoring (create → board → close)', async () => {
 				proposalId: 'f00086',
 				sliceId: 's1',
 				releaseLock: false,
+				validateEvidence: recentValidate(),
 			}),
 		);
 		expect(closed.closed).toBe(true);
