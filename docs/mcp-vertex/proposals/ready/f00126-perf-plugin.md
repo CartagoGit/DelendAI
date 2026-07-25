@@ -57,8 +57,8 @@ regressions beyond a threshold. Pure comparator over injected samples.
 
 ### S2 — bundle-size budget
 
-- **Status**: pending
-- **Files**: `plugins/perf/src/lib/bundle/`, `plugins/perf/src/lib/tools/perf-bundle.tool.ts`
+- **Status**: done
+- **Files**: `plugins/perf/src/lib/perf/check-budgets.ts`, `plugins/perf/src/lib/perf/real-deps.ts`, `plugins/perf/src/lib/tools/perf-bundle.tool.ts`
 - **Gate**: bun run validate
 
 `perf_bundle` reads build output sizes, checks per-entry budgets (pack-tuned),
