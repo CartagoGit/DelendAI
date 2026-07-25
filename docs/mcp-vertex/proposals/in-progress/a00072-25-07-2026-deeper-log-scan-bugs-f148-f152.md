@@ -343,6 +343,12 @@ Los F148-F152 son bugs **estructurales** del swarm, no cosméticos:
   - `039ce3c5` — `feat(f00129): S3 local correlation + catalog`
   - `ed3ece3e` — `docs(f00129): fold observability README S3 notes`
   - `217e1609` — `feat(f00130): add api_validate contract validator`
+- Post-S1 commits (post pasada-16):
+  - `bf91c2ab` — `chore(f00129): wire observability plugin into workspace + regenerate tool-outputs`
+  - `ee38b843` — `docs(a00069): move audit + F141-F186 followups to done/audits — S1-S13 landed`
+  - `255020ee` — `docs(a00069): complete rename to done/audits (resolve stage conflict)`
+  - `1787628c` — `docs(a00069): correct status from in-progress to done — final closure`
+  - `5dcf04b7` — `docs(a00072): pasada-17 F201-F208 — branches stranded, log honest catalog, skill resolver, livelock` (S4-S7 slices proposed)
 - F148-F152 documentados verbatim con logs.
 - 5 slices propuestos (S1.a-d, S2.a-c, S3.a-c).
 - Lint proposals pasa para a00072.
@@ -1581,6 +1587,118 @@ proposals/issues/ingested/*.md  → status: ingested (terminal)
 **Esperado**: terminal statuses en cualquier carpeta son válidos. **Actual**: 4 propuestas con status terminal pero **no en `done/`**.
 
 **Severado**: INFO — son terminales legítimas, no zombis. F166 (4/5 in-progress zombis) ≠ F208 (4 terminales legítimas).
+
+### F209 — `a00069` en `done/audits/` con `status: done` final — F157/F185/F187 cerrados + a00069 now terminal (POSITIVO)
+
+Re-audit-17 `head docs/mcp-vertex/proposals/done/audits/a00069-25-07-...md`:
+
+```yaml
+id: a00069
+status: done
+type: proposal
+track: audit+multi-agent+state-consistency+proposals-plugin
+```
+
+Re-audit-17 `ls -la docs/mcp-vertex/proposals/done/audits/a00069*.md`:
+
+```text
+-rw-r--r-- 1 cartago cartago 203321 Jul 25 21:38
+```
+
+**Esperado**: a00069 cerrado terminalmente. **Actual**: cerrado + `status: done` + 203KB (F1-F186 contenido).
+
+**Esperado vs Actual**: tras `c85303f1` (trim) + `ee38b843` (move a done/audits) + `1787628c` (status: done), **a00069 ahora terminal completo**.
+
+**Severidad**: **POSITIVO**. F157/F185/F187 triple-closed.
+
+### F210 — `a00072-S2` claim activo (`agents.lock in_flight[0]`) — workflow auto_work activo (INFO)
+
+Re-audit-17 `cat .cache/mcp-vertex/agents.lock.json`:
+
+```text
+{
+  "version": 1,
+  "stale_after_minutes": 10,
+  "in_flight": [
+    {
+      "task_id": "a00072-S2",
+      "agent": "copilot-minimax-m3",
+      "ownership": [
+        "plugins/proposals/src/lib/tools/proposal-transition.tool.ts",
+        "plugins/proposals/src/lib/tools/authoring.tool.ts"
+      ],
+      "started_at": "2026-07-25T19:40:30.005Z",
+      "last_seen": "2026-07-25T19:40:30.005Z"
+    }
+  ]
+}
+```
+
+**Esperado**: workflow activo en a00072-S2 (peer-review gate F149). **Actual**: claim fresco (started_at == last_seen, fresh claim).
+
+**Esperado vs Actual**: el sistema detecta correctamente la actividad. Si el agente muere, `removeStale` lo limpia en 10min.
+
+**Severidad**: INFO — saludable.
+
+### F211 — `plugins/auto-agent-selector/tests/src/lib/tools/auto-evaluate.tool.spec.ts` modified — F152 precursor (INFO)
+
+Re-audit-17 `git status --short`:
+
+```text
+ M plugins/auto-agent-selector/tests/src/lib/tools/auto-evaluate.tool.spec.ts
+```
+
+**Esperado**: spec actualizado. **Actual**: parallel agent modificó el spec.
+
+**Severado**: INFO — F152 precursor.
+
+### F212 — `plugins/api/src/lib/tools/api-mock.tool.spec.ts` modified — F189 evol precursor (INFO)
+
+**Severado**: INFO — F189 precursor.
+
+### F213 — `packages/core/src/generated/tool-outputs.ts` modified — 36 plugins regenerados (F121 evol, INFO)
+
+**Severado**: INFO — F121 evolución. Tool-outputs regenerado para 36 plugins.
+
+### F214 — `packages/core/src/lib/plugins/plugin-defaults.ts` modified — registro plugins (INFO)
+
+**Severado**: INFO — F121 evolución.
+
+### F215 — `tools/scripts/lint/proposal-files-exist.baseline.json` modified — F180 evol (INFO)
+
+**Severado**: INFO — F180 evolución. Baseline actualizado.
+
+### F216 — `tools/scripts/release/release-plan.ts` modified — F126/F181 evol (INFO)
+
+**Severado**: INFO — F126/F181 evolución.
+
+### F217 — `tsconfig.base.json` + `vitest.shared.ts` modified — F175 evol, alias updates para nuevos plugins (INFO)
+
+**Severado**: INFO — F175 evolución.
+
+### F218 — `usage-tracking/usage-summary.json.*.tmp` 64 files **sin cambio en 6 pasadas** — F155/F171/F195 reincidente (FATAL persistente)
+
+Re-audit-17 `ls .cache/mcp-vertex/results/usage-tracking/*.tmp | wc -l`:
+
+```text
+64
+```
+
+**Esperado**: 0. **Actual**: 64.
+
+**Esperado vs Actual**: F104 (pasada-11) → F128 (pasada-13) → F155 (pasada-14) → F171 (pasada-15) → F195 (pasada-16) → **F218 (pasada-17)**. **6 pasadas con el mismo FATAL sin mitigación**.
+
+**Severidad**: FATAL persistente — peor que el trend anterior (F195 era "5 pasadas").
+
+### F219 — `auto-agent-selector` plugin: `auto-evaluate.tool.spec.ts` modified — handle review-task invoca `mcp-vertex_quality_run` (F152 precursor, INFO)
+
+Re-audit-17 paralelo agent modificó el spec para invocar `quality_run` per review-task.
+
+**Severado**: INFO — F152 precursor.
+
+### F220 — `api` plugin: `api-mock.tool.spec.ts` modified — reproduce-friendly mocks (F189 evol, INFO)
+
+**Severado**: INFO — F189 evolución.
 
 ## scoreboard
 
