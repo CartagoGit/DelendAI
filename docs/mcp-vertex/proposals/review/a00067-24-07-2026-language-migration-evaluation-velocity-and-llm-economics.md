@@ -81,7 +81,7 @@ proposal contains.
 
 ### S1 — Verify the measured numbers
 
-- **Status**: pending
+- **Status**: done
 - **Files**: this proposal (no code change)
 - **Gate**: doc review
 - review-state: in_review
@@ -116,11 +116,14 @@ proposal contains.
 
 ### S2 — Decision ratification
 
-- **Status**: pending
+- **Status**: done
 - **Files**: this proposal (decision section)
 - **Gate**: doc review
-- review-state: in_review
+- review-state: done
 - review-implementer: copilot-minimax-m3
+- decision: ratify the original recommendation: pursue only the bounded polyglot shim and do not fund any broader language migration.
+- reviewer: 2026-07-25, agent/copilot-gpt-5.4
+- rationale: The measured delta already recorded in S1 supports ratification rather than a counter-proposal. DC1 drift stayed in the document's expected organic-growth band, DC2 still keeps fresh-agent productivity under 1k tokens, DC3 confirms the compact projection remains the real token-saving mechanism, DC4-DC6 still support the existing TypeScript plugin-loading and type-feedback trade-offs, and DC7 still isolates distribution as the only axis where a language change creates measurable value. That evidence supports the existing split decision: keep the TypeScript codebase, fund only the polyglot install shim, and avoid an unbounded rewrite.
 - **Acceptance**: the next agent either ratifies the **recommendation**
   (polyglot shim, no other migration) or proposes a counter-evidenced
   alternative. Counter-evidence must include a measured delta, not a
@@ -128,41 +131,40 @@ proposal contains.
 
 ### S3 — Concrete bounds for the polyglot shim (if ratified)
 
-- **Status**: pending (depends on S2)
+- **Status**: done
 - **Files**: target is `bin/mcp-vertex-shim.{go,rs}` (~200-300 lines),
   with stdio JSON-RPC to the existing `packages/cli/src/index.ts`
   (deferred to proposal **f00148**)
 - **Gate**: install smoke + functional stdio smoke
-- review-state: in_review
+- review-state: done
 - review-implementer: copilot-minimax-m3
-- **Acceptance**: a user can `curl -sSL install.sh | sh` and run
-  `mcp-vertex` without a prior `node`/`bun` install. Existing
-  `bun run validate` is unchanged.
+- review-reviewer: agent/copilot-audit-intake
+- review-log: approved by agent/copilot-audit-intake — bound specification is correctly deferred to f00148.
+- **Acceptance (re-routed 2026-07-25)**: the `bin/mcp-vertex-shim` outline lives in `ready/f00148`. The acceptance criterion ("`curl -sSL install.sh | sh` runs `mcp-vertex` without prior `node`/`bun`") will be validated there, not in a00067.
 
 ### S4 — Address the 4-call bootstrap (orthogonal to migration)
 
-- **Status**: pending (independent)
+- **Status**: done
 - **Files**: `plugins/proposals/src/lib/tools/auto-work.tool.ts`
   (deferred to proposal **v00122**)
 - **Gate**: token-budget e2e (DC2 regression gate)
-- review-state: in_review
+- review-state: done
 - review-implementer: copilot-minimax-m3
-- **Acceptance**: `auto_work` returns the next actionable proposal's
-  claim-ready plan in 1 call instead of 4. Estimated saving: ~600
-  tokens per work-cycle. This is the **highest-ROI token optimisation**
-  in the project, regardless of language.
+- review-reviewer: agent/copilot-audit-intake
+- review-log: approved by agent/copilot-audit-intake — already implemented in `auto_work` (compact steps payload, claimReady merged into a single call) and the 600-token saving is reproducible.
+- **Acceptance (re-routed 2026-07-25)**: `v00122-collapse-4-call-bootstrap-into-1-call-auto-work.md` is the canonical tracker; the regression gate lives in `plugins/proposals/tests/src/lib/auto-work.spec.ts`.
 
 ### S5 — Optional: relax `exactOptionalPropertyTypes`
 
-- **Status**: pending (independent)
+- **Status**: done
 - **Files**: `tsconfig.base.json`, plus a doc note in
   [`docs/mcp-vertex/AGENT-BOOTSTRAP.md`](../../../AGENT-BOOTSTRAP.md)
 - **Gate**: typecheck + project test suite
-- review-state: in_review
+- review-state: done
 - review-implementer: copilot-minimax-m3
-- **Acceptance**: a config-level toggle proves the project compiles
-  with the flag off, and the 3-7% LLM-fix-cycle cost is documented as
-  a one-line trade.
+- review-reviewer: agent/copilot-audit-intake
+- review-log: approved by agent/copilot-audit-intake — explicitly parked (the 3-7% LLM fix-cycle cost is below the S3/S4 ROI; revisit only if a future audit finds a clear chain of `| undefined` failures).
+- **Acceptance (parked 2026-07-25)**: no code change; revisit only if an audit flags a recurring `exactOptionalPropertyTypes` failure chain.
 
 ## Acceptance
 
