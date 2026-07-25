@@ -61,6 +61,7 @@ export interface IAssemblePluginsResult {
 			args: unknown,
 			result: unknown,
 			error?: unknown,
+			elapsedMs?: number,
 		) => Promise<void> | void
 	>;
 	readonly onToolStarts: Array<
@@ -160,6 +161,7 @@ export const assemblePlugins = async (
 			args: unknown,
 			result: unknown,
 			error?: unknown,
+			elapsedMs?: number,
 		) => Promise<void> | void
 	> = [];
 	const onToolStarts: Array<
