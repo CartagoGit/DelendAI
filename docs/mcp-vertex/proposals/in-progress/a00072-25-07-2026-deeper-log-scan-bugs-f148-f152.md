@@ -151,10 +151,28 @@ Los F148-F152 son bugs **estructurales** del swarm, no cosméticos:
 
 ### S3 — `auto_work` invoca logs/notification/quality en cada ciclo (F150/F152)
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/proposals/src/lib/tools/auto-work.tool.ts`,
   `plugins/quality/src/index.ts`,
-  `plugins/proposals/src/lib/tools/auto-work-persist.ts`.
+  `plugins/proposals/src/lib/tools/auto-work-persist.ts`,
+  `plugins/proposals/src/lib/tools/proposal-transition.tool.ts`.
+- implementation:
+  - **S3.a** `auto-work.tool.ts` — augmented steps array with
+    explicit dogfood advisories for `agent_names`,
+    `logs_tail`, and `notify_status { kind: 'lock-released' }`.
+  - **S3.b** `quality/src/index.ts` — new `quality_run_quality`
+    tool with severity filter; backward-compatible with the
+    legacy `scope`-based signature.
+  - **S3.c** `auto-work-persist.ts` — `IQualityProbeDeps` /
+    `IQualityProbeResult` / `shouldBlockCloseSliceOnQuality`
+    helpers exported for the close_slice pre-condition hook in
+    `authoring.tool.ts`.
+  - `proposal-transition.tool.ts` — S2.c peer-review gate falls
+    back to proposal frontmatter when `peerReviewLogPathAbs`
+    is undefined, so legacy f00888/peer-review-gate.spec.ts
+    contract keeps passing.
+- **Tests**: 107/107 / 968/968 in `plugins/proposals`; 5/5 / 28/28
+  in `plugins/quality`.
 - **Cambio** (3 sub-slices):
   - **S3.a** — `auto_work` invoca logs/notification/agent_names
     en cada ciclo. Wiring en el step 4. Si el LLM olvida,
