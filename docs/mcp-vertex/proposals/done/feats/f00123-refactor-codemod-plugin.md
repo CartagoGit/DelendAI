@@ -2,9 +2,16 @@
 id: f00123
 kind: feat
 title: refactor plugin — AST-safe rename, references and rule-based codemods with dry-run diffs (counters silent codemod corruption)
-status: ready
+status: done
 date: 2026-07-23
 track: plugin+refactor+reliability
+shipped-in:
+    - 12b7e5a1 # feat(f00123): S1 refactor plugin — navigation (references / definition / symbols)
+    - b031e137 # chore(f00123): wire refactor plugin and revert S2/S3 status to pending
+    - d553b16b # feat(f00123): S2 safe rename — scoped multi-file diff planner + apply
+    - d10e3bdb # feat(f00123): S3 rule-based codemods + recipe library
+    - e6e248a0 # docs(f00123): correct S3 status — codemod module never landed
+    - 8199bd1d # docs(f00123): S3 done — moved proposal to done/feats
 ---
 
 # f00123 — refactor plugin
