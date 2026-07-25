@@ -123,9 +123,17 @@ export class AgentLoopDetectorService {
 				cliArgs: this.ctx.args,
 				cacheDir: this.ctx.cacheDir,
 			});
-		})().then((options) => {
+		})().then(async (options) => {
 			this.options = options;
 			this.handoffDirAbs = this.ctx.workspace.resolve(options.handoffDir);
+			// Handoff packets are operational state, not an artefact that
+			// should survive until the next loop is detected.  Previously the
+			// sweep below only ran from the stuck-agent branch, which meant a
+			// healthy project could retain stale packets indefinitely.  Loading
+			// the resolved configuration is the first safe point at which both
+			// the configured directory and its TTL are available; the shared
+			// promise keeps this sweep once-per-service and idempotent.
+			await this.pruneOldHandoffs();
 		});
 		await this.configLoadPromise;
 	}
