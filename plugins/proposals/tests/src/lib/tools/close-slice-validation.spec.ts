@@ -194,9 +194,7 @@ status: in-progress
 			'in-progress/f00001-fixture.md',
 			docWithGate('bun run validate'),
 		);
-		const close = await capture(
-			buildCloseSliceRegistration(opts),
-		);
+		const close = await capture(buildCloseSliceRegistration(opts));
 		const result = parse(
 			await close({ proposalId: 'f00001', sliceId: 'S1' }),
 		);

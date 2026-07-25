@@ -116,9 +116,17 @@ describe('log-honest (a00072 S5.c)', () => {
 		const rewritten = readFileSync(path, 'utf8')
 			.trim()
 			.split('\n')
-			.map((line) => JSON.parse(line) as { outcome: string; meta?: { isError?: boolean } });
-		rewritten.filter((entry) => entry.meta?.isError === true).forEach((entry) => {
-			expect(entry.outcome).toBe('error');
-		});
+			.map(
+				(line) =>
+					JSON.parse(line) as {
+						outcome: string;
+						meta?: { isError?: boolean };
+					},
+			);
+		rewritten
+			.filter((entry) => entry.meta?.isError === true)
+			.forEach((entry) => {
+				expect(entry.outcome).toBe('error');
+			});
 	});
 });
