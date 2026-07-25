@@ -24,15 +24,15 @@ describe('PRESET_CATALOG', async () => {
 		expect(PRESET_CATALOG[0]?.members.length).toBe(2);
 		// lean: 4 members, independent essentials preset
 		expect(PRESET_CATALOG[1]?.members.length).toBe(4);
-		// standard: adds 7 on top of minimal (f00115 added test-policy, f00123 added refactor)
-		expect(PRESET_CATALOG[2]?.members.length).toBe(7);
+		// standard: adds 8 on top of minimal (f00115 added test-policy, f00123 added refactor, f00128 S1 added database)
+		expect(PRESET_CATALOG[2]?.members.length).toBe(8);
 		// swarm: adds 7 on top of standard (f00121 S3 added forge)
 		expect(PRESET_CATALOG[3]?.members.length).toBe(7);
 		// full: adds 2 host-only on top of swarm
 		expect(PRESET_CATALOG[4]?.members.length).toBe(2);
-		// vertex: 14 members (f00119 S6 added auto-agent-selector,
-		// f00123 S2 added refactor, f00126 S3 added perf; mirrors mcp-vertex.config.json)
-		expect(PRESET_CATALOG[5]?.members.length).toBe(14);
+		// vertex: 15 members (f00119 S6 added auto-agent-selector,
+		// f00123 S2 added refactor, f00126 S3 added perf, f00128 S1 added database; mirrors mcp-vertex.config.json)
+		expect(PRESET_CATALOG[5]?.members.length).toBe(15);
 	});
 
 	it('defines `lean` as an independent essentials preset', async () => {
@@ -140,13 +140,14 @@ describe('resolvePresetMembers', async () => {
 			'refactor',
 			'deps',
 			'test-policy',
+			'database',
 		]);
-		expect(resolvePresetMembers('swarm').length).toBe(16);
-		expect(resolvePresetMembers('full').length).toBe(18);
+		expect(resolvePresetMembers('swarm').length).toBe(17);
+		expect(resolvePresetMembers('full').length).toBe(19);
 		expect(resolvePresetMembers('swarm')).not.toContain('lean');
 	});
 
-	it('resolves standard = minimal + memory/docs/rules/quality/refactor/deps/test-policy', async () => {
+	it('resolves standard = minimal + memory/docs/rules/quality/refactor/deps/test-policy/database', async () => {
 		const resolved = resolvePresetMembers('standard');
 		expect(resolved).toContain('git');
 		expect(resolved).toContain('search');
@@ -157,7 +158,8 @@ describe('resolvePresetMembers', async () => {
 		expect(resolved).toContain('refactor');
 		expect(resolved).toContain('deps');
 		expect(resolved).toContain('test-policy');
-		expect(resolved.length).toBe(9);
+		expect(resolved).toContain('database');
+		expect(resolved.length).toBe(10);
 	});
 
 	it('resolves swarm = standard + proposals/notification/logs/status-marker/test-convention', async () => {
@@ -183,7 +185,7 @@ describe('resolvePresetMembers', async () => {
 
 	it('resolves vertex to ONLY its declared members (independent, skips chain)', async () => {
 		const resolved = resolvePresetMembers('vertex');
-		expect(resolved.length).toBe(14);
+		expect(resolved.length).toBe(15);
 		for (const required of [
 			'conventions',
 			'docs',
@@ -196,6 +198,7 @@ describe('resolvePresetMembers', async () => {
 			'test-policy',
 			'quality',
 			'refactor',
+			'database',
 			'issues',
 			'audit',
 			'auto-agent-selector',
