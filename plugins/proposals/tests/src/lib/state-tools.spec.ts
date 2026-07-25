@@ -60,9 +60,16 @@ describe('state_health / state_repair [N15]', async () => {
 		const out = parse(await handler({}));
 		expect(out.healthy).toBe(true);
 		expect(out.locks.active).toBe(0);
+		expect(out.locks.stale).toBe(0);
+		expect(out.locks.staleTaskIds).toEqual([]);
 		expect(out.locks.sessionClaims).toBe(0);
 		expect(out.locks.sessionReleases).toBe(0);
 		expect(out.locks.sessionImbalance).toBe(0);
+		expect(out.stale).toEqual({
+			count: 0,
+			taskIds: [],
+			lastStaleSeen: null,
+		});
 		expect(out.peerReviewBypasses).toBe(0);
 		expect(out.registry.orphans).toBe(0);
 	});
@@ -101,8 +108,7 @@ describe('state_health / state_repair [N15]', async () => {
 		expect(out.peerReviewBypasses).toBe(1);
 	});
 
-	it('flags a stale lock and repairs it on execute', async () => {
-		// A claim whose last_seen is far in the past → stale.
+	it('reports stale locks before counting active ones and repairs them on execute', async () => {
 		mkdirSync(dirname(opts.lockPathAbs), { recursive: true });
 		writeFileSync(
 			opts.lockPathAbs,
@@ -111,24 +117,54 @@ describe('state_health / state_repair [N15]', async () => {
 				stale_after_minutes: 10,
 				in_flight: [
 					{
-						task_id: 't-old',
+						task_id: 'f00126-S3',
 						agent: 'falcon',
 						ownership: ['src/a.ts'],
 						started_at: '2000-01-01T00:00:00.000Z',
 						last_seen: '2000-01-01T00:00:00.000Z',
 					},
+					{
+						task_id: 'f00126-S4',
+						agent: 'hawk',
+						ownership: ['src/b.ts'],
+						started_at: '2999-01-01T00:00:00.000Z',
+						last_seen: '2999-01-01T00:00:00.000Z',
+					},
 				],
 			}),
 		);
 
+		const health = await capture(buildStateHealthRegistration(opts));
+		const healthOut = parse(await health({}));
+		expect(healthOut.healthy).toBe(false);
+		expect(healthOut.locks.active).toBe(1);
+		expect(healthOut.locks.stale).toBe(1);
+		expect(healthOut.locks.staleTaskIds).toEqual(['f00126-S3']);
+		expect(healthOut.locks.lastStaleSeen).toBe(
+			'2000-01-01T00:00:00.000Z',
+		);
+		expect(healthOut.stale).toEqual({
+			count: 1,
+			taskIds: ['f00126-S3'],
+			lastStaleSeen: '2000-01-01T00:00:00.000Z',
+		});
+
 		const repair = await capture(buildStateRepairRegistration(opts));
 		const dry = parse(await repair({}));
 		expect(dry.mode).toBe('dry-run');
+		expect(dry.wouldRepair.staleLocks).toBe(1);
 
 		const exec = parse(await repair({ mode: 'execute' }));
 		expect(exec.mode).toBe('execute');
-		expect(exec.repaired.staleLocks).toBeGreaterThanOrEqual(1);
-		expect(exec.diagnosis.locks.active).toBe(0);
+		expect(exec.repaired.staleLocks).toBe(1);
+		expect(exec.diagnosis.locks.active).toBe(1);
+		expect(exec.diagnosis.locks.stale).toBe(0);
+		expect(exec.diagnosis.locks.staleTaskIds).toEqual([]);
+		expect(exec.diagnosis.stale).toEqual({
+			count: 0,
+			taskIds: [],
+			lastStaleSeen: null,
+		});
 	});
 
 	it('a00072 S1.a (F148/F151): state_health surfaces stale locks with taskIds + lastStaleSeen', async () => {

@@ -2,7 +2,7 @@
 id: f00129
 kind: feat
 title: observability plugin — remote errors, traces and release health from Sentry/Datadog (read) to complement local logs/metrics
-status: ready
+status: done
 date: 2026-07-23
 track: plugin+observability+runtime
 ---

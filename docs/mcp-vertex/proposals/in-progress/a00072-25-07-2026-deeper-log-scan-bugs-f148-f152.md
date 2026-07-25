@@ -80,25 +80,31 @@ Los F148-F152 son bugs **estructurales** del swarm, no cosméticos:
 ### S1 — `proposal_diagnose` self-heal + `state_health` stale check (F148/F151)
 
 - **Status**: done (F148 closed, F151 closed)
-- **Files**: `plugins/proposals/src/lib/tools/state-tools.tool.ts` (S1.a/S1.c),
+- **Files**: `plugins/proposals/src/lib/shared/purge-stale-locks.ts`,
+  `plugins/proposals/src/lib/tools/state-tools.tool.ts` (S1.a/S1.c),
   `plugins/proposals/src/lib/tools/recovery-tools.ts` (S1.b),
-  `plugins/proposals/tests/src/lib/state-tools.spec.ts` (new S1.a test),
-  `plugins/proposals/tests/src/lib/tools/recovery-tools.spec.ts` (3 new S1.b tests).
-- **S1.a — done**: `state_health` invoca `removeStale` antes de contar.
-  Schema `stale: { count, taskIds, lastStaleSeen }`. `healthy` ahora también chequea
-  `stale.count === 0`. Helper `purge-stale-locks.ts` no necesario (`removeStale` export
-  cubre el caso).
-- **S1.b — done**: `proposal_diagnose` cross-proposal cuando hay zombies.
-  Schema `crossProposal: boolean`, `crossProposalStaleTaskIds: string[]`,
-  `crossProposalStaleAgents: string[]`. Filter cross-proposal cuando
-  `task_id !== args.id && in cleaned = false`.
-  `suggestedActions`: `agent_lock_release_orphan` si ≤3 stale, `state_repair` si >3.
+  `plugins/proposals/tests/src/lib/shared/purge-stale-locks.spec.ts`,
+  `plugins/proposals/tests/src/lib/state-tools.spec.ts`,
+  `plugins/proposals/tests/src/lib/tools/recovery-tools.spec.ts`.
+- **Implementación**: se extrajo el criterio stale a
+  `purge-stale-locks.ts` como helper de sólo lectura; `state_health`
+  ahora reporta `locks.stale`, `locks.staleTaskIds` y
+  `locks.lastStaleSeen` sin perder el shape `stale` previo, y
+  `proposal_diagnose` resuelve locks por slice/prefijo y habilita
+  cross-proposal sólo cuando llama `auto_work`.
+- **S1.a — done**: `state_health` invoca el helper compartido antes de
+  contar. `healthy` ahora también chequea `stale.count === 0`.
+- **S1.b — done**: `proposal_diagnose` acepta `caller?: string` y sólo
+  relaja el filtro a cross-proposal cuando `caller === "auto_work"`.
+  Para locks propios usa match por prefijo (`f00126` -> `f00126-S3`).
+- **S1.c — done**: `state_health` retorna `locks.stale`,
+  `locks.staleTaskIds`, `locks.lastStaleSeen` y mantiene el bloque
+  `stale` existente por compatibilidad.
 - **S1.c — done**: `state_health` retorna `stale[]` (junto con S1.a).
 - **Gate**: type ✓, lint ✓, test ✓ (960/960 proposals passing).
 - **Close evidence**:
-  - 6 tests en `state-tools.spec.ts` (incluye nuevo `a00072 S1.a (F148/F151)`).
-  - 6 tests en `recovery-tools.spec.ts` (incluye 3 nuevos S1.b cross-proposal).
-  - `bun --cwd plugins/proposals test` 960/960 verde.
+  - Specs focalizados verdes para `state-tools`, `recovery-tools` y
+    `purge-stale-locks`.
 - **Verification**:
   - Spec: `state_health` con 1 entry stale → `healthy:false`,
     `stale:1`, `staleTaskIds:["f00126-S3"]`.
