@@ -62,7 +62,9 @@ export const dsnToPath = (dsn: string): string => {
  */
 const tryLoadBetterSqlite = async (): Promise<IBetterSqliteCtor | null> => {
 	try {
-		const mod = (await import('better-sqlite3')) as { default?: IBetterSqliteCtor };
+		const mod = (await import('better-sqlite3')) as {
+			default?: IBetterSqliteCtor;
+		};
 		const Ctor = mod.default ?? (mod as unknown as IBetterSqliteCtor);
 		return typeof Ctor === 'function' ? Ctor : null;
 	} catch (_err) {
@@ -96,13 +98,36 @@ export const createSqliteDriver = async (
 		driver: {
 			kind: 'sqlite',
 			async listTables() {
-				const rows = db.prepare(
-					"SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' ORDER BY name",
-				).all() as Array<{ name: string }>;
+				const rows = db
+					.prepare(
+						"SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' ORDER BY name",
+					)
+					.all() as Array<{ name: string }>;
 				return rows.map((r) => r.name);
 			},
 			async listColumns(table) {
-				const rows = db.prepare(`PRAGMA table_info(${quoteIdent(table)})`).all() as Array<{
+				const uniqueColumns = new Set(
+					db
+						.prepare(`PRAGMA index_list(${quoteIdent(table)})`)
+						.all()
+						.filter(
+							(row) => (row as { unique: 0 | 1 }).unique !== 0,
+						)
+						.flatMap((row) =>
+							db
+								.prepare(
+									`PRAGMA index_info(${quoteIdent((row as { name: string }).name)})`,
+								)
+								.all()
+								.map(
+									(column) =>
+										(column as { name: string }).name,
+								),
+						),
+				);
+				const rows = db
+					.prepare(`PRAGMA table_info(${quoteIdent(table)})`)
+					.all() as Array<{
 					name: string;
 					type: string;
 					notnull: 0 | 1;
@@ -114,16 +139,22 @@ export const createSqliteDriver = async (
 					type: normaliseColumnType(r.type),
 					nullable: r.notnull === 0,
 					primaryKey: r.pk !== 0,
-					defaultValue: r.dflt_value === null ? null : String(r.dflt_value),
+					unique: r.pk !== 0 || uniqueColumns.has(r.name),
+					defaultValue:
+						r.dflt_value === null ? null : String(r.dflt_value),
 				}));
 			},
 			async listIndexes(table) {
-				const rows = db.prepare(`PRAGMA index_list(${quoteIdent(table)})`).all() as Array<{
+				const rows = db
+					.prepare(`PRAGMA index_list(${quoteIdent(table)})`)
+					.all() as Array<{
 					name: string;
 					unique: 0 | 1;
 				}>;
 				return rows.map<IIndexInfo>((r) => {
-					const cols = db.prepare(`PRAGMA index_info(${quoteIdent(r.name)})`).all() as Array<{
+					const cols = db
+						.prepare(`PRAGMA index_info(${quoteIdent(r.name)})`)
+						.all() as Array<{
 						name: string;
 					}>;
 					return {
@@ -134,7 +165,9 @@ export const createSqliteDriver = async (
 				});
 			},
 			async listForeignKeys(table) {
-				const rows = db.prepare(`PRAGMA foreign_key_list(${quoteIdent(table)})`).all() as Array<{
+				const rows = db
+					.prepare(`PRAGMA foreign_key_list(${quoteIdent(table)})`)
+					.all() as Array<{
 					id: number;
 					from: string;
 					table: string;

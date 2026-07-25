@@ -22,7 +22,9 @@ export interface IFakeDatabaseFixture {
 	}[];
 }
 
-export const buildFakeDriver = (fixture: IFakeDatabaseFixture): IDatabaseDriver => {
+export const buildFakeDriver = (
+	fixture: IFakeDatabaseFixture,
+): IDatabaseDriver => {
 	const byName = new Map(fixture.tables.map((t) => [t.name, t]));
 	return {
 		kind: 'sqlite',
@@ -56,6 +58,7 @@ export const SAMPLE_FIXTURE: IFakeDatabaseFixture = {
 					type: 'integer',
 					nullable: false,
 					primaryKey: true,
+					unique: true,
 					defaultValue: null,
 				},
 				{
@@ -63,6 +66,7 @@ export const SAMPLE_FIXTURE: IFakeDatabaseFixture = {
 					type: 'text',
 					nullable: false,
 					primaryKey: false,
+					unique: true,
 					defaultValue: null,
 				},
 				{
@@ -70,11 +74,16 @@ export const SAMPLE_FIXTURE: IFakeDatabaseFixture = {
 					type: 'datetime',
 					nullable: true,
 					primaryKey: false,
+					unique: false,
 					defaultValue: 'CURRENT_TIMESTAMP',
 				},
 			],
 			indexes: [
-				{ name: 'sqlite_autoindex_users_1', unique: true, columns: ['email'] },
+				{
+					name: 'sqlite_autoindex_users_1',
+					unique: true,
+					columns: ['email'],
+				},
 			],
 		},
 		{
@@ -85,6 +94,7 @@ export const SAMPLE_FIXTURE: IFakeDatabaseFixture = {
 					type: 'integer',
 					nullable: false,
 					primaryKey: true,
+					unique: true,
 					defaultValue: null,
 				},
 				{
@@ -92,6 +102,7 @@ export const SAMPLE_FIXTURE: IFakeDatabaseFixture = {
 					type: 'integer',
 					nullable: false,
 					primaryKey: false,
+					unique: false,
 					defaultValue: null,
 				},
 				{
@@ -99,11 +110,16 @@ export const SAMPLE_FIXTURE: IFakeDatabaseFixture = {
 					type: 'integer',
 					nullable: false,
 					primaryKey: false,
+					unique: false,
 					defaultValue: '0',
 				},
 			],
 			indexes: [
-				{ name: 'orders_user_id_idx', unique: false, columns: ['user_id'] },
+				{
+					name: 'orders_user_id_idx',
+					unique: false,
+					columns: ['user_id'],
+				},
 			],
 			foreignKeys: [
 				{
