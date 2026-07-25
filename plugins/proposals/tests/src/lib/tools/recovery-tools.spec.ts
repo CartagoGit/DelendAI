@@ -6,13 +6,14 @@ import {
 	writeFileSync,
 } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import {
 	createRecoveryEventBuffer,
 	runAgentLockReleaseOrphan,
+	runProposalDiagnose,
 	runProposalReconcileFolder,
 	runProposalStaleList,
 	type IRecoveryToolOptions,
@@ -187,5 +188,137 @@ describe('recovery tools (f00016 S9)', async () => {
 			changed: true,
 			movedTo: 'ready/f200-test.md',
 		});
+	});
+});
+describe('a00072 S1.a (F148) proposal_diagnose cross-proposal stale detection', () => {
+	let dir = '';
+	beforeEach(() => {
+		dir = mkdtempSync(join(tmpdir(), 'recovery-'));
+	});
+	afterEach(() => {
+		rmSync(dir, { recursive: true, force: true });
+	});
+
+	const baseOptions = (): IRecoveryToolOptions => ({
+		proposalsDirAbs: join(dir, 'docs/mcp-vertex/proposals'),
+		lockPathAbs: join(dir, '.cache/mcp-vertex/agents.lock.json'),
+		queuePathAbs: join(dir, '.cache/mcp-vertex/agent-queue/queue.json'),
+		closedTasksPathAbs: join(
+			dir,
+			'.cache/mcp-vertex/agent-queue/closed-tasks.json',
+		),
+		registryPathAbs: join(dir, '.cache/mcp-vertex/agent-registry.json'),
+		workspaceRoot: dir,
+		eventBuffer: createRecoveryEventBuffer(),
+	});
+
+	it('proposal_diagnose surfaces cross-proposal stale locks and suggests agent_lock_release_orphan', async () => {
+		const opts = baseOptions();
+		mkdirSync(join(opts.proposalsDirAbs, 'ready'), { recursive: true });
+		writeFileSync(
+			join(opts.proposalsDirAbs, 'ready/f00128-database-plugin.md'),
+			'---\nid: f00128\nstatus: ready\n---\n# body',
+		);
+		mkdirSync(dirname(opts.lockPathAbs), { recursive: true });
+		writeFileSync(
+			opts.lockPathAbs,
+			JSON.stringify({
+				version: 1,
+				stale_after_minutes: 10,
+				in_flight: [
+					{
+						task_id: 'f00126-S3',
+						agent: 'impl-runner-perf-s3',
+						ownership: ['src/a.ts'],
+						started_at: '2000-01-01T00:00:00.000Z',
+						last_seen: '2000-01-01T00:00:00.000Z',
+					},
+					{
+						task_id: 'f00127-S2',
+						agent: 'impl-runner-eval-s2',
+						ownership: ['src/b.ts'],
+						started_at: '2000-01-01T00:00:00.000Z',
+						last_seen: '2000-01-01T00:00:00.000Z',
+					},
+				],
+			}),
+		);
+
+		const result = await runProposalDiagnose({ id: 'f00128' }, opts);
+		const parsed = JSON.parse(result.content[0]?.text ?? '{}');
+		expect(parsed.crossProposal).toBe(true);
+		expect(parsed.crossProposalStaleTaskIds).toEqual([
+			'f00126-S3',
+			'f00127-S2',
+		]);
+		expect(parsed.crossProposalStaleAgents).toEqual([
+			'impl-runner-perf-s3',
+			'impl-runner-eval-s2',
+		]);
+		expect(parsed.inconsistencies).toContain('cross-proposal-stale-locks');
+		expect(parsed.suggestedActions).toContain('agent_lock_release_orphan');
+	});
+
+	it('proposal_diagnose suggests state_repair when many cross-proposal zombies are present', async () => {
+		const opts = baseOptions();
+		mkdirSync(join(opts.proposalsDirAbs, 'ready'), { recursive: true });
+		writeFileSync(
+			join(opts.proposalsDirAbs, 'ready/f00128-database-plugin.md'),
+			'---\nid: f00128\nstatus: ready\n---\n# body',
+		);
+		mkdirSync(dirname(opts.lockPathAbs), { recursive: true });
+		const inFlight = Array.from({ length: 5 }, (_, i) => ({
+			task_id: `f-other-${i}-S${i}`,
+			agent: `impl-runner-other-${i}`,
+			ownership: ['src/a.ts'],
+			started_at: '2000-01-01T00:00:00.000Z',
+			last_seen: '2000-01-01T00:00:00.000Z',
+		}));
+		writeFileSync(
+			opts.lockPathAbs,
+			JSON.stringify({
+				version: 1,
+				stale_after_minutes: 10,
+				in_flight: inFlight,
+			}),
+		);
+
+		const result = await runProposalDiagnose({ id: 'f00128' }, opts);
+		const parsed = JSON.parse(result.content[0]?.text ?? '{}');
+		expect(parsed.crossProposal).toBe(true);
+		expect(parsed.crossProposalStaleTaskIds).toHaveLength(5);
+		expect(parsed.suggestedActions).toContain('state_repair');
+	});
+
+	it('proposal_diagnose does not flag a fresh cross-proposal lock', async () => {
+		const opts = baseOptions();
+		mkdirSync(join(opts.proposalsDirAbs, 'ready'), { recursive: true });
+		writeFileSync(
+			join(opts.proposalsDirAbs, 'ready/f00128-database-plugin.md'),
+			'---\nid: f00128\nstatus: ready\n---\n# body',
+		);
+		mkdirSync(dirname(opts.lockPathAbs), { recursive: true });
+		const freshNow = new Date().toISOString();
+		writeFileSync(
+			opts.lockPathAbs,
+			JSON.stringify({
+				version: 1,
+				stale_after_minutes: 10,
+				in_flight: [
+					{
+						task_id: 'f-other-S1',
+						agent: 'copilot',
+						ownership: ['src/a.ts'],
+						started_at: freshNow,
+						last_seen: freshNow,
+					},
+				],
+			}),
+		);
+
+		const result = await runProposalDiagnose({ id: 'f00128' }, opts);
+		const parsed = JSON.parse(result.content[0]?.text ?? '{}');
+		expect(parsed.crossProposal).toBeUndefined();
+		expect(parsed.crossProposalStaleTaskIds ?? []).toEqual([]);
 	});
 });

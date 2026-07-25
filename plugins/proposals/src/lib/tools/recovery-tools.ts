@@ -28,6 +28,7 @@ import { createAgentRegistryStore } from '../shared/agent-registry-store';
 import { createGitRunner, type IGitRunner } from '../shared/git-runner';
 import { hasIndependentPeerApproval } from './proposal-transition.tool';
 import { recordPeerReviewBypass } from '../shared/peer-review-bypass-log';
+import { removeStale } from '../locks/agent-lock-engine';
 
 export interface IRecoveryEvent {
 	readonly kind: 'agent-alive' | 'agent-idle' | 'agent-dead';
@@ -146,6 +147,13 @@ const RECOVERY_OUTPUT_SCHEMA = z.object({
 	lastAgentDeadEvent: RECOVERY_EVENT_SCHEMA.optional(),
 	inconsistencies: z.array(z.string()).optional(),
 	suggestedActions: z.array(z.string()).optional(),
+	// a00072 S1.a: cross-proposal stale locks the smoke detector
+	// saw when running. When non-empty the host should run
+	// `state_repair { mode: "execute" }` (or call
+	// `agent_lock_release_orphan` for a targeted release).
+	crossProposal: z.boolean().optional(),
+	crossProposalStaleTaskIds: z.array(z.string()).optional(),
+	crossProposalStaleAgents: z.array(z.string()).optional(),
 });
 
 const locateProposal = async (
@@ -496,6 +504,21 @@ export const runProposalDiagnose = async (
 		return toolError(`proposal "${args.id}" not found`, 'Check the id.');
 	const lock = await readLock(options.lockPathAbs);
 	const locks = lock.in_flight.filter((entry) => entry.task_id === args.id);
+	// a00072 S1.a (F148): surface stale locks for OTHER proposals too —
+	// the swarm state is shared, so a zombie on f00126-S3 is
+	// exactly the kind of cross-proposal smoke the detector should
+	// see when asked about f00128.
+	const cleaned = removeStale(lock);
+	const crossProposalStaleEntries = lock.in_flight.filter(
+		(e) => !cleaned.in_flight.includes(e) && e.task_id !== args.id,
+	);
+	const crossProposalStaleTaskIds = crossProposalStaleEntries.map(
+		(e) => e.task_id,
+	);
+	const crossProposalStaleAgents = crossProposalStaleEntries.map(
+		(e) => e.agent,
+	);
+	const crossProposal = crossProposalStaleEntries.length > 0;
 	const expectedFolder = isKnownStatus(found.status)
 		? await resolveDoneFolderFromRaw(found, found.status)
 		: undefined;
@@ -510,6 +533,9 @@ export const runProposalDiagnose = async (
 	if (owner && locks.some((entry) => entry.agent !== owner)) {
 		inconsistencies.push('lock-owner-mismatch');
 	}
+	if (crossProposal) {
+		inconsistencies.push('cross-proposal-stale-locks');
+	}
 	const lastDead = options.eventBuffer
 		?.list()
 		.find(
@@ -517,6 +543,29 @@ export const runProposalDiagnose = async (
 				event.kind === 'agent-dead' &&
 				locks.some((entry) => entry.agent === event.agent),
 		);
+	const suggestedActions: string[] = [];
+	if (inconsistencies.includes('folder-status-mismatch')) {
+		suggestedActions.push('proposal_reconcile_folder');
+	}
+	if (inconsistencies.includes('lock-owner-mismatch')) {
+		suggestedActions.push('agent_lock_release_orphan');
+	}
+	if (crossProposal) {
+		// Targeted release is preferred when only a handful of
+		// zombies are present; otherwise the blanket state_repair
+		// is the right hammer.
+		suggestedActions.push(
+			crossProposalStaleEntries.length <= 3
+				? 'agent_lock_release_orphan'
+				: 'state_repair',
+		);
+	}
+	if (lastDead && suggestedActions.length === 0) {
+		suggestedActions.push(
+			'agent_lock_release_orphan',
+			'proposal_force_transition',
+		);
+	}
 	return toolOk({
 		id: args.id,
 		file: found.relPath,
@@ -526,12 +575,10 @@ export const runProposalDiagnose = async (
 		lastHeartbeat: locks[0]?.last_seen,
 		lastAgentDeadEvent: lastDead,
 		inconsistencies,
-		suggestedActions:
-			inconsistencies.length > 0
-				? ['proposal_reconcile_folder']
-				: lastDead
-					? ['agent_lock_release_orphan', 'proposal_force_transition']
-					: [],
+		suggestedActions,
+		...(crossProposal ? { crossProposal: true } : {}),
+		crossProposalStaleTaskIds,
+		crossProposalStaleAgents,
 	});
 };
 

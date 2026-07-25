@@ -79,21 +79,26 @@ Los F148-F152 son bugs **estructurales** del swarm, no cosméticos:
 
 ### S1 — `proposal_diagnose` self-heal + `state_health` stale check (F148/F151)
 
-- **Status**: S1.a done (F148 partial / F151 closed); S1.b pending
-- **Files**: `plugins/proposals/src/lib/tools/state-tools.tool.ts` (modified,
-  import `removeStale` + schema `stale` + handler invoca `removeStale`),
-  `plugins/proposals/tests/src/lib/state-tools.spec.ts` (new test `a00072 S1.a`).
-- **S1.a — done** (`state_health` invokes `removeStale` before counting):
-  - `removeStale` importado de `../locks/agent-lock-engine` (export pre-existente).
-  - Schema `STATE_DIAGNOSIS_SCHEMA.stale: { count, taskIds, lastStaleSeen }` añadido.
-  - Handler `diagnose()` lee lock, aplica `removeStale` in-memory, popula `stale`.
-  - `healthy` ahora también chequea `stale.count === 0` (F151 closed).
-  - `runStateRepair` invoca `runAgentLockEngine({action: 'gc'})` que ya llama `removeStale`.
-  - Test añadido: 6/6 `state-tools.spec.ts` passing.
-  - Helper `purge-stale-locks.ts` no fue necesario — `removeStale` export es suficiente.
-- **S1.b — pending**: `proposal_diagnose` cross-proposal cuando hay zombies.
-- **S1.c — done** (junto con S1.a): `state_health` retorna `stale[]` con los 3 campos.
-- **Gate**: type, lint, test (all green for S1.a).
+- **Status**: done (F148 closed, F151 closed)
+- **Files**: `plugins/proposals/src/lib/tools/state-tools.tool.ts` (S1.a/S1.c),
+  `plugins/proposals/src/lib/tools/recovery-tools.ts` (S1.b),
+  `plugins/proposals/tests/src/lib/state-tools.spec.ts` (new S1.a test),
+  `plugins/proposals/tests/src/lib/tools/recovery-tools.spec.ts` (3 new S1.b tests).
+- **S1.a — done**: `state_health` invoca `removeStale` antes de contar.
+  Schema `stale: { count, taskIds, lastStaleSeen }`. `healthy` ahora también chequea
+  `stale.count === 0`. Helper `purge-stale-locks.ts` no necesario (`removeStale` export
+  cubre el caso).
+- **S1.b — done**: `proposal_diagnose` cross-proposal cuando hay zombies.
+  Schema `crossProposal: boolean`, `crossProposalStaleTaskIds: string[]`,
+  `crossProposalStaleAgents: string[]`. Filter cross-proposal cuando
+  `task_id !== args.id && in cleaned = false`.
+  `suggestedActions`: `agent_lock_release_orphan` si ≤3 stale, `state_repair` si >3.
+- **S1.c — done**: `state_health` retorna `stale[]` (junto con S1.a).
+- **Gate**: type ✓, lint ✓, test ✓ (960/960 proposals passing).
+- **Close evidence**:
+  - 6 tests en `state-tools.spec.ts` (incluye nuevo `a00072 S1.a (F148/F151)`).
+  - 6 tests en `recovery-tools.spec.ts` (incluye 3 nuevos S1.b cross-proposal).
+  - `bun --cwd plugins/proposals test` 960/960 verde.
 - **Verification**:
   - Spec: `state_health` con 1 entry stale → `healthy:false`,
     `stale:1`, `staleTaskIds:["f00126-S3"]`.
