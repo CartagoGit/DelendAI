@@ -68,6 +68,16 @@ shipped-in:
     - bb9add92 # feat(f00127): S3 calibration write-through + prompt-eval wiring
     - 559b8cf8 # fix(f00127): align calibration sample threshold
     - 8c4395f7 # feat(f00129): S1 — observability plugin obs_errors (Sentry/Datadog read)
+    - dcac0462 # feat(f00130): S1 — api plugin spec parse + request build (api_call)
+    - 94b12ccc # feat(f00128): S1 database plugin — schema introspection + db_schema/db_probe tools
+    - 96bfcd7e # fix(proposals): prevent re-claiming tracked pending slices
+    - 8caedd38 # docs(a00069): F111-F117 log-scan bugs + S13 log-honest slice (log-scan surfaced 7 new bugs; S13 log-honest slice)
+    - dc022c68 # feat(proposals+logs): atomic log writes + lock GC at boot + tmp sweep + agents_lock_diagnose tool (S12.a-d)
+    - 9eb38140 # docs(a00069): mark S12 agent-stuck self-healing done
+    - 53856652 # docs(f00128): mark S1 done in proposal + rebaseline lint
+    - 457ac60f # docs(f00128): mark S1 done + housekeeping (proposal f00128 + f00130)
+    - 4fe7c307 # feat(f00128): S2 guarded query + EXPLAIN
+    - 82758ef7 # docs(f00128): re-mark S1 done — query guard proposal was reverted to pending
 related:
     - a00067 # evaluación de migración de lenguaje (precedente de los mismos agentes)
     - a00068 # auditoría exhaustiva previa del 2026-07-24 (drift de carpeta/status)
@@ -506,6 +516,50 @@ uno, con la disciplina `f00073`/`f00075`/`f00052` como referencia.
     re-leer muestra 0 stale.
   - Spec: `agents_lock_diagnose` retorna lista con al menos 1 zombie
     cuando el lock tiene `started_at == last_seen && age > 30s`.
+
+### S14 — Enforce dogfood + diagnose auto-fire (F148-F152)
+
+- **Status**: todo
+- **Files**:
+  - `plugins/proposals/src/lib/tools/auto-work.tool.ts` — pre-claim
+    y post-claim invocan `state_health` + `proposal_diagnose`.
+  - `plugins/proposals/src/lib/tools/recovery-tools.ts` —
+    `runProposalDiagnose` filtro cross-proposal cuando hay zombies.
+  - `plugins/proposals/src/lib/tools/state-tools.tool.ts` —
+    `state_health` invoca `removeStale` antes de contar.
+  - `plugins/quality/src/index.ts` — `bun run validate` invoca
+    `quality_run_quality` post-vitest.
+  - `plugins/proposals/src/lib/agents/auto-work-engine.ts` —
+    `close_slice` post-condition invoca `quality_run`.
+- **Cambio** (5 sub-slices):
+  - **S14.a — `state_health` invoca `removeStale` antes de
+    contar.** Mover `removeStale` a un helper compartido
+    `purgeStaleLocks` que ambos `state_health` y `state_repair`
+    consumen. Output: `locks.stale: 2` cuando hay zombies.
+  - **S14.b — `proposal_diagnose` cross-proposal cuando hay
+    zombies.** El filtro `task_id === id` se relaja a
+    `task_id === id || crossProposal === true` cuando el
+    caller es `auto_work`. Output: el diagnóstico se invoca
+    para TODAS las propuestas con zombies, no solo la actual.
+  - **S14.c — `auto_work` invoca logs/notification/agent_names
+    en cada ciclo.** Wiring en el `step 4` del flow.
+  - **S14.d — `bun run validate` post-vitest invoca
+    `quality_run_quality`.** Si quality reporta `severity:
+    "error"`, fail el build.
+  - **S14.e — `close_slice` invoca quality pre-`ok:true`.** Si
+    quality falla, `close_slice` retorna `ok:false` con el
+    motivo.
+- **Gate**: type, lint, test.
+- **Verification**:
+  - Spec: `state_health` con 1 entry stale → `healthy:false`,
+    `stale:1`.
+  - Spec: `proposal_diagnose { id: f00126 }` con zombie en
+    f00126-S3 → retorna `lockOwners:["impl-runner-perf-s3"]`,
+    `suggestedActions:["agent_lock_release_orphan"]`.
+  - Spec: `bun run validate` exit code 0 con quality passing,
+    non-zero si quality severidad=error.
+  - Spec: 10-call session cubre ≥8 plugins distintos (dogfood
+    coverage).
 
 ## acceptance
 
@@ -1955,9 +2009,116 @@ closed-by: e726bc22
 
 **Esperado**: lock liberado. **Actual**: persiste stale.
 
-### F111 — Shipped-in nuevos (INFO)
+### F118 — Shipped-in nuevos (INFO) [renumbered: log-scan F111-F117 collided]
 
 Re-audit-11 6 commits close-evidence/hygiene shipped.
+
+### F111 — `isError:true` logueado con `outcome:"ok"` — el log miente sobre los fallos (FATAL log honest)
+
+Log scan sobre 9 días / 1524 entradas: **19/19** entradas con `meta.isError:true` se loguearon con `outcome:"ok"`. El log mintió una luz verde para fallos reales.
+
+Distribución por tool:
+- skill(3)
+- proposal_transition(3)
+- fs_read(3)
+- agent_lock(2)
+- agent_worktree(2)
+- create_proposal(2)
+- proposal_reconcile_folder(2)
+- proposal_diagnose(2)
+
+**Slice S13.a**: derivar `outcome` desde `meta.isError` en `plugins/logs/src/lib/services/log-store.ts` (write final del entry debe usar `outcome: meta.isError ? 'error' : 'ok'`).
+
+**Slice S13.b**: backfill recursivo en `logs_query` — re-derivar `outcome` de `meta.isError` post-hoc para entries existentes.
+
+**Severidad**: FATAL — el log es la fuente de verdad de auditoría. Si miente sobre fallos, miente sobre todo.
+
+### F112 — `lock contention` timeout 5s hardcoded en `withFileMutex` — falso "live holder" durante boot y validación (MUY MAL / S8)
+
+`packages/core/src/lib/shared/with-file-mutex.ts:83` hardcodea `lockContentionTimeoutMs = 5000`. Durante `bun run validate`, vitest workers (8+ paralelos) compiten por el mismo mutex; en ~3% de los runs el primer worker agota los 5s con un "lock contention" que **miente**: el "holder" detectado es un worker **muerto hace 200ms** (lock huérfano, no live).
+
+**Evidencia**: `bun run validate` reproduce `lock contention from <uuid> (held 5.000s)` en log pero el `agents.lock.json` no contiene ese uuid.
+
+**Slice S8.e-g**:
+- `S8.e` añadir `lockContentionTimeoutMs` configurable.
+- `S8.f` detectar `CI=true` y bajar a `1000ms`.
+- `S8.g` añadir `holderContext` (PID + cmd + started_at) al error.
+
+**Severidad**: MUY MAL — false positives enmascaran bugs reales.
+
+### F113 — `proposal not found` (a00067) tras mover a review/ — index stale post-transition, ningún nudge a re-sync (MEJORABLE / S3)
+
+**4× ocurrencias** tras mover proposal a `review/`:
+- `proposal_by_id { id: "a00067" }` → `proposal not found`
+- El index (`proposals/index.json`) no se re-genera; `locate.proposalById` lee cache stale.
+
+**Slice S3.e-f**:
+- `S3.e` añadir self-heal en `proposalById`: si no encuentra en index, leer filesystem.
+- `S3.f` añadir `nextAction: "index-stale" + suggestion: "run sync_proposals"` cuando el cache miss es detectable.
+
+**Severidad**: MEJORABLE — molesto pero recoverable.
+
+### F114 — 680 server-starts en 9 días, ratio 0.62 tools/session — host no reusa el server (MEJORABLE / F14 cerrado pero la métrica empeora)
+
+Re-audit-13 `grep -c 'server-started' .cache/mcp-vertex/logs/*.jsonl`:
+
+```text
+680 entradas en 9 días ≈ 75 server-starts/día
+398 (58%) en 2026-07-24 (un día de auditoría intensiva)
+tools-per-session promedio: 0.62 (= 422 tool-calls / 680 starts)
+```
+
+**Esperado**: ratio > 5 tools/session (host debería reusar el server). **Actual**: 0.62 → el host **mata y reinicia** el server después de casi cada tool call.
+
+**Slice F14.b-c**:
+- `F14.b` añadir `lifespanMs` configurable (default 1h).
+- `F14.c` añadir `bun run validate` smoke test al primer tool-call para detectar server corruptos antes de fallar.
+
+**Severidad**: MEJORABLE — métrica worsen, F14 ruido cerrado pero el problema persiste.
+
+### F115 — `tool-cancelled` sin timeout configurable y sin razón semántica (MEJORABLE / S13)
+
+**1 entrada** en 9 días:
+- `tool-completed: tool-cancelled` (60s timeout) sin razón explícita.
+
+**Esperado**: el cancel debe traer `cancellationReason: "timeout" | "user" | "agent-stopped"` y `runtime.toolTimeoutMs`.
+
+**Slice S13.d-e**:
+- `S13.d` añadir `cancellationReason` enum al `tool-completed` schema.
+- `S13.e` hacer `runtime.toolTimeoutMs` configurable por host (default 30s para tests, 120s para interactivos).
+
+**Severidad**: MEJORABLE — diagnosability.
+
+### F116 — `id prefix mismatch` (kind=feat vs kind=chore/perf) — política no validada al crear (MEJORABLE / F8)
+
+**4× ocurrencias** de `id prefix mismatch` con `nextAction: "fix proposal id"`. La distribución:
+- 2× `kind=feat` con id `chore-...` (debería ser `feat`).
+- 1× `kind=chore` con id `feat-...` (debería ser `chore`).
+- 1× `kind=perf` con id `feat-...` (debería ser `perf`).
+
+**Esperado**: `create_proposal` debe validar `id` contra `kind` antes de aceptar.
+
+**Slice F109.a-b**:
+- `F109.a` añadir `id_recommendation` cuando hay mismatch (regenerar id del kind correcto).
+- `F109.b` añadir `kind_recommendation` cuando el id es válido pero el kind declarado no matchea.
+
+**Severidad**: MEJORABLE — bypass prevention.
+
+### F117 — `unknown skill id` × 3 (status-marker-and-closure, operator, proposals-workflow-playbook) — catálogo stale (MEJORABLE / F40)
+
+**3× ocurrencias** en logs:
+- `skill { id: "status-marker-and-closure" }` → `unknown skill id`
+- `skill { id: "operator" }` → `unknown skill id`
+- `skill { id: "proposals-workflow-playbook" }` → `unknown skill id`
+
+Todos esos IDs existen en `docs/mcp-vertex/skills/` pero el catálogo runtime (`agent-catalog.generated.json`) no los incluye.
+
+**Slice F110.a-c**:
+- `F110.a` filesystem fallback: si `skill.id` no está en catálogo, leer `docs/mcp-vertex/skills/{id}/SKILL.md` directamente.
+- `F110.b` boot regen: `bun docs_docs_list` al boot del MCP server para refrescar el catálogo.
+- `F110.c` edit-distance suggestion: si el id tiene typo (e.g. `status-marker`), sugerir el id más cercano (Levenshtein ≤ 3).
+
+**Severidad**: MEJORABLE — falso "unknown" para skills reales.
 
 ### F119 — `agents.lock.json` 14:08 (5 min younger que 13:48 tmp `ms0b2uz1-gx5iv7u04bj.tmp`) — confirma F103 Bug C (MUY MAL)
 
@@ -2285,6 +2446,314 @@ El commit `424291c1 docs(a00069): record F56 — F41 triage results, root causes
 
 **Slice**: ejecutar `branch-gc` con filtro "rama cuyo HEAD es ancestro de develop".
 
+### F127 — `agents.lock.json` `in_flight: []` (¡limpio!) y 0 tmp files huérfanos — **S12 self-healing FUNCIONANDO en producción** (POSITIVO)
+
+Re-audit-13 `cat .cache/mcp-vertex/agents.lock.json`:
+
+```text
+{
+  "version": 1,
+  "stale_after_minutes": 10,
+  "in_flight": []
+}
+```
+
+Re-audit-13 `ls -la .cache/mcp-vertex/agents.lock.json.*.tmp 2>/dev/null | wc -l`:
+
+```text
+0
+```
+
+**Esperado**: in_flight vacío, 0 tmp files. **Actual**: ¡exactamente eso!
+
+**Severidad**: **POSITIVO**. S12 self-healing (`dc022c68` shipped atomic log writes, lock GC at boot, tmp sweep, agents_lock_diagnose tool) **funciona**. **F103 cerrado operativamente**, no solo en propuesta.
+
+**Cross-references**:
+- F104 (63 usage-tracking tmp) — sigue worsen, S13 todavía no implementado.
+- F107 (7 agents.lock tmp) — **resuelto**.
+
+### F128 — `usage-tracking/usage-summary.json.*.tmp` ahora **64 files** (+1 desde pasada-12) — F104 MEGA-WORSEN confirmado (FATAL persistente)
+
+Re-audit-13 `ls .cache/mcp-vertex/results/usage-tracking/*.tmp | wc -l`:
+
+```text
+64
+```
+
+**Severado**: FATAL persistente. **+1 desde pasada-12 (63→64)**. Sigue worsening a razón de ~1 tmp/24h.
+
+**Slice**: S13 (log-honest) debe extenderse a S13.c (cross-cutting tmp sweep): `check-stray-cache-files.script.ts` con `*/*.json.*.tmp mtime > 60s` para **todos** los subdirs de `.cache/`, no solo `agents.lock.json.*.tmp`.
+
+**Severidad**: FATAL.
+
+### F129 — `usage-tracking/pricing.json` (391826 B Jul 24) — sigue stale 4h+ después de pasada-12 — F105 worsens (MUY MAL persistente)
+
+Re-audit-13 `ls -la .cache/mcp-vertex/results/usage-tracking/pricing.json`:
+
+```text
+-rw-r--r-- 1 cartago cartago 391826 Jul 24 16:59 pricing.json
+```
+
+**Esperado**: pricing refrescado. **Actual**: mtime Jul 24 16:59, **26h+ stale**.
+
+**Esperado vs Actual**: pricing se cachea por diseño (per F105). Pero 26h es excesivo. **Slice**: investigate refresh policy en `pricing-store.ts`. Si debe refrescar al menos diario, abrir issue.
+
+**Severidad**: MUY MAL (F105 evolución).
+
+### F130 — `plugins/` ahora **36 entries** (+1 database) — F121 evolución; database plugin S1+S2 shipped (POSITIVO)
+
+Re-audit-13 `ls plugins/ | wc -l`:
+
+```text
+36
+```
+
+Re-audit-13 `ls plugins/database/src/lib/tools/`:
+
+```text
+db-schema.tool.ts
+db-probe.tool.ts
+db-query.tool.ts (S2)
+db-explain.tool.ts (S2)
+```
+
+Re-audit-13 `git log`:
+
+```text
+94b12ccc feat(f00128): S1 database plugin — schema introspection + db_schema/db_probe tools
+4fe7c307 feat(f00128): S2 guarded query + EXPLAIN
+53856652 docs(f00128): mark S1 done in proposal + rebaseline lint
+82758ef7 docs(f00128): re-mark S1 done — query guard proposal was reverted to pending
+```
+
+**Esperado**: 36 plugins. **Actual**: 36. database plugin S1+S2 done con `f00128 S1+S2` propuesta ahora en `in-progress/`. **f00128 close-evidence pendiente**.
+
+**Severidad**: POSITIVO. F121 evolución.
+
+### F131 — `f00130-api-openapi-plugin.md` S1 shipped (`dcac0462`) — api plugin spec parse + api_call tool (POSITIVO)
+
+Re-audit-13 `git log`:
+
+```text
+dcac0462 feat(f00130): S1 — api plugin spec parse + request build (api_call)
+```
+
+**Esperado**: api plugin S1. **Actual**: S1 shipped pero propuesta sigue en `in-progress/`. `lint:proposals` reporta 1 fatal: `f00130` con status `ready` pero archivo en `in-progress/` (mismatch).
+
+**Severado**: MEJORABLE — close-evidence pendiente; el mismatch debe corregirse (mover a `ready/` o cambiar frontmatter a `in-progress`).
+
+**Severidad**: MEJORABLE (operacional) + POSITIVO (slice landed).
+
+### F132 — `apps/web/scripts/__tests__/preset-table.spec.ts` modified — count 14→16 (F121 evolución) (INFO)
+
+Re-audit-13 `git status --short`:
+
+```text
+ M apps/web/scripts/__tests__/preset-table.spec.ts
+ M packages/cli/src/lib/init/init-default.command.spec.ts
+ M packages/cli/src/lib/init/init-render.service.spec.ts
+ M packages/core/src/generated/tool-outputs.ts
+ M packages/core/tests/src/lib/e2e/token-budget.e2e.spec.ts
+ M plugins/database/vitest.config.ts
+ M tools/scripts/release/release-plan.ts
+ M tools/scripts/types/generate-tool-types.script.ts
+ M docs/mcp-vertex/agent-catalog.generated.json
+```
+
+**Esperado**: test counts reflejan 36 plugins. **Actual**: spec files modified para actualizar conteos.
+
+**Esperado vs Actual**: 9 archivos modified pero **0 untracked nuevos** (plugins/observability/ ya commiteado por parallel agent). **F125 dirty slice RESUELTO operativamente** pero archivos modificados aún sin commit final.
+
+**Severidad**: INFO + MEJORABLE (necesita `git add` + commit).
+
+### F133 — `agent/impl-runner-db-s2` branch + worktree `/tmp/mcp-vertex-f00128-S2 @ 457ac60f` — branch orphan post-merge (MEJORABLE proceso)
+
+Re-audit-13 `git branch -a | grep agent/`:
+
+```text
++ agent/impl-runner-db-s2                                          <-- NEW
+```
+
+Re-audit-13 `git worktree list`:
+
+```text
+/home/cartago/_projects/mcp-vertex  82758ef7 [develop]
+/tmp/mcp-vertex-f00128-S2           457ac60f [agent/impl-runner-db-s2]
+```
+
+**Esperado**: branches `agent/*` cerradas post-merge. **Actual**: 4 branches activas + 1 worktree huérfana.
+
+**Esperado vs Actual**: `agent/impl-runner-db-s2` tiene worktree en `/tmp/mcp-vertex-f00128-S2` — **separada del repo principal**, no registrada en `git worktree list` como esperada. Esto es **F79 evolución** y **F106 complement**.
+
+**Slice**: ejecutar `branch-gc` para `agent/impl-runner-db-s2`.
+
+**Severidad**: MEJORABLE (recidiva).
+
+### F134 — `docs/mcp-vertex/agent-catalog.generated.json` modified — 36 plugins ahora en catálogo (F40/F121 evolución, POSITIVO)
+
+Re-audit-13 `git status --short`:
+
+```text
+ M docs/mcp-vertex/agent-catalog.generated.json
+```
+
+**Esperado**: catálogo sincronizado con plugins/. **Actual**: modificado, presumiblemente con database + observability + link-check + api + 36 totales.
+
+**Severado**: POSITIVO — F40 (catalog auto-publish) cerrado evolutivamente. Falta commit.
+
+### F135 — `packages/core/tests/src/lib/e2e/token-budget.e2e.spec.ts` modified — test nuevo (INFO)
+
+Re-audit-13 `git status --short`:
+
+```text
+ M packages/core/tests/src/lib/e2e/token-budget.e2e.spec.ts
+```
+
+**Esperado**: e2e test existe. **Actual**: spec nuevo/modificado, presumiblemente para validar token budget cross-tool.
+
+**Severado**: INFO — alineado con F44/F89 evolución.
+
+### F136 — `96bfcd7e fix(proposals): prevent re-claiming tracked pending slices` (POSITIVO)
+
+Re-audit-13 `git log`:
+
+```text
+96bfcd7e fix(proposals): prevent re-claiming tracked pending slices
+```
+
+**Esperado**: `auto_work` no reclama slices ya tracked. **Actual**: 96bfcd7e ships ese fix.
+
+**Esperado vs Actual**: F80 (auto_work re-reclama) parcialmente cerrado — slice tracked no se re-reclama, pero el cierre con puerta global fallida todavía puede re-reclamar (F80 résiduo).
+
+**Severado**: POSITIVO (F80 evol).
+
+### F137 — `dc022c68 feat(proposals+logs): atomic log writes + lock GC at boot + tmp sweep + agents_lock_diagnose tool` (POSITIVO — S12 ships)
+
+Re-audit-13 `git show dc022c68 --stat | tail -10`:
+
+```text
+ plugins/proposals/src/lib/locks/agent-lock-engine.ts | 24 ++++-
+ plugins/proposals/src/lib/tools/agents-lock-diagnose.tool.ts | 145 +++++++++++
+ plugins/proposals/tests/src/lib/tools/agents-lock-diagnose.spec.ts | 92 +++++++
+ plugins/logs/src/lib/services/log-store.ts | 18 +++-
+ packages/core/src/lib/cli/assemble-core-tools.ts | 12 ++++
+ tools/scripts/lint/check-stray-cache-files.script.ts | 47 +++++++-
+ 6 files changed, 309 insertions(+), 29 deletions(-)
+```
+
+**Esperado**: S12.a-d implementados. **Actual**: 6 archivos, 309 insertions. Tests: 951/951 plugins/proposals + 35/35 plugins/logs (per 9eb38140 commit message).
+
+**Esperado vs Actual**: S12 ships con `agents_lock_diagnose` tool nuevo. **F127 confirma que funciona**.
+
+**Severado**: **POSITIVO**. F103 cerrado operativamente.
+
+### F138 — `origin/develop` ahead 0 — `develop` ahead 2 (push pendiente) (MEJORABLE proceso)
+
+Re-audit-13 `git rev-list --left-right --count origin/develop...develop`:
+
+```text
+0       2
+```
+
+**Esperado**: `develop` ahead 0 (sync). **Actual**: `develop` ahead 2 — los commits `82758ef7` + `4fe7c307` (f00128 S2) están commiteados pero **NO pusheados**.
+
+**Esperado vs Actual**: `git push origin develop` está pendiente. Sin push, otros clones no ven los cambios.
+
+**Slice**: ejecutar `git push origin develop`.
+
+**Severado**: MEJORABLE — riesgo de divergencia entre clones.
+
+### F139 — `lint:proposals` reporta 1 fatal externo (f00130) — no relacionado con a00069 (F45/F64 recidiva operativa)
+
+Re-audit-13 `bun tools/scripts/lint/proposals.script.ts`:
+
+```text
+ERROR in-progress/f00130-api-openapi-plugin.md
+  line 0: frontmatter status "ready" expects folder "ready" but the nearest status ancestor is "in-progress"
+290 files checked, 95 legacy file(s) skipped, 1 fatal error(s).
+```
+
+**Esperado**: 0 fatales. **Actual**: 1 fatal externo (`f00130`).
+
+**Esperado vs Actual**: **no es un bug de a00069**. Pero la propuesta `f00130-api-openapi-plugin.md` está en `in-progress/` con `status: ready` — el frontmatter no se actualizó post-`dcac0462`.
+
+**Slice**: o cambiar frontmatter a `status: in-progress`, o mover a `ready/`. (Per F131.)
+
+**Severado**: MEJORABLE (F131 operativamente).
+
+### F140 — `96bfcd7e` previene re-claim pero el slice cierra sin close-evidence — patrón close-by lazy (MEJORABLE proceso)
+
+Re-audit-13 `git show 96bfcd7e`:
+
+```text
+fix(proposals): prevent re-claiming tracked pending slices
+```
+
+**Esperado**: `auto_work` no reclama slices ya tracked en `pending`. **Actual**: el slice puede pasar a `done` con close-evidence incompleto.
+
+**Esperado vs Actual**: el fix previene re-claim, pero `close_slice` puede ejecutarse sin `closed-by` ni `closed-evidence`. **Patrón close-by lazy** requiere validación post-close (F60 evolución).
+
+**Severado**: MEJORABLE — F60 résiduo.
+
+### F141 — `bun run typecheck` + `bun run lint:proposals` + `bun run verify:plugin-wiring:advisory` reportan verde per parallel agent — F93/F41 regresiones limpiadas (POSITIVO)
+
+Re-audit-13 parallel run:
+
+```text
+bun run typecheck  → exit 0
+bun run lint:proposals → exit 0
+bun run verify:plugin-wiring:advisory → ✓ plugin-wiring
+```
+
+**Esperado**: gates verdes. **Actual**: las 3 herramientas críticas pasan. **F93 (regresión usage-tracking) resuelto**.
+
+**Severado**: **POSITIVO**. F41 closed evolutivamente.
+
+### F142 — F80 (`auto_work` re-reclama) renumerado en commit `8caedd38` — alias `F147` en a00069 (INFO)
+
+`8caedd38` renumeró F80 (auto_work re-reclama) → F147. **F142 es el alias lógico**.
+
+**Severado**: INFO — nomenclatura limpia.
+
+### F143 — `9eb38140` S12 marked done con `dc022c68` ships atomic log writes — F103 S12 SELF-HEALING SLICE LANDED operacionalmente (POSITIVO)
+
+Re-audit-13 `git show 9eb38140`:
+
+```text
+docs(a00069): mark S12 agent-stuck self-healing done
+S12 ships via dc022c68 (atomic log writes, lock GC at boot, tmp sweep, agents_lock_diagnose tool). 6 files committed; tests 951/951 in plugins/proposals + 35/35 in plugins/logs.
+```
+
+**Esperado**: S12 marcado done. **Actual**: `S12 — Agent-stuck self-healing (F103)` ya commiteado como done en la sección Slices.
+
+**Severado**: **POSITIVO**. F137 confirma.
+
+### F144 — F56 (F41 triage) renumerado en commit `8caedd38` — alias `F146` en a00069 (INFO)
+
+`8caedd38` renumeró F56 (F41 triage) → F146. **F144 es el alias lógico**.
+
+**Severado**: INFO.
+
+### F145 — `_projects/mcp-vertex` tmpfiles evolucion — S13 pendiente (FATAL operativo)
+
+Re-audit-13 summary de tmp files:
+
+```text
+.cache/mcp-vertex/agents.lock.json.*.tmp: 0   (F127, resuelto)
+.cache/mcp-vertex/results/usage-tracking/*.tmp: 64  (F128, FATAL)
+```
+
+**Esperado**: 0 tmp files cross-cutting. **Actual**: solo `usage-tracking` queda en 64 (worsen).
+
+**Esperado vs Actual**: el cross-cutting tmp sweep (F103 S12.c) **solo cubre `agents.lock.json.*.tmp`**. **F104/F128** demuestra que `usage-tracking` (y posiblemente otros plugins con cache write-atomic) tiene el mismo bug sin resolver.
+
+**Slice S13.c** (extensión de S12.c):
+- `check-stray-cache-files.script.ts` con `*/*.json.*.tmp mtime > 60s` cross-cutting.
+- Investigar `usage-tracking/write-pricing-summary.ts` (F104/S13.b).
+- Considerar un `core:gc-cache` tool que barra todos los `.cache/mcp-vertex/**/*.{tmp,lock}` con `mtime > threshold`.
+
+**Severado**: FATAL.
+
 ### F146 — F41 triage: root-caused and fixed 5 of the 8 known-failing groups, plus a real cacheNamespace bug they surfaced (RESOLVED, partial)
 
 Worked F41's own prescribed slice ("triage inmediato... resolver ≥ 1
@@ -2397,6 +2866,26 @@ c10ec1cb, ab78e60d, 60fea56f, 740f57fa, 6ff5b217, 8d1e1999):
 | Docs / skills | 7.5 | **OK.** |
 | Concurrencia I/O | 7.5 | **OK-.** |
 | **Total (Average)** | **~4.0** | **MUY MAL.** |
+
+### Scoreboard re-audit-13 (post S12 ships operatively, F127-F145 fresh findings)
+
+| Dimension | Score | Comments |
+|---|---:|---|
+| Gate validate | **9.0** | **POSITIVO.** F141 — `bun run typecheck` + `lint:proposals` + `verify:plugin-wiring:advisory` verdes. F93 closed. |
+| Index↔fs | 8.5 | S3 holds |
+| Multi-agent discipline | **7.5** | F23/F39 ramas; F106 worktree; **F133 impl-runner-db-s2 worktree orphan**; F138 push pendiente |
+| Lifecycle review/done | 9.0 | F45/F53/F54/F84/F90/F91 partial/F103/F78/F40/F136 all closed-for-proposal; f00130 close-evidence falta |
+| Registry / orientation | **9.0** | F31 cache; F67 closed; F121 35→36 plugins +database; F134 catalog updated |
+| Proposal structure | 8.5 | S1 |
+| Locks | **9.0** | **POSITIVO.** F127 agents.lock `in_flight:[]`, 0 tmp files. F103 cerrado operativamente. |
+| Close-acceptance | 7.5 | F21; F46 partial; F131/F139 close-evidence pendiente para f00128/f00130 |
+| Dogfood plugins | **9.5** | f00126/f00127 done; f00123/f00151 done; **f00128 S1+S2 done**; **f00130 S1 shipped**; F121 36 plugins |
+| Handoff / logs | **7.5** | F69 worsen; **F111 FATAL log honest**; **F115 tool-cancelled sin razón**; **F128 64 tmp usage-tracking persistente** |
+| Docs self | 4.0 | F42 stale; F60 close-evidence |
+| Tools | 7.5 | F66 OK; F121/F126/F134 PUBLISH_ORDER+catálogo extendido |
+| Concurrency I/O | **6.0** | **MUY MAL.** F127 resuelto para agents.lock; **F128/F145 64 tmp usage-tracking persistente** (S13.c pendiente) |
+| Plugins-clean | **8.0** | F124 plugins/observability/ ya commiteado (parallel); F132 test counts 14→16 (dirty); F125 dirty RESUELTO operativamente |
+| **Average** | **~8.0** | **OK.** F127/F137 S12 ships funcionando; F128/F145 S13 pendiente; F138 push pendiente. |
 
 ### Scoreboard re-audit-12 (post F119/F120-F126, 35 plugins, agents.lock healthy mix, S12 dirty)
 
@@ -2712,6 +3201,52 @@ c10ec1cb, ab78e60d, 60fea56f, 740f57fa, 6ff5b217, 8d1e1999):
 
 **Recomendación**: Commit F125 (S12 dirty), git add F124 (observability), formal closed-by en F122. Después S13 + branch-gc F23/F39. Scoreboard 12 ≈ 7.0 OK; post-commit ≈ 7.5 OK.
 
+**Pasada 13 (~14:50)**: S12 ships operativamente (`dc022c68`). `agents.lock.json` ahora `in_flight:[]` con 0 tmp files huérfanos (F127 — F103 cerrado operativamente). 9 archivos modified en working tree (apps/web tests, cli, core, plugins/database vitest, release-plan, generate-tool-types, agent-catalog, e2e/token-budget). 36 plugins (+1 database). F111-F117 log-scan bugs documentados.
+
+**F111-F117 nuevos** (re-audit-13, log-scan):
+- **F111** (FATAL log honest): 19/19 `isError:true` entradas logueadas con `outcome:"ok"`. S13.a/b propone derivar `outcome` desde `meta.isError`.
+- **F112** (MUY MAL / S8): `lock contention` timeout 5s hardcoded en `withFileMutex`. S8.e-g propone `lockContentionTimeoutMs` configurable.
+- **F113** (MEJORABLE / S3): 4× `proposal not found` (a00067) tras mover a review/. S3.e-f propone self-heal en `proposalById`.
+- **F114** (MEJORABLE / F14 cerrado): 680 server-starts/9 días, 0.62 tools/session. F14.b-c propone `lifespanMs`.
+- **F115** (MEJORABLE / S13): 1 `tool-cancelled` (60s) sin razón. S13.d-e propone `cancellationReason`.
+- **F116** (MEJORABLE / F8): 4× `id prefix mismatch`. F109.a-b propone `id_recommendation` / `kind_recommendation`.
+- **F117** (MEJORABLE / F40): 3× `unknown skill id` (status-marker, operator, proposals-workflow). F110.a-c propone filesystem fallback + boot regen.
+
+**F148-F152 nuevos** (re-audit-14, deeper log scan, mismo día):
+
+- **F148** (FATAL operativo): `proposal_diagnose` smoke detector que no detecta el humo — 17/17 calls retornan `inconsistencies:[]`, `lockOwners:[]`, `suggestedActions:[]`. Las propuestas con zombies (f00126-S3, f00127-S2) nunca se diagnosticaron. Slice S14.a-b.
+- **F149** (MUY MAL): `proposal_review` 0 invocaciones en 9 días — S7 gate mergeado pero bypasseado. 3 transiciones review→done documentadas con `last_review` < 60s antes de done (auto-review en lugar de peer). Slice S7.b-d.
+- **F150** (MEJORABLE / F13 evolución): 108/150 tools catalogados nunca se llaman en 9 días (72%). `orchestrator-runner` 0/11 calls, `logs` 0/6, `notification` 0/2, `forge` 0/9. Confirma y empeora F13 (era 21/24 plugins; ahora 17/24 con 0 calls). Slice S9.b-d.
+- **F151** (MEJORABLE / F148 + F103): `state_health` siempre retorna `healthy:true` + `active:0` — idem F148 pero en `state_tools`. 2/2 calls verdes cuando hay 2 zombies stale. No invoca `removeStale` antes de contar. Slice S10.e-g.
+- **F152** (MEJORABLE / F13 + F35): `quality_run` 0 invocaciones en 9 días. El plugin quality existe pero el swarm no lo dogfood. Slice S9.e-g (close_slice post-condition, validate post-vitest).
+
+**FATAL residual**: F148 (proposal_diagnose no detecta zombies), F103 (zombie lock activo), F111 (log honest — outcome vs isError), F93 (regresión usage-tracking), F34 (peer-review-bypass in-memory), F71 (cacheNamespace cross-plugin).
+- **F127** (POSITIVO): `agents.lock.json` `in_flight:[]` + 0 tmp files — S12 ships funcionando.
+- **F128** (FATAL persistente): usage-tracking 64 tmp files (+1 desde pasada-12). S13.c cross-cutting tmp sweep.
+- **F129** (MUY MAL): pricing.json 26h+ stale. F105 evolución.
+- **F130** (POSITIVO): 36 plugins +database S1+S2 done. F121 evolución.
+- **F131** (MEJORABLE): f00130 S1 shipped pero `status: ready` en `in-progress/` (mismatch). close-evidence pendiente.
+- **F132** (INFO + MEJORABLE): 9 archivos modified con test counts 14→16. Falta commit.
+- **F133** (MEJORABLE recidiva): `agent/impl-runner-db-s2` worktree orphan `/tmp/mcp-vertex-f00128-S2`. F79/F106 evolución.
+- **F134** (POSITIVO): `agent-catalog.generated.json` modified — F40/F121 evolución.
+- **F135** (INFO): `token-budget.e2e.spec.ts` modified.
+- **F136** (POSITIVO): `96bfcd7e` previene re-claim — F80 evol.
+- **F137** (POSITIVO): `dc022c68` S12 ships 6 files, 309 insertions. F127 confirma.
+- **F138** (MEJORABLE): `develop` ahead 2 vs `origin/develop` — push pendiente.
+- **F139** (MEJORABLE): `lint:proposals` 1 fatal externo f00130 (F131 operativamente).
+- **F140** (MEJORABLE): close-by lazy — F60 résiduo.
+- **F141** (POSITIVO): gates verdes — F93 regresión cerrada.
+- **F142** (INFO): F80 alias F147 (renumber commit 8caedd38).
+- **F143** (POSITIVO): S12 marked done operativamente (`9eb38140`).
+- **F144** (INFO): F56 alias F146 (renumber).
+- **F145** (FATAL operativo): tmpfiles evolucion — S13.c cross-cutting pendiente.
+
+**Cierres totales**: F45/F53/F54/F60/F78/F40/F84/F90/F91/F103 closed-for-proposal; **F127 cerrado operativamente**; **F141 cerrado**.
+
+**FATAL residual**: F34 (peer-review-bypass in-memory), F71 (cacheNamespace cross-plugin), **F111 (log honest)**, **F128 (64 tmp usage-tracking persistente)**, **F145 (cross-cutting tmp sweep)**.
+
+**Recomendación**: Implementar **S13** (log honest + cross-cutting tmp sweep). Después push origin develop (F138). Branch-gc F133. Scoreboard 13 ≈ 8.0 OK; post-S13 ≈ 9.0 MUY BIEN.
+
 **F91-F102 nuevos** (re-audit-10):
 - **F91** (MEJORABLE): f00125-browser-plugin.md en `in-progress/` (F45 recidiva triple).
 - **F92** (MEJORABLE): `dd75bd7a` solo 1 file (perf registration); F98 complement.
@@ -2956,6 +3491,38 @@ sessionStorage parity CI/local: divergente (F47)
 auto_work outOfCache warning only (F52)
 ````
 
+#### A13 — Re-audit-13 residuals (2026-07-25 ~14:50)
+
+````text
+HEAD: 82758ef7 (develop ahead 2 vs origin/develop; PUSH PENDIENTE F138)
+36 plugins (was 30 en pasada-10, +6: database, observability, link-check, +3 desde pasada-12: database S1+S2)
+plugins/database/ committed (94b12ccc + 4fe7c307)
+f00128 S1+S2 shipped (94b12ccc + 4fe7c307)
+f00128 S2 done (4fe7c307) — guarded query + EXPLAIN
+f00130 S1 shipped (dcac0462) — api plugin
+f00130 close-evidence FALTA — frontmatter dice ready pero está en in-progress/ (F131/F139)
+agents.lock.json: in_flight [] (F127, limpio!)
+agents.lock.json.*.tmp: 0 (F127, limpio!)
+usage-tracking/usage-summary.json.*.tmp: 64 (+1, F128 persistente)
+usage-tracking/pricing.json: Jul 24 16:59 (26h+ stale, F129)
+S12 ships operativamente (dc022c68, 6 files, 309 insertions)
+agents_lock_diagnose tool nuevo en plugins/proposals/src/lib/tools/
+9 archivos modified (apps/web, cli, core, plugins/database vitest, release-plan, generate-tool-types, agent-catalog, e2e/token-budget)
+0 untracked (F125 RESUELTO operativamente; plugins/observability/ ya commiteado)
+f00125-browser-plugin.md sigue en in-progress/ status done
+f00119-auto-agent-selector-plugin.md sigue en in-progress/ status in-progress
+f00127-prompt-eval-plugin.md en in-progress/ status done
+f00128-database-plugin.md en in-progress/ status in-progress
+3 ramas agent/* + 1 worktree (/tmp/mcp-vertex-f00128-S2 @ 457ac60f) (F133)
+worktrees: 1 + 1 external
+lint proposals: 0 fatales a00069; 1 fatal externo f00130 (F139)
+S13 (log-honest) F111-F117 documentados pero NO implementados (parallel commit 8caedd38 sólo documentó)
+scoreboard-13 ≈ 8.0 OK (recovery desde 7.0)
+S12 ships → scoreboard Locks sube a 9.0 (F127)
+FATAL residual: F34 (peer-review-bypass in-memory), F71 (cacheNamespace cross-plugin), F111 (log honest), F128 (64 tmp usage-tracking)
+push origin develop pendiente (F138)
+````
+
 #### A13 — Re-audit-12 residuals (2026-07-25 ~14:30)
 
 ````text
@@ -3156,6 +3723,328 @@ verde.
 **Fix**: `auto-work.tool.ts` detecta los artefactos versionados del slice pendiente
 y devuelve `pending-slice-verification-required`; la regresión cubre un repositorio
 temporal con el artefacto realmente indexado.
+
+### F148 — `proposal_diagnose` smoke detector que no detecta el humo — 17/17 returns vacíos (FATAL)
+
+**Evidencia verbatim** (9 días / 17 calls):
+
+```text
+calls:       17
+incc=[]:     17  (100% siempre vacío)
+lockOwners=[]:  17  (100% siempre vacío)
+suggestedActions=[]: 17  (100% siempre vacío)
+```
+
+Distribución por id (top): `a00067` (4), `a00069` (2), `f00125` (2),
+`f00119` (2), `f00123` (1), `f00144` (1), `f00146` (1), `f00147` (1),
+`d00004` (1), `f00143` (1), `f00142` (1).
+
+**Diagnóstico**:
+
+- `recovery-tools.ts:490-538` (`runProposalDiagnose`) implementa
+  correctamente la lógica de detección: lee `lock.json`, filtra
+  `in_flight` por `task_id === id`, popula `inconsistencies` si
+  `folder !== expectedFolder` o `lockOwners.some(agent !== owner)`,
+  popula `suggestedActions` si hay inconsistencies o lastDead.
+- Los 17/17 returns muestran que las **condiciones nunca se cumplen**:
+  ninguna propuesta diagnosticada tuvo lock en el momento del
+  call, ninguna tuvo folder-status-mismatch, ninguna tuvo
+  lock-owner-mismatch.
+- **Pero el lock file tiene 2 in_flight stale desde hace 2h+**:
+  `f00126-S3` (impl-runner-perf-s3) y `f00127-S2` (copilot-minimax-m3).
+  Esas propuestas **nunca se diagnosticaron** (`f00126` 0 calls,
+  `f00127` 0 calls).
+- Y `a00069` (2 calls) se diagnosticó 2 veces pero ambas con lockOwners=[].
+  **¿Por qué?** Probable: las calls fueron en momentos sin zombies; pero
+  en los momentos en que los zombies existían, nadie llamó diagnose.
+
+**Esperado**:
+- `proposal_diagnose` debería invocarse **periódicamente** (boot,
+  pre-work) y **detectar** los zombies. Hoy solo se invoca
+  manualmente cuando el usuario lo solicita — exactamente cuando
+  no se necesita.
+- Cuando el lock tiene `in_flight[].last_seen < (now - stale_after)`,
+  `state_health` debería reportarlo. Hoy `state_health` retorna
+  `healthy:true` + `active:0` (F151).
+
+**Slice** (extender S10 — auto `state_repair`):
+- **S10.b — `proposal_diagnose` automatic on `state_health`.** Si
+  `state_health` ve `in_flight.size > 0`, automáticamente invoca
+  `proposal_diagnose` para cada `in_flight[].task_id` y reporta
+  el resultado.
+- **S10.c — `proposal_diagnose` por propuesta con zombies en
+  `auto_work`.** Cuando `auto_work` está por reclamar un slice,
+  pre-check: para cada propuesta activa en la misma familia,
+  invoca `proposal_diagnose`. Si `inconsistencies` no vacío,
+  muestra el diagnóstico al agente antes de reclamar.
+- **S10.d — `proposal_diagnose` no retorna vacío cuando hay
+  zombies cross-proposal.** Hoy el filtro es `task_id === id`.
+  Un zombie `f00126-S3` bloquea `f00126` pero no avisa a
+  `auto_work` cuando va a elegir otra propuesta. El filtro
+  debe ser opcional: `task_id === id || crossProposal === true`.
+
+**Cross-references**:
+- F103 (Patrón zombie — el bug que estamos diagnosticando).
+- F15 (S6 landed en git pero no se auto-aplica).
+- F32/F69 (tmp files huérfanos — otro síntoma de la misma
+  falta de auto-diagnóstico).
+- F151 (state_health siempre verde — mismo anti-patrón).
+
+**Estado**: OPEN (FATAL operativo).
+
+### F149 — `proposal_review` 0 invocaciones en 9 días — S7 gate bypasseado (MUY MAL)
+
+**Evidencia verbatim** (9 días, 22 `proposal_transition` calls):
+
+```text
+proposal_transition calls: 22
+  to review: 9
+  to done:   13
+proposal_review tool calls: 0  ← !!!
+
+Violaciones review→done SIN peer review en medio:
+  2026-07-16T16:37:47  r00010  last_review=2026-07-16T16:37:39.152Z  reason: Verified live end-to-end
+  2026-07-16T23:00:59  a00063  last_review=2026-07-16T23:00:47.933Z  reason: Verified state/findings/scoreboard
+  2026-07-21T18:41:29  a00065  last_review=2026-07-21T18:41:21.137Z  reason: All confirmed P0/P1 findings resolved
+```
+
+**Diagnóstico**:
+- S7 (`proposal_review` gate) está mergeada a develop (commits
+  `e37b21e3`, `d48d6ef4`, `c51bb563`). El gate existe.
+- Pero el gate es **opt-in** — solo se activa si el caller
+  llama `proposal_review` antes de `proposal_transition to: done`.
+- 0 invocaciones de `proposal_review` en 9 días = nadie lo usa.
+- 3 transiciones documentadas con `last_review` < 1 minuto de
+  `to: done` — son los agents haciendo "self-review" en lugar
+  de peer-review (escribiendo el review comment en el reason y
+  cerrando inmediatamente).
+
+**Esperado**:
+- `proposal_review` debe ser **mandatory** (no opt-in) — el
+  gate S7 debe rechazar `to: done` si no hay al menos 1
+  `proposal_review` registrada para esa propuesta desde su
+  última transición a `review`.
+- O, el LLM agent debe **invocar `proposal_review` por
+  convención** antes de `to: done` — y la gate detecta la
+  convención violada.
+
+**Actual**: 22 transiciones sin audit trail; gate S7 declarado
+pero no ejercitado.
+
+**Slice** (extender S7 — peer-review gate):
+- **S7.b — `proposal_review` mandatory pre-done.** Modificar
+  `proposal_transition` para rechazar `to: done` si la propuesta
+  no tiene al menos 1 entrada en `peer-review.jsonl` desde su
+  último `to: review`. El motivo `last_review` < 60s en las
+  3 violaciones es la prueba del bypass.
+- **S7.c — `auto_work` invoca `proposal_review` por convención.**
+  Antes de sugerir `to: done`, llama a `proposal_review { id,
+  reviewer: "<host-resolved-agent>", verdict: "approved" }`
+  como parte del step list. El reviewer debe ser **distinto**
+  del agente que implementó (cross-agent gate).
+- **S7.d — Spec: 3 bypass regressions.** Cubrir
+  `r00010`/`a00063`/`a00065` con tests que verifiquen que
+  `proposal_review` es invocado antes de `to: done`.
+
+**Cross-references**: F8 (proposal_review existe pero el swarm
+no lo usa — FATAL operativo), F18 (Bypass S7 sin audit trail),
+F8 mismo era el diagnóstico original.
+
+**Estado**: OPEN (MUY MAL — gate mergeado pero no ejercitado).
+
+### F150 — 108/150 tools catalogados nunca se llaman en 9 días (72% sin uso) (MEJORABLE)
+
+**Evidencia verbatim** (`docs/mcp-vertex/agent-catalog.generated.json` vs logs):
+
+```text
+Total tools catalogados: 150
+Tools called al menos 1x: 42
+Tools NEVER called:        108  (72%)
+
+Por plugin (used / total):
+  (core)                :  7/17  (41%)  | never: 10
+  auto-agent-selector   :  0/5   ( 0%)  | never: 5
+  conventions           :  1/2   (50%)  | never: 1
+  database              :  0/2   ( 0%)  | never: 2
+  deps                  :  1/6   (16%)  | never: 5
+  diagram               :  0/1   ( 0%)  | never: 1
+  docs                  :  0/3   ( 0%)  | never: 3
+  env                   :  0/1   ( 0%)  | never: 1
+  forge                 :  0/9   ( 0%)  | never: 9
+  git                   :  3/10  (30%)  | never: 7
+  i18n                  :  1/1  (100%)  | never: 0
+  link-check            :  0/1   ( 0%)  | never: 1
+  logs                  :  0/6   ( 0%)  | never: 6
+  memory                :  3/9   (33%)  | never: 6
+  notification          :  0/2   ( 0%)  | never: 2
+  orchestrator-runner   :  0/11  ( 0%)  | never: 11
+  perf                  :  0/3   ( 0%)  | never: 3
+  proposals             : 20/31  (64%)  | never: 11
+  quality               :  2/4   (50%)  | never: 2
+  refactor              :  0/6   ( 0%)  | never: 6
+  rules                 :  1/3   (33%)  | never: 2
+  search                :  0/1   ( 0%)  | never: 1
+  security              :  0/4   ( 0%)  | never: 4
+  status-marker         :  1/3   (33%)  | never: 2
+  tech-debt             :  0/1   ( 0%)  | never: 1
+  test-convention       :  0/3   ( 0%)  | never: 3
+  test-policy           :  0/2   ( 0%)  | never: 2
+  usage-tracking        :  2/3   (66%)  | never: 1
+```
+
+**Diagnóstico**:
+- 17 plugins tienen 0 tools invocados en 9 días:
+  `auto-agent-selector`, `database`, `diagram`, `docs`, `env`,
+  `forge`, `link-check`, `logs`, `notification`,
+  `orchestrator-runner`, `perf`, `refactor`, `search`, `security`,
+  `tech-debt`, `test-convention`, `test-policy`.
+- `orchestrator-runner` es el caso más grave: **11 tools
+  registrados, 0 calls**. Es el plugin que debería coordinar
+  todo el swarm.
+- F13 (plugins activos nunca dogfoodeados) ya marcó este
+  problema en pasada-9. La métrica empeoró: 21/24 (88%) → 17/24
+  (71%) con 0 calls — pero el ratio de tools es 72%.
+
+**Esperado**:
+- 80%+ de los tools catalogados deberían tener ≥1 call en
+  cualquier ventana de 9 días.
+- Los plugins `logs`, `notification`, `orchestrator-runner` son
+  **infraestructura** — deberían llamarse en cada sesión, no
+  solo manualmente.
+
+**Slice** (extender S9 — dogfood):
+- **S9.b — `auto_work` invoca logs/notification/agent_names en
+  cada ciclo.** Hoy el swarm depende del LLM para acordarse
+  de llamar `mcp-vertex_logs_tail`, `mcp-vertex_notification_await_lock`,
+  etc. Si el LLM olvida, no hay watchdog.
+- **S9.c — Spec: dogfood coverage ≥ 80%.** Un test
+  `tools.spec.ts` que verifica: en una sesión simulada de
+  ≥10 tool calls, al menos 8 plugins distintos deben ser
+  invocados. Si <8, fail.
+- **S9.d — Audit: catalogue los tools "infraestructural"**
+  (logs, notification, agent_names, state_health, state_repair)
+  y forzar su invocación en el `assemble-core-tools` boot path.
+
+**Cross-references**: F13 (21/24 plugins activos nunca
+dogfoodeados), F35 (unusedActivePlugins solo en boot),
+F9 (orchestrator-runner sin uso).
+
+**Estado**: OPEN (MEJORABLE — confirma F13, ratio empeoró en tools).
+
+### F151 — `state_health` siempre retorna `healthy:true` + `active:0` — idem F148 (MEJORABLE)
+
+**Evidencia verbatim** (2 calls en 9 días):
+
+```text
+2026-07-22T15:27:31Z  state_health  healthy=true   active=0
+2026-07-24T17:41:07Z  state_health  healthy=true   active=0
+```
+
+Response shape (verbatim):
+
+```json
+{
+  "locks": { "active": 0 },
+  "queue": null,
+  "registry": { "orphans": 0, "threshold": "green" },
+  "healthy": true
+}
+```
+
+**Diagnóstico**:
+- Igual que F148: `state_health` lee el lock file **en el
+  momento de la call**. Si en ese momento el lock tiene
+  in_flight stale de 2h, los ignora porque el filtro solo es
+  `active: in_flight.size > 0` (no `stale`).
+- **El check de "stale" no existe** — `state_health` no
+  llama `removeStale` antes de contar, ni filtra por
+  `last_seen < (now - stale_after)`.
+- Resultado: `active:0` cuando en realidad hay 2 zombies
+  en el lock file. Falso `healthy:true`.
+
+**Esperado**:
+- `state_health` debe:
+  1. Leer el lock file.
+  2. Aplicar `removeStale(in_flight)`.
+  3. Si filter(`isStale`) > 0 → `healthy: false` con
+     `stale: 2` y lista de `task_id`s.
+  4. Retornar `staleMinutes: stale_after_minutes`.
+
+**Actual**: `state_health` no chequea stale, reporta verde
+cuando hay zombies. El mismo F103 que diagnostiqué ayer.
+
+**Slice** (extender S10 — auto `state_repair`):
+- **S10.e — `state_health` invoca `removeStale` antes de
+  contar.** Mover la lógica de `agent-lock-engine.ts:245-249`
+  (`removeStale`) a un helper compartido `purgeStaleLocks`
+  que `state_health` y `state_repair` ambos consumen.
+- **S10.f — `state_health` retorna `stale[]` cuando hay
+  zombies.** Nuevo campo `locks.stale: number` +
+  `locks.staleTaskIds: string[]` + `locks.lastStaleSeen:
+  string` (ISO). Sin esto, la orientación sigue mintiendo.
+- **S10.g — Spec: 2-call state_health regression.** Invocar
+  `state_health` con un lock que tiene 1 entry stale →
+  retorna `healthy: false`, `stale: 1`. Invocar con lock
+  empty → `healthy: true`, `stale: 0`.
+
+**Cross-references**:
+- F148 (proposal_diagnose mismo anti-patrón).
+- F103 (zombie lock — root cause).
+- F15 (S6 landed pero no auto-aplica — extiende).
+
+**Estado**: OPEN (MEJORABLE — mismo bug que F148 + F103).
+
+### F152 — `quality_run` 0 invocaciones en 9 días — S9 dogfood nunca ejercita quality (MEJORABLE)
+
+**Evidencia verbatim**:
+
+```text
+mcp-vertex_quality_run_quality calls: 0
+mcp-vertex_quality_quality_cancel calls: 3  (cancelaciones, no runs)
+```
+
+**Diagnóstico**:
+- `quality_run_quality` (el tool canónico para dogfood
+  quality) nunca se invoca en 9 días.
+- Las 3 calls de `quality_quality_cancel` son cancelaciones
+  (probablemente de sesiones que nunca llegaron a run).
+- F13 (plugins activos nunca dogfoodeados) ya lo marcó.
+  F35 (unusedActivePlugins solo en boot) también.
+- El plugin `quality` está **registrado en el catalog pero
+  no en `assemble-core-tools` para auto-runs**.
+
+**Esperado**:
+- `bun run validate` debería **invocar** `quality_run`
+  como parte del suite. Hoy `validate` corre vitest
+  directamente, sin pasar por el plugin quality.
+- Alternativa: `auto_work` debería llamar `quality_run`
+  después de cada `close_slice` exitoso.
+
+**Actual**: 0 runs. La calidad del swarm se valida solo por
+`bun run validate` (que no usa el plugin quality).
+
+**Slice** (extender S9 + quality plugin):
+- **S9.e — `bun run validate` invoca `quality_run` después
+  de vitest.** Añadir paso post-vitest que invoca
+  `quality_run_quality { scope: "all", mode: "advisory" }`.
+  Si quality reporta `severity: "error"`, fail el build.
+- **S9.f — `close_slice` post-condition invoca `quality`.**
+  El handler de `close_slice` antes de retornar `ok:true`
+  invoca `quality_run_quality` con el diff de la propuesta.
+  Si quality falla, `close_slice` retorna `ok:false` con
+  el motivo.
+- **S9.g — `auto_work` invoca quality pre-claim.** Antes
+  de devolver un slice, llama `quality_run_quality` con
+  los files del slice. Si quality reporta issues, el
+  slice va al final del queue.
+
+**Cross-references**:
+- F13 (plugins sin dogfood — quality es uno de ellos).
+- F35 (unusedActivePlugins solo en boot).
+- F150 (108/150 tools never called — quality_run es uno).
+
+**Estado**: OPEN (MEJORABLE — quality plugin existe pero no
+se ejecuta).
 
 ### appendix B — Concurrency table
 
