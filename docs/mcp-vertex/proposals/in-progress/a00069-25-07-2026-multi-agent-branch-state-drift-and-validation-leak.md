@@ -1430,6 +1430,97 @@ existencia→GC no implementada.
 **Slice**: añadir check "HEAD is ancestor of develop" al lint orque injecta un
 warning en consola.
 
+### F51 — nuevo fail/err entre pasada 5→6 (43 fail / 35 errors) — drift implícito (MEJORABLE)
+
+Re-audit-6 muestra **un error más** (35 vs 34) y **un test más** (4988 vs
+4973) sin ningún shipped-in de a00069/x00072/x00073 entre pasadas 5 y 6.
+
+**Esperado**: mismo número (o menos). **Actual**: +1 fail y +1 err.
+
+**Esperado vs Actual**: ningún commit en `git log origin/develop` desde
+`d6a88789` explica +1. Probable: `auto_work` añadió archivo spec
+mientras yo leía, o `bun test` corre parcialmente en writes concurrent
+de cache.
+
+**Slice**: ci debe correr con `bun test --bail` para abortar y aislar
+el primer fail. **Más importante**: medir delta entre dos `bun test`
+consecutivos sin scripts escribientes.
+
+### F52 — `outOfCache` worktree warning en `auto_work` 2026-07-25 (MEJORABLE higiene)
+
+Re-audit-6 capturó en `.cache/mcp-vertex/logs/2026-07-25.jsonl`:
+
+```text
+branchStatusWarnings: [
+  "worktree /home/cartago/_projects/mcp-vertex lives outside the canonical
+   cache dir (AGENTS.md violation)"
+]
+hygieneWarnings: [
+  "1 worktree(s) outside the canonical cache dir (AGENTS.md violation) —
+   review and remove manually (see swarm_hygiene.outOfCache)"
+]
+```
+
+Esta sesión de copia sobre `/home/cartago/_projects/mcp-vertex` (no en
+`~/.cache/mcp-vertex/.worktrees`). `swarm_hygiene.outOfCache` lo detecta
+y emite `branchStatusWarnings`, pero **`auto_work` solo muestra el
+warning, no aborta ni intenta mover la copia**.
+
+**Esperado**: `auto_work` debe ofrecer mover a `<cacheDir>` y notificar
+a `swarm_hygiene`. **Actual**: warning informativo solamente.
+
+**Slice**: chore de `auto-work.tool.ts:776` — cuando `outOfCache` o
+`nonConformingBranches` aparecen, añadir step "Mover worktree a
+canonical cache dir" en `steps`.
+
+### F53 — `x00073 SEC-002 S1+S2` mergeadas pero x00073 sigue en `ready/` (MEJORABLE proceso)
+
+`x00073-sec-002-external-mcps-env-allow-list.md` (kind: fix, status: ready)
+tiene S1+S2 mergeadas a develop (`1f0c812a`, `2f2576ca`). El proposal
+sigue en `ready/` con `status: ready` en el frontmatter.
+
+**Esperado**: propuesta se mueve a `review/` o `done/` cuando S1+S2
+están mergeadas. **Actual**: `status: ready` perpetuo.
+
+**Esperado vs Actual**: mismo patrón que F45, ahora con x00073 en lugar
+de x00072. **Recidiva**.
+
+**Slice**: F45 follow-up — `proposal_transition` debería auto-mover a
+`review/` cuando un slice queda done. Sin esa automatización, **todos
+los x0007x share este drift**.
+
+### F54 — `x00152-rel-001-publish-tarballs-verified.md` ≠ `x00072-rel-001` (MEJORABLE nomenclatura)
+
+Hay dos propuestas con la misma etiqueta "REL-001":
+
+- `x00072-rel-001-npm-publish-workspace-rewrite.md` (mencionado en a00070).
+- `x00152-rel-001-publish-tarballs-verified.md` (en `ready/`).
+
+**Esperado**: 1 propuesta por issue. **Actual**: 2 con código distinto,
+mismo label.
+
+**Esperado vs Actual**: el usuario podría confundirlas: ¿REL-001 cubre
+wp rewrite o tarballs? El código de nomenclatura "x00072-rel-001" no
+matcha el id ("x00152").
+
+**Slice**: requiere acceso al seed/index — `proposal_adopt` debería
+denegar id collisions. **Chore**: renombrar x00152 → f00152-rel-001
+si es **feat**, o unificar ambos en x00152-rel-001.
+
+### F55 — `lint:proposals` ya **0 fatales** en pasada-6 (POSITIVE)
+
+Pasada-6 `bun tools/scripts/lint/proposals.script.ts` → **0 fatal error(s)**
+sobre 289 files. Pasada-5 tenía 5 fatales (f00120/f00121/f00122 duplicados).
+
+**Esperado**: 0 fatales. **Actual**: 0 fatales.
+
+**Origen**: comandos de pasada-6 (`git mv in-progress/f00120 → done/feats/`,
+`git rm review/f00120|f00121`, `rm -f ready/f00122`) resolvieron los
+3 duplicados.
+
+**Slice**: cerrado. Pero el **acceptance** debe actualizarse: a00069
+midió `5 fatales` en pasada-5; esa línea ya no aplica.
+
 ## scoreboard
 
 > Rúbrica: **FATAL** (≤3) · **MUY MAL** (3-4.9) · **MEJORABLE** (5-6.9) ·
@@ -1454,6 +1545,25 @@ warning en consola.
 | Docs / skills | 7.5 | **OK.** |
 | Concurrencia I/O | 7.5 | **OK-.** |
 | **Total (Average)** | **~4.0** | **MUY MAL.** |
+
+### Scoreboard re-audit-6 (post x00073 S2, F51–F55)
+
+| Dimension | Score | Comments |
+|---|---:|---|
+| Gate validate | **0.5** | **FATAL.** F41 43 fail / 35 error. +1 err vs pasada 5 (F51). |
+| Index↔fs | 8.5 | S3 holds |
+| Multi-agent discipline | 6.0 | S4 lint; **F23/F39/F50** ramas redundantes; **F52** outOfCache |
+| Lifecycle review/done | 8.0 | S7+S11+S30 ok; **F45/F53** x00072/x00073 still ready |
+| Registry / orientation | 7.0 | S10 wired; **F31** cache sin re-boot |
+| Proposal structure | 8.5 | S1 |
+| Locks | 7.5 | S8 develop; F25; **F37** no notify_status wire |
+| Close-acceptance | 7.5 | S5; F21 accepted |
+| Dogfood plugins | 7.0 | S9 done; **F35** solo boot-time; **F48** PRESET_CATALOG drift |
+| Handoff / logs | 6.5 | F19↓ 12→1; **F33** stale MD; F26 dual GC |
+| Docs self | **4.0** | **MUY MAL.** F42 verified state desfasado; F43 scoreboard miente |
+| Tools | 7.5 | OK |
+| Concurrency I/O | 7.0 | F32 .tmp litter |
+| **Average** | **~6.2** | **MEJORABLE−.** F41+F42 hunden techo. F51 empeora. |
 
 ### Scoreboard re-audit-5 (post F41–F50, validate roto)
 
@@ -1537,7 +1647,18 @@ warning en consola.
 
 **FATAL residual**: F41 (43 fail/34 error en validate). F34 (audit log in-memory).
 
-**Recomendación**: NO cerrar a00069 hasta resolver ≥ 1 fail por grupo (F41). Tras eso, S11 follow-up persiste bypass log (F34). Tras eso, mover x00072 a review/ (F45). Scoreboard 5 real ≈ 6.2 MEJORABLE−; post-fix ≈ 7.5 OK.
+**Pasada 6 (late)**: x00073 SEC-002 S1+S2 mergeadas. x00072 SEC-001 S1+S2 mergeadas. lint proposals 0 fatales (F55 closed). F51 detecta +1 fail/err drift implícito.
+
+**F51–F55 nuevos** (re-audit-6):
+- **F51**: +1 fail/err entre pasada 5→6 sin shipped-in explicativo.
+- **F52**: `auto_work` `outOfCache` warning solo informativo, no mueve la copia.
+- **F53**: x00073 sigue en `ready/` post S1+S2 mergeadas (recidiva F45).
+- **F54**: x00072-rel-001 vs x00152-rel-001 — mismo label, distinto id.
+- **F55**: lint proposals 0 fatales (closed; 5 fatales en pasada-5 cerrados).
+
+**FATAL residual**: F41 (43 fail/35 err). F34 (audit log in-memory).
+
+**Recomendación**: NO cerrar a00069 hasta resolver ≥ 1 fail por grupo (F41). Tras eso, S11 follow-up persiste bypass log (F34). Tras eso, mover x00072/x00073 a review/ (F45/F53). Scoreboard 6 real ≈ 6.2 MEJORABLE−; post-fix ≈ 7.5 OK.
 
 ### appendix A — Log evidence (verbatim)
 
@@ -1691,6 +1812,36 @@ e6b0c6d5 feat(a00069): S6 orphan GC + round-context activeAgents filter
 e37b21e3 feat(a00069): S7 peer-review gate on review→done
 d48d6ef4 fix(a00069): complete S7 peer-review short-circuit paths
 c51bb563 fix(a00069): unnest requirePeerReview from validationCommand
+````
+
+#### A13 — Re-audit-6 residuals (2026-07-25 late)
+
+````text
+origin/develop: 2f2576ca (develop), x00072 SEC-001 S1+S2 merged,
+  x00073 SEC-002 S1+S2 merged
+x00073 SEC-002 S1+S2 mergeada (buildSafeEnv + server-registry wire)
+x00072 SEC-001 S1+S2 mergeada (trust fingerprint + QuickPick)
+lint:proposals 0 fatales (F55) — 5 fatales en pasada-5 cerrados
+bun test 4945 pass / 43 fail / 35 errors / 20030 expects (F41, F51)
+worktree: 11 branches, 8 agent/* (litter F23/F39/F50)
+proposals: 290 indexed, 4 in-progress, 30 ready, 11 review, 245 done
+outOfCache warning: /home/cartago/_projects/mcp-vertex (F52)
+x00073 status: ready despite S1+S2 merged (F53)
+x00152-rel-001 duplica label con x00072-rel-001 (F54)
+x00072 status: ready despite S1+S2 merged (F45)
+worktree cache: 30 assignments, 30 orphanish, 14 activeAgents (F31 cache sin re-boot)
+agents.lock.json.*.tmp: 4 files (F32)
+handoff/: orchestrator-blocker-2026-06-21-no-mcp-runtime.md (F33)
+peer-review-bypass-log: in-memory only (F34 FATAL)
+unusedActivePlugins: assemble-core-tools only (F35)
+lock-released notify_status: no wire (F37)
+i18n sliceStatus/peerReviewBypasses: missing (F38)
+branches agent/*: 8 still present (F23/F39/F50)
+catalog auto-publish: none (F40)
+cli-ui-parity map: stale (F49)
+PRESET_CATALOG: vs mcp-vertex.config.json drift (F48)
+sessionStorage parity CI/local: divergente (F47)
+auto_work outOfCache warning only (F52)
 ````
 
 #### A13 — Re-audit-5 residuals (2026-07-25 late)
