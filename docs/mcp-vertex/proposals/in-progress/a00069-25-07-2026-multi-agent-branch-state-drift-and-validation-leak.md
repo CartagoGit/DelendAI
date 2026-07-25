@@ -34,6 +34,12 @@ shipped-in:
     - 183df88e # docs(a00067): record 2026-07-25 reviewer verification of DC1-DC7
     - 333a55f9 # fix(x00072): SEC-001 S1 gate stdio child on workspace trust
     - d6a88789 # fix(x00072): SEC-001 S1 gate stdio child on workspace trust
+    - c10ec1cb # fix(logs,core): F41/F48 — logs cacheNamespace bug (results/logs, results/logs-errors)
+    - ab78e60d # refactor(logs): F41 — ILogStoreOptions/ILogToolStores to contracts/interfaces
+    - 60fea56f # fix(apps-web): F41 — generate capabilities.json before vitest runs on fresh checkout
+    - 740f57fa # test(apps-shared): F41/F47 — stub sessionStorage for the node vitest environment
+    - 6ff5b217 # fix(core): F41/F48 — delete orphaned bun:test duplicate of preset-catalog.spec.ts
+    - 8d1e1999 # chore(proposals): rebaseline proposal-files-exist for 4 done proposals
 related:
     - a00067 # evaluación de migración de lenguaje (precedente de los mismos agentes)
     - a00068 # auditoría exhaustiva previa del 2026-07-24 (drift de carpeta/status)
@@ -1520,6 +1526,94 @@ sobre 289 files. Pasada-5 tenía 5 fatales (f00120/f00121/f00122 duplicados).
 
 **Slice**: cerrado. Pero el **acceptance** debe actualizarse: a00069
 midió `5 fatales` en pasada-5; esa línea ya no aplica.
+
+### F56 — F41 triage: root-caused and fixed 5 of the 8 known-failing groups, plus a real cacheNamespace bug they surfaced (RESOLVED, partial)
+
+Worked F41's own prescribed slice ("triage inmediato... resolver ≥ 1
+test verde de cada uno de los 8 grupos") against a fresh worktree, using
+`bun run test` (the canonical `vitest run`, **not** bare `bun test` —
+F41's own methodology likely used the latter, which is why several of
+its "8 known groups" turn out to be Bun's native test runner picking up
+files never meant to run under it; see below). Result: the canonical
+suite is **5115/5115 pass, 0 fail** after these fixes (shipped-in
+c10ec1cb, ab78e60d, 60fea56f, 740f57fa, 6ff5b217, 8d1e1999):
+
+- **F48** (`PRESET_CATALOG`/`resolvePresetMembers` "drift") — not
+  drift: `packages/core/src/lib/plugins/preset-catalog.spec.ts` was a
+  stale, orphaned duplicate written for `bun:test` (not vitest,
+  unlike every other spec in the repo), invisible to
+  `packages/core/vitest.config.ts`'s own `include`, only ever
+  executed by a bare `bun test` invocation. Its assertions predated
+  test-policy/forge/auto-agent-selector joining their presets. The
+  real, maintained, vitest-registered spec at
+  `packages/core/tests/src/lib/plugins/preset-catalog.spec.ts` already
+  covers the same ground correctly. Deleted the duplicate; no
+  coverage lost (6ff5b217).
+- **F47** (`sessionStorage` × 2) — `apps/shared`'s vitest project runs
+  `environment: 'node'`; the spec read `sessionStorage` as a bare
+  global the node environment doesn't provide. Added a minimal
+  in-memory stub scoped to the one spec file that needs it (740f57fa).
+- **New, not in F41's original 8**: `apps-web` test files crashed with
+  `Cannot find module '#MANIFESTS/capabilities.json'` on a fresh
+  checkout — `gen-capabilities.ts` already had a stub-on-fresh-checkout
+  fallback (`bun run dev` never crashes on this) but nothing triggered
+  the generator before `apps-web`'s vitest project ran. Reproduced
+  independently in PR #12's own CI run before tracing it here. Fixed
+  with a `globalSetup` (60fea56f).
+- **Real architecture bug found via this same triage**: the `logs`
+  plugin (F41 is unrelated to `logs`, but `check-stray-cache-files`
+  fired once run against a truly fresh checkout) declared
+  `cacheNamespace: 'results'` but computed its store paths from
+  `ctx.cacheDir` instead of the namespace-aware `ctx.pluginCacheDir` —
+  both its event streams were silently writing outside `results/`
+  (the directory `IMcpPlugin#cacheNamespace` exists specifically to
+  protect from being treated as derivable/evictable cache). Fixed at
+  the root; also relocated 2 new inline interfaces the fix's
+  companion work added, to satisfy `types-in-contracts` without
+  silently absorbing unrelated debt (c10ec1cb, ab78e60d).
+- **Rebaselined** `proposal-files-exist` for 4 old `done/` proposals
+  whose planned `Files:` lists reference paths later renamed/removed
+  by unrelated work (one entry is this session's own deletion above)
+  (8d1e1999).
+
+**Not fixed (out of scope, no context to safely touch)**:
+- `scssPlugin`, `cli-ui-parity.script`, and the remaining subprocess-
+  spawning suites (`createCommandRunner`, `createStdioTransport`,
+  `external-mcps ack↔call`, `mcpServerTransportFactory`,
+  `runAcceptanceCriteria`, `gracefulShutdown` e2e) were NOT reproduced
+  under the canonical `bun run test` — they only failed under a bare
+  `bun test` invocation, which auto-discovers spec-like files
+  repo-wide independent of any vitest project's `include` glob and
+  appears to hit sandbox/environment-specific subprocess-spawn limits
+  in at least one execution context. `gracefulShutdown` matches an
+  already-documented flaky-under-full-suite-load pattern. Recommend
+  F41's own "8 known groups" baseline be re-measured with `bun run
+  test`/`bun run validate` specifically (the repo's own canonical
+  gate — see `package.json`'s `"test"` script), not bare `bun test`,
+  before treating any of these as still-open.
+- `types-in-contracts` still blocks `bun run validate` on 10 files
+  from other in-flight work (`extensions/vscode/src/commands/
+  trust-fingerprint.ts`, `packages/core/src/lib/hosts/
+  host-adapter-pack.ts` + `host-capability-profile.ts`,
+  `packages/core/src/lib/tools/unused-active-plugins.ts`,
+  `plugins/external-mcps/src/lib/subprocess/env-filter.ts`,
+  `packages/cli/src/lib/init/core-skill-projection.service.ts`,
+  `plugins/proposals/src/lib/agents/zombie-reconcile.ts` +
+  `rewrite-stale-self-paths.ts` + `shared/peer-review-bypass-log.ts`
+  + `tools/auto-work.tool.ts`) — left untouched rather than blindly
+  running `--update` and absorbing debt from work this session has no
+  context on.
+- **NEW, found while validating this fix (not part of F41's original
+  set)**: `bun run typecheck` currently fails on `develop` HEAD —
+  `plugins/refactor/src/index.ts` and `.../public/index.ts` import
+  `./lib/tools/refactor-nav.tool` and `../nav/nav-engine`, neither of
+  which exist anywhere in the tree (`git ls-tree -r` confirms). Looks
+  like a commit that landed without `git add`-ing 2 new files. This
+  currently breaks typecheck for anyone on `develop`, not just CI —
+  more severe than any F41 finding since nothing downstream of
+  typecheck can be trusted green until it's resolved. No context on
+  the intended `nav-engine` design to safely implement it; needs an
+  owner.
 
 ## scoreboard
 
