@@ -694,6 +694,21 @@ export interface McpVertexLogsCorrelateOutput {
 	}[];
 }
 
+export interface McpVertexLogsErrorsTailOutput {
+	events: Array<{
+		ts: string;
+		kind: string;
+		agent: string | null;
+		taskId: string | null;
+		outcome: "ok" | "failed" | "timed-out" | "cancelled" | "dead" | "idle" | "unknown";
+		files: string[];
+		summary: string;
+		meta: Record<string, unknown>;
+	}>;
+	oldestTs: string | null;
+	newestTs: string | null;
+}
+
 export interface McpVertexLogsQueryOutput {
 	events: Array<{
 		ts: string;
@@ -2611,6 +2626,7 @@ export interface McpVertexToolOutputs {
 	"mcp-vertex_init_config": McpVertexInitConfigOutput;
 	"mcp-vertex_knowledge": McpVertexKnowledgeOutput;
 	"mcp-vertex_logs_correlate": McpVertexLogsCorrelateOutput;
+	"mcp-vertex_logs_errors_tail": McpVertexLogsErrorsTailOutput;
 	"mcp-vertex_logs_query": McpVertexLogsQueryOutput;
 	"mcp-vertex_logs_redact_test": McpVertexLogsRedactTestOutput;
 	"mcp-vertex_logs_subscribe": McpVertexLogsSubscribeOutput;
