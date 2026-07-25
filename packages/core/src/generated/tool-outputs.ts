@@ -1099,7 +1099,12 @@ export interface McpVertexProposalsAgentLockOutput {
 		last_seen: string;
 		parent_task_id?: string;
 	}[];
-	ok?: boolean;
+	ok: boolean;
+	session?: {
+		claims: number;
+		releases: number;
+		imbalance: number;
+	};
 	identity?: {
 		host?: string;
 		model?: string;
@@ -1920,6 +1925,9 @@ export interface McpVertexProposalsRoundContextOutput {
 export interface McpVertexProposalsStateHealthOutput {
 	locks: {
 		active: number;
+		sessionClaims: number;
+		sessionReleases: number;
+		sessionImbalance: number;
 	};
 	queue: {
 		queueLength: number;
@@ -1940,6 +1948,9 @@ export interface McpVertexProposalsStateRepairOutput {
 	diagnosis: {
 		locks: {
 			active: number;
+			sessionClaims: number;
+			sessionReleases: number;
+			sessionImbalance: number;
 		};
 		queue: {
 			queueLength: number;

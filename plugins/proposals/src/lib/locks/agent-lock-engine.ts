@@ -12,7 +12,6 @@ import { readFile, stat } from 'node:fs/promises';
 
 import {
 	LockContentionError,
-	toolError,
 	writeFileAtomic,
 	withFileMutex,
 } from '@mcp-vertex/core/public';
@@ -291,25 +290,19 @@ export async function runAgentLockEngine(
 	const toolName = getToolName(deps);
 	const lockFileLabel = getLockFileLabel(deps);
 	if (!v.ok) {
-		return {
-			content: [
-				{
-					type: 'text',
-					text: JSON.stringify({
-						ok: false,
-						tool: toolName,
-						action: args.action,
-						path: lockFileLabel,
-						error: v.error,
-						blockerType: 'invalid-input',
-						nextAction:
-							'Correct the missing lock arguments once; if the intended files are unclear, inspect the proposal ownership before retrying.',
-						summary: `invalid-input: ${v.error}`,
-					}),
-				},
-			],
-			isError: true,
-		};
+		return lockResult(
+			{
+				tool: toolName,
+				action: args.action,
+				path: lockFileLabel,
+				error: v.error,
+				blockerType: 'invalid-input',
+				nextAction:
+					'Correct the missing lock arguments once; if the intended files are unclear, inspect the proposal ownership before retrying.',
+				summary: `invalid-input: ${v.error}`,
+			},
+			{ isError: true },
+		);
 	}
 
 	// f00078 S4: needs-worktree gate. When the host has the
@@ -323,48 +316,36 @@ export async function runAgentLockEngine(
 	if (args.action === 'claim' && deps.agentWorktreeEnabled === true) {
 		const branch = await readCurrentBranchName(deps);
 		if (branch === null) {
-			return {
-				content: [
-					{
-						type: 'text',
-						text: JSON.stringify({
-							ok: false,
-							tool: toolName,
-							action: args.action,
-							path: lockFileLabel,
-							error: 'agent_lock claim requires a per-agent worktree when the host gate is on, but the active branch could not be read',
-							blockerType: 'needs-worktree',
-							nextAction:
-								'proposals_agent_worktree { action: "create", agent: "<your-agent-name>" } and retry the claim.',
-							summary:
-								'needs-worktree: active branch unreadable; create a worktree first',
-						}),
-					},
-				],
-				isError: true,
-			};
+			return lockResult(
+				{
+					tool: toolName,
+					action: args.action,
+					path: lockFileLabel,
+					error: 'agent_lock claim requires a per-agent worktree when the host gate is on, but the active branch could not be read',
+					blockerType: 'needs-worktree',
+					nextAction:
+						'proposals_agent_worktree { action: "create", agent: "<your-agent-name>" } and retry the claim.',
+					summary:
+						'needs-worktree: active branch unreadable; create a worktree first',
+				},
+				{ isError: true },
+			);
 		}
 		if (!isAgentBranchName(branch)) {
-			return {
-				content: [
-					{
-						type: 'text',
-						text: JSON.stringify({
-							ok: false,
-							tool: toolName,
-							action: args.action,
-							path: lockFileLabel,
-							activeBranch: branch,
-							error: `agent_lock claim requires a per-agent worktree when the host gate is on; active branch is "${branch}", expected "agent/<name>"`,
-							blockerType: 'needs-worktree',
-							nextAction:
-								'proposals_agent_worktree { action: "create", agent: "<your-agent-name>" } and retry the claim.',
-							summary: `needs-worktree: active branch is "${branch}"`,
-						}),
-					},
-				],
-				isError: true,
-			};
+			return lockResult(
+				{
+					tool: toolName,
+					action: args.action,
+					path: lockFileLabel,
+					activeBranch: branch,
+					error: `agent_lock claim requires a per-agent worktree when the host gate is on; active branch is "${branch}", expected "agent/<name>"`,
+					blockerType: 'needs-worktree',
+					nextAction:
+						'proposals_agent_worktree { action: "create", agent: "<your-agent-name>" } and retry the claim.',
+					summary: `needs-worktree: active branch is "${branch}"`,
+				},
+				{ isError: true },
+			);
 		}
 	}
 
@@ -395,9 +376,17 @@ export async function runAgentLockEngine(
 			// M28: under `onContention:'fail'` a live holder past the timeout
 			// rejects instead of being stolen — surface it as a clear tool
 			// error (not an uncaught exception) so the caller can back off.
-			return toolError(
-				error.message,
-				'Call notification_await_lock (or wait for lock-released via notify_status); do not busy-poll agent_lock status or force a steal.',
+			return lockResult(
+				{
+					tool: toolName,
+					action: args.action,
+					path: lockFileLabel,
+					error: error.message,
+					blockerType: 'lock-contention',
+					nextAction: CONTENTION_NEXT,
+					summary: `lock-contention: ${error.message}`,
+				},
+				{ isError: true },
 			);
 		}
 		throw error;
@@ -448,60 +437,53 @@ async function executeLockAction(
 				}
 			}
 			await writeLock(lock, deps);
-			return {
-				content: [
-					{
-						type: 'text',
-						text: JSON.stringify({
-							ok: notGranted.length === 0,
-							tool: toolName,
-							action: 'claim',
-							task_id: taskId,
-							refreshed: true,
-							path: lockFileLabel,
-							lock_path: lockPath,
-							ownership_count: existing.ownership.length,
-							...(added.length > 0 ? { added_files: added } : {}),
-							...(notGranted.length > 0
-								? { not_granted: notGranted }
-								: {}),
-							summary:
-								notGranted.length > 0
-									? `refreshed ${taskId}; ${notGranted.length} file(s) not granted (owned by another task)`
-									: `refreshed ${taskId}`,
-						}),
-					},
-				],
-			};
+			const partial = notGranted.length > 0;
+			return lockResult(
+				{
+					tool: toolName,
+					action: 'claim',
+					task_id: taskId,
+					refreshed: true,
+					path: lockFileLabel,
+					lock_path: lockPath,
+					ownership_count: existing.ownership.length,
+					...(added.length > 0 ? { added_files: added } : {}),
+					...(partial
+						? { not_granted: notGranted, blocked: true }
+						: {}),
+					summary: partial
+						? `refreshed ${taskId}; ${notGranted.length} file(s) not granted (owned by another task)`
+						: `refreshed ${taskId}`,
+					...(partial
+						? {
+								blockerType: 'lock-conflict',
+								nextAction: CONTENTION_NEXT,
+							}
+						: {}),
+				},
+				// Heartbeat refresh is not a new claim; only first claim counts.
+				partial ? {} : {},
+			);
 		}
 
 		for (const e of lock.in_flight) {
 			const overlap = findOverlap(files, e.ownership);
 			if (overlap.length > 0) {
-				return {
-					content: [
-						{
-							type: 'text',
-							text: JSON.stringify({
-								ok: false,
-								tool: toolName,
-								action: 'claim',
-								task_id: taskId,
-								blocked: true,
-								blockerType: 'lock-conflict',
-								blocked_reason: `overlaps with ${e.task_id}`,
-								conflicting_task: e.task_id,
-								conflicting_agent: e.agent,
-								overlapping_files: overlap,
-								path: lockFileLabel,
-								lock_path: lockPath,
-								nextAction:
-									'Do not retry the same claim. Route another owned slice, or call notification_await_lock once and wait for the lock-released event before retrying after evidence.',
-								summary: `lock-conflict: ${taskId} overlaps ${e.task_id}`,
-							}),
-						},
-					],
-				};
+				return lockResult({
+					tool: toolName,
+					action: 'claim',
+					task_id: taskId,
+					blocked: true,
+					blockerType: 'lock-conflict',
+					blocked_reason: `overlaps with ${e.task_id}`,
+					conflicting_task: e.task_id,
+					conflicting_agent: e.agent,
+					overlapping_files: overlap,
+					path: lockFileLabel,
+					lock_path: lockPath,
+					nextAction: CONTENTION_NEXT,
+					summary: `lock-conflict: ${taskId} overlaps ${e.task_id}`,
+				});
 			}
 		}
 
@@ -516,25 +498,20 @@ async function executeLockAction(
 				: {}),
 		});
 		await writeLock(lock, deps);
-		return {
-			content: [
-				{
-					type: 'text',
-					text: JSON.stringify({
-						ok: true,
-						tool: toolName,
-						action: 'claim',
-						task_id: taskId,
-						agent,
-						path: lockFileLabel,
-						lock_path: lockPath,
-						ownership_count: files.length,
-						claimed: true,
-						summary: `claimed ${taskId} (${files.length} files)`,
-					}),
-				},
-			],
-		};
+		return lockResult(
+			{
+				tool: toolName,
+				action: 'claim',
+				task_id: taskId,
+				agent,
+				path: lockFileLabel,
+				lock_path: lockPath,
+				ownership_count: files.length,
+				claimed: true,
+				summary: `claimed ${taskId} (${files.length} files)`,
+			},
+			{ countClaim: true },
+		);
 	}
 
 	if (args.action === 'release') {
@@ -543,47 +520,35 @@ async function executeLockAction(
 		lock.in_flight = lock.in_flight.filter((e) => e.task_id !== taskId);
 		const dropped = before - lock.in_flight.length;
 		await writeLock(lock, deps);
-		return {
-			content: [
-				{
-					type: 'text',
-					text: JSON.stringify({
-						ok: true,
-						tool: toolName,
-						action: 'release',
-						task_id: taskId,
-						path: lockFileLabel,
-						lock_path: lockPath,
-						removed: dropped,
-						summary:
-							dropped > 0
-								? `released ${taskId}`
-								: `no active claim for ${taskId}`,
-					}),
-				},
-			],
-		};
+		return lockResult(
+			{
+				tool: toolName,
+				action: 'release',
+				task_id: taskId,
+				path: lockFileLabel,
+				lock_path: lockPath,
+				removed: dropped,
+				released: dropped > 0,
+				summary:
+					dropped > 0
+						? `released ${taskId}`
+						: `no active claim for ${taskId}`,
+			},
+			dropped > 0 ? { countRelease: true } : {},
+		);
 	}
 
 	if (args.action === 'status') {
-		return {
-			content: [
-				{
-					type: 'text',
-					text: JSON.stringify({
-						ok: true,
-						tool: toolName,
-						action: 'status',
-						path: lockFileLabel,
-						lock_path: lockPath,
-						exists: await fileExists(lockPath),
-						active_write_lanes: lock.in_flight.length,
-						summary: `${lock.in_flight.length} active write lane(s)`,
-						...lock,
-					}),
-				},
-			],
-		};
+		return lockResult({
+			tool: toolName,
+			action: 'status',
+			path: lockFileLabel,
+			lock_path: lockPath,
+			exists: await fileExists(lockPath),
+			active_write_lanes: lock.in_flight.length,
+			summary: `${lock.in_flight.length} active write lane(s)`,
+			...lock,
+		});
 	}
 
 	if (args.action === 'gc') {
@@ -593,31 +558,15 @@ async function executeLockAction(
 		);
 		const dropped = before - lock.in_flight.length;
 		await writeLock(lock, deps);
-		return {
-			content: [
-				{
-					type: 'text',
-					text: JSON.stringify({
-						ok: true,
-						tool: toolName,
-						action: 'gc',
-						path: lockFileLabel,
-						lock_path: lockPath,
-						dropped,
-						summary: `gc dropped ${dropped} stale claim(s)`,
-					}),
-				},
-			],
-		};
+		return lockResult({
+			tool: toolName,
+			action: 'gc',
+			path: lockFileLabel,
+			lock_path: lockPath,
+			dropped,
+			summary: `gc dropped ${dropped} stale claim(s)`,
+		});
 	}
 
-	return {
-		content: [
-			{
-				type: 'text',
-				text: JSON.stringify({ ok: false, error: 'unreachable' }),
-			},
-		],
-		isError: true,
-	};
+	return lockResult({ error: 'unreachable' }, { isError: true });
 }

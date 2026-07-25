@@ -6,7 +6,21 @@ track: audit+multi-agent+state-consistency+proposals-plugin
 date: 2026-07-25
 kind: audit
 title: 'Auditoría + plan de fixes fin-de-tarde 2026-07-24 — ramas, índice, parser slices, validate roto, duplicados, orphans, review ausente y plugins activos no usados'
-shipped-in: []
+shipped-in:
+    - f3faae85 # fix(a00069): case-insensitive ## Slices parser
+    - dc31bb70 # fix(a00069): S1 case-insensitive slices parser + proposal hygiene
+    - 7bd59036 # feat(a00069): S3 atomic transition↔index + stale **Files** rewrite
+    - a14237a6 # test(a00069): S3 duplicate-id scan and Files rewrite
+    - 88992ee5 # test(a00069): continue_proposal stale-index heal + mark S1-S3 done
+    - 2ae13475 # feat(a00069): S4 agent-branch-naming lint gate
+    - 2e74b4ee # feat(a00069): S5 close_slice validation gate
+    - 2049f41a # fix(a00069): broaden close_slice acceptance detection
+    - 8238cf70 # test(a00069): cover S5 close_slice validation gate
+    - f1a629b9 # feat(a00069): S6 purge orphan registry assignments
+    - e6b0c6d5 # feat(a00069): S6 orphan GC + round-context activeAgents filter
+    - e37b21e3 # feat(a00069): S7 peer-review gate on review→done
+    - d48d6ef4 # fix(a00069): complete S7 peer-review short-circuit paths
+    - c51bb563 # fix(a00069): unnest requirePeerReview from validationCommand
 related:
     - a00067 # evaluación de migración de lenguaje (precedente de los mismos agentes)
     - a00068 # auditoría exhaustiva previa del 2026-07-24 (drift de carpeta/status)
@@ -50,11 +64,19 @@ ownership:
       }
     - {
           agent: implementation_runner,
-          task: 'S8 — agent_lock outputSchema uses ok + claimed; claim/release balance telemetry; await_lock on contention.',
+          task: 'S8 — agent_lock engine MUST emit ok:boolean on every path (success+fail) via structuredContent; claim/release balance in state_health; nextAction→await_lock on conflict.',
       }
     - {
           agent: implementation_runner,
-          task: 'S9 — dogfood gate: active plugins must be reachable in session tool surface OR config must mark them dormant; surface unused-plugin warning in overview/auto_work.',
+          task: 'S9 — dogfood gate: unused-active-plugins warning in overview/auto_work when enabled plugins have 0 session invocations.',
+      }
+    - {
+          agent: implementation_runner,
+          task: 'S10 — boot/session auto state_repair dry-run+apply orphans (F15): code S6 exists but on-disk registry still 30 orphans until someone calls state_repair.',
+      }
+    - {
+          agent: implementation_runner,
+          task: 'S11 — handoff GC + force:true peer-review audit trail (F18/F19): purge .cache/.../handoff older than TTL; log/require reason when force/skipPeerReview bypasses S7.',
       }
 globalGate: lint
 acceptance:
@@ -75,7 +97,25 @@ acceptance:
   `agentWorktree: false` (default), y la rúbrica de hygiene que el repo
   define para ese modo (`f00073` + `f00075`).
 - **Audited HEAD**: `47ed5747` (branch `develop`,
-  `fix(f00121): forge release constant spec + catalog regen`).
+  `fix(f00121): forge release consta11. **Re-audit 2026-07-25 tarde**
+  (HEAD `e37b21e3`+): S1–S7 landed in code; residual F15–F22 + S8–S11
+  abiertos.
+
+## progress (2026-07-25 re-audit)
+
+| Slice | Status código | Evidencia residual en disco/runtime |
+|---|---|---|
+| S1 | **done** (`## Slices` case-insensitive + alias) | parser ok |
+| S2 | **done** (description única; import security-gate resuelve) | validate path unblocked en tree actual |
+| S3 | **done** (transition+Files rewrite+dup scan) | **0** ids duplicados; review/ index-aligned (11 files) |
+| S4 | **done** (`lint:agent-branch-naming`) | 0 branches `agent/*` locales |
+| S5 | **done** (close_slice validation gate) | bypass legítimo `gate: none\|lint` sigue (F21) |
+| S6 | **done en código**, **NO aplicado al cache vivo** | registry sigue 30 orphans / 14 activeAgents hasta `state_repair` → **F15** |
+| S7 | **done** (transition + force_transition + auto_work) | bypass `force:true` / `skipPeerReview` sin audit trail → **F18** |
+| S8 | **pending** | engine claim success **sin** `ok` en payload; sin imbalance telemetry → **F9/F16/F17** |
+| S9 | **pending** | sin warning unused-active-plugins → **F13/F20** |
+| S10 | **pending** (nuevo) | auto-repair on boot/session → **F15** |
+| S11 | **pending** (nuevo) | handoff GC + force audit → **F18/F19** |
 - **Revisor / Model**: GitHub Copilot (MiniMax-M3) en VS Code, host
   `mcp-vertex-orchestrator` mode.
 - **Date**: 2026-07-25 (mañana siguiente a la sesión auditada).
@@ -296,22 +336,31 @@ uno, con la disciplina `f00073`/`f00075`/`f00052` como referencia.
 
 ### S8 — `agent_lock` contrato `ok` + balance claim/release + await
 
-- **Status**: pending
-- **Files**: tool `agent_lock` + logging envelope + docs playbook.
+- **Status**: done
+- **Files**:
+  - `plugins/proposals/src/lib/locks/agent-lock-engine.ts` (claim/release
+    success paths hoy devuelven solo `content[].text` JSON **sin**
+    `ok` ni `structuredContent`).
+  - `plugins/proposals/src/lib/tools/agent-lock.tool.ts` (`ok` está en
+    outputSchema como **optional** y el adapter **no** lo inyecta).
+  - `plugins/proposals/src/lib/tools/state-tools.tool.ts` — métricas
+    claim/release imbalance.
 - **Cambio**:
-  - Todo response de `agent_lock` debe incluir `ok: boolean` (hoy el
-    payload usa `claimed`/`released` sin `ok`, y parsers de telemetría
-    ven `ok=None`).
+  - Todo response (success y fail) de `agent_lock` debe incluir
+    `ok: boolean` en `structuredContent` (required en schema, no
+    optional).
   - Contador de sesión claim vs release; `state_health` alerta si
     claim − release > N o locks huérfanos.
   - En contención, el envelope `nextAction` debe apuntar a
-    `await_lock` / notification channel (0 usos de notification_* el
-    2026-07-24 pese a plugin activo).
+    `notification_await_lock` / lock-released (tool existe en
+    `@mcp-vertex/notification`; 0 usos el 2026-07-24).
 - **Gate**: type, test.
 - **Verification**:
-  - Spec outputSchema incluye `ok`.
+  - Spec: claim success → `structuredContent.ok === true` y
+    `claimed === true`.
+  - Spec: conflict → `ok === false` + `nextAction` contiene `await_lock`.
   - Día 2026-07-24: claim 29 / release 19 → imbalance 10; tras GC +
-    contract, imbalance reportable.
+    contract, imbalance reportable en `state_health`.
 
 ### S9 — Dogfood: plugins activos no ejercitados
 
@@ -330,34 +379,72 @@ uno, con la disciplina `f00073`/`f00075`/`f00052` como referencia.
     21 plugins activos sin una sola invocación (incl. `notification`,
     `quality`, `security`, `memory`, `rules`, `test-policy`).
 
+### S10 — Auto `state_repair` de orphans al boot / primera orientation (F15)
+
+- **Status**: pending
+- **Files**:
+  - `plugins/proposals/src/index.ts` o hook de register post-boot.
+  - `plugins/proposals/src/lib/tools/state-tools.tool.ts` /
+    `zombie-reconcile.ts` (ya tienen purge; falta invocación automática).
+  - opcional: `packages/core` overview compact warning si registry
+    unhealthy.
+- **Cambio**:
+  - Tras cargar el plugin proposals (o en primer `overview` /
+    `auto_work` de sesión), ejecutar purge de orphans con el TTL S6
+    **sin** requerir que un humano llame `state_repair`.
+  - Idempotente; log un evento `state-repair-auto` compacto.
+  - Dry-run first en `state_health` si el host setea
+    `autoRepairOrphans: false`.
+- **Gate**: type, test.
+- **Verification**:
+  - Fixture: registry con 30 orphans → boot/orientation → 0 orphans
+    en disco **sin** llamar el tool a mano.
+  - Re-audit 2026-07-25: cache vivo aún tenía 30/14 **después** de
+    mergear S6 — prueba de que el código sin auto-apply no cierra F10.
+
+### S11 — Handoff GC + audit trail de bypass peer-review (F18/F19)
+
+- **Status**: pending
+- **Files**:
+  - handoff writer/reader bajo `.cache/mcp-vertex/handoff/` (notification
+    / proposals).
+  - `proposal-transition.tool.ts` (`force:true`) y
+    `recovery-tools.ts` (`skipPeerReview:true`).
+- **Cambio**:
+  - GC de handoffs con mtime > TTL (default 7d); hoy **12/12** handoffs
+    tienen ≥32 días.
+  - Toda transición `review→done` con `force:true` o
+    `skipPeerReview:true` debe exigir `reason` no vacío y escribir
+    evento de log `peer-review-bypassed` (agent, proposalId, reason).
+  - `state_health` cuenta bypasses de la sesión.
+- **Gate**: type, test.
+- **Verification**:
+  - Spec: force without reason → reject.
+  - Spec: handoff dir con files 33d → GC deja 0.
+  - Manual: `ls .cache/mcp-vertex/handoff` post-repair vacío o solo
+    frescos.
+
 ## acceptance
 
 Ver `## scoreboard` abajo. Las acceptance `commands` ya están en
 frontmatter; este section documenta el flujo de cierre:
 
-1. **S1** (F1, parser case-insensitive): `mcp-vertex_proposals_continue_proposal
-   { proposalId: "f00122", mode: "plan" }` devuelve `kind: "slice-plan"`, no
-   `slice-mode-error`.
-2. **S2** (F2, bug TS): `bun run validate` exit 0 (4941/4941), el test
-   "generated tool-output modules out of sync" vuelve a verde.
-3. **S3** (F3+F7, atomicidad índice↔filesystem + anti-duplicados):
-   `proposal_transition` mueve archivo, index y `**Files**` en una
-   llamada; `lint:proposals` / reconcile fallan si el mismo id existe
-   en dos carpetas.
-4. **S4** (F4, naming + worktree gate):
-   `bun tools/scripts/lint/agent-branch-naming.script.ts` exit 0 en
-   `develop` (cero branches `agent/*`); contra un tree con las 12
-   branches de F4 debe reportar 6 violations.
-5. **S5** (F5, close_slice con validate): spec
-   `close-slice.spec.ts` cubre el caso "validate en rojo → rechaza".
-6. **S6** (F10): `state_repair` deja registry sin orphans stale;
-   `activeAgents` no lista zombies de junio.
-7. **S7** (F8): `review→done` sin `proposal_review approve` de peer
-   es rechazado.
-8. **S8** (F9): `agent_lock` siempre devuelve `ok`; health reporta
-   claim/release imbalance.
-9. **S9** (F13): overview/auto_work listan `unused-active-plugins`
-   cuando aplica.
+1. **S1** (F1) — **done**: parser case-insensitive.
+2. **S2** (F2) — **done**: security description + import path.
+3. **S3** (F3+F7+F11) — **done**: transition atómica + dups + nextHops;
+   re-audit: 0 dups, review/ alineado.
+4. **S4** (F4) — **done**: `lint:agent-branch-naming`.
+5. **S5** (F5) — **done**: close_slice validation gate (residual F21:
+   `gate: none|lint` sigue omitiendo validate — documentado).
+6. **S6** (F10) — **done código / open runtime** → cerrado del todo con
+   **S10** (auto-apply).
+7. **S7** (F8) — **done**: peer-review gate (residual F18 bypass audit
+   → **S11**).
+8. **S8** (F9+F16+F17): `agent_lock` siempre `ok` en structuredContent;
+   health reporta claim/release imbalance; conflict → await_lock.
+9. **S9** (F13+F20): overview/auto_work listan `unused-active-plugins`.
+10. **S10** (F15): boot/orientation purga orphans sin tool manual.
+11. **S11** (F18+F19): handoff GC + force/skipPeerReview audit trail.
 
 ## verified state
 
@@ -373,17 +460,22 @@ frontmatter; este section documenta el flujo de cierre:
 | Transiciones a `done` hoy | **4** (vs 18 a `in-progress`, 17 a `review`, 3 a `retired`) | log `2026-07-24.jsonl` |
 | Proposals en `ready/` | 25 | `ls docs/mcp-vertex/proposals/ready/` |
 | Proposals en `done/` | 251 | `find docs/mcp-vertex/proposals/done -name '*.md' \| wc -l` |
-| Proposals en `review/` | **14** (varias con index status `done`/`ready`/`in-progress`) | `ls review/` + index |
-| IDs duplicados en disco | **2** (`a00067`, `f00121`) en `review/` **y** `done/` | `find` por id |
+| Proposals en `review/` (tarde 24) | **14** misaligned | `ls review/` + index |
+| Proposals en `review/` (re-audit 25) | **11**, **0** misaligned vs index | post-S3 hygiene |
+| IDs duplicados en disco (tarde 24) | **2** (`a00067`, `f00121`) | `find` |
+| IDs duplicados (re-audit 25) | **0** | post-S3 |
 | `proposal_review` tool-completed 2026-07-24 | **0** | log |
 | `agent_lock` claim/release | **29 claim / 19 release / 4 status** | log |
-| `subagent-registry` assignments | **30**, todos `adopted: false` (27 orphan + 3 active stale) | registry JSON |
-| `round-context.activeAgents` | **14**, todos orphan/not adopted, lastSeen junio | digest JSON |
-| Plugins enabled en config | **24** | `mcp-vertex.config.json` |
-| Prefijos de tools usados 2026-07-24 | `proposals`(427), `status-marker`(20), `fs`(10), `overview`(6), `git`(4), `status`(2) | log |
-| Plugins activos sin invocación ese día | **21** (casi todo menos proposals/status-marker/git) | diff config vs log |
-| `notification_*` invocaciones | **0** | log |
-| Commits del día con prefijo `agent/copilot-minimax-*` mergeados a `develop` | 5 (S1, S2, S2-polish, S3 de f00121; S1+S2 de f00122) | `git log --merges` |
+| `agent_lock` success payload `ok` (código actual) | **ausente** (solo `claimed`) | engine.ts |
+| `subagent-registry` tras merge S6 **sin** tool | **sigue 30** orphans | F15 |
+| `round-context.activeAgents` tras S6 **sin** tool | **sigue 14** | F15 |
+| Handoffs `.cache/.../handoff` | **12**, todos ≥32d | F19 |
+| Plugins enabled en config | **24** | config |
+| Prefijos tools 2026-07-24 | `proposals`(427), `status-marker`(20), `fs`(10), `overview`(6), `git`(4), `status`(2) | log |
+| Plugins activos sin invocación ese día | **21** | F13 |
+| `notification_*` / `await_lock` invocaciones 24 | **0** | F17 |
+| Commits a00069 en develop (re-audit) | **14+** (S1–S7) | `git log --grep=a00069` |
+| Slices código done / pending | S1–S7 done; S8–S11 pending | progress table |
 
 ## findings
 
@@ -794,7 +886,165 @@ rollup.
 
 **Slice**: no bloqueante — candidata a chore de logs (rate-limit /
 session rollup). Anotar aquí; no S-bloqueante salvo que S8 necesite
-telemetría limpia.
+telemetría limpia. Puede vivir como chore bajo S9/S14 o propuesta
+`c*` aparte.
+
+### F15 — S6 landed en git pero **no se auto-aplica** al cache vivo (FATAL residual)
+
+**Evidencia (re-audit 2026-07-25, HEAD con S6 mergeado)**:
+
+- Código: `zombie-reconcile.ts` + `state_repair` purgan orphans con TTL
+  7d; `round-context-sources.ts` filtra activeAgents.
+- Disco **sin** haber llamado el tool:
+  - `subagent-registry.json`: **sigue** `assignments: 30`,
+    27 orphan + 3 active stale, **30/30** `adopted: false`.
+  - `round-context.digest.json#activeAgents`: **sigue** 14 zombies
+    (lastSeen junio).
+- No hay hook de boot/orientation que invoque el purge (grep
+  `state_repair` / `reconcileZombie` en `index.ts` / core boot → solo
+  el tool registration).
+
+**Esperado vs actual**:
+
+| Paso | Esperado tras merge S6 | Actual |
+|---|---|---|
+| Nueva sesión host | registry limpio o auto-repair | basura de junio intacta |
+| `overview` / `auto_work` | orientation sin zombies | digests mienten |
+| Operador | no debe recordar `state_repair` | **debe** llamarlo a mano |
+
+**Por qué es finding nuevo (no F10)**: F10 era “no hay GC”. Ahora hay
+GC **pero opt-in**. El síntoma operativo es idéntico hasta S10.
+
+**Slice**: S10.
+
+### F16 — `agent_lock` schema declara `ok` optional; engine success **no lo emite** (MUY MAL / S8)
+
+**Evidencia código (post S1–S7, sin S8)**:
+
+- `agent-lock.tool.ts` outputSchema: `ok: z.boolean().optional()`.
+- `agent-lock-engine.ts` claim success return:
+
+```ts
+return {
+  content: [{ type: 'text', text: JSON.stringify({
+    tool, action: 'claim', task_id, agent, path, lock_path,
+    ownership_count, claimed: true, summary: `claimed …`,
+  })}],
+};
+// no structuredContent, no ok:true
+```
+
+- Tool adapter llama `runAgentLockEngine` y **no** inyecta `ok`.
+- Contraste: `agent-worktree.tool.ts` sí usa `ok: z.boolean()` required.
+
+**Esperado**: todo tool de coordinación con side-effects →
+`structuredContent.ok: boolean` required (contrato x00107 / f00078).
+**Actual**: telemetría y hosts ven `ok=None` en claims exitosos (log
+2026-07-24).
+
+**Slice**: S8.
+
+### F17 — `await_lock` vive en **notification**, no en proposals; swarm no lo enlaza en conflict payload (MUY MAL)
+
+**Evidencia**:
+
+- Tool real: `plugins/notification/src/lib/tools/tools.ts` id
+  `await_lock` → `notification_await_lock`.
+- Playbook / `auto_work` / `continue_proposal` **mencionan** await_lock
+  en strings `nextAction`.
+- Engine de lock en conflictos pone `nextAction` genérico; **0**
+  invocaciones `notification_*` el 2026-07-24.
+- Plugin notification enabled; dogfood gap (F13) + naming cross-plugin
+  confunde agentes (`proposals_await_lock` no existe).
+
+**Esperado**: conflict envelope cita el nombre **calificado** real
+(`${notificationPrefix}_await_lock`) o proposals re-exporta un alias.
+**Actual**: texto ambiguo + zero usage.
+
+**Slice**: S8 (+ S9 surface).
+
+### F18 — Bypass S7 (`force:true` / `skipPeerReview:true`) sin audit trail ni reason obligatorio (MEJORABLE→MUY MAL)
+
+**Evidencia**:
+
+- `proposal-transition.tool.ts`: gate peer se salta si `args.force === true`
+  (no exige reason dedicado al bypass).
+- `recovery-tools.ts`: `skipPeerReview: true` salta el mismo gate;
+  `reason` existe para force_transition genérico pero **no** se loguea
+  como evento `peer-review-bypassed`.
+- Riesgo: un agente puede `force:true` en bucle y vaciar el valor de S7.
+
+**Esperado**: bypass host-only, reason obligatorio, evento en logs +
+contador en `state_health`. **Actual**: flag silencioso.
+
+**Slice**: S11.
+
+### F19 — `.cache/mcp-vertex/handoff/` sin GC (12 archivos, todos ≥32d) (MEJORABLE)
+
+**Evidencia (2026-07-25)**:
+
+```text
+handoff count 12
+older_7d 12
+implementation_runner-*.json  33 d
+default-agent-*.json          33 d
+mensa-*.json                  32 d
+orchestrator-blocker-2026-06-21-no-mcp-runtime.md
+```
+
+Ningún tool de hygiene (`branch_gc`, `state_repair`, session_hygiene)
+purga handoffs. El blocker de junio (`no-mcp-runtime`) sigue como
+ruido de orientation.
+
+**Slice**: S11.
+
+### F20 — Proposal `a00069` sin `shipped-in` ni scoreboard actualizado tras 14+ commits (MEJORABLE proceso)
+
+**Evidencia**: hasta este pase, `shipped-in: []` con S1–S7 ya en
+`origin/develop` (commits `f3faae85`…`c51bb563`). Los agentes
+implementaron slices sin volver a escribir el documento de auditoría
+→ la propuesta mentía “todo pending”.
+
+**Esperado**: cada close_slice / merge de slice actualiza
+`shipped-in` + Status del slice. **Actual**: drift doc↔git (irónico
+dado F3).
+
+**Mitigación en este pase**: rellenar `shipped-in` + tabla progress.
+**Slice de producto** (opcional): close_slice / transition reescribe
+`shipped-in` del propio proposal id cuando el commit message contiene
+el id — candidata S12 o chore; **no** bloquea S8–S11.
+
+### F21 — S5 omite validate en `gate: none|lint` — ventana residual (MEJORABLE, accepted)
+
+**Evidencia**: `authoring.tool.ts` (post S5) solo fuerza validation
+cuando gate es `type`/`e2e` o acceptance menciona test/validate.
+Slices con solo `gate: lint` pueden cerrarse con typecheck/test rojos
+si el linter pasa.
+
+**Esperado (estricto)**: globalGate del proposal o `bun run validate`
+siempre. **Actual (S5)**: respeta gate del slice (diseño consciente).
+
+**Decisión**: documentar como residual **aceptado** salvo que el host
+setee `validationCommand` always-on. No abrir S nuevo a menos que el
+usuario pida strict mode.
+
+### F22 — WIP / multi-agent edits concurrentes sobre `a00069` S7 wiring (MEJORABLE proceso)
+
+**Evidencia sesión**:
+
+- `git status` osciló con dirty `plugins/proposals/src/index.ts`,
+  `auto-work.tool.ts`, `recovery-tools.ts` mientras otros agentes
+  mergeaban S7 a `develop`.
+- Terminals: `git checkout HEAD -- index.ts` para recuperar wires.
+- Riesgo clásico F4 sin worktree: shared checkout + commits ajenos.
+
+**Esperado con `agentWorktree: false`**: un solo writer en proposals
+plugin surface. **Actual**: S4 nombra branches pero no serializa
+editores en el main worktree.
+
+**Slice**: cubierto parcialmente por S4 + playbook; candidata a
+`agent_lock` obligatorio en files de `plugins/proposals/**` via
+auto_work (refuerzo S8). No S nuevo si S8 health + disciplina bastan.
 
 ## scoreboard
 
@@ -802,40 +1052,62 @@ telemetría limpia.
 > **OK** (7-7.9) · **MUY BIEN** (8-8.9) · **PERFECTO** (9-10).
 > Una dimensión con un P0 finding no puede pasar de 6/10 (regla del playbook).
 
+### Scoreboard original (tarde 2026-07-24, pre-fix)
+
 | Dimension | Score | Comments |
 |---|---:|---|
-| Estado del gate (validate) | 2.5 | **FATAL.** F2: validate + typecheck rojos por `security-audit` dual `description` + import roto en `security-gate.spec`. |
-| Consistencia índice↔filesystem | 1.5 | **FATAL.** F3+F7: index stale **y** ids duplicados en `review/`+`done/`; 8/14 review files desalineados del index. |
-| Disciplina multi-agente (branches/worktrees) | 2.0 | **FATAL.** F4: 12 branches sin worktree, naming roto, GC silencioso. |
-| Lifecycle review/done | 2.0 | **FATAL.** F8+F11+F12: 0 `proposal_review`, DFA atajos, close_slice ok ≠ done sano. |
-| Registry / orientation state | 2.0 | **FATAL.** F10: 30 orphans, 14 activeAgents zombie desde junio. |
-| Estructura de proposals | 4.0 | **MUY MAL.** F1: parser `## Slices` case-sensitive; 21 slice-mode-error. |
-| Locks / coordinación | 4.5 | **MUY MAL.** F9: sin `ok`, claim 29/release 19, 0 await_lock/notification. |
-| Slices close-acceptance gate | 5.0 | **MEJORABLE.** F5+F12: close sin validate; ok local no implica tree verde. |
-| Dogfood plugins activos | 5.0 | **MEJORABLE.** F13: 21/24 plugins enabled sin una invocación el día del swarm. |
-| Observabilidad logs | 5.5 | **MEJORABLE.** F14: 379 server-started vs 238 tool cycles. |
-| Tools / scaffolding | 7.0 | **OK.** scaffold/create-plugin tests verdes; F6 limpia FPs. |
-| Documentación / skills | 7.5 | **OK.** Playbooks correctos; falla el enforcement runtime. |
-| Concurrencia / I/O durable | 7.5 | **OK/MUY BIEN-.** primitives ok; locks/registry no GC (F9/F10). |
-| **Total (Average)** | **~4.0** | **MUY MAL.** Cinco FATALs operacionales. S1–S9 cierran el gap sin redesign. Proyección post-S1–S9: **~7.6–8.0 (OK/MUY BIEN)**. |
+| Estado del gate (validate) | 2.5 | **FATAL.** F2 |
+| Consistencia índice↔filesystem | 1.5 | **FATAL.** F3+F7 |
+| Disciplina multi-agente | 2.0 | **FATAL.** F4 |
+| Lifecycle review/done | 2.0 | **FATAL.** F8+F11+F12 |
+| Registry / orientation | 2.0 | **FATAL.** F10 |
+| Estructura de proposals | 4.0 | **MUY MAL.** F1 |
+| Locks / coordinación | 4.5 | **MUY MAL.** F9 |
+| Close-acceptance gate | 5.0 | **MEJORABLE.** F5+F12 |
+| Dogfood plugins | 5.0 | **MEJORABLE.** F13 |
+| Observabilidad logs | 5.5 | **MEJORABLE.** F14 |
+| Tools / scaffolding | 7.0 | **OK.** F6 |
+| Docs / skills | 7.5 | **OK.** |
+| Concurrencia I/O | 7.5 | **OK-.** |
+| **Total (Average)** | **~4.0** | **MUY MAL.** |
+
+### Scoreboard re-audit (2026-07-25, post S1–S7 en código)
+
+| Dimension | Score | Comments |
+|---|---:|---|
+| Estado del gate (validate) | 8.0 | **MUY BIEN.** F2 cerrado (S2). |
+| Consistencia índice↔filesystem | 8.5 | **MUY BIEN.** S3: 0 dups; review/ alineado (F3/F7 mitigados). |
+| Disciplina multi-agente | 7.0 | **OK.** S4 lint existe; 0 agent branches; F22 WIP shared checkout residual. |
+| Lifecycle review/done | 7.0 | **OK.** S7 gate on; F18 bypass sin audit. |
+| Registry / orientation | 3.5 | **MUY MAL.** S6 código sí, cache vivo no (F15). |
+| Estructura de proposals | 8.5 | **MUY BIEN.** S1 parser. |
+| Locks / coordinación | 4.0 | **MUY MAL.** F9/F16/F17 abiertos (S8). |
+| Close-acceptance gate | 7.5 | **OK.** S5 on; F21 gate lint bypass accepted. |
+| Dogfood plugins | 5.0 | **MEJORABLE.** F13/F20; S9 pending. |
+| Observabilidad logs | 5.5 | **MEJORABLE.** F14+F19 handoff. |
+| Tools / scaffolding | 7.5 | **OK.** |
+| Docs / skills / proposal self | 6.0 | **MEJORABLE.** F20 shipped-in drift (mitigado este pase). |
+| Concurrencia I/O | 7.0 | **OK.** |
+| **Total (Average)** | **~6.5** | **MEJORABLE.** Subió ~2.5 pts con S1–S7. Quedan S8–S11 para empujar a **~8.0 OK/MUY BIEN**. |
 
 ## notes
 
 ### verdict
 
-La tarde del 2026-07-24 dejó **`develop` en rojo** y el **estado de
-swarm incoherente** por FATALs de enforcement, no de arquitectura:
+**Pasada 1 (2026-07-24)**: `develop` rojo + swarm incoherente — F1–F14.
 
-- **Parser/runtime proposals**: F1 (case), F3/F7 (index + duplicados),
-  F8 (review tool muerto en la práctica), F11 (DFA sin guía).
-- **Calidad merge**: F2 (TS huérfano), F5/F12 (close_slice débil).
-- **Multi-agente**: F4 (branches), F9 (locks), F10 (orphans), F13
-  (plugins enabled no usados), F14 (log ruido).
+**Pasada 2 (2026-07-25)**: S1–S7 **implementados y mergeados** (ver
+`shipped-in`). Mitigan F1–F8, F10 (código), F11–F12 en gran parte.
+**No cierra** el incidente operativo:
 
-El **camino a OK/MUY BIEN** es S1–S9 (S2 primero para desbloquear
-validate). F6 evita re-auditar fantasmas. No hace falta reescribir el
-plugin: hace falta **atomicidad, GC y gates** donde el playbook ya
-promete comportamiento.
+1. **F15** — GC de orphans no corre solo → orientation sigue mintiendo.
+2. **F16/F17/F9** — locks sin `ok` estable ni await dogfood → S8.
+3. **F18/F19** — bypass peer + handoff basura → S11.
+4. **F13/F20** — dogfood + doc drift → S9 + disciplina shipped-in.
+
+Camino restante: **S8 → S10 → S11 → S9** (S8 desbloquea telemetría;
+S10 hace real el S6; S11 cierra hygiene; S9 es advisory). F21 accepted.
+F22 proceso. No redesign.
 
 ### appendix A — Log evidence (verbatim)
 
@@ -947,16 +1219,61 @@ never invoked that day despite enabled: 21 plugins
 server-started: 379  |  tool-started/completed: 238/238
 ````
 
+#### A11 — Re-audit 2026-07-25 residual (post S1–S7 merge)
+
+````text
+HEAD: e37b21e3+ (S7 on develop)
+duplicate proposal ids on disk: 0
+review/ files: 11, index misaligned: 0
+agent/* branches: 0
+security-audit description: single string (S2 ok)
+security-gate import: ../../../../../../tools/... resolves (exists)
+slices parser: /^##(?:\s+\d+\.)?\s*Slices\b/im  (S1 ok)
+
+subagent-registry AFTER S6 code merge, BEFORE state_repair call:
+  assignments: 30  orphan:27  active:3  adopted_false:30
+round-context.activeAgents: 14 (still June zombies)
+→ F15: S6 is opt-in only
+
+agent-lock-engine claim success: no structuredContent, no ok:true
+agent-lock.tool outputSchema: ok optional, not injected
+await_lock: lives in notification plugin (notification_await_lock)
+handoff/: 12 files, all older_7d (32–33 days)
+proposal-transition: force:true skips peer gate without bypass audit event
+force_transition: skipPeerReview:true same
+a00069 shipped-in was [] while 14 commits already on develop (F20)
+````
+
+#### A12 — a00069 implementation commits (shipped-in)
+
+````text
+f3faae85 fix(a00069): case-insensitive ## Slices parser
+dc31bb70 fix(a00069): S1 case-insensitive slices parser + proposal hygiene
+7bd59036 feat(a00069): S3 atomic transition↔index + stale **Files** rewrite
+a14237a6 test(a00069): S3 duplicate-id scan and Files rewrite
+88992ee5 test(a00069): continue_proposal stale-index heal + mark S1-S3 done
+2ae13475 feat(a00069): S4 agent-branch-naming lint gate
+2e74b4ee feat(a00069): S5 close_slice validation gate
+2049f41a fix(a00069): broaden close_slice acceptance detection
+8238cf70 test(a00069): cover S5 close_slice validation gate
+f1a629b9 feat(a00069): S6 purge orphan registry assignments
+e6b0c6d5 feat(a00069): S6 orphan GC + round-context activeAgents filter
+e37b21e3 feat(a00069): S7 peer-review gate on review→done
+d48d6ef4 fix(a00069): complete S7 peer-review short-circuit paths
+c51bb563 fix(a00069): unnest requirePeerReview from validationCommand
+````
+
 ### appendix B — Concurrency table
 
 | Escenario | Riesgo | Mitigación hoy | Gap |
 |---|---|---|---|
-| Dos agentes cierran el mismo slice a la vez | Doble escritura del archivo | `agent_lock` antes de `close_slice` | ⚠ F9 — claim sin release simétrico |
-| Agente A mueve `f00122` a `done/feats/`, agente B hace `continue_proposal { id: f00122 }` antes de que el index se regenere | `slice-mode-error` falso | (ninguna — el "nextAction" sugiere `sync_proposals`, que es reactivo) | ❌ → **S3** |
-| Transition deja gemelo en `review/` y `done/` | Doble fuente de verdad | (ninguna) | ❌ → **S3/F7** |
-| Agente commitea con `bun run validate` en rojo | `develop` se queda roto | (ninguna en `close_slice`) | ❌ → **S5** |
-| Agente crea branch `agent/*` sin worktree | Pisarse entre agentes en el shared checkout | (ninguna — `branch_gc` borra silenciosamente) | ❌ → **S4** |
-| Agente A lee proposal index mientras agente B lo regenera | Torn read del `index.json` | `writeFileAtomic` (revisar si lo usa `proposal_reconcile_folder`) | ⚠ — no verificado en este pase |
-| Contención de lock | Busy-loop claim | `await_lock` + notification | ❌ 0 usos → **S8** |
-| Sesión muere con assignment active | Orientation miente | state_repair GC | ❌ 30 orphans → **S6** |
-| Item en `review/` sin peer | done sin calidad | proposal_review gate | ❌ 0 reviews → **S7** |
+| Dos agentes cierran el mismo slice a la vez | Doble escritura del archivo | `agent_lock` antes de `close_slice` | ⚠ F9/F16 — claim sin `ok` + release asimétrico → **S8** |
+| Agente A mueve proposal, B lee index stale | `slice-mode-error` falso | **S3 done** (sync post-transition) | ✅ mitigado |
+| Transition deja gemelo review+done | Doble fuente de verdad | **S3 done** (0 dups re-audit) | ✅ mitigado |
+| Agente commitea con validate rojo | `develop` roto | **S5 done** close_slice gate | ⚠ F21 gate lint bypass |
+| Agente crea branch `agent/*` sin worktree | Pisarse / litter | **S4 done** lint | ⚠ F22 shared checkout WIP |
+| Contención de lock | Busy-loop claim | texto nextAction menciona await_lock | ❌ F17 0 usos → **S8** |
+| Sesión muere con assignment active | Orientation miente | S6 código purge | ❌ F15 no auto → **S10** |
+| Item en `review/` sin peer | done sin calidad | **S7 done** gate | ⚠ F18 force bypass → **S11** |
+| Handoff basura meses | Orientation ruido | (ninguna) | ❌ F19 → **S11** |
+| Plugins enabled nunca llamados | False confidence dogfood | (ninguna) | ❌ F13 → **S9** |

@@ -5,7 +5,10 @@ import { z } from 'zod';
 import type { IToolRegistration } from '@mcp-vertex/core/public';
 import { toolJson, withFileMutex } from '@mcp-vertex/core/public';
 
-import { runAgentLockEngine } from '../locks/agent-lock-engine';
+import {
+	getAgentLockSessionBalance,
+	runAgentLockEngine,
+} from '../locks/agent-lock-engine';
 import { readJsonOrNull } from '../proposals/index-reader';
 
 /** Async existence check (H2): never blocks the event loop. */
@@ -49,7 +52,13 @@ export interface IStateToolOptions {
 }
 
 interface IStateDiagnosis {
-	readonly locks: { readonly active: number };
+	readonly locks: {
+		readonly active: number;
+		/** a00069 S8: process-local claim−release imbalance (telemetry). */
+		readonly sessionImbalance: number;
+		readonly sessionClaims: number;
+		readonly sessionReleases: number;
+	};
 	readonly queue: {
 		readonly queueLength: number;
 		readonly queuedCount: number;
@@ -65,7 +74,12 @@ interface IStateDiagnosis {
 }
 
 const STATE_DIAGNOSIS_SCHEMA = z.object({
-	locks: z.object({ active: z.number() }),
+	locks: z.object({
+		active: z.number(),
+		sessionClaims: z.number(),
+		sessionReleases: z.number(),
+		sessionImbalance: z.number(),
+	}),
 	queue: z
 		.object({
 			queueLength: z.number(),
@@ -158,7 +172,17 @@ const diagnose = async (
 		(queue?.waiterOrphans ?? 0) === 0;
 
 	return {
-		locks: { active: lockStatus.active_write_lanes ?? 0 },
+		locks: {
+			active: lockStatus.active_write_lanes ?? 0,
+			...(() => {
+				const b = getAgentLockSessionBalance();
+				return {
+					sessionClaims: b.claims,
+					sessionReleases: b.releases,
+					sessionImbalance: b.imbalance,
+				};
+			})(),
+		},
 		queue,
 		registry: {
 			orphans: zombies.orphans.length,
