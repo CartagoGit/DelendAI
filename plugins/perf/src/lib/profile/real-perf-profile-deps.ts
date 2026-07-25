@@ -1,17 +1,23 @@
 /**
  * real-perf-profile-deps.ts — production profiler probe + bounded runner for
  * the perf plugin. Probes PATH via the shared core helper and uses Node's
- * built-in CPU profiler to produce a normalized hotspot report.
+ * built-in CPU profiler to produce a normalized hotspot report. Scratch
+ * directories are anchored under `<pluginCacheDir>/exec/<stamp>/` via
+ * `resolveExecPath` + `withEphemeralExec` so the lint stays happy and the
+ * cache is GC'd by the shared `pruneExpiredExec` helper.
  */
-import { mkdtemp, readdir, rm } from 'node:fs/promises';
+import { randomUUID } from 'node:crypto';
+import { mkdir, readdir, rm } from 'node:fs/promises';
 import { join } from 'node:path';
-import { tmpdir } from 'node:os';
 
 import {
 	type IExternalTool,
+	type IMcpPluginContext,
 	probeTool,
 	realProbeDeps,
+	resolveExecPath,
 	runExternalTool,
+	withEphemeralExec,
 } from '@mcp-vertex/core/public';
 import type {
 	IPerfProfileExecution,
@@ -81,11 +87,27 @@ const inlineWorkload = (): string =>
 		'console.log(String(checksum));',
 	].join('');
 
+const execCtxFor = (pluginCacheDir: string): IMcpPluginContext =>
+	({ pluginCacheDir }) as IMcpPluginContext;
+
+/** Resolve an absolute, ephemeral directory under `<pluginCacheDir>/exec/perf-<stamp>/`. */
+const ephemeralProfileDir = async (
+	ctx: IMcpPluginContext,
+	stamp: string,
+): Promise<string> =>
+	await withEphemeralExec(ctx, `perf-${stamp}/.keep`, async (abs) => {
+		const dir = join(abs, '..');
+		await mkdir(dir, { recursive: true });
+		return dir;
+	});
+
 const runNodeProf = async (
+	ctx: IMcpPluginContext,
 	cwd: string,
 	timeoutMs: number,
 ): Promise<IPerfProfileExecution> => {
-	const tempDir = await mkdtemp(join(tmpdir(), 'mcp-vertex-perf-'));
+	const stamp = randomUUID().slice(0, 8);
+	const tempDir = await ephemeralProfileDir(ctx, stamp);
 	try {
 		const profile = await runExternalTool({
 			tool: NODE_PROF,
@@ -147,7 +169,13 @@ export const realPerfProfileDeps = (
 	options: IRealPerfProfileDepsOptions = {},
 ): IPerfProfileDeps => {
 	const probeDeps = options.probeDeps ?? realProbeDeps();
-	void workspaceRootAbs;
+	const pluginCacheDir =
+		options.pluginCacheDir ??
+		join(workspaceRootAbs, '.cache', 'mcp-vertex');
+	const ctx = execCtxFor(pluginCacheDir);
+	void resolveExecPath(ctx, '.keep', { skipMkdir: true }).catch(
+		() => undefined,
+	);
 	return {
 		probeProfilers: async (format: PerfProfileFormat) => {
 			const ordered =
@@ -161,6 +189,6 @@ export const realPerfProfileDeps = (
 		runProfiler: async (
 			_profilerId: string,
 			input: IPerfProfileCaptureInput,
-		) => runNodeProf(input.cwd, input.timeoutMs),
+		) => runNodeProf(ctx, input.cwd, input.timeoutMs),
 	};
 };
