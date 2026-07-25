@@ -1,8 +1,16 @@
 import { z } from 'zod';
+import { fileURLToPath } from 'node:url';
+import { dirname, resolve } from 'node:path';
 
 import type { IToolRegistration } from '../contracts/interfaces/tool-registration.interface';
 import type { ISkillCatalog } from '../skills/skill-catalog';
-import { toolError, toolJson } from '../shared/tool-response';
+import { loadSkillCached } from '../skills/registry';
+import { toolJson } from '../shared/tool-response';
+
+const WORKSPACE_ROOT = resolve(
+	dirname(fileURLToPath(import.meta.url)),
+	'../../../../..',
+);
 
 /**
  * On-demand access to the project's + active plugins' skills (f00065 slice-B).
@@ -50,7 +58,7 @@ export const buildSkillToolRegistration = (
 				}),
 			},
 			async (args: { id?: string | undefined }) => {
-				const { entries, loadBody } = catalog();
+				const { entries } = catalog();
 				if (args.id === undefined) {
 					return toolJson({
 						skills: entries.map((entry) => ({
@@ -61,14 +69,27 @@ export const buildSkillToolRegistration = (
 						})),
 					});
 				}
-				const body = await loadBody(args.id);
-				if (body === undefined) {
-					return toolError(
-						`unknown skill id "${args.id}"`,
-						'Call without `id` to list available skills.',
-					);
+				const loaded = await loadSkillCached(args.id, {
+					workspaceRoot: WORKSPACE_ROOT,
+				});
+				if (loaded === null) {
+					const error = {
+						ok: false as const,
+						error: 'unknown skill',
+						id: args.id,
+					};
+					return {
+						content: [
+							{
+								type: 'text' as const,
+								text: JSON.stringify(error),
+							},
+						],
+						structuredContent: error,
+						isError: true,
+					};
 				}
-				return toolJson({ id: args.id, body });
+				return toolJson({ id: loaded.id, body: loaded.body });
 			},
 		);
 	},
