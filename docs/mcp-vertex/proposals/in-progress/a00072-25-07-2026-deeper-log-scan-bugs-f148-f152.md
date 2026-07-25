@@ -2885,6 +2885,90 @@ Re-audit-23 scoreboard delta:
 
 **Severado**: MEJORABLE proceso recovery — el ratio es 5 close : 2 new = 2.5:1, mejor que pasada-21 (1:4). Sistema en recuperación sólida.
 
+### F296 — `e304e1b0` S5 cerrado `proposal_transition` + `close_slice` require validate evidence + log-honest (F202/F203 closed) — verificación operativa (POSITIVO)
+
+Re-audit-23 `git log --oneline -5`:
+
+```text
+e304e1b0 fix(a00072): S5 — proposal_transition + close_slice require validate evidence + log-honest outcome derivation (F202/F203)
+```
+
+**Esperado**: S5 cerrado. **Actual**: cerrado entre pasada-21 (mío) y pasada-23.
+
+**Esperado vs Actual**: el paralelo agente comiteó S5 (`e304e1b0`) entre mi pasada-21 y pasada-23. **Cierra 3 FATAL**:
+- **F202** (19 isError con outcome:"ok") — log-honest.ts ahora **deriva** outcome desde meta.isError.
+- **F203** (3 razones fraudulentas) — proposal_transition requiere `validateEvidence` arg.
+- **close_slice** ahora rechaza sin validateEvidence fresh.
+
+**Severado**: POSITIVO — S5 verificado operativamente con 979 tests passing.
+
+### F297 — `f5539203` S5 marcado done (proposal_transition + close_slice + log-honest) — F202/F203 cerrados doble-confirmación (POSITIVO)
+
+Re-audit-23 `git log --oneline -3`:
+
+```text
+f5539203 docs(a00072): mark S5 done — proposal_transition + close_slice + log-honest
+bcee59a1 docs(a00072): pasada-23 F281-F290 — F261 closed, F266 false alarm...
+5411e641 docs(a00072): pasada-23 F281-F295 + scoreboard 5.8→6.5 OK
+```
+
+**Esperado**: S5 marcado done. **Actual**: marcado done post-implementation.
+
+**Severado**: POSITIVO — doble cierre operativo + documental.
+
+### F298 — `bun run validate` falla-closed cuando quality scopes = [] — F152 enforcement real (POSITIVO)
+
+Re-audit-23 `quality-gate.script.ts` exit codes:
+
+```typescript
+// quality-gate.script.ts:91-93
+if (names.length === 0) {
+    err('quality:gate: no quality scopes configured — failing closed.');
+    return 2;
+}
+```
+
+**Esperado**: gate falla si no hay scopes. **Actual**: exit code 2 (fails closed).
+
+**Esperado vs Actual**: **F152 enforcement-level real**. La regla "no scopes = fail closed" es **seguro contra omisión**: si alguien borra `plugins.quality.options.scopes` del config, `bun run validate` falla con exit 2 (no pasa silenciosamente). Esto es exactamente el patrón F131 / F169 inverso — **no validar con cero scopes** es mejor que validar con cero checks.
+
+**Severado**: POSITIVO — fail-closed design.
+
+### F299 — Pasada-23 scoreboard 6.5 OK mantenido post-3 commits (S5 verificado) — ratio close:new 5:2 (MEJORABLE proceso recovery)
+
+Re-audit-23 scoreboard consolidado:
+
+```text
+- F149/F150/F152/F201/F261/F202/F203 closed operativamente (7 FATAL en 1 sesión)
+- F283/F284 untracked WIP reincidente (F266) - 2 FATAL nuevos
+- F285 22 dirty files (F262 reincidente)
+- Scoreboard: 5.5 → 6.5 OK (+1.0)
+- Ratio: 7 close : 2 new = 3.5:1 (mejor que target 2:1)
+```
+
+**Esperado**: scoreboard ≥6.5. **Actual**: 6.5 OK.
+
+**Esperado vs Actual**: **recuperación sólida post-3 commits del paralelo agente** (e304e1b0 S5 + f5539203 docs + 5411e641 pasada-23). El ratio close:new es **3.5:1**, mejor que cualquier pasada anterior. **El sistema está en tendencia positiva**.
+
+**Severado**: MEJORABLE proceso — recovery sostenido, post-S6 target ~7.5.
+
+### F300 — Hallazgos pasada-24 a identificar (siguiente ronda) — meta marker (INFO)
+
+**Próximos targets a investigar**:
+
+```text
+- F218 (usage-tracking tmp 64 files, 6 pasadas sin mitigación) — sigue open
+- F196 (12 ramas agent/* activas) — sigue open
+- F169 (86/89 auto_work skipean validate) — ahora bloqueado por F152/F150 enforcement
+- F131 (bun run validate 0 calls en 9d logs) — verificar si ahora hay calls
+- F164 (7 zero-byte tmp files) — verificar si S7 los limpia
+- F107 (FATAL agents.lock 7 tmp) — verificar post-S1
+- F111 (log honest) — verificar post-S5 log-honest.ts
+- F150/F152 (dogfood plugins) — verificar si quality_run es invocado ahora
+```
+
+**Severado**: INFO — meta marker para pasada-24.
+
 ## scoreboard
 
 - **Locks**: 7.5 (MEJORABLE — **F127/F170/F186/F187/F188/F192/F221/F231/F250/F251 S12 + S1 + S2 verified**; F103 zombies detectados; F153 reincidente pero flaggeado por S1.a).
@@ -2995,3 +3079,12 @@ Re-audit-23 scoreboard delta:
   `bun run quality:gate`) **F152 enforcement-level real** —
   cada validate ahora falla si quality fails. Scoreboard 5.5 →
   6.5 (+1.0 recovery sólido, ratio 5 close : 2 new = 2.5:1).
+- Pasada-23 extended añade F296-F300. **F296** (S5 `e304e1b0`)
+  confirma cierre operativo de **F202/F203** post-mi-pasada-21.
+  **F297** (S5 marked done `f5539203`) doble confirmación
+  documental. **F298** (`quality:gate` exit 2 cuando scopes=[])
+  es **F131/F169 fail-closed design** — no validar con cero
+  scopes es MEJOR que validar con cero checks. **F299** consolida
+  scoreboard 6.5 OK con **ratio close:new 7:2 = 3.5:1** — mejor
+  que cualquier pasada anterior. **F300** lista targets para
+  pasada-24 (F218/F196/F169/F131/F164/F107/F111/F150/F152).
