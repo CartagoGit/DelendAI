@@ -85,10 +85,17 @@ falsa verde y rompe el flujo de release.
 
 ### S2 — `publishAll` con tarballs verificados
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `tools/scripts/release/release.script.ts`,
-  `tools/scripts/release/publish-tarballs.ts` (new)
+  `tools/scripts/release/publish-tarballs.ts` (new),
+  `tools/scripts/release/publish-tarballs.spec.ts` (new)
 - **Gate**: type
+- implementation:
+  - `publish-tarballs.ts` exposes `publishTarballs` and `assertTarballsProvided`.
+  - The npm branch of `release.script.ts` calls `assertTarballsProvided`; exit 2 with explicit message on failure.
+  - The npm branch generates tarballs via `packRewrittenTarball`, inspects them, then publishes the verified tarballs.
+  - The bun branch keeps the current `bun publish` direct path.
+  - 3 tests cover the npm-missing-tarballs guard, bun no-op, and `npm publish` argv.
 - acceptance:
   - "`publishAll` refactorizado: 1) genera tarballs con rewrite, 2) los inspecciona, 3) publica los tarballs"
   - "Si `--tool=npm` se invoca sin tarballs verificados, exit 2 con mensaje explícito"
