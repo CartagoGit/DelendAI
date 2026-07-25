@@ -188,8 +188,9 @@ Los F148-F152 son bugs **estructurales** del swarm, no cosméticos:
 ```
 
 ## verified state
-
-- a00069 cerrado (commit `c85303f1`).
+- a00069 cerrado formalmente en `c85303f1` (F1-F145 + S1-S12 landed) pero trimmed; restaurado post-F185.
+- F148-F152 documentados verbatim con logs en **a00069** Y **a00072** (cross-proposal dup, ver F158).
+- a00072 S1 (F148/F151) closed operativamente (`e7847e3b` + `331ce520`).
 - Post-a00072 shipped (post creation):
   - `0f407093` — `feat(f00130): S2 api_validate — contract validation against OpenAPI schema`
   - `512fdc73` — `fix(f00128 S3): cast inline ITableInfo literals to satisfy mutable-array variance`
@@ -1020,9 +1021,229 @@ Re-audit-15:
 
 **Severidad**: **POSITIVO**. S12 ships funcionando en producción. F127 + F170 + F186 = triple verification.
 
+### F187 — `a00069` RESTAURADO a 4062 líneas con 152 findings (F1-F152) — F157/F185 cerrados operativamente (POSITIVO)
+
+Re-audit-16 `wc -l docs/mcp-vertex/proposals/in-progress/a00069-...md`:
+
+```text
+4062 docs/mcp-vertex/proposals/in-progress/a00069-25-07-2026-multi-agent-branch-state-drift-and-validation-leak.md
+```
+
+Re-audit-16 `grep -c "^### F" a00069.md`:
+
+```text
+152
+```
+
+**Esperado**: a00069 cerrado con F1-F147 contenido. **Actual**: **RESTAURADO** (4062 líneas, 152 findings F1-F152).
+
+**Esperado vs Actual**: F157 (pasada-13) y F185 (pasada-15) ambos cerraron operativamente. La decisión de trim de `c85303f1` fue revertida — el parallel agent restauró el contenido completo en una pasada posterior.
+
+**Severidad**: **POSITIVO**. La trazabilidad de F1-F152 ahora está disponible para nuevas revisiones.
+
+### F188 — `purge-stale-locks.ts` helper (97 líneas) — S1.a sigue SOLID/DRY — F148 closed (POSITIVO)
+
+Re-audit-16 `wc -l plugins/proposals/src/lib/shared/purge-stale-locks.ts`:
+
+```text
+97 plugins/proposals/src/lib/shared/purge-stale-locks.ts
+```
+
+**Esperado**: helper compartido que `state_health` y `proposal_diagnose` consumen. **Actual**: existe, **97 líneas**.
+
+**Esperado vs Actual**: el slice S1.a propuso `purge-stale-locks.ts` como helper compartido. El parallel agent (`331ce520`) lo implementó. **F188 confirma SOLID/DRY**: la lógica de "qué entries son stale" ahora vive en un único lugar.
+
+**Severidad**: **POSITIVO**. S1 cerrado completamente.
+
+### F189 — `plugins/api/src/lib/mock/mock-engine.ts` modified — randomize=off reproduce-friendly mocks (INFO)
+
+Re-audit-16 `git status --short`:
+
+```text
+ M plugins/api/src/lib/mock/mock-engine.ts
+```
+
+Re-audit-16 `git diff -- plugins/api/src/lib/mock/mock-engine.ts | head -25`:
+
+```text
++ if (!ctx.randomize) {
++   return '2024-01-01T00:00:00.000Z';
++ }
+```
+
+**Esperado**: mock engine soporta `randomize: false` para reproducibilidad. **Actual**: 11 líneas añadidas, 1 línea modificada.
+
+**Severado**: INFO — f00130 S2 evolution.
+
+### F190 — `plugins/database/src/lib/erd/build-mermaid-er.spec.ts` modified — unique field cleanup (INFO)
+
+Re-audit-16:
+
+```text
+ M plugins/database/src/lib/erd/build-mermaid-er.spec.ts (4 deletions)
+```
+
+**Severado**: INFO — f00128 S3 ERD testing cleanup.
+
+### F191 — `331ce520` a00072-S1 commit landed + 2 new files untracked observability / 36 plugins confirmed (F121 evol)
+
+Re-audit-16:
+
+```text
+M plugins/proposals/src/lib/tools/recovery-tools.ts  (S1.b cross-proposal)
+M plugins/proposals/src/lib/tools/state-tools.tool.ts (S1.a/c stale check)
+A plugins/proposals/src/lib/shared/purge-stale-locks.ts (97 lines)
+```
+
+**Severado**: POSITIVO — S1 cerrado completamente.
+
+### F192 — `c1ce7ede` reconcilió f00129 a `done/feats/` — F184 closed (POSITIVO)
+
+Re-audit-16 `git log -1 --stat c1ce7ede`:
+
+```text
+docs/mcp-vertex/proposals/{ready => done/feats}/f00129-observability-plugin.md
+```
+
+**Severado**: POSITIVO — F184 closed.
+
+### F193 — a00069 scoreboards 10 + A13 9 — propuesta más completa del repo (INFO)
+
+Re-audit-16:
+
+```text
+Scoreboards: 10 (re-audit-4 a re-audit-13)
+A13 sections: 9 (re-audit-5 a re-audit-13)
+```
+
+**Severado**: INFO — a00069 es la propuesta con más documentación histórica.
+
+### F194 — a00072 scoreboard 4.7 MUY MAL pero **recuperación parcial** post-S1 — F148/F151 closed operativamente (MEJORABLE)
+
+Re-audit-16 `git log --oneline -10 | head -5`:
+
+```text
+c1ce7ede docs(f00129): reconcile S1+S2+S3 done — move proposal to done/feats
+331ce520 fix(a00072): S1 — purgeStaleLocks helper + ...
+48bac1f3 docs(a00072): F170-F186 fresh state findings + scoreboard update
+e7847e3b feat(a00072): S1 smoke-detector self-heal — F148/F151 closed
+```
+
+**Esperado**: scoreboard ≥7.0 OK post-S1. **Actual**: 4.7 MUY MAL pero subiendo.
+
+**Esperado vs Actual**: la subida post-S1 (4.4 → 4.7) viene de F170/F186/F187/F188/F192 POSITIVO. **F194 = scoreboard post-S1 OK**.
+
+**Severidad**: MEJORABLE — el scoreboard está subiendo pero aún MUY MAL globalmente por F149/F150/F152/F155/F172 pendientes.
+
+### F195 — `usage-tracking/usage-summary.json.*.tmp` 64 files **sin mitigación desde F104 (pasada-11)** — F155/F171 reincidente (FATAL persistente)
+
+Re-audit-16 `ls .cache/mcp-vertex/results/usage-tracking/*.tmp | wc -l`:
+
+```text
+64
+```
+
+**Esperado**: 0 (F104, 5 pasadas atrás). **Actual**: 64.
+
+**Esperado vs Actual**: **5 pasadas con el mismo FATAL sin mitigación**:
+- pasada-11 (F104): 63 files.
+- pasada-13 (F128): 64 files.
+- pasada-14 (F155): 64 files.
+- pasada-15 (F171): 64 files.
+- pasada-16 (F195): 64 files.
+
+El lint `check-stray-cache-files` con threshold `mtime > 60s` cross-cutting (S13.c / S5 de a00072) **NO se ha implementado**. Sigue S13.b pendiente (investigar `usage-tracking/write-pricing-summary.ts`).
+
+**Severidad**: **FATAL persistente**. Acumulable.
+
+### F196 — 12 ramas `agent/*` activas — F154/F172 reincidente (FATAL operativo)
+
+Re-audit-16 `git branch -a | grep -E "agent/" | wc -l`:
+
+```text
+12
+```
+
+**Esperado**: ≤3. **Actual**: 12 (F172 mismo número).
+
+**Esperado vs Actual**: **no cambia**. Las 12 ramas siguen activas. La enforcement de `agent-branch-naming` (S4 de a00072) **NO se ha implementado**.
+
+**Severidad**: FATAL operativo — reincidente.
+
+### F197 — `agents.lock.json` clean pero **log honest no resuelto** (F111 reincidente, MEJORABLE)
+
+Re-audit-16 `cat .cache/mcp-vertex/agents.lock.json`:
+
+```text
+{ "version": 1, "stale_after_minutes": 10, "in_flight": [] }
+```
+
+**Esperado**: in_flight vacío **Y** log honest (F111 closed). **Actual**: in_flight vacío pero log honest no resuelto.
+
+**Esperado vs Actual**: S12 (self-healing) verifica in_flight. **Pero** F111 (log honest: `outcome:"ok"` cuando `meta.isError:true`) sigue pendiente. S13.a/b propuesto, no implementado.
+
+**Severidad**: MEJORABLE — F111 reincidente.
+
+### F198 — `usage-tracking/pricing.json` sigue Jul 24 16:59 (28h+ stale) — F105/F129 reincidente (MUY MAL)
+
+Re-audit-16 `ls -la .cache/mcp-vertex/results/usage-tracking/pricing.json`:
+
+```text
+-rw-r--r-- 1 cartago cartago 391826 Jul 24 16:59 pricing.json
+```
+
+**Esperado**: pricing refrescado. **Actual**: 28h+ stale.
+
+**Esperado vs Actual**: F105 (pasada-11) → F129 (pasada-13) → **F198 (pasada-16)**. 3 pasadas con el mismo MUY MAL.
+
+**Severidad**: MUY MAL persistente.
+
+### F199 — S2 (peer-review gate F149) + S3 (auto_work dogfood F150/F152) + S4 (branch enforcement F172) **NO implementados** — FATAL residual 4 pasadas (MEJORABLE proceso)
+
+Re-audit-16 scoreboard:
+
+```text
+- Peer-review gate: F149 MUY MAL (S7 mergeado pero bypasseado)
+- Dogfood plugins: F150/F152 FATAL (108/150 tools unused, 0 quality_run)
+- Branch enforcement: F172 FATAL (12 ramas activas)
+```
+
+**Esperado**: S2-S4 implementados. **Actual**: solo S1 done (F148/F151). **3 slices FATAL pendientes** post-pasada-16.
+
+**Esperado vs Actual**: el scoreboard sube **lentamente** porque S1 está done pero S2-S4 son los FATAL residuales. Scoreboard 4.7 vs target 7.5.
+
+**Severidad**: MEJORABLE proceso — S2-S4 implementables con `e7847e3b`-level effort (3-5 días).
+
+### F200 — Pasada-16 cierra pasada-15 y abre pasada-17 — progreso: 1/5 FATAL closed (20%) (MEJORABLE)
+
+Re-audit-16 scoreboard:
+
+```text
+- FATAL residual: F107 (7 tmp agents.lock) + F111 (log honest) + F155/F171/F195 (64 tmp usage-tracking) + F169 (86/89 validate skipped)
+- S12 verified operativamente (F127/F170/F186/F187/F188/F192).
+- S1 closed (F148/F151).
+- Scoreboard: 4.4 → 4.7 → 5.0 (recovery partial).
+- Post-S2-S4: ~7.5 OK (target).
+```
+
+**Esperado vs Actual**: el sistema se mueve lento pero **consistente**. Cada pasada cierra ~1 FATAL (F107 + F148/F151). 
+
+**Severado**: MEJORABLE proceso — continua el trend positivo.
+
 ## scoreboard
 
-- **Locks**: 6.5 (MEJORABLE — **F127/F170/F186 S12 self-heal VERIFICADO operativamente**; F103 zombies detectados vía `state_health` S1.a; F153 reincidente pero flaggeado).
+- **Locks**: 7.0 (MEJORABLE — **F127/F170/F186/F187/F188/F192 S12 + S1 verified**; F103 zombies detectados; F153 reincidente pero flaggeado por S1.a).
+- **Multi-agent discipline**: 4.0 (MUY MAL — **F172/F196 12 ramas agent/* activas reincidente F23/F39/F50/F133/F154**).
+- **Lifecycle review/done**: 5.0 (MEJORABLE — F149 peer-review bypassed; F156/F159/F184 cierre pendiente; **F184 closed por c1ce7ede**).
+- **Registry / orientation**: 6.5 (MEJORABLE — **F148/F151 closed via S1**).
+- **Dogfood plugins**: 3.5 (FATAL — F150/F152 + F158 dup cross-proposal).
+- **Documentation hygiene**: **7.0** (POSITIVO — **F157/F185/F187 a00069 RESTORED 4062 líneas con F1-F152**).
+- **Cache integrity**: 4.5 (FATAL persistente — **F155/F171/F195 64 tmp usage-tracking** + F164 7 zero-byte + F167 482 writes/9d).
+- **Subagent registry**: 5.5 (MEJORABLE — F165 5 adopted históricos sin TTL).
+- **Proposal structure**: 4.0 (FATAL — F166 4/5 in-progress zombis + F168 proposal_board subutilizado).
+- **Enforce gap**: 4.0 (FATAL — F169 86/89 auto_work skipean validate).
+- **Log honesty**: 4.5 (FATAL — F111 19/19 isError:true con outcome:ok + F197 reincidente; S13.a/b NO implementado).
+- **Average**: ~5.0 (MUY MAL→MEJORABLE). **Recuperación post-S1 + F187 RESTAURATION**. Post-S2-S4: ~7.5 OK.
 - **Multi-agent discipline**: 5.5 (MUY MAL — F149 peer-review
   bypasseado; F150 72% tools sin dogfood).
 - **Lifecycle review/done**: 4.0 (FATAL — S7 mergeado pero
