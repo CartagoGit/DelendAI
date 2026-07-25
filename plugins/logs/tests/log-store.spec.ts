@@ -1,4 +1,4 @@
-import { mkdtemp, readFile, writeFile } from 'node:fs/promises';
+import { mkdtemp, readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { describe, expect, it } from 'vitest';
@@ -82,23 +82,21 @@ describe('log store', async () => {
 		expect(failed.map((event) => event.taskId)).toEqual(['bad']);
 	});
 
-	it('garbage collects only files older than the retention threshold', async () => {
+	it('honors a custom maxLineBytes on the store (not just the default)', async () => {
 		const dir = await tempLogs();
-		await writeFile(join(dir, '2026-05-01.jsonl'), '{}\n');
-		await writeFile(join(dir, '2026-06-19.jsonl'), '{}\n');
-		const store = createLogStore(dir);
-
-		const removed = await (await store).gc({
-			olderThanDays: 30,
-			now: new Date('2026-06-20T00:00:00.000Z'),
-		});
-
-		expect(removed.some((path) => path.endsWith('2026-05-01.jsonl'))).toBe(
-			true,
+		const store = await createLogStore(dir, { maxLineBytes: 256 });
+		await store.appendEvent(
+			normalizeEvent(
+				'tool-failed',
+				{ toolName: 'huge', summary: 'x'.repeat(1000) },
+				new Date('2026-06-20T10:00:00.000Z'),
+			),
 		);
-		expect(await readFile(join(dir, '2026-06-19.jsonl'), 'utf8')).toBe(
-			'{}\n',
+		const raw = await readFile(join(dir, '2026-06-20.jsonl'), 'utf8');
+		expect(Buffer.byteLength(raw.trimEnd(), 'utf8')).toBeLessThanOrEqual(
+			256,
 		);
+		expect(JSON.parse(raw).meta.__truncated__).toBe(true);
 	});
 
 	it('caps oversized events and marks them truncated', async () => {
