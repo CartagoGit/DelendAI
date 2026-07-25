@@ -76,11 +76,18 @@ exposes the internal ordered publish plan (read/preview). Pure inference.
 
 ### S3 — catalog + pack
 
-- **Status**: pending
-- **Files**: `plugins/changelog/README.md`, `packages/core/src/lib/plugins/preset-catalog.ts`
+- **Status**: done
+- **Files**: `plugins/changelog/README.md`, `plugins/changelog/package.json` (description refresh)
 - **Gate**: bun run validate
 
-Catalog + wiki + `library` pack membership (r00011).
+Authored the plugin README covering both tools (`changelog_generate`,
+`release_plan`), the bump-inference ladder, the public re-exports,
+and the no-options contract. `preset-catalog.ts` already lists
+`changelog` in the `full` preset (done in S2), and `PUBLISH_ORDER`
+already names `plugins/changelog` — no further catalog wiring was
+needed. The `library` pack noted in r00011 does not yet exist in
+`preset-catalog.ts`; skipping pack-membership until that preset is
+introduced.
 
 ## acceptance
 
