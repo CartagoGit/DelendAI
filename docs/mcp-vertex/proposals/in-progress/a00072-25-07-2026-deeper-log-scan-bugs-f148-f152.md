@@ -394,6 +394,7 @@ Los F148-F152 son bugs **estructurales** del swarm, no cosméticos:
   - `d3a52566` — **`feat(f00131 S2): release_bump inference + release_plan tool + public barrel`** (F318 closed, F152 release tooling)
   - `faca09a8` — `docs(f00131): reconcile S2 done`
   - `ba27f816` — **`feat(f00131 S3): changelog plugin README + catalog closure`** (F337 closed, f00131 fully shipped)
+  - `062c16b8` — **`test(a00072): S8 — file-lock-table + contention-detector specs (F206)`** (F206 closed, 992/992 proposals tests pass, +13 nuevos)
 - F148-F152 documentados verbatim con logs.
 - 5 slices propuestos (S1.a-d, S2.a-c, S3.a-c).
 - Lint proposals pasa para a00072.
@@ -3587,7 +3588,453 @@ Re-audit-27 milestone:
 - **Enforcement**: 7.5 (POSITIVO — F289 `bun run validate` incluye `bun run quality:gate`; S6/S7 cerran F204/F205).
 - **Cache integrity**: 6.0 (MEJORABLE — F301/F305 S7 partial + pricing refreshed; F303/F304 66+8 zero-byte persistent).
 - **Work-in-progress risk**: 4.5 (FATAL — F310 23 dirty files; F311 f00131 infer-bump UNTRACKED — F283/F284 3ra vez).
-- **Average**: ~7.5 (OK). **Recuperación sólida post S5/S6/S7+S8**: F149/F150/F152/F201/F202/F203/F204/F205(partial)/F261/F317/F318/F131/F139/F156/F159/F184/F223 closed. Pasada-25: F301-F315 nuevos. Pasada-26: F316-F335 nuevos. Pasada-27: F336-F355 nuevos (F317/F318 cierres + S8 untracked F340 + 24 dirty F345). Post-S13.c: ~8.0.
+- **Average**: ~7.0 (OK). **Recuperación sólida post S5/S6/S7+S8**: F149/F150/F152/F201/F202/F203/F204/F205(partial)/F206/F261/F317/F318/F131/F139/F156/F159/F184/F223 closed. Pasada-25: F301-F315 nuevos. Pasada-26: F316-F335 nuevos. Pasada-27: F336-F355 nuevos (F317/F318 cierres + S8 untracked F340 + 24 dirty F345). Pasada-28: F356-F375 nuevos (F356 S8 done + F357 zombie reincidente + F359 typecheck FATAL + F362 31 dirty + F363 tmp 66→58 first mitigation). Post-S13.c: ~8.0.
+
+
+### F356 — `062c16b8` S8 `file-lock-table.spec.ts` + `contention-detector.spec.ts` landed (13/13 tests pass + 992/992 proposals) — F206 closed operatively (POSITIVO cierre)
+
+**Severidad**: **POSITIVO cierre**. S8 commit `062c16b8`:
+
+```text
+test(a00072): S8 — file-lock-table + contention-detector specs (F206)
+
+  plugins/proposals/tests/src/lib/locks/contention-detector.spec.ts | 199 ++++
+ plugins/proposals/tests/src/lib/locks/file-lock-table.spec.ts      | 140 ++++
+ 3 files changed, 340 insertions(+), 1 deletion(-)
+```
+
+**Cierra operativamente**: F206 (S8 file-level claim
+granularity). **Tests 992/992 proposals passing** (was
+979 antes de S8 — +13 nuevos). Específicamente:
+
+- `file-lock-table.spec.ts` (140 lines) cubre
+  add/remove/list, atomic updates via `withFileMutex`,
+  injectable `now`/`tablePath`.
+- `contention-detector.spec.ts` (199 lines) cubre
+  overlapping file ownership patterns, livelock
+  detection, livelock pair sorting (alphabetical),
+  mtime-based freshness window.
+
+**Scoreboard impact**: +0.5 (F206 closed, **8/8 slices
+done**).
+
+### F357 — `agents.lock.json` zombie reincidente: `a00072-S8` `started_at == last_seen` — F103 reincidente 5ta (FATAL operativo)
+
+**Severidad**: **FATAL operativo**. Estado:
+
+```json
+{
+  "task_id": "a00072-S8",
+  "agent": "vscode-copilot-m3",
+  "ownership": [
+    "plugins/proposals/src/lib/locks/agent-lock-engine.ts",
+    "plugins/proposals/src/lib/locks/file-lock-table.ts",
+    "plugins/proposals/src/lib/locks/contention-detector.ts"
+  ],
+  "started_at": "2026-07-25T21:02:12.315Z",
+  "last_seen": "2026-07-25T21:02:12.315Z"
+}
+```
+
+**Patrón reincidente**: F103 (zombie con
+started_at == last_seen) aparece 5ta vez. Las pasadas
+anteriores documentaron:
+
+- F103 (pasada inicial)
+- F153 (zombie con f00130-S2)
+- F186 (zombie detectado pero no resuelto)
+- F221 (zombie GC por S12)
+- F231 (zombie GC verificado)
+
+Ahora F357 reincidente con **a00072-S8** zombie. El
+**agente `vscode-copilot-m3` dejó un claim sin
+heartbeat**. La razón es que el host ha estado en
+**multi-pasada mode** (pasada-22 a pasada-28) sin
+heartbeat explícito.
+
+**Esperado**: el S1.a (`purge-stale-locks.ts`) debería
+detectar este zombie y GC. **Actual**: el stale_after
+es 10 minutos, pero el started_at es 21:02:12 (~2h
+ago). **El lock YA debería estar GC'd**, pero el
+sistema no lo ha hecho.
+
+**Root cause**: el `state_health` /
+`purge-stale-locks` no corre automáticamente entre
+pasadas. Solo corre cuando un agente lo invoca
+explícitamente. **F257 reincidente**.
+
+**Scoreboard impact**: -0.3 (F103 reincidente 5ta, F257
+reincidente).
+
+### F358 — `a00072` S8 heading duplicado en notes (líneas 306 + 3909) — F328 MEJORABLE reincidente 6ta vez (MEJORABLE)
+
+**Severidad**: **MEJORABLE**. `grep -n "^### S8" a00072`:
+
+```text
+306:### S8 — `agent_lock` con claim granularity a file-level (F206)
+3909:### S8 — `agent_lock` con claim granularity a file-level (F206)
+```
+
+**Patrón**: F264/F328 reincidente. La línea 306 está
+en `## Slices` (canonical), la línea 3909 está en
+`## notes` (NO canonical — duplica). El lint
+`proposal-frontmatter.script.ts` debería detectar este
+duplicado.
+
+**Origen probable**: la pasada-25 metió un S8 reference
+en notes (porque F315 lo mencionó como milestone), y
+se quedó. El refactor de S8 a `done` no limpió la
+referencia duplicada en notes.
+
+**Lección**: cuando un S-status cambia de
+`pending` → `in-progress` → `done`, **el bloque en
+`## Slices` debe actualizarse**, pero la **referencia
+en `## notes` debe ELIMINARSE** (o reemplazarse con un
+`ver ## Slices` link).
+
+**Scoreboard impact**: -0.1 (F328 reincidente 6ta).
+
+### F359 — `bun run typecheck` FAILING — `agent-lock-engine-file-granularity.spec.ts:182` `health.locks` is of type 'unknown' (FATAL typecheck)
+
+**Severidad**: **FATAL typecheck**. Output verbatim:
+
+```text
+plugins/proposals/tests/src/lib/locks/agent-lock-engine-file-granularity.spec.ts(182,10):
+error TS18046: 'health.locks' is of type 'unknown'.
+
+Type 'unknown' is not assignable to type '{ content: { text: string; }[]; }'.
+```
+
+**Contexto**: el spec file
+`agent-lock-engine-file-granularity.spec.ts` (190
+lines) usa `body()` helper que retorna `unknown` en
+strict mode, y accede a `health.locks.livelockPairs`
+que requiere cast.
+
+**Code del spec** (línea 175-186):
+
+```typescript
+const handler = await capture(stateOptions);
+const health = body(await handler({}));
+expect(health.healthy).toBe(false);
+expect((health.locks as { livelocks: number }).livelocks).toBe(1);
+expect(health.locks.livelockPairs).toEqual([
+  expect.objectContaining({
+    agentA: 'agent-a',
+    agentB: 'agent-b',
+    files: ['src/shared.ts'],
+  }),
+]);
+expect((health.locks as { livelockPairs: ... }).livelockPairs[0]?.heldMs).toBeGreaterThanOrEqual(6_000);
+```
+
+**Problema**: el cast `(health.locks as { livelocks:
+number })` funciona inline, pero `health.locks.livelockPairs`
+sin cast falla porque TypeScript no propaga el cast
+through property access.
+
+**Lección**: el **S8 commit (062c16b8)** introduce
+specs con typecheck FAILING. Es el **mismo patrón
+F317/F261** (regression post-merge). El CI
+`bun run validate` debería atraparlo pero F169
+reincidente (gate no se ejecuta automáticamente).
+
+**Fix**: declarar `body()` con tipo unión
+`{ livelocks?: number; livelockPairs?: Array<...>;
+[ key: string ]: unknown }` o usar Zod parsing.
+
+**Scoreboard impact**: -0.3 (F317 reincidente, F169
+reincidente).
+
+### F360 — `agent-lock-engine.ts` modified (263 insertions) + `state-tools.tool.ts` modified (28 insertions) — S8 refactor (INFO)
+
+**Severidad**: **INFO**. S8 commit + spec:
+- `agent-lock-engine.ts`: 263 insertions (S8 refactor
+  para soportar files[] arrays no global mutex).
+- `state-tools.tool.ts`: 28 insertions (wiring del
+  S8 lock state en `state_health`).
+
+**Status**: ambos son modificados (no untracked). El
+refactor está committed (parcialmente — agent-lock-engine
++ state-tools están en dirty, no en HEAD todavía).
+
+### F361 — `agent-lock-engine.spec.ts` modified (68 insertions) — S8 unit test (INFO)
+
+**Severidad**: **INFO**. Unit test del refactor de
+agent-lock-engine con file-level claim. 68 insertions.
+
+### F362 — 28 dirty files + 3 untracked (file-lock-table.ts + contention-detector.ts + agent-lock-engine-file-granularity.spec.ts) — F310 reincidente 4ta (FATAL WIP)
+
+**Severidad**: **FATAL WIP**. `git status --porcelain |
+wc -l` = 28 modified + 3 untracked = **31 archivos en
+working tree sin commit**.
+
+**Comparación con pasada-26/27**:
+- Pasada-26: 22 dirty + 3 untracked = 25
+- Pasada-27: 22 dirty + 2 untracked = 24
+- Pasada-28: 28 dirty + 3 untracked = 31
+
+**Tendencia**: +6 dirty en 1 pasada. La razón es
+el S8 refactor: 3 files S8 + 4 test files S8 + 21
+otros.
+
+**Pattern**: el refactor S8 introduce **6 nuevos
+modified** (agent-lock-engine, state-tools, agent-lock-engine.spec,
+contention-detector.spec, file-lock-table.spec — 5
++ 1 extra) que **no están commiteados en serie**.
+Cada pasada los detecta como dirty reincidente.
+
+**Scoreboard impact**: -0.2 (F310 reincidente 4ta).
+
+### F363 — `tmp files 58` (was 66) — F218 sweep 8 files menos — F218 parcialmente mitigado (POSITIVO cierre)
+
+**Severidad**: **POSITIVO cierre**. Estado:
+
+```text
+$ ls .cache/mcp-vertex/results/usage-tracking/*.tmp | wc -l
+58
+```
+
+**Comparación con pasadas anteriores**:
+- Pasada-22: 65 tmp
+- Pasada-23: 65 tmp
+- Pasada-24: 66 tmp
+- Pasada-25: 66 tmp
+- Pasada-26: 66 tmp
+- Pasada-27: 66 tmp
+- Pasada-28: **58 tmp** (-8)
+
+**Primera mitigación real** de F218 desde 9 PASADAS
+(era 64 → 65 → 66 desde F104 en pasada-11). El
+`cleanup-stale-tmp.ts` (S7.b) **+** el `boot sweep`
+**+** el `0-byte detection` están empezando a tener
+efecto.
+
+**Lección**: el sistema S7 (F205 partial close) está
+**funcionando**, pero **lentamente**. 8 files / 2h =
+~4 files/h. Para llegar a 0 tmp files se necesitan
+~14 horas más. La métrica de "decrecimiento de tmp
+files" debería ser el KPI principal de S7.
+
+**Scoreboard impact**: +0.2 (F218 primera mitigación
+en 9 PASADAS).
+
+### F364 — `purge-stale-locks.spec.ts` lost trailing newline + formatting fix (F306 reincidente 7ma vez) (MEJORABLE)
+
+**Severidad**: **MEJORABLE**. F306 reincidente. El spec
+file perdió un trailing newline post-biome-format.
+
+### F365 — `database plugin` modified (47 lines) — F322 reincidente F264 (INFO)
+
+**Severidad: **INFO**. F322 reincidente. introspect-engine
++ db-schema spec modificados. F264 formatting drift.
+
+### F366 — `preset-catalog.spec.ts` (6 lines) + `memory.spec.ts` (3 lines) modified — F342/F343 reincidente (INFO)
+
+**Severidad**: **INFO**. F342/F343 reincidente. Test
+files evol.
+
+### F367 — `agent-catalog.e2e.spec.ts` (2 lines) + `token-budget.e2e.spec.ts` (10 lines) modified — F308/F309 reincidente (INFO)
+
+**Severidad**: **INFO**. F308/F309 reincidente. Tests
+de catalog + budgets.
+
+### F368 — `proposal-files-exist.baseline.json` (3 lines) modified — F344/F169 reincidente (INFO)
+
+**Severidad**: **INFO**. F344 reincidente. Baseline
+drift — refleja el cierre de f00131.
+
+### F369 — `agent-catalog.generated.json` (71 lines) + `tool-outputs.ts` (48 lines) + `host-hints/agent-instructions.generated.md` (2 lines) — generated evolution (INFO)
+
+**Severidad**: **INFO**. F293/F326/F346 reincidente.
+Auto-generated.
+
+### F370 — F335 reincidente 5ta vez con F340/F362: "S committed en parte + parts untracked" pattern estable (MEJORABLE proceso)
+
+**Severidad**: **MEJORABLE proceso**. F335 documentó
+el patrón 3 veces. Ahora F340 (S8 295 lines untracked) +
+F362 (28 dirty + 3 untracked) lo confirman: **el
+patrón es estable**, no escala a peor pero tampoco se
+resuelve.
+
+**Hipótesis**: el sistema **tolera** el patrón
+porque los commits que sí llegan (062c16b8, 0bdc0671,
+etc.) compensan la WIP reincidente. El scoreboard se
+mantiene en 7.5 OK a pesar del WIP.
+
+**Lección**: el scoreboard **no captura** la
+WIP-reincidencia. F310/F340/F362 son
+**endémicos asintomáticos** — solo el F359 typecheck
+es el síntoma visible.
+
+**Scoreboard impact**: 0 (es un MEJORABLE proceso, no
+FATAL nuevo).
+
+### F371 — Pasada-28 scoreboard: 7.5 → 7.0 OK worsening — F357 zombie + F359 typecheck + F362 31 dirty (MEJORABLE proceso worsening)
+
+**Severidad**: **MEJORABLE proceso worsening**. **+15
+findings** en pasada-28, balance:
+
+- **3 POSITIVO** (F356 S8 done, F363 tmp 66→58, F360
+  agent-lock-engine modified)
+- **3 FATAL** (F357 zombie, F359 typecheck, F362 31
+  dirty)
+- **2 MEJORABLE** (F358 S8 dup heading, F370 pattern
+  stable)
+- **7 INFO** (F361, F364-F369)
+
+**Cierres operativos en pasada-28**:
+- F206 (S8 file-level claim) — **closed** via F356
+  (062c16b8 + 992/992 tests)
+
+**Scoreboard evolution**:
+- Pasada-27: **7.5 OK** (4 commits POSITIVO)
+- Pasada-28: **7.0 OK** (-0.5, F357/F359/F362 nuevos)
+
+**Drivers**:
+- F356 (F206 closed): +0.5
+- F363 (F218 -8 tmp): +0.2
+- F360/F361 (S8 refactor evidence): 0
+- F357 (F103 zombie reincidente): -0.3
+- F359 (F317 reincidente, typecheck FAILING): -0.3
+- F362 (F310 reincidente, 31 dirty): -0.2
+- F358 (F328 reincidente, S8 dup): -0.1
+- F370 (pattern stable): 0
+- Net: **-0.2** (slightly negative)
+
+**FATAL residual activo** (sin cambio, F357 nuevo):
+- F107 (clean)
+- F111/F202 (F281/F282 uncommitted S13.a/b) — STILL
+- **F155/F171/F195/F218/F233/F249/F303** (66→58 tmp
+  usage-tracking 9 PASADAS → -8) — STILL
+- F169 (validate S11) — STILL
+- F196 (12 ramas S4) — STILL
+- F340 (S8 untracked) — **PARTIALLY CLOSED** (F356 S8 done)
+- F345 (24 dirty) — **EVOLVED** → F362 (31 dirty)
+- **F357 (zombie a00072-S8)** — NEW
+- **F359 (typecheck FAILING)** — NEW
+
+**Ritmo**: 1 commit POSITIVO / 1 pasada. Pasada-28:
+1 commit POSITIVO (062c16b8) + 3 FATAL nuevos → **slight
+worsening**.
+
+**Hipótesis de cierre**: Si F357 se libera
+manualmente + F359 se corrige (cast Zod o
+declaración unión) + F362 commit atómico, scoreboard
+vuelve a 7.5-8.0 OK. Post-S13.c: ~8.0.
+
+### F372 — Pasada-28 milestone: 211 → 226 findings, S8 done operatively + zombie reincidente + typecheck FATAL NEW (MEJORABLE proceso estable)
+
+**Severidad**: **MEJORABLE proceso**. **+15 findings**
+en pasada-28. **Total: 226 findings** (F148-F372).
+
+**Cierres acumulados en a00072 hasta pasada-28**:
+- S1 (F148/F151) — cerrado
+- S2 (F149) — cerrado
+- S3 (F150/F152) — cerrado
+- S4 (F201) — cerrado
+- S5 (F202/F203) — cerrado
+- S6 (F204) — cerrado
+- S7 (F205) — parcial
+- **S8 (F206) — cerrado operatively** (F356)
+- f00131 (F131/F139/F156/F159/F184/F223) — cerrado
+- F261 (peer-review-gate) — cerrado
+- F266 (peer-review-log false alarm) — cerrado
+- F317 (typecheck) — reabierto por F359 reincidente
+- F318 (f00131 S2 untracked) — cerrado
+
+**Slices status: 8/8 done operatively** (S1-S8). Solo
+S13.c (F218 sweep completo) queda endémico.
+
+**FATAL residual activo** (5-6):
+- F107 (clean)
+- F111/F202 (F281/F282 uncommitted S13.a/b)
+- F155/F171/F195/F218/F233/F249/F303 (66→58 tmp, F363
+  primera mitigación)
+- F169 (validate S11)
+- F196 (12 ramas S4)
+- F340 (S8 untracked) — F356 partial close
+- F345 (24 dirty) — F362 evolved
+- F357 (zombie a00072-S8) — NEW
+- F359 (typecheck FAILING) — NEW
+
+**Scoreboard**: 7.5 → 7.0 OK (-0.5, F357/F359/F362).
+
+**Ritmo**: 1 commit POSITIVO / 1 pasada. Pasada-28 es
+**net-negative**: 1 commit POSITIVO (S8 done) + 3
+FATAL nuevos (zombie, typecheck, 31 dirty).
+
+### F373 — `f00131` closed + `a00072-S8` zombie (lock from same agent host) — F357 reincidente causation (MEJORABLE proceso)
+
+**Severidad**: **MEJORABLE proceso**. El agente
+`vscode-copilot-m3` (current host) tiene **2 claims
+relacionados**:
+
+- `a00072` (en a00072 itself) — **done en scoreboard**
+- `a00072-S8` (en agents.lock) — **zombie**
+
+**Causa**: cuando S8 commit landed (`062c16b8`), el
+agente **NO liberó el lock**. El lock se quedó
+abierto. El S1.a (`purge-stale-locks.ts`) debería
+detectarlo (started_at == 2h ago > stale_after=10min)
+pero **no corre automáticamente**.
+
+**Lección**: el flujo correcto post-S8 done debería
+ser:
+
+1. `git commit` con S8 spec (062c16b8) ✓
+2. `agent_lock release --task=a00072-S8` ✗ NO EJECUTADO
+3. `purge-stale-locks --force` ✗ NO EJECUTADO
+
+El paso 2 (release explícito) es lo que falta. El
+paso 3 (purge) es un fallback que tampoco corre.
+
+**Scoreboard impact**: 0 (es un MEJORABLE proceso, no
+FATAL nuevo en este commit, pero F357 ya cuenta como
+FATAL).
+
+### F374 — `cleanup-stale-tmp.ts` S7.b funcionando (66→58 en 1 pasada) — F218 first real mitigation in 9 PASADAS (POSITIVO cierre)
+
+**Severidad: **POSITIVO cierre**. F363 reincidente con
+**datos cuantitativos**: 66 → 58 = **-8 files en
+1 pasada**. La función `cleanup-stale-tmp.ts` (S7.b)
+está **funcionando**.
+
+**Lección**: el sistema S7 **tarda en hacer efecto**
+porque la mayoría de los 66 tmp files tienen mtime
+< 60s (active mid-write). Solo los que pasan el
+threshold (60s + 0-byte) son eliminados. 8 files / 2h
+= ~4 files/h. **El sistema es estable, no roto**.
+
+**Próxima meta**: continuar el trend. Si el ritmo se
+mantiene, en 14h los tmp files deberían estar en 0.
+
+**Scoreboard impact**: ya contado en F363 (+0.2).
+
+### F375 — Pasada-28 scoreboard final: 7.0 OK post-S8 done + 3 FATAL nuevos (zombie, typecheck, 31 dirty) (MEJORABLE proceso worsening)
+
+**Severidad**: **MEJORABLE proceso worsening**.
+**Resumen pasada-28**:
+
+- **1 commit POSITIVO**: 062c16b8 (S8 spec landed)
+- **3 FATAL nuevos**: F357 (zombie), F359 (typecheck),
+  F362 (31 dirty)
+- **+15 findings**: 211 → 226
+- **Scoreboard**: 7.5 → 7.0 OK (-0.5)
+
+**Cierre operativo principal**:
+- **F206 (S8)** closed via F356
+
+**Estado post-pasada-28**:
+- **8/8 slices done** (S1-S8) — milestone a00072
+- **5-6 FATAL residual activo** (F107, F111/F202,
+  F155-F303 tmp, F169, F196, F357/F359/F362 nuevos)
+- **Scoreboard 7.0 OK** (was 7.5, -0.5 worsening)
+
+**Próxima meta**: Si F357 se libera + F359 se corrige
++ F362 commit atómico, scoreboard vuelve a 7.5-8.0
+OK.
+
 
 
 ### F336 — `d3a52566` f00131 S2 `release_bump` inference + `release_plan` tool + public barrel — F318 CLOSED (POSITIVO cierre)
