@@ -86,6 +86,10 @@ export const captureToolRegistration = async (
 		// at register time (teardown wiring). Provide the inner-server
 		// seam so those registrations are capturable too.
 		server: { onclose: undefined as (() => void) | undefined },
+		// verify:tools / capture stubs do not implement the full MCP
+		// transport. notification + agent-events fire logging on lock
+		// release; a missing method throws *synchronously* before .catch.
+		sendLoggingMessage: async (_message?: unknown) => undefined,
 	};
 	await tool.register(fakeServer as never);
 	if (!invoke) {

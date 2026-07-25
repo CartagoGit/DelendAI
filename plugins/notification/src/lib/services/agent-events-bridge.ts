@@ -5,6 +5,7 @@ import {
 	type IAgentEvent,
 	type IAgentHeartbeatWatcher,
 } from './agent-events';
+import { safeSendLoggingMessage } from './safe-logging';
 
 export interface IAgentEventsBridgeOptions {
 	readonly namespacePrefix: string;
@@ -33,13 +34,11 @@ export const startAgentEventsBridge = (
 		onEvent: (event) => {
 			events.push(event);
 			if (events.length > 200) events.shift();
-			void server
-				.sendLoggingMessage({
-					level: event.kind === 'agent-dead' ? 'warning' : 'info',
-					logger: `${options.namespacePrefix}_agent_events`,
-					data: { event: event.kind, ...event },
-				})
-				.catch(() => undefined);
+			safeSendLoggingMessage(server, {
+				level: event.kind === 'agent-dead' ? 'warning' : 'info',
+				logger: `${options.namespacePrefix}_agent_events`,
+				data: { event: event.kind, ...event },
+			});
 		},
 	});
 	watcher.start();
