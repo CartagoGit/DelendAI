@@ -15,9 +15,9 @@ export type CommitType =
 
 export interface IConventionalCommit {
 	readonly type: CommitType;
-	readonly scope?: string;
+	readonly scope?: string | undefined;
 	readonly subject: string;
-	readonly body?: string;
+	readonly body?: string | undefined;
 	readonly breaking: boolean;
 	readonly hash: string;
 }

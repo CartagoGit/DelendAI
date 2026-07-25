@@ -64,9 +64,12 @@ section. Pure over injected git log; reuses the conventional-commit parser.
 
 ### S2 — semver bump inference + release-plan surface
 
-- **Status**: pending
-- **Files**: `plugins/changelog/src/lib/bump/`, `plugins/changelog/src/lib/tools/release-plan.tool.ts`
+- **Status**: done
+- **Files**: `plugins/changelog/src/lib/bump/infer-bump.ts`, `plugins/changelog/src/lib/bump/infer-bump.spec.ts`, `plugins/changelog/src/lib/tools/release-plan.tool.ts`, `plugins/changelog/src/lib/tools/release-plan.tool.spec.ts`, `plugins/changelog/src/public/index.ts`
 - **Gate**: bun run validate
+- **Wiring**: `tsconfig.base.json` paths, `vitest.shared.ts` aliases, `packages/core/src/lib/plugins/plugin-defaults.ts` (`changelog: {}`), `packages/core/src/lib/plugins/preset-catalog.ts` (`full` membership). PUBLISH_ORDER already lists `plugins/changelog`.
+
+Implemented `inferBump(commits)` (pure: breaking→major, feat→minor, fix/perf/revert→patch, else→none with reason + considered count) and `buildReleasePlan(publishOrder, bump)` (per-entry semver bump). Tool `release_plan` exposes a read-only preview. 33/33 changelog tests green, `bun run typecheck` clean.
 
 `release_bump` infers the next version from commit types; `release_plan`
 exposes the internal ordered publish plan (read/preview). Pure inference.
