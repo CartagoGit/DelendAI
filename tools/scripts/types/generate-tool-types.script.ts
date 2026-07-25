@@ -49,10 +49,10 @@ import envPlugin from '@mcp-vertex/env';
 import i18nPlugin from '@mcp-vertex/i18n';
 import perfPlugin from '@mcp-vertex/perf';
 import techDebtPlugin from '@mcp-vertex/tech-debt';
+import linkCheckPlugin from '@mcp-vertex/link-check';
 import usageTrackingPlugin from '../../../plugins/usage-tracking/src/index';
 import browserPlugin from '@mcp-vertex/browser';
 import refactorPlugin from '@mcp-vertex/refactor';
-import promptEvalPlugin from '@mcp-vertex/prompt-eval';
 
 import {
 	buildPackageModules,
@@ -83,14 +83,14 @@ const PLUGIN_SPECIFIERS: Readonly<Record<string, unknown>> = {
 	'mcp-i18n': i18nPlugin,
 	'mcp-perf': perfPlugin,
 	'mcp-tech-debt': techDebtPlugin,
+	'mcp-link-check': linkCheckPlugin,
 	'mcp-usage-tracking': usageTrackingPlugin,
 	'mcp-browser': browserPlugin,
 	'mcp-refactor': refactorPlugin,
-	'mcp-prompt-eval': promptEvalPlugin,
 };
 
 const PLUGIN_LIST =
-	'proposals,rules,memory,git,quality,search,notification,docs,deps,logs,audit,status-marker,test-convention,web-fetch,cache,security,diagram,env,i18n,perf,tech-debt,usage-tracking,browser,refactor,prompt-eval';
+	'proposals,rules,memory,git,quality,search,notification,docs,deps,logs,audit,status-marker,test-convention,web-fetch,cache,security,diagram,env,i18n,perf,tech-debt,link-check,usage-tracking,browser,refactor';
 
 /**
  * Assemble the reference server with every plugin and harvest each
