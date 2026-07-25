@@ -118,9 +118,16 @@ from env, redacted. Pure over injected fetch.
 
 ### S3 — local correlation + catalog
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/observability/src/lib/correlate/`, `plugins/observability/README.md`
 - **Gate**: bun run validate
+- implementation:
+  - `correlate/correlate-errors.ts` adds pure `correlateErrorsWithLocal({ issues, localLogs, localMetrics, now, sinceMinutes? })` and returns one flattened match per issue x log-line pair.
+  - `correlate/real-deps.ts` reads local JSONL logs from `.cache/mcp-vertex/results/logs/` + `logs-errors/` and exposes an injected `IReadLocalCorrelateDeps` seam; metrics are optional and read from `.cache/mcp-vertex/results/metrics/` when present.
+  - `tools/obs-correlate.tool.ts` registers `obs_correlate` with injected remote-issue and local-log readers so tests remain hermetic; output includes `{ matches, totalIssues, totalLogs, summary }`.
+  - `src/index.ts` wires the new tool with the env-backed `obs_errors` source, adds the `observability-correlate-usage` knowledge entry, and keeps the runtime reader local to the plugin.
+  - `plugins/observability/README.md` now documents the S3 flow and sample output.
+  - Added 2 S3 spec files covering direct correlation behavior and the tool round-trip.
 
 Correlate remote errors with local `logs`/`metrics` (reuse `logs_correlate`);
 catalog + wiki + pack membership.
