@@ -44,6 +44,7 @@ const columnSchema = z.object({
 	type: z.string(),
 	nullable: z.boolean(),
 	primaryKey: z.boolean(),
+	unique: z.boolean(),
 	defaultValue: z.string().nullable(),
 });
 
@@ -81,7 +82,9 @@ const PROBE_OUTPUT_SCHEMA = z.object({
 });
 
 /** Project the introspect output through zod so the JSON envelope is contract-clean. */
-const projectSchema = (schema: IDatabaseSchema): z.infer<typeof SCHEMA_OUTPUT_SCHEMA> =>
+const projectSchema = (
+	schema: IDatabaseSchema,
+): z.infer<typeof SCHEMA_OUTPUT_SCHEMA> =>
 	SCHEMA_OUTPUT_SCHEMA.parse({
 		driver: schema.driver,
 		tables: schema.tables.map((t: ITableInfo) => ({
@@ -92,6 +95,7 @@ const projectSchema = (schema: IDatabaseSchema): z.infer<typeof SCHEMA_OUTPUT_SC
 				type: c.type,
 				nullable: c.nullable,
 				primaryKey: c.primaryKey,
+				unique: c.unique,
 				defaultValue: c.defaultValue,
 			})),
 			indexes: t.indexes.map((i) => ({
@@ -113,7 +117,9 @@ export const buildDatabaseSchemaToolRegistrations = (
 	options: IDatabaseSchemaToolOptions,
 ): readonly IToolRegistration[] => {
 	const prefix = options.namespacePrefix;
-	const resolveDsn = options.resolveDsn ?? ((): string | undefined => process.env.DATABASE_URL);
+	const resolveDsn =
+		options.resolveDsn ??
+		((): string | undefined => process.env.DATABASE_URL);
 	const createDriver = options.createDriver ?? createSqliteDriver;
 
 	const probe = async () => {
@@ -133,7 +139,11 @@ export const buildDatabaseSchemaToolRegistrations = (
 				hint: result.hint,
 			} as const;
 		}
-		return { ok: true, driver: result.driver.kind, hint: undefined } as const;
+		return {
+			ok: true,
+			driver: result.driver.kind,
+			hint: undefined,
+		} as const;
 	};
 
 	const loadSchema = async () => {
@@ -195,7 +205,9 @@ export const buildDatabaseSchemaToolRegistrations = (
 							return toolJson({
 								ok: false,
 								driver: result.driver,
-								...(result.hint !== undefined ? { hint: result.hint } : {}),
+								...(result.hint !== undefined
+									? { hint: result.hint }
+									: {}),
 							});
 						}
 						return toolJson({ ok: true, driver: result.driver });

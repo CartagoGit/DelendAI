@@ -13,6 +13,7 @@
 import { definePlugin } from '@mcp-vertex/core/public';
 import { z } from 'zod';
 
+import { buildDatabaseErdToolRegistrations } from './lib/tools/db-erd.tool';
 import { buildDatabaseQueryToolRegistrations } from './lib/tools/db-query.tool';
 import { buildDatabaseSchemaToolRegistrations } from './lib/tools/db-schema.tool';
 
@@ -36,6 +37,12 @@ export default definePlugin({
 		const opts = parsed.data;
 		return {
 			tools: [
+				...buildDatabaseErdToolRegistrations({
+					namespacePrefix: ctx.namespacePrefix,
+					...(opts.resolveDsn !== undefined
+						? { resolveDsn: opts.resolveDsn }
+						: {}),
+				}),
 				...buildDatabaseSchemaToolRegistrations({
 					namespacePrefix: ctx.namespacePrefix,
 					...(opts.resolveDsn !== undefined
@@ -48,6 +55,22 @@ export default definePlugin({
 						? { resolveDsn: opts.resolveDsn }
 						: {}),
 				}),
+			],
+			knowledge: [
+				{
+					id: 'database-erd-usage',
+					title: 'Database ERD generation',
+					body: [
+						'# Database ERD generation',
+						'',
+						`Tool: \`${ctx.namespacePrefix}_db_erd\` — introspect the current database and return a deterministic mermaid ER diagram.`,
+						'',
+						'- Use the optional `tables` array to focus the diagram on a subset of entities; relationships are kept only when both ends are selected.',
+						'- The payload includes `mermaid`, `tableCount`, `relationshipCount`, and a compact `summary` for quick routing.',
+						'- The returned `erDiagram` string can be pasted directly into docs pages, wiki pages, or rendered alongside the diagram plugin mermaid output in the docs site.',
+						'- Pairs with the diagram plugin work tracked in f00132: both tools emit mermaid for the same docs/rendering pipeline.',
+					].join('\n'),
+				},
 			],
 		};
 	},
