@@ -614,7 +614,7 @@ export const deactivate = async (): Promise<void> => {
  * for the common single-script case while still letting power users
  * pass flags via `["run", "mcp-vertex", "--preset=swarm"]`.
  */
-const resolveServerCommand = async (
+export const resolveServerCommand = async (
 	vscode: IVscodeApi,
 ): Promise<{ command: string; args: readonly string[]; cwd?: string }> => {
 	const defaults = { command: 'bun', args: ['run', 'mcp-vertex'] } as const;
@@ -622,12 +622,17 @@ const resolveServerCommand = async (
 	const config = vscode.workspace?.getConfiguration?.('mcp-vertex.server');
 	const command = config?.get<string>('command');
 	const rawArgs = config?.get<unknown>('args');
+	const configCwd = config?.get<string>('cwd');
 	const args =
 		Array.isArray(rawArgs) && rawArgs.every((a) => typeof a === 'string')
 			? (rawArgs as readonly string[])
 			: typeof rawArgs === 'string' && rawArgs.trim().length > 0
 				? rawArgs.trim().split(/\s+/)
 				: undefined;
+	const cwd =
+		typeof configCwd === 'string' && configCwd.trim().length > 0
+			? configCwd.trim()
+			: root;
 	if (
 		(typeof command === 'string' && command.length > 0) ||
 		args !== undefined
@@ -635,17 +640,17 @@ const resolveServerCommand = async (
 		return {
 			command: command ?? defaults.command,
 			args: args ?? defaults.args,
-			...(root === undefined ? {} : { cwd: root }),
+			...(cwd === undefined ? {} : { cwd }),
 		};
 	}
 	const fromMcpJson =
 		root === undefined ? undefined : await readWorkspaceMcpJsonLaunch(root);
 	if (fromMcpJson !== undefined) {
-		return { ...fromMcpJson, cwd: root as string };
+		return { ...fromMcpJson, ...(cwd === undefined ? {} : { cwd }) };
 	}
 	return {
 		...defaults,
-		...(root === undefined ? {} : { cwd: root }),
+		...(cwd === undefined ? {} : { cwd }),
 	};
 };
 
