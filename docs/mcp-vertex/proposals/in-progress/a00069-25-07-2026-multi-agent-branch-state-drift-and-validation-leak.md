@@ -2172,7 +2172,7 @@ El commit `424291c1 docs(a00069): record F56 — F41 triage results, root causes
 
 **Slice**: ejecutar `branch-gc` con filtro "rama cuyo HEAD es ancestro de develop".
 
-### F56 — F41 triage: root-caused and fixed 5 of the 8 known-failing groups, plus a real cacheNamespace bug they surfaced (RESOLVED, partial)
+### F146 — F41 triage: root-caused and fixed 5 of the 8 known-failing groups, plus a real cacheNamespace bug they surfaced (RESOLVED, partial)
 
 Worked F41's own prescribed slice ("triage inmediato... resolver ≥ 1
 test verde de cada uno de los 8 grupos") against a fresh worktree, using
@@ -2918,8 +2918,7 @@ cli-ui-parity map: stale (F49)
 PRESET_CATALOG: vs mcp-vertex.config.json drift (F48)
 sessionStorage parity CI/local: divergente (F47)
 ````
-
-### F80 — `auto_work` re-reclama un slice pendiente ya implementado cuando el cierre falla por una puerta global ajena (BUG)
+### F147 —  `auto_work` re-reclama un slice pendiente ya implementado cuando el cierre falla por una puerta global ajena (BUG)
 
 **Evidencia (2026-07-25)**: tras implementar y versionar un slice, `close_slice`
 rechazó el cierre por fallos de formato no relacionados. El slice conservó el

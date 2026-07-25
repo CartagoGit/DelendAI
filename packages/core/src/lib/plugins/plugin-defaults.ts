@@ -75,6 +75,7 @@ export const PLUGIN_DEFAULTS: Readonly<
 		topActions: 5,
 		layers: [],
 	},
+	database: {},
 };
 
 export const resolvePluginOptions = (
