@@ -266,8 +266,10 @@ export const runStateRepair = async (
  * `state-repair-auto` line. Failures are swallowed so a corrupt cache never
  * blocks tool registration.
  */
-export const runAutoStateRepairOnBoot = (options: IStateToolOptions): void => {
-	void (async () => {
+export const runAutoStateRepairOnBoot = (
+	options: IStateToolOptions,
+): Promise<void> => {
+	const run = async (): Promise<void> => {
 		try {
 			const before = await diagnose(options);
 			if (
@@ -296,7 +298,10 @@ export const runAutoStateRepairOnBoot = (options: IStateToolOptions): void => {
 				}),
 			);
 		}
-	})();
+	};
+	const pending = run();
+	void pending;
+	return pending;
 };
 
 /** `<prefix>_state_health` — read-only swarm state diagnosis. */
