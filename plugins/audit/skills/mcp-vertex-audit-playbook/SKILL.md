@@ -43,6 +43,7 @@ Before reading any source file:
 3. Run `bun run build 2>&1 | tail -10` — capture build output.
 4. Run `biome ci . 2>&1 | tail -20` — capture warning/error count.
 5. Count approximate LOC: `find packages plugins extensions apps tools scripts -name '*.ts' | xargs wc -l | tail -1`.
+6. If the `logs` plugin is loaded, call `logs_errors_tail { limit: 200, includeMeta: true }` (or, if it isn't loaded in this host session, read `.cache/mcp-vertex/results/logs-errors/*.jsonl` directly). This is the curated stream of every event whose outcome was NOT `ok`/`idle` — failed/timed-out/dead/cancelled/unknown tool calls, each with full args, error message, stack and elapsedMs. It is real, observed breakage from prior sessions, not speculation. Build a short "known-bad" list from it — `{toolName/kind, count, most recent ts, files touched}` — and read those files FIRST once you reach the phase that owns them (a burst of `tool-failed` events for `proposals_agent_lock` sends you straight to Phase 2's proposals section, for example). Cite any finding that traces back to one of these events with its log line, in addition to the code.
 
 Record all numbers — they become the `## Verified State` table. **Do not stop here.**
 
