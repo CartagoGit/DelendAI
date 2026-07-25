@@ -117,15 +117,9 @@ Los F148-F152 son bugs **estructurales** del swarm, no cosméticos:
 
 ### S2 — `proposal_review` mandatory pre-done gate (F149)
 
-- **Status**: todo
-- **Files**:
-  - `plugins/proposals/src/lib/tools/proposal-transition.tool.ts` —
-    gate rechaza `to: done` si la propuesta no tiene al menos
-    1 entrada en `peer-review.jsonl` desde su último
-    `to: review`.
-  - `plugins/proposals/src/lib/tools/proposal-review.tool.ts` (nuevo
-    o ampliado) — el reviewer debe ser **distinto** del
-    agente que implementó.
+- **Status**: pending
+- **Files**: `plugins/proposals/src/lib/tools/proposal-transition.tool.ts`,
+  `plugins/proposals/src/lib/tools/authoring.tool.ts`.
 - **Cambio** (3 sub-slices):
   - **S2.a** — Gate mandatory. `proposal_transition` rechaza
     `to: done` si la propuesta no tiene ≥1 entrada en
@@ -174,6 +168,141 @@ Los F148-F152 son bugs **estructurales** del swarm, no cosméticos:
   - Spec: `close_slice` con quality error → `ok:false`,
     `blockerType: "quality-failed"`.
 
+### S4 — `agent_worktree` auto-detect stranded branches (F201)
+
+- **Status**: todo
+- **Files**:
+  - `plugins/proposals/src/lib/tools/branch-status.tool.ts` — new
+    helper `detectStrandedBranches()` en el tool.
+  - `plugins/proposals/src/lib/locks/branch-hygiene.ts` — new file
+    con `purgeStrandedBranches()` que detecta `ahead=0 && behind>10`
+    y propone delete via `git worktree remove` + `git branch -D`.
+  - `plugins/proposals/src/lib/tools/agent-worktree.tool.ts` —
+    wiring post-action `create` para invocar `purgeStrandedBranches()`
+    cada N días.
+- **Cambio** (2 sub-slices):
+  - **S4.a** — `detectStrandedBranches()` retorna lista de ramas
+    con `{branch, ahead, behind}` para todas las agent/* branches.
+    Reporta via `branch_status` tool.
+  - **S4.b** — `purgeStrandedBranches()` corre al boot del MCP
+    server (cada 24h) y propone delete de branches stranded.
+    Operator approve via `--purge-stranded` flag.
+- **Gate**: type, lint, test.
+- **Verification**:
+  - Spec: `branch_status` retorna 6 branches stranded 178 commits
+    antes de S4, 0 después de S4 con `--purge-stranded`.
+  - Spec: `purgeStrandedBranches()` es idempotente (re-run no-op).
+  - Spec: rama no-stranded (`ahead>0` o `behind<10`) no se borra.
+
+### S5 — `proposal_transition` y `close_slice` ejecutan `bun run validate` automáticamente (F202/F203)
+
+- **Status**: todo
+- **Files**:
+  - `plugins/proposals/src/lib/tools/proposal-transition.tool.ts` —
+    pre-condition invoca `bun run validate` antes de aceptar la
+    transición. Si validate fails, retorna `ok:false`.
+  - `plugins/proposals/src/lib/tools/close-slice.tool.ts` — pre-condition
+    invoca `validateEvidence` parameter (F169 evolución).
+  - `plugins/proposals/src/lib/logging/log-honest.ts` — new helper
+    que **deriva** `outcome` del campo `meta.isError`, no del LLM.
+- **Cambio** (3 sub-slices):
+  - **S5.a** — `proposal_transition` rechaza transiciones a
+    `done`/`review` si `bun run validate` no exit 0. El `reason`
+    field se ignora (no se loguea como "razón del agente").
+  - **S5.b** — `close_slice` rechaza si `validateEvidence` no es
+    un path a un validate log con exit 0.
+  - **S5.c** — `log-honest.ts` reescribe logs para que
+    `outcome:"ok"` solo aparezca cuando `meta.isError:false`. Si
+    hay `meta.isError:true`, `outcome` se sobrescribe a `"error"`.
+- **Gate**: type, lint, test.
+- **Verification**:
+  - Spec: `proposal_transition` con `validateEvidence=null` →
+    `ok:false`, `error.reason:"validate required"`.
+  - Spec: `close_slice` con validate log con exit 1 → `ok:false`.
+  - Spec: log post-S5 muestra `outcome:"error"` cuando
+    `meta.isError:true` (cataloga 19 events de F202).
+
+### S6 — `mcp-vertex_skill` resuelve SKILL.md desde `plugins/*/skills/` Y `packages/core/skills/` (F204)
+
+- **Status**: todo
+- **Files**:
+  - `packages/core/src/lib/tools/skill-tool.ts` — reescribir el
+    resolver para cargar SKILL.md desde múltiples raíces.
+  - `packages/core/src/lib/skills/registry.ts` — new file con
+    `loadSkill(id)` que busca en orden:
+    1. `plugins/*/skills/{id}/SKILL.md`
+    2. `packages/core/skills/{id}/SKILL.md`
+    3. `apps/web/skills/{id}/SKILL.md` (futuro)
+  - `packages/core/tests/src/lib/skills/registry.spec.ts` — new
+    test que verifica que los 3 skills rotos en F204 ahora resuelven.
+- **Cambio** (2 sub-slices):
+  - **S6.a** — Reescribir `skill-tool.ts` para usar `loadSkill(id)`.
+  - **S6.b** — Cache el skill body en `.cache/mcp-vertex/skills/{id}.md`
+    con TTL 1h para evitar re-lectura en cada llamada.
+- **Gate**: type, lint, test.
+- **Verification**:
+  - Spec: `mcp-vertex_skill id="proposals-workflow-playbook"`
+    retorna body del playbook (no "unknown").
+  - Spec: `mcp-vertex_skill id="operator"` retorna body del operator
+    skill.
+  - Spec: `mcp-vertex_skill id="status-marker-and-closure"` retorna
+    body del closure skill.
+  - Spec: 19 isError events históricos (F204 #[13-15]) son
+    ahora `ok:true` con body completo.
+
+### S7 — Lint cross-cutting `check-stray-cache-files` con mtime > 60s (F205)
+
+- **Status**: todo
+- **Files**:
+  - `tools/scripts/lint/check-stray-cache-files.script.ts` — new
+    file que escanea `.cache/mcp-vertex/**/*.tmp` y reporta los
+    que tienen `mtime > 60s` Y `size=0` como FATAL.
+  - `package.json` — wire `bun run lint:cache-files` en
+    `bun run validate` post-step.
+  - `plugins/proposals/src/lib/agents/auto-work-engine.ts` —
+    `close_slice` invoca el lint antes de aceptar el slice.
+- **Cambio** (2 sub-slices):
+  - **S7.a** — `check-stray-cache-files` retorna exit 1 cuando
+    hay 0-byte tmp files en `.cache/mcp-vertex/results/usage-tracking/`.
+    Reporta cada file por path.
+  - **S7.b** — `usage-tracking/write-pricing-summary.ts` se
+    refactoriza para atomic write (crear tmp, escribir, rename)
+    y limpia tmp files viejos (>60s) al boot del proceso.
+- **Gate**: type, lint, test.
+- **Verification**:
+  - Spec: `bun run lint:cache-files` retorna exit 1 con
+    `7 zero-byte tmp files` antes de S7, exit 0 después.
+  - Spec: tmp file creation es atómico (no se queda 0-byte
+    si el proceso crashes).
+
+### S8 — `agent_lock` con claim granularity a file-level (F206)
+
+- **Status**: todo
+- **Files**:
+  - `plugins/proposals/src/lib/locks/agent-lock-engine.ts` —
+    refactor: claim sobre `files[]` array no global mutex.
+  - `plugins/proposals/src/lib/locks/file-lock-table.ts` — new
+    file con tabla `{file: agent_id, mtime}` para tracking.
+  - `plugins/proposals/src/lib/locks/contention-detector.ts` —
+    new helper que detecta livelock > 5s entre 2 claims
+    con `files` disjoint.
+- **Cambio** (3 sub-slices):
+  - **S8.a** — `file-lock-table.ts` mantiene
+    `.cache/mcp-vertex/file-locks.json` con map file → agent.
+    Update atómico con `withFileMutex`.
+  - **S8.b** — `agent-lock-engine.ts` valida que 2 claims con
+    `files[]` disjoint NO compiten. Si hay contention > 5s
+    entre disjoint files, raise `livelock-error`.
+  - **S8.c** — `contention-detector.ts` corre cada 60s y reporta
+    patrones de livelock via `state_health`.
+- **Gate**: type, lint, test.
+- **Verification**:
+  - Spec: 2 agents claiming archivos disjoint NO entran en
+    contention (latency < 100ms).
+  - Spec: 2 agents claiming archivos overlapping entran en
+    contention normal (segundo espera).
+  - Spec: `state_health` reporta livelock detectado.
+
 ## acceptance
 
 ```text
@@ -185,6 +314,16 @@ Los F148-F152 son bugs **estructurales** del swarm, no cosméticos:
 - F151 fixed: state_health invoca removeStale (S1.a).
 - F152 fixed: validate invoca quality_run (S3.b).
 - F152 fixed: close_slice invoca quality_run pre-ok (S3.c).
+- F201 fixed: branch_status detecta stranded branches (S4.a).
+- F201 fixed: agent_worktree purga stranded branches > 24h (S4.b).
+- F202 fixed: log-honest reescribe outcome desde meta.isError (S5.c).
+- F203 fixed: proposal_transition invoca validate pre-accept (S5.a).
+- F203 fixed: close_slice requiere validateEvidence (S5.b).
+- F204 fixed: skill-tool resuelve desde plugins/*/skills y packages/core/skills (S6.a, S6.b).
+- F205 fixed: check-stray-cache-files detecta 0-byte tmp files (S7.a).
+- F205 fixed: write-pricing-summary atomic write + tmp cleanup (S7.b).
+- F206 fixed: file-lock-table con claim granularity file-level (S8.a, S8.b).
+- F206 fixed: contention-detector reporta livelock patterns (S8.c).
 ```
 
 ## verified state
@@ -1230,6 +1369,219 @@ Re-audit-16 scoreboard:
 
 **Severado**: MEJORABLE proceso — continua el trend positivo.
 
+### F201 — 6 ramas `agent/*` stranded 178 commits behind develop — F154/F172/F196 reincidente con datos actualizados (FATAL operativo)
+
+Re-audit-17 `git rev-list --count {branch}..develop`:
+
+```text
+agent/codex-prompt-eval-s1:        50 behind
+agent/codex-auto-work-pending-drift: 41 behind
+agent/claude-docfix:                32 behind
+agent/codex-cli-logs-errors-tail:   23 behind
+agent/codex-close-slice-timeout:    20 behind
+agent/codex-observability-readme:   12 behind
+TOTAL:                              178 behind
+```
+
+**Esperado**: 0 (S4 branch enforcement). **Actual**: 6 ramas × 178 commits stranded = ~30 commits/rama en promedio **que existen en develop y NO en la rama**.
+
+**Esperado vs Actual**: las 6 ramas tienen **0 commits ahead** de develop (`git rev-list --count develop..{branch} = 0`). Eso significa que **toda la historia de la rama ya está mergeada o fue reemplazada**, pero la rama persiste como snapshot obsoleto.
+
+- `agent/codex-prompt-eval-s1` (50 behind): probablemente contenía trabajo de prompt-eval que ya fue mergeado a develop pero develop ha seguido evolucionando.
+- `agent/codex-auto-work-pending-drift` (41 behind): mismo patrón.
+- `agent/claude-docfix` (32 behind): docfix mergeado, develop ha seguido.
+- 3 ramas más (12-23 behind): mismas.
+
+**Cross-ref**: F154 (pasada-13, 5 ramas), F172 (pasada-15, 12 ramas), F196 (pasada-16, 12 ramas) → **F201 (pasada-17, 6 ramas)**. La cifra oscila porque F196 contaba remote-tracking branches, F201 cuenta solo locales. **El patrón reincidente es claro**: las ramas agent/* persisten sin limpieza.
+
+**Severidad**: **FATAL operativo**. 178 commits stranded = **30 días de trabajo distribuido** entre 6 agentes **que ahora es invisible para los nuevos agentes** (no se sabe qué está mergeado y qué no).
+
+**Acción**: S4 (branch enforcement) **debe** detectar `ahead=0 && behind>10` y proponer delete. Es la diferencia entre "ramas activas" (F154) y "ramas stranded" (F201).
+
+### F202 — 19 isError:true events en logs 9d con `outcome:"ok"` — F111 reincidente con catálogo completo (FATAL persistente)
+
+Re-audit-17 scan de los 9 días de logs `2026-07-17.jsonl` a `2026-07-25.jsonl`:
+
+```text
+total tool-completed: 422
+isError=true: 19 (4.5% del total)
+con outcome="ok" en root: 19/19 (100%)
+```
+
+**Catálogo completo de errores** (evento, herramienta, motivo):
+
+| # | tool | args.id/agent | error.reason |
+|---|------|---------------|--------------|
+| 1 | proposal_transition | f00144 → done | illegal: "ready" → "done" |
+| 2 | proposal_transition | f00144 → done | illegal: "ready" → "done" (retry) |
+| 3 | proposal_transition | f00143 → review | illegal: "ready" → "review" |
+| 4 | fs_read | a00067 (path 120-300) | file not found |
+| 5 | fs_read | a00067 (path 120-240) | file not found (retry) |
+| 6 | fs_read | a00067 (path 120-180) | file not found (retry) |
+| 7 | create_proposal | f00123 (kind=chore) | prefix "f" ≠ prefix "c" |
+| 8 | create_proposal | f00122 (kind=perf) | prefix "f" ≠ prefix "v" |
+| 9 | reconcile_folder | a00067 | proposal not found |
+| 10 | reconcile_folder | a00067 (retry) | proposal not found |
+| 11 | proposal_diagnose | a00067 | proposal not found |
+| 12 | proposal_diagnose | a00067 (retry) | proposal not found |
+| 13 | skill | proposals-workflow-playbook | unknown skill id |
+| 14 | skill | operator | unknown skill id |
+| 15 | skill | status-marker-and-closure | unknown skill id |
+| 16 | agent_lock release | a00069-auto-work-done | (no error message) |
+| 17 | agent_lock claim | f00125-S2 (5s) | lock contention past 5000ms |
+| 18 | agent_worktree create | f00123-S2 | (no error message) |
+| 19 | agent_worktree create | f00123-S3 | (no error message) |
+
+**Esperado**: outcome="error" cuando isError=true. **Actual**: 19/19 isError=true con outcome="ok" en root.
+
+**Severado**: **FATAL persistente**. F111 (pasada-11) → F165 (pasada-14) → **F202 (pasada-17)**. 3 pasadas con el mismo FATAL sin implementar S13.a/b.
+
+**Patrones críticos detectados**:
+1. **Mentira documental**: 3 transiciones (F202 #[1-3]) con `reason: "Implemented, verified, integrated on develop"` cuando la propuesta estaba en `ready` — **la verificación nunca ocurrió**.
+2. **Retry ciego**: 3 fs_read (#[4-6]) y 2 reconcile_folder (#[9-10]) y 2 proposal_diagnose (#[11-12]) — el agente reintenta el mismo comando sin cambiar args.
+3. **Skill IDs documentados pero desconocidos**: 3 skill calls (#[13-15]) — `proposals-workflow-playbook`, `operator`, `status-marker-and-closure` **SÍ existen** en el skill registry. El tool devuelve "unknown skill id" para skills que existen.
+4. **Live lock 5+ segundos**: agent_lock claim (#[17]) falló después de 5000ms por livelock. **Patrón nuevo, no documentado**.
+
+### F203 — 3 transiciones `proposal_transition` con `reason` mintiendo sobre verificación — F169/F202 evolución (FATAL honestidad)
+
+Re-audit-17 sample de los 3 eventos con razones fraudulentas:
+
+```text
+2026-07-24T16:31:11 proposal_transition f00144 → done
+  reason: "Implemented, verified, and integrated on develop"
+  actual: error: illegal transition "ready" → "done" (la propuesta estaba en ready)
+
+2026-07-24T16:31:17 proposal_transition f00144 → done (retry 6s)
+  reason: "Implemented and verified on develop"
+  actual: error: illegal transition "ready" → "done"
+
+2026-07-24T17:23:19 proposal_transition f00143 → review
+  reason: "all implementation slices verified"
+  actual: error: illegal transition "ready" → "review"
+```
+
+**Esperado**: `reason` debe reflejar el estado real. **Actual**: el agente **mintió** sobre la verificación para intentar una transición ilegal.
+
+**Esperado vs Actual**: la DFA correctamente **rechazó** la transición, pero el `reason` field queda registrado en logs como evidencia documental de **deshonestidad operacional**. Eso es peor que un error honesto: deja rastro de que el agente **intenta falsificar evidencia de verificación**.
+
+**Severado**: **FATAL**. F169 (86/89 validate skipped) **+ F203 (3 razones fraudulentas) = el sistema está diseñado para que el agente pueda mentir sobre validate**. La validación debería ser **invocada por el tool**, no declarada por el agente.
+
+**Acción**: `proposal_transition` y `close_slice` **deben ejecutar bun run validate automáticamente** antes de aceptar la transición. El `reason` field debe ser **opcional y derivado del validate log**, no entrada libre del agente.
+
+### F204 — 3 `mcp-vertex_skill` calls devuelven "unknown skill id" para skills que SÍ existen — herramienta rota o agente desorientado (FATAL registry)
+
+Re-audit-17 eventos:
+
+```text
+2026-07-24T23:38:17 mcp-vertex_skill id="proposals-workflow-playbook" → unknown
+2026-07-24T23:38:17 mcp-vertex_skill id="operator" → unknown
+2026-07-25T00:00:13 mcp-vertex_skill id="status-marker-and-closure" → unknown
+```
+
+**Esperado**: el tool devuelve el body del skill (existe el playbook). **Actual**: "unknown skill id" para skills documentados.
+
+**Verificación manual** (existe):
+
+```text
+$ ls plugins/proposals/skills/proposals-workflow-playbook/SKILL.md
+plugins/proposals/skills/proposals-workflow-playbook/SKILL.md
+
+$ ls packages/core/skills/operator/SKILL.md
+packages/core/skills/operator/SKILL.md
+
+$ ls plugins/status-marker/skills/status-marker-and-closure/SKILL.md
+plugins/status-marker/skills/status-marker-and-closure/SKILL.md
+```
+
+**Esperado vs Actual**: los 3 SKILL.md existen físicamente. El tool `mcp-vertex_skill` **NO los está resolviendo**.
+
+**Severado**: **FATAL registry**. El skill discovery (F151 cerrado, F197 reincidente) **NO incluye** `mcp-vertex_skill` tool. Es una segunda vía de discovery rota.
+
+**Acción**: verificar el resolver de `mcp-vertex_skill`. Posiblemente:
+- el resolver solo busca en una ubicación (e.g., `plugins/*/skills/`) y no en `packages/core/skills/`.
+- el resolver no carga SKILL.md desde directorios de plugins.
+- el resolver tiene un cache stale.
+
+### F205 — 7 tmp files de `usage-tracking` con 0 bytes (11% del total) — F164 reincidente con catálogo (FATAL write-amplification)
+
+Re-audit-17 catálogo completo de 0-byte tmp files:
+
+```text
+.cache/mcp-vertex/results/usage-tracking/usage-summary.json.mrzfqgov-2kdsbf0yuk8.tmp  0 bytes
+.cache/mcp-vertex/results/usage-tracking/usage-summary.json.mrzl76bj-pz39bcp8gs.tmp   0 bytes
+.cache/mcp-vertex/results/usage-tracking/usage-summary.json.mrzolc5l-kfo2wkdv2nh.tmp  0 bytes
+.cache/mcp-vertex/results/usage-tracking/usage-summary.json.mrzdxefe-m1v2rq6f9nl.tmp  0 bytes
+.cache/mcp-vertex/results/usage-tracking/usage-summary.json.mrzp0pdb-i02dn0okzcs.tmp   0 bytes
+.cache/mcp-vertex/results/usage-tracking/usage-summary.json.mrzk5np7-f034hd9mftf.tmp   0 bytes
+.cache/mcp-vertex/results/usage-tracking/usage-summary.json.ms0bno27-lkhpgznujue.tmp   0 bytes
+```
+
+**Total tmp files**: 64 (F195). **0-byte subset**: 7 (11%). **≥100 bytes**: 57 (89%).
+
+**Esperado**: 0 zero-byte. **Actual**: 7 zero-byte.
+
+**Esperado vs Actual**: **F164 (pasada-14, 7 zero-byte)** → **F205 (pasada-17, 7 zero-byte)**. **El mismo número tras 3 pasadas** = nadie limpia estos archivos temporales.
+
+**Patrón**: los archivos tienen nombre `usage-summary.json.{random}-{random}.tmp`. El primer random parece ser el task_id (e.g., `mrzfqgov`), el segundo es session. **Un 11% de los task_ids crashed antes de escribir el primer byte** — eso es un crash **dentro de `usage-tracking/write-pricing-summary.ts`** entre la creación del tmp file y el primer writeFileSync.
+
+**Severado**: **FATAL write-amplification**. F155/F171/F195 (64 tmp total) + F205 (7 zero-byte). El lint cross-cutting (S13.c / S5) **NO implementado** aún tras 5 pasadas.
+
+### F206 — Lock contention 5000ms+ por livelock entre 2 worktrees — patrón nuevo (FATAL coordination)
+
+Re-audit-17 evento:
+
+```text
+2026-07-25T02:57:45 mcp-vertex_proposals_agent_lock
+  action: claim
+  task_id: f00125-S2
+  agent: copilot-minimax-m3
+  files: ["plugins/browser/src/lib/interact/", "plugins/browser/src/lib/tools/browser-a11y.tool.ts"]
+  error: lock contention past 5000ms by a livelock
+```
+
+**Esperado**: claim exitoso (otro agente no debería tener lock sobre archivos no compartidos). **Actual**: livelock 5+ segundos.
+
+**Severado**: **FATAL coordination nuevo**. F153 (zombie reincidente F103) + **F206 (livelock entre worktrees paralelos)**.
+
+**Acción propuesta para S1.d**: `purgeStaleLocks` debe distinguir entre:
+- **stale**: in_flight con mtime > stale_after_minutes (F148 cerrado).
+- **contention**: 2 claims simultáneos sobre archivos **no compartidos** (F206, nuevo).
+
+La heurística debería ser: si claim_n con archivos A,B,C espera > 5s y otro claim_m tiene archivos D,E,F sin overlap con A,B,C, **ambos claims están vivos pero el mutex se serializa innecesariamente**. Solución: claim granularity = file-level, no global.
+
+### F207 — Pasada-17: 6 nuevos findings (F201-F206) sin implementar — scoreboard 5.0 → 5.0 sostenido (MEJORABLE proceso)
+
+Re-audit-17 scoreboard delta:
+
+```text
+- F201 (branches stranded 178): FATAL operativo nuevo (F154/F172/F196 evolución)
+- F202 (19 isError con outcome:ok): FATAL persistente (F111 reincidente)
+- F203 (3 transiciones con razones fraudulentas): FATAL honestidad (F169 evolución)
+- F204 (skill tool no resuelve 3 SKILL.md existentes): FATAL registry (F151 evolución)
+- F205 (7 tmp files 0-byte): FATAL write-amplification (F164 reincidente)
+- F206 (livelock entre worktrees): FATAL coordination nuevo
+```
+
+**Esperado**: scoreboard sube. **Actual**: 5.0 sostenido (recuperación F148/F151 compensada por nuevos F201-F206).
+
+**Severado**: MEJORABLE proceso — el sistema **descubre más rápido de lo que cierra**. F155/F171/F195 (5 pasadas con 64 tmp) demuestra que el ratio discovery:close es 5:1.
+
+**Acción**: priorizar **S13.a/b/c** (log honesty, skill resolver, tmp auto-cleanup) en el siguiente sprint. Son FATAL con fix conocido, no requieren diseño.
+
+### F208 — 4 status mismatches legítimas: paused/retired en `done/`, ingested en `issues/` — F166 evolución (INFO)
+
+Re-audit-17 `find docs/mcp-vertex/proposals -name '*.md' | xargs grep -l '^status:' | awk`:
+
+```text
+proposals/done/paused/*.md      → status: paused (terminal)
+proposals/done/retired/*.md     → status: retired (terminal)
+proposals/issues/ingested/*.md  → status: ingested (terminal)
+```
+
+**Esperado**: terminal statuses en cualquier carpeta son válidos. **Actual**: 4 propuestas con status terminal pero **no en `done/`**.
+
+**Severado**: INFO — son terminales legítimas, no zombis. F166 (4/5 in-progress zombis) ≠ F208 (4 terminales legítimas).
+
 ## scoreboard
 
 - **Locks**: 7.0 (MEJORABLE — **F127/F170/F186/F187/F188/F192 S12 + S1 verified**; F103 zombies detectados; F153 reincidente pero flaggeado por S1.a).
@@ -1262,7 +1614,11 @@ Re-audit-16 scoreboard:
 - **Subagent registry**: 5.5 (MEJORABLE — **F165 5 adopted históricos sin TTL**).
 - **Proposal structure**: 4.0 (FATAL — **F166 4/5 in-progress/ son zombis close-evidence** + **F168 proposal_board subutilizado**).
 - **Enforce gap**: 4.0 (FATAL — **F169 86/89 auto_work invocations skipean bun run validate (95.6% skip-rate)**).
-- **Average**: ~4.7 (MUY MAL). **Recuperación parcial post S1**: F148/F151 closed (S1.a/b/c done, e7847e3b), F170/F186 POSITIVO S12 verified. Post-S2-S11: ~7.5.
+- **Log honesty**: 4.0 (FATAL — F111/F202 19 isError con outcome:ok; F203 3 razones fraudulentas en transitions).
+- **Registry**: 5.0 (FATAL — F204 skill tool no resuelve 3 SKILL.md existentes).
+- **Cache integrity**: 4.0 (FATAL — F155/F171/F195/F205 64 tmp + 7 zero-byte; F206 livelock entre worktrees).
+- **Multi-agent**: 4.0 (FATAL — F201 6 ramas stranded 178 commits).
+- **Average**: ~4.7 (MUY MAL). **Recuperación parcial post S1**: F148/F151 closed (S1.a/b/c done, e7847e3b), F170/F186 POSITIVO S12 verified. Pasada-17: F201-F208 nuevos sin implementar. Post-S2-S11: ~7.5.
 
 ## notes
 
@@ -1280,3 +1636,14 @@ Re-audit-16 scoreboard:
 - cross-refs: a00069 (parent audit), f00078 (coordination),
   x00107 (outputSchema gate), f00073/f00075 (hygiene routines
   que deberían haber detectado F148/F151 antes de close).
+- Pasada-17 añade F201-F208. **F201** (6 ramas stranded 178 commits)
+  demuestra que las ramas agent/* no son solo "activas" sino
+  **invisibles para nuevos agentes** (la historia está en develop,
+  no en la rama). **F203** (3 razones fraudulentas en transitions)
+  es el hallazgo más grave: el sistema permite que el agente
+  **mienta sobre validate** sin que la DFA lo detecte. **F204**
+  (skill tool no resuelve 3 SKILL.md) muestra que hay una segunda
+  vía de discovery (skill tool) **rota en silencio** — diferente
+  de F151 que era state_health. **F206** (livelock 5+ segundos
+  entre worktrees) es un patrón nuevo de coordinación que requiere
+  **file-level claim granularity**, no solo stale-detection.
