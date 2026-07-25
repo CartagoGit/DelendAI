@@ -44,12 +44,14 @@ yields an install command, never a crash.
 
 ### S1 — navigation, screenshot, DOM query
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/browser/src/lib/page/`, `plugins/browser/src/lib/tools/browser-inspect.tool.ts`
 - **Gate**: bun run validate
-
-`browser_open`, `browser_screenshot`, `browser_query` over an injected driver;
-artifacts to `pluginCacheDir`. Missing Playwright → install hint.
+- implementation:
+  - `browser-inspect.tool.ts` exposes `browser_open`, `browser_screenshot`, `browser_query` over an injected `IBrowserDriver`.
+  - Screenshots write atomically under `pluginCacheDir/browser/<timestamp>.png`.
+  - Missing Playwright → `status: 'install-missing'` plus a `bun add -D playwright && npx playwright install chromium` hint, never a crash.
+  - 20/20 plugin tests pass.
 
 ### S2 — interaction + accessibility scan
 
