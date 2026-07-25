@@ -1,3 +1,6 @@
+import { readFile } from 'node:fs/promises';
+import { join } from 'node:path';
+
 import { z } from 'zod';
 
 import type {
@@ -17,6 +20,7 @@ import { runSwarmHygieneEngine } from '../shared/swarm-hygiene-engine';
 import type { IRescueCandidate } from '../contracts/interfaces/swarm-hygiene.interface';
 import { runStashSnapshot, type IStashEntry } from '../shared/stash-snapshot';
 import { detectAgentLoop, type IToolCall } from '../agents/agent-loop-detector';
+import { hasPeerApprovedReview } from '../swarm/proposal-review';
 
 /**
  * Optional persistence step the orchestrator can opt into at slice
@@ -405,6 +409,7 @@ export const runAutoWork = async (
 		kind: string;
 		proposalId?: string;
 		file?: string;
+		status?: string;
 		reason?: string;
 		nextAction?: string;
 		pickedFromPaused?: boolean;
@@ -441,15 +446,19 @@ export const runAutoWork = async (
 	const requirePeer = options.requirePeerReview !== false;
 	const inReviewFolder =
 		typeof next.file === 'string' &&
-		(next.file.startsWith('review/') ||
-			next.file.includes('/review/') ||
-			next.status === 'review');
-	if (requirePeer && inReviewFolder && next.proposalId && next.file) {
-		const docPath = join(options.proposalsDirAbs ?? '', next.file);
+		(next.file.startsWith('review/') || next.file.includes('/review/'));
+	if (
+		requirePeer &&
+		inReviewFolder &&
+		next.proposalId &&
+		next.file &&
+		options.proposalsDirAbs
+	) {
+		const docPath = join(options.proposalsDirAbs, next.file);
 		let approved = false;
 		try {
 			const raw = await readFile(docPath, 'utf8');
-			approved = hasIndependentPeerApproval(raw);
+			approved = hasPeerApprovedReview(raw);
 		} catch {
 			approved = false;
 		}
