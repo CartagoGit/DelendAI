@@ -52,7 +52,7 @@ hardened for `fs_write`.
 
 ### S1 — navigation (references / definition / symbols)
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/refactor/src/lib/nav/`, `plugins/refactor/src/lib/tools/refactor-nav.tool.ts`
 - **Gate**: bun run validate
 
@@ -62,7 +62,7 @@ usage/definition data the text `search` can't (semantic, not lexical).
 
 ### S2 — safe rename (scoped multi-file diff)
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/refactor/src/lib/rename/`, `plugins/refactor/src/lib/tools/refactor-rename.tool.ts`
 - **Gate**: bun run validate
 
@@ -73,9 +73,14 @@ including the "don't touch a same-named symbol in another scope" case.
 
 ### S3 — rule-based codemods + recipe library
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/refactor/src/lib/codemod/`, `plugins/refactor/src/lib/tools/refactor-codemod.tool.ts`
 - **Gate**: bun run validate
+- implementation:
+  - `codemod-runner.ts` discovers files, applies boundary-safe regex rewrites, returns unified diffs.
+  - `recipes.ts` ships 3 recipes: `ts/no-throw-literal`, `ts/strict-equal`, `ts/console-to-logger`.
+  - `refactor-codemod.tool.ts` exposes `refactor_codemod` with `recipeId`/`cwd`/`dryRun` input and `{ files: [{ path, diff }], totalEdits, language }` output.
+  - Wired into `plugins/refactor/src/index.ts`; 30/30 tests in the plugin suite pass.
 
 `refactor_codemod` runs an ast-grep pattern (rewrite) → diff, boundary-safe;
 ships a small library of repo-relevant recipes. Each recipe is data + a test
