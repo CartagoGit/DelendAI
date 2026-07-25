@@ -66,7 +66,7 @@ fails on a seeded bloat. Pure size analyzer over injected file stats.
 
 ### S3 — profiling capture + metrics-gate integration
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/perf/src/lib/profile/`, `plugins/perf/README.md`
 - **Gate**: bun run validate
 
