@@ -43,7 +43,7 @@ docs/site and pairs with the `diagram` plugin (f00132).
 
 ### S1 — connection + schema introspection (read-only)
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/database/src/lib/introspect/`, `plugins/database/src/lib/tools/db-schema.tool.ts`
 - **Gate**: bun run validate
 
