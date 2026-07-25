@@ -2919,6 +2919,24 @@ PRESET_CATALOG: vs mcp-vertex.config.json drift (F48)
 sessionStorage parity CI/local: divergente (F47)
 ````
 
+### F80 — `auto_work` re-reclama un slice pendiente ya implementado cuando el cierre falla por una puerta global ajena (BUG)
+
+**Evidencia (2026-07-25)**: tras implementar y versionar un slice, `close_slice`
+rechazó el cierre por fallos de formato no relacionados. El slice conservó el
+estado `pending`; la siguiente llamada a `auto_work` volvió a devolver ese mismo
+claim. El agente reejecutaría trabajo ya publicado en lugar de mostrar que falta
+verificación.
+
+**Esperado**: si el primer slice reclamable sigue `pending` pero todos los
+artefactos declarados existen y están indexados en Git, `auto_work` debe bloquear
+con una razón accionable de verificación/cierre; nunca debe re-reclamarlo como
+trabajo nuevo. El estado sólo cambia a `done` mediante `close_slice` con la puerta
+verde.
+
+**Fix**: `auto-work.tool.ts` detecta los artefactos versionados del slice pendiente
+y devuelve `pending-slice-verification-required`; la regresión cubre un repositorio
+temporal con el artefacto realmente indexado.
+
 ### appendix B — Concurrency table
 
 | Escenario | Riesgo | Mitigación hoy | Gap |
