@@ -407,8 +407,7 @@ const toValidateEvidence = (
 				? entry.ts
 				: null;
 	if (timestamp === null) return null;
-	const exitCode =
-		typeof entry.exitCode === 'number' ? entry.exitCode : 0;
+	const exitCode = typeof entry.exitCode === 'number' ? entry.exitCode : 0;
 	return {
 		timestamp,
 		exitCode,
@@ -514,10 +513,7 @@ export const runProposalTransition = async (
 	const dfaRejection = validateTransition(args.id, from, finalTo);
 	if (dfaRejection !== null) return dfaRejection;
 
-	if (
-		args.force !== true &&
-		(finalTo === 'review' || finalTo === 'done')
-	) {
+	if (args.force !== true && (finalTo === 'review' || finalTo === 'done')) {
 		const validateEvidence = await resolveRecentValidateEvidence({
 			workspaceRoot: options.workspaceRoot,
 			validateEvidence: args.validateEvidence,
