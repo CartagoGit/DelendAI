@@ -204,6 +204,7 @@ export default definePlugin({
 			proposalsDirAbs: abs(layout.proposalsDir),
 			indexPathAbs: abs(layout.proposalIndexFile),
 			lockPathAbs: abs(layout.lockFile),
+			peerReviewLogPathAbs: abs(layout.peerReviewLogFile),
 			counterPathAbs: abs(layout.proposalIdCountersFile),
 			layout: {
 				proposalsDir: layout.proposalsDir,
@@ -418,6 +419,7 @@ export default definePlugin({
 					// a00069 S3: indexPathAbs triggers post-move index sync
 					// + self-**Files** rewrite inside applyTransition.
 					indexPathAbs: abs(layout.proposalIndexFile),
+					peerReviewLogPathAbs: abs(layout.peerReviewLogFile),
 					// a00069 S7: peer-review gate on review→done (default on).
 					...(typeof ctx.options.requirePeerReview === 'boolean'
 						? {

@@ -68,6 +68,10 @@ import { createGitRunner } from '../shared/git-runner';
 import type { IGitRunner } from '../shared/git-runner';
 import { rewriteStaleProposalSelfPaths } from '../proposals/rewrite-stale-self-paths';
 import { recordPeerReviewBypass } from '../shared/peer-review-bypass-log';
+import {
+	hasIndependentApprovalSinceLastReview,
+	recordProposalEnteredReview,
+} from '../shared/peer-review-log';
 
 const PEER_REVIEW_LOG_RELATIVE_PATH = join(
 	'.cache',
@@ -138,6 +142,8 @@ export interface IProposalTransitionToolOptions {
 	readonly indexPathAbs?: string;
 	/** Injectable for tests; defaults to a real `git mv` in `workspaceRoot`. */
 	readonly gitRunner?: IGitRunner;
+	/** Absolute path to the append-only peer-review journal. */
+	readonly peerReviewLogPathAbs?: string;
 	/**
 	 * a00069 S7: when true (default), `review → done` requires at least
 	 * one peer `proposal_review { action: "approve" }` recorded in the
@@ -231,6 +237,8 @@ const resolveTargetFolder = async (
 const TOOL_ERROR_SCHEMA = z.object({
 	reason: z.string(),
 	nextAction: z.string().optional(),
+	code: z.string().optional(),
+	blockerType: z.string().optional(),
 	/** a00069 S3 — legal DFA targets from the current status. */
 	nextHops: z.array(z.string()).optional(),
 });
@@ -389,26 +397,33 @@ export const runProposalTransition = async (
 				via: 'force',
 			});
 		} else {
-			const raw = await readFile(found.absPath, 'utf8');
-			const reviewStartedAt = findLastTransitionToReviewTs(raw);
-			const readPeerReviewLog =
-				options.peerReviewGateDeps?.readPeerReviewLog ??
-				readPeerReviewLogEntries;
-			const peerReviewEntries = await readPeerReviewLog(
-				join(options.workspaceRoot, PEER_REVIEW_LOG_RELATIVE_PATH),
-			);
-			if (
-				!hasApprovedPeerReviewSince(
-					peerReviewEntries,
-					args.id,
-					reviewStartedAt,
-				) &&
-				!hasIndependentPeerApproval(raw)
-			) {
-				return buildMissingPeerReviewError(
-					options.namespacePrefix,
-					args.id,
-				);
+			const approved =
+				typeof options.peerReviewLogPathAbs === 'string'
+					? await hasIndependentApprovalSinceLastReview(
+							options.peerReviewLogPathAbs,
+							args.id,
+						)
+					: false;
+			if (!approved) {
+				const envelope = {
+					ok: false as const,
+					error: {
+						code: 'peer-review-missing',
+						blockerType: 'missing-peer-review',
+						reason: 'proposal requires at least one independent peer-review entry in peer-review.jsonl after its latest transition to review before it can move to done',
+						nextAction: `Run ${options.namespacePrefix}_proposal_review { action: "approve", proposalId: "${args.id}", sliceId: "<finished-slice>", agent: "<reviewer≠implementer>" } before ${options.namespacePrefix}_proposal_transition { id: "${args.id}", to: "done", reason }. Emergency bypass: force:true (host-approved only).`,
+					},
+				};
+				return {
+					content: [
+						{
+							type: 'text' as const,
+							text: JSON.stringify(envelope),
+						},
+					],
+					structuredContent: envelope,
+					isError: true,
+				};
 			}
 		}
 	}
@@ -422,12 +437,24 @@ export const runProposalTransition = async (
 
 	// a00069 S3: applyTransition rewrites self-`**Files**` paths and
 	// regenerates the index (when indexPathAbs is set) before returning.
-	return await applyTransition(
+	const result = await applyTransition(
 		{ id: args.id, from, to: finalTo, reason: args.reason },
 		found,
 		options,
 		depId,
 	);
+	if (
+		result.isError !== true &&
+		finalTo === 'review' &&
+		typeof options.peerReviewLogPathAbs === 'string'
+	) {
+		void recordProposalEnteredReview({
+			logPathAbs: options.peerReviewLogPathAbs,
+			proposalId: args.id,
+			from,
+		}).catch(() => undefined);
+	}
+	return result;
 };
 
 // ---------------------------------------------------------------------------
