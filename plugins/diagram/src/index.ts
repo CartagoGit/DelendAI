@@ -1,13 +1,15 @@
 import { definePlugin } from '@mcp-vertex/core/public';
 import { z } from 'zod';
 
-import { buildDiagramDepsRegistration } from './lib/tools/diagram-deps.tool';
+import { buildDiagramGraphToolRegistrations } from './lib/tools/diagram-graph.tool';
 
 /**
- * Diagram plugin. `diagram_deps` renders the workspace's internal dependency
- * graph as a mermaid flowchart (which renders natively in the docs site and in
- * artifacts), so an agent can *see* the project's structure. Offline, pure, no
- * external tools. Load with `mcp-vertex --plugins=diagram`.
+ * Diagram plugin. `diagram_deps` renders the workspace's internal
+ * dependency graph as a mermaid flowchart, and `diagram_modules`
+ * renders a single package's file-level module graph. Both render
+ * natively in the docs site and in artifacts, so an agent can *see*
+ * the project's structure. Offline, pure, no external tools. Load
+ * with `mcp-vertex --plugins=diagram`.
  */
 const OptionsSchema = z.object({});
 
@@ -15,12 +17,12 @@ export default definePlugin({
 	name: 'diagram',
 	version: '0.1.0',
 	describe:
-		'Diagram generation: diagram_deps renders the workspace internal dependency graph as a mermaid flowchart. Offline, pure.',
+		'Diagram generation: diagram_deps (workspace dependency graph) + diagram_modules (per-package module graph) as mermaid. Offline, pure.',
 	optionsSchema: OptionsSchema,
 	register(ctx) {
 		return {
 			tools: [
-				buildDiagramDepsRegistration({
+				...buildDiagramGraphToolRegistrations({
 					namespacePrefix: ctx.namespacePrefix,
 					workspaceRootAbs: ctx.workspace.root,
 				}),
@@ -33,9 +35,10 @@ export default definePlugin({
 						'# Diagram generation',
 						'',
 						`Tool: \`${ctx.namespacePrefix}_diagram_deps\` — workspace internal dependency graph as mermaid.`,
+						`Tool: \`${ctx.namespacePrefix}_diagram_modules\` — single package file-level module graph as mermaid. Pass \`packageRoot\` to override the default.`,
 						'',
-						'- Returns a `flowchart LR` mermaid string (renders in the docs site + artifacts) plus raw nodes/edges.',
-						'- Only edges between same-workspace packages are drawn; external deps are ignored.',
+						'- Both return a `flowchart LR` mermaid string (renders in the docs site + artifacts) plus raw nodes/edges.',
+						'- Only edges between same-workspace packages / package files are drawn; external deps are dropped.',
 						'- Offline and pure — no external tools, no network.',
 					].join('\n'),
 				},
