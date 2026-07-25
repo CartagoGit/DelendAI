@@ -84,12 +84,37 @@ from env, redacted. Pure over injected fetch.
 
 ### S2 — traces + release health
 
-- **Status**: pending
-- **Files**: `plugins/observability/src/lib/traces/`, `plugins/observability/src/lib/tools/obs-health.tool.ts`
-- **Gate**: bun run validate
-
-`obs_trace` and `obs_release_health` (crash-free rate, adoption). Normalized
-summaries.
+- **Status**: done
+- **Files**: `plugins/observability/src/lib/traces/index.ts`,
+  `plugins/observability/src/lib/traces/interfaces.ts`,
+  `plugins/observability/src/lib/traces/real-deps.ts`,
+  `plugins/observability/src/lib/traces/release-health.ts`,
+  `plugins/observability/src/lib/traces/trace-summarizer.ts`,
+  `plugins/observability/src/lib/tools/obs-health.tool.ts`.
+- implementation:
+  - `traces/trace-summarizer.ts` — pure `groupRecordsByTrace(records)`
+    returns `ITraceSummary[]` keyed by `(service, trace_id, hourBucket)`
+    with error-rate and top-error rollup.
+  - `traces/release-health.ts` — pure `computeReleaseHealth(records)`
+    returns `IReleaseHealthSummary` with per-version `crashFreeRate`
+    and severity bands (critical <99%, high <99.5%, medium <99.9%,
+    low <99.95%).
+  - `traces/real-deps.ts` — `realReadTracesDeps(workspaceRootAbs)`
+    streams `.cache/mcp-vertex/results/logs/*.jsonl` +
+    `logs-errors/*.jsonl`; never throws on missing dir.
+  - `traces/interfaces.ts` — `IReadonlyTraceRecord`, `ITraceSummary`,
+    `IReleaseHealthSummary`, `IReadTracesDeps`,
+    `IReadReleaseHealthDeps`.
+  - `tools/obs-health.tool.ts` — registers `obs_trace` and
+    `obs_release_health`. `toolJson` / `toolError` / `summarizeFindings`
+    from `@mcp-vertex/core/public`. Injected deps for tests.
+  - 3 spec files: `trace-summarizer.spec.ts`,
+    `release-health.spec.ts`, `obs-health.tool.spec.ts` covering
+    empty input, multi-group traces, multi-version crash bands, and
+    missing-data fallback.
+  - Wired into `plugins/observability/src/index.ts` tool array via
+    `buildObsHealthRegistration({ namespacePrefix, workspaceRootAbs })`.
+- **Tests**: 5 files / 29 specs in `plugins/observability`.
 
 ### S3 — local correlation + catalog
 
