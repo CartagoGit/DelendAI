@@ -22,6 +22,7 @@ import type { IToolRegistration } from '@mcp-vertex/core/public';
 
 import {
 	buildCloseSliceRegistration,
+	runCloseSliceValidation,
 	sliceRequiresValidation,
 	type IAuthoringToolOptions,
 } from '@mcp-vertex/proposals/lib/tools/authoring.tool';
@@ -102,6 +103,18 @@ describe('sliceRequiresValidation (a00069 S5 pure helper)', () => {
 				'- **Gate**: none\n- acceptance:\n  - "bun run test"\n',
 			),
 		).toBe(true);
+	});
+});
+
+describe('runCloseSliceValidation', () => {
+	it('returns a bounded timeout instead of leaving a host call to be cancelled', async () => {
+		const result = await runCloseSliceValidation(
+			'bun -e "await Bun.sleep(200)"',
+			process.cwd(),
+			25,
+		);
+		expect(result).toMatchObject({ ok: false, exitCode: 124 });
+		expect(result.output).toMatch(/timeout/i);
 	});
 });
 
