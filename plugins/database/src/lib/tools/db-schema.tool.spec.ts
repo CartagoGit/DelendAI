@@ -47,7 +47,9 @@ const captureHandler = async (
 	return captured;
 };
 
-const call = async (handler: (a: unknown) => Promise<unknown>): Promise<ToolBody> => {
+const call = async (
+	handler: (a: unknown) => Promise<unknown>,
+): Promise<ToolBody> => {
 	const res = (await handler({})) as ToolBody;
 	return res;
 };
@@ -94,10 +96,17 @@ describe('f00128 S1 db-schema tool', () => {
 		const res = await call(handler);
 		const body = JSON.parse(res.content[0]?.text ?? '{}') as {
 			driver: string;
-			tables: Array<{ name: string; columns: unknown[]; foreignKeys: unknown[] }>;
+			tables: Array<{
+				name: string;
+				columns: unknown[];
+				foreignKeys: unknown[];
+			}>;
 		};
 		expect(body.driver).toBe('sqlite');
-		expect(body.tables.map((t) => t.name).sort()).toEqual(['orders', 'users']);
+		expect(body.tables.map((t) => t.name).sort()).toEqual([
+			'orders',
+			'users',
+		]);
 		const users = body.tables.find((t) => t.name === 'users');
 		expect(users?.columns.length).toBe(3);
 		const orders = body.tables.find((t) => t.name === 'orders');

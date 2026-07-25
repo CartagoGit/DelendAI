@@ -17,13 +17,17 @@ import {
 	type IPublishOrderEntry,
 } from './release-plan.tool';
 
+// SAMPLE uses the real monorepo anchor (`packages/core` at 0.1.0) plus
+// a plugin (`plugins/changelog`) pinned at 0.0.1 — the lockstep plan must
+// still move the plugin to the anchor's bumped target, never compute
+// its bump independently.
 const SAMPLE_PUBLISH_ORDER: readonly IPublishOrderEntry[] = [
 	{ dir: 'packages/core', name: '@mcp-vertex/core', version: '0.1.0' },
 	{ dir: 'packages/cli', name: '@mcp-vertex/cli', version: '0.1.0' },
 	{
 		dir: 'plugins/changelog',
 		name: '@mcp-vertex/changelog',
-		version: '0.1.0',
+		version: '0.0.1',
 	},
 ];
 
@@ -95,10 +99,13 @@ describe('f00131 S2.b release-plan', () => {
 		it('walks every entry and bumps the version to match the bump kind', () => {
 			const out = buildReleasePlan(SAMPLE_PUBLISH_ORDER, inferredPatch);
 			expect(out).toHaveLength(3);
+			// Lockstep: the anchor (core) is bumped; every entry — including
+			// the 0.0.1 plugin — inherits the anchor's target (0.1.1),
+			// never computes its own bump independently.
 			expect(out.map((e) => `${e.name}:${e.from}->${e.to}`)).toEqual([
 				'@mcp-vertex/core:0.1.0->0.1.1',
 				'@mcp-vertex/cli:0.1.0->0.1.1',
-				'@mcp-vertex/changelog:0.1.0->0.1.1',
+				'@mcp-vertex/changelog:0.0.1->0.1.1',
 			]);
 		});
 
@@ -109,8 +116,18 @@ describe('f00131 S2.b release-plan', () => {
 
 		it('none leaves the version unchanged', () => {
 			const out = buildReleasePlan(SAMPLE_PUBLISH_ORDER, inferredNone);
-			expect(out.map((e) => e.from)).toEqual(['0.1.0', '0.1.0', '0.1.0']);
+			// `from` keeps each entry's real current version; `to` is the
+			// anchor's unchanged version (lockstep, not per-entry).
+			expect(out.map((e) => e.from)).toEqual(['0.1.0', '0.1.0', '0.0.1']);
 			expect(out.map((e) => e.to)).toEqual(['0.1.0', '0.1.0', '0.1.0']);
+		});
+
+		it('returns an empty plan when no packages are published', () => {
+			expect(
+				buildReleasePlan([], inferredPatch).map(
+					(e) => `${e.from}->${e.to}`,
+				),
+			).toEqual([]);
 		});
 	});
 
@@ -177,8 +194,17 @@ describe('f00131 S2.b release-plan', () => {
 			const handler = await mountHandler(SAMPLE_PUBLISH_ORDER);
 			const body = await callHandler(handler, { commits: [] });
 			expect(body['bump']).toBe('none');
+			// The handler's top-level `from`/`to` shadow the anchor (core),
+			// not the first plugin. With `kind: none` the anchor stays put.
 			expect(body['from']).toBe('0.1.0');
 			expect(body['to']).toBe('0.1.0');
+			const entries = body['entries'] as Array<{
+				from: string;
+				to: string;
+			}>;
+			// Lockstep: every entry — including the 0.0.1 plugin — lands on
+			// the anchor's unchanged version (0.1.0).
+			expect(entries.every((e) => e.to === '0.1.0')).toBe(true);
 		});
 	});
 });

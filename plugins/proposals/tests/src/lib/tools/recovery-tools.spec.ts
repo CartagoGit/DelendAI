@@ -212,7 +212,9 @@ describe('recovery tools (f00016 S9)', async () => {
 			}),
 		);
 
-		const payload = json(await runProposalDiagnose({ id: 'f00126' }, options));
+		const payload = json(
+			await runProposalDiagnose({ id: 'f00126' }, options),
+		);
 
 		expect(payload).toMatchObject({
 			lockOwners: ['impl-runner-perf-s3'],
@@ -250,7 +252,9 @@ describe('recovery tools (f00016 S9)', async () => {
 			}),
 		);
 
-		const payload = json(await runProposalDiagnose({ id: 'f00128' }, options));
+		const payload = json(
+			await runProposalDiagnose({ id: 'f00128' }, options),
+		);
 
 		expect(payload.lockOwners).toEqual([]);
 		expect(payload.staleTaskIds).toEqual([]);
@@ -287,7 +291,10 @@ describe('recovery tools (f00016 S9)', async () => {
 		);
 
 		const payload = json(
-			await runProposalDiagnose({ id: 'f00128', caller: 'auto_work' }, options),
+			await runProposalDiagnose(
+				{ id: 'f00128', caller: 'auto_work' },
+				options,
+			),
 		);
 
 		expect(payload).toMatchObject({
@@ -314,7 +321,10 @@ describe('a00072 S1.a (F148) proposal_diagnose cross-proposal stale detection', 
 		namespacePrefix: 'test',
 		proposalsDirAbs: join(dir, 'docs/mcp-vertex/proposals'),
 		lockPathAbs: join(dir, '.cache/mcp-vertex/agents.lock.json'),
-		agentRegistryPathAbs: join(dir, '.cache/mcp-vertex/agent-registry.json'),
+		agentRegistryPathAbs: join(
+			dir,
+			'.cache/mcp-vertex/agent-registry.json',
+		),
 		workspaceRoot: dir,
 		eventBuffer: createRecoveryEventBuffer(),
 	});

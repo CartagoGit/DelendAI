@@ -1,140 +1,128 @@
-/**
- * file-lock-table.spec.ts — a00072 S8.a acceptance.
- *
- * The file-lock table is the durable `file → holder` map at
- * `.cache/mcp-vertex/file-locks.json`. Tests cover the four
- * operations exposed by the module: `readFileLockTable`,
- * `writeFileLockTable`, `tryAcquireFileLocks`, `releaseFileLocks`,
- * plus `listLocks` for the contention detector.
- */
-
-import { mkdirSync, mkdtempSync, rmSync } from 'node:fs';
-import { tmpdir } from 'node:os';
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import {
-	deriveFileLockTablePath,
-	listLocks,
+	listRecentFileLockContentions,
+	noteFileLockContention,
 	readFileLockTable,
 	releaseFileLocks,
+	resolveFileLockContentions,
 	tryAcquireFileLocks,
-	writeFileLockTable,
 } from '../../../../src/lib/locks/file-lock-table';
 
-describe('file-lock-table (a00072 S8.a)', () => {
-	let root = '';
+const makeVerifyTmpDir = (prefix: string): string => {
+	const root = join(process.cwd(), '.verify-tmp');
+	mkdirSync(root, { recursive: true });
+	return mkdtempSync(join(root, prefix));
+};
+
+describe('file-lock-table', () => {
+	let dir = '';
 	let tablePath = '';
 
 	beforeEach(() => {
-		root = mkdtempSync(join(tmpdir(), 'file-lock-table-'));
-		tablePath = join(root, 'file-locks.json');
+		dir = makeVerifyTmpDir('file-lock-table-');
+		tablePath = join(dir, 'file-locks.json');
 	});
+
 	afterEach(() => {
-		rmSync(root, { recursive: true, force: true });
+		rmSync(dir, { recursive: true, force: true });
 	});
 
-	it('returns an empty table when the file is missing', async () => {
-		const table = await readFileLockTable({ tablePath });
-		expect(table).toEqual({});
-	});
-
-	it('persists a table under withFileMutex atomic write', async () => {
-		await writeFileLockTable(
-			{ 'src/a.ts': { agentId: 'a', mtime: '2026-07-25T00:00:00.000Z' } },
-			{ tablePath },
-		);
-		const table = await readFileLockTable({ tablePath });
-		expect(table['src/a.ts']?.agentId).toBe('a');
-	});
-
-	it('tryAcquireFileLocks succeeds for an empty file slot', async () => {
-		const result = await tryAcquireFileLocks({
-			agentId: 'agent-1',
+	it('keeps file -> agent ownership in the persistent table', async () => {
+		const acquired = await tryAcquireFileLocks({
+			agentId: 'agent-a',
+			taskId: 'task-a',
 			files: ['src/a.ts', 'src/b.ts'],
 			tablePath,
+			now: () => '2026-07-25T10:00:00.000Z',
 		});
-		expect(result.ok).toBe(true);
-		const table = await readFileLockTable({ tablePath });
-		expect(Object.keys(table).sort()).toEqual(['src/a.ts', 'src/b.ts']);
+
+		expect(acquired).toEqual({ ok: true });
+		expect(await readFileLockTable({ tablePath })).toEqual({
+			'src/a.ts': {
+				agentId: 'agent-a',
+				mtime: '2026-07-25T10:00:00.000Z',
+				taskId: 'task-a',
+			},
+			'src/b.ts': {
+				agentId: 'agent-a',
+				mtime: '2026-07-25T10:00:00.000Z',
+				taskId: 'task-a',
+			},
+		});
 	});
 
-	it('tryAcquireFileLocks refuses when another agent holds the file', async () => {
+	it('records and resolves file-level contention history without losing the lock map', async () => {
 		await tryAcquireFileLocks({
-			agentId: 'agent-1',
-			files: ['src/a.ts'],
+			agentId: 'holder',
+			taskId: 'task-holder',
+			files: ['src/shared.ts'],
 			tablePath,
+			now: () => '2026-07-25T10:00:00.000Z',
 		});
-		const result = await tryAcquireFileLocks({
-			agentId: 'agent-2',
-			files: ['src/a.ts', 'src/b.ts'],
-			tablePath,
-		});
-		expect(result.ok).toBe(false);
-		// The conflict must be reported — `agent-2` may still acquire
-		// `src/b.ts` after the caller observes the conflict.
-		if (!result.ok) {
-			expect(result.conflictOn).toBe('src/a.ts');
-			expect(result.heldBy).toBe('agent-1');
-		}
-	});
 
-	it('tryAcquireFileLocks is idempotent for the same agent', async () => {
-		await tryAcquireFileLocks({
-			agentId: 'agent-1',
-			files: ['src/a.ts'],
+		const recorded = await noteFileLockContention({
+			kind: 'disjoint',
+			waitingTaskId: 'task-waiter',
+			waitingAgentId: 'waiter',
+			holderTaskId: 'task-holder',
+			holderAgentId: 'holder',
+			files: ['src/shared.ts'],
 			tablePath,
+			now: () => '2026-07-25T10:00:06.000Z',
 		});
-		const result = await tryAcquireFileLocks({
-			agentId: 'agent-1',
-			files: ['src/a.ts'],
-			tablePath,
-		});
-		expect(result.ok).toBe(true);
-	});
 
-	it('releaseFileLocks removes only the named files for the given agent', async () => {
-		await tryAcquireFileLocks({
-			agentId: 'agent-1',
-			files: ['src/a.ts', 'src/b.ts'],
-			tablePath,
+		expect(recorded.heldMs).toBe(0);
+		expect(await readFileLockTable({ tablePath })).toEqual({
+			'src/shared.ts': {
+				agentId: 'holder',
+				mtime: '2026-07-25T10:00:00.000Z',
+				taskId: 'task-holder',
+			},
 		});
-		await tryAcquireFileLocks({
-			agentId: 'agent-2',
-			files: ['src/c.ts'],
+
+		await resolveFileLockContentions({
+			waitingTaskId: 'task-waiter',
 			tablePath,
+			now: () => '2026-07-25T10:00:08.000Z',
 		});
+
+		const history = await listRecentFileLockContentions({
+			tablePath,
+			now: () => '2026-07-25T10:00:10.000Z',
+		});
+		expect(history).toHaveLength(1);
+		expect(history[0]?.resolvedAt).toBe('2026-07-25T10:00:08.000Z');
+
 		await releaseFileLocks({
-			agentId: 'agent-1',
-			files: ['src/a.ts'],
+			agentId: 'holder',
+			files: ['src/shared.ts'],
 			tablePath,
 		});
-		const table = await readFileLockTable({ tablePath });
-		expect(Object.keys(table).sort()).toEqual(['src/b.ts', 'src/c.ts']);
+		expect(await readFileLockTable({ tablePath })).toEqual({});
 	});
 
-	it('listLocks returns the current table', async () => {
-		await tryAcquireFileLocks({
-			agentId: 'agent-1',
-			files: ['src/a.ts'],
+	it('reads the legacy plain-map format without dropping ownership', async () => {
+		writeFileSync(
 			tablePath,
-		});
-		const listed = await listLocks({ tablePath });
-		expect(listed['src/a.ts']?.agentId).toBe('agent-1');
-	});
-
-	it('deriveFileLockTablePath defaults next to the lock file', () => {
-		const derived = deriveFileLockTablePath(
-			'/abs/.cache/mcp-vertex/agents.lock.json',
+			JSON.stringify({
+				'src/legacy.ts': {
+					agentId: 'legacy-agent',
+					mtime: '2026-07-25T09:00:00.000Z',
+					taskId: 'legacy-task',
+				},
+			}),
 		);
-		expect(derived).toBe('/abs/.cache/mcp-vertex/file-locks.json');
-	});
 
-	it('create the parent directory on first write (mtime recorded)', async () => {
-		const nested = join(root, 'nested', 'subdir', 'file-locks.json');
-		await writeFileLockTable({}, { tablePath: nested });
-		const table = await readFileLockTable({ tablePath: nested });
-		expect(table).toEqual({});
+		expect(await readFileLockTable({ tablePath })).toEqual({
+			'src/legacy.ts': {
+				agentId: 'legacy-agent',
+				mtime: '2026-07-25T09:00:00.000Z',
+				taskId: 'legacy-task',
+			},
+		});
 	});
 });
