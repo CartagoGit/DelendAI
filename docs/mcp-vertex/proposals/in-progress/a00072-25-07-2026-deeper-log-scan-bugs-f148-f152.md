@@ -777,6 +777,69 @@ sin dogfood).
 
 **Estado**: OPEN (MEJORABLE).
 
+### F169 — `auto_work` step "Run `bun run validate`" se da 89× pero solo 3 invocaciones reales (FATAL enforce gap)
+
+Re-audit-15 (logs 9 días):
+
+```text
+auto_work invocations with "Run `bun run validate`" in steps: 89
+tool invocations with `bun run validate` in args: 3
+ratio: 3/89 = 3.4% (95.6% omiten el step)
+```
+
+**Diagnóstico**:
+
+- 89 invocaciones de `auto_work` retornan un `steps` array que
+  incluye "Validate: run `bun run validate`" como step #5.
+- Pero solo **3** invocaciones de tool en los logs tienen
+  `bun run validate` en `args`. La diferencia es 86.
+- Eso significa que **86/89 invocaciones de auto_work**
+  sugieren al LLM que corra `bun run validate` pero el LLM
+  **omite el step**.
+- El gate S5 (close_slice validation) **NO chequea** que el
+  LLM realmente ejecutó validate. Solo chequea que el
+  `validationCommand` se ejecutó en el pasado (no en este
+  ciclo).
+
+**Esperado vs Actual**:
+
+- `auto_work` step 5 dice "Run `bun run validate`" como
+  obligation. El LLM lo skipea. close_slice retorna `ok:true`.
+- El gate S5 acepta el close sin validate **real** en este
+  ciclo.
+- **Resultado**: 86 slices cerradas sin validate real.
+  F80 (canonical 5203/5203 pass) es la **garantía nominal**;
+  F169 es la **realidad operacional** (validate skipped).
+
+**Esperado**:
+
+- close_slice debe:
+  1. Verificar que el LLM ejecutó `bun run validate` en este
+     ciclo (no en el pasado).
+  2. Si NO, rechazar el close con `blockerType: "validate-skipped"`.
+  3. O auto_work debe ejecutar validate **server-side** antes
+     de devolver el step list.
+
+**Slice**: **S11** — `close_slice` requiere evidencia de
+validate:
+
+- **S11.a** — `close_slice` acepta `validateEvidence: { sha,
+  passed, timestamp }`. Sin `validateEvidence.passed:true`,
+  rechaza.
+- **S11.b** — `auto_work` ejecuta `bun run validate` en su
+  propio step (no delega al LLM). El step list solo incluye
+  "Read close_slice instructions" en lugar de "Run validate".
+- **S11.c** — Spec: 86 closes sin validate real → reject con
+  `blockerType: "validate-skipped"`. Cubre regressions.
+
+**Cross-references**: F21 (S5 omite validate en `gate:
+none|lint`), F80 (canonical 5203/5203 pass — pero skip-rate
+95.6% en practice), F142/F147 (auto_work re-claim — mismo
+patrón de "step en step list, pero no ejecutado"), F149
+(close_slice sin audit trail real).
+
+**Estado**: OPEN (FATAL enforce).
+
 ## scoreboard
 
 - **Locks**: 5.0 (MUY MAL — F148/F151 no detectados; F103 zombies
@@ -798,7 +861,8 @@ sin dogfood).
 - **Cache integrity**: 4.5 (FATAL persistente — **F155 64 tmp files usage-tracking** + **F164 7 zero-byte tmp (11%)** + **F167 482 writes/9d write-amplification**).
 - **Subagent registry**: 5.5 (MEJORABLE — **F165 5 adopted históricos sin TTL**).
 - **Proposal structure**: 4.0 (FATAL — **F166 4/5 in-progress/ son zombis close-evidence** + **F168 proposal_board subutilizado**).
-- **Average**: ~4.3 (MUY MAL). **Baja vs pasada-13 (4.9) por F153-F168 nuevos**. Post-S1-S10: ~7.0.
+- **Enforce gap**: 4.0 (FATAL — **F169 86/89 auto_work invocations skipean bun run validate (95.6% skip-rate)**).
+- **Average**: ~4.2 (MUY MAL). **Baja vs pasada-13 (4.9) por F153-F169 nuevos**. Post-S1-S11: ~7.0.
 
 ## notes
 
