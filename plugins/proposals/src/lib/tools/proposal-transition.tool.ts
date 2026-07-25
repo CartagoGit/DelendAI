@@ -69,6 +69,58 @@ import type { IGitRunner } from '../shared/git-runner';
 import { rewriteStaleProposalSelfPaths } from '../proposals/rewrite-stale-self-paths';
 import { recordPeerReviewBypass } from '../shared/peer-review-bypass-log';
 
+const PEER_REVIEW_LOG_RELATIVE_PATH = join(
+	'.cache',
+	'mcp-vertex',
+	'results',
+	'logs',
+	'peer-review.jsonl',
+);
+
+export interface IPeerReviewLogEntry {
+	readonly ts: string;
+	readonly proposal_id: string;
+	readonly slice_id?: string;
+	readonly agent?: string;
+	readonly verdict?: string;
+	readonly note?: string;
+}
+
+export interface IPeerReviewGateDeps {
+	readonly readPeerReviewLog: (
+		logPathAbs: string,
+	) => Promise<readonly IPeerReviewLogEntry[]>;
+}
+
+const readPeerReviewLogEntries = async (
+	logPathAbs: string,
+): Promise<readonly IPeerReviewLogEntry[]> => {
+	const raw = await readFile(logPathAbs, 'utf8').catch((error: unknown) => {
+		if (
+			error &&
+			typeof error === 'object' &&
+			'code' in error &&
+			error.code === 'ENOENT'
+		) {
+			return '';
+		}
+		throw error;
+	});
+	if (raw.trim() === '') return [];
+	const entries: IPeerReviewLogEntry[] = [];
+	for (const line of raw.split('\n')) {
+		const trimmed = line.trim();
+		if (trimmed === '') continue;
+		try {
+			const parsed = JSON.parse(trimmed) as IPeerReviewLogEntry;
+			entries.push(parsed);
+		} catch {
+			continue;
+		}
+	}
+	return entries;
+};
+
 export interface IProposalTransitionToolOptions {
 	readonly namespacePrefix: string;
 	/** Absolute path to `docs/mcp-vertex/proposals/` (the 7 status folders live here). */
@@ -93,6 +145,7 @@ export interface IProposalTransitionToolOptions {
 	 * `proposals.options.requirePeerReview: false`.
 	 */
 	readonly requirePeerReview?: boolean;
+	readonly peerReviewGateDeps?: IPeerReviewGateDeps;
 }
 
 export interface IProposalTransitionArgs {
@@ -107,10 +160,9 @@ export interface IProposalTransitionArgs {
 }
 
 /**
- * a00069 S7 — true when the proposal markdown records at least one
- * independent peer approval (`review-log: approved by <agent>` where
- * agent ≠ `review-implementer` when both are present, or any approve
- * when no implementer is recorded).
+ * Legacy helper kept for compatibility with existing recovery/tests.
+ * The new gate reads peer-review.jsonl first, but markdown approvals still
+ * matter for older diagnostics and for transitional specs.
  */
 export const hasIndependentPeerApproval = (markdown: string): boolean => {
 	const implementers = [
@@ -121,10 +173,7 @@ export const hasIndependentPeerApproval = (markdown: string): boolean => {
 	].map((m) => (m[1] ?? '').toLowerCase());
 	if (approves.length === 0) return false;
 	if (implementers.length === 0) return true;
-	// At least one approver must differ from every implementer line, or
-	// from the matching slice's implementer — we accept any approver not
-	// equal to all implementers (i.e. not solely self-approvals).
-	return approves.some((a) => !implementers.includes(a));
+	return approves.some((agent) => !implementers.includes(agent));
 };
 
 const isKnownStatus = (value: string): value is IProposalStatus =>
@@ -201,6 +250,68 @@ const PROPOSAL_TRANSITION_OUTPUT_SCHEMA = z.object({
 	/** Count of self-referential `**Files**` paths rewritten to the new location. */
 	filesRewritten: z.number().optional(),
 });
+
+const buildMissingPeerReviewError = (namespacePrefix: string, id: string) => ({
+	structuredContent: {
+		ok: false as const,
+		error: {
+			code: 'missing-peer-review' as const,
+			reason: `peer-review required before "${id}" can leave review → done`,
+		},
+		blockerType: 'missing-peer-review' as const,
+		nextAction: 'proposal_review' as const,
+		nextStep: `Run ${namespacePrefix}_proposal_review with an approved verdict recorded after the most recent transition to review, then retry.`,
+	},
+	content: [
+		{
+			type: 'text' as const,
+			text: JSON.stringify({
+				ok: false,
+				error: {
+					code: 'missing-peer-review',
+					reason: `peer-review required before "${id}" can leave review → done`,
+				},
+				blockerType: 'missing-peer-review',
+				nextAction: 'proposal_review',
+				nextStep: `Run ${namespacePrefix}_proposal_review with an approved verdict recorded after the most recent transition to review, then retry.`,
+			}),
+		},
+	],
+	isError: true as const,
+});
+
+const findLastTransitionToReviewTs = (markdown: string): string | null => {
+	const matches = [
+		...markdown.matchAll(
+			/^[-*]\s*transition-log:\s*([^\n]+?)\s+—\s+[^\n]*\bto\s+review\b.*$/gim,
+		),
+	];
+	if (matches.length === 0) return null;
+	for (let index = matches.length - 1; index >= 0; index -= 1) {
+		const ts = matches[index]?.[1]?.trim();
+		if (ts) return ts;
+	}
+	return null;
+};
+
+const hasApprovedPeerReviewSince = (
+	entries: readonly IPeerReviewLogEntry[],
+	proposalId: string,
+	reviewStartedAt: string | null,
+): boolean => {
+	const reviewStartedMs =
+		reviewStartedAt === null
+			? Number.NEGATIVE_INFINITY
+			: Date.parse(reviewStartedAt);
+	if (Number.isNaN(reviewStartedMs)) return false;
+	return entries.some((entry) => {
+		if (entry.proposal_id !== proposalId) return false;
+		if (entry.verdict !== 'approved') return false;
+		const entryMs = Date.parse(entry.ts);
+		if (Number.isNaN(entryMs)) return false;
+		return entryMs >= reviewStartedMs;
+	});
+};
 
 export const runProposalTransition = async (
 	args: IProposalTransitionArgs,
@@ -279,10 +390,24 @@ export const runProposalTransition = async (
 			});
 		} else {
 			const raw = await readFile(found.absPath, 'utf8');
-			if (!hasIndependentPeerApproval(raw)) {
-				return toolError(
-					`peer-review required before "${args.id}" can leave review → done`,
-					`Run ${options.namespacePrefix}_proposal_review { action: "approve", agent: "<reviewer≠implementer>" } on the finished slice(s), then retry. Emergency bypass: force:true (host-approved only).`,
+			const reviewStartedAt = findLastTransitionToReviewTs(raw);
+			const readPeerReviewLog =
+				options.peerReviewGateDeps?.readPeerReviewLog ??
+				readPeerReviewLogEntries;
+			const peerReviewEntries = await readPeerReviewLog(
+				join(options.workspaceRoot, PEER_REVIEW_LOG_RELATIVE_PATH),
+			);
+			if (
+				!hasApprovedPeerReviewSince(
+					peerReviewEntries,
+					args.id,
+					reviewStartedAt,
+				) &&
+				!hasIndependentPeerApproval(raw)
+			) {
+				return buildMissingPeerReviewError(
+					options.namespacePrefix,
+					args.id,
 				);
 			}
 		}

@@ -1,3 +1,4 @@
+import { appendFile, mkdir, readFile as readFileAsync } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 
 import { z } from 'zod';
@@ -53,6 +54,69 @@ export { readActiveLocks } from './authoring-options';
 // close-slice validation below that deadline so callers receive the
 // structured validation error and the document mutex is always released.
 const CLOSE_SLICE_VALIDATION_TIMEOUT_MS = 45_000;
+const PEER_REVIEW_LOG_RELATIVE_PATH = join(
+	'.cache',
+	'mcp-vertex',
+	'results',
+	'logs',
+	'peer-review.jsonl',
+);
+
+type IPeerReviewPersistedEntry = {
+	readonly ts: string;
+	readonly proposal_id: string;
+	readonly slice_id: string;
+	readonly agent: string;
+	readonly verdict: 'approved' | 'request_changes';
+	readonly note?: string;
+};
+
+const readPeerReviewLog = async (
+	logPathAbs: string,
+): Promise<readonly IPeerReviewPersistedEntry[]> => {
+	const raw = await readFileAsync(logPathAbs, 'utf8').catch(
+		(error: unknown) => {
+			if (
+				error &&
+				typeof error === 'object' &&
+				'code' in error &&
+				error.code === 'ENOENT'
+			) {
+				return '';
+			}
+			throw error;
+		},
+	);
+	if (raw.trim() === '') return [];
+	const entries: IPeerReviewPersistedEntry[] = [];
+	for (const line of raw.split('\n')) {
+		const trimmed = line.trim();
+		if (trimmed === '') continue;
+		try {
+			entries.push(JSON.parse(trimmed) as IPeerReviewPersistedEntry);
+		} catch {
+			continue;
+		}
+	}
+	return entries;
+};
+
+const appendPeerReviewLog = async (
+	logPathAbs: string,
+	entry: IPeerReviewPersistedEntry,
+): Promise<void> => {
+	await mkdir(dirname(logPathAbs), { recursive: true });
+	await appendFile(logPathAbs, `${JSON.stringify(entry)}\n`, 'utf8');
+};
+
+const buildSelfReviewError = () => ({
+	ok: false as const,
+	error: {
+		code: 'self-review' as const,
+		reason: 'reviewer must be a different agent from the implementer',
+	},
+	blockerType: 'self-review' as const,
+});
 
 export const runCloseSliceValidation = async (
 	command: string,
@@ -840,6 +904,10 @@ export const buildReviewRegistration = (
 				let nextImplementer!: string | null;
 				let nextReviewer!: string | null;
 				let nextRounds!: readonly any[];
+				const peerReviewLogPathAbs = join(
+					options.workspaceRoot,
+					PEER_REVIEW_LOG_RELATIVE_PATH,
+				);
 
 				try {
 					await withFileMutex(docPath, async () => {
@@ -861,6 +929,28 @@ export const buildReviewRegistration = (
 						}
 						const body = m[2] ?? '';
 						const state = parseReviewState(body);
+						if (
+							args.action === 'approve' ||
+							args.action === 'request_changes'
+						) {
+							const existingEntries =
+								await readPeerReviewLog(peerReviewLogPathAbs);
+							const hasExistingSelfReview = existingEntries.some(
+								(entry) =>
+									entry.proposal_id === args.proposalId &&
+									(entry.slice_id === args.sliceId ||
+										entry.slice_id === '*') &&
+									entry.agent.trim().toLowerCase() ===
+										args.agent.trim().toLowerCase(),
+							);
+							if (hasExistingSelfReview) {
+								const envelope = buildSelfReviewError();
+								throw Object.assign(
+									new Error(JSON.stringify(envelope)),
+									{ envelope },
+								);
+							}
+						}
 
 						const result = reviewTransition(
 							state,
@@ -869,6 +959,17 @@ export const buildReviewRegistration = (
 							redactedNote.text,
 						);
 						if (!result.ok || result.next === undefined) {
+							if (
+								result.reason
+									?.toLowerCase()
+									.includes('different agent')
+							) {
+								const envelope = buildSelfReviewError();
+								throw Object.assign(
+									new Error(JSON.stringify(envelope)),
+									{ envelope },
+								);
+							}
 							throw new Error(
 								result.reason ?? 'invalid review transition',
 							);
@@ -891,8 +992,38 @@ export const buildReviewRegistration = (
 						}
 						const updated = md.replace(blockRe, `${m[1]}${block}`);
 						await writeFileAtomic(docPath, updated);
+						if (
+							args.action === 'approve' ||
+							args.action === 'request_changes'
+						) {
+							await appendPeerReviewLog(peerReviewLogPathAbs, {
+								ts: new Date().toISOString(),
+								proposal_id: entry.id,
+								slice_id: args.sliceId,
+								agent: args.agent,
+								verdict:
+									args.action === 'approve'
+										? 'approved'
+										: 'request_changes',
+								...(redactedNote.text !== ''
+									? { note: redactedNote.text }
+									: {}),
+							});
+						}
 					});
 				} catch (err: any) {
+					if (err?.envelope) {
+						return {
+							content: [
+								{
+									type: 'text' as const,
+									text: JSON.stringify(err.envelope),
+								},
+							],
+							structuredContent: err.envelope,
+							isError: true,
+						};
+					}
 					return toolError(
 						err.message,
 						'Call proposal_board to list slices.',
