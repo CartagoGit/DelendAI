@@ -178,8 +178,10 @@ const parseSchema = (raw: unknown): IJsonSchema => {
 	if ('example' in raw) out.example = raw.example;
 	if (typeof raw.minimum === 'number') out.minimum = raw.minimum;
 	if (typeof raw.maximum === 'number') out.maximum = raw.maximum;
-	if (typeof raw.exclusiveMinimum === 'number') out.exclusiveMinimum = raw.exclusiveMinimum;
-	if (typeof raw.exclusiveMaximum === 'number') out.exclusiveMaximum = raw.exclusiveMaximum;
+	if (typeof raw.exclusiveMinimum === 'number')
+		out.exclusiveMinimum = raw.exclusiveMinimum;
+	if (typeof raw.exclusiveMaximum === 'number')
+		out.exclusiveMaximum = raw.exclusiveMaximum;
 	if (typeof raw.minItems === 'number') out.minItems = raw.minItems;
 	if (typeof raw.maxItems === 'number') out.maxItems = raw.maxItems;
 	return out as IJsonSchema;

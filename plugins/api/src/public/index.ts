@@ -33,3 +33,17 @@ export {
 	validateResponse,
 } from '../lib/validate/response-validator';
 export type { IValidateResponseOptions } from '../lib/validate/response-validator';
+export {
+	generateMockFromSchema,
+	generateOperationMock,
+	mockHappyPath,
+	mockResponseForStatus,
+} from '../lib/mock/mock-engine';
+export type {
+	IMockGeneratorOptions,
+	IMockGeneratorDeps,
+	IMockedResponse,
+	IMockedOperation,
+} from '../lib/mock/mock-engine';
+export { buildApiMockToolRegistration } from '../lib/tools/api-mock.tool';
+export type { IApiMockToolOptions } from '../lib/tools/api-mock.tool';

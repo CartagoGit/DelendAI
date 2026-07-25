@@ -12,6 +12,7 @@ import { z } from 'zod';
 import { definePlugin } from '@mcp-vertex/core/public';
 
 import { buildApiCallToolRegistration } from './lib/tools/api-call.tool';
+import { buildApiMockToolRegistration } from './lib/tools/api-mock.tool';
 import { buildApiValidateToolRegistrations } from './lib/tools/api-validate.tool';
 
 const OptionsSchema = z
@@ -48,6 +49,12 @@ export default definePlugin({
 						? {}
 						: { defaultAllowList: opts.defaultAllowList }),
 				}),
+				buildApiMockToolRegistration({
+					namespacePrefix: ctx.namespacePrefix,
+					...(opts?.defaultAllowList === undefined
+						? {}
+						: { defaultAllowList: opts.defaultAllowList }),
+				}),
 			],
 			knowledge: [
 				{
@@ -61,6 +68,42 @@ export default definePlugin({
 						'- Inputs: `operationId`, `response`, and either `spec` or `specUrl` + `allowList`.',
 						'- Output: normalized findings plus severity summary and worst severity.',
 						'- Coverage: required fields, type drift, enum drift, email/uri format checks, nullable fields, nested arrays/objects, and closed-object extra properties.',
+					].join('\n'),
+				},
+				{
+					id: 'api-mock-overview',
+					title: 'api_mock',
+					body: [
+						'# api_mock',
+						'',
+						'Generate a deterministic example response for one OpenAPI operation directly from the parsed spec — no live server, no network. Useful for local development, contract-test seeds and documentation stubs.',
+						'',
+						'- Inputs: `operationId` (required) or `method` + `path`, plus either `spec` or `specUrl` + `allowList`.',
+						'- Optional `statusCode` picks a specific response (default: the first 2xx or `default`).',
+						'- Optional `count` generates a list of `count` unique mocks (default 1).',
+						'- Deterministic by default; pass `randomize: true` to mix the operationId + path + status into the seed between calls.',
+						'- Output: `{ ok, operationId, response }` where `response` carries the chosen status, content type, and the generated body that satisfies the spec.',
+					].join('\n'),
+				},
+				{
+					id: 'api-plugin-catalog',
+					title: 'api plugin catalog',
+					body: [
+						'# api plugin catalog',
+						'',
+						'OpenAPI-aware request building, contract validation, and mock generation on top of the allow-listed web-fetch engine.',
+						'',
+						'## Tools',
+						'- `api_call` — parse spec, build a request, dispatch through the allow-listed web-fetch engine.',
+						'- `api_validate` — check a decoded JSON response against the success response schema for one operation.',
+						'- `api_mock` — generate a deterministic example response for one operation from the spec (no network).',
+						'',
+						'## Pack membership',
+						'- `backend-api` — the API plugin ships in the backend-api preset pack alongside `database`, `browser`, and `observability`.',
+						'',
+						'## Engine',
+						'- All operations ride the shared `web-fetch` allow-list. Mutating calls require the same consent web-fetch demands.',
+						'- The S1 parser, S2 schema walker, and S3 mock generator share the same `IJsonSchema` shape — no parallel contracts.',
 					].join('\n'),
 				},
 			],
