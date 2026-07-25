@@ -73,9 +73,14 @@ including the "don't touch a same-named symbol in another scope" case.
 
 ### S3 — rule-based codemods + recipe library
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/refactor/src/lib/codemod/`, `plugins/refactor/src/lib/tools/refactor-codemod.tool.ts`
 - **Gate**: bun run validate
+- implementation:
+  - `codemod-runner.ts` discovers files, applies boundary-safe regex rewrites, returns unified diffs.
+  - `recipes.ts` ships 3 recipes: `ts/no-throw-literal`, `ts/strict-equal`, `ts/console-to-logger`.
+  - `refactor-codemod.tool.ts` exposes `refactor_codemod` with `recipeId`/`cwd`/`dryRun` input and `{ files: [{ path, diff }], totalEdits, language }` output.
+  - Wired into `plugins/refactor/src/index.ts`; 30/30 tests in the plugin suite pass.
 - implementation:
   - `codemod-runner.ts` discovers files, applies boundary-safe regex rewrites, returns unified diffs.
   - `recipes.ts` ships 3 recipes: `ts/no-throw-literal`, `ts/strict-equal`, `ts/console-to-logger`.
