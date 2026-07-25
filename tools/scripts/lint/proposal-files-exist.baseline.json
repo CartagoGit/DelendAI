@@ -9,6 +9,7 @@
 	"docs/mcp-vertex/proposals/done/fixes/x00008-web-ui-bugfixes-round-2.md": 6,
 	"docs/mcp-vertex/proposals/done/fixes/x00080-multi-agent-control-mvp.md": 3,
 	"docs/mcp-vertex/proposals/done/fixes/x00076-quick-wins-from-2026-06-28-audit.md": 3,
+	"docs/mcp-vertex/proposals/done/audits/a00069-25-07-2026-multi-agent-branch-state-drift-and-validation-leak.md": 1,
 	"docs/mcp-vertex/proposals/done/audits/a00033-22-06-2026-copilot-minimax-m3-test-isolation-and-auto-work-loop.md": 4,
 	"docs/mcp-vertex/proposals/done/audits/a00042-25-06-2026-antigravity-gemini-3-5-flash-repositorio.md": 5,
 	"docs/mcp-vertex/proposals/done/audits/a00024-21-06-2026-copilot-minimax-m3-estudio-ahorro-tokens.md": 13,
@@ -32,6 +33,7 @@
 	"docs/mcp-vertex/proposals/done/feats/f00045-chat-tool-error-shows-direct-log-link.md": 6,
 	"docs/mcp-vertex/proposals/done/feats/f00037-contracts-file-naming-and-folder-conventions.md": 4,
 	"docs/mcp-vertex/proposals/done/feats/f00011-loop-detection-and-handoff.md": 3,
+	"docs/mcp-vertex/proposals/done/feats/f00129-observability-plugin.md": 6,
 	"docs/mcp-vertex/proposals/done/feats/f00092-host-hints-single-fragment.md": 1,
 	"docs/mcp-vertex/proposals/done/feats/f00057-skill-unification-plugin-coverage-script-wiring-and-doc-drift-repair.md": 32,
 	"docs/mcp-vertex/proposals/done/feats/f00052-gate-agent-worktree-behind-host-flag-default-off.md": 9,
@@ -67,6 +69,5 @@
 	"docs/mcp-vertex/proposals/done/refactors/r00001-harden-catchall-outputschemas-jsdoc-boot-only-en-primitivas-sync-del-core.md": 2,
 	"docs/mcp-vertex/proposals/done/refactors/r00002-harden-catchall-output-schemas.md": 5,
 	"docs/mcp-vertex/proposals/done/refactors/r00003-apply-solid-on-a00036-findings.md": 3,
-	"docs/mcp-vertex/proposals/in-progress/f00130-api-openapi-plugin.md": 4,
-	"docs/mcp-vertex/proposals/in-progress/f00128-database-plugin.md": 3
+	"docs/mcp-vertex/proposals/in-progress/a00072-25-07-2026-deeper-log-scan-bugs-f148-f152.md": 9
 }

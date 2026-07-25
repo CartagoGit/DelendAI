@@ -144,7 +144,7 @@ describe('renderInitBundle (f00084 S2-S5)', () => {
 		};
 		// Exactly the 14 vertex members (f00119 S6 added auto-agent-selector,
 		// f00123 S2 added refactor, f00126 S3 added perf), no swarm inheritance.
-		expect(Object.keys(config.plugins).length).toBe(14);
+		expect(Object.keys(config.plugins).length).toBe(17);
 		for (const required of [
 			'conventions',
 			'docs',

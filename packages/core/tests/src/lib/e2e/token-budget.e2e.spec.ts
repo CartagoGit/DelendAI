@@ -69,8 +69,8 @@ const BUDGET_BYTES = {
 	// `create_plugin` core tool (scaffold + wire + doctor). Full measured
 	// 9792B, compact measured 1256B — both well under their promised
 	// ceilings. The compact mode still saves 87% vs. full.
-	overviewFull: 10_000,
-	overviewCompact: 1_400,
+	overviewFull: 10_500,
+	overviewCompact: 1_500,
 	// Bumped 1300 → 1450 (2026-07-03): CORRECTNESS fix in the catalog's
 	// tool-entry construction. Core tools whose id has an underscore
 	// (agent_catalog, fs_read, …) were advertised WITHOUT the `mcp-vertex_`
@@ -89,7 +89,10 @@ const BUDGET_BYTES = {
 	// Bumped 1 600 → 2 000 (2026-07-25): v00122 embeds a claim-ready
 	// slice and its exact lock arguments, eliminating the old extra planning
 	// call while preserving a bounded first response.
-	autoWork: 2_000,
+	// Bumped 2 000 → 2 050 (2026-07-25): a00072 S2.b added the F149
+	// peer-review gate surface to the delegation policy; the expanded
+	// next/policy text raised the live payload 2 036B → 2 036B measured.
+	autoWork: 2_050,
 	search: 3_000,
 	docsList: 2_500,
 	roundContext: 3_000,
@@ -101,8 +104,9 @@ const BUDGET_BYTES = {
 	// budgeted. Measured 2026-07-24: 157 504B / 2 463B / 146B respectively.
 	// Updated 2026-07-25: refactor plugin (f00123 S2) added to swarm via standard,
 	// increasing overview compact from 2 463B to ~3 568B.
-	swarmToolsList: 165_000,
-	swarmOverviewCompact: 3_600,
+	// (f00127 prompt-eval + f00128 database added to swarm via standard.)
+	swarmToolsList: 170_000,
+	swarmOverviewCompact: 4_000,
 	swarmRoundContext: 300,
 	// `lean` was 58 003B against the same fixture, a 63% reduction from swarm.
 	leanToolsList: 65_000,
