@@ -44,7 +44,7 @@ acceptance:
 ## goal
 
 Close audit `a00040` findings **H8, H10, H12, H15, H17** by making every user-visible string
-in [`packages/ui-extension/`](packages/ui-extension/ ) and [`extensions/vscode/`](extensions/vscode/ )
+in [`packages/ui-extension/`](../../../../../packages/ui-extension ) and [`extensions/vscode/`](../../../../../extensions/vscode )
 flow through the `t()` / `@mcp-vertex/shared` i18n layer, and by teaching `check-i18n.ts` to
 catch the gaps that the current 27-key subset misses.
 
@@ -76,14 +76,14 @@ and found:
 - **H17** — [`formatRelativeTime`](packages/ui-extension/src/utils/format-relative-time.ts )
   returns English strings (`'just now'`, `'2 minutes ago'`) and ignores the `locale`
   parameter (it's accepted and unused).
-- **H2 (from a00042)** — [`apps/web/src/i18n/langs/*.ts`](apps/web/src/i18n/langs/ ) has brace nesting errors where `homeQuickInstall` and `homeAtAGlance` are declared inside the `ui` object literal, breaking Astro check.
+- **H2 (from a00042)** — [`apps/web/src/i18n/langs/*.ts`](../../../../../apps/web/src/i18n/langs ) has brace nesting errors where `homeQuickInstall` and `homeAtAGlance` are declared inside the `ui` object literal, breaking Astro check.
 
 These 6 cluster around i18n completeness — the same root cause (no enforcement beyond the
 shared dict) and the same fix surface (`t()` everywhere, `Intl.*` for time, correct braces nesting).
 
 ## why this design
 
-**A single `t()` helper** already exists in [`apps/shared/src/i18n/`](apps/shared/src/i18n/ )
+**A single `t()` helper** already exists in [`apps/shared/src/i18n/`](../../../../../apps/shared/src/i18n )
 and is consumed by the toolbar (the only renderer that follows the rule). S1 just extends
 that contract to every renderer.
 
@@ -134,7 +134,7 @@ packages/ui-extension/src/
 ### S1 — every renderer through `t()` (closes H8)
 
 - **Status**: done
-- **Files**: [`packages/ui-extension/src/dashboard/`](packages/ui-extension/src/dashboard/), [`packages/ui-extension/src/settings/`](packages/ui-extension/src/settings/), [`packages/ui-extension/src/knowledge/`](packages/ui-extension/src/knowledge/), [`packages/ui-extension/src/toolbar/`](packages/ui-extension/src/toolbar/), [`apps/shared/src/i18n/langs/en.ts`](apps/shared/src/i18n/langs/en.ts), [`apps/shared/src/i18n/index.ts`](apps/shared/src/i18n/index.ts)
+- **Files**: [`packages/ui-extension/src/dashboard/`](../../../../../packages/ui-extension/src/dashboard), [`packages/ui-extension/src/settings/`](../../../../../packages/ui-extension/src/settings), [`packages/ui-extension/src/knowledge/`](../../../../../packages/ui-extension/src/knowledge), [`packages/ui-extension/src/toolbar/`](../../../../../packages/ui-extension/src/toolbar), [`apps/shared/src/i18n/langs/en.ts`](../../../../../apps/shared/src/i18n/langs/en.ts), [`apps/shared/src/i18n/index.ts`](../../../../../apps/shared/src/i18n/index.ts)
 - **Gate**: `bun run validate` exits 0
 
 For each file in the renderer tree (the proposal's `packages/ui-extension/src/renderers/`
@@ -167,7 +167,7 @@ checks the 27 keys); the strict mode would have caught the H10 gaps at merge tim
 ### S3 — `renderToolbar` plugin gating (closes H12)
 
 - **Status**: done
-- **Files**: [`extensions/vscode/src/commands/types.ts`](extensions/vscode/src/commands/types.ts ), [`extensions/vscode/src/commands/open-toolbar.ts`](extensions/vscode/src/commands/open-toolbar.ts ), [`extensions/vscode/src/extension.ts`](extensions/vscode/src/extension.ts )
+- **Files**: [`extensions/vscode/src/commands/types.ts`](../../../../../extensions/vscode/src/commands/types.ts ), [`extensions/vscode/src/commands/open-toolbar.ts`](../../../../../extensions/vscode/src/commands/open-toolbar.ts ), [`extensions/vscode/src/extension.ts`](../../../../../extensions/vscode/src/extension.ts )
 - **shipped-in**: 2499ef40, 4d08f335
 - **Command**: `bun run --cwd extensions/vscode test && bunx tsc --noEmit -p tsconfig.json`
 - **Expect**: 23/23 test files, 85/85 tests pass; typecheck clean.
@@ -204,7 +204,7 @@ the developer hardcoded at table-build time.
 ### S5 — `Intl.RelativeTimeFormat` (closes H17)
 
 - **Status**: done
-- **Files**: [`packages/ui-extension/src/dashboard/format.ts`](packages/ui-extension/src/dashboard/format.ts ), [`packages/ui-extension/tests/dashboard/format.spec.ts`](packages/ui-extension/tests/dashboard/format.spec.ts )
+- **Files**: [`packages/ui-extension/src/dashboard/format.ts`](../../../../../packages/ui-extension/src/dashboard/format.ts ), [`packages/ui-extension/tests/dashboard/format.spec.ts`](../../../../../packages/ui-extension/tests/dashboard/format.spec.ts )
 - **Command**: `bunx vitest run packages/ui-extension/tests/dashboard/format.spec.ts`
 - **Expect**: exit0
 - **Commit**: `3e07855b feat(ui-extension): locale-aware formatRelativeTime via Intl.RelativeTimeFormat (f00059 S5)`

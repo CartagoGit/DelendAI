@@ -66,7 +66,7 @@ de tirar el servidor. Lo que sigue son riesgos y fricciones, no bloqueos.
    crees universal pero no arranca en el runtime mayoritario.
 
 2. **`round_context` imprime con tabuladores — viola el principio de tokens del
-   propio repo.** [round-context.tool.ts:150](../../../plugins/proposals/src/lib/tools/round-context.tool.ts#L150)
+   propio repo.** [round-context.tool.ts:150](../../../../../plugins/proposals/src/lib/tools/round-context.tool.ts#L150)
    devuelve `JSON.stringify(out, null, '\t')`. `TOKEN-BUDGETS.md` dice literalmente
    "Tool responses are compact JSON … no pretty-print". El digest de ronda es de
    los payloads más grandes (locks + agentes + portfolio + hashes + resumeHint) y
@@ -94,7 +94,7 @@ de tirar el servidor. Lo que sigue son riesgos y fricciones, no bloqueos.
    `status` con `fields`.
 
 4. **Exclusión mutua latente en `withFileMutex`.**
-   [with-file-mutex.ts:73-77](../../../packages/core/src/lib/shared/with-file-mutex.ts#L73-L77):
+   [with-file-mutex.ts:73-77](../../../../../packages/core/src/lib/shared/with-file-mutex.ts#L73-L77):
    si la contención supera `timeoutMs` (5 s) el waiter **roba el lock y entra**,
    aunque el holder original siga ejecutando `fn()`. Para las secciones críticas
    reales (read-modify-write de un JSON pequeño, sub-ms) es seguro. Pero es una
@@ -116,7 +116,7 @@ de tirar el servidor. Lo que sigue son riesgos y fricciones, no bloqueos.
    (`release-plan.ts`), la ejecución no.
 
 6. **`parseQueue` valida `waitFor` con `existsSync(wf.file)` sobre la ruta tal
-   cual.** [persistent-task-queue.ts:336-345](../../../plugins/proposals/src/lib/agents/persistent-task-queue.ts#L336-L345)
+   cual.** [persistent-task-queue.ts:336-345](../../../../../plugins/proposals/src/lib/agents/persistent-task-queue.ts#L336-L345)
    trata `wf.file` como ruta utilizable directamente por `existsSync`. Si el
    enqueue guarda rutas relativas al workspace y el `parseQueue` corre con otro
    `cwd`, el chequeo da falsos `WAIT_FOR_FILE_MISSING` (que *aborta* el parseo de
@@ -135,7 +135,7 @@ de tirar el servidor. Lo que sigue son riesgos y fricciones, no bloqueos.
 - Envelope uniforme `{ ok, error: { reason, nextAction } }`, `tags` y `summary`
   cortos en cada tool, `outputSchema` Zod en las que devuelven structured content.
 - `doctor`/`--check` que **ensambla el servidor real** (no solo valida config) para
-  cazar colisiones de id antes de arrancar stdio. [assemble.ts:284-326](../../../packages/core/src/lib/cli/assemble.ts#L284-L326)
+  cazar colisiones de id antes de arrancar stdio. [assemble.ts:284-326](../../../../../packages/core/src/lib/cli/assemble.ts#L284-L326)
 - Precedencia de roots clara y testeable (CLI > config > default), contexto por
   plugin con `pluginCacheDir`/`pluginDocsDir` aislados.
 - Plugin malo se reporta a stderr y se salta; el resto carga (degradación
@@ -155,7 +155,7 @@ de tirar el servidor. Lo que sigue son riesgos y fricciones, no bloqueos.
   `agent_lock status` — el sumidero de tokens dominante en swarm real.
 - **Anti-bucle explícito en `auto_work`**: el estado `all-claimed`/`idle` devuelve
   `nextAction` verbatim para que el modelo **pare** en vez de re-llamar.
-  [auto-work.tool.ts:41-52](../../../plugins/proposals/src/lib/tools/auto-work.tool.ts#L41-L52)
+  [auto-work.tool.ts:41-52](../../../../../plugins/proposals/src/lib/tools/auto-work.tool.ts#L41-L52)
 
 ### 🟣 MUY BIEN
 

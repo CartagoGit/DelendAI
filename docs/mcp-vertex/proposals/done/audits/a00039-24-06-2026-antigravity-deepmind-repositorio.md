@@ -171,7 +171,7 @@ la misma forma que el core. ~10 min por plugin.
 **H2 · Biome CI tiene 1 error, 2 warnings, 1 info — el gate NO es
 verde**
 
-[`workspace-file-reader.ts:12`](../../packages/core/src/lib/bootstrap/workspace-file-reader.ts#L12):
+[`workspace-file-reader.ts:12`](../../../../../packages/core/src/lib/bootstrap/workspace-file-reader.ts#L12):
 ```typescript
 import { existsSync, readdirSync } from 'node:fs';
 ```
@@ -179,13 +179,13 @@ Importación **muerta**: `existsSync` y `readdirSync` no se usan (las
 implementaciones usan `fs.access` y `fs.readdir` async). Biome lo reporta
 como `noUnusedImports` **error**.
 
-[`cli.astro:13`](../../apps/web/src/pages/cli.astro#L13):
+[`cli.astro:13`](../../../../../apps/web/src/pages/cli.astro#L13):
 ```typescript
 import { type Lang } from '#I18N/ui';
 ```
 Biome pide `import type { Lang }` (warning `useImportType`).
 
-[`proposal-narrative-patterns.spec.ts:66`](../../plugins/proposals/tests/src/lib/proposals/proposal-narrative-patterns.spec.ts#L66):
+[`proposal-narrative-patterns.spec.ts:66`](../../../../../plugins/proposals/tests/src/lib/proposals/proposal-narrative-patterns.spec.ts#L66):
 ```typescript
 expect(provider.aliases['estado']).toContain('notes');
 ```
@@ -202,7 +202,7 @@ dot notation). 1 minuto.
 
 **H3 · `apps/shared` tiene 6.655 LOC y 0 specs** — (nuevo)
 
-[`apps/shared/src/`](../../apps/shared/src/) contiene toda la
+[`apps/shared/src/`](../../../../../apps/shared/src) contiene toda la
 infraestructura i18n compartida (13 idiomas × ~500 claves), el barrel
 público, y el módulo de tipos compartidos. **Cero tests.** Una
 regresión en las claves i18n (clave mal nombrada, idioma faltante,
@@ -247,9 +247,9 @@ respuestas de tools** — (eco parcial de H3/a00016)
 Las escrituras a disco con `JSON.stringify(..., null, '\t')` son
 **correctas** (legibilidad para operadores). Pero verificado en código:
 
-- [`agent-lock-engine.ts:127`](../../plugins/proposals/src/lib/locks/agent-lock-engine.ts#L127)
+- [`agent-lock-engine.ts:127`](../../../../../plugins/proposals/src/lib/locks/agent-lock-engine.ts#L127)
   — escribe `lockPath` con tabs.
-- [`sync-proposal-registry.ts:580`](../../plugins/proposals/src/lib/proposals/sync-proposal-registry.ts#L580)
+- [`sync-proposal-registry.ts:580`](../../../../../plugins/proposals/src/lib/proposals/sync-proposal-registry.ts#L580)
   — escribe `index.json` con 4-space indent.
 
 Ambos son **escrituras a disco only** (no se re-emiten directamente en
@@ -293,7 +293,7 @@ El SOLID split ya está hecho. **No hay refactor pendiente aquí.**
 **H10 · `biome.json` usa `"linter": { "enabled": true }` que está
 deprecado en Biome 2.5** — (eco de H9/a00016)
 
-[`biome.json:108-109`](../../biome.json#L108):
+[`biome.json:108-109`](../../../../../biome.json#L108):
 ```json
 "linter": {
   "enabled": true,

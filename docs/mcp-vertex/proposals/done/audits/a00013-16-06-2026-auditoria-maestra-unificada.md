@@ -84,11 +84,11 @@ Notación: **(n/8)** = cuántas de las 8 auditorías lo señalan. Severidad cons
 ### 🔴 P0 — Correctitud, concurrencia y genericidad
 
 **M1 · Carrera de robo del mutex (TOCTOU + borrado incondicional)** — (4/8)
-[with-file-mutex.ts:85](../../../packages/core/src/lib/shared/with-file-mutex.ts#L85)
+[with-file-mutex.ts:85](../../../../../packages/core/src/lib/shared/with-file-mutex.ts#L85)
 hace `if (acquired) await rm(lockPath)` **incondicional** en el `finally`; el sidecar
-guarda solo `${pid}\n${ts}` ([:54](../../../packages/core/src/lib/shared/with-file-mutex.ts#L54)),
+guarda solo `${pid}\n${ts}` ([:54](../../../../../packages/core/src/lib/shared/with-file-mutex.ts#L54)),
 sin token de propiedad. Si `fn()` de A supera `timeoutMs` (5 s), B roba el lock
-([:75](../../../packages/core/src/lib/shared/with-file-mutex.ts#L75)) y crea el suyo;
+([:75](../../../../../packages/core/src/lib/shared/with-file-mutex.ts#L75)) y crea el suyo;
 al terminar, el `finally` de A **borra el lock de B** → C entra en paralelo →
 *lost-update*. Gemini lo marca FATAL, Opus lo cataloga como TOCTOU residual, las
 previas igual. Para secciones críticas sub-ms no se dispara; bajo disco lento/FS de
@@ -98,7 +98,7 @@ solo si el token coincide**; opcional heartbeat del `mtime` y robar solo por
 `staleMs`.
 
 **M2 · `AGENT_SLOTS` es un `enum` cerrado con vocabulario del host** — (1/8, Sonnet, **FATAL**)
-[task-queue-engine.ts:74](../../../plugins/proposals/src/lib/agents/task-queue-engine.ts#L74):
+[task-queue-engine.ts:74](../../../../../plugins/proposals/src/lib/agents/task-queue-engine.ts#L74):
 `const IAgentSlotSchema = z.enum(AGENT_SLOTS)` con `['orchestrator',
 'proposal_guardian', 'implementation_runner', 'delivery_verifier',
 'technical_investigator']`. Cualquier proyecto externo que use `proposals` **debe**
@@ -108,7 +108,7 @@ verificado y de alto impacto en adopción.
 **Fix:** `z.string().min(1)` o set de slots inyectable por opciones del plugin.
 
 **M3 · Se publica TypeScript fuente; el CLI es de facto *bun-only*** — (1/8, Gemini-exhaustiva previa)
-[packages/core/package.json](../../../packages/core/package.json): `"main"`,
+[packages/core/package.json](../../../../../packages/core/package.json): `"main"`,
 `"exports"` → `./src/*.ts` y `"bin": "./src/cli.ts"`, **sin script `build`**. Bajo
 Node, `npx @mcp-vertex/core` no ejecuta `.ts` y falla; solo `bunx` arranca.
 Las 4 auditorías nuevas corrieron con bun y no lo notaron, pero limita la adopción
@@ -126,9 +126,9 @@ en Claude Desktop/Cursor/VS Code (lanzan `npx`/`node`).
 
 **M5 · I/O síncrono residual en rutas calientes de `proposals`** — (2/8: Sonnet, Codex)
 `readFileSync` dentro del `superRefine` de Zod del `enqueue`
-([task-queue-engine.ts:363](../../../plugins/proposals/src/lib/agents/task-queue-engine.ts#L363)),
-y en [zombie-reconcile.ts:51](../../../plugins/proposals/src/lib/agents/zombie-reconcile.ts#L51)
-/ [promote-on-release.ts:119](../../../plugins/proposals/src/lib/agents/promote-on-release.ts#L119).
+([task-queue-engine.ts:363](../../../../../plugins/proposals/src/lib/agents/task-queue-engine.ts#L363)),
+y en [zombie-reconcile.ts:51](../../../../../plugins/proposals/src/lib/agents/zombie-reconcile.ts#L51)
+/ [promote-on-release.ts:119](../../../../../plugins/proposals/src/lib/agents/promote-on-release.ts#L119).
 Menos crítico que `docs` (esporádico) pero inconsistente.
 **Fix:** prefetch async antes del parse; `fs/promises` en reconcile/promote. (`deps`
 y la inicialización de `rules` también leen sync — baja prioridad.)
@@ -136,23 +136,23 @@ y la inicialización de `rules` también leen sync — baja prioridad.)
 ### 🟠 P1 — Robustez de estado y hermeticidad
 
 **M6 · `deliveredDigests` solo en memoria** — (2/8: Sonnet, Codex)
-[task-queue-engine.ts:307](../../../plugins/proposals/src/lib/agents/task-queue-engine.ts#L307):
+[task-queue-engine.ts:307](../../../../../plugins/proposals/src/lib/agents/task-queue-engine.ts#L307):
 `new Set<string>()`. Tras reinicio del server (habitual con `--watch`) el primer
 `subscribe` re-entrega todos los digests → trabajo duplicado en el swarm.
 **Fix:** persistir en sidecar `.subscribe-delivered.json` bajo el mismo `withFileMutex`.
 
 **M7 · `waitFor.file` validado con `existsSync` sobre ruta cruda** — (2/8: Codex, + previa)
-[persistent-task-queue.ts:336-345](../../../plugins/proposals/src/lib/agents/persistent-task-queue.ts#L336-L345):
+[persistent-task-queue.ts:336-345](../../../../../plugins/proposals/src/lib/agents/persistent-task-queue.ts#L336-L345):
 si la ruta es workspace-relativa y `parseQueue` corre con otro `cwd`, da falsos
 `WAIT_FOR_FILE_MISSING` que **abortan el parseo de toda la cola**. Relacionado: el
-fallback suave de `lockPath` en la acción `report` ([task-queue-engine.ts:131](../../../plugins/proposals/src/lib/agents/task-queue-engine.ts#L131))
+fallback suave de `lockPath` en la acción `report` ([task-queue-engine.ts:131](../../../../../plugins/proposals/src/lib/agents/task-queue-engine.ts#L131))
 viola la regla "el workspace siempre se inyecta".
 **Fix:** resolver ambos contra el root inyectado; hacer `lockPath` requerido en `report`.
 
 ### 🟠 P1 — Tokens
 
 **M8 · Pretty-print residual en respuestas MCP** — (2/8: Codex, + Gemini-exhaustiva previa)
-[round-context.tool.ts:150](../../../plugins/proposals/src/lib/tools/round-context.tool.ts#L150)
+[round-context.tool.ts:150](../../../../../plugins/proposals/src/lib/tools/round-context.tool.ts#L150)
 usa `JSON.stringify(out, null, '\t')`, contra el propio `TOKEN-BUDGETS.md`. Codex
 lista además `sync_proposals`, `get_proposal_workflow`, `scaffold` y stores con
 pretty-print en caliente. El digest de ronda es de los payloads mayores y **no está
@@ -196,7 +196,7 @@ command allow/deny, threat-model por plugin ni sanitización central de paths. P
 pero sin migradores `v1→v2`, backup pre-migración ni `doctor --migrate --dry-run`.
 
 **M15 · `prepareServerBlueprintOnStart` recalcula `cacheDir` e ignora el del config** — (1/8: Opus)
-[assemble.ts:336-358](../../../packages/core/src/lib/cli/assemble.ts#L336-L358) →
+[assemble.ts:336-358](../../../../../packages/core/src/lib/cli/assemble.ts#L336-L358) →
 drift de bajo impacto: derivar de `assembleCliConfig`.
 
 **Menores verificados:** `outputSchema` permisivo `z.object().catchall` en tools
@@ -526,7 +526,7 @@ ya existen — la sugerencia de "health_check/repair" está cubierta.
 **P1 — seguridad de rutas (read-only plugins):**
 - ✅ **M22 · Containment de rutas.** Helper único en core
   `resolveWorkspaceContained(rootAbs, child) → {ok, abs, rel, reason}`
-  ([contain-path.ts](../../../packages/core/src/lib/shared/contain-path.ts), exportado
+  ([contain-path.ts](../../../../../packages/core/src/lib/shared/contain-path.ts), exportado
   en `public`), aplicado en `search` (roots), `docs` (`docs_list` **y** `docs_read`,
   unificando el `within`) y `deps` (`manifest`). Rechaza `..` que escapa y rutas
   absolutas (contrato = relativo al workspace). 9 tests de traversal. *(Containment es
@@ -534,7 +534,7 @@ ya existen — la sugerencia de "health_check/repair" está cubierta.
 
 **P1 — hermeticidad de secretos:**
 - ✅ **M23 · `redactSecrets` centralizado en core.**
-  ([redact.ts](../../../packages/core/src/lib/shared/redact.ts), exportado en `public`);
+  ([redact.ts](../../../../../packages/core/src/lib/shared/redact.ts), exportado en `public`);
   `memory` lo reexporta (shim, sin romper su superficie) y `proposals` lo aplica al
   **crear una proposal** (`create_proposal` scrubea el body antes de `writeFileAtomic` y
   reporta `redactedSecrets`). Test de integración añadido. *(El `close_slice` no toca
@@ -687,7 +687,7 @@ ya existen — la sugerencia de "health_check/repair" está cubierta.
 **Nuevas peticiones del usuario (18-06):**
 - ✅ **M35 · Ciclo de revisión por pares en `proposals`** — tool `proposal_review`
   (`submit`/`approve`/`request_changes`/`status`) + máquina de estados pura
-  ([proposal-review.ts](../../../plugins/proposals/src/lib/swarm/proposal-review.ts)):
+  ([proposal-review.ts](../../../../../plugins/proposals/src/lib/swarm/proposal-review.ts)):
   el implementador hace `submit` (queda **in_review**, NO done); un **agente distinto**
   `approve` (→ `- status: done` + libera lock) o `request_changes` con objeción (→
   `changes_requested`, reworkable + libera lock); el fixer re-`submit` y **otro** revisa el
@@ -799,9 +799,9 @@ camino al 11/10 — solo acabados de plataforma.**
 
 - **🔴 M45 · `auto_work`/`continue_proposal` lanzaban un crash de validación MCP
   en el caso idle** —
-  [auto-work.tool.ts:44-48](../../../plugins/proposals/src/lib/tools/auto-work.tool.ts)
+  [auto-work.tool.ts:44-48](../../../../../plugins/proposals/src/lib/tools/auto-work.tool.ts)
   y
-  [continue-proposal.tool.ts:35-39](../../../plugins/proposals/src/lib/tools/continue-proposal.tool.ts)
+  [continue-proposal.tool.ts:35-39](../../../../../plugins/proposals/src/lib/tools/continue-proposal.tool.ts)
   declaraban `outputSchema: z.object({}).catchall(z.unknown())` pero construían
   la respuesta con un `json()` local duplicado que **solo devolvía `content`
   (texto)**, nunca `structuredContent` — a diferencia del resto del plugin, que
@@ -826,9 +826,9 @@ camino al 11/10 — solo acabados de plataforma.**
   de los 13 proposals reales en `docs/proposals/`** —
   `mcp-vertex.config.json` tenía `"docsDir": "docs/mcp-vertex"` (el default del
   framework, `DEFAULT_CORE_PATHS.docsDir` en
-  [core-paths.interface.ts](../../../packages/core/src/lib/contracts/interfaces/core-paths.interface.ts)).
+  [core-paths.interface.ts](../../../../../packages/core/src/lib/contracts/interfaces/core-paths.interface.ts)).
   El plugin `proposals` resuelve su directorio como `<docsDir>/proposals`
-  ([index.ts:103](../../../plugins/proposals/src/index.ts#L103)), así que
+  ([index.ts:103](../../../../../plugins/proposals/src/index.ts#L103)), así que
   `create_proposal`/`continue_proposal`/`auto_work`/`proposal_board` operaban
   sobre `docs/mcp-vertex/proposals/` — un directorio casi vacío que solo
   contenía **3 borradores abandonados** de l104/l106/l107 (versiones más
@@ -879,10 +879,10 @@ camino al 11/10 — solo acabados de plataforma.**
 
 - **✅ M25 · Dedupe walk() search/docs** — ya estaba unificado: ambos motores
   delegan en `walkAllowedFiles`
-  ([walk-allowed-files.ts](../../../packages/core/src/lib/shared/walk-allowed-files.ts)),
+  ([walk-allowed-files.ts](../../../../../packages/core/src/lib/shared/walk-allowed-files.ts)),
   especializando solo `shouldSkipDir`/`visitFile`. Cerrado sin cambios de código.
 - **✅ M28 · `agent_lock` con modo `fail` cableado** — el schema de
-  [agent-lock.tool.ts:50](../../../plugins/proposals/src/lib/tools/agent-lock.tool.ts#L50)
+  [agent-lock.tool.ts:50](../../../../../plugins/proposals/src/lib/tools/agent-lock.tool.ts#L50)
   ya expone `onContention: z.enum(['steal','fail']).optional()`, con test
   dedicado en `agent-lock-contention.spec.ts`. Cerrado sin cambios de código.
 - **✅ M32 · Cobertura property-based** — confirmados ya existentes:

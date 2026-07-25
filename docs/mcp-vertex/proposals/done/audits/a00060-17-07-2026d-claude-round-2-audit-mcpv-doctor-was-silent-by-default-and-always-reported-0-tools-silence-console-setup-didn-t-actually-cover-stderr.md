@@ -66,22 +66,22 @@ User directive: keep pushing every dimension to 11/10. Continuing a00058/a00059'
 ## Findings
 
 ### 1. `mcpv doctor` printed nothing by default (P1 · broken UX for its stated purpose)
-**File**: [`packages/cli/src/commands/groups/doctor.ts#L53-L106`](packages/cli/src/commands/groups/doctor.ts) (pre-fix), [`packages/cli/src/index.ts#L99-L128`](packages/cli/src/index.ts) (the stdout policy that made the gap possible).
+**File**: [`packages/cli/src/commands/groups/doctor.ts#L53-L106`](../../../../../packages/cli/src/commands/groups/doctor.ts) (pre-fix), [`packages/cli/src/index.ts#L99-L128`](../../../../../packages/cli/src/index.ts) (the stdout policy that made the gap possible).
 **Impact**: a command explicitly documented as a "sectioned health report" gave a human operator zero visible information unless they happened to add `--json` (undocumented requirement) — indistinguishable from the tool hanging or doing nothing.
 **Resolution**: [RESUELTO] — `renderDoctorSummary` + gated stderr print, matching `init`'s established pattern; user-confirmed scope (doctor only).
 
 ### 2. `doctor`'s tool count was always 0 (P1 · false health signal)
-**File**: [`packages/cli/src/commands/groups/doctor.ts#L112`](packages/cli/src/commands/groups/doctor.ts) (pre-fix: `overview.tools?.length ?? 0`).
+**File**: [`packages/cli/src/commands/groups/doctor.ts#L112`](../../../../../packages/cli/src/commands/groups/doctor.ts) (pre-fix: `overview.tools?.length ?? 0`).
 **Impact**: the "tools" section of every `doctor` run reported `0 tool(s) registered` and a false `warn`, regardless of how many tools were actually loaded (92, in this repo) — the exact metric the command exists to check was silently broken since `overview.tools`'s compact-mode shape (`Record<string, string[]>`) was introduced, per the generated SDK type `McpVertexToolOutputs['mcp-vertex_overview']`.
 **Resolution**: [RESUELTO] — switched to the generated type + `countTools()` summing both union shapes; live-verified 92/92.
 
 ### 3. `silence-console-setup.ts` didn't silence what it documented (P2 · test-noise risk)
-**File**: [`tools/scripts/lib/silence-console-setup.ts#L10-L11`](tools/scripts/lib/silence-console-setup.ts) (docstring), `install()`/`uninstall()` (pre-fix: console-only).
+**File**: [`tools/scripts/lib/silence-console-setup.ts#L10-L11`](../../../../../tools/scripts/lib/silence-console-setup.ts) (docstring), `install()`/`uninstall()` (pre-fix: console-only).
 **Impact**: any future test exercising a command that writes its human recap via `process.stdout.write`/`stderr.write` directly (the established `init`/now-`doctor` pattern) would leak real output into the `bun run validate` test stream — exactly the drowning-signal problem this setup file exists to prevent, per its own docstring.
 **Resolution**: [RESUELTO] — `install()`/`uninstall()` now patch `process.stdout.write`/`stderr.write` too; full suite re-verified green and quiet.
 
 ### 4. `cli-shape.script.ts` scanned test files as command definitions (P2 · gate false positive)
-**File**: [`tools/scripts/lint/cli-shape.script.ts#L106`](tools/scripts/lint/cli-shape.script.ts) (pre-fix: `entry.name.endsWith('.ts')`).
+**File**: [`tools/scripts/lint/cli-shape.script.ts#L106`](../../../../../tools/scripts/lint/cli-shape.script.ts) (pre-fix: `entry.name.endsWith('.ts')`).
 **Impact**: any `commands/groups/*.spec.ts` test fixture containing a `name: '...'` property matching one of the shape rules (e.g. a plugin-namespace pattern) would trip a false "missing-action" finding, blocking `bun run test`/`validate` for reasons unrelated to real CLI command shape.
 **Resolution**: [RESUELTO] — filter now excludes `*.spec.ts`/`*.test.ts`.
 

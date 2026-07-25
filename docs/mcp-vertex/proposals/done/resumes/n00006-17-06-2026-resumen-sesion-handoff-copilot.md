@@ -28,7 +28,7 @@ track: general
 
 ### P0 — completo (M1, M2, M3, M4, M8)
 
-- **M1 · Carrera de robo del mutex** — [`packages/core/src/lib/shared/with-file-mutex.ts`](../../packages/core/src/lib/shared/with-file-mutex.ts).
+- **M1 · Carrera de robo del mutex** — [`packages/core/src/lib/shared/with-file-mutex.ts`](../../../../../packages/core/src/lib/shared/with-file-mutex.ts).
   Token de propiedad `pid\nts\nUUID` (`randomUUID`); el `finally` **solo borra el
   lock si el token sigue siendo el nuestro** (relee y compara) → no desprotege a un
   ladrón legítimo. + **heartbeat** que refresca el `mtime` mientras corre `fn()`
@@ -36,8 +36,8 @@ track: general
   `with-file-mutex.spec.ts` (fallaba con el código viejo).
 
 - **M2 · `agentSlot` agnóstico** — `z.enum(AGENT_SLOTS)` → `z.string().min(1)` en
-  los 2 schemas ([`task-queue-engine.ts`](../../plugins/proposals/src/lib/agents/task-queue-engine.ts)
-  + [`persistent-task-queue.ts`](../../plugins/proposals/src/lib/agents/persistent-task-queue.ts)).
+  los 2 schemas ([`task-queue-engine.ts`](../../../../../plugins/proposals/src/lib/agents/task-queue-engine.ts)
+  + [`persistent-task-queue.ts`](../../../../../plugins/proposals/src/lib/agents/persistent-task-queue.ts)).
   Los 5 roles canónicos quedan como `DEFAULT_AGENT_SLOTS` (default documentado, no
   restricción). Test de slot no-canónico en `persistent-task-queue.spec.ts`.
 

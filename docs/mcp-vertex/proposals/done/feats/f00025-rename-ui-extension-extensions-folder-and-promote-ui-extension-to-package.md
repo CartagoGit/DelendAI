@@ -249,12 +249,12 @@ cinco reglas no negociables:
   - `tsconfig.json`
   - `vitest.config.ts`
   - `vitest.shared.ts`
-- [`tsconfig.base.json`](tsconfig.base.json) — actualizar paths:
+- [`tsconfig.base.json`](../../../../../tsconfig.base.json) — actualizar paths:
   - `"@mcp-vertex/ide"` → `"@mcp-vertex/ui-extension"`
   - `"@mcp-vertex/ide/public"` → `"@mcp-vertex/ui-extension/public"`
   - `"@mcp-vertex/ide/*"` → `"@mcp-vertex/ui-extension/*"`
   - Apuntar a `packages/ui-extension/src/index.ts` y subpaths
-- [`vitest.shared.ts`](vitest.shared.ts) — actualizar el alias map
+- [`vitest.shared.ts`](../../../../../vitest.shared.ts) — actualizar el alias map
   (`find`/`replacement` de `@mcp-vertex/ide` → `@mcp-vertex/ui-extension`,
   rutas de `apps/ide/src/...` → `packages/ui-extension/src/...`)
 - [`vitest.config.ts`](vitest.config.ts) — actualizar el array de
@@ -318,7 +318,7 @@ cinco reglas no negociables:
 - **Files**:
   - `extensions/vscode/src/`
 
-- [`extensions/vscode/src/extension.ts`](extensions/vscode/src/extension.ts)
+- [`extensions/vscode/src/extension.ts`](../../../../../extensions/vscode/src/extension.ts)
   y todo el árbol `src/` — reemplazar imports relativos y aliases:
   - `from '@mcp-vertex/ide'` → `from '@mcp-vertex/ui-extension'`
   - `from '@mcp-vertex/ide/public'` → `from '@mcp-vertex/ui-extension/public'`
@@ -336,19 +336,19 @@ cinco reglas no negociables:
   - `tools/scripts/lib/monorepo-paths.ts`
   - `tools/scripts/lib/monorepo-paths.spec.ts`
 
-- [`tools/scripts/dev/dev.script.ts`](tools/scripts/dev/dev.script.ts):
+- [`tools/scripts/dev/dev.script.ts`](../../../../../tools/scripts/dev/dev.script.ts):
   - `root: join(ROOT, 'apps/ide')` → `join(ROOT, 'packages/ui-extension')`
   - `title: 'apps/ide — dashboard preview'` → `'packages/ui-extension — dashboard preview'`
   - `root: join(ROOT, 'extensions/vscode')` → `join(ROOT, 'extensions/vscode')`
   - `title: 'extensions/vscode — webviews preview'` → `'extensions/vscode — webviews preview'`
   - Mensaje de error: `'apps/ide/src/dev/entry.ts'` →
     `'packages/ui-extension/src/dev/entry.ts'`
-- [`tools/scripts/lib/monorepo-paths.ts`](tools/scripts/lib/monorepo-paths.ts):
+- [`tools/scripts/lib/monorepo-paths.ts`](../../../../../tools/scripts/lib/monorepo-paths.ts):
   - `WELL_KNOWN.vscode()`: `${repoRoot()}/build/extensions/vscode` →
     `${repoRoot()}/build/extensions/vscode`
   - Doc comments que mencionan `extensions/vscode/<version>` →
     `extensions/vscode/<version>`
-- [`tools/scripts/lib/monorepo-paths.spec.ts`](tools/scripts/lib/monorepo-paths.spec.ts):
+- [`tools/scripts/lib/monorepo-paths.spec.ts`](../../../../../tools/scripts/lib/monorepo-paths.spec.ts):
   - Actualizar asserts con los nuevos paths
 - **Acceptance**:
   - "`bun tools/scripts/dev/dev.script.ts --ide` arranca sirviendo en
@@ -383,7 +383,7 @@ cinco reglas no negociables:
     `extensions/vscode/media/...`
   - Sección "Development": `extensions/vscode` → `extensions/vscode`
   - Sección "Troubleshooting": idem
-- [`AGENTS.md`](AGENTS.md):
+- [`AGENTS.md`](../../../../../AGENTS.md):
   - Sección "What this repo is": enumerar `packages/ui-extension` y
     `extensions/vscode` en lugar de `apps/ide` y `extensions/vscode`
 - **Acceptance**:

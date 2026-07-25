@@ -42,7 +42,7 @@ The 7 slices are independent. Each is ≤ 1 component.
 ## why
 
 `a00040` walked every component in
-[`packages/ui-extension/src/components/`](packages/ui-extension/src/components/ ) and
+[`packages/ui-extension/src/components/`](../../../../../packages/ui-extension/src/components ) and
 found:
 
 - **H22** — [`render-panel-tools.ts`](packages/ui-extension/src/renderers/render-panel-tools.ts )
@@ -52,7 +52,7 @@ found:
 - **H24** — [`barChart`](packages/ui-extension/src/components/bar-chart.ts ) has no
   `aria-label`. Screen readers can't announce it. The component does accept `title`
   but renders it as a `<title>` SVG element which is non-standard.
-- **H25** — [`Toast`](packages/ui-extension/src/components/toast.ts ) in `sticky` mode
+- **H25** — [`Toast`](../../../../../packages/ui-extension/src/components/toast.ts ) in `sticky` mode
   has no close button. The user can't dismiss a sticky toast without waiting it out
   (it doesn't auto-dismiss).
 - **H26** — [`kpiStrip`](packages/ui-extension/src/components/kpi-strip.ts ) renders 8

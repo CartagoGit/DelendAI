@@ -15,7 +15,7 @@ produced it lives in the chat history of the originating session
 
 **What's there:**
 - `buildCatalog()` in
-  [`packages/core/src/lib/catalog/agent-discovery-catalog.ts`](../../packages/core/src/lib/catalog/agent-discovery-catalog.ts)
+  [`packages/core/src/lib/catalog/agent-discovery-catalog.ts`](../../../packages/core/src/lib/catalog/agent-discovery-catalog.ts)
   returns an `ICatalogSnapshot` of **tools, skills, and proposals** —
   i.e. what the MCP server exposes.
 - `proposals_agent_catalog` is a second catalog tool with the same shape.
@@ -180,7 +180,7 @@ don't optimize mid-session on cost.
 
 ## 8. The f00006 design memo
 
-[`docs/mcp-vertex/proposals/done/feats/f00006-feat-multi-model-audit-plugin.md`](../../proposals/done/feats/f00006-feat-multi-model-audit-plugin.md)
+[`docs/mcp-vertex/proposals/done/feats/f00006-feat-multi-model-audit-plugin.md`](../proposals/done/feats/f00006-feat-multi-model-audit-plugin.md)
 already enumerates the **three viable approaches** for multi-model
 support in the audit plugin specifically:
 

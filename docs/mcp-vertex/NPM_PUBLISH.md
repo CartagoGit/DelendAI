@@ -42,7 +42,7 @@ y dirigido por los commits** — no hay que bumpear versiones a mano:
 - Secreto `NPM_TOKEN` (npm *Granular access token* con **Bypass 2FA** activado) en
   *Settings → Secrets → Actions*. Desde **noviembre 2025** los tokens de
   escritura caducan a los 90 días como máximo legal; el workflow
-  [`.github/workflows/rotate-npm-token.yml`](../.github/workflows/rotate-npm-token.yml)
+  [`.github/workflows/rotate-npm-token.yml`](../../.github/workflows/rotate-npm-token.yml)
   abre un issue recordatorio cada ~3 meses (ver §0.1).
 - *Settings → Pages → Source = "GitHub Actions"*.
 
@@ -61,7 +61,7 @@ de token es **Granular**, y se configura así:
 - **Bypass 2FA**: ✅ activado ← clave para que CI no pida OTP
 
 ### 0.2 Rotación trimestral automática
-El workflow [`rotate-npm-token.yml`](../.github/workflows/rotate-npm-token.yml)
+El workflow [`rotate-npm-token.yml`](../../.github/workflows/rotate-npm-token.yml)
 corre el día 1 de cada 3 meses (`cron: "0 9 1 */3 *"`). Si han pasado más de
 75 días desde el último recordatorio, abre un issue con la etiqueta
 `npm-token-rotation` y los pasos exactos para regenerar el token. También puede

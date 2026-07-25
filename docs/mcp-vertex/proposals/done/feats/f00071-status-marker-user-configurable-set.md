@@ -37,11 +37,11 @@ acceptance:
 ## goal
 
 Let a host extend the canonical close-marker set **without forking** the
-[`@mcp-vertex/status-marker`](../../plugins/status-marker ) plugin. Today the
+[`@mcp-vertex/status-marker`](../../../../../plugins/status-marker ) plugin. Today the
 8 states (`HECHO` / `CAP` / `RE-PIVOT` / `CHECKPOINT-REQUIRED` /
 `REPAIR-NEEDED` / `BLOQUEADO` / `SIN PROPUESTAS LIBRES` / `SIN PROPUESTA DE
 NINGUN TIPO`) are hard-coded in
-[`plugins/status-marker/src/lib/markers.ts`](../../plugins/status-marker/src/lib/markers.ts ).
+[`plugins/status-marker/src/lib/markers.ts`](../../../../../plugins/status-marker/src/lib/markers.ts ).
 Hosts that want to teach their own agents a new closure (e.g. `REVIEW` for a
 code-review flow, or `DEFERRED` for a postponed task) either fork the plugin
 or hand-format lines that the validator then rejects.
@@ -225,12 +225,12 @@ Without it, an LLM given a new state would not know the semantic.
 | Slice | File(s) | Risk |
 |---|---|---|
 | S1 — schema | new file in `plugins/status-marker/src/lib/markers-config.ts` | none (additive) |
-| S2 — plugin options | [plugins/status-marker/src/index.ts](../../plugins/status-marker/src/index.ts ) | low |
-| S3 — merge logic | [plugins/status-marker/src/lib/markers.ts](../../plugins/status-marker/src/lib/markers.ts ), new `mergeMarkerTable` | low (pure) |
-| S4 — runtime wiring | [close-tools.ts](../../plugins/status-marker/src/lib/tools/close-tools.ts ), [validate.ts](../../plugins/status-marker/src/lib/validate.ts ) | low |
+| S2 — plugin options | [plugins/status-marker/src/index.ts](../../../../../plugins/status-marker/src/index.ts ) | low |
+| S3 — merge logic | [plugins/status-marker/src/lib/markers.ts](../../../../../plugins/status-marker/src/lib/markers.ts ), new `mergeMarkerTable` | low (pure) |
+| S4 — runtime wiring | [close-tools.ts](../../../../../plugins/status-marker/src/lib/tools/close-tools.ts ), [validate.ts](../../../../../plugins/status-marker/src/lib/validate.ts ) | low |
 | S5 — locale fallback | `markers.ts` (extend `MARKERS_BY_LOCALE` reader) | low |
 | S6 — types regen + spec | generated `tool-outputs.ts`, `tests/markers.spec.ts`, `tests/close-tools.spec.ts` | low |
-| S7 — README + CI lint | [plugins/status-marker/README.md](../../plugins/status-marker/README.md ), new `tools/scripts/lint/user-markers.script.ts` | low |
+| S7 — README + CI lint | [plugins/status-marker/README.md](../../../../../plugins/status-marker/README.md ), new `tools/scripts/lint/user-markers.script.ts` | low |
 
 ## Slices
 

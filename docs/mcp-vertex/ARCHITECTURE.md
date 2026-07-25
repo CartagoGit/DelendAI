@@ -1,8 +1,8 @@
 # Architecture — `@mcp-vertex/core`
 
 How the monorepo fits together, what the boundaries are, and which invariants hold
-across them. For the working rules see [`AGENTS.md`](../AGENTS.md); for the live
-roadmap see [`docs/mcp-vertex/proposals/done/audits/`](mcp-vertex/proposals/done/audits/).
+across them. For the working rules see [`AGENTS.md`](../../AGENTS.md); for the live
+roadmap see [`docs/mcp-vertex/proposals/done/audits/`](./proposals/done/audits).
 
 ## The one idea
 

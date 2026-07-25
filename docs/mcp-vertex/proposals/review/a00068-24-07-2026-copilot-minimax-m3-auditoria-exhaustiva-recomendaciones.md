@@ -225,7 +225,7 @@ añadir nuevas features.
 
 ### 3. Default de `workspaceRoot` usa `process.cwd()` en `init-answers.schema.ts` [ADVERTENCIA — riesgo de fuga]
 
-**File**: [`packages/cli/src/lib/init/init-answers.schema.ts:87`](packages/cli/src/lib/init/init-answers.schema.ts#L87)
+**File**: [`packages/cli/src/lib/init/init-answers.schema.ts:87`](../../../../packages/cli/src/lib/init/init-answers.schema.ts#L87)
 
 ```typescript
 /**
@@ -426,7 +426,7 @@ pasada más.
 
 ### 7. `audit_run` (Alcance B) hace llamadas LLM sin opt-in explícito por host [ADVERTENCIA — blast radius]
 
-**File**: [`plugins/audit/src/index.ts:23-30`](plugins/audit/src/index.ts#L23-L30)
+**File**: [`plugins/audit/src/index.ts:23-30`](../../../../plugins/audit/src/index.ts#L23-L30)
 
 ```typescript
  * Activation is opt-in: `mcp-vertex --plugins=audit`. The `audit_plan`

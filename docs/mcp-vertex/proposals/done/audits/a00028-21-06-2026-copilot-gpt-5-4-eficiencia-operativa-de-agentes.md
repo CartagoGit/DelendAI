@@ -29,7 +29,7 @@ acceptance:
 - **Audited HEAD**: rama de trabajo actual; la auditoría es viva y se ancla a fecha + propuestas derivadas, no a una foto histórica cerrada.
 - **Revisor / Model**: GitHub Copilot (GPT-5.4).
 - **Date**: 2026-06-21.
-- **Método**: revisión por tramos con rúbrica explícita, contraste contra las reglas ya declaradas en [AGENTS.md](../../../AGENTS.md), [.github/copilot-instructions.md](../../../.github/copilot-instructions.md), [CLAUDE.md](../../../CLAUDE.md), la familia de propuestas activas y las superficies donde hoy se gasta contexto o bytes sin retorno claro. La salida obligatoria no es "otro documento": son **propuestas hijas concretas** solo cuando el gap esté verificado.
+- **Método**: revisión por tramos con rúbrica explícita, contraste contra las reglas ya declaradas en [AGENTS.md](../../../../../AGENTS.md), [.github/copilot-instructions.md](../../../../../.github/copilot-instructions.md), [CLAUDE.md](../../../../../CLAUDE.md), la familia de propuestas activas y las superficies donde hoy se gasta contexto o bytes sin retorno claro. La salida obligatoria no es "otro documento": son **propuestas hijas concretas** solo cuando el gap esté verificado.
 
 ## why
 

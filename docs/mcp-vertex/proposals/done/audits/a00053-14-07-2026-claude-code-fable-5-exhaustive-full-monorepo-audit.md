@@ -86,7 +86,7 @@ y `mcpv init --dry-run` ejecutado en un proyecto consumidor limpio.
 ## Findings
 
 ### 1. `plan_mcp_project` y `analyze_project` son verbosos por defecto (P0 · tokens)
-**File**: [`plan-tool.ts#L143`](packages/core/src/lib/bootstrap/plan-tool.ts#L143), [`analyze-tool.ts#L99`](packages/core/src/lib/bootstrap/analyze-tool.ts#L99)
+**File**: [`plan-tool.ts#L143`](../../../../../packages/core/src/lib/bootstrap/plan-tool.ts#L143), [`analyze-tool.ts#L99`](../../../../../packages/core/src/lib/bootstrap/analyze-tool.ts#L99)
 
 ```typescript
 if (args.compact === true)
@@ -104,7 +104,7 @@ modelo de 200k y entierra la conversación. Contradice frontalmente la promesa
 `full: true` opt-in, y presupuesto e2e para ambos).
 
 ### 2. Enforcement de git hooks silenciosamente muerto + `bun install` roto (P0 · resuelto en sesión)
-**File**: `tools/scripts/install-formatter-hook.script.ts` (eliminado), [`lefthook.yml#L23`](lefthook.yml#L23)
+**File**: `tools/scripts/install-formatter-hook.script.ts` (eliminado), [`lefthook.yml#L23`](../../../../../lefthook.yml#L23)
 
 ```typescript
 // instalador retirado:
@@ -125,7 +125,7 @@ bloquearse pasaban; install roto para cualquier clon nuevo.
 formatter como comando lefthook, `sync-git-hooks.script.ts` de limpieza).
 
 ### 3. La extensión VS Code no arranca en un proyecto consumidor (P0 · adopción)
-**File**: [`extension.ts#L564`](extensions/vscode/src/extension.ts#L564)
+**File**: [`extension.ts#L564`](../../../../../extensions/vscode/src/extension.ts#L564)
 
 ```typescript
 const defaults = { command: 'bun', args: ['run', 'mcp-vertex'] } as const;
@@ -144,7 +144,7 @@ mismo launch canónico dual que `.mcp.json`, reutilizando el
 `host-entry-resolver` existente).
 
 ### 4. Adopción externa bloqueada mientras `@mcp-vertex/cli` no esté en npm (P0 · decisión de usuario)
-**File**: [`server-args.service.ts#L199`](packages/cli/src/lib/server-args.service.ts#L199)
+**File**: [`server-args.service.ts#L199`](../../../../../packages/cli/src/lib/server-args.service.ts#L199)
 
 ```typescript
 export const buildCanonicalLaunch = (…) // → bunx --package @mcp-vertex/cli …
@@ -163,7 +163,7 @@ la propuesta `x00102` como criterio de cierre; la publicación en sí es
 decisión del usuario.
 
 ### 5. `mcpv init` — "What's next" con pasos erróneos (P1 · adopción)
-**File**: [`init-human-summary.service.ts#L223`](packages/cli/src/lib/init/init-human-summary.service.ts#L223)
+**File**: [`init-human-summary.service.ts#L223`](../../../../../packages/cli/src/lib/init/init-human-summary.service.ts#L223)
 
 ```typescript
 const f = written.find((w) => w.path.includes('/docs/mcp-vertex/proposals/ready/'));
@@ -183,7 +183,7 @@ rotas — exactamente donde más confianza hay que dar.
 condicionar el hint de validate, corregir el comando de scaffold).
 
 ### 6. `validate` estaba rojo y el gate de métricas era un no-op (P1 · resuelto en sesión)
-**File**: [`self-host-dogfood.script.ts#L100`](tools/scripts/lint/self-host-dogfood.script.ts#L100), [`diff-snapshots.script.ts#L205`](tools/scripts/metrics/diff-snapshots.script.ts#L205)
+**File**: [`self-host-dogfood.script.ts#L100`](../../../../../tools/scripts/lint/self-host-dogfood.script.ts#L100), [`diff-snapshots.script.ts#L205`](../../../../../tools/scripts/metrics/diff-snapshots.script.ts#L205)
 
 **Problem**: `lint:self-host-dogfood` y 2 tests de `repo-mcp-config.spec`
 esperaban solo la forma `bunx` tras el cambio intencional de `0625acda`;
@@ -197,7 +197,7 @@ launch, devDependencies `workspace:*`, baseline versionada en
 `config/metrics-baseline.json`, `agent_catalog` trackeado, budget e2e 1450→900).
 
 ### 7. aria-labels hardcodeados en inglés en la UI compartida (P2 · i18n/a11y)
-**File**: [`toast.ts#L40`](packages/ui-extension/src/components/toast.ts#L40), [`language-picker.ts#L65`](packages/ui-extension/src/components/language-picker.ts#L65)
+**File**: [`toast.ts#L40`](../../../../../packages/ui-extension/src/components/toast.ts#L40), [`language-picker.ts#L65`](../../../../../packages/ui-extension/src/components/language-picker.ts#L65)
 
 ```typescript
 ? `<button type="button" class="mcpv-toast__close" aria-label="Close" …
@@ -211,7 +211,7 @@ inglés; incumple la regla "i18n completa o no se shippea".
 **Resolution Track**: Deferred to proposal `x00103`.
 
 ### 8. `docsUrl` 404 hardcodeado por triplicado (P2 · ya en scope de x00100)
-**File**: [`dashboard.ts#L94`](extensions/vscode/src/dev/pages/dashboard.ts#L94), [`dashboard.ts#L113`](extensions/vscode/src/dev/pages/dashboard.ts#L113), [`entry.ts#L89`](packages/ui-extension/src/dev/entry.ts#L89)
+**File**: [`dashboard.ts#L94`](../../../../../extensions/vscode/src/dev/pages/dashboard.ts#L94), [`dashboard.ts#L113`](../../../../../extensions/vscode/src/dev/pages/dashboard.ts#L113), [`entry.ts#L89`](../../../../../packages/ui-extension/src/dev/entry.ts#L89)
 
 ```typescript
 docsUrl: 'https://cartagogit.github.io/mcp-vertex/',
@@ -243,7 +243,7 @@ y se ve rota.
 **Resolution Track**: ejecutar `x00100` (siguiente trabajo de extensión).
 
 ### 11. `TOKEN-BUDGETS.md` desactualizado respecto a los gates reales (P3 · docs)
-**File**: [`TOKEN-BUDGETS.md#L20`](docs/mcp-vertex/TOKEN-BUDGETS.md#L20)
+**File**: [`TOKEN-BUDGETS.md#L20`](../../../TOKEN-BUDGETS.md#L20)
 
 **Problem**: la tabla "Enforced budgets" dice `overview compact 2 100` cuando
 el e2e ya exige `1 200`, no lista `agent_catalog` (budget nuevo: 900), y la
@@ -254,7 +254,7 @@ código que la exige.
 de defaults).
 
 ### 12. `assemble.ts` con 1 335 líneas (P3 · mantenibilidad)
-**File**: [`assemble.ts#L1`](packages/core/src/lib/cli/assemble.ts#L1)
+**File**: [`assemble.ts#L1`](../../../../../packages/core/src/lib/cli/assemble.ts#L1)
 
 **Problem**: 2.6× el umbral de refactor del playbook (500); mezcla ensamblado
 de config, wiring de presets y composición de tools.

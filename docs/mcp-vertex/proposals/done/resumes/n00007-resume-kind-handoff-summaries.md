@@ -194,7 +194,7 @@ So: **if you're a consumer, you get `docs/mcp-vertex/proposals/`; if you ARE mcp
 ### S1 — Add kind 'resume' (prefix n) to glossary + authoring tool kind enum + scaffold linter enum
 
 - **Status**: pending
-- **Files**: [`plugins/proposals/src/lib/contracts/constants/proposal-glossary.constant.ts`](../../plugins/proposals/src/lib/contracts/constants/proposal-glossary.constant.ts), [`plugins/proposals/src/lib/tools/authoring.tool.ts`](../../plugins/proposals/src/lib/tools/authoring.tool.ts), [`plugins/proposals/tests/src/lib/contracts/constants/proposal-glossary.constant.spec.ts`](../../plugins/proposals/tests/src/lib/contracts/constants/proposal-glossary.constant.spec.ts)
+- **Files**: [`plugins/proposals/src/lib/contracts/constants/proposal-glossary.constant.ts`](../../../../../plugins/proposals/src/lib/contracts/constants/proposal-glossary.constant.ts), [`plugins/proposals/src/lib/tools/authoring.tool.ts`](../../../../../plugins/proposals/src/lib/tools/authoring.tool.ts), [`plugins/proposals/tests/src/lib/contracts/constants/proposal-glossary.constant.spec.ts`](../../../../../plugins/proposals/tests/src/lib/contracts/constants/proposal-glossary.constant.spec.ts)
 - **Command**: `bun run type`
 - **Expect**: exit0
 - **acceptance**:
@@ -287,7 +287,7 @@ So: **if you're a consumer, you get `docs/mcp-vertex/proposals/`; if you ARE mcp
 
 - [`f00016`](../feats/f00016-feat-proposal-state-machine-kinds-scaffolds-and-recovery.md) — the predecessor that defined the 7 statuses and the original 12 kinds
 - [`f00001`](../feats/f00001-done-folder-mirrors-kinds-audits-feats-fixes-sub-folders-inside-done.md) — the convention this proposal extends (sub-folders inside `done/` mirror active kinds)
-- [`AGENTS.md`](../../AGENTS.md) — repo rules: definition of done (`bun run validate` green), Conventional Commits, durable writes via `withFileMutex`
-- [`plugins/proposals/README.md`](../../plugins/proposals/README.md) — the proposals plugin (workflow, `auto_work`, `create_proposal`, `close_slice`)
+- [`AGENTS.md`](../../../../../AGENTS.md) — repo rules: definition of done (`bun run validate` green), Conventional Commits, durable writes via `withFileMutex`
+- [`plugins/proposals/README.md`](../../../../../plugins/proposals/README.md) — the proposals plugin (workflow, `auto_work`, `create_proposal`, `close_slice`)
 - The 6 summaries this proposal migrates, in their new home:
   [`docs/proposals/done/resumes/`](../../docs/proposals/done/resumes/) (after S3 lands)

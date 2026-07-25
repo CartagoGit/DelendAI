@@ -168,5 +168,5 @@ project no longer has any call to `formatRelativeTime` that ignores `locale`
 ## notes
 
 The existing `formatRelativeTime` is exported from
-[`packages/ui-extension/src/public/index.ts`](packages/ui-extension/src/public/index.ts ).
+[`packages/ui-extension/src/public/index.ts`](../../../../../packages/ui-extension/src/public/index.ts ).
 S1 keeps the export name; the change is a pure rewrite of the body.
