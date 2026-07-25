@@ -15,6 +15,8 @@ import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import {
+	getAgentLockSessionBalance,
+	resetAgentLockSessionBalance,
 	runAgentLockEngine,
 	type IAgentLockArgs,
 	type IAgentLockDeps,
@@ -43,6 +45,7 @@ const readLockFile = (): ILockFile =>
 beforeEach(() => {
 	workspace = mkdtempSync(join(tmpdir(), 'agent-lock-'));
 	lockPath = join(workspace, 'agents.lock.json');
+	resetAgentLockSessionBalance();
 });
 
 afterEach(() => {
@@ -337,5 +340,86 @@ describe('runAgentLockEngine — stale GC', async () => {
 			expect(body(res).blockerType).toBe('needs-worktree');
 			expect(JSON.stringify(body(res))).toContain('main');
 		});
+	});
+});
+
+describe('runAgentLockEngine — a00069 S8 ok + session balance', async () => {
+	it('stamps ok:true + session on successful claim and release', async () => {
+		const claim = body(
+			await run({
+				action: 'claim',
+				task_id: 'task-S8',
+				agent: 'agent-S8',
+				files: ['src/s8.ts'],
+			}),
+		);
+		expect(claim.ok).toBe(true);
+		expect(claim.session).toEqual({ claims: 1, releases: 0, imbalance: 1 });
+		expect(getAgentLockSessionBalance()).toEqual({
+			claims: 1,
+			releases: 0,
+			imbalance: 1,
+		});
+
+		const release = body(
+			await run({ action: 'release', task_id: 'task-S8' }),
+		);
+		expect(release.ok).toBe(true);
+		expect(release.released).toBe(true);
+		expect(release.session).toEqual({
+			claims: 1,
+			releases: 1,
+			imbalance: 0,
+		});
+	});
+
+	it('stamps ok:false + await_lock nextAction on lock-conflict', async () => {
+		await run({
+			action: 'claim',
+			task_id: 'holder',
+			agent: 'a1',
+			files: ['src/shared.ts'],
+		});
+		const out = body(
+			await run({
+				action: 'claim',
+				task_id: 'waiter',
+				agent: 'a2',
+				files: ['src/shared.ts'],
+			}),
+		);
+		expect(out.ok).toBe(false);
+		expect(out.blocked).toBe(true);
+		expect(out.nextAction).toContain('notification_await_lock');
+		expect(typeof out.session?.claims).toBe('number');
+	});
+
+	it('stamps ok:false on invalid-input', async () => {
+		const res = await run({
+			action: 'claim',
+			task_id: 'x',
+			agent: 'y',
+		});
+		expect(res.isError).toBe(true);
+		const out = body(res);
+		expect(out.ok).toBe(false);
+		expect(out.session).toBeDefined();
+	});
+
+	it('does not count claim on lock-conflict (imbalance stays from prior success)', async () => {
+		await run({
+			action: 'claim',
+			task_id: 'h',
+			agent: 'a',
+			files: ['src/a.ts'],
+		});
+		await run({
+			action: 'claim',
+			task_id: 'w',
+			agent: 'b',
+			files: ['src/a.ts'],
+		});
+		expect(getAgentLockSessionBalance().claims).toBe(1);
+		expect(getAgentLockSessionBalance().imbalance).toBe(1);
 	});
 });

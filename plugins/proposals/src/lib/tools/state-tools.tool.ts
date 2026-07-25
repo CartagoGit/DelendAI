@@ -51,6 +51,9 @@ export interface IStateToolOptions {
 	readonly orphanTtlMinutes?: number;
 }
 
+/** a00069 S8: alert when session claims − releases exceeds this. */
+const CLAIM_RELEASE_IMBALANCE_THRESHOLD = 5;
+
 interface IStateDiagnosis {
 	readonly locks: {
 		readonly active: number;
@@ -166,22 +169,25 @@ const diagnose = async (
 		},
 	);
 
+	// a00069 S8: claim−release session imbalance (historical 29/19) and live
+	// orphan locks both fail the health gate.
+	const balance = getAgentLockSessionBalance();
+	const claimReleaseImbalanceAlert =
+		balance.imbalance > CLAIM_RELEASE_IMBALANCE_THRESHOLD;
+	const activeLocks = lockStatus.active_write_lanes ?? 0;
+
 	const healthy =
 		(queue?.threshold ?? 'green') !== 'red' &&
 		zombies.orphans.length === 0 &&
-		(queue?.waiterOrphans ?? 0) === 0;
+		(queue?.waiterOrphans ?? 0) === 0 &&
+		!claimReleaseImbalanceAlert;
 
 	return {
 		locks: {
-			active: lockStatus.active_write_lanes ?? 0,
-			...(() => {
-				const b = getAgentLockSessionBalance();
-				return {
-					sessionClaims: b.claims,
-					sessionReleases: b.releases,
-					sessionImbalance: b.imbalance,
-				};
-			})(),
+			active: activeLocks,
+			sessionClaims: balance.claims,
+			sessionReleases: balance.releases,
+			sessionImbalance: balance.imbalance,
 		},
 		queue,
 		registry: {
