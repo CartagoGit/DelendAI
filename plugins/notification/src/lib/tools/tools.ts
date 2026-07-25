@@ -17,6 +17,7 @@ import {
 	startAgentEventsBridge,
 	type IAgentEventsBridge,
 } from '../services/agent-events-bridge';
+import { safeSendLoggingMessage } from '../services/safe-logging';
 
 export interface INotifyToolOptions {
 	readonly namespacePrefix: string;
@@ -63,18 +64,16 @@ export const buildNotifyRegistration = (
 					lastReleases = [...released];
 					for (const claim of released) {
 						emitted += 1;
-						void server
-							.sendLoggingMessage({
-								level: 'info',
-								logger: `${options.namespacePrefix}_notification`,
-								data: {
-									event: 'lock-released',
-									taskId: claim.taskId,
-									agent: claim.agent,
-									files: claim.files,
-								},
-							})
-							.catch(() => undefined);
+						safeSendLoggingMessage(server, {
+							level: 'info',
+							logger: `${options.namespacePrefix}_notification`,
+							data: {
+								event: 'lock-released',
+								taskId: claim.taskId,
+								agent: claim.agent,
+								files: claim.files,
+							},
+						});
 					}
 				},
 			});
@@ -87,21 +86,19 @@ export const buildNotifyRegistration = (
 					: {}),
 				onHandoff: (events) => {
 					for (const ev of events) {
-						void server
-							.sendLoggingMessage({
-								level: 'warning',
-								logger: `${options.namespacePrefix}_notification`,
-								data: {
-									event: 'stuck-detected',
-									agent: ev.agent,
-									reason: ev.reason,
-									handoffPath: join(
-										options.handoffDirRel,
-										ev.file,
-									),
-								},
-							})
-							.catch(() => undefined);
+						safeSendLoggingMessage(server, {
+							level: 'warning',
+							logger: `${options.namespacePrefix}_notification`,
+							data: {
+								event: 'stuck-detected',
+								agent: ev.agent,
+								reason: ev.reason,
+								handoffPath: join(
+									options.handoffDirRel,
+									ev.file,
+								),
+							},
+						});
 					}
 				},
 			});
