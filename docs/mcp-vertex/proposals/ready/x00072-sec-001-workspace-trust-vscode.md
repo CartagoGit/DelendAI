@@ -79,7 +79,7 @@ workspaces untrusted.
 
 ### S2 — Aprobación humana con huella (command+args+cwd) persistida e invalidable
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `extensions/vscode/src/extension.ts`, `extensions/vscode/src/contracts/types.ts`, `extensions/vscode/tests/src/trust-gate.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -89,7 +89,7 @@ workspaces untrusted.
 
 ### S3 — Tests de integración (trusted, untrusted, modificado, cancelado)
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `extensions/vscode/src/test/trust-gate.integration.spec.ts`, `extensions/vscode/src/test/mcp-json-change.integration.spec.ts`
 - **Gate**: e2e
 - acceptance:
