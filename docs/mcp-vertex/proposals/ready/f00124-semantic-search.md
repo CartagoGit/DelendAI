@@ -50,9 +50,14 @@ slower or key-dependent by default.
 
 ### S1 — hybrid ranker (pure)
 
-- **Status**: pending
-- **Files**: `plugins/search/src/lib/rank/fuse.ts`, `plugins/search/src/lib/contracts/interfaces/hybrid-rank.interface.ts`
+- **Status**: done
+- **Files**: `plugins/search/src/lib/rank/fuse.ts`, `plugins/search/src/lib/contracts/interfaces/hybrid-rank.interface.ts`, `plugins/search/tests/src/lib/rank/fuse.spec.ts`
 - **Gate**: bun run validate
+- implementation:
+  - `fuse.ts` exports `fuseRankings` with RRF and graceful-degradation.
+  - `hybrid-rank.interface.ts` defines `IRankedHit`, `IHybridRankInput`, `IHybridRankResult`.
+  - 6 spec cases cover BM25-only, vector-only, basic RRF, graceful-degradation, weights defaulting, zero-weight guard.
+  - 83/83 plugin tests pass.
 
 Pure `fuseRankings(bm25Scores, vectorScores, weights)` with reciprocal-rank
 fusion; identity to BM25 when no vectors exist. Exhaustively unit-tested,
