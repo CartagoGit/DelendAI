@@ -151,9 +151,10 @@ The fix must be in the code path, not the doc, because every recent pathology in
   - "Tests: 5 cases (same host+pid different agent → refused; different host same agent → allowed; approve before submit → refused with explicit code; identity record written correctly; identity log survives process restart)"
 
 ### S3 — Auto-transition proposal to done/ when all slices approved + folder-drift lint
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/proposals/src/lib/services/auto-transition.ts`, `plugins/proposals/src/lib/services/sync-proposals.ts`, `tools/scripts/lint/proposal-folder-drift.script.ts`, `plugins/proposals/tests/src/lib/auto-transition.spec.ts`, `plugins/proposals/tests/src/lib/sync-proposals.spec.ts`
 - **Gate**: type
+- Implemented as: last-slice approval now flips proposal frontmatter to `done`, `syncProposalRegistry` moves the file into `done/<kind>/`, folder drift detected pre-reconcile is surfaced in sync errors, and failed auto-moves are queued for `proposals_state_health`.
 - acceptance:
   - "When proposal_review action=approve marks the last slice of a proposal done, the proposal folder is auto-moved from review/ to done/<kind>/ via the same atomic path as proposal_reconcile_folder"
   - "If the auto-move fails (folder write, index sync, lock contention), the slice is still marked done but a repair entry is queued for proposals_state_health"
@@ -162,9 +163,10 @@ The fix must be in the code path, not the doc, because every recent pathology in
   - "Tests: 4 cases (last-slice approve auto-moves; pre-last-slice approve does not move; sync surfaces drift; drift lint lists the exact set found on 2026-07-26)"
 
 ### S4 — Same-agent content removal gate (plugins/mass-deletes require acknowledgement)
-- **Status**: pending
+- **Status**: done
 - **Files**: `tools/scripts/lint/mass-content-removal.script.ts`, `plugins/proposals/tests/src/lib/mass-removal.spec.ts`, `docs/mcp-vertex/proposals/ready/a00074-state-machine-hardening-reject-done-review-regression-same-agent-peer-review-bypass-and-zero-work-ready-done.md` (this proposal)
 - **Gate**: type
+- Implemented as: a validate-time branch gate that fails with `same-agent-mass-removal` when `git diff develop..<branch> --diff-filter=D` finds at least 5 deleted files under `plugins/**` or `packages/core/src/lib/**`, with `--audit-removed` available for post-mortem scans.
 - why:
   - The 2026-07-26 pathology includes 31 deleted plugin files (3 of 6 skills-pack skills, 6 of 9 prompts-pack prompts, 3 search tools, 4 quality tools, 2 git tools, 2 docs tools) committed in `agent/sandbox-2026-07-26-staged-f00135-f00138-a00074`. None of the deletions are recorded in any proposal's frontmatter. The agents can't audit them because there's no field for it.
   - The "deletion" half of agent-misuse is structurally different from the "transition" half (S1-S3): it doesn't go through `proposal_transition` at all, so the gate has to live in a separate `bun run validate`-time lint that catches the diff before it lands.
