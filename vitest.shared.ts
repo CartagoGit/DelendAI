@@ -75,6 +75,10 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 		workspaceRoot,
 		'plugins/auto-agent-selector/src',
 	);
+	const autoPluginSelector = resolve(
+		workspaceRoot,
+		'plugins/auto-plugin-selector/src',
+	);
 	const api = resolve(workspaceRoot, 'plugins/api/src');
 	const conventions = resolve(workspaceRoot, 'plugins/conventions/src');
 	const database = resolve(workspaceRoot, 'plugins/database/src');
@@ -488,6 +492,18 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 		{
 			find: '@mcp-vertex/auto-agent-selector',
 			replacement: resolve(autoAgentSelector, 'index.ts'),
+		},
+		{
+			find: '@mcp-vertex/auto-plugin-selector/public',
+			replacement: resolve(autoPluginSelector, 'public/index.ts'),
+		},
+		{
+			find: /^@mcp-vertex\/auto-plugin-selector\/lib\/(.*)$/,
+			replacement: `${resolve(autoPluginSelector, 'lib')}/$1`,
+		},
+		{
+			find: '@mcp-vertex/auto-plugin-selector',
+			replacement: resolve(autoPluginSelector, 'index.ts'),
 		},
 		{
 			find: '@mcp-vertex/api/public',

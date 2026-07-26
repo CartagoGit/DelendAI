@@ -28,6 +28,9 @@ const ENGLISH_COMMAND_SUMMARIES: Readonly<Record<string, string>> = {
 	overview: 'Show loaded server map.',
 	'plugin list': 'List loaded plugins.',
 	'plugin inspect': 'Inspect one plugin and its tools.',
+	'plugin search': 'Search the first-party + community plugin registry.',
+	'plugin add':
+		'Plan the adopt of a plugin (returns the install + wire + config recipe).',
 	metrics: 'Show per-tool metrics.',
 	'validate-matrix': 'Show configured validation matrix.',
 	validate: 'Run the root validation gate.',

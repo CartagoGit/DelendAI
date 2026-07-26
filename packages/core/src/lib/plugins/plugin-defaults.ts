@@ -61,6 +61,7 @@ export const PLUGIN_DEFAULTS: Readonly<
 		allowList: [],
 	},
 	'auto-agent-selector': {},
+	'auto-plugin-selector': {},
 	security: {},
 	'skills-pack': {},
 	'prompts-pack': {},

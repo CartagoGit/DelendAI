@@ -203,6 +203,15 @@
 			"@mcp-vertex/auto-agent-selector/*": [
 				"./plugins/auto-agent-selector/src/*"
 			],
+			"@mcp-vertex/auto-plugin-selector": [
+				"./plugins/auto-plugin-selector/src/index.ts"
+			],
+			"@mcp-vertex/auto-plugin-selector/public": [
+				"./plugins/auto-plugin-selector/src/public/index.ts"
+			],
+			"@mcp-vertex/auto-plugin-selector/*": [
+				"./plugins/auto-plugin-selector/src/*"
+			],
 			"@mcp-vertex/issues": ["./plugins/issues/src/index.ts"],
 			"@mcp-vertex/issues/public": [
 				"./plugins/issues/src/public/index.ts"
