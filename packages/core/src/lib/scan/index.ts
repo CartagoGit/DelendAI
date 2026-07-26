@@ -30,3 +30,8 @@ export {
 	type DipKind,
 	type IDipHit,
 } from './dip-violation';
+export {
+	buildRegistrySkeleton,
+	formatFixProposal,
+	type IFixProposal,
+} from './long-chains-fix';

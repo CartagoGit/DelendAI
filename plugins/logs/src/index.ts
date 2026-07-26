@@ -186,6 +186,26 @@ export default definePlugin({
 				main: mainStore,
 				errors: errorStore,
 			}),
+			// f00154 S2 — publish our appendEvent as the canonical
+			// sink. The core routes every `onToolStart` / `onToolCall`
+			// / `onToolCancel` (across ALL plugins) through this sink,
+			// so the JSONL streams are populated even for plugins that
+			// ship no `onTool*` hooks of their own.
+			logsSink: {
+				id: 'logs-plugin',
+				record: async (event) => {
+					await appendEvent(
+						normalizeEvent(event.kind as never, {
+							ts: event.ts,
+							toolName: event.toolName ?? undefined,
+							taskId: event.taskId ?? undefined,
+							agent: event.agent,
+							summary: event.summary,
+							meta: event.meta,
+						}),
+					);
+				},
+			},
 			knowledge: [
 				{
 					id: 'logs-operational-event-log',

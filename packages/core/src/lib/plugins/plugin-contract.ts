@@ -127,6 +127,61 @@ export interface IMcpPluginContext {
 	 * the helper is undefined and the call is a no-op.
 	 */
 	readonly logs?: IPluginLogsHelper | undefined;
+	/**
+	 * f00154 S2 — the raw event sink the core uses for tool-call
+	 * lifecycle events. Plugins that want to write a fully-shaped
+	 * `ISinkEvent` (rather than the typed `IPluginLogInput` shortcut
+	 * of `ctx.logs.log(...)`) read this directly. The core ALWAYS
+	 * picks a sink at boot: if the `logs` plugin is in the load set,
+	 * the sink delegates to it; otherwise a `ConsoleLogsSink` writes
+	 * redacted JSON lines to stderr so no event is silently dropped.
+	 */
+	readonly logsSink?: ILogsSink | undefined;
+}
+
+/**
+ * f00154 S2 — see `logs-sink.ts` for the full contract. Re-exported
+ * from the contract so plugin authors can type their handlers
+ * without importing the internal path.
+ */
+export interface ILogsSink {
+	readonly id: string;
+	readonly record: (event: ISinkEvent) => Promise<void>;
+}
+
+/**
+ * f00154 S2 — the shape the core passes to `ILogsSink.record`. It
+ * is a structurally-equivalent subset of the `logs` plugin's
+ * `ILogEvent`; we keep it local to the core to avoid a
+ * cross-package type dependency (the `logs` plugin normalises its
+ * own `ILogEvent` from this shape at the sink boundary).
+ */
+export interface ISinkEvent {
+	readonly ts: string;
+	readonly kind: string;
+	readonly outcome:
+		| 'ok'
+		| 'failed'
+		| 'timed-out'
+		| 'cancelled'
+		| 'dead'
+		| 'idle'
+		| 'unknown';
+	readonly severity:
+		| 'debug'
+		| 'info'
+		| 'notice'
+		| 'warning'
+		| 'error'
+		| 'critical'
+		| 'alert'
+		| 'emergency';
+	readonly incidentType: string | null;
+	readonly toolName: string | null;
+	readonly taskId: string | null;
+	readonly agent: string | null;
+	readonly summary: string;
+	readonly meta: Readonly<Record<string, unknown>>;
 }
 
 /**
@@ -213,6 +268,16 @@ export interface IMcpPluginRegistrations {
 				args: unknown,
 		  ) => { handoffPath: string; suggestedAction: string } | null)
 		| undefined;
+	/**
+	 * f00154 S2 — the sink a plugin wants the core to publish
+	 * lifecycle events to. The `logs` plugin sets this so the core
+	 * forwards every `onToolStart` / `onToolCall` / `onToolCancel`
+	 * event to the `logs` JSONL streams, even when the plugin's own
+	 * `onTool*` hooks are absent. Other plugins may set their own
+	 * sink (e.g. an external SIEM bridge) — only one wins and the
+	 * core picks the first one that registers.
+	 */
+	readonly logsSink?: ILogsSink | undefined;
 }
 
 /**
