@@ -139,13 +139,13 @@ const find = (name: string): ICliCommand => {
 describe('router dashboard group', () => {
 	it('exposes only the dashboard command', () => {
 		expect(routerDashboardCommands.map((c) => c.name)).toEqual([
-			'router dashboard',
+			'router-dashboard',
 		]);
 	});
 
 	it('text mode pulls auto_status + auto_recommend + usage_report and renders a table', async () => {
 		const { ctx, calls } = buildStubContext();
-		const result = await find('router dashboard').run([], ctx);
+		const result = await find('router-dashboard').run([], ctx);
 		// 1 status + 4 default task types + 1 usage_report.
 		expect(calls.length).toBe(6);
 		expect(calls[0]?.tool).toBe(
@@ -164,7 +164,7 @@ describe('router dashboard group', () => {
 
 	it('--task narrows the recommendation set', async () => {
 		const { ctx, calls } = buildStubContext();
-		await find('router dashboard').run(['--task=code-edit'], ctx);
+		await find('router-dashboard').run(['--task=code-edit'], ctx);
 		// 1 status + 1 recommend + 1 usage.
 		expect(
 			calls.filter((c) => c.tool.endsWith('_auto_recommend')).length,
@@ -173,7 +173,7 @@ describe('router dashboard group', () => {
 
 	it('defaults to 4 task types when --task is omitted', async () => {
 		const { ctx, calls } = buildStubContext();
-		await find('router dashboard').run([], ctx);
+		await find('router-dashboard').run([], ctx);
 		expect(
 			calls.filter((c) => c.tool.endsWith('_auto_recommend')).length,
 		).toBe(4);
@@ -181,7 +181,7 @@ describe('router dashboard group', () => {
 
 	it('--pin writes through auto_recommend', async () => {
 		const { ctx, calls } = buildStubContext();
-		await find('router dashboard').run(['--pin=cheap'], ctx);
+		await find('router-dashboard').run(['--pin=cheap'], ctx);
 		const pinCall = calls.find((c) => {
 			if (!c.tool.endsWith('_auto_recommend')) return false;
 			return (c.args as { pin?: string }).pin === 'cheap';
@@ -191,7 +191,7 @@ describe('router dashboard group', () => {
 
 	it('json mode returns the view-model as data', async () => {
 		const { ctx } = buildStubContext();
-		const result = await find('router dashboard').run(['--json'], ctx);
+		const result = await find('router-dashboard').run(['--json'], ctx);
 		expect(result.code).toBe(0);
 		const data = result.data as {
 			rows: { providerId: string }[];
@@ -208,7 +208,7 @@ describe('router dashboard group', () => {
 
 	it('surfaces spend-only providers with the right note', async () => {
 		const { ctx } = buildStubContext();
-		const result = await find('router dashboard').run(['--json'], ctx);
+		const result = await find('router-dashboard').run(['--json'], ctx);
 		const data = result.data as {
 			rows: { providerId: string; note: string }[];
 		};

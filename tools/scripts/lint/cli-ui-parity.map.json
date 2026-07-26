@@ -78,6 +78,9 @@
 		"rules": {
 			"waiver": "rules engine consumed by agents and lint gates; terminal-first, no UI story planned"
 		},
+		"router-dashboard": {
+			"waiver": "f00140 S2 surfaces the recommendation + spend table as a CLI command (auto_status + auto_recommend + usage_report); the HTML webview renderer (S3) is staged for a future slice that wires it to a `vscode-view` command."
+		},
 		"scaffold": {
 			"waiver": "code generator that writes workspace files; terminal-first, no UI story planned"
 		},
