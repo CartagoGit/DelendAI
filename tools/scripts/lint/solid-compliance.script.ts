@@ -55,6 +55,7 @@ import { join } from 'node:path';
 
 import {
 	detectCatchSwallow,
+	detectDipViolations,
 	detectLongChains,
 	detectMagicNumbers,
 	lineOf,
@@ -72,7 +73,8 @@ export type SolidRuleId =
 	| 'oversized-file'
 	| 'catch-swallow'
 	| 'magic-number-in-plugin'
-	| 'duplicated-cross-plugin';
+	| 'duplicated-cross-plugin'
+	| 'dip-violation';
 
 export interface ISolidFinding {
 	readonly id: SolidRuleId;
@@ -108,6 +110,7 @@ const RULE_PRIORITY: Record<SolidRuleId, number> = {
 	'catch-swallow': 30,
 	'magic-number-in-plugin': 40,
 	'duplicated-cross-plugin': 50,
+	'dip-violation': 5,
 };
 
 // ──────────────────────────────────────────────────────────────────────────
@@ -168,6 +171,22 @@ export const classifySolidFindings = async (
 				line: s.line,
 				message: `empty catch block — clean code forbids swallowed errors`,
 				snippet: s.snippet,
+			});
+		}
+		// dip-violation
+		const dips = detectDipViolations(relPath, body);
+		for (const d of dips) {
+			const message =
+				d.kind === 'process-cwd'
+					? 'process.cwd() in non-boot code — use ctx.workspace / injected options (§7.1 #2)'
+					: 'sync node:fs import in hot path — use node:fs/promises (§7.1 #3)';
+			findings.push({
+				id: 'dip-violation',
+				priority: RULE_PRIORITY['dip-violation'],
+				relPath,
+				line: d.line,
+				message,
+				snippet: d.snippet,
 			});
 		}
 		// magic-number-in-plugin (only in plugins/*)

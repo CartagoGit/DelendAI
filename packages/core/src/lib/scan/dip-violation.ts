@@ -1,0 +1,107 @@
+/**
+ * dip-violation.ts — Dependency Inversion violation detector (c00126 S4).
+ *
+ * Catches two anti-patterns that the §7.1 invariant forbids:
+ *
+ *   - §7.1 #2: "No `process.cwd()` in engines" — the runtime must come
+ *     from `ctx.workspace` / `corePaths` / injected options, not from
+ *     the global process object.
+ *
+ *   - §7.1 #3: "Async I/O only in hot paths. Sync filesystem calls are
+ *     allowed only at boot." — engines and tools that import sync
+ *     functions from `node:fs` (other than boot-time exemptions) are
+ *     flagged.
+ *
+ * Pure: takes a body string and a context (relPath for scope), returns
+ * findings. The caller decides which paths count as engines. By default
+ * any file under plugins/<name>/src/lib, packages/core/src/lib, or
+ * apps/web/src is in scope.
+ */
+import { lineOf } from './text-utils';
+
+export type DipKind = 'process-cwd' | 'sync-fs-import';
+
+export interface IDipHit {
+	readonly line: number;
+	readonly kind: DipKind;
+	readonly snippet: string;
+}
+
+/** Paths exempt from the dip-violation rule. */
+const EXEMPT_PATH_PATTERNS: readonly RegExp[] = [
+	// Boot-time config loaders are explicitly allowed sync FS.
+	/packages\/core\/src\/lib\/configuration-center\//,
+	/packages\/core\/src\/lib\/install\//,
+	/packages\/core\/src\/lib\/setup\//,
+	/packages\/core\/src\/lib\/cli\/parse-cli-args/,
+];
+
+/** Sync node:fs functions that are not allowed outside boot. */
+const SYNC_FS_FUNCTIONS: readonly string[] = [
+	'readFileSync',
+	'writeFileSync',
+	'appendFileSync',
+	'unlinkSync',
+	'mkdirSync',
+	'rmSync',
+	'renameSync',
+	'copyFileSync',
+	'statSync',
+	'lstatSync',
+	'readdirSync',
+	'existsSync',
+	'realpathSync',
+	'symlinkSync',
+	'readlinkSync',
+	'chmodSync',
+	'chownSync',
+	'utimesSync',
+];
+
+const processCwdRegex = /\bprocess\.cwd\s*\(/g;
+const syncFsImportRegex = new RegExp(
+	`\\b(?:import|require)\\b[^;]*\\b(?:${SYNC_FS_FUNCTIONS.join('|')})\\b`,
+	'g',
+);
+
+const isExempt = (relPath: string): boolean => {
+	return EXEMPT_PATH_PATTERNS.some((p) => p.test(relPath));
+};
+
+const isInScope = (relPath: string): boolean => {
+	return (
+		relPath.startsWith('plugins/') ||
+		relPath.startsWith('packages/core/src/lib/') ||
+		relPath.startsWith('apps/web/src/')
+	);
+};
+
+/**
+ * Detect DIP violations in `body` for the file at `relPath`.
+ * Returns one hit per finding.
+ */
+export const detectDipViolations = (
+	relPath: string,
+	body: string,
+): readonly IDipHit[] => {
+	if (!isInScope(relPath) || isExempt(relPath)) {
+		return [];
+	}
+	const out: IDipHit[] = [];
+	let m: RegExpExecArray | null;
+	while ((m = processCwdRegex.exec(body)) !== null) {
+		out.push({
+			line: lineOf(body, m.index),
+			kind: 'process-cwd',
+			snippet: m[0],
+		});
+	}
+	while ((m = syncFsImportRegex.exec(body)) !== null) {
+		out.push({
+			line: lineOf(body, m.index),
+			kind: 'sync-fs-import',
+			snippet: m[0].replace(/\s+/g, ' ').slice(0, 120),
+		});
+	}
+	return out;
+};
