@@ -377,6 +377,70 @@ export interface McpVertexConfigurationCenterOutput {
 	}>;
 }
 
+export type McpVertexContainerContainerInspectOutput = {
+	ok: true;
+	kind: "docker-ps";
+	items: {
+		id: string;
+		name: string;
+		image: string;
+		status: string;
+		ports: string[];
+		createdAt: string;
+	}[];
+} | {
+	ok: true;
+	kind: "docker-images";
+	items: {
+		id: string;
+		repository: string;
+		tag: string;
+		size: string;
+		createdAt: string;
+	}[];
+} | {
+	ok: true;
+	kind: "k8s-get";
+	items: {
+		name: string;
+		namespace: string;
+		status: string;
+		nodeName?: string;
+		podIp?: string;
+		containers: string[];
+	}[];
+} | {
+	ok: "skipped";
+	hint: string;
+};
+
+export interface McpVertexContainerContainerLintOutput {
+	ok: true;
+	engine: "hadolint" | "builtin" | "builtin-hadolint-failed";
+	hadolintAvailable: boolean;
+	findings: Array<{
+		ruleId: string;
+		severity: "critical" | "high" | "medium" | "low" | "info";
+		message: string;
+		location?: {
+			file: string;
+			line?: number;
+		};
+		fix?: string;
+	}>;
+}
+
+export type McpVertexContainerContainerLogsOutput = {
+	ok: true;
+	kind: "docker" | "kubectl";
+	target: string;
+	logs: string;
+} | {
+	ok: false;
+	kind: "skipped";
+	hint: string;
+};
+
 export interface McpVertexCreatePluginOutput {
 	ok: boolean;
 	scaffolded: {
@@ -3062,6 +3126,9 @@ export interface McpVertexToolOutputs {
 	"mcp-vertex_browser_browser_verify_page": McpVertexBrowserBrowserVerifyPageOutput;
 	"mcp-vertex_cache_cache_gc": McpVertexCacheCacheGcOutput;
 	"mcp-vertex_configuration_center": McpVertexConfigurationCenterOutput;
+	"mcp-vertex_container_container_inspect": McpVertexContainerContainerInspectOutput;
+	"mcp-vertex_container_container_lint": McpVertexContainerContainerLintOutput;
+	"mcp-vertex_container_container_logs": McpVertexContainerContainerLogsOutput;
 	"mcp-vertex_create_plugin": McpVertexCreatePluginOutput;
 	"mcp-vertex_create_project": McpVertexCreateProjectOutput;
 	"mcp-vertex_deps_deps_audit": McpVertexDepsDepsAuditOutput;
