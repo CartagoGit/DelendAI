@@ -2,7 +2,7 @@
 id: f00141
 kind: feat
 title: plugin registry + one-command adopt — a discoverable index of plugins with mcpv plugin add that installs, wires and configures
-status: ready
+status: done
 date: 2026-07-23
 track: plugin+registry+dx
 ---
