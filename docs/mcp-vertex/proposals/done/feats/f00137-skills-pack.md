@@ -2,9 +2,11 @@
 id: f00137
 kind: feat
 title: skills pack — debugging, performance, security-hardening, incident-response, pr-review and migration playbooks
-status: ready
+status: done
 date: 2026-07-23
 track: plugin+skills+process
+shipped-in:
+    - 7dbf9166 # feat(f00137): skills-pack plugin - 6 playbooks + wiring
 ---
 
 # f00137 — skills pack
