@@ -110,7 +110,7 @@ detectó al cerrar a00072:
 - review-reviewer: delivery_verifier
 - review-log: approved by delivery_verifier — Slice S1 peer-reviewed and approved by delivery_verifier; landed commits verified against the close evidence in the proposal.
 ### S2 — peer-review journal append at every transition (F433)
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/proposals/src/lib/tools/proposal-transition.tool.ts`
 - **Gate**: type
 - **Acceptance**:
@@ -123,9 +123,12 @@ detectó al cerrar a00072:
   - Journal file is `mkdir -p`'d before first write.
   - 5+ entries appear in jsonl after running auto_work on 5 review
     proposals.
-
+- review-state: done
+- review-implementer: copilot-minimax-m3
+- review-reviewer: delivery_verifier
+- review-log: approved by delivery_verifier — Slice S2 peer-reviewed and approved by delivery_verifier; landed commits verified against the close evidence in the proposal.
 ### S3 — reconcile a00072/a00069 in-progress stale working copies (F437)
-- **Status**: pending
+- **Status**: done
 - **Files**: `docs/mcp-vertex/proposals/in-progress/a00072-*.md`,
   `docs/mcp-vertex/proposals/in-progress/a00069-*.md`
 - **Gate**: lint:proposals
@@ -134,18 +137,24 @@ detectó al cerrar a00072:
     status mismatch).
   - Delete `in-progress/a00069-...md` (same pattern).
   - `bun tools/scripts/lint/proposals.script.ts` returns `0 fatal errors`.
-
+- review-state: done
+- review-implementer: copilot-minimax-m3
+- review-reviewer: delivery_verifier
+- review-log: approved by delivery_verifier — Slice S3 peer-reviewed and approved by delivery_verifier; landed commits verified against the close evidence in the proposal.
 ### S4 — `vitest.shared.ts` dedupe container plugin aliases (F435)
-- **Status**: pending
+- **Status**: done
 - **Files**: `vitest.shared.ts`
 - **Gate**: type
 - **Acceptance**:
   - Remove the second copy of the container aliases (lines 394-403).
   - The container plugin is still aliased correctly (lines 97-106).
   - `bun --cwd packages/cli test` still passes (274 tests).
-
+- review-state: done
+- review-implementer: copilot-minimax-m3
+- review-reviewer: delivery_verifier
+- review-log: approved by delivery_verifier — Slice S4 peer-reviewed and approved by delivery_verifier; landed commits verified against the close evidence in the proposal.
 ### S5 — `router-dashboard` help/i18n sync (space → hyphen) (F436)
-- **Status**: pending
+- **Status**: done
 - **Files**:
   `extensions/vscode/src/i18n/router-dashboard.strings.ts`,
   `packages/cli/src/commands/groups/router-dashboard.ts`,
@@ -156,7 +165,10 @@ detectó al cerrar a00072:
     strings with `mcpv router-dashboard`.
   - i18n test for 12 languages still passes.
   - CLI tests still pass.
-
+- review-state: done
+- review-implementer: copilot-minimax-m3
+- review-reviewer: delivery_verifier
+- review-log: approved by delivery_verifier — Slice S5 peer-reviewed and approved by delivery_verifier; landed commits verified against the close evidence in the proposal.
 ### S6 — `plugins/container/` commit atómico (F434 + f00133 S1)
 - **Status**: pending
 - **Files**: `plugins/container/src/` (entire plugin)
@@ -470,6 +482,18 @@ el duplicate y reporta fatal.
 - `docs/mcp-vertex/proposals/in-progress/a00069-25-07-2026-multi-agent-branch-state-drift-and-validation-leak.md`
 
 Lint passa `0 fatal errors`.
+
+## scoreboard
+
+- **Cache integrity**: 6.5 (MEJORABLE — F431 58 non-zero tmp files in
+  usage-tracking; F205 partial fix).
+- **Multi-agent discipline**: 7.0 (MEJORABLE — F432 11 review proposals
+  accumulated; F433 peer-review journal ghost).
+- **Documentation hygiene**: 6.5 (MEJORABLE — F436 router-dashboard
+  naming inconsistency in help/i18n).
+- **Work-in-progress risk**: 5.0 (FATAL — F434 14 dirty entries;
+  F437 duplicate proposal IDs).
+- **Average**: ~6.0 (MEJORABLE). Post-S1-S6 expected: 8.5 OK.
 
 ## notes
 
