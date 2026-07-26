@@ -696,6 +696,16 @@ export async function syncProposalRegistry(
 			...Object.values(KIND_TO_DONE_SUBFOLDER).map((sub) =>
 				join(proposalsDir, 'done', sub),
 			),
+			// a00076 S1: archive sub-folders under `legacy/closed/<kind>/`
+			// mirror the `done/<kind>/` layout so reaped proposals stay
+			// indexed (with `archived: true`) without living in the active
+			// `done/` tree. `reconcileFolders` will not touch these because
+			// an archived proposal's frontmatter still says `status: done`,
+			// and the reconciler never moves *into* `legacy/closed/` — only
+			// out of it (the reaper script in S2 handles moves into it).
+			...Object.values(KIND_TO_DONE_SUBFOLDER)
+				.filter((sub): sub is string => sub !== undefined)
+				.map((sub) => join(proposalsDir, 'legacy', 'closed', sub)),
 			...containedExtraFolders,
 		];
 		const subtrees: ReadonlyArray<{ absolute: string }> = [
