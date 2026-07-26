@@ -2,9 +2,14 @@
 id: f00135
 kind: feat
 title: env plugin — .env schema validation, missing/mistyped var detection and a "which var powers which plugin/provider" diagnostic
-status: ready
+status: done
 date: 2026-07-23
 track: plugin+config+onboarding
+shipped-in:
+    - 123659cc # feat(env): add schema validation to env_check (f00135 S1)
+    - 0af37563 # docs(f00135): mark S1 done
+    - e3394d03 # feat(env): f00135 S2 — env_explains requirements map
+    - 01d9ca9e # docs(env): f00135 S3 — README env_explains + catalog + pack
 ---
 
 # f00135 — env plugin
