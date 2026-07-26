@@ -58,7 +58,7 @@ Three independent decisions, each at the smallest layer that buys the property:
 
 ### S1 — `legacy/closed/` folder + registry scanner + index inclusion
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `docs/mcp-vertex/proposals/legacy/closed/.gitkeep` (new — sentinel so the folder ships), `docs/mcp-vertex/proposals/legacy/closed/README.md` (new — explains the archive semantics, references a00076, lists the reaper command), `plugins/proposals/src/lib/proposals/sync-proposal-registry.ts` (add `legacy/closed/<kind>/` to `subtreeAbsolutes` so the index picks them up; tag the entry `archived: true` while keeping `status: done` in the frontmatter projection), `plugins/proposals/src/lib/contracts/constants/proposal-glossary.constant.ts` (export `PROPOSAL_ARCHIVE_FOLDER = 'legacy/closed'` and a new `IProposalEntry.archived?: boolean` field — or, if simpler, add the flag inline in the scan loop), `plugins/proposals/src/lib/contracts/schemas/proposal-entry.schema.ts` (or wherever `IProposalEntry` is defined — add `archived?: boolean` to the schema).
 - **Gate**: type + verify
 - **Acceptance**:
@@ -70,7 +70,7 @@ Three independent decisions, each at the smallest layer that buys the property:
 
 ### S2 — `reap-legacy-proposals.script.ts` (lint + `--apply` move)
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `tools/scripts/lint/reap-legacy-proposals.script.ts` (new — the reaper), `tools/scripts/lint/reap-legacy-proposals.script.spec.ts` (new — dry-run, `--apply`, vintage filter, kind inference, missing-file safety), `tools/scripts/lint/lib/reap-legacy-proposals.lib.ts` (new — pure functions for vintage detection + move-plan construction, importable from both script and tests), `docs/mcp-vertex/proposals/legacy/closed/README.md` (extend — document the reaper invocation, default thresholds, `--apply` opt-in).
 - **Gate**: type + verify
 - **Acceptance**:
@@ -83,7 +83,7 @@ Three independent decisions, each at the smallest layer that buys the property:
 
 ### S3 — `closed-frozen-guard.script.ts` (CI lint that enforces the freeze)
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `tools/scripts/lint/closed-frozen-guard.script.ts` (new — the freeze guard), `tools/scripts/lint/closed-frozen-guard.script.spec.ts` (new — covers: drift detection, mtime drift, status drift, slice drift, missing `archived-on:`), `tools/scripts/lint/lib/closed-frozen-guard.lib.ts` (new — pure `findFrozenDrift(rootDir): ReadonlyArray<IFrozenDrift>`), `plugins/proposals/src/lib/services/proposal-slice-completeness.ts` or the script that consumes it (extend to **skip** `legacy/closed/` — proposals there are frozen by definition, no slice-status or files-existence check applies).
 - **Gate**: type + verify
 - **Acceptance**:
@@ -99,7 +99,7 @@ Three independent decisions, each at the smallest layer that buys the property:
 
 ### S4 — Wiring: validate gates, registry sync, doc updates
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `package.json` (`scripts` block — add `lint:reap-legacy-proposals`, `lint:closed-frozen-guard`, and wire both into the `validate` script), `package.json` (`scripts` block — also add `archive:proposals:reap` (alias for `--apply`) and `archive:proposals:status` (count of proposals in `legacy/closed/`)), `docs/mcp-vertex/proposals/legacy/closed/README.md` (final form — references the four slices, the reaper command, and the guard command), `docs/mcp-vertex/AGENT-BOOTSTRAP.md` (add a one-paragraph note in §proposals mentioning `legacy/closed/` and the archive reaper), `plugins/proposals/README.md` (add a short subsection under "Workflow" pointing at the archive folder), `plugins/proposals/src/lib/proposals/sync-proposal-registry.ts` (final form — the scanner block that adds `legacy/closed/<kind>/` is reviewed and idiomatic, the `archived: true` flag is plumbed all the way to the JSON output).
 - **Gate**: type + verify + docs
 - **Acceptance**:
