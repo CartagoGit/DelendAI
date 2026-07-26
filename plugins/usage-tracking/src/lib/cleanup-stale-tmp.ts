@@ -24,6 +24,13 @@ export interface ICleanupStaleTmpOptions {
 	readonly staleMs?: number;
 	/** Injected time source for tests. */
 	readonly now?: () => number;
+	/**
+	 * When true, also remove non-zero-byte stale tmp files (older than
+	 * `staleMs`). Default false — the legacy 0-byte-only behaviour is
+	 * preserved. a00073 S1 / F431: extends hygiene to half-written
+	 * tmp files that crashed before they could be renamed.
+	 */
+	readonly keepNonZero?: boolean;
 }
 
 /** Summary of what was cleaned. */
