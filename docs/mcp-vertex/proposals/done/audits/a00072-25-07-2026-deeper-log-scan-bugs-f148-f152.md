@@ -1,6 +1,6 @@
 ---
 id: a00072
-status: in-progress
+status: done
 type: proposal
 track: audit+multi-agent+state-consistency+proposals-plugin+log-honesty
 date: 2026-07-25
