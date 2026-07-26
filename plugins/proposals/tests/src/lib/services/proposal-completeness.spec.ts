@@ -170,7 +170,7 @@ describe('proposal-completeness — proposal-completeness', () => {
 				proposal,
 				'utf8',
 			);
-			const result = guardTransitionToDone({
+			const result = await guardTransitionToDone({
 				proposalPath: proposal,
 				markdown,
 			});
@@ -187,7 +187,7 @@ describe('proposal-completeness — proposal-completeness', () => {
 				proposal,
 				'utf8',
 			);
-			const result = guardTransitionToDone({
+			const result = await guardTransitionToDone({
 				proposalPath: proposal,
 				markdown,
 			});

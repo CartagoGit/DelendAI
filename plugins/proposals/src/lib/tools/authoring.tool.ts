@@ -17,6 +17,7 @@ import { runAgentLockEngine } from '../locks/agent-lock-engine';
 import type { IGitRunner } from '../shared/git-runner';
 import { createPendingIntegrationStore } from '../shared/pending-integration-store';
 import { AGENT_BRANCH_PREFIX } from '../contracts/constants/agent-branch-convention.constant';
+import { PEER_REVIEW_LOG_RELATIVE_PATH } from '../contracts/constants/proposal-paths.constant';
 import { syncProposalRegistry } from '../proposals/sync-proposal-registry';
 import {
 	allocateNextProposalId,
@@ -70,13 +71,6 @@ export { readActiveLocks } from './authoring-options';
 // close-slice validation below that deadline so callers receive the
 // structured validation error and the document mutex is always released.
 const CLOSE_SLICE_VALIDATION_TIMEOUT_MS = 45_000;
-const PEER_REVIEW_LOG_RELATIVE_PATH = join(
-	'.cache',
-	'mcp-vertex',
-	'results',
-	'logs',
-	'peer-review.jsonl',
-);
 
 type IPeerReviewPersistedEntry = {
 	readonly ts: string;
