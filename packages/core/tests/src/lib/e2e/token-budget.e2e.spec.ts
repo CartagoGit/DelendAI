@@ -115,8 +115,10 @@ const BUDGET_BYTES = {
 	// via standard, increasing overview compact from ~3 568B to ~4 368B.
 	// Bumped 4 500 → 4 700 (2026-07-26): container plugin S2/S3 added the lint,
 	// logs, and build tools, increasing overview compact from ~4 368B to ~4 587B.
+	// Bumped 4 700 → 4 800 (2026-07-27): env plugin (f00135) added env_explains to
+	// standard preset, increasing overview compact from ~4 587B to ~4 796B.
 	swarmToolsList: 175_000,
-	swarmOverviewCompact: 4_700,
+	swarmOverviewCompact: 4_800,
 	swarmRoundContext: 300,
 	// `lean` was 58 003B against the same fixture, a 63% reduction from swarm.
 	leanToolsList: 65_000,

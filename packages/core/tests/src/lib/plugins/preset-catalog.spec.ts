@@ -24,8 +24,8 @@ describe('PRESET_CATALOG', async () => {
 		expect(PRESET_CATALOG[0]?.members.length).toBe(2);
 		// lean: 4 members, independent essentials preset
 		expect(PRESET_CATALOG[1]?.members.length).toBe(4);
-		// standard: adds 10 on top of minimal (f00115 added test-policy, f00123 added refactor, f00128 S1 added database, f00132 S1 added diagram, f00133 added container)
-		expect(PRESET_CATALOG[2]?.members.length).toBe(11);
+		// standard: adds 11 on top of minimal (f00115 added test-policy, f00123 added refactor, f00128 S1 added database, f00132 S1 added diagram, f00133 added container, f00135 added env)
+		expect(PRESET_CATALOG[2]?.members.length).toBe(12);
 		// swarm: adds 7 on top of standard (f00121 S3 added forge)
 		expect(PRESET_CATALOG[3]?.members.length).toBe(7);
 		// full: adds 2 host-only + api + changelog on top of swarm
@@ -151,13 +151,14 @@ describe('resolvePresetMembers', async () => {
 			'database',
 			'container',
 			'diagram',
+			'env',
 		]);
-		expect(resolvePresetMembers('swarm').length).toBe(20);
-		expect(resolvePresetMembers('full').length).toBe(24);
+		expect(resolvePresetMembers('swarm').length).toBe(21);
+		expect(resolvePresetMembers('full').length).toBe(25);
 		expect(resolvePresetMembers('swarm')).not.toContain('lean');
 	});
 
-	it('resolves standard = minimal + memory/docs/rules/quality/refactor/deps/test-policy/database', async () => {
+	it('resolves standard = minimal + memory/docs/rules/quality/refactor/deps/test-policy/database/diagram/container/env', async () => {
 		const resolved = resolvePresetMembers('standard');
 		expect(resolved).toContain('git');
 		expect(resolved).toContain('search');
@@ -171,7 +172,8 @@ describe('resolvePresetMembers', async () => {
 		expect(resolved).toContain('database');
 		expect(resolved).toContain('container');
 		expect(resolved).toContain('diagram');
-		expect(resolved.length).toBe(13);
+		expect(resolved).toContain('env');
+		expect(resolved.length).toBe(14);
 	});
 
 	it('resolves swarm = standard + proposals/notification/logs/status-marker/test-convention', async () => {
