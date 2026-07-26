@@ -22,10 +22,11 @@
  * through `--mcp-vertex-root` so the resolver's `flag` branch wins —
  * no need to stub the filesystem probe.
  */
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { mkdtemp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 import {
 	detectAndDecorateAnswers,
@@ -69,6 +70,11 @@ const INIT_DEFAULT_ANSWERS: Partial<IInitAnswers> = {
 	migrateFromLegacy: true,
 	force: false,
 };
+
+const HOST_ENTRY_PATH = join(
+	dirname(fileURLToPath(import.meta.url)),
+	'../../../../../tools/scripts/host/host-server.script.ts',
+);
 
 describe('init:default (f00103)', () => {
 	let tmp: string;
@@ -267,5 +273,40 @@ describe('init:default (f00103)', () => {
 		const result = await runInitWithAnswers(ctx, flags, answers);
 		expect(result.code).toBe(EXIT_CODE.OK);
 		expect(answers.force).toBe(true);
+	});
+
+	it('prints an early env warning block when the env plugin is loaded and a required var is missing', async () => {
+		const stderr = vi
+			.spyOn(process.stderr, 'write')
+			.mockImplementation(() => true);
+		try {
+			const flags = parseFlags([
+				'--dry-run',
+				`--mcp-vertex-root=${HOST_ENTRY_PATH}`,
+			]);
+			const answers = await detectAndDecorateAnswers(tmp, flags, {
+				preset: 'standard',
+				extraPlugins: [],
+				excludedPlugins: [],
+				hostInstructions: 'append',
+				copyCoreSkills: true,
+				generateAgentMd: true,
+				migrateFromLegacy: true,
+				force: false,
+			});
+			const result = await runInitWithAnswers(
+				noopCtx(tmp, minimalGlobals()),
+				flags,
+				answers,
+			);
+			expect(result.code).toBe(EXIT_CODE.OK);
+			const stderrText = stderr.mock.calls
+				.map(([line]) => String(line))
+				.join('');
+			expect(stderrText).toContain('mcp-vertex › env warning');
+			expect(stderrText).toContain('DATABASE_URL');
+		} finally {
+			stderr.mockRestore();
+		}
 	});
 });
