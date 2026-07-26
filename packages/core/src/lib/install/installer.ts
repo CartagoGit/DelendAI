@@ -57,6 +57,10 @@ const RUNNERS: Record<
 export interface IInstallOptions {
 	readonly via?: IRunnerVia;
 	readonly preset?: string;
+	/** Stack pack id (r00011 S3). Overrides the default-preset path
+	 * when present; the installer resolves the pack's plugin set +
+	 * option overlay and uses it as the effective preset. */
+	readonly pack?: string;
 	readonly pkg?: string;
 	/** Explicit target ids; when empty, `init` auto-detects. */
 	readonly ide?: readonly string[];
