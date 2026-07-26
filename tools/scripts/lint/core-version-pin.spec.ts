@@ -1,4 +1,4 @@
-import { mkdir, mkdtemp, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -32,7 +32,9 @@ const createTempRoot = async (): Promise<string> => {
 
 afterEach(async () => {
 	await Promise.all(
-		tempRoots.splice(0).map((root) => Bun.$`rm -rf ${root}`.quiet()),
+		tempRoots
+			.splice(0)
+			.map((root) => rm(root, { recursive: true, force: true })),
 	);
 });
 
