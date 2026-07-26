@@ -377,6 +377,27 @@ export interface McpVertexConfigurationCenterOutput {
 	}>;
 }
 
+export type McpVertexContainerContainerBuildOutput = {
+	ok: true;
+	command: string;
+	exitCode: number;
+	imageId?: string;
+} | {
+	ok: false;
+	reason: string;
+	nextAction: string;
+} | {
+	ok: "dry-run";
+	command: string;
+} | {
+	ok: false;
+	isError: true;
+	error: {
+		reason: "install-missing";
+		nextAction?: string;
+	};
+};
+
 export type McpVertexContainerContainerInspectOutput = {
 	ok: true;
 	kind: "docker-ps";
@@ -439,6 +460,26 @@ export type McpVertexContainerContainerLogsOutput = {
 	ok: false;
 	kind: "skipped";
 	hint: string;
+};
+
+export type McpVertexContainerK8sApplyOutput = {
+	ok: true;
+	command: string;
+	exitCode: number;
+} | {
+	ok: false;
+	reason: string;
+	nextAction: string;
+} | {
+	ok: "dry-run";
+	command: string;
+} | {
+	ok: false;
+	isError: true;
+	error: {
+		reason: "install-missing";
+		nextAction?: string;
+	};
 };
 
 export interface McpVertexCreatePluginOutput {
@@ -3126,9 +3167,11 @@ export interface McpVertexToolOutputs {
 	"mcp-vertex_browser_browser_verify_page": McpVertexBrowserBrowserVerifyPageOutput;
 	"mcp-vertex_cache_cache_gc": McpVertexCacheCacheGcOutput;
 	"mcp-vertex_configuration_center": McpVertexConfigurationCenterOutput;
+	"mcp-vertex_container_container_build": McpVertexContainerContainerBuildOutput;
 	"mcp-vertex_container_container_inspect": McpVertexContainerContainerInspectOutput;
 	"mcp-vertex_container_container_lint": McpVertexContainerContainerLintOutput;
 	"mcp-vertex_container_container_logs": McpVertexContainerContainerLogsOutput;
+	"mcp-vertex_container_k8s_apply": McpVertexContainerK8sApplyOutput;
 	"mcp-vertex_create_plugin": McpVertexCreatePluginOutput;
 	"mcp-vertex_create_project": McpVertexCreateProjectOutput;
 	"mcp-vertex_deps_deps_audit": McpVertexDepsDepsAuditOutput;
