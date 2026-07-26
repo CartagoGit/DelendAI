@@ -1,137 +1,193 @@
-import { describe, expect, it } from 'vitest';
+import { mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { join } from 'node:path';
+import { tmpdir } from 'node:os';
 
-import type { IArgvExec, IProbeDeps } from '@mcp-vertex/core/public';
+import { afterEach, describe, expect, it } from 'vitest';
 
-import { buildContainerLintToolRegistrations } from './container-lint.tool';
+import {
+	buildContainerLintToolRegistrations,
+	buildContainerLogsToolRegistrations,
+	type IContainerLintToolOptions,
+	type IContainerLogsToolOptions,
+} from './container-lint.tool';
 
-const mountHandlers = async (probeDeps: IProbeDeps, runExec: IArgvExec) => {
-	const registrations = buildContainerLintToolRegistrations({
-		namespacePrefix: 'container',
-		probeDeps,
-		runExec,
-	});
-	const tools: Record<
-		string,
-		(args: unknown) => Promise<{ content: Array<{ text: string }> }>
-	> = {};
-	const server = {
-		tools,
-		registerTool: (
-			name: string,
-			_meta: unknown,
-			handler: (
-				args: unknown,
-			) => Promise<{ content: Array<{ text: string }> }>,
-		) => {
-			tools[name] = handler;
-			return { dispose: () => undefined } as never;
-		},
-	};
-	for (const r of registrations) {
-		await r.register(server as never);
-	}
-	const lint = tools['container_container_lint'];
-	const logs = tools['container_container_logs'];
-	if (lint === undefined || logs === undefined) {
-		throw new Error('container lint/logs handlers were not registered');
-	}
-	return { lint, logs };
+type ToolBody = {
+	content: Array<{ text: string }>;
 };
 
-const probeDepsAvailable = (bin: string): IProbeDeps => ({
-	commandExists: async (b: string) => b === bin,
-	runVersion: async () => '1.0.0',
+const tempDirs: string[] = [];
+
+afterEach(async () => {
+	await Promise.all(
+		tempDirs
+			.splice(0)
+			.map((dir) => rm(dir, { force: true, recursive: true })),
+	);
 });
 
-const probeDepsMissing: IProbeDeps = {
-	commandExists: async () => false,
-	runVersion: async () => '',
+const capture = async (
+	registrationBuilder:
+		| ReturnType<typeof buildContainerLogsToolRegistrations>
+		| ReturnType<typeof buildContainerLintToolRegistrations>,
+	toolName: string,
+) => {
+	const registration = registrationBuilder.find(
+		(entry) => entry.id === toolName,
+	);
+	if (registration === undefined) {
+		throw new Error(`missing ${toolName} registration`);
+	}
+	let name = '';
+	let meta: Record<string, unknown> | undefined;
+	let handler: ((args: unknown) => Promise<unknown>) | undefined;
+	await registration.register({
+		registerTool: (
+			registeredName: string,
+			registeredMeta: Record<string, unknown>,
+			fn: (args: unknown) => Promise<unknown>,
+		) => {
+			name = registeredName;
+			meta = registeredMeta;
+			handler = fn;
+			return { dispose: () => undefined } as never;
+		},
+	} as never);
+	if (meta === undefined || handler === undefined) {
+		throw new Error(`tool ${toolName} was not registered`);
+	}
+	return { name, meta, handler };
 };
 
-const execWith = (stdout: string, code = 0): IArgvExec => {
-	const calls: { argv: readonly string[] }[] = [];
-	const fn: IArgvExec = async (argv) => {
-		calls.push({ argv });
-		return { code, stdout, stderr: '', timedOut: false };
-	};
-	(fn as unknown as { calls: typeof calls }).calls = calls;
-	return fn;
+const call = async (
+	handler: (args: unknown) => Promise<unknown>,
+	args: unknown,
+): Promise<Record<string, unknown>> => {
+	const result = (await handler(args)) as ToolBody;
+	return JSON.parse(result.content[0]?.text ?? '{}') as Record<
+		string,
+		unknown
+	>;
 };
 
-const parseBody = (raw: unknown): Record<string, unknown> => {
-	const content = (raw as { content: Array<{ text: string }> }).content;
-	return JSON.parse(content[0]?.text ?? '{}') as Record<string, unknown>;
-};
-
-describe('f00133 S2 container-lint tool', () => {
-	it('container_lint returns ok + builtin engine when hadolint is missing', async () => {
-		const { lint } = await mountHandlers(probeDepsMissing, execWith(''));
-		const body = parseBody(
-			await lint({ source: 'FROM alpine\nCMD ["x"]\n' }),
+describe('container logs and lint tools', () => {
+	it('registers the expected logs tool shape and returns parsed lines', async () => {
+		const { name, meta, handler } = await capture(
+			buildContainerLogsToolRegistrations({
+				namespacePrefix: 'container',
+				deps: {
+					probeBinary: async () => ({ present: true }),
+					exec: async () => ({
+						stdout: '2026-07-26T12:00:00Z ready',
+						stderr: '',
+					}),
+				},
+			} satisfies IContainerLogsToolOptions),
+			'container_logs',
 		);
-		expect(body['ok']).toBe(true);
-		expect(body['engine']).toBe('builtin');
-		expect(body['hadolintAvailable']).toBe(false);
+
+		expect(name).toBe('container_container_logs');
+		expect(meta.outputSchema).toBeDefined();
+		await expect(call(handler, { container: 'api' })).resolves.toEqual({
+			ok: true,
+			container: 'api',
+			lines: [
+				{
+					timestamp: '2026-07-26T12:00:00.000Z',
+					stream: 'stdout',
+					message: 'ready',
+				},
+			],
+		});
 	});
 
-	it('container_logs returns skipped when docker is missing', async () => {
-		const { logs } = await mountHandlers(probeDepsMissing, execWith(''));
-		const body = parseBody(await logs({ kind: 'docker', target: 'web' }));
-		expect(body['ok']).toBe(false);
-		expect(body['kind']).toBe('skipped');
+	it('returns skipped from container_logs when docker is missing', async () => {
+		const { handler } = await capture(
+			buildContainerLogsToolRegistrations({
+				namespacePrefix: 'container',
+				deps: {
+					probeBinary: async () => ({
+						present: false,
+						hint: 'install docker',
+					}),
+					exec: async () => ({ stdout: '', stderr: '' }),
+				},
+			}),
+			'container_logs',
+		);
+
+		await expect(call(handler, { container: 'api' })).resolves.toEqual({
+			ok: 'skipped',
+			hint: 'install docker',
+		});
 	});
 
-	it('container_logs tails docker output', async () => {
-		const exec = execWith('line one\nline two\n');
-		const { logs } = await mountHandlers(
-			probeDepsAvailable('docker'),
-			exec,
+	it('lints a Dockerfile from disk and defaults to the workspace Dockerfile', async () => {
+		const workspace = await mkdtemp(join(tmpdir(), 'container-plugin-'));
+		tempDirs.push(workspace);
+		await writeFile(join(workspace, 'Dockerfile'), 'FROM node\n', 'utf8');
+
+		const { name, meta, handler } = await capture(
+			buildContainerLintToolRegistrations({
+				namespacePrefix: 'container',
+				workspaceRootAbs: workspace,
+			} satisfies IContainerLintToolOptions),
+			'container_lint',
 		);
-		const body = parseBody(
-			await logs({ kind: 'docker', target: 'web', tail: 50 }),
-		);
-		expect(body['ok']).toBe(true);
-		expect(body['logs']).toBe('line one\nline two\n');
+
+		expect(name).toBe('container_container_lint');
+		expect(meta.inputSchema).toBeDefined();
+		await expect(call(handler, {})).resolves.toEqual({
+			ok: true,
+			findings: [
+				{
+					ruleId: 'DL3001',
+					severity: 'low',
+					message:
+						'Pin the base image to a non-latest tag or digest.',
+					fix: 'Use a specific tag like `node:20-alpine` or a digest.',
+					location: { file: 'Dockerfile', line: 1 },
+				},
+			],
+		});
 	});
 
-	it('container_logs tails kubectl pods', async () => {
-		const exec = execWith('pod-log-line\n');
-		const { logs } = await mountHandlers(
-			probeDepsAvailable('kubectl'),
-			exec,
+	it('returns containment-violation for escaped dockerfile paths', async () => {
+		const { handler } = await capture(
+			buildContainerLintToolRegistrations({
+				namespacePrefix: 'container',
+				workspaceRootAbs: '/workspace',
+				readDockerfile: async () => 'FROM alpine:3.20\n',
+			}),
+			'container_lint',
 		);
-		const body = parseBody(
-			await logs({
-				kind: 'kubectl',
-				target: 'web-0',
-				namespace: 'prod',
-				tail: 200,
+
+		await expect(
+			call(handler, { dockerfilePath: '../outside/Dockerfile' }),
+		).resolves.toEqual(
+			expect.objectContaining({
+				error: expect.objectContaining({
+					reason: 'containment-violation',
+				}),
 			}),
 		);
-		expect(body['ok']).toBe(true);
-		const calls = (
-			exec as unknown as { calls: { argv: readonly string[] }[] }
-		).calls;
-		expect(calls[0]?.argv).toEqual([
-			'kubectl',
-			'logs',
-			'--tail',
-			'200',
-			'-n',
-			'prod',
-			'web-0',
-		]);
 	});
 
-	it('exposes two tool registrations under the namespace prefix', () => {
-		const regs = buildContainerLintToolRegistrations({
-			namespacePrefix: 'container',
-			probeDeps: probeDepsAvailable('docker'),
-			runExec: execWith(''),
-		});
-		expect(regs.map((r) => r.id)).toEqual([
+	it('returns not-found when the target Dockerfile is missing', async () => {
+		const workspace = await mkdtemp(join(tmpdir(), 'container-plugin-'));
+		tempDirs.push(workspace);
+
+		const { handler } = await capture(
+			buildContainerLintToolRegistrations({
+				namespacePrefix: 'container',
+				workspaceRootAbs: workspace,
+			} satisfies IContainerLintToolOptions),
 			'container_lint',
-			'container_logs',
-		]);
+		);
+
+		await expect(call(handler, {})).resolves.toEqual(
+			expect.objectContaining({
+				error: expect.objectContaining({ reason: 'not-found' }),
+			}),
+		);
 	});
 });
