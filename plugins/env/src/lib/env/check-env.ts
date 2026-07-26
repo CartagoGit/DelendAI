@@ -5,6 +5,9 @@
  */
 import type { IFinding } from '@mcp-vertex/core/public';
 
+import type { IEnvSchema } from '../validate/env-schema';
+import { checkSchema } from '../validate/check-schema';
+
 import type {
 	IEnvEntry,
 	IEnvScanDeps,
@@ -32,6 +35,7 @@ export const parseEnv = (content: string): IParsedEnv => {
 		entries.push({
 			key: match[1] ?? '',
 			line: index + 1,
+			value,
 			empty: value === '' || value === '""' || value === "''",
 		});
 	}
@@ -103,4 +107,21 @@ export const runEnvCheck = async (
 	const content = await deps.readEnv(path);
 	if (content === undefined) return { found: false, findings: [] };
 	return { found: true, findings: checkEnv(content, required) };
+};
+
+/** Same as `runEnvCheck`, but additionally diffs the parsed env against a declared schema. */
+export const runEnvCheckWithSchema = async (
+	deps: IEnvScanDeps,
+	path: string,
+	required: readonly string[],
+	schema: IEnvSchema,
+): Promise<{ found: boolean; findings: readonly IFinding[] }> => {
+	const content = await deps.readEnv(path);
+	if (content === undefined) return { found: false, findings: [] };
+	const parsed = parseEnv(content);
+	const findings = [
+		...checkEnv(content, required),
+		...checkSchema(parsed, schema),
+	];
+	return { found: true, findings };
 };

@@ -14,8 +14,9 @@ import {
 } from '@mcp-vertex/core/public';
 
 import type { IEnvCheckToolOptions } from '../contracts/interfaces/env.interface';
-import { runEnvCheck } from '../env/check-env';
+import { runEnvCheck, runEnvCheckWithSchema } from '../env/check-env';
 import { realEnvDeps } from '../env/real-deps';
+import { ENV_SCHEMA, type IEnvSchema } from '../validate/env-schema';
 
 const FINDING = z.object({
 	ruleId: z.string(),
@@ -65,15 +66,21 @@ export const buildEnvCheckRegistration = (
 			async (args: {
 				path?: string | undefined;
 				required?: string[] | undefined;
+				schema?: IEnvSchema | undefined;
 			}) => {
 				const path = args.path ?? '.env';
 				const deps =
 					options.deps ?? realEnvDeps(options.workspaceRootAbs);
-				const { found, findings } = await runEnvCheck(
-					deps,
-					path,
-					args.required ?? [],
-				);
+				const schema = args.schema;
+				const { found, findings } =
+					schema !== undefined
+						? await runEnvCheckWithSchema(
+								deps,
+								path,
+								args.required ?? [],
+								schema,
+							)
+						: await runEnvCheck(deps, path, args.required ?? []);
 				return toolJson({
 					found,
 					path,
