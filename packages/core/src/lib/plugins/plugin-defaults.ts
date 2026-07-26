@@ -65,6 +65,7 @@ export const PLUGIN_DEFAULTS: Readonly<
 	diagram: {},
 	env: {},
 	i18n: {},
+	container: {},
 	perf: {},
 	'tech-debt': {},
 	'link-check': {},
