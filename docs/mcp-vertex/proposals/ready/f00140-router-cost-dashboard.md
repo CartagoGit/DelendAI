@@ -60,11 +60,11 @@ Implemented `mcpv router dashboard` (group name `router`; command name `router d
 
 ### S3 — VS Code extension panel
 
-- **Status**: pending
-- **Files**: `extensions/vscode/src/`, `packages/ui-extension/src/`
+- **Status**: done
+- **Files**: `extensions/vscode/src/views/router-dashboard-webview.ts`, `extensions/vscode/src/i18n/router-dashboard.strings.ts`, `extensions/vscode/src/test/router-dashboard-webview.spec.ts`
 - **Gate**: bun run validate
 
-A panel rendering the same view-model; review + pin from the UI. Catalog/wiki.
+Implemented the HTML renderer `renderRouterDashboardHtml(vm, strings)` — a thin presentation adapter over `IDashboardViewModel` from `@mcp-vertex/auto-agent-selector/public`. Theme-aware (CSS vars), default-deny CSP, no scripts, no polling. The pinned chip + best-rank badge + spend-only note bubble up from the S1 view-model so the panel renders identically to `mcpv router dashboard`. New strings file `i18n/router-dashboard.strings.ts` exposes the typed `IRouterDashboardStrings` surface (12-language matrix intentionally deferred to a later slice — non-en currently falls back to en). 6/6 webview tests pass; `bun run typecheck` clean; `lint:proposals` clean; `check:i18n` green. The command-palette registration + view-model fetch are deliberately deferred to a follow-up slice so S3 stays focused on the HTML contract the future action command will reuse.
 
 ## acceptance
 
