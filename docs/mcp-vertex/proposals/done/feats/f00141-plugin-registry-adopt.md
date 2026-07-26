@@ -66,11 +66,18 @@ and adds to config/pack; consent required for community entries. Idempotent.
 ### S3 — registry browse surface + catalog
 
 - **Status**: done
-- **Files**: `packages/core/src/lib/registry/plugin-search.tool.ts`
-- **Commit**: `99fa8b1c`
+- **Files**: `packages/core/src/lib/tools/plugin-search.tool.ts`, `packages/core/tests/src/lib/tools/plugin-search.tool.spec.ts`, `apps/web/src/pages/plugins/index.astro`
+- **Commit**: `faa75958`, `56630bda`
 - **Gate**: bun run validate
 
 `plugin_search` + a web `/plugins` index; catalog/wiki.
+
+What landed: the MCP `plugin_search` surface now wraps the pure registry
+resolver with query, tag, origin, and limit filters plus a focused 5-case spec
+that verifies empty-query, substring, tag, community-origin, and truncation
+semantics. The `/plugins` page now renders the first-party registry directly in
+Astro, including origin/tag/preset badges and a ready-to-copy
+`mcpv plugin add <id>` command for each entry.
 
 ## acceptance
 
