@@ -54,6 +54,10 @@ import type {
 	IProposalKind,
 	IProposalStatus,
 } from '../contracts/constants/proposal-glossary.constant';
+import {
+	extractYamlBlock,
+	parseFrontmatterBlock,
+} from '../proposals/frontmatter-parser';
 import { locateProposal } from '../proposals/locate';
 import type { ILocatedProposal } from '../proposals/locate';
 import {
@@ -72,6 +76,13 @@ import {
 	hasIndependentApprovalSinceLastReview,
 	recordProposalEnteredReview,
 } from '../shared/peer-review-log';
+import {
+	buildForcedRegressionCaller,
+	guardDoneToReviewRegression,
+	guardShippedInPresent,
+	logForcedRegression,
+} from '../services/proposal-state';
+import { checkTransitionEvidence } from '../services/transition-evidence';
 
 const PEER_REVIEW_LOG_RELATIVE_PATH = join(
 	'.cache',
@@ -90,6 +101,8 @@ export const VALIDATE_LOG_RELATIVE_PATH = join(
 );
 
 const VALIDATE_EVIDENCE_WINDOW_MS = 24 * 60 * 60 * 1000;
+
+type IProposalTransitionSourceStatus = IProposalStatus | 'pending';
 
 export interface IPeerReviewLogEntry {
 	readonly ts: string;
@@ -221,6 +234,7 @@ export interface IProposalTransitionArgs {
 	readonly id: string;
 	readonly to: string;
 	readonly reason: string;
+	readonly agent?: string | undefined;
 	/**
 	 * a00069 S7: skip the peer-review gate on `review → done`. Only for
 	 * emergency / host-approved bypass; default false.
@@ -449,6 +463,26 @@ const buildValidateRequiredEnvelope = () => ({
 	nextAction: 'bun run validate' as const,
 });
 
+const buildCodeError = (code: string, reason: string) => {
+	const envelope = {
+		ok: false as const,
+		error: {
+			code,
+			reason,
+		},
+	};
+	return {
+		content: [
+			{
+				type: 'text' as const,
+				text: JSON.stringify(envelope),
+			},
+		],
+		structuredContent: envelope,
+		isError: true,
+	};
+};
+
 export const runProposalTransition = async (
 	args: IProposalTransitionArgs,
 	options: IProposalTransitionToolOptions,
@@ -476,12 +510,12 @@ export const runProposalTransition = async (
 
 	const from = validateCurrentStatus(args.id, found);
 	if (typeof from !== 'string') return from;
+	const raw = await readFile(found.absPath, 'utf8').catch(() => '');
 
 	let finalTo = to;
 	let depId: string | undefined;
 
 	if (to === 'paused') {
-		const raw = await readFile(found.absPath, 'utf8');
 		const pausedReason = readFrontmatterField(raw, 'paused-reason');
 		if (!pausedReason || pausedReason.trim() === '') {
 			const PROPOSAL_ID_PATTERN = /[a-z]\d{5}/;
@@ -510,10 +544,52 @@ export const runProposalTransition = async (
 		}
 	}
 
-	const dfaRejection = validateTransition(args.id, from, finalTo);
-	if (dfaRejection !== null) return dfaRejection;
+	const regressionGuard = guardDoneToReviewRegression({
+		from,
+		to: finalTo,
+		force: args.force,
+		reason: args.reason,
+	});
+	if (!regressionGuard.ok) {
+		return buildCodeError(regressionGuard.code, regressionGuard.reason);
+	}
 
-	if (args.force !== true && (finalTo === 'review' || finalTo === 'done')) {
+	if (
+		args.reason.trim() === '' &&
+		!(from === 'done' && finalTo === 'review' && args.force === true)
+	) {
+		return toolError(
+			'reason is required',
+			'Call proposal_transition with a non-empty reason (audit trail).',
+		);
+	}
+
+	const isZeroWorkShortcut =
+		(from === 'ready' || from === 'pending') && finalTo === 'done';
+	const skipsDfa =
+		(from === 'done' && finalTo === 'review' && args.force === true) ||
+		isZeroWorkShortcut;
+	if (!skipsDfa) {
+		const dfaRejection = validateTransition(
+			args.id,
+			from === 'pending' ? 'ready' : from,
+			finalTo,
+		);
+		if (dfaRejection !== null) return dfaRejection;
+	}
+
+	if (isZeroWorkShortcut) {
+		const evidenceCheck = checkTransitionEvidence(args.validateEvidence);
+		if (!evidenceCheck.ok) {
+			return buildCodeError(evidenceCheck.code, evidenceCheck.reason);
+		}
+	}
+
+	if (
+		!isZeroWorkShortcut &&
+		args.force !== true &&
+		(finalTo === 'review' || finalTo === 'done')
+	) {
 		const validateEvidence = await resolveRecentValidateEvidence({
 			workspaceRoot: options.workspaceRoot,
 			validateEvidence: args.validateEvidence,
@@ -531,6 +607,18 @@ export const runProposalTransition = async (
 				structuredContent: envelope,
 				isError: true,
 			};
+		}
+	}
+
+	if (finalTo === 'done') {
+		const yamlBlock = extractYamlBlock(raw);
+		const frontmatter =
+			yamlBlock === null
+				? {}
+				: (parseFrontmatterBlock(yamlBlock) as Record<string, unknown>);
+		const shippedInGuard = guardShippedInPresent(frontmatter);
+		if (!shippedInGuard.ok) {
+			return buildCodeError(shippedInGuard.code, shippedInGuard.reason);
 		}
 	}
 
@@ -588,6 +676,18 @@ export const runProposalTransition = async (
 	);
 	if (guardRejection !== null) return guardRejection;
 
+	if (from === 'done' && finalTo === 'review' && args.force === true) {
+		await logForcedRegression({
+			workspaceRoot: options.workspaceRoot,
+			proposalId: args.id,
+			from,
+			to: finalTo,
+			reason: args.reason.trim(),
+			ts: new Date().toISOString(),
+			caller: buildForcedRegressionCaller(args.agent),
+		});
+	}
+
 	// a00069 S3: applyTransition rewrites self-`**Files**` paths and
 	// regenerates the index (when indexPathAbs is set) before returning.
 	const result = await applyTransition(
@@ -617,7 +717,7 @@ export const runProposalTransition = async (
 const validateTransitionArgs = (
 	args: IProposalTransitionArgs,
 ): ReturnType<typeof toolError> | null => {
-	if (args.reason.trim() === '') {
+	if (args.reason === '') {
 		return toolError(
 			'reason is required',
 			'Call proposal_transition with a non-empty reason (audit trail).',
@@ -640,8 +740,9 @@ const validateTransitionArgs = (
 const validateCurrentStatus = (
 	id: string,
 	found: ILocatedProposal,
-): IProposalStatus | ReturnType<typeof toolError> => {
+): IProposalTransitionSourceStatus | ReturnType<typeof toolError> => {
 	if (isKnownStatus(found.status)) return found.status;
+	if (found.status === 'pending') return 'pending';
 	return toolError(
 		`"${id}" has current status "${found.status}", which is not on the new state machine yet`,
 		'This proposal predates f00016 (legacy 8-status union) — it is migrated by S11/S12, not transitioned by this tool.',
@@ -720,7 +821,7 @@ const maybeApplyPlanClosureGuard = async (
 
 interface IApplyArgs {
 	readonly id: string;
-	readonly from: IProposalStatus;
+	readonly from: string;
 	readonly to: IProposalStatus;
 	readonly reason: string;
 }
@@ -876,6 +977,7 @@ export const buildProposalTransitionRegistration = (
 					id: z.string().min(1),
 					to: z.string().min(1),
 					reason: z.string().min(1),
+					agent: z.string().optional(),
 					force: z.boolean().optional(),
 					validateEvidence: z
 						.object({

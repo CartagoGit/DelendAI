@@ -28,6 +28,17 @@ const RECENT_VALIDATE = {
 	exitCode: 0,
 };
 
+const recentValidateWithLog = async (root: string) => {
+	const logPath = join(root, '.cache', 'validate.log');
+	await mkdir(dirname(logPath), { recursive: true });
+	await writeFile(logPath, 'ok\n', 'utf8');
+	return {
+		timestamp: new Date().toISOString(),
+		exitCode: 0,
+		logPath,
+	};
+};
+
 // A real `git mv` actually moves the file; the fake must too, or the tool's
 // post-move read (and every assertion on the new path) would silently pass
 // for the wrong reason (a no-op "success"). x00106 S2: the tool now asks
@@ -196,6 +207,9 @@ describe('proposal_transition', async () => {
 					id: `f200${from}${to}`.replace(/[^a-z0-9]/g, ''),
 					status: from,
 				};
+				if (to === 'done') {
+					frontmatter['shipped-in'] = '[abc123]';
+				}
 				if (to === 'paused') {
 					frontmatter['paused-reason'] = 'matrix test pause reason';
 				}
@@ -211,7 +225,8 @@ describe('proposal_transition', async () => {
 					},
 					options,
 				);
-				if (legal) {
+				const allowed = legal || (from === 'ready' && to === 'done');
+				if (allowed) {
 					expect(result.isError).toBeUndefined();
 				} else {
 					expect(result.isError).toBe(true);
@@ -250,6 +265,7 @@ describe('proposal_transition', async () => {
 					id,
 					kind,
 					status: 'review',
+					'shipped-in': '[ship123]',
 				});
 				const result = await runProposalTransition(
 					{
@@ -277,6 +293,7 @@ describe('proposal_transition', async () => {
 			await writeProposal(root, 'review', 'f70001-no-kind.md', {
 				id: 'f70001',
 				status: 'review',
+				'shipped-in': '[ship123]',
 			});
 			const result = await runProposalTransition(
 				{
@@ -300,6 +317,7 @@ describe('proposal_transition', async () => {
 				id: 'l70002',
 				kind: 'legacy',
 				status: 'review',
+				'shipped-in': '[ship123]',
 			});
 			const result = await runProposalTransition(
 				{
@@ -422,6 +440,7 @@ describe('proposal_transition', async () => {
 				'id: f90002',
 				'kind: feat',
 				'status: review',
+				'shipped-in: [ship123]',
 				'---',
 				'',
 				'## Slices',
@@ -494,6 +513,7 @@ describe('proposal_transition', async () => {
 				id: 'f90003',
 				status: 'review',
 				kind: 'feat',
+				'shipped-in': '[ship123]',
 			});
 			const result = await runProposalTransition(
 				{
@@ -513,6 +533,168 @@ describe('proposal_transition', async () => {
 				'utf8',
 			);
 			expect(moved).toContain('status: done');
+		});
+	});
+
+	describe('a00074 S1 guards', () => {
+		it('blocks done -> review without force', async () => {
+			await writeProposal(root, 'done', 'f91001-regress.md', {
+				id: 'f91001',
+				status: 'done',
+			});
+			const result = await runProposalTransition(
+				{ id: 'f91001', to: 'review', reason: 're-open' },
+				options,
+			);
+			expect(result.isError).toBe(true);
+			const body = JSON.parse(result.content[0]?.text ?? '{}');
+			expect(body.error.code).toBe('invalid-regression');
+		});
+
+		it('allows done -> review with force + reason and writes one audit line', async () => {
+			await writeProposal(root, 'done', 'f91002-regress.md', {
+				id: 'f91002',
+				status: 'done',
+			});
+			const result = await runProposalTransition(
+				{
+					id: 'f91002',
+					to: 'review',
+					reason: 're-open after post-ship audit',
+					force: true,
+					agent: 'agent-s1',
+				},
+				options,
+			);
+			expect(result.isError).toBeUndefined();
+			const log = await readFile(
+				join(root, '.cache', 'mcp-vertex', 'proposals-state.log'),
+				'utf8',
+			);
+			const lines = log.trim().split('\n');
+			expect(lines).toHaveLength(1);
+			const entry = JSON.parse(lines[0] ?? '{}');
+			expect(entry.proposalId).toBe('f91002');
+			expect(entry.from).toBe('done');
+			expect(entry.to).toBe('review');
+			expect(entry.caller.agent).toBe('agent-s1');
+		});
+
+		it('blocks done -> review with force and blank reason', async () => {
+			await writeProposal(root, 'done', 'f91003-regress.md', {
+				id: 'f91003',
+				status: 'done',
+			});
+			const result = await runProposalTransition(
+				{ id: 'f91003', to: 'review', reason: ' ', force: true },
+				options,
+			);
+			expect(result.isError).toBe(true);
+			const body = JSON.parse(result.content[0]?.text ?? '{}');
+			expect(body.error.code).toBe('invalid-regression');
+		});
+
+		it('keeps in-progress -> review allowed', async () => {
+			await writeProposal(root, 'in-progress', 'f91004-review.md', {
+				id: 'f91004',
+				status: 'in-progress',
+			});
+			const result = await runProposalTransition(
+				{
+					id: 'f91004',
+					to: 'review',
+					reason: 'ready for review',
+					validateEvidence: RECENT_VALIDATE,
+				},
+				options,
+			);
+			expect(result.isError).toBeUndefined();
+		});
+
+		it('blocks ready -> done without explicit evidence', async () => {
+			await writeProposal(root, 'ready', 'f91005-close.md', {
+				id: 'f91005',
+				status: 'ready',
+				'shipped-in': '[ship123]',
+			});
+			const result = await runProposalTransition(
+				{ id: 'f91005', to: 'done', reason: 'retro close' },
+				options,
+			);
+			expect(result.isError).toBe(true);
+			const body = JSON.parse(result.content[0]?.text ?? '{}');
+			expect(body.error.code).toBe('missing-evidence');
+		});
+
+		it('blocks ready -> done with stale evidence', async () => {
+			const logPath = join(root, '.cache', 'stale.log');
+			await mkdir(dirname(logPath), { recursive: true });
+			await writeFile(logPath, 'stale\n', 'utf8');
+			await writeProposal(root, 'ready', 'f91006-close.md', {
+				id: 'f91006',
+				status: 'ready',
+				'shipped-in': '[ship123]',
+			});
+			const result = await runProposalTransition(
+				{
+					id: 'f91006',
+					to: 'done',
+					reason: 'retro close',
+					validateEvidence: {
+						timestamp: '2026-07-20T00:00:00.000Z',
+						exitCode: 0,
+						logPath,
+					},
+				},
+				options,
+			);
+			expect(result.isError).toBe(true);
+			const body = JSON.parse(result.content[0]?.text ?? '{}');
+			expect(body.error.code).toBe('stale-evidence');
+		});
+
+		it('blocks done transitions when shipped-in is empty', async () => {
+			const validateEvidence = await recentValidateWithLog(root);
+			await writeProposal(root, 'ready', 'f91007-close.md', {
+				id: 'f91007',
+				status: 'ready',
+				'shipped-in': '[]',
+			});
+			const result = await runProposalTransition(
+				{
+					id: 'f91007',
+					to: 'done',
+					reason: 'retro close',
+					validateEvidence,
+				},
+				options,
+			);
+			expect(result.isError).toBe(true);
+			const body = JSON.parse(result.content[0]?.text ?? '{}');
+			expect(body.error.code).toBe('missing-shipped-in');
+		});
+
+		it('allows retroactive ready -> done when evidence + shipped-in are present', async () => {
+			const validateEvidence = await recentValidateWithLog(root);
+			await writeProposal(root, 'ready', 'a00067-retroactive.md', {
+				id: 'a00067',
+				status: 'ready',
+				kind: 'audit',
+				'shipped-in': '[ship123]',
+			});
+			const result = await runProposalTransition(
+				{
+					id: 'a00067',
+					to: 'done',
+					reason: 'retroactive close after prior shipment',
+					validateEvidence,
+				},
+				options,
+			);
+			expect(result.isError).toBeUndefined();
+			const body = JSON.parse(result.content[0]?.text ?? '{}');
+			expect(body.ok).toBe(true);
+			expect(body.to).toBe('done');
 		});
 	});
 });
@@ -559,6 +741,7 @@ describe('a00069 S7 peer-review gate on review → done', () => {
 			id: 'f00970',
 			status: 'review',
 			type: 'feat',
+			'shipped-in': '[ship123]',
 		});
 		const result = await runProposalTransition(
 			{
@@ -582,6 +765,13 @@ describe('a00069 S7 peer-review gate on review → done', () => {
 			'f00971-s7.md',
 			{ id: 'f00971', status: 'review', type: 'feat' },
 			[
+				'---',
+				'id: f00971',
+				'status: review',
+				'type: feat',
+				'shipped-in: [ship123]',
+				'---',
+				'',
 				'## Slices',
 				'',
 				'### S1 — work',
@@ -634,6 +824,13 @@ describe('a00069 S7 peer-review gate on review → done', () => {
 			'f00974-s7.md',
 			{ id: 'f00974', status: 'review', type: 'feat' },
 			[
+				'---',
+				'id: f00974',
+				'status: review',
+				'type: feat',
+				'shipped-in: [ship123]',
+				'---',
+				'',
 				'## Slices',
 				'',
 				'### S1 — work',
@@ -684,6 +881,7 @@ describe('a00069 S7 peer-review gate on review → done', () => {
 			id: 'f00972',
 			status: 'review',
 			type: 'feat',
+			'shipped-in': '[ship123]',
 		});
 		const result = await runProposalTransition(
 			{ id: 'f00972', to: 'done', reason: 'emergency', force: true },
@@ -700,6 +898,7 @@ describe('a00069 S7 peer-review gate on review → done', () => {
 			id: 'f00973',
 			status: 'review',
 			type: 'feat',
+			'shipped-in': '[ship123]',
 		});
 		const result = await runProposalTransition(
 			{
