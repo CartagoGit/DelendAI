@@ -346,3 +346,186 @@ export const checkOutdated = async (
 		truncated,
 	};
 };
+
+/**
+ * One node in a dependency tree. Children are the direct runtime deps of
+ * `name@version` (from the bun.lock `packages` block) or, for the
+ * root, the manifest's declared deps.
+ */
+export interface IDepTreeNode {
+	readonly name: string;
+	readonly version: string | null;
+	readonly section?: IDepSection;
+	readonly children: readonly IDepTreeNode[];
+}
+
+/** What the `deps_tree` tool returns. */
+export interface IDepTreeReport {
+	readonly manifest: string;
+	readonly lockfile: string;
+	readonly lockfileFound: boolean;
+	readonly root: IDepTreeNode;
+	readonly totalNodes: number;
+	readonly maxDepth: number;
+}
+
+interface IBunLock {
+	readonly lockfileVersion?: number;
+	readonly packages?: Record<string, readonly unknown[]>;
+	readonly workspaces?: Record<string, { name?: string }>;
+}
+
+interface IBunLockEntry {
+	readonly specifier: string; // "name@version"
+	readonly meta?: { dependencies?: Record<string, string> };
+}
+
+const parseBunLockEntry = (entry: readonly unknown[]): IBunLockEntry | null => {
+	if (entry.length < 1 || typeof entry[0] !== 'string') return null;
+	const specifier = entry[0];
+	const meta = entry[2];
+	if (typeof meta !== 'object' || meta === null) {
+		return { specifier };
+	}
+	const deps = (meta as { dependencies?: unknown }).dependencies;
+	return {
+		specifier,
+		meta: {
+			...(typeof deps === 'object' && deps !== null
+				? { dependencies: deps as Record<string, string> }
+				: {}),
+		},
+	};
+};
+
+const splitSpecifier = (
+	specifier: string,
+): { name: string; version: string | null } => {
+	const at = specifier.lastIndexOf('@');
+	if (at <= 0) return { name: specifier, version: null };
+	return { name: specifier.slice(0, at), version: specifier.slice(at + 1) };
+};
+
+/**
+ * Build a dependency tree for the manifest. The first level is the
+ * declared deps (from the manifest); each subsequent level comes from
+ * the bun.lock `packages` block. Pure over the workspace root + injected
+ * manifest/lockfile paths. Cycles are broken by visited-set guard. The
+ * tree is capped at `maxDepth` (default 6) to keep a single tool call
+ * bounded — deep transitive deps are still counted in `totalNodes`.
+ */
+export const buildDepTree = async (
+	rootAbs: string,
+	manifestRel = 'package.json',
+	lockfileRel = 'bun.lock',
+	maxDepth = 6,
+): Promise<IDepTreeReport> => {
+	const containedManifest = resolveWorkspaceContained(rootAbs, manifestRel);
+	const containedLock = resolveWorkspaceContained(rootAbs, lockfileRel);
+
+	const inventory = await listDeps(rootAbs, manifestRel);
+
+	let lockfile: IBunLock = {};
+	let lockfileFound = false;
+	if (containedLock.ok) {
+		try {
+			// bun.lock uses JSON5 (trailing commas, unquoted keys) — strip the
+			// trailing commas that strict JSON rejects, then parse. Errors are
+			// swallowed: a malformed lockfile still reports `lockfileFound: true`
+			// and the tool falls back to manifest-only data.
+			const raw = await readFile(containedLock.abs, 'utf8');
+			const stripped = raw.replace(/,(\s*[}\]])/gu, '$1');
+			lockfile = JSON.parse(stripped) as IBunLock;
+			lockfileFound = true;
+		} catch {
+			// File exists but couldn't be read or parsed — keep lockfileFound
+			// false (the caller can still report the manifest-only tree).
+			lockfile = {};
+		}
+	}
+
+	const packages = lockfile.packages ?? {};
+	const packageDeps = new Map<
+		string,
+		readonly { name: string; version: string | null }[]
+	>();
+	for (const [nameKey, rawEntry] of Object.entries(packages)) {
+		if (!Array.isArray(rawEntry) || rawEntry.length === 0) continue;
+		const entry = parseBunLockEntry(rawEntry);
+		if (entry === null) continue;
+		const meta = entry.meta?.dependencies ?? {};
+		const children: { name: string; version: string | null }[] = [];
+		for (const childName of Object.keys(meta)) {
+			const childEntry = packages[childName];
+			let childVersion: string | null = null;
+			if (Array.isArray(childEntry) && childEntry.length > 0) {
+				const parsed = parseBunLockEntry(childEntry);
+				if (parsed !== null) {
+					childVersion = splitSpecifier(parsed.specifier).version;
+				}
+			}
+			children.push({ name: childName, version: childVersion });
+		}
+		packageDeps.set(nameKey, children);
+	}
+
+	const visited = new Set<string>();
+	const buildChildren = (
+		name: string,
+		version: string | null,
+		section: IDepSection | undefined,
+		depth: number,
+	): IDepTreeNode => {
+		const key = `${name}@${version ?? '?'}`;
+		const children: IDepTreeNode[] = [];
+		if (depth < maxDepth && !visited.has(key)) {
+			visited.add(key);
+			const direct = packageDeps.get(name) ?? [];
+			for (const c of direct) {
+				children.push(
+					buildChildren(c.name, c.version, undefined, depth + 1),
+				);
+			}
+			visited.delete(key);
+		}
+		const node: IDepTreeNode =
+			section === undefined
+				? { name, version, children }
+				: { name, version, section, children };
+		return node;
+	};
+
+	const rootChildren: IDepTreeNode[] = inventory.deps.map((dep) =>
+		buildChildren(dep.name, null, dep.section, 1),
+	);
+
+	let totalNodes = 0;
+	let maxDepthSeen = 0;
+	const walk = (node: IDepTreeNode, depth: number): void => {
+		totalNodes += 1;
+		if (depth > maxDepthSeen) maxDepthSeen = depth;
+		for (const c of node.children) walk(c, depth + 1);
+	};
+	const root: IDepTreeNode = {
+		name: inventory.manifest === '' ? rootAbs : 'manifest',
+		version: null,
+		children: rootChildren,
+	};
+	for (const c of rootChildren) walk(c, 1);
+
+	// The containedManifest check above reads a contained abs; this builds
+	// a presentable manifest path string for the response.
+	const manifestDisplay = containedManifest.ok
+		? containedManifest.rel
+		: manifestRel;
+	const lockfileDisplay = containedLock.ok ? containedLock.rel : lockfileRel;
+
+	return {
+		manifest: manifestDisplay,
+		lockfile: lockfileDisplay,
+		lockfileFound,
+		root,
+		totalNodes,
+		maxDepth: maxDepthSeen,
+	};
+};
