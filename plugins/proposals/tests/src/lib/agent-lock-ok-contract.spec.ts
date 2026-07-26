@@ -50,7 +50,7 @@ describe('agent_lock ok contract (a00069 S8)', () => {
 		expect(body.session.claims).toBe(1);
 		expect(body.session.releases).toBe(0);
 		expect(body.session.imbalance).toBe(1);
-		expect(getAgentLockSessionBalance().imbalance).toBe(1);
+		expect((await getAgentLockSessionBalance()).imbalance).toBe(1);
 	});
 
 	it('release success decrements imbalance', async () => {
