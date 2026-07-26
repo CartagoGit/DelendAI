@@ -25,7 +25,7 @@ describe('PRESET_CATALOG', async () => {
 		// lean: 4 members, independent essentials preset
 		expect(PRESET_CATALOG[1]?.members.length).toBe(4);
 		// standard: adds 10 on top of minimal (f00115 added test-policy, f00123 added refactor, f00128 S1 added database, f00132 S1 added diagram, f00133 added container)
-		expect(PRESET_CATALOG[2]?.members.length).toBe(10);
+		expect(PRESET_CATALOG[2]?.members.length).toBe(11);
 		// swarm: adds 7 on top of standard (f00121 S3 added forge)
 		expect(PRESET_CATALOG[3]?.members.length).toBe(7);
 		// full: adds 2 host-only + api + changelog on top of swarm
@@ -142,6 +142,7 @@ describe('resolvePresetMembers', async () => {
 			'search',
 			'memory',
 			'docs',
+			'i18n',
 			'rules',
 			'quality',
 			'refactor',
@@ -151,8 +152,8 @@ describe('resolvePresetMembers', async () => {
 			'container',
 			'diagram',
 		]);
-		expect(resolvePresetMembers('swarm').length).toBe(19);
-		expect(resolvePresetMembers('full').length).toBe(23);
+		expect(resolvePresetMembers('swarm').length).toBe(20);
+		expect(resolvePresetMembers('full').length).toBe(24);
 		expect(resolvePresetMembers('swarm')).not.toContain('lean');
 	});
 
@@ -170,7 +171,7 @@ describe('resolvePresetMembers', async () => {
 		expect(resolved).toContain('database');
 		expect(resolved).toContain('container');
 		expect(resolved).toContain('diagram');
-		expect(resolved.length).toBe(12);
+		expect(resolved.length).toBe(13);
 	});
 
 	it('resolves swarm = standard + proposals/notification/logs/status-marker/test-convention', async () => {

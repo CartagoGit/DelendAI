@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
+import { extractUsedKeys } from '../../../src/lib/keys/extract-used-keys';
 import { checkLocales, flattenKeys } from '../../../src/lib/i18n/check-i18n';
 import type { ILocaleFile } from '../../../src/lib/contracts/interfaces/i18n.interface';
 
@@ -48,5 +49,32 @@ describe('checkLocales', () => {
 				{ locale: 'es', data: { hi: 'Hola {n}' } },
 			]),
 		).toEqual([]);
+	});
+
+	it('flags unused locale keys when source usage is provided', () => {
+		const findings = checkLocales(
+			[
+				{ locale: 'en', data: { used: 'Used', stale: 'Old' } },
+				{ locale: 'es', data: { used: 'Usado', stale: 'Viejo' } },
+			],
+			{ usedKeys: ['used'] },
+		);
+		expect(
+			findings.filter((finding) => finding.ruleId === 'unused-key'),
+		).toHaveLength(2);
+	});
+});
+
+describe('extractUsedKeys', () => {
+	it('extracts keys from t, i18n.t, and __ calls', () => {
+		expect([
+			...extractUsedKeys([
+				{
+					path: 'src/demo.ts',
+					content:
+						"t('alpha.one'); i18n.t(\"beta.two\"); __('gamma.three');",
+				},
+			]),
+		]).toEqual(['alpha.one', 'beta.two', 'gamma.three']);
 	});
 });

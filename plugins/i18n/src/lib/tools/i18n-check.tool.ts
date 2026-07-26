@@ -13,6 +13,7 @@ import {
 } from '@mcp-vertex/core/public';
 
 import type { II18nCheckToolOptions } from '../contracts/interfaces/i18n.interface';
+import { extractUsedKeys } from '../keys/extract-used-keys';
 import { checkLocales } from '../i18n/check-i18n';
 import { realI18nDeps } from '../i18n/real-deps';
 
@@ -35,14 +36,14 @@ export const buildI18nCheckRegistration = (
 ): IToolRegistration => ({
 	id: 'i18n_check',
 	summary:
-		'Flag missing keys + placeholder mismatches across locale JSON files. Offline.',
+		'Flag missing keys, unused keys, and placeholder mismatches across locale JSON files. Offline.',
 	tags: ['i18n', 'quality'],
 	register: async (server) => {
 		server.registerTool(
 			`${options.namespacePrefix}_i18n_check`,
 			{
 				description:
-					'Check locale JSON files for consistency: keys present in some locales but missing in others (missing-key, medium) and interpolation-placeholder mismatches for the same key (placeholder-mismatch, medium). Nested keys are flattened (a.b.c). Pass `localesDir` (default "locales"). Offline, read-only.',
+					'Check locale JSON files for consistency: keys present in some locales but missing in others (missing-key, medium), locale keys never referenced by the scanned source files (unused-key, low), and interpolation-placeholder mismatches for the same key (placeholder-mismatch, medium). Nested keys are flattened (a.b.c). Pass `localesDir` (default "locales"). Offline, read-only.',
 				inputSchema: z.object({ localesDir: z.string().optional() }),
 				outputSchema: z.object({
 					localesDir: z.string(),
@@ -64,7 +65,14 @@ export const buildI18nCheckRegistration = (
 					options.deps ??
 					realI18nDeps(options.workspaceRootAbs, localesDir);
 				const locales = await deps.listLocales();
-				const findings = checkLocales(locales);
+				const sourceFiles = (await deps.listSourceFiles?.()) ?? [];
+				const usedKeys =
+					sourceFiles.length > 0
+						? extractUsedKeys(sourceFiles)
+						: undefined;
+				const findings = checkLocales(locales, {
+					...(usedKeys !== undefined ? { usedKeys } : {}),
+				});
 				return toolJson({
 					localesDir,
 					locales: locales.map((locale) => locale.locale),

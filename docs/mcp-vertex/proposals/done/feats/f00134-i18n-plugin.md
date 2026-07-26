@@ -2,7 +2,7 @@
 id: f00134
 kind: feat
 title: i18n plugin — translation key extraction, missing/unused detection and interpolation validation (promotes internal i18n tooling)
-status: ready
+status: done
 date: 2026-07-23
 track: plugin+i18n+quality
 ---

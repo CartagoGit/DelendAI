@@ -869,6 +869,31 @@ export interface McpVertexI18nI18nCheckOutput {
 	worst: string;
 }
 
+export interface McpVertexI18nI18nValidateOutput {
+	localesDir: string;
+	sourceLocale: string;
+	locales: string[];
+	findings: Array<{
+		ruleId: string;
+		severity: "critical" | "high" | "medium" | "low" | "info";
+		message: string;
+		fix?: string;
+		location?: {
+			file: string;
+			line?: number;
+			endLine?: number;
+		};
+	}>;
+	summary: {
+		critical: number;
+		high: number;
+		medium: number;
+		low: number;
+		info: number;
+	};
+	worst: string;
+}
+
 export interface McpVertexInitConfigOutput {
 	ok: boolean;
 	error?: {
@@ -3203,6 +3228,7 @@ export interface McpVertexToolOutputs {
 	"mcp-vertex_git_status": McpVertexGitStatusOutput;
 	"mcp-vertex_git_worktree": McpVertexGitWorktreeOutput;
 	"mcp-vertex_i18n_i18n_check": McpVertexI18nI18nCheckOutput;
+	"mcp-vertex_i18n_i18n_validate": McpVertexI18nI18nValidateOutput;
 	"mcp-vertex_init_config": McpVertexInitConfigOutput;
 	"mcp-vertex_knowledge": McpVertexKnowledgeOutput;
 	"mcp-vertex_link-check_link_check": McpVertexLinkCheckLinkCheckOutput;

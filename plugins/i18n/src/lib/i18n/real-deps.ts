@@ -4,12 +4,66 @@
  * missing dir or unparseable file is skipped).
  */
 import { readFile, readdir } from 'node:fs/promises';
-import { isAbsolute, join } from 'node:path';
+import { isAbsolute, join, relative } from 'node:path';
 
 import type {
 	II18nScanDeps,
 	ILocaleFile,
+	ISourceFile,
 } from '../contracts/interfaces/i18n.interface';
+
+const SOURCE_EXTENSIONS = new Set([
+	'.ts',
+	'.tsx',
+	'.js',
+	'.jsx',
+	'.mjs',
+	'.cjs',
+	'.astro',
+	'.md',
+]);
+
+const IGNORED_DIRS = new Set([
+	'.git',
+	'.idea',
+	'.turbo',
+	'.vscode',
+	'build',
+	'dist',
+	'docs-api',
+	'node_modules',
+]);
+
+const hasSourceExtension = (fileName: string): boolean =>
+	[...SOURCE_EXTENSIONS].some((extension) => fileName.endsWith(extension));
+
+const readSourceFiles = async (
+	workspaceRootAbs: string,
+	dir: string,
+): Promise<readonly ISourceFile[]> => {
+	const entries = await readdir(dir, { withFileTypes: true }).catch(() => []);
+	const out: ISourceFile[] = [];
+	for (const entry of entries) {
+		const absolutePath = join(dir, entry.name);
+		if (entry.isDirectory()) {
+			if (IGNORED_DIRS.has(entry.name)) continue;
+			out.push(
+				...(await readSourceFiles(workspaceRootAbs, absolutePath)),
+			);
+			continue;
+		}
+		if (!entry.isFile() || !hasSourceExtension(entry.name)) continue;
+		const content = await readFile(absolutePath, 'utf8').catch(
+			() => undefined,
+		);
+		if (content === undefined) continue;
+		out.push({
+			path: relative(workspaceRootAbs, absolutePath),
+			content,
+		});
+	}
+	return out;
+};
 
 /** Production i18n deps: read `*.json` locale files from `localesDir`. */
 export const realI18nDeps = (
@@ -42,4 +96,6 @@ export const realI18nDeps = (
 		}
 		return out;
 	},
+	listSourceFiles: async () =>
+		readSourceFiles(workspaceRootAbs, workspaceRootAbs),
 });
