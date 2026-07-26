@@ -1,12 +1,17 @@
+import { z } from 'zod';
+
 import { definePlugin } from '@mcp-vertex/core/public';
 
 import { SKILLS_PACK_SKILLS } from './skills/catalog';
+
+const OptionsSchema = z.object({});
 
 export default definePlugin({
 	name: 'skills-pack',
 	version: '0.1.0',
 	describe:
 		'Skills pack: dev (debugging, performance, pr-review), safety (security-hardening, incident-response), and migration playbooks. Pure guidance, no execution.',
+	optionsSchema: OptionsSchema,
 	register() {
 		return {
 			skills: SKILLS_PACK_SKILLS.map((skill) => ({
