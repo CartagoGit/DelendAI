@@ -42,12 +42,20 @@ Values are redacted (presence only); nothing is written.
 
 ### S1 — schema + presence/type validation
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/env/src/lib/validate/`, `plugins/env/src/lib/tools/env-check.tool.ts`
 - **Gate**: bun run validate
+- **Commit**: `feat(env): add schema validation to env_check (f00135 S1)`
 
 `env_check` validates the env snapshot against a declared schema → findings
 (missing/extra/mistyped). Pure over injected env; values redacted.
+
+Delivered:
+- `env-schema.ts` — `IEnvSchema`, `IEnvVarSchema`, `EnvType`, `schemaKeys`, `schemaRequired`, `ENV_SCHEMA` zod parser.
+- `check-schema.ts` — `checkSchema(parsed, schema)` + helpers `validateValue`, `validateEntry`; emits 4 normalized finding categories (`env/missing-required`, `env/missing-typed`, `env/extra-undeclared`, `env/mistyped-value`).
+- `env-check.tool.ts` — accepts optional `schema` input, threads through `runEnvCheckWithSchema`.
+- `IEnvEntry` extended with `value: string`; `parseEnv` populates it.
+- 29 new tests (15 schema + 14 check-schema) all pass; 35/35 env tests, 1016/1016 core tests.
 
 ### S2 — requirements map (var → plugin/provider)
 
