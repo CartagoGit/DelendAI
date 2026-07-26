@@ -2,7 +2,7 @@
 id: f00138
 kind: feat
 title: prompts pack — explain-code, write-tests-for, review-diff, generate-docstrings, security-audit-file, optimize-this (project-aware MCP prompts)
-status: ready
+status: done
 date: 2026-07-23
 track: plugin+prompts+dx
 ---
