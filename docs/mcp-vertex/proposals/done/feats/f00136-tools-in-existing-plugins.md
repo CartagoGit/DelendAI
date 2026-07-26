@@ -2,9 +2,12 @@
 id: f00136
 kind: feat
 title: tools-in-existing-plugins — deps_audit/outdated/licenses, git_pr/bisect, quality_coverage/complexity, search_symbol/references, docs_generate
-status: ready
+status: done
 date: 2026-07-23
 track: plugin+tools+dx
+shipped-in:
+    - f0fa60e7 # feat(f00136): add S2/S3 plugin tools
+    - dcc87ca5 # docs(f00136): mark all 3 slices done
 ---
 
 # f00136 — tools in existing plugins
