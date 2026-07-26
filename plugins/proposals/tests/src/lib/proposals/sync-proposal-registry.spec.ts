@@ -147,10 +147,10 @@ describe('syncProposalRegistry (entry point)', async () => {
 		);
 	});
 
-	// a00076 S1: the registry scanner must include proposals under
+	// f00076 S1: the registry scanner must include proposals under
 	// `legacy/closed/<kind>/` and tag them with `archived: true` while
 	// keeping the original `status: done` in the frontmatter projection.
-	describe('legacy/closed/ archive (a00076 S1)', () => {
+	describe('legacy/closed/ archive (f00076 S1)', () => {
 		it('indexes a proposal under legacy/closed/feats with archived: true', async () => {
 			await seed(root, 'legacy/closed/feats', 'f910-archived-alpha.md', {
 				id: 'f910',

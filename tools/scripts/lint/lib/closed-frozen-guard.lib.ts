@@ -1,5 +1,5 @@
 /**
- * closed-frozen-guard.lib.ts — a00076 S3.
+ * closed-frozen-guard.lib.ts — f00076 S3.
  *
  * Pure functions that detect drift in `legacy/closed/<kind>/`. Drift
  * means an archived proposal's frontmatter or body has changed since

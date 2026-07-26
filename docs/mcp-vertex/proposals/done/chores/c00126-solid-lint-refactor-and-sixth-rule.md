@@ -126,7 +126,7 @@ mechanical instead of human-perceived.
 - acceptance:
   - "`bun tools/scripts/proposals/sync-proposal-registry.script.ts` exit 0 with 0 errors."
   - "`bun run lint:bootstrap-canonical` exit 0 (no regression to the bootstrap anchor / H2 order)."
-  - "`bun run lint:proposals` either exit 0 OR reports ONLY the pre-existing 3 duplicates (`a00074`, `f00123`, `f00128`) introduced by a00076 S2 (NOT by c00126)."
+  - "`bun run lint:proposals` either exit 0 OR reports ONLY the pre-existing 3 duplicates (`a00074`, `f00123`, `f00128`) introduced by f00076 S2 (NOT by c00126)."
   - "Single atomic commit per slice (S1..S5) with conventional message; close commit for S6."
   - "Final HEAD log shows 6 commits: 5 slice commits + 1 close commit."
 

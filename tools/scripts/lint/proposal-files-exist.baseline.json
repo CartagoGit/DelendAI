@@ -17,7 +17,7 @@
 	"docs/mcp-vertex/proposals/done/audits/a00044-28-06-2026-copilot-minimax-m3-system-fragility-and-robustness-gaps.md": 3,
 	"docs/mcp-vertex/proposals/done/audits/a00040-25-06-2026-copilot-minimax-m3-repositorio.md": 7,
 	"docs/mcp-vertex/proposals/done/audits/a00027-21-06-2026-antigravity-gemini-3-5-flash-repositorio.md": 1,
-	"docs/mcp-vertex/proposals/done/audits/a00074-state-machine-hardening-reject-done-review-regression-same-agent-peer-review-bypass-and-zero-work-ready-done.md": 4,
+	"docs/mcp-vertex/proposals/done/audits/a00074-state-machine-hardening-reject-done-review-regression-same-agent-peer-review-bypass-and-zero-work-ready-done.md": 2,
 	"docs/mcp-vertex/proposals/done/audits/a00025-21-06-2026-copilot-minimax-m3-repositorio.md": 5,
 	"docs/mcp-vertex/proposals/done/audits/a00031-21-06-2026-antigravity-gemini-3-5-flash-repositorio.md": 1,
 	"docs/mcp-vertex/proposals/done/audits/a00026-21-06-2026-claude-code-sonnet-4-6-auditoria-unificada.md": 1,
@@ -71,7 +71,6 @@
 	"docs/mcp-vertex/proposals/done/chores/c00075-proposal-guardian-cannot-pause-without-user-consent.md": 4,
 	"docs/mcp-vertex/proposals/done/plans/q00001-plan-of-plans.md": 1,
 	"docs/mcp-vertex/proposals/done/refactors/r00001-harden-catchall-outputschemas-jsdoc-boot-only-en-primitivas-sync-del-core.md": 2,
-	"docs/mcp-vertex/proposals/done/refactors/r00011-auto-config-packs.md": 2,
 	"docs/mcp-vertex/proposals/done/refactors/r00002-harden-catchall-output-schemas.md": 5,
 	"docs/mcp-vertex/proposals/done/refactors/r00003-apply-solid-on-a00036-findings.md": 3
 }

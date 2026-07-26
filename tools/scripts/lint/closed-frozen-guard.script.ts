@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
 /**
- * closed-frozen-guard.script.ts — a00076 S3.
+ * closed-frozen-guard.script.ts — f00076 S3.
  *
  * CI lint that enforces the `legacy/closed/<kind>/` freeze: any drift
  * since archival is reported and the script exits 1, blocking
@@ -14,7 +14,7 @@
  *   - prints one line per drift, exits 1 if any drift was found.
  *
  * Why a sidecar for slice snapshot rather than diffing commit history:
- *   - The reaper runs in the live worktree (a00076 S2). The sidecar
+ *   - The reaper runs in the live worktree (f00076 S2). The sidecar
  *     captures slice statuses at that exact moment so the guard does
  *     not depend on git log plumbing (which breaks in shallow clones).
  *   - Sidecar files are tracked in git (`.archive-snapshot.json` is a

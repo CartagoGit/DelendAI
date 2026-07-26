@@ -135,3 +135,28 @@ describe('x00153 S7 — kinds.ts doc comment claims 8-level taxonomy', () => {
 		expect(SEVERITY_RANK.debug).toBe(7);
 	});
 });
+
+describe('x00153 S7 — syslog 8-level, not 7-level', () => {
+	it('LOG_SEVERITIES has exactly 8 entries (RFC 5424 §6.2.1)', () => {
+		expect(LOG_SEVERITIES).toHaveLength(8);
+	});
+
+	it('LOG_SEVERITIES covers all 8 named levels alphabetically', () => {
+		expect([...LOG_SEVERITIES].sort()).toEqual([
+			'alert',
+			'critical',
+			'debug',
+			'emergency',
+			'error',
+			'info',
+			'notice',
+			'warning',
+		]);
+	});
+
+	it('SEVERITY_RANK covers the same 8 levels as LOG_SEVERITIES', () => {
+		expect(Object.keys(SEVERITY_RANK).sort()).toEqual(
+			[...LOG_SEVERITIES].sort(),
+		);
+	});
+});

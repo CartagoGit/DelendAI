@@ -1,5 +1,5 @@
 /**
- * reap-legacy-proposals.lib.ts — a00076 S2.
+ * reap-legacy-proposals.lib.ts — f00076 S2.
  *
  * Pure functions that decide whether a `done/<kind>/<file>.md` proposal is
  * vintage enough to reap into `legacy/closed/<kind>/<file>.md`, and

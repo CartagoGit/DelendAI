@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
 /**
- * closed-frozen-guard.script.spec.ts — a00076 S3.
+ * closed-frozen-guard.script.spec.ts — f00076 S3.
  *
  * Pure-function coverage of the four drift kinds. Each test feeds
  * synthetic markdown + frontmatter + mtime into `detectFrozenDrift`

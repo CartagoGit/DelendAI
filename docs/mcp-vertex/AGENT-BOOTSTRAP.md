@@ -109,7 +109,7 @@ the equivalent and equally cheap.
   this. Re-reading unchanged content is the #1 token waste.
 
 - **Archived proposals are frozen.** `legacy/closed/<kind>/` is the
-  reaper's destination (a00076). Reaped proposals stay indexed (with
+  reaper's destination (f00076). Reaped proposals stay indexed (with
   `archived: true` in the registry), keep their `status: done`, and
   **must not** be transitioned, edited, or have their slice statuses
   changed. The `lint:closed-frozen-guard` script enforces this in
