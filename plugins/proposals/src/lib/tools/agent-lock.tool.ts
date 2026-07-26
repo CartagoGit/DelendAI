@@ -229,7 +229,7 @@ export const buildAgentLockRegistration = (
 								typeof base.ok === 'boolean'
 									? base.ok
 									: res.isError !== true && !blocked;
-							const balance = getAgentLockSessionBalance();
+							const balance = await getAgentLockSessionBalance();
 							const session =
 								typeof base.session === 'object' &&
 								base.session !== null

@@ -103,18 +103,20 @@ let lastKnownSessionBalance: ISessionBalance = {
 	imbalance: 0,
 };
 
-export const getAgentLockSessionBalance = (): {
+export const getAgentLockSessionBalance = async (): Promise<{
 	readonly claims: number;
 	readonly releases: number;
 	readonly imbalance: number;
-} => {
-	lastKnownSessionBalance = readSessionBalanceSync(lastSessionWorkspaceRoot);
+}> => {
+	lastKnownSessionBalance = await readSessionBalance(
+		lastSessionWorkspaceRoot,
+	);
 	return lastKnownSessionBalance;
 };
 
-export const resetAgentLockSessionBalance = (): void => {
+export const resetAgentLockSessionBalance = async (): Promise<void> => {
 	lastKnownSessionBalance = { claims: 0, releases: 0, imbalance: 0 };
-	resetSessionBalance();
+	await resetSessionBalance();
 };
 
 const resolveSessionWorkspaceRoot = (
