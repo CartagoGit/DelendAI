@@ -1042,6 +1042,8 @@ export interface McpVertexLogsCorrelateOutput {
 		agent: string | null;
 		taskId: string | null;
 		outcome: "ok" | "failed" | "timed-out" | "cancelled" | "dead" | "idle" | "unknown";
+		severity: "debug" | "info" | "notice" | "warning" | "error" | "critical" | "alert" | "emergency";
+		incidentType: string | null;
 		files: string[];
 		summary: string;
 		meta: Record<string, unknown>;
@@ -1062,12 +1064,47 @@ export interface McpVertexLogsErrorsTailOutput {
 		agent: string | null;
 		taskId: string | null;
 		outcome: "ok" | "failed" | "timed-out" | "cancelled" | "dead" | "idle" | "unknown";
+		severity: "debug" | "info" | "notice" | "warning" | "error" | "critical" | "alert" | "emergency";
+		incidentType: string | null;
 		files: string[];
 		summary: string;
 		meta: Record<string, unknown>;
 	}>;
 	oldestTs: string | null;
 	newestTs: string | null;
+}
+
+export interface McpVertexLogsIncidentsOutput {
+	incidents: Array<{
+		incidentType: string;
+		toolName: string;
+		count: number;
+		distinctAgents: number;
+		firstSeen: string;
+		lastSeen: string;
+		sampleSummary: string;
+		sampleError: string;
+		recentEvents: Array<{
+			ts: string;
+			kind: string;
+			agent: string | null;
+			taskId: string | null;
+			outcome: "ok" | "failed" | "timed-out" | "cancelled" | "dead" | "idle" | "unknown";
+			severity: "debug" | "info" | "notice" | "warning" | "error" | "critical" | "alert" | "emergency";
+			incidentType: string | null;
+			files: string[];
+			summary: string;
+			meta: Record<string, unknown>;
+		}>;
+	}>;
+	totalIncidents: number;
+}
+
+export interface McpVertexLogsLogOutput {
+	ok: true;
+	ts: string;
+	incidentType: string;
+	severity: "debug" | "info" | "notice" | "warning" | "error" | "critical" | "alert" | "emergency";
 }
 
 export interface McpVertexLogsQueryOutput {
@@ -1077,6 +1114,8 @@ export interface McpVertexLogsQueryOutput {
 		agent: string | null;
 		taskId: string | null;
 		outcome: "ok" | "failed" | "timed-out" | "cancelled" | "dead" | "idle" | "unknown";
+		severity: "debug" | "info" | "notice" | "warning" | "error" | "critical" | "alert" | "emergency";
+		incidentType: string | null;
 		files: string[];
 		summary: string;
 		meta: Record<string, unknown>;
@@ -1090,6 +1129,23 @@ export interface McpVertexLogsRedactTestOutput {
 	redacted: string;
 }
 
+export interface McpVertexLogsSearchOutput {
+	events: Array<{
+		ts: string;
+		kind: string;
+		agent: string | null;
+		taskId: string | null;
+		outcome: "ok" | "failed" | "timed-out" | "cancelled" | "dead" | "idle" | "unknown";
+		severity: "debug" | "info" | "notice" | "warning" | "error" | "critical" | "alert" | "emergency";
+		incidentType: string | null;
+		files: string[];
+		summary: string;
+		meta: Record<string, unknown>;
+	}>;
+	matched: number;
+	hasMore: boolean;
+}
+
 export interface McpVertexLogsSubscribeOutput {
 	events: Array<{
 		ts: string;
@@ -1097,6 +1153,8 @@ export interface McpVertexLogsSubscribeOutput {
 		agent: string | null;
 		taskId: string | null;
 		outcome: "ok" | "failed" | "timed-out" | "cancelled" | "dead" | "idle" | "unknown";
+		severity: "debug" | "info" | "notice" | "warning" | "error" | "critical" | "alert" | "emergency";
+		incidentType: string | null;
 		files: string[];
 		summary: string;
 		meta: Record<string, unknown>;
@@ -1111,6 +1169,8 @@ export interface McpVertexLogsTailOutput {
 		agent: string | null;
 		taskId: string | null;
 		outcome: "ok" | "failed" | "timed-out" | "cancelled" | "dead" | "idle" | "unknown";
+		severity: "debug" | "info" | "notice" | "warning" | "error" | "critical" | "alert" | "emergency";
+		incidentType: string | null;
 		files: string[];
 		summary: string;
 		meta: Record<string, unknown>;
@@ -2528,6 +2588,11 @@ export interface McpVertexProposalsStateHealthOutput {
 			count: number;
 			taskIds: string[];
 		}[];
+		sessionBalance: {
+			claims: number;
+			releases: number;
+			imbalance: number;
+		};
 		sessionClaims: number;
 		sessionReleases: number;
 		sessionImbalance: number;
@@ -2581,6 +2646,11 @@ export interface McpVertexProposalsStateRepairOutput {
 				count: number;
 				taskIds: string[];
 			}[];
+			sessionBalance: {
+				claims: number;
+				releases: number;
+				imbalance: number;
+			};
 			sessionClaims: number;
 			sessionReleases: number;
 			sessionImbalance: number;
@@ -3378,8 +3448,11 @@ export interface McpVertexToolOutputs {
 	"mcp-vertex_link-check_link_check": McpVertexLinkCheckLinkCheckOutput;
 	"mcp-vertex_logs_correlate": McpVertexLogsCorrelateOutput;
 	"mcp-vertex_logs_errors_tail": McpVertexLogsErrorsTailOutput;
+	"mcp-vertex_logs_incidents": McpVertexLogsIncidentsOutput;
+	"mcp-vertex_logs_log": McpVertexLogsLogOutput;
 	"mcp-vertex_logs_query": McpVertexLogsQueryOutput;
 	"mcp-vertex_logs_redact_test": McpVertexLogsRedactTestOutput;
+	"mcp-vertex_logs_search": McpVertexLogsSearchOutput;
 	"mcp-vertex_logs_subscribe": McpVertexLogsSubscribeOutput;
 	"mcp-vertex_logs_tail": McpVertexLogsTailOutput;
 	"mcp-vertex_memory_checkpoint_packet": McpVertexMemoryCheckpointPacketOutput;

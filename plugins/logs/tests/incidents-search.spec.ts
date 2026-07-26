@@ -254,7 +254,9 @@ describe('logs_incidents (f00153 S3)', () => {
 			sampleError: string;
 			recentEvents: Array<{ kind: string }>;
 		}>;
-		expect(result.totalIncidents).toBe(2);
+		// Default minCount=2 drops the singleton quality_run cluster; the
+		// 3-event lock-conflict cluster survives.
+		expect(result.totalIncidents).toBe(1);
 		const top = incidents[0];
 		expect(top).toBeDefined();
 		expect(top?.toolName).toBe('proposals_agent_lock');
@@ -265,19 +267,29 @@ describe('logs_incidents (f00153 S3)', () => {
 		expect(top?.recentEvents.length).toBeLessThanOrEqual(5);
 	});
 
-	it('honors minCount to drop singleton clusters', async () => {
+	it('honors minCount to drop the surviving cluster as well', async () => {
 		const result = structured(
 			await handlers.get('logs_incidents')?.({ minCount: 4 }),
 		);
 		expect(result.totalIncidents).toBe(0);
 	});
 
+	it('lowering minCount to 1 surfaces the singleton quality_run cluster', async () => {
+		const result = structured(
+			await handlers.get('logs_incidents')?.({ minCount: 1 }),
+		);
+		expect(result.totalIncidents).toBe(2);
+	});
+
 	it('filters by agent before clustering', async () => {
 		const result = structured(
-			await handlers.get('logs_incidents')?.({ agent: 'a2' }),
+			await handlers.get('logs_incidents')?.({
+				agent: 'a2',
+				minCount: 1,
+			}),
 		);
 		const incidents = result.incidents as Array<{ count: number }>;
-		// a2 contributes 1 lock-conflict + 0 quality_run = 1 cluster with count 1
+		// a2 contributes 1 lock-conflict + 0 quality_run = 1 cluster
 		expect(incidents).toHaveLength(1);
 		expect(incidents[0]?.count).toBe(1);
 	});

@@ -197,6 +197,36 @@ function applyPlan(plan: IReleasePlan, logger: IReleaseLogger): void {
 	logger.info('');
 }
 
+/**
+ * f00152 S7: bump `mcp-vertex.config.json#coreVersion` to the new
+ * release. When the existing pin is the `latest-published` sentinel
+ * or is absent, we leave it (the sentinel tracks the latest tag and
+ * needs no bumping). When the pin is a concrete semver that is now
+ * stale, we move it to the new version — this keeps a self-host
+ * agent's CI green after the upgrade.
+ */
+function bumpConfigCoreVersion(
+	newVersion: string,
+	logger: IReleaseLogger,
+): void {
+	const configPath = join(ROOT, 'mcp-vertex.config.json');
+	const raw = JSON.parse(readFileSync(configPath, 'utf8')) as {
+		coreVersion?: string;
+	};
+	if (
+		raw.coreVersion === undefined ||
+		raw.coreVersion === 'latest-published'
+	) {
+		logger.info(
+			`  mcp-vertex.config.json#coreVersion unchanged (${raw.coreVersion ?? 'unset'} tracks the latest tag).`,
+		);
+		return;
+	}
+	raw.coreVersion = newVersion;
+	writeFileSync(configPath, `${JSON.stringify(raw, null, '\t')}\n`);
+	logger.info(`  bumped mcp-vertex.config.json#coreVersion → ${newVersion}`);
+}
+
 function run(cmd: string, args: readonly string[], cwd: string): void {
 	execFileSync(cmd, args as string[], { cwd, stdio: 'inherit' });
 }
@@ -312,6 +342,23 @@ async function main(): Promise<void> {
 
 	if (versionChange && flags.write) {
 		applyPlan(plan, logger);
+		// f00152 S7: regenerate the stable facade manifest after every
+		// release so `docs/mcp-vertex/api/stable.json` stays in sync
+		// with `packages/core/src/lib/api/stable-facade.ts`. Idempotent
+		// (the builder exits early when the file is unchanged).
+		logger.info('Regenerating stable facade manifest (f00152 S7)…\n');
+		run('bun', ['run', 'build:stable-manifest'], ROOT);
+		// Also bump `coreVersion` in mcp-vertex.config.json so a
+		// self-host agent's pin either matches the new release or
+		// stays on the sentinel (`latest-published`). The release
+		// script always moves the pin to the new version; CI
+		// (`lint:core-version-pin`) refuses to ship if the pin
+		// diverges from a published tag.
+		bumpConfigCoreVersion(
+			pkgs[0]?.version ??
+				('set' in target ? target.set : 'latest-published'),
+			logger,
+		);
 	} else if (versionChange) {
 		logger.info(
 			'Dry-run: pass --write to apply these changes to package.json.\n',

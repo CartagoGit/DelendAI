@@ -105,13 +105,27 @@ export const createLogStore = async (
 				async () => await readFile(file, 'utf8').catch(() => ''),
 				{ onContention: 'fail', timeoutMs: 10_000 },
 			);
+			let lineOffset = 0;
 			for (const line of content.split('\n')) {
-				if (!line.trim()) continue;
+				if (!line.trim()) {
+					lineOffset += 1;
+					continue;
+				}
 				try {
 					events.push(JSON.parse(line) as ILogEvent);
 				} catch {
+					// Derive `ts` from the day-file name (e.g. `2026-07-26.jsonl`)
+					// rather than `Date.now()` so the placeholder keeps its
+					// original position in the timeline instead of jumping to
+					// "now". Without this, a corrupt line in yesterday's file
+					// masquerades as a fresh error and breaks time-window
+					// queries (S3 of x00153).
+					const dayMatch = /^(\d{4}-\d{2}-\d{2})\.jsonl$/.exec(name);
+					const dayTs = dayMatch
+						? `${dayMatch[1]}T00:00:00.000Z`
+						: new Date(0).toISOString();
 					events.push({
-						ts: new Date().toISOString(),
+						ts: dayTs,
 						kind: 'log-warning',
 						severity: 'warning',
 						incidentType: 'corrupt-line',
@@ -119,10 +133,11 @@ export const createLogStore = async (
 						taskId: null,
 						outcome: 'failed',
 						files: [join(logsDir, name)],
-						summary: 'Skipped corrupt log line',
-						meta: { file: name },
+						summary: `Skipped corrupt line in ${name} (offset ${lineOffset})`,
+						meta: { file: name, offset: lineOffset },
 					});
 				}
+				lineOffset += 1;
 			}
 		}
 		return events.sort((a, b) => compareIso(a.ts, b.ts));

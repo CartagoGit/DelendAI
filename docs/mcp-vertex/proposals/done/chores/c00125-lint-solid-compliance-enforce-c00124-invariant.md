@@ -2,10 +2,11 @@
 id: c00125
 title: "lint:solid-compliance — enforce the new §6 invariant"
 kind: chore
-status: ready
+status: done
 type: proposal
 track: general
 date: 2026-07-26
+shipped-in: ["25c792779f9f36712e1636e187f39c3fac48ca9e"]
 ---
 
 # c00125 — lint:solid-compliance — enforce the new §6 invariant
@@ -45,8 +46,8 @@ level as `lint:file-conventions`, `lint:bootstrap-canonical`,
 
 - global_gate: lint
 
-### solid-compliance-lint — Implement tools/scripts/lint/solid-compliance.script.ts + .spec.ts + npm script
-- **Status**: pending
+### S1 — Implement tools/scripts/lint/solid-compliance.script.ts + .spec.ts + npm script
+- **Status**: done
 - **Files**: `tools/scripts/lint/solid-compliance.script.ts`, `tools/scripts/lint/solid-compliance.script.spec.ts`, `package.json`
 - **Gate**: lint
 - acceptance:

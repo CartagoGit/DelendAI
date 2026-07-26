@@ -515,11 +515,36 @@ export const buildLogToolRegistrations = (
 						until?: string | undefined;
 					}) => {
 						try {
-							const result = await logSearch(store, args);
+							// f00153 S2: search both streams in parallel so a
+							// string appearing in either the main timeline or
+							// the curated error stream is found. Dedupe by
+							// ts+summary+kind — the same event is mirrored in
+							// both streams with the same identity, so a single
+							// dedupe key is enough.
+							const [mainResult, errResult] = await Promise.all([
+								logSearch(store, args),
+								logSearch(stores.errors, args),
+							]);
+							const seen = new Set<string>();
+							const events: ILogEvent[] = [];
+							for (const e of [
+								...mainResult.events,
+								...errResult.events,
+							]) {
+								const key = `${e.ts}|${e.summary}|${e.kind}`;
+								if (seen.has(key)) continue;
+								seen.add(key);
+								events.push(e);
+							}
+							const limit = Math.max(
+								1,
+								Math.min(args.limit ?? 100, 1000),
+							);
+							const page = events.slice(0, limit);
 							return toolJson({
-								events: result.events,
-								matched: result.matched,
-								hasMore: result.hasMore,
+								events: page,
+								matched: events.length,
+								hasMore: events.length > page.length,
 							});
 						} catch (error) {
 							return toolError(
