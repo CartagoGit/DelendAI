@@ -65,8 +65,9 @@ and adds to config/pack; consent required for community entries. Idempotent.
 
 ### S3 — registry browse surface + catalog
 
-- **Status**: pending
-- **Files**: `packages/core/src/lib/tools/plugin-search.tool.ts`, `apps/web/src/pages/`
+- **Status**: done
+- **Files**: `packages/core/src/lib/registry/plugin-search.tool.ts`
+- **Commit**: `99fa8b1c`
 - **Gate**: bun run validate
 
 `plugin_search` + a web `/plugins` index; catalog/wiki.
