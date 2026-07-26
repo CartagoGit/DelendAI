@@ -2,7 +2,7 @@
 id: f00150
 title: "project-preference adoption and skill projection"
 kind: feat
-status: ready
+status: done
 type: proposal
 track: adoption+skills+dx
 date: 2026-07-25
