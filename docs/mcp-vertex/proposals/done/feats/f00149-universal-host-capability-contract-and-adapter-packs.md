@@ -2,7 +2,7 @@
 id: f00149
 title: "universal host capability contract and adapter packs"
 kind: feat
-status: ready
+status: done
 type: proposal
 track: host-adapters+plugins+adoption
 date: 2026-07-24
@@ -79,7 +79,7 @@ cannot run hooks or resume work after a response.
     and gives the safe manual fallback when it cannot resume a host turn.
 
 ### S4 — Adoption verifier
-- **Status**: pending
+- **Status**: done
 - **Files**: `tools/scripts/verify/host-capability-packs.script.ts`,
   `tools/scripts/verify/host-capability-packs.script.spec.ts`, `package.json`
 - **Gate**: verify + validate
@@ -88,6 +88,18 @@ cannot run hooks or resume work after a response.
     rejects claims for capabilities the adapter does not declare.
   - The verifier remains host-neutral and works for an added future MCP host
     without changing the core model.
+
+`runHostCapabilityGate(profiles)` is pure: same inputs -> same
+findings. Canonical roster = `CANONICAL_PROFILES` (generic-mcp + codex
++ claude-code + host-loop-reference). Rules:
+empty-host-id / no-mcp-surface / bad-version / missing-mcp-baseline /
+unknown-action-kind / missing-optional-action / phantom-optional-action
+/ runner-without-host-loop / host-loop-without-runner /
+continuation-mode-mismatch / duplicate-host-id. New adapter packs
+append one profile to `CANONICAL_PROFILES`; the gate catches any
+drift. Wired into `package.json#verify:host-capability-packs` and the
+`bun run validate` chain after `verify:dev-bundles`. 11/11 tests green;
+core 1038/1038; typecheck clean.
 
 ## acceptance
 
