@@ -28,6 +28,9 @@ export default definePlugin({
 				...buildContainerLintToolRegistrations({
 					namespacePrefix: ctx.namespacePrefix,
 				}),
+				...buildContainerBuildToolRegistrations({
+					namespacePrefix: ctx.namespacePrefix,
+				}),
 			],
 			knowledge: [
 				{
