@@ -51,13 +51,18 @@ confirms.
 
 ### S1 — pure plugin-fit scorer
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/auto-plugin-selector/src/lib/score/recommend-plugins.ts`, `plugins/auto-plugin-selector/src/lib/contracts/interfaces/plugin-fit.interface.ts`
 - **Gate**: bun run validate
+- **Commit**: `8da5db9e`
 
-`recommendPlugins(signals, catalog)` → ranked `{plugin, fitScore, reasons[]}`
-over plugin tags/`describe` × detected signals (reuses r00011 `detectStack`).
-Deterministic, exhaustively unit-tested on fixture project shapes.
+`recommendPlugins(signals, candidates, opts?)` → ranked `IPluginFit[]` over
+plugin tags × detected signals (`pack`, `languages`, `hasDocsSite`/`isCliTool`/
+`hasBackend`/`hasTests`). Pure deterministic scorer with pack+language+shape
+bonuses, mild unmatched penalty, top-1 normalization, tie-break by id, and
+optional `limit`/`minScore`. Reuses the `IProjectSignals` shape that the
+existing `plugins_recommend` tool (S2 stub) already imports. 11/11 tests
+green; typecheck clean.
 
 ### S2 — recommend tool + config diff
 
