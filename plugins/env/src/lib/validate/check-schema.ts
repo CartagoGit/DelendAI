@@ -16,16 +16,9 @@ import type { IFinding } from '@mcp-vertex/core/public';
 import type {
 	IEnvEntry,
 	IParsedEnv,
-} from '@mcp-vertex/env/lib/contracts/interfaces/env.interface';
-import type {
-	EnvType,
-	IEnvSchema,
-	IEnvVarSchema,
-} from '@mcp-vertex/env/lib/validate/env-schema';
-import {
-	schemaKeys,
-	schemaRequired,
-} from '@mcp-vertex/env/lib/validate/env-schema';
+} from '../contracts/interfaces/env.interface';
+import type { EnvType, IEnvSchema, IEnvVarSchema } from './env-schema';
+import { schemaKeys, schemaRequired } from './env-schema';
 
 const finding = (args: {
 	readonly ruleId: string;

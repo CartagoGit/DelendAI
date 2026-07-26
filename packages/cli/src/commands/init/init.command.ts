@@ -22,17 +22,31 @@ import type {
 } from '../../contracts/interfaces/cli-command.interface';
 import type { IInitFlags } from '../../contracts/interfaces/init.interface';
 import type { ICanonicalLaunch } from '../../contracts/interfaces/canonical-launch.interface';
+import type { IFinding } from '@mcp-vertex/core/public';
 import {
 	HostEntryNotFoundError,
 	resolveHostEntryPath,
 } from '../../lib/init/host-entry-resolver.service';
-import { parseConfigFile } from '@mcp-vertex/core/public';
+import {
+	nodeDynamicImport,
+	parseConfigFile,
+	resolvePluginSpecifier,
+} from '@mcp-vertex/core/public';
+import {
+	buildSchemaFromRequirements,
+	checkSchema,
+	extractRequirements,
+	parseEnv,
+} from '@mcp-vertex/env/public';
 import { InitAnswers } from '../../lib/init/init-answers.schema';
 import type { IInitAnswers } from '../../lib/init/init-answers.types';
 import { detectTargetProject } from '../../lib/init/init-detection.service';
 import { printInitHumanSummary } from '../../lib/init/init-human-summary.service';
 import { collectInitAnswers } from '../../lib/init/init-prompts.service';
-import { renderInitBundle } from '../../lib/init/init-render.service';
+import {
+	renderInitBundle,
+	resolvePluginSet,
+} from '../../lib/init/init-render.service';
 import { buildCanonicalLaunch } from '../../lib/server-args.service';
 import { readConfigText } from '../../lib/config-file.service';
 import { buildCoreSkillProjection } from '../../lib/init/core-skill-projection.service';
@@ -48,7 +62,111 @@ import {
 // Re-exported here for the init-default spec that imports the flag type.
 export type { IInitFlags } from '../../contracts/interfaces/init.interface';
 
-import { join } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
+import { readFile } from 'node:fs/promises';
+import { existsSync } from 'node:fs';
+
+const HIGH_ENV_SEVERITIES = new Set(['critical', 'high']);
+
+const resolveHostRootFromEntry = (entryPath: string): string | undefined => {
+	let current = dirname(entryPath);
+	for (let depth = 0; depth < 6; depth += 1) {
+		if (
+			existsSync(join(current, 'package.json')) &&
+			(existsSync(join(current, 'plugins')) ||
+				existsSync(join(current, 'packages')))
+		) {
+			return current;
+		}
+		const parent = dirname(current);
+		if (parent === current) break;
+		current = parent;
+	}
+	return undefined;
+};
+
+const candidatePluginSourceSpecifiers = (
+	pluginName: string,
+	hostEntryPath?: string,
+): readonly string[] => {
+	if (hostEntryPath === undefined) return [];
+	const hostRoot = resolveHostRootFromEntry(hostEntryPath);
+	if (hostRoot === undefined) return [];
+	return [
+		resolve(hostRoot, 'plugins', pluginName, 'src', 'index.ts'),
+		resolve(hostRoot, 'packages', pluginName, 'src', 'index.ts'),
+	].filter((path) => existsSync(path));
+};
+
+const readEnvWarningFindings = async (
+	workspaceRoot: string,
+	resolvedPlugins: readonly string[],
+	hostEntryPath?: string,
+): Promise<readonly IFinding[]> => {
+	if (!resolvedPlugins.includes('env')) return [];
+	const requirements = [] as ReturnType<
+		typeof extractRequirements
+	> extends readonly (infer T)[]
+		? T[]
+		: never[];
+	for (const pluginName of resolvedPlugins) {
+		if (pluginName === 'env') continue;
+		for (const specifier of [
+			...resolvePluginSpecifier(pluginName),
+			...candidatePluginSourceSpecifiers(pluginName, hostEntryPath),
+		]) {
+			try {
+				const mod = await nodeDynamicImport(specifier);
+				if (
+					mod === null ||
+					typeof mod !== 'object' ||
+					!('default' in mod)
+				) {
+					continue;
+				}
+				const plugin = (mod as { default: { optionsSchema?: unknown } })
+					.default;
+				if (plugin.optionsSchema === undefined) break;
+				requirements.push(
+					...extractRequirements(
+						pluginName,
+						plugin.optionsSchema as never,
+					),
+				);
+				break;
+			} catch {
+				continue;
+			}
+		}
+	}
+	if (requirements.length === 0) return [];
+	const schema = buildSchemaFromRequirements(requirements);
+	let content = '';
+	try {
+		content = await readFile(join(workspaceRoot, '.env'), 'utf8');
+	} catch {
+		content = '';
+	}
+	const findings: readonly IFinding[] = checkSchema(
+		parseEnv(content),
+		schema,
+	);
+	return findings.filter((finding) =>
+		HIGH_ENV_SEVERITIES.has(finding.severity),
+	);
+};
+
+const printEnvWarningBlock = (findings: readonly IFinding[]): void => {
+	if (findings.length === 0) return;
+	process.stderr.write('mcp-vertex › env warning\n');
+	process.stderr.write(
+		'high/critical env findings detected before bootstrap:\n',
+	);
+	for (const finding of findings) {
+		process.stderr.write(`- ${finding.message}\n`);
+	}
+	process.stderr.write('\n');
+};
 
 const applyExtraOptions = (
 	config: Record<string, unknown>,
@@ -200,6 +318,15 @@ export const runInitWithAnswers = async (
 			}
 			throw error;
 		}
+	}
+	const resolvedPlugins = resolvePluginSet(answers);
+	const envWarningFindings = await readEnvWarningFindings(
+		answers.workspaceRoot,
+		resolvedPlugins,
+		flags.mcpVertexRoot,
+	);
+	if (!ctx.globals.json) {
+		printEnvWarningBlock(envWarningFindings);
 	}
 	const bundle = await renderInitBundle(answers, { launch });
 	const currentConfig = parseConfigFile(

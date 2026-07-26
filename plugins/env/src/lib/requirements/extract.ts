@@ -49,6 +49,8 @@ const walkSchema = (
 	into: { name: string; description: string }[] = [],
 ): { name: string; description: string }[] => {
 	const def = schema._def;
+	const nested = def?.innerType ?? def?.schema;
+	const nestedDesc = nested?._def?.description ?? nested?.description;
 	// Zod v4: shape is a function on `_def.shape()`.
 	let shapeMap: Record<string, IZodLike> | undefined;
 	if (typeof def?.shape === 'function') {
@@ -58,12 +60,23 @@ const walkSchema = (
 	}
 	if (shapeMap === undefined) return into;
 	for (const [name, child] of Object.entries(shapeMap)) {
-		const desc = child._def?.description ?? child.description;
+		const childNested = child._def?.innerType ?? child._def?.schema;
+		const desc =
+			child._def?.description ??
+			child.description ??
+			childNested?._def?.description ??
+			childNested?.description;
 		if (desc !== undefined && desc !== '') {
 			into.push({ name, description: desc });
 		}
 		// Recurse into nested objects.
 		walkSchema(child, into);
+	}
+	if (nested !== undefined && nestedDesc !== undefined && nestedDesc !== '') {
+		into.push({ name: '', description: nestedDesc });
+	}
+	if (nested !== undefined) {
+		walkSchema(nested, into);
 	}
 	return into;
 };
