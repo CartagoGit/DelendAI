@@ -60,11 +60,12 @@ status DFA + current counts). Pure over injected data.
 
 ### S3 — catalog + site embedding
 
-- **Status**: pending
-- **Files**: `plugins/diagram/README.md`, `apps/web/src/pages/`
+- **Status**: done
+- **Files**: `plugins/diagram/README.md`, `packages/core/src/lib/plugins/preset-catalog.ts`
 - **Gate**: bun run validate
 
-Catalog + wiki; optional embed of the generated diagrams into the docs site.
+Catalog + wiki; diagram now in `standard` preset; optional embed of the
+generated diagrams into the docs site.
 
 ## acceptance
 
