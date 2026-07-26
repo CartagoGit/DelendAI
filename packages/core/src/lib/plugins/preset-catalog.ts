@@ -123,7 +123,7 @@ export const PRESET_CATALOG: readonly IPresetDefinition[] = [
 		id: 'standard',
 		title: 'standard',
 		summary:
-			'Single-agent toolkit: minimal + memory, docs, rules, quality, deps, test-policy, database.',
+			'Single-agent toolkit: minimal + memory, docs, rules, quality, deps, test-policy, database, diagram.',
 		members: [
 			{ plugin: 'memory' },
 			{ plugin: 'docs' },
@@ -133,6 +133,7 @@ export const PRESET_CATALOG: readonly IPresetDefinition[] = [
 			{ plugin: 'deps' },
 			{ plugin: 'test-policy' },
 			{ plugin: 'database' },
+			{ plugin: 'diagram' },
 		],
 	},
 	{
