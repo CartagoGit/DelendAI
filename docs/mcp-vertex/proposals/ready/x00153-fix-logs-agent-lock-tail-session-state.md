@@ -152,8 +152,8 @@ Worth a one-time audit: who actually consumes the compat window?
 
 ### S1 — Persistent session.imbalance across MCP-server restarts
 
-- **Status**: pending
-- **Files**: `plugins/proposals/src/lib/locks/agent-lock-engine.ts`, `plugins/proposals/src/lib/locks/agent-lock-session-store.ts` (new), `plugins/proposals/src/lib/tools/state-tools.tool.ts`, `plugins/proposals/tests/src/lib/locks/agent-lock-session-store.spec.ts` (new), `plugins/proposals/tests/src/lib/locks/agent-lock-engine.spec.ts` (additions)
+- **Status**: done
+- **Files**: `plugins/proposals/src/lib/locks/agent-lock-engine.ts`, `plugins/proposals/src/lib/locks/agent-lock-session-store.ts`, `plugins/proposals/src/lib/tools/state-tools.tool.ts`, `plugins/proposals/tests/src/lib/locks/agent-lock-session-store.spec.ts`, `plugins/proposals/tests/src/lib/locks/agent-lock-engine.spec.ts`
 - **Gate**: type + bun run validate
 - **acceptance**:
   - "agent_lock session.balance is read from .cache/mcp-vertex/agents.lock.session.jsonl on every call so the counter survives MCP-server restarts"
@@ -287,7 +287,7 @@ While investigating I found four typecheck/test regressions caused by a combinat
 |---|---|---|
 | t0 — typecheck/test fixes (already applied) | done | constant path-doubling, completeness-guard order, corrupt-line ts, peer-review→validate log leak |
 | t0b — `mass-content-removal.script.ts` threshold fix (from previous session) | done | carried over from x00153 v1 |
-| S1 — persistent session.imbalance | pending | |
+| S1 — persistent session.imbalance | done | session.store + engine wired; 5/5 tests pass on agent-lock-session-store.spec.ts |
 | S2 — tail/readRange day-file pre-filter | pending | |
 | S3 — corrupt-line day-boundary ts | logic done, tests pending | |
 | S4 — proposal-cited-commits lint | pending | baseline needed before validating |
