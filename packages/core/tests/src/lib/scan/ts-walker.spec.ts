@@ -31,7 +31,7 @@ describe('scan/ts-walker — walkTsFiles', () => {
 			'export const c = 3;',
 		);
 		const out = await walkTsFiles(rootDir, ['src']);
-		expect(out.sort()).toEqual([
+		expect([...out].sort()).toEqual([
 			'src/lib/a.ts',
 			'src/lib/b.ts',
 			'src/lib/c.tsx',
