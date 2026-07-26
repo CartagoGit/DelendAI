@@ -2,7 +2,7 @@
 id: a00073
 kind: audit
 title: 'Pasada-33 — post-closure deeper findings F431-F437 (tmp-files hygiene 2da, peer-review journal ghost, duplicate proposal IDs, dirty container plugin)'
-status: in-progress
+status: done
 type: proposal
 track: audit+multi-agent+state-consistency+proposals-plugin+log-honesty
 date: 2026-07-26
@@ -482,6 +482,148 @@ el duplicate y reporta fatal.
 - `docs/mcp-vertex/proposals/in-progress/a00069-25-07-2026-multi-agent-branch-state-drift-and-validation-leak.md`
 
 Lint passa `0 fatal errors`.
+
+**Status S3 (post-pasada-33)**: DONE. Both stale copies deleted
+(by parallel agent during pasada-33). `ls docs/mcp-vertex/proposals/in-progress/*.md`
+shows only `a00073-...md`.
+
+### F438 — F431 fix incomplete: `keepNonZero` flag defaults false (F431 reincidente)
+
+**Severidad**: **FATAL hygiene**. Output verbatim:
+
+```text
+$ cat plugins/usage-tracking/src/index.ts | grep -A3 cleanupStaleTmpFiles
+import { cleanupStaleTmpFiles } from './lib/cleanup-stale-tmp';
+import { detectAgent } from './lib/detect-agent';
+--
+                void cleanupStaleTmpFiles({ cacheDirAbs: pluginCacheDirAbs })
+                        .then((result) => {
+
+$ ls .cache/mcp-vertex/results/usage-tracking/*.tmp | wc -l
+58
+```
+
+**Pattern**: F431 reincidente. El commit `19350920` (parallel agent)
+añadió `keepNonZero` flag a `cleanupStaleTmpFiles` con default `false`.
+La intención era preservar backward compatibility, pero el boot sweep
+en `plugins/usage-tracking/src/index.ts:174` NO pasa `keepNonZero:
+true`. Resultado: la fix no se ejecuta por defecto, los 58 tmp files
+non-zero siguen acumulándose.
+
+**Causa raíz**: la fix fue minimal/backward-compatible pero NO
+production-effective. El caller (boot sweep) no se actualizó. El
+default `false` es un anti-pattern: si la intención es limpiar tmp
+files, debe hacerlo por defecto. Si la intención es preservar
+backward compat, debe ser opt-out vía env var.
+
+**Pattern reincidente**:
+- F317 (a00072 pasada-26): fix released but caller not updated.
+- F411 (a00072 pasada-31): F377 REGRESIÓN 4ta — fix revertido.
+- **F438 (pasada-33)**: fix shipped but boot sweep NOT updated.
+
+**Acción S1.5 (re-abrir S1)**: cambiar default `keepNonZero: false`
+→ `true`. El caller pasa explícitamente `keepNonZero: true`. Test
+`cleanupStaleTmpFiles({ keepNonZero: true })` ya existe per
+commit message; añadir integración que verifica los 58 tmp files
+se eliminan en el próximo boot.
+
+### F439 — F433 partial fix: peer-review journal at wrong paths
+
+**Severidad**: **FATAL contrato**. Output verbatim:
+
+```text
+$ cat plugins/proposals/src/lib/contracts/constants/default-path-layout.constant.ts | grep peerReviewLogFile
+        peerReviewLogFile: joinRel(cacheDir, 'proposals/peer-review.jsonl'),
+
+$ ls .cache/mcp-vertex/proposals/peer-review.jsonl 2>&1
+ls: cannot access ...: No such file or directory
+
+$ ls .cache/mcp-vertex/peer-review.log 2>&1
+-rw-r--r-- 1 cartago cartago 7783 Jul 26 04:49
+
+$ ls .cache/mcp-vertex/results/logs/peer-review.jsonl 2>&1
+-rw-r--r-- 1 cartago cartago 4254 Jul 26 04:49
+
+$ wc -l .cache/mcp-vertex/peer-review.log .cache/mcp-vertex/results/logs/peer-review.jsonl
+   55 .cache/mcp-vertex/peer-review.log
+   28 .cache/mcp-vertex/results/logs/peer-review.jsonl
+```
+
+**Pattern**: F433 partial. El journal se está escribiendo (55 + 28
+entries post-`c45a4847`) pero **en paths distintos del contrato**.
+El contrato `peerReviewLogFile = 'proposals/peer-review.jsonl'`
+NO se usa. Las entradas van a `peer-review.log` (root) +
+`results/logs/peer-review.jsonl`.
+
+**Causa raíz**: el journal writer usa un path hardcoded distinto del
+contrato. La interface `ISwarmPathLayout.peerReviewLogFile` está
+definida pero no se invoca. La gate de `peer-review.jsonl` (en
+`proposal-transition.tool.ts`) lee del contrato path (correcto),
+pero el writer (`appendPeerReviewLogEntry` en
+`peer-review-log.ts`) escribe a otro lado. **Reader y writer
+desconectados**.
+
+**Pattern reincidente**:
+- F149 (a00072): peer-review bypassed.
+- F156 (a00072): close-evidence pendiente.
+- **F439 (pasada-33)**: writer writes to wrong path; gate reads
+  from empty file → gate ALWAYS fails.
+
+**Acción S2.5 (re-abrir S2)**: identificar el hardcoded path en
+`peer-review-log.ts:appendPeerReviewLogEntry` y reemplazar con
+`peerReviewLogFile` del layout contract. O alternativamente, escribir
+a AMBOS paths (legacy + contract) para compat. Run auto_work y
+verificar que `cat .cache/mcp-vertex/proposals/peer-review.jsonl`
+muestra entries.
+
+### F440 — dirty tree accumulates to 17 entries (F434 reincidente 5ta)
+
+**Severidad**: **FATAL proceso**. Output verbatim:
+
+```text
+$ git status -s | wc -l
+17
+$ git status -s | head -20
+ M bun.lock
+ M docs/mcp-vertex/proposals/in-progress/a00073-26-07-2026-pasada-33-deeper-findings-f431-f437.md
+ M packages/core/src/generated/tool-outputs.ts
+ M packages/core/tests/src/lib/e2e/token-budget.e2e.spec.ts
+ M packages/core/tests/src/lib/plugins/preset-catalog.spec.ts
+ M plugins/container/package.json
+ M plugins/container/src/index.ts
+ M plugins/container/src/lib/inspect/cli-tools.ts
+ M plugins/container/src/lib/inspect/parse-docker-images.spec.ts
+ M plugins/container/src/lib/inspect/parse-docker-ps.spec.ts
+ M plugins/container/src/lib/inspect/parse-kubectl-get.spec.ts
+ M plugins/container/src/lib/inspect/run-inspect.spec.ts
+ M plugins/container/src/lib/tools/container-inspect.tool.ts
+ M plugins/container/src/public/index.ts
+ M plugins/container/tsconfig.json
+ M plugins/container/vitest.config.ts
+ M tools/scripts/types/generate-tool-types.script.ts
+```
+
+**Pattern**: F434 reincidente 5ta. Dirty tree escaló de 14 (inicio
+pasada-33) a 17 (post-commits parallel agent). Los 3 commits del
+parallel agent (`19350920`, `81d491fe`, `06343b50`) NO comitaron
+los regenerated artifacts (`tool-outputs.ts`, `e2e/token-budget.e2e.spec.ts`,
+`preset-catalog.spec.ts`).
+
+**Causa raíz**: el workflow `feat(f00133): S1 container inspection`
+regenera automáticamente 4+ archivos pero NO los incluye en el
+commit. Cada nuevo plugin activado dispara regeneración → dirty tree
+crece. **No hay enforce** que verifique `git status` clean post-commit.
+
+**Pattern reincidente**:
+- F310 (a00072 pasada-30): 23 dirty files.
+- F283/F284 (a00072 pasada-26): untracked files.
+- F434 (pasada-33 inicial): 14 dirty entries.
+- **F440 (pasada-33 final)**: 17 dirty entries, regenerated artifacts.
+
+**Acción S6.5 (re-abrir S6)**: commit atómico `feat(f00133): regenerated
+artifacts` que incluya `tool-outputs.ts`, `token-budget.e2e.spec.ts`,
+`preset-catalog.spec.ts`, `bun.lock`. Después, `git status -s | wc -l`
+debe ser 0.
 
 ## scoreboard
 
