@@ -1,0 +1,207 @@
+import { mkdir, readFile } from 'node:fs/promises';
+import { hostname as readHostname } from 'node:os';
+import { dirname, join } from 'node:path';
+
+import { withFileMutex, writeFileAtomic } from '@mcp-vertex/core/public';
+
+export interface IReviewIdentity {
+	readonly host: string;
+	readonly pid: number;
+	readonly agent: string;
+}
+
+export interface IReviewIdentityRecord {
+	readonly proposalId: string;
+	readonly sliceId: string;
+	readonly host: string;
+	readonly pid: number;
+	readonly agent: string;
+	readonly ts: string;
+}
+
+export interface IReviewIdentityDeps {
+	readonly appendLine: (path: string, line: string) => Promise<void>;
+	readonly ensureDir: (path: string) => Promise<void>;
+	readonly readText: (path: string) => Promise<string>;
+	readonly now: () => string;
+	readonly hostname: () => string;
+	readonly pid: () => number;
+	readonly envHost?: () => string | undefined;
+	readonly withLock?: <T>(path: string, work: () => Promise<T>) => Promise<T>;
+}
+
+export type IApproveIdentityCheckResult =
+	| { ok: true; submitter: IReviewIdentityRecord }
+	| {
+			ok: false;
+			reason: 'missing-submit-identity' | 'same-process-approve';
+			nextAction: string;
+			submitter?: IReviewIdentityRecord;
+	  };
+
+export const REVIEW_IDENTITY_RELATIVE_PATH = join(
+	'.cache',
+	'mcp-vertex',
+	'review-identity.jsonl',
+);
+
+const parseIdentityLine = (line: string): IReviewIdentityRecord | null => {
+	if (line.trim() === '') return null;
+	try {
+		const value = JSON.parse(line) as Partial<IReviewIdentityRecord>;
+		if (
+			typeof value.proposalId !== 'string' ||
+			typeof value.sliceId !== 'string' ||
+			typeof value.host !== 'string' ||
+			typeof value.pid !== 'number' ||
+			typeof value.agent !== 'string' ||
+			typeof value.ts !== 'string'
+		) {
+			return null;
+		}
+		return {
+			proposalId: value.proposalId,
+			sliceId: value.sliceId,
+			host: value.host,
+			pid: value.pid,
+			agent: value.agent,
+			ts: value.ts,
+		};
+	} catch {
+		return null;
+	}
+};
+
+export const createReviewIdentityDeps = (): IReviewIdentityDeps => {
+	return {
+		appendLine: async (path, line) => {
+			const existing = await readFile(path, 'utf8').catch(
+				(error: unknown) => {
+					if (
+						error &&
+						typeof error === 'object' &&
+						'code' in error &&
+						error.code === 'ENOENT'
+					) {
+						return '';
+					}
+					throw error;
+				},
+			);
+			const prefix =
+				existing === '' || existing.endsWith('\n')
+					? existing
+					: `${existing}\n`;
+			await writeFileAtomic(path, `${prefix}${line}\n`);
+		},
+		ensureDir: async (path) => {
+			await mkdir(path, { recursive: true });
+		},
+		readText: async (path) =>
+			readFile(path, 'utf8').catch((error: unknown) => {
+				if (
+					error &&
+					typeof error === 'object' &&
+					'code' in error &&
+					error.code === 'ENOENT'
+				) {
+					return '';
+				}
+				throw error;
+			}),
+		now: () => new Date().toISOString(),
+		hostname: () => readHostname(),
+		pid: () => process.pid,
+		envHost: () => process.env.MCP_HOST,
+		withLock: async (path, work) => withFileMutex(path, work),
+	};
+};
+
+export const buildReviewIdentity = (
+	agent: string,
+	deps: Pick<IReviewIdentityDeps, 'hostname' | 'pid' | 'envHost'>,
+): IReviewIdentity => ({
+	host: deps.envHost?.()?.trim() || deps.hostname(),
+	pid: deps.pid(),
+	agent: agent.trim(),
+});
+
+export const recordReviewSubmitIdentity = async (input: {
+	readonly workspaceRoot: string;
+	readonly proposalId: string;
+	readonly sliceId: string;
+	readonly agent: string;
+	readonly deps?: IReviewIdentityDeps;
+}): Promise<IReviewIdentityRecord> => {
+	const deps = input.deps ?? createReviewIdentityDeps();
+	const path = join(input.workspaceRoot, REVIEW_IDENTITY_RELATIVE_PATH);
+	const identity = buildReviewIdentity(input.agent, deps);
+	const record: IReviewIdentityRecord = {
+		proposalId: input.proposalId,
+		sliceId: input.sliceId,
+		...identity,
+		ts: deps.now(),
+	};
+	await deps.ensureDir(dirname(path));
+	const write = async () => {
+		await deps.appendLine(path, JSON.stringify(record));
+	};
+	if (deps.withLock !== undefined) {
+		await deps.withLock(path, write);
+	} else {
+		await write();
+	}
+	return record;
+};
+
+export const readLatestSubmitIdentity = async (input: {
+	readonly workspaceRoot: string;
+	readonly proposalId: string;
+	readonly sliceId: string;
+	readonly deps?: IReviewIdentityDeps;
+}): Promise<IReviewIdentityRecord | null> => {
+	const deps = input.deps ?? createReviewIdentityDeps();
+	const path = join(input.workspaceRoot, REVIEW_IDENTITY_RELATIVE_PATH);
+	const raw = await deps.readText(path);
+	if (raw.trim() === '') return null;
+	const matches = raw
+		.split(/\r?\n/)
+		.map(parseIdentityLine)
+		.filter((entry): entry is IReviewIdentityRecord => entry !== null)
+		.filter(
+			(entry) =>
+				entry.proposalId === input.proposalId &&
+				entry.sliceId === input.sliceId,
+		);
+	return matches.at(-1) ?? null;
+};
+
+export const checkApproveIdentity = async (input: {
+	readonly workspaceRoot: string;
+	readonly proposalId: string;
+	readonly sliceId: string;
+	readonly approver: IReviewIdentity;
+	readonly deps?: IReviewIdentityDeps;
+}): Promise<IApproveIdentityCheckResult> => {
+	const submitter = await readLatestSubmitIdentity(input);
+	if (submitter === null) {
+		return {
+			ok: false,
+			reason: 'missing-submit-identity',
+			nextAction:
+				'submit the slice for review before approving it so the implementer identity is recorded',
+		};
+	}
+	if (
+		submitter.host === input.approver.host &&
+		submitter.pid === input.approver.pid
+	) {
+		return {
+			ok: false,
+			reason: 'same-process-approve',
+			nextAction: 'a different MCP host / PID must call approve',
+			submitter,
+		};
+	}
+	return { ok: true, submitter };
+};

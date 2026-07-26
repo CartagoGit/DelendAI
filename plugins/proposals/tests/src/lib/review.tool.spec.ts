@@ -1,0 +1,153 @@
+import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+
+import type { IToolRegistration } from '@mcp-vertex/core/public';
+import {
+	buildCreateProposalRegistration,
+	buildReviewRegistration,
+	type IAuthoringToolOptions,
+} from '@mcp-vertex/proposals/lib/tools/authoring.tool';
+
+const capture = async (
+	reg: IToolRegistration,
+): Promise<
+	(
+		a: unknown,
+	) => Promise<{ content: Array<{ text: string }>; isError?: boolean }>
+> => {
+	let h: (
+		a: unknown,
+	) => Promise<{ content: Array<{ text: string }>; isError?: boolean }>;
+	await reg.register({
+		registerTool: (_n: string, _d: unknown, fn: typeof h) => {
+			h = fn;
+		},
+	} as never);
+	return h!;
+};
+
+const parse = (r: { content: Array<{ text: string }> }) =>
+	JSON.parse(r.content[0]?.text ?? '{}');
+
+describe('proposal_review identity gate (a00074 S2)', () => {
+	let root = '';
+	let opts: IAuthoringToolOptions;
+
+	beforeEach(() => {
+		root = mkdtempSync(join(tmpdir(), 'review-tool-'));
+		opts = {
+			namespacePrefix: 'proposals',
+			workspaceRoot: root,
+			proposalsDirAbs: join(root, 'docs/mcp-vertex/proposals'),
+			indexPathAbs: join(root, '.cache/mcp-vertex/proposals/index.json'),
+			lockPathAbs: join(root, '.cache/agents.lock.json'),
+			peerReviewLogPathAbs: join(
+				root,
+				'.cache/mcp-vertex/proposals/peer-review.jsonl',
+			),
+			counterPathAbs: join(root, '.cache/proposal-id-counters.json'),
+			runValidation: async () => ({
+				ok: true,
+				output: 'ok',
+				exitCode: 0,
+			}),
+		};
+	});
+
+	afterEach(() => rmSync(root, { recursive: true, force: true }));
+
+	it('refuses approve from the same host+pid even with a different agent name', async () => {
+		process.env.MCP_HOST = 'shared-host';
+		const create = await capture(buildCreateProposalRegistration(opts));
+		await create({
+			id: 'f00086',
+			title: 'Identity gate',
+			goal: 'work',
+			slices: [{ sliceId: 's1', files: ['src/a.ts'] }],
+		});
+		const review = await capture(buildReviewRegistration(opts));
+		const submitted = parse(
+			await review({
+				proposalId: 'f00086',
+				sliceId: 's1',
+				action: 'submit',
+				agent: 'copilot-minimax-m3',
+			}),
+		);
+		expect(submitted.ok).toBe(true);
+		const approved = parse(
+			await review({
+				proposalId: 'f00086',
+				sliceId: 's1',
+				action: 'approve',
+				agent: 'delivery_verifier',
+			}),
+		);
+		expect(approved).toEqual({
+			ok: false,
+			error: {
+				reason: 'same-process-approve',
+				nextAction: 'a different MCP host / PID must call approve',
+			},
+		});
+	});
+
+	it('refuses approve before submit with an explicit missing identity reason', async () => {
+		process.env.MCP_HOST = 'shared-host';
+		const create = await capture(buildCreateProposalRegistration(opts));
+		await create({
+			id: 'f00087',
+			title: 'Approve first',
+			goal: 'work',
+			slices: [{ sliceId: 's1', files: ['src/a.ts'] }],
+		});
+		const review = await capture(buildReviewRegistration(opts));
+		const approved = parse(
+			await review({
+				proposalId: 'f00087',
+				sliceId: 's1',
+				action: 'approve',
+				agent: 'delivery_verifier',
+			}),
+		);
+		expect(approved).toEqual({
+			ok: false,
+			error: {
+				reason: 'missing-submit-identity',
+				nextAction:
+					'submit the slice for review before approving it so the implementer identity is recorded',
+			},
+		});
+	});
+
+	it('writes the submit identity log that review approval reads back', async () => {
+		process.env.MCP_HOST = 'shared-host';
+		const create = await capture(buildCreateProposalRegistration(opts));
+		await create({
+			id: 'f00088',
+			title: 'Identity log',
+			goal: 'work',
+			slices: [{ sliceId: 's1', files: ['src/a.ts'] }],
+		});
+		const review = await capture(buildReviewRegistration(opts));
+		await review({
+			proposalId: 'f00088',
+			sliceId: 's1',
+			action: 'submit',
+			agent: 'copilot-minimax-m3',
+		});
+		const raw = readFileSync(
+			join(root, '.cache/mcp-vertex/review-identity.jsonl'),
+			'utf8',
+		);
+		const record = JSON.parse(raw.trim());
+		expect(record.proposalId).toBe('f00088');
+		expect(record.sliceId).toBe('s1');
+		expect(record.host).toBe('shared-host');
+		expect(record.pid).toBe(process.pid);
+		expect(record.agent).toBe('copilot-minimax-m3');
+	});
+});
