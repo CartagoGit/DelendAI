@@ -83,7 +83,9 @@ const queryFilterFrom = (
 	...(args.taskId !== undefined ? { taskId: args.taskId } : {}),
 	...(args.outcome !== undefined ? { outcome: args.outcome } : {}),
 	...(args.severity !== undefined ? { severityAtLeast: args.severity } : {}),
-	...(args.incidentType !== undefined ? { incidentType: args.incidentType } : {}),
+	...(args.incidentType !== undefined
+		? { incidentType: args.incidentType }
+		: {}),
 });
 
 const tailOptionsFrom = (args: {
@@ -406,7 +408,9 @@ export const buildLogToolRegistrations = (
 							message: z.string().min(1),
 							files: z.array(z.string()).optional(),
 							agent: z.string().optional(),
-							context: z.record(z.string(), z.unknown()).optional(),
+							context: z
+								.record(z.string(), z.unknown())
+								.optional(),
 						}),
 						outputSchema: z.object({
 							ok: z.literal(true),
@@ -594,7 +598,12 @@ export const buildLogToolRegistrations = (
 const severityToOutcome = (
 	severity: import('../services/kinds').LogSeverity,
 ): LogOutcome => {
-	if (severity === 'error' || severity === 'critical' || severity === 'alert' || severity === 'emergency') {
+	if (
+		severity === 'error' ||
+		severity === 'critical' ||
+		severity === 'alert' ||
+		severity === 'emergency'
+	) {
 		return 'failed';
 	}
 	if (severity === 'warning') return 'unknown';

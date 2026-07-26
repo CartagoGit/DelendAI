@@ -75,7 +75,10 @@ const deriveBalance = (text: string): ISessionBalance => {
 	};
 };
 
-const updateCache = (path: string, balance: ISessionBalance): ISessionBalance => {
+const updateCache = (
+	path: string,
+	balance: ISessionBalance,
+): ISessionBalance => {
 	cachedPath = path;
 	cachedBalance = balance;
 	return balance;
@@ -115,7 +118,8 @@ export const readSessionBalance = async (
 
 export const readSessionBalanceSync = (
 	workspaceRootAbs?: string,
-): ISessionBalance => readSessionBalanceFromFile(sessionLogPath(workspaceRootAbs));
+): ISessionBalance =>
+	readSessionBalanceFromFile(sessionLogPath(workspaceRootAbs));
 
 export const resetSessionBalance = (): void => {
 	if (cachedPath !== null) {

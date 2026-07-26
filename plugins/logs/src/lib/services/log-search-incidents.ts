@@ -39,7 +39,13 @@ export interface ILogSearchOptions {
 	 *   - `result`    → meta.result
 	 *   - `all`       → every field above (concatenated, newline-joined)
 	 */
-	readonly scope?: 'summary' | 'error' | 'args' | 'result' | 'all' | undefined;
+	readonly scope?:
+		| 'summary'
+		| 'error'
+		| 'args'
+		| 'result'
+		| 'all'
+		| undefined;
 	readonly limit?: number | undefined;
 	readonly since?: string | undefined;
 	readonly until?: string | undefined;
@@ -72,7 +78,10 @@ const collectStrings = (value: unknown, out: string[]): void => {
 	}
 };
 
-const fieldForScope = (event: ILogEvent, scope: ILogSearchOptions['scope']): string => {
+const fieldForScope = (
+	event: ILogEvent,
+	scope: ILogSearchOptions['scope'],
+): string => {
 	const meta = event.meta;
 	switch (scope) {
 		case 'summary': {
@@ -83,7 +92,8 @@ const fieldForScope = (event: ILogEvent, scope: ILogSearchOptions['scope']): str
 			const parts: string[] = [];
 			if (err && typeof err === 'object') {
 				const errObj = err as Record<string, unknown>;
-				if (typeof errObj.message === 'string') parts.push(errObj.message);
+				if (typeof errObj.message === 'string')
+					parts.push(errObj.message);
 				if (typeof errObj.stack === 'string') parts.push(errObj.stack);
 			} else if (typeof err === 'string') {
 				parts.push(err);
@@ -120,7 +130,10 @@ export const logSearch = async (
 	const compiled: RegExp | null = options.isRegex
 		? (() => {
 				try {
-					return new RegExp(options.pattern, options.caseSensitive ? '' : 'i');
+					return new RegExp(
+						options.pattern,
+						options.caseSensitive ? '' : 'i',
+					);
 				} catch {
 					throw new Error(
 						`invalid regex: ${options.pattern.slice(0, 200)}`,
@@ -131,9 +144,7 @@ export const logSearch = async (
 	const substring = options.isRegex ? null : options.pattern;
 	const haystackNormalize = (text: string): string =>
 		options.caseSensitive ? text : text.toLowerCase();
-	const needle = substring
-		? haystackNormalize(options.pattern)
-		: '';
+	const needle = substring ? haystackNormalize(options.pattern) : '';
 	const filter: ILogRangeFilter = {
 		...(options.since !== undefined ? { since: options.since } : {}),
 		...(options.until !== undefined ? { until: options.until } : {}),
@@ -265,7 +276,9 @@ export const logIncidents = async (
 	for (const cluster of clusters.values()) {
 		if (cluster.events.length < minCount) continue;
 		// sort events ascending for stable recent slice
-		const sorted = [...cluster.events].sort((a, b) => compareIso(a.ts, b.ts));
+		const sorted = [...cluster.events].sort((a, b) =>
+			compareIso(a.ts, b.ts),
+		);
 		const recent = sorted.slice(-recentLimit);
 		incidents.push({
 			incidentType: cluster.incidentType,

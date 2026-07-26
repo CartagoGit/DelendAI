@@ -43,7 +43,8 @@ const seed = async (
 					args: { file: 'foo.ts' },
 					result: { acquired: false },
 					error: { message: 'lock held by another agent' },
-					summary: 'tool-failed: proposals_agent_lock — lock held by another agent',
+					summary:
+						'tool-failed: proposals_agent_lock — lock held by another agent',
 				},
 				new Date(ts),
 			),
@@ -104,9 +105,15 @@ describe('logs_log (f00153 S2)', () => {
 		expect(result.incidentType).toBe('lock-conflict');
 		expect(typeof result.ts).toBe('string');
 		const query = structured(
-			await handlers.get('logs_query')?.({ incidentType: 'lock-conflict' }),
+			await handlers.get('logs_query')?.({
+				incidentType: 'lock-conflict',
+			}),
 		);
-		const events = query.events as Array<{ incidentType: string | null; severity: string; meta: Record<string, unknown> }>;
+		const events = query.events as Array<{
+			incidentType: string | null;
+			severity: string;
+			meta: Record<string, unknown>;
+		}>;
 		expect(events.length).toBeGreaterThanOrEqual(1);
 		const found = events.find(
 			(e) => e.meta.source === 'logs_log' && e.severity === 'critical',
@@ -174,7 +181,10 @@ describe('logs_search (f00153 S2)', () => {
 		const result = structured(
 			await handlers.get('logs_search')?.({ pattern: 'lock held' }),
 		);
-		const events = result.events as Array<{ toolName?: string; taskId: string }>;
+		const events = result.events as Array<{
+			toolName?: string;
+			taskId: string;
+		}>;
 		// 1 from main + 1 from errors stream.
 		expect(events.length).toBe(2);
 	});

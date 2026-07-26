@@ -59,26 +59,27 @@ const v1Schema = z.object({
 });
 
 /** The compat window for proposal_transition. */
-export const PROPOSAL_TRANSITION_COMPAT = defineCompatWindow<IProposalTransitionArgs>({
-	v2: {
-		version: 'v2',
-		schema: v2Schema,
-		sinceVersion: '0.1.0',
-		removedIn: 'never',
-		migrationHint:
-			'v2 is the canonical shape for proposal_transition. v1 is deprecated and will be removed in a future major release.',
-		translate: () => ({ id: '', to: '', reason: '' }),
-	},
-	v1: {
-		version: 'v1',
-		schema: v1Schema,
-		sinceVersion: '0.1.0',
-		removedIn: '1.0.0',
-		migrationHint:
-			'v1 is the legacy shape for proposal_transition. Migrate to v2 before 1.0.0 — the shape will hard-fail then.',
-		translate: (old) => old as IProposalTransitionArgs,
-	},
-});
+export const PROPOSAL_TRANSITION_COMPAT =
+	defineCompatWindow<IProposalTransitionArgs>({
+		v2: {
+			version: 'v2',
+			schema: v2Schema,
+			sinceVersion: '0.1.0',
+			removedIn: 'never',
+			migrationHint:
+				'v2 is the canonical shape for proposal_transition. v1 is deprecated and will be removed in a future major release.',
+			translate: () => ({ id: '', to: '', reason: '' }),
+		},
+		v1: {
+			version: 'v1',
+			schema: v1Schema,
+			sinceVersion: '0.1.0',
+			removedIn: '1.0.0',
+			migrationHint:
+				'v1 is the legacy shape for proposal_transition. Migrate to v2 before 1.0.0 — the shape will hard-fail then.',
+			translate: (old) => old as IProposalTransitionArgs,
+		},
+	});
 
 /**
  * Result envelope returned to MCP — the handler adds the
@@ -93,7 +94,10 @@ export type ProposalTransitionCompatResult =
 	  }
 	| {
 			readonly ok: false;
-			readonly error: { readonly code: 'compat-window-invalid'; readonly issues: ReadonlyArray<unknown> };
+			readonly error: {
+				readonly code: 'compat-window-invalid';
+				readonly issues: ReadonlyArray<unknown>;
+			};
 	  };
 
 /**
@@ -108,7 +112,10 @@ export const runProposalTransitionCompat = async (
 	if (!parsed.ok) {
 		return {
 			ok: false,
-			error: { code: 'compat-window-invalid', issues: parsed.error.issues },
+			error: {
+				code: 'compat-window-invalid',
+				issues: parsed.error.issues,
+			},
 		};
 	}
 	const payload = await runProposalTransition(parsed.value, options);

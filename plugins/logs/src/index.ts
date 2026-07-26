@@ -5,10 +5,7 @@ import { definePlugin } from '@mcp-vertex/core/public';
 import { z } from 'zod';
 
 import { buildOperationalEventLogKnowledge } from './lib/knowledge/logs-knowledge';
-import {
-	type LogSeverity,
-	severityForOutcome,
-} from './lib/services/kinds';
+import { type LogSeverity, severityForOutcome } from './lib/services/kinds';
 import { createLogStore } from './lib/services/log-store';
 import {
 	extractAgentHint,

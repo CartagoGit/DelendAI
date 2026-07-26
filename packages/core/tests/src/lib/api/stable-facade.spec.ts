@@ -72,7 +72,11 @@ describe('stable-facade (f00152 S2)', () => {
 
 describe('stable-manifest (f00152 S2)', () => {
 	it('buildStableManifest produces a sorted, deterministic tool list', () => {
-		const manifest = buildStableManifest(STABLE_API_TOOLS, '0.1.0', '2026-07-26T00:00:00.000Z');
+		const manifest = buildStableManifest(
+			STABLE_API_TOOLS,
+			'0.1.0',
+			'2026-07-26T00:00:00.000Z',
+		);
 		expect(manifest.version.schema).toBe(SCHEMA_VERSION);
 		expect(manifest.version.packageVersion).toBe('0.1.0');
 		expect(manifest.version.generatedAt).toBe('2026-07-26T00:00:00.000Z');

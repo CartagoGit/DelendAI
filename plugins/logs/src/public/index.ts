@@ -37,4 +37,8 @@ export type {
 	LogBusEventKind,
 } from '../lib/services/subscribe';
 export { logIncidents, logSearch } from '../lib/services/log-search-incidents';
-export type { ILogIncident, ILogIncidentsOptions, ILogSearchOptions } from '../lib/services/log-search-incidents';
+export type {
+	ILogIncident,
+	ILogIncidentsOptions,
+	ILogSearchOptions,
+} from '../lib/services/log-search-incidents';

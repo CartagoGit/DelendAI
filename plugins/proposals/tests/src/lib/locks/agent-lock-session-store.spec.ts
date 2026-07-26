@@ -5,7 +5,13 @@
  * claim/release imbalance survives MCP-server restarts.
  */
 
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import {
+	mkdirSync,
+	mkdtempSync,
+	readFileSync,
+	rmSync,
+	writeFileSync,
+} from 'node:fs';
 import { dirname } from 'node:path';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -126,7 +132,8 @@ describe('agent-lock-session-store', () => {
 				workspace,
 			),
 		]);
-		expect(readFileSync(sessionLogPath(workspace), 'utf8').trim().split('\n'))
-			.toHaveLength(2);
+		expect(
+			readFileSync(sessionLogPath(workspace), 'utf8').trim().split('\n'),
+		).toHaveLength(2);
 	});
 });
