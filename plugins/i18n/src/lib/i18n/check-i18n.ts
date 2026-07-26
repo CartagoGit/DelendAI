@@ -44,6 +44,10 @@ const placeholdersOf = (value: string): Set<string> =>
 const sameSet = (a: Set<string>, b: Set<string>): boolean =>
 	a.size === b.size && [...a].every((item) => b.has(item));
 
+export interface ICheckLocalesOptions {
+	readonly usedKeys?: Iterable<string>;
+}
+
 /**
  * Check a set of locale files for consistency:
  *   - `missing-key` (medium): a key some locale has that this one lacks.
@@ -51,7 +55,10 @@ const sameSet = (a: Set<string>, b: Set<string>): boolean =>
  *     placeholders differ between locales.
  * Pure; deterministic (keys + locales are sorted).
  */
-export const checkLocales = (locales: readonly ILocaleFile[]): IFinding[] => {
+export const checkLocales = (
+	locales: readonly ILocaleFile[],
+	options: ICheckLocalesOptions = {},
+): IFinding[] => {
 	const flat = locales
 		.map((locale) => ({
 			locale: locale.locale,
@@ -92,6 +99,24 @@ export const checkLocales = (locales: readonly ILocaleFile[]): IFinding[] => {
 					message: `${entry.locale}: key "${key}" has different interpolation placeholders than ${first.locale}`,
 					location: { file: entry.locale },
 					fix: 'Align the placeholders so every locale interpolates the same variables.',
+				});
+			}
+		}
+	}
+
+	const usedKeys = options.usedKeys
+		? new Set([...options.usedKeys].filter((key) => key.length > 0))
+		: undefined;
+	if (usedKeys !== undefined && usedKeys.size > 0) {
+		for (const entry of flat) {
+			for (const key of Object.keys(entry.keys).sort()) {
+				if (usedKeys.has(key)) continue;
+				findings.push({
+					ruleId: 'unused-key',
+					severity: 'low',
+					message: `${entry.locale}: key "${key}" is not referenced by the scanned source files`,
+					location: { file: entry.locale },
+					fix: `Remove "${key}" from ${entry.locale} or add a matching usage in source.`,
 				});
 			}
 		}
