@@ -8,6 +8,8 @@ export interface IEnvEntry {
 	readonly key: string;
 	/** 1-indexed source line. */
 	readonly line: number;
+	/** The raw value (used internally for schema type checks; never surfaced in findings). */
+	readonly value: string;
 	/** True when the value is empty (`KEY=`). */
 	readonly empty: boolean;
 }
