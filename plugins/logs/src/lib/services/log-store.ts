@@ -44,6 +44,7 @@ export interface ILogTailOptions {
 }
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}\.jsonl$/;
+const DAY_PREFIX_RE = /^(\d{4}-\d{2}-\d{2})/;
 
 const dayFromTs = (ts: string): string => {
 	const parsed = new Date(ts);
@@ -52,6 +53,17 @@ const dayFromTs = (ts: string): string => {
 	return parsed.toISOString().slice(0, 10);
 };
 
+const dayFromSince = (since: string): string => {
+	// Accept either an ISO timestamp or a bare `YYYY-MM-DD` day string.
+	// x00153 S2: `since` filters out whole day-files before its boundary
+	// instead of opening them and discarding every line.
+	const m = DAY_PREFIX_RE.exec(since);
+	if (m && m[1] !== undefined) return m[1];
+	return new Date(since).toISOString().slice(0, 10);
+};
+
+const dayFromFile = (name: string): string | null =>
+	DATE_RE.test(name) ? name.slice(0, 10) : null;
 const compareIso = (a: string, b: string): number =>
 	new Date(a).getTime() - new Date(b).getTime();
 
@@ -92,10 +104,24 @@ export const createLogStore = async (
 	const fileFor = (event: ILogEvent): string =>
 		join(logsDir, `${dayFromTs(event.ts)}.jsonl`);
 
-	const readAllFiles = async (): Promise<readonly ILogEvent[]> => {
+	const readAllFiles = async (dayRange?: {
+		readonly startDay?: string;
+		readonly endDay?: string;
+	}): Promise<readonly ILogEvent[]> => {
 		await mkdir(logsDir, { recursive: true });
-		const names = (await readdir(logsDir))
-			.filter((name) => DATE_RE.test(name))
+		const allNames = (await readdir(logsDir)).filter((name) =>
+			DATE_RE.test(name),
+		);
+		const startDay = dayRange?.startDay;
+		const endDay = dayRange?.endDay;
+		const names = allNames
+			.filter((name) => {
+				const day = dayFromFile(name);
+				if (!day) return false;
+				if (startDay && day < startDay) return false;
+				if (endDay && day > endDay) return false;
+				return true;
+			})
 			.sort();
 		const events: ILogEvent[] = [];
 		for (const name of names) {
@@ -163,23 +189,69 @@ export const createLogStore = async (
 			);
 		},
 		async readRange(filter = {}) {
-			const events = await readAllFiles();
+			const dayRange: { startDay?: string; endDay?: string } = {};
+			if (filter.since) dayRange.startDay = dayFromSince(filter.since);
+			if (filter.until) dayRange.endDay = dayFromSince(filter.until);
+			const events = await readAllFiles(dayRange);
 			return events.filter((event) => matches(event, filter));
 		},
 		async tail(options = {}) {
 			const limit = Math.max(1, Math.min(options.limit ?? 50, 1000));
-			const events = await readAllFiles();
-			return events
-				.filter(
-					(event) =>
-						(options.outcomeFilter
-							? event.outcome === options.outcomeFilter
-							: true) &&
-						(options.kindFilter
-							? event.kind === options.kindFilter
-							: true),
-				)
-				.slice(-limit);
+			// x00153 S2: tail() opens the active day-file + at most one previous
+			// when N exceeds the active file's line count, never all retained files.
+			await mkdir(logsDir, { recursive: true });
+			const dayFiles = (await readdir(logsDir))
+				.filter((name) => DATE_RE.test(name))
+				.sort();
+			const activeDay = dayFromFile(dayFiles.at(-1) ?? '');
+			const previousDay = dayFromFile(
+				dayFiles.length >= 2 ? (dayFiles.at(-2) ?? '') : '',
+			);
+			const dayRange: { startDay?: string; endDay?: string } = activeDay
+				? { endDay: activeDay }
+				: {};
+			if (previousDay) dayRange.startDay = previousDay;
+			const events = await readAllFiles(dayRange);
+			const filtered = events.filter(
+				(event) =>
+					(options.outcomeFilter
+						? event.outcome === options.outcomeFilter
+						: true) &&
+					(options.kindFilter
+						? event.kind === options.kindFilter
+						: true),
+			);
+			// If the active day-file holds fewer than `limit` events, we may
+			// need to extend the read back further — but only if there are
+			// earlier files. This avoids the O(all-files) cost when the
+			// active file is full.
+			let page = filtered.slice(-limit);
+			if (
+				page.length < limit &&
+				dayFiles.length > 2 &&
+				previousDay !== undefined
+			) {
+				const earlierDay = dayFromFile(dayFiles.at(-3) ?? '');
+				if (earlierDay) {
+					const extra = await readAllFiles({
+						startDay: earlierDay,
+						endDay: earlierDay,
+					});
+					page = [
+						...extra.filter(
+							(event) =>
+								(options.outcomeFilter
+									? event.outcome === options.outcomeFilter
+									: true) &&
+								(options.kindFilter
+									? event.kind === options.kindFilter
+									: true),
+						),
+						...filtered,
+					].slice(-limit);
+				}
+			}
+			return page;
 		},
 	};
 };
