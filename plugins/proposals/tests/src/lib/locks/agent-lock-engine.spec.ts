@@ -438,7 +438,7 @@ describe('runAgentLockEngine — a00069 S8 ok + session balance', async () => {
 		);
 		expect(claim.ok).toBe(true);
 		expect(claim.session).toEqual({ claims: 1, releases: 0, imbalance: 1 });
-		expect(getAgentLockSessionBalance()).toEqual({
+		expect(await getAgentLockSessionBalance()).toEqual({
 			claims: 1,
 			releases: 0,
 			imbalance: 1,
@@ -504,8 +504,8 @@ describe('runAgentLockEngine — a00069 S8 ok + session balance', async () => {
 			agent: 'b',
 			files: ['src/a.ts'],
 		});
-		expect(getAgentLockSessionBalance().claims).toBe(1);
-		expect(getAgentLockSessionBalance().imbalance).toBe(1);
+		expect((await getAgentLockSessionBalance()).claims).toBe(1);
+		expect((await getAgentLockSessionBalance()).imbalance).toBe(1);
 	});
 
 	it('survives a simulated restart because the balance is persisted', async () => {
@@ -516,7 +516,7 @@ describe('runAgentLockEngine — a00069 S8 ok + session balance', async () => {
 			files: ['src/persisted.ts'],
 		});
 		resetAgentLockSessionBalance();
-		expect(getAgentLockSessionBalance()).toEqual({
+		expect(await getAgentLockSessionBalance()).toEqual({
 			claims: 1,
 			releases: 0,
 			imbalance: 1,

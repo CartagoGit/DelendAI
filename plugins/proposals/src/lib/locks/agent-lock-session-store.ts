@@ -7,7 +7,6 @@
  * counter survives MCP-server restarts.
  */
 
-import { mkdirSync, readFileSync } from 'node:fs';
 import { mkdir, readFile } from 'node:fs/promises';
 import { cwd } from 'node:process';
 import { dirname, join } from 'node:path';
@@ -84,9 +83,12 @@ const updateCache = (
 	return balance;
 };
 
-const readSessionBalanceFromFile = (path: string): ISessionBalance => {
+const readSessionBalanceFromFile = async (
+	path: string,
+): Promise<ISessionBalance> => {
 	try {
-		return updateCache(path, deriveBalance(readFileSync(path, 'utf8')));
+		const text = await readFile(path, 'utf8');
+		return updateCache(path, deriveBalance(text));
 	} catch {
 		return updateCache(path, EMPTY_BALANCE());
 	}
@@ -116,14 +118,14 @@ export const readSessionBalance = async (
 	}
 };
 
-export const readSessionBalanceSync = (
+export const readSessionBalanceSync = async (
 	workspaceRootAbs?: string,
-): ISessionBalance =>
+): Promise<ISessionBalance> =>
 	readSessionBalanceFromFile(sessionLogPath(workspaceRootAbs));
 
-export const resetSessionBalance = (): void => {
+export const resetSessionBalance = async (): Promise<void> => {
 	if (cachedPath !== null) {
-		mkdirSync(dirname(cachedPath), { recursive: true });
+		await mkdir(dirname(cachedPath), { recursive: true });
 	}
 	cachedBalance = null;
 	cachedPath = null;
