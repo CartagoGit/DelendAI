@@ -31,6 +31,7 @@ import { purgeStaleLocks } from '../shared/purge-stale-locks';
 import { hasIndependentPeerApproval } from './proposal-transition.tool';
 import { recordPeerReviewBypass } from '../shared/peer-review-bypass-log';
 import { removeStale } from '../locks/agent-lock-engine';
+import { guardDoneToReviewRegression } from '../services/proposal-state';
 
 export interface IRecoveryEvent {
 	readonly kind: 'agent-alive' | 'agent-idle' | 'agent-dead';
@@ -360,6 +361,17 @@ const moveProposal = async (
 	};
 };
 
+const buildRecoveryCodeError = (code: string, reason: string) => ({
+	content: [
+		{
+			type: 'text' as const,
+			text: JSON.stringify({ ok: false, error: { code, reason } }),
+		},
+	],
+	structuredContent: { ok: false as const, error: { code, reason } },
+	isError: true,
+});
+
 export const runProposalStaleList = (
 	options: IRecoveryToolOptions,
 	now = new Date(),
@@ -474,7 +486,12 @@ export const runProposalForceTransition = async (
 };
 
 export const runProposalReconcileFolder = async (
-	args: { id: string; dryRun?: boolean | undefined },
+	args: {
+		id: string;
+		dryRun?: boolean | undefined;
+		force?: boolean | undefined;
+		reason?: string | undefined;
+	},
 	options: IRecoveryToolOptions,
 ) => {
 	const found = await locateProposal(options.proposalsDirAbs, args.id);
@@ -489,6 +506,17 @@ export const runProposalReconcileFolder = async (
 	const expectedFolder = await resolveDoneFolderFromRaw(found, found.status);
 	if (found.folder === expectedFolder) {
 		return toolOk({ id: args.id, changed: false, path: found.relPath });
+	}
+	if (found.folder === 'done' && expectedFolder === 'review') {
+		const guard = guardDoneToReviewRegression({
+			from: 'done',
+			to: 'review',
+			force: args.force,
+			reason: args.reason,
+		});
+		if (!guard.ok) {
+			return buildRecoveryCodeError(guard.code, guard.reason);
+		}
 	}
 	if (args.dryRun) {
 		const filename = found.relPath.split('/').pop() ?? found.relPath;
@@ -694,6 +722,8 @@ export const buildRecoveryToolRegistrations = (
 						inputSchema: z.object({
 							id: z.string().min(1),
 							dryRun: z.boolean().optional(),
+							force: z.boolean().optional(),
+							reason: z.string().optional(),
 						}),
 					},
 					async (args) =>

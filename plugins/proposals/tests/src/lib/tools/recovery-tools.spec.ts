@@ -190,6 +190,44 @@ describe('recovery tools (f00016 S9)', async () => {
 		});
 	});
 
+	it('proposal_reconcile_folder blocks done -> review without force', async () => {
+		mkdirSync(join(proposalsDir, 'done'), { recursive: true });
+		mkdirSync(join(proposalsDir, 'review'), { recursive: true });
+		writeFileSync(
+			join(proposalsDir, 'done', 'f201-test.md'),
+			proposal('f201', 'review'),
+		);
+
+		const result = await runProposalReconcileFolder(
+			{ id: 'f201' },
+			options,
+		);
+		expect(result.isError).toBe(true);
+		const body = json(result);
+		expect(JSON.stringify(body)).toContain('invalid-regression');
+	});
+
+	it('proposal_reconcile_folder allows done -> review with force + reason', async () => {
+		mkdirSync(join(proposalsDir, 'done'), { recursive: true });
+		mkdirSync(join(proposalsDir, 'review'), { recursive: true });
+		writeFileSync(
+			join(proposalsDir, 'done', 'f202-test.md'),
+			proposal('f202', 'review'),
+		);
+
+		const moved = json(
+			await runProposalReconcileFolder(
+				{ id: 'f202', force: true, reason: 'repair folder drift' },
+				options,
+			),
+		);
+
+		expect(moved).toMatchObject({
+			changed: true,
+			movedTo: 'review/f202-test.md',
+		});
+	});
+
 	it('proposal_diagnose matches stale slice locks for the requested proposal', async () => {
 		writeFileSync(
 			join(proposalsDir, 'ready', 'f00126-test.md'),
