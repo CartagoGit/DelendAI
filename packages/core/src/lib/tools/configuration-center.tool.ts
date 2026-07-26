@@ -19,6 +19,18 @@ const PAGE = z.object({
 	nextCursor: z.number().int().nonnegative().nullable(),
 	total: z.number().int().nonnegative(),
 });
+const ENV = z.object({
+	pluginLoaded: z.boolean(),
+	pathsChecked: z.array(z.string()),
+	missingRequired: z.array(z.string()),
+	blockedCapabilities: z.array(
+		z.object({
+			plugin: z.string(),
+			capability: z.string(),
+			missing: z.array(z.string()),
+		}),
+	),
+});
 
 export const buildConfigurationCenterToolRegistration = (
 	namespacePrefix: string,
@@ -46,6 +58,7 @@ export const buildConfigurationCenterToolRegistration = (
 							activePlugins: z.number(),
 							artifacts: z.number(),
 							unavailableArtifactKinds: z.array(ARTIFACT_KIND),
+							env: ENV.optional(),
 						})
 						.optional(),
 					configSchema: z.record(z.string(), z.unknown()).optional(),
