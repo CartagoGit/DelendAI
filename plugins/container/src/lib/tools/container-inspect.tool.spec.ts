@@ -41,10 +41,7 @@ const call = async (
 	args: unknown,
 ): Promise<Record<string, unknown>> => {
 	const result = (await handler(args)) as ToolBody;
-	return JSON.parse(result.content[0]?.text ?? '{}') as Record<
-		string,
-		unknown
-	>;
+	return JSON.parse(result.content[0]?.text ?? '{}') as Record<string, unknown>;
 };
 
 describe('container_inspect tool', () => {
@@ -70,27 +67,28 @@ describe('container_inspect tool', () => {
 			deps: {
 				probeBinary: async () => ({ present: true }),
 				exec: async () => ({
-					stdout: '{"ID":"sha256:1","Repository":"nginx","Tag":"latest","Size":"187MB","CreatedAt":"2026-07-26T12:00:00Z"}',
+					stdout:
+						'{"ID":"sha256:1","Repository":"nginx","Tag":"latest","Size":"187MB","CreatedAt":"2026-07-26T12:00:00Z"}',
 					stderr: '',
 				}),
 			},
 		});
 
-		await expect(call(handler, { kind: 'docker-images' })).resolves.toEqual(
-			{
-				ok: true,
-				kind: 'docker-images',
-				items: [
-					{
-						id: 'sha256:1',
-						repository: 'nginx',
-						tag: 'latest',
-						size: '187MB',
-						createdAt: '2026-07-26T12:00:00.000Z',
-					},
-				],
-			},
-		);
+		await expect(
+			call(handler, { kind: 'docker-images' }),
+		).resolves.toEqual({
+			ok: true,
+			kind: 'docker-images',
+			items: [
+				{
+					id: 'sha256:1',
+					repository: 'nginx',
+					tag: 'latest',
+					size: '187MB',
+					createdAt: '2026-07-26T12:00:00.000Z',
+				},
+			],
+		});
 	});
 
 	it('returns skipped with a hint when the requested CLI is missing', async () => {

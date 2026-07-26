@@ -79,6 +79,7 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 	const issues = resolve(workspaceRoot, 'plugins/issues/src');
 	const cache = resolve(workspaceRoot, 'plugins/cache/src');
 	const changelog = resolve(workspaceRoot, 'plugins/changelog/src');
+	const container = resolve(workspaceRoot, 'plugins/container/src');
 	const client = resolve(workspaceRoot, 'packages/client/src');
 	const cli = resolve(workspaceRoot, 'packages/cli/src');
 	const shared = resolve(workspaceRoot, 'apps/shared/src');
@@ -91,6 +92,18 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 		{
 			find: /^@mcp-vertex\/shared\/styles\/(.*)$/,
 			replacement: resolve(shared, 'styles/$1'),
+		},
+		{
+			find: '@mcp-vertex/container/public',
+			replacement: resolve(container, 'public/index.ts'),
+		},
+		{
+			find: /^@mcp-vertex\/container\/lib\/(.*)$/,
+			replacement: `${resolve(container, 'lib')}/$1`,
+		},
+		{
+			find: '@mcp-vertex/container',
+			replacement: resolve(container, 'index.ts'),
 		},
 		{
 			find: '@mcp-vertex/shared/styles',
@@ -376,6 +389,18 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 		{
 			find: '@mcp-vertex/browser',
 			replacement: resolve(browser, 'index.ts'),
+		},
+		{
+			find: '@mcp-vertex/container/public',
+			replacement: resolve(container, 'public/index.ts'),
+		},
+		{
+			find: /^@mcp-vertex\/container\/lib\/(.*)$/,
+			replacement: `${resolve(container, 'lib')}/$1`,
+		},
+		{
+			find: '@mcp-vertex/container',
+			replacement: resolve(container, 'index.ts'),
 		},
 		{
 			find: '@mcp-vertex/prompt-eval/public',
