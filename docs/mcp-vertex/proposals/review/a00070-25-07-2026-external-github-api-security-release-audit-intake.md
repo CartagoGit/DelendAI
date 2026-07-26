@@ -78,7 +78,10 @@ auditoría al estilo del proyecto y (b) una auditoría propia completa (ver
   - "Cada C/H con estado CONFIRMADO|PARCIAL|STALE y file:line live"
   - "Scoreboard del externo preservado + nota de re-verificación"
   - "Tracks SEC/REL/CORE/CI/NET/STATE listados"
-
+- review-state: done
+- review-implementer: copilot-grok-4.5
+- review-reviewer: copilot-minimax-m3
+- review-log: approved by copilot-minimax-m3 — External-audit-intake re-verification complete. Each C/H finding has live file:line evidence; scoreboard preserved with annotation.
 ## acceptance
 
 - Findings C/H con evidencia live `file:line`.
