@@ -228,13 +228,20 @@ export interface IReadMarkdown {
 export const verifyCompletedProposalAsync = async (input: {
 	readonly proposalPath: string;
 	readonly read: IReadMarkdown;
-}): ICompletenessResult => {
+}): Promise<ICompletenessResult> => {
 	const markdown = await input.read.readText(input.proposalPath);
 	const result = guardSlicesComplete({
 		markdown,
-		fileExists: (p) => existsSync(p),
+		fileExists: (p) => {
+			try {
+				require('node:fs').statSync(p);
+				return true;
+			} catch {
+				return false;
+			}
+		},
 	});
-	// `existsSync` is sync-only; for tests that need async correctness
+	// `statSync` is sync-only; for tests that need async correctness
 	// the caller injects the `fileExists` predicate directly.
 	return result;
 };
@@ -248,7 +255,7 @@ export const verifyCompletedProposalAsync = async (input: {
 export const guardTransitionToDone = async (input: {
 	readonly proposalPath: string;
 	readonly markdown: string;
-}): ICompletenessResult => {
+}): Promise<ICompletenessResult> => {
 	const result = guardSlicesComplete({ markdown: input.markdown });
 	if (!result.ok) return result;
 	// Re-check that the proposal-path itself is readable — guards
