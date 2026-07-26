@@ -39,7 +39,10 @@ those boundaries without sending a tool result back into every model turn.
 - **Acceptance**: malformed NDJSON rows are ignored; valid rows contain only
   opaque id, event and timestamp; summaries report turns and compaction/end
   counts without merging them into MCP sessions.
-
+- review-state: done
+- review-implementer: copilot-minimax-m3
+- review-reviewer: delivery_verifier
+- review-log: approved by delivery_verifier — Slice S1 peer-reviewed and approved by delivery_verifier; landed commits verified against the close evidence in the proposal.
 ### S2 — Install a non-blocking Claude command-hook recorder
 - **Status**: done
 - **Files**: `tools/scripts/host/record-claude-lifecycle.script.ts`, `tools/scripts/host/record-claude-lifecycle.script.spec.ts`, `config/external/claude-code/session-hygiene.hooks.json`, `config/external/claude-code/README.md`
@@ -47,14 +50,20 @@ those boundaries without sending a tool result back into every model turn.
 - **Acceptance**: documented Claude events append a redacted, mutex-guarded
   local row; malformed input or I/O failure exits cleanly and never blocks a
   host turn.
-
+- review-state: done
+- review-implementer: copilot-minimax-m3
+- review-reviewer: delivery_verifier
+- review-log: approved by delivery_verifier — Slice S2 peer-reviewed and approved by delivery_verifier; landed commits verified against the close evidence in the proposal.
 ### S3 — Expose separate observations and literal-only correlation
 - **Status**: done
 - **Files**: `plugins/usage-tracking/src/lib/tools/session-hygiene.tool.ts`, `plugins/usage-tracking/src/lib/tools/index.ts`, `plugins/usage-tracking/src/index.ts`, `plugins/usage-tracking/tests/src/lib/tools.spec.ts`, `plugins/usage-tracking/src/public/index.ts`
 - **Gate**: usage-tracking tests + generated tool type check
 - **Acceptance**: the report labels host and MCP evidence independently, and
   sets a correlation flag only when their supplied ids are exactly equal.
-
+- review-state: done
+- review-implementer: copilot-minimax-m3
+- review-reviewer: delivery_verifier
+- review-log: approved by delivery_verifier — Slice S3 peer-reviewed and approved by delivery_verifier; landed commits verified against the close evidence in the proposal.
 ## acceptance
 
 - A Claude lifecycle report can state observed session duration, turns,

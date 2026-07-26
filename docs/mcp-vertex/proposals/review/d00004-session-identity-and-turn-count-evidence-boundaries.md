@@ -37,7 +37,10 @@ turn count only where a host emits an explicit event.
 - **Gate**: docs/link checks
 - **Acceptance**: installation guidance distinguishes MCP-only observations,
   explicit host lifecycle observations, and literal id matching.
-
+- review-state: done
+- review-implementer: copilot-minimax-m3
+- review-reviewer: delivery_verifier
+- review-log: approved by delivery_verifier — CROSS-IDE.md and config/external/claude-code/README.md correctly distinguish MCP-only vs explicit host-lifecycle vs literal-id matching.
 ### S2 — Keep the operational rule compact and universal
 - **Status**: done
 - **Files**: `docs/mcp-vertex/AGENT-BOOTSTRAP.md`, `docs/mcp-vertex/TOKEN-BUDGETS.md`
@@ -45,7 +48,10 @@ turn count only where a host emits an explicit event.
 - **Acceptance**: the bootstrap directs agents to checkpoint/compact on host
   warnings without claiming the server can see a host quota; detailed host
   mechanics remain under demand-loaded docs.
-
+- review-state: done
+- review-implementer: copilot-minimax-m3
+- review-reviewer: delivery_verifier
+- review-log: approved by delivery_verifier — AGENT-BOOTSTRAP.md and TOKEN-BUDGETS.md keep the operational rule compact and universal; no host-specific protocol burden.
 ## acceptance
 
 - Users can interpret each counter's source and precision before acting on it.
