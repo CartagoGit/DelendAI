@@ -46,13 +46,19 @@ Everything is opt-in and read-only until the user consents to file.
 
 ### S1 — aggregate scanner findings
 
-- **Status**: pending
-- **Files**: `plugins/audit/src/lib/self-audit/aggregate.ts`, `plugins/audit/src/lib/contracts/interfaces/self-audit.interface.ts`
+- **Status**: done
+- **Files**: `plugins/audit/src/lib/self-audit/aggregate.ts`, `plugins/audit/src/lib/contracts/interfaces/self-audit.interface.ts`, `plugins/audit/tests/src/lib/self-audit/aggregate.spec.ts`
 - **Gate**: bun run validate
+- **Commit**: `2c30060b` (slice), `a0f47ffc` (JSDoc enrichment)
 
 Collect `IFinding[]` from every available scanner (each optional; missing ones
 skipped with a note) into one `ISelfAuditReport`. Pure over injected scanner
-runners.
+runners. Implements `aggregateSelfAudit(options: ISelfAuditOptions): Promise<ISelfAuditReport>`,
+reuses `aggregateScans` from `@mcp-vertex/core/public` (r00012) so this plugin
+owns zero detection logic. 9/9 new tests pass; full audit plugin suite
+77/77. `bun run validate` blocked on a pre-existing f00137
+`proposal-files-exist` failure (skills-pack skills referenced in
+`done/feats/f00137-skills-pack.md` that never shipped) — unrelated to f00139.
 
 ### S2 — rank into a single action backlog
 
