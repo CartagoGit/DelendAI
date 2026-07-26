@@ -2,7 +2,7 @@
 id: f00145
 title: "Host lifecycle checkpoint adapters"
 kind: feat
-status: review
+status: done
 type: proposal
 track: host-adapters+memory
 date: 2026-07-24

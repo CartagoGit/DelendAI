@@ -2,7 +2,7 @@
 id: a00068
 kind: audit
 title: "24-07-2026 · Auditoría exhaustiva del proyecto + recomendaciones concretas (mejoras, altas, bajas, cambios)"
-status: review
+status: done
 date: 2026-07-24T18:37:00Z
 track: code-quality+concurrency+architecture+invariants+tests+dx
 related:
@@ -11,6 +11,14 @@ related:
     - a00067 # evaluación de migración de lenguaje (done/audits)
 author: copilot-minimax-m3 (orchestrator)
 mode: general + recommendations
+closed-by: cartago (close pass 2026-07-24, restored 2026-07-26)
+closed-evidence:
+  - audit documented in 36062-byte proposal doc
+  - recommendations landed as separate fix proposals (audit covers file:line evidence for every finding)
+  - 17ed8d82 # symlink-aware containment in fs_read/fs_write — pre-existing-symlink escape
+shipped-in:
+  - 9e13ca92 # close commit (Jul 24 21:51)
+  - 17ed8d82 # symlink-aware containment follow-up
 ---
 
 # 24-07-2026 · Auditoría exhaustiva + recomendaciones — `@mcp-vertex/core`

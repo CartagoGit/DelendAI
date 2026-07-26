@@ -2,7 +2,7 @@
 id: a00070
 kind: audit
 title: "25-07-2026 · Auditoría externa GitHub-API (CartagoGit) — intake, re-verificación y triage C/H/M"
-status: review
+status: done
 date: 2026-07-25T22:00:00Z
 track: security+release+architecture+ci+invariants
 related:
@@ -13,6 +13,16 @@ author: copilot-grok-4.5 (orchestrator) — intake del informe externo
 mode: external-intake + live re-verify
 source_commit_claimed: 048f88a7051fac32a89918e20d94bb6bba95a103
 source_branch_claimed: main
+closed-by: cartago (intake 2026-07-25, restored 2026-07-26)
+closed-evidence:
+  - C-01, C-02, C-03 confirmed via live re-verification
+  - x00072/x00073/x00152 fix proposals carry the closed-evidence
+shipped-in:
+  - daab5199 # intake commit
+  - 4dc01795 # x00072/x00073/x00152 follow-ups
+  - 32c30d3a # x00072 SEC-001 S1
+  - fd0edcb7 # x00152 REL-001 S1
+  - 759b7c6f # x00073 SEC-002 S3
 ---
 
 # 25-07-2026 · Auditoría externa GitHub-API — intake y triage — `@mcp-vertex/core`

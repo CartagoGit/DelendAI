@@ -2,10 +2,17 @@
 id: f00146
 title: "Claude lifecycle evidence and observed-session correlation"
 kind: feat
-status: review
+status: done
 type: proposal
 track: host-adapters+usage-tracking
 date: 2026-07-24
+closed-by: cartago (close pass 2026-07-24, restored 2026-07-26)
+closed-evidence:
+  - S1-S3 ratified — plugins/usage-tracking/src/lib/host-lifecycle.ts persists validated events
+  - tools/scripts/host/record-claude-lifecycle.script.ts is the non-blocking command-hook recorder
+shipped-in:
+  - dd7ba156 # capture Claude lifecycle session evidence
+  - a921589d # checkpoint freshness
 ---
 
 # f00146 — Claude lifecycle evidence and observed-session correlation

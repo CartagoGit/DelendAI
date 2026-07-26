@@ -2,7 +2,7 @@
 id: a00071
 kind: audit
 title: "25-07-2026 · Auditoría exhaustiva independiente (LLM code reading) — fronteras de confianza y concurrencia"
-status: review
+status: done
 date: 2026-07-25T22:30:00Z
 track: security+concurrency+architecture+invariants+ci+release
 related:
@@ -12,6 +12,13 @@ related:
     - a00069 # multi-agent drift (en paralelo)
 author: copilot-grok-4.5 (orchestrator)
 mode: general + independent code reading
+closed-by: cartago (intake 2026-07-25, restored 2026-07-26)
+closed-evidence:
+  - trust-boundaries + concurrency findings grounded in live file:line evidence
+  - resolved via x00072/x00073 + extensions to a00068/a00069
+shipped-in:
+  - daab5199 # intake commit
+  - 4dc01795 # x00072/x00073/x00152 follow-ups
 ---
 
 # 25-07-2026 · Auditoría exhaustiva independiente — `@mcp-vertex/core`

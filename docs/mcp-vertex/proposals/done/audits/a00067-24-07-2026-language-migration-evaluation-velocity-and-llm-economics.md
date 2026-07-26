@@ -2,10 +2,23 @@
 id: a00067
 kind: audit
 title: language-migration evaluation — exhaustive empirical analysis of whether re-implementing mcp-vertex in another language (Rust/Go/Python/Zig) would improve LLM velocity, dev iteration, distribution, or token economics
-status: review
+status: done
 date: 2026-07-24
 track: research+architecture+economics+tooling
 author: copilot-minimax-m3 (orchestrator)
+closed-by: cartago (verification 2026-07-24, restored 2026-07-26)
+closed-evidence:
+  - S1-S5 ratified via a00069 review pass 2026-07-25 (DC1-DC6 reproduced within ±3%)
+  - f00148 polyglot shim shipped: 6b8c5a0e + eedd58a3 (bin/mcp-vertex-shim/main.go + S1 + S2 install.script.ts)
+  - v00122 auto_work ships (e9c9b4b2 collapse 4-call bootstrap into 1-call)
+  - c00123 opt-out env-var ships (d234886a tsconfig.relax.json)
+shipped-in:
+  - 441bcd07 # close pass (Jul 24)
+  - 183df88e # reviewer verification of DC1-DC7
+  - 34f390f9 # S1 measured
+  - ba8250af # S2 ratified
+  - 6b8c5a0e # f00148 S3 e2e shim invocation
+  - d234886a # c00123 opt-out
 ---
 
 # a00067 — language-migration evaluation
