@@ -772,6 +772,8 @@ export type {
 export type {
 	IPluginLogsHelper,
 	IPluginLogInput,
+	ILogsSink,
+	ISinkEvent,
 } from '../lib/plugins/plugin-contract';
 // --- f00154 S3: incident-driven adapter ---
 // `withIncidentLogging` is the wrapper plugins apply to a tool
@@ -793,6 +795,7 @@ export type {
 // full module set; this block re-exports the public surface.
 export {
 	detectCatchSwallow,
+	detectDipViolations,
 	detectLongChains,
 	detectMagicNumbers,
 	fnv1a,
@@ -804,10 +807,7 @@ export {
 } from '../lib/scan';
 export type {
 	ChainKind,
+	DipKind,
 	ICatchSwallowHit,
-	ILongChainHit,
-	ILongChainsOptions,
-	IMagicNumberHit,
-	IShingleHit,
-	IShingleOptions,
+	IDipHit,
 } from '../lib/scan';

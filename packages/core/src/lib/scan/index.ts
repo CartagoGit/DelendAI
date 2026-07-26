@@ -25,3 +25,8 @@ export {
 	MAGIC_WHITELIST,
 	type IMagicNumberHit,
 } from './magic-numbers';
+export {
+	detectDipViolations,
+	type DipKind,
+	type IDipHit,
+} from './dip-violation';
