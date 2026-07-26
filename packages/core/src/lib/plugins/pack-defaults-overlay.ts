@@ -103,6 +103,48 @@ export const resolvePackOptions = (
 	return { ...entry };
 };
 
+export interface IStackPackMeta {
+	readonly id: IPackId;
+	readonly title: string;
+	readonly summary: string;
+	readonly pluginCount: number;
+}
+
+const PACK_META: Readonly<
+	Record<IPackId, { readonly title: string; readonly summary: string }>
+> = {
+	'web-app': {
+		title: 'Web app',
+		summary:
+			'Astro / Next / Remix / SvelteKit / Vite. Tuned for content-heavy sites: BM25-leaning search, broader i18n, container (dockerfile) lint.',
+	},
+	'backend-api': {
+		title: 'Backend API',
+		summary:
+			'Nest / Express / Hono / Fastify / Django / FastAPI. Vector-leaning search, env strict-mode, ORM-aware.',
+	},
+	'cli-tool': {
+		title: 'CLI tool',
+		summary:
+			'oclif / commander / cobra / clap. Lean: perf + changelog hygiene, no quality gate.',
+	},
+};
+
+/**
+ * Return the metadata table for every shipped stack pack. Pure.
+ */
+export const describeStackPacks = (): readonly IStackPackMeta[] =>
+	PACK_IDS.map((id) => {
+		const meta = PACK_META[id];
+		const overlay = PACK_DEFAULTS_OVERLAY[id];
+		return {
+			id,
+			title: meta.title,
+			summary: meta.summary,
+			pluginCount: Object.keys(overlay).length,
+		};
+	});
+
 /**
  * Merge the pack overlay on top of the caller's `userConfig` for the
  * union of plugins the pack declares. Pure: same input -> same output.

@@ -6,6 +6,7 @@ import {
 	cellStateFor,
 	totalUniquePlugins,
 } from '#LIB/preset-table';
+import { describeStackPacks } from '@mcp-vertex/core/public';
 
 const lang: Lang = 'en';
 const t = useTranslations(lang);
@@ -13,6 +14,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 const homeHref = `${base}/`;
 const matrix = buildPresetMatrix();
 const totalPlugins = totalUniquePlugins(matrix);
+const stackPacks = describeStackPacks();
 ---
 
 <Base lang={lang} title={`${t.presets.title} — @mcp-vertex/core`}>
@@ -85,8 +87,25 @@ const totalPlugins = totalUniquePlugins(matrix);
 					))}
 				</ul>
 			</section>
-		</section>
-	</section>
+
+				<section class="presets__packs">
+					<h2 class="presets__packs-title">Stack packs (r00011)</h2>
+					<p class="presets__packs-lead">
+						Each pack bundles a curated plugin set + tuned per-plugin defaults. Run
+						<code>mcpv init --pack=&lt;name&gt;</code> to apply one; detection is
+						pure and lives in <code>@mcp-vertex/core/public</code>.
+					</p>
+					<ul class="presets__packs-list">
+						{stackPacks.map((pack) => (
+							<li class="presets__packs-item">
+								<strong>{pack.title}</strong>
+								<code class="presets__packs-id">--pack={pack.id}</code>
+								<span class="presets__packs-count">{pack.pluginCount} plugins</span>
+								<p>{pack.summary}</p>
+							</li>
+						))}
+					</ul>
+				</section>
 </Base>
 
 <style>
@@ -201,4 +220,39 @@ const totalPlugins = totalUniquePlugins(matrix);
 		margin-left: 0.75rem;
 		color: var(--color-muted, #888);
 	}
+
+        .presets__packs {
+                margin-top: 2rem;
+                padding-top: 1rem;
+                border-top: 1px solid var(--color-border, #eee);
+        }
+        .presets__packs-title {
+                font-size: 1.3rem;
+                margin: 0 0 0.5rem;
+        }
+        .presets__packs-lead {
+                margin: 0 0 1rem;
+                color: var(--color-muted, #888);
+        }
+        .presets__packs-list {
+                list-style: none;
+                padding: 0;
+                margin: 0;
+        }
+        .presets__packs-item {
+                padding: 0.5rem 0;
+                border-bottom: 1px solid var(--color-border, #eee);
+        }
+        .presets__packs-id {
+                display: inline-block;
+                margin-left: 0.5rem;
+                font-family: var(--font-mono, monospace);
+                font-size: 0.8rem;
+                color: var(--color-muted, #888);
+        }
+        .presets__packs-count {
+                margin-left: 0.5rem;
+                font-size: 0.7rem;
+                color: var(--color-muted, #888);
+        }
 </style>
