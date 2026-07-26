@@ -43,6 +43,7 @@ import statusMarkerPlugin from '@mcp-vertex/status-marker';
 import testConventionPlugin from '@mcp-vertex/test-convention';
 import webFetchPlugin from '@mcp-vertex/web-fetch';
 import cachePlugin from '@mcp-vertex/cache';
+import containerPlugin from '@mcp-vertex/container';
 import securityPlugin from '@mcp-vertex/security';
 import diagramPlugin from '@mcp-vertex/diagram';
 import envPlugin from '@mcp-vertex/env';
@@ -79,6 +80,7 @@ const PLUGIN_SPECIFIERS: Readonly<Record<string, unknown>> = {
 	'mcp-test-convention': testConventionPlugin,
 	'mcp-web-fetch': webFetchPlugin,
 	'mcp-cache': cachePlugin,
+	'mcp-container': containerPlugin,
 	'mcp-security': securityPlugin,
 	'mcp-diagram': diagramPlugin,
 	'mcp-env': envPlugin,
@@ -94,7 +96,7 @@ const PLUGIN_SPECIFIERS: Readonly<Record<string, unknown>> = {
 };
 
 const PLUGIN_LIST =
-	'proposals,rules,memory,git,quality,search,notification,docs,deps,logs,audit,status-marker,test-convention,web-fetch,cache,security,diagram,env,i18n,perf,tech-debt,link-check,usage-tracking,browser,refactor,prompt-eval,observability';
+	'proposals,rules,memory,git,quality,search,notification,docs,deps,logs,audit,status-marker,test-convention,web-fetch,cache,container,security,diagram,env,i18n,perf,tech-debt,link-check,usage-tracking,browser,refactor,prompt-eval,observability';
 
 /**
  * Assemble the reference server with every plugin and harvest each

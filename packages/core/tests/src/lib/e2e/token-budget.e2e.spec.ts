@@ -111,8 +111,10 @@ const BUDGET_BYTES = {
 	// Bumped 170 000 → 175 000 (2026-07-25): quality plugin gained
 	// buildRunQualityToolRegistration (a00072 S2.b peer-review gate), adding
 	// outputSchema metadata and bumping tools/list 168 938B → 171 174B.
+	// Bumped 4 200 → 4 500 (2026-07-26): container plugin (f00133) added to swarm
+	// via standard, increasing overview compact from ~3 568B to ~4 368B.
 	swarmToolsList: 175_000,
-	swarmOverviewCompact: 4_200,
+	swarmOverviewCompact: 4_500,
 	swarmRoundContext: 300,
 	// `lean` was 58 003B against the same fixture, a 63% reduction from swarm.
 	leanToolsList: 65_000,
