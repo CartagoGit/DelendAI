@@ -166,6 +166,11 @@
 				"./plugins/conventions/src/public/index.ts"
 			],
 			"@mcp-vertex/conventions/*": ["./plugins/conventions/src/*"],
+			"@mcp-vertex/container": ["./plugins/container/src/index.ts"],
+			"@mcp-vertex/container/public": [
+				"./plugins/container/src/public/index.ts"
+			],
+			"@mcp-vertex/container/*": ["./plugins/container/src/*"],
 			"@mcp-vertex/database": ["./plugins/database/src/index.ts"],
 			"@mcp-vertex/database/public": [
 				"./plugins/database/src/public/index.ts"

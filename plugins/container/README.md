@@ -1,4 +1,11 @@
-# @mcp-vertex/container
+The container plugin wraps the host's container CLIs for read-only inspection first: it probes docker, podman, and kubectl through the shared external-tool core, returns typed install hints when a CLI is missing, and keeps all output normalization in pure parsers so tests never need a live daemon or cluster.
+
+Tools:
+- `container_ps` — list running containers via docker, falling back to podman.
+- `container_images` — list local images via docker, falling back to podman.
+- `k8s_get` — inspect pods and services from the current kubectl context.
+- `container_logs` — planned in S2 for read-only log retrieval.
+- `container_lint` — planned in S2 for Dockerfile lint findings.# @mcp-vertex/container
 
 Read-only Docker and Kubernetes inspection plugin for
 [@mcp-vertex/core](../../packages/core).

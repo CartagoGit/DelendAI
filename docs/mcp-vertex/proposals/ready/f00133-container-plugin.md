@@ -40,12 +40,18 @@ no bundled engine, no credential handling beyond the CLI's own context.
 
 ### S1 — read-only inspection
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/container/src/lib/inspect/`, `plugins/container/src/lib/tools/container-inspect.tool.ts`
 - **Gate**: bun run validate
 
 `container_ps`/`container_images`/`k8s_get` over the probed CLI; pure parsers,
 injected exec. Missing CLI → install hint.
+
+Implemented as the `container_inspect` tool with pure parsers for
+`docker ps --format '{{json .}}'`, `docker images --format '{{json .}}'`, and
+`kubectl -n <namespace> get pods -o json`. The runner injects probe/exec deps,
+so tests remain deterministic and missing `docker`/`kubectl` returns a typed
+skipped envelope with an install hint instead of throwing.
 
 ### S2 — logs + Dockerfile lint
 

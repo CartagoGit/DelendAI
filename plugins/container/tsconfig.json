@@ -5,4 +5,11 @@
 		"noEmit": true
 	},
 	"include": ["src/**/*", "tests/**/*"]
+}{
+	"extends": "../../tsconfig.base.json",
+	"compilerOptions": {
+		"composite": false,
+		"noEmit": true
+	},
+	"include": ["src/**/*", "tests/**/*"]
 }
