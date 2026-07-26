@@ -2,10 +2,11 @@
 id: c00126
 title: "lint:solid — refactor helpers to public/ + add DIP rule + --fix mode"
 kind: chore
-status: ready
+status: done
 type: proposal
 track: general
 date: 2026-07-26
+shipped-in: ["7490cc85bd86deaff2961af7b4f613f563731293", "13c8b2701e6fe9ba7a3ee831cabe554da5018e95", "17018879c851351a3149bb1fc9841f5b4a31438b", "cafdcf5be7c48edc5aa5993f144e20b8f841c628", "25ba1fa96ee363abd88b45e021e58ef6c665f751"]
 ---
 
 # c00126 — lint:solid — refactor helpers to public/ + add DIP rule + --fix mode
@@ -69,7 +70,7 @@ mechanical instead of human-perceived.
 - global_gate: lint
 
 ### S1 — Extract helpers to packages/core/src/lib/scan/ + unit tests
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/src/lib/scan/path-utils.ts`, `packages/core/src/lib/scan/text-utils.ts`, `packages/core/src/lib/scan/ts-walker.ts`, `packages/core/src/lib/scan/shingle.ts`, `packages/core/src/lib/scan/long-chains.ts`, `packages/core/src/lib/scan/catch-swallow.ts`, `packages/core/src/lib/scan/magic-numbers.ts`, `packages/core/src/lib/scan/index.ts`, `packages/core/tests/src/lib/scan/path-utils.spec.ts`, `packages/core/tests/src/lib/scan/text-utils.spec.ts`, `packages/core/tests/src/lib/scan/ts-walker.spec.ts`, `packages/core/tests/src/lib/scan/shingle.spec.ts`, `packages/core/tests/src/lib/scan/long-chains.spec.ts`, `packages/core/tests/src/lib/scan/catch-swallow.spec.ts`, `packages/core/tests/src/lib/scan/magic-numbers.spec.ts`
 - **Gate**: lint
 - acceptance:
@@ -79,7 +80,7 @@ mechanical instead of human-perceived.
   - "`bun test packages/core/tests/src/lib/scan/` exit 0 with all tests passing."
 
 ### S2 — Re-export scan helpers from packages/core/src/public/index.ts
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/src/public/index.ts`
 - **Gate**: lint
 - acceptance:
@@ -88,7 +89,7 @@ mechanical instead of human-perceived.
   - "`bun test packages/core/tests/src/public/` exit 0 if that test dir exists; otherwise `bun run typecheck` exit 0 on the modified barrel only (not the whole repo, which has unrelated errors)."
 
 ### S3 — Refactor solid-compliance.script.ts to import from public/
-- **Status**: pending
+- **Status**: done
 - **Files**: `tools/scripts/lint/solid-compliance.script.ts`, `tools/scripts/lint/solid-compliance.script.spec.ts`
 - **Gate**: lint
 - acceptance:
@@ -98,7 +99,7 @@ mechanical instead of human-perceived.
   - "`bun run lint:solid --report` exit 1 (or 0 if the repo has no findings) with no new findings introduced by the refactor."
 
 ### S4 — Add sixth rule: dip-violation
-- **Status**: pending
+- **Status**: done
 - **Files**: `tools/scripts/lint/solid-compliance.script.ts`, `tools/scripts/lint/solid-compliance.script.spec.ts`, `packages/core/src/lib/scan/dip-violation.ts`, `packages/core/tests/src/lib/scan/dip-violation.spec.ts`
 - **Gate**: lint
 - acceptance:
@@ -109,8 +110,8 @@ mechanical instead of human-perceived.
   - "`bun test` exit 0 with the new spec."
 
 ### S5 — Add --fix mode for long-switch-chain
-- **Status**: pending
-- **Files**: `tools/scripts/lint/solid-compliance.script.ts`, `tools/scripts/lint/solid-compliance.script.spec.ts`
+- **Status**: done
+- **Files**: `tools/scripts/lint/solid-compliance.script.ts`, `tools/scripts/lint/solid-compliance.script.spec.ts`, `packages/core/src/lib/scan/long-chains-fix.ts`, `packages/core/tests/src/lib/scan/long-chains-fix.spec.ts`
 - **Gate**: lint
 - acceptance:
   - "`solid-compliance.script.ts --fix <relPath>` parses the file (read-only), finds the long switch chain, and prints a registry skeleton to stdout: `export const <suggestedName> = new Map<string, T>([ ['a', …], … ]);` plus a switch wrapper that delegates to the map."
@@ -119,7 +120,7 @@ mechanical instead of human-perceived.
   - "`bun test` exit 0."
 
 ### S6 — Re-sync proposal registry + final lint:proposals gate + close-loop
-- **Status**: pending
+- **Status**: done
 - **Files**: `docs/mcp-vertex/proposals/done/chores/c00126-solid-lint-refactor-and-sixth-rule.md`, all staged files
 - **Gate**: lint
 - acceptance:
