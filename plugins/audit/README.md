@@ -6,7 +6,7 @@ unificada. La planificación y consolidación son locales; `audit_run` es una
 superficie de red explícita que usa únicamente los proveedores y credenciales
 entregados por el host.
 
-## Activate
+### Activation
 
 ```bash
 mcp-vertex --plugins=audit
@@ -99,3 +99,77 @@ Contacta los proveedores solicitados y por ello declara efecto de red. Las
 claves se suministran en la petición/entorno y nunca se escriben en los
 informes. Si el plugin `proposals` está cargado, puede materializar propuestas;
 si no, devuelve explícitamente que ese paso fue omitido.
+
+## Self-audit
+
+`self_audit` composes `aggregateSelfAudit`, `rankFindings`, and,
+when the caller grants consent, `fileProposalsFromBacklog` to turn
+scanner findings into one ranked backlog and optionally file the top
+items as proposal drafts for human review.
+
+## Activate
+
+```bash
+mcp-vertex --plugins=audit
+```
+
+### Inputs
+
+`self_audit { limit?, consent? }`
+
+- `limit` caps how many ranked findings are returned and, when filing is
+  enabled, how many proposal drafts can be created in one run.
+- `consent` is required for proposal filing; omit it or pass `false`
+  to keep the run read-only.
+
+### Outputs
+
+Returns the aggregated audit summary plus the ranked backlog. When
+`consent: true`, the filing step also returns an `IFileProposalsResult`
+payload with:
+
+- `filed`, `skipped`, `ranAt`
+- `drafts[]` with `absPath`, `proposalId`, `rank`, and the source
+  `finding`
+
+### Filing proposals
+
+Proposal filing is consent-gated: drafts are only written when the
+caller passes `consent: true`. The filing step also applies a separate
+`limit` safety cap (default `3`) so a large backlog cannot flood the
+proposals directory in a single run.
+
+### Example
+
+Minimal tool call:
+
+```json
+{"limit": 5, "consent": true}
+```
+
+Result shape:
+
+```json
+{
+  "filed": 3,
+  "skipped": 2,
+  "drafts": [
+    {
+      "absPath": "/repo/docs/mcp-vertex/proposals/ready/f0012345-fix-issue.md",
+      "proposalId": "f0012345",
+      "rank": 1,
+      "finding": {
+        "ruleId": "rule-id",
+        "severity": "high",
+        "message": "Explain the issue"
+      }
+    }
+  ],
+  "ranAt": "2026-07-26T00:00:00.000Z"
+}
+```
+
+### Design reference
+
+See [docs/mcp-vertex/proposals/ready/f00139-self-audit-dogfood-loop.md](docs/mcp-vertex/proposals/ready/f00139-self-audit-dogfood-loop.md)
+for the original S3 design notes and acceptance criteria.
