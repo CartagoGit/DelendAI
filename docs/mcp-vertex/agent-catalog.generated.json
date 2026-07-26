@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-07-26T02:50:38.599Z",
+	"generatedAt": "2026-07-26T05:22:59.789Z",
 	"mode": "compact",
 	"tools": [
 		{
@@ -231,6 +231,10 @@
 		},
 		{
 			"name": "mcp-vertex_i18n_i18n_check",
+			"plugin": "i18n"
+		},
+		{
+			"name": "mcp-vertex_i18n_i18n_validate",
 			"plugin": "i18n"
 		},
 		{
@@ -943,6 +947,13 @@
 	"proposals": {
 		"actionable": [
 			{
+				"id": "a00073",
+				"title": "a00073",
+				"track": "audit+multi-agent+state-consistency+proposals-plugin+log-honesty",
+				"status": "in-progress",
+				"kind": "audit"
+			},
+			{
 				"id": "d00003",
 				"title": "d00003",
 				"track": "roadmap+plugins+ecosystem",
@@ -954,13 +965,6 @@
 				"title": "f00050",
 				"track": "lint+architecture+i18n+workflow+release",
 				"status": "paused",
-				"kind": "feat"
-			},
-			{
-				"id": "f00133",
-				"title": "f00133",
-				"track": "plugin+container+runtime",
-				"status": "ready",
 				"kind": "feat"
 			},
 			{
@@ -1063,11 +1067,11 @@
 			}
 		],
 		"byStatus": {
-			"ready": 16,
-			"in-progress": 0,
+			"ready": 15,
+			"in-progress": 1,
 			"review": 11,
 			"paused": 1,
-			"done": 263,
+			"done": 264,
 			"blocked": 0,
 			"retired": 2,
 			"unspecified": 0

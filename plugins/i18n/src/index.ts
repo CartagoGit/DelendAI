@@ -2,11 +2,12 @@ import { definePlugin } from '@mcp-vertex/core/public';
 import { z } from 'zod';
 
 import { buildI18nCheckRegistration } from './lib/tools/i18n-check.tool';
+import { buildI18nValidateRegistration } from './lib/tools/i18n-validate.tool';
 
 /**
- * i18n plugin. `i18n_check` flags cross-locale inconsistencies (missing keys,
- * interpolation-placeholder mismatches) across locale JSON files as normalized
- * findings. Offline, pure. Load with `mcp-vertex --plugins=i18n`.
+ * i18n plugin. `i18n_check` diffs key usage vs locale files; `i18n_validate`
+ * validates interpolation / ICU consistency. Offline, pure. Load with
+ * `mcp-vertex --plugins=i18n`.
  */
 const OptionsSchema = z.object({});
 
@@ -14,12 +15,16 @@ export default definePlugin({
 	name: 'i18n',
 	version: '0.1.0',
 	describe:
-		'Internationalization hygiene: i18n_check flags missing keys and interpolation-placeholder mismatches across locale JSON files. Offline, pure.',
+		'Internationalization hygiene: i18n_check diffs missing/unused keys and i18n_validate validates interpolation/ICU consistency across locale JSON files. Offline, pure.',
 	optionsSchema: OptionsSchema,
 	register(ctx) {
 		return {
 			tools: [
 				buildI18nCheckRegistration({
+					namespacePrefix: ctx.namespacePrefix,
+					workspaceRootAbs: ctx.workspace.root,
+				}),
+				buildI18nValidateRegistration({
 					namespacePrefix: ctx.namespacePrefix,
 					workspaceRootAbs: ctx.workspace.root,
 				}),
@@ -31,9 +36,10 @@ export default definePlugin({
 					body: [
 						'# Internationalization hygiene',
 						'',
-						`Tool: \`${ctx.namespacePrefix}_i18n_check\` — cross-locale consistency (offline).`,
+						`Tools: \`${ctx.namespacePrefix}_i18n_check\` + \`${ctx.namespacePrefix}_i18n_validate\` — read-only locale hygiene checks.`,
 						'',
-						'- Flags keys present in some locales but missing in others (missing-key), and interpolation-placeholder mismatches for the same key (placeholder-mismatch).',
+						'- `i18n_check`: missing-key, unused-key, and simple interpolation-placeholder mismatches.',
+						'- `i18n_validate`: ICU/select/plural placeholder mismatches, malformed ICU syntax, and extra-locale keys missing from the source locale.',
 						'- Nested keys are flattened to `a.b.c`. Pass `localesDir` (default `locales`).',
 						'- Offline and pure — no external tools, no network.',
 					].join('\n'),
