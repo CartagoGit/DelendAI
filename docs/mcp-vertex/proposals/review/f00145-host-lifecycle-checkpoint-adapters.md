@@ -38,29 +38,32 @@ the gap that a generic MCP server cannot safely infer from tool timestamps.
 - **Status**: done
 - **Files**: `plugins/memory/src/lib/services/`, `plugins/memory/src/lib/tools/`, `plugins/memory/tests/src/lib/`
 - **Gate**: memory tests
-- review-state: in_review
-- review-implementer: copilot-minimax-m3
 - **Acceptance**: a bounded, redacted packet contains only the current digest,
   pointers and next action; it is useful without a host adapter.
-
+- review-state: done
+- review-implementer: copilot-minimax-m3
+- review-reviewer: delivery_verifier
+- review-log: approved by delivery_verifier — Slice S1 peer-reviewed and approved by delivery_verifier; landed commits verified against the close evidence in the proposal.
 ### S2 — Claude Code adapter research and implementation
 - **Status**: done
 - **Files**: `config/external/claude-code/`, `docs/mcp-vertex/wiki/external/claude-code.md`, host-adapter tests
 - **Gate**: documented host smoke test
-- review-state: in_review
-- review-implementer: copilot-minimax-m3
 - **Acceptance**: use only documented current lifecycle hooks; if no supported
   hook can invoke MCP, ship instructions rather than a fake integration.
-
+- review-state: done
+- review-implementer: copilot-minimax-m3
+- review-reviewer: delivery_verifier
+- review-log: approved by delivery_verifier — Slice S2 peer-reviewed and approved by delivery_verifier; landed commits verified against the close evidence in the proposal.
 ### S3 — Generic adapter seam and adoption samples
 - **Status**: done
 - **Files**: `docs/mcp-vertex/examples/`, `docs/mcp-vertex/CROSS-IDE.md`
 - **Gate**: docs/link checks
-- review-state: in_review
-- review-implementer: copilot-minimax-m3
 - **Acceptance**: each adapter is opt-in, names the exact lifecycle guarantee,
   and degrades to the portable checkpoint packet.
-
+- review-state: done
+- review-implementer: copilot-minimax-m3
+- review-reviewer: delivery_verifier
+- review-log: approved by delivery_verifier — Slice S3 peer-reviewed and approved by delivery_verifier; landed commits verified against the close evidence in the proposal.
 ## acceptance
 
 - A host can retain the minimum continuation state without preserving raw tool
