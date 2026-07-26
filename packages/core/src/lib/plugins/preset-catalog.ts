@@ -39,6 +39,14 @@ export const PRESET_KIND = [
 	'swarm',
 	'full',
 	'vertex',
+	// r00011 S1 — stack packs. Independent: each pack resolves to
+	// exactly its own plugin set + tuned defaults; they never
+	// accumulate the chain and never perturb the resolved
+	// membership of `minimal`/`lean`/`standard`/`swarm`/`full`/
+	// `vertex`.
+	'web-app',
+	'backend-api',
+	'cli-tool',
 ] as const;
 export type IPresetKind = (typeof PRESET_KIND)[number];
 
@@ -204,6 +212,79 @@ export const PRESET_CATALOG: readonly IPresetDefinition[] = [
 			{ plugin: 'auto-agent-selector', hostOnly: true },
 			{ plugin: 'prompt-eval' },
 			{ plugin: 'database' },
+		],
+		independent: true,
+	},
+	// r00011 S1 — stack packs. Each resolves to exactly its own
+	// members; never accumulates the ⊇ chain. `resolvePackOptions`
+	// (in `pack-defaults.ts`) overlays tuned per-plugin defaults on
+	// top of `PLUGIN_DEFAULTS` and below the user's explicit config.
+	{
+		id: 'web-app',
+		title: 'web-app',
+		summary:
+			'Stack pack for web apps (Astro/Next/Remix/SvelteKit/etc): standard + i18n + diagram + container (dockerfile lint) + web-fetch. Independent; user config still wins.',
+		members: [
+			{ plugin: 'git' },
+			{ plugin: 'search' },
+			{ plugin: 'memory' },
+			{ plugin: 'docs' },
+			{ plugin: 'i18n' },
+			{ plugin: 'rules' },
+			{ plugin: 'quality' },
+			{ plugin: 'refactor' },
+			{ plugin: 'deps' },
+			{ plugin: 'test-policy' },
+			{ plugin: 'test-convention' },
+			{ plugin: 'diagram' },
+			{ plugin: 'env' },
+			{ plugin: 'container' },
+			{ plugin: 'web-fetch', hostOnly: true },
+			{ plugin: 'status-marker' },
+			{ plugin: 'skills-pack' },
+			{ plugin: 'prompts-pack' },
+		],
+		independent: true,
+	},
+	{
+		id: 'backend-api',
+		title: 'backend-api',
+		summary:
+			'Stack pack for backend services (Nest/Express/Hono/Fastify/etc): standard + database + container + env + audit (opt-in) + deps + perf. Independent; user config still wins.',
+		members: [
+			{ plugin: 'git' },
+			{ plugin: 'search' },
+			{ plugin: 'memory' },
+			{ plugin: 'docs' },
+			{ plugin: 'rules' },
+			{ plugin: 'quality' },
+			{ plugin: 'refactor' },
+			{ plugin: 'deps' },
+			{ plugin: 'test-policy' },
+			{ plugin: 'test-convention' },
+			{ plugin: 'database' },
+			{ plugin: 'diagram' },
+			{ plugin: 'env' },
+			{ plugin: 'container' },
+			{ plugin: 'skills-pack' },
+			{ plugin: 'prompts-pack' },
+		],
+		independent: true,
+	},
+	{
+		id: 'cli-tool',
+		title: 'cli-tool',
+		summary:
+			'Stack pack for CLI tools (oclif/commander/cobra/clap): minimal + search + memory + docs + env + changelog + perf. Independent; user config still wins.',
+		members: [
+			{ plugin: 'git' },
+			{ plugin: 'search' },
+			{ plugin: 'memory' },
+			{ plugin: 'docs' },
+			{ plugin: 'env' },
+			{ plugin: 'changelog' },
+			{ plugin: 'perf' },
+			{ plugin: 'test-policy' },
 		],
 		independent: true,
 	},
