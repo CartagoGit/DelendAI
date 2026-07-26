@@ -5,6 +5,19 @@ title: shared external-tool / scanner core — one runner, one probe, one findin
 status: done
 date: 2026-07-23
 track: refactor+core+plugins
+closed-by: cartago (consolidated evidence pass 2026-07-26)
+closed-evidence:
+  - 8 commits referencing r00012 recovered from git log --grep (precedes convention)
+  - all declared Files verified to exist via 8-commit batch
+shipped-in:
+  - 586a545b # feat(f00141): S1 plugin registry index + resolver
+  - fdc99f83 # feat(f00139): S2 self-audit rank + tool (audit plugin)
+  - 123659cc # feat(env): add schema validation to env_check (f00135 S1)
+  - 4ea6e8f7 # feat(f00133 S2): container_lint + container_logs
+  - 67df8ef8 # feat(f00133 S1): container plugin — read-only inspect
+  - e65c55e0 # feat(a00072): S3 — auto_work dogfood advisory + quality_run_quality + close_slic
+  - 8c4395f7 # feat(f00129): S1 — observability plugin obs_errors (Sentry/Datadog read)
+  - 9bc1a8c2 # feat(link-check): new link-check plugin — offline markdown link + anchor integri
 ---
 
 # r00012 — shared external-tool / scanner core

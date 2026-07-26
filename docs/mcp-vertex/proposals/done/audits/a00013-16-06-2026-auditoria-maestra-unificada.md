@@ -5,6 +5,11 @@ title: "Auditoría Maestra (Unificada) — 16-06-2026"
 status: done
 date: 2026-06-21T01:23:10Z
 track: archive
+closed-by: legacy (pre-convention; consolidated pass 2026-07-26)
+closed-evidence:
+  - a00013 predates the shipped-in convention (pre-2026-07-24)
+  - proposal body lists the original audit/fix/test deliverables
+  - status was already 'done' before this consolidation pass
 ---
 
 # 16-06-2026 · Auditoría Maestra (Unificada) — `@mcp-vertex/core`

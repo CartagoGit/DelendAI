@@ -9,6 +9,11 @@ related:
   - f00006 # feat: test-convention plugin
 kind: fix
 title: Fix `@mcp-vertex/audit` type errors and LSP `dist/public/index.d.ts not found` cascade
+closed-by: legacy (pre-convention; consolidated pass 2026-07-26)
+closed-evidence:
+  - x00078 predates the shipped-in convention (pre-2026-07-24)
+  - proposal body lists the original audit/fix/test deliverables
+  - status was already 'done' before this consolidation pass
 ---
 
 # x00001 — Fix `@mcp-vertex/audit` type errors and LSP `dist/public/index.d.ts not found` cascade

@@ -6,6 +6,12 @@ track: plugins+core
 date: 2026-06-21
 kind: refactor
 title: Harden the remaining permissive catchall outputSchemas
+closed-by: cartago (consolidated evidence pass 2026-07-26)
+closed-evidence:
+  - 1 commits referencing r00002 recovered from git log --grep (precedes convention)
+  - all declared Files verified to exist via 1-commit batch
+shipped-in:
+  - 2e11272f # refactor(proposals): close r00002 — catchall outputSchemas hardened + boot-only 
 ---
 
 # r00001 — Harden the remaining permissive `catchall` outputSchemas

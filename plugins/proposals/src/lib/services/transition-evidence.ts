@@ -14,8 +14,8 @@ import { stat } from 'node:fs/promises';
 
 export interface IValidateEvidence {
 	readonly timestamp: string;
-	readonly exitCode: 0;
-	readonly logPath: string;
+	readonly exitCode: number;
+	readonly logPath?: string | undefined;
 }
 
 export type IEvidenceCheckResult =
@@ -47,7 +47,7 @@ export const evidenceFileExists = async (logPath: string): Promise<boolean> => {
 };
 
 export const checkTransitionEvidence = (
-	evidence: Partial<IValidateEvidence> | undefined,
+	evidence: IValidateEvidence | undefined,
 	nowMs = Date.now(),
 ): IEvidenceCheckResult => {
 	if (evidence === undefined) {

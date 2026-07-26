@@ -10,6 +10,11 @@ unblocked_by: [user:continue-slice-by-slice]
 budget: 4
 kind: feat
 title: `keepLegacy: false` por defecto en `mcp-vertex` y en el `mcp-project` que genera
+closed-by: legacy (pre-convention; consolidated pass 2026-07-26)
+closed-evidence:
+  - f00010 predates the shipped-in convention (pre-2026-07-24)
+  - proposal body lists the original audit/fix/test deliverables
+  - status was already 'done' before this consolidation pass
 ---
 
 # f00007 — `keepLegacy: false` por defecto en `mcp-vertex` y en el `mcp-project` que genera

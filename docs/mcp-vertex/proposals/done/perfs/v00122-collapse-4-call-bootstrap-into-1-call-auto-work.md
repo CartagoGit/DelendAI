@@ -6,6 +6,12 @@ status: done
 type: proposal
 track: perf+token-budgets+agent-velocity
 date: 2026-07-24
+closed-by: cartago (consolidated evidence pass 2026-07-26)
+closed-evidence:
+  - 1 commits referencing v00122 recovered from git log --grep (precedes convention)
+  - all declared Files verified to exist via 1-commit batch
+shipped-in:
+  - 5660f729 # fix(proposals): correct stale Files: refs in a00067 done/audits/
 ---
 
 # v00122 — collapse 4-call bootstrap into 1-call `auto_work`

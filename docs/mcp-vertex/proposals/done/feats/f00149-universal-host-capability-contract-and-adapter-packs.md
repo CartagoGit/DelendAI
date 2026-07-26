@@ -6,6 +6,12 @@ status: done
 type: proposal
 track: host-adapters+plugins+adoption
 date: 2026-07-24
+closed-by: cartago (consolidated evidence pass 2026-07-26)
+closed-evidence:
+  - 1 commits referencing f00149 recovered from git log --grep (precedes convention)
+  - all declared Files verified to exist via 1-commit batch
+shipped-in:
+  - ee0a5a85 # feat(f00149): S4 host-capability-packs adoption verifier
 ---
 
 # f00149 — universal host capability contract and adapter packs

@@ -6,6 +6,14 @@ status: done
 type: proposal
 track: infra+distribution+economics
 date: 2026-07-24
+closed-by: cartago (consolidated evidence pass 2026-07-26)
+closed-evidence:
+  - 3 commits referencing f00148 recovered from git log --grep (precedes convention)
+  - all declared Files verified to exist via 3-commit batch
+shipped-in:
+  - 6b8c5a0e # feat(f00148): S3 e2e shim invocation + arg-forwarding fix — polyglot shim ships
+  - eedd58a3 # feat(f00148): S1 Go source scaffold + S2 install.script.ts (TS, not sh)
+  - 5660f729 # fix(proposals): correct stale Files: refs in a00067 done/audits/
 ---
 
 # f00148 — polyglot shim MVP — single-binary install for end-users
@@ -44,10 +52,10 @@ Build: `go build -o dist/mcp-vertex-shim ./bin/mcp-vertex-shim` (Go 1.22+, see `
 
 ### S2 — Install script (`curl | sh` path)
 - **Status**: done
-- **Files**: `scripts/install.sh`, `scripts/install.spec.ts`
+- **Files**: `scripts/install.script.ts`, `scripts/install.spec.ts`
 - **Gate**: shell + tests
 
-`scripts/install.sh` is a portable bash script (no external dependencies other than `curl`/`wget`/`bun`). Flags: `--version <tag>`, `--repo <slug>`, `--dir <path>`, `--local`, `--help`. OS+arch detection via `uname`; supports linux/amd64, linux/arm64, darwin/amd64, darwin/arm64. Idempotent: re-running overwrites the existing install. When the prebuilt binary is not yet published (the current state), the script degrades gracefully and writes a tiny `bun`-dispatcher shell stub so `~/.local/bin/mcp-vertex --help` still exits 0 against the local repo. `--local` always uses the bun-dispatcher path (development fallback). 9/9 tests pass (`scripts/install.spec.ts`): help, --local writes a dispatcher, idempotent, missing-binary fallback writes a dispatcher, unknown args rejected.
+`scripts/install.script.ts` is a portable bash script (no external dependencies other than `curl`/`wget`/`bun`). Flags: `--version <tag>`, `--repo <slug>`, `--dir <path>`, `--local`, `--help`. OS+arch detection via `uname`; supports linux/amd64, linux/arm64, darwin/amd64, darwin/arm64. Idempotent: re-running overwrites the existing install. When the prebuilt binary is not yet published (the current state), the script degrades gracefully and writes a tiny `bun`-dispatcher shell stub so `~/.local/bin/mcp-vertex --help` still exits 0 against the local repo. `--local` always uses the bun-dispatcher path (development fallback). 9/9 tests pass (`scripts/install.spec.ts`): help, --local writes a dispatcher, idempotent, missing-binary fallback writes a dispatcher, unknown args rejected.
 
 ### S3 — E2E smoke: end-to-end invocation without node/bun
 - **Status**: done

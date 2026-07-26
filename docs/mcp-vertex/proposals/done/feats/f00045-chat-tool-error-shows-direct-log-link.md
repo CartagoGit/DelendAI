@@ -6,6 +6,13 @@ status: done
 type: proposal
 track: core+client+extension+tests
 date: 2026-06-21
+closed-by: cartago (consolidated evidence pass 2026-07-26)
+closed-evidence:
+  - 2 commits referencing f00045 recovered from git log --grep (precedes convention)
+  - all declared Files verified to exist via 2-commit batch
+shipped-in:
+  - acfc0b21 # feat(f00045): clickable log link on tool failures (S2 client, S3 vscode, S4 e2e)
+  - 57017adf # fix(a00032): relocate issues specs to tests/ + fix S7 preset-table test
 ---
 
 # f00045 — chat tool error surfaces a direct clickable link to its log entry

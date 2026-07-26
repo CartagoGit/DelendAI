@@ -6,6 +6,13 @@ status: done
 type: proposal
 track: tests
 date: 2026-07-13
+closed-by: cartago (consolidated evidence pass 2026-07-26)
+closed-evidence:
+  - 2 commits referencing t00002 recovered from git log --grep (precedes convention)
+  - all declared Files verified to exist via 2-commit batch
+shipped-in:
+  - 61e33d69 # feat(proposals): a00057 — Files: doc drift is a recurring class; permanent ratch
+  - b3abc41e # docs(audit): a00053 exhaustive monorepo audit + 5 derived proposals; fix(proposa
 ---
 
 # t00002 — Cobertura de branches en engines de concurrencia y fix del PARSE_ERROR del coverage V8

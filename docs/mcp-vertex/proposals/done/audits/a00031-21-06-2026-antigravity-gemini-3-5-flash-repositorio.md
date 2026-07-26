@@ -9,6 +9,12 @@ ownership:
   - { agent: implementation_runner, task: 'S1: Execute audit and document findings' }
 acceptance:
   - { command: bun run validate, expect: exit0 }
+closed-by: cartago (consolidated evidence pass 2026-07-26)
+closed-evidence:
+  - 1 commits referencing a00031 recovered from git log --grep (precedes convention)
+  - all declared Files verified to exist via 1-commit batch
+shipped-in:
+  - 18f3369e # refactor(solid+deps): complete the SOLID pass on rules, web-fetch, vscode, ui-ex
 ---
 
 # a00031 — Auditoría de integración MCP y estado del repositorio — Antigravity (Gemini 3.5 Flash)

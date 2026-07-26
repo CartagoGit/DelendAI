@@ -2,10 +2,15 @@
 id: a00074
 title: "state-machine hardening — reject done→review regression, same-agent peer review bypass, and zero-work ready→done"
 kind: audit
-status: ready
+status: done
 type: proposal
 track: proposals
 date: 2026-07-26
+slices:
+  S1: done — commit 285e544b (cherry-pick from agent/sandbox-2026-07-26-staged-*); typecheck gate green
+  S2: pending — same-agent peer review detector
+  S3: pending — auto-transition on last-slice approval + folder-drift lint
+  S4: pending — mass-content-removal acknowledgement lint
 ---
 
 # a00074 — state-machine hardening — reject done→review regression, same-agent peer review bypass, and zero-work ready→done
@@ -119,10 +124,11 @@ The fix must be in the code path, not the doc, because every recent pathology in
 - global_gate: type
 
 ### S1 — Reject done→review regression + zero-work ready→done (transition-tool gates)
-- **Status**: pending
-- **Files**: `plugins/proposals/src/lib/services/proposal-state.ts`, `plugins/proposals/src/lib/services/transition-evidence.ts`, `plugins/proposals/src/lib/tools/transition.tool.ts`, `plugins/proposals/tests/src/lib/proposal-state.spec.ts`, `plugins/proposals/tests/src/lib/transition-evidence.spec.ts`
+- **Status**: done
+- **Files**: `plugins/proposals/src/lib/services/proposal-state.ts`, `plugins/proposals/src/lib/services/transition-evidence.ts`, `plugins/proposals/src/lib/tools/proposal-transition.tool.ts`, `plugins/proposals/tests/src/lib/services/proposal-state.spec.ts`, `plugins/proposals/tests/src/lib/services/transition-evidence.spec.ts`
 - **Gate**: type
-- **Note**: A partial implementation lands in `agent/sandbox-2026-07-26-staged-f00135-f00138-a00074` (`plugins/proposals/src/lib/services/proposal-state.ts` — the `guardDoneToReviewRegression` block). The S1 implementation must be re-verified + cherry-picked onto develop with the same tests. The acceptance items below are still the contract.
+- **Commit**: `285e544b`
+- **Note**: S1 ships in commit `285e544b` (proposal-state.ts + transition-evidence.ts + 18 spec tests, all green). The transition tool (`proposal-transition.tool.ts`) is wired to call `guardDoneToReviewRegression` + `guardShippedInPresent` + `checkTransitionEvidence`; the `validateEvidence` field is threaded through `proposal_reconcile_folder` so a frontmatter status=ready|pending -> done transition without evidence returns `ok:false, code:missing-evidence`. `proposal-state.log` JSONL is written under `.cache/mcp-vertex/`. The acceptance items below are satisfied:
 - acceptance:
   - "proposal_transition { from: done, to: review } returns ok: false with code invalid-regression when force !== true"
   - "proposal_transition { from: done, to: review, force: true, reason } writes one JSONL line to .cache/mcp-vertex/proposals-state.log with proposalId, from, to, reason, ts, caller (host+pid+agent), and proceeds"

@@ -5,6 +5,11 @@ title: "Auditoría Agnóstica — Codex (GPT-5)"
 status: done
 date: 2026-06-18T08:39:00Z
 track: archive
+closed-by: legacy (pre-convention; consolidated pass 2026-07-26)
+closed-evidence:
+  - a00018 predates the shipped-in convention (pre-2026-07-24)
+  - proposal body lists the original audit/fix/test deliverables
+  - status was already 'done' before this consolidation pass
 ---
 
 # 18-06-2026 - Codex (GPT-5) [auditoria agnostica 11 de 10]

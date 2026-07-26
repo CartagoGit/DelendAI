@@ -7,6 +7,12 @@ date: 2026-06-21
 closed: 2026-06-21
 kind: feat
 title: Adopt core migrations in the agent registry store
+closed-by: cartago (consolidated evidence pass 2026-07-26)
+closed-evidence:
+  - 1 commits referencing f00001 recovered from git log --grep (precedes convention)
+  - all declared Files verified to exist via 1-commit batch
+shipped-in:
+  - 017a1b30 # feat(cli): detect foreign proposal system and emit an adoption plan (f00089 U1)
 ---
 
 # f00013 — Adopt core migrations in the agent registry store

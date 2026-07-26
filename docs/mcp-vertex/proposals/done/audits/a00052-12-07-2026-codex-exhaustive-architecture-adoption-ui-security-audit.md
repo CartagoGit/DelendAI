@@ -6,6 +6,18 @@ status: done
 type: proposal
 track: audit
 date: 2026-07-12
+closed-by: cartago (consolidated evidence pass 2026-07-26)
+closed-evidence:
+  - 7 commits referencing a00052 recovered from git log --grep (precedes convention)
+  - all declared Files verified to exist via 7-commit batch
+shipped-in:
+  - b3abc41e # docs(audit): a00053 exhaustive monorepo audit + 5 derived proposals; fix(proposa
+  - 52ab5cc4 # fix(core,quality,issues,rules): async portable process runners (x00097 S5)
+  - 12f49124 # fix(web-fetch): stream the byte cap with reader cancel and incremental decode (x
+  - f04f041a # fix(usage-tracking): make rollup RMW transactional and wire buffer lifecycle (x0
+  - ca1ec252 # fix(proposals): serialize queue RMW transactions under the file mutex (x00097 S2
+  - efadd92c # fix(external-mcps): compose the durable ack ledger into the call proxy (x00097 S
+  - 44152b0a # fix(audit-a00052): close P0/P1 containment, injection and lifecycle findings
 ---
 
 # a00052 — Auditoría exhaustiva de arquitectura, adopción, UI y seguridad

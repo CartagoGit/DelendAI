@@ -5,6 +5,11 @@ title: Resumen de la sesión autónoma — 2026-06-15 (Claude Code · madrugada)
 status: done
 date: 2026-06-15
 track: general
+closed-by: legacy (pre-convention; consolidated pass 2026-07-26)
+closed-evidence:
+  - n00001 predates the shipped-in convention (pre-2026-07-24)
+  - proposal body lists the original audit/fix/test deliverables
+  - status was already 'done' before this consolidation pass
 ---
 
 # Resumen de la sesión autónoma — 2026-06-15, **madrugada → ~08:05** (Claude Code, Opus 4.8)

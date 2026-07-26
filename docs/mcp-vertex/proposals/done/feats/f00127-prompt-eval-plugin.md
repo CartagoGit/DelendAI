@@ -5,6 +5,16 @@ title: prompt-eval plugin — benchmark a prompt/task across discovered provider
 status: done
 date: 2026-07-23
 track: plugin+eval+routing
+closed-by: cartago (consolidated evidence pass 2026-07-26)
+closed-evidence:
+  - 5 commits referencing f00127 recovered from git log --grep (precedes convention)
+  - all declared Files verified to exist via 5-commit batch
+shipped-in:
+  - 4f75ec49 # fix(proposals): prune stale f00127/f00129 duplicates from ready+in-progress
+  - 559b8cf8 # fix(f00127): align calibration sample threshold
+  - bb9add92 # feat(f00127): S3 calibration write-through + prompt-eval wiring
+  - e6533f9e # fix(preset-catalog): align source with expected test counts for f00128 S1 (datab
+  - c1067568 # feat(f00127): S3 calibration write-through + plugin README
 ---
 
 # f00127 — prompt-eval plugin

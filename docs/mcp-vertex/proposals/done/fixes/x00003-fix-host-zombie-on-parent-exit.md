@@ -8,6 +8,11 @@ track: core+host
 related:
   - f00016 # feat: proposal state machine + kinds + scaffolds (DFA + linter)
   - x00001 # fix: audit type errors / LSP dist cascade (precedent for surgical fix)
+closed-by: legacy (pre-convention; consolidated pass 2026-07-26)
+closed-evidence:
+  - x00003 predates the shipped-in convention (pre-2026-07-24)
+  - proposal body lists the original audit/fix/test deliverables
+  - status was already 'done' before this consolidation pass
 ---
 
 # x00006 — fix(host): install signal handlers so Bun doesn't zombie on parent exit

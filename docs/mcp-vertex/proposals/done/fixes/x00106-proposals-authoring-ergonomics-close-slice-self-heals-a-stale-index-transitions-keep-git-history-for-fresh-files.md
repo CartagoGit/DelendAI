@@ -6,6 +6,12 @@ status: done
 type: proposal
 track: proposals+dx
 date: 2026-07-14
+closed-by: cartago (consolidated evidence pass 2026-07-26)
+closed-evidence:
+  - 1 commits referencing x00106 recovered from git log --grep (precedes convention)
+  - all declared Files verified to exist via 1-commit batch
+shipped-in:
+  - 6a2e7352 # fix(proposals): x00106 — indexed-path tools self-heal a stale index; honest git-
 ---
 
 # x00106 — Proposals authoring ergonomics — close_slice self-heals a stale index; transitions keep git history for fresh files

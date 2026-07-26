@@ -6,6 +6,12 @@ status: done
 type: proposal
 track: general
 date: 2026-07-12
+closed-by: cartago (consolidated evidence pass 2026-07-26)
+closed-evidence:
+  - 1 commits referencing f00109 recovered from git log --grep (precedes convention)
+  - all declared Files verified to exist via 1-commit batch
+shipped-in:
+  - ccbe4c24 # feat(core): surface dead-config diagnostics at boot (f00109 S1)
 ---
 
 # f00109 — Dead-config diagnostics: warn when docsDir or configured roots do not exist

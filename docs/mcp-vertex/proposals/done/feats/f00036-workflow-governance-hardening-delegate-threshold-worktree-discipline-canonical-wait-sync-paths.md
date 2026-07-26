@@ -6,6 +6,12 @@ status: done
 type: proposal
 track: proposals-plugin+workflow+skills+docs
 date: 2026-06-21
+closed-by: cartago (consolidated evidence pass 2026-07-26)
+closed-evidence:
+  - 1 commits referencing f00036 recovered from git log --grep (precedes convention)
+  - all declared Files verified to exist via 1-commit batch
+shipped-in:
+  - b0e94ac7 # feat(svg): add plugin issues logo
 ---
 
 # f00045 — Workflow governance hardening — delegate threshold, worktree discipline, canonical wait/sync paths

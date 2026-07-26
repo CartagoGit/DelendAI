@@ -5,6 +5,15 @@ title: api plugin — OpenAPI-aware request building, contract validation and mo
 status: done
 date: 2026-07-23
 track: plugin+api+integration
+closed-by: cartago (consolidated evidence pass 2026-07-26)
+closed-evidence:
+  - 4 commits referencing f00130 recovered from git log --grep (precedes convention)
+  - all declared Files verified to exist via 4-commit batch
+shipped-in:
+  - 9672738e # feat(f00130): S3 — api_mock registration + knowledge catalog + README
+  - 217e1609 # feat(f00130): add api_validate contract validator
+  - 0f407093 # feat(f00130): S2 api_validate — contract validation against OpenAPI schema
+  - dcac0462 # feat(f00130): S1 — api plugin spec parse + request build (api_call)
 ---
 
 # f00130 — api plugin

@@ -5,6 +5,11 @@ title: "Auditoría Exhaustiva — Antigravity (Claude Sonnet 4.6 Thinking)"
 status: done
 date: 2026-06-16T23:43:13Z
 track: archive
+closed-by: legacy (pre-convention; consolidated pass 2026-07-26)
+closed-evidence:
+  - a00008 predates the shipped-in convention (pre-2026-07-24)
+  - proposal body lists the original audit/fix/test deliverables
+  - status was already 'done' before this consolidation pass
 ---
 
 # 🔍 Auditoría Exhaustiva — `mcp-vertex` y Plugins

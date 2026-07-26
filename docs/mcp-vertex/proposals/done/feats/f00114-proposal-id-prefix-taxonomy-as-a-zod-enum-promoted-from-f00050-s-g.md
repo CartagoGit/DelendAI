@@ -6,6 +6,14 @@ status: done
 type: proposal
 track: proposals+lint
 date: 2026-07-14
+closed-by: cartago (consolidated evidence pass 2026-07-26)
+closed-evidence:
+  - 3 commits referencing f00114 recovered from git log --grep (precedes convention)
+  - all declared Files verified to exist via 3-commit batch
+shipped-in:
+  - aae0b627 # fix(proposals): reclassify l00001 → r00013 (refactor) — f00114 overcorrection
+  - d10ee02b # feat(proposals): f00114 — prefix taxonomy as executable Zod schema + tree drift 
+  - 464bce29 # feat(proposals): promote f00050 S-D and S-G — triggers fired by owner decision (
 ---
 
 # f00114 — Proposal-ID prefix taxonomy as a Zod enum — promoted from f00050 S-G

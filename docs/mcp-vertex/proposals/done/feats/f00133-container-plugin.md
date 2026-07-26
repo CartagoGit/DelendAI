@@ -5,6 +5,19 @@ title: container plugin — read-only Docker/Kubernetes inspection, Dockerfile l
 status: done
 date: 2026-07-23
 track: plugin+container+runtime
+closed-by: cartago (consolidated evidence pass 2026-07-26)
+closed-evidence:
+  - 8 commits referencing f00133 recovered from git log --grep (precedes convention)
+  - all declared Files verified to exist via 8-commit batch
+shipped-in:
+  - f1552d05 # fix(core): update preset-catalog spec + bump swarm token budget
+  - 4b3b00ec # feat(f00133): S2 container logs + Dockerfile lint
+  - a1dcfa0c # feat(f00133): close container plugin — S1+S2+S3 done
+  - 7b051b3d # feat(f00133 S3): README + consent gate documentation
+  - 292b0d5e # fix(f00133 S1): DL3042 regex word-boundary + parse-dockerfile spec raw contract
+  - fad3cee6 # feat(container): S1 read-only inspection (f00133)
+  - de8cc74f # fix(f00133 S3): container-build extract image id regex — match sha256: prefix
+  - 4d92d24e # feat(f00133 S3): wire buildContainerBuildToolRegistrations import in container p
 ---
 
 # f00133 — container plugin

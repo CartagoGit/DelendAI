@@ -5,6 +5,14 @@ title: browser plugin — Playwright-backed navigation, screenshots, DOM interac
 status: done
 date: 2026-07-23
 track: plugin+browser+verification
+closed-by: cartago (consolidated evidence pass 2026-07-26)
+closed-evidence:
+  - 3 commits referencing f00125 recovered from git log --grep (precedes convention)
+  - all declared Files verified to exist via 3-commit batch
+shipped-in:
+  - 321e55d8 # feat(f00125): S3 page verification + E2E recipe + wiring
+  - 39ba92d1 # feat(f00125): S1 navigation + screenshot + DOM query
+  - e1c50eaf # feat(f00125): S2 — browser interaction + accessibility tools
 ---
 
 # f00125 — browser plugin

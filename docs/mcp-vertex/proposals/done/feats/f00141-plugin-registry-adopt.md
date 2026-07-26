@@ -5,6 +5,19 @@ title: plugin registry + one-command adopt — a discoverable index of plugins w
 status: done
 date: 2026-07-23
 track: plugin+registry+dx
+closed-by: cartago (consolidated evidence pass 2026-07-26)
+closed-evidence:
+  - 8 commits referencing f00141 recovered from git log --grep (precedes convention)
+  - all declared Files verified to exist via 8-commit batch
+shipped-in:
+  - 0e80a83d # feat(f00142): S3 opt-in LLM rationale + README — auto-plugin-selector ships
+  - 56630bda # feat(web): f00141 S3 — /plugins catalog page
+  - faa75958 # feat(core): f00141 S3 — plugin_search MCP tool
+  - 99fa8b1c # feat(f00141): S3 plugin_search MCP tool
+  - b81390a7 # feat(cli): f00141 S2 — mcpv plugin add group command
+  - 5d5ec954 # feat(core): f00141 S2 — plugin_add tool + CLI
+  - 04132f39 # feat(f00141): S2 plugin_add (install + wire + config recipe)
+  - 586a545b # feat(f00141): S1 plugin registry index + resolver
 ---
 
 # f00141 — plugin registry + one-command adopt

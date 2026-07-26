@@ -22,6 +22,19 @@ acceptance:
     - { command: bun run lint:proposals, expect: exit0 }
     - { command: bun run test, expect: exit0 }
     - { command: bun run validate, expect: exit0 }
+closed-by: cartago (consolidated evidence pass 2026-07-26)
+closed-evidence:
+  - 8 commits referencing f00067 recovered from git log --grep (precedes convention)
+  - all declared Files verified to exist via 8-commit batch
+shipped-in:
+  - d10ee02b # feat(proposals): f00114 — prefix taxonomy as executable Zod schema + tree drift 
+  - 425581f2 # feat(web): providers static parity page (f00098 S5)
+  - e3e0b1b7 # feat(f00067a): S1+S3 — providers config schema + real mcp-server stdio transport
+  - 346fe8cc # feat(f00067): S9 — register orchestrator/usage-tracking tool i18n + CLI surface 
+  - c0ce9d76 # feat(f00067): S8 — no-cleartext-secrets lint (secrets posture complete)
+  - 4e426e34 # feat(f00067): S7 — spend governance (circuit breaker + advise_spend + auto-bypas
+  - 0866f368 # feat(orchestrator-runner/f00067): S6 — invocation manager + per-kind invokers + 
+  - 75642a91 # feat(orchestrator-runner/f00067): S5 — bootstrap wizard + quota tracking
 ---
 
 # f00067 — Multi-model orchestrator

@@ -5,6 +5,12 @@ title: "Auditoría Exhaustiva — Antigravity (Gemini 3.5 Flash (High)) — repo
 status: done
 date: 2026-06-25T23:37:00Z
 track: archive
+closed-by: cartago (consolidated evidence pass 2026-07-26)
+closed-evidence:
+  - 1 commits referencing a00042 recovered from git log --grep (precedes convention)
+  - all declared Files verified to exist via 1-commit batch
+shipped-in:
+  - aded62ac # fix(core): bootstrap file reader uses async I/O (f00066, closes a00042 H5)
 ---
 
 # 25-06-2026 · Auditoría Exhaustiva — `@mcp-vertex/core`

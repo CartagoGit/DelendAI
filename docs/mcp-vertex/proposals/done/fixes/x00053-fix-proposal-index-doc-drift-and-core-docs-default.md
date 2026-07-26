@@ -25,6 +25,12 @@ acceptance:
     - { command: bun run lint:proposals,     expect: exit0 }
     - { command: bun run validate,           expect: exit0 }
     - { command: grep -rn "docs/mcp-vertex/proposals/index.json" plugins/proposals/src plugins/proposals/skills packages/core/src packages/core/skills, expect: only in x00053 sources (locate.spec.ts comment, blocked-by.spec.ts const, layout-relocation.spec.ts F3 — pre-existing intentional cases) and the .gitignore rule }
+closed-by: cartago (consolidated evidence pass 2026-07-26)
+closed-evidence:
+  - 1 commits referencing x00053 recovered from git log --grep (precedes convention)
+  - all declared Files verified to exist via 1-commit batch
+shipped-in:
+  - 5d7ec63c # fix(proposals): doc-drift after x00052 — CORE_DOCS default + 6 source doc-commen
 ---
 
 # x00053 — Doc-drift from x00052: stale `docs/.../index.json` references

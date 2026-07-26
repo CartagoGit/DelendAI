@@ -5,6 +5,14 @@ title: semantic search — optional local embedding layer + hybrid ranking on th
 status: done
 date: 2026-07-23
 track: plugin+search+navigation
+closed-by: cartago (consolidated evidence pass 2026-07-26)
+closed-evidence:
+  - 3 commits referencing f00124 recovered from git log --grep (precedes convention)
+  - all declared Files verified to exist via 3-commit batch
+shipped-in:
+  - 5f1b2a5e # feat(f00124): S3 optional API embeddings + pack auto-tuning
+  - 1834724e # feat(f00124): S2 local incremental embedding index
+  - 5d1fef1e # feat(f00124): S1 hybrid ranker (pure RRF)
 ---
 
 # f00124 — semantic search
