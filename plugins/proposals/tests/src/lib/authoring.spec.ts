@@ -1,4 +1,4 @@
-import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -37,6 +37,7 @@ describe('proposal authoring (create → board → close)', async () => {
 	let root = '';
 	let opts: IAuthoringToolOptions;
 	beforeEach(() => {
+		delete process.env.MCP_HOST;
 		root = mkdtempSync(join(tmpdir(), 'authoring-'));
 		opts = {
 			namespacePrefix: 'proposals',
@@ -59,7 +60,10 @@ describe('proposal authoring (create → board → close)', async () => {
 			}),
 		};
 	});
-	afterEach(() => rmSync(root, { recursive: true, force: true }));
+	afterEach(() => {
+		delete process.env.MCP_HOST;
+		rmSync(root, { recursive: true, force: true });
+	});
 
 	// f00016 S13: id is now optional — omit it and pass `kind` to get a
 	// race-safe allocated id instead.
@@ -213,6 +217,15 @@ describe('proposal authoring (create → board → close)', async () => {
 		});
 		const review = await capture(buildReviewRegistration(opts));
 		const file = join(opts.proposalsDirAbs, 'ready', 'f00084-review-me.md');
+		writeFileSync(
+			file,
+			readFileSync(file, 'utf8').replace(
+				'status: ready',
+				'status: ready\nshipped-in: [ship123]',
+			),
+			'utf8',
+		);
+		process.env.MCP_HOST = 'implementer-host';
 
 		// Implementer submits for review.
 		const submitted = parse(
@@ -263,6 +276,7 @@ describe('proposal authoring (create → board → close)', async () => {
 			}),
 		);
 		expect(resubmitted.status).toBe('in_review');
+		process.env.MCP_HOST = 'reviewer-host';
 		const approved = parse(
 			await review({
 				proposalId: 'f00084',

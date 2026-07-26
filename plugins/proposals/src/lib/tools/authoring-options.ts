@@ -32,6 +32,8 @@ export interface IAuthoringToolOptions {
 	readonly lockPathAbs: string;
 	/** Append-only peer-review journal used by proposal_review + done gate. */
 	readonly peerReviewLogPathAbs?: string;
+	/** a00074 S2: per-submit caller identity journal for same-process review detection. */
+	readonly reviewIdentityDeps?: import('../services/review-identity').IReviewIdentityDeps;
 	/** f00016 S13: absolute path of the per-kind id counter file. */
 	readonly counterPathAbs: string;
 	/**
