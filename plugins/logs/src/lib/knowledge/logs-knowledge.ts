@@ -26,7 +26,7 @@ export const buildOperationalEventLogKnowledge = (
 		'',
 		'- `ts` (ISO 8601), `kind` (lifecycle hook: `tool-started` / `tool-failed` / …).',
 		'- `outcome` (`ok` / `failed` / `timed-out` / `cancelled` / `dead` / `idle` / `unknown`) — drives which stream the event lands in.',
-		'- `severity` (syslog 7-level: `debug` / `info` / `notice` / `warning` / `error` / `critical` / `alert` / `emergency`) — operator-facing alarm level, default `severityForOutcome(outcome)`. `error`+ means "wake someone up".',
+		'- `severity` (syslog 8-level: `debug` / `info` / `notice` / `warning` / `error` / `critical` / `alert` / `emergency`) — operator-facing alarm level, default `severityForOutcome(outcome)`. `error`+ means "wake someone up".',
 		'- `incidentType` (lower-case slug, e.g. `tool-failure`, `state-inconsistency`, `lock-conflict`, `secret-detected`) — the operator-facing code for WHAT BROKE. Defaults to `KIND_TO_INCIDENT_TYPE[kind]`. Lets a peer agent group recurring bugs by code, not by free-text.',
 		'- `agent` / `files` (top-level, not buried in `meta`) — filterable by `query` / `tail` / `correlate` even with `includeMeta:false`.',
 		'- `callId` (in `meta`) — pairs `tool-started` with its eventual `tool-completed` / `tool-failed` even when the same tool runs concurrently.',

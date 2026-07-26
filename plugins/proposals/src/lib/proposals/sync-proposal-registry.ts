@@ -78,7 +78,7 @@ interface IProposalEntry {
 	date: string;
 	extras?: IProposalExtras;
 	/**
-	 * `true` when the proposal lives under `legacy/closed/` — the a00076
+	 * `true` when the proposal lives under `legacy/closed/` — the f00076
 	 * archive folder — rather than the active `done/<kind>/` subtree. The
 	 * status field still reflects the original workflow status (today always
 	 * `done`); `archived` is a *location* marker, not a workflow state, so the
@@ -231,7 +231,7 @@ const readProposalFile = async (
 	const extras = yamlBlock
 		? extractExtras(parseFrontmatterBlock(yamlBlock))
 		: undefined;
-	// a00076: a proposal under `legacy/closed/` is archived. We tag the entry
+	// f00076: a proposal under `legacy/closed/` is archived. We tag the entry
 	// with `archived: true` so consumers (the index dashboard, the closed
 	// frozen guard lint, `proposal_diagnose`) can recognise it without
 	// having to compare paths. `file` keeps its proposalsDir-relative form
@@ -696,7 +696,7 @@ export async function syncProposalRegistry(
 			...Object.values(KIND_TO_DONE_SUBFOLDER).map((sub) =>
 				join(proposalsDir, 'done', sub),
 			),
-			// a00076 S1: archive sub-folders under `legacy/closed/<kind>/`
+			// f00076 S1: archive sub-folders under `legacy/closed/<kind>/`
 			// mirror the `done/<kind>/` layout so reaped proposals stay
 			// indexed (with `archived: true`) without living in the active
 			// `done/` tree. `reconcileFolders` will not touch these because

@@ -178,6 +178,7 @@ export {
 } from '../lib/plugins/pack-defaults-overlay';
 export type {
 	IPluginOptionsMap,
+	IStackPackMeta,
 	IPackId,
 } from '../lib/plugins/pack-defaults-overlay';
 export { deriveSourceRoots } from '../lib/bootstrap/derive-config';

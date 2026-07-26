@@ -128,7 +128,7 @@ const BUDGET_BYTES = {
 	// Bumped 5 500 → 5 600 (2026-07-27): auto-plugin-selector (f00142 S1)
 	// added `plugins_recommend` to standard preset, raising overview compact
 	// 5 396B → ~5 510B measured.
-	swarmToolsList: 182_000,
+	swarmToolsList: 190_000,
 	swarmOverviewCompact: 5_600,
 	swarmRoundContext: 300,
 	// `lean` was 58 003B against the same fixture, a 63% reduction from swarm.

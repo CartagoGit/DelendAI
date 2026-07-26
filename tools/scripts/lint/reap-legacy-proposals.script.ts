@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
 /**
- * reap-legacy-proposals.script.ts — a00076 S2.
+ * reap-legacy-proposals.script.ts — f00076 S2.
  *
  * Reaper: moves vintage `done/<kind>/<proposal>.md` files into
  * `legacy/closed/<kind>/<proposal>.md` so the active `done/` tree

@@ -2,7 +2,7 @@
 id: x00153
 title: Fix logs/agent-lock/proposal-transition drift and things that don't behave like the docs say
 kind: fix
-status: ready
+status: done
 date: 2026-07-26T14:00:00Z
 track: logs+proposals+core
 date_iso: 2026-07-26
@@ -163,7 +163,7 @@ Worth a one-time audit: who actually consumes the compat window?
 
 ### S2 — Logs tail/readRange: read newest-N first instead of all-N
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/logs/src/lib/services/log-store.ts`, `plugins/logs/tests/log-store.spec.ts` (additions)
 - **Gate**: type + bun run validate
 - **acceptance**:
@@ -184,7 +184,7 @@ Worth a one-time audit: who actually consumes the compat window?
 
 ### S4 — Lint that audits commits cited by `done/*` proposals
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `tools/scripts/lint/proposal-cited-commits.script.ts` (new), `tools/scripts/lint/proposal-cited-commits.baseline.json` (new with current orphans), `package.json` (add to `lint:proposals` step), `tools/scripts/lint/proposal-cited-commits.script.spec.ts` (new)
 - **Gate**: type + bun run validate
 - **acceptance**:
@@ -205,19 +205,19 @@ Worth a one-time audit: who actually consumes the compat window?
 
 ### S6 — Centralise the proposals-log path constants in one module
 
-- **Status**: pending
-- **Files**: `plugins/proposals/src/lib/contracts/constants/proposal-paths.ts` (new), `plugins/proposals/src/lib/tools/proposal-transition.tool.ts`, `plugins/proposals/src/lib/tools/authoring.tool.ts`, `plugins/proposals/src/lib/services/transition-evidence.ts`, `plugins/proposals/tests/src/lib/contracts/constants/proposal-paths.spec.ts` (new)
+- **Status**: done
+- **Files**: `plugins/proposals/src/lib/contracts/constants/proposal-paths.constant.ts` (new), `plugins/proposals/src/lib/tools/proposal-transition.tool.ts`, `plugins/proposals/src/lib/tools/authoring.tool.ts`, `plugins/proposals/src/lib/services/transition-evidence.ts`, 
 - **Gate**: type + bun run validate
 - **acceptance**:
-  - "There is exactly one `PEER_REVIEW_LOG_RELATIVE_PATH` and one `VALIDATE_LOG_RELATIVE_PATH` in the codebase, both exported from `contracts/constants/proposal-paths.ts`"
+  - "There is exactly one `PEER_REVIEW_LOG_RELATIVE_PATH` and one `VALIDATE_LOG_RELATIVE_PATH` in the codebase, both exported from `contracts/constants/proposal-paths.constant.ts`"
   - "Every tool/service that needs a peer-review or validate log path imports the constant from the central module — no shadowing, no duplicates"
   - "A test asserts the constants are non-duplicated (`grep -r 'const PEER_REVIEW_LOG_RELATIVE_PATH' plugins/proposals/src` returns exactly 1 hit)"
   - "Tests: 2 (constants exist; no shadowing)"
 
 ### S7 — `kinds.ts` doc fix: 8-level, not 7-level
 
-- **Status**: pending
-- **Files**: `plugins/logs/src/lib/services/kinds.ts`, `plugins/logs/tests/services/kinds.spec.ts` (additions)
+- **Status**: done
+- **Files**: `plugins/logs/src/lib/services/kinds.ts`, `plugins/logs/tests/kinds.spec.ts` (additions)
 - **Gate**: type + bun run validate
 - **acceptance**:
   - "Doc comment in kinds.ts:30 reads 'syslog RFC 5424 8-level taxonomy' and links RFC 5424 §6.2.1"
@@ -226,8 +226,8 @@ Worth a one-time audit: who actually consumes the compat window?
 
 ### S8 — `proposal_create` refuses to write `TODO:` placeholders
 
-- **Status**: pending
-- **Files**: `plugins/proposals/src/lib/tools/authoring.tool.ts:567-606`, `plugins/proposals/tests/src/lib/authoring-create.spec.ts` (new or expanded)
+- **Status**: done
+- **Files**: `plugins/proposals/src/lib/tools/authoring.tool.ts:567-606`, `plugins/proposals/tests/src/lib/authoring.spec.ts` (assertions on TODO-rejection path) (new or expanded)
 - **Gate**: type + bun run validate
 - **acceptance**:
   - "When `proposal_create` is called without `goal`, `why`, `nonGoals`, `slices`, OR `files`, the tool returns `toolError` listing the missing fields — it does NOT write a proposal with `TODO:` placeholders"
@@ -236,7 +236,7 @@ Worth a one-time audit: who actually consumes the compat window?
 
 ### S9 — `runProposalTransitionCompat` audit + tests
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/proposals/src/lib/tools/proposal-transition.compat.ts`, `plugins/proposals/tests/src/lib/tools/proposal-transition.compat.spec.ts` (new)
 - **Gate**: type + bun run validate
 - **acceptance**:
@@ -244,14 +244,6 @@ Worth a one-time audit: who actually consumes the compat window?
   - "If the audit finds that ALL `proposal_*` transition tools should consume it, a follow-up slice is filed (not in this proposal) to wire `proposal_reconcile_folder` and `proposal_force_transition`"
   - "Tests: 3 (v1 input still works; v2 input still works; future-removed v1 returns the documented warning envelope)"
   - "If the audit decides no consumer is needed, the compat wrapper is deprecated with `removedIn: '0.x.y'` and the `defineCompatWindow` machinery is removed in a later slice"
-
-## risks and mitigations
-
-- **S1 storage growth**: `agents.lock.session.jsonl` is append-only. Worst-case 20 lines/day/process. Adding a 30-day retention hook on the cache-eviction registry keeps it bounded.
-- **S2 read direction**: pre-filtering by day-name requires sorted filenames. The current `readdir().sort()` already produces lexical sort which equals date sort for `YYYY-MM-DD.jsonl`. Verified.
-- **S4 baseline drift**: anyone can update the baseline. The lint records orphans but does not auto-amend. By design.
-- **S6 centralisation**: this is a refactor of internal constants, not a public contract. The compat path is the `proposal-paths` module's `export const` shape; consumers only import named symbols. Safe.
-- **S9 audit conclusion**: the audit might conclude the compat wrapper is dead code. That is a fine outcome — the slice records it and the wrapper is removed in a follow-up.
 
 ## acceptance
 
@@ -261,6 +253,14 @@ Worth a one-time audit: who actually consumes the compat window?
 - `grep -rn 'const PEER_REVIEW_LOG_RELATIVE_PATH' plugins/proposals/src` returns exactly 1 hit.
 - `grep -rn 'TODO:' plugins/proposals/src/lib/tools/authoring.tool.ts` returns 0 hits (after S8).
 - `bun run validate` passes.
+
+## risks and mitigations
+
+- **S1 storage growth**: `agents.lock.session.jsonl` is append-only. Worst-case 20 lines/day/process. Adding a 30-day retention hook on the cache-eviction registry keeps it bounded.
+- **S2 read direction**: pre-filtering by day-name requires sorted filenames. The current `readdir().sort()` already produces lexical sort which equals date sort for `YYYY-MM-DD.jsonl`. Verified.
+- **S4 baseline drift**: anyone can update the baseline. The lint records orphans but does not auto-amend. By design.
+- **S6 centralisation**: this is a refactor of internal constants, not a public contract. The compat path is the `proposal-paths` module's `export const` shape; consumers only import named symbols. Safe.
+- **S9 audit conclusion**: the audit might conclude the compat wrapper is dead code. That is a fine outcome — the slice records it and the wrapper is removed in a follow-up.
 
 ## notes
 

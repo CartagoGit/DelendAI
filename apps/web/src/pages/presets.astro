@@ -6,7 +6,10 @@ import {
 	cellStateFor,
 	totalUniquePlugins,
 } from '#LIB/preset-table';
-import { describeStackPacks } from '@mcp-vertex/core/public';
+import {
+	describeStackPacks,
+	type IStackPackMeta,
+} from '@mcp-vertex/core/public';
 
 const lang: Lang = 'en';
 const t = useTranslations(lang);
@@ -96,7 +99,7 @@ const stackPacks = describeStackPacks();
 						pure and lives in <code>@mcp-vertex/core/public</code>.
 					</p>
 					<ul class="presets__packs-list">
-						{stackPacks.map((pack) => (
+						{stackPacks.map((pack: IStackPackMeta) => (
 							<li class="presets__packs-item">
 								<strong>{pack.title}</strong>
 								<code class="presets__packs-id">--pack={pack.id}</code>
