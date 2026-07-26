@@ -22,7 +22,18 @@ import { extname, join } from 'node:path';
 import { collectSliceStatuses } from '../../../plugins/proposals/src/lib/services/proposal-completeness';
 import { repoRoot } from '../lib/monorepo-paths';
 
-const PROPOSAL_KINDS = ['audits', 'feats', 'fixes', 'chores', 'docs', 'refactors', 'perfs', 'tests', 'plans', 'resumes'];
+const PROPOSAL_KINDS = [
+	'audits',
+	'feats',
+	'fixes',
+	'chores',
+	'docs',
+	'refactors',
+	'perfs',
+	'tests',
+	'plans',
+	'resumes',
+];
 
 const frontmatter = (content: string): Record<string, string> => {
 	const match = /^---\n([\s\S]+?)\n---/.exec(content);
@@ -86,7 +97,9 @@ const main = async (): Promise<number> => {
 	const root = repoRoot();
 	const issues = findIssues(root);
 	if (issues.length === 0) {
-		console.log('✓ proposal-slice-completeness: every done/ proposal is fully shipped');
+		console.log(
+			'✓ proposal-slice-completeness: every done/ proposal is fully shipped',
+		);
 		return 0;
 	}
 	const grouped = new Map<string, IIssue[]>();
@@ -95,7 +108,9 @@ const main = async (): Promise<number> => {
 		arr.push(issue);
 		grouped.set(issue.proposal, arr);
 	}
-	console.error(`✗ proposal-slice-completeness: ${issues.length} issue(s) across ${grouped.size} proposal(s)`);
+	console.error(
+		`✗ proposal-slice-completeness: ${issues.length} issue(s) across ${grouped.size} proposal(s)`,
+	);
 	for (const [proposal, items] of grouped) {
 		console.error(`  ${proposal}:`);
 		for (const item of items) {

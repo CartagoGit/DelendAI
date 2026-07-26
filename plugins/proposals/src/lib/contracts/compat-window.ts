@@ -117,5 +117,6 @@ export const parseWithCompatWindow = <T>(
  * Factory for the typed schema pair — keeps the handler boundary
  * one-line per tool.
  */
-export const defineCompatWindow = <T>(pair: ICompatWindowPair<T>): ICompatWindowPair<T> =>
-	pair;
+export const defineCompatWindow = <T>(
+	pair: ICompatWindowPair<T>,
+): ICompatWindowPair<T> => pair;

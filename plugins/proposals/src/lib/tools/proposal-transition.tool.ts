@@ -91,8 +91,8 @@ import { guardTransitionToDone } from '../services/proposal-completeness';
 import { runProposalTransitionCompat } from './proposal-transition.compat';
 
 const PEER_REVIEW_LOG_RELATIVE_PATH = join(
-        '.cache',
-        'mcp-vertex',
+	'.cache',
+	'mcp-vertex',
 	'.cache',
 	'mcp-vertex',
 	'results',
@@ -582,7 +582,9 @@ export const runProposalTransition = async (
 	}
 
 	if (isZeroWorkShortcut) {
-		const evidenceCheck = await checkTransitionEvidence(args.validateEvidence);
+		const evidenceCheck = await checkTransitionEvidence(
+			args.validateEvidence,
+		);
 		if (!evidenceCheck.ok) {
 			return buildCodeError(evidenceCheck.code, evidenceCheck.reason);
 		}
@@ -1017,7 +1019,15 @@ export const buildProposalTransitionRegistration = (
 			},
 			async (args: IProposalTransitionArgs) =>
 				runProposalTransitionCompat(args, options).then((result) =>
-					result.ok ? result.payload : { ok: false as const, error: { code: 'invalid-input', issues: result.error.issues } },
+					result.ok
+						? result.payload
+						: {
+								ok: false as const,
+								error: {
+									code: 'invalid-input',
+									issues: result.error.issues,
+								},
+							},
 				),
 		);
 	},

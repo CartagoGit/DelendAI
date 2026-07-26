@@ -39,7 +39,9 @@ describe('parseFeatureFlagCatalog (f00152 S5)', () => {
 	it('reports non-boolean default values', () => {
 		const verdict = parseFeatureFlagCatalog(MALFORMED_DEFAULT);
 		expect(verdict.ok).toBe(false);
-		expect(verdict.errors.some((error) => error.includes('defaultValue'))).toBe(true);
+		expect(
+			verdict.errors.some((error) => error.includes('defaultValue')),
+		).toBe(true);
 	});
 
 	it('returns empty entries for an empty file', () => {

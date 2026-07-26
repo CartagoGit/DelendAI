@@ -76,7 +76,9 @@ export const buildStableManifest = (
 			inputSchema: schemaToJson(descriptor.inputSchema),
 			outputSchema: schemaToJson(descriptor.outputSchema),
 		}))
-		.sort((left, right) => (left.name < right.name ? -1 : left.name > right.name ? 1 : 0));
+		.sort((left, right) =>
+			left.name < right.name ? -1 : left.name > right.name ? 1 : 0,
+		);
 	return {
 		version: {
 			schema: SCHEMA_VERSION,

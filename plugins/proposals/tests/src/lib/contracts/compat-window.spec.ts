@@ -10,7 +10,10 @@ describe('parseWithCompatWindow (f00152 S3)', () => {
 	const pair = defineCompatWindow({
 		v2: {
 			version: 'v2',
-			schema: z.object({ id: z.string(), newField: z.boolean().optional() }),
+			schema: z.object({
+				id: z.string(),
+				newField: z.boolean().optional(),
+			}),
 			sinceVersion: '0.5.0',
 			removedIn: 'never',
 			migrationHint: 'Add `newField` if you need the v2 extra column.',
@@ -22,13 +25,19 @@ describe('parseWithCompatWindow (f00152 S3)', () => {
 			sinceVersion: '0.1.0',
 			removedIn: '1.0.0',
 			migrationHint: 'v1 still parses; migrate to v2 before 1.0.0.',
-			translate: (old) => ({ id: (old as { id: string }).id, newField: false }),
+			translate: (old) => ({
+				id: (old as { id: string }).id,
+				newField: false,
+			}),
 		},
 	});
 
 	describe('v2 path', () => {
 		it('returns the parsed value and a null warning', () => {
-			const r = parseWithCompatWindow(pair, { id: 'f00152', newField: true });
+			const r = parseWithCompatWindow(pair, {
+				id: 'f00152',
+				newField: true,
+			});
 			expect(r.ok).toBe(true);
 			if (r.ok) {
 				expect(r.shapeUsed).toBe('v2');
@@ -83,7 +92,10 @@ describe('parseWithCompatWindow (f00152 S3)', () => {
 				sinceVersion: '0.1.0',
 				removedIn: '1.0.0',
 				migrationHint: 'Migrate to v2.',
-				translate: (old) => ({ id: (old as { id: string }).id, newField: false }),
+				translate: (old) => ({
+					id: (old as { id: string }).id,
+					newField: false,
+				}),
 			},
 		});
 
@@ -116,7 +128,10 @@ describe('parseWithCompatWindow (f00152 S3)', () => {
 				sinceVersion: '0.1.0',
 				removedIn: '1.0.0',
 				migrationHint: 'Migrate to v2.',
-				translate: (old) => ({ id: (old as { id: string }).id, newField: false }),
+				translate: (old) => ({
+					id: (old as { id: string }).id,
+					newField: false,
+				}),
 			},
 		});
 

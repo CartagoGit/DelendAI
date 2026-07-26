@@ -102,9 +102,9 @@ const toRelPosix = (rootDir: string, absPath: string): string => {
 
 /**
  * Walk a set of repository-relative roots and return every
- * TypeScript source file beneath them. Skips `node_modules`, `dist`,
- * `build`, `.cache`, and `.git`. Async (the engine is a hot path —
- * `AGENTS.md` #3).
+ * TypeScript source file beneath them. Skips node_modules, dist,
+ * build, cache, and git. Async (the engine is a hot path -
+ * see AGENTS rule #3).
  */
 export const walkTsFiles = async (
 	rootDir: string,

@@ -50,11 +50,15 @@ const main = (): number => {
 	}
 
 	const toolNames = new Set<string>(
-		((onDisk as { tools: Array<{ name: string }> }).tools ?? []).map((t) => t.name),
+		((onDisk as { tools: Array<{ name: string }> }).tools ?? []).map(
+			(t) => t.name,
+		),
 	);
 	for (const name of STABLE_API_TOOL_NAMES) {
 		if (!toolNames.has(name)) {
-			errors.push(`facade tool "${name}" missing from committed manifest`);
+			errors.push(
+				`facade tool "${name}" missing from committed manifest`,
+			);
 		}
 	}
 	for (const name of toolNames) {
@@ -78,12 +82,17 @@ const main = (): number => {
 	const fresh = buildStableManifest(STABLE_API_TOOLS, '0.0.0'); // version is checked elsewhere
 	const onDiskJson = JSON.stringify(onDisk, null, 2);
 	const freshJson = JSON.stringify(fresh, null, 2);
-	if (onDiskJson !== freshJson.replace(/"generatedAt": ".*?"/, '"generatedAt": "REPLACED"')) {
+	if (
+		onDiskJson !==
+		freshJson.replace(/"generatedAt": ".*?"/, '"generatedAt": "REPLACED"')
+	) {
 		// The fresh build always has a fresh timestamp; we can't byte-compare
 		// directly. Instead we compare structurally ignoring the timestamp.
 		const onDiskNoTs = JSON.parse(onDiskJson) as { tools: unknown };
 		const freshNoTs = JSON.parse(freshJson) as { tools: unknown };
-		if (JSON.stringify(onDiskNoTs.tools) !== JSON.stringify(freshNoTs.tools)) {
+		if (
+			JSON.stringify(onDiskNoTs.tools) !== JSON.stringify(freshNoTs.tools)
+		) {
 			process.stderr.write(
 				`stable-manifest: committed tools differ from a fresh build. Run \`bun run build:stable-manifest\`.\n`,
 			);
