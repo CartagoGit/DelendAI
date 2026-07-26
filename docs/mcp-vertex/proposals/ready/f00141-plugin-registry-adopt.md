@@ -55,8 +55,9 @@ with search/filter. Community sources are opt-in and labelled untrusted.
 
 ### S2 — plugin_add (install + wire + configure)
 
-- **Status**: pending
-- **Files**: `packages/core/src/lib/tools/plugin-add.tool.ts`, `packages/cli/src/commands/groups/plugin-add.ts`
+- **Status**: done
+- **Files**: `packages/core/src/lib/registry/plugin-add.ts`, `packages/core/src/lib/registry/plugin-add.tool.ts`, `packages/cli/src/commands/groups/plugins.ts`
+- **Commit**: `04132f39`
 - **Gate**: bun run validate
 
 `plugin_add`/`mcpv plugin add` installs (existing installer), wires (f00120),
