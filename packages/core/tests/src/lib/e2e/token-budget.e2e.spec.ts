@@ -123,8 +123,10 @@ const BUDGET_BYTES = {
 	// 4 796B → 4 880B measured.
 	// Bumped 4 900 → 5 200 (2026-07-27): i18n + skills-pack (f00138) added to
 	// standard preset, raising overview compact 4 880B → 5 097B measured.
+	// Bumped 5 200 → 5 500 (2026-07-27): prompts-pack (f00138 S1+S2+S3) added to
+	// standard preset, raising overview compact 5 097B → 5 396B measured.
 	swarmToolsList: 182_000,
-	swarmOverviewCompact: 5_200,
+	swarmOverviewCompact: 5_500,
 	swarmRoundContext: 300,
 	// `lean` was 58 003B against the same fixture, a 63% reduction from swarm.
 	// Bumped 65 000 → 69 000 (2026-07-27): env plugin (f00135) S3 added the `env`
