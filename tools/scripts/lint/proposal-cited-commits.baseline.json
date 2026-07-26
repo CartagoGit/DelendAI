@@ -1,0 +1,22 @@
+{
+	"orphans": [
+		{
+			"hash": "1940471",
+			"proposals": [
+				"docs/mcp-vertex/proposals/done/fixes/x00003-fix-host-zombie-on-parent-exit.md"
+			],
+			"status": "known-orphan",
+			"expectedResolution": "amend on next close (replace with real shipped-in SHA)",
+			"recordedAt": "2026-07-26T15:40:35.023Z"
+		},
+		{
+			"hash": "1826609",
+			"proposals": [
+				"docs/mcp-vertex/proposals/done/fixes/x00003-fix-host-zombie-on-parent-exit.md"
+			],
+			"status": "known-orphan",
+			"expectedResolution": "amend on next close (replace with real shipped-in SHA)",
+			"recordedAt": "2026-07-26T15:40:35.023Z"
+		}
+	]
+}
