@@ -1,181 +1,224 @@
 /**
  * container-lint.tool.ts — f00133 S2: `container_logs` + `container_lint`.
  *
- * `container_lint` runs a hadolint-style Dockerfile lint over the
- * provided source. It probes hadolint on PATH and falls back to the
- * built-in rules (curated DLxxxx subset) when the binary is missing,
- * so the tool never returns an empty report just because hadolint is
- * not installed.
+ * `container_lint` runs an offline hadolint-style Dockerfile lint over
+ * a workspace-contained Dockerfile path. No binary is required.
  *
- * `container_logs` tails logs from a running container or pod via the
- * matching docker / kubectl CLI. Read-only. Missing CLI returns a
- * structured `kind: 'skipped'` envelope with the install hint.
+ * `container_logs` tails logs from a running docker container. Read-only.
+ * Missing CLI returns a structured `ok: 'skipped'` envelope with the
+ * install hint.
  */
+import { relative, resolve, sep } from 'node:path';
+
 import { z } from 'zod';
 
 import type { IToolRegistration } from '@mcp-vertex/core/public';
-import {
-	probeTool,
-	realProbeDeps,
-	runExternalTool,
-	toolJson,
-} from '@mcp-vertex/core/public';
+import { toolError, toolJson } from '@mcp-vertex/core/public';
 
-import type { IArgvExec, IProbeDeps } from '@mcp-vertex/core/public';
+import { realContainerInspectDeps } from '../inspect/real-container-deps';
 import {
-	DOCKER_TOOL,
-	HADO_LINT_TOOL,
-	KUBECTL_TOOL,
-} from '../inspect/cli-tools';
-import { runDockerfileLint } from '../lint/run-lint';
+	realDockerfileFetcher,
+	type IDockerfileFetcher,
+} from '../lint/real-dockerfile-fetcher';
+import { runLint } from '../lint/run-lint';
+import type { IDockerfileFinding } from '../lint/types';
+import { runLogs } from '../logs/run-logs';
+import type { IDockerLogLine, IDockerLogsDeps } from '../logs/types';
+
+export interface IContainerLogsToolOptions {
+	readonly namespacePrefix: string;
+	readonly deps?: IDockerLogsDeps;
+}
 
 export interface IContainerLintToolOptions {
 	readonly namespacePrefix: string;
-	readonly probeDeps?: IProbeDeps;
-	readonly runExec?: IArgvExec;
+	readonly workspaceRootAbs: string;
+	readonly readDockerfile?: IDockerfileFetcher;
 }
-
-const LINT_INPUT = z
-	.object({
-		source: z
-			.string()
-			.min(1)
-			.max(64 * 1024),
-	})
-	.strict();
-
-const LINT_OUTPUT = z.object({
-	ok: z.literal(true),
-	engine: z.enum(['hadolint', 'builtin', 'builtin-hadolint-failed']),
-	hadolintAvailable: z.boolean(),
-	findings: z.array(
-		z.object({
-			ruleId: z.string(),
-			severity: z.enum(['critical', 'high', 'medium', 'low', 'info']),
-			message: z.string(),
-			location: z
-				.object({ file: z.string(), line: z.number().optional() })
-				.optional(),
-			fix: z.string().optional(),
-		}),
-	),
-});
 
 const LOGS_INPUT = z
 	.object({
-		kind: z.enum(['docker', 'kubectl']),
-		target: z.string().min(1).max(512),
+		container: z.string().min(1),
 		tail: z.number().int().positive().max(10_000).optional(),
-		namespace: z.string().optional(),
+		since: z.string().datetime().optional(),
 	})
 	.strict();
 
-const LOGS_OUTPUT = z.object({
+const DockerLogLineSchema = z.object({
+	timestamp: z.string(),
+	stream: z.enum(['stdout', 'stderr', 'unknown']),
+	message: z.string(),
+});
+
+const LOGS_OUTPUT = z.union([
+	z.object({
+		ok: z.literal(true),
+		container: z.string(),
+		lines: z.array(DockerLogLineSchema),
+	}),
+	z.object({
+		ok: z.literal('skipped'),
+		hint: z.string(),
+	}),
+]);
+
+const LINT_INPUT = z
+	.object({
+		dockerfilePath: z.string().min(1).optional(),
+	})
+	.strict();
+
+const DockerfileFindingSchema = z.object({
+	ruleId: z.string(),
+	severity: z.enum(['critical', 'high', 'medium', 'low', 'info']),
+	message: z.string(),
+	fix: z.string().optional(),
+	location: z.object({
+		file: z.string(),
+		line: z.number().int().positive(),
+	}),
+});
+
+const LINT_OUTPUT = z.object({
 	ok: z.literal(true),
-	kind: z.enum(['docker', 'kubectl']),
-	target: z.string(),
-	logs: z.string(),
+	findings: z.array(DockerfileFindingSchema),
 });
 
-const LOGS_SKIPPED = z.object({
-	ok: z.literal(false),
-	kind: z.literal('skipped'),
-	hint: z.string(),
-});
+const invalidArguments = (issues: readonly z.ZodIssue[]) =>
+	toolError(
+		'invalid-arguments',
+		issues
+			.map((issue) => `${issue.path.join('.')}: ${issue.message}`)
+			.join('; '),
+	);
 
-const LOGS_ALL = z.union([LOGS_OUTPUT, LOGS_SKIPPED]);
+const resolveContainedDockerfilePath = (
+	workspaceRootAbs: string,
+	dockerfilePath: string | undefined,
+):
+	| {
+			readonly ok: true;
+			readonly abs: string;
+			readonly locationFile: string;
+	  }
+	| {
+			readonly ok: false;
+			readonly detail: string;
+	  } => {
+	const workspaceRoot = resolve(workspaceRootAbs);
+	const requested = dockerfilePath ?? 'Dockerfile';
+	const abs = requested.startsWith('/')
+		? resolve(requested)
+		: resolve(workspaceRoot, requested);
+	const rel = relative(workspaceRoot, abs).split(sep).join('/');
+	if (rel === '..' || rel.startsWith('../')) {
+		return {
+			ok: false,
+			detail: `Path "${requested}" is outside workspace root`,
+		};
+	}
+	return {
+		ok: true,
+		abs,
+		locationFile: rel === '' ? 'Dockerfile' : rel,
+	};
+};
 
-export const buildContainerLintToolRegistrations = (
-	options: IContainerLintToolOptions,
+const readDockerfileOrError = async (
+	readDockerfile: IDockerfileFetcher,
+	path: string,
+): Promise<
+	{ ok: true; source: string } | { ok: false; code: string; detail: string }
+> => {
+	try {
+		return { ok: true, source: await readDockerfile(path) };
+	} catch (error) {
+		const failure = error as NodeJS.ErrnoException;
+		if (failure.code === 'ENOENT') {
+			return {
+				ok: false,
+				code: 'not-found',
+				detail: `Dockerfile not found: ${path}`,
+			};
+		}
+		return {
+			ok: false,
+			code: 'dockerfile-read-failed',
+			detail: failure.message,
+		};
+	}
+};
+
+const logsEnvelope = (container: string, lines: readonly IDockerLogLine[]) =>
+	toolJson(
+		LOGS_OUTPUT.parse({
+			ok: true as const,
+			container,
+			lines,
+		}),
+	);
+
+const skippedEnvelope = (hint: string) =>
+	toolJson(
+		LOGS_OUTPUT.parse({
+			ok: 'skipped' as const,
+			hint,
+		}),
+	);
+
+const lintEnvelope = (findings: readonly IDockerfileFinding[]) =>
+	toolJson(
+		LINT_OUTPUT.parse({
+			ok: true as const,
+			findings,
+		}),
+	);
+
+export const buildContainerLogsToolRegistrations = (
+	options: IContainerLogsToolOptions,
 ): readonly IToolRegistration[] => {
-	const prefix = options.namespacePrefix;
-	const probeDeps = options.probeDeps ?? realProbeDeps();
-	const runExec = options.runExec;
+	const deps = options.deps ?? realContainerInspectDeps;
 	return [
 		{
-			id: 'container_lint',
-			tags: ['container', 'lint', 'read-only'],
-			register: async (server) => {
-				server.registerTool(
-					`${prefix}_container_lint`,
-					{
-						description:
-							'Lint a Dockerfile (hadolint-style). Uses hadolint when available and falls back to the built-in DLxxxx rules otherwise, so the tool never returns an empty report just because hadolint is not installed. Pure: pass the Dockerfile source as `source`.',
-						inputSchema: LINT_INPUT,
-						outputSchema: LINT_OUTPUT,
-					},
-					async (args) => {
-						const result = await runDockerfileLint({
-							source: args.source,
-							probeDeps,
-						});
-						return toolJson(
-							LINT_OUTPUT.parse({
-								ok: true as const,
-								engine: result.engine,
-								hadolintAvailable: result.hadolintAvailable,
-								findings: result.findings,
-							}),
-						);
-					},
-				);
-			},
-		},
-		{
 			id: 'container_logs',
-			tags: ['container', 'logs', 'read-only'],
+			tags: ['container', 'docker', 'logs', 'read-only'],
+			effects: ['network'],
 			register: async (server) => {
 				server.registerTool(
-					`${prefix}_container_logs`,
+					`${options.namespacePrefix}_container_logs`,
 					{
 						description:
-							'Tail logs from a running docker container or a kubernetes pod. Read-only. Pass `kind: "docker" | "kubectl"`, the container/pod name as `target`, optional `tail` (default 100), and optional `namespace` (kubectl). Missing CLI → install hint.',
+							'Read-only Docker log tail over the host CLI. Accepts a container name or id, optional `tail`, and optional ISO `since`; missing docker returns a skipped envelope with an install hint.',
 						inputSchema: LOGS_INPUT,
-						outputSchema: LOGS_ALL,
+						outputSchema: LOGS_OUTPUT,
 					},
 					async (args) => {
-						const tool =
-							args.kind === 'docker' ? DOCKER_TOOL : KUBECTL_TOOL;
-						const probe = await probeTool(tool, probeDeps);
-						if (!probe.available) {
-							return toolJson(
-								LOGS_SKIPPED.parse({
-									ok: false as const,
-									kind: 'skipped' as const,
-									hint: probe.installHint?.command ?? '',
-								}),
+						const parsed = LOGS_INPUT.safeParse(args);
+						if (!parsed.success) {
+							return invalidArguments(parsed.error.issues);
+						}
+						const input = {
+							container: parsed.data.container,
+							...(parsed.data.tail === undefined
+								? {}
+								: { tail: parsed.data.tail }),
+							...(parsed.data.since === undefined
+								? {}
+								: { since: parsed.data.since }),
+						};
+
+						try {
+							const result = await runLogs(input, deps);
+							if (result.kind === 'skipped') {
+								return skippedEnvelope(result.hint);
+							}
+							return logsEnvelope(result.container, result.lines);
+						} catch (error) {
+							return toolError(
+								'container-logs-failed',
+								(error as Error).message,
 							);
 						}
-						const tail = args.tail ?? 100;
-						const argv =
-							args.kind === 'docker'
-								? ['logs', '--tail', String(tail), args.target]
-								: [
-										'logs',
-										'--tail',
-										String(tail),
-										...(args.namespace !== undefined
-											? ['-n', args.namespace]
-											: []),
-										args.target,
-									];
-						const run = await runExternalTool(
-							{ tool, args: argv, timeoutMs: 30_000 },
-							runExec,
-						);
-						if (run.unavailable || !run.ok) {
-							throw new Error(
-								`${tool.bin} logs failed (exit ${run.code}): ${run.stderr.slice(0, 256)}`,
-							);
-						}
-						return toolJson(
-							LOGS_OUTPUT.parse({
-								ok: true as const,
-								kind: args.kind,
-								target: args.target,
-								logs: run.stdout,
-							}),
-						);
 					},
 				);
 			},
@@ -183,4 +226,56 @@ export const buildContainerLintToolRegistrations = (
 	];
 };
 
-export { HADO_LINT_TOOL };
+export const buildContainerLintToolRegistrations = (
+	options: IContainerLintToolOptions,
+): readonly IToolRegistration[] => {
+	const readDockerfile = options.readDockerfile ?? realDockerfileFetcher;
+	return [
+		{
+			id: 'container_lint',
+			tags: ['container', 'dockerfile', 'lint', 'read-only'],
+			register: async (server) => {
+				server.registerTool(
+					`${options.namespacePrefix}_container_lint`,
+					{
+						description:
+							'Lint a workspace-contained Dockerfile with built-in hadolint-style rules. Reads from disk, works offline, and returns normalized findings.',
+						inputSchema: LINT_INPUT,
+						outputSchema: LINT_OUTPUT,
+					},
+					async (args) => {
+						const parsed = LINT_INPUT.safeParse(args);
+						if (!parsed.success) {
+							return invalidArguments(parsed.error.issues);
+						}
+
+						const resolved = resolveContainedDockerfilePath(
+							options.workspaceRootAbs,
+							parsed.data.dockerfilePath,
+						);
+						if (!resolved.ok) {
+							return toolError(
+								'containment-violation',
+								resolved.detail,
+							);
+						}
+
+						const source = await readDockerfileOrError(
+							readDockerfile,
+							resolved.abs,
+						);
+						if (!source.ok) {
+							return toolError(source.code, source.detail);
+						}
+
+						const result = runLint({
+							source: source.source,
+							file: resolved.locationFile,
+						});
+						return lintEnvelope(result.findings);
+					},
+				);
+			},
+		},
+	];
+};
