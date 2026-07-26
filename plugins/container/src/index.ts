@@ -3,7 +3,10 @@ import { z } from 'zod';
 import { definePlugin } from '@mcp-vertex/core/public';
 
 import { buildContainerInspectToolRegistrations } from './lib/tools/container-inspect.tool';
-import { buildContainerLintToolRegistrations } from './lib/tools/container-lint.tool';
+import {
+	buildContainerLintToolRegistrations,
+	buildContainerLogsToolRegistrations,
+} from './lib/tools/container-lint.tool';
 import { buildContainerBuildToolRegistrations } from './lib/tools/container-build.tool';
 
 const OptionsSchema = z.object({});
@@ -24,6 +27,9 @@ export default definePlugin({
 		return {
 			tools: [
 				...buildContainerInspectToolRegistrations({
+					namespacePrefix: ctx.namespacePrefix,
+				}),
+				...buildContainerLogsToolRegistrations({
 					namespacePrefix: ctx.namespacePrefix,
 				}),
 				...buildContainerLintToolRegistrations({
