@@ -2,7 +2,7 @@
 id: f00140
 kind: feat
 title: router cost + recommendation dashboard — surface auto-agent-selector picks and usage-tracking spend in the CLI and VS Code extension
-status: ready
+status: done
 date: 2026-07-23
 track: plugin+extension+routing
 ---
