@@ -30,11 +30,9 @@ The flag adds friction for LLMs without lifting the runtime quality bar (a00067 
 - global_gate: type
 
 ### S1 — Add the opt-out knob (env var or tsconfig toggle)
-- **Status**: done (closed 2026-07-24)
+- **Status**: done
 - **Files**: `tsconfig.base.json`, `tsconfig.relax.json`, `tools/scripts/typecheck.script.ts`, `package.json`
 - **Gate**: type
-- review-state: in_review
-- review-implementer: copilot-minimax-m3
 - **Close evidence**:
   - `tsconfig.relax.json` extends `tsconfig.base.json` and overrides `exactOptionalPropertyTypes: false`.
   - `tools/scripts/typecheck.script.ts` dispatches to `tsconfig.json` (default, flag ON) or `tsconfig.relax.json` (env var set, flag OFF); uses `bunx tsc` so it works without `tsc` on PATH.
@@ -46,19 +44,23 @@ The flag adds friction for LLMs without lifting the runtime quality bar (a00067 
   - "`MCP_VERTEX_RELAX_EXACT_OPTIONAL=1 npm run typecheck` succeeds with the flag off."
   - "Default run (env unset) keeps the flag ON and the project typechecks."
   - "Existing `bun run validate` is unchanged."
-
+- review-state: done
+- review-implementer: copilot-minimax-m3
+- review-reviewer: delivery_verifier
+- review-log: approved by delivery_verifier — Opt-out knob works via env var MCP_VERTEX_RELAX_EXACT_OPTIONAL; tsconfig.relax.json overrides the flag; typecheck.script.ts dispatches based on env.
 ### S2 — Document the trade in `AGENT-BOOTSTRAP.md`
-- **Status**: done (closed 2026-07-24)
+- **Status**: done
 - **Files**: `docs/mcp-vertex/AGENT-BOOTSTRAP.md`
 - **Gate**: type
-- review-state: in_review
-- review-implementer: copilot-minimax-m3
 - **Close evidence**:
   - New `### Tooling posture` subsection added under `## 7. Repo-level rules` (right after `### Repo-level conventions`), with the `MCP_VERTEX_RELAX_EXACT_OPTIONAL=1` knob, the trade (3-7% LLM fix-cycle cost, no runtime benefit), and a pointer to `a00067 F3 / DC5`.
   - `bun tools/scripts/lint/bootstrap-canonical.script.ts` → ✓ 9 H2 sections, all canonical.
 - acceptance:
   - "New section "Optional: relax `exactOptionalPropertyTypes`" under "Tooling posture", with the env var name, the trade (3-7% LLM fix-cycle cost, no runtime benefit), and a pointer to a00067 F3 for context."
-
+- review-state: done
+- review-implementer: copilot-minimax-m3
+- review-reviewer: delivery_verifier
+- review-log: approved by delivery_verifier — AGENT-BOOTSTRAP.md documents the trade-off (3-7% LLM fix-cycle cost) and the opt-out procedure.
 ## acceptance
 
 - `MCP_VERTEX_RELAX_EXACT_OPTIONAL=1 npm run typecheck` succeeds with the flag off.
