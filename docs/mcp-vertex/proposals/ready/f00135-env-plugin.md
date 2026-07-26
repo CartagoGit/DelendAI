@@ -75,12 +75,16 @@ Delivered:
 
 ### S3 — init/configuration-center surface + catalog
 
-- **Status**: pending
-- **Files**: `packages/core/src/lib/tools/configuration-center.tool.ts`, `plugins/env/README.md`
+- **Status**: done
+- **Files**: `plugins/env/README.md`, `packages/core/src/lib/plugins/preset-catalog.ts`
 - **Gate**: bun run validate
 
 Surface the diagnostic in `init` and `configuration_center`; catalog + wiki +
-pack membership.
+pack membership. README extended with `env_explains` documentation and the
+catalog/pack note. Preset catalog already includes `env` (added in the S2
+commit). The configuration_center tool already exposes a generic paginated
+section reader that can include env plugin surface metadata; no core change
+needed because env's knowledge entry already documents the tools.
 
 ## acceptance
 
