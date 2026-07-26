@@ -43,7 +43,7 @@ hardcoded provider (routing is `auto-agent-selector`'s job).
 
 ### S1 — comprehension prompts
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/prompts-pack/src/prompts/explain.ts`, `plugins/prompts-pack/src/prompts/docstrings.ts`
 - **Gate**: bun run validate
 
@@ -51,7 +51,7 @@ hardcoded provider (routing is `auto-agent-selector`'s job).
 
 ### S2 — quality prompts
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/prompts-pack/src/prompts/write-tests.ts`, `plugins/prompts-pack/src/prompts/review-diff.ts`
 - **Gate**: bun run validate
 
@@ -60,7 +60,7 @@ hardcoded provider (routing is `auto-agent-selector`'s job).
 
 ### S3 — security/perf prompts + wiring
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/prompts-pack/src/prompts/security-audit.ts`, `plugins/prompts-pack/src/index.ts`
 - **Gate**: bun run validate
 
@@ -79,3 +79,5 @@ prompts + pack membership; catalog.
 Reuses the prompt-registration surface + existing tools. Pairs with
 `auto-agent-selector` (routing) and f00122/f00126. Prior art: Continue/Cursor
 slash-prompts, but project-aware and tool-composing.
+
+Implementation shipped as a new first-party plugin at `plugins/prompts-pack`, with six MCP prompt registrations, one consolidated prompt spec, additive monorepo wiring, and a knowledge entry that documents the pack's composition model.

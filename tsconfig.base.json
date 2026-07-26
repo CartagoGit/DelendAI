@@ -53,6 +53,11 @@
 				"./plugins/proposals/src/public/index.ts"
 			],
 			"@mcp-vertex/proposals/*": ["./plugins/proposals/src/*"],
+			"@mcp-vertex/prompts-pack": ["./plugins/prompts-pack/src/index.ts"],
+			"@mcp-vertex/prompts-pack/public": [
+				"./plugins/prompts-pack/src/public/index.ts"
+			],
+			"@mcp-vertex/prompts-pack/*": ["./plugins/prompts-pack/src/*"],
 			"@mcp-vertex/rules": ["./plugins/rules/src/index.ts"],
 			"@mcp-vertex/rules/public": ["./plugins/rules/src/public/index.ts"],
 			"@mcp-vertex/rules/*": ["./plugins/rules/src/*"],
