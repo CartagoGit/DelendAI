@@ -70,11 +70,11 @@ Implemented `container_lint` + `container_logs`:
 
 ### S3 — consented build/apply + catalog
 
-- **Status**: pending
-- **Files**: `plugins/container/src/lib/tools/container-build.tool.ts`, `plugins/container/README.md`
+- **Status**: done
+- **Files**: `plugins/container/src/lib/tools/container-build.tool.{ts,spec.ts}`, `plugins/container/README.md`
 - **Gate**: bun run validate
 
-`container_build`/`k8s_apply` require `confirm: true`; catalog + wiki + pack.
+Implemented `container_build` + `k8s_apply` with an explicit `confirm: true` payload gate (same posture as `db_query`'s write gate). Without `confirm: true` the tool returns a structured refusal envelope (`{ok:false, reason:'mutation requires confirm:true', nextAction:...}`) before probing the CLI. With `confirm: true` the build runs `docker build -t <tag> ...` and parses the image id from the output; the apply runs `kubectl apply -f -` from stdin. Both tools also accept `dryRun: true` to preview the argv without executing. README rewritten to document all three families (inspect / lint+logs / mutating) with their consent gate. 35/35 plugin tests pass; `bun run typecheck` clean.
 
 ## acceptance
 
