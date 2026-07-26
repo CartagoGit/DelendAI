@@ -49,9 +49,12 @@ export const reviewTransition = (
 	action: IReviewAction,
 	agent: string,
 	note = '',
+	options?: { readonly enforceDistinctAgentName?: boolean },
 ): IReviewTransition => {
 	const who = agent.trim();
 	if (who.length === 0) return { ok: false, reason: 'agent is required' };
+	const enforceDistinctAgentName =
+		options?.enforceDistinctAgentName !== false;
 
 	if (action === 'submit') {
 		if (state.status === 'done') {
@@ -79,7 +82,7 @@ export const reviewTransition = (
 			reason: `nothing is in review (status: ${state.status}); submit it first`,
 		};
 	}
-	if (who === state.implementer) {
+	if (enforceDistinctAgentName && who === state.implementer) {
 		return {
 			ok: false,
 			reason: 'a reviewer must be a different agent than the implementer under review (independent verification)',

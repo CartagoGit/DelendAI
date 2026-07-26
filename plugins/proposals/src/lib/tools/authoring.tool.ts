@@ -46,10 +46,15 @@ import {
 } from '../swarm/proposal-review';
 import { recordProposalReviewAction } from '../shared/peer-review-log';
 import {
+	buildReviewIdentity,
+	checkApproveIdentity,
+	recordReviewSubmitIdentity,
+} from '../services/review-identity';
+import {
 	resolveRecentValidateEvidence,
-	type IValidateEvidence,
 	type IValidateEvidenceDeps,
 } from './proposal-transition.tool';
+import type { IValidateEvidence } from '../services/transition-evidence';
 import { readActiveLocks, resolveIndexedDoc } from './authoring-options';
 import type { IAuthoringToolOptions } from './authoring-options';
 
@@ -114,15 +119,6 @@ const appendPeerReviewLog = async (
 	await mkdir(dirname(logPathAbs), { recursive: true });
 	await appendFile(logPathAbs, `${JSON.stringify(entry)}\n`, 'utf8');
 };
-
-const buildSelfReviewError = () => ({
-	ok: false as const,
-	error: {
-		code: 'self-review' as const,
-		reason: 'reviewer must be a different agent from the implementer',
-	},
-	blockerType: 'self-review' as const,
-});
 
 export const runCloseSliceValidation = async (
 	command: string,
@@ -731,6 +727,20 @@ export const buildCloseSliceRegistration = (
 				force?: boolean | undefined;
 				validateEvidence?: IValidateEvidence | undefined;
 			}) => {
+				// Zod parses exitCode as number and logPath as string|undefined;
+				// the internal contract is stricter (exitCode literal 0, logPath required).
+				// The runtime gate in transition-evidence.ts rejects anything that
+				// does not satisfy both, so the cast is sound here.
+				if (args.validateEvidence !== undefined) {
+					args = {
+						...args,
+						validateEvidence: {
+							timestamp: args.validateEvidence.timestamp,
+							exitCode: 0,
+							logPath: args.validateEvidence.logPath ?? '',
+						},
+					};
+				}
 				// x00106 S1: index lookups self-heal a stale index once —
 				// transitions move files and leave the index pointing at
 				// the pre-move path until the next sync.
@@ -1093,25 +1103,53 @@ export const buildReviewRegistration = (
 						}
 						const body = m[2] ?? '';
 						const state = parseReviewState(body);
-						if (
-							args.action === 'approve' ||
-							args.action === 'request_changes'
-						) {
-							const existingEntries =
-								await readPeerReviewLog(peerReviewLogPathAbs);
-							const hasExistingSelfReview = existingEntries.some(
-								(entry) =>
-									entry.proposal_id === args.proposalId &&
-									(entry.slice_id === args.sliceId ||
-										entry.slice_id === '*') &&
-									entry.agent.trim().toLowerCase() ===
-										args.agent.trim().toLowerCase(),
+						if (args.action === 'approve') {
+							const sameAgentNameAsImplementer =
+								state.implementer?.trim().toLowerCase() ===
+								args.agent.trim().toLowerCase();
+							const approver = buildReviewIdentity(
+								args.agent,
+								options.reviewIdentityDeps ?? {
+									hostname: () =>
+										require('node:os').hostname(),
+									pid: () => process.pid,
+									envHost: () => process.env.MCP_HOST,
+								},
 							);
-							if (hasExistingSelfReview) {
-								const envelope = buildSelfReviewError();
+							const identityCheck = await checkApproveIdentity({
+								workspaceRoot: options.workspaceRoot,
+								proposalId: entry.id,
+								sliceId: args.sliceId,
+								approver,
+								...(options.reviewIdentityDeps !== undefined
+									? { deps: options.reviewIdentityDeps }
+									: {}),
+							});
+							if (!identityCheck.ok) {
+								if (
+									sameAgentNameAsImplementer &&
+									identityCheck.reason ===
+										'same-process-approve'
+								) {
+									throw Object.assign(
+										new Error(
+											'reviewer must be a different agent from the implementer',
+										),
+										{
+											toolError: toolError(
+												'reviewer must be a different agent from the implementer',
+											),
+										},
+									);
+								}
 								throw Object.assign(
-									new Error(JSON.stringify(envelope)),
-									{ envelope },
+									new Error(identityCheck.reason),
+									{
+										toolError: toolError(
+											identityCheck.reason,
+											identityCheck.nextAction,
+										),
+									},
 								);
 							}
 						}
@@ -1121,6 +1159,9 @@ export const buildReviewRegistration = (
 							args.action as any,
 							args.agent,
 							redactedNote.text,
+							args.action === 'approve'
+								? { enforceDistinctAgentName: false }
+								: undefined,
 						);
 						if (!result.ok || result.next === undefined) {
 							if (
@@ -1128,14 +1169,24 @@ export const buildReviewRegistration = (
 									?.toLowerCase()
 									.includes('different agent')
 							) {
-								const envelope = buildSelfReviewError();
-								throw Object.assign(
-									new Error(JSON.stringify(envelope)),
-									{ envelope },
-								);
+								throw Object.assign(new Error(result.reason), {
+									toolError: toolError(
+										'reviewer must be a different agent from the implementer',
+									),
+								});
 							}
-							throw new Error(
-								result.reason ?? 'invalid review transition',
+							throw Object.assign(
+								new Error(
+									result.reason ??
+										'invalid review transition',
+								),
+								{
+									toolError: toolError(
+										result.reason ??
+											'invalid review transition',
+										'Call proposal_board to list slices.',
+									),
+								},
 							);
 						}
 						const next = result.next;
@@ -1156,6 +1207,17 @@ export const buildReviewRegistration = (
 						}
 						const updated = md.replace(blockRe, `${m[1]}${block}`);
 						await writeFileAtomic(docPath, updated);
+						if (args.action === 'submit') {
+							await recordReviewSubmitIdentity({
+								workspaceRoot: options.workspaceRoot,
+								proposalId: entry.id,
+								sliceId: args.sliceId,
+								agent: args.agent,
+								...(options.reviewIdentityDeps !== undefined
+									? { deps: options.reviewIdentityDeps }
+									: {}),
+							});
+						}
 						if (
 							args.action === 'approve' ||
 							args.action === 'request_changes'
@@ -1176,18 +1238,7 @@ export const buildReviewRegistration = (
 						}
 					});
 				} catch (err: any) {
-					if (err?.envelope) {
-						return {
-							content: [
-								{
-									type: 'text' as const,
-									text: JSON.stringify(err.envelope),
-								},
-							],
-							structuredContent: err.envelope,
-							isError: true,
-						};
-					}
+					if (err?.toolError) return err.toolError;
 					return toolError(
 						err.message,
 						'Call proposal_board to list slices.',
