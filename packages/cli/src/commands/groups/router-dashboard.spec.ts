@@ -157,7 +157,7 @@ describe('router dashboard group', () => {
 			),
 		).toBe(true);
 		expect(result.code).toBe(0);
-		expect(result.text ?? '').toContain('mcp-vertex router dashboard');
+		expect(result.text ?? '').toContain('mcp-vertex router-dashboard');
 		expect(result.text ?? '').toContain('mid'); // best-ranked row label
 		expect(result.text ?? '').toContain('orphan'); // spend-only provider appears
 	});
