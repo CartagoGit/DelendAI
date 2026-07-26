@@ -1,32 +1,51 @@
 {
 	"name": "@mcp-vertex/container",
 	"version": "0.1.0",
-	"private": true,
 	"type": "module",
-	"description": "Read-only container and Kubernetes inspection via probed host CLIs with pure parsers and injected exec seams (f00133 S1).",
-	"sideEffects": false,
-	"main": "./src/index.ts",
-	"types": "./src/index.ts",
+	"description": "Container inspection plugin for @mcp-vertex/core: read-only Docker and Kubernetes inspection via docker/kubectl with install hints.",
+	"author": "Cartago",
+	"license": "BSD-3-Clause",
+	"keywords": [
+		"mcp",
+		"container",
+		"docker",
+		"kubernetes",
+		"kubectl",
+		"agent",
+		"ai",
+		"cartago"
+	],
+	"main": "./dist/index.js",
+	"files": [
+		"dist",
+		"README.md",
+		"LICENSE"
+	],
 	"exports": {
 		".": {
-			"types": "./src/index.ts",
-			"import": "./src/index.ts"
+			"@mcp-vertex/source": {
+				"types": "./src/index.ts"
+			},
+			"types": "./dist/index.d.ts",
+			"import": "./dist/index.js"
 		},
-		"./*": {
-			"types": "./src/*",
-			"import": "./src/*"
+		"./public": {
+			"@mcp-vertex/source": {
+				"types": "./src/public/index.ts"
+			},
+			"types": "./dist/public/index.d.ts",
+			"import": "./dist/public/index.js"
 		}
 	},
 	"scripts": {
+		"build": "tsc -p tsconfig.json",
+		"check": "tsc --noEmit -p tsconfig.json",
 		"test": "vitest run"
 	},
 	"dependencies": {
-		"@mcp-vertex/core": "workspace:*",
-		"zod": "^4.0.0"
+		"@mcp-vertex/core": "workspace:*"
 	},
 	"devDependencies": {
-		"@types/node": "^22.0.0",
-		"typescript": "^5.0.0",
-		"vitest": "^4.0.0"
+		"typescript": "7.0.2"
 	}
 }
