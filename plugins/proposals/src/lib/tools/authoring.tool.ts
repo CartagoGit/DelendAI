@@ -51,9 +51,14 @@ import {
 	recordReviewSubmitIdentity,
 } from '../services/review-identity';
 import {
+	markProposalDoneForAutoTransition,
+	recordAutoTransitionRepair,
+} from '../services/auto-transition';
+import {
 	resolveRecentValidateEvidence,
 	type IValidateEvidenceDeps,
 } from './proposal-transition.tool';
+import { locateProposal } from '../proposals/locate';
 import type { IValidateEvidence } from '../services/transition-evidence';
 import { readActiveLocks, resolveIndexedDoc } from './authoring-options';
 import type { IAuthoringToolOptions } from './authoring-options';
@@ -1078,6 +1083,7 @@ export const buildReviewRegistration = (
 				let nextImplementer!: string | null;
 				let nextReviewer!: string | null;
 				let nextRounds!: readonly any[];
+				let autoTransitionRequested = false;
 				const peerReviewLogPathAbs = join(
 					options.workspaceRoot,
 					PEER_REVIEW_LOG_RELATIVE_PATH,
@@ -1205,7 +1211,15 @@ export const buildReviewRegistration = (
 						if (next.status === 'done') {
 							block = flipSliceStatusDone(block);
 						}
-						const updated = md.replace(blockRe, `${m[1]}${block}`);
+						let updated = md.replace(blockRe, `${m[1]}${block}`);
+						if (args.action === 'approve') {
+							const prepared = markProposalDoneForAutoTransition(
+								entry.id,
+								updated,
+							);
+							autoTransitionRequested = prepared.changed;
+							updated = prepared.markdown;
+						}
 						await writeFileAtomic(docPath, updated);
 						if (args.action === 'submit') {
 							await recordReviewSubmitIdentity({
@@ -1265,6 +1279,20 @@ export const buildReviewRegistration = (
 					options.layout,
 					options.extraFolders ?? [],
 				);
+				if (autoTransitionRequested) {
+					const located = await locateProposal(entry.id, {
+						indexPathAbs: options.indexPathAbs,
+						proposalsDirAbs: options.proposalsDirAbs,
+					});
+					if (located === null || located.status !== 'done') {
+						await recordAutoTransitionRepair({
+							workspaceRoot: options.workspaceRoot,
+							proposalId: entry.id,
+							path: entry.file,
+							reason: 'auto-transition did not leave the proposal in done after approve',
+						});
+					}
+				}
 				if (options.peerReviewLogPathAbs !== undefined) {
 					await recordProposalReviewAction({
 						logPathAbs: options.peerReviewLogPathAbs,

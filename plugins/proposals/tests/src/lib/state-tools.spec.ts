@@ -73,6 +73,7 @@ describe('state_health / state_repair [N15]', async () => {
 			lastStaleSeen: null,
 		});
 		expect(out.peerReviewBypasses).toBe(0);
+		expect(out.autoTransitionRepairs).toEqual({ count: 0, entries: [] });
 		expect(out.registry.orphans).toBe(0);
 	});
 
