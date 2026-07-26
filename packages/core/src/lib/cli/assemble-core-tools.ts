@@ -48,6 +48,7 @@ import { buildAgentCatalogResourceRegistration } from '../resources/agent-catalo
 import { buildScaffoldToolRegistration } from '../scaffold/scaffold-tool';
 import { buildCreatePluginToolRegistration } from '../scaffold/create-plugin.tool';
 import { buildPluginAddRegistration } from '../registry/plugin-add.tool';
+import { buildPluginSearchRegistration } from '../registry/plugin-search.tool';
 import { buildFsToolRegistrations } from '../shared/fs-tools';
 import { joinRel } from '../shared/paths';
 import type { buildSkillCatalog } from '../skills/skill-catalog';
@@ -364,6 +365,11 @@ export const assembleCoreTools = (
 		// recipe for the agent to execute; the recipe is data so the tool
 		// stays pure (no subprocess, no fs, no config write).
 		buildPluginAddRegistration({
+			namespacePrefix: corePrefix,
+		}),
+		// f00141 S3: `plugin_search` MCP tool. Read-only registry search;
+		// pairs with plugin_add so the agent can discover first.
+		buildPluginSearchRegistration({
 			namespacePrefix: corePrefix,
 		}),
 		// f00117 S2: the server-side self-init — any MCP client can derive
