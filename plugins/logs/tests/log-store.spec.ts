@@ -160,22 +160,22 @@ describe('x00153 S2 — tail/readRange only open day-files in scope', async () =
 			dir,
 			'2026-07-25',
 			'2026-07-25T11:00:00.000Z',
-			'info-a',
+			'log-info',
 		);
 		await seedEvent(
 			dir,
 			'2026-07-25',
 			'2026-07-25T11:01:00.000Z',
-			'info-b',
+			'log-info',
 		);
 		const store = await createLogStore(dir);
 		const events = await store.tail({
 			limit: 50,
-			kindFilter: 'tool-completed',
+			kindFilter: 'log-info',
 		});
 		expect(events).toHaveLength(2);
 		for (const event of events) {
-			expect(event.kind).toBe('log-warning');
+			expect(event.kind).toBe('log-info');
 		}
 	});
 
