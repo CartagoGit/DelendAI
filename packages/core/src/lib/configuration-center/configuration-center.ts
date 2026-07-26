@@ -3,6 +3,7 @@ import { z } from 'zod';
 import type {
 	ConfigurationCenterSection,
 	IConfigurationCenterInput,
+	IConfigurationCenterEnvSummary,
 	IConfigurationCenterResult,
 	IConfigurationCenterSnapshot,
 } from '../contracts/interfaces/configuration-center.interface';
@@ -28,6 +29,48 @@ const redactValue = <T>(value: T): { value: T; redactions: number } => {
 	};
 };
 
+const normalizeEnvSummary = (
+	envSummary: IConfigurationCenterEnvSummary,
+): IConfigurationCenterEnvSummary => ({
+	pluginLoaded: envSummary.pluginLoaded,
+	pathsChecked: [...envSummary.pathsChecked],
+	missingRequired: [...envSummary.missingRequired].sort((a, b) =>
+		a.localeCompare(b),
+	),
+	blockedCapabilities: [...envSummary.blockedCapabilities]
+		.map((entry) => ({
+			plugin: entry.plugin,
+			capability: entry.capability,
+			missing: [...entry.missing].sort((a, b) => a.localeCompare(b)),
+		}))
+		.sort(
+			(a, b) =>
+				a.plugin.localeCompare(b.plugin) ||
+				a.capability.localeCompare(b.capability),
+		),
+});
+
+const buildEnvSummary = (
+	snapshot: IConfigurationCenterSnapshot,
+): IConfigurationCenterEnvSummary | undefined => {
+	const pluginLoaded = snapshot.plugins.some((entry) => entry.id === 'env');
+	if (!pluginLoaded && snapshot.envSummary === undefined) {
+		return undefined;
+	}
+	if (snapshot.envSummary === undefined) {
+		return {
+			pluginLoaded,
+			pathsChecked: ['.env'],
+			missingRequired: [],
+			blockedCapabilities: [],
+		};
+	}
+	return {
+		...snapshot.envSummary,
+		pluginLoaded,
+	};
+};
+
 export const buildConfigurationCenterSnapshot = (
 	input: IConfigurationCenterInput,
 ): IConfigurationCenterSnapshot => {
@@ -44,6 +87,9 @@ export const buildConfigurationCenterSnapshot = (
 			(a, b) => a.kind.localeCompare(b.kind) || a.id.localeCompare(b.id),
 		),
 		unavailableArtifactKinds: [...(input.unavailableArtifactKinds ?? [])],
+		...(input.envSummary === undefined
+			? {}
+			: { envSummary: normalizeEnvSummary(input.envSummary) }),
 	};
 };
 
@@ -64,6 +110,7 @@ export const readConfigurationCenterSection = (
 	const nextCursor = safeCursor + limit < total ? safeCursor + limit : null;
 	const page = { cursor: safeCursor, nextCursor, total };
 	if (section === 'summary') {
+		const env = buildEnvSummary(snapshot);
 		return {
 			section,
 			page,
@@ -73,6 +120,7 @@ export const readConfigurationCenterSection = (
 					.length,
 				artifacts: snapshot.artifacts.length,
 				unavailableArtifactKinds: snapshot.unavailableArtifactKinds,
+				...(env === undefined ? {} : { env }),
 			},
 		};
 	}

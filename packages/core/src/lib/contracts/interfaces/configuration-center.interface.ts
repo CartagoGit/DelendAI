@@ -49,6 +49,19 @@ export interface IConfigurationPlugin {
 	readonly capabilities: IConfigurationPluginCapabilities;
 }
 
+export interface IConfigurationCenterEnvBlockedCapability {
+	readonly plugin: string;
+	readonly capability: string;
+	readonly missing: readonly string[];
+}
+
+export interface IConfigurationCenterEnvSummary {
+	readonly pluginLoaded: boolean;
+	readonly pathsChecked: readonly string[];
+	readonly missingRequired: readonly string[];
+	readonly blockedCapabilities: readonly IConfigurationCenterEnvBlockedCapability[];
+}
+
 export interface IConfigurationCenterSummary {
 	readonly plugins: number;
 	readonly activePlugins: number;
@@ -63,6 +76,7 @@ export interface IConfigurationCenterSnapshot {
 	readonly plugins: readonly IConfigurationPlugin[];
 	readonly artifacts: readonly IConfigurationArtifact[];
 	readonly unavailableArtifactKinds: readonly ConfigurationArtifactKind[];
+	readonly envSummary?: IConfigurationCenterEnvSummary | undefined;
 }
 
 export interface IConfigurationCenterPage {
@@ -78,6 +92,7 @@ export interface IConfigurationCenterResult {
 	readonly configSchema?: Readonly<Record<string, unknown>> | undefined;
 	readonly config?: Readonly<Record<string, unknown>> | undefined;
 	readonly redactions?: number | undefined;
+	readonly env?: IConfigurationCenterEnvSummary | undefined;
 	readonly plugins?: readonly IConfigurationPlugin[] | undefined;
 	readonly artifacts?: readonly IConfigurationArtifact[] | undefined;
 }
@@ -90,4 +105,5 @@ export interface IConfigurationCenterInput {
 	readonly unavailableArtifactKinds?:
 		| readonly ConfigurationArtifactKind[]
 		| undefined;
+	readonly envSummary?: IConfigurationCenterEnvSummary | undefined;
 }
