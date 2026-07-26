@@ -62,13 +62,18 @@ owns zero detection logic. 9/9 new tests pass; full audit plugin suite
 
 ### S2 — rank into a single action backlog
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/audit/src/lib/self-audit/rank.ts`, `plugins/audit/src/lib/tools/self-audit.tool.ts`
 - **Gate**: bun run validate
 
 Pure ranker (severity × blast-radius × effort) → ordered backlog, reusing the
 `audit` scoring. `self_audit` surfaces the top-N with rationale (CLI +
 extension).
+
+Landed the pure `rankFindings()` backlog scorer plus the
+`<prefix>_self_audit` tool registration, and added focused acceptance coverage
+for empty input, severity ordering, truncation, tie-breaking, effort buckets,
+and caller-provided weight overrides. Commit: `eb87de23`.
 
 ### S3 — optional proposal filing + catalog
 
