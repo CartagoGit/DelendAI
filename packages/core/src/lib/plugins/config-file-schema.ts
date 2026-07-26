@@ -260,5 +260,20 @@ export const CONFIG_FILE_SCHEMA = z
 			})
 			.strict()
 			.optional(),
+		// f00152 S1 (L1 — version pin): optional semver string pinning the
+		// self-host agent to a specific published `@mcp-vertex/core`
+		// version. When omitted, the lint treats the pin as the latest
+		// published tag (`'latest-published'` sentinel). Strict semver
+		// regex so typos surface at boot instead of during a session.
+		coreVersion: z
+			.string()
+			.regex(
+				/^(latest-published|\d+\.\d+\.\d+(-[a-zA-Z0-9.-]+)?(\+[a-zA-Z0-9.-]+)?)$/,
+				'must be a semver string (e.g. "1.2.3") or the sentinel "latest-published"',
+			)
+			.optional()
+			.describe(
+				"Pin the @mcp-vertex/core version this host is wired against. Default 'latest-published' uses the most recent published tag. Set to a specific semver (e.g. '0.4.0') to lock the host to that release.",
+			),
 	})
 	.strict();
