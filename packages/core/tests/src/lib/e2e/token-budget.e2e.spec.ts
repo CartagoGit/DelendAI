@@ -113,8 +113,10 @@ const BUDGET_BYTES = {
 	// outputSchema metadata and bumping tools/list 168 938B → 171 174B.
 	// Bumped 4 200 → 4 500 (2026-07-26): container plugin (f00133) added to swarm
 	// via standard, increasing overview compact from ~3 568B to ~4 368B.
+	// Bumped 4 500 → 4 700 (2026-07-26): container plugin S2/S3 added the lint,
+	// logs, and build tools, increasing overview compact from ~4 368B to ~4 587B.
 	swarmToolsList: 175_000,
-	swarmOverviewCompact: 4_500,
+	swarmOverviewCompact: 4_700,
 	swarmRoundContext: 300,
 	// `lean` was 58 003B against the same fixture, a 63% reduction from swarm.
 	leanToolsList: 65_000,

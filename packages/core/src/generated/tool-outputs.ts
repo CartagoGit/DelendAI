@@ -437,28 +437,28 @@ export type McpVertexContainerContainerInspectOutput = {
 
 export interface McpVertexContainerContainerLintOutput {
 	ok: true;
-	engine: "hadolint" | "builtin" | "builtin-hadolint-failed";
-	hadolintAvailable: boolean;
 	findings: Array<{
 		ruleId: string;
 		severity: "critical" | "high" | "medium" | "low" | "info";
 		message: string;
-		location?: {
-			file: string;
-			line?: number;
-		};
 		fix?: string;
+		location: {
+			file: string;
+			line: number;
+		};
 	}>;
 }
 
 export type McpVertexContainerContainerLogsOutput = {
 	ok: true;
-	kind: "docker" | "kubectl";
-	target: string;
-	logs: string;
+	container: string;
+	lines: Array<{
+		timestamp: string;
+		stream: "stdout" | "stderr" | "unknown";
+		message: string;
+	}>;
 } | {
-	ok: false;
-	kind: "skipped";
+	ok: "skipped";
 	hint: string;
 };
 
