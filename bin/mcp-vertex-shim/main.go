@@ -68,7 +68,7 @@ func run() error {
 		return errors.New("could not locate packages/cli/src/index.ts")
 	}
 
-	cmd := exec.Command(bun, cliEntry)
+	cmd := exec.Command(bun, append([]string{cliEntry}, os.Args[1:]...)...)
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr

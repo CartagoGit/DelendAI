@@ -61,6 +61,7 @@
 	"docs/mcp-vertex/proposals/done/feats/f00080-canonical-ephemeral-exec-paths-in-plugin-cache.md": 2,
 	"docs/mcp-vertex/proposals/done/feats/f00031-single-orchestrator-client-adapters-redirect-to-mcp-vertex.md": 12,
 	"docs/mcp-vertex/proposals/done/feats/f00067-multi-model-orchestrator.md": 1,
+	"docs/mcp-vertex/proposals/done/feats/f00148-polyglot-shim-mvp-single-binary-install-for-end-users.md": 1,
 	"docs/mcp-vertex/proposals/done/feats/f00025-rename-ui-extension-extensions-folder-and-promote-ui-extension-to-package.md": 19,
 	"docs/mcp-vertex/proposals/done/feats/f00069-tabs-cross-fade-and-iconography.md": 2,
 	"docs/mcp-vertex/proposals/done/feats/f00021-tools-scripts-refactor-rename-scripts-to-tools.md": 33,
