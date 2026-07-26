@@ -10,6 +10,7 @@ import type { ILayerConfig } from './lib/services/audit-brief.service';
 import { buildConsolidateRegistration } from './lib/tools/audit-consolidate.tool';
 import { buildPlanRegistration } from './lib/tools/audit-plan.tool';
 import { buildRunRegistration } from './lib/tools/audit-run.tool';
+import { buildSelfAuditRegistration } from './lib/tools/self-audit.tool';
 
 /**
  * `@mcp-vertex/audit` — multi-model audit plugin (l99, alcance A + B).
@@ -418,7 +419,15 @@ export default definePlugin({
 			...(peerPlugins !== undefined ? { peerPlugins } : {}),
 		});
 		return {
-			tools: [plan, consolidate, run],
+			tools: [
+				plan,
+				consolidate,
+				run,
+				buildSelfAuditRegistration({
+					namespacePrefix: ctx.namespacePrefix,
+					workspaceRootAbs: ctx.workspace.root,
+				}),
+			],
 			knowledge: [
 				{
 					id: 'audit-overview',

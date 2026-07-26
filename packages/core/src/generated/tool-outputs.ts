@@ -221,6 +221,38 @@ export interface McpVertexAuditAuditRunOutput {
 	projects: string[];
 }
 
+export interface McpVertexAuditSelfAuditOutput {
+	ranAt: string;
+	worst: "critical" | "high" | "medium" | "low" | "info" | "none";
+	summary: {
+		critical: number;
+		high: number;
+		medium: number;
+		low: number;
+		info: number;
+	};
+	skipped: {
+		id: string;
+		note?: string;
+	}[];
+	backlog: Array<{
+		rank: number;
+		score: number;
+		rationale: string;
+		finding: {
+			ruleId: string;
+			severity: "critical" | "high" | "medium" | "low" | "info";
+			message: string;
+			location?: {
+				file: string;
+				line?: number;
+				endLine?: number;
+			};
+			fix?: string;
+		};
+	}>;
+}
+
 export interface McpVertexBrowserBrowserA11yOutput {
 	url: string;
 	findings: Array<{
@@ -3241,6 +3273,7 @@ export interface McpVertexToolOutputs {
 	"mcp-vertex_audit_audit_consolidate": McpVertexAuditAuditConsolidateOutput;
 	"mcp-vertex_audit_audit_plan": McpVertexAuditAuditPlanOutput;
 	"mcp-vertex_audit_audit_run": McpVertexAuditAuditRunOutput;
+	"mcp-vertex_audit_self_audit": McpVertexAuditSelfAuditOutput;
 	"mcp-vertex_browser_browser_a11y": McpVertexBrowserBrowserA11yOutput;
 	"mcp-vertex_browser_browser_assert": McpVertexBrowserBrowserAssertOutput;
 	"mcp-vertex_browser_browser_click": McpVertexBrowserBrowserClickOutput;
