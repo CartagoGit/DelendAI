@@ -66,13 +66,19 @@ green; typecheck clean.
 
 ### S2 — recommend tool + config diff
 
-- **Status**: pending
-- **Files**: `plugins/auto-plugin-selector/src/lib/tools/plugins-recommend.tool.ts`, `plugins/auto-plugin-selector/src/lib/apply/config-diff.ts`
+- **Status**: done
+- **Files**: `plugins/auto-plugin-selector/src/lib/tools/plugins-recommend.tool.ts`, `plugins/auto-plugin-selector/src/lib/apply/config-diff.ts`, `plugins/auto-plugin-selector/src/lib/contracts/interfaces/config-diff.interface.ts`, `plugins/auto-plugin-selector/src/lib/apply/config-diff.spec.ts`, `plugins/auto-plugin-selector/src/public/index.ts`
 - **Gate**: bun run validate
+- **Commit**: (this session)
 
-`plugins_recommend { task? }` returns the tailored set + a config diff vs
-current (adds high-fit, flags low-signal). Applying is consent-gated and reuses
-`configuration_center`. Pure diff builder.
+`plugins_recommend { signals, limit?, minScore?, refine?, currentPlugins? }`
+returns the ranked `IPluginFit[]` + a structured `IConfigDiff` against the
+caller-supplied `currentPlugins` list. The diff is grouped into
+`adds` / `removes` / `keeps` (each step carries `kind`, `pluginId`,
+`rationale`, optional `fit`) and reuses no I/O — applying remains
+consent-gated and reuses `configuration_center`/`f00120`. Pure diff
+builder. 21/21 plugin tests green (10 scorer + 10 diff + 1 sanity);
+core 1038/1038; typecheck clean.
 
 ### S3 — optional LLM refinement + surface + catalog
 
