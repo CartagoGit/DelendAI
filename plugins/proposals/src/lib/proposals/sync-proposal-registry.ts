@@ -77,6 +77,15 @@ interface IProposalEntry {
 	status: IProposalStatus;
 	date: string;
 	extras?: IProposalExtras;
+	/**
+	 * `true` when the proposal lives under `legacy/closed/` — the a00076
+	 * archive folder — rather than the active `done/<kind>/` subtree. The
+	 * status field still reflects the original workflow status (today always
+	 * `done`); `archived` is a *location* marker, not a workflow state, so the
+	 * existing DFA stays untouched and downstream consumers that ignore the
+	 * flag keep their semantics.
+	 */
+	archived?: boolean;
 }
 
 export interface IProposalRegistrySyncResult {
@@ -222,6 +231,14 @@ const readProposalFile = async (
 	const extras = yamlBlock
 		? extractExtras(parseFrontmatterBlock(yamlBlock))
 		: undefined;
+	// a00076: a proposal under `legacy/closed/` is archived. We tag the entry
+	// with `archived: true` so consumers (the index dashboard, the closed
+	// frozen guard lint, `proposal_diagnose`) can recognise it without
+	// having to compare paths. `file` keeps its proposalsDir-relative form
+	// (e.g. `legacy/closed/feats/f00001-...md`), and `status` is preserved
+	// verbatim — the archive is a *location*, not a workflow status.
+	const relPath = relative(proposalsDir, absFilepath);
+	const isArchived = relPath.startsWith(`legacy${sep}closed${sep}`);
 	const entry: IProposalEntry = {
 		id,
 		// x00052: `file` is `proposalsDir`-relative (was implicitly
@@ -231,12 +248,13 @@ const readProposalFile = async (
 		// (where the proposal files live) means every downstream
 		// `join(proposalsDir, entry.file)` and `folderOf(entry.file)`
 		// stays correct regardless of where the index itself is stored.
-		file: relative(proposalsDir, absFilepath),
+		file: relPath,
 		track: fm.track ?? 'unspecified',
 		type: fm.type ?? 'unspecified',
 		status,
 		date: fm.date ?? 'unknown',
 		...(extras ? { extras } : {}),
+		...(isArchived ? { archived: true } : {}),
 	};
 	if (!isProposalStatus(fm.status)) {
 		return {

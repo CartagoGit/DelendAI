@@ -1,3 +1,4 @@
+import { stat } from 'node:fs/promises';
 /**
  * proposal-completeness.ts
  *
@@ -46,8 +47,6 @@
  *     and runs `guardSlicesComplete`. The plan parser and the path
  *     reader are injectable so tests can run offline.
  */
-
-import { existsSync } from 'node:fs';
 
 export interface ISliceParse {
 	readonly id: string;
@@ -165,7 +164,7 @@ export const collectSliceStatuses = (
 export const guardSlicesComplete = (input: {
 	readonly markdown: string;
 	readonly fileExists?: (path: string) => boolean;
-}): ICompletenessResult => {
+}): Promise<ICompletenessResult> => {
 	const slices = collectSliceStatuses(input.markdown);
 	const probe = input.fileExists ?? ((p) => existsSync(p));
 
@@ -228,15 +227,17 @@ export const verifyCompletedProposalAsync = async (input: {
  * the filesystem?". Returns the same shape as `guardSlicesComplete`
  * so callers can render the error uniformly.
  */
-export const guardTransitionToDone = (input: {
+export const guardTransitionToDone = async (input: {
 	readonly proposalPath: string;
 	readonly markdown: string;
-}): ICompletenessResult => {
+}): Promise<ICompletenessResult> => {
 	const result = guardSlicesComplete({ markdown: input.markdown });
 	if (!result.ok) return result;
 	// Re-check that the proposal-path itself is readable — guards
 	// against a stale path during a transition attempt.
-	if (!existsSync(input.proposalPath)) {
+	try {
+		await stat(input.proposalPath);
+	} catch {
 		return {
 			ok: false,
 			code: 'missing-declared-files',

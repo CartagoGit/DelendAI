@@ -600,7 +600,7 @@ export const runProposalTransition = async (
 		// only thing standing between a `pending/ready → done` zero-work move
 		// and the disk. For `review → done` the peer-review gate (next) is
 		// already the strong signal, so we skip this check there.
-		const completenessGuard = guardTransitionToDone({
+		const completenessGuard = await guardTransitionToDone({
 			proposalPath: found.absPath,
 			markdown: raw,
 		});
