@@ -17,7 +17,6 @@ import {
 	probeTool,
 	realProbeDeps,
 	runExternalTool,
-	toolError,
 	toolJson,
 } from '@mcp-vertex/core/public';
 
@@ -82,13 +81,22 @@ const DRY_RUN = z.object({
 	command: z.string(),
 });
 
-const BUILD_OUTPUT = z.union([BUILD_OK, REFUSAL, DRY_RUN]);
-const APPLY_OUTPUT = z.union([APPLY_OK, REFUSAL, DRY_RUN]);
+const INSTALL_MISSING = z.object({
+	ok: z.literal(false),
+	isError: z.literal(true),
+	error: z.object({
+		reason: z.literal('install-missing'),
+		nextAction: z.string().optional(),
+	}),
+});
+
+const BUILD_OUTPUT = z.union([BUILD_OK, REFUSAL, DRY_RUN, INSTALL_MISSING]);
+const APPLY_OUTPUT = z.union([APPLY_OK, REFUSAL, DRY_RUN, INSTALL_MISSING]);
 
 /** Parse `docker build` output to extract the final image id. */
 const extractImageId = (stdout: string): string | undefined => {
 	for (const line of stdout.split('\n')) {
-		const match = /sha256:[a-f0-9]{64}/.exec(line);
+		const match = /sha256:[a-f0-9]+/.exec(line);
 		if (match !== null) return match[0];
 	}
 	return undefined;
@@ -103,6 +111,20 @@ export const buildContainerBuildToolRegistrations = (
 
 	const buildDockerfileArg = (path: string | undefined): readonly string[] =>
 		path === undefined ? [] : ['-f', path];
+
+	const installMissing = (nextAction?: string) =>
+		toolJson(
+			INSTALL_MISSING.parse({
+				ok: false,
+				isError: true,
+				error: {
+					reason: 'install-missing',
+					...(nextAction !== undefined && nextAction.length > 0
+						? { nextAction }
+						: {}),
+				},
+			}),
+		);
 
 	return [
 		{
@@ -140,10 +162,7 @@ export const buildContainerBuildToolRegistrations = (
 						}
 						const probe = await probeTool(DOCKER_TOOL, probeDeps);
 						if (!probe.available) {
-							return toolError(
-								'install-missing',
-								probe.installHint?.command ?? '',
-							);
+							return installMissing(probe.installHint?.command);
 						}
 						const run = await runExternalTool(
 							{
@@ -203,10 +222,7 @@ export const buildContainerBuildToolRegistrations = (
 						}
 						const probe = await probeTool(KUBECTL_TOOL, probeDeps);
 						if (!probe.available) {
-							return toolError(
-								'install-missing',
-								probe.installHint?.command ?? '',
-							);
+							return installMissing(probe.installHint?.command);
 						}
 						const argv =
 							args.namespace !== undefined
