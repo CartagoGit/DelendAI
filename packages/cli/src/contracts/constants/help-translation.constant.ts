@@ -62,6 +62,8 @@ const ENGLISH_COMMAND_SUMMARIES: Readonly<Record<string, string>> = {
 		'Report offline dependency health (lockfile, unpinned, duplicates).',
 	'deps polyglot':
 		'List declared deps from pyproject/Cargo/go.mod (non-npm ecosystems).',
+	'router dashboard':
+		'Show the recommendation + spend table for every reachable provider; --pin persists the choice.',
 	'rules get': 'Show the lint/type rules map (optionally for one area).',
 	'rules check':
 		'Show how to check an area against its rules (resolved configs + command).',
