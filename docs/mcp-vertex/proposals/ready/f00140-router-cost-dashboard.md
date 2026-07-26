@@ -44,12 +44,11 @@ always wins).
 
 ### S1 — shared view-model builder
 
-- **Status**: pending
-- **Files**: `plugins/auto-agent-selector/src/lib/dashboard/view-model.ts`, `plugins/auto-agent-selector/src/lib/contracts/interfaces/dashboard.interface.ts`
+- **Status**: done
+- **Files**: `plugins/auto-agent-selector/src/lib/dashboard/view-model.ts`, `plugins/auto-agent-selector/src/lib/contracts/interfaces/dashboard.interface.ts`, `plugins/auto-agent-selector/tests/src/lib/dashboard/view-model.spec.ts`
 - **Gate**: bun run validate
 
-Pure `buildDashboard(roster, recommendations, spend)` → rows (provider, fit,
-cost, spend-to-date, pinned?). Unit-tested without a UI.
+Implemented `buildDashboard(input)` — a pure `(roster, recommendations, spend) → rows + headline` projection. New types live in `contracts/interfaces/dashboard.interface.ts` (IBuildDashboardInput, IDashboardRow, IDashboardViewModel, IRecommendationRow, ISpendSummary, IProviderSpend); the builder in `lib/dashboard/view-model.ts`. Sort order: pinned → best-rank ASC → in-roster → costTier ASC → id (stable). Spend-only providers (recorded but not reachable) appear last with the matching note. 9/9 tests pass, `bun run typecheck` green.
 
 ### S2 — CLI command
 
