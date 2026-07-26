@@ -36,6 +36,19 @@ ownership:
           agent: implementation_runner,
           task: 'S5 — close_slice invoca quality_run antes de retornar ok.',
       }
+closed-by: cartago (consolidated evidence pass 2026-07-26)
+closed-evidence:
+  - 8 commits referencing a00072 recovered from git log --grep (precedes convention)
+  - all declared Files verified to exist via 8-commit batch
+shipped-in:
+  - 9e7aa80e # feat(a00072): S7 stale-tmp hygiene — lint detection (S7.a) + usage-tracking boot
+  - 0bdc0671 # fix(a00072): S7.a/S7.b — detect 0-byte stale tmp files + boot sweep (F205)
+  - 76c81dd6 # fix(a00072): S6 — mcp-vertex_skill multi-root resolver + 1h cache (F204)
+  - e304e1b0 # fix(a00072): S5 — proposal_transition + close_slice require validate evidence + 
+  - abcf700c # fix(a00072): S3 auto_work logs/quality cycle F150/F152
+  - f3134807 # fix(a00072): S3.b/S3.c — quality gate on validate + close_slice
+  - ca51237e # feat(a00072): S4 — agent_worktree auto-detect stranded branches (F201)
+  - e65c55e0 # feat(a00072): S3 — auto_work dogfood advisory + quality_run_quality + close_slic
 ---
 
 ## goal

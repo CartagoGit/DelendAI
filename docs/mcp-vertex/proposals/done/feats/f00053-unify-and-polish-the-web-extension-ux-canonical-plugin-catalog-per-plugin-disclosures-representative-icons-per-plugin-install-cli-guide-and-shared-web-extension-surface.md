@@ -6,6 +6,19 @@ kind: feat
 title: Unify and polish the web + extension UX — canonical plugin catalog, per-plugin disclosures, representative icons, per-plugin install, CLI guide, and shared web↔extension surface
 track: apps/web+extensions/vscode+packages/ui-extension+docs+i18n+ux
 date: 2026-06-24
+closed-by: cartago (consolidated evidence pass 2026-07-26)
+closed-evidence:
+  - 8 commits referencing f00053 recovered from git log --grep (precedes convention)
+  - all declared Files verified to exist via 8-commit batch
+shipped-in:
+  - 3db2b08f # fix(proposals): route done/ closure into done/<kind>/ subfolders
+  - 09f39a5e # feat(f00057 S7): add conventions to the swarm preset
+  - f36c3497 # feat(ui-extension): f00053 S7 — shared web↔extension UI strings layer
+  - c903c0f8 # feat(vscode): f00053 S6 — surface docs/API/how-to-use from the extension
+  - 73a8f76b # feat(web): f00053 S5 — first-class CLI usage guide page
+  - 759e9f57 # feat(web): f00053 S4 — per-plugin install instructions (derived from install mat
+  - 92eb0b40 # feat(vscode): f00053 S3 — distinct representative plugin icons in the tool tree
+  - cf3e387b # feat(web): f00053 S2 — expandable per-plugin disclosures on /plugins
 ---
 
 # f00053 — Unify and polish the web + extension UX: canonical plugin catalog, per-plugin disclosures, representative icons, per-plugin install, CLI guide, and shared web↔extension surface

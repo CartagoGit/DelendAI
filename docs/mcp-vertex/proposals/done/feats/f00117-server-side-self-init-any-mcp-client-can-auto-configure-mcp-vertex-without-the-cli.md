@@ -6,6 +6,14 @@ status: done
 type: proposal
 track: core+adoption
 date: 2026-07-15
+closed-by: cartago (consolidated evidence pass 2026-07-26)
+closed-evidence:
+  - 3 commits referencing f00117 recovered from git log --grep (precedes convention)
+  - all declared Files verified to exist via 3-commit batch
+shipped-in:
+  - 7adac35d # fix(init,search,docs): a00063 — adopter agent meltdown forensics + three-layer f
+  - c390dfbb # feat(core): f00117 — server-side self-init (init_config), no CLI required
+  - 3950150c # feat(proposals): q00002 plan — self-managing mcp-vertex (f00116 bootstrap+migrat
 ---
 
 # f00117 — Server-side self-init — any MCP client can auto-configure mcp-vertex without the CLI

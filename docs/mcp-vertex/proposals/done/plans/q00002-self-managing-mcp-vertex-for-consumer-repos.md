@@ -23,6 +23,14 @@ contains:
 closureGate:
     requirePeerReview: true
     requireAllChildrenDone: true
+closed-by: cartago (consolidated evidence pass 2026-07-26)
+closed-evidence:
+  - 3 commits referencing q00002 recovered from git log --grep (precedes convention)
+  - all declared Files verified to exist via 3-commit batch
+shipped-in:
+  - 61e33d69 # feat(proposals): a00057 — Files: doc drift is a recurring class; permanent ratch
+  - 3cfe944e # fix(proposals): q00002 peer review round found stale f00118 Files/acceptance tex
+  - 3950150c # feat(proposals): q00002 plan — self-managing mcp-vertex (f00116 bootstrap+migrat
 ---
 
 # q00002 — Self-managing mcp-vertex for consumer repos

@@ -5,6 +5,11 @@ title: "Auditoría del estado actual — Claude Code (Opus 4.8)"
 status: done
 date: 2026-06-17T18:18:00Z
 track: archive
+closed-by: legacy (pre-convention; consolidated pass 2026-07-26)
+closed-evidence:
+  - a00017 predates the shipped-in convention (pre-2026-07-24)
+  - proposal body lists the original audit/fix/test deliverables
+  - status was already 'done' before this consolidation pass
 ---
 
 # Auditoría del estado actual de `@cartago-git/mcp-vertex` — Claude Code (Opus 4.8)

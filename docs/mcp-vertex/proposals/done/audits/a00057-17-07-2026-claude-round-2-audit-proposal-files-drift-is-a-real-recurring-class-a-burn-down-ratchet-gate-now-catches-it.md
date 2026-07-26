@@ -6,6 +6,14 @@ status: done
 type: proposal
 track: audit
 date: 2026-07-16
+closed-by: cartago (consolidated evidence pass 2026-07-26)
+closed-evidence:
+  - 3 commits referencing a00057 recovered from git log --grep (precedes convention)
+  - all declared Files verified to exist via 3-commit batch
+shipped-in:
+  - 7aaa10fd # fix(cli): a00061 — mcpv init/init:default silently ignored --workspace and wrote
+  - 50906f38 # fix(dev): a00058 — dev-preview browser bundles were silently broken since an unk
+  - 61e33d69 # feat(proposals): a00057 — Files: doc drift is a recurring class; permanent ratch
 ---
 
 # a00057 — 17-07-2026 claude-round-2 audit — proposal Files: drift is a real, recurring class; a burn-down ratchet gate now catches it

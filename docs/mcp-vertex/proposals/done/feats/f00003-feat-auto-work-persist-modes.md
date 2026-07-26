@@ -11,6 +11,11 @@ related:
   - f00006 # test-convention (paralelo en filosofía: publica el contrato, lo verifica)
 kind: feat
 title: `auto_work`: modos de persistencia (commit / commit-and-push / none)
+closed-by: legacy (pre-convention; consolidated pass 2026-07-26)
+closed-evidence:
+  - f00003 predates the shipped-in convention (pre-2026-07-24)
+  - proposal body lists the original audit/fix/test deliverables
+  - status was already 'done' before this consolidation pass
 ---
 
 # f00003 — `auto_work`: modos de persistencia (commit / commit-and-push / none)

@@ -82,7 +82,10 @@ import {
 	guardShippedInPresent,
 	logForcedRegression,
 } from '../services/proposal-state';
-import { checkTransitionEvidence } from '../services/transition-evidence';
+import {
+	checkTransitionEvidence,
+	type IValidateEvidence,
+} from '../services/transition-evidence';
 
 const PEER_REVIEW_LOG_RELATIVE_PATH = join(
 	'.cache',
@@ -117,12 +120,6 @@ export interface IPeerReviewGateDeps {
 	readonly readPeerReviewLog: (
 		logPathAbs: string,
 	) => Promise<readonly IPeerReviewLogEntry[]>;
-}
-
-export interface IValidateEvidence {
-	readonly timestamp: string;
-	readonly exitCode: number;
-	readonly logPath?: string | undefined;
 }
 
 interface IValidateLogEntry {
@@ -282,6 +279,15 @@ const KNOWN_KINDS: ReadonlySet<string> = new Set([
 
 const isKnownKind = (value: string): value is IProposalKind =>
 	KNOWN_KINDS.has(value);
+
+const isPendingAliasEligible = (input: {
+	readonly proposalId: string;
+	readonly absPath: string;
+}): boolean => {
+	const filename = input.absPath.split('/').pop() ?? '';
+	const prefix = (filename[0] ?? input.proposalId[0] ?? '').toLowerCase();
+	return prefix !== 'p' && prefix in PROPOSAL_KIND_BY_PREFIX;
+};
 
 /**
  * Resolve the folder a transition should land in.
@@ -742,7 +748,12 @@ const validateCurrentStatus = (
 	found: ILocatedProposal,
 ): IProposalTransitionSourceStatus | ReturnType<typeof toolError> => {
 	if (isKnownStatus(found.status)) return found.status;
-	if (found.status === 'pending') return 'pending';
+	if (
+		found.status === 'pending' &&
+		isPendingAliasEligible({ proposalId: id, absPath: found.absPath })
+	) {
+		return 'pending';
+	}
 	return toolError(
 		`"${id}" has current status "${found.status}", which is not on the new state machine yet`,
 		'This proposal predates f00016 (legacy 8-status union) — it is migrated by S11/S12, not transitioned by this tool.',

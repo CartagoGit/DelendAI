@@ -6,6 +6,12 @@ status: done
 type: proposal
 track: configuration-center
 date: 2026-07-12
+closed-by: cartago (consolidated evidence pass 2026-07-26)
+closed-evidence:
+  - 1 commits referencing f00112 recovered from git log --grep (precedes convention)
+  - all declared Files verified to exist via 1-commit batch
+shipped-in:
+  - 61e33d69 # feat(proposals): a00057 — Files: doc drift is a recurring class; permanent ratch
 ---
 
 # f00112 — Schema-driven Configuration Center with plugin and artifact provenance

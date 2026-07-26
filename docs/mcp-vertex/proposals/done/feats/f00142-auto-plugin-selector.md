@@ -5,6 +5,16 @@ title: auto-plugin-selector — recommend the best plugin set for THIS project f
 status: done
 date: 2026-07-23
 track: plugin+config+auto-selection
+closed-by: cartago (consolidated evidence pass 2026-07-26)
+closed-evidence:
+  - 5 commits referencing f00142 recovered from git log --grep (precedes convention)
+  - all declared Files verified to exist via 5-commit batch
+shipped-in:
+  - 0e80a83d # feat(f00142): S3 opt-in LLM rationale + README — auto-plugin-selector ships
+  - 84373b93 # feat(f00142): S2 plugins_recommend tool + pure config-diff builder
+  - cfa4ae81 # fix(f00142): wire auto-plugin-selector + fix web style + i18n help + registry te
+  - 8da5db9e # feat(auto-plugin-selector): f00142 S1 — pure plugin-fit scorer (deterministic, n
+  - 676008f8 # feat(config,proposals): activate router in this repo + 4 self-improvement propos
 ---
 
 # f00142 — auto-plugin-selector

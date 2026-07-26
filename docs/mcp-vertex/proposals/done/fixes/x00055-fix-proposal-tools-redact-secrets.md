@@ -22,6 +22,12 @@ acceptance:
     - { command: bun run lint:tools,        expect: exit0 }
     - { command: bun run validate,          expect: exit0 }
     - { command: grep -rn "redactSecrets" plugins/proposals/src/lib/tools/ | wc -l, expect: ">= 5 (loop-detector handoff, proposal_create body, proposal_edit value, proposal_review note, the redaction module itself)" }
+closed-by: cartago (consolidated evidence pass 2026-07-26)
+closed-evidence:
+  - 1 commits referencing x00055 recovered from git log --grep (precedes convention)
+  - all declared Files verified to exist via 1-commit batch
+shipped-in:
+  - 9b53fc1d # fix(proposals): redactSecrets on user text in proposal_edit, proposal_add_slice,
 ---
 
 # x00055 — `proposal_edit.value`, `proposal_add_slice.{title,acceptanceCriteria}` and `proposal_review.note` skip `redactSecrets`

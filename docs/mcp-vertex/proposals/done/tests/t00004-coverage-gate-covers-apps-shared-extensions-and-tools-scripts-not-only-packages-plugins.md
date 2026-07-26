@@ -6,6 +6,11 @@ status: done
 type: proposal
 track: tests+coverage
 date: 2026-07-14
+closed-by: legacy (pre-convention; consolidated pass 2026-07-26)
+closed-evidence:
+  - t00004 predates the shipped-in convention (pre-2026-07-24)
+  - proposal body lists the original audit/fix/test deliverables
+  - status was already 'done' before this consolidation pass
 ---
 
 # t00004 — Coverage gate covers apps/shared, extensions and tools scripts — not only packages+plugins

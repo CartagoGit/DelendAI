@@ -5,6 +5,12 @@ title: prompts pack — explain-code, write-tests-for, review-diff, generate-doc
 status: done
 date: 2026-07-23
 track: plugin+prompts+dx
+closed-by: cartago (consolidated evidence pass 2026-07-26)
+closed-evidence:
+  - 1 commits referencing f00138 recovered from git log --grep (precedes convention)
+  - all declared Files verified to exist via 1-commit batch
+shipped-in:
+  - c6cb2333 # feat(f00138): add prompts-pack plugin (S1 - comprehension prompts)
 ---
 
 # f00138 — prompts pack

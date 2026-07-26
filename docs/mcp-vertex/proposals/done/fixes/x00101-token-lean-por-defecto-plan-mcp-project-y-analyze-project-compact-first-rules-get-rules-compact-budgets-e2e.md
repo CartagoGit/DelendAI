@@ -6,6 +6,13 @@ status: done
 type: proposal
 track: core
 date: 2026-07-13
+closed-by: cartago (consolidated evidence pass 2026-07-26)
+closed-evidence:
+  - 2 commits referencing x00101 recovered from git log --grep (precedes convention)
+  - all declared Files verified to exist via 2-commit batch
+shipped-in:
+  - 8005688e # fix(core): x00101 — compact is the default on plan_mcp_project/analyze_project; 
+  - b3abc41e # docs(audit): a00053 exhaustive monorepo audit + 5 derived proposals; fix(proposa
 ---
 
 # x00101 — Token-lean por defecto: plan_mcp_project y analyze_project compact-first, rules_get_rules compact, budgets e2e

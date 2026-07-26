@@ -6,6 +6,12 @@ status: done
 type: proposal
 track: audit
 date: 2026-07-15
+closed-by: cartago (consolidated evidence pass 2026-07-26)
+closed-evidence:
+  - 1 commits referencing a00055 recovered from git log --grep (precedes convention)
+  - all declared Files verified to exist via 1-commit batch
+shipped-in:
+  - 2981880c # fix(verify): x00107 — probes mirror the SDK's isError semantics; revert the 3 x0
 ---
 
 # a00055 — 15-07-2026 claude-code fable-5 follow-up audit — the error-envelope class made a convention, and gates that run in the wrong place

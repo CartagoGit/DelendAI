@@ -6,6 +6,11 @@ status: done
 type: proposal
 track: ci+gates
 date: 2026-07-15
+closed-by: legacy (pre-convention; consolidated pass 2026-07-26)
+closed-evidence:
+  - c00088 predates the shipped-in convention (pre-2026-07-24)
+  - proposal body lists the original audit/fix/test deliverables
+  - status was already 'done' before this consolidation pass
 ---
 
 # c00088 — CI builds the web site; repo-root gates stop depending on the invoking cwd

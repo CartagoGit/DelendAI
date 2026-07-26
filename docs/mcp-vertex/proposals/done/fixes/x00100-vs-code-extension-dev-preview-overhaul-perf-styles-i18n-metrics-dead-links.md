@@ -6,6 +6,14 @@ status: done
 type: proposal
 track: general
 date: 2026-07-13
+closed-by: cartago (consolidated evidence pass 2026-07-26)
+closed-evidence:
+  - 3 commits referencing x00100 recovered from git log --grep (precedes convention)
+  - all declared Files verified to exist via 3-commit batch
+shipped-in:
+  - 29fda532 # fix(dev): x00100 — ?lang applies to every dev-preview section, docsUrl from one 
+  - 5b694899 # fix(dev): x00100 dev-preview overhaul infra (catalog lean projection, lefthook f
+  - 6433fa2e # fix(dev): pool one persistent MCP client per cwd in the dev preview api (x00100 
 ---
 
 # x00100 — VS Code extension dev-preview overhaul: perf, styles, i18n, metrics, dead links

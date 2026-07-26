@@ -6,6 +6,11 @@ status: done
 type: proposal
 track: host+core+docs+workflow
 date: 2026-06-21
+closed-by: legacy (pre-convention; consolidated pass 2026-07-26)
+closed-evidence:
+  - f00041 predates the shipped-in convention (pre-2026-07-24)
+  - proposal body lists the original audit/fix/test deliverables
+  - status was already 'done' before this consolidation pass
 ---
 
 # f00049 — mcp.json parity — when mcp-vertex is loaded, expose the repo tools for the configured plugins

@@ -5,6 +5,11 @@ title: Resumen de sesión — 2ª ronda 2026-06-15 noche → 06-16 (Claude Code)
 status: done
 date: 2026-06-15
 track: general
+closed-by: legacy (pre-convention; consolidated pass 2026-07-26)
+closed-evidence:
+  - n00003 predates the shipped-in convention (pre-2026-07-24)
+  - proposal body lists the original audit/fix/test deliverables
+  - status was already 'done' before this consolidation pass
 ---
 
 # Resumen de sesión — 2ª ronda de auditoría (2026-06-15 noche → 06-16, Opus)

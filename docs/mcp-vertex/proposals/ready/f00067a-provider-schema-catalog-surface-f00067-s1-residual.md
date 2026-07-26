@@ -1,11 +1,18 @@
 ---
 id: f00067a
 kind: feat
-status: done
+status: ready
 type: proposal
 track: general
 date: 2026-07-05
+closed-by: pre-convention (2026-07-26 consolidation pass)
+closed-evidence:
+  - S1 providers block deferred (see f00067 S1 in done/feats); left in done/feats but never reopened
+  - status was 'ready' but lived in done/feats — folder drift
+shipped-in:
+  - (no commits in git log; pre-existing stub)
 ---
+status: ready
 
 # f00067a — Provider schema + catalog surface (f00067 S1 residual)
 

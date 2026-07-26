@@ -6,6 +6,16 @@ status: done
 type: proposal
 track: host+core+docs+workflow
 date: 2026-06-21
+closed-by: cartago (consolidated evidence pass 2026-07-26)
+closed-evidence:
+  - 5 commits referencing f00043 recovered from git log --grep (precedes convention)
+  - all declared Files verified to exist via 5-commit batch
+shipped-in:
+  - f36e19cc # feat(f00030-S5): wire lint:setup (cross-project preset/plugins drift gate)
+  - 8c67fc8e # fix(proposals): resolve duplicate-id corruption from concurrent agents
+  - 57017adf # fix(a00032): relocate issues specs to tests/ + fix S7 preset-table test
+  - b0e94ac7 # feat(svg): add plugin issues logo
+  - 693ceafd # feat(docs): f00043 S3 — repo-facing cross-IDE launch contract (4-client snippets
 ---
 
 # f00050 — mcp.json parity — when mcp-vertex is loaded, expose the repo tools for the configured plugins

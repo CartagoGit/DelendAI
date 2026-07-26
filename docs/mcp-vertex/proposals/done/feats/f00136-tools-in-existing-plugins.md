@@ -59,7 +59,7 @@ in heavy dependencies.
 ### S2 — git + quality tools
 
 - **Status**: done
-- **Files**: `plugins/git/src/lib/tools/git-extended.tool.ts`, `plugins/quality/src/lib/tools/{quality-coverage,quality-complexity,coverage,complexity}.ts`
+- **Files**: `plugins/git/src/lib/tools/git-extended.tool.ts`, `plugins/quality/src/lib/tools/{quality-coverage.tool,quality-complexity.tool,coverage.tool,complexity.tool}.ts`
 - **Gate**: bun run validate
 
 `git_pr` (create/view via `gh` when present), `git_bisect`, `git_stash`;
@@ -69,7 +69,7 @@ hotspots). Pure formatters over injected runners.
 ### S3 — search + docs tools
 
 - **Status**: done
-- **Files**: `plugins/search/src/lib/tools/{search-symbol,search-references,find-symbol}.ts`, `plugins/docs/src/lib/tools/{docs-generate,generate-docs}.ts`
+- **Files**: `plugins/search/src/lib/tools/{search-symbol.tool,search-references.tool,find-symbol.tool}.ts`, `plugins/docs/src/lib/tools/{docs-generate.tool,generate-docs.tool}.ts`
 - **Gate**: bun run validate
 
 `search_symbol` / `search_references` (symbol-accurate lookup), `docs_generate`

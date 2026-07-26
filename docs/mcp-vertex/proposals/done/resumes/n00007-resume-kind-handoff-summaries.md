@@ -22,6 +22,11 @@ related:
     - f00001 # done/ folder mirrors kinds — the convention this proposal extends
     - x00001 # fix-audit-types — established the `a<NN>-` prefix pattern
     - f00023 # rename proposal IDs by creation date — orthogonal: this adds a 13th kind, not a new numbering scheme
+closed-by: legacy (pre-convention; consolidated pass 2026-07-26)
+closed-evidence:
+  - n00007 predates the shipped-in convention (pre-2026-07-24)
+  - proposal body lists the original audit/fix/test deliverables
+  - status was already 'done' before this consolidation pass
 ---
 
 # n00007 — Resume kind: cross-session handoff summaries

@@ -6,6 +6,12 @@ status: done
 type: proposal
 track: core
 date: 2026-07-16
+closed-by: cartago (consolidated evidence pass 2026-07-26)
+closed-evidence:
+  - 1 commits referencing r00010 recovered from git log --grep (precedes convention)
+  - all declared Files verified to exist via 1-commit batch
+shipped-in:
+  - 0c39a40c # refactor(cache): r00010 — separate accumulated results from derivable cache
 ---
 
 # r00010 — separate accumulated results (logs, memory, usage-tracking) from derivable cache under .cache/mcp-vertex/results/

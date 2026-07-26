@@ -5,6 +5,12 @@ type: proposal
 track: testing
 date: 2026-06-22
 kind: test
+closed-by: cartago (consolidated evidence pass 2026-07-26)
+closed-evidence:
+  - 1 commits referencing t00001 recovered from git log --grep (precedes convention)
+  - all declared Files verified to exist via 1-commit batch
+shipped-in:
+  - 5f869793 # fix(t00001-S3): correct IRoundContextSourceState literal in resume spec
 ---
 
 # t00001 — Improve test coverage for core engines

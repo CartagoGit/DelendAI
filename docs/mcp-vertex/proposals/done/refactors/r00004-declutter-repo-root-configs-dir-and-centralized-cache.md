@@ -6,6 +6,11 @@ kind: refactor
 title: Declutter the repo root — a configs/ home for relocatable tool configs and a single centralized .cache/
 track: repo-layout+build+tooling+dx
 date: 2026-06-24
+closed-by: legacy (pre-convention; consolidated pass 2026-07-26)
+closed-evidence:
+  - r00004 predates the shipped-in convention (pre-2026-07-24)
+  - proposal body lists the original audit/fix/test deliverables
+  - status was already 'done' before this consolidation pass
 ---
 
 # r00004 — Declutter the repo root: configs/ + centralized .cache/

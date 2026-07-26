@@ -24,6 +24,12 @@ related:
     - f00016 # proposal state machine — defines the 7-status DFA + the 12 kinds; f00014 must not break it
     - f00042 # done-folder mirrors kinds — already landed; the audit documents now live in done/audits/ with padded IDs
     - f00022 # IDE extension v2 — does not touch IDs but has reservedFiles that include docs/proposals/done/feats/
+closed-by: cartago (consolidated evidence pass 2026-07-26)
+closed-evidence:
+  - 1 commits referencing f00014 recovered from git log --grep (precedes convention)
+  - all declared Files verified to exist via 1-commit batch
+shipped-in:
+  - 8c67fc8e # fix(proposals): resolve duplicate-id corruption from concurrent agents
 ---
 
 # f00014 — Renumerar proposals con padding de 5 dígitos, por fecha de creación, dentro de cada familia

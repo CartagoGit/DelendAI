@@ -6,6 +6,13 @@ status: done
 type: proposal
 track: audit
 date: 2026-07-16
+closed-by: cartago (consolidated evidence pass 2026-07-26)
+closed-evidence:
+  - 2 commits referencing a00060 recovered from git log --grep (precedes convention)
+  - all declared Files verified to exist via 2-commit batch
+shipped-in:
+  - 7aaa10fd # fix(cli): a00061 — mcpv init/init:default silently ignored --workspace and wrote
+  - f7238422 # fix(cli): a00060 — mcpv doctor was silent by default and always reported 0 tools
 ---
 
 # a00060 — 17-07-2026d claude-round-2 audit — mcpv doctor was silent by default and always reported 0 tools; silence-console-setup didn't actually cover stderr

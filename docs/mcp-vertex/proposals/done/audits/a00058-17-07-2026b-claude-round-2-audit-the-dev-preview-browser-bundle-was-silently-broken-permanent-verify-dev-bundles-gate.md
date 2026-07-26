@@ -6,6 +6,16 @@ status: done
 type: proposal
 track: audit
 date: 2026-07-16
+closed-by: cartago (consolidated evidence pass 2026-07-26)
+closed-evidence:
+  - 5 commits referencing a00058 recovered from git log --grep (precedes convention)
+  - all declared Files verified to exist via 5-commit batch
+shipped-in:
+  - 7b249ed1 # fix(search,docs): a00062 — search/docs returned zero results for every mcp-verte
+  - 7aaa10fd # fix(cli): a00061 — mcpv init/init:default silently ignored --workspace and wrote
+  - f7238422 # fix(cli): a00060 — mcpv doctor was silent by default and always reported 0 tools
+  - 06e5720d # fix(web): a00059 — 937 tool/plugin detail pages shipped as bare unstyled fragmen
+  - 50906f38 # fix(dev): a00058 — dev-preview browser bundles were silently broken since an unk
 ---
 
 # a00058 — 17-07-2026b claude-round-2 audit — the dev-preview browser bundle was silently broken; permanent verify:dev-bundles gate

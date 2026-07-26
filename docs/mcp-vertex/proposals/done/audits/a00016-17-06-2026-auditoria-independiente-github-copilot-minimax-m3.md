@@ -5,6 +5,11 @@ title: "Auditoría Independiente — GitHub Copilot (MiniMax-M3)"
 status: done
 date: 2026-06-17T12:51:25Z
 track: archive
+closed-by: legacy (pre-convention; consolidated pass 2026-07-26)
+closed-evidence:
+  - a00016 predates the shipped-in convention (pre-2026-07-24)
+  - proposal body lists the original audit/fix/test deliverables
+  - status was already 'done' before this consolidation pass
 ---
 
 # 17-06-2026 · Auditoría Independiente — `@cartago-git/mcp-vertex`

@@ -6,6 +6,13 @@ status: done
 type: proposal
 track: audit
 date: 2026-07-18
+closed-by: cartago (consolidated evidence pass 2026-07-26)
+closed-evidence:
+  - 2 commits referencing a00065 recovered from git log --grep (precedes convention)
+  - all declared Files verified to exist via 2-commit batch
+shipped-in:
+  - 0369f301 # fix(core,web-fetch): a00065-S6 reliability sweep — loader deps-before-register, 
+  - 16b8946e # fix(core,quality,build,metrics): a00065 — external review P0/P1 findings + 2 bon
 ---
 
 # a00065 — 18-07-2026 external broad review (ChatGPT web, model unspecified) — broad repo audit, 4 P0/P1 claims verified, rest queued for investigation slices

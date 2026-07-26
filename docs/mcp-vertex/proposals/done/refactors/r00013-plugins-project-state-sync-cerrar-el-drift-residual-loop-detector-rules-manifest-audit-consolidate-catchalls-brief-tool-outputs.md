@@ -7,6 +7,12 @@ date: 2026-06-21
 migrated_from: l00001
 renumbered_on: 2026-07-26
 kind: refactor
+closed-by: cartago (consolidated evidence pass 2026-07-26)
+closed-evidence:
+  - 1 commits referencing r00013 recovered from git log --grep (precedes convention)
+  - all declared Files verified to exist via 1-commit batch
+shipped-in:
+  - aae0b627 # fix(proposals): reclassify l00001 → r00013 (refactor) — f00114 overcorrection
 ---
 
 # r00013 — Plugins ↔ project state sync — cerrar el drift residual (loop-detector, rules/manifest, audit/consolidate, catchalls, brief, tool-outputs)

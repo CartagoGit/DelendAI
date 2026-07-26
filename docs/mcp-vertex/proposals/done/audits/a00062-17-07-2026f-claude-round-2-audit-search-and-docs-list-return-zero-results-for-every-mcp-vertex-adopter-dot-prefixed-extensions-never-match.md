@@ -6,6 +6,13 @@ status: done
 type: proposal
 track: audit
 date: 2026-07-16
+closed-by: cartago (consolidated evidence pass 2026-07-26)
+closed-evidence:
+  - 2 commits referencing a00062 recovered from git log --grep (precedes convention)
+  - all declared Files verified to exist via 2-commit batch
+shipped-in:
+  - 7adac35d # fix(init,search,docs): a00063 — adopter agent meltdown forensics + three-layer f
+  - 7b249ed1 # fix(search,docs): a00062 — search/docs returned zero results for every mcp-verte
 ---
 
 # a00062 — 17-07-2026f claude-round-2 audit — search and docs_list return zero results for every mcp-vertex adopter (dot-prefixed extensions never match)

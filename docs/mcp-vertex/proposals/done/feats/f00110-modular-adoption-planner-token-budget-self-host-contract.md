@@ -6,6 +6,12 @@ status: done
 type: proposal
 track: architecture
 date: 2026-07-12
+closed-by: cartago (consolidated evidence pass 2026-07-26)
+closed-evidence:
+  - 1 commits referencing f00110 recovered from git log --grep (precedes convention)
+  - all declared Files verified to exist via 1-commit batch
+shipped-in:
+  - 44152b0a # fix(audit-a00052): close P0/P1 containment, injection and lifecycle findings
 ---
 
 # f00110 — modular adoption planner token budget self host contract

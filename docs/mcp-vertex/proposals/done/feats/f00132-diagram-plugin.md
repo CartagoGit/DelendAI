@@ -5,6 +5,16 @@ title: diagram plugin — mermaid diagrams generated from project data (dependen
 status: done
 date: 2026-07-23
 track: plugin+diagram+docs
+closed-by: cartago (consolidated evidence pass 2026-07-26)
+closed-evidence:
+  - 5 commits referencing f00132 recovered from git log --grep (precedes convention)
+  - all declared Files verified to exist via 5-commit batch
+shipped-in:
+  - 96113266 # fix(f00132 + agent-lock): propagate mutex options + mkdir for tmp dirs
+  - 7187e2a3 # fix(diagram): wire into standard preset + mark S3 done
+  - bc937a95 # feat(f00132): S2 — diagram_erd passthrough + diagram_proposals DFA
+  - 854b4d7d # feat(f00132): S1 — diagram_modules + diagram-graph tool (deps + modules)
+  - c755f263 # feat(diagram): new diagram plugin — workspace dependency graph as mermaid (f0013
 ---
 
 # f00132 — diagram plugin

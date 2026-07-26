@@ -171,5 +171,5 @@ Result shape:
 
 ### Design reference
 
-See [docs/mcp-vertex/proposals/ready/f00139-self-audit-dogfood-loop.md](docs/mcp-vertex/proposals/ready/f00139-self-audit-dogfood-loop.md)
+See [docs/mcp-vertex/proposals/done/feats/f00139-self-audit-dogfood-loop.md](docs/mcp-vertex/proposals/done/feats/f00139-self-audit-dogfood-loop.md)
 for the original S3 design notes and acceptance criteria.

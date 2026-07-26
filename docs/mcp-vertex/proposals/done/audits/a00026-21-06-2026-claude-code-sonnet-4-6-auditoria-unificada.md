@@ -10,6 +10,12 @@ ownership:
 acceptance:
   - { command: bun run lint:proposals, expect: exit0 }
   - { command: bun run validate, expect: exit0 }
+closed-by: cartago (consolidated evidence pass 2026-07-26)
+closed-evidence:
+  - 1 commits referencing a00026 recovered from git log --grep (precedes convention)
+  - all declared Files verified to exist via 1-commit batch
+shipped-in:
+  - 2e11272f # refactor(proposals): close r00002 — catchall outputSchemas hardened + boot-only 
 ---
 
 # a00022 — Auditoría Unificada — consolidación de a00021/a00026/a00024/a00025/a00023

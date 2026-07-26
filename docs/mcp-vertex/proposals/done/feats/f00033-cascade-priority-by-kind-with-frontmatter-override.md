@@ -9,6 +9,11 @@ date: 2026-06-21
 related:
     - f00016 # proposal state machine — define PROPOSAL_KINDS y el DFA; f00024 no debe romperlo
     - f00023 # padding de IDs — independiente; el cascade trabaja por kind, no por número de ID
+closed-by: legacy (pre-convention; consolidated pass 2026-07-26)
+closed-evidence:
+  - f00033 predates the shipped-in convention (pre-2026-07-24)
+  - proposal body lists the original audit/fix/test deliverables
+  - status was already 'done' before this consolidation pass
 ---
 
 # f00024 — Cascade priority por kind (12 + alias p) con override por frontmatter, refactor SOLID

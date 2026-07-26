@@ -23,6 +23,19 @@ acceptance:
     - { command: bun run lint:proposals, expect: exit0 }
     - { command: bun run test, expect: exit0 }
     - { command: bun run validate, expect: exit0 }
+closed-by: cartago (consolidated evidence pass 2026-07-26)
+closed-evidence:
+  - 8 commits referencing f00046 recovered from git log --grep (precedes convention)
+  - all declared Files verified to exist via 8-commit batch
+shipped-in:
+  - e5050cbf # feat(f00046-S11): grouped help rendering + README + i18n parity
+  - 08ed2758 # feat(f00046-S10): doctor + completion commands
+  - 07e5d839 # feat(f00046-S9): conventions check/plan/apply CLI group
+  - 24761aef # feat(f00046-S8): notification + web-fetch + status-marker CLI groups
+  - 591af080 # feat(f00046-S7): proposals CLI group (25 subcommands)
+  - 78556ebe # feat(f00046-S6): docs search command + search --context flag
+  - 3d28f262 # feat(f00046-S5): fs + knowledge + project CLI groups
+  - df9b3d38 # feat(f00046-S4): quality + audit + logs CLI groups
 ---
 
 # f00046 — CLI coverage: every public MCP tool as a subcommand, plus `mcpv conventions` and `mcpv doctor`

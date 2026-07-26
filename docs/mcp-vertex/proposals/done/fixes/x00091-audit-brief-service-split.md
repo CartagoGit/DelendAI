@@ -8,6 +8,15 @@ kind: fix
 related:
     - a00048 # the audit that produced this proposal
 title: "Refactor: split audit-brief.service.ts into severity-table + brief-modes + brief-builder services"
+closed-by: cartago (consolidated evidence pass 2026-07-26)
+closed-evidence:
+  - 4 commits referencing x00091 recovered from git log --grep (precedes convention)
+  - all declared Files verified to exist via 4-commit batch
+shipped-in:
+  - 5041e495 # fix(tests): align f00037 S-helper tests + bump copilot-instructions budget
+  - b137b914 # fix(core): regenerate stale tool-outputs after audit merge
+  - 8fd6322c # fix(proposals): repair malformed x00091 frontmatter and sections
+  - 67bf02ff # refactor(audit): split audit-brief service into focused modules (x00091 s1)
 ---
 
 # x00091 — Audit-brief service split

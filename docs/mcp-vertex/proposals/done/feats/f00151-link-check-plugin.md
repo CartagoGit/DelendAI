@@ -5,6 +5,11 @@ title: link-check plugin — offline markdown link + anchor integrity (link_chec
 status: done
 date: 2026-07-25
 track: plugin+docs+quality
+closed-by: legacy (pre-convention; consolidated pass 2026-07-26)
+closed-evidence:
+  - f00151 predates the shipped-in convention (pre-2026-07-24)
+  - proposal body lists the original audit/fix/test deliverables
+  - status was already 'done' before this consolidation pass
 ---
 
 # f00144 — link-check plugin

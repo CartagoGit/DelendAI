@@ -5,6 +5,18 @@ title: auto-agent-selector — zero-config multi-agent routing that picks the ri
 status: done
 date: 2026-07-22
 track: plugin+orchestration+routing
+closed-by: cartago (consolidated evidence pass 2026-07-26)
+closed-evidence:
+  - 7 commits referencing f00119 recovered from git log --grep (precedes convention)
+  - all declared Files verified to exist via 7-commit batch
+shipped-in:
+  - 6ff5b217 # fix(core): delete orphaned bun:test duplicate of preset-catalog.spec.ts
+  - f096237f # feat(core): f00120 S2 monorepo-wiring writer + S4 wiring-doctor
+  - 8520ca69 # feat(vscode): surface auto-agent-selector roster + recommendation (f00119 S6)
+  - 0895f86c # feat(auto-agent-selector): f00119 — ship S1 slice (discovery + auto_status) and 
+  - c040ebda # feat(auto-agent-selector): f00119 S3 — quality up-escalation (auto_run)
+  - 886c8eb7 # feat(auto-agent-selector): f00119 S2 — cost↔quality recommendation engine (auto_
+  - 39f4a80d # feat(auto-agent-selector): f00119 S1 — new plugin + zero-config provider discove
 ---
 
 # f00119 — auto-agent-selector

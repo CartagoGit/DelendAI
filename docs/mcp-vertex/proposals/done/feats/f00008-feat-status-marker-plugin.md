@@ -9,6 +9,11 @@ related:
   - f00004 # audit multi-modelo (mismo espíritu: tooling sobre el comportamiento del agente)
 kind: feat
 title: Plugin `@mcp-vertex/status-marker` (cierre coloreado obligatorio)
+closed-by: legacy (pre-convention; consolidated pass 2026-07-26)
+closed-evidence:
+  - f00008 predates the shipped-in convention (pre-2026-07-24)
+  - proposal body lists the original audit/fix/test deliverables
+  - status was already 'done' before this consolidation pass
 ---
 
 # f00005 — Plugin `@mcp-vertex/status-marker` (cierre coloreado obligatorio)

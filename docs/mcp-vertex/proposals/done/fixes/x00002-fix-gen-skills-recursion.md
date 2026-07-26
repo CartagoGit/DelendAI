@@ -10,6 +10,11 @@ related:
   - f00011 # web header transitions
 kind: fix
 title: Fix `gen-skills.ts` recursión (SKILL.md en subdirectorios no se descubren)
+closed-by: legacy (pre-convention; consolidated pass 2026-07-26)
+closed-evidence:
+  - x00002 predates the shipped-in convention (pre-2026-07-24)
+  - proposal body lists the original audit/fix/test deliverables
+  - status was already 'done' before this consolidation pass
 ---
 
 # x00002 — Fix `gen-skills.ts` recursión (SKILL.md en subdirectorios no se descubren)

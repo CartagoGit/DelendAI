@@ -21,6 +21,12 @@ acceptance:
     - { command: bun run test,             expect: exit0 }
     - { command: bun run lint:tools,       expect: exit0 }
     - { command: bun run validate,         expect: exit0 }
+closed-by: cartago (consolidated evidence pass 2026-07-26)
+closed-evidence:
+  - 1 commits referencing x00054 recovered from git log --grep (precedes convention)
+  - all declared Files verified to exist via 1-commit batch
+shipped-in:
+  - 837feb39 # fix(proposals): derive loop-detector handoffDir from host cacheDir (x00054)
 ---
 
 # x00054 — `loop-detector.handoffDir` is hardcoded to `.cache/mcp-vertex/handoff`

@@ -5,6 +5,14 @@ title: auto-config packs — stack-aware presets + init auto-detection so adopte
 status: done
 date: 2026-07-23
 track: refactor+config+dx
+closed-by: cartago (consolidated evidence pass 2026-07-26)
+closed-evidence:
+  - 3 commits referencing r00011 recovered from git log --grep (precedes convention)
+  - all declared Files verified to exist via 3-commit batch
+shipped-in:
+  - ce0e99c9 # feat(r00011): S1 stack packs (web-app, backend-api, cli-tool) + default-options 
+  - 0e80a83d # feat(f00142): S3 opt-in LLM rationale + README — auto-plugin-selector ships
+  - ba27f816 # feat(f00131 S3): changelog plugin README + catalog closure
 ---
 
 # r00011 — auto-config packs

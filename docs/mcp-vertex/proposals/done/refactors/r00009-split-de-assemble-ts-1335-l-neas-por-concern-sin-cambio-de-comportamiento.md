@@ -6,6 +6,14 @@ status: done
 type: proposal
 track: core
 date: 2026-07-13
+closed-by: cartago (consolidated evidence pass 2026-07-26)
+closed-evidence:
+  - 3 commits referencing r00009 recovered from git log --grep (precedes convention)
+  - all declared Files verified to exist via 3-commit batch
+shipped-in:
+  - 61e33d69 # feat(proposals): a00057 — Files: doc drift is a recurring class; permanent ratch
+  - 3af25356 # refactor(core): r00009 — split assemble.ts (1335 lines) into concern modules, be
+  - b3abc41e # docs(audit): a00053 exhaustive monorepo audit + 5 derived proposals; fix(proposa
 ---
 
 # r00009 — Split de assemble.ts (1335 líneas) por concern, sin cambio de comportamiento
