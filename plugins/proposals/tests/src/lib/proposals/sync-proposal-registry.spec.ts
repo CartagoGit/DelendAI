@@ -146,4 +146,91 @@ describe('syncProposalRegistry (entry point)', async () => {
 			'folder drift: f903 at review/f903-drift.md is in review but status done expects done/feats',
 		);
 	});
+
+	// a00076 S1: the registry scanner must include proposals under
+	// `legacy/closed/<kind>/` and tag them with `archived: true` while
+	// keeping the original `status: done` in the frontmatter projection.
+	describe('legacy/closed/ archive (a00076 S1)', () => {
+		it('indexes a proposal under legacy/closed/feats with archived: true', async () => {
+			await seed(root, 'legacy/closed/feats', 'f910-archived-alpha.md', {
+				id: 'f910',
+				status: 'done',
+				kind: 'feat',
+				title: 'Archived Alpha',
+				'archived-on': '2026-07-15',
+			});
+			const result = await syncProposalRegistry(
+				root,
+				DEFAULT_PATH_LAYOUT,
+				[],
+				FAKE_GIT_MV,
+			);
+			expect(result.errors).toEqual([]);
+			const index = await readIndex(root);
+			const archived = index.proposals.find((p) => p.id === 'f910');
+			expect(archived).toBeDefined();
+			expect(archived?.status).toBe('done');
+			expect(
+				(
+					index as unknown as {
+						proposals: Array<{
+							id: string;
+							file: string;
+							archived?: boolean;
+						}>;
+					}
+				).proposals.find((p) => p.id === 'f910')?.file,
+			).toBe('legacy/closed/feats/f910-archived-alpha.md');
+		});
+
+		it('does not mark active done/<kind>/ entries as archived', async () => {
+			await seed(root, 'done/feats', 'f911-live.md', {
+				id: 'f911',
+				status: 'done',
+				kind: 'feat',
+				title: 'Live',
+			});
+			await syncProposalRegistry(
+				root,
+				DEFAULT_PATH_LAYOUT,
+				[],
+				FAKE_GIT_MV,
+			);
+			const index = await readIndex(root);
+			const live = (
+				index as unknown as {
+					proposals: Array<{ id: string; archived?: boolean }>;
+				}
+			).proposals.find((p) => p.id === 'f911');
+			expect(live).toBeDefined();
+			expect(live?.archived).toBeUndefined();
+		});
+
+		it('tolerates an empty legacy/closed/ subtree', async () => {
+			await mkdir(
+				resolve(
+					root,
+					DEFAULT_PATH_LAYOUT.proposalsDir,
+					'legacy/closed',
+				),
+				{ recursive: true },
+			);
+			await seed(root, 'ready', 'f912-baseline.md', {
+				id: 'f912',
+				status: 'ready',
+				kind: 'feat',
+				title: 'Baseline',
+			});
+			const result = await syncProposalRegistry(
+				root,
+				DEFAULT_PATH_LAYOUT,
+				[],
+				FAKE_GIT_MV,
+			);
+			expect(result.errors).toEqual([]);
+			const index = await readIndex(root);
+			expect(index.proposals).toHaveLength(1);
+			expect(index.proposals[0]?.id).toBe('f912');
+		});
+	});
 });

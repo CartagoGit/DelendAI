@@ -48,6 +48,15 @@ import { stat } from 'node:fs/promises';
  *     reader are injectable so tests can run offline.
  */
 
+const defaultFileExists = async (path: string): Promise<boolean> => {
+	try {
+		await stat(path);
+		return true;
+	} catch {
+		return false;
+	}
+};
+
 export interface ISliceParse {
 	readonly id: string;
 	readonly title: string;
@@ -164,9 +173,18 @@ export const collectSliceStatuses = (
 export const guardSlicesComplete = (input: {
 	readonly markdown: string;
 	readonly fileExists?: (path: string) => boolean;
-}): Promise<ICompletenessResult> => {
+}): ICompletenessResult => {
 	const slices = collectSliceStatuses(input.markdown);
-	const probe = input.fileExists ?? ((p) => existsSync(p));
+	const probe =
+		input.fileExists ??
+		((p) => {
+			try {
+				require('node:fs').statSync(p);
+				return true;
+			} catch {
+				return false;
+			}
+		});
 
 	const pending = slices.filter((s) => s.status !== 'done').map((s) => s.id);
 	const missing: string[] = [];
@@ -210,7 +228,7 @@ export interface IReadMarkdown {
 export const verifyCompletedProposalAsync = async (input: {
 	readonly proposalPath: string;
 	readonly read: IReadMarkdown;
-}): Promise<ICompletenessResult> => {
+}): ICompletenessResult => {
 	const markdown = await input.read.readText(input.proposalPath);
 	const result = guardSlicesComplete({
 		markdown,
@@ -230,7 +248,7 @@ export const verifyCompletedProposalAsync = async (input: {
 export const guardTransitionToDone = async (input: {
 	readonly proposalPath: string;
 	readonly markdown: string;
-}): Promise<ICompletenessResult> => {
+}): ICompletenessResult => {
 	const result = guardSlicesComplete({ markdown: input.markdown });
 	if (!result.ok) return result;
 	// Re-check that the proposal-path itself is readable — guards
