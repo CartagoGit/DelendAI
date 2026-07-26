@@ -89,22 +89,10 @@ import {
 } from '../services/transition-evidence';
 import { guardTransitionToDone } from '../services/proposal-completeness';
 import { runProposalTransitionCompat } from './proposal-transition.compat';
-
-const PEER_REVIEW_LOG_RELATIVE_PATH = join(
-	'.cache',
-	'mcp-vertex',
-	'results',
-	'logs',
-	'peer-review.jsonl',
-);
-
-const VALIDATE_LOG_RELATIVE_PATH = join(
-	'.cache',
-	'mcp-vertex',
-	'results',
-	'logs',
-	'validate.jsonl',
-);
+import {
+	PEER_REVIEW_LOG_RELATIVE_PATH,
+	VALIDATE_LOG_RELATIVE_PATH,
+} from '../contracts/constants/proposal-paths.constant';
 
 const VALIDATE_EVIDENCE_WINDOW_MS = 24 * 60 * 60 * 1000;
 
