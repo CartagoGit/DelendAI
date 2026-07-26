@@ -1,0 +1,50 @@
+{
+	"name": "@mcp-vertex/prompts-pack",
+	"version": "0.1.0",
+	"type": "module",
+	"description": "Prompts pack plugin for @mcp-vertex/core: six project-aware MCP prompts that compose existing tools without provider coupling.",
+	"author": "Cartago",
+	"license": "BSD-3-Clause",
+	"keywords": [
+		"mcp",
+		"prompts",
+		"model-context-protocol",
+		"agent",
+		"ai",
+		"cartago",
+		"plugin"
+	],
+	"main": "./dist/index.js",
+	"files": [
+		"dist",
+		"README.md",
+		"LICENSE"
+	],
+	"exports": {
+		".": {
+			"@mcp-vertex/source": {
+				"types": "./src/index.ts"
+			},
+			"types": "./dist/index.d.ts",
+			"import": "./dist/index.js"
+		},
+		"./public": {
+			"@mcp-vertex/source": {
+				"types": "./src/public/index.ts"
+			},
+			"types": "./dist/public/index.d.ts",
+			"import": "./dist/public/index.js"
+		}
+	},
+	"scripts": {
+		"build": "tsc -p tsconfig.json",
+		"check": "tsc --noEmit -p tsconfig.json",
+		"test": "vitest run"
+	},
+	"dependencies": {
+		"@mcp-vertex/core": "workspace:*"
+	},
+	"devDependencies": {
+		"typescript": "7.0.2"
+	}
+}

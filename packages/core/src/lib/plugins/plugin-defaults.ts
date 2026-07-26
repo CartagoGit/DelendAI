@@ -63,6 +63,7 @@ export const PLUGIN_DEFAULTS: Readonly<
 	'auto-agent-selector': {},
 	security: {},
 	'skills-pack': {},
+	'prompts-pack': {},
 	diagram: {},
 	env: {},
 	i18n: {},

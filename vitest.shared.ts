@@ -41,6 +41,7 @@ export const sharedSetupFiles = (workspaceRoot: string): string[] => [
 export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 	const core = resolve(workspaceRoot, 'packages/core/src');
 	const proposals = resolve(workspaceRoot, 'plugins/proposals/src');
+	const promptsPack = resolve(workspaceRoot, 'plugins/prompts-pack/src');
 	const rules = resolve(workspaceRoot, 'plugins/rules/src');
 	const memory = resolve(workspaceRoot, 'plugins/memory/src');
 	const git = resolve(workspaceRoot, 'plugins/git/src');
@@ -138,6 +139,18 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 		{
 			find: '@mcp-vertex/proposals',
 			replacement: resolve(proposals, 'index.ts'),
+		},
+		{
+			find: '@mcp-vertex/prompts-pack/public',
+			replacement: resolve(promptsPack, 'public/index.ts'),
+		},
+		{
+			find: /^@mcp-vertex\/prompts-pack\/lib\/(.*)$/,
+			replacement: `${resolve(promptsPack, 'lib')}/$1`,
+		},
+		{
+			find: '@mcp-vertex/prompts-pack',
+			replacement: resolve(promptsPack, 'index.ts'),
 		},
 		{
 			find: '@mcp-vertex/rules/public',
@@ -294,6 +307,18 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 		{
 			find: '@mcp-vertex/skills-pack',
 			replacement: resolve(skillsPack, 'index.ts'),
+		},
+		{
+			find: '@mcp-vertex/prompts-pack/public',
+			replacement: resolve(promptsPack, 'public/index.ts'),
+		},
+		{
+			find: /^@mcp-vertex\/prompts-pack\/lib\/(.*)$/,
+			replacement: `${resolve(promptsPack, 'lib')}/$1`,
+		},
+		{
+			find: '@mcp-vertex/prompts-pack',
+			replacement: resolve(promptsPack, 'index.ts'),
 		},
 		{
 			find: '@mcp-vertex/diagram/public',
