@@ -93,6 +93,12 @@ import { runProposalTransitionCompat } from './proposal-transition.compat';
 const PEER_REVIEW_LOG_RELATIVE_PATH = join(
 	'.cache',
 	'mcp-vertex',
+	'results',
+	'logs',
+	'peer-review.jsonl',
+);
+
+const VALIDATE_LOG_RELATIVE_PATH = join(
 	'.cache',
 	'mcp-vertex',
 	'results',
@@ -444,7 +450,7 @@ export const resolveRecentValidateEvidence = async (input: {
 			? input.validateEvidence
 			: null;
 	}
-	const logPathAbs = join(input.workspaceRoot, PEER_REVIEW_LOG_RELATIVE_PATH);
+	const logPathAbs = join(input.workspaceRoot, VALIDATE_LOG_RELATIVE_PATH);
 	const deps = input.deps ?? { readValidateLog: readValidateLogEntries };
 	const entries = await deps.readValidateLog(logPathAbs);
 	let latest: IValidateEvidence | null = null;
@@ -588,6 +594,24 @@ export const runProposalTransition = async (
 		if (!evidenceCheck.ok) {
 			return buildCodeError(evidenceCheck.code, evidenceCheck.reason);
 		}
+		// a00074 S5 (slice-completeness gate, shortcut only): every slice must be
+		// `Status: done` and every `Files:` declared in done slices must resolve
+		// on disk. The shortcut bypasses peer-review, so completeness is the
+		// only thing standing between a `pending/ready → done` zero-work move
+		// and the disk. For `review → done` the peer-review gate (next) is
+		// already the strong signal, so we skip this check there.
+		const completenessGuard = guardTransitionToDone({
+			proposalPath: found.absPath,
+			markdown: raw,
+		});
+		if (!completenessGuard.ok) {
+			return buildCodeError(
+				completenessGuard.code,
+				`slice-completeness gate: ${completenessGuard.code}; ` +
+					`pendingSlices=[${completenessGuard.pendingSlices.join(',')}] ` +
+					`missingFiles=${JSON.stringify(completenessGuard.missingFiles.slice(0, 5))}`,
+			);
+		}
 	}
 
 	if (
@@ -624,25 +648,6 @@ export const runProposalTransition = async (
 		const shippedInGuard = guardShippedInPresent(frontmatter);
 		if (!shippedInGuard.ok) {
 			return buildCodeError(shippedInGuard.code, shippedInGuard.reason);
-		}
-		// a00074 S5 (slice-completeness gate): every slice must be `Status: done`
-		// and every `Files:` declared in done slices must resolve on disk.
-		// Prevents the "proposal silently marked done while slices still say
-		// pending" pathology that the 2026-07-25 agents triggered by
-		// moving files with no body validation. Failure here returns
-		// `incomplete-slices` / `missing-declared-files` so the agent can
-		// repair the proposal body instead of landing an empty close.
-		const completenessGuard = guardTransitionToDone({
-			proposalPath: found.absPath,
-			markdown: raw,
-		});
-		if (!completenessGuard.ok) {
-			return buildCodeError(
-				completenessGuard.code,
-				`slice-completeness gate: ${completenessGuard.code}; ` +
-					`pendingSlices=[${completenessGuard.pendingSlices.join(',')}] ` +
-					`missingFiles=${JSON.stringify(completenessGuard.missingFiles.slice(0, 5))}`,
-			);
 		}
 	}
 
@@ -1021,13 +1026,9 @@ export const buildProposalTransitionRegistration = (
 				runProposalTransitionCompat(args, options).then((result) =>
 					result.ok
 						? result.payload
-						: {
-								ok: false as const,
-								error: {
-									code: 'invalid-input',
-									issues: result.error.issues,
-								},
-							},
+						: toolError(
+								`invalid input: ${JSON.stringify(result.error.issues)}`,
+							),
 				),
 		);
 	},

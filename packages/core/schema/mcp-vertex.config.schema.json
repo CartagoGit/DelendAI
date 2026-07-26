@@ -17,6 +17,15 @@
 		"agentWorktree": {
 			"type": "boolean"
 		},
+		"featureFlags": {
+			"type": "object",
+			"propertyNames": {
+				"type": "string"
+			},
+			"additionalProperties": {
+				"type": "boolean"
+			}
+		},
 		"convention": {
 			"type": "object",
 			"properties": {

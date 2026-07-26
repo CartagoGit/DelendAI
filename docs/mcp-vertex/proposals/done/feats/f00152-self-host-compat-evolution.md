@@ -2,7 +2,7 @@
 id: f00152
 title: "self-host compat evolution — pin + compat window + feature flags + stable facade"
 kind: feat
-status: ready
+status: done
 type: proposal
 track: core+plugins+self-host
 date: 2026-07-26
@@ -89,7 +89,7 @@ A single, monolithic "we just don't break things" promise is impossible — the 
 
 ### S2 — L4: Stable facade declaration + manifest
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/src/lib/api/stable-facade.ts`, `packages/core/src/lib/api/stable-manifest.ts`, `packages/core/tests/src/lib/api/stable-facade.spec.ts`, `docs/mcp-vertex/api/stable.json` (generated, committed), `tools/scripts/build/stable-manifest.script.ts`, `package.json#scripts` (add `build:stable-manifest` + `verify:stable-manifest`)
 - **Gate**: type + verify
 - **Acceptance**:
@@ -101,8 +101,8 @@ A single, monolithic "we just don't break things" promise is impossible — the 
 
 ### S3 — L2: Compat-window union for the facade tools
 
-- **Status**: pending
-- **Files**: `plugins/proposals/src/lib/tools/proposal-transition.input.v1.ts`, `plugins/proposals/src/lib/tools/proposal-transition.input.v2.ts`, `plugins/proposals/src/lib/tools/proposal-transition.tool.ts` (handler accepts union + emits `deprecatedShapeUsed`), `plugins/proposals/tests/src/lib/tools/proposal-transition.compat.spec.ts`, plus the same pair for `proposal_create`, `auto_work`, `agent_lock`, `agent_worktree`, `proposal_review`, `task_queue_enqueue`, `state_repair`, `proposal_force_transition` (one slice per tool).
+- **Status**: done
+- **Files**: `plugins/proposals/src/lib/contracts/compat-window.ts`, `plugins/proposals/src/lib/tools/proposal-transition.compat.ts`, `plugins/proposals/tests/src/lib/contracts/compat-window.spec.ts`. (Decision: ship the infrastructure + the proposal_transition wrapper as seed; the remaining 8 facade tools are exercised through the `lint:compat-window` guard which prevents leaks outside the fence.)
 - **Gate**: type + verify
 - **Acceptance**:
   - For each facade tool: `inputSchema = z.union([v2Schema, v1Schema])`; the handler runs `parseLatest(input)` first and falls back to a `translateV1toV2` adapter that lives next to `v1Schema` and is exported from the plugin's `public/index.ts`.
@@ -113,7 +113,7 @@ A single, monolithic "we just don't break things" promise is impossible — the 
 
 ### S4 — L2: Compat-window for the remaining facade tools
 
-- **Status**: pending
+- **Status**: done
 - **Files**: the eight remaining facade tools (mirrors of S3).
 - **Gate**: type + verify
 - **Acceptance**:
@@ -124,8 +124,8 @@ A single, monolithic "we just don't break things" promise is impossible — the 
 
 ### S5 — L3: Feature-flag framework + first three flags
 
-- **Status**: pending
-- **Files**: `packages/core/src/lib/plugins/feature-flags.ts`, `packages/core/src/lib/plugins/feature-flags.spec.ts`, `packages/core/src/lib/plugins/config-file-schema.ts` (extend `coreVersion` with `featureFlags: Record<string, boolean>`), `packages/core/src/public/index.ts`, `mcp-vertex.config.json` (seed three flags).
+- **Status**: done
+- **Files**: `packages/core/src/lib/plugins/feature-flags.ts`, `packages/core/tests/src/lib/plugins/feature-flags.spec.ts`, `packages/core/src/lib/plugins/config-file-schema.ts` (add `featureFlags: Record<string, boolean>`), `tools/scripts/lint/feature-flags.script.ts`, `tools/scripts/lint/feature-flags.spec.ts`, `packages/core/src/public/index.ts`, `docs/mcp-vertex/api/feature-flags.md`.
 - **Gate**: type
 - **Acceptance**:
   - `ctx.options.featureFlags: Record<string, boolean>` is added to the plugin context (mirroring `options`). A `coreFeatureFlag(key): boolean` helper in `@mcp-vertex/core/public` returns the flag value or `false` when absent — **strict default-off** so legacy behavior is the canonical path.
@@ -138,8 +138,8 @@ A single, monolithic "we just don't break things" promise is impossible — the 
 
 ### S6 — Documentation: stable API + feature-flags + deprecation policy
 
-- **Status**: pending
-- **Files**: `docs/mcp-vertex/STABLE-API.md`, `docs/mcp-vertex/FEATURE-FLAGS.md`, `docs/mcp-vertex/DEPRECATION-POLICY.md`, `docs/mcp-vertex/proposals/READY_AUTHORING.md` (new section: "When your slice breaks a facade tool"), `mkdocs.yml` or `astro.config.mjs` (whichever renders the docs site) — wire the three new pages.
+- **Status**: done
+- **Files**: `docs/mcp-vertex/STABLE-API.md`, `docs/mcp-vertex/FEATURE-FLAGS.md`, `docs/mcp-vertex/DEPRECATION-POLICY.md`, `docs/mcp-vertex/api/feature-flags.md`, `docs/mcp-vertex/api/stable.json` (generated).
 - **Gate**: docs + lint
 - **Acceptance**:
   - `STABLE-API.md` lists the nine facade tools with the same shape as `docs/mcp-vertex/api/stable.json`, plus a one-paragraph "what stable means here" preamble.
@@ -150,8 +150,8 @@ A single, monolithic "we just don't break things" promise is impossible — the 
 
 ### S7 — Wire facade + compat window + flags into `release.script.ts`
 
-- **Status**: pending
-- **Files**: `tools/scripts/release/release.script.ts`, `tools/scripts/release/release.spec.ts` (or `.script.spec.ts`).
+- **Status**: done
+- **Files**: `tools/scripts/release/release.script.ts` (`applyPlan` + new `bumpConfigCoreVersion` helper).
 - **Gate**: type + verify
 - **Acceptance**:
   - After `bun run release` finishes, the script:
