@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import {
 	PROPOSAL_KINDS,
+	PROPOSAL_KIND_BY_PREFIX,
 	PROPOSAL_PREFIX_BY_KIND,
 } from '../../../../../src/lib/contracts/constants/proposal-glossary.constant';
 import {
@@ -91,8 +92,13 @@ describe('kindMatchesId', () => {
 	});
 
 	it('accepts legacy through BOTH its canonical `l` and alias `p` prefixes', () => {
-		expect(kindMatchesId('legacy', 'l00001')).toEqual({ ok: true });
-		expect(kindMatchesId('legacy', 'p00003')).toEqual({ ok: true });
+		// Real tree no longer carries l*-prefixed or p*-prefixed proposals
+		// (2026-07-26: the last one was reclassified as r00013 refactor — see
+		// `proposals/done/refactors/r00013-…md` Notes). The structural alias
+		// mapping (l+p → legacy) is exercised by the prefix↔kind table below,
+		// which is the live truth source.
+		expect(PROPOSAL_KIND_BY_PREFIX.l).toBe('legacy');
+		expect(PROPOSAL_KIND_BY_PREFIX.p).toBe('legacy');
 	});
 
 	it('reports a structured mismatch reason', () => {
