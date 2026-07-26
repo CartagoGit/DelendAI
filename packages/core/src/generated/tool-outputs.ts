@@ -235,6 +235,8 @@ export interface McpVertexAuditSelfAuditOutput {
 		id: string;
 		note?: string;
 	}[];
+	scannerCount?: number;
+	capabilities?: Record<string, number>;
 	backlog: Array<{
 		rank: number;
 		score: number;
