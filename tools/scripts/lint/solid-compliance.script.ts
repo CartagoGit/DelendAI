@@ -46,9 +46,22 @@
  * SOLID: this file is the orchestrator. The actual rule engine is
  * exported as `classifySolidFindings(root, files)` so tests can drive
  * it with synthetic file lists without touching the filesystem.
+//
+// c00126 S3: pure helpers were extracted to packages/core/src/lib/scan/
+// and re-exported from the public barrel; this file now only orchestrates.
  */
-import { readdir, readFile } from 'node:fs/promises';
-import { join, relative, sep } from 'node:path';
+import { readFile } from 'node:fs/promises';
+import { join } from 'node:path';
+
+import {
+	detectCatchSwallow,
+	detectLongChains,
+	detectMagicNumbers,
+	lineOf,
+	shingleBlocks,
+	toRelPosix,
+	walkTsFiles,
+} from '@mcp-vertex/core/public';
 
 // ──────────────────────────────────────────────────────────────────────────
 // Public types
@@ -87,290 +100,6 @@ export interface ISolidScanResult {
 	readonly scannedFiles: number;
 	readonly elapsedMs: number;
 }
-
-// ──────────────────────────────────────────────────────────────────────────
-// Internal helpers
-// ──────────────────────────────────────────────────────────────────────────
-
-const TS_EXTS = /\.tsx?$/;
-
-const toRelPosix = (rootDir: string, absPath: string): string => {
-	const rel = relative(rootDir, absPath);
-	if (rel.startsWith('..') || rel === '') return rel;
-	return rel.split(sep).join('/');
-};
-
-/**
- * Walk a set of repository-relative roots and return every
- * TypeScript source file beneath them. Skips node_modules, dist,
- * build, cache, and git. Async (the engine is a hot path -
- * see AGENTS rule #3).
- */
-export const walkTsFiles = async (
-	rootDir: string,
-	roots: readonly string[],
-): Promise<readonly string[]> => {
-	const out: string[] = [];
-	const stack: string[] = [...roots];
-	while (stack.length > 0) {
-		const rel = stack.pop() as string;
-		const abs = join(rootDir, rel);
-		let entries: readonly import('node:fs').Dirent[];
-		try {
-			entries = await readdir(abs, { withFileTypes: true });
-		} catch {
-			continue;
-		}
-		for (const entry of entries) {
-			const childRel = rel === '' ? entry.name : `${rel}/${entry.name}`;
-			if (entry.isDirectory()) {
-				if (
-					entry.name === 'node_modules' ||
-					entry.name === 'dist' ||
-					entry.name === 'build' ||
-					entry.name === '.cache' ||
-					entry.name === '.git'
-				)
-					continue;
-				stack.push(childRel);
-				continue;
-			}
-			if (!entry.isFile()) continue;
-			if (!TS_EXTS.test(entry.name)) continue;
-			out.push(childRel);
-		}
-	}
-	out.sort((a, b) => a.localeCompare(b));
-	return out;
-};
-
-/** Count `case` branches and `else if` arms in a single file body. */
-const detectLongChains = (
-	body: string,
-): Array<{
-	line: number;
-	arms: number;
-	snippet: string;
-	kind: 'switch' | 'else-if';
-}> => {
-	const out: Array<{
-		line: number;
-		arms: number;
-		snippet: string;
-		kind: 'switch' | 'else-if';
-	}> = [];
-	// Match switches with `case`
-	const switchRegex = /\bswitch\s*\([^)]*\)\s*\{/g;
-	let m: RegExpExecArray | null;
-	while ((m = switchRegex.exec(body)) !== null) {
-		const start = m.index + m[0].length;
-		// Find matching closing brace (single-level aware; nested switches are rare)
-		let depth = 1;
-		let i = start;
-		while (i < body.length && depth > 0) {
-			const ch = body[i];
-			if (ch === '{') depth += 1;
-			else if (ch === '}') depth -= 1;
-			i += 1;
-		}
-		const block = body.slice(start, i - 1);
-		const cases = block.match(/\bcase\s+[^:]+:/g) ?? [];
-		if (cases.length >= 5) {
-			out.push({
-				line: lineOf(body, m.index),
-				arms: cases.length,
-				snippet: `switch with ${cases.length} case branches`,
-				kind: 'switch',
-			});
-		}
-	}
-	// Match chains of `else if` at indentation 0
-	const elseIfRegex = /\belse\s+if\s*\(/g;
-	const elseIfHits: Array<{ line: number; idx: number }> = [];
-	while ((m = elseIfRegex.exec(body)) !== null) {
-		elseIfHits.push({ line: lineOf(body, m.index), idx: m.index });
-	}
-	// Coalesce: consecutive `else if` branches (no intervening `}`-then-new-statement).
-	for (let i = 0; i < elseIfHits.length; i += 1) {
-		const here = elseIfHits[i];
-		if (!here) continue;
-		let arms = 1;
-		let prev = here.idx;
-		for (let j = i + 1; j < elseIfHits.length; j += 1) {
-			const next = elseIfHits[j];
-			if (!next) continue;
-			// same block if distance < 80 chars and no top-level `}` between
-			const between = body.slice(prev, next.idx);
-			if (between.length > 200) break;
-			if (/^\s*return\b/.test(between)) break;
-			if (/^\s*}\s*$/.test(between)) break;
-			arms += 1;
-			prev = next.idx;
-		}
-		if (arms >= 5) {
-			out.push({
-				line: here.line,
-				arms,
-				snippet: `chain of ${arms} else if branches`,
-				kind: 'else-if',
-			});
-			// Skip the consumed hits
-			i += arms - 1;
-		}
-	}
-	return out;
-};
-
-/** Detect empty `catch {}` blocks and catches whose body is a single comment. */
-const detectCatchSwallow = (
-	body: string,
-): Array<{ line: number; snippet: string }> => {
-	const out: Array<{ line: number; snippet: string }> = [];
-	const emptyCatch = /catch\s*(?:\([^)]*\))?\s*\{\s*\}/g;
-	let m: RegExpExecArray | null;
-	while ((m = emptyCatch.exec(body)) !== null) {
-		out.push({
-			line: lineOf(body, m.index),
-			snippet: m[0].replace(/\s+/g, ' '),
-		});
-	}
-	const nothingCatch = /catch\s*(?:\([^)]*\))?\s*\{\s*\/\*[^*]*\*\/\s*\}/g;
-	while ((m = nothingCatch.exec(body)) !== null) {
-		out.push({
-			line: lineOf(body, m.index),
-			snippet: m[0].replace(/\s+/g, ' '),
-		});
-	}
-	return out;
-};
-
-/** Literal numerics that are NOT magic numbers (whitelist). */
-const MAGIC_WHITELIST = new Set([
-	'0',
-	'1',
-	'-1',
-	'2',
-	'100',
-	'1000',
-	'0xFF',
-	'0xff',
-	'0x0',
-	'0b0',
-	'0b1',
-	'60',
-	'90',
-]);
-
-/** Detect bare numeric literals in plugin source that are not named consts. */
-const detectMagicNumbers = (
-	body: string,
-): Array<{ line: number; value: string; snippet: string }> => {
-	const out: Array<{ line: number; value: string; snippet: string }> = [];
-	// Single-line, no comments. Naive: a literal that is not part of an identifier
-	// and not in a string. Good enough for advisory.
-	const literalRegex = /(?<![\w.])(\d{2,})(?![\w])/g;
-	let m: RegExpExecArray | null;
-	while ((m = literalRegex.exec(body)) !== null) {
-		const value = m[1] ?? '';
-		if (MAGIC_WHITELIST.has(value)) continue;
-		// Skip lines that look like a `const` declaration (named)
-		const lineStart = body.lastIndexOf('\n', m.index) + 1;
-		const lineEnd = body.indexOf('\n', m.index);
-		const line = body.slice(
-			lineStart,
-			lineEnd === -1 ? body.length : lineEnd,
-		);
-		if (/\bconst\b/.test(line) && /=\s*\d/.test(line)) continue;
-		// Skip obvious non-magic: dead-code branch is allowed; version pins / lengths
-		if (/\.length\b/.test(line)) continue;
-		if (/\.size\b/.test(line)) continue;
-		out.push({
-			line: lineOf(body, m.index),
-			value,
-			snippet: line.trim().slice(0, 120),
-		});
-	}
-	return out;
-};
-
-/** 1-based line number. */
-const lineOf = (body: string, charIndex: number): number => {
-	let line = 1;
-	for (let i = 0; i < charIndex && i < body.length; i += 1) {
-		if (body.charCodeAt(i) === 10) line += 1;
-	}
-	return line;
-};
-
-/** FNV-1a hash for shingle deduplication. 32-bit, hex. */
-const fnv1a = (s: string): string => {
-	let h = 0x811c9dc5;
-	for (let i = 0; i < s.length; i += 1) {
-		h ^= s.charCodeAt(i);
-		h = Math.imul(h, 0x01000193);
-	}
-	return (h >>> 0).toString(16).padStart(8, '0');
-};
-
-/** Detect 8-line duplicated blocks across plugin sources. */
-const detectCrossPluginDuplication = (
-	fileContents: ReadonlyMap<string, string>,
-): Array<{
-	relPath: string;
-	line: number;
-	hash: string;
-	copies: number;
-	snippet: string;
-}> => {
-	const allHashes = new Map<
-		string,
-		{ relPath: string; line: number; snippet: string }[]
-	>();
-	const blockLines = 8;
-	for (const [relPath, body] of fileContents) {
-		const lines = body.split('\n');
-		for (let i = 0; i + blockLines <= lines.length; i += 1) {
-			const block = lines
-				.slice(i, i + blockLines)
-				.join('\n')
-				.trim();
-			if (block.length < 40) continue;
-			// Skip blocks that are mostly braces or imports
-			if (/^(import\b.*\n){8,}$/.test(block)) continue;
-			const hash = fnv1a(block);
-			const arr = allHashes.get(hash) ?? [];
-			arr.push({
-				relPath,
-				line: i + 1,
-				snippet: block.split('\n')[0] ?? '',
-			});
-			allHashes.set(hash, arr);
-		}
-	}
-	const out: Array<{
-		relPath: string;
-		line: number;
-		hash: string;
-		copies: number;
-		snippet: string;
-	}> = [];
-	for (const [hash, hits] of allHashes) {
-		if (hits.length < 2) continue;
-		// Different files only
-		const distinctFiles = new Set(hits.map((h) => h.relPath));
-		if (distinctFiles.size < 2) continue;
-		for (const h of hits) {
-			out.push({
-				relPath: h.relPath,
-				line: h.line,
-				hash,
-				copies: distinctFiles.size,
-				snippet: h.snippet.slice(0, 80),
-			});
-		}
-	}
-	return out;
-};
 
 /** Rule priority — lower number = higher priority (matches `lint:bootstrap-canonical`). */
 const RULE_PRIORITY: Record<SolidRuleId, number> = {
@@ -465,7 +194,7 @@ export const classifySolidFindings = async (
 			dupSources.set(relPath, body);
 		}
 	}
-	const dups = detectCrossPluginDuplication(dupSources);
+	const dups = shingleBlocks(dupSources);
 	const dupFilter = dups.filter((d) => d.copies >= minDupCopies);
 	for (const d of dupFilter) {
 		findings.push({
