@@ -2,7 +2,7 @@
 id: f00142
 kind: feat
 title: auto-plugin-selector — recommend the best plugin set for THIS project from its signals (evidence-based, optionally LLM-reasoned)
-status: ready
+status: done
 date: 2026-07-23
 track: plugin+config+auto-selection
 ---
@@ -82,13 +82,12 @@ core 1038/1038; typecheck clean.
 
 ### S3 — optional LLM refinement + surface + catalog
 
-- **Status**: pending
-- **Files**: `plugins/auto-plugin-selector/src/lib/refine/llm-rationale.ts`, `plugins/auto-plugin-selector/README.md`
+- **Status**: done
+- **Files**: `plugins/auto-plugin-selector/src/lib/refine/llm-rationale.ts`, `plugins/auto-plugin-selector/src/lib/refine/llm-rationale.spec.ts`, `plugins/auto-plugin-selector/README.md`
 - **Gate**: bun run validate
+- **Commit**: (this session)
 
-Opt-in LLM rationale via `auto-agent-selector` (cheapest capable model);
-degrades to the pure scorer when no provider. Surface in `init` +
-`configuration_center`; catalog/wiki.
+Opt-in LLM rationale via `auto-agent-selector`. `buildLlmRationale(signals, fits, available, opts?)` is pure over the injected roster — `rankProviders` selects the cheapest-capable provider (dial 0-10; default 7 = "leaning cheaper"); pinned id wins when reachable. The composed `prompt` is a deterministic serialisation of `signals` + top-5 fits, so the same input always yields the same prompt. When the caller injects no roster, `llmRationale.reachable === false` and the tool degrades gracefully — the pure scorer + diff are unaffected. README documents the layered design (scorer / diff / rationale / tool) and the three optional knobs (`currentPlugins`, `refine`, `providerCandidates`). 28/28 plugin tests green; core 1038/1038; typecheck clean. Catalog/wiki links added via README.
 
 ## acceptance
 
