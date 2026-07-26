@@ -698,6 +698,16 @@ export type {
 } from '../lib/contracts/interfaces/plugin-registry.interface';
 export { FIRST_PARTY_PLUGIN_INDEX } from '../lib/registry/first-party-index';
 export { resolvePlugins } from '../lib/registry/resolve';
+export {
+	buildPluginAddRecipe,
+	type IPluginAddRecipe,
+	type IPluginAddStep,
+	type PluginAddKind,
+} from '../lib/registry/plugin-add';
+export {
+	buildPluginAddRegistration,
+	type IPluginAddToolOptions,
+} from '../lib/registry/plugin-add.tool';
 
 // --- generated tool-output types (N23, see scripts/generate-tool-types.ts) ---
 export type * from '../generated/tool-outputs';

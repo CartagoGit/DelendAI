@@ -47,6 +47,7 @@ import { buildSkillPromptRegistrations } from '../prompts/skill-prompts';
 import { buildAgentCatalogResourceRegistration } from '../resources/agent-catalog-resource';
 import { buildScaffoldToolRegistration } from '../scaffold/scaffold-tool';
 import { buildCreatePluginToolRegistration } from '../scaffold/create-plugin.tool';
+import { buildPluginAddRegistration } from '../registry/plugin-add.tool';
 import { buildFsToolRegistrations } from '../shared/fs-tools';
 import { joinRel } from '../shared/paths';
 import type { buildSkillCatalog } from '../skills/skill-catalog';
@@ -358,6 +359,12 @@ export const assembleCoreTools = (
 		buildCreatePluginToolRegistration({
 			namespacePrefix: corePrefix,
 			workspace,
+		}),
+		// f00141 S2: `plugin_add` MCP tool. Returns the install + wire + config
+		// recipe for the agent to execute; the recipe is data so the tool
+		// stays pure (no subprocess, no fs, no config write).
+		buildPluginAddRegistration({
+			namespacePrefix: corePrefix,
 		}),
 		// f00117 S2: the server-side self-init — any MCP client can derive
 		// (and, with write:true, persist) mcp-vertex.config.json without
