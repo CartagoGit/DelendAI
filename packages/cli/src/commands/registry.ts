@@ -50,6 +50,7 @@ import { logsCommands } from './groups/logs';
 import { memoryCommands } from './groups/memory';
 import { notificationCommands } from './groups/notification';
 import { proposalsCommands } from './groups/proposals';
+import { pluginsCommands } from './groups/plugins';
 import { qualityCommands } from './groups/quality';
 import { routerDashboardCommands } from './groups/router-dashboard';
 import { rulesCommands } from './groups/rules';
@@ -453,6 +454,7 @@ export const registerAllCommands = async (): Promise<
 	...coreExtraCommands,
 	...docsCommands,
 	...proposalsCommands,
+	...pluginsCommands,
 	...notificationCommands,
 	...webFetchCommands,
 	...statusMarkerCommands,
