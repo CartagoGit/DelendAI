@@ -205,6 +205,23 @@ restates the rule for swarm context.
   file, agent answer, or generated fragment.** The server is the only
   source. If you find yourself wanting to list them, **stop** and call
   `mcp-vertex_agent_catalog` instead.
+- **Code quality is a non-negotiable default.** In this project and in
+  any project that uses `mcp-vertex`, every design, code change, file
+  or folder name, proposal, slice and answer must reflect, by default
+  and without reminder, SOLID (SRP, OCP, LSP, ISP, DIP), Clean Code
+  (intention-revealing names, small single-purpose functions, comments
+  only when they explain *why*, no swallowed errors, no dead code, no
+  magic numbers, no commented-out branches), reusable code (narrow
+  interfaces, registries over long `switch`/`if-else` chains,
+  dependency injection, no painful duplication, shared helpers) and
+  general best practices (tests for non-trivial logic, validation at
+  I/O edges, low coupling, high cohesion, strict types, declared
+  dependencies). The only acceptable escapes are (a) the user
+  explicitly asks for a relaxation in the request ("quick and dirty",
+  "skip refactoring now", etc.) or (b) the project's own binding
+  instructions force it (legacy compatibility, externally-pinned
+  contracts, mandatory upstream style). When an escape applies, state
+  it explicitly in the response so the relaxation stays auditable.
 - **Agents and tools invoke shell through `bash`, never `zsh` or
   `sh`.** The user keeps `zsh` for their own sessions (Powerlevel10k,
   oh-my-zsh, completions, prompt). Any agent-driven shell call —
@@ -308,6 +325,23 @@ A Bun monorepo:
     written for Cursor/Aider/Continue/etc. **include** this file by
     reference and add only the repo-/host-specific rules the server
     cannot enforce (see § 8 below).
+12. Code quality defaults are non-negotiable. Apply SOLID, Clean Code,
+    reusable patterns and general best practices by default — see the
+    §6 invariant for the universal contract. In this repo that
+    concretely means: small files with one responsibility each;
+    interfaces named `IFoo` and exported as the single contract; pure
+    validators returning a result type rather than throwing across
+    boundaries; no ad-hoc inline `switch` or long `if-else` chains
+    over plugin / tool / enum IDs (route through the existing
+    registries instead); no duplicated cross-plugin logic; names that
+    explain intent; no magic numbers; no swallowed errors; no dead
+    code; `*.spec.ts` tests colocated next to the unit they cover;
+    and any new shared helper lands in the appropriate public barrel
+    (`src/public/index.ts`) rather than being copy-pasted across
+    plugins. Only relax when the user explicitly asks for it in the
+    request or when the project's own binding instructions force it —
+    in which case state the exception in the response so it stays
+    auditable.
 
 ### Repo-level conventions
 
