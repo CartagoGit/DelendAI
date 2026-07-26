@@ -109,6 +109,7 @@
       "dependencies": {
         "@mcp-vertex/client": "workspace:*",
         "@mcp-vertex/core": "workspace:*",
+        "@mcp-vertex/env": "workspace:*",
         "zod": "^4.4.3",
       },
       "devDependencies": {
@@ -248,17 +249,10 @@
       "name": "@mcp-vertex/container",
       "version": "0.1.0",
       "dependencies": {
-        "@modelcontextprotocol/sdk": "^1.29.0",
-        "zod": "^4.4.3",
+        "@mcp-vertex/core": "workspace:*",
       },
       "devDependencies": {
-        "@mcp-vertex/core": "workspace:*",
-        "@types/bun": "latest",
         "typescript": "7.0.2",
-        "vitest": "4.1.10",
-      },
-      "peerDependencies": {
-        "@mcp-vertex/core": "^0.1.0",
       },
     },
     "plugins/conventions": {
@@ -671,6 +665,19 @@
         "@modelcontextprotocol/sdk": "^1.29.0",
         "zod": "^4.4.3",
       },
+      "devDependencies": {
+        "@mcp-vertex/core": "workspace:*",
+        "@types/bun": "latest",
+        "typescript": "7.0.2",
+        "vitest": "4.1.10",
+      },
+      "peerDependencies": {
+        "@mcp-vertex/core": "^0.1.0",
+      },
+    },
+    "plugins/skills-pack": {
+      "name": "@mcp-vertex/skills-pack",
+      "version": "0.1.0",
       "devDependencies": {
         "@mcp-vertex/core": "workspace:*",
         "@types/bun": "latest",
@@ -1139,6 +1146,8 @@
     "@mcp-vertex/security": ["@mcp-vertex/security@workspace:plugins/security"],
 
     "@mcp-vertex/shared": ["@mcp-vertex/shared@workspace:apps/shared"],
+
+    "@mcp-vertex/skills-pack": ["@mcp-vertex/skills-pack@workspace:plugins/skills-pack"],
 
     "@mcp-vertex/status-marker": ["@mcp-vertex/status-marker@workspace:plugins/status-marker"],
 

@@ -18,6 +18,12 @@ import { buildDatabaseQueryToolRegistrations } from './lib/tools/db-query.tool';
 import { buildDatabaseSchemaToolRegistrations } from './lib/tools/db-schema.tool';
 
 const OptionsSchema = z.object({
+	dsn: z
+		.string()
+		.describe(
+			'Database DSN env:DATABASE_URL provider:database capability:Database introspection DSN',
+		)
+		.optional(),
 	resolveDsn: z.custom<() => string | undefined>().optional(),
 });
 
@@ -35,25 +41,22 @@ export default definePlugin({
 			);
 		}
 		const opts = parsed.data;
+		const resolveDsn =
+			opts.resolveDsn ??
+			(opts.dsn !== undefined ? () => opts.dsn : undefined);
 		return {
 			tools: [
 				...buildDatabaseErdToolRegistrations({
 					namespacePrefix: ctx.namespacePrefix,
-					...(opts.resolveDsn !== undefined
-						? { resolveDsn: opts.resolveDsn }
-						: {}),
+					...(resolveDsn !== undefined ? { resolveDsn } : {}),
 				}),
 				...buildDatabaseSchemaToolRegistrations({
 					namespacePrefix: ctx.namespacePrefix,
-					...(opts.resolveDsn !== undefined
-						? { resolveDsn: opts.resolveDsn }
-						: {}),
+					...(resolveDsn !== undefined ? { resolveDsn } : {}),
 				}),
 				...buildDatabaseQueryToolRegistrations({
 					namespacePrefix: ctx.namespacePrefix,
-					...(opts.resolveDsn !== undefined
-						? { resolveDsn: opts.resolveDsn }
-						: {}),
+					...(resolveDsn !== undefined ? { resolveDsn } : {}),
 				}),
 			],
 			knowledge: [

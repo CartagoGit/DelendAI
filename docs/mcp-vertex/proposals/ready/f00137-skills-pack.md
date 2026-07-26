@@ -41,7 +41,7 @@ the right skills appear for the right project type.
 
 ### S1 — core dev playbooks
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/skills-pack/src/skills/debugging.md`, `plugins/skills-pack/src/skills/pr-review.md`
 - **Gate**: bun run validate
 
@@ -50,7 +50,7 @@ each referencing the relevant tools (logs, perf, quality, git/forge).
 
 ### S2 — safety playbooks
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/skills-pack/src/skills/security-hardening.md`, `plugins/skills-pack/src/skills/incident-response.md`
 - **Gate**: bun run validate
 
@@ -59,7 +59,7 @@ each referencing the relevant tools (logs, perf, quality, git/forge).
 
 ### S3 — migration playbooks + pack wiring
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/skills-pack/src/skills/migrate-from.md`, `plugins/skills-pack/src/index.ts`
 - **Gate**: bun run validate
 
@@ -76,3 +76,11 @@ pack membership; catalog.
 
 Reuses the skills loader + legacy-migration skill pattern. Pairs with f00122
 (security), f00126 (perf), f00129 (observability).
+
+## implementation
+
+Implemented as a pure-guidance plugin under `plugins/skills-pack/` with six
+canonical skill bodies under `plugins/skills-pack/skills/**`, typed public
+descriptors, plugin registration through `register().skills`, and additive
+monorepo wiring through aliases, preset/default catalogs, release ordering, and
+the versioned skill manifest.

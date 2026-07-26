@@ -638,6 +638,24 @@ export interface McpVertexDepsDepsPolyglotOutput {
 	}[];
 }
 
+export interface McpVertexDepsDepsTreeOutput {
+	manifest: string;
+	lockfile: string;
+	lockfileFound: boolean;
+	root: {
+		name: string;
+		version: string | null;
+		children: Array<{
+			name: string;
+			version: string | null;
+			section?: "dependencies" | "devDependencies" | "peerDependencies" | "optionalDependencies";
+			children: unknown[];
+		}>;
+	};
+	totalNodes: number;
+	maxDepth: number;
+}
+
 export interface McpVertexDiagramDiagramDepsOutput {
 	mermaid: string;
 	nodes: string[];
@@ -668,14 +686,6 @@ export interface McpVertexDiagramDiagramProposalsOutput {
 	statuses: string[];
 	edges: number;
 	annotated: string[];
-}
-
-export interface McpVertexDocsDocsGenerateOutput {
-	ok: true;
-	files: {
-		path: string;
-		markdown: string;
-	}[];
 }
 
 export interface McpVertexDocsDocsListOutput {
@@ -748,25 +758,30 @@ export interface McpVertexEnvEnvExplainsOutput {
 	found: boolean;
 	path: string;
 	explain: {
-		variables: {
-			varName: string;
-			plugins: {
-				plugin: string;
-				reason: string;
-				present: boolean;
-			}[];
-			providers: {
-				provider: string;
-				reason: string;
-				present: boolean;
-			}[];
-		}[];
-		blockedCapabilities: {
+		capabilities: Array<{
 			plugin: string;
-			reason: string;
+			capability: string;
 			provider?: string;
-			missingVars: string[];
+			satisfiedBy: string[];
+		} | {
+			plugin: string;
+			capability: string;
+			provider?: string;
+			missing: string[];
+		}>;
+		blocked: {
+			plugin: string;
+			capability: string;
+			provider?: string;
+			missing: string[];
 		}[];
+		unlocked: {
+			plugin: string;
+			capability: string;
+			provider?: string;
+			satisfiedBy: string[];
+		}[];
+		completelyMissing: string[];
 	};
 }
 
@@ -790,16 +805,6 @@ export interface McpVertexGetValidationMatrixOutput {
 		command: string;
 		expect: string;
 	}[]>;
-}
-
-export interface McpVertexGitBisectOutput {
-	ok: true | "skipped";
-	action?: string;
-	result?: Record<string, unknown> | Record<string, unknown>[] | {
-		stdout: string;
-		stderr: string;
-	};
-	hint?: string;
 }
 
 export interface McpVertexGitBlameOutput {
@@ -841,16 +846,6 @@ export interface McpVertexGitLogOutput {
 	}[];
 }
 
-export interface McpVertexGitPrOutput {
-	ok: true | "skipped";
-	action?: string;
-	result?: Record<string, unknown> | Record<string, unknown>[] | {
-		stdout: string;
-		stderr: string;
-	};
-	hint?: string;
-}
-
 export interface McpVertexGitPrListOutput {
 	available: boolean;
 	note?: string;
@@ -888,16 +883,6 @@ export interface McpVertexGitShowOutput {
 	date: string;
 	subject: string;
 	stat: string;
-}
-
-export interface McpVertexGitStashOutput {
-	ok: true | "skipped";
-	action?: string;
-	result?: Record<string, unknown> | Record<string, unknown>[] | {
-		stdout: string;
-		stderr: string;
-	};
-	hint?: string;
 }
 
 export interface McpVertexGitStatusOutput {
@@ -2657,38 +2642,6 @@ export interface McpVertexProposalsTaskQueueOutput {
 	recommendation?: string;
 }
 
-export interface McpVertexQualityComplexityOutput {
-	ok: true;
-	findings: {
-		file: string;
-		line: number;
-		function: string;
-		complexity: number;
-		threshold: number;
-	}[];
-}
-
-export interface McpVertexQualityCoverageOutput {
-	ok: true | "skipped";
-	scope?: "lines" | "branches" | "functions" | "all";
-	lines?: {
-		covered: number;
-		total: number;
-		pct: number;
-	};
-	branches?: {
-		covered: number;
-		total: number;
-		pct: number;
-	};
-	functions?: {
-		covered: number;
-		total: number;
-		pct: number;
-	};
-	hint?: string;
-}
-
 export interface McpVertexQualityGetQualityScopesOutput {
 	scopes: Record<string, {
 		command: string;
@@ -2929,15 +2882,6 @@ export interface McpVertexScaffoldOutput {
 	errors: string[];
 }
 
-export interface McpVertexSearchReferencesOutput {
-	hits: {
-		file: string;
-		line: number;
-		column: number;
-		isDefinition: boolean;
-	}[];
-}
-
 export interface McpVertexSearchSearchOutput {
 	query: string;
 	count: number;
@@ -2957,16 +2901,6 @@ export interface McpVertexSearchSearchOutput {
 		before?: string[];
 		after?: string[];
 	}[];
-}
-
-export interface McpVertexSearchSymbolOutput {
-	hits: Array<{
-		file: string;
-		line: number;
-		column: number;
-		kind: "function" | "class" | "interface" | "type" | "enum" | "variable" | "export-from";
-		exportPath?: string;
-	}>;
 }
 
 export interface McpVertexSecuritySecurityAuditOutput {
@@ -3330,11 +3264,11 @@ export interface McpVertexToolOutputs {
 	"mcp-vertex_deps_deps_list": McpVertexDepsDepsListOutput;
 	"mcp-vertex_deps_deps_outdated": McpVertexDepsDepsOutdatedOutput;
 	"mcp-vertex_deps_deps_polyglot": McpVertexDepsDepsPolyglotOutput;
+	"mcp-vertex_deps_deps_tree": McpVertexDepsDepsTreeOutput;
 	"mcp-vertex_diagram_diagram_deps": McpVertexDiagramDiagramDepsOutput;
 	"mcp-vertex_diagram_diagram_erd": McpVertexDiagramDiagramErdOutput;
 	"mcp-vertex_diagram_diagram_modules": McpVertexDiagramDiagramModulesOutput;
 	"mcp-vertex_diagram_diagram_proposals": McpVertexDiagramDiagramProposalsOutput;
-	"mcp-vertex_docs_docs_generate": McpVertexDocsDocsGenerateOutput;
 	"mcp-vertex_docs_docs_list": McpVertexDocsDocsListOutput;
 	"mcp-vertex_docs_docs_read": McpVertexDocsDocsReadOutput;
 	"mcp-vertex_docs_docs_search": McpVertexDocsDocsSearchOutput;
@@ -3344,17 +3278,14 @@ export interface McpVertexToolOutputs {
 	"mcp-vertex_fs_read": McpVertexFsReadOutput;
 	"mcp-vertex_fs_write": McpVertexFsWriteOutput;
 	"mcp-vertex_get_validation_matrix": McpVertexGetValidationMatrixOutput;
-	"mcp-vertex_git_bisect": McpVertexGitBisectOutput;
 	"mcp-vertex_git_blame": McpVertexGitBlameOutput;
 	"mcp-vertex_git_changed": McpVertexGitChangedOutput;
 	"mcp-vertex_git_changelog": McpVertexGitChangelogOutput;
 	"mcp-vertex_git_diff": McpVertexGitDiffOutput;
 	"mcp-vertex_git_log": McpVertexGitLogOutput;
-	"mcp-vertex_git_pr": McpVertexGitPrOutput;
 	"mcp-vertex_git_pr_list": McpVertexGitPrListOutput;
 	"mcp-vertex_git_pr_view": McpVertexGitPrViewOutput;
 	"mcp-vertex_git_show": McpVertexGitShowOutput;
-	"mcp-vertex_git_stash": McpVertexGitStashOutput;
 	"mcp-vertex_git_status": McpVertexGitStatusOutput;
 	"mcp-vertex_git_worktree": McpVertexGitWorktreeOutput;
 	"mcp-vertex_i18n_i18n_check": McpVertexI18nI18nCheckOutput;
@@ -3420,8 +3351,6 @@ export interface McpVertexToolOutputs {
 	"mcp-vertex_proposals_swarm_hygiene": McpVertexProposalsSwarmHygieneOutput;
 	"mcp-vertex_proposals_sync_proposals": McpVertexProposalsSyncProposalsOutput;
 	"mcp-vertex_proposals_task_queue": McpVertexProposalsTaskQueueOutput;
-	"mcp-vertex_quality_complexity": McpVertexQualityComplexityOutput;
-	"mcp-vertex_quality_coverage": McpVertexQualityCoverageOutput;
 	"mcp-vertex_quality_get_quality_scopes": McpVertexQualityGetQualityScopesOutput;
 	"mcp-vertex_quality_quality_cancel": McpVertexQualityQualityCancelOutput;
 	"mcp-vertex_quality_quality_run_all": McpVertexQualityQualityRunAllOutput;
@@ -3436,9 +3365,7 @@ export interface McpVertexToolOutputs {
 	"mcp-vertex_rules_check_rules": McpVertexRulesCheckRulesOutput;
 	"mcp-vertex_rules_get_rules": McpVertexRulesGetRulesOutput;
 	"mcp-vertex_scaffold": McpVertexScaffoldOutput;
-	"mcp-vertex_search_references": McpVertexSearchReferencesOutput;
 	"mcp-vertex_search_search": McpVertexSearchSearchOutput;
-	"mcp-vertex_search_symbol": McpVertexSearchSymbolOutput;
 	"mcp-vertex_security_security_audit": McpVertexSecuritySecurityAuditOutput;
 	"mcp-vertex_security_security_deps": McpVertexSecuritySecurityDepsOutput;
 	"mcp-vertex_security_security_sast": McpVertexSecuritySecuritySastOutput;

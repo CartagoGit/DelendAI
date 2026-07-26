@@ -1,0 +1,54 @@
+{
+	"name": "@mcp-vertex/skills-pack",
+	"version": "0.1.0",
+	"type": "module",
+	"description": "Skills pack plugin for @mcp-vertex/core: debugging, performance, PR review, security hardening, incident response, and migration playbooks. Pure guidance, no execution.",
+	"author": "Cartago",
+	"license": "BSD-3-Clause",
+	"keywords": [
+		"mcp",
+		"model-context-protocol",
+		"skills",
+		"playbook",
+		"agent",
+		"ai",
+		"cartago",
+		"plugin"
+	],
+	"main": "./dist/index.js",
+	"files": [
+		"dist",
+		"skills",
+		"README.md"
+	],
+	"exports": {
+		".": {
+			"@mcp-vertex/source": {
+				"types": "./src/index.ts"
+			},
+			"types": "./dist/index.d.ts",
+			"import": "./dist/index.js"
+		},
+		"./public": {
+			"@mcp-vertex/source": {
+				"types": "./src/public/index.ts"
+			},
+			"types": "./dist/public/index.d.ts",
+			"import": "./dist/public/index.js"
+		}
+	},
+	"scripts": {
+		"build": "bun ../../tools/scripts/compile/build.script.ts plugins/skills-pack",
+		"check": "tsc --noEmit -p tsconfig.json",
+		"test": "vitest run"
+	},
+	"peerDependencies": {
+		"@mcp-vertex/core": "^0.1.0"
+	},
+	"devDependencies": {
+		"@mcp-vertex/core": "workspace:*",
+		"@types/bun": "latest",
+		"typescript": "7.0.2",
+		"vitest": "4.1.10"
+	}
+}

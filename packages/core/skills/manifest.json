@@ -1,6 +1,6 @@
 {
 	"$schema": "https://json-schema.org/draft/2020-12/schema",
-	"generatedAt": "2026-06-25T12:00:00.000Z",
+	"generatedAt": "2026-07-26T08:00:00.000Z",
 	"skills": [
 		{
 			"id": "mcp-vertex-plugin-authoring",
@@ -187,6 +187,90 @@
 			"bodyPath": "plugins/external-mcps/skills/external-mcps/SKILL.md",
 			"tags": ["external-mcps", "composition", "human-ack", "f00068"],
 			"appliesTo": ["@mcp-vertex/external-mcps"]
+		},
+		{
+			"id": "debugging-playbook",
+			"version": "1.0.0",
+			"minCoreVersion": "0.1.0",
+			"summary": "Use when a run fails or output looks wrong to triage logs, proposal state, and orphaned locks before repairing anything.",
+			"bodyPath": "plugins/skills-pack/skills/debugging-playbook/SKILL.md",
+			"tags": ["debugging", "triage", "logs", "state"],
+			"appliesTo": [
+				"@mcp-vertex/skills-pack",
+				"@mcp-vertex/logs",
+				"@mcp-vertex/proposals"
+			]
+		},
+		{
+			"id": "performance-optimization",
+			"version": "1.0.0",
+			"minCoreVersion": "0.1.0",
+			"summary": "Use when performance regresses to benchmark first, profile the real hotspot, and validate improvements with the narrowest quality gate.",
+			"bodyPath": "plugins/skills-pack/skills/performance-optimization/SKILL.md",
+			"tags": ["performance", "benchmarking", "profiling", "quality"],
+			"appliesTo": [
+				"@mcp-vertex/skills-pack",
+				"@mcp-vertex/perf",
+				"@mcp-vertex/quality"
+			]
+		},
+		{
+			"id": "pr-review-checklist",
+			"version": "1.0.0",
+			"minCoreVersion": "0.1.0",
+			"summary": "Use when reviewing a PR to check scope, history, CI, quality gates, and security signals before deciding.",
+			"bodyPath": "plugins/skills-pack/skills/pr-review-checklist/SKILL.md",
+			"tags": ["review", "pull-request", "quality", "security"],
+			"appliesTo": [
+				"@mcp-vertex/skills-pack",
+				"@mcp-vertex/git",
+				"@mcp-vertex/forge",
+				"@mcp-vertex/quality",
+				"@mcp-vertex/security"
+			]
+		},
+		{
+			"id": "security-hardening-checklist",
+			"version": "1.0.0",
+			"minCoreVersion": "0.1.0",
+			"summary": "Use when hardening a project so audit, dependency, SAST, secret, and environment checks happen in one repeatable pass.",
+			"bodyPath": "plugins/skills-pack/skills/security-hardening-checklist/SKILL.md",
+			"tags": ["security", "hardening", "secrets", "dependencies"],
+			"appliesTo": [
+				"@mcp-vertex/skills-pack",
+				"@mcp-vertex/security",
+				"@mcp-vertex/env"
+			]
+		},
+		{
+			"id": "incident-response",
+			"version": "1.0.0",
+			"minCoreVersion": "0.1.0",
+			"summary": "Use during an incident to establish impact, correlate remote errors with local logs, and repair coordination drift only when confirmed.",
+			"bodyPath": "plugins/skills-pack/skills/incident-response/SKILL.md",
+			"tags": ["incident", "operations", "logs", "recovery"],
+			"appliesTo": [
+				"@mcp-vertex/skills-pack",
+				"@mcp-vertex/observability",
+				"@mcp-vertex/logs",
+				"@mcp-vertex/notification",
+				"@mcp-vertex/proposals"
+			]
+		},
+		{
+			"id": "migrate-from-x",
+			"version": "1.0.0",
+			"minCoreVersion": "0.1.0",
+			"summary": "Use when migrating off a legacy tool or pattern to extend the legacy migration discipline with codemods, rename, history checks, and final quality gates.",
+			"bodyPath": "plugins/skills-pack/skills/migrate-from-x/SKILL.md",
+			"tags": ["migration", "refactor", "legacy", "quality"],
+			"appliesTo": [
+				"@mcp-vertex/skills-pack",
+				"@mcp-vertex/refactor",
+				"@mcp-vertex/git",
+				"@mcp-vertex/quality",
+				"@mcp-vertex/proposals"
+			]
 		}
 	]
 }

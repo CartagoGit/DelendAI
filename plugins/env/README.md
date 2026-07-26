@@ -1,39 +1,181 @@
 # @mcp-vertex/env
 
-Environment-config validation plugin for [`@mcp-vertex/core`](../../packages/core).
+Environment configuration diagnostics for [@mcp-vertex/core](../../packages/core).
+The plugin is read-only: it parses `.env`, validates presence and type against a
+derived schema, and explains which variables unlock which plugin or provider
+capabilities. Values are always redacted to presence-only signals.
 
 ## Tools
 
-- **`env_check`** — validate a `.env` file and return normalized findings:
-  duplicate keys (medium), empty values (low), malformed lines (low), and
-  missing **required** variables (high, when a `required` list is passed).
-  Pass `path` (default `.env`) and an optional `required` list of names.
-  **Values are never included in the output** — only key names and line numbers.
+### `env_check`
 
-- **`env_explains`** — diff a parsed `.env` against an injected
-  **requirements catalog** (built by walking other plugins' `optionsSchema`
-  for `.describe("...env:VAR...")` markers) and report which plugin
-  capabilities are **unlocked** vs **blocked**. Useful for onboarding:
-  "Which keys do I need to set to enable the GitHub provider?"
-  Pass `path` (default `.env`) and the `requirements` catalog.
-  **Values are never included in the output.**
+Validate a dotenv file and return normalized findings.
 
-Offline, pure. The parse + check + extract + explain primitives are all
-pure functions (exported from `@mcp-vertex/env/public`) over an injected
-reader.
+- Input:
 
-## Load
+```json
+{
+  "path": ".env"
+}
+```
+
+- Output shape:
+
+```json
+{
+  "found": true,
+  "path": ".env",
+  "findings": [
+    {
+      "ruleId": "env/missing-required",
+      "severity": "high",
+      "message": "Required variable \"DATABASE_URL\" is missing from the env schema.",
+      "location": { "file": ".env" }
+    }
+  ],
+  "summary": {
+    "critical": 0,
+    "high": 1,
+    "medium": 0,
+    "low": 0,
+    "info": 0
+  },
+  "worst": "high"
+}
+```
+
+- What it checks:
+
+  - missing required variables
+  - missing typed variables
+  - undeclared extra variables
+  - mistyped values
+  - duplicate keys
+  - empty values
+  - malformed lines
+
+### `env_explains`
+
+Explain which plugin/provider capabilities each environment variable unlocks.
+The requirements catalog is derived from plugin `optionsSchema` metadata, not
+hand-maintained.
+
+- Input:
+
+```json
+{
+  "path": ".env"
+}
+```
+
+- Output shape:
+
+```json
+{
+  "found": true,
+  "path": ".env",
+  "explain": {
+    "variables": [
+      {
+        "varName": "DATABASE_URL",
+        "plugins": [
+          {
+            "plugin": "database",
+            "reason": "Database DSN",
+            "present": false
+          }
+        ],
+        "providers": [
+          {
+            "provider": "database",
+            "reason": "Database DSN",
+            "present": false
+          }
+        ]
+      }
+    ],
+    "blockedCapabilities": [
+      {
+        "plugin": "database",
+        "reason": "Database DSN",
+        "provider": "database",
+        "missingVars": ["DATABASE_URL"]
+      }
+    ]
+  }
+}
+```
+
+- Missing file behavior:
+
+```json
+{
+  "found": false,
+  "path": ".env",
+  "explain": {
+    "variables": [],
+    "blockedCapabilities": []
+  }
+}
+```
+
+## Example invocations
 
 ```bash
 mcp-vertex --plugins=env
 ```
 
-## Catalog + pack
+```json
+{"tool":"mcp-vertex_env_check","arguments":{"path":".env"}}
+```
 
-`env_check` and `env_explains` are exposed via the `env-usage` knowledge
-entry in `plugins/env/src/index.ts`. The plugin ships in the **`standard`**
-preset (see `packages/core/src/lib/plugins/preset-catalog.ts`) so an
-`mcp-vertex --plugins=env` host picks it up automatically.
+```json
+{"tool":"mcp-vertex_env_explains","arguments":{"path":".env"}}
+```
+
+## Integrations
+
+### `init`
+
+When the resolved preset/plugin set includes `env`, the CLI `init` flow runs an
+early env diagnostic before writing files. Any `high` or `critical` findings are
+printed as a warning block so missing required variables surface during
+bootstrap.
+
+### `configuration_center`
+
+The core `configuration_center` tool exposes a dedicated `section: "env"`
+payload:
+
+```json
+{
+  "section": "env",
+  "env": {
+    "pluginId": "env",
+    "present": true,
+    "missing": ["DATABASE_URL"],
+    "findingsCount": 2,
+    "sampleFindings": [
+      {
+        "ruleId": "env/missing-required",
+        "severity": "high",
+        "message": "Required variable \"DATABASE_URL\" is missing from the env schema."
+      }
+    ]
+  }
+}
+```
+
+Only presence and finding metadata are returned. Raw env values are never
+included.
+
+## Consent gate
+
+None. The plugin is read-only: no writes, no network, no secret-value logging.
+
+## Catalog
+
+`env` is part of the `standard` preset.
 
 ## License
 
