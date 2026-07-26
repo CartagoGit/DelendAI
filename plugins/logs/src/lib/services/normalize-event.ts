@@ -48,9 +48,10 @@ export interface ILogEvent {
 	readonly taskId: string | null;
 	readonly outcome: LogOutcome;
 	/**
-	 * f00153 S1 — operator-facing severity from the syslog 7-level
-	 * taxonomy. `severityForOutcome(outcome)` is the default; callers
-	 * can override via the `severity` field on `normalizeEvent`.
+	 * f00153 S1 — operator-facing severity from the syslog RFC 5424
+	 * 8-level taxonomy (emergency → debug). `severityForOutcome(outcome)`
+	 * is the default; callers can override via the `severity` field on
+	 * `normalizeEvent`.
 	 */
 	readonly severity: LogSeverity;
 	/**

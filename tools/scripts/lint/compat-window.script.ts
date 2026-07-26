@@ -39,6 +39,7 @@ export const FACADE_TOOLS: readonly string[] = Object.freeze([
 	'task_queue_enqueue',
 	'state_repair',
 	'proposal_force_transition',
+	'proposal_transition_compat',
 ]);
 
 /** Helpers that should NEVER leak outside the facade. */
@@ -68,11 +69,16 @@ export interface ICompatWindowVerdict {
  * `.compat.ts` for the wrapper.
  */
 export const lintCompatWindow = (
-	files: readonly { readonly absPath: string; readonly imports: readonly string[] }[],
+	files: readonly {
+		readonly absPath: string;
+		readonly imports: readonly string[];
+	}[],
 ): ICompatWindowVerdict => {
 	const violations: ICompatWindowViolation[] = [];
 	for (const file of files) {
-		const kebabFacades = FACADE_TOOLS.map((tool) => tool.replace(/_/g, '-'));
+		const kebabFacades = FACADE_TOOLS.map((tool) =>
+			tool.replace(/_/g, '-'),
+		);
 		const isFacade = kebabFacades.some(
 			(kebab) =>
 				file.absPath.endsWith(`/${kebab}.tool.ts`) ||
@@ -101,7 +107,9 @@ const walkToolFiles = async (root: string): Promise<readonly string[]> => {
 	const stack = [root];
 	while (stack.length > 0) {
 		const current = stack.pop() as string;
-		const entries = await readdir(current, { withFileTypes: true }).catch(() => []);
+		const entries = await readdir(current, { withFileTypes: true }).catch(
+			() => [],
+		);
 		for (const entry of entries) {
 			const abs = join(current, entry.name);
 			if (entry.isDirectory()) {
@@ -145,7 +153,9 @@ const main = async (): Promise<number> => {
 		);
 		return 1;
 	}
-	process.stdout.write(`✓ compat-window: no compat helpers leaked outside the facade\n`);
+	process.stdout.write(
+		`✓ compat-window: no compat helpers leaked outside the facade\n`,
+	);
 	return 0;
 };
 

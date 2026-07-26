@@ -1,5 +1,5 @@
 ---
-id: a00076
+id: f00076
 title: "legacy/closed/ archive mechanism — reaper moves vintage done/ to legacy/closed/<kind>/ so the active done/ stays small while history stays preserved"
 kind: feat
 status: ready
@@ -8,7 +8,7 @@ track: proposals+workflow
 date: 2026-07-26
 ---
 
-# a00076 — `legacy/closed/` archive mechanism
+# f00076 — `legacy/closed/` archive mechanism
 
 ## Goal
 
@@ -59,7 +59,7 @@ Three independent decisions, each at the smallest layer that buys the property:
 ### S1 — `legacy/closed/` folder + registry scanner + index inclusion
 
 - **Status**: done
-- **Files**: `docs/mcp-vertex/proposals/legacy/closed/.gitkeep` (new — sentinel so the folder ships), `docs/mcp-vertex/proposals/legacy/closed/README.md` (new — explains the archive semantics, references a00076, lists the reaper command), `plugins/proposals/src/lib/proposals/sync-proposal-registry.ts` (add `legacy/closed/<kind>/` to `subtreeAbsolutes` so the index picks them up; tag the entry `archived: true` while keeping `status: done` in the frontmatter projection), `plugins/proposals/src/lib/contracts/constants/proposal-glossary.constant.ts` (export `PROPOSAL_ARCHIVE_FOLDER = 'legacy/closed'` and a new `IProposalEntry.archived?: boolean` field — or, if simpler, add the flag inline in the scan loop), `plugins/proposals/src/lib/contracts/schemas/proposal-entry.schema.ts` (or wherever `IProposalEntry` is defined — add `archived?: boolean` to the schema).
+- **Files**: `docs/mcp-vertex/proposals/legacy/closed/.gitkeep` (new — sentinel so the folder ships), `docs/mcp-vertex/proposals/legacy/closed/README.md` (new — explains the archive semantics, references f00076, lists the reaper command), `plugins/proposals/src/lib/proposals/sync-proposal-registry.ts` (add `legacy/closed/<kind>/` to `subtreeAbsolutes` so the index picks them up; tag the entry `archived: true` while keeping `status: done` in the frontmatter projection), `plugins/proposals/src/lib/contracts/constants/proposal-glossary.constant.ts` (export `PROPOSAL_ARCHIVE_FOLDER = 'legacy/closed'` and a new `IProposalEntry.archived?: boolean` field — or, if simpler, add the flag inline in the scan loop), `plugins/proposals/src/lib/contracts/schemas/proposal-entry.schema.ts` (or wherever `IProposalEntry` is defined — add `archived?: boolean` to the schema).
 - **Gate**: type + verify
 - **Acceptance**:
   - The folder `docs/mcp-vertex/proposals/legacy/closed/` exists with a `.gitkeep` and a `README.md` that documents the archive semantics.
@@ -109,7 +109,13 @@ Three independent decisions, each at the smallest layer that buys the property:
   - `AGENTS.md` and `plugins/proposals/README.md` mention the archive in one paragraph each — no full section, just enough that an agent landing cold knows the folder exists.
   - All slices from S1-S3 ship with tests green: 12 new tests for the reaper lib, 8 new tests for the frozen-guard lib, plus 4 new tests on the registry scanner's `archived: true` flag.
 
-## Why a slice set of four
+## Acceptance
+
+All acceptance criteria are documented per-slice above (S1–S4). The proposal is accepted when `bun run validate` passes with zero errors from the new `lint:reap-legacy-proposals` and `lint:closed-frozen-guard` gates, and the registry includes `legacy/closed/` entries with `archived: true`.
+
+## Notes
+
+### Why a slice set of four
 
 Each slice is a **vertically-shipping unit**:
 
@@ -120,7 +126,7 @@ Each slice is a **vertically-shipping unit**:
 
 Splitting S4 from S1-S3 matters because **S4 touches only docs and `package.json`** — it can land in a separate PR if S1-S3 take longer than expected, and the mechanism is still useful in the interim via `bun tools/scripts/lint/reap-legacy-proposals.script.ts` direct invocation.
 
-## Why not a `closed` DFA status (an explicit non-decision)
+### Why not a `closed` DFA status (an explicit non-decision)
 
 The obvious alternative — adding `closed` to `IProposalStatus` and a `closed` folder alongside `done/` — was considered and rejected for four reasons:
 
@@ -131,7 +137,7 @@ The obvious alternative — adding `closed` to `IProposalStatus` and a `closed` 
 
 `legacy/closed/` is a folder. `done/` stays the canonical home for active-done proposals. The reaper moves files between them under operator control.
 
-## Files (consolidated for `proposal-completeness` gate)
+### Files (consolidated for `proposal-completeness` gate)
 
 S1: `docs/mcp-vertex/proposals/legacy/closed/.gitkeep` (new), `docs/mcp-vertex/proposals/legacy/closed/README.md` (new), `plugins/proposals/src/lib/proposals/sync-proposal-registry.ts` (modify scanner to include `legacy/closed/<kind>/` and tag entries `archived: true`), `plugins/proposals/src/lib/contracts/constants/proposal-glossary.constant.ts` (export `PROPOSAL_ARCHIVE_FOLDER`), `plugins/proposals/src/lib/contracts/schemas/proposal-entry.schema.ts` (add `archived?: boolean`).
 

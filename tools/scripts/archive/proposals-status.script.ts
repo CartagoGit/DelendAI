@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
 /**
- * proposals-status.script.ts — a00076 S4.
+ * proposals-status.script.ts — f00076 S4.
  *
  * Print a per-kind count of proposals currently archived under
  * `legacy/closed/<kind>/`, plus the total. Lets the operator see

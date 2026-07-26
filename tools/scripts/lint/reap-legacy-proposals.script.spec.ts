@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
 /**
- * reap-legacy-proposals.script.spec.ts — a00076 S2.
+ * reap-legacy-proposals.script.spec.ts — f00076 S2.
  *
  * Coverage:
  *   - The pure lib (`reap-legacy-proposals.lib.ts`) is covered with

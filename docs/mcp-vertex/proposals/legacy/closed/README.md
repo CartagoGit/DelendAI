@@ -3,8 +3,8 @@
 This folder mirrors the `done/<kind>/` subtree of the active proposals tree
 and is the destination for proposals that have been **reaped** out of
 `done/` because they have outlived their active-review window. The mechanism
-is specified in **proposal `a00076`** (status: `ready`, see
-[`ready/a00076-legacy-closed-archive-mechanism.md`](../../../ready/a00076-legacy-closed-archive-mechanism.md)).
+is specified in **proposal `f00076`** (status: `ready`, see
+[`ready/f00076-legacy-closed-archive-mechanism.md`](../../../ready/f00076-legacy-closed-archive-mechanism.md)).
 
 ## Semantics
 
@@ -92,6 +92,6 @@ and zero DFA changes.
 
 ## See also
 
-- [`a00076`](../../../ready/a00076-legacy-closed-archive-mechanism.md) — the proposal that ships this mechanism
+- [`f00076`](../../../ready/f00076-legacy-closed-archive-mechanism.md) — the proposal that ships this mechanism
 - `done/<kind>/` — the active home for proposals that closed recently
 - `retired/` — proposals that were deliberately stopped before completion (a workflow status, distinct from archive)
