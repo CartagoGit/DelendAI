@@ -5,6 +5,12 @@ title: i18n plugin — translation key extraction, missing/unused detection and 
 status: done
 date: 2026-07-23
 track: plugin+i18n+quality
+closed-by: cartago (consolidated evidence pass 2026-07-26)
+closed-evidence:
+  - 1 commits referencing f00134 recovered from git log --grep (precedes convention)
+  - all declared Files verified to exist via 1-commit batch
+shipped-in:
+  - 2ad243ec # feat(f00134): close i18n plugin — S1+S2+S3 done
 ---
 
 # f00134 — i18n plugin

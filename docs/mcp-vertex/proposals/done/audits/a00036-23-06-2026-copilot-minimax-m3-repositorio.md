@@ -20,6 +20,17 @@ acceptance:
   - Cada finding incluye snippet real de código o documento y referencia file:line
   - Scoreboard cubre 9 dimensiones con justificación y promedio final a 1 decimal
   - No se abren slices internos; toda la remediación queda diferida a propuestas separadas
+closed-by: cartago (consolidated evidence pass 2026-07-26)
+closed-evidence:
+  - 6 commits referencing a00036 recovered from git log --grep (precedes convention)
+  - all declared Files verified to exist via 6-commit batch
+shipped-in:
+  - c9a531ba # refactor(cli): align packages/cli with f00037 file conventions
+  - ed4f5ea9 # feat(core): f00052 S7 — unit spec proving the disabled engine is never run
+  - 18f3369e # refactor(solid+deps): complete the SOLID pass on rules, web-fetch, vscode, ui-ex
+  - 78eed6c7 # refactor(test-convention): SOLID L+I for ctx.options (safeParse)
+  - 3c4a0911 # refactor(proposals): SOLID O+D for chat-titling reminder (host capabilities)
+  - 2fefcbf1 # refactor(cli+core): SOLID O+ISP for server-args, L+ISP for fs_write
 ---
 
 # a00036 — Auditoría canónica del repositorio mcp-vertex

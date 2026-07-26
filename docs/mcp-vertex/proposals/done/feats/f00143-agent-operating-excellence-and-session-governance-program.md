@@ -6,6 +6,11 @@ status: done
 type: proposal
 track: agent-discipline+session-governance
 date: 2026-07-24
+closed-by: legacy (pre-convention; consolidated pass 2026-07-26)
+closed-evidence:
+  - f00143 predates the shipped-in convention (pre-2026-07-24)
+  - proposal body lists the original audit/fix/test deliverables
+  - status was already 'done' before this consolidation pass
 ---
 
 # f00143 — Agent operating excellence and session governance program
@@ -37,17 +42,17 @@ budgets into one operating model.
 
 ### S1 — Local evidence and bounded advice
 - **Status**: done
-- **Files**: `docs/mcp-vertex/proposals/ready/f00144-session-hygiene-observability-and-advisory-alerts.md`
+- **Files**: `plugins/usage-tracking/src/lib/session-hygiene.ts`
 - **Gate**: plugin tests + typecheck
 
 ### S2 — Real host lifecycle boundaries
 - **Status**: done
-- **Files**: `docs/mcp-vertex/proposals/ready/f00145-host-lifecycle-checkpoint-adapters.md`
+- **Files**: `plugins/memory/src/lib/services/checkpoint-packet.ts`
 - **Gate**: host-adapter contract tests
 
 ### S3 — Lean activation and regression budgets
 - **Status**: done
-- **Files**: `docs/mcp-vertex/proposals/ready/c00089-lean-activation-and-full-preset-context-budgets.md`
+- **Files**: `packages/core/src/lib/plugins/preset-catalog.ts`
 - **Gate**: token-budget e2e + validate
 
 ### S4 — Policy and adoption feedback loop

@@ -6,6 +6,18 @@ status: done
 type: proposal
 track: extension+client+ui
 date: 2026-07-15
+closed-by: cartago (consolidated evidence pass 2026-07-26)
+closed-evidence:
+  - 7 commits referencing f00118 recovered from git log --grep (precedes convention)
+  - all declared Files verified to exist via 7-commit batch
+shipped-in:
+  - f7238422 # fix(cli): a00060 — mcpv doctor was silent by default and always reported 0 tools
+  - 50906f38 # fix(dev): a00058 — dev-preview browser bundles were silently broken since an unk
+  - 61e33d69 # feat(proposals): a00057 — Files: doc drift is a recurring class; permanent ratch
+  - 3cfe944e # fix(proposals): q00002 peer review round found stale f00118 Files/acceptance tex
+  - 10c2ed4a # feat(proposals): f00118 closes — S3 plugin-toggle verified pre-existing, S4 spen
+  - 88d7f772 # feat(client,ui-extension): f00118 S1/S2 — real spend telemetry in the dashboard
+  - 3950150c # feat(proposals): q00002 plan — self-managing mcp-vertex (f00116 bootstrap+migrat
 ---
 
 # f00118 — Extension live telemetry + control — real usage, savings, costs, top tools, and plugin enable/disable from the panel

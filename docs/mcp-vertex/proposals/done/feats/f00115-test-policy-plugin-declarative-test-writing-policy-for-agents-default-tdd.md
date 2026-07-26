@@ -6,6 +6,14 @@ status: done
 type: proposal
 track: plugins+presets
 date: 2026-07-14
+closed-by: cartago (consolidated evidence pass 2026-07-26)
+closed-evidence:
+  - 3 commits referencing f00115 recovered from git log --grep (precedes convention)
+  - all declared Files verified to exist via 3-commit batch
+shipped-in:
+  - 6ff5b217 # fix(core): delete orphaned bun:test duplicate of preset-catalog.spec.ts
+  - dc512224 # feat(proposals): f00115 S1 — policy engine + durable override store for test-pol
+  - 015a0570 # feat(proposals): f00115 S1 — policy engine + durable override store for test-pol
 ---
 
 # f00115 — test-policy plugin — declarative test-writing policy for agents (default TDD)

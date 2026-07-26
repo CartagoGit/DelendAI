@@ -26,6 +26,11 @@ acceptance:
     - { command: bun run lint:tools,       expect: exit0 }
     - { command: bun run lint:proposals,   expect: exit0 }
     - { command: bun run validate,         expect: exit0 }
+closed-by: legacy (pre-convention; consolidated pass 2026-07-26)
+closed-evidence:
+  - x00051 predates the shipped-in convention (pre-2026-07-24)
+  - proposal body lists the original audit/fix/test deliverables
+  - status was already 'done' before this consolidation pass
 ---
 
 # x00051 — Orchestrator does not create per-agent worktrees

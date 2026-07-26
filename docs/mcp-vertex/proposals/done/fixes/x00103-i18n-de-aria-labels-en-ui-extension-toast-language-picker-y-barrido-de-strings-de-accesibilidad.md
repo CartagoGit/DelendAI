@@ -6,6 +6,14 @@ status: done
 type: proposal
 track: ui
 date: 2026-07-13
+closed-by: cartago (consolidated evidence pass 2026-07-26)
+closed-evidence:
+  - 3 commits referencing x00103 recovered from git log --grep (precedes convention)
+  - all declared Files verified to exist via 3-commit batch
+shipped-in:
+  - 61e33d69 # feat(proposals): a00057 — Files: doc drift is a recurring class; permanent ratch
+  - 6b6ca714 # fix(ui): x00103 — a11y labels through i18n in the shared components; ratchet blo
+  - b3abc41e # docs(audit): a00053 exhaustive monorepo audit + 5 derived proposals; fix(proposa
 ---
 
 # x00103 — i18n de aria-labels en ui-extension: toast, language-picker y barrido de strings de accesibilidad

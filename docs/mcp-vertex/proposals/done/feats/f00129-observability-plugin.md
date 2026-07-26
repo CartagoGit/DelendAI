@@ -5,6 +5,14 @@ title: observability plugin — remote errors, traces and release health from Se
 status: done
 date: 2026-07-23
 track: plugin+observability+runtime
+closed-by: cartago (consolidated evidence pass 2026-07-26)
+closed-evidence:
+  - 3 commits referencing f00129 recovered from git log --grep (precedes convention)
+  - all declared Files verified to exist via 3-commit batch
+shipped-in:
+  - 4f75ec49 # fix(proposals): prune stale f00127/f00129 duplicates from ready+in-progress
+  - 039ce3c5 # feat(f00129): S3 local correlation + catalog
+  - 8c4395f7 # feat(f00129): S1 — observability plugin obs_errors (Sentry/Datadog read)
 ---
 
 # f00129 — observability plugin

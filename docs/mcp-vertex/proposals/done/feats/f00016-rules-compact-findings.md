@@ -7,6 +7,13 @@ date: 2026-06-21
 closed: 2026-06-21
 kind: feat
 title: Add compact findings to rules checks
+closed-by: cartago (consolidated evidence pass 2026-07-26)
+closed-evidence:
+  - 2 commits referencing f00016 recovered from git log --grep (precedes convention)
+  - all declared Files verified to exist via 2-commit batch
+shipped-in:
+  - 2012dffe # fix(proposals): align authoring, teaching and parsing with the canonical format 
+  - 8c67fc8e # fix(proposals): resolve duplicate-id corruption from concurrent agents
 ---
 
 # f00018 — Add compact findings to rules checks

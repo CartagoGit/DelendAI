@@ -13,6 +13,17 @@ related:
     - f00050 # parking lot convention (slice deferred behind a precondition list)
     - f00067 # multi-model orchestrator — analogous "host composes an external thing under a namespace" precedent; both rely on `toolSchemaVersion` and human-ack
     - AGENTS.md # the invariants this proposal must not break (no process.cwd in engines, plugin owns its namespace, durable writes go through the primitives)
+closed-by: cartago (consolidated evidence pass 2026-07-26)
+closed-evidence:
+  - 6 commits referencing f00068 recovered from git log --grep (precedes convention)
+  - all declared Files verified to exist via 6-commit batch
+shipped-in:
+  - f812abfb # fix(external-mcps,dev): converge f00068 S4+S5 gates + dev-entry style/i18n fix
+  - 1ecc431b # feat(external-mcps): detection annotation + live discover gate + ack surface (f0
+  - 757cf404 # feat(core): native authorized-roots filesystem allowlist for fs_read/fs_write
+  - 57daa975 # feat(core): cache eviction registry + boot sweep (f00068 slice A)
+  - 9b53fc1d # fix(proposals): redactSecrets on user text in proposal_edit, proposal_add_slice,
+  - 837feb39 # fix(proposals): derive loop-detector handoffDir from host cacheDir (x00054)
 ---
 
 # f00068 — external-mcps plugin

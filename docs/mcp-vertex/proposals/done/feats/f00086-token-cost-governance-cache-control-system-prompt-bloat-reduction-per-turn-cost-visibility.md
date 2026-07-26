@@ -6,6 +6,15 @@ track: core+orchestration+metrics
 date: 2026-06-28
 kind: feat
 title: Token cost governance — cache control + system prompt bloat reduction + per-turn cost visibility
+closed-by: cartago (consolidated evidence pass 2026-07-26)
+closed-evidence:
+  - 4 commits referencing f00086 recovered from git log --grep (precedes convention)
+  - all declared Files verified to exist via 4-commit batch
+shipped-in:
+  - 96aa16b5 # feat(presets): add independent `lean` preset (git, search, memory, docs)
+  - e8e41baa # feat(lint): add system-prompt size budget lint (f00086 S3)
+  - 1a489181 # feat(lint): f00083 S3+S4 — host-hints-fragments guard + lefthook wiring
+  - ec6eaedf # feat(proposals): f00086 swarm commit discipline - worktree-only commits + conven
 ---
 
 # f00086 — Token cost governance

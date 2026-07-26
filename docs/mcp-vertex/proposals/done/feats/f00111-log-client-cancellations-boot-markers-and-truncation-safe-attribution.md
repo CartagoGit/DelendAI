@@ -6,6 +6,12 @@ status: done
 type: proposal
 track: general
 date: 2026-07-12
+closed-by: cartago (consolidated evidence pass 2026-07-26)
+closed-evidence:
+  - 1 commits referencing f00111 recovered from git log --grep (precedes convention)
+  - all declared Files verified to exist via 1-commit batch
+shipped-in:
+  - a8145721 # feat(core,logs): log client cancellations, boot markers and truncation-safe attr
 ---
 
 # f00111 — Log client cancellations, boot markers and truncation-safe attribution

@@ -5,6 +5,19 @@ title: forge plugin — GitHub/GitLab PRs, remote issues, CI status and releases
 status: done
 date: 2026-07-23
 track: plugin+forge+collab
+closed-by: cartago (consolidated evidence pass 2026-07-26)
+closed-evidence:
+  - 8 commits referencing f00121 recovered from git log --grep (precedes convention)
+  - all declared Files verified to exist via 8-commit batch
+shipped-in:
+  - fcace98f # fix(a00074): restore 11 review->done proposals + extended hardening proposal
+  - 6ff5b217 # fix(core): delete orphaned bun:test duplicate of preset-catalog.spec.ts
+  - dc31bb70 # fix(a00069): S1 case-insensitive slices parser + proposal hygiene
+  - 47ed5747 # fix(f00121): forge release constant spec + catalog regen
+  - 40e65088 # fix(scaffold,tests,forge): S3 companion changes — self-contained vitest config +
+  - 4b27bf00 # feat(f00121): forge plugin releases + remote code search + full wiring (S3)
+  - ddf39795 # feat(f00121): S2 body templates + branch helpers + lazy extract-plugin TS
+  - 2e754840 # feat(f00121): forge plugin write surface (S2)
 ---
 
 # f00121 — forge plugin

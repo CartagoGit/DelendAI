@@ -6,6 +6,13 @@ status: done
 type: proposal
 track: audit
 date: 2026-07-16
+closed-by: cartago (consolidated evidence pass 2026-07-26)
+closed-evidence:
+  - 2 commits referencing a00063 recovered from git log --grep (precedes convention)
+  - all declared Files verified to exist via 2-commit batch
+shipped-in:
+  - c9f6d2bb # fix(conventions,docs,doctor): a00064 round — zero-scan diagnostics everywhere + 
+  - 7adac35d # fix(init,search,docs): a00063 — adopter agent meltdown forensics + three-layer f
 ---
 
 # a00063 — 17-07-2026g claude-round-2 audit — adopter agent meltdown forensics: init stamped monorepo roots into an Angular repo and search/docs died silently

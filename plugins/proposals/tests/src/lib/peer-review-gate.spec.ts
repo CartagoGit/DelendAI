@@ -18,6 +18,7 @@ import { hasPeerApprovedReview } from '@mcp-vertex/proposals/lib/swarm/proposal-
 const RECENT_VALIDATE = {
 	timestamp: new Date().toISOString(),
 	exitCode: 0,
+	logPath: '.cache/validate.log',
 };
 
 const DOC = (extra: string) => `---
@@ -25,6 +26,7 @@ id: f00888
 title: peer review fixture
 status: review
 type: feature
+shipped-in: [ship123]
 ---
 
 # peer review fixture

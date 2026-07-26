@@ -25,6 +25,14 @@ acceptance:
     - { command: bun run lint:cache,        expect: exit0 }
     - { command: bun run validate,          expect: exit0 }
     - { command: git ls-files docs/mcp-vertex/proposals/index.json, expect: empty }
+closed-by: cartago (consolidated evidence pass 2026-07-26)
+closed-evidence:
+  - 3 commits referencing x00052 recovered from git log --grep (precedes convention)
+  - all declared Files verified to exist via 3-commit batch
+shipped-in:
+  - 837feb39 # fix(proposals): derive loop-detector handoffDir from host cacheDir (x00054)
+  - 5d7ec63c # fix(proposals): doc-drift after x00052 — CORE_DOCS default + 6 source doc-commen
+  - a998393a # fix(proposals): move proposals/index.json to .cache/ + propagate proposalsDirAbs
 ---
 
 # x00052 — `proposals/index.json` lives under docs/ but is regenerable state

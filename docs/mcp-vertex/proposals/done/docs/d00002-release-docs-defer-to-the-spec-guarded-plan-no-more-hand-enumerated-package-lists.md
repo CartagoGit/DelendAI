@@ -6,6 +6,11 @@ status: done
 type: proposal
 track: release+docs
 date: 2026-07-15
+closed-by: legacy (pre-convention; consolidated pass 2026-07-26)
+closed-evidence:
+  - d00002 predates the shipped-in convention (pre-2026-07-24)
+  - proposal body lists the original audit/fix/test deliverables
+  - status was already 'done' before this consolidation pass
 ---
 
 # d00002 — Release docs defer to the spec-guarded plan — no more hand-enumerated package lists

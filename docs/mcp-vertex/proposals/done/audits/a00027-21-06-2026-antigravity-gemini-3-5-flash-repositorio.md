@@ -9,6 +9,11 @@ ownership:
   - { agent: implementation_runner, task: 'S1: Execute audit and document findings' }
 acceptance:
   - { command: bun run validate, expect: exit0 }
+closed-by: legacy (pre-convention; consolidated pass 2026-07-26)
+closed-evidence:
+  - a00027 predates the shipped-in convention (pre-2026-07-24)
+  - proposal body lists the original audit/fix/test deliverables
+  - status was already 'done' before this consolidation pass
 ---
 
 # a00028 — Auditoría de integración MCP y estado del repositorio — Antigravity (Gemini 3.5 Flash)

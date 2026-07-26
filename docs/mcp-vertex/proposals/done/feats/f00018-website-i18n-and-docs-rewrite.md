@@ -7,6 +7,11 @@ date: 2026-06-18
 budget: 4
 kind: feat
 title: Web: i18n real de herramientas, estructura por página y docs profundas
+closed-by: legacy (pre-convention; consolidated pass 2026-07-26)
+closed-evidence:
+  - f00018 predates the shipped-in convention (pre-2026-07-24)
+  - proposal body lists the original audit/fix/test deliverables
+  - status was already 'done' before this consolidation pass
 ---
 
 # f00012 — Web: i18n real de herramientas, estructura por página y docs profundas

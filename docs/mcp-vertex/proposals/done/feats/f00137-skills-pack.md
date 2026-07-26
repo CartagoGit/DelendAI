@@ -44,7 +44,7 @@ the right skills appear for the right project type.
 ### S1 — core dev playbooks
 
 - **Status**: done
-- **Files**: `plugins/skills-pack/src/skills/debugging.md`, `plugins/skills-pack/src/skills/pr-review.md`
+- **Files**: `plugins/skills-pack/skills/debugging-playbook/SKILL.md`, `plugins/skills-pack/skills/pr-review-checklist/SKILL.md`
 - **Gate**: bun run validate
 
 `debugging-playbook`, `performance-optimization`, `pr-review-checklist` —
@@ -53,7 +53,7 @@ each referencing the relevant tools (logs, perf, quality, git/forge).
 ### S2 — safety playbooks
 
 - **Status**: done
-- **Files**: `plugins/skills-pack/src/skills/security-hardening.md`, `plugins/skills-pack/src/skills/incident-response.md`
+- **Files**: `plugins/skills-pack/skills/security-hardening-checklist/SKILL.md`, `plugins/skills-pack/skills/incident-response/SKILL.md`
 - **Gate**: bun run validate
 
 `security-hardening-checklist` (pairs with f00122), `incident-response`
@@ -62,7 +62,7 @@ each referencing the relevant tools (logs, perf, quality, git/forge).
 ### S3 — migration playbooks + pack wiring
 
 - **Status**: done
-- **Files**: `plugins/skills-pack/src/skills/migrate-from.md`, `plugins/skills-pack/src/index.ts`
+- **Files**: `plugins/skills-pack/skills/migrate-from-x/SKILL.md`, `plugins/skills-pack/src/index.ts`
 - **Gate**: bun run validate
 
 `migrate-from-<X>` (extends the legacy-migration skill); register all skills +

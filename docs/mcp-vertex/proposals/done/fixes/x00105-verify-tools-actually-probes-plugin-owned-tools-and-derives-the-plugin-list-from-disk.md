@@ -6,6 +6,15 @@ status: done
 type: proposal
 track: tooling+gates
 date: 2026-07-14
+closed-by: cartago (consolidated evidence pass 2026-07-26)
+closed-evidence:
+  - 4 commits referencing x00105 recovered from git log --grep (precedes convention)
+  - all declared Files verified to exist via 4-commit batch
+shipped-in:
+  - f7238422 # fix(cli): a00060 — mcpv doctor was silent by default and always reported 0 tools
+  - 2981880c # fix(verify): x00107 — probes mirror the SDK's isError semantics; revert the 3 x0
+  - f45f7a9a # fix(lint): stray-cache sanctions plugin cache dirs derived from plugins/* on dis
+  - b6dc89cd # fix(verify): x00105 — verify:tools now probes plugin-owned tools; 3 real schema 
 ---
 
 # x00105 — verify:tools actually probes plugin-owned tools and derives the plugin list from disk

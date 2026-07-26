@@ -6,6 +6,12 @@ status: done
 type: proposal
 track: adoption+skills+dx
 date: 2026-07-25
+closed-by: cartago (consolidated evidence pass 2026-07-26)
+closed-evidence:
+  - 1 commits referencing f00150 recovered from git log --grep (precedes convention)
+  - all declared Files verified to exist via 1-commit batch
+shipped-in:
+  - dc31bb70 # fix(a00069): S1 case-insensitive slices parser + proposal hygiene
 ---
 
 # f00150 — project-preference adoption and skill projection

@@ -6,6 +6,13 @@ status: done
 type: proposal
 track: audit
 date: 2026-07-16
+closed-by: cartago (consolidated evidence pass 2026-07-26)
+closed-evidence:
+  - 2 commits referencing a00059 recovered from git log --grep (precedes convention)
+  - all declared Files verified to exist via 2-commit batch
+shipped-in:
+  - f7238422 # fix(cli): a00060 — mcpv doctor was silent by default and always reported 0 tools
+  - 06e5720d # fix(web): a00059 — 937 tool/plugin detail pages shipped as bare unstyled fragmen
 ---
 
 # a00059 — 17-07-2026c claude-round-2 audit — hundreds of live tool/plugin pages shipped as bare unstyled fragments (missing Base layout)

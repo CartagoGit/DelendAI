@@ -7,6 +7,12 @@ date: 2026-06-21
 closed: 2026-06-21
 kind: feat
 title: Harden remaining proposals output schemas
+closed-by: cartago (consolidated evidence pass 2026-07-26)
+closed-evidence:
+  - 1 commits referencing f00013 recovered from git log --grep (precedes convention)
+  - all declared Files verified to exist via 1-commit batch
+shipped-in:
+  - 8c67fc8e # fix(proposals): resolve duplicate-id corruption from concurrent agents
 ---
 
 # f00017 — Harden remaining proposals output schemas

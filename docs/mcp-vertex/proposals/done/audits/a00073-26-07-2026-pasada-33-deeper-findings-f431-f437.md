@@ -36,6 +36,15 @@ ownership:
           agent: implementation_runner,
           task: 'S6 — plugins/container commit atómico (untracked → tracked)',
       }
+closed-by: cartago (consolidated evidence pass 2026-07-26)
+closed-evidence:
+  - 4 commits referencing a00073 recovered from git log --grep (precedes convention)
+  - all declared Files verified to exist via 4-commit batch
+shipped-in:
+  - 2ad243ec # feat(f00134): close i18n plugin — S1+S2+S3 done
+  - 90f97e46 # fix(cli+vscode): align router-dashboard user-facing text with command name (a000
+  - b983c2bf # fix(vitest): dedupe container plugin aliases (a00073 S4 / F435)
+  - 19350920 # feat(usage-tracking): extend cleanup-stale-tmp to non-zero partial writes (a0007
 ---
 
 ## goal

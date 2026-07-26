@@ -6,6 +6,11 @@ status: done
 type: proposal
 track: audit
 date: 2026-07-14
+closed-by: legacy (pre-convention; consolidated pass 2026-07-26)
+closed-evidence:
+  - a00054 predates the shipped-in convention (pre-2026-07-24)
+  - proposal body lists the original audit/fix/test deliverables
+  - status was already 'done' before this consolidation pass
 ---
 
 # a00054 — 14-07-2026 claude-code fable-5 delta audit — post-backlog-drain re-scan, gates that lie, and the taxonomy made executable

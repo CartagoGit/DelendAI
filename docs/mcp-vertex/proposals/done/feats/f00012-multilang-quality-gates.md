@@ -11,6 +11,11 @@ related:
   - f00006 # test-convention plugin (complementary: scan-drift vs run_quality)
 kind: feat
 title: Quality gates multi-lenguaje (DRY type, dogfood config, web docs)
+closed-by: legacy (pre-convention; consolidated pass 2026-07-26)
+closed-evidence:
+  - f00012 predates the shipped-in convention (pre-2026-07-24)
+  - proposal body lists the original audit/fix/test deliverables
+  - status was already 'done' before this consolidation pass
 ---
 
 # f00009 — Quality gates multi-lenguaje (DRY type, dogfood config, web docs)

@@ -22,6 +22,11 @@ reservedFiles:
     - packages/cli/README.md
     - packages/core/package.json # only the bin field is touched; see S1
     - docs/NPM_PUBLISH.md # add @mcp-vertex/cli to the package list (S7)
+closed-by: legacy (pre-convention; consolidated pass 2026-07-26)
+closed-evidence:
+  - f00038 predates the shipped-in convention (pre-2026-07-24)
+  - proposal body lists the original audit/fix/test deliverables
+  - status was already 'done' before this consolidation pass
 ---
 
 # f00034 — Single CLI for `@mcp-vertex/core` — `mcp-vertex` / `mcpv`, local + `--remote=stdio`, one private package

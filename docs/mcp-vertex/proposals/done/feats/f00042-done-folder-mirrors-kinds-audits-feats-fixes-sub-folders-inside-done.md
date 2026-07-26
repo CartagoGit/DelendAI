@@ -18,6 +18,13 @@ acceptance:
 related:
     - f00016 # proposal state machine — 7 statuses at root, kinds now mirrored inside done/
     - x00001 # fix-audit-types — established the `a<NN>-` audit prefix this proposal generalises
+closed-by: cartago (consolidated evidence pass 2026-07-26)
+closed-evidence:
+  - 2 commits referencing f00042 recovered from git log --grep (precedes convention)
+  - all declared Files verified to exist via 2-commit batch
+shipped-in:
+  - aae0b627 # fix(proposals): reclassify l00001 → r00013 (refactor) — f00114 overcorrection
+  - 3db2b08f # fix(proposals): route done/ closure into done/<kind>/ subfolders
 ---
 
 # f00042 — Done folder mirrors kinds: audits/, feats/, fixes/ sub-folders inside done/

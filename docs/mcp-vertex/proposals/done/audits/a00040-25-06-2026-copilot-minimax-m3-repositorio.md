@@ -5,6 +5,15 @@ title: "Auditoría Exhaustiva — Copilot (MiniMax-M3) — repositorio completo"
 status: done
 date: 2026-06-25T08:00:00Z
 track: archive
+closed-by: cartago (consolidated evidence pass 2026-07-26)
+closed-evidence:
+  - 4 commits referencing a00040 recovered from git log --grep (precedes convention)
+  - all declared Files verified to exist via 4-commit batch
+shipped-in:
+  - fe608e47 # feat(ui-extension,vscode): CSP default-deny for webviews (f00079 S1)
+  - c3207c49 # feat(vscode): register proposals tree and honor openProposal arg (f00079 S4+S5)
+  - d79e28a4 # feat(vscode): persist extension settings to globalState (f00079 S3)
+  - 9e61648d # feat(vscode): allow-list toolbar command dispatch (f00079 S2)
 ---
 
 # 25-06-2026 · Auditoría Exhaustiva — `@mcp-vertex/core`

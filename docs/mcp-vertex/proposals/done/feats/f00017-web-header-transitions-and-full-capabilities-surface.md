@@ -8,6 +8,11 @@ budget: 3
 closed: 2026-06-18
 kind: feat
 title: Header persistente con transiciones + surface completo en la web
+closed-by: legacy (pre-convention; consolidated pass 2026-07-26)
+closed-evidence:
+  - f00017 predates the shipped-in convention (pre-2026-07-24)
+  - proposal body lists the original audit/fix/test deliverables
+  - status was already 'done' before this consolidation pass
 ---
 
 # f00011 — Header persistente con transiciones + surface completo en la web

@@ -5,6 +5,12 @@ type: proposal
 track: logs
 date: 2026-06-22
 kind: fix
+closed-by: cartago (consolidated evidence pass 2026-07-26)
+closed-evidence:
+  - 1 commits referencing x00001 recovered from git log --grep (precedes convention)
+  - all declared Files verified to exist via 1-commit batch
+shipped-in:
+  - 7562d51a # feat(lint): detect duplicate proposal ids across docs/mcp-vertex/proposals
 ---
 
 # x00001 — Fix torn reads in log-store

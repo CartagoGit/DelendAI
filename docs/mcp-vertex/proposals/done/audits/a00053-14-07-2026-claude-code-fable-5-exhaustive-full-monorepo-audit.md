@@ -6,6 +6,12 @@ status: done
 type: proposal
 track: audit
 date: 2026-07-14
+closed-by: cartago (consolidated evidence pass 2026-07-26)
+closed-evidence:
+  - 1 commits referencing a00053 recovered from git log --grep (precedes convention)
+  - all declared Files verified to exist via 1-commit batch
+shipped-in:
+  - b3abc41e # docs(audit): a00053 exhaustive monorepo audit + 5 derived proposals; fix(proposa
 ---
 
 # a00053 — Auditoría exhaustiva del monorepo: tokens, adopción, hooks, extensión y web

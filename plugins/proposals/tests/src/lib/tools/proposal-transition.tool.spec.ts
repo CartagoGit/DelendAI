@@ -23,10 +23,12 @@ import {
 } from '@mcp-vertex/proposals/lib/contracts/constants/proposal-glossary.constant';
 import type { IGitRunner } from '@mcp-vertex/proposals/lib/shared/git-runner';
 
+const RECENT_VALIDATE_LOG = '/dev/null';
 const RECENT_VALIDATE = {
 	timestamp: new Date().toISOString(),
 	exitCode: 0,
-};
+	logPath: '.cache/validate.log',
+} as const;
 
 const recentValidateWithLog = async (root: string) => {
 	const logPath = join(root, '.cache', 'validate.log');
@@ -34,7 +36,7 @@ const recentValidateWithLog = async (root: string) => {
 	await writeFile(logPath, 'ok\n', 'utf8');
 	return {
 		timestamp: new Date().toISOString(),
-		exitCode: 0,
+		exitCode: 0 as const,
 		logPath,
 	};
 };
@@ -219,9 +221,14 @@ describe('proposal_transition', async () => {
 						id: `f200${from}${to}`.replace(/[^a-z0-9]/g, ''),
 						to,
 						reason: 'matrix test',
-						...(to === 'review' || to === 'done'
+						...(to === 'review'
 							? { validateEvidence: RECENT_VALIDATE }
-							: {}),
+							: to === 'done'
+								? {
+										validateEvidence:
+											await recentValidateWithLog(root),
+									}
+								: {}),
 					},
 					options,
 				);
@@ -410,11 +417,12 @@ describe('proposal_transition', async () => {
 	});
 
 	describe('a00069 S3 — atomic transition + nextHops + Files rewrite', () => {
-		it('surfaces nextHops on illegal ready → done', async () => {
+		it('blocks ready -> done without explicit evidence before any DFA shortcut closes', async () => {
 			await writeProposal(root, 'ready', 'f90001-nexthops.md', {
 				id: 'f90001',
 				status: 'ready',
 				kind: 'feat',
+				'shipped-in': '[ship123]',
 			});
 			const result = await runProposalTransition(
 				{ id: 'f90001', to: 'done', reason: 'shortcut' },
@@ -426,10 +434,8 @@ describe('proposal_transition', async () => {
 				error?: { nextHops?: string[]; reason?: string };
 			};
 			expect(body.ok).toBe(false);
-			expect(body.error?.reason).toMatch(/illegal transition/i);
-			expect(body.error?.nextHops).toEqual(
-				['blocked', 'in-progress', 'paused', 'retired'].sort(),
-			);
+			expect(body.error?.reason).toMatch(/validateEvidence/i);
+			expect(body.error?.nextHops).toBeUndefined();
 		});
 
 		it('rewrites stale **Files** self-paths and marks indexSynced when index is configured', async () => {
@@ -763,15 +769,13 @@ describe('a00069 S7 peer-review gate on review → done', () => {
 			root,
 			'review',
 			'f00971-s7.md',
-			{ id: 'f00971', status: 'review', type: 'feat' },
+			{
+				id: 'f00971',
+				status: 'review',
+				type: 'feat',
+				'shipped-in': '[ship123]',
+			},
 			[
-				'---',
-				'id: f00971',
-				'status: review',
-				'type: feat',
-				'shipped-in: [ship123]',
-				'---',
-				'',
 				'## Slices',
 				'',
 				'### S1 — work',
@@ -822,15 +826,13 @@ describe('a00069 S7 peer-review gate on review → done', () => {
 			root,
 			'review',
 			'f00974-s7.md',
-			{ id: 'f00974', status: 'review', type: 'feat' },
+			{
+				id: 'f00974',
+				status: 'review',
+				type: 'feat',
+				'shipped-in': '[ship123]',
+			},
 			[
-				'---',
-				'id: f00974',
-				'status: review',
-				'type: feat',
-				'shipped-in: [ship123]',
-				'---',
-				'',
 				'## Slices',
 				'',
 				'### S1 — work',

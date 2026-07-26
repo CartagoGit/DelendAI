@@ -13,6 +13,13 @@ related:
   - f00027 # token-budget gate backing the measured numbers cited by S4
   - l00008 # residual state-sync hardening that these write-side slices build on
   - f00022 # IDE extension consumer of fs/git write-side tools
+closed-by: cartago (consolidated evidence pass 2026-07-26)
+closed-evidence:
+  - 2 commits referencing f00020 recovered from git log --grep (precedes convention)
+  - all declared Files verified to exist via 2-commit batch
+shipped-in:
+  - 6edbda01 # refactor(proposals): remove never-registered proposals_edit/add_slice dead code
+  - 86fc5f08 # feat(i18n): add new translation interfaces for install matrix and UI primitives
 ---
 
 # f00032 — Skills coverage + write-side tools (closes the audit gaps `f00028`/`r00001` do not)

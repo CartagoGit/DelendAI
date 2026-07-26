@@ -9,6 +9,13 @@ date: 2026-07-25
 related:
   - a00070 # intake auditoría externa
   - a00071 # auditoría independiente
+closed-by: cartago (consolidated evidence pass 2026-07-26)
+closed-evidence:
+  - 2 commits referencing x00073 recovered from git log --grep (precedes convention)
+  - all declared Files verified to exist via 2-commit batch
+shipped-in:
+  - 2f2576ca # feat(x00073): SEC-002 S2 wire buildSafeEnv into server-registry
+  - 1f0c812a # feat(x00073): SEC-002 S1 buildSafeEnv helper + tests
 ---
 
 # x00073 — SEC-002 · Entorno mínimo allow-list para servidores MCP externos

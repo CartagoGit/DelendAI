@@ -6,6 +6,12 @@ track: release+ci
 date: 2026-06-21
 kind: feat
 title: Release provenance: switch final publish step to npm publish --provenance
+closed-by: cartago (consolidated evidence pass 2026-07-26)
+closed-evidence:
+  - 1 commits referencing f00019 recovered from git log --grep (precedes convention)
+  - all declared Files verified to exist via 1-commit batch
+shipped-in:
+  - 934131f4 # feat(notification): close f00019 — watcher.ts already migrated to fs/promises
 ---
 
 # f00019 — Release provenance: switch final publish step to `npm publish --provenance`

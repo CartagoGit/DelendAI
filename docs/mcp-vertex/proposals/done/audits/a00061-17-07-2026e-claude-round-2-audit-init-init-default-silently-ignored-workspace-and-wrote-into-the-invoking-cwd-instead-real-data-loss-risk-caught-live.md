@@ -6,6 +6,13 @@ status: done
 type: proposal
 track: audit
 date: 2026-07-16
+closed-by: cartago (consolidated evidence pass 2026-07-26)
+closed-evidence:
+  - 2 commits referencing a00061 recovered from git log --grep (precedes convention)
+  - all declared Files verified to exist via 2-commit batch
+shipped-in:
+  - 7b249ed1 # fix(search,docs): a00062 — search/docs returned zero results for every mcp-verte
+  - 7aaa10fd # fix(cli): a00061 — mcpv init/init:default silently ignored --workspace and wrote
 ---
 
 # a00061 — 17-07-2026e claude-round-2 audit — init/init:default silently ignored --workspace and wrote into the invoking cwd instead (real data-loss risk, caught live)

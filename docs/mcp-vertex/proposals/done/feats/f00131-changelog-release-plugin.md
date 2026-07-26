@@ -5,6 +5,14 @@ title: changelog/release plugin — changelog generation and semver-bump inferen
 status: done
 date: 2026-07-23
 track: plugin+release+automation
+closed-by: cartago (consolidated evidence pass 2026-07-26)
+closed-evidence:
+  - 3 commits referencing f00131 recovered from git log --grep (precedes convention)
+  - all declared Files verified to exist via 3-commit batch
+shipped-in:
+  - ba27f816 # feat(f00131 S3): changelog plugin README + catalog closure
+  - d3a52566 # feat(f00131 S2): release_bump inference + release_plan tool + public barrel
+  - a14a70a6 # feat(f00131): S1 changelog render from conventional commits
 ---
 
 # f00131 — changelog/release plugin

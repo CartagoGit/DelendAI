@@ -5,6 +5,16 @@ title: self-audit dogfood loop — one tool that runs every scanner and emits a 
 status: done
 date: 2026-07-23
 track: plugin+audit+self-improvement
+closed-by: cartago (consolidated evidence pass 2026-07-26)
+closed-evidence:
+  - 5 commits referencing f00139 recovered from git log --grep (precedes convention)
+  - all declared Files verified to exist via 5-commit batch
+shipped-in:
+  - 97723a45 # feat(audit): f00139 S3 — file proposals + catalog + README
+  - eb87de23 # feat(audit): f00139 S2 — rank + tool registration
+  - fdc99f83 # feat(f00139): S2 self-audit rank + tool (audit plugin)
+  - 2c30060b # feat(audit): f00139 S1 — aggregate scanner findings
+  - 676008f8 # feat(config,proposals): activate router in this repo + 4 self-improvement propos
 ---
 
 # f00139 — self-audit dogfood loop

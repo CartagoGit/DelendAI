@@ -188,6 +188,7 @@ describe('proposal_transition on fresh vs tracked files (x00106 S2)', () => {
 			'type: proposal',
 			'track: general',
 			'kind: feat',
+			'shipped-in: [ship123]',
 			'---',
 			'',
 			'# f00004',

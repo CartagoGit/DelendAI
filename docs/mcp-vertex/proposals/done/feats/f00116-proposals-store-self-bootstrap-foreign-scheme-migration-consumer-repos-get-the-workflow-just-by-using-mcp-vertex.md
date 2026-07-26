@@ -6,6 +6,15 @@ status: done
 type: proposal
 track: proposals+adoption
 date: 2026-07-15
+closed-by: cartago (consolidated evidence pass 2026-07-26)
+closed-evidence:
+  - 4 commits referencing f00116 recovered from git log --grep (precedes convention)
+  - all declared Files verified to exist via 4-commit batch
+shipped-in:
+  - 61e33d69 # feat(proposals): a00057 — Files: doc drift is a recurring class; permanent ratch
+  - c390dfbb # feat(core): f00117 — server-side self-init (init_config), no CLI required
+  - 8beea3d3 # feat(proposals): f00116 — proposal_adopt bootstraps the store and migrates forei
+  - 3950150c # feat(proposals): q00002 plan — self-managing mcp-vertex (f00116 bootstrap+migrat
 ---
 
 # f00116 — Proposals store self-bootstrap + foreign-scheme migration — consumer repos get the workflow just by using mcp-vertex

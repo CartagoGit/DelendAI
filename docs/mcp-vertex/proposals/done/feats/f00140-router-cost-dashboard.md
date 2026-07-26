@@ -5,6 +5,16 @@ title: router cost + recommendation dashboard — surface auto-agent-selector pi
 status: done
 date: 2026-07-23
 track: plugin+extension+routing
+closed-by: cartago (consolidated evidence pass 2026-07-26)
+closed-evidence:
+  - 5 commits referencing f00140 recovered from git log --grep (precedes convention)
+  - all declared Files verified to exist via 5-commit batch
+shipped-in:
+  - 568406da # feat(f00140 S3): router dashboard extension webview
+  - f2ba3816 # feat(f00140 S2): mcpv router dashboard CLI command
+  - 2154c263 # feat(f00140 S1): dashboard view-model builder
+  - e1d937f3 # feat(cli): agents command group — router recommendations from the terminal
+  - 676008f8 # feat(config,proposals): activate router in this repo + 4 self-improvement propos
 ---
 
 # f00140 — router cost + recommendation dashboard

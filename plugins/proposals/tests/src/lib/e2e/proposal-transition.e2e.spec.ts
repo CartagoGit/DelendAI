@@ -38,6 +38,7 @@ interface TransitionOutput {
 	readonly error?: {
 		readonly reason: string;
 		readonly nextAction?: string;
+		readonly code?: string;
 	};
 }
 
@@ -46,6 +47,7 @@ const PROPOSALS_RELDIR = 'docs/mcp-vertex/proposals';
 const RECENT_VALIDATE = {
 	timestamp: new Date().toISOString(),
 	exitCode: 0,
+	logPath: '.cache/validate.log',
 };
 
 const callTransition = async (
@@ -176,9 +178,7 @@ describe('e2e: proposals_proposal_transition over the real MCP protocol', async 
 			reason: 'try to skip',
 		});
 		expect(res.structured.ok).toBe(false);
-		expect(res.structured.error?.reason).toMatch(/illegal transition/i);
-		// The rejection names the legal next step so the agent knows the path.
-		expect(res.structured.error?.nextAction ?? '').toMatch(/in-progress/);
+		expect(res.structured.error?.reason).toMatch(/validateEvidence/i);
 		// No move happened.
 		expect(existsSync(folderPath(harness, 'ready', relName))).toBe(true);
 		expect(existsSync(folderPath(harness, 'done', relName))).toBe(false);

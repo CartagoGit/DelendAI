@@ -6,6 +6,12 @@ status: done
 type: proposal
 track: tooling+gates
 date: 2026-07-15
+closed-by: cartago (consolidated evidence pass 2026-07-26)
+closed-evidence:
+  - 1 commits referencing x00107 recovered from git log --grep (precedes convention)
+  - all declared Files verified to exist via 1-commit batch
+shipped-in:
+  - 2981880c # fix(verify): x00107 — probes mirror the SDK's isError semantics; revert the 3 x0
 ---
 
 # x00107 — Every tool outputSchema accepts the canonical toolError envelope — convention + gate + fix the 8 offender files

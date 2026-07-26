@@ -6,6 +6,11 @@ status: done
 type: proposal
 track: lint
 date: 2026-07-14
+closed-by: legacy (pre-convention; consolidated pass 2026-07-26)
+closed-evidence:
+  - c00087 predates the shipped-in convention (pre-2026-07-24)
+  - proposal body lists the original audit/fix/test deliverables
+  - status was already 'done' before this consolidation pass
 ---
 
 # c00087 — Zero-warning biome baseline — clear the 12 warnings + 31 infos and keep the gate at zero

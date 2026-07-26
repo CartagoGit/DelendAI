@@ -6,6 +6,12 @@ status: done
 type: proposal
 track: general
 date: 2026-07-12
+closed-by: cartago (consolidated evidence pass 2026-07-26)
+closed-evidence:
+  - 1 commits referencing x00098 recovered from git log --grep (precedes convention)
+  - all declared Files verified to exist via 1-commit batch
+shipped-in:
+  - 2012dffe # fix(proposals): align authoring, teaching and parsing with the canonical format 
 ---
 
 # x00098 — Align proposal authoring, teaching and parsing with the canonical format
