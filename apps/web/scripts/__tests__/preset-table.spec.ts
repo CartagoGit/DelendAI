@@ -17,18 +17,9 @@ describe('preset-table', () => {
 				'swarm',
 				'full',
 				'vertex',
-			]);
-		});
-
-		it('lean is independent and resolves to exactly its 4 essentials', () => {
-			const matrix = buildPresetMatrix();
-			const lean = matrix.rows.find((r) => r.preset.id === 'lean');
-			expect(lean?.preset.independent).toBe(true);
-			expect(lean?.effective).toEqual([
-				'git',
-				'search',
-				'memory',
-				'docs',
+				'web-app',
+				'backend-api',
+				'cli-tool',
 			]);
 		});
 

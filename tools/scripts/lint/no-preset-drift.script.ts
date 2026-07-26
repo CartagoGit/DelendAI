@@ -41,6 +41,10 @@ const PRESET_KIND = [
 	'swarm',
 	'full',
 	'vertex',
+	// r00011 S1 — stack packs (independent).
+	'web-app',
+	'backend-api',
+	'cli-tool',
 ] as const;
 
 const SCAN_ROOTS: readonly string[] = [
