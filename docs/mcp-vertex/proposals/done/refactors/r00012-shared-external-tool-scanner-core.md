@@ -2,7 +2,7 @@
 id: r00012
 kind: refactor
 title: shared external-tool / scanner core — one runner, one probe, one finding shape (DRY seam for security/deps/perf/forge/browser)
-status: ready
+status: done
 date: 2026-07-23
 track: refactor+core+plugins
 ---
@@ -62,38 +62,50 @@ lives in `contracts/interfaces` to satisfy `types-in-contracts`.
 
 ### S1 — external-tool descriptor + presence/version probe + install hints
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/src/lib/external-tool/probe.ts`, `packages/core/src/lib/contracts/interfaces/external-tool.interface.ts`
 - **Gate**: bun run validate
 
-Define `IExternalTool` (id, probeCommand, versionPattern, installHints) and a
-pure `probeTool(deps)` that reports available|missing + resolved version +
-the one-command fix. Generalises `auto-agent-selector` `commandExists` and
-`orchestrator-runner` `discoverProviders` into one seam; those two become
-callers in a follow-up (no behaviour change).
+`IExternalTool { id, label, bin, versionArgs?, versionPattern?, installHints? }`
++ pure `probeTool(tool, deps): Promise<IToolProbeResult>` and
+`probeTools(tools, deps): Promise<IToolProbeResult[]>`. Reports
+available|missing + parsed version + first install hint. Production adapter
+`realProbeDeps()` uses `bash -c 'command -v "$1"'` (3s timeout, argv-only —
+no shell interpolation) plus `runArgv` for `--version`. Cross-platform
+(Windows falls back to `where`). Mirrors `auto-agent-selector`'s
+`commandExists` so a follow-up can re-point it here without behaviour
+change. Exported from `@mcp-vertex/core/public`.
 
 ### S2 — normalised finding/result contracts + shared renderer
 
-- **Status**: pending
-- **Files**: `packages/core/src/lib/external-tool/finding.ts`, `packages/core/src/lib/contracts/interfaces/finding.interface.ts`
+- **Status**: done
+- **Files**: `packages/core/src/lib/contracts/interfaces/finding.interface.ts`, `packages/core/src/lib/external-tool/render-findings.ts`, `packages/core/src/lib/external-tool/aggregate-scans.ts`
 - **Gate**: bun run validate
 
-`IFinding { severity, ruleId, location{file,line}, message, fix? }` and
-`IScanResult { tool, findings, summary, ranAt }`, plus a pure renderer
-(CLI table / extension rows / `toolJson`) so every scanner reports one way.
-Severity ordering + ranking reused from the audit plugin's finding model
-where it already exists.
+`IFinding { ruleId, severity, message, location?, fix? }` with
+`IFindingLocation { file?, line?, column? }` and `IScanResult { tool, findings,
+summary, ranAt }`. Severity band `'critical'|'high'|'medium'|'low'|'info'`
+matching the audit plugin's finding model. Pure renderers:
+`renderFindingsTable` (CLI rows), `sortFindings` / `worstSeverity` /
+`summarizeFindings` (used by `aggregateScans` to roll multiple scan results
+into one), plus `aggregateScans(results, deps) -> IRollup` for the
+extension + `toolJson` surface. Reuses severity ranking from the audit
+plugin. Exported from `@mcp-vertex/core/public`.
 
 ### S3 — runExternalTool seam (bounded, redacted, injected exec)
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/src/lib/external-tool/run-external-tool.ts`, `packages/core/src/public/index.ts`
 - **Gate**: bun run validate
 
-`runExternalTool({tool,args,exec,timeoutMs,maxBytes,redact})` over
-command-policy + `run-command`: enforces timeout, caps output bytes, redacts
-secrets from captured output, never throws (returns a typed failure). Exported
-from `@mcp-vertex/core/public`; unit-tested with an injected exec (no spawn).
+`runExternalTool({ tool, args, exec, timeoutMs, maxBytes, redact }):
+Promise<IExternalToolRun>` over `runArgv` (no shell, timeout, capped
+output) + secret-pattern redaction against the captured output. `exec` is
+injected (defaults to `runArgv`), so callers are unit-testable without
+spawning. Never throws: a non-zero exit yields `{ok:false, error}`, never a
+thrown exception. Exported from `@mcp-vertex/core/public`. 27/27 tests
+green (probe, render-findings, aggregate-scans, run-external-tool);
+core 1038/1038; typecheck clean.
 
 ## acceptance
 
