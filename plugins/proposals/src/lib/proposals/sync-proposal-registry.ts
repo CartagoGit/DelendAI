@@ -386,6 +386,14 @@ interface INewSystemFile {
 	readonly kind: IProposalKind | undefined;
 }
 
+export interface IProposalFolderDrift {
+	readonly id: string;
+	readonly path: string;
+	readonly folder: string;
+	readonly expectedFolder: string;
+	readonly status: IGlossaryStatus;
+}
+
 /** Collects every `.md` under the proposalsDir tree whose frontmatter status is on the new state machine. */
 /**
  * A file is only "on the new state machine" if BOTH hold:
@@ -489,6 +497,29 @@ export const findDuplicateProposalIds = async (
 	}
 	out.sort((a, b) => a.id.localeCompare(b.id));
 	return out;
+};
+
+export const findProposalFolderDrift = async (
+	proposalsDirAbs: string,
+): Promise<readonly IProposalFolderDrift[]> => {
+	const files = await scanNewSystemFiles(proposalsDirAbs);
+	const drift: IProposalFolderDrift[] = [];
+	for (const file of files) {
+		const expectedFolder =
+			file.status === 'done'
+				? doneFolderFor(file.kind)
+				: STATUS_TO_FOLDER[file.status];
+		if (file.folder === expectedFolder) continue;
+		drift.push({
+			id: file.id,
+			path: relative(proposalsDirAbs, file.absPath),
+			folder: file.folder || '(root)',
+			expectedFolder,
+			status: file.status,
+		});
+	}
+	drift.sort((a, b) => a.id.localeCompare(b.id));
+	return drift;
 };
 
 const moveFile = async (
@@ -613,6 +644,7 @@ export async function syncProposalRegistry(
 	// the same index must not lose entries (read FS → write index).
 	return withFileMutex(indexPath, async () => {
 		await reconcileAndArchiveCompletedRootProposals(proposalsDir);
+		const folderDriftBefore = await findProposalFolderDrift(proposalsDir);
 		// f00016 S5: new-system files only (isGlossaryStatus gates it) — move
 		// anything whose folder disagrees with its status, then auto-resolve
 		// `blocked` → `ready` where every blocker has cleared. Runs before
@@ -668,6 +700,11 @@ export async function syncProposalRegistry(
 		// Detection only: we still write the index so agents can see both
 		// paths, but the error list is non-empty so lint/CI can fail.
 		const duplicates = await findDuplicateProposalIds(proposalsDir);
+		for (const drift of folderDriftBefore) {
+			warnings.push(
+				`folder drift: ${drift.id} at ${drift.path} is in ${drift.folder} but status ${drift.status} expects ${drift.expectedFolder}`,
+			);
+		}
 		for (const dup of duplicates) {
 			warnings.push(
 				`duplicate proposal id "${dup.id}" on disk: ${dup.paths.join(' and ')}`,
