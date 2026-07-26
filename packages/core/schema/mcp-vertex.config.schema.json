@@ -495,6 +495,11 @@
 				}
 			},
 			"additionalProperties": false
+		},
+		"coreVersion": {
+			"description": "Pin the @mcp-vertex/core version this host is wired against. Default 'latest-published' uses the most recent published tag. Set to a specific semver (e.g. '0.4.0') to lock the host to that release.",
+			"type": "string",
+			"pattern": "^(latest-published|\\d+\\.\\d+\\.\\d+(-[a-zA-Z0-9.-]+)?(\\+[a-zA-Z0-9.-]+)?)$"
 		}
 	},
 	"additionalProperties": false,

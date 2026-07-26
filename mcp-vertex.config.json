@@ -1,5 +1,6 @@
 {
 	"$schema": "https://unpkg.com/@mcp-vertex/core/schema/mcp-vertex.config.schema.json",
+	"coreVersion": "latest-published",
 	"cacheDir": ".cache/mcp-vertex",
 	"docsDir": "docs/mcp-vertex",
 	"convention": {
