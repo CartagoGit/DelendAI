@@ -2,7 +2,7 @@
 id: d00003
 kind: docs
 title: mcp-vertex capability-expansion roadmap — plugins, tools, skills, prompts, auto-config
-status: ready
+status: done
 date: 2026-07-23
 track: roadmap+plugins+ecosystem
 ---
@@ -80,8 +80,8 @@ tirón" while keeping per-plugin overrides.
 
 ### S1 — Wave 1: foundations + generator (ships first, unblocks the rest)
 
-- **Status**: pending
-- **Files**: `docs/mcp-vertex/proposals/ready/f00120-project-to-plugin-generator.md`, `docs/mcp-vertex/proposals/ready/r00011-auto-config-packs.md`, `docs/mcp-vertex/proposals/ready/r00012-shared-external-tool-scanner-core.md`
+- **Status**: done
+- **Files**: `docs/mcp-vertex/proposals/done/feats/f00120-project-to-plugin-generator.md`, `docs/mcp-vertex/proposals/done/refactors/r00011-auto-config-packs.md`, `docs/mcp-vertex/proposals/done/refactors/r00012-shared-external-tool-scanner-core.md`
 - **Gate**: none (roadmap tracking slice)
 
 r00012 (shared scanner core) + f00120 (project→plugin generator +
@@ -91,8 +91,8 @@ directly deliver the user's "self-generating, self-configuring" vision.
 
 ### S2 — Wave 2: tier-1 dogfooding plugins
 
-- **Status**: pending
-- **Files**: `docs/mcp-vertex/proposals/ready/f00121-forge-plugin.md`, `docs/mcp-vertex/proposals/ready/f00122-security-plugin.md`, `docs/mcp-vertex/proposals/ready/f00123-refactor-codemod-plugin.md`, `docs/mcp-vertex/proposals/ready/f00124-semantic-search.md`
+- **Status**: done
+- **Files**: `docs/mcp-vertex/proposals/done/feats/f00121-forge-plugin.md`, `docs/mcp-vertex/proposals/done/feats/f00122-security-plugin.md`, `docs/mcp-vertex/proposals/done/feats/f00123-refactor-codemod-plugin.md`, `docs/mcp-vertex/proposals/done/feats/f00124-semantic-search.md`
 - **Gate**: none (roadmap tracking slice)
 
 The plugins that most improve working on mcp-vertex itself: **forge**
@@ -104,8 +104,8 @@ The plugins that most improve working on mcp-vertex itself: **forge**
 
 ### S3 — Wave 3: tier-1.5 / tier-2 plugins
 
-- **Status**: pending
-- **Files**: `docs/mcp-vertex/proposals/ready/f00125-browser-plugin.md`, `docs/mcp-vertex/proposals/ready/f00126-perf-plugin.md`, `docs/mcp-vertex/proposals/ready/f00127-prompt-eval-plugin.md`, `docs/mcp-vertex/proposals/ready/f00128-database-plugin.md`
+- **Status**: done
+- **Files**: `docs/mcp-vertex/proposals/done/feats/f00125-browser-plugin.md`, `docs/mcp-vertex/proposals/done/feats/f00126-perf-plugin.md`, `docs/mcp-vertex/proposals/done/feats/f00127-prompt-eval-plugin.md`, `docs/mcp-vertex/proposals/done/feats/f00128-database-plugin.md`
 - **Gate**: none (roadmap tracking slice)
 
 **browser** (Playwright: E2E/screenshot/a11y for apps/web + the extension
@@ -118,8 +118,8 @@ diagram (f00132), container (f00133), i18n (f00134), env (f00135).
 
 ### S4 — Wave 4: cross-cutting tools, skills, prompts
 
-- **Status**: pending
-- **Files**: `docs/mcp-vertex/proposals/ready/f00136-tools-in-existing-plugins.md`, `docs/mcp-vertex/proposals/ready/f00137-skills-pack.md`, `docs/mcp-vertex/proposals/ready/f00138-prompts-pack.md`
+- **Status**: done
+- **Files**: `docs/mcp-vertex/proposals/done/feats/f00136-tools-in-existing-plugins.md`, `docs/mcp-vertex/proposals/done/feats/f00137-skills-pack.md`, `docs/mcp-vertex/proposals/done/feats/f00138-prompts-pack.md`
 - **Gate**: none (roadmap tracking slice)
 
 Cheap high-value wins that need no new plugin: **tools inside existing
