@@ -1526,6 +1526,19 @@ export interface McpVertexPluginAddOutput {
 	alreadyAdopted: boolean;
 }
 
+export interface McpVertexPluginSearchOutput {
+	entries: Array<{
+		id: string;
+		package: string;
+		summary: string;
+		tags: string[];
+		origin: "first-party" | "community";
+		defaultPreset?: "minimal" | "lean" | "standard" | "swarm" | "full" | "vertex";
+	}>;
+	total: number;
+	truncated: boolean;
+}
+
 export interface McpVertexPromptEvalEvalReportOutput {
 	tool: "eval_report";
 	rows: Array<{
@@ -3371,6 +3384,7 @@ export interface McpVertexToolOutputs {
 	"mcp-vertex_perf_perf_profile": McpVertexPerfPerfProfileOutput;
 	"mcp-vertex_plan_mcp_project": McpVertexPlanMcpProjectOutput;
 	"mcp-vertex_plugin_add": McpVertexPluginAddOutput;
+	"mcp-vertex_plugin_search": McpVertexPluginSearchOutput;
 	"mcp-vertex_prompt-eval_eval_report": McpVertexPromptEvalEvalReportOutput;
 	"mcp-vertex_prompt-eval_eval_run": McpVertexPromptEvalEvalRunOutput;
 	"mcp-vertex_proposals_agent_lock": McpVertexProposalsAgentLockOutput;
