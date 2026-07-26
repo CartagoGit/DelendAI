@@ -2,7 +2,7 @@
 id: v00122
 title: "collapse 4-call bootstrap into 1-call `auto_work`"
 kind: perf
-status: in-progress
+status: done
 type: proposal
 track: perf+token-budgets+agent-velocity
 date: 2026-07-24
