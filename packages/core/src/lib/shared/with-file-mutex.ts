@@ -1,6 +1,17 @@
+import { AsyncLocalStorage } from 'node:async_hooks';
 import { randomUUID } from 'node:crypto';
 import { mkdir, open, readFile, rm, stat, utimes } from 'node:fs/promises';
 import { dirname } from 'node:path';
+
+/**
+ * Reentrance tracker: tracks the set of lock paths currently held by this
+ * async call stack. Nested calls for an already-held path skip the mutex
+ * acquisition entirely (the outer call still holds it). This prevents the
+ * agent_lock engine from deadlocking on `tryAcquireFileLocks` which would
+ * otherwise re-acquire the same mutex the outer `executeLockAction`
+ * wrapper already holds.
+ */
+const lockStack = new AsyncLocalStorage<Set<string>>();
 
 /**
  * Cross-process critical section over a shared state file.
@@ -91,7 +102,18 @@ export const withFileMutex = async <T>(
 	// deletes a lock that was stolen and is now owned by someone else.
 	const token = `${process.pid}\n${Date.now()}\n${randomUUID()}`;
 
-	await mkdir(dirname(targetPath), { recursive: true });
+	// Reentrance: if this async stack already holds this lock, skip the
+	// filesystem mutex entirely. The outer holder still owns the critical
+	// section, so nested calls are safe.
+	const held = lockStack.getStore();
+	if (held !== undefined && held.has(lockPath)) {
+		return await fn();
+	}
+
+	// Ensure the parent directory exists. `open(..., 'wx')` raises ENOENT
+	// when the dir is missing — without this guard, a fresh tmpdir would
+	// never get past the first acquire.
+	await mkdir(dirname(lockPath), { recursive: true });
 
 	const deadline = Date.now() + timeoutMs;
 	let acquired = false;
@@ -142,19 +164,28 @@ export const withFileMutex = async <T>(
 	}, heartbeatMs);
 	heartbeat.unref?.();
 
-	try {
-		return await fn();
-	} finally {
-		clearInterval(heartbeat);
-		if (acquired) {
-			// Remove the lock only if it is still ours. If a stealer replaced
-			// it, deleting it would unprotect the new holder.
-			try {
-				const current = await readFile(lockPath, 'utf8');
-				if (current === token) await rm(lockPath, { force: true });
-			} catch {
-				// Already gone (stolen and released): nothing to do.
+	// Track this lock in the reentrance set so nested calls detect it.
+	const enterStack = (parent: Set<string> | undefined): Set<string> => {
+		const next = new Set<string>(parent);
+		next.add(lockPath);
+		return next;
+	};
+
+	return await lockStack.run(enterStack(held), async () => {
+		try {
+			return await fn();
+		} finally {
+			clearInterval(heartbeat);
+			if (acquired) {
+				// Remove the lock only if it is still ours. If a stealer replaced
+				// it, deleting it would unprotect the new holder.
+				try {
+					const current = await readFile(lockPath, 'utf8');
+					if (current === token) await rm(lockPath, { force: true });
+				} catch {
+					// Already gone (stolen and released): nothing to do.
+				}
 			}
 		}
-	}
+	});
 };

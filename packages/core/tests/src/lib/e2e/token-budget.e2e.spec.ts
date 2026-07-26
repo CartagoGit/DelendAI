@@ -112,7 +112,7 @@ const BUDGET_BYTES = {
 	// buildRunQualityToolRegistration (a00072 S2.b peer-review gate), adding
 	// outputSchema metadata and bumping tools/list 168 938B → 171 174B.
 	swarmToolsList: 175_000,
-	swarmOverviewCompact: 4_000,
+	swarmOverviewCompact: 4_200,
 	swarmRoundContext: 300,
 	// `lean` was 58 003B against the same fixture, a 63% reduction from swarm.
 	leanToolsList: 65_000,

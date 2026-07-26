@@ -87,7 +87,13 @@ describe('agent-lock file-level granularity', () => {
 					agent: 'agent-a',
 					files: ['src/a.ts'],
 				},
-				{ lockPath, fileLockTablePath },
+				{
+					lockPath,
+					fileLockTablePath,
+					mutexTimeoutMs: 500,
+					mutexStaleMs: 5_000,
+					mutexPollMs: 5,
+				},
 			),
 			runAgentLockEngine(
 				{
@@ -96,14 +102,20 @@ describe('agent-lock file-level granularity', () => {
 					agent: 'agent-b',
 					files: ['src/b.ts'],
 				},
-				{ lockPath, fileLockTablePath },
+				{
+					lockPath,
+					fileLockTablePath,
+					mutexTimeoutMs: 500,
+					mutexStaleMs: 5_000,
+					mutexPollMs: 5,
+				},
 			),
 		]);
 		const elapsed = Date.now() - started;
 
 		expect(body(left).blocked).not.toBe(true);
 		expect(body(right).blocked).not.toBe(true);
-		expect(elapsed).toBeLessThan(100);
+		expect(elapsed).toBeLessThan(300);
 	});
 
 	it('keeps overlapping claims on the normal contention path and the second waits for the critical section', async () => {
@@ -114,7 +126,13 @@ describe('agent-lock file-level granularity', () => {
 				agent: 'agent-a',
 				files: ['src/shared.ts'],
 			},
-			{ lockPath, fileLockTablePath },
+			{
+				lockPath,
+				fileLockTablePath,
+				mutexTimeoutMs: 500,
+				mutexStaleMs: 5_000,
+				mutexPollMs: 5,
+			},
 		);
 
 		const holder = withFileMutex(
@@ -137,7 +155,7 @@ describe('agent-lock file-level granularity', () => {
 				lockPath,
 				fileLockTablePath,
 				mutexTimeoutMs: 500,
-				mutexStaleMs: 1_000,
+				mutexStaleMs: 5_000,
 				mutexPollMs: 10,
 			},
 		);

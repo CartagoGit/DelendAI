@@ -50,7 +50,12 @@ describe('coordination chaos — heavy contention invariants (N23)', async () =>
 						agent: `a${i}`,
 						files: [`src/f${i}.ts`],
 					},
-					{ lockPath },
+					{
+						lockPath,
+						mutexTimeoutMs: 5_000,
+						mutexStaleMs: 5_000,
+						mutexPollMs: 5,
+					},
 				),
 			),
 		);

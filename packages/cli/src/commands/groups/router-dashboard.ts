@@ -135,7 +135,7 @@ const collectRecommendations = async (
 };
 
 const routerDashboardCommand: ICliCommand = {
-	name: 'router dashboard',
+	name: 'router-dashboard',
 	summary:
 		'Show the recommendation + spend table for every reachable provider; --pin persists the choice.',
 	async run(args, ctx) {

@@ -532,6 +532,29 @@ export interface McpVertexDiagramDiagramDepsOutput {
 	}[];
 }
 
+export interface McpVertexDiagramDiagramErdOutput {
+	mermaid: string;
+	tables: number;
+	relationships: number;
+}
+
+export interface McpVertexDiagramDiagramModulesOutput {
+	mermaid: string;
+	nodes: string[];
+	edges: {
+		from: string;
+		to: string;
+	}[];
+	packageRoot: string;
+}
+
+export interface McpVertexDiagramDiagramProposalsOutput {
+	mermaid: string;
+	statuses: string[];
+	edges: number;
+	annotated: string[];
+}
+
 export interface McpVertexDocsDocsListOutput {
 	count: number;
 	total: number;
@@ -2240,6 +2263,13 @@ export interface McpVertexProposalsStateHealthOutput {
 		stale: number;
 		staleTaskIds: string[];
 		lastStaleSeen: string | null;
+		livelocks: number;
+		livelockPairs: {
+			agentA: string;
+			agentB: string;
+			files: string[];
+			heldMs: number;
+		}[];
 		crossProposal: {
 			id: string;
 			count: number;
@@ -2277,6 +2307,13 @@ export interface McpVertexProposalsStateRepairOutput {
 			stale: number;
 			staleTaskIds: string[];
 			lastStaleSeen: string | null;
+			livelocks: number;
+			livelockPairs: {
+				agentA: string;
+				agentB: string;
+				files: string[];
+				heldMs: number;
+			}[];
 			crossProposal: {
 				id: string;
 				count: number;
@@ -3034,6 +3071,9 @@ export interface McpVertexToolOutputs {
 	"mcp-vertex_deps_deps_outdated": McpVertexDepsDepsOutdatedOutput;
 	"mcp-vertex_deps_deps_polyglot": McpVertexDepsDepsPolyglotOutput;
 	"mcp-vertex_diagram_diagram_deps": McpVertexDiagramDiagramDepsOutput;
+	"mcp-vertex_diagram_diagram_erd": McpVertexDiagramDiagramErdOutput;
+	"mcp-vertex_diagram_diagram_modules": McpVertexDiagramDiagramModulesOutput;
+	"mcp-vertex_diagram_diagram_proposals": McpVertexDiagramDiagramProposalsOutput;
 	"mcp-vertex_docs_docs_list": McpVertexDocsDocsListOutput;
 	"mcp-vertex_docs_docs_read": McpVertexDocsDocsReadOutput;
 	"mcp-vertex_docs_docs_search": McpVertexDocsDocsSearchOutput;

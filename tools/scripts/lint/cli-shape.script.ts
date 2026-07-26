@@ -53,6 +53,12 @@ const TOP_LEVEL_EXEMPT: ReadonlySet<string> = new Set([
 	// Its namespace is already kebab-case; there is no second token to
 	// add without inventing a redundant `web-fetch fetch`.
 	'web-fetch',
+	// `router-dashboard` is a 1:1 group command: the group exposes exactly
+	// one sub-action whose name happens to be the same word as the dashboard
+	// noun. The kebab-case namespace `router-dashboard` is the canonical,
+	// documented term (the help translation key, the webview path, and the
+	// router doctor's auto-dashboard test all use it as one token).
+	'router-dashboard',
 ]);
 
 /**
