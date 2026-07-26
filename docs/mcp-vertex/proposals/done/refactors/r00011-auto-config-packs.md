@@ -86,7 +86,7 @@ tests + 19/19 catalog tests green; core 1038/1038; typecheck clean.
 
 ### S2 — pure stack auto-detection
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/src/lib/config/detect-stack.ts`, `packages/core/src/lib/contracts/interfaces/stack-detection.interface.ts`
 - **Gate**: bun run validate
 
@@ -97,7 +97,7 @@ on fixture repos; never reads network.
 
 ### S3 — init/configuration-center surface + web + docs
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/src/lib/cli/run-init.ts`, `packages/core/src/lib/tools/configuration-center.tool.ts`, `apps/web/src/pages/presets.astro`
 - **Gate**: bun run validate
 
