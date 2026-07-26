@@ -45,8 +45,9 @@ clearly labelled and never auto-trusted.
 
 ### S1 — registry index + resolver
 
-- **Status**: pending
-- **Files**: `packages/core/src/lib/registry/resolve.ts`, `packages/core/src/lib/contracts/interfaces/plugin-registry.interface.ts`
+- **Status**: done
+- **Files**: `packages/core/src/lib/registry/resolve.ts`, `packages/core/src/lib/registry/first-party-index.ts`, `packages/core/src/lib/contracts/interfaces/plugin-registry.interface.ts`, `packages/core/tests/src/lib/registry/resolve.spec.ts`
+- **Commit**: `586a545b`
 - **Gate**: bun run validate
 
 A first-party index (id → package, summary, tags, origin) + a pure resolver
