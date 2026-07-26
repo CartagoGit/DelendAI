@@ -30,9 +30,9 @@
  *                                  (whitelist: 0, 1, -1, 2, 100,
  *                                  1000, 0xFF, parseFlag bits).
  *   - "duplicated-cross-plugin"  — same 8-line block (shingle hash)
- *                                  appearing in ≥ 2 files under
- *                                  `plugins/*/src/lib/`. Pure
- *                                  duplication signal.
+ *                                  appearing in two or more files
+ *                                  under plugins/<name>/src/lib/.
+ *                                  Pure duplication signal.
  *
  * Usage:
  *   bun tools/scripts/lint/solid-compliance.script.ts
@@ -147,8 +147,18 @@ export const walkTsFiles = async (
 /** Count `case` branches and `else if` arms in a single file body. */
 const detectLongChains = (
 	body: string,
-): Array<{ line: number; arms: number; snippet: string; kind: 'switch' | 'else-if' }> => {
-	const out: Array<{ line: number; arms: number; snippet: string; kind: 'switch' | 'else-if' }> = [];
+): Array<{
+	line: number;
+	arms: number;
+	snippet: string;
+	kind: 'switch' | 'else-if';
+}> => {
+	const out: Array<{
+		line: number;
+		arms: number;
+		snippet: string;
+		kind: 'switch' | 'else-if';
+	}> = [];
 	// Match switches with `case`
 	const switchRegex = /\bswitch\s*\([^)]*\)\s*\{/g;
 	let m: RegExpExecArray | null;
@@ -211,8 +221,10 @@ const detectLongChains = (
 	return out;
 };
 
-/** Detect `catch {}` or `catch (e) { /* nothing * / }` patterns. */
-const detectCatchSwallow = (body: string): Array<{ line: number; snippet: string }> => {
+/** Detect empty `catch {}` blocks and catches whose body is a single comment. */
+const detectCatchSwallow = (
+	body: string,
+): Array<{ line: number; snippet: string }> => {
 	const out: Array<{ line: number; snippet: string }> = [];
 	const emptyCatch = /catch\s*(?:\([^)]*\))?\s*\{\s*\}/g;
 	let m: RegExpExecArray | null;
@@ -234,7 +246,19 @@ const detectCatchSwallow = (body: string): Array<{ line: number; snippet: string
 
 /** Literal numerics that are NOT magic numbers (whitelist). */
 const MAGIC_WHITELIST = new Set([
-	'0', '1', '-1', '2', '100', '1000', '0xFF', '0xff', '0x0', '0b0', '0b1', '60', '90',
+	'0',
+	'1',
+	'-1',
+	'2',
+	'100',
+	'1000',
+	'0xFF',
+	'0xff',
+	'0x0',
+	'0b0',
+	'0b1',
+	'60',
+	'90',
 ]);
 
 /** Detect bare numeric literals in plugin source that are not named consts. */
@@ -252,7 +276,10 @@ const detectMagicNumbers = (
 		// Skip lines that look like a `const` declaration (named)
 		const lineStart = body.lastIndexOf('\n', m.index) + 1;
 		const lineEnd = body.indexOf('\n', m.index);
-		const line = body.slice(lineStart, lineEnd === -1 ? body.length : lineEnd);
+		const line = body.slice(
+			lineStart,
+			lineEnd === -1 ? body.length : lineEnd,
+		);
 		if (/\bconst\b/.test(line) && /=\s*\d/.test(line)) continue;
 		// Skip obvious non-magic: dead-code branch is allowed; version pins / lengths
 		if (/\.length\b/.test(line)) continue;
@@ -288,23 +315,45 @@ const fnv1a = (s: string): string => {
 /** Detect 8-line duplicated blocks across plugin sources. */
 const detectCrossPluginDuplication = (
 	fileContents: ReadonlyMap<string, string>,
-): Array<{ relPath: string; line: number; hash: string; copies: number; snippet: string }> => {
-	const allHashes = new Map<string, { relPath: string; line: number; snippet: string }[]>();
+): Array<{
+	relPath: string;
+	line: number;
+	hash: string;
+	copies: number;
+	snippet: string;
+}> => {
+	const allHashes = new Map<
+		string,
+		{ relPath: string; line: number; snippet: string }[]
+	>();
 	const blockLines = 8;
 	for (const [relPath, body] of fileContents) {
 		const lines = body.split('\n');
 		for (let i = 0; i + blockLines <= lines.length; i += 1) {
-			const block = lines.slice(i, i + blockLines).join('\n').trim();
+			const block = lines
+				.slice(i, i + blockLines)
+				.join('\n')
+				.trim();
 			if (block.length < 40) continue;
 			// Skip blocks that are mostly braces or imports
 			if (/^(import\b.*\n){8,}$/.test(block)) continue;
 			const hash = fnv1a(block);
 			const arr = allHashes.get(hash) ?? [];
-			arr.push({ relPath, line: i + 1, snippet: block.split('\n')[0] ?? '' });
+			arr.push({
+				relPath,
+				line: i + 1,
+				snippet: block.split('\n')[0] ?? '',
+			});
 			allHashes.set(hash, arr);
 		}
 	}
-	const out: Array<{ relPath: string; line: number; hash: string; copies: number; snippet: string }> = [];
+	const out: Array<{
+		relPath: string;
+		line: number;
+		hash: string;
+		copies: number;
+		snippet: string;
+	}> = [];
 	for (const [hash, hits] of allHashes) {
 		if (hits.length < 2) continue;
 		// Different files only
@@ -453,7 +502,9 @@ export const classifySolidFindings = async (
 
 export const formatReport = (result: ISolidScanResult): string => {
 	const lines: string[] = [];
-	lines.push(`solid-compliance: scanned ${result.scannedFiles} files in ${result.elapsedMs} ms`);
+	lines.push(
+		`solid-compliance: scanned ${result.scannedFiles} files in ${result.elapsedMs} ms`,
+	);
 	if (result.findings.length === 0) {
 		lines.push('  ✓ no findings');
 		return lines.join('\n');
@@ -479,7 +530,9 @@ export const formatReport = (result: ISolidScanResult): string => {
 
 const DEFAULT_ROOTS = ['plugins', 'packages/core/src/lib'];
 
-const parseArgs = (argv: readonly string[]): {
+const parseArgs = (
+	argv: readonly string[],
+): {
 	roots: readonly string[];
 	report: boolean;
 } => {
@@ -490,7 +543,7 @@ const parseArgs = (argv: readonly string[]): {
 		if (a === '--report') {
 			report = true;
 		} else if (a?.startsWith('--roots=') && a.length > 8) {
-			roots.push(...(a.slice(8).split(',').filter(Boolean)));
+			roots.push(...a.slice(8).split(',').filter(Boolean));
 		}
 	}
 	return {
@@ -513,7 +566,9 @@ export const main = async (argv: readonly string[]): Promise<number> => {
 	const result = await classifySolidFindings(rootDir, fileContents);
 	const out = formatReport(result);
 	if (report) {
-		process.stderr.write(`solid-compliance: ${result.findings.length} findings\n`);
+		process.stderr.write(
+			`solid-compliance: ${result.findings.length} findings\n`,
+		);
 	} else {
 		process.stdout.write(`${out}\n`);
 	}
