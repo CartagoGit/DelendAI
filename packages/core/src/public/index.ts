@@ -758,3 +758,56 @@ export type {
 	IStableManifestTool,
 	IStableManifestVersion,
 } from '../lib/api/stable-manifest';
+
+// --- f00154 S1: incident-driven types (formerly internal to plugin-contract) ---
+// Third-party plugin authors need these to type their `ctx.logs.log(...)`
+// calls without importing from `@mcp-vertex/core/lib/...` (the internal
+// surface). The re-export pins the public contract.
+//
+// The `severity` and `incidentType` unions live inline on
+// `IPluginLogInput` (the canonical shape); re-export the helper so a
+// third-party plugin can `import type { IPluginLogsHelper, IPluginLogInput }`
+// and then `ctx.logs?.log({ severity: 'critical', incidentType: 'x', ... })`
+// against the same syslog taxonomy f00153 ships.
+export type {
+	IPluginLogsHelper,
+	IPluginLogInput,
+} from '../lib/plugins/plugin-contract';
+// --- f00154 S3: incident-driven adapter ---
+// `withIncidentLogging` is the wrapper plugins apply to a tool
+// handler so the handler's `toolError(...)` paths become structured
+// incidents on the `logs` JSONL streams (or the `ConsoleLogsSink`
+// when the `logs` plugin is not loaded). `emitIncident` is the
+// one-line helper for plugins that build the error envelope
+// themselves.
+export {
+	withIncidentLogging,
+	emitIncident,
+} from '../lib/tools/with-incident-logging';
+export type {
+	IWithIncidentLoggingOptions,
+	IIncidentLoggingContext,
+} from '../lib/tools/with-incident-logging';
+// c00126 S2: scan helpers - pure utilities adopted by the SOLID-compliance
+// lint and any future lint. See `packages/core/src/lib/scan/` for the
+// full module set; this block re-exports the public surface.
+export {
+	detectCatchSwallow,
+	detectLongChains,
+	detectMagicNumbers,
+	fnv1a,
+	lineOf,
+	MAGIC_WHITELIST,
+	shingleBlocks,
+	toRelPosix,
+	walkTsFiles,
+} from '../lib/scan';
+export type {
+	ChainKind,
+	ICatchSwallowHit,
+	ILongChainHit,
+	ILongChainsOptions,
+	IMagicNumberHit,
+	IShingleHit,
+	IShingleOptions,
+} from '../lib/scan';
