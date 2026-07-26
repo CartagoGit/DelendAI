@@ -7,6 +7,8 @@ const EXPECTED_COMMANDS = [
 	'overview',
 	'plugin list',
 	'plugin inspect',
+	'plugin search',
+	'plugin add',
 	'metrics',
 	'validate-matrix',
 	'validate',

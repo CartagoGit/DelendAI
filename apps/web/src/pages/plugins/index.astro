@@ -37,7 +37,7 @@ const entries = [...FIRST_PARTY_PLUGIN_INDEX.entries];
 							<p>{entry.summary}</p>
 							<div class="plugins-catalog__badges" aria-label={`Metadata for ${entry.id}`}>
 								<span class="plugins-catalog__badge">{entry.origin}</span>
-								{entry.tags.map((tag) => (
+								{entry.tags.map((tag: string) => (
 									<span class="plugins-catalog__badge">{tag}</span>
 								))}
 								{
@@ -58,6 +58,12 @@ const entries = [...FIRST_PARTY_PLUGIN_INDEX.entries];
 </PageShell>
 
 <style>
+	.plugins-catalog {
+		display: flex;
+		flex-direction: column;
+		gap: 1.5rem;
+	}
+
 	.plugins-catalog__grid {
 		display: grid;
 		gap: 1.5rem;

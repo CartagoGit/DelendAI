@@ -125,8 +125,11 @@ const BUDGET_BYTES = {
 	// standard preset, raising overview compact 4 880B → 5 097B measured.
 	// Bumped 5 200 → 5 500 (2026-07-27): prompts-pack (f00138 S1+S2+S3) added to
 	// standard preset, raising overview compact 5 097B → 5 396B measured.
+	// Bumped 5 500 → 5 600 (2026-07-27): auto-plugin-selector (f00142 S1)
+	// added `plugins_recommend` to standard preset, raising overview compact
+	// 5 396B → ~5 510B measured.
 	swarmToolsList: 182_000,
-	swarmOverviewCompact: 5_500,
+	swarmOverviewCompact: 5_600,
 	swarmRoundContext: 300,
 	// `lean` was 58 003B against the same fixture, a 63% reduction from swarm.
 	// Bumped 65 000 → 69 000 (2026-07-27): env plugin (f00135) S3 added the `env`
