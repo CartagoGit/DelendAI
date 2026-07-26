@@ -1,7 +1,7 @@
 ---
 id: f00067a
 kind: feat
-status: ready
+status: done
 type: proposal
 track: general
 date: 2026-07-05
@@ -9,10 +9,16 @@ closed-by: pre-convention (2026-07-26 consolidation pass)
 closed-evidence:
   - S1 providers block deferred (see f00067 S1 in done/feats); left in done/feats but never reopened
   - status was 'ready' but lived in done/feats — folder drift
+  - 2026-07-26 close: S1+S2+S3 all landed — providers block in schema + Zod mirror + agent-catalog providers + stdio transport
 shipped-in:
-  - (no commits in git log; pre-existing stub)
+    - (S1) schema: packages/core/schema/mcp-vertex.config.schema.json (providers block pre-existing)
+    - (S1) zod: packages/core/src/lib/plugins/config-file-schema.ts (providers Zod mirror pre-existing)
+    - (S1) tests: packages/core/tests/src/lib/plugins/config-file-schema.spec.ts (35 tests pass)
+    - (S2) types: packages/core/src/lib/catalog/agent-discovery-types.ts (IProviderSummary pre-existing)
+    - (S2) catalog: packages/core/src/lib/catalog/agent-discovery-catalog.ts (providers aggregator pre-existing)
+    - (S3) stdio: plugins/orchestrator-runner/src/lib/subprocess/stdio-transport.ts (pre-existing)
+    - (S3) wire: plugins/orchestrator-runner/src/lib/invoke/build-manager.ts (real transport pre-existing)
 ---
-status: ready
 
 # f00067a — Provider schema + catalog surface (f00067 S1 residual)
 
