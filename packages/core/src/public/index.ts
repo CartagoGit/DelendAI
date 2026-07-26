@@ -688,5 +688,16 @@ export type {
 	IScanSkip,
 } from '../lib/contracts/interfaces/finding.interface';
 
+// --- plugin registry (f00141 S1) ---
+export type {
+	IPluginRegistryEntry,
+	PluginRegistryOrigin,
+	IPluginRegistrySource,
+	IResolvePluginsOptions,
+	IResolvePluginsResult,
+} from '../lib/contracts/interfaces/plugin-registry.interface';
+export { FIRST_PARTY_PLUGIN_INDEX } from '../lib/registry/first-party-index';
+export { resolvePlugins } from '../lib/registry/resolve';
+
 // --- generated tool-output types (N23, see scripts/generate-tool-types.ts) ---
 export type * from '../generated/tool-outputs';
