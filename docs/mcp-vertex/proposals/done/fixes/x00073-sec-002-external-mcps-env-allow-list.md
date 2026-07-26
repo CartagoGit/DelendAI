@@ -2,7 +2,7 @@
 id: x00073
 kind: fix
 title: "SEC-002 · Entorno mínimo allow-list para servidores MCP externos"
-status: ready
+status: done
 type: proposal
 track: security+invariants
 date: 2026-07-25
