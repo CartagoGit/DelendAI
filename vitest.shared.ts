@@ -390,18 +390,7 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 			find: '@mcp-vertex/browser',
 			replacement: resolve(browser, 'index.ts'),
 		},
-		{
-			find: '@mcp-vertex/container/public',
-			replacement: resolve(container, 'public/index.ts'),
-		},
-		{
-			find: /^@mcp-vertex\/container\/lib\/(.*)$/,
-			replacement: `${resolve(container, 'lib')}/$1`,
-		},
-		{
-			find: '@mcp-vertex/container',
-			replacement: resolve(container, 'index.ts'),
-		},
+
 		{
 			find: '@mcp-vertex/prompt-eval/public',
 			replacement: resolve(promptEval, 'public/index.ts'),
