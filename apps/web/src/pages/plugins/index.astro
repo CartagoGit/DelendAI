@@ -1,15 +1,19 @@
 ---
 /**
- * `/plugins` — English plugins index. Same recipe as `/tools`: copy
- * this file, swap the Section and `t.<pageKey>` to add a new root page.
+ * plugins/index.astro — f00141/S3 first-party registry catalog.
+ *
+ * The route stays `/plugins`, but the content is now sourced directly
+ * from `FIRST_PARTY_PLUGIN_INDEX` on the public core surface.
+ * No manifests, no network fetches, no generated capabilities inputs.
  */
-import PluginsSection from '#COMPONENTS/PluginsSection.astro';
 import PageShell from '#COMPONENTS/PageShell.astro';
 import { localePath } from '#LIB/page';
 import { useTranslations } from '#I18N/ui';
+import { FIRST_PARTY_PLUGIN_INDEX } from '@mcp-vertex/core/public';
 
 const lang = 'en' as const;
 const t = useTranslations(lang);
+const entries = [...FIRST_PARTY_PLUGIN_INDEX.entries];
 ---
 
 <PageShell
@@ -18,5 +22,88 @@ const t = useTranslations(lang);
 	base={import.meta.env.BASE_URL.replace(/\/$/, '')}
 	crumbs={[{ label: t.nav.plugins, href: localePath(lang, 'plugins') }]}
 >
-	<PluginsSection lang={lang} heading={t.plugins.title} />
+	<section class="section">
+		<div class="container plugins-catalog">
+			<h2>First-party plugins</h2>
+			<p class="lead">
+				Static catalog rendered from the in-process first-party plugin
+				registry.
+			</p>
+			<div class="plugins-catalog__grid">
+				{
+					entries.map((entry) => (
+						<article class="plugins-catalog__card">
+							<h3>{entry.id}</h3>
+							<p>{entry.summary}</p>
+							<div class="plugins-catalog__badges" aria-label={`Metadata for ${entry.id}`}>
+								<span class="plugins-catalog__badge">{entry.origin}</span>
+								{entry.tags.map((tag) => (
+									<span class="plugins-catalog__badge">{tag}</span>
+								))}
+								{
+									entry.defaultPreset !== undefined && (
+										<span class="plugins-catalog__badge plugins-catalog__badge--preset">
+											preset: {entry.defaultPreset}
+										</span>
+									)
+								}
+							</div>
+							<pre class="plugins-catalog__command"><code>{`mcpv plugin add ${entry.id}`}</code></pre>
+						</article>
+					))
+				}
+			</div>
+		</div>
+	</section>
 </PageShell>
+
+<style>
+	.plugins-catalog__grid {
+		display: grid;
+		gap: 1.5rem;
+	}
+
+	.plugins-catalog__card {
+		padding: 1.5rem;
+		border: 1px solid rgba(15, 23, 42, 0.12);
+		border-radius: 1rem;
+		background:
+			linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(247, 250, 252, 0.98));
+		box-shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
+	}
+
+	.plugins-catalog__card h3 {
+		margin: 0 0 0.75rem;
+	}
+
+	.plugins-catalog__badges {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.5rem;
+		margin: 1rem 0;
+	}
+
+	.plugins-catalog__badge {
+		display: inline-flex;
+		align-items: center;
+		padding: 0.25rem 0.65rem;
+		border-radius: 999px;
+		background: rgba(15, 23, 42, 0.08);
+		font-size: 0.875rem;
+		font-weight: 600;
+	}
+
+	.plugins-catalog__badge--preset {
+		background: rgba(14, 116, 144, 0.12);
+		color: rgb(14, 116, 144);
+	}
+
+	.plugins-catalog__command {
+		margin: 0;
+		padding: 0.9rem 1rem;
+		border-radius: 0.85rem;
+		background: rgb(15, 23, 42);
+		color: rgb(241, 245, 249);
+		overflow-x: auto;
+	}
+</style>
