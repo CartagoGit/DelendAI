@@ -169,6 +169,7 @@ export type {
 	ISearchHybridWeights,
 } from '../lib/plugins/pack-defaults';
 export {
+	describeStackPacks,
 	isPackId,
 	mergePackDefaults,
 	PACK_DEFAULTS_OVERLAY,
@@ -794,10 +795,12 @@ export type {
 // lint and any future lint. See `packages/core/src/lib/scan/` for the
 // full module set; this block re-exports the public surface.
 export {
+	buildRegistrySkeleton,
 	detectCatchSwallow,
 	detectDipViolations,
 	detectLongChains,
 	detectMagicNumbers,
+	formatFixProposal,
 	fnv1a,
 	lineOf,
 	MAGIC_WHITELIST,
