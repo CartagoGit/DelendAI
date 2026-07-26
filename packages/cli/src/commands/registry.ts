@@ -51,6 +51,7 @@ import { memoryCommands } from './groups/memory';
 import { notificationCommands } from './groups/notification';
 import { proposalsCommands } from './groups/proposals';
 import { qualityCommands } from './groups/quality';
+import { routerDashboardCommands } from './groups/router-dashboard';
 import { rulesCommands } from './groups/rules';
 import { securityCommands } from './groups/security';
 import { statusMarkerCommands } from './groups/status-marker';
@@ -459,4 +460,5 @@ export const registerAllCommands = async (): Promise<
 	...doctorCommands,
 	...usageTrackingCommands,
 	...securityCommands,
+	...routerDashboardCommands,
 ];

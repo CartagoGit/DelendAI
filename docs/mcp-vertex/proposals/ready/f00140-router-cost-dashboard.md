@@ -52,12 +52,11 @@ Implemented `buildDashboard(input)` — a pure `(roster, recommendations, spend)
 
 ### S2 — CLI command
 
-- **Status**: pending
-- **Files**: `packages/cli/src/commands/groups/router-dashboard.ts`, `packages/cli/src/lib/help.service.ts`
+- **Status**: done
+- **Files**: `packages/cli/src/commands/groups/router-dashboard.ts`, `packages/cli/src/commands/groups/router-dashboard.spec.ts`, `packages/cli/src/commands/registry.ts` (registration), `packages/cli/src/contracts/constants/help-translation.constant.ts` (en summary), `plugins/auto-agent-selector/src/public/index.ts` (export buildDashboard + dashboard types)
 - **Gate**: bun run validate
 
-`mcpv router` prints the recommendation + spend table with rationale; `--pin`
-writes the pin back to config.
+Implemented `mcpv router dashboard` (group name `router`; command name `router dashboard`). The command pulls `mcp-vertex_auto-agent-selector_auto_status` + one `mcp-vertex_auto-agent-selector_auto_recommend` per task type + `mcp-vertex_usage-tracking_usage_report` (grouped by `provider`) and pipes them through the shared `buildDashboard` view-model (S1). Text mode renders via `formatRows`; `--json` returns the raw view-model; `--pin=<id>` writes through `auto_recommend`. 7/7 CLI tests pass; cli-coverage now 18 commands; bun run typecheck clean. help-translation.en entry added; non-en languages intentionally fall back to the English summary (matches the rest of the repo).
 
 ### S3 — VS Code extension panel
 
