@@ -67,6 +67,10 @@ export const buildOperationalEventLogKnowledge = (
 			p +
 			'_log` uses, so an entry is queryable by `query` / `search` / `incidents`. The helper is conditional on the `logs` plugin being loaded; null-check before calling (`ctx.logs?.log(...)`).',
 		'',
+		'## Authoring',
+		'',
+		'For third-party plugin authors: see `docs/mcp-vertex/plugins/logs/AUTHORING.md` for the full `withIncidentLogging` recipe, the `IPluginLogInput` / `IPluginLogsHelper` types, the `incidentLoggingDisabled` opt-out, and the `--strict-logs` host flag.',
+		'',
 		'## Recipe — "what is broken right now?"',
 		'',
 		'1. Call `' +
