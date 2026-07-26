@@ -287,12 +287,12 @@ While investigating I found four typecheck/test regressions caused by a combinat
 |---|---|---|
 | t0 — typecheck/test fixes (already applied) | done | constant path-doubling, completeness-guard order, corrupt-line ts, peer-review→validate log leak |
 | t0b — `mass-content-removal.script.ts` threshold fix (from previous session) | done | carried over from x00153 v1 |
-| S1 — persistent session.imbalance | done | session.store + engine wired; 5/5 tests pass on agent-lock-session-store.spec.ts |
-| S2 — tail/readRange day-file pre-filter | pending | |
-| S3 — corrupt-line day-boundary ts | logic done, tests pending | |
-| S4 — proposal-cited-commits lint | pending | baseline needed before validating |
-| S5 — agent_lock cross-process release | pending | depends on a00074 S2 (host+pid in entry) already shipped |
-| S6 — centralise proposals-log path constants | pending | low-risk refactor; unlocks future log-path lint |
-| S7 — kinds.ts doc fix (8-level not 7-level) | pending | 1-line + 1 test |
-| S8 — proposal_create refuses TODO placeholders | pending | changes authoring.tool.ts fallback paths |
-| S9 — proposal-transition.compat audit + tests | pending | may conclude the wrapper is dead code |
+| S1 — persistent session.imbalance | done | `5fc6fe1a` x00153 S6 + `4d6c6e52` async balance; 1061/1061 proposal tests pass |
+| S2 — tail/readRange day-file pre-filter | done | `987fb5b2` x00153 S2 — day-file pre-filter; tests fixed in this commit for outcomeFilter/kindFilter mismatch |
+| S3 — corrupt-line day-boundary ts | done | logic landed in `d083895d`; 4 new tests added (`x00153 S3` describe block in `log-store.spec.ts`) |
+| S4 — proposal-cited-commits lint | done | `5fc6fe1a` ships the lint + spec (13 tests) + baseline (2 entries) + `package.json#validate` wiring. **602 hashes checked, 0 new, 2 known suppressed.** |
+| S5 — agent_lock cross-process release | pending | a00074 S2 (host+pid in entry) is shipped but the cross-process release gate still needs wiring. Lower priority — no other slice depends on it. |
+| S6 — centralise proposals-log path constants | done | `5fc6fe1a` + this commit (`proposal-transition.tool.ts` now imports from `proposal-paths.constant.ts`); `grep '^const PEER_REVIEW_LOG_RELATIVE_PATH' plugins/proposals/src` returns 0 hits. |
+| S7 — kinds.ts doc fix (8-level not 7-level) | done | 1-line + 1 new test (`x00153 S7` describe block in `kinds.spec.ts`); `SEVERITY_RANK` exported for stable ordering. |
+| S8 — proposal_create refuses TODO placeholders | done | `204f9b9b` x00153 S8; authoring now refuses empty `goal/why/nonGoals/slices/files` instead of writing `TODO:` placeholders. |
+| S9 — proposal-transition.compat audit + tests | pending | the v1/v2 wrapper exists but the audit of which tools actually consume it is not done. The wrapper is a no-op today (per its own comment), so the slice is low-priority. |pper is dead code |
