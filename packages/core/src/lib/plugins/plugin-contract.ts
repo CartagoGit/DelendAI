@@ -114,6 +114,47 @@ export interface IMcpPluginContext {
 	 * treat absent as a no-op registry (always empty).
 	 */
 	readonly peerPlugins?: IPeerPluginRegistry | undefined;
+	/**
+	 * f00153 S4 — incident helper exposed by the `logs` plugin. A
+	 * peer plugin emits a structured incident by calling
+	 * `ctx.logs?.log({ severity, incidentType, message, files?, agent?, context? })`;
+	 * the helper is the same writer the `logs_log` MCP tool uses, so
+	 * an entry lands in the redacted main timeline with `severity` and
+	 * `incidentType` set, ready for `query` / `search` / `incidents`.
+	 *
+	 * Conditional on the `logs` plugin being loaded. Plugins MUST null-
+	 * check (`ctx.logs?.log(...)`) — when the `logs` plugin is absent,
+	 * the helper is undefined and the call is a no-op.
+	 */
+	readonly logs?: IPluginLogsHelper | undefined;
+}
+
+/**
+ * f00153 S4 — cross-plugin incident helper. Defined on the core
+ * contract so other plugins can type-check against it without taking
+ * a runtime dependency on `@mcp-vertex/logs`. The implementation is
+ * injected by the `logs` plugin at register time (it owns the
+ * `appendEvent` writer that actually persists the event).
+ */
+export interface IPluginLogsHelper {
+	readonly log: (input: IPluginLogInput) => Promise<void>;
+}
+
+export interface IPluginLogInput {
+	readonly severity:
+		| 'debug'
+		| 'info'
+		| 'notice'
+		| 'warning'
+		| 'error'
+		| 'critical'
+		| 'alert'
+		| 'emergency';
+	readonly incidentType: string;
+	readonly message: string;
+	readonly files?: readonly string[] | undefined;
+	readonly agent?: string | undefined;
+	readonly context?: Readonly<Record<string, unknown>> | undefined;
 }
 
 /**

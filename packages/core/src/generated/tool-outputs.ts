@@ -2538,6 +2538,15 @@ export interface McpVertexProposalsStateHealthOutput {
 		lastStaleSeen: string | null;
 	};
 	peerReviewBypasses: number;
+	autoTransitionRepairs: {
+		count: number;
+		entries: {
+			proposalId: string;
+			path: string;
+			reason: string;
+			ts: string;
+		}[];
+	};
 	queue: {
 		queueLength: number;
 		queuedCount: number;
@@ -2582,6 +2591,15 @@ export interface McpVertexProposalsStateRepairOutput {
 			lastStaleSeen: string | null;
 		};
 		peerReviewBypasses: number;
+		autoTransitionRepairs: {
+			count: number;
+			entries: {
+				proposalId: string;
+				path: string;
+				reason: string;
+				ts: string;
+			}[];
+		};
 		queue: {
 			queueLength: number;
 			queuedCount: number;

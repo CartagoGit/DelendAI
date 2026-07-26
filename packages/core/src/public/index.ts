@@ -726,3 +726,35 @@ export {
 
 // --- generated tool-output types (N23, see scripts/generate-tool-types.ts) ---
 export type * from '../generated/tool-outputs';
+
+// --- f00152 S5 (L3): feature flags ---
+export {
+	coreFeatureFlag,
+	readFeatureFlag,
+} from '../lib/plugins/feature-flags';
+export type {
+	IFeatureFlagEntry,
+	IFeatureFlagSource,
+} from '../lib/plugins/feature-flags';
+
+// --- f00152 S2 (L4): stable API facade ---
+export {
+	STABLE_API_TOOLS,
+	STABLE_API_TOOL_NAMES,
+	describeStableTool,
+	findStableDescriptor,
+} from '../lib/api/stable-facade';
+export type {
+	IStableToolDescriptor,
+	TStableSemverGuarantee,
+} from '../lib/api/stable-facade';
+export {
+	SCHEMA_VERSION,
+	STABLE_MANIFEST_REL,
+	buildStableManifest,
+} from '../lib/api/stable-manifest';
+export type {
+	IStableManifest,
+	IStableManifestTool,
+	IStableManifestVersion,
+} from '../lib/api/stable-manifest';

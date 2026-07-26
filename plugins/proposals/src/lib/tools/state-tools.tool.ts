@@ -11,10 +11,8 @@ import {
 	type ILivelockPair,
 } from '../locks/contention-detector';
 import { deriveFileLockTablePath } from '../locks/file-lock-table';
-import {
-	getAgentLockSessionBalance,
-	runAgentLockEngine,
-} from '../locks/agent-lock-engine';
+import { runAgentLockEngine } from '../locks/agent-lock-engine';
+import { readSessionBalance } from '../locks/agent-lock-session-store';
 import { readJsonOrNull } from '../proposals/index-reader';
 import { getPeerReviewBypassCount } from '../shared/peer-review-bypass-log';
 import { purgeStaleLocks } from '../shared/purge-stale-locks';
@@ -77,7 +75,12 @@ interface IStateDiagnosis {
 			readonly count: number;
 			readonly taskIds: readonly string[];
 		}[];
-		/** a00069 S8: process-local claim−release imbalance (telemetry). */
+		readonly sessionBalance: {
+			readonly claims: number;
+			readonly releases: number;
+			readonly imbalance: number;
+		};
+		/** a00069 S8: persisted claim−release imbalance (telemetry). */
 		readonly sessionImbalance: number;
 		readonly sessionClaims: number;
 		readonly sessionReleases: number;
@@ -140,6 +143,11 @@ const STATE_DIAGNOSIS_SCHEMA = z.object({
 				taskIds: z.array(z.string()),
 			}),
 		),
+		sessionBalance: z.object({
+			claims: z.number(),
+			releases: z.number(),
+			imbalance: z.number(),
+		}),
 		sessionClaims: z.number(),
 		sessionReleases: z.number(),
 		sessionImbalance: z.number(),
@@ -342,9 +350,9 @@ const diagnose = async (
 		options.workspaceRoot,
 	);
 
-	// a00069 S8: claim−release session imbalance (historical 29/19) and live
+	// a00069 S8 / x00153 S1: persisted claim−release imbalance and live
 	// orphan locks both fail the health gate.
-	const balance = getAgentLockSessionBalance();
+	const balance = await readSessionBalance(options.workspaceRoot);
 	const claimReleaseImbalanceAlert =
 		balance.imbalance > CLAIM_RELEASE_IMBALANCE_THRESHOLD;
 	const activeLocks =
@@ -368,6 +376,7 @@ const diagnose = async (
 			livelocks: livelockState.livelocks.length,
 			livelockPairs: livelockState.livelocks,
 			crossProposal: summarizeCrossProposal(cleanedLock.in_flight),
+			sessionBalance: balance,
 			sessionClaims: balance.claims,
 			sessionReleases: balance.releases,
 			sessionImbalance: balance.imbalance,

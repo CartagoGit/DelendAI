@@ -275,6 +275,15 @@ export interface IMcpVertexConfigFile extends IMcpVertexCorePathsConfig {
 	 * `bootstrap/pattern-catalog-overrides.ts` for the merge rules.
 	 */
 	readonly bootstrap?: IBootstrapPatternOverrides;
+	/**
+	 * f00152 S1 (L1 — version pin): optional semver string pinning the
+	 * self-host agent to a specific published `@mcp-vertex/core`
+	 * version. When omitted, the lint treats the pin as
+	 * `'latest-published'` (the latest tag from the npm registry).
+	 * The sentinel `latest-published` is also accepted for explicit
+	 * "track latest" intent. See `tools/scripts/lint/core-version-pin.script.ts`.
+	 */
+	readonly coreVersion?: string;
 }
 
 /** Default config file name looked up at the workspace root. */

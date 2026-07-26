@@ -107,6 +107,10 @@ export const CONFIG_FILE_SCHEMA = z
 		docsDir: z.string().optional(),
 		keepLegacy: z.boolean().optional(),
 		agentWorktree: z.boolean().optional(),
+		// f00152 S5 (L3 — feature flags): optional top-level feature
+		// flags block. Default-off; see `docs/mcp-vertex/api/feature-flags.md`.
+		// Per-plugin flags live under `plugins.<name>.options.featureFlags`.
+		featureFlags: z.record(z.string(), z.boolean()).optional(),
 		// f00088 S4 — operator-chosen source/conventions block.
 		// The `init` command emits this when its S1 detector picks
 		// a non-default `pluginPathsRoot` (e.g. `libs/` for Angular

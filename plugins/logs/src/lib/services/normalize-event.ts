@@ -1,5 +1,7 @@
 import { redactSecrets } from '@mcp-vertex/core/public';
 
+import { incidentTypeForKind, severityForOutcome, type LogSeverity } from './kinds';
+
 export const LOG_OUTCOMES = [
 	'ok',
 	'failed',
@@ -41,6 +43,19 @@ export interface ILogEvent {
 	readonly agent: string | null;
 	readonly taskId: string | null;
 	readonly outcome: LogOutcome;
+	/**
+	 * f00153 S1 — operator-facing severity from the syslog 7-level
+	 * taxonomy. `severityForOutcome(outcome)` is the default; callers
+	 * can override via the `severity` field on `normalizeEvent`.
+	 */
+	readonly severity: LogSeverity;
+	/**
+	 * f00153 S1 — stable, lower-case incident code (e.g. `tool-failure`,
+	 * `state-inconsistency`). Defaults to `KIND_TO_INCIDENT_TYPE[kind]`
+	 * or `null` when the kind is unknown. `logs_log` callers can pin
+	 * an arbitrary code in the `^[a-z][a-z0-9-]{0,63}$` slug shape.
+	 */
+	readonly incidentType: string | null;
 	readonly files: readonly string[];
 	readonly summary: string;
 	readonly meta: Readonly<Record<string, unknown>>;
@@ -144,12 +159,15 @@ export const normalizeEvent = (
 	const summarySource =
 		asString(record.summary) ?? (tool ? `${kind}: ${tool}` : kind);
 	const redactedSummary = redactSecrets(summarySource).text.slice(0, 200);
+	const outcome = outcomeForKind(kind, record);
 	return {
 		ts: asString(record.ts) ?? now.toISOString(),
 		kind,
 		agent: asString(record.agent),
 		taskId: asString(record.taskId) ?? asString(record.task) ?? tool,
-		outcome: outcomeForKind(kind, record),
+		outcome,
+		severity: severityForOutcome(outcome),
+		incidentType: incidentTypeForKind(kind),
 		files: asFiles(record.files),
 		summary: redactedSummary,
 		meta: record,

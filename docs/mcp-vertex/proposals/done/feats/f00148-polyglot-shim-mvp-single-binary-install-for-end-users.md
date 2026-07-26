@@ -6,14 +6,6 @@ status: done
 type: proposal
 track: infra+distribution+economics
 date: 2026-07-24
-closed-by: cartago (consolidated evidence pass 2026-07-26)
-closed-evidence:
-  - 3 commits referencing f00148 recovered from git log --grep (precedes convention)
-  - all declared Files verified to exist via 3-commit batch
-shipped-in:
-  - 6b8c5a0e # feat(f00148): S3 e2e shim invocation + arg-forwarding fix — polyglot shim ships
-  - eedd58a3 # feat(f00148): S1 Go source scaffold + S2 install.script.ts (TS, not sh)
-  - 5660f729 # fix(proposals): correct stale Files: refs in a00067 done/audits/
 ---
 
 # f00148 — polyglot shim MVP — single-binary install for end-users
