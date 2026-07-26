@@ -12,6 +12,7 @@ import {
 	checkDeps,
 	checkOutdated,
 	fetchLatestFromNpm,
+	buildDepTree,
 } from '../services/engine';
 import type { ILatestVersionFetcher } from '../services/engine';
 import { listPolyglotDeps } from '../services/polyglot';
@@ -338,6 +339,70 @@ export const buildDepsToolRegistrations = (
 								options.workspaceRootAbs,
 							),
 						}),
+				);
+			},
+		},
+		{
+			id: 'deps_tree',
+			summary:
+				'Build a dependency tree from the manifest + lockfile (capped depth).',
+			tags: ['deps', 'lazy'],
+			register: async (server) => {
+				server.registerTool(
+					`${prefix}_deps_tree`,
+					{
+						description:
+							'Build a dependency tree from the manifest + lockfile (default `bun.lock`): the first level is the declared deps from package.json; each subsequent level comes from the lockfile `packages` block. Capped at depth 6 to keep a single call bounded; `totalNodes` reports the full count of nodes walked (including ones past the cap). Pure over the workspace root. Read-only, offline.',
+						inputSchema: z.object({
+							manifest: z.string().optional(),
+							lockfile: z.string().optional(),
+							maxDepth: z
+								.number()
+								.int()
+								.min(1)
+								.max(20)
+								.optional(),
+						}),
+						outputSchema: z.object({
+							manifest: z.string(),
+							lockfile: z.string(),
+							lockfileFound: z.boolean(),
+							root: z.object({
+								name: z.string(),
+								version: z.string().nullable(),
+								children: z.array(
+									z.object({
+										name: z.string(),
+										version: z.string().nullable(),
+										section: z
+											.enum([
+												'dependencies',
+												'devDependencies',
+												'peerDependencies',
+												'optionalDependencies',
+											])
+											.optional(),
+										children: z.array(z.any()),
+									}),
+								),
+							}),
+							totalNodes: z.number(),
+							maxDepth: z.number(),
+						}),
+					},
+					async (args: {
+						manifest?: string | undefined;
+						lockfile?: string | undefined;
+						maxDepth?: number | undefined;
+					}) => {
+						const report = await buildDepTree(
+							options.workspaceRootAbs,
+							args.manifest ?? manifest,
+							args.lockfile ?? 'bun.lock',
+							args.maxDepth ?? 6,
+						);
+						return toolJson(report);
+					},
 				);
 			},
 		},
