@@ -108,6 +108,16 @@ the equivalent and equally cheap.
   changed. `round_context` and the docs tools expose digests for exactly
   this. Re-reading unchanged content is the #1 token waste.
 
+- **Archived proposals are frozen.** `legacy/closed/<kind>/` is the
+  reaper's destination (a00076). Reaped proposals stay indexed (with
+  `archived: true` in the registry), keep their `status: done`, and
+  **must not** be transitioned, edited, or have their slice statuses
+  changed. The `lint:closed-frozen-guard` script enforces this in
+  `bun run validate`. Reaper entry point:
+  `bun run archive:proposals:reap` (dry-run by default; pass `--apply`
+  via the underlying `tools/scripts/lint/reap-legacy-proposals.script.ts`
+  to actually move files).
+
 ### 4.c Session hygiene — keep host usage intentional
 
 `mcp-vertex` can measure its own payloads and tool activity, but it cannot
