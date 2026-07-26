@@ -74,19 +74,59 @@ const registerHandlers = async (
 };
 
 describe('logs plugin — register()', () => {
-	it('registers the six tools plus the operational-log knowledge entry', async () => {
+	it('registers the nine tools plus the operational-log knowledge entry', async () => {
 		const { ctx } = await buildCtx();
 		const result: Registrations = await logsPlugin.register(ctx);
 		expect((result.tools ?? []).map((t) => t.id).sort()).toEqual([
 			'correlate',
 			'errors_tail',
+			'incidents',
+			'log',
 			'query',
 			'redact_test',
+			'search',
 			'subscribe',
 			'tail',
 		]);
 		expect(result.knowledge?.[0]?.id).toBe('logs-operational-event-log');
 		expect(result.knowledge?.[0]?.body).toContain('logs-errors');
+		// f00153 S4 — the new fields and tools are documented in the knowledge body.
+		expect(result.knowledge?.[0]?.body).toContain('severity');
+		expect(result.knowledge?.[0]?.body).toContain('incidentType');
+		expect(result.knowledge?.[0]?.body).toContain('logs_log');
+		expect(result.knowledge?.[0]?.body).toContain('logs_search');
+		expect(result.knowledge?.[0]?.body).toContain('logs_incidents');
+	});
+
+	it('injects a ctx.logs helper that peer plugins can call (f00153 S4)', async () => {
+		const { ctx } = await buildCtx();
+		const result: Registrations = await logsPlugin.register(ctx);
+		const logs = (ctx as { logs?: { log: (input: unknown) => Promise<void> } })
+			.logs;
+		expect(logs).toBeDefined();
+		await logs?.log({
+			severity: 'critical',
+			incidentType: 'lock-conflict',
+			message: 'agents/proposals.lock held > 30s',
+			files: ['agents/proposals.lock'],
+			agent: 'peer-agent',
+			context: { hint: 'unit-test' },
+		});
+		const handlers = await registerHandlers(result);
+		const query = await handlers.get('logs_query')?.({
+			incidentType: 'lock-conflict',
+		});
+		const events = query?.structuredContent.events as Array<{
+			incidentType: string | null;
+			severity: string;
+			agent: string | null;
+			meta: { source?: string; hint?: string };
+		}>;
+		const found = events.find((e) => e.meta.source === 'ctx.logs');
+		expect(found?.incidentType).toBe('lock-conflict');
+		expect(found?.severity).toBe('critical');
+		expect(found?.agent).toBe('peer-agent');
+		expect(found?.meta.hint).toBe('unit-test');
 	});
 
 	it('registers independent keepLastN retention rules for results/logs/* and results/logs-errors/*, default 10', async () => {

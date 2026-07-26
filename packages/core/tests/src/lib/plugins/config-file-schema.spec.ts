@@ -395,6 +395,38 @@ describe('IMcpVertexConfigFile ISP segregation', async () => {
 		expect(asConfig.cache?.runOnBoot).toBe('dry-run');
 		expect(asConfig.cache?.worktrees?.keepLastN).toBe(3);
 	});
+
+        it('accepts coreVersion as the latest-published sentinel (f00152 S1)', async () => {
+                const res = CONFIG_FILE_SCHEMA.safeParse({
+                        coreVersion: 'latest-published',
+                });
+                expect(res.success).toBe(true);
+                if (res.success) {
+                        expect(res.data.coreVersion).toBe('latest-published');
+                }
+        });
+
+        it('accepts coreVersion as a concrete semver string', async () => {
+                const res = CONFIG_FILE_SCHEMA.safeParse({ coreVersion: '1.2.3' });
+                expect(res.success).toBe(true);
+        });
+
+        it('accepts coreVersion as a semver pre-release', async () => {
+                const res = CONFIG_FILE_SCHEMA.safeParse({
+                        coreVersion: '1.2.3-rc.4+build.7',
+                });
+                expect(res.success).toBe(true);
+        });
+
+        it('rejects coreVersion that is not semver-shaped', async () => {
+                const res = CONFIG_FILE_SCHEMA.safeParse({ coreVersion: 'not-semver' });
+                expect(res.success).toBe(false);
+        });
+
+        it('rejects coreVersion as a non-string type', async () => {
+                const res = CONFIG_FILE_SCHEMA.safeParse({ coreVersion: 42 });
+                expect(res.success).toBe(false);
+        });
 });
 
 describe('LSP — sub-interfaces compose into IMcpVertexConfigFile', async () => {

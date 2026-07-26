@@ -4,6 +4,7 @@ import { join } from 'node:path';
 import { withFileMutex } from '@mcp-vertex/core/public';
 
 import type { ILogStoreOptions } from '../contracts/interfaces/log-store.interface';
+import { type LogSeverity, severityForOutcome } from './kinds';
 import {
 	type ILogEvent,
 	type LogEventKind,
@@ -26,6 +27,14 @@ export interface ILogRangeFilter {
 	readonly agent?: string;
 	readonly taskId?: string;
 	readonly outcome?: LogOutcome;
+	/**
+	 * f00153 S1 — minimum severity (inclusive). `error` matches
+	 * `error`/`critical`/`alert`/`emergency`. Filters by the event's
+	 * stored `severity` field.
+	 */
+	readonly severityAtLeast?: LogSeverity;
+	/** f00153 S1 — exact incidentType match (`tool-failure`, …). */
+	readonly incidentType?: string;
 }
 
 export interface ILogTailOptions {
@@ -46,6 +55,17 @@ const dayFromTs = (ts: string): string => {
 const compareIso = (a: string, b: string): number =>
 	new Date(a).getTime() - new Date(b).getTime();
 
+const SEVERITY_RANK: Readonly<Record<LogSeverity, number>> = {
+	debug: 0,
+	info: 1,
+	notice: 2,
+	warning: 3,
+	error: 4,
+	critical: 5,
+	alert: 6,
+	emergency: 7,
+};
+
 const matches = (event: ILogEvent, filter: ILogRangeFilter): boolean => {
 	if (filter.since && compareIso(event.ts, filter.since) < 0) return false;
 	if (filter.until && compareIso(event.ts, filter.until) > 0) return false;
@@ -53,6 +73,15 @@ const matches = (event: ILogEvent, filter: ILogRangeFilter): boolean => {
 	if (filter.agent && event.agent !== filter.agent) return false;
 	if (filter.taskId && event.taskId !== filter.taskId) return false;
 	if (filter.outcome && event.outcome !== filter.outcome) return false;
+	if (
+		filter.severityAtLeast &&
+		SEVERITY_RANK[event.severity] < SEVERITY_RANK[filter.severityAtLeast]
+	) {
+		return false;
+	}
+	if (filter.incidentType && event.incidentType !== filter.incidentType) {
+		return false;
+	}
 	return true;
 };
 
@@ -84,6 +113,8 @@ export const createLogStore = async (
 					events.push({
 						ts: new Date().toISOString(),
 						kind: 'log-warning',
+							severity: 'warning',
+							incidentType: 'corrupt-line',
 						agent: null,
 						taskId: null,
 						outcome: 'failed',

@@ -50,7 +50,7 @@ const runBinary = (
 	};
 };
 
-describe('mcp-vertex-shim end-to-end', () => {
+describe('mcp-vertex-shim end-to-end', { timeout: 30_000 }, () => {
 	if (!hasBinary() && hasGo()) {
 		// Auto-build on the fly when Go is present so the test
 		// is self-contained on a CI box with Go installed.

@@ -4,6 +4,11 @@ import { dirname, join } from 'node:path';
 import { definePlugin } from '@mcp-vertex/core/public';
 import { z } from 'zod';
 
+import { buildOperationalEventLogKnowledge } from './lib/knowledge/logs-knowledge';
+import {
+	type LogSeverity,
+	severityForOutcome,
+} from './lib/services/kinds';
 import { createLogStore } from './lib/services/log-store';
 import {
 	extractAgentHint,
@@ -128,6 +133,57 @@ export default definePlugin({
 			}),
 		);
 
+		// f00153 S4 — cross-plugin incident helper. The `logs` plugin
+		// owns the `appendEvent` writer, but peer plugins (notification,
+		// quality, security, …) can call it through `ctx.logs.log(...)`
+		// without depending on `@mcp-vertex/logs` at compile time. The
+		// `IMcpPluginContext.logs` field is optional in the contract;
+		// when this plugin is present it injects the helper. The cast
+		// through the readonly `IMcpPluginContext` is the only place we
+		// mutate the context after the core hands it in, and it is safe
+		// because the cast is internal to this plugin and the property
+		// is added (not replaced) on an object the loader has not yet
+		// handed to anyone else.
+		const logsHelper: {
+			readonly log: (input: {
+				readonly severity: LogSeverity;
+				readonly incidentType: string;
+				readonly message: string;
+				readonly files?: readonly string[] | undefined;
+				readonly agent?: string | undefined;
+				readonly context?:
+					| Readonly<Record<string, unknown>>
+					| undefined;
+			}) => Promise<void>;
+		} = {
+			log: async (input) => {
+				const ts = new Date().toISOString();
+				const outcome = severityToOutcomeForHelper(input.severity);
+				const event: ILogEvent = {
+					ts,
+					kind: 'log-warning',
+					agent: input.agent ?? null,
+					taskId: input.incidentType,
+					outcome,
+					severity: input.severity,
+					incidentType: input.incidentType,
+					files: input.files ?? [],
+					summary: `incident-logged: ${input.incidentType} \u2014 ${input.message.slice(0, 140)}`,
+					meta: {
+						source: 'ctx.logs',
+						...(input.context ?? {}),
+					},
+				};
+				await appendEvent(event);
+			},
+		};
+		// The core's `IMcpPluginContext` declares `logs?` (optional) but
+		// the property is structurally readonly; assign through a type-
+		// asserted `Omit<>` of the readonly modifier so the cast is
+		// confined to this one statement and the runtime mutation is
+		// safe (the loader has not yet handed `ctx` to another plugin).
+		(ctx as { logs?: typeof logsHelper }).logs = logsHelper;
+
 		return {
 			tools: buildLogToolRegistrations(ctx.namespacePrefix, {
 				main: mainStore,
@@ -137,16 +193,9 @@ export default definePlugin({
 				{
 					id: 'logs-operational-event-log',
 					title: 'Operational event log',
-					body: [
-						'# Operational event log',
-						'',
-						'The logs plugin persists redacted JSONL events under `.cache/mcp-vertex/results/logs/` (every event) and ALSO under `.cache/mcp-vertex/results/logs-errors/` (only events whose outcome is not `ok`/`idle` — failed, timed-out, dead, cancelled or unknown).',
-						'It captures tool start/completion/failure/cancellation through core hooks with real detail: `elapsedMs` for every completed/failed call (not just cancellations), the error `.stack` when available, a `callId` in `meta` pairing a `tool-started` line to its eventual outcome even when the same tool runs concurrently (routine in a multi-agent swarm), and best-effort `agent`/`files` fields extracted from the call args (and result, for files) — populated whenever the tool itself takes an `agent`/`agentName` or `path`/`file`/`filePath`/`files`/`paths` argument.',
-						'`agent` and `files` are top-level fields on every event (not buried in `meta`), so `<prefix>_query`/`<prefix>_tail`/`<prefix>_correlate` can filter or scan by them even with `includeMeta:false` — and a `tool-failed` summary already reads e.g. `tool-failed: proposals_agent_lock — lock held by another agent (812ms)`, no second call needed just to see what broke.',
-						'Both streams are day-rotated JSONL, each retained independently to the newest `retentionCount` files (default 10, oldest dropped first) — history from earlier sessions survives as long as it fits that window.',
-						'A `server-started` event marks each host boot (pid + workspace).',
-						'`<prefix>_errors_tail` is the fast path for "where do I look for bugs": it reads ONLY the curated error stream, with full `meta` (args/result/error/stack/callId) included by default.',
-					].join('\n'),
+					body: buildOperationalEventLogKnowledge({
+						prefix: ctx.namespacePrefix,
+					}),
 				},
 			],
 			onToolStart: async (toolName, args) => {
@@ -224,3 +273,27 @@ export default definePlugin({
 		};
 	},
 });
+
+/**
+ * f00153 S4 — derive an `outcome` for a peer-emitted incident. The
+ * outcome drives which stream the event lands in (the curated error
+ * stream lights up when `outcome !== 'ok' && outcome !== 'idle'`),
+ * so an `error`/`critical`/`alert`/`emergency` severity promotes the
+ * event to the error stream and a `warning`/`notice`/`info` keeps
+ * it on the main timeline only.
+ */
+const severityToOutcomeForHelper = (
+	severity: LogSeverity,
+): import('./lib/services/normalize-event').LogOutcome => {
+	if (
+		severity === 'error' ||
+		severity === 'critical' ||
+		severity === 'alert' ||
+		severity === 'emergency'
+	) {
+		return 'failed';
+	}
+	if (severity === 'warning') return 'unknown';
+	if (severity === 'notice') return 'cancelled';
+	return 'ok';
+};

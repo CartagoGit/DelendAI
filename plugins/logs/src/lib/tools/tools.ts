@@ -8,6 +8,15 @@ import {
 
 import type { ILogToolStores } from '../contracts/interfaces/tools.interface';
 import { correlateEvents } from '../services/correlate';
+import {
+	incidentTypeForKind,
+	INCIDENT_TYPE_PATTERN,
+	isValidIncidentType,
+	KIND_TO_INCIDENT_TYPE,
+	LOG_SEVERITIES,
+	severityForOutcome,
+} from '../services/kinds';
+import { logIncidents, logSearch } from '../services/log-search-incidents';
 import { LOG_OUTCOMES, type LogEventKind } from '../services/normalize-event';
 import type { ILogEvent } from '../services/normalize-event';
 import type { LogOutcome } from '../services/normalize-event';
@@ -16,12 +25,15 @@ import { redactTest } from '../services/redact-test';
 export type { ILogToolStores } from '../contracts/interfaces/tools.interface';
 
 const LogOutcomeSchema = z.enum(LOG_OUTCOMES);
+const LogSeveritySchema = z.enum(LOG_SEVERITIES);
 const LogEventSchema = z.object({
 	ts: z.string(),
 	kind: z.string(),
 	agent: z.string().nullable(),
 	taskId: z.string().nullable(),
 	outcome: LogOutcomeSchema,
+	severity: LogSeveritySchema,
+	incidentType: z.string().nullable(),
 	files: z.array(z.string()),
 	summary: z.string(),
 	meta: z.record(z.string(), z.unknown()),
@@ -34,6 +46,8 @@ const QueryInputSchema = z.object({
 	agent: z.string().optional(),
 	taskId: z.string().optional(),
 	outcome: LogOutcomeSchema.optional(),
+	severity: LogSeveritySchema.optional(),
+	incidentType: z.string().optional(),
 	limit: z.number().optional(),
 	cursor: z.string().optional(),
 });
@@ -59,6 +73,8 @@ const queryFilterFrom = (
 	agent?: string;
 	taskId?: string;
 	outcome?: LogOutcome;
+	severityAtLeast?: import('../services/kinds').LogSeverity;
+	incidentType?: string;
 } => ({
 	...(args.since !== undefined ? { since: args.since } : {}),
 	...(args.until !== undefined ? { until: args.until } : {}),
@@ -66,6 +82,8 @@ const queryFilterFrom = (
 	...(args.agent !== undefined ? { agent: args.agent } : {}),
 	...(args.taskId !== undefined ? { taskId: args.taskId } : {}),
 	...(args.outcome !== undefined ? { outcome: args.outcome } : {}),
+	...(args.severity !== undefined ? { severityAtLeast: args.severity } : {}),
+	...(args.incidentType !== undefined ? { incidentType: args.incidentType } : {}),
 });
 
 const tailOptionsFrom = (args: {
@@ -364,5 +382,222 @@ export const buildLogToolRegistrations = (
 				);
 			},
 		},
+		{
+			// f00153 S2 — write-side. Closes the symmetry gap: any
+			// plugin, host or MCP agent can now record an incident
+			// without writing JSONL directly. `severity` defaults to
+			// `warning` when omitted so a sloppy caller still gets a
+			// useful event in the log.
+			id: 'log',
+			summary:
+				'Record a structured incident (severity + incidentType + message) into the redacted event log.',
+			tags: ['logs', 'observability', 'incident'],
+			register: async (server) => {
+				server.registerTool(
+					`${prefix}_log`,
+					{
+						description:
+							'Record a structured incident into the redacted event log. `incidentType` must be a lower-case slug in `^[a-z][a-z0-9-]{0,63}$`. The new event lands in the main timeline (not the curated error stream) with `severity`, `incidentType` and the caller-supplied `message` so it is filterable by `query`/`search`/`incidents`.',
+						inputSchema: z.object({
+							severity: LogSeveritySchema.default('warning'),
+							incidentType: z
+								.string()
+								.regex(INCIDENT_TYPE_PATTERN),
+							message: z.string().min(1),
+							files: z.array(z.string()).optional(),
+							agent: z.string().optional(),
+							context: z.record(z.string(), z.unknown()).optional(),
+						}),
+						outputSchema: z.object({
+							ok: z.literal(true),
+							ts: z.string(),
+							incidentType: z.string(),
+							severity: LogSeveritySchema,
+						}),
+					},
+					async (args: {
+						severity: import('../services/kinds').LogSeverity;
+						incidentType: string;
+						message: string;
+						files?: string[] | undefined;
+						agent?: string | undefined;
+						context?: Record<string, unknown> | undefined;
+					}) => {
+						if (!isValidIncidentType(args.incidentType)) {
+							return toolError(
+								`invalid incidentType "${args.incidentType}"`,
+								`must match ${INCIDENT_TYPE_PATTERN}`,
+							);
+						}
+						const ts = new Date().toISOString();
+						const outcome = severityToOutcome(args.severity);
+						const summary = `incident-logged: ${args.incidentType} \u2014 ${args.message.slice(0, 140)}`;
+						const event: ILogEvent = {
+							ts,
+							kind: 'log-warning',
+							agent: args.agent ?? null,
+							taskId: args.incidentType,
+							outcome,
+							severity: args.severity,
+							incidentType: args.incidentType,
+							files: args.files ?? [],
+							summary,
+							meta: {
+								source: 'logs_log',
+								...(args.context ?? {}),
+							},
+						};
+						await store.appendEvent(event);
+						return toolJson({
+							ok: true as const,
+							ts,
+							incidentType: args.incidentType,
+							severity: args.severity,
+						});
+					},
+				);
+			},
+		},
+		{
+			// f00153 S2 — content search. `query` only filters on
+			// metadata; `search` looks inside `summary`, `error.message`,
+			// `error.stack`, `args` and `result`.
+			id: 'search',
+			summary:
+				'Full-text / regex search over event summary, error message+stack, args and result.',
+			tags: ['logs', 'observability'],
+			register: async (server) => {
+				server.registerTool(
+					`${prefix}_search`,
+					{
+						description:
+							'Search the redacted event log. `pattern` is a substring by default; pass `isRegex:true` for a JavaScript regular expression. `scope` narrows the surface (`summary` | `error` | `args` | `result` | `all`; default `all`). Returns the matched events with `matched` count and `hasMore` pagination.',
+						inputSchema: z.object({
+							pattern: z.string().min(1),
+							caseSensitive: z.boolean().optional(),
+							isRegex: z.boolean().optional(),
+							scope: z
+								.enum([
+									'summary',
+									'error',
+									'args',
+									'result',
+									'all',
+								])
+								.optional(),
+							limit: z.number().optional(),
+							since: z.string().optional(),
+							until: z.string().optional(),
+						}),
+						outputSchema: z.object({
+							events: z.array(LogEventSchema),
+							matched: z.number(),
+							hasMore: z.boolean(),
+						}),
+					},
+					async (args: {
+						pattern: string;
+						caseSensitive?: boolean | undefined;
+						isRegex?: boolean | undefined;
+						scope?:
+							| 'summary'
+							| 'error'
+							| 'args'
+							| 'result'
+							| 'all'
+							| undefined;
+						limit?: number | undefined;
+						since?: string | undefined;
+						until?: string | undefined;
+					}) => {
+						try {
+							const result = await logSearch(store, args);
+							return toolJson({
+								events: result.events,
+								matched: result.matched,
+								hasMore: result.hasMore,
+							});
+						} catch (error) {
+							return toolError(
+								'Search failed',
+								error instanceof Error
+									? error.message
+									: String(error),
+							);
+						}
+					},
+				);
+			},
+		},
+		{
+			// f00153 S3 — auto-detector. Reads the curated error stream
+			// (NOT the main timeline) and clusters failing events by
+			// `(toolName, hash(error.message))` so recurring incidents
+			// surface as one record with a count.
+			id: 'incidents',
+			summary:
+				'Cluster recurring failing events by (toolName, error.message) so the same bug surfaces once with a count.',
+			tags: ['logs', 'observability', 'audit', 'incident'],
+			register: async (server) => {
+				server.registerTool(
+					`${prefix}_incidents`,
+					{
+						description:
+							'Read the curated error stream and group failing events by (toolName, error.message hash). Each cluster carries `count`, `distinctAgents`, `firstSeen`, `lastSeen`, `sampleSummary`, `sampleError` and the most recent `recentEvents`. Clusters with fewer than `minCount` (default 2) matches are dropped. Use this for the "what is broken right now" question \u2014 it returns the same bug many times, ONCE.',
+						inputSchema: z.object({
+							since: z.string().optional(),
+							until: z.string().optional(),
+							minCount: z.number().optional(),
+							agent: z.string().optional(),
+							recentLimit: z.number().optional(),
+						}),
+						outputSchema: z.object({
+							incidents: z.array(
+								z.object({
+									incidentType: z.string(),
+									toolName: z.string(),
+									count: z.number(),
+									distinctAgents: z.number(),
+									firstSeen: z.string(),
+									lastSeen: z.string(),
+									sampleSummary: z.string(),
+									sampleError: z.string(),
+									recentEvents: z.array(LogEventSchema),
+								}),
+							),
+							totalIncidents: z.number(),
+						}),
+					},
+					async (args: {
+						since?: string | undefined;
+						until?: string | undefined;
+						minCount?: number | undefined;
+						agent?: string | undefined;
+						recentLimit?: number | undefined;
+					}) => {
+						const result = await logIncidents(stores.errors, args);
+						return toolJson(result);
+					},
+				);
+			},
+		},
 	];
+};
+
+/**
+ * f00153 S2 — derive an `outcome` from a `severity` so a written
+ * incident lands in the curated error stream when it is actually an
+ * error (severity `error` and above) but does NOT pollute the
+ * errors-tail when it is a `warning` / `notice` / `info`. Symmetric
+ * with `severityForOutcome`, but in reverse.
+ */
+const severityToOutcome = (
+	severity: import('../services/kinds').LogSeverity,
+): LogOutcome => {
+	if (severity === 'error' || severity === 'critical' || severity === 'alert' || severity === 'emergency') {
+		return 'failed';
+	}
+	if (severity === 'warning') return 'unknown';
+	if (severity === 'notice') return 'cancelled';
+	return 'ok';
 };

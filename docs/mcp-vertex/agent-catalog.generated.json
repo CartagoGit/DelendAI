@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-07-26T05:22:59.789Z",
+	"generatedAt": "2026-07-26T14:35:54.810Z",
 	"mode": "compact",
 	"tools": [
 		{
@@ -110,6 +110,10 @@
 			"plugin": "deps"
 		},
 		{
+			"name": "mcp-vertex_deps_deps_tree",
+			"plugin": "deps"
+		},
+		{
 			"name": "mcp-vertex_diagram_diagram_deps",
 			"plugin": "diagram"
 		},
@@ -142,6 +146,10 @@
 		},
 		{
 			"name": "mcp-vertex_env_env_check",
+			"plugin": "env"
+		},
+		{
+			"name": "mcp-vertex_env_env_explains",
 			"plugin": "env"
 		},
 		{
@@ -379,6 +387,12 @@
 		},
 		{
 			"name": "mcp-vertex_plan_mcp_project"
+		},
+		{
+			"name": "mcp-vertex_plugin_add"
+		},
+		{
+			"name": "mcp-vertex_plugin_search"
 		},
 		{
 			"name": "mcp-vertex_proposals_agent_lock",
@@ -635,6 +649,44 @@
 		}
 	],
 	"skills": [
+		{
+			"id": "debugging-playbook",
+			"version": "1.0.0",
+			"minCoreVersion": "0.1.0",
+			"summary": "Use when a run fails or output looks wrong to triage logs, proposal state, and orphaned locks before repairing anything.",
+			"appliesTo": [
+				"@mcp-vertex/logs",
+				"@mcp-vertex/proposals",
+				"@mcp-vertex/skills-pack"
+			],
+			"tags": [
+				"debugging",
+				"logs",
+				"state",
+				"triage"
+			],
+			"bodyPath": "plugins/skills-pack/skills/debugging-playbook/SKILL.md"
+		},
+		{
+			"id": "incident-response",
+			"version": "1.0.0",
+			"minCoreVersion": "0.1.0",
+			"summary": "Use during an incident to establish impact, correlate remote errors with local logs, and repair coordination drift only when confirmed.",
+			"appliesTo": [
+				"@mcp-vertex/logs",
+				"@mcp-vertex/notification",
+				"@mcp-vertex/observability",
+				"@mcp-vertex/proposals",
+				"@mcp-vertex/skills-pack"
+			],
+			"tags": [
+				"incident",
+				"logs",
+				"operations",
+				"recovery"
+			],
+			"bodyPath": "plugins/skills-pack/skills/incident-response/SKILL.md"
+		},
 		{
 			"id": "mcp-vertex-audit-playbook",
 			"version": "1.0.0",
@@ -928,6 +980,82 @@
 			"bodyPath": "packages/core/skills/mcp-vertex-token-budget-playbook/SKILL.md"
 		},
 		{
+			"id": "migrate-from-x",
+			"version": "1.0.0",
+			"minCoreVersion": "0.1.0",
+			"summary": "Use when migrating off a legacy tool or pattern to extend the legacy migration discipline with codemods, rename, history checks, and final quality gates.",
+			"appliesTo": [
+				"@mcp-vertex/git",
+				"@mcp-vertex/proposals",
+				"@mcp-vertex/quality",
+				"@mcp-vertex/refactor",
+				"@mcp-vertex/skills-pack"
+			],
+			"tags": [
+				"legacy",
+				"migration",
+				"quality",
+				"refactor"
+			],
+			"bodyPath": "plugins/skills-pack/skills/migrate-from-x/SKILL.md"
+		},
+		{
+			"id": "performance-optimization",
+			"version": "1.0.0",
+			"minCoreVersion": "0.1.0",
+			"summary": "Use when performance regresses to benchmark first, profile the real hotspot, and validate improvements with the narrowest quality gate.",
+			"appliesTo": [
+				"@mcp-vertex/perf",
+				"@mcp-vertex/quality",
+				"@mcp-vertex/skills-pack"
+			],
+			"tags": [
+				"benchmarking",
+				"performance",
+				"profiling",
+				"quality"
+			],
+			"bodyPath": "plugins/skills-pack/skills/performance-optimization/SKILL.md"
+		},
+		{
+			"id": "pr-review-checklist",
+			"version": "1.0.0",
+			"minCoreVersion": "0.1.0",
+			"summary": "Use when reviewing a PR to check scope, history, CI, quality gates, and security signals before deciding.",
+			"appliesTo": [
+				"@mcp-vertex/forge",
+				"@mcp-vertex/git",
+				"@mcp-vertex/quality",
+				"@mcp-vertex/security",
+				"@mcp-vertex/skills-pack"
+			],
+			"tags": [
+				"pull-request",
+				"quality",
+				"review",
+				"security"
+			],
+			"bodyPath": "plugins/skills-pack/skills/pr-review-checklist/SKILL.md"
+		},
+		{
+			"id": "security-hardening-checklist",
+			"version": "1.0.0",
+			"minCoreVersion": "0.1.0",
+			"summary": "Use when hardening a project so audit, dependency, SAST, secret, and environment checks happen in one repeatable pass.",
+			"appliesTo": [
+				"@mcp-vertex/env",
+				"@mcp-vertex/security",
+				"@mcp-vertex/skills-pack"
+			],
+			"tags": [
+				"dependencies",
+				"hardening",
+				"secrets",
+				"security"
+			],
+			"bodyPath": "plugins/skills-pack/skills/security-hardening-checklist/SKILL.md"
+		},
+		{
 			"id": "tabs-component",
 			"version": "1.0.0",
 			"minCoreVersion": "0.1.0",
@@ -947,94 +1075,17 @@
 	"proposals": {
 		"actionable": [
 			{
-				"id": "a00073",
-				"title": "a00073",
-				"track": "audit+multi-agent+state-consistency+proposals-plugin+log-honesty",
-				"status": "in-progress",
-				"kind": "audit"
-			},
-			{
-				"id": "d00003",
-				"title": "d00003",
-				"track": "roadmap+plugins+ecosystem",
+				"id": "a00075",
+				"title": "a00075",
+				"track": "code-quality+concurrency+security+architecture+tests+invariants+tokens+logs",
 				"status": "ready",
-				"kind": "docs"
+				"kind": "audit"
 			},
 			{
 				"id": "f00050",
 				"title": "f00050",
 				"track": "lint+architecture+i18n+workflow+release",
 				"status": "paused",
-				"kind": "feat"
-			},
-			{
-				"id": "f00134",
-				"title": "f00134",
-				"track": "plugin+i18n+quality",
-				"status": "ready",
-				"kind": "feat"
-			},
-			{
-				"id": "f00135",
-				"title": "f00135",
-				"track": "plugin+config+onboarding",
-				"status": "ready",
-				"kind": "feat"
-			},
-			{
-				"id": "f00136",
-				"title": "f00136",
-				"track": "plugin+tools+dx",
-				"status": "ready",
-				"kind": "feat"
-			},
-			{
-				"id": "f00137",
-				"title": "f00137",
-				"track": "plugin+skills+process",
-				"status": "ready",
-				"kind": "feat"
-			},
-			{
-				"id": "f00138",
-				"title": "f00138",
-				"track": "plugin+prompts+dx",
-				"status": "ready",
-				"kind": "feat"
-			},
-			{
-				"id": "f00139",
-				"title": "f00139",
-				"track": "plugin+audit+self-improvement",
-				"status": "ready",
-				"kind": "feat"
-			},
-			{
-				"id": "f00141",
-				"title": "f00141",
-				"track": "plugin+registry+dx",
-				"status": "ready",
-				"kind": "feat"
-			},
-			{
-				"id": "f00142",
-				"title": "f00142",
-				"track": "plugin+config+auto-selection",
-				"status": "ready",
-				"kind": "feat"
-			},
-			{
-				"id": "f00148",
-				"title": "f00148",
-				"track": "infra+distribution+economics",
-				"status": "ready",
-				"kind": "feat"
-			},
-			{
-				"id": "f00149",
-				"title": "f00149",
-				"track": "host-adapters+plugins+adoption",
-				"status": "ready",
 				"kind": "feat"
 			},
 			{
@@ -1045,33 +1096,26 @@
 				"kind": "feat"
 			},
 			{
-				"id": "r00011",
-				"title": "r00011",
-				"track": "refactor+config+dx",
+				"id": "f00152",
+				"title": "f00152",
+				"track": "core+plugins+self-host",
 				"status": "ready",
-				"kind": "refactor"
+				"kind": "feat"
 			},
 			{
-				"id": "r00012",
-				"title": "r00012",
-				"track": "refactor+core+plugins",
-				"status": "ready",
-				"kind": "refactor"
-			},
-			{
-				"id": "x00073",
-				"title": "x00073",
-				"track": "security+invariants",
-				"status": "ready",
-				"kind": "fix"
+				"id": "v00122",
+				"title": "v00122",
+				"track": "perf+token-budgets+agent-velocity",
+				"status": "in-progress",
+				"kind": "unspecified"
 			}
 		],
 		"byStatus": {
-			"ready": 15,
+			"ready": 3,
 			"in-progress": 1,
-			"review": 11,
+			"review": 2,
 			"paused": 1,
-			"done": 264,
+			"done": 291,
 			"blocked": 0,
 			"retired": 2,
 			"unspecified": 0

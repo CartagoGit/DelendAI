@@ -9,7 +9,6 @@
  * it validates only the caller-supplied evidence object required by a00074 S1.
  */
 
-import { existsSync } from 'node:fs';
 import { stat } from 'node:fs/promises';
 
 export interface IValidateEvidence {
@@ -46,10 +45,10 @@ export const evidenceFileExists = async (logPath: string): Promise<boolean> => {
 	}
 };
 
-export const checkTransitionEvidence = (
+export const checkTransitionEvidence = async (
 	evidence: IValidateEvidence | undefined,
 	nowMs = Date.now(),
-): IEvidenceCheckResult => {
+): Promise<IEvidenceCheckResult> => {
 	if (evidence === undefined) {
 		return {
 			ok: false,
@@ -105,7 +104,9 @@ export const checkTransitionEvidence = (
 		};
 	}
 
-	if (!existsSync(evidence.logPath)) {
+	try {
+		await stat(evidence.logPath);
+	} catch {
 		return {
 			ok: false,
 			code: 'invalid-evidence',

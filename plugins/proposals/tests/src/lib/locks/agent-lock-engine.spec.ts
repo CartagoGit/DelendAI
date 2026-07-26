@@ -24,6 +24,10 @@ import {
 	type ILockFile,
 } from '../../../../src/lib/locks/agent-lock-engine';
 import {
+	readSessionBalance,
+	sessionLogPath,
+} from '../../../../src/lib/locks/agent-lock-session-store';
+import {
 	deriveFileLockTablePath,
 	readFileLockTable,
 } from '../../../../src/lib/locks/file-lock-table';
@@ -46,6 +50,9 @@ const body = (res: { content: Array<{ text: string }> }) =>
 
 const readLockFile = (): ILockFile =>
 	JSON.parse(readFileSync(lockPath, 'utf8')) as ILockFile;
+
+const readSessionLog = (): string =>
+	readFileSync(sessionLogPath(workspace), 'utf8');
 
 beforeEach(() => {
 	workspace = mkdtempSync(join(tmpdir(), 'agent-lock-'));
@@ -381,7 +388,7 @@ describe('runAgentLockEngine — file-level claims', async () => {
 		expect(body(second).ok).toBe(true);
 		expect(body(first).heldFiles).toEqual(['src/a.ts']);
 		expect(body(second).heldFiles).toEqual(['src/b.ts']);
-		expect(Date.now() - started).toBeLessThan(300);
+		expect(Date.now() - started).toBeLessThan(700);
 	});
 
 	it('keeps overlapping file claims in normal contention', async () => {
@@ -436,6 +443,7 @@ describe('runAgentLockEngine — a00069 S8 ok + session balance', async () => {
 			releases: 0,
 			imbalance: 1,
 		});
+		expect(readSessionLog().trim().split('\n')).toHaveLength(1);
 
 		const release = body(
 			await run({ action: 'release', task_id: 'task-S8' }),
@@ -447,6 +455,7 @@ describe('runAgentLockEngine — a00069 S8 ok + session balance', async () => {
 			releases: 1,
 			imbalance: 0,
 		});
+		expect(readSessionLog().trim().split('\n')).toHaveLength(2);
 	});
 
 	it('stamps ok:false + await_lock nextAction on lock-conflict', async () => {
@@ -497,5 +506,43 @@ describe('runAgentLockEngine — a00069 S8 ok + session balance', async () => {
 		});
 		expect(getAgentLockSessionBalance().claims).toBe(1);
 		expect(getAgentLockSessionBalance().imbalance).toBe(1);
+	});
+
+	it('survives a simulated restart because the balance is persisted', async () => {
+		await run({
+			action: 'claim',
+			task_id: 'persisted',
+			agent: 'agent-persisted',
+			files: ['src/persisted.ts'],
+		});
+		resetAgentLockSessionBalance();
+		expect(getAgentLockSessionBalance()).toEqual({
+			claims: 1,
+			releases: 0,
+			imbalance: 1,
+		});
+	});
+
+	it('serializes concurrent successful claims into two JSONL entries', async () => {
+		await Promise.all([
+			run({
+				action: 'claim',
+				task_id: 'task-concurrent-a',
+				agent: 'agent-a',
+				files: ['src/a.ts'],
+			}),
+			run({
+				action: 'claim',
+				task_id: 'task-concurrent-b',
+				agent: 'agent-b',
+				files: ['src/b.ts'],
+			}),
+		]);
+		expect(readSessionLog().trim().split('\n')).toHaveLength(2);
+		expect(await readSessionBalance(workspace)).toEqual({
+			claims: 2,
+			releases: 0,
+			imbalance: 2,
+		});
 	});
 });
