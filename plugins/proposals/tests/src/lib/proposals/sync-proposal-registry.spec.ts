@@ -14,6 +14,7 @@ import { join, resolve } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import { syncProposalRegistry } from '@mcp-vertex/proposals/lib/proposals/sync-proposal-registry';
+import { findProposalFolderDrift } from '@mcp-vertex/proposals/lib/proposals/sync-proposal-registry';
 import { DEFAULT_PATH_LAYOUT } from '@mcp-vertex/proposals/lib/contracts/constants/default-path-layout.constant';
 import type { IGitRunner } from '@mcp-vertex/proposals/lib/shared/git-runner';
 
@@ -116,5 +117,33 @@ describe('syncProposalRegistry (entry point)', async () => {
 			.map((p) => p.id)
 			.sort();
 		expect(second).toEqual(first);
+	});
+
+	it('surfaces folder drift found before reconciliation in sync errors', async () => {
+		await seed(root, 'review', 'f903-drift.md', {
+			id: 'f903',
+			status: 'done',
+			kind: 'feat',
+			title: 'Drift',
+		});
+		const drift = await findProposalFolderDrift(
+			resolve(root, DEFAULT_PATH_LAYOUT.proposalsDir),
+		);
+		expect(drift).toHaveLength(1);
+		expect(drift[0]).toMatchObject({
+			id: 'f903',
+			folder: 'review',
+			expectedFolder: 'done/feats',
+			status: 'done',
+		});
+		const result = await syncProposalRegistry(
+			root,
+			DEFAULT_PATH_LAYOUT,
+			[],
+			FAKE_GIT_MV,
+		);
+		expect(result.errors).toContain(
+			'folder drift: f903 at review/f903-drift.md is in review but status done expects done/feats',
+		);
 	});
 });

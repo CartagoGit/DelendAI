@@ -18,6 +18,7 @@ import {
 import { readJsonOrNull } from '../proposals/index-reader';
 import { getPeerReviewBypassCount } from '../shared/peer-review-bypass-log';
 import { purgeStaleLocks } from '../shared/purge-stale-locks';
+import { readAutoTransitionRepairs } from '../services/auto-transition';
 
 /** Async existence check (H2): never blocks the event loop. */
 const fileExists = async (path: string): Promise<boolean> => {
@@ -94,6 +95,15 @@ interface IStateDiagnosis {
 	};
 	/** a00069 S11: peer-review bypasses (force/skipPeerReview) this session. */
 	readonly peerReviewBypasses: number;
+	readonly autoTransitionRepairs: {
+		readonly count: number;
+		readonly entries: readonly {
+			readonly proposalId: string;
+			readonly path: string;
+			readonly reason: string;
+			readonly ts: string;
+		}[];
+	};
 	readonly queue: {
 		readonly queueLength: number;
 		readonly queuedCount: number;
@@ -147,6 +157,17 @@ const STATE_DIAGNOSIS_SCHEMA = z.object({
 	}),
 	/** a00069 S11: force/skipPeerReview peer-review bypasses this session. */
 	peerReviewBypasses: z.number(),
+	autoTransitionRepairs: z.object({
+		count: z.number(),
+		entries: z.array(
+			z.object({
+				proposalId: z.string(),
+				path: z.string(),
+				reason: z.string(),
+				ts: z.string(),
+			}),
+		),
+	}),
 	queue: z
 		.object({
 			queueLength: z.number(),
@@ -317,6 +338,10 @@ const diagnose = async (
 		},
 	);
 
+	const autoTransitionRepairs = await readAutoTransitionRepairs(
+		options.workspaceRoot,
+	);
+
 	// a00069 S8: claim−release session imbalance (historical 29/19) and live
 	// orphan locks both fail the health gate.
 	const balance = getAgentLockSessionBalance();
@@ -331,7 +356,8 @@ const diagnose = async (
 		(queue?.waiterOrphans ?? 0) === 0 &&
 		livelockState.livelocks.length === 0 &&
 		!claimReleaseImbalanceAlert &&
-		stale.count === 0;
+		stale.count === 0 &&
+		autoTransitionRepairs.length === 0;
 
 	return {
 		locks: {
@@ -347,6 +373,10 @@ const diagnose = async (
 			sessionImbalance: balance.imbalance,
 		},
 		peerReviewBypasses: getPeerReviewBypassCount(),
+		autoTransitionRepairs: {
+			count: autoTransitionRepairs.length,
+			entries: autoTransitionRepairs,
+		},
 		queue,
 		registry: {
 			orphans: zombies.orphans.length,

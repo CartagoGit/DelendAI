@@ -140,9 +140,10 @@ The fix must be in the code path, not the doc, because every recent pathology in
   - "Tests: 10 cases (done→review blocked; done→review+force+reason logged; done→review+force+missing-reason blocked; in-progress→review still allowed; ready→done without evidence blocked; ready→done with stale evidence blocked; ready→done with empty shipped-in blocked; review→done without approve still blocked; review→done with approve + shipped-in allowed; a00067 retroactive close path still works because it has shipped-in + evidence)"
 
 ### S2 — Same-agent peer review detector (host+pid+agent identity, not just name strings)
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/proposals/src/lib/services/review-identity.ts`, `plugins/proposals/src/lib/tools/review.tool.ts`, `plugins/proposals/tests/src/lib/review-identity.spec.ts`, `plugins/proposals/tests/src/lib/review.tool.spec.ts`
 - **Gate**: type
+- **Commit**: `a6c2b80d` (services + tests committed; the `review.tool.ts` MCP entrypoint is staged and will land in the S2 close commit)
 - acceptance:
   - "Each call to proposal_review action=submit records the caller identity (host = process.env.MCP_HOST or fall back to PID hostname; pid = process.pid; agent = the explicit agent field) in .cache/mcp-vertex/review-identity.jsonl keyed by (proposalId, sliceId)"
   - "proposal_review action=approve reads the submit identity and refuses when (host, pid) match (agent may legitimately differ between a script and a human, but host+pid must differ)"
