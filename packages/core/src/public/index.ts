@@ -168,6 +168,17 @@ export type {
 	IPackStackId,
 	ISearchHybridWeights,
 } from '../lib/plugins/pack-defaults';
+export {
+	isPackId,
+	mergePackDefaults,
+	PACK_DEFAULTS_OVERLAY,
+	PACK_IDS,
+	resolvePackOptions,
+} from '../lib/plugins/pack-defaults-overlay';
+export type {
+	IPluginOptionsMap,
+	IPackId,
+} from '../lib/plugins/pack-defaults-overlay';
 export { deriveSourceRoots } from '../lib/bootstrap/derive-config';
 export { mergeDerivedConfig } from '../lib/bootstrap/merge-derived-config';
 export {

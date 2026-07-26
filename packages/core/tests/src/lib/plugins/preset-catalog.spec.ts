@@ -7,7 +7,7 @@ import {
 } from '@mcp-vertex/core/lib/plugins/preset-catalog';
 
 describe('PRESET_CATALOG', async () => {
-	it('lists presets in ⊇ order: minimal, lean, standard, swarm, full, vertex', async () => {
+	it('lists presets in ⊇ order: minimal, lean, standard, swarm, full, vertex, web-app, backend-api, cli-tool', async () => {
 		expect(PRESET_CATALOG.map((def) => def.id)).toEqual(PRESET_KIND);
 		expect([...PRESET_KIND]).toEqual([
 			'minimal',
@@ -16,6 +16,9 @@ describe('PRESET_CATALOG', async () => {
 			'swarm',
 			'full',
 			'vertex',
+			'web-app',
+			'backend-api',
+			'cli-tool',
 		]);
 	});
 
@@ -80,6 +83,27 @@ describe('PRESET_CATALOG', async () => {
 		const vertex = PRESET_CATALOG[5];
 		expect(vertex).toBeDefined();
 		expect(vertex?.independent).toBe(true);
+	});
+
+	it('marks every stack pack (web-app, backend-api, cli-tool) as independent', async () => {
+		for (const id of ['web-app', 'backend-api', 'cli-tool']) {
+			const def = PRESET_CATALOG.find((d) => d.id === id);
+			expect(def, `pack ${id} missing from PRESET_CATALOG`).toBeDefined();
+			expect(def?.independent).toBe(true);
+		}
+	});
+
+	it('stack packs resolve to exactly their own members (no chain accumulation)', async () => {
+		// `standard` resolves to 16 plugins. None of those should leak
+		// into `web-app` just because `web-app` is added after them in
+		// the catalog order.
+		const standardResolved = resolvePresetMembers('standard');
+		const webAppResolved = resolvePresetMembers('web-app');
+		expect(webAppResolved).not.toContain('proposals');
+		expect(webAppResolved).not.toContain('notification');
+		expect(webAppResolved).not.toContain('logs');
+		expect(standardResolved.length).toBeGreaterThan(0);
+		expect(webAppResolved.length).toBeGreaterThan(0);
 	});
 
 	it('every catalog plugin id corresponds to a real package on disk', async () => {
