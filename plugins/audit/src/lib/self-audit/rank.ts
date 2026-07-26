@@ -99,3 +99,10 @@ export const scoreFinding = (
 	finding: IFinding,
 	weights: IBacklogWeights = DEFAULT_BACKLOG_WEIGHTS,
 ): Omit<IBacklogItem, 'finding' | 'rank'> => scoreFor(finding, weights);
+
+export {
+	DEFAULT_BACKLOG_WEIGHTS,
+	type IBacklog,
+	type IBacklogItem,
+	type IBacklogWeights,
+};

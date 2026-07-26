@@ -12,8 +12,15 @@ import {
 
 import { z } from 'zod';
 
-import { aggregateSelfAudit, defaultScannerMap } from '../self-audit/aggregate';
+import {
+	aggregateSelfAudit,
+	defaultScannerMap,
+} from '../self-audit/aggregate';
 import { rankFindings } from '../self-audit/rank';
+import type {
+	ISelfAuditScannerRef,
+	ISelfAuditScannerRunner,
+} from '../contracts/interfaces/self-audit.interface';
 
 const SelfAuditInputSchema = z.object({
 	limit: z.number().int().min(1).max(100).optional(),
@@ -36,6 +43,8 @@ const SelfAuditOutputSchema = z.object({
 			note: z.string().optional(),
 		}),
 	),
+	scannerCount: z.number().optional(),
+	capabilities: z.record(z.string(), z.number()).optional(),
 	backlog: z.array(
 		z.object({
 			rank: z.number(),
@@ -61,6 +70,14 @@ const SelfAuditOutputSchema = z.object({
 export interface ISelfAuditToolOptions {
 	readonly namespacePrefix: string;
 	readonly workspaceRootAbs: string;
+	readonly scanners?: ReadonlyMap<
+		string,
+		{
+			readonly ref: ISelfAuditScannerRef;
+			readonly run: ISelfAuditScannerRunner;
+		}
+	>;
+	readonly topN?: number;
 }
 
 const filterFindingsByCapabilities = (
@@ -100,17 +117,20 @@ export const buildSelfAuditRegistration = (
 			},
 			async (args: {
 				limit?: number | undefined;
+				topN?: number | undefined;
 				capabilities?: readonly string[] | undefined;
 			}) => {
 				const report = await aggregateSelfAudit({
 					workspaceRootAbs: options.workspaceRootAbs,
-					scanners: defaultScannerMap(),
+					scanners: options.scanners ?? defaultScannerMap(),
 				});
 				const findings = filterFindingsByCapabilities(
 					report.aggregated.findings,
 					report.capabilities,
 					args.capabilities,
 				);
+				const limit =
+					args.limit ?? args.topN ?? options.topN ?? 20;
 
 				try {
 					return toolJson({
@@ -118,8 +138,10 @@ export const buildSelfAuditRegistration = (
 						worst: report.worst,
 						summary: report.aggregated.summary,
 						skipped: report.skipped,
+						scannerCount: report.scannerCount,
+						capabilities: report.capabilities,
 						backlog: rankFindings(findings, {
-							limit: args.limit ?? 20,
+							limit,
 						}),
 					});
 				} catch (error: unknown) {
