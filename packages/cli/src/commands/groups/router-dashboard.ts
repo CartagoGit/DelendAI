@@ -105,7 +105,7 @@ const textFor = (vm: ReturnType<typeof buildDashboard>): string => {
 		'calls',
 		'note',
 	]);
-	return [`mcp-vertex router dashboard`, `  ${vm.headline}`, '', table].join(
+	return [`mcp-vertex router-dashboard`, `  ${vm.headline}`, '', table].join(
 		'\n',
 	);
 };
