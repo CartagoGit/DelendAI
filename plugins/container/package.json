@@ -1,0 +1,51 @@
+{
+	"name": "@mcp-vertex/container",
+	"version": "0.1.0",
+	"type": "module",
+	"description": "Container inspection plugin for @mcp-vertex/core: read-only Docker and Kubernetes inspection via docker/kubectl with install hints.",
+	"author": "Cartago",
+	"license": "BSD-3-Clause",
+	"keywords": [
+		"mcp",
+		"container",
+		"docker",
+		"kubernetes",
+		"kubectl",
+		"agent",
+		"ai",
+		"cartago"
+	],
+	"main": "./dist/index.js",
+	"files": [
+		"dist",
+		"README.md",
+		"LICENSE"
+	],
+	"exports": {
+		".": {
+			"@mcp-vertex/source": {
+				"types": "./src/index.ts"
+			},
+			"types": "./dist/index.d.ts",
+			"import": "./dist/index.js"
+		},
+		"./public": {
+			"@mcp-vertex/source": {
+				"types": "./src/public/index.ts"
+			},
+			"types": "./dist/public/index.d.ts",
+			"import": "./dist/public/index.js"
+		}
+	},
+	"scripts": {
+		"build": "tsc -p tsconfig.json",
+		"check": "tsc --noEmit -p tsconfig.json",
+		"test": "vitest run"
+	},
+	"dependencies": {
+		"@mcp-vertex/core": "workspace:*"
+	},
+	"devDependencies": {
+		"typescript": "7.0.2"
+	}
+}
