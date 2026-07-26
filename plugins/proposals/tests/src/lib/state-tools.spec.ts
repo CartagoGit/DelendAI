@@ -64,6 +64,11 @@ describe('state_health / state_repair [N15]', async () => {
 		expect(out.locks.livelocks).toBe(0);
 		expect(out.locks.livelockPairs).toEqual([]);
 		expect(out.locks.staleTaskIds).toEqual([]);
+		expect(out.locks.sessionBalance).toEqual({
+			claims: 0,
+			releases: 0,
+			imbalance: 0,
+		});
 		expect(out.locks.sessionClaims).toBe(0);
 		expect(out.locks.sessionReleases).toBe(0);
 		expect(out.locks.sessionImbalance).toBe(0);
@@ -97,7 +102,47 @@ describe('state_health / state_repair [N15]', async () => {
 		expect(out.locks.sessionClaims).toBe(6);
 		expect(out.locks.sessionReleases).toBe(0);
 		expect(out.locks.sessionImbalance).toBe(6);
+		expect(out.locks.sessionBalance).toEqual({
+			claims: 6,
+			releases: 0,
+			imbalance: 6,
+		});
 		expect(out.healthy).toBe(false);
+	});
+
+	it('reads persisted session imbalance from the JSONL store', async () => {
+		mkdirSync(join(dir, '.cache/mcp-vertex'), { recursive: true });
+		writeFileSync(
+			join(dir, '.cache/mcp-vertex/agents.lock.session.jsonl'),
+			[
+				JSON.stringify({
+					ts: '2026-07-26T00:00:00.000Z',
+					agent: 'alpha',
+					action: 'claim',
+					ok: true,
+				}),
+				JSON.stringify({
+					ts: '2026-07-26T00:00:01.000Z',
+					agent: 'alpha',
+					action: 'release',
+					ok: true,
+				}),
+				JSON.stringify({
+					ts: '2026-07-26T00:00:02.000Z',
+					agent: 'beta',
+					action: 'claim',
+					ok: true,
+				}),
+			].join('\n') + '\n',
+		);
+		const handler = await capture(buildStateHealthRegistration(opts));
+		const out = parse(await handler({}));
+		expect(out.locks.sessionBalance).toEqual({
+			claims: 2,
+			releases: 1,
+			imbalance: 1,
+		});
+		expect(out.locks.sessionImbalance).toBe(1);
 	});
 
 	it('a00069 S11: surfaces peerReviewBypasses session count', async () => {

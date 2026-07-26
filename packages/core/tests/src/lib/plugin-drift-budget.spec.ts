@@ -86,6 +86,16 @@ const SYNC_IO_ALLOWLIST = new Set<string>([
 	// server start, not per-request.
 	'plugins/proposals/src/index.ts:5',
 	'plugins/proposals/src/index.ts:480',
+	// a00074 S1: structural guard for done→review regression runs as part
+	// of `checkTransitionEvidence`, which is called synchronously by
+	// `proposal-transition.tool.ts` (its result drives an inline error
+	// vs. ok branch, not an async validation pipeline). The `existsSync`
+	// is a fast syscall on Linux/macOS (no read of file contents) and
+	// runs in the contractually-allowed sync path; widening to async
+	// would force the caller to `await` and break the inline decision
+	// model.
+	'plugins/proposals/src/lib/services/transition-evidence.ts:12',
+	'plugins/proposals/src/lib/services/transition-evidence.ts:108',
 ]);
 
 const SYNC_IO_PATTERN =

@@ -1,0 +1,90 @@
+{
+  "version": {
+    "schema": "1",
+    "packageVersion": "0.1.0",
+    "generatedAt": "2026-07-26T14:52:37.117Z"
+  },
+  "tools": [
+    {
+      "name": "agent_lock",
+      "plugin": "proposals",
+      "sinceVersion": "1",
+      "semverGuarantee": "additive-only",
+      "summary": "Claim file ownership for an agent (cross-process lock).",
+      "inputSchema": null,
+      "outputSchema": null
+    },
+    {
+      "name": "agent_worktree",
+      "plugin": "proposals",
+      "sinceVersion": "1",
+      "semverGuarantee": "additive-only",
+      "summary": "Create or manage per-agent git worktrees.",
+      "inputSchema": null,
+      "outputSchema": null
+    },
+    {
+      "name": "auto_work",
+      "plugin": "proposals",
+      "sinceVersion": "1",
+      "semverGuarantee": "additive-only",
+      "summary": "Resolve the next proposal slice and return an action plan.",
+      "inputSchema": null,
+      "outputSchema": null
+    },
+    {
+      "name": "proposal_create",
+      "plugin": "proposals",
+      "sinceVersion": "1",
+      "semverGuarantee": "additive-only",
+      "summary": "Create a new proposal document with frontmatter + slices.",
+      "inputSchema": null,
+      "outputSchema": null
+    },
+    {
+      "name": "proposal_force_transition",
+      "plugin": "proposals",
+      "sinceVersion": "1",
+      "semverGuarantee": "additive-only",
+      "summary": "Recovery-path transition (skips peer-review lock).",
+      "inputSchema": null,
+      "outputSchema": null
+    },
+    {
+      "name": "proposal_review",
+      "plugin": "proposals",
+      "sinceVersion": "1",
+      "semverGuarantee": "additive-only",
+      "summary": "Submit/approve/request-changes on a proposal in review.",
+      "inputSchema": null,
+      "outputSchema": null
+    },
+    {
+      "name": "proposal_transition",
+      "plugin": "proposals",
+      "sinceVersion": "1",
+      "semverGuarantee": "additive-only",
+      "summary": "Move a proposal to a new status against the DFA.",
+      "inputSchema": null,
+      "outputSchema": null
+    },
+    {
+      "name": "state_repair",
+      "plugin": "proposals",
+      "sinceVersion": "1",
+      "semverGuarantee": "additive-only",
+      "summary": "Auto-heal stale locks, queue backpressure, orphan assignments.",
+      "inputSchema": null,
+      "outputSchema": null
+    },
+    {
+      "name": "task_queue_enqueue",
+      "plugin": "proposals",
+      "sinceVersion": "1",
+      "semverGuarantee": "additive-only",
+      "summary": "Push a task onto the persistent swarm queue.",
+      "inputSchema": null,
+      "outputSchema": null
+    }
+  ]
+}

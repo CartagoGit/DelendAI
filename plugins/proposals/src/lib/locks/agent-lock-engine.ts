@@ -29,6 +29,13 @@ import {
 	tryAcquireFileLocks,
 } from './file-lock-table';
 import { isLockEntryStale } from '../shared/purge-stale-locks';
+import {
+	appendSessionEntry,
+	readSessionBalance,
+	readSessionBalanceSync,
+	resetSessionBalance,
+	type ISessionBalance,
+} from './agent-lock-session-store';
 
 export type IAgentLockAction = 'claim' | 'release' | 'status' | 'gc';
 
@@ -89,22 +96,31 @@ export type IAgentLockResponse = {
 	isError?: boolean;
 };
 
-let sessionClaimCount = 0;
-let sessionReleaseCount = 0;
+let lastSessionWorkspaceRoot: string | undefined;
+let lastKnownSessionBalance: ISessionBalance = {
+	claims: 0,
+	releases: 0,
+	imbalance: 0,
+};
 
 export const getAgentLockSessionBalance = (): {
 	readonly claims: number;
 	readonly releases: number;
 	readonly imbalance: number;
-} => ({
-	claims: sessionClaimCount,
-	releases: sessionReleaseCount,
-	imbalance: sessionClaimCount - sessionReleaseCount,
-});
+} => {
+	lastKnownSessionBalance = readSessionBalanceSync(lastSessionWorkspaceRoot);
+	return lastKnownSessionBalance;
+};
 
 export const resetAgentLockSessionBalance = (): void => {
-	sessionClaimCount = 0;
-	sessionReleaseCount = 0;
+	lastKnownSessionBalance = { claims: 0, releases: 0, imbalance: 0 };
+	resetSessionBalance();
+};
+
+const resolveSessionWorkspaceRoot = (deps: IAgentLockDeps): string | undefined => {
+	if (!deps.lockPath) return undefined;
+	const parent = dirname(deps.lockPath);
+	return basename(parent) === '.cache' ? dirname(parent) : parent;
 };
 
 const CONTENTION_NEXT =
@@ -131,16 +147,13 @@ const lockResult = (
 	payload: Record<string, unknown>,
 	opts: {
 		isError?: boolean;
-		countClaim?: boolean;
-		countRelease?: boolean;
+		balance?: ISessionBalance;
 	} = {},
 ): IAgentLockResponse => {
 	const blocked = payload.blocked === true;
 	const isError = opts.isError === true;
 	const ok = !isError && !blocked;
-	if (opts.countClaim === true && ok) sessionClaimCount += 1;
-	if (opts.countRelease === true && ok) sessionReleaseCount += 1;
-	const balance = getAgentLockSessionBalance();
+	const balance = opts.balance ?? lastKnownSessionBalance;
 	const body = {
 		...payload,
 		ok,
@@ -154,6 +167,79 @@ const lockResult = (
 		content: [{ type: 'text', text: JSON.stringify(body) }],
 		...(isError ? { isError: true } : {}),
 	};
+};
+
+const replaceSessionBalance = (
+	response: IAgentLockResponse,
+	balance: ISessionBalance,
+): IAgentLockResponse => {
+	const raw = response.content[0]?.text;
+	if (typeof raw !== 'string') return response;
+	try {
+		const parsed = JSON.parse(raw) as Record<string, unknown>;
+		return {
+			...response,
+			content: [
+				{
+					type: 'text',
+					text: JSON.stringify({
+						...parsed,
+						session: {
+							claims: balance.claims,
+							releases: balance.releases,
+							imbalance: balance.imbalance,
+						},
+					}),
+				},
+			],
+		};
+	} catch {
+		return response;
+	}
+};
+
+const applyPersistedSessionBalance = async (
+	response: IAgentLockResponse,
+	args: IAgentLockArgs,
+	deps: IAgentLockDeps,
+): Promise<IAgentLockResponse> => {
+	const workspaceRoot = resolveSessionWorkspaceRoot(deps);
+	const raw = response.content[0]?.text;
+	if (typeof raw !== 'string') return response;
+	let payload: Record<string, unknown>;
+	try {
+		payload = JSON.parse(raw) as Record<string, unknown>;
+	} catch {
+		return response;
+	}
+	if (args.action === 'claim' && payload.claimed === true && payload.ok === true) {
+		await appendSessionEntry(
+			{
+				ts: getNow(deps),
+				agent: String(payload.agent ?? args.agent ?? ''),
+				action: 'claim',
+				ok: true,
+			},
+			workspaceRoot,
+		);
+	}
+	if (
+		args.action === 'release' &&
+		payload.released === true &&
+		payload.ok === true
+	) {
+		await appendSessionEntry(
+			{
+				ts: getNow(deps),
+				agent: String(payload.agent ?? 'unknown'),
+				action: 'release',
+				ok: true,
+			},
+			workspaceRoot,
+		);
+	}
+	lastKnownSessionBalance = await readSessionBalance(workspaceRoot);
+	return replaceSessionBalance(response, lastKnownSessionBalance);
 };
 
 const getLockPath = (deps: IAgentLockDeps = {}): string => {
@@ -514,6 +600,7 @@ export async function runAgentLockEngine(
 	args: IAgentLockArgs,
 	deps: IAgentLockDeps = {},
 ): Promise<IAgentLockResponse> {
+	lastSessionWorkspaceRoot = resolveSessionWorkspaceRoot(deps);
 	const v = validateArgs(args);
 	const toolName = getToolName(deps);
 	const lockFileLabel = getLockFileLabel(deps);
@@ -570,14 +657,22 @@ export async function runAgentLockEngine(
 	}
 
 	if (args.action === 'status') {
-		return executeLockAction(args, deps);
+		return applyPersistedSessionBalance(
+			await executeLockAction(args, deps),
+			args,
+			deps,
+		);
 	}
 
 	try {
-		return await withFileMutex(
+		return await applyPersistedSessionBalance(
+			await withFileMutex(
 			getFileLockTablePath(deps),
 			() => executeLockAction(args, deps),
 			getMutexOptions(args, deps),
+			),
+			args,
+			deps,
 		);
 	} catch (error) {
 		if (error instanceof LockContentionError) {
@@ -828,7 +923,6 @@ async function executeLockAction(
 				claimed: true,
 				summary: `claimed ${taskId} (${files.length} files)`,
 			},
-			{ countClaim: true },
 		);
 	}
 
@@ -856,6 +950,7 @@ async function executeLockAction(
 				tool: toolName,
 				action: 'release',
 				task_id: taskId,
+				...(existing !== undefined ? { agent: existing.agent } : {}),
 				path: lockFileLabel,
 				lock_path: lockPath,
 				removed: dropped,
@@ -864,8 +959,7 @@ async function executeLockAction(
 					dropped > 0
 						? `released ${taskId}`
 						: `no active claim for ${taskId}`,
-			},
-			dropped > 0 ? { countRelease: true } : {},
+				},
 		);
 	}
 

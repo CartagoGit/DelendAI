@@ -59,13 +59,16 @@ const structured = (value: unknown): Record<string, unknown> =>
 	(value as { structuredContent: Record<string, unknown> }).structuredContent;
 
 describe('log tools', async () => {
-	it('registers the six read-only tools', async () => {
+	it('registers the nine tools (six read-only + log + search + incidents)', async () => {
 		const handlers = await registeredHandlers();
 		expect([...handlers.keys()].sort()).toEqual([
 			'logs_correlate',
 			'logs_errors_tail',
+			'logs_incidents',
+			'logs_log',
 			'logs_query',
 			'logs_redact_test',
+			'logs_search',
 			'logs_subscribe',
 			'logs_tail',
 		]);

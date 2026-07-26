@@ -55,18 +55,19 @@ const SANCTIONED_TOP_LEVEL: ReadonlySet<string> = new Set([
 	// Subdirs of durable or regenerable cache state.
 	'bootstrap',
 	'drift',
+	'exec',
 	'handoff',
+	'logs-errors',
 	'proposals',
 	'rules',
+	'skills',
 	'state',
 	'verify',
 	// Accumulated records (see IMcpPlugin#cacheNamespace) — NOT derivable
 	// cache, but still under the one canonical ignored root. Nests
 	// logs/memory/usage-tracking (and any future opt-in plugin).
 	'results',
-	// Per-plugin ephemeral exec dir (f00080). Plugins add their own
-	// `<pluginCacheDir>/<plugin>/exec/` subtree at boot, so we whitelist
-	// the whole pattern generically below.
+	// Per-plugin ephemeral exec dir (f00080)
 	// Per-agent git worktrees — not source code, never stray.
 	'.worktrees',
 ]);
