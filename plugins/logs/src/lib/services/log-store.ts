@@ -113,8 +113,8 @@ export const createLogStore = async (
 					events.push({
 						ts: new Date().toISOString(),
 						kind: 'log-warning',
-							severity: 'warning',
-							incidentType: 'corrupt-line',
+						severity: 'warning',
+						incidentType: 'corrupt-line',
 						agent: null,
 						taskId: null,
 						outcome: 'failed',

@@ -121,8 +121,8 @@ export const collectSliceStatuses = (
 		if (header) {
 			if (current !== null) slices.push(current);
 			current = {
-				id: header[1] ?? "",
-				title: header[2]?.trim() ?? "",
+				id: header[1] ?? '',
+				title: header[2]?.trim() ?? '',
 				status: 'pending',
 				files: [],
 			};
@@ -145,7 +145,10 @@ export const collectSliceStatuses = (
 		if (filesMatch) {
 			const decl = expandDeclaredFiles(filesMatch[1] ?? '');
 			if (decl.length > 0) {
-				current = { ...current, files: [...(current?.files ?? []), ...decl] };
+				current = {
+					...current,
+					files: [...(current?.files ?? []), ...decl],
+				};
 			}
 		}
 	}
@@ -210,7 +213,10 @@ export const verifyCompletedProposalAsync = async (input: {
 	readonly read: IReadMarkdown;
 }): Promise<ICompletenessResult> => {
 	const markdown = await input.read.readText(input.proposalPath);
-	const result = guardSlicesComplete({ markdown, fileExists: (p) => existsSync(p) });
+	const result = guardSlicesComplete({
+		markdown,
+		fileExists: (p) => existsSync(p),
+	});
 	// `existsSync` is sync-only; for tests that need async correctness
 	// the caller injects the `fileExists` predicate directly.
 	return result;

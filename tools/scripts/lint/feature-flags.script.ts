@@ -70,7 +70,9 @@ export const parseFeatureFlagCatalog = (
 			.map((cell) => cell.trim())
 			.filter((cell) => cell.length > 0);
 		if (cells.length < 5) {
-			errors.push(`line ${index + 1}: expected 5 cells, got ${cells.length}`);
+			errors.push(
+				`line ${index + 1}: expected 5 cells, got ${cells.length}`,
+			);
 			continue;
 		}
 		const [nameCell, sinceCell, defaultCell, removalCell, ...rest] = cells;
@@ -82,12 +84,20 @@ export const parseFeatureFlagCatalog = (
 		const sinceVersion = sinceCell;
 		const defaultValue = parseBooleanLiteral(defaultCell);
 		if (defaultValue === null) {
-			errors.push(`line ${index + 1}: defaultValue must be \`true\` or \`false\``);
+			errors.push(
+				`line ${index + 1}: defaultValue must be \`true\` or \`false\``,
+			);
 			continue;
 		}
 		const removalVersion = removalCell;
 		const description = rest.join(' | ');
-		entries.push({ name, sinceVersion, defaultValue, removalVersion, description });
+		entries.push({
+			name,
+			sinceVersion,
+			defaultValue,
+			removalVersion,
+			description,
+		});
 	}
 	return { ok: errors.length === 0, entries, errors };
 };

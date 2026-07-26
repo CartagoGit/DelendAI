@@ -5,9 +5,9 @@ import { join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import {
-        checkTransitionEvidence,
-        evidenceFileExists,
-        isEvidenceFresh,
+	checkTransitionEvidence,
+	evidenceFileExists,
+	isEvidenceFresh,
 } from '@mcp-vertex/proposals/lib/services/transition-evidence';
 
 describe('transition-evidence', () => {
@@ -33,8 +33,7 @@ describe('transition-evidence', () => {
 		await expect(checkTransitionEvidence(undefined)).resolves.toEqual({
 			ok: false,
 			code: 'missing-evidence',
-			reason:
-				'validateEvidence is required to move pending/ready proposals directly to done',
+			reason: 'validateEvidence is required to move pending/ready proposals directly to done',
 		});
 	});
 
@@ -85,20 +84,14 @@ describe('transition-evidence', () => {
 	it('treats exactly 24h old evidence as fresh', () => {
 		const nowMs = Date.parse('2026-07-26T12:00:00.000Z');
 		expect(
-			isEvidenceFresh(
-				{ timestamp: '2026-07-25T12:00:00.000Z' },
-				nowMs,
-			),
+			isEvidenceFresh({ timestamp: '2026-07-25T12:00:00.000Z' }, nowMs),
 		).toBe(true);
 	});
 
 	it('accepts future timestamps to tolerate clock skew', () => {
 		const nowMs = Date.parse('2026-07-26T12:00:00.000Z');
 		expect(
-			isEvidenceFresh(
-				{ timestamp: '2026-07-26T12:30:00.000Z' },
-				nowMs,
-			),
+			isEvidenceFresh({ timestamp: '2026-07-26T12:30:00.000Z' }, nowMs),
 		).toBe(true);
 	});
 

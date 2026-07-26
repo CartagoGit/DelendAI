@@ -44,19 +44,26 @@ describe('solid-compliance.script — pure engine', () => {
 		].join('\n');
 		const files = mkMap({ 'plugins/example/src/lib/route.ts': body });
 		const result = await classifySolidFindings(process.cwd(), files);
-		const chains = result.findings.filter((f) => f.id === 'long-switch-chain');
+		const chains = result.findings.filter(
+			(f) => f.id === 'long-switch-chain',
+		);
 		expect(chains).toHaveLength(1);
 		expect(chains[0]?.relPath).toBe('plugins/example/src/lib/route.ts');
 		expect(chains[0]?.message).toMatch(/6 case branches/);
 	});
 
 	it('oversized-file: > 400 LOC flagged once', async () => {
-		const lines = Array.from({ length: 401 }, (_, i) => `// line ${i + 1}`).join('\n');
+		const lines = Array.from(
+			{ length: 401 },
+			(_, i) => `// line ${i + 1}`,
+		).join('\n');
 		const files = mkMap({ 'plugins/example/src/lib/big.ts': lines });
 		const result = await classifySolidFindings(process.cwd(), files, {
 			maxLoc: 400,
 		});
-		const oversize = result.findings.filter((f) => f.id === 'oversized-file');
+		const oversize = result.findings.filter(
+			(f) => f.id === 'oversized-file',
+		);
 		expect(oversize).toHaveLength(1);
 		expect(oversize[0]?.message).toMatch(/401 LOC/);
 	});
@@ -77,7 +84,9 @@ describe('solid-compliance.script — pure engine', () => {
 			'packages/core/src/lib/util/wait.ts': coreBody,
 		});
 		const result = await classifySolidFindings(process.cwd(), files);
-		const mags = result.findings.filter((f) => f.id === 'magic-number-in-plugin');
+		const mags = result.findings.filter(
+			(f) => f.id === 'magic-number-in-plugin',
+		);
 		expect(mags).toHaveLength(1);
 		expect(mags[0]?.relPath).toBe('plugins/example/src/lib/wait.ts');
 		expect(mags[0]?.message).toMatch(/12345/);
@@ -93,7 +102,9 @@ describe('solid-compliance.script — pure engine', () => {
 		].join('\n');
 		const files = mkMap({ 'plugins/example/src/lib/safe.ts': body });
 		const result = await classifySolidFindings(process.cwd(), files);
-		const swallows = result.findings.filter((f) => f.id === 'catch-swallow');
+		const swallows = result.findings.filter(
+			(f) => f.id === 'catch-swallow',
+		);
 		expect(swallows).toHaveLength(1);
 		expect(swallows[0]?.line).toBe(4);
 	});
@@ -116,7 +127,9 @@ describe('solid-compliance.script — pure engine', () => {
 		const result = await classifySolidFindings(process.cwd(), files, {
 			minDupCopies: 2,
 		});
-		const dups = result.findings.filter((f) => f.id === 'duplicated-cross-plugin');
+		const dups = result.findings.filter(
+			(f) => f.id === 'duplicated-cross-plugin',
+		);
 		expect(dups.length).toBeGreaterThanOrEqual(2);
 		const relPaths = new Set(dups.map((d) => d.relPath));
 		expect(relPaths.size).toBe(2);

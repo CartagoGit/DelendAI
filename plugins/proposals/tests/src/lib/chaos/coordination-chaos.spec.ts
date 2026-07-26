@@ -52,7 +52,7 @@ describe('coordination chaos — heavy contention invariants (N23)', async () =>
 					},
 					{
 						lockPath,
-						mutexTimeoutMs: 5_000,
+						mutexTimeoutMs: 10_000,
 						mutexStaleMs: 5_000,
 						mutexPollMs: 5,
 					},

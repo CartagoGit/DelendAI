@@ -117,7 +117,9 @@ export const resetAgentLockSessionBalance = (): void => {
 	resetSessionBalance();
 };
 
-const resolveSessionWorkspaceRoot = (deps: IAgentLockDeps): string | undefined => {
+const resolveSessionWorkspaceRoot = (
+	deps: IAgentLockDeps,
+): string | undefined => {
 	if (!deps.lockPath) return undefined;
 	const parent = dirname(deps.lockPath);
 	return basename(parent) === '.cache' ? dirname(parent) : parent;
@@ -212,7 +214,11 @@ const applyPersistedSessionBalance = async (
 	} catch {
 		return response;
 	}
-	if (args.action === 'claim' && payload.claimed === true && payload.ok === true) {
+	if (
+		args.action === 'claim' &&
+		payload.claimed === true &&
+		payload.ok === true
+	) {
 		await appendSessionEntry(
 			{
 				ts: getNow(deps),
@@ -667,9 +673,9 @@ export async function runAgentLockEngine(
 	try {
 		return await applyPersistedSessionBalance(
 			await withFileMutex(
-			getFileLockTablePath(deps),
-			() => executeLockAction(args, deps),
-			getMutexOptions(args, deps),
+				getFileLockTablePath(deps),
+				() => executeLockAction(args, deps),
+				getMutexOptions(args, deps),
 			),
 			args,
 			deps,
@@ -910,20 +916,18 @@ async function executeLockAction(
 		});
 		await resolveTrackedContentions({ waitingTaskId: taskId }, deps);
 		await writeLockWithMutex(lock, args, deps);
-		return lockResult(
-			{
-				tool: toolName,
-				action: 'claim',
-				task_id: taskId,
-				agent,
-				path: lockFileLabel,
-				lock_path: lockPath,
-				heldFiles: files,
-				ownership_count: files.length,
-				claimed: true,
-				summary: `claimed ${taskId} (${files.length} files)`,
-			},
-		);
+		return lockResult({
+			tool: toolName,
+			action: 'claim',
+			task_id: taskId,
+			agent,
+			path: lockFileLabel,
+			lock_path: lockPath,
+			heldFiles: files,
+			ownership_count: files.length,
+			claimed: true,
+			summary: `claimed ${taskId} (${files.length} files)`,
+		});
 	}
 
 	if (args.action === 'release') {
@@ -945,22 +949,20 @@ async function executeLockAction(
 		);
 		const dropped = before - lock.in_flight.length;
 		await writeLockWithMutex(lock, args, deps);
-		return lockResult(
-			{
-				tool: toolName,
-				action: 'release',
-				task_id: taskId,
-				...(existing !== undefined ? { agent: existing.agent } : {}),
-				path: lockFileLabel,
-				lock_path: lockPath,
-				removed: dropped,
-				released: dropped > 0,
-				summary:
-					dropped > 0
-						? `released ${taskId}`
-						: `no active claim for ${taskId}`,
-				},
-		);
+		return lockResult({
+			tool: toolName,
+			action: 'release',
+			task_id: taskId,
+			...(existing !== undefined ? { agent: existing.agent } : {}),
+			path: lockFileLabel,
+			lock_path: lockPath,
+			removed: dropped,
+			released: dropped > 0,
+			summary:
+				dropped > 0
+					? `released ${taskId}`
+					: `no active claim for ${taskId}`,
+		});
 	}
 
 	if (args.action === 'status') {

@@ -1,6 +1,10 @@
 import { redactSecrets } from '@mcp-vertex/core/public';
 
-import { incidentTypeForKind, severityForOutcome, type LogSeverity } from './kinds';
+import {
+	incidentTypeForKind,
+	severityForOutcome,
+	type LogSeverity,
+} from './kinds';
 
 export const LOG_OUTCOMES = [
 	'ok',

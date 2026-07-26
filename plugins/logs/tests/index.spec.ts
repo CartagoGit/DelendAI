@@ -101,8 +101,9 @@ describe('logs plugin — register()', () => {
 	it('injects a ctx.logs helper that peer plugins can call (f00153 S4)', async () => {
 		const { ctx } = await buildCtx();
 		const result: Registrations = await logsPlugin.register(ctx);
-		const logs = (ctx as { logs?: { log: (input: unknown) => Promise<void> } })
-			.logs;
+		const logs = (
+			ctx as { logs?: { log: (input: unknown) => Promise<void> } }
+		).logs;
 		expect(logs).toBeDefined();
 		await logs?.log({
 			severity: 'critical',

@@ -38,9 +38,7 @@ describe('proposal-completeness — proposal-completeness', () => {
 
 		it('parses brace-expanded lists', () => {
 			expect(
-				expandDeclaredFiles(
-					'- **Files**: `dir/{a,b,c}.ts`, `e/f.ts`',
-				),
+				expandDeclaredFiles('- **Files**: `dir/{a,b,c}.ts`, `e/f.ts`'),
 			).toEqual(['dir/a.ts', 'dir/b.ts', 'dir/c.ts', 'e/f.ts']);
 		});
 
@@ -51,13 +49,16 @@ describe('proposal-completeness — proposal-completeness', () => {
 
 	describe('collectSliceStatuses', () => {
 		it('extracts every ### S<n> block with its status + files', () => {
-			const md = `
+			const md =
+				`
 ### S1 — slice one
 - **Files**: \`a/b.ts\`
 - **Status**: done
 
 ### S2 — slice two
-- **Files**: \`dir/{c,d}.ts\`, ` + '`e/f.ts`' + `
+- **Files**: \`dir/{c,d}.ts\`, ` +
+				'`e/f.ts`' +
+				`
 - **Status**: pending
 `;
 			const slices = collectSliceStatuses(md);
@@ -69,7 +70,11 @@ describe('proposal-completeness — proposal-completeness', () => {
 				files: ['a/b.ts'],
 			});
 			expect(slices[1]!.status).toBe('pending');
-			expect(slices[1]!.files).toEqual(['dir/c.ts', 'dir/d.ts', 'e/f.ts']);
+			expect(slices[1]!.files).toEqual([
+				'dir/c.ts',
+				'dir/d.ts',
+				'e/f.ts',
+			]);
 		});
 
 		it('defaults to pending when slice has no Status: line', () => {

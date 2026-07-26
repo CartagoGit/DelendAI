@@ -88,11 +88,14 @@ export const KIND_TO_INCIDENT_TYPE = {
 	'log-warning': 'log-warning',
 } as const;
 
-export type IncidentType = (typeof KIND_TO_INCIDENT_TYPE)[keyof typeof KIND_TO_INCIDENT_TYPE];
+export type IncidentType =
+	(typeof KIND_TO_INCIDENT_TYPE)[keyof typeof KIND_TO_INCIDENT_TYPE];
 
 export const incidentTypeForKind = (kind: string): string | null => {
 	if (kind in KIND_TO_INCIDENT_TYPE) {
-		return KIND_TO_INCIDENT_TYPE[kind as keyof typeof KIND_TO_INCIDENT_TYPE];
+		return KIND_TO_INCIDENT_TYPE[
+			kind as keyof typeof KIND_TO_INCIDENT_TYPE
+		];
 	}
 	return null;
 };
