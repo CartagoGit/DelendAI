@@ -1,0 +1,145 @@
+import { mkdtemp, readFile, rm } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+
+import { afterEach, describe, expect, it } from 'vitest';
+
+import {
+	buildForcedRegressionCaller,
+	guardDoneToReviewRegression,
+	guardShippedInPresent,
+	logForcedRegression,
+} from '@mcp-vertex/proposals/lib/services/proposal-state';
+
+describe('proposal-state guards', () => {
+	const tempRoots: string[] = [];
+
+	afterEach(async () => {
+		await Promise.all(
+			tempRoots
+				.splice(0)
+				.map((root) => rm(root, { recursive: true, force: true })),
+		);
+	});
+
+	it('allows non-regression transitions unchanged', () => {
+		expect(
+			guardDoneToReviewRegression({
+				from: 'in-progress',
+				to: 'review',
+			}),
+		).toEqual({ ok: true });
+	});
+
+	it('blocks done -> review without force', () => {
+		expect(
+			guardDoneToReviewRegression({ from: 'done', to: 'review' }),
+		).toEqual({
+			ok: false,
+			code: 'invalid-regression',
+			reason: 'cannot move done -> review without force: true',
+		});
+	});
+
+	it('blocks done -> review when force is false', () => {
+		expect(
+			guardDoneToReviewRegression({
+				from: 'done',
+				to: 'review',
+				force: false,
+				reason: 'nope',
+			}),
+		).toEqual({
+			ok: false,
+			code: 'invalid-regression',
+			reason: 'cannot move done -> review without force: true',
+		});
+	});
+
+	it('blocks done -> review with force and blank reason', () => {
+		expect(
+			guardDoneToReviewRegression({
+				from: 'done',
+				to: 'review',
+				force: true,
+				reason: '   ',
+			}),
+		).toEqual({
+			ok: false,
+			code: 'invalid-regression',
+			reason: 'force: true requires a non-empty reason',
+		});
+	});
+
+	it('allows done -> review with force and reason', () => {
+		expect(
+			guardDoneToReviewRegression({
+				from: 'done',
+				to: 'review',
+				force: true,
+				reason: 're-open for operator fix',
+			}),
+		).toEqual({ ok: true });
+	});
+
+	it('builds a caller record with host/pid/agent', () => {
+		const caller = buildForcedRegressionCaller('agent-s1');
+		expect(caller.agent).toBe('agent-s1');
+		expect(typeof caller.host).toBe('string');
+		expect(typeof caller.pid).toBe('number');
+	});
+
+	it('accepts a non-empty shipped-in list', () => {
+		expect(
+			guardShippedInPresent({ 'shipped-in': ['abc123', 'def456'] }),
+		).toEqual({ ok: true });
+	});
+
+	it('rejects missing shipped-in', () => {
+		expect(guardShippedInPresent({})).toEqual({
+			ok: false,
+			code: 'missing-shipped-in',
+			reason: 'shipped-in: list is required to mark a proposal done',
+		});
+	});
+
+	it('rejects empty shipped-in lists', () => {
+		expect(guardShippedInPresent({ 'shipped-in': [] })).toEqual({
+			ok: false,
+			code: 'missing-shipped-in',
+			reason: 'shipped-in: list is required to mark a proposal done',
+		});
+	});
+
+	it('rejects shipped-in lists without non-empty strings', () => {
+		expect(guardShippedInPresent({ 'shipped-in': ['   ', ''] })).toEqual({
+			ok: false,
+			code: 'missing-shipped-in',
+			reason: 'shipped-in: list is required to mark a proposal done',
+		});
+	});
+
+	it('appends one JSONL line for a forced regression', async () => {
+		const root = await mkdtemp(join(tmpdir(), 'proposal-state-log-'));
+		tempRoots.push(root);
+		await logForcedRegression({
+			workspaceRoot: root,
+			proposalId: 'f00074',
+			from: 'done',
+			to: 'review',
+			reason: 're-open after audit regression',
+			ts: '2026-07-26T12:00:00.000Z',
+			caller: { host: 'test-host', pid: 1234, agent: 'agent-s1' },
+		});
+		const raw = await readFile(
+			join(root, '.cache', 'mcp-vertex', 'proposals-state.log'),
+			'utf8',
+		);
+		const entry = JSON.parse(raw.trim()) as {
+			proposalId: string;
+			caller: { agent: string };
+		};
+		expect(entry.proposalId).toBe('f00074');
+		expect(entry.caller.agent).toBe('agent-s1');
+	});
+});
