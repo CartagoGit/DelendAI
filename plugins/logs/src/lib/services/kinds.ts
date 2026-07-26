@@ -1,10 +1,15 @@
 /**
  * kinds.ts — f00153 S1.
  *
- * `severity` (syslog-style 7-level taxonomy) and `incidentType` (the
+ * `severity` (syslog RFC 5424 8-level taxonomy, §6.2.1) and `incidentType` (the
  * type of incident an event represents). Both fields ride on every
  * `ILogEvent` so any read tool (query / tail / errors_tail / correlate
  * / search / incidents) can filter by them without a separate index.
+ *
+ * The syslog severity scale runs 0-7 (8 levels total): emergency, alert,
+ * critical, error, warning, notice, informational, debug. We expose them
+ * alphabetically in `LOG_SEVERITIES` for stable sort; the numeric
+ * ranking in `SEVERITY_RANK` is the operator-facing order.
  *
  * `KIND_TO_INCIDENT_TYPE` maps the lifecycle `kind` (the hook that
  * emitted the event) to a stable, lower-case `^[a-z][a-z0-9-]{0,63}$`
@@ -58,6 +63,23 @@ const SEVERITY_FOR_OUTCOME: Readonly<Record<LogOutcome, LogSeverity>> = {
 
 export const severityForOutcome = (outcome: LogOutcome): LogSeverity =>
 	SEVERITY_FOR_OUTCOME[outcome];
+
+/**
+ * Numeric ranking per syslog severity (RFC 5424 §6.2.1: 0=emerg .. 7=debug).
+ * Exposed so the read-side filters (`severityAtLeast`) can compare
+ * without a hand-rolled switch, and so x00153 S7's spec can assert the
+ * operator-facing order without re-listing the levels.
+ */
+export const SEVERITY_RANK: Readonly<Record<LogSeverity, number>> = {
+	emergency: 0,
+	alert: 1,
+	critical: 2,
+	error: 3,
+	warning: 4,
+	notice: 5,
+	info: 6,
+	debug: 7,
+};
 
 /**
  * Default incident-type per lifecycle kind. Stable, lower-case,

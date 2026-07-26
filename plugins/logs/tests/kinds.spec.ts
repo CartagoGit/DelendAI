@@ -12,6 +12,7 @@ import {
 	isValidIncidentType,
 	KIND_TO_INCIDENT_TYPE,
 	LOG_SEVERITIES,
+	SEVERITY_RANK,
 	severityForOutcome,
 } from '../src/lib/services/kinds';
 import {
@@ -104,5 +105,33 @@ describe('normalizeEvent populates severity + incidentType (f00153 S1)', () => {
 		const event = normalizeEvent('server-started', { taskId: 'pid-1' });
 		expect(event.severity).toBe('info');
 		expect(event.incidentType).toBe('server-boot');
+	});
+});
+
+describe('x00153 S7 — kinds.ts doc comment claims 8-level taxonomy', () => {
+	it('defines exactly the 8 canonical syslog severities', () => {
+		expect(LOG_SEVERITIES.length).toBe(8);
+		expect([...LOG_SEVERITIES].sort()).toEqual([
+			'alert',
+			'critical',
+			'debug',
+			'emergency',
+			'error',
+			'info',
+			'notice',
+			'warning',
+		]);
+	});
+
+	it('SEVERITY_RANK exposes the operator-facing numeric order', () => {
+		// syslog RFC 5424 §6.2.1: 0=emerg .. 7=debug
+		expect(SEVERITY_RANK.emergency).toBe(0);
+		expect(SEVERITY_RANK.alert).toBe(1);
+		expect(SEVERITY_RANK.critical).toBe(2);
+		expect(SEVERITY_RANK.error).toBe(3);
+		expect(SEVERITY_RANK.warning).toBe(4);
+		expect(SEVERITY_RANK.notice).toBe(5);
+		expect(SEVERITY_RANK.info).toBe(6);
+		expect(SEVERITY_RANK.debug).toBe(7);
 	});
 });
