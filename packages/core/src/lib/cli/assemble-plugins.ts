@@ -24,7 +24,7 @@ import {
 } from '../plugins/load-config-file';
 import type { IMcpVertexConfigFile } from '../plugins/load-config-file';
 import { loadPlugins, nodeDynamicImport } from '../plugins/load-plugins';
-import type { IPluginLoadResult } from '../plugins/load-plugins';
+import type { ILoadedPlugin, IPluginLoadResult } from '../plugins/load-plugins';
 import { buildActivationReport } from '../plugins/activation-report';
 import { classifyOrigin } from '../plugins/classify-origin';
 import type { IMcpPluginContext } from '../plugins/plugin-contract';
@@ -75,6 +75,7 @@ export interface IAssemblePluginsResult {
 		) => Promise<void> | void
 	>;
 	readonly isAgentStuckFn: IMcpVertexHostConfig['isAgentStuck'];
+	readonly logsSink: import('../plugins/logs-sink').ILogsSink | undefined;
 	readonly activationReport: ReturnType<typeof buildActivationReport>;
 	readonly activationById: ReadonlyMap<
 		string,
@@ -138,6 +139,43 @@ export const assemblePlugins = async (
 		import: importFn ?? nodeDynamicImport,
 	});
 
+	// f00154 S4 — `--strict-logs` auto-injects the `logs` plugin when
+	// the host did not name it explicitly. The injection is a no-op if
+	// `logs` is already in the load set; otherwise we re-load with the
+	// added specifier and warn once on stderr. The auto-load is
+	// deliberately idempotent: a host that adds `logs` to its preset
+	// never sees a duplicate.
+	if (
+		args.strictLogs === true &&
+		!loadResult.loaded.some((p) => p.plugin.name === 'logs')
+	) {
+		process.stderr.write(
+			'[mcp-vertex] --strict-logs: auto-loading the `logs` plugin to persist lifecycle events.\n',
+		);
+		const autoLoad = await loadPlugins({
+			specifiers: [...effectivePlugins, 'logs'],
+			workspaceRoot: args.workspace,
+			buildContext,
+			import: importFn ?? nodeDynamicImport,
+		});
+		// Merge: every plugin from the original load survives, plus
+		// any from the auto-load that are not already there. We cast
+		// through the readonly modifier because `loadResult.loaded`
+		// is typed as immutable; the merge happens before the
+		// downstream consumers (`onTool*` wiring) read it.
+		const merged: Array<(typeof loadResult.loaded)[number]> = [
+			...loadResult.loaded,
+		];
+		const seen = new Set(merged.map((p) => p.plugin.name));
+		for (const entry of autoLoad.loaded) {
+			if (!seen.has(entry.plugin.name)) {
+				merged.push(entry);
+				seen.add(entry.plugin.name);
+			}
+		}
+		(loadResult as unknown as { loaded: ILoadedPlugin[] }).loaded = merged;
+	}
+
 	// Populate the peer-plugin registry now that we know the final
 	// load outcome. Plugins running their `register()` see `[]`; tool
 	// handlers (which run later, after this call returns) see the
@@ -175,7 +213,10 @@ export const assemblePlugins = async (
 		) => Promise<void> | void
 	> = [];
 	let isAgentStuckFn: IMcpVertexHostConfig['isAgentStuck'];
-
+	// f00154 S2 — every plugin can register a logsSink; we pick the
+	// first one that does. The `logs` plugin's sink is the canonical
+	// choice when both are present.
+	let resolvedLogsSink: import('../plugins/logs-sink').ILogsSink | undefined;
 	for (const { plugin, registrations } of loadResult.loaded) {
 		const ns =
 			pluginConfigFor(fileConfig, plugin.name).prefix ?? plugin.name;
@@ -190,6 +231,9 @@ export const assemblePlugins = async (
 			onToolCancels.push(registrations.onToolCancel);
 		if (registrations.isAgentStuck)
 			isAgentStuckFn = registrations.isAgentStuck;
+		if (registrations.logsSink && resolvedLogsSink === undefined) {
+			resolvedLogsSink = registrations.logsSink;
+		}
 		for (const tool of registrations.tools ?? []) {
 			// Every plugin tool is qualified with the host's core namespace
 			// prefix (`mcp-vertex` by default) followed by the plugin's own
@@ -388,6 +432,7 @@ export const assemblePlugins = async (
 		onToolStarts,
 		onToolCancels,
 		isAgentStuckFn,
+		logsSink: resolvedLogsSink,
 		activationReport,
 		activationById,
 		configurationPlugins,

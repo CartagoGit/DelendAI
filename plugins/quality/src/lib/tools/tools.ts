@@ -1,7 +1,15 @@
 import { z } from 'zod';
 
-import type { IFileReader, IToolRegistration } from '@mcp-vertex/core/public';
-import { toolError, toolJson } from '@mcp-vertex/core/public';
+import type {
+	IFileReader,
+	ILogsSink,
+	IToolRegistration,
+} from '@mcp-vertex/core/public';
+import {
+	toolError,
+	toolJson,
+	withIncidentLogging,
+} from '@mcp-vertex/core/public';
 
 import { cancelActiveRuns, runScope } from '../services/runner';
 import type { ICommandRunner } from '../services/runner';
@@ -17,6 +25,13 @@ export interface IQualityToolOptions {
 	readonly optionScopes?: Readonly<Record<string, readonly string[]>>;
 	/** Optional allow/deny policy enforced before any command is spawned. */
 	readonly commandPolicy?: ICommandPolicy;
+	/**
+	 * f00154 S3 — optional sink for incident-driven logging. When set,
+	 * every `toolError(...)` in a quality tool handler emits a
+	 * structured incident. Defaults to `undefined` (no incident
+	 * emitted), preserving f00153 behaviour.
+	 */
+	readonly logsSink?: ILogsSink;
 }
 
 const scopesOf = async (options: IQualityToolOptions): Promise<IScopeMap> =>
@@ -88,37 +103,43 @@ export const buildQualityToolRegistrations = (
 							),
 						}),
 					},
-					async (args: { scope?: string | undefined }) => {
-						const scopes = await scopesOf(options);
-						const names = Object.keys(scopes);
-						if (names.length === 0) {
-							return toolError(
-								'no quality scopes configured',
-								'Add scripts to package.json, a validationMatrix to mcp-vertex.config.json, or `scopes` to the plugin options.',
+					withIncidentLogging(
+						{ incidentType: 'quality-failure' },
+						options.logsSink !== undefined
+							? { logsSink: options.logsSink }
+							: {},
+						async (args: { scope?: string | undefined }) => {
+							const scopes = await scopesOf(options);
+							const names = Object.keys(scopes);
+							if (names.length === 0) {
+								return toolError(
+									'no quality scopes configured',
+									'Add scripts to package.json, a validationMatrix to mcp-vertex.config.json, or `scopes` to the plugin options.',
+								);
+							}
+							const scope =
+								args.scope ??
+								(names.includes('all')
+									? 'all'
+									: (names[0] as string));
+							const commands = scopes[scope];
+							if (commands === undefined) {
+								return toolError(
+									`unknown scope "${scope}"`,
+									`Available: ${names.join(', ')}.`,
+								);
+							}
+							return toolJson(
+								await runScope(
+									scope,
+									commands,
+									options.workspaceRoot,
+									options.run,
+									options.commandPolicy,
+								),
 							);
-						}
-						const scope =
-							args.scope ??
-							(names.includes('all')
-								? 'all'
-								: (names[0] as string));
-						const commands = scopes[scope];
-						if (commands === undefined) {
-							return toolError(
-								`unknown scope "${scope}"`,
-								`Available: ${names.join(', ')}.`,
-							);
-						}
-						return toolJson(
-							await runScope(
-								scope,
-								commands,
-								options.workspaceRoot,
-								options.run,
-								options.commandPolicy,
-							),
-						);
-					},
+						},
+					),
 				);
 			},
 		},

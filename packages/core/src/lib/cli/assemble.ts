@@ -31,6 +31,8 @@ import type {
 } from '../contracts/interfaces/cache-eviction.interface';
 import { createCacheEvictionRegistry } from '../cache/eviction-registry';
 import { resolveWorkspaceContained } from '../shared/contain-path';
+import type { ILogsSink } from '../plugins/plugin-contract';
+import { ConsoleLogsSink } from '../plugins/logs-sink';
 import { assemblePlugins } from './assemble-plugins';
 import { assembleCoreTools } from './assemble-core-tools';
 import { assembleSkills } from './assemble-skills';
@@ -260,6 +262,13 @@ export const assembleCliConfig = async (
 		createGitConfigReader(createGitRunner(workspace.root)),
 	);
 
+	// f00154 S2 — the sink every plugin's context receives. We
+	// resolve it AFTER `assemblePlugins` (which sees the `logsSink`
+	// each plugin returned in its registrations), and fall back to a
+	// `ConsoleLogsSink` if no plugin supplied one. The fallback
+	// guarantees no tool-call lifecycle event is silently dropped
+	// when the host forgets `--plugins=logs`.
+	let resolvedLogsSink: ILogsSink | undefined;
 	const buildContext = (
 		pluginName: string,
 		cacheNamespace?: string,
@@ -284,6 +293,9 @@ export const assembleCliConfig = async (
 			args: args.extra,
 			cacheEvictionRegistry,
 			peerPlugins: peerRegistry.registry,
+			...(resolvedLogsSink !== undefined
+				? { logsSink: resolvedLogsSink }
+				: {}),
 		};
 	};
 
@@ -299,6 +311,7 @@ export const assembleCliConfig = async (
 		onToolStarts,
 		onToolCancels,
 		isAgentStuckFn,
+		logsSink,
 		activationReport,
 		configurationPlugins,
 		configurationArtifacts,
@@ -437,6 +450,15 @@ export const assembleCliConfig = async (
 			? { isAgentStuck: isAgentStuckFn }
 			: {}),
 	};
+
+	// f00154 S2 — if no plugin supplied a sink, default to the
+	// console fallback so lifecycle events still surface (one
+	// structured JSON line per event on stderr, redacted).
+	resolvedLogsSink =
+		logsSink ??
+		new ConsoleLogsSink({
+			quiet: (args as { quiet?: boolean }).quiet === true,
+		});
 
 	// f00072 slice S1/S3: boot sweep. Runs once, AFTER every plugin has
 	// registered its rules. The result is surfaced in

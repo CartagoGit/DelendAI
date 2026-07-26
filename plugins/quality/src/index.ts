@@ -296,6 +296,10 @@ export default definePlugin({
 			...(ctx.options.commandPolicy
 				? { commandPolicy: ctx.options.commandPolicy }
 				: {}),
+			// f00154 S3 — wire the incident sink. Every `toolError`
+			// in the quality tool handlers emits one structured
+			// incident on the JSONL streams (or console fallback).
+			...(ctx.logsSink ? { logsSink: ctx.logsSink } : {}),
 		};
 		const validateOutputReader = (
 			ctx.options as { validateOutputReader?: IValidateOutputReader }

@@ -810,4 +810,10 @@ export type {
 	DipKind,
 	ICatchSwallowHit,
 	IDipHit,
+	IFixProposal,
+	ILongChainHit,
+	ILongChainsOptions,
+	IMagicNumberHit,
+	IShingleHit,
+	IShingleOptions,
 } from '../lib/scan';
