@@ -175,6 +175,7 @@ describe('deps_outdated tool registration (M11, opt-in)', async () => {
 			'deps_check',
 			'deps_licenses',
 			'deps_polyglot',
+			'deps_tree',
 		]);
 	});
 
@@ -191,6 +192,7 @@ describe('deps_outdated tool registration (M11, opt-in)', async () => {
 			'deps_audit',
 			'deps_licenses',
 			'deps_polyglot',
+			'deps_tree',
 		]);
 		expect(tools.find((t) => t.id === 'deps_outdated')?.effects).toEqual([
 			'network',
@@ -389,6 +391,7 @@ describe('deps plugin', async () => {
 			'deps_check',
 			'deps_licenses',
 			'deps_polyglot',
+			'deps_tree',
 		]);
 		expect(reg.knowledge?.[0]?.id).toBe('deps-usage');
 	});
