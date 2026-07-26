@@ -19,12 +19,13 @@ export const parseDockerLogs = (
 		if (line.trim() === '') continue;
 		const match = TIMESTAMPED_LOG_LINE.exec(line);
 		if (match === null) continue;
+		if (match[1] === undefined) continue;
 		const timestamp = toIsoTimestamp(match[1]);
 		if (timestamp === undefined) continue;
 		lines.push({
 			timestamp,
 			stream,
-			message: match[2] ?? '',
+			message: match[2] ?? line,
 		});
 	}
 	return lines;
