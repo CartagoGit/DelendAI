@@ -2,7 +2,7 @@
 id: f00133
 kind: feat
 title: container plugin — read-only Docker/Kubernetes inspection, Dockerfile lint and consented build/apply via the host CLI
-status: ready
+status: done
 date: 2026-07-23
 track: plugin+container+runtime
 ---
