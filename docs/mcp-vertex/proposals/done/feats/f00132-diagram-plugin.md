@@ -2,7 +2,7 @@
 id: f00132
 kind: feat
 title: diagram plugin — mermaid diagrams generated from project data (dependency graph, architecture, ERD, proposal DFA)
-status: ready
+status: done
 date: 2026-07-23
 track: plugin+diagram+docs
 ---

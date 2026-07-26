@@ -2,7 +2,7 @@
 id: f00124
 kind: feat
 title: semantic search — optional local embedding layer + hybrid ranking on the existing search plugin (find by meaning, zero-config)
-status: ready
+status: done
 date: 2026-07-23
 track: plugin+search+navigation
 ---

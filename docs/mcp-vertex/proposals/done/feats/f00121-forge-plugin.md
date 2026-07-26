@@ -2,7 +2,7 @@
 id: f00121
 kind: feat
 title: forge plugin — GitHub/GitLab PRs, remote issues, CI status and releases via the host's authenticated CLI
-status: ready
+status: done
 date: 2026-07-23
 track: plugin+forge+collab
 ---
@@ -58,7 +58,7 @@ stays a thin adapter: map the CLI's JSON output into the shared shapes.
 ### S1 — read surface (PR / CI / issues)
 
 - **Status**: done (2026-07-24)
-- **Files**: `plugins/forge/src/lib/read/`, `plugins/forge/src/lib/tools/forge-read.tool.ts`
+- **Files**: `plugins/forge/src/lib/tools/forge-read.tool.ts`, `plugins/forge/src/lib/git/`, `plugins/forge/src/lib/cli/`
 - **Gate**: bun run validate
 
 `forge_pr_list`, `forge_pr_show`, `forge_ci_status` (+ failing-job logs) and
@@ -73,7 +73,7 @@ reads, validated with plugin-local tests plus repo typecheck/lint gates.
 ### S2 — write surface (consented)
 
 - **Status**: done (2026-07-24)
-- **Files**: `plugins/forge/src/lib/write/`, `plugins/forge/src/lib/tools/forge-write.tool.ts`
+- **Files**: `plugins/forge/src/lib/tools/forge-write.tool.ts`, `plugins/forge/src/lib/exec.ts`, `plugins/forge/src/lib/detect.ts`
 - **Gate**: bun run validate
 
 `forge_pr_create` (body assembled from the linked proposal/commits, honouring
