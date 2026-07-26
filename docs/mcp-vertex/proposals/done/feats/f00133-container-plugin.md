@@ -56,17 +56,15 @@ skipped envelope with an install hint instead of throwing.
 ### S2 — logs + Dockerfile lint
 
 - **Status**: done
-- **Files**: `plugins/container/src/lib/lint/{dockerfile-parser,dockerfile-rules,run-lint}.{ts,spec.ts}`, `plugins/container/src/lib/tools/container-lint.tool.{ts,spec.ts}`, `plugins/container/src/lib/inspect/cli-tools.ts` (HADO_LINT_TOOL), `plugins/container/src/index.ts`
+- **Files**: `plugins/container/src/lib/logs/`, `plugins/container/src/lib/lint/`, `plugins/container/src/lib/tools/container-lint.tool.ts`
 - **Gate**: bun run validate
 
-Implemented `container_lint` + `container_logs`:
-- Pure Dockerfile parser supporting backslash continuations + JSON-array CMD/ENTRYPOINT.
-- Built-in DLxxxx rule set mapped onto the r00012 `IFinding` severity scale: USER missing/root, MAINTAINER deprecated, apt-get install without update, missing `--no-install-recommends`, missing `apt-get clean`.
-- `runDockerfileLint` probes hadolint on PATH. When present, parses hadolint JSON; when absent, falls back to the built-in rules so the tool never returns an empty report.
-- `container_logs` tails docker/kubectl logs via r00012; missing CLI → structured `kind: 'skipped'` envelope with the install hint.
-- HADO_LINT_TOOL descriptor with brew/apt/curl install hints added.
-
-21/21 container tests pass; `bun run typecheck` clean.
+Implemented as two additive read-only tools. `container_logs` probes only the
+Docker CLI, shells out through `docker logs --tail N --timestamps`, and
+normalizes stdout/stderr into typed timestamped lines via a pure parser.
+`container_lint` reads a workspace-contained Dockerfile from disk and applies a
+built-in offline rule set (DL3001, DL3008, DL3025, DL3042, DL3047) over a pure
+Dockerfile parser, so hosts without hadolint still get deterministic findings.
 
 ### S3 — consented build/apply + catalog
 
