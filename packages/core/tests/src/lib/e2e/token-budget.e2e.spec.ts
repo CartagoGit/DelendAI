@@ -108,20 +108,27 @@ const BUDGET_BYTES = {
 	// Updated 2026-07-25: refactor plugin (f00123 S2) added to swarm via standard,
 	// increasing overview compact from 2 463B to ~3 568B.
 	// (f00127 prompt-eval + f00128 database added to swarm via standard.)
-	// Bumped 170 000 → 175 000 (2026-07-25): quality plugin gained
-	// buildRunQualityToolRegistration (a00072 S2.b peer-review gate), adding
-	// outputSchema metadata and bumping tools/list 168 938B → 171 174B.
+	// Bumped 175 000 → 182 000 (2026-07-27): env plugin (f00135) S3 added the
+	// `env` sub-field to configuration_center summary, raising tools/list
+	// 175 000B → 180 561B measured. Round to 182 000 to absorb tool-outputs
+	// regeneration noise from the f00136 surface additions.
 	// Bumped 4 200 → 4 500 (2026-07-26): container plugin (f00133) added to swarm
 	// via standard, increasing overview compact from ~3 568B to ~4 368B.
 	// Bumped 4 500 → 4 700 (2026-07-26): container plugin S2/S3 added the lint,
 	// logs, and build tools, increasing overview compact from ~4 368B to ~4 587B.
 	// Bumped 4 700 → 4 800 (2026-07-27): env plugin (f00135) added env_explains to
 	// standard preset, increasing overview compact from ~4 587B to ~4 796B.
-	swarmToolsList: 175_000,
-	swarmOverviewCompact: 4_800,
+	// Bumped 4 800 → 4 900 (2026-07-27): env plugin (f00135) S3 added the `env`
+	// sub-field to configuration_center summary, raising overview compact
+	// 4 796B → 4 880B measured.
+	swarmToolsList: 182_000,
+	swarmOverviewCompact: 4_900,
 	swarmRoundContext: 300,
 	// `lean` was 58 003B against the same fixture, a 63% reduction from swarm.
-	leanToolsList: 65_000,
+	// Bumped 65 000 → 69 000 (2026-07-27): env plugin (f00135) S3 added the `env`
+	// sub-field to configuration_center summary, raising lean tools/list
+	// 65 000B → 68 126B measured.
+	leanToolsList: 69_000,
 } as const;
 
 describe('e2e: token budget (cold-start payloads)', async () => {
