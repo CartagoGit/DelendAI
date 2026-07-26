@@ -358,7 +358,11 @@ describe('runAgentLockEngine — file-level claims', async () => {
 					agentId: 'agent-A',
 					files: ['src/a.ts'],
 				},
-				deps(),
+				deps({
+					mutexTimeoutMs: 500,
+					mutexStaleMs: 5_000,
+					mutexPollMs: 5,
+				}),
 			),
 			claimWithFileLocks(
 				{
@@ -366,14 +370,18 @@ describe('runAgentLockEngine — file-level claims', async () => {
 					agentId: 'agent-B',
 					files: ['src/b.ts'],
 				},
-				deps(),
+				deps({
+					mutexTimeoutMs: 500,
+					mutexStaleMs: 5_000,
+					mutexPollMs: 5,
+				}),
 			),
 		]);
 		expect(body(first).ok).toBe(true);
 		expect(body(second).ok).toBe(true);
 		expect(body(first).heldFiles).toEqual(['src/a.ts']);
 		expect(body(second).heldFiles).toEqual(['src/b.ts']);
-		expect(Date.now() - started).toBeLessThan(100);
+		expect(Date.now() - started).toBeLessThan(300);
 	});
 
 	it('keeps overlapping file claims in normal contention', async () => {

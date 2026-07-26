@@ -112,6 +112,7 @@ const EXPECTED_COMMANDS = [
 	'usage-tracking clear',
 	'security secrets',
 	'security audit',
+	'router-dashboard',
 ] as const;
 
 describe('CLI command registry', async () => {

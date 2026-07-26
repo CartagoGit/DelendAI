@@ -73,7 +73,7 @@ export const registerStartServerUntrusted = async (
 			detail,
 		},
 	);
-	if (!pick || pick.label !== 'Approve & start') return;
+	if (pick?.label !== 'Approve & start') return;
 	const client = await (
 		deps.createClient ?? (() => createDefaultClient(vscode))
 	)();
