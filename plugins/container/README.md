@@ -1,14 +1,8 @@
-The container plugin wraps the host's container CLIs for read-only inspection first: it probes docker, podman, and kubectl through the shared external-tool core, returns typed install hints when a CLI is missing, and keeps all output normalization in pure parsers so tests never need a live daemon or cluster.
+# `@mcp-vertex/container`
 
-Tools:
-- `container_ps` — list running containers via docker, falling back to podman.
-- `container_images` — list local images via docker, falling back to podman.
-- `k8s_get` — inspect pods and services from the current kubectl context.
-- `container_logs` — planned in S2 for read-only log retrieval.
-- `container_lint` — planned in S2 for Dockerfile lint findings.# @mcp-vertex/container
+Read-only + consent-gated container plugin for `@mcp-vertex/core`: inspect Docker / Kubernetes state, lint Dockerfiles (hadolint-style), tail logs, and build / apply manifests only on explicit consent.
 
-Read-only Docker and Kubernetes inspection plugin for
-[@mcp-vertex/core](../../packages/core).
+Wraps the host's `docker` / `kubectl` CLIs through the shared r00012 external-tool core (probe + runner + install hint). Never bundles a container engine — install `docker` / `kubectl` yourself. The plugin never bundles hadolint either: missing binaries surface a structured `install-missing` envelope with a one-liner install command instead of crashing.
 
 ## Load it
 
@@ -16,50 +10,53 @@ Read-only Docker and Kubernetes inspection plugin for
 mcp-vertex --plugins=container
 ```
 
-Registers `<prefix>_container_ps`, `<prefix>_container_images` and
-`<prefix>_k8s_get`.
+Registers three families under your namespace prefix:
 
-## Tools
+- **Inspect** — `container_inspect { kind: "docker-ps" | "docker-images" | "k8s-get", namespace? }`
+- **Lint + logs** — `container_lint { path }` (workspace-relative Dockerfile) and `container_logs { container?, tail?, since? }`
+- **Mutating** (consent required) — `container_build { tag, dockerfile?, context?, confirm? }` and `k8s_apply { manifest, namespace?, confirm? }`
 
-- `<prefix>_container_ps` `{ all? }` lists containers from the host Docker CLI.
-- `<prefix>_container_images` `{ all? }` lists local images from Docker.
-- `<prefix>_k8s_get` `{ kind, name?, namespace? }` reads Kubernetes resources via `kubectl get ... -o json`.
+## Read-only tools
 
-All tools are read-only. Missing `docker` or `kubectl` returns a structured
-`install-missing` envelope with an install hint instead of crashing.# @mcp-vertex/container
+Read-only tools never mutate the host. Missing `docker` / `kubectl` returns a structured `kind: "skipped"` envelope with the first install hint (apt / brew / curl) so the host can surface the one-liner install command instead of crashing.
 
-Read-only container inspection for `@mcp-vertex/core`.
+### `container_inspect`
 
-## S1
+Single tool with a `kind` discriminator:
 
-The plugin ships one tool in S1:
+- `kind: "docker-ps"` wraps `docker ps --format '{{json .}}'`.
+- `kind: "docker-images"` wraps `docker images --format '{{json .}}'`.
+- `kind: "k8s-get"` wraps `kubectl -n <namespace> get pods -o json` (default `namespace: "default"`).
 
-- `container_inspect`
+Parsers are pure string-to-structure transforms with injected exec dependencies, so tests never shell out and never probe the real host environment.
 
-Input:
+### `container_lint`
 
-```json
-{
-	"kind": "docker-ps"
-}
-```
+Reads a workspace-relative Dockerfile and lints it with built-in hadolint-style rules (DL3002, DL3009, DL3015, DL3042, DL4000 subset). Pure: no binary required. Returns normalized findings with the shared r00012 `IFinding` shape (ruleId / severity / message / location / optional fix).
 
-Supported kinds:
+### `container_logs`
 
-- `docker-ps` — wraps `docker ps --format '{{json .}}'`
-- `docker-images` — wraps `docker images --format '{{json .}}'`
-- `k8s-get` — wraps `kubectl -n <namespace> get pods -o json`
+Tails `docker logs` for a running container. Read-only. Missing docker → install hint, never a crash.
 
-The tool is safe to load on hosts without Docker or Kubernetes CLIs. When the
-requested CLI is missing from `PATH`, it returns:
+## Mutating tools (consent required)
 
-```json
-{
-	"ok": "skipped",
-	"hint": "`docker` not found on PATH. Install with `apt-get install -y docker.io` and retry."
-}
-```
+Mutating tools refuse to execute without `confirm: true` in the payload. The default is refusal — the tool returns `{ ok: false, reason: "mutation requires confirm: true", nextAction: ... }` without even probing the CLI. Pass `confirm: true` to actually run; pass `dryRun: true` to preview the argv without executing.
 
-The inspect parsers are pure string-to-structure transforms with injected exec
-dependencies in the runner, so tests never shell out and never probe the real
-host environment.
+### `container_build { tag, dockerfile?, context?, confirm? }`
+
+Wraps `docker build -t <tag> [-f <dockerfile>] <context>`. With `confirm: true`, runs the build and returns the image id parsed from the docker output. With `dryRun: true`, returns the argv without executing.
+
+### `k8s_apply { manifest, namespace?, confirm? }`
+
+Wraps `kubectl apply -f -` (manifest is the YAML passed through stdin) with optional `-n <namespace>`. With `confirm: true`, runs the apply. With `dryRun: true`, returns the argv without executing.
+
+## Acceptance
+
+- `bun run validate` → exit 0 (incl. `verify:tools`).
+- Lists local containers/images and lints a fixture Dockerfile → findings.
+- Missing `docker` / `kubectl` → install hint, never a crash.
+- `container_build` / `k8s_apply` refuse without `confirm: true`.
+
+## License
+
+BSD-3-Clause, same as the parent monorepo.
