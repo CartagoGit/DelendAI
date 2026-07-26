@@ -2,7 +2,7 @@
 id: c00123
 title: "config-level toggle for `exactOptionalPropertyTypes`"
 kind: chore
-status: review
+status: done
 type: proposal
 track: tooling+llm-velocity+optional
 date: 2026-07-24

@@ -2,10 +2,18 @@
 id: d00004
 title: "Session identity and turn-count evidence boundaries"
 kind: docs
-status: review
+status: done
 type: proposal
 track: agent-discipline+host-adapters
 date: 2026-07-24
+closed-by: cartago (close pass 2026-07-24, restored 2026-07-26)
+closed-evidence:
+  - S1 + S2 documented in CROSS-IDE.md and config/external/claude-code/README.md
+  - docs/mcp-vertex/AGENT-BOOTSTRAP.md updated with checkpoint/compact guidance
+shipped-in:
+  - a921589d # feat: advise checkpoint freshness at host boundaries
+  - dd7ba156 # feat: capture Claude lifecycle session evidence
+  - db388195 # move to review/
 ---
 
 # d00004 — Session identity and turn-count evidence boundaries

@@ -2,10 +2,17 @@
 id: f00147
 title: "Host-aware checkpoint advisory and compaction freshness"
 kind: feat
-status: review
+status: done
 type: proposal
 track: memory+host-adapters
 date: 2026-07-24
+closed-by: cartago (close pass 2026-07-24, restored 2026-07-26)
+closed-evidence:
+  - S1-S3 ratified — plugins/memory/src/lib/services/checkpoint-freshness.ts derives freshness from durable metadata
+  - plugins/usage-tracking/src/lib/session-hygiene.ts surfaces the advisory
+shipped-in:
+  - a921589d # advise checkpoint freshness at host boundaries
+  - 882ce46d # session hygiene observability (f00144)
 ---
 
 # f00147 — Host-aware checkpoint advisory and compaction freshness

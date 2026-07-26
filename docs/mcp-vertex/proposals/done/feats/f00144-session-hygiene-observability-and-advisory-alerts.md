@@ -2,7 +2,7 @@
 id: f00144
 title: "Session hygiene observability and advisory alerts"
 kind: feat
-status: review
+status: done
 type: proposal
 track: usage-tracking+memory+notification
 date: 2026-07-24
