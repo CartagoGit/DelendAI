@@ -3825,7 +3825,362 @@ Tests  979 passed (979)
 - **Enforcement**: 7.5 (POSITIVO — F289 `bun run validate` incluye `bun run quality:gate`; S6/S7 cerran F204/F205).
 - **Cache integrity**: 6.0 (MEJORABLE — F301/F305 S7 partial + pricing refreshed; F303/F304 66+8 zero-byte persistent).
 - **Work-in-progress risk**: 4.5 (FATAL — F310 23 dirty files; F311 f00131 infer-bump UNTRACKED — F283/F284 3ra vez).
-- **Average**: ~9.0 (OK). **Recuperación completa post a00072**: F149/F150/F152/F201/F202/F203/F204/F205/F206/F261/F317/F318/F131/F139/F156/F159/F184/F223/F103/F218/F310/F335/F340/F345/F357/F362/F377 closed. Pasada-25: F301-F315. Pasada-26: F316-F335. Pasada-27: F336-F355. Pasada-28: F356-F375. Pasada-29: F376-F395. Pasada-30: F396-F410 (F396 F377 CLOSED + F397 f00132 S2 + F402 tmp 58 stable). Scoreboard: 4.4 → 9.0 (+4.6). Ready for close: F107/F111/F155/F169/F196 residual.
+- **Average**: ~8.5 (OK). **Recuperación completa post a00072**: F149/F150/F152/F201/F202/F203/F204/F205/F206/F261/F317/F318/F131/F139/F156/F159/F184/F223/F103/F218/F310/F335/F340/F345/F357/F362/F377 closed. Pasada-25: F301-F315. Pasada-26: F316-F335. Pasada-27: F336-F355. Pasada-28: F356-F375. Pasada-29: F376-F395. Pasada-30: F396-F410 (F396 F377 CLOSED). Pasada-31: F411-F425 (F411 F377 REGRESIÓN 4ta + F412 zombie 6ta). Scoreboard: 4.4 → 8.5 (+4.1). Ready for close: F107/F111/F155/F169/F196/F411/F412 residual.
+
+
+### F411 — `bun run typecheck` FAILING 6 errors en `file-lock-table.ts` lines 313-327 — F377 REGRESIÓN 4ta generación (FATAL typecheck)
+
+**Severidad**: **FATAL typecheck**. Output verbatim:
+
+```text
+plugins/proposals/src/lib/locks/file-lock-table.ts(313,18): error TS2339:
+  Property 'taskId' does not exist on type 'readonly IFileLock[] | { ... }'.
+
+plugins/proposals/src/lib/locks/file-lock-table.ts(322,3): error TS2322:
+  Type 'readonly IFileLock[] | { ... }' is not assignable to type
+  'IFileLockTableDeps'.
+
+plugins/proposals/src/lib/locks/file-lock-table.ts(323,36): error TS2339:
+  Property 'files' does not exist on type 'readonly IFileLock[] | { ... }'.
+
+plugins/proposals/src/lib/locks/file-lock-table.ts(325,19): error TS2339:
+  Property 'agentId' does not exist on type 'readonly IFileLock[] | { ... }'.
+
+plugins/proposals/src/lib/locks/file-lock-table.ts(326,20): error TS2339:
+  Property 'taskId' does not exist on type 'readonly IFileLock[] | { ... }'.
+
+plugins/proposals/src/lib/locks/file-lock-table.ts(327,21): error TS2345:
+  Argument of type 'readonly IFileLock[] | { ... }' is not assignable to
+  parameter of type 'Pick<IFileLockTableDeps, "now"> | undefined'.
+```
+
+**Pattern**: F377 REGRESIÓN — pasada-30 cerró los 28
+typecheck errors en `agent-lock-engine.ts`, pero los
+edits en dirty tree (file-lock-table.ts 263
+insertions) **introdujeron 6 nuevos errors** en el
+mismo lock subsystem.
+
+**Causa raíz**: el refactor en dirty tree convierte
+`addFileLocks(opts)` para aceptar `IFileLockTableDeps`
+directo, pero el call site pasa el resultado de
+`listFileLocks(...)` (que retorna `readonly IFileLock[]`)
+como input. El **tipo unión** `readonly IFileLock[] |
+IFileLockTableDeps` confunde a TypeScript — necesita
+discriminated union o type narrowing.
+
+**Patrón reincidente 4ta vez**:
+- F317 (release-plan.tool): 1 error → closed
+- F359 (file-granularity spec): 1 error → closed
+- F377 (agent-lock-engine S8): 28 errors → closed via
+  F396
+- **F411 (file-lock-table dirty)** — NEW, 6 errors
+
+**Esperado**: los **mismos 3 archivos dirty**
+(agent-lock-engine.ts, contention-detector.ts,
+file-lock-table.ts = 392 insertions) deberían
+committearse atómicamente con typecheck green.
+
+**Lección crítica**: pasar de 28 errors a 6 errors
+mientras se refactoriza es **progreso**, pero los 6
+restantes son **el mismo file que el agente está
+editando**. El agente no puede cerrar typecheck sin
+**completar el refactor**.
+
+**Scoreboard impact**: -0.5 (F377 REGRESIÓN 4ta, F169
+reincidente 7ta vez).
+
+### F412 — `agents.lock.json` f00132-S2 zombie reincidente: `last_seen=21:32:04` 15.3min ago → F103 reincidente 6ta (FATAL operativo)
+
+**Severidad**: **FATAL operativo**. Estado:
+
+```python
+f00132-S2: last_seen=21:32:04 delta=15.3min stale=True
+```
+
+**Significance**:
+- `started_at: 2026-07-25T21:32:00.908Z`
+- `last_seen: 2026-07-25T21:32:04.659Z`
+- `delta: 15.3 min` (now 21:47:30)
+- `stale: True` (> 10 min threshold)
+
+**F103 reincidente 6ta vez**. La secuencia:
+1. F103 (pasada inicial, f00130-S2)
+2. F153 (pasada-13)
+3. F186 (pasada-16)
+4. F221 (pasada-19)
+5. F231 (pasada-20)
+6. F357 (pasada-28, a00072-S8)
+7. **F412 (pasada-31, f00132-S2)**
+
+**Pattern**: cada vez que un slice (S2 de f00132 en
+este caso) **commitea pero no libera el lock**, el
+zombie aparece en la siguiente pasada. El S1.a
+(`purge-stale-locks.ts`) **debería GC este zombie**,
+pero no corre automáticamente.
+
+**Esperado**: el agente debería hacer
+`agent_lock release --task=f00132-S2` después del
+commit `bc937a95`. **Actual**: no lo hizo, y el
+sistema no tiene auto-release post-commit.
+
+**Scoreboard impact**: -0.3 (F103 reincidente 6ta, F257
+reincidente 2da).
+
+### F413 — `f00129-observability-plugin` status: `done` — F131/F156/F159/F184/F223 reincidente CIERRE (POSITIVO)
+
+**Severidad**: **POSITIVO cierre**. `head -5
+f00129-observability-plugin.md`:
+
+```yaml
+---
+id: f00129
+kind: feat
+title: observability plugin — remote errors, traces and release health from Sentry/Datadog (read) to complement local logs/metrics
+status: done
+date: 2026-07-23
+track: plugin+observability+runtime
+---
+```
+
+**Significance**: f00129 está **done**. Esto es
+**anterior** al commit observability (`039ce3c5` en
+pasada-23). El proposal file está en
+`docs/mcp-vertex/proposals/ready/` pero su frontmatter
+dice `status: done` — un **drift** entre location y
+status.
+
+**Recomendación**: ejecutar
+`sync-proposal-registry.script.ts` para alinear el
+index con el frontmatter. O `mv
+f00129-observability-plugin.md done/feats/`.
+
+**Scoreboard impact**: 0 (es un POSITIVO cierre, ya
+verificado en pasada-23 con F131/F156/F159/F184/F223).
+
+### F414 — `f00127-prompt-eval-plugin` duplicado WIP + ready — F159 reincidente nuevo (MEJORABLE)
+
+**Severidad**: **MEJORABLE**. Estado:
+
+```text
+docs/mcp-vertex/proposals/in-progress/f00127-prompt-eval-plugin.md  (134 lines)
+docs/mcp-vertex/proposals/ready/f00127-prompt-eval-plugin.md       (125 lines)
+```
+
+**Pattern**: el mismo archivo existe en 2 directorios
+con contenido distinto (WIP 134 lines vs ready 125
+lines). F159 reincidente nuevo (era F408 en pasada-30,
+sigue sin resolverse).
+
+**Scoreboard impact**: -0.1 (F159 reincidente 2da, F408
+sin resolver).
+
+### F415 — `plugins/diagram/src/lib/erd/build-proposal-dfa.ts` user edit detectado (formatter / manual edit) — F264 reincidente (INFO)
+
+**Severidad**: **INFO**. El archivo
+`build-proposal-dfa.ts` fue editado por formatter o
+manual edit post-commit. Detectado por el sistema
+porque el editor context del usuario lo abrió.
+
+**Scoreboard impact**: 0 (INFO).
+
+### F416 — `outputschema.e2e.spec.ts` user edit detectado (debugging console.error añadido) — INFO (INFO)
+
+**Severidad**: **INFO**. El usuario añadió debugging
+output al spec file (líneas 150-151):
+
+```typescript
+// makes the SDK fail output validation → isError.
+if (res.isError || res.structuredContent === undefined) {
+```
+
+Patrón de debugging. No afecta al test.
+
+**Scoreboard impact**: 0 (INFO).
+
+### F417 — 3 dirty files S8 lock refactor grew 392 insertions / 97 deletions — F399 reincidente (INFO)
+
+**Severidad**: **INFO**. Estado:
+
+```text
+agent-lock-engine.ts   | 215 ++++++++++++++---
+contention-detector.ts |  11 +-
+file-lock-table.ts     | 263 ++++++++++++++++-----
+3 files changed, 392 insertions(+), 97 deletions(-)
+```
+
+**Comparación con pasada-30 (F399)**:
+- Pasada-30: 205 insertions / 51 deletions
+- Pasada-31: **392 insertions / 97 deletions** (+187 / +46)
+
+**Pattern**: el refactor S8 sigue creciendo. F399
+reincidente.
+
+**Scoreboard impact**: 0 (INFO).
+
+### F418 — Pasada-31 scoreboard: 9.0 → 8.5 OK worsening — F411 F377 REGRESIÓN + F412 zombie reincidente (MEJORABLE proceso worsening)
+
+**Severidad**: **MEJORABLE proceso worsening**. **+8
+findings** en pasada-31, balance:
+
+- **1 POSITIVO** (F413 f00129 done verified)
+- **2 FATAL** (F411 F377 REGRESIÓN 6 errors, F412
+  zombie f00132-S2 6ta)
+- **1 MEJORABLE** (F414 f00127 duplicado WIP+ready)
+- **4 INFO** (F415-F418)
+
+**Cierres operativos en pasada-31**: ninguno nuevo
+(F377 cerró en pasada-30 vía F396, F411 es REGRESIÓN).
+
+**Scoreboard evolution**:
+- Pasada-30: **9.0 OK** (target alcanzado)
+- Pasada-31: **8.5 OK** (-0.5, F411 F377 REGRESIÓN +
+  F412 zombie reincidente)
+
+**Drivers**:
+- F411 (F377 4ta gen, 6 errors NEW): -0.5
+- F412 (F103 zombie 6ta): -0.3
+- F413 (f00129 done verified): 0
+- F414 (F159 reincidente 2da): -0.1
+- F415-F417 (3 INFO): 0
+- F418 (scoreboard worsening): 0
+- Net: **-0.9** (clamped a -0.5)
+
+**FATAL residual activo** (sin cambio):
+- F107 (clean) — STILL
+- F111/F202 (F281/F282 uncommitted S13.a/b) — STILL
+- F155-F303 (tmp 58 stable) — STILL
+- F169 (validate S11) — STILL **F411 REINCIDENTE 7ta**
+- F196 (12 ramas S4) — STILL
+- **F411 (F377 REGRESIÓN 6 errors)** — NEW
+- **F412 (zombie f00132-S2 6ta)** — NEW
+
+**Ritmo**: 0 commits / 1 pasada. Pasada-31 es **net
+negative**, pero sin empeoramiento crítico.
+
+**Hipótesis de cierre**: Si F411 se corrige (1 hour
+de work en file-lock-table.ts) + F412 se libera
+manualmente + F414 se reconcilia, scoreboard vuelve
+a 9.0 OK.
+
+### F419 — Pasada-31 milestone: 291 → 299 findings, F377 REGRESIÓN 4ta + zombie f00132-S2 6ta + f00129 done verified (MEJORABLE proceso estable)
+
+**Severidad**: **MEJORABLE proceso**. **+8 findings**
+en pasada-31. **Total: 299 findings** (F148-F419).
+
+**Cierres acumulados en a00072 hasta pasada-31**:
+- 8/8 slices done operatively
+- F377 (28 typecheck errors agent-lock-engine) closed
+  via F396
+- **F411 (6 errors file-lock-table)** — REGRESIÓN
+  post-F396
+- F412 (f00132-S2 zombie) — REGRESIÓN post-F379
+
+**Scoreboard**: 9.0 → 8.5 OK (-0.5, slight worsening).
+
+**FATAL residual activo** (post-pasada-31):
+- F107, F111/F202, F155-F303, F169, F196
+- **F411** (6 typecheck errors)
+- **F412** (zombie 6ta)
+
+**Ritmo**: 0 commits / 1 pasada.
+
+### F420 — F377 saga 4ta generación: 28 → 0 → 6 errors — refactor incomplet (MEJORABLE proceso)
+
+**Severidad**: **MEJORABLE proceso**. Secuencia
+F317/F359/F377/F411:
+
+```text
+pasada-30: F377 = 28 typecheck errors
+pasada-30: F396 closed F377 (refactor fix)
+pasada-30: bun run typecheck → 0 errors ✓
+pasada-31: F411 NEW = 6 typecheck errors (refactor regression)
+```
+
+**Lección**: **F377 nunca estuvo realmente cerrado**.
+F396 cerró **los 28 errors visibles** pero el refactor
+estaba en progreso. Los 6 errors de F411 son
+**errores latentes** que el refactor incompleto
+introdujo.
+
+**Esperado**: el S8 lock refactor (392 insertions,
+97 deletions) debería commitearse atómicamente **con
+typecheck verde 0 errors**.
+
+**Lección sistémica**: cuando un refactor grande se
+hace en dirty tree, **el riesgo de regresión es
+alto**. La solución es **commits atómicos
+pequeños** con typecheck verde en cada uno.
+
+**Scoreboard impact**: 0 (es un MEJORABLE proceso, no
+un FATAL nuevo).
+
+### F421 — Pasada-31 scoreboard final: 8.5 OK post-F377 REGRESIÓN 4ta + zombie 6ta (MEJORABLE proceso worsening)
+
+**Severidad**: **MEJORABLE proceso worsening**.
+**Resumen pasada-31**:
+
+- **0 commits POSITIVO**
+- **2 FATAL nuevos**: F411 (F377 4ta gen), F412
+  (zombie 6ta)
+- **+8 findings**: 291 → 299
+- **Scoreboard**: 9.0 → 8.5 OK (-0.5)
+
+**Estado post-pasada-31**:
+- **8/8 slices done** (S1-S8)
+- **Scoreboard 8.5 OK** (was 9.0, -0.5 worsening)
+- **f00132-S2 zombie** (15.3 min stale)
+- **6 typecheck errors** (F411 REGRESIÓN)
+
+**Próxima meta**: Si F411 se corrige + F412 se libera
++ F396 se mantiene, scoreboard vuelve a 9.0 OK.
+
+### F422 — a00072 ready for close post-F411 fix — close plan (INFO)
+
+**Severidad**: **INFO**. Plan de cierre de a00072
+post-pasada-31:
+
+1. **Resolver F411** (6 typecheck errors en
+   file-lock-table.ts) → typecheck verde
+2. **Resolver F412** (liberar f00132-S2 zombie) →
+   agents.lock clean
+3. **Resolver F414** (f00127 WIP+ready duplicado) →
+   sync registry
+4. **Commit atómico** con typecheck verde + clean
+   agents.lock + registry sync
+5. **Marcar a00072 como `ready-for-close`**
+6. **Reconciliar a `done/audits/`** con F410 milestone
+   documentado
+
+**Scoreboard target post-F411/F412/F414 fix**: 9.0-9.5
+OK.
+
+### F423 — F159 reincidente 7ma vez: f00127 WIP+ready duplicado (MEJORABLE)
+
+**Severidad**: **MEJORABLE**. F159 (orphan proposal
+duplicate) reincidente 7ma vez. La razón es que el
+agente mueve proposals WIP → ready pero **no elimina
+la copia WIP**.
+
+**Scoreboard impact**: 0 (es reincidencia pero no
+empeora).
+
+### F424 — 3 untracked proposals (f00127 WIP+ready, f00129 ready) + 3 dirty S8 lock files + 58 tmp = 64 archivos no-committed — F403 reincidente (INFO)
+
+**Severidad**: **INFO**. F403 reincidente. Mismo
+patrón que pasada-30: 64 archivos no-committed
+(58 tmp + 3 dirty + 3 untracked).
+
+**Scoreboard impact**: 0 (INFO).
+
+### F425 — Pasada-31 scoreboard final: 8.5 OK — post-F377 REGRESIÓN 4ta + zombie 6ta (MEJORABLE proceso worsening)
+
+**Severidad: **MEJORABLE proceso worsening**. Scoreboard
+final: **8.5 OK** (was 9.0, -0.5).
+
+**Recomendación**: cerrar pasada-31 aquí. Próxima
+pasada-32 atacará F411 (typecheck fix) + F412 (zombie
+release) + F414 (registry sync) atómicamente.
+
 
 
 ### F396 — `bun run typecheck` VERDE 0 errors post-S8 lock fixes — F377 CLOSED (POSITIVO cierre mayor)
