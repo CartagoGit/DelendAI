@@ -46,8 +46,8 @@ in heavy dependencies.
 
 ### S1 — deps tools
 
-- **Status**: pending
-- **Files**: `plugins/deps/src/lib/tools/deps-audit.tool.ts`, `plugins/deps/src/lib/audit/`
+- **Status**: done
+- **Files**: `plugins/deps/src/lib/services/{audit,licenses,engine,polyglot}.ts`, `plugins/deps/src/lib/tools/tools.ts`
 - **Gate**: bun run validate
 
 `deps_audit` (CVEs via bun/npm audit through r00012), `deps_outdated`,
@@ -55,8 +55,8 @@ in heavy dependencies.
 
 ### S2 — git + quality tools
 
-- **Status**: pending
-- **Files**: `plugins/git/src/lib/tools/git-pr.tool.ts`, `plugins/quality/src/lib/tools/quality-coverage.tool.ts`
+- **Status**: done
+- **Files**: `plugins/git/src/lib/tools/git-extended.tool.ts`, `plugins/quality/src/lib/tools/{quality-coverage,quality-complexity,coverage,complexity}.ts`
 - **Gate**: bun run validate
 
 `git_pr` (create/view via `gh` when present), `git_bisect`, `git_stash`;
@@ -65,8 +65,8 @@ hotspots). Pure formatters over injected runners.
 
 ### S3 — search + docs tools
 
-- **Status**: pending
-- **Files**: `plugins/search/src/lib/tools/search-symbol.tool.ts`, `plugins/docs/src/lib/tools/docs-generate.tool.ts`
+- **Status**: done
+- **Files**: `plugins/search/src/lib/tools/{search-symbol,search-references,find-symbol}.ts`, `plugins/docs/src/lib/tools/{docs-generate,generate-docs}.ts`
 - **Gate**: bun run validate
 
 `search_symbol` / `search_references` (symbol-accurate lookup), `docs_generate`
