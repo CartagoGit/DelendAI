@@ -2,9 +2,17 @@
 id: f00126
 kind: feat
 title: perf plugin — micro-benchmarks, bundle-size budgets and lightweight profiling with baseline regression gates
-status: ready
+status: done
 date: 2026-07-23
 track: plugin+perf+quality
+shipped-in:
+    - bfbdfd46 # feat(f00126): S1 bench harness + baseline compare
+    - 85e15d32 # docs(f00126): mark S1 bench harness + baseline compare done
+    - f0d55edf # feat(f00126): S2 bundle-size budget — perf_bundle tool + tests
+    - 87b722e2 # docs(f00126): mark S2 bundle-size budget done — actual file paths
+    - 3815c571 # feat(perf): S3 perf_profile tool + profile capture + tests
+    - bbf3b945 # feat(f00126): S3 profiling capture + metrics-gate integration
+    - e726bc22 # docs(f00126): reconcile S3 done — move proposal to done/feats
 ---
 
 # f00126 — perf plugin
