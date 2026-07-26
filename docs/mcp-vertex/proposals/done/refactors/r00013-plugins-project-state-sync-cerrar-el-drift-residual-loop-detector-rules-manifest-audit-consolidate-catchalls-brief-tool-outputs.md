@@ -1,14 +1,15 @@
 ---
-id: l00001
+id: r00013
 status: done
 type: proposal
 track: plugins+core+audit
 date: 2026-06-21
-kind: legacy
-legacy: true
+migrated_from: l00001
+renumbered_on: 2026-07-26
+kind: refactor
 ---
 
-# l00001 — Plugins ↔ project state sync — cerrar el drift residual (loop-detector, rules/manifest, audit/consolidate, catchalls, brief, tool-outputs)
+# r00013 — Plugins ↔ project state sync — cerrar el drift residual (loop-detector, rules/manifest, audit/consolidate, catchalls, brief, tool-outputs)
 
 ## Goal
 
@@ -107,7 +108,7 @@ Consolidar el drift residual entre los 13 plugins y los invariantes del core (AG
   - "Spec que ejecuta `grep -rE 'await writeFile\(' plugins/*/src/` y falla si encuentra hits (debe ser writeFileAtomic)."
   - "Los 3 specs son parte de `bun run validate`."
 - status: done
-- implementation_note: "3 tests en `packages/core/tests/src/lib/plugin-drift-budget.spec.ts`, implementados en TypeScript/Node (no shell `grep`, para que corran igual en CI y en cualquier OS, vía `readdir`/`readFile` recursivo sobre `plugins/*/src`): (1) 0 sync `node:fs` fuera del allowlist explícito de 2 ubicaciones documentadas (constructor boot-time de `loop-detector-service.ts` + el método `isAgentStuck` contract-constrained, ambos de `l00008 s1`); (2) 0 `catchall(z.unknown(` en `plugins/*/src` + `packages/core/src` (confirmado 0 tras `r00002` S1/S2 + `l00008` s4); (3) 0 `await writeFile(` crudo en `plugins/*/src`. **Hallazgo adicional durante la implementación**: el barrido encontró un cuarto sitio no listado en el acceptance original — `plugins/proposals/src/lib/swarm/round-context-digest.ts:122` (`await writeFile(tmpPath, ...)`, una reimplementación manual del patrón write-temp-then-rename que `writeFileAtomic` ya provee). Se corrigió como parte de este slice (reemplazado por una llamada directa a `writeFileAtomic`, eliminando ~15 líneas de lógica duplicada de cleanup/rename). Tras ese fix, los 3 greps dan 0 hits reales en todo el monorepo. `bun run typecheck`, `plugins/proposals` suite (52 archivos) y suite completa (148 archivos, 1065 tests) verdes."
+- implementation_note: "3 tests en `packages/core/tests/src/lib/plugin-drift-budget.spec.ts`, implementados en TypeScript/Node (no shell `grep`, para que corran igual en CI y en cualquier OS, vía `readdir`/`readFile` recursivo sobre `plugins/*/src`): (1) 0 sync `node:fs` fuera del allowlist explícito de 2 ubicaciones documentadas (constructor boot-time de `loop-detector-service.ts` + el método `isAgentStuck` contract-constrained, ambos de `r00013 s1`); (2) 0 `catchall(z.unknown(` en `plugins/*/src` + `packages/core/src` (confirmado 0 tras `r00002` S1/S2 + `r00013` s4); (3) 0 `await writeFile(` crudo en `plugins/*/src`. **Hallazgo adicional durante la implementación**: el barrido encontró un cuarto sitio no listado en el acceptance original — `plugins/proposals/src/lib/swarm/round-context-digest.ts:122` (`await writeFile(tmpPath, ...)`, una reimplementación manual del patrón write-temp-then-rename que `writeFileAtomic` ya provee). Se corrigió como parte de este slice (reemplazado por una llamada directa a `writeFileAtomic`, eliminando ~15 líneas de lógica duplicada de cleanup/rename). Tras ese fix, los 3 greps dan 0 hits reales en todo el monorepo. `bun run typecheck`, `plugins/proposals` suite (52 archivos) y suite completa (148 archivos, 1065 tests) verdes."
 
 ## Why
 
@@ -161,9 +162,33 @@ Consolidar el drift residual entre los 13 plugins y los invariantes del core (AG
 - **Propuestas relacionadas** (no se solapan):
   - `f00020` — race en `sync-proposal-registry.ts:331` (cerrado por separado, ver `f00020` Notes).
   - `f00019` — sync I/O en `notification/watcher.ts` (cerrado por separado, ver `f00019` Notes).
-  - `r00001` / `r00002` — catchalls en bootstrap/scaffold + JSDoc de primitivas sync (cubren el core, no los plugins). `r00002` cerró S1/S2/S5 (los 4 catchalls de `packages/core/src`); sus slices S3/S4 (los mismos 2 archivos que el `s4` de esta propuesta — `rules-tools.ts:199`, `adopt.tool.ts:81`) quedaron explícitamente `deferred` a favor de este `l00008.s4`, resolviendo el meta-hallazgo META-1 documentado en `a00022`. **`s4` de `l00008` es ahora la única propuesta viva para esos 2 archivos** — quien la tome no necesita coordinar con `r00002`.
+  - `r00001` / `r00002` — catchalls en bootstrap/scaffold + JSDoc de primitivas sync (cubren el core, no los plugins). `r00002` cerró S1/S2/S5 (los 4 catchalls de `packages/core/src`); sus slices S3/S4 (los mismos 2 archivos que el `s4` de esta propuesta — `rules-tools.ts:199`, `adopt.tool.ts:81`) quedaron explícitamente `deferred` a favor de `r00013.s4`, resolviendo el meta-hallazgo META-1 documentado en `a00022`. **`s4` de `r00013` es ahora la única propuesta viva para esos 2 archivos** — quien la tome no necesita coordinar con `r00002`.
   - `f00028` — depth extension (search rg, memory export/import, docs_search; **distinto objetivo**).
   - `x00006` — fix de zombie host (no relacionado).
 - **Primitivas del core usadas**: `writeFileAtomic`, `withFileMutex`, `resolveWorkspaceContained`, `redactSecrets`, `walkAllowedFiles` (todas del barrel `@mcp-vertex/core/public`).
 - **Relación con `mcp-vertex_metrics`**: el spec `s7` registra los anti-patrones en cada test; `mcp-vertex_metrics` (M29) los observará en producción tras el primer release post-merge.
 - **Tamaño estimado del cambio**: 7 slices, 8 archivos de producción + 5 specs nuevos. Cada slice es ≤ 1 día; el total es ≈ 4 días de trabajo.
+
+## Notes
+
+- **2026-07-26 — renombrado a `r00013`** (anteriormente `l00001`/`l00008`).
+  La propuesta se creó el 2026-06-21 como `l00008` en `ready/l00008-…md`,
+  pasó a `done/l00008-…md` ese mismo día, se renombró a `l00001`
+  el 2026-06-21 23:46 (commit `5028b9e2`), se re-categorizó como `kind: chore`
+  y se movió a `done/chores/l00001-…md` el 2026-06-23 (commit `cdcf8705`),
+  el 2026-07-14 fue reasignada a `kind: legacy` y movida a `done/` raíz
+  por la propuesta `f00114` (commit `d10ee02b`) — un sobrecorregido mecánico
+  basado en prefijo que ignoraba que el contenido es **trabajo real de refactor**
+  (7 slices cerrando drift entre 13 plugins), no contenido legacy genuino.
+  Hoy se restaura el `kind` correcto (`refactor`) y el id canónico
+  (`r00013`, siguiente slot libre después de `r00012`) según la intención
+  original de `f00042 S2` ("Move the legacy-prefixed closed proposals into
+  their real-kind sub-folders"). El campo `migrated_from: l00001` preserva la
+  trazabilidad histórica; las menciones a `l00008` en `a00022`, `x00074`
+  y otros docs históricos se conservan tal cual porque reflejan el estado
+  del archivo en el momento de su redacción.
+- **Body drift pre-existente**: las implementation_notes mencionaban
+  `l00008 s1` / `l00008 s4` / `l00008.s4` en self-referencias que
+  deberían haber dicho `l00001` desde el rename del 2026-06-21
+  (problema documentado en `f00049 S3` y cerrado por este renumerado).
+  Tras este cambio, todas las self-referencias usan `r00013`.
