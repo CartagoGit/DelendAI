@@ -45,6 +45,7 @@ import {
 } from '@mcp-vertex/core/public';
 
 import {
+	PROPOSAL_KIND_BY_PREFIX,
 	PROPOSAL_STATUS_TRANSITIONS,
 	PROPOSAL_STATUSES,
 	STATUS_TO_FOLDER,
