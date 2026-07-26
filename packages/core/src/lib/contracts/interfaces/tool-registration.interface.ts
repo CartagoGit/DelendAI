@@ -72,6 +72,22 @@ export interface IToolRegistration {
 	 * follows the standard slice flow.
 	 */
 	readonly deprecated?: IToolDeprecationMarker | undefined;
+	/**
+	 * f00154 S3 — when `true`, the core skips the
+	 * `withIncidentLogging` wrapper for this tool. The default is
+	 * `false` (every tool's errors are incident-logged). Escape hatch
+	 * for tools that intentionally return failure as part of their
+	 * contract (e.g. `redact_test`, `proposals_locate`) and would
+	 * otherwise flood the curated error stream.
+	 */
+	readonly incidentLoggingDisabled?: boolean | undefined;
+	/**
+	 * f00154 S3 — per-tool `incidentType` override. When the tool
+	 * fails, the emitted incident carries this code instead of the
+	 * generic `tool-failure`. Plugin authors set this once per
+	 * registration to give `logs_incidents` a per-plugin signature.
+	 */
+	readonly incidentType?: string | undefined;
 	register(server: McpServer): Promise<void>;
 }
 

@@ -54,10 +54,12 @@ import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
 import {
+	buildRegistrySkeleton,
 	detectCatchSwallow,
 	detectDipViolations,
 	detectLongChains,
 	detectMagicNumbers,
+	formatFixProposal,
 	lineOf,
 	shingleBlocks,
 	toRelPosix,
@@ -283,26 +285,63 @@ const parseArgs = (
 ): {
 	roots: readonly string[];
 	report: boolean;
+	fixPath: string | undefined;
 } => {
 	const roots: string[] = [];
 	let report = false;
+	let fixPath: string | undefined;
 	for (let i = 0; i < argv.length; i += 1) {
 		const a = argv[i];
 		if (a === '--report') {
 			report = true;
 		} else if (a?.startsWith('--roots=') && a.length > 8) {
 			roots.push(...a.slice(8).split(',').filter(Boolean));
+		} else if (a?.startsWith('--fix=') && a.length > 6) {
+			fixPath = a.slice(6);
+		} else if (a === '--help' || a === '-h') {
+			process.stdout.write(USAGE);
+			process.exit(0);
 		}
 	}
 	return {
 		roots: roots.length > 0 ? roots : DEFAULT_ROOTS,
 		report,
+		fixPath,
 	};
 };
 
+const USAGE = `Usage: solid-compliance.script.ts [options]
+
+Options:
+  --report               Print only the count (stderr) and exit.
+  --roots=plugins,core   Override the scan roots (default: plugins, packages/core/src/lib).
+  --fix=<relPath>        Print a registry skeleton for the first long switch in the
+                         given file. NEVER writes to disk; output is a printable
+                         TypeScript block the agent can review.
+  -h, --help             Print this help.
+
+Exit codes: 0 clean, 1 one or more findings.`;
+
 export const main = async (argv: readonly string[]): Promise<number> => {
-	const { roots, report } = parseArgs(argv);
+	const { roots, report, fixPath } = parseArgs(argv);
 	const rootDir = process.cwd();
+	if (fixPath) {
+		// --fix mode: read a single file and print a registry skeleton.
+		const abs = join(rootDir, fixPath);
+		const body = await readFile(abs, 'utf8');
+		const proposal = buildRegistrySkeleton(fixPath, body);
+		if (!proposal) {
+			const msg =
+				'solid-compliance: --fix ' +
+				fixPath +
+				' -- no long switch found, or it is not a simple switch-on-string.' +
+				'\n';
+			process.stderr.write(msg);
+			return 1;
+		}
+		process.stdout.write(formatFixProposal(proposal) + '\n');
+		return 0;
+	}
 	const files = await walkTsFiles(rootDir, roots);
 	const fileContents = new Map<string, string>();
 	await Promise.all(
@@ -315,15 +354,15 @@ export const main = async (argv: readonly string[]): Promise<number> => {
 	const out = formatReport(result);
 	if (report) {
 		process.stderr.write(
-			`solid-compliance: ${result.findings.length} findings\n`,
+			'solid-compliance: ' + result.findings.length + ' findings' + '\n',
 		);
 	} else {
-		process.stdout.write(`${out}\n`);
+		process.stdout.write(out + '\n');
 	}
 	return result.findings.length === 0 ? 0 : 1;
 };
 
-// Run when invoked directly (`bun tools/scripts/lint/solid-compliance.script.ts`)
+// Run when invoked directly with the CLI: bun tools/scripts/lint/solid-compliance.script.ts
 const entrypoint = process.argv[1] ?? '';
 if (entrypoint.endsWith('solid-compliance.script.ts')) {
 	const code = await main(process.argv.slice(2));

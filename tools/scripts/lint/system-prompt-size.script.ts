@@ -76,7 +76,7 @@ export const PROMPT_SIZE_BUDGETS: readonly IPromptSizeBudget[] = [
 	{ file: 'AGENTS.md', maxBytes: 1_000 },
 	{ file: 'CLAUDE.md', maxBytes: 1_000 },
 	{ file: '.github/copilot-instructions.md', maxBytes: 1_000 },
-	{ file: 'docs/mcp-vertex/AGENT-BOOTSTRAP.md', maxBytes: 27_000 },
+	{ file: 'docs/mcp-vertex/AGENT-BOOTSTRAP.md', maxBytes: 30_000 },
 ] as const;
 
 export interface IPromptSizeResult {

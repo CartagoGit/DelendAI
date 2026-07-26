@@ -47,6 +47,15 @@ export interface IMcpVertexCliArgs {
 	 * (`--agent-worktree=maybe`) throws a parse error.
 	 */
 	readonly agentWorktree?: boolean | undefined;
+	/**
+	 * f00154 S4 — auto-load the `logs` plugin when this flag is on
+	 * and the explicit `--plugins` list does not include it. Lets a
+	 * host guarantee "every tool call lands in the redacted JSONL
+	 * streams" without enumerating the `logs` plugin on every
+	 * command line. `--strict-logs[=true|false]` follows the same
+	 * tri-state shape as `--agent-worktree`.
+	 */
+	readonly strictLogs?: boolean | undefined;
 	/** Any other `--key=value` flags, forwarded to plugins via ctx.args. */
 	readonly extra: Readonly<Record<string, string>>;
 	/** The raw tokenized flags, so callers can detect what was explicit. */
@@ -78,6 +87,7 @@ const KNOWN_KEYS = new Set([
 	'mcp-project-create',
 	'mcp-project-tests',
 	'agent-worktree',
+	'strict-logs',
 ]);
 
 /**
@@ -208,6 +218,7 @@ export const parseCliArgs = (
 			'--agent-worktree',
 			tokens['agent-worktree'],
 		),
+		strictLogs: parseTriStateFlag('--strict-logs', tokens['strict-logs']),
 		extra,
 		tokens,
 	};
