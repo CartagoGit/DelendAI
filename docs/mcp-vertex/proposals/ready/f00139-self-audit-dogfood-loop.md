@@ -77,12 +77,17 @@ and caller-provided weight overrides. Commit: `eb87de23`.
 
 ### S3 — optional proposal filing + catalog
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/audit/src/lib/self-audit/file-proposals.ts`, `plugins/audit/README.md`
 - **Gate**: bun run validate
 
 On consent, file the top items as proposals via `proposals_create_proposal`;
 catalog + wiki.
+
+Landed a pure `fileProposalsFromBacklog()` helper that turns ranked backlog
+items into minimal consent-gated proposal drafts, writes them atomically,
+skips identical reruns, and documents the `self_audit` filing flow in the
+audit plugin README. Commit: `97723a45`.
 
 ## acceptance
 
