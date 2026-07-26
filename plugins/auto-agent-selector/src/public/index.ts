@@ -15,6 +15,15 @@ export {
 	type IRosterSnapshotStore,
 } from '../lib/discovery/roster-store';
 export { rankProviders } from '../lib/routing/rank-providers';
+export { buildDashboard } from '../lib/dashboard/view-model';
+export type {
+	IBuildDashboardInput,
+	IDashboardRow,
+	IDashboardViewModel,
+	IRecommendationRow,
+	IProviderSpend,
+	ISpendSummary,
+} from '../lib/contracts/interfaces/dashboard.interface';
 export type {
 	IRankInput,
 	IRankedProvider,
