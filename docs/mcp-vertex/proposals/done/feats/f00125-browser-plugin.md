@@ -2,7 +2,7 @@
 id: f00125
 kind: feat
 title: browser plugin — Playwright-backed navigation, screenshots, DOM interaction, E2E assertions and accessibility scans
-status: in-progress
+status: done
 date: 2026-07-23
 track: plugin+browser+verification
 ---
