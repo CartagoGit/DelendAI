@@ -2,7 +2,7 @@
 id: c00089
 title: "Lean activation and full-preset context budgets"
 kind: chore
-status: review
+status: done
 type: proposal
 track: presets+metrics+token-efficiency
 date: 2026-07-24
