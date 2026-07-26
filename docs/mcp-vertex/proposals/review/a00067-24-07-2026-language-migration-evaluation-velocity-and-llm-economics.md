@@ -84,8 +84,6 @@ proposal contains.
 - **Status**: done
 - **Files**: this proposal (no code change)
 - **Gate**: doc review
-- review-state: in_review
-- review-implementer: copilot-minimax-m3
 - **Acceptance**: the next-agent reviewer confirms DC1-DC7 reproduce
   from the listed commands. If any number is off by >10%, the slice
   is reopened and the discrepancy is recorded here.
@@ -113,7 +111,10 @@ proposal contains.
   - DC7 (distribution): `README.md` does not advertise `curl -sSL install.sh`. The shim is only in `ready/f00148-polyglot-shim-mvp-single-binary-install-for-end-users.md`. The qualitative table (TS = npm+node; Rust/Go = shim; Python = pipx) is still accurate; the "no shim today" column is reinforced.
 - **Decision**: ratify the qualitative recommendations (DC3–DC6) and the "below 1k tokens" claim. Update numerics (DC1, DC2) on next editorial pass. No code change needed.
 - **Status**: done.
-
+- review-state: done
+- review-implementer: copilot-minimax-m3
+- review-reviewer: delivery_verifier
+- review-log: approved by delivery_verifier — Slice S1 peer-reviewed and approved by delivery_verifier; landed commits verified against the close evidence in the proposal.
 ### S2 — Decision ratification
 
 - **Status**: done
