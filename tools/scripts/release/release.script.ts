@@ -198,12 +198,32 @@ function applyPlan(plan: IReleasePlan, logger: IReleaseLogger): void {
 }
 
 /**
- * f00152 S7: bump `mcp-vertex.config.json#coreVersion` to the new
- * release. When the existing pin is the `latest-published` sentinel
- * or is absent, we leave it (the sentinel tracks the latest tag and
- * needs no bumping). When the pin is a concrete semver that is now
- * stale, we move it to the new version — this keeps a self-host
- * agent's CI green after the upgrade.
+ * f00152 S7: pure decision function — given the current config and a
+ * new release version, return the next config. When the existing
+ * pin is the `latest-published` sentinel or is absent, we leave it
+ * (the sentinel tracks the latest tag and needs no bumping). When
+ * the pin is a concrete semver that is now stale, we move it to the
+ * new version — this keeps a self-host agent's CI green after the
+ * upgrade. Exported for unit testing.
+ */
+export const resolveBumpCoreVersion = <T extends { coreVersion?: string }>(
+	currentConfig: T,
+	newVersion: string,
+): T => {
+	if (
+		currentConfig.coreVersion === undefined ||
+		currentConfig.coreVersion === 'latest-published'
+	) {
+		return currentConfig;
+	}
+	return { ...currentConfig, coreVersion: newVersion };
+};
+
+/**
+ * f00152 S7: I/O wrapper around `resolveBumpCoreVersion`. Reads the
+ * config, asks the pure function what to do, writes back when the
+ * bump happened. Idempotent — when the pin is the sentinel or
+ * absent, the file is not touched.
  */
 function bumpConfigCoreVersion(
 	newVersion: string,
@@ -213,17 +233,14 @@ function bumpConfigCoreVersion(
 	const raw = JSON.parse(readFileSync(configPath, 'utf8')) as {
 		coreVersion?: string;
 	};
-	if (
-		raw.coreVersion === undefined ||
-		raw.coreVersion === 'latest-published'
-	) {
+	const next = resolveBumpCoreVersion(raw, newVersion);
+	if (next === raw) {
 		logger.info(
 			`  mcp-vertex.config.json#coreVersion unchanged (${raw.coreVersion ?? 'unset'} tracks the latest tag).`,
 		);
 		return;
 	}
-	raw.coreVersion = newVersion;
-	writeFileSync(configPath, `${JSON.stringify(raw, null, '\t')}\n`);
+	writeFileSync(configPath, `${JSON.stringify(next, null, '\t')}\n`);
 	logger.info(`  bumped mcp-vertex.config.json#coreVersion → ${newVersion}`);
 }
 
