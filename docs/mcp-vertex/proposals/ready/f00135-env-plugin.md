@@ -59,12 +59,19 @@ Delivered:
 
 ### S2 — requirements map (var → plugin/provider)
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/env/src/lib/requirements/`, `plugins/env/src/lib/tools/env-explains.tool.ts`
 - **Gate**: bun run validate
 
 `env_explains` derives, from plugin `optionsSchema` + provider `reach`, which
 capability each var unlocks and what is currently blocked. Pure derivation.
+
+Delivered:
+- `requirements/types.ts` — `IEnvRequirement`, `IUnlockedCapability`, `IBlockedCapability`, `IEnvExplain`.
+- `requirements/extract.ts` — walks a plugin's zod `optionsSchema`, finds `.describe("...env:VAR...")` markers, emits `IEnvRequirement[]`.
+- `requirements/explain.ts` — pure diff: present vs missing env vars → unlocked vs blocked capabilities.
+- `tools/env-explains.tool.ts` — registers `env_explains`; takes an optional injected `requirements` catalog.
+- 13 tests in `tests/src/lib/requirements/{extract,explain}.spec.ts`; 49/49 env tests pass.
 
 ### S3 — init/configuration-center surface + catalog
 
