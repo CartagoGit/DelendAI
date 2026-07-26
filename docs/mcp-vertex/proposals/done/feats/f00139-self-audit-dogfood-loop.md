@@ -2,7 +2,7 @@
 id: f00139
 kind: feat
 title: self-audit dogfood loop — one tool that runs every scanner and emits a single ranked action backlog (the project improving itself each round)
-status: ready
+status: done
 date: 2026-07-23
 track: plugin+audit+self-improvement
 ---
