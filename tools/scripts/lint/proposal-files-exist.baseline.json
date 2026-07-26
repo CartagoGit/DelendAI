@@ -23,6 +23,7 @@
 	"docs/mcp-vertex/proposals/done/audits/a00032-22-06-2026-copilot-minimax-m3-repositorio.md": 3,
 	"docs/mcp-vertex/proposals/done/audits/a00023-21-06-2026-copilot-gpt-5-4-repositorio.md": 2,
 	"docs/mcp-vertex/proposals/done/audits/a00045-28-06-2026-copilot-minimax-m3-post-merge-exhaustive-audit.md": 12,
+	"docs/mcp-vertex/proposals/done/feats/f00137-skills-pack.md": 5,
 	"docs/mcp-vertex/proposals/done/feats/f00015-residual-p100-web-and-i18n.md": 2,
 	"docs/mcp-vertex/proposals/done/feats/f00029-github-issues-plugin-ingest-and-propose.md": 20,
 	"docs/mcp-vertex/proposals/done/feats/f00028-ide-extension-multi-ide-brand-dashboard.md": 29,
@@ -68,6 +69,5 @@
 	"docs/mcp-vertex/proposals/done/plans/q00001-plan-of-plans.md": 1,
 	"docs/mcp-vertex/proposals/done/refactors/r00001-harden-catchall-outputschemas-jsdoc-boot-only-en-primitivas-sync-del-core.md": 2,
 	"docs/mcp-vertex/proposals/done/refactors/r00002-harden-catchall-output-schemas.md": 5,
-	"docs/mcp-vertex/proposals/done/refactors/r00003-apply-solid-on-a00036-findings.md": 3,
-	"docs/mcp-vertex/proposals/in-progress/a00072-25-07-2026-deeper-log-scan-bugs-f148-f152.md": 2
+	"docs/mcp-vertex/proposals/done/refactors/r00003-apply-solid-on-a00036-findings.md": 3
 }
