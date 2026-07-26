@@ -121,6 +121,9 @@
 			"options": {
 				"costQualityTradeoff": 8
 			}
+		},
+		"container": {
+			"options": {}
 		}
 	}
 }
