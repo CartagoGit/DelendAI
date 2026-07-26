@@ -4,6 +4,7 @@ import { definePlugin } from '@mcp-vertex/core/public';
 
 import { buildContainerInspectToolRegistrations } from './lib/tools/container-inspect.tool';
 import { buildContainerLintToolRegistrations } from './lib/tools/container-lint.tool';
+import { buildContainerBuildToolRegistrations } from './lib/tools/container-build.tool';
 
 const OptionsSchema = z.object({});
 
