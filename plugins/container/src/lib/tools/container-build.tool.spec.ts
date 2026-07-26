@@ -106,8 +106,9 @@ describe('f00133 S3 container-build tool', () => {
 			execWith('', 127),
 		);
 		const body = parseBody(await build({ tag: 'app:1', confirm: true }));
+		const err = body['error'] as { reason?: string } | undefined;
 		expect(body['ok']).toBe(false);
-		expect(body['reason']).toBe('install-missing');
+		expect(err?.reason).toBe('install-missing');
 	});
 
 	it('k8s_apply refuses without confirm', async () => {
