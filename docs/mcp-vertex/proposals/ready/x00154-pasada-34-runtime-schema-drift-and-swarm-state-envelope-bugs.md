@@ -359,15 +359,9 @@ empty/corrupt is a structured `toolError`.
 
 ### S4 — Declare `inputSchema`/`outputSchema` on the 7 wrapper tools
 
-- **Status**: pending
-- **Files**:
-  - `plugins/proposals/src/lib/tools/agents-lock-diagnose.tool.ts`
-  - `plugins/proposals/src/lib/tools/get-proposal-workflow.tool.ts`
-  - `plugins/proposals/src/lib/tools/review.tool.ts`
-  - `plugins/proposals/src/lib/tools/scan-host-instructions.tool.ts`
-  - `plugins/proposals/src/lib/tools/sync-proposals.tool.ts`
-  - `plugins/search/src/lib/tools/search-semantic.tool.ts`
-  - `plugins/database/src/lib/tools/db-schema.tool.ts`
+- **Status**: done
+- **Implementation**: `aad7ef8b` (inputSchema + outputSchema declared on all 7 wrapper tools; `grep -L` returns 0; 6076 tests pass)
+- **Files**: `plugins/proposals/src/lib/tools/agents-lock-diagnose.tool.ts`, `plugins/proposals/src/lib/tools/get-proposal-workflow.tool.ts`, `plugins/proposals/src/lib/tools/review.tool.ts`, `plugins/proposals/src/lib/tools/scan-host-instructions.tool.ts`, `plugins/proposals/src/lib/tools/sync-proposals.tool.ts`, `plugins/search/src/lib/tools/search-semantic.tool.ts`, `plugins/database/src/lib/tools/db-schema.tool.ts`
 - Each file gets an explicit `inputSchema: delegateInputSchema`
   and `outputSchema: delegateOutputSchema` re-export (or a
   re-import of the schema constant from the delegate file).
