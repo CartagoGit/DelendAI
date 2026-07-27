@@ -34,6 +34,7 @@ import {
 	detectForeignProposals,
 	type IForeignProposalInventory,
 } from './init-foreign-detect.service';
+import { PROPOSAL_STATUS_FOLDERS } from './init-render.service';
 
 const slugify = (input: string): string =>
 	input
@@ -108,17 +109,23 @@ const findExistingAdoptionId = async (
 	scope: string,
 ): Promise<string | undefined> => {
 	const re = new RegExp(`^(f\\d+)-adopt-mcp-vertex-${scope}\\.md$`);
-	for (const dir of [
-		'docs/mcp-vertex/proposals/ready',
-		'docs/mcp-vertex/proposals/done',
-		'docs/mcp-vertex/proposals/paused',
-		'docs/mcp-vertex/proposals',
-	]) {
+	// Scan every canonical status folder (root + 7 sub-folders) so a
+	// prior plan that has already transitioned out of `ready` does not
+	// cause `init` to allocate a duplicate id.
+	for (const folder of PROPOSAL_STATUS_FOLDERS) {
+		const dir = `docs/mcp-vertex/proposals/${folder}`;
 		const entries = await reader.listDir(dir);
 		for (const name of entries) {
 			const m = name.match(re);
 			if (m) return m[1];
 		}
+	}
+	// Plus the root `docs/mcp-vertex/proposals/` (which holds the legacy
+	// `f00001-migrate-legacy` style stubs).
+	const rootEntries = await reader.listDir('docs/mcp-vertex/proposals');
+	for (const name of rootEntries) {
+		const m = name.match(re);
+		if (m) return m[1];
 	}
 	return undefined;
 };
