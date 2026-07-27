@@ -185,6 +185,13 @@ describe('initCommand extraOptions (f00084 S8)', () => {
 		'../../../../../tools/scripts/host/host-server.script.ts',
 	);
 
+	// f00084 S8: `initCommand.run` performs a dynamic import of every
+	// resolved plugin to compute the env warning block. In the test
+	// sandbox each import costs ~100-300ms, so the standard preset
+	// (14 non-env plugins) easily exceeds vitest's 5s default timeout
+	// when the suite is warm. Bump the timeout for this describe.
+	const TEST_TIMEOUT_MS = 30_000;
+
 	let workspace: string;
 	let stderrWrite: MockInstance<typeof process.stderr.write>;
 
@@ -201,94 +208,106 @@ describe('initCommand extraOptions (f00084 S8)', () => {
 		await rm(workspace, { recursive: true, force: true });
 	});
 
-	it('merges CLI plugin option overrides on top of rendered defaults before writing', async () => {
-		const result = await initCommand.run(
-			[`--mcp-vertex-root=${HOST_ENTRY_PATH}`],
-			{
-				cwd: workspace,
-				globals: {
-					workspace,
-					remote: undefined,
-					json: false,
-					format: 'text',
-					lang: 'en',
-					noColor: false,
-					plugins: [],
-					extraOptions: {
-						memory: { maxNotes: '500' },
-						proposals: { proposalDir: 'docs/proposals/custom' },
+	it(
+		'merges CLI plugin option overrides on top of rendered defaults before writing',
+		async () => {
+			// Dynamic imports of every standard-preset plugin take ~2-4s
+			// in the test sandbox (env warning lookup); the standard
+			// preset exceeds vitest's 5s default. The describe-level
+			// `TEST_TIMEOUT_MS` constant explains why.
+			const result = await initCommand.run(
+				[`--mcp-vertex-root=${HOST_ENTRY_PATH}`],
+				{
+					cwd: workspace,
+					globals: {
+						workspace,
+						remote: undefined,
+						json: false,
+						format: 'text',
+						lang: 'en',
+						noColor: false,
+						plugins: [],
+						extraOptions: {
+							memory: { maxNotes: '500' },
+							proposals: { proposalDir: 'docs/proposals/custom' },
+						},
 					},
+					request: async () => {
+						throw new Error('not used');
+					},
+					listTools: async () => [],
+					close: async () => {},
 				},
-				request: async () => {
-					throw new Error('not used');
-				},
-				listTools: async () => [],
-				close: async () => {},
-			},
-		);
+			);
 
-		expect(result.code).toBe(0);
-		const onDisk = await readFile(
-			join(workspace, 'mcp-vertex.config.json'),
-			'utf8',
-		);
-		const parsed = JSON.parse(onDisk) as {
-			plugins: {
-				memory?: { options: { maxNotes?: string } };
-				proposals?: { options: { proposalDir?: string } };
+			expect(result.code).toBe(0);
+			const onDisk = await readFile(
+				join(workspace, 'mcp-vertex.config.json'),
+				'utf8',
+			);
+			const parsed = JSON.parse(onDisk) as {
+				plugins: {
+					memory?: { options: { maxNotes?: string } };
+					proposals?: { options: { proposalDir?: string } };
+				};
 			};
-		};
-		expect(parsed.plugins.memory?.options.maxNotes).toBe('500');
-		expect(parsed.plugins.proposals?.options.proposalDir).toBe(
-			'docs/proposals/custom',
-		);
-	});
+			expect(parsed.plugins.memory?.options.maxNotes).toBe('500');
+			expect(parsed.plugins.proposals?.options.proposalDir).toBe(
+				'docs/proposals/custom',
+			);
+		},
+		TEST_TIMEOUT_MS,
+	);
 
-	it('warns and skips when a CLI override targets a plugin outside the resolved set', async () => {
-		const result = await initCommand.run(
-			[`--mcp-vertex-root=${HOST_ENTRY_PATH}`],
-			{
-				cwd: workspace,
-				globals: {
-					workspace,
-					remote: undefined,
-					json: false,
-					format: 'text',
-					lang: 'en',
-					noColor: false,
-					plugins: [],
-					extraOptions: {
-						memory: { maxNotes: '500' },
-						audit: { auditDir: 'docs/audits' },
-						'web-fetch': { userAgent: 'custom' },
+	it(
+		'warns and skips when a CLI override targets a plugin outside the resolved set',
+		async () => {
+			const result = await initCommand.run(
+				[`--mcp-vertex-root=${HOST_ENTRY_PATH}`],
+				{
+					cwd: workspace,
+					globals: {
+						workspace,
+						remote: undefined,
+						json: false,
+						format: 'text',
+						lang: 'en',
+						noColor: false,
+						plugins: [],
+						extraOptions: {
+							memory: { maxNotes: '500' },
+							audit: { auditDir: 'docs/audits' },
+							'web-fetch': { userAgent: 'custom' },
+						},
 					},
+					request: async () => {
+						throw new Error('not used');
+					},
+					listTools: async () => [],
+					close: async () => {},
 				},
-				request: async () => {
-					throw new Error('not used');
-				},
-				listTools: async () => [],
-				close: async () => {},
-			},
-		);
+			);
 
-		expect(result.code).toBe(0);
-		expect(stderrWrite).toHaveBeenCalledWith(
-			'warning: init override ignored for unresolved plugin "audit"\n',
-		);
-		expect(stderrWrite).toHaveBeenCalledWith(
-			'warning: init override ignored for unresolved plugin "web-fetch"\n',
-		);
-		const onDisk = await readFile(
-			join(workspace, 'mcp-vertex.config.json'),
-			'utf8',
-		);
-		const parsed = JSON.parse(onDisk) as {
-			plugins: Record<string, { options: Record<string, unknown> }>;
-		};
-		expect(parsed.plugins.memory?.options.maxNotes).toBe('500');
-		expect(parsed.plugins.audit).toBeUndefined();
-		expect(parsed.plugins['web-fetch']).toBeUndefined();
-	});
+			expect(result.code).toBe(0);
+			expect(stderrWrite).toHaveBeenCalledWith(
+				'warning: init override ignored for unresolved plugin "audit"\n',
+			);
+			expect(stderrWrite).toHaveBeenCalledWith(
+				'warning: init override ignored for unresolved plugin "web-fetch"\n',
+			);
+			const onDisk = await readFile(
+				join(workspace, 'mcp-vertex.config.json'),
+				'utf8',
+			);
+			const parsed = JSON.parse(onDisk) as {
+				plugins: Record<string, { options: Record<string, unknown> }>;
+			};
+			expect(parsed.plugins.memory?.options.maxNotes).toBe('500');
+			expect(parsed.plugins.audit).toBeUndefined();
+			expect(parsed.plugins['web-fetch']).toBeUndefined();
+		},
+		TEST_TIMEOUT_MS,
+	);
 });
 
 describe('writeMcpVertexConfig (f00084 S2)', () => {
