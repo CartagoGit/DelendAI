@@ -316,7 +316,7 @@ The timer is stored in a local `const`, never exposed. The plugin's `register` c
 
 ### S1 — `kebab()` returns `''` collides filenames
 
-- **Status**: pending
+- **Status**: done
 - **Files**:
   - `plugins/proposals/src/lib/shared/string-helpers.ts` — add
     `slugFromTitle(title: string, fallback: string): string` alongside
@@ -341,10 +341,22 @@ The timer is stored in a local `const`, never exposed. The plugin's `register` c
     title produces a non-empty filename.
   - `bun run test --cwd plugins/proposals -- string-helpers.spec.ts`
     — new specs pass.
+- **Closure note**: Implemented as designed, with one refinement —
+  `migrate-foreign.ts:114`'s `source` key is a **per-checklist-item**
+  dedup key inside a single source file, so `basename(rel)` alone
+  would still collide when two non-ASCII checklist items share a
+  file. Used `item-${match.index ?? 0}` (the regex match's character
+  offset, always unique per occurrence) as the fallback instead.
+  Documented and pinned by `string-helpers.spec.ts`'s
+  "two different non-ASCII titles with the same fallback id would
+  collide" test. Verified live: `bun test` green across
+  `plugins/proposals`, plus a live `authoring.spec.ts` regression
+  creating a proposal titled `提案` and asserting the filename is
+  `ready/f00001-f00001.md`, not `ready/f00001-.md`.
 
 ### S2 — `peer-review-bypass-log.ts:39` writes unbounded
 
-- **Status**: pending
+- **Status**: done
 - **Files**:
   - `plugins/proposals/src/lib/shared/peer-review-bypass-log.ts` —
     refactor `events` to a TTL-bounded ring buffer (mirror
@@ -359,6 +371,22 @@ The timer is stored in a local `const`, never exposed. The plugin's `register` c
   - `bun run verify:tools --plugin=proposals` — `state_health`
     reports `peer-review-bypass-count` correctly under the new
     bounded model.
+- **Closure note**: Implemented as designed, plus one bug found and
+  fixed during the TTL test itself — `gc(now: Date)` originally took
+  a `Date`, and both call sites built it via `new Date()` /
+  `new Date(event.ts)`. Overriding `Date.now` (the test's only way to
+  simulate clock skew without a real 24h wait) does **not** affect
+  the bare `Date()` constructor's internal clock in Bun/V8 — they are
+  independent internal hooks, confirmed live with `bun -e` (`Date.now`
+  mocked to `12345`, `new Date().getTime()` still returned the real
+  wall-clock time). The first version of the TTL test failed for
+  exactly this reason (count stayed at 1001 instead of dropping to 1).
+  Fixed by threading `nowMs: number` through `gc` and calling
+  `Date.now()` explicitly at every clock read (`recordPeerReviewBypass`,
+  `getPeerReviewBypassCount`, `listPeerReviewBypasses`), so the
+  override actually takes effect. Verified: `bun test
+  peer-review-bypass-log.spec.ts` (3/3 pass), `bunx tsc --noEmit
+  --project .` clean, `state-tools.spec.ts` (a caller) still green.
 
 ### S3 — `external-mcps/discover.tool.ts:64` `fetch` no timeout
 
