@@ -82,6 +82,20 @@ describe('proposal authoring (create → board → close)', async () => {
 		expect(second.file).toBe('ready/f00002-second-one.md');
 	});
 
+	// x00157 S1: kebab() strips ALL non-ASCII characters, so a title
+	// like "提案" used to collapse to "" — every non-ASCII title
+	// produced the SAME shape (`${id}-.md`), and a second non-ASCII
+	// proposal would overwrite... no, different ids still differ, but
+	// the filename gives the user zero signal their title was even
+	// used. slugFromTitle falls back to the (always-unique) id instead.
+	it('falls back to the proposal id in the filename for a non-ASCII title (x00157 S1)', async () => {
+		const create = await capture(buildCreateProposalRegistration(opts));
+		const created = parse(await create({ kind: 'feat', title: '提案' }));
+		expect(created.ok).toBe(true);
+		expect(created.file).toBe('ready/f00001-f00001.md');
+		expect(created.file).not.toBe('ready/f00001-.md');
+	});
+
 	it('errors clearly when neither id nor kind is provided', async () => {
 		const create = await capture(buildCreateProposalRegistration(opts));
 		const result = await create({ title: 'No id, no kind' });

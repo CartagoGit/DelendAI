@@ -36,7 +36,7 @@ import {
 	newProposalIdSchema,
 } from '../contracts/schemas/proposal-kind.schema';
 import { readJsonOrNull, readTextOrNull } from '../proposals/index-reader';
-import { escapeRegExp, kebab } from '../shared/string-helpers';
+import { escapeRegExp, slugFromTitle } from '../shared/string-helpers';
 import {
 	deriveSliceStatuses,
 	parseProposalSlicePlan,
@@ -603,7 +603,7 @@ export const buildCreateProposalRegistration = (
 				].join('\n');
 				// The linter requires every proposal to live in its status
 				// folder (`ready/`, `in-progress/`, …), not the dir root.
-				const fileRel = `${STATUS_TO_FOLDER[status]}/${id}-${kebab(args.title)}.md`;
+				const fileRel = `${STATUS_TO_FOLDER[status]}/${id}-${slugFromTitle(args.title, id)}.md`;
 				const absPath = join(
 					options.proposalsDirAbs,
 					...fileRel.split('/'),

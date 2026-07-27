@@ -372,7 +372,7 @@ provide the option.
 - **Files**:
   - `plugins/proposals/src/lib/tools/state-tools.tool.ts`
   - `plugins/proposals/src/index.ts`
-  - `plugins/proposals/tests/src/lib/auto-state-repair-boot.spec.ts` (the real existing spec for this function; the originally-planned `tests/src/lib/tools/state-tools.tool.spec.ts` path does not exist)
+  - `plugins/proposals/tests/src/lib/auto-state-repair-boot.spec.ts` (the real existing spec for this function; the originally-planned path tests/src/lib/tools/state-tools.tool.spec.ts does not exist)
 - **Gate**: `bun test plugins/proposals/tests` — 1103/1103 pass (was 1101, +2 new cases: failed-repair severity + no-logs-helper carve-out).
 
 ### S3 — `record-buffer.ts` `process.stderr.write` → structured event
@@ -458,7 +458,8 @@ provide the option.
     delete the `process.cwd()` fallback; require
     `workspaceRootAbs`.
   - Update every test fixture that called these constructors
-    with `{}` to include `workspaceRootAbs: '/x'`.
+    with an empty options object to include a workspaceRootAbs
+    value (e.g. `/x`).
 - **Gate**: `bun test plugins/search/tests` — 98/98 pass; `bun tools/scripts/verify/plugin-tool-verify.script.ts --plugin=search` — 17 ok, 6 need-input, 0 failed; `bunx tsc --noEmit` clean; `bunx biome check` clean on every touched file.
 
 ## acceptance
