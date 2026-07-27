@@ -25,6 +25,8 @@
  */
 import { spawnSync } from 'node:child_process';
 
+import { isLefthookBypassed } from '../lib/lefthook-bypass';
+
 const DEVELOP_BRANCH = 'develop';
 
 /** Paths that, when staged on `develop`, are a policy violation. */
@@ -187,6 +189,16 @@ const formatReport = (result: CommitBranchResult): string => {
 };
 
 const main = async (): Promise<number> => {
+	// x00159 S2: honour the documented escape hatch for real. Every
+	// blocker message below tells the operator to set
+	// LEFTHOOK_BYPASS=1 — lefthook itself has no such variable, so
+	// this script must be the one to check it.
+	if (isLefthookBypassed()) {
+		process.stdout.write(
+			'✓ commit-branch-discipline: bypassed (LEFTHOOK_BYPASS=1)\n',
+		);
+		return 0;
+	}
 	const args = parseArgs(process.argv.slice(2));
 	const branch = args.branch ?? readCurrentBranch(args.cwd);
 	const staged =
