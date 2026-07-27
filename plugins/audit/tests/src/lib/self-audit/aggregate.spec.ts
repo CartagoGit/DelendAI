@@ -234,8 +234,9 @@ describe('aggregateSelfAudit — resilience', () => {
 				{
 					ref: ref('weird', 'misc'),
 					run: async () => {
-						// biome-ignore lint/suspicious/noExplicitAny: defensive contract
-						throw 'plain string error' as any;
+						// A scanner throwing a non-Error value is the exact
+						// defensive case this test pins.
+						throw 'plain string error';
 					},
 				},
 			],

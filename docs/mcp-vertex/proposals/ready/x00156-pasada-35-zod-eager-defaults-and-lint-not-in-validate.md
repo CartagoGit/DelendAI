@@ -433,29 +433,16 @@ provide the option.
 
 ### S5 — `no-any` lint script
 
-- **Status**: pending
+- **Status**: done
+- **Implementation**: `no-any.script.ts` mirrors `solid-compliance.script.ts`'s walkAndClassify → pure engine → formatReport → main shell template. **Scope deviation from the original spec (documented, not silent)**: the proposal said "detect `as any` and `as unknown as` patterns" — implemented as `as any` ONLY. Blanket-flagging `as unknown as` would fail `validate` immediately on ~40 intentional, already-reviewed casts (documented MCP SDK workarounds, duck-typing bridges — see x00157's own census of the 49 `as unknown as` sites, only 6 of which are genuinely ungrounded). `as any` has no such legitimate use case, so it is unconditionally banned; `as unknown as` stays a separate, more nuanced follow-up (x00157 S6).
+- **The 5 known offenders, fixed**: `authoring.tool.ts`'s `args.action as any` was pure noise — `IReviewAction` was already satisfied once a *local* re-narrowing check was added (the original `args.action === 'status'` early return does narrow the type, but that narrowing does not cross the `withFileMutex(docPath, async () => {...})` closure boundary the call actually runs inside — a real, non-obvious TypeScript scoping gotcha, not something a blind cast removal would have caught). `nextRounds as any` was cosmetic on top of a REAL problem: the variable itself was declared `readonly any[]` at its definition — retyped to `readonly IReviewRound[]` (the actual shape `next.rounds` produces) and the cast dropped entirely. Both `catch (err: any)` blocks in `authoring.tool.ts` narrow via `instanceof Error` plus a small shared `ICloseSliceThrownError` / `IToolErrorCarryingError` intersection type (matching the ad-hoc `Object.assign(new Error(...), {...})` shape those blocks were always built around) instead of a cast. `online-preset.ts`'s was a plain `err instanceof Error ? err.message : String(err)` narrow.
+- **2 additional offenders found by the lint itself** (not in the original 5, both in test files): `plugins/audit/tests/.../aggregate.spec.ts` (`throw '...' as any` — the cast was pure noise; `throw` accepts any expression) and `plugins/rules/tests/.../e2e-polyglot.spec.ts` (`} as any)` — also noise; the target parameter was already typed `any`, so no cast was ever needed). Both fixed the same way: cast removed.
+- **Incidental dead-code removal**: `authoring.tool.ts` had an unused `readPeerReviewLog` function (and, once removed, an unused `readFile` import) noticed while in the file — removed.
 - **Files**:
-  - `tools/scripts/lint/no-any.script.ts` — new lint, ≤80 LOC,
-    mirrors the `solid-compliance.script.ts` template.
-  - `tools/scripts/lint/no-any.script.spec.ts` — specs covering
-    positive (no `as any` in fixture) and negative (2 fixtures
-    each) cases.
-  - `package.json` — add `bun run lint:no-any` to the
-    `lint:*` chain and to `validate`.
-  - Fix the 5 known offenders in the same commit:
-    - `plugins/proposals/src/lib/tools/authoring.tool.ts:1159`
-      — narrow `args.action as any` to `args.action` (the schema
-      already proves it).
-    - `plugins/proposals/src/lib/tools/authoring.tool.ts:1248`
-      — `catch (err: unknown)`, narrow.
-    - `plugins/proposals/src/lib/tools/authoring.tool.ts:1312`
-      — `nextRounds as any` — investigate and narrow.
-    - `plugins/proposals/src/lib/tools/authoring.tool.ts:839` —
-      same pattern as 1248.
-    - `plugins/rules/src/lib/frameworks/online-preset.ts:410` —
-      same pattern.
-- **Gate**: `bun run lint:no-any` exits 0 after the fix;
-  `bun run validate` exits 0.
+  - `tools/scripts/lint/no-any.script.ts`, `tools/scripts/lint/no-any.script.spec.ts`, `package.json`
+  - `plugins/proposals/src/lib/tools/authoring.tool.ts`, `plugins/rules/src/lib/frameworks/online-preset.ts`
+  - `plugins/audit/tests/src/lib/self-audit/aggregate.spec.ts`, `plugins/rules/tests/src/lib/e2e-polyglot.spec.ts`
+- **Gate**: `bunx tsc --noEmit` clean; `bun run lint:no-any` — 0 findings (was 7: the 5 known + 2 found live); `bun test plugins/proposals/tests plugins/rules/tests plugins/audit/tests` — 1476/1476 pass; `bun run validate`'s `lint:no-any` step wired in.
 
 ### S6 — Search plugin `process.cwd()` removal
 
