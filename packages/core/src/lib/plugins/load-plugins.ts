@@ -69,19 +69,40 @@ export interface ILoadPluginsOptions {
  * unresolvable dynamic imports and downgrades tree-shaking). At
  * runtime this is exactly equivalent to `import(specifier)`.
  *
+ * Some test sandboxes (e.g. vitest under bun) reject dynamic imports
+ * synthesized via `new Function` ("A dynamic import callback was not
+ * specified"). When that happens we fall back to a direct `import()`
+ * which is also unresolvable from the bundler's perspective but
+ * works at runtime in those sandboxes. Both code paths converge on
+ * the same call site; the fallback exists purely to make the function
+ * usable under test.
+ *
  * Exported separately so it never lives inside the core's public
  * bundle — browser hosts (web, VS Code) MUST provide their own
  * loader instead. The web app's loader is a thin wrapper around the
  * module-graph URL the dev server hands it; the VS Code extension
  * uses Node's `require` for activation-time loads.
  */
-export const nodeDynamicImport = (specifier: string): Promise<unknown> =>
-	dynamicImport(normalizeImportSpecifier(specifier));
-
-const dynamicImport = new Function(
-	'specifier',
-	'return import(specifier);',
-) as (specifier: string) => Promise<unknown>;
+export const nodeDynamicImport = async (
+	specifier: string,
+): Promise<unknown> => {
+	const normalized = normalizeImportSpecifier(specifier);
+	// Use `Function` to hide `import()` from the static analyser, but
+	// fall back to the direct form on sandbox failures so callers
+	// (and the test suite) keep working in restricted runtimes.
+	const indirect = new Function('specifier', 'return import(specifier);') as (
+		s: string,
+	) => Promise<unknown>;
+	try {
+		return await indirect(normalized);
+	} catch (err) {
+		const message = err instanceof Error ? err.message : String(err);
+		if (/dynamic import callback/i.test(message)) {
+			return await import(normalized);
+		}
+		throw err;
+	}
+};
 
 const normalizeImportSpecifier = (specifier: string): string => {
 	if (!specifier.startsWith('/')) return specifier;
