@@ -306,6 +306,39 @@ export const parseVerifyCliArgs = (
 };
 
 /**
+ * x00154 S3 — `verify:tools` is loud, not SIGKILL-silent: parse a
+ * per-plugin wall-clock budget from `--timeout=<ms>`. Lives next to
+ * `parseVerifyCliArgs` for symmetry but is a SEPARATE helper: the
+ * legacy spec at
+ * `tools/scripts/verify/plugin-tool-verify.script.spec.ts` pins an
+ * exact two-field shape for `parseVerifyCliArgs`, so adding a
+ * `timeoutMs` field there would break every existing assertion.
+ *
+ * Defaults to {@link DEFAULT_PLUGIN_TIMEOUT_MS} (15 minutes) when the
+ * flag is absent. A malformed value (non-digit, negative, decimal)
+ * is rejected with a stderr warning so the operator can see why
+ * their override did not apply.
+ */
+export const DEFAULT_PLUGIN_TIMEOUT_MS = 900_000;
+
+const TIMEOUT_VALUE_RE = /^\d+$/;
+
+export const parseTimeoutMs = (
+	argv: readonly string[],
+	fallback: number = DEFAULT_PLUGIN_TIMEOUT_MS,
+): number => {
+	const raw = lastFlagValue(argv, '--timeout=');
+	if (raw === undefined) return fallback;
+	if (!TIMEOUT_VALUE_RE.test(raw)) {
+		process.stderr.write(
+			`[plugin-tool-verify] --timeout=${raw} is not a positive integer ms; using default ${fallback}ms\n`,
+		);
+		return fallback;
+	}
+	return Number.parseInt(raw, 10);
+};
+
+/**
  * r00003 S5 (TS-01, DIP): resolve a plugin name to its source root
  * **relative to the injected workspace root**, not to a relative path
  * baked into this script's own location. The name is contained with
@@ -350,8 +383,97 @@ export const createWorkspacePluginRootResolver = (
 	},
 });
 
+/**
+ * x00154 S3 — per-plugin timing record. We surface `timedOut` so the
+ * timing footer can flag the offender without an operator having to
+ * cross-reference against the (also newly-added) `(plugin-timeout)`
+ * row in the table.
+ */
+interface IPluginTiming {
+	readonly elapsedMs: number;
+	readonly timedOut: boolean;
+}
+
+/** x00154 S3 — discriminator returned by the timeout race. */
+type IRaceOutcome<T> =
+	| { readonly kind: 'ok'; readonly value: T }
+	| { readonly kind: 'timeout' };
+
+/**
+ * x00154 S3 — race an async verifier against a wall-clock budget.
+ * The previous behaviour SIGKILL'd the parent process when a single
+ * plugin hung; that meant a slow plugin could mask every other plugin
+ * AND corrupt the run with no structured record. The new contract:
+ *
+ *   - The underlying task keeps running after the timeout (we cannot
+ *     cancel arbitrary Promise work), but its eventual rejection is
+ *     swallowed so we never leak an unhandled rejection.
+ *   - The timer is ALWAYS cleared in `finally`, so a fast verify
+ *     does not leave a stale timer keeping the event loop alive.
+ *   - The caller gets a typed `timeout` branch and is responsible for
+ *     converting it into a structured failure row in the report.
+ */
+const raceWithTimeout = async <T>(
+	run: () => Promise<T>,
+	timeoutMs: number,
+): Promise<IRaceOutcome<T>> => {
+	let timer: ReturnType<typeof setTimeout> | undefined;
+	const task = run();
+	// Background-safety: attach a no-op rejection handler up front so a
+	// late rejection from `task` cannot become an unhandled rejection
+	// after we have already moved on. The returned promise is unused.
+	task.catch(() => {});
+	try {
+		const winner = await Promise.race<IRaceOutcome<T>>([
+			task.then((value): IRaceOutcome<T> => ({ kind: 'ok', value })),
+			new Promise<IRaceOutcome<T>>((resolve) => {
+				timer = setTimeout(
+					() => resolve({ kind: 'timeout' }),
+					timeoutMs,
+				);
+			}),
+		]);
+		return winner;
+	} finally {
+		if (timer !== undefined) clearTimeout(timer);
+	}
+};
+
+/**
+ * x00154 S3 — render the per-plugin timing footer. Same plain-text
+ * stream as `formatResultsTable`, no new format — just additional
+ * lines after the totals so an operator can spot the slow plugin
+ * without re-running under a profiler. Empty plugin list is handled
+ * so the footer never prints garbage.
+ */
+const formatTimingFooter = (
+	timings: ReadonlyMap<string, IPluginTiming>,
+	timeoutMs: number,
+): string => {
+	const lines: string[] = [];
+	lines.push(`Per-plugin timing (budget ${timeoutMs}ms each):`);
+	if (timings.size === 0) {
+		lines.push('  (no plugins verified)');
+		return lines.join('\n');
+	}
+	const ordered = [...timings.entries()].sort(([a], [b]) =>
+		a.localeCompare(b),
+	);
+	for (const [name, t] of ordered) {
+		const mark = t.timedOut ? ' [TIMED OUT]' : '';
+		lines.push(`  ${name}: ${t.elapsedMs}ms${mark}`);
+	}
+	return lines.join('\n');
+};
+
 const main = async (): Promise<number> => {
-	const options = parseVerifyCliArgs(process.argv.slice(2));
+	const argv = process.argv.slice(2);
+	const options = parseVerifyCliArgs(argv);
+	// x00154 S3: per-plugin timeout. Default 900_000ms (15min) so the
+	// nightly run can absorb cold boots; `--timeout=<ms>` tightens the
+	// budget when an operator wants a faster signal. We surface the
+	// actual value in the timing footer so it is never ambiguous.
+	const timeoutMs = parseTimeoutMs(argv, DEFAULT_PLUGIN_TIMEOUT_MS);
 	// r00003 S5 (TS-01): the workspace root comes from `--workspace`, with
 	// `process.cwd()` as a boot-time fallback. Resolving it here (a single
 	// CLI entrypoint) is the one place a cwd read is acceptable; everything
@@ -372,19 +494,39 @@ const main = async (): Promise<number> => {
 	const rootResolver = createWorkspacePluginRootResolver(workspaceRoot);
 
 	const all: IVerifyResult[] = [];
+	const timings = new Map<string, IPluginTiming>();
 	let includeCoreTools = true;
 	for (const name of list) {
+		const startedAt = Date.now();
+		let timedOut = false;
 		try {
 			// Contain the plugin name before doing any I/O: a name that
 			// escapes the workspace is rejected here, not after a load.
 			rootResolver.resolve(name);
-			const res = await verifyPlugin(
-				name,
-				workspaceRoot,
-				includeCoreTools,
+			// x00154 S3: race the verify pass against the per-plugin
+			// timeout. We never SIGKILL the parent process — when the
+			// budget runs out we surface a structured `(plugin-timeout)`
+			// row in the existing report and keep going.
+			const outcome = await raceWithTimeout(
+				() => verifyPlugin(name, workspaceRoot, includeCoreTools),
+				timeoutMs,
 			);
-			includeCoreTools = false;
-			all.push(...res);
+			if (outcome.kind === 'ok') {
+				includeCoreTools = false;
+				all.push(...outcome.value);
+			} else {
+				timedOut = true;
+				all.push({
+					plugin: name,
+					tool: '(plugin-timeout)',
+					schemaCompatible: 'failed',
+					handlerReturned: false,
+					detail:
+						`plugin verify exceeded ${timeoutMs}ms budget ` +
+						`(elapsed=${Date.now() - startedAt}ms); ` +
+						`raise --timeout=<ms> or investigate the slow plugin`,
+				});
+			}
 		} catch (err) {
 			// x00105 S1: a thrown load path is a FAILED result, not a
 			// console note the exit code ignores.
@@ -394,6 +536,11 @@ const main = async (): Promise<number> => {
 				schemaCompatible: 'failed',
 				handlerReturned: false,
 				detail: (err as Error).message,
+			});
+		} finally {
+			timings.set(name, {
+				elapsedMs: Date.now() - startedAt,
+				timedOut,
 			});
 		}
 	}
@@ -409,6 +556,10 @@ const main = async (): Promise<number> => {
 		...(r.detail !== undefined ? { detail: r.detail } : {}),
 	}));
 	process.stdout.write(formatResultsTable(rows));
+	// x00154 S3: append per-plugin timings to the existing report so
+	// an operator can spot the slow plugin without re-running under a
+	// profiler. Same plain-text stream, no new format.
+	process.stdout.write(`${formatTimingFooter(timings, timeoutMs)}\n`);
 	const totalFailed = rows.filter((r) => r.outcome === 'failed').length;
 	return totalFailed === 0 ? 0 : 1;
 };
