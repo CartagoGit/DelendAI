@@ -34,7 +34,7 @@ import {
 	detectForeignProposals,
 	type IForeignProposalInventory,
 } from './init-foreign-detect.service';
-import { PROPOSAL_STATUS_FOLDERS } from './init-render.service';
+import { PROPOSAL_STATUS_FOLDERS } from './init-proposal-folders.constant';
 
 const slugify = (input: string): string =>
 	input
