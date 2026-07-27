@@ -216,13 +216,13 @@ export const allocateNextAdoptionId = async (
 ): Promise<string> => {
 	let max = 0;
 
-	// 1) Our own proposals dir in the target (root + ready/ + done/).
-	for (const dir of [
-		'docs/mcp-vertex/proposals',
-		'docs/mcp-vertex/proposals/ready',
-		'docs/mcp-vertex/proposals/done',
-		'docs/mcp-vertex/proposals/paused',
-	]) {
+	// 1) Our own proposals dir in the target. Scan every canonical
+	//    status folder (root + 7 sub-folders) — a proposal that has
+	//    already been transitioned out of `ready/` (into `in-progress`,
+	//    `review`, `blocked`, etc.) must still count against the id
+	//    allocator or we'd risk collisions on the next `init` run.
+	for (const folder of PROPOSAL_STATUS_FOLDERS) {
+		const dir = `docs/mcp-vertex/proposals/${folder}`;
 		const entries = await reader.listDir(dir);
 		for (const name of entries) {
 			const m = name.match(MCP_VERTEX_RE);
@@ -230,6 +230,16 @@ export const allocateNextAdoptionId = async (
 				const n = Number(m[2]);
 				if (Number.isFinite(n) && n > max) max = n;
 			}
+		}
+	}
+	// Plus the root `docs/mcp-vertex/proposals/` (legacy stubs + any
+	// out-of-status proposals).
+	const rootEntries = await reader.listDir('docs/mcp-vertex/proposals');
+	for (const name of rootEntries) {
+		const m = name.match(MCP_VERTEX_RE);
+		if (m && m[1]?.toLowerCase() === 'f') {
+			const n = Number(m[2]);
+			if (Number.isFinite(n) && n > max) max = n;
 		}
 	}
 
