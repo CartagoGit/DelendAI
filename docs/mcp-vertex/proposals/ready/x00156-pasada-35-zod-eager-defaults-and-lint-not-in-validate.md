@@ -358,27 +358,22 @@ provide the option.
 
 ### S1 — Lazy default for `workspaceRoot` in `init-answers.schema.ts`
 
-- **Status**: pending
+- **Status**: done
+- **Implementation**: `.default(process.cwd())` → `.default(() => process.cwd())` in `init-answers.schema.ts`. Regression spec added at `packages/cli/src/lib/init/init-answers.schema.spec.ts` (the repo colocates CLI specs next to source, not under a separate `tests/` mirror — the file path in this slice's original spec was wrong).
 - **Files**:
-  - `packages/cli/src/lib/init/init-answers.schema.ts` — change
-    `.default(process.cwd())` to `.default(() => process.cwd())`.
-  - `packages/cli/tests/src/lib/init/init-answers.schema.spec.ts`
-    — add the chdir-between-parsees spec (the repro).
-- **Gate**: `bun test packages/cli/src/lib/init/init-answers.schema.spec.ts`
-  passes. `bun run typecheck` clean. Existing tests unchanged.
+  - `packages/cli/src/lib/init/init-answers.schema.ts`
+  - `packages/cli/src/lib/init/init-answers.schema.spec.ts`
+- **Gate**: `bun test packages/cli/src/lib/init/init-answers.schema.spec.ts` — 7/7 pass. `bunx tsc --noEmit` clean.
 
 ### S2 — `state-tools.tool.ts` `console.info` → `ctx.logs.log(...)`
 
-- **Status**: pending
+- **Status**: done
+- **Implementation**: added `readonly logs?: IPluginLogsHelper` to `IStateToolOptions` (f00153 S4's `ctx.logs` helper — the plugin has no `ctx` field on its tool options, so the helper itself is threaded through, not a full `ctx`), replaced both `console.info(...)` calls with `options.logs?.log({ severity, incidentType: 'state-repair-auto', message, context })`, and wired `logs: ctx.logs` at the actual construction site in `plugins/proposals/src/index.ts` (the prior plan assumed `ctx` was already reachable inside the tool function, which it is not).
 - **Files**:
-  - `plugins/proposals/src/lib/tools/state-tools.tool.ts` — replace
-    both `console.info(...)` calls with `ctx.logs.log(...)`.
-  - `plugins/proposals/tests/src/lib/tools/state-tools.tool.spec.ts`
-    — add a spec asserting the auto-repair event lands in the
-    structured store with `kind: 'log-warning'` and
-    `incidentType: 'state-repair-auto'`.
-- **Gate**: spec passes; `bun run verify:tools --plugin=proposals`
-  shows `state-repair-auto` discoverable through `errors_tail`.
+  - `plugins/proposals/src/lib/tools/state-tools.tool.ts`
+  - `plugins/proposals/src/index.ts`
+  - `plugins/proposals/tests/src/lib/auto-state-repair-boot.spec.ts` (the real existing spec for this function; the originally-planned `tests/src/lib/tools/state-tools.tool.spec.ts` path does not exist)
+- **Gate**: `bun test plugins/proposals/tests` — 1103/1103 pass (was 1101, +2 new cases: failed-repair severity + no-logs-helper carve-out).
 
 ### S3 — `record-buffer.ts` `process.stderr.write` → structured event
 

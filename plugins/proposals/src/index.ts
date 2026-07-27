@@ -188,6 +188,9 @@ export default definePlugin({
 			closedTasksPathAbs: abs(layout.closedTasksFile),
 			registryPathAbs: abs(layout.agentRegistryFile),
 			workspaceRoot: ctx.workspace.root,
+			// x00156 S2: route the auto-repair boot event through the
+			// structured incident stream instead of console.info.
+			logs: ctx.logs,
 		};
 
 		// a00069 S10: purge stale orphans at boot unless the host opts out.

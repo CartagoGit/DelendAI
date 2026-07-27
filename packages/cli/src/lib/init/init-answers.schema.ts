@@ -83,8 +83,19 @@ export const InitAnswers = z.object({
 	/** Optional hostname allow-list for the `web-fetch` plugin. */
 	webFetchAllowList: z.array(z.string()).optional(),
 
-	/** Workspace root resolved by the CLI context. */
-	workspaceRoot: z.string().default(process.cwd()),
+	/**
+	 * Workspace root resolved by the CLI context.
+	 *
+	 * x00156 S1: a function default, not an eager value — Zod's
+	 * `.default(value)` captures `value` once, at schema construction
+	 * (module load) time, not at `.parse()` time. A bare
+	 * `.default(process.cwd())` freezes the CWD from whenever this
+	 * module first loaded, so any later `process.chdir()` (test
+	 * isolation, sandboxed harnesses) before a `.parse({})` call
+	 * silently gets the stale directory. `.default(() => ...)` is
+	 * Zod's lazy form — evaluated on every parse.
+	 */
+	workspaceRoot: z.string().default(() => process.cwd()),
 
 	/**
 	 * f00088 S1: detection result from `analyzeProject`. Populated by
