@@ -338,7 +338,8 @@ empty/corrupt is a structured `toolError`.
 
 ### S2 — `proposal_diagnose` returns `toolJson({ ok: true, ... })`
 
-- **Status**: pending
+- **Status**: done
+- **Implementation**: `b0b5d66c` (success path → `toolOk({ ok: true, ...payload })`; error helper routes through `toolJson({ ok: false, error: {...} })`; 2 new envelope-contract tests)
 - **Files**:
   - `plugins/proposals/src/lib/tools/recovery-tools.ts` —
     wrap both return paths (the early-return toolError and the
