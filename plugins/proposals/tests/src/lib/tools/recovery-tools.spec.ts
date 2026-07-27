@@ -9,6 +9,7 @@ import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { z } from 'zod';
 
 import {
 	createRecoveryEventBuffer,
@@ -18,6 +19,20 @@ import {
 	runProposalStaleList,
 	type IRecoveryToolOptions,
 } from '@mcp-vertex/proposals/lib/tools/recovery-tools';
+
+// x00154 S2: envelope schema. Both return paths of `proposal_diagnose`
+// (and the recovery tools family) must parse against this shape:
+// success → `{ ok: true, ...payload }`, error → `{ ok: false, error: {...} }`.
+const RECOVERY_ENVELOPE_SCHEMA = z.object({
+	ok: z.boolean(),
+	error: z
+		.object({
+			reason: z.string().optional(),
+			nextAction: z.string().optional(),
+			code: z.string().optional(),
+		})
+		.optional(),
+});
 
 const json = (result: { content: Array<{ text: string }> }) =>
 	JSON.parse(result.content[0]?.text ?? '{}') as Record<string, unknown>;
@@ -481,5 +496,90 @@ describe('a00072 S1.a (F148) proposal_diagnose cross-proposal stale detection', 
 		const parsed = JSON.parse(result.content[0]?.text ?? '{}');
 		expect(parsed.crossProposal).toBeUndefined();
 		expect(parsed.crossProposalStaleTaskIds ?? []).toEqual([]);
+	});
+});
+
+// x00154 S2: envelope contract. Both return paths of `proposal_diagnose`
+// must produce a Zod-parseable envelope with `ok === true` for success
+// and `ok === false` for error — matching the uniform `{ ok, ... }`
+// contract that the rest of the recovery tools family already uses via
+// `toolOk` / `toolError`.
+describe('x00154 S2 — proposal_diagnose uniform { ok: true | false } envelope', () => {
+	let dir = '';
+
+	beforeEach(() => {
+		dir = mkdtempSync(join(tmpdir(), 'recovery-envelope-'));
+	});
+
+	afterEach(() => {
+		rmSync(dir, { recursive: true, force: true });
+	});
+
+	const envelopeOptions = (): IRecoveryToolOptions => ({
+		namespacePrefix: 'test',
+		proposalsDirAbs: join(dir, 'docs/mcp-vertex/proposals'),
+		lockPathAbs: join(dir, '.cache/mcp-vertex/agents.lock.json'),
+		agentRegistryPathAbs: join(
+			dir,
+			'.cache/mcp-vertex/agent-registry.json',
+		),
+		workspaceRoot: dir,
+		eventBuffer: createRecoveryEventBuffer(),
+	});
+
+	it('success path returns an envelope with ok === true (Zod parses)', async () => {
+		const opts = envelopeOptions();
+		mkdirSync(join(opts.proposalsDirAbs, 'ready'), { recursive: true });
+		writeFileSync(
+			join(opts.proposalsDirAbs, 'ready/f00130-envelope.md'),
+			'---\nid: f00130\nstatus: ready\n---\n# body',
+		);
+		mkdirSync(dirname(opts.lockPathAbs), { recursive: true });
+		writeFileSync(
+			opts.lockPathAbs,
+			JSON.stringify({
+				version: 1,
+				stale_after_minutes: 10,
+				in_flight: [],
+			}),
+		);
+
+		const result = await runProposalDiagnose({ id: 'f00130' }, opts);
+		const parsed = JSON.parse(result.content[0]?.text ?? '{}');
+
+		const ok = RECOVERY_ENVELOPE_SCHEMA.safeParse(parsed);
+		expect(ok.success).toBe(true);
+		expect(parsed.ok).toBe(true);
+		expect(parsed.error).toBeUndefined();
+		// payload fields from the diagnose call must survive the envelope
+		expect(parsed.id).toBe('f00130');
+		expect(parsed.status).toBe('ready');
+	});
+
+	it('error path returns an envelope with ok === false (Zod parses)', async () => {
+		const opts = envelopeOptions();
+		mkdirSync(join(opts.proposalsDirAbs, 'ready'), { recursive: true });
+		// No proposal file → `runProposalDiagnose` early-returns `toolError`.
+		mkdirSync(dirname(opts.lockPathAbs), { recursive: true });
+		writeFileSync(
+			opts.lockPathAbs,
+			JSON.stringify({
+				version: 1,
+				stale_after_minutes: 10,
+				in_flight: [],
+			}),
+		);
+
+		const result = await runProposalDiagnose({ id: 'f99999' }, opts);
+
+		expect(result.isError).toBe(true);
+		const parsed = JSON.parse(result.content[0]?.text ?? '{}');
+		const ok = RECOVERY_ENVELOPE_SCHEMA.safeParse(parsed);
+		expect(ok.success).toBe(true);
+		expect(parsed.ok).toBe(false);
+		expect(parsed.error).toBeDefined();
+		expect((parsed.error as { reason?: string }).reason).toContain(
+			'f99999',
+		);
 	});
 });
