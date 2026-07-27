@@ -112,7 +112,16 @@ const walkToolFiles = async (root: string): Promise<readonly string[]> => {
 		);
 		for (const entry of entries) {
 			const abs = join(current, entry.name);
+			// Skip build outputs so dist/.d.ts shims emitted by `bun run build`
+			// (which mirror the source imports) do not double-count
+			// facade-only compat helpers as leaks.
 			if (entry.isDirectory()) {
+				if (
+					entry.name === 'dist' ||
+					entry.name === 'node_modules' ||
+					entry.name === '.cache'
+				)
+					continue;
 				stack.push(abs);
 			} else if (entry.isFile() && extname(entry.name) === '.ts') {
 				out.push(abs);
