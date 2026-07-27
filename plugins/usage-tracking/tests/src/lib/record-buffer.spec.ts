@@ -9,12 +9,13 @@
  *     appendFile under withFileMutex);
  *   - secrets are redacted before the bytes land on disk.
  */
-import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import type { IPluginLogInput } from '@mcp-vertex/core/public';
 import { RecordBuffer } from '../../../src/lib/record-buffer';
 
 const readLines = (path: string): string[] =>
@@ -117,5 +118,71 @@ describe('RecordBuffer (CRITICAL C2 buffered append)', () => {
 			expect(() => JSON.parse(line)).not.toThrow();
 		}
 		expect(lines).toHaveLength(200);
+	});
+
+	// x00156 S3 — append failures used to only ever reach `process.stderr`,
+	// invisible to the structured incident stream. `onError` now also
+	// surfaces a `warning` incident through an optional `logs` helper
+	// (never a hard dependency: no helper → today's stderr-only path).
+	describe('onError structured-log surfacing (x00156 S3)', () => {
+		// `withFileMutex` defensively `mkdir -p`s the target's parent
+		// directory (so a fresh tmpdir always survives its first
+		// acquire) — a merely-missing directory therefore does NOT force
+		// an append failure. A regular FILE standing where a directory
+		// is expected does: `mkdir -p` cannot turn a file into a dir,
+		// so the mutex acquisition itself fails and `drain()`'s catch
+		// routes it to `onError`.
+		const makeUnwritablePath = (): string => {
+			const blocker = join(dir, 'blocker');
+			writeFileSync(blocker, 'not a directory');
+			return join(blocker, 'invocations.jsonl');
+		};
+
+		it('calls the logs helper with a warning incident on append failure', async () => {
+			const logSpy = vi
+				.fn<(input: IPluginLogInput) => Promise<void>>()
+				.mockResolvedValue(undefined);
+			const buf = new RecordBuffer(makeUnwritablePath(), {
+				maxBatch: 1,
+				maxDelayMs: 10,
+				logs: { log: logSpy },
+			});
+			buf.push({ n: 1 });
+			await buf.flush();
+			expect(logSpy).toHaveBeenCalledTimes(1);
+			const [input] = logSpy.mock.calls[0] as [IPluginLogInput];
+			expect(input.severity).toBe('warning');
+			expect(input.incidentType).toBe('usage-tracking-append-failed');
+		});
+
+		it('still writes to stderr and never throws when no logs helper is supplied', async () => {
+			const stderrSpy = vi
+				.spyOn(process.stderr, 'write')
+				.mockImplementation(() => true);
+			const buf = new RecordBuffer(makeUnwritablePath(), {
+				maxBatch: 1,
+				maxDelayMs: 10,
+			});
+			buf.push({ n: 1 });
+			await expect(buf.flush()).resolves.toBeUndefined();
+			expect(stderrSpy).toHaveBeenCalled();
+			stderrSpy.mockRestore();
+		});
+
+		it('still allows a subclass to override onError entirely (existing test seam)', async () => {
+			const overrideSpy = vi.fn();
+			class TestBuffer extends RecordBuffer {
+				protected override onError(error: unknown): void {
+					overrideSpy(error);
+				}
+			}
+			const buf = new TestBuffer(makeUnwritablePath(), {
+				maxBatch: 1,
+				maxDelayMs: 10,
+			});
+			buf.push({ n: 1 });
+			await buf.flush();
+			expect(overrideSpy).toHaveBeenCalledTimes(1);
+		});
 	});
 });

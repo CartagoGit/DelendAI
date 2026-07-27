@@ -17,6 +17,7 @@
  */
 import { appendFile } from 'node:fs/promises';
 
+import type { IPluginLogsHelper } from '@mcp-vertex/core/public';
 import { redactSecrets, withFileMutex } from '@mcp-vertex/core/public';
 
 export interface IRecordBufferOptions {
@@ -24,6 +25,14 @@ export interface IRecordBufferOptions {
 	readonly maxDelayMs?: number;
 	/** Flush as soon as the buffer reaches this many records. */
 	readonly maxBatch?: number;
+	/**
+	 * x00156 S3 — structured-log helper (f00153 S4's `ctx.logs`). When
+	 * provided, an append failure is also surfaced as a `warning`
+	 * incident on the curated event stream, not just `stderr`. Optional
+	 * by design: the log is observability, never a hard dependency, so
+	 * an instance built without it keeps today's stderr-only behaviour.
+	 */
+	readonly logs?: IPluginLogsHelper | undefined;
 }
 
 const DEFAULT_MAX_DELAY_MS = 250;
@@ -65,6 +74,7 @@ export class RecordBuffer {
 	private flushPromise: Promise<void> | null = null;
 	private readonly maxDelayMs: number;
 	private readonly maxBatch: number;
+	private readonly logs: IPluginLogsHelper | undefined;
 
 	constructor(
 		private readonly filePath: string,
@@ -72,6 +82,7 @@ export class RecordBuffer {
 	) {
 		this.maxDelayMs = options.maxDelayMs ?? DEFAULT_MAX_DELAY_MS;
 		this.maxBatch = options.maxBatch ?? DEFAULT_MAX_BATCH;
+		this.logs = options.logs;
 		installExitHook();
 	}
 
@@ -166,12 +177,23 @@ export class RecordBuffer {
 	}
 
 	/**
-	 * Overridable error sink. Default writes a single stderr line — the
-	 * log is observability, not a hard dependency, so a write failure must
-	 * never break the tool call that triggered it.
+	 * Overridable error sink. Default writes a single stderr line AND
+	 * (x00156 S3, when a `logs` helper was supplied) a `warning`
+	 * incident on the curated event stream — the log is observability,
+	 * not a hard dependency, so a write failure must never break the
+	 * tool call that triggered it, and this method itself must never
+	 * throw.
 	 */
 	protected onError(error: unknown): void {
 		const message = error instanceof Error ? error.message : String(error);
 		process.stderr.write(`[usage-tracking] append failed: ${message}\n`);
+		void this.logs
+			?.log({
+				severity: 'warning',
+				incidentType: 'usage-tracking-append-failed',
+				message: `usage-tracking append failed: ${message}`,
+				context: { filePath: this.filePath },
+			})
+			.catch(() => undefined);
 	}
 }
