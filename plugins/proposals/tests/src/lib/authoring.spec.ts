@@ -6,6 +6,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import type { IToolRegistration } from '@mcp-vertex/core/public';
 
+import { runAgentLockEngine } from '@mcp-vertex/proposals/lib/locks/agent-lock-engine';
 import {
 	buildCloseSliceRegistration,
 	buildCreateProposalRegistration,
@@ -157,6 +158,55 @@ describe('proposal authoring (create → board → close)', async () => {
 			'utf8',
 		);
 		expect(doc).toMatch(/### S1[\s\S]*?- \*\*Status\*\*: done/);
+	});
+
+	// x00157 S3-adjacent finding: `close_slice` released by the bare
+	// `sliceId` (e.g. "S1"), but `auto_work`'s own `claimReady.agent_lock_args`
+	// instructs callers to claim with the composite `${proposalId}-${sliceId}`
+	// task_id (so two different proposals with the same slice name never
+	// collide). Every claim made the recommended way was never actually
+	// released — `close_slice` still reported `lockReleased: true` because
+	// it never inspected the release engine's result, hiding the leak.
+	it('actually releases a lock claimed with the auto_work-recommended composite task_id', async () => {
+		const create = await capture(buildCreateProposalRegistration(opts));
+		const created = parse(
+			await create({
+				id: 'f00082',
+				title: 'Composite lock release',
+				goal: 'regression',
+				slices: [{ sliceId: 's1', files: ['src/a.ts'] }],
+			}),
+		);
+		expect(created.ok).toBe(true);
+
+		const lockDeps = {
+			lockPath: opts.lockPathAbs,
+			toolName: 'proposals_agent_lock',
+		};
+		await runAgentLockEngine(
+			{
+				action: 'claim',
+				task_id: 'f00082-S1',
+				agent: 'test-agent',
+				files: ['src/a.ts'],
+			},
+			lockDeps,
+		);
+
+		const close = await capture(buildCloseSliceRegistration(opts));
+		const closed = parse(
+			await close({
+				proposalId: 'f00082',
+				sliceId: 's1',
+				validateEvidence: recentValidate(),
+			}),
+		);
+		expect(closed.closed).toBe(true);
+		expect(closed.lockReleased).toBe(true);
+
+		const status = await runAgentLockEngine({ action: 'status' }, lockDeps);
+		const statusBody = parse(status);
+		expect(statusBody.active_write_lanes).toBe(0);
 	});
 
 	it('closes the last slice without appending the done marker outside the slice block', async () => {

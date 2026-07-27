@@ -656,6 +656,55 @@ type ICloseSliceValidateOptions = IAuthoringToolOptions & {
 	readonly validateEvidenceDeps?: IValidateEvidenceDeps;
 };
 
+interface IAgentLockReleaseResult {
+	readonly removed?: number;
+}
+
+/**
+ * Releases a slice's agent-lock claim on close/approve. `auto_work`'s
+ * `claimReady.agent_lock_args` (see `auto-work.tool.ts`) tells callers to
+ * claim with the composite `${proposalId}-${canonicalSliceId}` task_id
+ * (canonical uppercase, e.g. "f00082-S1") — the form that stays
+ * unambiguous when two different proposals both have a slice named e.g.
+ * "S1". Try that convention first (both the canonical-case and the
+ * caller's-own-case spelling, since `close_slice` itself accepts either),
+ * then fall back to the bare sliceId for callers that claimed without
+ * the proposal prefix.
+ *
+ * `runAgentLockEngine`'s release action reports `ok:true` even when NO
+ * entry matched (it is a no-op release, not an error) — a caller that
+ * only checks for a thrown error, without inspecting `removed`, will
+ * wrongly believe the lock was released. Every existing call site here
+ * used to do exactly that (hardcode `lockReleased = true`); this helper
+ * inspects the actual result so the reported flag is honest.
+ */
+const releaseSliceLock = async (
+	options: IAuthoringToolOptions,
+	proposalId: string,
+	sliceId: string,
+): Promise<boolean> => {
+	const deps = {
+		lockPath: options.lockPathAbs,
+		toolName: `${options.namespacePrefix}_agent_lock`,
+	};
+	const candidates = new Set([
+		`${proposalId}-${canonicalSliceId(sliceId)}`,
+		`${proposalId}-${sliceId}`,
+		sliceId,
+	]);
+	for (const taskId of candidates) {
+		const result = await runAgentLockEngine(
+			{ action: 'release', task_id: taskId },
+			deps,
+		);
+		const body = JSON.parse(
+			result.content[0]?.text ?? '{}',
+		) as IAgentLockReleaseResult;
+		if ((body.removed ?? 0) > 0) return true;
+	}
+	return false;
+};
+
 /**
  * `close_slice` — mark a slice `done` in the proposal doc AND release its
  * agent lock, atomically. Closes the loop crisply so the next agent sees
@@ -939,14 +988,11 @@ export const buildCloseSliceRegistration = (
 
 				let lockReleased = false;
 				if (args.releaseLock !== false) {
-					await runAgentLockEngine(
-						{ action: 'release', task_id: args.sliceId },
-						{
-							lockPath: options.lockPathAbs,
-							toolName: `${options.namespacePrefix}_agent_lock`,
-						},
+					lockReleased = await releaseSliceLock(
+						options,
+						entry.id,
+						args.sliceId,
 					);
-					lockReleased = true;
 				}
 				await syncProposalRegistry(
 					options.workspaceRoot,
@@ -1279,14 +1325,11 @@ export const buildReviewRegistration = (
 					nextStatus === 'done' ||
 					nextStatus === 'changes_requested'
 				) {
-					await runAgentLockEngine(
-						{ action: 'release', task_id: args.sliceId },
-						{
-							lockPath: options.lockPathAbs,
-							toolName: `${options.namespacePrefix}_agent_lock`,
-						},
+					lockReleased = await releaseSliceLock(
+						options,
+						entry.id,
+						args.sliceId,
 					);
-					lockReleased = true;
 				}
 				await syncProposalRegistry(
 					options.workspaceRoot,
