@@ -18,41 +18,44 @@ export interface IEmbedIndexStore {
 }
 
 export interface IEmbedIndexStoreOptions {
-	readonly workspaceRootAbs?: string;
+	/**
+	 * x00156 S6: required, no `process.cwd()` fallback. AGENTS.md rule 2
+	 * ("no `process.cwd()` in engines") — a plugin wired without an
+	 * explicit workspace root used to silently write its cache
+	 * relative to whatever directory the host process happened to be
+	 * cwd'd to, which `verify:tools` cannot detect because the
+	 * orchestrator-runner host always supplies this option in
+	 * practice. `createEmbedIndexStore` throws immediately if it is
+	 * missing instead of guessing.
+	 */
+	readonly workspaceRootAbs: string;
 	readonly cacheDir?: string;
 	readonly pluginCacheDir?: string;
 	readonly indexPath?: string;
 }
 
-const DEFAULT_CACHE_DIR = join(process.cwd(), '.cache', 'mcp-vertex');
 const EMBED_INDEX_FILE = 'embed-index.json';
 
 const resolveCacheRoot = (options: IEmbedIndexStoreOptions): string => {
 	if (options.cacheDir === undefined) {
-		return DEFAULT_CACHE_DIR;
+		return join(options.workspaceRootAbs, '.cache', 'mcp-vertex');
 	}
-	if (isAbsolute(options.cacheDir)) {
-		return options.cacheDir;
-	}
-	return options.workspaceRootAbs !== undefined
-		? join(options.workspaceRootAbs, options.cacheDir)
-		: join(process.cwd(), options.cacheDir);
+	return isAbsolute(options.cacheDir)
+		? options.cacheDir
+		: join(options.workspaceRootAbs, options.cacheDir);
 };
 
 const resolvePluginCacheDir = (options: IEmbedIndexStoreOptions): string => {
 	if (options.pluginCacheDir === undefined) {
 		return join(resolveCacheRoot(options), 'search');
 	}
-	if (isAbsolute(options.pluginCacheDir)) {
-		return options.pluginCacheDir;
-	}
-	return options.workspaceRootAbs !== undefined
-		? join(options.workspaceRootAbs, options.pluginCacheDir)
-		: join(process.cwd(), options.pluginCacheDir);
+	return isAbsolute(options.pluginCacheDir)
+		? options.pluginCacheDir
+		: join(options.workspaceRootAbs, options.pluginCacheDir);
 };
 
 export const resolveEmbedIndexPath = (
-	options: IEmbedIndexStoreOptions = {},
+	options: IEmbedIndexStoreOptions,
 ): string =>
 	options.indexPath ?? join(resolvePluginCacheDir(options), EMBED_INDEX_FILE);
 
@@ -108,8 +111,17 @@ const parseIndex = (raw: string): IEmbedIndex => {
 };
 
 export const createEmbedIndexStore = (
-	options: IEmbedIndexStoreOptions = {},
+	options: IEmbedIndexStoreOptions,
 ): IEmbedIndexStore => {
+	if (
+		typeof options.workspaceRootAbs !== 'string' ||
+		options.workspaceRootAbs.length === 0
+	) {
+		throw new Error(
+			'createEmbedIndexStore requires a non-empty workspaceRootAbs. ' +
+				'Falling back to process.cwd() is forbidden — see AGENTS.md.',
+		);
+	}
 	const indexPath = resolveEmbedIndexPath(options);
 	return {
 		indexPath,

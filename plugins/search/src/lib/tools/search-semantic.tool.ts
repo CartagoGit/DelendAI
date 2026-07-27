@@ -8,7 +8,10 @@ import {
 	buildApiEmbedder,
 	type IApiEmbedderFetch,
 } from '../embed/build-api-embedder';
-import { runEmbedPipeline } from '../embed/embed-pipeline';
+import {
+	runEmbedPipeline,
+	type IEmbedPipelineResult,
+} from '../embed/embed-pipeline';
 import { defaultEmbedder, type IEmbedder } from '../embed/embedder';
 import {
 	discoverProviders,
@@ -92,7 +95,10 @@ const resolvePluginCacheDir = (options: ISearchSemanticToolOptions): string => {
 			? join(options.cacheDir, 'search')
 			: join(options.workspaceRootAbs, options.cacheDir, 'search');
 	}
-	return join(process.cwd(), '.cache', 'mcp-vertex', 'search');
+	// x00156 S6: workspaceRootAbs is already required on this options
+	// interface — no process.cwd() fallback needed or allowed
+	// (AGENTS.md rule 2).
+	return join(options.workspaceRootAbs, '.cache', 'mcp-vertex', 'search');
 };
 
 const scoreToRankedHits = (
@@ -216,7 +222,7 @@ export const runSearchWithMode = async (
 	}
 
 	let queryVector: readonly number[];
-	let pipeline;
+	let pipeline: IEmbedPipelineResult;
 	try {
 		queryVector = await embedder.embed(args.query);
 		pipeline = await runEmbedPipeline({
