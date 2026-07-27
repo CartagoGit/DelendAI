@@ -245,6 +245,8 @@ After implementing and verifying a slice, follow the standard close path:
 1. Commit the changes.
 2. Call `proposals_force_transition` (or `proposals_proposal_transition`) with `to: "done"` and specify the commit SHA in the `reason` so that the registry reflects the new state without waiting for the next sync cycle.
 
+The claim-or-no-touch enforcement itself (x00080) shipped as a lefthook-driven `tools/scripts/hooks/pre-commit.ts` TypeScript hook plus the `lint:agent-claims` gate, not the raw `.sh` git-hook templates originally sketched — every hook in this repo is TypeScript and installed through lefthook (see `docs/mcp-vertex/AGENT-BOOTSTRAP.md` §6).
+
 ## Three condensed session examples
 
 ### Example A — Two doc slices, disjoint files
