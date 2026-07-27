@@ -270,6 +270,76 @@ This file is only the Copilot adapter; the agent contract lives in \`mcp-project
 	};
 };
 
+/** Claude Code's recognised `model:` aliases — anything else is omitted so the field defaults to `inherit` rather than shipping an invalid value. */
+const CLAUDE_MODEL_ALIASES = new Set([
+	'sonnet',
+	'opus',
+	'haiku',
+	'fable',
+	'inherit',
+]);
+
+const claudeModelField = (defaultModel: string | undefined): string => {
+	if (defaultModel === undefined) return '';
+	if (
+		CLAUDE_MODEL_ALIASES.has(defaultModel) ||
+		defaultModel.startsWith('claude-')
+	) {
+		return `\nmodel: ${defaultModel}`;
+	}
+	return '';
+};
+
+/**
+ * x00160 S1 — Claude Code's own subagent format
+ * (`.claude/agents/<name>.md`), generated alongside the Copilot
+ * `.agent.md` variant above. AGENT-BOOTSTRAP.md §8.2 unconditionally
+ * tells every Claude Code host to delegate to the orchestrator
+ * subagent; without this file nothing ever creates it.
+ *
+ * Schema verified against Claude Code's documented subagent contract
+ * (code.claude.com/docs/en/sub-agents): required `name` (kebab-case)
+ * + `description`; optional `tools` (a COMMA-SEPARATED STRING, not a
+ * YAML list) and `model`. `tools` is deliberately omitted here — the
+ * Copilot variant's tool vocabulary (`read`, `search`, `edit`,
+ * `mcp-project-<prefix>/*`, …) does not map to Claude Code's own tool
+ * names, and inventing an unverified mapping would trade one
+ * inaccuracy for another; omitting `tools` inherits every tool
+ * available to subagents in the session, which is the closest honest
+ * equivalent to the Copilot file's broad `[read, search, edit,
+ * execute, todo, agent, …]` grant.
+ */
+export const scaffoldClaudeAgentFile = (
+	options: IScaffoldHostOptions,
+	slot: IScaffoldAgentSlot,
+): IScaffoldedFile => {
+	const prefix = options.namespacePrefix;
+	const isRoot = slot === 'orchestrator';
+	const name = kebab(slot);
+	const modelField = claudeModelField(options.defaultModel);
+	return {
+		path: `.claude/agents/${name}.md`,
+		content: `---
+name: ${name}
+description: ${isRoot ? 'Root orchestrator' : 'Bounded subagent'} for ${options.projectName}. The real contract lives in the ${prefix} MCP server — use for any non-trivial change (more than 3 tool calls, multiple files, or repeated MCP reads).${modelField}
+---
+
+# ${pascal(slot)} (${options.projectName})
+
+The agent contract lives in the \`${prefix}\` MCP server, not in this file.
+
+## Compact lane
+
+1. First call \`${prefix}_overview\` once per turn; it maps the server's tools/plugins and returns a \`recommendedNextAction\` — follow it. Only call tools that \`overview\` lists.
+2. Keep the main thread as the coordinator: \`${prefix}_auto_work\` → maybe \`${prefix}_continue_proposal { mode: "plan" }\` → maybe \`${prefix}_delegate\`. If a slice needs more than 3 tool calls, multiple files, or repeated MCP reads, delegate it instead of doing the heavy inspection here.
+3. One atomic slice per turn; minimal validation; trust the MCP payload over local re-derivation.
+4. When the server loads the \`proposals\` plugin, claim files before writing with \`${prefix}_agent_lock\` and report \`lock-conflict\` instead of retrying; otherwise work with whatever tools \`overview\` reports.
+5. A broken global gate outside your ownership is \`external-gate-blocker\`: record evidence and continue with owned work.
+6. When the project changes shape (new script, new framework, new monorepo package, dropped dependency), the host owns re-analysis${isRoot ? '' : ': escalate to the root so'} the orchestrator can call \`${prefix}_analyze_project\`, \`${prefix}_plan_mcp_project\`, \`${prefix}_create_project\`. The first tool inspects; the second returns an exhaustive blueprint; the third materialises the files.
+`,
+	};
+};
+
 export const scaffoldInstructionsFile = (
 	options: IScaffoldHostOptions,
 ): IScaffoldedFile => {
@@ -392,8 +462,9 @@ void startServer();
 
 /**
  * Everything a brand-new project needs: server entry + host config +
- * editor registration + orchestrator + 4 subagents + instructions +
- * a starter skill.
+ * editor registration + orchestrator + 4 subagents (in both the
+ * Copilot `.agent.md` and Claude Code `.claude/agents` formats) +
+ * instructions + a starter skill.
  */
 export const scaffoldHostProject = (
 	options: IScaffoldHostOptions,
@@ -402,6 +473,8 @@ export const scaffoldHostProject = (
 	...scaffoldServerEntryFiles(options),
 	scaffoldAgentFile(options, 'orchestrator'),
 	...SUBAGENT_SLOTS.map((slot) => scaffoldAgentFile(options, slot)),
+	scaffoldClaudeAgentFile(options, 'orchestrator'),
+	...SUBAGENT_SLOTS.map((slot) => scaffoldClaudeAgentFile(options, slot)),
 	scaffoldInstructionsFile(options),
 	scaffoldSkillFile(
 		options.namespacePrefix,

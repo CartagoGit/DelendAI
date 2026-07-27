@@ -290,6 +290,41 @@ const renderAgentFile = (descriptor: {
 	};
 };
 
+/**
+ * x00160 S2 — Claude Code's own subagent format
+ * (`.claude/agents/*.md`), rendered alongside the Copilot `.agent.md`
+ * variant above. AGENT-BOOTSTRAP.md §8.2 unconditionally tells every
+ * Claude Code host to delegate to the orchestrator subagent; without
+ * this, `mcpv init` never created one — reproduced live in
+ * mcp-vertex's own repo, whose `.claude/agents/` didn't exist at all.
+ *
+ * Schema verified against Claude Code's documented subagent contract
+ * (code.claude.com/docs/en/sub-agents): required `name` (kebab-case)
+ * + `description`; `tools`, when present, is a COMMA-SEPARATED
+ * STRING, not a YAML list. `tools` is omitted here: the catalog's
+ * `PROP_*`-prefixed placeholder ids are neither Claude Code's built-in
+ * tool names nor its `mcp__<server>__<tool>` naming for MCP tools, so
+ * emitting them would ship a non-functional restriction; omitting the
+ * field inherits every tool available to subagents in the session.
+ */
+const renderClaudeAgentFile = (descriptor: {
+	role: string;
+	description: string;
+	tools: readonly string[];
+	body: string;
+}): IRenderedFile => {
+	const frontmatter = [
+		'---',
+		`name: mcp-vertex-${descriptor.role}`,
+		`description: ${descriptor.description}`,
+		'---',
+	].join('\n');
+	return {
+		relPath: `.claude/agents/mcp-vertex-${descriptor.role}.md`,
+		content: `${frontmatter}\n\n${descriptor.body}\n`,
+	};
+};
+
 /** S3 — render `.github/agents/mcp-vertex-<role>.agent.md` from the live catalog. */
 export const renderAgentFiles = async (
 	workspaceRoot: string,
@@ -299,7 +334,11 @@ export const renderAgentFiles = async (
 	} = {},
 ): Promise<readonly IRenderedFile[]> => {
 	const descriptors = await loadAgentDescriptors(workspaceRoot, options);
-	return descriptors.map(renderAgentFile);
+	// x00160 S2: one Copilot file + one Claude Code file per role.
+	return descriptors.flatMap((descriptor) => [
+		renderAgentFile(descriptor),
+		renderClaudeAgentFile(descriptor),
+	]);
 };
 
 // f00092: the 3-fragment model collapsed to a single canonical fragment.

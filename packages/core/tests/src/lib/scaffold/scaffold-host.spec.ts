@@ -14,6 +14,7 @@ import {
 	buildScaffoldReport,
 	createWorkspacePathProvider,
 	scaffoldAgentFile,
+	scaffoldClaudeAgentFile,
 	scaffoldHostProject,
 	scaffoldPluginFiles,
 	scaffoldPromptFile,
@@ -119,6 +120,49 @@ describe('scaffold-host generators', () => {
 		expect(runner.content).not.toContain('mcp-vertex_');
 	});
 
+	// x00160 S1 — the Copilot `.agent.md` variant was the ONLY subagent
+	// format ever scaffolded; AGENT-BOOTSTRAP.md §8.2 unconditionally
+	// tells every Claude Code host to delegate to the orchestrator
+	// subagent, so a Claude Code adopter never got one. Verified
+	// against Claude Code's documented subagent contract
+	// (code.claude.com/docs/en/sub-agents): required name (kebab-case)
+	// + description; tools is a comma-separated STRING when present,
+	// not a YAML list.
+	it('scaffoldClaudeAgentFile emits a Claude Code-native subagent alongside the Copilot one', () => {
+		const orchestrator = scaffoldClaudeAgentFile(HOST, 'orchestrator');
+		expect(orchestrator.path).toBe('.claude/agents/orchestrator.md');
+		expect(orchestrator.content).toMatch(/^---\nname: orchestrator\n/);
+		expect(orchestrator.content).toContain('description:');
+		expect(orchestrator.content).toContain('acme_overview');
+		expect(orchestrator.content).toContain('acme_auto_work');
+		expect(orchestrator.content).toContain('acme_delegate');
+		expect(orchestrator.content).toContain('more than 3 tool calls');
+		// No unmapped Copilot tool vocabulary leaks into the Claude file.
+		expect(orchestrator.content).not.toContain('mcp-project-acme/*');
+		expect(orchestrator.content).not.toContain('user-invocable');
+
+		const runner = scaffoldClaudeAgentFile(HOST, 'implementation_runner');
+		// SUBAGENT_SLOTS uses snake_case; Claude Code's `name` requires
+		// kebab-case.
+		expect(runner.path).toBe('.claude/agents/implementation-runner.md');
+		expect(runner.content).toMatch(/^---\nname: implementation-runner\n/);
+		expect(runner.content).not.toContain('mcp-vertex_');
+	});
+
+	it('scaffoldClaudeAgentFile omits an unrecognised model rather than emitting an invalid value', () => {
+		const withBogusModel = scaffoldClaudeAgentFile(
+			{ ...HOST, defaultModel: 'gpt-5' },
+			'orchestrator',
+		);
+		expect(withBogusModel.content).not.toContain('model:');
+
+		const withRealModel = scaffoldClaudeAgentFile(
+			{ ...HOST, defaultModel: 'sonnet' },
+			'orchestrator',
+		);
+		expect(withRealModel.content).toContain('model: sonnet');
+	});
+
 	it('scaffoldHostProject covers server, config, agents and docs', () => {
 		const files = scaffoldHostProject(HOST);
 		const paths = files.map((file) => file.path);
@@ -128,9 +172,13 @@ describe('scaffold-host generators', () => {
 		);
 		expect(paths).toContain('.vscode/mcp.json');
 		expect(paths).toContain('.github/agents/orchestrator.agent.md');
+		expect(paths).toContain('.claude/agents/orchestrator.md');
 		expect(paths).toContain('.github/copilot-instructions.md');
 		expect(
 			paths.filter((path) => path.startsWith('.github/agents/')),
+		).toHaveLength(5);
+		expect(
+			paths.filter((path) => path.startsWith('.claude/agents/')),
 		).toHaveLength(5);
 		const config = files.find((file) =>
 			file.path.endsWith('host-config.ts'),
