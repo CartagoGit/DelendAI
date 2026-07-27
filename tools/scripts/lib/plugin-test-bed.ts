@@ -113,6 +113,17 @@ export interface IPluginTestBed {
 	readonly config: IAssembledCliConfig['config'];
 	readonly tools: readonly import('@mcp-vertex/core/public').IToolRegistration[];
 	/**
+	 * f00030-protect-verify-tools: prompts/skills counts surfaced so
+	 * `verify:tools` can distinguish "plugin shipped no tools by
+	 * design" (e.g. `prompts-pack`, `skills-pack` — they only contribute
+	 * prompts/skills, no `server.registerTool()`) from "plugin failed to
+	 * register tools" (a real regression). Without this, every
+	 * prompts/skills-only plugin showed up as `(no-plugin-tools)` and
+	 * failed the harness.
+	 */
+	readonly promptsCount: number;
+	readonly skillsCount: number;
+	/**
 	 * Plugin load failures (x00105 S1). The bed used to drop these on
 	 * the floor, which is exactly how verify:tools spent months
 	 * reporting green while probing zero plugin-owned tools. Callers
@@ -152,9 +163,12 @@ export const assemblePluginForTest = async (
 	};
 
 	const { config, loadResult } = await assembleCliConfig(args, deps);
+	const tools = config.extraTools ?? [];
 	return {
 		config,
-		tools: config.extraTools ?? [],
+		tools,
+		promptsCount: config.extraPrompts?.length ?? 0,
+		skillsCount: config.extraSkills?.length ?? 0,
 		loadErrors: loadResult.errors.map((error) => error.message),
 	};
 };
