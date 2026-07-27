@@ -41,6 +41,7 @@ export const buildSyncProposalsRegistration = (
 		server.registerTool(
 			`${options.namespacePrefix}_sync_proposals`,
 			{
+				inputSchema: z.object({}),
 				outputSchema: z.object({
 					changed: z.boolean(),
 					count: z.number(),
