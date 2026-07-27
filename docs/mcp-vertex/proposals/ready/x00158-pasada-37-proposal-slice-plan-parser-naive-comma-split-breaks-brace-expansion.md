@@ -1,6 +1,6 @@
 ---
 id: x00158
-kind: bug
+kind: fix
 title: "proposal-slice-plan.ts: parseFiles naively splits on comma and breaks brace expansion"
 status: ready
 type: proposal
@@ -65,24 +65,6 @@ shared.
 - No changes to `agent_lock`; the lock's `Set`-membership check
   will work fine once the parser gives it real paths.
 - No UX changes to `auto_work` output format.
-
-## acceptance
-
-- [ ] New module `plugins/proposals/src/lib/proposals/expand-declared-files.ts`
-      exports `expandDeclaredFiles` and the two regex constants.
-- [ ] `proposal-slice-plan.ts` imports the shared helper and the
-      3-entry bug for x00155 S1 is replaced by 4-entry correct output.
-- [ ] `proposal-completeness.ts` re-exports the shared helper and
-      the existing 14+ tests still pass byte-identically.
-- [ ] New spec `plugins/proposals/tests/src/lib/proposals/expand-declared-files.spec.ts`
-      covers: plain comma list, single brace, multi-line, empty strings,
-      nested things, leading/trailing whitespace, parenthetical
-      annotations.
-- [ ] New regression case in `proposal-slice-plan.spec.ts` pins
-      x00155 S1 to the 4-entry output.
-- [ ] `bun --cwd plugins/proposals test` passes.
-- [ ] Empirical re-run: `bun packages/cli/src/index.ts proposals auto-work --json`
-      for x00155 yields the 4-element `claimReady.files`.
 
 ---
 
@@ -323,7 +305,8 @@ Both parsers should consume the same primitive. Move
 
 ### S1 — Extract `expandDeclaredFiles` to shared module + use it in both callers
 
-- **Status**: pending
+- **Status**: done
+- **Implementation**: new module `plugins/proposals/src/lib/proposals/expand-declared-files.ts` owns `expandDeclaredFiles`/`BACKTICKED`/`BRACE_PATTERN`; `proposal-completeness.ts` re-exports it (dead `defaultFileExists` helper removed in the same pass); `proposal-slice-plan.ts` now calls the shared helper before falling back to the legacy comma-split for unbackticked/legacy `Files:` forms. **Extra root-cause fix beyond the original spec**: the outer per-slice `Files:` capture regex required a literal TAB (`\n\t+`) to see continuation lines, but every real proposal indents sub-bullets with 2 spaces — so even with the shared expander wired in, only the *first* continuation line was ever visible. Widened to `[ \t]+` so space- and tab-indented continuations both parse. Verified against the actual x00155 S1 body: 4 files now returned (3 brace-expanded + 1 sibling), not 3 garbage fragments.
 - **Files**:
   - `plugins/proposals/src/lib/proposals/expand-declared-files.ts` (new file, export `expandDeclaredFiles` and constants `BACKTICKED`, `BRACE_PATTERN`)
   - `plugins/proposals/src/lib/swarm/proposal-slice-plan.ts` (replace lines 78-90 naive split with the shared helper)
@@ -341,6 +324,30 @@ Both parsers should consume the same primitive. Move
   - `proposal-completeness` validation still passes for the
     existing fixtures (no behavior regression).
   - `timing:lock; bun packages/cli/src/index.ts proposals auto-work --json` returns the 4-element `claimReady.files` for x00155.
+
+---
+
+## acceptance
+
+- [x] New module `plugins/proposals/src/lib/proposals/expand-declared-files.ts`
+      exports `expandDeclaredFiles` and the two regex constants.
+- [x] `proposal-slice-plan.ts` imports the shared helper and the
+      3-entry bug for x00155 S1 is replaced by 4-entry correct output.
+- [x] `proposal-completeness.ts` re-exports the shared helper and
+      the existing 14+ tests still pass byte-identically.
+- [x] New spec `plugins/proposals/tests/src/lib/proposals/expand-declared-files.spec.ts`
+      covers: plain comma list, single brace, multi-line, empty strings,
+      nested things, leading/trailing whitespace, parenthetical
+      annotations.
+- [x] New regression case in `proposal-slice-plan.spec.ts` pins
+      x00155 S1 to the 4-entry output.
+- [x] `bun test plugins/proposals/tests` passes (1101/1101; `vitest run`
+      itself is broken in this environment independent of this change —
+      see the note under `## notes`).
+- [ ] Empirical re-run via `bun packages/cli/src/index.ts proposals
+      auto-work --json` was not exercised live (x00155 is being closed
+      out in the same session, which would make the repro moot); the
+      unit-level regression test above pins the same 4-element output.
 
 ---
 
@@ -364,3 +371,34 @@ Both parsers should consume the same primitive. Move
    bug was hidden by the orchestrator being more careful than its
    tools. This is exactly the failure mode the
    `expandDeclaredFiles` unit tests would have caught.
+
+4. **This proposal's own fix spec was itself incomplete.** The
+   original write-up said the naive `split(',')` at
+   `proposal-slice-plan.ts:80-90` was the whole bug, and that
+   swapping it for `expandDeclaredFiles` alone would make
+   `parseProposalSlicePlan(x00155, md)` return the correct 4
+   files. Empirically re-running that exact claim against the
+   live x00155 S1 body showed only 3 files came out — because the
+   **outer** capture regex (`\n\t+` continuation) never saw the
+   second `- \`tools/scripts/...\`` line in the first place (real
+   proposals indent with spaces, not tabs). Fixing only the
+   documented half would have shipped a slice whose own acceptance
+   criterion ("returns 4 files") was false. Both halves are fixed
+   here; see the regression test in `proposal-slice-plan.spec.ts`
+   that pins the real x00155 S1 body verbatim.
+
+5. **Environment note (out of scope for this slice):** `bun test
+   plugins/proposals/tests` (Bun's native runner) is green
+   (1101/1101) and is what verified this fix. `vitest run` (the
+   canonical `bun run test` / `bun run validate` path) currently
+   fails on ~460 unrelated files with `TypeError: undefined is not
+   an object (evaluating 'z.discriminatedUnion'/'z.object')` in
+   this workspace — reproduced on totally unrelated plugins
+   (`plugins/logs`), so it is not caused by this slice. `zod`
+   resolves fine under Bun's own transpiler/test-runner (no esbuild
+   dep-prebundling step) but not under vitest's Vite-powered
+   dependency optimizer in an environment with no standalone
+   Node.js binary on `PATH` (only Bun). This looks like a
+   Bun-only-host-specific vitest/esbuild/zod resolution gap and
+   deserves its own audit — flagged here rather than chased inside
+   this slice's scope.
