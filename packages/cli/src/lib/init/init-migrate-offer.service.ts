@@ -108,7 +108,12 @@ const findExistingAdoptionId = async (
 	reader: IFileReader,
 	scope: string,
 ): Promise<string | undefined> => {
-	const re = new RegExp(`^(f\\d+)-adopt-mcp-vertex-${scope}\\.md$`);
+	// f00154 S2 audit: the previous `\d+` accepted 1+ digits, so a stray
+	// pre-padding file like `f1-adopt-mcp-vertex-…` was picked up even
+	// though the canonical allocator emits 5-digit padded ids. Require
+	// at least 5 digits so we only match canonical-shape files and a
+	// re-run after a stray legacy file can't reuse it.
+	const re = new RegExp(`^(f\\d{5,})-adopt-mcp-vertex-${scope}\\.md$`);
 	// Scan every canonical status folder (root + 7 sub-folders) so a
 	// prior plan that has already transitioned out of `ready` does not
 	// cause `init` to allocate a duplicate id.

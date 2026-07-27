@@ -57,9 +57,13 @@ describe('transition-evidence', () => {
 	});
 
 	it('returns invalid-evidence when logPath does not exist', async () => {
+		// f00154 audit: use a fresh timestamp (relative to now) so the
+		// 24h-staleness check doesn't fire before the existence check.
+		// Previous hardcoded `2026-07-26T11:00:00Z` had drifted past
+		// 24h whenever the suite ran more than a day after that date.
 		await expect(
 			checkTransitionEvidence({
-				timestamp: '2026-07-26T11:00:00.000Z',
+				timestamp: new Date(Date.now() - 60_000).toISOString(),
 				exitCode: 0,
 				logPath: join(tmpdir(), 'does-not-exist.log'),
 			}),

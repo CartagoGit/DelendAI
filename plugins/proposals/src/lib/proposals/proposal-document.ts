@@ -215,7 +215,13 @@ const extractSection = (body: string, heading: string): string[] => {
 
 const parseBody = (raw: string): IProposalBody => {
 	// Strip frontmatter block; body starts after the closing ---.
-	const bodyText = raw.replace(/^---\n[\s\S]*?\n---\n?/, '').trimStart();
+	// f00154 S2 audit: previous regex only matched LF line endings; a
+	// `.md` saved or piped through a Windows tool with `\r\n` left a
+	// leading `\r` in the body and the frontmatter was not stripped.
+	// Use `\r?\n` so CRLF files parse the same as LF files.
+	const bodyText = raw
+		.replace(/^---\r?\n[\s\S]*?\r?\n---\r?\n?/, '')
+		.trimStart();
 
 	// Extract the document goal: prefer paragraph directly after H1; fall back
 	// to the ## Description section when nothing sits between H1 and first ##.

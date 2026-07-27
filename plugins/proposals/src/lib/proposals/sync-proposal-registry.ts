@@ -498,7 +498,14 @@ const scanNewSystemFiles = async (
 export const findDuplicateProposalIds = async (
 	proposalsDirAbs: string,
 ): Promise<ReadonlyArray<{ id: string; paths: readonly string[] }>> => {
-	const files = await scanNewSystemFiles(proposalsDirAbs);
+	// f00154 S2 audit: `scanNewSystemFiles` deliberately filters out
+	// legacy `pNNN-*` / `lNNN-*` filenames so the folder reconciler
+	// doesn't relocate freshly-created pre-f00016 proposals. But the
+	// duplicate-id guard must catch ANY two `.md` files (any prefix,
+	// any folder under proposalsDirAbs) that share the same frontmatter
+	// `id`. Walk the full tree for THIS scan only — the folder
+	// reconciler keeps its narrow scope.
+	const files = await scanAllProposalIds(proposalsDirAbs);
 	const byId = new Map<string, string[]>();
 	for (const file of files) {
 		const list = byId.get(file.id) ?? [];
@@ -514,6 +521,47 @@ export const findDuplicateProposalIds = async (
 		});
 	}
 	out.sort((a, b) => a.id.localeCompare(b.id));
+	return out;
+};
+
+/**
+ * Walk EVERY `.md` under `proposalsDirAbs` and extract its
+ * frontmatter `id` (or fall back to the filename when the frontmatter
+ * is missing). Used ONLY by `findDuplicateProposalIds` — other
+ * reconcilers stay narrow via `scanNewSystemFiles`. Skips dirs the
+ * scanner can't read (EACCES / ENOENT) without throwing.
+ */
+const scanAllProposalIds = async (
+	proposalsDirAbs: string,
+): Promise<ReadonlyArray<{ id: string; absPath: string }>> => {
+	const out: Array<{ id: string; absPath: string }> = [];
+	const queue: string[] = [proposalsDirAbs];
+	while (queue.length > 0) {
+		const dirAbs = queue.shift();
+		if (dirAbs === undefined) continue;
+		const dirents = await readdir(dirAbs, { withFileTypes: true }).catch(
+			() => [],
+		);
+		for (const dirent of dirents) {
+			const childAbs = join(dirAbs, String(dirent.name));
+			if (dirent.isDirectory()) {
+				// Don't recurse into sibling cache dirs / unrelated
+				// sub-trees — keep the scan strictly under the
+				// proposalsDir the caller passed.
+				if (childAbs.startsWith(proposalsDirAbs + '/')) {
+					queue.push(childAbs);
+				}
+				continue;
+			}
+			if (!dirent.isFile() || !dirent.name.endsWith('.md')) continue;
+			const raw = await readFile(childAbs, 'utf8').catch(() => '');
+			if (raw.length === 0) continue;
+			const block = extractYamlBlock(raw);
+			const fm = block === null ? {} : parseFrontmatterBlock(block);
+			const id = typeof fm.id === 'string' ? fm.id : dirent.name;
+			out.push({ id, absPath: childAbs });
+		}
+	}
 	return out;
 };
 

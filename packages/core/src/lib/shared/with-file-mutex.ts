@@ -182,8 +182,19 @@ export const withFileMutex = async <T>(
 				try {
 					const current = await readFile(lockPath, 'utf8');
 					if (current === token) await rm(lockPath, { force: true });
-				} catch {
-					// Already gone (stolen and released): nothing to do.
+				} catch (releaseError) {
+					// f00154 S2 audit: only ENOENT (file gone — stolen and
+					// released by another holder) is benign. Other errors
+					// (EACCES, EIO, EISDIR …) mean the cache dir was
+					// tampered with while we held the lock — surface them
+					// on stderr so an operator can investigate, but
+					// otherwise leave the in-process cleanup alone.
+					const code = (releaseError as NodeJS.ErrnoException).code;
+					if (code !== 'ENOENT') {
+						process.stderr.write(
+							`withFileMutex: release failed for ${lockPath}: ${(releaseError as Error).message}\n`,
+						);
+					}
 				}
 			}
 		}

@@ -48,34 +48,34 @@ El repositorio sigue teniendo una base técnica fuerte: arquitectura núcleo-plu
 ### S1 — Execute audit and document findings
 - **Files**: `docs/proposals/ready/a00024-21-06-2026-copilot-gpt-5-4-repositorio.md`
 - **Gate**: `bun run lint:proposals`
-- **Status**: pending
+- **Status**: done
 
 ### S2 — Restore green validation gate in current workspace
 - **Files**:
   - `apps/web/src/components/Config.astro`
   - `apps/web/src/components/PluginsSection.astro`
 - **Gate**: `bun run validate`
-- **Status**: pending
+- **Status**: done
 
 ### S3 — Re-expand root validation coverage
 - **Files**:
   - `vitest.config.ts`
   - `tsconfig.json`
 - **Gate**: `bun run validate`
-- **Status**: pending
+- **Status**: done
 
 ### S4 — Harden durable writes in rules cache
 - **Files**:
   - `plugins/rules/src/lib/frameworks/manifest.ts`
 - **Gate**: `bun run validate`
-- **Status**: pending
+- **Status**: done
 
 ### S5 — Expand publish/install smoke coverage
 - **Files**:
   - `scripts/smoke-pack.ts`
   - `plugins/audit/package.json`
 - **Gate**: `bun run build && bun run smoke:pack`
-- **Status**: pending
+- **Status**: done
 
 ### S6 — Raise app-level resilience and UI test coverage
 - **Files**:
@@ -85,7 +85,7 @@ El repositorio sigue teniendo una base técnica fuerte: arquitectura núcleo-plu
   - `extensions/vscode/src/commands/open-proposal.ts`
   - `extensions/vscode/src/commands/run-validation.ts`
 - **Gate**: `bun run validate`
-- **Status**: pending
+- **Status**: done
 
 ## Acceptance
 

@@ -2063,7 +2063,7 @@ Re-audit-20 `git diff HEAD -- plugins/proposals/src/lib/tools/auto-work.tool.ts 
 Re-audit-20 `git diff HEAD -- docs/mcp-vertex/proposals/ready/f00130-api-openapi-plugin.md | head`:
 
 ```diff
-- **Status**: pending
+- **Status**: done
 + **Status**: done
 + implementation:
 +  - lib/mock/mock-engine.ts is the pure IJsonSchema → example generator.

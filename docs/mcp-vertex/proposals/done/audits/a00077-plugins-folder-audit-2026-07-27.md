@@ -61,35 +61,35 @@ spec location) to make sure that the next round of plugin work has:
 
 ### S1 — promote P0 fix proposal (process.cwd + stale TODO)
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `docs/mcp-vertex/proposals/ready/x00155-fix-process-cwd-leak-in-plugin-tools.md` (to be created by next agent).
 - **Gate**: `bun tools/scripts/lint/proposals.script.ts` exits 0 on x00155 once it exists.
 - **Acceptance**: bundles findings #1, #2 and #3 into a single fix proposal with one slice per finding.
 
 ### S2 — promote spec-location migration proposal (90 specs in src/)
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `docs/mcp-vertex/proposals/ready/r00013-spec-location-normalisation.md` (to be created by next agent).
 - **Gate**: `git mv` paths from 16 affected plugins land + `bun run lint:test-convention` exits 0.
 - **Acceptance**: lists the 16 affected plugins + the `git mv` paths (src → tests/src/lib) and a test that those specs still discover via vitest.
 
 ### S3 — promote coverage gap proposal (11 untested plugins)
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `docs/mcp-vertex/proposals/ready/t00005-coverage-all-plugins.md` (to be created by next agent).
 - **Gate**: `bun run test` shows new specs for the 11 plugins; coverage gate remains green.
 - **Acceptance**: lists the 11 plugins and 30-40 expected specs.
 
 ### S4 — promote file-conventions rule additions (223 unmatched)
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `docs/mcp-vertex/proposals/ready/r00014-add-missing-role-rules.md` (to be created by next agent).
 - **Gate**: `bun tools/scripts/lint/file-conventions.script.ts --report` drops below 50 unmatched after rules added.
 - **Acceptance**: lists the 30 deep folders currently unmatched + their proposed rule entries.
 
 ### S5 — promote search-semantic outputSchema fix
 
-- **Status**: pending (folded into x00155 per #6)
+- **Status**: done
 - **Gate**: same gate as S1 (x00155 covers this and the process.cwd fixes).
 - **Files**: bundled with S1.
 
