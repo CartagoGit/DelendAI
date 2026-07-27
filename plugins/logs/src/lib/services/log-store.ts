@@ -4,7 +4,12 @@ import { join } from 'node:path';
 import { withFileMutex } from '@mcp-vertex/core/public';
 
 import type { ILogStoreOptions } from '../contracts/interfaces/log-store.interface';
-import { type LogSeverity, severityForOutcome } from './kinds';
+import {
+	incidentTypeForKind,
+	isLogSeverity,
+	type LogSeverity,
+	severityForOutcome,
+} from './kinds';
 import {
 	type ILogEvent,
 	type LogEventKind,
@@ -13,6 +18,24 @@ import {
 } from './normalize-event';
 
 export type { ILogStoreOptions } from '../contracts/interfaces/log-store.interface';
+
+/**
+ * x00154 S1 — backfill input shape. Old JSONL records (pre-`f00153` S1)
+ * omit `severity` and `incidentType`; new transports may hand the store
+ * a raw record straight from the MCP server. Either flavour must project
+ * to a complete {@link ILogEvent} on disk so `LogEventSchema` validates.
+ *
+ * {@link completeLogEvent} consumes this shape; both the write path
+ * (`appendEvent`) and the read path (`readAllFiles`) route raw records
+ * through it. An explicit non-`LogSeverity` string for `severity`
+ * (e.g. `'?'` from a corrupted stream) is rejected with
+ * `INVALID_SEVERITY` instead of being silently coerced.
+ */
+export interface ILogEventInput
+	extends Omit<ILogEvent, 'severity' | 'incidentType'> {
+	readonly severity?: LogSeverity | string | undefined;
+	readonly incidentType?: string | null | undefined;
+}
 
 export interface ILogStore {
 	appendEvent(event: ILogEvent): Promise<void>;
@@ -78,6 +101,60 @@ const SEVERITY_RANK: Readonly<Record<LogSeverity, number>> = {
 	emergency: 7,
 };
 
+/**
+ * x00154 S1 — backfill `severity` + `incidentType` from a raw record.
+ *
+ * Rules:
+ *   - `severity`:
+ *     - explicit value that is a valid {@link LogSeverity} → use it;
+ *     - explicit value that is NOT a valid {@link LogSeverity} (including
+ *       arbitrary strings like `'?'` from a corrupted stream) → throw
+ *       `INVALID_SEVERITY` so the bad input is surfaced, not silently
+ *       coerced to a default (silent coercion is the symptom that caused
+ *       `no_severity=412/412` on the live JSONL in the first place);
+ *     - missing (`undefined`) → derive from `outcome` via
+ *       {@link severityForOutcome}.
+ *   - `incidentType`:
+ *     - explicit value (`null` or string) → use it;
+ *     - missing (`undefined`) → derive from `kind` via
+ *       {@link incidentTypeForKind}.
+ *
+ * The function is safe to call on already-complete {@link ILogEvent}s:
+ * the explicit-value branches pass through. It is also the single
+ * backfill point for both the writer (`appendEvent`) and the reader
+ * (`readAllFiles`), so a stale JSONL record reconstructed on read yields
+ * the same projection as a freshly-normalised write.
+ */
+export const completeLogEvent = (input: ILogEventInput): ILogEvent => {
+	const severityIn = input.severity;
+	let severity: LogSeverity;
+	if (severityIn === undefined) {
+		severity = severityForOutcome(input.outcome);
+	} else if (isLogSeverity(severityIn)) {
+		severity = severityIn;
+	} else {
+		// x00154 S1 — explicit invalid severity (e.g. '?') must be rejected,
+		// not silently coerced to severityForOutcome(outcome).
+		throw new Error('INVALID_SEVERITY');
+	}
+	const incidentType =
+		input.incidentType === undefined
+			? incidentTypeForKind(input.kind)
+			: input.incidentType;
+	return {
+		ts: input.ts,
+		kind: input.kind,
+		agent: input.agent,
+		taskId: input.taskId,
+		outcome: input.outcome,
+		severity,
+		incidentType,
+		files: input.files,
+		summary: input.summary,
+		meta: input.meta,
+	};
+};
+
 const matches = (event: ILogEvent, filter: ILogRangeFilter): boolean => {
 	if (filter.since && compareIso(event.ts, filter.since) < 0) return false;
 	if (filter.until && compareIso(event.ts, filter.until) > 0) return false;
@@ -138,7 +215,14 @@ export const createLogStore = async (
 					continue;
 				}
 				try {
-					events.push(JSON.parse(line) as ILogEvent);
+					// x00154 S1 — old JSONL records written pre-`f00153` S1
+					// lack `severity` + `incidentType`. Backfill here so
+					// `readRange`/`tail` returns a complete projection that
+					// satisfies `LogEventSchema` even for legacy data.
+					const parsed = JSON.parse(line) as Record<string, unknown>;
+					events.push(
+						completeLogEvent(parsed as unknown as ILogEventInput),
+					);
 				} catch {
 					// Derive `ts` from the day-file name (e.g. `2026-07-26.jsonl`)
 					// rather than `Date.now()` so the placeholder keeps its
@@ -171,9 +255,24 @@ export const createLogStore = async (
 
 	return {
 		async appendEvent(event) {
-			const file = fileFor(event);
+			// x00154 S1 — derive `severity` + `incidentType` from the raw
+			// record before writing. `completeLogEvent` also rejects an
+			// explicit invalid `severity` (e.g. `'?'`) with INVALID_SEVERITY
+			// so the writer never silently coerces a malformed record.
+			//
+			// The public `ILogStore.appendEvent` signature is still
+			// `ILogEvent`; production callers always go through
+			// `normalizeEvent(...)` first, so they already supply
+			// complete records. The cast here is a defensive backfill for
+			// any future in-process writer that hasn't been updated (and
+			// for the spec at `tests/log-store.spec.ts` that exercises the
+			// backfill path directly).
+			const complete = completeLogEvent(
+				event as unknown as ILogEventInput,
+			);
+			const file = fileFor(complete);
 			await mkdir(logsDir, { recursive: true });
-			const line = `${serializeRedactedEvent(event, options.maxLineBytes)}\n`;
+			const line = `${serializeRedactedEvent(complete, options.maxLineBytes)}\n`;
 			await withFileMutex(
 				file,
 				async () => {

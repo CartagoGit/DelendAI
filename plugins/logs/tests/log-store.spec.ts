@@ -357,3 +357,155 @@ describe('x00153 S3 — corrupt-line placeholder carries the day it belongs to, 
 		expect(offsets).toEqual([0, 1, 2]);
 	});
 });
+
+describe('x00154 S1 — appendEvent + readAllFiles derive severity + incidentType from the raw record', async () => {
+	const { mkdir, appendFile } = await import('node:fs/promises');
+
+	/**
+	 * Seed a single legacy JSONL line into the day-file WITHOUT the
+	 * `severity` / `incidentType` fields. Mirrors the live
+	 * `2026-07-25.jsonl` shape that produced the FATAL class item in
+	 * x00154 (412/412 records missing both fields).
+	 */
+	const seedLegacyLine = async (
+		logsDir: string,
+		day: string,
+		record: Readonly<Record<string, unknown>>,
+	): Promise<void> => {
+		await mkdir(logsDir, { recursive: true });
+		await appendFile(
+			join(logsDir, `${day}.jsonl`),
+			`${JSON.stringify(record)}\n`,
+			'utf8',
+		);
+	};
+
+	it('readRange backfills severity + incidentType for legacy JSONL records lacking both fields', async () => {
+		const dir = await tempLogs();
+		// A raw `tool-started` shape identical to what the live
+		// MCP transport emits: kind is set, no `severity`, no `incidentType`.
+		await seedLegacyLine(dir, '2026-07-25', {
+			ts: '2026-07-25T10:00:00.000Z',
+			kind: 'tool-started',
+			tool: 'mcp-vertex_logs_query',
+			agent: null,
+			taskId: 'mcp-vertex_logs_query',
+			outcome: 'ok',
+			files: [],
+			summary: 'tool-started: mcp-vertex_logs_query',
+			meta: {},
+		});
+		const store = await createLogStore(dir);
+		const events = await store.readRange();
+		expect(events).toHaveLength(1);
+		const stored = events[0];
+		expect(stored).toBeDefined();
+		// x00154 S1 — both fields populated from the raw record.
+		expect(typeof stored?.severity).toBe('string');
+		expect(stored?.severity).toBe('info'); // outcome === 'ok' → severityForOutcome
+		expect(stored?.incidentType).toBe('tool-invocation'); // kind === 'tool-started'
+	});
+
+	it('appendEvent derives severity + incidentType from a raw tool-started event', async () => {
+		const dir = await tempLogs();
+		const store = await createLogStore(dir);
+		// Cast: the test deliberately exercises the backfill path with
+		// a record that omits both fields. TypeScript will not let this
+		// through the public `ILogEvent` signature, which is the point.
+		await store.appendEvent({
+			ts: '2026-07-25T10:01:00.000Z',
+			kind: 'tool-started',
+			agent: null,
+			taskId: 'mcp-vertex_logs_query',
+			outcome: 'ok',
+			files: [],
+			summary: 'tool-started: mcp-vertex_logs_query',
+			meta: {},
+			// severity: undefined
+			// incidentType: undefined
+		} as unknown as Parameters<typeof store.appendEvent>[0]);
+
+		const events = await store.readRange();
+		expect(events).toHaveLength(1);
+		const stored = events[0];
+		expect(stored).toBeDefined();
+		expect(stored?.severity).toBe('info');
+		expect(stored?.incidentType).toBe('tool-invocation');
+	});
+
+	it('appendEvent preserves an explicit valid LogSeverity', async () => {
+		const dir = await tempLogs();
+		const store = await createLogStore(dir);
+		await store.appendEvent(
+			normalizeEvent(
+				'tool-failed',
+				{
+					toolName: 'bad',
+					summary: 'kaboom',
+				},
+				new Date('2026-07-25T10:02:00.000Z'),
+			),
+		);
+
+		const events = await store.readRange();
+		expect(events).toHaveLength(1);
+		// normalizeEvent already populated severity === 'error' for a
+		// tool-failed outcome; confirm the writer did NOT overwrite it
+		// with severityForOutcome-derived value (would also be 'error'
+		// here, so we assert the canonical mapping instead).
+		expect(events[0]?.severity).toBe('error');
+		expect(events[0]?.incidentType).toBe('tool-failure');
+	});
+
+	it('appendEvent rejects an explicit invalid severity with INVALID_SEVERITY (no silent coercion)', async () => {
+		const dir = await tempLogs();
+		const store = await createLogStore(dir);
+		await expect(
+			store.appendEvent({
+				ts: '2026-07-25T10:03:00.000Z',
+				kind: 'tool-started',
+				agent: null,
+				taskId: 't',
+				outcome: 'ok',
+				files: [],
+				summary: 'malformed',
+				meta: {},
+				severity: '?' as unknown as 'info',
+				incidentType: 'tool-invocation',
+			} as unknown as Parameters<typeof store.appendEvent>[0]),
+		).rejects.toThrow('INVALID_SEVERITY');
+
+		// No partial write should have landed: the rejection happens
+		// before `withFileMutex`.
+		const raw = await readFile(join(dir, '2026-07-25.jsonl'), 'utf8').catch(
+			() => '',
+		);
+		expect(raw.trim()).toBe('');
+	});
+
+	it('readRange reconstructs severity for legacy records whose kind is unknown to KIND_TO_INCIDENT_TYPE (incidentType falls back to null)', async () => {
+		const dir = await tempLogs();
+		// Some legacy records used kinds that don't appear in
+		// KIND_TO_INCIDENT_TYPE (added after the record was first
+		// written). The reader must still surface severity from
+		// outcome and leave incidentType as null when the kind is
+		// not in the table — NOT throw and NOT silently invent a
+		// code.
+		await seedLegacyLine(dir, '2026-07-25', {
+			ts: '2026-07-25T10:04:00.000Z',
+			kind: 'future-kind',
+			agent: null,
+			taskId: 't',
+			outcome: 'failed',
+			files: [],
+			summary: 'legacy future-kind record',
+			meta: {},
+		});
+		const store = await createLogStore(dir);
+		const events = await store.readRange();
+		expect(events).toHaveLength(1);
+		const stored = events[0];
+		expect(stored?.severity).toBe('error'); // severityForOutcome('failed')
+		expect(stored?.incidentType).toBeNull(); // kind unknown → null
+	});
+});
