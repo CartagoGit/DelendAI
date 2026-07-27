@@ -377,22 +377,14 @@ provide the option.
 
 ### S3 — `record-buffer.ts` `process.stderr.write` → structured event
 
-- **Status**: pending
+- **Status**: done
+- **Implementation**: `record-buffer.ts` has no `ctx` access (it's a plain utility class instantiated once at plugin boot, not a tool handler), so the fix threads an optional `logs?: IPluginLogsHelper` through `IRecordBufferOptions` instead of the originally-sketched `appendEvent` write — same DI pattern as x00156 S2. `onError` keeps writing to `stderr` (never a hard dependency) AND, when a `logs` helper was supplied, emits a `warning`/`usage-tracking-append-failed` incident. Wired `logs: ctx.logs` at the real construction site in `plugins/usage-tracking/src/index.ts`. The override hook (`protected onError`) is untouched — a subclass can still replace it entirely.
+- **Test-mechanism finding**: the originally-sketched repro ("spawning with an unwritable dir") does not actually force a failure — `withFileMutex` defensively `mkdir -p`s the target's parent directory on every acquisition (so a fresh tmpdir survives its first use), which silently heals a merely-missing directory. The spec instead pre-creates a plain *file* where a directory is expected (`mkdir -p` cannot turn a file into a directory), which reliably forces the real `EEXIST`/`ENOTDIR` failure path.
 - **Files**:
-  - `plugins/usage-tracking/src/lib/record-buffer.ts` — replace
-    `onError` body with a `withFileMutex` + `appendEvent` write
-    against the curated error stream. Keep the override hook so a
-    test can supply a synchronous stub.
+  - `plugins/usage-tracking/src/lib/record-buffer.ts`
+  - `plugins/usage-tracking/src/index.ts`
   - `plugins/usage-tracking/tests/src/lib/record-buffer.spec.ts`
-    — add a spec that calls `onError(...)` against a stub
-    `onError` override and asserts the override fires. Plus a
-    separate spec that triggers an append failure (e.g. by
-    spawning with an unwritable dir) and asserts the
-    structured-log event is appended with `kind: 'log-warning'`
-    and `severity: 'warning'`.
-- **Gate**: existing `record-buffer.spec.ts` tests still pass; the
-  new event-spec passes; the bare `process.stderr.write` no
-  longer appears in production code.
+- **Gate**: `bun test plugins/usage-tracking/tests` — 100/100 pass (was 97, +3 new cases). `bare process.stderr.write` is gone as the sole sink; it now runs alongside the structured emit, never replaced by it (observability must not become a hard dependency).
 
 ### S4 — Gate `lint:solid` and add baseline support
 
