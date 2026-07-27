@@ -202,6 +202,24 @@
         "@mcp-vertex/core": "^0.1.0",
       },
     },
+    "plugins/auto-plugin-selector": {
+      "name": "@mcp-vertex/auto-plugin-selector",
+      "version": "0.1.0",
+      "dependencies": {
+        "@mcp-vertex/auto-agent-selector": "workspace:*",
+        "@modelcontextprotocol/sdk": "^1.29.0",
+        "zod": "^4.4.3",
+      },
+      "devDependencies": {
+        "@mcp-vertex/core": "workspace:*",
+        "@types/bun": "latest",
+        "typescript": "7.0.2",
+        "vitest": "4.1.10",
+      },
+      "peerDependencies": {
+        "@mcp-vertex/core": "^0.1.0",
+      },
+    },
     "plugins/browser": {
       "name": "@mcp-vertex/browser",
       "version": "0.1.0",
@@ -313,6 +331,8 @@
       "name": "@mcp-vertex/diagram",
       "version": "0.1.0",
       "dependencies": {
+        "@mcp-vertex/database": "workspace:*",
+        "@mcp-vertex/proposals": "workspace:*",
         "@modelcontextprotocol/sdk": "^1.29.0",
         "zod": "^4.4.3",
       },
@@ -573,6 +593,16 @@
         "@mcp-vertex/auto-agent-selector": "^0.1.0",
         "@mcp-vertex/core": "^0.1.0",
         "@mcp-vertex/orchestrator-runner": "^0.1.0",
+      },
+    },
+    "plugins/prompts-pack": {
+      "name": "@mcp-vertex/prompts-pack",
+      "version": "0.1.0",
+      "dependencies": {
+        "@mcp-vertex/core": "workspace:*",
+      },
+      "devDependencies": {
+        "typescript": "7.0.2",
       },
     },
     "plugins/proposals": {
@@ -1079,6 +1109,8 @@
 
     "@mcp-vertex/auto-agent-selector": ["@mcp-vertex/auto-agent-selector@workspace:plugins/auto-agent-selector"],
 
+    "@mcp-vertex/auto-plugin-selector": ["@mcp-vertex/auto-plugin-selector@workspace:plugins/auto-plugin-selector"],
+
     "@mcp-vertex/browser": ["@mcp-vertex/browser@workspace:plugins/browser"],
 
     "@mcp-vertex/cache": ["@mcp-vertex/cache@workspace:plugins/cache"],
@@ -1132,6 +1164,8 @@
     "@mcp-vertex/perf": ["@mcp-vertex/perf@workspace:plugins/perf"],
 
     "@mcp-vertex/prompt-eval": ["@mcp-vertex/prompt-eval@workspace:plugins/prompt-eval"],
+
+    "@mcp-vertex/prompts-pack": ["@mcp-vertex/prompts-pack@workspace:plugins/prompts-pack"],
 
     "@mcp-vertex/proposals": ["@mcp-vertex/proposals@workspace:plugins/proposals"],
 

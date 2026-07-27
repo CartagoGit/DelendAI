@@ -141,7 +141,8 @@ const buildPackage = (rel: string): void => {
 	// Cross-package `@mcp-vertex/*` types resolve to each dependency's BUILT
 	// `dist/*.d.ts` (declaration inputs — not pulled into this package's
 	// program, so no `rootDir` violation). Build order guarantees the
-	// dependency's dist exists: core first, then packages/* in rank order.
+	// dependency's dist exists: rank 0 first (core), then rank 1 (other
+	// packages), then rank 2 (plugins) in alphabetical order.
 	const builtDepPaths = (pkg: string): Record<string, string[]> => ({
 		[`@mcp-vertex/${pkg}`]: [join(ROOT, `packages/${pkg}/dist/index.d.ts`)],
 		[`@mcp-vertex/${pkg}/public`]: [
@@ -153,13 +154,55 @@ const buildPackage = (rel: string): void => {
 			join(ROOT, `packages/${pkg}/dist/lib/*`),
 		],
 	});
-	const corePaths = {
-		...(rel === 'packages/core' ? {} : builtDepPaths('core')),
-		// apps/shared (compiled into the ui-extension dts program) imports
-		// @mcp-vertex/client deep paths; client's dist is built before
-		// ui-extension (alphabetical within rank 1).
-		...(rel === 'packages/ui-extension' ? builtDepPaths('client') : {}),
-	};
+	const builtPluginPaths = (plugin: string): Record<string, string[]> => ({
+		[`@mcp-vertex/${plugin}`]: [
+			join(ROOT, `plugins/${plugin}/dist/index.d.ts`),
+		],
+		[`@mcp-vertex/${plugin}/public`]: [
+			join(ROOT, `plugins/${plugin}/dist/public/index.d.ts`),
+		],
+		[`@mcp-vertex/${plugin}/lib/*`]: [
+			join(ROOT, `plugins/${plugin}/dist/lib/*`),
+		],
+	});
+	// Introspect package.json so plugin-to-plugin deep imports (e.g.
+	// auto-plugin-selector → auto-agent-selector/lib/ranking/*) resolve to
+	// the BUILT .d.ts files of the dependency plugin. Build order guarantees
+	// the dependency's dist exists: discover() sorts alphabetically within
+	// rank 2 (plugins), so e.g. `auto-agent-selector` builds before
+	// `auto-plugin-selector`.
+	const pkgMeta: {
+		name?: string;
+		dependencies?: Record<string, string>;
+		peerDependencies?: Record<string, string>;
+	} = JSON.parse(readFileSync(pkgJsonPath, 'utf8'));
+	const mcpDeps = new Set<string>();
+	for (const section of ['dependencies', 'peerDependencies'] as const) {
+		const map = pkgMeta[section] ?? {};
+		for (const dep of Object.keys(map)) {
+			if (dep.startsWith('@mcp-vertex/')) {
+				mcpDeps.add(dep.replace(/^@mcp-vertex\//, ''));
+			}
+		}
+	}
+	const selfName = pkgMeta.name?.replace(/^@mcp-vertex\//, '');
+	if (selfName) mcpDeps.delete(selfName);
+	const corePaths: Record<string, string[]> = {};
+	for (const dep of mcpDeps) {
+		const pkgPath = join(ROOT, 'packages', dep);
+		const pluginPath = join(ROOT, 'plugins', dep);
+		if (existsSync(pkgPath) && rel !== `packages/${dep}`) {
+			Object.assign(corePaths, builtDepPaths(dep));
+		} else if (existsSync(pluginPath) && rel !== `plugins/${dep}`) {
+			Object.assign(corePaths, builtPluginPaths(dep));
+		}
+	}
+	// apps/shared (compiled into the ui-extension dts program) imports
+	// @mcp-vertex/client deep paths; client's dist is built before
+	// ui-extension (alphabetical within rank 1).
+	// This block is now redundant (the dep introspection above picks up
+	// client), kept for clarity that ui-extension's dist must exist before
+	// building it.
 	writeFileSync(
 		dtsConfig,
 		JSON.stringify(
