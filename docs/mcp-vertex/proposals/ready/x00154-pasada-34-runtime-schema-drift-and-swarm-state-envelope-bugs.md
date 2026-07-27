@@ -384,16 +384,9 @@ empty/corrupt is a structured `toolError`.
 
 ### S6 — `.catch(() => '')` becomes typal: missing vs empty
 
-- **Status**: pending
-- **Files**:
-  - `plugins/proposals/src/lib/shared/peer-review-log.ts` —
-    distinguish `ENOENT` from generic error in the
-    `readFile(logPathAbs, 'utf8')` call; ENOENT returns the
-    current empty-history behaviour; any other error (or an
-    empty file) returns a typed `PeerReviewLogUnreadableError`
-    that callers map to `{ ok: false, error: 'no-log-readable' }`.
-  - `plugins/proposals/src/lib/locks/agent-lock-session-store.ts` —
-    same pattern for `prefix.read`.
+- **Status**: done
+- **Implementation**: `9f945f60` (PeerReviewLogUnreadableError + SessionLogUnreadableError; `readPeerReviewLog` throws on empty; 8 + 3 new specs; 1087/1087 plugin tests pass)
+- **Files**: `plugins/proposals/src/lib/shared/peer-review-log.ts`, `plugins/proposals/src/lib/locks/agent-lock-session-store.ts`
 - **Gate**: a spec asserting that an empty-but-present file
   triggers the typed error, while a missing file yields
   empty-state behaviour.
