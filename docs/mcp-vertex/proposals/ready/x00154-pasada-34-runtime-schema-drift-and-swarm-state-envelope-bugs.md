@@ -340,18 +340,7 @@ empty/corrupt is a structured `toolError`.
 
 - **Status**: done
 - **Implementation**: `b0b5d66c` (success path → `toolOk({ ok: true, ...payload })`; error helper routes through `toolJson({ ok: false, error: {...} })`; 2 new envelope-contract tests)
-- **Files**:
-  - `plugins/proposals/src/lib/tools/recovery-tools.ts` —
-    wrap both return paths (the early-return toolError and the
-    `toolJson(...)` at line 628) with `{ ok: true as const,
-    ...payload }` and the error path with `{ ok: false as
-    const, error: {...}, ...payload }`. Make `toolError`
-    return a `toolJson({ ok: false, error: {...} })` shape so
-    the contract is uniform.
-  - `plugins/proposals/tests/src/lib/tools/recovery.spec.ts`
-    — spec asserting Zod parse of the success envelope
-    succeeds with `ok === true`, and the error envelope
-    succeeds with `ok === false`.
+- **Files**: `plugins/proposals/src/lib/tools/recovery-tools.ts`, `plugins/proposals/tests/src/lib/tools/recovery-tools.spec.ts`
 - **Gate**: `bun tools/scripts/verify/plugin-tool-verify.script.ts
   --plugin=proposals` — `proposal_diagnose` shows `✓ ok` (today:
   tool-level envelope error).
