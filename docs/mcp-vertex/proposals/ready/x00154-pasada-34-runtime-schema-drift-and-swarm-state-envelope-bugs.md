@@ -324,7 +324,8 @@ empty/corrupt is a structured `toolError`.
 
 ### S1 — Make `appendEvent` derive severity + incidentType from the raw record
 
-- **Status**: pending
+- **Status**: done
+- **Implementation**: `818ae99e` (`completeLogEvent` shim + 5 new tests; legacy JSONL `readRange` backfills `severity='info'`, `incidentType='tool-invocation'`; invalid `severity:'?'` rejected with `INVALID_SEVERITY`)
 - **Files**:
   - `plugins/logs/src/lib/services/log-store.ts` (make
     `appendEvent` route every record through `normalizeEvent`
