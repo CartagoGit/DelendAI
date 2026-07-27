@@ -19,8 +19,19 @@ export const scssPlugin: BunPlugin = {
 	setup(build) {
 		build.onResolve({ filter: SCSS_FILTER }, (args) => {
 			const cleanPath = args.path.split('?')[0] ?? args.path;
+			// x00162 S1: `resolveDir` is typed as always a string, but a
+			// globally `Bun.plugin()`-registered instance (as opposed to
+			// one passed to `Bun.build()`) can invoke this hook with it
+			// empty for some import chains — reproduced live under
+			// `bun test --preload`. `importer` (the file doing the
+			// importing) is populated in that case, so fall back to its
+			// directory.
+			const baseDir =
+				typeof args.resolveDir === 'string' && args.resolveDir !== ''
+					? args.resolveDir
+					: dirname(args.importer);
 			return {
-				path: resolve(args.resolveDir, cleanPath),
+				path: resolve(baseDir, cleanPath),
 				namespace: 'mcp-vertex-scss',
 			};
 		});
