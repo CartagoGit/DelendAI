@@ -122,9 +122,20 @@ export const realDiagramModules = (
 					relativePath,
 					packageRootAbs,
 				);
-				if (resolved === undefined) continue;
-				if (!allSet.has(resolved)) continue;
+				if (resolved === undefined) {
+					match = IMPORT_RE.exec(raw);
+					continue;
+				}
+				if (!allSet.has(resolved)) {
+					match = IMPORT_RE.exec(raw);
+					continue;
+				}
 				out.push(resolved);
+				// Advance the regex to the next match on every successful
+				// iteration — without this, the loop re-processes the same
+				// `match` on every `while` check and the function never
+				// returns. Diagnosed by f00030-protect-diagram-modules.
+				match = IMPORT_RE.exec(raw);
 			}
 			return out;
 		},
