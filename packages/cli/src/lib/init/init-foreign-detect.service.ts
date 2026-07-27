@@ -31,6 +31,7 @@ import type {
 	IForeignProposalInventory,
 } from '../../contracts/interfaces/init.interface';
 import type { IFileReader } from './init-detection.service';
+import { PROPOSAL_STATUS_FOLDERS } from './init-render.service';
 
 // f00037/f00093: canonical home is contracts/interfaces/init.interface.ts.
 // Re-exported here for migrate-offer + specs that import from the detector.
