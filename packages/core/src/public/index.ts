@@ -256,6 +256,7 @@ export type {
 // --- scaffolding kit ("tools to create tools/plugins") ---------------------
 export {
 	scaffoldAgentFile,
+	scaffoldClaudeAgentFile,
 	scaffoldClientFiles,
 	scaffoldHostConfigFile,
 	scaffoldHostProject,
