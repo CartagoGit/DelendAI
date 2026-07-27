@@ -35,6 +35,9 @@ export const DISCOVER_MAX_RESULTS = 10;
 export const DISCOVER_BUDGET_LIMIT = 10;
 export const DISCOVER_BUDGET_WINDOW_MS = 10 * 60 * 1000;
 
+/** Hard bound on the npm-registry search request (matches online-preset.ts). */
+export const DISCOVER_FETCH_TIMEOUT_MS = 5_000;
+
 /** One npm-registry search hit, already narrowed to the fields we surface. */
 export interface INpmSearchResult {
 	readonly name: string;
@@ -61,7 +64,9 @@ export const createDefaultNpmSearch = (): INpmSearchClient => {
 		const url = `https://registry.npmjs.org/-/v1/search?text=${encodeURIComponent(
 			query,
 		)}&size=${limit}`;
-		const res = await fetch(url);
+		const res = await fetch(url, {
+			signal: AbortSignal.timeout(DISCOVER_FETCH_TIMEOUT_MS),
+		});
 		if (!res.ok) {
 			throw new Error(`npm-search-http-${res.status}`);
 		}

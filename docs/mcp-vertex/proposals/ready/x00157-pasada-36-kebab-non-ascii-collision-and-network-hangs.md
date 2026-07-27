@@ -390,14 +390,27 @@ The timer is stored in a local `const`, never exposed. The plugin's `register` c
 
 ### S3 — `external-mcps/discover.tool.ts:64` `fetch` no timeout
 
-- **Status**: pending
+- **Status**: done
 - **Files**:
-  - `plugins/external-mcps/src/lib/tools/discover.tool.ts:64` — add
-    `signal: AbortSignal.timeout(5_000)` to the `fetch(url, …)` call.
-  - `plugins/external-mcps/tests/src/lib/tools/discover.tool.spec.ts`
-    — add a spec that injects a hanging server (Promise that never
-    resolves) and asserts the tool throws within 5.5s.
-- **Gate**: spec passes; live hung-server repro confirms fast fail.
+  - `plugins/external-mcps/src/lib/tools/discover.tool.ts` — added
+    `DISCOVER_FETCH_TIMEOUT_MS = 5_000` and passed
+    `signal: AbortSignal.timeout(DISCOVER_FETCH_TIMEOUT_MS)` to the
+    `fetch(url, …)` call in `createDefaultNpmSearch`.
+  - `plugins/external-mcps/tests/src/lib/discover-gate.spec.ts` (the
+    real existing spec file for this tool; the originally-planned
+    `tests/src/lib/tools/discover.tool.spec.ts` path does not exist)
+    — added a spec that mocks `global.fetch` with a Promise that
+    never resolves on its own and only rejects when the injected
+    `AbortSignal` fires, asserting `createDefaultNpmSearch()` rejects
+    and that the real `fetch` call received an `AbortSignal`.
+- **Gate**: `bun test plugins/external-mcps/tests/src/lib/discover-gate.spec.ts`
+  — 8/8 pass (was 7); `bun test --cwd plugins/external-mcps` —
+  111/111 pass; `bunx tsc --noEmit --project .` clean.
+- **Closure note**: the existing `try/catch` around `search(...)` in
+  the tool handler already converts any rejection (including the
+  `AbortSignal.timeout` TimeoutError) into a clean
+  `{ ok:false, code:'discovery-failed' }` — no additional error
+  handling was needed at the call site.
 
 ### S4 — `observability/list-errors.ts:148` `fetch` no timeout
 
@@ -526,6 +539,38 @@ The timer is stored in a local `const`, never exposed. The plugin's `register` c
 | `state_health` peer-review-bypass-count accuracy | false-green over time | bounded at 24h |
 
 ## notes
+
+### incidental fix — `close_slice`/`proposal_review` false-positive `lockReleased`
+
+Found live while closing S2 and S3 in this same session: after calling
+`close_slice`, `mcp-vertex_proposals_agent_lock` `status` still showed
+the lock claim as active, even though `close_slice` had reported
+`lockReleased: true`. Root cause, confirmed by reading
+`authoring.tool.ts`: `close_slice` and `proposal_review`'s
+approve/request_changes path both released using
+`task_id: args.sliceId` (the bare slice id, e.g. `"S2"`) — but
+`auto_work`'s own `claimReady.agent_lock_args` (`auto-work.tool.ts:307`)
+instructs every calling agent to **claim** with the composite
+`` `${proposalId}-${sliceId}` `` task_id, specifically so two different
+proposals with an identically-named slice (every proposal has an
+"S1") never collide in the shared lock table. Any agent following that
+recommendation — which is the documented, tool-advised path — got a
+lock claim that `close_slice` could never subsequently match, so the
+release was always a silent no-op. Worse, `lockReleased` was hardcoded
+to `true` whenever `releaseLock !== false`, without inspecting whether
+`runAgentLockEngine`'s release actually removed anything — so the bug
+was invisible to every caller and every existing test (none exercised
+claim→close_slice with the composite task_id). Fixed with a shared
+`releaseSliceLock` helper that tries the canonical composite task_id
+first (accounting for `close_slice`'s existing s1/S1 case-insensitivity
+via the existing `canonicalSliceId` helper), falls back to the bare
+sliceId, and returns whether an entry was **actually** removed instead
+of assuming success. Verified: `bun test
+plugins/proposals/tests/src/lib/authoring.spec.ts` — new regression
+test claims with `f00082-S1`, closes with `sliceId: 's1'`, and asserts
+BOTH `lockReleased: true` AND (via a real `agent_lock status` call)
+`active_write_lanes: 0` afterward; full `plugins/proposals` suite
+1112/1112 pass (was 1111); `bunx tsc --noEmit --project .` clean.
 
 ### related work
 
