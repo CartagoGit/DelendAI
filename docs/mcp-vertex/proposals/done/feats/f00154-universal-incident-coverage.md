@@ -2,7 +2,7 @@
 id: f00154
 title: "universal incident coverage — every tool, every plugin, every project gets logged"
 kind: feat
-status: ready
+status: done
 type: proposal
 track: packages/core+plugins/logs+all
 date: 2026-07-26
@@ -59,7 +59,7 @@ The "opt-out" framing is the key design decision. The default should be "log eve
 
 ### S1 — Re-export `IPluginLogsHelper` / `IPluginLogInput` / `LogSeverity` from `@mcp-vertex/core/public`
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/src/public/index.ts` (re-export from `plugin-contract.ts`), `packages/core/tests/src/public/public-api.spec.ts` (assertion that the three types are in the public barrel), `packages/core/src/lib/plugins/plugin-contract.ts` (no signature change — only the re-export is new), `plugins/logs/README.md` (note that the types are now importable from core).
 - **Gate**: type
 - **Acceptance**:
@@ -70,7 +70,7 @@ The "opt-out" framing is the key design decision. The default should be "log eve
 
 ### S2 — `ILogsSink` + core-level tool-call lifecycle plumbing
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/src/lib/plugins/logs-sink.ts` (new — `ILogsSink` interface with `record(event: ILogEvent)`, two impls: `LogsPluginSink` and `ConsoleLogsSink`), `packages/core/src/lib/plugins/assemble.ts` (resolve the sink at boot — if `logs` plugin is loaded use its store, otherwise `ConsoleLogsSink`; emit a one-time warning on the console fallback when `--strict-logs` is on), `packages/core/src/lib/plugins/plugin-contract.ts` (add `logsSink?: ILogsSink` to `IMcpPluginContext` so the core can publish a single shared instance; plugins that want to emit do so via the sink, not via the `ctx.logs` helper, which becomes a thin wrapper), `packages/core/src/lib/plugins/load-plugins.ts` (call `ctx.logsSink.record(...)` on `onToolStart` / `onToolCall` / `onToolCancel` paths that the core itself runs), `packages/core/tests/src/lib/plugins/logs-sink.spec.ts` (new).
 - **Gate**: type + verify
 - **Acceptance**:
@@ -83,7 +83,7 @@ The "opt-out" framing is the key design decision. The default should be "log eve
 
 ### S3 — `withIncidentLogging` adapter + opt-in for the 41 plugins
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/src/lib/tools/with-incident-logging.ts` (new — pure wrapper: `(handler, ctx) => wrappedHandler` that runs the inner handler, inspects the result for `isError: true`, and emits an incident with `incidentType: 'tool-failure'` by default; caller can override per-tool), `packages/core/src/lib/plugins/plugin-contract.ts` (extend `IToolRegistration` with optional `incidentType?: string` and `incidentLoggingDisabled?: boolean`), `packages/core/src/public/index.ts` (export the wrapper as `withIncidentLogging`), `plugins/quality/src/lib/tools/tools.ts` (wrap every `toolError` return with the adapter, opt-out only on `quality_redact_test`), `plugins/audit/src/lib/tools/plan-tool.ts` (same), `plugins/security/src/lib/tools/security-secrets.tool.ts` (same), `plugins/proposals/src/lib/tools/authoring.tool.ts` (same — already has many `toolError` paths), `plugins/notification/src/lib/tools/notification-await-lock.tool.ts` (same), `plugins/deps/src/lib/tools/deps-audit.tool.ts` (same). Each gets a tiny `incidentType: 'quality-failure'` / `'audit-failure'` / etc. label so `logs_incidents` distinguishes the source plugin.
 - **Gate**: type + verify
 - **Acceptance**:
@@ -95,7 +95,7 @@ The "opt-out" framing is the key design decision. The default should be "log eve
 
 ### S4 — Auto-load the `logs` plugin when the host passes `--strict-logs`; document for plugin authors
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/src/lib/plugins/load-plugins.ts` (when `--strict-logs` is on the CLI args and `logs` is **not** in the explicit plugin list, inject the `logs` plugin into the load set and log a one-time info line on stderr), `packages/core/src/lib/plugins/plugin-defaults.ts` (add the `logs` plugin to the defaults for the `quality` and `security` preset packs, since they benefit most from the incident surface), `docs/mcp-vertex/plugins/logs/AUTHORING.md` (new — short guide for plugin authors: how to type a `ctx.logs.log(...)` call, how to use the `incidentType` per plugin, when to opt out), `plugins/logs/src/lib/knowledge/logs-knowledge.ts` (add a "third-party plugin authoring" section that points to the new doc).
 - **Gate**: type + docs
 - **Acceptance**:

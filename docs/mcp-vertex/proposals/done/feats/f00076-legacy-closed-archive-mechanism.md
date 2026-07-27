@@ -2,7 +2,7 @@
 id: f00076
 title: "legacy/closed/ archive mechanism — reaper moves vintage done/ to legacy/closed/<kind>/ so the active done/ stays small while history stays preserved"
 kind: feat
-status: ready
+status: done
 type: proposal
 track: proposals+workflow
 date: 2026-07-26
