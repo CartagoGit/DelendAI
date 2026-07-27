@@ -4,3 +4,10 @@ hoist = ["vitest", "typescript", "@types/bun", "@types/node", "zod", "@modelcont
 [test]
 runner = "bun"
 coverage = false
+# x00162 S2: registers scss-plugin.ts globally so any `bun test` spec
+# that transitively imports a `.scss` file (shared webview-rendering
+# helpers) gets the same default+compiledCss export shape the
+# production Bun.build() bundle already produces via that same
+# plugin — without this, those specs fail with
+# "Export named 'compiledCss' not found".
+preload = ["./tools/scripts/compile/scss-preload.ts"]

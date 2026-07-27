@@ -6,7 +6,8 @@ import { scssPlugin } from './scss-plugin';
 
 interface IResolveArgs {
 	readonly path: string;
-	readonly resolveDir: string;
+	readonly resolveDir: string | undefined;
+	readonly importer: string;
 }
 
 interface ILoadArgs {
@@ -49,12 +50,47 @@ describe('scssPlugin', () => {
 			contents: string;
 			loader: string;
 		};
-		const module = (await import(
-			`data:text/javascript,${encodeURIComponent(loaded.contents)}`
-		)) as { default: string; compiledCss: string };
+		// A dynamic `import('data:text/javascript,...')` does not execute
+		// the module in this Bun version — it silently resolves `default`
+		// to the data: URL string itself instead of running the code
+		// (reproduced directly with `bun -e`, independent of this test
+		// runner). Writing to a real file and importing that path is the
+		// reliable way to actually execute generated module source.
+		const modulePath = join(directory, 'compiled.mjs');
+		await writeFile(modulePath, loaded.contents);
+		const module = (await import(modulePath)) as {
+			default: string;
+			compiledCss: string;
+		};
 		expect(loaded.loader).toBe('js');
 		expect(module.default).toBe(module.compiledCss);
 		expect(module.default).toContain('color: #5b8cff');
+	});
+
+	// x00162 S1 — a globally `Bun.plugin()`-registered instance (as
+	// opposed to one passed directly to `Bun.build()`) can invoke
+	// onResolve with an empty/undefined `resolveDir` for some import
+	// chains, even though Bun's own types declare it as always a
+	// string — reproduced live under `bun test --preload`. Falls back
+	// to `dirname(importer)`.
+	it('falls back to dirname(importer) when resolveDir is empty (global-plugin registration edge case)', async () => {
+		const directory = await mkdtemp(join(tmpdir(), 'mcp-vertex-scss-'));
+		temporaryDirectories.push(directory);
+		await writeFile(
+			join(directory, 'fixture.scss'),
+			'.fixture { color: red; }',
+		);
+
+		const { resolveCallback } = await registerPlugin();
+		const resolved = resolveCallback({
+			path: './fixture.scss',
+			resolveDir: '',
+			importer: join(directory, 'consumer.ts'),
+		}) as { path: string; namespace: string };
+		expect(resolved).toEqual({
+			path: join(directory, 'fixture.scss'),
+			namespace: 'mcp-vertex-scss',
+		});
 	});
 
 	it('fails the bundle when Sass is invalid', async () => {
