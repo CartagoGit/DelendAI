@@ -1,6 +1,49 @@
 import { appendFile, mkdir, readFile } from 'node:fs/promises';
 import { dirname } from 'node:path';
 
+/**
+ * x00154 S6 — typed error thrown by `readPeerReviewLog` when the
+ * file exists but is empty or cannot be read for any reason other
+ * than `ENOENT` (missing file). The previous `.catch(() => '')`
+ * collapsed three different states — missing, empty, and corrupt —
+ * into one silent empty-history outcome, which made it impossible
+ * for callers to tell "no peer review yet" from "the log is broken
+ * and we should refuse to make a decision".
+ *
+ * Callers should map this to `{ ok: false, error: 'no-log-readable' }`
+ * at the tool envelope layer.
+ */
+export class PeerReviewLogUnreadableError extends Error {
+	override readonly cause: unknown;
+	constructor(cause: unknown) {
+		super(`peer-review log is not readable: ${describeError(cause)}`);
+		this.name = 'PeerReviewLogUnreadableError';
+		this.cause = cause;
+	}
+}
+
+const describeError = (value: unknown): string => {
+	if (value === null || value === undefined) return String(value);
+	if (typeof value === 'string') return value;
+	if (
+		typeof value === 'object' &&
+		'message' in (value as Record<string, unknown>)
+	) {
+		const message = (value as { message?: unknown }).message;
+		if (typeof message === 'string') return message;
+	}
+	return String(value);
+};
+
+const isMissingFileErrno = (err: unknown): boolean => {
+	// x00154 S6 — only ENOENT is the legitimate "no log yet" state.
+	// ENOTDIR (parent path is a file) and EACCES/EIO/… are real
+	// read failures that the caller must surface, not paper over.
+	if (typeof err !== 'object' || err === null) return false;
+	const code = (err as { code?: unknown }).code;
+	return code === 'ENOENT';
+};
+
 export interface IPeerReviewTransitionLogEntry {
 	readonly kind: 'transition';
 	readonly ts: string;
@@ -79,8 +122,23 @@ export const recordProposalReviewAction = async (input: {
 export const readPeerReviewLog = async (
 	logPathAbs: string,
 ): Promise<readonly IPeerReviewLogEntry[]> => {
-	const raw = await readFile(logPathAbs, 'utf8').catch(() => '');
-	if (raw.trim() === '') return [];
+	let raw: string;
+	try {
+		raw = await readFile(logPathAbs, 'utf8');
+	} catch (err) {
+		// x00154 S6 — missing file is a legitimate "no history yet"
+		// state. Every other read failure (permissions, EIO, …) is
+		// surfaced via the typed error so callers can refuse to make
+		// a decision rather than silently treating it as empty.
+		if (isMissingFileErrno(err)) return [];
+		throw new PeerReviewLogUnreadableError(err);
+	}
+	if (raw.trim() === '') {
+		// x00154 S6 — an empty but present log is not the same as a
+		// missing log. Surface the difference so tool envelopes can
+		// map it to `{ ok: false, error: 'no-log-readable' }`.
+		throw new PeerReviewLogUnreadableError('empty peer-review log');
+	}
 	return raw
 		.split(/\r?\n/)
 		.map(parseEntry)
