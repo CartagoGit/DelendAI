@@ -167,7 +167,13 @@ describe('agent-lock file-level granularity', () => {
 		expect(body(secondResult).conflicting_task).toBe('task-a');
 	});
 
-	it('state_health reports livelock once disjoint contention exceeds 5s', async () => {
+	it('state_health reports livelock once disjoint contention exceeds the heartbeat × 2', async () => {
+		// f00154 S2 audit: the LIVELOCK_THRESHOLD used to be a hardcoded
+		// 5s, shorter than withFileMutex's default heartbeatMs (10s).
+		// Now the threshold is derived from `mutexStaleMs` so it scales
+		// with the heartbeat the holder is actually refreshing. With
+		// `mutexStaleMs: 2_500` here, `heartbeat = 833`, threshold ≈
+		// 1_666; a 6-second held lock exceeds that.
 		const startedAt = new Date(Date.now() - 6_000).toISOString();
 		await tryAcquireFileLocks({
 			agentId: 'agent-a',
@@ -187,6 +193,7 @@ describe('agent-lock file-level granularity', () => {
 			{
 				lockPath,
 				fileLockTablePath,
+				mutexStaleMs: 2_500,
 				now: () => startedAt,
 			},
 		);
@@ -203,6 +210,7 @@ describe('agent-lock file-level granularity', () => {
 			{
 				lockPath,
 				fileLockTablePath,
+				mutexStaleMs: 2_500,
 				now: () => escalatedAt,
 			},
 		);

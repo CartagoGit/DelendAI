@@ -73,7 +73,14 @@ const askConfirm = (
 	fallback: boolean,
 ): Promise<boolean> =>
 	new Promise((resolve) => {
-		const prompt = (): void => {
+		// Cap retries so a misconfigured TTY / pasted garbage cannot
+		// recurse indefinitely (an earlier fix used unbounded recursion
+		// here which crashed the process on the destructive
+		// `host-instructions: overwrite` prompt when the operator kept
+		// pasting garbage). Matches the 32-iter cap used by
+		// `collectPluginList` / `collectStringList` in this module.
+		let attempts = 0;
+		const askOnce = (): void => {
 			rl.question(
 				`${question} (y/n) [${fallback ? 'y' : 'n'}]: `,
 				(answer) => {
@@ -83,6 +90,13 @@ const askConfirm = (
 						return resolve(true);
 					if (trimmed === 'n' || trimmed === 'no')
 						return resolve(false);
+					attempts += 1;
+					if (attempts >= 32) {
+						process.stderr.write(
+							`Too many invalid answers — using default (${fallback ? 'y' : 'n'}).\n`,
+						);
+						return resolve(fallback);
+					}
 					// Anything else (typos like "ye" / "nn" / "maybe") used
 					// to silently fall through to `fallback` — an operator
 					// typing "ye" at the destructive `host-instructions:
@@ -93,11 +107,11 @@ const askConfirm = (
 					process.stderr.write(
 						`Unrecognised answer "${answer.trim()}" — please type y or n.\n`,
 					);
-					prompt();
+					askOnce();
 				},
 			);
 		};
-		prompt();
+		askOnce();
 	});
 
 const validatePluginId = (value: string): string | null => {

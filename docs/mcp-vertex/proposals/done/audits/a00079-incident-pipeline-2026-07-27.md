@@ -70,25 +70,25 @@ on cycles, `process.stderr.write` not handling broken pipes).
 
 ### S1 — Promote P0 fix proposal (severityToOutcome duplicated)
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `docs/mcp-vertex/proposals/ready/f00155-incident-pipeline-p0.md`
   (new — the follow-up fix proposal).
 
 ### S2 — Promote P0 fix proposal (extractFiles missing `paths` key)
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `docs/mcp-vertex/proposals/ready/f00155-incident-pipeline-p0.md`
   (same proposal; one root, two slices).
 
 ### S3 — Promote P1 fix proposal (redactValue cycle DoS + ILogsSink duplicate)
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `docs/mcp-vertex/proposals/ready/f00156-incident-pipeline-p1.md`
   (new — the P1 hardening proposal).
 
 ### S4 — Promote P2 fix proposal (process.stderr.write without EPIPE guard)
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `docs/mcp-vertex/proposals/ready/f00157-incident-pipeline-p2.md`
   (new — the P2 polish proposal).
 

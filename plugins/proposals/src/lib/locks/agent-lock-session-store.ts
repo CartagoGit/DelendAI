@@ -78,12 +78,32 @@ const readSessionLogPrefix = async (path: string): Promise<string> => {
 let cachedBalance: ISessionBalance | null = null;
 let cachedPath: string | null = null;
 
-export const sessionLogPath = (workspaceRootAbs?: string): string =>
-	join(
-		workspaceRootAbs ?? cwd(),
+/**
+ * Resolve the absolute path of the session log for a workspace.
+ *
+ * f00154 S2 audit: the previous version fell back to `process.cwd()`
+ * when the caller omitted `workspaceRootAbs`. That violated AGENTS.md
+ * ("no `process.cwd()`") and silently wrote session logs to whatever
+ * directory the host happened to be cwd'd to — a real bug in CI /
+ * orchestrator scenarios where the MCP server is launched from a
+ * different cwd than the consumer workspace. The function now refuses
+ * to compute a path without an explicit workspace root; callers
+ * without one must pass `null`/throw a typed error rather than
+ * contaminating the host cwd.
+ */
+export const sessionLogPath = (workspaceRootAbs: string): string => {
+	if (typeof workspaceRootAbs !== 'string' || workspaceRootAbs.length === 0) {
+		throw new Error(
+			'agent-lock-session-store: sessionLogPath requires a non-empty workspaceRootAbs. ' +
+				'Passing undefined / process.cwd() fallback is forbidden — see AGENTS.md.',
+		);
+	}
+	return join(
+		workspaceRootAbs,
 		'.cache/mcp-vertex',
 		'agents.lock.session.jsonl',
 	);
+};
 
 const isSessionEntry = (value: unknown): value is ISessionEntry => {
 	if (typeof value !== 'object' || value === null) return false;
@@ -137,7 +157,7 @@ const readSessionBalanceFromFile = async (
 
 export const appendSessionEntry = async (
 	entry: ISessionEntry,
-	workspaceRootAbs?: string,
+	workspaceRootAbs: string,
 ): Promise<void> => {
 	const path = sessionLogPath(workspaceRootAbs);
 	await withFileMutex(path, async () => {
@@ -149,7 +169,7 @@ export const appendSessionEntry = async (
 };
 
 export const readSessionBalance = async (
-	workspaceRootAbs?: string,
+	workspaceRootAbs: string,
 ): Promise<ISessionBalance> => {
 	const path = sessionLogPath(workspaceRootAbs);
 	try {
@@ -160,7 +180,7 @@ export const readSessionBalance = async (
 };
 
 export const readSessionBalanceSync = async (
-	workspaceRootAbs?: string,
+	workspaceRootAbs: string,
 ): Promise<ISessionBalance> =>
 	readSessionBalanceFromFile(sessionLogPath(workspaceRootAbs));
 

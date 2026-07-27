@@ -132,7 +132,7 @@ export const assemblePlugins = async (
 		);
 	});
 
-	const loadResult = await loadPlugins({
+	let loadResult: IPluginLoadResult = await loadPlugins({
 		specifiers: effectivePlugins,
 		workspaceRoot: args.workspace,
 		buildContext,
@@ -159,21 +159,23 @@ export const assemblePlugins = async (
 			import: importFn ?? nodeDynamicImport,
 		});
 		// Merge: every plugin from the original load survives, plus
-		// any from the auto-load that are not already there. We cast
-		// through the readonly modifier because `loadResult.loaded`
-		// is typed as immutable; the merge happens before the
-		// downstream consumers (`onTool*` wiring) read it.
-		const merged: Array<(typeof loadResult.loaded)[number]> = [
-			...loadResult.loaded,
-		];
-		const seen = new Set(merged.map((p) => p.plugin.name));
-		for (const entry of autoLoad.loaded) {
-			if (!seen.has(entry.plugin.name)) {
-				merged.push(entry);
-				seen.add(entry.plugin.name);
-			}
+		// any from the auto-load that are not already there. We
+		// rebuild `loadResult` as a NEW object with a fresh `loaded`
+		// array — the previous version cast through `readonly` and
+		// mutated the upstream immutable field, which lied to the
+		// type system and could surprise downstream consumers that
+		// snapshot `loadResult.loaded` once (f00154 S2 audit).
+		const seen = new Set(loadResult.loaded.map((p) => p.plugin.name));
+		const additions = autoLoad.loaded.filter(
+			(entry) => !seen.has(entry.plugin.name),
+		);
+		if (additions.length > 0) {
+			loadResult = {
+				...loadResult,
+				loaded: [...loadResult.loaded, ...additions],
+				errors: [...loadResult.errors, ...autoLoad.errors],
+			};
 		}
-		(loadResult as unknown as { loaded: ILoadedPlugin[] }).loaded = merged;
 	}
 
 	// Populate the peer-plugin registry now that we know the final

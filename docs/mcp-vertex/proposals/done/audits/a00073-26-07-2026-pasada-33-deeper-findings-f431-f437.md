@@ -179,7 +179,7 @@ detectó al cerrar a00072:
 - review-reviewer: delivery_verifier
 - review-log: approved by delivery_verifier — Slice S5 peer-reviewed and approved by delivery_verifier; landed commits verified against the close evidence in the proposal.
 ### S6 — `plugins/container/` commit atómico (F434 + f00133 S1)
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/container/src/` (entire plugin)
 - **Gate**: lint + type + bun --cwd plugins/container test
 - **Acceptance**:

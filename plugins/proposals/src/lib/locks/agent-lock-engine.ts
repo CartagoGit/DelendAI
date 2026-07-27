@@ -8,7 +8,8 @@
  * `DEFAULT_PATH_LAYOUT`.
  */
 
-import { readFile, readdir, rm, stat } from 'node:fs/promises';
+import { mkdir, readFile, readdir, rm, stat } from 'node:fs/promises';
+import { hostname } from 'node:os';
 import { basename, dirname, join } from 'node:path';
 
 import {
@@ -18,6 +19,7 @@ import {
 } from '@mcp-vertex/core/public';
 
 import { DEFAULT_PATH_LAYOUT } from '../contracts/constants/default-path-layout.constant';
+import { RELEASE_AUDIT_LOG_RELATIVE_PATH } from '../contracts/constants/agents-lock.constants';
 import {
 	addFileLocks,
 	deriveFileLockTablePath,
@@ -61,6 +63,13 @@ export type ILockEntry = {
 	started_at: string;
 	last_seen: string;
 	parent_task_id?: string;
+	// x00155 S2 / x00153 S5 — cross-process release tracking. Both
+	// fields are optional so locks persisted before the tracking was
+	// added (e.g. a host process that has not yet been restarted)
+	// still parse; the release handler treats missing fields as
+	// "backfill on next touch" rather than as a hard mismatch.
+	host?: string;
+	pid?: number;
 };
 
 export type ILockFile = {
@@ -89,6 +98,14 @@ export type IAgentLockDeps = {
 	fileLockTablePath?: string;
 	agentWorktreeEnabled?: boolean;
 	currentBranchOverride?: string;
+	/**
+	 * x00155 S2 / x00153 S5 — caller-host identity used to detect a
+	 * cross-process release after a host restart. Defaults to
+	 * `{ host: os.hostname(), pid: process.pid }`. Tests inject a
+	 * deterministic value to simulate the "new PID's
+	 * `vscode-copilot-m3` agent" scenario.
+	 */
+	nowHostId?: () => { host: string; pid: number };
 };
 
 export type IAgentLockResponse = {
@@ -96,26 +113,106 @@ export type IAgentLockResponse = {
 	isError?: boolean;
 };
 
+// x00155 S2 / x00153 S5 — one JSONL line per cross-process release.
+// Lives under `.cache/mcp-vertex/agents.lock.releases.jsonl`; operators
+// grep this to find host-restart patterns in production.
+export type IReleaseAuditEntry = {
+	readonly task_id: string;
+	readonly agent: string;
+	readonly originalHost: string | undefined;
+	readonly originalPid: number | undefined;
+	readonly releasingHost: string;
+	readonly releasingPid: number;
+	readonly ts: string;
+	readonly reason: 'cross-process release';
+};
+
+const resolveCallerHostId = (
+	deps: IAgentLockDeps,
+): { host: string; pid: number } => {
+	if (deps.nowHostId !== undefined) {
+		return deps.nowHostId();
+	}
+	return { host: hostname(), pid: process.pid };
+};
+
+const isMissingFileErrno = (err: unknown): boolean => {
+	if (typeof err !== 'object' || err === null) return false;
+	const code = (err as { code?: unknown }).code;
+	return code === 'ENOENT';
+};
+
+const appendReleaseAuditEntry = async (
+	entry: IReleaseAuditEntry,
+	workspaceRoot: string | undefined,
+): Promise<void> => {
+	if (workspaceRoot === undefined) return;
+	const auditPath = join(workspaceRoot, RELEASE_AUDIT_LOG_RELATIVE_PATH);
+	await withFileMutex(auditPath, async () => {
+		await mkdir(dirname(auditPath), { recursive: true });
+		try {
+			const prefix = await readFile(auditPath, 'utf8');
+			await writeFileAtomic(
+				auditPath,
+				`${prefix}${JSON.stringify(entry)}\n`,
+			);
+		} catch (err) {
+			if (isMissingFileErrno(err)) {
+				await writeFileAtomic(
+					auditPath,
+					`${JSON.stringify(entry)}\n`,
+				);
+				return;
+			}
+			throw err;
+		}
+	});
+};
+
 let lastSessionWorkspaceRoot: string | undefined;
-let lastKnownSessionBalance: ISessionBalance = {
+// f00154 S2 audit: the previous module-level single `lastKnownSessionBalance`
+// bled across workspaces when the same MCP server reused its process to
+// drive two workspaces sequentially (CI / orchestrator scenarios). After
+// workspace A's `agent_lock release`, the cached balance held A's numbers
+// and a subsequent read on workspace B reported A's session counters.
+// Key the cache by absolute workspace root so each workspace has its
+// own balance snapshot.
+const EMPTY_BALANCE: ISessionBalance = {
 	claims: 0,
 	releases: 0,
 	imbalance: 0,
 };
+const balanceByWorkspace = new Map<string, ISessionBalance>();
 
-export const getAgentLockSessionBalance = async (): Promise<{
+const knownBalanceFor = (workspaceRoot: string | undefined): ISessionBalance => {
+	if (workspaceRoot === undefined) return EMPTY_BALANCE;
+	return balanceByWorkspace.get(workspaceRoot) ?? EMPTY_BALANCE;
+};
+
+export const getAgentLockSessionBalance = async (
+	workspaceRootAbs?: string,
+): Promise<{
 	readonly claims: number;
 	readonly releases: number;
 	readonly imbalance: number;
 }> => {
-	lastKnownSessionBalance = await readSessionBalance(
-		lastSessionWorkspaceRoot,
-	);
-	return lastKnownSessionBalance;
+	// Prefer the explicit workspace root; fall back to the last-seen
+	// one (set by `runAgentLockEngine`); throw if neither is known.
+	const workspaceRoot =
+		workspaceRootAbs ?? lastSessionWorkspaceRoot;
+	if (typeof workspaceRoot !== 'string' || workspaceRoot.length === 0) {
+		throw new Error(
+			'agent-lock: getAgentLockSessionBalance requires a workspaceRootAbs (or a prior runAgentLockEngine call to seed it). ' +
+				'Refusing to read from process.cwd() — see AGENTS.md.',
+		);
+	}
+	const fresh = await readSessionBalance(workspaceRoot);
+	balanceByWorkspace.set(workspaceRoot, fresh);
+	return fresh;
 };
 
 export const resetAgentLockSessionBalance = async (): Promise<void> => {
-	lastKnownSessionBalance = { claims: 0, releases: 0, imbalance: 0 };
+	balanceByWorkspace.clear();
 	await resetSessionBalance();
 };
 
@@ -130,7 +227,22 @@ const resolveSessionWorkspaceRoot = (
 const CONTENTION_NEXT =
 	'Do not busy-poll agent_lock status. Call notification_await_lock (or wait for a lock-released notification via notify_status), then retry the claim once ownership is free.';
 
-const LIVELOCK_THRESHOLD_MS = 5_000;
+// f00154 S2 audit: the LIVELOCK_THRESHOLD used to be a hardcoded
+// 5_000ms — shorter than `withFileMutex`'s default heartbeatMs
+// (staleMs / 3, default 10_000ms when staleMs is 30_000ms). A holder
+// that was still alive but slow (e.g. a 6-second write under
+// contention) was therefore reported as a livelock even though the
+// mutex itself considered it live. Tie the threshold to the
+// heartbeat: a holder is only "stuck" after going two full
+// heartbeats without progress, which the heartbeat would have
+// refreshed at the next tick. When `mutexStaleMs` is not configured,
+// fall back to a safe default of 30s (matches withFileMutex's
+// `staleMs ?? 30_000`).
+const livelockThresholdMs = (deps: IAgentLockDeps): number => {
+	const staleMs = deps.mutexStaleMs ?? 30_000;
+	const heartbeatMs = Math.max(50, Math.floor(staleMs / 3));
+	return 2 * heartbeatMs;
+};
 const LIVELOCK_NEXT =
 	'Run proposals_state_health to inspect livelockPairs, then clear the stale file-lock state before retrying this claim.';
 
@@ -152,12 +264,18 @@ const lockResult = (
 	opts: {
 		isError?: boolean;
 		balance?: ISessionBalance;
+		workspaceRoot?: string;
 	} = {},
 ): IAgentLockResponse => {
 	const blocked = payload.blocked === true;
 	const isError = opts.isError === true;
 	const ok = !isError && !blocked;
-	const balance = opts.balance ?? lastKnownSessionBalance;
+	// Resolve the balance for the CURRENT workspace rather than the
+	// module-level singleton — the singleton used to bleed across
+	// workspaces when the same MCP server drove two workspaces
+	// sequentially (see `balanceByWorkspace` declaration above).
+	const balance =
+		opts.balance ?? knownBalanceFor(opts.workspaceRoot ?? lastSessionWorkspaceRoot);
 	const body = {
 		...payload,
 		ok,
@@ -207,7 +325,20 @@ const applyPersistedSessionBalance = async (
 	args: IAgentLockArgs,
 	deps: IAgentLockDeps,
 ): Promise<IAgentLockResponse> => {
+	// f00154 S2 audit: this function must NEVER throw — the underlying
+	// lock op has already succeeded by the time we get here, and a
+	// failure in the session-log write (disk full, EACCES on the
+	// .cache dir, …) used to bubble up and made the caller see the
+	// claim/release as failed when it actually succeeded. The lock
+	// outcome is encoded in `response`; treat telemetry as best-effort.
 	const workspaceRoot = resolveSessionWorkspaceRoot(deps);
+	if (typeof workspaceRoot !== 'string' || workspaceRoot.length === 0) {
+		// f00154 S2 audit: refuse to fall back to cwd() — without an
+		// explicit workspace root we cannot write the session log to the
+		// correct location. Skip telemetry and return the response
+		// untouched (the lock op already succeeded).
+		return response;
+	}
 	const raw = response.content[0]?.text;
 	if (typeof raw !== 'string') return response;
 	let payload: Record<string, unknown>;
@@ -216,38 +347,49 @@ const applyPersistedSessionBalance = async (
 	} catch {
 		return response;
 	}
-	if (
-		args.action === 'claim' &&
-		payload.claimed === true &&
-		payload.ok === true
-	) {
-		await appendSessionEntry(
-			{
-				ts: getNow(deps),
-				agent: String(payload.agent ?? args.agent ?? ''),
-				action: 'claim',
-				ok: true,
-			},
-			workspaceRoot,
+	try {
+		if (
+			args.action === 'claim' &&
+			payload.claimed === true &&
+			payload.ok === true
+		) {
+			await appendSessionEntry(
+				{
+					ts: getNow(deps),
+					agent: String(payload.agent ?? args.agent ?? ''),
+					action: 'claim',
+					ok: true,
+				},
+				workspaceRoot,
+			);
+		}
+		if (
+			args.action === 'release' &&
+			payload.released === true &&
+			payload.ok === true
+		) {
+			await appendSessionEntry(
+				{
+					ts: getNow(deps),
+					agent: String(payload.agent ?? 'unknown'),
+					action: 'release',
+					ok: true,
+				},
+				workspaceRoot,
+			);
+		}
+		const fresh = await readSessionBalance(workspaceRoot);
+		balanceByWorkspace.set(workspaceRoot, fresh);
+	} catch (telemetryError) {
+		// Telemetry failure: log on stderr and continue. The lock op's
+		// outcome lives in `response` and must not be invalidated by
+		// a session-log write.
+		process.stderr.write(
+			`agent_lock: session log update failed (${(telemetryError as Error).message}); lock op result preserved.\n`,
 		);
+		return response;
 	}
-	if (
-		args.action === 'release' &&
-		payload.released === true &&
-		payload.ok === true
-	) {
-		await appendSessionEntry(
-			{
-				ts: getNow(deps),
-				agent: String(payload.agent ?? 'unknown'),
-				action: 'release',
-				ok: true,
-			},
-			workspaceRoot,
-		);
-	}
-	lastKnownSessionBalance = await readSessionBalance(workspaceRoot);
-	return replaceSessionBalance(response, lastKnownSessionBalance);
+	return replaceSessionBalance(response, knownBalanceFor(workspaceRoot));
 };
 
 const getLockPath = (deps: IAgentLockDeps = {}): string => {
@@ -482,7 +624,7 @@ const maybeEscalateContention = async (params: {
 			: {}),
 		...getFileLockDeps(params.deps),
 	});
-	if (contention.heldMs <= LIVELOCK_THRESHOLD_MS) return null;
+	if (contention.heldMs <= livelockThresholdMs(params.deps)) return null;
 	return lockResult(
 		{
 			tool: params.toolName,
@@ -906,12 +1048,19 @@ async function executeLockAction(
 				summary: `lock-conflict: ${taskId} overlaps file lock ${acquired.conflictOn}`,
 			});
 		}
+		// x00155 S2 / x00153 S5 — stamp (host, pid) on the new
+		// in_flight entry so a later release can detect a host
+		// restart. The release handler treats a pid mismatch as a
+		// "host-restart cleanup" and writes an audit line.
+		const caller = resolveCallerHostId(deps);
 		lock.in_flight.push({
 			task_id: taskId,
 			agent,
 			ownership: files,
 			started_at: now,
 			last_seen: now,
+			host: caller.host,
+			pid: caller.pid,
 			...(args.parent_task_id !== undefined
 				? { parent_task_id: args.parent_task_id }
 				: {}),
@@ -938,6 +1087,56 @@ async function executeLockAction(
 		const existing = lock.in_flight.find(
 			(entry) => entry.task_id === taskId,
 		);
+
+		// x00155 S2 / x00153 S5 — caller-host awareness. When the
+		// recorded (host, pid) on the in_flight entry differs from
+		// the live caller's (host, pid), the original process is
+		// dead (host restart, MCP server crash, swap to a different
+		// shell). The new caller is the same agent by name — and is
+		// the legitimate release path — so we force-release and write
+		// a JSONL audit line under
+		// `.cache/mcp-vertex/agents.lock.releases.jsonl`.
+		const caller = resolveCallerHostId(deps);
+
+		// (1) Agent-name check. If the caller explicitly identifies
+		// itself as a different agent than the recorded holder, we
+		// refuse — the agent name is the stable identity across
+		// process restarts, so a mismatch means a different agent
+		// is trying to release someone else's claim. When the
+		// caller omits `agent`, we keep the pre-fix behaviour and
+		// skip the identity check.
+		if (
+			existing !== undefined &&
+			typeof args.agent === 'string' &&
+			args.agent !== existing.agent
+		) {
+			return lockResult(
+				{
+					tool: toolName,
+					action: 'release',
+					task_id: taskId,
+					agent: existing.agent,
+					path: lockFileLabel,
+					lock_path: lockPath,
+					error: `release refused: caller agent "${args.agent}" does not match the recorded holder agent "${existing.agent}"`,
+					blockerType: 'invalid-input',
+					nextAction:
+						'Pass the agent name that originally claimed the lock, or omit the agent arg to use the recorded holder.',
+					summary: `release refused: agent mismatch for ${taskId}`,
+				},
+				{ isError: true },
+			);
+		}
+
+		// (2) Pid mismatch detection. The recorded entry is from a
+		// dead process when pid is set on the entry AND pid does not
+		// match the live caller. (Entries without pid pre-date the
+		// tracking and are released normally — the caller's choice.)
+		const isCrossProcess =
+			existing !== undefined &&
+			typeof existing.pid === 'number' &&
+			existing.pid !== caller.pid;
+
 		await removeFileLocksForTask({ taskId, tablePath });
 		if (existing !== undefined) {
 			await resolveTrackedContentions(
@@ -951,18 +1150,44 @@ async function executeLockAction(
 		);
 		const dropped = before - lock.in_flight.length;
 		await writeLockWithMutex(lock, args, deps);
+
+		// (3) Audit log. Only when the entry was actually removed AND
+		// we detected a host/pid mismatch — the audit line is the
+		// operator's signal that a host restart reclaimed a claim.
+		if (isCrossProcess && dropped > 0 && existing !== undefined) {
+			await appendReleaseAuditEntry(
+				{
+					task_id: taskId,
+					agent: existing.agent,
+					originalHost: existing.host,
+					originalPid: existing.pid,
+					releasingHost: caller.host,
+					releasingPid: caller.pid,
+					ts: getNow(deps),
+					reason: 'cross-process release',
+				},
+				resolveSessionWorkspaceRoot(deps),
+			);
+		}
+
 		return lockResult({
 			tool: toolName,
 			action: 'release',
 			task_id: taskId,
 			...(existing !== undefined ? { agent: existing.agent } : {}),
+			...(isCrossProcess ? { cross_process_release: true } : {}),
+			...(isCrossProcess && existing !== undefined
+				? { original_pid: existing.pid }
+				: {}),
 			path: lockFileLabel,
 			lock_path: lockPath,
 			removed: dropped,
 			released: dropped > 0,
 			summary:
 				dropped > 0
-					? `released ${taskId}`
+					? isCrossProcess
+						? `released ${taskId} (cross-process; original pid ${existing?.pid} → releasing pid ${caller.pid})`
+						: `released ${taskId}`
 					: `no active claim for ${taskId}`,
 		});
 	}

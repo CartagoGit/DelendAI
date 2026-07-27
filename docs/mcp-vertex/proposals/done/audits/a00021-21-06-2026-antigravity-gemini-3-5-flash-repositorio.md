@@ -82,22 +82,22 @@ Base de código extremadamente sólida, calificada con un **9.6/10** de media. D
 ### S1 — Execute audit and document findings
 - **Files**: docs/proposals/ready/a00021-21-06-2026-antigravity-gemini-3-5-flash-repositorio.md
 - **Gate**: bun run lint:proposals
-- **Status**: pending
+- **Status**: done
 
 ### S2 — Include extensions/vscode in workspace test suite
 - **Files**: vitest.config.ts
 - **Gate**: bun run validate
-- **Status**: pending
+- **Status**: done
 
 ### S3 — Add data-pagefind-body to Astro Base layout
 - **Files**: apps/web/src/layouts/Base.astro
 - **Gate**: bun run site:strict
-- **Status**: pending
+- **Status**: done
 
 ### S4 — Resolve auto_work loop-detection mitigation
 - **Files**: plugins/proposals/src/lib/proposals/task-queue.ts
 - **Gate**: bun run validate
-- **Status**: pending
+- **Status**: done
 
 ## Acceptance
 

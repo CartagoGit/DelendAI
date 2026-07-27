@@ -5,6 +5,8 @@ import type {
 	IToolRegistration,
 } from '@mcp-vertex/core/public';
 
+import { dirname, basename } from 'node:path';
+
 import {
 	getAgentLockSessionBalance,
 	runAgentLockEngine,
@@ -56,6 +58,16 @@ const AGENT_LOCK_ENTRY_OUTPUT_SCHEMA = z.object({
 	parent_task_id: z.string().optional(),
 });
 
+/**
+ * Derive the workspace root from `lockPathAbs`. Mirrors the engine's
+ * own `resolveSessionWorkspaceRoot` so the tool layer doesn't need
+ * `process.cwd()` lookups when stamping the session balance.
+ */
+const deriveWorkspaceRoot = (lockPathAbs: string): string => {
+	const parent = dirname(lockPathAbs);
+	return basename(parent) === '.cache' ? dirname(parent) : parent;
+};
+
 const AGENT_LOCK_OUTPUT_SCHEMA = z.object({
 	tool: z.string().optional(),
 	action: z.enum(['claim', 'release', 'status', 'gc']).optional(),
@@ -77,6 +89,12 @@ const AGENT_LOCK_OUTPUT_SCHEMA = z.object({
 	summary: z.string().optional(),
 	refreshed: z.boolean().optional(),
 	ownership_count: z.number().optional(),
+	// x00155 S2 / x00153 S5 — when `release` detects a caller-host
+	// mismatch (recorded pid != live pid), the engine stamps
+	// `cross_process_release: true` and echoes the original pid so
+	// operators can tell host-restart cleanups from normal releases.
+	cross_process_release: z.boolean().optional(),
+	original_pid: z.number().optional(),
 	blocked: z.boolean().optional(),
 	blocked_reason: z.string().optional(),
 	conflicting_task: z.string().optional(),
@@ -229,7 +247,9 @@ export const buildAgentLockRegistration = (
 								typeof base.ok === 'boolean'
 									? base.ok
 									: res.isError !== true && !blocked;
-							const balance = await getAgentLockSessionBalance();
+							const balance = await getAgentLockSessionBalance(
+								deriveWorkspaceRoot(options.lockPathAbs),
+							);
 							const session =
 								typeof base.session === 'object' &&
 								base.session !== null
