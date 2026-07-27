@@ -144,9 +144,9 @@ a shorter compact entrypoint.
     docs cuyo digest no haya cambiado'."
 - status: done
 ### S3 — Skill `mcp-vertex-conventional-commits-and-release`
-- **Files**: `skills/mcp-vertex-conventional-commits-and-release/SKILL.md`
-  (nuevo).
-- **Status**: pending
+- **Files**: `packages/core/skills/conventional-commits-and-release/SKILL.md`.
+- **Status**: done
+- **Note (x00155 S4, 2026-07-27)**: landed as a real package skill at `packages/core/skills/conventional-commits-and-release/` rather than the originally-planned `skills/mcp-vertex-conventional-commits-and-release/` path; content verified — carries the commit-type → semver-bump table, `derive-version.ts` as single source of truth, and the dry-run → --write → tag → publish flow.
 - **Gate**: `bun run validate`
 - **Acceptance**:
   - "Tabla `commit type → semver bump`: `fix:` → patch, `feat:` →
@@ -160,7 +160,6 @@ a shorter compact entrypoint.
   - "Riesgos: `fix:` mal clasificado como `feat:` (minor indebido),
     `chore:` rompiendo Conventional Commits (default patch pero CI
     puede fallar el lint)."
-- status: done
 ### S4 — Skill `mcp-vertex-token-budget-discipline`
 - **Files**: `skills/mcp-vertex-token-budget-discipline/SKILL.md`
   (nuevo).

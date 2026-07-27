@@ -1648,6 +1648,8 @@ export interface McpVertexProposalsAgentLockOutput {
 	summary?: string;
 	refreshed?: boolean;
 	ownership_count?: number;
+	cross_process_release?: boolean;
+	original_pid?: number;
 	blocked?: boolean;
 	blocked_reason?: string;
 	conflicting_task?: string;

@@ -114,33 +114,33 @@ We cannot — it is an external process. The next best thing is to make its comm
 
 Create `tools/scripts/install-claim-hooks.script.ts` and the two hook templates. Wire the installer into `bun install` via the `prepare` script. Verify by editing a file outside an active claim and confirming `git commit` blocks.
 
-- **Status**: pending
+- **Status**: done
+- **Note (x00155 S3, 2026-07-27)**: shipped via a different, later mechanism than the raw `.sh` hooks originally spec'd here — the repo migrated all git hooks to lefthook, and the claim check itself lives at `tools/scripts/hooks/pre-commit.ts` (TypeScript, per the repo's tools/scripts-are-TypeScript-exclusive convention), invoked as lefthook's `format-staged`-adjacent command. Same enforcement point (pre-commit), different implementation substrate.
 - **Files**:
-    - `tools/scripts/install-claim-hooks.script.ts` [NEW]
-    - `tools/scripts/hooks/pre-commit.sh` [NEW]
-    - `tools/scripts/hooks/pre-push.sh` [NEW]
-    - `package.json` [MODIFY — add `prepare` step]
+    - `tools/scripts/hooks/pre-commit.ts` [shipped in place of the originally-planned `.sh` templates]
+    - `lefthook.yml` [installs the hook; replaces the originally-planned `install-claim-hooks.script.ts` + `prepare` wiring]
 - **Gate**: bun run test
 
 ### S2 — `lint:agents` step in `bun run validate`
 
 Create the lint script and its spec. Wire into `validate` so any tracked file modified without a claim makes the gate fail. Add `lint:agents` to `package.json` scripts and to the `validate` chain.
 
-- **Status**: pending
+- **Status**: done
+- **Note (x00155 S3, 2026-07-27)**: shipped as `lint:agent-claims` (`tools/scripts/lint/agent-claims.script.ts` + `.spec.ts`), not literally named `lint:agents` (that name was later reused for an unrelated `agent-redirector-contract` check). `AGENT-BOOTSTRAP.md` §6 documents `lint:agent-claims` as the enforcement gate.
 - **Files**:
-    - `tools/scripts/lint/agent-claims.script.ts` [NEW]
-    - `tools/scripts/lint/agent-claims.spec.ts` [NEW]
-    - `package.json` [MODIFY — add `lint:agents`, wire into `validate`]
+    - `tools/scripts/lint/agent-claims.script.ts`
+    - `tools/scripts/lint/agent-claims.spec.ts`
 - **Gate**: bun run validate
 
 ### S3 — Skill + bootstrap documentation refresh
 
 Add the "Closing a slice" sub-section to `multi-agent-coordination/SKILL.md` and the one-liner to `docs/mcp-vertex/AGENT-BOOTSTRAP.md`. The documentation changes are minimal: 2 paragraphs + 1 sentence.
 
-- **Status**: pending
+- **Status**: done
+- **Note (x00155 S3, 2026-07-27)**: both already present — `multi-agent-coordination/SKILL.md` has a "Closing a slice" section (naming `proposals_force_transition` + the commit SHA convention) and `AGENT-BOOTSTRAP.md` §6 has the `agent_lock` claim invariant with the `lint:agent-claims` gate named explicitly.
 - **Files**:
-    - `plugins/proposals/skills/multi-agent-coordination/SKILL.md` [MODIFY]
-    - `docs/mcp-vertex/AGENT-BOOTSTRAP.md` [MODIFY]
+    - `plugins/proposals/skills/multi-agent-coordination/SKILL.md`
+    - `docs/mcp-vertex/AGENT-BOOTSTRAP.md`
 - **Gate**: bun run lint:proposals
 
 ## acceptance

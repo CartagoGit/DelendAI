@@ -45,42 +45,39 @@ The audit `a00043` identified that:
 
 Run type/schema generation to resolve the test failure in `tool-types-sdk.spec.ts`.
 
-- **Status**: pending
+- **Status**: done
 - **Files**:
     - `packages/core/src/generated/tool-outputs.ts`
 - **Gate**: bun run validate
-- status: done
 ### S2 — Relocate shipped proposal f00058
 
 Move the completed proposal `f00058` to its canonical location under `done/feats/`.
 
-- **Status**: pending
+- **Status**: done
+- **Note (x00155 S3, 2026-07-27)**: moot as originally scoped — `f00058` (canonical-ephemeral-exec-paths) was renumbered to `done/feats/f00080-canonical-ephemeral-exec-paths-in-plugin-cache.md` rather than moved under its original id. The `f00058` id slot itself is unused (no file currently occupies it). Closing this slice on the renumbered outcome rather than the literal file move described below.
 - **Files**:
-    - `docs/mcp-vertex/proposals/done/feats/f00058-canonical-ephemeral-exec-paths-in-plugin-cache.md` [NEW]
-    - `docs/mcp-vertex/proposals/in-progress/f00058-canonical-ephemeral-exec-paths-in-plugin-cache.md` [DELETE]
+    - `docs/mcp-vertex/proposals/done/feats/f00080-canonical-ephemeral-exec-paths-in-plugin-cache.md` [renumbered from f00058, not a literal path match]
 - **Gate**: bun run lint:proposals
-- status: done
 ### S3 — Correct styling and folder alignment of warned proposals f00070 and x00074
 
 Reorder sections, add missing fields to slices, and move `x00074` to `paused/fixes/` folder to resolve all warnings from `lint:proposals`.
 
-- **Status**: pending
+- **Status**: done
+- **Note (x00155 S3, 2026-07-27)**: both proposals shipped to full completion rather than being merely re-styled/paused — `f00070` lives at `done/feats/f00070-status-marker-bilingual-rendering.md` and `x00074` lives at `done/fixes/x00074-loop-detector-distinguish-backoff-from-stuck.md`. `bun tools/scripts/lint/proposals.script.ts` reports 0 fatal errors on both, so the original "resolve lint warnings" goal is met by their completion.
 - **Files**:
-    - `docs/mcp-vertex/proposals/ready/f00070-status-marker-bilingual-rendering.md`
-    - `docs/mcp-vertex/proposals/paused/fixes/x00074-loop-detector-distinguish-backoff-from-stuck.md` [NEW]
-    - `docs/mcp-vertex/proposals/ready/x00074-loop-detector-distinguish-backoff-from-stuck.md` [DELETE]
+    - `docs/mcp-vertex/proposals/done/feats/f00070-status-marker-bilingual-rendering.md`
+    - `docs/mcp-vertex/proposals/done/fixes/x00074-loop-detector-distinguish-backoff-from-stuck.md`
 - **Gate**: bun run lint:proposals
-- status: done
 ### S4 — Support Hex, Composer, and Luarocks registry parsing in online-preset
 
 Expand the JSON parsing logic in `fetchOnlinePresetInfo` to correctly extract the latest package version for Hex (Elixir Credo), Composer (PHP phpstan), and Luarocks (Lua luacheck), and update their specs to assert the actual returned version instead of the fallback '1.0.0'.
 
-- **Status**: pending
+- **Status**: done
+- **Verified (x00155 S3, 2026-07-27)**: `plugins/rules/src/lib/frameworks/online-preset.ts` resolves real `hex.pm`/`repo.packagist.org`/`luarocks.org` endpoints; `plugins/rules/tests/src/lib/online-preset.spec.ts` asserts the real URLs (not the `'1.0.0'` stub) for all three.
 - **Files**:
     - `plugins/rules/src/lib/frameworks/online-preset.ts`
     - `plugins/rules/tests/src/lib/online-preset.spec.ts`
 - **Gate**: bun run test
-- status: done
 ## acceptance
 
 - `bun run validate` passes successfully with no errors or warnings.
