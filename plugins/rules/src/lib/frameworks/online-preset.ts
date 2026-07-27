@@ -407,11 +407,11 @@ const fetchOnlinePresetInfoUnchecked = async (
 		}
 
 		return { ok: true, package: pkg, version: '' };
-	} catch (err: any) {
+	} catch (err: unknown) {
 		return {
 			ok: false,
 			package: pkg,
-			reason: `failed to parse response: ${err.message}`,
+			reason: `failed to parse response: ${err instanceof Error ? err.message : String(err)}`,
 		};
 	}
 };
