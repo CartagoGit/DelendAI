@@ -22,6 +22,7 @@ import { describe, expect, it } from 'vitest';
 import {
 	escapeRegExp,
 	kebab,
+	slugFromTitle,
 } from '@mcp-vertex/proposals/lib/shared/string-helpers';
 
 describe('escapeRegExp', async () => {
@@ -88,5 +89,43 @@ describe('kebab', async () => {
 	it('preserves digits as-is', async () => {
 		expect(kebab('S1 S2 S3')).toBe('s1-s2-s3');
 		expect(kebab('42')).toBe('42');
+	});
+
+	// x00157 S1 — documents (does not fix) the ASCII-only asymmetry:
+	// non-ASCII titles collapse to '', truncate, or drop characters.
+	// The fix lives in the caller via `slugFromTitle`, not here.
+	it('documents the non-ASCII asymmetry that motivated slugFromTitle', async () => {
+		expect(kebab('提案')).toBe('');
+		expect(kebab('привет')).toBe('');
+		expect(kebab('你好')).toBe('');
+		expect(kebab('café')).toBe('caf');
+		expect(kebab('🚀 emoji')).toBe('emoji');
+	});
+});
+
+describe('slugFromTitle', async () => {
+	it('returns the kebab slug for an ordinary ASCII title', async () => {
+		expect(slugFromTitle('My Cool Slice', 'f00042')).toBe('my-cool-slice');
+	});
+
+	it('falls back to the given id for a non-ASCII title (the collision fix)', async () => {
+		expect(slugFromTitle('提案', 'f00042')).toBe('f00042');
+		expect(slugFromTitle('привет', 'f00001')).toBe('f00001');
+	});
+
+	it('falls back for an empty or whitespace-only title', async () => {
+		expect(slugFromTitle('', 'x00099')).toBe('x00099');
+		expect(slugFromTitle('   ', 'x00099')).toBe('x00099');
+	});
+
+	it('two different non-ASCII titles with the same fallback id would collide — callers must pass a per-item-unique fallback', async () => {
+		// Documents the contract: slugFromTitle itself cannot invent
+		// uniqueness it wasn't given. Callers building filenames use the
+		// already-unique proposal id; callers building dedup keys for
+		// MULTIPLE items in one file (migrate-foreign.ts) must include
+		// an extra positional discriminator in the fallback they pass.
+		expect(slugFromTitle('提案', 'shared-fallback')).toBe(
+			slugFromTitle('审核', 'shared-fallback'),
+		);
 	});
 });

@@ -24,7 +24,7 @@ import {
 	writeFileAtomic,
 } from '@mcp-vertex/core/public';
 
-import { kebab } from '../shared/string-helpers';
+import { slugFromTitle } from '../shared/string-helpers';
 import { allocateNextProposalId } from './proposal-id-allocator';
 
 export interface IMigrateForeignOptions {
@@ -111,7 +111,13 @@ const parseChecklistShape = (
 	for (const match of matches) {
 		const checked = match[1] !== ' ';
 		const title = (match[2] ?? '').trim();
-		const source = `${rel}#${kebab(title)}`;
+		// x00157 S1: `kebab(title)` collapses to '' for any non-ASCII
+		// title, which would make every non-ASCII checklist item in the
+		// SAME source file collide on `${rel}#` and get silently
+		// deduped against each other via `alreadyMigrated.has(...)`.
+		// `match.index` (this occurrence's character offset in `text`)
+		// is unique per checklist item regardless of title content.
+		const source = `${rel}#${slugFromTitle(title, `item-${match.index ?? 0}`)}`;
 		if (checked) {
 			skipped.push({
 				source,
@@ -310,7 +316,7 @@ export const migrateForeign = async (
 				counterPathAbs: options.counterPathAbs,
 			});
 			const folder = candidate.status === 'done' ? 'done' : 'ready';
-			const filename = `${id}-${kebab(candidate.title)}.md`;
+			const filename = `${id}-${slugFromTitle(candidate.title, id)}.md`;
 			const targetAbs = join(options.proposalsDirAbs, folder, filename);
 			const { text: safeBody } = redactSecrets(
 				renderProposal(id, candidate, kind),
