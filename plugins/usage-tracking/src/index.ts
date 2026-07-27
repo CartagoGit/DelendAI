@@ -190,6 +190,9 @@ export default definePlugin({
 		const buffer = new RecordBuffer(invocationsPath, {
 			maxBatch,
 			maxDelayMs,
+			// x00156 S3: surface append failures on the structured
+			// incident stream, not just stderr.
+			logs: ctx.logs,
 		});
 		const clock = new StartClock();
 		const corePrefix = deriveCorePrefix(ctx.namespacePrefix);
