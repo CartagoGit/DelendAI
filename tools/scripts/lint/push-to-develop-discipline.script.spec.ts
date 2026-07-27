@@ -23,8 +23,10 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+	lintPrePushStdinUpdates,
 	lintPushToDevelop,
 	parseGitPushArgs,
+	parsePrePushStdin,
 } from './push-to-develop-discipline.script';
 
 describe('lintPushToDevelop', () => {
@@ -155,5 +157,127 @@ describe('parseGitPushArgs', () => {
 		);
 		expect(parsed.remote).toBe('origin');
 		expect(parsed.remoteBranch).toBe('develop');
+	});
+});
+
+// x00159 S1 — git's real pre-push hook contract passes ref updates on
+// STDIN (`<local ref> <local oid> <remote ref> <remote oid>`), not as
+// a third CLI argument. lefthook's `{3}` template has nothing to
+// substitute for a plain `git push`, so it shipped the literal string
+// `"{3}"` as argv[2] — which `parseGitPushArgs` happily parsed as a
+// branch named `{3}` (not `develop`), silently defeating the guard
+// for exactly the case it exists to catch. These tests pin the real
+// contract instead.
+describe('parsePrePushStdin', () => {
+	it('parses a single ref-update line', () => {
+		const updates = parsePrePushStdin(
+			'refs/heads/develop aaaa000000000000000000000000000000000a refs/heads/develop bbbb000000000000000000000000000000000b\n',
+		);
+		expect(updates).toEqual([
+			{
+				localRef: 'refs/heads/develop',
+				localSha: 'aaaa000000000000000000000000000000000a',
+				remoteRef: 'refs/heads/develop',
+				remoteSha: 'bbbb000000000000000000000000000000000b',
+			},
+		]);
+	});
+
+	it('parses multiple ref-update lines (multi-ref push)', () => {
+		const stdin = [
+			'refs/heads/develop aaaa000000000000000000000000000000000a refs/heads/develop bbbb000000000000000000000000000000000b',
+			'refs/heads/agent/x cccc000000000000000000000000000000000c refs/heads/agent/x dddd000000000000000000000000000000000d',
+		].join('\n');
+		expect(parsePrePushStdin(stdin)).toHaveLength(2);
+	});
+
+	it('ignores blank lines and malformed lines', () => {
+		const stdin = [
+			'',
+			'   ',
+			'not-four-fields',
+			'refs/heads/develop aaaa000000000000000000000000000000000a refs/heads/develop bbbb000000000000000000000000000000000b',
+		].join('\n');
+		expect(parsePrePushStdin(stdin)).toHaveLength(1);
+	});
+
+	it('returns an empty list for empty stdin (no push in flight)', () => {
+		expect(parsePrePushStdin('')).toEqual([]);
+	});
+});
+
+describe('lintPrePushStdinUpdates', () => {
+	const ZERO_SHA = '0'.repeat(40);
+	const SHA_A = 'a'.repeat(40);
+	const SHA_B = 'b'.repeat(40);
+
+	it('blocks a real develop → origin/develop update (the bug this fixes)', () => {
+		const result = lintPrePushStdinUpdates([
+			{
+				localRef: 'refs/heads/develop',
+				localSha: SHA_A,
+				remoteRef: 'refs/heads/develop',
+				remoteSha: SHA_B,
+			},
+		]);
+		expect(result.ok).toBe(false);
+	});
+
+	it('allows an agent branch pushed to origin/develop (PR-merge shape)', () => {
+		const result = lintPrePushStdinUpdates([
+			{
+				localRef: 'refs/heads/agent/copilot-minimax-m3',
+				localSha: SHA_A,
+				remoteRef: 'refs/heads/develop',
+				remoteSha: SHA_B,
+			},
+		]);
+		expect(result.ok).toBe(true);
+	});
+
+	it('allows develop pushed to a non-develop remote branch', () => {
+		const result = lintPrePushStdinUpdates([
+			{
+				localRef: 'refs/heads/develop',
+				localSha: SHA_A,
+				remoteRef: 'refs/heads/feature/x',
+				remoteSha: SHA_B,
+			},
+		]);
+		expect(result.ok).toBe(true);
+	});
+
+	it('does not block a branch delete (all-zero local oid)', () => {
+		const result = lintPrePushStdinUpdates([
+			{
+				localRef: '(delete)',
+				localSha: ZERO_SHA,
+				remoteRef: 'refs/heads/develop',
+				remoteSha: SHA_B,
+			},
+		]);
+		expect(result.ok).toBe(true);
+	});
+
+	it('allows an empty update list (no push in flight)', () => {
+		expect(lintPrePushStdinUpdates([]).ok).toBe(true);
+	});
+
+	it('blocks on the first offending ref in a multi-ref push', () => {
+		const result = lintPrePushStdinUpdates([
+			{
+				localRef: 'refs/heads/agent/x',
+				localSha: SHA_A,
+				remoteRef: 'refs/heads/agent/x',
+				remoteSha: SHA_B,
+			},
+			{
+				localRef: 'refs/heads/develop',
+				localSha: SHA_A,
+				remoteRef: 'refs/heads/develop',
+				remoteSha: SHA_B,
+			},
+		]);
+		expect(result.ok).toBe(false);
 	});
 });
