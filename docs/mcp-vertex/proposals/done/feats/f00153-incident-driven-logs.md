@@ -2,7 +2,7 @@
 id: f00153
 title: "incident-driven logs — severity taxonomy + logs_log + logs_search + logs_incidents"
 kind: feat
-status: ready
+status: done
 type: proposal
 track: plugins/logs
 date: 2026-07-26
@@ -61,7 +61,7 @@ Three independent additions, each at the smallest layer that buys the property:
 
 ### S1 — Severity taxonomy + `incidentType` on `ILogEvent`
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/logs/src/lib/services/normalize-event.ts` (extend `ILogEvent` with `severity: LogSeverity` + `incidentType: string | null`; add `LogSeverity` enum; expose `IncidentType` type), `plugins/logs/src/lib/services/kinds.ts` (new — `kind → incidentType` default table; `severityForOutcome()` mapper), `plugins/logs/src/lib/services/normalize-event.spec.ts` (new — coverage for all 7 severities and the 20 kinds), `plugins/logs/src/lib/tools/tools.ts` (extend `LogEventSchema` with the two fields), `plugins/logs/tests/src/lib/services/normalize-event.spec.ts` (extend existing tests).
 - **Gate**: type + verify
 - **Acceptance**:
@@ -74,7 +74,7 @@ Three independent additions, each at the smallest layer that buys the property:
 
 ### S2 — `logs_log` (write-side) + `logs_search` (content search)
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/logs/src/lib/tools/tools.ts` (add two new tool registrations: `log` and `search`), `plugins/logs/src/lib/services/log-store.ts` (add `appendEvent` reader-only alias if needed; expose existing `appendEvent` for the write-side), `plugins/logs/src/lib/services/log-search.ts` (new — regex / text scan over `summary`, `meta.error.message`, `meta.error.stack`, `meta.args`, `meta.result`), `plugins/logs/src/lib/services/log-store.spec.ts` (extend), `plugins/logs/tests/src/lib/tools/log-tool.spec.ts` (new), `plugins/logs/tests/src/lib/tools/search-tool.spec.ts` (new).
 - **Gate**: type + verify
 - **Acceptance**:
@@ -87,7 +87,7 @@ Three independent additions, each at the smallest layer that buys the property:
 
 ### S3 — `logs_incidents` (auto-detector) + projection of new fields across all tools
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/logs/src/lib/services/log-incidents.ts` (new — clustering logic), `plugins/logs/src/lib/tools/tools.ts` (add `incidents` tool registration; extend `LogEventSchema` projection to `query`/`tail`/`errors_tail`/`correlate`/`subscribe` outputs), `plugins/logs/tests/src/lib/services/log-incidents.spec.ts` (new), `plugins/logs/tests/src/lib/tools/incidents-tool.spec.ts` (new).
 - **Gate**: type + verify
 - **Acceptance**:
@@ -101,7 +101,7 @@ Three independent additions, each at the smallest layer that buys the property:
 
 ### S4 — Cross-plugin `ctx.logs.log` helper + knowledge update
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/src/lib/plugins/plugin-context.ts` (or equivalent — add `logs?: { log(input): Promise<void> }` to the plugin context), `plugins/logs/src/index.ts` (the `register()` hook now exposes `logs` to downstream plugins via `ctx`; the helper is just a thin wrapper around the same `appendEvent` used internally), `plugins/logs/src/lib/knowledge/logs-knowledge.ts` (new — extracted from the existing inline body in `index.ts`), `plugins/logs/src/index.ts` (rewrite the inline `knowledge` body to delegate to the new module), `plugins/logs/README.md` (document the new tools).
 - **Gate**: type + docs
 - **Acceptance**:

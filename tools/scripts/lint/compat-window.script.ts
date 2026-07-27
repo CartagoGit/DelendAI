@@ -138,6 +138,7 @@ const main = async (): Promise<number> => {
 	const inputs: { absPath: string; imports: readonly string[] }[] = [];
 	for (const abs of files) {
 		if (!abs.includes('/tools/')) continue;
+		if (abs.endsWith('.spec.ts') || abs.endsWith('.test.ts')) continue;
 		const source = await readFile(abs, 'utf8').catch(() => '');
 		inputs.push({ absPath: abs, imports: extractImports(source) });
 	}
