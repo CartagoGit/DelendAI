@@ -177,6 +177,23 @@ const verifyPlugin = async (
 	const pluginOwned = tools.filter((t) => t.id.includes(`_${pluginName}_`));
 	const results: IVerifyResult[] = [];
 	if (pluginOwned.length === 0) {
+		// f00030-protect-verify-tools: plugins that ship only prompts
+		// or skills (e.g. `prompts-pack`, `skills-pack`) legitimately
+		// register zero tools. Report them as `ok` so the harness does
+		// not punish the plugin for a non-regression — verify:tools is
+		// for the tool surface; prompts/skills have their own contract
+		// suites.
+		if (bed.promptsCount > 0 || bed.skillsCount > 0) {
+			return [
+				{
+					plugin: pluginName,
+					tool: '(prompts/skills-only)',
+					schemaCompatible: 'ok' as const,
+					handlerReturned: true,
+					detail: `plugin ships ${bed.promptsCount} prompt(s) + ${bed.skillsCount} skill(s), no tools (verify:tools covers the tool surface only)`,
+				},
+			];
+		}
 		results.push({
 			plugin: pluginName,
 			tool: '(no-plugin-tools)',
