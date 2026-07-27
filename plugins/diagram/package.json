@@ -54,7 +54,9 @@
 	},
 	"dependencies": {
 		"@modelcontextprotocol/sdk": "^1.29.0",
-		"zod": "^4.4.3"
+		"zod": "^4.4.3",
+		"@mcp-vertex/database": "workspace:*",
+		"@mcp-vertex/proposals": "workspace:*"
 	},
 	"devDependencies": {
 		"@mcp-vertex/core": "workspace:*",
