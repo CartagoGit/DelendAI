@@ -5,6 +5,39 @@ import { writeFileAtomic, withFileMutex } from '@mcp-vertex/core/public';
 
 import { DEFAULT_PATH_LAYOUT } from '../contracts/constants/default-path-layout.constant';
 
+/**
+ * x00154 S5 — typed error thrown (and surfaced to the operator) when
+ * the contention file at `path` contains invalid JSON. Callers can
+ * distinguish a corrupt contention file (`LocksFileCorruptError`)
+ * from a missing one (`ENOENT`) or a downstream write failure.
+ */
+export class LocksFileCorruptError extends Error {
+	readonly path: string;
+	override readonly cause: SyntaxError;
+	constructor(path: string, cause: SyntaxError) {
+		super(`Locks contention file is corrupt: ${path}`);
+		this.name = 'LocksFileCorruptError';
+		this.path = path;
+		this.cause = cause;
+	}
+}
+
+/**
+ * x00154 S5 — minimum event shape the proposals lock table emits
+ * when it has to recover from corruption. Mirrors `ILogEvent` from
+ * `@mcp-vertex/logs` without importing it (the proposals plugin
+ * does not depend on the logs plugin). Host code that wants to
+ * forward the event into the structured event log can normalise
+ * the payload into the canonical `ILogEvent` shape before calling
+ * `appendEvent`.
+ */
+export interface IFileLockTableLogEvent {
+	readonly kind: 'log-warning';
+	readonly summary: string;
+	readonly file: string;
+	readonly meta?: Readonly<Record<string, unknown>>;
+}
+
 export interface IFileLock {
 	readonly file: string;
 	readonly agent: string;
@@ -36,6 +69,13 @@ export interface IFileLockTableDeps {
 	readonly mutexTimeoutMs?: number;
 	readonly mutexStaleMs?: number;
 	readonly mutexPollMs?: number;
+	/**
+	 * x00154 S5 — host-supplied writer for structured log events
+	 * (currently only `log-warning`, emitted when the contention file
+	 * is corrupt). Defaults to a no-op when not provided so existing
+	 * callers keep their behaviour.
+	 */
+	readonly emitLog?: (event: IFileLockTableLogEvent) => Promise<void>;
 }
 
 const CONTENTION_HISTORY_WINDOW_MS = 60_000;
@@ -218,13 +258,24 @@ const writeDocument = async (
 	await writer(getTablePath(deps), JSON.stringify(doc, null, 2));
 };
 
+/**
+ * x00154 S5 — `ENOENT` (and `ENOTDIR`) are normal "the contention
+ * file does not exist yet" outcomes; everything else is a real
+ * read failure. We keep the discrimination local so the proposal
+ * plugin does not need a shared `isEnoent` helper.
+ */
+const isMissingFileErrno = (err: unknown): boolean => {
+	if (typeof err !== 'object' || err === null) return false;
+	const code = (err as { code?: unknown }).code;
+	return code === 'ENOENT' || code === 'ENOTDIR';
+};
+
 const readContentions = async (
 	deps: IFileLockTableDeps,
 ): Promise<readonly IFileLockContention[]> => {
+	const contentionPath = getContentionPath(deps);
 	try {
-		const raw = await (deps.readTable ?? defaultReadTable)(
-			getContentionPath(deps),
-		);
+		const raw = await (deps.readTable ?? defaultReadTable)(contentionPath);
 		if (raw.length > 0) {
 			const parsed = JSON.parse(raw) as unknown;
 			if (Array.isArray(parsed)) {
@@ -235,7 +286,29 @@ const readContentions = async (
 				);
 			}
 		}
-	} catch {}
+	} catch (err) {
+		if (err instanceof SyntaxError) {
+			// x00154 S5 — surface corrupt contention file as a structured
+			// log-warning and fall back to the lock-table's
+			// contentionHistory. We do NOT rethrow: callers (listers,
+			// resolve-time sweepers) must continue to function when the
+			// contention file is bad, mirroring today's behaviour.
+			const wrapped = new LocksFileCorruptError(contentionPath, err);
+			if (deps.emitLog) {
+				await deps.emitLog({
+					kind: 'log-warning',
+					summary: `Locks contention file is corrupt: ${contentionPath}`,
+					file: contentionPath,
+					meta: { errorName: err.name, errorMessage: err.message },
+				});
+			}
+			void wrapped; // surfaced via the typed export for callers/tests.
+		} else if (!isMissingFileErrno(err)) {
+			throw err;
+		}
+		// Missing file (ENOENT/ENOTDIR) → silent fallback, current
+		// behaviour. Falls through to `readDocument` below.
+	}
 	const current = await readDocument(deps);
 	const nowMs = new Date(getNow(deps)).getTime();
 	return pruneContentions(
