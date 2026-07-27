@@ -2,7 +2,7 @@
 id: x00154
 title: Pasada-34 — runtime outputSchema drift (logs JSONL), proposal_diagnose envelope, verify:tools SIGKILL + 3 other concrete bugs
 kind: fix
-status: ready
+status: done
 date: 2026-07-27T15:30:00Z
 date_iso: 2026-07-27
 track: logs+proposals+orchestration+code-quality+runtime-integrity
