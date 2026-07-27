@@ -35,7 +35,10 @@ describe('embed index store', async () => {
 	afterEach(() => rmSync(root, { recursive: true, force: true }));
 
 	it('round-trips the on-disk JSON index', async () => {
-		const store = createEmbedIndexStore({ pluginCacheDir });
+		const store = createEmbedIndexStore({
+			workspaceRootAbs: root,
+			pluginCacheDir,
+		});
 		await store.save({
 			abc: {
 				path: 'src/a.ts',
@@ -46,7 +49,7 @@ describe('embed index store', async () => {
 
 		const loaded = await store.load();
 		const raw = readFileSync(
-			resolveEmbedIndexPath({ pluginCacheDir }),
+			resolveEmbedIndexPath({ workspaceRootAbs: root, pluginCacheDir }),
 			'utf8',
 		);
 

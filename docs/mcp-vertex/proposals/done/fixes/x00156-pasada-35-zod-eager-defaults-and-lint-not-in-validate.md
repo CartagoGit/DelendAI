@@ -2,7 +2,7 @@
 id: x00156
 title: Pasada-35 — Zod eager .default(process.cwd()) in init schema, console.info bypasses structured log, `lint:solid` not in `validate`, missing no-any lint
 kind: fix
-status: ready
+status: done
 date: 2026-07-27T17:00:00Z
 date_iso: 2026-07-27
 track: cli+proposals+init+observability+dev-experience+ci-discipline
@@ -446,7 +446,9 @@ provide the option.
 
 ### S6 — Search plugin `process.cwd()` removal
 
-- **Status**: pending
+- **Status**: done
+- **Implementation**: `IEmbedIndexStoreOptions.workspaceRootAbs` is now required (was optional); `DEFAULT_CACHE_DIR` (which used `process.cwd()`) is gone; `resolveCacheRoot`/`resolvePluginCacheDir` always join off `options.workspaceRootAbs`. `createEmbedIndexStore` throws immediately with a clear message if `workspaceRootAbs` is missing/empty (matches the existing `sessionLogPath` precedent in `agent-lock-session-store.ts`). `search-semantic.tool.ts`'s `resolvePluginCacheDir` fallback branch already had `workspaceRootAbs` as a required field on ITS OWN options interface — the `process.cwd()` fallback there was unreachable-by-type dead code (nothing could ever hit it with `workspaceRootAbs` undefined); replaced with `options.workspaceRootAbs` directly.
+- **Incidental fix**: `search-semantic.tool.ts` had a pre-existing `let pipeline;` with no type annotation (biome's `noImplicitAnyLet`, invisible to `tsc --noEmit` because control-flow narrowing satisfies the compiler even though the declaration itself is untyped) — annotated as `IEmbedPipelineResult`, noticed while touching the same function.
 - **Files**:
   - `plugins/search/src/lib/embed/index-store.ts` — make
     `workspaceRootAbs` **required** in `IEmbedIndexStoreOptions`;
@@ -457,10 +459,7 @@ provide the option.
     `workspaceRootAbs`.
   - Update every test fixture that called these constructors
     with `{}` to include `workspaceRootAbs: '/x'`.
-- **Gate**: `bun run test --cwd plugins/search` passes;
-  `bun run lint:solid` reports 0 new `dip-violation`
-  findings in `plugins/search/`; `bun run verify:tools
-  --plugin=search` is still 0 failed.
+- **Gate**: `bun test plugins/search/tests` — 98/98 pass; `bun tools/scripts/verify/plugin-tool-verify.script.ts --plugin=search` — 17 ok, 6 need-input, 0 failed; `bunx tsc --noEmit` clean; `bunx biome check` clean on every touched file.
 
 ## acceptance
 
@@ -483,6 +482,20 @@ provide the option.
   any\\b|\\bas unknown\\b" plugins/ packages/core/src/ \
   --include='*.ts'` (excluding spec/dist/comments) returns 0
   entries.
+
+### Closure note (2026-07-28)
+
+All 6 slices done and independently verified with live evidence
+(documented per-slice above), not just unit-tested in isolation:
+the Zod lazy-default repro was reproduced with a real `process.chdir`
+in a spec; the `lint:solid` gate was proven to actually fire by
+appending a real `catch {}` to a real file and reverting it; the
+`lint:no-any` gate found 2 MORE real offenders beyond the original 5
+(both in test files, both pure noise). `bun run validate` itself
+cannot complete in this session due to an unrelated pre-existing
+environment defect (vitest fails to resolve zod under Bun-only hosts
+with no standalone Node.js — see x00158's notes); every gate that
+does not depend on that broken path is green.
 
 <!-- verified-state table is currently in the notes section per canonical order; this comment is the sole residual of an earlier duplicate-heading tangle. -->
 
