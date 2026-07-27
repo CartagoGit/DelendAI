@@ -52,7 +52,9 @@ describe('embed pipeline', async () => {
 			'src/a.ts',
 			'src/b.md',
 		]);
-		expect(resolveEmbedIndexPath({ pluginCacheDir })).toBeDefined();
+		expect(
+			resolveEmbedIndexPath({ workspaceRootAbs: root, pluginCacheDir }),
+		).toBeDefined();
 
 		calls.length = 0;
 		const second = await runEmbedPipeline({
