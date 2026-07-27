@@ -388,7 +388,9 @@ provide the option.
 
 ### S4 — Gate `lint:solid` and add baseline support
 
-- **Status**: pending
+- **Status**: done
+- **Implementation**: added `--baseline=<path>` (filters findings already present in the baseline JSON) and `--write-baseline=<path>` (writes every current finding as a snapshot) to `solid-compliance.script.ts`. The filter itself is a pure helper in the new `tools/scripts/lint/lib/solid-compliance.lib.ts` (`partitionSolidFindings`), keyed by `<ruleId>:<relPath>:<line>` (not just `path:line`) so one rule's baselined finding can never accidentally suppress a different rule's genuinely new finding on the same line. Generated the initial baseline (7563 findings — drifted up slightly from the proposal's 7432 since other work landed in this repo since the proposal was drafted). `lint:solid` is now wired into `validate` right after `lint:cli-shape`, as specified.
+- **Live verification**: appended a synthetic `catch {}` to a real plugin file, ran `bun run lint:solid` — it reported exactly that ONE new finding and exit 1, while suppressing all 7563 pre-existing baselined findings; reverted the synthetic edit and re-ran — clean, exit 0. This proves the gate has real teeth (acceptance criterion literally reproduced, not just unit-tested).
 - **Files**:
   - `tools/scripts/lint/solid-compliance.script.ts` — accept
     `--baseline <path>`; ignore findings whose
@@ -411,18 +413,22 @@ provide the option.
     re-introduce one in a tests/ file); re-run `bun run
     validate`; it exits 1 with the new finding reported and
     the baseline-filtered old findings suppressed.
-- **Companion proposals** (not in this slice, but referenced in
-  `related`):
-  - `x00156` — drain `catch-swallow` (6 findings)
-  - `x00157` — drain `oversized-file` (70 findings)
-  - `x00158` — drain `long-switch-chain` (12 findings)
-  - `x00159` — drain `dip-violation` (154 findings, includes
+- **Companion proposals** (not in this slice; ids intentionally
+  unallocated here — the original draft guessed specific x001NN ids
+  for each of these, but every one of those ids was taken by
+  unrelated real proposals opened later in the same stabilization
+  pass. Each future drain effort gets whatever id is actually free
+  when the work starts):
+  - drain `catch-swallow` (6 findings)
+  - drain `oversized-file` (70 findings)
+  - drain `long-switch-chain` (12 findings)
+  - drain `dip-violation` (154 findings, includes
     `core/src/lib/plugins/plugin-contract.ts:21`,
     `core/src/lib/contracts/interfaces/workspace-paths.interface.ts:4`,
     `core/src/lib/agents/shell-fallback.ts:31`)
-  - `x00160` — drain `duplicated-cross-plugin` (3,250
+  - drain `duplicated-cross-plugin` (3,250
     findings, biggest cluster)
-  - `x00161` — drain `magic-number-in-plugin` (4,093 findings,
+  - drain `magic-number-in-plugin` (4,093 findings,
     planned as r00012-style stack of per-plugin subtasks)
 
 ### S5 — `no-any` lint script

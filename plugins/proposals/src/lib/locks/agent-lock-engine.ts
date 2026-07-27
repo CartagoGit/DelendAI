@@ -25,7 +25,6 @@ import {
 	deriveFileLockTablePath,
 	findConflictingLocks,
 	noteFileLockContention,
-	readFileLockEntries,
 	removeFileLocksForTask,
 	resolveFileLockContentions,
 	tryAcquireFileLocks,
@@ -34,7 +33,6 @@ import { isLockEntryStale } from '../shared/purge-stale-locks';
 import {
 	appendSessionEntry,
 	readSessionBalance,
-	readSessionBalanceSync,
 	resetSessionBalance,
 	type ISessionBalance,
 } from './agent-lock-session-store';
@@ -214,12 +212,34 @@ export const resetAgentLockSessionBalance = async (): Promise<void> => {
 	await resetSessionBalance();
 };
 
+/**
+ * x00163 fix: this used to check only ONE level up (`basename(parent)
+ * === '.cache'`), which is correct for a lock path shaped
+ * `<root>/.cache/agents.lock.json` but wrong for the real, canonical
+ * shape `<root>/.cache/mcp-vertex/agents.lock.json` (the plugin cache
+ * dir adds an extra `mcp-vertex` segment). On the real shape the old
+ * code returned `<root>/.cache/mcp-vertex` itself as the "workspace
+ * root", which `sessionLogPath` then re-joined with `.cache/mcp-vertex`
+ * again — producing a doubly-nested
+ * `<root>/.cache/mcp-vertex/.cache/mcp-vertex/agents.lock.session.jsonl`
+ * on every real session (confirmed live: this exact stray path exists
+ * on disk in this repo's own `.cache/`). Walk up from the lock path
+ * looking for a directory literally named `.cache` and return ITS
+ * parent — this is correct for both the one-level test-fixture shape
+ * and the real two-level plugin-cache-dir shape.
+ */
 const resolveSessionWorkspaceRoot = (
 	deps: IAgentLockDeps,
 ): string | undefined => {
 	if (!deps.lockPath) return undefined;
-	const parent = dirname(deps.lockPath);
-	return basename(parent) === '.cache' ? dirname(parent) : parent;
+	let dir = dirname(deps.lockPath);
+	for (;;) {
+		if (basename(dir) === '.cache') return dirname(dir);
+		const parent = dirname(dir);
+		if (parent === dir) break;
+		dir = parent;
+	}
+	return dirname(deps.lockPath);
 };
 
 const CONTENTION_NEXT =
@@ -883,7 +903,6 @@ async function executeLockAction(
 		const agent = args.agent as string;
 		const files = [...new Set(args.files as string[])].sort();
 		const now = getNow(deps);
-		const tableEntries = await readFileLockEntries({ tablePath });
 
 		const existing = lock.in_flight.find(
 			(entry) => entry.task_id === taskId,
