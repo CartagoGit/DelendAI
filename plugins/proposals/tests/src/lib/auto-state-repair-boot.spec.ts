@@ -7,6 +7,7 @@ import {
 	runAutoStateRepairOnBoot,
 	runStateRepair,
 } from '@mcp-vertex/proposals/lib/tools/state-tools.tool';
+import type { IPluginLogInput } from '@mcp-vertex/core/public';
 
 const emptyLock = { version: 1, in_flight: [] as unknown[] };
 const emptyQueue = { version: 1, entries: [] as unknown[] };
@@ -17,7 +18,9 @@ describe('a00069 S10 auto state_repair on boot', () => {
 	let queuePath = '';
 	let closedPath = '';
 	let registryPath = '';
-	let infoSpy: ReturnType<typeof vi.spyOn>;
+	let logSpy: ReturnType<
+		typeof vi.fn<(input: IPluginLogInput) => Promise<void>>
+	>;
 
 	beforeEach(async () => {
 		root = await mkdtemp(join(tmpdir(), 'a00069-s10-'));
@@ -67,11 +70,12 @@ describe('a00069 S10 auto state_repair on boot', () => {
 				],
 			}),
 		);
-		infoSpy = vi.spyOn(console, 'info').mockImplementation(() => {});
+		logSpy = vi
+			.fn<(input: IPluginLogInput) => Promise<void>>()
+			.mockResolvedValue(undefined);
 	});
 
 	afterEach(async () => {
-		infoSpy.mockRestore();
 		await rm(root, { recursive: true, force: true });
 	});
 
@@ -82,6 +86,7 @@ describe('a00069 S10 auto state_repair on boot', () => {
 		closedTasksPathAbs: closedPath,
 		registryPathAbs: registryPath,
 		workspaceRoot: root,
+		logs: { log: logSpy },
 	});
 
 	it('runStateRepair purges orphan assignments', async () => {
@@ -104,15 +109,37 @@ describe('a00069 S10 auto state_repair on boot', () => {
 			assignments: unknown[];
 		};
 		expect(reg.assignments).toHaveLength(0);
-		const autoLines = infoSpy.mock.calls
-			.map((c: unknown[]) => String(c[0] ?? ''))
-			.filter((s: string) => s.includes('state-repair-auto'));
-		expect(autoLines.length).toBeGreaterThan(0);
-		const payload = JSON.parse(autoLines[0] as string) as {
-			event: string;
-			orphanAssignments?: number;
-		};
-		expect(payload.event).toBe('state-repair-auto');
-		expect(payload.orphanAssignments).toBeGreaterThan(0);
+		// x00156 S2: the event now goes through ctx.logs.log(...) (the
+		// structured incident stream) instead of console.info, so
+		// logs/errors_tail can actually see a state-repair-auto event.
+		expect(logSpy).toHaveBeenCalledTimes(1);
+		const [input] = logSpy.mock.calls[0] as [
+			{
+				severity: string;
+				incidentType: string;
+				context?: { orphanAssignments?: number };
+			},
+		];
+		expect(input.incidentType).toBe('state-repair-auto');
+		expect(input.severity).toBe('warning');
+		expect(input.context?.orphanAssignments).toBeGreaterThan(0);
+	});
+
+	it('reports a failed repair through logs.log with severity error', async () => {
+		// Point at a registry path that cannot be read as JSON to force
+		// the catch branch.
+		await writeFile(registryPath, 'not json');
+		await runAutoStateRepairOnBoot(opts());
+		expect(logSpy).toHaveBeenCalledTimes(1);
+		const [input] = logSpy.mock.calls[0] as [
+			{ severity: string; incidentType: string },
+		];
+		expect(input.incidentType).toBe('state-repair-auto');
+		expect(input.severity).toBe('error');
+	});
+
+	it('does not throw when no logs helper is provided (optional dependency)', async () => {
+		const { logs: _logs, ...rest } = opts();
+		await expect(runAutoStateRepairOnBoot(rest)).resolves.toBeUndefined();
 	});
 });

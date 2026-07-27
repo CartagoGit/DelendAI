@@ -1,6 +1,8 @@
 /**
  * f00084 S1 — `IInitAnswers` Zod schema acceptance spec.
  */
+import { tmpdir } from 'node:os';
+
 import { describe, expect, it } from 'vitest';
 
 import { INIT_VALID_PLUGIN_IDS } from '../../contracts/constants/init-answers.constant';
@@ -62,5 +64,26 @@ describe('InitAnswers schema (f00084 S1)', () => {
 		expect(INIT_VALID_PLUGIN_IDS.has('proposals')).toBe(true);
 		expect(INIT_VALID_PLUGIN_IDS.has('git')).toBe(true);
 		expect(INIT_VALID_PLUGIN_IDS.has('web-fetch')).toBe(true);
+	});
+
+	// x00156 S1 — Zod's `.default(value)` is eager (captured once at
+	// schema-construction/module-load time). A bare
+	// `.default(process.cwd())` would freeze the CWD from module load
+	// forever; `.default(() => process.cwd())` re-resolves on every
+	// parse. This pins the lazy behavior directly.
+	it('re-resolves workspaceRoot from the CURRENT cwd on every parse (lazy default, not module-load-frozen)', () => {
+		const before = InitAnswers.parse({}).workspaceRoot;
+		expect(before).toBe(process.cwd());
+
+		const originalCwd = process.cwd();
+		const tmp = tmpdir();
+		process.chdir(tmp);
+		try {
+			const after = InitAnswers.parse({}).workspaceRoot;
+			expect(after).toBe(tmp);
+			expect(after).not.toBe(before);
+		} finally {
+			process.chdir(originalCwd);
+		}
 	});
 });
