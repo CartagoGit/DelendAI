@@ -183,7 +183,9 @@ export const parseProposalSlicePlan = (
 		// and split on commas — the single-path form degenerates to a
 		// one-element split, so legacy lines parse byte-identically.
 		const files = [
-			...body.matchAll(/^[-*]\s*(?:files|\*\*Files\*\*):\s*(.+)$/gm),
+			...body.matchAll(
+				/^[-*]\s*(?:files|\*\*Files\*\*):\s*((?:.+(?:\n\t+.*)?)*)$/gm,
+			),
 		]
 			.flatMap((m) => {
 				const raw = (m[1] ?? '').trim();
@@ -278,7 +280,8 @@ export interface ILockSnapshotEntry {
 
 const normalizeFileToken = (value: string): string =>
 	value
-		.replace(/^`+|`+$/gu, '')
+		.replace(/^\s*[-*]\s+/gu, '')
+		.replace(/`/gu, '')
 		.replace(/\s*\(.*$/u, '')
 		.replace(/\s*—.*$/u, '')
 		.replace(/[),.;:]+$/gu, '')
