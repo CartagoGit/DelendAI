@@ -1,8 +1,20 @@
 import { definePlugin } from '@mcp-vertex/core/public';
 import { z } from 'zod';
+import { dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 import { buildDiagramGraphToolRegistrations } from './lib/tools/diagram-graph.tool';
 import { buildDiagramProposalsToolRegistrations } from './lib/tools/diagram-proposals.tool';
+
+/**
+ * Plugin's own source root, derived from `import.meta.url`. This is the
+ * package directory (`plugins/diagram/`) — used as the default scan root
+ * for `diagram_modules` so the tool does not walk the whole workspace on
+ * a missing `packageRoot` argument. At runtime `import.meta.url` points
+ * at the bundled `dist/index.js`, so the plugin package root is its
+ * `..`. See f00030-protect-diagram-modules.
+ */
+const PLUGIN_ROOT = dirname(dirname(fileURLToPath(import.meta.url)));
 
 /**
  * Diagram plugin. Four mermaid tools:
@@ -29,6 +41,7 @@ export default definePlugin({
 				...buildDiagramGraphToolRegistrations({
 					namespacePrefix: ctx.namespacePrefix,
 					workspaceRootAbs: ctx.workspace.root,
+					modulePackageRootAbs: PLUGIN_ROOT,
 				}),
 				...buildDiagramProposalsToolRegistrations({
 					namespacePrefix: ctx.namespacePrefix,
