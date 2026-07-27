@@ -126,8 +126,21 @@ pre-push:
     # shape (`agent/x → origin/develop`) is allowed.
     # Bypass: LEFTHOOK_BYPASS=1 git push ... (documented in the
     # blocker text).
+    #
+    # x00159 S1: `use_stdin: true` is REQUIRED here. Lefthook does not
+    # forward git's real stdin to a command by default (it connects a
+    # pseudo-TTY instead), so the ref-update lines git's pre-push hook
+    # writes to stdin (`<local ref> <local oid> <remote ref>
+    # <remote oid>`) never reached this script — it silently fell back
+    # to the `{1} {2} {3}` argv template, which lefthook itself cannot
+    # populate with a real refspec for a plain `git push` (that data
+    # only ever exists on stdin), so `{3}` shipped as the literal,
+    # unsubstituted string and the guard never actually blocked
+    # anything. Without `use_stdin: true`, do not remove the script's
+    # own `process.stdin.isTTY` guard — see the script's header comment.
     push-to-develop-discipline:
-      run: bun run lint:push-to-develop -- {1} {2} {3} || exit 1
+      use_stdin: true
+      run: bun run lint:push-to-develop -- {1} {2} || exit 1
 
 # f00086: commit-msg discipline. BLOCKING (no `|| true`). Enforces
 # Conventional Commits format on the first line of the commit
