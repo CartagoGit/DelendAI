@@ -414,14 +414,28 @@ The timer is stored in a local `const`, never exposed. The plugin's `register` c
 
 ### S4 — `observability/list-errors.ts:148` `fetch` no timeout
 
-- **Status**: pending
+- **Status**: done
 - **Files**:
-  - `plugins/observability/src/lib/errors/list-errors.ts:148` — add
-    `signal: AbortSignal.timeout(8000)` to the `direct` fetch.
-  - `plugins/observability/tests/src/lib/errors/list-errors.spec.ts`
-    — add a spec that injects a hanging server and asserts the
-    tool throws within 8.5s.
-- **Gate**: spec passes; live hung-server repro confirms fast fail.
+  - `plugins/observability/src/lib/errors/list-errors.ts` — added a
+    shared `FETCH_TIMEOUT_MS = 8_000` constant used by BOTH the
+    engine's `timeoutMs` (previously a bare inline `8_000`) and the
+    new `signal: AbortSignal.timeout(FETCH_TIMEOUT_MS)` on the
+    `direct` fetch, so the two requests can't drift out of sync.
+  - `plugins/observability/src/lib/tools/obs-errors.tool.spec.ts`
+    (the real existing spec at the tool boundary — the
+    originally-planned `tests/src/lib/errors/list-errors.spec.ts`
+    path does not exist; there is a colocated
+    `src/lib/errors/list-errors.spec.ts`, but that one only exercises
+    the injected `source.fetch` seam, which bypasses this bug
+    entirely) — added a spec that omits `source.fetch` so the real
+    `fetchViaWebFetch` production path runs, mocks `global.fetch` to
+    let the engine's own allow-list-checking call succeed fast while
+    the direct re-fetch hangs until the injected `AbortSignal` fires,
+    and asserts the tool returns `isError: true` within
+    `FETCH_TIMEOUT_MS + 1s` instead of hanging.
+- **Gate**: `bun test plugins/observability/src/lib/tools/obs-errors.tool.spec.ts`
+  — 7/7 pass (was 6); `bun test --cwd plugins/observability` —
+  34/34 pass; `bunx tsc --noEmit --project .` clean.
 
 ### S5 — `joinUnderRoot` helper + 10+ call sites
 
