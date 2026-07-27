@@ -50,7 +50,7 @@
 // c00126 S3: pure helpers were extracted to packages/core/src/lib/scan/
 // and re-exported from the public barrel; this file now only orchestrates.
  */
-import { readFile } from 'node:fs/promises';
+import { readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
 import {
@@ -65,6 +65,13 @@ import {
 	toRelPosix,
 	walkTsFiles,
 } from '@mcp-vertex/core/public';
+import {
+	buildSolidBaseline,
+	EMPTY_SOLID_BASELINE,
+	formatSolidBaseline,
+	parseSolidBaseline,
+	partitionSolidFindings,
+} from './lib/solid-compliance.lib';
 
 // ──────────────────────────────────────────────────────────────────────────
 // Public types
@@ -286,10 +293,14 @@ const parseArgs = (
 	roots: readonly string[];
 	report: boolean;
 	fixPath: string | undefined;
+	baselinePath: string | undefined;
+	writeBaselinePath: string | undefined;
 } => {
 	const roots: string[] = [];
 	let report = false;
 	let fixPath: string | undefined;
+	let baselinePath: string | undefined;
+	let writeBaselinePath: string | undefined;
 	for (let i = 0; i < argv.length; i += 1) {
 		const a = argv[i];
 		if (a === '--report') {
@@ -298,6 +309,10 @@ const parseArgs = (
 			roots.push(...a.slice(8).split(',').filter(Boolean));
 		} else if (a?.startsWith('--fix=') && a.length > 6) {
 			fixPath = a.slice(6);
+		} else if (a?.startsWith('--baseline=') && a.length > 11) {
+			baselinePath = a.slice(11);
+		} else if (a?.startsWith('--write-baseline=') && a.length > 17) {
+			writeBaselinePath = a.slice(17);
 		} else if (a === '--help' || a === '-h') {
 			process.stdout.write(USAGE);
 			process.exit(0);
@@ -307,6 +322,8 @@ const parseArgs = (
 		roots: roots.length > 0 ? roots : DEFAULT_ROOTS,
 		report,
 		fixPath,
+		baselinePath,
+		writeBaselinePath,
 	};
 };
 
@@ -318,12 +335,20 @@ Options:
   --fix=<relPath>        Print a registry skeleton for the first long switch in the
                          given file. NEVER writes to disk; output is a printable
                          TypeScript block the agent can review.
+  --baseline=<path>      Ignore findings already present in this baseline JSON file
+                         (x00156 S4). Exits 0 when every remaining finding is NEW
+                         relative to the baseline, even if the raw finding count
+                         is nonzero. Missing file == empty baseline (all findings new).
+  --write-baseline=<path> Write every CURRENT finding to this path as a baseline
+                         snapshot and exit 0. Re-run after a legitimate refactor
+                         shifts line numbers or after draining findings for real.
   -h, --help             Print this help.
 
-Exit codes: 0 clean, 1 one or more findings.`;
+Exit codes: 0 clean (or all findings baselined), 1 one or more NEW findings.`;
 
 export const main = async (argv: readonly string[]): Promise<number> => {
-	const { roots, report, fixPath } = parseArgs(argv);
+	const { roots, report, fixPath, baselinePath, writeBaselinePath } =
+		parseArgs(argv);
 	const rootDir = process.cwd();
 	if (fixPath) {
 		// --fix mode: read a single file and print a registry skeleton.
@@ -351,6 +376,43 @@ export const main = async (argv: readonly string[]): Promise<number> => {
 		}),
 	);
 	const result = await classifySolidFindings(rootDir, fileContents);
+
+	if (writeBaselinePath) {
+		const baseline = buildSolidBaseline(result);
+		await writeFile(
+			join(rootDir, writeBaselinePath),
+			formatSolidBaseline(baseline),
+			'utf8',
+		);
+		process.stdout.write(
+			`solid-compliance: wrote ${baseline.entries.length} baselined finding(s) to ${writeBaselinePath}\n`,
+		);
+		return 0;
+	}
+
+	if (baselinePath) {
+		const baseline = await readFile(join(rootDir, baselinePath), 'utf8')
+			.then(parseSolidBaseline)
+			.catch(() => EMPTY_SOLID_BASELINE);
+		const { newFindings, baselinedCount } = partitionSolidFindings(
+			result.findings,
+			baseline,
+		);
+		const newResult = { ...result, findings: newFindings };
+		const out = formatReport(newResult);
+		if (report) {
+			process.stderr.write(
+				`solid-compliance: ${newFindings.length} new finding(s) (${baselinedCount} baselined)\n`,
+			);
+		} else {
+			process.stdout.write(`${out}\n`);
+			process.stdout.write(
+				`solid-compliance: ${baselinedCount} pre-existing finding(s) suppressed by ${baselinePath}\n`,
+			);
+		}
+		return newFindings.length === 0 ? 0 : 1;
+	}
+
 	const out = formatReport(result);
 	if (report) {
 		process.stderr.write(
