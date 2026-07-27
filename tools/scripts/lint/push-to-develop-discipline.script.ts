@@ -30,6 +30,8 @@
 import { readFileSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 
+import { isLefthookBypassed } from '../lib/lefthook-bypass';
+
 const DEVELOP_BRANCH = 'develop';
 
 export interface IPushToDevelopInput {
@@ -293,6 +295,17 @@ const readStdinRefUpdates = (): ReadonlyArray<IPrePushRefUpdate> => {
 };
 
 const main = async (): Promise<number> => {
+	// x00159 S2: honour the documented escape hatch for real. Every
+	// blocker message below tells the operator to set
+	// LEFTHOOK_BYPASS=1 — lefthook itself has no such variable, so
+	// this script must be the one to check it.
+	if (isLefthookBypassed()) {
+		process.stdout.write(
+			'✓ push-to-develop-discipline: bypassed (LEFTHOOK_BYPASS=1)\n',
+		);
+		return 0;
+	}
+
 	// x00159 S1: STDIN is the authoritative source — it is git's real
 	// pre-push contract (`<local ref> <local oid> <remote ref>
 	// <remote oid>` per updated ref). The lefthook argv `{3}` template
