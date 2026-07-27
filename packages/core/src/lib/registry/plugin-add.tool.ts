@@ -62,16 +62,29 @@ export const buildPluginAddRegistration = (
 				inputSchema: z.object({
 					id: z.string().min(1),
 					consent: z.boolean().optional(),
+					monorepoDev: z
+						.boolean()
+						.optional()
+						.describe(
+							'x00161: set true ONLY when this call is adding a first-party plugin to the @mcp-vertex/core monorepo itself (tsconfig/vitest/preset-catalog/publish-order/tool-outputs wiring applies). Leave unset/false for any project that consumes @mcp-vertex/core as an npm dependency.',
+						),
 				}),
 				outputSchema: RECIPE_OUTPUT,
 			},
-			async (args: { id: string; consent?: boolean | undefined }) => {
+			async (args: {
+				id: string;
+				consent?: boolean | undefined;
+				monorepoDev?: boolean | undefined;
+			}) => {
 				const recipe = buildPluginAddRecipe(args.id, {
 					...(options.sources !== undefined
 						? { sources: options.sources }
 						: {}),
 					...(options.alreadyAdoptedIds !== undefined
 						? { alreadyAdoptedIds: options.alreadyAdoptedIds }
+						: {}),
+					...(args.monorepoDev !== undefined
+						? { monorepoDev: args.monorepoDev }
 						: {}),
 				});
 				if (recipe === undefined) {
