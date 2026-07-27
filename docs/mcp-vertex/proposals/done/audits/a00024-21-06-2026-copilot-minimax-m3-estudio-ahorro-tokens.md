@@ -149,7 +149,7 @@ Score cualitativo: **8.1/10** — el marco está; el plano fino está sin hacer.
   - `docs/proposals/done/audits/a00013-16-06-2026-auditoria-maestra-unificada.md` (referencia)
   - `docs/TOKEN-BUDGETS.md` (referencia)
   - `docs/proposals/ready/f00027-metrics-longitudinal-regression-gate.md` (referencia, **prerequisite de A y B**)
-- **Status**: pending
+- **Status**: done
 - **Agent**: `technical_investigator`
 - **Gate**: `bun run lint:proposals`
 - **Expect**: green; este slice solo deja el inventario escrito, no toca código.
@@ -162,7 +162,7 @@ Score cualitativo: **8.1/10** — el marco está; el plano fino está sin hacer.
   - `docs/proposals/ready/a024c-skill-token-hygiene.md` (crear)
   - `docs/TOKEN-BUDGETS.md` (anotación mínima, opcional)
   - `docs/proposals/index.json` (alta de los nuevos)
-- **Status**: pending
+- **Status**: done
 - **Agent**: `proposal_guardian`
 - **Command**: `bun run lint:proposals`
 - **Expect**: por cada H# relevante, una nota en este mismo archivo (§findings) indicando `proposal-id-asignado` o `deferred-to-<id>`. Si se abren proposals nuevos, se crean en `docs/proposals/ready/` con el patrón `a00025{a,b,c,d}-…` y se actualiza `docs/proposals/index.json`.
@@ -172,7 +172,7 @@ Score cualitativo: **8.1/10** — el marco está; el plano fino está sin hacer.
   - `docs/proposals/done/audits/a00025-21-06-2026-copilot-minimax-m3-estudio-ahorro-tokens.md` (este archivo, movido)
   - `docs/proposals/index.json` (status: done)
   - `docs/proposals/done/audits/a00013-16-06-2026-auditoria-maestra-unificada.md` (si aplica, marcar línea como `[x]`)
-- **Status**: pending
+- **Status**: done
 - **Agent**: `proposal_guardian`
 - **Command**: `bun run validate`
 - **Expect**: este archivo está en `docs/proposals/done/audits/`, `index.json` actualizado, y la línea relevante del master audit (si la hay) marcada `[x]`.

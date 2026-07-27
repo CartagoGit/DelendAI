@@ -7,7 +7,9 @@ type: proposal
 track: general
 date: 2026-07-26
 shipped-in: ["146b65582ad50eb0ef57a4859fa2514a4b462aae"]
-
+closed-by: cartago (auto sync 2026-07-27)
+closed-evidence:
+  - 146b65582ad50eb0ef57a4859fa2514a4b462aae
 
 ---
 
@@ -32,7 +34,7 @@ La preferencia existe en mi memoria de usuario pero no en el bootstrap universal
 - global_gate: lint
 
 ### S1 — Append SOLID/Clean Code invariant to §6 and #12 hard rule to §7.1
-- **Status**: pending
+- **Status**: done
 - **Files**: `docs/mcp-vertex/AGENT-BOOTSTRAP.md`
 - **Gate**: lint
 - acceptance:

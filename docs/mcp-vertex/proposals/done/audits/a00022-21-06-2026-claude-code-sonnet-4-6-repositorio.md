@@ -87,36 +87,36 @@ Base de código sólida y disciplinada (**8.9/10**), pero el estado *auditado en
 ### S1 — Execute audit and document findings
 - **Files**: docs/proposals/ready/a00023-21-06-2026-claude-code-sonnet-4-6-repositorio.md
 - **Gate**: bun run lint:proposals
-- **Status**: pending
+- **Status**: done
 
 ### S2 — Fix `IStatusBarItem` missing `visible` + add `data-pagefind-body`
 - **Files**:
   - apps/ide/src/host-adapter.types.ts
   - apps/web/src/layouts/Base.astro
 - **Gate**: bun run validate
-- **Status**: pending
+- **Status**: done
 
 ### S3 — Fix untyped `request()` call in `DashboardService.getOverviewModel`
 - **Files**: packages/client/src/lib/services/dashboard-service.ts
 - **Gate**: bun run site:strict
-- **Status**: pending
+- **Status**: done
 
 ### S4 — Fix dashboard model re-exports in the client public barrel
 - **Files**: packages/client/src/public/index.ts
 - **Gate**: bun run validate
-- **Status**: pending
+- **Status**: done
 
 ### S5 — Align `sync-proposal-registry.ts` JSON indentation with Biome
 - **Files**: plugins/proposals/src/lib/proposals/sync-proposal-registry.ts
 - **Gate**: bun run validate
-- **Status**: pending
+- **Status**: done
 
 ### S6 — Add missing `LICENSE` to `plugins/audit`
 - **Files**:
   - plugins/audit/LICENSE
   - plugins/audit/package.json
 - **Gate**: bun run validate
-- **Status**: pending
+- **Status**: done
 
 ## Acceptance
 

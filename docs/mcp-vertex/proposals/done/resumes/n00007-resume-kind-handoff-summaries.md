@@ -198,7 +198,7 @@ So: **if you're a consumer, you get `docs/mcp-vertex/proposals/`; if you ARE mcp
 
 ### S1 — Add kind 'resume' (prefix n) to glossary + authoring tool kind enum + scaffold linter enum
 
-- **Status**: pending
+- **Status**: done
 - **Files**: [`plugins/proposals/src/lib/contracts/constants/proposal-glossary.constant.ts`](../../../../../plugins/proposals/src/lib/contracts/constants/proposal-glossary.constant.ts), [`plugins/proposals/src/lib/tools/authoring.tool.ts`](../../../../../plugins/proposals/src/lib/tools/authoring.tool.ts), [`plugins/proposals/tests/src/lib/contracts/constants/proposal-glossary.constant.spec.ts`](../../../../../plugins/proposals/tests/src/lib/contracts/constants/proposal-glossary.constant.spec.ts)
 - **Command**: `bun run type`
 - **Expect**: exit0
@@ -212,7 +212,7 @@ So: **if you're a consumer, you get `docs/mcp-vertex/proposals/`; if you ARE mcp
 
 ### S2 — Rewrite this proposal as `n00007` with full canonical sections, in `ready/`
 
-- **Status**: pending
+- **Status**: done
 - **Files**: [`docs/proposals/ready/n00007-resume-kind-handoff-summaries.md`](../../docs/proposals/ready/n00007-resume-kind-handoff-summaries.md), [`docs/proposals/n00001-resume-kind-cross-session-handoff-summaries.md`](../../docs/proposals/n00001-resume-kind-cross-session-handoff-summaries.md) (delete the auto-created stub at root)
 - **Command**: `bun run lint:proposals`
 - **Expect**: exit0
@@ -224,7 +224,7 @@ So: **if you're a consumer, you get `docs/mcp-vertex/proposals/`; if you ARE mcp
 
 ### S3 — Move 6 `n00001-SESION-*.md` to `done/resumes/` with `n00001..n00006` chronological numbering + bucket README
 
-- **Status**: pending
+- **Status**: done
 - **Files**:
   - `docs/proposals/n00001-SESION-2026-06-17.md` (move from root)
   - `docs/proposals/done/n00001-SESION-AUTONOMA-2026-06-15.md`
@@ -247,7 +247,7 @@ So: **if you're a consumer, you get `docs/mcp-vertex/proposals/`; if you ARE mcp
 
 ### S4 — Update `docs/proposals/done/README.md` for the new bucket + answer the `docsDir` question
 
-- **Status**: pending
+- **Status**: done
 - **Files**: [`docs/proposals/done/README.md`](../../docs/proposals/done/README.md)
 - **Command**: `bun run lint:proposals`
 - **Expect**: exit0
@@ -260,7 +260,7 @@ So: **if you're a consumer, you get `docs/mcp-vertex/proposals/`; if you ARE mcp
 
 ### S5 — Sync proposals index + validate end-to-end
 
-- **Status**: pending
+- **Status**: done
 - **Files**: [`docs/proposals/index.json`](../../docs/proposals/index.json)
 - **Command**: `bun run validate`
 - **Expect**: exit0

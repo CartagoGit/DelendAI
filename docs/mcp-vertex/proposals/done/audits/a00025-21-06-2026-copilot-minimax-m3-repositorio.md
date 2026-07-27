@@ -114,7 +114,7 @@ El monorepo está **arquitectónicamente sano y disciplinado**. Los invariantes 
 ### S1 — Ejecutar la auditoría y documentar los hallazgos
 - **Files**: `docs/proposals/ready/a00026-21-06-2026-copilot-minimax-m3-repositorio.md`
 - **Gate**: `bun run lint:proposals`
-- **Status**: pending
+- **Status**: done
 
 ### S2 — Hygiene in-situ (drift i18n + tsbuildinfo)
 - **Files**:
@@ -124,7 +124,7 @@ El monorepo está **arquitectónicamente sano y disciplinado**. Los invariantes 
   - `.gitignore` (añadir `*.tsbuildinfo`)
   - Limpiar `plugins/test-convention/tsconfig.tsbuildinfo` del WD
 - **Gate**: `bun run validate`
-- **Status**: pending
+- **Status**: done
 
 ## Acceptance
 

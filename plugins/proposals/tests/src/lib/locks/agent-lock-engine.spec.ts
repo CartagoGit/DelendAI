@@ -8,7 +8,7 @@
  * release / status / stale-GC / invalid-input without a server.
  */
 import { execSync } from 'node:child_process';
-import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -23,6 +23,7 @@ import {
 	type IAgentLockDeps,
 	type ILockFile,
 } from '../../../../src/lib/locks/agent-lock-engine';
+import { RELEASE_AUDIT_LOG_RELATIVE_PATH } from '../../../../src/lib/contracts/constants/agents-lock.constants';
 import {
 	readSessionBalance,
 	sessionLogPath,
@@ -544,5 +545,198 @@ describe('runAgentLockEngine — a00069 S8 ok + session balance', async () => {
 			releases: 0,
 			imbalance: 2,
 		});
+	});
+});
+
+// x00155 S2 / x00153 S5 — cross-process release. The test cluster
+// drives `agent_lock` with an injected `nowHostId` so we can simulate
+// the "host restart: same agent name, different pid" scenario that
+// used to return `released: false` and hang the notification
+// plugin's `await_lock`.
+describe('runAgentLockEngine — cross-process release (x00155 S2)', async () => {
+	const readReleaseAudit = (): Array<Record<string, unknown>> => {
+		const auditPath = join(workspace, RELEASE_AUDIT_LOG_RELATIVE_PATH);
+		try {
+			const text = readFileSync(auditPath, 'utf8');
+			return text
+				.split('\n')
+				.filter((line) => line.length > 0)
+				.map((line) => JSON.parse(line) as Record<string, unknown>);
+		} catch {
+			return [];
+		}
+	};
+
+	const fakeHost =
+		(pid: number) =>
+		(): { host: string; pid: number } => ({
+			host: 'test-host',
+			pid,
+		});
+
+	it('release after host restart takes ownership and releases', async () => {
+		// Original process claims with pid 100.
+		await run(
+			{
+				action: 'claim',
+				task_id: 'restart-task',
+				agent: 'vscode-copilot-m3',
+				files: ['src/restart.ts'],
+			},
+			{ nowHostId: fakeHost(100) },
+		);
+		const claimed = readLockFile().in_flight.find(
+			(e) => e.task_id === 'restart-task',
+		);
+		expect(claimed?.pid).toBe(100);
+		expect(claimed?.host).toBe('test-host');
+
+		// New process (pid 200) inherits the lock and releases. The
+		// release is treated as a "host-restart cleanup" because the
+		// recorded pid no longer matches the live caller.
+		const res = await run(
+			{ action: 'release', task_id: 'restart-task' },
+			{ nowHostId: fakeHost(200) },
+		);
+		const out = body(res);
+		expect(out.released).toBe(true);
+		expect(out.removed).toBe(1);
+		expect(out.cross_process_release).toBe(true);
+		expect(out.original_pid).toBe(100);
+		expect(
+			readLockFile().in_flight.some((e) => e.task_id === 'restart-task'),
+		).toBe(false);
+
+		// Audit line was written with the recorded (host, pid) and
+		// the releasing (host, pid) plus the canonical reason.
+		const audit = readReleaseAudit();
+		expect(audit).toHaveLength(1);
+		const line = audit[0]!;
+		expect(line).toMatchObject({
+			task_id: 'restart-task',
+			agent: 'vscode-copilot-m3',
+			originalHost: 'test-host',
+			originalPid: 100,
+			releasingHost: 'test-host',
+			releasingPid: 200,
+			reason: 'cross-process release',
+		});
+		expect(typeof line.ts).toBe('string');
+	});
+
+	it('cross-process release without matching agent name is refused', async () => {
+		// Original process claims with agent A and pid 100.
+		await run(
+			{
+				action: 'claim',
+				task_id: 'mismatch-task',
+				agent: 'agent-A',
+				files: ['src/mismatch.ts'],
+			},
+			{ nowHostId: fakeHost(100) },
+		);
+
+		// New process (pid 200) calls release but identifies itself
+		// as a DIFFERENT agent. The agent-name check is the
+		// stable identity across process restarts, so the release
+		// is refused even though the file lock could technically be
+		// removed.
+		const res = await run(
+			{
+				action: 'release',
+				task_id: 'mismatch-task',
+				agent: 'agent-B',
+			},
+			{ nowHostId: fakeHost(200) },
+		);
+		expect(res.isError).toBe(true);
+		const out = body(res);
+		expect(out.blockerType).toBe('invalid-input');
+		expect(out.error).toContain('agent-A');
+		expect(out.error).toContain('agent-B');
+		// The entry is NOT removed; the lock survives.
+		const stillThere = readLockFile().in_flight.find(
+			(e) => e.task_id === 'mismatch-task',
+		);
+		expect(stillThere?.agent).toBe('agent-A');
+		// And no audit line is written for a refused release.
+		expect(readReleaseAudit()).toEqual([]);
+	});
+
+	it('release from the same pid is NOT flagged as cross-process', async () => {
+		// Same process, same pid — the release is a normal release.
+		await run(
+			{
+				action: 'claim',
+				task_id: 'same-pid-task',
+				agent: 'agent-A',
+				files: ['src/same-pid.ts'],
+			},
+			{ nowHostId: fakeHost(100) },
+		);
+		const res = await run(
+			{ action: 'release', task_id: 'same-pid-task' },
+			{ nowHostId: fakeHost(100) },
+		);
+		const out = body(res);
+		expect(out.released).toBe(true);
+		expect(out.cross_process_release).not.toBe(true);
+		expect(out.original_pid).toBeUndefined();
+		// No audit line for a normal release.
+		expect(readReleaseAudit()).toEqual([]);
+	});
+
+	it('release of an entry that pre-dates host/pid tracking is allowed', async () => {
+		// Manually write a lock file with an entry that has no
+		// host/pid (the pre-S5 shape). The release must succeed
+		// without an audit line — the entry predates the tracking
+		// and the caller's choice is respected.
+		const legacyLock: ILockFile = {
+			version: 1,
+			stale_after_minutes: 10,
+			in_flight: [
+				{
+					task_id: 'legacy-task',
+					agent: 'agent-legacy',
+					ownership: ['src/legacy.ts'],
+					started_at: '2026-01-01T00:00:00.000Z',
+					last_seen: '2026-01-01T00:00:00.000Z',
+				},
+			],
+		};
+		// Avoid stale-GC eviction by writing a fresh last_seen.
+		legacyLock.in_flight[0]!.last_seen = new Date().toISOString();
+		writeFileSync(lockPath, JSON.stringify(legacyLock, null, '\t'));
+
+		const res = await run(
+			{ action: 'release', task_id: 'legacy-task' },
+			{ nowHostId: fakeHost(process.pid + 1) },
+		);
+		const out = body(res);
+		expect(out.released).toBe(true);
+		expect(out.cross_process_release).not.toBe(true);
+		expect(
+			readLockFile().in_flight.some((e) => e.task_id === 'legacy-task'),
+		).toBe(false);
+		// No audit line: the entry was missing host/pid so the engine
+		// did not detect a "real" cross-process case.
+		expect(readReleaseAudit()).toEqual([]);
+	});
+
+	it('claim stamps host/pid on the new in_flight entry', async () => {
+		await run(
+			{
+				action: 'claim',
+				task_id: 'stamp-task',
+				agent: 'agent-stamp',
+				files: ['src/stamp.ts'],
+			},
+			{ nowHostId: fakeHost(7777) },
+		);
+		const entry = readLockFile().in_flight.find(
+			(e) => e.task_id === 'stamp-task',
+		);
+		expect(entry?.pid).toBe(7777);
+		expect(entry?.host).toBe('test-host');
 	});
 });
