@@ -158,10 +158,7 @@ const appendReleaseAuditEntry = async (
 			);
 		} catch (err) {
 			if (isMissingFileErrno(err)) {
-				await writeFileAtomic(
-					auditPath,
-					`${JSON.stringify(entry)}\n`,
-				);
+				await writeFileAtomic(auditPath, `${JSON.stringify(entry)}\n`);
 				return;
 			}
 			throw err;
@@ -184,7 +181,9 @@ const EMPTY_BALANCE: ISessionBalance = {
 };
 const balanceByWorkspace = new Map<string, ISessionBalance>();
 
-const knownBalanceFor = (workspaceRoot: string | undefined): ISessionBalance => {
+const knownBalanceFor = (
+	workspaceRoot: string | undefined,
+): ISessionBalance => {
 	if (workspaceRoot === undefined) return EMPTY_BALANCE;
 	return balanceByWorkspace.get(workspaceRoot) ?? EMPTY_BALANCE;
 };
@@ -198,8 +197,7 @@ export const getAgentLockSessionBalance = async (
 }> => {
 	// Prefer the explicit workspace root; fall back to the last-seen
 	// one (set by `runAgentLockEngine`); throw if neither is known.
-	const workspaceRoot =
-		workspaceRootAbs ?? lastSessionWorkspaceRoot;
+	const workspaceRoot = workspaceRootAbs ?? lastSessionWorkspaceRoot;
 	if (typeof workspaceRoot !== 'string' || workspaceRoot.length === 0) {
 		throw new Error(
 			'agent-lock: getAgentLockSessionBalance requires a workspaceRootAbs (or a prior runAgentLockEngine call to seed it). ' +
@@ -275,7 +273,8 @@ const lockResult = (
 	// workspaces when the same MCP server drove two workspaces
 	// sequentially (see `balanceByWorkspace` declaration above).
 	const balance =
-		opts.balance ?? knownBalanceFor(opts.workspaceRoot ?? lastSessionWorkspaceRoot);
+		opts.balance ??
+		knownBalanceFor(opts.workspaceRoot ?? lastSessionWorkspaceRoot);
 	const body = {
 		...payload,
 		ok,

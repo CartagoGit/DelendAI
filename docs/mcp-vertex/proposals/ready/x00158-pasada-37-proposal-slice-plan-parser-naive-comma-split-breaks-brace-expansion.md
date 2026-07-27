@@ -86,6 +86,7 @@ shared.
 
 ---
 
+## architecture
 
 ### Verified State
 
@@ -169,8 +170,6 @@ parser would return 4 entries (all valid file globs).
    paths).
 
 ---
-
-## architecture
 
 ### Bug detail
 
@@ -294,7 +293,7 @@ expansion:
 
 ---
 
-## Resolution: extract `expandDeclaredFiles` to shared location
+### Resolution
 
 Both parsers should consume the same primitive. Move
 `expandDeclaredFiles` (and its two constants) from
@@ -345,7 +344,7 @@ Both parsers should consume the same primitive. Move
 
 ---
 
-## Lessons (for the project memory)
+## notes
 
 1. **Two parsers for the same input = a bug** — one will drift.
    When you find the right impl, de-duplicate immediately. The
