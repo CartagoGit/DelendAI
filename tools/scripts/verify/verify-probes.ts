@@ -154,7 +154,12 @@ export const runEmptyInputProbe = async (
 	if (invocationError !== undefined) {
 		// Handler crashed on input that the schema accepted — real bug.
 		outcome = 'failed';
-	} else if (outputSchema && typeof result === 'object' && result !== null) {
+	} else if (outputSchema) {
+		// Validate unconditionally — covers primitives (string/number/boolean),
+		// null, undefined, and objects. The previous version only entered
+		// this branch when `typeof result === 'object' && result !== null`,
+		// so primitive-returning tools with an `outputSchema` were silently
+		// marked 'failed' even when their output matched the schema.
 		try {
 			outputSchema.parse(result);
 			outcome = 'ok';
@@ -164,7 +169,7 @@ export const runEmptyInputProbe = async (
 			outcome = 'failed';
 			invocationError = `output violates outputSchema: ${(parseError as Error).message}`;
 		}
-	} else if (!outputSchema) {
+	} else {
 		// catchall schemas are documented exceptions (AGENTS.md #8).
 		outcome = handlerReturned ? 'ok' : 'failed';
 	}

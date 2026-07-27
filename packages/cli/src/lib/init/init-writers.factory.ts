@@ -84,21 +84,28 @@ const mergeSkillManifest = (
 		const next = JSON.parse(incoming) as { skills?: unknown[] };
 		if (!Array.isArray(current.skills) || !Array.isArray(next.skills))
 			return undefined;
-		const ids = new Set(
-			current.skills
-				.map((skill) => skill.id)
-				.filter((id): id is string => typeof id === 'string'),
-		);
+		// De-dup `current.skills` by id before spreading: if the existing
+		// manifest already has duplicate id entries (e.g. two `mcp-vertex-
+		// operator` rows from a prior broken merge), the previous version
+		// preserved them verbatim and the new merge never stripped them.
+		const seenIds = new Set<string>();
+		const dedupedCurrent = current.skills.filter((skill) => {
+			const id = (skill as { id?: unknown }).id;
+			if (typeof id !== 'string') return true; // keep non-id rows untouched
+			if (seenIds.has(id)) return false;
+			seenIds.add(id);
+			return true;
+		});
 		return `${JSON.stringify(
 			{
 				...current,
 				skills: [
-					...current.skills,
+					...dedupedCurrent,
 					...next.skills.filter((skill) => {
 						if (skill === null || typeof skill !== 'object')
 							return false;
 						const id = (skill as { id?: unknown }).id;
-						return typeof id === 'string' && !ids.has(id);
+						return typeof id === 'string' && !seenIds.has(id);
 					}),
 				],
 			},

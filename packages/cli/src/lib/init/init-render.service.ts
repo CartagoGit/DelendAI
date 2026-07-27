@@ -32,6 +32,7 @@ import {
 } from './init-host-instructions.service';
 import { renderSnapshotHostInstructionsProposal } from './init-host-snapshot.service';
 import { renderAdoptionPlan } from './init-migrate-offer.service';
+import { PROPOSAL_STATUS_FOLDERS } from './init-proposal-folders.constant';
 
 // Single source of truth for preset membership lives in
 // `@mcp-vertex/core`'s preset catalog. We delegate to
@@ -502,15 +503,12 @@ export const renderInitBundle = async (
  * is caught by `init-render.spec.ts` (see the `proposals-folders
  * -match-plugin-statuses` test).
  */
-export const PROPOSAL_STATUS_FOLDERS: readonly string[] = [
-	'ready',
-	'in-progress',
-	'review',
-	'done',
-	'paused',
-	'blocked',
-	'retired',
-];
+// Constant now lives in its own module
+// (`init-proposal-folders.constant.ts`) to break a circular-import /
+// TDZ trap with the migration helpers. Re-export for backwards
+// compatibility — existing imports of `PROPOSAL_STATUS_FOLDERS` from
+// `./init-render.service` keep working.
+export { PROPOSAL_STATUS_FOLDERS };
 
 /**
  * Mirror of `PROPOSAL_STATUSES` in

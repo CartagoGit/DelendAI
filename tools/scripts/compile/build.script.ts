@@ -74,11 +74,32 @@ const buildRank = (rel: string): number => {
 	return 2;
 };
 
+class BuildError extends Error {
+	constructor(
+		message: string,
+		readonly exitCode: number,
+	) {
+		super(message);
+		this.name = 'BuildError';
+	}
+}
+
+/**
+ * Run a child command and forward stdio. Throws `BuildError` on a
+ * non-zero exit so the caller's `try/finally` blocks actually run.
+ * The previous version called `process.exit()` directly, which
+ * bypassed every `finally` and leaked `mkdtempSync` dirs under
+ * `node_modules/.cache/mcp-vertex-dts/build-*` for every failed
+ * package build (CI runs would accumulate one leaked dir per failure).
+ */
 const run = (cmd: string, args: string[], cwd: string): void => {
 	const r = spawnSync(cmd, args, { cwd, stdio: 'inherit' });
 	if (r.status !== 0) {
 		console.error(`\n✗ ${cmd} ${args.join(' ')} (in ${cwd}) failed`);
-		process.exit(r.status ?? 1);
+		throw new BuildError(
+			`build command failed: ${cmd} ${args.join(' ')}`,
+			r.status ?? 1,
+		);
 	}
 };
 
@@ -203,38 +224,42 @@ const buildPackage = (rel: string): void => {
 	// This block is now redundant (the dep introspection above picks up
 	// client), kept for clarity that ui-extension's dist must exist before
 	// building it.
-	writeFileSync(
-		dtsConfig,
-		JSON.stringify(
-			{
-				extends: join(ROOT, 'tsconfig.base.json'),
-				compilerOptions: {
-					noEmit: false,
-					declaration: true,
-					emitDeclarationOnly: true,
-					outDir: join(dir, 'dist'),
-					rootDir: join(dir, 'src'),
-					paths: corePaths,
-				},
-				include: [
-					join(dir, 'src/**/*'),
-					// Ambient `*.scss` module declarations for the shared
-					// package's style .ts modules (dev-preview-css & co.).
-					// A dependency's ambient d.ts is not auto-loaded, and it
-					// emits nothing, so including it here is safe for every
-					// package.
-					join(ROOT, 'apps/shared/src/styles/raw.d.ts'),
-				],
-				exclude: [
-					join(dir, 'src/**/*.spec.ts'),
-					join(dir, 'src/**/*.test.ts'),
-				],
-			},
-			null,
-			'\t',
-		),
-	);
+	// All work that touches the throwaway `dtsTempDir` lives inside the
+	// try/finally so a failure in `writeFileSync`, `JSON.stringify`, or
+	// `run` cleans up the tempdir. `run` throws `BuildError` instead of
+	// calling `process.exit`, so the finally actually runs.
 	try {
+		writeFileSync(
+			dtsConfig,
+			JSON.stringify(
+				{
+					extends: join(ROOT, 'tsconfig.base.json'),
+					compilerOptions: {
+						noEmit: false,
+						declaration: true,
+						emitDeclarationOnly: true,
+						outDir: join(dir, 'dist'),
+						rootDir: join(dir, 'src'),
+						paths: corePaths,
+					},
+					include: [
+						join(dir, 'src/**/*'),
+						// Ambient `*.scss` module declarations for the shared
+						// package's style .ts modules (dev-preview-css & co.).
+						// A dependency's ambient d.ts is not auto-loaded, and
+						// it emits nothing, so including it here is safe for
+						// every package.
+						join(ROOT, 'apps/shared/src/styles/raw.d.ts'),
+					],
+					exclude: [
+						join(dir, 'src/**/*.spec.ts'),
+						join(dir, 'src/**/*.test.ts'),
+					],
+				},
+				null,
+				'\t',
+			),
+		);
 		run('bunx', ['tsc', '-p', dtsConfig], dir);
 	} finally {
 		rmSync(dtsTempDir, { recursive: true, force: true });
@@ -243,5 +268,25 @@ const buildPackage = (rel: string): void => {
 
 const targets =
 	process.argv.slice(2).length > 0 ? process.argv.slice(2) : discover();
-for (const rel of targets) buildPackage(rel);
+let firstFailure: BuildError | undefined;
+for (const rel of targets) {
+	try {
+		buildPackage(rel);
+	} catch (err) {
+		if (err instanceof BuildError) {
+			if (firstFailure === undefined) firstFailure = err;
+			// Continue so the remaining packages still build (their own
+			// try/finally cleanups still run); we surface the failure
+			// at the end so partial progress is visible to the operator.
+		} else {
+			throw err;
+		}
+	}
+}
+if (firstFailure !== undefined) {
+	console.error(
+		`\n✗ Build failed; first failure exit code ${firstFailure.exitCode}.`,
+	);
+	process.exit(firstFailure.exitCode);
+}
 console.log(`\n✓ Built ${targets.length} package(s).`);

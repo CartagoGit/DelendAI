@@ -434,6 +434,44 @@ describe('writeCoreSkillProjection', () => {
 		);
 		expect(second.some((write) => write.kind === 'exists')).toBe(true);
 	});
+
+	it('mergeSkillManifest de-dupes duplicate ids in the existing manifest on next merge', async () => {
+		// a00079 (audit): the previous merge logic preserved `current.skills`
+		// verbatim and only filtered the incoming list, so any duplicate
+		// already present in the existing manifest was never stripped.
+		// This regression test seeds a manifest with two entries of the
+		// same id and asserts the next merge collapses to a single row.
+		const manifestPath = join(
+			workspace,
+			'docs/mcp-vertex/skills/manifest.json',
+		);
+		await mkdir(dirname(manifestPath), { recursive: true });
+		await fsWriteFile(
+			manifestPath,
+			`${JSON.stringify(
+				{
+					skills: [
+						{ id: 'mcp-vertex-operator', bodyPath: 'a' },
+						{ id: 'mcp-vertex-operator', bodyPath: 'b' },
+						{ id: 'other-plugin', bodyPath: 'c' },
+					],
+				},
+				null,
+				'\t',
+			)}\n`,
+			'utf8',
+		);
+
+		await writeCoreSkillProjection(workspace, 'docs/mcp-vertex', false);
+
+		const onDisk = JSON.parse(await readFile(manifestPath, 'utf8')) as {
+			skills: Array<{ id: string }>;
+		};
+		const operatorRows = onDisk.skills.filter(
+			(skill) => skill.id === 'mcp-vertex-operator',
+		);
+		expect(operatorRows).toHaveLength(1);
+	});
 });
 
 describe('computeHostInstructionsWrite (f00084 S4)', () => {
