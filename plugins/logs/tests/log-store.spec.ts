@@ -25,7 +25,7 @@ describe('x00153 S2 — tail/readRange only open day-files in scope', async () =
 		const { appendFile, mkdir } = await import('node:fs/promises');
 		const line = JSON.stringify({
 			ts,
-			kind: overrides.kind ?? 'log-info',
+			kind: overrides.kind ?? 'tool-completed',
 			severity: 'info',
 			incidentType: 'test',
 			agent: 't',
@@ -171,11 +171,11 @@ describe('x00153 S2 — tail/readRange only open day-files in scope', async () =
 		const store = await createLogStore(dir);
 		const events = await store.tail({
 			limit: 50,
-			kindFilter: 'log-info',
+			kindFilter: 'tool-completed',
 		});
 		expect(events).toHaveLength(2);
 		for (const event of events) {
-			expect(event.kind).toBe('log-info');
+			expect(event.kind).toBe('tool-completed');
 		}
 	});
 
