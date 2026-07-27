@@ -92,7 +92,7 @@ export const formatResultsTable = (rows: readonly IFormatRow[]): string => {
 		if (r.outcome === 'failed' && r.detail !== undefined) {
 			// Single continuation line, truncated: enough to act on,
 			// never a wall of stack trace.
-			const detail = r.detail.replace(/\s+/g, ' ').slice(0, 200);
+			const detail = r.detail.replace(/\s+/g, ' ').slice(0, 500);
 			lines.push(`  ↳ ${detail}`);
 		}
 		if (r.outcome === 'ok') totalOk += 1;

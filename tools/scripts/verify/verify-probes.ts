@@ -80,6 +80,27 @@ export const runEmptyInputProbe = async (
 ): Promise<IProbeResult> => {
 	const { tool, inputSchema, outputSchema, invoke } = handle;
 
+	// f00030-protect-diagram-modules: tools that declare side effects
+	// (`spawn`, `fs:write`, `network`) MUST NOT be probed with empty
+	// input — invoking them with `{}` would execute real subprocesses
+	// (e.g. `run_quality` running `vitest`, `tsc`, `bun run build`)
+	// and hang the verify harness for as long as those scripts take.
+	// Report them as `needs-input` to keep the harness fast, and rely
+	// on the plugin's own test suite for the happy-path coverage.
+	if (
+		tool.effects !== undefined &&
+		tool.effects.some(
+			(e) => e === 'spawn' || e === 'fs:write' || e === 'network',
+		)
+	) {
+		return {
+			tool: tool.id,
+			outcome: 'needs-input',
+			handlerReturned: true,
+			detail: `skipped: declared side-effect (${tool.effects.join(', ')})`,
+		};
+	}
+
 	// Schema gate: does the inputSchema accept an empty payload?
 	if (inputSchema) {
 		const emptyProbe = inputSchema.safeParse({});
