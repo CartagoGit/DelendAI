@@ -374,20 +374,9 @@ empty/corrupt is a structured `toolError`.
 
 ### S5 — `file-lock-table.ts` distinguishes missing from corrupt
 
-- **Status**: pending
-- **Files**:
-  - `plugins/proposals/src/lib/locks/file-lock-table.ts` —
-    replace `catch {}` at line 238 with structured handling:
-    on `SyntaxError` (corrupt JSON) log `log-warning` to the
-    structured event log and fall back to "no history"; on
-    any other error rethrow. Add a typed error export
-    (`LocksFileCorruptError`).
-  - `plugins/proposals/tests/src/lib/locks/file-lock-table.spec.ts`
-    — specs for: (a) corrupt JSON file → structured log
-    emitted and history is empty, (b) truncated file → same,
-    (c) missing file → empty history (current behaviour, no
-    log), (d) valid file with one contention → filtered
-    correctly.
+- **Status**: done
+- **Implementation**: `cf399f6a` (LocksFileCorruptError class + emitLog dep + structured catch for SyntaxError; 4 new specs; 1076/1076 plugin tests pass)
+- **Files**: `plugins/proposals/src/lib/locks/file-lock-table.ts`, `plugins/proposals/tests/src/lib/locks/file-lock-table.spec.ts`
 - **Gate**: `bun run test --cwd plugins/proposals` — all
   green; the bare-catch lint (if one exists in the repo) shows
   0 violations; the harness's struct-log catches the new
