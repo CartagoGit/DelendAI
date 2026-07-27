@@ -57,7 +57,7 @@ const invoke = async (
 		registerTool: (_name: string, _desc: any, fn: Handler): void => {
 			handler = fn;
 		},
-	} as any);
+	});
 	if (!handler) throw new Error('tool did not register a handler');
 	const result = await handler(args);
 	return result.structuredContent;

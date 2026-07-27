@@ -1,9 +1,12 @@
-import { appendFile, mkdir, readFile as readFileAsync } from 'node:fs/promises';
+import { appendFile, mkdir } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 
 import { z } from 'zod';
 
-import type { IToolRegistration } from '@mcp-vertex/core/public';
+import type {
+	IToolRegistration,
+	IToolTextResult,
+} from '@mcp-vertex/core/public';
 import {
 	redactSecrets,
 	toolError,
@@ -44,6 +47,7 @@ import {
 	parseReviewState,
 	renderReviewLines,
 	reviewTransition,
+	type IReviewRound,
 } from '../swarm/proposal-review';
 import { recordProposalReviewAction } from '../shared/peer-review-log';
 import {
@@ -72,6 +76,41 @@ export { readActiveLocks } from './authoring-options';
 // structured validation error and the document mutex is always released.
 const CLOSE_SLICE_VALIDATION_TIMEOUT_MS = 45_000;
 
+/**
+ * x00156 S5 — the `close_slice` write-path throws a plain `Error`
+ * decorated with these extra fields (quality-gate failure, or a
+ * validation-error kind checked defensively though nothing currently
+ * throws it) instead of a dedicated Error subclass. Named once and
+ * shared between the throw site and the catch site so neither needs
+ * `catch (err: any)`.
+ */
+type ICloseSliceThrownError = Error & {
+	readonly kind?: 'validation-error' | 'quality-failed';
+	readonly output?: string;
+	readonly detail?: {
+		readonly ok: boolean;
+		readonly severity: 'ok' | 'error';
+		readonly findings: readonly string[];
+		readonly summary?: { readonly ok: boolean; readonly scopes: number };
+	};
+};
+
+const isCloseSliceThrownError = (
+	value: unknown,
+): value is ICloseSliceThrownError => value instanceof Error;
+
+/**
+ * x00156 S5 — the review-transition write-path (`approve` /
+ * `request_changes`) throws a plain `Error` decorated with a
+ * pre-built `toolError(...)` envelope (see the identity-check guard
+ * above) so the catch site can re-surface it verbatim.
+ */
+type IToolErrorCarryingError = Error & { readonly toolError?: IToolTextResult };
+
+const isToolErrorCarryingError = (
+	value: unknown,
+): value is IToolErrorCarryingError => value instanceof Error;
+
 type IPeerReviewPersistedEntry = {
 	readonly ts: string;
 	readonly proposal_id: string;
@@ -79,36 +118,6 @@ type IPeerReviewPersistedEntry = {
 	readonly agent: string;
 	readonly verdict: 'approved' | 'request_changes';
 	readonly note?: string;
-};
-
-const readPeerReviewLog = async (
-	logPathAbs: string,
-): Promise<readonly IPeerReviewPersistedEntry[]> => {
-	const raw = await readFileAsync(logPathAbs, 'utf8').catch(
-		(error: unknown) => {
-			if (
-				error &&
-				typeof error === 'object' &&
-				'code' in error &&
-				error.code === 'ENOENT'
-			) {
-				return '';
-			}
-			throw error;
-		},
-	);
-	if (raw.trim() === '') return [];
-	const entries: IPeerReviewPersistedEntry[] = [];
-	for (const line of raw.split('\n')) {
-		const trimmed = line.trim();
-		if (trimmed === '') continue;
-		try {
-			entries.push(JSON.parse(trimmed) as IPeerReviewPersistedEntry);
-		} catch {
-			continue;
-		}
-	}
-	return entries;
 };
 
 const appendPeerReviewLog = async (
@@ -810,22 +819,16 @@ export const buildCloseSliceRegistration = (
 						if (typeof options.runQuality === 'function') {
 							const quality = await options.runQuality();
 							if (quality.severity === 'error') {
-								const err = new Error(
-									'quality gate reported severity=error',
-								) as Error & {
-									kind: string;
-									detail: {
-										ok: boolean;
-										severity: 'ok' | 'error';
-										findings: readonly string[];
-										summary?: {
-											ok: boolean;
-											scopes: number;
-										};
-									};
-								};
-								err.kind = 'quality-failed';
-								err.detail = quality;
+								const err: ICloseSliceThrownError =
+									Object.assign(
+										new Error(
+											'quality gate reported severity=error',
+										),
+										{
+											kind: 'quality-failed' as const,
+											detail: quality,
+										},
+									);
 								throw err;
 							}
 						}
@@ -836,8 +839,10 @@ export const buildCloseSliceRegistration = (
 						);
 						await writeFileAtomic(docPath, nextContent);
 					});
-				} catch (err: any) {
-					if (err?.kind === 'validation-error') {
+				} catch (rawErr: unknown) {
+					if (!isCloseSliceThrownError(rawErr)) throw rawErr;
+					const err = rawErr;
+					if (err.kind === 'validation-error') {
 						const envelope = {
 							ok: false as const,
 							kind: 'validation-error',
@@ -864,7 +869,7 @@ export const buildCloseSliceRegistration = (
 							isError: true,
 						};
 					}
-					if (err?.kind === 'quality-failed') {
+					if (err.kind === 'quality-failed') {
 						const envelope = {
 							ok: false as const,
 							kind: 'quality-failed',
@@ -1076,7 +1081,7 @@ export const buildReviewRegistration = (
 					| 'done';
 				let nextImplementer!: string | null;
 				let nextReviewer!: string | null;
-				let nextRounds!: readonly any[];
+				let nextRounds!: readonly IReviewRound[];
 				let autoTransitionRequested = false;
 				const peerReviewLogPathAbs = join(
 					options.workspaceRoot,
@@ -1154,9 +1159,23 @@ export const buildReviewRegistration = (
 							}
 						}
 
+						// x00156 S5: `args.action === 'status'` already returned
+						// above, but that narrowing does not cross the
+						// `withFileMutex(docPath, async () => { ... })` closure
+						// boundary this code runs inside — TS re-widens `args`
+						// back to its full declared union inside any nested
+						// function. Re-proving it here (rather than an `as
+						// any` cast) keeps the check real: if this callback
+						// is ever reached with `action: 'status'`, it throws
+						// instead of silently mismatching `IReviewAction`.
+						if (args.action === 'status') {
+							throw new Error(
+								'unreachable: action "status" already returned above',
+							);
+						}
 						const result = reviewTransition(
 							state,
-							args.action as any,
+							args.action,
 							args.agent,
 							redactedNote.text,
 							args.action === 'approve'
@@ -1245,10 +1264,11 @@ export const buildReviewRegistration = (
 							});
 						}
 					});
-				} catch (err: any) {
-					if (err?.toolError) return err.toolError;
+				} catch (rawErr: unknown) {
+					if (!isToolErrorCarryingError(rawErr)) throw rawErr;
+					if (rawErr.toolError !== undefined) return rawErr.toolError;
 					return toolError(
-						err.message,
+						rawErr.message,
 						'Call proposal_board to list slices.',
 					);
 				}
@@ -1309,7 +1329,7 @@ export const buildReviewRegistration = (
 					status: nextStatus,
 					implementer: nextImplementer,
 					reviewer: nextReviewer,
-					rounds: nextRounds as any,
+					rounds: nextRounds,
 					lockReleased,
 					redactedSecrets: redactedNote.redactions,
 				});
