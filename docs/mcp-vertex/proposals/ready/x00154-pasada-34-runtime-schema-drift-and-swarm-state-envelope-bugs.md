@@ -347,7 +347,8 @@ empty/corrupt is a structured `toolError`.
 
 ### S3 — `verify:tools` is loud, not SIGKILL-silent
 
-- **Status**: pending
+- **Status**: done
+- **Implementation**: `279e42a6` (`--timeout=<ms>` flag with default 900000ms; `raceWithTimeout` returns typed timeout discriminator; structured `toolError` row in same `IVerifyResult` shape; timing footer appended to existing stdout report; parent process never SIGKILL'd)
 - **Files**:
   - `tools/scripts/verify/plugin-tool-verify.script.ts` —
     accept `--timeout <ms>` per-plugin (default 900_000);
