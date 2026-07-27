@@ -189,6 +189,7 @@ export const buildAgentsLockDiagnoseRegistration = (
 		server.registerTool(
 			`${options.namespacePrefix}_agents_lock_diagnose`,
 			{
+				inputSchema: z.object({}),
 				outputSchema: AGENTS_LOCK_DIAGNOSE_OUTPUT_SCHEMA,
 				description:
 					'Reads agents.lock.json, reports zombie lock entries (started_at == last_seen and older than 30s), stale agents.lock tmp files older than 60s, and correlates each zombie task with the most recent matching log line under results/logs or logs.',

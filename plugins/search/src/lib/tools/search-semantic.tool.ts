@@ -1,6 +1,8 @@
 import { isAbsolute, join } from 'node:path';
 import { readFile } from 'node:fs/promises';
 
+import { z } from 'zod';
+
 import type { IRankedHit } from '../contracts/interfaces/hybrid-rank.interface';
 import {
 	buildApiEmbedder,
@@ -276,3 +278,44 @@ export const runSearchWithMode = async (
 			: {}),
 	};
 };
+
+/**
+ * x00154 S4: explicit input/output schemas for the semantic-search
+ * helper. The function is consumed by `search.tool.ts` — these
+ * constants declare the helper's API surface so this `.tool.ts` file
+ * satisfies the bootstrap §6 invariant (`Every public tool declares an
+ * outputSchema` — extended here to the helper layer). Mirrors the
+ * `ISearchToolArgs` + `ISearchResult` contracts.
+ */
+export const inputSchema = z.object({
+	query: z.string(),
+	mode: z.enum(['lexical', 'semantic', 'hybrid']).optional(),
+	consent: z.boolean().optional(),
+	providerId: z.enum(['openai', 'voyage', 'cohere']).optional(),
+	roots: z.array(z.string()).optional(),
+	maxResults: z.number().optional(),
+	caseSensitive: z.boolean().optional(),
+	regex: z.boolean().optional(),
+	include: z.array(z.string()).optional(),
+	exclude: z.array(z.string()).optional(),
+	context: z.number().int().min(0).max(10).optional(),
+	preferRg: z.boolean().optional(),
+});
+
+export const outputSchema = z.object({
+	query: z.string(),
+	hits: z.array(
+		z.object({
+			file: z.string(),
+			line: z.number(),
+			text: z.string(),
+			before: z.array(z.string()).optional(),
+			after: z.array(z.string()).optional(),
+		}),
+	),
+	truncated: z.boolean(),
+	scanned: z.number(),
+	usedRg: z.boolean(),
+	rgFallbackReason: z.string().optional(),
+	diagnostic: z.string().optional(),
+});
