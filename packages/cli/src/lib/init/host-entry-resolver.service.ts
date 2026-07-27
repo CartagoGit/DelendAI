@@ -77,7 +77,11 @@ const upwardSiblingWalk = (
 	//
 	// The walk is bounded so `/tmp/` (thousands of entries) does
 	// not blow up the call latency on a CI scratch dir.
-	const reader = probe.readDirNames?.bind(probe) ?? realProbe.readDirNames;
+	// Honour the injected probe as a complete unit: if the caller
+	// did not expose `readDirNames`, the walk has no reader and must
+	// not silently fall back to the real filesystem (that would walk
+	// `/workspace/..` for real and explode CI latency).
+	const reader = probe.readDirNames?.bind(probe);
 
 	const probeAt = (dir: string, depth: number): string | null => {
 		const queue: Array<{ dir: string; depth: number }> = [
