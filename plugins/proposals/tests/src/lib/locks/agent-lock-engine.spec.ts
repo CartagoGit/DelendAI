@@ -567,12 +567,10 @@ describe('runAgentLockEngine — cross-process release (x00155 S2)', async () =>
 		}
 	};
 
-	const fakeHost =
-		(pid: number) =>
-		(): { host: string; pid: number } => ({
-			host: 'test-host',
-			pid,
-		});
+	const fakeHost = (pid: number) => (): { host: string; pid: number } => ({
+		host: 'test-host',
+		pid,
+	});
 
 	it('release after host restart takes ownership and releases', async () => {
 		// Original process claims with pid 100.
