@@ -237,11 +237,7 @@ const writeMcpJson = async (
 		return { kind: 'exists', path };
 	}
 
-	const written = await writeWorkspaceFileSafely(
-		workspace,
-		'.vscode/mcp.json',
-		merged,
-	);
+	const written = await writeWorkspaceFileSafely(workspace, relPath, merged);
 
 	// Compute the list of servers we preserved (everything in the
 	// merged file except `mcp-vertex`) so the recap can surface a
