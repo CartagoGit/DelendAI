@@ -32,6 +32,49 @@ const EMPTY_BALANCE = (): ISessionBalance => ({
 	imbalance: 0,
 });
 
+/**
+ * x00154 S6 — typed error thrown by `appendSessionEntry` when the
+ * existing session log cannot be read for any reason other than
+ * `ENOENT` (no log yet). The previous `.catch(() => '')` collapsed
+ * permissions failures, EIO, and "log is gone" into a single silent
+ * overwrite path, which could destroy the durable counter. Callers
+ * surface this to the tool envelope as a `lock-store-unreadable`
+ * failure so the operator can decide whether to retry or escalate.
+ */
+export class SessionLogUnreadableError extends Error {
+	readonly path: string;
+	override readonly cause: unknown;
+	constructor(path: string, cause: unknown) {
+		super(`session log is not readable: ${path}`);
+		this.name = 'SessionLogUnreadableError';
+		this.path = path;
+		this.cause = cause;
+	}
+}
+
+const isMissingFileErrno = (err: unknown): boolean => {
+	// x00154 S6 — only ENOENT is the legitimate "first append" case.
+	// ENOTDIR (parent path is a file) and EACCES/EIO/… are real
+	// read failures that must not silently become an empty prefix
+	// that overwrites the durable counter.
+	if (typeof err !== 'object' || err === null) return false;
+	const code = (err as { code?: unknown }).code;
+	return code === 'ENOENT';
+};
+
+const readSessionLogPrefix = async (path: string): Promise<string> => {
+	try {
+		return await readFile(path, 'utf8');
+	} catch (err) {
+		// x00154 S6 — a missing log is the normal "first append"
+		// case. Any other read failure is a real problem and must
+		// not silently become an empty prefix that overwrites the
+		// durable counter.
+		if (isMissingFileErrno(err)) return '';
+		throw new SessionLogUnreadableError(path, err);
+	}
+};
+
 let cachedBalance: ISessionBalance | null = null;
 let cachedPath: string | null = null;
 
@@ -63,9 +106,7 @@ const deriveBalance = (text: string): ISessionBalance => {
 			if (!isSessionEntry(parsed) || parsed.ok !== true) continue;
 			if (parsed.action === 'claim') balance.claims += 1;
 			if (parsed.action === 'release') balance.releases += 1;
-		} catch {
-			continue;
-		}
+		} catch {}
 	}
 	return {
 		claims: balance.claims,
@@ -101,7 +142,7 @@ export const appendSessionEntry = async (
 	const path = sessionLogPath(workspaceRootAbs);
 	await withFileMutex(path, async () => {
 		await mkdir(dirname(path), { recursive: true });
-		const prefix = await readFile(path, 'utf8').catch(() => '');
+		const prefix = await readSessionLogPrefix(path);
 		await writeFileAtomic(path, `${prefix}${JSON.stringify(entry)}\n`);
 		updateCache(path, deriveBalance(`${prefix}${JSON.stringify(entry)}\n`));
 	});
