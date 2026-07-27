@@ -25,6 +25,7 @@ export const buildGetProposalWorkflowRegistration = (
 		server.registerTool(
 			`${options.namespacePrefix}_get_proposal_workflow`,
 			{
+				inputSchema: z.object({}),
 				outputSchema: z.object({
 					families: z.array(
 						z.object({

@@ -175,6 +175,7 @@ export const buildDatabaseSchemaToolRegistrations = (
 				server.registerTool(
 					`${prefix}_db_schema`,
 					{
+						inputSchema: z.object({}),
 						description:
 							'Introspect the database schema (tables, columns, indexes, foreign keys). Pure read; refuses if DATABASE_URL is unset or the driver is missing.',
 						outputSchema: SCHEMA_OUTPUT_SCHEMA,
@@ -193,6 +194,7 @@ export const buildDatabaseSchemaToolRegistrations = (
 				server.registerTool(
 					`${prefix}_db_probe`,
 					{
+						inputSchema: z.object({}),
 						description:
 							'Check whether DATABASE_URL is set and the declared driver is reachable. Never throws; returns an install hint when the driver is missing.',
 						outputSchema: PROBE_OUTPUT_SCHEMA,
