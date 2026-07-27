@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
 /**
- * push-to-develop-discipline.script.ts — f00086 S2.
+ * push-to-develop-discipline.script.ts — f00086 S2, stdin fix x00159 S1.
  *
  * Pre-push guard. Pure function over
  * `(cwd, remoteName, remoteBranch, currentBranch) → { ok: true } | { ok: false, blockers: string[] }`.
@@ -13,7 +13,21 @@
  *     shape) is allowed.
  *   - Pushing any other branch to any other remote is allowed.
  *   - Pushing to a non-develop remote branch is always allowed.
+ *
+ * x00159 S1: the refs actually being pushed are NOT available as a
+ * third CLI argument. Git's real pre-push hook contract passes only
+ * `<remote name> <remote url>` on argv; every updated ref arrives as
+ * a STDIN line (`<local ref> <local oid> <remote ref> <remote oid>`).
+ * lefthook's `{3}` template has nothing to substitute for a plain
+ * `git push`, so it was shipping the literal, unsubstituted string
+ * `"{3}"` as argv[2] — which silently parsed as "not develop" and
+ * defeated this entire guard for the exact case it exists to catch
+ * (reproduced live: `git push` on `develop` printed `✓ ok` and
+ * pushed straight through). `main()` now reads the real stdin
+ * contract first; the argv-based parsing stays only as a fallback
+ * for direct/manual invocation (and the existing unit tests).
  */
+import { readFileSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 
 const DEVELOP_BRANCH = 'develop';
@@ -28,6 +42,73 @@ export interface IPushToDevelopInput {
 export type PushToDevelopResult =
 	| { readonly ok: true }
 	| { readonly ok: false; readonly blockers: readonly string[] };
+
+export interface IPrePushRefUpdate {
+	readonly localRef: string;
+	readonly localSha: string;
+	readonly remoteRef: string;
+	readonly remoteSha: string;
+}
+
+const REFS_HEADS_PREFIX = 'refs/heads/';
+
+const stripRefsHeadsPrefix = (ref: string): string =>
+	ref.startsWith(REFS_HEADS_PREFIX)
+		? ref.slice(REFS_HEADS_PREFIX.length)
+		: ref;
+
+/** All-zero SHA marks a branch delete in the pre-push stdin protocol. */
+const isAllZeroSha = (sha: string): boolean => /^0+$/.test(sha);
+
+/**
+ * Parse git's actual pre-push hook STDIN contract: one line per ref
+ * being updated, `<local ref> SP <local oid> SP <remote ref> SP
+ * <remote oid>`. This is the authoritative source for "what is being
+ * pushed where" — unlike the hook's argv, which only ever carries
+ * `<remote name> <remote url>`.
+ */
+export const parsePrePushStdin = (
+	stdin: string,
+): ReadonlyArray<IPrePushRefUpdate> => {
+	const updates: IPrePushRefUpdate[] = [];
+	for (const line of stdin.split('\n')) {
+		const trimmed = line.trim();
+		if (trimmed === '') continue;
+		const parts = trimmed.split(/\s+/);
+		if (parts.length !== 4) continue;
+		const [localRef, localSha, remoteRef, remoteSha] = parts as [
+			string,
+			string,
+			string,
+			string,
+		];
+		updates.push({ localRef, localSha, remoteRef, remoteSha });
+	}
+	return updates;
+};
+
+/**
+ * Apply the f00086 policy to every parsed ref update: block the
+ * first one that pushes `develop` to `origin/develop` from a
+ * `develop` local ref. Branch deletes (all-zero local oid) never
+ * block — deleting `origin/develop` is a different, much rarer
+ * hazard this guard does not own.
+ */
+export const lintPrePushStdinUpdates = (
+	updates: ReadonlyArray<IPrePushRefUpdate>,
+): PushToDevelopResult => {
+	for (const update of updates) {
+		if (isAllZeroSha(update.localSha)) continue;
+		const result = lintPushToDevelop({
+			cwd: '',
+			remoteName: '',
+			remoteBranch: stripRefsHeadsPrefix(update.remoteRef),
+			currentBranch: stripRefsHeadsPrefix(update.localRef),
+		});
+		if (!result.ok) return result;
+	}
+	return { ok: true };
+};
 
 /**
  * Parse `git push` argv into a `{ remote, remoteBranch }` pair.
@@ -196,16 +277,46 @@ const formatReport = (result: PushToDevelopResult): string => {
 	].join('\n');
 };
 
+/**
+ * x00159 S1: read the pre-push hook's real STDIN payload. A TTY
+ * (interactive shell, no piped data) never has ref updates to read —
+ * probing it would block waiting for keyboard input — so it short-
+ * circuits to empty rather than calling `readFileSync(0, ...)`.
+ */
+const readStdinRefUpdates = (): ReadonlyArray<IPrePushRefUpdate> => {
+	if (process.stdin.isTTY) return [];
+	try {
+		return parsePrePushStdin(readFileSync(0, 'utf8'));
+	} catch {
+		return [];
+	}
+};
+
 const main = async (): Promise<number> => {
+	// x00159 S1: STDIN is the authoritative source — it is git's real
+	// pre-push contract (`<local ref> <local oid> <remote ref>
+	// <remote oid>` per updated ref). The lefthook argv `{3}` template
+	// has no refspec to substitute for a plain `git push` and used to
+	// ship as the literal string `"{3}"`, silently defeating the guard.
+	const stdinUpdates = readStdinRefUpdates();
+	if (stdinUpdates.length > 0) {
+		const result = lintPrePushStdinUpdates(stdinUpdates);
+		const report = formatReport(result);
+		if (result.ok) {
+			process.stdout.write(report);
+			return 0;
+		}
+		process.stderr.write(report);
+		return 1;
+	}
+
+	// Fallback: no stdin ref data (manual/direct invocation, e.g. a
+	// developer running `bun run lint:push-to-develop` by hand, or the
+	// explicit --flags used by this script's own tests). Smoke-test
+	// carve-out: with zero positional args and no stdin, there is no
+	// push in flight to discipline (e.g. `bun run validate` chains
+	// this lint outside of any real `git push`).
 	const rawArgv = process.argv.slice(2);
-	// Smoke-test carve-out: when the CLI is invoked with NO
-	// positional args (e.g. `bun run validate` chains the lint
-	// outside of any real `git push`), there is no push in
-	// flight to discipline. Return a no-op success so the
-	// validate chain does not false-positive on every develop
-	// build. The discipline is still enforced by lefthook's
-	// pre-push hook, which always passes the real refspec
-	// (`{1} {2} {3} = remote remote_url refs`).
 	const positionals = rawArgv.filter((a) => !a.startsWith('-'));
 	if (positionals.length === 0) {
 		process.stdout.write(
