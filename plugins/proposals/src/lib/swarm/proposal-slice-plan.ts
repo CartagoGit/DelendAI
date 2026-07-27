@@ -279,6 +279,8 @@ export interface ILockSnapshotEntry {
 const normalizeFileToken = (value: string): string =>
 	value
 		.replace(/^`+|`+$/gu, '')
+		.replace(/\s*\(.*$/u, '')
+		.replace(/\s*—.*$/u, '')
 		.replace(/[),.;:]+$/gu, '')
 		.trim();
 
