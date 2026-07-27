@@ -2,7 +2,10 @@ import { stat } from 'node:fs/promises';
 
 import { z } from 'zod';
 
-import type { IToolRegistration } from '@mcp-vertex/core/public';
+import type {
+	IPluginLogsHelper,
+	IToolRegistration,
+} from '@mcp-vertex/core/public';
 import { toolJson, withFileMutex } from '@mcp-vertex/core/public';
 
 import type { ILockEntry, ILockFile } from '../locks/agent-lock-engine';
@@ -57,6 +60,14 @@ export interface IStateToolOptions {
 	 * `DEFAULT_ORPHAN_TTL_MINUTES` in zombie-reconcile).
 	 */
 	readonly orphanTtlMinutes?: number;
+	/**
+	 * x00156 S2 — structured-log helper from the `logs` plugin (f00153
+	 * S4's `ctx.logs`). Conditional on that plugin being loaded; when
+	 * absent, the auto-repair events below are simply not emitted
+	 * (they were previously written via `console.info`, which bypassed
+	 * the structured incident stream entirely).
+	 */
+	readonly logs?: IPluginLogsHelper | undefined;
 }
 
 /** a00069 S8: alert when session claims − releases exceeds this. */
@@ -473,23 +484,27 @@ export const runAutoStateRepairOnBoot = (
 				return;
 			}
 			const repaired = await runStateRepair(options);
-			console.info(
-				JSON.stringify({
-					event: 'state-repair-auto',
+			void options.logs?.log({
+				severity: 'warning',
+				incidentType: 'state-repair-auto',
+				message: `state-repair-auto: staleLocks=${repaired.staleLocks} expired=${repaired.expiredQueueEntries} orphans=${repaired.orphanAssignments} healthy=${repaired.diagnosis.healthy}`,
+				context: {
 					staleLocks: repaired.staleLocks,
 					expiredQueueEntries: repaired.expiredQueueEntries,
 					orphanAssignments: repaired.orphanAssignments,
 					healthy: repaired.diagnosis.healthy,
-				}),
-			);
+				},
+			});
 		} catch (err) {
-			console.info(
-				JSON.stringify({
-					event: 'state-repair-auto',
+			void options.logs?.log({
+				severity: 'error',
+				incidentType: 'state-repair-auto',
+				message: `state-repair-auto failed: ${err instanceof Error ? err.message : String(err)}`,
+				context: {
 					ok: false,
 					error: err instanceof Error ? err.message : String(err),
-				}),
-			);
+				},
+			});
 		}
 	};
 	const pending = run();
