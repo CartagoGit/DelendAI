@@ -24,6 +24,13 @@ import {
 const DEFAULT_LIMIT = 25;
 const MAX_LIMIT = 100;
 
+/**
+ * Shared bound for both the allow-list-checking engine call AND the
+ * direct re-fetch below (x00157 S4) — a single constant so the two
+ * requests can't silently drift out of sync.
+ */
+export const FETCH_TIMEOUT_MS = 8_000;
+
 const clampLimit = (limit: number): number =>
 	Number.isFinite(limit) && limit > 0
 		? Math.min(limit, MAX_LIMIT)
@@ -139,7 +146,7 @@ const fetchViaWebFetch = async (
 			url,
 			allowList: source.allowList,
 			maxBytes: 200_000,
-			timeoutMs: 8_000,
+			timeoutMs: FETCH_TIMEOUT_MS,
 		},
 		undefined as never,
 	);
@@ -148,6 +155,7 @@ const fetchViaWebFetch = async (
 	const direct = await fetch(url, {
 		headers: { [headers.name]: headers.value, Accept: 'application/json' },
 		redirect: 'manual',
+		signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
 	});
 	const text = await direct.text();
 	return {
