@@ -73,16 +73,31 @@ const askConfirm = (
 	fallback: boolean,
 ): Promise<boolean> =>
 	new Promise((resolve) => {
-		rl.question(
-			`${question} (y/n) [${fallback ? 'y' : 'n'}]: `,
-			(answer) => {
-				const trimmed = answer.trim().toLowerCase();
-				if (trimmed.length === 0) return resolve(fallback);
-				if (trimmed === 'y' || trimmed === 'yes') return resolve(true);
-				if (trimmed === 'n' || trimmed === 'no') return resolve(false);
-				resolve(fallback);
-			},
-		);
+		const prompt = (): void => {
+			rl.question(
+				`${question} (y/n) [${fallback ? 'y' : 'n'}]: `,
+				(answer) => {
+					const trimmed = answer.trim().toLowerCase();
+					if (trimmed.length === 0) return resolve(fallback);
+					if (trimmed === 'y' || trimmed === 'yes')
+						return resolve(true);
+					if (trimmed === 'n' || trimmed === 'no')
+						return resolve(false);
+					// Anything else (typos like "ye" / "nn" / "maybe") used
+					// to silently fall through to `fallback` — an operator
+					// typing "ye" at the destructive `host-instructions:
+					// overwrite` prompt got overwrite with no signal.
+					// Surface the unrecognised answer on stderr and
+					// re-prompt so the operator gets a chance to type a
+					// valid answer.
+					process.stderr.write(
+						`Unrecognised answer "${answer.trim()}" — please type y or n.\n`,
+					);
+					prompt();
+				},
+			);
+		};
+		prompt();
 	});
 
 const validatePluginId = (value: string): string | null => {
