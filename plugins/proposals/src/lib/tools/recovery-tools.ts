@@ -361,16 +361,17 @@ const moveProposal = async (
 	};
 };
 
-const buildRecoveryCodeError = (code: string, reason: string) => ({
-	content: [
-		{
-			type: 'text' as const,
-			text: JSON.stringify({ ok: false, error: { code, reason } }),
-		},
-	],
-	structuredContent: { ok: false as const, error: { code, reason } },
-	isError: true,
-});
+// x00154 S2: route the local error helper through `toolJson` so the
+// envelope (text + structuredContent) is produced by the same helper
+// as `toolOk` / `toolError`, and stamp `isError: true` to match
+// `toolError`'s contract.
+const buildRecoveryCodeError = (code: string, reason: string) => {
+	const envelope = { ok: false as const, error: { code, reason } };
+	return {
+		...toolJson(envelope),
+		isError: true,
+	};
+};
 
 export const runProposalStaleList = (
 	options: IRecoveryToolOptions,
@@ -626,7 +627,11 @@ export const runProposalDiagnose = async (
 			'proposal_force_transition',
 		);
 	}
-	return toolJson({
+	// x00154 S2: success envelope is `{ ok: true, ...payload }` so the
+	// contract matches `toolError` and the modern MCP client can read
+	// `ok` from `structuredContent` without re-parsing the text.
+	return toolOk({
+		ok: true,
 		id: args.id,
 		file: found.relPath,
 		folder: found.folder,
