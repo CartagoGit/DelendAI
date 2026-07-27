@@ -42,6 +42,10 @@ describe('renderInitBundle (f00084 S2-S5)', () => {
 		expect(rels).toContain('.vscode/mcp.json');
 		expect(rels).toContain('.mcp.json');
 		expect(rels.some((r) => r.startsWith('.github/agents/'))).toBe(true);
+		// x00160 S2: the Claude Code-native subagent format is rendered
+		// alongside the Copilot one — AGENT-BOOTSTRAP.md §8.2 tells every
+		// Claude Code host to delegate to it, so init must create it.
+		expect(rels.some((r) => r.startsWith('.claude/agents/'))).toBe(true);
 		expect(rels).toContain('AGENTS.md');
 		expect(rels).toContain('CLAUDE.md');
 		expect(rels).toContain('.github/copilot-instructions.md');
@@ -72,12 +76,15 @@ describe('renderInitBundle (f00084 S2-S5)', () => {
 		);
 	});
 
-	it('skips .agent.md when generateAgentMd=false', async () => {
+	it('skips .agent.md AND the Claude Code subagent when generateAgentMd=false', async () => {
 		const bundle = await renderInitBundle(
 			parseAnswers({ generateAgentMd: false }),
 		);
 		expect(
 			bundle.files.some((f) => f.relPath.startsWith('.github/agents/')),
+		).toBe(false);
+		expect(
+			bundle.files.some((f) => f.relPath.startsWith('.claude/agents/')),
 		).toBe(false);
 	});
 
