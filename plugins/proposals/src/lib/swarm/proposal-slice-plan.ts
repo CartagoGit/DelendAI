@@ -7,6 +7,7 @@
 // index.json changes (non-goal).
 
 import { CAPABILITY_TAGS, type CapabilityTag } from '@mcp-vertex/core/public';
+import { expandDeclaredFiles } from '../proposals/expand-declared-files';
 
 export type ISliceGate = 'lint' | 'type' | 'e2e' | 'none';
 
@@ -182,13 +183,26 @@ export const parseProposalSlicePlan = (
 		// Capture the whole rest of the line, strip an optional [] wrapper
 		// and split on commas — the single-path form degenerates to a
 		// one-element split, so legacy lines parse byte-identically.
+		//
+		// x00158 S1: the continuation group used to require a literal TAB
+		// (`\n\t+`), but every real proposal indents sub-bullets with
+		// spaces (`- **Files**:\n  - \`a\`\n  - \`b\``) — so the tab-only
+		// check silently dropped every continuation line past the first,
+		// which fed only a fragment of the declared files into the
+		// (also buggy) comma split below. `[ \t]+` accepts either.
 		const files = [
 			...body.matchAll(
-				/^[-*]\s*(?:files|\*\*Files\*\*):\s*((?:.+(?:\n\t+.*)?)*)$/gm,
+				/^[-*]\s*(?:files|\*\*Files\*\*):[ \t]*(.*(?:\n[ \t]+.*)*)$/gm,
 			),
 		]
 			.flatMap((m) => {
 				const raw = (m[1] ?? '').trim();
+				// x00158 S1: prefer the shared brace-aware parser (handles
+				// backticked `{a,b,c}` expansion correctly). Only the legacy
+				// unbacktick form (a bare path, or a `[]`-wrapped plain list)
+				// falls through to the naive comma split.
+				const expanded = expandDeclaredFiles(raw);
+				if (expanded.length > 0) return expanded;
 				const unwrapped =
 					raw.startsWith('[') && raw.endsWith(']')
 						? raw.slice(1, -1)

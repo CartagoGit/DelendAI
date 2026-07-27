@@ -390,4 +390,31 @@ describe('canonical **Files** lists (x00098 S1)', async () => {
 		);
 		expect(plan?.slices[0]?.files).toEqual(['a/b.ts', 'c/d.ts']);
 	});
+
+	// x00158 S1 — the naive `unwrapped.split(',')` used to shatter a
+	// `{a,b,c}` brace expansion into 3 garbage fragments
+	// (`"{resumes"`, `"chores"`, `"audits}/* (...)"`). Pins the x00155 S1
+	// `Files:` line to its correct 4-entry expansion.
+	it('expands brace-group Files: lines instead of garbage-splitting on every comma (x00155 S1 regression)', async () => {
+		const plan = parseProposalSlicePlan(
+			'x00155',
+			[
+				'## Slices',
+				'',
+				'### S1 — mass status sync',
+				'- **Status**: pending',
+				'- **Files**:',
+				'  - `docs/mcp-vertex/proposals/done/{resumes,chores,audits}/*` (frontmatter + slice rows in those proposals only)',
+				'  - `tools/scripts/proposals/sync-proposal-registry.script.ts` (re-run at the end)',
+				'- **Gate**: bun tools/scripts/lint/proposals.script.ts',
+				'',
+			].join('\n'),
+		);
+		expect(plan?.slices[0]?.files).toEqual([
+			'docs/mcp-vertex/proposals/done/resumes/*',
+			'docs/mcp-vertex/proposals/done/chores/*',
+			'docs/mcp-vertex/proposals/done/audits/*',
+			'tools/scripts/proposals/sync-proposal-registry.script.ts',
+		]);
+	});
 });

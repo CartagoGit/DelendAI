@@ -1,4 +1,5 @@
 import { stat } from 'node:fs/promises';
+import { expandDeclaredFiles } from '../proposals/expand-declared-files';
 /**
  * proposal-completeness.ts
  *
@@ -48,15 +49,6 @@ import { stat } from 'node:fs/promises';
  *     reader are injectable so tests can run offline.
  */
 
-const defaultFileExists = async (path: string): Promise<boolean> => {
-	try {
-		await stat(path);
-		return true;
-	} catch {
-		return false;
-	}
-};
-
 export interface ISliceParse {
 	readonly id: string;
 	readonly title: string;
@@ -78,39 +70,10 @@ const STATUS_TOKEN = /-\s*\*\*Status\*\*:\s*(pending|in-progress|done)\b/i;
 const FILES_LINE = /-\s*\*\*Files\*\*:\s*([^\n]+(?:\n(?!-\s*\*\*)[^\n]+)*)/;
 const SLICE_HEADER = /^###\s+(S\d+)\s+—\s*([^\n]+)$/;
 
-const BACKTICKED = /`([^`]+)`/g;
-
-/**
- * Expand every comma-separated path inside backticks, handling
- * `{a,b,c}` brace patterns. Returns the flat list of concrete paths
- * a slice declares in its `Files:` line. Brace depth is 1 (matches
- * the patterns actually used in 2026-Q3 proposals).
- */
-export const expandDeclaredFiles = (text: string): ReadonlyArray<string> => {
-	const out: string[] = [];
-	for (const match of text.matchAll(BACKTICKED)) {
-		const inside = match[1] ?? '';
-		// Split on commas not inside braces.
-		const parts = inside.split(/,\s*(?![^{}]*\})/);
-		for (const raw of parts) {
-			const trimmed = raw.trim();
-			if (trimmed === '') continue;
-			const brace = /^(.*)\{([^}]+)\}(.*)$/.exec(trimmed);
-			if (brace) {
-				if (brace === null) continue;
-				const prefix = brace[1] ?? '';
-				const choices = brace[2] ?? '';
-				const suffix = brace[3] ?? '';
-				for (const choice of choices.split(',')) {
-					out.push(`${prefix}${choice}${suffix}`);
-				}
-				continue;
-			}
-			out.push(trimmed);
-		}
-	}
-	return out;
-};
+// x00158 S1: the brace-aware Files: parser is now owned by
+// `expand-declared-files.ts` and shared with `proposal-slice-plan.ts`,
+// which used to carry its own (buggy) `split(',')` duplicate.
+export { expandDeclaredFiles } from '../proposals/expand-declared-files';
 
 /**
  * Parse every `### S<n>` block in a proposal markdown body and pull
