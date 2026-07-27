@@ -326,20 +326,7 @@ empty/corrupt is a structured `toolError`.
 
 - **Status**: done
 - **Implementation**: `818ae99e` (`completeLogEvent` shim + 5 new tests; legacy JSONL `readRange` backfills `severity='info'`, `incidentType='tool-invocation'`; invalid `severity:'?'` rejected with `INVALID_SEVERITY`)
-- **Files**:
-  - `plugins/logs/src/lib/services/log-store.ts` (make
-    `appendEvent` route every record through `normalizeEvent`
-    from `normalize-event.ts` before writing; add a one-line
-    shim that calls `normalizeEvent(...).then(appendEvent)` so
-    callers stay typed)
-  - `plugins/logs/tests/src/lib/services/log-store.spec.ts`
-    (spec: a raw `tool-started` event appended via
-    `appendEvent` produces a stored event with non-null
-    `severity` and `incidentType`)
-  - `plugins/logs/tests/src/lib/services/log-store.spec.ts`
-    (spec: a malformed record with `severity: '?'` is
-    rejected with a `INVALID_SEVERITY` error, not silently
-    coerced)
+- **Files**: `plugins/logs/src/lib/services/log-store.ts`, `plugins/logs/tests/log-store.spec.ts`
 - **Gate**:
   - `bun tools/scripts/verify/plugin-tool-verify.script.ts
     --plugin=logs` — both `query` and `errors_tail` show
