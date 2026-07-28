@@ -2,7 +2,7 @@
 id: x00158
 kind: fix
 title: "proposal-slice-plan.ts: parseFiles naively splits on comma and breaks brace expansion"
-status: ready
+status: done
 type: proposal
 track: bug+proposals+parser+drift+integration
 date: 2026-07-27
