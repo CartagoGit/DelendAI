@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-07-26T14:35:54.810Z",
+	"generatedAt": "2026-07-28T06:04:02.729Z",
 	"mode": "compact",
 	"tools": [
 		{
@@ -264,11 +264,23 @@
 			"plugin": "logs"
 		},
 		{
+			"name": "mcp-vertex_logs_incidents",
+			"plugin": "logs"
+		},
+		{
+			"name": "mcp-vertex_logs_log",
+			"plugin": "logs"
+		},
+		{
 			"name": "mcp-vertex_logs_query",
 			"plugin": "logs"
 		},
 		{
 			"name": "mcp-vertex_logs_redact_test",
+			"plugin": "logs"
+		},
+		{
+			"name": "mcp-vertex_logs_search",
 			"plugin": "logs"
 		},
 		{
@@ -1075,47 +1087,19 @@
 	"proposals": {
 		"actionable": [
 			{
-				"id": "a00075",
-				"title": "a00075",
-				"track": "code-quality+concurrency+security+architecture+tests+invariants+tokens+logs",
-				"status": "ready",
-				"kind": "audit"
-			},
-			{
 				"id": "f00050",
 				"title": "f00050",
 				"track": "lint+architecture+i18n+workflow+release",
 				"status": "paused",
 				"kind": "feat"
-			},
-			{
-				"id": "f00150",
-				"title": "f00150",
-				"track": "adoption+skills+dx",
-				"status": "ready",
-				"kind": "feat"
-			},
-			{
-				"id": "f00152",
-				"title": "f00152",
-				"track": "core+plugins+self-host",
-				"status": "ready",
-				"kind": "feat"
-			},
-			{
-				"id": "v00122",
-				"title": "v00122",
-				"track": "perf+token-budgets+agent-velocity",
-				"status": "in-progress",
-				"kind": "unspecified"
 			}
 		],
 		"byStatus": {
-			"ready": 3,
-			"in-progress": 1,
-			"review": 2,
+			"ready": 0,
+			"in-progress": 0,
+			"review": 0,
 			"paused": 1,
-			"done": 291,
+			"done": 316,
 			"blocked": 0,
 			"retired": 2,
 			"unspecified": 0
