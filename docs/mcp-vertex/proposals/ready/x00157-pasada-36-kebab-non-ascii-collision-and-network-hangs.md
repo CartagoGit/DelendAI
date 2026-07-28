@@ -16,6 +16,12 @@ related:
     - c00126    # lint:solid refactor — the kebab spec gap is a different test (unit-test of string-helpers.spec.ts)
     - f00037    # file-conventions canon
     - f00050    # parked "S-D host instructions anywhere" trigger — x00157 S5 bullet on kebab() relates to the user-host boundary case
+shipped-in:
+    - 7e5ac2f0 # S1+S2 — kebab non-ASCII collision fix, peer-review-bypass-log TTL bound
+    - c77aac4e # S3 — discover.tool.ts fetch timeout + close_slice/proposal_review lockReleased fix
+    - d8d6ae51 # S4 — list-errors.ts direct fetch timeout
+    - 9ff8be4d # S5 — joinUnderRoot helper + call sites
+    - ea626b65 # S6 — narrow 3 ungrounded `as unknown as` casts
 ---
 
 # x00157 — Pasada-36 — `kebab()` silent-empty collides proposal filenames; `fetch()` no-timeout in 2 tools; module-level `events[]` memory leak; `path.join` with absolute right-operand
@@ -557,12 +563,19 @@ The timer is stored in a local `const`, never exposed. The plugin's `register` c
 
 ### S7 — `usage-tracking/index.ts:245` summaryTimer documentation
 
-- **Status**: pending
+- **Status**: done
 - **Files**:
-  - `plugins/usage-tracking/src/index.ts:243` — add a comment
-    block explaining the fire-and-forget semantics and the
-    `unref` rationale. No code change.
-- **Gate**: documentation-only slice; no test changes.
+  - `plugins/usage-tracking/src/index.ts` — expanded the comment
+    above `summaryTimer` to explain it is a true orphan by strict
+    definition (no `deactivate` hook cancels it), why that is benign
+    in production (one `register` call per host process lifetime,
+    already `unref()`'d), the actual risk window (re-registration
+    within the same process — a dev host restart or a test that
+    instantiates the plugin twice without teardown), and the
+    existing test seam (`drainLiveBuffers`, or holding the returned
+    handle to `clearInterval` directly). No code change.
+- **Gate**: documentation-only slice; `bunx tsc --noEmit --project .`
+  clean, `bunx biome check` clean — no test changes needed.
 
 ## acceptance
 
