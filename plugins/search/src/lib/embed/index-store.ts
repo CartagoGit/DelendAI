@@ -1,7 +1,11 @@
 import { readFile } from 'node:fs/promises';
-import { isAbsolute, join } from 'node:path';
+import { join } from 'node:path';
 
-import { withFileMutex, writeFileAtomic } from '@mcp-vertex/core/public';
+import {
+	joinUnderRoot,
+	withFileMutex,
+	writeFileAtomic,
+} from '@mcp-vertex/core/public';
 
 export interface IEmbedIndexEntry {
 	readonly path: string;
@@ -40,18 +44,14 @@ const resolveCacheRoot = (options: IEmbedIndexStoreOptions): string => {
 	if (options.cacheDir === undefined) {
 		return join(options.workspaceRootAbs, '.cache', 'mcp-vertex');
 	}
-	return isAbsolute(options.cacheDir)
-		? options.cacheDir
-		: join(options.workspaceRootAbs, options.cacheDir);
+	return joinUnderRoot(options.workspaceRootAbs, options.cacheDir);
 };
 
 const resolvePluginCacheDir = (options: IEmbedIndexStoreOptions): string => {
 	if (options.pluginCacheDir === undefined) {
 		return join(resolveCacheRoot(options), 'search');
 	}
-	return isAbsolute(options.pluginCacheDir)
-		? options.pluginCacheDir
-		: join(options.workspaceRootAbs, options.pluginCacheDir);
+	return joinUnderRoot(options.workspaceRootAbs, options.pluginCacheDir);
 };
 
 export const resolveEmbedIndexPath = (

@@ -437,33 +437,75 @@ The timer is stored in a local `const`, never exposed. The plugin's `register` c
   — 7/7 pass (was 6); `bun test --cwd plugins/observability` —
   34/34 pass; `bunx tsc --noEmit --project .` clean.
 
-### S5 — `joinUnderRoot` helper + 10+ call sites
+### S5 — `joinUnderRoot` helper + call sites
 
-- **Status**: pending
+- **Status**: done
 - **Files**:
   - `packages/core/src/lib/shared/join-under-root.ts` — new
     helper `joinUnderRoot(rootAbs: string, rel: string): string`
     that returns `rel` if `isAbsolute(rel)`, else `join(rootAbs, rel)`.
-  - `packages/core/src/lib/shared/join-under-root.spec.ts` —
+  - `packages/core/tests/src/lib/shared/join-under-root.spec.ts`
+    (the repo's real test-mirror convention for `packages/core` —
+    the originally-planned colocated `.spec.ts` next to the source
+    file does not match how this package's tests are organized) —
     spec: (a) absolute `rel` returns `rel` unchanged; (b) relative
     `rel` returns `join(rootAbs, rel)`; (c) `..` prefix is NOT
     collapsed (this is the caller's responsibility).
-  - `plugins/search/src/lib/embed/index-store.ts:38,50` — replace
-    `join(workspaceRootAbs, options.cacheDir)` with
-    `joinUnderRoot(workspaceRootAbs, options.cacheDir)`.
-  - `plugins/search/src/lib/tools/search-semantic.tool.ts:91` —
-    same.
-  - Other plugin paths from the audit (perf, link-check, security,
-    deps, observability, etc.) — replace inline `join(workspaceRootAbs, rel)`
-    with `joinUnderRoot(workspaceRootAbs, rel)` in the same
-    commit. Use `git grep -l 'join(workspaceRootAbs'` to find
-    all sites.
+  - `packages/core/src/public/index.ts` — exported `joinUnderRoot`.
+  - `plugins/search/src/lib/embed/index-store.ts` — replaced both
+    `isAbsolute(...) ? ... : join(workspaceRootAbs, ...)` branches
+    (`resolveCacheRoot`, `resolvePluginCacheDir`) with `joinUnderRoot`.
+  - `plugins/search/src/lib/tools/search-semantic.tool.ts` — same
+    for its own `resolvePluginCacheDir`, plus `buildSyntheticHit`'s
+    `join(workspaceRootAbs, relPath)` (the embed index's internally
+    stored file id, never absolute in practice, but consistent).
+  - `plugins/i18n/src/lib/i18n/real-deps.ts` — replaced the
+    hand-rolled `isAbsolute(localesDir) ? localesDir :
+    join(workspaceRootAbs, localesDir)` with `joinUnderRoot` (pure
+    dedup, `localesDir` is a plugin option, not tool input).
 - **Gate**:
-  - `bun run test --cwd packages/core -- join-under-root.spec.ts`
-    — passes.
-  - Live reproducer in `x00157/s5-repro.ts` confirms an absolute
-    `rel` is returned unchanged.
-  - `bun run test --cwd plugins/search` — all green.
+  - `bun test packages/core/tests/src/lib/shared/join-under-root.spec.ts`
+    — 3/3 pass.
+  - `bun test --cwd plugins/search` — 98/98 pass;
+    `bun test --cwd plugins/i18n` — 13/13 pass;
+    `bun test --cwd packages/core` — 1170/1170 pass.
+  - `bunx tsc --noEmit --project .` clean.
+- **Closure note — scope narrowed from "10+ call sites" to 4, deliberately**:
+  a full `git grep -n "join(workspaceRootAbs" -- plugins packages`
+  turned up ~20 more hits (deps/licenses.ts, deps/write-tools.ts,
+  diagram/real-deps.ts, link-check/real-deps.ts, perf/real-deps.ts,
+  perf/real-perf-profile-deps.ts, observability/correlate+traces
+  real-deps.ts, tech-debt/real-deps.ts, security/secrets/real-deps.ts,
+  docs-generate.tool.ts, search's embed-pipeline.ts +
+  search-engine.in-house.ts). Reading each call site's actual second
+  argument before touching it found two categories that must NOT be
+  swept:
+  1. **Literal or glob-derived second arguments** (`'.gitignore'`,
+     `'package.json'`, `Bun.Glob(...).scan()` results, or a path
+     already produced by `resolveWorkspaceContained`) can never be
+     absolute — `joinUnderRoot` would be a provable no-op there, so
+     replacing them is pure unrelated churn with no bug fixed
+     (`deps/*`, `diagram/*`, `link-check/real-deps.ts`,
+     `perf/real-deps.ts`, `perf/real-perf-profile-deps.ts`,
+     `observability/*`, `tech-debt/real-deps.ts`,
+     `docs-generate.tool.ts`, `search/embed-pipeline.ts`,
+     `search/search-engine.in-house.ts`).
+  2. **`licenses.ts:100`'s `manifestRel`** and
+     **`security/secrets/real-deps.ts:38`'s `readFile(path)`** are
+     genuinely non-literal — but both originate from a **live MCP
+     tool argument** (`deps_licenses`'s `manifest` input;
+     `security_secrets`'s file-candidate list), not a trusted
+     config/option value. Applying `joinUnderRoot` there would be a
+     **security regression**: an absolute tool-supplied path would
+     be honored verbatim, letting a scan read an arbitrary file
+     outside the workspace instead of the current (accidentally
+     safer) POSIX-`join` mangling. `joinUnderRoot` is documented as
+     explicitly NOT a containment primitive for exactly this reason
+     — untrusted tool input needs `resolveWorkspaceContained`/
+     `resolveAgainstRoots`, not this helper. Left both sites
+     untouched; flagging here so a future pass doesn't "finish the
+     sweep" by introducing the regression this note is warning
+     against.
 
 ### S6 — `as unknown as` structural cast catalog (6 ungrounded)
 
