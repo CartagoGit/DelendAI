@@ -2,7 +2,7 @@
 id: x00159
 title: "push-to-develop-discipline pre-push guard never actually fires (lefthook {3} template has no refspec on plain git push)"
 kind: fix
-status: ready
+status: done
 type: proposal
 track: git-hooks+ci-discipline+self-hosting
 date: 2026-07-27
