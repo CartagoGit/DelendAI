@@ -4,7 +4,9 @@
  * missing dir or unparseable file is skipped).
  */
 import { readFile, readdir } from 'node:fs/promises';
-import { isAbsolute, join, relative } from 'node:path';
+import { join, relative } from 'node:path';
+
+import { joinUnderRoot } from '@mcp-vertex/core/public';
 
 import type {
 	II18nScanDeps,
@@ -71,9 +73,7 @@ export const realI18nDeps = (
 	localesDir: string,
 ): II18nScanDeps => ({
 	listLocales: async () => {
-		const dir = isAbsolute(localesDir)
-			? localesDir
-			: join(workspaceRootAbs, localesDir);
+		const dir = joinUnderRoot(workspaceRootAbs, localesDir);
 		const entries = await readdir(dir, { withFileTypes: true }).catch(
 			() => [],
 		);
