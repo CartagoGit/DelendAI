@@ -1,5 +1,6 @@
 import { existsSync } from 'node:fs';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 import { McpStdioClient } from '@mcp-vertex/client/public';
 
@@ -10,11 +11,36 @@ import type {
 } from '../contracts/interfaces/cli-command.interface';
 import { buildServerArgs } from './server-args.service';
 
+/**
+ * Resolve the path to `packages/cli/src/index.ts` (the in-process server
+ * entrypoint that the CLI spawns back over stdio).
+ *
+ * Why this is non-trivial: `cwd` is the **consumer workspace** (e.g.
+ * logistics-app), NOT the mcp-vertex repo. Naively `join(cwd, 'packages/cli/src/index.ts')`
+ * resolves to a non-existent path and the spawned server dies with
+ * `MCP error -32000: Connection closed` against the stdio client.
+ *
+ * Resolution order:
+ *   1. `MCP_VERTEX_SERVER_BIN` env override (escape hatch).
+ *   2. Relative to `cwd` (works when the CLI happens to be run from
+ *      inside the mcp-vertex repo itself).
+ *   3. Relative to the location of THIS file (`import.meta.url`). This
+ *      file lives at `<mcp-vertex>/packages/cli/src/lib/`, so the
+ *      target entrypoint is `../../index.ts` from here.
+ *   4. Last-resort dist path, same derivation.
+ */
 const resolveServerEntrypoint = (cwd: string): string => {
 	if (process.env.MCP_VERTEX_SERVER_BIN)
 		return process.env.MCP_VERTEX_SERVER_BIN;
-	const source = join(cwd, 'packages/cli/src/index.ts');
-	if (existsSync(source)) return source;
+	const localSource = join(cwd, 'packages/cli/src/index.ts');
+	if (existsSync(localSource)) return localSource;
+	const here = dirname(fileURLToPath(import.meta.url));
+	const sourceFromHere = join(here, '..', '..', 'index.ts');
+	if (existsSync(sourceFromHere)) return sourceFromHere;
+	const distFromHere = join(here, '..', '..', '..', 'dist', 'index.js');
+	if (existsSync(distFromHere)) return distFromHere;
+	// Fall back to the original behaviour so the error message still surfaces
+	// the candidate path the caller would have expected.
 	return join(cwd, 'packages/cli/dist/index.js');
 };
 
