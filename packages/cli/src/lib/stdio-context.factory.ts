@@ -26,8 +26,9 @@ import { buildServerArgs } from './server-args.service';
  *      inside the mcp-vertex repo itself).
  *   3. Relative to the location of THIS file (`import.meta.url`). This
  *      file lives at `<mcp-vertex>/packages/cli/src/lib/`, so the
- *      target entrypoint is `../../index.ts` from here.
- *   4. Last-resort dist path, same derivation.
+ *      server entrypoint `<mcp-vertex>/packages/cli/src/index.ts` is
+ *      one level up: `../index.ts`.
+ *   4. Last-resort dist path: `../../dist/index.js`.
  */
 const resolveServerEntrypoint = (cwd: string): string => {
 	if (process.env.MCP_VERTEX_SERVER_BIN)
@@ -35,9 +36,14 @@ const resolveServerEntrypoint = (cwd: string): string => {
 	const localSource = join(cwd, 'packages/cli/src/index.ts');
 	if (existsSync(localSource)) return localSource;
 	const here = dirname(fileURLToPath(import.meta.url));
-	const sourceFromHere = join(here, '..', '..', 'index.ts');
+	// this file lives at <mcp-vertex>/packages/cli/src/lib/stdio-context.factory.ts,
+	// so the server entrypoint <mcp-vertex>/packages/cli/src/index.ts is one
+	// level up: `../index.ts`.
+	const sourceFromHere = join(here, '..', 'index.ts');
 	if (existsSync(sourceFromHere)) return sourceFromHere;
-	const distFromHere = join(here, '..', '..', '..', 'dist', 'index.js');
+	// Last-resort dist path: <mcp-vertex>/packages/cli/dist/index.js requires
+	// two levels up: `../../dist/index.js`.
+	const distFromHere = join(here, '..', '..', 'dist', 'index.js');
 	if (existsSync(distFromHere)) return distFromHere;
 	// Fall back to the original behaviour so the error message still surfaces
 	// the candidate path the caller would have expected.
