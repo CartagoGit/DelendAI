@@ -69,13 +69,18 @@ const deriveSourceFromPath = (
 			source: { host: 'unknown', model: 'unknown', date: '' },
 		};
 	}
-	const [, date, head, model, _tail] = m as unknown as [
-		string,
-		string,
-		string,
-		string,
-		string,
-	];
+	const [, date, head, model] = m;
+	// `noUncheckedIndexedAccess` types every capture as `string | undefined`
+	// (TS cannot see that none of this regex's groups are optional) — narrow
+	// with a real check instead of casting past it. Malformed input degrades
+	// to the same "unknown" source as the `!m` branch above, matching this
+	// parser's documented permissive design, rather than assuming success.
+	if (date === undefined || head === undefined || model === undefined) {
+		return {
+			slug: noExt,
+			source: { host: 'unknown', model: 'unknown', date: '' },
+		};
+	}
 	const host = head.replace(/\s*\(.*$/u, '').trim() || 'unknown';
 	const dateIso = date.replace(/^(\d{2})-(\d{2})-(\d{4})$/u, '$3-$2-$1');
 	return {
