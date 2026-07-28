@@ -245,6 +245,22 @@ export default definePlugin({
 
 		// Periodic 5-min rollup regeneration from the log (unref'd so it
 		// never keeps the process alive).
+		//
+		// x00157 S7: this `register` callback returns no `deactivate` hook,
+		// so `summaryTimer` is never explicitly cancelled — it is a true
+		// orphan by the strict definition. In production this is benign:
+		// an MCP host calls a plugin's `register` exactly once per process
+		// lifetime, so there is only ever one timer, and `unref()` already
+		// guarantees it can't block process exit. The risk is confined to
+		// a **re-registration within the same process** (a host restart in
+		// dev, or a test suite that instantiates the plugin twice without
+		// tearing down the first instance) — that would accumulate a second
+		// live timer alongside the first. Tests that need to simulate this
+		// have a seam: `drainLiveBuffers` clears the in-memory buffer state,
+		// and a test that also wants to stop the interval itself can hold
+		// the returned handle and call `clearInterval` directly; no new API
+		// was added here since no test in this repo currently re-registers
+		// the plugin without a fresh process.
 		const summaryTimer = setInterval(() => {
 			void regenerateSummary(
 				invocationsPath,
