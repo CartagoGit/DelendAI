@@ -321,6 +321,7 @@ export {
 	resolveWorkspaceContained,
 } from '../lib/shared/contain-path';
 export type { IContainedPath } from '../lib/shared/contain-path';
+export { joinUnderRoot } from '../lib/shared/join-under-root';
 // f00087 S2: batch atomic writer for consumers that want to apply
 // scaffolded files outside an MCP session.
 export { createFileSystemBatchWriter } from '../lib/shared/batch-atomic-writer';

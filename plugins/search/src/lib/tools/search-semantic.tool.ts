@@ -1,7 +1,9 @@
-import { isAbsolute, join } from 'node:path';
+import { join } from 'node:path';
 import { readFile } from 'node:fs/promises';
 
 import { z } from 'zod';
+
+import { joinUnderRoot } from '@mcp-vertex/core/public';
 
 import type { IRankedHit } from '../contracts/interfaces/hybrid-rank.interface';
 import {
@@ -86,14 +88,13 @@ const resolveEmbedder = (
 
 const resolvePluginCacheDir = (options: ISearchSemanticToolOptions): string => {
 	if (options.pluginCacheDir !== undefined) {
-		return isAbsolute(options.pluginCacheDir)
-			? options.pluginCacheDir
-			: join(options.workspaceRootAbs, options.pluginCacheDir);
+		return joinUnderRoot(options.workspaceRootAbs, options.pluginCacheDir);
 	}
 	if (options.cacheDir !== undefined) {
-		return isAbsolute(options.cacheDir)
-			? join(options.cacheDir, 'search')
-			: join(options.workspaceRootAbs, options.cacheDir, 'search');
+		return join(
+			joinUnderRoot(options.workspaceRootAbs, options.cacheDir),
+			'search',
+		);
 	}
 	// x00156 S6: workspaceRootAbs is already required on this options
 	// interface — no process.cwd() fallback needed or allowed
@@ -147,7 +148,7 @@ const buildSyntheticHit = async (
 	workspaceRootAbs: string,
 	relPath: string,
 ): Promise<ISearchHit> => {
-	const absPath = join(workspaceRootAbs, relPath);
+	const absPath = joinUnderRoot(workspaceRootAbs, relPath);
 	const content = await readFile(absPath, 'utf8').catch(() => '');
 	const rawLines = content.split('\n');
 	const lines =
