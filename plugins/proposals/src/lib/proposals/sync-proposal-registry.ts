@@ -491,9 +491,17 @@ const scanNewSystemFiles = async (
 
 /**
  * a00069 S3 / F7 — report every proposal id that appears in more than
- * one path under `proposalsDirAbs`. Pure detection (no deletes); the
- * lint gate (`lint:proposals`) and reconcile tooling both call this so
- * a twin left behind after a half-applied transition is never silent.
+ * one path under `proposalsDirAbs`. Pure detection (no deletes).
+ *
+ * Not currently wired into a live gate or tool — `lint:proposals`'s
+ * actual duplicate-id check is the separate, narrower
+ * `detectDuplicateProposalIds` in `tools/scripts/lint/proposals.script.ts`
+ * (matches only the canonical `id:` frontmatter pattern, so it never
+ * needs the filename-fallback this function uses). Found and fixed
+ * live 2026-07-28: this function's filename fallback made every
+ * frontmatter-less `.md` (README.md, etc.) collide with every other
+ * file of the same name; kept as a pure detection primitive available
+ * for a future caller, not something in the request path today.
  */
 export const findDuplicateProposalIds = async (
 	proposalsDirAbs: string,
@@ -553,11 +561,25 @@ const scanAllProposalIds = async (
 				}
 				continue;
 			}
-			if (!dirent.isFile() || !dirent.name.endsWith('.md')) continue;
+			if (
+				!dirent.isFile() ||
+				!dirent.name.endsWith('.md') ||
+				dirent.name === 'README.md'
+			)
+				continue;
 			const raw = await readFile(childAbs, 'utf8').catch(() => '');
 			if (raw.length === 0) continue;
 			const block = extractYamlBlock(raw);
-			const fm = block === null ? {} : parseFrontmatterBlock(block);
+			// A `.md` with no frontmatter block at all is not a proposal (an
+			// index page, a session summary, etc.) — falling back to the
+			// filename as its "id" made every such file collide with every
+			// other frontmatter-less file of the same name (5 README.md
+			// files across done/, done/audits/, done/resumes/,
+			// legacy/closed/, retired/issues/ all reported as duplicate id
+			// "README.md", live-reproduced 2026-07-28). Skip it instead of
+			// inventing an id for it.
+			if (block === null) continue;
+			const fm = parseFrontmatterBlock(block);
 			const id = typeof fm.id === 'string' ? fm.id : dirent.name;
 			out.push({ id, absPath: childAbs });
 		}
