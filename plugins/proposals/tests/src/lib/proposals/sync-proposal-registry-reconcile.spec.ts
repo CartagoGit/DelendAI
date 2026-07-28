@@ -307,6 +307,27 @@ describe('sync-proposal-registry reconciliation (f113 S5)', async () => {
 			]);
 		});
 
+		// x00157-adjacent finding (2026-07-28 live repro): a `.md` with NO
+		// frontmatter block at all (README.md, a session summary, etc.)
+		// used to fall back to its filename as the "id" — so multiple
+		// frontmatter-less README.md files under different folders all
+		// collided on id "README.md". Confirmed live against the real
+		// `docs/mcp-vertex/proposals` tree (5 README.md files, one false
+		// "duplicate" report) before this fix.
+		it('does not treat multiple frontmatter-less README.md files as duplicate ids', async () => {
+			for (const folder of ['done', 'done/audits', 'legacy/closed']) {
+				const dir = join(root, folder);
+				await mkdir(dir, { recursive: true });
+				await writeFile(
+					join(dir, 'README.md'),
+					'# Just an index page, no frontmatter\n',
+					'utf8',
+				);
+			}
+			const dups = await findDuplicateProposalIds(root);
+			expect(dups).toEqual([]);
+		});
+
 		it('surfaces duplicate ids in syncProposalRegistry errors', async () => {
 			await writeProposal(root, 'ready', 'f00901-twin.md', {
 				id: 'f00901',
