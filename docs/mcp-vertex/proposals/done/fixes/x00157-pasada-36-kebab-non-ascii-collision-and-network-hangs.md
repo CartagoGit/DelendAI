@@ -2,7 +2,7 @@
 id: x00157
 title: Pasada-36 — `kebab()` silent-empty collides proposal filenames; `fetch()` no-timeout in 2 tools; module-level `events[]` memory leak; `path.join` with absolute right-operand
 kind: fix
-status: ready
+status: done
 date: 2026-07-27T18:30:00Z
 date_iso: 2026-07-27
 track: cli+proposals+observability+network+resource-hygiene+file-handling
@@ -328,10 +328,12 @@ The timer is stored in a local `const`, never exposed. The plugin's `register` c
     `slugFromTitle(title: string, fallback: string): string` alongside
     `kebab`. The function returns `kebab(title)` if non-empty,
     otherwise `fallback`. Pin with a spec.
-  - `plugins/proposals/src/lib/shared/string-helpers.spec.ts` — add
-    `slugFromTitle` spec (ASCII + non-ASCII + empty + fallback).
   - `plugins/proposals/tests/src/lib/shared/string-helpers.spec.ts`
-    — pin the **existing** `kebab` behavior on non-ASCII as
+    (the repo colocates src/ with a separate tests/ mirror for
+    this plugin, not a `.spec.ts` next to the source file — the
+    originally-planned colocated path does not exist) — added the
+    `slugFromTitle` spec (ASCII + non-ASCII + empty + fallback) and
+    pinned the **existing** `kebab` behavior on non-ASCII as
     "documented-but-empty" (the asymmetry is real — fixes happen at
     call sites, not in `kebab`).
   - `plugins/proposals/src/lib/tools/authoring.tool.ts:597` — replace
@@ -404,7 +406,7 @@ The timer is stored in a local `const`, never exposed. The plugin's `register` c
     `fetch(url, …)` call in `createDefaultNpmSearch`.
   - `plugins/external-mcps/tests/src/lib/discover-gate.spec.ts` (the
     real existing spec file for this tool; the originally-planned
-    `tests/src/lib/tools/discover.tool.spec.ts` path does not exist)
+    path tests/src/lib/tools/discover.tool.spec.ts does not exist)
     — added a spec that mocks `global.fetch` with a Promise that
     never resolves on its own and only rejects when the injected
     `AbortSignal` fires, asserting `createDefaultNpmSearch()` rejects
@@ -429,9 +431,9 @@ The timer is stored in a local `const`, never exposed. The plugin's `register` c
     `direct` fetch, so the two requests can't drift out of sync.
   - `plugins/observability/src/lib/tools/obs-errors.tool.spec.ts`
     (the real existing spec at the tool boundary — the
-    originally-planned `tests/src/lib/errors/list-errors.spec.ts`
-    path does not exist; there is a colocated
-    `src/lib/errors/list-errors.spec.ts`, but that one only exercises
+    originally-planned path tests/src/lib/errors/list-errors.spec.ts
+    does not exist; there is a colocated
+    src/lib/errors/list-errors.spec.ts, but that one only exercises
     the injected `source.fetch` seam, which bypasses this bug
     entirely) — added a spec that omits `source.fetch` so the real
     `fetchViaWebFetch` production path runs, mocks `global.fetch` to
