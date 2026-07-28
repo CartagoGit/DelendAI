@@ -15,6 +15,8 @@ related:
     - a00082  # sibling deep-hunt in cli + core libs
     - a00080  # sibling init-bug-hunt (cli/init)
     - a00081  # sibling init-bug-hunt-2 migration
+shipped-in:
+    - b89391ca # S1 — shared expandDeclaredFiles + space-indent continuation fix
 ---
 
 # 🐞 x00158 — `parseProposalSlicePlan` produces 3 garbage paths when a slice uses `{a,b,c}` brace expansion
