@@ -190,9 +190,7 @@ export const buildReleasePlanToolRegistration = (
 						);
 					}
 					const commits = parsed.data.commits ?? [];
-					const bump = infer(
-						commits as unknown as readonly IConventionalCommit[],
-					);
+					const bump = infer(commits);
 					const entries = buildReleasePlan(publishOrder, bump);
 					return toolJson(
 						OUTPUT.parse({

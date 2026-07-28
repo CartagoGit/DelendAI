@@ -39,8 +39,16 @@ export const buildFormatHandoffRegistration = (
 				outputSchema: FormatHandoffOutputSchema,
 			},
 			async (args: z.infer<typeof InputSchema>) => {
+				// x00157 S6: `args.decision` is already runtime-validated by
+				// RoutingDecisionSchema — the only mismatch against
+				// IRoutingDecision is exactOptionalPropertyTypes: Zod's
+				// `.optional()` infers `T | undefined`, while IRoutingDecision's
+				// optional fields omit the explicit `undefined`. A single-hop
+				// cast (not `as unknown as`) still has TS check the two types
+				// are structurally related, unlike the `unknown` bridge this
+				// used to go through.
 				const formatted = formatHandoff(
-					args.decision as unknown as IRoutingDecision,
+					args.decision as IRoutingDecision,
 				);
 				return toolJson(formatted);
 			},

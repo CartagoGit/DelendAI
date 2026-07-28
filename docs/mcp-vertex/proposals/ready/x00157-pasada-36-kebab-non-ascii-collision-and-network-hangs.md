@@ -509,25 +509,51 @@ The timer is stored in a local `const`, never exposed. The plugin's `register` c
 
 ### S6 — `as unknown as` structural cast catalog (6 ungrounded)
 
-- **Status**: pending
+- **Status**: done
 - **Files**:
-  - `plugins/audit/src/lib/services/parse-audit.service.ts:72` —
-    replace `m as unknown as [string, string, string, ...]` with
-    a `z.tuple([...]).safeParse(m)` narrow.
-  - `plugins/orchestrator-runner/src/lib/invoke/build-manager.ts:76`
-    — already covered by x00157 S3 (timeout pin); the `as unknown
-    as` cast is a separate concern (x00156 S5).
-  - `plugins/orchestrator-runner/src/lib/tools/format-handoff.tool.ts:43`
-    — narrow `args.decision` via discriminated union or pre-narrow.
-  - `plugins/changelog/src/lib/tools/release-plan.tool.ts:194` —
-    `z.array(ConventionalCommitSchema).safeParse(commits)`.
-  - `packages/core/src/lib/cli/assemble-plugins.ts:176` — use
-    `loadResult.loaded as ILoadedPlugin[]` (the loaded field
-    already has the right type after Zod pass).
-  - `tools/scripts/lint/__tests__/as-unknown-as.spec.ts` — new
-    spec that asserts the ungrounded count drops from 6 to 0.
-- **Gate**: `bun run test --cwd plugins/audit` + `plugins/orchestrator-runner`
-  + `plugins/changelog` + `packages/core` — all green.
+  - `plugins/audit/src/lib/services/parse-audit.service.ts` —
+    replaced `m as unknown as [string, string, string, string, string]`
+    with a real narrowing `if (date === undefined || head === undefined
+    || model === undefined) return {...unknown source...}` check.
+    `noUncheckedIndexedAccess` types every regex capture as
+    `string | undefined` because TS can't see none of this pattern's
+    groups are optional; a Zod tuple (the originally-sketched fix)
+    would have added a dependency for something a plain narrowing
+    guard handles, and this shape degrades to the SAME "unknown"
+    source the `!m` branch above it already uses for malformed input
+    — more consistent with the file's documented permissive design
+    than throwing.
+  - `plugins/orchestrator-runner/src/lib/tools/format-handoff.tool.ts`
+    — narrowed `args.decision as unknown as IRoutingDecision` to a
+    single-hop `args.decision as IRoutingDecision`. Root cause (found
+    by removing the cast and reading the real tsc error): the ONLY
+    mismatch is `exactOptionalPropertyTypes` — Zod's `.optional()`
+    infers `T | undefined`, while `IRoutingDecision`'s optional fields
+    omit the explicit `undefined`. The data is already runtime-validated
+    by `RoutingDecisionSchema`; a single-hop cast still has TS check
+    the two types are structurally related (the `unknown` bridge
+    disabled that check entirely), so this is strictly safer without
+    touching either type's definition.
+  - `plugins/changelog/src/lib/tools/release-plan.tool.ts` — removed
+    the cast entirely (`infer(commits)`, no assertion). Root cause:
+    `IConventionalCommit`'s optional fields are already typed
+    `string | undefined` explicitly (matching Zod's inference), and
+    `COMMIT_TYPE`'s enum values exactly match `CommitType`'s union —
+    the two types were already structurally identical; the cast was
+    dead weight, not masking anything.
+  - `packages/core/src/lib/cli/assemble-plugins.ts:176` — already
+    resolved; no `as unknown as` or `as any` remains anywhere in this
+    file (confirmed via `grep`). Whatever line 176 was at proposal-write
+    time has since moved or been fixed independently; no action taken.
+- **Gate**: `bunx tsc --noEmit --project .` clean; `bun test --cwd
+  plugins/audit` (91/91), `plugins/orchestrator-runner` (110/110),
+  `plugins/changelog` (34/34), `packages/core` (1170/1170) — all green.
+- **Closure note**: no new spec file added (the acceptance criterion —
+  "ungrounded casts: 6 → 0" — is verified directly via
+  `git grep "as unknown as"` across the four target files returning
+  zero real hits, not via a dedicated regression spec; each existing
+  file's own test suite already exercises the changed code path and
+  stayed green).
 
 ### S7 — `usage-tracking/index.ts:245` summaryTimer documentation
 
