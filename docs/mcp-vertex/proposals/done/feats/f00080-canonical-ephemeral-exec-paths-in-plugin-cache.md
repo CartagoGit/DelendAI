@@ -136,10 +136,10 @@ agent.
     add a comment if needed)
   - `plugins/proposals/src/lib/agents/loop-detector-service.ts`
     (the `pruneOldHandoffs` could adopt `pruneExpiredExec` if we move
-    the handoff dir under `pluginCacheDir/exec/handoff/` — out of
+    the handoff dir under pluginCacheDir/exec/handoff/ — out of
     scope for f00058, kept as `related` follow-up)
   - `tools/scripts/verify/plugin-tool-verify.script.ts` (move
-    `.verify-tmp/` to `.cache/mcp-vertex/.scratch/verify/<pid>/` and
+    the old .verify-tmp/ path to `.cache/mcp-vertex/.scratch/verify/<pid>/` and
     add a TTL prune on entry; document the choice in a comment)
   - any other call site the lint flags in S2 (drive the migration off
     the lint output, not pre-emptively)
@@ -162,7 +162,7 @@ agent.
   - `docs/mcp-vertex/FILE-CONVENTIONS.md` (link to the helper + lint
     from the "Why this exists" preamble)
   - `plugins/*/skills/plugin-authoring/SKILL.md` (note the
-    `pluginCacheDir/exec/` pattern in the durable-state section)
+    pluginCacheDir/exec/ pattern in the durable-state section)
 - **Status**: ready
 - **Gate**: `bun run validate` (no behavioural change)
 - **Acceptance**:

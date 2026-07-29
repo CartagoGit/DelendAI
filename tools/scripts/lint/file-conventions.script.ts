@@ -10,6 +10,8 @@
  *   bun tools/scripts/lint/file-conventions.script.ts                  # check current repo
  *   bun tools/scripts/lint/file-conventions.script.ts --report         # only count, no findings
  *   bun tools/scripts/lint/file-conventions.script.ts --roots=docs,apps # limit scan
+ *   bun tools/scripts/lint/file-conventions.script.ts --baseline=<path>       # ratchet: only NEW unmatched files fail
+ *   bun tools/scripts/lint/file-conventions.script.ts --write-baseline=<path> # accept today's unmatched files as the floor
  *
  * Architecture (matches no-preset-drift.script.ts):
  *   - `IRoleFinding` (interface) — one row in the report.
@@ -26,7 +28,7 @@
  * `classifyPath` without monkey-patching; the production wiring is
  * the default export.
  */
-import { readdir } from 'node:fs/promises';
+import { readdir, readFile, writeFile } from 'node:fs/promises';
 import { join, relative, sep } from 'node:path';
 
 import { classifyPath, DEFAULT_TS_RULES, type Role } from './file-conventions';
@@ -36,6 +38,46 @@ export interface IRoleFinding {
 	readonly role: Role;
 	readonly reason: 'unmatched' | 'rule-error';
 }
+
+/**
+ * Ratchet baseline: the set of `relPath`s already accepted as
+ * pre-existing debt. `--baseline=<path>` filters findings down to
+ * only files NOT in this set (real repo migration has ~329+ files
+ * that predate the convention — see types-in-contracts.script.ts's
+ * identical rationale); `--write-baseline=<path>` accepts today's
+ * findings as the new floor. Mirrors the pattern used by
+ * `solid-compliance.lib.ts` / `proposal-files-exist.script.ts` /
+ * `types-in-contracts.script.ts` so all four ratchets behave the same
+ * way for a human running them.
+ */
+export const loadBaseline = async (
+	path: string,
+): Promise<ReadonlySet<string>> => {
+	const raw = await readFile(path, 'utf8').catch(() => null);
+	if (raw === null) return new Set();
+	try {
+		const parsed = JSON.parse(raw) as unknown;
+		return Array.isArray(parsed)
+			? new Set(parsed.filter((v): v is string => typeof v === 'string'))
+			: new Set();
+	} catch {
+		return new Set();
+	}
+};
+
+export const writeBaseline = async (
+	path: string,
+	relPaths: readonly string[],
+): Promise<void> => {
+	const sorted = [...relPaths].sort((a, b) => a.localeCompare(b));
+	await writeFile(path, `${JSON.stringify(sorted, null, '\t')}\n`, 'utf8');
+};
+
+/** Pure: findings whose `relPath` is NOT already in the baseline. */
+export const filterNewFindings = (
+	findings: readonly IRoleFinding[],
+	baseline: ReadonlySet<string>,
+): readonly IRoleFinding[] => findings.filter((f) => !baseline.has(f.relPath));
 
 /** Repo-relative POSIX path of a file (or null if `absPath` is outside `rootDir`). */
 export const toRelPosix = (rootDir: string, absPath: string): string => {
@@ -158,6 +200,40 @@ export const main = async (argv: readonly string[]): Promise<number> => {
 			] as const);
 	const rootDir = process.cwd();
 	const findings = await walkAndClassify(rootDir, scanRoots);
+
+	const writeBaselineFlag = args.find((a) =>
+		a.startsWith('--write-baseline='),
+	);
+	if (writeBaselineFlag) {
+		const path = writeBaselineFlag.slice('--write-baseline='.length);
+		await writeBaseline(
+			path,
+			findings.map((f) => f.relPath),
+		);
+		process.stderr.write(
+			`file-conventions: baseline updated — ${findings.length} accepted unmatched file(s) at ${path}\n`,
+		);
+		return 0;
+	}
+
+	const baselineFlag = args.find((a) => a.startsWith('--baseline='));
+	if (baselineFlag) {
+		const path = baselineFlag.slice('--baseline='.length);
+		const baseline = await loadBaseline(path);
+		const newFindings = filterNewFindings(findings, baseline);
+		if (newFindings.length === 0) {
+			const shrank = findings.length < baseline.size;
+			process.stderr.write(
+				shrank
+					? `✓ file-conventions: no new unmatched files; debt shrank ${baseline.size} → ${findings.length}. Run --write-baseline to lock in the win.\n`
+					: `✓ file-conventions: no new unmatched files (${findings.length} baselined).\n`,
+			);
+			return 0;
+		}
+		process.stderr.write(formatReport(newFindings, reportOnly));
+		return decideExitCode(newFindings, { reportOnly, strict });
+	}
+
 	process.stderr.write(formatReport(findings, reportOnly));
 	return decideExitCode(findings, { reportOnly, strict });
 };

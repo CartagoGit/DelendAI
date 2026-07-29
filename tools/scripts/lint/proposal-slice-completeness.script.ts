@@ -14,13 +14,34 @@
  * at runtime). The lint catches **drift**: a proposal whose status was
  * flipped to `done` historically but whose body no longer matches the
  * workspace today.
+ *
+ * Ratchet (mirrors `proposal-files-exist.script.ts`, the closest
+ * sibling lint over the same `done/` tree): hundreds of `done/`
+ * proposals predate this check, so a hard gate would be permanently
+ * red. A JSON baseline records each proposal's ACCEPTED issue count;
+ * the gate fails only when a proposal's count exceeds its baseline or
+ * a newly-`done` proposal has any issue at all.
+ *
+ * Usage:
+ *   bun tools/scripts/lint/proposal-slice-completeness.script.ts            # check
+ *   bun tools/scripts/lint/proposal-slice-completeness.script.ts --update   # rewrite baseline
+ *   bun tools/scripts/lint/proposal-slice-completeness.script.ts --report   # counts only
  */
 
-import { existsSync, readFileSync, readdirSync } from 'node:fs';
-import { extname, join } from 'node:path';
+import {
+	existsSync,
+	mkdirSync,
+	readFileSync,
+	readdirSync,
+	writeFileSync,
+} from 'node:fs';
+import { dirname, extname, join } from 'node:path';
 
 import { collectSliceStatuses } from '../../../plugins/proposals/src/lib/services/proposal-completeness';
 import { repoRoot } from '../lib/monorepo-paths';
+
+const BASELINE_REL =
+	'tools/scripts/lint/proposal-slice-completeness.baseline.json';
 
 const PROPOSAL_KINDS = [
 	'audits',
@@ -50,13 +71,14 @@ const frontmatter = (content: string): Record<string, string> => {
 	return out;
 };
 
-interface IIssue {
+export interface IIssue {
 	readonly proposal: string;
 	readonly kind: 'pending-slice' | 'missing-file';
 	readonly detail: string;
 }
 
-const findIssues = (root: string): readonly IIssue[] => {
+/** Pure over the filesystem it's given; every path check is rooted at `root`. */
+export const findIssues = (root: string): readonly IIssue[] => {
 	const out: IIssue[] = [];
 	const doneRoot = join(root, 'docs', 'mcp-vertex', 'proposals', 'done');
 	for (const kind of PROPOSAL_KINDS) {
@@ -75,15 +97,19 @@ const findIssues = (root: string): readonly IIssue[] => {
 					out.push({
 						proposal: f,
 						kind: 'pending-slice',
-						detail: `S${slice.id} status=${slice.status} title='${slice.title}'`,
+						detail: `${slice.id} status=${slice.status} title='${slice.title}'`,
 					});
 				}
 				for (const file of slice.files) {
-					if (!existsSync(file)) {
+					// Declared paths are workspace-relative — resolve against
+					// `root`, not the caller's cwd (a bug when this ran from
+					// a different cwd, and the only reason a temp-dir test
+					// of this function would have been impossible before).
+					if (!existsSync(join(root, file))) {
 						out.push({
 							proposal: f,
 							kind: 'missing-file',
-							detail: `S${slice.id} declares ${file} (not on disk)`,
+							detail: `${slice.id} declares ${file} (not on disk)`,
 						});
 					}
 				}
@@ -93,41 +119,113 @@ const findIssues = (root: string): readonly IIssue[] => {
 	return out;
 };
 
-const main = async (): Promise<number> => {
-	const root = repoRoot();
-	const issues = findIssues(root);
-	if (issues.length === 0) {
-		console.log(
-			'✓ proposal-slice-completeness: every done/ proposal is fully shipped',
-		);
-		return 0;
-	}
+export const groupByProposal = (
+	issues: readonly IIssue[],
+): ReadonlyMap<string, readonly IIssue[]> => {
 	const grouped = new Map<string, IIssue[]>();
 	for (const issue of issues) {
 		const arr = grouped.get(issue.proposal) ?? [];
 		arr.push(issue);
 		grouped.set(issue.proposal, arr);
 	}
-	console.error(
-		`✗ proposal-slice-completeness: ${issues.length} issue(s) across ${grouped.size} proposal(s)`,
-	);
+	return grouped;
+};
+
+export const loadBaseline = (root: string): Record<string, number> => {
+	const abs = join(root, BASELINE_REL);
+	if (!existsSync(abs)) return {};
+	return JSON.parse(readFileSync(abs, 'utf8')) as Record<string, number>;
+};
+
+const printIssues = (grouped: ReadonlyMap<string, readonly IIssue[]>): void => {
 	for (const [proposal, items] of grouped) {
 		console.error(`  ${proposal}:`);
 		for (const item of items) {
 			console.error(`    - [${item.kind}] ${item.detail}`);
 		}
 	}
-	console.error('');
-	console.error(
-		'fix: each proposal with pending slices must be `git mv` to ready/ and re-opened;',
-	);
-	console.error(
-		'     each proposal with missing declared files must either re-ship the file or',
-	);
-	console.error(
-		'     amend the proposal body to reflect what actually shipped.',
-	);
-	return 1;
 };
 
-process.exit(await main());
+/** Testable core: takes `root`/`args` explicitly instead of reading globals. */
+export const run = (root: string, args: ReadonlySet<string>): number => {
+	const issues = findIssues(root);
+	const grouped = groupByProposal(issues);
+	const currentCounts: Record<string, number> = {};
+	for (const [proposal, items] of grouped)
+		currentCounts[proposal] = items.length;
+
+	if (args.has('--update')) {
+		const baselinePath = join(root, BASELINE_REL);
+		mkdirSync(dirname(baselinePath), { recursive: true });
+		writeFileSync(
+			baselinePath,
+			`${JSON.stringify(currentCounts, null, '\t')}\n`,
+			'utf8',
+		);
+		const total = Object.values(currentCounts).reduce((a, b) => a + b, 0);
+		console.error(
+			`proposal-slice-completeness: baseline updated — ${Object.keys(currentCounts).length} proposal(s), ${total} accepted issue(s).`,
+		);
+		return 0;
+	}
+
+	const baseline = loadBaseline(root);
+	const regressed = new Map<string, IIssue[]>();
+	for (const [proposal, items] of grouped) {
+		const allowed = baseline[proposal] ?? 0;
+		if (items.length > allowed) regressed.set(proposal, [...items]);
+	}
+
+	const totalCur = Object.values(currentCounts).reduce((a, b) => a + b, 0);
+	const totalBase = Object.values(baseline).reduce((a, b) => a + b, 0);
+
+	if (args.has('--report')) {
+		console.error(
+			`proposal-slice-completeness: ${Object.keys(currentCounts).length} proposal(s) / ${totalCur} issue(s) (baseline ${totalBase}).`,
+		);
+		return 0;
+	}
+
+	if (regressed.size > 0) {
+		const regressedTotal = [...regressed.values()].reduce(
+			(a, items) => a + items.length,
+			0,
+		);
+		console.error(
+			`✗ proposal-slice-completeness: ${regressedTotal} NEW issue(s) across ${regressed.size} proposal(s):`,
+		);
+		printIssues(regressed);
+		console.error('');
+		console.error(
+			'fix: each proposal with pending slices must be `git mv` to ready/ and re-opened;',
+		);
+		console.error(
+			'     each proposal with missing declared files must either re-ship the file or',
+		);
+		console.error(
+			'     amend the proposal body to reflect what actually shipped.',
+		);
+		console.error(
+			'If this is a documented pre-existing case, run --update to accept it into the baseline.',
+		);
+		return 1;
+	}
+
+	if (totalCur < totalBase) {
+		console.log(
+			`✓ proposal-slice-completeness: no new issues; debt shrank ${totalBase} → ${totalCur}. Run --update to lock in the win.`,
+		);
+		return 0;
+	}
+	console.log(
+		`✓ proposal-slice-completeness: no new issues (${totalCur} baselined).`,
+	);
+	return 0;
+};
+
+const main = (): number => run(repoRoot(), new Set(process.argv.slice(2)));
+
+// Run when invoked directly (not when imported by tests).
+if (import.meta.main) {
+	process.exit(main());
+}
