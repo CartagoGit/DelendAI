@@ -6,6 +6,8 @@ status: ready
 type: proposal
 track: general
 date: 2026-07-29
+shipped-in:
+    - ac0fcbe5 # S1-S3 — statSync hot-path fix + test-policy/auto-agent-selector redaction gaps
 ---
 
 # x00190 — Group 3: swarm hot-path statSync + two un-redacted secret-persistence gaps
