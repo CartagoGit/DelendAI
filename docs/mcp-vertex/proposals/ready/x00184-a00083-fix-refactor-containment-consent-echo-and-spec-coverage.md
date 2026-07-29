@@ -8,6 +8,8 @@ track: plugins+audit-followup
 date: 2026-07-29
 related:
     - a00083 # full-project audit
+shipped-in:
+    - 70a79a20 # S1+S2 — nav/rename containment + consentToken echo + spec coverage
 ---
 
 # x00184 — a00083 — fix refactor plugin: containment, consent-token echo, and spec coverage (the worst-scoring slice)
