@@ -37,10 +37,11 @@ type ITool = {
 };
 type IPkg = { name: string; version: string };
 
-const nsFor = (s: string): string => (s === 'core' ? 'mcp-vertex' : s);
-const ns = nsFor(slug);
+// a00085: `capabilities.tools[].namespace` is always the plugin's own
+// short name — no remapping needed (the old `nsFor` mapped "core" to
+// a namespace no tool actually has, hiding every core-plugin tool).
 const tools = (capabilities.tools as ITool[])
-	.filter((tool) => tool.namespace === ns)
+	.filter((tool) => tool.namespace === slug)
 	.sort((a, b) => a.name.localeCompare(b.name));
 const pkg = (capabilities.packages as IPkg[]).find(
 	(p) => p.name.replace('@mcp-vertex/', '') === slug,

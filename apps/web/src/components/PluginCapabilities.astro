@@ -62,8 +62,6 @@ const knowledge = capabilities.knowledge as Array<{
 	title: string;
 }>;
 
-// Map a package short-name to its tool namespace (core → mcp-vertex).
-const nsFor = (s: string): string => (s === 'core' ? 'mcp-vertex' : s);
 const shortName = (name: string) =>
 	name.replace('@mcp-vertex/', '').replace('@mcp-vertex/', '');
 
@@ -90,18 +88,20 @@ const ordered = [...packages].sort((a, b) =>
 			{
 				ordered.map((pkg) => {
 					const slug = shortName(pkg.name);
-					const ns = nsFor(slug);
+					// a00085: `namespace` fields are always the plugin's own
+					// short name — no "core" → "mcp-vertex" remapping needed
+					// (the old mapping hid every core-plugin capability).
 					const pkgTools = tools
-						.filter((tool) => tool.namespace === ns)
+						.filter((tool) => tool.namespace === slug)
 						.sort((a, b) => a.name.localeCompare(b.name));
 					const pkgPrompts = prompts
-						.filter((p) => p.namespace === ns)
+						.filter((p) => p.namespace === slug)
 						.sort((a, b) => a.name.localeCompare(b.name));
 					const pkgResources = resources
-						.filter((r) => r.namespace === ns)
+						.filter((r) => r.namespace === slug)
 						.sort((a, b) => a.uri.localeCompare(b.uri));
 					const pkgKnowledge = knowledge
-						.filter((k) => k.namespace === ns)
+						.filter((k) => k.namespace === slug)
 						.sort((a, b) => a.id.localeCompare(b.id));
 					// Skip the section if the plugin has nothing to show.
 					const total =

@@ -12,7 +12,6 @@ import capabilities from '#MANIFESTS/capabilities.json';
 
 export function getStaticPaths() {
 	const slugOf = (name: string) => name.replace('@mcp-vertex/', '');
-	const nsFor = (s: string) => (s === 'core' ? 'mcp-vertex' : s);
 	const pkgs = capabilities.packages as Array<{ name: string }>;
 	const tools = capabilities.tools as Array<{
 		name: string;
@@ -20,16 +19,23 @@ export function getStaticPaths() {
 	}>;
 	return pkgs.flatMap((p) => {
 		const slug = slugOf(p.name);
-		const ns = nsFor(slug);
+		// a00085: `t.namespace` is already the plugin's own short name —
+		// the removed `nsFor` mapped "core" to a namespace no tool
+		// actually has, so this route never generated a static path for
+		// any of the core plugin's 19 tools (every /tools/core/<tool>
+		// URL 404'd).
 		return tools
-			.filter((t) => t.namespace === ns)
+			.filter((t) => t.namespace === slug)
 			.map((t) => ({ params: { plugin: slug, tool: t.name } }));
 	});
 }
 
 const { tool } = Astro.params;
+// a00085: Base's <title> falls back to the generic homepage title
+// unless a page explicitly passes one.
+const title = `${tool} — @mcp-vertex/core`;
 ---
 
-<Base lang="en">
+<Base lang="en" title={title}>
 	<ToolPage lang="en" toolName={tool!} />
 </Base>

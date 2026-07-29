@@ -25,9 +25,6 @@ const toolHref = (name: string) =>
 		? `${base}/tools/${slug}/${name}`
 		: `${base}/${lang}/tools/${slug}/${name}`;
 
-// Map a package short-name to its tool namespace (core → mcp-vertex).
-const nsFor = (s: string): string => (s === 'core' ? 'mcp-vertex' : s);
-
 type ITool = {
 	name: string;
 	namespace: string;
@@ -66,9 +63,13 @@ const slugOf = (n: string): string => n.replace('@mcp-vertex/', '');
 const pluginTutorials = (
 	(capabilities as { tutorials?: ITutorial[] }).tutorials ?? []
 ).filter((t) => slugOf(t.plugin) === slug);
-const ns = nsFor(slug);
+// a00085: `capabilities.tools[].namespace` is always the plugin's own
+// short name ("core", "search", …) — there is no separate "mcp-vertex"
+// namespace value in the manifest, so no remapping is needed (or
+// correct — the old `nsFor` mapped "core" to a namespace that no tool
+// actually has, silently hiding every core-plugin tool from this tab).
 const tools = (capabilities.tools as ITool[])
-	.filter((tool) => tool.namespace === ns)
+	.filter((tool) => tool.namespace === slug)
 	.sort((a, b) => a.name.localeCompare(b.name));
 // Localized description with graceful English fallback.
 // SSR-fast path: use the precomputed `i18n` block when available. Falls
