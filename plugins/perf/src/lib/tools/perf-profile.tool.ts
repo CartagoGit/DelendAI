@@ -3,10 +3,11 @@
  * bounded hotspot summary when possible and degrade gracefully to `skipped`
  * when the host has no profiling toolchain available.
  */
-import { z } from 'zod';
+import z from 'zod';
 
 import type { IToolRegistration } from '@mcp-vertex/core/public';
 import {
+	resolveWorkspaceContained,
 	summarizeFindings,
 	toolError,
 	toolJson,
@@ -95,6 +96,21 @@ export const buildPerfProfileRegistration = (
 				timeoutMs?: number | undefined;
 				format?: 'hotspots' | 'flamegraph' | undefined;
 			}) => {
+				let cwd = options.workspaceRootAbs;
+				if (args.cwd !== undefined) {
+					const contained = resolveWorkspaceContained(
+						options.workspaceRootAbs,
+						args.cwd,
+					);
+					if (!contained.ok) {
+						return toolError(
+							`cwd "${args.cwd}" is not allowed`,
+							contained.reason ??
+								'cwd must be a workspace-relative path.',
+						);
+					}
+					cwd = contained.abs;
+				}
 				const deps =
 					options.deps ??
 					realPerfProfileDeps(
@@ -104,7 +120,7 @@ export const buildPerfProfileRegistration = (
 							: {},
 					);
 				const input: IPerfProfileCaptureInput = {
-					cwd: args.cwd ?? options.workspaceRootAbs,
+					cwd,
 					timeoutMs: args.timeoutMs ?? 2_500,
 					format: args.format ?? 'hotspots',
 				};

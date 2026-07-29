@@ -97,11 +97,24 @@ const failure = (reason: string, provider?: IForgeProvider): IForgeFailure => ({
 const normaliseProposalId = (proposalId: string): string =>
 	proposalId.endsWith('.md') ? proposalId.slice(0, -3) : proposalId;
 
+/**
+ * x00168 (S5): a proposal id is always a flat filename stem
+ * (`x00165` or `x00165-some-slug`) — never a path. Rejecting anything
+ * outside that shape (path separators, `.`/`..` segments) closes a
+ * real exfiltration channel: `proposalId` used to reach a bare
+ * `path.join` with no containment check, and the resulting file
+ * content is embedded verbatim into a PR body posted to the real,
+ * public origin forge by `createPr`.
+ */
+const isSafeProposalIdStem = (stem: string): boolean =>
+	/^[a-z][a-z0-9-]*$/i.test(stem);
+
 const proposalPathsFor = (
 	workspaceRootAbs: string,
 	proposalId: string,
 ): readonly string[] => {
 	const stem = normaliseProposalId(proposalId);
+	if (!isSafeProposalIdStem(stem)) return [];
 	return PROPOSAL_FOLDERS.map((folder) =>
 		join(
 			workspaceRootAbs,
