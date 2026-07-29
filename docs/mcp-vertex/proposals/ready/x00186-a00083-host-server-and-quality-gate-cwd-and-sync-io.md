@@ -33,14 +33,22 @@ Resolve findings F26, F27, F28, F29 from a00083 (29-07-2026). The easy/medium sl
 
 ## slices
 
-### s1 — host server: thread the workspace flag
+### S1 — host server: thread the workspace flag
+- **Status**: ready
+- **Files**: <see slice body below>
+- **Gate**: test
+  acceptance:
 
 - **File**: `tools/scripts/host/host-server.script.ts#L17`.
 - Parse `--workspace <abs>` from `process.argv.slice(2)`; default to `process.cwd()` ONLY when the flag is missing AND `process.env['MCP_VERTEX_WORKSPACE']` is unset; in both fallback cases, log a `[mcp-vertex] warning: using cwd as workspace` line to stderr.
 - The remainder of the entrypoint uses the resolved `workspaceRoot`.
 - **Acceptance**: `bun tools/scripts/host/host-server.script.ts --workspace /tmp/x --preset=lean` starts with `/tmp/x` as the workspace; without the flag it falls back to cwd + a stderr warning.
 
-### s2 — quality-gate: async I/O + injected cwd
+### S2 — quality-gate: async I/O + injected cwd
+- **Status**: ready
+- **Files**: <see slice body below>
+- **Gate**: test
+  acceptance:
 
 - **File**: `tools/scripts/quality/quality-gate.script.ts#L50`.
 - Replace `readFileSync` calls with the `readFile` from `node:fs/promises`.
@@ -48,7 +56,13 @@ Resolve findings F26, F27, F28, F29 from a00083 (29-07-2026). The easy/medium sl
 - Update the `IFileReader.readFile` callback to be the async variant (already async in signature — only the implementation needs to drop `Sync`).
 - **Acceptance**: `bun run quality:gate` still passes; a new spec asserts the reader is async (use Bun's `process.getActiveResources()` style or count `readFileSync` calls).
 
-## related
+## Notes
+
+
 
 - a00083 — full-project audit (source of these findings)
 - a2f3fa73 — shipped F26 + F29 (the easy ones)
+
+## acceptance
+
+Every slice lands with its acceptance bullets green and `bun run validate` exits 0 on a clean checkout of develop (the gate itself ships in x00189 s4).

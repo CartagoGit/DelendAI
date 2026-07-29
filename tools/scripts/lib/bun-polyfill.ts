@@ -57,7 +57,15 @@ const resolveBunPath = (): string | null => {
 const path = resolveBunPath();
 const version = path ? resolveBunVersion() : '';
 
-(globalThis as unknown as { Bun: unknown }).Bun = {
-	which: (name: string): string | null => (name === 'bun' ? path : null),
-	version,
-};
+// x00189: only stamp `globalThis.Bun` if it isn't already there.
+// vitest 4.1.10's runtime already exposes `Bun` as a frozen built-in
+// getter; assigning to it from this setup file throws
+// `TypeError: Attempted to assign to readonly property`. In that case
+// the host (vitest) provides its own `Bun` shim and we don't need to
+// install ours — leaving it alone is the safe no-op.
+if (typeof (globalThis as { Bun?: unknown }).Bun === 'undefined') {
+	(globalThis as unknown as { Bun: unknown }).Bun = {
+		which: (name: string): string | null => (name === 'bun' ? path : null),
+		version,
+	};
+}

@@ -33,20 +33,34 @@ Resolve findings F21, F24 (and the residual i18n coverage) from a00083 (29-07-20
 
 ## slices
 
-### s1 — vscode agent-catalog webview schema
+### S1 — vscode agent-catalog webview schema
+- **Status**: ready
+- **Files**: <see slice body below>
+- **Gate**: test
+  acceptance:
 
 - **File**: `extensions/vscode/src/commands/open-agent-catalog.ts#L131`.
 - Define a `MESSAGE_SCHEMA = z.discriminatedUnion('command', [...])` covering every currently-handled `command` (`refresh`, `copied`, etc.).
 - Replace the duck-typed dispatch with `MESSAGE_SCHEMA.safeParse(message)`; on failure, return a structured `[mcp-vertex] dropped invalid webview message` log and ignore.
 - **Acceptance**: `bun test extensions/vscode/src/test/...` (or the closest equivalent) — new spec fires an unknown `command` and asserts the host ignored it.
 
-### s2 — guide.astro i18n
+### S2 — guide.astro i18n
+- **Status**: ready
+- **Files**: <see slice body below>
+- **Gate**: test
+  acceptance:
 
 - **Files**: `apps/web/src/pages/guide.astro`, `apps/web/src/i18n/ui.ts`.
 - Audit the page; every visible string + accessible attribute moves to `ui.ts` (12 locales). Use the existing `t(key, locale)` helper.
 - **Acceptance**: `bun run site:strict` exits 0 after the change.
 
-## related
+## Notes
+
+
 
 - a00083 — full-project audit
 - a2f3fa73 — shipped F22 + F23 (the throw-on-missing-label pattern in `packages/ui-extension`)
+
+## acceptance
+
+Every slice lands with its acceptance bullets green and `bun run validate` exits 0 on a clean checkout of develop (the gate itself ships in x00189 s4).

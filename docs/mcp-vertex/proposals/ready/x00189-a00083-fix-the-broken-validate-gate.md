@@ -40,30 +40,52 @@ Without this fix, **no proposal can be closed via the canonical gate** — every
 
 ## slices
 
-### s1 — fix `z.discriminatedUnion` runtime
+### S1 — fix `z.discriminatedUnion` runtime
+- **Status**: ready
+- **Files**: <see slice body below>
+- **Gate**: test
+  acceptance:
 
 - **File**: `packages/core/src/lib/plugins/config-file-schema.ts#L38`.
 - Either pin `zod` to a version that ships `discriminatedUnion` on the runtime path, or replace the call with `z.union([…])` if `discriminatedUnion` isn't loadable from the resolved import.
 - **Acceptance**: `bun test packages/core/tests/src/lib/configuration-center/first-party-metadata.spec.ts` exits 0.
 
-### s2 — align `create-mcp-project` tool registration
+### S2 — align `create-mcp-project` tool registration
+- **Status**: ready
+- **Files**: <see slice body below>
+- **Gate**: test
+  acceptance:
 
 - **File**: `packages/core/src/lib/project/create-mcp-project.ts`.
 - Reconcile the schema drift surfaced by `create-mcp-project.spec.ts`. Likely candidates: the test expects a tool description that the registration no longer matches; or vice-versa. Pin both sides to the same string.
 - **Acceptance**: `bun test packages/core/tests/src/lib/project/create-mcp-project.spec.ts` exits 0.
 
-### s3 — empty spec files
+### S3 — empty spec files
+- **Status**: ready
+- **Files**: <see slice body below>
+- **Gate**: test
+  acceptance:
 
 - For each of the 7+ empty spec files (`plugins/external-mcps/...`, `plugins/forge/...`, etc.), either delete the file or add the first real spec.
 - **Acceptance**: `bun run test` reports `0 spec files with 0 tests` for the workspace.
 
-### s4 — regenerate `solid-compliance` baseline
+### S4 — regenerate `solid-compliance` baseline
+- **Status**: ready
+- **Files**: <see slice body below>
+- **Gate**: test
+  acceptance:
 
 - **File**: `tools/scripts/lint/solid-compliance.baseline.json`.
 - Run `bun tools/scripts/lint/solid-compliance.script.ts --regenerate-baseline` against the cleaned tree; commit the updated baseline.
 - **Acceptance**: `bun run lint:solid` exits 0 with no suppressed findings (or only findings that survived the s1–s3 fixes).
 
-## related
+## Notes
+
+
 
 - a00083 — full-project audit
 - x00187 — separate proposal covering the **first** spec per zero-spec plugin (s3 above is a different angle: it deletes 0-test files or fills them minimally; `x00187` adds real coverage).
+
+## acceptance
+
+Every slice lands with its acceptance bullets green and `bun run validate` exits 0 on a clean checkout of develop (the gate itself ships in x00189 s4).

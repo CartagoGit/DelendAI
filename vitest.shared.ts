@@ -70,6 +70,13 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 		workspaceRoot,
 		'plugins/test-convention/src',
 	);
+	// x00189: token-budget.e2e imports `@mcp-vertex/test-policy` (it
+	// is the only plugin used by a core spec that wasn't already in
+	// the alias list). Without this entry the test resolves through
+	// the package's published `main` (which points at `dist/index.js`)
+	// and the bundled dist still uses the broken `import { z } from
+	// 'zod'` form, surfacing the rolldown interop bug at test time.
+	const testPolicy = resolve(workspaceRoot, 'plugins/test-policy/src');
 	const webFetch = resolve(workspaceRoot, 'plugins/web-fetch/src');
 	const autoAgentSelector = resolve(
 		workspaceRoot,
@@ -480,6 +487,18 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 		{
 			find: '@mcp-vertex/web-fetch',
 			replacement: resolve(webFetch, 'index.ts'),
+		},
+		{
+			find: '@mcp-vertex/test-policy/public',
+			replacement: resolve(testPolicy, 'public/index.ts'),
+		},
+		{
+			find: /^@mcp-vertex\/test-policy\/lib\/(.*)$/,
+			replacement: `${resolve(testPolicy, 'lib')}/$1`,
+		},
+		{
+			find: '@mcp-vertex/test-policy',
+			replacement: resolve(testPolicy, 'index.ts'),
 		},
 		{
 			find: '@mcp-vertex/auto-agent-selector/public',

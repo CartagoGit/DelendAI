@@ -36,7 +36,11 @@ Resolve findings F12, F13, F14, F15, F16 from a00083 (29-07-2026) — a cluster 
 
 ## slices
 
-### s1 — observability timeout + health tools
+### S1 — observability timeout + health tools
+- **Status**: ready
+- **Files**: <see slice body below>
+- **Gate**: test
+  acceptance:
 
 - **File**: `plugins/observability/src/lib/errors/ierror-source.ts`.
 - Wrap the `reader.read()` loop with an `AbortSignal.timeout` (reuse the existing `FETCH_TIMEOUT_MS`); on abort, throw a typed `BodyReadTimeoutError`.
@@ -44,26 +48,44 @@ Resolve findings F12, F13, F14, F15, F16 from a00083 (29-07-2026) — a cluster 
 - Register `obs_health` and `obs_trace` tools alongside `obs_errors` and `obs_correlate`.
 - **Acceptance**: a new spec fires a slow-body response and asserts the timeout fires within `FETCH_TIMEOUT_MS` ± 10%; an `obs_health` smoke spec asserts the tool appears in the plugin's tool list.
 
-### s2 — docs_read filter
+### S2 — docs_read filter
+- **Status**: ready
+- **Files**: <see slice body below>
+- **Gate**: test
+  acceptance:
 
 - **File**: `plugins/docs/src/lib/services/engine.ts#L308`.
 - After the containment check, assert `abs` ends in `.md` or `.mdx` (case-insensitive); otherwise `return miss()` with a structured reason `"not-a-markdown-file"`.
 - **Acceptance**: `bun test plugins/docs/tests/src/lib/services/engine.spec.ts` (or the closest equivalent) — a new spec asserts `docs_read` rejects `package.json`.
 
-### s3 — git_changelog footer parsing
+### S3 — git_changelog footer parsing
+- **Status**: ready
+- **Files**: <see slice body below>
+- **Gate**: test
+  acceptance:
 
 - **File**: `plugins/git/src/lib/services/changelog.ts`.
 - Extend the git argv to use `%h%x1f%s%x1f%b` (hash, subject, body) when the subject doesn't already match `!` or contain `BREAKING CHANGE`. The parser re-tests the combined string for the marker.
 - Add a fixture-driven spec covering footer-only breaking changes.
 - **Acceptance**: `bun test plugins/git/tests/src/lib/services/changelog.spec.ts` exits 0 with the new footer-only case.
 
-### s4 — security_deps cwd containment
+### S4 — security_deps cwd containment
+- **Status**: ready
+- **Files**: <see slice body below>
+- **Gate**: test
+  acceptance:
 
 - **File**: `plugins/security/src/lib/tools/security-deps.tool.ts#L138`.
 - Before invoking `listDeps(cwd)`, run `resolveWorkspaceContained(options.workspaceRootAbs, args.cwd ?? '.')`; on `contained.ok === false`, return `toolError(...)`.
 - **Acceptance**: new spec — `args.cwd = '/etc'` is rejected with `workspace-escape`; `args.cwd = '.'` is allowed.
 
-## related
+## Notes
+
+
 
 - a00083 — full-project audit (source of these findings)
 - x00157 S4 — predecessor fix that bounded the initial fetch but missed the body-read
+
+## acceptance
+
+Every slice lands with its acceptance bullets green and `bun run validate` exits 0 on a clean checkout of develop (the gate itself ships in x00189 s4).
