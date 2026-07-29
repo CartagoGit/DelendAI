@@ -38,7 +38,11 @@ Resolve the seven `@mcp-vertex/core` findings from the full-project audit a00083
 
 ## slices
 
-### s1 — durability: batch-atomic-writer + scaffold rollback
+### S1 — durability: batch-atomic-writer + scaffold rollback
+- **Status**: ready
+- **Files**: <see slice body below>
+- **Gate**: test
+  acceptance:
 
 - **Files**: `packages/core/src/lib/shared/batch-atomic-writer.ts`, `packages/core/src/lib/scaffold/scaffold-tool.ts`.
 - Replace the in-process promise-chain in `batch-atomic-writer.ts` with `withFileMutex(workspaceRoot, …)` keyed on the workspace root (cross-process serialisation; the existing per-root map is preserved).
@@ -47,14 +51,22 @@ Resolve the seven `@mcp-vertex/core` findings from the full-project audit a00083
 - Update the writer's docstring to reflect that the mutex is now cross-process (was: process-local).
 - **Acceptance**: `bun test packages/core/tests/src/lib/shared/batch-atomic-writer.spec.ts` (new), `packages/core/tests/src/lib/scaffold/scaffold-tool.spec.ts` (updated for the partial-failure test).
 
-### s2 — genericity: remove `@mcp-vertex/core-monorepo` hardcode
+### S2 — genericity: remove `@mcp-vertex/core-monorepo` hardcode
+- **Status**: ready
+- **Files**: <see slice body below>
+- **Gate**: test
+  acceptance:
 
 - **File**: `packages/core/src/lib/bootstrap/build-blueprint.ts#L91`.
 - Drop the `if (analysis.name === '@mcp-vertex/core-monorepo') return 'packages/core'` branch. The fallback chain becomes: `analysis.hasPackageJson ? '.' : 'libs/mcp-project'`, with the configured `convention.targetDir` (if any) winning over both.
 - Update any tests that pinned the monorepo special-case.
 - **Acceptance**: `bun test packages/core/tests/src/lib/bootstrap/build-blueprint.spec.ts`.
 
-### s3 — genericity: open the Claude alias list
+### S3 — genericity: open the Claude alias list
+- **Status**: ready
+- **Files**: <see slice body below>
+- **Gate**: test
+  acceptance:
 
 - **File**: `packages/core/src/lib/scaffold/scaffold-host.ts#L273`.
 - Move `CLAUDE_MODEL_ALIASES` into `IScaffoldHostOptions.claudeModelAliases?: readonly string[]` (default: empty array, since the alias list is provider-specific and shouldn't be core's responsibility).
@@ -62,14 +74,24 @@ Resolve the seven `@mcp-vertex/core` findings from the full-project audit a00083
 - Update the two affected callers (the mcp-vertex host itself in `extensions/vscode/src/commands/` and the init scaffolding in `tools/scripts/init/`) to pass their alias lists explicitly.
 - **Acceptance**: `bun test packages/core/tests/src/lib/scaffold/scaffold-host.spec.ts`, plus `bun biome ci packages/core/src/lib/scaffold` (no remaining Claude literals).
 
-### s4 — genericity: open the provider subscription union
+### S4 — genericity: open the provider subscription union
+- **Status**: ready
+- **Files**: <see slice body below>
+- **Gate**: test
+  acceptance:
 
 - **File**: `packages/core/src/lib/contracts/interfaces/provider-capabilities.interface.ts#L71`.
 - Change `IProviderInvoke.subscription.tool` from a closed union to `string` (kept as a string literal type for tooling autocomplete, but extendable by the orchestrator-runner plugin via a `ISubscriptionToolRegistry`).
 - Update `plugins/orchestrator-runner/src/lib/...` to consume the registry instead of the closed union.
 - **Acceptance**: `bun tsc --noEmit -p tsconfig.json` (must accept any subscription tool id), plus a smoke test that the orchestrator-runner plugin can register a new host.
 
-## related
+## Notes
+
+
 
 - a00083 — full-project audit (source of these findings)
 - a2f3fa73 — shipped the easy findings (F4 scaffold template `outputSchema`, F1 init_config mutex, etc.)
+
+## acceptance
+
+Every slice lands with its acceptance bullets green and `bun run validate` exits 0 on a clean checkout of develop (the gate itself ships in x00189 s4).
