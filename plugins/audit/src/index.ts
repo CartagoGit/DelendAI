@@ -1,4 +1,4 @@
-import { definePlugin } from '@mcp-vertex/core/public';
+import { definePlugin, joinRel } from '@mcp-vertex/core/public';
 import { z } from 'zod';
 
 import {
@@ -255,14 +255,14 @@ const OptionsSchema = z
 		/**
 		 * Workspace-relative directory where individual audits land
 		 * (the `*.md` outputs of `audit_plan` per model). Default:
-		 * `docs/mcp-vertex/proposals/done/audits`. Used by `audit_consolidate` as the
+		 * `<docsDir>/proposals/done/audits` (host's resolved `docsDir`). Used by `audit_consolidate` as the
 		 * fallback when the tool call does not pass `auditDir`.
 		 */
 		auditDir: z.string().min(1).optional(),
 		/**
 		 * Workspace-relative directory where `audit_run` writes
 		 * scaffolded fix proposals. Default:
-		 * `docs/mcp-vertex/proposals/ready`. The tool validates the
+		 * `<docsDir>/proposals/ready` (host's resolved `docsDir`). The tool validates the
 		 * path against the workspace root before any write happens.
 		 */
 		proposalsDir: z.string().min(1).optional(),
@@ -333,12 +333,14 @@ const OptionsSchema = z
 	.strict();
 
 /**
- * Default values for {@link OptionsSchema}. Kept as a single object so
- * the knowledge entry and the `register` function agree on the same
- * fallback values without risk of drift.
+ * Default values for {@link OptionsSchema} that do not depend on the
+ * host's resolved `docsDir` (S-B/x00165: `auditDir`/`proposalsDir` used
+ * to be static literals here too, hardcoding `docs/mcp-vertex/...`
+ * regardless of the host's actual configured docs root — now derived
+ * from `ctx.docsDir` inside `register()` instead, matching the same
+ * `IMcpPluginContext`-driven pattern `plugins/proposals` already uses).
  */
 const DEFAULT_OPTIONS = {
-	auditDir: 'docs/mcp-vertex/proposals/done/audits',
 	topActions: 5,
 	dimensions: SCORE_DIMENSIONS,
 	// Default to auto-scaffolding when proposals is available. Hosts
@@ -355,7 +357,9 @@ export default definePlugin({
 	register(ctx) {
 		const optionsResult = OptionsSchema.safeParse(ctx.options);
 		const pluginOptions = optionsResult.success ? optionsResult.data : {};
-		const auditDir = pluginOptions.auditDir ?? DEFAULT_OPTIONS.auditDir;
+		const auditDir =
+			pluginOptions.auditDir ??
+			joinRel(ctx.docsDir, 'proposals/done/audits');
 		const topActions =
 			pluginOptions.topActions ?? DEFAULT_OPTIONS.topActions;
 		// Empty-array → canonical dimensions (explicit reset). Non-empty
@@ -407,7 +411,8 @@ export default definePlugin({
 			workspaceRoot: ctx.workspace.root,
 			defaultAuditDir: auditDir,
 			defaultProposalsDir:
-				pluginOptions.proposalsDir ?? 'docs/mcp-vertex/proposals/ready',
+				pluginOptions.proposalsDir ??
+				joinRel(ctx.docsDir, 'proposals/ready'),
 			dimensions,
 			layers,
 			...(projectName !== undefined ? { projectName } : {}),

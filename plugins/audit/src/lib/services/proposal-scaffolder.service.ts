@@ -1,16 +1,15 @@
 /**
  * Map deduplicated audit findings into ready-to-run proposal files.
  *
- * Alcance B (f00077) closes the audit loop: after
- * `audit_run` collects N model reports, the consolidator produces a
- * single canonical finding set, and this module writes one proposal
- * per actionable finding under `docs/mcp-vertex/proposals/ready/`.
+ * Closes the audit loop: after `audit_run` collects N model reports,
+ * the consolidator produces a single canonical finding set, and this
+ * module writes one proposal per actionable finding under the host's
+ * configured proposals directory.
  *
  * The scaffolder is deliberately conservative:
  *
- * - **Only severity bands `FATAL` / `MUY_MAL` / `MEJORABLE` get a
- *   proposal.** `OK` / `MUY_BIEN` / `PERFECTO` are intentionally
- *   silenced (no work to do).
+ * - **Only severity bands `FATAL` / `BAD` / `MINOR` get a
+ *   proposal.** `OK` is intentionally silenced (no work to do).
  * - **Frontmatter is pre-filled but minimal.** We assign an id, set
  *   `kind: fix` (matches the slice spec), link the originating
  *   audit via `related: [aNNNNN]`, and surface a deterministic
@@ -75,11 +74,21 @@ export interface IScaffoldOptions {
 	readonly startAt?: number;
 	/**
 	 * Output directory (workspace-relative) where the proposal will
-	 * be written. Default `docs/mcp-vertex/proposals/ready`. The
-	 * value is embedded in the frontmatter comment so an editor
-	 * opening the file knows where it belongs.
+	 * be written. Default `docs/proposals/ready` — callers that go
+	 * through the registered `audit_run` tool always pass the host's
+	 * real resolved directory explicitly; this fallback only matters
+	 * for a direct caller of this exported function. The value is
+	 * embedded in the frontmatter comment so an editor opening the
+	 * file knows where it belongs.
 	 */
 	readonly outputDir?: string;
+	/**
+	 * Override the default track-inference heuristic (folder-name
+	 * based: `plugins/` → `plugins+fix`, etc., tuned for this repo's
+	 * own monorepo layout) with a host-specific one. Default: the
+	 * built-in heuristic, unchanged.
+	 */
+	readonly inferTrack?: (files: readonly string[]) => string;
 	/**
 	 * Originating audit id to link in the frontmatter `related`
 	 * array. When the caller does not pass one, the scaffolder
@@ -183,6 +192,7 @@ const renderProposalBody = (
 	related: readonly string[],
 	date: string,
 	outputDir: string,
+	inferTrackFn: (files: readonly string[]) => string,
 ): { body: string; filename: string } => {
 	const slug = toSlug(title);
 	const filename = `${id}-${slug}.md`;
@@ -190,7 +200,7 @@ const renderProposalBody = (
 		related.length > 0
 			? related.map((r) => `    - ${r}`).join('\n')
 			: '    - _<add related proposal ids here>_';
-	const track = inferTrack(files);
+	const track = inferTrackFn(files);
 	const body = [
 		'---',
 		`id: ${id}`,
@@ -236,7 +246,7 @@ const renderProposalBody = (
 		'- [ ] `bun run lint:proposals` passes.',
 		'',
 		'<!--',
-		`  Sourced by \`audit_run\` (alcance B, f00077).`,
+		'  Sourced by `audit_run`.',
 		`  Suggested output dir: ${outputDir}/${filename}`,
 		'-->',
 		'',
@@ -265,7 +275,7 @@ const inferTrack = (files: readonly string[]): string => {
  * caller can write them in priority order and the resulting index
  * stays roughly grouped.
  *
- * Findings with severity outside `FATAL | MUY_MAL | MEJORABLE` are
+ * Findings with severity outside `FATAL | BAD | MINOR` are
  * silently skipped (they do not need a fix proposal). To debug the
  * skip set, callers can diff `findings.length` against
  * `result.length`.
@@ -280,7 +290,8 @@ export const scaffoldProposals = (
 	// inside the loop and the input contract says we must not
 	// mutate the caller's set.
 	const taken: Set<string> = new Set(options.existingIds ?? []);
-	const outputDir = options.outputDir ?? 'docs/mcp-vertex/proposals/ready';
+	const outputDir = options.outputDir ?? 'docs/proposals/ready';
+	const inferTrackFn = options.inferTrack ?? inferTrack;
 	const date = options.date ?? new Date().toISOString().slice(0, 10);
 	const auditId = options.auditId;
 	const out: IScaffoldedProposal[] = [];
@@ -313,6 +324,7 @@ export const scaffoldProposals = (
 			related,
 			date,
 			outputDir,
+			inferTrackFn,
 		);
 		out.push({
 			id,

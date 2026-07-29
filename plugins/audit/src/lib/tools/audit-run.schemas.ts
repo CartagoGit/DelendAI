@@ -1,6 +1,6 @@
 /**
  * audit-run.schemas.ts — Zod input + output schemas for
- * `<prefix>_audit_run` (alcance B, f00077).
+ * `<prefix>_audit_run`.
  *
  * Pure data declarations: no side effects, no I/O, no runtime
  * behaviour. Extracted from `audit-run.tool.ts` to keep the tool
@@ -125,8 +125,9 @@ export const RunInputSchema = z.object({
 	targets: z.array(TargetSchema).min(1).max(8),
 	/**
 	 * Workspace-relative directory for the saved audit markdowns.
-	 * Default `docs/mcp-vertex/proposals/done/audits`. The path is
-	 * validated against the workspace root before any write
+	 * Default: the host's configured `defaultAuditDir`
+	 * (`<docsDir>/proposals/done/audits` unless overridden). The
+	 * path is validated against the workspace root before any write
 	 * happens.
 	 */
 	auditDir: z.string().optional(),
@@ -138,8 +139,9 @@ export const RunInputSchema = z.object({
 	scaffoldProposals: z.boolean().optional(),
 	/**
 	 * Workspace-relative directory for the scaffolded proposals.
-	 * Default `docs/mcp-vertex/proposals/ready`. Validated against
-	 * the workspace root like `auditDir`.
+	 * Default: the host's configured `defaultProposalsDir`
+	 * (`<docsDir>/proposals/ready` unless overridden). Validated
+	 * against the workspace root like `auditDir`.
 	 */
 	proposalsDir: z.string().optional(),
 	/**
@@ -150,11 +152,16 @@ export const RunInputSchema = z.object({
 	 */
 	proposalStartAt: z.number().int().min(1).optional(),
 	/**
-	 * Prefix for new proposal ids. Default `x` (fix). Hosts that
-	 * want a different band (e.g. `c` for chore) can override.
+	 * Prefix for new proposal ids. Default `x` (fix). A single
+	 * lowercase letter — the scaffolder's own id allocator is
+	 * prefix-agnostic, so this only validates shape, not membership
+	 * in any specific host's kind taxonomy (which may add/rename
+	 * prefixes over time; hardcoding a closed list here would drift
+	 * out of sync with it, as the previous enum had).
 	 */
 	proposalPrefix: z
-		.enum(['f', 'x', 'c', 'r', 'd', 'a', 't', 'n', 'q', 'u', 'l'] as const)
+		.string()
+		.regex(/^[a-z]$/, 'proposalPrefix must be a single lowercase letter')
 		.optional(),
 	/**
 	 * Originating audit id. When set, the scaffolder links it as

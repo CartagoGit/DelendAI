@@ -6,6 +6,7 @@ import {
 
 import {
 	buildBrief,
+	SCORE_DIMENSIONS,
 	UNIVERSAL_SCOPES,
 	type AuditMode,
 	type ILayerConfig,
@@ -182,17 +183,7 @@ export const buildPlanRegistration = (
 					const mode =
 						args.mode ??
 						inferMode(scope, configuredLayers, projects);
-					const dimensions = defaultDimensions ?? [
-						'Arquitectura',
-						'Contratos e interfaces',
-						'Eficiencia de tokens',
-						'Anti-deadlock / concurrencia',
-						'Calidad de código fuente',
-						'Documentación',
-						'Tests',
-						'Seguridad operacional',
-						'Genericidad',
-					];
+					const dimensions = defaultDimensions ?? SCORE_DIMENSIONS;
 					// Filter the available-scopes list to the monorepo
 					// subset when `projects` is provided so the model
 					// does not waste cycles reading the wrong files.

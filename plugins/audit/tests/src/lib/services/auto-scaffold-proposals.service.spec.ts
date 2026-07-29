@@ -61,6 +61,53 @@ describe('resolveAutoScaffold — proposals availability', async () => {
 		}
 	});
 
+	// x00165 (S-B): the generated proposal body used to embed
+	// "Alcance B (f00077)" — an mcp-vertex-internal roadmap slice +
+	// proposal id — directly into every scaffolded proposal, for any
+	// downstream host. It must now read as a generic, portable note.
+	it('scaffolds a proposal body with no mcp-vertex-internal vocabulary leaked into it', async () => {
+		const dir = await mkTmp();
+		try {
+			const outcome = await resolveAutoScaffold(
+				{
+					auditsFound: 1,
+					skipped: [],
+					consensus: [],
+					findings: [
+						{
+							id: 'fatal-2',
+							titles: ['Leaked vocabulary check'],
+							worstSeverity: 'FATAL',
+							files: ['src/x.ts'],
+							seenBy: ['gpt-4o'],
+						},
+					],
+					topActions: [],
+				},
+				{
+					enabled: true,
+					peerPlugins: makeRegistry(['proposals', 'audit']),
+					proposalsDir: dir,
+					workspaceRoot: dir,
+				},
+			);
+			expect(outcome.kind).toBe('scaffolded');
+			if (outcome.kind === 'scaffolded') {
+				const written = await readFile(
+					path.join(dir, outcome.records[0]!.filename),
+					'utf8',
+				);
+				expect(written).not.toContain('Alcance B');
+				expect(written).not.toContain('f00077');
+				expect(written).not.toContain('MUY_MAL');
+				expect(written).not.toContain('MEJORABLE');
+				expect(written).toContain('Sourced by `audit_run`.');
+			}
+		} finally {
+			await rm(dir, { recursive: true, force: true });
+		}
+	});
+
 	it('returns `skipped` (proposals-not-loaded) when the proposals peer plugin is NOT loaded', async () => {
 		const dir = await mkTmp();
 		try {
