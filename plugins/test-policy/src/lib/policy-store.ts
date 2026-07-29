@@ -12,6 +12,7 @@ import { join } from 'node:path';
 
 import {
 	quarantineCorruptFile,
+	redactSecrets,
 	withFileMutex,
 	writeFileAtomic,
 } from '@mcp-vertex/core/public';
@@ -77,10 +78,19 @@ export const writePolicyOverride = async (
 	storeDir: string,
 	override: { readonly mode: ITestPolicyMode; readonly reason?: string },
 ): Promise<IPolicyOverride> => {
+	// x00190: `reason` is free text an agent supplies and a durable,
+	// later-re-surfaced value (get_test_policy echoes it back verbatim
+	// as `overrideReason` to every future caller) — exactly the shape
+	// `redactSecrets` exists to guard (repo rule: secrets never persisted
+	// un-redacted).
+	const redactedReason =
+		override.reason !== undefined
+			? redactSecrets(override.reason).text
+			: undefined;
 	const record: IPolicyOverride = {
 		mode: override.mode,
 		setAt: new Date().toISOString(),
-		...(override.reason !== undefined ? { reason: override.reason } : {}),
+		...(redactedReason !== undefined ? { reason: redactedReason } : {}),
 	};
 	const path = storePath(storeDir);
 	await withFileMutex(path, async () => {
