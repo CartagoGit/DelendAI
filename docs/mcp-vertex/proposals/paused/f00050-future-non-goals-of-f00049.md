@@ -15,9 +15,11 @@ recan:
     - { at: 2026-07-14, by: claude-fable, slice: S-D, status: unblocked, notes: "Trigger fired: the user explicitly committed to mcp-vertex being adoptable in any project ('que se pueda usar facilmente en cualquier otro proyecto') and confirmed the S-D promotion when asked directly. Promoted to f00113 (profiles live plugin-side; core TS contract untouched)." }
     - { at: 2026-07-14, by: claude-fable, slice: S-G, status: unblocked, notes: "Trigger fired: the user (project owner) confirmed the current prefix taxonomy as the agreed one — the community-decision precondition. Promoted to f00114 with one recorded expansion: the enum exports from @mcp-vertex/proposals' public barrel, NOT @mcp-vertex/core, because proposal vocabulary in the core would break AGENTS.md rule #1 (core agnostic). deps_check re-run this pass: healthy=true, zero findings — S-I stays parked; S-A/S-B/S-C/S-E/S-F/S-H unchanged, no trigger." }
     - { at: 2026-07-28, by: claude-sonnet-5, slice: all, status: still-paused, notes: "User-requested re-scan of the remaining seven (S-A, S-B, S-C, S-E, S-F, S-H, S-I). Checked every done/audits/ file dated after this proposal's 2026-07-14 recan (a00053 through a00082, 28 audits) for the specific trigger keywords each slice requires (SRP-violation finding, audit-plugin vocab leak, public-symbol removal need, unexportable-type need, strict-order ID convention, production loop/starvation/state-repair-playbook bug, CVE/unmaintained-dep) — zero hits in that window. Checked ready/ and in-progress/ for a new orchestrator proposal citing a loop/starvation finding (S-H's specific precondition) — none exists; an incidental lock-release honesty bug I fixed this same session (close_slice/proposal_review's lockReleased was hardcoded true) was fixed directly rather than filed as a new orchestrator proposal citing a production loop, so it does not satisfy S-H's precondition as written. deps_check: healthy=true, zero findings (S-I). compact_status: queue green, 0 orphans (no starvation signal). No trigger fired for any of the seven; the proposal correctly stays paused per its own non-goal ('do not blind-execute a trigger-blocked item'). Also note: this file's 2026-07-12 recan entry says 'promoted to ready', but the frontmatter status and physical folder (paused/) were never actually updated to match — that promotion was apparently never executed, and every recan since (including this one) has correctly continued treating the file as paused. Left status: paused as-is (that IS the accurate current state); flagging the stale prose only so a future reader isn't confused by the contradiction." }
+    - { at: 2026-07-29, by: claude-sonnet-5, slice: S-I, status: unblocked, notes: "User-requested re-scan asked to mine this file for anything actionable without needing the user's decision. Live re-run of mcp-vertex_deps_deps_audit found 20 real CVE findings (11 high, 8 medium, 1 low) against currently-resolved dependency versions — S-I's precondition ('A security advisory (CVE) is filed against a dep that the current bun.lock resolves') fired. Promoted to x00164 (astro -> 7.1.5, @modelcontextprotocol/sdk -> 1.30.0 to unlock a patched @hono/node-server 2.x, plus package.json overrides for 11 vulnerable transitive deps). Re-ran deps_audit post-fix: 0 findings. Verified no regressions: full typecheck, bun test across packages/core+client+cli and plugins/proposals+deps+search+notification, astro check, and a full astro build (2657 pages) all green. Shipped 519d9ab3, x00164 transitioned to done." }
 preconditions-met:
     - { slice: S-D, id: f00113, on: 2026-07-14 }
     - { slice: S-G, id: f00114, on: 2026-07-14 }
+    - { slice: S-I, id: x00164, on: 2026-07-29 }
 ---
 
 # f00050 — Triage the nine non-goals deferred from f00049
@@ -85,7 +87,7 @@ Common precondition (f00049 done + `@mcp-vertex/core/public` stable): **MET**
 | S-F renumber IDs | a strict-order convention + git-filter-repo approval | trigger-blocked |
 | S-G fuse ID prefixes | a community decision on the prefix taxonomy | **trigger FIRED 2026-07-14** → promoted to `f00114` |
 | S-H loop-detector contract | a new orchestrator proposal cites a prod loop | trigger-blocked |
-| S-I dep bump / bun.lock | a CVE OR an unmaintained-dep + alternative | trigger-blocked (run `deps_check` each pass) |
+| S-I dep bump / bun.lock | a CVE OR an unmaintained-dep + alternative | **trigger FIRED 2026-07-29** → promoted to `x00164` |
 
 **Consequence:** S0 (triage) is the only active slice; it re-runs this table
 each pass and promotes any row that flips to "trigger fired." The nine item
@@ -280,20 +282,7 @@ files + gate.
 
 ### S-I — Bump / swap / remove dependencies (touch `bun.lock`)
 
-- **Status**: blocked
-- **Preconditions**:
-  - A security advisory (CVE) is filed against a dep that the current
-    `bun.lock` resolves.
-  - OR: a dep's upstream is unmaintained for >12 months AND a maintained
-    alternative exists with comparable API surface.
-  - OR: a new dep is needed to land a feature that cannot be built from
-    the current dep set.
-- **Files**: a single `package.json` + regenerated `bun.lock` + per-package
-  spec updates. The PR cites the precondition explicitly in its body.
-- **Gate**: `bun install` clean; `bun run validate` green; the
-  `deps_list` / `deps_check` lints report no unpinned ranges.
-- **Note**: f00049 touches zero deps. This slice is the *only* sanctioned
-  way to change `bun.lock` as part of convention work.
+- **Status**: promoted → [`x00164`](../done/fixes/x00164-pasada-f00050-s-i-bump-vulnerable-dependencies-11-high-8-medium-1-low-cve-findings.md) (2026-07-29). The block moved there per `### how to unpause an item`. Trigger: `deps_audit` reported 20 real CVE findings (11 high, 8 medium, 1 low) against currently-resolved dependency versions.
 
 ### how to unpause an item
 
