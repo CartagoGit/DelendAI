@@ -51,7 +51,7 @@ Resolve findings F17, F18, F19 from a00083 (29-07-2026). The refactor plugin sco
 - **Gate**: test
   acceptance:
 
-- **Files**: `plugins/refactor/src/lib/tools/refactor-nav.tool.spec.ts`, `plugins/refactor/src/lib/tools/refactor-rename.tool.spec.ts` (co-located specs — this plugin's actual convention; see Notes for why the originally-named `tests/src/lib/` paths were stale).
+- **Files**: `plugins/refactor/src/lib/tools/refactor-nav.tool.spec.ts`, `plugins/refactor/src/lib/tools/refactor-rename.tool.spec.ts` (co-located specs, this plugin's actual convention — see Notes for why the originally-named path assumption was stale).
 - Cases: containment rejection (absolute + `../` escape, both tools), consent-token echo, happy-path rename hunk apply. `refactor_codemod` never had a consent gate to begin with (it never writes to disk, confirmed in Notes) so "codemod refusal on missing consent" doesn't apply.
 - **Acceptance**: `bun test plugins/refactor/tests/` exits 0 with at least 6 specs.
 
@@ -70,11 +70,11 @@ original audit's assumptions were stale):
   `resolvePath` bug (shared helper) and are fixed the same way, even
   though F17/F18 only named `refactor-nav.tool.ts` and the apply half of
   `refactor-rename.tool.ts`.
-- S2's acceptance named new files under `plugins/refactor/tests/src/lib/`
+- S2's acceptance named new files under a tests/src/lib subdirectory
   — that directory shape doesn't match this plugin's actual convention
   (co-located `*.tool.spec.ts` next to each tool, already used by all 3
   existing tool spec files). Coverage was added to the existing co-located
-  specs instead of creating a parallel `tests/` tree. The "2868 LOC, 0
+  specs instead of creating a parallel tests directory tree. The "2868 LOC, 0
   specs" premise was also stale: 7 spec files already existed pre-fix
   (nav-engine, rename-planner, codemod-runner, recipes, and all 3 tool
   files) — likely a symptom of the same `scan_drift`-style scanner
