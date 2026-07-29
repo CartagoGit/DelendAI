@@ -148,12 +148,13 @@ describe('init:default (f00103)', () => {
 		expect(rels.some((r) => r.startsWith('.github/agents/'))).toBe(true);
 		expect(rels).toContain('docs/mcp-vertex/skills/manifest.json');
 
-		// The config must include every vertex member (10 plugins:
-		// conventions, docs, search, git, web-fetch, status-marker,
-		// test-convention, quality, issues, audit). The vertex preset
-		// is independent — it does NOT inherit swarm, so
-		// `proposals`/`memory`/`rules`/`deps`/`notification`/`logs`
-		// MUST NOT be present in the rendered config.
+		// The config must include every vertex member — x00166: vertex
+		// now mirrors mcp-vertex.config.json's `plugins` keys exactly
+		// (28 total), INCLUDING `proposals` (orchestration/swarm) since
+		// mcp-vertex dogfoods its own orchestrator and every adopter via
+		// `init:default` must get it too. Previously vertex silently
+		// excluded proposals/memory/rules/deps/notification/logs and
+		// included 6 phantom plugins that were never actually loaded.
 		const configFile = data.files.find(
 			(f) => f.relPath === 'mcp-vertex.config.json',
 		);
@@ -162,32 +163,49 @@ describe('init:default (f00103)', () => {
 			plugins: Record<string, unknown>;
 		};
 		for (const required of [
-			'conventions',
-			'docs',
-			'search',
-			'git',
-			'web-fetch',
-			'status-marker',
-			'test-convention',
-			'quality',
-			'issues',
 			'audit',
+			'auto-agent-selector',
+			'container',
+			'conventions',
+			'deps',
+			'diagram',
+			'docs',
+			'env',
+			'forge',
+			'git',
+			'i18n',
+			'link-check',
+			'logs',
+			'memory',
+			'notification',
+			'orchestrator-runner',
+			'perf',
+			'prompts-pack',
+			'proposals',
+			'quality',
+			'rules',
+			'search',
+			'security',
+			'status-marker',
+			'tech-debt',
+			'test-convention',
+			'test-policy',
+			'usage-tracking',
 		]) {
 			expect(config.plugins[required]).toBeDefined();
 		}
-		for (const excluded of [
-			'memory',
-			'rules',
-			'deps',
-			'proposals',
-			'notification',
-			'logs',
+		for (const phantom of [
+			'web-fetch',
+			'issues',
+			'refactor',
+			'api',
+			'prompt-eval',
+			'database',
 		]) {
-			expect(config.plugins[excluded]).toBeUndefined();
+			expect(config.plugins[phantom]).toBeUndefined();
 		}
-		// Exactly 14 vertex plugins rendered (f00119 S6 added
-		// auto-agent-selector, f00123 S2 added refactor, f00126 S3 added perf), no extras added.
-		expect(Object.keys(config.plugins).length).toBe(17);
+		// Exactly 28 vertex plugins rendered, no extras added.
+		expect(Object.keys(config.plugins).length).toBe(28);
 	});
 
 	it('writes the bundle to disk when --dry-run is absent', async () => {
@@ -211,12 +229,14 @@ describe('init:default (f00103)', () => {
 		) as { plugins: Record<string, unknown> };
 		expect(configOnDisk.plugins.git).toBeDefined();
 		expect(configOnDisk.plugins.audit).toBeDefined();
-		expect(configOnDisk.plugins.issues).toBeDefined();
-		expect(configOnDisk.plugins['web-fetch']).toBeDefined();
 		expect(configOnDisk.plugins.conventions).toBeDefined();
-		// Swarm-only plugins MUST NOT have been written.
-		expect(configOnDisk.plugins.proposals).toBeUndefined();
-		expect(configOnDisk.plugins.memory).toBeUndefined();
+		// x00166: vertex now includes the orchestration plugins too —
+		// every adopter running init:default gets the orchestrator.
+		expect(configOnDisk.plugins.proposals).toBeDefined();
+		expect(configOnDisk.plugins.memory).toBeDefined();
+		// Phantom plugins that were never actually loaded.
+		expect(configOnDisk.plugins.issues).toBeUndefined();
+		expect(configOnDisk.plugins['web-fetch']).toBeUndefined();
 
 		// Host-instructions centralizer wrote its managed canonical block.
 		const agentsContent = await readFile(join(tmp, 'AGENTS.md'), 'utf8');

@@ -33,10 +33,11 @@ describe('PRESET_CATALOG', async () => {
 		expect(PRESET_CATALOG[3]?.members.length).toBe(7);
 		// full: adds 2 host-only + api + changelog on top of swarm
 		expect(PRESET_CATALOG[4]?.members.length).toBe(4);
-		// vertex: 17 members (f00119 S6 added auto-agent-selector,
-		// f00123 S2 added refactor, f00126 S3 added perf, f00127 S3 added prompt-eval,
-		// f00128 S1 added database, f00130 S3 added api; mirrors mcp-vertex.config.json)
-		expect(PRESET_CATALOG[5]?.members.length).toBe(17);
+		// vertex: 28 members, exactly mirroring mcp-vertex.config.json's
+		// `plugins` object (x00166 — corrected a long-stale drift where
+		// this preset had 6 phantom plugins not actually loaded and was
+		// missing 17 real ones, including `proposals`).
+		expect(PRESET_CATALOG[5]?.members.length).toBe(28);
 	});
 
 	it('defines `lean` as an independent essentials preset', async () => {
@@ -226,36 +227,58 @@ describe('resolvePresetMembers', async () => {
 	});
 
 	it('resolves vertex to ONLY its declared members (independent, skips chain)', async () => {
+		// x00166: vertex mirrors mcp-vertex.config.json's `plugins` keys
+		// exactly (28 total) — verified live against the root config
+		// 2026-07-29. Previously missing 17 real plugins (including
+		// `proposals`, the orchestration engine every mcp-vertex adopter
+		// needs) and listing 6 phantom ones that were never actually
+		// loaded.
 		const resolved = resolvePresetMembers('vertex');
-		expect(resolved.length).toBe(17);
+		expect(resolved.length).toBe(28);
 		for (const required of [
-			'conventions',
-			'docs',
-			'search',
-			'git',
-			'perf',
-			'web-fetch',
-			'status-marker',
-			'test-convention',
-			'test-policy',
-			'quality',
-			'refactor',
-			'database',
-			'issues',
 			'audit',
 			'auto-agent-selector',
-			'prompt-eval',
+			'container',
+			'conventions',
+			'deps',
+			'diagram',
+			'docs',
+			'env',
+			'forge',
+			'git',
+			'i18n',
+			'link-check',
+			'logs',
+			'memory',
+			'notification',
+			'orchestrator-runner',
+			'perf',
+			'prompts-pack',
+			'proposals',
+			'quality',
+			'rules',
+			'search',
+			'security',
+			'status-marker',
+			'tech-debt',
+			'test-convention',
+			'test-policy',
+			'usage-tracking',
 		]) {
 			expect(resolved).toContain(required);
 		}
-		// Independent presets do NOT inherit swarm — those plugins
-		// are intentionally absent from mcp-vertex.config.json.
-		expect(resolved).not.toContain('memory');
-		expect(resolved).not.toContain('rules');
-		expect(resolved).not.toContain('deps');
-		expect(resolved).not.toContain('proposals');
-		expect(resolved).not.toContain('notification');
-		expect(resolved).not.toContain('logs');
+		// Phantom plugins the old (stale) definition listed but that
+		// were never actually loaded by the live config.
+		for (const phantom of [
+			'web-fetch',
+			'issues',
+			'refactor',
+			'api',
+			'prompt-eval',
+			'database',
+		]) {
+			expect(resolved).not.toContain(phantom);
+		}
 	});
 
 	it('preserves the ⊇ chain ordering for chain presets', async () => {

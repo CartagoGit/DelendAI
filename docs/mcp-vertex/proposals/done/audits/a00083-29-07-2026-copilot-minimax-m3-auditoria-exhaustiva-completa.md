@@ -1,3 +1,15 @@
+---
+id: a00083
+kind: audit
+title: "Auditoría completa del proyecto mcp-vertex — Copilot / MiniMax M3, 5 capas en paralelo"
+status: done
+type: proposal
+track: audit+plugins+cross-llm+cross-client
+date: 2026-07-29
+date_iso: 2026-07-29
+mode: general
+---
+
 # a00083 — Auditoría completa del proyecto mcp-vertex
 
 > **Date**: 2026-07-29

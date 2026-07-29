@@ -31,17 +31,24 @@ describe('preset-table', () => {
 			// First ids come from minimal (git, search)
 			expect(ids[0]).toBe('git');
 			expect(ids[1]).toBe('search');
-			// The last ids include vertex-only additions beyond the chain:
-			// `perf` (f00126 S3), `audit` (opt-in), `auto-agent-selector`,
-			// and `prompt-eval` (f00127). `web-fetch` is already introduced by
-			// `full`, so it no longer appears in the unique tail.
-			const tail = ids.slice(-4);
+			// x00166: vertex now mirrors mcp-vertex.config.json exactly
+			// (28 members) — the last 8 unique columns are the ones only
+			// vertex introduces (not already seen from minimal/lean/
+			// standard/swarm/full): audit, auto-agent-selector,
+			// link-check, orchestrator-runner, perf, security,
+			// tech-debt, usage-tracking. 35 total columns.
+			expect(ids.length).toBe(35);
+			const tail = ids.slice(-8);
 			expect(new Set(tail)).toEqual(
 				new Set([
-					'perf',
 					'audit',
 					'auto-agent-selector',
-					'prompt-eval',
+					'link-check',
+					'orchestrator-runner',
+					'perf',
+					'security',
+					'tech-debt',
+					'usage-tracking',
 				]),
 			);
 		});
@@ -63,19 +70,19 @@ describe('preset-table', () => {
 			expect(swarm?.effective).toContain('logs');
 			// `issues` stays in `full` (host-only).
 			expect(full?.effective).toContain('issues');
-			// `vertex` is independent — its effective membership equals
-			// its 17 declared members (f00119 S6 added auto-agent-selector,
-			// f00123 added refactor, f00126 S3 added perf, f00127 added prompt-eval,
-			// f00128 added database, f00130 added api), NOT swarm + a delta.
-			expect(vertex?.effective.length).toBe(17);
+			// x00166: `vertex` is independent — its effective membership
+			// equals its 28 declared members, exactly mirroring
+			// mcp-vertex.config.json (including `proposals`, the
+			// orchestration plugin — previously excluded, a stale drift).
+			expect(vertex?.effective.length).toBe(28);
 			expect(vertex?.effective).toContain('perf');
 			expect(vertex?.effective).toContain('audit');
-			expect(vertex?.effective).toContain('refactor');
-			expect(vertex?.effective).toContain('issues');
-			expect(vertex?.effective).toContain('web-fetch');
 			expect(vertex?.effective).toContain('auto-agent-selector');
-			expect(vertex?.effective).not.toContain('memory');
-			expect(vertex?.effective).not.toContain('proposals');
+			expect(vertex?.effective).toContain('proposals');
+			expect(vertex?.effective).toContain('memory');
+			expect(vertex?.effective).not.toContain('refactor');
+			expect(vertex?.effective).not.toContain('issues');
+			expect(vertex?.effective).not.toContain('web-fetch');
 		});
 	});
 
