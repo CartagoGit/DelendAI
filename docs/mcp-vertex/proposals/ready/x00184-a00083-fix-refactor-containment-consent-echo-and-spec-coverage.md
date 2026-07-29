@@ -51,8 +51,8 @@ Resolve findings F17, F18, F19 from a00083 (29-07-2026). The refactor plugin sco
 - **Gate**: test
   acceptance:
 
-- **Files**: `plugins/refactor/tests/src/lib/refactor-nav.spec.ts` (new), `plugins/refactor/tests/src/lib/refactor-rename.spec.ts` (new).
-- Cases: containment rejection, consent echo, happy-path rename hunk apply, codemod refusal on missing consent.
+- **Files**: `plugins/refactor/src/lib/tools/refactor-nav.tool.spec.ts`, `plugins/refactor/src/lib/tools/refactor-rename.tool.spec.ts` (co-located specs — this plugin's actual convention; see Notes for why the originally-named `tests/src/lib/` paths were stale).
+- Cases: containment rejection (absolute + `../` escape, both tools), consent-token echo, happy-path rename hunk apply. `refactor_codemod` never had a consent gate to begin with (it never writes to disk, confirmed in Notes) so "codemod refusal on missing consent" doesn't apply.
 - **Acceptance**: `bun test plugins/refactor/tests/` exits 0 with at least 6 specs.
 
 ## Notes
