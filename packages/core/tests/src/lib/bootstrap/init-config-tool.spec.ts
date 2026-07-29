@@ -98,4 +98,22 @@ describe('init_config (f00117 S2)', () => {
 		expect(result.ok).toBe(false);
 		expect(result.error.reason).toContain('not valid JSON');
 	});
+
+	it('serializes concurrent init_config writes through the file mutex (a00083 F1)', async () => {
+		// Two concurrent writers with different `write:true` calls. With
+		// the mutex, the second writer reads the first's commit (not
+		// a torn snapshot) and produces a valid JSON file. Without the
+		// mutex, the two writes race and the on-disk file can be
+		// truncated or hold an interleaved JSON.
+		const [a, b] = await Promise.all([
+			init({ write: true }),
+			init({ write: true }),
+		]);
+		expect(parse(a).ok).toBe(true);
+		expect(parse(b).ok).toBe(true);
+		const written = JSON.parse(
+			await readFile(join(root, 'mcp-vertex.config.json'), 'utf8'),
+		);
+		expect(written.plugins).toBeDefined();
+	});
 });

@@ -13,6 +13,7 @@
 import { readFile } from 'node:fs/promises';
 
 import { redactSecrets } from './redact';
+import { NoteQuotaExceededError, getMaxNotes } from './store-records';
 import { readStore, withStoreLock, writeStore } from './store-io';
 import type { INote } from './store-types';
 
@@ -135,6 +136,12 @@ const parseImportPayload = (
 	return notes as Record<string, unknown>[];
 };
 
+/** Extract the id from a candidate. The id is already part of the
+ *  candidate shape (see `redactCandidate` below), so the quota check
+ *  can read it without re-deriving from the title. */
+const candidateIdOf = (candidate: Record<string, unknown>): unknown =>
+	candidate.id;
+
 /** Redact secrets from a candidate note's text fields before it ever
  *  touches disk. */
 const redactCandidate = (
@@ -204,6 +211,12 @@ export const importNotes = (
 		format: IMemoryImportFormat;
 		mode: IMemoryImportMode;
 		conflict?: IMemoryImportConflict;
+		/**
+		 * a00083 F10: enforce the same `maxNotes` quota that `saveNote`
+		 * does. Without this guard a single import can permanently
+		 * inflate the store above the configured ceiling.
+		 */
+		maxNotes?: number;
 	},
 ): Promise<IMemoryImportResult> =>
 	withStoreLock(absPath, async () => {
@@ -218,6 +231,18 @@ export const importNotes = (
 		let overwritten = 0;
 		let merged = 0;
 		let redactedSecrets = 0;
+
+		// a00083 F10: enforce maxNotes the same way saveNote does.
+		// We count *new* notes (no existing id) against the ceiling,
+		// because collisions are resolved by conflict policy and never
+		// grow the store.
+		const limit = getMaxNotes(options.maxNotes);
+		const newCandidatesCount = candidates.filter(
+			(c) => !byId.has(String(candidateIdOf(c))),
+		).length;
+		if (byId.size + newCandidatesCount > limit) {
+			throw new NoteQuotaExceededError(limit);
+		}
 
 		for (const candidate of candidates) {
 			const { note, redactions } = redactCandidate(candidate);

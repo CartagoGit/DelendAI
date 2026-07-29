@@ -39,7 +39,12 @@ beforeEach(() => {
 
 describe('language-picker', async () => {
 	it('renderLanguagePicker renders a <select> with all 12 languages', async () => {
-		const html = renderLanguagePicker({ current: 'en', languages });
+		const html = renderLanguagePicker({
+			current: 'en',
+			languages,
+			// a00083 F23: ariaLabel is required and must come from i18n.
+			ariaLabel: 'Language',
+		});
 		expect(html).toContain('data-mcpv-lang');
 		expect(html).toContain('value="en"');
 		expect(html).toContain('value="es"');
@@ -50,9 +55,20 @@ describe('language-picker', async () => {
 	});
 
 	it('marks the current language as selected', async () => {
-		const html = renderLanguagePicker({ current: 'es', languages });
+		const html = renderLanguagePicker({
+			current: 'es',
+			languages,
+			ariaLabel: 'Idioma',
+		});
 		expect(html).toContain('value="es" selected');
 		expect(html).not.toContain('value="en" selected');
+		expect(html).toContain('aria-label="Idioma"');
+	});
+
+	it('throws when rendered without ariaLabel (a00083 F23)', () => {
+		expect(() =>
+			renderLanguagePicker({ current: 'en', languages }),
+		).toThrow(/ariaLabel/);
 	});
 
 	it('readInitialLang returns the stored value when valid', async () => {

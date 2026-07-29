@@ -64,4 +64,14 @@ const run = async (): Promise<void> => {
 	await assembled.start();
 };
 
-void run();
+// a00083 F26: a terminal `.catch` so a rejected boot surfaces as a
+// structured error and exits with code 1 instead of an unhandled
+// rejection that CI wrappers / host supervisors cannot parse.
+const handleBootFailure = (err: unknown): void => {
+	process.stderr.write(
+		`[mcp-vertex] boot failed: ${err instanceof Error ? (err.stack ?? err.message) : String(err)}\n`,
+	);
+	process.exit(1);
+};
+
+run().catch(handleBootFailure);

@@ -14,6 +14,7 @@ import type { IToolRegistration } from '../contracts/interfaces/tool-registratio
 import type { IWorkspacePathProvider } from '../contracts/interfaces/workspace-paths.interface';
 import { toolError, toolJson } from '../shared/tool-response';
 import { writeFileAtomic } from '../shared/atomic-write';
+import { withFileMutex } from '../shared/with-file-mutex';
 import type { IFileReader } from './analyze-project';
 import { analyzeProject } from './analyze-project';
 import { deriveConfig } from './derive-config';
@@ -106,9 +107,15 @@ export const buildInitConfigToolRegistration = (
 				}
 
 				const absPath = deps.workspace.resolve(CONFIG_FILENAME);
-				await writeFileAtomic(
-					absPath,
-					`${JSON.stringify(config, null, '\t')}\n`,
+				// a00083 F1: write under withFileMutex so two concurrent
+				// init_config calls serialize on the same path. Atomic
+				// write protects against torn reads; the mutex protects
+				// against last-writer-wins overwriting a concurrent merge.
+				await withFileMutex(absPath, () =>
+					writeFileAtomic(
+						absPath,
+						`${JSON.stringify(config, null, '\t')}\n`,
+					),
 				);
 				return toolJson({
 					ok: true,
