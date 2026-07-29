@@ -60,6 +60,7 @@ export const buildQualityToolRegistrations = (
 					{
 						description:
 							'List the quality-gate scopes and the commands each runs. Read-only.',
+						inputSchema: z.object({}).strict(),
 						outputSchema: z.object({
 							scopes: z.record(
 								z.string(),

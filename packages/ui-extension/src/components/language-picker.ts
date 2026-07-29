@@ -19,9 +19,12 @@ export interface ILanguagePickerOptions {
 	readonly languages: readonly ILangMeta[];
 	readonly onChange?: (lang: Lang) => void;
 	/**
-	 * x00103: accessible name for the `<select>`. Pass
-	 * `extensionText(dict, 'a11yLanguageSelector')` so screen readers
-	 * announce it in the active language; defaults to English.
+	 * x00103 + a00083 F23: accessible name for the `<select>`. Required
+	 * for any UI that ships a language picker; the caller MUST source
+	 * it from the active i18n dictionary
+	 * (`extensionText(dict, 'a11yLanguageSelector')`). A fallback
+	 * English string used to ship silently from the shared package;
+	 * that violated AGENTS.md rule 9 in every non-English host.
 	 */
 	readonly ariaLabel?: string;
 }
@@ -66,9 +69,16 @@ export const renderLanguagePicker = (opts: ILanguagePickerOptions): string => {
 				`<option value="${escapeHtml(l.code)}"${l.code === opts.current ? ' selected' : ''}>${escapeHtml(l.label)}</option>`,
 		)
 		.join('');
+	// a00083 F23: required i18n-sourced aria-label. Throw early instead
+	// of silently shipping English a11y text.
+	if (opts.ariaLabel === undefined || opts.ariaLabel === '') {
+		throw new Error(
+			'renderLanguagePicker: ariaLabel is required and must come from the active i18n dictionary (a00083 F23).',
+		);
+	}
 	return `<label class="mcpv-lang-picker"${idAttr}>
 	<span class="mcpv-lang-picker__label" aria-hidden="true">🌐</span>
-	<select class="mcpv-lang-picker__select" data-mcpv-lang aria-label="${escapeHtml(opts.ariaLabel ?? 'Language')}">
+	<select class="mcpv-lang-picker__select" data-mcpv-lang aria-label="${escapeHtml(opts.ariaLabel)}">
 		${options}
 	</select>
 </label>`;

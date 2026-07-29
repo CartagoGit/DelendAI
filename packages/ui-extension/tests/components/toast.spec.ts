@@ -5,11 +5,23 @@ import { componentScript } from '../../src/components/runtime';
 
 describe('renderToast', () => {
 	it('renders a sticky close button only when ttl is 0 (H25)', () => {
-		const sticky = renderToast({ id: 't1', message: 'hi', ttl: 0 });
+		const sticky = renderToast({
+			id: 't1',
+			message: 'hi',
+			ttl: 0,
+			// a00083 F22: sticky toasts MUST source closeLabel from i18n.
+			closeLabel: 'Cerrar',
+		});
 		expect(sticky).toContain('class="mcpv-toast__close"');
 		expect(sticky).toContain('data-mcpv-toast-close="t1"');
-		expect(sticky).toContain('aria-label="Close"');
+		expect(sticky).toContain('aria-label="Cerrar"');
 		expect(sticky).toContain('data-mcpv-toast-sticky="true"');
+	});
+
+	it('throws when a sticky toast is rendered without closeLabel (a00083 F22)', () => {
+		expect(() =>
+			renderToast({ id: 't-sticky', message: 'hi', ttl: 0 }),
+		).toThrow(/closeLabel/);
 	});
 
 	it('omits the close button for auto-dismissing toasts', () => {
@@ -26,7 +38,12 @@ describe('renderToast', () => {
 	});
 
 	it('escapes the toast id in the close button', () => {
-		const html = renderToast({ id: '"><x', message: 'm', ttl: 0 });
+		const html = renderToast({
+			id: '"><x',
+			message: 'm',
+			ttl: 0,
+			closeLabel: 'Close',
+		});
 		expect(html).not.toContain('data-mcpv-toast-close=""><x"');
 		expect(html).toContain('&quot;&gt;&lt;x');
 	});

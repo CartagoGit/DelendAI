@@ -225,8 +225,10 @@ export const buildRoundContextRegistration = (
 ): IToolRegistration => ({
 	id: 'round_context',
 	effects: ['write'],
-	summary:
-		'Persisted multi-agent round digest + staleness (forceRefresh recomputes). For resumed swarm work.',
+	// a00083 F33: summary is the cold-path token surface. Description
+	// already covers persistence + staleness + forceRefresh in detail
+	// (see below); keep the summary to the *purpose* only.
+	summary: 'Persisted multi-agent round digest for resumed swarm work.',
 	tags: ['coordination', 'lazy'],
 	register: async (server) => {
 		server.registerTool(

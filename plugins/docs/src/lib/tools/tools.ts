@@ -126,7 +126,7 @@ export const buildDocsToolRegistrations = (
 				'[deprecated] Use search_search { roots: ["docs"] } instead.',
 			tags: ['docs', 'orientation', 'lazy', 'deprecated'],
 			deprecated: {
-				since: '0.x.y',
+				since: '0.1.0',
 				replacement: 'search_search',
 				replacementArgs: { roots: ['docs'] },
 				note: 'docs_search is superseded by the workspace search plugin; pass roots: ["docs"] to scope it to the docs tree.',
@@ -136,7 +136,7 @@ export const buildDocsToolRegistrations = (
 					`${prefix}_docs_search`,
 					{
 						description:
-							'[deprecated since 0.x.y] Use search_search { roots: ["docs"] } for the same hits. This tool returns a typed deprecation envelope and never executes the original search.',
+							'[deprecated since 0.1.0] Use search_search { roots: ["docs"] } for the same hits. This tool returns a typed deprecation envelope and never executes the original search.',
 						inputSchema: z.object({
 							query: z.string(),
 							limit: z.number().optional(),
@@ -159,7 +159,7 @@ export const buildDocsToolRegistrations = (
 								reason: 'deprecated' as const,
 								replacement: 'search_search',
 								replacementArgs: { roots: ['docs'] },
-								since: '0.x.y',
+								since: '0.1.0',
 								note: 'docs_search is superseded by the workspace search plugin; pass roots: ["docs"] to scope it to the docs tree.',
 							},
 						};

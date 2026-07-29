@@ -28,7 +28,7 @@ Registers two tools, `<prefix>_docs_list` and `<prefix>_docs_read`.
   `{ roots: ["docs"] }` (the docs plugin's own configured roots). The tool
   is still registered so callers learn the deprecation at runtime; it
   returns
-  `{ ok: false, error: { reason: 'deprecated', replacement: 'search_search', replacementArgs: { roots: ['docs'] }, since: '0.x.y' } }`
+  `{ ok: false, error: { reason: 'deprecated', replacement: 'search_search', replacementArgs: { roots: ['docs'] }, since: '0.1.0' } }`
   with `isError: true`. Removal is a follow-up once every known caller
   has migrated (f00057 S11).
 

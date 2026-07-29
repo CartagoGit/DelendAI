@@ -15,9 +15,13 @@ export interface IToastOptions {
 	readonly ttl?: number; // ms; 0 = sticky
 	readonly action?: { id: string; label: string };
 	/**
-	 * x00103: accessible name for the sticky toast's close button.
-	 * Pass `extensionText(dict, 'a11yCloseToast')` so screen readers
-	 * announce it in the active language; defaults to English.
+	 * x00103 + a00083 F22: accessible name for the sticky toast's close
+	 * button. Required when `ttl <= 0` (sticky toast); the caller MUST
+	 * source it from the active i18n dictionary
+	 * (`extensionText(dict, 'a11yCloseToast')`). A fallback English
+	 * string used to ship silently from the shared package; that
+	 * violated AGENTS.md rule 9 in every non-English host. Optional
+	 * for non-sticky toasts (no close button rendered).
 	 */
 	readonly closeLabel?: string;
 }
@@ -42,8 +46,19 @@ export const renderToast = (opts: IToastOptions): string => {
 	const action = opts.action
 		? `<button type="button" class="mcpv-toast__action" data-mcpv-action="${escapeHtml(opts.action.id)}" data-mcpv-toast-id="${escapeHtml(opts.id)}">${escapeHtml(opts.action.label)}</button>`
 		: '';
+	// a00083 F22: sticky toasts REQUIRE a `closeLabel` (i18n-sourced).
+	// Throw early instead of silently shipping English a11y text.
+	const closeLabel =
+		opts.closeLabel ??
+		(sticky
+			? (() => {
+					throw new Error(
+						`renderToast: sticky toast "${opts.id}" must receive an i18n-sourced closeLabel (a00083 F22).`,
+					);
+				})()
+			: '');
 	const close = sticky
-		? `<button type="button" class="mcpv-toast__close" aria-label="${escapeHtml(opts.closeLabel ?? 'Close')}" data-mcpv-toast-close="${escapeHtml(opts.id)}">×</button>`
+		? `<button type="button" class="mcpv-toast__close" aria-label="${escapeHtml(closeLabel)}" data-mcpv-toast-close="${escapeHtml(opts.id)}">×</button>`
 		: '';
 	return `<div
 	id="${escapeHtml(opts.id)}"

@@ -98,6 +98,15 @@ export const ${toolSymbol}_TOOL = {
 
 export const ${toolSymbol}_INPUT_SCHEMA = z.object({});
 
+export const ${toolSymbol}_OUTPUT_SCHEMA = z.object({
+	content: z.array(
+		z.object({
+			type: z.literal('text'),
+			text: z.string(),
+		}),
+	),
+});
+
 export type I${fn}Args = z.infer<typeof ${toolSymbol}_INPUT_SCHEMA>;
 
 export function build${fn}Response(_args: I${fn}Args): {
@@ -119,6 +128,7 @@ export async function register${fn}Tool(server: McpServer): Promise<void> {
 		{
 			description: ${toolSymbol}_TOOL.description,
 			inputSchema: ${toolSymbol}_INPUT_SCHEMA,
+			outputSchema: ${toolSymbol}_OUTPUT_SCHEMA,
 		},
 		async (args: I${fn}Args) => build${fn}Response(args)
 	);
