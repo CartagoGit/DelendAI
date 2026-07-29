@@ -16,10 +16,12 @@ recan:
     - { at: 2026-07-14, by: claude-fable, slice: S-G, status: unblocked, notes: "Trigger fired: the user (project owner) confirmed the current prefix taxonomy as the agreed one — the community-decision precondition. Promoted to f00114 with one recorded expansion: the enum exports from @mcp-vertex/proposals' public barrel, NOT @mcp-vertex/core, because proposal vocabulary in the core would break AGENTS.md rule #1 (core agnostic). deps_check re-run this pass: healthy=true, zero findings — S-I stays parked; S-A/S-B/S-C/S-E/S-F/S-H unchanged, no trigger." }
     - { at: 2026-07-28, by: claude-sonnet-5, slice: all, status: still-paused, notes: "User-requested re-scan of the remaining seven (S-A, S-B, S-C, S-E, S-F, S-H, S-I). Checked every done/audits/ file dated after this proposal's 2026-07-14 recan (a00053 through a00082, 28 audits) for the specific trigger keywords each slice requires (SRP-violation finding, audit-plugin vocab leak, public-symbol removal need, unexportable-type need, strict-order ID convention, production loop/starvation/state-repair-playbook bug, CVE/unmaintained-dep) — zero hits in that window. Checked ready/ and in-progress/ for a new orchestrator proposal citing a loop/starvation finding (S-H's specific precondition) — none exists; an incidental lock-release honesty bug I fixed this same session (close_slice/proposal_review's lockReleased was hardcoded true) was fixed directly rather than filed as a new orchestrator proposal citing a production loop, so it does not satisfy S-H's precondition as written. deps_check: healthy=true, zero findings (S-I). compact_status: queue green, 0 orphans (no starvation signal). No trigger fired for any of the seven; the proposal correctly stays paused per its own non-goal ('do not blind-execute a trigger-blocked item'). Also note: this file's 2026-07-12 recan entry says 'promoted to ready', but the frontmatter status and physical folder (paused/) were never actually updated to match — that promotion was apparently never executed, and every recan since (including this one) has correctly continued treating the file as paused. Left status: paused as-is (that IS the accurate current state); flagging the stale prose only so a future reader isn't confused by the contradiction." }
     - { at: 2026-07-29, by: claude-sonnet-5, slice: S-I, status: unblocked, notes: "User-requested re-scan asked to mine this file for anything actionable without needing the user's decision. Live re-run of mcp-vertex_deps_deps_audit found 20 real CVE findings (11 high, 8 medium, 1 low) against currently-resolved dependency versions — S-I's precondition ('A security advisory (CVE) is filed against a dep that the current bun.lock resolves') fired. Promoted to x00164 (astro -> 7.1.5, @modelcontextprotocol/sdk -> 1.30.0 to unlock a patched @hono/node-server 2.x, plus package.json overrides for 11 vulnerable transitive deps). Re-ran deps_audit post-fix: 0 findings. Verified no regressions: full typecheck, bun test across packages/core+client+cli and plugins/proposals+deps+search+notification, astro check, and a full astro build (2657 pages) all green. Shipped 519d9ab3, x00164 transitioned to done." }
+    - { at: 2026-07-29, by: claude-sonnet-5, slice: S-B, status: unblocked, notes: "Same re-scan pass as S-I. Direct source inspection of plugins/audit (not a formal a0003x+ audit doc, but the same class of finding the precondition describes) found 7 concrete mcp-vertex-vocabulary/path leaks in production code: index.ts hardcoded auditDir/proposalsDir to a literal docs/mcp-vertex/... instead of deriving from ctx.docsDir (the exact mechanism IMcpPluginContext exists for); the scaffolder embedded 'Alcance B (f00077)' into every generated proposal body; audit-consolidate.tool.ts's description hardcoded a literal instead of interpolating its own defaultAuditDir parameter; audit-run.tool.ts's summary carried the same jargon plus deprecated MUY_MAL/MEJORABLE tokens; audit-run.schemas.ts's proposalPrefix enum was a stale, ACTIVELY WRONG duplicate of the canonical proposal-kind-prefix taxonomy (missing b/v/i/s, included a nonexistent u); audit-plan.tool.ts's dead dimensions fallback was a stale Spanish translation of SCORE_DIMENSIONS. Promoted to x00165, all 6 slices implemented with 13 new tests, full audit-plugin suite green (104/104), typecheck clean. Shipped 936ecffe, x00165 transitioned to done." }
 preconditions-met:
     - { slice: S-D, id: f00113, on: 2026-07-14 }
     - { slice: S-G, id: f00114, on: 2026-07-14 }
     - { slice: S-I, id: x00164, on: 2026-07-29 }
+    - { slice: S-B, id: x00165, on: 2026-07-29 }
 ---
 
 # f00050 — Triage the nine non-goals deferred from f00049
@@ -80,7 +82,7 @@ Common precondition (f00049 done + `@mcp-vertex/core/public` stable): **MET**
 | Item | Trigger precondition | 2026-07-13 status |
 |------|----------------------|-------------------|
 | S-A semantic rewrite | user request OR P0 audit flags an SRP violation | trigger-blocked (no such request/finding) |
-| S-B audit-plugin contract | audit finds a vocab leak / downstream host asks | trigger-blocked |
+| S-B audit-plugin contract | audit finds a vocab leak / downstream host asks | **trigger FIRED 2026-07-29** → promoted to `x00165` |
 | S-C public surface change | a public symbol must be removed/renamed | trigger-blocked (no removal pending) |
 | S-D non-TS profile | a consumer needs python/rust/go OR v1 commits multi-lang | **trigger FIRED 2026-07-14** → promoted to `f00113` |
 | S-E new public types | a needed type can't be exported today | trigger-blocked |
@@ -186,20 +188,7 @@ files + gate.
 
 ### S-B — Touch the audit plugin's agnostic contract
 
-- **Status**: blocked
-- **Preconditions**:
-  - A specific finding in a post-f00049 audit (most likely an a0003x+ audit)
-    calls out a remaining mcp-vertex-vocabulary leak in the audit plugin.
-  - OR: a downstream host (e.g. a non-mcp-vertex consumer using the audit
-    plugin) reports that the current contract does not fit their vocabulary.
-- **Files**: targeted additions to `plugins/audit/src/lib/{brief,consolidate}.ts`
-  + the corresponding `plan-tool.ts` and `consolidate-tool.ts` options. The
-  existing `crossCuttingAdditions`, `projectName`, `configFileName` fields
-  from a00032-S4 are the surface; new fields add, never replace.
-- **Gate**: 42/42 audit tests pass (per a00032-S4 baseline); the new spec
-  proves the new field is honored by `buildBrief` end-to-end.
-- **Note**: f00049 S7 already invokes `crossCuttingAdditions` as evidence;
-  this slice is for *new* additions, not refinements of the existing one.
+- **Status**: promoted → [`x00165`](../done/fixes/x00165-pasada-f00050-s-b-remove-mcp-vertex-vocabulary-path-leaks-from-the-audit-plugin-s-agnostic-contract.md) (2026-07-29). The block moved there per `### how to unpause an item`. Trigger: a direct source re-scan found 7 concrete mcp-vertex-vocabulary/path leaks in the audit plugin's production code path, contradicting its own stated project-agnostic contract.
 
 ### S-C — Public surface change with deprecated aliases
 
