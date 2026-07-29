@@ -32,20 +32,9 @@
 import { readdir, readFile } from 'node:fs/promises';
 import { isAbsolute, join, relative } from 'node:path';
 
-const REPO_ROOT = process.cwd();
+import { PRESET_KIND, resolvePresetMembers } from '@mcp-vertex/core/public';
 
-const PRESET_KIND = [
-	'minimal',
-	'lean',
-	'standard',
-	'swarm',
-	'full',
-	'vertex',
-	// r00011 S1 — stack packs (independent).
-	'web-app',
-	'backend-api',
-	'cli-tool',
-] as const;
+const REPO_ROOT = process.cwd();
 
 const SCAN_ROOTS: readonly string[] = [
 	'docs',
@@ -56,58 +45,18 @@ const SCAN_ROOTS: readonly string[] = [
 
 const FILE_GLOBS = /\.(md|mdx|astro|ts|tsx|js|mjs)$/;
 
-/** Effective preset memberships (mirrors `resolvePresetMembers`). */
-const PRESET_MEMBERSHIPS: Readonly<Record<string, readonly string[]>> = {
-	minimal: ['git', 'search'],
-	// `lean` is an independent preset (skips chain accumulation); its
-	// members are exactly the 4 essentials.
-	lean: ['git', 'search', 'memory', 'docs'],
-	standard: ['git', 'search', 'memory', 'docs', 'rules', 'quality', 'deps'],
-	swarm: [
-		'git',
-		'search',
-		'memory',
-		'docs',
-		'rules',
-		'quality',
-		'deps',
-		'proposals',
-		'notification',
-		'status-marker',
-		'test-convention',
-	],
-	full: [
-		'git',
-		'search',
-		'memory',
-		'docs',
-		'rules',
-		'quality',
-		'deps',
-		'proposals',
-		'notification',
-		'status-marker',
-		'test-convention',
-		'audit',
-		'logs',
-		'web-fetch',
-		'issues',
-	],
-	// `vertex` is an independent preset (skips chain accumulation);
-	// its members mirror `mcp-vertex.config.json` exactly.
-	vertex: [
-		'conventions',
-		'docs',
-		'search',
-		'git',
-		'web-fetch',
-		'status-marker',
-		'test-convention',
-		'quality',
-		'issues',
-		'audit',
-	],
-};
+/**
+ * Effective preset memberships — derived from the real `PRESET_CATALOG`
+ * via `resolvePresetMembers`, never hand-copied. x00166: this used to
+ * be a hand-maintained literal object that was itself a second,
+ * independently-drifted copy of the catalog (the exact category of
+ * drift this script exists to prevent — its own mission statement
+ * says "hand-kept mirrors are not allowed because they drift").
+ */
+const PRESET_MEMBERSHIPS: Readonly<Record<string, readonly string[]>> =
+	Object.fromEntries(
+		PRESET_KIND.map((id) => [id, resolvePresetMembers(id)] as const),
+	);
 
 export interface IDriftFinding {
 	readonly absPath: string;
