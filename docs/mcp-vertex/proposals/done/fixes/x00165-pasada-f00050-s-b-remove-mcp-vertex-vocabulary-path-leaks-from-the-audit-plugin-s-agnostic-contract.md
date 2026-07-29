@@ -2,10 +2,12 @@
 id: x00165
 title: "Pasada f00050 S-B — remove mcp-vertex vocabulary/path leaks from the audit plugin's agnostic contract"
 kind: fix
-status: ready
+status: done
 type: proposal
 track: plugins+fix
 date: 2026-07-29
+shipped-in:
+    - 936ecffe # S1-S6 — remove mcp-vertex vocabulary/path leaks from the audit plugin
 ---
 
 # x00165 — Pasada f00050 S-B — remove mcp-vertex vocabulary/path leaks from the audit plugin's agnostic contract
