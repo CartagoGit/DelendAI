@@ -14,4 +14,12 @@ export interface IRunArgvOptions {
 	readonly timeoutMs?: number;
 	/** Cap captured bytes per stream. Default 64KiB. */
 	readonly maxOutputBytes?: number;
+	/**
+	 * Data written to the child's stdin, then closed. When omitted, stdin
+	 * is `'ignore'` (closed immediately) — the correct default for tools
+	 * that never read stdin, but wrong for anything shaped like
+	 * `kubectl apply -f -`, which blocks on / receives EOF from an
+	 * ignored stdin and never sees the piped content.
+	 */
+	readonly stdin?: string;
 }

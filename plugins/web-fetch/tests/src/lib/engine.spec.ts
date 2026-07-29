@@ -182,4 +182,64 @@ describe('webFetch', async () => {
 			detail: 'Error: ECONNRESET',
 		});
 	});
+
+	// x00169: method/headers/body used to be silently dropped — every
+	// request left the engine as an unauthenticated GET regardless of
+	// what the caller asked for.
+	it('forwards method, headers and body to the fetcher', async () => {
+		let seenInit: Parameters<IFetchLike>[1];
+		const fetchImpl: IFetchLike = (_url, init) => {
+			seenInit = init;
+			return textResponse(201, '{"id":1}', {
+				'content-type': 'application/json',
+			});
+		};
+
+		const result = await webFetch(
+			{
+				url: 'https://example.com/items',
+				allowList: ['example.com'],
+				method: 'POST',
+				headers: {
+					authorization: 'Bearer tok',
+					'content-type': 'application/json',
+				},
+				body: '{"name":"x"}',
+			},
+			fetchImpl,
+		);
+
+		expect(result.ok).toBe(true);
+		expect(seenInit?.method).toBe('POST');
+		expect(seenInit?.headers).toEqual({
+			authorization: 'Bearer tok',
+			'content-type': 'application/json',
+		});
+		expect(seenInit?.body).toBe('{"name":"x"}');
+	});
+
+	it('forwards method/headers/body unchanged across a redirect hop', async () => {
+		const seenMethods: Array<string | undefined> = [];
+		const fetchImpl: IFetchLike = (url, init) => {
+			seenMethods.push(init?.method);
+			if (url === 'https://example.com/old') {
+				return textResponse(307, '', {
+					location: 'https://example.com/new',
+				});
+			}
+			return textResponse(200, 'ok');
+		};
+
+		await webFetch(
+			{
+				url: 'https://example.com/old',
+				allowList: ['example.com'],
+				method: 'PUT',
+				body: 'payload',
+			},
+			fetchImpl,
+		);
+
+		expect(seenMethods).toEqual(['PUT', 'PUT']);
+	});
 });

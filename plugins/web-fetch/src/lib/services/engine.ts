@@ -216,6 +216,13 @@ export const webFetch = async (
 			res = await fetchImpl(currentUrl.toString(), {
 				signal: controller.signal,
 				redirect: 'manual',
+				...(options.method !== undefined
+					? { method: options.method }
+					: {}),
+				...(options.headers !== undefined
+					? { headers: options.headers }
+					: {}),
+				...(options.body !== undefined ? { body: options.body } : {}),
 			});
 		} catch (err) {
 			clearTimeout(timer);

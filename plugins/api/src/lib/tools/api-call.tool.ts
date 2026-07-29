@@ -167,6 +167,11 @@ export const buildApiCallToolRegistration = (
 				const response: IWebFetchResult = await fetch({
 					url: request.url,
 					allowList,
+					method: request.method,
+					headers: request.headers,
+					...(request.body !== undefined
+						? { body: request.body }
+						: {}),
 					...(args.maxBytes !== undefined
 						? { maxBytes: args.maxBytes }
 						: {}),
