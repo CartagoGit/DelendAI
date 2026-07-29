@@ -6,6 +6,9 @@ status: ready
 type: proposal
 track: general
 date: 2026-07-29
+shipped-in:
+    - 8e2ced0c # S1-S4 — api_call/k8s_apply/plugins_recommend/eval_run fixes
+    - d9234b9d # catalog regen after S3/S4 index.ts changes
 ---
 
 # x00169 — x00169 — Group 2: four silently-broken/lying tools (api_call, k8s_apply, plugins_recommend, eval_run)
