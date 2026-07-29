@@ -16,8 +16,15 @@ export function getStaticPaths() {
 }
 
 const { plugin } = Astro.params;
+// a00085: Base's <title> falls back to the generic homepage title
+// unless a page explicitly passes one — PluginPage's own computed
+// title only reaches its in-body header, never the document head.
+const pkg = (capabilities.packages as Array<{ name: string }>).find(
+	(p) => p.name.replace('@mcp-vertex/', '') === plugin,
+);
+const title = pkg?.name ?? `@mcp-vertex/${plugin}`;
 ---
 
-<Base lang="en">
+<Base lang="en" title={title}>
 	<PluginPage lang="en" slug={plugin!} />
 </Base>
