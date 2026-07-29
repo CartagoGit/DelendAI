@@ -110,28 +110,33 @@ export const runHumanCli = async (
 		if (result.error !== undefined)
 			process.stderr.write(`${result.error}\n`);
 		if (result.data !== undefined) {
-			// Stdout policy (f00103 follow-up + the operator's report):
+			// Stdout policy (f00103 follow-up + the operator's report,
+			// refined by a00087):
 			//   - `--json` (or `--format=json`)  → structured envelope
 			//     to stdout (pipe-safe, machine-readable).
-			//   - everything else                → nothing on stdout.
-			//     The command is expected to print its own
-			//     human-facing recap to stderr (e.g. `init` writes
+			//   - `suppressDefaultPrint: true`    → nothing on stdout.
+			//     The command already printed its own human-facing
+			//     recap as a side effect (e.g. `init` writes
 			//     `printInitHumanSummary` from `runInitWithAnswers`).
 			//     The previous behaviour (`asScalarText(result.data)`)
-			//     duplicated the recap with a full JSON dump on stdout
-			//     — that is the bug the operator reported for `init`
-			//     and `init:default` after a successful bootstrap.
+			//     duplicated that recap with a full JSON dump on stdout
+			//     — the bug the operator reported for `init` and
+			//     `init:default` after a successful bootstrap.
+			//   - everything else                → the same JSON dump,
+			//     because a command with NO bespoke human output and
+			//     no `--json` used to be entirely silent (exit 0, zero
+			//     stdout/stderr) — indistinguishable from a hang for a
+			//     human running e.g. `mcpv status` the obvious way
+			//     (a00087). Pretty JSON on stdout is a strictly better
+			//     default than nothing.
 			//
 			// Note: `result.text` below still writes to stdout because
 			// some commands (`--version`, `--help`, simple scalar
 			// commands) return their output via `result.text` rather
-			// than `result.data`. The runner policy is "if the
-			// command handed us structured data, only surface it on
-			// stdout when JSON mode is explicit". Plain-text commands
-			// are unaffected.
+			// than `result.data`. Plain-text commands are unaffected.
 			const emitStructured =
 				parsed.globals.json || parsed.globals.format === 'json';
-			if (emitStructured) {
+			if (emitStructured || !result.suppressDefaultPrint) {
 				process.stdout.write(formatJson(result.data));
 			}
 		} else if (result.text !== undefined) {

@@ -134,9 +134,7 @@ const readEnvWarningFindings = async (
 					),
 				);
 				break;
-			} catch {
-				continue;
-			}
+			} catch {}
 		}
 	}
 	if (requirements.length === 0) return [];
@@ -357,6 +355,9 @@ export const runInitWithAnswers = async (
 				files: [...bundle.files, ...skillProjection],
 				summary: bundle.summary,
 			},
+			// a00087: printInitHumanSummary above already covers the
+			// non-`--json` case; don't ALSO dump this as JSON.
+			suppressDefaultPrint: !ctx.globals.json,
 		};
 	}
 
@@ -486,6 +487,9 @@ export const runInitWithAnswers = async (
 	return {
 		code: EXIT_CODE.OK,
 		data: { ok: true, written, summary: bundle.summary },
+		// a00087: printInitHumanSummary above already covers the
+		// non-`--json` case; don't ALSO dump this as JSON.
+		suppressDefaultPrint: !ctx.globals.json,
 	};
 };
 

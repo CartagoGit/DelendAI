@@ -38,6 +38,16 @@ export interface ICliCommandResult {
 	readonly data?: unknown;
 	readonly text?: string | undefined;
 	readonly error?: string | undefined;
+	/**
+	 * a00087: set by a command that already printed its own human-facing
+	 * recap as a side effect (e.g. `init`'s `printInitHumanSummary`) —
+	 * tells the runner not to ALSO dump `data` as JSON in non-`--json`
+	 * mode. Every other command with `data` set and no bespoke output of
+	 * its own gets that pretty-printed JSON fallback instead of the
+	 * previous silent-by-default behaviour (a hung-looking `mcpv status`
+	 * with exit 0 and zero stdout/stderr).
+	 */
+	readonly suppressDefaultPrint?: boolean | undefined;
 }
 
 export interface ICliCommandContext {
