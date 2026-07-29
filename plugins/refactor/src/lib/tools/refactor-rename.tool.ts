@@ -4,24 +4,35 @@
  * `refactor_rename` plans a rename (dry-run by default) and returns a diff.
  * `refactor_apply` writes the diff via containment + consent token echo.
  *
+ * x00184 (F17/F18): `root`/`scopePaths`/`file.path` used to be resolved by
+ * a local `resolvePath` that passed an absolute path straight through
+ * (`if (path.startsWith('/')) return path;`) — a hostile `root` (or
+ * `file.path`) escaped the workspace entirely, and `isPathInRoot`'s
+ * containment check ran against that already-hostile `rootAbs`. Every
+ * path is now routed through the shared `resolveWorkspaceContained`,
+ * which rejects absolute paths and `..`-escapes lexically.
+ *
  * The write path uses `writeFileAtomic` from `@mcp-vertex/core/public`
  * (temp + rename, crash-safe) so a half-finished write never tears the
  * file. The previous raw `await writeFile(` pattern tripped the
  * plugin-drift budget lint; this is the structural fix.
  */
 import { readFile } from 'node:fs/promises';
-import { join, resolve } from 'node:path';
 
 import z from 'zod';
 
 import type { IToolRegistration } from '@mcp-vertex/core/public';
-import { toolError, toolJson, writeFileAtomic } from '@mcp-vertex/core/public';
+import {
+	resolveWorkspaceContained,
+	toolError,
+	toolJson,
+	writeFileAtomic,
+} from '@mcp-vertex/core/public';
 
 import {
 	planRename,
 	type IFileReader,
 	type IHunk,
-	type IRenamePlan,
 	type IRenameRequest,
 } from '../rename/rename-planner';
 
@@ -78,18 +89,8 @@ const RENAME_OUTPUT_SCHEMA = z.object({
 const APPLY_OUTPUT_SCHEMA = z.object({
 	written: z.array(z.string()),
 	gateCommand: z.string(),
+	consentToken: z.string(),
 });
-
-const resolvePath = (root: string, path: string): string => {
-	if (path.startsWith('/')) return path;
-	return resolve(join(root, path));
-};
-
-const isPathInRoot = (root: string, path: string): boolean => {
-	const abs = resolvePath(root, path);
-	const rootNorm = resolve(root);
-	return abs.startsWith(rootNorm + '/') || abs === rootNorm;
-};
 
 export const buildRefactorRenameToolRegistrations = (
 	options: IRefactorRenameToolOptions,
@@ -126,22 +127,40 @@ export const buildRefactorRenameToolRegistrations = (
 						outputSchema: RENAME_OUTPUT_SCHEMA,
 					},
 					async (args) => {
+						const containedRoot = resolveWorkspaceContained(
+							options.workspaceRootAbs,
+							args.root,
+						);
+						if (!containedRoot.ok) {
+							return toolError(
+								`root "${args.root}" is not allowed`,
+								containedRoot.reason ??
+									'root must be a workspace-relative path.',
+							);
+						}
+						const scopePaths: string[] = [];
+						if (args.scopePaths !== undefined) {
+							for (const p of args.scopePaths) {
+								const contained = resolveWorkspaceContained(
+									options.workspaceRootAbs,
+									p,
+								);
+								if (!contained.ok) {
+									return toolError(
+										`scopePaths entry "${p}" is not allowed`,
+										contained.reason ??
+											'scopePaths entries must be workspace-relative paths.',
+									);
+								}
+								scopePaths.push(contained.abs);
+							}
+						}
 						const req: IRenameRequest = {
-							root: resolvePath(
-								options.workspaceRootAbs,
-								args.root,
-							),
+							root: containedRoot.abs,
 							from: args.from,
 							to: args.to,
 							...(args.scopePaths !== undefined
-								? {
-										scopePaths: args.scopePaths.map((p) =>
-											resolvePath(
-												options.workspaceRootAbs,
-												p,
-											),
-										),
-									}
+								? { scopePaths }
 								: {}),
 							...(args.requireKind !== undefined
 								? { requireKind: args.requireKind }
@@ -190,26 +209,41 @@ export const buildRefactorRenameToolRegistrations = (
 						outputSchema: APPLY_OUTPUT_SCHEMA,
 					},
 					async (args) => {
-						const rootAbs = resolvePath(
+						const containedRoot = resolveWorkspaceContained(
 							options.workspaceRootAbs,
 							args.root,
 						);
+						if (!containedRoot.ok) {
+							return toolError(
+								`root "${args.root}" is not allowed`,
+								containedRoot.reason ??
+									'root must be a workspace-relative path.',
+							);
+						}
+						const rootAbs = containedRoot.abs;
 
-						// Containment check
+						// Containment check: every file path must resolve
+						// inside the (already-contained) root.
+						const fileAbsByPath = new Map<string, string>();
 						for (const file of args.files) {
-							const fileAbs = resolvePath(rootAbs, file.path);
-							if (!isPathInRoot(rootAbs, fileAbs)) {
+							const contained = resolveWorkspaceContained(
+								rootAbs,
+								file.path,
+							);
+							if (!contained.ok) {
 								return toolError(
 									'containment-violation',
-									`Path "${file.path}" is outside root "${args.root}"`,
+									`Path "${file.path}" is outside root "${args.root}": ${contained.reason ?? ''}`,
 								);
 							}
+							fileAbsByPath.set(file.path, contained.abs);
 						}
 
 						// Write each file
 						const written: string[] = [];
 						for (const file of args.files) {
-							const fileAbs = resolvePath(rootAbs, file.path);
+							const fileAbs = fileAbsByPath.get(file.path);
+							if (fileAbs === undefined) continue;
 							try {
 								// Read the current content (we need the full file to apply hunks)
 								const before = await read(fileAbs);
@@ -228,6 +262,7 @@ export const buildRefactorRenameToolRegistrations = (
 						return toolJson({
 							written,
 							gateCommand: 'bun run validate',
+							consentToken: args.consentToken,
 						});
 					},
 				);

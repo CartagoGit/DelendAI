@@ -8,12 +8,15 @@
  * can ground rename/codemod decisions in the AST.
  */
 import { readFile } from 'node:fs/promises';
-import { join } from 'node:path';
 
 import z from 'zod';
 
 import type { IToolRegistration } from '@mcp-vertex/core/public';
-import { toolError, toolJson } from '@mcp-vertex/core/public';
+import {
+	resolveWorkspaceContained,
+	toolError,
+	toolJson,
+} from '@mcp-vertex/core/public';
 
 import {
 	buildNavEngine,
@@ -50,11 +53,6 @@ const SYMBOLS_OUTPUT_SCHEMA = z.object({
 	hits: z.array(hitSchema),
 });
 
-const resolve = (root: string, path: string): string => {
-	if (path.startsWith('/')) return path;
-	return join(root, path);
-};
-
 export const buildRefactorNavToolRegistrations = (
 	options: IRefactorNavToolOptions,
 ): readonly IToolRegistration[] => {
@@ -62,7 +60,23 @@ export const buildRefactorNavToolRegistrations = (
 	const read = options.readFile ?? ((p: string) => readFile(p, 'utf8'));
 
 	const loadEngine = async (path: string) => {
-		const abs = resolve(options.workspaceRootAbs, path);
+		// x00184 (F17): `path` used to be passed straight through when it
+		// started with "/" — an absolute `path` (e.g. `/etc/shadow`) was
+		// read verbatim, with zero containment check.
+		const contained = resolveWorkspaceContained(
+			options.workspaceRootAbs,
+			path,
+		);
+		if (!contained.ok) {
+			return {
+				error: toolError(
+					`path "${path}" is not allowed`,
+					contained.reason ??
+						'Path must stay inside the workspace root.',
+				),
+			};
+		}
+		const abs = contained.abs;
 		try {
 			const source = await read(abs);
 			return {
