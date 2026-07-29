@@ -5,8 +5,8 @@
  * Thin wrapper around `CapabilityGrid` that:
  *   - emits the lead + stat-row (the grid itself only renders the
  *     cards, not the intro),
- *   - maps the `mcp-vertex` namespace to the `core` package slug used
- *     by the `/tools/<plugin>/<tool>` route,
+ *   - builds each card's `/tools/<plugin>/<tool>` href directly from
+ *     `tool.namespace` (already the plugin's own short name),
  *   - localises tool descriptions via `describeTool`.
  *
  * The `<h1>` + breadcrumb come from `PageShell` via `PageHeader`; this
@@ -25,13 +25,13 @@ const { lang, heading: _heading } = Astro.props;
 const t = useTranslations(lang);
 
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
-const slugFor = (ns: string): string => (ns === 'mcp-vertex' ? 'core' : ns);
-const toolHref = (tool: { namespace: string; name: string }): string => {
-	const slug = slugFor(tool.namespace);
-	return lang === 'en'
-		? `${base}/tools/${slug}/${tool.name}`
-		: `${base}/${lang}/tools/${slug}/${tool.name}`;
-};
+// a00085: `tool.namespace` is already the plugin's own short name — no
+// remapping needed (the removed `slugFor` was a no-op for every real
+// namespace value in the manifest).
+const toolHref = (tool: { namespace: string; name: string }): string =>
+	lang === 'en'
+		? `${base}/tools/${tool.namespace}/${tool.name}`
+		: `${base}/${lang}/tools/${tool.namespace}/${tool.name}`;
 
 type ITool = { name: string; namespace: string; description: string };
 const tools = (capabilities.tools ?? []) as ITool[];

@@ -20,8 +20,13 @@ const { lang, plugin } = Astro.params;
 const langCode: Lang = (
 	lang && languages.some((l) => l.code === lang) ? lang : 'en'
 ) as Lang;
+// a00085: same document-<title> fallback bug as the English route.
+const pkg = (capabilities.packages as Array<{ name: string }>).find(
+	(p) => p.name.replace('@mcp-vertex/', '') === plugin,
+);
+const title = `Tools — ${pkg?.name ?? `@mcp-vertex/${plugin}`}`;
 ---
 
-<Base lang={langCode}>
+<Base lang={langCode} title={title}>
 	<ToolsPluginIndex lang={langCode} slug={plugin!} />
 </Base>

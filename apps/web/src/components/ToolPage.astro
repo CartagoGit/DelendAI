@@ -56,9 +56,11 @@ if (!tool) {
 	);
 }
 
-// Map the tool's namespace back to its package slug (mcp-vertex → core).
-const slugFor = (ns: string): string => (ns === 'mcp-vertex' ? 'core' : ns);
-const slug = slugFor(tool.namespace);
+// a00085: `tool.namespace` is already the plugin's own short name — no
+// remapping needed (the removed `slugFor` was a no-op for every real
+// namespace value in the manifest; its sibling `nsFor` in PluginPage.astro
+// and friends went the wrong way and hid every core-plugin capability).
+const slug = tool.namespace;
 const pluginHref =
 	lang === 'en'
 		? `${base}/plugins/${slug}`
