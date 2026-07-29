@@ -49,9 +49,9 @@ const probeDepsMissing: IProbeDeps = {
 };
 
 const execWith = (stdout: string, code = 0): IArgvExec => {
-	const calls: { argv: readonly string[] }[] = [];
-	const fn: IArgvExec = async (argv) => {
-		calls.push({ argv });
+	const calls: { argv: readonly string[]; stdin?: string | undefined }[] = [];
+	const fn: IArgvExec = async (argv, options) => {
+		calls.push({ argv, stdin: options?.stdin });
 		return { code, stdout, stderr: '', timedOut: false };
 	};
 	(fn as unknown as { calls: typeof calls }).calls = calls;
@@ -154,9 +154,14 @@ describe('f00133 S3 container-build tool', () => {
 		);
 		expect(body['ok']).toBe(true);
 		const calls = (
-			exec as unknown as { calls: { argv: readonly string[] }[] }
+			exec as unknown as {
+				calls: { argv: readonly string[]; stdin?: string }[];
+			}
 		).calls;
 		expect(calls[0]?.argv).toEqual(['kubectl', 'apply', '-f', '-']);
+		// x00169: the manifest used to be parsed and then never sent
+		// anywhere — `kubectl apply -f -` ran against an empty stdin.
+		expect(calls[0]?.stdin).toBe('apiVersion: v1\nkind: Pod\n');
 	});
 
 	it('exposes two tool registrations under the namespace prefix', () => {

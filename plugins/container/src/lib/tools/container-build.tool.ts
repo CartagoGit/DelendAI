@@ -234,6 +234,7 @@ export const buildContainerBuildToolRegistrations = (
 								args: argv,
 								timeoutMs: 60_000,
 								redact: [/data\.kubernetes\.io\/[^"\s]+/g],
+								stdin: args.manifest,
 							},
 							runExec,
 						);
