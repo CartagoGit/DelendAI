@@ -149,34 +149,52 @@ describe('renderInitBundle (f00084 S2-S5)', () => {
 		const config = JSON.parse(configFile?.content ?? '{}') as {
 			plugins: Record<string, unknown>;
 		};
-		// Exactly the 14 vertex members (f00119 S6 added auto-agent-selector,
-		// f00123 S2 added refactor, f00126 S3 added perf), no swarm inheritance.
-		expect(Object.keys(config.plugins).length).toBe(17);
+		// x00166: vertex mirrors mcp-vertex.config.json's `plugins` keys
+		// exactly (28 total), including proposals (orchestration/swarm)
+		// — no independent-preset chain inheritance involved, this is
+		// just what the live config actually loads.
+		expect(Object.keys(config.plugins).length).toBe(28);
 		for (const required of [
-			'conventions',
-			'docs',
-			'search',
-			'git',
-			'perf',
-			'web-fetch',
-			'status-marker',
-			'test-convention',
-			'quality',
-			'refactor',
-			'issues',
 			'audit',
+			'auto-agent-selector',
+			'container',
+			'conventions',
+			'deps',
+			'diagram',
+			'docs',
+			'env',
+			'forge',
+			'git',
+			'i18n',
+			'link-check',
+			'logs',
+			'memory',
+			'notification',
+			'orchestrator-runner',
+			'perf',
+			'prompts-pack',
+			'proposals',
+			'quality',
+			'rules',
+			'search',
+			'security',
+			'status-marker',
+			'tech-debt',
+			'test-convention',
+			'test-policy',
+			'usage-tracking',
 		]) {
 			expect(config.plugins[required]).toBeDefined();
 		}
-		for (const excluded of [
-			'memory',
-			'rules',
-			'deps',
-			'proposals',
-			'notification',
-			'logs',
+		for (const phantom of [
+			'web-fetch',
+			'issues',
+			'refactor',
+			'api',
+			'prompt-eval',
+			'database',
 		]) {
-			expect(config.plugins[excluded]).toBeUndefined();
+			expect(config.plugins[phantom]).toBeUndefined();
 		}
 	});
 });

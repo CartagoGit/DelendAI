@@ -180,38 +180,56 @@ export const PRESET_CATALOG: readonly IPresetDefinition[] = [
 	},
 	{
 		// `vertex` mirrors the plugin set of the mcp-vertex project
-		// itself (`mcp-vertex.config.json` at the repo root). It is
-		// intentionally NOT a superset of `swarm`/`full`: the project
-		// does not load `memory`, `rules`, `deps`, `proposals`,
-		// `notification`, or `logs` in its own development surface,
-		// because those plugins are designed for downstream consumer
-		// projects rather than for the host monorepo. Marked
-		// `independent: true` so `resolvePresetMembers` skips the
+		// itself (`mcp-vertex.config.json` at the repo root) — every
+		// key under its `plugins` object, INCLUDING `proposals` (the
+		// orchestration/swarm engine): mcp-vertex dogfoods its own
+		// orchestrator in its own dev surface, and this preset is what
+		// a new adopter gets via `mcpv init:default`'s default, so it
+		// must include `proposals` too (x00166 — the orchestrator is
+		// the whole point of adopting mcp-vertex; this preset used to
+		// silently omit it, a stale drift caught live 2026-07-29).
+		// Marked `independent: true` so `resolvePresetMembers` skips the
 		// chain accumulation and returns ONLY the members listed
-		// below — the exact snapshot the project ships.
+		// below — the exact snapshot the project ships. Keep this list
+		// in lockstep with the root `mcp-vertex.config.json`'s `plugins`
+		// keys — `no-preset-drift.script.ts` re-derives from
+		// `PRESET_CATALOG` rather than hand-copying it, but it cannot
+		// catch THIS list drifting from the live config; that
+		// comparison must be done by hand on each pass.
 		id: 'vertex',
 		title: 'vertex',
 		summary:
-			'Snapshot of the mcp-vertex project itself: conventions, docs, search, git, web-fetch, status-marker, test-convention, test-policy, quality, issues, audit. ' +
+			'Snapshot of the mcp-vertex project itself: every plugin its own mcp-vertex.config.json loads, including proposals (orchestration/swarm). ' +
 			'Independent preset (does NOT accumulate swarm); use this for projects that want the exact set the core ships.',
 		members: [
-			{ plugin: 'conventions' },
-			{ plugin: 'docs' },
-			{ plugin: 'search' },
-			{ plugin: 'git' },
-			{ plugin: 'perf' },
-			{ plugin: 'web-fetch', hostOnly: true },
-			{ plugin: 'status-marker' },
-			{ plugin: 'test-convention' },
-			{ plugin: 'test-policy' },
-			{ plugin: 'quality' },
-			{ plugin: 'refactor' },
-			{ plugin: 'issues', hostOnly: true },
-			{ plugin: 'api' },
 			{ plugin: 'audit' },
 			{ plugin: 'auto-agent-selector', hostOnly: true },
-			{ plugin: 'prompt-eval' },
-			{ plugin: 'database' },
+			{ plugin: 'container' },
+			{ plugin: 'conventions' },
+			{ plugin: 'deps' },
+			{ plugin: 'diagram' },
+			{ plugin: 'docs' },
+			{ plugin: 'env' },
+			{ plugin: 'forge' },
+			{ plugin: 'git' },
+			{ plugin: 'i18n' },
+			{ plugin: 'link-check' },
+			{ plugin: 'logs' },
+			{ plugin: 'memory' },
+			{ plugin: 'notification' },
+			{ plugin: 'orchestrator-runner' },
+			{ plugin: 'perf' },
+			{ plugin: 'prompts-pack' },
+			{ plugin: 'proposals' },
+			{ plugin: 'quality' },
+			{ plugin: 'rules' },
+			{ plugin: 'search' },
+			{ plugin: 'security' },
+			{ plugin: 'status-marker' },
+			{ plugin: 'tech-debt' },
+			{ plugin: 'test-convention' },
+			{ plugin: 'test-policy' },
+			{ plugin: 'usage-tracking' },
 		],
 		independent: true,
 	},
