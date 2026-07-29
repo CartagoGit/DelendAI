@@ -85,7 +85,8 @@ const ConsolidationOutputSchema = z.object({
 const ConsolidateInputSchema = z.object({
 	/**
 	 * Workspace-relative directory containing the individual audit
-	 * `*.md` files. Default: `docs/mcp-vertex/proposals/done/audits`.
+	 * `*.md` files. Default: the host's configured `defaultAuditDir`
+	 * (`<docsDir>/proposals/done/audits` unless overridden).
 	 */
 	auditDir: z.string().optional(),
 	/** How many top actions to surface. Default: 5. */
@@ -98,8 +99,9 @@ const ConsolidateInputSchema = z.object({
 	autoScaffoldProposals: z.boolean().optional(),
 	/**
 	 * Workspace-relative directory for the scaffolded proposals.
-	 * Default: `docs/mcp-vertex/proposals/ready`. Path is validated
-	 * against the workspace root like `auditDir`.
+	 * Default: the host's configured `defaultProposalsDir`
+	 * (`<docsDir>/proposals/ready` unless overridden). Path is
+	 * validated against the workspace root like `auditDir`.
 	 */
 	proposalsDir: z.string().optional(),
 });
@@ -114,7 +116,7 @@ export interface IConsolidateToolOptions {
 	 * Default audits directory (workspace-relative). Used when the
 	 * tool call does not pass `auditDir`. The host wires this from
 	 * `ctx.options.auditDir` when present, defaulting to
-	 * `docs/mcp-vertex/proposals/done/audits`.
+	 * `<docsDir>/proposals/done/audits`.
 	 */
 	readonly defaultAuditDir: string;
 	/**
@@ -165,8 +167,7 @@ export const buildConsolidateRegistration = (
 			server.registerTool(
 				`${prefix}_audit_consolidate`,
 				{
-					description:
-						'Read every `*.md` in the audits directory, parse + deduplicate + average per-dimension scores across N models, and return both the structured consolidation (per-dimension scores, deduplicated findings with `seenBy`) and the rendered master markdown. When the `proposals` plugin is loaded and `autoScaffoldProposals` is enabled, also scaffold one fix proposal per actionable finding under the proposals directory. Default dir: `docs/mcp-vertex/proposals/done/audits`.',
+					description: `Read every \`*.md\` in the audits directory, parse + deduplicate + average per-dimension scores across N models, and return both the structured consolidation (per-dimension scores, deduplicated findings with \`seenBy\`) and the rendered master markdown. When the \`proposals\` plugin is loaded and \`autoScaffoldProposals\` is enabled, also scaffold one fix proposal per actionable finding under the proposals directory. Default dir: \`${options.defaultAuditDir}\`.`,
 					inputSchema: ConsolidateInputSchema,
 					outputSchema: ConsolidationOutputSchema,
 				},
