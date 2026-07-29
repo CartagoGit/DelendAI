@@ -47,10 +47,15 @@ const registration = (
 	return found;
 };
 
+const UNUSED_CACHE_DIR = '/tmp/browser-inspect-spec-unused';
+
 describe('browser-inspect (f00125 S1)', () => {
 	it('browser_open happy path with a mock driver', async () => {
 		const captured = await captureToolRegistration(
-			registration('browser_open', { driver: fakeDriver() }),
+			registration('browser_open', {
+				pluginCacheDir: UNUSED_CACHE_DIR,
+				driver: fakeDriver(),
+			}),
 		);
 		const output = (await captured.invoke({
 			url: 'https://example.com',
@@ -90,7 +95,10 @@ describe('browser-inspect (f00125 S1)', () => {
 
 	it('browser_query returns the matched texts', async () => {
 		const captured = await captureToolRegistration(
-			registration('browser_query', { driver: fakeDriver() }),
+			registration('browser_query', {
+				pluginCacheDir: UNUSED_CACHE_DIR,
+				driver: fakeDriver(),
+			}),
 		);
 		const output = (await captured.invoke({
 			url: 'https://example.com',
@@ -114,7 +122,10 @@ describe('browser-inspect (f00125 S1)', () => {
 			'browser_query',
 		]) {
 			const captured = await captureToolRegistration(
-				registration(toolId, { probeTool }),
+				registration(toolId, {
+					pluginCacheDir: UNUSED_CACHE_DIR,
+					probeTool,
+				}),
 			);
 			const output = (await captured.invoke({
 				url: 'https://example.com',
