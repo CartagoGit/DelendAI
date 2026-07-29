@@ -180,8 +180,38 @@ export const guardSlicesComplete = (input: {
 };
 
 /**
- * Convenience: read the proposal markdown from disk and run the sync
- * check. Async variant lets the caller mount a `fs/promises`-style
+ * x00190: pre-resolve every `done`-slice declared file with the async
+ * `stat` (already imported) BEFORE calling the sync `guardSlicesComplete`,
+ * so the swarm-hot-path callers below (`guardTransitionToDone`,
+ * `verifyCompletedProposalAsync` — both invoked by `proposal_transition`
+ * on every real `done` move) never block the event loop with sync I/O.
+ * `guardSlicesComplete` itself stays sync/pure (its own default
+ * `statSync` fallback is intentional for direct, offline callers — e.g.
+ * a CLI script — and is covered by its own tests), only these two
+ * production entry points now inject a pre-resolved, non-blocking
+ * predicate instead of falling through to that default.
+ */
+const buildAsyncFileExistsSet = async (
+	files: ReadonlyArray<string>,
+): Promise<ReadonlySet<string>> => {
+	const existing = new Set<string>();
+	await Promise.all(
+		files.map(async (file) => {
+			try {
+				await stat(file);
+				existing.add(file);
+			} catch {
+				// missing — not added
+			}
+		}),
+	);
+	return existing;
+};
+
+/**
+ * Convenience: read the proposal markdown from disk and run the
+ * completeness check with a non-blocking, pre-resolved file-existence
+ * predicate. Async variant lets the caller mount a `fs/promises`-style
  * reader for tmpdir-based tests.
  */
 export interface IReadMarkdown {
@@ -193,20 +223,15 @@ export const verifyCompletedProposalAsync = async (input: {
 	readonly read: IReadMarkdown;
 }): Promise<ICompletenessResult> => {
 	const markdown = await input.read.readText(input.proposalPath);
-	const result = guardSlicesComplete({
+	const slices = collectSliceStatuses(markdown);
+	const doneFiles = slices
+		.filter((s) => s.status === 'done')
+		.flatMap((s) => s.files);
+	const existing = await buildAsyncFileExistsSet(doneFiles);
+	return guardSlicesComplete({
 		markdown,
-		fileExists: (p) => {
-			try {
-				require('node:fs').statSync(p);
-				return true;
-			} catch {
-				return false;
-			}
-		},
+		fileExists: (p) => existing.has(p),
 	});
-	// `statSync` is sync-only; for tests that need async correctness
-	// the caller injects the `fileExists` predicate directly.
-	return result;
 };
 
 /**
@@ -219,7 +244,15 @@ export const guardTransitionToDone = async (input: {
 	readonly proposalPath: string;
 	readonly markdown: string;
 }): Promise<ICompletenessResult> => {
-	const result = guardSlicesComplete({ markdown: input.markdown });
+	const slices = collectSliceStatuses(input.markdown);
+	const doneFiles = slices
+		.filter((s) => s.status === 'done')
+		.flatMap((s) => s.files);
+	const existing = await buildAsyncFileExistsSet(doneFiles);
+	const result = guardSlicesComplete({
+		markdown: input.markdown,
+		fileExists: (p) => existing.has(p),
+	});
 	if (!result.ok) return result;
 	// Re-check that the proposal-path itself is readable — guards
 	// against a stale path during a transition attempt.
