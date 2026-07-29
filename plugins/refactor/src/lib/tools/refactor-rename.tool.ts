@@ -12,7 +12,7 @@
 import { readFile } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 
-import { z } from 'zod';
+import z from 'zod';
 
 import type { IToolRegistration } from '@mcp-vertex/core/public';
 import { toolError, toolJson, writeFileAtomic } from '@mcp-vertex/core/public';

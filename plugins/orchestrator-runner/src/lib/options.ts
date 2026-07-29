@@ -10,7 +10,7 @@
  * writes the canonical root block; wiring the root read is a follow-up
  * (needs a core ctx addition) and is out of S4 scope. Documented in README.
  */
-import { z } from 'zod';
+import z from 'zod';
 
 export const CapabilityTagSchema = z.enum([
 	'code-edit',

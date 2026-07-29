@@ -11,7 +11,7 @@
  * hint so the host surfaces a one-line install command instead of
  * crashing.
  */
-import { z } from 'zod';
+import z from 'zod';
 
 import { definePlugin } from '@mcp-vertex/core/public';
 

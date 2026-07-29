@@ -4,7 +4,7 @@
  * them as severity-ranked findings. Composes the r00012 finding helpers; the
  * reader is injectable, so the tool is testable. Offline, read-only.
  */
-import { z } from 'zod';
+import z from 'zod';
 
 import type { IToolRegistration } from '@mcp-vertex/core/public';
 import {

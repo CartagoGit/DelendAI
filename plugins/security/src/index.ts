@@ -1,5 +1,5 @@
 import { definePlugin } from '@mcp-vertex/core/public';
-import { z } from 'zod';
+import z from 'zod';
 
 import { buildSecurityAuditRegistration } from './lib/tools/security-audit.tool';
 import { buildSecurityDepsRegistration } from './lib/tools/security-deps.tool';

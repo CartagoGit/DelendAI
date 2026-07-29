@@ -4,7 +4,7 @@
  * guidance the agent must follow. Read this before writing any code
  * that changes behaviour.
  */
-import { z } from 'zod';
+import z from 'zod';
 
 import {
 	toolError,

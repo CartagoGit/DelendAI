@@ -13,7 +13,7 @@
  * `orchestrator-runner` use, so evaluation is deterministic and
  * unit-testable without spawning or spending.
  */
-import { z } from 'zod';
+import z from 'zod';
 
 import { definePlugin } from '@mcp-vertex/core/public';
 import type { ICalibrationStore } from '@mcp-vertex/auto-agent-selector/public';

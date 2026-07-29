@@ -11,7 +11,7 @@ import { readFileSync, mkdirSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { z } from 'zod';
+import z from 'zod';
 
 import { CONFIG_FILE_SCHEMA } from '@mcp-vertex/core/public';
 

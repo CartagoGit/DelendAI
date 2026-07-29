@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import z from 'zod';
 
 import type { IFileReader, IToolRegistration } from '@mcp-vertex/core/public';
 import { toolError, toolJson } from '@mcp-vertex/core/public';

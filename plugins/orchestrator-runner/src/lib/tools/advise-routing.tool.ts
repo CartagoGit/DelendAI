@@ -18,7 +18,7 @@ import { randomUUID } from 'node:crypto';
 
 import { toolJson, type IToolRegistration } from '@mcp-vertex/core/public';
 import type { IProviderCapabilities } from '@mcp-vertex/core/public';
-import { z } from 'zod';
+import z from 'zod';
 
 import { buildRoutingDecision } from '../router/advise';
 import type { SessionStore } from '../router/session';

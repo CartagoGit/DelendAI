@@ -11,7 +11,7 @@
  * - `browser_assert` → `IFinding[]` (empty = all assertions passed)
  * - `browser_a11y` → `IFinding[]` (axe-core, normalized via r00012)
  */
-import { z } from 'zod';
+import z from 'zod';
 
 import type { IToolRegistration } from '@mcp-vertex/core/public';
 import { toolError, toolJson } from '@mcp-vertex/core/public';

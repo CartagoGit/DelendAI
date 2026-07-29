@@ -3,7 +3,7 @@ import {
 	definePlugin,
 	resolveWorkspaceContained,
 } from '@mcp-vertex/core/public';
-import { z } from 'zod';
+import z from 'zod';
 
 import { createGithubSetupDeps } from './lib/github-setup';
 import { fetchIssue, listIssues } from './lib/github-client';

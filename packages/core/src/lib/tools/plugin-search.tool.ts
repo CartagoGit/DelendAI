@@ -5,7 +5,7 @@
  * `resolvePlugins`, mirroring the registry resolver's query semantics.
  * No fs, no network, no config writes: this only shapes filtered data.
  */
-import { z } from 'zod';
+import z from 'zod';
 
 import type {
 	IResolvePluginsOptions,
@@ -19,9 +19,7 @@ import { resolvePlugins } from '../registry/resolve';
 export interface IPluginSearchToolOptions {
 	readonly namespacePrefix: string;
 	/** Injected resolver; defaults to `resolvePlugins` from core. */
-	readonly resolve?: (
-		opts: IResolvePluginsOptions,
-	) => IResolvePluginsResult;
+	readonly resolve?: (opts: IResolvePluginsOptions) => IResolvePluginsResult;
 }
 
 const SEARCH_OUTPUT = z.object({
@@ -70,7 +68,9 @@ export const buildPluginSearchRegistration = (
 				const result = runResolve({
 					...(args.query !== undefined ? { query: args.query } : {}),
 					...(args.tag !== undefined ? { tags: [args.tag] } : {}),
-					...(args.origin !== undefined ? { origin: args.origin } : {}),
+					...(args.origin !== undefined
+						? { origin: args.origin }
+						: {}),
 					...(args.limit !== undefined ? { limit: args.limit } : {}),
 				});
 

@@ -8,7 +8,7 @@
  * atomically. A valid existing config is merged as the project authority;
  * only `overwrite: true` intentionally replaces it.
  */
-import { z } from 'zod';
+import z from 'zod';
 
 import type { IToolRegistration } from '../contracts/interfaces/tool-registration.interface';
 import type { IWorkspacePathProvider } from '../contracts/interfaces/workspace-paths.interface';

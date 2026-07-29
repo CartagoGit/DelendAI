@@ -23,7 +23,7 @@
 import { mkdir, readFile, stat } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 
-import { z } from 'zod';
+import z from 'zod';
 
 import {
 	quarantineCorruptFile,

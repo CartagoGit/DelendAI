@@ -8,7 +8,7 @@
  * pass a real `node:fs`-backed reader in production and tests can pass an
  * in-memory tree — no global filesystem coupling in the tool itself.
  */
-import { z } from 'zod';
+import z from 'zod';
 
 import type { IToolRegistration } from '@mcp-vertex/core/public';
 import { toolError, toolOk } from '@mcp-vertex/core/public';

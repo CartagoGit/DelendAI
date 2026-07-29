@@ -1,7 +1,7 @@
 import { mkdir, rename } from 'node:fs/promises';
 import { dirname, join, relative } from 'node:path';
 
-import { z } from 'zod';
+import z from 'zod';
 
 import {
 	toolError,

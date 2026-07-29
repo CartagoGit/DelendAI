@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import z from 'zod';
 
 import { CAPABILITY_TAGS } from '../contracts/interfaces/provider-capabilities.interface';
 import type { IToolRegistration } from '../contracts/interfaces/tool-registration.interface';

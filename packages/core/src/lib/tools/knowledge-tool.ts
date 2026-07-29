@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import z from 'zod';
 
 import type { IKnowledgeEntry } from '../contracts/interfaces/knowledge.interface';
 import type { IToolRegistration } from '../contracts/interfaces/tool-registration.interface';

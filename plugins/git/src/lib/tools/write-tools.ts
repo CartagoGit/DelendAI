@@ -12,7 +12,7 @@
  * Conventional-Commit message validation, the `--amend` ownership guard,
  * and the protected-branch push refusal.
  */
-import { z } from 'zod';
+import z from 'zod';
 
 import type {
 	IToolRegistration,

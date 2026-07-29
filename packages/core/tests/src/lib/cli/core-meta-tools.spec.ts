@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { z } from 'zod';
+import z from 'zod';
 
 import { assembleCliConfig } from '@mcp-vertex/core/lib/cli/assemble';
 import { parseCliArgs } from '@mcp-vertex/core/lib/plugins/parse-cli-args';

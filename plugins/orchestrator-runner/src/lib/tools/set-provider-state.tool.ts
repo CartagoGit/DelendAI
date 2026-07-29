@@ -9,7 +9,7 @@
  */
 import { toolJson, type IToolRegistration } from '@mcp-vertex/core/public';
 import type { IProviderAvailability } from '@mcp-vertex/core/public';
-import { z } from 'zod';
+import z from 'zod';
 
 import type { HealthStore } from '../healthcheck/store';
 import { SetProviderStateOutputSchema } from '../schemas';

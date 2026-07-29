@@ -1,5 +1,5 @@
 /** Read-only host-adapter surface for rehydrating an explicit session digest. */
-import { z } from 'zod';
+import z from 'zod';
 
 import type { IToolRegistration } from '@mcp-vertex/core/public';
 import { CorruptFileError, toolError, toolJson } from '@mcp-vertex/core/public';

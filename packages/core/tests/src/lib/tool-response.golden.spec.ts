@@ -42,7 +42,7 @@
 import { createHash } from 'node:crypto';
 
 import { describe, expect, it } from 'vitest';
-import { z } from 'zod';
+import z from 'zod';
 
 import {
 	MCP_PROJECT_SKELETON_SCHEMA,

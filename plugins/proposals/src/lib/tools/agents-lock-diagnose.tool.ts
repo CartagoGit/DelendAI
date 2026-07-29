@@ -6,7 +6,7 @@ import {
 	type IToolRegistration,
 	withFileMutex,
 } from '@mcp-vertex/core/public';
-import { z } from 'zod';
+import z from 'zod';
 
 import {
 	listStaleAgentLockTmpFiles,
