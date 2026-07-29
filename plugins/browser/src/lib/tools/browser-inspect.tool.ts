@@ -14,7 +14,7 @@ import {
 
 export interface IBrowserInspectToolOptions {
 	readonly namespacePrefix: string;
-	readonly pluginCacheDir?: string;
+	readonly pluginCacheDir: string;
 	readonly driver?: IBrowserDriver;
 	readonly probeTool?: () => Promise<{
 		readonly unavailable?: boolean;
@@ -73,8 +73,8 @@ const QUERY_OUTPUT = z.discriminatedUnion('status', [
 	}),
 ]);
 
-const resolvePluginCacheDir = (pluginCacheDir?: string): string =>
-	resolve(pluginCacheDir ?? join(process.cwd(), '.cache', 'mcp-vertex'));
+const resolvePluginCacheDir = (pluginCacheDir: string): string =>
+	resolve(pluginCacheDir);
 
 const normalizeHttpUrl = (input: string): string => {
 	const parsed = new URL(input);
@@ -98,7 +98,7 @@ const installMissing = (url: string, hint: string) =>
 	});
 
 const screenshotPathFor = (
-	pluginCacheDir?: string,
+	pluginCacheDir: string,
 	timestamp = Date.now(),
 ): string =>
 	join(resolvePluginCacheDir(pluginCacheDir), 'browser', `${timestamp}.png`);

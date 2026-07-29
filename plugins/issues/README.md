@@ -136,10 +136,13 @@ All 5 tools follow the same conventions:
 ### `issues_list` — list issues in the configured repo
 
 ```ts
-{ state?: "open" | "closed" | "all"; labels?: readonly string[]; assignee?: string; limit?: number }
+{ state?: "open" | "closed" | "all"; labels?: readonly string[]; limit?: number }
 ```
 
-Returns `{ count, issues: IIssueSummary[] }`. Filter-only, no writes.
+Returns `{ ok, issues?: IssueSummary[], tier?: "gh" | "rest-authed" | "rest-anon" }`,
+where `IssueSummary` is `{ number, title, state, labels, author, url, createdAt,
+updatedAt, commentsCount }`. `tier` reports which GitHub auth path served the
+request. Filter-only, no writes.
 
 ### `issues_fetch` — fetch one issue
 
@@ -147,27 +150,32 @@ Returns `{ count, issues: IIssueSummary[] }`. Filter-only, no writes.
 { number: number }
 ```
 
-Returns `{ number, title, body, state, labels, author, createdAt, updatedAt, comments: number, url }`.
+Returns `{ ok, issue?: IssueDetail, comments?: Comment[] }`, where `IssueDetail`
+is `IssueSummary & { body, comments: Comment[] }` and `Comment` is `{ author,
+body, createdAt, url }`.
 
 ### `issues_ingest` — fetch + persist a scaffold
 
 ```ts
-{ number: number; reason?: string }
+{ number: number; force?: boolean }
 ```
 
 Fetches the issue, runs `redactSecrets` over the body, and writes a
-scaffold file to `<scaffoldDir>/<owner>-<repo>-<number>.md`. Returns
-`{ scaffoldPath, summary, redactedFields: readonly string[] }`.
+scaffold file to `<scaffoldDir>/<owner>-<repo>-<number>.md` (skipped when one
+already exists, unless `force: true`). Returns `{ ok, filePath?, scaffold?: {
+filePath, frontmatter }, alreadyExisted? }`.
 
 ### `issues_analyze` — mechanical pre-analysis
 
 ```ts
-{ scaffoldPath: string }
+{ number: number }
 ```
 
-Reads the scaffold file, computes linked PRs, label cross-references,
-comment count, and a 1-line summary. Returns `{ labels, linkedPrs,
-commentCount, summary, suggestedNextAction }`.
+Auto-ingests the issue if it hasn't been already, then runs label/body
+heuristics over the scaffold. Returns `{ ok, draft?: { kind: "fix" | "feat" |
+"refactor" | "chore" | "spike" | "dismiss", confidence, rationale,
+bodyMarkdown, suggestedSlices?: { title, files }[] }, sourceFile? }`. Never
+creates a proposal — that's a separate `proposals_create_proposal` call.
 
 ### `issues_resolve` — mark an issue as resolved
 
@@ -175,8 +183,9 @@ commentCount, summary, suggestedNextAction }`.
 { number: number; resolution: "promoted" | "promoted-multiple" | "dismissed"; proposalIds?: string[]; dismissReason?: string }
 ```
 
-Updates the existing scaffold atomically. Dismissal requires a reason, and all
-new persisted strings are secret-redacted before serialization.
+Updates the existing scaffold atomically. Returns `{ ok, filePath?, scaffold?:
+{ filePath, frontmatter } }`. Dismissal requires a reason, and all new
+persisted strings are secret-redacted before serialization.
 
 ## See also
 
