@@ -24,10 +24,12 @@ export type { ISuggestResult } from '../suggest';
 
 export { scanDrift } from '../scan';
 export type {
+	IDirEntry,
 	IDrift,
 	IDriftCounts,
 	IDriftReport,
 	IScanOptions,
+	IScanReader,
 	Severity,
 } from '../scan';
 

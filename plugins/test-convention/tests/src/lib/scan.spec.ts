@@ -1,19 +1,38 @@
 import { describe, expect, it } from 'vitest';
 
-import type { IFileReader } from '@mcp-vertex/core/public';
-
 import {
 	DEFAULT_CONVENTION,
 	mergeConvention,
 	scanDrift,
+	type IDirEntry,
+	type IScanReader,
 } from '@mcp-vertex/test-convention/public';
 
-const fakeReader = (files: Record<string, string>): IFileReader => {
-	const keys = Object.keys(files);
+/**
+ * x00167: `IScanReader.list` is recursive-directory-aware (unlike the
+ * old flat `IFileReader.listDir`), so the fake must actually simulate
+ * a directory tree from the flat `path -> content` map instead of
+ * just returning every key from a single `list('')` call.
+ */
+const fakeReader = (files: Record<string, string>): IScanReader => {
+	const paths = Object.keys(files);
 	return {
 		readFile: async (p) => files[p],
-		exists: async (p) => p in files,
-		listDir: async () => keys,
+		list: async (relDir: string): Promise<readonly IDirEntry[]> => {
+			const prefix = relDir === '' ? '' : `${relDir}/`;
+			const seen = new Map<string, boolean>();
+			for (const p of paths) {
+				if (!p.startsWith(prefix)) continue;
+				const rest = p.slice(prefix.length);
+				const slash = rest.indexOf('/');
+				const name = slash === -1 ? rest : rest.slice(0, slash);
+				seen.set(name, slash !== -1);
+			}
+			return [...seen.entries()].map(([name, isDirectory]) => ({
+				name,
+				isDirectory,
+			}));
+		},
 	};
 };
 
