@@ -2,10 +2,12 @@
 id: x00167
 title: "test-convention's scan_drift silently scans 0 files in production — always reports false \"all clean\""
 kind: fix
-status: ready
+status: done
 type: proposal
 track: plugins+test-convention+dogfooding
 date: 2026-07-29
+shipped-in:
+    - 3d48cf8e # S1 — recursive IScanReader port, fixes scannedFiles:0 in production
 ---
 
 # x00167 — test-convention's scan_drift silently scans 0 files in production — always reports false "all clean"
