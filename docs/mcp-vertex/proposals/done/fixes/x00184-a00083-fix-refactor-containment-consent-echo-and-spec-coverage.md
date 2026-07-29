@@ -2,7 +2,7 @@
 id: x00184
 title: "a00083 — fix refactor plugin: containment, consent-token echo, and spec coverage (the worst-scoring slice)"
 kind: fix
-status: ready
+status: done
 type: proposal
 track: plugins+audit-followup
 date: 2026-07-29
