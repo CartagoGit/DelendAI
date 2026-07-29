@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-07-28T06:04:02.729Z",
+	"generatedAt": "2026-07-29T18:40:49.838Z",
 	"mode": "compact",
 	"tools": [
 		{
@@ -7,6 +7,22 @@
 		},
 		{
 			"name": "mcp-vertex_analyze_project"
+		},
+		{
+			"name": "mcp-vertex_audit_audit_consolidate",
+			"plugin": "audit"
+		},
+		{
+			"name": "mcp-vertex_audit_audit_plan",
+			"plugin": "audit"
+		},
+		{
+			"name": "mcp-vertex_audit_audit_run",
+			"plugin": "audit"
+		},
+		{
+			"name": "mcp-vertex_audit_self_audit",
+			"plugin": "audit"
 		},
 		{
 			"name": "mcp-vertex_auto-agent-selector_auto_evaluate",
@@ -1092,14 +1108,63 @@
 				"track": "lint+architecture+i18n+workflow+release",
 				"status": "paused",
 				"kind": "feat"
+			},
+			{
+				"id": "x00183",
+				"title": "x00183",
+				"track": "core+audit-followup",
+				"status": "ready",
+				"kind": "fix"
+			},
+			{
+				"id": "x00184",
+				"title": "x00184",
+				"track": "plugins+audit-followup",
+				"status": "ready",
+				"kind": "fix"
+			},
+			{
+				"id": "x00185",
+				"title": "x00185",
+				"track": "plugins+audit-followup",
+				"status": "ready",
+				"kind": "fix"
+			},
+			{
+				"id": "x00186",
+				"title": "x00186",
+				"track": "tools+audit-followup",
+				"status": "ready",
+				"kind": "fix"
+			},
+			{
+				"id": "x00187",
+				"title": "x00187",
+				"track": "tests+audit-followup",
+				"status": "ready",
+				"kind": "fix"
+			},
+			{
+				"id": "x00188",
+				"title": "x00188",
+				"track": "apps+audit-followup",
+				"status": "ready",
+				"kind": "fix"
+			},
+			{
+				"id": "x00189",
+				"title": "x00189",
+				"track": "tests+audit-followup",
+				"status": "ready",
+				"kind": "fix"
 			}
 		],
 		"byStatus": {
-			"ready": 0,
+			"ready": 7,
 			"in-progress": 0,
 			"review": 0,
 			"paused": 1,
-			"done": 316,
+			"done": 322,
 			"blocked": 0,
 			"retired": 2,
 			"unspecified": 0
