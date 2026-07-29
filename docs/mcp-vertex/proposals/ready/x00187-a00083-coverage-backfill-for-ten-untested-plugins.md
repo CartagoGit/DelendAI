@@ -31,13 +31,21 @@ This proposal lands the first batch of specs — one happy-path + one failure-pa
 
 ## slices
 
-### s1 — concurrent-engine parallel-writer spec
+### S1 — concurrent-engine parallel-writer spec
+- **Status**: ready
+- **Files**: <see slice body below>
+- **Gate**: test
+  acceptance:
 
 - **File**: `plugins/proposals/tests/src/lib/agents/persistent-task-queue.spec.ts`.
 - Add a `it('serializes concurrent enqueue + observe under contention', ...)` that fires `N=8` concurrent `enqueue` calls against the same persisted queue and asserts the final queue length matches the unique payloads (no lost updates).
 - Reference the existing parallel specs (`sync-proposal-registry-race.spec.ts#L88`, `agent-lock-engine.spec.ts#L573`) for the contention pattern.
 
-### s2 — first specs for the 10 zero-spec plugins
+### S2 — first specs for the 10 zero-spec plugins
+- **Status**: ready
+- **Files**: <see slice body below>
+- **Gate**: test
+  acceptance:
 
 - One happy-path + one failure-path per plugin. Specifically:
   - `plugins/api/tests/` — parse a small OpenAPI 3.1 fixture; assert request build.
@@ -51,13 +59,23 @@ This proposal lands the first batch of specs — one happy-path + one failure-pa
   - `plugins/skills-pack/tests/` — assert skills enumeration is order-stable.
   - `plugins/refactor/tests/` — see `x00184` s2.
 
-### s3 — workspace baselines
+### S3 — workspace baselines
+- **Status**: ready
+- **Files**: <see slice body below>
+- **Gate**: test
+  acceptance:
 
 - `packages/cli/tests/` — at least one smoke spec asserting the published CLI runs.
 - `apps/shared/tests/` — at least one spec per public helper.
 - `tools/tests/` — at least one spec covering the verify:tools harness (mirrors the manual run).
 
-## related
+## Notes
+
+
 
 - a00083 — full-project audit
 - x00184 — refactor plugin contract (separate slice; this proposal covers refactor's spec baseline only)
+
+## acceptance
+
+Every slice lands with its acceptance bullets green and `bun run validate` exits 0 on a clean checkout of develop (the gate itself ships in x00189 s4).

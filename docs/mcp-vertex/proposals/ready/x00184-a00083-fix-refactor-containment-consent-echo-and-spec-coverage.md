@@ -31,7 +31,11 @@ Resolve findings F17, F18, F19 from a00083 (29-07-2026). The refactor plugin sco
 
 ## slices
 
-### s1 — containment + consent
+### S1 — containment + consent
+- **Status**: ready
+- **Files**: <see slice body below>
+- **Gate**: test
+  acceptance:
 
 - **Files**: `plugins/refactor/src/lib/tools/refactor-nav.tool.ts`, `plugins/refactor/src/lib/tools/refactor-rename.tool.ts`.
 - Add `resolveWorkspaceContained` to every user-path entry in nav (`refactor_definition`, `refactor_references`, `refactor_symbols`).
@@ -39,13 +43,23 @@ Resolve findings F17, F18, F19 from a00083 (29-07-2026). The refactor plugin sco
 - Replace `resolvePath(root, path)` with the contained path resolver; on `contained.ok === false`, return `toolError(...)` with the same envelope shape as other plugins use for workspace escapes.
 - **Acceptance**: every nav + apply tool rejects `path.startsWith('/')` or `..`-escapes with `toolError`. Add a spec per tool that asserts the contract.
 
-### s2 — first batch of specs
+### S2 — first batch of specs
+- **Status**: ready
+- **Files**: <see slice body below>
+- **Gate**: test
+  acceptance:
 
 - **Files**: `plugins/refactor/tests/src/lib/refactor-nav.spec.ts` (new), `plugins/refactor/tests/src/lib/refactor-rename.spec.ts` (new).
 - Cases: containment rejection, consent echo, happy-path rename hunk apply, codemod refusal on missing consent.
 - **Acceptance**: `bun test plugins/refactor/tests/` exits 0 with at least 6 specs.
 
-## related
+## Notes
+
+
 
 - a00083 — full-project audit (source of these findings)
 - f00123 — refactor plugin charter (S1+S2 covered here; S3 codemods separate)
+
+## acceptance
+
+Every slice lands with its acceptance bullets green and `bun run validate` exits 0 on a clean checkout of develop (the gate itself ships in x00189 s4).
