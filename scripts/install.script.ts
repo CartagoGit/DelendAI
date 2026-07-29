@@ -29,7 +29,8 @@ import {
 	writeFileSync,
 } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join, resolve } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 const REPO = process.env['MCP_VERTEX_REPO'] ?? 'cartago-git/mcp-vertex';
 const VERSION = process.env['MCP_VERTEX_VERSION'] ?? 'latest';
@@ -162,8 +163,12 @@ const main = async (): Promise<number> => {
 	const target = join(args.dir, BIN_NAME);
 
 	// Resolve the absolute path to the CLI entry (used by --local and
-	// by the bun-dispatcher fallback).
-	const cliEntry = resolve(process.cwd(), 'packages/cli/src/index.ts');
+	// by the bun-dispatcher fallback). a00083 F29: anchor to the
+	// script's own directory (via `import.meta.url`), NOT `process.cwd()`,
+	// so running the installer from outside the repo can't write a
+	// dispatcher pointing at a non-existent path.
+	const scriptDir = dirname(fileURLToPath(import.meta.url));
+	const cliEntry = resolve(scriptDir, '..', 'packages/cli/src/index.ts');
 
 	if (args.local || !existsSync(cliEntry.replace(/[^/]+$/, ''))) {
 		log(`local install: writing bun dispatcher at ${target}`);

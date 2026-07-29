@@ -23,8 +23,13 @@ export type {
 } from '../lib/frameworks/types';
 export { detectPresetForArea } from '../lib/frameworks/detect-framework';
 export type { IDetectResult } from '../lib/frameworks/detect-framework';
+// NOTE: `buildRulesManifest` (legacy manifest builder) is intentionally
+// NOT re-exported from the public barrel. The plugin's tool surface
+// (`rules-tools.ts`) consumes `buildManifestViaComposition` exclusively
+// — the composition root is the single source of truth. Programmatic
+// consumers that still need the legacy builder should import from the
+// deep path `@mcp-vertex/rules/lib/frameworks/manifest` (tests do this).
 export {
-	buildRulesManifest,
 	discoverAreas,
 	ensureRulesCache,
 } from '../lib/frameworks/manifest';

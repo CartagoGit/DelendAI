@@ -204,6 +204,47 @@ describe('memory export/import (f00028 S2)', async () => {
 		expect(all[0]?.body).not.toContain(secret);
 	});
 
+	it('import honours maxNotes and rejects when quota would be exceeded (a00083 F10)', async () => {
+		await saveNote(store, { title: 'Existing', body: 'one', tags: [] });
+		const payload = JSON.stringify({
+			notes: [
+				{
+					id: 'incoming-1',
+					title: 'Incoming 1',
+					body: 'first incoming',
+					tags: [],
+					createdAt: '2026-01-01T00:00:00.000Z',
+					updatedAt: '2026-01-01T00:00:00.000Z',
+				},
+				{
+					id: 'incoming-2',
+					title: 'Incoming 2',
+					body: 'second incoming',
+					tags: [],
+					createdAt: '2026-01-01T00:00:00.000Z',
+					updatedAt: '2026-01-01T00:00:00.000Z',
+				},
+			],
+		});
+		// Quota is 1: existing note already takes the only slot, the two
+		// incoming ones would push the store to 3 → must throw.
+		await expect(
+			importNotes(store, payload, {
+				format: 'json',
+				mode: 'merge',
+				maxNotes: 1,
+			}),
+		).rejects.toThrow(/note store is full \(max 1 notes\)/);
+		// Quota is 3: 1 existing + 2 incoming = 3 → must succeed.
+		await expect(
+			importNotes(store, payload, {
+				format: 'json',
+				mode: 'merge',
+				maxNotes: 3,
+			}),
+		).resolves.toMatchObject({ imported: 2 });
+	});
+
 	it('round-trips export -> import preserving every non-expired note', async () => {
 		await saveNote(store, { title: 'One', body: 'first', tags: ['x'] });
 		await saveNote(store, { title: 'Two', body: 'second', tags: ['y'] });

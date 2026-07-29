@@ -464,6 +464,9 @@ export const buildMemoryToolRegistrations = (
 						}
 						return guardCorrupt(async () => {
 							try {
+								// a00083 F10: forward the configured maxNotes
+								// so a single import can't blow past the
+								// quota that saveNote enforces.
 								const result = await importNotes(
 									options.storePathAbs,
 									args.payload,
@@ -473,6 +476,7 @@ export const buildMemoryToolRegistrations = (
 										...(args.conflict !== undefined
 											? { conflict: args.conflict }
 											: {}),
+										maxNotes: options.maxNotes,
 									},
 								);
 								return toolOk({ ...result });
