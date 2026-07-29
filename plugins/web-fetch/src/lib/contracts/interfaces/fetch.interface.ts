@@ -37,6 +37,12 @@ export interface IWebFetchOptions {
 	readonly url: string;
 	/** Hostnames (exact or `*.suffix` wildcard) this call is allowed to reach. */
 	readonly allowList: readonly string[];
+	/** HTTP method. Default `GET`. Sent unchanged on every redirect hop. */
+	readonly method?: string;
+	/** Request headers, sent unchanged on every redirect hop. */
+	readonly headers?: Readonly<Record<string, string>>;
+	/** Request body (already-serialized, e.g. a JSON string). */
+	readonly body?: string;
 	/** Response cap in bytes — real octets, not UTF-16 units. Default 50 KiB. */
 	readonly maxBytes?: number;
 	/** Per-request timeout in ms — covers the BODY read too. Default 8000. */
@@ -65,7 +71,13 @@ export interface ISanitizedBounds {
  */
 export type IFetchLike = (
 	url: string,
-	init?: { readonly signal?: AbortSignal; readonly redirect?: 'manual' },
+	init?: {
+		readonly signal?: AbortSignal;
+		readonly redirect?: 'manual';
+		readonly method?: string;
+		readonly headers?: Readonly<Record<string, string>>;
+		readonly body?: string;
+	},
 ) => Promise<{
 	readonly ok: boolean;
 	readonly status: number;

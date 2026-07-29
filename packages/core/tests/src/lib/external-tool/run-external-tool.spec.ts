@@ -61,6 +61,28 @@ describe('runExternalTool', () => {
 		);
 	});
 
+	// x00169: `IRunExternalToolInput.stdin` used to not exist at all — a
+	// tool shaped like `kubectl apply -f -` had no way to hand the
+	// manifest to the child process's stdin.
+	it('forwards stdin to the exec options', async () => {
+		const exec = vi.fn(fakeExec({ code: 0 }));
+		await runExternalTool(
+			{ tool, args: ['apply', '-f', '-'], stdin: 'kind: Pod\n' },
+			exec,
+		);
+		expect(exec).toHaveBeenCalledWith(
+			['demo', 'apply', '-f', '-'],
+			expect.objectContaining({ stdin: 'kind: Pod\n' }),
+		);
+	});
+
+	it('omits stdin from the exec options when not provided', async () => {
+		const exec = vi.fn(fakeExec({ code: 0 }));
+		await runExternalTool({ tool, args: ['scan'] }, exec);
+		const options = exec.mock.calls[0]?.[1];
+		expect(options).not.toHaveProperty('stdin');
+	});
+
 	it('redacts literal and regex patterns from output', async () => {
 		const run = await runExternalTool(
 			{

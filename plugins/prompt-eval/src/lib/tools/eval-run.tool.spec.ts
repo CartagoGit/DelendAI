@@ -77,6 +77,38 @@ describe('eval-run (f00127 S3)', () => {
 		]);
 	});
 
+	// x00169: `unwired: true` must refuse BEFORE touching providers —
+	// proves the diagnostic path never silently runs the harness against
+	// stub deps.
+	it('refuses with a diagnostic and never invokes providers when unwired', async () => {
+		let runProviderCalls = 0;
+		const reg = buildEvalRunRegistration({
+			namespacePrefix: 'eval',
+			providers,
+			unwired: true,
+			allowSpend: async () => true,
+			runProvider: async (provider) => {
+				runProviderCalls += 1;
+				return { output: provider.id, costUsd: 0 };
+			},
+			checkAcceptance: async () => true,
+		});
+		const server = new FakeServer();
+		void reg.register(server as never);
+		const handler = server.tools.eval_eval_run?.handler as (
+			a: unknown,
+		) => Promise<unknown>;
+		const raw = (await handler({
+			prompt: 'fix the bug',
+			consent: true,
+		})) as { content: Array<{ text: string }> };
+		const body = JSON.parse(raw.content[0]?.text ?? '{}') as {
+			error?: { reason: string };
+		};
+		expect(body.error?.reason).toContain('no real provider runtime');
+		expect(runProviderCalls).toBe(0);
+	});
+
 	it('still succeeds when no calibration store is injected', async () => {
 		const tools = build();
 		const handler = tools.eval_eval_run?.handler as (

@@ -86,6 +86,8 @@ export interface IRunExternalToolInput {
 	readonly maxOutputBytes?: number;
 	/** Literal strings / regexes replaced with `***` in captured output. */
 	readonly redact?: readonly (string | RegExp)[];
+	/** Data piped to the child's stdin, then closed (e.g. `kubectl apply -f -`). */
+	readonly stdin?: string;
 }
 
 /** Outcome of a shared external-tool run. Never throws. */
