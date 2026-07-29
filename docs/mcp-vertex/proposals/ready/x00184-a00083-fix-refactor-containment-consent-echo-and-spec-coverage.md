@@ -32,7 +32,7 @@ Resolve findings F17, F18, F19 from a00083 (29-07-2026). The refactor plugin sco
 ## slices
 
 ### S1 — containment + consent
-- **Status**: ready
+- **Status**: done
 - **Files**: <see slice body below>
 - **Gate**: test
   acceptance:
@@ -44,7 +44,7 @@ Resolve findings F17, F18, F19 from a00083 (29-07-2026). The refactor plugin sco
 - **Acceptance**: every nav + apply tool rejects `path.startsWith('/')` or `..`-escapes with `toolError`. Add a spec per tool that asserts the contract.
 
 ### S2 — first batch of specs
-- **Status**: ready
+- **Status**: done
 - **Files**: <see slice body below>
 - **Gate**: test
   acceptance:
@@ -55,7 +55,33 @@ Resolve findings F17, F18, F19 from a00083 (29-07-2026). The refactor plugin sco
 
 ## Notes
 
+Implementation notes (delivery deviates from the literal S1/S2 text where the
+original audit's assumptions were stale):
 
+- S1 also fixed `refactor_apply`'s `root` itself: the original code only
+  checked that `file.path` resolved inside `rootAbs`, but never verified
+  `rootAbs` (derived from `args.root`) was inside the workspace — so
+  `root: "/etc"` + `file.path: "passwd"` passed containment and wrote to
+  `/etc/passwd`. Both `root` and `file.path` are now independently
+  contained via `resolveWorkspaceContained`.
+- `refactor_rename`'s `root`/`scopePaths` had the identical unguarded
+  `resolvePath` bug (shared helper) and are fixed the same way, even
+  though F17/F18 only named `refactor-nav.tool.ts` and the apply half of
+  `refactor-rename.tool.ts`.
+- S2's acceptance named new files under `plugins/refactor/tests/src/lib/`
+  — that directory shape doesn't match this plugin's actual convention
+  (co-located `*.tool.spec.ts` next to each tool, already used by all 3
+  existing tool spec files). Coverage was added to the existing co-located
+  specs instead of creating a parallel `tests/` tree. The "2868 LOC, 0
+  specs" premise was also stale: 7 spec files already existed pre-fix
+  (nav-engine, rename-planner, codemod-runner, recipes, and all 3 tool
+  files) — likely a symptom of the same `scan_drift`-style scanner
+  undercount already fixed in x00167, not an actual coverage gap.
+- `refactor_codemod`'s hand-rolled `resolvePath`/`isContainedPath` was
+  checked for the same bug class: it resolves+normalizes before the
+  prefix check, so both absolute and `../`-relative escapes are correctly
+  rejected today. Left as-is (a DRY nit against the shared helper, not a
+  security bug) — out of scope here.
 
 - a00083 — full-project audit (source of these findings)
 - f00123 — refactor plugin charter (S1+S2 covered here; S3 codemods separate)
