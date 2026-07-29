@@ -6,6 +6,8 @@ status: ready
 type: proposal
 track: general
 date: 2026-07-29
+shipped-in:
+    - 4f1f1872 # S1-S6 — 7 minor findings across deps/notification/quality/forge/browser/git/issues
 ---
 
 # x00191 — Group 4: minor cleanup — missing schemas, dead registrations, silent guard gaps, doc drift
