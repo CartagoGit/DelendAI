@@ -14,6 +14,7 @@ import { webFetch, type IWebFetchResult } from '@mcp-vertex/web-fetch/public';
 import {
 	authHeaderFor,
 	dispatchFetch,
+	FETCH_TIMEOUT_MS,
 	redactToken,
 	type IErrorSource,
 	type IListErrorsInput,
@@ -24,12 +25,11 @@ import {
 const DEFAULT_LIMIT = 25;
 const MAX_LIMIT = 100;
 
-/**
- * Shared bound for both the allow-list-checking engine call AND the
- * direct re-fetch below (x00157 S4) — a single constant so the two
- * requests can't silently drift out of sync.
- */
-export const FETCH_TIMEOUT_MS = 8_000;
+// x00157 S4 + a00084: FETCH_TIMEOUT_MS is defined once in
+// ierror-source.ts (dispatchFetch uses it too) and re-exported here so
+// this module's own direct re-fetch below can't silently drift out of
+// sync with it.
+export { FETCH_TIMEOUT_MS };
 
 const clampLimit = (limit: number): number =>
 	Number.isFinite(limit) && limit > 0

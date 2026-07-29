@@ -116,6 +116,13 @@ export const redactToken = (input: string, token: string): string =>
 	token.length === 0 ? input : input.split(token).join('[REDACTED]');
 
 /**
+ * Shared bound for every fetch this plugin issues. Exported so
+ * `list-errors.ts`'s own direct fetch can use the same constant instead
+ * of a second hardcoded value.
+ */
+export const FETCH_TIMEOUT_MS = 8_000;
+
+/**
  * The shared fetch seam. The default reads from the `IErrorSource.fetch`
  * and falls back to the global `fetch`. Pure dispatcher.
  */
@@ -132,7 +139,14 @@ export const dispatchFetch = async (
 		Accept: 'application/json',
 		[authHeaderFor(source).name]: authHeaderFor(source).value,
 	};
-	const res = await f(url, {});
+	// x00157-adjacent finding (2026-07-28): this call had NO signal at
+	// all — a hung `source.fetch` (a host-injected adapter) or a
+	// server that opens the connection and never sends a body would
+	// hang this dispatcher, and the unbounded `reader.read()` loop
+	// below, forever. `IFetchLike`'s contract already declares an
+	// optional `signal`; every caller (real fetch, or a compliant
+	// injected adapter) is expected to honor it.
+	const res = await f(url, { signal: AbortSignal.timeout(FETCH_TIMEOUT_MS) });
 	const ok = res.ok;
 	const contentType = res.headers.get('content-type');
 	const status = res.status;
