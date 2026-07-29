@@ -2,7 +2,7 @@
 id: x00169
 title: "x00169 — Group 2: four silently-broken/lying tools (api_call, k8s_apply, plugins_recommend, eval_run)"
 kind: fix
-status: ready
+status: done
 type: proposal
 track: general
 date: 2026-07-29
