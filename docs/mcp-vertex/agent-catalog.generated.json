@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-07-29T18:40:49.838Z",
+	"generatedAt": "2026-07-29T23:46:39.032Z",
 	"mode": "compact",
 	"tools": [
 		{
@@ -202,6 +202,10 @@
 		},
 		{
 			"name": "mcp-vertex_forge_release",
+			"plugin": "forge"
+		},
+		{
+			"name": "mcp-vertex_forge_search_code",
 			"plugin": "forge"
 		},
 		{
@@ -1157,10 +1161,17 @@
 				"track": "tests+audit-followup",
 				"status": "ready",
 				"kind": "fix"
+			},
+			{
+				"id": "x00191",
+				"title": "x00191",
+				"track": "general",
+				"status": "ready",
+				"kind": "fix"
 			}
 		],
 		"byStatus": {
-			"ready": 7,
+			"ready": 8,
 			"in-progress": 0,
 			"review": 0,
 			"paused": 1,
