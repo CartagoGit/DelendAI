@@ -78,4 +78,25 @@ describe('perf_profile tool (f00126 S3)', () => {
 		expect(out.summary.high).toBe(1);
 		expect(out.worst).toBe('high');
 	});
+
+	// x00168 (S3): `cwd` used to reach the spawned profiler process
+	// argument with zero containment check.
+	it('rejects a cwd that escapes the workspace', async () => {
+		const captured = await captureToolRegistration(
+			buildPerfProfileRegistration({
+				namespacePrefix: 'mcp',
+				workspaceRootAbs: '/tmp/perf-fixture',
+				deps: stubDeps,
+				runProfileCapture:
+					async (): Promise<IPerfProfileCaptureResult> => ({
+						ok: 'skipped',
+						hint: 'should never be reached',
+					}),
+			}),
+		);
+		const out = (await captured.invoke({
+			cwd: '../../../../etc',
+		})) as { error?: unknown };
+		expect(out.error).toBeDefined();
+	});
 });

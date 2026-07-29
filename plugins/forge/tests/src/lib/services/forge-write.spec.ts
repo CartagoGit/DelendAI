@@ -121,6 +121,41 @@ describe('forge write service', () => {
 		).toBe(true);
 	});
 
+	// x00168 (S5): `proposalId` used to reach a bare `path.join` with zero
+	// containment check — a caller could read any `.md` file outside
+	// docs/mcp-vertex/proposals/ via `../` traversal, and its content
+	// would be embedded verbatim into a PR body posted to the real,
+	// public origin forge by `createPr`.
+	it('refuses a proposalId containing path traversal', async () => {
+		const reads: string[] = [];
+		const readFile = async (path: string): Promise<string> => {
+			reads.push(path);
+			return '# should never be reached\n';
+		};
+		const markdown = await readProposalMarkdown(
+			'/repo',
+			'../../../../outside/secret',
+			readFile,
+		);
+		expect(markdown).toBeUndefined();
+		expect(reads).toHaveLength(0);
+	});
+
+	it('refuses a proposalId containing a path separator', async () => {
+		const reads: string[] = [];
+		const readFile = async (path: string): Promise<string> => {
+			reads.push(path);
+			return '# should never be reached\n';
+		};
+		const markdown = await readProposalMarkdown(
+			'/repo',
+			'foo/bar',
+			readFile,
+		);
+		expect(markdown).toBeUndefined();
+		expect(reads).toHaveLength(0);
+	});
+
 	it('creates a PR with proposal-aware body assembly', async () => {
 		const result = await createPr(
 			'/repo',

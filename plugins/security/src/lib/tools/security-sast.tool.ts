@@ -1,7 +1,8 @@
-import { z } from 'zod';
+import z from 'zod';
 
 import type { IToolRegistration } from '@mcp-vertex/core/public';
 import {
+	resolveWorkspaceContained,
 	summarizeFindings,
 	toolError,
 	toolJson,
@@ -72,7 +73,21 @@ export const buildSecuritySastRegistration = (
 				runner?: 'semgrep' | 'ast-grep' | 'auto' | undefined;
 				rules?: string[] | undefined;
 			}) => {
-				const cwd = args.cwd ?? options.workspaceRootAbs;
+				let cwd = options.workspaceRootAbs;
+				if (args.cwd !== undefined) {
+					const contained = resolveWorkspaceContained(
+						options.workspaceRootAbs,
+						args.cwd,
+					);
+					if (!contained.ok) {
+						return toolError(
+							`cwd "${args.cwd}" is not allowed`,
+							contained.reason ??
+								'cwd must be a workspace-relative path.',
+						);
+					}
+					cwd = contained.abs;
+				}
 				const stack = await (options.detectStack ?? detectStack)(cwd);
 				const selectedRules = (options.rules ?? SAST_RULES).filter(
 					(rule) =>

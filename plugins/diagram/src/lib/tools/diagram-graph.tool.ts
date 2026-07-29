@@ -12,10 +12,14 @@
  * shape end-to-end without a filesystem.
  */
 
-import { z } from 'zod';
+import z from 'zod';
 
 import type { IToolRegistration } from '@mcp-vertex/core/public';
-import { toolError, toolJson } from '@mcp-vertex/core/public';
+import {
+	resolveWorkspaceContained,
+	toolError,
+	toolJson,
+} from '@mcp-vertex/core/public';
 
 import type {
 	IDiagramDeps,
@@ -97,7 +101,7 @@ export const buildDiagramGraphToolRegistrations = (
 					`${options.namespacePrefix}_diagram_modules`,
 					{
 						description:
-							'Build the file-level module graph (every `.ts` file under the package and the `import` edges between them) and return it as a mermaid `flowchart LR` plus the raw nodes/edges. External imports are dropped. The default package root is the diagram plugin itself; override via `packageRoot` for a different package. Offline, read-only.',
+							'Build the file-level module graph (every `.ts` file under the package and the `import` edges between them) and return it as a mermaid `flowchart LR` plus the raw nodes/edges. External imports are dropped. The default package root is the diagram plugin itself; override via `packageRoot` (workspace-relative, e.g. `plugins/foo`) for a different package. Offline, read-only.',
 						inputSchema: z.object({
 							packageRoot: z.string().optional(),
 						}),
@@ -112,14 +116,23 @@ export const buildDiagramGraphToolRegistrations = (
 					},
 					async (args: { packageRoot?: string | undefined }) => {
 						const explicitRoot = args.packageRoot;
-						const runtimeDeps =
-							explicitRoot !== undefined && explicitRoot !== ''
-								? realDiagramModules(explicitRoot)
-								: moduleDeps;
-						const effectiveRoot =
-							explicitRoot !== undefined && explicitRoot !== ''
-								? explicitRoot
-								: modulePackageRootAbs;
+						let runtimeDeps = moduleDeps;
+						let effectiveRoot = modulePackageRootAbs;
+						if (explicitRoot !== undefined && explicitRoot !== '') {
+							const contained = resolveWorkspaceContained(
+								options.workspaceRootAbs,
+								explicitRoot,
+							);
+							if (!contained.ok) {
+								return toolError(
+									`packageRoot "${explicitRoot}" is not allowed`,
+									contained.reason ??
+										'packageRoot must be a workspace-relative path.',
+								);
+							}
+							runtimeDeps = realDiagramModules(contained.abs);
+							effectiveRoot = contained.abs;
+						}
 						try {
 							const files = await runtimeDeps.listPackageFiles();
 							const importMap = new Map<
