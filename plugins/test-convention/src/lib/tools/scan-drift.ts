@@ -2,18 +2,17 @@ import { z } from 'zod';
 
 import {
 	toolJson,
-	type IFileReader,
 	type IToolRegistration,
 	type IToolTextResult,
 } from '@mcp-vertex/core/public';
 
 import type { ITestConvention } from '../../convention';
-import { scanDrift } from '../../scan';
+import { scanDrift, type IScanReader } from '../../scan';
 
 export interface IScanDriftOptions {
 	readonly namespacePrefix: string;
 	readonly convention: ITestConvention;
-	readonly reader: IFileReader;
+	readonly reader: IScanReader;
 	readonly workspaceRoot: string;
 }
 

@@ -5,6 +5,7 @@ import {
 import { z } from 'zod';
 
 import { mergeConvention } from './convention';
+import { createFsScanReader } from './fs-scan-reader';
 import { buildGetConvention } from './lib/tools/get-convention';
 import { buildSuggestSpec } from './lib/tools/suggest-spec';
 import { buildScanDrift } from './lib/tools/scan-drift';
@@ -73,6 +74,10 @@ export default definePlugin({
 		);
 		const reader = createWorkspaceFileReader(ctx.workspace);
 		const runner: IRunnerInfo = await detectRunner(reader);
+		// x00167: scan_drift needs a RECURSIVE, isDirectory-aware
+		// reader — `reader` above is the shallow, single-level
+		// IFileReader every other consumer here correctly relies on.
+		const scanReader = createFsScanReader(ctx.workspace.root);
 		return {
 			tools: [
 				buildGetConvention({
@@ -86,7 +91,7 @@ export default definePlugin({
 				buildScanDrift({
 					namespacePrefix: ctx.namespacePrefix,
 					convention,
-					reader,
+					reader: scanReader,
 					workspaceRoot: ctx.workspace.root,
 				}),
 			],
