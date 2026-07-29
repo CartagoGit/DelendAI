@@ -60,10 +60,35 @@ import { testConventionCommands } from './groups/test-convention';
 import { usageTrackingCommands } from './groups/usage-tracking';
 import { webFetchCommands } from './groups/web-fetch';
 
-const text = (body: string, code = EXIT_CODE.OK): ICliCommandResult => ({
+const text = (
+	body: string,
+	code: ICliCommandResult['code'] = EXIT_CODE.OK,
+): ICliCommandResult => ({
 	code,
 	text: body.endsWith('\n') ? body : `${body}\n`,
 });
+
+/**
+ * a00087: the runner (`index.ts`) only ever writes `result.data` to
+ * stdout when `--json`/`--format=json` is explicit — by design, so a
+ * command that already prints its own human recap (like `init`) never
+ * gets a duplicate JSON dump. But a dozen read-only commands here
+ * (`status`, `overview`, `metrics`, `validate-matrix`, `config *`,
+ * `search`, `docs *`, `scaffold`, `plugin inspect`) never grew that
+ * recap — they returned bare `data(...)` and were **completely silent**
+ * by default (exit 0, zero stdout/stderr), indistinguishable from a
+ * hang for a human running `mcpv status` the obvious way. Until each
+ * gets a bespoke formatter, fall back to pretty-printed JSON through
+ * the `.text` channel (always emitted) instead of `.data` (json-gated).
+ */
+const dataOrText = (
+	value: unknown,
+	ctx: ICliCommandContext,
+	code: ICliCommandResult['code'] = EXIT_CODE.OK,
+): ICliCommandResult =>
+	ctx.globals.json || ctx.globals.format === 'json'
+		? data(value, code)
+		: text(JSON.stringify(value, null, 2), code);
 
 const overview = async (ctx: ICliCommandContext, compact = false) =>
 	request<Record<string, unknown>>(ctx, 'mcp-vertex_overview', { compact });
@@ -145,18 +170,44 @@ const inspectCommand: ICliCommand = {
 			};
 		}
 		const snapshot = await overview(ctx, false);
-		const prefix = `${pluginName}_`;
+		// a00087: every registered tool name is
+		// `${namespacePrefix}_${plugin}_${tool}` (core tools omit the
+		// plugin infix: `${namespacePrefix}_${tool}`), never a bare
+		// `${plugin}_${tool}` — the old `${pluginName}_` prefix check
+		// never matched a single real tool name, so `plugin inspect
+		// <anything>` always returned an empty `tools: []`.
+		const namespacePrefix =
+			typeof snapshot.namespacePrefix === 'string'
+				? snapshot.namespacePrefix
+				: 'mcp-vertex';
+		const toolNameOf = (tool: unknown): string =>
+			typeof tool === 'string'
+				? tool
+				: String((tool as Record<string, unknown>).name ?? '');
+		const otherPluginPrefixes = (
+			Array.isArray(snapshot.plugins) ? snapshot.plugins : []
+		)
+			.map((plugin) =>
+				typeof plugin === 'string'
+					? plugin
+					: String((plugin as Record<string, unknown>).name ?? ''),
+			)
+			.filter((name) => name !== '' && name !== pluginName)
+			.map((name) => `${namespacePrefix}_${name}_`);
+		const prefix = `${namespacePrefix}_${pluginName}_`;
+		const matchesPlugin = (toolName: string): boolean =>
+			pluginName === 'core'
+				? toolName.startsWith(`${namespacePrefix}_`) &&
+					!otherPluginPrefixes.some((other) =>
+						toolName.startsWith(other),
+					)
+				: toolName.startsWith(prefix);
 		const tools = (
 			Array.isArray(snapshot.tools) ? snapshot.tools : []
-		).filter((tool) =>
-			typeof tool === 'string'
-				? tool.startsWith(prefix)
-				: String(
-						(tool as Record<string, unknown>).name ?? '',
-					).startsWith(prefix),
-		);
-		return data(
+		).filter((tool) => matchesPlugin(toolNameOf(tool)));
+		return dataOrText(
 			{ plugin: pluginName, tools },
+			ctx,
 			tools.length === 0 ? EXIT_CODE.NOT_FOUND : EXIT_CODE.OK,
 		);
 	},
@@ -169,14 +220,14 @@ export const registerAllCommands = async (): Promise<
 		name: 'status',
 		summary: 'Show runtime status collectors.',
 		async run(_args, ctx) {
-			return data(await request(ctx, 'mcp-vertex_status'));
+			return dataOrText(await request(ctx, 'mcp-vertex_status'), ctx);
 		},
 	},
 	{
 		name: 'overview',
 		summary: 'Show loaded server map.',
 		async run(args, ctx) {
-			return data(await overview(ctx, !hasFlag(args, 'full')));
+			return dataOrText(await overview(ctx, !hasFlag(args, 'full')), ctx);
 		},
 	},
 	listCommand,
@@ -185,11 +236,12 @@ export const registerAllCommands = async (): Promise<
 		name: 'metrics',
 		summary: 'Show per-tool metrics.',
 		async run(args, ctx) {
-			return data(
+			return dataOrText(
 				await request(ctx, 'mcp-vertex_metrics', {
 					reset: hasFlag(args, 'reset'),
 					persist: hasFlag(args, 'persist'),
 				}),
+				ctx,
 			);
 		},
 	},
@@ -197,7 +249,10 @@ export const registerAllCommands = async (): Promise<
 		name: 'validate-matrix',
 		summary: 'Show configured validation matrix.',
 		async run(_args, ctx) {
-			return data(await request(ctx, 'mcp-vertex_get_validation_matrix'));
+			return dataOrText(
+				await request(ctx, 'mcp-vertex_get_validation_matrix'),
+				ctx,
+			);
 		},
 	},
 	{
@@ -228,7 +283,7 @@ export const registerAllCommands = async (): Promise<
 					error: `schema not found at ${path}`,
 				};
 			const schema = JSON.parse(await readFile(path, 'utf8')) as unknown;
-			return data(schema);
+			return dataOrText(schema, ctx);
 		},
 	},
 	{
@@ -241,7 +296,7 @@ export const registerAllCommands = async (): Promise<
 					code: EXIT_CODE.NOT_FOUND,
 					error: `missing ${configPathFor(ctx.globals.workspace)}`,
 				};
-			return data(JSON.parse(raw) as unknown);
+			return dataOrText(JSON.parse(raw) as unknown, ctx);
 		},
 	},
 	{
@@ -260,15 +315,19 @@ export const registerAllCommands = async (): Promise<
 					code: EXIT_CODE.NOT_FOUND,
 					error: `missing ${configPathFor(ctx.globals.workspace)}`,
 				};
-			return data(getDotPath(JSON.parse(raw) as unknown, key.split('.')));
+			return dataOrText(
+				getDotPath(JSON.parse(raw) as unknown, key.split('.')),
+				ctx,
+			);
 		},
 	},
 	{
 		name: 'config doctor',
 		summary: 'Diagnose the config file.',
 		async run(_args, ctx) {
-			return data(
+			return dataOrText(
 				diagnoseConfigText(await readConfigText(ctx.globals.workspace)),
+				ctx,
 			);
 		},
 	},
@@ -290,7 +349,7 @@ export const registerAllCommands = async (): Promise<
 			const plan = parseSetExpression(expression);
 			const next = setDotPath(current, plan.path, plan.value);
 			const path = await writeConfigSafely(ctx.globals.workspace, next);
-			return data({ path, updated: plan.path.join('.') });
+			return dataOrText({ path, updated: plan.path.join('.') }, ctx);
 		},
 	},
 	{
@@ -340,7 +399,7 @@ export const registerAllCommands = async (): Promise<
 			const contextRaw = scalarArg(args, 'context');
 			const context =
 				contextRaw !== undefined ? Number(contextRaw) : undefined;
-			return data(
+			return dataOrText(
 				await request(ctx, 'mcp-vertex_search_search', {
 					query,
 					maxResults: Number(scalarArg(args, 'max') ?? 20),
@@ -351,6 +410,7 @@ export const registerAllCommands = async (): Promise<
 						? { context }
 						: {}),
 				}),
+				ctx,
 			);
 		},
 	},
@@ -358,7 +418,7 @@ export const registerAllCommands = async (): Promise<
 		name: 'docs list',
 		summary: 'List project documentation.',
 		async run(args, ctx) {
-			return data(
+			return dataOrText(
 				await request(ctx, 'mcp-vertex_docs_docs_list', {
 					limit: Number(
 						scalarArg(args, 'limit') ??
@@ -367,6 +427,7 @@ export const registerAllCommands = async (): Promise<
 					),
 					offset: Number(scalarArg(args, 'offset') ?? 0),
 				}),
+				ctx,
 			);
 		},
 	},
@@ -385,8 +446,9 @@ export const registerAllCommands = async (): Promise<
 				'mcp-vertex_docs_docs_read',
 				{ path },
 			);
-			return data(
+			return dataOrText(
 				result,
+				ctx,
 				result.found === false ? EXIT_CODE.NOT_FOUND : EXIT_CODE.OK,
 			);
 		},
@@ -410,7 +472,7 @@ export const registerAllCommands = async (): Promise<
 				dryRun: true,
 			});
 			if (out === undefined || hasFlag(args, 'dry-run')) {
-				return data(report);
+				return dataOrText(report, ctx);
 			}
 			const files = scaffoldFilesOf(report);
 			if (files.length === 0) {
@@ -430,7 +492,7 @@ export const registerAllCommands = async (): Promise<
 					),
 				);
 			}
-			return data({ report, written });
+			return dataOrText({ report, written }, ctx);
 		},
 	},
 	gitStatusCommand,

@@ -1,6 +1,43 @@
 import { describe, expect, it } from 'vitest';
 
+import type { ICliCommandContext } from '../contracts/interfaces/cli-command.interface';
 import { registerAllCommands } from './registry';
+
+/** Minimal fake context: `request` answers with a canned `mcp-vertex_overview`
+ * snapshot regardless of the tool name, matching how every command here
+ * only ever calls `overview()` for plugin/tool introspection. */
+const fakeOverviewCtx = (
+	overrides: Partial<ICliCommandContext['globals']> = {},
+): ICliCommandContext => ({
+	cwd: '/workspace',
+	globals: {
+		workspace: '/workspace',
+		json: true,
+		format: 'json',
+		lang: 'en',
+		noColor: true,
+		plugins: [],
+		...overrides,
+	},
+	request: async () =>
+		({
+			namespacePrefix: 'mcp-vertex',
+			plugins: [
+				{ name: 'core' },
+				{ name: 'proposals' },
+				{ name: 'search' },
+			],
+			tools: [
+				{ name: 'mcp-vertex_overview' },
+				{ name: 'mcp-vertex_status' },
+				{ name: 'mcp-vertex_proposals_agent_lock' },
+				{ name: 'mcp-vertex_proposals_close_slice' },
+				{ name: 'mcp-vertex_search_search' },
+			],
+		}) as never,
+	listTools: async () => [],
+	close: async () => {},
+});
 
 const EXPECTED_COMMANDS = [
 	'status',
@@ -136,5 +173,78 @@ describe('CLI command registry', async () => {
 			(command) => command.name,
 		);
 		expect(new Set(names).size).toBe(names.length);
+	});
+});
+
+// a00087: `plugin inspect <name>` used to filter tools by
+// `tool.name.startsWith(\`${pluginName}_\`)`, but every real tool name is
+// `${namespacePrefix}_${plugin}_${tool}` (core tools:
+// `${namespacePrefix}_${tool}`, no plugin infix) — that prefix never
+// matched a single real tool, so every plugin returned `tools: []`.
+describe('plugin inspect (a00087)', async () => {
+	const inspect = async (pluginName: string) => {
+		const commands = await registerAllCommands();
+		const command = commands.find((c) => c.name === 'plugin inspect');
+		if (command === undefined)
+			throw new Error('plugin inspect not registered');
+		return command.run([pluginName], fakeOverviewCtx());
+	};
+
+	it("finds a namespaced plugin's tools by the real prefix convention", async () => {
+		const result = await inspect('proposals');
+		const data = result.data as { plugin: string; tools: unknown[] };
+		expect(data.plugin).toBe('proposals');
+		expect(data.tools).toHaveLength(2);
+		expect(
+			(data.tools as Array<{ name: string }>).map((t) => t.name),
+		).toEqual([
+			'mcp-vertex_proposals_agent_lock',
+			'mcp-vertex_proposals_close_slice',
+		]);
+	});
+
+	it('finds only core tools for "core", never another plugin\'s tools', async () => {
+		const result = await inspect('core');
+		const data = result.data as { tools: Array<{ name: string }> };
+		expect(data.tools.map((t) => t.name)).toEqual([
+			'mcp-vertex_overview',
+			'mcp-vertex_status',
+		]);
+	});
+
+	it('returns NOT_FOUND for a plugin with no matching tools', async () => {
+		const result = await inspect('does-not-exist');
+		expect(result.code).not.toBe(0);
+		const data = result.data as { tools: unknown[] };
+		expect(data.tools).toEqual([]);
+	});
+});
+
+// a00087: `status`/`overview`/`metrics`/`validate-matrix`/`config *`/
+// `search`/`docs *`/`scaffold`/`plugin inspect` returned bare `data(...)`
+// with no bespoke human formatter — completely silent (exit 0, zero
+// stdout/stderr) whenever `--json` was not passed. `dataOrText` fixes
+// this by routing through the always-emitted `.text` channel instead.
+describe('dataOrText fallback (a00087)', async () => {
+	it('emits .data (not .text) in --json mode', async () => {
+		const commands = await registerAllCommands();
+		const status = commands.find((c) => c.name === 'status');
+		if (status === undefined) throw new Error('status not registered');
+		const result = await status.run([], fakeOverviewCtx({ json: true }));
+		expect(result.data).toBeDefined();
+		expect(result.text).toBeUndefined();
+	});
+
+	it('emits .text (never silently nothing) outside --json mode', async () => {
+		const commands = await registerAllCommands();
+		const status = commands.find((c) => c.name === 'status');
+		if (status === undefined) throw new Error('status not registered');
+		const result = await status.run(
+			[],
+			fakeOverviewCtx({ json: false, format: 'text' }),
+		);
+		expect(result.data).toBeUndefined();
+		expect(result.text).toBeDefined();
+		expect(result.text?.trim().length).toBeGreaterThan(0);
 	});
 });
