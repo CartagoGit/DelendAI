@@ -5,12 +5,15 @@ import {
 	type IRoleRule,
 } from './file-conventions';
 import {
+	filterNewFindings,
 	formatReport,
+	loadBaseline,
 	main,
 	toRelPosix,
 	walkAndClassify,
+	writeBaseline,
 } from './file-conventions.script';
-import { mkdir, rm, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -339,6 +342,147 @@ describe('formatReport', async () => {
 		expect(out).toBe('file-conventions: 80 unmatched files\n');
 		expect(out).not.toContain('f0.ts');
 		expect(out).not.toContain('…and');
+	});
+});
+
+describe('ratchet: loadBaseline / writeBaseline / filterNewFindings', async () => {
+	it('loadBaseline returns an empty set when the file does not exist', async () => {
+		const baseline = await loadBaseline(
+			join(tmpdir(), `no-such-baseline-${Date.now()}.json`),
+		);
+		expect(baseline.size).toBe(0);
+	});
+
+	it('writeBaseline then loadBaseline round-trips the same set', async () => {
+		const root = await mkTmpDir();
+		const path = join(root, 'baseline.json');
+		await writeBaseline(path, ['b.ts', 'a.ts', 'a.ts']);
+		const raw = await readFile(path, 'utf8');
+		expect(JSON.parse(raw)).toEqual(['a.ts', 'a.ts', 'b.ts']);
+		const baseline = await loadBaseline(path);
+		expect([...baseline].sort()).toEqual(['a.ts', 'b.ts']);
+		await rm(root, { recursive: true });
+	});
+
+	it('loadBaseline tolerates a malformed (non-array or invalid JSON) file', async () => {
+		const root = await mkTmpDir();
+		const path = join(root, 'baseline.json');
+		await writeFile(path, '{"not":"an array"}', 'utf8');
+		expect((await loadBaseline(path)).size).toBe(0);
+		await writeFile(path, 'not json at all', 'utf8');
+		expect((await loadBaseline(path)).size).toBe(0);
+		await rm(root, { recursive: true });
+	});
+
+	it('filterNewFindings keeps only findings absent from the baseline', () => {
+		const findings = [
+			{
+				relPath: 'a.ts',
+				role: 'other' as const,
+				reason: 'unmatched' as const,
+			},
+			{
+				relPath: 'b.ts',
+				role: 'other' as const,
+				reason: 'unmatched' as const,
+			},
+		];
+		const kept = filterNewFindings(findings, new Set(['a.ts']));
+		expect(kept.map((f) => f.relPath)).toEqual(['b.ts']);
+	});
+
+	it('main() --baseline=<path> exits 0 when every finding is already baselined', async () => {
+		const root = await mkTmpDir();
+		await mkdir(join(root, 'packages/x/src/lib/utils'), {
+			recursive: true,
+		});
+		await writeFile(
+			join(root, 'packages/x/src/lib/utils/legacy.ts'),
+			'',
+			'utf8',
+		);
+		const baselinePath = join(root, 'baseline.json');
+		await writeBaseline(baselinePath, [
+			'packages/x/src/lib/utils/legacy.ts',
+		]);
+		const originalCwd = process.cwd();
+		process.chdir(root);
+		try {
+			const code = await main([
+				'bun',
+				'file-conventions.script.ts',
+				'--roots=packages',
+				`--baseline=${baselinePath}`,
+			]);
+			expect(code).toBe(0);
+		} finally {
+			process.chdir(originalCwd);
+			await rm(root, { recursive: true });
+		}
+	});
+
+	it('main() --baseline=<path> exits 1 when a NEW unmatched file appears', async () => {
+		const root = await mkTmpDir();
+		await mkdir(join(root, 'packages/x/src/lib/utils'), {
+			recursive: true,
+		});
+		await writeFile(
+			join(root, 'packages/x/src/lib/utils/legacy.ts'),
+			'',
+			'utf8',
+		);
+		await writeFile(
+			join(root, 'packages/x/src/lib/utils/brand-new.ts'),
+			'',
+			'utf8',
+		);
+		const baselinePath = join(root, 'baseline.json');
+		await writeBaseline(baselinePath, [
+			'packages/x/src/lib/utils/legacy.ts',
+		]);
+		const originalCwd = process.cwd();
+		process.chdir(root);
+		try {
+			const code = await main([
+				'bun',
+				'file-conventions.script.ts',
+				'--roots=packages',
+				`--baseline=${baselinePath}`,
+			]);
+			expect(code).toBe(1);
+		} finally {
+			process.chdir(originalCwd);
+			await rm(root, { recursive: true });
+		}
+	});
+
+	it('main() --write-baseline=<path> captures current findings and exits 0', async () => {
+		const root = await mkTmpDir();
+		await mkdir(join(root, 'packages/x/src/lib/utils'), {
+			recursive: true,
+		});
+		await writeFile(
+			join(root, 'packages/x/src/lib/utils/a.ts'),
+			'',
+			'utf8',
+		);
+		const baselinePath = join(root, 'baseline.json');
+		const originalCwd = process.cwd();
+		process.chdir(root);
+		try {
+			const code = await main([
+				'bun',
+				'file-conventions.script.ts',
+				'--roots=packages',
+				`--write-baseline=${baselinePath}`,
+			]);
+			expect(code).toBe(0);
+			const written = JSON.parse(await readFile(baselinePath, 'utf8'));
+			expect(written).toEqual(['packages/x/src/lib/utils/a.ts']);
+		} finally {
+			process.chdir(originalCwd);
+			await rm(root, { recursive: true });
+		}
 	});
 });
 
