@@ -11,7 +11,7 @@
  * the plugin and run the introspection engine against a fake driver.
  */
 import { definePlugin } from '@mcp-vertex/core/public';
-import { z } from 'zod';
+import z from 'zod';
 
 import { buildDatabaseErdToolRegistrations } from './lib/tools/db-erd.tool';
 import { buildDatabaseQueryToolRegistrations } from './lib/tools/db-query.tool';

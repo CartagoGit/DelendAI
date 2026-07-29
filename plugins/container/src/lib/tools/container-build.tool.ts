@@ -10,7 +10,7 @@
  * `container_logs`) stay in their own files. This file is the only
  * mutation surface in the container plugin.
  */
-import { z } from 'zod';
+import z from 'zod';
 
 import type { IToolRegistration } from '@mcp-vertex/core/public';
 import {

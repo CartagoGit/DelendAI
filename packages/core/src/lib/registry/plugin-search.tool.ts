@@ -6,7 +6,7 @@
  * no config write. Same shape as `plugin_add`'s planner — the agent
  * discovers, then decides whether to call `plugin_add`.
  */
-import { z } from 'zod';
+import z from 'zod';
 
 import type { IToolRegistration } from '@mcp-vertex/core/public';
 import { toolJson } from '@mcp-vertex/core/public';

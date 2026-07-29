@@ -18,7 +18,7 @@
  * writes (x00097 S1), so an accepted ack enables the call across restarts.
  */
 import { toolJson, type IToolRegistration } from '@mcp-vertex/core/public';
-import { z } from 'zod';
+import z from 'zod';
 
 import type { ExternalServerRegistry } from '../subprocess/server-registry';
 

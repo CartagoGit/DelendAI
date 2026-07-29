@@ -1,5 +1,5 @@
 import { definePlugin } from '@mcp-vertex/core/public';
-import { z } from 'zod';
+import z from 'zod';
 
 import { buildDepsToolRegistrations } from './lib/tools';
 import { buildDepsWriteToolRegistrations } from './lib/tools/write-tools';

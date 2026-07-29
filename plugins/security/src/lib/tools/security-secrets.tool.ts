@@ -4,7 +4,7 @@
  * summary. Composes the r00012 finding helpers; the scan orchestrator's I/O
  * is injectable (real git+fs adapter by default), so the tool is testable.
  */
-import { z } from 'zod';
+import z from 'zod';
 
 import type { IToolRegistration } from '@mcp-vertex/core/public';
 import {

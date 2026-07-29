@@ -1,7 +1,7 @@
 import { spawn } from 'node:child_process';
 import { readFile, stat, writeFile } from 'node:fs/promises';
 
-import { z } from 'zod';
+import z from 'zod';
 
 import type { IPluginWiringFs } from '../contracts/interfaces/plugin-wiring.interface';
 import type { IToolRegistration } from '../contracts/interfaces/tool-registration.interface';

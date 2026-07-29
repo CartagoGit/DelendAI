@@ -7,7 +7,7 @@
  * report missing / extra / mistyped variables; values are NEVER
  * included in the output (only the key name + the inferred type).
  */
-import { z } from 'zod';
+import z from 'zod';
 
 /** Supported value types — kept small on purpose. */
 export type EnvType = 'string' | 'number' | 'boolean' | 'enum';

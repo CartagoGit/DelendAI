@@ -1,7 +1,7 @@
 import { readFile, stat } from 'node:fs/promises';
 import { join, relative, resolve } from 'node:path';
 
-import { z } from 'zod';
+import z from 'zod';
 
 import type {
 	IToolRegistration,

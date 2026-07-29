@@ -297,7 +297,7 @@ const renderSpecIndex = (
 ): string => {
 	const safe = sanitizeText(description);
 	return `import { definePlugin } from '@mcp-vertex/core/public';
-import { z } from 'zod';
+import z from 'zod';
 
 /** Free-form, validated options this plugin accepts from mcp-vertex.config.json. */
 export const OptionsSchema = z.object({}).passthrough();

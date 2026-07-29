@@ -3,7 +3,7 @@ import {
 	joinRel,
 	resolveWorkspaceContained,
 } from '@mcp-vertex/core/public';
-import { z } from 'zod';
+import z from 'zod';
 
 import {
 	buildAwaitLockRegistration,

@@ -7,7 +7,7 @@
 // pure `buildServerBlueprint` + `buildBlueprintFiles` over the
 // project analysis.
 
-import { z } from 'zod';
+import z from 'zod';
 
 import type { IToolRegistration } from '../contracts/interfaces/tool-registration.interface';
 import type { IFileReader } from './analyze-project';

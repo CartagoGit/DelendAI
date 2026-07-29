@@ -19,7 +19,7 @@
  * top-level shapes.
  */
 
-import { z } from 'zod';
+import z from 'zod';
 
 // ---------------------------------------------------------------------------
 // Output schema

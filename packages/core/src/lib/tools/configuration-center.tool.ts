@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import z from 'zod';
 
 import type { IConfigurationCenterSnapshot } from '../contracts/interfaces/configuration-center.interface';
 import type { IToolRegistration } from '../contracts/interfaces/tool-registration.interface';

@@ -10,12 +10,9 @@ import {
 	type IToolRegistration,
 } from '@mcp-vertex/core/public';
 
-import { z } from 'zod';
+import z from 'zod';
 
-import {
-	aggregateSelfAudit,
-	defaultScannerMap,
-} from '../self-audit/aggregate';
+import { aggregateSelfAudit, defaultScannerMap } from '../self-audit/aggregate';
 import { rankFindings } from '../self-audit/rank';
 import type {
 	ISelfAuditScannerRef,
@@ -129,8 +126,7 @@ export const buildSelfAuditRegistration = (
 					report.capabilities,
 					args.capabilities,
 				);
-				const limit =
-					args.limit ?? args.topN ?? options.topN ?? 20;
+				const limit = args.limit ?? args.topN ?? options.topN ?? 20;
 
 				try {
 					return toolJson({

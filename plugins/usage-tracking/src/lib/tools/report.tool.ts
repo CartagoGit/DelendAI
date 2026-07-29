@@ -6,7 +6,7 @@
  * calls (by cost, falling back to duration) for the user to inspect. No
  * PII, no message content — only the metadata already in the log.
  */
-import { z } from 'zod';
+import z from 'zod';
 
 import type { IToolRegistration } from '@mcp-vertex/core/public';
 import { toolJson } from '@mcp-vertex/core/public';

@@ -89,7 +89,7 @@ export const scaffoldToolFile = (
 	return {
 		path: targetPath(targetDir, `src/lib/tools/${prefix}-${id}.tool.ts`),
 		content: `import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
-import { z } from 'zod';
+import z from 'zod';
 
 export const ${toolSymbol}_TOOL = {
 	name: '${toolName}',
@@ -557,7 +557,7 @@ export const scaffoldPluginFiles = (
 		{
 			path: `plugins/${id}/src/index.ts`,
 			content: `import { definePlugin } from '@mcp-vertex/core/public';
-import { z } from 'zod';
+import z from 'zod';
 
 /**
  * ${safeDescription}

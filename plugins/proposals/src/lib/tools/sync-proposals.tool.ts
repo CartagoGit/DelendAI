@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import z from 'zod';
 import type { IToolRegistration } from '@mcp-vertex/core/public';
 
 import { syncProposalRegistry } from '../proposals/sync-proposal-registry';
