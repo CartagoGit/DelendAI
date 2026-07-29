@@ -2,7 +2,7 @@
 id: x00191
 title: "Group 4: minor cleanup — missing schemas, dead registrations, silent guard gaps, doc drift"
 kind: fix
-status: ready
+status: done
 type: proposal
 track: general
 date: 2026-07-29
