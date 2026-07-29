@@ -3,11 +3,13 @@
  * mismatches across locale JSON files. Composes the r00012 finding helpers;
  * the reader is injectable, so the tool is testable.
  */
-import { z } from 'zod';
+import z from 'zod';
 
 import type { IToolRegistration } from '@mcp-vertex/core/public';
 import {
+	resolveWorkspaceContained,
 	summarizeFindings,
+	toolError,
 	toolJson,
 	worstSeverity,
 } from '@mcp-vertex/core/public';
@@ -61,9 +63,24 @@ export const buildI18nCheckRegistration = (
 			},
 			async (args: { localesDir?: string | undefined }) => {
 				const localesDir = args.localesDir ?? 'locales';
-				const deps =
-					options.deps ??
-					realI18nDeps(options.workspaceRootAbs, localesDir);
+				let deps = options.deps;
+				if (deps === undefined) {
+					const contained = resolveWorkspaceContained(
+						options.workspaceRootAbs,
+						localesDir,
+					);
+					if (!contained.ok) {
+						return toolError(
+							`localesDir "${localesDir}" is not allowed`,
+							contained.reason ??
+								'Path must stay inside the workspace root.',
+						);
+					}
+					deps = realI18nDeps(
+						options.workspaceRootAbs,
+						contained.rel,
+					);
+				}
 				const locales = await deps.listLocales();
 				const sourceFiles = (await deps.listSourceFiles?.()) ?? [];
 				const usedKeys =

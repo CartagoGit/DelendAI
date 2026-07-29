@@ -4,11 +4,13 @@
  * vars). Composes the r00012 finding helpers; the reader is injectable, so
  * the tool is testable. Values are never included in the output.
  */
-import { z } from 'zod';
+import z from 'zod';
 
 import type { IToolRegistration } from '@mcp-vertex/core/public';
 import {
+	resolveWorkspaceContained,
 	summarizeFindings,
+	toolError,
 	toolJson,
 	worstSeverity,
 } from '@mcp-vertex/core/public';
@@ -69,6 +71,19 @@ export const buildEnvCheckRegistration = (
 				schema?: IEnvSchema | undefined;
 			}) => {
 				const path = args.path ?? '.env';
+				if (options.deps === undefined) {
+					const contained = resolveWorkspaceContained(
+						options.workspaceRootAbs,
+						path,
+					);
+					if (!contained.ok) {
+						return toolError(
+							`path "${path}" is not allowed`,
+							contained.reason ??
+								'path must stay inside the workspace root.',
+						);
+					}
+				}
 				const deps =
 					options.deps ?? realEnvDeps(options.workspaceRootAbs);
 				const schema = args.schema;

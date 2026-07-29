@@ -105,4 +105,26 @@ describe('i18n_check tool', () => {
 		expect(payload.worst).toBe('medium');
 		expect(result.isError).toBeUndefined();
 	});
+
+	// x00168 (S1): `localesDir` used to reach `joinUnderRoot` un-contained —
+	// a caller could point it at any directory the host process can read.
+	it('rejects a localesDir that escapes the workspace when no deps override is supplied', async () => {
+		const registration = buildI18nCheckRegistration({
+			namespacePrefix: 'i18n',
+			workspaceRootAbs: '/workspace',
+		});
+		const tool = await captureTool(registration);
+		const result = await tool.handler({ localesDir: '../../../../etc' });
+		expect(result.isError).toBe(true);
+	});
+
+	it('rejects an absolute localesDir when no deps override is supplied', async () => {
+		const registration = buildI18nCheckRegistration({
+			namespacePrefix: 'i18n',
+			workspaceRootAbs: '/workspace',
+		});
+		const tool = await captureTool(registration);
+		const result = await tool.handler({ localesDir: '/etc' });
+		expect(result.isError).toBe(true);
+	});
 });
