@@ -2,7 +2,7 @@
 id: x00190
 title: "x00190 — Group 3: swarm hot-path statSync + two un-redacted secret-persistence gaps"
 kind: fix
-status: ready
+status: done
 type: proposal
 track: general
 date: 2026-07-29
