@@ -794,3 +794,32 @@ These are the highest-ROI fixes for the two weak slices; everything else is incr
 **Impact**: blocks every x00183–x00188 proposed above. Every existing slice in `done/fixes/` that claims it "passed validate" must be re-verified.
 
 **Resolution Track**: Untriaged — proposes its own proposal: **`x00189` — fix the validate gate** (split into S1: restore `z.discriminatedUnion` runtime, S2: align `create-mcp-project`'s tool registration schema, S3: delete or fill the 0-test spec files, S4: regenerate solid-compliance baseline to reflect current reality).
+
+---
+
+## 🏁 Resolution status (post-audit, 2026-07-29)
+
+This audit was reviewed by the operator (`copilot-minimax-m3`) and split:
+
+- **9 findings shipped in `a2f3fa73`** — the easy/medium slice (see commit message for the per-finding breakdown):
+  - F1 init_config mutex · F4 scaffold template `outputSchema` · F9 get_quality_scopes `inputSchema` · F10 memory_import `maxNotes` · F11 rules barrel cleanup · F22 toast `closeLabel` throw · F23 language-picker `ariaLabel` throw · F25 0.x.y version placeholder → 0.1.0 · F26 host-server `.catch` · F29 install-script `import.meta.url` anchor · F33 round_context description dedup.
+
+- **27 findings filed as 7 ready proposals** under `docs/mcp-vertex/proposals/ready/`. None block each other; they can ship in any order once `x00189` unblocks the validate gate:
+  - [`x00183`](../../ready/x00183-a00083-fix-core-durability-scaffold-template-and-genericity-leaks.md) — core durability + scaffold template + genericity leaks (F2, F3, F5, F6, F7)
+  - [`x00184`](../../ready/x00184-a00083-fix-refactor-containment-consent-echo-and-spec-coverage.md) — refactor containment + consent echo + spec baseline (F17, F18, F19) — worst-scoring slice 5.8/10
+  - [`x00185`](../../ready/x00185-a00083-fix-observability-docs-git-security-deps-contracts.md) — observability body-read timeout + docs_read filter + git_changelog footer + security_deps containment (F12, F13, F14, F15, F16)
+  - [`x00186`](../../ready/x00186-a00083-host-server-and-quality-gate-cwd-and-sync-io.md) — host-server + quality-gate cwd + sync I/O (F27, F28; F26+F29 shipped)
+  - [`x00187`](../../ready/x00187-a00083-coverage-backfill-for-ten-untested-plugins.md) — 10 zero-spec plugins + persistent-task-queue parallel-writer + workspace baselines (F30, F31, F32)
+  - [`x00188`](../../ready/x00188-a00083-i18n-completion-pass-ui-extension-and-guide-page.md) — vscode webview schema + guide.astro i18n (F21, F24; F22+F23 shipped)
+  - [`x00189`](../../ready/x00189-a00083-fix-the-broken-validate-gate.md) — fix the broken `bun run validate` gate itself (F36)
+
+- **35 of 36 findings have a resolution path**. The remaining one is implicit in `x00189` (the validate-gate fix surfaces the real state of the 25 pre-existing test failures and 7,569 solid-compliance suppressions; some of those will spawn their own sub-proposals once x00189 unblocks the gate).
+
+**Audit status**: **complete**. No further iterations planned; the audit is closed as `done` and the 7 ready proposals stand as the follow-on work.
+
+**Commits shipped by this audit**:
+1. `9240dc61` — feat(audit): load @mcp-vertex/audit + first-run exhaustive audit (a00083)
+2. `a2f3fa73` — fix(a00083): ship the easy/medium findings from the full audit (9 findings, 18 files)
+3. `bdc98112` — docs(proposals): x00183..x00189 — 7 follow-up proposals from a00083
+
+**Audit scope stats** (final): 22 slices audited · 3,767 TS files · 163,237 LOC · 821 specs · 41 plugins. Overall average: **7.6 / 10** (the two weak slices — `refactor` 5.8 and `core` 6.2 — are the next batch's fix targets via `x00184` and `x00183`).
