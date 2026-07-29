@@ -1,10 +1,10 @@
 /**
- * `<prefix>_audit_run` — Alcance B of the audit plugin (f00077).
+ * `<prefix>_audit_run` — the audit plugin's end-to-end fan-out tool.
  *
  * Closes the audit loop: dispatch the brief to N providers in
  * parallel, save each markdown report, consolidate the findings, and
  * scaffold ready-to-run proposal files for every actionable
- * severity band (FATAL / MUY_MAL / MEJORABLE).
+ * severity band (FATAL / BAD / MINOR).
  *
  * Pipeline (each step is a pure call into a dedicated service):
  *
@@ -84,7 +84,7 @@ export const buildRunRegistration = (
 	return {
 		id: 'audit_run',
 		summary:
-			'Alcance B: dispatch the audit brief (general / specific / monorepo modes) to one or more LLM targets in parallel, save the markdown reports, consolidate the findings, and scaffold fix proposals for every actionable severity band (FATAL/MUY_MAL/MEJORABLE).',
+			'Dispatch the audit brief (general / specific / monorepo modes) to one or more LLM targets in parallel, save the markdown reports, consolidate the findings, and scaffold fix proposals for every actionable severity band (FATAL/BAD/MINOR).',
 		descriptionKey: 'audit_run',
 		tags: ['audit', 'automation', 'fan-out'],
 		register: async (server) => {

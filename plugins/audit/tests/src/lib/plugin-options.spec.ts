@@ -170,6 +170,29 @@ describe('@mcp-vertex/audit optionsSchema', async () => {
 		expect(out.dimensions).toEqual([...SCORE_DIMENSIONS]);
 	});
 
+	// x00165 (S-B): `auditDir`/`proposalsDir` used to default to the
+	// literal string `docs/mcp-vertex/proposals/...` regardless of the
+	// host's actual resolved `docsDir` — now derived from `ctx.docsDir`
+	// so a host with a custom docs root gets a matching default.
+	it('derives the auditDir default from ctx.docsDir, not a hardcoded mcp-vertex literal', async () => {
+		const customCtx: IMcpPluginContext = {
+			...baseCtx(),
+			docsDir: 'docs/my-other-project',
+			corePaths: {
+				cacheDir: '.cache/mcp-vertex',
+				docsDir: 'docs/my-other-project',
+			},
+			pluginDocsDir: 'docs/my-other-project/audit',
+		};
+		const tools = await captureTools(customCtx);
+		const consolidate = await invoke(tools.consolidate, {});
+		const out = parse(consolidate);
+		expect(JSON.stringify(out)).toContain(
+			'docs/my-other-project/proposals/done/audits',
+		);
+		expect(JSON.stringify(out)).not.toContain('docs/mcp-vertex/proposals');
+	});
+
 	it('wires the host-supplied auditDir into the consolidate tool default', async () => {
 		const tools = await captureTools(
 			baseCtx({ auditDir: 'docs/team-audits' }),
