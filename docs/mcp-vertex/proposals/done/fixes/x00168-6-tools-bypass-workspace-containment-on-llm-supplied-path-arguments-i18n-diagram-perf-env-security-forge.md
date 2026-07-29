@@ -2,10 +2,12 @@
 id: x00168
 title: "6 tools bypass workspace containment on LLM-supplied path arguments (i18n, diagram, perf, env, security, forge)"
 kind: fix
-status: ready
+status: done
 type: proposal
 track: security+plugins+containment
 date: 2026-07-29
+shipped-in:
+    - fc93b326 # S1-S5 — contain path arguments across i18n, diagram, perf, env, security, forge
 ---
 
 # x00168 — 6 tools bypass workspace containment on LLM-supplied path arguments (i18n, diagram, perf, env, security, forge)
