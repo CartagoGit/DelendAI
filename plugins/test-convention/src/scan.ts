@@ -1,7 +1,57 @@
-import type { IFileReader } from '@mcp-vertex/core/public';
-
 import type { ITestConvention } from './convention';
 import { effectiveMockStyle } from './convention';
+
+/**
+ * Minimal recursive-directory-listing port for the scan engine
+ * (x00167). Deliberately NOT `@mcp-vertex/core/public`'s `IFileReader`
+ * — that port's `listDir` is a single shallow `fs.readdir` (by
+ * design; other core consumers rely on exactly that shallow
+ * semantics), so a scanner needs its OWN reader that exposes
+ * `isDirectory` per entry and is walked recursively by
+ * {@link walkFiles} below. Mirrors `@mcp-vertex/conventions`'s
+ * `IDirReader`/`IDirEntry` port (the same problem, solved there
+ * first): production wiring is `node:fs`-backed, tests pass an
+ * in-memory tree.
+ */
+export interface IDirEntry {
+	readonly name: string;
+	readonly isDirectory: boolean;
+}
+
+export interface IScanReader {
+	/** List immediate child entries of `relDir` (repo-relative POSIX). */
+	readonly list: (relDir: string) => Promise<readonly IDirEntry[]>;
+	/** Read one file's contents, or `undefined` if unreadable. */
+	readonly readFile: (relPath: string) => Promise<string | undefined>;
+}
+
+/** Directories never worth scanning (build output, deps, vcs). */
+const SKIP_DIRS = new Set(['node_modules', 'dist', '.git', '.cache', 'build']);
+
+/**
+ * Walk the whole tree breadth-first via the injected reader, skipping
+ * {@link SKIP_DIRS}, and return every FILE path found (repo-relative
+ * POSIX). A failing listing (nonexistent dir) is silently skipped,
+ * matching `@mcp-vertex/conventions`'s `scanConventions` behaviour for
+ * nested directories.
+ */
+const walkFiles = async (reader: IScanReader): Promise<readonly string[]> => {
+	const out: string[] = [];
+	const stack: string[] = [''];
+	while (stack.length > 0) {
+		const dir = stack.pop() as string;
+		const entries = await reader.list(dir).catch(() => []);
+		for (const entry of entries) {
+			const rel = dir === '' ? entry.name : `${dir}/${entry.name}`;
+			if (entry.isDirectory) {
+				if (!SKIP_DIRS.has(entry.name)) stack.push(rel);
+				continue;
+			}
+			out.push(rel);
+		}
+	}
+	return out;
+};
 
 export type Severity = 'error' | 'warning' | 'info';
 
@@ -187,7 +237,7 @@ const runSpecRules = (
 
 export interface IScanOptions {
 	readonly convention: ITestConvention;
-	readonly reader: IFileReader;
+	readonly reader: IScanReader;
 	readonly workspaceRoot: string;
 	readonly scope?: 'all' | 'src' | 'tests';
 	/** Cap to keep the report token-friendly. */
@@ -208,9 +258,7 @@ export const scanDrift = async (
 	const scope = options.scope ?? 'all';
 	const specExt = convention.specExtension;
 
-	const all = (await reader.listDir('')).filter(
-		(p) => !p.includes('node_modules/'),
-	);
+	const all = await walkFiles(reader);
 	const specFiles = all.filter((p) => isSpec(p, specExt));
 	const sourceFiles = all.filter(isTsSource);
 	// Files that look like specs but use a non-canonical extension
