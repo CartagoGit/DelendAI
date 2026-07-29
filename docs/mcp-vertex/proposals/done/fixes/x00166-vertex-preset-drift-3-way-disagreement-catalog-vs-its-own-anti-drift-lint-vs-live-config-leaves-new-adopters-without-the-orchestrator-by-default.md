@@ -2,10 +2,12 @@
 id: x00166
 title: "vertex preset drift — 3-way disagreement (catalog vs its own anti-drift lint vs live config) leaves new adopters without the orchestrator by default"
 kind: fix
-status: ready
+status: done
 type: proposal
 track: core+preset+init+self-hosting
 date: 2026-07-29
+shipped-in:
+    - ea9d7507 # S1-S3 — fix vertex preset drift, orchestrator now default for adopters
 ---
 
 # x00166 — vertex preset drift — 3-way disagreement (catalog vs its own anti-drift lint vs live config) leaves new adopters without the orchestrator by default
