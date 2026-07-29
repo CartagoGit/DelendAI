@@ -3,6 +3,7 @@ import z from 'zod';
 
 import { buildForgeReadToolRegistrations } from './lib/tools/forge-read.tool';
 import { buildForgeReleaseToolRegistrations } from './lib/tools/forge-release.tool';
+import { buildForgeSearchToolRegistrations } from './lib/tools/forge-search.tool';
 import { buildForgeWriteToolRegistrations } from './lib/tools/forge-write.tool';
 
 const OptionsSchema = z
@@ -45,8 +46,20 @@ export default definePlugin({
 				? { timeoutMs: parsed.data.defaultTimeoutMs }
 				: {}),
 		});
+		// x00190 follow-up: implemented since this plugin's original slice
+		// but never wired into the tools array — search_code was
+		// completely unreachable by any host.
+		const searchTools = buildForgeSearchToolRegistrations({
+			namespacePrefix: ctx.namespacePrefix,
+			workspaceRootAbs: ctx.workspace.root,
+		});
 		return {
-			tools: [...readTools, ...writeTools, ...releaseTools],
+			tools: [
+				...readTools,
+				...writeTools,
+				...releaseTools,
+				...searchTools,
+			],
 			knowledge: [
 				{
 					id: 'forge-surface',
@@ -55,8 +68,9 @@ export default definePlugin({
 						'# Forge surface',
 						'',
 						`Read tools: \`${ctx.namespacePrefix}_pr_list\` / \`${ctx.namespacePrefix}_pr_show\` / \`${ctx.namespacePrefix}_ci_status\` / \`${ctx.namespacePrefix}_issue_list\` / \`${ctx.namespacePrefix}_issue_show\`.`,
-						`Write tool: \`${ctx.namespacePrefix}_write\` with kind discriminator \`pr_create\` / \`pr_comment\` / \`issue_create\`.`,
-						`Release tool: \`${ctx.namespacePrefix}_release\` with kind discriminator \`create\` / \`search_code\`.`,
+						`Write tools: \`${ctx.namespacePrefix}_pr_create\` / \`${ctx.namespacePrefix}_pr_comment\` / \`${ctx.namespacePrefix}_issue_create\` (each its own tool, not a kind discriminator).`,
+						`Release tool: \`${ctx.namespacePrefix}_release\` — creates a release from an existing tag.`,
+						`Search tool: \`${ctx.namespacePrefix}_search_code\` — read-only remote code search.`,
 						'',
 						'- Provider is auto-detected from the `origin` remote.',
 						"- The plugin wraps the host's existing `gh`/`glab` auth; it never stores or prompts for a PAT.",
