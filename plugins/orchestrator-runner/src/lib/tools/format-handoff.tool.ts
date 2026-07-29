@@ -8,7 +8,7 @@
  */
 import { toolJson, type IToolRegistration } from '@mcp-vertex/core/public';
 import type { IRoutingDecision } from '@mcp-vertex/core/public';
-import { z } from 'zod';
+import z from 'zod';
 
 import { formatHandoff } from '../invoke/handoff';
 import { FormatHandoffOutputSchema, RoutingDecisionSchema } from '../schemas';

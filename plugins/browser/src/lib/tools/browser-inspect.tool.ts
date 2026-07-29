@@ -1,7 +1,7 @@
 import { mkdir, open, rename, rm } from 'node:fs/promises';
 import { dirname, join, resolve } from 'node:path';
 
-import { z } from 'zod';
+import z from 'zod';
 
 import type { IToolRegistration } from '@mcp-vertex/core/public';
 import { toolJson } from '@mcp-vertex/core/public';

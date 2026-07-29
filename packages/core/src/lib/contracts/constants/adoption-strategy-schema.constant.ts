@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import z from 'zod';
 
 export const ADOPTION_MODE_SCHEMA = z.enum(['replace', 'augment', 'partial']);
 

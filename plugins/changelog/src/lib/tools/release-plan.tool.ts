@@ -14,7 +14,7 @@
  * `computeReleasePlan`'s `IReleasePlan`. Never throws on unknown commit
  * types or empty ranges — returns the corresponding typed envelope.
  */
-import { z } from 'zod';
+import z from 'zod';
 
 import type { IToolRegistration } from '@mcp-vertex/core/public';
 import { toolError, toolJson } from '@mcp-vertex/core/public';

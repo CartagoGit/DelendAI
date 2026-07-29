@@ -33,7 +33,7 @@
  *          `withFileMutex` ports; tests can swap the port
  *          implementations.
  */
-import { z } from 'zod';
+import z from 'zod';
 
 import type { IToolRegistration } from '../contracts/interfaces/tool-registration.interface';
 import { toolError, toolJson } from './tool-response';

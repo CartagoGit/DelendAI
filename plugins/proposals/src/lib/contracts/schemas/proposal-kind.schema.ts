@@ -24,7 +24,7 @@
  * from `@mcp-vertex/proposals`, NOT `@mcp-vertex/core` — proposal
  * vocabulary in the core would break AGENTS.md rule #1 (core agnostic).
  */
-import { z } from 'zod';
+import z from 'zod';
 
 import {
 	PROPOSAL_KIND_BY_PREFIX,

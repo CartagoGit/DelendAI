@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import z from 'zod';
 import type { IValidationMatrix } from '../contracts/interfaces/validation-matrix.interface';
 import type { IToolRegistration } from '../contracts/interfaces/tool-registration.interface';
 import { toolJson } from '../shared/tool-response';

@@ -2,7 +2,7 @@
  * `<prefix>_issues_fetch` — fetches one GitHub issue (detail + comments).
  * Pure read: delegates straight to the injected `IGithubClient.fetchIssue`.
  */
-import { z } from 'zod';
+import z from 'zod';
 
 import type { IToolRegistration } from '@mcp-vertex/core/public';
 import { toolError, toolOk } from '@mcp-vertex/core/public';

@@ -786,7 +786,7 @@ const buildToolFile = (
 	pluginId: string,
 	candidate: IExtractCandidate,
 ): string => `import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
-import { z } from 'zod';
+import z from 'zod';
 
 import { ${candidate.exportName} } from '${candidate.importPath}';
 

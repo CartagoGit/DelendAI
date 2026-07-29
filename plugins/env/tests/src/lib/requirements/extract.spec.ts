@@ -2,7 +2,7 @@
  * extract.spec.ts — pull env-var requirements out of a zod options schema.
  */
 import { describe, expect, it } from 'vitest';
-import { z } from 'zod';
+import z from 'zod';
 
 import { extractRequirements } from '@mcp-vertex/env/lib/requirements/extract';
 import type { IZodLike } from '@mcp-vertex/env/lib/requirements/extract';

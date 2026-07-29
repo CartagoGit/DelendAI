@@ -10,7 +10,7 @@
  * writes — that is `bootstrap_providers`' job.
  */
 import { toolJson, type IToolRegistration } from '@mcp-vertex/core/public';
-import { z } from 'zod';
+import z from 'zod';
 
 import { discoverProviders } from '../bootstrap';
 import type { ProbeRunner } from '../healthcheck/probe';

@@ -4,7 +4,7 @@
  * S2: safe rename (scoped multi-file diffs + apply).
  * S3 (rule-based codemods) tracked separately under `f00123`.
  */
-import { z } from 'zod';
+import z from 'zod';
 
 import { definePlugin } from '@mcp-vertex/core/public';
 

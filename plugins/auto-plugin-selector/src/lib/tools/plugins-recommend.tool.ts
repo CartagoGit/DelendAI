@@ -12,7 +12,7 @@
  *
  * Pure: no fs, no subprocess. The host wires I/O.
  */
-import { z } from 'zod';
+import z from 'zod';
 
 import type { IToolRegistration } from '@mcp-vertex/core/public';
 import { toolJson } from '@mcp-vertex/core/public';

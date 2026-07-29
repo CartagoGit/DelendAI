@@ -15,7 +15,7 @@
  * Both tools are pure over injected data, per the S2 spec.
  */
 
-import { z } from 'zod';
+import z from 'zod';
 
 import type { IToolRegistration } from '@mcp-vertex/core/public';
 import { toolError, toolJson } from '@mcp-vertex/core/public';

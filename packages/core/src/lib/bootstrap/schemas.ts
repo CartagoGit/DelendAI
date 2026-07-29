@@ -10,7 +10,7 @@
 // exports are the *output* schemas the SDK validates against. New
 // tools should add their schema here, not in `bootstrap-tool.ts`.
 
-import { z } from 'zod';
+import z from 'zod';
 import {
 	ADOPTION_STRATEGY_INPUT_SCHEMA,
 	ADOPTION_STRATEGY_SCHEMA,

@@ -8,7 +8,7 @@
  * no-op that returns `cancelled:false` — never an error.
  */
 import { toolJson, type IToolRegistration } from '@mcp-vertex/core/public';
-import { z } from 'zod';
+import z from 'zod';
 
 import type { InvocationManager } from '../invoke/manager';
 import { CancelInvocationOutputSchema } from '../schemas';

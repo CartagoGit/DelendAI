@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import z from 'zod';
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
 

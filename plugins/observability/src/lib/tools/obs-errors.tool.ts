@@ -7,7 +7,7 @@
  * an actionable install hint rather than crashing — same fail-soft
  * contract the other plugins in this monorepo use.
  */
-import { z } from 'zod';
+import z from 'zod';
 
 import type { IToolRegistration } from '@mcp-vertex/core/public';
 import { toolError, toolJson } from '@mcp-vertex/core/public';

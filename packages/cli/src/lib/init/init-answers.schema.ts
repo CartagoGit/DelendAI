@@ -19,7 +19,7 @@
  *     host-instructions `append` (safe), skills + agent-md generated,
  *     migration offered.
  */
-import { z } from 'zod';
+import z from 'zod';
 
 import { PRESET_KIND } from '@mcp-vertex/core/public';
 

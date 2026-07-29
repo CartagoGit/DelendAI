@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import z from 'zod';
 
 export const FORGE_PROVIDER_SCHEMA = z.enum(['github', 'gitlab']);
 export const FORGE_ERROR_SCHEMA = z

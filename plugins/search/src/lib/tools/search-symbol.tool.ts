@@ -1,7 +1,7 @@
 import { readFile, readdir } from 'node:fs/promises';
 import { join } from 'node:path';
 
-import { z } from 'zod';
+import z from 'zod';
 
 import {
 	resolveWorkspaceContained,

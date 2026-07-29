@@ -1,5 +1,5 @@
 import { definePlugin } from '@mcp-vertex/core/public';
-import { z } from 'zod';
+import z from 'zod';
 
 import { buildEnvCheckRegistration } from './lib/tools/env-check.tool';
 import { buildEnvExplainsRegistration } from './lib/tools/env-explains.tool';

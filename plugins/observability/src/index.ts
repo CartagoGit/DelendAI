@@ -7,7 +7,7 @@
  * S2 (traces + release health) and S3 (local correlation + catalog)
  * are tracked separately under f00129.
  */
-import { z } from 'zod';
+import z from 'zod';
 
 import { definePlugin } from '@mcp-vertex/core/public';
 
