@@ -422,7 +422,11 @@ synopsis:           Source code suggestions
 		}
 	});
 
-	it('does not fabricate versions for unparsed registry response shapes', async () => {
+	it('does not fabricate versions for a preset with no online registry mapping', async () => {
+		// a00084 F19: 'proto-buf' used to map to `buf_registry:bufbuild/buf`,
+		// a registry with no working parser (the BSR web page is a
+		// client-rendered SPA, and it doesn't host the `buf` CLI's own
+		// releases anyway). The mapping was removed rather than faked.
 		const result = await fetchOnlinePresetInfo('proto-buf', async () => ({
 			ok: true,
 			status: 200,
@@ -431,9 +435,43 @@ synopsis:           Source code suggestions
 
 		expect(result).toEqual({
 			ok: false,
-			package: 'bufbuild/buf',
-			reason: 'registry response did not contain a published version',
+			package: '',
+			reason: 'no online package mapped for preset "proto-buf"',
 		});
+	});
+
+	it('resolves psgallery registry info successfully (OData/Atom XML, not JSON)', async () => {
+		const fetcher: IOnlineFetcher = async (url) => {
+			expect(url).toBe(
+				"https://www.powershellgallery.com/api/v2/FindPackagesById()?id='PSScriptAnalyzer'&$filter=IsLatestVersion",
+			);
+			return {
+				ok: true,
+				status: 200,
+				body: [
+					'<?xml version="1.0" encoding="utf-8"?>',
+					'<feed xmlns="http://www.w3.org/2005/Atom">',
+					'<entry><m:properties xmlns:m="http://schemas.microsoft.com/ado/2007/08/dataservices/metadata" xmlns:d="http://schemas.microsoft.com/ado/2007/08/dataservices">',
+					'<d:Version>1.25.0</d:Version>',
+					'<d:NormalizedVersion>1.25.0</d:NormalizedVersion>',
+					'<d:ProjectUrl>https://github.com/PowerShell/PSScriptAnalyzer</d:ProjectUrl>',
+					'</m:properties></entry></feed>',
+				].join(''),
+			};
+		};
+
+		const result = await fetchOnlinePresetInfo(
+			'pwsh-psscriptanalyzer',
+			fetcher,
+		);
+		expect(result.ok).toBe(true);
+		if (result.ok) {
+			expect(result.package).toBe('PSScriptAnalyzer');
+			expect(result.version).toBe('1.25.0');
+			expect(result.homepage).toBe(
+				'https://github.com/PowerShell/PSScriptAnalyzer',
+			);
+		}
 	});
 
 	it('preserves a real 1.0.0 version returned by a registry', async () => {

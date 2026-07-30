@@ -284,7 +284,14 @@ const scanSubtree = async (
 		if (!dirent.isFile()) continue;
 		const name = String(dirent.name);
 		if (!name.endsWith('.md') || name === 'README.md') continue;
-		if (!/^[a-z]\d+[a-z]*-.+\.md$/iu.test(name)) continue;
+		// a00084 F20: `[a-z]?`, not `[a-z]*` — a single optional trailing
+		// letter matches the one legacy residual-suffix form that actually
+		// exists on disk (`f00067a-…`, see `proposalIdSchema`'s
+		// READ_ID_PATTERN in proposal-kind.schema.ts). Unbounded trailing
+		// letters let a malformed id (e.g. `x1abcd-…`) into the index even
+		// though `frontmatter-linter.ts`'s stricter id check would reject
+		// it — the two need to agree on what "looks like a proposal id" is.
+		if (!/^[a-z]\d+[a-z]?-.+\.md$/iu.test(name)) continue;
 		const { entry, warning } = await readProposalFile(
 			join(absDir, name),
 			indexPath,

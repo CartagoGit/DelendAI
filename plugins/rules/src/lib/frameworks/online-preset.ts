@@ -101,7 +101,11 @@ export const ONLINE_PACKAGE_BY_PRESET: Readonly<Record<string, string>> = {
 	'carbon-carbon-format': 'r_github:carbon-language/carbon-lang',
 	'dart-dart-analyze': 'homebrew:dart',
 	'ipynb-ruff': 'pypi:ruff',
-	'proto-buf': 'buf_registry:bufbuild/buf',
+	// a00084 F19: 'proto-buf' had no working online check — buf.build/{owner}/
+	// {pkg}/releases is a client-rendered SPA page (no static version data),
+	// and the Buf Schema Registry doesn't host the `buf` CLI's own releases
+	// anyway (that's github.com/bufbuild/buf/releases). No mapping is more
+	// honest than a registry entry that can never resolve.
 	'graphql-graphql-eslint': 'npm:@graphql-eslint/eslint-plugin',
 	'avsc-avsc-lint': 'npm:avsc',
 	'thrift-thriftcheck': 'crates:thriftcheck',
@@ -149,12 +153,14 @@ export const REGISTRY_URL: Readonly<Record<string, string>> = {
 	julia_registry: 'https://pkg.julialang.org/api/v1/{pkg}',
 	r_cran: 'https://crandb.r-pkg.org/{pkg}',
 	r_github: 'https://raw.githubusercontent.com/{pkg}/main/DESCRIPTION',
+	// a00084 F19: `$filter=IsLatestVersion` makes the OData feed return
+	// exactly one <entry> (the latest published version) instead of every
+	// version ever published, so the parser branch below never has to sort.
 	psgallery:
-		"https://www.powershellgallery.com/api/v2/FindPackagesById()?id='{pkg}'",
+		"https://www.powershellgallery.com/api/v2/FindPackagesById()?id='{pkg}'&$filter=IsLatestVersion",
 	terraform_registry:
 		'https://registry.terraform.io/v1/providers/{namespace}/{type}/versions',
 	nix_channels: 'https://channels.nix.gsc.io/{branch}',
-	buf_registry: 'https://buf.build/{owner}/{pkg}/releases',
 	homebrew: 'https://formulae.brew.sh/api/formula/{pkg}.json',
 	chocolatey:
 		"https://community.chocolatey.org/api/v2/Packages?filter=Id%20eq%20'{pkg}'",
@@ -392,6 +398,26 @@ const fetchOnlinePresetInfoUnchecked = async (
 				ok: true,
 				package: pkg,
 				version,
+			};
+		}
+
+		if (registry === 'psgallery') {
+			// a00084 F19: the PowerShell Gallery v2 API is an OData/Atom XML
+			// feed, not JSON — every other branch above assumes JSON.parse.
+			// `$filter=IsLatestVersion` on the request already narrows the
+			// feed to a single <entry>, so a plain regex extraction (same
+			// style as the hackage/opam/r_github branch below) is enough.
+			const versionMatch = res.body.match(
+				/<d:NormalizedVersion>([^<]+)<\/d:NormalizedVersion>/,
+			);
+			const homepageMatch = res.body.match(
+				/<d:ProjectUrl>([^<]*)<\/d:ProjectUrl>/,
+			);
+			return {
+				ok: true,
+				package: pkg,
+				version: versionMatch?.[1] || '',
+				homepage: homepageMatch?.[1] || undefined,
 			};
 		}
 
