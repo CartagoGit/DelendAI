@@ -29,17 +29,30 @@ const TYPE_ORDER = [
 	'revert',
 ];
 
-/** Parse `{hash, subject}` lines into conventional commits (others ignored). */
+/**
+ * Parse `{hash, subject, body?}` records into conventional commits (others
+ * ignored). x00185 (F15): the breaking marker is tested against
+ * `subject + body` combined — Conventional Commits 1.0.0 puts
+ * `BREAKING CHANGE: ...` in the commit BODY as a footer far more often
+ * than in the (deliberately short) subject line; checking the subject
+ * alone silently classified those as a non-breaking bump.
+ */
 export const parseConventionalCommits = (
-	lines: readonly { hash: string; subject: string }[],
+	lines: readonly {
+		hash: string;
+		subject: string;
+		body?: string | undefined;
+	}[],
 ): IConventionalCommit[] => {
 	const out: IConventionalCommit[] = [];
-	for (const { hash, subject } of lines) {
+	for (const { hash, subject, body } of lines) {
 		const match = HEADER.exec(subject);
 		if (match === null) continue;
 		const type = (match[1] ?? '').toLowerCase();
 		const scope = match[2];
-		const breaking = match[3] === '!' || /BREAKING CHANGE/.test(subject);
+		const breaking =
+			match[3] === '!' ||
+			/BREAKING CHANGE/.test(`${subject}\n${body ?? ''}`);
 		out.push({
 			hash,
 			type,
@@ -106,16 +119,22 @@ export const gitChangelog = async (
 			? [options.range]
 			: ['-n', String(options.limit ?? 100)]),
 		'--no-merges',
-		'--pretty=format:%h%x1f%s',
+		// x00185 (F15): %b (body) is where Conventional Commits 1.0.0 puts
+		// a `BREAKING CHANGE:` footer — the subject line alone almost
+		// never carries it. %b can itself contain newlines, so records
+		// are separated by %x1e (not "\n") to keep one commit's
+		// multi-line body from being split into several bogus records.
+		'--pretty=format:%h%x1f%s%x1f%b%x1e',
 	];
 	const result = await run(args);
 	if (!result.ok) return { groups: [], bump: 'none', total: 0 };
 	const lines = result.output
-		.split('\n')
-		.filter((line) => line.length > 0)
-		.map((line) => {
-			const [hash, subject] = line.split('\x1f');
-			return { hash: hash ?? '', subject: subject ?? '' };
+		.split('\x1e')
+		.map((record) => record.replace(/^\n+/, '').replace(/\n+$/, ''))
+		.filter((record) => record.length > 0)
+		.map((record) => {
+			const [hash, subject, body] = record.split('\x1f');
+			return { hash: hash ?? '', subject: subject ?? '', body };
 		});
 	return buildChangelog(parseConventionalCommits(lines));
 };
