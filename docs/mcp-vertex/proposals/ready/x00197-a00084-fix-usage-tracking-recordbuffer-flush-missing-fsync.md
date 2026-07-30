@@ -6,6 +6,8 @@ status: ready
 type: proposal
 track: a00084-audit-followup
 date: 2026-07-30
+shipped-in:
+    - 32f5e80b # fix(x00197): a00084 #18 — RecordBuffer flush missing fsync
 ---
 
 # x00197 — a00084 fix — usage-tracking RecordBuffer flush missing fsync
