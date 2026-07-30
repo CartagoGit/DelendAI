@@ -2,6 +2,7 @@ import { AgentCatalogService } from '@mcp-vertex/client';
 import type { McpVertexToolOutputs } from '@mcp-vertex/core/public';
 
 import { renderAgentCatalogWebview } from '../views/agent-catalog-webview';
+import { AGENT_CATALOG_MESSAGE_SCHEMA } from '../contracts/constants/agent-catalog-message-schema.constant';
 import type { IViewCopy } from '../contracts/interfaces/view-copy.interface';
 import { resolveViewLang, viewCopyFor } from '../i18n/view-copy.strings';
 
@@ -128,42 +129,37 @@ export const registerOpenAgentCatalogCommand = (deps: ICommandDeps) =>
 					{ enableScripts: true },
 				);
 				panel.webview.html = await loadCatalogHtml(service, copy);
-				panel.webview.onDidReceiveMessage?.(
-					async (message: unknown) => {
-						if (typeof message !== 'object' || message === null)
-							return;
-						const command = (message as { command?: unknown })
-							.command;
-						if (command === 'refresh') {
-							service.invalidate();
-							panel.webview.html = await loadCatalogHtml(
-								service,
-								copy,
-							);
-							return;
-						}
-						if (command === 'copied') {
-							await deps.vscode.window.showInformationMessage?.(
-								'mcp-vertex: bootstrap prompt copied',
-							);
-							return;
-						}
-						const id = (message as { id?: unknown }).id;
-						if (typeof id !== 'string' || id.length === 0) return;
-						if (command === 'callTool') {
-							await executeToolPreview(deps, id);
-							return;
-						}
-						if (command === 'openSkill') {
-							await openSkillPreview(deps, service, id);
-							return;
-						}
-						if (command === 'openProposal') {
-							await openProposalPreview(deps, id);
-							return;
-						}
-					},
-				);
+				panel.webview.onDidReceiveMessage?.(async (raw: unknown) => {
+					const parsed = AGENT_CATALOG_MESSAGE_SCHEMA.safeParse(raw);
+					if (!parsed.success) return;
+					const message = parsed.data;
+					if (message.command === 'refresh') {
+						service.invalidate();
+						panel.webview.html = await loadCatalogHtml(
+							service,
+							copy,
+						);
+						return;
+					}
+					if (message.command === 'copied') {
+						await deps.vscode.window.showInformationMessage?.(
+							'mcp-vertex: bootstrap prompt copied',
+						);
+						return;
+					}
+					if (message.command === 'callTool') {
+						await executeToolPreview(deps, message.id);
+						return;
+					}
+					if (message.command === 'openSkill') {
+						await openSkillPreview(deps, service, message.id);
+						return;
+					}
+					if (message.command === 'openProposal') {
+						await openProposalPreview(deps, message.id);
+						return;
+					}
+				});
 				return panel;
 			} catch (err) {
 				await showCommandError(deps.vscode, 'open agent catalog', err);
