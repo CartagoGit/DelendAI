@@ -8,6 +8,8 @@ track: plugins+audit-followup
 date: 2026-07-29
 related:
     - a00083 # full-project audit
+shipped-in:
+    - f1ede5e0 # fix(x00185): observability body-read timeout, docs_read filter, git_changelog footer, security_deps containment
 ---
 
 # x00185 — a00083 — observability body-read timeout, docs_read filter, git_changelog footer, security_deps containment
