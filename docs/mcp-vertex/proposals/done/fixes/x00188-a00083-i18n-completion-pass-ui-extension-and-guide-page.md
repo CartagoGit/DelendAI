@@ -2,7 +2,7 @@
 id: x00188
 title: "a00083 — i18n completion pass: guide.astro, vscode webview schema, ui-extension aria-labels"
 kind: fix
-status: ready
+status: done
 type: proposal
 track: apps+audit-followup
 date: 2026-07-29
