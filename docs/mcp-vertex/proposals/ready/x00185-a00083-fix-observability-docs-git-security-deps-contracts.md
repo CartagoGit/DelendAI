@@ -37,55 +37,49 @@ Resolve findings F12, F13, F14, F15, F16 from a00083 (29-07-2026) — a cluster 
 ## slices
 
 ### S1 — observability timeout + health tools
-- **Status**: ready
-- **Files**: <see slice body below>
+- **Status**: done
+- **Files**: `plugins/observability/src/lib/errors/ierror-source.ts`, `plugins/observability/src/lib/errors/ierror-source.spec.ts`, `plugins/observability/src/index.ts`, `plugins/observability/src/index.spec.ts`
 - **Gate**: test
-  acceptance:
-
-- **File**: `plugins/observability/src/lib/errors/ierror-source.ts`.
-- Wrap the `reader.read()` loop with an `AbortSignal.timeout` (reuse the existing `FETCH_TIMEOUT_MS`); on abort, throw a typed `BodyReadTimeoutError`.
-- **File**: `plugins/observability/src/index.ts`.
-- Register `obs_health` and `obs_trace` tools alongside `obs_errors` and `obs_correlate`.
-- **Acceptance**: a new spec fires a slow-body response and asserts the timeout fires within `FETCH_TIMEOUT_MS` ± 10%; an `obs_health` smoke spec asserts the tool appears in the plugin's tool list.
+- acceptance:
+  - "The reader.read() body loop races each read against its own AbortSignal.timeout(FETCH_TIMEOUT_MS); on expiry the reader is cancelled and a typed BodyReadTimeoutError is thrown instead of hanging forever"
+  - "obs_health (which itself registers both obs_trace and obs_release_health) is imported and wired into the plugin's tools array — previously fully implemented and tested in isolation but completely unreachable"
+  - "New tests: a stalled-body-after-headers spec proving the new timeout fires, plus a new index.spec.ts (this plugin had zero registration-level test coverage before, which is exactly how F13 went unnoticed) proving all 3 tool ids register and obs_health exposes both sub-tools"
 
 ### S2 — docs_read filter
-- **Status**: ready
-- **Files**: <see slice body below>
+- **Status**: done
+- **Files**: `plugins/docs/src/lib/services/engine.ts`, `plugins/docs/src/lib/tools/tools.ts`, `plugins/docs/tests/src/lib/docs.spec.ts`
 - **Gate**: test
-  acceptance:
-
-- **File**: `plugins/docs/src/lib/services/engine.ts#L308`.
-- After the containment check, assert `abs` ends in `.md` or `.mdx` (case-insensitive); otherwise `return miss()` with a structured reason `"not-a-markdown-file"`.
-- **Acceptance**: `bun test plugins/docs/tests/src/lib/services/engine.spec.ts` (or the closest equivalent) — a new spec asserts `docs_read` rejects `package.json`.
+- acceptance:
+  - "readDoc rejects any path whose extension isn't .md/.mdx (reusing the same extOf/DEFAULT_EXTENSIONS listDocs already uses), returning a structured reason: 'not-a-markdown-file'"
+  - "IDocContent gained an optional reason field (also distinguishes an out-of-workspace miss via contained.reason) and docs_read's outputSchema was updated to match"
+  - "New test proves both a non-markdown text file and a .ts source file are rejected even though they exist and are contained"
 
 ### S3 — git_changelog footer parsing
-- **Status**: ready
-- **Files**: <see slice body below>
+- **Status**: done
+- **Files**: `plugins/git/src/lib/services/changelog.ts`, `plugins/git/tests/src/lib/changelog.spec.ts`
 - **Gate**: test
-  acceptance:
-
-- **File**: `plugins/git/src/lib/services/changelog.ts`.
-- Extend the git argv to use `%h%x1f%s%x1f%b` (hash, subject, body) when the subject doesn't already match `!` or contain `BREAKING CHANGE`. The parser re-tests the combined string for the marker.
-- Add a fixture-driven spec covering footer-only breaking changes.
-- **Acceptance**: `bun test plugins/git/tests/src/lib/services/changelog.spec.ts` exits 0 with the new footer-only case.
+- acceptance:
+  - "git argv extended to %h%x1f%s%x1f%b%x1e (hash/subject/body, %x1e-terminated per record instead of newline-terminated, since %b itself can contain newlines that would otherwise split one commit into several bogus records — verified against this repo's own real git log output before trusting the parser)"
+  - "parseConventionalCommits tests the breaking marker against subject+body combined, not subject alone"
+  - "New fixture-driven test proves a footer-only BREAKING CHANGE (body, not subject) is classified major; existing fixture updated to the new %x1e-terminated format"
 
 ### S4 — security_deps cwd containment
-- **Status**: ready
-- **Files**: <see slice body below>
+- **Status**: done
+- **Files**: `plugins/security/src/lib/tools/security-deps.tool.ts`, `plugins/security/src/lib/tools/security-deps.tool.spec.ts`
 - **Gate**: test
-  acceptance:
-
-- **File**: `plugins/security/src/lib/tools/security-deps.tool.ts#L138`.
-- Before invoking `listDeps(cwd)`, run `resolveWorkspaceContained(options.workspaceRootAbs, args.cwd ?? '.')`; on `contained.ok === false`, return `toolError(...)`.
-- **Acceptance**: new spec — `args.cwd = '/etc'` is rejected with `workspace-escape`; `args.cwd = '.'` is allowed.
+- acceptance:
+  - "args.cwd now goes through resolveWorkspaceContained(options.workspaceRootAbs, cwd) before reaching listDeps/runAuditCommand, matching the exact pattern already shipped for security-sast.tool.ts in x00168 (this exact file was deliberately left untouched then, to avoid duplicating this proposal's in-flight ownership)"
+  - "New test proves a cwd that escapes the workspace (../../../../etc) is rejected with a structured error"
 
 ## Notes
 
-
-
 - a00083 — full-project audit (source of these findings)
 - x00157 S4 — predecessor fix that bounded the initial fetch but missed the body-read
+- x00168 — shipped the identical containment pattern for security-sast.tool.ts, deliberately leaving security-deps.tool.ts (F16) for this proposal
 
 ## acceptance
 
-Every slice lands with its acceptance bullets green and `bun run validate` exits 0 on a clean checkout of develop (the gate itself ships in x00189 s4).
+- The observability body-read loop times out instead of hanging forever; obs_health/obs_trace/obs_release_health are now reachable
+- docs_read refuses any non-.md/.mdx file even when contained and existing
+- git_changelog correctly classifies a footer-only BREAKING CHANGE as a major bump
+- security_deps's cwd is contained to the workspace before any audit runs
