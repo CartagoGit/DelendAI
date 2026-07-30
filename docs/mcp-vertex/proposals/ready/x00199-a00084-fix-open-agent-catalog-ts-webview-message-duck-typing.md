@@ -6,6 +6,8 @@ status: ready
 type: proposal
 track: a00084-audit-followup
 date: 2026-07-30
+shipped-in:
+    - fcfa8310 # fix(x00199): a00084 #31 — open-agent-catalog.ts webview message duck-typing
 ---
 
 # x00199 — a00084 fix — open-agent-catalog.ts webview message duck-typing
