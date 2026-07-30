@@ -14,9 +14,38 @@ import {
 	parseCliArgs,
 } from '@mcp-vertex/core/public';
 
+// x00186 (F27): `--workspace <abs>` (space or `=` form) already threads
+// through parseCliArgs's own `tokens.workspace ?? cwd` resolution
+// regardless of this function — but there was no MCP_VERTEX_WORKSPACE
+// env-var fallback, and no signal when the caller silently got cwd.
+// Resolving it explicitly here adds both.
+export const resolveWorkspaceFlag = (
+	argv: readonly string[],
+): string | undefined => {
+	for (let i = 0; i < argv.length; i += 1) {
+		const token = argv[i];
+		if (token === undefined) continue;
+		if (token.startsWith('--workspace='))
+			return token.slice('--workspace='.length);
+		if (token === '--workspace') {
+			const next = argv[i + 1];
+			if (next !== undefined) return next;
+		}
+	}
+	return undefined;
+};
+
 const run = async (): Promise<void> => {
-	const cwd = process.cwd();
 	const forwarded = process.argv.slice(2);
+	const explicitWorkspace =
+		resolveWorkspaceFlag(forwarded) ?? process.env.MCP_VERTEX_WORKSPACE;
+	const cwd =
+		explicitWorkspace !== undefined && explicitWorkspace !== ''
+			? explicitWorkspace
+			: process.cwd();
+	if (explicitWorkspace === undefined || explicitWorkspace === '') {
+		process.stderr.write('[mcp-vertex] warning: using cwd as workspace\n');
+	}
 	const parsedForwarded = parseCliArgs(forwarded, cwd);
 	// Repo default: when the caller did not explicitly choose a plugin surface,
 	// fall back to `--preset=swarm`. If the caller *did* pass --preset/--plugins,
@@ -74,4 +103,8 @@ const handleBootFailure = (err: unknown): void => {
 	process.exit(1);
 };
 
-run().catch(handleBootFailure);
+// Guarded so a spec file can `import { resolveWorkspaceFlag }` from this
+// module (to unit-test the argv parsing) without also booting a real server.
+if (import.meta.main) {
+	run().catch(handleBootFailure);
+}
