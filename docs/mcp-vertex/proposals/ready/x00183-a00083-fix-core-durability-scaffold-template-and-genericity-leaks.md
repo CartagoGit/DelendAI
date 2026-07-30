@@ -8,6 +8,8 @@ track: core+audit-followup
 date: 2026-07-29
 related:
     - a00083 # full-project audit that surfaced these findings
+shipped-in:
+    - 537aa741 # S1+S3+S4 — batch-writer/scaffold rollback + Claude-alias + subscription-union genericity fixes
 ---
 
 # x00183 — a00083 — fix core durability, scaffold template outputSchema, and genericity leaks in packages/core
