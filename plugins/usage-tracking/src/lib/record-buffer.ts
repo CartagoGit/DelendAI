@@ -15,7 +15,7 @@
  * the log path — a safe async append, not a read-modify-write, so a
  * growing `invocations.jsonl` never rewrites megabytes on every call.
  */
-import { appendFile } from 'node:fs/promises';
+import { open } from 'node:fs/promises';
 
 import type { IPluginLogsHelper } from '@mcp-vertex/core/public';
 import { redactSecrets, withFileMutex } from '@mcp-vertex/core/public';
@@ -142,9 +142,22 @@ export class RecordBuffer {
 					.map((record) => JSON.stringify(record))
 					.join('\n');
 				const { text } = redactSecrets(`${serialized}\n`);
-				await withFileMutex(this.filePath, () =>
-					appendFile(this.filePath, text, 'utf8'),
-				);
+				// a00084 F18: appendFile alone leaves the batch sitting in the
+				// OS page cache with no durability guarantee — a crash or
+				// SIGKILL shortly after a "successful" flush could lose it.
+				// An explicit fsync per flush (already what the header
+				// comment above documents) makes each batch durable before
+				// drain() resolves, at the cost of one extra syscall per
+				// coalesced window/batch, not per record.
+				await withFileMutex(this.filePath, async () => {
+					const handle = await open(this.filePath, 'a');
+					try {
+						await handle.writeFile(text, 'utf8');
+						await handle.sync();
+					} finally {
+						await handle.close();
+					}
+				});
 			}
 		} catch (error) {
 			this.onError(error);
