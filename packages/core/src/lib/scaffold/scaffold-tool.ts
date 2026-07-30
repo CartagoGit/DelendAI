@@ -37,6 +37,8 @@ export interface IScaffoldToolOptions {
 	readonly projectName: string;
 	readonly projectPackageName: string;
 	readonly defaultModel?: string;
+	/** x00183 (F6): passthrough to IScaffoldHostOptions — see there. */
+	readonly claudeModelAliases?: readonly string[];
 	readonly keepLegacy?: boolean;
 	/**
 	 * r00003 S11 (CONC-2, DIP): the scaffold tool writes the generated
@@ -183,6 +185,9 @@ export const buildScaffoldReport = async (
 		...(options.defaultModel !== undefined
 			? { defaultModel: options.defaultModel }
 			: {}),
+		...(options.claudeModelAliases !== undefined
+			? { claudeModelAliases: options.claudeModelAliases }
+			: {}),
 	};
 	const dryRun = args.dryRun ?? true;
 	const errors: string[] = [];
@@ -259,6 +264,18 @@ export const buildScaffoldReport = async (
 	const moved: string[] = [];
 	const kept: string[] = [];
 	const toWrite: IBatchOperation[] = [];
+	// x00183 (F3): a keepLegacy move relocates the original file BEFORE
+	// the batch write of the new content — if the batch later fails, the
+	// original is already gone and the new content was never written,
+	// breaking the "no partial scaffold on disk" promise. Track each
+	// move's absolute paths so a failed batch can compensate by moving
+	// every relocated original back, restoring the pre-call state.
+	const legacyMoves: Array<{
+		readonly originalRelativePath: string;
+		readonly legacyRelativePath: string;
+		readonly legacyAbsolutePath: string;
+		readonly originalAbsolutePath: string;
+	}> = [];
 	if (!dryRun && errors.length === 0) {
 		for (const file of files) {
 			const absolute = options.workspace.resolve(file.path);
@@ -282,6 +299,12 @@ export const buildScaffoldReport = async (
 						legacy.absolutePath,
 					);
 					moved.push(legacy.relativePath);
+					legacyMoves.push({
+						originalRelativePath: file.path,
+						legacyRelativePath: legacy.relativePath,
+						legacyAbsolutePath: legacy.absolutePath,
+						originalAbsolutePath: absolute,
+					});
 					if (strategy === 'copy-unlink') {
 						errors.push(
 							`${file.path}: moved via copy+unlink fallback after cross-device rename`,
@@ -310,6 +333,23 @@ export const buildScaffoldReport = async (
 			} else {
 				for (const err of batchResult.errors) {
 					errors.push(`${err.path}: ${err.reason}`);
+				}
+				// x00183 (F3): compensate the moves made above so the
+				// original files are back in place — best-effort; a
+				// failure here does not mask the original batch error.
+				for (const entry of legacyMoves) {
+					try {
+						await moveToLegacy(
+							entry.legacyAbsolutePath,
+							entry.originalAbsolutePath,
+						);
+						const idx = moved.indexOf(entry.legacyRelativePath);
+						if (idx >= 0) moved.splice(idx, 1);
+						kept.push(entry.originalRelativePath);
+					} catch {
+						// intentional no-op: restore errors must not mask
+						// the original batch failure already recorded above.
+					}
 				}
 			}
 		}

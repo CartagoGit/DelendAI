@@ -156,11 +156,41 @@ describe('scaffold-host generators', () => {
 		);
 		expect(withBogusModel.content).not.toContain('model:');
 
+		// x00183 (F6): CLAUDE_MODEL_ALIASES moved out of core — a bare
+		// alias like "sonnet" only resolves when the host explicitly
+		// supplies its alias list (core no longer bakes in a
+		// Claude-specific default).
 		const withRealModel = scaffoldClaudeAgentFile(
-			{ ...HOST, defaultModel: 'sonnet' },
+			{
+				...HOST,
+				defaultModel: 'sonnet',
+				claudeModelAliases: [
+					'sonnet',
+					'opus',
+					'haiku',
+					'fable',
+					'inherit',
+				],
+			},
 			'orchestrator',
 		);
 		expect(withRealModel.content).toContain('model: sonnet');
+	});
+
+	it('scaffoldClaudeAgentFile omits a bare alias when the host does not supply claudeModelAliases', () => {
+		const withoutAliases = scaffoldClaudeAgentFile(
+			{ ...HOST, defaultModel: 'sonnet' },
+			'orchestrator',
+		);
+		expect(withoutAliases.content).not.toContain('model:');
+	});
+
+	it('scaffoldClaudeAgentFile still resolves a claude-prefixed id with no alias list', () => {
+		const withClaudeId = scaffoldClaudeAgentFile(
+			{ ...HOST, defaultModel: 'claude-sonnet-5' },
+			'orchestrator',
+		);
+		expect(withClaudeId.content).toContain('model: claude-sonnet-5');
 	});
 
 	it('scaffoldHostProject covers server, config, agents and docs', () => {

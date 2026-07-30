@@ -148,4 +148,45 @@ describe('createFileSystemBatchWriter — serialization', async () => {
 			final === 'A'.repeat(10_000) || final === 'B'.repeat(10_000),
 		).toBe(true);
 	});
+
+	// x00183 (F2): the old mutex was a process-local promise chain —
+	// re-created fresh on every `createFileSystemBatchWriter(...)` call.
+	// Two INDEPENDENT writer instances against the same root (simulating
+	// two separate mcp-vertex processes, or a CLI script racing a running
+	// host) never shared that chain and had zero real serialization,
+	// even though a single file's atomic rename alone already prevents a
+	// torn SINGLE-file read regardless of any mutex — the guarantee that
+	// actually depends on serialization is MULTI-file batch atomicity: a
+	// reader must never see file X from batch A and file Y from batch B.
+	// The fix keys the mutex on a cross-process lockfile
+	// (`withFileMutex(workspaceRoot, …)`) instead, so two independent
+	// instances now genuinely serialize.
+	it('never mixes files from two INDEPENDENT writer instances racing on the same multi-file batch', async () => {
+		const writerA = createFileSystemBatchWriter(workspace);
+		const writerB = createFileSystemBatchWriter(workspace);
+
+		const batchFor = (tag: string): readonly IBatchOperation[] => [
+			op('x.txt', tag.repeat(5_000)),
+			op('y.txt', tag.repeat(5_000)),
+			op('z.txt', tag.repeat(5_000)),
+		];
+
+		await Promise.all([
+			writerA.writeAll(batchFor('A')),
+			writerB.writeAll(batchFor('B')),
+		]);
+
+		const [x, y, z] = await Promise.all([
+			readFile(join(workspace, 'x.txt'), 'utf8'),
+			readFile(join(workspace, 'y.txt'), 'utf8'),
+			readFile(join(workspace, 'z.txt'), 'utf8'),
+		]);
+		// Whichever batch "won", all three files must agree — never a mix
+		// of A's x.txt with B's y.txt.
+		const winner = x[0] ?? '';
+		expect(winner === 'A' || winner === 'B').toBe(true);
+		expect(x).toBe(winner.repeat(5_000));
+		expect(y).toBe(winner.repeat(5_000));
+		expect(z).toBe(winner.repeat(5_000));
+	});
 });

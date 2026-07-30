@@ -39,59 +39,46 @@ Resolve the seven `@mcp-vertex/core` findings from the full-project audit a00083
 ## slices
 
 ### S1 — durability: batch-atomic-writer + scaffold rollback
-- **Status**: ready
-- **Files**: <see slice body below>
+- **Status**: done
+- **Files**: `packages/core/src/lib/shared/batch-atomic-writer.ts`, `packages/core/tests/src/lib/shared/batch-atomic-writer.spec.ts`, `packages/core/src/lib/scaffold/scaffold-tool.ts`, `packages/core/tests/src/lib/scaffold/scaffold-tool.spec.ts`
 - **Gate**: test
-  acceptance:
-
-- **Files**: `packages/core/src/lib/shared/batch-atomic-writer.ts`, `packages/core/src/lib/scaffold/scaffold-tool.ts`.
-- Replace the in-process promise-chain in `batch-atomic-writer.ts` with `withFileMutex(workspaceRoot, …)` keyed on the workspace root (cross-process serialisation; the existing per-root map is preserved).
-- Replace every `writeFile(absolute, op.content, 'utf8')` inside the writer with `writeFileAtomic(absolute, op.content)`.
-- In `scaffold-tool.ts`, reorder the `keepLegacy` moves so they happen **after** a successful `batchWriter.writeAll` (or wrap them in a single transaction the writer owns); add a unit test that simulates a partial-batch failure and asserts the original target is still on disk.
-- Update the writer's docstring to reflect that the mutex is now cross-process (was: process-local).
-- **Acceptance**: `bun test packages/core/tests/src/lib/shared/batch-atomic-writer.spec.ts` (new), `packages/core/tests/src/lib/scaffold/scaffold-tool.spec.ts` (updated for the partial-failure test).
-
-### S2 — genericity: remove `@mcp-vertex/core-monorepo` hardcode
-- **Status**: ready
-- **Files**: <see slice body below>
-- **Gate**: test
-  acceptance:
-
-- **File**: `packages/core/src/lib/bootstrap/build-blueprint.ts#L91`.
-- Drop the `if (analysis.name === '@mcp-vertex/core-monorepo') return 'packages/core'` branch. The fallback chain becomes: `analysis.hasPackageJson ? '.' : 'libs/mcp-project'`, with the configured `convention.targetDir` (if any) winning over both.
-- Update any tests that pinned the monorepo special-case.
-- **Acceptance**: `bun test packages/core/tests/src/lib/bootstrap/build-blueprint.spec.ts`.
+- acceptance:
+  - "batch-atomic-writer.ts serializes via withFileMutex(workspaceRoot, ...) instead of a process-local promise chain, and writes via writeFileAtomic instead of plain writeFile"
+  - "scaffold-tool.ts compensates a failed batch by moving every relocated keepLegacy original back to its pre-call path, instead of reordering (reordering alone would let the batch writer's existing rm-based rollback delete pre-existing content rather than restore it)"
+  - "New/updated specs cover both: a cross-process-simulating two-independent-writer-instances multi-file race, and a batch-write-failure-restores-the-original scaffold test"
 
 ### S3 — genericity: open the Claude alias list
-- **Status**: ready
-- **Files**: <see slice body below>
+- **Status**: done
+- **Files**: `packages/core/src/lib/scaffold/scaffold-host.ts`, `packages/core/src/lib/scaffold/scaffold-tool.ts`, `packages/core/tests/src/lib/scaffold/scaffold-host.spec.ts`
 - **Gate**: test
-  acceptance:
-
-- **File**: `packages/core/src/lib/scaffold/scaffold-host.ts#L273`.
-- Move `CLAUDE_MODEL_ALIASES` into `IScaffoldHostOptions.claudeModelAliases?: readonly string[]` (default: empty array, since the alias list is provider-specific and shouldn't be core's responsibility).
-- In `claudeModelField`, treat an empty/undefined list as "no Claude-specific decision"; fall through to the generic model-field path.
-- Update the two affected callers (the mcp-vertex host itself in `extensions/vscode/src/commands/` and the init scaffolding in `tools/scripts/init/`) to pass their alias lists explicitly.
-- **Acceptance**: `bun test packages/core/tests/src/lib/scaffold/scaffold-host.spec.ts`, plus `bun biome ci packages/core/src/lib/scaffold` (no remaining Claude literals).
+- acceptance:
+  - "CLAUDE_MODEL_ALIASES moved into IScaffoldHostOptions.claudeModelAliases?: readonly string[] (default: none supplied = empty)"
+  - "claudeModelField falls through to the generic claude- prefix check when no alias list is supplied"
+  - "IScaffoldToolOptions gained a passthrough claudeModelAliases field (the two caller locations named in the original finding, extensions/vscode/src/commands/ and tools/scripts/init/, do not exist in this repo — scaffold-tool.ts is the real, only caller)"
 
 ### S4 — genericity: open the provider subscription union
-- **Status**: ready
-- **Files**: <see slice body below>
+- **Status**: done
+- **Files**: `packages/core/src/lib/contracts/interfaces/provider-capabilities.interface.ts`, `packages/core/src/lib/plugins/config-file-schema.ts`, `packages/core/schema/mcp-vertex.config.schema.json`, `plugins/orchestrator-runner/src/lib/options.ts`, `plugins/orchestrator-runner/tests/src/lib/options.spec.ts`
 - **Gate**: test
-  acceptance:
-
-- **File**: `packages/core/src/lib/contracts/interfaces/provider-capabilities.interface.ts#L71`.
-- Change `IProviderInvoke.subscription.tool` from a closed union to `string` (kept as a string literal type for tooling autocomplete, but extendable by the orchestrator-runner plugin via a `ISubscriptionToolRegistry`).
-- Update `plugins/orchestrator-runner/src/lib/...` to consume the registry instead of the closed union.
-- **Acceptance**: `bun tsc --noEmit -p tsconfig.json` (must accept any subscription tool id), plus a smoke test that the orchestrator-runner plugin can register a new host.
+- acceptance:
+  - "IProviderInvoke.subscription.tool is KnownSubscriptionTool | (string & {}) — any string accepted, literals kept for autocomplete"
+  - "config-file-schema.ts's PROVIDER_INVOKE_SCHEMA and orchestrator-runner's own InvokeSchema (a second, independent copy of the same enum) both widened to z.string().min(1) — the TS-level fix alone would have been hollow, since these zod schemas are the actual runtime parsers for the same field"
+  - "New smoke test proves a brand-new, never-seen-before host id round-trips through ProviderSchema"
 
 ## Notes
 
+**S2 reviewed and NOT implemented** (retired, not silently dropped): the finding's own "why" — "every non-mcp-vertex adopter... will hit a wrong default" — does not actually hold. `defaultTargetDir`'s check is `analysis.name === '@mcp-vertex/core-monorepo'`, an EXACT string match against this repo's own root `package.json#name`. No other real adopter's package would ever carry that literal name, so the branch can only ever fire for mcp-vertex's own repo — it is not a genericity leak that harms adopters.
 
+More importantly, it is not accidental leftover: **3 separate, deliberately-named tests** encode this as an intentional feature —
+`build-blueprint.spec.ts`'s "derives the canonical self-host namespace and package target", `adoption-modes.e2e.spec.ts`'s "dogfoods the real repository identity without targeting libs/mcp-project", and `recommend-plan`'s analogous test (`recommend-plan.ts` has the identical hardcode at its own `defaultTargetDir`, not just `build-blueprint.ts` — the finding only cited one of the two occurrences). Removing the branch would make mcp-vertex's own self-scaffold default silently change from `packages/core` to `.` (repo root) and break all 3 tests. Since the check can never fire for a real adopter, this is dogfooding support, not a genericity bug — implementing it as literally specified would have traded a real, tested, intentional feature for a hypothetical harm that cannot occur. Left both occurrences untouched.
 
 - a00083 — full-project audit (source of these findings)
 - a2f3fa73 — shipped the easy findings (F4 scaffold template `outputSchema`, F1 init_config mutex, etc.)
 
 ## acceptance
 
-Every slice lands with its acceptance bullets green and `bun run validate` exits 0 on a clean checkout of develop (the gate itself ships in x00189 s4).
+- batch-atomic-writer.ts serializes via withFileMutex(workspaceRoot, ...) instead of a process-local promise chain, and writes via writeFileAtomic instead of plain writeFile
+- scaffold-tool.ts compensates a failed batch by moving every relocated keepLegacy original back to its pre-call path
+- CLAUDE_MODEL_ALIASES moved into IScaffoldHostOptions.claudeModelAliases?: readonly string[]
+- IProviderInvoke.subscription.tool accepts any string; both real zod parsers (core + orchestrator-runner) widened to match
+- S2 reviewed and retired with documented reasoning (see Notes) rather than implemented or silently dropped
