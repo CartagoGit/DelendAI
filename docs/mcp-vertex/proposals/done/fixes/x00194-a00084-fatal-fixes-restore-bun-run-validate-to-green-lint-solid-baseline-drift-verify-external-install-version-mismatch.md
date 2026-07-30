@@ -2,7 +2,7 @@
 id: x00194
 title: "a00084 FATAL fixes — restore bun run validate to green (lint:solid baseline drift + verify:external-install version mismatch)"
 kind: fix
-status: ready
+status: done
 type: proposal
 track: a00084-audit-followup
 date: 2026-07-30
