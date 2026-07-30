@@ -6,6 +6,8 @@ status: ready
 type: proposal
 track: a00084-audit-followup
 date: 2026-07-30
+shipped-in:
+    - 6bccb6db # fix(x00195): a00084 BAD fixes — browser_inspect, notification watcher, proposal completeness + review-to-done gate
 ---
 
 # x00195 — a00084 BAD fixes — browser_inspect cwd fallback, notification watcher boot priming, proposal-completeness async + review-to-done gate
