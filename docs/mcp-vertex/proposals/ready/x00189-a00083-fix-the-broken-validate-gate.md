@@ -8,6 +8,8 @@ track: tests+audit-followup
 date: 2026-07-29
 related:
     - a00083 # full-project audit
+shipped-in:
+    - ed4a753b # fix(x00189): restore the bun run validate gate to green
 ---
 
 # x00189 — a00083 — fix the broken `bun run validate` gate (the gate itself is red on a clean develop checkout)
