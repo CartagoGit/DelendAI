@@ -186,6 +186,13 @@ export interface IDocContent {
 	readonly content: string;
 	readonly truncated: boolean;
 	readonly found: boolean;
+	/**
+	 * x00185 (F14): set on a miss so a caller can tell "no such file" /
+	 * "escapes the workspace" apart from "exists, but isn't a markdown
+	 * file docs_read is scoped to" — the last case used to silently
+	 * read and return ANY workspace file's content.
+	 */
+	readonly reason?: string;
 }
 
 export interface IDocSearchHit {
@@ -292,22 +299,30 @@ export const searchDocs = async (
 
 /**
  * Read one doc by its workspace-relative path. Refuses paths that escape
- * the workspace root (no `..` traversal). Content is capped.
+ * the workspace root (no `..` traversal) and paths that aren't a markdown
+ * file (`.md`/`.mdx`, case-insensitive) — the same extension filter
+ * `listDocs` applies, so a caller can't widen the surface from "read
+ * documentation" to "read any file the workspace can see" just by
+ * knowing a relative path. Content is capped.
  */
 export const readDoc = async (
 	workspaceRootAbs: string,
 	relPath: string,
 ): Promise<IDocContent> => {
-	const miss = (): IDocContent => ({
+	const miss = (reason?: string): IDocContent => ({
 		path: relPath,
 		title: relPath,
 		content: '',
 		truncated: false,
 		found: false,
+		...(reason !== undefined ? { reason } : {}),
 	});
 	const contained = resolveWorkspaceContained(workspaceRootAbs, relPath);
-	if (!contained.ok) return miss();
+	if (!contained.ok) return miss(contained.reason);
 	const abs = contained.abs;
+	if (!DEFAULT_EXTENSIONS.includes(extOf(abs))) {
+		return miss('not-a-markdown-file');
+	}
 	let raw: string;
 	try {
 		if (!(await stat(abs)).isFile()) return miss();
