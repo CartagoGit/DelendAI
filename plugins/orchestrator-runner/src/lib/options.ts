@@ -36,7 +36,9 @@ export const InvokeSchema = z.discriminatedUnion('kind', [
 	}),
 	z.object({
 		kind: z.literal('subscription'),
-		tool: z.enum(['vscode-copilot', 'claude-code', 'codex', 'cursor']),
+		// x00183 (F7): open to any subscription-host id — this plugin
+		// owns which hosts it actually knows how to drive, not core.
+		tool: z.string().min(1),
 	}),
 	z.object({
 		kind: z.literal('cli'),

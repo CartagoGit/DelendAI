@@ -19,7 +19,12 @@
  *     `node:fs` symbol — every method takes and returns plain data.
  *   - **All-or-nothing semantics**: if any operation in the batch
  *     fails, every previously-committed operation is rolled back.
- *     Concurrent batches are serialized through a single mutex.
+ *     Concurrent batches are serialized through `withFileMutex`, a
+ *     cross-process (lockfile-based) mutex keyed on the workspace root —
+ *     not a process-local promise chain, which only serialized calls
+ *     within a single Node instance and did nothing for two separate
+ *     `mcp-vertex` processes (or a CLI script + a running host) writing
+ *     the same workspace concurrently (x00183 F2).
  */
 
 export interface IBatchOperation {
@@ -57,36 +62,31 @@ export interface IBatchAtomicWriter {
 	): Promise<IBatchWriteResult>;
 }
 
-import { mkdir, rm, writeFile } from 'node:fs/promises';
+import { mkdir, rm } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 
+import { writeFileAtomic } from './atomic-write';
+import { withFileMutex } from './with-file-mutex';
+
 /**
- * Default implementation: a process-local mutex serializes every
- * `writeAll` call against the same workspace root. We use the
- * workspace root as the mutex key so concurrent batches targeting
- * different workspaces do not block each other.
+ * Default implementation: a cross-process mutex (keyed on the absolute
+ * workspace root) serializes every `writeAll` call targeting the same
+ * workspace — two separate `mcp-vertex` processes (or a CLI script and
+ * a running host) writing the same workspace concurrently now
+ * genuinely serialize, not just two callers inside one Node instance.
+ * Concurrent batches targeting different workspaces do not block each
+ * other (different mutex keys).
  *
  * The mutex is held for the duration of the batch — between planning
- * (mkdir parents), commits (writeFile) and any rollback (rm of the
- * committed files). Readers and other writers see either the full
+ * (mkdir parents), commits (writeFileAtomic) and any rollback (rm of
+ * the committed files). Readers and other writers see either the full
  * pre-batch state or the full post-batch state, never a torn view.
  */
 export const createFileSystemBatchWriter = (
 	workspaceRoot: string,
 ): IBatchAtomicWriter => {
-	// One promise-chain per workspaceRoot acts as the mutex. New
-	// batches await the previous batch's resolution before starting.
-	const lockChain: { current: Promise<unknown> } = {
-		current: Promise.resolve(),
-	};
-
-	const withMutex = async <T>(work: () => Promise<T>): Promise<T> => {
-		const next = lockChain.current.then(work, work);
-		// Swallow rejections on the chain so a failed batch does not
-		// poison every subsequent batch.
-		lockChain.current = next.catch(() => undefined);
-		return next;
-	};
+	const withMutex = async <T>(work: () => Promise<T>): Promise<T> =>
+		withFileMutex(workspaceRoot, work);
 
 	const rollback = async (committed: readonly string[]): Promise<void> => {
 		// Best-effort rollback: delete each committed file in reverse
@@ -115,7 +115,7 @@ export const createFileSystemBatchWriter = (
 					const absolute = join(workspaceRoot, op.path);
 					try {
 						await mkdir(dirname(absolute), { recursive: true });
-						await writeFile(absolute, op.content, 'utf8');
+						await writeFileAtomic(absolute, op.content);
 						committed.push(op.path);
 					} catch (error) {
 						errors.push({

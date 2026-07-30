@@ -64,6 +64,18 @@ export type ProviderKind =
 	| 'mcp-server'; // spawn an MCP server (codex mcp-server) and call it as a tool
 
 /**
+ * x00183 (F7): the runtime-known hosts as of this writing — kept only as
+ * an autocomplete hint (see `IProviderInvoke`'s `subscription.tool`), NOT
+ * as a validation boundary. `orchestrator-runner` is free to drive a host
+ * whose id isn't in this list; core never rejects it.
+ */
+export type KnownSubscriptionTool =
+	| 'vscode-copilot'
+	| 'claude-code'
+	| 'codex'
+	| 'cursor';
+
+/**
  * Discriminated union on `kind` (CRITICAL C6 fix): `invoke` is not a bare
  * string — the discriminator picks the right shape so the runner cannot
  * mix, e.g., an api `url` with a cli `command`.
@@ -77,11 +89,14 @@ export type IProviderInvoke =
 	  }
 	| {
 			readonly kind: 'subscription';
-			readonly tool:
-				| 'vscode-copilot'
-				| 'claude-code'
-				| 'codex'
-				| 'cursor';
+			/**
+			 * x00183 (F7): the runtime-known hosts stay as literal-type
+			 * autocomplete hints, but the field accepts ANY string —
+			 * `orchestrator-runner` (not core) owns the actual registry of
+			 * which subscription tools it knows how to drive, and adding a
+			 * new host must not require editing this core contract.
+			 */
+			readonly tool: KnownSubscriptionTool | (string & {});
 	  }
 	| {
 			readonly kind: 'cli';

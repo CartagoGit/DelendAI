@@ -210,12 +210,7 @@
 									},
 									"tool": {
 										"type": "string",
-										"enum": [
-											"vscode-copilot",
-											"claude-code",
-											"codex",
-											"cursor"
-										]
+										"minLength": 1
 									}
 								},
 								"required": [

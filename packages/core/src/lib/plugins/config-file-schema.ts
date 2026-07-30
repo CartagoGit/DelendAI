@@ -51,7 +51,11 @@ const PROVIDER_INVOKE_SCHEMA = z.discriminatedUnion('kind', [
 	z
 		.object({
 			kind: z.literal('subscription'),
-			tool: z.enum(['vscode-copilot', 'claude-code', 'codex', 'cursor']),
+			// x00183 (F7): any non-empty id is accepted — core no longer
+			// closes this to the hosts it happened to know about at
+			// authoring time. orchestrator-runner owns validating it
+			// against the hosts it can actually drive.
+			tool: z.string().min(1),
 		})
 		.strict(),
 	z
