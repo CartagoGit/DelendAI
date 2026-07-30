@@ -2,7 +2,7 @@
 id: x00195
 title: "a00084 BAD fixes — browser_inspect cwd fallback, notification watcher boot priming, proposal-completeness async + review-to-done gate"
 kind: fix
-status: ready
+status: done
 type: proposal
 track: a00084-audit-followup
 date: 2026-07-30
