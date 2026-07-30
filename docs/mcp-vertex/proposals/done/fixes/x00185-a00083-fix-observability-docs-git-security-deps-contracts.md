@@ -2,7 +2,7 @@
 id: x00185
 title: "a00083 — observability body-read timeout, docs_read filter, git_changelog footer, security_deps containment"
 kind: fix
-status: ready
+status: done
 type: proposal
 track: plugins+audit-followup
 date: 2026-07-29
