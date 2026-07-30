@@ -2,7 +2,7 @@
 id: x00187
 title: "a00083 — coverage backfill: 10 plugins ship with 0 specs, persistent-task-queue needs a parallel-writer test"
 kind: fix
-status: ready
+status: done
 type: proposal
 track: tests+audit-followup
 date: 2026-07-29
