@@ -2,7 +2,7 @@
 id: x00189
 title: "a00083 — fix the broken `bun run validate` gate (the gate itself is red on a clean develop checkout)"
 kind: fix
-status: ready
+status: done
 type: proposal
 track: tests+audit-followup
 date: 2026-07-29
