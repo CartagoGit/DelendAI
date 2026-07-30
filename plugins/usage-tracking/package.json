@@ -1,6 +1,6 @@
 {
 	"name": "@mcp-vertex/usage-tracking",
-	"version": "0.1.0",
+	"version": "0.1.1",
 	"type": "module",
 	"description": "Observability plugin for @mcp-vertex/core: records every tool invocation (agent, plugin, model, extension) to an append-only NDJSON log under the cache dir and surfaces aggregate usage/cost reports. Load with `mcp-vertex --plugins=usage-tracking`.",
 	"author": "Cartago",
@@ -45,7 +45,7 @@
 		"build": "bun ../../tools/scripts/compile/build.script.ts plugins/usage-tracking"
 	},
 	"peerDependencies": {
-		"@mcp-vertex/core": "^0.1.0"
+		"@mcp-vertex/core": "^0.1.1"
 	},
 	"dependencies": {
 		"@modelcontextprotocol/sdk": "^1.29.0",

@@ -12,10 +12,21 @@
       },
       "devDependencies": {
         "@biomejs/biome": "2.5.3",
+        "@mcp-vertex/auto-agent-selector": "workspace:*",
+        "@mcp-vertex/container": "workspace:*",
         "@mcp-vertex/conventions": "workspace:*",
+        "@mcp-vertex/diagram": "workspace:*",
+        "@mcp-vertex/env": "workspace:*",
         "@mcp-vertex/external-mcps": "workspace:*",
+        "@mcp-vertex/forge": "workspace:*",
+        "@mcp-vertex/i18n": "workspace:*",
         "@mcp-vertex/issues": "workspace:*",
+        "@mcp-vertex/link-check": "workspace:*",
         "@mcp-vertex/orchestrator-runner": "workspace:*",
+        "@mcp-vertex/perf": "workspace:*",
+        "@mcp-vertex/prompts-pack": "workspace:*",
+        "@mcp-vertex/security": "workspace:*",
+        "@mcp-vertex/tech-debt": "workspace:*",
         "@mcp-vertex/test-policy": "workspace:*",
         "@mcp-vertex/usage-tracking": "workspace:*",
         "@modelcontextprotocol/sdk": "1.30.0",
@@ -101,7 +112,7 @@
     },
     "packages/cli": {
       "name": "@mcp-vertex/cli",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "bin": {
         "mcp-vertex": "./dist/index.js",
         "mcpv": "./dist/index.js",
@@ -120,7 +131,7 @@
     },
     "packages/client": {
       "name": "@mcp-vertex/client",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "dependencies": {
         "@mcp-vertex/core": "workspace:*",
         "@modelcontextprotocol/sdk": "^1.29.0",
@@ -133,7 +144,7 @@
     },
     "packages/core": {
       "name": "@mcp-vertex/core",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "dependencies": {
         "@modelcontextprotocol/sdk": "^1.29.0",
         "zod": "^4.4.3",
@@ -162,7 +173,7 @@
     },
     "plugins/api": {
       "name": "@mcp-vertex/api",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "peerDependencies": {
         "@mcp-vertex/core": "workspace:*",
         "@mcp-vertex/web-fetch": "workspace:*",
@@ -170,7 +181,7 @@
     },
     "plugins/audit": {
       "name": "@mcp-vertex/audit",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "dependencies": {
         "@modelcontextprotocol/sdk": "^1.29.0",
         "zod": "^4.4.3",
@@ -182,12 +193,12 @@
         "vitest": "4.1.10",
       },
       "peerDependencies": {
-        "@mcp-vertex/core": "^0.1.0",
+        "@mcp-vertex/core": "^0.1.1",
       },
     },
     "plugins/auto-agent-selector": {
       "name": "@mcp-vertex/auto-agent-selector",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "dependencies": {
         "@modelcontextprotocol/sdk": "^1.29.0",
         "zod": "^4.4.3",
@@ -199,12 +210,12 @@
         "vitest": "4.1.10",
       },
       "peerDependencies": {
-        "@mcp-vertex/core": "^0.1.0",
+        "@mcp-vertex/core": "^0.1.1",
       },
     },
     "plugins/auto-plugin-selector": {
       "name": "@mcp-vertex/auto-plugin-selector",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "dependencies": {
         "@mcp-vertex/auto-agent-selector": "workspace:*",
         "@modelcontextprotocol/sdk": "^1.29.0",
@@ -217,12 +228,12 @@
         "vitest": "4.1.10",
       },
       "peerDependencies": {
-        "@mcp-vertex/core": "^0.1.0",
+        "@mcp-vertex/core": "^0.1.1",
       },
     },
     "plugins/browser": {
       "name": "@mcp-vertex/browser",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "dependencies": {
         "@mcp-vertex/core": "workspace:*",
       },
@@ -235,7 +246,7 @@
     },
     "plugins/cache": {
       "name": "@mcp-vertex/cache",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "dependencies": {
         "@modelcontextprotocol/sdk": "^1.29.0",
         "zod": "^4.4.3",
@@ -247,12 +258,12 @@
         "vitest": "4.1.10",
       },
       "peerDependencies": {
-        "@mcp-vertex/core": "^0.1.0",
+        "@mcp-vertex/core": "^0.1.1",
       },
     },
     "plugins/changelog": {
       "name": "@mcp-vertex/changelog",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "dependencies": {
         "@mcp-vertex/core": "workspace:*",
         "zod": "^4.0.0",
@@ -265,7 +276,7 @@
     },
     "plugins/container": {
       "name": "@mcp-vertex/container",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "dependencies": {
         "@mcp-vertex/core": "workspace:*",
       },
@@ -275,7 +286,7 @@
     },
     "plugins/conventions": {
       "name": "@mcp-vertex/conventions",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "dependencies": {
         "@modelcontextprotocol/sdk": "^1.29.0",
         "zod": "^4.4.3",
@@ -287,12 +298,12 @@
         "vitest": "4.1.10",
       },
       "peerDependencies": {
-        "@mcp-vertex/core": "^0.1.0",
+        "@mcp-vertex/core": "^0.1.1",
       },
     },
     "plugins/database": {
       "name": "@mcp-vertex/database",
-      "version": "0.0.0",
+      "version": "0.1.1",
       "dependencies": {
         "@mcp-vertex/core": "workspace:*",
         "zod": "^4.0.0",
@@ -312,7 +323,7 @@
     },
     "plugins/deps": {
       "name": "@mcp-vertex/deps",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "dependencies": {
         "@modelcontextprotocol/sdk": "^1.29.0",
         "zod": "^4.4.3",
@@ -324,12 +335,12 @@
         "vitest": "4.1.10",
       },
       "peerDependencies": {
-        "@mcp-vertex/core": "^0.1.0",
+        "@mcp-vertex/core": "^0.1.1",
       },
     },
     "plugins/diagram": {
       "name": "@mcp-vertex/diagram",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "dependencies": {
         "@mcp-vertex/database": "workspace:*",
         "@mcp-vertex/proposals": "workspace:*",
@@ -343,12 +354,12 @@
         "vitest": "4.1.10",
       },
       "peerDependencies": {
-        "@mcp-vertex/core": "^0.1.0",
+        "@mcp-vertex/core": "^0.1.1",
       },
     },
     "plugins/docs": {
       "name": "@mcp-vertex/docs",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "dependencies": {
         "@modelcontextprotocol/sdk": "^1.29.0",
         "zod": "^4.4.3",
@@ -360,12 +371,12 @@
         "vitest": "4.1.10",
       },
       "peerDependencies": {
-        "@mcp-vertex/core": "^0.1.0",
+        "@mcp-vertex/core": "^0.1.1",
       },
     },
     "plugins/env": {
       "name": "@mcp-vertex/env",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "dependencies": {
         "@modelcontextprotocol/sdk": "^1.29.0",
         "zod": "^4.4.3",
@@ -377,12 +388,12 @@
         "vitest": "4.1.10",
       },
       "peerDependencies": {
-        "@mcp-vertex/core": "^0.1.0",
+        "@mcp-vertex/core": "^0.1.1",
       },
     },
     "plugins/external-mcps": {
       "name": "@mcp-vertex/external-mcps",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "dependencies": {
         "zod": "^4.4.3",
       },
@@ -393,12 +404,12 @@
         "vitest": "4.1.10",
       },
       "peerDependencies": {
-        "@mcp-vertex/core": "^0.1.0",
+        "@mcp-vertex/core": "^0.1.1",
       },
     },
     "plugins/forge": {
       "name": "@mcp-vertex/forge",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "dependencies": {
         "@modelcontextprotocol/sdk": "^1.29.0",
         "zod": "^4.4.3",
@@ -410,12 +421,12 @@
         "vitest": "4.1.10",
       },
       "peerDependencies": {
-        "@mcp-vertex/core": "^0.1.0",
+        "@mcp-vertex/core": "^0.1.1",
       },
     },
     "plugins/git": {
       "name": "@mcp-vertex/git",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "dependencies": {
         "@modelcontextprotocol/sdk": "^1.29.0",
         "zod": "^4.4.3",
@@ -427,12 +438,12 @@
         "vitest": "4.1.10",
       },
       "peerDependencies": {
-        "@mcp-vertex/core": "^0.1.0",
+        "@mcp-vertex/core": "^0.1.1",
       },
     },
     "plugins/i18n": {
       "name": "@mcp-vertex/i18n",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "dependencies": {
         "@modelcontextprotocol/sdk": "^1.29.0",
         "zod": "^4.4.3",
@@ -444,12 +455,12 @@
         "vitest": "4.1.10",
       },
       "peerDependencies": {
-        "@mcp-vertex/core": "^0.1.0",
+        "@mcp-vertex/core": "^0.1.1",
       },
     },
     "plugins/issues": {
       "name": "@mcp-vertex/issues",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "dependencies": {
         "@modelcontextprotocol/sdk": "^1.29.0",
         "zod": "^4.4.3",
@@ -461,12 +472,12 @@
         "vitest": "4.1.10",
       },
       "peerDependencies": {
-        "@mcp-vertex/core": "^0.1.0",
+        "@mcp-vertex/core": "^0.1.1",
       },
     },
     "plugins/link-check": {
       "name": "@mcp-vertex/link-check",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "dependencies": {
         "@modelcontextprotocol/sdk": "^1.29.0",
         "zod": "^4.4.3",
@@ -478,12 +489,12 @@
         "vitest": "4.1.10",
       },
       "peerDependencies": {
-        "@mcp-vertex/core": "^0.1.0",
+        "@mcp-vertex/core": "^0.1.1",
       },
     },
     "plugins/logs": {
       "name": "@mcp-vertex/logs",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "dependencies": {
         "@modelcontextprotocol/sdk": "^1.29.0",
         "zod": "^4.4.3",
@@ -495,12 +506,12 @@
         "vitest": "4.1.10",
       },
       "peerDependencies": {
-        "@mcp-vertex/core": "^0.1.0",
+        "@mcp-vertex/core": "^0.1.1",
       },
     },
     "plugins/memory": {
       "name": "@mcp-vertex/memory",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "dependencies": {
         "@modelcontextprotocol/sdk": "^1.29.0",
         "zod": "^4.4.3",
@@ -512,12 +523,12 @@
         "vitest": "4.1.10",
       },
       "peerDependencies": {
-        "@mcp-vertex/core": "^0.1.0",
+        "@mcp-vertex/core": "^0.1.1",
       },
     },
     "plugins/notification": {
       "name": "@mcp-vertex/notification",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "dependencies": {
         "@modelcontextprotocol/sdk": "^1.29.0",
         "zod": "^4.4.3",
@@ -529,12 +540,12 @@
         "vitest": "4.1.10",
       },
       "peerDependencies": {
-        "@mcp-vertex/core": "^0.1.0",
+        "@mcp-vertex/core": "^0.1.1",
       },
     },
     "plugins/observability": {
       "name": "@mcp-vertex/observability",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "peerDependencies": {
         "@mcp-vertex/core": "workspace:*",
         "@mcp-vertex/web-fetch": "workspace:*",
@@ -542,7 +553,7 @@
     },
     "plugins/orchestrator-runner": {
       "name": "@mcp-vertex/orchestrator-runner",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "dependencies": {
         "@modelcontextprotocol/sdk": "^1.29.0",
         "zod": "^4.4.3",
@@ -554,12 +565,12 @@
         "vitest": "4.1.10",
       },
       "peerDependencies": {
-        "@mcp-vertex/core": "^0.1.0",
+        "@mcp-vertex/core": "^0.1.1",
       },
     },
     "plugins/perf": {
       "name": "@mcp-vertex/perf",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "dependencies": {
         "@modelcontextprotocol/sdk": "^1.29.0",
         "zod": "^4.4.3",
@@ -571,12 +582,12 @@
         "vitest": "4.1.10",
       },
       "peerDependencies": {
-        "@mcp-vertex/core": "^0.1.0",
+        "@mcp-vertex/core": "^0.1.1",
       },
     },
     "plugins/prompt-eval": {
       "name": "@mcp-vertex/prompt-eval",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "dependencies": {
         "@modelcontextprotocol/sdk": "^1.29.0",
         "zod": "^4.4.3",
@@ -591,13 +602,13 @@
       },
       "peerDependencies": {
         "@mcp-vertex/auto-agent-selector": "^0.1.0",
-        "@mcp-vertex/core": "^0.1.0",
+        "@mcp-vertex/core": "^0.1.1",
         "@mcp-vertex/orchestrator-runner": "^0.1.0",
       },
     },
     "plugins/prompts-pack": {
       "name": "@mcp-vertex/prompts-pack",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "dependencies": {
         "@mcp-vertex/core": "workspace:*",
       },
@@ -607,7 +618,7 @@
     },
     "plugins/proposals": {
       "name": "@mcp-vertex/proposals",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "dependencies": {
         "@modelcontextprotocol/sdk": "^1.29.0",
         "zod": "^4.4.3",
@@ -619,12 +630,12 @@
         "vitest": "4.1.10",
       },
       "peerDependencies": {
-        "@mcp-vertex/core": "^0.1.0",
+        "@mcp-vertex/core": "^0.1.1",
       },
     },
     "plugins/quality": {
       "name": "@mcp-vertex/quality",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "dependencies": {
         "@modelcontextprotocol/sdk": "^1.29.0",
         "zod": "^4.4.3",
@@ -636,12 +647,12 @@
         "vitest": "4.1.10",
       },
       "peerDependencies": {
-        "@mcp-vertex/core": "^0.1.0",
+        "@mcp-vertex/core": "^0.1.1",
       },
     },
     "plugins/refactor": {
       "name": "@mcp-vertex/refactor",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "dependencies": {
         "@mcp-vertex/core": "workspace:*",
       },
@@ -654,7 +665,7 @@
     },
     "plugins/rules": {
       "name": "@mcp-vertex/rules",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "dependencies": {
         "@modelcontextprotocol/sdk": "^1.29.0",
         "zod": "^4.4.3",
@@ -666,12 +677,12 @@
         "vitest": "4.1.10",
       },
       "peerDependencies": {
-        "@mcp-vertex/core": "^0.1.0",
+        "@mcp-vertex/core": "^0.1.1",
       },
     },
     "plugins/search": {
       "name": "@mcp-vertex/search",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "dependencies": {
         "@modelcontextprotocol/sdk": "^1.29.0",
         "zod": "^4.4.3",
@@ -683,12 +694,12 @@
         "vitest": "4.1.10",
       },
       "peerDependencies": {
-        "@mcp-vertex/core": "^0.1.0",
+        "@mcp-vertex/core": "^0.1.1",
       },
     },
     "plugins/security": {
       "name": "@mcp-vertex/security",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "dependencies": {
         "@mcp-vertex/deps": "workspace:*",
         "@mcp-vertex/web-fetch": "workspace:*",
@@ -702,12 +713,12 @@
         "vitest": "4.1.10",
       },
       "peerDependencies": {
-        "@mcp-vertex/core": "^0.1.0",
+        "@mcp-vertex/core": "^0.1.1",
       },
     },
     "plugins/skills-pack": {
       "name": "@mcp-vertex/skills-pack",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "devDependencies": {
         "@mcp-vertex/core": "workspace:*",
         "@types/bun": "latest",
@@ -715,12 +726,12 @@
         "vitest": "4.1.10",
       },
       "peerDependencies": {
-        "@mcp-vertex/core": "^0.1.0",
+        "@mcp-vertex/core": "^0.1.1",
       },
     },
     "plugins/status-marker": {
       "name": "@mcp-vertex/status-marker",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "dependencies": {
         "@modelcontextprotocol/sdk": "^1.29.0",
         "zod": "^4.4.3",
@@ -732,12 +743,12 @@
         "vitest": "4.1.10",
       },
       "peerDependencies": {
-        "@mcp-vertex/core": "^0.1.0",
+        "@mcp-vertex/core": "^0.1.1",
       },
     },
     "plugins/tech-debt": {
       "name": "@mcp-vertex/tech-debt",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "dependencies": {
         "@modelcontextprotocol/sdk": "^1.29.0",
         "zod": "^4.4.3",
@@ -749,12 +760,12 @@
         "vitest": "4.1.10",
       },
       "peerDependencies": {
-        "@mcp-vertex/core": "^0.1.0",
+        "@mcp-vertex/core": "^0.1.1",
       },
     },
     "plugins/test-convention": {
       "name": "@mcp-vertex/test-convention",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "dependencies": {
         "@modelcontextprotocol/sdk": "^1.29.0",
         "zod": "^4.4.3",
@@ -766,12 +777,12 @@
         "vitest": "4.1.10",
       },
       "peerDependencies": {
-        "@mcp-vertex/core": "^0.1.0",
+        "@mcp-vertex/core": "^0.1.1",
       },
     },
     "plugins/test-policy": {
       "name": "@mcp-vertex/test-policy",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "dependencies": {
         "@modelcontextprotocol/sdk": "^1.29.0",
         "zod": "^4.4.3",
@@ -783,12 +794,12 @@
         "vitest": "4.1.10",
       },
       "peerDependencies": {
-        "@mcp-vertex/core": "^0.1.0",
+        "@mcp-vertex/core": "^0.1.1",
       },
     },
     "plugins/usage-tracking": {
       "name": "@mcp-vertex/usage-tracking",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "dependencies": {
         "@modelcontextprotocol/sdk": "^1.29.0",
         "zod": "^4.4.3",
@@ -800,12 +811,12 @@
         "vitest": "4.1.10",
       },
       "peerDependencies": {
-        "@mcp-vertex/core": "^0.1.0",
+        "@mcp-vertex/core": "^0.1.1",
       },
     },
     "plugins/web-fetch": {
       "name": "@mcp-vertex/web-fetch",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "dependencies": {
         "@modelcontextprotocol/sdk": "^1.29.0",
         "zod": "^4.4.3",
@@ -817,7 +828,7 @@
         "vitest": "4.1.10",
       },
       "peerDependencies": {
-        "@mcp-vertex/core": "^0.1.0",
+        "@mcp-vertex/core": "^0.1.1",
       },
     },
     "tools": {

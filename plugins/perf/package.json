@@ -1,6 +1,6 @@
 {
 	"name": "@mcp-vertex/perf",
-	"version": "0.1.0",
+	"version": "0.1.1",
 	"type": "module",
 	"description": "Performance-budget plugin for @mcp-vertex/core: perf_bundle measures build-output files by glob and flags any over a per-file or total size budget. Offline. Load with `mcp-vertex --plugins=perf`.",
 	"author": "Cartago",
@@ -50,7 +50,7 @@
 		"build": "bun ../../tools/scripts/compile/build.script.ts plugins/perf"
 	},
 	"peerDependencies": {
-		"@mcp-vertex/core": "^0.1.0"
+		"@mcp-vertex/core": "^0.1.1"
 	},
 	"dependencies": {
 		"@modelcontextprotocol/sdk": "^1.29.0",

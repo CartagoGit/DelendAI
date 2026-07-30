@@ -1,6 +1,6 @@
 {
 	"name": "@mcp-vertex/database",
-	"version": "0.0.0",
+	"version": "0.1.1",
 	"private": true,
 	"type": "module",
 	"description": "Database introspection + query tools (f00128).",

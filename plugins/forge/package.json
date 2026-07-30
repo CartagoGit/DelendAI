@@ -1,6 +1,6 @@
 {
 	"name": "@mcp-vertex/forge",
-	"version": "0.1.0",
+	"version": "0.1.1",
 	"type": "module",
 	"description": "GitHub/GitLab PRs, PR comments, remote issues and CI status via the host's authenticated gh/glab CLI.",
 	"author": "Cartago",
@@ -44,7 +44,7 @@
 		"build": "bun ../../tools/scripts/compile/build.script.ts plugins/forge"
 	},
 	"peerDependencies": {
-		"@mcp-vertex/core": "^0.1.0"
+		"@mcp-vertex/core": "^0.1.1"
 	},
 	"dependencies": {
 		"@modelcontextprotocol/sdk": "^1.29.0",
