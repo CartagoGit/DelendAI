@@ -8,6 +8,8 @@ track: apps+audit-followup
 date: 2026-07-29
 related:
     - a00083 # full-project audit
+shipped-in:
+    - 53927ed5 # fix(x00188): vscode agent-catalog webview schema + guide.astro dict drift
 ---
 
 # x00188 — a00083 — i18n completion pass: guide.astro, vscode webview schema, ui-extension aria-labels
