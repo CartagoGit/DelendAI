@@ -1,6 +1,6 @@
 {
 	"name": "@mcp-vertex/external-mcps",
-	"version": "0.1.0",
+	"version": "0.1.1",
 	"type": "module",
 	"description": "Compose third-party MCP servers under an @mcp-vertex/core host: seed-catalog discovery, LLM-assisted config validation with mandatory version pins, and (later slices) lazy subprocess boot with human-acked activation. Load with `mcp-vertex --plugins=external-mcps`.",
 	"author": "Cartago",
@@ -43,7 +43,7 @@
 		"build": "bun ../../tools/scripts/compile/build.script.ts plugins/external-mcps"
 	},
 	"peerDependencies": {
-		"@mcp-vertex/core": "^0.1.0"
+		"@mcp-vertex/core": "^0.1.1"
 	},
 	"dependencies": {
 		"zod": "^4.4.3"

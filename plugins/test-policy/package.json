@@ -1,6 +1,6 @@
 {
 	"name": "@mcp-vertex/test-policy",
-	"version": "0.1.0",
+	"version": "0.1.1",
 	"type": "module",
 	"description": "Declarative test-writing policy for agents: tdd (default), tests-after, free or none. Exposes get/set tools plus a knowledge entry so every LLM sees the workspace's testing contract at orientation. Load with `mcp-vertex --plugins=test-policy` (member of the standard preset).",
 	"author": "Cartago",
@@ -43,7 +43,7 @@
 		"build": "bun ../../tools/scripts/compile/build.script.ts plugins/test-policy"
 	},
 	"peerDependencies": {
-		"@mcp-vertex/core": "^0.1.0"
+		"@mcp-vertex/core": "^0.1.1"
 	},
 	"dependencies": {
 		"@modelcontextprotocol/sdk": "^1.29.0",

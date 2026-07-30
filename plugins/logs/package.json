@@ -1,6 +1,6 @@
 {
 	"name": "@mcp-vertex/logs",
-	"version": "0.1.0",
+	"version": "0.1.1",
 	"type": "module",
 	"description": "Append-only, redacted event log plugin for @mcp-vertex/core.",
 	"author": "Cartago",
@@ -42,7 +42,7 @@
 		"build": "bun ../../tools/scripts/compile/build.script.ts plugins/logs"
 	},
 	"peerDependencies": {
-		"@mcp-vertex/core": "^0.1.0"
+		"@mcp-vertex/core": "^0.1.1"
 	},
 	"dependencies": {
 		"@modelcontextprotocol/sdk": "^1.29.0",

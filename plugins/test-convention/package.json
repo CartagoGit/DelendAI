@@ -1,6 +1,6 @@
 {
 	"name": "@mcp-vertex/test-convention",
-	"version": "0.1.0",
+	"version": "0.1.1",
 	"type": "module",
 	"description": "Canonical test convention for any mcp-vertex project: the rules the repo expects its tests to follow, plus tools to suggest spec paths and audit drift. Load with `mcp-vertex --plugins=test-convention`.",
 	"author": "Cartago",
@@ -46,7 +46,7 @@
 		"build": "bun ../../tools/scripts/compile/build.script.ts plugins/test-convention"
 	},
 	"peerDependencies": {
-		"@mcp-vertex/core": "^0.1.0"
+		"@mcp-vertex/core": "^0.1.1"
 	},
 	"dependencies": {
 		"@modelcontextprotocol/sdk": "^1.29.0",

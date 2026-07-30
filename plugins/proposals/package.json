@@ -1,6 +1,6 @@
 {
 	"name": "@mcp-vertex/proposals",
-	"version": "0.1.0",
+	"version": "0.1.1",
 	"type": "module",
 	"description": "Proposals workflow plugin for @mcp-vertex/core: a file-based proposal store (frontmatter, budgets, acceptance, parallelism, registry sync), file-level agent locks, a persistent task queue and multi-agent (swarm) orchestration. Load with `mcp-vertex --plugins=proposals`.",
 	"author": "Cartago",
@@ -43,7 +43,7 @@
 		"build": "bun ../../tools/scripts/compile/build.script.ts plugins/proposals"
 	},
 	"peerDependencies": {
-		"@mcp-vertex/core": "^0.1.0"
+		"@mcp-vertex/core": "^0.1.1"
 	},
 	"dependencies": {
 		"@modelcontextprotocol/sdk": "^1.29.0",

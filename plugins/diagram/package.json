@@ -1,6 +1,6 @@
 {
 	"name": "@mcp-vertex/diagram",
-	"version": "0.1.0",
+	"version": "0.1.1",
 	"type": "module",
 	"description": "Diagram plugin for @mcp-vertex/core: diagram_deps renders the workspace internal dependency graph as a mermaid flowchart. Offline, pure. Load with `mcp-vertex --plugins=diagram`.",
 	"author": "Cartago",
@@ -50,7 +50,7 @@
 		"build": "bun ../../tools/scripts/compile/build.script.ts plugins/diagram"
 	},
 	"peerDependencies": {
-		"@mcp-vertex/core": "^0.1.0"
+		"@mcp-vertex/core": "^0.1.1"
 	},
 	"dependencies": {
 		"@modelcontextprotocol/sdk": "^1.29.0",
