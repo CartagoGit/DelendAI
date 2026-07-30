@@ -8,6 +8,8 @@ track: tests+audit-followup
 date: 2026-07-29
 related:
     - a00083 # full-project audit
+shipped-in:
+    - 926ebecb # fix(x00187): task-queue-engine concurrent enqueue regression test
 ---
 
 # x00187 — a00083 — coverage backfill: 10 plugins ship with 0 specs, persistent-task-queue needs a parallel-writer test
