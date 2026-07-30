@@ -158,4 +158,36 @@ describe('setPluginActivation', () => {
 
 		expect(await readFile(file, 'utf8')).toBe(original);
 	});
+
+	// a00084 F32: `configFileName` used to be `join()`-ed onto workspaceRoot
+	// with no containment check. Not reachable from the VS Code UI today,
+	// but the service API accepts it, so a `..` traversal must still fail
+	// closed instead of writing outside the workspace.
+	it('rejects a configFileName that escapes the workspace root', async () => {
+		const root = await workspace();
+
+		await expect(
+			setPluginActivation({
+				workspaceRoot: root,
+				id: 'git',
+				origin: 'bundled',
+				active: true,
+				configFileName: '../../escaped.config.json',
+			}),
+		).rejects.toThrow('configFileName is not contained in the workspace');
+	});
+
+	it('rejects an absolute configFileName', async () => {
+		const root = await workspace();
+
+		await expect(
+			setPluginActivation({
+				workspaceRoot: root,
+				id: 'git',
+				origin: 'bundled',
+				active: true,
+				configFileName: '/etc/mcpv-escaped.config.json',
+			}),
+		).rejects.toThrow('configFileName is not contained in the workspace');
+	});
 });
