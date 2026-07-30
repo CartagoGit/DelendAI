@@ -78,6 +78,41 @@ describe('lock-release watcher [N14]', async () => {
 		expect(seen[0]?.files).toEqual(['src/a.ts']);
 	});
 
+	// a00084 F14: start() used to only arm the interval/fs.watch — the very
+	// first tick, whatever triggered it (timer OR a file-change event), was
+	// always treated as the priming scan (prev starts undefined, so it can
+	// never report a diff). If a peer released its lock milliseconds after
+	// this watcher booted, and THAT write was what caused the first-ever
+	// tick to run, the release was silently swallowed into the baseline —
+	// a subscriber that starts watching right after a peer's release would
+	// wait for the NEXT release instead of hearing about this one. Fixed
+	// by priming eagerly inside start() itself, decoupled from whatever
+	// external event happens to fire next.
+	it('start() primes the baseline eagerly so a release right after boot is not swallowed', async () => {
+		writeFileSync(
+			lockFile,
+			lock([{ task_id: 't1', agent: 'falcon', ownership: ['src/a.ts'] }]),
+		);
+		const seen: IReleasedClaim[] = [];
+		// A deliberately huge interval: if start() did NOT prime eagerly,
+		// nothing would establish the baseline until this timer fires (or
+		// fs.watch races the release itself into being the first tick),
+		// so this test would only pass by accident, not by design.
+		const watcher = createReleaseWatcher({
+			lockFile,
+			onRelease: (r) => seen.push(...r),
+			intervalMs: 5 * 60_000,
+		});
+		watcher.start();
+		// Let the eager priming tick's async body (readInFlight) settle.
+		await new Promise((r) => setTimeout(r, 20));
+		// Release t1 — this is the file-change event fs.watch reacts to.
+		writeFileSync(lockFile, lock([]));
+		await new Promise((r) => setTimeout(r, 100));
+		watcher.stop();
+		expect(seen.map((c) => c.taskId)).toEqual(['t1']);
+	});
+
 	it('awaitLockRelease returns immediately when the lock is already free', async () => {
 		writeFileSync(lockFile, lock([{ task_id: 'other' }]));
 		const r = await awaitLockRelease({
