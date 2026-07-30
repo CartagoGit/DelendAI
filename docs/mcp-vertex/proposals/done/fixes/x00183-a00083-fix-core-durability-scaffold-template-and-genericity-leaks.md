@@ -2,7 +2,7 @@
 id: x00183
 title: "a00083 — fix core durability, scaffold template outputSchema, and genericity leaks in packages/core"
 kind: fix
-status: ready
+status: done
 type: proposal
 track: core+audit-followup
 date: 2026-07-29
