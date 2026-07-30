@@ -2,7 +2,7 @@
 id: x00192
 title: "packages/cli missing @mcp-vertex/auto-agent-selector dependency — breaks the dist build in every CI run"
 kind: fix
-status: ready
+status: done
 type: proposal
 track: ci+audit-followup
 date: 2026-07-30
