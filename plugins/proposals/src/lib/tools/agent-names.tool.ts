@@ -14,7 +14,7 @@ import {
 import {
 	enqueue,
 	parseQueue,
-	persistQueue,
+	persistQueueUnlocked,
 } from '../agents/persistent-task-queue';
 import { gcZombies } from '../agents/zombie-reconcile';
 import {
@@ -293,7 +293,7 @@ const runAgentNamesImpl = async (
 					observe: [],
 					status: 'queued',
 				});
-				await persistQueue(updated, options.queuePathAbs);
+				await persistQueueUnlocked(updated, options.queuePathAbs);
 			});
 		} catch {
 			// Queue is optional coordination; never fail the registry op.

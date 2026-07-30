@@ -37,7 +37,7 @@ export const registerSetupGithubCommand = (deps: ICommandDeps) =>
 	deps.vscode.commands.registerCommand(SETUP_GITHUB_COMMAND, () => {
 		const lang = resolveLang(deps);
 		const strings = setupGithubStrings(lang);
-		const html = renderSetupGithubWebview(strings);
+		const html = renderSetupGithubWebview(strings, lang);
 		const panel = deps.vscode.window.createWebviewPanel(
 			SETUP_GITHUB_VIEW_TYPE,
 			strings.title,

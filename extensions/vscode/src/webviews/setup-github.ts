@@ -18,6 +18,7 @@
  * (a catalog id) rather than a hand-typed `--plugins=…` mirror of a preset's
  * full membership — which the `lint:setup` drift gate forbids.
  */
+import type { Lang } from '../i18n';
 import type { ISetupGithubStrings } from '../i18n/strings';
 
 /** The 7 canonical commands, in guide order. Kept in lockstep with the guide. */
@@ -75,6 +76,7 @@ const escapeHtml = (value: string): string =>
  */
 export const renderSetupGithubWebview = (
 	strings: ISetupGithubStrings,
+	lang: Lang,
 ): string => {
 	const total = strings.steps.length;
 	const stepSections = strings.steps
@@ -100,7 +102,7 @@ export const renderSetupGithubWebview = (
 		.join('');
 
 	return `<!DOCTYPE html>
-<html lang="en">
+<html lang="${escapeHtml(lang)}">
 <head>
 	<meta charset="UTF-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
