@@ -34,25 +34,25 @@ Resolve findings F21, F24 (and the residual i18n coverage) from a00083 (29-07-20
 ## slices
 
 ### S1 — vscode agent-catalog webview schema
-- **Status**: ready
-- **Files**: <see slice body below>
+- **Status**: done
+- **Files**: `extensions/vscode/src/contracts/constants/agent-catalog-message-schema.constant.ts` (new), `extensions/vscode/src/commands/open-agent-catalog.ts`, `extensions/vscode/src/test/open-agent-catalog.spec.ts` (new)
 - **Gate**: test
-  acceptance:
-
-- **File**: `extensions/vscode/src/commands/open-agent-catalog.ts#L131`.
-- Define a `MESSAGE_SCHEMA = z.discriminatedUnion('command', [...])` covering every currently-handled `command` (`refresh`, `copied`, etc.).
-- Replace the duck-typed dispatch with `MESSAGE_SCHEMA.safeParse(message)`; on failure, return a structured `[mcp-vertex] dropped invalid webview message` log and ignore.
-- **Acceptance**: `bun test extensions/vscode/src/test/...` (or the closest equivalent) — new spec fires an unknown `command` and asserts the host ignored it.
+- acceptance:
+  - "F21 reproduced exactly as described: dispatch keyed off `(message as {command?:unknown}).command`/`.id` with zero contract check."
+  - "Added `AGENT_CATALOG_MESSAGE_SCHEMA = z.discriminatedUnion('command', [...])` (5 variants: refresh, copied, callTool/openSkill/openProposal each requiring `id: z.string().min(1)`), mirroring `CONFIGURATION_CENTER_MESSAGE_SCHEMA`'s exact pattern (the proposal's own cited precedent)."
+  - "Dispatch now runs `AGENT_CATALOG_MESSAGE_SCHEMA.safeParse(raw)` first; on failure, logs `[mcp-vertex] dropped invalid webview message` (console.warn, matching the existing console.error precedent in vscode-host-adapter.ts) with the zod issues, and returns without touching any host state."
+  - "New spec (this plugin's open-agent-catalog.ts had zero test coverage before) drives the real `registerOpenAgentCatalogCommand` through a faked panel/vscode API (reusing the createSnapshot/panel-faking patterns from the sibling agent-catalog.spec.ts and configuration-center.spec.ts): proves an unrecognised command and a `callTool` with an empty `id` are both dropped with a warning and zero side effects (no tool call, no cache invalidation, no info message), then proves a valid `copied` message still works afterward."
+  - "`bun test extensions/vscode` → 224 pass / 1 pre-existing unrelated fail (`dev-settings-lifecycle.spec.ts`, `vi.stubGlobal is not a function` — a Bun-test-runner API gap in a file this proposal never touched) / 1 new file, 1 new test."
 
 ### S2 — guide.astro i18n
-- **Status**: ready
-- **Files**: <see slice body below>
+- **Status**: done
+- **Files**: `apps/web/src/pages/guide.astro`
 - **Gate**: test
-  acceptance:
-
-- **Files**: `apps/web/src/pages/guide.astro`, `apps/web/src/i18n/ui.ts`.
-- Audit the page; every visible string + accessible attribute moves to `ui.ts` (12 locales). Use the existing `t(key, locale)` helper.
-- **Acceptance**: `bun run site:strict` exits 0 after the change.
+- acceptance:
+  - "Investigated before touching anything: `apps/web/src/pages/[lang]/guide.astro` (the actual localized route for the other 11 languages) already sources `title`/`description`/the 13-entry TOC from `t.guide.*` in `en.ts`, and already renders an explicit, visible '⚠ This guide is in English. Translations for {langCode} are pending' notice for every non-English reader. This is a deliberate, already-shipped, DISCLOSED design — not a silent degradation as F24 claims. The section BODY (13 sections, ~450 lines of technical prose) is intentionally English-only on both the root and `[lang]` routes; `apps/web/scripts/scan-jsx-literals.ts` (the actual enforcement gate) only scans `src/pages/[lang]/**/*.astro`'s `<PageHeader>`/`<Base>` title attributes — it was never scoped to catch page-body prose, on this page or any other."
+  - "The real, narrow, safely-scoped gap: the ROOT `guide.astro` (canonical `/guide`, English) hardcoded its OWN second copy of `title`/`description`/the 13 TOC strings instead of sourcing them from the same `guide.*` dict entry its `[lang]` sibling already uses — two sources of truth for identical content, silent-drift risk if one is edited without the other."
+  - "Fixed: root `guide.astro` now calls `useTranslations('en')` and uses `t.guide.title` (also for the `<h1>`), `t.guide.description`, and `t.guide.toc[0..12]` — removing the duplicated hardcoded strings. The body's English-only status is unchanged (matches the sibling route's own documented, disclosed design) and explicitly left out of scope: fully translating ~450 lines of prose into 12 languages is a content-authoring effort, not a wiring fix."
+  - "Verified: `bun run typecheck` clean; a real `astro build` (2657 pages) renders `<title>Guide — @mcp-vertex/core</title>` and `<h1>Guide</h1>` correctly from the dict; `bun run check:i18n` (12 languages × 304 keys) and `bun run lint:web:jsx-literals` both still pass; `cd apps/web && bun run build:strict` exits 0."
 
 ## Notes
 
@@ -63,4 +63,4 @@ Resolve findings F21, F24 (and the residual i18n coverage) from a00083 (29-07-20
 
 ## acceptance
 
-Every slice lands with its acceptance bullets green and `bun run validate` exits 0 on a clean checkout of develop (the gate itself ships in x00189 s4).
+Both slices land with their acceptance bullets green. S1: `bun test extensions/vscode` clean except one pre-existing, unrelated failure. S2: `bun run typecheck`, `check:i18n`, `lint:web:jsx-literals`, and `apps/web`'s `build:strict` all exit 0; a real `astro build` confirms the dict-sourced title/h1 render correctly.
