@@ -6,6 +6,8 @@ status: ready
 type: proposal
 track: ci+audit-followup
 date: 2026-07-30
+shipped-in:
+    - 9efce103 # fix(x00192): packages/cli was missing its @mcp-vertex/auto-agent-selector dependency
 ---
 
 # x00192 — packages/cli missing @mcp-vertex/auto-agent-selector dependency — breaks the dist build in every CI run
