@@ -6,6 +6,9 @@ status: ready
 type: proposal
 track: a00084-audit-followup
 date: 2026-07-30
+shipped-in:
+    - 6039321a # fix(x00194): a00084 FATAL #2 — verify:external-install ERESOLVE (core version lockstep bump)
+    - e7fc2c9a # fix(x00194): a00084 FATAL #1 — regenerate lint:solid baseline
 ---
 
 # x00194 — a00084 FATAL fixes — restore bun run validate to green (lint:solid baseline drift + verify:external-install version mismatch)
