@@ -6,6 +6,8 @@ status: ready
 type: proposal
 track: a00084-audit-followup
 date: 2026-07-30
+shipped-in:
+    - d36c2b3a # fix(x00198): a00084 MINOR-findings batch (F15,F19,F20,F30,F32,F35,F36)
 ---
 
 # x00198 — a00084 MINOR-findings batch — persistQueue footgun, online-preset gaps, id-regex drift, hardcoded lang, path containment, logo diffing
