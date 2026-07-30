@@ -2,7 +2,7 @@
 id: x00196
 title: "a00084 fixes — vscode start-server sync I/O + apps/web Base.astro NAV/FOOTER dedup"
 kind: fix
-status: ready
+status: done
 type: proposal
 track: a00084-audit-followup
 date: 2026-07-30
