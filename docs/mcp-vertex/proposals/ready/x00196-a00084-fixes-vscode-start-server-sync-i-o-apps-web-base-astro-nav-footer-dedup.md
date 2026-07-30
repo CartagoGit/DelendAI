@@ -6,6 +6,8 @@ status: ready
 type: proposal
 track: a00084-audit-followup
 date: 2026-07-30
+shipped-in:
+    - 51265bfd # fix(x00196): a00084 — vscode start-server sync I/O + apps/web NAV/FOOTER dedup
 ---
 
 # x00196 — a00084 fixes — vscode start-server sync I/O + apps/web Base.astro NAV/FOOTER dedup
