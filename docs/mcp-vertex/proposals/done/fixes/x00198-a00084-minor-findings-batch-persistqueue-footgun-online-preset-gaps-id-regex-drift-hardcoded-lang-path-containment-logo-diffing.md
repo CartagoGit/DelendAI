@@ -2,7 +2,7 @@
 id: x00198
 title: "a00084 MINOR-findings batch — persistQueue footgun, online-preset gaps, id-regex drift, hardcoded lang, path containment, logo diffing"
 kind: fix
-status: ready
+status: done
 type: proposal
 track: a00084-audit-followup
 date: 2026-07-30
