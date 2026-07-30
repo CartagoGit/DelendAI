@@ -2,7 +2,7 @@
 id: x00186
 title: "a00083 — host server, install script, and quality-gate: drop implicit cwd, sync I/O, and stale entrypoint shape"
 kind: fix
-status: ready
+status: done
 type: proposal
 track: tools+audit-followup
 date: 2026-07-29
