@@ -1,5 +1,5 @@
 import { mkdir, open, rename, rm } from 'node:fs/promises';
-import { dirname, join, resolve } from 'node:path';
+import { dirname, join } from 'node:path';
 
 import z from 'zod';
 
@@ -14,7 +14,13 @@ import {
 
 export interface IBrowserInspectToolOptions {
 	readonly namespacePrefix: string;
-	readonly pluginCacheDir?: string;
+	// a00084 F13: required, not optional — the plugin entry (index.ts)
+	// always injects ctx.pluginCacheDir (a required field on the plugin
+	// context). A process.cwd() fallback here meant screenshots/captures
+	// landed wherever the host process happened to be running from in a
+	// multi-workspace session, breaking cache eviction and the
+	// usage-tracking boot sweep, which both depend on a stable cache path.
+	readonly pluginCacheDir: string;
 	readonly driver?: IBrowserDriver;
 	readonly probeTool?: () => Promise<{
 		readonly unavailable?: boolean;
@@ -73,9 +79,6 @@ const QUERY_OUTPUT = z.discriminatedUnion('status', [
 	}),
 ]);
 
-const resolvePluginCacheDir = (pluginCacheDir?: string): string =>
-	resolve(pluginCacheDir ?? join(process.cwd(), '.cache', 'mcp-vertex'));
-
 const normalizeHttpUrl = (input: string): string => {
 	const parsed = new URL(input);
 	if (
@@ -98,10 +101,9 @@ const installMissing = (url: string, hint: string) =>
 	});
 
 const screenshotPathFor = (
-	pluginCacheDir?: string,
+	pluginCacheDir: string,
 	timestamp = Date.now(),
-): string =>
-	join(resolvePluginCacheDir(pluginCacheDir), 'browser', `${timestamp}.png`);
+): string => join(pluginCacheDir, 'browser', `${timestamp}.png`);
 
 const writeScreenshotAtomic = async (
 	path: string,

@@ -3,7 +3,7 @@
  */
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
@@ -21,7 +21,13 @@ const RECENT_VALIDATE = {
 	logPath: '.cache/validate.log',
 };
 
-const DOC = (extra: string) => `---
+// a00084 F17: the completeness gate (previously shortcut-only) now also
+// runs on review -> done, so every fixture's declared `Files:` entry must
+// resolve on disk — `filePath` defaults to a bare relative name for the
+// two pure-function describe blocks below (which never reach the gate),
+// and is overridden with a real absolute path by the
+// `runProposalTransition` describe block, which does.
+const DOC = (extra: string, filePath = 'src/a.ts') => `---
 id: f00888
 title: peer review fixture
 status: review
@@ -35,7 +41,7 @@ shipped-in: [ship123]
 
 ### S1 — work
 - **Status**: done
-- **Files**: \`src/a.ts\`
+- **Files**: \`${filePath}\`
 ${extra}
 `;
 
@@ -101,6 +107,11 @@ describe('runProposalTransition peer-review gate (a00069 S7)', () => {
 	let opts: IProposalTransitionToolOptions;
 	let docPath = '';
 	let peerReviewLogPath = '';
+	let shippedFile = '';
+	// a00084 F17: the completeness gate now runs on review -> done too, so
+	// this fixture's `Files:` entry must resolve on disk — an absolute
+	// path into the same temp workspace the rest of the fixture uses.
+	const doc = (extra: string) => DOC(extra, shippedFile);
 
 	beforeEach(() => {
 		root = mkdtempSync(join(tmpdir(), 'peer-gate-'));
@@ -112,6 +123,9 @@ describe('runProposalTransition peer-review gate (a00069 S7)', () => {
 			root,
 			'.cache/mcp-vertex/proposals/peer-review.jsonl',
 		);
+		shippedFile = join(root, 'src', 'a.ts');
+		mkdirSync(dirname(shippedFile), { recursive: true });
+		writeFileSync(shippedFile, '// shipped\n', 'utf8');
 		opts = {
 			namespacePrefix: 'proposals',
 			workspaceRoot: root,
@@ -137,7 +151,7 @@ describe('runProposalTransition peer-review gate (a00069 S7)', () => {
 	};
 
 	it('blocks review→done without peer approve', async () => {
-		writeFileSync(docPath, DOC('- review-implementer: alice\n'), 'utf8');
+		writeFileSync(docPath, doc('- review-implementer: alice\n'), 'utf8');
 		const body = parse(
 			await runProposalTransition(
 				{
@@ -155,7 +169,7 @@ describe('runProposalTransition peer-review gate (a00069 S7)', () => {
 	});
 
 	it('blocks self-approve even when review-state is done', async () => {
-		writeFileSync(docPath, DOC(SELF_APPROVE), 'utf8');
+		writeFileSync(docPath, doc(SELF_APPROVE), 'utf8');
 		writeJournal([
 			{
 				kind: 'transition',
@@ -190,7 +204,7 @@ describe('runProposalTransition peer-review gate (a00069 S7)', () => {
 	});
 
 	it('allows review→done after independent approve', async () => {
-		writeFileSync(docPath, DOC(PEER_OK), 'utf8');
+		writeFileSync(docPath, doc(PEER_OK), 'utf8');
 		writeJournal([
 			{
 				kind: 'transition',
@@ -224,8 +238,50 @@ describe('runProposalTransition peer-review gate (a00069 S7)', () => {
 		expect(body.ok).toBe(true);
 	});
 
+	// a00084 F17: peer review only ever sees the proposal's markdown text,
+	// never the filesystem — a reviewer approving PEER_OK has no way to
+	// notice the declared file doesn't exist or the slice is still
+	// pending. Before this fix, review→done skipped the completeness gate
+	// entirely and this would have shipped with ok:true.
+	it('blocks review→done on independent approve when the slice is not actually complete', async () => {
+		const missingFile = join(root, 'src', 'never-written.ts');
+		writeFileSync(docPath, DOC(PEER_OK, missingFile), 'utf8');
+		writeJournal([
+			{
+				kind: 'transition',
+				ts: '2026-07-25T10:00:00.000Z',
+				proposalId: 'f00888',
+				from: 'in-progress',
+				to: 'review',
+			},
+			{
+				kind: 'review',
+				ts: '2026-07-25T10:01:00.000Z',
+				proposalId: 'f00888',
+				sliceId: 'S1',
+				action: 'approve',
+				implementer: 'alice',
+				reviewer: 'bob',
+				verdict: 'approved',
+			},
+		]);
+		const body = parse(
+			await runProposalTransition(
+				{
+					id: 'f00888',
+					to: 'done',
+					reason: 'peer ok but file never shipped',
+					validateEvidence: RECENT_VALIDATE,
+				},
+				opts,
+			),
+		);
+		expect(body.ok).toBe(false);
+		expect(JSON.stringify(body)).toMatch(/missing-declared-files/);
+	});
+
 	it('allows force:true bypass', async () => {
-		writeFileSync(docPath, DOC(''), 'utf8');
+		writeFileSync(docPath, doc(''), 'utf8');
 		const body = parse(
 			await runProposalTransition(
 				{ id: 'f00888', to: 'done', reason: 'emergency', force: true },
@@ -236,7 +292,7 @@ describe('runProposalTransition peer-review gate (a00069 S7)', () => {
 	});
 
 	it('skips gate when requirePeerReview is false', async () => {
-		writeFileSync(docPath, DOC(''), 'utf8');
+		writeFileSync(docPath, doc(''), 'utf8');
 		const body = parse(
 			await runProposalTransition(
 				{
