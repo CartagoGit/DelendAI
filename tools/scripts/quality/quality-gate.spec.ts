@@ -13,7 +13,7 @@
  */
 
 import { spawnSync } from 'node:child_process';
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -35,6 +35,18 @@ describe('quality:gate script (a00072 S3.b)', () => {
 			cwd,
 			encoding: 'utf8',
 			timeout: 30_000,
+		});
+
+	const runWith = (
+		cwd: string,
+		args: readonly string[],
+		env?: Record<string, string>,
+	) =>
+		spawnSync('bun', [SCRIPT, ...args], {
+			cwd,
+			encoding: 'utf8',
+			timeout: 30_000,
+			env: env !== undefined ? { ...process.env, ...env } : process.env,
 		});
 
 	it('exits 0 when every scope is clean', () => {
@@ -87,5 +99,66 @@ describe('quality:gate script (a00072 S3.b)', () => {
 		);
 		const r = run(root);
 		expect(r.status).toBe(2);
+	});
+
+	// x00186 (F28): the gate used to read `mcp-vertex.config.json` from
+	// `process.cwd()` unconditionally — no `--workspace` support at all.
+	it('honors --workspace instead of process.cwd()', () => {
+		writeFileSync(
+			join(root, 'mcp-vertex.config.json'),
+			JSON.stringify({
+				plugins: {
+					quality: { options: { scopes: { smoke: ['echo clean'] } } },
+				},
+			}),
+		);
+		const elsewhere = mkdtempSync(join(tmpdir(), 'qgate-elsewhere-'));
+		try {
+			const r = runWith(elsewhere, ['--workspace', root]);
+			expect(r.status).toBe(0);
+			expect(r.stdout).toMatch(/quality:gate: passed/);
+		} finally {
+			rmSync(elsewhere, { recursive: true, force: true });
+		}
+	});
+
+	it('honors MCP_VERTEX_WORKSPACE when no --workspace flag is given', () => {
+		writeFileSync(
+			join(root, 'mcp-vertex.config.json'),
+			JSON.stringify({
+				plugins: {
+					quality: { options: { scopes: { smoke: ['echo clean'] } } },
+				},
+			}),
+		);
+		const elsewhere = mkdtempSync(join(tmpdir(), 'qgate-elsewhere-'));
+		try {
+			const r = runWith(elsewhere, [], { MCP_VERTEX_WORKSPACE: root });
+			expect(r.status).toBe(0);
+			expect(r.stdout).toMatch(/quality:gate: passed/);
+		} finally {
+			rmSync(elsewhere, { recursive: true, force: true });
+		}
+	});
+
+	it('warns to stderr only when falling back to cwd, not when --workspace is explicit', () => {
+		writeFileSync(
+			join(root, 'mcp-vertex.config.json'),
+			JSON.stringify({
+				plugins: {
+					quality: { options: { scopes: { smoke: ['echo clean'] } } },
+				},
+			}),
+		);
+		const implicit = run(root);
+		expect(implicit.stderr).toMatch(/using cwd as workspace/);
+
+		const elsewhere = mkdtempSync(join(tmpdir(), 'qgate-elsewhere-'));
+		try {
+			const explicit = runWith(elsewhere, ['--workspace', root]);
+			expect(explicit.stderr).not.toMatch(/using cwd as workspace/);
+		} finally {
+			rmSync(elsewhere, { recursive: true, force: true });
+		}
 	});
 });

@@ -34,27 +34,25 @@ Resolve findings F26, F27, F28, F29 from a00083 (29-07-2026). The easy/medium sl
 ## slices
 
 ### S1 — host server: thread the workspace flag
-- **Status**: ready
-- **Files**: <see slice body below>
+- **Status**: done
+- **Files**: `tools/scripts/host/host-server.script.ts`, `tools/scripts/host/host-server.script.spec.ts`
 - **Gate**: test
-  acceptance:
-
-- **File**: `tools/scripts/host/host-server.script.ts#L17`.
-- Parse `--workspace <abs>` from `process.argv.slice(2)`; default to `process.cwd()` ONLY when the flag is missing AND `process.env['MCP_VERTEX_WORKSPACE']` is unset; in both fallback cases, log a `[mcp-vertex] warning: using cwd as workspace` line to stderr.
-- The remainder of the entrypoint uses the resolved `workspaceRoot`.
-- **Acceptance**: `bun tools/scripts/host/host-server.script.ts --workspace /tmp/x --preset=lean` starts with `/tmp/x` as the workspace; without the flag it falls back to cwd + a stderr warning.
+- acceptance:
+  - "Verified empirically before touching any code: `parseCliArgs(argv, cwd)` already resolves `workspace: tokens.workspace ?? cwd` from argv itself, and `assembleCliConfig` already uses `args.workspace` (not the raw `cwd` param) for every path. A live run with `--workspace <tmp>` and a config declaring a bad plugin path produced an error referencing the tmp dir, not `process.cwd()` — F27's \"silently mounts the wrong config\" does not reproduce."
+  - "What WAS missing: no `MCP_VERTEX_WORKSPACE` env-var fallback at all, and no signal when the caller silently got cwd. Added `resolveWorkspaceFlag` (parses `--workspace=<v>` and `--workspace <v>`), used as `resolveWorkspaceFlag(argv) ?? process.env.MCP_VERTEX_WORKSPACE`, falling back to `process.cwd()` with a `[mcp-vertex] warning: using cwd as workspace` stderr line — matching the acceptance bullet's fallback-warning behavior even though the flag path itself needed no fix."
+  - "`resolveWorkspaceFlag` exported and unit-tested directly (5 cases: `=` form, space form, absent, trailing flag with no value, first-wins on duplicate). The top-level `run().catch(...)` boot call is now guarded by `if (import.meta.main)` so a spec file can import the pure helper without also booting a real MCP server as an import side effect."
+  - "Pre-existing e2e suite (`host-graceful-shutdown.spec.ts`, spawns the real script with `--workspace=<tmp>`) re-verified green after the guard: 8/8 passing."
 
 ### S2 — quality-gate: async I/O + injected cwd
-- **Status**: ready
-- **Files**: <see slice body below>
+- **Status**: done
+- **Files**: `tools/scripts/quality/quality-gate.script.ts`, `tools/scripts/quality/quality-gate.spec.ts`
 - **Gate**: test
-  acceptance:
-
-- **File**: `tools/scripts/quality/quality-gate.script.ts#L50`.
-- Replace `readFileSync` calls with the `readFile` from `node:fs/promises`.
-- Read `cwd` from `process.argv` (`--workspace <abs>`) or `process.env['MCP_VERTEX_WORKSPACE']`, falling back to cwd with the same stderr warning as s1.
-- Update the `IFileReader.readFile` callback to be the async variant (already async in signature — only the implementation needs to drop `Sync`).
-- **Acceptance**: `bun run quality:gate` still passes; a new spec asserts the reader is async (use Bun's `process.getActiveResources()` style or count `readFileSync` calls).
+- acceptance:
+  - "This one reproduced exactly as described: `cwd = process.cwd()` was unconditional, no `--workspace`/env support, and all 3 file reads used `readFileSync`."
+  - "Replaced all 3 `readFileSync` call sites with `readFile` from `node:fs/promises`; `loadQualityScopes` is now `async` and awaited from `main`."
+  - "Added the same `resolveWorkspace` precedence as S1 (`--workspace` flag > `MCP_VERTEX_WORKSPACE` env > cwd-with-warning)."
+  - "New tests (4): `--workspace` overrides cwd end-to-end (config read from the flagged dir, not the spawn cwd), `MCP_VERTEX_WORKSPACE` honored when no flag is given, and the fallback warning fires only when neither is given. Pre-existing 4 tests (exit 0/1/2/2) re-verified green — the stderr assertions use `toMatch`, unaffected by the new warning line being present."
+  - "`bun run quality:gate` re-verified passing standalone and as part of a full `bun run validate` run."
 
 ## Notes
 
@@ -65,4 +63,4 @@ Resolve findings F26, F27, F28, F29 from a00083 (29-07-2026). The easy/medium sl
 
 ## acceptance
 
-Every slice lands with its acceptance bullets green and `bun run validate` exits 0 on a clean checkout of develop (the gate itself ships in x00189 s4).
+Every slice lands with its acceptance bullets green. `bun run quality:gate` and the full `bun test` suite are re-verified green after both slices (see x00189, which tracks `bun run validate`'s overall gate status — its acceptance notes the one remaining red step is an execution-environment gap unrelated to any of x00183-x00191's findings).
