@@ -1,6 +1,6 @@
 {
 	"name": "@mcp-vertex/web-fetch",
-	"version": "0.1.0",
+	"version": "0.1.1",
 	"type": "module",
 	"description": "Opt-in web/fetch plugin for @mcp-vertex/core: web_fetch resolves an allow-listed URL and returns capped text. Load with `mcp-vertex --plugins=web-fetch` and configure `plugins.web-fetch.options.allowList`.",
 	"author": "Cartago",
@@ -43,7 +43,7 @@
 		"build": "bun ../../tools/scripts/compile/build.script.ts plugins/web-fetch"
 	},
 	"peerDependencies": {
-		"@mcp-vertex/core": "^0.1.0"
+		"@mcp-vertex/core": "^0.1.1"
 	},
 	"dependencies": {
 		"@modelcontextprotocol/sdk": "^1.29.0",

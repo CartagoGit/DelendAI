@@ -1,6 +1,6 @@
 {
 	"name": "@mcp-vertex/env",
-	"version": "0.1.0",
+	"version": "0.1.1",
 	"type": "module",
 	"description": "Env config validation plugin for @mcp-vertex/core: env_check flags duplicate/empty/malformed keys and missing required vars in a .env file. Offline, values never leaked. Load with `mcp-vertex --plugins=env`.",
 	"author": "Cartago",
@@ -50,7 +50,7 @@
 		"build": "bun ../../tools/scripts/compile/build.script.ts plugins/env"
 	},
 	"peerDependencies": {
-		"@mcp-vertex/core": "^0.1.0"
+		"@mcp-vertex/core": "^0.1.1"
 	},
 	"dependencies": {
 		"@modelcontextprotocol/sdk": "^1.29.0",

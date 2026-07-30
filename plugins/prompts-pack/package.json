@@ -1,6 +1,6 @@
 {
 	"name": "@mcp-vertex/prompts-pack",
-	"version": "0.1.0",
+	"version": "0.1.1",
 	"type": "module",
 	"description": "Prompts pack plugin for @mcp-vertex/core: six project-aware MCP prompts that compose existing tools without provider coupling.",
 	"author": "Cartago",

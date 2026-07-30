@@ -1,6 +1,6 @@
 {
 	"name": "@mcp-vertex/tech-debt",
-	"version": "0.1.0",
+	"version": "0.1.1",
 	"type": "module",
 	"description": "Tech-debt visibility plugin for @mcp-vertex/core: debt_scan finds TODO/FIXME/HACK/XXX/BUG/DEPRECATED/NOTE markers across the workspace, ranked by severity. Offline. Load with `mcp-vertex --plugins=tech-debt`.",
 	"author": "Cartago",
@@ -50,7 +50,7 @@
 		"build": "bun ../../tools/scripts/compile/build.script.ts plugins/tech-debt"
 	},
 	"peerDependencies": {
-		"@mcp-vertex/core": "^0.1.0"
+		"@mcp-vertex/core": "^0.1.1"
 	},
 	"dependencies": {
 		"@modelcontextprotocol/sdk": "^1.29.0",

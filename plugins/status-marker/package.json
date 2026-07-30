@@ -1,6 +1,6 @@
 {
 	"name": "@mcp-vertex/status-marker",
-	"version": "0.1.0",
+	"version": "0.1.1",
 	"type": "module",
 	"description": "Cierre obligatorio coloreado para agentes: 8 estados canónicos (HECHO/CAP/RE-PIVOT/CHECKPOINT-REQUIRED/REPAIR-NEEDED/BLOQUEADO/SIN PROPUESTAS LIBRES/SIN PROPUESTA DE NINGUN TIPO), herramientas `close` y `validate`, knowledge entry con la tabla. Load with `mcp-vertex --plugins=status-marker`.",
 	"author": "Cartago",
@@ -42,7 +42,7 @@
 		"build": "bun ../../tools/scripts/compile/build.script.ts plugins/status-marker"
 	},
 	"peerDependencies": {
-		"@mcp-vertex/core": "^0.1.0"
+		"@mcp-vertex/core": "^0.1.1"
 	},
 	"dependencies": {
 		"@modelcontextprotocol/sdk": "^1.29.0",

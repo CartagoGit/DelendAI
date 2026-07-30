@@ -1,6 +1,6 @@
 {
 	"name": "@mcp-vertex/search",
-	"version": "0.1.0",
+	"version": "0.1.1",
 	"type": "module",
 	"description": "Textual workspace search plugin for @mcp-vertex/core: a grep-like `search` tool returning low-token {file,line,text} hits over allow-listed text files. Load with `mcp-vertex --plugins=search`.",
 	"author": "Cartago",
@@ -43,7 +43,7 @@
 		"build": "bun ../../tools/scripts/compile/build.script.ts plugins/search"
 	},
 	"peerDependencies": {
-		"@mcp-vertex/core": "^0.1.0"
+		"@mcp-vertex/core": "^0.1.1"
 	},
 	"dependencies": {
 		"@modelcontextprotocol/sdk": "^1.29.0",
