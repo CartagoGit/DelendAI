@@ -29,10 +29,13 @@ const readMcpJsonRaw = async (
 ): Promise<string | undefined> => {
 	void vscode;
 	if (cwd === undefined) return undefined;
-	const { readFileSync } = await import('node:fs');
+	// a00084 F28: was readFileSync — sync I/O on the interactive command
+	// path, a brief UI freeze on remote filesystems (WSL/SSH) when the
+	// user approves an untrusted server start.
+	const { readFile } = await import('node:fs/promises');
 	const { join } = await import('node:path');
 	try {
-		return readFileSync(join(cwd, '.mcp.json'), 'utf8');
+		return await readFile(join(cwd, '.mcp.json'), 'utf8');
 	} catch {
 		return undefined;
 	}
