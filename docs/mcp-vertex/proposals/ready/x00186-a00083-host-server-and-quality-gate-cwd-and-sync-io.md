@@ -8,6 +8,8 @@ track: tools+audit-followup
 date: 2026-07-29
 related:
     - a00083 # full-project audit
+shipped-in:
+    - 56b04565 # fix(x00186): host-server + quality-gate workspace resolution and async I/O
 ---
 
 # x00186 — a00083 — host server, install script, and quality-gate: drop implicit cwd, sync I/O, and stale entrypoint shape
