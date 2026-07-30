@@ -2,7 +2,7 @@
 id: x00199
 title: "a00084 fix — open-agent-catalog.ts webview message duck-typing"
 kind: fix
-status: ready
+status: done
 type: proposal
 track: a00084-audit-followup
 date: 2026-07-30
