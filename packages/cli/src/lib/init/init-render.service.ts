@@ -22,9 +22,9 @@ import {
 	type IFileReader,
 } from '@mcp-vertex/core/public';
 
-import type { IInitAnswers } from './init-answers.types';
 import type { ICanonicalLaunch } from '../../contracts/interfaces/canonical-launch.interface';
 import { buildCanonicalLaunch } from '../server-args.service';
+import type { IInitAnswers } from './init-answers.types';
 import { loadAgentDescriptors } from './init-catalog.constant';
 import {
 	computeHostInstructionsWrite,
@@ -325,6 +325,35 @@ const renderClaudeAgentFile = (descriptor: {
 	};
 };
 
+/**
+ * Codex CLI custom-subagent format
+ * (`.codex/agents/*.md`), rendered alongside the Copilot and Claude
+ * variants. Codex CLI treats a subagent file as a named, invocable
+ * prompt template — `name` (kebab-case) + `description` are the only
+ * required keys; everything else is host-managed.
+ *
+ * AGENT-BOOTSTRAP.md §8.3 tells Codex sessions how to invoke these
+ * subagents; without it the Codex host reads only `AGENTS.md` (shared
+ * with Copilot Chat) and never knows they exist.
+ */
+const renderCodexAgentFile = (descriptor: {
+	role: string;
+	description: string;
+	tools: readonly string[];
+	body: string;
+}): IRenderedFile => {
+	const frontmatter = [
+		'---',
+		`name: mcp-vertex-${descriptor.role}`,
+		`description: ${descriptor.description}`,
+		'---',
+	].join('\n');
+	return {
+		relPath: `.codex/agents/mcp-vertex-${descriptor.role}.md`,
+		content: `${frontmatter}\n\n${descriptor.body}\n`,
+	};
+};
+
 /** S3 — render `.github/agents/mcp-vertex-<role>.agent.md` from the live catalog. */
 export const renderAgentFiles = async (
 	workspaceRoot: string,
@@ -335,9 +364,12 @@ export const renderAgentFiles = async (
 ): Promise<readonly IRenderedFile[]> => {
 	const descriptors = await loadAgentDescriptors(workspaceRoot, options);
 	// x00160 S2: one Copilot file + one Claude Code file per role.
+	// Extended to emit Codex CLI files as well so a Codex adopter of
+	// `mcpv init` gets the subagents AGENT-BOOTSTRAP.md §8.3 references.
 	return descriptors.flatMap((descriptor) => [
 		renderAgentFile(descriptor),
 		renderClaudeAgentFile(descriptor),
+		renderCodexAgentFile(descriptor),
 	]);
 };
 

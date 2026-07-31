@@ -44,7 +44,7 @@
 		"lint:proposals": "bun tools/scripts/lint/proposals.script.ts && bun tools/scripts/lint/proposal-id-prefix.script.ts && bun tools/scripts/lint/proposal-files-exist.script.ts && bun tools/scripts/lint/proposal-folder-drift.script.ts",
 		"lint:mass-content-removal": "bun tools/scripts/lint/mass-content-removal.script.ts",
 		"lint:scaffolds": "bun tools/scripts/lint/scaffolds.script.ts",
-		"lint:agents": "bun tools/scripts/lint/agent-redirector-contract.script.ts",
+		"lint:agents": "bun tools/scripts/lint/agent-redirector-contract.script.ts && bun tools/scripts/lint/agent-slots-in-sync.script.ts",
 		"lint:agent-claims": "bun tools/scripts/lint/agent-claims.script.ts",
 		"lint:agent-claims:warn": "echo '\u26a0 lint:agent-claims is ADVISORY since x00088 \u2014 use `bun run lint:agent-claims` directly if you want to see the warnings. It never blocks.'",
 		"lint:cli-imports": "bun tools/scripts/lint/no-internal-core-imports.script.ts",
