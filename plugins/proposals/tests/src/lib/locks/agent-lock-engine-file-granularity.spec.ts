@@ -11,8 +11,17 @@ import {
 	type IStateToolOptions,
 } from '@mcp-vertex/proposals/lib/tools/state-tools.tool';
 
+/**
+ * Canonical test scratch location: the cache root the repo declares
+ * exactly once (single source of truth in `DEFAULT_CORE_PATHS.cacheDir`,
+ * enforced by `tools/scripts/lint/check-cache.script.ts`). Hardcoding
+ * `.cache/mcp-vertex/verify-tmp/` here keeps the three lock specs in
+ * sync with the rest of the repo — the previous `.verify-tmp/` at the
+ * repo root was a regression: a stray scratch dir that the
+ * `check-cache` lint already flags as out-of-place.
+ */
 const makeVerifyTmpDir = (prefix: string): string => {
-	const root = join(process.cwd(), '.verify-tmp');
+	const root = join(process.cwd(), '.cache', 'mcp-vertex', 'verify-tmp');
 	mkdirSync(root, { recursive: true });
 	return mkdtempSync(join(root, prefix));
 };
