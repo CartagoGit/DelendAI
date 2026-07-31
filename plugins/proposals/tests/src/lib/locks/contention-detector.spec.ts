@@ -15,7 +15,11 @@ describe('detectContention', () => {
 	let tablePath = '';
 
 	beforeEach(() => {
-		const root = join(process.cwd(), '.verify-tmp');
+		// Canonical scratch location: see the `makeVerifyTmpDir` helper
+		// in the sibling specs for the rationale. This `beforeEach` does
+		// the same thing inline because `detectContention` only needs
+		// one fixture dir, not the shared helper.
+		const root = join(process.cwd(), '.cache', 'mcp-vertex', 'verify-tmp');
 		mkdirSync(root, { recursive: true });
 		dir = mkdtempSync(join(root, 'contention-detector-'));
 		lockPath = join(dir, '.cache/agents.lock.json');

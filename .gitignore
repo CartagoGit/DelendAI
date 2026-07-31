@@ -1,7 +1,10 @@
 node_modules/
 
-# Legacy plugin tool verification scratch dir. Current probes write under
-# `.cache/mcp-vertex/verify/`; keep this ignore for old local runs.
+# Legacy plugin tool verification scratch dir. The proposals lock
+# specs now write ephemeral state under `.cache/mcp-vertex/verify-tmp/`
+# (the canonical cache root, see `DEFAULT_CORE_PATHS.cacheDir`); this
+# entry is kept for old local runs whose `.verify-tmp/agents.lock.*`
+# files were never migrated and would otherwise show up as untracked.
 .verify-tmp/
 
 # Monorepo-wide artifact layout (see AGENTS.md → "Build / dist layout"):
