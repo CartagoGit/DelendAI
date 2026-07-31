@@ -33,6 +33,18 @@ export interface IScaffoldHostOptions {
 	 * should append it here so the orchestrator knows it exists.
 	 */
 	readonly bootstrapToolIds?: readonly string[];
+	/**
+	 * When true, the scaffolder skips emitting `libs/mcp-project/`
+	 * (host-config, server entry, `.vscode/mcp.json`) because the
+	 * project already wires mcp-vertex via its own `mcp-vertex.config.json`
+	 * + `plugins/` layout. Agents / instructions / skill are still
+	 * emitted so the host-instruction contract is honoured on every
+	 * supported editor (Copilot Chat, Claude Code, Codex CLI).
+	 *
+	 * Defaults to `false` so greenfield projects still get the
+	 * `libs/mcp-project/` bootstrap.
+	 */
+	readonly existingMcpVertex?: boolean;
 }
 
 const SUBAGENT_SLOTS = [
@@ -350,6 +362,56 @@ The agent contract lives in the \`${prefix}\` MCP server, not in this file.
 	};
 };
 
+/**
+ * Codex CLI custom-subagent format
+ * (`.codex/agents/<name>.md`), generated alongside the Copilot and
+ * Claude variants. Codex CLI treats a subagent file as a named,
+ * invocable prompt template — `name` (kebab-case) + `description` are
+ * the only required keys; everything else is host-managed.
+ *
+ * The generated description mirrors `scaffoldClaudeAgentFile`: the
+ * contract lives in the `${prefix}` MCP server, not in the file
+ * itself. We deliberately do NOT emit a `tools:` field here — Codex
+ * CLI's documented custom-agent format does not constrain it, and
+ * copying the Copilot variant's vocabulary (`mcp-project-<prefix>/*`,
+ * …) would be just as inaccurate as it is for Claude. Omitting the
+ * field inherits the tools available to the session.
+ *
+ * AGENT-BOOTSTRAP.md §8.3 is the host appendix that tells Codex
+ * sessions how to use this file. Without it the Codex CLI host reads
+ * only `AGENTS.md` (which is shared with Copilot Chat) and never
+ * knows the subagent exists.
+ */
+export const scaffoldCodexAgentFile = (
+	options: IScaffoldHostOptions,
+	slot: IScaffoldAgentSlot,
+): IScaffoldedFile => {
+	const prefix = options.namespacePrefix;
+	const isRoot = slot === 'orchestrator';
+	const name = kebab(slot);
+	return {
+		path: `.codex/agents/${name}.md`,
+		content: `---
+name: ${name}
+description: ${isRoot ? 'Root orchestrator' : 'Bounded subagent'} for ${options.projectName}. The real contract lives in the ${prefix} MCP server — use for any non-trivial change (more than 3 tool calls, multiple files, or repeated MCP reads).
+---
+
+# ${pascal(slot)} (${options.projectName})
+
+The agent contract lives in the \`${prefix}\` MCP server, not in this file.
+
+## Compact lane
+
+1. First call \`${prefix}_overview\` once per turn; it maps the server's tools/plugins and returns a \`recommendedNextAction\` — follow it. Only call tools that \`overview\` lists.
+2. Keep the main thread as the coordinator: \`${prefix}_auto_work\` → maybe \`${prefix}_continue_proposal { mode: "plan" }\` → maybe \`${prefix}_delegate\`. If a slice needs more than 3 tool calls, multiple files, or repeated MCP reads, delegate it instead of doing the heavy inspection here.
+3. One atomic slice per turn; minimal validation; trust the MCP payload over local re-derivation.
+4. When the server loads the \`proposals\` plugin, claim files before writing with \`${prefix}_agent_lock\` and report \`lock-conflict\` instead of retrying; otherwise work with whatever tools \`overview\` reports.
+5. A broken global gate outside your ownership is \`external-gate-blocker\`: record evidence and continue with owned work.
+6. When the project changes shape (new script, new framework, new monorepo package, dropped dependency), the host owns re-analysis${isRoot ? '' : ': escalate to the root so'} the orchestrator can call \`${prefix}_analyze_project\`, \`${prefix}_plan_mcp_project\`, \`${prefix}_create_project\`. The first tool inspects; the second returns an exhaustive blueprint; the third materialises the files.
+`,
+	};
+};
+
 export const scaffoldInstructionsFile = (
 	options: IScaffoldHostOptions,
 ): IScaffoldedFile => {
@@ -472,29 +534,48 @@ void startServer();
 
 /**
  * Everything a brand-new project needs: server entry + host config +
- * editor registration + orchestrator + 4 subagents (in both the
- * Copilot `.agent.md` and Claude Code `.claude/agents` formats) +
- * instructions + a starter skill.
+ * editor registration + orchestrator + 4 subagents (in all three
+ * host formats: Copilot `.agent.md`, Claude Code `.claude/agents`,
+ * Codex CLI `.codex/agents`) + instructions + a starter skill.
+ *
+ * When `options.existingMcpVertex === true`, the host server entry
+ * files are omitted — the caller has wired the project to mcp-vertex
+ * via its own `mcp-vertex.config.json` + `plugins/` layout and does
+ * not want the scaffolder to overwrite that with a fresh
+ * `libs/mcp-project/` server. The agents, instructions and skill are
+ * still emitted (those are the contract surface any host needs).
  */
 export const scaffoldHostProject = (
 	options: IScaffoldHostOptions,
-): readonly IScaffoldedFile[] => [
-	scaffoldHostConfigFile(options),
-	...scaffoldServerEntryFiles(options),
-	scaffoldAgentFile(options, 'orchestrator'),
-	...SUBAGENT_SLOTS.map((slot) => scaffoldAgentFile(options, slot)),
-	scaffoldClaudeAgentFile(options, 'orchestrator'),
-	...SUBAGENT_SLOTS.map((slot) => scaffoldClaudeAgentFile(options, slot)),
-	scaffoldInstructionsFile(options),
-	scaffoldSkillFile(
-		options.namespacePrefix,
-		'project-standards',
-		`Closed stack and conventions of ${options.projectName}.`,
-		[],
-		undefined,
-		options.targetDir,
-	),
-];
+): readonly IScaffoldedFile[] => {
+	const agentFiles: IScaffoldedFile[] = [
+		scaffoldAgentFile(options, 'orchestrator'),
+		...SUBAGENT_SLOTS.map((slot) => scaffoldAgentFile(options, slot)),
+		scaffoldClaudeAgentFile(options, 'orchestrator'),
+		...SUBAGENT_SLOTS.map((slot) => scaffoldClaudeAgentFile(options, slot)),
+		scaffoldCodexAgentFile(options, 'orchestrator'),
+		...SUBAGENT_SLOTS.map((slot) => scaffoldCodexAgentFile(options, slot)),
+	];
+	const hostFiles: IScaffoldedFile[] = options.existingMcpVertex
+		? []
+		: [
+				scaffoldHostConfigFile(options),
+				...scaffoldServerEntryFiles(options),
+			];
+	return [
+		...hostFiles,
+		...agentFiles,
+		scaffoldInstructionsFile(options),
+		scaffoldSkillFile(
+			options.namespacePrefix,
+			'project-standards',
+			`Closed stack and conventions of ${options.projectName}.`,
+			[],
+			undefined,
+			options.targetDir,
+		),
+	];
+};
 
 // ---------------------------------------------------------------------------
 // Plugin generator — "mcp-vertex knows how to create plugins"
