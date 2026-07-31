@@ -9,13 +9,18 @@ import { basename, dirname, extname } from 'node:path';
 
 import z from 'zod';
 
-import type { IWorkspacePathProvider } from '../contracts/interfaces/workspace-paths.interface';
 import type { IToolRegistration } from '../contracts/interfaces/tool-registration.interface';
+import type { IWorkspacePathProvider } from '../contracts/interfaces/workspace-paths.interface';
 import {
 	createFileSystemBatchWriter,
 	type IBatchAtomicWriter,
 	type IBatchOperation,
 } from '../shared/batch-atomic-writer';
+import type {
+	IScaffoldAgentSlot,
+	IScaffoldHostOptions,
+	IScaffoldedFile,
+} from './scaffold-host';
 import {
 	scaffoldAgentFile,
 	scaffoldClientFiles,
@@ -24,11 +29,6 @@ import {
 	scaffoldPromptFile,
 	scaffoldSkillFile,
 	scaffoldToolFile,
-} from './scaffold-host';
-import type {
-	IScaffoldAgentSlot,
-	IScaffoldHostOptions,
-	IScaffoldedFile,
 } from './scaffold-host';
 
 export interface IScaffoldToolOptions {
@@ -79,6 +79,15 @@ export const SCAFFOLD_INPUT_SCHEMA = z.object({
 		.optional()
 		.describe(
 			'Override the config-level keepLegacy for this scaffold call.',
+		),
+	existingMcpVertex: z
+		.boolean()
+		.optional()
+		.describe(
+			'For kind: "host". When true, skip emitting libs/mcp-project/, ' +
+				'.vscode/mcp.json and host-config.ts — the project already wires ' +
+				'mcp-vertex via its own mcp-vertex.config.json + plugins/. ' +
+				'Agents / instructions / skill are still emitted. Defaults to false.',
 		),
 });
 
@@ -234,7 +243,12 @@ export const buildScaffoldReport = async (
 			];
 			break;
 		case 'host':
-			files = scaffoldHostProject(hostOptions);
+			files = scaffoldHostProject({
+				...hostOptions,
+				...(args.existingMcpVertex !== undefined
+					? { existingMcpVertex: args.existingMcpVertex }
+					: {}),
+			});
 			break;
 		case 'plugin':
 			if (name.length === 0) errors.push('kind "plugin" requires name');

@@ -1,4 +1,4 @@
-import { mkdirSync, mkdtempSync, rmSync } from 'node:fs';
+import { mkdtempSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
@@ -11,20 +11,19 @@ import {
 	type IStateToolOptions,
 } from '@mcp-vertex/proposals/lib/tools/state-tools.tool';
 
+import { verifyTmpRoot } from './verify-tmp-root';
+
 /**
  * Canonical test scratch location: the cache root the repo declares
  * exactly once (single source of truth in `DEFAULT_CORE_PATHS.cacheDir`,
- * enforced by `tools/scripts/lint/check-cache.script.ts`). Hardcoding
- * `.cache/mcp-vertex/verify-tmp/` here keeps the three lock specs in
- * sync with the rest of the repo — the previous `.verify-tmp/` at the
- * repo root was a regression: a stray scratch dir that the
- * `check-cache` lint already flags as out-of-place.
+ * enforced by `tools/scripts/lint/check-cache.script.ts`). The actual
+ * root resolution happens in `verify-tmp-root.ts` so this path is
+ * stable across cwd / worktree / hoisted-checkout invocations —
+ * pinning it to `process.cwd()` here would leak a `.cache/` inside
+ * every agent worktree the swarm spawns.
  */
-const makeVerifyTmpDir = (prefix: string): string => {
-	const root = join(process.cwd(), '.cache', 'mcp-vertex', 'verify-tmp');
-	mkdirSync(root, { recursive: true });
-	return mkdtempSync(join(root, prefix));
-};
+const makeVerifyTmpDir = (prefix: string): string =>
+	mkdtempSync(join(verifyTmpRoot(), prefix));
 
 const body = (res: { content: Array<{ text: string }> }) =>
 	JSON.parse(res.content[0]?.text ?? '{}') as {
