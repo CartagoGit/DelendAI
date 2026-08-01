@@ -102,50 +102,63 @@ its own onboarding claims:
 ## Slices
 
 ### S1 — Fix the namespace ↔ host-server-name bug
-- **Status**: ready
-- Add `mcpServerName?: string` to `IScaffoldHostOptions`, defaulting to
-  today's `mcp-project-${namespacePrefix}` (byte-identical output for every
-  existing greenfield caller/test). Replace every hardcoded
-  `mcp-project-${prefix}` literal in `scaffoldAgentFile`,
-  `scaffoldClaudeAgentFile`, `scaffoldCodexAgentFile`, and
-  `scaffoldInstructionsFile` with `options.mcpServerName ?? \`mcp-project-${prefix}\``.
-  Wire the field through `SCAFFOLD_INPUT_SCHEMA` (`scaffold-tool.ts`) and
-  the CLI init render path (`init-render.service.ts`) so both surfaces can
-  receive an explicit server name.
+- **Status**: done
+- **Implementation**: added `mcpServerName?: string` to
+  `IScaffoldHostOptions`, defaulting to `mcp-project-${namespacePrefix}`
+  (byte-identical output for every existing greenfield caller/test —
+  verified by a dedicated regression test). Replaced the hardcoded
+  `mcp-project-${prefix}` literal in `scaffoldAgentFile` (the Copilot
+  `tools:` grant and the "the agent contract lives in" prose) and
+  `scaffoldInstructionsFile` with `resolveMcpServerName(options)`.
+  `scaffoldClaudeAgentFile` / `scaffoldCodexAgentFile` never referenced a
+  server name to begin with (Claude Code / Codex CLI call tools by bare
+  name, no `<server>/<tool>` qualification) — confirmed by grep, no
+  changes needed there. Wired `mcpServerName` through
+  `SCAFFOLD_INPUT_SCHEMA` (`scaffold-tool.ts`).
+- **`packages/cli/src/lib/init/init-render.service.ts` needed no change**:
+  its agent-tool list (`init-catalog.constant.ts`) already prefixes tools
+  as `${namespacePrefix}_<tool>` with no server-name literal at all —
+  verified this bug does not exist on the `mcpv init` code path (a
+  separate implementation from `scaffold-host.ts`; see this proposal's
+  Notes for the "two parallel scaffolders" finding this surfaced).
 - **Files**: `packages/core/src/lib/scaffold/scaffold-host.ts`,
   `packages/core/src/lib/scaffold/scaffold-tool.ts`,
-  `packages/cli/src/lib/init/init-render.service.ts`, plus their specs.
+  `packages/core/tests/src/lib/scaffold/scaffold-host.spec.ts` (2 new
+  tests).
 - **Gate**: type+test.
-- **Acceptance**: a scaffold call with `mcpServerName: 'mcp-vertex'` emits
-  agent files whose tool references read `mcp-vertex/mcp-vertex_overview`,
-  not `mcp-project-mcp-vertex/mcp-vertex_overview`; omitting the option
-  reproduces today's greenfield output exactly (regression-pinned by
-  existing scaffold-host.spec.ts assertions).
+- **Acceptance**: `scaffoldAgentFile({ ...HOST, mcpServerName: 'mcp-vertex' }, 'orchestrator')`
+  emits `mcp-vertex/*` and `mcp-vertex/acme_overview`, never
+  `mcp-project-acme`; omitting the option reproduces the exact
+  `mcp-project-acme/*` output every existing test already pinned.
 
 ### S2 — Auto-detect an existing install instead of requiring a caller to know the flags
-- **Status**: ready
-- New pure detector (`detectExistingMcpVertexInstall` or similar) that,
-  given a workspace root, inspects `mcp-vertex.config.json` presence and
-  `.vscode/mcp.json` / `.mcp.json` server entries for a launch shape
-  matching mcp-vertex (`mcpv __serve`, `@mcp-vertex/cli`, or a repo-local
-  `host-server.script.ts` / `host-server.ts` argument), and returns
-  `{ existingMcpVertex: boolean; mcpServerName?: string }`. Wire it as the
-  default resolution in `<prefix>_scaffold` and `mcpv init` /
-  `init:default`: an explicit `existingMcpVertex` / `mcpServerName` from
-  the caller always wins (never silently override an explicit choice);
-  absent input falls back to detection instead of the hardcoded
-  greenfield default.
-- **Files**: new detector module under
-  `packages/core/src/lib/scaffold/` (or `install/`, matching existing
-  boot-time-sync exemption paths), wiring in `scaffold-tool.ts` and the
-  `mcpv init` command, plus specs — including one fixture shaped like
-  postman-exporter's actual layout (`mcp-vertex.config.json` + `plugins/`
-  + a `.vscode/mcp.json` naming the server `mcp-vertex`).
+- **Status**: done
+- **Implementation**: new `packages/core/src/lib/scaffold/detect-existing-install.ts`
+  — `findMcpVertexServerName` (pure: parses a `.vscode/mcp.json`
+  `{servers:{...}}` or `.mcp.json` `{mcpServers:{...}}` shape, matches a
+  server whose command/args contain `@mcp-vertex/cli`, `mcpv`,
+  `host-server.script.ts`, or `host-server.ts`) and
+  `detectExistingMcpVertexInstall` (async: checks `mcp-vertex.config.json`
+  presence + reads both editor config candidates). `resolveHostScaffoldDefaults`
+  wires the two together with the "explicit caller value always wins"
+  rule and is the single call `buildScaffoldReport` makes — kept the
+  resolution out of `scaffold-tool.ts` entirely (SRP; also kept that file
+  under the 400 LOC solid-compliance ceiling instead of just absorbing a
+  bigger overage into the baseline).
+- **Files**: `packages/core/src/lib/scaffold/detect-existing-install.ts`
+  (new), `packages/core/src/lib/scaffold/scaffold-tool.ts` (wiring),
+  `packages/core/src/public/index.ts` (exports),
+  `packages/core/tests/src/lib/scaffold/detect-existing-install.spec.ts`
+  (new — 12 cases, including a fixture that reproduces postman-exporter's
+  real `.vscode/mcp.json` shape verbatim: an `mcp-vertex` server alongside
+  an unrelated `filesystem` server).
 - **Gate**: type+test.
-- **Acceptance**: running the scaffold/init path against a postman-exporter
-  -shaped fixture with no explicit flags auto-detects
-  `existingMcpVertex: true` and `mcpServerName: 'mcp-vertex'`; running it
-  against an empty directory still defaults to greenfield, unchanged.
+- **Acceptance**: `detectExistingMcpVertexInstall` against the
+  postman-exporter-shaped fixture returns
+  `{ existingMcpVertex: true, mcpServerName: 'mcp-vertex' }`; against an
+  empty workspace returns `{ existingMcpVertex: false }`; an explicit
+  `args.existingMcpVertex` / `args.mcpServerName` on `buildScaffoldReport`
+  is never overridden by detection.
 
 ### S3 — Harden the redirector contract so a missing file fails, not just a malformed one
 - **Status**: ready
@@ -221,3 +234,20 @@ its own onboarding claims:
   mode to only fire for a project that has declared a canonical redirector
   name in the first place — a project that never adopted the pattern sees
   no new failures.
+
+## Notes
+
+- **Two parallel scaffolders exist, only one had the namespace bug.**
+  S1's investigation found that `mcpv init` (`packages/cli/src/lib/init/`)
+  and `create_project` / `<prefix>_scaffold`
+  (`packages/core/src/lib/scaffold/scaffold-host.ts`) are two independent
+  implementations that both generate agent files — `mcpv init` reads a
+  live catalog (or a locale-keyed fallback) and prefixes bare tool names
+  with `${namespacePrefix}_`, never referencing a server key at all;
+  `scaffold-host.ts` grants a `<server>/*` wildcard in the Copilot
+  `tools:` field, which is what needed to know the real server name. Only
+  the second had this proposal's bug. Unifying the two into one
+  implementation would remove this exact category of "which code path has
+  which bug" risk going forward, but is a bigger, separate refactor — not
+  undertaken here to keep this proposal's diff reviewable, filed as a
+  candidate follow-up.
