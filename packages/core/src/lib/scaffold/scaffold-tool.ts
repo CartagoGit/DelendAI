@@ -16,6 +16,7 @@ import {
 	type IBatchAtomicWriter,
 	type IBatchOperation,
 } from '../shared/batch-atomic-writer';
+import { resolveHostScaffoldDefaults } from './detect-existing-install';
 import type {
 	IScaffoldAgentSlot,
 	IScaffoldHostOptions,
@@ -88,6 +89,17 @@ export const SCAFFOLD_INPUT_SCHEMA = z.object({
 				'.vscode/mcp.json and host-config.ts — the project already wires ' +
 				'mcp-vertex via its own mcp-vertex.config.json + plugins/. ' +
 				'Agents / instructions / skill are still emitted. Defaults to false.',
+		),
+	mcpServerName: z
+		.string()
+		.optional()
+		.describe(
+			"The MCP server's actual registration key in the target editor " +
+				'config (.vscode/mcp.json / .mcp.json). Copilot agent files and ' +
+				'instructions reference this key to qualify tool names. Defaults ' +
+				'to "mcp-project-<namespacePrefix>" (the greenfield key). Pass the ' +
+				"project's real key when existingMcpVertex is true — it almost " +
+				'never matches the greenfield default.',
 		),
 });
 
@@ -185,12 +197,23 @@ export const buildScaffoldReport = async (
 		options.batchWriter ??
 		createFileSystemBatchWriter(options.workspace.root);
 
+	// x00201 S2: an explicit args.existingMcpVertex/mcpServerName always
+	// wins; an omitted value auto-detects from the workspace instead of
+	// defaulting to the greenfield shape a guest-mode project doesn't want.
+	const resolvedInstall = await resolveHostScaffoldDefaults(
+		args,
+		options.workspace,
+	);
+
 	const hostOptions: IScaffoldHostOptions = {
 		projectName: options.projectName,
 		namespacePrefix: options.namespacePrefix,
 		projectPackageName: options.projectPackageName,
 		...(options.defaultModel !== undefined
 			? { defaultModel: options.defaultModel }
+			: {}),
+		...(resolvedInstall?.mcpServerName !== undefined
+			? { mcpServerName: resolvedInstall.mcpServerName }
 			: {}),
 	};
 	const dryRun = args.dryRun ?? true;
@@ -245,8 +268,8 @@ export const buildScaffoldReport = async (
 		case 'host':
 			files = scaffoldHostProject({
 				...hostOptions,
-				...(args.existingMcpVertex !== undefined
-					? { existingMcpVertex: args.existingMcpVertex }
+				...(resolvedInstall?.existingMcpVertex !== undefined
+					? { existingMcpVertex: resolvedInstall.existingMcpVertex }
 					: {}),
 			});
 			break;

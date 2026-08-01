@@ -285,6 +285,36 @@ describe('scaffold-host generators', () => {
 		expect(paths).toContain('libs/mcp-project/src/server.ts');
 		expect(paths).toContain('.vscode/mcp.json');
 	});
+
+	// x00201 S1 — guest-mode adopters (existingMcpVertex: true) already have
+	// their OWN registered MCP server name (postman-exporter's real key is
+	// `mcp-vertex`, not the greenfield `mcp-project-<prefix>` default).
+	// Without `mcpServerName`, every generated agent's first tool call
+	// addressed a server that does not exist.
+	it('mcpServerName overrides the greenfield mcp-project-<prefix> default in every Copilot-facing surface', () => {
+		const withRealServerName = { ...HOST, mcpServerName: 'mcp-vertex' };
+		const orchestrator = scaffoldAgentFile(
+			withRealServerName,
+			'orchestrator',
+		);
+		expect(orchestrator.content).toContain('mcp-vertex/*');
+		expect(orchestrator.content).toContain('mcp-vertex/acme_overview');
+		expect(orchestrator.content).not.toContain('mcp-project-acme');
+
+		const instructions = scaffoldHostProject(withRealServerName).find(
+			(file) => file.path.endsWith('copilot-instructions.md'),
+		);
+		expect(instructions?.content).toContain('mcp-vertex` rules');
+		expect(instructions?.content).not.toContain('mcp-project-acme');
+	});
+
+	it('mcpServerName defaults to mcp-project-<prefix> when omitted (greenfield, unchanged)', () => {
+		const orchestrator = scaffoldAgentFile(HOST, 'orchestrator');
+		expect(orchestrator.content).toContain('mcp-project-acme/*');
+		expect(orchestrator.content).toContain(
+			'mcp-project-acme/acme_overview',
+		);
+	});
 });
 
 describe('scaffoldPluginFiles (f00120 S1)', () => {
