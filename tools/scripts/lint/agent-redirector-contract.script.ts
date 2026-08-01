@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
 /**
- * agent-redirector-contract.script.ts — f00031 S3: warn (never block —
+ * agent-redirector-contract.script.ts — f00031 S3: warns (advisory,
  * matches lefthook.yml's "warn but never block" policy) when an
  * `*.agent.md` under `.github/agents/` or `.claude/agents/` is neither:
  *
@@ -25,6 +25,12 @@
  * the single-orchestrator redirector body, so a naive "body must be
  * the literal redirector template" rule would false-positive on
  * exactly the files the proposal says are already compliant.
+ *
+ * x00201 S3: two finding kinds are the exception to "warn, never block" —
+ * `missing-redirector` and `subagent-user-invocable-not-false` fail the
+ * build (`isFatalFinding`). Both guard the one property this whole
+ * contract exists for (exactly one visible orchestrator entry); every
+ * other kind stays advisory, unchanged from f00031.
  *
  * `.claude/agents/*.cc.md` files are excluded entirely from the scan:
  * the `.cc.md` suffix (vs. `.md`) is the project's own convention for
