@@ -105,7 +105,12 @@ const resolveCacheRoot = (): string => {
  * The returned path is absolute and stable across callers.
  */
 export const verifyTmpRoot = (): string => {
-	const root = join(resolveCacheRoot(), 'verify-tmp');
+	// Nests under the already-sanctioned `verify/` top-level cache dir
+	// (see `check-stray-cache-files.script.ts`'s `SANCTIONED_TOP_LEVEL` /
+	// `SANCTIONED_SUBPATH_PREFIXES`) instead of inventing a new
+	// `verify-tmp` top-level name the stray-cache-files gate doesn't
+	// recognise.
+	const root = join(resolveCacheRoot(), 'verify', 'lock-specs');
 	mkdirSync(root, { recursive: true });
 	return root;
 };
