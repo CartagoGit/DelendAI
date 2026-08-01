@@ -2,10 +2,12 @@
 id: x00202
 kind: fix
 title: "mcpv init's fallback agent catalog was always the ONLY path, and it shipped stale tool names + no user-invocable flag to every adopter"
-status: ready
+status: done
 type: proposal
 track: init+adopter-experience+self-hosting
 date: 2026-08-01
+shipped-in:
+    - 29115c3e # S1 — rot-proof redirector bodies + user-invocable fix in init-render.service.ts
 related:
     - x00201 # closed the same class of bug (namespace + user-invocable) on the create_project/scaffold-host.ts code path
     - f00031 # single-orchestrator redirector contract this proposal also protects

@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-08-01T09:49:18.070Z",
+	"generatedAt": "2026-08-01T09:57:07.112Z",
 	"mode": "compact",
 	"tools": [
 		{
@@ -1157,21 +1157,14 @@
 				"track": "tests+audit-followup",
 				"status": "ready",
 				"kind": "fix"
-			},
-			{
-				"id": "x00202",
-				"title": "x00202",
-				"track": "init+adopter-experience+self-hosting",
-				"status": "ready",
-				"kind": "fix"
 			}
 		],
 		"byStatus": {
-			"ready": 8,
+			"ready": 7,
 			"in-progress": 0,
 			"review": 0,
 			"paused": 1,
-			"done": 325,
+			"done": 326,
 			"blocked": 0,
 			"retired": 2,
 			"unspecified": 0
