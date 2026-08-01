@@ -161,31 +161,48 @@ its own onboarding claims:
   is never overridden by detection.
 
 ### S3 — Harden the redirector contract so a missing file fails, not just a malformed one
-- **Status**: ready
-- Extend `agent-redirector-contract.script.ts` (and its spec) so that,
-  when a project declares a canonical redirector name (this repo:
-  `mcp-vertex`), the check FAILS (not warns) if
-  `.github/agents/<name>.agent.md` is absent — closing the exact blind
-  spot that let 271c7cf5 delete it unnoticed. Also assert every bounded
-  subagent (`name:` in `SUBAGENT_SLOTS`) has `user-invocable: false` in
-  its frontmatter, matching what `scaffoldAgentFile` already emits for new
-  adopters (`scaffold-host.ts` line ~276) but this repo's own
-  hand-authored `.github/agents/mcp-vertex-*.agent.md` files never picked
-  up (all four currently say `user-invocable: true`).
-- Re-sync this repo's own `.github/agents/*.agent.md` to the corrected
-  `user-invocable: false` shape, and add the `.codex/agents/*.md` files
-  x00200 added scaffolding support for but this repo — being unpushed —
-  never generated for itself, using S1's `mcpServerName: 'mcp-vertex'` so
-  the dogfooded files are namespace-correct too.
+- **Status**: done
+- **Implementation**: `agent-redirector-contract.script.ts` gained two new
+  finding kinds — `missing-redirector` (new
+  `checkCanonicalRedirectorPresent`, called once against the
+  `.github/agents/` listing: fails when `mcp-vertex.agent.md` specifically
+  is absent) and `subagent-user-invocable-not-false` (extended
+  `checkGithubAgentFile`'s existing `isBoundedSubagent` branch to also
+  require `user-invocable: false`). A new `isFatalFinding(kind)` splits
+  findings into `fatal` (these two kinds — `process.exit(1)`) vs
+  `advisory` (every pre-existing kind, unchanged "warn but never block"
+  behaviour) so this hardening does not retroactively tighten unrelated,
+  unaudited findings elsewhere. `checkClaudeAgentFile` was deliberately
+  left untouched (no bounded-subagent exemption added there) — see Notes.
+- Re-synced this repo's own dogfood files: all four
+  `.github/agents/mcp-vertex-*.agent.md` now say `user-invocable: false`
+  and reference `mcp-vertex/*` / `mcp-vertex/mcp-vertex_overview` (was
+  `mcp-project-mcp-vertex`, wrong per S1). All five `.claude/agents/mcp-vertex-*.md`
+  bodies were rewritten from stale, hardcoded tool names that no longer
+  exist (`fs_write`, `proposal_adopt`, bare `auto_work` /
+  `compact_status` / `proposal_board`, `quality_run_quality`,
+  `proposal_review` — none namespaced, several referencing tools renamed
+  or removed by later refactors) to the canonical short redirector body
+  (f00031's "Contract change" template): call `mcp-vertex_overview`,
+  follow `recommendedNextAction`, never hardcode a tool name that will
+  rot. Added the 5 `.codex/agents/mcp-vertex-*.md` files x00200 added
+  scaffolding support for but this repo never generated for itself
+  (`.codex/config.toml` already existed and already used the `mcp-vertex`
+  server key, so no config change was needed — only the agent files were
+  missing).
 - **Files**: `tools/scripts/lint/agent-redirector-contract.script.ts` (+
-  spec), `.github/agents/mcp-vertex-*.agent.md` (4 files), new
-  `.codex/agents/*.md` (5 files).
-- **Gate**: type+test; the redirector-contract script run live against
-  this repo's post-slice `.github/agents/` and `.claude/agents/`.
-- **Acceptance**: deleting `.github/agents/mcp-vertex.agent.md` locally
-  and re-running the lint fails loudly with a specific "missing redirector"
-  message; all four bounded subagents read `user-invocable: false`;
-  `.codex/agents/` has all 5 files.
+  spec, 6 new test cases), `.github/agents/mcp-vertex-*.agent.md` (4
+  files), `.claude/agents/mcp-vertex-*.md` (5 files, orchestrator
+  included), new `.codex/agents/mcp-vertex-*.md` (5 files).
+- **Gate**: type+test (20 total redirector-contract cases, all pass);
+  `bun run lint:agents` run live against this repo's post-slice state.
+- **Acceptance**: `checkGithubAgentFile` fails
+  `subagent-user-invocable-not-false` on a fixture pinned from the
+  ACTUAL pre-fix file content (proved the check would have caught the
+  real drift); `checkCanonicalRedirectorPresent` fails
+  `missing-redirector` when `mcp-vertex.agent.md` is absent from the
+  listing (the exact 271c7cf5 scenario) and is silent once present;
+  `bun run lint:agents` is clean against the repaired repo state.
 
 ### S4 — Empirical end-to-end verification + docs
 - **Status**: ready
@@ -237,6 +254,21 @@ its own onboarding claims:
 
 ## Notes
 
+- **`checkClaudeAgentFile` was not extended with a bounded-subagent
+  exemption.** `checkGithubAgentFile` accepts two shapes (pure redirector,
+  or a bounded subagent with the Copilot-adapter disclaimer); its Claude
+  counterpart only ever accepted the pure-redirector shape, and an
+  existing pinned test (`agent-redirector-contract.script.spec.ts`
+  — "warns when name starts with mcp-vertex but body is not the
+  redirector shape") explicitly expects `mcp-vertex-orchestrator` to stay
+  in that stricter shape. Rather than risk that pinned behaviour by adding
+  a second exemption path under time pressure, S3 rewrote all five
+  `.claude/agents/mcp-vertex-*.md` bodies (orchestrator included) to fit
+  the existing pure-redirector shape (≤12 prose lines, no numbered
+  workflow) — which also fully closes the actual bug (stale hardcoded
+  tool names) without touching the lint's Claude-side logic at all. A
+  richer Claude "Compact lane" format, if wanted later, is a separate,
+  reviewable follow-up.
 - **Two parallel scaffolders exist, only one had the namespace bug.**
   S1's investigation found that `mcpv init` (`packages/cli/src/lib/init/`)
   and `create_project` / `<prefix>_scaffold`
