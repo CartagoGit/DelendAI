@@ -217,6 +217,25 @@ because the project already wires mcp-vertex via its own
 and skill are still emitted (those are the contract surface any host
 needs to honour `AGENT-BOOTSTRAP.md`).
 
+**x00201: both `existingMcpVertex` and `mcpServerName` are optional —
+omit them and the scaffolder auto-detects.** Passing them explicitly
+still always wins (detection never overrides a real caller choice), but
+a caller that doesn't already know the target project's state no longer
+needs to. `resolveHostScaffoldDefaults`
+(`packages/core/src/lib/scaffold/detect-existing-install.ts`) inspects
+`mcp-vertex.config.json` presence and `.vscode/mcp.json` / `.mcp.json`
+server entries for an mcp-vertex-shaped launch, and:
+
+- `mcpServerName` is the real MCP server registration key
+  (`.vscode/mcp.json`'s `servers.<key>` / `.mcp.json`'s
+  `mcpServers.<key>`) that generated Copilot agent files reference to
+  qualify tool names (`<key>/<prefix>_overview`). It defaults to
+  `mcp-project-<namespacePrefix>` — correct for greenfield, wrong for
+  almost every guest-mode project, which already registered its own key
+  (routinely just `mcp-vertex`). Passing the wrong (or default, when
+  guest-mode) key produces agent files whose first tool call addresses a
+  server that does not exist.
+
 When to use `existingMcpVertex: true`:
 
 - The project keeps mcp-vertex as a **tooling guest** (not its own MCP
