@@ -1,19 +1,26 @@
 /**
- * f00084 S3 + f00088 S3 — read the live `agent-catalog.generated.json`
- * and produce the canonical set of `.github/agents/mcp-vertex-<role>.agent.md`
- * files.
+ * f00084 S3 + f00088 S3 + x00202 S1 — read the live
+ * `agent-catalog.generated.json` and produce the canonical set of
+ * `.github/agents/mcp-vertex-<role>.agent.md` files.
  *
- * The catalog is the source of truth for `name`, `description`, and the
- * `tools` list of every agent. The module degrades gracefully when the
- * catalog is missing: it falls back to a hardcoded set of 5 canonical
- * roles (locale-keyed; English + Spanish today) so the bootstrap never
- * silently produces nothing.
+ * The catalog is the source of truth for `name` and `description`. The
+ * module degrades gracefully when the catalog is missing (or has no
+ * `agents` array — true for every project today: nothing in this repo
+ * has ever written that key, so this fallback is not a rare edge case,
+ * it is the ONLY path `mcpv init` has ever exercised): it falls back to
+ * a hardcoded set of 5 canonical roles (locale-keyed; English + Spanish
+ * today) so the bootstrap never silently produces nothing.
  *
- * f00088 S3: the fallback agents are now keyed by locale (English is the
- * canonical set; Spanish preserved for backwards compatibility), and
- * `loadAgentDescriptors` accepts an `options.namespacePrefix` so the
- * fallback tools match whatever the operator's running server actually
- * exposes (instead of the hardcoded `mcp-vertex_*` from f00084 S3).
+ * x00202 S1: the fallback bodies no longer hardcode plugin-specific tool
+ * names (`auto_work`, `fs_write`, `search_search`, …) — several had
+ * already rotted (`search_search` doesn't exist; the real tool is
+ * `search`) and this was live-shipping to every `mcpv init` adopter,
+ * silently, because the "read the live catalog" branch above is dead
+ * code. Bodies are now the same rot-proof redirector shape used
+ * elsewhere in this repo (f00031): call `{PREFIX}_overview`, follow
+ * `recommendedNextAction`, never restate a plugin's tool surface — the
+ * ONE tool name safe to hardcode is `overview` itself, a core contract
+ * every mcp-vertex server guarantees, unlike a plugin's tools.
  */
 import { existsSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
@@ -22,6 +29,9 @@ import { join } from 'node:path';
 import type { IAgentDescriptor } from '../../contracts/interfaces/agent-descriptor.interface';
 
 export type { IAgentDescriptor };
+
+/** Substituted with the resolved namespace prefix in every fallback body. */
+const PREFIX_TOKEN = '{PREFIX}';
 
 /**
  * f00088 S3: locale-keyed fallback agents. Adding a new locale is one
@@ -36,127 +46,65 @@ const FALLBACK_AGENTS_BY_LOCALE: Readonly<
 		{
 			role: 'orchestrator',
 			description: 'Multi-agent orchestrator for mcp-vertex',
-			tools: [
-				'PROP_proposals_auto_work',
-				'PROP_proposals_compact_status',
-				'PROP_proposals_proposal_board',
-			],
-			body:
-				'For implementation tasks, delegate to mcp-vertex via auto_work.\n' +
-				'For swarm status, use compact_status or proposal_board.',
+			body: `This file is a thin redirector. The canonical contract lives in the \`mcp-vertex\` MCP server. On the first call of every turn, invoke \`${PREFIX_TOKEN}_overview\` and follow its \`recommendedNextAction\`. For non-trivial work, delegate through the swarm-coordination tools \`overview\` reports. Do not restate the workflow here — hardcoded tool names rot within days.`,
 		},
 		{
 			role: 'proposal-guardian',
 			description: 'Proposal hygiene and planning',
-			tools: [
-				'PROP_proposals_create_proposal',
-				'PROP_proposals_plan',
-				'PROP_proposals_proposal_adopt',
-			],
-			body:
-				'Create proposals before implementing. Run plan to validate slice\n' +
-				'disjointness. Use proposal_adopt to register existing folders.',
+			body: `This file is a thin redirector. The canonical contract lives in the \`mcp-vertex\` MCP server. On the first call of every turn, invoke \`${PREFIX_TOKEN}_overview\` and follow its \`recommendedNextAction\` — it lists the live proposal/planning tools, which change often enough that a hardcoded list here would go stale. Do not restate the workflow here.`,
 		},
 		{
 			role: 'technical-investigator',
 			description: 'Focused technical investigation',
-			tools: [
-				'PROP_proposals_delegate',
-				'PROP_search_search',
-				'PROP_docs_docs_read',
-			],
-			body:
-				'Investigate workspace code using mcp-vertex tools.\n' +
-				'For deep analysis, prefer delegate with agent=technical_investigator.',
+			body: `This file is a thin redirector. The canonical contract lives in the \`mcp-vertex\` MCP server. On the first call of every turn, invoke \`${PREFIX_TOKEN}_overview\` and follow its \`recommendedNextAction\`. Keep investigation narrow and hypothesis-driven; hand back the minimal actionable slice instead of expanding scope. Do not restate the workflow here.`,
 		},
 		{
 			role: 'implementation-runner',
 			description: 'Slice executor (atomic writes with locks)',
-			tools: ['PROP_fs_write', 'PROP_fs_read', 'PROP_search_search'],
-			body:
-				'Implement isolated slices. Before writing, verify no other\n' +
-				'agent holds the file lock. Use fs_write with createDirs=true.',
+			body: `This file is a thin redirector. The canonical contract lives in the \`mcp-vertex\` MCP server. On the first call of every turn, invoke \`${PREFIX_TOKEN}_overview\` and follow its \`recommendedNextAction\`. Claim files before writing with the agent-lock tool \`overview\` reports; a hardcoded tool list here would go stale. Do not restate the workflow here.`,
 		},
 		{
 			role: 'delivery-verifier',
 			description: 'Acceptance and gates verifier',
-			tools: [
-				'PROP_quality_run_quality',
-				'PROP_proposals_proposal_review',
-			],
-			body:
-				'Verify acceptance criteria for each slice. Run quality_run_quality\n' +
-				'before approving. Use proposal_review with approve only when the slice passes gates.',
+			body: `This file is a thin redirector. The canonical contract lives in the \`mcp-vertex\` MCP server. On the first call of every turn, invoke \`${PREFIX_TOKEN}_overview\` and follow its \`recommendedNextAction\` — it lists the live quality-gate and proposal-review tools, which change often enough that a hardcoded list here would go stale. Do not restate the workflow here.`,
 		},
 	],
 	es: [
 		{
 			role: 'orchestrator',
 			description: 'Orquestador multi-agente de mcp-vertex',
-			tools: [
-				'PROP_proposals_auto_work',
-				'PROP_proposals_compact_status',
-				'PROP_proposals_proposal_board',
-			],
-			body:
-				'Para tareas de implementación, delega a mcp-vertex usando auto_work.\n' +
-				'Para ver el estado del swarm, usa compact_status o proposal_board.',
+			body: `Este archivo es un redirector mínimo. El contrato canónico vive en el servidor MCP \`mcp-vertex\`. En la primera llamada de cada turno, invoca \`${PREFIX_TOKEN}_overview\` y sigue su \`recommendedNextAction\`. Para trabajo no trivial, delega a través de las herramientas de coordinación de swarm que reporta \`overview\`. No repitas el flujo de trabajo aquí — los nombres de herramientas fijos quedan obsoletos en días.`,
 		},
 		{
 			role: 'proposal-guardian',
 			description: 'Higiene y planificación de propuestas',
-			tools: [
-				'PROP_proposals_create_proposal',
-				'PROP_proposals_plan',
-				'PROP_proposals_proposal_adopt',
-			],
-			body:
-				'Crea propuestas antes de implementar. Ejecuta plan para validar\n' +
-				'disjointness de slices. Usa proposal_adopt para dar de alta carpetas existentes.',
+			body: `Este archivo es un redirector mínimo. El contrato canónico vive en el servidor MCP \`mcp-vertex\`. En la primera llamada de cada turno, invoca \`${PREFIX_TOKEN}_overview\` y sigue su \`recommendedNextAction\` — enumera las herramientas de propuestas/planificación vigentes, que cambian con la frecuencia suficiente para que una lista fija aquí quede obsoleta. No repitas el flujo de trabajo aquí.`,
 		},
 		{
 			role: 'technical-investigator',
 			description: 'Investigación técnica focalizada',
-			tools: [
-				'PROP_proposals_delegate',
-				'PROP_search_search',
-				'PROP_docs_docs_read',
-			],
-			body:
-				'Investiga código del workspace usando las tools de mcp-vertex.\n' +
-				'Para análisis profundo, prefiere delegate con agent=technical_investigator.',
+			body: `Este archivo es un redirector mínimo. El contrato canónico vive en el servidor MCP \`mcp-vertex\`. En la primera llamada de cada turno, invoca \`${PREFIX_TOKEN}_overview\` y sigue su \`recommendedNextAction\`. Mantén la investigación acotada y guiada por hipótesis; entrega el slice accionable mínimo en vez de ampliar el alcance. No repitas el flujo de trabajo aquí.`,
 		},
 		{
 			role: 'implementation-runner',
 			description: 'Ejecutor de slices (escritura atómica con locks)',
-			tools: ['PROP_fs_write', 'PROP_fs_read', 'PROP_search_search'],
-			body:
-				'Implementa slices aislados. Antes de escribir, verifica que ningún\n' +
-				'otro agente tiene el lock del archivo. Usa fs_write con createDirs=true.',
+			body: `Este archivo es un redirector mínimo. El contrato canónico vive en el servidor MCP \`mcp-vertex\`. En la primera llamada de cada turno, invoca \`${PREFIX_TOKEN}_overview\` y sigue su \`recommendedNextAction\`. Reclama los archivos antes de escribir con la herramienta de bloqueo que reporta \`overview\`; una lista fija aquí quedaría obsoleta. No repitas el flujo de trabajo aquí.`,
 		},
 		{
 			role: 'delivery-verifier',
 			description: 'Verificador de aceptación y gates',
-			tools: [
-				'PROP_quality_run_quality',
-				'PROP_proposals_proposal_review',
-			],
-			body:
-				'Verifica acceptance criteria de cada slice. Ejecuta quality_run_quality\n' +
-				'antes de aprobar. Usa proposal_review con approve solo si el slice pasa gates.',
+			body: `Este archivo es un redirector mínimo. El contrato canónico vive en el servidor MCP \`mcp-vertex\`. En la primera llamada de cada turno, invoca \`${PREFIX_TOKEN}_overview\` y sigue su \`recommendedNextAction\` — enumera las herramientas de quality-gate y revisión de propuestas vigentes, que cambian con la frecuencia suficiente para que una lista fija aquí quede obsoleta. No repitas el flujo de trabajo aquí.`,
 		},
 	],
 };
 
-/** Substitute the literal `PROP` with the resolved namespace prefix. */
-const prefixTools = (
+/** Substitutes `{PREFIX}` with the resolved namespace prefix in a descriptor's body. */
+const applyNamespacePrefix = (
 	descriptor: IAgentDescriptor,
 	namespacePrefix: string,
 ): IAgentDescriptor => ({
 	...descriptor,
-	tools: descriptor.tools.map((tool) =>
-		tool.startsWith('PROP_') ? `${namespacePrefix}_${tool.slice(5)}` : tool,
-	),
+	body: descriptor.body.replaceAll(PREFIX_TOKEN, namespacePrefix),
 });
 
 const pickLocaleFallback = (locale: string): readonly IAgentDescriptor[] =>
@@ -198,9 +146,6 @@ const slugify = (name: string): string =>
 const asString = (v: unknown, fallback = ''): string =>
 	typeof v === 'string' ? v : fallback;
 
-const asStringArray = (v: unknown): readonly string[] =>
-	Array.isArray(v) ? v.filter((x): x is string => typeof x === 'string') : [];
-
 /**
  * Read the catalog (if present) and return the descriptor list. The
  * returned array is the **only** truth — callers should not branch on
@@ -208,8 +153,8 @@ const asStringArray = (v: unknown): readonly string[] =>
  *
  * f00088 S3: accepts `namespacePrefix` (default `'mcp-vertex'`) and
  * `locale` (default `'en'`). The fallback path applies the prefix to
- * every `PROP_<tool>` placeholder so the rendered agent files match
- * what the operator's running server actually exposes.
+ * the `{PREFIX}_overview` placeholder in every body so the rendered
+ * agent files match what the operator's running server actually exposes.
  */
 export const loadAgentDescriptors = async (
 	workspace: string,
@@ -223,7 +168,7 @@ export const loadAgentDescriptors = async (
 	const catalog = await tryReadCatalog(workspace);
 	if (catalog === undefined) {
 		return pickLocaleFallback(locale).map((d) =>
-			prefixTools(d, namespacePrefix),
+			applyNamespacePrefix(d, namespacePrefix),
 		);
 	}
 	const out: IAgentDescriptor[] = [];
@@ -238,12 +183,11 @@ export const loadAgentDescriptors = async (
 				entry.description,
 				`mcp-vertex agent: ${role}`,
 			),
-			tools: asStringArray(entry.tools),
 			body: asString(entry.body, `mcp-vertex agent (${role}).`),
 		});
 	}
 	if (out.length > 0) return out;
 	return pickLocaleFallback(locale).map((d) =>
-		prefixTools(d, namespacePrefix),
+		applyNamespacePrefix(d, namespacePrefix),
 	);
 };
