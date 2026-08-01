@@ -2,10 +2,13 @@
 id: x00201
 kind: fix
 title: "Adopter bootstrap is unusable: wrong MCP server namespace in generated agents, no existing-install detection, and a stale self-hosted redirector"
-status: ready
+status: done
 type: proposal
 track: scaffold+init+adopter-experience+self-hosting+postman-exporter
 date: 2026-08-01
+shipped-in:
+    - 819b95ab # S1+S2 — real MCP server name resolution + existing-install auto-detect
+    - e08d363a # S3 — redirector contract hardening + dogfood re-sync (Copilot/Claude/Codex)
 related:
     - x00200 # closed 3 postman-exporter gaps; left the namespace bug + auto-detect as explicit non-goals
     - f00031 # single-orchestrator redirector contract this proposal hardens
@@ -205,22 +208,51 @@ its own onboarding claims:
   `bun run lint:agents` is clean against the repaired repo state.
 
 ### S4 — Empirical end-to-end verification + docs
-- **Status**: ready
-- Verify S1–S3 against a scratch copy shaped like postman-exporter's real
-  topology (never writing into the actual `postman-exporter` checkout,
-  per the working agreement that repo stays read-only/reference-only for
-  this proposal) — run the scaffold/init path with no explicit flags and
-  confirm the generated agent files resolve tool calls against the
-  project's real server name on the first try. Update
-  `AGENT-BOOTSTRAP.md` / `EXTENSION-AUTHORING.md` to state that
-  `existingMcpVertex` / `mcpServerName` are now auto-detected defaults, not
-  required manual input, and to drop guidance that implied a caller must
-  already know them.
-- **Files**: `docs/mcp-vertex/AGENT-BOOTSTRAP.md`,
-  `docs/mcp-vertex/EXTENSION-AUTHORING.md`, verification transcript
-  captured in this proposal's closing notes.
-- **Gate**: `bun run validate` green; verification log attached to this
-  proposal before it moves to `done/`.
+- **Status**: done
+- **Implementation**: built a scratch fixture at
+  `<scratchpad>/postman-exporter-fixture/` reproducing postman-exporter's
+  REAL `.vscode/mcp.json` (an `mcp-vertex` server launched via
+  `host-server.script.ts`, alongside an unrelated `filesystem` server)
+  and `mcp-vertex.config.json` verbatim (structural shape only, read from
+  the real project — never written into it). Ran `buildScaffoldReport`
+  against it with NO explicit `existingMcpVertex` / `mcpServerName`, for
+  both `kind: 'agent'` and `kind: 'host'`, plus an explicit-override case
+  and a greenfield (empty workspace) control. Updated
+  `EXTENSION-AUTHORING.md`'s `existingMcpVertex` section with a new
+  paragraph documenting that both fields are now auto-detected defaults
+  and explaining what `mcpServerName` is for and why the greenfield
+  default is wrong for almost every guest-mode project.
+  `AGENT-BOOTSTRAP.md` was not touched — it stays a lean pointer file per
+  its own stated purpose, and it never described these scaffolder-level
+  flags to begin with; `EXTENSION-AUTHORING.md` is the correct, existing
+  home for this detail.
+- **Files**: `docs/mcp-vertex/EXTENSION-AUTHORING.md`, verification
+  transcript below.
+- **Gate**: `bun run validate` green (see this proposal's Verification
+  log); the scratch fixture and verify script were deleted after
+  capturing the transcript (one-shot, not checked in).
+- **Verification log** (dry-run, `kind: 'agent'`, no explicit flags,
+  against the postman-exporter-shaped fixture):
+
+  ```
+  references real server key "mcp-vertex/*": true
+  does NOT reference the wrong greenfield key "mcp-project-postman-exporter": true
+  ```
+
+  (`kind: 'host'`, no explicit flags, same fixture):
+
+  ```
+  skipped libs/mcp-project/src/server.ts (guest mode auto-detected): true
+  skipped .vscode/mcp.json overwrite (guest mode auto-detected): true
+  copilot-instructions.md references the real server: true
+  ```
+
+  (explicit override + greenfield control):
+
+  ```
+  explicit mcpServerName honoured over detection: true
+  greenfield still defaults to mcp-project-<prefix>: true
+  ```
 
 ## Acceptance
 
