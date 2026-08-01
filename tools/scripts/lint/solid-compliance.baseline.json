@@ -3365,7 +3365,7 @@
 		"duplicated-cross-plugin:plugins/web-fetch/tests/src/lib/plugin-options.spec.ts:8",
 		"duplicated-cross-plugin:plugins/web-fetch/tests/src/lib/plugin-options.spec.ts:9",
 		"long-switch-chain:packages/core/src/lib/hosts/host-adapter-pack.ts:36",
-		"long-switch-chain:packages/core/src/lib/scaffold/scaffold-tool.ts:223",
+		"long-switch-chain:packages/core/src/lib/scaffold/scaffold-tool.ts:226",
 		"long-switch-chain:plugins/api/src/lib/mock/mock-engine.ts:81",
 		"long-switch-chain:plugins/api/src/lib/spec/openapi.ts:113",
 		"long-switch-chain:plugins/api/src/lib/validate/response-validator.ts:68",
