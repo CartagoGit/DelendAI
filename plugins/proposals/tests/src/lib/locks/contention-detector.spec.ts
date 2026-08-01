@@ -3,11 +3,11 @@ import { dirname, join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
+import { detectContention } from '../../../../src/lib/locks/contention-detector';
 import {
 	noteFileLockContention,
 	resolveFileLockContentions,
 } from '../../../../src/lib/locks/file-lock-table';
-import { detectContention } from '../../../../src/lib/locks/contention-detector';
 
 import { verifyTmpRoot } from './verify-tmp-root';
 
