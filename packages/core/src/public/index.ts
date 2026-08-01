@@ -280,6 +280,13 @@ export type {
 } from '../lib/scaffold/plugin-blueprint';
 export { scaffoldExtensionHostFiles } from '../lib/scaffold/scaffold-extension-host';
 export {
+	detectExistingMcpVertexInstall,
+	findMcpVertexServerName,
+	isMcpVertexLaunchShape,
+	resolveHostScaffoldDefaults,
+} from '../lib/scaffold/detect-existing-install';
+export type { IExistingMcpVertexInstall } from '../lib/scaffold/detect-existing-install';
+export {
 	scaffoldAgentFile,
 	scaffoldClaudeAgentFile,
 	scaffoldClientFiles,
