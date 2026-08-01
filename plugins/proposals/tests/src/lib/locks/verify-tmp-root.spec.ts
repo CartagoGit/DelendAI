@@ -15,8 +15,9 @@
  * The tests below pin three properties of the helper:
  *   1. The root is absolute (not relative to cwd).
  *   2. The root is the same regardless of `process.chdir()`.
- *   3. The root ends in `.cache/mcp-vertex/verify-tmp` (matches
- *      `DEFAULT_CORE_PATHS.cacheDir` + the `verify-tmp` subdir).
+ *   3. The root ends in `.cache/mcp-vertex/verify/lock-specs` (matches
+ *      `DEFAULT_CORE_PATHS.cacheDir` + the sanctioned `verify/` subdir —
+ *      see `check-stray-cache-files.script.ts`'s `SANCTIONED_TOP_LEVEL`).
  */
 
 import { sep } from 'node:path';
@@ -46,10 +47,12 @@ describe('verifyTmpRoot (canonical scratch root)', () => {
 		expect(fromTmp).toBe(fromCwd);
 	});
 
-	it('ends in .cache/mcp-vertex/verify-tmp (matches DEFAULT_CORE_PATHS)', () => {
+	it('ends in .cache/mcp-vertex/verify/lock-specs (matches DEFAULT_CORE_PATHS)', () => {
 		const root = verifyTmpRoot();
 		expect(
-			root.endsWith(`${sep}.cache${sep}mcp-vertex${sep}verify-tmp`),
+			root.endsWith(
+				`${sep}.cache${sep}mcp-vertex${sep}verify${sep}lock-specs`,
+			),
 		).toBe(true);
 	});
 

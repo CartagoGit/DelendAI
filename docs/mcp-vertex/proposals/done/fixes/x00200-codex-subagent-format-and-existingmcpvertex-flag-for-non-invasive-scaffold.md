@@ -1,7 +1,7 @@
 ---
 id: x00200
 title: "Codex CLI custom-subagent format + `existingMcpVertex` flag for non-invasive host scaffolding"
-kind: feat
+kind: fix
 status: done
 type: proposal
 track: scaffold+init+codex+claude-code+self-hosting+adopter-experience+postman-exporter
