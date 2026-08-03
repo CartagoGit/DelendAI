@@ -5,8 +5,9 @@
  * the 2026-07-25 pathology (proposals marked `status: done` while
  * slices still report `pending` or `Files:` don't resolve on disk).
  */
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
+import * as nodeFs from 'node:fs';
 import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
@@ -17,6 +18,7 @@ import {
 	expandDeclaredFiles,
 	guardSlicesComplete,
 	guardTransitionToDone,
+	verifyCompletedProposalAsync,
 } from '../../../../src/lib/services/proposal-completeness';
 
 describe('proposal-completeness — proposal-completeness', () => {
@@ -195,6 +197,77 @@ describe('proposal-completeness — proposal-completeness', () => {
 			if (!result.ok) {
 				expect(result.code).toBe('incomplete-slices');
 			}
+		});
+
+		// x00190: both real production entry points used to fall through
+		// to a sync `statSync` for every declared file — blocking the
+		// event loop on every real `done` transition (a swarm-hot path
+		// hit by every agent). They now pre-resolve files with async
+		// `stat` and never touch `statSync`.
+		it('never calls the sync statSync fallback', async () => {
+			const statSyncSpy = vi.spyOn(nodeFs, 'statSync');
+			const a = join(workdir, 'a.ts');
+			await writeFile(a, '// a');
+			const proposal = join(workdir, 'proposal.md');
+			await writeFile(
+				proposal,
+				`---\nstatus: done\n---\n\n### S1 — done\n- **Files**: \`${a}\`\n- **Status**: done\n`,
+			);
+			const markdown = await (await import('node:fs/promises')).readFile(
+				proposal,
+				'utf8',
+			);
+			const result = await guardTransitionToDone({
+				proposalPath: proposal,
+				markdown,
+			});
+			expect(result.ok).toBe(true);
+			expect(statSyncSpy).not.toHaveBeenCalled();
+			statSyncSpy.mockRestore();
+		});
+	});
+
+	describe('verifyCompletedProposalAsync', () => {
+		it('succeeds for a fully shipped proposal without sync I/O', async () => {
+			const statSyncSpy = vi.spyOn(nodeFs, 'statSync');
+			const a = join(workdir, 'a.ts');
+			await writeFile(a, '// a');
+			const proposal = join(workdir, 'proposal.md');
+			await writeFile(
+				proposal,
+				`---\nstatus: done\n---\n\n### S1 — done\n- **Files**: \`${a}\`\n- **Status**: done\n`,
+			);
+			const result = await verifyCompletedProposalAsync({
+				proposalPath: proposal,
+				read: {
+					readText: (p) =>
+						import('node:fs/promises').then((fs) =>
+							fs.readFile(p, 'utf8'),
+						),
+				},
+			});
+			expect(result.ok).toBe(true);
+			expect(statSyncSpy).not.toHaveBeenCalled();
+			statSyncSpy.mockRestore();
+		});
+
+		it('reports missing-declared-files for a file that does not exist', async () => {
+			const proposal = join(workdir, 'proposal.md');
+			await writeFile(
+				proposal,
+				`---\nstatus: done\n---\n\n### S1 — done\n- **Files**: \`${join(workdir, 'not-there.ts')}\`\n- **Status**: done\n`,
+			);
+			const result = await verifyCompletedProposalAsync({
+				proposalPath: proposal,
+				read: {
+					readText: (p) =>
+						import('node:fs/promises').then((fs) =>
+							fs.readFile(p, 'utf8'),
+						),
+				},
+			});
+			expect(result.ok).toBe(false);
+			if (!result.ok) expect(result.code).toBe('missing-declared-files');
 		});
 	});
 });
