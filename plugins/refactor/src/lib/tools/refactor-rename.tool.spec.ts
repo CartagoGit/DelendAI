@@ -28,7 +28,7 @@ describe('refactor-rename tool', () => {
 	describe('refactor_rename', () => {
 		it('returns a diff via injected planner', async () => {
 			const files = new Map<string, string>([
-				['/root/test.ts', 'const foo = 42;'],
+				['/workspace/root/test.ts', 'const foo = 42;'],
 			]);
 			const reader = vi.fn(async (path: string) => {
 				const content = files.get(path);
@@ -55,10 +55,10 @@ describe('refactor-rename tool', () => {
 			expect(handler).toBeDefined();
 
 			const result = await handler?.({
-				root: '/root',
+				root: 'root',
 				from: 'foo',
 				to: 'bar',
-				scopePaths: ['/root/test.ts'],
+				scopePaths: ['root/test.ts'],
 			});
 
 			expect(result).toBeDefined();
@@ -73,12 +73,12 @@ describe('refactor-rename tool', () => {
 			const parsed = JSON.parse(jsonContent ?? '{}');
 			expect(parsed.totalEdits).toBe(1);
 			expect(parsed.files).toHaveLength(1);
-			expect(parsed.files[0].path).toBe('/root/test.ts');
+			expect(parsed.files[0].path).toBe('/workspace/root/test.ts');
 		});
 
 		it('returns an error for unknown symbol', async () => {
 			const files = new Map<string, string>([
-				['/root/test.ts', 'const foo = 42;'],
+				['/workspace/root/test.ts', 'const foo = 42;'],
 			]);
 			const reader = vi.fn(async (path: string) => {
 				const content = files.get(path);
@@ -101,10 +101,10 @@ describe('refactor-rename tool', () => {
 
 			const handler = mock.tools['test_refactor_rename']?.handler;
 			const result = await handler?.({
-				root: '/root',
+				root: 'root',
 				from: 'bar',
 				to: 'baz',
-				scopePaths: ['/root/test.ts'],
+				scopePaths: ['root/test.ts'],
 			});
 
 			expect(result).toBeDefined();
@@ -114,12 +114,55 @@ describe('refactor-rename tool', () => {
 			};
 			expect(res.isError).toBe(true);
 		});
+
+		// x00184 (F17): `root`/`scopePaths` used to pass an absolute path
+		// straight through with zero containment check.
+		it('rejects an absolute root', async () => {
+			const registrations = buildRefactorRenameToolRegistrations({
+				namespacePrefix: 'test',
+				workspaceRootAbs: '/workspace',
+				readFile: vi.fn(),
+			});
+			const renameTool = registrations.find(
+				(r) => r.id === 'refactor_rename',
+			);
+			const mock = makeMockServer();
+			await renameTool?.register(mock.server as never);
+			const handler = mock.tools['test_refactor_rename']?.handler;
+			const result = await handler?.({
+				root: '/etc',
+				from: 'foo',
+				to: 'bar',
+			});
+			expect((result as { isError?: boolean }).isError).toBe(true);
+		});
+
+		it('rejects a scopePaths entry that escapes the workspace', async () => {
+			const registrations = buildRefactorRenameToolRegistrations({
+				namespacePrefix: 'test',
+				workspaceRootAbs: '/workspace',
+				readFile: vi.fn(),
+			});
+			const renameTool = registrations.find(
+				(r) => r.id === 'refactor_rename',
+			);
+			const mock = makeMockServer();
+			await renameTool?.register(mock.server as never);
+			const handler = mock.tools['test_refactor_rename']?.handler;
+			const result = await handler?.({
+				root: 'root',
+				from: 'foo',
+				to: 'bar',
+				scopePaths: ['../../etc/passwd'],
+			});
+			expect((result as { isError?: boolean }).isError).toBe(true);
+		});
 	});
 
 	describe('refactor_apply', () => {
 		it('writes via fake fs and returns written paths', async () => {
 			const files = new Map<string, string>([
-				['/root/test.ts', 'const foo = 42;'],
+				['/workspace/root/test.ts', 'const foo = 42;'],
 			]);
 			const reader = vi.fn(async (path: string) => {
 				const content = files.get(path);
@@ -150,10 +193,10 @@ describe('refactor-rename tool', () => {
 			expect(handler).toBeDefined();
 
 			const result = await handler?.({
-				root: '/root',
+				root: 'root',
 				files: [
 					{
-						path: '/root/test.ts',
+						path: 'test.ts',
 						hunks: [
 							{
 								oldStart: 1,
@@ -182,28 +225,45 @@ describe('refactor-rename tool', () => {
 			expect(jsonContent).toBeDefined();
 			const parsed = JSON.parse(jsonContent ?? '{}');
 			expect(parsed.written).toHaveLength(1);
-			expect(parsed.written[0]).toBe('/root/test.ts');
+			expect(parsed.written[0]).toBe('test.ts');
 			expect(parsed.gateCommand).toBe('bun run validate');
 			expect(writer).toHaveBeenCalledWith(
-				'/root/test.ts',
+				'/workspace/root/test.ts',
 				expect.stringContaining('const bar = 42;'),
 			);
 		});
 
-		it('rejects out-of-root paths', async () => {
-			const files = new Map<string, string>();
-			const reader = vi.fn(async (path: string) => {
-				const content = files.get(path);
-				if (content === undefined)
-					throw new Error(`Not found: ${path}`);
-				return content;
-			});
+		it('rejects an absolute root', async () => {
 			const writer = vi.fn();
-
 			const registrations = buildRefactorRenameToolRegistrations({
 				namespacePrefix: 'test',
 				workspaceRootAbs: '/workspace',
-				readFile: reader,
+				readFile: vi.fn(),
+				writeFileAtomic: writer,
+			});
+			const applyTool = registrations.find(
+				(r) => r.id === 'refactor_apply',
+			);
+			const mock = makeMockServer();
+			await applyTool?.register(mock.server as never);
+			const handler = mock.tools['test_refactor_apply']?.handler;
+			const result = await handler?.({
+				root: '/etc',
+				files: [{ path: 'passwd', hunks: [] }],
+				consentToken: 'user-confirmed',
+			});
+			expect(result).toBeDefined();
+			const res = result as { isError?: boolean };
+			expect(res.isError).toBe(true);
+			expect(writer).not.toHaveBeenCalled();
+		});
+
+		it('rejects out-of-root paths (../ escape)', async () => {
+			const writer = vi.fn();
+			const registrations = buildRefactorRenameToolRegistrations({
+				namespacePrefix: 'test',
+				workspaceRootAbs: '/workspace',
+				readFile: vi.fn(),
 				writeFileAtomic: writer,
 			});
 
@@ -215,10 +275,10 @@ describe('refactor-rename tool', () => {
 
 			const handler = mock.tools['test_refactor_apply']?.handler;
 			const result = await handler?.({
-				root: '/root',
+				root: 'root',
 				files: [
 					{
-						path: '/outside/test.ts',
+						path: '../outside/test.ts',
 						hunks: [],
 					},
 				],
@@ -231,9 +291,39 @@ describe('refactor-rename tool', () => {
 			expect(writer).not.toHaveBeenCalled();
 		});
 
-		it('echoes the consentToken via gateCommand', async () => {
+		it('rejects an absolute file path even when root is valid', async () => {
+			const writer = vi.fn();
+			const registrations = buildRefactorRenameToolRegistrations({
+				namespacePrefix: 'test',
+				workspaceRootAbs: '/workspace',
+				readFile: vi.fn(),
+				writeFileAtomic: writer,
+			});
+
+			const applyTool = registrations.find(
+				(r) => r.id === 'refactor_apply',
+			);
+			const mock = makeMockServer();
+			await applyTool?.register(mock.server as never);
+
+			const handler = mock.tools['test_refactor_apply']?.handler;
+			const result = await handler?.({
+				root: 'root',
+				files: [{ path: '/etc/passwd', hunks: [] }],
+				consentToken: 'user-confirmed',
+			});
+
+			expect(result).toBeDefined();
+			const res = result as { isError?: boolean };
+			expect(res.isError).toBe(true);
+			expect(writer).not.toHaveBeenCalled();
+		});
+
+		// x00184 (F18): `consentToken` was accepted but never echoed back —
+		// the output contract promised an echo that never shipped.
+		it('echoes the consentToken back in the output', async () => {
 			const files = new Map<string, string>([
-				['/root/test.ts', 'const foo = 42;'],
+				['/workspace/root/test.ts', 'const foo = 42;'],
 			]);
 			const reader = vi.fn(async (path: string) => {
 				const content = files.get(path);
@@ -258,10 +348,10 @@ describe('refactor-rename tool', () => {
 
 			const handler = mock.tools['test_refactor_apply']?.handler;
 			const result = await handler?.({
-				root: '/root',
+				root: 'root',
 				files: [
 					{
-						path: '/root/test.ts',
+						path: 'test.ts',
 						hunks: [],
 					},
 				],
@@ -276,6 +366,7 @@ describe('refactor-rename tool', () => {
 				(c) => c.type === 'text',
 			)?.text;
 			const parsed = JSON.parse(jsonContent ?? '{}');
+			expect(parsed.consentToken).toBe('my-token-123');
 			expect(parsed.gateCommand).toBe('bun run validate');
 		});
 	});

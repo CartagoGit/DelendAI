@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-07-30T00:59:13.540Z",
+	"generatedAt": "2026-07-29T23:12:13.675Z",
 	"mode": "compact",
 	"tools": [
 		{
@@ -1110,9 +1110,9 @@
 				"kind": "feat"
 			},
 			{
-				"id": "x00184",
-				"title": "x00184",
-				"track": "plugins+audit-followup",
+				"id": "x00183",
+				"title": "x00183",
+				"track": "core+audit-followup",
 				"status": "ready",
 				"kind": "fix"
 			},
