@@ -1,4 +1,5 @@
 import { stat } from 'node:fs/promises';
+import { isAbsolute, resolve } from 'node:path';
 import { expandDeclaredFiles } from '../proposals/expand-declared-files';
 /**
  * proposal-completeness.ts
@@ -128,21 +129,38 @@ export const collectSliceStatuses = (
 };
 
 /**
- * Pure check: every slice must be `done` AND every declared file must
- * resolve on disk (sync probe). The async probe is split out in
- * `verifyCompletedProposalAsync` for tests that use `Bun.write` /
- * tmp dirs.
+ * Every slice must be `done` AND every declared file must resolve on
+ * disk. a00084 F16: the default probe used to be `require('node:fs').
+ * statSync` — sync I/O in a path reachable from the public
+ * `proposal_transition` handler, which can iterate a long `Files:`
+ * list on a large proposal. Default probe is now `fs/promises.stat`;
+ * callers can still inject a custom `fileExists` (sync or async) for
+ * tests.
+ *
+ * `workspaceRoot`, when given, resolves relative `Files:` entries
+ * against it instead of the default probe's implicit `process.cwd()`
+ * — the same "never trust cwd, take an explicit root" rule this
+ * session already applied elsewhere (x00186). Without it, a host
+ * launched from a different directory than the workspace (or an
+ * isolated test using its own tmp workspace) would silently probe the
+ * wrong location.
  */
-export const guardSlicesComplete = (input: {
+export const guardSlicesComplete = async (input: {
 	readonly markdown: string;
-	readonly fileExists?: (path: string) => boolean;
-}): ICompletenessResult => {
+	readonly workspaceRoot?: string;
+	readonly fileExists?: (path: string) => boolean | Promise<boolean>;
+}): Promise<ICompletenessResult> => {
 	const slices = collectSliceStatuses(input.markdown);
+	const workspaceRoot = input.workspaceRoot;
 	const probe =
 		input.fileExists ??
-		((p) => {
+		(async (p: string) => {
+			const target =
+				workspaceRoot !== undefined && !isAbsolute(p)
+					? resolve(workspaceRoot, p)
+					: p;
 			try {
-				require('node:fs').statSync(p);
+				await stat(target);
 				return true;
 			} catch {
 				return false;
@@ -154,7 +172,7 @@ export const guardSlicesComplete = (input: {
 	for (const slice of slices) {
 		if (slice.status !== 'done') continue;
 		for (const file of slice.files) {
-			if (!probe(file)) missing.push(file);
+			if (!(await probe(file))) missing.push(file);
 		}
 	}
 
@@ -180,39 +198,9 @@ export const guardSlicesComplete = (input: {
 };
 
 /**
- * x00190: pre-resolve every `done`-slice declared file with the async
- * `stat` (already imported) BEFORE calling the sync `guardSlicesComplete`,
- * so the swarm-hot-path callers below (`guardTransitionToDone`,
- * `verifyCompletedProposalAsync` — both invoked by `proposal_transition`
- * on every real `done` move) never block the event loop with sync I/O.
- * `guardSlicesComplete` itself stays sync/pure (its own default
- * `statSync` fallback is intentional for direct, offline callers — e.g.
- * a CLI script — and is covered by its own tests), only these two
- * production entry points now inject a pre-resolved, non-blocking
- * predicate instead of falling through to that default.
- */
-const buildAsyncFileExistsSet = async (
-	files: ReadonlyArray<string>,
-): Promise<ReadonlySet<string>> => {
-	const existing = new Set<string>();
-	await Promise.all(
-		files.map(async (file) => {
-			try {
-				await stat(file);
-				existing.add(file);
-			} catch {
-				// missing — not added
-			}
-		}),
-	);
-	return existing;
-};
-
-/**
- * Convenience: read the proposal markdown from disk and run the
- * completeness check with a non-blocking, pre-resolved file-existence
- * predicate. Async variant lets the caller mount a `fs/promises`-style
- * reader for tmpdir-based tests.
+ * Convenience: read the proposal markdown from disk (via the injected
+ * reader, so tmpdir-based tests can mount their own) and run the
+ * completeness check with the default async `fs/promises.stat` probe.
  */
 export interface IReadMarkdown {
 	readonly readText: (path: string) => Promise<string>;
@@ -223,15 +211,7 @@ export const verifyCompletedProposalAsync = async (input: {
 	readonly read: IReadMarkdown;
 }): Promise<ICompletenessResult> => {
 	const markdown = await input.read.readText(input.proposalPath);
-	const slices = collectSliceStatuses(markdown);
-	const doneFiles = slices
-		.filter((s) => s.status === 'done')
-		.flatMap((s) => s.files);
-	const existing = await buildAsyncFileExistsSet(doneFiles);
-	return guardSlicesComplete({
-		markdown,
-		fileExists: (p) => existing.has(p),
-	});
+	return guardSlicesComplete({ markdown });
 };
 
 /**
@@ -243,15 +223,13 @@ export const verifyCompletedProposalAsync = async (input: {
 export const guardTransitionToDone = async (input: {
 	readonly proposalPath: string;
 	readonly markdown: string;
+	readonly workspaceRoot?: string;
 }): Promise<ICompletenessResult> => {
-	const slices = collectSliceStatuses(input.markdown);
-	const doneFiles = slices
-		.filter((s) => s.status === 'done')
-		.flatMap((s) => s.files);
-	const existing = await buildAsyncFileExistsSet(doneFiles);
-	const result = guardSlicesComplete({
+	const result = await guardSlicesComplete({
 		markdown: input.markdown,
-		fileExists: (p) => existing.has(p),
+		...(input.workspaceRoot !== undefined
+			? { workspaceRoot: input.workspaceRoot }
+			: {}),
 	});
 	if (!result.ok) return result;
 	// Re-check that the proposal-path itself is readable — guards

@@ -99,7 +99,7 @@ describe('proposal-completeness — proposal-completeness', () => {
 - **Files**: \`${a}\`
 - **Status**: done
 `;
-			const result = guardSlicesComplete({ markdown: md });
+			const result = await guardSlicesComplete({ markdown: md });
 			expect(result.ok).toBe(true);
 		});
 
@@ -115,7 +115,7 @@ describe('proposal-completeness — proposal-completeness', () => {
 - **Files**: \`${a}\`
 - **Status**: done
 `;
-			const result = guardSlicesComplete({ markdown: md });
+			const result = await guardSlicesComplete({ markdown: md });
 			expect(result.ok).toBe(false);
 			if (!result.ok) {
 				expect(result.code).toBe('incomplete-slices');
@@ -130,7 +130,7 @@ describe('proposal-completeness — proposal-completeness', () => {
 - **Files**: \`${missing}\`
 - **Status**: done
 `;
-			const result = guardSlicesComplete({ markdown: md });
+			const result = await guardSlicesComplete({ markdown: md });
 			expect(result.ok).toBe(false);
 			if (!result.ok) {
 				expect(result.code).toBe('missing-declared-files');
@@ -144,7 +144,7 @@ describe('proposal-completeness — proposal-completeness', () => {
 - **Files**: \`does/not/exist.ts\`
 - **Status**: pending
 `;
-			const result = guardSlicesComplete({ markdown: md });
+			const result = await guardSlicesComplete({ markdown: md });
 			expect(result.ok).toBe(false);
 			if (!result.ok) {
 				expect(result.code).toBe('incomplete-slices');
@@ -152,9 +152,9 @@ describe('proposal-completeness — proposal-completeness', () => {
 			}
 		});
 
-		it('treats a proposal with zero slices as incomplete (not a free pass)', () => {
+		it('treats a proposal with zero slices as incomplete (not a free pass)', async () => {
 			const md = `Just a front-matter; no Slices section.`;
-			const result = guardSlicesComplete({ markdown: md });
+			const result = await guardSlicesComplete({ markdown: md });
 			expect(result.ok).toBe(true); // empty plan => no slices to wait on
 		});
 	});
