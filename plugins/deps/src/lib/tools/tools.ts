@@ -316,6 +316,7 @@ export const buildDepsToolRegistrations = (
 					{
 						description:
 							'List declared dependencies from whichever of pyproject.toml (PEP 621 `[project] dependencies` and/or Poetry `[tool.poetry.dependencies]`), Cargo.toml ([dependencies]/[dev-dependencies]/[build-dependencies]) and go.mod (require) exist at the workspace root. Each entry has {ecosystem,name,range,section}. Read-only, offline, no CVE database — same contract as deps_list, for non-npm ecosystems.',
+						inputSchema: z.object({}).strict(),
 						outputSchema: z.object({
 							manifests: z.array(
 								z.object({
