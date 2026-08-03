@@ -1,6 +1,6 @@
 {
 	"name": "@mcp-vertex/security",
-	"version": "0.1.0",
+	"version": "0.1.1",
 	"type": "module",
 	"description": "Security scanning plugin for @mcp-vertex/core: security_secrets detects leaked secrets (private keys, cloud/API tokens) with high-precision offline rules and normalized findings. No network. Load with `mcp-vertex --plugins=security`.",
 	"author": "Cartago",
@@ -51,7 +51,7 @@
 		"verify:security": "bun ../../tools/scripts/verify/security.script.ts"
 	},
 	"peerDependencies": {
-		"@mcp-vertex/core": "^0.1.0"
+		"@mcp-vertex/core": "^0.1.1"
 	},
 	"dependencies": {
 		"@mcp-vertex/deps": "workspace:*",

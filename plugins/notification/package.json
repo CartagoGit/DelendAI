@@ -1,6 +1,6 @@
 {
 	"name": "@mcp-vertex/notification",
-	"version": "0.1.0",
+	"version": "0.1.1",
 	"type": "module",
 	"description": "Lock-release notification plugin for @mcp-vertex/core: watches the shared lock file and pushes an MCP notifications/message when a claim frees, so agents stop polling agent_lock. Load with `mcp-vertex --plugins=notification`.",
 	"author": "Cartago",
@@ -44,7 +44,7 @@
 		"build": "bun ../../tools/scripts/compile/build.script.ts plugins/notification"
 	},
 	"peerDependencies": {
-		"@mcp-vertex/core": "^0.1.0"
+		"@mcp-vertex/core": "^0.1.1"
 	},
 	"dependencies": {
 		"@modelcontextprotocol/sdk": "^1.29.0",

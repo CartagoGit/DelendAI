@@ -1,6 +1,6 @@
 {
 	"name": "@mcp-vertex/container",
-	"version": "0.1.0",
+	"version": "0.1.1",
 	"type": "module",
 	"description": "Container inspection plugin for @mcp-vertex/core: read-only Docker and Kubernetes inspection via docker/kubectl with install hints.",
 	"author": "Cartago",

@@ -1,6 +1,6 @@
 {
 	"name": "@mcp-vertex/docs",
-	"version": "0.1.0",
+	"version": "0.1.1",
 	"type": "module",
 	"description": "Project documentation plugin for @mcp-vertex/core: catalogue + read the repo markdown (docs_list / docs_read). Load with `mcp-vertex --plugins=docs`.",
 	"author": "Cartago",
@@ -43,7 +43,7 @@
 		"build": "bun ../../tools/scripts/compile/build.script.ts plugins/docs"
 	},
 	"peerDependencies": {
-		"@mcp-vertex/core": "^0.1.0"
+		"@mcp-vertex/core": "^0.1.1"
 	},
 	"dependencies": {
 		"@modelcontextprotocol/sdk": "^1.29.0",

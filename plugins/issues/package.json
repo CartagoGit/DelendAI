@@ -1,6 +1,6 @@
 {
 	"name": "@mcp-vertex/issues",
-	"version": "0.1.0",
+	"version": "0.1.1",
 	"type": "module",
 	"description": "Opt-in GitHub issues plugin for @mcp-vertex/core: ingest, mechanically pre-analyse and (optionally) promote GitHub issues to proposals. Requires the `proposals` plugin to be loaded in the same load set. Load with `mcp-vertex --plugins=proposals,issues`.",
 	"author": "Cartago",
@@ -44,7 +44,7 @@
 		"build": "bun ../../tools/scripts/compile/build.script.ts plugins/issues"
 	},
 	"peerDependencies": {
-		"@mcp-vertex/core": "^0.1.0"
+		"@mcp-vertex/core": "^0.1.1"
 	},
 	"dependencies": {
 		"@modelcontextprotocol/sdk": "^1.29.0",

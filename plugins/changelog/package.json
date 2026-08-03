@@ -1,6 +1,6 @@
 {
 	"name": "@mcp-vertex/changelog",
-	"version": "0.1.0",
+	"version": "0.1.1",
 	"private": true,
 	"type": "module",
 	"description": "Changelog generation + semver bump inference + release-plan preview from conventional commits (f00131 S1+S2+S3).",

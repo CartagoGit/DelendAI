@@ -1,6 +1,6 @@
 {
 	"name": "@mcp-vertex/orchestrator-runner",
-	"version": "0.1.0",
+	"version": "0.1.1",
 	"type": "module",
 	"description": "The routing brain for @mcp-vertex/core: healthchecks installed model providers, scores them against a task's capability hints, and advises which provider to route to. Headless (no subprocess spawning). Depends on the usage-tracking plugin. Load with `mcp-vertex --plugins=usage-tracking,orchestrator-runner`.",
 	"author": "Cartago",
@@ -46,7 +46,7 @@
 		"build": "bun ../../tools/scripts/compile/build.script.ts plugins/orchestrator-runner"
 	},
 	"peerDependencies": {
-		"@mcp-vertex/core": "^0.1.0"
+		"@mcp-vertex/core": "^0.1.1"
 	},
 	"dependencies": {
 		"@modelcontextprotocol/sdk": "^1.29.0",
