@@ -5,7 +5,11 @@ import {
 	buildRunAllToolRegistration,
 	runAllScopes,
 } from '@mcp-vertex/quality/lib/services/run-all';
-import type { IFileReader } from '@mcp-vertex/core/public';
+import type {
+	IFileReader,
+	ILogsSink,
+	ISinkEvent,
+} from '@mcp-vertex/core/public';
 
 const reader = (files: Record<string, string>): IFileReader => ({
 	readFile: async (p) => files[p],
@@ -149,5 +153,43 @@ describe('quality_run_all tool registration', async () => {
 			ok: true,
 			scopes: 2,
 		});
+	});
+
+	// x00190 follow-up: quality_run_all was added after f00154 S3 wired
+	// incident logging into run_quality and never got the same wrapper —
+	// its toolError path emitted no incident even though a logsSink was
+	// already being passed into the same options object.
+	it('emits an incident on the logsSink when no scopes are configured', async () => {
+		const recorded: ISinkEvent[] = [];
+		const fakeSink: ILogsSink = {
+			id: 'fake',
+			record: async (event) => {
+				recorded.push(event);
+			},
+		};
+		const registration = buildRunAllToolRegistration({
+			namespacePrefix: 'quality',
+			reader: reader({}),
+			workspaceRoot: '/ws',
+			run: async () => ({ code: 0, output: '', timedOut: false }),
+			logsSink: fakeSink,
+		});
+
+		let handler: ((args: unknown) => Promise<unknown>) | undefined;
+		const fakeServer = {
+			registerTool: (
+				_name: string,
+				_def: unknown,
+				fn: (args: unknown) => Promise<unknown>,
+			) => {
+				handler = fn;
+			},
+		} as unknown as Parameters<typeof registration.register>[0];
+
+		await registration.register(fakeServer);
+		const result = (await handler?.({})) as { isError?: boolean };
+		expect(result.isError).toBe(true);
+		expect(recorded).toHaveLength(1);
+		expect(recorded[0]?.incidentType).toBe('quality-failure');
 	});
 });

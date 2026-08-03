@@ -151,6 +151,25 @@ describe('git_commit / git_push (S9)', async () => {
 		).toContain('refusing --amend');
 	});
 
+	// x00190 follow-up: `agent` is optional in the schema (most non-amend
+	// callers never pass it), but the ownership guard only ever fired
+	// when BOTH lastAuthor and agent were known — omitting agent entirely
+	// silently skipped the check instead of refusing, letting any caller
+	// bypass it by simply not identifying itself.
+	it('refuses --amend when no agent identity is supplied at all', async () => {
+		await writeFile(join(repoDir, 'g.txt'), 'g\n', 'utf8');
+		const result = await runGitCommit(runner, {
+			message: 'feat: amend with no agent',
+			files: ['g.txt'],
+			amend: true,
+		});
+		expect(result.isError).toBe(true);
+		expect(
+			(result.structuredContent as { error: { reason: string } }).error
+				.reason,
+		).toContain('refusing --amend');
+	});
+
 	it('rejects an empty commit message', async () => {
 		const result = await runGitCommit(runner, { message: '   ' });
 		expect(result.isError).toBe(true);

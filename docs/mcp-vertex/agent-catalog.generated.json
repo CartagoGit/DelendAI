@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-07-30T12:59:45.092Z",
+	"generatedAt": "2026-07-29T23:48:17.092Z",
 	"mode": "compact",
 	"tools": [
 		{
@@ -202,6 +202,10 @@
 		},
 		{
 			"name": "mcp-vertex_forge_release",
+			"plugin": "forge"
+		},
+		{
+			"name": "mcp-vertex_forge_search_code",
 			"plugin": "forge"
 		},
 		{

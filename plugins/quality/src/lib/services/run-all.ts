@@ -1,7 +1,15 @@
 import z from 'zod';
 
-import type { IFileReader, IToolRegistration } from '@mcp-vertex/core/public';
-import { toolError, toolJson } from '@mcp-vertex/core/public';
+import type {
+	IFileReader,
+	ILogsSink,
+	IToolRegistration,
+} from '@mcp-vertex/core/public';
+import {
+	toolError,
+	toolJson,
+	withIncidentLogging,
+} from '@mcp-vertex/core/public';
 
 import type { ICommandPolicy } from './command-policy';
 import type { ICommandRunner, IScopeCommand } from './runner';
@@ -78,6 +86,14 @@ export interface IRunAllToolOptions {
 	readonly run: ICommandRunner;
 	readonly optionScopes?: Readonly<Record<string, readonly string[]>>;
 	readonly commandPolicy?: ICommandPolicy;
+	/**
+	 * x00190 follow-up: `quality_run_all` was added after f00154 S3 wired
+	 * incident logging into `run_quality` and never got the same wrapper
+	 * — its `toolError` path silently emitted no incident even though
+	 * `index.ts` already passes a `logsSink` into this same options
+	 * object (the field just wasn't declared/read here).
+	 */
+	readonly logsSink?: ILogsSink;
 }
 
 const scopesOf = async (options: IRunAllToolOptions): Promise<IScopeMap> =>
@@ -122,24 +138,30 @@ export const buildRunAllToolRegistration = (
 					}),
 				}),
 			},
-			async () => {
-				const scopes = await scopesOf(options);
-				const names = Object.keys(scopes);
-				if (names.length === 0) {
-					return toolError(
-						'no quality scopes configured',
-						'Add scripts to package.json, a validationMatrix to `<config-file>`, or `scopes` to the plugin options.',
+			withIncidentLogging(
+				{ incidentType: 'quality-failure' },
+				options.logsSink !== undefined
+					? { logsSink: options.logsSink }
+					: {},
+				async () => {
+					const scopes = await scopesOf(options);
+					const names = Object.keys(scopes);
+					if (names.length === 0) {
+						return toolError(
+							'no quality scopes configured',
+							'Add scripts to package.json, a validationMatrix to `<config-file>`, or `scopes` to the plugin options.',
+						);
+					}
+					return toolJson(
+						await runAllScopes(
+							scopes,
+							options.workspaceRoot,
+							options.run,
+							options.commandPolicy,
+						),
 					);
-				}
-				return toolJson(
-					await runAllScopes(
-						scopes,
-						options.workspaceRoot,
-						options.run,
-						options.commandPolicy,
-					),
-				);
-			},
+				},
+			),
 		);
 	},
 });
