@@ -131,13 +131,7 @@ export const registerOpenAgentCatalogCommand = (deps: ICommandDeps) =>
 				panel.webview.html = await loadCatalogHtml(service, copy);
 				panel.webview.onDidReceiveMessage?.(async (raw: unknown) => {
 					const parsed = AGENT_CATALOG_MESSAGE_SCHEMA.safeParse(raw);
-					if (!parsed.success) {
-						console.warn(
-							'[mcp-vertex] dropped invalid webview message',
-							parsed.error.issues,
-						);
-						return;
-					}
+					if (!parsed.success) return;
 					const message = parsed.data;
 					if (message.command === 'refresh') {
 						service.invalidate();
