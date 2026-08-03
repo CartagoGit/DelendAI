@@ -26,6 +26,15 @@ export interface IScaffoldHostOptions {
 	/** Default agent model id. */
 	readonly defaultModel?: string;
 	/**
+	 * x00183 (F6): Claude Code's recognised `model:` aliases (e.g.
+	 * `sonnet`, `opus`) — provider-specific, so core never bakes them in.
+	 * Hosts that want the Claude subagent file's `model:` field
+	 * short-circuited for a bare alias (not just a `claude-…` id) pass
+	 * their alias list here. Default empty: an alias-less `defaultModel`
+	 * only resolves through the generic `claude-` prefix check.
+	 */
+	readonly claudeModelAliases?: readonly string[];
+	/**
 	 * Namespaced ids of the bootstrap tools that the generated host should
 	 * reference from its agent/instructions files. Defaults to
 	 * `[\`<prefix>_analyze_project\`, \`<prefix>_plan_mcp_project\`,
@@ -280,19 +289,13 @@ This file is only the Copilot adapter; the agent contract lives in \`mcp-project
 	};
 };
 
-/** Claude Code's recognised `model:` aliases — anything else is omitted so the field defaults to `inherit` rather than shipping an invalid value. */
-const CLAUDE_MODEL_ALIASES = new Set([
-	'sonnet',
-	'opus',
-	'haiku',
-	'fable',
-	'inherit',
-]);
-
-const claudeModelField = (defaultModel: string | undefined): string => {
+const claudeModelField = (
+	defaultModel: string | undefined,
+	claudeModelAliases: readonly string[] = [],
+): string => {
 	if (defaultModel === undefined) return '';
 	if (
-		CLAUDE_MODEL_ALIASES.has(defaultModel) ||
+		claudeModelAliases.includes(defaultModel) ||
 		defaultModel.startsWith('claude-')
 	) {
 		return `\nmodel: ${defaultModel}`;
@@ -326,7 +329,10 @@ export const scaffoldClaudeAgentFile = (
 	const prefix = options.namespacePrefix;
 	const isRoot = slot === 'orchestrator';
 	const name = kebab(slot);
-	const modelField = claudeModelField(options.defaultModel);
+	const modelField = claudeModelField(
+		options.defaultModel,
+		options.claudeModelAliases,
+	);
 	return {
 		path: `.claude/agents/${name}.md`,
 		content: `---
