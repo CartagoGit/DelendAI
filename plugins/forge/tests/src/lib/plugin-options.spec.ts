@@ -32,6 +32,7 @@ describe('@mcp-vertex/forge optionsSchema', async () => {
 			'pr_comment',
 			'issue_create',
 			'release',
+			'search_code',
 		]);
 	});
 

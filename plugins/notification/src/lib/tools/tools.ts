@@ -127,6 +127,7 @@ export const buildNotifyRegistration = (
 				{
 					description:
 						'Report the lock-release notifier: the watched lock file, how many lock-released notifications it has pushed, and the most recent releases. The notifier emits notifications/message {event:"lock-released",taskId,agent,files} so agents react to freed files instead of polling agent_lock.',
+					inputSchema: z.object({}).strict(),
 					outputSchema: z.object({
 						watching: z.string(),
 						emitted: z.number(),

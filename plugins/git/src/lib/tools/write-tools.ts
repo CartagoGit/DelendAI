@@ -113,8 +113,9 @@ export interface IGitCommitArgs {
 	readonly amend?: boolean | undefined;
 	/**
 	 * Identity of the calling agent, used ONLY to guard `--amend` against
-	 * clobbering another agent's commit. Optional because most callers
-	 * never amend.
+	 * clobbering another agent's commit. Optional for a normal commit;
+	 * REQUIRED when `amend: true` — omitting it refuses the amend rather
+	 * than silently skipping the ownership check.
 	 */
 	readonly agent?: string | undefined;
 }
@@ -149,13 +150,20 @@ export const runGitCommit = async (
 
 	const amend = args.amend === true;
 	if (amend) {
-		const lastAuthor = await gitLastCommitAuthor(run);
+		// x00190 follow-up: the ownership check below only ever fires when
+		// BOTH lastAuthor and agent are known — omitting `agent` (allowed
+		// by the schema; most non-amend callers never pass it) silently
+		// skipped the whole guard instead of refusing, so any caller could
+		// bypass it by simply not identifying itself.
 		const agent = args.agent;
-		if (
-			lastAuthor !== undefined &&
-			agent !== undefined &&
-			lastAuthor !== agent
-		) {
+		if (agent === undefined) {
+			return toolError(
+				'refusing --amend: no agent identity supplied',
+				'Pass `agent` (your agent name) so the ownership guard can verify you authored the last commit.',
+			);
+		}
+		const lastAuthor = await gitLastCommitAuthor(run);
+		if (lastAuthor !== undefined && lastAuthor !== agent) {
 			return toolError(
 				`refusing --amend: last commit author "${lastAuthor}" does not match agent "${agent}"`,
 				'Only amend a commit your own agent authored; create a new commit instead.',
@@ -294,7 +302,7 @@ export const buildGitWriteToolRegistrations = (
 					`${prefix}_commit`,
 					{
 						description:
-							'Stages `files` (or everything already staged when omitted) and creates a commit. `message` MUST start with a Conventional Commit prefix (feat/fix/refactor/perf/docs/test/chore/build/ci/style/revert, optionally scoped and/or `!`). `amend: true` rewrites the last commit — refused unless the last commit author matches `agent`. Write effect.',
+							'Stages `files` (or everything already staged when omitted) and creates a commit. `message` MUST start with a Conventional Commit prefix (feat/fix/refactor/perf/docs/test/chore/build/ci/style/revert, optionally scoped and/or `!`). `amend: true` rewrites the last commit — requires `agent`, and is refused unless the last commit author matches it. Write effect.',
 						inputSchema: z.object({
 							message: z.string(),
 							files: z.array(z.string()).optional(),
