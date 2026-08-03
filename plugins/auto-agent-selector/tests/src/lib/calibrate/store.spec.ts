@@ -25,4 +25,26 @@ describe('realCalibrationStore', () => {
 		const store = realCalibrationStore(join(tmp(), 'nope'));
 		expect(await store.readAll()).toEqual([]);
 	});
+
+	// x00190: `taskType` is free text with no cap or enum — a durable,
+	// append-only log later re-surfaced via auto_recommend's blend and
+	// prompt-eval's win-rate summaries — with zero redaction before this
+	// fix.
+	it('redacts a high-confidence secret out of taskType before persisting', async () => {
+		const dir = tmp();
+		const store = realCalibrationStore(dir);
+		await store.append({
+			providerId: 'a',
+			success: true,
+			taskType: 'implement: leaked key sk-ant-api03-abcdefghijklmnop',
+		});
+		const all = await store.readAll();
+		expect(all[0]?.taskType).not.toContain('sk-ant-api03-abcdefghijklmnop');
+		expect(all[0]?.taskType).toContain('[REDACTED]');
+		const raw = await (await import('node:fs/promises')).readFile(
+			join(dir, 'calibration.jsonl'),
+			'utf8',
+		);
+		expect(raw).not.toContain('sk-ant-api03-abcdefghijklmnop');
+	});
 });

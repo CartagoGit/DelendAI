@@ -31,6 +31,21 @@ describe('policy-store', () => {
 		expect(typeof read?.setAt).toBe('string');
 	});
 
+	// x00190: `reason` used to be persisted verbatim and later echoed
+	// back to every future caller via get_test_policy's `overrideReason`
+	// — a durable, re-surfaced value with zero redaction.
+	it('redacts a high-confidence secret out of reason before persisting', async () => {
+		await writePolicyOverride(cacheDir, {
+			mode: 'tests-after',
+			reason: 'disabling TDD, key sk-ant-api03-abcdefghijklmnop leaked',
+		});
+		const read = await readPolicyOverride(cacheDir);
+		expect(read?.reason).not.toContain('sk-ant-api03-abcdefghijklmnop');
+		expect(read?.reason).toContain('[REDACTED]');
+		const raw = await readFile(join(cacheDir, 'policy.json'), 'utf8');
+		expect(raw).not.toContain('sk-ant-api03-abcdefghijklmnop');
+	});
+
 	it('the write is durable JSON on disk (atomic path)', async () => {
 		await writePolicyOverride(cacheDir, { mode: 'none' });
 		const raw = await readFile(join(cacheDir, 'policy.json'), 'utf8');
