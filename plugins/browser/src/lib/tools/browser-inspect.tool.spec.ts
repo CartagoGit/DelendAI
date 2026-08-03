@@ -32,15 +32,21 @@ const fakeDriver = (): IBrowserDriver => ({
 	assert: async () => ({ passed: true }),
 });
 
+// a00084 F13: pluginCacheDir is required (no more process.cwd() fallback),
+// so every call site must supply one; tests that don't assert on the cache
+// dir itself get this fixed dummy value.
+const DEFAULT_TEST_CACHE_DIR = '/tmp/browser-inspect-tool-spec-default';
+
 const registration = (
 	id: string,
 	options: Omit<
 		Parameters<typeof buildBrowserInspectToolRegistrations>[0],
-		'namespacePrefix'
-	>,
+		'namespacePrefix' | 'pluginCacheDir'
+	> & { pluginCacheDir?: string },
 ) => {
 	const found = buildBrowserInspectToolRegistrations({
 		namespacePrefix: 'browser',
+		pluginCacheDir: DEFAULT_TEST_CACHE_DIR,
 		...options,
 	}).find((entry) => entry.id === id);
 	if (found === undefined) throw new Error(`missing registration: ${id}`);
