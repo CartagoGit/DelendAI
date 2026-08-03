@@ -1,6 +1,6 @@
 {
 	"name": "@mcp-vertex/api",
-	"version": "0.1.0",
+	"version": "0.1.1",
 	"type": "module",
 	"description": "OpenAPI-aware request building, contract validation and mocking on top of the allow-listed web-fetch engine.",
 	"author": "Cartago",
@@ -40,7 +40,7 @@
 		"test": "vitest run"
 	},
 	"peerDependencies": {
-		"@mcp-vertex/core": "workspace:*",
+		"@mcp-vertex/core": "^0.1.1",
 		"@mcp-vertex/web-fetch": "workspace:*"
 	}
 }

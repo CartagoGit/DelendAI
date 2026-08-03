@@ -1,6 +1,6 @@
 {
 	"name": "@mcp-vertex/prompt-eval",
-	"version": "0.1.0",
+	"version": "0.1.1",
 	"type": "module",
 	"description": "Benchmark a prompt across the providers auto-agent-selector discovers, scoring cost × quality on the project's own acceptance checks; writes the resulting win-rates into the auto-agent-selector calibration store. Load with mcp-vertex --plugins=prompt-eval.",
 	"author": "Cartago",
@@ -43,7 +43,7 @@
 		"build": "bun ../../tools/scripts/compile/build.script.ts plugins/prompt-eval"
 	},
 	"peerDependencies": {
-		"@mcp-vertex/core": "^0.1.0",
+		"@mcp-vertex/core": "^0.1.1",
 		"@mcp-vertex/auto-agent-selector": "^0.1.0",
 		"@mcp-vertex/orchestrator-runner": "^0.1.0"
 	},

@@ -1,6 +1,6 @@
 {
 	"name": "@mcp-vertex/conventions",
-	"version": "0.1.0",
+	"version": "0.1.1",
 	"type": "module",
 	"description": "File-convention plugin for @mcp-vertex/core: a consumer-facing TypeScript profile (canonical suffixes + contract folders, f00037) exposed as MCP tools that classify paths and report convention drift. Load with `mcp-vertex --plugins=conventions`.",
 	"author": "Cartago",
@@ -44,7 +44,7 @@
 		"build": "bun ../../tools/scripts/compile/build.script.ts plugins/conventions"
 	},
 	"peerDependencies": {
-		"@mcp-vertex/core": "^0.1.0"
+		"@mcp-vertex/core": "^0.1.1"
 	},
 	"dependencies": {
 		"@modelcontextprotocol/sdk": "^1.29.0",

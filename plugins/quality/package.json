@@ -1,6 +1,6 @@
 {
 	"name": "@mcp-vertex/quality",
-	"version": "0.1.0",
+	"version": "0.1.1",
 	"type": "module",
 	"description": "Quality-gate runner plugin for @mcp-vertex/core: executes the project's validation commands (lint/test/build/typecheck) per scope and returns a structured pass/fail report. Load with `mcp-vertex --plugins=quality`.",
 	"author": "Cartago",
@@ -45,7 +45,7 @@
 		"build": "bun ../../tools/scripts/compile/build.script.ts plugins/quality"
 	},
 	"peerDependencies": {
-		"@mcp-vertex/core": "^0.1.0"
+		"@mcp-vertex/core": "^0.1.1"
 	},
 	"dependencies": {
 		"@modelcontextprotocol/sdk": "^1.29.0",

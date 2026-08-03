@@ -1,6 +1,6 @@
 {
 	"name": "@mcp-vertex/cli",
-	"version": "0.1.0",
+	"version": "0.1.1",
 	"type": "module",
 	"description": "Human-facing mcp-vertex CLI with local and stdio transports.",
 	"author": "Cartago",

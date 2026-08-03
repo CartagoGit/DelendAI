@@ -1,6 +1,6 @@
 {
 	"name": "@mcp-vertex/git",
-	"version": "0.1.0",
+	"version": "0.1.1",
 	"type": "module",
 	"description": "Read-only git orientation plugin for @mcp-vertex/core: status, changed files, diff stat and recent log as structured JSON, so agents cheaply see what changed. Load with `mcp-vertex --plugins=git`.",
 	"author": "Cartago",
@@ -42,7 +42,7 @@
 		"build": "bun ../../tools/scripts/compile/build.script.ts plugins/git"
 	},
 	"peerDependencies": {
-		"@mcp-vertex/core": "^0.1.0"
+		"@mcp-vertex/core": "^0.1.1"
 	},
 	"dependencies": {
 		"@modelcontextprotocol/sdk": "^1.29.0",

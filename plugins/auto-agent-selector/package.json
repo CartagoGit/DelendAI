@@ -1,6 +1,6 @@
 {
 	"name": "@mcp-vertex/auto-agent-selector",
-	"version": "0.1.0",
+	"version": "0.1.1",
 	"type": "module",
 	"description": "Zero-config multi-agent routing: auto-discovers every LLM/agent the user can reach (CLI on PATH + API keys), recommends the most cost-effective one per task (the user decides and can pin), and escalates to a stronger model only when the cheap one fails the project's acceptance gate. Load with `mcp-vertex --plugins=auto-agent-selector`.",
 	"author": "Cartago",
@@ -43,7 +43,7 @@
 		"build": "bun ../../tools/scripts/compile/build.script.ts plugins/auto-agent-selector"
 	},
 	"peerDependencies": {
-		"@mcp-vertex/core": "^0.1.0"
+		"@mcp-vertex/core": "^0.1.1"
 	},
 	"dependencies": {
 		"@modelcontextprotocol/sdk": "^1.29.0",
