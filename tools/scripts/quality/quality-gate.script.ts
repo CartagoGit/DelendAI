@@ -28,7 +28,7 @@
  *       fails closed.
  */
 
-import { readFileSync } from 'node:fs';
+import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
 import {
@@ -46,17 +46,37 @@ interface IFlatFileReader {
 	listDir: (relativePath: string) => Promise<readonly string[]>;
 }
 
+// x00186 (F27 sibling): `--workspace <abs>` (space or `=` form) takes
+// precedence, then MCP_VERTEX_WORKSPACE, else cwd with a warning — the
+// same fallback order host-server.script.ts uses for the same flag.
+const resolveWorkspace = (argv: readonly string[]): string => {
+	for (let i = 0; i < argv.length; i += 1) {
+		const token = argv[i];
+		if (token === undefined) continue;
+		if (token.startsWith('--workspace='))
+			return token.slice('--workspace='.length);
+		if (token === '--workspace') {
+			const next = argv[i + 1];
+			if (next !== undefined) return next;
+		}
+	}
+	const fromEnv = process.env.MCP_VERTEX_WORKSPACE;
+	if (fromEnv !== undefined && fromEnv !== '') return fromEnv;
+	err('[mcp-vertex] warning: using cwd as workspace');
+	return process.cwd();
+};
+
 const flatReader = (cwd: string): IFlatFileReader => ({
 	readFile: async (relativePath) => {
 		try {
-			return readFileSync(join(cwd, relativePath), 'utf8');
+			return await readFile(join(cwd, relativePath), 'utf8');
 		} catch {
 			return undefined;
 		}
 	},
 	exists: async (relativePath) => {
 		try {
-			readFileSync(join(cwd, relativePath), 'utf8');
+			await readFile(join(cwd, relativePath), 'utf8');
 			return true;
 		} catch {
 			return false;
@@ -71,10 +91,12 @@ const flatReader = (cwd: string): IFlatFileReader => ({
 	},
 });
 
-const loadQualityScopes = (cwd: string): Record<string, readonly string[]> => {
+const loadQualityScopes = async (
+	cwd: string,
+): Promise<Record<string, readonly string[]>> => {
 	const configPath = join(cwd, 'mcp-vertex.config.json');
 	try {
-		const raw = readFileSync(configPath, 'utf8');
+		const raw = await readFile(configPath, 'utf8');
 		const parsed = JSON.parse(raw) as {
 			plugins?: {
 				quality?: {
@@ -89,9 +111,9 @@ const loadQualityScopes = (cwd: string): Record<string, readonly string[]> => {
 };
 
 const main = async (): Promise<number> => {
-	const cwd = process.cwd();
+	const cwd = resolveWorkspace(process.argv.slice(2));
 	const reader = flatReader(cwd);
-	const configuredScopes = loadQualityScopes(cwd);
+	const configuredScopes = await loadQualityScopes(cwd);
 	const scopeResult = await resolveScopes(reader, {
 		scopes: configuredScopes,
 	});
