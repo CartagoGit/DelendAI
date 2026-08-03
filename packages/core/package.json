@@ -43,7 +43,7 @@
 		"build": "bun ../../tools/scripts/compile/build.script.ts packages/core"
 	},
 	"dependencies": {
-		"@modelcontextprotocol/sdk": "^1.29.0",
+		"@modelcontextprotocol/sdk": "^1.30.0",
 		"zod": "^4.4.3"
 	},
 	"devDependencies": {
