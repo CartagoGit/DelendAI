@@ -72,11 +72,28 @@ describe('gitChangelog', () => {
 	it('runs git log and builds the changelog', async () => {
 		const run: IGitRunner = async () => ({
 			ok: true,
-			output: 'a1\x1ffeat: one\nb2\x1ffix: two',
+			// x00185 (F15): records are %x1e-terminated (not "\n") so a
+			// multi-line %b body can't be split into bogus extra records.
+			output: 'a1\x1ffeat: one\x1f\x1e\nb2\x1ffix: two\x1f\x1e',
 		});
 		const changelog = await gitChangelog(run, { limit: 50 });
 		expect(changelog.total).toBe(2);
 		expect(changelog.bump).toBe('minor');
+	});
+
+	// x00185 (F15): BREAKING CHANGE footers live in the commit BODY per
+	// Conventional Commits 1.0.0 — the git argv used to fetch only %s
+	// (subject), so a footer-only breaking change was silently
+	// classified as a non-breaking bump.
+	it('classifies a footer-only BREAKING CHANGE (in the body, not the subject) as major', async () => {
+		const run: IGitRunner = async () => ({
+			ok: true,
+			output: 'a1\x1ffeat: add new api\x1fSome details.\n\nBREAKING CHANGE: removes the old endpoint.\x1e',
+		});
+		const changelog = await gitChangelog(run, { limit: 50 });
+		expect(changelog.total).toBe(1);
+		expect(changelog.bump).toBe('major');
+		expect(changelog.groups[0]?.entries[0]?.breaking).toBe(true);
 	});
 
 	it('returns an empty changelog when git fails', async () => {

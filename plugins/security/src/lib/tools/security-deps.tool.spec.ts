@@ -289,4 +289,34 @@ describe('security_deps tool', () => {
 			'ghp_0123456789abcdefghijklmnopqrstuvwxyz',
 		);
 	});
+
+	// x00185 (F16): `args.cwd` used to reach listDeps/runAuditCommand with
+	// zero containment check — a caller could run a dependency audit
+	// against any host-readable directory (e.g. /etc, /home).
+	it('rejects a cwd that escapes the workspace', async () => {
+		const tool = buildSecurityDepsRegistration(
+			options({
+				listDeps: async () => ({
+					manifest: 'package.json',
+					found: true,
+					counts: {
+						dependencies: 0,
+						devDependencies: 0,
+						peerDependencies: 0,
+						optionalDependencies: 0,
+					},
+					deps: [],
+				}),
+				auditExec: async () => {
+					throw new Error('should never be reached');
+				},
+			}),
+		);
+		const captured = await captureToolRegistration(tool);
+		const out = (await captured.invoke({
+			cwd: '../../../../etc',
+			json: 'bun',
+		})) as { error?: unknown };
+		expect(out.error).toBeDefined();
+	});
 });

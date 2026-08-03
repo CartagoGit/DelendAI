@@ -99,6 +99,22 @@ describe('docs engine', async () => {
 	it('reports found:false for a missing doc', async () => {
 		expect((await readDoc(root, 'docs/nope.md')).found).toBe(false);
 	});
+
+	// x00185 (F14): readDoc never enforced the same .md/.mdx filter
+	// listDocs applies — a caller who knew a relative path could read
+	// ANY workspace file, widening the surface from "read documentation"
+	// to "read any file the workspace can see".
+	it('refuses a non-markdown file even though it exists and is contained', async () => {
+		const notes = await readDoc(root, 'docs/notes.txt');
+		expect(notes.found).toBe(false);
+		expect(notes.content).toBe('');
+		expect(notes.reason).toBe('not-a-markdown-file');
+
+		const source = await readDoc(root, 'src/code.ts');
+		expect(source.found).toBe(false);
+		expect(source.content).toBe('');
+		expect(source.reason).toBe('not-a-markdown-file');
+	});
 });
 
 describe('docs plugin', async () => {

@@ -122,6 +122,14 @@ export const redactToken = (input: string, token: string): string =>
  */
 export const FETCH_TIMEOUT_MS = 8_000;
 
+/** x00185 (F12): thrown when a response body stalls past FETCH_TIMEOUT_MS. */
+export class BodyReadTimeoutError extends Error {
+	constructor(url: string) {
+		super(`body read timed out after ${FETCH_TIMEOUT_MS}ms: ${url}`);
+		this.name = 'BodyReadTimeoutError';
+	}
+}
+
 /**
  * The shared fetch seam. The default reads from the `IErrorSource.fetch`
  * and falls back to the global `fetch`. Pure dispatcher.
@@ -166,10 +174,33 @@ export const dispatchFetch = async (
 	const reader = body.getReader();
 	const decoder = new TextDecoder('utf-8');
 	let out = '';
-	while (true) {
-		const { done, value } = await reader.read();
-		if (done) break;
-		if (value !== undefined) out += decoder.decode(value, { stream: true });
+	// x00185 (F12): the signal above only bounds the INITIAL connection —
+	// a server that sends headers and then never completes the body (or
+	// drips it arbitrarily slowly) hung this loop forever, blocking the
+	// whole MCP tool call. Each read now races against its own timeout;
+	// on expiry the reader is cancelled and a typed error is thrown
+	// instead of hanging.
+	const bodyTimeoutSignal = AbortSignal.timeout(FETCH_TIMEOUT_MS);
+	const bodyTimeout = new Promise<never>((_, reject) => {
+		bodyTimeoutSignal.addEventListener(
+			'abort',
+			() => reject(new BodyReadTimeoutError(url)),
+			{ once: true },
+		);
+	});
+	try {
+		while (true) {
+			const { done, value } = await Promise.race([
+				reader.read(),
+				bodyTimeout,
+			]);
+			if (done) break;
+			if (value !== undefined)
+				out += decoder.decode(value, { stream: true });
+		}
+	} catch (error) {
+		await reader.cancel().catch(() => undefined);
+		throw error;
 	}
 	out += decoder.decode();
 	return {
