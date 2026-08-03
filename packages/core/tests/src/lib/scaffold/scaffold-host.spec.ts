@@ -10,18 +10,19 @@ import { join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
+import type { IScaffoldToolOptions } from '@mcp-vertex/core/public';
 import {
 	buildScaffoldReport,
 	createWorkspacePathProvider,
 	scaffoldAgentFile,
 	scaffoldClaudeAgentFile,
+	scaffoldCodexAgentFile,
 	scaffoldHostProject,
 	scaffoldPluginFiles,
 	scaffoldPromptFile,
 	scaffoldSkillFile,
 	scaffoldToolFile,
 } from '@mcp-vertex/core/public';
-import type { IScaffoldToolOptions } from '@mcp-vertex/core/public';
 
 const HOST = {
 	projectName: 'Acme Quest',
@@ -241,6 +242,107 @@ describe('scaffold-host generators', () => {
 		);
 		expect(editorConfig?.content).toContain(
 			'${workspaceFolder}/packages/core',
+		);
+	});
+
+	it('scaffoldCodexAgentFile emits a Codex CLI-native subagent alongside the Copilot and Claude ones', () => {
+		const orchestrator = scaffoldCodexAgentFile(HOST, 'orchestrator');
+		expect(orchestrator.path).toBe('.codex/agents/orchestrator.md');
+		expect(orchestrator.content).toMatch(/^---\nname: orchestrator\n/);
+		expect(orchestrator.content).toContain('description:');
+		expect(orchestrator.content).toContain('acme_overview');
+		expect(orchestrator.content).toContain('acme_auto_work');
+		expect(orchestrator.content).toContain('acme_delegate');
+		expect(orchestrator.content).toContain('more than 3 tool calls');
+		// No Copilot-only vocabulary leaks into the Codex file.
+		expect(orchestrator.content).not.toContain('mcp-project-acme');
+		expect(orchestrator.content).not.toContain('user-invocable');
+		expect(orchestrator.content).not.toContain('display-name');
+		expect(orchestrator.content).not.toContain('icon:');
+
+		const runner = scaffoldCodexAgentFile(HOST, 'implementation_runner');
+		// SUBAGENT_SLOTS uses snake_case; Codex kebab-case like Claude.
+		expect(runner.path).toBe('.codex/agents/implementation-runner.md');
+		expect(runner.content).toMatch(/^---\nname: implementation-runner\n/);
+	});
+
+	it('scaffoldHostProject emits 5 Codex subagents + 5 Claude + 5 Copilot agents by default', () => {
+		const files = scaffoldHostProject(HOST);
+		const paths = files.map((f) => f.path);
+		expect(
+			paths.filter((p) => p.startsWith('.codex/agents/')),
+		).toHaveLength(5);
+		expect(
+			paths.filter((p) => p.startsWith('.claude/agents/')),
+		).toHaveLength(5);
+		expect(
+			paths.filter((p) => p.startsWith('.github/agents/')),
+		).toHaveLength(5);
+		// Codex agent names are kebab-case.
+		expect(paths).toContain('.codex/agents/orchestrator.md');
+		expect(paths).toContain('.codex/agents/proposal-guardian.md');
+		expect(paths).toContain('.codex/agents/implementation-runner.md');
+		expect(paths).toContain('.codex/agents/delivery-verifier.md');
+		expect(paths).toContain('.codex/agents/technical-investigator.md');
+	});
+
+	it('existingMcpVertex=true skips the libs/mcp-project bootstrap and the .vscode/mcp.json', () => {
+		const files = scaffoldHostProject({
+			...HOST,
+			existingMcpVertex: true,
+		});
+		const paths = files.map((f) => f.path);
+		// No host bootstrap.
+		expect(paths).not.toContain('libs/mcp-project/src/server.ts');
+		expect(paths).not.toContain('libs/mcp-project/src/index.ts');
+		expect(paths).not.toContain(
+			'libs/mcp-project/src/lib/shared/host-config.ts',
+		);
+		expect(paths).not.toContain('.vscode/mcp.json');
+		// Agents / instructions / skill still emitted.
+		expect(paths).toContain('.github/agents/orchestrator.agent.md');
+		expect(paths).toContain('.claude/agents/orchestrator.md');
+		expect(paths).toContain('.codex/agents/orchestrator.md');
+		expect(paths).toContain('.github/copilot-instructions.md');
+		expect(
+			paths.some((p) => p.endsWith('skills/acme-project-standards.md')),
+		).toBe(true);
+	});
+
+	it('existingMcpVertex=false (default) still emits the libs/mcp-project bootstrap', () => {
+		const files = scaffoldHostProject(HOST);
+		const paths = files.map((f) => f.path);
+		expect(paths).toContain('libs/mcp-project/src/server.ts');
+		expect(paths).toContain('.vscode/mcp.json');
+	});
+
+	// x00201 S1 — guest-mode adopters (existingMcpVertex: true) already have
+	// their OWN registered MCP server name (postman-exporter's real key is
+	// `mcp-vertex`, not the greenfield `mcp-project-<prefix>` default).
+	// Without `mcpServerName`, every generated agent's first tool call
+	// addressed a server that does not exist.
+	it('mcpServerName overrides the greenfield mcp-project-<prefix> default in every Copilot-facing surface', () => {
+		const withRealServerName = { ...HOST, mcpServerName: 'mcp-vertex' };
+		const orchestrator = scaffoldAgentFile(
+			withRealServerName,
+			'orchestrator',
+		);
+		expect(orchestrator.content).toContain('mcp-vertex/*');
+		expect(orchestrator.content).toContain('mcp-vertex/acme_overview');
+		expect(orchestrator.content).not.toContain('mcp-project-acme');
+
+		const instructions = scaffoldHostProject(withRealServerName).find(
+			(file) => file.path.endsWith('copilot-instructions.md'),
+		);
+		expect(instructions?.content).toContain('mcp-vertex` rules');
+		expect(instructions?.content).not.toContain('mcp-project-acme');
+	});
+
+	it('mcpServerName defaults to mcp-project-<prefix> when omitted (greenfield, unchanged)', () => {
+		const orchestrator = scaffoldAgentFile(HOST, 'orchestrator');
+		expect(orchestrator.content).toContain('mcp-project-acme/*');
+		expect(orchestrator.content).toContain(
+			'mcp-project-acme/acme_overview',
 		);
 	});
 });

@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
 /**
- * agent-redirector-contract.script.ts — f00031 S3: warn (never block —
+ * agent-redirector-contract.script.ts — f00031 S3: warns (advisory,
  * matches lefthook.yml's "warn but never block" policy) when an
  * `*.agent.md` under `.github/agents/` or `.claude/agents/` is neither:
  *
@@ -25,6 +25,12 @@
  * the single-orchestrator redirector body, so a naive "body must be
  * the literal redirector template" rule would false-positive on
  * exactly the files the proposal says are already compliant.
+ *
+ * x00201 S3: two finding kinds are the exception to "warn, never block" —
+ * `missing-redirector` and `subagent-user-invocable-not-false` fail the
+ * build (`isFatalFinding`). Both guard the one property this whole
+ * contract exists for (exactly one visible orchestrator entry); every
+ * other kind stays advisory, unchanged from f00031.
  *
  * `.claude/agents/*.cc.md` files are excluded entirely from the scan:
  * the `.cc.md` suffix (vs. `.md`) is the project's own convention for
@@ -69,12 +75,25 @@ const SUBAGENT_DISCLAIMER =
 /** Body line budget for a hand-rolled `.github/agents/*.agent.md` workflow. */
 const MAX_REDIRECTOR_PROSE_LINES = 12;
 
+/**
+ * x00201 S3: the canonical redirector filename for THIS repo's own
+ * dogfood — the single Copilot-visible entry point f00031 established.
+ * A project adopting mcp-vertex under a different namespace has its own
+ * `<namespacePrefix>.agent.md`; this constant only governs mcp-vertex's
+ * own self-check (`isMainModule()` block below), not the reusable
+ * `checkGithubAgentFile` / `checkClaudeAgentFile` functions other
+ * projects' tooling could call with their own filename.
+ */
+const CANONICAL_REDIRECTOR_FILE = 'mcp-vertex.agent.md';
+
 export interface IAgentFileFinding {
 	readonly path: string;
 	readonly kind:
 		| 'not-a-redirector'
 		| 'mcp-vertex-name-not-redirector'
-		| 'subagent-filename-mismatch';
+		| 'subagent-filename-mismatch'
+		| 'missing-redirector'
+		| 'subagent-user-invocable-not-false';
 	readonly detail: string;
 }
 
@@ -105,6 +124,18 @@ const isBoundedSubagent = (frontmatter: string, body: string): boolean => {
 	if (!SUBAGENT_SLOTS.includes(name as ISubagentSlot)) return false;
 	return body.includes(SUBAGENT_DISCLAIMER);
 };
+
+/**
+ * x00201 S3: `scaffoldAgentFile` (scaffold-host.ts) emits
+ * `user-invocable: false` for every bounded subagent so it never
+ * duplicates the orchestrator in the Copilot agent picker — the whole
+ * point of the redirector contract (f00031). Nothing previously verified
+ * a hand-authored `.github/agents/*.agent.md` actually kept that flag;
+ * mcp-vertex's own dogfood files drifted to `user-invocable: true` on
+ * all four without this check ever catching it.
+ */
+const hasUserInvocableFalse = (frontmatter: string): boolean =>
+	frontmatterField(frontmatter, 'user-invocable') === 'false';
 
 const isRedirectorBody = (body: string): boolean => {
 	// Canonical shape: a short heading, then prose that defers entirely
@@ -151,7 +182,14 @@ export const checkGithubAgentFile = (
 			detail: `${path} has name: "${name}" (a bounded subagent slot) but the filename should be ".github/agents/${expectedFile}" (the namespaced shape)`,
 		};
 	}
-	if (isBoundedSubagent(frontmatter, body)) return undefined;
+	if (isBoundedSubagent(frontmatter, body)) {
+		if (hasUserInvocableFalse(frontmatter)) return undefined;
+		return {
+			path,
+			kind: 'subagent-user-invocable-not-false',
+			detail: `${path} is a bounded subagent (name: "${name}") but does not declare "user-invocable: false" — it will duplicate the orchestrator in the Copilot agent picker, the exact thing the redirector contract (f00031) exists to prevent`,
+		};
+	}
 	if (isRedirectorBody(body)) return undefined;
 	return {
 		path,
@@ -190,6 +228,43 @@ const listMarkdownFiles = async (
 		.sort((a, b) => a.localeCompare(b));
 };
 
+/**
+ * x00201 S3: findings whose absence is the whole point of the check
+ * (a missing redirector, a subagent that WILL duplicate it in the
+ * picker) fail the build. Everything else stays advisory, matching the
+ * "warn but never block" policy this script has always documented —
+ * this is a deliberate, narrow exception for the two regressions this
+ * proposal was written to close, not a blanket tightening of every
+ * finding kind.
+ */
+const FATAL_FINDING_KINDS: ReadonlySet<IAgentFileFinding['kind']> = new Set([
+	'missing-redirector',
+	'subagent-user-invocable-not-false',
+]);
+
+export const isFatalFinding = (kind: IAgentFileFinding['kind']): boolean =>
+	FATAL_FINDING_KINDS.has(kind);
+
+/**
+ * x00201 S3: `agent-redirector-contract`'s own checks only ever inspect
+ * files that exist — 271c7cf5 deleted `mcp-vertex.agent.md` (f00031's
+ * single-orchestrator redirector) and nothing caught it, because an
+ * absence was invisible to a check that only walks present files. This
+ * closes that blind spot for mcp-vertex's own dogfood only (a generic
+ * adopter project has its own differently-named redirector).
+ */
+export const checkCanonicalRedirectorPresent = (
+	githubAgentFiles: readonly string[],
+): IAgentFileFinding | undefined => {
+	if (githubAgentFiles.includes(CANONICAL_REDIRECTOR_FILE)) return undefined;
+	const path = `.github/agents/${CANONICAL_REDIRECTOR_FILE}`;
+	return {
+		path,
+		kind: 'missing-redirector',
+		detail: `${path} is missing — f00031's single-orchestrator redirector contract requires it to exist so the Copilot agent picker shows exactly one mcp-vertex entry. Restore it (see develop, or git log -- ${path}) instead of adding a new one.`,
+	};
+};
+
 const isMainModule = (): boolean => {
 	const entry = process.argv[1];
 	return entry !== undefined && import.meta.url === `file://${entry}`;
@@ -202,16 +277,21 @@ if (isMainModule()) {
 
 	void (async () => {
 		const findings: IAgentFileFinding[] = [];
-
-		for (const file of await listMarkdownFiles(
+		const githubAgentFiles = await listMarkdownFiles(
 			githubAgentsDir,
 			'.agent.md',
-		)) {
+		);
+
+		for (const file of githubAgentFiles) {
 			const path = `.github/agents/${file}`;
 			const text = await readFile(join(githubAgentsDir, file), 'utf8');
 			const finding = checkGithubAgentFile(path, text);
 			if (finding) findings.push(finding);
 		}
+
+		const missingRedirector =
+			checkCanonicalRedirectorPresent(githubAgentFiles);
+		if (missingRedirector) findings.push(missingRedirector);
 
 		for (const file of await listMarkdownFiles(claudeAgentsDir, '.md')) {
 			if (file.endsWith('.cc.md')) continue; // opted out of the index by convention
@@ -221,15 +301,28 @@ if (isMainModule()) {
 			if (finding) findings.push(finding);
 		}
 
-		if (findings.length > 0) {
+		const fatal = findings.filter((f) => isFatalFinding(f.kind));
+		const advisory = findings.filter((f) => !isFatalFinding(f.kind));
+
+		if (advisory.length > 0) {
 			console.warn(
-				`⚠ agent-redirector-contract: ${findings.length} warning(s) (advisory, does not fail the build):`,
+				`⚠ agent-redirector-contract: ${advisory.length} warning(s) (advisory, does not fail the build):`,
 			);
-			for (const f of findings) console.warn(`  [${f.kind}] ${f.detail}`);
-			return;
+			for (const f of advisory) console.warn(`  [${f.kind}] ${f.detail}`);
 		}
-		console.log(
-			'✓ agent-redirector-contract: every agent file is a redirector or a bounded subagent.',
-		);
+
+		if (fatal.length > 0) {
+			console.error(
+				`✖ agent-redirector-contract: ${fatal.length} FATAL finding(s) — the single-orchestrator contract (f00031) is broken:`,
+			);
+			for (const f of fatal) console.error(`  [${f.kind}] ${f.detail}`);
+			process.exit(1);
+		}
+
+		if (advisory.length === 0) {
+			console.log(
+				'✓ agent-redirector-contract: every agent file is a redirector or a bounded subagent.',
+			);
+		}
 	})();
 }

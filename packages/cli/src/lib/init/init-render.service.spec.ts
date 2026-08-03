@@ -1,31 +1,34 @@
 /**
  * f00084 S2 — `renderInitBundle` and writers acceptance spec.
  */
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import {
-	mkdtemp,
+	writeFile as fsWriteFile,
 	mkdir,
+	mkdtemp,
 	readFile,
 	rm,
-	writeFile as fsWriteFile,
 } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { MockInstance } from 'vitest';
-import { vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { initCommand } from '../../commands/init/init.command';
+import { buildCanonicalLaunch } from '../server-args.service';
 import { InitAnswers } from './init-answers.schema';
 import type { IInitAnswers } from './init-answers.types';
 import { computeHostInstructionsWrite } from './init-host-instructions.service';
 import { deriveScope } from './init-migrate-offer.service';
-import { renderInitBundle, resolvePluginSet } from './init-render.service';
+import {
+	renderAgentFiles,
+	renderInitBundle,
+	resolvePluginSet,
+} from './init-render.service';
 import {
 	writeCoreSkillProjection,
 	writeMcpVertexConfig,
 } from './init-writers.factory';
-import { buildCanonicalLaunch } from '../server-args.service';
 
 const parseAnswers = (
 	partial: Partial<IInitAnswers> = {},
@@ -46,6 +49,9 @@ describe('renderInitBundle (f00084 S2-S5)', () => {
 		// alongside the Copilot one — AGENT-BOOTSTRAP.md §8.2 tells every
 		// Claude Code host to delegate to it, so init must create it.
 		expect(rels.some((r) => r.startsWith('.claude/agents/'))).toBe(true);
+		// Codex CLI custom-subagent format, parallel to Claude. AGENT-BOOTSTRAP.md
+		// §8.3 tells every Codex CLI host to invoke them by name.
+		expect(rels.some((r) => r.startsWith('.codex/agents/'))).toBe(true);
 		expect(rels).toContain('AGENTS.md');
 		expect(rels).toContain('CLAUDE.md');
 		expect(rels).toContain('.github/copilot-instructions.md');
@@ -76,7 +82,7 @@ describe('renderInitBundle (f00084 S2-S5)', () => {
 		);
 	});
 
-	it('skips .agent.md AND the Claude Code subagent when generateAgentMd=false', async () => {
+	it('skips .agent.md AND the Claude Code AND the Codex subagents when generateAgentMd=false', async () => {
 		const bundle = await renderInitBundle(
 			parseAnswers({ generateAgentMd: false }),
 		);
@@ -85,6 +91,9 @@ describe('renderInitBundle (f00084 S2-S5)', () => {
 		).toBe(false);
 		expect(
 			bundle.files.some((f) => f.relPath.startsWith('.claude/agents/')),
+		).toBe(false);
+		expect(
+			bundle.files.some((f) => f.relPath.startsWith('.codex/agents/')),
 		).toBe(false);
 	});
 
@@ -195,6 +204,48 @@ describe('renderInitBundle (f00084 S2-S5)', () => {
 			'database',
 		]) {
 			expect(config.plugins[phantom]).toBeUndefined();
+		}
+	});
+});
+
+describe('renderAgentFiles — Copilot user-invocable + server key (x00202 S1)', () => {
+	// x00202: `mcpv init`'s fallback path (the ONLY path it has ever
+	// exercised — nothing in this repo ever writes an `agents` array
+	// into agent-catalog.generated.json) never emitted `user-invocable`
+	// at all, so every adopter got all 5 agents visible/selectable in
+	// the Copilot picker — the exact bug f00031's redirector contract
+	// exists to prevent, just on a different code path than x00201
+	// fixed. It also emitted a bare, un-namespaced tool list with at
+	// least one stale entry (search_search is not a real tool).
+	it('marks the orchestrator user-invocable and every subagent not', async () => {
+		const files = await renderAgentFiles('/no-catalog', { locale: 'en' });
+		const githubFiles = files.filter((f) =>
+			f.relPath.startsWith('.github/agents/'),
+		);
+		expect(githubFiles.length).toBeGreaterThan(0);
+		const orchestrator = githubFiles.find((f) =>
+			f.relPath.endsWith('mcp-vertex-orchestrator.agent.md'),
+		);
+		expect(orchestrator?.content).toContain('user-invocable: true');
+		const subagents = githubFiles.filter((f) => f !== orchestrator);
+		expect(subagents.length).toBeGreaterThan(0);
+		for (const subagent of subagents) {
+			expect(subagent.content).toContain('user-invocable: false');
+		}
+	});
+
+	it('grants the fixed mcp-vertex/* server key, never a bare or stale tool name', async () => {
+		const files = await renderAgentFiles('/no-catalog', {
+			namespacePrefix: 'acme',
+			locale: 'en',
+		});
+		const githubFiles = files.filter((f) =>
+			f.relPath.startsWith('.github/agents/'),
+		);
+		for (const file of githubFiles) {
+			expect(file.content).toContain('mcp-vertex/*');
+			expect(file.content).not.toContain('search_search');
+			expect(file.content).not.toContain('acme_search_search');
 		}
 	});
 });

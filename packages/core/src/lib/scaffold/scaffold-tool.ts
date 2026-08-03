@@ -9,13 +9,19 @@ import { basename, dirname, extname } from 'node:path';
 
 import z from 'zod';
 
-import type { IWorkspacePathProvider } from '../contracts/interfaces/workspace-paths.interface';
 import type { IToolRegistration } from '../contracts/interfaces/tool-registration.interface';
+import type { IWorkspacePathProvider } from '../contracts/interfaces/workspace-paths.interface';
 import {
 	createFileSystemBatchWriter,
 	type IBatchAtomicWriter,
 	type IBatchOperation,
 } from '../shared/batch-atomic-writer';
+import { resolveHostScaffoldDefaults } from './detect-existing-install';
+import type {
+	IScaffoldAgentSlot,
+	IScaffoldHostOptions,
+	IScaffoldedFile,
+} from './scaffold-host';
 import {
 	scaffoldAgentFile,
 	scaffoldClientFiles,
@@ -25,11 +31,6 @@ import {
 	scaffoldSkillFile,
 	scaffoldToolFile,
 } from './scaffold-host';
-import type {
-	IScaffoldAgentSlot,
-	IScaffoldHostOptions,
-	IScaffoldedFile,
-} from './scaffold-host';
 
 export interface IScaffoldToolOptions {
 	readonly namespacePrefix: string;
@@ -37,8 +38,6 @@ export interface IScaffoldToolOptions {
 	readonly projectName: string;
 	readonly projectPackageName: string;
 	readonly defaultModel?: string;
-	/** x00183 (F6): passthrough to IScaffoldHostOptions — see there. */
-	readonly claudeModelAliases?: readonly string[];
 	readonly keepLegacy?: boolean;
 	/**
 	 * r00003 S11 (CONC-2, DIP): the scaffold tool writes the generated
@@ -81,6 +80,26 @@ export const SCAFFOLD_INPUT_SCHEMA = z.object({
 		.optional()
 		.describe(
 			'Override the config-level keepLegacy for this scaffold call.',
+		),
+	existingMcpVertex: z
+		.boolean()
+		.optional()
+		.describe(
+			'For kind: "host". When true, skip emitting libs/mcp-project/, ' +
+				'.vscode/mcp.json and host-config.ts — the project already wires ' +
+				'mcp-vertex via its own mcp-vertex.config.json + plugins/. ' +
+				'Agents / instructions / skill are still emitted. Defaults to false.',
+		),
+	mcpServerName: z
+		.string()
+		.optional()
+		.describe(
+			"The MCP server's actual registration key in the target editor " +
+				'config (.vscode/mcp.json / .mcp.json). Copilot agent files and ' +
+				'instructions reference this key to qualify tool names. Defaults ' +
+				'to "mcp-project-<namespacePrefix>" (the greenfield key). Pass the ' +
+				"project's real key when existingMcpVertex is true — it almost " +
+				'never matches the greenfield default.',
 		),
 });
 
@@ -178,6 +197,14 @@ export const buildScaffoldReport = async (
 		options.batchWriter ??
 		createFileSystemBatchWriter(options.workspace.root);
 
+	// x00201 S2: an explicit args.existingMcpVertex/mcpServerName always
+	// wins; an omitted value auto-detects from the workspace instead of
+	// defaulting to the greenfield shape a guest-mode project doesn't want.
+	const resolvedInstall = await resolveHostScaffoldDefaults(
+		args,
+		options.workspace,
+	);
+
 	const hostOptions: IScaffoldHostOptions = {
 		projectName: options.projectName,
 		namespacePrefix: options.namespacePrefix,
@@ -185,8 +212,8 @@ export const buildScaffoldReport = async (
 		...(options.defaultModel !== undefined
 			? { defaultModel: options.defaultModel }
 			: {}),
-		...(options.claudeModelAliases !== undefined
-			? { claudeModelAliases: options.claudeModelAliases }
+		...(resolvedInstall?.mcpServerName !== undefined
+			? { mcpServerName: resolvedInstall.mcpServerName }
 			: {}),
 	};
 	const dryRun = args.dryRun ?? true;
@@ -239,7 +266,12 @@ export const buildScaffoldReport = async (
 			];
 			break;
 		case 'host':
-			files = scaffoldHostProject(hostOptions);
+			files = scaffoldHostProject({
+				...hostOptions,
+				...(resolvedInstall?.existingMcpVertex !== undefined
+					? { existingMcpVertex: resolvedInstall.existingMcpVertex }
+					: {}),
+			});
 			break;
 		case 'plugin':
 			if (name.length === 0) errors.push('kind "plugin" requires name');
@@ -264,18 +296,6 @@ export const buildScaffoldReport = async (
 	const moved: string[] = [];
 	const kept: string[] = [];
 	const toWrite: IBatchOperation[] = [];
-	// x00183 (F3): a keepLegacy move relocates the original file BEFORE
-	// the batch write of the new content — if the batch later fails, the
-	// original is already gone and the new content was never written,
-	// breaking the "no partial scaffold on disk" promise. Track each
-	// move's absolute paths so a failed batch can compensate by moving
-	// every relocated original back, restoring the pre-call state.
-	const legacyMoves: Array<{
-		readonly originalRelativePath: string;
-		readonly legacyRelativePath: string;
-		readonly legacyAbsolutePath: string;
-		readonly originalAbsolutePath: string;
-	}> = [];
 	if (!dryRun && errors.length === 0) {
 		for (const file of files) {
 			const absolute = options.workspace.resolve(file.path);
@@ -299,12 +319,6 @@ export const buildScaffoldReport = async (
 						legacy.absolutePath,
 					);
 					moved.push(legacy.relativePath);
-					legacyMoves.push({
-						originalRelativePath: file.path,
-						legacyRelativePath: legacy.relativePath,
-						legacyAbsolutePath: legacy.absolutePath,
-						originalAbsolutePath: absolute,
-					});
 					if (strategy === 'copy-unlink') {
 						errors.push(
 							`${file.path}: moved via copy+unlink fallback after cross-device rename`,
@@ -333,23 +347,6 @@ export const buildScaffoldReport = async (
 			} else {
 				for (const err of batchResult.errors) {
 					errors.push(`${err.path}: ${err.reason}`);
-				}
-				// x00183 (F3): compensate the moves made above so the
-				// original files are back in place — best-effort; a
-				// failure here does not mask the original batch error.
-				for (const entry of legacyMoves) {
-					try {
-						await moveToLegacy(
-							entry.legacyAbsolutePath,
-							entry.originalAbsolutePath,
-						);
-						const idx = moved.indexOf(entry.legacyRelativePath);
-						if (idx >= 0) moved.splice(idx, 1);
-						kept.push(entry.originalRelativePath);
-					} catch {
-						// intentional no-op: restore errors must not mask
-						// the original batch failure already recorded above.
-					}
 				}
 			}
 		}

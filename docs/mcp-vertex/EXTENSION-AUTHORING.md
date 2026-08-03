@@ -200,6 +200,66 @@ reference scaffold with:
 Use `extensionHostName` to choose the host id and `description` for the
 generated package metadata.
 
+### `create_project { kind: "host" }` — full project scaffolder
+
+`create_project { kind: "host", existingMcpVertex: true|false }` is the
+**complete greenfield bootstrap** — server entry, host config, editor
+registration, orchestrator + 4 subagents (in **all three** editor
+formats: GitHub Copilot `.github/agents/*.agent.md`, Claude Code
+`.claude/agents/*.md`, Codex CLI `.codex/agents/*.md`), host
+instructions and a starter skill.
+
+`existingMcpVertex: true` switches the scaffolder into **non-invasive**
+mode: it skips emitting `libs/mcp-project/`, `src/server.ts`,
+`src/index.ts`, `src/lib/shared/host-config.ts`, and `.vscode/mcp.json`
+because the project already wires mcp-vertex via its own
+`mcp-vertex.config.json` + `plugins/` layout. The agents, instructions
+and skill are still emitted (those are the contract surface any host
+needs to honour `AGENT-BOOTSTRAP.md`).
+
+**x00201: both `existingMcpVertex` and `mcpServerName` are optional —
+omit them and the scaffolder auto-detects.** Passing them explicitly
+still always wins (detection never overrides a real caller choice), but
+a caller that doesn't already know the target project's state no longer
+needs to. `resolveHostScaffoldDefaults`
+(`packages/core/src/lib/scaffold/detect-existing-install.ts`) inspects
+`mcp-vertex.config.json` presence and `.vscode/mcp.json` / `.mcp.json`
+server entries for an mcp-vertex-shaped launch, and:
+
+- `mcpServerName` is the real MCP server registration key
+  (`.vscode/mcp.json`'s `servers.<key>` / `.mcp.json`'s
+  `mcpServers.<key>`) that generated Copilot agent files reference to
+  qualify tool names (`<key>/<prefix>_overview`). It defaults to
+  `mcp-project-<namespacePrefix>` — correct for greenfield, wrong for
+  almost every guest-mode project, which already registered its own key
+  (routinely just `mcp-vertex`). Passing the wrong (or default, when
+  guest-mode) key produces agent files whose first tool call addresses a
+  server that does not exist.
+
+When to use `existingMcpVertex: true`:
+
+- The project keeps mcp-vertex as a **tooling guest** (not its own MCP
+  server). It mounts the repo-local mcp-vertex via `.vscode/mcp.json`
+  pointing at the host's `host-server.script.ts` and loads extra
+  plugins (e.g. a domain-specific Postman generator) through
+  `mcp-vertex.config.json → plugins`.
+- The project has been on `mcpv init` once already and is being
+  re-bootstrapped after a shape change — `create_project` re-emits the
+  agents / instructions / skill without disturbing the working
+  `mcp-vertex.config.json` + plugin set.
+
+When to omit it (default `false` — greenfield):
+
+- The project has **never** integrated mcp-vertex before.
+- The project wants the scaffolder to generate a self-contained
+  `libs/mcp-project/` server entry it can `bun run` immediately.
+
+The scaffolder always emits the three host subagent formats side-by-side
+regardless of `existingMcpVertex`. Dropping one would silently break
+the docs that tell every Claude Code / Codex / Copilot Chat session to
+delegate to the orchestrator subagent (see
+`docs/mcp-vertex/AGENT-BOOTSTRAP.md` §8.1, §8.2, §8.3).
+
 ## Porting Checklist
 
 - Use MCP tool discovery instead of a hardcoded catalog.
