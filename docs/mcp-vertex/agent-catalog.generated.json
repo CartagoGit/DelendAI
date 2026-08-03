@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-07-29T23:12:13.675Z",
+	"generatedAt": "2026-07-29T23:29:28.865Z",
 	"mode": "compact",
 	"tools": [
 		{
@@ -1117,6 +1117,13 @@
 				"kind": "fix"
 			},
 			{
+				"id": "x00184",
+				"title": "x00184",
+				"track": "plugins+audit-followup",
+				"status": "ready",
+				"kind": "fix"
+			},
+			{
 				"id": "x00185",
 				"title": "x00185",
 				"track": "plugins+audit-followup",
@@ -1153,7 +1160,7 @@
 			}
 		],
 		"byStatus": {
-			"ready": 6,
+			"ready": 7,
 			"in-progress": 0,
 			"review": 0,
 			"paused": 1,

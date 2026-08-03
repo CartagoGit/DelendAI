@@ -6,7 +6,11 @@
  */
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
-import { withFileMutex, writeFileAtomic } from '@mcp-vertex/core/public';
+import {
+	redactSecrets,
+	withFileMutex,
+	writeFileAtomic,
+} from '@mcp-vertex/core/public';
 
 import type {
 	ICalibrationStore,
@@ -42,12 +46,26 @@ export const realCalibrationStore = (dirAbs: string): ICalibrationStore => {
 		return out;
 	};
 	return {
+		// x00190: `taskType` is caller-supplied free text (no length cap,
+		// no enum) reaching a durable, append-only, later-re-surfaced log
+		// (auto_recommend's blend, prompt-eval's win-rate summaries) with
+		// zero redaction — the same shape `redactSecrets` exists to guard.
 		append: async (record) => {
 			await withFileMutex(file, async () => {
 				const history = await read();
+				const redactedTaskType =
+					record.taskType !== undefined
+						? redactSecrets(record.taskType).text
+						: undefined;
 				const next = [
 					...history,
-					{ ...record, ts: record.ts ?? new Date().toISOString() },
+					{
+						...record,
+						...(redactedTaskType !== undefined
+							? { taskType: redactedTaskType }
+							: {}),
+						ts: record.ts ?? new Date().toISOString(),
+					},
 				];
 				await writeFileAtomic(
 					file,
