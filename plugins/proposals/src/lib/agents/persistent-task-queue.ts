@@ -12,6 +12,7 @@ import { resolve } from 'node:path';
 
 import {
 	quarantineCorruptFile,
+	withFileMutex,
 	writeFileAtomic,
 } from '@mcp-vertex/core/public';
 
@@ -409,13 +410,36 @@ export const parseQueue = async (
 // persistQueue — atomic write via tmp + rename
 // ---------------------------------------------------------------------------
 
-export const persistQueue = async (
+/**
+ * a00084 F15: the raw atomic write, with NO mutex — the caller must
+ * already hold `withFileMutex(queuePath, ...)` for the whole
+ * read-mutate-write cycle (every in-repo caller does). Exported only for
+ * call sites that are provably already inside that critical section;
+ * everyone else should call {@link persistQueue} below.
+ */
+export const persistQueueUnlocked = async (
 	queue: IPersistentTaskQueue,
 	absolutePath: string,
 ): Promise<void> => {
 	// Atomic write with the temp IN THE SAME DIRECTORY (never os.tmpdir),
 	// so `rename` can't fail with EXDEV across filesystems.
 	await writeFileAtomic(absolutePath, JSON.stringify(queue, null, 2));
+};
+
+/**
+ * Safe-by-default entry point: takes the file mutex itself before
+ * writing. `withFileMutex` is reentrant (a nested call for a path
+ * already held by the current async stack is a no-op), so this is also
+ * safe to call from inside a caller that already holds the same lock —
+ * it never double-acquires or deadlocks.
+ */
+export const persistQueue = async (
+	queue: IPersistentTaskQueue,
+	absolutePath: string,
+): Promise<void> => {
+	await withFileMutex(absolutePath, () =>
+		persistQueueUnlocked(queue, absolutePath),
+	);
 };
 
 // ---------------------------------------------------------------------------
@@ -490,7 +514,7 @@ export const dequeue = async (
 	entries[idx] = updated;
 	const updatedQueue: IPersistentTaskQueue = { ...queue, entries };
 
-	await persistQueue(updatedQueue, queuePath);
+	await persistQueueUnlocked(updatedQueue, queuePath);
 
 	return { queue: updatedQueue, entry: updated };
 };
@@ -562,7 +586,7 @@ export const promote = async (
 	entries[idx] = promoted;
 	const updatedQueue: IPersistentTaskQueue = { ...queue, entries };
 
-	await persistQueue(updatedQueue, queuePath);
+	await persistQueueUnlocked(updatedQueue, queuePath);
 
 	return { promoted: true, entry: promoted, queue: updatedQueue };
 };
@@ -597,7 +621,7 @@ export const cancel = async (
 	entries[idx] = cancelled;
 	const updatedQueue: IPersistentTaskQueue = { ...queue, entries };
 
-	await persistQueue(updatedQueue, queuePath);
+	await persistQueueUnlocked(updatedQueue, queuePath);
 
 	return { queue: updatedQueue, entry: cancelled };
 };
@@ -628,7 +652,7 @@ export const expireSweep = async (
 
 	const updatedQueue: IPersistentTaskQueue = { ...queue, entries };
 
-	await persistQueue(updatedQueue, queuePath);
+	await persistQueueUnlocked(updatedQueue, queuePath);
 
 	return { queue: updatedQueue, expiredCount };
 };

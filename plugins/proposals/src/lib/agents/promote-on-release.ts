@@ -52,7 +52,9 @@ export interface IPromoteOnReleaseResult {
 // Atomic persist
 // ---------------------------------------------------------------------------
 
-const persistQueue = async (
+// a00084 F15: unexported and unlocked by design — its one call site below
+// already runs inside `withFileMutex(params.queuePath, ...)`.
+const persistQueueUnlocked = async (
 	queue: IPersistentTaskQueue,
 	queuePath: string,
 ): Promise<void> => {
@@ -151,7 +153,7 @@ export const promoteOnRelease = async (
 			...queue,
 			entries: updatedEntries,
 		};
-		await persistQueue(updatedQueue, params.queuePath);
+		await persistQueueUnlocked(updatedQueue, params.queuePath);
 
 		return {
 			promotedCount: promotedTaskIds.length,

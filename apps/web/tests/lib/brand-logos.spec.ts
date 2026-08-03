@@ -1,11 +1,21 @@
 import { describe, expect, it } from 'vitest';
 
+import capabilities from '#MANIFESTS/capabilities.json';
 import {
 	KIND_PREFIX,
 	brandLogo,
 	brandLogosInventory,
 	type LogoKind,
 } from '../../src/lib/brand-logos';
+
+// a00084 F36: derived from the manifest (45 packages today) instead of a
+// hardcoded 16-slug list — a new plugin with no `plugin-<slug>.svg` used to
+// slip through this spec silently since it was never in the hand-typed set.
+const MANIFEST_PLUGIN_SLUGS = (
+	capabilities.packages as ReadonlyArray<{ name: string }>
+)
+	.map((p) => p.name.replace('@mcp-vertex/', ''))
+	.sort();
 
 /**
  * `brand-logos.ts` is the single resolver every Astro component
@@ -80,25 +90,11 @@ describe('brand-logos', () => {
 	});
 
 	describe('brandLogo — plugins (kind: plugin)', () => {
-		const slugs = [
-			'proposals',
-			'memory',
-			'quality',
-			'search',
-			'rules',
-			'docs',
-			'deps',
-			'notification',
-			'logs',
-			'status-marker',
-			'git',
-			'issues',
-			'conventions',
-			'audit',
-			'test-convention',
-			'web-fetch',
-		];
-		for (const slug of slugs) {
+		it('the manifest lists at least 40 packages (sanity — a shrunk manifest would silently pass every test below)', () => {
+			expect(MANIFEST_PLUGIN_SLUGS.length).toBeGreaterThanOrEqual(40);
+		});
+
+		for (const slug of MANIFEST_PLUGIN_SLUGS) {
 			it(`resolves plugin-${slug}`, () => {
 				const url = brandLogo(slug, 'plugin');
 				expect(url).toBeTruthy();

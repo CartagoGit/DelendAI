@@ -119,6 +119,36 @@ describe('syncProposalRegistry (entry point)', async () => {
 		expect(second).toEqual(first);
 	});
 
+	// a00084 F20: the filename prefilter used to accept unbounded trailing
+	// letters (`[a-z]*`) after the digit run, e.g. `x1abcd-*.md`, even
+	// though `frontmatter-linter.ts`'s id-shape check would reject such an
+	// id as soon as it's actually linted. Tightened to a single optional
+	// legacy-residual letter (`[a-z]?`) — enough for real files like
+	// `f00067a-*.md` but not an open-ended suffix.
+	it('does not index a filename with a malformed multi-letter id suffix', async () => {
+		await seed(root, 'ready', 'x1abcd-malformed.md', {
+			id: 'x1abcd',
+			status: 'ready',
+			kind: 'fix',
+			title: 'Malformed',
+		});
+		await syncProposalRegistry(root, DEFAULT_PATH_LAYOUT, [], FAKE_GIT_MV);
+		const index = await readIndex(root);
+		expect(index.proposals.map((p) => p.id)).not.toContain('x1abcd');
+	});
+
+	it('still indexes the legacy single-letter residual-suffix id form', async () => {
+		await seed(root, 'done', 'f904a-residual.md', {
+			id: 'f904a',
+			status: 'done',
+			kind: 'feat',
+			title: 'Residual',
+		});
+		await syncProposalRegistry(root, DEFAULT_PATH_LAYOUT, [], FAKE_GIT_MV);
+		const index = await readIndex(root);
+		expect(index.proposals.map((p) => p.id)).toContain('f904a');
+	});
+
 	it('surfaces folder drift found before reconciliation in sync errors', async () => {
 		await seed(root, 'review', 'f903-drift.md', {
 			id: 'f903',

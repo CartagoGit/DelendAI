@@ -258,7 +258,10 @@ const main = async (): Promise<void> => {
 		const outName = `${brand.outName}.${extensionForKind(hit.kind)}`;
 		const outPath = join(OUT, outName);
 		const existing = existsSync(outPath) ? readFileSync(outPath) : null;
-		if (existing && existing.byteLength === hit.body.byteLength) {
+		// a00084 F35: byteLength alone treats two DIFFERENT logos that happen
+		// to share a byte count as "unchanged", silently keeping the stale
+		// cached asset. Buffer#equals compares actual content.
+		if (existing?.equals(hit.body)) {
 			console.log(`unchanged ${outName} (${hit.bytes}B)`);
 			writtenThisRun.add(outName);
 			continue;

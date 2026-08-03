@@ -35,6 +35,7 @@ import {
 	enqueue,
 	loadLockSnapshot,
 	persistQueue,
+	persistQueueUnlocked,
 	reportBackpressure,
 } from './persistent-task-queue';
 import type {
@@ -449,7 +450,7 @@ export async function runTaskQueueAction(
 			};
 
 			const updated = enqueue(queue, newEntry);
-			await persistQueue(updated, paths.queuePath);
+			await persistQueueUnlocked(updated, paths.queuePath);
 
 			return {
 				taskId: finalParams.taskId,
@@ -487,7 +488,7 @@ export async function runTaskQueueAction(
 			};
 			const entries = [...queue.entries];
 			entries[idx] = updated;
-			await persistQueue({ ...queue, entries }, paths.queuePath);
+			await persistQueueUnlocked({ ...queue, entries }, paths.queuePath);
 
 			// If observe is non-empty, populate digest from closedTasks.json
 			let digest: IDequeueDigestPayload | undefined;
