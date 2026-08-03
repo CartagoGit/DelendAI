@@ -80,7 +80,10 @@ describe('mcp-vertex.setupGithub', async () => {
 
 	describe('renderSetupGithubWebview', async () => {
 		it('emits all 7 step screens, only the first visible', async () => {
-			const html = renderSetupGithubWebview(setupGithubStrings('en'));
+			const html = renderSetupGithubWebview(
+				setupGithubStrings('en'),
+				'en',
+			);
 			for (let i = 0; i < 7; i += 1) {
 				expect(html).toContain(`data-step="${i}"`);
 			}
@@ -91,7 +94,7 @@ describe('mcp-vertex.setupGithub', async () => {
 
 		it('renders Back / Next controls and a copy button per step', async () => {
 			const en = setupGithubStrings('en');
-			const html = renderSetupGithubWebview(en);
+			const html = renderSetupGithubWebview(en, 'en');
 			expect(html).toContain('id="back"');
 			expect(html).toContain('id="next"');
 			expect(html).toContain(en.next);
@@ -99,14 +102,33 @@ describe('mcp-vertex.setupGithub', async () => {
 			expect((html.match(/class="copy"/g) ?? []).length).toBe(7);
 		});
 
+		// a00084 F30: the <html lang> attribute used to be hardcoded to "en"
+		// regardless of the host's persisted language — an accessibility
+		// regression (screen readers / font-selection heuristics treat the
+		// whole page as English even when the strings are localized).
+		it('emits the resolved language on the <html> tag, not a hardcoded "en"', async () => {
+			const html = renderSetupGithubWebview(
+				setupGithubStrings('es'),
+				'es',
+			);
+			expect(html).toContain('<html lang="es">');
+			expect(html).not.toContain('<html lang="en">');
+		});
+
 		it('links back to the canonical docs guide', async () => {
-			const html = renderSetupGithubWebview(setupGithubStrings('en'));
+			const html = renderSetupGithubWebview(
+				setupGithubStrings('en'),
+				'en',
+			);
 			expect(html).toContain(SETUP_GITHUB_DOCS_URL);
 			expect(SETUP_GITHUB_DOCS_URL).toContain('CROSS-PROJECT-SETUP.md');
 		});
 
 		it('embeds the 7 canonical commands', async () => {
-			const html = renderSetupGithubWebview(setupGithubStrings('en'));
+			const html = renderSetupGithubWebview(
+				setupGithubStrings('en'),
+				'en',
+			);
 			expect(SETUP_GITHUB_COMMANDS).toHaveLength(7);
 			expect(html).toContain('git remote get-url origin');
 			expect(html).toContain(

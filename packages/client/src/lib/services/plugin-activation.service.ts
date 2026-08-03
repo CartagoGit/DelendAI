@@ -4,13 +4,14 @@
  * locking and atomic persistence so every future host can reuse it.
  */
 import { readFile } from 'node:fs/promises';
-import { isAbsolute, join } from 'node:path';
+import { isAbsolute } from 'node:path';
 
 import {
 	DEFAULT_CONFIG_FILENAME,
 	type IMcpVertexConfigFile,
 	type IMcpVertexPluginConfig,
 	type PluginOrigin,
+	resolveWorkspaceContained,
 	withFileMutex,
 	writeFileAtomic,
 } from '@mcp-vertex/core/public';
@@ -108,10 +109,19 @@ export const setPluginActivation = async (
 		throw new Error('workspaceRoot must be absolute');
 	}
 	if (input.id.trim().length === 0) throw new Error('plugin id is required');
-	const configFile = join(
+	// a00084 F32: `configFileName` isn't reachable from the VS Code UI today,
+	// but the service API accepts it and must not let a relative
+	// `../../whatever` (or an absolute path) write outside the workspace.
+	const contained = resolveWorkspaceContained(
 		input.workspaceRoot,
 		input.configFileName ?? DEFAULT_CONFIG_FILENAME,
 	);
+	if (!contained.ok) {
+		throw new Error(
+			`configFileName is not contained in the workspace: ${contained.reason}`,
+		);
+	}
+	const configFile = contained.abs;
 
 	return withFileMutex(configFile, async () => {
 		const current = await readConfig(configFile);
