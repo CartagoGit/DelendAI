@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-07-30T12:00:47.429Z",
+	"generatedAt": "2026-07-30T12:29:50.005Z",
 	"mode": "compact",
 	"tools": [
 		{
@@ -1157,21 +1157,14 @@
 				"track": "tests+audit-followup",
 				"status": "ready",
 				"kind": "fix"
-			},
-			{
-				"id": "x00195",
-				"title": "x00195",
-				"track": "a00084-audit-followup",
-				"status": "ready",
-				"kind": "fix"
 			}
 		],
 		"byStatus": {
-			"ready": 8,
+			"ready": 7,
 			"in-progress": 0,
 			"review": 0,
 			"paused": 1,
-			"done": 322,
+			"done": 323,
 			"blocked": 0,
 			"retired": 2,
 			"unspecified": 0
