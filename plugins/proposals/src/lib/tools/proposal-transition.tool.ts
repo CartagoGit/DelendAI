@@ -582,15 +582,23 @@ export const runProposalTransition = async (
 		if (!evidenceCheck.ok) {
 			return buildCodeError(evidenceCheck.code, evidenceCheck.reason);
 		}
-		// a00074 S5 (slice-completeness gate, shortcut only): every slice must be
-		// `Status: done` and every `Files:` declared in done slices must resolve
-		// on disk. The shortcut bypasses peer-review, so completeness is the
-		// only thing standing between a `pending/ready → done` zero-work move
-		// and the disk. For `review → done` the peer-review gate (next) is
-		// already the strong signal, so we skip this check there.
+	}
+	// a00074 S5 / a00084 F17: every slice must be `Status: done` and every
+	// `Files:` declared in done slices must resolve on disk. Originally
+	// gated to the ready/pending→done shortcut only, on the theory that
+	// `review → done` already has the peer-review gate as its strong
+	// signal — but peer review only ever sees the proposal's MARKDOWN
+	// TEXT, never the filesystem; an approving reviewer has no way to
+	// notice that a `Files:` entry doesn't exist or a slice is still
+	// `rework`. Now runs on every transition that lands on `done`,
+	// regardless of which prior state it came from. `force: true` still
+	// bypasses it — same precedent as the validate-evidence check below —
+	// an explicit, audited (required `reason`) override, not a new gap.
+	if (finalTo === 'done' && args.force !== true) {
 		const completenessGuard = await guardTransitionToDone({
 			proposalPath: found.absPath,
 			markdown: raw,
+			workspaceRoot: options.workspaceRoot,
 		});
 		if (!completenessGuard.ok) {
 			return buildCodeError(

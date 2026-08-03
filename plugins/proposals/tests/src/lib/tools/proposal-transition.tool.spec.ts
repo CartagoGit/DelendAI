@@ -453,7 +453,7 @@ describe('proposal_transition', async () => {
 				'',
 				'### S1 — ship',
 				`- **Files**: \`${oldRel}\``,
-				'- **Status**: pending',
+				'- **Status**: done',
 				'',
 			].join('\n');
 			await mkdir(join(root, 'review'), { recursive: true });

@@ -215,6 +215,14 @@ export const createReleaseWatcher = (params: {
 		timer = setInterval(tick, intervalMs);
 		// Don't keep the process alive just for the notifier.
 		timer.unref?.();
+		// a00084 F14: prime `prev` immediately instead of waiting for the
+		// first interval tick (up to `intervalMs`, default 2s, away). A
+		// release that happens in that window — very plausible right after
+		// a peer's watcher boots in a multi-agent swarm — used to be
+		// swallowed into the baseline and never reported. This first tick()
+		// still emits nothing (prev is still undefined when it runs), it
+		// just runs as early as possible instead of waiting on the timer.
+		tick();
 		void (async (): Promise<void> => {
 			try {
 				const dir = dirname(params.lockFile);
