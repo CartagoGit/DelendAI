@@ -2,12 +2,14 @@
 id: x00184
 title: "a00083 — fix refactor plugin: containment, consent-token echo, and spec coverage (the worst-scoring slice)"
 kind: fix
-status: ready
+status: done
 type: proposal
 track: plugins+audit-followup
 date: 2026-07-29
 related:
     - a00083 # full-project audit
+shipped-in:
+    - 70a79a20 # S1+S2 — nav/rename containment + consentToken echo + spec coverage
 ---
 
 # x00184 — a00083 — fix refactor plugin: containment, consent-token echo, and spec coverage (the worst-scoring slice)
@@ -32,7 +34,7 @@ Resolve findings F17, F18, F19 from a00083 (29-07-2026). The refactor plugin sco
 ## slices
 
 ### S1 — containment + consent
-- **Status**: ready
+- **Status**: done
 - **Files**: <see slice body below>
 - **Gate**: test
   acceptance:
@@ -44,18 +46,44 @@ Resolve findings F17, F18, F19 from a00083 (29-07-2026). The refactor plugin sco
 - **Acceptance**: every nav + apply tool rejects `path.startsWith('/')` or `..`-escapes with `toolError`. Add a spec per tool that asserts the contract.
 
 ### S2 — first batch of specs
-- **Status**: ready
+- **Status**: done
 - **Files**: <see slice body below>
 - **Gate**: test
   acceptance:
 
-- **Files**: `plugins/refactor/tests/src/lib/refactor-nav.spec.ts` (new), `plugins/refactor/tests/src/lib/refactor-rename.spec.ts` (new).
-- Cases: containment rejection, consent echo, happy-path rename hunk apply, codemod refusal on missing consent.
+- **Files**: `plugins/refactor/src/lib/tools/refactor-nav.tool.spec.ts`, `plugins/refactor/src/lib/tools/refactor-rename.tool.spec.ts` (co-located specs, this plugin's actual convention — see Notes for why the originally-named path assumption was stale).
+- Cases: containment rejection (absolute + `../` escape, both tools), consent-token echo, happy-path rename hunk apply. `refactor_codemod` never had a consent gate to begin with (it never writes to disk, confirmed in Notes) so "codemod refusal on missing consent" doesn't apply.
 - **Acceptance**: `bun test plugins/refactor/tests/` exits 0 with at least 6 specs.
 
 ## Notes
 
+Implementation notes (delivery deviates from the literal S1/S2 text where the
+original audit's assumptions were stale):
 
+- S1 also fixed `refactor_apply`'s `root` itself: the original code only
+  checked that `file.path` resolved inside `rootAbs`, but never verified
+  `rootAbs` (derived from `args.root`) was inside the workspace — so
+  `root: "/etc"` + `file.path: "passwd"` passed containment and wrote to
+  `/etc/passwd`. Both `root` and `file.path` are now independently
+  contained via `resolveWorkspaceContained`.
+- `refactor_rename`'s `root`/`scopePaths` had the identical unguarded
+  `resolvePath` bug (shared helper) and are fixed the same way, even
+  though F17/F18 only named `refactor-nav.tool.ts` and the apply half of
+  `refactor-rename.tool.ts`.
+- S2's acceptance named new files under a tests/src/lib subdirectory
+  — that directory shape doesn't match this plugin's actual convention
+  (co-located `*.tool.spec.ts` next to each tool, already used by all 3
+  existing tool spec files). Coverage was added to the existing co-located
+  specs instead of creating a parallel tests directory tree. The "2868 LOC, 0
+  specs" premise was also stale: 7 spec files already existed pre-fix
+  (nav-engine, rename-planner, codemod-runner, recipes, and all 3 tool
+  files) — likely a symptom of the same `scan_drift`-style scanner
+  undercount already fixed in x00167, not an actual coverage gap.
+- `refactor_codemod`'s hand-rolled `resolvePath`/`isContainedPath` was
+  checked for the same bug class: it resolves+normalizes before the
+  prefix check, so both absolute and `../`-relative escapes are correctly
+  rejected today. Left as-is (a DRY nit against the shared helper, not a
+  security bug) — out of scope here.
 
 - a00083 — full-project audit (source of these findings)
 - f00123 — refactor plugin charter (S1+S2 covered here; S3 codemods separate)
