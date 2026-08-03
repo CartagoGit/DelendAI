@@ -4,8 +4,10 @@ import { join, resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 import {
+	checkCanonicalRedirectorPresent,
 	checkClaudeAgentFile,
 	checkGithubAgentFile,
+	isFatalFinding,
 } from './agent-redirector-contract.script.ts';
 
 const root = resolve(import.meta.dirname, '..', '..', '..');
@@ -138,6 +140,77 @@ describe('checkGithubAgentFile', async () => {
 		expect(finding).toBeDefined();
 		expect(finding?.kind).toBe('not-a-redirector');
 		expect(finding?.detail).toContain('example.agent.md');
+	});
+});
+
+describe('checkGithubAgentFile — user-invocable (x00201 S3)', () => {
+	const BOUNDED_SUBAGENT_BODY = `---
+name: implementation_runner
+description: Bounded subagent.
+tools: [read, search, edit, execute, todo, mcp-project-acme/*]
+user-invocable: true
+---
+
+# implementation_runner
+
+This file is only the Copilot adapter; the agent contract lives in \`mcp-project-acme\`.
+`;
+
+	it('fails a bounded subagent that still declares user-invocable: true', () => {
+		const finding = checkGithubAgentFile(
+			'.github/agents/mcp-vertex-implementation-runner.agent.md',
+			BOUNDED_SUBAGENT_BODY,
+		);
+		expect(finding).toBeDefined();
+		expect(finding?.kind).toBe('subagent-user-invocable-not-false');
+		expect(isFatalFinding(finding?.kind as never)).toBe(true);
+	});
+
+	it('is silent once user-invocable: false is set', () => {
+		const compliant = BOUNDED_SUBAGENT_BODY.replace(
+			'user-invocable: true',
+			'user-invocable: false',
+		);
+		expect(
+			checkGithubAgentFile(
+				'.github/agents/mcp-vertex-implementation-runner.agent.md',
+				compliant,
+			),
+		).toBeUndefined();
+	});
+});
+
+describe('checkCanonicalRedirectorPresent (x00201 S3)', () => {
+	it('fails when mcp-vertex.agent.md is absent from the listing', () => {
+		const finding = checkCanonicalRedirectorPresent([
+			'mcp-vertex-delivery-verifier.agent.md',
+			'mcp-vertex-implementation-runner.agent.md',
+		]);
+		expect(finding).toBeDefined();
+		expect(finding?.kind).toBe('missing-redirector');
+		expect(isFatalFinding(finding?.kind as never)).toBe(true);
+	});
+
+	it('is silent when mcp-vertex.agent.md is present', () => {
+		expect(
+			checkCanonicalRedirectorPresent([
+				'mcp-vertex.agent.md',
+				'mcp-vertex-implementation-runner.agent.md',
+			]),
+		).toBeUndefined();
+	});
+});
+
+describe('isFatalFinding (x00201 S3)', () => {
+	it('treats pre-existing advisory kinds as non-fatal', () => {
+		expect(isFatalFinding('not-a-redirector')).toBe(false);
+		expect(isFatalFinding('mcp-vertex-name-not-redirector')).toBe(false);
+		expect(isFatalFinding('subagent-filename-mismatch')).toBe(false);
+	});
+
+	it('treats the two new contract-breaking kinds as fatal', () => {
+		expect(isFatalFinding('missing-redirector')).toBe(true);
+		expect(isFatalFinding('subagent-user-invocable-not-false')).toBe(true);
 	});
 });
 

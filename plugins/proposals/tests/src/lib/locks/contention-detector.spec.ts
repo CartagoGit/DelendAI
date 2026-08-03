@@ -3,11 +3,13 @@ import { dirname, join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
+import { detectContention } from '../../../../src/lib/locks/contention-detector';
 import {
 	noteFileLockContention,
 	resolveFileLockContentions,
 } from '../../../../src/lib/locks/file-lock-table';
-import { detectContention } from '../../../../src/lib/locks/contention-detector';
+
+import { verifyTmpRoot } from './verify-tmp-root';
 
 describe('detectContention', () => {
 	let dir = '';
@@ -15,9 +17,13 @@ describe('detectContention', () => {
 	let tablePath = '';
 
 	beforeEach(() => {
-		const root = join(process.cwd(), '.verify-tmp');
-		mkdirSync(root, { recursive: true });
-		dir = mkdtempSync(join(root, 'contention-detector-'));
+		// Canonical scratch location: `verifyTmpRoot()` resolves the
+		// repo root via `import.meta.url` (see ./verify-tmp-root.ts) so
+		// the resulting `<repoRoot>/.cache/mcp-vertex/verify-tmp/<prefix>-XXXXXX/`
+		// stays under the canonical cache even when the suite runs from
+		// an agent worktree. Pinning this to `process.cwd()` here
+		// would leak a `.cache/` inside every swarm worktree.
+		dir = mkdtempSync(join(verifyTmpRoot(), 'contention-detector-'));
 		lockPath = join(dir, '.cache/agents.lock.json');
 		tablePath = join(dir, '.cache/file-locks.json');
 		mkdirSync(dirname(lockPath), { recursive: true });

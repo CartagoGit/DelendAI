@@ -22,9 +22,9 @@ import {
 	type IFileReader,
 } from '@mcp-vertex/core/public';
 
-import type { IInitAnswers } from './init-answers.types';
 import type { ICanonicalLaunch } from '../../contracts/interfaces/canonical-launch.interface';
 import { buildCanonicalLaunch } from '../server-args.service';
+import type { IInitAnswers } from './init-answers.types';
 import { loadAgentDescriptors } from './init-catalog.constant';
 import {
 	computeHostInstructionsWrite,
@@ -271,17 +271,33 @@ export const renderGenericMcpJson = (
 	)}\n`,
 });
 
+/**
+ * x00202 S1: `tools:` now grants the fixed `mcp-vertex/*` wildcard
+ * (matching `renderVscodeMcpJson`/`renderGenericMcpJson`, which always
+ * register the server under the literal key `mcp-vertex` regardless of
+ * `namespacePrefix` — the tool NAMES are prefixed, the server KEY is
+ * not) instead of the descriptor's own tool list, which had no server
+ * qualification and at least one stale entry. `user-invocable: false`
+ * on every role but `orchestrator` is the flag that keeps a bounded
+ * subagent out of the Copilot agent picker (f00031) — previously
+ * omitted here entirely, so every `mcpv init` adopter got all 5 agents
+ * visible and selectable.
+ */
 const renderAgentFile = (descriptor: {
 	role: string;
 	description: string;
-	tools: readonly string[];
 	body: string;
 }): IRenderedFile => {
+	const isRoot = descriptor.role === 'orchestrator';
+	const tools = isRoot
+		? '[read, search, edit, execute, todo, agent, mcp-vertex/*]'
+		: '[read, search, edit, execute, todo, mcp-vertex/*]';
 	const frontmatter = [
 		'---',
 		`name: mcp-vertex-${descriptor.role}`,
 		`description: ${descriptor.description}`,
-		`tools: [${descriptor.tools.map((t) => `"${t}"`).join(', ')}]`,
+		`tools: ${tools}`,
+		`user-invocable: ${isRoot}`,
 		'---',
 	].join('\n');
 	return {
@@ -301,16 +317,15 @@ const renderAgentFile = (descriptor: {
  * Schema verified against Claude Code's documented subagent contract
  * (code.claude.com/docs/en/sub-agents): required `name` (kebab-case)
  * + `description`; `tools`, when present, is a COMMA-SEPARATED
- * STRING, not a YAML list. `tools` is omitted here: the catalog's
- * `PROP_*`-prefixed placeholder ids are neither Claude Code's built-in
- * tool names nor its `mcp__<server>__<tool>` naming for MCP tools, so
- * emitting them would ship a non-functional restriction; omitting the
- * field inherits every tool available to subagents in the session.
+ * STRING, not a YAML list — the descriptor never carried a `tools`
+ * field to begin with (x00202 S1 removed it: Claude Code's tool
+ * vocabulary doesn't map to a namespaced MCP tool id list anyway), so
+ * omitting the frontmatter key inherits every tool available to
+ * subagents in the session, same as before.
  */
 const renderClaudeAgentFile = (descriptor: {
 	role: string;
 	description: string;
-	tools: readonly string[];
 	body: string;
 }): IRenderedFile => {
 	const frontmatter = [
@@ -325,6 +340,34 @@ const renderClaudeAgentFile = (descriptor: {
 	};
 };
 
+/**
+ * Codex CLI custom-subagent format
+ * (`.codex/agents/*.md`), rendered alongside the Copilot and Claude
+ * variants. Codex CLI treats a subagent file as a named, invocable
+ * prompt template — `name` (kebab-case) + `description` are the only
+ * required keys; everything else is host-managed.
+ *
+ * AGENT-BOOTSTRAP.md §8.3 tells Codex sessions how to invoke these
+ * subagents; without it the Codex host reads only `AGENTS.md` (shared
+ * with Copilot Chat) and never knows they exist.
+ */
+const renderCodexAgentFile = (descriptor: {
+	role: string;
+	description: string;
+	body: string;
+}): IRenderedFile => {
+	const frontmatter = [
+		'---',
+		`name: mcp-vertex-${descriptor.role}`,
+		`description: ${descriptor.description}`,
+		'---',
+	].join('\n');
+	return {
+		relPath: `.codex/agents/mcp-vertex-${descriptor.role}.md`,
+		content: `${frontmatter}\n\n${descriptor.body}\n`,
+	};
+};
+
 /** S3 — render `.github/agents/mcp-vertex-<role>.agent.md` from the live catalog. */
 export const renderAgentFiles = async (
 	workspaceRoot: string,
@@ -335,9 +378,12 @@ export const renderAgentFiles = async (
 ): Promise<readonly IRenderedFile[]> => {
 	const descriptors = await loadAgentDescriptors(workspaceRoot, options);
 	// x00160 S2: one Copilot file + one Claude Code file per role.
+	// Extended to emit Codex CLI files as well so a Codex adopter of
+	// `mcpv init` gets the subagents AGENT-BOOTSTRAP.md §8.3 references.
 	return descriptors.flatMap((descriptor) => [
 		renderAgentFile(descriptor),
 		renderClaudeAgentFile(descriptor),
+		renderCodexAgentFile(descriptor),
 	]);
 };
 

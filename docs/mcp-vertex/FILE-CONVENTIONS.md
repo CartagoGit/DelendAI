@@ -116,6 +116,13 @@ These categories are exempt from the role-suffix rule:
    over role suffix when both would apply.
 5. **Configuration** — `*.config.ts`, `package.json`, `tsconfig.json`.
    These are read by tooling; renaming them breaks the tooling.
+6. **Editor host files** — `.github/agents/<role>.agent.md`,
+   `.claude/agents/<role>.md`, `.codex/agents/<role>.md`, `.cursor/...`,
+   `.continue/...`, `.aider.conf.yml`, `.cursorrules`. These names are
+   dictated by the **editors** that read them, not by the role-suffix
+   rule. Moving or renaming them silently breaks the editor's
+   subagent discovery. Only the scaffolder (`scaffoldAgentFile`,
+   `scaffoldClaudeAgentFile`, `scaffoldCodexAgentFile`) emits them.
 
 ## The classifier
 
@@ -186,6 +193,46 @@ the current count.
 - `f00020` (`docs/mcp-vertex/proposals/ready/f00020-skills-and-tools-coverage.md`)
   — the broader skills + tools coverage work that depends on this
   naming being stable.
+
+## Editor host subagent files (Copilot Chat, Claude Code, Codex CLI)
+
+The scaffolder (`packages/core/src/lib/scaffold/scaffold-host.ts`)
+emits one subagent file per editor that recognises its own format.
+The paths and frontmatter keys are dictated by the **editors**, not
+by this convention — renaming or moving any of them silently breaks
+the editor's subagent discovery and the `mcp-vertex-orchestrator`
+becomes invisible to that host.
+
+| Editor       | Path                                | Generator                        | Min. frontmatter                  |
+| ------------ | ----------------------------------- | -------------------------------- | --------------------------------- |
+| GitHub Copilot | `.github/agents/<role>.agent.md`  | `scaffoldAgentFile`              | `name`, `description`, `tools`, `user-invocable`, `display-name`, `icon`, `model` |
+| Claude Code  | `.claude/agents/<role>.md`          | `scaffoldClaudeAgentFile`        | `name` (kebab-case), `description` |
+| Codex CLI    | `.codex/agents/<role>.md`          | `scaffoldCodexAgentFile`         | `name` (kebab-case), `description` |
+| Cursor       | `.cursor/<role>.mdc`               | (not scaffolded; manual)         | follows `.mdc` shape              |
+| Aider        | `.aider.conf.yml` + `AGENTS.md`    | (not scaffolded; manual)         | YAML keys, repo-wide              |
+
+`subagent name` convention: the **role** slot is `orchestrator`,
+`proposal_guardian`, `implementation_runner`, `delivery_verifier`,
+`technical_investigator`. The orchestrator emits these as snake_case
+in the Copilot variant (it is a YAML key) and kebab-case in the Claude
+and Codex variants (their `name` field requires kebab). The
+scaffolder converts via the existing `kebab()` helper, never by hand.
+
+The Claude and Codex files deliberately omit a `tools:` field — the
+Copilot variant's tool vocabulary (`read`, `search`, `edit`,
+`mcp-project-<prefix>/*`, …) does not map to those editors' own tool
+names. Omitting `tools:` inherits every tool available to subagents
+in the session, which is the closest honest equivalent to the Copilot
+file's broad `[read, search, edit, execute, todo, agent, …]` grant.
+Inventing a per-editor vocabulary mapping would trade one inaccuracy
+for another (proven live in the proposal that added Claude support:
+see `docs/mcp-vertex/proposals/done/fixes/x00160-...md`).
+
+The Codex CLI custom-subagent format is intentionally **minimal**
+(`name` + `description` + free-form body) — same shape as the Claude
+file but no optional `model` field. Codex CLI's documented custom-agent
+contract treats `name` + `description` as the only required keys.
+
 ## Shared design + i18n package (f00047)
 
 `apps/shared/` is the single source of truth for design tokens,
