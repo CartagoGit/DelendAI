@@ -27,7 +27,7 @@
 import { DEFAULT_PATH_LAYOUT } from '../contracts/constants/default-path-layout.constant';
 import { join } from 'node:path';
 
-import { z } from 'zod';
+import z from 'zod';
 
 import { reportBackpressure } from './persistent-task-queue';
 import type { IBackpressureReport } from './persistent-task-queue';

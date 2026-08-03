@@ -9,7 +9,7 @@
  * (git/gh/env/fs) are wired by `createGithubSetupDeps` in the plugin's
  * `register`.
  */
-import { z } from 'zod';
+import z from 'zod';
 
 import type { IToolRegistration } from '@mcp-vertex/core/public';
 import { toolOk } from '@mcp-vertex/core/public';

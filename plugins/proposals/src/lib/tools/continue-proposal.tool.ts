@@ -1,6 +1,6 @@
 import { dirname, join } from 'node:path';
 
-import { z } from 'zod';
+import z from 'zod';
 
 import type {
 	IToolRegistration,

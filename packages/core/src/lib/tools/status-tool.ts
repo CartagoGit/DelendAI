@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import z from 'zod';
 
 import type { IToolRegistration } from '../contracts/interfaces/tool-registration.interface';
 import type { IStatusCollector } from '../contracts/interfaces/status-collector.interface';

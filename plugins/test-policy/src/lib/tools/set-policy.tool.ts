@@ -5,7 +5,7 @@
  * `options.allowSetTool: false` (the policy then only changes through
  * `mcp-vertex.config.json`).
  */
-import { z } from 'zod';
+import z from 'zod';
 
 import {
 	toolError,

@@ -13,7 +13,7 @@
  * `orchestrator-runner` use, so evaluation is deterministic and
  * unit-testable without spawning or spending.
  */
-import { z } from 'zod';
+import z from 'zod';
 
 import { definePlugin } from '@mcp-vertex/core/public';
 import type { ICalibrationStore } from '@mcp-vertex/auto-agent-selector/public';
@@ -52,7 +52,7 @@ export default definePlugin({
 	name: 'prompt-eval',
 	version: '0.1.0',
 	describe:
-		"Benchmark a prompt across reachable providers on cost × quality using the project's acceptance gate; writes win-rates into auto-agent-selector calibration. Spend-guarded.",
+		"Benchmark a prompt across reachable providers on cost × quality using the project's acceptance gate; writes win-rates into auto-agent-selector calibration. Spend-guarded. eval_run currently has no real provider runtime wired in and refuses with a diagnostic — pending orchestrator-runner integration.",
 	optionsSchema: OptionsSchema,
 	register(ctx) {
 		const rawOptions = (ctx.options ?? {}) as {
@@ -70,9 +70,15 @@ export default definePlugin({
 		)
 			? rawOptions.calibrationStore
 			: undefined;
-		// Wiring is intentionally a no-op pass-through stub: the contract
-		// (`allowSpend`, `runProvider`, `checkAcceptance`) is provided by
-		// the host (auto-agent-selector + orchestrator-runner) at runtime.
+		// x00169: no real provider runtime is wired into this build yet — real
+		// wiring needs an adapter from this plugin's simple
+		// `(provider) => Promise<boolean>` contract onto orchestrator-runner's
+		// spend-guard (session/monthly circuit breaker + fallback chain) and
+		// invocation manager, which is real, separate feature work, not a bug
+		// fix. These stubs would make every attempt silently report
+		// "spend-denied" — indistinguishable from a legitimate budget refusal
+		// — so `unwired: true` below makes `eval_run` refuse with an explicit
+		// diagnostic instead.
 		const deps = {
 			allowSpend: async () => false as const,
 			runProvider: async () => ({
@@ -86,6 +92,7 @@ export default definePlugin({
 				buildEvalRunRegistration({
 					namespacePrefix: ctx.namespacePrefix,
 					providers,
+					unwired: true,
 					...(calibrationStore === undefined
 						? {}
 						: { calibrationStore }),
@@ -104,6 +111,8 @@ export default definePlugin({
 						'',
 						'- Run `<prefix>_eval_run` to collect spend-guarded attempts and write winner data into calibration when a store is injected.',
 						'- Run `<prefix>_eval_report` to rank the attempts on cost × quality.',
+						'',
+						"**Current build**: `eval_run` has no real provider runtime wired in — it refuses with an explicit diagnostic instead of running. Wiring `allowSpend`/`runProvider`/`checkAcceptance` to a real provider needs an adapter onto orchestrator-runner's spend-guard + invocation manager (separate feature work). `eval_report` (pure scoring over attempts you supply) is unaffected.",
 					].join('\n'),
 				},
 			],

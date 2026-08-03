@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import z from 'zod';
 
 const PS_ROW = z.object({
 	ID: z.string().optional(),

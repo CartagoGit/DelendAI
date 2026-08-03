@@ -16,7 +16,7 @@ import {
 	type IProviderCapabilities,
 	type IToolRegistration,
 } from '@mcp-vertex/core/public';
-import { z } from 'zod';
+import z from 'zod';
 
 import {
 	availabilityFromHealth,

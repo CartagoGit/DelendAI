@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import z from 'zod';
 
 import type { IActivationReport } from '../contracts/interfaces/activation-report.interface';
 import { CAPABILITY_TAGS } from '../contracts/interfaces/provider-capabilities.interface';

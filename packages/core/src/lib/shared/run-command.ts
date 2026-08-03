@@ -146,8 +146,15 @@ export const runArgv = (
 		let timedOut = false;
 		const child = spawn(binary, args, {
 			...(options.cwd !== undefined ? { cwd: options.cwd } : {}),
-			stdio: ['ignore', 'pipe', 'pipe'],
+			stdio: [
+				options.stdin !== undefined ? 'pipe' : 'ignore',
+				'pipe',
+				'pipe',
+			],
 		});
+		if (options.stdin !== undefined) {
+			child.stdin?.end(options.stdin);
+		}
 		child.stdout?.on('data', (chunk: Buffer) => {
 			if (stdout.length < maxOutputBytes) stdout += chunk.toString();
 		});

@@ -13,7 +13,7 @@
  * Pure and read-only: no filesystem, no network, no state.
  */
 import { toolJson, type IToolRegistration } from '@mcp-vertex/core/public';
-import { z } from 'zod';
+import z from 'zod';
 
 import { ServersSchema } from '../options-schema';
 

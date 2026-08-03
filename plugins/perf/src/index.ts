@@ -1,5 +1,5 @@
 import { definePlugin } from '@mcp-vertex/core/public';
-import { z } from 'zod';
+import z from 'zod';
 
 import { buildPerfBenchRegistration } from './lib/tools/perf-bench.tool';
 import { buildPerfBundleRegistration } from './lib/tools/perf-bundle.tool';

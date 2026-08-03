@@ -7,7 +7,7 @@
  * spec + injected `fetch` seam; the test suite swaps the seam
  * so no real network is required.
  */
-import { z } from 'zod';
+import z from 'zod';
 
 import type { IToolRegistration } from '@mcp-vertex/core/public';
 import { toolError, toolJson } from '@mcp-vertex/core/public';
@@ -167,6 +167,11 @@ export const buildApiCallToolRegistration = (
 				const response: IWebFetchResult = await fetch({
 					url: request.url,
 					allowList,
+					method: request.method,
+					headers: request.headers,
+					...(request.body !== undefined
+						? { body: request.body }
+						: {}),
 					...(args.maxBytes !== undefined
 						? { maxBytes: args.maxBytes }
 						: {}),

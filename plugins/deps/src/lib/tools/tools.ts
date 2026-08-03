@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import z from 'zod';
 
 import type { IArgvExec, IToolRegistration } from '@mcp-vertex/core/public';
 import {

@@ -3,7 +3,7 @@ import {
 	definePlugin,
 	joinRel,
 } from '@mcp-vertex/core/public';
-import { z } from 'zod';
+import z from 'zod';
 
 import { buildApplyingRulesKnowledge } from './lib/knowledge/applying-rules';
 import { ensureRulesCache } from './lib/frameworks/manifest';

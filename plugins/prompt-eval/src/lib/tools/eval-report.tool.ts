@@ -6,7 +6,7 @@
  * ranked report (winner + per-provider rows + a tiny markdown table for
  * the CLI). No I/O: the calibration write-through is S3.
  */
-import { z } from 'zod';
+import z from 'zod';
 
 import type { IToolRegistration } from '@mcp-vertex/core/public';
 import { toolError, toolJson } from '@mcp-vertex/core/public';

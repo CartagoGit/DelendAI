@@ -1,6 +1,6 @@
 import { execFile } from 'node:child_process';
 
-import { z } from 'zod';
+import z from 'zod';
 
 import type {
 	IGitRunner,

@@ -11,7 +11,7 @@
  * first tool that needs it) and re-imported by the other tool modules
  * so there is exactly one definition.
  */
-import { z } from 'zod';
+import z from 'zod';
 
 import type { IToolRegistration } from '@mcp-vertex/core/public';
 import { toolError, toolOk } from '@mcp-vertex/core/public';

@@ -1,6 +1,6 @@
 import { stat } from 'node:fs/promises';
 
-import { z } from 'zod';
+import z from 'zod';
 
 import type {
 	IPluginLogsHelper,

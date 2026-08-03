@@ -7,7 +7,7 @@
  * S2 (contract validation) and S3 (mock + catalog) are tracked
  * separately under f00130.
  */
-import { z } from 'zod';
+import z from 'zod';
 
 import { definePlugin } from '@mcp-vertex/core/public';
 

@@ -6,7 +6,7 @@
  * user's usage history by accident. The truncate goes through the same
  * durable path as every write (mutex + atomic + redact of the empty body).
  */
-import { z } from 'zod';
+import z from 'zod';
 
 import type { IToolRegistration } from '@mcp-vertex/core/public';
 import {

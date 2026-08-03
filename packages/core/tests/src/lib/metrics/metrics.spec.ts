@@ -4,7 +4,7 @@ import { join } from 'node:path';
 
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
-import { z } from 'zod';
+import z from 'zod';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import {

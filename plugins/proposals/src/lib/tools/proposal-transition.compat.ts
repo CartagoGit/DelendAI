@@ -15,7 +15,7 @@
  *   - **DIP**: imports the underlying handler from the original tool
  *     module so the handler is the single source of truth.
  */
-import { z } from 'zod';
+import z from 'zod';
 
 import {
 	defineCompatWindow,

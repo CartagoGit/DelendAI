@@ -26,7 +26,7 @@ import {
 	toolJson,
 	type IToolRegistration,
 } from '@mcp-vertex/core/public';
-import { z } from 'zod';
+import z from 'zod';
 
 /** Hard cap on rows per call (token-lean mandate). */
 export const DISCOVER_MAX_RESULTS = 10;

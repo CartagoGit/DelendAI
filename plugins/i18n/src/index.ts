@@ -1,5 +1,5 @@
 import { definePlugin } from '@mcp-vertex/core/public';
-import { z } from 'zod';
+import z from 'zod';
 
 import { buildI18nCheckRegistration } from './lib/tools/i18n-check.tool';
 import { buildI18nValidateRegistration } from './lib/tools/i18n-validate.tool';
