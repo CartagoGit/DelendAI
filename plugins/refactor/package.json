@@ -1,6 +1,6 @@
 {
 	"name": "@mcp-vertex/refactor",
-	"version": "0.1.0",
+	"version": "0.1.1",
 	"type": "module",
 	"description": "AST-safe refactor plugin for @mcp-vertex/core: navigation (references/definition/symbols), safe rename, and rule-based codemods with dry-run diffs. Load with `mcp-vertex --plugins=refactor`.",
 	"author": "Cartago",

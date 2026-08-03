@@ -1,6 +1,6 @@
 {
 	"name": "@mcp-vertex/memory",
-	"version": "0.1.0",
+	"version": "0.1.1",
 	"type": "module",
 	"description": "Persistent project memory plugin for @mcp-vertex/core: save/recall/list/forget small notes under the cache dir, so agents keep continuity across sessions with minimal tokens. Load with `mcp-vertex --plugins=memory`.",
 	"author": "Cartago",
@@ -42,7 +42,7 @@
 		"build": "bun ../../tools/scripts/compile/build.script.ts plugins/memory"
 	},
 	"peerDependencies": {
-		"@mcp-vertex/core": "^0.1.0"
+		"@mcp-vertex/core": "^0.1.1"
 	},
 	"dependencies": {
 		"@modelcontextprotocol/sdk": "^1.29.0",

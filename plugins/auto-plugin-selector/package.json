@@ -1,6 +1,6 @@
 {
 	"name": "@mcp-vertex/auto-plugin-selector",
-	"version": "0.1.0",
+	"version": "0.1.1",
 	"type": "module",
 	"description": "Plugin-fit scorer plugin for @mcp-vertex/core: recommends the best plugin set for THIS project from its signals (manifest, files, git history, task). Pure deterministic scorer by default; optional LLM rationale via auto-agent-selector. Pairs with the registry index (f00141). Load with `mcp-vertex --plugins=auto-plugin-selector`.",
 	"author": "Cartago",
@@ -44,7 +44,7 @@
 		"build": "bun ../../tools/scripts/compile/build.script.ts plugins/auto-plugin-selector"
 	},
 	"peerDependencies": {
-		"@mcp-vertex/core": "^0.1.0"
+		"@mcp-vertex/core": "^0.1.1"
 	},
 	"dependencies": {
 		"@modelcontextprotocol/sdk": "^1.29.0",
