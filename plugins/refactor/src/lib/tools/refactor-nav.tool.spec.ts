@@ -90,4 +90,55 @@ describe('refactor_nav tool (f00123 S1)', () => {
 		expect(names).toEqual(expect.arrayContaining(['PI', 'greet']));
 		expect(names).not.toContain('x');
 	});
+
+	// x00184 (F17): `path` used to pass an absolute path straight through
+	// with zero containment check — a caller could read `/etc/shadow` (or
+	// any host-readable file) via any of the three nav tools.
+	describe('containment (x00184)', () => {
+		it('rejects an absolute path', async () => {
+			const t = collectHandlers();
+			const handler = t['refactor_refactor_symbols']?.handler as (
+				a: unknown,
+			) => Promise<unknown>;
+			const out = (await handler({ path: '/etc/shadow' })) as {
+				content: Array<{ text: string }>;
+			};
+			const body = JSON.parse(out.content[0]?.text ?? '{}') as {
+				error?: { reason: string };
+			};
+			expect(body.error).toBeDefined();
+		});
+
+		it('rejects a path that traverses out via ../..', async () => {
+			const t = collectHandlers();
+			const handler = t['refactor_refactor_references']?.handler as (
+				a: unknown,
+			) => Promise<unknown>;
+			const out = (await handler({
+				path: '../../../../etc/passwd',
+				name: 'root',
+			})) as { content: Array<{ text: string }> };
+			const body = JSON.parse(out.content[0]?.text ?? '{}') as {
+				error?: { reason: string };
+			};
+			expect(body.error).toBeDefined();
+		});
+
+		it('accepts a workspace-relative path', async () => {
+			const t = collectHandlers();
+			const handler = t['refactor_refactor_definition']?.handler as (
+				a: unknown,
+			) => Promise<unknown>;
+			const out = (await handler({
+				path: 'nested/demo.ts',
+				name: 'PI',
+			})) as { content: Array<{ text: string }> };
+			const body = JSON.parse(out.content[0]?.text ?? '{}') as {
+				error?: unknown;
+				hit?: { name: string };
+			};
+			expect(body.error).toBeUndefined();
+			expect(body.hit?.name).toBe('PI');
+		});
+	});
 });
