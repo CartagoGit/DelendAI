@@ -1,5 +1,5 @@
 import { execFile } from 'node:child_process';
-import { z } from 'zod';
+import z from 'zod';
 
 import type { IToolRegistration } from '@mcp-vertex/core/public';
 

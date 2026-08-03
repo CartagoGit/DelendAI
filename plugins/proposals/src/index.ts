@@ -5,7 +5,7 @@ import {
 import { existsSync } from 'node:fs';
 
 import { AgentLoopDetectorService } from './lib/agents/loop-detector-service';
-import { z } from 'zod';
+import z from 'zod';
 
 import { buildSwarmPaths } from './lib/contracts/constants/default-path-layout.constant';
 import { buildAgentLockRegistration } from './lib/tools/agent-lock.tool';

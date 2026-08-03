@@ -5,7 +5,7 @@
  * of scanners that were skipped. The self-improvement flywheel: one call →
  * the highest-value posture fix for this project.
  */
-import { z } from 'zod';
+import z from 'zod';
 
 import type { IToolRegistration } from '@mcp-vertex/core/public';
 import { toScanResult, toolJson } from '@mcp-vertex/core/public';

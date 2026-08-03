@@ -8,7 +8,7 @@
  * it. It NEVER spends without a signed confirmation token.
  */
 import { toolJson, type IToolRegistration } from '@mcp-vertex/core/public';
-import { z } from 'zod';
+import z from 'zod';
 
 import type { InvocationManager } from '../invoke/manager';
 import { CapabilityTagSchema, InvokeOutputSchema } from '../schemas';

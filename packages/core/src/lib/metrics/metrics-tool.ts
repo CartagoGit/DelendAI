@@ -8,7 +8,7 @@
 import { mkdir, readdir } from 'node:fs/promises';
 import { join } from 'node:path';
 
-import { z } from 'zod';
+import z from 'zod';
 
 import { writeFileAtomic } from '../shared/atomic-write';
 import { toolJson } from '../shared/tool-response';

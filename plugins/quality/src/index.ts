@@ -10,7 +10,7 @@ import type {
 	IFindingCounts,
 	IToolRegistration,
 } from '@mcp-vertex/core/public';
-import { z } from 'zod';
+import z from 'zod';
 
 import { createCommandRunner } from './lib/services/runner';
 import { buildRunAllToolRegistration } from './lib/services/run-all';

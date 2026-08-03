@@ -1,7 +1,7 @@
 import { readFile, readdir } from 'node:fs/promises';
 import path from 'node:path';
 
-import { z } from 'zod';
+import z from 'zod';
 
 import type { IPeerPluginRegistry } from '@mcp-vertex/core/public';
 import {

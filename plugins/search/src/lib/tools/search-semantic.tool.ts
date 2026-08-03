@@ -1,7 +1,7 @@
 import { join } from 'node:path';
 import { readFile } from 'node:fs/promises';
 
-import { z } from 'zod';
+import z from 'zod';
 
 import { joinUnderRoot } from '@mcp-vertex/core/public';
 

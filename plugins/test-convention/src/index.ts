@@ -2,7 +2,7 @@ import {
 	createWorkspaceFileReader,
 	definePlugin,
 } from '@mcp-vertex/core/public';
-import { z } from 'zod';
+import z from 'zod';
 
 import { mergeConvention } from './convention';
 import { createFsScanReader } from './fs-scan-reader';

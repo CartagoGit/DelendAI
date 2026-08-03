@@ -11,7 +11,7 @@
 
 import { readFile } from 'node:fs/promises';
 
-import { z } from 'zod';
+import z from 'zod';
 
 import {
 	PROPOSAL_KIND_VALUES,

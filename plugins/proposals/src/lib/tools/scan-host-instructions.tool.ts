@@ -20,7 +20,7 @@ import { promises as fs } from 'node:fs';
 import { homedir } from 'node:os';
 import { isAbsolute, join, normalize, resolve, sep } from 'node:path';
 
-import { z } from 'zod';
+import z from 'zod';
 
 import type { IFileReader } from '@mcp-vertex/core/public';
 

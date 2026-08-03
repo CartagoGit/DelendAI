@@ -142,6 +142,66 @@ describe('api-call (f00130 S1)', () => {
 		expect(response.body).toContain('Alice');
 	});
 
+	// x00169: `request.method` / `.headers` / `.body` used to be built and
+	// then silently dropped — every call reached webFetch as a bare
+	// `{url, allowList}`, so auth headers and request bodies never left
+	// the process.
+	it('forwards the built method, headers and body to the fetch seam', async () => {
+		const specWithBody = parseOpenApi(
+			JSON.stringify({
+				openapi: '3.0.0',
+				info: { title: 'Test', version: '1.0.0' },
+				servers: [{ url: 'https://api.example.com/v1' }],
+				paths: {
+					'/users': {
+						post: {
+							operationId: 'createUser',
+							parameters: [
+								{
+									name: 'Authorization',
+									in: 'header',
+									required: true,
+									schema: { type: 'string' },
+								},
+							],
+							requestBody: {
+								content: { 'application/json': { schema: {} } },
+							},
+							responses: { '201': { description: 'Created' } },
+						},
+					},
+				},
+			}),
+		);
+		let seenOpts: IWebFetchOptions | undefined;
+		const tools = build({
+			spec: specWithBody,
+			allowList: ['api.example.com'],
+			fetchImpl: (async (opts: IWebFetchOptions) => {
+				seenOpts = opts;
+				return {
+					ok: true,
+					url: opts.url,
+					status: 201,
+					contentType: 'application/json',
+					body: '{"id":1}',
+					truncated: false,
+				};
+			}) as never,
+		});
+		const handler = tools.api_api_call?.handler as (
+			a: unknown,
+		) => Promise<unknown>;
+		await handler({
+			operationId: 'createUser',
+			params: { Authorization: 'Bearer tok' },
+			body: { name: 'Alice' },
+		});
+		expect(seenOpts?.method).toBe('POST');
+		expect(seenOpts?.headers?.authorization).toBe('Bearer tok');
+		expect(seenOpts?.body).toBe('{"name":"Alice"}');
+	});
+
 	it('returns a structured error envelope when webFetch rejects the request', async () => {
 		const tools = build({
 			spec: FIXTURE_SPEC,

@@ -7,7 +7,7 @@
 import { copyFile, mkdir, rename, stat, unlink } from 'node:fs/promises';
 import { basename, dirname, extname } from 'node:path';
 
-import { z } from 'zod';
+import z from 'zod';
 
 import type { IWorkspacePathProvider } from '../contracts/interfaces/workspace-paths.interface';
 import type { IToolRegistration } from '../contracts/interfaces/tool-registration.interface';

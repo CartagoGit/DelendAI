@@ -20,7 +20,7 @@
  * Pure module: no I/O, no core imports — `external_mcp_validate_config`
  * dry-runs proposals against these schemas without booting anything.
  */
-import { z } from 'zod';
+import z from 'zod';
 
 /** Server ids are kebab-case: unique roster keys and `ext.<id>` roots. */
 export const KEBAB_CASE_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;

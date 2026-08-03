@@ -1,5 +1,5 @@
 import { definePlugin, joinRel } from '@mcp-vertex/core/public';
-import { z } from 'zod';
+import z from 'zod';
 
 import { buildAutoRecommendRegistration } from './lib/tools/auto-recommend.tool';
 import { buildAutoRecordRegistration } from './lib/tools/auto-record.tool';

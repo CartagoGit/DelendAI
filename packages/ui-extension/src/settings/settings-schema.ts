@@ -6,7 +6,7 @@ import {
 	HOST_THEME_CHOICES,
 	type IExtensionSettings,
 } from '@mcp-vertex/client';
-import { z } from 'zod';
+import z from 'zod';
 
 /**
  * The wire-format shape of the extension-settings payload posted by the

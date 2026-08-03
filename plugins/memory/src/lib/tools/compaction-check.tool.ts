@@ -12,7 +12,7 @@
  * the policy is the plugin's). This closes the loop: **check → compact →
  * recall the digest** (all under `memory_*`, one mental model).
  */
-import { z } from 'zod';
+import z from 'zod';
 
 import type {
 	IToolRegistration,

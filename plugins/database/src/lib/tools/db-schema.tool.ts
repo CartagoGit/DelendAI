@@ -10,7 +10,7 @@
  * (query guard) and S3 (ERD), so the three slices can stack without
  * reformatting.
  */
-import { z } from 'zod';
+import z from 'zod';
 
 import type { IToolRegistration } from '@mcp-vertex/core/public';
 import { toolError, toolJson } from '@mcp-vertex/core/public';

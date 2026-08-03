@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import z from 'zod';
 
 import type { IToolRegistration } from '@mcp-vertex/core/public';
 import { toolError, toolJson } from '@mcp-vertex/core/public';
@@ -15,6 +15,19 @@ export interface IEvalRunToolOptions extends IEvalHarnessDeps {
 	readonly namespacePrefix: string;
 	readonly providers: readonly IEvalProvider[];
 	readonly calibrationStore?: ICalibrationStore;
+	/**
+	 * x00169: set by a composition root whose `allowSpend` /
+	 * `runProvider` / `checkAcceptance` are NOT wired to a real
+	 * provider runtime (this plugin's own `index.ts` today — it installs
+	 * always-false/no-op stubs pending real auto-agent-selector /
+	 * orchestrator-runner integration). When true, `eval_run` refuses
+	 * with an explicit diagnostic instead of silently running the
+	 * harness: with stub deps every provider is "spend-denied", which
+	 * produces a well-formed envelope indistinguishable from a
+	 * legitimate spend-guard refusal — the caller has no way to tell
+	 * "your budget is exhausted" from "this feature was never wired up".
+	 */
+	readonly unwired?: boolean;
 }
 
 const INPUT = z
@@ -63,6 +76,12 @@ export const buildEvalRunRegistration = (
 				taskType?: string | undefined;
 				consent: true;
 			}) => {
+				if (options.unwired === true) {
+					return toolError(
+						'prompt-eval has no real provider runtime wired into this host build.',
+						'eval_run ships only the pure harness + scoring here; allowSpend/runProvider/checkAcceptance are not connected to a real LLM provider, so every attempt would be reported as spend-denied regardless of budget. Wiring them requires host-level integration with auto-agent-selector/orchestrator-runner — until then eval_run cannot produce a real evaluation.',
+					);
+				}
 				if (options.providers.length === 0) {
 					return toolError(
 						'No reachable providers are available for evaluation.',

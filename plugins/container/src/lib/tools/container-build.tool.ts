@@ -10,7 +10,7 @@
  * `container_logs`) stay in their own files. This file is the only
  * mutation surface in the container plugin.
  */
-import { z } from 'zod';
+import z from 'zod';
 
 import type { IToolRegistration } from '@mcp-vertex/core/public';
 import {
@@ -234,6 +234,7 @@ export const buildContainerBuildToolRegistrations = (
 								args: argv,
 								timeoutMs: 60_000,
 								redact: [/data\.kubernetes\.io\/[^"\s]+/g],
+								stdin: args.manifest,
 							},
 							runExec,
 						);

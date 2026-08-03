@@ -6,7 +6,7 @@
  * every tool result's `structuredContent`. Kept in one place so the three
  * tools stay small and the shapes never drift between them.
  */
-import { z } from 'zod';
+import z from 'zod';
 
 import { CapabilityTagSchema, InvokeSchema, ProviderSchema } from './options';
 

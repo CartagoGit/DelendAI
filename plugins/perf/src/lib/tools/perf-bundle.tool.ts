@@ -3,7 +3,7 @@
  * those over per-file / total byte budgets. Composes the r00012 finding
  * helpers; the sizer is injectable, so the tool is testable. Offline.
  */
-import { z } from 'zod';
+import z from 'zod';
 
 import type { IToolRegistration } from '@mcp-vertex/core/public';
 import {

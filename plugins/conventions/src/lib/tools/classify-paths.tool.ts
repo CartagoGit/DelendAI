@@ -5,7 +5,7 @@
  * Responsibility — the filesystem walk lives in
  * `check-conventions.tool.ts`.
  */
-import { z } from 'zod';
+import z from 'zod';
 
 import type { IToolRegistration } from '@mcp-vertex/core/public';
 import { toolError, toolOk } from '@mcp-vertex/core/public';

@@ -1,5 +1,5 @@
 import { definePlugin, joinRel } from '@mcp-vertex/core/public';
-import { z } from 'zod';
+import z from 'zod';
 
 import { expireExpiredNotes } from './lib/services/store';
 import { buildMemoryToolRegistrations } from './lib/tools';

@@ -1,7 +1,7 @@
 import { isAbsolute } from 'node:path';
 
 import { definePlugin } from '@mcp-vertex/core/public';
-import { z } from 'zod';
+import z from 'zod';
 
 import {
 	POLICY_GUIDANCE,
