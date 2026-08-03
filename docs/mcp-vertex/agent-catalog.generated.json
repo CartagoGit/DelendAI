@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-07-29T19:34:53.000Z",
+	"generatedAt": "2026-07-30T00:59:13.540Z",
 	"mode": "compact",
 	"tools": [
 		{
@@ -1110,20 +1110,6 @@
 				"kind": "feat"
 			},
 			{
-				"id": "x00169",
-				"title": "x00169",
-				"track": "general",
-				"status": "ready",
-				"kind": "fix"
-			},
-			{
-				"id": "x00183",
-				"title": "x00183",
-				"track": "core+audit-followup",
-				"status": "ready",
-				"kind": "fix"
-			},
-			{
 				"id": "x00184",
 				"title": "x00184",
 				"track": "plugins+audit-followup",
@@ -1167,11 +1153,11 @@
 			}
 		],
 		"byStatus": {
-			"ready": 8,
+			"ready": 6,
 			"in-progress": 0,
 			"review": 0,
 			"paused": 1,
-			"done": 322,
+			"done": 323,
 			"blocked": 0,
 			"retired": 2,
 			"unspecified": 0
