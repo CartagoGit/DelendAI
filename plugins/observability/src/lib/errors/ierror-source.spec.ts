@@ -102,6 +102,36 @@ describe('dispatchFetch', () => {
 		FETCH_TIMEOUT_MS + 500,
 	);
 
+	// x00185 (F12): the signal above only bounded the INITIAL fetch call
+	// — a server that sends headers and then never completes the body
+	// (or drips it arbitrarily slowly) hung the reader.read() loop
+	// forever, since nothing tied it to a timeout of its own.
+	it(
+		'times out a body that stalls after headers arrive, instead of hanging forever',
+		async () => {
+			const body = new ReadableStream<Uint8Array>({
+				start(controller) {
+					controller.enqueue(new TextEncoder().encode('{"dat'));
+					// Never closes and never enqueues again — a real
+					// slow-drip / stalled body.
+				},
+			});
+			const source = baseSource({
+				fetch: (() =>
+					Promise.resolve({
+						ok: true,
+						status: 200,
+						headers: { get: () => 'application/json' },
+						body,
+					})) as never,
+			});
+			await expect(
+				dispatchFetch(source, 'https://sentry.example/x'),
+			).rejects.toThrow(/body read timed out/);
+		},
+		FETCH_TIMEOUT_MS + 500,
+	);
+
 	it('passes an AbortSignal to the injected fetch seam', async () => {
 		const fetchSpy = vi.fn(
 			(_url: string, _init?: { signal?: AbortSignal }) =>

@@ -98,7 +98,7 @@ export const buildDocsToolRegistrations = (
 					`${prefix}_docs_read`,
 					{
 						description:
-							'Read one documentation file by its workspace-relative path (from docs_list). Returns {path,title,content,truncated,found}. Refuses paths outside the workspace. Read-only.',
+							'Read one documentation file by its workspace-relative path (from docs_list). Returns {path,title,content,truncated,found}. Refuses paths outside the workspace and paths that are not a .md/.mdx file. Read-only.',
 						inputSchema: z.object({ path: z.string() }),
 						outputSchema: z.object({
 							path: z.string(),
@@ -106,6 +106,7 @@ export const buildDocsToolRegistrations = (
 							content: z.string(),
 							truncated: z.boolean(),
 							found: z.boolean(),
+							reason: z.string().optional(),
 						}),
 					},
 					async (args: { path: string }) =>
