@@ -11,8 +11,16 @@ import type {
 } from '../contracts/interfaces/forge-release.interface';
 import { runForge } from './forge';
 
-const trimOrEmpty = (value: unknown, fallback = ''): string =>
-	typeof value === 'string' ? value.trim() : fallback;
+/**
+ * `gh release view --json id,...` returns `id`/`databaseId` as numbers, not
+ * strings — treating anything non-string as "missing" made every real
+ * GitHub release response fail to parse, even on success.
+ */
+const trimOrEmpty = (value: unknown, fallback = ''): string => {
+	if (typeof value === 'string') return value.trim();
+	if (typeof value === 'number') return String(value);
+	return fallback;
+};
 
 const toRecord = (value: unknown): Record<string, unknown> | undefined =>
 	typeof value === 'object' && value !== null && !Array.isArray(value)
