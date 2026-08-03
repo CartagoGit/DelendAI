@@ -14,6 +14,7 @@ import { definePlugin } from '@mcp-vertex/core/public';
 import { realReadLocalCorrelateDeps } from './lib/correlate';
 import { buildObsErrorsToolRegistration } from './lib/tools/obs-errors.tool';
 import { buildObsCorrelateToolRegistration } from './lib/tools/obs-correlate.tool';
+import { buildObsHealthToolRegistration } from './lib/tools/obs-health.tool';
 import {
 	listRecentErrors,
 	sentryBuildListUrl,
@@ -111,6 +112,13 @@ export default definePlugin({
 									).issues,
 							}),
 					localDeps: realReadLocalCorrelateDeps(ctx.workspace.root),
+				}),
+				// x00185 (F13): fully implemented and tested (obs_trace +
+				// obs_release_health), but never wired into this registration
+				// — completely unreachable by any host.
+				buildObsHealthToolRegistration({
+					namespacePrefix: ctx.namespacePrefix,
+					workspaceRootAbs: ctx.workspace.root,
 				}),
 			],
 			knowledge: [
