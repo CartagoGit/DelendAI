@@ -1,5 +1,5 @@
 import type { z } from 'zod';
-import { z as zImpl } from 'zod';
+import zImpl from 'zod';
 import { describe, expect, it } from 'vitest';
 
 import type { IToolRegistration } from '@mcp-vertex/core/public';

@@ -7,7 +7,7 @@ import {
 	type IToolRegistration,
 } from '@mcp-vertex/core/public';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
-import { z } from 'zod';
+import z from 'zod';
 
 import { deriveCorePrefix } from './lib/attribute';
 import { cleanupStaleTmpFiles } from './lib/cleanup-stale-tmp';

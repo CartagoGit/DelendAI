@@ -21,7 +21,7 @@ import {
 	type IToolRegistration,
 	type IToolTextResult,
 } from '@mcp-vertex/core/public';
-import { z } from 'zod';
+import z from 'zod';
 
 const GcInputSchema = z.object({
 	/** When false, actually delete; default true (preview only). */

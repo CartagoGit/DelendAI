@@ -13,7 +13,7 @@ import {
 } from '../services/audit-brief.service';
 import { inferMode } from '../services/brief/brief-modes.service';
 
-import { z } from 'zod';
+import z from 'zod';
 
 // --- output schemas --------------------------------------------------------
 

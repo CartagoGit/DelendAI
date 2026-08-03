@@ -14,7 +14,7 @@
  * write + TTL expiry from the durable-memory contract). No new persistence
  * path is introduced (DIP — persistence is the store's job, not the tool's).
  */
-import { z } from 'zod';
+import z from 'zod';
 
 import type { IToolRegistration } from '@mcp-vertex/core/public';
 import { CorruptFileError, toolError, toolJson } from '@mcp-vertex/core/public';

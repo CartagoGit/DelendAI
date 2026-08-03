@@ -9,7 +9,7 @@
  * conversation. Read-only (no effects).
  */
 import { toolJson, type IToolRegistration } from '@mcp-vertex/core/public';
-import { z } from 'zod';
+import z from 'zod';
 
 import { readQuotaSnapshot } from '../quota/read-quota';
 import { GetQuotaOutputSchema } from '../schemas';

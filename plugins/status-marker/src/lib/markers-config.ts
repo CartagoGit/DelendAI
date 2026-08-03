@@ -22,7 +22,7 @@
  * that parse by emoji and is therefore NOT overridable.
  */
 
-import { z } from 'zod';
+import z from 'zod';
 
 /**
  * A single user-declared marker. The `id` doubles as the protocol `state`

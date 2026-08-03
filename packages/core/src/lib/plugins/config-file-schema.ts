@@ -19,7 +19,7 @@
  * exactly — `.strict()` everywhere so a typo in the config file is
  * reported as a schema violation instead of being silently ignored.
  */
-import { z } from 'zod';
+import z from 'zod';
 import { CAPABILITY_TAGS } from '../contracts/interfaces/provider-capabilities.interface';
 import { COMMIT_AUTHOR_MODES } from '../shared/commit-author';
 

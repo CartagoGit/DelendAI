@@ -1,5 +1,5 @@
 import { definePlugin } from '@mcp-vertex/core/public';
-import { z } from 'zod';
+import z from 'zod';
 
 import { registerStaticRules } from './lib/registry';
 import { CACHE_OWNER } from './lib/static-rules';

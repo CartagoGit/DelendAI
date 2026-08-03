@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import z from 'zod';
 import { delimiter, join } from 'node:path';
 import { stat } from 'node:fs/promises';
 

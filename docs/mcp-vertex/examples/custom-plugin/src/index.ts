@@ -16,7 +16,7 @@
  * Run it:  `mcp-vertex --plugins=@mcp-vertex/example-wordcount`
  * (or point your client's `mcp.json` at the core bin with that `--plugins`).
  */
-import { z } from 'zod';
+import z from 'zod';
 
 import { definePlugin, toolJson } from '@mcp-vertex/core/public';
 import type { IToolRegistration } from '@mcp-vertex/core/public';

@@ -18,7 +18,7 @@
  * generated body. Errors are surfaced through the canonical
  * `toolError` shape.
  */
-import { z } from 'zod';
+import z from 'zod';
 
 import type { IToolRegistration } from '@mcp-vertex/core/public';
 import { toolError, toolJson } from '@mcp-vertex/core/public';

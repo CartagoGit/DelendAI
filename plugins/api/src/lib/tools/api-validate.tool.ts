@@ -6,7 +6,7 @@
  * is used it loads the spec through the allow-listed web-fetch engine or an
  * injected fetch seam in tests.
  */
-import { z } from 'zod';
+import z from 'zod';
 
 import type { IToolRegistration } from '@mcp-vertex/core/public';
 import {

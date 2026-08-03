@@ -5,7 +5,7 @@
  * ['network']`, and drive the host's authenticated `gh` CLI through the
  * shared `runExternalTool` seam (r00012) — no token handling of our own.
  */
-import { z } from 'zod';
+import z from 'zod';
 
 import type { IToolRegistration } from '@mcp-vertex/core/public';
 import { toolJson } from '@mcp-vertex/core/public';

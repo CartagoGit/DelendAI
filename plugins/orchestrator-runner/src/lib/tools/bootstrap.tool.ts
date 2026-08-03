@@ -15,7 +15,7 @@
  * `spawn` (probes) + `write` (the draft). Never spends on a model.
  */
 import { toolJson, type IToolRegistration } from '@mcp-vertex/core/public';
-import { z } from 'zod';
+import z from 'zod';
 
 import {
 	buildProvidersPatch,

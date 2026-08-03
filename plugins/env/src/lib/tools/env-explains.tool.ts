@@ -11,7 +11,7 @@
  * in at register-time (or accepts the default empty catalog for
  * standalone use).
  */
-import { z } from 'zod';
+import z from 'zod';
 
 import type { IToolRegistration } from '@mcp-vertex/core/public';
 import { toolJson } from '@mcp-vertex/core/public';

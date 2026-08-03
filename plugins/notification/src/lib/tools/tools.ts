@@ -1,5 +1,5 @@
 import { join } from 'node:path';
-import { z } from 'zod';
+import z from 'zod';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 
 import type { IToolRegistration } from '@mcp-vertex/core/public';

@@ -1,5 +1,5 @@
 import { definePlugin } from '@mcp-vertex/core/public';
-import { z } from 'zod';
+import z from 'zod';
 
 import { buildLinkCheckRegistration } from './lib/tools/link-check.tool';
 

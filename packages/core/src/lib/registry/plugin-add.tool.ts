@@ -11,7 +11,7 @@
  * Community entries (`origin === 'community'`) require an explicit
  * `consent: true` argument — the tool refuses without it.
  */
-import { z } from 'zod';
+import z from 'zod';
 
 import type { IToolRegistration } from '@mcp-vertex/core/public';
 import { toolError, toolJson } from '@mcp-vertex/core/public';

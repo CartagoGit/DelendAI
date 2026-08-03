@@ -5,7 +5,7 @@
  * enforce explicit consent for community entries, then either return a
  * dry-run plan or call injected install/configure hooks.
  */
-import { z } from 'zod';
+import z from 'zod';
 
 import type {
 	IPluginRegistryEntry,
@@ -24,17 +24,13 @@ export interface IPluginAddToolOptions {
 	 * Resolver for the registry (defaults to `resolvePlugins` from core).
 	 * Injected so tests can stub the registry without touching the index.
 	 */
-	readonly resolve?: (
-		opts: IResolvePluginsOptions,
-	) => IResolvePluginsResult;
+	readonly resolve?: (opts: IResolvePluginsOptions) => IResolvePluginsResult;
 	/**
 	 * Installer the tool will call after wiring. Receives an
 	 * `IPluginRegistryEntry` and returns a structured result.
 	 * Defaults to a no-op stub that records intent.
 	 */
-	readonly install?: (
-		entry: IPluginRegistryEntry,
-	) => Promise<IInstallResult>;
+	readonly install?: (entry: IPluginRegistryEntry) => Promise<IInstallResult>;
 	/**
 	 * Config writer. Receives the entry's `id` + `package` and returns
 	 * the new config file path. Defaults to a no-op stub.
@@ -116,7 +112,9 @@ export const buildPluginAddRegistration = (
 				const configure = options.configure ?? buildDefaultConfigure;
 				const dryRun = args.dryRun ?? options.defaultDryRun ?? true;
 				const { entries } = resolve({});
-				const entry = entries.find((candidate) => candidate.id === args.id);
+				const entry = entries.find(
+					(candidate) => candidate.id === args.id,
+				);
 
 				if (entry === undefined) {
 					return toolError(

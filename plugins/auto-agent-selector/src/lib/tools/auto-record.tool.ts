@@ -4,7 +4,7 @@
  * future rankings (S4). Append-only; the recommendation only shifts once a
  * provider has enough samples. The store is injectable for tests.
  */
-import { z } from 'zod';
+import z from 'zod';
 
 import type { IToolRegistration } from '@mcp-vertex/core/public';
 import { toolJson } from '@mcp-vertex/core/public';

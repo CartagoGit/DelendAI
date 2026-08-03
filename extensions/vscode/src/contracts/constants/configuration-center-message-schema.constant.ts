@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import z from 'zod';
 
 const PathSegmentSchema = z.union([
 	z.string().min(1).max(200),
