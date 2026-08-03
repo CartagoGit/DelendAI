@@ -111,7 +111,7 @@
 		"dev:vscode": "bun tools/scripts/dev/dev.script.ts --vscode"
 	},
 	"devDependencies": {
-		"@biomejs/biome": "2.5.4",
+		"@biomejs/biome": "2.5.6",
 		"@mcp-vertex/conventions": "workspace:*",
 		"@mcp-vertex/external-mcps": "workspace:*",
 		"@mcp-vertex/issues": "workspace:*",
@@ -123,7 +123,7 @@
 		"@types/node": "^26.1.0",
 		"@vitest/coverage-v8": "4.1.10",
 		"lefthook": "^2.1.9",
-		"postcss": "8.5.20",
+		"postcss": "8.5.25",
 		"postcss-scss": "4.0.9",
 		"postcss-selector-parser": "7.1.4",
 		"stylelint": "17.14.1",
