@@ -142,9 +142,7 @@
 		"archive:proposals:status": "bun tools/scripts/archive/proposals-status.script.ts"
 	},
 	"devDependencies": {
-		"@biomejs/biome": "2.5.5",
-		"@mcp-vertex/auto-agent-selector": "workspace:*",
-		"@mcp-vertex/container": "workspace:*",
+		"@biomejs/biome": "2.5.6",
 		"@mcp-vertex/conventions": "workspace:*",
 		"@mcp-vertex/diagram": "workspace:*",
 		"@mcp-vertex/env": "workspace:*",
@@ -165,7 +163,7 @@
 		"@types/node": "^26.1.0",
 		"@vitest/coverage-v8": "4.1.10",
 		"lefthook": "^2.1.9",
-		"postcss": "8.5.23",
+		"postcss": "8.5.25",
 		"postcss-scss": "4.0.9",
 		"postcss-selector-parser": "7.1.4",
 		"stylelint": "17.14.1",
