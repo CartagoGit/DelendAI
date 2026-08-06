@@ -12,7 +12,8 @@
 		"apps/*",
 		"extensions/*",
 		"docs/mcp-vertex/examples/*",
-		"tools"
+		"tools",
+		"tools/docs-api"
 	],
 	"engines": {
 		"bun": ">=1.1.0"
@@ -121,8 +122,8 @@
 		"smoke": "bun tools/scripts/smoke/cli.script.ts",
 		"smoke:pack": "bun tools/scripts/smoke/pack.script.ts",
 		"plugin:create": "bun tools/scripts/create-plugin.ts",
-		"docs:api": "typedoc --options config/typedoc.json",
-		"docs:api:watch": "typedoc --options config/typedoc.json --watch",
+		"docs:api": "bun run --cwd tools/docs-api build",
+		"docs:api:watch": "bun run --cwd tools/docs-api watch",
 		"site": "bun run build && bun run docs:api && cd apps/web && bun run build && cd ../.. && bun run verify:site-pages",
 		"site:strict": "bun run build && bun run docs:api && cd apps/web && bun run build:strict",
 		"dev": "bun tools/scripts/dev/dev.script.ts",
@@ -167,7 +168,6 @@
 		"postcss-scss": "4.0.9",
 		"postcss-selector-parser": "7.1.4",
 		"stylelint": "17.14.1",
-		"typedoc": "^0.28.19",
 		"typescript": "^7.0.2",
 		"vitest": "4.1.10",
 		"zod": "^4.4.3"
