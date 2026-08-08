@@ -121,3 +121,72 @@ describe('prefixForKind', async () => {
 		expect(prefixForKind('nonsense')).toBeNull();
 	});
 });
+
+/**
+ * El contador no es la única fuente: el disco manda igual.
+ *
+ * Las propuestas llegan al árbol por caminos que no pasan por el
+ * asignador —creadas a mano, traídas por un merge, escritas por otro
+ * agente—, y un contador que no las ha visto reparte un id **que ya
+ * existe**.
+ *
+ * Pasó de verdad: dos `r00005` en el mismo directorio, una de cada
+ * agente. El linter del repo destino lo cazó, pero para entonces ya
+ * había dos ficheros que renombrar a mano.
+ */
+describe('el contador atrasado no reparte ids repetidos', async () => {
+	let root = '';
+	let counterPathAbs = '';
+
+	beforeEach(async () => {
+		root = await mkdtemp(join(tmpdir(), 'id-allocator-stale-'));
+		counterPathAbs = join(root, 'proposal-id-counters.json');
+		await mkdir(join(root, 'ready'), { recursive: true });
+	});
+
+	afterEach(async () => rm(root, { recursive: true, force: true }));
+
+	it('no devuelve un id que ya está en disco', async () => {
+		// El contador cree que va por 4…
+		await writeFile(counterPathAbs, JSON.stringify({ r: 4 }));
+		// …pero alguien dejó r00005 en el árbol sin pasar por aquí.
+		await writeFile(join(root, 'ready', 'r00005-de-otro-agente.md'), '');
+
+		const id = await allocateNextProposalId('r', {
+			proposalsDirAbs: root,
+			counterPathAbs,
+		});
+		expect(id).toBe('r00006');
+	});
+
+	it('gana el contador cuando va por delante del disco', async () => {
+		// El caso simétrico: una propuesta ya asignada y luego movida o
+		// borrada no puede hacer que su id se vuelva a repartir.
+		await writeFile(counterPathAbs, JSON.stringify({ r: 9 }));
+		await writeFile(join(root, 'ready', 'r00002-vieja.md'), '');
+
+		const id = await allocateNextProposalId('r', {
+			proposalsDirAbs: root,
+			counterPathAbs,
+		});
+		expect(id).toBe('r00010');
+	});
+
+	it('cada prefijo se reconcilia por su cuenta', async () => {
+		await writeFile(counterPathAbs, JSON.stringify({ r: 1, f: 20 }));
+		await writeFile(join(root, 'ready', 'r00007-en-disco.md'), '');
+
+		expect(
+			await allocateNextProposalId('r', {
+				proposalsDirAbs: root,
+				counterPathAbs,
+			}),
+		).toBe('r00008');
+		expect(
+			await allocateNextProposalId('f', {
+				proposalsDirAbs: root,
+				counterPathAbs,
+			}),
+		).toBe('f00021');
+	});
+});

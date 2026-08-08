@@ -101,9 +101,14 @@ export interface IProposalIdAllocatorOptions {
 /**
  * Returns the next id for `prefix` (e.g. `'f'` → `'f00014'`), atomically
  * incrementing the shared counter file under `withFileMutex`. Never
- * returns a number lower than what's already on disk for that prefix —
- * the seed-from-disk step guarantees that even on a counter file that's
- * missing or predates some legacy proposals.
+ * returns a number lower than what's already on disk for that prefix:
+ * the counter file and the directory listing are **both** consulted on
+ * every call and the higher of the two wins.
+ *
+ * Reading the counter alone is not enough. Proposals arrive on disk by
+ * routes that never touch this allocator — created by hand, pulled in by
+ * a merge, written by another agent — and a counter that has not seen
+ * them hands out an id that already exists.
  *
  * IDs are formatted as padded 5-digit numbers (f00001, f00014, …) to
  * align with the f00023 "renumber with padding" rule, which the linter
@@ -118,9 +123,24 @@ export const allocateNextProposalId = async (
 	options: IProposalIdAllocatorOptions,
 ): Promise<string> =>
 	withFileMutex(options.counterPathAbs, async () => {
-		let counters = await readCounters(options.counterPathAbs);
-		if (counters === null) {
-			counters = await seedFromDisk(options.proposalsDirAbs);
+		const stored = await readCounters(options.counterPathAbs);
+		const onDisk = await seedFromDisk(options.proposalsDirAbs);
+		// El disco **siempre** entra en la cuenta, no solo cuando el
+		// contador falta.
+		//
+		// Antes se leía el disco únicamente si el fichero de contadores no
+		// existía, y eso hacía falsa la garantía que promete el bloque de
+		// arriba: con el contador presente pero atrasado —porque alguien
+		// creó una propuesta a mano, porque llegó en un merge, o porque
+		// otro agente escribió en el árbol sin pasar por aquí— se repartía
+		// un id **que ya estaba en uso**.
+		//
+		// Pasó de verdad: dos propuestas `r00005` en el mismo directorio,
+		// una de cada agente. El linter del repo destino lo cazó, pero
+		// para entonces ya había dos ficheros que renombrar a mano.
+		const counters: ICounters = { ...onDisk };
+		for (const [key, value] of Object.entries(stored ?? {})) {
+			counters[key] = Math.max(counters[key] ?? 0, value);
 		}
 		const next = (counters[prefix] ?? 0) + 1;
 		counters[prefix] = next;
