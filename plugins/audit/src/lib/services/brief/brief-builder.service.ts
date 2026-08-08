@@ -328,6 +328,27 @@ ${renderSeverityTable()}
 > \`ESPLÉNDIDO\`); the parser still accepts them and normalises to the
 > English canonical token, so old audits stay readable.
 
+**Group the findings under one \`## \` section per band**, and put the
+token in that section header. This is where \`audit_consolidate\` reads
+the severity from — a token that appears only on the \`### \` line of an
+individual finding is a weaker signal, and a finding under no banded
+section at all cannot be ranked:
+
+\`\`\`
+## 🔴 FATAL
+
+### 1. <imperative title>
+…
+
+### 2. <imperative title>
+…
+
+## 🟠 BAD
+
+### 3. <imperative title>
+…
+\`\`\`
+
 For each finding use this block:
 
 \`\`\`
@@ -343,8 +364,17 @@ For each finding use this block:
 **Resolution Track**: [Fixed in slice \`sN\`] | [Deferred to proposal \`xNNNNN\`]
 \`\`\`
 
+Number the findings **continuously across sections** (1, 2, 3 … not
+restarting at each band) so a reader can cite "finding 14" without
+naming the band.
+
 **Golden rule**: a finding without a code snippet is speculation — not a finding.
 Do not write "might" or "possibly" — either you saw it in the code, or you don't report it.
+
+**One more trap**: only the final scoring table should be a two-column
+\`| label | N/10 |\` table. The score extractor reads every markdown
+table it finds, so an inventory table shaped the same way lands in the
+scoreboard as a dimension with no score. Use lists for those.
 
 ---
 
