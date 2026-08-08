@@ -161,18 +161,38 @@ const extractFindings = (body: string): readonly IAuditFinding[] => {
 			currentFiles = [];
 			continue;
 		}
-		if (!currentSeverity) continue;
 		if (/^###\s+\d+\.\s+/u.test(line)) {
 			flush();
 			currentTitle = line.replace(/^###\s+\d+\.\s+/u, '').trim();
 			currentDetail = [];
 			currentFiles = [];
+			// The brief shows the band in the rubric table but does not
+			// say the findings must sit under a severity-banded `##`.
+			// Plenty of models put the token on the finding heading
+			// instead, and every one of those findings used to be
+			// dropped on the floor: the section header carried no band,
+			// so `currentSeverity` stayed undefined and the `continue`
+			// above skipped the whole block. Reading the heading as a
+			// fallback keeps both shapes parseable.
+			currentSeverity = classifyHeader(line) ?? currentSeverity;
 			continue;
 		}
+		if (!currentSeverity) continue;
 		if (currentTitle.length === 0) continue;
-		// Capture "Fichero" / "Archivo" hints to seed `files[]`.
+		// Capture the file hint to seed `files[]`. Accepts the Spanish
+		// `Fichero` / `Archivo` the older audits use and the English
+		// `File` the current brief asks for — the brief and this parser
+		// disagreed, so audits that followed the brief to the letter
+		// parsed with an empty `files[]`.
+		// The capture runs to the end of the line rather than to the next
+		// backtick: a finding that touches two files writes them as
+		// `**File**: \`a.ts#L1\`, \`b.ts#L2\``, and stopping at the first
+		// closing backtick silently kept only the first one. Backticks
+		// are stripped per candidate below.
 		const fileMatch =
-			/\*\*Fichero[a-z]?\s*:?\*\*?\s*:?\s*`?([^`\n]+)`?/u.exec(line);
+			/\*\*(?:Fichero[a-z]?|Archivos?|Files?)\s*:?\*\*?\s*:?\s*(.+)$/iu.exec(
+				line,
+			);
 		if (fileMatch?.[1]) {
 			for (const candidate of fileMatch[1].split(',')) {
 				// Strip backticks, asterisks, and any trailing line
@@ -250,19 +270,27 @@ const extractScores = (body: string): readonly IAuditScore[] => {
 	return out;
 };
 
-/** Final note: paragraph after `**Nota final:**` or `**Nota global:**`. */
+/** The closing note, whatever it is labelled. */
+const NOTE_LABEL = String.raw`(?:Nota\s+(?:final|global)|Final\s+note|Overall\s+note)`;
+
+/**
+ * Final note: the paragraph after `**Nota final:**`, `**Nota global:**`
+ * or the English `**Final note:**`.
+ *
+ * Tolerant, because the source audits vary: `**Nota final: 8/10 — …**`,
+ * `**Nota global 7/10 — …**` and unbolded variants all resolve. The
+ * English label is accepted because it is the one the brief actually
+ * asks for — before this, an audit that followed the brief to the
+ * letter came back with an empty note.
+ */
 const extractNote = (body: string): string => {
-	// Tolerant: the source audits vary in formatting. We find the line
-	// that mentions `Nota final` or `Nota global`, then strip the
-	// surrounding `**` emphasis and any leading colon. This handles
-	// every observed shape: `**Nota final: 8/10 — ...**`,
-	// `**Nota global 7/10 — ...**`, and unbolded variants.
-	const m = /\*\*Nota\s+(?:final|global)[^\n]*\*\*/iu.exec(body);
+	const m = new RegExp(String.raw`\*\*${NOTE_LABEL}[^\n]*\*\*`, 'iu').exec(
+		body,
+	);
 	const raw = m?.[0] ?? '';
-	// Strip the `**` emphasis and the `Nota final:` label, keeping
-	// only the actual note content.
+	// Strip the `**` emphasis and the label, keeping only the content.
 	return raw
-		.replace(/^\*\*Nota\s+(?:final|global)\s*:?\s*/iu, '')
+		.replace(new RegExp(String.raw`^\*\*${NOTE_LABEL}\s*:?\s*`, 'iu'), '')
 		.replace(/\*\*$/u, '')
 		.trim();
 };
