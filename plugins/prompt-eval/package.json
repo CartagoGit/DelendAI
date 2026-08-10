@@ -52,8 +52,8 @@
 		"zod": "^4.4.3"
 	},
 	"devDependencies": {
-		"@types/node": "^20.0.0",
-		"typescript": "^5.4.0",
+		"@types/node": "^26.1.2",
+		"typescript": "^7.0.2",
 		"vitest": "^4.1.10",
 		"@mcp-vertex/core": "workspace:*",
 		"@mcp-vertex/auto-agent-selector": "workspace:*",
