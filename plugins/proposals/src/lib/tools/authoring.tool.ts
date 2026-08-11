@@ -1410,11 +1410,22 @@ export const buildProposalBoardRegistration = (
 								}),
 							),
 							claimableSliceIds: z.array(z.string()).optional(),
+							/**
+							 * Why the board could not read this proposal.
+							 *
+							 * Absent on the happy path. Without it, an index
+							 * entry pointing at a moved or deleted file was
+							 * indistinguishable from a proposal that genuinely
+							 * has no slices: both came back as `slices: []`,
+							 * and an orchestrator would report "actionable,
+							 * nothing to claim" and stall.
+							 */
+							unreadable: z.string().optional(),
 						}),
 					),
 				}),
 				description:
-					'Returns each actionable proposal with its slices (status, owner) and the slices claimable right now. Read-only; the orchestrator board for planning multi-agent work.',
+					'Returns each actionable proposal with its slices (status, owner) and the slices claimable right now. Read-only; the orchestrator board for planning multi-agent work. A proposal whose document cannot be read reports `unreadable` instead of an empty slice list.',
 			},
 			async () => {
 				const index = await readJsonOrNull<{
@@ -1443,10 +1454,35 @@ export const buildProposalBoardRegistration = (
 								dirname(options.indexPathAbs),
 							p.file,
 						);
-						const md = (await readTextOrNull(docPath)) ?? '';
+						const md = await readTextOrNull(docPath);
+						if (md === null) {
+							// El índice apunta a un fichero que ya no está.
+							// Pasa en cuanto alguien mueve una propuesta a
+							// mano —archivarla en `done/`, por ejemplo— sin
+							// pasar por `sync_proposals`, y en un repo donde
+							// el humano también toca los ficheros eso es lo
+							// normal, no la excepción.
+							//
+							// Antes devolvía `slices: []`, que es exactamente
+							// lo que devuelve una propuesta sin slices. Un
+							// orquestador veía "accionable, nada que
+							// reclamar" y se quedaba parado sin ninguna pista.
+							return {
+								id: p.id,
+								status: p.status,
+								slices: [],
+								unreadable: `index points at ${p.file}, which does not exist — run sync_proposals`,
+							};
+						}
 						const parsed = parseProposalSlicePlan(p.id, md);
 						if (parsed === null) {
-							return { id: p.id, status: p.status, slices: [] };
+							return {
+								id: p.id,
+								status: p.status,
+								slices: [],
+								unreadable:
+									'the document has no parseable `## Slices` section',
+							};
 						}
 						const plan = deriveSliceStatuses(parsed, locks);
 						return {
