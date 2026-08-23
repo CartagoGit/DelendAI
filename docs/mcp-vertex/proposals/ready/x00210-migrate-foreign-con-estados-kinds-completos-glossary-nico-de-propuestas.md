@@ -29,7 +29,7 @@ Auditoría 2026-08-24 (hallazgos B6, B7, B8, B9): migrate-foreign solo reconoce 
 - global_gate: type
 
 ### S1 — Glossary único de estados/kinds/scan-folders
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/proposals/src/lib/contracts/constants/proposal-glossary.constant.ts`
 - **Gate**: type
 - acceptance:
@@ -37,7 +37,7 @@ Auditoría 2026-08-24 (hallazgos B6, B7, B8, B9): migrate-foreign solo reconoce 
   - "Sin duplicación de listas de estados entre archivos."
 
 ### S2 — migrate-foreign: estados y kinds completos
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/proposals/src/lib/proposals/migrate-foreign.ts`
 - **Gate**: type
 - acceptance:
@@ -52,10 +52,11 @@ Auditoría 2026-08-24 (hallazgos B6, B7, B8, B9): migrate-foreign solo reconoce 
   - "sync-proposal-registry y proposal-document consumen el glossary (sin unión legacy mezclada)."
   - "retired/issues aparece en el árbol de escaneo real."
   - "La capa legacy queda aislada y explícita."
+- note: "APLAZADO por diseño: el propio glossary documenta que sync/document no se conectan a la máquina de 7 estados hasta migrar los 14 archivos legacy (flag PROPOSAL_STATE_MACHINE_V2, f00016 S11/S12) — forzarlo ahora haría que sync_proposals rechace toda propuesta legacy en disco."
 
 ### S4 — Tests de migración y glossary
-- **Status**: pending
-- **Files**: `plugins/proposals/tests/src/lib/proposals/migrate-foreign.spec.ts`
+- **Status**: done
+- **Files**: `plugins/proposals/tests/src/lib/migrate-foreign.spec.ts`
 - **Gate**: type
 - acceptance:
   - "Specs cubren el mapeo completo de estados/kinds y el glossary único."
