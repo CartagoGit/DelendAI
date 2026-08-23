@@ -240,6 +240,10 @@ export const createReleaseWatcher = (params: {
 		if (fsWatcher) fsWatcher.close();
 		timer = undefined;
 		fsWatcher = undefined;
+		// a00085 #7: a later start() must re-prime the baseline, not
+		// diff against pre-stop in-flight claims (false lock-released).
+		prev = undefined;
+		checkInFlight = false;
 	};
 
 	return { check, start, stop };
