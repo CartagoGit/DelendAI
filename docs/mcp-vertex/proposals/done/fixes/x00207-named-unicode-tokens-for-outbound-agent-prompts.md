@@ -2,10 +2,12 @@
 id: x00207
 title: "Named Unicode tokens for outbound agent prompts"
 kind: fix
-status: ready
+status: done
 type: proposal
 track: plugins+fix
 date: 2026-08-23
+shipped-in:
+  - 61dccaaa # fix(orchestrator-runner): named Unicode tokens for outbound agent prompts
 ---
 
 # x00207 — Named Unicode tokens for outbound agent prompts
