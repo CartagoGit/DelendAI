@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-08-23T13:24:40.494Z",
+	"generatedAt": "2026-08-23T20:17:03.137Z",
 	"mode": "compact",
 	"tools": [
 		{
@@ -1107,6 +1107,13 @@
 	"proposals": {
 		"actionable": [
 			{
+				"id": "a00085",
+				"title": "a00085",
+				"track": "audit+bugs+maintainability",
+				"status": "in-progress",
+				"kind": "audit"
+			},
+			{
 				"id": "f00050",
 				"title": "f00050",
 				"track": "lint+architecture+i18n+workflow+release",
@@ -1114,380 +1121,23 @@
 				"kind": "feat"
 			},
 			{
-				"id": "f00156",
-				"title": "f00156",
-				"track": "session-hygiene",
+				"id": "x00203",
+				"title": "x00203",
+				"track": "plugins+fix",
 				"status": "in-progress",
-				"kind": "feat"
-			},
-			{
-				"id": "x00001",
-				"title": "x00001",
-				"track": "fix",
-				"status": "ready",
 				"kind": "fix"
 			},
 			{
-				"id": "x00002",
-				"title": "x00002",
-				"track": "fix",
-				"status": "ready",
-				"kind": "fix"
-			},
-			{
-				"id": "x00003",
-				"title": "x00003",
-				"track": "fix",
-				"status": "ready",
-				"kind": "fix"
-			},
-			{
-				"id": "x00004",
-				"title": "x00004",
-				"track": "fix",
-				"status": "ready",
-				"kind": "fix"
-			},
-			{
-				"id": "x00005",
-				"title": "x00005",
-				"track": "fix",
-				"status": "ready",
-				"kind": "fix"
-			},
-			{
-				"id": "x00006",
-				"title": "x00006",
+				"id": "x00204",
+				"title": "x00204",
 				"track": "plugins+fix",
-				"status": "ready",
-				"kind": "fix"
-			},
-			{
-				"id": "x00007",
-				"title": "x00007",
-				"track": "fix",
-				"status": "ready",
-				"kind": "fix"
-			},
-			{
-				"id": "x00008",
-				"title": "x00008",
-				"track": "fix",
-				"status": "ready",
-				"kind": "fix"
-			},
-			{
-				"id": "x00009",
-				"title": "x00009",
-				"track": "fix",
-				"status": "ready",
-				"kind": "fix"
-			},
-			{
-				"id": "x00010",
-				"title": "x00010",
-				"track": "fix",
-				"status": "ready",
-				"kind": "fix"
-			},
-			{
-				"id": "x00011",
-				"title": "x00011",
-				"track": "fix",
-				"status": "ready",
-				"kind": "fix"
-			},
-			{
-				"id": "x00012",
-				"title": "x00012",
-				"track": "fix",
-				"status": "ready",
-				"kind": "fix"
-			},
-			{
-				"id": "x00013",
-				"title": "x00013",
-				"track": "fix",
-				"status": "ready",
-				"kind": "fix"
-			},
-			{
-				"id": "x00014",
-				"title": "x00014",
-				"track": "fix",
-				"status": "ready",
-				"kind": "fix"
-			},
-			{
-				"id": "x00015",
-				"title": "x00015",
-				"track": "fix",
-				"status": "ready",
-				"kind": "fix"
-			},
-			{
-				"id": "x00016",
-				"title": "x00016",
-				"track": "fix",
-				"status": "ready",
-				"kind": "fix"
-			},
-			{
-				"id": "x00017",
-				"title": "x00017",
-				"track": "fix",
-				"status": "ready",
-				"kind": "fix"
-			},
-			{
-				"id": "x00018",
-				"title": "x00018",
-				"track": "fix",
-				"status": "ready",
-				"kind": "fix"
-			},
-			{
-				"id": "x00019",
-				"title": "x00019",
-				"track": "fix",
-				"status": "ready",
-				"kind": "fix"
-			},
-			{
-				"id": "x00020",
-				"title": "x00020",
-				"track": "fix",
-				"status": "ready",
-				"kind": "fix"
-			},
-			{
-				"id": "x00021",
-				"title": "x00021",
-				"track": "fix",
-				"status": "ready",
-				"kind": "fix"
-			},
-			{
-				"id": "x00022",
-				"title": "x00022",
-				"track": "fix",
-				"status": "ready",
-				"kind": "fix"
-			},
-			{
-				"id": "x00023",
-				"title": "x00023",
-				"track": "fix",
-				"status": "ready",
-				"kind": "fix"
-			},
-			{
-				"id": "x00024",
-				"title": "x00024",
-				"track": "fix",
-				"status": "ready",
-				"kind": "fix"
-			},
-			{
-				"id": "x00025",
-				"title": "x00025",
-				"track": "plugins+fix",
-				"status": "ready",
-				"kind": "fix"
-			},
-			{
-				"id": "x00026",
-				"title": "x00026",
-				"track": "fix",
-				"status": "ready",
-				"kind": "fix"
-			},
-			{
-				"id": "x00027",
-				"title": "x00027",
-				"track": "fix",
-				"status": "ready",
-				"kind": "fix"
-			},
-			{
-				"id": "x00028",
-				"title": "x00028",
-				"track": "fix",
-				"status": "ready",
-				"kind": "fix"
-			},
-			{
-				"id": "x00029",
-				"title": "x00029",
-				"track": "fix",
-				"status": "ready",
-				"kind": "fix"
-			},
-			{
-				"id": "x00030",
-				"title": "x00030",
-				"track": "fix",
-				"status": "ready",
-				"kind": "fix"
-			},
-			{
-				"id": "x00031",
-				"title": "x00031",
-				"track": "fix",
-				"status": "ready",
-				"kind": "fix"
-			},
-			{
-				"id": "x00032",
-				"title": "x00032",
-				"track": "fix",
-				"status": "ready",
-				"kind": "fix"
-			},
-			{
-				"id": "x00033",
-				"title": "x00033",
-				"track": "fix",
-				"status": "ready",
-				"kind": "fix"
-			},
-			{
-				"id": "x00034",
-				"title": "x00034",
-				"track": "fix",
-				"status": "ready",
-				"kind": "fix"
-			},
-			{
-				"id": "x00035",
-				"title": "x00035",
-				"track": "fix",
-				"status": "ready",
-				"kind": "fix"
-			},
-			{
-				"id": "x00036",
-				"title": "x00036",
-				"track": "fix",
-				"status": "ready",
-				"kind": "fix"
-			},
-			{
-				"id": "x00037",
-				"title": "x00037",
-				"track": "fix",
-				"status": "ready",
-				"kind": "fix"
-			},
-			{
-				"id": "x00038",
-				"title": "x00038",
-				"track": "fix",
-				"status": "ready",
-				"kind": "fix"
-			},
-			{
-				"id": "x00039",
-				"title": "x00039",
-				"track": "fix",
-				"status": "ready",
-				"kind": "fix"
-			},
-			{
-				"id": "x00040",
-				"title": "x00040",
-				"track": "fix",
-				"status": "ready",
-				"kind": "fix"
-			},
-			{
-				"id": "x00041",
-				"title": "x00041",
-				"track": "fix",
-				"status": "ready",
-				"kind": "fix"
-			},
-			{
-				"id": "x00042",
-				"title": "x00042",
-				"track": "fix",
-				"status": "ready",
-				"kind": "fix"
-			},
-			{
-				"id": "x00043",
-				"title": "x00043",
-				"track": "fix",
-				"status": "ready",
-				"kind": "fix"
-			},
-			{
-				"id": "x00044",
-				"title": "x00044",
-				"track": "fix",
-				"status": "ready",
-				"kind": "fix"
-			},
-			{
-				"id": "x00045",
-				"title": "x00045",
-				"track": "fix",
-				"status": "ready",
-				"kind": "fix"
-			},
-			{
-				"id": "x00046",
-				"title": "x00046",
-				"track": "fix",
-				"status": "ready",
-				"kind": "fix"
-			},
-			{
-				"id": "x00047",
-				"title": "x00047",
-				"track": "fix",
-				"status": "ready",
-				"kind": "fix"
-			},
-			{
-				"id": "x00048",
-				"title": "x00048",
-				"track": "fix",
-				"status": "ready",
-				"kind": "fix"
-			},
-			{
-				"id": "x00049",
-				"title": "x00049",
-				"track": "fix",
-				"status": "ready",
-				"kind": "fix"
-			},
-			{
-				"id": "x00050",
-				"title": "x00050",
-				"track": "fix",
-				"status": "ready",
-				"kind": "fix"
-			},
-			{
-				"id": "x00051",
-				"title": "x00051",
-				"track": "fix",
-				"status": "ready",
-				"kind": "fix"
-			},
-			{
-				"id": "x00052",
-				"title": "x00052",
-				"track": "core+fix",
-				"status": "ready",
+				"status": "in-progress",
 				"kind": "fix"
 			}
 		],
 		"byStatus": {
-			"ready": 52,
-			"in-progress": 1,
+			"ready": 0,
+			"in-progress": 3,
 			"review": 0,
 			"paused": 1,
 			"done": 343,
