@@ -85,7 +85,10 @@ const CLOSE_SLICE_VALIDATION_TIMEOUT_MS = 45_000;
  * `catch (err: any)`.
  */
 type ICloseSliceThrownError = Error & {
-	readonly kind?: 'validation-error' | 'quality-failed';
+	readonly kind?:
+		| 'validation-error'
+		| 'quality-failed'
+		| 'peer-review-required';
 	readonly output?: string;
 	readonly detail?: {
 		readonly ok: boolean;
@@ -762,7 +765,7 @@ export const buildCloseSliceRegistration = (
 					validationOutput: z.string().optional(),
 				}),
 				description:
-					'Mark a slice as done in its proposal document and release its agent lock atomically, then re-sync. Requires recent validate evidence within the last 24h unless force:true is passed. When per-agent worktrees are on and the slice was closed on an agent/* branch, records that branch for deliberate integration (non-destructive: runs no git write). Use it the moment a slice passes its acceptance.',
+					'Mark a slice as done in its proposal document and release its agent lock atomically, then re-sync. Requires recent validate evidence within the last 24h unless force:true is passed. When requirePeerReview is on (the default), the slice must already have review-state: done from proposal_review action=approve by a different agent — implementers submit via proposal_review, they do not close their own slice. When per-agent worktrees are on and the slice was closed on an agent/* branch, records that branch for deliberate integration (non-destructive: runs no git write).',
 				inputSchema: z.object({
 					proposalId: z.string(),
 					sliceId: z.string(),
@@ -881,6 +884,24 @@ export const buildCloseSliceRegistration = (
 								throw err;
 							}
 						}
+						if (
+							options.requirePeerReview !== false &&
+							args.force !== true
+						) {
+							const review = parseReviewState(rawBlock);
+							if (review.status !== 'done') {
+								const err: ICloseSliceThrownError =
+									Object.assign(
+										new Error(
+											'peer-review required before close_slice can mark the slice done',
+										),
+										{
+											kind: 'peer-review-required' as const,
+										},
+									);
+								throw err;
+							}
+						}
 						const block = flipSliceStatusDone(rawBlock);
 						const nextContent = md.replace(
 							blockRe,
@@ -906,6 +927,31 @@ export const buildCloseSliceRegistration = (
 							sliceId: args.sliceId,
 							closed: false,
 							validationOutput: String(err.output ?? ''),
+						};
+						return {
+							content: [
+								{
+									type: 'text' as const,
+									text: JSON.stringify(envelope),
+								},
+							],
+							structuredContent: envelope,
+							isError: true,
+						};
+					}
+					if (err.kind === 'peer-review-required') {
+						const envelope = {
+							ok: false as const,
+							kind: 'peer-review-required',
+							blockerType: 'peer-review-required' as const,
+							error: {
+								reason: String(err.message),
+								nextAction: `${options.namespacePrefix}_proposal_review { action: "submit", proposalId: "${entry.id}", sliceId: "${args.sliceId}", agent: "<implementer>" } then a DIFFERENT agent ${options.namespacePrefix}_proposal_review { action: "approve", proposalId: "${entry.id}", sliceId: "${args.sliceId}", agent: "<reviewer≠implementer>" }`,
+								kind: 'peer-review-required',
+							},
+							proposalId: entry.id,
+							sliceId: args.sliceId,
+							closed: false,
 						};
 						return {
 							content: [

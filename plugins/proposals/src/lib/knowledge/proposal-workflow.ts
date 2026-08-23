@@ -79,7 +79,7 @@ export const buildProposalWorkflow = (
 		'2+ agents sharing this repo? Each must call agent_worktree (action: create) once at the start of its session — it isolates the agent into its own git worktree + branch (agent/<name>) so concurrent git add/commit never race on a shared .git/index. List active worktrees with action: list; clean up with action: remove.',
 		'If the work needs more than 3 tool calls, touches multiple files, or requires repeated MCP reads, delegate it instead of keeping it on the main thread.',
 		'Run sync_proposals only after the last open slice of that proposal is closed; do not sync mid-flight while peer slices are still open.',
-		'Close a slice with close_slice (it flips `- **Status**: done` and releases the lock atomically); move finished proposals with proposal_transition, never by hand.',
+		'Finish a slice with proposal_review action=submit (it stays NOT done). close_slice may flip `- **Status**: done` only when requirePeerReview is false or the slice already has review-state: done; move finished proposals with proposal_transition, never by hand.',
 		'Peer review: instead of closing your own slice, proposal_review action=submit (it stays NOT done). A DIFFERENT agent reviews: action=approve → done + lock released, or action=request_changes (with a note) → reworkable. The fixer re-submits and another agent reviews the fix. Loop until a reviewer has no objection. Reviewer must differ from the implementer.',
 	],
 	template: [

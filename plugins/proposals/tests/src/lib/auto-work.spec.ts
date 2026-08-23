@@ -220,6 +220,10 @@ describe('auto_work (one-call action plan)', async () => {
 		expect(out.steps.join('\n')).toContain(
 			'If that was the last open slice for the proposal, run proposals_sync_proposals once; otherwise do not sync mid-flight.',
 		);
+		expect(out.steps.join('\n')).toContain('proposal_review');
+		expect(out.steps.join('\n')).not.toContain(
+			'proposals_close_slice { id, sliceId }',
+		);
 	});
 
 	it('allows hosts to tune the auto_work delegation threshold', async () => {

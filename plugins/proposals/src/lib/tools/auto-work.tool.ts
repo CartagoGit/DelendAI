@@ -715,7 +715,7 @@ export const runAutoWork = async (
 					'Validate per the project gate (see get_validation_matrix if present).',
 				]),
 		`If the logs plugin is loaded, run logs_query again after validation/close to confirm the slice's append events landed.`,
-		`Mark progress in the proposal, then ${prefix}_close_slice { id, sliceId } to flip the slice status and release the lock atomically.`,
+		`Submit the finished slice for peer review (do NOT close it yourself): ${prefix}_proposal_review { action: "submit", proposalId, sliceId, agent: "<implementer>" }. A DIFFERENT agent must then ${prefix}_proposal_review { action: "approve" | "request_changes", proposalId, sliceId, agent: "<reviewer≠implementer>" }. close_slice is reserved for hosts that set requirePeerReview:false.`,
 		`If the notification plugin is loaded, keep notification_notify_status { kind: 'lock-released' } active before claiming the next slice.`,
 		`If that was the last open slice for the proposal, run ${prefix}_sync_proposals once; otherwise do not sync mid-flight.`,
 		...persistStep,
