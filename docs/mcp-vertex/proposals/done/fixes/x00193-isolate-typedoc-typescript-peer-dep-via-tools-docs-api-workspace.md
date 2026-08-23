@@ -7,7 +7,8 @@ type: proposal
 track: ci+audit-followup
 date: 2026-07-30
 shipped-in:
-    - 0a16172f # fix(x00193): isolate typedoc's typescript peer dep via tools/docs-api workspace---
+    - 0a16172f # fix(x00193): isolate typedoc's typescript peer dep via tools/docs-api workspace
+---
 
 # x00193 — Two more pre-existing CI breaks unmasked by x00192: Node-vs-Bun plugin resolution gap + typedoc/TypeScript-7 incompatibility
 
