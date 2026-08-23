@@ -612,7 +612,18 @@ export const runContinueProposal = async (
 			entry.file,
 		);
 		const markdown = await readTextOrNull(docPath);
-		if (markdown === null) continue;
+		if (markdown === null) {
+			// Only treat a missing document as unclaimable when we
+			// have a real proposals dir (production). Unit fixtures
+			// omit the file and still expect serial work.
+			if (
+				options.proposalsDirAbs !== undefined &&
+				isNewSystemEntry(entry)
+			) {
+				claimableById.set(entry.id, 0);
+			}
+			continue;
+		}
 		const parsedPlan = parseProposalSlicePlan(entry.id, markdown);
 		if (parsedPlan === null) continue;
 		const derivedPlan = deriveSliceStatuses(parsedPlan, activeLocks);
@@ -623,6 +634,8 @@ export const runContinueProposal = async (
 			).length,
 		);
 	}
+	// Unset entries keep the serial-work default of 1 (legacy docs
+	// without a `## Slices` section). Missing documents are explicitly 0.
 	const seriallyFree = free.filter(
 		(entry) => (claimableById.get(entry.id) ?? 1) > 0,
 	);

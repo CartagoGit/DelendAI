@@ -59,6 +59,7 @@ describe('indexed-path tools self-heal a stale index (x00106 S1)', () => {
 				output: 'ok',
 				exitCode: 0,
 			}),
+			requirePeerReview: false,
 		};
 	});
 	afterEach(() => rmSync(root, { recursive: true, force: true }));

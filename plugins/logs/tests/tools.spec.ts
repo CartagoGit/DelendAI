@@ -127,7 +127,7 @@ describe('log tools', async () => {
 		expect(corr.firstTs).toBe('2026-06-20T10:00:00.000Z');
 	});
 
-	it('errors_tail reads only the curated error stream, with full meta by default', async () => {
+	it('errors_tail reads only the curated error stream, compact by default', async () => {
 		const handlers = await registeredHandlers();
 		const errors = structured(await handlers.get('logs_errors_tail')?.({}));
 		const events = errors.events as Array<{
@@ -136,9 +136,17 @@ describe('log tools', async () => {
 		}>;
 		expect(events).toHaveLength(1);
 		expect(events[0]?.taskId).toBe('gamma');
-		// Full context by default — no second call needed to see why it broke.
-		expect(events[0]?.meta.toolName).toBe('gamma');
-		expect(events[0]?.meta.error).toBe('boom');
+		expect(events[0]?.meta).toEqual({});
+		const detailed = structured(
+			await handlers.get('logs_errors_tail')?.({ includeMeta: true }),
+		);
+		expect(
+			(
+				detailed.events as Array<{
+					meta: Record<string, unknown>;
+				}>
+			)[0]?.meta.toolName,
+		).toBe('gamma');
 	});
 
 	it('errors_tail honors includeMeta:false to strip context', async () => {
