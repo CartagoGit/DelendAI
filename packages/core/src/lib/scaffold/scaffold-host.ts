@@ -490,9 +490,9 @@ import type { IMcpVertexHostConfig } from '@mcp-vertex/core/public';
 // the mcp-vertex CLI (\`mcp-vertex --plugins=proposals\`) rather than
 // being wired here; see the package README for both launch paths.
 // Hermetic: the workspace root is injected by the caller (the server
-// entry point), never read from \`process.cwd()\` here — a lib must not
-// guess where the project lives, so this stays correct under CI,
-// containers and tests.
+// entry point), never guessed from the current working directory here —
+// a lib must not guess where the project lives, so this stays correct
+// under CI, containers and tests.
 export const buildHostConfig = (workspaceRoot: string): IMcpVertexHostConfig => {
 	const workspace = createWorkspacePathProvider(workspaceRoot);
 	return {

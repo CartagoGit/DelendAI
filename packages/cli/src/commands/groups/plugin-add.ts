@@ -79,19 +79,14 @@ export const pluginAddCommand: ICliCommand = {
 		if (entry === undefined) {
 			return {
 				code: EXIT_CODE.NOT_FOUND,
-				error:
-					`Plugin "${id}" was not found in the registry. Run plugin search first and retry with a valid id.`,
+				error: `Plugin "${id}" was not found in the registry. Run plugin search first and retry with a valid id.`,
 			};
 		}
 
-		if (
-			entry.origin === 'community' &&
-			consentCommunity !== true
-		) {
+		if (entry.origin === 'community' && consentCommunity !== true) {
 			return {
 				code: EXIT_CODE.VALIDATION,
-				error:
-					`Plugin "${entry.id}" (${entry.package}) is community-origin. Re-run with --consent-community to confirm adoption.`,
+				error: `Plugin "${entry.id}" (${entry.package}) is community-origin. Re-run with --consent-community to confirm adoption.`,
 			};
 		}
 

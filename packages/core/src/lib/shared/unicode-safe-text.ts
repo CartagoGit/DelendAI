@@ -7,10 +7,10 @@
  * surrogate pair or a hex-only escape.
  */
 import type { IUnicodeSafeText } from '../contracts/interfaces/unicode-safe-text.interface';
+import { UNICODE_TOKEN_LEGEND } from '../contracts/constants/unicode-token-legend.constant';
 import { UNICODE_EMOJI_NAMES } from './unicode-emoji-names.generated';
 
-export const UNICODE_TOKEN_LEGEND =
-	'[unicode-tokens] Tokens of the form [kind:name U+XXXX] stand for the named character; treat each token as the meaning of that character, not as decoration.';
+export { UNICODE_TOKEN_LEGEND };
 
 const ZWJ = 0x200d;
 const VS15 = 0xfe0e;

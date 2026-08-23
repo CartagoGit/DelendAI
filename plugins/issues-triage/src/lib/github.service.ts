@@ -1,4 +1,4 @@
-import { runExternalTool, GH_CLI_TOOL } from '@mcp-vertex/core/public';
+import { runGhCli } from '@mcp-vertex/core/public';
 
 /** Injected exec seam — production uses the shared `gh` runner. */
 export type IGhExec = (
@@ -6,11 +6,7 @@ export type IGhExec = (
 ) => Promise<{ ok: boolean; code: number; stdout: string; stderr: string }>;
 
 export const ghExec: IGhExec = async (argv) => {
-	const run = await runExternalTool({
-		tool: GH_CLI_TOOL,
-		args: argv,
-		redact: ['--body'],
-	});
+	const run = await runGhCli(argv);
 	return {
 		ok: run.ok,
 		code: run.code,

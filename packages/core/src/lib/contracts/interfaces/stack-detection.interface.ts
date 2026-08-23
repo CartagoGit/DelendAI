@@ -26,7 +26,10 @@ export interface IStackRecommendation {
 export interface IStackProbeDeps {
 	readonly readJson: (path: string) => Promise<unknown | null>;
 	readonly readText: (path: string) => Promise<string | null>;
-	readonly listFiles: (root: string, globs: readonly string[]) => readonly string[];
+	readonly listFiles: (
+		root: string,
+		globs: readonly string[],
+	) => readonly string[];
 }
 
 export interface IStackDetectionResult {

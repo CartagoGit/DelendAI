@@ -20,19 +20,9 @@
 import { readFile, stat } from 'node:fs/promises';
 
 import type { IWorkspacePathProvider } from '../contracts/interfaces/workspace-paths.interface';
+import type { IExistingMcpVertexInstall } from '../contracts/interfaces/existing-mcp-vertex-install.interface';
 
-export interface IExistingMcpVertexInstall {
-	/** True when the workspace already has any mcp-vertex wiring (config, or a registered server, or both). */
-	readonly existingMcpVertex: boolean;
-	/**
-	 * The MCP server's real registration key, when one could be found in
-	 * `.vscode/mcp.json` or `.mcp.json`. Undefined when no matching
-	 * server entry exists (e.g. `mcp-vertex.config.json` is present but
-	 * no editor has registered a server yet) — callers fall back to the
-	 * greenfield `mcp-project-<prefix>` default in that case.
-	 */
-	readonly mcpServerName?: string;
-}
+export type { IExistingMcpVertexInstall } from '../contracts/interfaces/existing-mcp-vertex-install.interface';
 
 interface IMcpServerLaunchShape {
 	readonly command?: unknown;

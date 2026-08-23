@@ -17,27 +17,13 @@
  */
 import type { IToolRegistration } from '../contracts/interfaces/tool-registration.interface';
 import type { IWorkspacePathProvider } from '../contracts/interfaces/workspace-paths.interface';
+import type { IStandaloneCoreToolsOptions } from '../contracts/interfaces/standalone-core-tools.interface';
 import { buildBootstrapToolRegistrations } from '../bootstrap/bootstrap-tool';
 import type { IOverviewSnapshot } from '../tools/overview-tool';
 import { buildOverviewToolRegistration } from '../tools/overview-tool';
 import { buildScaffoldToolRegistration } from './scaffold-tool';
 
-export interface IStandaloneCoreToolsOptions {
-	/** Tool namespace, e.g. `acme` → `acme_*` tools. */
-	readonly namespacePrefix: string;
-	readonly workspace: IWorkspacePathProvider;
-	readonly projectName: string;
-	readonly projectPackageName: string;
-	/** Server identity surfaced by `overview`. Defaults derived from the prefix. */
-	readonly serverName?: string;
-	readonly serverVersion?: string;
-	/** Resolved cache/docs roots surfaced by `overview`. Defaults to the CLI defaults. */
-	readonly corePaths?: {
-		readonly cacheDir: string;
-		readonly docsDir: string;
-	};
-	readonly keepLegacy?: boolean;
-}
+export type { IStandaloneCoreToolsOptions } from '../contracts/interfaces/standalone-core-tools.interface';
 
 /**
  * The orientation + bootstrap surface the generated agents/instructions

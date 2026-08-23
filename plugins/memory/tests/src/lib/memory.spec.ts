@@ -424,9 +424,13 @@ describe('memory store — corrupt ≠ empty (M10)', async () => {
 				/\.corrupt-|inspect it manually/,
 			);
 		}
-	}, // conditions but the 5s vitest default occasionally flips this test. // can take ~1.5s under load — well above the 5s default in normal // a00070 6-attempt backoff window (~310ms worst case) the whole test // The 4 case-loop exercises the quarantine 4× back-to-back. With the
-	// Bumping to 30s keeps the assertion sharp without flaking on slow CI.
-	30_000);
+		// The 4 case-loop exercises the quarantine 4× back-to-back. With
+		// the a00070 6-attempt backoff window (~310ms worst case) the
+		// whole test can take ~1.5s under load — well above the 5s
+		// default in normal conditions, but the 5s vitest default
+		// occasionally flips this test. Bumping to 30s keeps the
+		// assertion sharp without flaking on slow CI.
+	}, 30_000);
 });
 
 describe('memory plugin', async () => {

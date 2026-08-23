@@ -11,9 +11,10 @@ export {
 	OptionsSchema,
 	DEFAULT_LABELS,
 	DEFAULT_TARGET_REPO,
+	DEFAULT_DEDUPE_WINDOW_HOURS,
 	resolveOptions,
-} from '../lib/options.constant';
-export type { IErrorReportingOptions } from '../lib/options.constant';
+} from '../lib/contracts/constants/options.constant';
+export type { IErrorReportingOptions } from '../lib/contracts/interfaces/options.interface';
 
 export {
 	isMcpVertexInternal,
@@ -24,7 +25,7 @@ export {
 	buildIssueTitle,
 	buildIssueBody,
 } from '../lib/signature.helper';
-export type { IBuildIssueBodyInput } from '../lib/signature.helper';
+export type { IBuildIssueBodyInput } from '../lib/contracts/interfaces/signature.interface';
 
 export {
 	shouldReport,
@@ -36,11 +37,11 @@ export type {
 	IIssueExecResult,
 	ISubmitIssueInput,
 	ISubmitIssueOutcome,
-} from '../lib/reporter.service';
+} from '../lib/contracts/interfaces/reporter.interface';
 
 export { createReportStore } from '../lib/report-store.service';
 export type {
 	IReportRecord,
 	IReportRecordInput,
 	IReportStore,
-} from '../lib/report-store.service';
+} from '../lib/contracts/interfaces/report-store.interface';

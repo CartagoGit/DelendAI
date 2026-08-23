@@ -62,7 +62,10 @@ const CLI_FRAMEWORK_SIGNALS: ReadonlyArray<{
 	{ framework: 'clap (Rust)', dep: 'clap' },
 ];
 
-const DATA_SIGNALS: ReadonlyArray<{ readonly framework: string; readonly dep: string }> = [
+const DATA_SIGNALS: ReadonlyArray<{
+	readonly framework: string;
+	readonly dep: string;
+}> = [
 	{ framework: 'Prisma', dep: 'prisma' },
 	{ framework: 'Drizzle', dep: 'drizzle-orm' },
 	{ framework: 'TypeORM', dep: 'typeorm' },
@@ -91,18 +94,25 @@ const extractDeps = (pkg: unknown): Record<string, string> => {
 
 const hasAnyDep = (
 	deps: Readonly<Record<string, string>>,
-	signals: ReadonlyArray<{ readonly framework: string; readonly dep: string }>,
+	signals: ReadonlyArray<{
+		readonly framework: string;
+		readonly dep: string;
+	}>,
 ): readonly string[] => {
 	const matched: string[] = [];
 	for (const { framework, dep } of signals) {
-		if (Object.prototype.hasOwnProperty.call(deps, dep)) matched.push(framework);
+		if (Object.prototype.hasOwnProperty.call(deps, dep))
+			matched.push(framework);
 	}
 	return matched;
 };
 
 const containsAnyPythonDep = (
 	text: string,
-	signals: ReadonlyArray<{ readonly framework: string; readonly dep: string }>,
+	signals: ReadonlyArray<{
+		readonly framework: string;
+		readonly dep: string;
+	}>,
 ): readonly string[] => {
 	const matched: string[] = [];
 	const lower = text.toLowerCase();
@@ -117,7 +127,9 @@ const containsAny = (text: string, needles: readonly string[]): boolean => {
 	return needles.some((n) => lower.includes(n.toLowerCase()));
 };
 
-const detectLanguages = (deps: Readonly<Record<string, string>>): readonly string[] => {
+const detectLanguages = (
+	deps: Readonly<Record<string, string>>,
+): readonly string[] => {
 	const out: string[] = [];
 	if (Object.keys(deps).length > 0) out.push('typescript-or-javascript');
 	return out;
@@ -143,7 +155,8 @@ const probeFiles = (root: string, deps: IStackProbeDeps): IFileProbes => {
 		'Cargo.toml',
 		'go.mod',
 	]);
-	const has = (suffix: string): boolean => list.some((p) => p.endsWith(suffix));
+	const has = (suffix: string): boolean =>
+		list.some((p) => p.endsWith(suffix));
 	return {
 		hasAstroConfig: list.some((p) => p.includes('astro.config')),
 		hasNextConfig: list.some((p) => p.includes('next.config')),
@@ -185,7 +198,9 @@ const finalize = (acc: IAccumulator): IStackDetectionResult => {
 			reasons,
 		});
 	}
-	recs.sort((a, b) => b.confidence - a.confidence || a.pack.localeCompare(b.pack));
+	recs.sort(
+		(a, b) => b.confidence - a.confidence || a.pack.localeCompare(b.pack),
+	);
 	const top =
 		recs.length > 0 && recs[0] !== undefined && recs[0].confidence >= 0.4
 			? recs[0].pack
@@ -227,7 +242,9 @@ export const detectStack = async (
 	for (const f of dataFrameworks) acc.frameworks.add(f);
 
 	const pyproject = await deps.readText(`${workspaceRoot}/pyproject.toml`);
-	const requirements = await deps.readText(`${workspaceRoot}/requirements.txt`);
+	const requirements = await deps.readText(
+		`${workspaceRoot}/requirements.txt`,
+	);
 	const pyText = `${pyproject ?? ''}\n${requirements ?? ''}`;
 	const pyBackend = containsAnyPythonDep(pyText, [
 		{ framework: 'Django', dep: 'django' },
@@ -247,7 +264,8 @@ export const detectStack = async (
 		(cargoText !== null && containsAny(cargoText, ['[[bin]]'])) ||
 		(cargoText !== null && containsAny(cargoText, ['clap', 'structopt']));
 	const goModText = await deps.readText(`${workspaceRoot}/go.mod`);
-	const goCli = goModText !== null && containsAny(goModText, ['cobra', 'urfave/cli']);
+	const goCli =
+		goModText !== null && containsAny(goModText, ['cobra', 'urfave/cli']);
 
 	const files = probeFiles(workspaceRoot, deps);
 
@@ -301,7 +319,10 @@ export const detectStack = async (
 		(cargoText !== null && cargoText.includes('[[bin]]'));
 	if (cliSignals) {
 		bump(acc, 'cli-tool', 0.5, 'CLI framework or bin target detected');
-		if (cliFrameworksJs.includes('oclif') || cliFrameworksJs.includes('commander')) {
+		if (
+			cliFrameworksJs.includes('oclif') ||
+			cliFrameworksJs.includes('commander')
+		) {
 			bump(acc, 'cli-tool', 0.3, 'JS CLI framework detected');
 		}
 		if (cargoBin) {
@@ -341,14 +362,17 @@ export const detectStack = async (
 	if (
 		dataFrameworks.length > 0 ||
 		pyData.length > 0 ||
-		(Object.keys(deps_).length > 0 && files.hasPrismaSchema && webFrameworks.length === 0 && backendFrameworks.length === 0)
+		(Object.keys(deps_).length > 0 &&
+			files.hasPrismaSchema &&
+			webFrameworks.length === 0 &&
+			backendFrameworks.length === 0)
 	) {
 		bump(acc, 'data', 0.4, 'data / ORM stack detected');
 	}
 
 	// Security-hardened is reserved for a future slice that consumes
-// `detectStack` output + lint findings; we do not bump it here so
-// the recommendation set always reflects concrete signals.
+	// `detectStack` output + lint findings; we do not bump it here so
+	// the recommendation set always reflects concrete signals.
 
 	return finalize(acc);
 };

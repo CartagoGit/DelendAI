@@ -40,10 +40,14 @@ const tempDir = async (): Promise<string> => {
 };
 
 afterEach(async () => {
-	await Promise.all(tempDirs.splice(0).map((dir) => rm(dir, {
-		recursive: true,
-		force: true,
-	})));
+	await Promise.all(
+		tempDirs.splice(0).map((dir) =>
+			rm(dir, {
+				recursive: true,
+				force: true,
+			}),
+		),
+	);
 });
 
 describe('fileProposalsFromBacklog', () => {
@@ -160,7 +164,9 @@ describe('fileProposalsFromBacklog', () => {
 			drafts: [],
 			ranAt: '2026-07-26T00:00:00.000Z',
 		});
-		expect(await readdir(path.join(proposalsDirAbs, 'ready'))).toHaveLength(1);
+		expect(await readdir(path.join(proposalsDirAbs, 'ready'))).toHaveLength(
+			1,
+		);
 	});
 
 	it('uses a stable proposalId for the same finding across runs', async () => {

@@ -56,7 +56,11 @@ const isExemptFile = (rel: string): boolean =>
 	rel.endsWith('.constant.ts') ||
 	rel.endsWith('.spec.ts') ||
 	rel.endsWith('.test.ts') ||
-	rel.endsWith('.d.ts');
+	rel.endsWith('.d.ts') ||
+	// Generated artefacts (e.g. unicode-emoji-names.generated.ts) are not
+	// hand-authored contracts; their inline exports are produced, not
+	// chosen, so the ratchet must not flag them.
+	rel.endsWith('.generated.ts');
 
 /** An exported inline `interface`/`type`, or a SCREAMING_SNAKE `const`. */
 const VIOLATION_RE =
