@@ -24,6 +24,12 @@ import {
 	writeFileAtomic,
 } from '@mcp-vertex/core/public';
 
+import {
+	PROPOSAL_KINDS,
+	STATUS_TO_FOLDER,
+	type IProposalKind,
+	type IProposalStatus,
+} from '../contracts/constants/proposal-glossary.constant';
 import { slugFromTitle } from '../shared/string-helpers';
 import { allocateNextProposalId } from './proposal-id-allocator';
 
@@ -54,29 +60,92 @@ export interface IMigrationReport {
 	readonly skipped: readonly ISkippedEntry[];
 }
 
-/** Statuses foreign schemes use for "finished". Mirrors adopt.ts. */
-const DONE_SYNONYMS = new Set([
-	'done',
-	'closed',
-	'completed',
-	'merged',
-	'shipped',
-	'archived',
-]);
+/** Foreign status spellings → canonical status (glossary single source). */
+const FOREIGN_STATUS_MAP: Readonly<Record<string, IProposalStatus>> = {
+	done: 'done',
+	closed: 'done',
+	completed: 'done',
+	merged: 'done',
+	shipped: 'done',
+	archived: 'retired',
+	obsolete: 'retired',
+	superseded: 'retired',
+	wontfix: 'retired',
+	cancelled: 'retired',
+	canceled: 'retired',
+	ready: 'ready',
+	todo: 'ready',
+	backlog: 'ready',
+	'in-progress': 'in-progress',
+	in_progress: 'in-progress',
+	wip: 'in-progress',
+	review: 'review',
+	'in-review': 'review',
+	paused: 'paused',
+	deferred: 'paused',
+	'on-hold': 'paused',
+	on_hold: 'paused',
+	blocked: 'blocked',
+};
+
+/** Canonical status for a foreign status string (unknown → ready). */
+const statusFor = (raw: string): IProposalStatus => {
+	const normalized = raw.trim().toLowerCase();
+	return FOREIGN_STATUS_MAP[normalized] ?? 'ready';
+};
 
 const FIX_TITLE = /\b(fix|bug|crash|error|broken|regression)\b/i;
 
-const kindPrefixFor = (title: string): { kind: string; prefix: string } =>
-	FIX_TITLE.test(title)
-		? { kind: 'fix', prefix: 'x' }
-		: { kind: 'feat', prefix: 'f' };
+/** Resolve a canonical kind from foreign metadata (kind/type fields). */
+const kindFromMetadata = (
+	kind: string | undefined,
+	type: string | undefined,
+): IProposalKind | undefined => {
+	for (const raw of [kind, type]) {
+		if (raw === undefined) continue;
+		const normalized = raw.trim().toLowerCase();
+		if (Object.hasOwn(PROPOSAL_KINDS, normalized)) {
+			return normalized as IProposalKind;
+		}
+		if (normalized === 'bug' || normalized === 'defect') return 'fix';
+		if (
+			normalized === 'feature' ||
+			normalized === 'improvement' ||
+			normalized === 'enhancement'
+		) {
+			return 'feat';
+		}
+	}
+	return undefined;
+};
+
+/**
+ * Canonical kind for a candidate: preserved metadata first, then the
+ * title heuristic as a LAST resort for shapes that carry no metadata
+ * (checklists, rfc-style prose) — a known kind is never overwritten by
+ * the title regex.
+ */
+const kindFor = (
+	candidate: ICandidate,
+): { kind: IProposalKind; prefix: string } => {
+	const kind =
+		kindFromMetadata(candidate.kind, candidate.type) ??
+		(FIX_TITLE.test(candidate.title) ? 'fix' : 'feat');
+	const prefix = PROPOSAL_KINDS[kind].prefix;
+	return { kind, prefix };
+};
 
 interface ICandidate {
 	/** Provenance key (`rel` or `rel#slug`). */
 	readonly source: string;
 	readonly title: string;
 	readonly body: string;
-	readonly status: 'ready' | 'done';
+	/** Canonical status (resolved from foreign spellings). */
+	readonly status: IProposalStatus;
+	/** Kind preserved from frontmatter metadata, when present. */
+	readonly kind: string | undefined;
+	/** Legacy type field preserved from frontmatter, when present. */
+	readonly type: string | undefined;
 }
 
 const parseFrontmatterShape = (
@@ -89,12 +158,14 @@ const parseFrontmatterShape = (
 		block[1]?.match(new RegExp(`^${key}:\\s*(.+)$`, 'm'))?.[1]?.trim();
 	const title = field('title') ?? field('name');
 	if (title === undefined || title.length === 0) return null;
-	const rawStatus = (field('status') ?? 'ready').toLowerCase();
+	const rawStatus = field('status') ?? 'ready';
 	return {
 		source: rel,
 		title,
 		body: text.slice(block[0].length).trim(),
-		status: DONE_SYNONYMS.has(rawStatus) ? 'done' : 'ready',
+		status: statusFor(rawStatus),
+		kind: field('kind'),
+		type: field('type'),
 	};
 };
 
@@ -125,7 +196,14 @@ const parseChecklistShape = (
 			});
 			continue;
 		}
-		candidates.push({ source, title, body: '', status: 'ready' });
+		candidates.push({
+			source,
+			title,
+			body: '',
+			status: 'ready',
+			kind: undefined,
+			type: undefined,
+		});
 	}
 	return { candidates, skipped };
 };
@@ -136,7 +214,14 @@ const parseRfcShape = (rel: string, text: string): ICandidate | null => {
 	const title = (heading[1] ?? '').trim();
 	if (title.length === 0) return null;
 	const body = text.slice((heading.index ?? 0) + heading[0].length).trim();
-	return { source: rel, title, body, status: 'ready' };
+	return {
+		source: rel,
+		title,
+		body,
+		status: 'ready',
+		kind: undefined,
+		type: undefined,
+	};
 };
 
 /** Walk a contained root and return every `.md` file (workspace-relative). */
@@ -310,12 +395,12 @@ export const migrateForeign = async (
 				});
 				continue;
 			}
-			const { kind, prefix } = kindPrefixFor(candidate.title);
+			const { kind, prefix } = kindFor(candidate);
 			const id = await allocateNextProposalId(prefix, {
 				proposalsDirAbs: options.proposalsDirAbs,
 				counterPathAbs: options.counterPathAbs,
 			});
-			const folder = candidate.status === 'done' ? 'done' : 'ready';
+			const folder = STATUS_TO_FOLDER[candidate.status];
 			const filename = `${id}-${slugFromTitle(candidate.title, id)}.md`;
 			const targetAbs = join(options.proposalsDirAbs, folder, filename);
 			const { text: safeBody } = redactSecrets(

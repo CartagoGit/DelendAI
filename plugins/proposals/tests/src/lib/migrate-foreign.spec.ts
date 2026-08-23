@@ -148,4 +148,54 @@ describe('migrateForeign (f00116 S2)', () => {
 			second.skipped.some((s) => s.reason.includes('already migrated')),
 		).toBe(true);
 	});
+
+	it('maps foreign statuses to canonical folders (in-progress, blocked, paused, retired)', async () => {
+		write(
+			'planning/a.md',
+			['---', 'title: A', 'status: in-progress', '---', '', 'Body.'].join(
+				'\n',
+			),
+		);
+		write(
+			'planning/b.md',
+			['---', 'title: B', 'status: blocked', '---', '', 'Body.'].join(
+				'\n',
+			),
+		);
+		write(
+			'planning/c.md',
+			['---', 'title: C', 'status: on-hold', '---', '', 'Body.'].join(
+				'\n',
+			),
+		);
+		write(
+			'planning/d.md',
+			['---', 'title: D', 'status: archived', '---', '', 'Body.'].join(
+				'\n',
+			),
+		);
+		const report = await run(['planning']);
+		const targets = report.migrated.map((m) => m.target);
+		expect(targets.some((t) => t.includes('/in-progress/'))).toBe(true);
+		expect(targets.some((t) => t.includes('/blocked/'))).toBe(true);
+		expect(targets.some((t) => t.includes('/paused/'))).toBe(true);
+		expect(targets.some((t) => t.includes('/retired/'))).toBe(true);
+	});
+
+	it('preserves frontmatter kind instead of degrading to a title-regex guess', async () => {
+		write(
+			'planning/docs.md',
+			[
+				'---',
+				'title: Fix the broken docs',
+				'kind: docs',
+				'---',
+				'',
+				'Body.',
+			].join('\n'),
+		);
+		const report = await run(['planning']);
+		// A docs kind (d prefix) even though the title says "fix".
+		expect(report.migrated[0]!.id).toMatch(/^d\d{5}$/);
+	});
 });
