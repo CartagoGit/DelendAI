@@ -347,10 +347,7 @@ export const parseAuditFiles = (
 		seen.add(f.path);
 		try {
 			docs.push(parseAuditBody(f.path, f.body));
-		} catch {
-			// Invalid audits are reported by the consolidator — skip here.
-			continue;
-		}
+		} catch {}
 	}
 	return docs;
 };
