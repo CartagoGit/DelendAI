@@ -84,6 +84,8 @@ const BRANCH_STATUS_OUTPUT_SCHEMA = z.object({
 	branches: z.array(BRANCH_ENTRY).optional(),
 	stranded: z.array(STRANDED_BRANCH_ENTRY).optional(),
 	worktrees: z.array(WORKTREE_ENTRY).optional(),
+	mainCheckoutBranch: z.string().optional(),
+	mainCheckoutDrift: z.boolean().optional(),
 	summary: SUMMARY.optional(),
 	generatedAt: z.string().optional(),
 });

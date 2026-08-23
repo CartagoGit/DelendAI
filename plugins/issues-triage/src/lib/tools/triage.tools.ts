@@ -10,31 +10,15 @@ import z from 'zod';
 
 import { analyzeIssue, titleForIssue } from '../analysis.helper';
 import { withBotNotice } from '../bot-notice.constant';
+import type { IGhExec } from '../contracts/interfaces/github.interface';
+import type { ITriageToolsOptions } from '../contracts/interfaces/triage-tools.interface';
 import {
 	addComment,
 	addLabels,
 	fetchIssue,
 	listOpenIssues,
-	type IGhExec,
 } from '../github.service';
 import { buildProposalDraft } from '../proposal-draft.builder';
-
-export interface ITriageToolsOptions {
-	readonly namespacePrefix: string;
-	readonly repo: string;
-	readonly exec?: IGhExec | undefined;
-	/**
-	 * When present and `writeProposal` is set on the call, `triage_run`
-	 * materialises the drafted proposal under `ready/` with an id
-	 * allocated from the shared proposals counter.
-	 */
-	readonly proposals?:
-		| {
-				readonly proposalsDirAbs: string;
-				readonly counterPathAbs: string;
-		  }
-		| undefined;
-}
 
 const MAX_SLUG_LENGTH = 40;
 const ISO_DATE_PREFIX_LENGTH = 10;

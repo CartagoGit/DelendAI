@@ -104,6 +104,8 @@ const SWARM_HYGIENE_OUTPUT_SCHEMA = z.object({
 	rescueCandidates: z.array(RESCUE_CANDIDATE).optional(),
 	gcEligible: z.array(GC_ELIGIBLE).optional(),
 	outOfCache: z.array(OUT_OF_CACHE).optional(),
+	mainCheckoutBranch: z.string().optional(),
+	mainCheckoutDrift: z.boolean().optional(),
 	pendingIntegration: z.array(PENDING_INTEGRATION).optional(),
 	nonConformingBranches: z.array(NON_CONFORMING_BRANCH).optional(),
 	staleUnmerged: z.array(STALE_UNMERGED).optional(),

@@ -18,9 +18,9 @@
  * Pure engine is exported for unit tests; the CLI shell shells out
  * to `git branch` / `git worktree list` and reads the host config.
  */
-import { existsSync, readFileSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
-import { join } from 'node:path';
+
+import { readAgentWorktreeFlag } from './lib/agent-worktree-flag.lib';
 
 /**
  * model + proposal-id + optional slice. Tokens are lowercase alnum
@@ -156,25 +156,6 @@ export const lintAgentBranchNaming = (
 };
 
 // ---------- CLI shell ----------
-
-const readAgentWorktreeFlag = (cwd: string): boolean => {
-	const candidates = [
-		join(cwd, 'mcp-vertex.config.json'),
-		join(cwd, '.mcp-vertex.config.json'),
-	];
-	for (const path of candidates) {
-		if (!existsSync(path)) continue;
-		try {
-			const raw = JSON.parse(readFileSync(path, 'utf8')) as {
-				agentWorktree?: unknown;
-			};
-			return raw.agentWorktree === true;
-		} catch {
-			// ignore parse errors — treat as default false
-		}
-	}
-	return false;
-};
 
 const readLocalAgentBranches = (cwd: string): string[] => {
 	const res = spawnSync(

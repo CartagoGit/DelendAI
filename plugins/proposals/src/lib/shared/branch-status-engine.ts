@@ -81,6 +81,18 @@ export interface IBranchStatusResult {
 	readonly branches: readonly IBranchStatusEntry[];
 	readonly worktrees: readonly IWorktreeStatusEntry[];
 	readonly summary: IBranchStatusSummary;
+	/**
+	 * Branch checked out in the main (shared) checkout. Empty when the
+	 * main checkout is detached. The main checkout must stay on
+	 * `baseBranch`; agents working in worktrees never switch it.
+	 */
+	readonly mainCheckoutBranch: string;
+	/**
+	 * `true` when the main checkout is on a branch other than
+	 * `baseBranch` — an agent switched the shared checkout instead of
+	 * working inside its own worktree.
+	 */
+	readonly mainCheckoutDrift: boolean;
 	/** `now` echoed back so the caller can spot stale snapshots. ISO-8601. */
 	readonly generatedAt: string;
 }
@@ -386,11 +398,23 @@ export const runBranchStatusEngine = async (
 	).length;
 	const outOfCacheWorktrees = worktrees.filter((w) => w.outOfCache).length;
 
+	// 4. Main-checkout drift. The shared checkout (workspaceRoot) must
+	// stay on `baseBranch`. An agent working in a worktree must never
+	// `git switch` the main checkout — otherwise every other agent's
+	// cwd-relative git commands land on the wrong branch.
+	const mainRoot = resolve(options.workspaceRoot);
+	const mainWt = worktrees.find((w) => resolve(w.path) === mainRoot);
+	const mainCheckoutBranch = mainWt?.branch ?? '';
+	const mainCheckoutDrift =
+		mainCheckoutBranch.length > 0 && mainCheckoutBranch !== baseBranch;
+
 	return {
 		ok: true,
 		baseBranch,
 		branches,
 		worktrees,
+		mainCheckoutBranch,
+		mainCheckoutDrift,
 		summary: {
 			totalBranches: branches.length,
 			totalWorktrees: worktrees.length,
