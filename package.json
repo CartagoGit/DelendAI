@@ -27,7 +27,7 @@
 		"immutable": "5.1.9",
 		"js-yaml": "4.3.0",
 		"linkify-it": "5.0.2",
-		"postcss": "8.5.25",
+		"postcss": "8.5.26",
 		"sharp": "0.35.3",
 		"svgo": "4.0.2",
 		"yaml": "2.9.0"
@@ -143,7 +143,7 @@
 		"archive:proposals:status": "bun tools/scripts/archive/proposals-status.script.ts"
 	},
 	"devDependencies": {
-		"@biomejs/biome": "2.5.6",
+		"@biomejs/biome": "2.5.7",
 		"@mcp-vertex/conventions": "workspace:*",
 		"@mcp-vertex/diagram": "workspace:*",
 		"@mcp-vertex/env": "workspace:*",
@@ -164,9 +164,9 @@
 		"@types/node": "^26.1.0",
 		"@vitest/coverage-v8": "4.1.10",
 		"lefthook": "^2.1.9",
-		"postcss": "8.5.25",
+		"postcss": "8.5.26",
 		"postcss-scss": "4.0.9",
-		"postcss-selector-parser": "7.1.4",
+		"postcss-selector-parser": "7.1.5",
 		"stylelint": "17.14.1",
 		"typescript": "^7.0.2",
 		"vitest": "4.1.10",
