@@ -14,6 +14,23 @@ describe('slugify', () => {
 		expect(slugify('My **Bold** Heading!')).toBe('my-bold-heading');
 		expect(slugify('§8.2 Host appendix')).toBe('82-host-appendix');
 	});
+
+	/**
+	 * The one that mattered. Stripping the punctuation leaves the spaces
+	 * that surrounded it, and GitHub turns each of them into its own
+	 * hyphen. Collapsing the run reported these four as broken anchors
+	 * even though GitHub resolves every one of them.
+	 */
+	it('keeps one hyphen per space, so stripped punctuation doubles it', () => {
+		expect(slugify('OpenAPI / Swagger')).toBe('openapi--swagger');
+		expect(slugify('Django / DRF')).toBe('django--drf');
+		expect(slugify('Rust (Actix-web / Rocket)')).toBe(
+			'rust-actix-web--rocket',
+		);
+		expect(slugify('1. Orient first — one cheap call')).toBe(
+			'1-orient-first--one-cheap-call',
+		);
+	});
 });
 
 describe('headingAnchors', () => {
