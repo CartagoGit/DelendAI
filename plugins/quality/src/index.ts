@@ -159,7 +159,7 @@ const buildRunQualityToolRegistration = (
 			`${qualityOptions.namespacePrefix}_run_quality`,
 			{
 				description:
-					'With `scope`, execute a quality scope and return a structured pass/fail report. Without `scope`, and when a validate-output reader is injected, scan the most recent validate findings and return severity-filtered results.',
+					'With `scope`, execute a quality scope and return a structured pass/fail report. Pass `dryRun: true` to resolve the scope and list commands without spawning them. Without `scope`, and when a validate-output reader is injected, scan the most recent validate findings and return severity-filtered results.',
 				inputSchema: z.object({
 					scope: z.string().optional(),
 					dryRun: z.boolean().optional(),
@@ -168,6 +168,8 @@ const buildRunQualityToolRegistration = (
 				outputSchema: z.object({
 					scope: z.string().optional(),
 					ok: z.boolean(),
+					dryRun: z.boolean().optional(),
+					commands: z.array(z.string()).optional(),
 					results: z
 						.array(
 							z.object({
@@ -236,6 +238,14 @@ const buildRunQualityToolRegistration = (
 						`unknown scope "${scope}"`,
 						`Available: ${names.join(', ')}.`,
 					);
+				}
+				if (args.dryRun === true) {
+					return toolJson({
+						scope,
+						ok: true,
+						dryRun: true,
+						commands: commands.map((command) => command.command),
+					});
 				}
 				return toolJson(
 					await runScope(

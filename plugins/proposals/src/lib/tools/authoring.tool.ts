@@ -1,4 +1,3 @@
-import { appendFile, mkdir } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 
 import z from 'zod';
@@ -36,6 +35,7 @@ import {
 	newProposalIdSchema,
 } from '../contracts/schemas/proposal-kind.schema';
 import { readJsonOrNull, readTextOrNull } from '../proposals/index-reader';
+import { appendPeerReviewJsonl } from '../shared/peer-review-log';
 import { escapeRegExp, slugFromTitle } from '../shared/string-helpers';
 import {
 	deriveSliceStatuses,
@@ -123,10 +123,7 @@ type IPeerReviewPersistedEntry = {
 const appendPeerReviewLog = async (
 	logPathAbs: string,
 	entry: IPeerReviewPersistedEntry,
-): Promise<void> => {
-	await mkdir(dirname(logPathAbs), { recursive: true });
-	await appendFile(logPathAbs, `${JSON.stringify(entry)}\n`, 'utf8');
-};
+): Promise<void> => appendPeerReviewJsonl(logPathAbs, entry);
 
 export const runCloseSliceValidation = async (
 	command: string,

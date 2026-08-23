@@ -121,3 +121,126 @@ describe('prefixForKind', async () => {
 		expect(prefixForKind('nonsense')).toBeNull();
 	});
 });
+
+/**
+ * The counter file is not the only source: disk always participates.
+ * Reproduced in a00085: `create_proposal` reissued `a00084` because the
+ * persisted counter lagged the tree.
+ */
+describe('a stale counter file does not reissue ids already on disk', async () => {
+	let root = '';
+	let counterPathAbs = '';
+
+	beforeEach(async () => {
+		root = await mkdtemp(join(tmpdir(), 'id-allocator-stale-'));
+		counterPathAbs = join(root, 'proposal-id-counters.json');
+		await mkdir(join(root, 'ready'), { recursive: true });
+	});
+
+	afterEach(async () => rm(root, { recursive: true, force: true }));
+
+	it('does not return an id that is already on disk', async () => {
+		await writeFile(counterPathAbs, JSON.stringify({ r: 4 }));
+		await writeFile(
+			join(root, 'ready', 'r00005-from-another-agent.md'),
+			'',
+		);
+
+		const id = await allocateNextProposalId('r', {
+			proposalsDirAbs: root,
+			counterPathAbs,
+		});
+		expect(id).toBe('r00006');
+	});
+
+	it('lets the counter win when it is ahead of disk', async () => {
+		await writeFile(counterPathAbs, JSON.stringify({ r: 9 }));
+		await writeFile(join(root, 'ready', 'r00002-old.md'), '');
+
+		const id = await allocateNextProposalId('r', {
+			proposalsDirAbs: root,
+			counterPathAbs,
+		});
+		expect(id).toBe('r00010');
+	});
+
+	it('reconciles each prefix independently', async () => {
+		await writeFile(counterPathAbs, JSON.stringify({ r: 1, f: 20 }));
+		await writeFile(join(root, 'ready', 'r00007-on-disk.md'), '');
+
+		expect(
+			await allocateNextProposalId('r', {
+				proposalsDirAbs: root,
+				counterPathAbs,
+			}),
+		).toBe('r00008');
+		expect(
+			await allocateNextProposalId('f', {
+				proposalsDirAbs: root,
+				counterPathAbs,
+			}),
+		).toBe('f00021');
+	});
+});
+
+/**
+ * The counter file is not the only source: disk always participates.
+ *
+ * Proposals reach the tree by routes that never touch this allocator
+ * (hand-written, merge, other agent). A present-but-stale counter
+ * used to reissue an id that was already on disk — reproduced as two
+ * `r00005` files, and again as `create_proposal` reissuing `a00084`
+ * during a00085.
+ */
+describe('stale counter file does not reissue on-disk ids', async () => {
+	let root = '';
+	let counterPathAbs = '';
+
+	beforeEach(async () => {
+		root = await mkdtemp(join(tmpdir(), 'id-allocator-stale-'));
+		counterPathAbs = join(root, 'proposal-id-counters.json');
+		await mkdir(join(root, 'ready'), { recursive: true });
+	});
+
+	afterEach(async () => rm(root, { recursive: true, force: true }));
+
+	it('does not return an id that already exists on disk', async () => {
+		await writeFile(counterPathAbs, JSON.stringify({ r: 4 }));
+		await writeFile(join(root, 'ready', 'r00005-from-other-agent.md'), '');
+
+		const id = await allocateNextProposalId('r', {
+			proposalsDirAbs: root,
+			counterPathAbs,
+		});
+		expect(id).toBe('r00006');
+	});
+
+	it('lets the counter win when it is ahead of disk', async () => {
+		await writeFile(counterPathAbs, JSON.stringify({ r: 9 }));
+		await writeFile(join(root, 'ready', 'r00002-old.md'), '');
+
+		const id = await allocateNextProposalId('r', {
+			proposalsDirAbs: root,
+			counterPathAbs,
+		});
+		expect(id).toBe('r00010');
+	});
+
+	it('reconciles each prefix independently', async () => {
+		await writeFile(counterPathAbs, JSON.stringify({ r: 1, f: 20 }));
+		await writeFile(join(root, 'ready', 'r00007-on-disk.md'), '');
+
+		expect(
+			await allocateNextProposalId('r', {
+				proposalsDirAbs: root,
+				counterPathAbs,
+			}),
+		).toBe('r00008');
+		expect(
+			await allocateNextProposalId('f', {
+				proposalsDirAbs: root,
+				counterPathAbs,
+			}),
+		).toBe('f00021');
+	});
+});

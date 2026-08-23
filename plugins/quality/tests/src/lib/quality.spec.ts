@@ -74,6 +74,68 @@ describe('runScope', async () => {
 	});
 });
 
+describe('run_quality dryRun (a00085 #4)', async () => {
+	it('lists commands without spawning when dryRun is true', async () => {
+		const registration = (
+			await plugin.register({
+				workspace: {
+					root: '/ws',
+					resolve: (p: string) => `/ws/${p}`,
+				},
+				corePaths: {
+					cacheDir: '.cache/mcp-vertex',
+					docsDir: 'docs/mcp-vertex',
+				},
+				cacheDir: '.cache/mcp-vertex',
+				docsDir: 'docs/mcp-vertex',
+				keepLegacy: false,
+				pluginCacheDir: '.cache/mcp-vertex/quality',
+				pluginDocsDir: 'docs/mcp-vertex/quality',
+				namespacePrefix: 'quality',
+				options: { scopes: { lint: ['eslint .'] } },
+				args: {},
+			} satisfies IMcpPluginContext)
+		).tools?.find((tool) => tool.id === 'run_quality');
+		expect(registration).toBeDefined();
+
+		let handler:
+			| ((args: { scope?: string; dryRun?: boolean }) => Promise<{
+					structuredContent?: {
+						ok?: boolean;
+						dryRun?: boolean;
+						commands?: string[];
+					};
+			  }>)
+			| undefined;
+		const fakeServer = {
+			registerTool: (
+				_name: string,
+				_def: unknown,
+				fn: (args: { scope?: string; dryRun?: boolean }) => Promise<{
+					structuredContent?: {
+						ok?: boolean;
+						dryRun?: boolean;
+						commands?: string[];
+					};
+				}>,
+			) => {
+				handler = fn;
+			},
+		} as unknown as Parameters<
+			NonNullable<typeof registration>['register']
+		>[0];
+
+		await registration?.register(fakeServer);
+		const result = await handler?.({ scope: 'lint', dryRun: true });
+		expect(result?.structuredContent).toMatchObject({
+			ok: true,
+			dryRun: true,
+			commands: ['eslint .'],
+		});
+		expect(result?.structuredContent).not.toHaveProperty('results');
+	});
+});
+
 describe('quality plugin', async () => {
 	it('registers the quality tools + knowledge', async () => {
 		const ctx = {

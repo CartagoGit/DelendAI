@@ -20,6 +20,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import {
 	PeerReviewLogUnreadableError,
+	appendPeerReviewJsonl,
 	hasIndependentApprovalSinceLastReview,
 	readPeerReviewLog,
 	recordProposalEnteredReview,
@@ -95,6 +96,13 @@ describe('peer-review-log (x00154 S6)', () => {
 			await expect(readPeerReviewLog(bogusPath)).rejects.toBeInstanceOf(
 				PeerReviewLogUnreadableError,
 			);
+		});
+
+		it('appendPeerReviewJsonl writes a durable line that readPeerReviewLog can parse', async () => {
+			await appendPeerReviewJsonl(logPathAbs, ENTRY_TRANSITION());
+			const entries = await readPeerReviewLog(logPathAbs);
+			expect(entries).toHaveLength(1);
+			expect(entries[0]?.kind).toBe('transition');
 		});
 
 		it('returns parsed entries for a valid JSONL log', async () => {
