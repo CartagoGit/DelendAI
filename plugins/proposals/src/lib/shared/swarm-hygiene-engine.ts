@@ -315,6 +315,8 @@ export const runSwarmHygieneEngine = async (
 		rescueCandidates,
 		gcEligible,
 		outOfCache: outOfCache.slice(0, maxOut),
+		mainCheckoutBranch: snapshot.mainCheckoutBranch,
+		mainCheckoutDrift: snapshot.mainCheckoutDrift,
 		pendingIntegration,
 		nonConformingBranches,
 		staleUnmerged,

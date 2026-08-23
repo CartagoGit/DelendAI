@@ -1,16 +1,17 @@
 /**
  * f00086 / c00086 V1 — `push-to-develop-discipline` pure engine
- * (policy flipped 2026-08-24: single shared `develop` branch).
+ * (refined 2026-08-24: config-driven, block only per-agent branches).
  *
- * Pins the three rules the pre-push guard makes:
+ * Pins the rules the pre-push guard makes:
  *
  *   1. Pushing from `develop` → ALLOW (the shared push, and
  *      `develop → main` release merges).
  *   2. Pushing from `main` → ALLOW (release flow; versioning is
  *      derived on push to `main`).
- *   3. Pushing from any other branch (`agent/*`, `feature/*`) →
- *      BLOCK with a next-action telling the agent to switch to
- *      develop. Detached HEAD / null current branch → fail-open.
+ *   3. With `agentWorktree` on → every branch allowed.
+ *   4. With `agentWorktree` off → `agent/*` blocked; user-managed
+ *      branches (`fix/*`, `feature/*`) allowed. Detached HEAD /
+ *      null current branch → fail-open.
  *
  * `parseGitPushArgs` is a separate pure helper that turns the
  * lefthook positional argv `{1} {2} {3} = remote remote_url refs`
@@ -77,14 +78,25 @@ describe('lintPushToDevelop', () => {
 		}
 	});
 
-	it('blocks feature/x → origin/develop (no feature branches)', () => {
+	it('allows agent/x → origin/develop when the worktree gate is on', () => {
+		const result = lintPushToDevelop({
+			cwd: '/repo',
+			remoteName: 'origin',
+			remoteBranch: 'develop',
+			currentBranch: 'agent/copilot-minimax-m3',
+			agentWorktreeEnabled: true,
+		});
+		expect(result.ok).toBe(true);
+	});
+
+	it('allows feature/x → origin/develop (user-managed branch, gate off)', () => {
 		const result = lintPushToDevelop({
 			cwd: '/repo',
 			remoteName: 'origin',
 			remoteBranch: 'develop',
 			currentBranch: 'feature/f00086-discipline',
 		});
-		expect(result.ok).toBe(false);
+		expect(result.ok).toBe(true);
 	});
 
 	it('fails open on null currentBranch (detached HEAD carve-out)', () => {
@@ -236,6 +248,21 @@ describe('lintPrePushStdinUpdates', () => {
 			},
 		]);
 		expect(result.ok).toBe(false);
+	});
+
+	it('allows an agent branch pushed when the worktree gate is on', () => {
+		const result = lintPrePushStdinUpdates(
+			[
+				{
+					localRef: 'refs/heads/agent/copilot-minimax-m3',
+					localSha: SHA_A,
+					remoteRef: 'refs/heads/develop',
+					remoteSha: SHA_B,
+				},
+			],
+			true,
+		);
+		expect(result.ok).toBe(true);
 	});
 
 	it('allows main pushed to origin/main (release flow)', () => {

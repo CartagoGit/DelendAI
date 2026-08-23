@@ -5,8 +5,8 @@ import {
 	addLabels,
 	fetchIssue,
 	listOpenIssues,
-	type IGhExec,
 } from '../src/lib/github.service';
+import type { IGhExec } from '../src/lib/contracts/interfaces/github.interface';
 
 const ok =
 	(stdout: string): IGhExec =>

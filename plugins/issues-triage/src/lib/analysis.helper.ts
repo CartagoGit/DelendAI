@@ -3,16 +3,11 @@
  * result is a stable, testable shape the rest of the plugin consumes
  * to draft a proposal and write the automated comment.
  */
-export type TriageCategory = 'bug' | 'feature' | 'docs' | 'question' | 'other';
-
-export type TriageSeverity = 'critical' | 'high' | 'medium' | 'low';
-
-export interface ITriageAnalysis {
-	readonly category: TriageCategory;
-	readonly severity: TriageSeverity;
-	readonly keywords: readonly string[];
-	readonly summary: string;
-}
+import type {
+	ITriageAnalysis,
+	TriageCategory,
+	TriageSeverity,
+} from './contracts/interfaces/analysis.interface';
 
 const CATEGORY_RULES: readonly {
 	readonly category: TriageCategory;

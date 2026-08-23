@@ -1,15 +1,15 @@
 /**
  * f00086 / c00086 V1 — `commit-branch-discipline` pure engine
- * (policy flipped 2026-08-24: single shared `develop` branch).
+ * (refined 2026-08-24: config-driven, block only per-agent branches).
  *
- * Pins the three rules the pre-commit guard makes:
+ * Pins the rules the pre-commit guard makes:
  *
  *   1. Detached HEAD / non-git cwd → fail-open (release engineers
  *      can check out a tag and commit a hotfix without a branch).
- *   2. `develop` → always allowed (the shared branch; agents commit
- *      and push together).
- *   3. Any other branch (`agent/*`, `feature/*`) → BLOCK with a
- *      next-action telling the agent to switch back to develop.
+ *   2. `develop` → always allowed (the shared branch).
+ *   3. With `agentWorktree` on → every branch allowed.
+ *   4. With `agentWorktree` off → `agent/*` blocked; user-managed
+ *      branches (`fix/*`, `feature/*`) allowed.
  *
  * Imports the script as a module so the test never invokes
  * `process.exit` — the `if (import.meta.main)` guard at the bottom
@@ -56,7 +56,16 @@ describe('lintCommitBranch', () => {
 		expect(result.ok).toBe(true);
 	});
 
-	it('blocks an agent/* branch and tells the agent to switch to develop', () => {
+	it('allows a user-managed feature branch (gate off)', () => {
+		const result = lintCommitBranch({
+			...baseInput,
+			stagedFiles: ['README.md'],
+			currentBranch: 'feature/some-thing',
+		});
+		expect(result.ok).toBe(true);
+	});
+
+	it('blocks an agent/* branch when the worktree gate is off', () => {
 		const result = lintCommitBranch({
 			...baseInput,
 			stagedFiles: ['packages/core/src/lib/foo.ts'],
@@ -71,20 +80,21 @@ describe('lintCommitBranch', () => {
 		}
 	});
 
-	it('blocks a feature/* branch too (no new branches)', () => {
+	it('allows an agent/* branch when the worktree gate is on', () => {
 		const result = lintCommitBranch({
 			...baseInput,
-			stagedFiles: ['README.md'],
-			currentBranch: 'feature/some-thing',
+			stagedFiles: ['packages/core/src/lib/foo.ts'],
+			currentBranch: 'agent/copilot-minimax-m3',
+			agentWorktreeEnabled: true,
 		});
-		expect(result.ok).toBe(false);
+		expect(result.ok).toBe(true);
 	});
 
 	it('blocks the LEFTHOOK_BYPASS escape hatch in the message', () => {
 		const result = lintCommitBranch({
 			...baseInput,
 			stagedFiles: ['packages/core/src/lib/foo.ts'],
-			currentBranch: 'feature/some-thing',
+			currentBranch: 'agent/copilot-minimax-m3',
 		});
 		expect(result.ok).toBe(false);
 		if (!result.ok) {

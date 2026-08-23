@@ -63,6 +63,17 @@ export interface ISwarmHygieneResult {
 	readonly gcEligible: readonly IGcPlanEntry[];
 	readonly outOfCache: readonly IOutOfCacheWorktree[];
 	/**
+	 * Branch checked out in the main (shared) checkout. Empty when
+	 * detached. The main checkout must stay on `baseBranch`.
+	 */
+	readonly mainCheckoutBranch: string;
+	/**
+	 * `true` when the main checkout is on a branch other than
+	 * `baseBranch` — an agent switched the shared checkout instead of
+	 * working inside its own worktree.
+	 */
+	readonly mainCheckoutDrift: boolean;
+	/**
 	 * f00091 S2: branches `close_slice` recorded as finished-but-not-yet
 	 * -integrated. Entries whose branch has since merged into base are
 	 * pruned out (the caller passes a `pruneIntegrated` callback).

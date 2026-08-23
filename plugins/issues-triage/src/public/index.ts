@@ -17,13 +17,13 @@ export type {
 	ITriageAnalysis,
 	TriageCategory,
 	TriageSeverity,
-} from '../lib/analysis.helper';
+} from '../lib/contracts/interfaces/analysis.interface';
 
 export { buildProposalDraft } from '../lib/proposal-draft.builder';
-export type { IBuildProposalDraftInput } from '../lib/proposal-draft.builder';
+export type { IBuildProposalDraftInput } from '../lib/contracts/interfaces/proposal-draft.interface';
 
+export { BOT_REPLY_MARKER } from '../lib/contracts/constants/github.constant';
 export {
-	BOT_REPLY_MARKER,
 	addComment,
 	addLabels,
 	fetchIssue,
@@ -36,4 +36,4 @@ export type {
 	IGhResult,
 	ITriageIssueDetail,
 	ITriageIssueSummary,
-} from '../lib/github.service';
+} from '../lib/contracts/interfaces/github.interface';

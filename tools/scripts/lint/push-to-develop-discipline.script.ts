@@ -1,20 +1,22 @@
 #!/usr/bin/env bun
 /**
  * push-to-develop-discipline.script.ts — f00086 S2, stdin fix x00159 S1
- * (policy flipped 2026-08-24: single shared `develop` branch).
+ * (refined 2026-08-24: config-driven, block only per-agent branches).
  *
  * Pre-push guard. Pure function over
- * `(cwd, remoteName, remoteBranch, currentBranch) → { ok: true } | { ok: false, blockers: string[] }`.
+ * `(cwd, remoteName, remoteBranch, currentBranch, agentWorktreeEnabled)`
+ * → `{ ok: true } | { ok: false, blockers: string[] }`.
  *
- * Policy (single shared branch):
- *   - This repo works on ONE branch: `develop`. Agents share commits
- *     and pushes instead of creating per-agent branches.
+ * Policy (config-driven):
  *   - Pushing from `develop` → always allowed (the shared push, and
  *     `develop → main` release merges).
  *   - Pushing from `main` → allowed (release flow; versioning is
  *     derived on push to `main`).
- *   - Any other source branch (`agent/*`, `feature/*`, …) → blocked
- *     with a next-action telling the agent to switch back to develop.
+ *   - When `agentWorktree: true` → every branch is allowed: `agent/*`
+ *     branches are the expected per-agent isolation shape.
+ *   - When `agentWorktree: false` (this repo) → pushing from an
+ *     `agent/*` branch is blocked (agents never branch on their own).
+ *     User-managed branches (`fix/*`, `feature/*`, …) are allowed.
  *   - Branch deletes (all-zero local oid) never block.
  *
  * x00159 S1: the refs actually being pushed are NOT available as a
@@ -34,15 +36,18 @@ import { readFileSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 
 import { isLefthookBypassed } from '../lib/lefthook-bypass';
+import { readAgentWorktreeFlag } from './lib/agent-worktree-flag.lib';
 
 const DEVELOP_BRANCH = 'develop';
-const MAIN_BRANCH = 'main';
+const AGENT_BRANCH_PREFIX = 'agent/';
 
 export interface IPushToDevelopInput {
 	readonly cwd: string;
 	readonly remoteName: string;
 	readonly remoteBranch: string;
 	readonly currentBranch: string | null;
+	/** Resolved `mcp-vertex.config.json#agentWorktree` (default false). */
+	readonly agentWorktreeEnabled?: boolean;
 }
 
 export type PushToDevelopResult =
@@ -94,12 +99,13 @@ export const parsePrePushStdin = (
 };
 
 /**
- * Apply the single-shared-branch policy to every parsed ref update:
- * block the first update whose source branch is not `develop` or
- * `main`. Branch deletes (all-zero local oid) never block.
+ * Apply the config-driven policy to every parsed ref update: when
+ * `agentWorktree` is off, block the first update whose source branch
+ * is `agent/*`. Branch deletes (all-zero local oid) never block.
  */
 export const lintPrePushStdinUpdates = (
 	updates: ReadonlyArray<IPrePushRefUpdate>,
+	agentWorktreeEnabled = false,
 ): PushToDevelopResult => {
 	for (const update of updates) {
 		if (isAllZeroSha(update.localSha)) continue;
@@ -108,6 +114,7 @@ export const lintPrePushStdinUpdates = (
 			remoteName: '',
 			remoteBranch: stripRefsHeadsPrefix(update.remoteRef),
 			currentBranch: stripRefsHeadsPrefix(update.localRef),
+			agentWorktreeEnabled,
 		});
 		if (!result.ok) return result;
 	}
@@ -165,7 +172,7 @@ export const parseGitPushArgs = (
 export const lintPushToDevelop = (
 	input: IPushToDevelopInput,
 ): PushToDevelopResult => {
-	const { currentBranch } = input;
+	const { currentBranch, agentWorktreeEnabled = false } = input;
 	const blockers: string[] = [];
 
 	// Detached HEAD / unknown source: fail-open (mirrors the commit
@@ -174,25 +181,28 @@ export const lintPushToDevelop = (
 		return { ok: true };
 	}
 
-	// The shared branch and the release branch are both allowed
-	// sources. Everything else is a stray per-agent / feature
-	// branch this repo does not want.
-	if (currentBranch === DEVELOP_BRANCH || currentBranch === MAIN_BRANCH) {
+	// With the worktree gate on, `agent/*` branches are the expected
+	// per-agent isolation shape — allow every branch.
+	if (agentWorktreeEnabled === true) {
 		return { ok: true };
 	}
 
-	// Anything else: no new branches. Switch back to develop and push
-	// the shared branch.
+	// Gate off: the only branches agents must not push are `agent/*`.
+	// `develop` (shared push), `main` (release) and user-managed
+	// branches (fix/*, feature/*, …) are all allowed.
+	if (!currentBranch.startsWith(AGENT_BRANCH_PREFIX)) {
+		return { ok: true };
+	}
+
 	blockers.push(
-		`pushing from \`${currentBranch}\` — this repo works on \`develop\` only.`,
+		`pushing from \`${currentBranch}\` — per-agent branches are disabled (agentWorktree: false).`,
 		'',
 		'next-action:',
 		`  switch back:  git switch ${DEVELOP_BRANCH}`,
-		'  then commit and push on develop. agents share one branch;',
-		'  do not push agent/* or feature/* branches.',
+		'  then commit and push on develop (the shared branch).',
+		'  only the operator creates branches; agents never branch on their own.',
 		'',
-		'  if this is a true emergency (CI follow-up, release hotfix),',
-		'  bypass the hook with:  LEFTHOOK_BYPASS=1 git push ...',
+		'  if this is a true emergency, bypass:  LEFTHOOK_BYPASS=1 git push ...',
 	);
 	return { ok: false, blockers };
 };
@@ -204,6 +214,7 @@ interface ICliArgs {
 	readonly remote: string;
 	readonly remoteBranch: string;
 	readonly currentBranch: string | null;
+	readonly agentWorktree?: boolean;
 }
 
 const parseArgs = (argv: readonly string[]): ICliArgs => {
@@ -211,6 +222,7 @@ const parseArgs = (argv: readonly string[]): ICliArgs => {
 	let remote = '';
 	let remoteBranch = '';
 	let currentBranch: string | null | undefined;
+	let agentWorktree: boolean | undefined;
 	const positional: string[] = [];
 	for (let i = 0; i < argv.length; i += 1) {
 		const arg = argv[i];
@@ -227,6 +239,11 @@ const parseArgs = (argv: readonly string[]): ICliArgs => {
 			case '--current-branch': {
 				const v = argv[++i];
 				currentBranch = v === undefined ? null : v;
+				break;
+			}
+			case '--agent-worktree': {
+				const v = argv[++i];
+				agentWorktree = v === 'true' || v === '1';
 				break;
 			}
 			default:
@@ -257,6 +274,7 @@ const parseArgs = (argv: readonly string[]): ICliArgs => {
 		remote,
 		remoteBranch,
 		currentBranch: currentBranch ?? null,
+		...(agentWorktree !== undefined ? { agentWorktree } : {}),
 	};
 };
 
@@ -310,6 +328,14 @@ const main = async (): Promise<number> => {
 		return 0;
 	}
 
+	// Resolve the worktree gate once: CLI flag > config file > false.
+	// (Parsing argv up front is safe: lefthook only ever passes the
+	// remote name/url on argv, never the refspec.)
+	const rawArgv = process.argv.slice(2);
+	const args = parseArgs(rawArgv);
+	const agentWorktreeEnabled =
+		args.agentWorktree ?? readAgentWorktreeFlag(args.cwd);
+
 	// x00159 S1: STDIN is the authoritative source — it is git's real
 	// pre-push contract (`<local ref> <local oid> <remote ref>
 	// <remote oid>` per updated ref). The lefthook argv `{3}` template
@@ -317,7 +343,10 @@ const main = async (): Promise<number> => {
 	// ship as the literal string `"{3}"`, silently defeating the guard.
 	const stdinUpdates = readStdinRefUpdates();
 	if (stdinUpdates.length > 0) {
-		const result = lintPrePushStdinUpdates(stdinUpdates);
+		const result = lintPrePushStdinUpdates(
+			stdinUpdates,
+			agentWorktreeEnabled,
+		);
 		const report = formatReport(result);
 		if (result.ok) {
 			process.stdout.write(report);
@@ -333,7 +362,6 @@ const main = async (): Promise<number> => {
 	// carve-out: with zero positional args and no stdin, there is no
 	// push in flight to discipline (e.g. `bun run validate` chains
 	// this lint outside of any real `git push`).
-	const rawArgv = process.argv.slice(2);
 	const positionals = rawArgv.filter((a) => !a.startsWith('-'));
 	if (positionals.length === 0) {
 		process.stdout.write(
@@ -341,7 +369,6 @@ const main = async (): Promise<number> => {
 		);
 		return 0;
 	}
-	const args = parseArgs(rawArgv);
 	const currentBranch = args.currentBranch ?? readCurrentBranch(args.cwd);
 	const pushArgs = parseGitPushArgs(rawArgv, currentBranch);
 	const remote = args.remote || pushArgs.remote;
@@ -351,6 +378,7 @@ const main = async (): Promise<number> => {
 		remoteName: remote,
 		remoteBranch,
 		currentBranch,
+		agentWorktreeEnabled,
 	});
 	const report = formatReport(result);
 	if (result.ok) {
