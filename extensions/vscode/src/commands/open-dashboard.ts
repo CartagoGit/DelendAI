@@ -15,6 +15,7 @@ import { renderDashboard } from '@mcp-vertex/ui-extension/public';
 
 import type { IHostAdapter } from '@mcp-vertex/ui-extension/public';
 
+import { DASHBOARD_MESSAGE_SCHEMA } from '../contracts/constants/dashboard-message-schema.constant';
 import { OPEN_PROPOSAL_COMMAND } from './open-proposal';
 import { REFRESH_COMMAND } from './refresh';
 import { HOST_LANG_KEY } from './setup-github';
@@ -84,13 +85,9 @@ export const registerOpenDashboardCommand = (deps: IOpenDashboardDeps) =>
 		// Agents/Sessions panels open the matching proposal. Without
 		// this listener both gestures were silent no-ops.
 		panel.webview.onDidReceiveMessage?.(async (msg: unknown) => {
-			if (typeof msg !== 'object' || msg === null) return;
-			const m = msg as {
-				command?: unknown;
-				action?: unknown;
-				id?: unknown;
-			};
-			if (m.command === 'action' && m.action === 'refresh') {
+			const parsed = DASHBOARD_MESSAGE_SCHEMA.safeParse(msg);
+			if (!parsed.success) return;
+			if (parsed.data.command === 'action') {
 				try {
 					await deps.host.executeCommand?.(REFRESH_COMMAND);
 				} catch {
@@ -99,15 +96,13 @@ export const registerOpenDashboardCommand = (deps: IOpenDashboardDeps) =>
 				}
 				return;
 			}
-			if (m.command === 'openProposal' && typeof m.id === 'string') {
-				try {
-					await deps.host.executeCommand?.(
-						OPEN_PROPOSAL_COMMAND,
-						m.id,
-					);
-				} catch {
-					// Same: best-effort.
-				}
+			try {
+				await deps.host.executeCommand?.(
+					OPEN_PROPOSAL_COMMAND,
+					parsed.data.id,
+				);
+			} catch {
+				// Same: best-effort.
 			}
 		});
 		return panel;

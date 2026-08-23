@@ -14,7 +14,10 @@ import { join } from 'node:path';
 
 import { withFileMutex, writeFileAtomic } from '@mcp-vertex/core/public';
 
-import { PROPOSAL_PREFIX_BY_KIND } from '../contracts/constants/proposal-glossary.constant';
+import {
+	PROPOSAL_PREFIX_BY_KIND,
+	PROPOSAL_SCAN_FOLDERS,
+} from '../contracts/constants/proposal-glossary.constant';
 import type { IProposalKind } from '../contracts/constants/proposal-glossary.constant';
 import {
 	DEFAULT_ALLOCATOR_FS,
@@ -38,30 +41,7 @@ const seedFromDisk = async (
 	fs: IAllocatorFs = DEFAULT_ALLOCATOR_FS,
 ): Promise<ICounters> => {
 	const counters: ICounters = {};
-	const folders = [
-		'',
-		'ready',
-		'in-progress',
-		'review',
-		'done',
-		'paused',
-		'blocked',
-		'retired',
-		'done/feats',
-		'done/fixes',
-		'done/refactors',
-		'done/audits',
-		'done/chores',
-		'done/docs',
-		'done/tests',
-		'done/plans',
-		'done/resumes',
-		'done/breakings',
-		'done/perfs',
-		'done/infras',
-		'done/spikes',
-	];
-	for (const folder of folders) {
+	for (const folder of PROPOSAL_SCAN_FOLDERS) {
 		const dirAbs =
 			folder === '' ? proposalsDirAbs : join(proposalsDirAbs, folder);
 		const entries = await fs.list(dirAbs);

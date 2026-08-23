@@ -39,14 +39,14 @@ const deps = (
 	originUrl: () => 'https://github.com/owner/name',
 	hasGhCli: () => false,
 	githubToken: () => 'tok',
-	readConfig: () => undefined,
+	readConfig: async () => undefined,
 	configPath: 'mcp-vertex.config.json',
 	...over,
 });
 
 describe('buildSetupGithubReport', async () => {
 	it('detects context and renders the guide', async () => {
-		const { context, guide } = buildSetupGithubReport(deps());
+		const { context, guide } = await buildSetupGithubReport(deps());
 		expect(context).toEqual({
 			repo: 'owner/name',
 			tier: 'token',
