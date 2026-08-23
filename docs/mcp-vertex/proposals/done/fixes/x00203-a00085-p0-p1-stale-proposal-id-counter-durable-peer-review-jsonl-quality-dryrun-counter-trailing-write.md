@@ -2,7 +2,7 @@
 id: x00203
 title: "a00085 P0/P1: stale proposal-id counter, durable peer-review JSONL, quality dryRun, counter trailing write"
 kind: fix
-status: in-progress
+status: done
 type: proposal
 track: plugins+fix
 date: 2026-08-23
