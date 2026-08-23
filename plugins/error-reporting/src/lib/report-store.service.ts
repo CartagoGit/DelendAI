@@ -62,16 +62,14 @@ export const createReportStore = (dirAbs: string): IReportStore => {
 			await withFileMutex(statePath, async () => {
 				const state = await readAll(statePath);
 				const previous = state[signature];
+				const issueNumber = input.issueNumber ?? previous?.issueNumber;
+				const issueUrl = input.issueUrl ?? previous?.issueUrl;
 				const next: IReportRecord = {
 					signature,
 					count: (previous?.count ?? 0) + 1,
 					lastReportedAt: input.at,
-					...(input.issueNumber !== undefined
-						? { issueNumber: input.issueNumber }
-						: {}),
-					...(input.issueUrl !== undefined
-						? { issueUrl: input.issueUrl }
-						: {}),
+					...(issueNumber !== undefined ? { issueNumber } : {}),
+					...(issueUrl !== undefined ? { issueUrl } : {}),
 				};
 				state[signature] = next;
 				await writeFileAtomic(

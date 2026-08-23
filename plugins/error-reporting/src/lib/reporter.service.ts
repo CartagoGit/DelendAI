@@ -1,16 +1,9 @@
-import { runExternalTool, type IExternalTool } from '@mcp-vertex/core/public';
+import { runExternalTool, GH_CLI_TOOL } from '@mcp-vertex/core/public';
 
-import { buildIssueBody, buildIssueTitle } from './signature';
+import { buildIssueBody, buildIssueTitle } from './signature.helper';
 
-const GH_TOOL: IExternalTool = {
-	id: 'gh',
-	bin: 'gh',
-	installHints: [
-		{ manager: 'brew', command: 'brew install gh' },
-		{ manager: 'apt', command: 'sudo apt install gh' },
-		{ manager: 'winget', command: 'winget install GitHub.cli' },
-	],
-};
+/** `gh` exit code when the binary is not found on PATH. */
+const GH_NOT_FOUND_EXIT = 127;
 
 /** Injected exec seam so the network call is unit-testable. */
 export interface IIssueExecResult {
@@ -28,7 +21,7 @@ export type IIssueExec = (
 /** Production adapter over the shared external-tool runner. */
 export const ghIssueExec: IIssueExec = async (argv, options) => {
 	const run = await runExternalTool({
-		tool: GH_TOOL,
+		tool: GH_CLI_TOOL,
 		args: argv,
 		...(options?.cwd !== undefined ? { cwd: options.cwd } : {}),
 		redact: ['--body'],
@@ -125,7 +118,7 @@ export const submitIssue = async (
 		const reason =
 			run.stderr.trim() !== ''
 				? run.stderr.trim()
-				: run.code === 127
+				: run.code === GH_NOT_FOUND_EXIT
 					? '`gh` is not installed'
 					: `gh exited with code ${run.code}`;
 		return { ok: false, reason };

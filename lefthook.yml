@@ -69,16 +69,16 @@ pre-commit:
     stray-files-check:
       run: bun run lint:stray-cache-files || true
 
-    # f00086: worktree-isolation discipline. ADVISORY (wrapped with `|| true`).
-    # On `develop`, warns when any staged file is under a deep path
-    # (proposals, packages sources, plugin sources, tools/scripts/)
-    # — the agent probably forgot to open a feature branch. Matches
-    # the top-of-file policy: hooks WARN but never BLOCK commit/push.
+    # f00086: single-shared-branch discipline. ADVISORY (wrapped with
+    # `|| true`). This repo works on `develop` only: committing on any
+    # other branch (`agent/*`, `feature/*`) warns the agent to switch
+    # back. Matches the top-of-file policy: hooks WARN but never BLOCK
+    # commit/push.
     # Real enforcement still happens via:
     #   - `bun run validate` in CI, which runs `lint:commit-branch`
-    #     and fails the pipeline on a develop-deep-path violation
-    #   - `push-to-develop-discipline` (pre-push), which still blocks
-    #     `develop → origin/develop` direct pushes
+    #     and fails the pipeline on a non-develop commit
+    #   - `push-to-develop-discipline` (pre-push), which blocks pushes
+    #     from any branch other than `develop` / `main`
     # Bypass: LEFTHOOK_BYPASS=1 git commit ... (documented in
     # the warning text).
     commit-branch-discipline:
@@ -121,9 +121,10 @@ pre-push:
     lint-scss-all:
       run: bun run lint:scss || true
 
-    # f00086: worktree-isolation discipline. BLOCKING (no `|| true`).
-    # Blocks `develop → origin/develop` direct push. The PR-merge
-    # shape (`agent/x → origin/develop`) is allowed.
+    # f00086: single-shared-branch discipline. BLOCKING (no `|| true`).
+    # Blocks pushes from any branch other than `develop` / `main`.
+    # `develop → origin/develop` (the shared push) and release
+    # merges (`develop → main`, `main → main`) are allowed.
     # Bypass: LEFTHOOK_BYPASS=1 git push ... (documented in the
     # blocker text).
     #

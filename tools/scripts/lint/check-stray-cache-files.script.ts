@@ -63,6 +63,9 @@ const SANCTIONED_TOP_LEVEL: ReadonlySet<string> = new Set([
 	'skills',
 	'state',
 	'verify',
+	// Persistent swarm task queue (default-path-layout.constant.ts:
+	// taskQueueDir = <cacheDir>/agent-queue). Runtime-owned, never stray.
+	'agent-queue',
 	// Accumulated records (see IMcpPlugin#cacheNamespace) — NOT derivable
 	// cache, but still under the one canonical ignored root. Nests
 	// logs/memory/usage-tracking (and any future opt-in plugin).

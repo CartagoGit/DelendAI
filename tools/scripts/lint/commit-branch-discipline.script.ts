@@ -1,44 +1,29 @@
 #!/usr/bin/env bun
 /**
- * commit-branch-discipline.script.ts — f00086 S1.
+ * commit-branch-discipline.script.ts — f00086 S1 (policy flipped
+ * 2026-08-24: single shared `develop` branch).
  *
  * Pre-commit guard. Pure function over
  * `(cwd, stagedFiles, currentBranch) → { ok: true } | { ok: false, blockers: string[] }`.
  *
- * Policy (f00086):
- *   - When `currentBranch === 'develop'`, any staged file under one
- *     of the "deep" paths (proposals, packages sources, plugin
- *     sources, tools/scripts/) is a violation: the agent forgot
- *     to open a feature branch.
- *   - Small residual fixes (≤3 staged files, no deep paths) are
- *     allowed.
- *   - Any other branch (agent/x, feature/x, etc.) is always
- *     allowed — the discipline is "don't commit to develop
- *     directly", not "don't commit".
- *   - Detached HEAD (`currentBranch === null` / empty) is
- *     fail-open so release engineers can check out a tag and
- *     commit a fix.
+ * Policy (single shared branch):
+ *   - This repo works on ONE branch: `develop`. Agents share commits
+ *     and pushes instead of creating per-agent branches.
+ *   - `currentBranch === 'develop'` → always allowed.
+ *   - Detached HEAD (`currentBranch === null` / empty) → fail-open so
+ *     release engineers can check out a tag and commit a fix.
+ *   - Any other branch (`agent/*`, `feature/*`, …) → blocked with a
+ *     next-action telling the agent to switch back to develop. No new
+ *     branches; joint work, not parallel isolates.
  *
- * Default behaviour: **block when in doubt.** False positives are
- * cheap (the agent re-runs the commit on a branch in 30s); false
- * negatives leave the tree dirty again and the rule has no teeth.
+ * Default behaviour: **block on a stray branch.** The agent switches
+ * back to `develop` and re-commits there.
  */
 import { spawnSync } from 'node:child_process';
 
 import { isLefthookBypassed } from '../lib/lefthook-bypass';
 
 const DEVELOP_BRANCH = 'develop';
-
-/** Paths that, when staged on `develop`, are a policy violation. */
-export const DEEP_PATH_PATTERNS: readonly RegExp[] = [
-	/^docs\/mcp-vertex\/proposals\//,
-	/^packages\/[^/]+\/src\//,
-	/^plugins\/[^/]+\/src\//,
-	/^tools\/scripts\//,
-];
-
-/** Maximum staged files allowed for a "small residual fix" on `develop`. */
-export const MAX_RESIDUAL_FILES = 3;
 
 export interface ICommitBranchInput {
 	readonly cwd: string;
@@ -50,17 +35,11 @@ export type CommitBranchResult =
 	| { readonly ok: true }
 	| { readonly ok: false; readonly blockers: readonly string[] };
 
-/** Pure classifier. Returns the deep-path files that are violations. */
-export const findDeepPathViolations = (
-	stagedFiles: readonly string[],
-): readonly string[] =>
-	stagedFiles.filter((f) => DEEP_PATH_PATTERNS.some((re) => re.test(f)));
-
 /** Pure decision engine. No I/O, no side effects. */
 export const lintCommitBranch = (
 	input: ICommitBranchInput,
 ): CommitBranchResult => {
-	const { stagedFiles, currentBranch } = input;
+	const { currentBranch } = input;
 	const blockers: string[] = [];
 
 	// Detached HEAD / non-git cwd: fail-open. Release engineers may
@@ -70,41 +49,25 @@ export const lintCommitBranch = (
 		return { ok: true };
 	}
 
-	// Any non-develop branch is allowed. The discipline is "don't
-	// commit to develop directly", not "don't commit at all".
-	if (currentBranch !== DEVELOP_BRANCH) {
+	// The shared branch. Committing here is the whole point.
+	if (currentBranch === DEVELOP_BRANCH) {
 		return { ok: true };
 	}
 
-	// On develop: deep paths are an immediate block.
-	const deep = findDeepPathViolations(stagedFiles);
-	if (deep.length > 0) {
-		blockers.push(
-			`on \`develop\`, these staged files need a feature branch: ${deep.join(', ')}`,
-			'',
-			'next-action:',
-			'  create a branch:  git switch -c agent/<your-name>-<id>-<id-proposals>-<id-agent>',
-			'  then commit there. push to develop only via PR.',
-			'',
-			'  if this is a true emergency (CI follow-up, release hotfix),',
-			'  bypass the hook with:  LEFTHOOK_BYPASS=1 git commit ...',
-		);
-		return { ok: false, blockers };
-	}
-
-	// On develop with no deep paths: small residual fixes allowed.
-	if (stagedFiles.length > MAX_RESIDUAL_FILES) {
-		blockers.push(
-			`on \`develop\`, more than ${MAX_RESIDUAL_FILES} files are staged (${stagedFiles.length}). even when none of them are in a deep path, this is too much for a direct develop commit.`,
-			'',
-			'next-action:',
-			'  create a branch:  git switch -c agent/<your-name>-<id>-<id-proposals>-<id-agent>',
-			'  push there and open a PR.',
-		);
-		return { ok: false, blockers };
-	}
-
-	return { ok: true };
+	// Anything else is a stray per-agent / feature branch. This repo
+	// works on `develop` only; agents share one branch.
+	blockers.push(
+		`committing on \`${currentBranch}\` — this repo works on \`develop\` only.`,
+		'',
+		'next-action:',
+		`  switch back:  git switch ${DEVELOP_BRANCH}`,
+		'  then commit and push on develop. agents share one branch;',
+		'  do not create agent/* or feature/* branches.',
+		'',
+		'  if this is a true emergency (CI follow-up, release hotfix),',
+		'  bypass the hook with:  LEFTHOOK_BYPASS=1 git commit ...',
+	);
+	return { ok: false, blockers };
 };
 
 // ---------- CLI shell ----------

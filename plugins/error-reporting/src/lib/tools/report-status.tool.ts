@@ -4,8 +4,8 @@ import {
 } from '@mcp-vertex/core/public';
 import z from 'zod';
 
-import type { IReportStore } from '../report-store';
-import type { IErrorReportingOptions } from '../options';
+import type { IReportStore } from '../report-store.service';
+import type { IErrorReportingOptions } from '../options.constant';
 
 export interface IReportStatusToolOptions {
 	readonly namespacePrefix: string;
@@ -14,6 +14,9 @@ export interface IReportStatusToolOptions {
 }
 
 const ReportStatusInputSchema = z.object({}).strict();
+
+/** Cap on how many recent records `report_status` surfaces. */
+const MAX_RECENT_REPORTS = 20;
 
 const ReportStatusOutputSchema = z
 	.object({
@@ -70,7 +73,7 @@ export const buildReportStatusRegistration = (
 									a.lastReportedAt,
 								),
 							)
-							.slice(0, 20)
+							.slice(0, MAX_RECENT_REPORTS)
 							.map((record) => ({
 								signature: record.signature,
 								...(record.issueNumber !== undefined

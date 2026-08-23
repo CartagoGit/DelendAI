@@ -21,13 +21,15 @@ export const OptionsSchema = z.object({
 	 * never sent upstream. Set `false` to report every tool failure.
 	 */
 	internalOnly: z.boolean().optional(),
-	/** De-duplication window in hours. Default 24. */
+	/** De-duplication window in hours. Defaults to one day. */
 	dedupeWindowHours: z.number().int().positive().optional(),
 });
 
 export const DEFAULT_TARGET_REPO = 'CartagoGit/mcp-vertex';
 
 export const DEFAULT_LABELS: readonly string[] = ['auto-reported', 'bug'];
+
+export const DEFAULT_DEDUPE_WINDOW_HOURS = 24;
 
 export interface IErrorReportingOptions {
 	readonly enabled: boolean;
@@ -57,6 +59,7 @@ export const resolveOptions = (
 				? configuredLabels
 				: [...DEFAULT_LABELS],
 		internalOnly: data.internalOnly ?? true,
-		dedupeWindowHours: data.dedupeWindowHours ?? 24,
+		dedupeWindowHours:
+			data.dedupeWindowHours ?? DEFAULT_DEDUPE_WINDOW_HOURS,
 	};
 };
