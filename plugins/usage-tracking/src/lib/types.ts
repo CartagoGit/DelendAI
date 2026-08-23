@@ -160,6 +160,11 @@ export type SessionHygieneReason =
 	| 'idle-gap'
 	| 'mcp-output-volume';
 
+/** f00156 S2: nextAction values this plugin may emit from hygiene. Never `block`. */
+export type SessionTooLongNextAction =
+	| 'checkpoint-and-fresh-session'
+	| 'checkpoint-and-compact';
+
 /** Policy for local MCP-session observations. All values are positive. */
 export interface ISessionHygienePolicy {
 	readonly maxSessionAgeMs: number;

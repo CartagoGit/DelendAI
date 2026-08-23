@@ -37,6 +37,14 @@ coordination — including naming the whole agent tree (orchestrator included).
 | `proposal_adopt` | Make an existing proposals folder followable: canonical layout + a scan of the real folder + a plan to organize it for mcp-vertex (read-only; you run the steps). |
 | `proposals_close_plan` | Close a `type: plan` proposal (prefix `q`). Refuses with a `blockers[]` list until every contained proposal, sub-plan, and own slice is done + peer-reviewed. `dryRun: true` runs the preflight without applying the transition. See **Plan-of-plans (q00001)** below. |
 
+### Checkpoint advisories (f00156)
+
+Composes requirement drift, micro-validation, interactive context drift
+and stale-acceptance push guards into `getCheckpointAdvisory` /
+`beforeToolCall`. Swarm `isAgentStuck` handoff is unchanged. Options:
+`plugins.proposals.options.checkpointAdvisories`. See
+[`CHECKPOINT-ADVISORIES.md`](../../docs/mcp-vertex/CHECKPOINT-ADVISORIES.md).
+
 ### Folder layout (`<docsDir>/proposals`, default `docs/mcp-vertex/proposals`)
 
 ```

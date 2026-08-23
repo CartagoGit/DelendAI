@@ -34,4 +34,9 @@ Notes persist in `.cache/mcp-vertex/results/memory/notes.json`.
 Writes redact secrets, use atomic replacement and enforce the configured note
 quota inside the store mutex.
 
+Missing or stale explicit session digests produce a `STALE_CHECKPOINT`
+recommend advisory (`create-semantic-checkpoint`) without reading host
+transcripts. See
+[`CHECKPOINT-ADVISORIES.md`](../../docs/mcp-vertex/CHECKPOINT-ADVISORIES.md).
+
 BSD-3-Clause © Cartago

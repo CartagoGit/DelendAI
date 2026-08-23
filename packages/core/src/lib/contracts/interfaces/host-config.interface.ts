@@ -135,6 +135,20 @@ export interface IHostObservability {
 				args: unknown,
 		  ) => { handoffPath: string; suggestedAction: string } | null)
 		| undefined;
+	/**
+	 * f00156: merged checkpoint-advisory provider (highest severity
+	 * across plugins). Optional so existing programmatic hosts compile.
+	 */
+	readonly getCheckpointAdvisory?:
+		| import('./checkpoint-advisory.interface').CheckpointAdvisoryProvider
+		| undefined;
+	/**
+	 * f00156: merged pre-handler hook. `severity: 'block'` short-circuits
+	 * the tool handler. Optional so existing hosts compile.
+	 */
+	readonly beforeToolCall?:
+		| import('./checkpoint-advisory.interface').BeforeToolCallHook
+		| undefined;
 }
 
 /** Solid-ISP: extra registrations the host wants to anchor. */
