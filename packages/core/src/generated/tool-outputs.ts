@@ -741,6 +741,7 @@ export interface McpVertexDocsDocsReadOutput {
 	content: string;
 	truncated: boolean;
 	found: boolean;
+	reason?: string;
 }
 
 export interface McpVertexDocsDocsSearchOutput {
@@ -1356,6 +1357,43 @@ export interface McpVertexObservabilityObsErrorsOutput {
 	}>;
 	nextCursor: string | null;
 	redactions: number;
+}
+
+export interface McpVertexObservabilityObsReleaseHealthOutput {
+	versions: {
+		version: string;
+		totalSessions: number;
+		crashCount: number;
+		crashFreeRate: number;
+	}[];
+	summary: {
+		critical: number;
+		high: number;
+		medium: number;
+		low: number;
+		info: number;
+	};
+	worst: "critical" | "high" | "medium" | "low" | "info" | null;
+}
+
+export interface McpVertexObservabilityObsTraceOutput {
+	sampleSize: number;
+	groups: Array<{
+		service: string;
+		traceId: string;
+		hourBucket: string;
+		count: number;
+		errorRate: number;
+		topError: string | null;
+	}>;
+	summary: {
+		critical: number;
+		high: number;
+		medium: number;
+		low: number;
+		info: number;
+	};
+	worst: "critical" | "high" | "medium" | "low" | "info" | null;
 }
 
 export interface McpVertexOverviewOutput {
@@ -2222,6 +2260,7 @@ export interface McpVertexProposalsProposalBoardOutput {
 			owner: string | null;
 		}>;
 		claimableSliceIds?: string[];
+		unreadable?: string;
 	}>;
 }
 
@@ -2824,6 +2863,8 @@ export interface McpVertexQualityQualityRunAllOutput {
 export interface McpVertexQualityRunQualityOutput {
 	scope?: string;
 	ok: boolean;
+	dryRun?: boolean;
+	commands?: string[];
 	results?: {
 		command: string;
 		ok: boolean;
@@ -2855,6 +2896,7 @@ export interface McpVertexQualityRunQualityOutput {
 export interface McpVertexRefactorRefactorApplyOutput {
 	written: string[];
 	gateCommand: string;
+	consentToken: string;
 }
 
 export interface McpVertexRefactorRefactorCodemodOutput {
@@ -3471,6 +3513,8 @@ export interface McpVertexToolOutputs {
 	"mcp-vertex_notification_notify_status": McpVertexNotificationNotifyStatusOutput;
 	"mcp-vertex_observability_obs_correlate": McpVertexObservabilityObsCorrelateOutput;
 	"mcp-vertex_observability_obs_errors": McpVertexObservabilityObsErrorsOutput;
+	"mcp-vertex_observability_obs_release_health": McpVertexObservabilityObsReleaseHealthOutput;
+	"mcp-vertex_observability_obs_trace": McpVertexObservabilityObsTraceOutput;
 	"mcp-vertex_overview": McpVertexOverviewOutput;
 	"mcp-vertex_perf_perf_bench": McpVertexPerfPerfBenchOutput;
 	"mcp-vertex_perf_perf_bundle": McpVertexPerfPerfBundleOutput;

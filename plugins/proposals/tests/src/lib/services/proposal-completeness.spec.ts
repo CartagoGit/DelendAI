@@ -21,6 +21,12 @@ import {
 	verifyCompletedProposalAsync,
 } from '../../../../src/lib/services/proposal-completeness';
 
+// `node:fs` is a non-configurable ESM namespace, so `vi.spyOn(nodeFs,
+// 'statSync')` throws. Automocking with `spy: true` turns each export
+// into a spy-backed mock (still delegating to the real implementation)
+// so the regression guard below can assert `statSync` is never called.
+vi.mock('node:fs', { spy: true });
+
 describe('proposal-completeness — proposal-completeness', () => {
 	let workdir: string;
 
@@ -205,7 +211,8 @@ describe('proposal-completeness — proposal-completeness', () => {
 		// hit by every agent). They now pre-resolve files with async
 		// `stat` and never touch `statSync`.
 		it('never calls the sync statSync fallback', async () => {
-			const statSyncSpy = vi.spyOn(nodeFs, 'statSync');
+			const statSyncSpy = vi.mocked(nodeFs.statSync);
+			statSyncSpy.mockClear();
 			const a = join(workdir, 'a.ts');
 			await writeFile(a, '// a');
 			const proposal = join(workdir, 'proposal.md');
@@ -223,13 +230,13 @@ describe('proposal-completeness — proposal-completeness', () => {
 			});
 			expect(result.ok).toBe(true);
 			expect(statSyncSpy).not.toHaveBeenCalled();
-			statSyncSpy.mockRestore();
 		});
 	});
 
 	describe('verifyCompletedProposalAsync', () => {
 		it('succeeds for a fully shipped proposal without sync I/O', async () => {
-			const statSyncSpy = vi.spyOn(nodeFs, 'statSync');
+			const statSyncSpy = vi.mocked(nodeFs.statSync);
+			statSyncSpy.mockClear();
 			const a = join(workdir, 'a.ts');
 			await writeFile(a, '// a');
 			const proposal = join(workdir, 'proposal.md');
