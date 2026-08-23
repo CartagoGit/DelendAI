@@ -949,6 +949,11 @@ const collectBranchStatusWarnings = async (
 		});
 		if (!snapshot.ok) return [];
 		const warnings: string[] = [];
+		if (snapshot.mainCheckoutDrift) {
+			warnings.push(
+				`main checkout is on \`${snapshot.mainCheckoutBranch}\` instead of \`${snapshot.baseBranch}\` — an agent switched the shared checkout. Switch it back with: git switch ${snapshot.baseBranch}`,
+			);
+		}
 		for (const wt of snapshot.worktrees) {
 			if (wt.dirtyFiles > 0 || wt.untrackedFiles > 0) {
 				warnings.push(

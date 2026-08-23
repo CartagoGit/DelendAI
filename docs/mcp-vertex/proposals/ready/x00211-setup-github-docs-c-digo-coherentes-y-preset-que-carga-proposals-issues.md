@@ -29,13 +29,15 @@ Auditoría 2026-08-24 (hallazgos C1, C2): CROSS-PROJECT-SETUP.md describe 7 paso
 - global_gate: type
 
 ### S1 — Flujo operativo setup-github (o doc realista)
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/src/lib/setup/setup-steps.ts`, `plugins/issues/src/lib/github-setup.ts`, `plugins/issues/src/lib/tools/setup-github.tool.ts`, `packages/core/src/lib/cli/setup-subcommand.ts`
 - **Gate**: type
 - acceptance:
   - "El motor de pasos produce pasos operativos reales (write/verify/print/mark) con writer inyectado y sin I/O síncrono en el plugin."
   - "setup_github (tool) y setup-subcommand (CLI) emiten la misma guía operativa."
   - "El doc y el código coinciden (ningún paso prometido queda sin implementar)."
+- implementation:
+  - "Se eligió la rama 'doc realista': la guía es de solo-lectura por diseño. Además se unificó el vocabulario de tiers (`token`/`anon` → `rest-authed`/`rest-anon`) para que el motor de setup-github y el cliente de issues compartan un mismo enum."
 
 ### S2 — init_config recomienda preset que carga proposals/issues
 - **Status**: done
@@ -59,11 +61,13 @@ Auditoría 2026-08-24 (hallazgos C1, C2): CROSS-PROJECT-SETUP.md describe 7 paso
   - "La matriz de tiers se alineó al runtime real de issues (gh/rest-authed/rest-anon) y se anotó que el motor de setup-github usa las formas cortas token/anon (a unificar en S1)."
 
 ### S4 — Tests de setup-github y derive-config
-- **Status**: pending
-- **Files**: `plugins/issues/tests/src/lib/github-setup.spec.ts`, `packages/core/tests/src/lib/cli/setup-subcommand.spec.ts`
+- **Status**: done
+- **Files**: `plugins/issues/tests/src/lib/github-setup.spec.ts`, `packages/core/tests/src/lib/cli/setup-subcommand.spec.ts`, `packages/core/tests/src/lib/setup/setup-steps.spec.ts`, `packages/core/tests/src/lib/setup/cross-project-guide.spec.ts`
 - **Gate**: type
 - acceptance:
   - "Specs cubren pasos operativos y la recomendación de preset."
+- implementation:
+  - "Los specs de setup-github/derive-config cubren el nuevo vocabulario de tiers y la recomendación swarm para monorepos."
 
 ## acceptance
 

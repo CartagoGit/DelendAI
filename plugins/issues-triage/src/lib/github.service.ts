@@ -9,15 +9,7 @@ import type {
 	ITriageIssueSummary,
 } from './contracts/interfaces/github.interface';
 
-export const ghExec: IGhExec = async (argv) => {
-	const run = await runGhCli(argv);
-	return {
-		ok: run.ok,
-		code: run.code,
-		stdout: run.stdout,
-		stderr: run.stderr,
-	};
-};
+export const ghExec: IGhExec = async (argv) => runGhCli(argv);
 
 const sliceJson = (raw: string): string => {
 	const trimmed = raw.trim();

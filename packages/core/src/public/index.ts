@@ -737,6 +737,7 @@ export {
 } from '../lib/external-tool/run-external-tool';
 export { GH_CLI_TOOL } from '../lib/external-tool/known-tools.constant';
 export { runGhCli } from '../lib/external-tool/gh-cli.service';
+export type { IGhCliRun } from '../lib/external-tool/gh-cli.service';
 
 // --- plugin registry (f00141 S1) ---
 export type {

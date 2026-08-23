@@ -69,16 +69,16 @@ pre-commit:
     stray-files-check:
       run: bun run lint:stray-cache-files || true
 
-    # f00086: single-shared-branch discipline. ADVISORY (wrapped with
-    # `|| true`). This repo works on `develop` only: committing on any
-    # other branch (`agent/*`, `feature/*`) warns the agent to switch
-    # back. Matches the top-of-file policy: hooks WARN but never BLOCK
-    # commit/push.
+    # f00086: config-driven branch discipline. ADVISORY (wrapped with
+    # `|| true`). With `agentWorktree: false` (this repo), committing on
+    # an `agent/*` branch warns the agent to switch back to `develop`;
+    # user-managed branches (`fix/*`, `feature/*`) are allowed. Matches
+    # the top-of-file policy: hooks WARN but never BLOCK commit/push.
     # Real enforcement still happens via:
     #   - `bun run validate` in CI, which runs `lint:commit-branch`
-    #     and fails the pipeline on a non-develop commit
+    #     and `lint:agent-branch-naming`
     #   - `push-to-develop-discipline` (pre-push), which blocks pushes
-    #     from any branch other than `develop` / `main`
+    #     from `agent/*` branches
     # Bypass: LEFTHOOK_BYPASS=1 git commit ... (documented in
     # the warning text).
     commit-branch-discipline:
@@ -121,13 +121,14 @@ pre-push:
     lint-scss-all:
       run: bun run lint:scss || true
 
-    # f00086: single-shared-branch discipline. ADVISORY (wrapped with
-    # `|| true`). Warns when pushing from any branch other than
-    # `develop` / `main`; `develop → origin/develop` (the shared push)
-    # and release merges (`develop → main`, `main → main`) are allowed.
-    # Matches the top-of-file policy: hooks WARN but never BLOCK
-    # commit/push. Pushing from `develop` is always allowed — develop
-    # has NO push protection.
+    # f00086: config-driven branch discipline. ADVISORY (wrapped with
+    # `|| true`). With `agentWorktree: false` (this repo), pushing from
+    # an `agent/*` branch warns the agent to switch back to `develop`.
+    # `develop → origin/develop` (the shared push), release merges
+    # (`develop → main`, `main → main`) and user-managed branches
+    # (`fix/*`, `feature/*`) are all allowed. Matches the top-of-file
+    # policy: hooks WARN but never BLOCK commit/push. Pushing from
+    # `develop` is always allowed — develop has NO push protection.
     #
     # x00159 S1: `use_stdin: true` is REQUIRED here. Lefthook does not
     # forward git's real stdin to a command by default (it connects a

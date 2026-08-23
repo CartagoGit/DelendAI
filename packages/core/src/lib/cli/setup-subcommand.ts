@@ -38,14 +38,14 @@ export const parseGithubRepo = (originUrl: string | null): string | null => {
 	return match === null ? null : `${match[1]}/${match[2]}`;
 };
 
-/** Resolve the auth tier (gh ≫ token ≫ anon). Pure. */
+/** Resolve the auth tier (gh ≫ rest-authed ≫ rest-anon). Pure. */
 export const resolveTier = (
 	hasGhCli: boolean,
 	token: string | undefined,
 ): GithubAuthTier => {
 	if (hasGhCli) return 'gh';
-	if (token !== undefined && token.trim() !== '') return 'token';
-	return 'anon';
+	if (token !== undefined && token.trim() !== '') return 'rest-authed';
+	return 'rest-anon';
 };
 
 /** True when the config text declares `plugins.issues`. Pure. */

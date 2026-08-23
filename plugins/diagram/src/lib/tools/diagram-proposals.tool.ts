@@ -69,7 +69,30 @@ export const buildDiagramProposalsToolRegistrations = (
 					description:
 						'Take the schema object the database plugin produces (`db_schema`) and render it as a mermaid `erDiagram` (renders natively in the docs site + artifacts). Pure passthrough: the diagram tool never touches the database — pass the schema as `schema` and the tool returns the mermaid string. Cardinality is inferred from FK uniqueness; if the inference cannot classify, the edge is drawn as `one-to-many` (the conservative default).',
 					inputSchema: z.object({
-						schema: z.unknown(),
+						// Structural validation of IDatabaseSchema (the shape
+						// buildMermaidEr consumes): reject non-object
+						// schemas, schemas without `tables`, and tables
+						// missing the fields the renderer dereferences
+						// (name / columns / indexes / foreignKeys) BEFORE
+						// the handler runs. `.passthrough()` keeps extra
+						// fields (driver, table.schema, column metadata…)
+						// so the database plugin's richer projection still
+						// validates. A bare `z.unknown()` used to accept any
+						// scalar here and only failed at runtime.
+						schema: z
+							.object({
+								tables: z.array(
+									z
+										.object({
+											name: z.string(),
+											columns: z.array(z.unknown()),
+											indexes: z.array(z.unknown()),
+											foreignKeys: z.array(z.unknown()),
+										})
+										.passthrough(),
+								),
+							})
+							.passthrough(),
 					}),
 					outputSchema: z.object({
 						mermaid: z.string(),

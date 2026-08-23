@@ -35,12 +35,12 @@ describe('parseGithubRepo', async () => {
 });
 
 describe('resolveTier', async () => {
-	it('prefers gh, then token, then anon', async () => {
+	it('prefers gh, then rest-authed, then rest-anon', async () => {
 		expect(resolveTier(true, undefined)).toBe('gh');
 		expect(resolveTier(true, 'tok')).toBe('gh');
-		expect(resolveTier(false, 'tok')).toBe('token');
-		expect(resolveTier(false, '')).toBe('anon');
-		expect(resolveTier(false, undefined)).toBe('anon');
+		expect(resolveTier(false, 'tok')).toBe('rest-authed');
+		expect(resolveTier(false, '')).toBe('rest-anon');
+		expect(resolveTier(false, undefined)).toBe('rest-anon');
 	});
 });
 
@@ -88,7 +88,7 @@ describe('runSetupGithub', async () => {
 				githubToken: () => undefined,
 			}),
 		);
-		expect(result.context.tier).toBe('anon');
+		expect(result.context.tier).toBe('rest-anon');
 		expect(result.context.repo).toBeNull();
 		expect(result.steps[0]?.id).toBe('auth');
 	});

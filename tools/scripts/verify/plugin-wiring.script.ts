@@ -56,10 +56,33 @@ const listPluginIds = async (): Promise<readonly string[]> => {
 				const hasIndex = await realFs.pathExists(
 					`plugins/${entry.name}/src/index.ts`,
 				);
-				return hasIndex ? entry.name : undefined;
+				if (!hasIndex) return undefined;
+				const isPrivate = await isPrivatePlugin(entry.name);
+				return isPrivate ? undefined : entry.name;
 			}),
 	);
 	return ids.filter((id): id is string => id !== undefined).sort();
+};
+
+/**
+ * A plugin marked `"private": true` is internal-only: it is not
+ * published, sits outside every preset and outside `PUBLISH_ORDER`, so
+ * the public six-point wiring contract does not apply. The doctor skips
+ * it instead of demanding preset/publish/defaults entries that must not
+ * exist for an internal package.
+ */
+const isPrivatePlugin = async (id: string): Promise<boolean> => {
+	try {
+		const raw = await realFs.readFile(`plugins/${id}/package.json`);
+		const parsed: unknown = JSON.parse(raw);
+		return (
+			typeof parsed === 'object' &&
+			parsed !== null &&
+			(parsed as { private?: unknown }).private === true
+		);
+	} catch {
+		return false;
+	}
 };
 
 const formatReport = (report: IPluginWiringReport): string => {
