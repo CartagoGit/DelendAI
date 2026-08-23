@@ -196,6 +196,19 @@ export type {
 	IMcpPluginRegistrations,
 } from '../lib/plugins/plugin-contract';
 export {
+	injectCheckpointAdvisory,
+	mergeCheckpointAdvisories,
+	selectCheckpointAdvisory,
+} from '../lib/shared/checkpoint-advisory';
+export type {
+	BeforeToolCallHook,
+	CheckpointAdvisoryProvider,
+	CheckpointAdvisorySeverity,
+	ICheckpointAdvisory,
+	ICheckpointAdvisoryContext,
+} from '../lib/contracts/interfaces/checkpoint-advisory.interface';
+export { CHECKPOINT_ADVISORY_SEVERITIES } from '../lib/contracts/interfaces/checkpoint-advisory.interface';
+export {
 	PLUGIN_DEFAULTS,
 	resolvePluginOptions,
 } from '../lib/plugins/plugin-defaults';

@@ -38,6 +38,7 @@ export {
 	assessCheckpointFreshness,
 	DEFAULT_CHECKPOINT_MAX_AGE_MS,
 } from '../lib/services/checkpoint-freshness';
+export { mapFreshnessToCheckpointAdvisory } from '../lib/services/checkpoint-advisory.service';
 export type {
 	CheckpointFreshnessState,
 	ICheckpointFreshness,

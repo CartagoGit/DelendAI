@@ -122,6 +122,7 @@ describe('close_slice validation gate (a00069 S5)', () => {
 			lockPathAbs: join(root, '.cache/agents.lock.json'),
 			counterPathAbs: join(root, '.cache/proposal-id-counters.json'),
 			validationCommand: 'bun run validate',
+			requirePeerReview: false,
 		};
 	});
 	afterEach(() => rmSync(root, { recursive: true, force: true }));
@@ -253,6 +254,7 @@ describe('close_slice quality gate (a00072 S3.c)', () => {
 			lockPathAbs: join(root, '.cache/agents.lock.json'),
 			counterPathAbs: join(root, '.cache/proposal-id-counters.json'),
 			validationCommand: 'bun run validate',
+			requirePeerReview: false,
 		};
 	});
 	afterEach(() => rmSync(root, { recursive: true, force: true }));

@@ -95,8 +95,9 @@ output: { events: LogEvent[], oldestTs: string | null, newestTs: string | null }
 ```
 
 Reads **only** the curated `logs-errors/` stream. `includeMeta` defaults to
-`true` so the first call already shows you the args, the error message, the
-stack and `elapsedMs`.
+`false` (cheap projection; `meta` is stripped) so a debugging session cannot
+overflow the host context. Pass `includeMeta:true` only for the one event you
+are inspecting.
 
 #### `correlate` — chronological chain + gap detection
 

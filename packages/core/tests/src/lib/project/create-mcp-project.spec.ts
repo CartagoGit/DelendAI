@@ -272,3 +272,148 @@ describe('instrumented tool hooks (f00111 S1)', async () => {
 		}
 	});
 });
+
+describe('checkpoint advisory injection (f00156 S1)', async () => {
+	const pingTool = (handlerInvoked: { n: number }): IToolRegistration => ({
+		id: 'ping',
+		register: async (server) => {
+			server.registerTool(
+				'spec_ping',
+				{
+					description: 'ping',
+					inputSchema: z.object({}),
+				},
+				async () => {
+					handlerInvoked.n += 1;
+					return {
+						content: [
+							{ type: 'text' as const, text: '{"ok":true}' },
+						],
+						structuredContent: { ok: true },
+					};
+				},
+			);
+		},
+	});
+
+	const connect = async (config: IMcpVertexHostConfig) => {
+		const assembled = await createMcpProject(config);
+		const [clientTransport, serverTransport] =
+			InMemoryTransport.createLinkedPair();
+		await assembled.server.connect(serverTransport);
+		const client = new Client(
+			{ name: 'advisory-spec', version: '0' },
+			{ capabilities: {} },
+		);
+		await client.connect(clientTransport);
+		return {
+			client,
+			close: async () => {
+				await client.close();
+				await assembled.server.close();
+			},
+		};
+	};
+
+	it('injects a triggered advisory onto structuredContent', async () => {
+		const invoked = { n: 0 };
+		const { client, close } = await connect({
+			...hostConfig([pingTool(invoked)]),
+			getCheckpointAdvisory: () => ({
+				triggered: true,
+				code: 'SESSION_TOO_LONG',
+				severity: 'recommend',
+				message:
+					'At this point, I recommend creating a semantic checkpoint and continuing in a fresh agent session.',
+				reason: 'session age crossed the local MCP threshold',
+				nextAction: 'checkpoint-and-fresh-session',
+				dedupeKey: 'SESSION_TOO_LONG:s1:session-age',
+			}),
+		});
+		try {
+			const result = await client.callTool({
+				name: 'spec_ping',
+				arguments: {},
+			});
+			expect(invoked.n).toBe(1);
+			expect(
+				(
+					result.structuredContent as {
+						checkpointAdvisory?: { code: string };
+					}
+				).checkpointAdvisory?.code,
+			).toBe('SESSION_TOO_LONG');
+		} finally {
+			await close();
+		}
+	});
+
+	it('does not re-inject the same dedupeKey on the next call', async () => {
+		const invoked = { n: 0 };
+		const { client, close } = await connect({
+			...hostConfig([pingTool(invoked)]),
+			getCheckpointAdvisory: () => ({
+				triggered: true,
+				code: 'SESSION_TOO_LONG',
+				severity: 'recommend',
+				message: 'At this point, I recommend a checkpoint.',
+				reason: 'age',
+				nextAction: 'checkpoint-and-fresh-session',
+				dedupeKey: 'SESSION_TOO_LONG:s1:session-age',
+			}),
+		});
+		try {
+			const first = await client.callTool({
+				name: 'spec_ping',
+				arguments: {},
+			});
+			const second = await client.callTool({
+				name: 'spec_ping',
+				arguments: {},
+			});
+			expect(
+				(first.structuredContent as { checkpointAdvisory?: unknown })
+					.checkpointAdvisory,
+			).toBeDefined();
+			expect(
+				(second.structuredContent as { checkpointAdvisory?: unknown })
+					.checkpointAdvisory,
+			).toBeUndefined();
+		} finally {
+			await close();
+		}
+	});
+
+	it('short-circuits the handler when beforeToolCall returns severity block', async () => {
+		const invoked = { n: 0 };
+		const { client, close } = await connect({
+			...hostConfig([pingTool(invoked)]),
+			beforeToolCall: () => ({
+				triggered: true,
+				code: 'STALE_ACCEPTANCE',
+				severity: 'block',
+				message: 'At this point, I recommend not pushing yet.',
+				reason: 'acceptance evidence is stale',
+				nextAction: 'validate-before-push',
+				dedupeKey: 'STALE_ACCEPTANCE:s1:tree',
+			}),
+		});
+		try {
+			const result = await client.callTool({
+				name: 'spec_ping',
+				arguments: {},
+			});
+			expect(invoked.n).toBe(0);
+			expect(result.isError).toBe(true);
+			expect(
+				(
+					result.structuredContent as {
+						checkpointAdvisory?: { severity: string };
+					}
+				).checkpointAdvisory?.severity,
+			).toBe('block');
+		} finally {
+			await close();
+		}
+	});
+});

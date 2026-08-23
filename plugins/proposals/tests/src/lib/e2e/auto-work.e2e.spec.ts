@@ -204,7 +204,7 @@ describe('e2e: proposals_auto_work over the real MCP protocol', async () => {
 		// expected to call, in the order `auto_work` documents.
 		expect(stepsBlob).toMatch(/proposals_continue_proposal/);
 		expect(stepsBlob).toMatch(/proposals_agent_lock/);
-		expect(stepsBlob).toMatch(/proposals_close_slice/);
+		expect(stepsBlob).toMatch(/proposal_review/);
 		expect(stepsBlob).toMatch(/proposals_sync_proposals/);
 	});
 
