@@ -127,6 +127,37 @@ const toSlug = (title: string, maxLen = 60): string => {
 /** Five-digit zero-padded id, matches the repo's existing proposal ids. */
 const padId = (n: number): string => n.toString().padStart(5, '0');
 
+const WORKSPACE_PATH_RE =
+	/(?:^|\/)((?:packages|plugins|extensions|apps|tools|docs|scripts|src|lib)\/.+)$/;
+
+/** Drop markdown leftovers (`[`) and lift `file://` links to workspace paths. */
+export const sanitizeCitedFiles = (
+	files: readonly string[],
+): readonly string[] => {
+	const out: string[] = [];
+	for (const raw of files) {
+		const fileUri = raw.match(/file:\/\/(\/[^)\s#]+)/u)?.[1];
+		const quoted = raw.match(/`([^`]+)`/u)?.[1];
+		let token = (fileUri ?? quoted ?? raw)
+			.replace(/^\s*[-*]\s+/gu, '')
+			.replace(/`/gu, '')
+			.replace(/^\[|\]$/gu, '')
+			.replace(/#L[\w-]+$/u, '')
+			.trim();
+		const workspace = token.match(WORKSPACE_PATH_RE)?.[1];
+		if (workspace !== undefined) token = workspace;
+		if (
+			token.length >= 2 &&
+			!/^[\[\]()]+$/.test(token) &&
+			(token.includes('/') || /\.[A-Za-z0-9]+$/.test(token)) &&
+			!out.includes(token)
+		) {
+			out.push(token);
+		}
+	}
+	return out;
+};
+
 /**
  * Allocate the next free id under `prefix`. Walks from `startAt`
  * upward until it finds an id not in `taken`.
@@ -316,11 +347,12 @@ export const scaffoldProposals = (
 		const id = allocateId(prefix, startAt, taken);
 		taken.add(id);
 		const related = auditId ? [auditId] : [];
+		const files = sanitizeCitedFiles(finding.files);
 		const { body, filename } = renderProposalBody(
 			id,
 			title,
 			finding.worstSeverity,
-			finding.files,
+			files,
 			related,
 			date,
 			outputDir,
@@ -331,7 +363,7 @@ export const scaffoldProposals = (
 			filename,
 			body,
 			severity: finding.worstSeverity,
-			files: finding.files,
+			files,
 			title,
 		});
 	}

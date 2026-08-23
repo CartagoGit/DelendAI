@@ -171,21 +171,40 @@ const extractFindings = (body: string): readonly IAuditFinding[] => {
 		}
 		if (currentTitle.length === 0) continue;
 		// Capture "Fichero" / "Archivo" hints to seed `files[]`.
-		const fileMatch =
-			/\*\*Fichero[a-z]?\s*:?\*\*?\s*:?\s*`?([^`\n]+)`?/u.exec(line);
-		if (fileMatch?.[1]) {
-			for (const candidate of fileMatch[1].split(',')) {
-				// Strip backticks, asterisks, and any trailing line
-				// anchor (`#L42` / `#L42-L58`) so callers can match on
-				// the canonical path alone.
-				const trimmed = candidate
-					.trim()
-					.replace(/[`*]/g, '')
-					.replace(/#L[\w-]+$/u, '')
-					.trim();
-				if (trimmed.length > 0 && !currentFiles.includes(trimmed)) {
-					currentFiles.push(trimmed);
-				}
+		// Prefer backtick-quoted paths (the playbook form) so a truncated
+		// markdown list like `[sync-proposal-registry.ts#L311](file://...)`
+		// cannot leak the leftover `[` token into the proposal slice.
+		const quoted = [...line.matchAll(/`([^`]+)`/gu)].map((m) => m[1] ?? '');
+		const fileUris = [...line.matchAll(/file:\/\/(\/[^)\s#]+)/gu)].map(
+			(m) => m[1] ?? '',
+		);
+		const fileHint =
+			/\*\*(?:Fichero[a-z]?|Archivo[s]?)\s*:?\*\*?\s*:?/iu.test(line);
+		const candidates =
+			quoted.length > 0
+				? quoted
+				: fileUris.length > 0
+					? fileUris
+					: fileHint
+						? [line]
+						: [];
+		for (const candidate of candidates) {
+			let trimmed = candidate
+				.trim()
+				.replace(/^\[|\]$/gu, '')
+				.replace(/\(.*$/u, '')
+				.replace(/#L[\w-]+$/u, '')
+				.replace(/^[\s*`\[(]+|[\s*`\])]+$/gu, '')
+				.trim();
+			const workspace = trimmed.match(
+				/(?:^|\/)((?:packages|plugins|extensions|apps|tools|docs|scripts|src|lib)\/.+)$/,
+			)?.[1];
+			if (workspace !== undefined) trimmed = workspace;
+			if (
+				/^[A-Za-z0-9._/-]+\.[A-Za-z0-9]+$/.test(trimmed) &&
+				!currentFiles.includes(trimmed)
+			) {
+				currentFiles.push(trimmed);
 			}
 		}
 		currentDetail.push(line);

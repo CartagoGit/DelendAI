@@ -110,6 +110,24 @@ describe('parseAuditBody', async () => {
 		);
 	});
 
+	it('does not treat leftover markdown list tokens as cited files', async () => {
+		const doc = parseAuditBody(
+			'docs/mcp-vertex/proposals/done/23-08-2026- Copilot (Grok).md',
+			`# Audit
+
+## 🔴 FATAL
+
+### 1. Broken citation
+**Fichero**: [
+[sync-proposal-registry.ts#L311](file:///tmp/plugins/proposals/src/lib/proposals/sync-proposal-registry.ts#L311)
+`,
+		);
+		expect(doc.findings[0]?.files).toEqual([
+			'plugins/proposals/src/lib/proposals/sync-proposal-registry.ts',
+		]);
+		expect(doc.findings[0]?.files).not.toContain('[');
+	});
+
 	it('extracts the per-dimension scoring table', async () => {
 		const doc = parseAuditBody(
 			'docs/mcp-vertex/proposals/done/14-06-2026- Antigravity (Claude Sonnet 4.6 Thinking).md',

@@ -57,6 +57,22 @@ describe('scaffoldProposals — agnostic contract (x00165)', () => {
 		expect(proposal!.body).toContain('Sourced by `audit_run`.');
 	});
 
+	it('drops leftover markdown tokens and lifts file:// citations to workspace paths', () => {
+		const [proposal] = scaffoldProposals(
+			consolidationWith([
+				'[',
+				'[sync-proposal-registry.ts#L311](file:///home/cartago/_projects/mcp-vertex/plugins/proposals/src/lib/proposals/sync-proposal-registry.ts#L311)',
+			]),
+		);
+		expect(proposal!.files).toEqual([
+			'plugins/proposals/src/lib/proposals/sync-proposal-registry.ts',
+		]);
+		expect(proposal!.body).toContain(
+			'`plugins/proposals/src/lib/proposals/sync-proposal-registry.ts`',
+		);
+		expect(proposal!.body).not.toContain('    - `[`');
+	});
+
 	it('proposalFilenameFor previews the same filename scaffoldProposals would allocate', () => {
 		const [proposal] = scaffoldProposals(consolidationWith(['src/x.ts']));
 		expect(proposalFilenameFor(proposal!.title, proposal!.id)).toBe(
