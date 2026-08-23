@@ -120,7 +120,7 @@ describe('selectCheckpointAdvisory', () => {
 });
 
 describe('injectCheckpointAdvisory', () => {
-	it('writes checkpointAdvisory onto structuredContent', () => {
+	it('writes checkpointAdvisory onto _meta (not structuredContent)', () => {
 		const result: Record<string, unknown> = {
 			content: [{ type: 'text', text: '{}' }],
 			structuredContent: { ok: true },
@@ -132,18 +132,17 @@ describe('injectCheckpointAdvisory', () => {
 		});
 		injectCheckpointAdvisory(result, value);
 		expect(
-			(result.structuredContent as Record<string, unknown>)
-				.checkpointAdvisory,
+			(result._meta as Record<string, unknown>).checkpointAdvisory,
 		).toEqual(value);
-		expect((result.structuredContent as Record<string, unknown>).ok).toBe(
-			true,
-		);
+		// structuredContent stays untouched so the tool's outputSchema
+		// validation still passes.
+		expect(result.structuredContent).toEqual({ ok: true });
 	});
 
 	it('is a no-op for null advisory or non-object results', () => {
 		const result: Record<string, unknown> = { structuredContent: {} };
 		injectCheckpointAdvisory(result, null);
-		expect(result.structuredContent).toEqual({});
+		expect(result._meta).toBeUndefined();
 		injectCheckpointAdvisory(
 			'text',
 			advisory({

@@ -726,7 +726,12 @@ export const runProposalTransition = async (
 		finalTo === 'review' &&
 		typeof options.peerReviewLogPathAbs === 'string'
 	) {
-		void recordProposalEnteredReview({
+		// Await (not fire-and-forget): the audit line must land before the
+		// tool returns so tests and hosts can tear down the workspace
+		// without racing the `withFileMutex` sidecar write (ENOTEMPTY on
+		// `rm -rf .cache`). Failures are swallowed — the transition result
+		// must never fail because a best-effort log append failed.
+		await recordProposalEnteredReview({
 			logPathAbs: options.peerReviewLogPathAbs,
 			proposalId: args.id,
 			from,

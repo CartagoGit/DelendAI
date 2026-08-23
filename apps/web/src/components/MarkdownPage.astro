@@ -13,6 +13,9 @@ const markdown = new MarkdownIt({
 	html: false,
 	linkify: true,
 });
+// linkify-it v6 autolinks bare hostnames (no scheme) by default; disable
+// the fuzzy inference so only explicit-scheme URLs and emails become links.
+markdown.linkify.set({ fuzzyLink: false });
 
 const { page, lang } = Astro.props;
 const requestedTranslation = (
