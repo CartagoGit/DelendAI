@@ -315,7 +315,7 @@ describe('checkpoint advisory injection (f00156 S1)', async () => {
 		};
 	};
 
-	it('injects a triggered advisory onto structuredContent', async () => {
+	it('injects a triggered advisory onto _meta', async () => {
 		const invoked = { n: 0 };
 		const { client, close } = await connect({
 			...hostConfig([pingTool(invoked)]),
@@ -338,9 +338,11 @@ describe('checkpoint advisory injection (f00156 S1)', async () => {
 			expect(invoked.n).toBe(1);
 			expect(
 				(
-					result.structuredContent as {
-						checkpointAdvisory?: { code: string };
-					}
+					(
+						result as unknown as {
+							_meta?: { checkpointAdvisory?: { code: string } };
+						}
+					)._meta as { checkpointAdvisory?: { code: string } }
 				).checkpointAdvisory?.code,
 			).toBe('SESSION_TOO_LONG');
 		} finally {
@@ -372,12 +374,18 @@ describe('checkpoint advisory injection (f00156 S1)', async () => {
 				arguments: {},
 			});
 			expect(
-				(first.structuredContent as { checkpointAdvisory?: unknown })
-					.checkpointAdvisory,
+				(
+					first as unknown as {
+						_meta?: { checkpointAdvisory?: unknown };
+					}
+				)._meta?.checkpointAdvisory,
 			).toBeDefined();
 			expect(
-				(second.structuredContent as { checkpointAdvisory?: unknown })
-					.checkpointAdvisory,
+				(
+					second as unknown as {
+						_meta?: { checkpointAdvisory?: unknown };
+					}
+				)._meta?.checkpointAdvisory,
 			).toBeUndefined();
 		} finally {
 			await close();
@@ -407,9 +415,13 @@ describe('checkpoint advisory injection (f00156 S1)', async () => {
 			expect(result.isError).toBe(true);
 			expect(
 				(
-					result.structuredContent as {
-						checkpointAdvisory?: { severity: string };
-					}
+					(
+						result as unknown as {
+							_meta?: {
+								checkpointAdvisory?: { severity: string };
+							};
+						}
+					)._meta as { checkpointAdvisory?: { severity: string } }
 				).checkpointAdvisory?.severity,
 			).toBe('block');
 		} finally {

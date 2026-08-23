@@ -83,6 +83,9 @@ export const PLUGIN_DEFAULTS: Readonly<
 	database: {},
 	api: {},
 	changelog: {},
+	'error-reporting': {
+		enabled: true,
+	},
 };
 
 export const resolvePluginOptions = (
