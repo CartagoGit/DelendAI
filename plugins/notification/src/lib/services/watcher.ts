@@ -104,7 +104,9 @@ export const awaitLockRelease = (params: {
 }): Promise<IAwaitLockResult> => {
 	const timeoutMs = clampTimeout(params.timeoutMs);
 	const pollMs = Math.max(100, Math.min(5_000, params.pollMs ?? 500));
-	const startedAt = Date.now();
+	// Monotonic clock: `Date.now()` can step backwards under NTP/clock
+	// adjustments, which made `waitedMs` go negative in flaky test runs.
+	const startedAt = performance.now();
 	const isFree = async (): Promise<boolean> =>
 		!(await readInFlight(params.lockFile)).has(params.taskId);
 
@@ -128,7 +130,7 @@ export const awaitLockRelease = (params: {
 			resolve({
 				released,
 				timedOut,
-				waitedMs: Date.now() - startedAt,
+				waitedMs: Math.round(performance.now() - startedAt),
 				alreadyFree: false,
 			});
 		};

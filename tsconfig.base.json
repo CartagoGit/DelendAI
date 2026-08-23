@@ -224,7 +224,23 @@
 			"@mcp-vertex/changelog/public": [
 				"./plugins/changelog/src/public/index.ts"
 			],
-			"@mcp-vertex/changelog/*": ["./plugins/changelog/src/*"]
+			"@mcp-vertex/changelog/*": ["./plugins/changelog/src/*"],
+			"@mcp-vertex/error-reporting": [
+				"./plugins/error-reporting/src/index.ts"
+			],
+			"@mcp-vertex/error-reporting/public": [
+				"./plugins/error-reporting/src/public/index.ts"
+			],
+			"@mcp-vertex/error-reporting/*": [
+				"./plugins/error-reporting/src/*"
+			],
+			"@mcp-vertex/issues-triage": [
+				"./plugins/issues-triage/src/index.ts"
+			],
+			"@mcp-vertex/issues-triage/public": [
+				"./plugins/issues-triage/src/public/index.ts"
+			],
+			"@mcp-vertex/issues-triage/*": ["./plugins/issues-triage/src/*"]
 		}
 	},
 	"exclude": ["node_modules", "dist", "build", ".cache"]
