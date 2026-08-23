@@ -12,6 +12,7 @@ related:
   - a00083
   - a00084
   - x00193
+  - x00203
 author: copilot-grok-4.6 (orchestrator)
 ---
 
@@ -48,7 +49,7 @@ El usuario pidió una propuesta de auditoría **muy completa** centrada en bugs/
 
 ### S1 — Documento de auditoría (fases 0–10) + scoreboard
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `docs/mcp-vertex/proposals/in-progress/a00085-auditoria-exhaustiva-bugs-fixes-y-mantenibilidad-copilot-grok-4-6.md`
 - **Gate**: lint
 - **Acceptance**:
@@ -57,6 +58,15 @@ El usuario pidió una propuesta de auditoría **muy completa** centrada en bugs/
   - Cada finding cita file#Lnn y Resolution Track
   - Scoreboard justificado
   - `bun run lint:proposals` exits 0
+
+### S2 — Follow-up x00203 (P0/P1 shipped on this branch)
+
+- **Status**: done
+- **Files**: `docs/mcp-vertex/proposals/in-progress/x00203-a00085-p0-p1-stale-proposal-id-counter-durable-peer-review-jsonl-quality-dryrun-counter-trailing-write.md`
+- **Gate**: none
+- **Acceptance**:
+  - Findings #1–#4 have Resolution Track pointing at `x00203`
+  - Implementation lives in `x00203` (file-disjoint from this audit doc)
 
 ## acceptance
 
@@ -117,7 +127,7 @@ export const allocateNextProposalId = async (
 
 **Impact**: colisión de IDs en el índice, `sync_proposals` reporta `duplicate proposal id`, lint de propuestas se rompe, dos documentos distintos comparten id. Ya ocurrió en destino real (`r00005` duplicado — commit `59325969`).
 
-**Resolution Track**: **Fix ya escrito, no merged.** `fix/proposal-id-allocator-stale-counter` @ `59325969` (`max(persisted, scanned)` por prefijo en cada allocate). Merge a `develop` + tests de regresión stale-counter. Candidate slice: `x00203-s1`.
+**Resolution Track**: **Resolved in `x00203` S1** (this branch). Same algorithm as `fix/proposal-id-allocator-stale-counter` @ `59325969`: `max(persisted, scanned)` per prefix on every allocate, plus three regression tests. Still needs merge to `develop`.
 
 ---
 
@@ -138,7 +148,7 @@ export const allocateNextProposalId = async (
 
 **Impact**: un allocate concurrente puede perderse (last-writer-wins). Exactamente el escenario que el script dice prevenir.
 
-**Resolution Track**: Deferred → `x00204-s1` (borrar el `writeFile` residual).
+**Resolution Track**: **Resolved in `x00203` S2** (this branch). Residual `writeFile` after `persistCounters` removed.
 
 ---
 
@@ -172,7 +182,7 @@ const appendPeerReviewLog = async (
 
 **Impact**: dos agentes que aprueban/rechazan a la vez pueden perder o entremezclar líneas JSONL; un crash tras `appendFile` puede perder el veredicto. El log es la prueba de “reviewer ≠ implementer”.
 
-**Resolution Track**: Deferred → `x00205-s1` (un solo helper endurecido; borrar el local de `authoring.tool.ts`).
+**Resolution Track**: **Resolved in `x00203` S3** (this branch). `appendPeerReviewJsonl` (mutex + `open` append + `handle.sync`); `authoring.tool.ts` delegates to it.
 
 ---
 
@@ -213,7 +223,7 @@ const appendPeerReviewLog = async (
 
 **Impact**: un agente que pide preview dispara lint/test/validate reales (minutos, side effects, ruido en CI local). Viola el contrato del parámetro.
 
-**Resolution Track**: Deferred → `x00206-s1` (si `dryRun`, devolver scopes/commands y no llamar `runScope`).
+**Resolution Track**: **Resolved in `x00203` S4** (this branch). Live `run_quality` in `plugins/quality/src/index.ts` returns `{ ok, dryRun, commands }` and skips `runScope`. Spec: `run_quality dryRun (a00085 #4)`.
 
 ---
 
@@ -496,16 +506,13 @@ Unweighted average. Dimensión con FATAL no puede ir >6.
 
 ### Recommended follow-ups (priority)
 
-1. **Merge** `fix/proposal-id-allocator-stale-counter` (`59325969`) → cierra #1.
-2. `x00204` trailing `writeFile` en `sync-proposal-counters`.
-3. `x00205` peer-review JSONL durable (un helper).
-4. `x00206` `dryRun` real en quality.
-5. `x00207` token HMAC ata provider+tier.
-6. `x00211` `outputSchema` en plantilla ping (deuda a00084).
-7. `r00014` slug NFD (mantenibilidad; este filename es la prueba).
-8. `x00208`–`x00210`, `x00212`–`x00214`, `r00015`, `d00005` según capacidad.
+1. **Merge this branch to `develop`** — findings #1–#4 are implemented here (S2–S5); `develop` still reissues IDs until that lands.
+2. `x00207` token HMAC ata provider+tier.
+3. `x00211` `outputSchema` en plantilla ping (deuda a00084).
+4. `r00014` slug NFD (mantenibilidad; este filename es la prueba).
+5. `x00208`–`x00210`, `x00212`–`x00214`, `r00015`, `d00005` según capacidad.
 
-No spawnar esas propuestas desde esta sesión: el allocator en `develop` **sigue** reemitiendo IDs. Primero el merge del P0.
+No spawnar esas propuestas hasta que S2 esté en `develop`: el allocator de `develop` **sigue** reemitiendo IDs.
 
 ---
 
@@ -534,7 +541,7 @@ No spawnar esas propuestas desde esta sesión: el allocator en `develop` **sigue
 | `@ts-ignore` en src productivo | **FIXED** | sin suppressions vivas |
 | MiniMax hardcoded en scaffold-host | **FIXED** | sin hit actual |
 | plantilla ping **sin `outputSchema`** | **STILL PRESENT** | finding #9 |
-| allocator stale counter | **STILL PRESENT** (y **reproducido**) | finding #1; fix vive en otra rama, no merged |
+| allocator stale counter | **FIXED on this branch (S2)**; **STILL PRESENT on `develop`** | finding #1; `max(counter, disk)` + 3 regression tests |
 
 ---
 

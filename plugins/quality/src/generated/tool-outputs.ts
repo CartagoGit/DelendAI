@@ -38,15 +38,36 @@ export interface QualityQualityRunAllOutput {
 }
 
 export interface QualityRunQualityOutput {
-	scope: string;
+	scope?: string;
 	ok: boolean;
-	results: {
+	dryRun?: boolean;
+	commands?: string[];
+	results?: {
 		command: string;
 		ok: boolean;
 		code: number;
 		timedOut: boolean;
 		tail: string;
 	}[];
+	severities?: {
+		critical: number;
+		high: number;
+		medium: number;
+		low: number;
+		info: number;
+	};
+	worst?: "critical" | "high" | "medium" | "low" | "info" | "none";
+	findings?: Array<{
+		ruleId: string;
+		severity: "critical" | "high" | "medium" | "low" | "info";
+		message: string;
+		location?: {
+			file: string;
+			line?: number;
+			endLine?: number;
+		};
+		fix?: string;
+	}>;
 }
 
 /** Map of this package's MCP tool names to their `structuredContent` type. */

@@ -21,7 +21,7 @@
  * The script reads --dry-run via an env flag so CI never accidentally
  * rewrites the counter from a stale filesystem snapshot.
  */
-import { mkdir, readdir, readFile, writeFile } from 'node:fs/promises';
+import { mkdir, readdir, readFile } from 'node:fs/promises';
 import { join, relative } from 'node:path';
 
 import { withFileMutex, writeFileAtomic } from '@mcp-vertex/core/public';
@@ -130,11 +130,6 @@ if (isMainModule()) {
 		}
 
 		await persistCounters(countersPathAbs, counters);
-		// Best-effort: touch the file via writeFile so the persisted JSON
-		// is human-readable (writeFileAtomic adds a trailing newline).
-		await writeFile(countersPathAbs, JSON.stringify(counters)).catch(
-			() => undefined,
-		);
 		console.log(
 			`✓ sync-proposal-counters: ${relative(root, countersPathAbs)} refreshed (${Object.keys(counters).length} prefixes).`,
 		);

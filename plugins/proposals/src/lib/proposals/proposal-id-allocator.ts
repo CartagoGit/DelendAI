@@ -26,12 +26,10 @@ type ICounters = Record<string, number>;
 const FILENAME_PATTERN = /^([a-z])(\d+)-/;
 
 /**
- * Scans every `.md` under `proposalsDirAbs` (root + the 7 status
- * folders) for filenames shaped like a proposal id, grouping the max
- * numeric suffix per prefix letter. Used once, to seed the counter
- * file the first time it's missing — so the very first allocation
- * after this ships is safe even with the 14 legacy + f00016 already on
- * disk, with zero manual bootstrap step.
+ * Scans every `.md` under `proposalsDirAbs` (root + status folders)
+ * for filenames shaped like a proposal id, grouping the max numeric
+ * suffix per prefix letter. Called on **every** allocate so a present
+ * but stale counter cannot reissue an on-disk id.
  *
  * DIP — `fs` is injected; default wiring uses the real filesystem.
  */
@@ -101,9 +99,14 @@ export interface IProposalIdAllocatorOptions {
 /**
  * Returns the next id for `prefix` (e.g. `'f'` → `'f00014'`), atomically
  * incrementing the shared counter file under `withFileMutex`. Never
- * returns a number lower than what's already on disk for that prefix —
- * the seed-from-disk step guarantees that even on a counter file that's
- * missing or predates some legacy proposals.
+ * returns a number lower than what's already on disk for that prefix:
+ * the counter file and the directory listing are **both** consulted on
+ * every call and the higher of the two wins.
+ *
+ * Reading the counter alone is not enough. Proposals arrive on disk by
+ * routes that never touch this allocator — created by hand, pulled in by
+ * a merge, written by another agent — and a counter that has not seen
+ * them hands out an id that already exists.
  *
  * IDs are formatted as padded 5-digit numbers (f00001, f00014, …) to
  * align with the f00023 "renumber with padding" rule, which the linter
@@ -118,9 +121,16 @@ export const allocateNextProposalId = async (
 	options: IProposalIdAllocatorOptions,
 ): Promise<string> =>
 	withFileMutex(options.counterPathAbs, async () => {
-		let counters = await readCounters(options.counterPathAbs);
-		if (counters === null) {
-			counters = await seedFromDisk(options.proposalsDirAbs);
+		const stored = await readCounters(options.counterPathAbs);
+		const onDisk = await seedFromDisk(options.proposalsDirAbs);
+		// Disk always participates, not only when the counter file is missing.
+		// A present-but-stale counter (hand-written proposal, merge, other
+		// agent) used to reissue an id that was already on disk — reproduced
+		// as two `r00005` files, and again as `create_proposal` reissuing
+		// `a00084` during a00085.
+		const counters: ICounters = { ...onDisk };
+		for (const [key, value] of Object.entries(stored ?? {})) {
+			counters[key] = Math.max(counters[key] ?? 0, value);
 		}
 		const next = (counters[prefix] ?? 0) + 1;
 		counters[prefix] = next;
