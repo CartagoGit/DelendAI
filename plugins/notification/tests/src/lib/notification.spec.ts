@@ -78,6 +78,21 @@ describe('lock-release watcher [N14]', async () => {
 		expect(seen[0]?.files).toEqual(['src/a.ts']);
 	});
 
+	it('stop() resets prev so a restart does not emit stale releases (a00085 #7)', async () => {
+		writeFileSync(lockFile, lock([{ task_id: 't1' }]));
+		const seen: IReleasedClaim[] = [];
+		const watcher = createReleaseWatcher({
+			lockFile,
+			onRelease: (released) => seen.push(...released),
+		});
+		expect(await watcher.check()).toEqual([]);
+		watcher.stop();
+		writeFileSync(lockFile, lock([]));
+		expect(await watcher.check()).toEqual([]);
+		watcher.stop();
+		expect(seen).toEqual([]);
+	});
+
 	// a00084 F14: start() used to only arm the interval/fs.watch — the very
 	// first tick, whatever triggered it (timer OR a file-change event), was
 	// always treated as the priming scan (prev starts undefined, so it can

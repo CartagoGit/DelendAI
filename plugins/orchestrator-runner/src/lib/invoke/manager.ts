@@ -151,8 +151,16 @@ export class InvocationManager {
 	}
 
 	/** Signed-token minter for the host's confirmation gate to call. */
-	mintToken(invocationId: string): string {
-		return this.signer.mint(invocationId);
+	mintToken(
+		invocationId: string,
+		providerId: string,
+		estimatedCostTier: number,
+	): string {
+		return this.signer.mint({
+			invocationId,
+			providerId,
+			estimatedCostTier,
+		});
 	}
 
 	/** Cancel an in-flight invocation with the per-kind ladder (CRITICAL I8). */
@@ -246,14 +254,15 @@ export class InvocationManager {
 			}
 			return { ok: false, bypassed: false };
 		}
-		const token = await this.gate.confirm({
+		const spend = {
 			invocationId,
 			providerId: decision.targetProvider.id,
 			estimatedCostTier: decision.estimatedCostTier,
-		});
+		};
+		const token = await this.gate.confirm(spend);
 		if (token === null) return { ok: false, bypassed: false };
 		return {
-			ok: this.signer.verify(token, invocationId),
+			ok: this.signer.verify(token, spend),
 			bypassed: false,
 		};
 	}

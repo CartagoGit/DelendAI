@@ -86,7 +86,12 @@ export class McpStdioClient {
 			stderr: options.stderr ?? 'inherit',
 		};
 		const transport = new StdioClientTransport(transportOptions);
-		await client.connect(transport);
+		try {
+			await client.connect(transport);
+		} catch (error) {
+			await transport.close().catch(() => undefined);
+			throw error;
+		}
 		return new McpStdioClient(client as unknown as IMcpTransport);
 	}
 
