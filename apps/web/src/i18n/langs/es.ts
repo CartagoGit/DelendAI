@@ -145,8 +145,8 @@ const dict: LangDict = {
 		core: 'El núcleo agnóstico: overview, scaffold, métricas, doctor y el cargador de plugins.',
 		issues: {
 			description:
-				'GitHub issues plugin — ingest, analyse and (optionally) promote to a proposal.',
-			requires: 'requires',
+				'Plugin de issues de GitHub: ingiere, analiza y (opcionalmente) promociona a una propuesta.',
+			requires: 'requiere',
 			installSnippet: 'mcp-vertex --plugins=proposals,issues',
 		},
 	},

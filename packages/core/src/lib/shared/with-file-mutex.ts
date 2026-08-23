@@ -59,6 +59,10 @@ export interface IFileMutexOptions {
 	 *   preempting a peer mid-write. This is the safe default — stealing a
 	 *   live holder lets both critical sections run at once, which is a
 	 *   lost-update / corruption hazard ("a mutex that stops being a mutex").
+	 * - `'wait'` (a00085 #6): same as `'fail'` at the deadline (never steal a
+	 *   live holder) but documents a reader that is *trying* to wait out the
+	 *   writer. Call sites that previously passed `'fail'` on a read path
+	 *   should switch to `'wait'` so the intent is grep-able.
 	 * - `'steal'`: reclaim the lock anyway — the historical last-resort
 	 *   anti-deadlock behaviour. The ownership token stops the old holder from
 	 *   deleting ours, but it CAN clobber a slow-but-alive holder under load, so
@@ -68,7 +72,7 @@ export interface IFileMutexOptions {
 	 * refreshing the heartbeat past `staleMs` — is ALWAYS reclaimed regardless
 	 * of this option, so the deadlock-avoidance property is preserved either way.
 	 */
-	readonly onContention?: 'steal' | 'fail';
+	readonly onContention?: 'steal' | 'fail' | 'wait';
 }
 
 /** Thrown by `withFileMutex` under `onContention: 'fail'` when a live holder
@@ -147,7 +151,7 @@ export const withFileMutex = async <T>(
 				// 'steal' reclaims to avoid deadlock — safe from self-deletion
 				// because the ownership token stops the old holder deleting the
 				// lock we create next, but able to clobber the peer's work.
-				if (onContention === 'fail') {
+				if (onContention === 'fail' || onContention === 'wait') {
 					throw new LockContentionError(lockPath, timeoutMs);
 				}
 				await rm(lockPath, { force: true }).catch(() => undefined);

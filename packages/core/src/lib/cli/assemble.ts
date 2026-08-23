@@ -1,4 +1,5 @@
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync } from 'node:fs';
+import { readFile as readFileAsync } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 
 import { DEFAULT_CORE_PATHS } from '../contracts/interfaces/core-paths.interface';
@@ -102,10 +103,21 @@ export const assembleCliConfig = async (
 	const workspace = createWorkspacePathProvider(args.workspace);
 	const readFile: (absolutePath: string) => Promise<string | undefined> =
 		deps.readFile ??
-		(async (absolutePath: string) =>
-			existsSync(absolutePath)
-				? readFileSync(absolutePath, 'utf8')
-				: undefined);
+		(async (absolutePath: string) => {
+			try {
+				return await readFileAsync(absolutePath, 'utf8');
+			} catch (error) {
+				if (
+					error &&
+					typeof error === 'object' &&
+					'code' in error &&
+					error.code === 'ENOENT'
+				) {
+					return undefined;
+				}
+				throw error;
+			}
+		});
 
 	// Config file: --config, else `mcp-vertex.config.json` at the workspace.
 	// Read the raw text ONCE and derive both the parsed config and the
