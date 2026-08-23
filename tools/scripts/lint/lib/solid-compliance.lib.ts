@@ -17,7 +17,10 @@
  * the expected maintenance step (mirrors `proposal-files-exist`'s own
  * baseline file in this repo).
  */
-import type { ISolidFinding, ISolidScanResult } from '../solid-compliance.script';
+import type {
+	ISolidFinding,
+	ISolidScanResult,
+} from '../solid-compliance.script';
 
 export interface ISolidBaseline {
 	readonly entries: readonly string[];
@@ -35,7 +38,10 @@ export const solidFindingBaselineKey = (finding: ISolidFinding): string =>
 export const partitionSolidFindings = (
 	findings: readonly ISolidFinding[],
 	baseline: ISolidBaseline,
-): { readonly newFindings: readonly ISolidFinding[]; readonly baselinedCount: number } => {
+): {
+	readonly newFindings: readonly ISolidFinding[];
+	readonly baselinedCount: number;
+} => {
 	const known = new Set(baseline.entries);
 	const newFindings: ISolidFinding[] = [];
 	let baselinedCount = 0;

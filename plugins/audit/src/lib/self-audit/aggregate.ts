@@ -15,10 +15,7 @@
  *  - The function is pure over its inputs (no fs, no git, no
  *    `Date.now()`); `ranAt` is captured at call time.
  */
-import {
-	aggregateScans,
-	type IScanResult,
-} from '@mcp-vertex/core/public';
+import { aggregateScans, type IScanResult } from '@mcp-vertex/core/public';
 
 import type {
 	ISelfAuditOptions,
@@ -61,8 +58,7 @@ const runScanner = async (
 	try {
 		return await entry.run(workspaceRootAbs);
 	} catch (error: unknown) {
-		const note =
-			error instanceof Error ? error.message : String(error);
+		const note = error instanceof Error ? error.message : String(error);
 		return toSkippedResult(entry.ref.id, note, ranAt);
 	}
 };

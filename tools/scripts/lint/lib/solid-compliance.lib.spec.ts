@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
 
-import type { ISolidFinding, ISolidScanResult } from '../solid-compliance.script';
+import type {
+	ISolidFinding,
+	ISolidScanResult,
+} from '../solid-compliance.script';
 import {
 	buildSolidBaseline,
 	EMPTY_SOLID_BASELINE,
@@ -86,7 +89,9 @@ describe('buildSolidBaseline / parseSolidBaseline / formatSolidBaseline round-tr
 	});
 
 	it('parseSolidBaseline rejects a malformed shape', () => {
-		expect(() => parseSolidBaseline('{"entries": "not-an-array"}')).toThrow();
+		expect(() =>
+			parseSolidBaseline('{"entries": "not-an-array"}'),
+		).toThrow();
 		expect(() => parseSolidBaseline('{}')).toThrow();
 	});
 

@@ -1,3 +1,4 @@
+import type { IErrorReportingOptions } from '../interfaces/options.interface';
 import z from 'zod';
 
 /**
@@ -30,14 +31,6 @@ export const DEFAULT_TARGET_REPO = 'CartagoGit/mcp-vertex';
 export const DEFAULT_LABELS: readonly string[] = ['auto-reported', 'bug'];
 
 export const DEFAULT_DEDUPE_WINDOW_HOURS = 24;
-
-export interface IErrorReportingOptions {
-	readonly enabled: boolean;
-	readonly targetRepo: string;
-	readonly labels: readonly string[];
-	readonly internalOnly: boolean;
-	readonly dedupeWindowHours: number;
-}
 
 export const resolveOptions = (
 	raw: Readonly<Record<string, unknown>>,

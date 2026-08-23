@@ -3,6 +3,7 @@
  * here is side-effect free so the decision/body logic is unit-testable
  * without touching a real error, the filesystem or the network.
  */
+import type { IBuildIssueBodyInput } from './contracts/interfaces/signature.interface';
 
 /**
  * Markers that indicate a failure originated inside mcp-vertex itself
@@ -81,18 +82,6 @@ export const buildIssueTitle = (toolName: string, error: unknown): string => {
 		MAX_TITLE_LENGTH,
 	);
 };
-
-export interface IBuildIssueBodyInput {
-	readonly toolName: string;
-	readonly error: unknown;
-	readonly signature: string;
-	readonly argsJson: string;
-	readonly elapsedMs?: number | undefined;
-	readonly ts: string;
-	readonly namespacePrefix: string;
-	readonly host?: string | undefined;
-	readonly model?: string | undefined;
-}
 
 /** Full markdown body: detail + redacted log + opt-out instructions. */
 export const buildIssueBody = (input: IBuildIssueBodyInput): string => {

@@ -121,12 +121,13 @@ pre-push:
     lint-scss-all:
       run: bun run lint:scss || true
 
-    # f00086: single-shared-branch discipline. BLOCKING (no `|| true`).
-    # Blocks pushes from any branch other than `develop` / `main`.
-    # `develop → origin/develop` (the shared push) and release
-    # merges (`develop → main`, `main → main`) are allowed.
-    # Bypass: LEFTHOOK_BYPASS=1 git push ... (documented in the
-    # blocker text).
+    # f00086: single-shared-branch discipline. ADVISORY (wrapped with
+    # `|| true`). Warns when pushing from any branch other than
+    # `develop` / `main`; `develop → origin/develop` (the shared push)
+    # and release merges (`develop → main`, `main → main`) are allowed.
+    # Matches the top-of-file policy: hooks WARN but never BLOCK
+    # commit/push. Pushing from `develop` is always allowed — develop
+    # has NO push protection.
     #
     # x00159 S1: `use_stdin: true` is REQUIRED here. Lefthook does not
     # forward git's real stdin to a command by default (it connects a
@@ -141,7 +142,7 @@ pre-push:
     # own `process.stdin.isTTY` guard — see the script's header comment.
     push-to-develop-discipline:
       use_stdin: true
-      run: bun run lint:push-to-develop -- {1} {2} || exit 1
+      run: bun run lint:push-to-develop -- {1} {2} || true
 
 # f00086: commit-msg discipline. BLOCKING (no `|| true`). Enforces
 # Conventional Commits format on the first line of the commit

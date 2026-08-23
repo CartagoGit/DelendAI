@@ -1,31 +1,18 @@
-import { runExternalTool, GH_CLI_TOOL } from '@mcp-vertex/core/public';
+import { runGhCli } from '@mcp-vertex/core/public';
 
+import type {
+	IIssueExec,
+	ISubmitIssueInput,
+	ISubmitIssueOutcome,
+} from './contracts/interfaces/reporter.interface';
 import { buildIssueBody, buildIssueTitle } from './signature.helper';
 
 /** `gh` exit code when the binary is not found on PATH. */
 const GH_NOT_FOUND_EXIT = 127;
 
-/** Injected exec seam so the network call is unit-testable. */
-export interface IIssueExecResult {
-	readonly ok: boolean;
-	readonly code: number;
-	readonly stdout: string;
-	readonly stderr: string;
-}
-
-export type IIssueExec = (
-	argv: readonly string[],
-	options?: { readonly cwd?: string | undefined },
-) => Promise<IIssueExecResult>;
-
 /** Production adapter over the shared external-tool runner. */
 export const ghIssueExec: IIssueExec = async (argv, options) => {
-	const run = await runExternalTool({
-		tool: GH_CLI_TOOL,
-		args: argv,
-		...(options?.cwd !== undefined ? { cwd: options.cwd } : {}),
-		redact: ['--body'],
-	});
+	const run = await runGhCli(argv, options);
 	return {
 		ok: run.ok,
 		code: run.code,
@@ -46,27 +33,6 @@ export const shouldReport = (input: {
 	const windowMs = input.dedupeWindowHours * 3_600_000;
 	return input.nowMs - last > windowMs;
 };
-
-export interface ISubmitIssueInput {
-	readonly targetRepo: string;
-	readonly labels: readonly string[];
-	readonly workspaceRootAbs: string;
-	readonly toolName: string;
-	readonly error: unknown;
-	readonly signature: string;
-	readonly argsJson: string;
-	readonly elapsedMs?: number | undefined;
-	readonly namespacePrefix: string;
-	readonly host?: string | undefined;
-	readonly model?: string | undefined;
-}
-
-export interface ISubmitIssueOutcome {
-	readonly ok: boolean;
-	readonly reason: string;
-	readonly issueNumber?: number | undefined;
-	readonly issueUrl?: string | undefined;
-}
 
 const parseIssueNumber = (stdout: string): number | undefined => {
 	const match = /\/issues\/(\d+)/.exec(stdout);

@@ -6,26 +6,25 @@
  */
 import { describe, expect, it } from 'vitest';
 
-import { detectStack, MANIFEST_FILES } from '@mcp-vertex/core/lib/config/detect-stack';
-import type {
-	IStackProbeDeps,
-} from '@mcp-vertex/core/lib/contracts/interfaces/stack-detection.interface';
+import {
+	detectStack,
+	MANIFEST_FILES,
+} from '@mcp-vertex/core/lib/config/detect-stack';
+import type { IStackProbeDeps } from '@mcp-vertex/core/lib/contracts/interfaces/stack-detection.interface';
 
 const pkg = (deps: Record<string, string>): unknown => ({
 	dependencies: deps,
 	devDependencies: {},
 });
 
-const makeDeps = (
-	over: {
-		pkg?: unknown | null;
-		pyproject?: string | null;
-		requirements?: string | null;
-		cargo?: string | null;
-		gomod?: string | null;
-		files?: readonly string[];
-	},
-): IStackProbeDeps => {
+const makeDeps = (over: {
+	pkg?: unknown | null;
+	pyproject?: string | null;
+	requirements?: string | null;
+	cargo?: string | null;
+	gomod?: string | null;
+	files?: readonly string[];
+}): IStackProbeDeps => {
 	const fs = over.files ?? [];
 	return {
 		readJson: async (path) => {
@@ -34,7 +33,8 @@ const makeDeps = (
 		},
 		readText: async (path) => {
 			if (path.endsWith('pyproject.toml')) return over.pyproject ?? null;
-			if (path.endsWith('requirements.txt')) return over.requirements ?? null;
+			if (path.endsWith('requirements.txt'))
+				return over.requirements ?? null;
 			if (path.endsWith('Cargo.toml')) return over.cargo ?? null;
 			if (path.endsWith('go.mod')) return over.gomod ?? null;
 			return null;
@@ -61,7 +61,9 @@ describe('detectStack', () => {
 		expect(r.detectedFrameworks).toContain('Astro');
 		const web = r.recommendations.find((c) => c.pack === 'web-app');
 		expect(web).toBeDefined();
-		expect(web?.reasons.some((reason) => reason.includes('Astro'))).toBe(true);
+		expect(web?.reasons.some((reason) => reason.includes('Astro'))).toBe(
+			true,
+		);
 	});
 
 	it('detects Next.js as web-app', async () => {
@@ -92,7 +94,9 @@ describe('detectStack', () => {
 	});
 
 	it('detects Rust bin target as cli-tool', async () => {
-		const deps = makeDeps({ cargo: '[package]\nname = "x"\n[[bin]]\nname = "x"\npath = "src/main.rs"' });
+		const deps = makeDeps({
+			cargo: '[package]\nname = "x"\n[[bin]]\nname = "x"\npath = "src/main.rs"',
+		});
 		const r = await detectStack('/w', deps);
 		expect(r.top).toBe('cli-tool');
 	});

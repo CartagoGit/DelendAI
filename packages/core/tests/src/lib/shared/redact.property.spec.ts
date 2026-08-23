@@ -123,20 +123,19 @@ const SECRET_GENERATORS: ReadonlyArray<{
 const TRIALS = 50;
 
 describe('redactSecrets (property-based, M32)', async () => {
-	it.each(
-		SECRET_GENERATORS,
-	)('always redacts a generated $name secret embedded in prose', ({
-		gen,
-	}) => {
-		const rng = mulberry32(0xc0ffee ^ gen.length);
-		for (let i = 0; i < TRIALS; i++) {
-			const secret = gen(rng);
-			const input = `${randomSentence(rng, 3)} ${secret} ${randomSentence(rng, 3)}`;
-			const { text, redactions } = redactSecrets(input);
-			expect(redactions).toBeGreaterThan(0);
-			expect(text).not.toContain(secret);
-		}
-	});
+	it.each(SECRET_GENERATORS)(
+		'always redacts a generated $name secret embedded in prose',
+		({ gen }) => {
+			const rng = mulberry32(0xc0ffee ^ gen.length);
+			for (let i = 0; i < TRIALS; i++) {
+				const secret = gen(rng);
+				const input = `${randomSentence(rng, 3)} ${secret} ${randomSentence(rng, 3)}`;
+				const { text, redactions } = redactSecrets(input);
+				expect(redactions).toBeGreaterThan(0);
+				expect(text).not.toContain(secret);
+			}
+		},
+	);
 
 	it('never flags plain prose with no secret-shaped substring (no false positives)', async () => {
 		const rng = mulberry32(1234);
