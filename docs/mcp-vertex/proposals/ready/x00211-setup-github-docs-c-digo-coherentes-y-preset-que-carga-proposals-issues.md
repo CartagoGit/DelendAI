@@ -38,12 +38,14 @@ Auditoría 2026-08-24 (hallazgos C1, C2): CROSS-PROJECT-SETUP.md describe 7 paso
   - "El doc y el código coinciden (ningún paso prometido queda sin implementar)."
 
 ### S2 — init_config recomienda preset que carga proposals/issues
-- **Status**: pending
-- **Files**: `packages/core/src/lib/bootstrap/derive-config.ts`
+- **Status**: done
+- **Files**: `packages/core/src/lib/bootstrap/derive-config.ts`, `packages/core/tests/src/lib/bootstrap/derive-config.spec.ts`
 - **Gate**: type
 - acceptance:
   - "init_config recomienda un preset que carga proposals/issues cuando el análisis lo requiere (swarm o full), no lean/standard/minimal."
   - "La recomendación queda documentada y testeada."
+- implementation:
+  - "Los monorepos TypeScript ahora derivan `swarm` (⊇ proposals) en lugar de `standard`, de modo que el workflow de propuestas carga sin editar la config a mano; `issues` queda opt-in vía `full` (requiere repo GitHub)."
 
 ### S3 — Docs de cross-project alineados
 - **Status**: done
