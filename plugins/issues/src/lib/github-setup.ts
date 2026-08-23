@@ -58,8 +58,8 @@ export const resolveTier = (
 	token: string | undefined,
 ): GithubAuthTier => {
 	if (hasGhCli) return 'gh';
-	if (token !== undefined && token.trim() !== '') return 'token';
-	return 'anon';
+	if (token !== undefined && token.trim() !== '') return 'rest-authed';
+	return 'rest-anon';
 };
 
 /** True when the config text declares `plugins.issues`. */

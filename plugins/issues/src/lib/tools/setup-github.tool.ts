@@ -19,7 +19,7 @@ import { runSetupGithub, type IGithubSetupDeps } from '../github-setup';
 const SETUP_GITHUB_OUTPUT_SCHEMA = z.object({
 	ok: z.boolean(),
 	repo: z.string().nullable(),
-	tier: z.enum(['gh', 'token', 'anon']),
+	tier: z.enum(['gh', 'rest-authed', 'rest-anon']),
 	configured: z.boolean(),
 	steps: z.array(
 		z.object({

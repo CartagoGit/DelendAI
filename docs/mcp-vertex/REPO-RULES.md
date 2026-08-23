@@ -105,14 +105,19 @@ A Bun monorepo:
   loop.
 - Swarm proposals workflow. If a proposals task needs more than 3 tool
   calls, touches multiple files, or requires repeated MCP reads, delegate
-  it instead of keeping it on the main thread. **This repo works on a
-  single shared branch: `develop`.** `agentWorktree` is disabled
-  (`agentWorktree: false` in `mcp-vertex.config.json`), so agents never
-  create `agent/*` worktrees or branches — they commit and push directly
-  on `develop` and share the git history; on claim conflict, wait for
-  `lock-released` or `await_lock` instead of polling;
-  `proposals_sync_proposals` runs only after the last open slice of
-  that proposal is closed.
+  it instead of keeping it on the main thread. **Branching is
+  config-driven.** With `agentWorktree: false` in
+  `mcp-vertex.config.json` (this repo's setting) agents never create
+  `agent/*` worktrees or branches — they commit and push directly on
+  `develop` and share the git history; the operator may still create
+  manual branches (`fix/*`, `feature/*`). When the gate is on and an
+  agent works in a worktree, it must never `git switch` the shared
+  checkout: the main checkout stays on `develop` and the worktree is
+  merged + removed before its branch disappears. `branch_status` and
+  `swarm_hygiene` report `mainCheckoutDrift` when the shared checkout
+  was switched. On claim conflict, wait for `lock-released` or
+  `await_lock` instead of polling; `proposals_sync_proposals` runs only
+  after the last open slice of that proposal is closed.
 - `auto_work` ↔ loop detector ↔ idle-streak. Calling `auto_work` three
   times in a row is NOT a loop; it's the orchestrator polling for work.
   The detector is wired into `auto_work` but disabled by default for

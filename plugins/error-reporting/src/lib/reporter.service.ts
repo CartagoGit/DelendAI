@@ -11,15 +11,8 @@ import { buildIssueBody, buildIssueTitle } from './signature.helper';
 const GH_NOT_FOUND_EXIT = 127;
 
 /** Production adapter over the shared external-tool runner. */
-export const ghIssueExec: IIssueExec = async (argv, options) => {
-	const run = await runGhCli(argv, options);
-	return {
-		ok: run.ok,
-		code: run.code,
-		stdout: run.stdout,
-		stderr: run.stderr,
-	};
-};
+export const ghIssueExec: IIssueExec = async (argv, options) =>
+	runGhCli(argv, options);
 
 /** Pure de-duplication decision. */
 export const shouldReport = (input: {

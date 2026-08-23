@@ -37,6 +37,8 @@ const status = (
 	baseBranch,
 	branches,
 	worktrees,
+	mainCheckoutBranch: '',
+	mainCheckoutDrift: false,
 	summary: {
 		totalBranches: branches.length,
 		totalWorktrees: worktrees.length,
@@ -393,6 +395,8 @@ describe('f00075 S0 — worktree-only branches are not "not-found"', () => {
 		baseBranch: 'develop',
 		branches,
 		worktrees,
+		mainCheckoutBranch: '',
+		mainCheckoutDrift: false,
 		summary: {
 			totalBranches: branches.length,
 			totalWorktrees: worktrees.length,

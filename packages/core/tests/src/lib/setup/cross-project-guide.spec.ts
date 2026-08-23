@@ -28,7 +28,7 @@ describe('renderCrossProjectGuide', async () => {
 	});
 
 	it('marks optional steps and renders command fences', async () => {
-		const c = ctx({ tier: 'token' });
+		const c = ctx({ tier: 'rest-authed' });
 		const md = renderCrossProjectGuide(c, await buildGithubSetupSteps(c));
 		expect(md).toContain('_(optional)_');
 		expect(md).toContain('```');

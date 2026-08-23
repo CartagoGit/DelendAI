@@ -22,16 +22,16 @@ describe('buildGithubSetupSteps', () => {
 		expect(ids).toEqual(['config', 'load', 'verify']);
 	});
 
-	it('adds a required auth step on the anonymous tier', () => {
-		const steps = buildGithubSetupSteps(ctx({ tier: 'anon' }));
+	it('adds a required auth step on the rest-anon tier', () => {
+		const steps = buildGithubSetupSteps(ctx({ tier: 'rest-anon' }));
 		const auth = steps.find((s) => s.id === 'auth');
 		expect(auth).toBeDefined();
 		expect(auth?.optional).not.toBe(true);
 		expect(steps[0]?.id).toBe('auth');
 	});
 
-	it('adds an optional auth step on the token tier', () => {
-		const auth = buildGithubSetupSteps(ctx({ tier: 'token' })).find(
+	it('adds an optional auth step on the rest-authed tier', () => {
+		const auth = buildGithubSetupSteps(ctx({ tier: 'rest-authed' })).find(
 			(s) => s.id === 'auth',
 		);
 		expect(auth?.optional).toBe(true);
