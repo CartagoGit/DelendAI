@@ -149,10 +149,7 @@ const readValidateLogEntries = async (
 			if (parsed && typeof parsed === 'object') {
 				entries.push(parsed as IValidateLogEntry);
 			}
-		} catch {
-			// Malformed JSONL line (truncated write, hand edit) — skip it.
-			continue;
-		}
+		} catch {}
 	}
 	return entries;
 };
