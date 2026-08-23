@@ -149,9 +149,7 @@ const readValidateLogEntries = async (
 			if (parsed && typeof parsed === 'object') {
 				entries.push(parsed as IValidateLogEntry);
 			}
-		} catch {
-			continue;
-		}
+		} catch {}
 	}
 	return entries;
 };
