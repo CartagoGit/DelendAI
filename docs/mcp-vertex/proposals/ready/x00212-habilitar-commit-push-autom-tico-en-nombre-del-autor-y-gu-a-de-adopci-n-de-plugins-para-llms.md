@@ -29,7 +29,7 @@ Los agentes no commitean ni pushean al terminar una tarea y el usuario tiene que
 - global_gate: type
 
 ### S1 — Habilitar write tools + commitAuthor en este repo
-- **Status**: pending
+- **Status**: done
 - **Files**: `mcp-vertex.config.json`
 - **Gate**: none
 - acceptance:
@@ -37,7 +37,7 @@ Los agentes no commitean ni pushean al terminar una tarea y el usuario tiene que
   - "La config declara commitAuthor explícito (modo git, autor = Cartago)."
 
 ### S2 — DoD y knowledge del plugin git: commit+push al terminar
-- **Status**: pending
+- **Status**: done
 - **Files**: `docs/mcp-vertex/AGENT-BOOTSTRAP.md`, `plugins/git/src/index.ts`
 - **Gate**: type
 - acceptance:
