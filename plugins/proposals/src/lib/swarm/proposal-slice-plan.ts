@@ -198,11 +198,16 @@ export const parseProposalSlicePlan = (
 			.flatMap((m) => {
 				const raw = (m[1] ?? '').trim();
 				// x00158 S1: prefer the shared brace-aware parser (handles
-				// backticked `{a,b,c}` expansion correctly). Only the legacy
-				// unbacktick form (a bare path, or a `[]`-wrapped plain list)
-				// falls through to the naive comma split.
+				// backticked `{a,b,c}` expansion correctly). Also lift
+				// `file://` markdown links so a truncated `[path](file://…)`
+				// citation is not lost when a leftover backtick token (`[`)
+				// already satisfied expandDeclaredFiles.
 				const expanded = expandDeclaredFiles(raw);
-				if (expanded.length > 0) return expanded;
+				const fileUris = [
+					...raw.matchAll(/file:\/\/(\/[^)\s#]+)/gu),
+				].map((match) => match[1] ?? '');
+				const tokens = [...expanded, ...fileUris];
+				if (tokens.length > 0) return tokens;
 				const unwrapped =
 					raw.startsWith('[') && raw.endsWith(']')
 						? raw.slice(1, -1)
@@ -292,14 +297,33 @@ export interface ILockSnapshotEntry {
 	readonly ownership?: readonly string[];
 }
 
-const normalizeFileToken = (value: string): string =>
-	value
+const WORKSPACE_PATH_RE =
+	/(?:^|\/)((?:packages|plugins|extensions|apps|tools|docs|scripts|src|lib)\/.+)$/;
+
+const looksLikePath = (value: string): boolean => {
+	if (value.length < 2) return false;
+	if (/^[\[\]()]+$/.test(value)) return false;
+	if (value.includes('/') || /\.[A-Za-z0-9]+$/.test(value)) return true;
+	return /^[A-Za-z][A-Za-z0-9._-]*$/.test(value);
+};
+
+const normalizeFileToken = (value: string): string => {
+	const fileUri = value.match(/file:\/\/(\/[^)\s#]+)/u)?.[1];
+	const linked = value.match(/\[[^\]]*\]\(([^)]+)\)/u)?.[1];
+	let raw = fileUri ?? linked ?? value;
+	raw = raw
 		.replace(/^\s*[-*]\s+/gu, '')
 		.replace(/`/gu, '')
 		.replace(/\s*\(.*$/u, '')
 		.replace(/\s*—.*$/u, '')
 		.replace(/[),.;:]+$/gu, '')
+		.replace(/^\[|\]$/gu, '')
+		.replace(/#L[\w-]+$/u, '')
 		.trim();
+	const workspace = raw.match(WORKSPACE_PATH_RE)?.[1];
+	if (workspace !== undefined) raw = workspace;
+	return looksLikePath(raw) ? raw : '';
+};
 
 const lockCoversSlice = (
 	taskId: string,

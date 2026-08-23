@@ -133,6 +133,25 @@ describe('parseProposalSlicePlan', async () => {
 		expect(validateClaim(plan!, 'pX.S1').blockerType).toBe('already-done');
 	});
 
+	it('ignores leftover markdown list tokens in Files bullets', async () => {
+		const plan = parseProposalSlicePlan(
+			'x00001',
+			`# x00001
+
+## Slices
+
+### x00001-s1 — Fix
+- **Files**:
+    - \`[\`
+    - [sync-proposal-registry.ts#L311](file:///tmp/plugins/proposals/src/lib/proposals/sync-proposal-registry.ts#L311)
+- **Gate**: none
+`,
+		);
+		expect(plan?.slices[0]?.files).toEqual([
+			'plugins/proposals/src/lib/proposals/sync-proposal-registry.ts',
+		]);
+	});
+
 	it('parses narrative bold field labels used by live proposal docs', async () => {
 		const plan = parseProposalSlicePlan('f00020', DOC_WITH_BOLD_FIELDS);
 		expect(plan?.slices[0]?.files).toEqual([
