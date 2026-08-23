@@ -27,12 +27,14 @@ Auditoría 2026-08-24 (tier de tonterías): el starter skill sale con TODO, los 
 - global_gate: type
 
 ### S1 — Contenido starter sin TODOs vacíos
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/src/lib/scaffold/scaffold-host.ts`
 - **Gate**: type
 - acceptance:
   - "La skill inicial y los stubs de tool/prompt/skill no dejan TODOs vacíos (contenido mínimo válido o claim rebajado)."
   - "El stub de tool documenta que es un stub a rellenar."
+- implementation:
+  - "La skill starter ya no emite `TODO` vacíos: el when-to-use, el body y el checklist tienen contenido mínimo válido que apunta a `overview` como fuente de verdad. El stub de tool sigue marcando `todo: true` (señal explícita de stub)."
 
 ### S2 — sampleToolId con efecto real o fuera
 - **Status**: pending

@@ -248,11 +248,11 @@ export const scaffoldSkillFile = (
 	const bullets =
 		whenToUse.length > 0
 			? whenToUse.map((entry) => `- ${entry}`).join('\n')
-			: '- TODO: describe when an agent should read this skill.';
+			: `- Before working on ${name} in this project.`;
 	const bodySection =
 		body !== undefined && body.length > 0
 			? body
-			: '2. TODO: the skill body.';
+			: `- \`${prefix}_overview\` is the source of truth; this skill records the project-specific conventions for ${name}.`;
 	return {
 		path: targetPath(targetDir, `src/lib/skills/${prefix}-${id}.md`),
 		content: `---
@@ -274,7 +274,7 @@ ${bodySection}
 
 ## Checklist
 
-- [ ] TODO
+- [ ] \`${prefix}_overview\` is the first call of the session.
 `,
 	};
 };
