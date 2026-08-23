@@ -20,7 +20,7 @@ export interface IDeriveConfigContext {
 
 export interface IDerivedConfig {
 	/** The preset whose membership seeded the plugins map. */
-	readonly preset: 'lean' | 'standard' | 'minimal';
+	readonly preset: 'lean' | 'standard' | 'minimal' | 'swarm';
 	readonly config: {
 		readonly $schema: string;
 		readonly cacheDir: string;
@@ -86,14 +86,19 @@ export const deriveConfig = (
 			`Non-TS language detected (${analysis.language}) — starting minimal (git + search) plus conventions; pass profile: "${analysis.language}" to conventions_check/classify for language-native roles.`,
 		);
 	} else if (analysis.monorepoTool !== undefined) {
-		preset = 'standard';
+		// x00211 S2: a TypeScript monorepo is the shape multi-agent work
+		// lands on, so seed the proposal workflow (swarm ⊇ proposals)
+		// instead of `standard` — agents can plan/claim/close slices
+		// without hand-editing the config. `issues` stays opt-in via
+		// `full` (it needs a GitHub repo).
+		preset = 'swarm';
 		rationale.push(
-			`TypeScript monorepo (${analysis.monorepoTool}) — the standard single-agent toolkit fits; upgrade to the swarm preset when multiple agents work this repo in parallel.`,
+			`TypeScript monorepo (${analysis.monorepoTool}) — the swarm preset loads the proposal workflow (proposals + coordination) on top of the standard toolkit; upgrade to full for the GitHub issues plugin.`,
 		);
 	} else {
 		preset = 'lean';
 		rationale.push(
-			'Single-package TypeScript project — the 4 lean essentials (git, search, memory, docs) keep the token surface small.',
+			'Single-package TypeScript project — the 4 lean essentials (git, search, memory, docs) keep the token surface small; switch to swarm when you need the proposal workflow.',
 		);
 	}
 

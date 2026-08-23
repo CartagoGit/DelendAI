@@ -22,7 +22,7 @@ const analysis = (overrides: Partial<IProjectAnalysis>): IProjectAnalysis => ({
 });
 
 describe('deriveConfig (f00117 S1)', () => {
-	it('TS monorepo → standard preset expanded into the plugins map, with real roots', () => {
+	it('TS monorepo → swarm preset (loads the proposal workflow), with real roots', () => {
 		const derived = deriveConfig(
 			analysis({ monorepoTool: 'bun-workspaces' }),
 			{
@@ -35,11 +35,14 @@ describe('deriveConfig (f00117 S1)', () => {
 				],
 			},
 		);
-		expect(derived.preset).toBe('standard');
+		// x00211 S2: monorepos seed the proposal workflow, not just the
+		// single-agent standard toolkit.
+		expect(derived.preset).toBe('swarm');
 		const plugins = Object.keys(derived.config.plugins);
 		expect(plugins).toContain('git');
 		expect(plugins).toContain('memory');
 		expect(plugins).toContain('test-policy');
+		expect(plugins).toContain('proposals');
 		// Roots derive from the REAL top-level dirs, never node_modules.
 		const searchRoots = (
 			derived.config.plugins.search as { options: { roots: string[] } }
