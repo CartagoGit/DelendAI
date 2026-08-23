@@ -147,6 +147,7 @@ export const PRESET_CATALOG: readonly IPresetDefinition[] = [
 			{ plugin: 'diagram' },
 			{ plugin: 'env' },
 			{ plugin: 'skills-pack' },
+			{ plugin: 'error-reporting' },
 		],
 	},
 	{
@@ -230,6 +231,7 @@ export const PRESET_CATALOG: readonly IPresetDefinition[] = [
 			{ plugin: 'test-convention' },
 			{ plugin: 'test-policy' },
 			{ plugin: 'usage-tracking' },
+			{ plugin: 'error-reporting' },
 		],
 		independent: true,
 	},

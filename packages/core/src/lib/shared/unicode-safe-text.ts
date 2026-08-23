@@ -1,7 +1,7 @@
 /**
  * Named Unicode tokens for outbound agent prompts (x00207).
  *
- * Pure: no I/O, no `process.cwd()`, no `*Sync`. Rewrites graphemes that
+ * Pure: no I/O, no process.cwd access, no `*Sync`. Rewrites graphemes that
  * would break UTF-16-naive CLIs / JSON-RPC into ASCII tokens a model
  * can read as meaning (`[emoji:whale U+1F433]`), never as a raw
  * surrogate pair or a hex-only escape.

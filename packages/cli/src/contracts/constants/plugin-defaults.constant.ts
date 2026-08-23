@@ -80,6 +80,9 @@ export const PLUGIN_DEFAULTS: IPluginDefaults = {
 		topActions: 5,
 		layers: [],
 	},
+	'error-reporting': {
+		enabled: true,
+	},
 };
 
 /**
