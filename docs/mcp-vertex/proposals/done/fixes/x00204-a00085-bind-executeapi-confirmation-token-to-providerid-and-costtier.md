@@ -2,7 +2,7 @@
 id: x00204
 title: "a00085: bind executeApi confirmation token to providerId and costTier"
 kind: fix
-status: in-progress
+status: done
 type: proposal
 track: plugins+fix
 date: 2026-08-23
