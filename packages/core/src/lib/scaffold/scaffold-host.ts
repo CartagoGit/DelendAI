@@ -478,14 +478,17 @@ export const scaffoldHostConfigFile = (
 	return {
 		path: targetPath(options.targetDir, 'src/lib/shared/host-config.ts'),
 		content: `import {
-	buildScaffoldToolRegistration,
+	buildStandaloneCoreToolRegistrations,
 	createWorkspacePathProvider,
 } from '@mcp-vertex/core/public';
 import type { IMcpVertexHostConfig } from '@mcp-vertex/core/public';
 
-// The core is project-agnostic. Add domain behaviour (e.g. a proposal
-// workflow) by loading a plugin via the mcp-vertex CLI
-// (\`mcp-vertex --plugins=proposals\`) rather than wiring it here.
+// The core is project-agnostic. The standalone surface registers the
+// orientation + bootstrap tools the generated agents rely on
+// (overview, analyze/plan/create/drift, scaffold). Domain behaviour —
+// including the multi-agent proposal workflow — comes from plugins via
+// the mcp-vertex CLI (\`mcp-vertex --plugins=proposals\`) rather than
+// being wired here; see the package README for both launch paths.
 // Hermetic: the workspace root is injected by the caller (the server
 // entry point), never read from \`process.cwd()\` here — a lib must not
 // guess where the project lives, so this stays correct under CI,
@@ -503,14 +506,14 @@ export const buildHostConfig = (workspaceRoot: string): IMcpVertexHostConfig => 
 		keepLegacy: false,
 		validationMatrix: { scopes: {} },
 		extraTools: [
-			// Your project tools register here. The scaffold tool lets
-			// agents generate more of them.
-			buildScaffoldToolRegistration({
+			// Orientation + bootstrap the generated agents/instructions
+			// promise. Add project tools after this spread.
+			...buildStandaloneCoreToolRegistrations({
 				namespacePrefix: '${prefix}',
 				workspace,
-				keepLegacy: false,
 				projectName: '${options.projectName}',
 				projectPackageName: '${options.projectPackageName}',
+				keepLegacy: false,
 			}),
 		],
 	};
@@ -567,6 +570,115 @@ void startServer();
 ];
 
 /**
+ * The greenfield host package files: a self-contained `package.json`,
+ * `tsconfig.json` and `README.md` under `targetDir` so the generated
+ * host is runnable out of the box in a repo that has none of its own
+ * (the same self-contained stance as `scaffoldPluginFiles` — a00067:
+ * no dependency on a root `tsconfig.base.json` or `vitest.shared`).
+ */
+export const scaffoldHostPackageFiles = (
+	options: IScaffoldHostOptions,
+): readonly IScaffoldedFile[] => {
+	const { projectPackageName, projectName, namespacePrefix } = options;
+	const prefix = namespacePrefix;
+	return [
+		{
+			path: targetPath(options.targetDir, 'package.json'),
+			content: `${JSON.stringify(
+				{
+					name: projectPackageName,
+					version: '0.0.1',
+					private: true,
+					type: 'module',
+					description: `${projectName} workspace MCP server (built on mcp-vertex).`,
+					scripts: {
+						dev: 'bun --watch run src/index.ts',
+						typecheck: 'tsc --noEmit -p tsconfig.json',
+					},
+					dependencies: {
+						'@mcp-vertex/core': '^0.1.0',
+						'@modelcontextprotocol/sdk': '^1.29.0',
+						zod: '^4.4.3',
+					},
+					devDependencies: {
+						'@types/node': '^26.1.0',
+						typescript: '^7.0.0',
+					},
+				},
+				null,
+				'\t',
+			)}\n`,
+		},
+		{
+			path: targetPath(options.targetDir, 'tsconfig.json'),
+			content: `${JSON.stringify(
+				{
+					compilerOptions: {
+						target: 'ES2022',
+						module: 'ESNext',
+						moduleResolution: 'bundler',
+						lib: ['ES2022'],
+						strict: true,
+						esModuleInterop: true,
+						skipLibCheck: true,
+						resolveJsonModule: true,
+						noEmit: true,
+					},
+					include: ['src/**/*'],
+				},
+				null,
+				'\t',
+			)}\n`,
+		},
+		{
+			path: targetPath(options.targetDir, 'README.md'),
+			content: `# ${projectName} — MCP server (built on mcp-vertex)
+
+This host registers the orientation + bootstrap surface (${prefix}_overview,
+${prefix}_analyze_project, ${prefix}_plan_mcp_project, ${prefix}_create_project,
+${prefix}_drift_check, ${prefix}_scaffold) so any agent can orient itself and
+generate project tools.
+
+## Two launch paths
+
+1. **Own server (this package)** — run \`bun install\` then \`bun run dev\`.
+   This host is plugin-less: it exposes orientation + bootstrap only.
+
+2. **Full mcp-vertex (recommended)** — launch the canonical CLI to load
+   plugins (the multi-agent proposal workflow, issues, quality gates, …):
+
+   \`\`\`bash
+   bunx --package @mcp-vertex/cli mcpv __serve --workspace . --preset full
+   \`\`\`
+
+   The editor registration in \`.vscode/mcp.json\` is the source of truth for
+   which launch the IDE actually uses. See
+   \`docs/mcp-vertex/CROSS-PROJECT-SETUP.md\` for the full setup guide.
+`,
+		},
+	];
+};
+
+/**
+ * Codex CLI's native MCP server registration (\`.codex/config.toml\`),
+ * mirroring the VS Code \`.vscode/mcp.json\` entry the same host ships.
+ */
+export const scaffoldCodexConfigFile = (
+	options: IScaffoldHostOptions,
+): IScaffoldedFile => {
+	const targetDir = normalizeTargetDir(options.targetDir);
+	return {
+		path: '.codex/config.toml',
+		content: `# Codex CLI MCP server registration (mirrors .vscode/mcp.json).
+[mcp_servers.mcp-project-${options.namespacePrefix}]
+command = "bun"
+args = ["--watch", "run", "src/index.ts"]
+cwd = "${targetDir === '.' ? '.' : targetDir}"
+`,
+	};
+};
+
+/**
  * Everything a brand-new project needs: server entry + host config +
  * editor registration + orchestrator + 4 subagents (in all three
  * host formats: Copilot `.agent.md`, Claude Code `.claude/agents`,
@@ -595,6 +707,8 @@ export const scaffoldHostProject = (
 		: [
 				scaffoldHostConfigFile(options),
 				...scaffoldServerEntryFiles(options),
+				...scaffoldHostPackageFiles(options),
+				scaffoldCodexConfigFile(options),
 			];
 	return [
 		...hostFiles,
