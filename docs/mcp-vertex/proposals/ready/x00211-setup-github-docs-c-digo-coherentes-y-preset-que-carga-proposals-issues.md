@@ -46,12 +46,15 @@ Auditoría 2026-08-24 (hallazgos C1, C2): CROSS-PROJECT-SETUP.md describe 7 paso
   - "La recomendación queda documentada y testeada."
 
 ### S3 — Docs de cross-project alineados
-- **Status**: pending
+- **Status**: done
 - **Files**: `docs/mcp-vertex/CROSS-PROJECT-SETUP.md`
 - **Gate**: type
 - acceptance:
   - "CROSS-PROJECT-SETUP.md refleja el comportamiento real (pasos, preset, arranque)."
   - "Sin pasos fantasma."
+- implementation:
+  - "La tabla de 7 pasos operativos se sustituyó por la guía real de solo-lectura (4 pasos: auth/config/load/verify) que el motor devuelve."
+  - "La matriz de tiers se alineó al runtime real de issues (gh/rest-authed/rest-anon) y se anotó que el motor de setup-github usa las formas cortas token/anon (a unificar en S1)."
 
 ### S4 — Tests de setup-github y derive-config
 - **Status**: pending
