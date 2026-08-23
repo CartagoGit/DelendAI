@@ -13,6 +13,8 @@
  * wiring it into the {@link SubprocessPool}) is a thin adapter deferred to
  * S10's live e2e — everything here is exercised without a live process.
  */
+import { rewriteUnicodeForAgent } from '@mcp-vertex/core/public';
+
 import type {
 	IActiveInvocation,
 	IInvokeRequest,
@@ -105,7 +107,7 @@ export const createMcpInvoker = (options: IMcpInvokerOptions): IKindInvoker => {
 						name: invoke.tool,
 						arguments: {
 							...invoke.args,
-							prompt: request.prompt,
+							prompt: rewriteUnicodeForAgent(request.prompt),
 						},
 					},
 				});

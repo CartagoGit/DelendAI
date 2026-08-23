@@ -10,6 +10,7 @@
  * the rendered template is safe to log, paste and share.
  */
 import type { IRoutingDecision } from '@mcp-vertex/core/public';
+import { rewriteUnicodeForAgent } from '@mcp-vertex/core/public';
 
 export type HandoffKind = 'cli' | 'curl' | 'mcp-tool' | 'passthrough' | 'none';
 
@@ -26,12 +27,13 @@ export const formatHandoff = (
 	decision: IRoutingDecision,
 ): IFormattedHandoff => {
 	const invoke = decision.invoke;
+	const prompt = rewriteUnicodeForAgent(decision.prompt);
 	switch (invoke.kind) {
 		case 'cli': {
 			const parts = [
 				invoke.command,
 				...(invoke.args ?? []),
-				shellQuote(decision.prompt),
+				shellQuote(prompt),
 			];
 			return {
 				kind: 'cli',
@@ -45,7 +47,7 @@ export const formatHandoff = (
 				`curl -sS -X ${method} ${shellQuote(invoke.url)}`,
 				`  -H ${shellQuote(`Authorization: Bearer $${invoke.envVar}`)}`,
 				`  -H ${shellQuote('Content-Type: application/json')}`,
-				`  -d ${shellQuote(JSON.stringify({ prompt: decision.prompt }))}`,
+				`  -d ${shellQuote(JSON.stringify({ prompt }))}`,
 			].join(' \\\n');
 			return {
 				kind: 'curl',
@@ -57,7 +59,7 @@ export const formatHandoff = (
 			return {
 				kind: 'mcp-tool',
 				command: `${invoke.server} → tools/call ${invoke.tool} ${JSON.stringify(
-					{ ...invoke.args, prompt: decision.prompt },
+					{ ...invoke.args, prompt },
 				)}`,
 				note: `Call the ${invoke.server} MCP server's ${invoke.tool} tool. Uses your subscription, not an API key.`,
 			};
