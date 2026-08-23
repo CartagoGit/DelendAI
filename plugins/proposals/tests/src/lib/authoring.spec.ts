@@ -65,6 +65,7 @@ describe('proposal authoring (create → board → close)', async () => {
 				output: 'ok',
 				exitCode: 0,
 			}),
+			requirePeerReview: false,
 		};
 	});
 	afterEach(() => {
@@ -164,6 +165,43 @@ describe('proposal authoring (create → board → close)', async () => {
 			'utf8',
 		);
 		expect(doc).toMatch(/### S1[\s\S]*?- \*\*Status\*\*: done/);
+	});
+
+	it('refuses close_slice until a distinct agent has approved the slice', async () => {
+		const gated: IAuthoringToolOptions = {
+			...opts,
+			requirePeerReview: true,
+		};
+		const create = await capture(buildCreateProposalRegistration(gated));
+		const created = parse(
+			await create({
+				id: 'f00083',
+				title: 'Peer review gate',
+				goal: 'Must be reviewed',
+				slices: [{ sliceId: 's1', files: ['src/c.ts'] }],
+			}),
+		);
+		expect(created.ok).toBe(true);
+
+		const close = await capture(buildCloseSliceRegistration(gated));
+		const refused = await close({
+			proposalId: 'f00083',
+			sliceId: 's1',
+			releaseLock: false,
+			validateEvidence: recentValidate(),
+		});
+		expect(refused).toMatchObject({ isError: true });
+		expect(parse(refused).blockerType).toBe('peer-review-required');
+		expect(
+			readFileSync(
+				join(
+					opts.proposalsDirAbs,
+					'ready',
+					'f00083-peer-review-gate.md',
+				),
+				'utf8',
+			),
+		).toMatch(/- \*\*Status\*\*: pending/);
 	});
 
 	// x00157 S3-adjacent finding: `close_slice` released by the bare

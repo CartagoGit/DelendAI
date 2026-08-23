@@ -227,7 +227,7 @@ export default definePlugin({
 						requirePeerReview: ctx.options
 							.requirePeerReview as boolean,
 					}
-				: {}),
+				: { requirePeerReview: true }),
 			...((ctx.peerPlugins?.has('quality') ?? false)
 				? {
 						runQuality: () =>

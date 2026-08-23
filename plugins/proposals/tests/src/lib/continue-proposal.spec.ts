@@ -55,6 +55,51 @@ describe('continue_proposal (serial cascade)', async () => {
 		expect(out.proposalId).toBe('f1-fix');
 	});
 
+	it('skips a new-system entry whose document is missing on disk', async () => {
+		writeFileSync(
+			options.indexPathAbs,
+			JSON.stringify({
+				proposals: [
+					{
+						id: 'x00183',
+						file: 'ready/x00183-gone.md',
+						status: 'ready',
+						type: 'proposal',
+					},
+					{
+						id: 'x00184',
+						file: 'ready/x00184-alive.md',
+						status: 'ready',
+						type: 'proposal',
+					},
+				],
+			}),
+		);
+		mkdirSync(join(root, 'ready'), { recursive: true });
+		writeFileSync(
+			join(root, 'ready/x00184-alive.md'),
+			`---
+id: x00184
+status: ready
+kind: fix
+---
+
+# x00184
+
+## Slices
+
+### S1 — next
+- **Files**: \`src/alive.ts\`
+- **Gate**: none
+- **Status**: pending
+`,
+		);
+		options = { ...options, proposalsDirAbs: root };
+		const out = parse(await runContinueProposal({ mode: 'auto' }, options));
+		expect(out.kind).toBe('next-proposal');
+		expect(out.proposalId).toBe('x00184');
+	});
+
 	it('applies cascadeOverride and reports its reason in cascadeTrace', async () => {
 		writeFileSync(
 			options.indexPathAbs,
@@ -287,29 +332,27 @@ describe('continue_proposal (serial cascade)', async () => {
 			expect(out.proposalId).toBe('f201');
 		});
 
-		it.each([
-			'paused',
-			'blocked',
-			'done',
-			'retired',
-		])('skips a new-system entry living in %s/', async (folder) => {
-			writeFileSync(
-				options.indexPathAbs,
-				JSON.stringify({
-					proposals: [
-						{
-							id: 'f202',
-							file: `${folder}/f202-x.md`,
-							status: folder,
-						},
-					],
-				}),
-			);
-			const out = parse(
-				await runContinueProposal({ mode: 'auto' }, options),
-			);
-			expect(out.kind).toBe('no-proposal');
-		});
+		it.each(['paused', 'blocked', 'done', 'retired'])(
+			'skips a new-system entry living in %s/',
+			async (folder) => {
+				writeFileSync(
+					options.indexPathAbs,
+					JSON.stringify({
+						proposals: [
+							{
+								id: 'f202',
+								file: `${folder}/f202-x.md`,
+								status: folder,
+							},
+						],
+					}),
+				);
+				const out = parse(
+					await runContinueProposal({ mode: 'auto' }, options),
+				);
+				expect(out.kind).toBe('no-proposal');
+			},
+		);
 
 		it('never reclassifies a legacy (p-prefixed) entry as new-system even when its status+folder match the glossary', async () => {
 			// Same shape as a real new-system "ready" entry, but the id keeps
