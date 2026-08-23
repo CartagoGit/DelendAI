@@ -112,10 +112,15 @@ const readContext = async (
 		const withoutComments = (extraToolsBlock ?? '')
 			.replace(/\/\*[\s\S]*?\*\//g, '')
 			.replace(/\/\/.*$/gm, '');
-		const stripped = withoutComments.replace(
-			/buildScaffoldToolRegistration\s*\([\s\S]*?\)\s*,?/g,
-			'',
-		);
+		// Both the single-artefact scaffold helper and the standalone core
+		// surface (overview + bootstrap + scaffold) are the DEFAULT host
+		// surface, not "custom extra tools" — strip both before matching.
+		const stripped = withoutComments
+			.replace(/buildScaffoldToolRegistration\s*\([\s\S]*?\)\s*,?/g, '')
+			.replace(
+				/buildStandaloneCoreToolRegistrations\s*\([\s\S]*?\)\s*,?/g,
+				'',
+			);
 		return { filePath, raw, extraToolsBlock, stripped };
 	}
 	return {
