@@ -131,6 +131,55 @@ const extractSummary = (body: string): string => {
  * inside a severity-banded `## …` section. The severity comes from the
  * section header; the title from the `###` line.
  */
+/**
+ * Paths cited on a finding line. Combines:
+ * - English `**File**:` (brief) and Spanish `**Fichero**`/`**Archivo**`
+ * - multiple backtick paths on one line (`a.ts#L1`, `b.ts#L2`)
+ * - `file://` URIs, lifted to a workspace-relative path when possible
+ * - rejection of leftover markdown tokens (`[`) from truncated citations
+ */
+const citedPathsFromFindingLine = (line: string): readonly string[] => {
+	const fileHint =
+		/\*\*(?:Fichero[a-z]?|Archivos?|Files?)\s*:?\*\*?\s*:?/iu.test(line);
+	const quoted = [...line.matchAll(/`([^`]+)`/gu)].map((m) => m[1] ?? '');
+	const fileUris = [...line.matchAll(/file:\/\/(\/[^)\s#]+)/gu)].map(
+		(m) => m[1] ?? '',
+	);
+	const rest = fileHint
+		? (/\*\*(?:Fichero[a-z]?|Archivos?|Files?)\s*:?\*\*?\s*:?\s*(.+)$/iu.exec(
+				line,
+			)?.[1] ?? '')
+		: '';
+	const fromRest = rest
+		.split(',')
+		.map((part) => part.trim())
+		.filter((part) => part.length > 0);
+	const raw =
+		quoted.length > 0 ? quoted : fileUris.length > 0 ? fileUris : fromRest;
+	const out: string[] = [];
+	for (const candidate of raw) {
+		let trimmed = candidate
+			.trim()
+			.replace(/[`*]/g, '')
+			.replace(/^\[|\]$/gu, '')
+			.replace(/\(.*$/u, '')
+			.replace(/#L[\w-]+$/u, '')
+			.replace(/^[\s*`[(]+|[\s*`\])]+$/gu, '')
+			.trim();
+		const workspace = trimmed.match(
+			/(?:^|\/)((?:packages|plugins|extensions|apps|tools|docs|scripts|src|lib)\/.+)$/,
+		)?.[1];
+		if (workspace !== undefined) trimmed = workspace;
+		if (
+			/^[A-Za-z0-9._/-]+\.[A-Za-z0-9]+$/.test(trimmed) &&
+			!out.includes(trimmed)
+		) {
+			out.push(trimmed);
+		}
+	}
+	return out;
+};
+
 const extractFindings = (body: string): readonly IAuditFinding[] => {
 	const lines = body.split('\n');
 	let currentSeverity: AuditSeverity | undefined;
@@ -161,51 +210,26 @@ const extractFindings = (body: string): readonly IAuditFinding[] => {
 			currentFiles = [];
 			continue;
 		}
-		if (!currentSeverity) continue;
 		if (/^###\s+\d+\.\s+/u.test(line)) {
 			flush();
 			currentTitle = line.replace(/^###\s+\d+\.\s+/u, '').trim();
 			currentDetail = [];
 			currentFiles = [];
+			// The brief shows the band in the rubric table but does not
+			// say the findings must sit under a severity-banded `##`.
+			// Plenty of models put the token on the finding heading
+			// instead, and every one of those findings used to be
+			// dropped on the floor: the section header carried no band,
+			// so `currentSeverity` stayed undefined and the `continue`
+			// above skipped the whole block. Reading the heading as a
+			// fallback keeps both shapes parseable.
+			currentSeverity = classifyHeader(line) ?? currentSeverity;
 			continue;
 		}
+		if (!currentSeverity) continue;
 		if (currentTitle.length === 0) continue;
-		// Capture "Fichero" / "Archivo" hints to seed `files[]`.
-		// Prefer backtick-quoted paths (the playbook form) so a truncated
-		// markdown list like `[sync-proposal-registry.ts#L311](file://...)`
-		// cannot leak the leftover `[` token into the proposal slice.
-		const quoted = [...line.matchAll(/`([^`]+)`/gu)].map((m) => m[1] ?? '');
-		const fileUris = [...line.matchAll(/file:\/\/(\/[^)\s#]+)/gu)].map(
-			(m) => m[1] ?? '',
-		);
-		const fileHint =
-			/\*\*(?:Fichero[a-z]?|Archivo[s]?)\s*:?\*\*?\s*:?/iu.test(line);
-		const candidates =
-			quoted.length > 0
-				? quoted
-				: fileUris.length > 0
-					? fileUris
-					: fileHint
-						? [line]
-						: [];
-		for (const candidate of candidates) {
-			let trimmed = candidate
-				.trim()
-				.replace(/^\[|\]$/gu, '')
-				.replace(/\(.*$/u, '')
-				.replace(/#L[\w-]+$/u, '')
-				.replace(/^[\s*`\[(]+|[\s*`\])]+$/gu, '')
-				.trim();
-			const workspace = trimmed.match(
-				/(?:^|\/)((?:packages|plugins|extensions|apps|tools|docs|scripts|src|lib)\/.+)$/,
-			)?.[1];
-			if (workspace !== undefined) trimmed = workspace;
-			if (
-				/^[A-Za-z0-9._/-]+\.[A-Za-z0-9]+$/.test(trimmed) &&
-				!currentFiles.includes(trimmed)
-			) {
-				currentFiles.push(trimmed);
-			}
+		for (const path of citedPathsFromFindingLine(line)) {
+			if (!currentFiles.includes(path)) currentFiles.push(path);
 		}
 		currentDetail.push(line);
 	}
@@ -269,19 +293,27 @@ const extractScores = (body: string): readonly IAuditScore[] => {
 	return out;
 };
 
-/** Final note: paragraph after `**Nota final:**` or `**Nota global:**`. */
+/** The closing note, whatever it is labelled. */
+const NOTE_LABEL = String.raw`(?:Nota\s+(?:final|global)|Final\s+note|Overall\s+note)`;
+
+/**
+ * Final note: the paragraph after `**Nota final:**`, `**Nota global:**`
+ * or the English `**Final note:**`.
+ *
+ * Tolerant, because the source audits vary: `**Nota final: 8/10 — …**`,
+ * `**Nota global 7/10 — …**` and unbolded variants all resolve. The
+ * English label is accepted because it is the one the brief actually
+ * asks for — before this, an audit that followed the brief to the
+ * letter came back with an empty note.
+ */
 const extractNote = (body: string): string => {
-	// Tolerant: the source audits vary in formatting. We find the line
-	// that mentions `Nota final` or `Nota global`, then strip the
-	// surrounding `**` emphasis and any leading colon. This handles
-	// every observed shape: `**Nota final: 8/10 — ...**`,
-	// `**Nota global 7/10 — ...**`, and unbolded variants.
-	const m = /\*\*Nota\s+(?:final|global)[^\n]*\*\*/iu.exec(body);
+	const m = new RegExp(String.raw`\*\*${NOTE_LABEL}[^\n]*\*\*`, 'iu').exec(
+		body,
+	);
 	const raw = m?.[0] ?? '';
-	// Strip the `**` emphasis and the `Nota final:` label, keeping
-	// only the actual note content.
+	// Strip the `**` emphasis and the label, keeping only the content.
 	return raw
-		.replace(/^\*\*Nota\s+(?:final|global)\s*:?\s*/iu, '')
+		.replace(new RegExp(String.raw`^\*\*${NOTE_LABEL}\s*:?\s*`, 'iu'), '')
 		.replace(/\*\*$/u, '')
 		.trim();
 };

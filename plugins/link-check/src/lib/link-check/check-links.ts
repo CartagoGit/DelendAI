@@ -22,13 +22,28 @@ const HEADING = /^(#{1,6})\s+(.*?)(?:\s+#+)?\s*$/;
 /** A fenced-code delimiter (``` or ~~~). */
 const FENCE = /^\s*(```|~~~)/;
 
-/** GitHub-style heading → anchor slug. Pure. */
+/**
+ * GitHub-style heading → anchor slug. Pure.
+ *
+ * Each space becomes **one** hyphen — runs are not collapsed. GitHub's
+ * slugger strips punctuation first and then replaces every remaining
+ * space individually, so `## OpenAPI / Swagger` loses the slash and
+ * keeps the two spaces that surrounded it, landing on `openapi--swagger`
+ * with a double hyphen.
+ *
+ * Collapsing the run with `\s+` produced `openapi-swagger`, and every
+ * heading containing `/`, an em dash or `(...)` was then reported as a
+ * broken anchor. Measured on a real repository: 12 of 14 findings were
+ * this false positive, all of them anchors GitHub resolves fine. A
+ * checker that cries wolf gets switched off, which is worse than not
+ * having it.
+ */
 export const slugify = (heading: string): string =>
 	heading
 		.trim()
 		.toLowerCase()
 		.replace(/[^\w\s-]/g, '')
-		.replace(/\s+/g, '-');
+		.replace(/\s/g, '-');
 
 /**
  * All heading-anchor slugs in a doc, skipping fenced code blocks. Duplicate

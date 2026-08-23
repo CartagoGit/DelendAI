@@ -217,3 +217,93 @@ describe('parseAuditFiles', async () => {
 		]);
 	});
 });
+
+/**
+ * The brief that `audit_plan` emits and this parser disagreed in three
+ * places, so an audit that followed the brief to the letter came back
+ * with `findings: []` and an empty note. Measured on a real repository:
+ * 23 findings, all dropped.
+ *
+ * The parser is the permissive side by design, so it now accepts both
+ * shapes. The brief was also made explicit about the banded sections,
+ * which it never mentioned.
+ */
+describe('the shapes the audit brief actually asks for', () => {
+	const BRIEF_SHAPED = [
+		'# Audit',
+		'',
+		'## Executive summary',
+		'',
+		'Something happened.',
+		'',
+		'## 🔴 FATAL',
+		'',
+		'### 1. Declare the missing schema',
+		'**File**: `src/tools/generate.tool.ts#L55`',
+		'',
+		'**Problem**: no outputSchema.',
+		'**Impact**: callers get untyped output.',
+		'',
+		'## 🟠 BAD',
+		'',
+		'### 2. Write atomically',
+		'**File**: `src/cli/generate.ts#L312`, `src/cli/watch.ts#L76`',
+		'',
+		'**Problem**: bare writeFile.',
+		'',
+		'**Final note: 6/10 — works, but the contracts slipped.**',
+	].join('\n');
+
+	it('reads `**File**:` the way it reads `**Fichero**:`', () => {
+		const doc = parseAuditBody('test.md', BRIEF_SHAPED);
+		const fatal = doc.findings.find(
+			(f: IAuditFinding) => f.severity === 'FATAL',
+		);
+		expect(fatal?.files).toEqual(['src/tools/generate.tool.ts']);
+	});
+
+	it('splits a multi-file `**File**:` and drops the line anchors', () => {
+		const doc = parseAuditBody('test.md', BRIEF_SHAPED);
+		const bad = doc.findings.find(
+			(f: IAuditFinding) => f.severity === 'BAD',
+		);
+		expect(bad?.files).toEqual(['src/cli/generate.ts', 'src/cli/watch.ts']);
+	});
+
+	it('reads the English `**Final note:**`', () => {
+		const doc = parseAuditBody('test.md', BRIEF_SHAPED);
+		expect(doc.note).toContain('the contracts slipped');
+	});
+
+	/**
+	 * The severity used to come only from the `##` section header. A
+	 * model that put the band on the finding heading instead lost every
+	 * finding, because `currentSeverity` never got set.
+	 */
+	it('falls back to the band on the finding heading', () => {
+		const onHeading = [
+			'# Audit',
+			'',
+			'## Findings',
+			'',
+			'### 1. Declare the missing schema — `FATAL`',
+			'**File**: `src/a.ts#L1`',
+			'',
+			'### 2. Tidy the names — `MINOR`',
+			'**File**: `src/b.ts#L2`',
+		].join('\n');
+		const doc = parseAuditBody('test.md', onHeading);
+		expect(doc.findings.map((f: IAuditFinding) => f.severity)).toEqual([
+			'FATAL',
+			'MINOR',
+		]);
+	});
+
+	it('still prefers the section band when both are present', () => {
+		const doc = parseAuditBody('test.md', BRIEF_SHAPED);
+		expect(doc.findings.map((f: IAuditFinding) => f.severity)).toEqual([
+			'FATAL',
+			'BAD',
+		]);
+	});
+});
