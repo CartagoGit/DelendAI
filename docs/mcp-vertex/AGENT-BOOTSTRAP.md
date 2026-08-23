@@ -146,6 +146,30 @@ Codex, or another host's subscription usage. `usage-tracking` remains useful
 for local MCP activity, while the host dashboard remains the source of truth
 for host-level limits.
 
+### 4.d Checkpoint advisories (f00156)
+
+When any mcp-vertex tool result contains `structuredContent.checkpointAdvisory`
+with `triggered: true`:
+
+1. Surface `checkpointAdvisory.message` to the user **verbatim**. Do not
+   silently consume or paraphrase it.
+2. Explain the reason in at most one short sentence.
+3. Follow `nextAction` unless the user explicitly asks to continue.
+4. Never repeat the same advisory until its `dedupeKey` changes.
+
+Every visible recommendation begins with **At this point, I recommend**.
+
+**Agent-enforced fallback (host-private terminals):** if you run two or more
+equivalent validation cycles without a meaningful implementation delta, treat
+it as a micro-validation loop and surface the same advisory. That signal is
+agent-enforced; server-observed validation is whatever MCP quality/git tools
+the server can see. See `docs/mcp-vertex/CHECKPOINT-ADVISORIES.md`.
+
+Preferred fresh-session sequence: coherent boundary → semantic checkpoint →
+persist proposal/slice state → release unnecessary locks → new session →
+orient → resume from `memory_checkpoint_packet`. Session age by itself must
+never hard-block work.
+
 ### 4.b Coexistence with parallel work (c00012)
 
 This workspace is shared. Other agents, CI bots, and humans commit

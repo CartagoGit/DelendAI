@@ -358,3 +358,82 @@ describe('renderCommitMessage', async () => {
 		).toBe('feat(<unknown>): s2');
 	});
 });
+
+describe('f00156 S7 stale-acceptance persist guard', async () => {
+	it('f00156 S7: commit with stale acceptance still commits (warn-only)', async () => {
+		const runner = fakeRunner([
+			{ match: (a) => a[0] === 'add', output: '' },
+			{ match: (a) => a[0] === 'commit', output: '' },
+			{ match: (a) => a[0] === 'rev-parse', output: 'abc1234' },
+		]);
+		const result = await maybePersistAfterSlice(
+			['plugins/proposals/src/lib/foo.ts'],
+			'f00156',
+			'S7',
+			{
+				mode: 'commit',
+				git: runner,
+				acceptanceEvidence: {
+					sliceId: 'S7',
+					gitTreeHash: 'tree1',
+					lastMeaningfulChangeAt: '2026-08-23T12:00:00.000Z',
+					requiresValidation: true,
+				},
+			},
+		);
+		expect(result.committed).toBe(true);
+		expect(result.pushed).toBe(false);
+	});
+
+	it('f00156 S7: push is refused when required acceptance is stale', async () => {
+		const runner = fakeRunner([{ match: () => true, output: '' }]);
+		const result = await maybePersistAfterSlice(
+			['plugins/proposals/src/lib/foo.ts'],
+			'f00156',
+			'S7',
+			{
+				mode: 'commit-and-push',
+				pushTarget: 'origin agent/f00156',
+				git: runner,
+				acceptanceEvidence: {
+					sliceId: 'S7',
+					gitTreeHash: 'tree1',
+					lastMeaningfulChangeAt: '2026-08-23T12:00:00.000Z',
+					validatedAt: '2026-08-23T11:00:00.000Z',
+					validationPassed: true,
+					requiresValidation: true,
+				},
+			},
+		);
+		expect(result.committed).toBe(false);
+		expect(result.pushed).toBe(false);
+		expect(result.reason).toMatch(/changed after/u);
+		expect(runner.calls).toHaveLength(0);
+	});
+
+	it('f00156 S7: push is allowed when validation is not required', async () => {
+		const runner = fakeRunner([
+			{ match: (a) => a[0] === 'add', output: '' },
+			{ match: (a) => a[0] === 'commit', output: '' },
+			{ match: (a) => a[0] === 'rev-parse', output: 'deadbeef' },
+			{ match: (a) => a[0] === 'push', output: '' },
+		]);
+		const result = await maybePersistAfterSlice(
+			['plugins/proposals/src/lib/foo.ts'],
+			'f00156',
+			'S7',
+			{
+				mode: 'commit-and-push',
+				pushTarget: 'origin agent/f00156',
+				git: runner,
+				acceptanceEvidence: {
+					sliceId: 'S7',
+					gitTreeHash: 'tree1',
+					lastMeaningfulChangeAt: '2026-08-23T12:00:00.000Z',
+					requiresValidation: false,
+				},
+			},
+		);
+		expect(result.pushed).toBe(true);
+	});
+});

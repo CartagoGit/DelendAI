@@ -4,6 +4,11 @@ import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import type { IMcpVertexHostConfig } from '../contracts/interfaces/host-config.interface';
 import type { IToolRegistration } from '../contracts/interfaces/tool-registration.interface';
 import { estimateResultBytes } from '../metrics/metrics-registry';
+import {
+	injectCheckpointAdvisory,
+	selectCheckpointAdvisory,
+} from '../shared/checkpoint-advisory';
+import { toolError } from '../shared/tool-response';
 
 /**
  * Compute the absolute path of today's JSONL entry in the `logs`
@@ -93,6 +98,7 @@ const instrumentToolHandlers = (
 		}
 		return undefined;
 	};
+	let lastCheckpointDedupeKey: string | null = null;
 	const wrap = (name: string, handler: unknown): unknown => {
 		if (typeof handler !== 'function') return handler;
 		const fn = handler as (...args: unknown[]) => unknown;
@@ -146,6 +152,26 @@ const instrumentToolHandlers = (
 						// Ignored
 					}
 				}
+				const preBlock = config.beforeToolCall?.({
+					toolName: name,
+					args: hookArgs,
+				});
+				if (
+					preBlock?.triggered === true &&
+					preBlock.severity === 'block'
+				) {
+					if (preBlock.dedupeKey !== lastCheckpointDedupeKey) {
+						lastCheckpointDedupeKey = preBlock.dedupeKey;
+					}
+					const blocked = toolError(
+						preBlock.reason,
+						preBlock.nextAction,
+					);
+					injectCheckpointAdvisory(blocked, preBlock);
+					isError = true;
+					result = blocked;
+					return blocked;
+				}
 				result = await fn(...args);
 				isError = (result as { isError?: boolean })?.isError === true;
 
@@ -182,6 +208,20 @@ const instrumentToolHandlers = (
 						resolveLogFilePath(config, new Date()),
 						new Date(),
 					);
+				} else {
+					const advisory = selectCheckpointAdvisory(
+						[
+							config.getCheckpointAdvisory?.({
+								toolName: name,
+								args: hookArgs,
+							}),
+						],
+						lastCheckpointDedupeKey,
+					);
+					if (advisory !== null) {
+						lastCheckpointDedupeKey = advisory.dedupeKey;
+						injectCheckpointAdvisory(result, advisory);
+					}
 				}
 
 				return result;

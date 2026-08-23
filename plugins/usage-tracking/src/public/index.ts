@@ -16,6 +16,12 @@ export {
 	SessionHygieneMonitor,
 } from '../lib/session-hygiene';
 export {
+	mapHygieneToCheckpointAdvisory,
+	SESSION_TOO_LONG_CODE,
+	SessionTooLongAdvisorySource,
+	sessionTooLongDedupeKey,
+} from '../lib/services/checkpoint-advisory.service';
+export {
 	readHostLifecycleEvents,
 	summarizeHostLifecycle,
 } from '../lib/host-lifecycle';

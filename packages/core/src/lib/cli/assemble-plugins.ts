@@ -75,6 +75,12 @@ export interface IAssemblePluginsResult {
 		) => Promise<void> | void
 	>;
 	readonly isAgentStuckFn: IMcpVertexHostConfig['isAgentStuck'];
+	readonly getCheckpointAdvisoryFns: Array<
+		NonNullable<IMcpVertexHostConfig['getCheckpointAdvisory']>
+	>;
+	readonly beforeToolCallFns: Array<
+		NonNullable<IMcpVertexHostConfig['beforeToolCall']>
+	>;
 	readonly logsSink: import('../plugins/logs-sink').ILogsSink | undefined;
 	readonly activationReport: ReturnType<typeof buildActivationReport>;
 	readonly activationById: ReadonlyMap<
@@ -215,6 +221,12 @@ export const assemblePlugins = async (
 		) => Promise<void> | void
 	> = [];
 	let isAgentStuckFn: IMcpVertexHostConfig['isAgentStuck'];
+	const getCheckpointAdvisoryFns: Array<
+		NonNullable<IMcpVertexHostConfig['getCheckpointAdvisory']>
+	> = [];
+	const beforeToolCallFns: Array<
+		NonNullable<IMcpVertexHostConfig['beforeToolCall']>
+	> = [];
 	// f00154 S2 — every plugin can register a logsSink; we pick the
 	// first one that does. The `logs` plugin's sink is the canonical
 	// choice when both are present.
@@ -233,6 +245,10 @@ export const assemblePlugins = async (
 			onToolCancels.push(registrations.onToolCancel);
 		if (registrations.isAgentStuck)
 			isAgentStuckFn = registrations.isAgentStuck;
+		if (registrations.getCheckpointAdvisory)
+			getCheckpointAdvisoryFns.push(registrations.getCheckpointAdvisory);
+		if (registrations.beforeToolCall)
+			beforeToolCallFns.push(registrations.beforeToolCall);
 		if (registrations.logsSink && resolvedLogsSink === undefined) {
 			resolvedLogsSink = registrations.logsSink;
 		}
@@ -434,6 +450,8 @@ export const assemblePlugins = async (
 		onToolStarts,
 		onToolCancels,
 		isAgentStuckFn,
+		getCheckpointAdvisoryFns,
+		beforeToolCallFns,
 		logsSink: resolvedLogsSink,
 		activationReport,
 		activationById,

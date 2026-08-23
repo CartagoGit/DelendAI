@@ -585,6 +585,7 @@ describe('AgentLoopDetectorService', async () => {
 					agent: 'copilot-default',
 				}),
 			).toBeNull();
+			expect(service.getInteractiveCheckpointAdvisory()).toBeNull();
 			// And no handoff packet was written either.
 			const handoffDirAbs = mockCtx.workspace.resolve(
 				'.cache/mcp-vertex/handoff',
