@@ -26,19 +26,25 @@ observe. The `lean`, `standard`, and larger presets include `memory`; projects
 that deliberately use a smaller explicit plugin list should load it when they
 want the same compact-and-resume workflow.
 
-## The 7 steps of `setup-github`
+## `setup-github` — read-only detection + a paste-ready guide
 
-| # | Step | What it does | Verifiable by |
-|---|---|---|---|
-| 1 | Detect repo | Runs `git remote get-url origin` and normalizes the GitHub remote to `owner/name`. | The detected slug matches `owner/name` and points at the repo you expect. |
-| 2 | Confirm owner/name | Prompts you to confirm or override the detected repo slug before writing config. | Your confirmed value is exactly `owner/name`. |
-| 3 | Pick auth tier | Chooses `gh` when `gh auth status` succeeds, `rest-authed` when `GITHUB_TOKEN` is set, or `rest-anon` otherwise. Anonymous mode must warn about the `60` requests/hour cap. | The reported tier is `gh`, `rest-authed`, or `rest-anon`, and anonymous mode prints the rate-limit warning. |
-| 4 | Write config | Writes `plugins.issues.options.repo` into `mcp-vertex.config.json` without touching unrelated plugin settings. | Re-reading `mcp-vertex.config.json` shows the expected `plugins.issues.options.repo` value. |
-| 5 | Verify tier | Calls `issues_fetch` against a sentinel issue path to prove the chosen auth tier actually works. | The result reports the effective `tier` and completes without an auth error. |
-| 6 | Print invocation | Prints the exact launch command and `mcp.json` shape to use in your host. | The command and JSON match the canonical preset/plugin wiring below. |
-| 7 | Mark configured | Optionally records `setup_github_completed_at` so later runs can tell the repo was already configured once. | Re-reading the config shows the completion timestamp when you opted in. |
+`setup-github` (the CLI subcommand and the `setup_github` MCP tool) is
+**read-only**: it detects the repo, the auth tier and whether the issues
+plugin is already configured, then returns a paste-ready guide. It never
+writes config and never calls GitHub — the agent executes the returned
+steps. The CLI and the MCP tool share one step engine, so they always
+agree on the guide.
 
-The per-repo config written by step 4 is intentionally small:
+The returned guide has up to four ordered steps:
+
+| # | Step | What the agent does |
+|---|---|---|
+| 1 | Auth | If `gh` is not authenticated, run `gh auth login` (or export `GITHUB_TOKEN`). Skipped when `gh` is already the best tier. |
+| 2 | Config | Add the `plugins.issues.options.repo` block to `mcp-vertex.config.json` (or run `init_config` with `write: true` to derive the whole config). |
+| 3 | Load | Launch the host with `--plugins=proposals,issues` (issues hard-depends on proposals). |
+| 4 | Verify | Run `mcpv issues list` (or call the `issues_list` MCP tool) to confirm the repo + auth tier resolve. |
+
+The config block step 2 adds:
 
 ```jsonc
 {
@@ -53,6 +59,10 @@ The per-repo config written by step 4 is intentionally small:
 ```
 
 ## Auth tier decision matrix
+
+The `issues` runtime reports one of three tiers. The `setup-github` step
+engine uses the short forms `token`/`anon` for the same two non-`gh`
+states.
 
 | Tier | Use it when | What you do |
 |---|---|---|
