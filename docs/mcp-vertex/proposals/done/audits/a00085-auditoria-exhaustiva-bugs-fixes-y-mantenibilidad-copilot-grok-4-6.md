@@ -2,7 +2,7 @@
 id: a00085
 title: "Auditoría exhaustiva — bugs, fixes y mantenibilidad (Copilot / Grok 4.6)"
 kind: audit
-status: in-progress
+status: done
 type: proposal
 track: audit+bugs+maintainability
 date: 2026-08-23
@@ -50,7 +50,7 @@ El usuario pidió una propuesta de auditoría **muy completa** centrada en bugs/
 ### S1 — Documento de auditoría (fases 0–10) + scoreboard
 
 - **Status**: done
-- **Files**: `docs/mcp-vertex/proposals/in-progress/a00085-auditoria-exhaustiva-bugs-fixes-y-mantenibilidad-copilot-grok-4-6.md`
+- **Files**: `docs/mcp-vertex/proposals/done/audits/a00085-auditoria-exhaustiva-bugs-fixes-y-mantenibilidad-copilot-grok-4-6.md`
 - **Gate**: lint
 - **Acceptance**:
   - Goal incluye hash HEAD
@@ -62,7 +62,7 @@ El usuario pidió una propuesta de auditoría **muy completa** centrada en bugs/
 ### S2 — Follow-up x00203 (P0/P1 shipped on this branch)
 
 - **Status**: done
-- **Files**: `docs/mcp-vertex/proposals/in-progress/x00203-a00085-p0-p1-stale-proposal-id-counter-durable-peer-review-jsonl-quality-dryrun-counter-trailing-write.md`
+- **Files**: `docs/mcp-vertex/proposals/done/fixes/x00203-a00085-p0-p1-stale-proposal-id-counter-durable-peer-review-jsonl-quality-dryrun-counter-trailing-write.md`
 - **Gate**: none
 - **Acceptance**:
   - Findings #1–#4 have Resolution Track pointing at `x00203`
