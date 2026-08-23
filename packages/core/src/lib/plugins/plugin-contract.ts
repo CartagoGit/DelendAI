@@ -269,6 +269,21 @@ export interface IMcpPluginRegistrations {
 		  ) => { handoffPath: string; suggestedAction: string } | null)
 		| undefined;
 	/**
+	 * f00156: optional post-handler advisory. Core merges every plugin's
+	 * provider (highest severity wins) and may inject the winner onto
+	 * the tool result. Domain-agnostic — plugins own codes/actions.
+	 */
+	readonly getCheckpointAdvisory?:
+		| import('../contracts/interfaces/checkpoint-advisory.interface').CheckpointAdvisoryProvider
+		| undefined;
+	/**
+	 * f00156: optional pre-handler hook. When the merged advisory has
+	 * `severity: 'block'`, core short-circuits the tool handler.
+	 */
+	readonly beforeToolCall?:
+		| import('../contracts/interfaces/checkpoint-advisory.interface').BeforeToolCallHook
+		| undefined;
+	/**
 	 * f00154 S2 — the sink a plugin wants the core to publish
 	 * lifecycle events to. The `logs` plugin sets this so the core
 	 * forwards every `onToolStart` / `onToolCall` / `onToolCancel`

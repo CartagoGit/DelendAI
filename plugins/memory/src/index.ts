@@ -1,8 +1,15 @@
 import { definePlugin, joinRel } from '@mcp-vertex/core/public';
 import z from 'zod';
 
-import { expireExpiredNotes } from './lib/services/store';
+import { expireExpiredNotes, readStore } from './lib/services/store';
 import { buildMemoryToolRegistrations } from './lib/tools';
+import {
+	assessCheckpointFreshness,
+	DEFAULT_CHECKPOINT_MAX_AGE_MS,
+} from './lib/services/checkpoint-freshness';
+import { mapFreshnessToCheckpointAdvisory } from './lib/services/checkpoint-advisory.service';
+import { selectLatestSessionDigest } from './lib/services/session-digest-recall';
+import type { ICheckpointAdvisory } from '@mcp-vertex/core/public';
 
 const OptionsSchema = z
 	.object({
@@ -96,6 +103,30 @@ export default definePlugin({
 			},
 		});
 
+		let lastFreshnessAdvisory: ICheckpointAdvisory | null = null;
+		const refreshFreshnessAdvisory = async (): Promise<void> => {
+			try {
+				const notes = await readStore(storePathAbs);
+				const digest = selectLatestSessionDigest(
+					notes.map((note) => ({
+						title: note.title,
+						body: note.body,
+						createdAt: note.createdAt,
+					})),
+				);
+				lastFreshnessAdvisory = mapFreshnessToCheckpointAdvisory(
+					assessCheckpointFreshness(
+						digest,
+						Date.now(),
+						DEFAULT_CHECKPOINT_MAX_AGE_MS,
+					),
+				);
+			} catch {
+				// Store missing/corrupt: do not invent an advisory.
+			}
+		};
+		void refreshFreshnessAdvisory();
+
 		return {
 			tools: buildMemoryToolRegistrations({
 				namespacePrefix: ctx.namespacePrefix,
@@ -105,6 +136,10 @@ export default definePlugin({
 				titleWeight,
 				maxNotes,
 			}),
+			onToolCall: () => {
+				void refreshFreshnessAdvisory();
+			},
+			getCheckpointAdvisory: () => lastFreshnessAdvisory,
 			knowledge: [
 				{
 					id: 'memory-usage',

@@ -19,6 +19,7 @@ import {
 	DEFAULT_SESSION_HYGIENE_POLICY,
 	SessionHygieneMonitor,
 } from './lib/session-hygiene';
+import { SessionTooLongAdvisorySource } from './lib/services/checkpoint-advisory.service';
 import { StartClock } from './lib/start-clock';
 import {
 	computeCostUsd,
@@ -140,6 +141,7 @@ export default definePlugin({
 				hygieneOptions?.maxMcpOutputTokens ??
 				DEFAULT_SESSION_HYGIENE_POLICY.maxMcpOutputTokens,
 		});
+		const sessionTooLong = new SessionTooLongAdvisorySource();
 		let notificationServer: McpServer | undefined;
 
 		// S7 circuit-breaker config. The session anchor is boot time; the
@@ -356,6 +358,7 @@ export default definePlugin({
 						at: endedAt,
 						responseBytes: record.responseBytes ?? 0,
 					});
+					sessionTooLong.noteHygiene(advisory);
 					if (advisory && notificationServer) {
 						void notificationServer
 							.sendLoggingMessage({
@@ -371,6 +374,8 @@ export default definePlugin({
 				}
 				buffer.push(record);
 			},
+			getCheckpointAdvisory: () =>
+				sessionHygieneEnabled ? sessionTooLong.current() : null,
 			knowledge: [
 				{
 					id: 'usage-tracking-usage',

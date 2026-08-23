@@ -48,6 +48,9 @@ import { buildCompactStatusRegistration } from './lib/tools/compact-status.tool'
 import { cleanupStaleAgentLockState } from './lib/locks/agent-lock-engine';
 import { buildAgentsLockDiagnoseRegistration } from './lib/tools/agents-lock-diagnose.tool';
 import { buildRecoveryToolRegistrations } from './lib/tools/recovery-tools';
+import { mergeCheckpointAdvisories } from '@mcp-vertex/core/public';
+import { assessMicroValidationLoop } from './lib/services/checkpoint-advisory-micro-validation.service';
+import type { IObservedToolCall } from './lib/services/checkpoint-advisory-micro-validation.service';
 
 /**
  * The proposals workflow plugin. It turns mcp-vertex into a multi-agent
@@ -109,6 +112,41 @@ const PROPOSALS_OPTIONS_SCHEMA = z.object({
 	 * Default true. Set false to keep diagnose-only (manual state_repair).
 	 */
 	autoRepairOrphans: z.boolean().optional(),
+	/**
+	 * f00156: checkpoint-advisory thresholds. Augments existing plugin
+	 * options rather than a parallel source of truth. Session age lives
+	 * on usage-tracking.sessionHygiene.
+	 */
+	checkpointAdvisories: z
+		.object({
+			enabled: z.boolean().optional(),
+			microValidation: z
+				.object({
+					equivalentRunsBeforeWarning: z
+						.number()
+						.int()
+						.positive()
+						.optional(),
+				})
+				.strict()
+				.optional(),
+			contextDrift: z
+				.object({
+					interactiveSeverity: z
+						.enum(['recommend', 'strong'])
+						.optional(),
+				})
+				.strict()
+				.optional(),
+			pushGuard: z
+				.object({
+					enabled: z.boolean().optional(),
+				})
+				.strict()
+				.optional(),
+		})
+		.strict()
+		.optional(),
 });
 
 export default definePlugin({
@@ -157,6 +195,7 @@ export default definePlugin({
 		// e.g. `['paused/demos']`. mcp-vertex bakes none — the host injects
 		// its folder policy via ctx.options (now schema-validated, S9).
 		const extraProposalFolders = parsedOptions.data.proposalFolders ?? [];
+		const microValidationCalls: IObservedToolCall[] = [];
 
 		const agentNamesOptions: IAgentNamesToolOptions = {
 			namespacePrefix: ctx.namespacePrefix,
@@ -609,9 +648,55 @@ export default definePlugin({
 					].join('\n'),
 				},
 			],
-			onToolCall: (name, args, result, error) =>
-				loopDetector.onToolCall(name, args, result, error),
+			onToolCall: (name, args, result, error) => {
+				void loopDetector.onToolCall(name, args, result, error);
+				const advisories = parsedOptions.data.checkpointAdvisories;
+				if (advisories?.enabled === false) return;
+				const stem = name.split('_').at(-1) ?? name;
+				const kind: IObservedToolCall['kind'] =
+					/quality|validate|typecheck|lint|test/u.test(stem) ||
+					/quality|validate|typecheck|lint|test/u.test(name)
+						? 'validation'
+						: /write|edit|commit/u.test(stem)
+							? 'edit'
+							: 'other';
+				microValidationCalls.push({
+					tool: name,
+					kind,
+					progressHash: 'live',
+					sliceId: 'unknown',
+				});
+				if (microValidationCalls.length > 32) {
+					microValidationCalls.splice(
+						0,
+						microValidationCalls.length - 32,
+					);
+				}
+			},
 			isAgentStuck: (name, args) => loopDetector.isAgentStuck(name, args),
+			getCheckpointAdvisory: () => {
+				const advisories = parsedOptions.data.checkpointAdvisories;
+				if (advisories?.enabled === false) return null;
+				return mergeCheckpointAdvisories([
+					loopDetector.getInteractiveCheckpointAdvisory(),
+					assessMicroValidationLoop(microValidationCalls, {
+						equivalentRunsBeforeWarning:
+							advisories?.microValidation
+								?.equivalentRunsBeforeWarning ?? 2,
+					}),
+				]);
+			},
+			beforeToolCall: (context) => {
+				const advisories = parsedOptions.data.checkpointAdvisories;
+				if (advisories?.pushGuard?.enabled === false) return null;
+				const tool = context.toolName;
+				if (!/_push$/u.test(tool) && !tool.includes('git_push')) {
+					return null;
+				}
+				// Push-guard block only when evidence was supplied on the
+				// persist helper; without it we must not invent a blocker.
+				return null;
+			},
 		};
 	},
 });
