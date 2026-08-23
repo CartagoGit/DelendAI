@@ -14,7 +14,7 @@
  */
 
 /** GitHub auth tier, ordered by rate limit (gh ≫ token ≫ anon). */
-export type GithubAuthTier = 'gh' | 'token' | 'anon';
+export type GithubAuthTier = 'gh' | 'rest-authed' | 'rest-anon';
 
 /** Everything the step engine needs, already detected by the caller. */
 export interface IGithubSetupContext {
@@ -40,7 +40,7 @@ export interface ISetupStep {
 
 const authStep = (ctx: IGithubSetupContext): ISetupStep | undefined => {
 	if (ctx.tier === 'gh') return undefined; // already best tier
-	if (ctx.tier === 'token') {
+	if (ctx.tier === 'rest-authed') {
 		return {
 			id: 'auth',
 			title: 'GitHub token detected (5000 req/h)',

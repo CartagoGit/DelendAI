@@ -300,6 +300,74 @@ describe('runBranchStatusEngine', () => {
 		expect(result.summary.outOfCacheWorktrees).toBe(1);
 	});
 
+	it('flags drift when the main checkout branch left baseBranch', async () => {
+		const runner: IGitRunner = makeRunner([
+			[['branch', '--list', 'agent/*'], { ok: true, output: '' }],
+			[
+				['worktree', 'list', '--porcelain'],
+				{
+					ok: true,
+					output: [
+						'worktree /home/cartago/_projects/mcp-vertex',
+						'HEAD abc1234',
+						'branch refs/heads/agent/rogue',
+						'',
+						'worktree /home/cartago/_projects/mcp-vertex/.cache/mcp-vertex/.worktrees/rogue',
+						'HEAD abc1234',
+						'branch refs/heads/agent/rogue',
+					].join('\n'),
+				},
+			],
+		]);
+		const tailRunner: IGitRunner = async () => ({ ok: true, output: '' });
+		const composite: IGitRunner = async (args) => {
+			const m = await runner(args);
+			if (m.ok || m.output.length > 0) return m;
+			return tailRunner(args);
+		};
+		const result = await runBranchStatusEngine({
+			run: composite,
+			workspaceRoot,
+			now: FIXED_NOW,
+		});
+		expect(result.ok).toBe(true);
+		if (!result.ok) return;
+		expect(result.mainCheckoutBranch).toBe('agent/rogue');
+		expect(result.mainCheckoutDrift).toBe(true);
+	});
+
+	it('does NOT flag drift when the main checkout stays on baseBranch', async () => {
+		const runner: IGitRunner = makeRunner([
+			[['branch', '--list', 'agent/*'], { ok: true, output: '' }],
+			[
+				['worktree', 'list', '--porcelain'],
+				{
+					ok: true,
+					output: [
+						'worktree /home/cartago/_projects/mcp-vertex',
+						'HEAD abc1234',
+						'branch refs/heads/develop',
+					].join('\n'),
+				},
+			],
+		]);
+		const tailRunner: IGitRunner = async () => ({ ok: true, output: '' });
+		const composite: IGitRunner = async (args) => {
+			const m = await runner(args);
+			if (m.ok || m.output.length > 0) return m;
+			return tailRunner(args);
+		};
+		const result = await runBranchStatusEngine({
+			run: composite,
+			workspaceRoot,
+			now: FIXED_NOW,
+		});
+		expect(result.ok).toBe(true);
+		if (!result.ok) return;
+		expect(result.mainCheckoutBranch).toBe('develop');
+		expect(result.mainCheckoutDrift).toBe(false);
+	});
+
 	it('marks a branch as NOT merged when its tip has unique commits ahead of base, even if git branch --merged says otherwise (f00057-S11 trap)', async () => {
 		const runner = makeRunner([
 			[

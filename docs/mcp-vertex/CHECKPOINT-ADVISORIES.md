@@ -3,8 +3,10 @@
 Host-agnostic quality + compute protection. Plugins compose existing
 signals (session hygiene, memory checkpoint freshness, round context,
 loop detection, slice acceptance) into one structured
-`checkpointAdvisory` envelope. Core injects it onto tool results when
-`triggered: true`. Compliant agents surface the message verbatim.
+`checkpointAdvisory` envelope. Core injects it into the result `_meta`
+(never `structuredContent`, which MCP clients validate against the
+tool's `outputSchema`) when `triggered: true`. Compliant agents surface
+the message verbatim.
 
 User-facing recommendations always begin with:
 

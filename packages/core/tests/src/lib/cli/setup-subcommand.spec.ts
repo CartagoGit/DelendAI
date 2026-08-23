@@ -20,10 +20,10 @@ describe('setup-github detection helpers', async () => {
 		expect(parseGithubRepo(null)).toBeNull();
 	});
 
-	it('resolveTier prefers gh > token > anon', async () => {
+	it('resolveTier prefers gh > rest-authed > rest-anon', async () => {
 		expect(resolveTier(true, undefined)).toBe('gh');
-		expect(resolveTier(false, 'x')).toBe('token');
-		expect(resolveTier(false, undefined)).toBe('anon');
+		expect(resolveTier(false, 'x')).toBe('rest-authed');
+		expect(resolveTier(false, undefined)).toBe('rest-anon');
 	});
 
 	it('isIssuesConfigured reads plugins.issues', async () => {
@@ -49,7 +49,7 @@ describe('buildSetupGithubReport', async () => {
 		const { context, guide } = await buildSetupGithubReport(deps());
 		expect(context).toEqual({
 			repo: 'owner/name',
-			tier: 'token',
+			tier: 'rest-authed',
 			configured: false,
 			configPath: 'mcp-vertex.config.json',
 		});

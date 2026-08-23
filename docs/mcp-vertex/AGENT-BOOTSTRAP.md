@@ -148,8 +148,9 @@ for host-level limits.
 
 ### 4.d Checkpoint advisories (f00156)
 
-When any mcp-vertex tool result contains `structuredContent.checkpointAdvisory`
-with `triggered: true`:
+When any mcp-vertex tool result carries `checkpointAdvisory` in the result
+`_meta` (the protocol metadata channel — never `structuredContent`, which is
+schema-validated) with `triggered: true`:
 
 1. Surface `checkpointAdvisory.message` to the user **verbatim**. Do not
    silently consume or paraphrase it.
@@ -240,12 +241,15 @@ restates the rule for swarm context.
 - Token budget is a protected invariant. `overview` (compact) +
   `auto_work` stay under their measured budgets.
 - **Every agent MUST hold an active lock claim (`agent_lock`) for the files it edits.** The validation gate enforces this via `lint:agent-claims`, and commits/pushes violating this will be rejected by git hooks. (x00080) The claim check itself is a lefthook-installed TypeScript hook (`tools/scripts/hooks/pre-commit.ts`), not a raw `.sh` git hook template — every hook in this repo is TypeScript, per rule #10 below.
-- **Single shared branch — work only on `develop`.** This repo has
-  `agentWorktree: false` in `mcp-vertex.config.json`; agents never
-  create `agent/*`, `feature/*` or any other branch. Commit and push
-  directly on `develop` and share the git history. Git hooks reject
-  commits/pushes from any branch other than `develop` (and `main`
-  for releases).
+- **Branching is config-driven; this repo forbids per-agent branches.**
+  `agentWorktree: false` in `mcp-vertex.config.json` means agents never
+  create `agent/*` worktrees or branches — they commit and push directly
+  on `develop` and share the git history. The operator may still create
+  manual branches (`fix/*`, `feature/*`); those are allowed. When the
+  gate is on, agents working in worktrees must never `git switch` the
+  shared checkout — the main checkout stays on `develop` until the
+  worktree is merged and removed. `branch_status` / `swarm_hygiene`
+  expose `mainCheckoutDrift` to detect a switched shared checkout.
 - Every public tool declares an `outputSchema`. `catchall` is documented,
   not default.
 - **No hardcoded lists of skills / tools / proposal ids in any host

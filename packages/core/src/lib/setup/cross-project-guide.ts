@@ -12,8 +12,8 @@ import type {
 
 const TIER_LABEL: Readonly<Record<GithubAuthTier, string>> = {
 	gh: '`gh` CLI (5000 req/h)',
-	token: '`GITHUB_TOKEN` (5000 req/h)',
-	anon: 'anonymous (60 req/h — authenticate to raise this)',
+	'rest-authed': '`GITHUB_TOKEN` (5000 req/h)',
+	'rest-anon': 'anonymous (60 req/h — authenticate to raise this)',
 };
 
 const renderStep = (step: ISetupStep, index: number): string => {

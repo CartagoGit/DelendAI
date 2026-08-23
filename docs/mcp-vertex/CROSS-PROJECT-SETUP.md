@@ -60,9 +60,8 @@ The config block step 2 adds:
 
 ## Auth tier decision matrix
 
-The `issues` runtime reports one of three tiers. The `setup-github` step
-engine uses the short forms `token`/`anon` for the same two non-`gh`
-states.
+The `issues` runtime and the `setup-github` step engine share one tier
+vocabulary (`gh`, `rest-authed`, `rest-anon`).
 
 | Tier | Use it when | What you do |
 |---|---|---|

@@ -68,7 +68,7 @@ El usuario pidió una propuesta de auditoría **muy completa** centrada en bugs/
 
 ---
 
-## Verified State (Phase 0)
+## verified state
 
 | Metric | Value | Source |
 |---|---|---|
@@ -90,7 +90,7 @@ El usuario pidió una propuesta de auditoría **muy completa** centrada en bugs/
 
 ---
 
-## Re-verificación a00083 / a00084 (no recitar stale)
+### N. Re-verificación a00083 / a00084 (no recitar stale)
 
 | Tema (auditoría previa) | Estado en `090a7904` | Evidencia |
 |---|---|---|
@@ -463,7 +463,7 @@ export const kebab = (value: string): string =>
 
 ---
 
-## Concurrency table (Phase 8)
+### N. Concurrency table (Phase 8)
 
 | Scenario | Risk | Mitigation | Gap |
 |---|---|---|---|
@@ -478,7 +478,7 @@ export const kebab = (value: string): string =>
 
 ---
 
-## AGENTS.md hard-rules (scan)
+### N. AGENTS.md hard-rules (scan)
 
 | # | Rule | Result |
 |---|---|---|
@@ -497,7 +497,7 @@ Biome 44 errors **no** se tratan como findings cualitativos nuevos: viven en spe
 
 ---
 
-## Scoreboard (Phase 10)
+## scoreboard
 
 Unweighted average. Dimensión con FATAL no puede ir >6.
 
@@ -517,7 +517,7 @@ Unweighted average. Dimensión con FATAL no puede ir >6.
 
 ---
 
-## Recommended follow-ups (priority)
+### N. Recommended follow-ups (priority)
 
 1. **Merge** `fix/proposal-id-allocator-stale-counter` (`59325969`) → cierra #1.
 2. `x00204` trailing `writeFile` en `sync-proposal-counters`.
@@ -532,7 +532,7 @@ No spawnar esas propuestas desde esta sesión: el allocator en `develop` **sigue
 
 ---
 
-## Anti-patterns avoided
+### N. Anti-patterns avoided
 
 - No se citó a00083/a00084 sin reabrir el archivo.
 - Cada finding abierto tiene quote + línea.
