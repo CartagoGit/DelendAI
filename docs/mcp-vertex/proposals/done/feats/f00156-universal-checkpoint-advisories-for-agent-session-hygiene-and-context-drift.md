@@ -2,7 +2,7 @@
 id: f00156
 title: "Universal checkpoint advisories for agent session hygiene and context drift"
 kind: feat
-status: in-progress
+status: done
 type: proposal
 track: session-hygiene
 date: 2026-08-23
@@ -36,7 +36,7 @@ Real agent sessions degrade in a small number of recurring ways: they run too lo
 - global_gate: lint
 
 ### S1 — Agnostic core advisory contract, merge, pre-block hook, and tool-result injection
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/src/lib/contracts/interfaces/checkpoint-advisory.interface.ts`, `packages/core/src/lib/shared/checkpoint-advisory.ts`, `packages/core/src/lib/plugins/plugin-contract.ts`, `packages/core/src/lib/contracts/interfaces/host-config.interface.ts`, `packages/core/src/lib/cli/assemble-plugins.ts`, `packages/core/src/lib/cli/assemble.ts`, `packages/core/src/lib/project/create-mcp-project.ts`, `packages/core/src/public/index.ts`, `packages/core/tests/src/lib/shared/checkpoint-advisory.spec.ts`, `packages/core/tests/src/lib/project/create-mcp-project.spec.ts`
 - **Gate**: lint
 - acceptance:
@@ -48,7 +48,7 @@ Real agent sessions degrade in a small number of recurring ways: they run too lo
   - "No implementation reads host transcripts, context meters, or quotas."
 
 ### S2 — SESSION_TOO_LONG from SessionHygieneMonitor
-- **Status**: pending
+- **Status**: done
 - **DependsOn**: [S1]
 - **Files**: `plugins/usage-tracking/src/lib/services/checkpoint-advisory.service.ts`, `plugins/usage-tracking/src/index.ts`, `plugins/usage-tracking/src/public/index.ts`, `plugins/usage-tracking/src/lib/types.ts`, `plugins/usage-tracking/tests/src/lib/checkpoint-advisory.spec.ts`
 - **Gate**: lint
@@ -61,7 +61,7 @@ Real agent sessions degrade in a small number of recurring ways: they run too lo
   - "Tests: below threshold → none; cross threshold → one; next call same state → none; new reason → escalate."
 
 ### S3 — Memory checkpoint freshness as an advisory input
-- **Status**: pending
+- **Status**: done
 - **DependsOn**: [S1]
 - **Files**: `plugins/memory/src/lib/services/checkpoint-advisory.service.ts`, `plugins/memory/src/index.ts`, `plugins/memory/src/public/index.ts`, `plugins/memory/tests/src/lib/checkpoint-advisory.spec.ts`
 - **Gate**: lint
@@ -73,7 +73,7 @@ Real agent sessions degrade in a small number of recurring ways: they run too lo
   - "Tests cover missing, stale, fresh, and reset-on-new-checkpoint."
 
 ### S4 — REQUIREMENTS_NOT_CONSOLIDATED from round_context vs checkpoint
-- **Status**: pending
+- **Status**: done
 - **DependsOn**: [S1]
 - **Files**: `plugins/proposals/src/lib/services/checkpoint-advisory-requirements.service.ts`, `plugins/proposals/tests/src/lib/services/checkpoint-advisory-requirements.spec.ts`
 - **Gate**: lint
@@ -86,7 +86,7 @@ Real agent sessions degrade in a small number of recurring ways: they run too lo
   - "Tests cover checkpoint-newer, material-change-after-checkpoint, and reset-on-new-checkpoint."
 
 ### S5 — MICRO_VALIDATION_LOOP from observable validation without progress
-- **Status**: pending
+- **Status**: done
 - **DependsOn**: [S1]
 - **Files**: `plugins/proposals/src/lib/services/checkpoint-advisory-micro-validation.service.ts`, `plugins/proposals/tests/src/lib/services/checkpoint-advisory-micro-validation.spec.ts`
 - **Gate**: lint
@@ -99,7 +99,7 @@ Real agent sessions degrade in a small number of recurring ways: they run too lo
   - "Tests cover valid edit-test cycles, unchanged-progress loops, and legitimate multi-layer tests after one slice."
 
 ### S6 — CONTEXT_DRIFT for interactive agents; preserve swarm stuck/handoff
-- **Status**: pending
+- **Status**: done
 - **DependsOn**: [S1]
 - **Files**: `plugins/proposals/src/lib/services/checkpoint-advisory-context-drift.service.ts`, `plugins/proposals/src/lib/agents/loop-detector-service.ts`, `plugins/proposals/tests/src/lib/services/checkpoint-advisory-context-drift.spec.ts`, `plugins/proposals/tests/src/lib/agents/loop-detector-service.spec.ts`
 - **Gate**: lint
@@ -112,7 +112,7 @@ Real agent sessions degrade in a small number of recurring ways: they run too lo
   - "Tests cover repeat-with-progress, no-progress sequence, reset, and swarm-vs-interactive split."
 
 ### S7 — STALE_ACCEPTANCE evidence + commit warn / push block
-- **Status**: pending
+- **Status**: done
 - **DependsOn**: [S1]
 - **Files**: `plugins/proposals/src/lib/services/slice-acceptance-evidence.service.ts`, `plugins/proposals/src/lib/services/checkpoint-advisory-stale-acceptance.service.ts`, `plugins/proposals/src/lib/tools/auto-work-persist.ts`, `plugins/proposals/tests/src/lib/services/checkpoint-advisory-stale-acceptance.spec.ts`, `plugins/proposals/tests/src/lib/tools/auto-work-persist.spec.ts`
 - **Gate**: lint
@@ -125,7 +125,7 @@ Real agent sessions degrade in a small number of recurring ways: they run too lo
   - "Tests: validate-then-push allowed; validate-then-change-then-push blocked; change-then-commit warn-only; no-requirement-no-block."
 
 ### S8 — Proposals wiring, universal bootstrap contract, config schema, and workflow docs
-- **Status**: pending
+- **Status**: done
 - **DependsOn**: [S1, S2, S3, S4, S5, S6, S7]
 - **Files**: `plugins/proposals/src/index.ts`, `docs/mcp-vertex/AGENT-BOOTSTRAP.md`, `docs/mcp-vertex/CHECKPOINT-ADVISORIES.md`, `packages/core/schema/mcp-vertex.config.schema.json`, `plugins/usage-tracking/README.md`, `plugins/memory/README.md`, `plugins/proposals/README.md`
 - **Gate**: lint
