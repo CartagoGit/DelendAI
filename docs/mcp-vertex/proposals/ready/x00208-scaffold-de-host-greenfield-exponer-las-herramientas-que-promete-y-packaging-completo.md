@@ -40,12 +40,15 @@ Auditoría 2026-08-24 (hallazgos A1, A3, A5, A6, A7): `createMcpProject` llama `
   - "El texto de instrucciones y agentes solo nombra herramientas que el host realmente expone."
 
 ### S2 — Una sola estrategia de mcp.json
-- **Status**: pending
-- **Files**: `packages/core/src/lib/scaffold/scaffold-tool.ts`, `packages/core/src/lib/scaffold/detect-existing-install.ts`
+- **Status**: done
+- **Files**: `packages/core/src/lib/scaffold/scaffold-host.ts`, `packages/core/src/lib/scaffold/detect-existing-install.ts`
 - **Gate**: type
 - acceptance:
   - "El mcp.json generado por scaffold coincide con la estrategia del CLI (o se elimina la duplicidad documentándolo)."
   - "La autodetección existingMcpVertex/mcpServerName (x00201) sigue activa y testeada."
+- implementation:
+  - "La duplicidad se elimina documentándola: el README generado describe los dos caminos de arranque (servidor propio plugin-less vs CLI con --preset full)."
+  - "La autodetección x00201 queda intacta y sigue cubierta por detect-existing-install.spec.ts (sin cambios de comportamiento)."
 
 ### S3 — createMcpProject permite registrar las meta-tools core
 - **Status**: done
