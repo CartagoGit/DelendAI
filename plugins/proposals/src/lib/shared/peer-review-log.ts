@@ -1,5 +1,7 @@
-import { appendFile, mkdir, readFile } from 'node:fs/promises';
+import { mkdir, open, readFile } from 'node:fs/promises';
 import { dirname } from 'node:path';
+
+import { withFileMutex } from '@mcp-vertex/core/public';
 
 /**
  * x00154 S6 — typed error thrown by `readPeerReviewLog` when the
@@ -76,13 +78,33 @@ const parseEntry = (line: string): IPeerReviewLogEntry | null => {
 	}
 };
 
+/**
+ * Durable JSONL append for peer-review history (a00085 #3).
+ * Serializes writers with `withFileMutex` and fsyncs the handle so a
+ * crash after `writeFile` cannot drop the just-recorded verdict.
+ * Accepts any JSON-serialisable record so both the typed helper and
+ * the authoring-tool snake_case journal share one writer.
+ */
+export const appendPeerReviewJsonl = async (
+	logPathAbs: string,
+	entry: unknown,
+): Promise<void> => {
+	await mkdir(dirname(logPathAbs), { recursive: true });
+	await withFileMutex(logPathAbs, async () => {
+		const handle = await open(logPathAbs, 'a');
+		try {
+			await handle.writeFile(`${JSON.stringify(entry)}\n`, 'utf8');
+			await handle.sync();
+		} finally {
+			await handle.close();
+		}
+	});
+};
+
 export const appendPeerReviewLogEntry = async (
 	logPathAbs: string,
 	entry: IPeerReviewLogEntry,
-): Promise<void> => {
-	await mkdir(dirname(logPathAbs), { recursive: true });
-	await appendFile(logPathAbs, `${JSON.stringify(entry)}\n`, 'utf8');
-};
+): Promise<void> => appendPeerReviewJsonl(logPathAbs, entry);
 
 export const recordProposalEnteredReview = async (input: {
 	readonly logPathAbs: string;
