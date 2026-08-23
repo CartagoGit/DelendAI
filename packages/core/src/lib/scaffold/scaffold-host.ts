@@ -698,6 +698,12 @@ export default definePlugin({
 								description:
 									'Health check for the ${id} plugin; echoes its resolved paths.',
 								inputSchema: z.object({}),
+								outputSchema: z.object({
+									plugin: z.string(),
+									cacheDir: z.string(),
+									docsDir: z.string(),
+									options: z.unknown(),
+								}),
 							},
 							async () => ({
 								content: [

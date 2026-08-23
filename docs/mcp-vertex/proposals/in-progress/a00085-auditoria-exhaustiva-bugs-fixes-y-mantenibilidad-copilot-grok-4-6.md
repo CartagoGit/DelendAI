@@ -248,7 +248,7 @@ const appendPeerReviewLog = async (
 
 **Impact**: frontera de gasto más débil que el contrato. Default `denyAll` + `executeApi:false` mitiga en prod dogfooding; no mitiga un host con elicitation + fallback.
 
-**Resolution Track**: Deferred → `x00207-s1` (firmar `invocationId|providerId|costTier`; verificar la tupla en cada hop).
+**Resolution Track**: **Resolved in `x00204` S1**. HMAC payload is `invocationId\\0providerId\\0estimatedCostTier`; manager verifies the hop tuple.
 
 ---
 
@@ -289,7 +289,7 @@ const appendPeerReviewLog = async (
 
 **Impact**: falsos `lock-released` (o silenciar releases reales) en hosts que pausan/reanudan el notifier.
 
-**Resolution Track**: Deferred → `x00209-s1`.
+**Resolution Track**: **Resolved in `x00204` S2**. `stop()` sets `prev = undefined` and `checkInFlight = false`.
 
 ---
 
@@ -307,7 +307,7 @@ const appendPeerReviewLog = async (
 
 **Impact**: reintentos de activate (VS Code) pueden filtrar procesos stdio.
 
-**Resolution Track**: Deferred → `x00210-s1` (`try/catch` + close).
+**Resolution Track**: **Resolved in `x00204` S3**. `connect` closes the transport if handshake throws.
 
 ---
 
@@ -332,7 +332,7 @@ const appendPeerReviewLog = async (
 
 **Impact**: catálogo/consumidores tipados y gates de `outputSchema` fallan en el primer tool generado.
 
-**Resolution Track**: Deferred → `x00211-s1`. (Hallazgo de a00084 **sigue abierto**.)
+**Resolution Track**: **Resolved in `x00204` S4**. Scaffold plugin ping now declares `outputSchema`.
 
 ---
 

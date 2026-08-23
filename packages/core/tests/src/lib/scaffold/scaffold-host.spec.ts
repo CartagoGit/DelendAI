@@ -348,6 +348,18 @@ describe('scaffold-host generators', () => {
 });
 
 describe('scaffoldPluginFiles (f00120 S1)', () => {
+	it('ping tool template declares outputSchema (a00085 #9)', () => {
+		const files = scaffoldPluginFiles({
+			pluginName: 'demo',
+			description: 'A demo plugin scaffolded for testing.',
+		});
+		const index = files.find((file) =>
+			file.path.endsWith('plugins/demo/src/index.ts'),
+		);
+		expect(index?.content).toContain('outputSchema: z.object({');
+		expect(index?.content).toContain('plugin: z.string()');
+	});
+
 	it('emits the eight canonical plugin files', () => {
 		const files = scaffoldPluginFiles({
 			pluginName: 'demo',
