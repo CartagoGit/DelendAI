@@ -206,7 +206,8 @@ export const createLogStore = async (
 			const content = await withFileMutex(
 				file,
 				async () => await readFile(file, 'utf8').catch(() => ''),
-				{ onContention: 'fail', timeoutMs: 10_000 },
+				// a00085 #6: readers wait for the writer (never steal).
+				{ onContention: 'wait', timeoutMs: 10_000 },
 			);
 			let lineOffset = 0;
 			for (const line of content.split('\n')) {

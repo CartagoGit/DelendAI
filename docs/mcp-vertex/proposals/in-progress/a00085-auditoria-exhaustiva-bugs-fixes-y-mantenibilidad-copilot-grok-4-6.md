@@ -268,7 +268,7 @@ const appendPeerReviewLog = async (
 
 **Impact**: dashboards/tools de log fallan justo cuando hay más actividad (el momento en que más se necesitan). Mejor que torn read, peor que degradar.
 
-**Resolution Track**: Deferred → `x00208-s1` (`onContention: 'wait'` o retry acotado en lecturas).
+**Resolution Track**: **Resolved on `fix/a00085-remaining-minors`**. `onContention: 'wait'` on log readers; mutex union includes `wait` (never steals).
 
 ---
 
@@ -353,7 +353,7 @@ export const kebab = (value: string): string =>
 
 **Impact**: filenames ilegibles; peor UX en títulos ES/FR/DE; no es colisión si el id es único.
 
-**Resolution Track**: Deferred → `r00014-s1` (NFD + strip combining marks **antes** del collapse). Cambio de contrato: kind:refactor, no fix silencioso.
+**Resolution Track**: **Resolved on `fix/a00085-remaining-minors`**. `kebab` NFD + strip `\p{M}` (`café`→`cafe`, `Auditoría`→`auditoria`).
 
 ---
 
@@ -374,7 +374,7 @@ export const kebab = (value: string): string =>
 
 **Impact**: bajo en CLI one-shot; alto si el mismo helper se reusa desde el server MCP.
 
-**Resolution Track**: Deferred → `x00212-s1`.
+**Resolution Track**: **Resolved on `fix/a00085-remaining-minors`**. `assemble.ts` and `setup-subcommand.ts` use async `readFile`; ENOENT → `undefined`.
 
 ---
 
@@ -390,7 +390,7 @@ export const kebab = (value: string): string =>
 
 **Impact**: plugins huérfanos / copias en el sitio equivocado.
 
-**Resolution Track**: Deferred → `x00213-s1`.
+**Resolution Track**: **Resolved on `fix/a00085-remaining-minors`**. `create-plugin.ts` writes under `repoRoot()`, not `process.cwd()`.
 
 ---
 
@@ -413,7 +413,7 @@ export const kebab = (value: string): string =>
 
 **Impact**: superficie de mensajes inconsistente; fácil de crecer sin schema.
 
-**Resolution Track**: Deferred → `x00214-s1`.
+**Resolution Track**: **Resolved on `fix/a00085-remaining-minors`**. `DASHBOARD_MESSAGE_SCHEMA` Zod union + `aria-label` on refresh.
 
 ---
 
@@ -434,7 +434,7 @@ export const kebab = (value: string): string =>
 
 **Impact**: UX rota para `es` (y el resto de langs).
 
-**Resolution Track**: Deferred → `d00005-s1` (docs/i18n, no fix de runtime).
+**Resolution Track**: **Resolved on `fix/a00085-remaining-minors`**. ES `plugin.issues` translated; `[lang]/guide.astro` chrome uses `t.guide` / `tutorialFallback`.
 
 ---
 
@@ -446,7 +446,7 @@ export const kebab = (value: string): string =>
 
 **Impact**: el próximo reaper/migración puede dejar IDs invisibles al allocator y otra vez el finding #1.
 
-**Resolution Track**: Deferred → `r00015-s1` (una constante compartida).
+**Resolution Track**: **Resolved on `fix/a00085-remaining-minors`**. `PROPOSAL_SCAN_FOLDERS` in glossary; allocator, sync script and drift lint import it.
 
 ---
 

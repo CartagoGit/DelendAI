@@ -43,13 +43,13 @@ export function buildTabsBar(lang: ILangDict): string {
 		label: text(tab.label),
 	}));
 	const docsTab = { id: 'docs', label: text('tabDocs') };
-	const refreshHtml = `<button class="mcpv-tabs__action-btn" id="tab-refresh" data-action="refresh" type="button" title="${text('refreshDashboard')}">⟳</button>`;
+	const refreshHtml = `<button class="mcpv-tabs__action-btn" id="tab-refresh" data-action="refresh" type="button" title="${text('refreshDashboard')}" aria-label="${text('refreshDashboard')}">⟳</button>`;
 	return (
 		`<section class="mcpv-tabs mcpv-tabs--underline">` +
 		renderTabs({
 			tabs: [...tabItems, docsTab],
 			variant: 'underline',
-			label: 'Dashboard sections',
+			label: text('tabOverview'),
 			idPrefix: '',
 			actionHtml: refreshHtml,
 		}) +

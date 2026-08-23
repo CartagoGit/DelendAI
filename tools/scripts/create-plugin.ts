@@ -7,8 +7,7 @@
  *
  * Generates the canonical four files for an `IMcpPlugin` package
  * (package.json, src/index.ts, tsconfig.json, README.md) under
- * `./libs/plugins/<plugin-name>/` relative to the current working
- * directory. Uses the same `scaffoldPluginFiles` generator the MCP
+ * `./libs/plugins/<plugin-name>/` relative to the monorepo root. Uses the same `scaffoldPluginFiles` generator the MCP
  * `<prefix>_scaffold` tool uses, so the generated plugin is
  * structurally identical to one produced by a host-driven scaffold.
  *
@@ -22,6 +21,8 @@
  * without parsing prose.
  */
 import { resolve } from 'node:path';
+
+import { repoRoot } from './lib/monorepo-paths';
 
 import {
 	scaffoldPluginFiles,
@@ -89,7 +90,7 @@ const main = async (): Promise<void> => {
 				]
 			: [],
 	);
-	const targetDir = resolve(process.cwd(), `libs/plugins/${pluginName}`);
+	const targetDir = resolve(repoRoot(), `libs/plugins/${pluginName}`);
 	const result: IWriteScaffoldedFilesResult =
 		await writeScaffoldedFilesOrThrow(targetDir, files, { keepLegacy });
 	console.log(JSON.stringify(result, null, '\t'));

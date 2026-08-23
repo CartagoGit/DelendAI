@@ -22,6 +22,7 @@ export {
 	PROPOSAL_KIND_BY_PREFIX,
 	KIND_TO_DONE_SUBFOLDER,
 	doneFolderFor,
+	PROPOSAL_SCAN_FOLDERS,
 	PROPOSAL_FLAGS,
 } from '../lib/contracts/constants/proposal-glossary.constant';
 export type {
