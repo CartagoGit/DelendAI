@@ -72,6 +72,31 @@ describe('withFileMutex — cross-process critical section', async () => {
 		expect(existsSync(`${target}.mutex`)).toBe(true);
 	});
 
+	it("a00085 #6: onContention:'wait' never steals a live holder (same as fail at deadline)", async () => {
+		writeFileSync(target, '{}');
+		writeFileSync(
+			`${target}.mutex`,
+			`${process.pid}\n${Date.now()}\nmanual`,
+		);
+		let ran = false;
+		await expect(
+			withFileMutex(
+				target,
+				async () => {
+					ran = true;
+				},
+				{
+					onContention: 'wait',
+					timeoutMs: 120,
+					staleMs: 30_000,
+					pollMs: 20,
+				},
+			),
+		).rejects.toBeInstanceOf(LockContentionError);
+		expect(ran).toBe(false);
+		expect(existsSync(`${target}.mutex`)).toBe(true);
+	});
+
 	it("a00065 S2: explicit onContention:'steal' still reclaims a live lock past the timeout", async () => {
 		writeFileSync(target, '{}');
 		writeFileSync(
