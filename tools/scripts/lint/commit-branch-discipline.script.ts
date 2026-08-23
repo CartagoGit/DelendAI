@@ -1,34 +1,38 @@
 #!/usr/bin/env bun
 /**
- * commit-branch-discipline.script.ts — f00086 S1 (policy flipped
- * 2026-08-24: single shared `develop` branch).
+ * commit-branch-discipline.script.ts — f00086 S1 (refined 2026-08-24:
+ * config-driven, block only per-agent branches).
  *
  * Pre-commit guard. Pure function over
- * `(cwd, stagedFiles, currentBranch) → { ok: true } | { ok: false, blockers: string[] }`.
+ * `(cwd, stagedFiles, currentBranch, agentWorktreeEnabled)` →
+ * `{ ok: true } | { ok: false, blockers: string[] }`.
  *
- * Policy (single shared branch):
- *   - This repo works on ONE branch: `develop`. Agents share commits
- *     and pushes instead of creating per-agent branches.
- *   - `currentBranch === 'develop'` → always allowed.
- *   - Detached HEAD (`currentBranch === null` / empty) → fail-open so
- *     release engineers can check out a tag and commit a fix.
- *   - Any other branch (`agent/*`, `feature/*`, …) → blocked with a
- *     next-action telling the agent to switch back to develop. No new
- *     branches; joint work, not parallel isolates.
+ * Policy (config-driven):
+ *   - `develop` → always allowed (the shared branch).
+ *   - Detached HEAD (`null` / empty) → fail-open (release hotfix).
+ *   - When `agentWorktree: true` → every branch is allowed: `agent/*`
+ *     branches are the expected per-agent isolation shape.
+ *   - When `agentWorktree: false` (this repo) → `agent/*` branches are
+ *     blocked (agents never branch on their own). User-managed
+ *     branches (`fix/*`, `feature/*`, …) are allowed.
  *
- * Default behaviour: **block on a stray branch.** The agent switches
- * back to `develop` and re-commits there.
+ * Default behaviour: **block only `agent/*`** when the worktree gate
+ * is off. The agent switches back to `develop` and re-commits there.
  */
 import { spawnSync } from 'node:child_process';
 
 import { isLefthookBypassed } from '../lib/lefthook-bypass';
+import { readAgentWorktreeFlag } from './lib/agent-worktree-flag.lib';
 
 const DEVELOP_BRANCH = 'develop';
+const AGENT_BRANCH_PREFIX = 'agent/';
 
 export interface ICommitBranchInput {
 	readonly cwd: string;
 	readonly stagedFiles: readonly string[];
 	readonly currentBranch: string | null;
+	/** Resolved `mcp-vertex.config.json#agentWorktree` (default false). */
+	readonly agentWorktreeEnabled?: boolean;
 }
 
 export type CommitBranchResult =
@@ -39,7 +43,7 @@ export type CommitBranchResult =
 export const lintCommitBranch = (
 	input: ICommitBranchInput,
 ): CommitBranchResult => {
-	const { currentBranch } = input;
+	const { currentBranch, agentWorktreeEnabled = false } = input;
 	const blockers: string[] = [];
 
 	// Detached HEAD / non-git cwd: fail-open. Release engineers may
@@ -54,18 +58,27 @@ export const lintCommitBranch = (
 		return { ok: true };
 	}
 
-	// Anything else is a stray per-agent / feature branch. This repo
-	// works on `develop` only; agents share one branch.
+	// With the worktree gate on, `agent/*` branches are the expected
+	// per-agent isolation shape — allow every branch.
+	if (agentWorktreeEnabled === true) {
+		return { ok: true };
+	}
+
+	// Gate off: the only branches agents must not create are `agent/*`.
+	// User-managed branches (fix/*, feature/*, …) are allowed.
+	if (!currentBranch.startsWith(AGENT_BRANCH_PREFIX)) {
+		return { ok: true };
+	}
+
 	blockers.push(
-		`committing on \`${currentBranch}\` — this repo works on \`develop\` only.`,
+		`committing on \`${currentBranch}\` — per-agent branches are disabled (agentWorktree: false).`,
 		'',
 		'next-action:',
 		`  switch back:  git switch ${DEVELOP_BRANCH}`,
-		'  then commit and push on develop. agents share one branch;',
-		'  do not create agent/* or feature/* branches.',
+		'  then commit and push on develop (the shared branch).',
+		'  only the operator creates branches; agents never branch on their own.',
 		'',
-		'  if this is a true emergency (CI follow-up, release hotfix),',
-		'  bypass the hook with:  LEFTHOOK_BYPASS=1 git commit ...',
+		'  if this is a true emergency, bypass:  LEFTHOOK_BYPASS=1 git commit ...',
 	);
 	return { ok: false, blockers };
 };
@@ -76,6 +89,7 @@ interface ICliArgs {
 	readonly cwd: string;
 	readonly staged: readonly string[];
 	readonly branch: string | null;
+	readonly agentWorktree?: boolean;
 	readonly listOnly: boolean;
 }
 
@@ -83,6 +97,7 @@ const parseArgs = (argv: readonly string[]): ICliArgs => {
 	let cwd = process.cwd();
 	const staged: string[] = [];
 	let branch: string | null | undefined;
+	let agentWorktree: boolean | undefined;
 	let listOnly = false;
 	for (let i = 0; i < argv.length; i += 1) {
 		const arg = argv[i];
@@ -105,6 +120,11 @@ const parseArgs = (argv: readonly string[]): ICliArgs => {
 				branch = v === undefined ? null : v;
 				break;
 			}
+			case '--agent-worktree': {
+				const v = argv[++i];
+				agentWorktree = v === 'true' || v === '1';
+				break;
+			}
 			case '--list-only':
 				listOnly = true;
 				break;
@@ -112,7 +132,13 @@ const parseArgs = (argv: readonly string[]): ICliArgs => {
 				break;
 		}
 	}
-	return { cwd, staged, branch: branch ?? null, listOnly };
+	return {
+		cwd,
+		staged,
+		branch: branch ?? null,
+		...(agentWorktree !== undefined ? { agentWorktree } : {}),
+		listOnly,
+	};
 };
 
 const readCurrentBranch = (cwd: string): string | null => {
@@ -166,6 +192,8 @@ const main = async (): Promise<number> => {
 	const branch = args.branch ?? readCurrentBranch(args.cwd);
 	const staged =
 		args.staged.length > 0 ? args.staged : readStagedFiles(args.cwd);
+	const agentWorktreeEnabled =
+		args.agentWorktree ?? readAgentWorktreeFlag(args.cwd);
 	if (args.listOnly) {
 		process.stdout.write(`${staged.join('\n')}\n`);
 		return 0;
@@ -174,6 +202,7 @@ const main = async (): Promise<number> => {
 		cwd: args.cwd,
 		stagedFiles: staged,
 		currentBranch: branch,
+		agentWorktreeEnabled,
 	});
 	const report = formatReport(result);
 	if (result.ok) {

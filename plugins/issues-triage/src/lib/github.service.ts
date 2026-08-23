@@ -1,9 +1,13 @@
 import { runGhCli } from '@mcp-vertex/core/public';
 
-/** Injected exec seam — production uses the shared `gh` runner. */
-export type IGhExec = (
-	argv: readonly string[],
-) => Promise<{ ok: boolean; code: number; stdout: string; stderr: string }>;
+import { BOT_REPLY_MARKER } from './contracts/constants/github.constant';
+import type {
+	ICommentResult,
+	IGhExec,
+	IGhResult,
+	ITriageIssueDetail,
+	ITriageIssueSummary,
+} from './contracts/interfaces/github.interface';
 
 export const ghExec: IGhExec = async (argv) => {
 	const run = await runGhCli(argv);
@@ -14,10 +18,6 @@ export const ghExec: IGhExec = async (argv) => {
 		stderr: run.stderr,
 	};
 };
-
-export type IGhResult<T> =
-	| { readonly ok: true; readonly data: T }
-	| { readonly ok: false; readonly reason: string };
 
 const sliceJson = (raw: string): string => {
 	const trimmed = raw.trim();
@@ -73,25 +73,6 @@ const labelNames = (value: unknown): readonly string[] =>
 				})
 				.filter((label) => label !== '')
 		: [];
-
-export interface ITriageIssueSummary {
-	readonly number: number;
-	readonly title: string;
-	readonly labels: readonly string[];
-	readonly updatedAt: string;
-}
-
-export interface ITriageIssueDetail {
-	readonly number: number;
-	readonly title: string;
-	readonly body: string;
-	readonly labels: readonly string[];
-	readonly commentCount: number;
-	readonly hasBotReply: boolean;
-}
-
-/** Bot marker to detect our own previous replies. */
-export const BOT_REPLY_MARKER = '@mcp-vertex/issues-triage';
 
 export const listOpenIssues = async (
 	repo: string,
@@ -175,11 +156,6 @@ export const fetchIssue = async (
 		},
 	};
 };
-
-export interface ICommentResult {
-	readonly number: number;
-	readonly url?: string | undefined;
-}
 
 export const addComment = async (
 	repo: string,

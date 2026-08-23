@@ -1,16 +1,5 @@
-import type { ITriageAnalysis } from './analysis.helper';
+import type { IBuildProposalDraftInput } from './contracts/interfaces/proposal-draft.interface';
 import { kindForCategory } from './analysis.helper';
-
-export interface IBuildProposalDraftInput {
-	readonly id: string;
-	readonly issueNumber: number;
-	readonly issueUrl: string;
-	readonly repo: string;
-	readonly title: string;
-	readonly body: string;
-	readonly analysis: ITriageAnalysis;
-	readonly date: string;
-}
 
 const yamlQuote = (value: string): string => JSON.stringify(value);
 

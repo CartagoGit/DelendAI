@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-08-23T23:05:41.539Z",
+	"generatedAt": "2026-08-23T23:26:39.069Z",
 	"mode": "compact",
 	"tools": [
 		{
@@ -167,6 +167,10 @@
 		{
 			"name": "mcp-vertex_env_env_explains",
 			"plugin": "env"
+		},
+		{
+			"name": "mcp-vertex_error-reporting_report_status",
+			"plugin": "error-reporting"
 		},
 		{
 			"name": "mcp-vertex_forge_ci_status",
@@ -1136,6 +1140,13 @@
 				"kind": "feat"
 			},
 			{
+				"id": "f00158",
+				"title": "f00158",
+				"track": "github",
+				"status": "ready",
+				"kind": "feat"
+			},
+			{
 				"id": "r00014",
 				"title": "r00014",
 				"track": "bootstrap",
@@ -1190,10 +1201,17 @@
 				"track": "plugins+adoption",
 				"status": "ready",
 				"kind": "fix"
+			},
+			{
+				"id": "x00213",
+				"title": "x00213",
+				"track": "quality+proposals+lint-baseline",
+				"status": "ready",
+				"kind": "fix"
 			}
 		],
 		"byStatus": {
-			"ready": 10,
+			"ready": 12,
 			"in-progress": 0,
 			"review": 0,
 			"paused": 1,
