@@ -13,6 +13,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import type { IScaffoldToolOptions } from '@mcp-vertex/core/public';
 import {
 	buildScaffoldReport,
+	buildStandaloneCoreToolRegistrations,
 	createWorkspacePathProvider,
 	scaffoldAgentFile,
 	scaffoldClaudeAgentFile,
@@ -215,7 +216,19 @@ describe('scaffold-host generators', () => {
 			file.path.endsWith('host-config.ts'),
 		);
 		expect(config?.content).toContain("namespacePrefix: 'acme'");
-		expect(config?.content).toContain('buildScaffoldToolRegistration');
+		// The default host surface is the standalone core set (overview +
+		// bootstrap + scaffold) — never just the single-artefact scaffold
+		// helper, or the generated agents would name tools the host lacks.
+		expect(config?.content).toContain(
+			'buildStandaloneCoreToolRegistrations',
+		);
+		expect(config?.content).not.toContain('buildScaffoldToolRegistration');
+		// Greenfield host is self-contained: package, tsconfig, README and
+		// the Codex CLI MCP registration ship alongside the server entry.
+		expect(paths).toContain('libs/mcp-project/package.json');
+		expect(paths).toContain('libs/mcp-project/tsconfig.json');
+		expect(paths).toContain('libs/mcp-project/README.md');
+		expect(paths).toContain('.codex/config.toml');
 		const instructions = files.find((file) =>
 			file.path.endsWith('copilot-instructions.md'),
 		);
@@ -344,6 +357,30 @@ describe('scaffold-host generators', () => {
 		expect(orchestrator.content).toContain(
 			'mcp-project-acme/acme_overview',
 		);
+	});
+
+	// x00208 S4 — the contract test behind the original ROTO: the
+	// generated agents promise `overview` + the bootstrap tools as
+	// always-present, so the standalone host MUST register exactly that
+	// surface (proposal tools stay conditional on the CLI's proposals
+	// plugin and are therefore not required here).
+	it('standalone core surface registers every always-present tool the agents promise', () => {
+		const workspace = createWorkspacePathProvider(tmpdir());
+		const registrations = buildStandaloneCoreToolRegistrations({
+			namespacePrefix: 'acme',
+			workspace,
+			projectName: 'Acme Quest',
+			projectPackageName: '@acme/mcp-project',
+		});
+		const ids = registrations.map((registration) => registration.id);
+		expect(ids).toContain('overview');
+		expect(ids).toContain('analyze_project');
+		expect(ids).toContain('plan_mcp_project');
+		expect(ids).toContain('create_project');
+		expect(ids).toContain('drift_check');
+		expect(ids).toContain('scaffold');
+		// Ids are unique — planRegistrationOrder must not reject the set.
+		expect(new Set(ids).size).toBe(ids.length);
 	});
 });
 

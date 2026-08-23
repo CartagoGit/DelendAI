@@ -706,17 +706,15 @@ export const runAutoWork = async (
 		`If non-trivial: ${orchestration.next}; then ${prefix}_delegate one claimable slice to a subagent.`,
 		`Claim its files: ${prefix}_agent_lock { action: "claim", task_id, files }. On lock-conflict or all-claimed work, use notification_await_lock once (or wait for a lock-released notification) — do NOT poll status in a loop.`,
 		`Cycle boundary: re-check your agent slot with ${prefix}_agent_names before starting the claimed slice so the host wiring cannot skip identity resolution.`,
-		`Cycle boundary: if the logs plugin is loaded, run logs_query to inspect the latest append-only events for this proposal/claim before editing.`,
-		`Cycle boundary: if the notification plugin is loaded, subscribe with notification_notify_status { kind: 'lock-released' } before the work loop so the next claim reacts to releases instead of polling.`,
+		`Cycle boundary: if the logs plugin is loaded, run logs_query before editing and again after validation/close.`,
+		`Cycle boundary: if the notification plugin is loaded, keep notification_notify_status { kind: 'lock-released' } active through the work loop and before each next claim.`,
 		'Implement exactly that slice — nothing outside the claimed files.',
 		...(options.validationCommand
 			? [`Validate: run \`${options.validationCommand}\`.`]
 			: [
 					'Validate per the project gate (see get_validation_matrix if present).',
 				]),
-		`If the logs plugin is loaded, run logs_query again after validation/close to confirm the slice's append events landed.`,
 		`Submit the finished slice for peer review (do NOT close it yourself): ${prefix}_proposal_review { action: "submit", proposalId, sliceId, agent: "<implementer>" }. A DIFFERENT agent must then ${prefix}_proposal_review { action: "approve" | "request_changes", proposalId, sliceId, agent: "<reviewer≠implementer>" }. close_slice is reserved for hosts that set requirePeerReview:false.`,
-		`If the notification plugin is loaded, keep notification_notify_status { kind: 'lock-released' } active before claiming the next slice.`,
 		`If that was the last open slice for the proposal, run ${prefix}_sync_proposals once; otherwise do not sync mid-flight.`,
 		...persistStep,
 		`Repeat ${prefix}_auto_work for the next slice/proposal.`,
@@ -763,8 +761,9 @@ export const runAutoWork = async (
 		// blocks the plan. Lets the orchestrator surface "agent X has
 		// 8 dirty files" / "Y is 5 commits behind" without a second
 		// tool call. Failures are swallowed — the status snapshot is
-		// advisory, not gating.
-		branchStatusWarnings,
+		// advisory, not gating. Omitted when empty (like the hygiene
+		// arrays below) to keep the cold-start plan cheap.
+		...(branchStatusWarnings.length > 0 ? { branchStatusWarnings } : {}),
 		// f00075 S1: hygiene hints ride along only when there is
 		// already something to flag. Cheap (reuses the same git
 		// runner, no extra round-trip to a separate tool) and bounded

@@ -79,14 +79,17 @@ export default definePlugin({
 						"- `git_blame` explains who/when for a file (optionally one line range); `git_show` gives a commit's metadata + --stat without the full patch.",
 						'- `git_worktree` only lists existing worktrees — to create/remove a per-agent one use `proposals_agent_worktree`.',
 						'- These read-only tools never modify the repo (no add/commit/push).',
+						'',
+						'- **Definition of done:** a finished task ends with its changes committed and pushed under the configured author identity — never leave completed work uncommitted and never ask the user whose name to use (the author is resolved centrally).',
 						...(allowWrite
 							? [
 									'',
-									`- \`${ctx.namespacePrefix}_commit\` / \`${ctx.namespacePrefix}_push\` are enabled (write effect): commit messages must use a Conventional Commit prefix; \`--amend\` is refused unless the last commit author matches the calling agent; push to a protected branch (main/master) is refused; \`force: "with-lease"\` is the only supported force mode (never plain --force by default).`,
+									`- Commit with \`${ctx.namespacePrefix}_commit\` (Conventional Commit message) and push with \`${ctx.namespacePrefix}_push\` at the end of every task.`,
+									`- \`${ctx.namespacePrefix}_commit\` / \`${ctx.namespacePrefix}_push\` (write effect): commit messages must use a Conventional Commit prefix; \`--amend\` is refused unless the last commit author matches the calling agent; push to a protected branch (main/master) is refused; \`force: "with-lease"\` is the only supported force mode (never plain --force by default).`,
 								]
 							: [
 									'',
-									'- Write tools (`_commit`/`_push`) are disabled by default. A host opts in via `{"plugins":{"git":{"options":{"allowWrite":true}}}}`.',
+									'- Write tools (`_commit`/`_push`) are disabled by default. A host opts in via `{"plugins":{"git":{"options":{"allowWrite":true}}}}`; until then, commit/push through the proposals persist step or the host shell — still do not leave completed work uncommitted.',
 								]),
 					].join('\n'),
 				},

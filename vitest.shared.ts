@@ -92,6 +92,11 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 	const issues = resolve(workspaceRoot, 'plugins/issues/src');
 	const cache = resolve(workspaceRoot, 'plugins/cache/src');
 	const changelog = resolve(workspaceRoot, 'plugins/changelog/src');
+	const errorReporting = resolve(
+		workspaceRoot,
+		'plugins/error-reporting/src',
+	);
+	const issuesTriage = resolve(workspaceRoot, 'plugins/issues-triage/src');
 	const container = resolve(workspaceRoot, 'plugins/container/src');
 	const client = resolve(workspaceRoot, 'packages/client/src');
 	const cli = resolve(workspaceRoot, 'packages/cli/src');
@@ -595,6 +600,30 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 		{
 			find: '@mcp-vertex/changelog',
 			replacement: resolve(changelog, 'index.ts'),
+		},
+		{
+			find: '@mcp-vertex/error-reporting/public',
+			replacement: resolve(errorReporting, 'public/index.ts'),
+		},
+		{
+			find: /^@mcp-vertex\/error-reporting\/lib\/(.*)$/,
+			replacement: `${resolve(errorReporting, 'lib')}/$1`,
+		},
+		{
+			find: '@mcp-vertex/error-reporting',
+			replacement: resolve(errorReporting, 'index.ts'),
+		},
+		{
+			find: '@mcp-vertex/issues-triage/public',
+			replacement: resolve(issuesTriage, 'public/index.ts'),
+		},
+		{
+			find: /^@mcp-vertex\/issues-triage\/lib\/(.*)$/,
+			replacement: `${resolve(issuesTriage, 'lib')}/$1`,
+		},
+		{
+			find: '@mcp-vertex/issues-triage',
+			replacement: resolve(issuesTriage, 'index.ts'),
 		},
 		{
 			find: '@mcp-vertex/client/public',

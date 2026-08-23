@@ -325,6 +325,8 @@ export {
 	buildScaffoldToolRegistration,
 	SCAFFOLD_INPUT_SCHEMA,
 } from '../lib/scaffold/scaffold-tool';
+export { buildStandaloneCoreToolRegistrations } from '../lib/scaffold/standalone-core-tools';
+export type { IStandaloneCoreToolsOptions } from '../lib/scaffold/standalone-core-tools';
 export type {
 	IScaffoldArgs,
 	IScaffoldReport,
