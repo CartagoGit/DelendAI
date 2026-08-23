@@ -85,7 +85,10 @@ const CLOSE_SLICE_VALIDATION_TIMEOUT_MS = 45_000;
  * `catch (err: any)`.
  */
 type ICloseSliceThrownError = Error & {
-	readonly kind?: 'validation-error' | 'quality-failed';
+	readonly kind?:
+		| 'validation-error'
+		| 'quality-failed'
+		| 'peer-review-required';
 	readonly output?: string;
 	readonly detail?: {
 		readonly ok: boolean;
@@ -759,7 +762,7 @@ export const buildCloseSliceRegistration = (
 					validationOutput: z.string().optional(),
 				}),
 				description:
-					'Mark a slice as done in its proposal document and release its agent lock atomically, then re-sync. Requires recent validate evidence within the last 24h unless force:true is passed. When per-agent worktrees are on and the slice was closed on an agent/* branch, records that branch for deliberate integration (non-destructive: runs no git write). Use it the moment a slice passes its acceptance.',
+					'Mark a slice as done in its proposal document and release its agent lock atomically, then re-sync. Requires recent validate evidence within the last 24h unless force:true is passed. When requirePeerReview is on (the default), the slice must already have review-state: done from proposal_review action=approve by a different agent — implementers submit via proposal_review, they do not close their own slice. When per-agent worktrees are on and the slice was closed on an agent/* branch, records that branch for deliberate integration (non-destructive: runs no git write).',
 				inputSchema: z.object({
 					proposalId: z.string(),
 					sliceId: z.string(),
@@ -878,6 +881,24 @@ export const buildCloseSliceRegistration = (
 								throw err;
 							}
 						}
+						if (
+							options.requirePeerReview !== false &&
+							args.force !== true
+						) {
+							const review = parseReviewState(rawBlock);
+							if (review.status !== 'done') {
+								const err: ICloseSliceThrownError =
+									Object.assign(
+										new Error(
+											'peer-review required before close_slice can mark the slice done',
+										),
+										{
+											kind: 'peer-review-required' as const,
+										},
+									);
+								throw err;
+							}
+						}
 						const block = flipSliceStatusDone(rawBlock);
 						const nextContent = md.replace(
 							blockRe,
@@ -903,6 +924,31 @@ export const buildCloseSliceRegistration = (
 							sliceId: args.sliceId,
 							closed: false,
 							validationOutput: String(err.output ?? ''),
+						};
+						return {
+							content: [
+								{
+									type: 'text' as const,
+									text: JSON.stringify(envelope),
+								},
+							],
+							structuredContent: envelope,
+							isError: true,
+						};
+					}
+					if (err.kind === 'peer-review-required') {
+						const envelope = {
+							ok: false as const,
+							kind: 'peer-review-required',
+							blockerType: 'peer-review-required' as const,
+							error: {
+								reason: String(err.message),
+								nextAction: `${options.namespacePrefix}_proposal_review { action: "submit", proposalId: "${entry.id}", sliceId: "${args.sliceId}", agent: "<implementer>" } then a DIFFERENT agent ${options.namespacePrefix}_proposal_review { action: "approve", proposalId: "${entry.id}", sliceId: "${args.sliceId}", agent: "<reviewer≠implementer>" }`,
+								kind: 'peer-review-required',
+							},
+							proposalId: entry.id,
+							sliceId: args.sliceId,
+							closed: false,
 						};
 						return {
 							content: [
@@ -1407,11 +1453,22 @@ export const buildProposalBoardRegistration = (
 								}),
 							),
 							claimableSliceIds: z.array(z.string()).optional(),
+							/**
+							 * Why the board could not read this proposal.
+							 *
+							 * Absent on the happy path. Without it, an index
+							 * entry pointing at a moved or deleted file was
+							 * indistinguishable from a proposal that genuinely
+							 * has no slices: both came back as `slices: []`,
+							 * and an orchestrator would report "actionable,
+							 * nothing to claim" and stall.
+							 */
+							unreadable: z.string().optional(),
 						}),
 					),
 				}),
 				description:
-					'Returns each actionable proposal with its slices (status, owner) and the slices claimable right now. Read-only; the orchestrator board for planning multi-agent work.',
+					'Returns each actionable proposal with its slices (status, owner) and the slices claimable right now. Read-only; the orchestrator board for planning multi-agent work. A proposal whose document cannot be read reports `unreadable` instead of an empty slice list.',
 			},
 			async () => {
 				const index = await readJsonOrNull<{
@@ -1440,10 +1497,35 @@ export const buildProposalBoardRegistration = (
 								dirname(options.indexPathAbs),
 							p.file,
 						);
-						const md = (await readTextOrNull(docPath)) ?? '';
+						const md = await readTextOrNull(docPath);
+						if (md === null) {
+							// El índice apunta a un fichero que ya no está.
+							// Pasa en cuanto alguien mueve una propuesta a
+							// mano —archivarla en `done/`, por ejemplo— sin
+							// pasar por `sync_proposals`, y en un repo donde
+							// el humano también toca los ficheros eso es lo
+							// normal, no la excepción.
+							//
+							// Antes devolvía `slices: []`, que es exactamente
+							// lo que devuelve una propuesta sin slices. Un
+							// orquestador veía "accionable, nada que
+							// reclamar" y se quedaba parado sin ninguna pista.
+							return {
+								id: p.id,
+								status: p.status,
+								slices: [],
+								unreadable: `index points at ${p.file}, which does not exist — run sync_proposals`,
+							};
+						}
 						const parsed = parseProposalSlicePlan(p.id, md);
 						if (parsed === null) {
-							return { id: p.id, status: p.status, slices: [] };
+							return {
+								id: p.id,
+								status: p.status,
+								slices: [],
+								unreadable:
+									'the document has no parseable `## Slices` section',
+							};
 						}
 						const plan = deriveSliceStatuses(parsed, locks);
 						return {

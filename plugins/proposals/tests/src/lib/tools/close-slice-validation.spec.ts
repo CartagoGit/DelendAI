@@ -148,6 +148,7 @@ describe('close_slice validation gate (a00069 S5)', () => {
 				proposalIndexFile: '.cache/mcp-vertex/proposals/index.json',
 			},
 			validationCommand: 'bun run validate',
+			requirePeerReview: false,
 		};
 		mkdirSync(opts.proposalsDirAbs, { recursive: true });
 		mkdirSync(join(root, '.cache/mcp-vertex/proposals'), {

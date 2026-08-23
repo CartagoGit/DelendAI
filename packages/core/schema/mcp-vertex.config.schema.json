@@ -139,6 +139,7 @@
 					},
 					"options": {
 						"type": "object",
+						"description": "Plugin-owned options. Checkpoint advisories (f00156) live here: usage-tracking.sessionHygiene and proposals.checkpointAdvisories. Session age never hard-blocks.",
 						"propertyNames": {
 							"type": "string"
 						},

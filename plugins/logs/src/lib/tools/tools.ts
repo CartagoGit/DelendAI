@@ -230,7 +230,7 @@ export const buildLogToolRegistrations = (
 					`${prefix}_errors_tail`,
 					{
 						description:
-							'Return the newest events from the curated error stream (outcome not ok/idle: failed, timed-out, dead, cancelled, unknown). Each entry carries full context by default (args, result, error message+stack, elapsedMs) — pass includeMeta:false to omit it. Read this BEFORE reading source when auditing or debugging: it points at exactly where execution did not reach the expected state.',
+							'Return the newest events from the curated error stream (outcome not ok/idle: failed, timed-out, dead, cancelled, unknown). Omits verbose meta by default so a debugging session cannot overflow the host context; pass includeMeta:true only for the one event you are inspecting. Read this BEFORE reading source when auditing or debugging: it points at exactly where execution did not reach the expected state.',
 						inputSchema: z.object({
 							limit: z.number().optional(),
 							kindFilter: z.string().optional(),
@@ -254,7 +254,7 @@ export const buildLogToolRegistrations = (
 									kindFilter: args.kindFilter,
 								}),
 							),
-							args.includeMeta ?? true,
+							args.includeMeta,
 						);
 						return toolJson({
 							events,
