@@ -419,6 +419,16 @@ export type {
 } from '../lib/shared/fs-tools';
 export { redactSecrets } from '../lib/shared/redact';
 export type { IRedactResult } from '../lib/shared/redact';
+export {
+	UNICODE_TOKEN_LEGEND,
+	decodeUnicodeFromAgent,
+	inspectUnicodeForAgent,
+	rewriteUnicodeForAgent,
+} from '../lib/shared/unicode-safe-text';
+export type {
+	IUnicodeSafeText,
+	UnicodeTokenKind,
+} from '../lib/contracts/interfaces/unicode-safe-text.interface';
 export { runArgv, runCommand } from '../lib/shared/run-command';
 export type {
 	IRunCommandOptions,

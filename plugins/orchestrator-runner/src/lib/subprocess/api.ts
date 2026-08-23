@@ -11,6 +11,8 @@
  * turns `x-ratelimit-*` / `retry-after` headers into an `httpHeaderSample`
  * the caller can hand to `writeQuotaSnapshot`.
  */
+import { rewriteUnicodeForAgent } from '@mcp-vertex/core/public';
+
 import {
 	httpHeaderSample,
 	type IProviderQuotaSample,
@@ -112,7 +114,9 @@ export const createApiInvoker = (options: IApiInvokerOptions): IKindInvoker => {
 						authorization: `Bearer ${key}`,
 						'content-type': 'application/json',
 					},
-					body: JSON.stringify({ prompt: request.prompt }),
+					body: JSON.stringify({
+						prompt: rewriteUnicodeForAgent(request.prompt),
+					}),
 					signal: controller.signal,
 				});
 				// Feed the quota merge regardless of success (rate-limit

@@ -20,6 +20,7 @@ import type {
 	ProviderKind,
 	RoutingMode,
 } from '@mcp-vertex/core/public';
+import { rewriteUnicodeForAgent } from '@mcp-vertex/core/public';
 
 import type { CapabilityTag } from '@mcp-vertex/core/public';
 import { planFallbackChain, type FallbackStrategy } from './fallback';
@@ -274,19 +275,20 @@ export class InvocationManager {
 		const strategy: FallbackStrategy =
 			args.fallbackStrategy ?? this.opts.fallbackStrategy;
 		const invocationId = this.newId();
+		const prompt = rewriteUnicodeForAgent(args.task);
 
 		const chain = planFallbackChain({
 			providers: this.opts.providers,
 			availabilityOf: this.opts.availabilityOf,
 			hint: { mode, capabilities: args.capabilityHints ?? [], costPref },
-			prompt: args.task,
+			prompt,
 			sessionId,
 			strategy,
 			maxDepth: this.opts.maxFallbackDepth,
 		});
 
 		if (chain.length === 0 || chain[0] === undefined) {
-			const empty = this.emptyDecision(args.task, mode, sessionId);
+			const empty = this.emptyDecision(prompt, mode, sessionId);
 			return {
 				decision: empty,
 				sessionId,
