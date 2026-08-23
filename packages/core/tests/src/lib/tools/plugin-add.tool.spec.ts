@@ -65,8 +65,8 @@ const capture = async (
 };
 
 const parse = (result: IToolResult): Record<string, unknown> =>
-	(result.structuredContent ??
-		(JSON.parse(result.content[0]?.text ?? '{}') as Record<string, unknown>));
+	result.structuredContent ??
+	(JSON.parse(result.content[0]?.text ?? '{}') as Record<string, unknown>);
 
 describe('plugin_add tool registration (f00141/S2)', () => {
 	it('returns not-found and skips install/configure when the id is missing', async () => {

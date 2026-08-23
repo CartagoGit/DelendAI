@@ -4,14 +4,7 @@ import {
 } from '@mcp-vertex/core/public';
 import z from 'zod';
 
-import type { IReportStore } from '../report-store.service';
-import type { IErrorReportingOptions } from '../options.constant';
-
-export interface IReportStatusToolOptions {
-	readonly namespacePrefix: string;
-	readonly options: IErrorReportingOptions;
-	readonly store: IReportStore;
-}
+import type { IReportStatusToolOptions } from '../contracts/interfaces/report-status.interface';
 
 const ReportStatusInputSchema = z.object({}).strict();
 

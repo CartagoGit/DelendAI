@@ -10,7 +10,9 @@ import type {
 	IProjectSignals,
 } from '@mcp-vertex/auto-plugin-selector/lib/contracts/interfaces/plugin-fit.interface';
 
-const cand = (over: Partial<IPluginCandidate> & { id: string }): IPluginCandidate => ({
+const cand = (
+	over: Partial<IPluginCandidate> & { id: string },
+): IPluginCandidate => ({
 	tags: over.tags ?? [],
 	summary: over.summary ?? '',
 	id: over.id,
@@ -18,12 +20,18 @@ const cand = (over: Partial<IPluginCandidate> & { id: string }): IPluginCandidat
 
 describe('recommendPlugins', () => {
 	it('returns empty for an empty candidate list', () => {
-		const signals: IProjectSignals = { pack: 'typescript', languages: ['typescript'] };
+		const signals: IProjectSignals = {
+			pack: 'typescript',
+			languages: ['typescript'],
+		};
 		expect(recommendPlugins(signals, [])).toEqual([]);
 	});
 
 	it('returns empty when no candidate matches any signal', () => {
-		const signals: IProjectSignals = { pack: 'typescript', languages: ['typescript'] };
+		const signals: IProjectSignals = {
+			pack: 'typescript',
+			languages: ['typescript'],
+		};
 		const fits = recommendPlugins(signals, [
 			cand({ id: 'unrelated', tags: ['rust'] }),
 		]);
@@ -31,7 +39,10 @@ describe('recommendPlugins', () => {
 	});
 
 	it('ranks a pack-matched plugin first', () => {
-		const signals: IProjectSignals = { pack: 'typescript', languages: ['typescript'] };
+		const signals: IProjectSignals = {
+			pack: 'typescript',
+			languages: ['typescript'],
+		};
 		const fits = recommendPlugins(signals, [
 			cand({ id: 'a', tags: ['docs'] }),
 			cand({ id: 'b', tags: ['typescript'] }),
@@ -40,7 +51,10 @@ describe('recommendPlugins', () => {
 	});
 
 	it('omits candidates whose tags match no signal (zero or negative raw score)', () => {
-		const signals: IProjectSignals = { pack: 'mixed', languages: ['python', 'rust'] };
+		const signals: IProjectSignals = {
+			pack: 'mixed',
+			languages: ['python', 'rust'],
+		};
 		const fits = recommendPlugins(signals, [
 			cand({ id: 'py', tags: ['python'] }),
 			cand({ id: 'rust', tags: ['rust'] }),
@@ -77,7 +91,10 @@ describe('recommendPlugins', () => {
 	});
 
 	it('normalizes so the top plugin is always 1.0', () => {
-		const signals: IProjectSignals = { pack: 'typescript', languages: ['typescript'] };
+		const signals: IProjectSignals = {
+			pack: 'typescript',
+			languages: ['typescript'],
+		};
 		const fits = recommendPlugins(signals, [
 			cand({ id: 'a', tags: ['typescript'] }),
 			cand({ id: 'b', tags: ['typescript', 'docs'] }),
@@ -100,7 +117,10 @@ describe('recommendPlugins', () => {
 	});
 
 	it('honors a limit', () => {
-		const signals: IProjectSignals = { pack: 'typescript', languages: ['typescript'] };
+		const signals: IProjectSignals = {
+			pack: 'typescript',
+			languages: ['typescript'],
+		};
 		const candidates = Array.from({ length: 10 }, (_, i) =>
 			cand({ id: `p${i}`, tags: ['typescript'] }),
 		);
@@ -109,7 +129,10 @@ describe('recommendPlugins', () => {
 	});
 
 	it('is pure (same input -> same output)', () => {
-		const signals: IProjectSignals = { pack: 'typescript', languages: ['typescript'] };
+		const signals: IProjectSignals = {
+			pack: 'typescript',
+			languages: ['typescript'],
+		};
 		const candidates = [
 			cand({ id: 'a', tags: ['typescript'] }),
 			cand({ id: 'b', tags: ['rust'] }),
@@ -121,7 +144,10 @@ describe('recommendPlugins', () => {
 	});
 
 	it('lists unmatched tags so the caller can de-recommend', () => {
-		const signals: IProjectSignals = { pack: 'typescript', languages: ['typescript'] };
+		const signals: IProjectSignals = {
+			pack: 'typescript',
+			languages: ['typescript'],
+		};
 		const fits = recommendPlugins(signals, [
 			cand({ id: 'mixed', tags: ['typescript', 'rust'] }),
 		]);

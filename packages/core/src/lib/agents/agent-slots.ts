@@ -39,24 +39,11 @@
  *      `plugins/proposals/src/lib/shared/agent-conventions.ts`
  *      (`AGENT_CANONICAL_ROLES`) — the lint will fail if you forget.
  */
-export const AGENT_SLOTS = [
-	'orchestrator',
-	'proposal_guardian',
-	'implementation_runner',
-	'delivery_verifier',
-	'technical_investigator',
-] as const;
-
-export type IAgentSlot = (typeof AGENT_SLOTS)[number];
-
-/** Bounded sub-slots only — every slot except the root orchestrator. */
-export type ISubagentSlot = Exclude<IAgentSlot, 'orchestrator'>;
-
-/**
- * Runtime-derived subset of `AGENT_SLOTS` minus the orchestrator. The
- * scaffolder iterates this list to emit one adapter file per sub-slot
- * in each supported host's agents directory.
- */
-export const SUBAGENT_SLOTS: readonly ISubagentSlot[] = AGENT_SLOTS.filter(
-	(slot): slot is ISubagentSlot => slot !== 'orchestrator',
-);
+export {
+	AGENT_SLOTS,
+	SUBAGENT_SLOTS,
+} from '../contracts/constants/agent-slots.constant';
+export type {
+	IAgentSlot,
+	ISubagentSlot,
+} from '../contracts/interfaces/agent-slot.interface';

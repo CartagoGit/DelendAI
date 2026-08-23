@@ -84,7 +84,7 @@ const buildHandler = async () => {
 				tag?: string;
 				origin?: 'first-party' | 'community';
 				limit?: number;
-			}) => Promise<unknown>)
+		  }) => Promise<unknown>)
 		| undefined;
 	const registration = buildPluginSearchRegistration({
 		namespacePrefix: 'mcp-vertex',
@@ -136,9 +136,9 @@ describe('buildPluginSearchRegistration', () => {
 			'sec-lint',
 			'security-shield',
 		]);
-		expect(result.entries.every((entry) => entry.tags.includes('security'))).toBe(
-			true,
-		);
+		expect(
+			result.entries.every((entry) => entry.tags.includes('security')),
+		).toBe(true);
 	});
 
 	it('filters to community entries when origin is community', async () => {
@@ -146,9 +146,9 @@ describe('buildPluginSearchRegistration', () => {
 		const result = parseTextResult(await handler({ origin: 'community' }));
 
 		expect(result.entries).toHaveLength(2);
-		expect(result.entries.every((entry) => entry.origin === 'community')).toBe(
-			true,
-		);
+		expect(
+			result.entries.every((entry) => entry.origin === 'community'),
+		).toBe(true);
 	});
 
 	it('reports truncation when the requested limit clips the result set', async () => {

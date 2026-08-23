@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { shouldReport, submitIssue } from '../src/lib/reporter.service';
-import type { IIssueExec } from '../src/lib/reporter.service';
+import type { IIssueExec } from '../src/lib/contracts/interfaces/reporter.interface';
 
 describe('shouldReport', () => {
 	const now = Date.parse('2026-08-24T00:00:00.000Z');

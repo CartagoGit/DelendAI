@@ -6,10 +6,7 @@
 import { access, mkdir, readdir } from 'node:fs/promises';
 import path from 'node:path';
 
-import {
-	type IFinding,
-	writeFileAtomic,
-} from '@mcp-vertex/core/public';
+import { type IFinding, writeFileAtomic } from '@mcp-vertex/core/public';
 
 import type { IBacklog } from '../contracts/interfaces/backlog.interface';
 
@@ -122,9 +119,7 @@ const bodyFor = (
 	].join('\n');
 };
 
-const defaultWriteProposal = async (
-	draft: IProposalDraft,
-): Promise<string> => {
+const defaultWriteProposal = async (draft: IProposalDraft): Promise<string> => {
 	await mkdir(path.dirname(draft.absPath), { recursive: true });
 	await writeFileAtomic(draft.absPath, draft.body);
 	return draft.absPath;
@@ -152,7 +147,9 @@ const resolveFilename = (
 	let proposalSuffix = 0;
 	while (proposalSuffix < 1000) {
 		const candidateId =
-			proposalSuffix === 0 ? proposalId : `${proposalId}-${proposalSuffix}`;
+			proposalSuffix === 0
+				? proposalId
+				: `${proposalId}-${proposalSuffix}`;
 		let slugSuffix = 0;
 		while (slugSuffix < 1000) {
 			const candidateSlug =

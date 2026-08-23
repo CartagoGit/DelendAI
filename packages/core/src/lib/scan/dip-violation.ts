@@ -34,6 +34,10 @@ const EXEMPT_PATH_PATTERNS: readonly RegExp[] = [
 	/packages\/core\/src\/lib\/install\//,
 	/packages\/core\/src\/lib\/setup\//,
 	/packages\/core\/src\/lib\/cli\/parse-cli-args/,
+	// Scaffold GENERATORS emit code (template literals), they do not run
+	// it: a cwd read inside an emitted `src/server.ts` body is the
+	// generated entry point, not a runtime read in this module.
+	/packages\/core\/src\/lib\/scaffold\//,
 ];
 
 /** Sync node:fs functions that are not allowed outside boot. */
@@ -77,6 +81,16 @@ const isInScope = (relPath: string): boolean => {
 };
 
 /**
+ * Tests are not a runtime hot path: they legitimately use process.cwd
+ * and sync `node:fs` helpers for hermetic fixtures. The §7.1 invariant
+ * governs product code, so specs never count as DIP violations.
+ */
+const isTestFile = (relPath: string): boolean =>
+	relPath.includes('/tests/') ||
+	relPath.endsWith('.spec.ts') ||
+	relPath.endsWith('.test.ts');
+
+/**
  * Detect DIP violations in `body` for the file at `relPath`.
  * Returns one hit per finding.
  */
@@ -84,7 +98,7 @@ export const detectDipViolations = (
 	relPath: string,
 	body: string,
 ): readonly IDipHit[] => {
-	if (!isInScope(relPath) || isExempt(relPath)) {
+	if (!isInScope(relPath) || isExempt(relPath) || isTestFile(relPath)) {
 		return [];
 	}
 	const out: IDipHit[] = [];
