@@ -181,6 +181,7 @@ fallback with the identical shape.
 
 - [IDE-EXTENSION.md](./IDE-EXTENSION.md) for the VS Code host and extension-specific commands.
 - [CROSS-IDE.md](./CROSS-IDE.md) for the same setup shape across other hosts.
+- [PLUGIN-CONFIGURATION-GUIDE.md](./PLUGIN-CONFIGURATION-GUIDE.md) for the LLM-facing map of which plugins exist and how to configure them per project need (commit/push, clean code/SOLID, file conventions).
 - [PLUGINS-MCP-VERTEX.md](./PLUGINS-MCP-VERTEX.md) for plugin authoring and the issues-plugin setup note.
 - [NPM_PUBLISH.md](./NPM_PUBLISH.md) if you are packaging or shipping the repo after setup is working.
 

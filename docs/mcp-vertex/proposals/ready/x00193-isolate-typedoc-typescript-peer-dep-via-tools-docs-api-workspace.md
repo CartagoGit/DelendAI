@@ -2,15 +2,18 @@
 id: x00193
 title: "Two more pre-existing CI breaks unmasked by x00192: Node-vs-Bun plugin resolution gap + typedoc/TypeScript-7 incompatibility"
 kind: fix
-status: done
+status: ready
 type: proposal
 track: ci+audit-followup
 date: 2026-07-30
-shipped-in:
-    - 0a16172f # fix(x00193): isolate typedoc's typescript peer dep via tools/docs-api workspace
 ---
 
 # x00193 — Two more pre-existing CI breaks unmasked by x00192: Node-vs-Bun plugin resolution gap + typedoc/TypeScript-7 incompatibility
+
+> **Reopened 2026-08-24**: S2 (typedoc isolation) shipped in `0a16172f`, but
+> S1 (Node-vs-Bun plugin resolution) was never implemented. The proposal was
+> closed as `done` with only S2 done; this reopens it so the remaining S1 work
+> stays visible instead of silently rotting in a `done` proposal.
 
 ## Goal
 
@@ -45,7 +48,8 @@ Both are required CI checks blocking every PR in this repo, including all 11 cur
   - "`tools/scripts/smoke/cli.script.ts` and the CI's 'Smoke — Node runs the compiled CLI' step both pass under real Node"
 
 ### S2 — Isolate typedoc's TypeScript peer dependency
-- **Status**: pending
+- **Status**: done
+- **ShippedIn**: 0a16172f # fix(x00193): isolate typedoc's typescript peer dep via tools/docs-api workspace
 - **Files**: `config/typedoc.json`, `package.json`
 - **Gate**: e2e
 - acceptance:

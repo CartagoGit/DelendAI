@@ -3,6 +3,9 @@
 	"coreVersion": "latest-published",
 	"cacheDir": ".cache/mcp-vertex",
 	"docsDir": "docs/mcp-vertex",
+	"commitAuthor": {
+		"mode": "git"
+	},
 	"convention": {
 		"pluginPathsRoot": "packages",
 		"sourceRoot": "packages"
@@ -10,7 +13,8 @@
 	"plugins": {
 		"git": {
 			"options": {
-				"allowForge": true
+				"allowForge": true,
+				"allowWrite": true
 			}
 		},
 		"forge": {

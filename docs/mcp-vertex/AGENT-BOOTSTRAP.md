@@ -217,6 +217,12 @@ restates the rule for swarm context.
 - `bun run validate` is green (typecheck + lint + tests + drift guards).
 - Conventional Commits (`fix:` / `feat:` / `feat!:`) — versioning is
   automatic on `main`. No manual bumps.
+- **Work is committed and pushed under the configured author identity.**
+  A finished task ends with its changes committed (Conventional Commit)
+  and pushed — via the git write tools when the host enabled them, or the
+  proposals persist step otherwise. The author is resolved centrally, so
+  never ask the user whose name to use and never leave completed work
+  uncommitted waiting for a reminder.
 - Touched a tool? Kept its `outputSchema`. Added a tool? Added its
   output to the catalog generator (if it isn't picked up automatically).
 - Persisted state? Routed through `withFileMutex` + `writeFileAtomic`.
