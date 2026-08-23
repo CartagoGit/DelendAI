@@ -4,12 +4,15 @@ import MarkdownIt from 'markdown-it';
 /**
  * Pins the renderer config used by `MarkdownPage.astro` against
  * markdown-it 15 + linkify-it 6 (Dependabot PR 41). 15 ships its own
- * types and drops fuzzy (no-scheme) autolinks.
+ * types; linkify-it 6 still fuzzy-links bare hostnames by default, so
+ * the renderer explicitly disables fuzzy links — only explicit-scheme
+ * URLs and emails autolink.
  */
 const markdown = new MarkdownIt({
 	html: false,
 	linkify: true,
 });
+markdown.linkify.set({ fuzzyLink: false });
 
 describe('markdown-it 15 (apps/web renderer)', () => {
 	it('constructs from the default export and renders a heading', () => {

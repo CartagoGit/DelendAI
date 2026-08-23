@@ -68,19 +68,24 @@ const isRecord = (value: unknown): value is Record<string, unknown> =>
 	typeof value === 'object' && value !== null && !Array.isArray(value);
 
 /**
- * Attach `checkpointAdvisory` to a tool result's `structuredContent`
- * (creating it when absent). Mutates the in-memory result; no I/O.
- * No-op when `advisory` is null or the result is not an object.
+ * Attach `checkpointAdvisory` to a tool result's `_meta` (creating it
+ * when absent). Mutates the in-memory result; no I/O. No-op when
+ * `advisory` is null or the result is not an object.
+ *
+ * The advisory lives in `_meta`, NOT `structuredContent`, because
+ * `structuredContent` is validated by MCP clients against the tool's
+ * `outputSchema` (Zod objects serialise with `additionalProperties:
+ * false`), so an injected extra key would make the call fail with a
+ * -32602 "must NOT have additional properties" error. `_meta` is the
+ * protocol's metadata channel and is never schema-validated.
  */
 export const injectCheckpointAdvisory = (
 	result: unknown,
 	advisory: ICheckpointAdvisory | null,
 ): void => {
 	if (advisory === null || !isRecord(result)) return;
-	const existing = result.structuredContent;
-	const structured: Record<string, unknown> = isRecord(existing)
-		? existing
-		: {};
-	structured.checkpointAdvisory = advisory;
-	result.structuredContent = structured;
+	const existing = result._meta;
+	const meta: Record<string, unknown> = isRecord(existing) ? existing : {};
+	meta.checkpointAdvisory = advisory;
+	result._meta = meta;
 };
