@@ -117,6 +117,15 @@ export const FIRST_PARTY_PLUGIN_INDEX: IPluginRegistrySource = {
 		},
 		{
 			origin: 'first-party',
+			id: 'error-reporting',
+			package: '@mcp-vertex/error-reporting',
+			summary:
+				'Automatic mcp-vertex error reporting: opens de-duplicated GitHub issues for internal failures (enabled by default).',
+			tags: ['error-reporting', 'github', 'issues', 'f00158'],
+			defaultPreset: 'standard',
+		},
+		{
+			origin: 'first-party',
 			id: 'external-mcps',
 			package: '@mcp-vertex/external-mcps',
 			summary:

@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-08-23T20:17:03.137Z",
+	"generatedAt": "2026-08-23T23:05:41.539Z",
 	"mode": "compact",
 	"tools": [
 		{
@@ -230,6 +230,10 @@
 			"plugin": "git"
 		},
 		{
+			"name": "mcp-vertex_git_commit",
+			"plugin": "git"
+		},
+		{
 			"name": "mcp-vertex_git_diff",
 			"plugin": "git"
 		},
@@ -243,6 +247,10 @@
 		},
 		{
 			"name": "mcp-vertex_git_pr_view",
+			"plugin": "git"
+		},
+		{
+			"name": "mcp-vertex_git_push",
 			"plugin": "git"
 		},
 		{
@@ -1107,11 +1115,11 @@
 	"proposals": {
 		"actionable": [
 			{
-				"id": "a00085",
-				"title": "a00085",
-				"track": "audit+bugs+maintainability",
-				"status": "in-progress",
-				"kind": "audit"
+				"id": "c00127",
+				"title": "c00127",
+				"track": "adoption",
+				"status": "ready",
+				"kind": "chore"
 			},
 			{
 				"id": "f00050",
@@ -1121,29 +1129,78 @@
 				"kind": "feat"
 			},
 			{
-				"id": "x00203",
-				"title": "x00203",
-				"track": "plugins+fix",
-				"status": "in-progress",
+				"id": "f00157",
+				"title": "f00157",
+				"track": "adoption",
+				"status": "ready",
+				"kind": "feat"
+			},
+			{
+				"id": "r00014",
+				"title": "r00014",
+				"track": "bootstrap",
+				"status": "ready",
+				"kind": "refactor"
+			},
+			{
+				"id": "r00015",
+				"title": "r00015",
+				"track": "plugins",
+				"status": "ready",
+				"kind": "refactor"
+			},
+			{
+				"id": "x00193",
+				"title": "x00193",
+				"track": "ci+audit-followup",
+				"status": "ready",
 				"kind": "fix"
 			},
 			{
-				"id": "x00204",
-				"title": "x00204",
-				"track": "plugins+fix",
-				"status": "in-progress",
+				"id": "x00208",
+				"title": "x00208",
+				"track": "scaffold",
+				"status": "ready",
+				"kind": "fix"
+			},
+			{
+				"id": "x00209",
+				"title": "x00209",
+				"track": "proposals",
+				"status": "ready",
+				"kind": "fix"
+			},
+			{
+				"id": "x00210",
+				"title": "x00210",
+				"track": "proposals",
+				"status": "ready",
+				"kind": "fix"
+			},
+			{
+				"id": "x00211",
+				"title": "x00211",
+				"track": "setup",
+				"status": "ready",
+				"kind": "fix"
+			},
+			{
+				"id": "x00212",
+				"title": "x00212",
+				"track": "plugins+adoption",
+				"status": "ready",
 				"kind": "fix"
 			}
 		],
 		"byStatus": {
-			"ready": 0,
-			"in-progress": 3,
+			"ready": 10,
+			"in-progress": 0,
 			"review": 0,
 			"paused": 1,
-			"done": 343,
+			"done": 348,
 			"blocked": 0,
 			"retired": 2,
-			"unspecified": 1
+			"unspecified": 0
 		}
 	}
 }

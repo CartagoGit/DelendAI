@@ -296,6 +296,13 @@ export const buildScaffoldReport = async (
 	const moved: string[] = [];
 	const kept: string[] = [];
 	const toWrite: IBatchOperation[] = [];
+	// (original path, legacy relative + absolute) so a failed batch can
+	// roll every keepLegacy move back to its original location.
+	const legacyMoves: Array<{
+		path: string;
+		legacyRelativePath: string;
+		legacyAbsolutePath: string;
+	}> = [];
 	if (!dryRun && errors.length === 0) {
 		for (const file of files) {
 			const absolute = options.workspace.resolve(file.path);
@@ -319,6 +326,11 @@ export const buildScaffoldReport = async (
 						legacy.absolutePath,
 					);
 					moved.push(legacy.relativePath);
+					legacyMoves.push({
+						path: file.path,
+						legacyRelativePath: legacy.relativePath,
+						legacyAbsolutePath: legacy.absolutePath,
+					});
 					if (strategy === 'copy-unlink') {
 						errors.push(
 							`${file.path}: moved via copy+unlink fallback after cross-device rename`,
@@ -347,6 +359,25 @@ export const buildScaffoldReport = async (
 			} else {
 				for (const err of batchResult.errors) {
 					errors.push(`${err.path}: ${err.reason}`);
+				}
+				// x00183 F3: roll every keepLegacy move back so a failed
+				// batch leaves the workspace exactly as it was — the
+				// original file back in place, nothing stranded under
+				// legacy/. Restored files leave `moved` and join `kept`.
+				for (const entry of legacyMoves) {
+					try {
+						await moveToLegacy(
+							entry.legacyAbsolutePath,
+							options.workspace.resolve(entry.path),
+						);
+						const idx = moved.indexOf(entry.legacyRelativePath);
+						if (idx !== -1) moved.splice(idx, 1);
+						kept.push(entry.path);
+					} catch (error) {
+						errors.push(
+							`${entry.path}: rollback failed (${error instanceof Error ? error.message : String(error)})`,
+						);
+					}
 				}
 			}
 		}
