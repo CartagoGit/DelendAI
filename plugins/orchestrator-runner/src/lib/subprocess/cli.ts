@@ -14,6 +14,8 @@
  * exited. Both the grace timer is `unref()`'d and cleared on exit, so a
  * cancelled invocation never leaks a handle.
  */
+import { rewriteUnicodeForAgent } from '@mcp-vertex/core/public';
+
 import type {
 	IActiveInvocation,
 	IInvokeRequest,
@@ -100,7 +102,7 @@ export const buildCliArgs = (
 	prompt: string,
 	toolsAllow?: readonly string[],
 ): readonly string[] => {
-	const args = [...baseArgs, prompt];
+	const args = [...baseArgs, rewriteUnicodeForAgent(prompt)];
 	if (toolsAllow !== undefined && toolsAllow.length > 0) {
 		args.push('--allowedTools', toolsAllow.join(','));
 	}
