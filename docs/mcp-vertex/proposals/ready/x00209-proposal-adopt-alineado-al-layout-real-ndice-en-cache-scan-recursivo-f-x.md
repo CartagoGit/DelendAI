@@ -29,7 +29,7 @@ Auditoría 2026-08-24 (hallazgos B1, B2, B3, B4, B5): proposal_adopt mide hasInd
 - global_gate: type
 
 ### S1 — adopt.ts: layout real, scan recursivo, taxonomía f/x, ready estricto
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/proposals/src/lib/proposals/adopt.ts`
 - **Gate**: type
 - acceptance:
@@ -39,7 +39,7 @@ Auditoría 2026-08-24 (hallazgos B1, B2, B3, B4, B5): proposal_adopt mide hasInd
   - "ready exige index + README + carpetas canónicas + recolocación de done."
 
 ### S2 — adopt.tool.ts: dir coherente en bootstrap+migrate+sync
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/proposals/src/lib/tools/adopt.tool.ts`
 - **Gate**: type
 - acceptance:
@@ -47,8 +47,8 @@ Auditoría 2026-08-24 (hallazgos B1, B2, B3, B4, B5): proposal_adopt mide hasInd
   - "El schema de salida refleja el layout corregido."
 
 ### S3 — Tests de adopt
-- **Status**: pending
-- **Files**: `plugins/proposals/tests/src/lib/proposals/adopt.spec.ts`
+- **Status**: done
+- **Files**: `plugins/proposals/tests/src/lib/adopt.spec.ts`
 - **Gate**: type
 - acceptance:
   - "Specs de adopt cubren scan recursivo, índice en cache, taxonomía y ready estricto."
