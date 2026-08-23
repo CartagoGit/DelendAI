@@ -45,7 +45,7 @@ Los agentes no commitean ni pushean al terminar una tarea y el usuario tiene que
   - "El knowledge git-orientation instruye commit+push al terminar la tarea en ambos estados (allowWrite activado y desactivado)."
 
 ### S3 — Guía de adopción de plugins para LLMs + enlace
-- **Status**: pending
+- **Status**: done
 - **Files**: `docs/mcp-vertex/PLUGIN-CONFIGURATION-GUIDE.md`, `docs/mcp-vertex/CROSS-PROJECT-SETUP.md`
 - **Gate**: none
 - acceptance:
