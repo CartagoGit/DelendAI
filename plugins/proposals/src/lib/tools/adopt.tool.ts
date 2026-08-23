@@ -16,7 +16,12 @@ import {
 	buildBootstrapActions,
 	type IScanEntry,
 } from '../proposals/adopt';
-import { STATUS_TO_FOLDER } from '../contracts/constants/proposal-glossary.constant';
+import {
+	STATUS_TO_FOLDER,
+	PROPOSAL_KINDS,
+} from '../contracts/constants/proposal-glossary.constant';
+import { DEFAULT_PATH_LAYOUT } from '../contracts/constants/default-path-layout.constant';
+import type { IHostPathLayout } from '../contracts/interfaces/swarm-path-layout.interface';
 import { migrateForeign } from '../proposals/migrate-foreign';
 import { syncProposalRegistry } from '../proposals/sync-proposal-registry';
 import type { IAuthoringToolOptions } from './authoring.tool';
@@ -30,45 +35,71 @@ const ADOPT_LAYOUT_SCHEMA = z.object({
 	folders: z.record(z.string(), z.string()),
 });
 
-type ILightFrontmatter = { id?: string; status?: string; type?: string } | null;
+type ILightFrontmatter = {
+	id?: string;
+	status?: string;
+	type?: string;
+	kind?: string;
+} | null;
 
-/** Extract id/status/type from a markdown file's leading frontmatter block. */
+/** Extract id/status/type/kind from a markdown file's leading frontmatter block. */
 const lightFrontmatter = (text: string): ILightFrontmatter => {
 	const block = text.match(/^---\n([\s\S]*?)\n---/)?.[1];
 	if (block === undefined) return null;
 	const field = (key: string): string | undefined =>
 		block.match(new RegExp(`^${key}:\\s*(.+)$`, 'm'))?.[1]?.trim();
-	const fm: { id?: string; status?: string; type?: string } = {};
+	const fm: {
+		id?: string;
+		status?: string;
+		type?: string;
+		kind?: string;
+	} = {};
 	const id = field('id');
 	const status = field('status');
 	const type = field('type');
+	const kind = field('kind');
 	if (id !== undefined) fm.id = id;
 	if (status !== undefined) fm.status = status;
 	if (type !== undefined) fm.type = type;
+	if (kind !== undefined) fm.kind = kind;
 	return fm;
 };
 
-/** Read a proposals directory into scan entries (dirs + .md frontmatter). */
+/**
+ * Recursively read a proposals directory into scan entries. Top-level
+ * directories become `folders`; `.md` files nested under status folders
+ * surface with their proposals-root-relative path (e.g. `done/f00100-x.md`)
+ * so the analysis can classify them by folder (x00209 — the old scan only
+ * saw the top level and misread every canonical store).
+ */
 const scanDir = async (dirAbs: string): Promise<IScanEntry[]> => {
-	const names = await readdir(dirAbs).catch(() => [] as string[]);
 	const entries: IScanEntry[] = [];
-	for (const name of names) {
-		const isDir = await stat(join(dirAbs, name))
-			.then((s) => s.isDirectory())
-			.catch(() => false);
-		if (!isDir && name.toLowerCase().endsWith('.md')) {
-			const text = await readFile(join(dirAbs, name), 'utf8').catch(
-				() => '',
-			);
-			entries.push({
-				name,
-				isDir: false,
-				frontmatter: lightFrontmatter(text),
-			});
-		} else {
-			entries.push({ name, isDir });
+	const walk = async (abs: string, relPrefix: string): Promise<void> => {
+		const names = await readdir(abs).catch(() => [] as string[]);
+		for (const name of names) {
+			const absPath = join(abs, name);
+			const rel = relPrefix === '' ? name : `${relPrefix}/${name}`;
+			const isDir = await stat(absPath)
+				.then((s) => s.isDirectory())
+				.catch(() => false);
+			if (isDir) {
+				if (relPrefix === '') entries.push({ name: rel, isDir: true });
+				await walk(absPath, rel);
+			} else if (name.toLowerCase().endsWith('.md')) {
+				const text = await readFile(absPath, 'utf8').catch(() => '');
+				entries.push({
+					name: rel,
+					isDir: false,
+					frontmatter: lightFrontmatter(text),
+				});
+			} else if (relPrefix === '') {
+				// Top-level non-markdown files are "other"; nested ones
+				// (e.g. `.gitkeep` inside status folders) are noise.
+				entries.push({ name: rel, isDir: false });
+			}
 		}
-	}
+	};
+	await walk(dirAbs, '');
 	return entries.sort((a, b) => a.name.localeCompare(b.name));
 };
 
@@ -140,7 +171,12 @@ export const buildAdoptRegistration = (
 							z.object({
 								file: z.string(),
 								id: z.string(),
-								kind: z.enum(['proposal', 'fix']),
+								kind: z.enum(
+									Object.keys(PROPOSAL_KINDS) as [
+										string,
+										...string[],
+									],
+								),
 								status: z.string(),
 							}),
 						),
@@ -195,6 +231,27 @@ export const buildAdoptRegistration = (
 					dirAbs = contained.abs;
 					root = args.dir;
 				}
+				// x00209: a custom `dir` must drive migration AND the index
+				// sync too — the old code always wrote to the configured
+				// proposals dir, leaving a custom-dir adoption half-done.
+				const customDir =
+					args.dir !== undefined && args.dir.length > 0
+						? args.dir
+						: undefined;
+				const syncLayout:
+					| Pick<
+							IHostPathLayout,
+							'proposalsDir' | 'proposalIndexFile'
+					  >
+					| undefined =
+					customDir !== undefined
+						? {
+								proposalsDir: customDir,
+								proposalIndexFile:
+									options.layout?.proposalIndexFile ??
+									DEFAULT_PATH_LAYOUT.proposalIndexFile,
+							}
+						: options.layout;
 
 				let created: string[] = [];
 				let skipped: string[] = [];
@@ -210,7 +267,7 @@ export const buildAdoptRegistration = (
 				if (args.migrate !== undefined) {
 					migration = await migrateForeign({
 						workspaceRoot: options.workspaceRoot,
-						proposalsDirAbs: options.proposalsDirAbs,
+						proposalsDirAbs: dirAbs,
 						counterPathAbs: options.counterPathAbs,
 						roots: args.migrate.roots,
 					});
@@ -221,13 +278,21 @@ export const buildAdoptRegistration = (
 					// as the last mutating step (idempotent by design).
 					await syncProposalRegistry(
 						options.workspaceRoot,
-						options.layout,
+						syncLayout,
 						options.extraFolders ?? [],
 					);
 				}
 
+				// x00209: the registry index is a cache artefact
+				// (<cacheDir>/proposals/index.json), not a file in this
+				// folder — probe the real absolute location (x00052).
+				const indexPresent = await access(options.indexPathAbs).then(
+					() => true,
+					() => false,
+				);
+
 				const entries = await scanDir(dirAbs);
-				const report = analyzeProposals(root, entries);
+				const report = analyzeProposals(root, entries, indexPresent);
 				return toolOk({
 					...report,
 					applied: args.apply === true,
