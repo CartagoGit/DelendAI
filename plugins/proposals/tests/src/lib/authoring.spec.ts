@@ -1,4 +1,10 @@
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import {
+	mkdirSync,
+	mkdtempSync,
+	readFileSync,
+	rmSync,
+	writeFileSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -59,6 +65,7 @@ describe('proposal authoring (create → board → close)', async () => {
 				output: 'ok',
 				exitCode: 0,
 			}),
+			requirePeerReview: false,
 		};
 	});
 	afterEach(() => {
@@ -158,6 +165,43 @@ describe('proposal authoring (create → board → close)', async () => {
 			'utf8',
 		);
 		expect(doc).toMatch(/### S1[\s\S]*?- \*\*Status\*\*: done/);
+	});
+
+	it('refuses close_slice until a distinct agent has approved the slice', async () => {
+		const gated: IAuthoringToolOptions = {
+			...opts,
+			requirePeerReview: true,
+		};
+		const create = await capture(buildCreateProposalRegistration(gated));
+		const created = parse(
+			await create({
+				id: 'f00083',
+				title: 'Peer review gate',
+				goal: 'Must be reviewed',
+				slices: [{ sliceId: 's1', files: ['src/c.ts'] }],
+			}),
+		);
+		expect(created.ok).toBe(true);
+
+		const close = await capture(buildCloseSliceRegistration(gated));
+		const refused = await close({
+			proposalId: 'f00083',
+			sliceId: 's1',
+			releaseLock: false,
+			validateEvidence: recentValidate(),
+		});
+		expect(refused).toMatchObject({ isError: true });
+		expect(parse(refused).blockerType).toBe('peer-review-required');
+		expect(
+			readFileSync(
+				join(
+					opts.proposalsDirAbs,
+					'ready',
+					'f00083-peer-review-gate.md',
+				),
+				'utf8',
+			),
+		).toMatch(/- \*\*Status\*\*: pending/);
 	});
 
 	// x00157 S3-adjacent finding: `close_slice` released by the bare
@@ -420,6 +464,105 @@ describe('proposal authoring (create → board → close)', async () => {
 		);
 		expect(out.ok).toBe(false);
 		expect(out.error.reason).toMatch(/share files/);
+	});
+});
+
+/**
+ * Una entrada del índice que apunta a un fichero que ya no está.
+ *
+ * Pasa en cuanto alguien mueve una propuesta a mano —archivarla en
+ * `done/`, por ejemplo— sin pasar por `sync_proposals`, y es lo normal
+ * en un repo donde el humano también toca los ficheros.
+ *
+ * El board devolvía `slices: []`, que es **exactamente** lo que devuelve
+ * una propuesta sin slices. Un orquestador veía «accionable, nada que
+ * reclamar» y se quedaba parado sin ninguna pista de por qué.
+ */
+describe('proposal_board — el índice apunta a un fichero que no existe', () => {
+	let root = '';
+	let opts: IAuthoringToolOptions;
+
+	beforeEach(() => {
+		root = mkdtempSync(join(tmpdir(), 'board-stale-'));
+		opts = {
+			namespacePrefix: 'proposals',
+			workspaceRoot: root,
+			proposalsDirAbs: join(root, 'docs/mcp-vertex/proposals'),
+			indexPathAbs: join(root, '.cache/mcp-vertex/proposals/index.json'),
+			lockPathAbs: join(root, '.cache/agents.lock.json'),
+			peerReviewLogPathAbs: join(
+				root,
+				'.cache/mcp-vertex/proposals/peer-review.jsonl',
+			),
+			counterPathAbs: join(root, '.cache/proposal-id-counters.json'),
+			runValidation: async () => ({
+				ok: true,
+				output: 'ok',
+				exitCode: 0,
+			}),
+		};
+	});
+	afterEach(() => rmSync(root, { recursive: true, force: true }));
+
+	it('lo dice en vez de devolver una lista de slices vacía', async () => {
+		mkdirSync(join(root, '.cache/mcp-vertex/proposals'), {
+			recursive: true,
+		});
+		writeFileSync(
+			opts.indexPathAbs,
+			JSON.stringify({
+				proposals: [
+					{
+						id: 'x00001',
+						file: 'ready/x00001-movida.md',
+						status: 'ready',
+					},
+				],
+			}),
+		);
+
+		const board = await capture(buildProposalBoardRegistration(opts));
+		const view = parse(await board({}));
+		const p = view.proposals.find((x: { id: string }) => x.id === 'x00001');
+
+		expect(p.slices).toEqual([]);
+		// EL test: sin esto, indistinguible de una propuesta sin slices.
+		expect(p.unreadable).toContain('does not exist');
+		expect(p.unreadable).toContain('sync_proposals');
+	});
+
+	it('una propuesta sin sección de slices tampoco se confunde', async () => {
+		mkdirSync(join(root, 'docs/mcp-vertex/proposals/ready'), {
+			recursive: true,
+		});
+		mkdirSync(join(root, '.cache/mcp-vertex/proposals'), {
+			recursive: true,
+		});
+		writeFileSync(
+			join(root, 'docs/mcp-vertex/proposals/ready/x00002-sin-slices.md'),
+			'---\nid: x00002\nstatus: ready\n---\n\n# Sin slices\n',
+		);
+		writeFileSync(
+			opts.indexPathAbs,
+			JSON.stringify({
+				proposals: [
+					{
+						id: 'x00002',
+						file: 'ready/x00002-sin-slices.md',
+						status: 'ready',
+					},
+				],
+			}),
+		);
+
+		const board = await capture(buildProposalBoardRegistration(opts));
+		const view = parse(await board({}));
+		const p = view.proposals.find((x: { id: string }) => x.id === 'x00002');
+
+		expect(p.slices).toEqual([]);
+		expect(p.unreadable).toContain('Slices');
+		// Y no se confunde con el caso de arriba.
+		expect(p.unreadable).not.toContain('does not exist');
 	});
 });
 

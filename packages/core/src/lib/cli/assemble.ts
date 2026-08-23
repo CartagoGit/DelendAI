@@ -36,6 +36,10 @@ import { ConsoleLogsSink } from '../plugins/logs-sink';
 import { assemblePlugins } from './assemble-plugins';
 import { assembleCoreTools } from './assemble-core-tools';
 import { assembleSkills } from './assemble-skills';
+import {
+	mergeCheckpointAdvisories,
+	selectCheckpointAdvisory,
+} from '../shared/checkpoint-advisory';
 
 export interface IAssembledCliConfig {
 	readonly config: IMcpVertexHostConfig;
@@ -311,6 +315,8 @@ export const assembleCliConfig = async (
 		onToolStarts,
 		onToolCancels,
 		isAgentStuckFn,
+		getCheckpointAdvisoryFns,
+		beforeToolCallFns,
 		logsSink,
 		activationReport,
 		configurationPlugins,
@@ -448,6 +454,22 @@ export const assembleCliConfig = async (
 			: {}),
 		...(isAgentStuckFn !== undefined
 			? { isAgentStuck: isAgentStuckFn }
+			: {}),
+		...(getCheckpointAdvisoryFns.length > 0
+			? {
+					getCheckpointAdvisory: (context) =>
+						selectCheckpointAdvisory(
+							getCheckpointAdvisoryFns.map((fn) => fn(context)),
+						),
+				}
+			: {}),
+		...(beforeToolCallFns.length > 0
+			? {
+					beforeToolCall: (context) =>
+						mergeCheckpointAdvisories(
+							beforeToolCallFns.map((fn) => fn(context)),
+						),
+				}
 			: {}),
 	};
 

@@ -1,10 +1,10 @@
 import { AgentCatalogService } from '@mcp-vertex/client';
 import type { McpVertexToolOutputs } from '@mcp-vertex/core/public';
 
-import { renderAgentCatalogWebview } from '../views/agent-catalog-webview';
 import { AGENT_CATALOG_MESSAGE_SCHEMA } from '../contracts/constants/agent-catalog-message-schema.constant';
 import type { IViewCopy } from '../contracts/interfaces/view-copy.interface';
 import { resolveViewLang, viewCopyFor } from '../i18n/view-copy.strings';
+import { renderAgentCatalogWebview } from '../views/agent-catalog-webview';
 
 import type { ICommandDeps, ICommandVscodeApi } from './types';
 import { escapeHtml, renderJsonHtml, showCommandError } from './types';

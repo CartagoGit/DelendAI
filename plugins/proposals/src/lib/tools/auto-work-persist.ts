@@ -44,6 +44,8 @@ import {
 } from '@mcp-vertex/core/public';
 
 import type { IGitRunner } from '../shared/git-runner';
+import { assessStaleAcceptance } from '../services/checkpoint-advisory-stale-acceptance.service';
+import type { ISliceAcceptanceEvidence } from '../services/slice-acceptance-evidence.service';
 
 export interface IQualityProbeResult {
 	readonly ok: boolean;
@@ -98,6 +100,12 @@ export interface IAutoWorkPersistOptions {
 	readonly git?: IGitRunner;
 	/** f00082: resolved commit-author policy. */
 	readonly commitAuthor?: ICommitAuthorResolution | undefined;
+	/**
+	 * f00156 S7: optional slice-acceptance evidence. Push is refused only
+	 * when required validation is objectively stale. Commit is never
+	 * hard-blocked by this field.
+	 */
+	readonly acceptanceEvidence?: ISliceAcceptanceEvidence;
 }
 
 /**
@@ -228,6 +236,18 @@ export const maybePersistAfterSlice = async (
 	// makes the rest of the logic mode-aware without nested branches.
 	if (mode === 'none') {
 		return persistResult(false, false, mode);
+	}
+
+	if (mode === 'commit-and-push' && options.acceptanceEvidence) {
+		const blocked = assessStaleAcceptance(
+			options.acceptanceEvidence,
+			'push',
+		);
+		if (blocked?.severity === 'block') {
+			return persistResult(false, false, mode, {
+				reason: blocked.reason,
+			});
+		}
 	}
 
 	const run = resolveGitRunner(options);

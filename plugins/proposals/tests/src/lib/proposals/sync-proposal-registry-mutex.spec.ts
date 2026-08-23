@@ -49,6 +49,7 @@ describe('proposal serialization withFileMutex', () => {
 				output: 'ok',
 				exitCode: 0,
 			}),
+			requirePeerReview: false,
 		};
 	});
 

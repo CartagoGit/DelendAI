@@ -37,6 +37,14 @@ For each tool call it writes one NDJSON row to
 record is piped through the core's `redactSecrets` before it lands, so a
 credential an agent happened to see is never persisted.
 
+## Checkpoint advisories (f00156)
+
+`SessionHygieneMonitor` newly-breached reasons map to
+`SESSION_TOO_LONG` (`recommend`; `strong` when several independent
+thresholds fire). Age alone never blocks. Configure via
+`plugins.usage-tracking.options.sessionHygiene`. See
+[`CHECKPOINT-ADVISORIES.md`](../../docs/mcp-vertex/CHECKPOINT-ADVISORIES.md).
+
 ## Durable, non-blocking append
 
 Recording is on the tool **hot path**, so it must never block. `push()`

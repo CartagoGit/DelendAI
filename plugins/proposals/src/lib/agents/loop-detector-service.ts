@@ -22,6 +22,11 @@ import type {
 	ILoopDetectorServiceOptions,
 } from './loop-detector-config';
 import { buildSwarmPaths } from '../contracts/constants/default-path-layout.constant';
+import {
+	assessContextDrift,
+	type IInteractiveCall,
+} from '../services/checkpoint-advisory-context-drift.service';
+import type { ICheckpointAdvisory } from '@mcp-vertex/core/public';
 
 export type { ILoopDetectorServiceOptions } from './loop-detector-config';
 
@@ -64,6 +69,7 @@ export class AgentLoopDetectorService {
 	private readonly windowMap = new Map<string, IExtendedToolCall[]>();
 	private lastKnownDiff = '';
 	private initialized = false;
+	private lastInteractiveAdvisory: ICheckpointAdvisory | null = null;
 
 	// Keep track of active stuck status per agent
 	private readonly stuckAgents = new Map<
@@ -185,6 +191,23 @@ export class AgentLoopDetectorService {
 	 * minimatch without pulling the dep — the patterns we expect are
 	 * trivially small (typically 4-5 entries from the default config).
 	 */
+	private readonly interactiveCalls = new Map<string, IInteractiveCall[]>();
+
+	private recordInteractiveCall(call: IInteractiveCall): void {
+		const window = this.interactiveCalls.get(call.agentId) ?? [];
+		window.push(call);
+		const bounded = window.length > 32 ? window.slice(-32) : window;
+		this.interactiveCalls.set(call.agentId, bounded);
+		this.lastInteractiveAdvisory = assessContextDrift(bounded, {
+			interactive: true,
+		});
+	}
+
+	/** f00156 S6: latest interactive CONTEXT_DRIFT advisory, if any. */
+	public getInteractiveCheckpointAdvisory(): ICheckpointAdvisory | null {
+		return this.lastInteractiveAdvisory;
+	}
+
 	private isInteractiveAgent(agent: string): boolean {
 		if (!agent || !this.options.interactiveAgentPatterns?.length) {
 			return false;
@@ -250,16 +273,6 @@ export class AgentLoopDetectorService {
 			agent = await this.getActiveAgent();
 		}
 
-		// Interactive host sessions (Copilot/Cursor/Windsurf user-facing
-		// tabs etc.) legitimately re-call orient tools a handful of times;
-		// they are not swarm agents and the detector should not police
-		// them. Skip both the sliding-window accumulation and the verdict
-		// so a future stuck swarm agent is not poisoned by interactive
-		// calls that happened to share the lock file.
-		if (this.isInteractiveAgent(agent)) {
-			return;
-		}
-
 		// Calculate progress via git diff
 		const isMod = this.isModifying(toolName);
 		let madeProgress = true;
@@ -276,6 +289,22 @@ export class AgentLoopDetectorService {
 			} catch {
 				// Fallback to progress assumed
 			}
+		}
+
+		// Interactive host sessions (Copilot/Cursor/Windsurf user-facing
+		// tabs etc.) legitimately re-call orient tools a handful of times;
+		// they are not swarm agents and the detector should not police
+		// them. Skip both the sliding-window accumulation and the verdict
+		// so a future stuck swarm agent is not poisoned by interactive
+		// calls that happened to share the lock file.
+		if (this.isInteractiveAgent(agent)) {
+			this.recordInteractiveCall({
+				tool: toolName,
+				madeProgress,
+				progressHash: progressHash ?? 'none',
+				agentId: agent,
+			});
+			return;
 		}
 
 		const callRecord: IExtendedToolCall = {
