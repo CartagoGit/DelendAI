@@ -98,7 +98,8 @@ describe('kebab', async () => {
 		expect(kebab('提案')).toBe('');
 		expect(kebab('привет')).toBe('');
 		expect(kebab('你好')).toBe('');
-		expect(kebab('café')).toBe('caf');
+		expect(kebab('café')).toBe('cafe');
+		expect(kebab('Auditoría')).toBe('auditoria');
 		expect(kebab('🚀 emoji')).toBe('emoji');
 	});
 });

@@ -11,7 +11,7 @@
  * The issues plugin exposes the SAME guidance via its `setup_github` MCP
  * tool; both feed the one core engine so the output never diverges.
  */
-import { existsSync, readFileSync } from 'node:fs';
+import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
 import { renderCrossProjectGuide } from '../setup/cross-project-guide';
@@ -25,7 +25,7 @@ export interface ISetupGithubCliDeps {
 	readonly originUrl: () => string | null;
 	readonly hasGhCli: () => boolean;
 	readonly githubToken: () => string | undefined;
-	readonly readConfig: () => string | undefined;
+	readonly readConfig: () => Promise<string | undefined>;
 	readonly configPath: string;
 }
 
@@ -62,13 +62,13 @@ export const isIssuesConfigured = (configText: string | undefined): boolean => {
 };
 
 /** Detect the context and render the guide. Pure given `deps`. */
-export const buildSetupGithubReport = (
+export const buildSetupGithubReport = async (
 	deps: ISetupGithubCliDeps,
-): { context: IGithubSetupContext; guide: string } => {
+): Promise<{ context: IGithubSetupContext; guide: string }> => {
 	const context: IGithubSetupContext = {
 		repo: parseGithubRepo(deps.originUrl()),
 		tier: resolveTier(deps.hasGhCli(), deps.githubToken()),
-		configured: isIssuesConfigured(deps.readConfig()),
+		configured: isIssuesConfigured(await deps.readConfig()),
 		configPath: deps.configPath,
 	};
 	return {
@@ -99,9 +99,20 @@ const defaultDeps = (cwd: string): ISetupGithubCliDeps => {
 		},
 		hasGhCli: () => spawn(['gh', 'auth', 'status']).ok,
 		githubToken: () => process.env.GITHUB_TOKEN,
-		readConfig: () => {
-			const path = join(cwd, CONFIG_FILENAME);
-			return existsSync(path) ? readFileSync(path, 'utf8') : undefined;
+		readConfig: async () => {
+			try {
+				return await readFile(join(cwd, CONFIG_FILENAME), 'utf8');
+			} catch (error) {
+				if (
+					error &&
+					typeof error === 'object' &&
+					'code' in error &&
+					error.code === 'ENOENT'
+				) {
+					return undefined;
+				}
+				throw error;
+			}
 		},
 		configPath: CONFIG_FILENAME,
 	};
@@ -113,6 +124,6 @@ export const runSetupGithubSubcommand = async (
 	cwd: string,
 	deps: ISetupGithubCliDeps = defaultDeps(cwd),
 ): Promise<void> => {
-	const { guide } = buildSetupGithubReport(deps);
+	const { guide } = await buildSetupGithubReport(deps);
 	process.stdout.write(`${guide}\n`);
 };

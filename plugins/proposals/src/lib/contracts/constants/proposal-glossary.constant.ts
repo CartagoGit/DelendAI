@@ -279,6 +279,25 @@ export const doneFolderFor = (kind: IProposalKind | undefined): string => {
 		: `${STATUS_TO_FOLDER.done}/${sub}`;
 };
 
+/**
+ * a00085 #15 — every folder a proposal `.md` can live in. Used by the
+ * id allocator, the counter-sync script and the drift lint so they
+ * cannot drift from each other (the lint used to include
+ * `retired/issues`; the sync script did not).
+ *
+ * Order: root (`ready` lives here historically) → status folders →
+ * `retired/issues` → `done/<kind>` subfolders from
+ * {@link KIND_TO_DONE_SUBFOLDER}.
+ */
+export const PROPOSAL_SCAN_FOLDERS: readonly string[] = [
+	'',
+	...Object.values(STATUS_TO_FOLDER),
+	'retired/issues',
+	...Object.values(KIND_TO_DONE_SUBFOLDER).map(
+		(sub) => `${STATUS_TO_FOLDER.done}/${sub}`,
+	),
+];
+
 export interface IProposalFlagInfo {
 	readonly label: string;
 }

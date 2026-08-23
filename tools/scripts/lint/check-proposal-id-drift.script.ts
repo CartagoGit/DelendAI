@@ -40,6 +40,7 @@ import { readdir, readFile } from 'node:fs/promises';
 import { join, relative } from 'node:path';
 
 import { repoRoot } from '../lib/monorepo-paths';
+import { PROPOSAL_SCAN_FOLDERS } from '../../../plugins/proposals/src/lib/contracts/constants/proposal-glossary.constant';
 
 /** Subset of `proposal-id-counters.json` we care about. */
 type ICounters = Readonly<Record<string, number>>;
@@ -80,32 +81,6 @@ export interface IProposalIdDriftSummary {
  */
 const PROPOSAL_FILENAME = /^([a-z])(\d{2,5})-[a-z0-9-]+\.md$/;
 
-/** Status folders under `docs/mcp-vertex/proposals/` that hold proposal files. */
-const STATUS_FOLDERS: readonly string[] = [
-	'',
-	'ready',
-	'in-progress',
-	'review',
-	'done',
-	'paused',
-	'blocked',
-	'retired',
-	'retired/issues',
-	'done/feats',
-	'done/fixes',
-	'done/refactors',
-	'done/audits',
-	'done/chores',
-	'done/docs',
-	'done/tests',
-	'done/plans',
-	'done/resumes',
-	'done/breakings',
-	'done/perfs',
-	'done/infras',
-	'done/spikes',
-];
-
 /**
  * Walk the proposals tree and collect every absolute path whose filename
  * matches `PROPOSAL_FILENAME`. Pure over the filesystem it is given;
@@ -115,7 +90,7 @@ export const collectProposalFiles = async (
 	proposalsDirAbs: string,
 ): Promise<readonly string[]> => {
 	const out: string[] = [];
-	for (const folder of STATUS_FOLDERS) {
+	for (const folder of PROPOSAL_SCAN_FOLDERS) {
 		const dirAbs =
 			folder === '' ? proposalsDirAbs : join(proposalsDirAbs, folder);
 		const entries = await readdir(dirAbs, { withFileTypes: true }).catch(

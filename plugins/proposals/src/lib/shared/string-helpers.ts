@@ -38,22 +38,16 @@ export const escapeRegExp = (value: string): string =>
 export const kebab = (value: string): string =>
 	value
 		.trim()
+		.normalize('NFD')
+		.replace(/\p{M}/gu, '')
 		.toLowerCase()
 		.replace(/[^a-z0-9]+/g, '-')
 		.replace(/^-+|-+$/g, '');
 
 /**
- * x00157 S1 — `kebab()`'s character class (`[^a-z0-9]+`) is ASCII-only
- * by design (documented, not fixed here — the asymmetry is real and
- * intentional; ripping out that contract would be a much bigger
- * change than a filename-collision fix). For a non-ASCII title
- * (Chinese, Cyrillic, Hebrew, Arabic, emoji, …) `kebab` returns `''`,
- * which is silently indistinguishable from any OTHER non-ASCII title
- * once used in a filename — `${id}-${kebab(title)}.md` collapses to
- * `${id}-.md` for every one of them. Since the caller always has a
- * unique, non-empty `id` on hand (allocated before the filename is
- * built), falling back to it keeps every filename distinct without
- * inventing new slugging rules.
+ * Latin-1 diacritics are stripped via NFD (a00085 #10: `Auditoría` →
+ * `auditoria`). Scripts without a Latin base (Chinese, Cyrillic, …)
+ * still collapse to `''`; `slugFromTitle` then falls back to the id.
  *
  *   slugFromTitle('My Cool Slice', 'f00042')  // → 'my-cool-slice'
  *   slugFromTitle('提案', 'f00042')            // → 'f00042' (kebab⇒'')

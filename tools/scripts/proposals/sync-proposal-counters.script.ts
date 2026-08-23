@@ -25,34 +25,11 @@ import { mkdir, readdir, readFile } from 'node:fs/promises';
 import { join, relative } from 'node:path';
 
 import { withFileMutex, writeFileAtomic } from '@mcp-vertex/core/public';
+import { PROPOSAL_SCAN_FOLDERS } from '../../../plugins/proposals/src/lib/contracts/constants/proposal-glossary.constant';
 
 import { repoRoot } from '../lib/monorepo-paths';
 
 const PROPOSAL_FILENAME = /^([a-z])(\d{2,5})-[a-z0-9-]+\.md$/;
-
-const STATUS_FOLDERS: readonly string[] = [
-	'',
-	'ready',
-	'in-progress',
-	'review',
-	'done',
-	'paused',
-	'blocked',
-	'retired',
-	'done/feats',
-	'done/fixes',
-	'done/refactors',
-	'done/audits',
-	'done/chores',
-	'done/docs',
-	'done/tests',
-	'done/plans',
-	'done/resumes',
-	'done/breakings',
-	'done/perfs',
-	'done/infras',
-	'done/spikes',
-];
 
 export type ICounters = Readonly<Record<string, number>>;
 
@@ -61,7 +38,7 @@ export const computeCountersFromDisk = async (
 	proposalsDirAbs: string,
 ): Promise<ICounters> => {
 	const counters: Record<string, number> = {};
-	for (const folder of STATUS_FOLDERS) {
+	for (const folder of PROPOSAL_SCAN_FOLDERS) {
 		const dirAbs =
 			folder === '' ? proposalsDirAbs : join(proposalsDirAbs, folder);
 		const entries = await readdir(dirAbs).catch(() => []);

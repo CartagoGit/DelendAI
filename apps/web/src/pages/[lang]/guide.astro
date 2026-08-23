@@ -40,8 +40,8 @@ const sections = [
 	<PageHeader lang={langCode} title={t.guide.title} />
 	<section class="section">
 		<div class="container guide">
-			<aside class="guide__toc" aria-label="Table of contents">
-				<strong>Contents</strong>
+			<aside class="guide__toc" aria-label={t.guide.title}>
+				<strong>{t.guide.title}</strong>
 				<ol>
 					{sections.map((s) => (
 						<li><a href={`#${s.id}`}>{s.title}</a></li>
@@ -51,8 +51,8 @@ const sections = [
 			<article class="guide__body">
 				{langCode !== 'en' && (
 					<p class="guide__notice">
-						⚠ This guide is in <strong>English</strong>. Translations for {langCode} are
-						pending — see <a href={`${homeHref}`}>the home page</a> for what's translated so far.
+						⚠ {t.pluginpage.tutorialFallback.replace('{lang}', langCode)} —
+						<a href={homeHref}>{t.nav.guide}</a>
 					</p>
 				)}
 				<h2 id="intro">1. Introduction</h2>
