@@ -6,7 +6,7 @@ import {
 	isMcpVertexInternal,
 	normalizeMessage,
 	signatureOf,
-} from '../src/lib/signature';
+} from '../src/lib/signature.helper';
 
 describe('isMcpVertexInternal', () => {
 	it('detects a stack trace originating inside mcp-vertex', () => {

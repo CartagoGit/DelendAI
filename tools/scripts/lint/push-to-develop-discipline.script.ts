@@ -1,18 +1,21 @@
 #!/usr/bin/env bun
 /**
- * push-to-develop-discipline.script.ts — f00086 S2, stdin fix x00159 S1.
+ * push-to-develop-discipline.script.ts — f00086 S2, stdin fix x00159 S1
+ * (policy flipped 2026-08-24: single shared `develop` branch).
  *
  * Pre-push guard. Pure function over
  * `(cwd, remoteName, remoteBranch, currentBranch) → { ok: true } | { ok: false, blockers: string[] }`.
  *
- * Policy (f00086):
- *   - The interesting case is `remoteBranch === 'develop'` AND
- *     `currentBranch === 'develop'` → block. The agent forgot to
- *     open a feature branch.
- *   - Pushing `develop` from a feature branch (the PR-merge
- *     shape) is allowed.
- *   - Pushing any other branch to any other remote is allowed.
- *   - Pushing to a non-develop remote branch is always allowed.
+ * Policy (single shared branch):
+ *   - This repo works on ONE branch: `develop`. Agents share commits
+ *     and pushes instead of creating per-agent branches.
+ *   - Pushing from `develop` → always allowed (the shared push, and
+ *     `develop → main` release merges).
+ *   - Pushing from `main` → allowed (release flow; versioning is
+ *     derived on push to `main`).
+ *   - Any other source branch (`agent/*`, `feature/*`, …) → blocked
+ *     with a next-action telling the agent to switch back to develop.
+ *   - Branch deletes (all-zero local oid) never block.
  *
  * x00159 S1: the refs actually being pushed are NOT available as a
  * third CLI argument. Git's real pre-push hook contract passes only
@@ -33,6 +36,7 @@ import { spawnSync } from 'node:child_process';
 import { isLefthookBypassed } from '../lib/lefthook-bypass';
 
 const DEVELOP_BRANCH = 'develop';
+const MAIN_BRANCH = 'main';
 
 export interface IPushToDevelopInput {
 	readonly cwd: string;
@@ -90,11 +94,9 @@ export const parsePrePushStdin = (
 };
 
 /**
- * Apply the f00086 policy to every parsed ref update: block the
- * first one that pushes `develop` to `origin/develop` from a
- * `develop` local ref. Branch deletes (all-zero local oid) never
- * block — deleting `origin/develop` is a different, much rarer
- * hazard this guard does not own.
+ * Apply the single-shared-branch policy to every parsed ref update:
+ * block the first update whose source branch is not `develop` or
+ * `main`. Branch deletes (all-zero local oid) never block.
  */
 export const lintPrePushStdinUpdates = (
 	updates: ReadonlyArray<IPrePushRefUpdate>,
@@ -163,29 +165,31 @@ export const parseGitPushArgs = (
 export const lintPushToDevelop = (
 	input: IPushToDevelopInput,
 ): PushToDevelopResult => {
-	const { remoteBranch, currentBranch } = input;
+	const { currentBranch } = input;
 	const blockers: string[] = [];
 
-	// Pushing to a non-develop branch is always allowed.
-	if (remoteBranch !== DEVELOP_BRANCH) {
+	// Detached HEAD / unknown source: fail-open (mirrors the commit
+	// discipline; release engineers may push from a checked-out tag).
+	if (currentBranch === null || currentBranch === '') {
 		return { ok: true };
 	}
 
-	// Pushing to develop from a feature branch is the PR-merge
-	// shape. Allow it; the actual merge is the maintainer's
-	// decision.
-	if (currentBranch !== DEVELOP_BRANCH) {
+	// The shared branch and the release branch are both allowed
+	// sources. Everything else is a stray per-agent / feature
+	// branch this repo does not want.
+	if (currentBranch === DEVELOP_BRANCH || currentBranch === MAIN_BRANCH) {
 		return { ok: true };
 	}
 
-	// develop → develop from develop is the only case we block.
+	// Anything else: no new branches. Switch back to develop and push
+	// the shared branch.
 	blockers.push(
-		`pushing \`${currentBranch}\` → \`origin/${remoteBranch}\` directly.`,
+		`pushing from \`${currentBranch}\` — this repo works on \`develop\` only.`,
 		'',
 		'next-action:',
-		'  create a feature branch:  git switch -c agent/<your-name>-<id>-<id-proposals>-<id-agent>',
-		'  push there:                git push -u origin agent/<your-name>-<id>-<id-proposals>-<id-agent>',
-		'  open a PR; the PR-merge is what lands on develop.',
+		`  switch back:  git switch ${DEVELOP_BRANCH}`,
+		'  then commit and push on develop. agents share one branch;',
+		'  do not push agent/* or feature/* branches.',
 		'',
 		'  if this is a true emergency (CI follow-up, release hotfix),',
 		'  bypass the hook with:  LEFTHOOK_BYPASS=1 git push ...',

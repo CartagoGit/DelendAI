@@ -89,10 +89,7 @@ import {
 } from '../services/transition-evidence';
 import { guardTransitionToDone } from '../services/proposal-completeness';
 import { runProposalTransitionCompat } from './proposal-transition.compat';
-import {
-	PEER_REVIEW_LOG_RELATIVE_PATH,
-	VALIDATE_LOG_RELATIVE_PATH,
-} from '../contracts/constants/proposal-paths.constant';
+import { VALIDATE_LOG_RELATIVE_PATH } from '../contracts/constants/proposal-paths.constant';
 
 const VALIDATE_EVIDENCE_WINDOW_MS = 24 * 60 * 60 * 1000;
 
@@ -127,35 +124,6 @@ export interface IValidateEvidenceDeps {
 		logPathAbs: string,
 	) => Promise<readonly IValidateLogEntry[]>;
 }
-
-const readPeerReviewLogEntries = async (
-	logPathAbs: string,
-): Promise<readonly IPeerReviewLogEntry[]> => {
-	const raw = await readFile(logPathAbs, 'utf8').catch((error: unknown) => {
-		if (
-			error &&
-			typeof error === 'object' &&
-			'code' in error &&
-			error.code === 'ENOENT'
-		) {
-			return '';
-		}
-		throw error;
-	});
-	if (raw.trim() === '') return [];
-	const entries: IPeerReviewLogEntry[] = [];
-	for (const line of raw.split('\n')) {
-		const trimmed = line.trim();
-		if (trimmed === '') continue;
-		try {
-			const parsed = JSON.parse(trimmed) as IPeerReviewLogEntry;
-			entries.push(parsed);
-		} catch {
-			continue;
-		}
-	}
-	return entries;
-};
 
 const readValidateLogEntries = async (
 	logPathAbs: string,
@@ -333,68 +301,6 @@ const PROPOSAL_TRANSITION_OUTPUT_SCHEMA = z.object({
 	/** Count of self-referential `**Files**` paths rewritten to the new location. */
 	filesRewritten: z.number().optional(),
 });
-
-const buildMissingPeerReviewError = (namespacePrefix: string, id: string) => ({
-	structuredContent: {
-		ok: false as const,
-		error: {
-			code: 'missing-peer-review' as const,
-			reason: `peer-review required before "${id}" can leave review → done`,
-		},
-		blockerType: 'missing-peer-review' as const,
-		nextAction: 'proposal_review' as const,
-		nextStep: `Run ${namespacePrefix}_proposal_review with an approved verdict recorded after the most recent transition to review, then retry.`,
-	},
-	content: [
-		{
-			type: 'text' as const,
-			text: JSON.stringify({
-				ok: false,
-				error: {
-					code: 'missing-peer-review',
-					reason: `peer-review required before "${id}" can leave review → done`,
-				},
-				blockerType: 'missing-peer-review',
-				nextAction: 'proposal_review',
-				nextStep: `Run ${namespacePrefix}_proposal_review with an approved verdict recorded after the most recent transition to review, then retry.`,
-			}),
-		},
-	],
-	isError: true as const,
-});
-
-const findLastTransitionToReviewTs = (markdown: string): string | null => {
-	const matches = [
-		...markdown.matchAll(
-			/^[-*]\s*transition-log:\s*([^\n]+?)\s+—\s+[^\n]*\bto\s+review\b.*$/gim,
-		),
-	];
-	if (matches.length === 0) return null;
-	for (let index = matches.length - 1; index >= 0; index -= 1) {
-		const ts = matches[index]?.[1]?.trim();
-		if (ts) return ts;
-	}
-	return null;
-};
-
-const hasApprovedPeerReviewSince = (
-	entries: readonly IPeerReviewLogEntry[],
-	proposalId: string,
-	reviewStartedAt: string | null,
-): boolean => {
-	const reviewStartedMs =
-		reviewStartedAt === null
-			? Number.NEGATIVE_INFINITY
-			: Date.parse(reviewStartedAt);
-	if (Number.isNaN(reviewStartedMs)) return false;
-	return entries.some((entry) => {
-		if (entry.proposal_id !== proposalId) return false;
-		if (entry.verdict !== 'approved') return false;
-		const entryMs = Date.parse(entry.ts);
-		if (Number.isNaN(entryMs)) return false;
-		return entryMs >= reviewStartedMs;
-	});
-};
 
 const isFreshValidateEvidence = (
 	evidence: IValidateEvidence,

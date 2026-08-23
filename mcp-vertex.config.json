@@ -3,6 +3,7 @@
 	"coreVersion": "latest-published",
 	"cacheDir": ".cache/mcp-vertex",
 	"docsDir": "docs/mcp-vertex",
+	"agentWorktree": false,
 	"commitAuthor": {
 		"mode": "git"
 	},
@@ -105,6 +106,9 @@
 			"options": {}
 		},
 		"env": {
+			"options": {}
+		},
+		"error-reporting": {
 			"options": {}
 		},
 		"i18n": {

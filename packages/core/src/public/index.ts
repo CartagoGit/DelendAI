@@ -735,6 +735,7 @@ export {
 	makeRedactor,
 	runExternalTool,
 } from '../lib/external-tool/run-external-tool';
+export { GH_CLI_TOOL } from '../lib/external-tool/known-tools.constant';
 
 // --- plugin registry (f00141 S1) ---
 export type {

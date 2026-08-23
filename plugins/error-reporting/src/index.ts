@@ -1,9 +1,9 @@
 import { definePlugin, redactSecrets } from '@mcp-vertex/core/public';
 
-import { OptionsSchema, resolveOptions } from './lib/options';
-import { createReportStore } from './lib/report-store';
-import { shouldReport, submitIssue } from './lib/reporter';
-import { isMcpVertexInternal, signatureOf } from './lib/signature';
+import { OptionsSchema, resolveOptions } from './lib/options.constant';
+import { createReportStore } from './lib/report-store.service';
+import { shouldReport, submitIssue } from './lib/reporter.service';
+import { isMcpVertexInternal, signatureOf } from './lib/signature.helper';
 import { buildReportStatusRegistration } from './lib/tools/report-status.tool';
 
 const KNOWLEDGE_BODY = [

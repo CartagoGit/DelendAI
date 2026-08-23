@@ -4,7 +4,7 @@ import {
 	DEFAULT_LABELS,
 	DEFAULT_TARGET_REPO,
 	resolveOptions,
-} from '../src/lib/options';
+} from '../src/lib/options.constant';
 
 describe('resolveOptions', () => {
 	it('applies the intrinsic defaults when nothing is configured', () => {

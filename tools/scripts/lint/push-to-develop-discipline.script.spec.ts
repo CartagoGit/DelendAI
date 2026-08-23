@@ -1,15 +1,16 @@
 /**
- * f00086 / c00086 V1 — `push-to-develop-discipline` pure engine.
+ * f00086 / c00086 V1 — `push-to-develop-discipline` pure engine
+ * (policy flipped 2026-08-24: single shared `develop` branch).
  *
- * Pins the four rules the pre-push guard makes:
+ * Pins the three rules the pre-push guard makes:
  *
- *   1. Pushing `develop → origin/develop` from `develop` → BLOCK.
- *      The agent forgot to open a feature branch.
- *   2. Pushing `agent/x → origin/develop` from `agent/x` → ALLOW
- *      (the PR-merge shape; the actual merge is the maintainer's
- *      decision).
- *   3. Pushing any branch to any non-develop remote → ALLOW.
- *   4. Detached HEAD / null current branch → fail-open.
+ *   1. Pushing from `develop` → ALLOW (the shared push, and
+ *      `develop → main` release merges).
+ *   2. Pushing from `main` → ALLOW (release flow; versioning is
+ *      derived on push to `main`).
+ *   3. Pushing from any other branch (`agent/*`, `feature/*`) →
+ *      BLOCK with a next-action telling the agent to switch to
+ *      develop. Detached HEAD / null current branch → fail-open.
  *
  * `parseGitPushArgs` is a separate pure helper that turns the
  * lefthook positional argv `{1} {2} {3} = remote remote_url refs`
@@ -30,58 +31,60 @@ import {
 } from './push-to-develop-discipline.script';
 
 describe('lintPushToDevelop', () => {
-	it('blocks develop → origin/develop from develop (the policy violation)', () => {
+	it('allows develop → origin/develop (the shared push)', () => {
 		const result = lintPushToDevelop({
 			cwd: '/repo',
 			remoteName: 'origin',
 			remoteBranch: 'develop',
 			currentBranch: 'develop',
 		});
-		expect(result.ok).toBe(false);
-		if (!result.ok) {
-			expect(result.blockers[0]).toContain('develop');
-			expect(result.blockers[0]).toContain('origin/develop');
-		}
+		expect(result.ok).toBe(true);
 	});
 
-	it('allows agent/x → origin/develop (PR-merge shape)', () => {
+	it('allows develop → origin/main (release merge)', () => {
+		const result = lintPushToDevelop({
+			cwd: '/repo',
+			remoteName: 'origin',
+			remoteBranch: 'main',
+			currentBranch: 'develop',
+		});
+		expect(result.ok).toBe(true);
+	});
+
+	it('allows main → origin/main (release flow)', () => {
+		const result = lintPushToDevelop({
+			cwd: '/repo',
+			remoteName: 'origin',
+			remoteBranch: 'main',
+			currentBranch: 'main',
+		});
+		expect(result.ok).toBe(true);
+	});
+
+	it('blocks agent/x → origin/develop (no new branches)', () => {
 		const result = lintPushToDevelop({
 			cwd: '/repo',
 			remoteName: 'origin',
 			remoteBranch: 'develop',
 			currentBranch: 'agent/copilot-minimax-m3',
 		});
-		expect(result.ok).toBe(true);
+		expect(result.ok).toBe(false);
+		if (!result.ok) {
+			expect(result.blockers.join('\n')).toContain(
+				'agent/copilot-minimax-m3',
+			);
+			expect(result.blockers.join('\n')).toContain('git switch develop');
+		}
 	});
 
-	it('allows feature/x → origin/develop (the same PR-merge shape)', () => {
+	it('blocks feature/x → origin/develop (no feature branches)', () => {
 		const result = lintPushToDevelop({
 			cwd: '/repo',
 			remoteName: 'origin',
 			remoteBranch: 'develop',
 			currentBranch: 'feature/f00086-discipline',
 		});
-		expect(result.ok).toBe(true);
-	});
-
-	it('allows develop → origin/feature/x (push develop to a feature branch)', () => {
-		const result = lintPushToDevelop({
-			cwd: '/repo',
-			remoteName: 'origin',
-			remoteBranch: 'feature/x',
-			currentBranch: 'develop',
-		});
-		expect(result.ok).toBe(true);
-	});
-
-	it('allows develop → origin/agent/x (push to another agent branch)', () => {
-		const result = lintPushToDevelop({
-			cwd: '/repo',
-			remoteName: 'origin',
-			remoteBranch: 'agent/copilot-minimax-m3',
-			currentBranch: 'develop',
-		});
-		expect(result.ok).toBe(true);
+		expect(result.ok).toBe(false);
 	});
 
 	it('fails open on null currentBranch (detached HEAD carve-out)', () => {
@@ -99,7 +102,7 @@ describe('lintPushToDevelop', () => {
 			cwd: '/repo',
 			remoteName: 'origin',
 			remoteBranch: 'develop',
-			currentBranch: 'develop',
+			currentBranch: 'agent/copilot-minimax-m3',
 		});
 		expect(result.ok).toBe(false);
 		if (!result.ok) {
@@ -211,22 +214,10 @@ describe('lintPrePushStdinUpdates', () => {
 	const SHA_A = 'a'.repeat(40);
 	const SHA_B = 'b'.repeat(40);
 
-	it('blocks a real develop → origin/develop update (the bug this fixes)', () => {
+	it('allows a real develop → origin/develop update (the shared push)', () => {
 		const result = lintPrePushStdinUpdates([
 			{
 				localRef: 'refs/heads/develop',
-				localSha: SHA_A,
-				remoteRef: 'refs/heads/develop',
-				remoteSha: SHA_B,
-			},
-		]);
-		expect(result.ok).toBe(false);
-	});
-
-	it('allows an agent branch pushed to origin/develop (PR-merge shape)', () => {
-		const result = lintPrePushStdinUpdates([
-			{
-				localRef: 'refs/heads/agent/copilot-minimax-m3',
 				localSha: SHA_A,
 				remoteRef: 'refs/heads/develop',
 				remoteSha: SHA_B,
@@ -235,12 +226,24 @@ describe('lintPrePushStdinUpdates', () => {
 		expect(result.ok).toBe(true);
 	});
 
-	it('allows develop pushed to a non-develop remote branch', () => {
+	it('blocks an agent branch pushed to origin/develop (no new branches)', () => {
 		const result = lintPrePushStdinUpdates([
 			{
-				localRef: 'refs/heads/develop',
+				localRef: 'refs/heads/agent/copilot-minimax-m3',
 				localSha: SHA_A,
-				remoteRef: 'refs/heads/feature/x',
+				remoteRef: 'refs/heads/develop',
+				remoteSha: SHA_B,
+			},
+		]);
+		expect(result.ok).toBe(false);
+	});
+
+	it('allows main pushed to origin/main (release flow)', () => {
+		const result = lintPrePushStdinUpdates([
+			{
+				localRef: 'refs/heads/main',
+				localSha: SHA_A,
+				remoteRef: 'refs/heads/main',
 				remoteSha: SHA_B,
 			},
 		]);
@@ -266,15 +269,15 @@ describe('lintPrePushStdinUpdates', () => {
 	it('blocks on the first offending ref in a multi-ref push', () => {
 		const result = lintPrePushStdinUpdates([
 			{
-				localRef: 'refs/heads/agent/x',
-				localSha: SHA_A,
-				remoteRef: 'refs/heads/agent/x',
-				remoteSha: SHA_B,
-			},
-			{
 				localRef: 'refs/heads/develop',
 				localSha: SHA_A,
 				remoteRef: 'refs/heads/develop',
+				remoteSha: SHA_B,
+			},
+			{
+				localRef: 'refs/heads/agent/x',
+				localSha: SHA_A,
+				remoteRef: 'refs/heads/agent/x',
 				remoteSha: SHA_B,
 			},
 		]);

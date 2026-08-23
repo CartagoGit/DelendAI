@@ -72,6 +72,17 @@ const walk = async (dir: string, accumulator: IDetection[]): Promise<void> => {
 	for (const entry of entries) {
 		const abs = join(dir, entry.name);
 		if (entry.isDirectory()) {
+			// node_modules/ is third-party, not repo code — typedoc (via
+			// tools/docs-api) vendors lunr, which ships its own .sh. Also
+			// skip VCS + build output so the gate only judges our code.
+			if (
+				entry.name === 'node_modules' ||
+				entry.name === '.git' ||
+				entry.name === 'dist' ||
+				entry.name === '.vite'
+			) {
+				continue;
+			}
 			await walk(abs, accumulator);
 		} else if (entry.isFile()) {
 			const forbidden = FORBIDDEN_EXTENSIONS.find((f) =>

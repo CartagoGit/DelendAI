@@ -4,7 +4,7 @@ import { tmpdir } from 'node:os';
 
 import { afterEach, describe, expect, it } from 'vitest';
 
-import { createReportStore } from '../src/lib/report-store';
+import { createReportStore } from '../src/lib/report-store.service';
 
 const tmpDirs: string[] = [];
 
