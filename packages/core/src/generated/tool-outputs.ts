@@ -2222,7 +2222,7 @@ export interface McpVertexProposalsProposalAdoptOutput {
 		proposals: Array<{
 			file: string;
 			id: string;
-			kind: "proposal" | "fix";
+			kind: "feat" | "breaking" | "fix" | "refactor" | "perf" | "audit" | "chore" | "docs" | "test" | "infra" | "spike" | "legacy" | "resume" | "plan";
 			status: string;
 		}>;
 		folders: string[];

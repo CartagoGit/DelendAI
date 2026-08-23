@@ -240,6 +240,12 @@ restates the rule for swarm context.
 - Token budget is a protected invariant. `overview` (compact) +
   `auto_work` stay under their measured budgets.
 - **Every agent MUST hold an active lock claim (`agent_lock`) for the files it edits.** The validation gate enforces this via `lint:agent-claims`, and commits/pushes violating this will be rejected by git hooks. (x00080) The claim check itself is a lefthook-installed TypeScript hook (`tools/scripts/hooks/pre-commit.ts`), not a raw `.sh` git hook template — every hook in this repo is TypeScript, per rule #10 below.
+- **Single shared branch — work only on `develop`.** This repo has
+  `agentWorktree: false` in `mcp-vertex.config.json`; agents never
+  create `agent/*`, `feature/*` or any other branch. Commit and push
+  directly on `develop` and share the git history. Git hooks reject
+  commits/pushes from any branch other than `develop` (and `main`
+  for releases).
 - Every public tool declares an `outputSchema`. `catchall` is documented,
   not default.
 - **No hardcoded lists of skills / tools / proposal ids in any host

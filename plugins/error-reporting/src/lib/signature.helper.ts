@@ -48,6 +48,9 @@ const HEX = /\b0x[0-9a-f]+\b/g;
 const NUMBERS = /\d+/g;
 const PATH = /\/[^\s"'`]*/g;
 
+const MAX_SIGNATURE_LENGTH = 280;
+const MAX_TITLE_LENGTH = 180;
+
 /**
  * Collapse the variable parts of an error message so two sightings of
  * the same bug (different timestamps, port numbers, absolute paths,
@@ -64,7 +67,7 @@ export const normalizeMessage = (message: string): string =>
 /** Stable de-duplication key for `toolName` + error. */
 export const signatureOf = (toolName: string, error: unknown): string => {
 	const normalized = normalizeMessage(messageOf(error) ?? 'unknown error');
-	return `${toolName}::${normalized}`.slice(0, 280);
+	return `${toolName}::${normalized}`.slice(0, MAX_SIGNATURE_LENGTH);
 };
 
 const truncate = (value: string, max: number): string =>
@@ -75,7 +78,7 @@ export const buildIssueTitle = (toolName: string, error: unknown): string => {
 	const message = messageOf(error) ?? 'unknown error';
 	return truncate(
 		`[auto] ${toolName}: ${message.replace(/\s+/g, ' ').trim()}`,
-		180,
+		MAX_TITLE_LENGTH,
 	);
 };
 

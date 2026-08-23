@@ -12,8 +12,8 @@ export {
 	DEFAULT_LABELS,
 	DEFAULT_TARGET_REPO,
 	resolveOptions,
-} from '../lib/options';
-export type { IErrorReportingOptions } from '../lib/options';
+} from '../lib/options.constant';
+export type { IErrorReportingOptions } from '../lib/options.constant';
 
 export {
 	isMcpVertexInternal,
@@ -23,20 +23,24 @@ export {
 	signatureOf,
 	buildIssueTitle,
 	buildIssueBody,
-} from '../lib/signature';
-export type { IBuildIssueBodyInput } from '../lib/signature';
+} from '../lib/signature.helper';
+export type { IBuildIssueBodyInput } from '../lib/signature.helper';
 
-export { shouldReport, submitIssue, ghIssueExec } from '../lib/reporter';
+export {
+	shouldReport,
+	submitIssue,
+	ghIssueExec,
+} from '../lib/reporter.service';
 export type {
 	IIssueExec,
 	IIssueExecResult,
 	ISubmitIssueInput,
 	ISubmitIssueOutcome,
-} from '../lib/reporter';
+} from '../lib/reporter.service';
 
-export { createReportStore } from '../lib/report-store';
+export { createReportStore } from '../lib/report-store.service';
 export type {
 	IReportRecord,
 	IReportRecordInput,
 	IReportStore,
-} from '../lib/report-store';
+} from '../lib/report-store.service';
