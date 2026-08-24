@@ -69,14 +69,14 @@ Hoy `submitIssue()` registra la firma aunque el envío falle, por lo que un fall
   - "Circuit breaker abre tras N fallos consecutivos y recierra con backoff."
   - "Antes de crear issue nueva se busca el fingerprint existente para comentar/actualizar solo con datos seguros."
 
-### S3 — Agrupación por root-cause: cadena de errores → una única issue
+### S3 — El MISMO error deduplica aunque los datos difieran (el tipo NO es el error)
 - **Status**: pending
 - **Files**: `plugins/error-reporting/src/lib/report-store.service.ts`, `plugins/error-reporting/src/lib/signature.helper.ts`
 - **Gate**: type
 - acceptance:
-  - "Errores de la misma root-cause (mismo origen, aunque el mensaje o el frame hoja difieran) colapsan en una única issue."
-  - "Antes de crear issue se busca el fingerprint de root-cause existente y se incrementa su contador; nunca se crean N issues para una cadena del mismo error."
-  - "La deduplicación agrupa la cadena de errores cascada del mismo origen, no cada mensaje distinto."
+  - "El MISMO error (misma identidad: packageId + componentId + errorCode + frame interno) colapsa en una única issue aunque los datos de runtime (mensaje, args, valores) difieran."
+  - "Antes de crear issue se busca el fingerprint del MISMO error y se incrementa su contador; nunca se crean N issues para el mismo error."
+  - "Un mismo TIPO de error no es el mismo error: dos bugs distintos que comparten errorCode pero difieren en ubicación producen fingerprints distintos y NO colapsan."
 
 ## acceptance
 
@@ -87,4 +87,4 @@ Hoy `submitIssue()` registra la firma aunque el envío falle, por lo que un fall
 - Backoff exponencial con jitter y sin retry loop agresivo.
 - Circuit breaker abre tras N fallos consecutivos y recierra con backoff.
 - Antes de crear issue nueva se busca el fingerprint existente para comentar/actualizar solo con datos seguros.
-- Errores de la misma root-cause colapsan en una única issue (cadena → un error, no N issues).
+- El MISMO error (no el mismo tipo) colapsa en una única issue aunque los datos difieran; bugs distintos del mismo tipo no se mezclan.
