@@ -1,6 +1,6 @@
 import type { IProviderCapabilities } from '../contracts/interfaces/provider-capabilities.interface';
 import type { PluginOrigin } from '../contracts/interfaces/plugin-origin.interface';
-import type { CommitAuthorMode } from '../shared/commit-author';
+import type { CommitAuthorMode } from '../contracts/interfaces/commit-author.interface';
 import { CONFIG_FILE_SCHEMA } from './config-file-schema';
 
 /**

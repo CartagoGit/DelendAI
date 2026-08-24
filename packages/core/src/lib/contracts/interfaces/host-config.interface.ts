@@ -1,5 +1,5 @@
 import type { ICorePaths } from './core-paths.interface';
-import type { ICommitAuthorResolution } from '../../shared/commit-author';
+import type { ICommitAuthorResolution } from './commit-author.interface';
 import type { IKnowledgeEntry, ISkillEntry } from './knowledge.interface';
 import type { IMcpVertexProjectMetadata } from './project-metadata.interface';
 import type { IStatusCollector } from './status-collector.interface';

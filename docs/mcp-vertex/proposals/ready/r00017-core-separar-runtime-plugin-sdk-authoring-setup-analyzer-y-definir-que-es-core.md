@@ -39,7 +39,7 @@ El core ya contiene agents, bootstrap, cache, catalog, CLI assembly, config, hos
 - global_gate: type
 
 ### S1 — Definir el límite de core (documentación)
-- **Status**: pending
+- **Status**: done
 - **Files**: `docs/mcp-vertex/ARCHITECTURE.md`
 - **Gate**: type
 - acceptance:
@@ -47,7 +47,7 @@ El core ya contiene agents, bootstrap, cache, catalog, CLI assembly, config, hos
   - "CORE-002 resuelto con una definición explícita."
 
 ### S2 — Medición cold-start antes/después
-- **Status**: pending
+- **Status**: done
 - **Files**: `tools/scripts/perf/cold-start.script.ts`
 - **Gate**: type
 - acceptance:
@@ -55,7 +55,7 @@ El core ya contiene agents, bootstrap, cache, catalog, CLI assembly, config, hos
   - "CHECK-005: la división se decide con datos, no por dogma."
 
 ### S3 — Extraer @mcp-vertex/plugin-sdk
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/src/lib/plugins/plugin-contract.ts`
 - **Gate**: type
 - acceptance:
