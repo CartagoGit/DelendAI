@@ -3200,7 +3200,6 @@
 		"oversized-file:packages/core/src/lib/contracts/file-conventions.contract.ts:1",
 		"oversized-file:packages/core/src/lib/plugins/load-config-file.ts:1",
 		"oversized-file:packages/core/src/lib/scaffold/extract-plugin.ts:1",
-		"oversized-file:packages/core/src/lib/scaffold/plugin-blueprint.ts:1",
 		"oversized-file:packages/core/src/lib/scaffold/scaffold-host.ts:1",
 		"oversized-file:packages/core/src/lib/scaffold/scaffold-tool.ts:1",
 		"oversized-file:plugins/api/src/lib/spec/openapi.ts:1",

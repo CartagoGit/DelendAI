@@ -71,22 +71,27 @@ const PUBLISH_ORDER_SEED = `export const PUBLISH_ORDER: readonly string[] = [
 ];
 `;
 
-const PRESET_CATALOG_SEED = `export const PRESET_CATALOG: Readonly<
-\tRecord<string, IPresetDefinition>
-> = {
-\tminimal: {
-\t\tmembers: [
-\t\t\t{ plugin: 'git' },
-\t\t\t{ plugin: 'docs' },
-\t\t],
-\t},
-\tvertex: {
-\t\tmembers: [
-\t\t\t{ plugin: 'proposals' },
-\t\t\t{ plugin: 'rules' },
-\t\t],
-\t},
-};
+const PRESET_CATALOG_SEED = `export const PRESET_CATALOG: readonly IPresetDefinition[] = [
+	{
+		id: 'minimal',
+		title: 'minimal',
+		summary: 'summary',
+		members: [
+			{ plugin: 'git' },
+			{ plugin: 'docs' },
+		],
+	},
+	{
+		id: 'vertex',
+		title: 'vertex',
+		summary: 'summary',
+		members: [
+			{ plugin: 'proposals' },
+			{ plugin: 'rules' },
+		],
+		independent: true,
+	},
+];
 `;
 
 const CATALOG_SEED = `{
@@ -97,6 +102,12 @@ const CATALOG_SEED = `{
 		{ "name": "y", "plugin": "rules" }
 	]
 }
+`;
+
+const FIRST_PARTY_INDEX_SEED = `export const FIRST_PARTY_PLUGIN_INDEX = {
+	origin: 'first-party',
+	entries: [{ id: 'demo' }],
+};
 `;
 
 const seedPath = (dir: string, path: string, content: string): string => {
@@ -125,6 +136,10 @@ describe('plugin-wiring doctor (in-memory)', () => {
 			[
 				'packages/core/src/lib/plugins/preset-catalog.ts',
 				PRESET_CATALOG_SEED,
+			],
+			[
+				'packages/core/src/lib/registry/first-party-index.ts',
+				FIRST_PARTY_INDEX_SEED,
 			],
 			['docs/mcp-vertex/agent-catalog.generated.json', CATALOG_SEED],
 		];
@@ -184,6 +199,7 @@ describe('plugin-wiring doctor (in-memory)', () => {
 
 		const report = await diagnosePluginWiring('demo', fs);
 		expect(report.missing).toEqual([]);
+		expect(report.loadDiagnostics).toEqual([]);
 		expect(report.fullyWired).toBe(true);
 	});
 

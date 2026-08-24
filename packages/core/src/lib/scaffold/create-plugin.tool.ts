@@ -11,6 +11,12 @@ import {
 	type IBatchAtomicWriter,
 } from '../shared/batch-atomic-writer';
 import { toolJson } from '../shared/tool-response';
+import {
+	createOverlayFs,
+	stagePluginScaffold,
+	writeFirstPartyIndex,
+	writeHostConfig,
+} from './create-plugin-writer.service';
 import { diagnosePluginWiring } from './diagnose-plugin-wiring';
 import { scaffoldPluginFiles } from './scaffold-host';
 import { wirePluginIntoMonorepo } from './wire-plugin';
@@ -55,6 +61,13 @@ const PLUGIN_WIRING_POINT_SCHEMA = z.object({
 const PLUGIN_WIRING_REPORT_SCHEMA = z.object({
 	pluginId: z.string(),
 	points: z.array(PLUGIN_WIRING_POINT_SCHEMA),
+	loadDiagnostics: z.array(
+		z.object({
+			pluginId: z.string(),
+			reason: z.string(),
+			fixHint: z.string(),
+		}),
+	),
 	fullyWired: z.boolean(),
 	missing: z.array(PLUGIN_WIRING_POINT_ID_SCHEMA),
 });
@@ -81,7 +94,6 @@ export const CREATE_PLUGIN_OUTPUT_SCHEMA = z.object({
 	doctor: PLUGIN_WIRING_REPORT_SCHEMA,
 	pluginId: z.string(),
 });
-
 export type ICreatePluginArgs = z.infer<typeof CREATE_PLUGIN_INPUT_SCHEMA>;
 export type ICreatePluginOutput = z.infer<typeof CREATE_PLUGIN_OUTPUT_SCHEMA>;
 
@@ -101,7 +113,6 @@ export interface IRegenerateCatalogArgs {
 	readonly workspaceRoot: string;
 	readonly dryRun: boolean;
 }
-
 const SYNTHETIC_CATALOG_TOOL_ID = 'sample-tool';
 
 const normalizeWired = (
@@ -132,6 +143,11 @@ const normalizeDoctor = (report: {
 		readonly summary: string;
 		readonly remediation?: string;
 	}[];
+	readonly loadDiagnostics: readonly {
+		readonly pluginId: string;
+		readonly reason: string;
+		readonly fixHint: string;
+	}[];
 	readonly fullyWired: boolean;
 	readonly missing: readonly string[];
 }): ICreatePluginOutput['doctor'] => ({
@@ -145,6 +161,7 @@ const normalizeDoctor = (report: {
 			? { remediation: point.remediation }
 			: {}),
 	})),
+	loadDiagnostics: report.loadDiagnostics.map((entry) => ({ ...entry })),
 	fullyWired: report.fullyWired,
 	missing: [
 		...report.missing.map(
@@ -152,7 +169,6 @@ const normalizeDoctor = (report: {
 		),
 	],
 });
-
 const createWorkspaceFs = (
 	workspace: IWorkspacePathProvider,
 ): IPluginWiringFs => ({
@@ -171,23 +187,6 @@ const createWorkspaceFs = (
 		}
 	},
 });
-
-const createOverlayFs = (baseFs: IPluginWiringFs): IPluginWiringFs => {
-	const overlay = new Map<string, string>();
-	return {
-		async readFile(path) {
-			const fromOverlay = overlay.get(path);
-			if (fromOverlay !== undefined) return fromOverlay;
-			return baseFs.readFile(path);
-		},
-		async writeFile(path, content) {
-			overlay.set(path, content);
-		},
-		async pathExists(path) {
-			return overlay.has(path) || (await baseFs.pathExists(path));
-		},
-	};
-};
 
 const appendSyntheticCatalogEntry = async ({
 	pluginId,
@@ -283,23 +282,45 @@ export const runCreatePlugin = async (
 	const fs = options.fs ?? createWorkspaceFs(options.workspace);
 	const regenerateCatalog =
 		options.regenerateCatalog ?? defaultRegenerateCatalog;
+	const stageWiring = async (
+		targetFs: IPluginWiringFs,
+		catalogDryRun: boolean,
+	): Promise<
+		readonly {
+			readonly pointId: string;
+			readonly edits: readonly {
+				readonly path: string;
+				readonly previous: string;
+				readonly next: string;
+				readonly noop: boolean;
+			}[];
+			readonly wired: boolean;
+		}[]
+	> => {
+		await stagePluginScaffold({ files: scaffoldedFiles, fs: targetFs });
+		const wired = await wirePluginIntoMonorepo({
+			pluginId,
+			fs: targetFs,
+			dryRun: false,
+		});
+		await writeFirstPartyIndex({
+			pluginId,
+			description: args.description,
+			fs: targetFs,
+		});
+		await writeHostConfig({ pluginId, fs: targetFs });
+		await regenerateCatalog({
+			pluginId,
+			fs: targetFs,
+			workspaceRoot: options.workspace.root,
+			dryRun: catalogDryRun,
+		});
+		return wired;
+	};
 
 	if (dryRun) {
 		const previewFs = createOverlayFs(fs);
-		for (const file of scaffoldedFiles) {
-			await previewFs.writeFile(file.path, file.content);
-		}
-		const wired = await wirePluginIntoMonorepo({
-			pluginId,
-			fs: previewFs,
-			dryRun: false,
-		});
-		await regenerateCatalog({
-			pluginId,
-			fs: previewFs,
-			workspaceRoot: options.workspace.root,
-			dryRun: true,
-		});
+		const wired = await stageWiring(previewFs, true);
 		const doctor = await diagnosePluginWiring(pluginId, previewFs);
 		return {
 			ok: doctor.fullyWired,
@@ -314,12 +335,9 @@ export const runCreatePlugin = async (
 	const batchWriter =
 		options.batchWriter ??
 		createFileSystemBatchWriter(options.workspace.root);
-	const batch = await batchWriter.writeAll(
-		scaffoldedFiles.map((file) => ({
-			path: file.path,
-			content: file.content,
-		})),
-	);
+	const previewFs = createOverlayFs(fs);
+	const wired = await stageWiring(previewFs, true);
+	const batch = await batchWriter.writeAll(previewFs.snapshot());
 	if (!batch.ok) {
 		const detail = batch.errors
 			.map((error) => `${error.path}: ${error.reason}`)
@@ -330,12 +348,6 @@ export const runCreatePlugin = async (
 				: 'failed to scaffold plugin files',
 		);
 	}
-
-	const wired = await wirePluginIntoMonorepo({
-		pluginId,
-		fs,
-		dryRun: false,
-	});
 	await regenerateCatalog({
 		pluginId,
 		fs,
@@ -357,7 +369,7 @@ export const buildCreatePluginToolRegistration = (
 ): IToolRegistration => ({
 	id: 'create_plugin',
 	summary:
-		'Scaffold a new first-party plugin: writes the scaffold files, wires monorepo integration points, then self-checks via the wiring doctor.',
+		'Scaffold a new first-party plugin: writes the plugin package scaffold, wires monorepo integration points, updates the first-party index and host config, then self-checks via the wiring doctor.',
 	tags: ['bootstrap'],
 	effects: ['write', 'spawn'],
 	register: async (server) => {
@@ -365,7 +377,7 @@ export const buildCreatePluginToolRegistration = (
 			`${options.namespacePrefix}_create_plugin`,
 			{
 				description:
-					'Scaffold a new first-party plugin: writes the four scaffold files + wires it into tsconfig.base/vitest.shared/PLUGIN_DEFAULTS/publish-order/preset-catalog, then self-checks via the doctor. Returns the full report.',
+					'Scaffold a new first-party plugin: writes the plugin package scaffold, wires it into tsconfig.base/vitest.shared/PLUGIN_DEFAULTS/publish-order/preset-catalog, updates FIRST_PARTY_PLUGIN_INDEX and mcp-vertex.config.json, then self-checks via the doctor. Returns the full report.',
 				inputSchema: CREATE_PLUGIN_INPUT_SCHEMA,
 				outputSchema: CREATE_PLUGIN_OUTPUT_SCHEMA,
 			},

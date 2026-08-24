@@ -10,7 +10,7 @@ import * as testConventionPublic from '@mcp-vertex/test-convention/public';
 
 import {
 	buildQualityPolicyToolRegistrations,
-	QualityPolicyOutputSchema,
+	type QualityPolicyOutputSchema,
 } from '../../src/public/index';
 
 const createdRoots: string[] = [];
