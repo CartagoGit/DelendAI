@@ -60,6 +60,7 @@ import completionPlugin from '@mcp-vertex/completion';
 import contextForChangePlugin from '@mcp-vertex/context-for-change';
 import impactAnalysisPlugin from '@mcp-vertex/impact-analysis';
 import projectHealthPlugin from '@mcp-vertex/project-health';
+import qualityPolicyPlugin from '@mcp-vertex/quality-policy';
 
 import {
 	buildPackageModules,
@@ -101,10 +102,15 @@ const PLUGIN_SPECIFIERS: Readonly<Record<string, unknown>> = {
 	'mcp-context-for-change': contextForChangePlugin,
 	'mcp-impact-analysis': impactAnalysisPlugin,
 	'mcp-project-health': projectHealthPlugin,
+	'mcp-quality-policy': qualityPolicyPlugin,
 };
 
+const PLUGIN_SPECIFIER_ENTRIES = Object.entries(PLUGIN_SPECIFIERS).sort(
+	(left, right) => right[0].length - left[0].length,
+);
+
 const PLUGIN_LIST =
-	'proposals,rules,memory,git,quality,search,notification,completion,context-for-change,docs,deps,logs,audit,status-marker,test-convention,web-fetch,cache,container,security,diagram,env,i18n,impact-analysis,project-health,perf,tech-debt,link-check,usage-tracking,browser,refactor,prompt-eval,observability';
+	'proposals,rules,memory,git,quality,search,notification,completion,context-for-change,docs,deps,logs,audit,status-marker,test-convention,web-fetch,cache,container,security,diagram,env,i18n,impact-analysis,project-health,quality-policy,perf,tech-debt,link-check,usage-tracking,browser,refactor,prompt-eval,observability';
 
 /**
  * Assemble the reference server with every plugin and harvest each
@@ -119,7 +125,7 @@ export const harvestToolSchemas = async (): Promise<IHarvestedTool[]> => {
 	);
 	const { config } = await assembleCliConfig(args, {
 		import: async (specifier: string) => {
-			const hit = Object.entries(PLUGIN_SPECIFIERS).find(([key]) =>
+			const hit = PLUGIN_SPECIFIER_ENTRIES.find(([key]) =>
 				specifier.includes(key),
 			);
 			return { default: hit ? hit[1] : undefined };

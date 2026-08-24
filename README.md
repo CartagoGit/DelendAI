@@ -26,6 +26,7 @@ Project-agnostic core for building MCP servers + a CLI plugin loader, by
 | `plugins/context-for-change` | `@mcp-vertex/context-for-change` | Compact task-oriented change context orchestration across diff, symbols, tests, docs and conventions. |
 | `plugins/impact-analysis` | `@mcp-vertex/impact-analysis` | Bounded impact analysis and test selection across changed symbols, dependents and related specs. |
 | `plugins/project-health` | `@mcp-vertex/project-health` | Compact project-health aggregator: cheap summary first, lazy domain details on demand. |
+| `plugins/quality-policy` | `@mcp-vertex/quality-policy` | Unified quality-policy surface: cheap tests, conventions, lint, types and coverage guidance without running heavy quality commands. |
 | `plugins/search` | `@mcp-vertex/search` | Code search (semantic + symbol + references). |
 <!-- END GENERATED: migrated-plugin-layout-rows -->
 | `plugins/notification` | `@mcp-vertex/notification` | Watches the shared lock file and pushes an MCP `notifications/message` on release, so agents stop polling. |

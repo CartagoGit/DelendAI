@@ -39,6 +39,9 @@ export const PLUGIN_DEFAULTS: Readonly<
 	'project-health': {
 		maxBytes: 2000,
 	},
+	'quality-policy': {
+		maxBytes: 2000,
+	},
 	forge: {},
 	deps: {
 		manifest: 'package.json',
