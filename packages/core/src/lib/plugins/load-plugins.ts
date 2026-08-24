@@ -3,6 +3,7 @@ import type {
 	IMcpPluginContext,
 	IMcpPluginRegistrations,
 } from './plugin-contract';
+import type { IPluginRuntime } from '../contracts/interfaces/plugin-runtime.interface';
 import type { IPluginRegisterErrorInfo } from '../contracts/interfaces/plugin-lifecycle-error.interface';
 import { registerResolvedPluginsWithLifecycle } from './load-plugins-lifecycle.helper';
 import { resolve as resolvePath } from 'node:path';
@@ -25,6 +26,7 @@ export interface ILoadedPlugin {
 	readonly resolved: string;
 	readonly plugin: IMcpPlugin;
 	readonly registrations: IMcpPluginRegistrations;
+	readonly runtime: IPluginRuntime<IMcpPluginRegistrations>;
 }
 
 export interface IPluginLoadResult {
@@ -56,6 +58,8 @@ export interface ILoadPluginsOptions {
 	readonly import: (specifier: string) => Promise<unknown>;
 	/** Per-step timeout (ms) for import and register. Default 15000. */
 	readonly timeoutMs?: number;
+	/** External batch cancellation for register lifecycle. */
+	readonly signal?: AbortSignal | undefined;
 }
 
 /**
@@ -188,10 +192,11 @@ interface IResolvedPlugin {
 }
 
 /**
- * Resolve, import and register each requested plugin. One bad plugin
- * never aborts the rest: failures are collected in `errors` and the
- * server still boots with whatever loaded. Deterministic: plugins are
- * processed in the order requested.
+ * Resolve, import and register each requested plugin. Import and option
+ * validation keep the old tolerant behaviour (one bad specifier does not
+ * abort the rest). The register phase is transactional: once registration
+ * starts, the first register failure or cancellation rolls back the plugins
+ * that already became active, in reverse order.
  *
  * Three-phase by design (a00065 S6, x00218):
  *  1. **Resolve** — import, dedup, and validate options for every
@@ -316,7 +321,7 @@ export const loadPlugins = async (
 	const lifecycle = await registerResolvedPluginsWithLifecycle({
 		resolvedPlugins,
 		timeoutMs,
-		withTimeout,
+		signal: options.signal,
 	});
 
 	return {

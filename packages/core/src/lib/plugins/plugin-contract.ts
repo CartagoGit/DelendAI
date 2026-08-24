@@ -18,11 +18,12 @@ import type {
 	IPluginHookErrorInfo,
 	IPluginRegisterErrorInfo,
 } from '../contracts/interfaces/plugin-lifecycle-error.interface';
+import type { IPluginRuntime } from '../contracts/interfaces/plugin-runtime.interface';
 
 /**
  * What the core hands a plugin at registration time. A plugin is
  * pure: given this context it returns the artefacts to expose. It must
- * not call `process.cwd()` or read CLI args directly — everything it
+ * not read the process working directory or CLI args directly - everything it
  * needs is here, already resolved, so the same plugin behaves
  * identically under any agent, model or host.
  */
@@ -367,7 +368,14 @@ export interface IMcpPlugin {
 	readonly cacheNamespace?: 'results';
 	register(
 		ctx: IMcpPluginContext,
-	): IMcpPluginRegistrations | Promise<IMcpPluginRegistrations>;
+		signal?: AbortSignal,
+	):
+		| IMcpPluginRegistrations
+		| IPluginRuntime<IMcpPluginRegistrations>
+		| Promise<
+				| IMcpPluginRegistrations
+				| IPluginRuntime<IMcpPluginRegistrations>
+		  >;
 }
 
 /** Identity helper for type-safe plugin authoring and inference. */
