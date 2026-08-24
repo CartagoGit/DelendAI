@@ -88,6 +88,22 @@ const CATALOG_SEED = `{
 }
 `;
 
+const FIRST_PARTY_INDEX_SEED = `export const FIRST_PARTY_PLUGIN_INDEX = {
+	origin: 'first-party',
+	entries: [
+		{
+			origin: 'first-party',
+			id: 'api',
+			package: '@mcp-vertex/api',
+			summary: 'REST/GraphQL API surface for mcp-vertex plugins.',
+			tags: ['api'],
+			permissions: [],
+		},
+		...GENERATED_FIRST_PARTY_MANIFEST_ENTRIES,
+	],
+};
+`;
+
 const createMemoryFs = (
 	seed: Readonly<Record<string, string>>,
 ): IPluginWiringFs & {
@@ -149,6 +165,8 @@ const buildSeed = (): Record<string, string> => ({
 	'packages/core/src/lib/plugins/plugin-defaults.ts': PLUGIN_DEFAULTS_SEED,
 	'tools/scripts/release/release-plan.ts': PUBLISH_ORDER_SEED,
 	'packages/core/src/lib/plugins/preset-catalog.ts': PRESET_CATALOG_SEED,
+	'packages/core/src/lib/registry/first-party-index.ts':
+		FIRST_PARTY_INDEX_SEED,
 	'docs/mcp-vertex/agent-catalog.generated.json': CATALOG_SEED,
 	// A minimal host config that loads the plugin under test — the doctor
 	// uses this to decide whether the catalog-regen check is required.
@@ -180,6 +198,16 @@ describe('runCreatePlugin (f00120 S4)', () => {
 		expect(report.wired).toHaveLength(6);
 		expect(report.doctor.fullyWired).toBe(true);
 		expect(fs.files.has('plugins/demo-plugin/package.json')).toBe(true);
+		expect(
+			fs.files
+				.get('packages/core/src/lib/registry/first-party-index.ts')
+				?.includes("id: 'demo-plugin'"),
+		).toBe(true);
+		expect(
+			JSON.parse(fs.files.get('mcp-vertex.config.json') ?? '{}').plugins[
+				'demo-plugin'
+			],
+		).toEqual({ options: {} });
 	});
 
 	it('surfaces doctor failures when the catalog point is still missing', async () => {
