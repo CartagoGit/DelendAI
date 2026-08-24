@@ -676,6 +676,16 @@ export const runAutoWork = async (
 		});
 	}
 	const claimReady = claimReadyResolution.claimReady;
+	// x00231: the persist plan must respect the configured branch
+	// policy. With the worktree gate on, agents persist from per-agent
+	// branches; with it off (this repo), they commit and push directly
+	// on `develop`. The push target honours the configured
+	// `persist.pushTarget` and only falls back to a mode-appropriate
+	// default.
+	const worktreeEnabled = options.agentWorktreeEnabled === true;
+	const pushTargetHint =
+		options.persist?.pushTarget ??
+		(worktreeEnabled ? 'origin agent/<branch>' : 'origin develop');
 	const persistStep =
 		resolvedMode === 'none'
 			? []
@@ -684,21 +694,27 @@ export const runAutoWork = async (
 						'Persist the slice: call the engine helper `maybePersistAfterSlice(<claim.files>, <proposalId>, <sliceId>, { mode: "commit" })` after `sync_proposals` and before `release`.',
 					]
 				: [
-						'Persist the slice (commit + push): call `maybePersistAfterSlice(<claim.files>, <proposalId>, <sliceId>, { mode: "commit-and-push", pushTarget: "origin agent/<branch>" })` after `sync_proposals` and before `release`. The helper refuses to push to `main` automatically.',
+						`Persist the slice (commit + push): call \`maybePersistAfterSlice(<claim.files>, <proposalId>, <sliceId>, { mode: "commit-and-push", pushTarget: "${pushTargetHint}" })\` after \`sync_proposals\` and before \`release\`. The helper refuses to push to \`main\` automatically.`,
 					];
 
-	// x00051 S3: when persist is enabled, the plan must surface the
-	// `agent_worktree create` step explicitly so a host that runs
-	// `auto_work` solo (without going through `delegate`) still
-	// produces the per-agent branch before the persist push. When
-	// persist is `none`, no worktree step is needed — the orchestrator
-	// is not pushing.
+	// x00051 S3 + x00231: when persist is enabled, the plan must
+	// surface where the persist push goes. With the worktree gate on,
+	// that is the per-agent branch — surface the `agent_worktree
+	// create` step explicitly so a host that runs `auto_work` solo
+	// (without going through `delegate`) still produces it before the
+	// push. With the gate off, agents never branch: surface the
+	// shared-branch commit step instead. When persist is `none`, no
+	// such step is needed — the orchestrator is not pushing.
 	const worktreeStep =
 		resolvedMode === 'none'
 			? []
-			: [
-					`Ensure per-agent worktree exists before persisting: ${prefix}_agent_worktree { action: "create", agent: "<pending>" } (idempotent — returns the existing worktree if one is present; required when persist mode is "${resolvedMode}"). When the slice is delegated via ${prefix}_delegate this is handled for you; keep the step as a safety net for solo runs.`,
-				];
+			: worktreeEnabled
+				? [
+						`Ensure per-agent worktree exists before persisting: ${prefix}_agent_worktree { action: "create", agent: "<pending>" } (idempotent — returns the existing worktree if one is present; required when persist mode is "${resolvedMode}"). When the slice is delegated via ${prefix}_delegate this is handled for you; keep the step as a safety net for solo runs.`,
+					]
+				: [
+						`This repo forbids per-agent branches (\`agentWorktree: false\`): commit and push directly on \`develop\` — do NOT create an agent worktree or branch.`,
+					];
 
 	const steps = [
 		...worktreeStep,
