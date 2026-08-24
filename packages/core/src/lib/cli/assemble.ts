@@ -357,6 +357,7 @@ export const assembleCliConfig = async (
 		cacheDir,
 		corePrefix,
 		docsDirMissing,
+		configPresent: baseConfigDiagnostic.present,
 		readFile,
 		loadResult,
 		configurationArtifacts,

@@ -188,9 +188,11 @@ export const assembleCoreTools = (
 				'# No mcp-vertex.config.json yet',
 				'',
 				'This workspace has no config file. Call',
-				`\`${corePrefix}_init_config\` to see a recommended config`,
-				'derived from this project (dry-run by default); pass',
-				'`write: true` to persist it — no CLI required.',
+				`\`${corePrefix}_adopt_project\` to self-configure the project`,
+				'in ONE call: it derives the config, bootstraps the proposals',
+				'store and generates the orchestrator + subagent files (dry-run',
+				'by default; pass `write: true` to persist — no CLI required).',
+				'For just the config, `init_config` is the granular alternative.',
 			].join('\n'),
 		});
 	}
