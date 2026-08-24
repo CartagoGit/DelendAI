@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-08-24T00:31:03.734Z",
+	"generatedAt": "2026-08-24T01:25:18.768Z",
 	"mode": "compact",
 	"tools": [
 		{
@@ -1141,11 +1141,60 @@
 				"kind": "audit"
 			},
 			{
+				"id": "a00086",
+				"title": "a00086",
+				"track": "plugin-hardening",
+				"status": "in-progress",
+				"kind": "audit"
+			},
+			{
+				"id": "a00087",
+				"title": "a00087",
+				"track": "plugin-hardening",
+				"status": "in-progress",
+				"kind": "audit"
+			},
+			{
+				"id": "a00088",
+				"title": "a00088",
+				"track": "plugin-hardening",
+				"status": "in-progress",
+				"kind": "audit"
+			},
+			{
 				"id": "c00127",
 				"title": "c00127",
 				"track": "adoption",
 				"status": "ready",
 				"kind": "chore"
+			},
+			{
+				"id": "c00128",
+				"title": "c00128",
+				"track": "core",
+				"status": "ready",
+				"kind": "chore"
+			},
+			{
+				"id": "c00129",
+				"title": "c00129",
+				"track": "web-release",
+				"status": "ready",
+				"kind": "chore"
+			},
+			{
+				"id": "d00005",
+				"title": "d00005",
+				"track": "ci-test-docs",
+				"status": "ready",
+				"kind": "docs"
+			},
+			{
+				"id": "d00006",
+				"title": "d00006",
+				"track": "dogfooding",
+				"status": "ready",
+				"kind": "docs"
 			},
 			{
 				"id": "f00050",
@@ -1162,6 +1211,132 @@
 				"kind": "feat"
 			},
 			{
+				"id": "f00159",
+				"title": "f00159",
+				"track": "privacy",
+				"status": "ready",
+				"kind": "feat"
+			},
+			{
+				"id": "f00160",
+				"title": "f00160",
+				"track": "privacy",
+				"status": "ready",
+				"kind": "feat"
+			},
+			{
+				"id": "f00161",
+				"title": "f00161",
+				"track": "lifecycle",
+				"status": "ready",
+				"kind": "feat"
+			},
+			{
+				"id": "f00162",
+				"title": "f00162",
+				"track": "tokens",
+				"status": "ready",
+				"kind": "feat"
+			},
+			{
+				"id": "f00163",
+				"title": "f00163",
+				"track": "tokens",
+				"status": "ready",
+				"kind": "feat"
+			},
+			{
+				"id": "f00164",
+				"title": "f00164",
+				"track": "permissions",
+				"status": "ready",
+				"kind": "feat"
+			},
+			{
+				"id": "f00165",
+				"title": "f00165",
+				"track": "product",
+				"status": "ready",
+				"kind": "feat"
+			},
+			{
+				"id": "f00166",
+				"title": "f00166",
+				"track": "product",
+				"status": "ready",
+				"kind": "feat"
+			},
+			{
+				"id": "f00167",
+				"title": "f00167",
+				"track": "product",
+				"status": "ready",
+				"kind": "feat"
+			},
+			{
+				"id": "f00168",
+				"title": "f00168",
+				"track": "product",
+				"status": "ready",
+				"kind": "feat"
+			},
+			{
+				"id": "f00169",
+				"title": "f00169",
+				"track": "product",
+				"status": "ready",
+				"kind": "feat"
+			},
+			{
+				"id": "f00170",
+				"title": "f00170",
+				"track": "adoption",
+				"status": "ready",
+				"kind": "feat"
+			},
+			{
+				"id": "f00171",
+				"title": "f00171",
+				"track": "dogfooding",
+				"status": "ready",
+				"kind": "feat"
+			},
+			{
+				"id": "f00172",
+				"title": "f00172",
+				"track": "dogfooding",
+				"status": "ready",
+				"kind": "feat"
+			},
+			{
+				"id": "f00173",
+				"title": "f00173",
+				"track": "privacy",
+				"status": "ready",
+				"kind": "feat"
+			},
+			{
+				"id": "i00002",
+				"title": "i00002",
+				"track": "ci-test-docs",
+				"status": "in-progress",
+				"kind": "unspecified"
+			},
+			{
+				"id": "i00003",
+				"title": "i00003",
+				"track": "web-release",
+				"status": "in-progress",
+				"kind": "unspecified"
+			},
+			{
+				"id": "q00003",
+				"title": "q00003",
+				"track": "develop-audit-consolidation",
+				"status": "in-progress",
+				"kind": "plan"
+			},
+			{
 				"id": "r00014",
 				"title": "r00014",
 				"track": "bootstrap",
@@ -1174,6 +1349,48 @@
 				"track": "plugins",
 				"status": "ready",
 				"kind": "refactor"
+			},
+			{
+				"id": "r00016",
+				"title": "r00016",
+				"track": "registry",
+				"status": "ready",
+				"kind": "refactor"
+			},
+			{
+				"id": "r00017",
+				"title": "r00017",
+				"track": "core",
+				"status": "ready",
+				"kind": "refactor"
+			},
+			{
+				"id": "t00005",
+				"title": "t00005",
+				"track": "privacy",
+				"status": "ready",
+				"kind": "unspecified"
+			},
+			{
+				"id": "t00006",
+				"title": "t00006",
+				"track": "ci-test-docs",
+				"status": "ready",
+				"kind": "unspecified"
+			},
+			{
+				"id": "v00123",
+				"title": "v00123",
+				"track": "tokens",
+				"status": "in-progress",
+				"kind": "unspecified"
+			},
+			{
+				"id": "v00124",
+				"title": "v00124",
+				"track": "memory-mcp",
+				"status": "in-progress",
+				"kind": "unspecified"
 			},
 			{
 				"id": "x00193",
@@ -1230,11 +1447,130 @@
 				"track": "quality+proposals+lint-baseline",
 				"status": "ready",
 				"kind": "fix"
+			},
+			{
+				"id": "x00214",
+				"title": "x00214",
+				"track": "privacy",
+				"status": "ready",
+				"kind": "fix"
+			},
+			{
+				"id": "x00215",
+				"title": "x00215",
+				"track": "privacy",
+				"status": "ready",
+				"kind": "fix"
+			},
+			{
+				"id": "x00216",
+				"title": "x00216",
+				"track": "privacy",
+				"status": "ready",
+				"kind": "fix"
+			},
+			{
+				"id": "x00217",
+				"title": "x00217",
+				"track": "lifecycle",
+				"status": "ready",
+				"kind": "fix"
+			},
+			{
+				"id": "x00218",
+				"title": "x00218",
+				"track": "lifecycle",
+				"status": "ready",
+				"kind": "fix"
+			},
+			{
+				"id": "x00219",
+				"title": "x00219",
+				"track": "concurrency",
+				"status": "ready",
+				"kind": "fix"
+			},
+			{
+				"id": "x00220",
+				"title": "x00220",
+				"track": "concurrency",
+				"status": "ready",
+				"kind": "fix"
+			},
+			{
+				"id": "x00221",
+				"title": "x00221",
+				"track": "concurrency",
+				"status": "ready",
+				"kind": "fix"
+			},
+			{
+				"id": "x00222",
+				"title": "x00222",
+				"track": "concurrency",
+				"status": "ready",
+				"kind": "fix"
+			},
+			{
+				"id": "x00223",
+				"title": "x00223",
+				"track": "metrics",
+				"status": "ready",
+				"kind": "fix"
+			},
+			{
+				"id": "x00224",
+				"title": "x00224",
+				"track": "metrics",
+				"status": "ready",
+				"kind": "fix"
+			},
+			{
+				"id": "x00225",
+				"title": "x00225",
+				"track": "registry",
+				"status": "ready",
+				"kind": "fix"
+			},
+			{
+				"id": "x00226",
+				"title": "x00226",
+				"track": "registry",
+				"status": "ready",
+				"kind": "fix"
+			},
+			{
+				"id": "x00227",
+				"title": "x00227",
+				"track": "core",
+				"status": "ready",
+				"kind": "fix"
+			},
+			{
+				"id": "x00228",
+				"title": "x00228",
+				"track": "core",
+				"status": "ready",
+				"kind": "fix"
+			},
+			{
+				"id": "x00229",
+				"title": "x00229",
+				"track": "memory-mcp",
+				"status": "ready",
+				"kind": "fix"
+			},
+			{
+				"id": "x00230",
+				"title": "x00230",
+				"track": "product",
+				"status": "ready",
+				"kind": "fix"
 			}
 		],
 		"byStatus": {
-			"ready": 10,
-			"in-progress": 3,
+			"ready": 50,
+			"in-progress": 11,
 			"review": 0,
 			"paused": 1,
 			"done": 347,

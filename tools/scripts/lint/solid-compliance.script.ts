@@ -198,8 +198,9 @@ export const classifySolidFindings = async (
 				snippet: d.snippet,
 			});
 		}
-		// magic-number-in-plugin (only in plugins/*)
-		if (relPath.startsWith('plugins/')) {
+		// magic-number-in-plugin (only in plugins/*, never in their tests:
+		// numeric literals in specs are fixtures/timestamps, not magic).
+		if (relPath.startsWith('plugins/') && !relPath.includes('/tests/')) {
 			pluginFiles.set(relPath, body);
 			const mags = detectMagicNumbers(body);
 			for (const m of mags) {
