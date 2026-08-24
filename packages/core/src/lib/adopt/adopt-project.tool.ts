@@ -24,6 +24,8 @@
 import z from 'zod';
 
 import { analyzeProject } from '../bootstrap/analyze-project';
+import { buildAdoptionAssessment } from './adoption-assessment.service';
+import { ADOPTION_ASSESSMENT_SCHEMA } from '../contracts/constants/adoption-assessment-schema.constant';
 import { deriveConfig, type IDerivedConfig } from '../bootstrap/derive-config';
 import { mergeDerivedConfig } from '../bootstrap/merge-derived-config';
 import type {
@@ -213,6 +215,7 @@ const OUTPUT_SCHEMA = z.object({
 	preset: z.enum(['lean', 'standard', 'minimal', 'swarm']),
 	config: z.record(z.string(), z.unknown()).optional(),
 	rationale: z.array(z.string()).optional(),
+	assessment: ADOPTION_ASSESSMENT_SCHEMA.optional(),
 	wrote: z.boolean(),
 	created: z.array(z.string()),
 	skipped: z.array(z.string()),
@@ -252,6 +255,7 @@ export const buildAdoptProjectToolRegistration = (
 				description:
 					'Adopt THIS project for mcp-vertex in one call. Composes the config derivation (init_config), the proposals-store bootstrap, and the host agent/instructions scaffold — writing only what is missing and never overwriting project-owned files. Dry-run by default: returns the resolved config, rationale, the exact file list and the residual manual steps (launch + optional issues). Pass `write: true` to persist. `overwrite: true` replaces an existing config instead of merging; `repo: "owner/name"` wires the GitHub issues plugin.',
 				inputSchema: z.object({
+					analyze: z.boolean().optional(),
 					write: z.boolean().optional(),
 					overwrite: z.boolean().optional(),
 					projectName: z.string().optional(),
@@ -263,6 +267,7 @@ export const buildAdoptProjectToolRegistration = (
 				outputSchema: OUTPUT_SCHEMA,
 			},
 			async (args: {
+				analyze?: boolean | undefined;
 				write?: boolean | undefined;
 				overwrite?: boolean | undefined;
 				projectName?: string | undefined;
@@ -273,6 +278,22 @@ export const buildAdoptProjectToolRegistration = (
 			}) => {
 				const analysis = await analyzeProject(deps.reader);
 				const topLevelDirs = await deps.reader.listDir('');
+				const assessment = buildAdoptionAssessment(
+					analysis,
+					topLevelDirs,
+					{
+						projectName:
+							args.projectName ?? analysis.name ?? 'Workspace',
+						namespacePrefix:
+							args.namespacePrefix ?? deps.namespacePrefix,
+						mcpServerName: args.mcpServerName ?? 'mcp-vertex',
+						docsDir: deps.corePaths.docsDir,
+						...(args.defaultModel !== undefined
+							? { defaultModel: args.defaultModel }
+							: {}),
+						...(args.repo !== undefined ? { repo: args.repo } : {}),
+					},
+				);
 				const plan = buildAdoptProjectPlan({
 					analysis,
 					topLevelDirs,
@@ -288,11 +309,25 @@ export const buildAdoptProjectToolRegistration = (
 					...(args.repo !== undefined ? { repo: args.repo } : {}),
 				});
 
+				if (args.analyze === true) {
+					return toolOk({
+						preset: plan.preset,
+						config: plan.config,
+						rationale: plan.rationale,
+						assessment,
+						wrote: false,
+						created: [],
+						skipped: [],
+						residual: plan.residual,
+					});
+				}
+
 				if (args.write !== true) {
 					return toolOk({
 						preset: plan.preset,
 						config: plan.config,
 						rationale: plan.rationale,
+						assessment,
 						wrote: false,
 						created: [],
 						skipped: [],
@@ -345,6 +380,7 @@ export const buildAdoptProjectToolRegistration = (
 					preset: plan.preset,
 					config,
 					rationale: plan.rationale,
+					assessment,
 					wrote: true,
 					created,
 					skipped,

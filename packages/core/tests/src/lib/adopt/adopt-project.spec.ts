@@ -62,6 +62,18 @@ describe('adopt_project (f00157 S1)', () => {
 		expect(existsSync(join(root, 'mcp-vertex.config.json'))).toBe(false);
 	});
 
+	it('analyze:true returns a read-only adoption assessment without writing', async () => {
+		const result = parse(await adopt({ analyze: true }));
+		expect(result.ok).toBe(true);
+		expect(result.wrote).toBe(false);
+		expect(result.assessment).toBeDefined();
+		expect(result.assessment.cost.schemaBytes).toBeGreaterThan(0);
+		expect(Array.isArray(result.assessment.pluginRecommendations)).toBe(
+			true,
+		);
+		expect(existsSync(join(root, 'mcp-vertex.config.json'))).toBe(false);
+	});
+
 	it('write:true persists config, agent files and the proposals store', async () => {
 		const result = parse(await adopt({ write: true }));
 		expect(result.ok).toBe(true);
