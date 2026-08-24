@@ -12,8 +12,10 @@ import { tmpdir } from 'node:os';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import {
+	getRecallMetricsSnapshot,
 	readStore,
 	recall,
+	resetRecallMetrics,
 	removeNote,
 	saveNote,
 } from '@mcp-vertex/memory/lib/services/store';
@@ -95,6 +97,7 @@ describe('memory store', async () => {
 	// dropped tail. Wires the pure `selectLatestSessionDigest` into the live
 	// recall tool.
 	it('recall surfaces the latest session digest (f00090 S3)', async () => {
+		resetRecallMetrics();
 		const regs = buildMemoryToolRegistrations({
 			namespacePrefix: 'memory',
 			storePathAbs: store,
@@ -138,6 +141,11 @@ describe('memory store', async () => {
 		expect(out.sessionDigest?.body).toBe('fresh working state');
 		// The digest surfaces even though the query matched a different note.
 		expect(out.notes.some((n) => n.title === 'A plain note')).toBe(true);
+		const metrics = getRecallMetricsSnapshot();
+		expect(metrics.recallCalls).toBe(2);
+		expect(metrics.notesReturned).toBe(2);
+		expect(metrics.digestReused).toBe(1);
+		expect(metrics.bytesAvoided).toBeGreaterThan(0);
 	});
 
 	// f00090 S2: the compaction-check tool is the live surface of the pure
