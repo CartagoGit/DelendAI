@@ -17,14 +17,25 @@ export {
 export type { IErrorReportingOptions } from '../lib/contracts/interfaces/options.interface';
 
 export {
+	classifyInternalError,
 	classificationOf,
 	buildIssueBody,
 	buildIssueTitle,
+	isMarkedInternalBoundary,
 	isMcpVertexInternal,
+	markErrorAsInternalBoundary,
+	registerInternalPath,
+	registerInternalRuntimePaths,
+	resetInternalPathRegistry,
 	safeFailureClassOf,
 	signatureOf,
 } from '../lib/signature.helper';
 export type { ISafeFingerprintInput } from '../lib/contracts/interfaces/signature.interface';
+export {
+	MCP_VERTEX_ERROR_CODES,
+	isMcpVertexErrorCode,
+} from '../lib/contracts/constants/error-codes.constant';
+export type { McpVertexErrorCode } from '../lib/contracts/constants/error-codes.constant';
 
 export {
 	extractSafeMcpFrames,

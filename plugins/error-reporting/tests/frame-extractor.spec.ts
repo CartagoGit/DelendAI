@@ -3,10 +3,15 @@ import { describe, expect, it } from 'vitest';
 import {
 	extractSafeMcpFrames,
 	packageIdFromSafeFrame,
+	registerInternalPath,
+	resetInternalPathRegistry,
 } from '../src/lib/frame-extractor.helper';
 
 describe('extractSafeMcpFrames', () => {
-	it('keeps only @mcp-vertex frames and normalizes node_modules paths', () => {
+	it('keeps only @mcp-vertex frames and registered internal monorepo paths', () => {
+		resetInternalPathRegistry();
+		registerInternalPath('/home/user/acme');
+		registerInternalPath('/home/user/acme/node_modules/@mcp-vertex');
 		const error = new Error('boom');
 		error.stack = [
 			'Error: boom',
@@ -33,6 +38,7 @@ describe('extractSafeMcpFrames', () => {
 	});
 
 	it('never returns consumer absolute paths', () => {
+		resetInternalPathRegistry();
 		const error = new Error('boom');
 		error.stack = [
 			'Error: boom',

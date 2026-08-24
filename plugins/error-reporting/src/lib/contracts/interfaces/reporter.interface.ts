@@ -1,4 +1,9 @@
 import type { ISafeMcpFrame } from './safe-frame.interface';
+import type { McpVertexErrorCode } from '../constants/error-codes.constant';
+import {
+	McpVertexInternalError,
+	isSafeScalar,
+} from '../../mcp-internal-error.helper';
 
 /** Injected exec seam so the network call is unit-testable. */
 export interface IIssueExecResult {
@@ -65,7 +70,7 @@ export interface ISafeMcpVertexReport {
 	readonly mcpVertexVersion: string;
 	readonly packageId: string;
 	readonly toolId?: string | undefined;
-	readonly errorCode?: string | undefined;
+	readonly errorCode?: McpVertexErrorCode | undefined;
 	readonly failureClass: SafeFailureClass;
 	readonly classification: IssueClassification;
 	readonly fingerprint: string;
@@ -74,58 +79,7 @@ export interface ISafeMcpVertexReport {
 	readonly environmentClass?: IEnvironmentClass | undefined;
 }
 
-export const isSafeScalar = (value: unknown): value is SafeScalar => {
-	if (
-		typeof value === 'string' ||
-		typeof value === 'number' ||
-		typeof value === 'boolean' ||
-		value === null
-	) {
-		return true;
-	}
-	if (Array.isArray(value))
-		return value.every((entry) => isSafeScalar(entry));
-	if (typeof value !== 'object' || value === null) return false;
-	if (value instanceof Error) return false;
-	if (typeof Buffer !== 'undefined' && Buffer.isBuffer(value)) return false;
-	for (const entry of Object.values(value)) {
-		if (!isSafeScalar(entry)) return false;
-	}
-	return true;
-};
-
-export class McpVertexInternalError extends Error {
-	readonly code: string;
-	readonly packageId: string;
-	readonly componentId: string;
-	readonly safeContext?: Readonly<Record<string, SafeScalar>> | undefined;
-
-	constructor(input: {
-		readonly code: string;
-		readonly packageId: string;
-		readonly componentId: string;
-		readonly safeContext?: Readonly<Record<string, SafeScalar>> | undefined;
-		readonly message?: string | undefined;
-		readonly cause?: unknown;
-	}) {
-		super(input.message ?? input.code, {
-			...(input.cause !== undefined ? { cause: input.cause } : {}),
-		});
-		this.name = 'McpVertexInternalError';
-		this.code = input.code;
-		this.packageId = input.packageId;
-		this.componentId = input.componentId;
-		if (
-			input.safeContext !== undefined &&
-			!isSafeScalar(input.safeContext)
-		) {
-			throw new TypeError(
-				'McpVertexInternalError.safeContext must contain only SafeScalar values',
-			);
-		}
-		this.safeContext = input.safeContext;
-	}
-}
+export { McpVertexInternalError, isSafeScalar };
 
 export interface ISafeReporterConfig {
 	readonly targetRepo: string;
