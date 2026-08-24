@@ -24,6 +24,7 @@ Project-agnostic core for building MCP servers + a CLI plugin loader, by
 | `plugins/quality` | `@mcp-vertex/quality` | Quality-gate runner: executes lint/test/build per scope, structured pass/fail. |
 <!-- BEGIN GENERATED: migrated-plugin-layout-rows -->
 | `plugins/context-for-change` | `@mcp-vertex/context-for-change` | Compact task-oriented change context orchestration across diff, symbols, tests, docs and conventions. |
+| `plugins/impact-analysis` | `@mcp-vertex/impact-analysis` | Bounded impact analysis and test selection across changed symbols, dependents and related specs. |
 | `plugins/search` | `@mcp-vertex/search` | Code search (semantic + symbol + references). |
 <!-- END GENERATED: migrated-plugin-layout-rows -->
 | `plugins/notification` | `@mcp-vertex/notification` | Watches the shared lock file and pushes an MCP `notifications/message` on release, so agents stop polling. |

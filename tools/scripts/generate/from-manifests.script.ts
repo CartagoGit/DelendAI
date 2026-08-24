@@ -13,9 +13,14 @@ import {
 	type PermissionCategory,
 } from '@mcp-vertex/core/public';
 
-export const MIGRATED_PLUGIN_IDS = ['context-for-change', 'search'] as const;
+export const MIGRATED_PLUGIN_IDS = [
+	'context-for-change',
+	'impact-analysis',
+	'search',
+] as const;
 export const MIGRATED_MANIFEST_PATHS = [
 	'plugins/context-for-change/plugin.manifest.ts',
+	'plugins/impact-analysis/plugin.manifest.ts',
 	'plugins/search/plugin.manifest.ts',
 ] as const;
 

@@ -106,6 +106,40 @@ const withFixture = async (
 				'};\n',
 			].join('\n'),
 		);
+		await mkdir(join(root, 'plugins/impact-analysis'), {
+			recursive: true,
+		});
+		await writeFile(
+			join(root, 'plugins/impact-analysis/package.json'),
+			JSON.stringify(
+				{
+					name: '@mcp-vertex/impact-analysis',
+					version: '0.1.0',
+					publishConfig: { access: 'public' },
+				},
+				null,
+				'\t',
+			) + '\n',
+		);
+		await writeFile(
+			join(root, 'plugins/impact-analysis/plugin.manifest.ts'),
+			[
+				'export const IMPACT_ANALYSIS_PLUGIN_MANIFEST = {',
+				"\tid: 'impact-analysis',",
+				"\tpackage: '@mcp-vertex/impact-analysis',",
+				"\tversion: '0.1.0',",
+				"\tvisibility: 'public',",
+				"\tsummary: 'Bounded impact analysis and test selection.',",
+				"\ttags: ['impact', 'tests', 'f00169'],",
+				"\tmaturity: 'experimental',",
+				"\tpermissions: ['filesystem-read'],",
+				"\tpresets: ['vertex'],",
+				'\ttokenBudget: { warning: 2200, hard: 2500, releaseRelativePercent: 20 },',
+				"\tdependencies: ['@mcp-vertex/core', 'zod'],",
+				"\tcapabilities: ['impact-analysis', 'test-selection'],",
+				'};\n',
+			].join('\n'),
+		);
 		await writeFile(
 			join(root, README_PATH),
 			[
@@ -149,6 +183,7 @@ describe('from-manifests generator', () => {
 			);
 			expect(entries.map((entry) => entry.id)).toEqual([
 				'context-for-change',
+				'impact-analysis',
 				'search',
 			]);
 			expect(entries[0]?.permissions).toEqual(['filesystem-read']);

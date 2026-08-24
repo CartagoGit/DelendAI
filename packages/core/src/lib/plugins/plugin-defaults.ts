@@ -35,6 +35,7 @@ export const PLUGIN_DEFAULTS: Readonly<
 	'prompt-eval': {},
 	observability: {},
 	'context-for-change': {},
+	'impact-analysis': {},
 	forge: {},
 	deps: {
 		manifest: 'package.json',

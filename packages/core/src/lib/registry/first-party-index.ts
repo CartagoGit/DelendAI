@@ -204,6 +204,15 @@ export const FIRST_PARTY_PLUGIN_INDEX: IPluginRegistrySource = {
 		},
 		{
 			origin: 'first-party',
+			id: 'impact-analysis',
+			package: '@mcp-vertex/impact-analysis',
+			summary:
+				'Bounded impact analysis and test selection across changed symbols, dependents and related specs.',
+			tags: ['impact', 'tests', 'f00169'],
+			permissions: ['filesystem-read'],
+		},
+		{
+			origin: 'first-party',
 			id: 'issues',
 			package: '@mcp-vertex/issues',
 			summary: 'Issue tracker adapters.',

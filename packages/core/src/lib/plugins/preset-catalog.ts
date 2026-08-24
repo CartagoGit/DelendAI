@@ -241,6 +241,7 @@ export const PRESET_CATALOG: readonly IPresetDefinition[] = [
 			{ plugin: 'forge' },
 			{ plugin: 'git' },
 			{ plugin: 'i18n' },
+			{ plugin: 'impact-analysis' },
 			{ plugin: 'link-check' },
 			{ plugin: 'logs' },
 			{ plugin: 'memory' },

@@ -58,6 +58,7 @@ import promptEvalPlugin from '@mcp-vertex/prompt-eval';
 import observabilityPlugin from '@mcp-vertex/observability';
 import completionPlugin from '@mcp-vertex/completion';
 import contextForChangePlugin from '@mcp-vertex/context-for-change';
+import impactAnalysisPlugin from '@mcp-vertex/impact-analysis';
 
 import {
 	buildPackageModules,
@@ -97,10 +98,11 @@ const PLUGIN_SPECIFIERS: Readonly<Record<string, unknown>> = {
 	'mcp-observability': observabilityPlugin,
 	'mcp-completion': completionPlugin,
 	'mcp-context-for-change': contextForChangePlugin,
+	'mcp-impact-analysis': impactAnalysisPlugin,
 };
 
 const PLUGIN_LIST =
-	'proposals,rules,memory,git,quality,search,notification,completion,context-for-change,docs,deps,logs,audit,status-marker,test-convention,web-fetch,cache,container,security,diagram,env,i18n,perf,tech-debt,link-check,usage-tracking,browser,refactor,prompt-eval,observability';
+	'proposals,rules,memory,git,quality,search,notification,completion,context-for-change,docs,deps,logs,audit,status-marker,test-convention,web-fetch,cache,container,security,diagram,env,i18n,impact-analysis,perf,tech-debt,link-check,usage-tracking,browser,refactor,prompt-eval,observability';
 
 /**
  * Assemble the reference server with every plugin and harvest each
