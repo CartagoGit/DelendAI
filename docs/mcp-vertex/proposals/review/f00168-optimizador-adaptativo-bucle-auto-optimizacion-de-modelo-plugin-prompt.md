@@ -2,7 +2,7 @@
 id: f00168
 title: "optimizador adaptativo: bucle auto-optimización de modelo/plugin/prompt"
 kind: feat
-status: ready
+status: review
 type: proposal
 track: product
 date: 2026-08-24
@@ -36,7 +36,7 @@ Ya existen las piezas (eval, usage, perf, selectores); falta el bucle que las ci
 - global_gate: type
 
 ### S1 — Plugin adaptive-optimizer (bucle de experimentos)
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/adaptive-optimizer/src/lib/tools/optimize-run.tool.ts`
 - **Gate**: type
 - acceptance:
@@ -44,7 +44,7 @@ Ya existen las piezas (eval, usage, perf, selectores); falta el bucle que las ci
   - "Optimiza success/tokens/latency/coste/permisos con budget y consentimiento explícitos."
 
 ### S2 — Wiring del plugin
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/adaptive-optimizer/src/index.ts`
 - **Gate**: type
 - acceptance:
