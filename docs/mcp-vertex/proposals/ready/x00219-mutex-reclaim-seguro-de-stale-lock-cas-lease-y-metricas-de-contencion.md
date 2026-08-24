@@ -39,7 +39,7 @@ El token evita que el antiguo propietario borre el lock del nuevo, pero no evita
 - global_gate: type
 
 ### S1 — Reclaim con validación de identidad/lease
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/src/lib/shared/with-file-mutex.ts`
 - **Gate**: type
 - acceptance:
@@ -47,14 +47,14 @@ El token evita que el antiguo propietario borre el lock del nuevo, pero no evita
   - "Un lock renovado (heartbeat) durante la observación NO es reclamado."
 
 ### S2 — Métricas de contención
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/src/lib/shared/mutex-metrics.helper.ts`
 - **Gate**: type
 - acceptance:
   - "Registra waitMs, contentionCount, staleReclaims, failedAcquisitions sin paths privados."
 
 ### S3 — Test de carrera controlada
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/tests/src/lib/shared/with-file-mutex-reclaim.spec.ts`
 - **Gate**: type
 - acceptance:
