@@ -2,7 +2,7 @@
 id: f00164
 title: "permisos: modelo por plugin/tool, visibilidad al activar y penalización de riesgo"
 kind: feat
-status: ready
+status: review
 type: proposal
 track: permissions
 date: 2026-08-24
@@ -38,7 +38,7 @@ Un modelo de permisos declarativo es la base de la adopción empresarial: el usu
 - global_gate: type
 
 ### S1 — Schema de permisos por plugin/tool
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/src/lib/manifest/permissions.schema.ts`
 - **Gate**: type
 - acceptance:
@@ -46,14 +46,14 @@ Un modelo de permisos declarativo es la base de la adopción empresarial: el usu
   - "Soporta granularidad por tool, no solo por plugin (PERM-002)."
 
 ### S2 — Coste de permisos visible al activar
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/src/lib/tools/configuration-center.tool.ts`
 - **Gate**: type
 - acceptance:
   - "Al activar un plugin se muestra qué permisos requiere (p. ej. container -> process + Docker socket) (PERM-003)."
 
 ### S3 — Auto-selector penaliza riesgo innecesario
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/auto-plugin-selector/src/lib/score/recommend-plugins.ts`
 - **Gate**: type
 - acceptance:
