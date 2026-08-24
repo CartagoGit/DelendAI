@@ -65,7 +65,7 @@ globalGate: type
 
 ## Goal
 
-Orquestar la conversión de la **auditoría externa legada** en trabajo trazable, verificable y cerrable. Este plan agrupa **41 propuestas hijas** que cubren, punto por punto, las secciones 1–36 de la auditoría, y define las reglas de proyecto que deben respetar todas ellas.
+Orquestar la conversión de la **auditoría externa legada** en trabajo trazable, verificable y cerrable. Este plan agrupa **43 propuestas hijas** que cubren, punto por punto, las secciones 1–36 de la auditoría, y define las reglas de proyecto que deben respetar todas ellas.
 
 Fuente de la auditoría (material de entrada, conservado como referencia legada):
 
@@ -230,7 +230,7 @@ Cada propuesta hija cita, en su `## Goal`, la sección exacta de la auditoría q
 
 - global_gate: type
 
-### S1 — Orquestar las 41 propuestas hijas a `done`
+### S1 — Orquestar las 43 propuestas hijas a `done`
 
 - **Status**: pending
 - **Files**: `docs/mcp-vertex/proposals/in-progress/q00003-consolidacion-post-auditoria-de-develop-privacidad-lifecycle-tokens-y-arquitectura.md`
