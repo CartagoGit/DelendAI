@@ -131,8 +131,10 @@ export const TOKEN_BUDGETS: ITokenBudgetRegistry = {
 				marginalPluginWarning: 70_000,
 			},
 			overviewCompact: {
-				hard: 6_100,
-				warning: 6_000,
+				// x00230 adds auto-agent-selector to standard, so swarm's compact
+				// overview now includes one more real plugin surface.
+				hard: 6_400,
+				warning: 6_300,
 				releaseRelativePercent: 20,
 			},
 			roundContext: {

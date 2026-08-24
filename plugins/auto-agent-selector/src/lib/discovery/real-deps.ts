@@ -9,6 +9,10 @@
 import { execFile } from 'node:child_process';
 
 import type { IDiscoveryDeps } from '../contracts/interfaces/roster.interface';
+import { discoverAndPersistRoster } from './discover-roster';
+import type { IRosterSnapshotStore } from './roster-store';
+
+const COMMAND_EXISTS_TIMEOUT_MS = 3_000;
 
 /**
  * True when `command` resolves on PATH. Uses `bash -lc 'command -v <cmd>'`
@@ -28,7 +32,7 @@ const commandExists = (command: string): Promise<boolean> =>
 				'probe',
 				command,
 			],
-			{ timeout: 3000 },
+			{ timeout: COMMAND_EXISTS_TIMEOUT_MS },
 			(error) => resolve(error === null),
 		);
 	});
@@ -38,3 +42,16 @@ export const realDiscoveryDeps = (): IDiscoveryDeps => ({
 	commandExists,
 	env: process.env,
 });
+
+/** Production composition: probe the live environment and persist the snapshot. */
+export const discoverRosterWithRealDeps = (
+	store: IRosterSnapshotStore | undefined,
+) => discoverAndPersistRoster(realDiscoveryDeps(), store);
+
+export const discoverRosterForTool = (
+	deps: IDiscoveryDeps | undefined,
+	store: IRosterSnapshotStore | undefined,
+) =>
+	deps !== undefined
+		? discoverAndPersistRoster(deps, store)
+		: discoverRosterWithRealDeps(store);

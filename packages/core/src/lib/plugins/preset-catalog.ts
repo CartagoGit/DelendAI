@@ -34,7 +34,6 @@ import type { IPresetBudgetProfile } from '../contracts/interfaces/preset-budget
  * the rest of the core: only the ids the user types in `--plugins=`
  * are referenced here.
  */
-
 export const PRESET_KIND = [
 	'minimal',
 	'lean',
@@ -151,7 +150,7 @@ export const PRESET_CATALOG: readonly IPresetDefinition[] = [
 		id: 'standard',
 		title: 'standard',
 		summary:
-			'Adaptive/task-aware single-agent toolkit: minimal + memory, docs, i18n, rules, quality, deps, test-policy, database, container, diagram, env, skills-pack and prompts-pack.',
+			'Adaptive/task-aware single-agent toolkit: minimal + memory, docs, i18n, rules, quality, deps, test-policy, database, container, diagram, env, skills-pack, prompts-pack and auto-agent-selector.',
 		role: PRESET_METADATA.standard.role,
 		members: [
 			{ plugin: 'memory' },
@@ -169,6 +168,7 @@ export const PRESET_CATALOG: readonly IPresetDefinition[] = [
 			{ plugin: 'env' },
 			{ plugin: 'skills-pack' },
 			{ plugin: 'error-reporting' },
+			{ plugin: 'auto-agent-selector' },
 		],
 		budget: PRESET_METADATA.standard.budget,
 	},
@@ -230,7 +230,7 @@ export const PRESET_CATALOG: readonly IPresetDefinition[] = [
 		members: [
 			{ plugin: 'adaptive-optimizer' },
 			{ plugin: 'audit' },
-			{ plugin: 'auto-agent-selector', hostOnly: true },
+			{ plugin: 'auto-agent-selector' },
 			{ plugin: 'completion' },
 			{ plugin: 'container' },
 			{ plugin: 'conventions' },
