@@ -37,7 +37,7 @@ Defaults como `bun run validate` o `docs/mcp-vertex` rompen la promesa project-a
 - global_gate: type
 
 ### S1 — Defaults genéricos sin vocabulario del repo
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/src/lib/plugins/plugin-defaults.ts`
 - **Gate**: type
 - acceptance:
@@ -45,7 +45,7 @@ Defaults como `bun run validate` o `docs/mcp-vertex` rompen la promesa project-a
   - "La config específica del repo se mueve a la config del repo."
 
 ### S2 — Project analyzer como fuente de defaults
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/src/lib/config/detect-stack.ts`
 - **Gate**: type
 - acceptance:
