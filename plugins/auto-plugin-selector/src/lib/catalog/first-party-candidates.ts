@@ -19,5 +19,8 @@ export const firstPartyPluginCandidates = (): readonly IPluginCandidate[] =>
 		id: entry.id,
 		tags: entry.tags,
 		summary: entry.summary,
+		...(entry.permissions === undefined
+			? {}
+			: { permissions: entry.permissions }),
 		origin: entry.origin,
 	}));

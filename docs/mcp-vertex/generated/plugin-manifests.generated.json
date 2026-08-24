@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-08-24T07:28:07.580Z",
+	"generatedAt": "2026-08-24T10:42:28.459Z",
 	"manifests": [
 		{
 			"id": "search",
@@ -9,7 +9,7 @@
 			"summary": "Code search (semantic + symbol + references).",
 			"tags": ["search", "symbol", "f00136"],
 			"maturity": "stable",
-			"permissions": ["read-workspace"],
+			"permissions": ["filesystem-read"],
 			"presets": [
 				"minimal",
 				"lean",
@@ -45,7 +45,8 @@
 			"id": "search",
 			"package": "@mcp-vertex/search",
 			"summary": "Code search (semantic + symbol + references).",
-			"tags": ["search", "symbol", "f00136"]
+			"tags": ["search", "symbol", "f00136"],
+			"permissions": ["filesystem-read"]
 		}
 	],
 	"webCatalog": [
@@ -86,7 +87,7 @@
 	"permissionsTable": [
 		{
 			"id": "search",
-			"permissions": ["read-workspace"]
+			"permissions": ["filesystem-read"]
 		}
 	],
 	"compatibilityMatrix": [

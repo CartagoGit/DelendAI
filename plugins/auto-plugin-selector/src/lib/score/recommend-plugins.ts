@@ -16,6 +16,9 @@
  *  - **Project-shape bonus**: `hasDocsSite` matches `docs-site`;
  *    `isCliTool` matches `cli`; `hasBackend` matches `backend`;
  *    `hasTests` matches `tests`. Each contributes `+0.5`.
+ *  - **Permission-risk penalty**: when the candidate declares
+ *    permissions, subtract the sum of `PERMISSION_RISK_WEIGHTS`
+ *    across those categories and record `permission-risk:<n>`.
  *  - **Penalty**: every tag on the candidate that matched nothing
  *    contributes `-0.05` (mild so it doesn't crush a candidate with
  *    mostly-fitting tags and one stray tag).
@@ -33,6 +36,7 @@ import type {
 	IProjectSignals,
 	IRecommendPluginsOptions,
 } from '../contracts/interfaces/plugin-fit.interface';
+import { PERMISSION_RISK_WEIGHTS } from '@mcp-vertex/core/public';
 
 export type {
 	IPluginCandidate,
@@ -95,6 +99,18 @@ const scoreOne = (
 				matchedTags.add(tag);
 			}
 		}
+	}
+
+	if (
+		candidate.permissions !== undefined &&
+		candidate.permissions.length > 0
+	) {
+		const permissionRisk = candidate.permissions.reduce(
+			(total, permission) => total + PERMISSION_RISK_WEIGHTS[permission],
+			0,
+		);
+		raw -= permissionRisk;
+		reasons.add(`permission-risk:${permissionRisk}`);
 	}
 
 	// Unmatched penalty

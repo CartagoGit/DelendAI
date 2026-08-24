@@ -14,9 +14,9 @@
 
 ## Permissions
 
-| id | permissions |
-| --- | --- |
-| search | read-workspace |
+| id | permissions | toolPermissions |
+| --- | --- | --- |
+| search | filesystem-read |  |
 
 ## Compatibility matrix
 

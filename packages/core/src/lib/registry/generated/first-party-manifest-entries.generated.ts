@@ -8,5 +8,6 @@ export const GENERATED_FIRST_PARTY_MANIFEST_ENTRIES: readonly IPluginRegistryEnt
 			package: '@mcp-vertex/search',
 			summary: 'Code search (semantic + symbol + references).',
 			tags: ['search', 'symbol', 'f00136'],
+			permissions: ['filesystem-read'],
 		},
 	];

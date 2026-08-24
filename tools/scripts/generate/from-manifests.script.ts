@@ -9,6 +9,8 @@ import {
 	resolvePresetMembers,
 	type IPluginManifest,
 	type IPluginRegistryEntry,
+	type IToolPermissionGrant,
+	type PermissionCategory,
 } from '@mcp-vertex/core/public';
 
 export const MIGRATED_PLUGIN_IDS = ['search'] as const;
@@ -76,7 +78,8 @@ export interface IPluginManifestArtifact {
 	}[];
 	readonly permissionsTable: readonly {
 		readonly id: string;
-		readonly permissions: readonly string[];
+		readonly permissions: readonly PermissionCategory[];
+		readonly toolPermissions?: readonly IToolPermissionGrant[] | undefined;
 	}[];
 	readonly compatibilityMatrix: readonly ICompatibilityRow[];
 }
@@ -200,6 +203,7 @@ export const buildGeneratedFirstPartyEntries = (
 		package: manifest.package,
 		summary: manifest.summary,
 		tags: [...manifest.tags],
+		permissions: [...manifest.permissions],
 	}));
 
 export const buildCompatibilityMatrix = (
@@ -250,6 +254,9 @@ export const buildManifestArtifact = (
 	permissionsTable: manifests.map(({ manifest }) => ({
 		id: manifest.id,
 		permissions: [...manifest.permissions],
+		...(manifest.toolPermissions === undefined
+			? {}
+			: { toolPermissions: [...manifest.toolPermissions] }),
 	})),
 	compatibilityMatrix: buildCompatibilityMatrix(manifests),
 });
@@ -265,6 +272,11 @@ const renderRegistryEntry = (entry: IPluginRegistryEntry): string => {
 		`\t\t\tsummary: ${quote(entry.summary)},`,
 		`\t\t\ttags: [${entry.tags.map(quote).join(', ')}],`,
 	];
+	if (entry.permissions !== undefined) {
+		lines.push(
+			`\t\t\tpermissions: [${entry.permissions.map(quote).join(', ')}],`,
+		);
+	}
 	if (entry.defaultPreset !== undefined) {
 		lines.push(`\t\t\tdefaultPreset: ${quote(entry.defaultPreset)},`);
 	}
@@ -343,6 +355,9 @@ const renderDocsMarkdown = (artifact: IPluginManifestArtifact): string => {
 	const permissionRows = artifact.permissionsTable.map((entry) => [
 		entry.id,
 		entry.permissions.join(', '),
+		(entry.toolPermissions ?? [])
+			.map((grant) => `${grant.tool}: ${grant.permissions.join(', ')}`)
+			.join('; '),
 	]);
 	const compatibilityRows = artifact.compatibilityMatrix.map((entry) => [
 		entry.pluginId,
@@ -370,7 +385,10 @@ const renderDocsMarkdown = (artifact: IPluginManifestArtifact): string => {
 		'',
 		'## Permissions',
 		'',
-		renderMarkdownTable(['id', 'permissions'], permissionRows),
+		renderMarkdownTable(
+			['id', 'permissions', 'toolPermissions'],
+			permissionRows,
+		),
 		'',
 		'## Compatibility matrix',
 		'',

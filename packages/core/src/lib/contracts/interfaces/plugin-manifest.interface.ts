@@ -1,4 +1,6 @@
 import type { ITokenBudgetCeiling } from '../constants/token-budgets.constant';
+import type { PermissionCategory } from '../constants/permission-categories.constant';
+import type { IToolPermissionGrant } from './permission.interface';
 
 export type PluginManifestVisibility = 'public' | 'private';
 
@@ -12,7 +14,8 @@ export interface IPluginManifest {
 	readonly summary: string;
 	readonly tags: readonly string[];
 	readonly maturity: PluginManifestMaturity;
-	readonly permissions: readonly string[];
+	readonly permissions: readonly PermissionCategory[];
+	readonly toolPermissions?: readonly IToolPermissionGrant[] | undefined;
 	readonly presets: readonly string[];
 	readonly tokenBudget: ITokenBudgetCeiling;
 	readonly dependencies: readonly string[];

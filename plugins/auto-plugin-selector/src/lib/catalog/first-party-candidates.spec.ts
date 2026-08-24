@@ -13,6 +13,7 @@ describe('firstPartyPluginCandidates (x00169)', () => {
 		expect(security).toBeDefined();
 		expect(security?.tags).toContain('security');
 		expect(security?.summary.length).toBeGreaterThan(0);
+		expect(security?.permissions).toContain('filesystem-read');
 	});
 
 	it('produces unique ids', () => {

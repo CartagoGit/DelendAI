@@ -122,6 +122,10 @@ describe('helper role (f00093)', async () => {
 		expect(classifyPath('pkg/src/lib/foo.helper.ts')).toBe('helper');
 	});
 
+	it('classifies a bare foo.schema.ts (no folder) as `helper` (suffix rule)', async () => {
+		expect(classifyPath('pkg/src/lib/foo.schema.ts')).toBe('helper');
+	});
+
 	it('does NOT steal service-shaped files (foo.service.ts stays `service`)', async () => {
 		expect(classifyPath('pkg/src/lib/help.service.ts')).toBe('service');
 	});

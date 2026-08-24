@@ -64,7 +64,7 @@ const withFixture = async (
 				"\tsummary: 'Code search (semantic + symbol + references).',",
 				"\ttags: ['search', 'symbol', 'f00136'],",
 				"\tmaturity: 'stable',",
-				"\tpermissions: ['read-workspace'],",
+				"\tpermissions: ['filesystem-read'],",
 				"\tpresets: ['minimal', 'lean', 'standard', 'swarm', 'full', 'vertex', 'web-app', 'backend-api', 'cli-tool'],",
 				'\ttokenBudget: { warning: 2200, hard: 2500, releaseRelativePercent: 20 },',
 				"\tdependencies: ['@mcp-vertex/core', 'zod'],",
@@ -114,6 +114,7 @@ describe('from-manifests generator', () => {
 				})),
 			);
 			expect(entries.map((entry) => entry.id)).toEqual(['search']);
+			expect(entries[0]?.permissions).toEqual(['filesystem-read']);
 			const compatibility = buildCompatibilityMatrix(
 				(result?.artifact.manifests ?? []).map((manifest) => ({
 					id: manifest.id,
@@ -149,6 +150,9 @@ describe('from-manifests generator', () => {
 			expect(
 				await readFile(join(root, GENERATED_DOCS_JSON_PATH), 'utf8'),
 			).toContain('compatibilityMatrix');
+			expect(
+				await readFile(join(root, GENERATED_DOCS_JSON_PATH), 'utf8'),
+			).toContain('filesystem-read');
 			expect(await readFile(join(root, README_PATH), 'utf8')).toContain(
 				'| `plugins/search` | `@mcp-vertex/search` | Code search (semantic + symbol + references). |',
 			);
