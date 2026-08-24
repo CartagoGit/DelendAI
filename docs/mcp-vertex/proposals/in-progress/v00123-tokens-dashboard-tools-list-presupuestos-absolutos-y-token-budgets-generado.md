@@ -40,7 +40,7 @@ La superficie estática (hasta ~190 KB en swarm) es el mayor coste de contexto d
 - global_gate: type
 
 ### S1 — Generador de dashboard y TOKEN-BUDGETS
-- **Status**: pending
+- **Status**: done
 - **Files**: `docs/mcp-vertex/TOKEN-BUDGETS.md`
 - **Gate**: type
 - acceptance:
@@ -49,7 +49,7 @@ La superficie estática (hasta ~190 KB en swarm) es el mayor coste de contexto d
   - "El script generador nuevo se crea en tools/scripts/report/token-budget-dashboard.script.ts."
 
 ### S2 — Presupuestos absolutos en el test e2e
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/tests/src/lib/e2e/token-budget.e2e.spec.ts`
 - **Gate**: type
 - acceptance:

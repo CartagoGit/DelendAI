@@ -1,0 +1,659 @@
+#!/usr/bin/env bun
+import { join } from 'node:path';
+
+import {
+	PRESET_CATALOG,
+	TOKEN_BUDGETS,
+	withFileMutex,
+	writeFileAtomic,
+} from '@mcp-vertex/core/public';
+
+import { repoRoot } from '../lib/monorepo-paths';
+import {
+	asPresetId,
+	connectTokenBudgetClient,
+	createTokenBudgetFixtureWorkspace,
+	destroyTokenBudgetFixtureWorkspace,
+	listToolsMetrics,
+	measureToolTextBytes,
+	seedAutoWorkReadyProposal,
+	type IConnectedBudgetClient,
+	type IToolListMetrics,
+	type IToolOwnerMetrics,
+} from './token-budget-report-lib';
+import {
+	estimateTokensFromBytes,
+	measurePresetTokenizerCosts,
+	TOKENIZER_MODELS,
+	type ITokenizerPresetMeasurement,
+} from './tokenizer-real.script';
+
+interface IFixtureMeasurements {
+	readonly overviewFull: number;
+	readonly overviewCompact: number;
+	readonly autoWorkIdle: number;
+	readonly autoWorkWorkPlan: number;
+	readonly agentCatalogCompact: number;
+	readonly agentCatalogFull: number;
+	readonly analyzeCompact: number;
+	readonly planCompact: number;
+	readonly search: number;
+	readonly docsList: number;
+	readonly roundContext: number;
+	readonly logsTail: number;
+}
+
+interface IPresetDashboardRow {
+	readonly presetId: string;
+	readonly title: string;
+	readonly pluginCount: number;
+	readonly toolCount: number;
+	readonly toolsListBytes: number;
+	readonly schemaBytes: number;
+	readonly descriptionBytes: number;
+	readonly inputSchemaBytes: number;
+	readonly outputSchemaBytes: number;
+	readonly maxPluginBytes: number;
+	readonly overviewCompactBytes: number | null;
+	readonly roundContextBytes: number | null;
+	readonly loadErrors: readonly string[];
+	readonly ownerRows: readonly IToolOwnerMetrics[];
+}
+
+const GENERATED_MARKER = [
+	'<!-- generated: token-budget-dashboard.script.ts -->',
+	'<!-- generated — do not edit by hand -->',
+].join('\n');
+
+const formatInt = (value: number): string => value.toLocaleString('en-US');
+
+const budgetStatus = (
+	value: number,
+	budget:
+		| {
+				readonly hard: number;
+				readonly warning: number;
+		  }
+		| undefined,
+): string => {
+	if (budget === undefined) {
+		return 'n/a';
+	}
+	if (value > budget.hard) {
+		return `over hard (${formatInt(budget.hard)}B)`;
+	}
+	if (value > budget.warning) {
+		return `over warning (${formatInt(budget.warning)}B)`;
+	}
+	return 'within hard';
+};
+
+const presetToolsBudget = (
+	presetId: string,
+):
+	| {
+			readonly hard: number;
+			readonly warning: number;
+	  }
+	| undefined => {
+	if (presetId === 'swarm') {
+		return TOKEN_BUDGETS.presets.swarm.toolsList;
+	}
+	if (presetId === 'lean') {
+		return TOKEN_BUDGETS.presets.lean.toolsList;
+	}
+	return undefined;
+};
+
+const presetMarginalBudget = (
+	presetId: string,
+):
+	| {
+			readonly hard: number;
+			readonly warning: number;
+	  }
+	| undefined => {
+	if (presetId === 'swarm') {
+		return {
+			hard: TOKEN_BUDGETS.presets.swarm.toolsList.marginalPluginHard ?? 0,
+			warning:
+				TOKEN_BUDGETS.presets.swarm.toolsList.marginalPluginWarning ??
+				0,
+		};
+	}
+	if (presetId === 'lean') {
+		return {
+			hard: TOKEN_BUDGETS.presets.lean.toolsList.marginalPluginHard ?? 0,
+			warning:
+				TOKEN_BUDGETS.presets.lean.toolsList.marginalPluginWarning ?? 0,
+		};
+	}
+	return undefined;
+};
+
+const markdownTable = (
+	headers: readonly string[],
+	rows: ReadonlyArray<readonly string[]>,
+): string => {
+	const separator = headers.map(() => '---');
+	return [
+		`| ${headers.join(' | ')} |`,
+		`| ${separator.join(' | ')} |`,
+		...rows.map((row) => `| ${row.join(' | ')} |`),
+	].join('\n');
+};
+
+const measureFixtureSurfaces = async (
+	workspace: string,
+): Promise<IFixtureMeasurements> => {
+	const base = await connectTokenBudgetClient(workspace, {
+		pluginList: TOKEN_BUDGETS.fixturePluginIds.join(','),
+	});
+	const catalog = await connectTokenBudgetClient(workspace, {
+		pluginList: '',
+	});
+	const extra = await connectTokenBudgetClient(workspace, {
+		pluginList: 'proposals,memory,search,docs,logs',
+	});
+	try {
+		const overviewFull = await measureToolTextBytes(
+			base.client,
+			'mcp-vertex_overview',
+			{},
+		);
+		const overviewCompact = await measureToolTextBytes(
+			base.client,
+			'mcp-vertex_overview',
+			{ compact: true },
+		);
+		const autoWorkIdle = await measureToolTextBytes(
+			base.client,
+			'mcp-vertex_proposals_auto_work',
+			{},
+		);
+		await seedAutoWorkReadyProposal(workspace, base.client);
+		const autoWorkWorkPlan = await measureToolTextBytes(
+			base.client,
+			'mcp-vertex_proposals_auto_work',
+			{},
+		);
+		const agentCatalogCompact = await measureToolTextBytes(
+			catalog.client,
+			'mcp-vertex_agent_catalog',
+			{ mode: 'compact' },
+		);
+		const agentCatalogFull = await measureToolTextBytes(
+			catalog.client,
+			'mcp-vertex_agent_catalog',
+			{ mode: 'full' },
+		);
+		const analyzeCompact = await measureToolTextBytes(
+			base.client,
+			'mcp-vertex_analyze_project',
+			{},
+		);
+		const planCompact = await measureToolTextBytes(
+			base.client,
+			'mcp-vertex_plan_mcp_project',
+			{},
+		);
+		await extra.client.callTool({
+			name: 'mcp-vertex_search_search',
+			arguments: { query: 'proposal', maxResults: 5, context: 0 },
+		});
+		await extra.client.callTool({
+			name: 'mcp-vertex_docs_docs_list',
+			arguments: { limit: 10 },
+		});
+		const search = await measureToolTextBytes(
+			extra.client,
+			'mcp-vertex_search_search',
+			{ query: 'proposal', maxResults: 5, context: 0 },
+		);
+		const docsList = await measureToolTextBytes(
+			extra.client,
+			'mcp-vertex_docs_docs_list',
+			{ limit: 10 },
+		);
+		const roundContext = await measureToolTextBytes(
+			extra.client,
+			'mcp-vertex_proposals_round_context',
+			{},
+		);
+		const logsTail = await measureToolTextBytes(
+			extra.client,
+			'mcp-vertex_logs_tail',
+			{ limit: 10 },
+		);
+		return {
+			overviewFull,
+			overviewCompact,
+			autoWorkIdle,
+			autoWorkWorkPlan,
+			agentCatalogCompact,
+			agentCatalogFull,
+			analyzeCompact,
+			planCompact,
+			search,
+			docsList,
+			roundContext,
+			logsTail,
+		};
+	} finally {
+		await Promise.all([base.close(), catalog.close(), extra.close()]);
+	}
+};
+
+const maybeMeasure = async (
+	connection: IConnectedBudgetClient,
+	toolName: string,
+	args: Record<string, unknown>,
+): Promise<number | null> => {
+	const toolList = await connection.client.listTools();
+	if (!toolList.tools.some((tool) => tool.name === toolName)) {
+		return null;
+	}
+	return measureToolTextBytes(connection.client, toolName, args);
+};
+
+const measurePresetDashboard = async (
+	workspace: string,
+	presetId: string,
+): Promise<IPresetDashboardRow> => {
+	const preset = PRESET_CATALOG.find((entry) => entry.id === presetId);
+	const connection = await connectTokenBudgetClient(workspace, {
+		pluginList: asPresetId(presetId),
+		preset: true,
+	});
+	try {
+		const metrics: IToolListMetrics = await listToolsMetrics(
+			connection.client,
+			connection.pluginIds,
+		);
+		const overviewCompactBytes = await maybeMeasure(
+			connection,
+			'mcp-vertex_overview',
+			{ compact: true },
+		);
+		const roundContextBytes = await maybeMeasure(
+			connection,
+			'mcp-vertex_proposals_round_context',
+			{},
+		);
+		return {
+			presetId,
+			title: preset?.title ?? presetId,
+			pluginCount: connection.pluginIds.length,
+			toolCount: metrics.toolCount,
+			toolsListBytes: metrics.toolsListBytes,
+			schemaBytes: metrics.schemaBytes,
+			descriptionBytes: metrics.descriptionBytes,
+			inputSchemaBytes: metrics.inputSchemaBytes,
+			outputSchemaBytes: metrics.outputSchemaBytes,
+			maxPluginBytes: metrics.maxPluginBytes,
+			overviewCompactBytes,
+			roundContextBytes,
+			loadErrors: connection.loadErrors,
+			ownerRows: metrics.ownerRows,
+		};
+	} finally {
+		await connection.close();
+	}
+};
+
+const renderGeneratedMarkdown = (
+	generatedAt: string,
+	fixture: IFixtureMeasurements,
+	presetRows: readonly IPresetDashboardRow[],
+	tokenizerRows: readonly ITokenizerPresetMeasurement[],
+): string => {
+	const fixtureRows = [
+		[
+			'overview full',
+			formatInt(fixture.overviewFull),
+			String(estimateTokensFromBytes(fixture.overviewFull)),
+			formatInt(TOKEN_BUDGETS.toolPayloads.overviewFull.warning),
+			formatInt(TOKEN_BUDGETS.toolPayloads.overviewFull.hard),
+			budgetStatus(
+				fixture.overviewFull,
+				TOKEN_BUDGETS.toolPayloads.overviewFull,
+			),
+		],
+		[
+			'overview compact',
+			formatInt(fixture.overviewCompact),
+			String(estimateTokensFromBytes(fixture.overviewCompact)),
+			formatInt(TOKEN_BUDGETS.toolPayloads.overviewCompact.warning),
+			formatInt(TOKEN_BUDGETS.toolPayloads.overviewCompact.hard),
+			budgetStatus(
+				fixture.overviewCompact,
+				TOKEN_BUDGETS.toolPayloads.overviewCompact,
+			),
+		],
+		[
+			'auto_work idle',
+			formatInt(fixture.autoWorkIdle),
+			String(estimateTokensFromBytes(fixture.autoWorkIdle)),
+			formatInt(TOKEN_BUDGETS.toolPayloads.autoWork.warning),
+			formatInt(TOKEN_BUDGETS.toolPayloads.autoWork.hard),
+			budgetStatus(
+				fixture.autoWorkIdle,
+				TOKEN_BUDGETS.toolPayloads.autoWork,
+			),
+		],
+		[
+			'auto_work work plan',
+			formatInt(fixture.autoWorkWorkPlan),
+			String(estimateTokensFromBytes(fixture.autoWorkWorkPlan)),
+			formatInt(TOKEN_BUDGETS.toolPayloads.autoWork.warning),
+			formatInt(TOKEN_BUDGETS.toolPayloads.autoWork.hard),
+			budgetStatus(
+				fixture.autoWorkWorkPlan,
+				TOKEN_BUDGETS.toolPayloads.autoWork,
+			),
+		],
+		[
+			'agent_catalog compact',
+			formatInt(fixture.agentCatalogCompact),
+			String(estimateTokensFromBytes(fixture.agentCatalogCompact)),
+			formatInt(TOKEN_BUDGETS.toolPayloads.agentCatalogCompact.warning),
+			formatInt(TOKEN_BUDGETS.toolPayloads.agentCatalogCompact.hard),
+			budgetStatus(
+				fixture.agentCatalogCompact,
+				TOKEN_BUDGETS.toolPayloads.agentCatalogCompact,
+			),
+		],
+		[
+			'agent_catalog full',
+			formatInt(fixture.agentCatalogFull),
+			String(estimateTokensFromBytes(fixture.agentCatalogFull)),
+			formatInt(TOKEN_BUDGETS.toolPayloads.agentCatalogFull.warning),
+			formatInt(TOKEN_BUDGETS.toolPayloads.agentCatalogFull.hard),
+			budgetStatus(
+				fixture.agentCatalogFull,
+				TOKEN_BUDGETS.toolPayloads.agentCatalogFull,
+			),
+		],
+		[
+			'analyze_project {}',
+			formatInt(fixture.analyzeCompact),
+			String(estimateTokensFromBytes(fixture.analyzeCompact)),
+			formatInt(TOKEN_BUDGETS.toolPayloads.analyzeCompact.warning),
+			formatInt(TOKEN_BUDGETS.toolPayloads.analyzeCompact.hard),
+			budgetStatus(
+				fixture.analyzeCompact,
+				TOKEN_BUDGETS.toolPayloads.analyzeCompact,
+			),
+		],
+		[
+			'plan_mcp_project {}',
+			formatInt(fixture.planCompact),
+			String(estimateTokensFromBytes(fixture.planCompact)),
+			formatInt(TOKEN_BUDGETS.toolPayloads.planCompact.warning),
+			formatInt(TOKEN_BUDGETS.toolPayloads.planCompact.hard),
+			budgetStatus(
+				fixture.planCompact,
+				TOKEN_BUDGETS.toolPayloads.planCompact,
+			),
+		],
+		[
+			'search_search',
+			formatInt(fixture.search),
+			String(estimateTokensFromBytes(fixture.search)),
+			formatInt(TOKEN_BUDGETS.toolPayloads.search.warning),
+			formatInt(TOKEN_BUDGETS.toolPayloads.search.hard),
+			budgetStatus(fixture.search, TOKEN_BUDGETS.toolPayloads.search),
+		],
+		[
+			'docs_docs_list',
+			formatInt(fixture.docsList),
+			String(estimateTokensFromBytes(fixture.docsList)),
+			formatInt(TOKEN_BUDGETS.toolPayloads.docsList.warning),
+			formatInt(TOKEN_BUDGETS.toolPayloads.docsList.hard),
+			budgetStatus(fixture.docsList, TOKEN_BUDGETS.toolPayloads.docsList),
+		],
+		[
+			'proposals_round_context',
+			formatInt(fixture.roundContext),
+			String(estimateTokensFromBytes(fixture.roundContext)),
+			formatInt(TOKEN_BUDGETS.toolPayloads.roundContext.warning),
+			formatInt(TOKEN_BUDGETS.toolPayloads.roundContext.hard),
+			budgetStatus(
+				fixture.roundContext,
+				TOKEN_BUDGETS.toolPayloads.roundContext,
+			),
+		],
+		[
+			'logs_tail',
+			formatInt(fixture.logsTail),
+			String(estimateTokensFromBytes(fixture.logsTail)),
+			formatInt(TOKEN_BUDGETS.toolPayloads.logsTail.warning),
+			formatInt(TOKEN_BUDGETS.toolPayloads.logsTail.hard),
+			budgetStatus(fixture.logsTail, TOKEN_BUDGETS.toolPayloads.logsTail),
+		],
+	];
+
+	const presetSummaryRows = presetRows.map((row) => [
+		row.presetId,
+		row.title,
+		String(row.pluginCount),
+		String(row.toolCount),
+		formatInt(row.toolsListBytes),
+		formatInt(row.schemaBytes),
+		formatInt(row.descriptionBytes),
+		formatInt(row.inputSchemaBytes),
+		formatInt(row.outputSchemaBytes),
+		formatInt(row.maxPluginBytes),
+		row.overviewCompactBytes === null
+			? 'n/a'
+			: formatInt(row.overviewCompactBytes),
+		row.roundContextBytes === null
+			? 'n/a'
+			: formatInt(row.roundContextBytes),
+		budgetStatus(row.toolsListBytes, presetToolsBudget(row.presetId)),
+		budgetStatus(row.maxPluginBytes, presetMarginalBudget(row.presetId)),
+		row.loadErrors.length === 0 ? 'none' : row.loadErrors.join('<br>'),
+	]);
+
+	const pluginRows = presetRows.flatMap((row) =>
+		row.ownerRows.map((ownerRow) => [
+			row.presetId,
+			ownerRow.owner,
+			String(ownerRow.toolCount),
+			formatInt(ownerRow.toolsListBytes),
+			formatInt(ownerRow.schemaBytes),
+			formatInt(ownerRow.descriptionBytes),
+			formatInt(ownerRow.inputSchemaBytes),
+			formatInt(ownerRow.outputSchemaBytes),
+		]),
+	);
+
+	const tokenizerMap = new Map(
+		tokenizerRows.map((row) => [row.presetId, row]),
+	);
+	const tokenizerSummaryRows = presetRows.map((row) => {
+		const tokenizerRow = tokenizerMap.get(row.presetId);
+		const estimates = TOKENIZER_MODELS.map((model) => {
+			const estimate = tokenizerRow?.estimates.find(
+				(entry) => entry.model === model,
+			);
+			return estimate?.estimatedTokens ?? 0;
+		});
+		return [
+			row.presetId,
+			formatInt(row.toolsListBytes),
+			String(estimates[0] ?? 0),
+			String(estimates[1] ?? 0),
+			String(estimates[2] ?? 0),
+			'heuristic-4-bytes-per-token',
+			'estimated fallback (no lightweight tokenizer dependency present)',
+		];
+	});
+
+	const deficits = presetRows
+		.filter((row) => {
+			const budget = presetToolsBudget(row.presetId);
+			return budget !== undefined && row.toolsListBytes > budget.hard;
+		})
+		.map(
+			(row) =>
+				`- ${row.presetId} tools/list = ${formatInt(row.toolsListBytes)}B, documented hard ceiling = ${formatInt(presetToolsBudget(row.presetId)?.hard ?? 0)}B. Kept as-is per v00123 non-goal: report the deficit, do not auto-bump.`,
+		);
+
+	return [
+		'# Token Budgets — generated dashboard',
+		'',
+		GENERATED_MARKER,
+		'',
+		`Generated at: ${generatedAt}`,
+		'',
+		'This file is generated from the same budget contract the e2e test imports: packages/core/src/lib/contracts/constants/token-budgets.constant.ts. Do not edit this markdown by hand; regenerate it with bun tools/scripts/report/token-budget-dashboard.script.ts.',
+		'',
+		'## Semantics',
+		'',
+		'- hard ceiling: the documented absolute limit for a governed surface. In the e2e gate it is the failing threshold; in this generated dashboard it is also used to flag real preset deficits that must not be auto-bumped.',
+		'- warning ceiling: advisory threshold. Crossing it emits a warning or a report flag but does not fail by itself.',
+		`- release ceiling: the relative release gate remains ${TOKEN_BUDGETS.toolPayloads.overviewFull.releaseRelativePercent}% against the persisted metrics baseline; this proposal does not replace that longitudinal guard.`,
+		'- marginal plugin ceiling: max static tools/list bytes one plugin is allowed to contribute within a governed preset. This is tracked separately from the total preset ceiling.',
+		'',
+		'## Bump policy',
+		'',
+		`${TOKEN_BUDGETS.bumpPolicy.summary}`,
+		'',
+		...TOKEN_BUDGETS.bumpPolicy.requiredSteps.map(
+			(step, index) => `${index + 1}. ${step}`,
+		),
+		'',
+		'## Fixture-gated surfaces',
+		'',
+		'These are the bounded payloads the e2e spec governs directly today. They use the historical synthetic workspace fixture, so the hard ceilings stay stable until a future proposal deliberately tightens or re-baselines them.',
+		'',
+		markdownTable(
+			['Surface', 'Bytes', 'Est. Tokens', 'Warning', 'Hard', 'Status'],
+			fixtureRows,
+		),
+		'',
+		'## Real preset dashboard',
+		'',
+		'This dashboard measures the real preset assemblies through the actual plugin loader. It treats tools/list as first-order static context cost and breaks the payload down by preset and owner plugin.',
+		'',
+		markdownTable(
+			[
+				'Preset',
+				'Title',
+				'Plugins',
+				'Tools',
+				'Tools/List Bytes',
+				'Schema Bytes',
+				'Description Bytes',
+				'InputSchema Bytes',
+				'OutputSchema Bytes',
+				'Max Plugin Bytes',
+				'Overview Compact',
+				'Round Context',
+				'Tools Status',
+				'Marginal Status',
+				'Load Errors',
+			],
+			presetSummaryRows,
+		),
+		'',
+		'## Plugin marginal dashboard',
+		'',
+		markdownTable(
+			[
+				'Preset',
+				'Owner',
+				'Tools',
+				'Tools/List Bytes',
+				'Schema Bytes',
+				'Description Bytes',
+				'InputSchema Bytes',
+				'OutputSchema Bytes',
+			],
+			pluginRows,
+		),
+		'',
+		'## CHECK-007 — tokenizer cost by preset',
+		'',
+		'The repo has no lightweight LLM tokenizer dependency installed today. This report therefore uses an explicit fallback estimator of 4 bytes/token, published as an estimate rather than pretending to be an exact tokenizer. The script lives in tools/scripts/report/tokenizer-real.script.ts so the fallback can be replaced by a real tokenizer later without changing the dashboard contract.',
+		'',
+		markdownTable(
+			[
+				'Preset',
+				'Tools/List Bytes',
+				`${TOKENIZER_MODELS[0]} Tokens`,
+				`${TOKENIZER_MODELS[1]} Tokens`,
+				`${TOKENIZER_MODELS[2]} Tokens`,
+				'Estimator',
+				'Notes',
+			],
+			tokenizerSummaryRows,
+		),
+		'',
+		'## Documented deficits (kept, not auto-bumped)',
+		'',
+		...(deficits.length === 0 ? ['- none'] : deficits),
+		'',
+		'## Reproduce',
+		'',
+		'```bash',
+		'bunx vitest run packages/core/tests/src/lib/e2e/token-budget.e2e.spec.ts',
+		'bun tools/scripts/report/token-budget-dashboard.script.ts',
+		'bun tools/scripts/report/tokenizer-real.script.ts',
+		'```',
+	].join('\n');
+};
+
+export const generateTokenBudgetDashboard = async (): Promise<{
+	readonly markdown: string;
+	readonly outputPath: string;
+}> => {
+	const workspace = createTokenBudgetFixtureWorkspace();
+	try {
+		const [fixture, tokenizerRows] = await Promise.all([
+			measureFixtureSurfaces(workspace),
+			measurePresetTokenizerCosts(),
+		]);
+		const presetRows: IPresetDashboardRow[] = [];
+		for (const presetId of TOKEN_BUDGETS.dashboardPresetIds) {
+			presetRows.push(await measurePresetDashboard(workspace, presetId));
+		}
+		const markdown = `${renderGeneratedMarkdown(
+			new Date().toISOString(),
+			fixture,
+			presetRows,
+			tokenizerRows,
+		)}\n`;
+		const outputPath = join(
+			repoRoot(),
+			'docs',
+			'mcp-vertex',
+			'TOKEN-BUDGETS.md',
+		);
+		await withFileMutex(outputPath, async () => {
+			await writeFileAtomic(outputPath, markdown);
+		});
+		return { markdown, outputPath };
+	} finally {
+		destroyTokenBudgetFixtureWorkspace(workspace);
+	}
+};
+
+const isMainModule = (): boolean => {
+	const entry = process.argv[1];
+	return entry !== undefined && import.meta.url === `file://${entry}`;
+};
+
+if (isMainModule()) {
+	generateTokenBudgetDashboard()
+		.then((result) => {
+			console.log(`wrote ${result.outputPath}`);
+		})
+		.catch((error: unknown) => {
+			console.error(
+				`token-budget-dashboard failed: ${error instanceof Error ? error.message : String(error)}`,
+			);
+			process.exit(1);
+		});
+}

@@ -571,6 +571,12 @@ export {
 	DEFAULT_MAX_RESPONSE_BYTES,
 	MAX_RESPONSE_BYTES_CEILING,
 } from '../lib/contracts/constants/response-byte-budget.constant';
+export { TOKEN_BUDGETS } from '../lib/contracts/constants/token-budgets.constant';
+export type {
+	ITokenBudgetCeiling,
+	ITokenBudgetRegistry,
+	ITokenBudgetSurface,
+} from '../lib/contracts/constants/token-budgets.constant';
 export {
 	paginateFileExcerpt,
 	paginateItems,
