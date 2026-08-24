@@ -2,10 +2,11 @@
 id: f00157
 title: "Tool única de adopción end-to-end (adopt_project)"
 kind: feat
-status: ready
+status: done
 type: proposal
 track: adoption
 date: 2026-08-23
+shipped-in: ["285a9b8d"]
 ---
 
 # f00157 — Tool única de adopción end-to-end (adopt_project)
@@ -29,7 +30,7 @@ Auditoría 2026-08-24 (recomendación top): adoptar un repo exige hoy encadenar 
 - global_gate: type
 
 ### S1 — Tool adopt_project (orquestador de adopción)
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/src/lib/adopt/adopt-project.tool.ts`, `packages/core/src/lib/cli/assemble-core-tools.ts`
 - **Gate**: type
 - acceptance:
@@ -38,14 +39,14 @@ Auditoría 2026-08-24 (recomendación top): adoptar un repo exige hoy encadenar 
   - "Respeta el consentimiento (no escribe fuera de lo declarado, no ejecuta red sin opt-in)."
 
 ### S2 — Documentación del camino feliz
-- **Status**: pending
+- **Status**: done
 - **Files**: `docs/mcp-vertex/CROSS-PROJECT-SETUP.md`
 - **Gate**: type
 - acceptance:
   - "Documentación y knowledge entry describen el camino feliz de una llamada."
 
 ### S3 — Tests del orquestador de adopción
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/tests/src/lib/adopt/adopt-project.spec.ts`
 - **Gate**: type
 - acceptance:
