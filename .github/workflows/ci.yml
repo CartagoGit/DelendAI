@@ -14,8 +14,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  lint:
-    name: lint (biome)
+  lint-biome:
+    name: lint-biome
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -28,8 +28,230 @@ jobs:
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
-      - name: Lint
-        run: bun run lint
+      - name: Run biome and style-entry lints
+        run: |
+          set -euo pipefail
+          bun run lint
+          bun run lint:scss
+
+  lint-architecture:
+    name: lint-architecture
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.14
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Run architecture lints
+        run: |
+          set -euo pipefail
+          bun run lint:cli-imports
+          bun run lint:cli-coverage
+          bun run lint:tools
+          bun run lint:self-host-dogfood
+          bun run lint:solid
+          bun run lint:no-any
+          bun run lint:cli-shape
+          bun run lint:cli-ui-parity
+          bun run lint:shared-ui-ratchet
+          bun run lint:types-in-contracts
+          bun run lint:file-conventions
+
+  lint-presets:
+    name: lint-presets
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.14
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Run preset and release-surface checks
+        run: |
+          set -euo pipefail
+          bun run lint:setup
+          bun run lint:dependency-versions
+          bun run lint:core-version-pin
+          bun run lint:feature-flags
+          bun run lint:compat-window
+          bun run verify:stable-manifest
+          bun run catalog:check
+          bun run catalog:hints:check
+
+  lint-docs:
+    name: lint-docs
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.14
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Run docs, content and web lints
+        run: |
+          set -euo pipefail
+          bun run lint:cli:i18n
+          bun run lint:style-integrity
+          bun run lint:content-integrity
+          bun run lint:web
+          bun run lint:workflow
+          bun run lint:brand-hex
+          bun run lint:skills
+          bun run lint:host-instructions
+          bun run lint:prompt-size
+
+  lint-security:
+    name: lint-security
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.14
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Run security and hygiene lints
+        run: |
+          set -euo pipefail
+          bun run lint:no-cleartext-secrets
+          bun run lint:ephemeral
+          bun run lint:stray-cache-files
+          bun run lint:no-tracked-ignored-files
+
+  lint-governance:
+    name: lint-governance
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.14
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Run governance and proposal lints
+        run: |
+          set -euo pipefail
+          bun run lint:proposals
+          bun run lint:mass-content-removal
+          bun run lint:scaffolds
+          bun run lint:agents
+          bun run lint:audit-ids
+          bun run lint:cache
+          bun run lint:proposal-id-drift
+          bun run lint:proposal-cited-commits
+          bun run lint:reap-legacy-proposals
+          bun run lint:closed-frozen-guard
+          bun run lint:user-markers
+          bun run lint:proposal-slice-completeness
+          bun run lint:commit-branch
+          bun run lint:push-to-develop
+          bun run lint:agent-branch-naming
+
+  typecheck:
+    name: typecheck
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.14
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Typecheck
+        run: bun run typecheck
+
+  tests:
+    name: tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.14
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Clean mcp-vertex cache
+        run: rm -rf .cache/mcp-vertex
+
+      - name: Run tests and coverage gate
+        run: |
+          set -euo pipefail
+          bun run test
+          bun run test:coverage
+
+  quality-gate:
+    name: quality-gate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.14
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Run configured quality scopes
+        run: bun run quality:gate
+
+  verify-runtime:
+    name: verify-runtime
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.14
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Run runtime and packaging verification
+        run: |
+          set -euo pipefail
+          bun run verify:tools
+          bun run verify:plugin-wiring:advisory
+          bun run verify:cache
+          bun run verify:external-install
+          bun run verify:scaffolds
+          bun run verify:dev-bundles
+          bun run verify:host-capability-packs
 
   site:
     # c00088: astro-check (lint:web) provably misses build-only
@@ -51,29 +273,6 @@ jobs:
 
       - name: Build the web site
         run: bun run site
-
-  validate:
-    name: typecheck + tests
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v7
-
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: 1.3.14
-
-      - name: Install dependencies
-        run: bun install --frozen-lockfile
-
-      - name: Clean mcp-vertex cache
-        run: rm -rf .cache/mcp-vertex
-
-      - name: Typecheck
-        run: bun run typecheck
-
-      - name: Tests + coverage gate
-        run: bun run test:coverage
 
   pack-smoke:
     name: pack smoke (publishable packages)
