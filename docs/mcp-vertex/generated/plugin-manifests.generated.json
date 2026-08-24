@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-08-24T11:51:10.527Z",
+	"generatedAt": "2026-08-24T12:09:24.129Z",
 	"manifests": [
 		{
 			"id": "context-for-change",
@@ -83,6 +83,33 @@
 			"capabilities": ["health-aggregation"]
 		},
 		{
+			"id": "quality-policy",
+			"package": "@mcp-vertex/quality-policy",
+			"version": "0.1.0",
+			"visibility": "public",
+			"summary": "Unified quality-policy surface: cheap tests, conventions, lint, types and coverage guidance without running heavy quality commands.",
+			"tags": ["quality", "policy", "aggregation", "f00167"],
+			"maturity": "experimental",
+			"permissions": ["filesystem-read"],
+			"presets": ["vertex"],
+			"tokenBudget": {
+				"hard": 3000,
+				"warning": 2700,
+				"releaseRelativePercent": 20
+			},
+			"dependencies": [
+				"@mcp-vertex/core",
+				"@mcp-vertex/quality",
+				"@mcp-vertex/rules",
+				"@mcp-vertex/test-policy",
+				"@mcp-vertex/test-convention",
+				"@mcp-vertex/conventions",
+				"@modelcontextprotocol/sdk",
+				"zod"
+			],
+			"capabilities": ["quality-policy"]
+		},
+		{
 			"id": "search",
 			"package": "@mcp-vertex/search",
 			"version": "0.1.1",
@@ -147,6 +174,14 @@
 		},
 		{
 			"origin": "first-party",
+			"id": "quality-policy",
+			"package": "@mcp-vertex/quality-policy",
+			"summary": "Unified quality-policy surface: cheap tests, conventions, lint, types and coverage guidance without running heavy quality commands.",
+			"tags": ["quality", "policy", "aggregation", "f00167"],
+			"permissions": ["filesystem-read"]
+		},
+		{
+			"origin": "first-party",
 			"id": "search",
 			"package": "@mcp-vertex/search",
 			"summary": "Code search (semantic + symbol + references).",
@@ -184,6 +219,16 @@
 			"visibility": "public",
 			"presets": ["vertex"],
 			"capabilities": ["health-aggregation"]
+		},
+		{
+			"id": "quality-policy",
+			"package": "@mcp-vertex/quality-policy",
+			"summary": "Unified quality-policy surface: cheap tests, conventions, lint, types and coverage guidance without running heavy quality commands.",
+			"tags": ["quality", "policy", "aggregation", "f00167"],
+			"maturity": "experimental",
+			"visibility": "public",
+			"presets": ["vertex"],
+			"capabilities": ["quality-policy"]
 		},
 		{
 			"id": "search",
@@ -231,6 +276,12 @@
 			"releaseRelativePercent": 20
 		},
 		{
+			"id": "quality-policy",
+			"warning": 2700,
+			"hard": 3000,
+			"releaseRelativePercent": 20
+		},
+		{
 			"id": "search",
 			"warning": 2700,
 			"hard": 3000,
@@ -248,6 +299,10 @@
 		},
 		{
 			"id": "project-health",
+			"permissions": ["filesystem-read"]
+		},
+		{
+			"id": "quality-policy",
 			"permissions": ["filesystem-read"]
 		},
 		{
@@ -440,6 +495,69 @@
 		},
 		{
 			"pluginId": "project-health",
+			"presetId": "cli-tool",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "quality-policy",
+			"presetId": "minimal",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "quality-policy",
+			"presetId": "lean",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "quality-policy",
+			"presetId": "standard",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "quality-policy",
+			"presetId": "swarm",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "quality-policy",
+			"presetId": "full",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "quality-policy",
+			"presetId": "vertex",
+			"declared": true,
+			"catalogMember": true,
+			"matches": true
+		},
+		{
+			"pluginId": "quality-policy",
+			"presetId": "web-app",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "quality-policy",
+			"presetId": "backend-api",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "quality-policy",
 			"presetId": "cli-tool",
 			"declared": false,
 			"catalogMember": false,

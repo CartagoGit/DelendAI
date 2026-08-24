@@ -3006,6 +3006,173 @@ export interface McpVertexQualityRunQualityOutput {
 	}>;
 }
 
+export interface McpVertexQualityPolicyQualityPolicyOutput {
+	tests?: {
+		summary: string;
+		mode?: string;
+		source?: string;
+		guidance?: string[];
+		runner?: string;
+		mockApi?: string;
+		evidence?: string;
+		scopes?: string[];
+		presets?: {
+			area: string;
+			presetId: string;
+			reason: string;
+		}[];
+		sampledPaths?: {
+			path: string;
+			role: string;
+		}[];
+		roleCounts?: Record<string, number>;
+		strict?: boolean;
+		exactOptionalPropertyTypes?: boolean;
+		noUncheckedIndexedAccess?: boolean;
+		noImplicitOverride?: boolean;
+		tsconfigChain?: string[];
+		coverageThreshold?: {
+			lines: number;
+			functions: number;
+			branches: number;
+			statements: number;
+		};
+		static?: boolean;
+	};
+	conventions?: {
+		summary: string;
+		mode?: string;
+		source?: string;
+		guidance?: string[];
+		runner?: string;
+		mockApi?: string;
+		evidence?: string;
+		scopes?: string[];
+		presets?: {
+			area: string;
+			presetId: string;
+			reason: string;
+		}[];
+		sampledPaths?: {
+			path: string;
+			role: string;
+		}[];
+		roleCounts?: Record<string, number>;
+		strict?: boolean;
+		exactOptionalPropertyTypes?: boolean;
+		noUncheckedIndexedAccess?: boolean;
+		noImplicitOverride?: boolean;
+		tsconfigChain?: string[];
+		coverageThreshold?: {
+			lines: number;
+			functions: number;
+			branches: number;
+			statements: number;
+		};
+		static?: boolean;
+	};
+	lint?: {
+		summary: string;
+		mode?: string;
+		source?: string;
+		guidance?: string[];
+		runner?: string;
+		mockApi?: string;
+		evidence?: string;
+		scopes?: string[];
+		presets?: {
+			area: string;
+			presetId: string;
+			reason: string;
+		}[];
+		sampledPaths?: {
+			path: string;
+			role: string;
+		}[];
+		roleCounts?: Record<string, number>;
+		strict?: boolean;
+		exactOptionalPropertyTypes?: boolean;
+		noUncheckedIndexedAccess?: boolean;
+		noImplicitOverride?: boolean;
+		tsconfigChain?: string[];
+		coverageThreshold?: {
+			lines: number;
+			functions: number;
+			branches: number;
+			statements: number;
+		};
+		static?: boolean;
+	};
+	types?: {
+		summary: string;
+		mode?: string;
+		source?: string;
+		guidance?: string[];
+		runner?: string;
+		mockApi?: string;
+		evidence?: string;
+		scopes?: string[];
+		presets?: {
+			area: string;
+			presetId: string;
+			reason: string;
+		}[];
+		sampledPaths?: {
+			path: string;
+			role: string;
+		}[];
+		roleCounts?: Record<string, number>;
+		strict?: boolean;
+		exactOptionalPropertyTypes?: boolean;
+		noUncheckedIndexedAccess?: boolean;
+		noImplicitOverride?: boolean;
+		tsconfigChain?: string[];
+		coverageThreshold?: {
+			lines: number;
+			functions: number;
+			branches: number;
+			statements: number;
+		};
+		static?: boolean;
+	};
+	coverage?: {
+		summary: string;
+		mode?: string;
+		source?: string;
+		guidance?: string[];
+		runner?: string;
+		mockApi?: string;
+		evidence?: string;
+		scopes?: string[];
+		presets?: {
+			area: string;
+			presetId: string;
+			reason: string;
+		}[];
+		sampledPaths?: {
+			path: string;
+			role: string;
+		}[];
+		roleCounts?: Record<string, number>;
+		strict?: boolean;
+		exactOptionalPropertyTypes?: boolean;
+		noUncheckedIndexedAccess?: boolean;
+		noImplicitOverride?: boolean;
+		tsconfigChain?: string[];
+		coverageThreshold?: {
+			lines: number;
+			functions: number;
+			branches: number;
+			statements: number;
+		};
+		static?: boolean;
+	};
+	dependsOn: string[];
+	bytes: number;
+	truncated: boolean;
+	originalBytes?: number;
+}
+
 export interface McpVertexRefactorRefactorApplyOutput {
 	written: string[];
 	gateCommand: string;
@@ -3737,6 +3904,7 @@ export interface McpVertexToolOutputs {
 	"mcp-vertex_quality_quality_cancel": McpVertexQualityQualityCancelOutput;
 	"mcp-vertex_quality_quality_run_all": McpVertexQualityQualityRunAllOutput;
 	"mcp-vertex_quality_run_quality": McpVertexQualityRunQualityOutput;
+	"mcp-vertex_quality-policy_quality_policy": McpVertexQualityPolicyQualityPolicyOutput;
 	"mcp-vertex_refactor_refactor_apply": McpVertexRefactorRefactorApplyOutput;
 	"mcp-vertex_refactor_refactor_codemod": McpVertexRefactorRefactorCodemodOutput;
 	"mcp-vertex_refactor_refactor_definition": McpVertexRefactorRefactorDefinitionOutput;

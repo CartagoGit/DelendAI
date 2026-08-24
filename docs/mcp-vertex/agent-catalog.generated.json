@@ -610,6 +610,10 @@
 			"plugin": "quality"
 		},
 		{
+			"name": "mcp-vertex_quality-policy_quality_policy",
+			"plugin": "quality-policy"
+		},
+		{
 			"name": "mcp-vertex_refactor_refactor_apply",
 			"plugin": "refactor"
 		},

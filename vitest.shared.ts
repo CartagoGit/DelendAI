@@ -100,6 +100,7 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 		'plugins/impact-analysis/src',
 	);
 	const projectHealth = resolve(workspaceRoot, 'plugins/project-health/src');
+	const qualityPolicy = resolve(workspaceRoot, 'plugins/quality-policy/src');
 	const changelog = resolve(workspaceRoot, 'plugins/changelog/src');
 	const completion = resolve(workspaceRoot, 'plugins/completion/src');
 	const errorReporting = resolve(
@@ -148,6 +149,18 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 		{
 			find: '@mcp-vertex/project-health',
 			replacement: resolve(projectHealth, 'index.ts'),
+		},
+		{
+			find: '@mcp-vertex/quality-policy/public',
+			replacement: resolve(qualityPolicy, 'public/index.ts'),
+		},
+		{
+			find: /^@mcp-vertex\/quality-policy\/lib\/(.*)$/,
+			replacement: `${resolve(qualityPolicy, 'lib')}/$1`,
+		},
+		{
+			find: '@mcp-vertex/quality-policy',
+			replacement: resolve(qualityPolicy, 'index.ts'),
 		},
 		{
 			find: '@mcp-vertex/shared/i18n',

@@ -77,6 +77,10 @@ export const PACKAGE_ROUTES: Readonly<Record<string, IPackageRoute>> = {
 		dir: 'plugins/project-health',
 		label: 'ProjectHealth',
 	},
+	'quality-policy': {
+		dir: 'plugins/quality-policy',
+		label: 'QualityPolicy',
+	},
 };
 
 /** Relative path (from a package dir) of the generated module. */
