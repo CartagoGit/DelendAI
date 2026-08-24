@@ -8,6 +8,8 @@ Project-agnostic core for building MCP servers + a CLI plugin loader, by
 - **[PLUGINS-MCP-VERTEX.md](./docs/mcp-vertex/PLUGINS-MCP-VERTEX.md)** — how to create plugins.
 - **[ARCHITECTURE.md](./docs/mcp-vertex/ARCHITECTURE.md)** — layers, contracts, request flow,
   invariants (with a diagram).
+- **[VISION-AND-OPERATING-MODEL.md](./docs/mcp-vertex/VISION-AND-OPERATING-MODEL.md)** — north star,
+  growth rule, two speeds, dogfooding loop, privacy motto.
 - **[CONTRIBUTING.md](./.github/CONTRIBUTING.md)** · **[SECURITY.md](./.github/SECURITY.md)** ·
   **[AGENTS.md](./AGENTS.md)** — how to contribute, report vulnerabilities, and the
   rules agents follow.
