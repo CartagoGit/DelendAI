@@ -38,14 +38,14 @@ Una versión hardcoded en el anuncio del client es un bug menor pero sintomátic
 - global_gate: type
 
 ### S1 — Versión inyectada desde package metadata
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/client/src/index.ts`
 - **Gate**: type
 - acceptance:
   - "La versión anunciada se genera desde package metadata (CLIEN-001, REL-004)."
 
 ### S2 — Payload validation opcional y errores de transporte
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/client/src/lib/transport/mcp-stdio-client.ts`
 - **Gate**: type
 - acceptance:

@@ -11,6 +11,11 @@ export type {
 	IMcpToolDescriptor,
 	IMcpTransport,
 } from '../lib/contracts/interfaces/mcp-transport.interface';
+export type {
+	IMcpTransportError,
+	McpTransportErrorCode,
+	McpTransportErrorKind,
+} from '../lib/contracts/interfaces/mcp-transport-error.interface';
 export {
 	DEFAULT_NAMESPACE_PREFIX,
 	formatToolName,
