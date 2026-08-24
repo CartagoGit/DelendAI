@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-08-24T11:35:33.431Z",
+	"generatedAt": "2026-08-24T11:51:10.527Z",
 	"manifests": [
 		{
 			"id": "context-for-change",
@@ -55,6 +55,32 @@
 				"zod"
 			],
 			"capabilities": ["impact-analysis", "test-selection"]
+		},
+		{
+			"id": "project-health",
+			"package": "@mcp-vertex/project-health",
+			"version": "0.1.0",
+			"visibility": "public",
+			"summary": "Compact project-health aggregator: cheap summary first, lazy domain details on demand.",
+			"tags": ["health", "aggregation", "f00166"],
+			"maturity": "experimental",
+			"permissions": ["filesystem-read"],
+			"presets": ["vertex"],
+			"tokenBudget": {
+				"hard": 3000,
+				"warning": 2700,
+				"releaseRelativePercent": 20
+			},
+			"dependencies": [
+				"@mcp-vertex/core",
+				"@mcp-vertex/quality",
+				"@mcp-vertex/security",
+				"@mcp-vertex/deps",
+				"@mcp-vertex/tech-debt",
+				"@modelcontextprotocol/sdk",
+				"zod"
+			],
+			"capabilities": ["health-aggregation"]
 		},
 		{
 			"id": "search",
@@ -113,6 +139,14 @@
 		},
 		{
 			"origin": "first-party",
+			"id": "project-health",
+			"package": "@mcp-vertex/project-health",
+			"summary": "Compact project-health aggregator: cheap summary first, lazy domain details on demand.",
+			"tags": ["health", "aggregation", "f00166"],
+			"permissions": ["filesystem-read"]
+		},
+		{
+			"origin": "first-party",
 			"id": "search",
 			"package": "@mcp-vertex/search",
 			"summary": "Code search (semantic + symbol + references).",
@@ -140,6 +174,16 @@
 			"visibility": "public",
 			"presets": ["vertex"],
 			"capabilities": ["impact-analysis", "test-selection"]
+		},
+		{
+			"id": "project-health",
+			"package": "@mcp-vertex/project-health",
+			"summary": "Compact project-health aggregator: cheap summary first, lazy domain details on demand.",
+			"tags": ["health", "aggregation", "f00166"],
+			"maturity": "experimental",
+			"visibility": "public",
+			"presets": ["vertex"],
+			"capabilities": ["health-aggregation"]
 		},
 		{
 			"id": "search",
@@ -181,6 +225,12 @@
 			"releaseRelativePercent": 20
 		},
 		{
+			"id": "project-health",
+			"warning": 2700,
+			"hard": 3000,
+			"releaseRelativePercent": 20
+		},
+		{
 			"id": "search",
 			"warning": 2700,
 			"hard": 3000,
@@ -194,6 +244,10 @@
 		},
 		{
 			"id": "impact-analysis",
+			"permissions": ["filesystem-read"]
+		},
+		{
+			"id": "project-health",
 			"permissions": ["filesystem-read"]
 		},
 		{
@@ -323,6 +377,69 @@
 		},
 		{
 			"pluginId": "impact-analysis",
+			"presetId": "cli-tool",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "project-health",
+			"presetId": "minimal",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "project-health",
+			"presetId": "lean",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "project-health",
+			"presetId": "standard",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "project-health",
+			"presetId": "swarm",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "project-health",
+			"presetId": "full",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "project-health",
+			"presetId": "vertex",
+			"declared": true,
+			"catalogMember": true,
+			"matches": true
+		},
+		{
+			"pluginId": "project-health",
+			"presetId": "web-app",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "project-health",
+			"presetId": "backend-api",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "project-health",
 			"presetId": "cli-tool",
 			"declared": false,
 			"catalogMember": false,

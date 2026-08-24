@@ -22,6 +22,17 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG = [
 		capabilities: ['impact-analysis', 'test-selection'],
 	},
 	{
+		id: 'project-health',
+		package: '@mcp-vertex/project-health',
+		summary:
+			'Compact project-health aggregator: cheap summary first, lazy domain details on demand.',
+		tags: ['health', 'aggregation', 'f00166'],
+		maturity: 'experimental',
+		visibility: 'public',
+		presets: ['vertex'],
+		capabilities: ['health-aggregation'],
+	},
+	{
 		id: 'search',
 		package: '@mcp-vertex/search',
 		summary: 'Code search (semantic + symbol + references).',

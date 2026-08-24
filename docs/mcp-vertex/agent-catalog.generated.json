@@ -466,6 +466,10 @@
 			"name": "mcp-vertex_plugin_search"
 		},
 		{
+			"name": "mcp-vertex_project-health_project_health",
+			"plugin": "project-health"
+		},
+		{
 			"name": "mcp-vertex_proposals_agent_lock",
 			"plugin": "proposals"
 		},

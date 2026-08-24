@@ -22,6 +22,15 @@ export const GENERATED_FIRST_PARTY_MANIFEST_ENTRIES: readonly IPluginRegistryEnt
 		},
 		{
 			origin: 'first-party',
+			id: 'project-health',
+			package: '@mcp-vertex/project-health',
+			summary:
+				'Compact project-health aggregator: cheap summary first, lazy domain details on demand.',
+			tags: ['health', 'aggregation', 'f00166'],
+			permissions: ['filesystem-read'],
+		},
+		{
+			origin: 'first-party',
 			id: 'search',
 			package: '@mcp-vertex/search',
 			summary: 'Code search (semantic + symbol + references).',

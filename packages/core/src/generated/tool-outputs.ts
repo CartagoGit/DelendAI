@@ -1727,6 +1727,25 @@ export interface McpVertexPluginSearchOutput {
 	truncated: boolean;
 }
 
+export interface McpVertexProjectHealthProjectHealthOutput {
+	score?: number;
+	security?: number;
+	deps?: number;
+	quality?: number;
+	debt?: number;
+	next?: {
+		tool: string;
+		reason: string;
+	}[];
+	domain?: "summary" | "security" | "deps" | "quality" | "debt";
+	tool?: string;
+	hint?: string;
+	dependsOn?: string[];
+	bytes: number;
+	truncated: boolean;
+	originalBytes?: number;
+}
+
 export interface McpVertexPromptEvalEvalReportOutput {
 	tool: "eval_report";
 	rows: Array<{
@@ -3680,6 +3699,7 @@ export interface McpVertexToolOutputs {
 	"mcp-vertex_plan_mcp_project": McpVertexPlanMcpProjectOutput;
 	"mcp-vertex_plugin_add": McpVertexPluginAddOutput;
 	"mcp-vertex_plugin_search": McpVertexPluginSearchOutput;
+	"mcp-vertex_project-health_project_health": McpVertexProjectHealthProjectHealthOutput;
 	"mcp-vertex_prompt-eval_eval_report": McpVertexPromptEvalEvalReportOutput;
 	"mcp-vertex_prompt-eval_eval_run": McpVertexPromptEvalEvalRunOutput;
 	"mcp-vertex_proposals_agent_lock": McpVertexProposalsAgentLockOutput;

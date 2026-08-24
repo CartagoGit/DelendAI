@@ -45,6 +45,11 @@
 				"maxBytes": 3000
 			}
 		},
+		"project-health": {
+			"options": {
+				"maxBytes": 2000
+			}
+		},
 		"memory": {
 			"options": {
 				"bm25K1": 1.5,
