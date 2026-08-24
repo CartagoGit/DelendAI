@@ -2075,6 +2075,65 @@ export interface McpVertexProposalsAgentsLockDiagnoseOutput {
 	}>;
 }
 
+export interface McpVertexProposalsAutoFixQueueOutput {
+	ok: true;
+	autoFixable: Array<{
+		signature: string;
+		toolName: string;
+		incidentType: string;
+		classification: string;
+		title: string;
+		summary: string;
+		rationale: string;
+		suggestedTrack: string;
+		sourceCluster: {
+			count: number;
+			distinctAgents: number;
+			firstSeen: string;
+			lastSeen: string;
+			sampleSummary: string;
+			sampleError: string;
+			recentEventsCount: number;
+		};
+		severity: "critical" | "high" | "medium" | "low";
+		reproducible: boolean;
+		affectedPaths: string[];
+		affectsPublishedOutputSchema: boolean;
+		decision: "auto-fixable" | "needs-human";
+		reason: string;
+	}>;
+	needsHuman: Array<{
+		signature: string;
+		toolName: string;
+		incidentType: string;
+		classification: string;
+		title: string;
+		summary: string;
+		rationale: string;
+		suggestedTrack: string;
+		sourceCluster: {
+			count: number;
+			distinctAgents: number;
+			firstSeen: string;
+			lastSeen: string;
+			sampleSummary: string;
+			sampleError: string;
+			recentEventsCount: number;
+		};
+		severity: "critical" | "high" | "medium" | "low";
+		reproducible: boolean;
+		affectedPaths: string[];
+		affectsPublishedOutputSchema: boolean;
+		decision: "auto-fixable" | "needs-human";
+		reason: string;
+	}>;
+	deduped: number;
+	totalClusters: number;
+	written?: number;
+	files?: string[];
+	indexCount?: number;
+}
+
 export interface McpVertexProposalsAutoWorkOutput {
 	state: "idle" | "work";
 	idleStreak?: number;
@@ -2354,6 +2413,34 @@ export interface McpVertexProposalsGetProposalWorkflowOutput {
 	naming: string;
 	rules: string[];
 	template: string;
+}
+
+export interface McpVertexProposalsIncidentProposalsOutput {
+	ok: true;
+	drafts: {
+		signature: string;
+		toolName: string;
+		incidentType: string;
+		classification: string;
+		title: string;
+		summary: string;
+		rationale: string;
+		suggestedTrack: string;
+		sourceCluster: {
+			count: number;
+			distinctAgents: number;
+			firstSeen: string;
+			lastSeen: string;
+			sampleSummary: string;
+			sampleError: string;
+			recentEventsCount: number;
+		};
+	}[];
+	deduped: number;
+	totalClusters: number;
+	written?: number;
+	files?: string[];
+	indexCount?: number;
 }
 
 export interface McpVertexProposalsInheritHostInstructionsOutput {
@@ -3928,6 +4015,7 @@ export interface McpVertexToolOutputs {
 	"mcp-vertex_proposals_agent_names": McpVertexProposalsAgentNamesOutput;
 	"mcp-vertex_proposals_agent_worktree": McpVertexProposalsAgentWorktreeOutput;
 	"mcp-vertex_proposals_agents_lock_diagnose": McpVertexProposalsAgentsLockDiagnoseOutput;
+	"mcp-vertex_proposals_auto_fix_queue": McpVertexProposalsAutoFixQueueOutput;
 	"mcp-vertex_proposals_auto_work": McpVertexProposalsAutoWorkOutput;
 	"mcp-vertex_proposals_branch_gc": McpVertexProposalsBranchGcOutput;
 	"mcp-vertex_proposals_branch_status": McpVertexProposalsBranchStatusOutput;
@@ -3937,6 +4025,7 @@ export interface McpVertexToolOutputs {
 	"mcp-vertex_proposals_create_proposal": McpVertexProposalsCreateProposalOutput;
 	"mcp-vertex_proposals_delegate": McpVertexProposalsDelegateOutput;
 	"mcp-vertex_proposals_get_proposal_workflow": McpVertexProposalsGetProposalWorkflowOutput;
+	"mcp-vertex_proposals_incident_proposals": McpVertexProposalsIncidentProposalsOutput;
 	"mcp-vertex_proposals_inherit_host_instructions": McpVertexProposalsInheritHostInstructionsOutput;
 	"mcp-vertex_proposals_plan": McpVertexProposalsPlanOutput;
 	"mcp-vertex_proposals_proposal_adopt": McpVertexProposalsProposalAdoptOutput;

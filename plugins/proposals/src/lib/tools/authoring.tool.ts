@@ -17,6 +17,7 @@ import {
 
 import { runAgentLockEngine } from '../locks/agent-lock-engine';
 import type { IGitRunner } from '../shared/git-runner';
+import { toolErrorEnvelope } from '../shared/tool-envelope';
 import { createPendingIntegrationStore } from '../shared/pending-integration-store';
 import { AGENT_BRANCH_PREFIX } from '../contracts/constants/agent-branch-convention.constant';
 import { PEER_REVIEW_LOG_RELATIVE_PATH } from '../contracts/constants/proposal-paths.constant';
@@ -75,6 +76,8 @@ export { readActiveLocks } from './authoring-options';
 // close-slice validation below that deadline so callers receive the
 // structured validation error and the document mutex is always released.
 const CLOSE_SLICE_VALIDATION_TIMEOUT_MS = 45_000;
+const ISO_DATE_LENGTH = 10;
+const TIMEOUT_EXIT_CODE = 124;
 
 /**
  * x00156 S5 — the `close_slice` write-path throws a plain `Error`
@@ -159,7 +162,7 @@ export const runCloseSliceValidation = async (
 			.join('\n'),
 		exitCode:
 			verdict.exitCode ??
-			(verdict.reason?.startsWith('timeout:') ? 124 : 1),
+			(verdict.reason?.startsWith('timeout:') ? TIMEOUT_EXIT_CODE : 1),
 	};
 };
 
@@ -276,6 +279,218 @@ const renderSlice = (s: z.infer<typeof SLICE_IN>): string => {
 		for (const a of s.acceptance) lines.push(`  - "${a}"`);
 	}
 	return lines.join('\n');
+};
+
+type ICreateProposalSlice = z.infer<typeof SLICE_IN>;
+
+type IFrontmatterPrimitive = boolean | number | string;
+
+interface ICreateProposalRequest {
+	readonly id?: string | undefined;
+	readonly kind?: string | undefined;
+	readonly title: string;
+	readonly goal?: string | undefined;
+	readonly status?: string | undefined;
+	readonly track?: string | undefined;
+	readonly why?: string | undefined;
+	readonly nonGoals?: readonly string[] | undefined;
+	readonly globalGate?: 'lint' | 'type' | 'e2e' | 'none' | undefined;
+	readonly slices?: readonly ICreateProposalSlice[] | undefined;
+	readonly extraFrontmatter?:
+		| Readonly<Record<string, IFrontmatterPrimitive>>
+		| undefined;
+}
+
+interface ICreateProposalWriteResult {
+	readonly ok: true;
+	readonly file: string;
+	readonly path: string;
+	readonly disjointnessIssues: readonly {
+		readonly first: string;
+		readonly second: string;
+		readonly file: string;
+	}[];
+	readonly indexCount: number;
+	readonly redactedSecrets: number;
+}
+
+interface ICreateProposalWriteError {
+	readonly ok: false;
+	readonly reason: string;
+	readonly nextAction: string;
+}
+
+const serializeFrontmatterValue = (value: IFrontmatterPrimitive): string =>
+	typeof value === 'string' ? JSON.stringify(value) : String(value);
+
+const renderExtraFrontmatter = (
+	frontmatter: Readonly<Record<string, IFrontmatterPrimitive>> | undefined,
+): string[] =>
+	Object.entries(frontmatter ?? {})
+		.filter(([, value]) => value !== undefined)
+		.sort(([left], [right]) => left.localeCompare(right))
+		.map(([key, value]) => `${key}: ${serializeFrontmatterValue(value)}`);
+
+export const createProposalDocument = async (
+	args: ICreateProposalRequest,
+	options: Pick<
+		IAuthoringToolOptions,
+		| 'workspaceRoot'
+		| 'proposalsDirAbs'
+		| 'counterPathAbs'
+		| 'layout'
+		| 'extraFolders'
+	>,
+): Promise<ICreateProposalWriteResult | ICreateProposalWriteError> => {
+	let id: string;
+	if (args.id !== undefined) {
+		id = args.id;
+		const idResult = newProposalIdSchema.safeParse(id);
+		if (!idResult.success) {
+			return {
+				ok: false,
+				reason: `invalid proposal id "${id}" — ${idResult.error.issues[0]?.message ?? 'malformed'}`,
+				nextAction:
+					'Use one lowercase family prefix followed by exactly five digits (for example f00001), or omit id and pass kind for race-safe allocation.',
+			};
+		}
+		if (args.kind !== undefined) {
+			const match = kindMatchesId(args.kind, id);
+			if (!match.ok) {
+				return {
+					ok: false,
+					reason: match.reason,
+					nextAction:
+						'Ensure the ID prefix matches the specified kind.',
+				};
+			}
+		}
+	} else if (args.kind !== undefined) {
+		const prefix = prefixForKind(args.kind);
+		if (prefix === null) {
+			return {
+				ok: false,
+				reason: `unknown kind "${args.kind}"`,
+				nextAction: 'Pass a recognised kind, or pass id explicitly.',
+			};
+		}
+		id = await allocateNextProposalId(prefix, {
+			proposalsDirAbs: options.proposalsDirAbs,
+			counterPathAbs: options.counterPathAbs,
+		});
+	} else {
+		return {
+			ok: false,
+			reason: 'either id or kind is required',
+			nextAction:
+				'Pass an explicit id, or pass kind to auto-allocate the next one (f00016 S13).',
+		};
+	}
+	const slices = [...(args.slices ?? [])];
+	const plan = {
+		proposalId: id,
+		globalGate: (args.globalGate ?? 'none') as
+			| 'lint'
+			| 'type'
+			| 'e2e'
+			| 'none',
+		slices: slices.map((s) => ({
+			proposalId: id,
+			sliceId: s.sliceId,
+			title: s.title ?? s.sliceId,
+			owner: null,
+			files: s.files,
+			dependsOn: s.dependsOn ?? [],
+			gate: (s.gate ?? 'none') as 'lint' | 'type' | 'e2e' | 'none',
+			status: 'pending' as const,
+			acceptanceCriteria: s.acceptance ?? [],
+		})),
+	};
+	const issues = planDisjointnessIssues(plan);
+	if (issues.length > 0) {
+		return {
+			ok: false,
+			reason: `slices share files: ${issues.map((i) => `${i.first}/${i.second}:${i.file}`).join(', ')}`,
+			nextAction: 'Make each slice edit a disjoint set of files.',
+		};
+	}
+	const inferredKind =
+		args.kind ?? (PROPOSAL_KIND_BY_PREFIX[id[0] ?? ''] || 'feat');
+	const date = new Date().toISOString().slice(0, ISO_DATE_LENGTH);
+	const status = canonicalStatus(args.status);
+	const acceptanceLines = slices.flatMap((s) =>
+		(s.acceptance ?? []).map((acceptance) => `- ${acceptance}`),
+	);
+	const body = [
+		'---',
+		`id: ${id}`,
+		`title: ${JSON.stringify(args.title)}`,
+		`kind: ${inferredKind}`,
+		`status: ${status}`,
+		'type: proposal',
+		`track: ${args.track ?? 'general'}`,
+		`date: ${date}`,
+		...renderExtraFrontmatter(args.extraFrontmatter),
+		'---',
+		'',
+		`# ${id} — ${args.title}`,
+		'',
+		'## Goal',
+		'',
+		args.goal ?? 'TODO: describe the goal.',
+		'',
+		'## why',
+		'',
+		args.why ?? 'TODO: why this work matters now.',
+		'',
+		'## non-goals',
+		'',
+		...(args.nonGoals && args.nonGoals.length > 0
+			? args.nonGoals.map((goal) => `- ${goal}`)
+			: ['- TODO: what this proposal deliberately skips.']),
+		'',
+		'## Slices',
+		'',
+		`- global_gate: ${args.globalGate ?? 'none'}`,
+		'',
+		...(slices.length > 0
+			? slices.map(renderSlice).join('\n\n').split('\n')
+			: [
+					'### S1 — TODO',
+					'- **Status**: pending',
+					'- **Files**: `TODO`',
+					'- **Gate**: none',
+				]),
+		'',
+		'## acceptance',
+		'',
+		...(acceptanceLines.length > 0
+			? acceptanceLines
+			: ['- TODO: observable acceptance criteria.']),
+		'',
+	].join('\n');
+	const fileRel = `${STATUS_TO_FOLDER[status]}/${id}-${slugFromTitle(args.title, id)}.md`;
+	const absPath = join(options.proposalsDirAbs, ...fileRel.split('/'));
+	const { text: safeBody, redactions } = redactSecrets(body);
+	await writeFileAtomic(absPath, safeBody);
+	const sync = await syncProposalRegistry(
+		options.workspaceRoot,
+		options.layout,
+		options.extraFolders ?? [],
+	);
+	const syncEntry = sync.proposals.find((proposal) => proposal.id === id);
+	const finalFileRel = syncEntry ? syncEntry.file : fileRel;
+	const finalAbsPath = syncEntry
+		? join(options.proposalsDirAbs, ...finalFileRel.split('/'))
+		: absPath;
+	return {
+		ok: true,
+		file: finalFileRel,
+		path: finalAbsPath,
+		disjointnessIssues: issues,
+		indexCount: sync.count,
+		redactedSecrets: redactions,
+	};
 };
 
 /**
@@ -470,162 +685,26 @@ export const buildCreateProposalRegistration = (
 				globalGate?: string | undefined;
 				slices?: Array<z.infer<typeof SLICE_IN>> | undefined;
 			}) => {
-				let id: string;
-				if (args.id !== undefined) {
-					id = args.id;
-					// f00114: the WRITE-seam schema owns the shape rule
-					// (strict 5 digits, canonical prefix, no `p` alias)…
-					const idResult = newProposalIdSchema.safeParse(id);
-					if (!idResult.success) {
-						return toolError(
-							`invalid proposal id "${id}" — ${idResult.error.issues[0]?.message ?? 'malformed'}`,
-							'Use one lowercase family prefix followed by exactly five digits (for example f00001), or omit id and pass kind for race-safe allocation.',
-						);
-					}
-					// …and kindMatchesId owns prefix↔kind coherence.
-					if (args.kind !== undefined) {
-						const match = kindMatchesId(args.kind, id);
-						if (!match.ok) {
-							return toolError(
-								match.reason,
-								'Ensure the ID prefix matches the specified kind.',
-							);
-						}
-					}
-				} else if (args.kind !== undefined) {
-					const prefix = prefixForKind(args.kind);
-					if (prefix === null) {
-						return toolError(
-							`unknown kind "${args.kind}"`,
-							'Pass a recognised kind, or pass id explicitly.',
-						);
-					}
-					id = await allocateNextProposalId(prefix, {
-						proposalsDirAbs: options.proposalsDirAbs,
-						counterPathAbs: options.counterPathAbs,
-					});
-				} else {
-					return toolError(
-						'either id or kind is required',
-						'Pass an explicit id, or pass kind to auto-allocate the next one (f00016 S13).',
-					);
-				}
-				const slices = args.slices ?? [];
-				// Validate disjointness before writing.
-				const plan = {
-					proposalId: id,
-					globalGate: (args.globalGate ?? 'none') as
-						| 'lint'
-						| 'type'
-						| 'e2e'
-						| 'none',
-					slices: slices.map((s) => ({
-						proposalId: id,
-						sliceId: s.sliceId,
-						title: s.title ?? s.sliceId,
-						owner: null,
-						files: s.files,
-						dependsOn: s.dependsOn ?? [],
-						gate: (s.gate ?? 'none') as
+				const created = await createProposalDocument(
+					{
+						...args,
+						globalGate: (args.globalGate ?? 'none') as
 							| 'lint'
 							| 'type'
 							| 'e2e'
 							| 'none',
-						status: 'pending' as const,
-						acceptanceCriteria: s.acceptance ?? [],
-					})),
-				};
-				const issues = planDisjointnessIssues(plan);
-				if (issues.length > 0) {
-					return toolError(
-						`slices share files: ${issues.map((i) => `${i.first}/${i.second}:${i.file}`).join(', ')}`,
-						'Make each slice edit a disjoint set of files.',
-					);
+					},
+					options,
+				);
+				if (!created.ok) {
+					return toolError(created.reason, created.nextAction);
 				}
-				const inferredKind =
-					args.kind ??
-					(PROPOSAL_KIND_BY_PREFIX[id[0] ?? ''] || 'feat');
-				const date = new Date().toISOString().slice(0, 10);
-				// x00098 S2: author the canonical, lint-valid document —
-				// frontmatter `title`, hyphenated status, the required
-				// why/non-goals/acceptance sections (scaffolded when the
-				// caller gave no content) and canonical slice bullets.
-				const status = canonicalStatus(args.status);
-				const acceptanceLines = slices.flatMap((s) =>
-					(s.acceptance ?? []).map((a) => `- ${a}`),
-				);
-				const body = [
-					'---',
-					`id: ${id}`,
-					`title: ${JSON.stringify(args.title)}`,
-					`kind: ${inferredKind}`,
-					`status: ${status}`,
-					'type: proposal',
-					`track: ${args.track ?? 'general'}`,
-					`date: ${date}`,
-					'---',
-					'',
-					`# ${id} — ${args.title}`,
-					'',
-					'## Goal',
-					'',
-					args.goal ?? 'TODO: describe the goal.',
-					'',
-					'## why',
-					'',
-					args.why ?? 'TODO: why this work matters now.',
-					'',
-					'## non-goals',
-					'',
-					...(args.nonGoals && args.nonGoals.length > 0
-						? args.nonGoals.map((g) => `- ${g}`)
-						: ['- TODO: what this proposal deliberately skips.']),
-					'',
-					'## Slices',
-					'',
-					`- global_gate: ${args.globalGate ?? 'none'}`,
-					'',
-					...(slices.length > 0
-						? slices.map(renderSlice).join('\n\n').split('\n')
-						: [
-								'### S1 — TODO',
-								'- **Status**: pending',
-								'- **Files**: `TODO`',
-								'- **Gate**: none',
-							]),
-					'',
-					'## acceptance',
-					'',
-					...(acceptanceLines.length > 0
-						? acceptanceLines
-						: ['- TODO: observable acceptance criteria.']),
-					'',
-				].join('\n');
-				// The linter requires every proposal to live in its status
-				// folder (`ready/`, `in-progress/`, …), not the dir root.
-				const fileRel = `${STATUS_TO_FOLDER[status]}/${id}-${slugFromTitle(args.title, id)}.md`;
-				const absPath = join(
-					options.proposalsDirAbs,
-					...fileRel.split('/'),
-				);
-				const { text: safeBody, redactions } = redactSecrets(body);
-				await writeFileAtomic(absPath, safeBody);
-				const sync = await syncProposalRegistry(
-					options.workspaceRoot,
-					options.layout,
-					options.extraFolders ?? [],
-				);
-				const syncEntry = sync.proposals.find((p) => p.id === id);
-				const finalFileRel = syncEntry ? syncEntry.file : fileRel;
-				const finalAbsPath = syncEntry
-					? join(options.proposalsDirAbs, ...finalFileRel.split('/'))
-					: absPath;
 				return toolOk({
-					file: finalFileRel,
-					path: finalAbsPath,
-					disjointnessIssues: issues,
-					indexCount: sync.count,
-					redactedSecrets: redactions,
+					file: created.file,
+					path: created.path,
+					disjointnessIssues: created.disjointnessIssues,
+					indexCount: created.indexCount,
+					redactedSecrets: created.redactedSecrets,
 				});
 			},
 		);
@@ -829,16 +908,7 @@ export const buildCloseSliceRegistration = (
 							sliceId: args.sliceId,
 							closed: false,
 						};
-						return {
-							content: [
-								{
-									type: 'text' as const,
-									text: JSON.stringify(envelope),
-								},
-							],
-							structuredContent: envelope,
-							isError: true,
-						};
+						return toolErrorEnvelope(envelope);
 					}
 				}
 				try {
@@ -925,16 +995,7 @@ export const buildCloseSliceRegistration = (
 							closed: false,
 							validationOutput: String(err.output ?? ''),
 						};
-						return {
-							content: [
-								{
-									type: 'text' as const,
-									text: JSON.stringify(envelope),
-								},
-							],
-							structuredContent: envelope,
-							isError: true,
-						};
+						return toolErrorEnvelope(envelope);
 					}
 					if (err.kind === 'peer-review-required') {
 						const envelope = {
@@ -950,16 +1011,7 @@ export const buildCloseSliceRegistration = (
 							sliceId: args.sliceId,
 							closed: false,
 						};
-						return {
-							content: [
-								{
-									type: 'text' as const,
-									text: JSON.stringify(envelope),
-								},
-							],
-							structuredContent: envelope,
-							isError: true,
-						};
+						return toolErrorEnvelope(envelope);
 					}
 					if (err.kind === 'quality-failed') {
 						const envelope = {
@@ -980,16 +1032,7 @@ export const buildCloseSliceRegistration = (
 							sliceId: args.sliceId,
 							closed: false,
 						};
-						return {
-							content: [
-								{
-									type: 'text' as const,
-									text: JSON.stringify(envelope),
-								},
-							],
-							structuredContent: envelope,
-							isError: true,
-						};
+						return toolErrorEnvelope(envelope);
 					}
 					return toolError(
 						err.message,
