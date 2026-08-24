@@ -2,7 +2,7 @@
 id: i00002
 title: "CI: gates arquitectónicos obligatorios, DAG de jobs y protección de ramas"
 kind: infra
-status: in-progress
+status: review
 type: proposal
 track: ci-test-docs
 date: 2026-08-24

@@ -2,7 +2,7 @@
 id: x00227
 title: "config: defaults project-agnostic y project analyzer como fuente"
 kind: fix
-status: ready
+status: review
 type: proposal
 track: core
 date: 2026-08-24

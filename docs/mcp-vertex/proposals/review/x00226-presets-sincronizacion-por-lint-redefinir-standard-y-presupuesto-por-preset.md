@@ -2,7 +2,7 @@
 id: x00226
 title: "presets: sincronización por lint, redefinir standard y presupuesto por preset"
 kind: fix
-status: ready
+status: review
 type: proposal
 track: registry
 date: 2026-08-24

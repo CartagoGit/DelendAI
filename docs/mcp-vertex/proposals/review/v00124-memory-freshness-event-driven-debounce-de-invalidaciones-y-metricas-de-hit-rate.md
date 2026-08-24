@@ -2,7 +2,7 @@
 id: v00124
 title: "memory: freshness event-driven, debounce de invalidaciones y métricas de hit-rate"
 kind: perf
-status: in-progress
+status: review
 type: proposal
 track: memory-mcp
 date: 2026-08-24

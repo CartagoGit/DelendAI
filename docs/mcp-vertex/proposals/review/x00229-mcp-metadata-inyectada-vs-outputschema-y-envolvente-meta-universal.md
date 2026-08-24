@@ -2,7 +2,7 @@
 id: x00229
 title: "MCP: metadata inyectada vs outputSchema y envolvente _meta universal"
 kind: fix
-status: ready
+status: review
 type: proposal
 track: memory-mcp
 date: 2026-08-24

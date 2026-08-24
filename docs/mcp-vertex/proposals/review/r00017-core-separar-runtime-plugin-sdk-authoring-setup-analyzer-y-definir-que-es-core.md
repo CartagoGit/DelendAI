@@ -2,7 +2,7 @@
 id: r00017
 title: "core: separar runtime/plugin-sdk/authoring/setup/analyzer y definir qué es core"
 kind: refactor
-status: ready
+status: review
 type: proposal
 track: core
 date: 2026-08-24
