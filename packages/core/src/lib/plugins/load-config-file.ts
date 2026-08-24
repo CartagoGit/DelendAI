@@ -275,6 +275,8 @@ export interface IMcpVertexConfigFile extends IMcpVertexCorePathsConfig {
 	 * `bootstrap/pattern-catalog-overrides.ts` for the merge rules.
 	 */
 	readonly bootstrap?: IBootstrapPatternOverrides;
+	/** Optional local plugin-registry additions for discovery tools. */
+	readonly pluginRegistry?: import('../contracts/interfaces/plugin-registry.interface').IPluginRegistryConfig;
 	/**
 	 * f00152 S1 (L1 — version pin): optional semver string pinning the
 	 * self-host agent to a specific published `@mcp-vertex/core`

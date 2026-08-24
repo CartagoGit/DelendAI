@@ -18,6 +18,7 @@ import type {
 
 export interface IPluginSearchToolOptions {
 	readonly namespacePrefix: string;
+	/** Community sources injected from committed config; first-party stays the resolver fallback. */
 	readonly sources?: readonly IPluginRegistrySource[];
 	/** Default limit; overrides the resolver's default of 50. */
 	readonly defaultLimit?: number;

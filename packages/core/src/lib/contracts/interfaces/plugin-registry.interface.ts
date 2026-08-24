@@ -41,6 +41,12 @@ export interface IPluginRegistrySource {
 	readonly entries: readonly IPluginRegistryEntry[];
 }
 
+/** Durable config block for extra plugin-registry sources. */
+export interface IPluginRegistryConfig {
+	/** Local, committed community sources merged with the bundled first-party index. */
+	readonly communitySources?: readonly IPluginRegistrySource[];
+}
+
 /** Resolver input. */
 export interface IResolvePluginsOptions {
 	/** All sources (first-party + community). Defaults to the bundled index only. */
