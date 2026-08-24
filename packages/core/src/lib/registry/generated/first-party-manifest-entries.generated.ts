@@ -4,6 +4,15 @@ export const GENERATED_FIRST_PARTY_MANIFEST_ENTRIES: readonly IPluginRegistryEnt
 	[
 		{
 			origin: 'first-party',
+			id: 'adaptive-optimizer',
+			package: '@mcp-vertex/adaptive-optimizer',
+			summary:
+				'Adaptive optimizer: cheaply rank model, plugin-set and prompt candidates with explicit budget and consent guards.',
+			tags: ['optimizer', 'adaptive', 'prompt', 'f00168'],
+			permissions: ['filesystem-read'],
+		},
+		{
+			origin: 'first-party',
 			id: 'context-for-change',
 			package: '@mcp-vertex/context-for-change',
 			summary:

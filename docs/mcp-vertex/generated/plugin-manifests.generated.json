@@ -1,6 +1,33 @@
 {
-	"generatedAt": "2026-08-24T12:09:24.129Z",
+	"generatedAt": "2026-08-24T12:52:21.298Z",
 	"manifests": [
+		{
+			"id": "adaptive-optimizer",
+			"package": "@mcp-vertex/adaptive-optimizer",
+			"version": "0.1.0",
+			"visibility": "public",
+			"summary": "Adaptive optimizer: cheaply rank model, plugin-set and prompt candidates with explicit budget and consent guards.",
+			"tags": ["optimizer", "adaptive", "prompt", "f00168"],
+			"maturity": "experimental",
+			"permissions": ["filesystem-read"],
+			"presets": ["vertex"],
+			"tokenBudget": {
+				"hard": 3000,
+				"warning": 2700,
+				"releaseRelativePercent": 20
+			},
+			"dependencies": [
+				"@mcp-vertex/core",
+				"@mcp-vertex/prompt-eval",
+				"@mcp-vertex/usage-tracking",
+				"@mcp-vertex/perf",
+				"@mcp-vertex/auto-agent-selector",
+				"@mcp-vertex/auto-plugin-selector",
+				"@modelcontextprotocol/sdk",
+				"zod"
+			],
+			"capabilities": ["adaptive-optimization"]
+		},
 		{
 			"id": "context-for-change",
 			"package": "@mcp-vertex/context-for-change",
@@ -150,6 +177,14 @@
 	"firstPartyEntries": [
 		{
 			"origin": "first-party",
+			"id": "adaptive-optimizer",
+			"package": "@mcp-vertex/adaptive-optimizer",
+			"summary": "Adaptive optimizer: cheaply rank model, plugin-set and prompt candidates with explicit budget and consent guards.",
+			"tags": ["optimizer", "adaptive", "prompt", "f00168"],
+			"permissions": ["filesystem-read"]
+		},
+		{
+			"origin": "first-party",
 			"id": "context-for-change",
 			"package": "@mcp-vertex/context-for-change",
 			"summary": "Compact task-oriented change context orchestration across diff, symbols, tests, docs and conventions.",
@@ -190,6 +225,16 @@
 		}
 	],
 	"webCatalog": [
+		{
+			"id": "adaptive-optimizer",
+			"package": "@mcp-vertex/adaptive-optimizer",
+			"summary": "Adaptive optimizer: cheaply rank model, plugin-set and prompt candidates with explicit budget and consent guards.",
+			"tags": ["optimizer", "adaptive", "prompt", "f00168"],
+			"maturity": "experimental",
+			"visibility": "public",
+			"presets": ["vertex"],
+			"capabilities": ["adaptive-optimization"]
+		},
 		{
 			"id": "context-for-change",
 			"package": "@mcp-vertex/context-for-change",
@@ -258,6 +303,12 @@
 	],
 	"tokenBudgets": [
 		{
+			"id": "adaptive-optimizer",
+			"warning": 2700,
+			"hard": 3000,
+			"releaseRelativePercent": 20
+		},
+		{
 			"id": "context-for-change",
 			"warning": 2700,
 			"hard": 3000,
@@ -290,6 +341,10 @@
 	],
 	"permissionsTable": [
 		{
+			"id": "adaptive-optimizer",
+			"permissions": ["filesystem-read"]
+		},
+		{
 			"id": "context-for-change",
 			"permissions": ["filesystem-read"]
 		},
@@ -311,6 +366,69 @@
 		}
 	],
 	"compatibilityMatrix": [
+		{
+			"pluginId": "adaptive-optimizer",
+			"presetId": "minimal",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "adaptive-optimizer",
+			"presetId": "lean",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "adaptive-optimizer",
+			"presetId": "standard",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "adaptive-optimizer",
+			"presetId": "swarm",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "adaptive-optimizer",
+			"presetId": "full",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "adaptive-optimizer",
+			"presetId": "vertex",
+			"declared": true,
+			"catalogMember": true,
+			"matches": true
+		},
+		{
+			"pluginId": "adaptive-optimizer",
+			"presetId": "web-app",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "adaptive-optimizer",
+			"presetId": "backend-api",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "adaptive-optimizer",
+			"presetId": "cli-tool",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
 		{
 			"pluginId": "context-for-change",
 			"presetId": "minimal",

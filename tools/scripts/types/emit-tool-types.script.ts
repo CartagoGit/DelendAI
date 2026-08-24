@@ -73,6 +73,10 @@ export const PACKAGE_ROUTES: Readonly<Record<string, IPackageRoute>> = {
 		dir: 'plugins/impact-analysis',
 		label: 'ImpactAnalysis',
 	},
+	'adaptive-optimizer': {
+		dir: 'plugins/adaptive-optimizer',
+		label: 'AdaptiveOptimizer',
+	},
 	'project-health': {
 		dir: 'plugins/project-health',
 		label: 'ProjectHealth',

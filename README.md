@@ -23,6 +23,7 @@ Project-agnostic core for building MCP servers + a CLI plugin loader, by
 | `plugins/git` | `@mcp-vertex/git` | Read-only git orientation: status, changed files, diff stat, log. |
 | `plugins/quality` | `@mcp-vertex/quality` | Quality-gate runner: executes lint/test/build per scope, structured pass/fail. |
 <!-- BEGIN GENERATED: migrated-plugin-layout-rows -->
+| `plugins/adaptive-optimizer` | `@mcp-vertex/adaptive-optimizer` | Adaptive optimizer: cheaply rank model, plugin-set and prompt candidates with explicit budget and consent guards. |
 | `plugins/context-for-change` | `@mcp-vertex/context-for-change` | Compact task-oriented change context orchestration across diff, symbols, tests, docs and conventions. |
 | `plugins/impact-analysis` | `@mcp-vertex/impact-analysis` | Bounded impact analysis and test selection across changed symbols, dependents and related specs. |
 | `plugins/project-health` | `@mcp-vertex/project-health` | Compact project-health aggregator: cheap summary first, lazy domain details on demand. |
