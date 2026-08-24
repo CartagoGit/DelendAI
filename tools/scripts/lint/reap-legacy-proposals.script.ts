@@ -43,8 +43,14 @@
  *     (or `Applied N proposals; failed M.` if a `git mv` failed).
  */
 
-import { existsSync, readFileSync, readdirSync } from 'node:fs';
-import { join, resolve, sep } from 'node:path';
+import {
+	existsSync,
+	mkdirSync,
+	readFileSync,
+	readdirSync,
+	utimesSync,
+} from 'node:fs';
+import { dirname, join, resolve, sep } from 'node:path';
 
 import {
 	buildVintageProposal,
@@ -210,6 +216,7 @@ const main = async (): Promise<number> => {
 	let failed = 0;
 	for (const entry of vintage) {
 		const { sourceAbsPath, destAbsPath, frontmatterPatch } = entry.plan;
+		mkdirSync(dirname(destAbsPath), { recursive: true });
 		const moved = await gitRunner(['mv', sourceAbsPath, destAbsPath]);
 		if (!moved.ok) {
 			failed += 1;
@@ -244,6 +251,13 @@ const main = async (): Promise<number> => {
 			: `---\narchived-on: ${frontmatterPatch['archived-on']}\n---\n${raw}`;
 		const { writeFileSync } = await import('node:fs');
 		writeFileSync(destAbsPath, patched, 'utf8');
+		// Freeze the mtime to the archived-on date so closed-frozen-guard
+		// never sees a same-day write as drift (archived-on is a date; the
+		// guard only grants a 60s grace window past it).
+		const archivedAt = new Date(
+			`${frontmatterPatch['archived-on']}T00:00:00Z`,
+		);
+		utimesSync(destAbsPath, archivedAt, archivedAt);
 	}
 	if (failed > 0) {
 		console.error(
