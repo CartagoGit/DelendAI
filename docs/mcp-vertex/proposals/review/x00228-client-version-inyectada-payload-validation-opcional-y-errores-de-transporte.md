@@ -2,7 +2,7 @@
 id: x00228
 title: "client: versión inyectada, payload validation opcional y errores de transporte"
 kind: fix
-status: ready
+status: review
 type: proposal
 track: core
 date: 2026-08-24

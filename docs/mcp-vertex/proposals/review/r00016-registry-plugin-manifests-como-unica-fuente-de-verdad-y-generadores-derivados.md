@@ -2,7 +2,7 @@
 id: r00016
 title: "registry: plugin manifests como única fuente de verdad y generadores derivados"
 kind: refactor
-status: ready
+status: review
 type: proposal
 track: registry
 date: 2026-08-24

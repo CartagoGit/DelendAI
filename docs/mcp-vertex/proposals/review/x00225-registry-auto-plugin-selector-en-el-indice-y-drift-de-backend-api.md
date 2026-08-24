@@ -2,7 +2,7 @@
 id: x00225
 title: "registry: auto-plugin-selector en el índice y drift de backend-api"
 kind: fix
-status: ready
+status: review
 type: proposal
 track: registry
 date: 2026-08-24

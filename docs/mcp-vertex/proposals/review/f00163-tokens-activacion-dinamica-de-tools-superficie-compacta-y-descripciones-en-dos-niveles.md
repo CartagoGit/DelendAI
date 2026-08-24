@@ -2,7 +2,7 @@
 id: f00163
 title: "tokens: activación dinámica de tools, superficie compacta y descripciones en dos niveles"
 kind: feat
-status: ready
+status: review
 type: proposal
 track: tokens
 date: 2026-08-24
