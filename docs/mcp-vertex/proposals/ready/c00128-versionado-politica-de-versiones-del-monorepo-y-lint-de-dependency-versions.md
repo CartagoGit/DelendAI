@@ -36,14 +36,14 @@ Divergencias silenciosas de TS/SDK entre paquetes pueden producir builds no repr
 - global_gate: type
 
 ### S1 — Política de versiones con allowlist
-- **Status**: pending
+- **Status**: done
 - **Files**: `docs/mcp-vertex/DEPENDENCY-VERSIONS.md`
 - **Gate**: type
 - acceptance:
   - "Documenta default + excepciones por paquete (VER-001)."
 
 ### S2 — Lint de dependency-versions
-- **Status**: pending
+- **Status**: done
 - **Files**: `tools/scripts/lint/dependency-versions.script.ts`
 - **Gate**: type
 - acceptance:
