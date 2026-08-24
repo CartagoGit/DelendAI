@@ -75,6 +75,17 @@ const assemble = async () => {
 	return { config, byId };
 };
 
+const assembleNoConfig = async () => {
+	const args = parseCliArgs(['--plugins=demo', '--workspace=/ws'], '/cwd');
+	const { config } = await assembleCliConfig(args, {
+		import: async () => ({ default: fakePlugin }),
+		readFile: async () => undefined,
+	});
+	const byId = (id: string): IToolRegistration =>
+		config.extraTools!.find((tool) => tool.id === id)!;
+	return { config, byId };
+};
+
 describe('core meta-tools', async () => {
 	it('overview maps the server, plugins, tools (with summaries) and knowledge', async () => {
 		const { byId } = await assemble();
@@ -92,6 +103,15 @@ describe('core meta-tools', async () => {
 		);
 		expect(typeof snap.recommendedNextAction).toBe('string');
 		expect(snap.activationReport).toBeUndefined();
+	});
+
+	it('routes first-use orientation to adopt_project when no config file exists (f00157)', async () => {
+		const { byId } = await assembleNoConfig();
+		const snap = await callTool(byId('overview'));
+		expect(snap.recommendedNextAction).toMatch(/adopt_project/);
+		expect(snap.knowledge.map((k: { id: string }) => k.id)).toContain(
+			'no-config-file',
+		);
 	});
 
 	it('overview exposes activation origin, source and tool count only on request', async () => {
