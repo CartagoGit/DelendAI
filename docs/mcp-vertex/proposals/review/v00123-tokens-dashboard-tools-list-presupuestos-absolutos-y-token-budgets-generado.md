@@ -2,7 +2,7 @@
 id: v00123
 title: "tokens: dashboard tools/list, presupuestos absolutos y TOKEN-BUDGETS generado"
 kind: perf
-status: in-progress
+status: review
 type: proposal
 track: tokens
 date: 2026-08-24

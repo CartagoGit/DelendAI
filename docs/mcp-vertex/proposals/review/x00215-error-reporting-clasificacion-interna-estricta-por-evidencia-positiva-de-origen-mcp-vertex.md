@@ -49,7 +49,7 @@ El marcador `/plugins/` es excesivamente genérico: un consumidor con `/home/emp
 
 ### S1 — Errores tipados: códigos y clase
 - **Status**: done
-- **Files**: `plugins/error-reporting/src/lib/contracts/constants/error-codes.constant.ts`, `plugins/error-reporting/src/lib/mcp-internal-error.ts`
+- **Files**: `plugins/error-reporting/src/lib/contracts/constants/error-codes.constant.ts`, `plugins/error-reporting/src/lib/mcp-internal-error.helper.ts`
 - **Gate**: type
 - acceptance:
   - "McpVertexErrorCode cubre las clases de fallo internas conocidas (PLUGIN_REGISTER_TIMEOUT, etc.)."
