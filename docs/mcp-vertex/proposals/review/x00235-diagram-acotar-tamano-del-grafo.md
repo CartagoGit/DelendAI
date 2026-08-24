@@ -2,7 +2,7 @@
 id: x00235
 title: "diagram: acotar el tamaño del grafo (limit + truncated) en diagram_deps/diagram_modules"
 kind: fix
-status: ready
+status: review
 type: proposal
 track: plugins+fix
 date: 2026-08-24
@@ -33,7 +33,7 @@ Hallazgo a00087 #1 (confirmed · media). La dimensión de coste de tokens es par
 - global_gate: lint
 
 ### S1 — limit + truncated en los dos grafos
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/diagram/src/lib/tools/diagram-graph.tool.ts`, `plugins/diagram/src/lib/graph/build-module-graph.ts`, `plugins/diagram/src/lib/graph/build-graph.ts`
 - **Gate**: lint
 - acceptance:

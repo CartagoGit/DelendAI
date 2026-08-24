@@ -2,7 +2,7 @@
 id: x00233
 title: "web-fetch: restringir el puerto en el allow-list (SSRF a puertos no-web)"
 kind: fix
-status: ready
+status: review
 type: proposal
 track: plugins+fix
 date: 2026-08-24
@@ -33,7 +33,7 @@ Hallazgo a00086 #1 (confirmed · media). La mitigación SSRF del plugin está bi
 - global_gate: lint
 
 ### S1 — Restringir puerto en el allow-list
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/web-fetch/src/lib/services/engine.ts`, `plugins/web-fetch/tests/src/lib/services/engine.spec.ts`
 - **Gate**: lint
 - acceptance:
