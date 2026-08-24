@@ -146,14 +146,20 @@ const normalizeTransportError = (
 
 /**
  * Best-effort extraction of a `logHint` from an `isError` result. The
- * server may put it on `structuredContent` or only inside the JSON
- * `content[0].text` envelope; we check both and validate the shape so a
- * malformed hint never produces a half-populated affordance.
+ * server may put it on the MCP `_meta` channel (not schema-validated),
+ * on `structuredContent`, or only inside the JSON `content[0].text`
+ * envelope; we check all three and validate the shape so a malformed
+ * hint never produces a half-populated affordance.
  */
 export const logHintFromResult = (result: {
 	readonly structuredContent?: unknown;
 	readonly content?: Array<{ readonly text?: string }>;
+	readonly _meta?: unknown;
 }): IMcpLogHint | undefined => {
+	const fromMeta = (result._meta as Record<string, unknown> | undefined)
+		?.logHint;
+	if (isLogHint(fromMeta)) return fromMeta;
+
 	const fromStructured = (result.structuredContent as Record<string, unknown>)
 		?.logHint;
 	if (isLogHint(fromStructured)) return fromStructured;
