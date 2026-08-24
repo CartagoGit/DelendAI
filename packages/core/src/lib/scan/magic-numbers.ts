@@ -50,6 +50,16 @@ export const detectMagicNumbers = (
 			lineStart,
 			lineEnd === -1 ? body.length : lineEnd,
 		);
+		// Skip comments: a numeric literal in a comment/docstring is prose,
+		// not a magic number in code (e.g. "the last 50 calls").
+		const trimmed = line.trim();
+		if (
+			trimmed.startsWith('//') ||
+			trimmed.startsWith('*') ||
+			trimmed.startsWith('/*')
+		) {
+			continue;
+		}
 		if (/\bconst\b/.test(line) && /=\s*\d/.test(line)) continue;
 		if (/\.length\b/.test(line)) continue;
 		if (/\.size\b/.test(line)) continue;
