@@ -2,7 +2,7 @@
 id: r00014
 title: "Bootstrap: create_project fiel al blueprint y análisis sin duplicar"
 kind: refactor
-status: ready
+status: review
 type: proposal
 track: bootstrap
 date: 2026-08-23
@@ -29,7 +29,7 @@ Auditoría 2026-08-24 (hallazgos A4, A8, A9, A10 y el gasto de tokens): la caden
 - global_gate: type
 
 ### S1 — Esquema de create_project acepta el blueprint completo
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/src/lib/bootstrap/build-blueprint.ts`, `packages/core/src/lib/bootstrap/schemas.ts`
 - **Gate**: type
 - acceptance:
@@ -37,7 +37,7 @@ Auditoría 2026-08-24 (hallazgos A4, A8, A9, A10 y el gasto de tokens): la caden
   - "No se rompe el contrato actual (back-compat de flags existentes)."
 
 ### S2 — create_project consume el blueprint fielmente
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/src/lib/bootstrap/create-tool.ts`
 - **Gate**: type
 - acceptance:
@@ -45,7 +45,7 @@ Auditoría 2026-08-24 (hallazgos A4, A8, A9, A10 y el gasto de tokens): la caden
   - "Se preservan targetDir, tests, prompts, skills, agents y estrategia de adopción."
 
 ### S3 — Análisis compartido + payload perezoso + una sola estrategia mcp.json
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/src/lib/bootstrap/plan-tool.ts`, `packages/core/src/lib/bootstrap/recommend-plan.ts`, `packages/core/src/lib/bootstrap/analyze-tool.ts`
 - **Gate**: type
 - acceptance:
@@ -54,7 +54,7 @@ Auditoría 2026-08-24 (hallazgos A4, A8, A9, A10 y el gasto de tokens): la caden
   - "Una sola estrategia de mcp.json en todo el flujo bootstrap."
 
 ### S4 — Tests del bootstrap
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/tests/src/lib/bootstrap/plan-tool.spec.ts`
 - **Gate**: type
 - acceptance:
