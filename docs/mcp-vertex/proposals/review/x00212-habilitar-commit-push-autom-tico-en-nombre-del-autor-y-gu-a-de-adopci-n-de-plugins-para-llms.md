@@ -2,7 +2,7 @@
 id: x00212
 title: "Habilitar commit+push automático en nombre del autor y guía de adopción de plugins para LLMs"
 kind: fix
-status: ready
+status: review
 type: proposal
 track: plugins+adoption
 date: 2026-08-23

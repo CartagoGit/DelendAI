@@ -2,7 +2,7 @@
 id: x00232
 title: "resume-hint determinista: romper el bucle de re-orientación del orquestador"
 kind: fix
-status: ready
+status: review
 type: proposal
 track: plugins+fix
 date: 2026-08-24
