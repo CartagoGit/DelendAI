@@ -1,14 +1,42 @@
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
+import type { ZodType } from 'zod';
 
+import {
+	MCP_VERTEX_CLIENT_NAME,
+	MCP_VERTEX_CLIENT_VERSION,
+} from '../contracts/constants/client-package.constant';
+import { MCP_TRANSPORT_ERROR_CODES } from '../contracts/constants/mcp-transport-error.constant';
+import type {
+	IMcpTransportError,
+	McpTransportErrorKind,
+} from '../contracts/interfaces/mcp-transport-error.interface';
 import type {
 	IMcpLogHint,
 	IMcpStdioClientOptions,
+	IMcpToolCallResult,
 	IMcpToolDescriptor,
 	IMcpTransport,
 } from '../contracts/interfaces/mcp-transport.interface';
 
-export class McpToolError extends Error {
+class McpTransportError extends Error implements IMcpTransportError {
+	readonly code;
+	readonly kind;
+	override readonly cause?;
+
+	constructor(kind: McpTransportErrorKind, message: string, cause?: unknown) {
+		super(message);
+		this.name = 'McpTransportError';
+		this.kind = kind;
+		this.code = MCP_TRANSPORT_ERROR_CODES[kind];
+		if (cause !== undefined) this.cause = cause;
+	}
+}
+
+export class McpToolError
+	extends McpTransportError
+	implements IMcpTransportError
+{
 	/**
 	 * Pointer to the log line that recorded this failure, when the
 	 * server surfaced one (f00045). Absent for transport-level errors
@@ -18,7 +46,7 @@ export class McpToolError extends Error {
 	readonly logHint?: IMcpLogHint;
 
 	constructor(message: string, result: unknown, logHint?: IMcpLogHint) {
-		super(message);
+		super('tool-error', message, result);
 		this.name = 'McpToolError';
 		this.result = result;
 		if (logHint !== undefined) this.logHint = logHint;
@@ -34,6 +62,87 @@ const isLogHint = (value: unknown): value is IMcpLogHint =>
 	typeof (value as Record<string, unknown>).path === 'string' &&
 	typeof (value as Record<string, unknown>).line === 'number' &&
 	typeof (value as Record<string, unknown>).ts === 'string';
+
+const isMcpTransportError = (value: unknown): value is IMcpTransportError =>
+	typeof value === 'object' &&
+	value !== null &&
+	typeof (value as Record<string, unknown>).kind === 'string' &&
+	typeof (value as Record<string, unknown>).code === 'string';
+
+const textFromUnknown = (value: unknown): string | undefined => {
+	if (typeof value === 'string') return value;
+	if (value instanceof Error) return `${value.name} ${value.message}`;
+	if (typeof value === 'object' && value !== null) {
+		const record = value as Record<string, unknown>;
+		return [record.name, record.message, record.code]
+			.filter((entry): entry is string => typeof entry === 'string')
+			.join(' ');
+	}
+	return undefined;
+};
+
+const classifyTransportErrorKind = (
+	error: unknown,
+): Exclude<McpTransportErrorKind, 'invalid-payload' | 'tool-error'> => {
+	const haystack = [
+		textFromUnknown(error),
+		textFromUnknown(
+			typeof error === 'object' && error !== null
+				? (error as Record<string, unknown>).cause
+				: undefined,
+		),
+	]
+		.filter((entry): entry is string => entry !== undefined)
+		.join(' ')
+		.toLowerCase();
+
+	if (
+		/(abort|aborted|cancel(?:led)?|cancellation|sigint|sigterm)/u.test(
+			haystack,
+		)
+	) {
+		return 'cancellation';
+	}
+	if (
+		/(time[ -]?out|timed out|deadline exceeded|etimedout)/u.test(haystack)
+	) {
+		return 'timeout';
+	}
+	if (
+		/(server exit|server exited|child process.*exit|closed unexpectedly|broken pipe|econnreset|epipe|eof|end of file)/u.test(
+			haystack,
+		)
+	) {
+		return 'server-exit';
+	}
+	return 'protocol';
+};
+
+const describeTransportError = (context: string, error: unknown): string => {
+	const detail = textFromUnknown(error);
+	return detail === undefined || detail.length === 0
+		? context
+		: `${context}: ${detail}`;
+};
+
+const normalizeTransportError = (
+	error: unknown,
+	context: string,
+): McpTransportError => {
+	if (error instanceof McpTransportError) return error;
+	if (isMcpTransportError(error)) {
+		return new McpTransportError(
+			error.kind,
+			describeTransportError(context, error),
+			error.cause ?? error,
+		);
+	}
+	return new McpTransportError(
+		classifyTransportErrorKind(error),
+		describeTransportError(context, error),
+		error,
+	);
+};
 
 /**
  * Best-effort extraction of a `logHint` from an `isError` result. The
@@ -72,7 +181,10 @@ export class McpStdioClient {
 		options: IMcpStdioClientOptions,
 	): Promise<McpStdioClient> {
 		const client = new Client(
-			{ name: '@mcp-vertex/client', version: '0.1.0' },
+			{
+				name: MCP_VERTEX_CLIENT_NAME,
+				version: MCP_VERTEX_CLIENT_VERSION,
+			},
 			{ capabilities: {} },
 		);
 		const transportOptions = {
@@ -90,7 +202,10 @@ export class McpStdioClient {
 			await client.connect(transport);
 		} catch (error) {
 			await transport.close().catch(() => undefined);
-			throw error;
+			throw normalizeTransportError(
+				error,
+				'Failed to connect to MCP server',
+			);
 		}
 		return new McpStdioClient(client as unknown as IMcpTransport);
 	}
@@ -98,11 +213,31 @@ export class McpStdioClient {
 	async request<TIn extends object, TOut>(
 		tool: string,
 		args: TIn,
+	): Promise<TOut>;
+
+	async request<TIn extends object, TOut>(
+		tool: string,
+		args: TIn,
+		outputSchema: ZodType<TOut>,
+	): Promise<TOut>;
+
+	async request<TIn extends object, TOut>(
+		tool: string,
+		args: TIn,
+		outputSchema?: ZodType<TOut>,
 	): Promise<TOut> {
-		const result = await this.transport.callTool({
-			name: tool,
-			arguments: args,
-		});
+		let result: IMcpToolCallResult;
+		try {
+			result = await this.transport.callTool({
+				name: tool,
+				arguments: args,
+			});
+		} catch (error) {
+			throw normalizeTransportError(
+				error,
+				`Failed to call MCP tool "${tool}"`,
+			);
+		}
 		if (result.isError) {
 			throw new McpToolError(
 				`MCP tool "${tool}" returned an error`,
@@ -110,7 +245,7 @@ export class McpStdioClient {
 				logHintFromResult(result),
 			);
 		}
-		return payloadFromResult<TOut>(result);
+		return parsePayloadFromResult(result, outputSchema);
 	}
 
 	async listTools(): Promise<readonly IMcpToolDescriptor[]> {
@@ -123,27 +258,55 @@ export class McpStdioClient {
 	}
 }
 
-export const payloadFromResult = <TOut>(result: {
+const extractPayloadFromResult = (result: {
 	readonly structuredContent?: unknown;
 	readonly content?: Array<{ readonly text?: string }>;
-}): TOut => {
+}): unknown => {
 	if (result.structuredContent !== undefined) {
-		return result.structuredContent as TOut;
+		return result.structuredContent;
 	}
 
 	const text = result.content?.find(
 		(entry) => entry.text !== undefined,
 	)?.text;
 	if (text === undefined) {
-		throw new McpToolError(
+		throw new McpTransportError(
+			'protocol',
 			'MCP tool returned no structured or text payload',
 			result,
 		);
 	}
 
 	try {
-		return JSON.parse(text) as TOut;
+		return JSON.parse(text) as unknown;
 	} catch {
-		return text as TOut;
+		return text;
 	}
 };
+
+const parsePayloadFromResult = <TOut>(
+	result: {
+		readonly structuredContent?: unknown;
+		readonly content?: Array<{ readonly text?: string }>;
+	},
+	outputSchema?: ZodType<TOut>,
+): TOut => {
+	const payload = extractPayloadFromResult(result);
+	if (outputSchema === undefined) {
+		return payload as TOut;
+	}
+	const parsed = outputSchema.safeParse(payload);
+	if (parsed.success) {
+		return parsed.data;
+	}
+	throw new McpTransportError(
+		'invalid-payload',
+		'MCP tool returned a payload that does not match the provided schema',
+		parsed.error,
+	);
+};
+
+export const payloadFromResult = <TOut>(result: {
+	readonly structuredContent?: unknown;
+	readonly content?: Array<{ readonly text?: string }>;
+}): TOut => extractPayloadFromResult(result) as TOut;

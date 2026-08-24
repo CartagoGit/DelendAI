@@ -1,9 +1,11 @@
+import z from 'zod';
 import { describe, expect, it } from 'vitest';
 
 import {
 	McpStdioClient,
 	McpToolError,
 	payloadFromResult,
+	type IMcpTransportError,
 	type IMcpTransport,
 } from '../../src/public/index';
 
@@ -61,6 +63,45 @@ describe('McpStdioClient', async () => {
 		).resolves.toEqual({ count: 2 });
 	});
 
+	it('validates the payload when an output schema is provided', async () => {
+		const client = McpStdioClient.fromTransport({
+			async callTool() {
+				return {
+					structuredContent: {
+						count: 2,
+					},
+				};
+			},
+		});
+
+		await expect(
+			client.request(
+				'demo_count',
+				{},
+				z.object({ count: z.number().int().positive() }),
+			),
+		).resolves.toEqual({ count: 2 });
+	});
+
+	it('throws an invalid-payload transport error when schema validation fails', async () => {
+		const client = McpStdioClient.fromTransport({
+			async callTool() {
+				return {
+					structuredContent: {
+						count: '2',
+					},
+				};
+			},
+		});
+
+		await expect(
+			client.request('demo_count', {}, z.object({ count: z.number() })),
+		).rejects.toMatchObject({
+			code: 'mcp-invalid-payload',
+			kind: 'invalid-payload',
+		} satisfies Partial<IMcpTransportError>);
+	});
+
 	it('throws a typed error for MCP error results', async () => {
 		const result = {
 			isError: true,
@@ -74,8 +115,50 @@ describe('McpStdioClient', async () => {
 
 		await expect(client.request('demo_fail', {})).rejects.toMatchObject({
 			name: 'McpToolError',
+			code: 'mcp-tool-error',
+			kind: 'tool-error',
 			result,
 		});
+	});
+
+	it.each([
+		{
+			code: 'mcp-timeout',
+			error: new Error('request timed out after 5s'),
+			kind: 'timeout',
+			label: 'timeout errors',
+		},
+		{
+			code: 'mcp-cancellation',
+			error: Object.assign(new Error('operation aborted'), {
+				name: 'AbortError',
+			}),
+			kind: 'cancellation',
+			label: 'cancellation errors',
+		},
+		{
+			code: 'mcp-protocol',
+			error: new Error('JSON-RPC protocol error: invalid response'),
+			kind: 'protocol',
+			label: 'protocol errors',
+		},
+		{
+			code: 'mcp-server-exit',
+			error: new Error('Server exited before responding with code 1'),
+			kind: 'server-exit',
+			label: 'server-exit errors',
+		},
+	] as const)('classifies $label', async ({ code, error, kind }) => {
+		const client = McpStdioClient.fromTransport({
+			async callTool() {
+				throw error;
+			},
+		});
+
+		await expect(client.request('demo_fail', {})).rejects.toMatchObject({
+			code,
+			kind,
+		} satisfies Partial<IMcpTransportError>);
 	});
 
 	it('attaches a logHint from structuredContent on an error result', async () => {
@@ -204,6 +287,8 @@ describe('payloadFromResult', async () => {
 	});
 
 	it('throws when the result contains no usable payload', async () => {
-		expect(() => payloadFromResult({ content: [] })).toThrow(McpToolError);
+		expect(() => payloadFromResult({ content: [] })).toThrow(
+			'MCP tool returned no structured or text payload',
+		);
 	});
 });
