@@ -50,6 +50,7 @@ import { buildCompactStatusRegistration } from './lib/tools/compact-status.tool'
 import { cleanupStaleAgentLockState } from './lib/locks/agent-lock-engine';
 import { buildAgentsLockDiagnoseRegistration } from './lib/tools/agents-lock-diagnose.tool';
 import { buildRecoveryToolRegistrations } from './lib/tools/recovery-tools';
+import { buildAutoFixQueueRegistration } from './lib/tools/auto-fix-queue.tool';
 import { buildIncidentProposalRegistration } from './lib/tools/incident-proposal.tool';
 import { mergeCheckpointAdvisories } from '@mcp-vertex/core/public';
 import { assessMicroValidationLoop } from './lib/services/checkpoint-advisory-micro-validation.service';
@@ -515,6 +516,20 @@ export default definePlugin({
 					extraFolders: extraProposalFolders,
 				}),
 				buildIncidentProposalRegistration({
+					namespacePrefix: ctx.namespacePrefix,
+					workspaceRoot: ctx.workspace.root,
+					proposalsDirAbs: abs(layout.proposalsDir),
+					indexPathAbs: abs(layout.proposalIndexFile),
+					counterPathAbs: abs(layout.proposalIdCountersFile),
+					layout: {
+						proposalsDir: layout.proposalsDir,
+						proposalIndexFile: layout.proposalIndexFile,
+					},
+					extraFolders: extraProposalFolders,
+					readIncidents: async (options) =>
+						logIncidents(await incidentLogStore, options),
+				}),
+				buildAutoFixQueueRegistration({
 					namespacePrefix: ctx.namespacePrefix,
 					workspaceRoot: ctx.workspace.root,
 					proposalsDirAbs: abs(layout.proposalsDir),

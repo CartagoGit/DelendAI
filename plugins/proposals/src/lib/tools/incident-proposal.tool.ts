@@ -10,7 +10,6 @@ import {
 import {
 	createLogStore,
 	logIncidents,
-	type ILogIncident,
 	type ILogIncidentsOptions,
 } from '@mcp-vertex/logs/public';
 import z from 'zod';
@@ -23,6 +22,10 @@ import {
 	allocateNextProposalId,
 	prefixForKind,
 } from '../proposals/proposal-id-allocator';
+import {
+	buildIncidentProposalWriteSummarySchema,
+	incidentProposalDraftSchema,
+} from '../contracts/schemas/incident-proposal.schema';
 import { readProposalIndex, readTextOrNull } from '../proposals/index-reader';
 import {
 	extractYamlBlock,
@@ -46,41 +49,14 @@ const INCIDENT_PROPOSAL_INPUT_SCHEMA = z.object({
 	limit: z.number().int().positive().max(MAX_INCIDENT_DRAFTS).optional(),
 });
 
-const INCIDENT_PROPOSAL_DRAFT_SCHEMA = z
-	.object({
-		signature: z.string(),
-		toolName: z.string(),
-		incidentType: z.string(),
-		classification: z.string(),
-		title: z.string(),
-		summary: z.string(),
-		rationale: z.string(),
-		suggestedTrack: z.string(),
-		sourceCluster: z
-			.object({
-				count: z.number(),
-				distinctAgents: z.number(),
-				firstSeen: z.string(),
-				lastSeen: z.string(),
-				sampleSummary: z.string(),
-				sampleError: z.string(),
-				recentEventsCount: z.number(),
-			})
-			.strict(),
-	})
-	.strict();
-
-const INCIDENT_PROPOSAL_OUTPUT_SCHEMA = z
-	.object({
+const INCIDENT_PROPOSAL_OUTPUT_SCHEMA = buildIncidentProposalWriteSummarySchema(
+	{
 		ok: z.literal(true),
-		drafts: z.array(INCIDENT_PROPOSAL_DRAFT_SCHEMA),
+		drafts: z.array(incidentProposalDraftSchema()),
 		deduped: z.number(),
 		totalClusters: z.number(),
-		written: z.number().optional(),
-		files: z.array(z.string()).optional(),
-		indexCount: z.number().optional(),
-	})
-	.strict();
+	},
+);
 
 type IProposalKind =
 	| 'feat'
@@ -108,6 +84,10 @@ const PROPOSAL_KIND_BY_CLASSIFICATION: Record<string, IProposalKind> = {
 	UNKNOWN: 'spike',
 };
 
+export const proposalKindForIncidentClassification = (
+	classification: string,
+): IProposalKind => PROPOSAL_KIND_BY_CLASSIFICATION[classification] ?? 'spike';
+
 const canonicalTitleOf = (title: string): string => title.trim();
 
 const extractDocumentTitle = (raw: string): string | null => {
@@ -125,7 +105,7 @@ const extractDocumentTitle = (raw: string): string | null => {
 	return heading && heading.length > 0 ? heading : null;
 };
 
-const readExistingDedupKeys = async (
+export const readExistingDedupKeys = async (
 	options: Pick<
 		IIncidentProposalToolOptions,
 		'indexPathAbs' | 'proposalsDirAbs'
@@ -156,7 +136,7 @@ const readExistingDedupKeys = async (
 	return keys;
 };
 
-const readIncidentsWithDefault = async (
+export const readIncidentsWithDefault = async (
 	options: IIncidentProposalToolOptions,
 	query: ILogIncidentsOptions,
 ): Promise<IIncidentProposalLogReadResult> => {
@@ -169,6 +149,26 @@ const readIncidentsWithDefault = async (
 	const store = await createLogStore(options.logsDirAbs);
 	return logIncidents(store, query);
 };
+
+export async function loadIncidentProposalDraftBatch(
+	options: IIncidentProposalToolOptions,
+	args: { since?: string | undefined; limit?: number | undefined },
+) {
+	const incidentResult = await readIncidentsWithDefault(options, {
+		...(args.since !== undefined ? { since: args.since } : {}),
+	});
+	const limitedIncidents =
+		typeof args.limit === 'number'
+			? incidentResult.incidents.slice(0, args.limit)
+			: incidentResult.incidents;
+	const existingKeys = await readExistingDedupKeys(options);
+	const result = buildIncidentProposalDrafts(limitedIncidents, existingKeys);
+	return {
+		incidentResult,
+		limitedIncidents,
+		result,
+	};
+}
 
 const renderProposalBody = (
 	id: string,
@@ -258,20 +258,9 @@ export function buildIncidentProposalRegistration(
 					since?: string | undefined;
 					limit?: number | undefined;
 				}) => {
-					const incidentResult = await readIncidentsWithDefault(
+					const { result } = await loadIncidentProposalDraftBatch(
 						options,
-						{
-							since: args.since,
-						},
-					);
-					const limitedIncidents =
-						typeof args.limit === 'number'
-							? incidentResult.incidents.slice(0, args.limit)
-							: incidentResult.incidents;
-					const existingKeys = await readExistingDedupKeys(options);
-					const result = buildIncidentProposalDrafts(
-						limitedIncidents,
-						existingKeys,
+						args,
 					);
 					if (args.write !== true) {
 						return toolOk({ ...result });
@@ -293,7 +282,7 @@ export function buildIncidentProposalRegistration(
 						const prefix = prefixForKind(kind);
 						if (prefix === null) {
 							return toolError(
-								`no proposal prefix for kind \"${kind}\"`,
+								`no proposal prefix for kind "${kind}"`,
 								'Adjust the incident classification to a supported proposal kind.',
 							);
 						}
