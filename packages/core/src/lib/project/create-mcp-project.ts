@@ -4,6 +4,7 @@ import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import type { IMcpVertexHostConfig } from '../contracts/interfaces/host-config.interface';
 import type { IToolRegistration } from '../contracts/interfaces/tool-registration.interface';
 import { instrumentToolHandlers } from './instrument-tool-handlers.helper';
+import { createToolSurfaceRuntime } from './tool-surface-runtime.service';
 
 /**
  * An assembled (but not yet connected) MCP server. `start()` connects
@@ -80,10 +81,65 @@ export async function createMcpProject(
 	});
 	// Instrument BEFORE registering tools so every handler is wrapped.
 	instrumentToolHandlers(server, config);
+	const toolSurfaceRuntime =
+		config.toolSurfacePlan !== undefined
+			? createToolSurfaceRuntime(config.toolSurfacePlan)
+			: undefined;
+	if (
+		toolSurfaceRuntime !== undefined &&
+		config.toolSurfaceRuntime !== undefined
+	) {
+		config.toolSurfaceRuntime.bind(toolSurfaceRuntime);
+	}
+	let currentRegistration: IToolRegistration | undefined;
+	const registrationServer =
+		toolSurfaceRuntime === undefined
+			? server
+			: (() => {
+					const proxy = Object.create(server) as McpServer;
+					proxy.registerTool = ((name, cfg, cb) => {
+						const registrationId = currentRegistration?.id ?? name;
+						const originalConfig = cfg as {
+							description?: string | undefined;
+							inputSchema?: unknown;
+							outputSchema?: unknown;
+						};
+						const publicDescription =
+							toolSurfaceRuntime.publicDescriptionFor(
+								registrationId,
+								originalConfig.description,
+								currentRegistration?.summary,
+							);
+						const handle = server.registerTool(
+							name,
+							{
+								...cfg,
+								...(publicDescription !== undefined
+									? { description: publicDescription }
+									: {}),
+							},
+							cb,
+						);
+						toolSurfaceRuntime.bindRegisteredTool({
+							registrationId,
+							name,
+							description: originalConfig.description,
+							inputSchema: originalConfig.inputSchema,
+							outputSchema: originalConfig.outputSchema,
+							handler: handle.handler,
+							handle,
+						});
+						return handle;
+					}) as McpServer['registerTool'];
+					return proxy;
+				})();
 	const ordered = planRegistrationOrder([], config.extraTools ?? []);
 	for (const registration of ordered) {
-		await registration.register(server);
+		currentRegistration = registration;
+		await registration.register(registrationServer);
 	}
+	currentRegistration = undefined;
+	toolSurfaceRuntime?.finalizeInitialSurface();
 	for (const prompt of config.extraPrompts ?? []) {
 		await prompt.register(server);
 	}

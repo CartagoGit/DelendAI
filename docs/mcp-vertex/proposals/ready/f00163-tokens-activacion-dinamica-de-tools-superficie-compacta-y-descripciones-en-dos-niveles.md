@@ -40,7 +40,7 @@ Optimizar respuestas individuales (2500→1800 B) es secundario frente a cargar 
 - global_gate: type
 
 ### S1 — Bootstrap mínimo y activación dinámica
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/src/lib/plugins/preset-catalog.ts`, `packages/core/src/lib/tools/configuration-center.tool.ts`
 - **Gate**: type
 - acceptance:
@@ -49,7 +49,7 @@ Optimizar respuestas individuales (2500→1800 B) es secundario frente a cargar 
   - "Fallback estático documentado para clientes sin cambios dinámicos."
 
 ### S2 — Superficie compacta (router)
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/src/lib/tools/vertex-router.tool.ts`
 - **Gate**: type
 - acceptance:
@@ -57,7 +57,7 @@ Optimizar respuestas individuales (2500→1800 B) es secundario frente a cargar 
   - "--surface=compact expone solo el router."
 
 ### S3 — Descripciones en dos niveles y ejemplos fuera de schemas
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/src/lib/tools/knowledge-tool.ts`
 - **Gate**: type
 - acceptance:

@@ -36,6 +36,7 @@ import type { createPeerPluginRegistry } from '../plugins/peer-plugin-registry';
 import type { IMcpVertexCliArgs } from '../plugins/parse-cli-args';
 import { serializeConfigurationSchema } from '../configuration-center/configuration-center';
 import type { IOverviewToolEntry } from '../tools/overview-tool';
+import type { IToolSurfaceDescriptor } from '../contracts/interfaces/tool-surface.interface';
 
 /** Inputs `assemblePlugins` needs from the config-resolution phase. */
 export interface IAssemblePluginsInput {
@@ -76,6 +77,7 @@ export interface IAssemblePluginsResult {
 		string,
 		ReturnType<typeof buildActivationReport>['entries'][number]
 	>;
+	readonly toolSurfaceDescriptors: readonly IToolSurfaceDescriptor[];
 	readonly configurationPlugins: IConfigurationPlugin[];
 	readonly configurationArtifacts: IConfigurationArtifact[];
 }
@@ -239,6 +241,7 @@ export const assemblePlugins = async (
 	// the registration-order uniqueness check must run on the qualified id,
 	// not the raw one.
 	const qualifiedPluginTools: IToolRegistration[] = [];
+	const toolSurfaceDescriptors: IToolSurfaceDescriptor[] = [];
 
 	const onToolCalls: IPluginToolCallObserver[] = [];
 	const onToolStarts: IPluginToolStartObserver[] = [];
@@ -341,6 +344,17 @@ export const assemblePlugins = async (
 							registerAfter: `${corePrefix}_${ns}_${tool.registerAfter}`,
 						}
 					: {}),
+			});
+			toolSurfaceDescriptors.push({
+				registrationId: qualifiedId,
+				name: qualifiedId,
+				toolId: tool.id,
+				pluginId: plugin.name,
+				namespace: ns,
+				...(tool.summary !== undefined
+					? { summary: tool.summary }
+					: {}),
+				...(tool.tags !== undefined ? { tags: tool.tags } : {}),
 			});
 		}
 	}
@@ -513,6 +527,7 @@ export const assemblePlugins = async (
 		logsSink: resolvedLogsSink,
 		activationReport,
 		activationById,
+		toolSurfaceDescriptors,
 		configurationPlugins,
 		configurationArtifacts,
 	};

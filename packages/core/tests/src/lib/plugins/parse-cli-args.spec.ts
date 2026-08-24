@@ -14,8 +14,21 @@ describe('parseCliArgs', async () => {
 		expect(args.cacheDir).toBe('.cache/mcp-vertex');
 		expect(args.docsDir).toBe('docs/mcp-vertex');
 		expect(args.workspace).toBe('/cwd');
+		expect(args.surfaceMode).toBe('native');
 		expect(args.mcpProjectCreate).toBe(true);
 		expect(args.mcpProjectTests).toBe(true);
+	});
+
+	it('parses --surface and rejects unknown values', async () => {
+		expect(parseCliArgs(['--surface=adaptive'], '/cwd').surfaceMode).toBe(
+			'adaptive',
+		);
+		expect(parseCliArgs(['--surface=compact'], '/cwd').surfaceMode).toBe(
+			'compact',
+		);
+		expect(() => parseCliArgs(['--surface=wide'], '/cwd')).toThrow(
+			/Invalid value for --surface: "wide"/,
+		);
 	});
 
 	it('parses --mcp-project-create=false and --mcp-project-tests=false', async () => {
