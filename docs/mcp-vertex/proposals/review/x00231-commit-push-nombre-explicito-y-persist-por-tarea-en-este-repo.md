@@ -2,7 +2,7 @@
 id: x00231
 title: "Commit+push recuperando el autor del git y persist por tarea en este repo"
 kind: fix
-status: ready
+status: review
 type: proposal
 track: plugins
 date: 2026-08-24

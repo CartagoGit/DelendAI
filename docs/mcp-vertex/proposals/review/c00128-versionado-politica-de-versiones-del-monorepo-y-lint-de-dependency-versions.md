@@ -2,7 +2,7 @@
 id: c00128
 title: "versionado: política de versiones del monorepo y lint de dependency-versions"
 kind: chore
-status: ready
+status: review
 type: proposal
 track: core
 date: 2026-08-24
