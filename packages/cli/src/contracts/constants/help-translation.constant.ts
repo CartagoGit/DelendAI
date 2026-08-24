@@ -102,6 +102,7 @@ const ENGLISH_COMMAND_SUMMARIES: Readonly<Record<string, string>> = {
 	'fs write':
 		'Write a workspace file (atomic by default, never outside the root).',
 	knowledge: 'List knowledge entries, or print one by id.',
+	adopt: 'Assess or scaffold mcp-vertex adoption for the current project.',
 	'project analyze':
 		'Inspect the project and recommend an MCP server plan (read-only).',
 	'project plan':

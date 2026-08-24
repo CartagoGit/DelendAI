@@ -682,6 +682,7 @@ export type {
 } from '../lib/bootstrap/index';
 
 // --- one-call project adoption (f00157 S1) --------------------------------
+export { buildAdoptionAssessment } from '../lib/adopt/adoption-assessment.service';
 export {
 	buildAdoptProjectPlan,
 	buildAdoptProjectToolRegistration,
@@ -692,6 +693,13 @@ export type {
 	IAdoptProjectToolDeps,
 	IBuildAdoptProjectPlanInput,
 } from '../lib/contracts/interfaces/adopt-project.interface';
+export type {
+	IAdoptionAssessment,
+	IAssessmentConflict,
+	IAssessmentCost,
+	IBuildAdoptionAssessmentOptions,
+	IPluginRecommendation,
+} from '../lib/contracts/interfaces/adoption-assessment.interface';
 
 // --- versioned skill bundles (f00029 S4; f00065 S1: skills owned by package/plugin) ------
 export { loadSkills } from '../lib/skills/load-skills';

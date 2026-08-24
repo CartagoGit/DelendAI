@@ -262,7 +262,7 @@ describe('r00001 S0 — core outputSchema golden snapshot', async () => {
 		 */
 		const EXPECTED_FINGERPRINTS: Readonly<Record<string, string>> = {
 			analyze_project:
-				'd31363fcbbdba0f0dcaea08ad4d6098874d9ea63d832980f8a2987331376b1cd',
+				'0cc64460cec6928836ab42573c789735e52ae3210b5fe6595182ea5ece27d7dd',
 			create_project:
 				'43761bcac35e09be864140f7f36191a84eb71ff45f8374e358e5e16dc5a4b6f3',
 			plan_mcp_project:

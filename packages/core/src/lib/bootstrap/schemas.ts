@@ -16,6 +16,15 @@ import {
 	ADOPTION_STRATEGY_SCHEMA,
 } from '../contracts/constants/adoption-strategy-schema.constant';
 
+const DOCS_CONVENTION_SCHEMA = z.enum([
+	'README.md',
+	'docs/',
+	'root-markdown',
+	'docs-site:astro',
+	'docs-site:docusaurus',
+	'docs-site:vitepress',
+]);
+
 // r00002 S1 — mirrors `IProjectAnalysis` (analyze-project.ts).
 // r00001 S0 — exported so the golden snapshot test can pin the schema shape.
 export const PROJECT_ANALYSIS_SCHEMA = z.object({
@@ -44,8 +53,13 @@ export const PROJECT_ANALYSIS_SCHEMA = z.object({
 	hasMcpProject: z.boolean(),
 	mcpEvidence: z.array(z.string()),
 	ci: z.array(z.string()),
+	ciProvider: z
+		.enum(['github-actions', 'gitlab-ci', 'circleci', 'unknown'])
+		.optional(),
 	agentConfigs: z.array(z.string()),
 	scripts: z.record(z.string(), z.string()),
+	docsConventions: z.array(DOCS_CONVENTION_SCHEMA).optional(),
+	conflicts: z.array(z.string()).optional(),
 	signals: z.array(z.string()),
 });
 

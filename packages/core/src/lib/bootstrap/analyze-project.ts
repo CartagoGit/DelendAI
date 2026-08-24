@@ -19,6 +19,11 @@ import { matchTestRunner } from './test-runner-rules';
 import { matchHostConfig } from './host-config-rules';
 import { matchVertexConfigFromRaw } from './vertex-config-rules';
 import { matchSignals } from './signal-rules';
+import {
+	detectCiProvider,
+	detectConflicts,
+	detectDocsConventions,
+} from './adoption-signal-rules';
 
 /**
  * Read-only, injectable view of the target project. The default
@@ -65,10 +70,20 @@ export interface IProjectAnalysis {
 	readonly mcpEvidence: readonly string[];
 	/** Detected CI systems (file evidence). */
 	readonly ci: readonly string[];
+	/** Primary CI provider used by adoption assessment heuristics. */
+	readonly ciProvider?:
+		| 'github-actions'
+		| 'gitlab-ci'
+		| 'circleci'
+		| 'unknown';
 	/** Detected AI-agent config files already in the repo. */
 	readonly agentConfigs: readonly string[];
 	/** Recognised quality-gate scripts, by role. */
 	readonly scripts: Readonly<Record<string, string>>;
+	/** High-level docs shape detected from conventional files/dirs. */
+	readonly docsConventions?: readonly string[];
+	/** Existing commands/config files that an adoption scaffold should not clobber silently. */
+	readonly conflicts?: readonly string[];
 	/** Free-form notes the recommender and the agent can use. */
 	readonly signals: readonly string[];
 }
@@ -288,10 +303,13 @@ export const analyzeProject = async (
 		monorepoTool,
 	);
 	const ci = await detectCi(reader);
+	const ciProvider = detectCiProvider(ci);
 	const agentConfigs = await detectAgentConfigs(reader);
 	const packageManager = await detectPackageManager(reader);
 	const testRunner = detectTestRunner(deps, scripts);
 	const scriptsPicked = pickScripts(scripts);
+	const docsConventions = await detectDocsConventions(reader);
+	const conflicts = await detectConflicts(reader, scripts);
 
 	const signals = matchSignals({
 		analysis: {
@@ -306,8 +324,11 @@ export const analyzeProject = async (
 			hasMcpProject: mcp.has,
 			mcpEvidence: mcp.evidence,
 			ci,
+			ciProvider,
 			agentConfigs,
 			scripts: scriptsPicked,
+			docsConventions,
+			conflicts,
 			signals: [],
 		},
 		hasCustomExtraTools,
@@ -326,8 +347,11 @@ export const analyzeProject = async (
 		hasMcpProject: mcp.has,
 		mcpEvidence: mcp.evidence,
 		ci,
+		ciProvider,
 		agentConfigs,
 		scripts: scriptsPicked,
+		docsConventions,
+		conflicts,
 		signals,
 	};
 };
