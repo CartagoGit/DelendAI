@@ -21,16 +21,48 @@ const baseReport: ISafeMcpVertexReport = {
 	environmentClass: { runtime: 'bun', platformFamily: 'linux' },
 };
 
+const baseSyntheticExample = {
+	summary: 'Synthetic weather reproduction for PROCESS_TIMEOUT.',
+	source: 'fixture-fallback',
+	fixtureId: 'weather',
+	fixtureDomain: 'weather',
+	argumentType: 'object',
+} as const;
+
 describe('validateSafeReport', () => {
 	it('accepts a safe DTO', () => {
 		expect(validateSafeReport(baseReport)).toEqual({ ok: true });
+	});
+
+	it('accepts synthetic examples built only with reserved domains and synthetic ids', () => {
+		expect(
+			validateSafeReport({
+				...baseReport,
+				syntheticExample: {
+					...baseSyntheticExample,
+					context: {
+						operation: 'external process timeout',
+						reservedHosts: ['example.invalid', 'example.com'],
+						exampleIds: ['EXAMPLE-001', 'DEMO-123', 'SYNTHETIC-42'],
+					},
+					payload: {
+						requestId: 'SYNTHETIC-42',
+						endpoint: 'https://example.com/weather/forecast',
+						windowHours: 12,
+					},
+				},
+			}),
+		).toEqual({ ok: true });
 	});
 
 	it('rejects absolute paths', () => {
 		expect(
 			validateSafeReport({
 				...baseReport,
-				syntheticExample: { summary: '/home/alice/acme/private' },
+				syntheticExample: {
+					...baseSyntheticExample,
+					summary: '/home/alice/acme/private',
+				},
 			}),
 		).toEqual({ ok: false, reasonCode: 'absolute-path' });
 	});
@@ -39,13 +71,17 @@ describe('validateSafeReport', () => {
 		expect(
 			validateSafeReport({
 				...baseReport,
-				syntheticExample: { summary: 'contact alice@example.com' },
+				syntheticExample: {
+					...baseSyntheticExample,
+					summary: 'contact alice@example.com',
+				},
 			}),
 		).toEqual({ ok: false, reasonCode: 'email' });
 		expect(
 			validateSafeReport({
 				...baseReport,
 				syntheticExample: {
+					...baseSyntheticExample,
 					summary: 'https://corp.example.org/secret',
 				},
 			}),
@@ -53,7 +89,10 @@ describe('validateSafeReport', () => {
 		expect(
 			validateSafeReport({
 				...baseReport,
-				syntheticExample: { summary: '{"secret":true}' },
+				syntheticExample: {
+					...baseSyntheticExample,
+					summary: '{"secret":true}',
+				},
 			}),
 		).toEqual({ ok: false, reasonCode: 'json-fragment' });
 		expect(validateSafeReport({ ...baseReport, mcpFrames: [] })).toEqual({
@@ -69,7 +108,10 @@ describe('validateSerializedSafeReport', () => {
 			validateSerializedSafeReport(
 				JSON.stringify({
 					...baseReport,
-					syntheticExample: { summary: 'Authorization: Bearer abc' },
+					syntheticExample: {
+						...baseSyntheticExample,
+						summary: 'Authorization: Bearer abc',
+					},
 				}),
 			),
 		).toEqual({ ok: false, reasonCode: 'token' });

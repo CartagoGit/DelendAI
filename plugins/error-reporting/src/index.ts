@@ -7,11 +7,7 @@ import {
 	OptionsSchema,
 	resolveOptions,
 } from './lib/contracts/constants/options.constant';
-import {
-	McpVertexInternalError,
-	type ISafeMcpVertexReport,
-	type SafeScalar,
-} from './lib/contracts/interfaces/reporter.interface';
+import type { ISafeMcpVertexReport } from './lib/contracts/interfaces/reporter.interface';
 import { registerInternalRuntimePaths } from './lib/frame-extractor.helper';
 import { classifyInternalError } from './lib/internal-classifier.helper';
 import {
@@ -21,6 +17,7 @@ import {
 import { createReportStore } from './lib/report-store.service';
 import { createSafeReporter, shouldReport } from './lib/reporter.service';
 import { signatureOf } from './lib/signature.helper';
+import { buildSyntheticExample } from './lib/synthetic-example.builder';
 import { buildReportStatusRegistration } from './lib/tools/report-status.tool';
 
 const KNOWLEDGE_BODY = [
@@ -70,23 +67,6 @@ const platformFamilyOf = (): 'windows' | 'linux' | 'macos' | 'unknown' => {
 			return 'unknown';
 	}
 };
-const syntheticExampleOf = (
-	error: unknown,
-):
-	| {
-			readonly summary: string;
-			readonly context?: Readonly<Record<string, SafeScalar>> | undefined;
-	  }
-	| undefined => {
-	if (!(error instanceof McpVertexInternalError)) return undefined;
-	return {
-		summary:
-			'Synthetic diagnostic context built from MCP Vertex-only metadata.',
-		...(error.safeContext !== undefined
-			? { context: error.safeContext }
-			: {}),
-	};
-};
 
 const redactReport = (report: ISafeMcpVertexReport): ISafeMcpVertexReport =>
 	JSON.parse(
@@ -123,7 +103,12 @@ const buildSafeReport = (
 			platformFamily: platformFamilyOf(),
 		},
 	};
-	const syntheticExample = syntheticExampleOf(error);
+	const syntheticExample = buildSyntheticExample({
+		packageId: classified.packageId,
+		toolName,
+		errorCode: classified.errorCode,
+		failureClass: classified.failureClass,
+	});
 	return {
 		...reportCore,
 		fingerprint: signatureOf({
