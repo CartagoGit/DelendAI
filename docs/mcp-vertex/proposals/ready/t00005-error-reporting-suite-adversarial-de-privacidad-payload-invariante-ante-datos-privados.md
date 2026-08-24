@@ -43,14 +43,14 @@ Sin una propiedad comprobable, cualquier cambio futuro puede reintroducir una fu
 - global_gate: type
 
 ### S1 — Fixtures adversas reutilizables
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/error-reporting/tests/adversarial-fixtures.ts`
 - **Gate**: type
 - acceptance:
   - "Cubren paths Unix/Windows, secrets (AWS/GitHub/JWT/OpenAI/Anthropic), connection strings, URLs internas, IPs privadas, emails, nombres de empresa/cliente, SQL/GraphQL/JSON/source embebidos, Unicode, strings enormes."
 
 ### S2 — Invariante de invarianza del payload
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/error-reporting/tests/privacy-adversarial.spec.ts`
 - **Gate**: type
 - acceptance:
