@@ -2,7 +2,7 @@
 id: r00015
 title: "Creación de plugins: una sola fuente de verdad y cableado estructural"
 kind: refactor
-status: ready
+status: review
 type: proposal
 track: plugins
 date: 2026-08-23
@@ -29,7 +29,7 @@ Auditoría 2026-08-24 (hallazgos D1-D13): tres writers de wire-plugin insertan p
 - global_gate: type
 
 ### S1 — Cableado estructural en wire-plugin
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/src/lib/scaffold/wire-plugin.ts`
 - **Gate**: type
 - acceptance:
@@ -37,7 +37,7 @@ Auditoría 2026-08-24 (hallazgos D1-D13): tres writers de wire-plugin insertan p
   - "Los writers fallan si el archivo no parsea tras editar."
 
 ### S2 — Una sola fuente de verdad + índice y carga actualizados
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/src/lib/scaffold/create-plugin.tool.ts`, `packages/core/src/lib/scaffold/plugin-blueprint.ts`, `packages/core/src/lib/registry/first-party-index.ts`
 - **Gate**: type
 - acceptance:
@@ -46,14 +46,14 @@ Auditoría 2026-08-24 (hallazgos D1-D13): tres writers de wire-plugin insertan p
   - "La descripción pública refleja los archivos reales (no 'four scaffold files')."
 
 ### S3 — Doctor detecta plugin creado pero no cargado
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/src/lib/scaffold/diagnose-plugin-wiring.ts`
 - **Gate**: type
 - acceptance:
   - "El doctor marca 'creado pero no cargado' cuando el plugin no está en mcp-vertex.config.json."
 
 ### S4 — Eliminar copias muertas de plugin_add/plugin_search
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/src/lib/tools/plugin-add.tool.ts`, `packages/core/src/lib/tools/plugin-search.tool.ts`
 - **Gate**: type
 - acceptance:
@@ -61,7 +61,7 @@ Auditoría 2026-08-24 (hallazgos D1-D13): tres writers de wire-plugin insertan p
   - "El barrel público sigue exportando las versiones de registry/."
 
 ### S5 — Tests de cableado de plugin
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/tests/src/lib/scaffold/wire-plugin.spec.ts`
 - **Gate**: type
 - acceptance:
