@@ -326,6 +326,7 @@ export const assembleCliConfig = async (
 		onToolCalls,
 		onToolStarts,
 		onToolCancels,
+		onHookErrors,
 		isAgentStuckFn,
 		getCheckpointAdvisoryFns,
 		beforeToolCallFns,
@@ -391,6 +392,26 @@ export const assembleCliConfig = async (
 			resources,
 		});
 
+	const emitHookError = async (info: {
+		readonly pluginName: string;
+		readonly resolvedSpecifier: string;
+		readonly hookName: import('../contracts/interfaces/plugin-lifecycle-error.interface').PluginHookName;
+		readonly toolName: string;
+		readonly args: unknown;
+		readonly error: unknown;
+		readonly elapsedMs?: number;
+	}): Promise<void> => {
+		for (const observer of onHookErrors) {
+			try {
+				await observer.handler(info);
+			} catch (hookError) {
+				process.stderr.write(
+					`[mcp-vertex] onHookError error (${observer.pluginName}): ${hookError instanceof Error ? hookError.message : String(hookError)}\n`,
+				);
+			}
+		}
+	};
+
 	const config: IMcpVertexHostConfig = {
 		metadata: {
 			name: args.serverName,
@@ -411,13 +432,22 @@ export const assembleCliConfig = async (
 		...(onToolStarts.length > 0
 			? {
 					onToolStart: async (toolName, toolArgs) => {
-						for (const handler of onToolStarts) {
+						for (const observer of onToolStarts) {
 							try {
-								await handler(toolName, toolArgs);
+								await observer.handler(toolName, toolArgs);
 							} catch (e) {
 								process.stderr.write(
 									`[mcp-vertex] onToolStart error: ${e instanceof Error ? e.message : String(e)}\n`,
 								);
+								await emitHookError({
+									pluginName: observer.pluginName,
+									resolvedSpecifier:
+										observer.resolvedSpecifier,
+									hookName: 'onToolStart',
+									toolName,
+									args: toolArgs,
+									error: e,
+								});
 							}
 						}
 					},
@@ -426,13 +456,27 @@ export const assembleCliConfig = async (
 		...(onToolCancels.length > 0
 			? {
 					onToolCancel: async (toolName, toolArgs, elapsedMs) => {
-						for (const handler of onToolCancels) {
+						for (const observer of onToolCancels) {
 							try {
-								await handler(toolName, toolArgs, elapsedMs);
+								await observer.handler(
+									toolName,
+									toolArgs,
+									elapsedMs,
+								);
 							} catch (e) {
 								process.stderr.write(
 									`[mcp-vertex] onToolCancel error: ${e instanceof Error ? e.message : String(e)}\n`,
 								);
+								await emitHookError({
+									pluginName: observer.pluginName,
+									resolvedSpecifier:
+										observer.resolvedSpecifier,
+									hookName: 'onToolCancel',
+									toolName,
+									args: toolArgs,
+									error: e,
+									elapsedMs,
+								});
 							}
 						}
 					},
@@ -447,9 +491,9 @@ export const assembleCliConfig = async (
 						error,
 						elapsedMs,
 					) => {
-						for (const handler of onToolCalls) {
+						for (const observer of onToolCalls) {
 							try {
-								await handler(
+								await observer.handler(
 									toolName,
 									toolArgs,
 									result,
@@ -460,6 +504,18 @@ export const assembleCliConfig = async (
 								process.stderr.write(
 									`[mcp-vertex] onToolCall error: ${e instanceof Error ? e.message : String(e)}\n`,
 								);
+								await emitHookError({
+									pluginName: observer.pluginName,
+									resolvedSpecifier:
+										observer.resolvedSpecifier,
+									hookName: 'onToolCall',
+									toolName,
+									args: toolArgs,
+									error: e,
+									...(elapsedMs !== undefined
+										? { elapsedMs }
+										: {}),
+								});
 							}
 						}
 					},

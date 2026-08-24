@@ -110,6 +110,7 @@ describe('loadPlugins', async () => {
 		});
 		expect(result.loaded.map((entry) => entry.plugin.name)).toEqual(['ok']);
 		expect(result.errors[0]?.specifier).toBe('bad');
+		expect(result.registerErrors).toEqual([]);
 	});
 
 	it('loads a plugin from an absolute path specifier', async () => {
@@ -215,6 +216,13 @@ describe('loadPlugins', async () => {
 			),
 		).toBe(true);
 		expect(aRegistered).toBe(false);
+		expect(result.registerErrors).toEqual([
+			expect.objectContaining({
+				pluginName: 'a',
+				phase: 'dependency',
+				missingDependencies: ['b'],
+			}),
+		]);
 	});
 
 	it('a00065 S6: a satisfied dependency still registers both plugins', async () => {
@@ -241,5 +249,29 @@ describe('loadPlugins', async () => {
 			'a',
 			'b',
 		]);
+	});
+
+	it('captures register() failures as registerErrors with the resolved specifier', async () => {
+		const result = await loadPlugins({
+			specifiers: ['broken'],
+			buildContext: ctx,
+			import: async () => ({
+				default: {
+					name: 'broken',
+					register: () => {
+						throw new Error('register boom');
+					},
+				},
+			}),
+		});
+		expect(result.loaded).toEqual([]);
+		expect(result.registerErrors).toEqual([
+			expect.objectContaining({
+				pluginName: 'broken',
+				resolvedSpecifier: '@mcp-vertex/broken',
+				phase: 'register',
+			}),
+		]);
+		expect(result.errors[0]?.message).toMatch(/register\(\) failed/);
 	});
 });

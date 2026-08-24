@@ -10,7 +10,10 @@ import {
 	registerInternalPath,
 	resetInternalPathRegistry,
 } from '../src/lib/signature.helper';
-import { buildReportErrorHandler } from '../src/index';
+import {
+	buildObservedFailureHandler,
+	buildReportErrorHandler,
+} from '../src/index';
 
 const tmpDirs: string[] = [];
 
@@ -134,5 +137,99 @@ describe('buildReportErrorHandler', () => {
 		expect(record[0]?.classification).toBe('BUG');
 		expect(record[0]?.issueNumber).toBe(88);
 		expect(reporter.submitSafeReport).toHaveBeenCalledTimes(1);
+	});
+
+	it('reports an llm-format failure surfaced through tool result envelopes', async () => {
+		const store = createReportStore(await makeDir());
+		const reporter: ISafeReporter = {
+			submitSafeReport: vi.fn().mockResolvedValue({
+				ok: true,
+				reason: 'created',
+				issueNumber: 101,
+			}),
+		};
+		const observe = buildObservedFailureHandler({
+			options: {
+				enabled: true,
+				targetRepo: 'CartagoGit/mcp-vertex',
+				labels: ['auto-reported'],
+				internalOnly: true,
+				dedupeWindowHours: 24,
+				maxIssuesPerDay: 10,
+				circuitBreakerThreshold: 3,
+				backoffBaseMs: 60_000,
+				backoffMaxMs: 3_600_000,
+				backoffJitterRatio: 0,
+			},
+			store,
+			reporter,
+			clock: {
+				nowMs: () => Date.parse('2026-08-24T10:00:00.000Z'),
+				random: () => 0,
+			},
+		});
+
+		await observe(
+			'mcp-vertex_orchestrator-runner_invoke',
+			{
+				structuredContent: {
+					error: {
+						code: 'LLM_FORMAT',
+						reason: 'provider rejected invalid request body after schema validation failed',
+					},
+				},
+			},
+			undefined,
+		);
+
+		expect(reporter.submitSafeReport).toHaveBeenCalledTimes(1);
+		const record = await store.all();
+		expect(record[0]?.issueNumber).toBe(101);
+	});
+
+	it('does not report external provider failures surfaced through tool result envelopes', async () => {
+		const store = createReportStore(await makeDir());
+		const reporter: ISafeReporter = {
+			submitSafeReport: vi.fn().mockResolvedValue({
+				ok: true,
+				reason: 'created',
+				issueNumber: 202,
+			}),
+		};
+		const observe = buildObservedFailureHandler({
+			options: {
+				enabled: true,
+				targetRepo: 'CartagoGit/mcp-vertex',
+				labels: ['auto-reported'],
+				internalOnly: true,
+				dedupeWindowHours: 24,
+				maxIssuesPerDay: 10,
+				circuitBreakerThreshold: 3,
+				backoffBaseMs: 60_000,
+				backoffMaxMs: 3_600_000,
+				backoffJitterRatio: 0,
+			},
+			store,
+			reporter,
+			clock: {
+				nowMs: () => Date.parse('2026-08-24T10:00:00.000Z'),
+				random: () => 0,
+			},
+		});
+
+		await observe(
+			'mcp-vertex_orchestrator-runner_invoke',
+			{
+				structuredContent: {
+					error: {
+						reason: 'api responded 429: rate limit exceeded',
+					},
+				},
+			},
+			undefined,
+		);
+
+		expect(reporter.submitSafeReport).not.toHaveBeenCalled();
+		expect(await store.all()).toEqual([]);
 	});
 });

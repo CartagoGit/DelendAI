@@ -129,6 +129,11 @@ export interface IHostObservability {
 				elapsedMs: number,
 		  ) => Promise<void> | void)
 		| undefined;
+	readonly onHookError?:
+		| ((
+				info: import('./plugin-lifecycle-error.interface').IPluginHookErrorInfo,
+		  ) => Promise<void> | void)
+		| undefined;
 	readonly isAgentStuck?:
 		| ((
 				toolName: string,
