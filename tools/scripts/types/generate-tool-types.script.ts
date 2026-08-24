@@ -56,6 +56,7 @@ import browserPlugin from '@mcp-vertex/browser';
 import refactorPlugin from '@mcp-vertex/refactor';
 import promptEvalPlugin from '@mcp-vertex/prompt-eval';
 import observabilityPlugin from '@mcp-vertex/observability';
+import completionPlugin from '@mcp-vertex/completion';
 
 import {
 	buildPackageModules,
@@ -93,10 +94,11 @@ const PLUGIN_SPECIFIERS: Readonly<Record<string, unknown>> = {
 	'mcp-refactor': refactorPlugin,
 	'mcp-prompt-eval': promptEvalPlugin,
 	'mcp-observability': observabilityPlugin,
+	'mcp-completion': completionPlugin,
 };
 
 const PLUGIN_LIST =
-	'proposals,rules,memory,git,quality,search,notification,docs,deps,logs,audit,status-marker,test-convention,web-fetch,cache,container,security,diagram,env,i18n,perf,tech-debt,link-check,usage-tracking,browser,refactor,prompt-eval,observability';
+	'proposals,rules,memory,git,quality,search,notification,completion,docs,deps,logs,audit,status-marker,test-convention,web-fetch,cache,container,security,diagram,env,i18n,perf,tech-debt,link-check,usage-tracking,browser,refactor,prompt-eval,observability';
 
 /**
  * Assemble the reference server with every plugin and harvest each

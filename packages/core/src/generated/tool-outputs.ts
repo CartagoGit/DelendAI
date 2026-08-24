@@ -12,6 +12,17 @@
  * surface as `Record<string, unknown>`.
  */
 
+export interface McpVertexAdoptProjectOutput {
+	ok: true;
+	preset: "lean" | "standard" | "minimal" | "swarm";
+	config?: Record<string, unknown>;
+	rationale?: string[];
+	wrote: boolean;
+	created: string[];
+	skipped: string[];
+	residual: string[];
+}
+
 export interface McpVertexAgentCatalogOutput {
 	ok?: boolean;
 	matches?: number;
@@ -363,6 +374,34 @@ export interface McpVertexCacheCacheGcOutput {
 		id: string;
 		path: string;
 		error: string;
+	}[];
+}
+
+export interface McpVertexCompletionClearOutput {
+	ok: boolean;
+	cleared: boolean;
+	taskId: string;
+}
+
+export interface McpVertexCompletionReportCompleteOutput {
+	ok: boolean;
+	record: {
+		taskId: string;
+		agent: string;
+		summary: string;
+		reviewEvidence: string;
+		ts: string;
+	};
+}
+
+export interface McpVertexCompletionStatusOutput {
+	ok: boolean;
+	records: {
+		taskId: string;
+		agent: string;
+		summary: string;
+		reviewEvidence: string;
+		ts: string;
 	}[];
 }
 
@@ -2029,6 +2068,8 @@ export interface McpVertexProposalsBranchStatusOutput {
 		untrackedFiles: number;
 		ageLabel: string;
 	}[];
+	mainCheckoutBranch?: string;
+	mainCheckoutDrift?: boolean;
 	summary?: {
 		totalBranches: number;
 		totalWorktrees: number;
@@ -2766,6 +2807,8 @@ export interface McpVertexProposalsSwarmHygieneOutput {
 		head: string;
 		lastCommitMinutesAgo: number;
 	}[];
+	mainCheckoutBranch?: string;
+	mainCheckoutDrift?: boolean;
 	pendingIntegration?: {
 		branch: string;
 		worktreePath: string;
@@ -3432,6 +3475,7 @@ export interface McpVertexWebFetchWebFetchOutput {
 
 /** Map of this package's MCP tool names to their `structuredContent` type. */
 export interface McpVertexToolOutputs {
+	"mcp-vertex_adopt_project": McpVertexAdoptProjectOutput;
 	"mcp-vertex_agent_catalog": McpVertexAgentCatalogOutput;
 	"mcp-vertex_analyze_project": McpVertexAnalyzeProjectOutput;
 	"mcp-vertex_audit_audit_consolidate": McpVertexAuditAuditConsolidateOutput;
@@ -3447,6 +3491,9 @@ export interface McpVertexToolOutputs {
 	"mcp-vertex_browser_browser_screenshot": McpVertexBrowserBrowserScreenshotOutput;
 	"mcp-vertex_browser_browser_verify_page": McpVertexBrowserBrowserVerifyPageOutput;
 	"mcp-vertex_cache_cache_gc": McpVertexCacheCacheGcOutput;
+	"mcp-vertex_completion_clear": McpVertexCompletionClearOutput;
+	"mcp-vertex_completion_report_complete": McpVertexCompletionReportCompleteOutput;
+	"mcp-vertex_completion_status": McpVertexCompletionStatusOutput;
 	"mcp-vertex_configuration_center": McpVertexConfigurationCenterOutput;
 	"mcp-vertex_container_container_build": McpVertexContainerContainerBuildOutput;
 	"mcp-vertex_container_container_inspect": McpVertexContainerContainerInspectOutput;

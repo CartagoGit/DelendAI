@@ -4,11 +4,14 @@
 # Install: `bun install` runs `prepare` → `lefthook install` automatically.
 # Skip with `LEFTHOOK=0 git commit ...` or `git commit --no-verify`.
 #
-# Policy: hooks WARN but never BLOCK commit/push.
-# Lefthook 2.x has no native `run_type: warning` option, so every command
-# that should be advisory is wrapped with `|| true`. The command's own
-# output (including errors) is still printed, so violations are visible
-# and `bun run validate` / CI are still the source of truth.
+# Policy: hooks WARN but never BLOCK commit/push — EXCEPT the generated
+# artifact drift guards (`catalog-drift-check`, `bootstrap-canonical-discipline`,
+# `host-hints-fragments-discipline`), which BLOCK because a stale checked-in
+# artifact is a correctness bug, not a style warning.
+# Lefthook 2.x has no native `run_type: warning` option, so every advisory
+# command is wrapped with `|| true`. The command's own output (including
+# errors) is still printed, so violations are visible and
+# `bun run validate` / CI are still the source of truth for the advisory ones.
 #
 # Lefthook is the ONLY owner of `.git/hooks/*` in this repo. The staged-file
 # Biome formatter runs as the `format-staged` command below
@@ -42,14 +45,22 @@ pre-commit:
       run: bun run lint:scss || true
       stage_fixed: false
 
+    # f00056: the checked-in agent catalog must match its live sources
+    # (tools from the plugin registry, skills from the manifest, proposals
+    # from the cache index). BLOCKING (no `|| true`) — a stale artifact is
+    # a correctness bug and CI gates the same check via `bun run validate`.
+    # Skips gracefully only when the regenerable proposal index is missing
+    # (fresh checkout): the artifact cannot be verified without it.
+    # Bypass: LEFTHOOK_BYPASS=1 git commit ...
     catalog-drift-check:
       glob_filter:
         items:
-          - "packages/core/skills/manifest.json"
-          - "docs/mcp-vertex/proposals/index.json"
-          - "packages/core/src/generated/tool-outputs.ts"
+          - "packages/core/skills/**"
+          - "docs/mcp-vertex/proposals/**"
           - "docs/mcp-vertex/agent-catalog.generated.json"
-      run: bun run catalog:check || true
+          - "plugins/*/src/**"
+          - "packages/core/src/**"
+      run: 'if [ -f .cache/mcp-vertex/proposals/index.json ]; then bun run catalog:check; else echo "catalog-drift-check: skipped (proposal index not present yet)"; fi'
       stage_fixed: false
 
     host-hints-drift-check:

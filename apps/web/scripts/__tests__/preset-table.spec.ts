@@ -71,10 +71,11 @@ describe('preset-table', () => {
 			// `issues` stays in `full` (host-only).
 			expect(full?.effective).toContain('issues');
 			// x00166: `vertex` is independent — its effective membership
-			// equals its 28 declared members, exactly mirroring
-			// mcp-vertex.config.json (including `proposals`, the
-			// orchestration plugin — previously excluded, a stale drift).
-			expect(vertex?.effective.length).toBe(28);
+			// equals its 29 declared members (f00158 added
+			// error-reporting), exactly mirroring mcp-vertex.config.json
+			// (including `proposals`, the orchestration plugin —
+			// previously excluded, a stale drift).
+			expect(vertex?.effective.length).toBe(29);
 			expect(vertex?.effective).toContain('perf');
 			expect(vertex?.effective).toContain('audit');
 			expect(vertex?.effective).toContain('auto-agent-selector');

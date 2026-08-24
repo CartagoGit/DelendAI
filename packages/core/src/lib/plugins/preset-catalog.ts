@@ -159,6 +159,7 @@ export const PRESET_CATALOG: readonly IPresetDefinition[] = [
 		members: [
 			{ plugin: 'proposals' },
 			{ plugin: 'notification' },
+			{ plugin: 'completion' },
 			{ plugin: 'logs' },
 			{ plugin: 'status-marker' },
 			{ plugin: 'test-convention' },

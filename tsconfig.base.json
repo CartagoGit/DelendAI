@@ -225,6 +225,11 @@
 				"./plugins/changelog/src/public/index.ts"
 			],
 			"@mcp-vertex/changelog/*": ["./plugins/changelog/src/*"],
+			"@mcp-vertex/completion": ["./plugins/completion/src/index.ts"],
+			"@mcp-vertex/completion/public": [
+				"./plugins/completion/src/public/index.ts"
+			],
+			"@mcp-vertex/completion/*": ["./plugins/completion/src/*"],
 			"@mcp-vertex/error-reporting": [
 				"./plugins/error-reporting/src/index.ts"
 			],
