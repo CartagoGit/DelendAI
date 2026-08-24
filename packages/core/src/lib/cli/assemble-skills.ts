@@ -25,6 +25,8 @@ export interface IAssembleSkillsInput {
 	readonly cacheDir: string;
 	readonly corePrefix: string;
 	readonly docsDirMissing: boolean;
+	/** True when a real mcp-vertex.config.json exists at the workspace root. */
+	readonly configPresent: boolean;
 	readonly readFile: (absolutePath: string) => Promise<string | undefined>;
 	readonly loadResult: IPluginLoadResult;
 	/** Mutated in place: skills append their configuration-center rows. */
@@ -52,6 +54,7 @@ export const assembleSkills = async (
 		cacheDir,
 		corePrefix,
 		docsDirMissing,
+		configPresent,
 		readFile,
 		loadResult,
 		configurationArtifacts,
@@ -137,12 +140,18 @@ export const assembleSkills = async (
 	// agent into auto_work would have it "work" an empty proposals layout —
 	// the exact silent failure this diagnostic exists to prevent. Route it
 	// to fixing the config first instead.
+	// f00157: when there is NO config file at all, the very first action is
+	// the one-call self-config (`adopt_project`) — before auto_work, before
+	// analyze_project. That is the "mcp-vertex self-configures on first use"
+	// contract: one call writes config + agents + proposals store.
 	const recommendedNextAction = docsDirMissing
 		? `Config mismatch: docsDir "${docsDir}" does not exist in this workspace (see configIssues). Fix mcp-vertex.config.json or scaffold the layout (mcp-vertex init) BEFORE starting work; do not hand-create proposals or docs outside the server workflow.`
-		: (hasProposals
-				? `Call ${corePrefix}_overview, then ${corePrefix}_proposals_auto_work to start working.`
-				: `Call ${corePrefix}_analyze_project to see what this project needs.`) +
-			rulesClause;
+		: !configPresent
+			? `Call ${corePrefix}_overview, then ${corePrefix}_adopt_project to self-configure this project (config + agents + proposals store) in one call before starting work.`
+			: (hasProposals
+					? `Call ${corePrefix}_overview, then ${corePrefix}_proposals_auto_work to start working.`
+					: `Call ${corePrefix}_analyze_project to see what this project needs.`) +
+				rulesClause;
 
 	return {
 		validationMatrix,

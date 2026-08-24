@@ -72,7 +72,10 @@ const BUDGET_BYTES = {
 	// Bumped 10 500 → 10 600 (2026-08-24): f00158 added the error-reporting
 	// plugin to the standard/vertex presets; its `report_status` tool +
 	// knowledge entry raised the full overview 10 500B → 10 545B measured.
-	overviewFull: 10_600,
+	// Bumped 10 600 → 10 700 (2026-08-24): f00157 added the `adopt_project`
+	// core tool (one-call project adoption); full measured 10 622B. Compact
+	// is still the real promise at 1 446B < 1 500B.
+	overviewFull: 10_700,
 	overviewCompact: 1_500,
 	// Bumped 1300 → 1450 (2026-07-03): CORRECTNESS fix in the catalog's
 	// tool-entry construction. Core tools whose id has an underscore
