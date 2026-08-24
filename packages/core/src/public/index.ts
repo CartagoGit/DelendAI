@@ -259,6 +259,7 @@ export { runCli, runDoctor } from '../lib/cli/run-cli';
 export type { IDoctorReport } from '../lib/cli/run-cli';
 export type {
 	IPluginWiringEdit,
+	IPluginWiringDiagnostic,
 	IPluginWiringFs,
 	IPluginWiringPoint,
 	IPluginWiringReport,
@@ -301,11 +302,6 @@ export type {
 	IExtractPluginOptions,
 	IExtractPluginResult,
 } from '../lib/scaffold/extract-plugin';
-export { renderPluginBlueprint } from '../lib/scaffold/plugin-blueprint';
-export type {
-	BlueprintFile,
-	IPluginBlueprintDeps,
-} from '../lib/scaffold/plugin-blueprint';
 export { scaffoldExtensionHostFiles } from '../lib/scaffold/scaffold-extension-host';
 export {
 	detectExistingMcpVertexInstall,

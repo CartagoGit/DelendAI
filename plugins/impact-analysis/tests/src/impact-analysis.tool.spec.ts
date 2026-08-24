@@ -7,7 +7,7 @@ import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 
 import {
 	buildImpactAnalysisToolRegistrations,
-	ImpactAnalyzeOutputSchema,
+	type ImpactAnalyzeOutputSchema,
 	runTestsForChange,
 	TestsForChangeOutputSchema,
 } from '../../src/public/index';

@@ -653,6 +653,11 @@ export interface McpVertexCreatePluginOutput {
 			summary: string;
 			remediation?: string;
 		}>;
+		loadDiagnostics: {
+			pluginId: string;
+			reason: string;
+			fixHint: string;
+		}[];
 		fullyWired: boolean;
 		missing: Array<"tsconfig-base" | "vitest-shared" | "plugin-defaults" | "publish-order" | "preset-catalog" | "catalog-regen">;
 	};

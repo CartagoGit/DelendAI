@@ -46,6 +46,12 @@ export interface IPluginWiringPoint {
 	readonly remediation?: string;
 }
 
+export interface IPluginWiringDiagnostic {
+	readonly pluginId: string;
+	readonly reason: string;
+	readonly fixHint: string;
+}
+
 export type PluginWiringPointId =
 	| 'tsconfig-base'
 	| 'vitest-shared'
@@ -58,6 +64,7 @@ export type PluginWiringPointId =
 export interface IPluginWiringReport {
 	readonly pluginId: string;
 	readonly points: readonly IPluginWiringPoint[];
+	readonly loadDiagnostics: readonly IPluginWiringDiagnostic[];
 	readonly fullyWired: boolean;
 	readonly missing: readonly PluginWiringPointId[];
 }

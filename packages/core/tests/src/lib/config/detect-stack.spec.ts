@@ -22,8 +22,8 @@ const globToRegExp = (glob: string): RegExp => {
 	const escaped = glob.replace(/[.+^${}()|[\]\\]/g, '\\$&');
 	const pattern = escaped
 		.replaceAll('*', '[^/]*')
-		.replaceAll('\{', '{')
-		.replaceAll('\}', '}');
+		.replaceAll('{', '{')
+		.replaceAll('}', '}');
 	if (pattern.includes('{') && pattern.includes('}')) {
 		const alternation = pattern.replace(
 			/\{([^}]+)\}/g,

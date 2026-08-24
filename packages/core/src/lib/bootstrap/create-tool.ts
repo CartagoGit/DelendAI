@@ -20,7 +20,7 @@ import {
 import { scaffoldExtensionHostFiles } from '../scaffold/scaffold-extension-host';
 import {
 	CREATE_INPUT_SCHEMA,
-	BLUEPRINT_ARTIFACT_SCHEMA,
+	type BLUEPRINT_ARTIFACT_SCHEMA,
 	MCP_PROJECT_SKELETON_SCHEMA,
 } from './schemas';
 import { toolJson } from '../shared/tool-response';
