@@ -186,6 +186,27 @@ describe('McpStdioClient', async () => {
 		});
 	});
 
+	it('attaches a logHint from the MCP _meta channel on an error result', async () => {
+		const logHint = {
+			path: '/tmp/z/.cache/mcp-vertex/logs/2026-06-22.jsonl',
+			line: 9,
+			ts: '2026-06-22T12:00:00.000Z',
+		};
+		const client = McpStdioClient.fromTransport({
+			async callTool() {
+				return {
+					isError: true,
+					_meta: { logHint },
+					content: [{ type: 'text', text: '{"ok":false}' }],
+				};
+			},
+		});
+		await expect(client.request('demo_fail', {})).rejects.toMatchObject({
+			name: 'McpToolError',
+			logHint,
+		});
+	});
+
 	it('attaches a logHint parsed from the text envelope when structuredContent is absent', async () => {
 		const logHint = {
 			path: '/tmp/y/.cache/mcp-vertex/logs/2026-06-22.jsonl',
