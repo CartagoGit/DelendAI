@@ -1,5 +1,9 @@
 import { DEFAULT_CORE_PATHS } from '../contracts/interfaces/core-paths.interface';
 import {
+	isMcpToolSurfaceMode,
+	type IMcpToolSurfaceMode,
+} from '../contracts/interfaces/surface-mode.interface';
+import {
 	PRESET_CATALOG,
 	resolvePresetMembers,
 	type IPresetKind,
@@ -24,6 +28,8 @@ export interface IMcpVertexCliArgs {
 	readonly docsDir: string;
 	/** Absolute workspace root (`--workspace`, default cwd). */
 	readonly workspace: string;
+	/** Tool-surface strategy (`--surface=native|adaptive|compact`). */
+	readonly surfaceMode: IMcpToolSurfaceMode;
 	/** Server name advertised over MCP (`--name`). */
 	readonly serverName: string;
 	/** Server version (`--serverVersion`). */
@@ -77,6 +83,7 @@ const KNOWN_KEYS = new Set([
 	'cacheDir',
 	'docsDir',
 	'workspace',
+	'surface',
 	'name',
 	'serverVersion',
 	'prefix',
@@ -170,6 +177,14 @@ const splitList = (value: string | undefined): string[] =>
 				.map((entry) => entry.trim())
 				.filter((entry) => entry.length > 0);
 
+const parseSurfaceMode = (value: string | undefined): IMcpToolSurfaceMode => {
+	if (value === undefined) return 'native';
+	if (isMcpToolSurfaceMode(value)) return value;
+	throw new Error(
+		`Invalid value for --surface: "${value}". Use --surface=native, --surface=adaptive, or --surface=compact.`,
+	);
+};
+
 /**
  * Parse an mcp-vertex argv (without the `node script` prefix) against a
  * working directory. Unknown `--key=value` flags land in `extra` and
@@ -208,6 +223,7 @@ export const parseCliArgs = (
 		cacheDir: tokens.cacheDir ?? DEFAULT_CLI_ARGS.cacheDir,
 		docsDir: tokens.docsDir ?? DEFAULT_CLI_ARGS.docsDir,
 		workspace: tokens.workspace ?? cwd,
+		surfaceMode: parseSurfaceMode(tokens.surface),
 		serverName: tokens.name ?? DEFAULT_CLI_ARGS.serverName,
 		serverVersion: tokens.serverVersion ?? DEFAULT_CLI_ARGS.serverVersion,
 		namespacePrefix: tokens.prefix,

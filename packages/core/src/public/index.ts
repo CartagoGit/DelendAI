@@ -23,6 +23,11 @@ export type { IMcpVertexProject } from '../lib/project/create-mcp-project';
 // --- workspace + paths -----------------------------------------------------
 export { DEFAULT_CORE_PATHS } from '../lib/contracts/interfaces/core-paths.interface';
 export type { ICorePaths } from '../lib/contracts/interfaces/core-paths.interface';
+export {
+	isMcpToolSurfaceMode,
+	MCP_TOOL_SURFACE_MODE,
+} from '../lib/contracts/interfaces/surface-mode.interface';
+export type { IMcpToolSurfaceMode } from '../lib/contracts/interfaces/surface-mode.interface';
 export type { IWorkspacePathProvider } from '../lib/contracts/interfaces/workspace-paths.interface';
 export { createWorkspacePathProvider } from '../lib/workspace/create-workspace-path-provider';
 

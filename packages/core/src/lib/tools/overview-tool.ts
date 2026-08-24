@@ -3,6 +3,7 @@ import z from 'zod';
 import type { IActivationReport } from '../contracts/interfaces/activation-report.interface';
 import { CAPABILITY_TAGS } from '../contracts/interfaces/provider-capabilities.interface';
 import type { IProviderSummary } from '../contracts/interfaces/provider-capabilities.interface';
+import type { IToolSurfaceRuntimeAccess } from '../contracts/interfaces/tool-surface.interface';
 import type {
 	IToolEffect,
 	IToolRegistration,
@@ -104,6 +105,7 @@ const compactSummary = (summary: string | undefined): string | undefined => {
 export const buildOverviewToolRegistration = (
 	namespacePrefix: string,
 	snapshot: () => IOverviewSnapshot,
+	runtimeAccess?: IToolSurfaceRuntimeAccess,
 ): IToolRegistration => ({
 	id: 'overview',
 	summary:
@@ -250,10 +252,16 @@ export const buildOverviewToolRegistration = (
 				activation?: boolean | undefined;
 			}) => {
 				const snap = snapshot();
+				const runtime = runtimeAccess?.get();
 				let tools = snap.tools;
 				if (args.tag !== undefined) {
 					tools = tools.filter((t) =>
 						(t.tags ?? []).includes(args.tag!),
+					);
+				}
+				if (runtime !== undefined) {
+					tools = tools.filter((tool) =>
+						runtime.isToolExposed(tool.name),
 					);
 				}
 				if (args.compact === true) {
