@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+	DEFAULT_COMPACT_RESPONSE_BYTES,
 	DEFAULT_MAX_RESPONSE_BYTES,
+	MAX_RESPONSE_BYTES_CEILING,
 	truncateIfTooLarge,
 	toolJsonBounded,
 } from '@mcp-vertex/core/public';
@@ -54,23 +56,23 @@ describe('truncateIfTooLarge', async () => {
 		expect(medium.truncated).toBe(false);
 	});
 
-	it('returns an empty marker when maxBytes is smaller than the marker itself', async () => {
-		// When maxBytes is below the envelope overhead, the marker envelope
-		// itself cannot fit; the function still returns a truncated envelope,
-		// but finalBytes may exceed maxBytes. The contract here is
-		// 'truncated=true and the marker is present', not 'the output fits
-		// under maxBytes' — that case is impossible by construction.
+	it('returns an explicit clamp when maxBytes is smaller than the honest minimum envelope', async () => {
 		const value = { rows: 'x'.repeat(256) };
 		const result = truncateIfTooLarge(value, 16);
 		expect(result.truncated).toBe(true);
 		const payload = result.value as {
 			__truncated: true;
 			originalBytes: number;
-			head: string;
+			finalBytes: number;
+			clamped?: true;
+			head: { kind: string };
 		};
 		expect(payload.__truncated).toBe(true);
 		expect(payload.originalBytes).toBeGreaterThan(16);
-		expect(payload.head.length).toBe(0);
+		expect(payload.clamped).toBe(true);
+		expect(payload.finalBytes).toBe(result.finalBytes);
+		expect(payload.finalBytes).toBeGreaterThan(16);
+		expect(payload.head.kind).toBe('object');
 	});
 });
 
@@ -107,10 +109,15 @@ describe('toolJsonBounded', async () => {
 });
 
 describe('DEFAULT_MAX_RESPONSE_BYTES', async () => {
-	it('is a positive integer aligned with the documented token budget', async () => {
+	it('is a positive integer aligned with the provisional emergency ceiling', async () => {
 		expect(DEFAULT_MAX_RESPONSE_BYTES).toBeGreaterThan(0);
+		expect(DEFAULT_COMPACT_RESPONSE_BYTES).toBeGreaterThan(0);
+		expect(MAX_RESPONSE_BYTES_CEILING).toBeGreaterThanOrEqual(
+			DEFAULT_COMPACT_RESPONSE_BYTES,
+		);
 		expect(Number.isInteger(DEFAULT_MAX_RESPONSE_BYTES)).toBe(true);
-		// 256 KiB — the documented default from the module docstring.
-		expect(DEFAULT_MAX_RESPONSE_BYTES).toBe(256 * 1024);
+		expect(DEFAULT_COMPACT_RESPONSE_BYTES).toBe(8 * 1024);
+		expect(MAX_RESPONSE_BYTES_CEILING).toBe(64 * 1024);
+		expect(DEFAULT_MAX_RESPONSE_BYTES).toBe(MAX_RESPONSE_BYTES_CEILING);
 	});
 });

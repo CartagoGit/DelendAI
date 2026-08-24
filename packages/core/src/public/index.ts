@@ -550,7 +550,6 @@ export {
 
 // --- shared tool-response helpers (compact JSON + error envelope) ----------
 export {
-	DEFAULT_MAX_RESPONSE_BYTES,
 	toolError,
 	toolErrorWithLogHint,
 	toolJson,
@@ -561,8 +560,25 @@ export {
 export type {
 	IToolErrorLogHint,
 	IToolTextResult,
-	ITruncationResult,
 } from '../lib/shared/tool-response';
+export type {
+	ICursorPage,
+	IExcerptRange,
+	IPaginatedItems,
+} from '../lib/contracts/interfaces/pagination.interface';
+export {
+	DEFAULT_COMPACT_RESPONSE_BYTES,
+	DEFAULT_MAX_RESPONSE_BYTES,
+	MAX_RESPONSE_BYTES_CEILING,
+} from '../lib/contracts/constants/response-byte-budget.constant';
+export {
+	paginateFileExcerpt,
+	paginateItems,
+} from '../lib/shared/pagination.helper';
+export type {
+	ITruncatedEnvelope,
+	ITruncationResult,
+} from '../lib/contracts/interfaces/truncation.interface';
 
 // --- core meta-tools (overview / knowledge / validation matrix) ------------
 export { buildCatalog } from '../lib/catalog/agent-discovery-catalog';
