@@ -34,6 +34,37 @@ export interface McpVertexAdoptProjectOutput {
 	preset: "lean" | "standard" | "minimal" | "swarm";
 	config?: Record<string, unknown>;
 	rationale?: string[];
+	assessment?: {
+		recommendedPresetId: string;
+		recommendedPluginIds: string[];
+		pluginRecommendations: {
+			id: string;
+			recommended: boolean;
+			rationale: string;
+		}[];
+		conflicts: Array<{
+			kind: "existing-surface" | "write-estimate";
+			summary: string;
+			severity: "info" | "warning";
+			count?: number;
+			exact: boolean;
+		}>;
+		cost: {
+			presetId: string;
+			schemaBytes: number;
+			estimatedTokens: number;
+			recommendedPluginCount: number;
+			source: "preset-budget" | "fallback-budget";
+			note: string;
+		};
+		summary: {
+			projectType: "library" | "cli" | "webapp" | "game" | "monorepo" | "generic";
+			language: "typescript" | "javascript" | "python" | "go" | "rust" | "unknown";
+			packageManager: "bun" | "pnpm" | "yarn" | "npm" | "unknown";
+			ciProvider: "github-actions" | "gitlab-ci" | "circleci" | "unknown";
+			docsConventions: string[];
+		};
+	};
 	wrote: boolean;
 	created: string[];
 	skipped: string[];
@@ -112,8 +143,11 @@ export interface McpVertexAnalyzeProjectOutput {
 		hasMcpProject: boolean;
 		mcpEvidence: string[];
 		ci: string[];
+		ciProvider?: "github-actions" | "gitlab-ci" | "circleci" | "unknown";
 		agentConfigs: string[];
 		scripts: Record<string, string>;
+		docsConventions?: Array<"README.md" | "docs/" | "root-markdown" | "docs-site:astro" | "docs-site:docusaurus" | "docs-site:vitepress">;
+		conflicts?: string[];
 		signals: string[];
 	};
 	plan?: {

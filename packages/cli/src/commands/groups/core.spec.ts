@@ -49,6 +49,7 @@ describe('core extra group (f00046 S5)', async () => {
 			'fs read',
 			'fs write',
 			'knowledge',
+			'adopt',
 			'project analyze',
 			'project plan',
 			'project create',
@@ -122,6 +123,28 @@ describe('core extra group (f00046 S5)', async () => {
 		expect(calls[0]).toEqual({
 			tool: 'mcp-vertex_create_project',
 			args: { kind: 'plugin', pluginName: 'widgets' },
+		});
+	});
+
+	it('adopt forwards analyze mode and optional flags', async () => {
+		const { ctx, calls } = buildStubContext();
+		await find('adopt').run(
+			[
+				'--analyze',
+				'--repo=acme/widgets',
+				'--project-name=Widgets',
+				'--prefix=acme',
+			],
+			ctx,
+		);
+		expect(calls[0]).toEqual({
+			tool: 'mcp-vertex_adopt_project',
+			args: {
+				analyze: true,
+				repo: 'acme/widgets',
+				projectName: 'Widgets',
+				namespacePrefix: 'acme',
+			},
 		});
 	});
 });

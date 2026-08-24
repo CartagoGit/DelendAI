@@ -104,6 +104,7 @@ const EXPECTED_COMMANDS = [
 	'fs read',
 	'fs write',
 	'knowledge',
+	'adopt',
 	'project analyze',
 	'project plan',
 	'project create',
