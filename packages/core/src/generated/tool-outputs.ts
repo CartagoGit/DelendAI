@@ -1033,7 +1033,7 @@ export interface McpVertexInitConfigOutput {
 		reason: string;
 		nextAction?: string;
 	};
-	preset?: "lean" | "standard" | "minimal";
+	preset?: "lean" | "standard" | "minimal" | "swarm";
 	config?: Record<string, unknown>;
 	rationale?: string[];
 	wrote?: boolean;
