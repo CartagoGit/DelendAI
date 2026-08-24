@@ -38,7 +38,7 @@ Los presets son la superficie de carga real del runtime; si su membership se sin
 - global_gate: type
 
 ### S1 — Lint de sincronización de presets
-- **Status**: pending
+- **Status**: done
 - **Files**: `tools/scripts/lint/preset-drift.script.ts`
 - **Gate**: type
 - acceptance:
@@ -46,7 +46,7 @@ Los presets son la superficie de carga real del runtime; si su membership se sin
   - "La membership de vertex se valida contra la config real (PRE-002)."
 
 ### S2 — Roles de presets y budget por preset
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/src/lib/plugins/preset-catalog.ts`
 - **Gate**: type
 - acceptance:
