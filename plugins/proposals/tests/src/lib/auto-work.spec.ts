@@ -449,6 +449,26 @@ describe('auto_work (one-call action plan)', async () => {
 		expect(developStep).toContain('develop');
 	});
 
+	it("x00231: persist 'commit' with agentWorktree off orders commit only (no push mention)", async () => {
+		const commitOptions: IAutoWorkToolOptions = {
+			...options,
+			persist: { mode: 'commit' },
+		};
+		writeFileSync(
+			commitOptions.indexPathAbs,
+			JSON.stringify({
+				proposals: [{ id: 'p1-x', file: 'p1.md', status: 'pending' }],
+			}),
+		);
+		const out = parse(await runAutoWork(commitOptions));
+		const developStep = out.steps.find((s: string) =>
+			s.includes('agentWorktree: false'),
+		);
+		expect(developStep).toBeDefined();
+		expect(developStep).toContain('commit directly on `develop`');
+		expect(developStep).not.toContain('push');
+	});
+
 	it('input.persist overrides config.persist.mode (priority chain, l109 §2)', async () => {
 		const commitOptions: IAutoWorkToolOptions = {
 			...options,

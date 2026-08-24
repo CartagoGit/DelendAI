@@ -713,7 +713,9 @@ export const runAutoWork = async (
 						`Ensure per-agent worktree exists before persisting: ${prefix}_agent_worktree { action: "create", agent: "<pending>" } (idempotent — returns the existing worktree if one is present; required when persist mode is "${resolvedMode}"). When the slice is delegated via ${prefix}_delegate this is handled for you; keep the step as a safety net for solo runs.`,
 					]
 				: [
-						`This repo forbids per-agent branches (\`agentWorktree: false\`): commit and push directly on \`develop\` — do NOT create an agent worktree or branch.`,
+						resolvedMode === 'commit-and-push'
+							? `This repo forbids per-agent branches (\`agentWorktree: false\`): commit and push directly on \`develop\` — do NOT create an agent worktree or branch.`
+							: `This repo forbids per-agent branches (\`agentWorktree: false\`): commit directly on \`develop\` — do NOT create an agent worktree or branch.`,
 					];
 
 	const steps = [
