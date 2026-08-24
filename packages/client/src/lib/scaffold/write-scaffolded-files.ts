@@ -195,7 +195,7 @@ export const writeScaffoldedFiles = async (
 /**
  * Default-on-disk convenience: same as `writeScaffoldedFiles` but
  * returns `void` and re-throws on the first error. Useful for
- * `bun run tools/scripts/create-plugin.ts <name>` style scripts that
+ * `bun run tools/scripts/scaffold/create-plugin.script.ts <name>` style scripts that
  * prefer a non-zero exit on failure.
  */
 export const writeScaffoldedFilesOrThrow = async (

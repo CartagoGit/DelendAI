@@ -122,7 +122,7 @@
 		"release": "bun tools/scripts/release/release.script.ts",
 		"smoke": "bun tools/scripts/smoke/cli.script.ts",
 		"smoke:pack": "bun tools/scripts/smoke/pack.script.ts",
-		"plugin:create": "bun tools/scripts/create-plugin.ts",
+		"plugin:create": "bun tools/scripts/scaffold/create-plugin.script.ts",
 		"docs:api": "bun run --cwd tools/docs-api build",
 		"docs:api:watch": "bun run --cwd tools/docs-api watch",
 		"site": "bun run build && bun run docs:api && cd apps/web && bun run build && cd ../.. && bun run verify:site-pages",

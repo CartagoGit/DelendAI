@@ -7,7 +7,7 @@
  * internal plugins.
  *
  * It is the in-process, spec-driven sibling of the operator script
- * `tools/scripts/create-plugin.ts` (f00087 S2): both reuse the same pure
+ * `tools/scripts/scaffold/create-plugin.script.ts` (f00087 S2): both reuse the same pure
  * generator `scaffoldPluginFiles` (f00087) and the same atomic writer
  * `writeScaffoldedFiles` (f00087 S2). `authorPlugin` adds two things the
  * script does not:
@@ -31,13 +31,13 @@ import { isAbsolute, join, relative } from 'node:path';
 
 import {
 	DEFAULT_CONFIG_FILENAME,
-	type IMcpVertexConfigFile,
-	type IMcpVertexPluginConfig,
-	type IScaffoldedFile,
 	parseConfigFile,
 	scaffoldPluginFiles,
 	withFileMutex,
 	writeFileAtomic,
+	type IMcpVertexConfigFile,
+	type IMcpVertexPluginConfig,
+	type IScaffoldedFile,
 } from '@mcp-vertex/core/public';
 
 import {

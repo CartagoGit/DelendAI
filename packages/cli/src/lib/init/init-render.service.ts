@@ -128,7 +128,7 @@ export const renderMcpVertexConfig = (
 	};
 	// f00088 S4: when the S1 detector picked a non-default
 	// `pluginPathsRoot`, record it in a `convention` block so
-	// `tools/scripts/create-plugin.ts` (f00087 S2) and any
+	// `tools/scripts/scaffold/create-plugin.script.ts` (f00087 S2) and any
 	// downstream tool that wants to scaffold code under the
 	// project's natural root can read it. The block is advisory
 	// only — the loader ignores it.
