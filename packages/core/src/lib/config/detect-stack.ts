@@ -13,20 +13,33 @@
  * production deps live in `realStackProbeDeps()`.
  */
 import type {
+	IDetectedProjectDefaults,
 	IDetectedStackPack,
 	IStackDetectionResult,
 	IStackProbeDeps,
 	IStackRecommendation,
 } from '../contracts/interfaces/stack-detection.interface';
+import {
+	containsAny,
+	containsAnyPythonDep,
+	detectDocsRoots,
+	detectLanguageSignals,
+	detectLintCommand,
+	detectPackageManager,
+	detectPrimaryLanguage,
+	detectSourceRoots,
+	detectTestRunner,
+	detectTypecheckCommand,
+	extractDeps,
+	extractScripts,
+	hasAnyDep,
+	listDocRootGlobs,
+	listManifestFiles,
+	listPackageManagerLockfiles,
+	listSourceRootCandidates,
+} from './detect-stack-defaults.helper';
 
-const MANIFEST_FILES = [
-	'package.json',
-	'requirements.txt',
-	'pyproject.toml',
-	'Cargo.toml',
-	'go.mod',
-	'composer.json',
-] as const;
+const MANIFEST_FILES = listManifestFiles();
 
 const WEB_FRAMEWORK_SIGNALS: ReadonlyArray<{
 	readonly framework: string;
@@ -74,68 +87,8 @@ const DATA_SIGNALS: ReadonlyArray<{
 	{ framework: 'sqlx (Rust)', dep: 'sqlx' },
 ];
 
-interface IPackageJson {
-	readonly dependencies?: Readonly<Record<string, string>>;
-	readonly devDependencies?: Readonly<Record<string, string>>;
-}
-
-const extractDeps = (pkg: unknown): Record<string, string> => {
-	if (pkg === null || typeof pkg !== 'object') return {};
-	const obj = pkg as Partial<IPackageJson>;
-	const out: Record<string, string> = {};
-	if (obj.dependencies !== undefined) {
-		Object.assign(out, obj.dependencies);
-	}
-	if (obj.devDependencies !== undefined) {
-		Object.assign(out, obj.devDependencies);
-	}
-	return out;
-};
-
-const hasAnyDep = (
-	deps: Readonly<Record<string, string>>,
-	signals: ReadonlyArray<{
-		readonly framework: string;
-		readonly dep: string;
-	}>,
-): readonly string[] => {
-	const matched: string[] = [];
-	for (const { framework, dep } of signals) {
-		if (Object.prototype.hasOwnProperty.call(deps, dep))
-			matched.push(framework);
-	}
-	return matched;
-};
-
-const containsAnyPythonDep = (
-	text: string,
-	signals: ReadonlyArray<{
-		readonly framework: string;
-		readonly dep: string;
-	}>,
-): readonly string[] => {
-	const matched: string[] = [];
-	const lower = text.toLowerCase();
-	for (const { framework, dep } of signals) {
-		if (lower.includes(dep.toLowerCase())) matched.push(framework);
-	}
-	return matched;
-};
-
-const containsAny = (text: string, needles: readonly string[]): boolean => {
-	const lower = text.toLowerCase();
-	return needles.some((n) => lower.includes(n.toLowerCase()));
-};
-
-const detectLanguages = (
-	deps: Readonly<Record<string, string>>,
-): readonly string[] => {
-	const out: string[] = [];
-	if (Object.keys(deps).length > 0) out.push('typescript-or-javascript');
-	return out;
-};
-
 interface IFileProbes {
+	readonly paths: readonly string[];
 	readonly hasAstroConfig: boolean;
 	readonly hasNextConfig: boolean;
 	readonly hasViteConfig: boolean;
@@ -150,14 +103,20 @@ const probeFiles = (root: string, deps: IStackProbeDeps): IFileProbes => {
 		'astro.config.{ts,js,mjs}',
 		'next.config.{js,ts,mjs}',
 		'vite.config.{js,ts,mjs}',
+		'tsconfig.json',
+		'tsconfig.*.json',
 		'prisma/schema.prisma',
 		'nest-cli.json',
 		'Cargo.toml',
 		'go.mod',
+		...listPackageManagerLockfiles(),
+		...listDocRootGlobs(),
+		...listSourceRootCandidates(),
 	]);
 	const has = (suffix: string): boolean =>
 		list.some((p) => p.endsWith(suffix));
 	return {
+		paths: list,
 		hasAstroConfig: list.some((p) => p.includes('astro.config')),
 		hasNextConfig: list.some((p) => p.includes('next.config')),
 		hasViteConfig: list.some((p) => p.includes('vite.config')),
@@ -210,6 +169,15 @@ const finalize = (acc: IAccumulator): IStackDetectionResult => {
 		top,
 		detectedLanguages: [...acc.languages].sort(),
 		detectedFrameworks: [...acc.frameworks].sort(),
+		defaults: {
+			packageManager: 'unknown',
+			language: 'unknown',
+			testRunner: 'unknown',
+			lintCommand: undefined,
+			typecheckCommand: undefined,
+			docsRoots: [],
+			sourceRoots: [],
+		},
 	};
 };
 
@@ -230,7 +198,7 @@ export const detectStack = async (
 
 	const pkg = await deps.readJson(`${workspaceRoot}/package.json`);
 	const deps_ = extractDeps(pkg);
-	for (const l of detectLanguages(deps_)) acc.languages.add(l);
+	const scripts = extractScripts(pkg);
 
 	const webFrameworks = hasAnyDep(deps_, WEB_FRAMEWORK_SIGNALS);
 	for (const f of webFrameworks) acc.frameworks.add(f);
@@ -268,6 +236,53 @@ export const detectStack = async (
 		goModText !== null && containsAny(goModText, ['cobra', 'urfave/cli']);
 
 	const files = probeFiles(workspaceRoot, deps);
+	for (const language of detectLanguageSignals(
+		deps_,
+		files.paths,
+		pyText,
+		cargoText,
+		goModText,
+	)) {
+		acc.languages.add(language);
+	}
+	const packageManager = detectPackageManager(files.paths);
+	const language = detectPrimaryLanguage(
+		deps_,
+		files.paths,
+		pyText,
+		cargoText,
+		goModText,
+	);
+	const testRunner = detectTestRunner(
+		deps_,
+		scripts,
+		pyText,
+		cargoText,
+		goModText,
+	);
+	const docsRoots = detectDocsRoots(files.paths);
+	const sourceRoots = detectSourceRoots(files.paths);
+	const detectedDefaults: IDetectedProjectDefaults = {
+		packageManager,
+		language,
+		testRunner,
+		lintCommand: detectLintCommand(
+			scripts,
+			packageManager,
+			language,
+			pyText,
+		),
+		typecheckCommand: detectTypecheckCommand(
+			scripts,
+			packageManager,
+			language,
+			pyText,
+			cargoText,
+			goModText,
+		),
+		docsRoots,
+		sourceRoots,
+	};
 
 	// Web-app signals
 	if (
@@ -316,7 +331,7 @@ export const detectStack = async (
 		cliFrameworksJs.length > 0 ||
 		cargoBin ||
 		goCli ||
-		(cargoText !== null && cargoText.includes('[[bin]]'));
+		cargoText?.includes('[[bin]]');
 	if (cliSignals) {
 		bump(acc, 'cli-tool', 0.5, 'CLI framework or bin target detected');
 		if (
@@ -374,7 +389,11 @@ export const detectStack = async (
 	// `detectStack` output + lint findings; we do not bump it here so
 	// the recommendation set always reflects concrete signals.
 
-	return finalize(acc);
+	const result = finalize(acc);
+	return {
+		...result,
+		defaults: detectedDefaults,
+	};
 };
 
 export { MANIFEST_FILES };

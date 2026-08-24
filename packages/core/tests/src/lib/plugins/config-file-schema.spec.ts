@@ -46,7 +46,7 @@ describe('config-file-schema (Solid SRP extraction)', async () => {
 					proposals: {
 						enabled: false,
 						prefix: 'work',
-						options: { validationCommand: 'bun run validate' },
+						options: { validationCommand: 'npm run validate' },
 					},
 				},
 			});
