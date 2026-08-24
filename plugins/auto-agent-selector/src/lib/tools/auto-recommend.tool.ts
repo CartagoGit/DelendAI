@@ -3,10 +3,11 @@ import z from 'zod';
 import type { IToolRegistration } from '@mcp-vertex/core/public';
 import { toolJson } from '@mcp-vertex/core/public';
 
-import { discoverAndPersistRoster } from '../discovery/discover-roster';
-import { realDiscoveryDeps } from '../discovery/real-deps';
-import { rankProviders } from '../routing/rank-providers';
-import { resolveTaskPin } from '../prefs/resolve-task-pin';
+import {
+	MAX_COST_QUALITY_TRADEOFF,
+	MAX_TASK_TYPE_LENGTH,
+} from '../contracts/constants/tradeoff.constant';
+import { discoverRankedProviders } from '../services/discover-ranked-providers.service';
 import { realCalibrationStore } from '../calibrate/store';
 import { winRateMap } from '../calibrate/win-rates';
 import type { IDiscoveryDeps } from '../contracts/interfaces/roster.interface';
@@ -65,18 +66,21 @@ export const buildAutoRecommendRegistration = (options: {
 			server.registerTool(
 				`${prefix}_auto_recommend`,
 				{
-					description:
-						'Rank the reachable LLM/agent providers for a task and recommend the most cost-effective one, with a plain-language rationale for every option (cost tier, fit for your cost↔quality setting, measured win-rate, pin). Pass `costQualityTradeoff` (0 = always the strongest model, 10 = the cheapest that works) to override the configured default, and `pin` to force a provider you prefer — a reachable pin always ranks first. Headless and advisory: it never spawns anything, never spends, and never overrides your choice.',
+					description: `Rank the reachable LLM/agent providers for a task and recommend the most cost-effective one, with a plain-language rationale for every option (cost tier, fit for your cost↔quality setting, measured win-rate, pin). Pass \`costQualityTradeoff\` (0 = always the strongest model, ${MAX_COST_QUALITY_TRADEOFF} = the cheapest that works) to override the configured default, and \`pin\` to force a provider you prefer — a reachable pin always ranks first. Headless and advisory: it never spawns anything, never spends, and never overrides your choice.`,
 					inputSchema: z
 						.object({
 							costQualityTradeoff: z
 								.number()
 								.int()
 								.min(0)
-								.max(10)
+								.max(MAX_COST_QUALITY_TRADEOFF)
 								.optional(),
 							pin: z.string().min(1).optional(),
-							taskType: z.string().min(1).max(80).optional(),
+							taskType: z
+								.string()
+								.min(1)
+								.max(MAX_TASK_TYPE_LENGTH)
+								.optional(),
 						})
 						.strict(),
 					outputSchema: OUTPUT_SCHEMA,
@@ -86,12 +90,6 @@ export const buildAutoRecommendRegistration = (options: {
 					pin?: string | undefined;
 					taskType?: string | undefined;
 				}) => {
-					const roster = await discoverAndPersistRoster(
-						options.deps ?? realDiscoveryDeps(),
-						options.rosterStore,
-					);
-					const tradeoff =
-						args.costQualityTradeoff ?? options.defaultTradeoff;
 					const store =
 						options.store ??
 						(options.calibrationDir !== undefined
@@ -105,14 +103,14 @@ export const buildAutoRecommendRegistration = (options: {
 									args.taskType,
 								)
 							: undefined;
-					const ranked = rankProviders({
-						available: roster.available,
-						costQualityTradeoff: tradeoff,
-						pinnedId: resolveTaskPin(
-							args.pin,
-							args.taskType,
-							options.taskPins,
-						),
+					const { tradeoff, ranked } = await discoverRankedProviders({
+						deps: options.deps,
+						rosterStore: options.rosterStore,
+						requestedTradeoff: args.costQualityTradeoff,
+						defaultTradeoff: options.defaultTradeoff,
+						pin: args.pin,
+						taskType: args.taskType,
+						taskPins: options.taskPins,
 						...(calibration !== undefined ? { calibration } : {}),
 					});
 					const rows = ranked.map((r) => ({

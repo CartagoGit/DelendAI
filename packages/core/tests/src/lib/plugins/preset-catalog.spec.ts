@@ -30,8 +30,8 @@ describe('PRESET_CATALOG', async () => {
 		expect(PRESET_CATALOG[0]?.members.length).toBe(2);
 		// lean: 4 members, independent essentials preset
 		expect(PRESET_CATALOG[1]?.members.length).toBe(4);
-		// standard: adds 14 on top of minimal (f00115 added test-policy, f00123 added refactor, f00128 S1 added database, f00132 S1 added diagram, f00133 added container, f00135 added env, f00137 added skills-pack, f00138 added prompts-pack, f00158 added error-reporting)
-		expect(PRESET_CATALOG[2]?.members.length).toBe(15);
+		// standard: adds 16 on top of minimal (f00115 added test-policy, f00123 added refactor, f00128 S1 added database, f00132 S1 added diagram, f00133 added container, f00135 added env, f00137 added skills-pack, f00138 added prompts-pack, f00158 added error-reporting, x00230 added auto-agent-selector)
+		expect(PRESET_CATALOG[2]?.members.length).toBe(16);
 		// swarm: adds 8 on top of standard (f00121 S3 added forge,
 		// completion added by the completion plugin)
 		expect(PRESET_CATALOG[3]?.members.length).toBe(8);
@@ -104,7 +104,7 @@ describe('PRESET_CATALOG', async () => {
 	});
 
 	it('stack packs resolve to exactly their own members (no chain accumulation)', async () => {
-		// `standard` resolves to 16 plugins. None of those should leak
+		// `standard` resolves to 18 plugins. None of those should leak
 		// into `web-app` just because `web-app` is added after them in
 		// the catalog order.
 		const standardResolved = resolvePresetMembers('standard');
@@ -233,9 +233,10 @@ describe('resolvePresetMembers', async () => {
 			'env',
 			'skills-pack',
 			'error-reporting',
+			'auto-agent-selector',
 		]);
-		expect(resolvePresetMembers('swarm').length).toBe(25);
-		expect(resolvePresetMembers('full').length).toBe(29);
+		expect(resolvePresetMembers('swarm').length).toBe(26);
+		expect(resolvePresetMembers('full').length).toBe(30);
 		expect(resolvePresetMembers('swarm')).not.toContain('lean');
 	});
 
@@ -261,7 +262,8 @@ describe('resolvePresetMembers', async () => {
 		expect(resolved).toContain('skills-pack');
 		expect(resolved).toContain('prompts-pack');
 		expect(resolved).toContain('error-reporting');
-		expect(resolved.length).toBe(17);
+		expect(resolved).toContain('auto-agent-selector');
+		expect(resolved.length).toBe(18);
 	});
 
 	it('resolves swarm = standard + proposals/notification/logs/status-marker/test-convention', async () => {
