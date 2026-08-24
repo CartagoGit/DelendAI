@@ -2,7 +2,7 @@
 id: f00158
 title: "Auto-reporte de errores a GitHub + triage interno automático de issues"
 kind: feat
-status: ready
+status: review
 type: proposal
 track: github
 date: 2026-08-24
@@ -44,7 +44,7 @@ intervención humana.
 - global_gate: type
 
 ### S1 — Plugin `error-reporting` (auto-reporte de errores)
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/error-reporting/**`, `packages/core/src/lib/plugins/preset-catalog.ts`, `packages/core/src/lib/plugins/plugin-defaults.ts`, `packages/cli/src/contracts/constants/plugin-defaults.constant.ts`, `packages/core/src/lib/registry/first-party-index.ts`, `tools/scripts/release/release-plan.ts`, `tsconfig.base.json`, `vitest.shared.ts`
 - **Gate**: type
 - acceptance:
@@ -56,7 +56,7 @@ intervención humana.
   - "Sin `gh`/auth/red falla silenciosamente (nunca rompe el boot)."
 
 ### S2 — Plugin `issues-triage` (bot interno, privado)
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/issues-triage/**`, `tsconfig.base.json`, `vitest.shared.ts`
 - **Gate**: type
 - acceptance:
