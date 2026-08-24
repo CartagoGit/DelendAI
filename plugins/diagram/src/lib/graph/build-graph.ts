@@ -9,6 +9,11 @@ import type {
 	IWorkspacePackage,
 } from '../contracts/interfaces/graph.interface';
 
+interface INodeEdgeGraph<TEdge extends { from: string; to: string }> {
+	readonly nodes: readonly string[];
+	readonly edges: readonly TEdge[];
+}
+
 /** The short, display name for a package (unscoped last segment). */
 const shortName = (name: string): string => {
 	const slash = name.lastIndexOf('/');
@@ -46,10 +51,45 @@ export const buildDependencyGraph = (
 };
 
 /**
- * Render a dependency graph as a mermaid `flowchart LR`. Isolated nodes (no
- * edges) are declared so they still appear. Deterministic output.
+ * Deterministically keep the first `limit` node ids in alphabetical order and
+ * retain only the edges whose endpoints both survive the cut.
  */
-export const renderMermaid = (graph: IDependencyGraph): string => {
+export const limitGraph = <TEdge extends { from: string; to: string }>(
+	graph: INodeEdgeGraph<TEdge>,
+	limit: number | undefined,
+): { graph: INodeEdgeGraph<TEdge>; truncated: boolean } => {
+	if (limit === undefined || graph.nodes.length <= limit) {
+		return { graph, truncated: false };
+	}
+	const nodes = graph.nodes.slice(0, limit);
+	const kept = new Set(nodes);
+	return {
+		graph: {
+			nodes,
+			edges: graph.edges.filter(
+				(edge) => kept.has(edge.from) && kept.has(edge.to),
+			),
+		},
+		truncated: true,
+	};
+};
+
+export const limitDependencyGraph = (
+	graph: IDependencyGraph,
+	limit: number | undefined,
+): { graph: IDependencyGraph; truncated: boolean } => {
+	const limited = limitGraph(graph, limit);
+	return {
+		graph: limited.graph as IDependencyGraph,
+		truncated: limited.truncated,
+	};
+};
+
+export const renderNodeEdgeMermaid = <
+	TEdge extends { from: string; to: string },
+>(
+	graph: INodeEdgeGraph<TEdge>,
+): string => {
 	const lines = ['flowchart LR'];
 	const connected = new Set<string>();
 	for (const edge of graph.edges) {
@@ -64,3 +104,10 @@ export const renderMermaid = (graph: IDependencyGraph): string => {
 	}
 	return lines.join('\n');
 };
+
+/**
+ * Render a dependency graph as a mermaid `flowchart LR`. Isolated nodes (no
+ * edges) are declared so they still appear. Deterministic output.
+ */
+export const renderMermaid = (graph: IDependencyGraph): string =>
+	renderNodeEdgeMermaid(graph);

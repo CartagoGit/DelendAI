@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import {
 	buildDependencyGraph,
+	limitDependencyGraph,
 	renderMermaid,
 } from '../../../src/lib/graph/build-graph';
 import type { IWorkspacePackage } from '../../../src/lib/contracts/interfaces/graph.interface';
@@ -29,6 +30,13 @@ describe('buildDependencyGraph', () => {
 			{ name: '@scope/a', dependencies: ['@scope/a'] },
 		]);
 		expect(graph.edges).toEqual([]);
+	});
+
+	it('limits deterministically by the first sorted node ids', () => {
+		const limited = limitDependencyGraph(buildDependencyGraph(packages), 2);
+		expect(limited.graph.nodes).toEqual(['core', 'deps']);
+		expect(limited.graph.edges).toEqual([{ from: 'deps', to: 'core' }]);
+		expect(limited.truncated).toBe(true);
 	});
 });
 
