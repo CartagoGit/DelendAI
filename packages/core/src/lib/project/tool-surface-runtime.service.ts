@@ -13,8 +13,8 @@ import {
 	buildToolKnowledgeEntry,
 	compactDescription,
 	safeParseSurfaceArgs,
-	TOOL_DETAILS_PREFIX,
 } from './tool-surface-runtime.helper';
+import { TOOL_DETAILS_PREFIX } from '../contracts/constants/tool-details-prefix.constant';
 
 const DEFAULT_SEARCH_LIMIT = 20;
 

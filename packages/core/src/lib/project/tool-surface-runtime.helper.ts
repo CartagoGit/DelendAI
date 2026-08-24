@@ -1,8 +1,9 @@
 import type { IKnowledgeEntry } from '../contracts/interfaces/knowledge.interface';
+import { TOOL_DETAILS_PREFIX } from '../contracts/constants/tool-details-prefix.constant';
 
 const MAX_PUBLIC_DESCRIPTION_CHARS = 120;
 
-export const TOOL_DETAILS_PREFIX = 'tool:';
+export { TOOL_DETAILS_PREFIX };
 
 export const compactDescription = (
 	description: string | undefined,
