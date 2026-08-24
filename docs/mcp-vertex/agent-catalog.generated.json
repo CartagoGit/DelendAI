@@ -494,6 +494,10 @@
 			"plugin": "proposals"
 		},
 		{
+			"name": "mcp-vertex_proposals_auto_fix_queue",
+			"plugin": "proposals"
+		},
+		{
 			"name": "mcp-vertex_proposals_auto_work",
 			"plugin": "proposals"
 		},
