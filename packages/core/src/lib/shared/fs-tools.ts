@@ -51,6 +51,51 @@ export type {
 } from './fs-tools-options';
 
 /**
+ * Threat model — filesystem containment and residual TOCTOU window.
+ *
+ * What this module family DOES cover for `fs_read` / `fs_write`:
+ *
+ * - Lexical containment (`contain-path.ts`): rejects absolute paths on the
+ *   workspace contract, rejects `..` traversal, and constrains allowlisted
+ *   absolute paths to the workspace root or an operator-authorized root.
+ * - Symlink-aware containment (`contain-realpath.ts`): resolves the target's
+ *   deepest existing prefix and rejects a pre-existing symlink / junction that
+ *   lands outside the workspace or every authorized root.
+ * - Atomic durability (`writeFileAtomic`) plus per-path exclusion
+ *   (`withFileMutex`): prevents torn writes and same-process / cooperating
+ *   cross-process clobbering for the exact destination path.
+ * - Authorized roots are explicit operator config, never model-expanded input.
+ *
+ * What this module family does NOT claim to cover:
+ *
+ * - Absolute TOCTOU closure between the `realpath` check and the later
+ *   open/read/write. An attacker with concurrent filesystem mutation can still
+ *   swap a symlink, junction, mount, or parent directory after containment has
+ *   been checked.
+ * - Non-cooperating writers outside `withFileMutex`, or aliasing through a
+ *   second path to the same inode/target that does not share this mutex key.
+ * - Host-level escape vectors such as bind mounts, admin reparse-point tricks,
+ *   or permissions / sandbox policy mistakes outside the workspace boundary.
+ *
+ * Residual vectors therefore remain the host sandbox's job: the cheap defense
+ * here is "lexical containment first, realpath containment second, then atomic
+ * write + mutex", not a promise of a TOCTOU-proof filesystem capability.
+ *
+ * Recorded decision — `O_NOFOLLOW` / fd-relative APIs:
+ *
+ * - `O_NOFOLLOW` would harden the final open against a symlink swap, but it is
+ *   not sufficient on its own because the parent chain can still change after
+ *   validation, and Bun/Node do not expose a portable end-to-end write path
+ *   here that composes `mkdir`, temp-file creation, rename, and replacement
+ *   strictly via descriptor-relative operations across Unix and Windows.
+ * - Parent-fd / `openat`-style traversal would be the right full answer for a
+ *   narrower runtime target, but adopting it here would be a portability and
+ *   implementation rewrite, especially for Windows reparse points and Bun's fs
+ *   surface. We therefore defer it and document the residual window instead of
+ *   pretending the current API can make a stronger guarantee than it does.
+ */
+
+/**
  * `fs_read` (effects: none — read-only) and `fs_write`
  * (effects: ['write']). Both validate `path` via
  * `resolveWorkspaceContained`; neither ever throws out of the

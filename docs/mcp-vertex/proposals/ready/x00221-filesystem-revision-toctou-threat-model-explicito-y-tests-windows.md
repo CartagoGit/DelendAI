@@ -36,7 +36,7 @@ La contención del filesystem es una de las fortalezas del proyecto; documentar 
 - global_gate: type
 
 ### S1 — Documentar threat model y mitigaciones
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/src/lib/shared/fs-tools.ts`
 - **Gate**: type
 - acceptance:
@@ -44,7 +44,7 @@ La contención del filesystem es una de las fortalezas del proyecto; documentar 
   - "Se evalúan O_NOFOLLOW / fd-relative con decisión registrada."
 
 ### S2 — Tests Windows de contención
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/tests/src/lib/shared/fs-tools-windows.spec.ts`
 - **Gate**: type
 - acceptance:
