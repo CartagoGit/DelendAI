@@ -38,14 +38,14 @@ Hoy el auto-selector piensa solo en adecuación funcional. Con el tax y la utili
 - global_gate: type
 
 ### S1 — Token tax por plugin
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/usage-tracking/src/lib/token-tax.helper.ts`
 - **Gate**: type
 - acceptance:
   - "Cada plugin declara/deriva staticSchemaBytes, compactTypicalBytes, p95ResponseBytes."
 
 ### S2 — KPIs locales en report y rollup
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/usage-tracking/src/lib/tools/report.tool.ts`, `plugins/usage-tracking/src/lib/rollup.ts`
 - **Gate**: type
 - acceptance:
@@ -53,7 +53,7 @@ Hoy el auto-selector piensa solo en adecuación funcional. Con el tax y la utili
   - "Se calcula utility per 1K por plugin (success contribution / context tokens)."
 
 ### S3 — Tests de tax y utility
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/usage-tracking/tests/token-tax.spec.ts`
 - **Gate**: type
 - acceptance:
