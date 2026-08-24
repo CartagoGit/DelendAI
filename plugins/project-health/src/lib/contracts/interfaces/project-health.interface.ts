@@ -16,6 +16,17 @@ export interface IProjectHealthScore {
 	readonly debt: number;
 }
 
+export interface IProjectHealthSignals {
+	readonly lockfile: string | undefined;
+	readonly qualityScopes: readonly string[];
+	readonly lintConfig: boolean;
+	readonly testConfig: boolean;
+	readonly suspiciousPaths: readonly string[];
+	readonly markerCount: number;
+	readonly sampledFiles: number;
+	readonly score: IProjectHealthScore;
+}
+
 export interface IProjectHealthNextAction {
 	readonly tool: string;
 	readonly reason: string;
