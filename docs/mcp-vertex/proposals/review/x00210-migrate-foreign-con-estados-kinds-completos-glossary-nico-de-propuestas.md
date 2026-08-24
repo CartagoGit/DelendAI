@@ -2,7 +2,7 @@
 id: x00210
 title: "migrate-foreign con estados/kinds completos + glossary único de propuestas"
 kind: fix
-status: ready
+status: review
 type: proposal
 track: proposals
 date: 2026-08-23
@@ -45,7 +45,7 @@ Auditoría 2026-08-24 (hallazgos B6, B7, B8, B9): migrate-foreign solo reconoce 
   - "Los kinds se preservan o se marcan no-migrables; nunca se degradan por regex de título."
 
 ### S3 — sync y proposal-document consumen el glossary
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/proposals/src/lib/proposals/sync-proposal-registry.ts`, `plugins/proposals/src/lib/proposals/proposal-document.ts`
 - **Gate**: type
 - acceptance:
