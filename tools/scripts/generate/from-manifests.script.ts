@@ -81,6 +81,12 @@ export interface IPluginManifestArtifact {
 		readonly visibility: string;
 		readonly presets: readonly string[];
 		readonly capabilities: readonly string[];
+		readonly permissions: readonly PermissionCategory[];
+		readonly tokenBudget: {
+			readonly warning: number;
+			readonly hard: number;
+			readonly releaseRelativePercent: number;
+		};
 	}[];
 	readonly tokenBudgets: readonly {
 		readonly id: string;
@@ -256,6 +262,12 @@ export const buildManifestArtifact = (
 		visibility: manifest.visibility,
 		presets: [...manifest.presets],
 		capabilities: [...manifest.capabilities],
+		permissions: [...manifest.permissions],
+		tokenBudget: {
+			warning: manifest.tokenBudget.warning,
+			hard: manifest.tokenBudget.hard,
+			releaseRelativePercent: manifest.tokenBudget.releaseRelativePercent,
+		},
 	})),
 	tokenBudgets: manifests.map(({ manifest }) => ({
 		id: manifest.id,
