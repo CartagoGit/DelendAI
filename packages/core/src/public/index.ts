@@ -195,6 +195,7 @@ export type {
 	IMcpPluginContext,
 	IMcpPluginRegistrations,
 } from '../lib/plugins/plugin-contract';
+export type { IPluginRuntime } from '../lib/contracts/interfaces/plugin-runtime.interface';
 export {
 	injectCheckpointAdvisory,
 	mergeCheckpointAdvisories,

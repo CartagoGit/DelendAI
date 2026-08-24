@@ -3,9 +3,15 @@ import type {
 	IMcpPluginContext,
 	IMcpPluginRegistrations,
 } from './plugin-contract';
+import type { IPluginRuntime } from '../contracts/interfaces/plugin-runtime.interface';
 import type { IDependencyGraphNode } from '../contracts/interfaces/dependency-graph.interface';
 import type { IPluginRegisterErrorInfo } from '../contracts/interfaces/plugin-lifecycle-error.interface';
 import { formatMissingDependenciesError } from './load-plugins-deps.helper';
+import {
+	disposeLoadedPlugins,
+	extractPartialRuntime,
+	registerPluginWithLifecycle,
+} from './load-plugins-runtime.helper';
 import {
 	blockDependentsForFailure,
 	buildDependencyGraph,
@@ -38,6 +44,14 @@ const recordDependencyError = (
 	errors.push({ specifier: node.specifier, message });
 };
 
+interface ILoadedPluginRuntimeEntry {
+	readonly specifier: string;
+	readonly resolved: string;
+	readonly plugin: IMcpPlugin;
+	readonly registrations: IMcpPluginRegistrations;
+	readonly runtime: IPluginRuntime<IMcpPluginRegistrations>;
+}
+
 export const registerResolvedPluginsWithLifecycle = async (input: {
 	readonly resolvedPlugins: readonly {
 		readonly specifier: string;
@@ -46,17 +60,14 @@ export const registerResolvedPluginsWithLifecycle = async (input: {
 		readonly ctx: IMcpPluginContext;
 	}[];
 	readonly timeoutMs: number;
-	readonly withTimeout: <T>(
-		promise: Promise<T>,
-		ms: number,
-		label: string,
-	) => Promise<T>;
+	readonly signal?: AbortSignal | undefined;
 }): Promise<{
 	readonly loaded: readonly {
 		readonly specifier: string;
 		readonly resolved: string;
 		readonly plugin: IMcpPlugin;
 		readonly registrations: IMcpPluginRegistrations;
+		readonly runtime: IPluginRuntime<IMcpPluginRegistrations>;
 	}[];
 	readonly errors: ReadonlyArray<{
 		readonly specifier: string;
@@ -64,7 +75,7 @@ export const registerResolvedPluginsWithLifecycle = async (input: {
 	}>;
 	readonly registerErrors: readonly IPluginRegisterErrorInfo[];
 }> => {
-	const { resolvedPlugins, timeoutMs, withTimeout } = input;
+	const { resolvedPlugins, timeoutMs, signal } = input;
 	const errors: Array<{ specifier: string; message: string }> = [];
 	const registerErrors: IPluginRegisterErrorInfo[] = [];
 	const recordedDependencyPlugins = new Set<string>();
@@ -166,12 +177,7 @@ export const registerResolvedPluginsWithLifecycle = async (input: {
 		}
 	}
 
-	const loaded: Array<{
-		readonly specifier: string;
-		readonly resolved: string;
-		readonly plugin: IMcpPlugin;
-		readonly registrations: IMcpPluginRegistrations;
-	}> = [];
+	const loaded: ILoadedPluginRuntimeEntry[] = [];
 	for (const pluginName of dependencyGraph.order) {
 		const entry = resolvedByName.get(pluginName);
 		const node = dependencyGraph.nodes[pluginName];
@@ -184,18 +190,47 @@ export const registerResolvedPluginsWithLifecycle = async (input: {
 		);
 		const { specifier, resolved, plugin, ctx } = entry;
 		try {
-			const registrations = await withTimeout(
-				Promise.resolve(plugin.register(ctx)),
+			const runtime = await registerPluginWithLifecycle({
+				plugin,
+				ctx,
 				timeoutMs,
-				`plugin "${plugin.name}" register()`,
-			);
+				signal,
+			});
 			dependencyGraph = setDependencyGraphState(
 				dependencyGraph,
 				pluginName,
 				'active',
 			);
-			loaded.push({ specifier, resolved, plugin, registrations });
+			loaded.push({
+				specifier,
+				resolved,
+				plugin,
+				registrations: runtime.registrations,
+				runtime,
+			});
 		} catch (error) {
+			const partialRuntime = extractPartialRuntime(error);
+			if (partialRuntime) {
+				await disposeLoadedPlugins(
+					[
+						{
+							specifier,
+							resolved,
+							plugin,
+							registrations: partialRuntime.registrations,
+							runtime: partialRuntime,
+						},
+					],
+					{
+						onError: (disposedEntry, disposeError) => {
+							errors.push({
+								specifier: disposedEntry.specifier,
+								message: `plugin "${disposedEntry.plugin.name}" dispose() failed during rollback: ${disposeError instanceof Error ? disposeError.message : String(disposeError)}`,
+							});
+						},
+					},
+				);
+			}
 			dependencyGraph = setDependencyGraphState(
 				dependencyGraph,
 				pluginName,
@@ -254,7 +289,42 @@ export const registerResolvedPluginsWithLifecycle = async (input: {
 					),
 				);
 			}
+			await disposeLoadedPlugins(loaded, {
+				onError: (disposedEntry, disposeError) => {
+					errors.push({
+						specifier: disposedEntry.specifier,
+						message: `plugin "${disposedEntry.plugin.name}" dispose() failed during rollback: ${disposeError instanceof Error ? disposeError.message : String(disposeError)}`,
+					});
+				},
+				onDisposed: (disposedEntry) => {
+					dependencyGraph = setDependencyGraphState(
+						dependencyGraph,
+						disposedEntry.plugin.name,
+						'disposed',
+					);
+				},
+			});
+			return { loaded: [], errors, registerErrors };
 		}
+	}
+
+	if (signal?.aborted) {
+		await disposeLoadedPlugins(loaded, {
+			onError: (disposedEntry, disposeError) => {
+				errors.push({
+					specifier: disposedEntry.specifier,
+					message: `plugin "${disposedEntry.plugin.name}" dispose() failed during rollback: ${disposeError instanceof Error ? disposeError.message : String(disposeError)}`,
+				});
+			},
+			onDisposed: (disposedEntry) => {
+				dependencyGraph = setDependencyGraphState(
+					dependencyGraph,
+					disposedEntry.plugin.name,
+					'disposed',
+				);
+			},
+		});
+		return { loaded: [], errors, registerErrors };
 	}
 
 	return { loaded, errors, registerErrors };
