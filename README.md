@@ -22,7 +22,9 @@ Project-agnostic core for building MCP servers + a CLI plugin loader, by
 | `plugins/memory` | `@mcp-vertex/memory` | Persistent project notes (save/recall/list/forget) for cross-session continuity. |
 | `plugins/git` | `@mcp-vertex/git` | Read-only git orientation: status, changed files, diff stat, log. |
 | `plugins/quality` | `@mcp-vertex/quality` | Quality-gate runner: executes lint/test/build per scope, structured pass/fail. |
-| `plugins/search` | `@mcp-vertex/search` | Grep-like, low-token textual `search` over allow-listed workspace files. |
+<!-- BEGIN GENERATED: migrated-plugin-layout-rows -->
+| `plugins/search` | `@mcp-vertex/search` | Code search (semantic + symbol + references). |
+<!-- END GENERATED: migrated-plugin-layout-rows -->
 | `plugins/notification` | `@mcp-vertex/notification` | Watches the shared lock file and pushes an MCP `notifications/message` on release, so agents stop polling. |
 | `plugins/docs` | `@mcp-vertex/docs` | Catalogue + read the repo markdown (`docs_list` / `docs_read`), anti-traversal. |
 | `plugins/deps` | `@mcp-vertex/deps` | Dependency inventory + offline health (`deps_list` / `deps_check`); no network. |

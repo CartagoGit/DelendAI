@@ -39,7 +39,7 @@ El catálogo vive duplicado en package.json, FIRST_PARTY_PLUGIN_INDEX, PLUGIN_DE
 - global_gate: type
 
 ### S1 — definePluginManifest y schema del manifest
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/src/lib/manifest/define-plugin-manifest.ts`
 - **Gate**: type
 - acceptance:
@@ -47,7 +47,7 @@ El catálogo vive duplicado en package.json, FIRST_PARTY_PLUGIN_INDEX, PLUGIN_DE
   - "Schema validado con Zod; MAN-001 cubierto."
 
 ### S2 — Lint de manifests y representación
-- **Status**: pending
+- **Status**: done
 - **Files**: `tools/scripts/lint/plugin-manifest.script.ts`
 - **Gate**: type
 - acceptance:
@@ -55,7 +55,7 @@ El catálogo vive duplicado en package.json, FIRST_PARTY_PLUGIN_INDEX, PLUGIN_DE
   - "REG-004: no hay paquetes invisibles por accidente."
 
 ### S3 — Generadores desde manifests
-- **Status**: pending
+- **Status**: done
 - **Files**: `tools/scripts/generate/from-manifests.script.ts`
 - **Gate**: type
 - acceptance:
@@ -63,7 +63,7 @@ El catálogo vive duplicado en package.json, FIRST_PARTY_PLUGIN_INDEX, PLUGIN_DE
   - "El auto-plugin-selector consume manifests (MAN-008)."
 
 ### S4 — Primer manifest migrado como patrón
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/src/lib/registry/first-party-index.ts`, `plugins/search/plugin.manifest.ts`
 - **Gate**: type
 - acceptance:

@@ -787,6 +787,15 @@ export type {
 	IResolvePluginsResult,
 	PluginRegistryOrigin,
 } from '../lib/contracts/interfaces/plugin-registry.interface';
+export type {
+	IPluginManifest,
+	PluginManifestMaturity,
+	PluginManifestVisibility,
+} from '../lib/contracts/interfaces/plugin-manifest.interface';
+export {
+	definePluginManifest,
+	parsePluginManifest,
+} from '../lib/manifest/define-plugin-manifest';
 export { FIRST_PARTY_PLUGIN_INDEX } from '../lib/registry/first-party-index';
 export {
 	buildPluginAddRecipe,
