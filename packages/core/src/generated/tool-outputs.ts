@@ -566,6 +566,18 @@ export type McpVertexContainerK8sApplyOutput = {
 	};
 };
 
+export interface McpVertexContextForChangeContextForChangeOutput {
+	dependsOn: string[];
+	files: string[];
+	sections: Array<{
+		source: "git" | "symbols" | "references" | "tests" | "docs" | "conventions" | "test-policy" | "memory";
+		summary: string;
+	}>;
+	bytes: number;
+	truncated: boolean;
+	originalBytes?: number;
+}
+
 export interface McpVertexCreatePluginOutput {
 	ok: boolean;
 	scaffolded: {
@@ -3576,6 +3588,7 @@ export interface McpVertexToolOutputs {
 	"mcp-vertex_container_container_lint": McpVertexContainerContainerLintOutput;
 	"mcp-vertex_container_container_logs": McpVertexContainerContainerLogsOutput;
 	"mcp-vertex_container_k8s_apply": McpVertexContainerK8sApplyOutput;
+	"mcp-vertex_context-for-change_context_for_change": McpVertexContextForChangeContextForChangeOutput;
 	"mcp-vertex_create_plugin": McpVertexCreatePluginOutput;
 	"mcp-vertex_create_project": McpVertexCreateProjectOutput;
 	"mcp-vertex_deps_deps_audit": McpVertexDepsDepsAuditOutput;

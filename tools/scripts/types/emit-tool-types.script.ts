@@ -65,6 +65,10 @@ export const PACKAGE_ROUTES: Readonly<Record<string, IPackageRoute>> = {
 	// f00072 S2 — opt-in cache eviction plugin (not in any preset;
 	// harvested so `cache_gc`'s outputSchema gets a typed SDK module).
 	cache: { dir: 'plugins/cache', label: 'Cache' },
+	'context-for-change': {
+		dir: 'plugins/context-for-change',
+		label: 'ContextForChange',
+	},
 };
 
 /** Relative path (from a package dir) of the generated module. */

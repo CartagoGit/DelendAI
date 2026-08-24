@@ -34,6 +34,7 @@ export const PLUGIN_DEFAULTS: Readonly<
 	browser: {},
 	'prompt-eval': {},
 	observability: {},
+	'context-for-change': {},
 	forge: {},
 	deps: {
 		manifest: 'package.json',

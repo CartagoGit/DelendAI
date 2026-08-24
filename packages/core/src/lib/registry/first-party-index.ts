@@ -93,6 +93,15 @@ export const FIRST_PARTY_PLUGIN_INDEX: IPluginRegistrySource = {
 		},
 		{
 			origin: 'first-party',
+			id: 'context-for-change',
+			package: '@mcp-vertex/context-for-change',
+			summary:
+				'Compact change-context orchestrator that combines diff, symbols, tests, docs and conventions.',
+			tags: ['context', 'orchestration', 'f00165'],
+			permissions: ['filesystem-read'],
+		},
+		{
+			origin: 'first-party',
 			id: 'conventions',
 			package: '@mcp-vertex/conventions',
 			summary:
