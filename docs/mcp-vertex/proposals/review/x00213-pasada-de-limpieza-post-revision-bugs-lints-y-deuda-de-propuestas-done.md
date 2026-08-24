@@ -2,7 +2,7 @@
 id: x00213
 title: "Pasada de limpieza post-revisión: bugs, lints rotos y deuda de propuestas 'done'"
 kind: fix
-status: ready
+status: review
 type: proposal
 track: quality+proposals+lint-baseline
 date: 2026-08-24
@@ -29,7 +29,7 @@ La revisión de las propuestas `done` (siguiendo las instrucciones iniciales: "r
 - global_gate: type
 
 ### S1 — `lint:solid`: 524 hallazgos nuevos fuera de baseline
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/src/lib/scan/dip-violation.ts`, archivos afectados (ver detalle)
 - **Gate**: type
 - acceptance:
@@ -38,7 +38,7 @@ La revisión de las propuestas `done` (siguiendo las instrucciones iniciales: "r
   - "Los 173 `duplicated across` y 343 `magic number` restantes se resuelven con un rebaseline deliberado (`--update`) documentando la deuda aceptada, o se refactorizan; nunca quedan como fallo silencioso."
 
 ### S2 — `lint:tools`: escáner no excluye `node_modules`
-- **Status**: pending
+- **Status**: done
 - **Files**: `tools/scripts/lint/no-shell-python.script.ts`
 - **Gate**: type
 - acceptance:
@@ -46,14 +46,14 @@ La revisión de las propuestas `done` (siguiendo las instrucciones iniciales: "r
   - "`bun run lint:tools` sale 0."
 
 ### S3 — `lint:stray-cache-files`: directorio stray `agent-queue`
-- **Status**: pending
+- **Status**: done
 - **Files**: `.cache/mcp-vertex/agent-queue/queue.json`
 - **Gate**: none
 - acceptance:
   - "`bun run lint:stray-cache-files` sale 0 (el dir `agent-queue` deja de existir o se mueve a `tools/scripts/`)."
 
 ### S4 — `lint:types-in-contracts`: 24 archivos con tipos exportados fuera de contracts/
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/usage-tracking/src/lib/services/checkpoint-advisory.service.ts`, `plugins/usage-tracking/src/lib/types.ts`, `packages/core/src/lib/agents/agent-slots.ts`, `packages/core/src/lib/scaffold/{detect-existing-install,standalone-core-tools}.ts`, `packages/core/src/lib/shared/{unicode-safe-text,unicode-emoji-names.generated}.ts`, `plugins/error-reporting/**`, `plugins/issues-triage/**`
 - **Gate**: type
 - acceptance:
@@ -62,16 +62,17 @@ La revisión de las propuestas `done` (siguiendo las instrucciones iniciales: "r
   - "`bun run lint:types-in-contracts` sale 0."
 
 ### S5 — x00193 S1 huérfano: Node-vs-Bun plugin resolution
-- **Status**: pending
+- **Status**: done
 - **Files**: `docs/mcp-vertex/proposals/ready/x00193-*.md`, `tools/scripts/smoke/cli.script.ts`, `tools/scripts/smoke/pack.script.ts`
 - **Gate**: none
 - acceptance:
   - "La propuesta x00193 queda coherentemente abierta en `ready/` (ya reabierta; S2 marcado `done`, S1 `pending`)."
   - "Se añade una nota en la propuesta sobre la verificación pendiente bajo Node real (el sandbox no tiene `node`)."
   - "Sin acción de código: es trabajo pendiente documentado, no un cierre falso."
+- **Closure note (2026-08-24)**: divergencia intencionada respecto al acceptance original — el sandbox SÍ tiene binario `node` (`/run/user/1000/fnm_multishells/.../bin/node`, v26.5.1), así que x00193 S1 se resolvió de verdad en lugar de dejarse documentado como pendiente. x00193 quedó completada y movida a `review/` (no permanece abierta en `ready/` como asumía el acceptance).
 
 ### S6 — `reap-legacy-proposals`: 116 propuestas listas para archivar
-- **Status**: pending
+- **Status**: done
 - **Files**: `docs/mcp-vertex/proposals/done/**` (116 archivos), `tools/scripts/lint/reap-legacy-proposals.script.ts`
 - **Gate**: type
 - acceptance:
@@ -79,7 +80,7 @@ La revisión de las propuestas `done` (siguiendo las instrucciones iniciales: "r
   - "El índice queda regenerado sin duplicados ni huérfanos."
 
 ### S7 — Código muerto en `proposal-transition.tool.ts`
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/proposals/src/lib/tools/proposal-transition.tool.ts`
 - **Gate**: type
 - acceptance:
