@@ -2,7 +2,7 @@
 id: f00173
 title: "error-reporting: observar todas las superficies de error (tools, lifecycle, LLM/providers, procesos) con análisis de origen"
 kind: feat
-status: ready
+status: review
 type: proposal
 track: privacy
 date: 2026-08-24

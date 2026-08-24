@@ -2,7 +2,7 @@
 id: x00218
 title: "loader: grafo de dependencias con estados y registro topológico (dependencia fallida bloquea dependientes)"
 kind: fix
-status: ready
+status: review
 type: proposal
 track: lifecycle
 date: 2026-08-24

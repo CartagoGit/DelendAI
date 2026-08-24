@@ -2,7 +2,7 @@
 id: x00214
 title: "error-reporting: reporte por construcción con DTO seguro (sin Error/stack/args/message crudos)"
 kind: fix
-status: ready
+status: review
 type: proposal
 track: privacy
 date: 2026-08-24

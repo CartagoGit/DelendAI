@@ -2,7 +2,7 @@
 id: x00219
 title: "mutex: reclaim seguro de stale lock (CAS/lease) y métricas de contención"
 kind: fix
-status: ready
+status: review
 type: proposal
 track: concurrency
 date: 2026-08-24

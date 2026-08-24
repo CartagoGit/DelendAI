@@ -2,7 +2,7 @@
 id: f00159
 title: "error-reporting: ejemplos sintéticos generados desde schema/fixtures (nunca desde datos reales)"
 kind: feat
-status: ready
+status: review
 type: proposal
 track: privacy
 date: 2026-08-24

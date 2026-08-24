@@ -2,7 +2,7 @@
 id: f00160
 title: "error-reporting: report_status transparente, opt-out simple y destino allowlisted"
 kind: feat
-status: ready
+status: review
 type: proposal
 track: privacy
 date: 2026-08-24
