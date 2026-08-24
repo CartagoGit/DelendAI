@@ -2,7 +2,7 @@
 id: f00170
 title: "adopción: assessment de repos maduros (adopt --analyze) con detección de stack, recomendación de plugins y coste de tool-schema"
 kind: feat
-status: ready
+status: review
 type: proposal
 track: adoption
 date: 2026-08-24
@@ -31,7 +31,7 @@ La conversación señala como problema principal que adoptar Vertex en un repo m
 - global_gate: type
 
 ### S1 — Detectores de adopción (comandos, test runner, CI, docs y conflictos)
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/src/lib/bootstrap/analyze-project.ts`
 - **Gate**: type
 - acceptance:
@@ -40,7 +40,7 @@ La conversación señala como problema principal que adoptar Vertex en un repo m
   - "Los tests unitarios cubren un repo maduro TS monorepo y un repo no-TS."
 
 ### S2 — Builder del assessment (recomendación por plugin, coste y conflictos)
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/src/lib/adopt/adoption-assessment.ts`, `packages/core/src/lib/contracts/interfaces/adoption-assessment.interface.ts`
 - **Gate**: type
 - acceptance:
@@ -49,7 +49,7 @@ La conversación señala como problema principal que adoptar Vertex en un repo m
   - "Lista conflictos y número de archivos que adopt_project cambiaría."
 
 ### S3 — Wiring: adopt_project (modo analyze) + CLI mcpv adopt --analyze
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/src/lib/adopt/adopt-project.tool.ts`, `packages/core/src/public/index.ts`, `packages/cli/src/commands/init/init.command.ts`
 - **Gate**: type
 - acceptance:
