@@ -1,6 +1,6 @@
 import { spawn } from 'node:child_process';
 
-import { killProcessGroup } from '../commands/process-group';
+import { killProcessGroup, killProcessTree } from '../commands/process-group';
 import type {
 	IRunArgvOptions,
 	IRunArgvOutcome,
@@ -194,8 +194,10 @@ export const runArgv = (
 		const stdoutCollector = createByteCollector(options.maxStdoutBytes);
 		const stderrCollector = createByteCollector(options.maxStderrBytes);
 		let timedOut = false;
+		let timeoutTeardown: Promise<void> | undefined;
 		const child = spawn(binary, args, {
 			...(options.cwd !== undefined ? { cwd: options.cwd } : {}),
+			...(process.platform === 'win32' ? {} : { detached: true }),
 			stdio: [
 				options.stdin !== undefined ? 'pipe' : 'ignore',
 				'pipe',
@@ -213,10 +215,11 @@ export const runArgv = (
 		});
 		const timer = setTimeout(() => {
 			timedOut = true;
-			child.kill('SIGKILL');
+			timeoutTeardown = killProcessTree(child.pid);
 		}, timeoutMs);
-		child.on('close', (code) => {
+		child.on('close', async (code) => {
 			clearTimeout(timer);
+			await timeoutTeardown;
 			resolve({
 				code: timedOut ? 124 : (code ?? 1),
 				stdout: decodeUtf8Chunks(stdoutCollector.chunks),
@@ -224,8 +227,9 @@ export const runArgv = (
 				timedOut,
 			});
 		});
-		child.on('error', (error: NodeJS.ErrnoException) => {
+		child.on('error', async (error: NodeJS.ErrnoException) => {
 			clearTimeout(timer);
+			await timeoutTeardown;
 			resolve({
 				code: error.code === 'ENOENT' ? 127 : 126,
 				stdout: decodeUtf8Chunks(stdoutCollector.chunks),
