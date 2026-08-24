@@ -2,7 +2,7 @@
 id: c00129
 title: "release: Node smoke, tarball install e2e y manifest correctness empaquetado"
 kind: chore
-status: ready
+status: review
 type: proposal
 track: web-release
 date: 2026-08-24
@@ -38,7 +38,7 @@ Probar artefactos publicables (Node smoke, tarball real en limpio) es de las dec
 - global_gate: type
 
 ### S1 — Verificación de manifest en el paquete publicado
-- **Status**: pending
+- **Status**: done
 - **Files**: `tools/scripts/release/verify-published-manifest.script.ts`
 - **Gate**: type
 - acceptance:
