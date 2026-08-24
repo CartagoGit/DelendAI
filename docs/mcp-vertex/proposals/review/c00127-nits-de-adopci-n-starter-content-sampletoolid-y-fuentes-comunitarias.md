@@ -2,7 +2,7 @@
 id: c00127
 title: "Nits de adopción: starter content, sampleToolId y fuentes comunitarias"
 kind: chore
-status: ready
+status: review
 type: proposal
 track: adoption
 date: 2026-08-23
@@ -37,14 +37,14 @@ Auditoría 2026-08-24 (tier de tonterías): el starter skill sale con TODO, los 
   - "La skill starter ya no emite `TODO` vacíos: el when-to-use, el body y el checklist tienen contenido mínimo válido que apunta a `overview` como fuente de verdad. El stub de tool sigue marcando `todo: true` (señal explícita de stub)."
 
 ### S2 — sampleToolId con efecto real o fuera
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/src/lib/scaffold/create-plugin.tool.ts`
 - **Gate**: type
 - acceptance:
   - "sampleToolId tiene efecto real en el scaffold o se elimina del input hasta que exista integración."
 
 ### S3 — Fuentes comunitarias de plugins cableadas
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/src/lib/registry/resolve.ts`, `packages/core/src/lib/registry/plugin-search.tool.ts`
 - **Gate**: type
 - acceptance:
