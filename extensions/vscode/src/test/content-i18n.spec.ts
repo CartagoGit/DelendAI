@@ -6,6 +6,15 @@ import { renderMetricsHtml } from '../views/metrics-sparkline';
 import { renderProposalDetailHtml } from '../views/proposal-detail-webview';
 import { renderToolDetailHtml } from '../views/tool-detail-webview';
 
+const zeroCost = {
+	contentTextBytes: 0,
+	structuredJsonBytes: 0,
+	wireEstimateBytes: 0,
+	estimatedTokens: {
+		estimatedTokens4B: 0,
+	},
+};
+
 describe('secondary webview content i18n', () => {
 	const es = viewCopyFor('es');
 
@@ -13,7 +22,13 @@ describe('secondary webview content i18n', () => {
 		const metrics = renderMetricsHtml(
 			{
 				tools: {},
-				totals: { calls: 2, errors: 1, totalMs: 0, totalBytes: 0 },
+				totals: {
+					calls: 2,
+					errors: 1,
+					totalMs: 0,
+					totalBytes: 0,
+					cost: zeroCost,
+				},
 			},
 			es,
 		);

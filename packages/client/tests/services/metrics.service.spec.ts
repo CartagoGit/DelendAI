@@ -6,21 +6,45 @@ import {
 	type IMetricsSnapshot,
 } from '../../src/public/index';
 
+const metric = (
+	calls: number,
+	errors: number,
+	totalMs: number,
+	maxMs: number,
+	totalBytes: number,
+) => ({
+	calls,
+	errors,
+	totalMs,
+	maxMs,
+	totalBytes,
+	cost: {
+		contentTextBytes: totalBytes,
+		structuredJsonBytes: 0,
+		wireEstimateBytes: totalBytes,
+		estimatedTokens: {
+			estimatedTokens4B: Math.ceil(totalBytes / 4),
+		},
+	},
+});
+
 const firstSnapshot: IMetricsSnapshot = {
 	tools: {
-		'mcp-vertex_overview': {
-			calls: 1,
-			errors: 0,
-			totalMs: 3,
-			maxMs: 3,
-			totalBytes: 128,
-		},
+		'mcp-vertex_overview': metric(1, 0, 3, 3, 128),
 	},
 	totals: {
 		calls: 1,
 		errors: 0,
 		totalMs: 3,
 		totalBytes: 128,
+		cost: {
+			contentTextBytes: 128,
+			structuredJsonBytes: 0,
+			wireEstimateBytes: 128,
+			estimatedTokens: {
+				estimatedTokens4B: 32,
+			},
+		},
 	},
 };
 

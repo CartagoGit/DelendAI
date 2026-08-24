@@ -30,6 +30,14 @@ describe('createMetricsRegistry (M12)', async () => {
 			totalMs: 40,
 			maxMs: 30,
 			totalBytes: 150,
+			cost: {
+				contentTextBytes: 150,
+				structuredJsonBytes: 0,
+				wireEstimateBytes: 150,
+				estimatedTokens: {
+					estimatedTokens4B: 38,
+				},
+			},
 		});
 		expect(snap.tools.b?.calls).toBe(1);
 		expect(snap.totals).toEqual({
@@ -37,6 +45,14 @@ describe('createMetricsRegistry (M12)', async () => {
 			errors: 1,
 			totalMs: 45,
 			totalBytes: 157,
+			cost: {
+				contentTextBytes: 157,
+				structuredJsonBytes: 0,
+				wireEstimateBytes: 157,
+				estimatedTokens: {
+					estimatedTokens4B: 40,
+				},
+			},
 		});
 	});
 

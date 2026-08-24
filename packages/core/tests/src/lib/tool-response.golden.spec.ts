@@ -54,6 +54,16 @@ import {
 import { MetricSchema } from '@mcp-vertex/core/lib/metrics/metrics-tool';
 import { SCAFFOLD_REPORT_SCHEMA } from '@mcp-vertex/core/lib/scaffold/scaffold-tool';
 
+const TOOL_COST_SCHEMA = z.object({
+	contentTextBytes: z.number(),
+	structuredJsonBytes: z.number(),
+	wireEstimateBytes: z.number(),
+	estimatedTokens: z.object({
+		estimatedTokens4B: z.number(),
+		actualModelTokens: z.number().optional(),
+	}),
+});
+
 /**
  * The set of host-core tool `outputSchema`s to pin. Each entry is the
  * EXACT Zod node that the tool registers with `server.registerTool` —
@@ -83,6 +93,7 @@ const CORE_TOOL_SCHEMAS = {
 			errors: z.number(),
 			totalMs: z.number(),
 			totalBytes: z.number(),
+			cost: TOOL_COST_SCHEMA,
 		}),
 		persistedTo: z.string().optional(),
 		snapshots: z.number().optional(),
@@ -261,7 +272,7 @@ describe('r00001 S0 — core outputSchema golden snapshot', async () => {
 			scaffold:
 				'd2f13f06246544b123f1b3dcc98c68e0159ed91002df748df86ad72343a49ffc',
 			metrics:
-				'6a620df97c35aff8faa9f4ceb9c1dacfa1d520ef3abe1b9ae338f898254bb000',
+				'f81e96e3832567b1c3ed3a95b7ff7a4c5ea4a0b68e7f95a16e0b76659e566ce1',
 		};
 
 		for (const [toolId, expected] of Object.entries(

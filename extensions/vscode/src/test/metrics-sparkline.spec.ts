@@ -7,32 +7,57 @@ import {
 	renderMetricsSparkline,
 } from '../views/metrics-sparkline';
 
+const metric = (
+	calls: number,
+	errors: number,
+	totalMs: number,
+	maxMs: number,
+	totalBytes: number,
+) => ({
+	calls,
+	errors,
+	totalMs,
+	maxMs,
+	totalBytes,
+	cost: {
+		contentTextBytes: totalBytes,
+		structuredJsonBytes: 0,
+		wireEstimateBytes: totalBytes,
+		estimatedTokens: {
+			estimatedTokens4B: Math.ceil(totalBytes / 4),
+		},
+	},
+});
+
+const totals = (
+	calls: number,
+	errors: number,
+	totalMs: number,
+	totalBytes: number,
+) => ({
+	calls,
+	errors,
+	totalMs,
+	totalBytes,
+	cost: {
+		contentTextBytes: totalBytes,
+		structuredJsonBytes: 0,
+		wireEstimateBytes: totalBytes,
+		estimatedTokens: {
+			estimatedTokens4B: Math.ceil(totalBytes / 4),
+		},
+	},
+});
+
 describe('metrics sparkline', async () => {
 	it('turns a metrics snapshot into sorted points', async () => {
 		expect(
 			metricsToPoints({
 				tools: {
-					z_tool: {
-						calls: 1,
-						errors: 0,
-						totalMs: 1,
-						maxMs: 1,
-						totalBytes: 10,
-					},
-					a_tool: {
-						calls: 3,
-						errors: 0,
-						totalMs: 3,
-						maxMs: 2,
-						totalBytes: 30,
-					},
+					z_tool: metric(1, 0, 1, 1, 10),
+					a_tool: metric(3, 0, 3, 2, 30),
 				},
-				totals: {
-					calls: 4,
-					errors: 0,
-					totalMs: 4,
-					totalBytes: 40,
-				},
+				totals: totals(4, 0, 4, 40),
 			}),
 		).toEqual([
 			{ label: 'a_tool', value: 3 },
@@ -54,12 +79,7 @@ describe('metrics sparkline', async () => {
 	it('renders metrics html summary', async () => {
 		const html = renderMetricsHtml({
 			tools: {},
-			totals: {
-				calls: 0,
-				errors: 0,
-				totalMs: 0,
-				totalBytes: 0,
-			},
+			totals: totals(0, 0, 0, 0),
 		});
 
 		expect(html).toContain('mcp-vertex Metrics');
@@ -69,12 +89,7 @@ describe('metrics sparkline', async () => {
 	it('renders a body fragment without an outer <html> wrapper', async () => {
 		const body = renderMetricsBody({
 			tools: {},
-			totals: {
-				calls: 7,
-				errors: 1,
-				totalMs: 42,
-				totalBytes: 0,
-			},
+			totals: totals(7, 1, 42, 0),
 		});
 
 		expect(body).toContain('mcp-vertex Metrics');
