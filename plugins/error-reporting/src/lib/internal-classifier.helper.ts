@@ -58,7 +58,7 @@ const componentIdOf = (
 	return componentIdFromFrame(packageId, frame.file);
 };
 
-const classificationFromEvidence = (input: {
+export const classificationFromEvidence = (input: {
 	readonly toolId?: string | undefined;
 	readonly packageId?: string | undefined;
 	readonly componentId?: string | undefined;

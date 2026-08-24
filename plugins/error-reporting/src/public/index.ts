@@ -28,6 +28,7 @@ export type {
 
 export {
 	classifyInternalError,
+	classificationFromEvidence,
 	classificationOf,
 	buildIssueBody,
 	buildIssueTitle,
