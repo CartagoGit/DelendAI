@@ -2,7 +2,7 @@
 id: x00234
 title: "api_call: no devolver headers sensibles (Authorization/Cookie) en el output"
 kind: fix
-status: ready
+status: review
 type: proposal
 track: plugins+fix
 date: 2026-08-24
@@ -33,7 +33,7 @@ Hallazgo a00086 #8 (confirmed · media). Es una fuga de secretos al output que c
 - global_gate: lint
 
 ### S1 — Redactar headers sensibles en el output
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/api/src/lib/tools/api-call.tool.ts`, `plugins/api/src/lib/tools/api-call.tool.spec.ts`
 - **Gate**: lint
 - acceptance:
