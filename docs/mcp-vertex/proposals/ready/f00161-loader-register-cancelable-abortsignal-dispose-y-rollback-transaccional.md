@@ -47,7 +47,7 @@ Un plugin que supera el timeout debe poder ser abortado (o marcado como no cance
 - global_gate: type
 
 ### S1 — Contrato IPluginRuntime y AbortSignal en register
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/src/lib/plugins/plugin-contract.ts`
 - **Gate**: type
 - acceptance:
@@ -56,7 +56,7 @@ Un plugin que supera el timeout debe poder ser abortado (o marcado como no cance
   - "Se define la capability abortable vs non-abortable."
 
 ### S2 — Timeout cancelable y rollback transaccional
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/src/lib/plugins/load-plugins.ts`
 - **Gate**: type
 - acceptance:
@@ -65,7 +65,7 @@ Un plugin que supera el timeout debe poder ser abortado (o marcado como no cance
   - "Si un registro falla a mitad, se revierte lo ya registrado (timer/tool/listener)."
 
 ### S3 — Tests de cancelación, dispose y rollback
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/tests/src/lib/plugins/register-cancel-dispose.spec.ts`
 - **Gate**: type
 - acceptance:
