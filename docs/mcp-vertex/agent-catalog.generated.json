@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-08-24T06:33:03.489Z",
+	"generatedAt": "2026-08-24T08:23:53.806Z",
 	"mode": "compact",
 	"tools": [
 		{
@@ -1344,13 +1344,6 @@
 				"kind": "unspecified"
 			},
 			{
-				"id": "v00123",
-				"title": "v00123",
-				"track": "tokens",
-				"status": "in-progress",
-				"kind": "unspecified"
-			},
-			{
 				"id": "v00124",
 				"title": "v00124",
 				"track": "memory-mcp",
@@ -1493,8 +1486,8 @@
 		],
 		"byStatus": {
 			"ready": 39,
-			"in-progress": 11,
-			"review": 16,
+			"in-progress": 10,
+			"review": 17,
 			"paused": 1,
 			"done": 347,
 			"blocked": 0,
