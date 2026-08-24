@@ -2,7 +2,7 @@
 id: d00005
 title: "documentación: generación desde datos vivos y separación humano/generado"
 kind: docs
-status: ready
+status: review
 type: proposal
 track: ci-test-docs
 date: 2026-08-24
@@ -37,7 +37,7 @@ La documentación es la principal fuente de drift actual: números y catálogos 
 - global_gate: type
 
 ### S1 — Catálogo y tablas generados
-- **Status**: pending
+- **Status**: done
 - **Files**: `tools/scripts/docs/generate-catalog.script.ts`
 - **Gate**: type
 - acceptance:
@@ -45,14 +45,14 @@ La documentación es la principal fuente de drift actual: números y catálogos 
   - "La documentación generada no se edita a mano (DOC-001)."
 
 ### S2 — Separar humano de generado en docs
-- **Status**: pending
+- **Status**: done
 - **Files**: `README.md`
 - **Gate**: lint
 - acceptance:
   - "El README distingue explícitamente contenido humano (visión/rationale) de catálogo generado (DOC-004)."
 
 ### S3 — Comentarios de código: why sobre historia
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/tests/src/lib/e2e/token-budget.e2e.spec.ts`
 - **Gate**: lint
 - acceptance:
