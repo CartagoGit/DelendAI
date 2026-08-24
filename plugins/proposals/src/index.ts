@@ -2,7 +2,9 @@ import {
 	createWorkspaceFileReader,
 	definePlugin,
 } from '@mcp-vertex/core/public';
-import { existsSync } from 'node:fs';
+import { createLogStore, logIncidents } from '@mcp-vertex/logs/public';
+import { access } from 'node:fs/promises';
+import { join } from 'node:path';
 
 import { AgentLoopDetectorService } from './lib/agents/loop-detector-service';
 import z from 'zod';
@@ -48,6 +50,7 @@ import { buildCompactStatusRegistration } from './lib/tools/compact-status.tool'
 import { cleanupStaleAgentLockState } from './lib/locks/agent-lock-engine';
 import { buildAgentsLockDiagnoseRegistration } from './lib/tools/agents-lock-diagnose.tool';
 import { buildRecoveryToolRegistrations } from './lib/tools/recovery-tools';
+import { buildIncidentProposalRegistration } from './lib/tools/incident-proposal.tool';
 import { mergeCheckpointAdvisories } from '@mcp-vertex/core/public';
 import { assessMicroValidationLoop } from './lib/services/checkpoint-advisory-micro-validation.service';
 import type { IObservedToolCall } from './lib/services/checkpoint-advisory-micro-validation.service';
@@ -164,7 +167,7 @@ export default definePlugin({
 			orchestration: { delegateAfterToolCalls: 3 },
 		},
 	},
-	register(ctx) {
+	async register(ctx) {
 		// r00003 S9 (F9): validate ctx.options through the SAME schema the
 		// loader declares, so a host misconfig is a structured error here
 		// rather than a silent cast downstream. The narrow per-field casts
@@ -196,6 +199,13 @@ export default definePlugin({
 		// its folder policy via ctx.options (now schema-validated, S9).
 		const extraProposalFolders = parsedOptions.data.proposalFolders ?? [];
 		const microValidationCalls: IObservedToolCall[] = [];
+		const incidentLogStore = createLogStore(
+			ctx.workspace.resolve(join(ctx.cacheDir, 'results', 'logs-errors')),
+		);
+		const hasProposalsStore = await access(abs(layout.proposalsDir)).then(
+			() => true,
+			() => false,
+		);
 
 		const agentNamesOptions: IAgentNamesToolOptions = {
 			namespacePrefix: ctx.namespacePrefix,
@@ -504,6 +514,20 @@ export default definePlugin({
 					},
 					extraFolders: extraProposalFolders,
 				}),
+				buildIncidentProposalRegistration({
+					namespacePrefix: ctx.namespacePrefix,
+					workspaceRoot: ctx.workspace.root,
+					proposalsDirAbs: abs(layout.proposalsDir),
+					indexPathAbs: abs(layout.proposalIndexFile),
+					counterPathAbs: abs(layout.proposalIdCountersFile),
+					layout: {
+						proposalsDir: layout.proposalsDir,
+						proposalIndexFile: layout.proposalIndexFile,
+					},
+					extraFolders: extraProposalFolders,
+					readIncidents: async (options) =>
+						logIncidents(await incidentLogStore, options),
+				}),
 				buildStateHealthRegistration(stateOptions),
 				buildStateRepairRegistration(stateOptions),
 				buildCompactStatusRegistration({
@@ -589,9 +613,8 @@ export default definePlugin({
 			],
 			knowledge: [
 				// f00116 S3: when the workspace has NO proposals store yet,
-				// orientation names the one call that bootstraps it. Boot-time
-				// existsSync is sanctioned (AGENTS.md rule 3); no writes here.
-				...(existsSync(abs(layout.proposalsDir))
+				// orientation names the one call that bootstraps it.
+				...(hasProposalsStore
 					? []
 					: [
 							{
