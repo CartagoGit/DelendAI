@@ -151,6 +151,99 @@
 				"additionalProperties": false
 			}
 		},
+		"pluginRegistry": {
+			"type": "object",
+			"properties": {
+				"communitySources": {
+					"type": "array",
+					"items": {
+						"type": "object",
+						"properties": {
+							"origin": {
+								"type": "string",
+								"const": "community"
+							},
+							"entries": {
+								"type": "array",
+								"items": {
+									"type": "object",
+									"properties": {
+										"id": {
+											"type": "string"
+										},
+										"package": {
+											"type": "string"
+										},
+										"summary": {
+											"type": "string"
+										},
+										"tags": {
+											"type": "array",
+											"items": {
+												"type": "string"
+											}
+										},
+										"origin": {
+											"type": "string",
+											"enum": [
+												"first-party",
+												"community"
+											]
+										},
+										"permissions": {
+											"type": "array",
+											"items": {
+												"type": "string",
+												"enum": [
+													"filesystem-read",
+													"filesystem-write",
+													"process",
+													"network",
+													"git-read",
+													"git-write",
+													"forge-read",
+													"forge-write",
+													"env-read",
+													"secrets",
+													"browser",
+													"container",
+													"database"
+												]
+											}
+										},
+										"defaultPreset": {
+											"type": "string",
+											"enum": [
+												"minimal",
+												"lean",
+												"standard",
+												"swarm",
+												"full",
+												"vertex"
+											]
+										}
+									},
+									"required": [
+										"id",
+										"package",
+										"summary",
+										"tags",
+										"origin"
+									],
+									"additionalProperties": false
+								}
+							}
+						},
+						"required": [
+							"origin",
+							"entries"
+						],
+						"additionalProperties": false
+					}
+				}
+			},
+			"additionalProperties": false
+		},
 		"providers": {
 			"type": "array",
 			"items": {

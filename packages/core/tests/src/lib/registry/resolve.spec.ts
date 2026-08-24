@@ -94,6 +94,25 @@ describe('resolvePlugins', () => {
 		expect(out.entries.map((e) => e.id)).toEqual(['demo-x']);
 	});
 
+	it('keeps the bundled first-party index as the fallback for community-only sources', () => {
+		const community: IPluginRegistrySource = {
+			origin: 'community',
+			entries: [
+				sample({
+					id: 'community-search',
+					origin: 'community',
+					summary: 'community search helper',
+					tags: ['search'],
+				}),
+			],
+		};
+		const out = resolvePlugins({ sources: [community], query: 'search' });
+		expect(
+			out.entries.some((entry) => entry.id === 'community-search'),
+		).toBe(true);
+		expect(out.entries.some((entry) => entry.id === 'search')).toBe(true);
+	});
+
 	it('matches the query case-insensitively across id, package, and summary', () => {
 		const out = resolvePlugins({ query: 'AUDIT' });
 		expect(out.entries.some((e) => e.id === 'audit')).toBe(true);

@@ -766,6 +766,7 @@ export interface McpVertexDiagramDiagramDepsOutput {
 		from: string;
 		to: string;
 	}[];
+	truncated?: boolean;
 }
 
 export interface McpVertexDiagramDiagramErdOutput {
@@ -782,6 +783,7 @@ export interface McpVertexDiagramDiagramModulesOutput {
 		to: string;
 	}[];
 	packageRoot: string;
+	truncated?: boolean;
 }
 
 export interface McpVertexDiagramDiagramProposalsOutput {
