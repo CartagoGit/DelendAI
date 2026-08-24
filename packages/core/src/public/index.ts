@@ -229,6 +229,7 @@ export type {
 	IPresetKind,
 	IPresetMember,
 } from '../lib/plugins/preset-catalog';
+export type { ProjectPackKind } from '../lib/contracts/interfaces/project-signals.interface';
 // f00120 S2: monorepo-wiring writer for first-party plugins.
 export {
 	buildTsconfigPathsEntry,

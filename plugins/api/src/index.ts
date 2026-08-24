@@ -9,11 +9,26 @@
  */
 import z from 'zod';
 
-import { definePlugin } from '@mcp-vertex/core/public';
+import { definePlugin, resolvePresetMembers } from '@mcp-vertex/core/public';
 
 import { buildApiCallToolRegistration } from './lib/tools/api-call.tool';
 import { buildApiMockToolRegistration } from './lib/tools/api-mock.tool';
 import { buildApiValidateToolRegistrations } from './lib/tools/api-validate.tool';
+
+const formatPluginList = (plugins: readonly string[]): string => {
+	if (plugins.length === 0) return '';
+	if (plugins.length === 1) return `\`${plugins[0]}\``;
+	if (plugins.length === 2) return `\`${plugins[0]}\` and \`${plugins[1]}\``;
+	return `${plugins
+		.slice(0, -1)
+		.map((plugin) => `\`${plugin}\``)
+		.join(', ')}, and \`${plugins.at(-1)}\``;
+};
+
+const backendApiPackMembershipLine = (): string => {
+	const members = resolvePresetMembers('backend-api');
+	return `- \`backend-api\` — the preset currently ships ${formatPluginList(members)}; it does not include \`api\` by default.`;
+};
 
 const OptionsSchema = z
 	.object({
@@ -99,7 +114,7 @@ export default definePlugin({
 						'- `api_mock` — generate a deterministic example response for one operation from the spec (no network).',
 						'',
 						'## Pack membership',
-						'- `backend-api` — the API plugin ships in the backend-api preset pack alongside `database`, `browser`, and `observability`.',
+						backendApiPackMembershipLine(),
 						'',
 						'## Engine',
 						'- All operations ride the shared `web-fetch` allow-list. Mutating calls require the same consent web-fetch demands.',

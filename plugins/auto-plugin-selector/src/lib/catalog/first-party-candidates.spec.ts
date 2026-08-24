@@ -19,4 +19,13 @@ describe('firstPartyPluginCandidates (x00169)', () => {
 		const ids = firstPartyPluginCandidates().map((c) => c.id);
 		expect(new Set(ids).size).toBe(ids.length);
 	});
+
+	it('includes auto-plugin-selector so the recommender knows itself', () => {
+		const candidate = firstPartyPluginCandidates().find(
+			(entry) => entry.id === 'auto-plugin-selector',
+		);
+		expect(candidate).toBeDefined();
+		expect(candidate?.origin).toBe('first-party');
+		expect(candidate?.tags).toContain('plugins');
+	});
 });
