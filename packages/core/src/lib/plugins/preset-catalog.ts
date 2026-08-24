@@ -1,3 +1,6 @@
+import { PRESET_METADATA } from '../contracts/constants/preset-metadata.constant';
+import type { IPresetBudgetProfile } from '../contracts/interfaces/preset-budget-profile.interface';
+
 /**
  * Canonical preset catalog for `@mcp-vertex/core`.
  *
@@ -6,7 +9,7 @@
  * that wants to know "which plugins does preset X ship?".
  *
  * Invariants (enforced by `preset-catalog.spec.ts` and
- * `tools/scripts/lint/no-preset-drift.script.ts`):
+ * `tools/scripts/lint/preset-drift.script.ts`):
  *
  *   1. The catalog stores DELTAS, not full membership lists. Each
  *      preset's `members` array lists only the plugins *added* on
@@ -67,6 +70,8 @@ export interface IPresetDefinition {
 	readonly title: string;
 	/** Human-facing summary (i18n key: `preset.<id>.summary`). */
 	readonly summary: string;
+	/** Why this preset exists operationally. */
+	readonly role: string;
 	/**
 	 * DELTA members. The effective membership is the union of every
 	 * preceding preset in `PRESET_KIND` plus this `members` array,
@@ -74,6 +79,18 @@ export interface IPresetDefinition {
 	 * members apply).
 	 */
 	readonly members: readonly IPresetMember[];
+	/**
+	 * Runtime budget snapshot for this preset.
+	 *
+	 * `toolCount` and `schemaBytes` were measured against the live
+	 * runtime on 2026-08-24 via the same in-memory MCP flow used by
+	 * `token-budget.e2e.spec.ts`. `coldStartTokens` is an estimate
+	 * derived from `schemaBytes / TOKEN_BUDGETS.bytesPerEstimatedToken`.
+	 * `permissions` is the union of real tool effects for the preset;
+	 * `capabilities` is the role-profile summary that explains what the
+	 * preset is for at a glance.
+	 */
+	readonly budget: IPresetBudgetProfile;
 	/**
 	 * When true, the preset resolves to ONLY its own members and
 	 * skips the chain accumulation. Use this for presets that are
@@ -101,8 +118,10 @@ export const PRESET_CATALOG: readonly IPresetDefinition[] = [
 		id: 'minimal',
 		title: 'minimal',
 		summary:
-			'Read-only orientation: git + search. Lightweight default for CI smoke tests.',
+			'Orientation baseline: git + search. Smallest preset for local inspection, onboarding and smoke checks.',
+		role: PRESET_METADATA.minimal.role,
 		members: [{ plugin: 'git' }, { plugin: 'search' }],
+		budget: PRESET_METADATA.minimal.budget,
 	},
 	{
 		// `lean` is the 4-plugin essentials preset: version control
@@ -117,21 +136,23 @@ export const PRESET_CATALOG: readonly IPresetDefinition[] = [
 		id: 'lean',
 		title: 'lean',
 		summary:
-			'The 4 essentials: git (version control), search (code discovery), memory (cross-session continuity), docs (documentation). ' +
-			'Independent preset (does NOT accumulate the chain); nothing heavy.',
+			'Everyday work preset: git, search, memory and docs. Independent; keeps routine coding light without orchestration.',
+		role: PRESET_METADATA.lean.role,
 		members: [
 			{ plugin: 'git' },
 			{ plugin: 'search' },
 			{ plugin: 'memory' },
 			{ plugin: 'docs' },
 		],
+		budget: PRESET_METADATA.lean.budget,
 		independent: true,
 	},
 	{
 		id: 'standard',
 		title: 'standard',
 		summary:
-			'Single-agent toolkit: minimal + memory, docs, i18n, rules, quality, deps, test-policy, database, container, diagram, env, skills-pack, prompts-pack.',
+			'Adaptive/task-aware single-agent toolkit: minimal + memory, docs, i18n, rules, quality, deps, test-policy, database, container, diagram, env, skills-pack and prompts-pack.',
+		role: PRESET_METADATA.standard.role,
 		members: [
 			{ plugin: 'memory' },
 			{ plugin: 'docs' },
@@ -149,13 +170,15 @@ export const PRESET_CATALOG: readonly IPresetDefinition[] = [
 			{ plugin: 'skills-pack' },
 			{ plugin: 'error-reporting' },
 		],
+		budget: PRESET_METADATA.standard.budget,
 	},
 	{
 		id: 'swarm',
 		title: 'swarm',
 		summary:
-			'Multi-agent coordination: standard + proposals, notification, logs, status-marker, test-convention, conventions. ' +
+			'Explicit multi-agent coordination: standard + proposals, notification, logs, status-marker, test-convention and conventions. ' +
 			'audit is opt-in per project and is NOT in swarm — run it separately after a round finishes.',
+		role: PRESET_METADATA.swarm.role,
 		members: [
 			{ plugin: 'proposals' },
 			{ plugin: 'notification' },
@@ -166,19 +189,22 @@ export const PRESET_CATALOG: readonly IPresetDefinition[] = [
 			{ plugin: 'conventions' },
 			{ plugin: 'forge' },
 		],
+		budget: PRESET_METADATA.swarm.budget,
 	},
 	{
 		id: 'full',
 		title: 'full',
 		summary:
-			'Everything in swarm + the host-only plugins (web-fetch, issues). ' +
+			'Diagnostic/development surface: everything in swarm + the host-only plugins (web-fetch, issues). ' +
 			'audit is opt-in (load with --plugins=audit) when you need it.',
+		role: PRESET_METADATA.full.role,
 		members: [
 			{ plugin: 'web-fetch', hostOnly: true },
 			{ plugin: 'issues', hostOnly: true },
 			{ plugin: 'api' },
 			{ plugin: 'changelog' },
 		],
+		budget: PRESET_METADATA.full.budget,
 	},
 	{
 		// `vertex` mirrors the plugin set of the mcp-vertex project
@@ -192,20 +218,19 @@ export const PRESET_CATALOG: readonly IPresetDefinition[] = [
 		// silently omit it, a stale drift caught live 2026-07-29).
 		// Marked `independent: true` so `resolvePresetMembers` skips the
 		// chain accumulation and returns ONLY the members listed
-		// below — the exact snapshot the project ships. Keep this list
-		// in lockstep with the root `mcp-vertex.config.json`'s `plugins`
-		// keys — `no-preset-drift.script.ts` re-derives from
-		// `PRESET_CATALOG` rather than hand-copying it, but it cannot
-		// catch THIS list drifting from the live config; that
-		// comparison must be done by hand on each pass.
+		// below — the exact snapshot the project ships. `preset-drift`
+		// verifies this list against the live root
+		// `mcp-vertex.config.json` plugin keys on every validate pass.
 		id: 'vertex',
 		title: 'vertex',
 		summary:
 			'Snapshot of the mcp-vertex project itself: every plugin its own mcp-vertex.config.json loads, including proposals (orchestration/swarm). ' +
 			'Independent preset (does NOT accumulate swarm); use this for projects that want the exact set the core ships.',
+		role: PRESET_METADATA.vertex.role,
 		members: [
 			{ plugin: 'audit' },
 			{ plugin: 'auto-agent-selector', hostOnly: true },
+			{ plugin: 'completion' },
 			{ plugin: 'container' },
 			{ plugin: 'conventions' },
 			{ plugin: 'deps' },
@@ -234,6 +259,7 @@ export const PRESET_CATALOG: readonly IPresetDefinition[] = [
 			{ plugin: 'usage-tracking' },
 			{ plugin: 'error-reporting' },
 		],
+		budget: PRESET_METADATA.vertex.budget,
 		independent: true,
 	},
 	// r00011 S1 — stack packs. Each resolves to exactly its own
@@ -245,6 +271,7 @@ export const PRESET_CATALOG: readonly IPresetDefinition[] = [
 		title: 'web-app',
 		summary:
 			'Stack pack for web apps (Astro/Next/Remix/SvelteKit/etc): standard + i18n + diagram + container (dockerfile lint) + web-fetch. Independent; user config still wins.',
+		role: PRESET_METADATA['web-app'].role,
 		members: [
 			{ plugin: 'git' },
 			{ plugin: 'search' },
@@ -265,6 +292,7 @@ export const PRESET_CATALOG: readonly IPresetDefinition[] = [
 			{ plugin: 'skills-pack' },
 			{ plugin: 'prompts-pack' },
 		],
+		budget: PRESET_METADATA['web-app'].budget,
 		independent: true,
 	},
 	{
@@ -272,6 +300,7 @@ export const PRESET_CATALOG: readonly IPresetDefinition[] = [
 		title: 'backend-api',
 		summary:
 			'Stack pack for backend services (Nest/Express/Hono/Fastify/etc): standard + database + container + env + audit (opt-in) + deps + perf. Independent; user config still wins.',
+		role: PRESET_METADATA['backend-api'].role,
 		members: [
 			{ plugin: 'git' },
 			{ plugin: 'search' },
@@ -290,6 +319,7 @@ export const PRESET_CATALOG: readonly IPresetDefinition[] = [
 			{ plugin: 'skills-pack' },
 			{ plugin: 'prompts-pack' },
 		],
+		budget: PRESET_METADATA['backend-api'].budget,
 		independent: true,
 	},
 	{
@@ -297,6 +327,7 @@ export const PRESET_CATALOG: readonly IPresetDefinition[] = [
 		title: 'cli-tool',
 		summary:
 			'Stack pack for CLI tools (oclif/commander/cobra/clap): minimal + search + memory + docs + env + changelog + perf. Independent; user config still wins.',
+		role: PRESET_METADATA['cli-tool'].role,
 		members: [
 			{ plugin: 'git' },
 			{ plugin: 'search' },
@@ -307,6 +338,7 @@ export const PRESET_CATALOG: readonly IPresetDefinition[] = [
 			{ plugin: 'perf' },
 			{ plugin: 'test-policy' },
 		],
+		budget: PRESET_METADATA['cli-tool'].budget,
 		independent: true,
 	},
 ];
