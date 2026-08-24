@@ -256,7 +256,7 @@ const builders: Record<
 		buildTestsEntry(reader, workspaceSignals),
 	conventions: async ({ workspaceRootAbs }) =>
 		buildConventionsEntry(workspaceRootAbs),
-	lint: async ({ reader, workspaceRootAbs }) => buildLintEntry(reader),
+	lint: async ({ reader }) => buildLintEntry(reader),
 	types: async ({ workspaceRootAbs }) => buildTypesEntry(workspaceRootAbs),
 	coverage: async ({ reader, workspaceSignals }) =>
 		buildCoverageEntry(reader, workspaceSignals),

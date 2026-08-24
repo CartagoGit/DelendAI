@@ -18,10 +18,7 @@ import {
 	autoFixPolicy,
 	defaultSeverityForClassification,
 } from '../services/auto-fix-policy';
-import {
-	buildIncidentProposalDrafts,
-	incidentSignatureOf,
-} from '../services/incident-proposal.service';
+import { incidentSignatureOf } from '../services/incident-proposal.service';
 import { createProposalDocument } from './authoring.tool';
 import {
 	loadIncidentProposalDraftBatch,
