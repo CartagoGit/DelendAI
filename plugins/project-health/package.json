@@ -1,0 +1,75 @@
+{
+	"name": "@mcp-vertex/project-health",
+	"version": "0.1.0",
+	"type": "module",
+	"description": "Compact project health aggregator for @mcp-vertex/core: cheap summary first, lazy domain details on demand.",
+	"author": "Cartago",
+	"license": "BSD-3-Clause",
+	"keywords": [
+		"mcp",
+		"model-context-protocol",
+		"health",
+		"aggregation",
+		"agent",
+		"ai",
+		"cartago",
+		"plugin"
+	],
+	"main": "./dist/index.js",
+	"files": [
+		"dist",
+		"README.md",
+		"LICENSE"
+	],
+	"exports": {
+		".": {
+			"@mcp-vertex/source": {
+				"types": "./src/index.ts"
+			},
+			"types": "./dist/index.d.ts",
+			"import": "./dist/index.js"
+		},
+		"./public": {
+			"@mcp-vertex/source": {
+				"types": "./src/public/index.ts"
+			},
+			"types": "./dist/public/index.d.ts",
+			"import": "./dist/public/index.js"
+		}
+	},
+	"scripts": {
+		"test": "vitest run",
+		"typecheck": "tsc --noEmit",
+		"build": "bun ../../tools/scripts/compile/build.script.ts plugins/project-health"
+	},
+	"peerDependencies": {
+		"@mcp-vertex/core": "^0.1.1"
+	},
+	"dependencies": {
+		"@mcp-vertex/deps": "workspace:*",
+		"@mcp-vertex/quality": "workspace:*",
+		"@mcp-vertex/security": "workspace:*",
+		"@mcp-vertex/tech-debt": "workspace:*",
+		"@modelcontextprotocol/sdk": "^1.29.0",
+		"zod": "^4.4.3"
+	},
+	"devDependencies": {
+		"@mcp-vertex/core": "workspace:*",
+		"@mcp-vertex/deps": "workspace:*",
+		"@mcp-vertex/quality": "workspace:*",
+		"@mcp-vertex/security": "workspace:*",
+		"@mcp-vertex/tech-debt": "workspace:*",
+		"@types/bun": "latest",
+		"typescript": "7.0.2",
+		"vitest": "4.1.10"
+	},
+	"publishConfig": {
+		"access": "public"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/CartagoGit/mcp-vertex"
+	},
+	"module": "./dist/index.js",
+	"types": "./dist/index.d.ts"
+}

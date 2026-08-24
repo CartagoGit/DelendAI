@@ -36,6 +36,9 @@ export const PLUGIN_DEFAULTS: Readonly<
 	observability: {},
 	'context-for-change': {},
 	'impact-analysis': {},
+	'project-health': {
+		maxBytes: 2000,
+	},
 	forge: {},
 	deps: {
 		manifest: 'package.json',

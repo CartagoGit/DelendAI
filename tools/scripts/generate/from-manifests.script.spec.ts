@@ -140,6 +140,38 @@ const withFixture = async (
 				'};\n',
 			].join('\n'),
 		);
+		await mkdir(join(root, 'plugins/project-health'), { recursive: true });
+		await writeFile(
+			join(root, 'plugins/project-health/package.json'),
+			JSON.stringify(
+				{
+					name: '@mcp-vertex/project-health',
+					version: '0.1.0',
+					publishConfig: { access: 'public' },
+				},
+				null,
+				'\t',
+			) + '\n',
+		);
+		await writeFile(
+			join(root, 'plugins/project-health/plugin.manifest.ts'),
+			[
+				'export const PROJECT_HEALTH_PLUGIN_MANIFEST = {',
+				"\tid: 'project-health',",
+				"\tpackage: '@mcp-vertex/project-health',",
+				"\tversion: '0.1.0',",
+				"\tvisibility: 'public',",
+				"\tsummary: 'Compact project-health aggregator.',",
+				"\ttags: ['health', 'aggregation', 'f00166'],",
+				"\tmaturity: 'experimental',",
+				"\tpermissions: ['filesystem-read'],",
+				"\tpresets: ['vertex'],",
+				'\ttokenBudget: { warning: 2200, hard: 2500, releaseRelativePercent: 20 },',
+				"\tdependencies: ['@mcp-vertex/core', 'zod'],",
+				"\tcapabilities: ['health-aggregation'],",
+				'};\n',
+			].join('\n'),
+		);
 		await writeFile(
 			join(root, README_PATH),
 			[
@@ -184,6 +216,7 @@ describe('from-manifests generator', () => {
 			expect(entries.map((entry) => entry.id)).toEqual([
 				'context-for-change',
 				'impact-analysis',
+				'project-health',
 				'search',
 			]);
 			expect(entries[0]?.permissions).toEqual(['filesystem-read']);

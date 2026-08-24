@@ -73,6 +73,10 @@ export const PACKAGE_ROUTES: Readonly<Record<string, IPackageRoute>> = {
 		dir: 'plugins/impact-analysis',
 		label: 'ImpactAnalysis',
 	},
+	'project-health': {
+		dir: 'plugins/project-health',
+		label: 'ProjectHealth',
+	},
 };
 
 /** Relative path (from a package dir) of the generated module. */
