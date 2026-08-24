@@ -29,8 +29,9 @@ describe('PRESET_CATALOG', async () => {
 		expect(PRESET_CATALOG[1]?.members.length).toBe(4);
 		// standard: adds 14 on top of minimal (f00115 added test-policy, f00123 added refactor, f00128 S1 added database, f00132 S1 added diagram, f00133 added container, f00135 added env, f00137 added skills-pack, f00138 added prompts-pack, f00158 added error-reporting)
 		expect(PRESET_CATALOG[2]?.members.length).toBe(15);
-		// swarm: adds 7 on top of standard (f00121 S3 added forge)
-		expect(PRESET_CATALOG[3]?.members.length).toBe(7);
+		// swarm: adds 8 on top of standard (f00121 S3 added forge,
+		// completion added by the completion plugin)
+		expect(PRESET_CATALOG[3]?.members.length).toBe(8);
 		// full: adds 2 host-only + api + changelog on top of swarm
 		expect(PRESET_CATALOG[4]?.members.length).toBe(4);
 		// vertex: 29 members, exactly mirroring mcp-vertex.config.json's
@@ -181,8 +182,8 @@ describe('resolvePresetMembers', async () => {
 			'skills-pack',
 			'error-reporting',
 		]);
-		expect(resolvePresetMembers('swarm').length).toBe(24);
-		expect(resolvePresetMembers('full').length).toBe(28);
+		expect(resolvePresetMembers('swarm').length).toBe(25);
+		expect(resolvePresetMembers('full').length).toBe(29);
 		expect(resolvePresetMembers('swarm')).not.toContain('lean');
 	});
 
