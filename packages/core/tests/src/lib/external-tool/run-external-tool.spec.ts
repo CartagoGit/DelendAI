@@ -61,6 +61,28 @@ describe('runExternalTool', () => {
 		);
 	});
 
+	it('forwards the combined and per-stream byte budgets', async () => {
+		const exec = vi.fn(fakeExec({ code: 0 }));
+		await runExternalTool(
+			{
+				tool,
+				args: ['scan'],
+				maxOutputBytes: 512,
+				maxStdoutBytes: 128,
+				maxStderrBytes: 64,
+			},
+			exec,
+		);
+		expect(exec).toHaveBeenCalledWith(
+			['demo', 'scan'],
+			expect.objectContaining({
+				maxOutputBytes: 512,
+				maxStdoutBytes: 128,
+				maxStderrBytes: 64,
+			}),
+		);
+	});
+
 	// x00169: `IRunExternalToolInput.stdin` used to not exist at all — a
 	// tool shaped like `kubectl apply -f -` had no way to hand the
 	// manifest to the child process's stdin.
@@ -81,6 +103,8 @@ describe('runExternalTool', () => {
 		await runExternalTool({ tool, args: ['scan'] }, exec);
 		const options = exec.mock.calls[0]?.[1];
 		expect(options).not.toHaveProperty('stdin');
+		expect(options).not.toHaveProperty('maxStdoutBytes');
+		expect(options).not.toHaveProperty('maxStderrBytes');
 	});
 
 	it('redacts literal and regex patterns from output', async () => {

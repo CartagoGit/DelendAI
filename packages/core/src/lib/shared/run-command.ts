@@ -68,6 +68,47 @@ const spawnShell = (command: string, cwd: string): ReturnType<typeof spawn> =>
 				stdio: ['ignore', 'pipe', 'pipe'],
 			});
 
+interface IByteCollector {
+	readonly chunks: Buffer[];
+	collectedBytes: number;
+	readonly limitBytes?: number;
+}
+
+const createByteCollector = (limitBytes?: number): IByteCollector => ({
+	chunks: [],
+	collectedBytes: 0,
+	...(limitBytes !== undefined ? { limitBytes } : {}),
+});
+
+const remainingBytes = (collector: IByteCollector): number =>
+	collector.limitBytes === undefined
+		? Number.POSITIVE_INFINITY
+		: Math.max(0, collector.limitBytes - collector.collectedBytes);
+
+const captureUtf8Bytes = (
+	collector: IByteCollector,
+	chunk: Buffer,
+	sharedCollector?: IByteCollector,
+): void => {
+	const chunkBytes = Buffer.byteLength(chunk);
+	const bytesToTake = Math.min(
+		chunkBytes,
+		remainingBytes(collector),
+		sharedCollector === undefined
+			? Number.POSITIVE_INFINITY
+			: remainingBytes(sharedCollector),
+	);
+	if (bytesToTake <= 0) return;
+	collector.chunks.push(chunk.subarray(0, bytesToTake));
+	collector.collectedBytes += bytesToTake;
+	if (sharedCollector !== undefined) {
+		sharedCollector.collectedBytes += bytesToTake;
+	}
+};
+
+const decodeUtf8Chunks = (chunks: readonly Buffer[]): string =>
+	Buffer.concat(chunks).toString('utf8');
+
 const spawnOnce = (
 	command: string,
 	cwd: string,
@@ -75,11 +116,11 @@ const spawnOnce = (
 	maxOutputBytes: number,
 ): Promise<IRunCommandOutcome> =>
 	new Promise<IRunCommandOutcome>((resolve) => {
-		let output = '';
+		const outputCollector = createByteCollector(maxOutputBytes);
 		let timedOut = false;
 		const child = spawnShell(command, cwd);
 		const capture = (chunk: Buffer): void => {
-			if (output.length < maxOutputBytes) output += chunk.toString();
+			captureUtf8Bytes(outputCollector, chunk);
 		};
 		child.stdout?.on('data', capture);
 		child.stderr?.on('data', capture);
@@ -89,11 +130,19 @@ const spawnOnce = (
 		}, timeoutMs);
 		child.on('close', (code) => {
 			clearTimeout(timer);
-			resolve({ code: timedOut ? 124 : (code ?? 1), output, timedOut });
+			resolve({
+				code: timedOut ? 124 : (code ?? 1),
+				output: decodeUtf8Chunks(outputCollector.chunks),
+				timedOut,
+			});
 		});
 		child.on('error', (error) => {
 			clearTimeout(timer);
-			resolve({ code: 127, output: String(error), timedOut: false });
+			resolve({
+				code: 127,
+				output: String(error),
+				timedOut: false,
+			});
 		});
 	});
 
@@ -141,8 +190,9 @@ export const runArgv = (
 		}
 		const timeoutMs = options.timeoutMs ?? 600_000;
 		const maxOutputBytes = options.maxOutputBytes ?? 64 * 1024;
-		let stdout = '';
-		let stderr = '';
+		const totalCollector = createByteCollector(maxOutputBytes);
+		const stdoutCollector = createByteCollector(options.maxStdoutBytes);
+		const stderrCollector = createByteCollector(options.maxStderrBytes);
 		let timedOut = false;
 		const child = spawn(binary, args, {
 			...(options.cwd !== undefined ? { cwd: options.cwd } : {}),
@@ -156,10 +206,10 @@ export const runArgv = (
 			child.stdin?.end(options.stdin);
 		}
 		child.stdout?.on('data', (chunk: Buffer) => {
-			if (stdout.length < maxOutputBytes) stdout += chunk.toString();
+			captureUtf8Bytes(stdoutCollector, chunk, totalCollector);
 		});
 		child.stderr?.on('data', (chunk: Buffer) => {
-			if (stderr.length < maxOutputBytes) stderr += chunk.toString();
+			captureUtf8Bytes(stderrCollector, chunk, totalCollector);
 		});
 		const timer = setTimeout(() => {
 			timedOut = true;
@@ -169,8 +219,8 @@ export const runArgv = (
 			clearTimeout(timer);
 			resolve({
 				code: timedOut ? 124 : (code ?? 1),
-				stdout,
-				stderr,
+				stdout: decodeUtf8Chunks(stdoutCollector.chunks),
+				stderr: decodeUtf8Chunks(stderrCollector.chunks),
 				timedOut,
 			});
 		});
@@ -178,7 +228,7 @@ export const runArgv = (
 			clearTimeout(timer);
 			resolve({
 				code: error.code === 'ENOENT' ? 127 : 126,
-				stdout,
+				stdout: decodeUtf8Chunks(stdoutCollector.chunks),
 				stderr: String(error),
 				timedOut: false,
 			});

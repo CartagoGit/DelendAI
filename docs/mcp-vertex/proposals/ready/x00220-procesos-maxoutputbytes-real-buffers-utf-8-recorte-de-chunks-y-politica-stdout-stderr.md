@@ -37,7 +37,7 @@ Hoy se usa `output.length` (UTF-16) y `if (output.length < max) output += chunk`
 - global_gate: type
 
 ### S1 — Acumulación por Buffers y recorte de chunks
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/src/lib/shared/run-command.ts`
 - **Gate**: type
 - acceptance:
@@ -46,7 +46,7 @@ Hoy se usa `output.length` (UTF-16) y `if (output.length < max) output += chunk`
   - "El límite nunca se excede."
 
 ### S2 — Política combinada stdout+stderr
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/src/lib/external-tool/run-external-tool.ts`
 - **Gate**: type
 - acceptance:
@@ -55,7 +55,7 @@ Hoy se usa `output.length` (UTF-16) y `if (output.length < max) output += chunk`
   - "Documentado en el contrato de run-command."
 
 ### S3 — Tests de límites reales
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/tests/src/lib/shared/run-command-bytes.spec.ts`
 - **Gate**: type
 - acceptance:
