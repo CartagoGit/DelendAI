@@ -82,8 +82,12 @@ export interface IRunExternalToolInput {
 	readonly cwd?: string;
 	/** Kill after this many ms. Default 60000. */
 	readonly timeoutMs?: number;
-	/** Cap captured bytes per stream. Default 1 MiB. */
+	/** Cap captured UTF-8 bytes across stdout+stderr combined. Default 1 MiB. */
 	readonly maxOutputBytes?: number;
+	/** Optional extra cap for stdout only. Defaults to no extra cap. */
+	readonly maxStdoutBytes?: number;
+	/** Optional extra cap for stderr only. Defaults to no extra cap. */
+	readonly maxStderrBytes?: number;
 	/** Literal strings / regexes replaced with `***` in captured output. */
 	readonly redact?: readonly (string | RegExp)[];
 	/** Data piped to the child's stdin, then closed (e.g. `kubectl apply -f -`). */
