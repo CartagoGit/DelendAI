@@ -14,6 +14,10 @@ import type {
 import type { IWorkspacePathProvider } from '../contracts/interfaces/workspace-paths.interface';
 import type { ICacheEvictionRegistry } from '../contracts/interfaces/cache-eviction.interface';
 import type { IActivationContribution } from '../contracts/interfaces/activation-report.interface';
+import type {
+	IPluginHookErrorInfo,
+	IPluginRegisterErrorInfo,
+} from '../contracts/interfaces/plugin-lifecycle-error.interface';
 
 /**
  * What the core hands a plugin at registration time. A plugin is
@@ -261,6 +265,12 @@ export interface IMcpPluginRegistrations {
 				args: unknown,
 				elapsedMs: number,
 		  ) => Promise<void> | void)
+		| undefined;
+	readonly onRegisterError?:
+		| ((info: IPluginRegisterErrorInfo) => Promise<void> | void)
+		| undefined;
+	readonly onHookError?:
+		| ((info: IPluginHookErrorInfo) => Promise<void> | void)
 		| undefined;
 	readonly isAgentStuck?:
 		| ((

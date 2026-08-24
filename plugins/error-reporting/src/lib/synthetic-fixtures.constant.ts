@@ -1,4 +1,5 @@
 import type { SafeScalar } from './contracts/interfaces/reporter.interface';
+import { stableIndexOf } from './stable-index.helper';
 
 interface ISyntheticFixture {
 	readonly domain: string;
@@ -11,6 +12,11 @@ interface ISyntheticFixture {
 	readonly payload: Readonly<Record<string, SafeScalar>>;
 	readonly list: readonly SafeScalar[];
 }
+
+const BAKERY_TOTAL_CENTS = 4200;
+const WEATHER_WINDOW_HOURS = 12;
+const INVENTORY_QUANTITY = 24;
+const HASH_MULTIPLIER = 33;
 
 const deepFreeze = <T>(value: T): T => {
 	if (typeof value !== 'object' || value === null || Object.isFrozen(value)) {
@@ -44,7 +50,7 @@ export const SYNTHETIC_FIXTURES = deepFreeze([
 					quantity: 2,
 				},
 			],
-			totalCents: 4200,
+			totalCents: BAKERY_TOTAL_CENTS,
 		},
 		list: ['EXAMPLE-001', 'https://example.invalid/orders', 2],
 	},
@@ -61,10 +67,10 @@ export const SYNTHETIC_FIXTURES = deepFreeze([
 			requestId: 'SYNTHETIC-42',
 			endpoint: 'https://example.com/weather/forecast',
 			locale: 'Harbor Point',
-			windowHours: 12,
+			windowHours: WEATHER_WINDOW_HOURS,
 			includeAlerts: true,
 		},
-		list: ['DEMO-123', 'Harbor Point', 12],
+		list: ['DEMO-123', 'Harbor Point', WEATHER_WINDOW_HOURS],
 	},
 	{
 		domain: 'books',
@@ -133,20 +139,12 @@ export const SYNTHETIC_FIXTURES = deepFreeze([
 			warehouseId: 'DEMO-123',
 			endpoint: 'https://example.com/inventory/snapshots',
 			sku: 'SYNTHETIC-42',
-			quantity: 24,
+			quantity: INVENTORY_QUANTITY,
 			location: 'North Shelf',
 		},
-		list: ['EXAMPLE-001', 'SYNTHETIC-42', 24],
+		list: ['EXAMPLE-001', 'SYNTHETIC-42', INVENTORY_QUANTITY],
 	},
 ] as const) as readonly ISyntheticFixture[];
-
-const stableIndexOf = (seed: string, length: number): number => {
-	let hash = 0;
-	for (const char of seed) {
-		hash = (hash * 33 + char.charCodeAt(0)) >>> 0;
-	}
-	return hash % length;
-};
 
 export const selectSyntheticFixture = (input: {
 	readonly packageId: string;
@@ -155,13 +153,14 @@ export const selectSyntheticFixture = (input: {
 	readonly failureClass: string;
 }): ISyntheticFixture =>
 	SYNTHETIC_FIXTURES[
-		stableIndexOf(
-			[
+		stableIndexOf({
+			seed: [
 				input.packageId,
 				input.toolName,
 				input.errorCode ?? '',
 				input.failureClass,
 			].join(':'),
-			SYNTHETIC_FIXTURES.length,
-		)
+			length: SYNTHETIC_FIXTURES.length,
+			multiplier: HASH_MULTIPLIER,
+		})
 	] ?? SYNTHETIC_FIXTURES[0]!;

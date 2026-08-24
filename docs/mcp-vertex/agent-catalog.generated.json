@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-08-24T01:36:55.569Z",
+	"generatedAt": "2026-08-24T04:36:32.283Z",
 	"mode": "compact",
 	"tools": [
 		{
@@ -1573,10 +1573,38 @@
 				"track": "plugins",
 				"status": "ready",
 				"kind": "fix"
+			},
+			{
+				"id": "x00232",
+				"title": "x00232",
+				"track": "plugins+fix",
+				"status": "ready",
+				"kind": "fix"
+			},
+			{
+				"id": "x00233",
+				"title": "x00233",
+				"track": "plugins+fix",
+				"status": "ready",
+				"kind": "fix"
+			},
+			{
+				"id": "x00234",
+				"title": "x00234",
+				"track": "plugins+fix",
+				"status": "ready",
+				"kind": "fix"
+			},
+			{
+				"id": "x00235",
+				"title": "x00235",
+				"track": "plugins+fix",
+				"status": "ready",
+				"kind": "fix"
 			}
 		],
 		"byStatus": {
-			"ready": 51,
+			"ready": 55,
 			"in-progress": 11,
 			"review": 0,
 			"paused": 1,

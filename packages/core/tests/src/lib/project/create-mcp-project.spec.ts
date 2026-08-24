@@ -271,6 +271,57 @@ describe('instrumented tool hooks (f00111 S1)', async () => {
 			await close();
 		}
 	});
+
+	it('reports host hook failures through onHookError without breaking the tool call', async () => {
+		const hookErrors: Array<{
+			hookName: string;
+			toolName: string;
+			args: unknown;
+			error: unknown;
+		}> = [];
+		const pingTool: IToolRegistration = {
+			id: 'hook-ping',
+			register: async (server) => {
+				server.registerTool(
+					'spec_hook_ping',
+					{
+						description: 'hook ping',
+						inputSchema: z.object({ value: z.number() }),
+					},
+					async () => ({
+						content: [{ type: 'text' as const, text: 'ok' }],
+					}),
+				);
+			},
+		};
+		const { client, close } = await connect({
+			...hostConfig([pingTool]),
+			onToolStart: () => {
+				throw new Error('start boom');
+			},
+			onHookError: (info) => {
+				hookErrors.push(info);
+			},
+		});
+		try {
+			const result = await client.callTool({
+				name: 'spec_hook_ping',
+				arguments: { value: 1 },
+			});
+			expect(result.isError).not.toBe(true);
+			expect(hookErrors).toHaveLength(1);
+			expect(hookErrors[0]).toEqual(
+				expect.objectContaining({
+					hookName: 'onToolStart',
+					toolName: 'spec_hook_ping',
+					args: { value: 1 },
+				}),
+			);
+			expect(hookErrors[0]?.error).toBeInstanceOf(Error);
+		} finally {
+			await close();
+		}
+	});
 });
 
 describe('checkpoint advisory injection (f00156 S1)', async () => {

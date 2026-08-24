@@ -3,6 +3,11 @@ import type {
 	IMcpPluginContext,
 	IMcpPluginRegistrations,
 } from './plugin-contract';
+import type { IPluginRegisterErrorInfo } from '../contracts/interfaces/plugin-lifecycle-error.interface';
+import {
+	checkPluginDependencies,
+	formatMissingDependenciesError,
+} from './load-plugins-deps.helper';
 import { resolve as resolvePath } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
@@ -31,12 +36,7 @@ export interface IPluginLoadResult {
 		readonly specifier: string;
 		readonly message: string;
 	}>;
-}
-
-/** One loaded plugin's unmet `dependsOn` entries. */
-export interface IMissingPluginDependency {
-	readonly plugin: string;
-	readonly missing: readonly string[];
+	readonly registerErrors: readonly IPluginRegisterErrorInfo[];
 }
 
 export interface ILoadPluginsOptions {
@@ -182,50 +182,6 @@ const asPlugin = (mod: unknown): IMcpPlugin | undefined => {
 	return undefined;
 };
 
-/**
- * Pure, single-pass dependency check: for every plugin whose
- * `dependsOn` names a plugin id that is NOT also in the set, collect a
- * `{ plugin, missing }` entry. Order matches the input. Does not mutate
- * or import anything — a separate concern from the import/register loop
- * in `loadPlugins`, so it can be unit-tested and reasoned about on its
- * own (SOLID: one responsibility per function).
- *
- * Accepts anything carrying a `{ plugin }` — the RESOLVED set (before
- * `register()`) as well as the fully-loaded set — so `loadPlugins` can
- * gate registration on satisfied dependencies before running any
- * plugin's side effects.
- */
-export const checkPluginDependencies = (
-	loadedPlugins: ReadonlyArray<{ readonly plugin: IMcpPlugin }>,
-): readonly IMissingPluginDependency[] => {
-	const loadedNames = new Set(
-		loadedPlugins.map((entry) => entry.plugin.name),
-	);
-	const result: IMissingPluginDependency[] = [];
-	for (const { plugin } of loadedPlugins) {
-		const missing = (plugin.dependsOn ?? []).filter(
-			(dep) => !loadedNames.has(dep),
-		);
-		if (missing.length > 0) {
-			result.push({ plugin: plugin.name, missing });
-		}
-	}
-	return result;
-};
-
-/** Render the combined dependency error for every plugin with missing deps. */
-const formatMissingDependenciesError = (
-	missing: readonly IMissingPluginDependency[],
-): string =>
-	missing
-		.map(
-			(entry) =>
-				`plugin "${entry.plugin}" requires ${entry.missing
-					.map((dep) => `"${dep}"`)
-					.join(', ')} (not in load set)`,
-		)
-		.join('; ');
-
 /** A plugin that resolved + validated its options but has NOT yet run `register()`. */
 interface IResolvedPlugin {
 	readonly specifier: string;
@@ -263,6 +219,7 @@ export const loadPlugins = async (
 	const importer = options.import;
 	const timeoutMs = options.timeoutMs ?? 15_000;
 	const errors: Array<{ specifier: string; message: string }> = [];
+	const registerErrors: IPluginRegisterErrorInfo[] = [];
 	const resolvedPlugins: IResolvedPlugin[] = [];
 	const resolvedNames = new Set<string>();
 	const seenSpecifiers = new Set<string>();
@@ -362,6 +319,20 @@ export const loadPlugins = async (
 	//    register() runs if a hard dependency is unmet. ──
 	const missingDependencies = checkPluginDependencies(resolvedPlugins);
 	if (missingDependencies.length > 0) {
+		for (const missing of missingDependencies) {
+			const resolved = resolvedPlugins.find(
+				(entry) => entry.plugin.name === missing.plugin,
+			);
+			registerErrors.push({
+				pluginName: missing.plugin,
+				resolvedSpecifier: resolved?.resolved ?? missing.plugin,
+				phase: 'dependency',
+				error: new Error(
+					`plugin "${missing.plugin}" requires ${missing.missing.join(', ')}`,
+				),
+				missingDependencies: missing.missing,
+			});
+		}
 		return {
 			loaded: [],
 			errors: [
@@ -372,6 +343,7 @@ export const loadPlugins = async (
 						formatMissingDependenciesError(missingDependencies),
 				},
 			],
+			registerErrors,
 		};
 	}
 
@@ -386,6 +358,12 @@ export const loadPlugins = async (
 			);
 			loaded.push({ specifier, resolved, plugin, registrations });
 		} catch (error) {
+			registerErrors.push({
+				pluginName: plugin.name,
+				resolvedSpecifier: resolved,
+				phase: 'register',
+				error,
+			});
 			errors.push({
 				specifier,
 				message: `plugin "${plugin.name}" register() failed: ${error instanceof Error ? error.message : String(error)}`,
@@ -393,5 +371,5 @@ export const loadPlugins = async (
 		}
 	}
 
-	return { loaded, errors };
+	return { loaded, errors, registerErrors };
 };

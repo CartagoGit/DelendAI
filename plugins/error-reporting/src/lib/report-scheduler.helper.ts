@@ -7,8 +7,10 @@ import type {
 import type { IReportRecord } from './contracts/interfaces/report-store.interface';
 import { shouldReport } from './reporter.service';
 
+const ISO_DATE_PREFIX_LENGTH = 10;
+
 const utcDayOf = (iso: string | undefined): string | undefined =>
-	iso?.slice(0, 10);
+	iso?.slice(0, ISO_DATE_PREFIX_LENGTH);
 
 const nextUtcDayIsoOf = (nowMs: number): string => {
 	const now = new Date(nowMs);

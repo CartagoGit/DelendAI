@@ -41,7 +41,7 @@ Hoy solo se observan los fallos de tool (`onToolCall`). Los fallos de `register`
 - global_gate: type
 
 ### S1 — Superficie de observación de errores en core
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/src/lib/plugins/plugin-contract.ts`, `packages/core/src/lib/plugins/load-plugins.ts`
 - **Gate**: type
 - acceptance:
@@ -49,7 +49,7 @@ Hoy solo se observan los fallos de tool (`onToolCall`). Los fallos de `register`
   - "El loader emite fallos de register, hooks que lanzan y dependencias fallidas a través de esos hooks."
 
 ### S2 — error-reporting suscribe todas las superficies + análisis de origen
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/error-reporting/src/index.ts`, `plugins/error-reporting/src/lib/origin-analyzer.helper.ts`
 - **Gate**: type
 - acceptance:
@@ -58,7 +58,7 @@ Hoy solo se observan los fallos de tool (`onToolCall`). Los fallos de `register`
   - "Solo internal y llm-format (payload generado por mcp-vertex) son reportables; el resto es local-only."
 
 ### S3 — Análisis exhaustivo del origen LLM/format y tests
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/error-reporting/tests/origin-analyzer.spec.ts`
 - **Gate**: type
 - acceptance:
