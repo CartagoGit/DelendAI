@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-08-24T00:20:06.205Z",
+	"generatedAt": "2026-08-24T00:31:03.734Z",
 	"mode": "compact",
 	"tools": [
 		{
@@ -1218,13 +1218,6 @@
 				"kind": "fix"
 			},
 			{
-				"id": "x00211",
-				"title": "x00211",
-				"track": "setup",
-				"status": "ready",
-				"kind": "fix"
-			},
-			{
 				"id": "x00212",
 				"title": "x00212",
 				"track": "plugins+adoption",
@@ -1240,11 +1233,11 @@
 			}
 		],
 		"byStatus": {
-			"ready": 11,
+			"ready": 10,
 			"in-progress": 3,
 			"review": 0,
 			"paused": 1,
-			"done": 346,
+			"done": 347,
 			"blocked": 0,
 			"retired": 2,
 			"unspecified": 0

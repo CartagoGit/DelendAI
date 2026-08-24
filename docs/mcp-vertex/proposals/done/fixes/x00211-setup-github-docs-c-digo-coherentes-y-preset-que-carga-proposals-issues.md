@@ -2,10 +2,15 @@
 id: x00211
 title: "setup-github: docs↔código coherentes y preset que carga proposals/issues"
 kind: fix
-status: ready
+status: done
 type: proposal
 track: setup
 date: 2026-08-23
+closed: 2026-08-24
+shipped-in:
+  - acf5df01 # S3: align CROSS-PROJECT-SETUP with the real read-only setup flow
+  - 40ea326c # S2: init_config derives swarm preset for TS monorepos
+  - e85e0cc4 # follow-up: tool-outputs preset enum accepts swarm
 ---
 
 # x00211 — setup-github: docs↔código coherentes y preset que carga proposals/issues
