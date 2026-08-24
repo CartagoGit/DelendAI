@@ -2,7 +2,7 @@
 id: x00221
 title: "filesystem: revisión TOCTOU, threat model explícito y tests Windows"
 kind: fix
-status: ready
+status: review
 type: proposal
 track: concurrency
 date: 2026-08-24

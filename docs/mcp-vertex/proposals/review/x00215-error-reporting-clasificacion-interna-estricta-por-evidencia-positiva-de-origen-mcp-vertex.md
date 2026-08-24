@@ -2,7 +2,7 @@
 id: x00215
 title: "error-reporting: clasificación interna estricta por evidencia positiva de origen MCP Vertex"
 kind: fix
-status: ready
+status: review
 type: proposal
 track: privacy
 date: 2026-08-24

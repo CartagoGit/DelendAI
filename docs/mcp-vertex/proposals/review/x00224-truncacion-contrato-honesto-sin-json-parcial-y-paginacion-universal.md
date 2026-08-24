@@ -2,7 +2,7 @@
 id: x00224
 title: "truncación: contrato honesto, sin JSON parcial y paginación universal"
 kind: fix
-status: ready
+status: review
 type: proposal
 track: metrics
 date: 2026-08-24
