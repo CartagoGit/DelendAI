@@ -153,23 +153,6 @@ export const resolveWorkspaceContained = (
 };
 
 /**
- * Lexical containment of `child` inside a single `rootAbs`, *allowing*
- * an absolute `child` as long as it resolves inside the root. This is
- * the per-root primitive {@link resolveAgainstRoots} composes; it is
- * deliberately separate from {@link resolveWorkspaceContained}, which
- * rejects absolute paths outright because the workspace contract is
- * "relative path only".
- *
- * Returns `ok:false` (without a reason) when the path escapes the
- * root, so the caller can keep trying the next authorized root before
- * deciding on a final rejection message.
- */
-const containWithinRoot = (rootAbs: string, child: string): IContainedPath =>
-	containWithinRootForPathDialect(nativePathDialect, rootAbs, child, {
-		caseInsensitive: WINDOWS_CASE_INSENSITIVE,
-	});
-
-/**
  * Resolve `child` against the workspace root first, then each of the
  * `authorizedRoots` in order, returning the first containment hit.
  *
