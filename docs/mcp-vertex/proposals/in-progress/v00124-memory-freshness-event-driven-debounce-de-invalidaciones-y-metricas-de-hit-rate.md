@@ -38,7 +38,7 @@ El refresco global en cada tool call añade I/O y cálculo sin aportar frescura 
 - global_gate: type
 
 ### S1 — Freshness event-driven con debounce
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/memory/src/lib/services/checkpoint-freshness.ts`, `plugins/memory/src/index.ts`
 - **Gate**: type
 - acceptance:
@@ -46,7 +46,7 @@ El refresco global en cada tool call añade I/O y cálculo sin aportar frescura 
   - "Debounce de 100-500 ms evita lecturas simultáneas repetidas (MEM-002)."
 
 ### S2 — Métricas de hit-rate
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/memory/src/lib/services/store-recall.ts`
 - **Gate**: type
 - acceptance:

@@ -3,7 +3,14 @@
  * lifecycle boundary. This is deliberately a metadata check, not a claim that
  * the digest semantically covers the current task.
  */
+import { stat } from 'node:fs/promises';
+
+import type { ICheckpointAdvisory } from '@mcp-vertex/core/public';
+
 import type { ISessionDigestSelection } from '../contracts/interfaces/session-digest-recall.interface';
+import { mapFreshnessToCheckpointAdvisory } from './checkpoint-advisory.service';
+import { selectLatestSessionDigest } from './session-digest-recall';
+import { readStore } from './store';
 
 export type CheckpointFreshnessState = 'missing' | 'fresh' | 'stale';
 
@@ -47,5 +54,49 @@ export const assessCheckpointFreshness = (
 		latestCheckpointAt: digest.createdAt,
 		ageMs,
 		maxAgeMs: maximum,
+	};
+};
+
+export const readStoreMtimeMs = async (
+	absPath: string,
+): Promise<number | null> => {
+	try {
+		return (await stat(absPath)).mtimeMs;
+	} catch {
+		return null;
+	}
+};
+
+export const refreshCheckpointFreshnessAdvisory = async (
+	absPath: string,
+	options: {
+		nowMs?: number;
+		maxAgeMs?: number;
+	} = {},
+): Promise<{
+	advisory: ICheckpointAdvisory | null;
+	freshness: ICheckpointFreshness;
+	mtimeMs: number | null;
+}> => {
+	const [notes, mtimeMs] = await Promise.all([
+		readStore(absPath),
+		readStoreMtimeMs(absPath),
+	]);
+	const digest = selectLatestSessionDigest(
+		notes.map((note) => ({
+			title: note.title,
+			body: note.body,
+			createdAt: note.createdAt,
+		})),
+	);
+	const freshness = assessCheckpointFreshness(
+		digest,
+		options.nowMs ?? Date.now(),
+		options.maxAgeMs ?? DEFAULT_CHECKPOINT_MAX_AGE_MS,
+	);
+	return {
+		advisory: mapFreshnessToCheckpointAdvisory(freshness),
+		freshness,
+		mtimeMs,
 	};
 };
