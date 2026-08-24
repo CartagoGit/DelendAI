@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-08-23T23:58:23.693Z",
+	"generatedAt": "2026-08-24T00:20:06.205Z",
 	"mode": "compact",
 	"tools": [
 		{
@@ -1155,13 +1155,6 @@
 				"kind": "feat"
 			},
 			{
-				"id": "f00157",
-				"title": "f00157",
-				"track": "adoption",
-				"status": "ready",
-				"kind": "feat"
-			},
-			{
 				"id": "f00158",
 				"title": "f00158",
 				"track": "github",
@@ -1247,11 +1240,11 @@
 			}
 		],
 		"byStatus": {
-			"ready": 12,
+			"ready": 11,
 			"in-progress": 3,
 			"review": 0,
 			"paused": 1,
-			"done": 345,
+			"done": 346,
 			"blocked": 0,
 			"retired": 2,
 			"unspecified": 0
