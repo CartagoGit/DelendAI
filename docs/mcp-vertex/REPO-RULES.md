@@ -118,6 +118,17 @@ A Bun monorepo:
   was switched. On claim conflict, wait for `lock-released` or
   `await_lock` instead of polling; `proposals_sync_proposals` runs only
   after the last open slice of that proposal is closed.
+- **No orphaned branches or stashes — always reconcile.** Before closing
+  any work (or a session), run `bun run reclaim:orphans` (report) and
+  reconcile every listed orphan: if a stranded branch or stash adds
+  value, merge it into `develop` and fix discrepancies/bugs until it is
+  100% functional (`git switch develop && git merge --no-ff <branch>` →
+  validate → commit → `git branch -D <branch>`); if it adds no value,
+  delete it as-is (`git branch -D <branch>` / `git stash drop <ref>`).
+  `bun run reclaim:orphans --apply` deletes only the provably-lossless
+  branches (`ahead === 0`); `needs-review` branches and stashes are
+  never auto-deleted. This is a repo-level policy, not a plugin
+  behaviour: mcp-vertex does not enforce it on other repos.
 - `auto_work` ↔ loop detector ↔ idle-streak. Calling `auto_work` three
   times in a row is NOT a loop; it's the orchestrator polling for work.
   The detector is wired into `auto_work` but disabled by default for

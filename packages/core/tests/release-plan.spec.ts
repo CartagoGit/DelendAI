@@ -97,7 +97,20 @@ describe('PUBLISH_ORDER', async () => {
 			})
 		)
 			.filter((entry) => entry.isDirectory())
-			.map((entry) => `plugins/${entry.name}`)
+			.map((entry) => entry.name)
+			.filter(async (name) => {
+				// Internal-only plugins (`"private": true`, e.g.
+				// issues-triage) are intentionally absent from
+				// PUBLISH_ORDER — they never ship to npm.
+				const manifest = JSON.parse(
+					await readFile(
+						resolve(root, 'plugins', name, 'package.json'),
+						'utf8',
+					),
+				) as { private?: boolean };
+				return manifest.private !== true;
+			})
+			.map((name) => `plugins/${name}`)
 			.sort();
 		expect(
 			PUBLISH_ORDER.filter((dir) => dir.startsWith('plugins/')).sort(),

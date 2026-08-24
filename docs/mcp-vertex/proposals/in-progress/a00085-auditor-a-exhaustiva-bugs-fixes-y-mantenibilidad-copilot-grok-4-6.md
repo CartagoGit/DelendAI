@@ -49,7 +49,7 @@ El usuario pidió una propuesta de auditoría **muy completa** centrada en bugs/
 ### S1 — Documento de auditoría (fases 0–10) + scoreboard
 
 - **Status**: pending
-- **Files**: `docs/mcp-vertex/proposals/in-progress/a00085-auditoria-exhaustiva-bugs-fixes-y-mantenibilidad-copilot-grok-4-6.md`
+- **Files**: `docs/mcp-vertex/proposals/in-progress/a00085-auditor-a-exhaustiva-bugs-fixes-y-mantenibilidad-copilot-grok-4-6.md`
 - **Gate**: lint
 - **Acceptance**:
   - Goal incluye hash HEAD

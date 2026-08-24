@@ -57,6 +57,14 @@ export const FIRST_PARTY_PLUGIN_INDEX: IPluginRegistrySource = {
 		},
 		{
 			origin: 'first-party',
+			id: 'completion',
+			package: '@mcp-vertex/completion',
+			summary:
+				'Task-completion notifier: records an agent declaring its original task done + reviewed and pushes a notification.',
+			tags: ['completion', 'notification', 'f00159'],
+		},
+		{
+			origin: 'first-party',
 			id: 'container',
 			package: '@mcp-vertex/container',
 			summary:

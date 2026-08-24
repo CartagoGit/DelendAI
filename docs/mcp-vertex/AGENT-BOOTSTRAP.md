@@ -250,6 +250,13 @@ restates the rule for swarm context.
   shared checkout — the main checkout stays on `develop` until the
   worktree is merged and removed. `branch_status` / `swarm_hygiene`
   expose `mainCheckoutDrift` to detect a switched shared checkout.
+- **No orphaned branches or stashes — always reconcile (this repo).**
+  Before closing any work or session, run `bun run reclaim:orphans` and
+  reconcile every listed orphan: merge-if-valuable into `develop`
+  (fixing discrepancies/bugs until 100% functional) or delete-if-not.
+  `bun run reclaim:orphans --apply` deletes only lossless branches
+  (`ahead === 0`); stashes and unique-commit branches are never
+  auto-deleted. This is a repo-level policy, not a plugin behaviour.
 - Every public tool declares an `outputSchema`. `catchall` is documented,
   not default.
 - **No hardcoded lists of skills / tools / proposal ids in any host

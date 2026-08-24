@@ -644,6 +644,18 @@ export type {
 	IServerPlan,
 } from '../lib/bootstrap/index';
 
+// --- one-call project adoption (f00157 S1) --------------------------------
+export {
+	buildAdoptProjectPlan,
+	buildAdoptProjectToolRegistration,
+} from '../lib/adopt/adopt-project.tool';
+export type {
+	IAdoptProjectPlan,
+	IAdoptProjectPreset,
+	IAdoptProjectToolDeps,
+	IBuildAdoptProjectPlanInput,
+} from '../lib/contracts/interfaces/adopt-project.interface';
+
 // --- versioned skill bundles (f00029 S4; f00065 S1: skills owned by package/plugin) ------
 export { loadSkills } from '../lib/skills/load-skills';
 export type { ISkillBundle } from '../lib/skills/load-skills';

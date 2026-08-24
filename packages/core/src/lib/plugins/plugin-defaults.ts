@@ -83,6 +83,7 @@ export const PLUGIN_DEFAULTS: Readonly<
 	database: {},
 	api: {},
 	changelog: {},
+	completion: {},
 	'error-reporting': {
 		enabled: true,
 	},

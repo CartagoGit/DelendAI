@@ -8,6 +8,7 @@
  * block had) and returns the composed tool list plus the metrics
  * registry the host config wires in.
  */
+import { buildAdoptProjectToolRegistration } from '../adopt/adopt-project.tool';
 import { buildBootstrapToolRegistrations } from '../bootstrap/index';
 import { buildInitConfigToolRegistration } from '../bootstrap/init-config-tool';
 import { createWorkspaceFileReader } from '../bootstrap/workspace-file-reader';
@@ -378,6 +379,14 @@ export const assembleCoreTools = (
 		buildInitConfigToolRegistration({
 			namespacePrefix: corePrefix,
 			workspace,
+			reader: createWorkspaceFileReader(workspace),
+		}),
+		// f00157 S1: the one-call adoption orchestrator — composes config
+		// derivation + proposals-store bootstrap + host agent scaffold.
+		buildAdoptProjectToolRegistration({
+			namespacePrefix: corePrefix,
+			workspace,
+			corePaths,
 			reader: createWorkspaceFileReader(workspace),
 		}),
 	];

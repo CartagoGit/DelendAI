@@ -1,7 +1,10 @@
 {
-	"generatedAt": "2026-08-23T23:26:39.069Z",
+	"generatedAt": "2026-08-23T23:58:23.693Z",
 	"mode": "compact",
 	"tools": [
+		{
+			"name": "mcp-vertex_adopt_project"
+		},
 		{
 			"name": "mcp-vertex_agent_catalog"
 		},
@@ -43,6 +46,18 @@
 		{
 			"name": "mcp-vertex_auto-agent-selector_auto_status",
 			"plugin": "auto-agent-selector"
+		},
+		{
+			"name": "mcp-vertex_completion_clear",
+			"plugin": "completion"
+		},
+		{
+			"name": "mcp-vertex_completion_report_complete",
+			"plugin": "completion"
+		},
+		{
+			"name": "mcp-vertex_completion_status",
+			"plugin": "completion"
 		},
 		{
 			"name": "mcp-vertex_configuration_center"
@@ -1119,6 +1134,13 @@
 	"proposals": {
 		"actionable": [
 			{
+				"id": "a00085",
+				"title": "a00085",
+				"track": "audit+bugs+maintainability",
+				"status": "in-progress",
+				"kind": "audit"
+			},
+			{
 				"id": "c00127",
 				"title": "c00127",
 				"track": "adoption",
@@ -1168,6 +1190,20 @@
 				"kind": "fix"
 			},
 			{
+				"id": "x00203",
+				"title": "x00203",
+				"track": "plugins+fix",
+				"status": "in-progress",
+				"kind": "fix"
+			},
+			{
+				"id": "x00204",
+				"title": "x00204",
+				"track": "plugins+fix",
+				"status": "in-progress",
+				"kind": "fix"
+			},
+			{
 				"id": "x00208",
 				"title": "x00208",
 				"track": "scaffold",
@@ -1212,10 +1248,10 @@
 		],
 		"byStatus": {
 			"ready": 12,
-			"in-progress": 0,
+			"in-progress": 3,
 			"review": 0,
 			"paused": 1,
-			"done": 348,
+			"done": 345,
 			"blocked": 0,
 			"retired": 2,
 			"unspecified": 0

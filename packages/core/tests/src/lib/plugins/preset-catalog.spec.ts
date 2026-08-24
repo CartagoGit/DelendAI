@@ -27,17 +27,17 @@ describe('PRESET_CATALOG', async () => {
 		expect(PRESET_CATALOG[0]?.members.length).toBe(2);
 		// lean: 4 members, independent essentials preset
 		expect(PRESET_CATALOG[1]?.members.length).toBe(4);
-		// standard: adds 13 on top of minimal (f00115 added test-policy, f00123 added refactor, f00128 S1 added database, f00132 S1 added diagram, f00133 added container, f00135 added env, f00137 added skills-pack, f00138 added prompts-pack)
-		expect(PRESET_CATALOG[2]?.members.length).toBe(14);
+		// standard: adds 14 on top of minimal (f00115 added test-policy, f00123 added refactor, f00128 S1 added database, f00132 S1 added diagram, f00133 added container, f00135 added env, f00137 added skills-pack, f00138 added prompts-pack, f00158 added error-reporting)
+		expect(PRESET_CATALOG[2]?.members.length).toBe(15);
 		// swarm: adds 7 on top of standard (f00121 S3 added forge)
 		expect(PRESET_CATALOG[3]?.members.length).toBe(7);
 		// full: adds 2 host-only + api + changelog on top of swarm
 		expect(PRESET_CATALOG[4]?.members.length).toBe(4);
-		// vertex: 28 members, exactly mirroring mcp-vertex.config.json's
+		// vertex: 29 members, exactly mirroring mcp-vertex.config.json's
 		// `plugins` object (x00166 — corrected a long-stale drift where
 		// this preset had 6 phantom plugins not actually loaded and was
 		// missing 17 real ones, including `proposals`).
-		expect(PRESET_CATALOG[5]?.members.length).toBe(28);
+		expect(PRESET_CATALOG[5]?.members.length).toBe(29);
 	});
 
 	it('defines `lean` as an independent essentials preset', async () => {
@@ -179,9 +179,10 @@ describe('resolvePresetMembers', async () => {
 			'diagram',
 			'env',
 			'skills-pack',
+			'error-reporting',
 		]);
-		expect(resolvePresetMembers('swarm').length).toBe(23);
-		expect(resolvePresetMembers('full').length).toBe(27);
+		expect(resolvePresetMembers('swarm').length).toBe(24);
+		expect(resolvePresetMembers('full').length).toBe(28);
 		expect(resolvePresetMembers('swarm')).not.toContain('lean');
 	});
 
@@ -202,7 +203,8 @@ describe('resolvePresetMembers', async () => {
 		expect(resolved).toContain('env');
 		expect(resolved).toContain('skills-pack');
 		expect(resolved).toContain('prompts-pack');
-		expect(resolved.length).toBe(16);
+		expect(resolved).toContain('error-reporting');
+		expect(resolved.length).toBe(17);
 	});
 
 	it('resolves swarm = standard + proposals/notification/logs/status-marker/test-convention', async () => {
@@ -228,13 +230,10 @@ describe('resolvePresetMembers', async () => {
 
 	it('resolves vertex to ONLY its declared members (independent, skips chain)', async () => {
 		// x00166: vertex mirrors mcp-vertex.config.json's `plugins` keys
-		// exactly (28 total) — verified live against the root config
-		// 2026-07-29. Previously missing 17 real plugins (including
-		// `proposals`, the orchestration engine every mcp-vertex adopter
-		// needs) and listing 6 phantom ones that were never actually
-		// loaded.
+		// exactly (29 total) — verified live against the root config.
+		// f00158 added error-reporting to the project's own config.
 		const resolved = resolvePresetMembers('vertex');
-		expect(resolved.length).toBe(28);
+		expect(resolved.length).toBe(29);
 		for (const required of [
 			'audit',
 			'auto-agent-selector',
@@ -244,6 +243,7 @@ describe('resolvePresetMembers', async () => {
 			'diagram',
 			'docs',
 			'env',
+			'error-reporting',
 			'forge',
 			'git',
 			'i18n',
