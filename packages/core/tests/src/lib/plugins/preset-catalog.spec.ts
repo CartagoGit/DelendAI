@@ -37,13 +37,14 @@ describe('PRESET_CATALOG', async () => {
 		expect(PRESET_CATALOG[3]?.members.length).toBe(8);
 		// full: adds 2 host-only + api + changelog on top of swarm
 		expect(PRESET_CATALOG[4]?.members.length).toBe(4);
-		// vertex: 34 members, exactly mirroring mcp-vertex.config.json's
+		// vertex: 35 members, exactly mirroring mcp-vertex.config.json's
 		// `plugins` object (x00166 — corrected a long-stale drift where
 		// this preset had 6 phantom plugins not actually loaded and was
 		// missing 17 real ones, including `proposals`; f00165 added
 		// context-for-change; f00169 adds impact-analysis; f00166 adds
-		// project-health; f00167 adds quality-policy.
-		expect(PRESET_CATALOG[5]?.members.length).toBe(34);
+		// project-health; f00167 adds quality-policy; f00168 adds
+		// adaptive-optimizer.
+		expect(PRESET_CATALOG[5]?.members.length).toBe(35);
 	});
 
 	it('defines `lean` as an independent essentials preset', async () => {

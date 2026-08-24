@@ -41,6 +41,13 @@ const withFixture = async (
 			name: '@mcp-vertex/impact-analysis',
 			version: '0.1.0',
 		});
+		await mkdir(join(root, 'plugins/adaptive-optimizer'), {
+			recursive: true,
+		});
+		await writeJson(join(root, 'plugins/adaptive-optimizer/package.json'), {
+			name: '@mcp-vertex/adaptive-optimizer',
+			version: '0.1.0',
+		});
 		await mkdir(join(root, 'plugins/project-health'), { recursive: true });
 		await writeJson(join(root, 'plugins/project-health/package.json'), {
 			name: '@mcp-vertex/project-health',
@@ -86,6 +93,25 @@ const withFixture = async (
 				'\ttokenBudget: { warning: 2200, hard: 2500, releaseRelativePercent: 20 },',
 				"\tdependencies: ['@mcp-vertex/core', 'zod'],",
 				"\tcapabilities: ['impact-analysis', 'test-selection'],",
+				'};\n',
+			].join('\n'),
+		);
+		await writeFile(
+			join(root, 'plugins/adaptive-optimizer/plugin.manifest.ts'),
+			[
+				'export const ADAPTIVE_OPTIMIZER_PLUGIN_MANIFEST = {',
+				"\tid: 'adaptive-optimizer',",
+				"\tpackage: '@mcp-vertex/adaptive-optimizer',",
+				"\tversion: '0.1.0',",
+				"\tvisibility: 'public',",
+				"\tsummary: 'Adaptive optimizer for cheap candidate ranking.',",
+				"\ttags: ['optimizer', 'adaptive', 'f00168'],",
+				"\tmaturity: 'experimental',",
+				"\tpermissions: ['filesystem-read'],",
+				"\tpresets: ['vertex'],",
+				'\ttokenBudget: { warning: 2200, hard: 2500, releaseRelativePercent: 20 },',
+				"\tdependencies: ['@mcp-vertex/core', 'zod'],",
+				"\tcapabilities: ['adaptive-optimization'],",
 				'};\n',
 			].join('\n'),
 		);

@@ -99,6 +99,10 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 		workspaceRoot,
 		'plugins/impact-analysis/src',
 	);
+	const adaptiveOptimizer = resolve(
+		workspaceRoot,
+		'plugins/adaptive-optimizer/src',
+	);
 	const projectHealth = resolve(workspaceRoot, 'plugins/project-health/src');
 	const qualityPolicy = resolve(workspaceRoot, 'plugins/quality-policy/src');
 	const changelog = resolve(workspaceRoot, 'plugins/changelog/src');
@@ -137,6 +141,18 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 		{
 			find: '@mcp-vertex/impact-analysis',
 			replacement: resolve(impactAnalysis, 'index.ts'),
+		},
+		{
+			find: '@mcp-vertex/adaptive-optimizer/public',
+			replacement: resolve(adaptiveOptimizer, 'public/index.ts'),
+		},
+		{
+			find: /^@mcp-vertex\/adaptive-optimizer\/lib\/(.*)$/,
+			replacement: `${resolve(adaptiveOptimizer, 'lib')}/$1`,
+		},
+		{
+			find: '@mcp-vertex/adaptive-optimizer',
+			replacement: resolve(adaptiveOptimizer, 'index.ts'),
 		},
 		{
 			find: '@mcp-vertex/project-health/public',

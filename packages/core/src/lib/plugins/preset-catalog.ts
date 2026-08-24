@@ -228,6 +228,7 @@ export const PRESET_CATALOG: readonly IPresetDefinition[] = [
 			'Independent preset (does NOT accumulate swarm); use this for projects that want the exact set the core ships.',
 		role: PRESET_METADATA.vertex.role,
 		members: [
+			{ plugin: 'adaptive-optimizer' },
 			{ plugin: 'audit' },
 			{ plugin: 'auto-agent-selector', hostOnly: true },
 			{ plugin: 'completion' },

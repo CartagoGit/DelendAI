@@ -4,6 +4,7 @@
 
 | id | package | visibility | maturity | presets |
 | --- | --- | --- | --- | --- |
+| adaptive-optimizer | @mcp-vertex/adaptive-optimizer | public | experimental | vertex |
 | context-for-change | @mcp-vertex/context-for-change | public | experimental | vertex |
 | impact-analysis | @mcp-vertex/impact-analysis | public | experimental | vertex |
 | project-health | @mcp-vertex/project-health | public | experimental | vertex |
@@ -14,6 +15,7 @@
 
 | id | warning | hard | releaseRelativePercent |
 | --- | --- | --- | --- |
+| adaptive-optimizer | 2700 | 3000 | 20 |
 | context-for-change | 2700 | 3000 | 20 |
 | impact-analysis | 2700 | 3000 | 20 |
 | project-health | 2700 | 3000 | 20 |
@@ -24,6 +26,7 @@
 
 | id | permissions | toolPermissions |
 | --- | --- | --- |
+| adaptive-optimizer | filesystem-read |  |
 | context-for-change | filesystem-read |  |
 | impact-analysis | filesystem-read |  |
 | project-health | filesystem-read |  |
@@ -34,6 +37,15 @@
 
 | plugin | preset | declared | catalog | matches |
 | --- | --- | --- | --- | --- |
+| adaptive-optimizer | minimal | no | no | yes |
+| adaptive-optimizer | lean | no | no | yes |
+| adaptive-optimizer | standard | no | no | yes |
+| adaptive-optimizer | swarm | no | no | yes |
+| adaptive-optimizer | full | no | no | yes |
+| adaptive-optimizer | vertex | yes | yes | yes |
+| adaptive-optimizer | web-app | no | no | yes |
+| adaptive-optimizer | backend-api | no | no | yes |
+| adaptive-optimizer | cli-tool | no | no | yes |
 | context-for-change | minimal | no | no | yes |
 | context-for-change | lean | no | no | yes |
 | context-for-change | standard | no | no | yes |

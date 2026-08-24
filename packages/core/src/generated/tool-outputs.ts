@@ -12,6 +12,23 @@
  * surface as `Record<string, unknown>`.
  */
 
+export interface McpVertexAdaptiveOptimizerOptimizeRunOutput {
+	ranked: {
+		id: string;
+		score: number;
+		utility: number;
+		relevance: number;
+		confidence: number;
+		tokenTax: number;
+		latencyTax: number;
+		permissionRisk: number;
+	}[];
+	budget: number;
+	consent: boolean;
+	bytes: number;
+	truncated: boolean;
+}
+
 export interface McpVertexAdoptProjectOutput {
 	ok: true;
 	preset: "lean" | "standard" | "minimal" | "swarm";
@@ -3769,6 +3786,7 @@ export interface McpVertexWebFetchWebFetchOutput {
 
 /** Map of this package's MCP tool names to their `structuredContent` type. */
 export interface McpVertexToolOutputs {
+	"mcp-vertex_adaptive-optimizer_optimize_run": McpVertexAdaptiveOptimizerOptimizeRunOutput;
 	"mcp-vertex_adopt_project": McpVertexAdoptProjectOutput;
 	"mcp-vertex_agent_catalog": McpVertexAgentCatalogOutput;
 	"mcp-vertex_analyze_project": McpVertexAnalyzeProjectOutput;

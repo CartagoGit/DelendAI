@@ -1,5 +1,16 @@
 export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG = [
 	{
+		id: 'adaptive-optimizer',
+		package: '@mcp-vertex/adaptive-optimizer',
+		summary:
+			'Adaptive optimizer: cheaply rank model, plugin-set and prompt candidates with explicit budget and consent guards.',
+		tags: ['optimizer', 'adaptive', 'prompt', 'f00168'],
+		maturity: 'experimental',
+		visibility: 'public',
+		presets: ['vertex'],
+		capabilities: ['adaptive-optimization'],
+	},
+	{
 		id: 'context-for-change',
 		package: '@mcp-vertex/context-for-change',
 		summary:
