@@ -7,6 +7,8 @@
  * in by passing their own `IPluginRegistrySource[]` to the resolver.
  */
 
+import type { PermissionCategory } from './permission.interface';
+
 export type PluginRegistryOrigin = 'first-party' | 'community';
 
 /** Tags surfaced for filtering. Mirrors the keywords already in each plugin's package.json. */
@@ -21,6 +23,8 @@ export interface IPluginRegistryEntry {
 	readonly tags: readonly string[];
 	/** First-party = bundled in this monorepo; community = opt-in third-party. */
 	readonly origin: PluginRegistryOrigin;
+	/** Declared permission categories for this plugin's tool surface. */
+	readonly permissions?: readonly PermissionCategory[] | undefined;
 	/** Optional default preset id where this plugin lives. */
 	readonly defaultPreset?:
 		| 'minimal'

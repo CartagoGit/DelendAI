@@ -37,6 +37,7 @@ import type { IMcpVertexCliArgs } from '../plugins/parse-cli-args';
 import { serializeConfigurationSchema } from '../configuration-center/configuration-center';
 import type { IOverviewToolEntry } from '../tools/overview-tool';
 import type { IToolSurfaceDescriptor } from '../contracts/interfaces/tool-surface.interface';
+import { FIRST_PARTY_PLUGIN_INDEX } from '../registry/first-party-index';
 
 /** Inputs `assemblePlugins` needs from the config-resolution phase. */
 export interface IAssemblePluginsInput {
@@ -436,6 +437,11 @@ export const assemblePlugins = async (
 	const loadedByName = new Map(
 		loadResult.loaded.map((entry) => [entry.plugin.name, entry]),
 	);
+	const firstPartyPermissionsById = new Map(
+		FIRST_PARTY_PLUGIN_INDEX.entries
+			.filter((entry) => entry.permissions !== undefined)
+			.map((entry) => [entry.id, entry.permissions] as const),
+	);
 	const configurationPlugins: IConfigurationPlugin[] =
 		activationReport.entries.map((activation) => {
 			const loaded = loadedByName.get(activation.id);
@@ -454,6 +460,18 @@ export const assemblePlugins = async (
 				runtimeSchema === undefined
 					? undefined
 					: serializeConfigurationSchema(runtimeSchema);
+			const runtimeManifest = (
+				loaded?.plugin as
+					| {
+							readonly manifest?: {
+								readonly permissions?: readonly import('../contracts/interfaces/permission.interface').PermissionCategory[];
+							};
+					  }
+					| undefined
+			)?.manifest;
+			const permissions =
+				runtimeManifest?.permissions ??
+				firstPartyPermissionsById.get(activation.id);
 			return {
 				id: activation.id,
 				origin: activation.origin,
@@ -474,6 +492,7 @@ export const assemblePlugins = async (
 					: contributed?.configExample === undefined
 						? {}
 						: { configExample: contributed.configExample }),
+				...(permissions === undefined ? {} : { permissions }),
 				capabilities: {
 					tools: loaded?.registrations.tools?.length ?? 0,
 					prompts: loaded?.registrations.prompts?.length ?? 0,

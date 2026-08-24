@@ -41,7 +41,7 @@ const withFixture = async (
 					"\tsummary: 'Code search (semantic + symbol + references).',",
 					"\ttags: ['search', 'symbol', 'f00136'],",
 					"\tmaturity: 'stable',",
-					"\tpermissions: ['read-workspace'],",
+					"\tpermissions: ['filesystem-read'],",
 					"\tpresets: ['minimal', 'lean', 'standard', 'swarm', 'full', 'vertex', 'web-app', 'backend-api', 'cli-tool'],",
 					'\ttokenBudget: { warning: 2200, hard: 2500, releaseRelativePercent: 20 },',
 					"\tdependencies: ['@mcp-vertex/core', 'zod'],",

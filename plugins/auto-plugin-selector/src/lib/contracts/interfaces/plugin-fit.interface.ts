@@ -7,13 +7,17 @@
  * `FIRST_PARTY_PLUGIN_INDEX` as the default catalog.
  */
 
-import type { ProjectPackKind } from '@mcp-vertex/core/public';
+import type {
+	PermissionCategory,
+	ProjectPackKind,
+} from '@mcp-vertex/core/public';
 
 /** A plugin the scorer can recommend from the catalog. */
 export interface IPluginCandidate {
 	readonly id: string;
 	readonly tags: readonly string[];
 	readonly summary: string;
+	readonly permissions?: readonly PermissionCategory[] | undefined;
 	readonly origin?: 'first-party' | 'community' | undefined;
 }
 
