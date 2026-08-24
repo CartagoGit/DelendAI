@@ -17,27 +17,50 @@ export {
 export type { IErrorReportingOptions } from '../lib/contracts/interfaces/options.interface';
 
 export {
-	isMcpVertexInternal,
-	normalizeMessage,
-	messageOf,
-	stackOf,
-	signatureOf,
-	buildIssueTitle,
+	classificationOf,
 	buildIssueBody,
+	buildIssueTitle,
+	isMcpVertexInternal,
+	safeFailureClassOf,
+	signatureOf,
 } from '../lib/signature.helper';
-export type { IBuildIssueBodyInput } from '../lib/contracts/interfaces/signature.interface';
+export type { ISafeFingerprintInput } from '../lib/contracts/interfaces/signature.interface';
 
 export {
+	extractSafeMcpFrames,
+	packageIdFromSafeFrame,
+} from '../lib/frame-extractor.helper';
+export {
+	validateSafeReport,
+	validateSerializedSafeReport,
+} from '../lib/privacy-validator.helper';
+export type { IPrivacyValidationResult } from '../lib/contracts/interfaces/privacy-validator.interface';
+
+export {
+	createSafeReporter,
 	shouldReport,
-	submitIssue,
 	ghIssueExec,
 } from '../lib/reporter.service';
 export type {
+	IEnvironmentClass,
 	IIssueExec,
 	IIssueExecResult,
-	ISubmitIssueInput,
+	ISafeMcpVertexReport,
+	ISafeReporter,
+	ISafeReporterConfig,
+	ISafeSyntheticExample,
+	IssueClassification,
+	SafeFailureClass,
+	SafeScalar,
 	ISubmitIssueOutcome,
 } from '../lib/contracts/interfaces/reporter.interface';
+export {
+	ISSUE_CLASSIFICATIONS,
+	McpVertexInternalError,
+	SAFE_FAILURE_CLASSES,
+	isSafeScalar,
+} from '../lib/contracts/interfaces/reporter.interface';
+export type { ISafeMcpFrame } from '../lib/contracts/interfaces/safe-frame.interface';
 
 export { createReportStore } from '../lib/report-store.service';
 export type {

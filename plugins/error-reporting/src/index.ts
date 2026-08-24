@@ -1,29 +1,52 @@
 import { definePlugin, redactSecrets } from '@mcp-vertex/core/public';
 
+import monorepoPackageJson from '../../../package.json';
+import reporterPackageJson from '../package.json';
+
 import {
 	OptionsSchema,
 	resolveOptions,
 } from './lib/contracts/constants/options.constant';
+import {
+	McpVertexInternalError,
+	type ISafeMcpVertexReport,
+	type SafeScalar,
+} from './lib/contracts/interfaces/reporter.interface';
+import {
+	extractSafeMcpFrames,
+	packageIdFromSafeFrame,
+} from './lib/frame-extractor.helper';
+import {
+	validateSafeReport,
+	validateSerializedSafeReport,
+} from './lib/privacy-validator.helper';
 import { createReportStore } from './lib/report-store.service';
-import { shouldReport, submitIssue } from './lib/reporter.service';
-import { isMcpVertexInternal, signatureOf } from './lib/signature.helper';
+import { createSafeReporter, shouldReport } from './lib/reporter.service';
+import {
+	classificationOf,
+	isMcpVertexInternal,
+	safeFailureClassOf,
+	signatureOf,
+} from './lib/signature.helper';
 import { buildReportStatusRegistration } from './lib/tools/report-status.tool';
 
 const KNOWLEDGE_BODY = [
 	'# Automatic mcp-vertex error reporting',
 	'',
 	'`@mcp-vertex/error-reporting` detects failures that originate inside',
-	'mcp-vertex itself (not the host project) and opens a detailed,',
-	'de-duplicated issue on the target GitHub repository so the mcp-vertex',
-	'team can fix incidents almost without noticing them.',
+	'mcp-vertex itself (not the host project) and opens a de-duplicated,',
+	'safe issue on the target GitHub repository using only MCP Vertex-owned',
+	'metadata.',
 	'',
 	'## Behaviour',
 	'',
 	'- Intrinsic and **enabled by default** in the `standard` preset.',
-	'- Only mcp-vertex-internal failures are reported (stack/message must',
-	'  contain an mcp-vertex marker). Project errors are never sent.',
-	'- De-duplicated by a stable signature: the same bug opens one issue per',
-	'  configured window (default 24h), not one per sighting.',
+	'- Only mcp-vertex-internal failures are reported (typed internal error',
+	'  or `@mcp-vertex/*` frame evidence required). Project errors are never',
+	'  sent.',
+	'- De-duplicated by a stable fingerprint built from safe internal data.',
+	'- Raw message, stack, args, result, cwd and repo/workspace data are not',
+	'  part of the public report contract.',
 	'- Never blocks or breaks the server: without `gh`, auth, or network the',
 	'  report is silently dropped.',
 	'',
@@ -35,6 +58,117 @@ const KNOWLEDGE_BODY = [
 	'',
 	'Inspect state with the `<prefix>_report_status` tool.',
 ].join('\n');
+
+const runtimeOf = (): 'node' | 'bun' | 'unknown' => {
+	if ('Bun' in globalThis) return 'bun';
+	if (typeof process !== 'undefined' && process.versions.node) return 'node';
+	return 'unknown';
+};
+
+const platformFamilyOf = (): 'windows' | 'linux' | 'macos' | 'unknown' => {
+	switch (process.platform) {
+		case 'win32':
+			return 'windows';
+		case 'linux':
+			return 'linux';
+		case 'darwin':
+			return 'macos';
+		default:
+			return 'unknown';
+	}
+};
+
+const errorCodeOf = (error: unknown): string | undefined => {
+	if (error instanceof McpVertexInternalError) return error.code;
+	if (typeof error === 'object' && error !== null) {
+		const record = error as {
+			code?: unknown;
+			mcpVertexErrorCode?: unknown;
+		};
+		if (typeof record.mcpVertexErrorCode === 'string') {
+			return record.mcpVertexErrorCode;
+		}
+		if (typeof record.code === 'string') return record.code;
+	}
+	return undefined;
+};
+
+const packageIdOf = (
+	error: unknown,
+	frames: ReturnType<typeof extractSafeMcpFrames>,
+): string | undefined => {
+	if (error instanceof McpVertexInternalError) return error.packageId;
+	for (const frame of frames) {
+		const packageId = packageIdFromSafeFrame(frame);
+		if (packageId !== undefined) return packageId;
+	}
+	return undefined;
+};
+
+const syntheticExampleOf = (
+	error: unknown,
+):
+	| {
+			readonly summary: string;
+			readonly context?: Readonly<Record<string, SafeScalar>> | undefined;
+	  }
+	| undefined => {
+	if (!(error instanceof McpVertexInternalError)) return undefined;
+	return {
+		summary:
+			'Synthetic diagnostic context built from MCP Vertex-only metadata.',
+		...(error.safeContext !== undefined
+			? { context: error.safeContext }
+			: {}),
+	};
+};
+
+const redactReport = (report: ISafeMcpVertexReport): ISafeMcpVertexReport =>
+	JSON.parse(
+		redactSecrets(JSON.stringify(report)).text,
+	) as ISafeMcpVertexReport;
+
+const logPrivacyBlock = (reasonCode: string): void => {
+	console.warn(`report blocked by privacy validator: ${reasonCode}`);
+};
+
+const buildSafeReport = (
+	toolName: string,
+	error: unknown,
+): ISafeMcpVertexReport | undefined => {
+	const mcpFrames = extractSafeMcpFrames(error);
+	if (mcpFrames.length === 0) return undefined;
+	const packageId = packageIdOf(error, mcpFrames);
+	if (packageId === undefined) return undefined;
+	const errorCode = errorCodeOf(error);
+	const failureClass = safeFailureClassOf(error);
+	const classification = classificationOf({
+		toolId: toolName,
+		errorCode,
+		failureClass,
+	});
+	const reportWithoutFingerprint = {
+		reporterVersion: reporterPackageJson.version,
+		mcpVertexVersion: monorepoPackageJson.version,
+		packageId,
+		toolId: toolName,
+		...(errorCode !== undefined ? { errorCode } : {}),
+		failureClass,
+		classification,
+		mcpFrames,
+		...(syntheticExampleOf(error) !== undefined
+			? { syntheticExample: syntheticExampleOf(error) }
+			: {}),
+		environmentClass: {
+			runtime: runtimeOf(),
+			platformFamily: platformFamilyOf(),
+		},
+	};
+	return {
+		...reportWithoutFingerprint,
+		fingerprint: signatureOf(reportWithoutFingerprint),
+	};
+};
 
 /**
  * Intrinsic, opt-out automatic error reporting. Ships in the `standard`
@@ -54,6 +188,11 @@ export default definePlugin({
 	register(ctx) {
 		const options = resolveOptions(ctx.options);
 		const store = createReportStore(ctx.pluginCacheDir);
+		const reporter = createSafeReporter({
+			targetRepo: options.targetRepo,
+			labels: options.labels,
+			workspaceRootAbs: ctx.workspace.root,
+		});
 		const statusTool = buildReportStatusRegistration({
 			namespacePrefix: ctx.namespacePrefix,
 			options,
@@ -91,13 +230,27 @@ export default definePlugin({
 		const reportError = async (
 			toolName: string,
 			error: unknown,
-			args: unknown,
-			elapsedMs: number | undefined,
 		): Promise<void> => {
 			try {
 				if (options.internalOnly && !isMcpVertexInternal(error)) return;
-				const signature = signatureOf(toolName, error);
-				const existing = await store.get(signature);
+				const report = buildSafeReport(toolName, error);
+				if (report === undefined) return;
+				const redactedReport = redactReport(report);
+				const validation = validateSafeReport(redactedReport);
+				if (!validation.ok) {
+					logPrivacyBlock(validation.reasonCode ?? 'unknown');
+					return;
+				}
+				const serializedReport = JSON.stringify(redactedReport);
+				const serializedValidation =
+					validateSerializedSafeReport(serializedReport);
+				if (!serializedValidation.ok) {
+					logPrivacyBlock(
+						serializedValidation.reasonCode ?? 'unknown',
+					);
+					return;
+				}
+				const existing = await store.get(redactedReport.fingerprint);
 				if (
 					!shouldReport({
 						lastReportedAt: existing?.lastReportedAt,
@@ -107,24 +260,8 @@ export default definePlugin({
 				) {
 					return;
 				}
-				const outcome = await submitIssue({
-					targetRepo: options.targetRepo,
-					labels: options.labels,
-					workspaceRootAbs: ctx.workspace.root,
-					toolName,
-					error,
-					signature,
-					argsJson: redactSecrets(JSON.stringify(args ?? {})).text,
-					elapsedMs,
-					namespacePrefix: ctx.namespacePrefix,
-					...(ctx.hostIdentity?.host !== undefined
-						? { host: ctx.hostIdentity.host }
-						: {}),
-					...(ctx.hostIdentity?.model !== undefined
-						? { model: ctx.hostIdentity.model }
-						: {}),
-				});
-				await store.record(signature, {
+				const outcome = await reporter.submitSafeReport(redactedReport);
+				await store.record(redactedReport.fingerprint, {
 					at: new Date().toISOString(),
 					...(outcome.ok
 						? {
@@ -146,9 +283,9 @@ export default definePlugin({
 		return {
 			tools: [statusTool],
 			knowledge,
-			onToolCall: async (toolName, args, _result, error, elapsedMs) => {
+			onToolCall: async (toolName, _args, _result, error) => {
 				if (error === undefined) return;
-				void reportError(toolName, error, args, elapsedMs);
+				void reportError(toolName, error);
 			},
 		};
 	},

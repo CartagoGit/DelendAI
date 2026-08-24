@@ -1,11 +1,14 @@
-export interface IBuildIssueBodyInput {
-	readonly toolName: string;
-	readonly error: unknown;
-	readonly signature: string;
-	readonly argsJson: string;
-	readonly elapsedMs?: number | undefined;
-	readonly ts: string;
-	readonly namespacePrefix: string;
-	readonly host?: string | undefined;
-	readonly model?: string | undefined;
+import type {
+	IssueClassification,
+	SafeFailureClass,
+} from './reporter.interface';
+import type { ISafeMcpFrame } from './safe-frame.interface';
+
+export interface ISafeFingerprintInput {
+	readonly packageId: string;
+	readonly toolId?: string | undefined;
+	readonly errorCode?: string | undefined;
+	readonly failureClass: SafeFailureClass;
+	readonly classification: IssueClassification;
+	readonly mcpFrames: readonly ISafeMcpFrame[];
 }
