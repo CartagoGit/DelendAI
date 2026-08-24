@@ -5,8 +5,8 @@ import { toolJson } from '@mcp-vertex/core/public';
 
 import { computeWinRates } from '../calibrate/win-rates';
 import { realCalibrationStore } from '../calibrate/store';
-import { discoverAndPersistRoster } from '../discovery/discover-roster';
-import { realDiscoveryDeps } from '../discovery/real-deps';
+import { discoverRosterForTool } from '../discovery/real-deps';
+import { MAX_TASK_TYPE_LENGTH } from '../contracts/constants/tradeoff.constant';
 import type { ICalibrationStore } from '../contracts/interfaces/calibration.interface';
 import type { IDiscoveryDeps } from '../contracts/interfaces/roster.interface';
 import type { IRosterSnapshotStore } from '../discovery/roster-store';
@@ -43,13 +43,19 @@ export const buildAutoEvaluateRegistration = (options: {
 				description:
 					'Explain the locally recorded success evidence per provider and task type, then flag newly reachable providers without enough evidence. This never contacts a provider or spends money.',
 				inputSchema: z
-					.object({ taskType: z.string().min(1).max(80).optional() })
+					.object({
+						taskType: z
+							.string()
+							.min(1)
+							.max(MAX_TASK_TYPE_LENGTH)
+							.optional(),
+					})
 					.strict(),
 				outputSchema: OUTPUT_SCHEMA,
 			},
 			async (args: { taskType?: string | undefined }) => {
-				const roster = await discoverAndPersistRoster(
-					options.deps ?? realDiscoveryDeps(),
+				const roster = await discoverRosterForTool(
+					options.deps,
 					options.rosterStore,
 				);
 				const store =
