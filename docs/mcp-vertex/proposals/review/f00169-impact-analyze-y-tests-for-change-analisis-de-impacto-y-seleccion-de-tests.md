@@ -2,7 +2,7 @@
 id: f00169
 title: "impact_analyze y tests_for_change: análisis de impacto y selección de tests"
 kind: feat
-status: ready
+status: review
 type: proposal
 track: product
 date: 2026-08-24
@@ -36,7 +36,7 @@ Ejecutar toda la suite en un monorepo grande quema tiempo y tokens. Saber qué t
 - global_gate: type
 
 ### S1 — Plugin impact-analysis (analyze + tests_for_change)
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/impact-analysis/src/lib/tools/impact-analyze.tool.ts`, `plugins/impact-analysis/src/lib/tools/tests-for-change.tool.ts`
 - **Gate**: type
 - acceptance:
@@ -44,7 +44,7 @@ Ejecutar toda la suite en un monorepo grande quema tiempo y tokens. Saber qué t
   - "tests_for_change selecciona tests relevantes y descarta los irrelevantes."
 
 ### S2 — Wiring del plugin
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/impact-analysis/src/index.ts`
 - **Gate**: type
 - acceptance:
