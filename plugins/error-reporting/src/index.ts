@@ -1,8 +1,5 @@
 import { definePlugin, redactSecrets } from '@mcp-vertex/core/public';
 
-import monorepoPackageJson from '../../../package.json';
-import reporterPackageJson from '../package.json';
-
 import {
 	OptionsSchema,
 	resolveOptions,
@@ -12,37 +9,20 @@ import type { IErrorReportingOptions } from './lib/contracts/interfaces/options.
 import type { IReportSchedulerClock } from './lib/contracts/interfaces/report-scheduler.interface';
 import type { IReportStore } from './lib/contracts/interfaces/report-store.interface';
 import { registerInternalRuntimePaths } from './lib/frame-extractor.helper';
-import { classifyInternalError } from './lib/internal-classifier.helper';
 import { buildErrorReportingKnowledge } from './lib/knowledge/error-reporting';
 import {
 	validateSafeReport,
 	validateSerializedSafeReport,
 } from './lib/privacy-validator.helper';
+import {
+	asReportableError,
+	buildSafeReport,
+	extractObservedFailure,
+} from './lib/report-builder.helper';
 import { createReportScheduler } from './lib/report-scheduler.helper';
 import { createReportStore } from './lib/report-store.service';
 import { createSafeReporter } from './lib/reporter.service';
-import { signatureOf } from './lib/signature.helper';
-import { buildSyntheticExample } from './lib/synthetic-example.builder';
 import { buildReportStatusRegistration } from './lib/tools/report-status.tool';
-
-const runtimeOf = (): 'node' | 'bun' | 'unknown' => {
-	if ('Bun' in globalThis) return 'bun';
-	if (typeof process !== 'undefined' && process.versions.node) return 'node';
-	return 'unknown';
-};
-
-const platformFamilyOf = (): 'windows' | 'linux' | 'macos' | 'unknown' => {
-	switch (process.platform) {
-		case 'win32':
-			return 'windows';
-		case 'linux':
-			return 'linux';
-		case 'darwin':
-			return 'macos';
-		default:
-			return 'unknown';
-	}
-};
 
 const redactReport = (report: ISafeMcpVertexReport): ISafeMcpVertexReport =>
 	JSON.parse(
@@ -58,47 +38,7 @@ const systemClock: IReportSchedulerClock = {
 	random: () => Math.random(),
 };
 
-const buildSafeReport = (
-	toolName: string,
-	error: unknown,
-): ISafeMcpVertexReport | undefined => {
-	const classified = classifyInternalError({ toolId: toolName, error });
-	if (!classified.isInternal || classified.classification === 'UNKNOWN') {
-		return undefined;
-	}
-	if (classified.mcpFrames.length === 0) return undefined;
-	if (classified.packageId === undefined) return undefined;
-	const reportCore = {
-		reporterVersion: reporterPackageJson.version,
-		mcpVertexVersion: monorepoPackageJson.version,
-		packageId: classified.packageId,
-		toolId: toolName,
-		...(classified.errorCode !== undefined
-			? { errorCode: classified.errorCode }
-			: {}),
-		failureClass: classified.failureClass,
-		classification: classified.classification,
-		mcpFrames: classified.mcpFrames,
-		environmentClass: {
-			runtime: runtimeOf(),
-			platformFamily: platformFamilyOf(),
-		},
-	};
-	const syntheticExample = buildSyntheticExample({
-		packageId: classified.packageId,
-		toolName,
-		errorCode: classified.errorCode,
-		failureClass: classified.failureClass,
-	});
-	return {
-		...reportCore,
-		fingerprint: signatureOf({
-			...reportCore,
-			componentId: classified.componentId,
-		}),
-		...(syntheticExample !== undefined ? { syntheticExample } : {}),
-	};
-};
+registerInternalRuntimePaths(import.meta.url);
 
 export const buildReportErrorHandler = (input: {
 	readonly options: IErrorReportingOptions;
@@ -172,6 +112,26 @@ export const buildReportErrorHandler = (input: {
 	};
 };
 
+export const buildObservedFailureHandler = (input: {
+	readonly options: IErrorReportingOptions;
+	readonly store: IReportStore;
+	readonly reporter: ReturnType<typeof createSafeReporter>;
+	readonly clock: IReportSchedulerClock;
+}) => {
+	const reportError = buildReportErrorHandler(input);
+	return async (
+		toolName: string,
+		result: unknown,
+		error: unknown,
+	): Promise<void> => {
+		const observed = extractObservedFailure(result, error);
+		if (observed === undefined) return;
+		const reportable = asReportableError(toolName, observed);
+		if (reportable === undefined) return;
+		await reportError(toolName, reportable);
+	};
+};
+
 /**
  * Intrinsic, opt-out automatic error reporting. Ships in the `standard`
  * preset so every adopter is a live sensor for mcp-vertex bugs. The
@@ -197,6 +157,12 @@ export default definePlugin({
 			workspaceRootAbs: ctx.workspace.root,
 		});
 		const reportError = buildReportErrorHandler({
+			options,
+			store,
+			reporter,
+			clock: systemClock,
+		});
+		const reportObservedFailure = buildObservedFailureHandler({
 			options,
 			store,
 			reporter,
@@ -242,9 +208,30 @@ export default definePlugin({
 		return {
 			tools: [statusTool],
 			knowledge,
-			onToolCall: async (toolName, _args, _result, error) => {
-				if (error === undefined) return;
-				void reportError(toolName, error);
+			onToolCall: async (toolName, _args, result, error) => {
+				void reportObservedFailure(toolName, result, error);
+			},
+			onRegisterError: async (info) => {
+				const reportable = asReportableError(
+					`plugin:${info.pluginName}:register`,
+					info,
+				);
+				if (reportable === undefined) return;
+				void reportError(
+					`plugin:${info.pluginName}:register`,
+					reportable,
+				);
+			},
+			onHookError: async (info) => {
+				const reportable = asReportableError(
+					`plugin:${info.pluginName}:${info.hookName}`,
+					info,
+				);
+				if (reportable === undefined) return;
+				void reportError(
+					`plugin:${info.pluginName}:${info.hookName}`,
+					reportable,
+				);
 			},
 		};
 	},

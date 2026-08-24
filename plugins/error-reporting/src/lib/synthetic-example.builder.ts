@@ -4,6 +4,7 @@ import type {
 	SafeFailureClass,
 	SafeScalar,
 } from './contracts/interfaces/reporter.interface';
+import { stableIndexOf } from './stable-index.helper';
 import { selectSyntheticFixture } from './synthetic-fixtures.constant';
 
 type SyntheticArgumentType = 'object' | 'array' | 'scalar' | 'unknown';
@@ -27,6 +28,70 @@ interface IBuildSyntheticExampleInput {
 	readonly failureClass: SafeFailureClass;
 	readonly toolSchema?: unknown;
 }
+
+const HASH_MULTIPLIER = 31;
+const GENERATED_VALUE_RANGE = 90;
+const GENERATED_VALUE_OFFSET = 10;
+const TIMEOUT_VARIANT_COUNT = 8;
+const TIMEOUT_BASE_MS = 250;
+const TIMEOUT_STEP_MS = 50;
+const QUANTITY_VARIANT_COUNT = 7;
+const AMOUNT_BASE_VALUE = 42;
+const AMOUNT_VARIANT_COUNT = 12;
+const DEFAULT_NUMBER_VARIANT_COUNT = 25;
+const DEFAULT_OPERATION_LABEL = 'internal failure';
+
+const OPERATION_BY_ERROR_CODE: Record<McpVertexErrorCode, string> = {
+	PLUGIN_REGISTER_TIMEOUT: 'plugin registration',
+	PLUGIN_LOAD_FAILED: 'plugin load',
+	PLUGIN_DISPOSE_FAILED: 'plugin dispose',
+	TOOL_EXECUTION_FAILED: 'tool execution',
+	HOOK_FAILED: 'tool lifecycle hook',
+	INVALID_OPTIONS: 'options validation',
+	MUTEX_STALE_LOCK: 'mutex recovery',
+	PROCESS_TIMEOUT: 'external process timeout',
+};
+
+interface IStringValueRule {
+	readonly test: RegExp;
+	render(input: {
+		readonly propertyKey: string;
+		readonly fixture: SyntheticFixture;
+		readonly seed: string;
+		readonly lowerKey: string;
+		readonly id: string;
+	}): string;
+}
+
+const STRING_VALUE_RULES: readonly IStringValueRule[] = [
+	{
+		test: /(^id$|id$|code$|sku$)/i,
+		render: ({ id }) => id,
+	},
+	{
+		test: /(url|uri|endpoint|href)/i,
+		render: ({ fixture, propertyKey }) =>
+			/(preview|secondary|fallback)/i.test(propertyKey)
+				? fixture.urls.secondary
+				: fixture.urls.primary,
+	},
+	{
+		test: /(name|title|label)/i,
+		render: ({ fixture }) => fixture.label,
+	},
+	{
+		test: /(kind|mode|state|status|reason)/i,
+		render: ({ fixture }) => `${fixture.domain}-demo`,
+	},
+	{
+		test: /(city|location|region|locale)/i,
+		render: () => 'Harbor Point',
+	},
+	{
+		test: /(query|term|slug)/i,
+		render: ({ fixture }) => `${fixture.domain}-sample`,
+	},
+];
 
 const toolShapeOf = (schema: unknown): ISyntheticToolShape | undefined => {
 	if (typeof schema !== 'object' || schema === null) return undefined;
@@ -60,35 +125,9 @@ const toolShapeOf = (schema: unknown): ISyntheticToolShape | undefined => {
 	return undefined;
 };
 
-const stableIndexOf = (seed: string, length: number): number => {
-	let hash = 0;
-	for (const char of seed) {
-		hash = (hash * 31 + char.charCodeAt(0)) >>> 0;
-	}
-	return hash % length;
-};
-
 const operationOf = (errorCode: McpVertexErrorCode | undefined): string => {
-	switch (errorCode) {
-		case 'PLUGIN_REGISTER_TIMEOUT':
-			return 'plugin registration';
-		case 'PLUGIN_LOAD_FAILED':
-			return 'plugin load';
-		case 'PLUGIN_DISPOSE_FAILED':
-			return 'plugin dispose';
-		case 'TOOL_EXECUTION_FAILED':
-			return 'tool execution';
-		case 'HOOK_FAILED':
-			return 'tool lifecycle hook';
-		case 'INVALID_OPTIONS':
-			return 'options validation';
-		case 'MUTEX_STALE_LOCK':
-			return 'mutex recovery';
-		case 'PROCESS_TIMEOUT':
-			return 'external process timeout';
-		default:
-			return 'internal failure';
-	}
+	if (errorCode === undefined) return DEFAULT_OPERATION_LABEL;
+	return OPERATION_BY_ERROR_CODE[errorCode] ?? DEFAULT_OPERATION_LABEL;
 };
 
 const stringValueOf = (input: {
@@ -99,30 +138,30 @@ const stringValueOf = (input: {
 	const lowerKey = input.propertyKey.toLowerCase();
 	const id =
 		input.fixture.ids[
-			stableIndexOf(
-				`${input.seed}:${lowerKey}:id`,
-				input.fixture.ids.length,
-			)
+			stableIndexOf({
+				seed: `${input.seed}:${lowerKey}:id`,
+				length: input.fixture.ids.length,
+				multiplier: HASH_MULTIPLIER,
+			})
 		] ?? input.fixture.ids[0]!;
-	if (/(^id$|id$|code$|sku$)/i.test(input.propertyKey)) return id;
-	if (/(url|uri|endpoint|href)/i.test(input.propertyKey)) {
-		return /(preview|secondary|fallback)/i.test(input.propertyKey)
-			? input.fixture.urls.secondary
-			: input.fixture.urls.primary;
+	for (const rule of STRING_VALUE_RULES) {
+		if (rule.test.test(input.propertyKey)) {
+			return rule.render({
+				propertyKey: input.propertyKey,
+				fixture: input.fixture,
+				seed: input.seed,
+				lowerKey,
+				id,
+			});
+		}
 	}
-	if (/(name|title|label)/i.test(input.propertyKey)) {
-		return input.fixture.label;
-	}
-	if (/(kind|mode|state|status|reason)/i.test(input.propertyKey)) {
-		return `${input.fixture.domain}-demo`;
-	}
-	if (/(city|location|region|locale)/i.test(input.propertyKey)) {
-		return 'Harbor Point';
-	}
-	if (/(query|term|slug)/i.test(input.propertyKey)) {
-		return `${input.fixture.domain}-sample`;
-	}
-	return `${input.fixture.domain}-${stableIndexOf(`${input.seed}:${lowerKey}:value`, 90) + 10}`;
+	return `${input.fixture.domain}-${
+		stableIndexOf({
+			seed: `${input.seed}:${lowerKey}:value`,
+			length: GENERATED_VALUE_RANGE,
+			multiplier: HASH_MULTIPLIER,
+		}) + GENERATED_VALUE_OFFSET
+	}`;
 };
 
 const numberValueOf = (input: {
@@ -131,22 +170,54 @@ const numberValueOf = (input: {
 }): number => {
 	const lowerKey = input.propertyKey.toLowerCase();
 	if (/(ms|timeout|window)/i.test(input.propertyKey)) {
-		return 250 + stableIndexOf(`${input.seed}:${lowerKey}`, 8) * 50;
+		return (
+			TIMEOUT_BASE_MS +
+			stableIndexOf({
+				seed: `${input.seed}:${lowerKey}`,
+				length: TIMEOUT_VARIANT_COUNT,
+				multiplier: HASH_MULTIPLIER,
+			}) *
+				TIMEOUT_STEP_MS
+		);
 	}
 	if (
 		/(count|qty|quantity|copies|visits|hours|items|limit|size)/i.test(
 			input.propertyKey,
 		)
 	) {
-		return stableIndexOf(`${input.seed}:${lowerKey}`, 7) + 1;
+		return (
+			stableIndexOf({
+				seed: `${input.seed}:${lowerKey}`,
+				length: QUANTITY_VARIANT_COUNT,
+				multiplier: HASH_MULTIPLIER,
+			}) + 1
+		);
 	}
 	if (/(amount|price|cents|total)/i.test(input.propertyKey)) {
-		return 42 + stableIndexOf(`${input.seed}:${lowerKey}`, 12);
+		return (
+			AMOUNT_BASE_VALUE +
+			stableIndexOf({
+				seed: `${input.seed}:${lowerKey}`,
+				length: AMOUNT_VARIANT_COUNT,
+				multiplier: HASH_MULTIPLIER,
+			})
+		);
 	}
-	return stableIndexOf(`${input.seed}:${lowerKey}`, 25) + 1;
+	return (
+		stableIndexOf({
+			seed: `${input.seed}:${lowerKey}`,
+			length: DEFAULT_NUMBER_VARIANT_COUNT,
+			multiplier: HASH_MULTIPLIER,
+		}) + 1
+	);
 };
 
-const booleanValueOf = (seed: string): boolean => stableIndexOf(seed, 2) === 0;
+const booleanValueOf = (seed: string): boolean =>
+	stableIndexOf({
+		seed,
+		length: 2,
+		multiplier: HASH_MULTIPLIER,
+	}) === 0;
 
 const objectPayloadOf = (input: {
 	readonly fixture: SyntheticFixture;
@@ -197,41 +268,48 @@ const objectPayloadOf = (input: {
 	return payload;
 };
 
+const scalarPayloadOf = (input: {
+	readonly fixture: SyntheticFixture;
+	readonly toolShape: ISyntheticToolShape | undefined;
+	readonly seed: string;
+}): SafeScalar => {
+	const scalarType = input.toolShape?.scalarType;
+	if (scalarType === 'number') {
+		return numberValueOf({
+			propertyKey: 'value',
+			seed: input.seed,
+		});
+	}
+	if (scalarType === 'boolean') {
+		return booleanValueOf(input.seed);
+	}
+	if (scalarType === 'string') {
+		return stringValueOf({
+			propertyKey: 'value',
+			fixture: input.fixture,
+			seed: input.seed,
+		});
+	}
+	return (
+		input.fixture.ids[
+			stableIndexOf({
+				seed: input.seed,
+				length: input.fixture.ids.length,
+				multiplier: HASH_MULTIPLIER,
+			})
+		] ?? input.fixture.ids[0]!
+	);
+};
+
 const payloadOf = (input: {
 	readonly fixture: SyntheticFixture;
 	readonly toolShape: ISyntheticToolShape | undefined;
 	readonly seed: string;
 }): SafeScalar => {
-	switch (input.toolShape?.rootKind) {
-		case 'array':
-			return input.fixture.list;
-		case 'scalar':
-			switch (input.toolShape.scalarType) {
-				case 'number':
-					return numberValueOf({
-						propertyKey: 'value',
-						seed: input.seed,
-					});
-				case 'boolean':
-					return booleanValueOf(input.seed);
-				case 'string':
-					return stringValueOf({
-						propertyKey: 'value',
-						fixture: input.fixture,
-						seed: input.seed,
-					});
-				default:
-					return (
-						input.fixture.ids[
-							stableIndexOf(input.seed, input.fixture.ids.length)
-						] ?? input.fixture.ids[0]!
-					);
-			}
-		case 'unknown':
-		case 'object':
-		case undefined:
-			return objectPayloadOf(input);
-	}
+	const rootKind = input.toolShape?.rootKind;
+	if (rootKind === 'array') return input.fixture.list;
+	if (rootKind === 'scalar') return scalarPayloadOf(input);
+	return objectPayloadOf(input);
 };
 
 export const buildSyntheticExample = (

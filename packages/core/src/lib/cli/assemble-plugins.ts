@@ -24,10 +24,14 @@ import {
 } from '../plugins/load-config-file';
 import type { IMcpVertexConfigFile } from '../plugins/load-config-file';
 import { loadPlugins, nodeDynamicImport } from '../plugins/load-plugins';
-import type { ILoadedPlugin, IPluginLoadResult } from '../plugins/load-plugins';
+import type { IPluginLoadResult } from '../plugins/load-plugins';
 import { buildActivationReport } from '../plugins/activation-report';
 import { classifyOrigin } from '../plugins/classify-origin';
 import type { IMcpPluginContext } from '../plugins/plugin-contract';
+import type {
+	IPluginHookErrorInfo,
+	IPluginRegisterErrorInfo,
+} from '../contracts/interfaces/plugin-lifecycle-error.interface';
 import type { createPeerPluginRegistry } from '../plugins/peer-plugin-registry';
 import type { IMcpVertexCliArgs } from '../plugins/parse-cli-args';
 import { serializeConfigurationSchema } from '../configuration-center/configuration-center';
@@ -55,25 +59,10 @@ export interface IAssemblePluginsResult {
 	readonly knowledge: IKnowledgeEntry[];
 	readonly pluginToolEntries: IOverviewToolEntry[];
 	readonly qualifiedPluginTools: IToolRegistration[];
-	readonly onToolCalls: Array<
-		(
-			toolName: string,
-			args: unknown,
-			result: unknown,
-			error?: unknown,
-			elapsedMs?: number,
-		) => Promise<void> | void
-	>;
-	readonly onToolStarts: Array<
-		(toolName: string, args: unknown) => Promise<void> | void
-	>;
-	readonly onToolCancels: Array<
-		(
-			toolName: string,
-			args: unknown,
-			elapsedMs: number,
-		) => Promise<void> | void
-	>;
+	readonly onToolCalls: readonly IPluginToolCallObserver[];
+	readonly onToolStarts: readonly IPluginToolStartObserver[];
+	readonly onToolCancels: readonly IPluginToolCancelObserver[];
+	readonly onHookErrors: readonly IPluginHookErrorObserver[];
 	readonly isAgentStuckFn: IMcpVertexHostConfig['isAgentStuck'];
 	readonly getCheckpointAdvisoryFns: Array<
 		NonNullable<IMcpVertexHostConfig['getCheckpointAdvisory']>
@@ -90,6 +79,52 @@ export interface IAssemblePluginsResult {
 	readonly configurationPlugins: IConfigurationPlugin[];
 	readonly configurationArtifacts: IConfigurationArtifact[];
 }
+
+interface IPluginToolCallObserver {
+	readonly pluginName: string;
+	readonly resolvedSpecifier: string;
+	readonly handler: NonNullable<IMcpVertexHostConfig['onToolCall']>;
+}
+
+interface IPluginToolStartObserver {
+	readonly pluginName: string;
+	readonly resolvedSpecifier: string;
+	readonly handler: NonNullable<IMcpVertexHostConfig['onToolStart']>;
+}
+
+interface IPluginToolCancelObserver {
+	readonly pluginName: string;
+	readonly resolvedSpecifier: string;
+	readonly handler: NonNullable<IMcpVertexHostConfig['onToolCancel']>;
+}
+
+interface IPluginHookErrorObserver {
+	readonly pluginName: string;
+	readonly resolvedSpecifier: string;
+	readonly handler: (info: IPluginHookErrorInfo) => Promise<void> | void;
+}
+
+const replayRegisterErrors = async (
+	handlers: ReadonlyArray<{
+		readonly pluginName: string;
+		readonly handler: (
+			info: IPluginRegisterErrorInfo,
+		) => Promise<void> | void;
+	}>,
+	errors: readonly IPluginRegisterErrorInfo[],
+): Promise<void> => {
+	for (const info of errors) {
+		for (const observer of handlers) {
+			try {
+				await observer.handler(info);
+			} catch (error) {
+				process.stderr.write(
+					`[mcp-vertex] onRegisterError error (${observer.pluginName}): ${error instanceof Error ? error.message : String(error)}\n`,
+				);
+			}
+		}
+	}
+};
 
 export const assemblePlugins = async (
 	input: IAssemblePluginsInput,
@@ -180,6 +215,10 @@ export const assemblePlugins = async (
 				...loadResult,
 				loaded: [...loadResult.loaded, ...additions],
 				errors: [...loadResult.errors, ...autoLoad.errors],
+				registerErrors: [
+					...loadResult.registerErrors,
+					...autoLoad.registerErrors,
+				],
 			};
 		}
 	}
@@ -201,25 +240,16 @@ export const assemblePlugins = async (
 	// not the raw one.
 	const qualifiedPluginTools: IToolRegistration[] = [];
 
-	const onToolCalls: Array<
-		(
-			toolName: string,
-			args: unknown,
-			result: unknown,
-			error?: unknown,
-			elapsedMs?: number,
-		) => Promise<void> | void
-	> = [];
-	const onToolStarts: Array<
-		(toolName: string, args: unknown) => Promise<void> | void
-	> = [];
-	const onToolCancels: Array<
-		(
-			toolName: string,
-			args: unknown,
-			elapsedMs: number,
-		) => Promise<void> | void
-	> = [];
+	const onToolCalls: IPluginToolCallObserver[] = [];
+	const onToolStarts: IPluginToolStartObserver[] = [];
+	const onToolCancels: IPluginToolCancelObserver[] = [];
+	const onHookErrors: IPluginHookErrorObserver[] = [];
+	const onRegisterErrors: Array<{
+		readonly pluginName: string;
+		readonly handler: (
+			info: IPluginRegisterErrorInfo,
+		) => Promise<void> | void;
+	}> = [];
 	let isAgentStuckFn: IMcpVertexHostConfig['isAgentStuck'];
 	const getCheckpointAdvisoryFns: Array<
 		NonNullable<IMcpVertexHostConfig['getCheckpointAdvisory']>
@@ -232,17 +262,43 @@ export const assemblePlugins = async (
 	// choice when both are present.
 	let resolvedLogsSink: import('../plugins/logs-sink').ILogsSink | undefined;
 	for (const { plugin, registrations } of loadResult.loaded) {
+		const resolvedSpecifier =
+			loadResult.loaded.find((entry) => entry.plugin.name === plugin.name)
+				?.resolved ?? plugin.name;
 		const ns =
 			pluginConfigFor(fileConfig, plugin.name).prefix ?? plugin.name;
 		if (registrations.prompts) prompts.push(...registrations.prompts);
 		if (registrations.resources) resources.push(...registrations.resources);
 		if (registrations.knowledge) knowledge.push(...registrations.knowledge);
 		if (registrations.onToolCall)
-			onToolCalls.push(registrations.onToolCall);
+			onToolCalls.push({
+				pluginName: plugin.name,
+				resolvedSpecifier,
+				handler: registrations.onToolCall,
+			});
 		if (registrations.onToolStart)
-			onToolStarts.push(registrations.onToolStart);
+			onToolStarts.push({
+				pluginName: plugin.name,
+				resolvedSpecifier,
+				handler: registrations.onToolStart,
+			});
 		if (registrations.onToolCancel)
-			onToolCancels.push(registrations.onToolCancel);
+			onToolCancels.push({
+				pluginName: plugin.name,
+				resolvedSpecifier,
+				handler: registrations.onToolCancel,
+			});
+		if (registrations.onHookError)
+			onHookErrors.push({
+				pluginName: plugin.name,
+				resolvedSpecifier,
+				handler: registrations.onHookError,
+			});
+		if (registrations.onRegisterError)
+			onRegisterErrors.push({
+				pluginName: plugin.name,
+				handler: registrations.onRegisterError,
+			});
 		if (registrations.isAgentStuck)
 			isAgentStuckFn = registrations.isAgentStuck;
 		if (registrations.getCheckpointAdvisory)
@@ -288,6 +344,7 @@ export const assemblePlugins = async (
 			});
 		}
 	}
+	await replayRegisterErrors(onRegisterErrors, loadResult.registerErrors);
 
 	const configNameBySpecifier = new Map(
 		configPluginNames.map((name, index) => [
@@ -449,6 +506,7 @@ export const assemblePlugins = async (
 		onToolCalls,
 		onToolStarts,
 		onToolCancels,
+		onHookErrors,
 		isAgentStuckFn,
 		getCheckpointAdvisoryFns,
 		beforeToolCallFns,
