@@ -59,7 +59,7 @@ describe('proposal_review identity gate (a00074 S2)', () => {
 
 	afterEach(() => rmSync(root, { recursive: true, force: true }));
 
-	it('refuses approve from the same host+pid even with a different agent name', async () => {
+	it('allows approve from a different agent even on the same host+pid', async () => {
 		process.env.MCP_HOST = 'shared-host';
 		const create = await capture(buildCreateProposalRegistration(opts));
 		await create({
@@ -86,11 +86,42 @@ describe('proposal_review identity gate (a00074 S2)', () => {
 				agent: 'delivery_verifier',
 			}),
 		);
+		expect(approved.ok).toBe(true);
+		expect(approved.status).toBe('done');
+		expect(approved.reviewer).toBe('delivery_verifier');
+	});
+
+	it('refuses self-approval by the same agent', async () => {
+		process.env.MCP_HOST = 'shared-host';
+		const create = await capture(buildCreateProposalRegistration(opts));
+		await create({
+			id: 'f00089',
+			title: 'Self approval',
+			goal: 'work',
+			slices: [{ sliceId: 's1', files: ['src/a.ts'] }],
+		});
+		const review = await capture(buildReviewRegistration(opts));
+		const submitted = parse(
+			await review({
+				proposalId: 'f00089',
+				sliceId: 's1',
+				action: 'submit',
+				agent: 'copilot-minimax-m3',
+			}),
+		);
+		expect(submitted.ok).toBe(true);
+		const approved = parse(
+			await review({
+				proposalId: 'f00089',
+				sliceId: 's1',
+				action: 'approve',
+				agent: 'copilot-minimax-m3',
+			}),
+		);
 		expect(approved).toEqual({
 			ok: false,
 			error: {
-				reason: 'same-process-approve',
-				nextAction: 'a different MCP host / PID must call approve',
+				reason: 'reviewer must be a different agent from the implementer',
 			},
 		});
 	});

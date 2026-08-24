@@ -74,7 +74,7 @@ describe('review identity service (a00074 S2)', () => {
 		});
 	});
 
-	it('refuses same host+pid even when agent names differ', async () => {
+	it('allows approve from a different agent even on the same host+pid', async () => {
 		await recordReviewSubmitIdentity({
 			workspaceRoot: root,
 			proposalId: 'a00074',
@@ -90,9 +90,7 @@ describe('review identity service (a00074 S2)', () => {
 			deps,
 		});
 		expect(out).toEqual({
-			ok: false,
-			reason: 'same-process-approve',
-			nextAction: 'a different MCP host / PID must call approve',
+			ok: true,
 			submitter: {
 				proposalId: 'a00074',
 				sliceId: 'S2',
@@ -104,7 +102,7 @@ describe('review identity service (a00074 S2)', () => {
 		});
 	});
 
-	it('allows approve from a different host even when agent names match', async () => {
+	it('refuses self-approval (same agent) even from a different host', async () => {
 		await recordReviewSubmitIdentity({
 			workspaceRoot: root,
 			proposalId: 'a00074',
@@ -118,12 +116,25 @@ describe('review identity service (a00074 S2)', () => {
 			sliceId: 'S2',
 			approver: {
 				host: 'other-host',
-				pid: 111,
+				pid: 222,
 				agent: 'delivery_verifier',
 			},
 			deps,
 		});
-		expect(out.ok).toBe(true);
+		expect(out).toEqual({
+			ok: false,
+			reason: 'self-approve',
+			nextAction:
+				'a different agent must call approve — the implementer submits and a different agent approves the slice',
+			submitter: {
+				proposalId: 'a00074',
+				sliceId: 'S2',
+				host: 'env-host',
+				pid: 111,
+				agent: 'delivery_verifier',
+				ts: '2026-07-26T12:00:00.000Z',
+			},
+		});
 	});
 
 	it('returns explicit missing-submit-identity before approve', async () => {
