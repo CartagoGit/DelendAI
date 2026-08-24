@@ -11,6 +11,7 @@ import type {
 	CheckpointAdvisorySeverity,
 	ICheckpointAdvisory,
 } from '../contracts/interfaces/checkpoint-advisory.interface';
+import { injectToolResultMeta } from './tool-response';
 
 const SEVERITY_RANK: Readonly<Record<CheckpointAdvisorySeverity, number>> = {
 	recommend: 1,
@@ -64,9 +65,6 @@ export const selectCheckpointAdvisory = (
 	return winner;
 };
 
-const isRecord = (value: unknown): value is Record<string, unknown> =>
-	typeof value === 'object' && value !== null && !Array.isArray(value);
-
 /**
  * Attach `checkpointAdvisory` to a tool result's `_meta` (creating it
  * when absent). Mutates the in-memory result; no I/O. No-op when
@@ -83,9 +81,6 @@ export const injectCheckpointAdvisory = (
 	result: unknown,
 	advisory: ICheckpointAdvisory | null,
 ): void => {
-	if (advisory === null || !isRecord(result)) return;
-	const existing = result._meta;
-	const meta: Record<string, unknown> = isRecord(existing) ? existing : {};
-	meta.checkpointAdvisory = advisory;
-	result._meta = meta;
+	if (advisory === null) return;
+	injectToolResultMeta(result, { checkpointAdvisory: advisory });
 };

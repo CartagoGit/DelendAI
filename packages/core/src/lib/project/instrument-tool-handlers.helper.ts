@@ -10,7 +10,7 @@ import {
 	injectCheckpointAdvisory,
 	selectCheckpointAdvisory,
 } from '../shared/checkpoint-advisory';
-import { toolError } from '../shared/tool-response';
+import { injectToolResultMeta, toolError } from '../shared/tool-response';
 
 const resolveLogFilePath = (
 	config: IMcpVertexHostConfig,
@@ -29,29 +29,14 @@ const injectLogHintIntoResult = (
 	logPath: string | null,
 	now: Date,
 ): void => {
-	if (!result || typeof result !== 'object') return;
-	if (
-		!Array.isArray(result) &&
-		(result as { isError?: boolean }).isError !== true
-	)
-		return;
-	const resObj = result as Record<string, unknown>;
-	const structured = resObj.structuredContent;
-	if (
-		structured === null ||
-		typeof structured !== 'object' ||
-		Array.isArray(structured)
-	) {
-		return;
-	}
-	const structuredObj = structured as Record<string, unknown>;
-	if ('logHint' in structuredObj) return;
 	if (logPath === null) return;
-	structuredObj.logHint = {
-		path: logPath,
-		line: 0,
-		ts: now.toISOString(),
-	};
+	injectToolResultMeta(result, {
+		logHint: {
+			path: logPath,
+			line: 0,
+			ts: now.toISOString(),
+		},
+	});
 };
 
 export const instrumentToolHandlers = (
@@ -191,18 +176,13 @@ export const instrumentToolHandlers = (
 				) {
 					const stuckInfo = config.isAgentStuck(name, hookArgs);
 					if (stuckInfo) {
-						const resObj = result as Record<string, unknown>;
-						const structured =
-							(resObj.structuredContent as Record<
-								string,
-								unknown
-							>) ?? {};
-						resObj.structuredContent = {
-							...structured,
-							__stuck_detected: true,
-							handoffPath: stuckInfo.handoffPath,
-							suggestedAction: stuckInfo.suggestedAction,
-						};
+						injectToolResultMeta(result, {
+							stuck: {
+								detected: true,
+								handoffPath: stuckInfo.handoffPath,
+								suggestedAction: stuckInfo.suggestedAction,
+							},
+						});
 					}
 				}
 				if (isError) {

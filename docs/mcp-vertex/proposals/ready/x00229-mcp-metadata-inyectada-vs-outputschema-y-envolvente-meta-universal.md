@@ -38,7 +38,7 @@ Si una tool con `outputSchema` estricto recibe propiedades ajenas (advisories) e
 - global_gate: type
 
 ### S1 — Inventario y validación de metadata vs outputSchema
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/src/lib/shared/tool-response.ts`
 - **Gate**: type
 - acceptance:
@@ -46,7 +46,7 @@ Si una tool con `outputSchema` estricto recibe propiedades ajenas (advisories) e
   - "La metadata transversal se reubica en _meta o envolvente { data, meta } (MCP-002)."
 
 ### S2 — Compatibilidad MCP multi-cliente
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/tests/src/lib/shared/meta-envelope.spec.ts`
 - **Gate**: type
 - acceptance:
