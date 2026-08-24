@@ -47,6 +47,29 @@ export interface IToolErrorLogHint {
 const isPlainObject = (value: unknown): value is Record<string, unknown> =>
 	typeof value === 'object' && value !== null && !Array.isArray(value);
 
+const ensureToolResultMeta = (
+	result: unknown,
+): Record<string, unknown> | null => {
+	if (!isPlainObject(result)) return null;
+	const existing = result._meta;
+	if (isPlainObject(existing)) return existing;
+	const meta: Record<string, unknown> = {};
+	result._meta = meta;
+	return meta;
+};
+
+export const injectToolResultMeta = (
+	result: unknown,
+	metaEntries: Record<string, unknown>,
+): void => {
+	const meta = ensureToolResultMeta(result);
+	if (meta === null) return;
+	for (const [key, value] of Object.entries(metaEntries)) {
+		if (value === undefined) continue;
+		meta[key] = value;
+	}
+};
+
 /**
  * Compact JSON text result (no envelope). Use for raw structured data.
  * Object payloads are also surfaced as `structuredContent` so modern MCP
