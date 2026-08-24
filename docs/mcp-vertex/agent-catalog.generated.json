@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-08-24T08:23:53.806Z",
+	"generatedAt": "2026-08-24T23:37:59.055Z",
 	"mode": "compact",
 	"tools": [
 		{
@@ -1194,41 +1194,6 @@
 				"kind": "audit"
 			},
 			{
-				"id": "c00127",
-				"title": "c00127",
-				"track": "adoption",
-				"status": "ready",
-				"kind": "chore"
-			},
-			{
-				"id": "c00128",
-				"title": "c00128",
-				"track": "core",
-				"status": "ready",
-				"kind": "chore"
-			},
-			{
-				"id": "c00129",
-				"title": "c00129",
-				"track": "web-release",
-				"status": "ready",
-				"kind": "chore"
-			},
-			{
-				"id": "d00005",
-				"title": "d00005",
-				"track": "ci-test-docs",
-				"status": "ready",
-				"kind": "docs"
-			},
-			{
-				"id": "d00006",
-				"title": "d00006",
-				"track": "dogfooding",
-				"status": "ready",
-				"kind": "docs"
-			},
-			{
 				"id": "f00050",
 				"title": "f00050",
 				"track": "lint+architecture+i18n+workflow+release",
@@ -1236,158 +1201,11 @@
 				"kind": "feat"
 			},
 			{
-				"id": "f00158",
-				"title": "f00158",
-				"track": "github",
-				"status": "ready",
-				"kind": "feat"
-			},
-			{
-				"id": "f00162",
-				"title": "f00162",
-				"track": "tokens",
-				"status": "ready",
-				"kind": "feat"
-			},
-			{
-				"id": "f00163",
-				"title": "f00163",
-				"track": "tokens",
-				"status": "ready",
-				"kind": "feat"
-			},
-			{
-				"id": "f00164",
-				"title": "f00164",
-				"track": "permissions",
-				"status": "ready",
-				"kind": "feat"
-			},
-			{
-				"id": "f00165",
-				"title": "f00165",
-				"track": "product",
-				"status": "ready",
-				"kind": "feat"
-			},
-			{
-				"id": "f00166",
-				"title": "f00166",
-				"track": "product",
-				"status": "ready",
-				"kind": "feat"
-			},
-			{
-				"id": "f00167",
-				"title": "f00167",
-				"track": "product",
-				"status": "ready",
-				"kind": "feat"
-			},
-			{
-				"id": "f00168",
-				"title": "f00168",
-				"track": "product",
-				"status": "ready",
-				"kind": "feat"
-			},
-			{
-				"id": "f00169",
-				"title": "f00169",
-				"track": "product",
-				"status": "ready",
-				"kind": "feat"
-			},
-			{
-				"id": "f00170",
-				"title": "f00170",
-				"track": "adoption",
-				"status": "ready",
-				"kind": "feat"
-			},
-			{
-				"id": "f00171",
-				"title": "f00171",
-				"track": "dogfooding",
-				"status": "ready",
-				"kind": "feat"
-			},
-			{
-				"id": "f00172",
-				"title": "f00172",
-				"track": "dogfooding",
-				"status": "ready",
-				"kind": "feat"
-			},
-			{
-				"id": "i00002",
-				"title": "i00002",
-				"track": "ci-test-docs",
-				"status": "in-progress",
-				"kind": "unspecified"
-			},
-			{
-				"id": "i00003",
-				"title": "i00003",
-				"track": "web-release",
-				"status": "in-progress",
-				"kind": "unspecified"
-			},
-			{
 				"id": "q00003",
 				"title": "q00003",
 				"track": "develop-audit-consolidation",
 				"status": "in-progress",
 				"kind": "plan"
-			},
-			{
-				"id": "r00014",
-				"title": "r00014",
-				"track": "bootstrap",
-				"status": "ready",
-				"kind": "refactor"
-			},
-			{
-				"id": "r00015",
-				"title": "r00015",
-				"track": "plugins",
-				"status": "ready",
-				"kind": "refactor"
-			},
-			{
-				"id": "r00016",
-				"title": "r00016",
-				"track": "registry",
-				"status": "ready",
-				"kind": "refactor"
-			},
-			{
-				"id": "r00017",
-				"title": "r00017",
-				"track": "core",
-				"status": "ready",
-				"kind": "refactor"
-			},
-			{
-				"id": "t00006",
-				"title": "t00006",
-				"track": "ci-test-docs",
-				"status": "ready",
-				"kind": "unspecified"
-			},
-			{
-				"id": "v00124",
-				"title": "v00124",
-				"track": "memory-mcp",
-				"status": "in-progress",
-				"kind": "unspecified"
-			},
-			{
-				"id": "x00193",
-				"title": "x00193",
-				"track": "ci+audit-followup",
-				"status": "ready",
-				"kind": "fix"
 			},
 			{
 				"id": "x00203",
@@ -1402,124 +1220,12 @@
 				"track": "plugins+fix",
 				"status": "in-progress",
 				"kind": "fix"
-			},
-			{
-				"id": "x00208",
-				"title": "x00208",
-				"track": "scaffold",
-				"status": "ready",
-				"kind": "fix"
-			},
-			{
-				"id": "x00209",
-				"title": "x00209",
-				"track": "proposals",
-				"status": "ready",
-				"kind": "fix"
-			},
-			{
-				"id": "x00210",
-				"title": "x00210",
-				"track": "proposals",
-				"status": "ready",
-				"kind": "fix"
-			},
-			{
-				"id": "x00212",
-				"title": "x00212",
-				"track": "plugins+adoption",
-				"status": "ready",
-				"kind": "fix"
-			},
-			{
-				"id": "x00213",
-				"title": "x00213",
-				"track": "quality+proposals+lint-baseline",
-				"status": "ready",
-				"kind": "fix"
-			},
-			{
-				"id": "x00225",
-				"title": "x00225",
-				"track": "registry",
-				"status": "ready",
-				"kind": "fix"
-			},
-			{
-				"id": "x00226",
-				"title": "x00226",
-				"track": "registry",
-				"status": "ready",
-				"kind": "fix"
-			},
-			{
-				"id": "x00227",
-				"title": "x00227",
-				"track": "core",
-				"status": "ready",
-				"kind": "fix"
-			},
-			{
-				"id": "x00228",
-				"title": "x00228",
-				"track": "core",
-				"status": "ready",
-				"kind": "fix"
-			},
-			{
-				"id": "x00229",
-				"title": "x00229",
-				"track": "memory-mcp",
-				"status": "ready",
-				"kind": "fix"
-			},
-			{
-				"id": "x00230",
-				"title": "x00230",
-				"track": "product",
-				"status": "ready",
-				"kind": "fix"
-			},
-			{
-				"id": "x00231",
-				"title": "x00231",
-				"track": "plugins",
-				"status": "ready",
-				"kind": "fix"
-			},
-			{
-				"id": "x00232",
-				"title": "x00232",
-				"track": "plugins+fix",
-				"status": "ready",
-				"kind": "fix"
-			},
-			{
-				"id": "x00233",
-				"title": "x00233",
-				"track": "plugins+fix",
-				"status": "ready",
-				"kind": "fix"
-			},
-			{
-				"id": "x00234",
-				"title": "x00234",
-				"track": "plugins+fix",
-				"status": "ready",
-				"kind": "fix"
-			},
-			{
-				"id": "x00235",
-				"title": "x00235",
-				"track": "plugins+fix",
-				"status": "ready",
-				"kind": "fix"
 			}
 		],
 		"byStatus": {
-			"ready": 39,
-			"in-progress": 10,
-			"review": 17,
+			"ready": 0,
+			"in-progress": 7,
+			"review": 59,
 			"paused": 1,
 			"done": 347,
 			"blocked": 0,
