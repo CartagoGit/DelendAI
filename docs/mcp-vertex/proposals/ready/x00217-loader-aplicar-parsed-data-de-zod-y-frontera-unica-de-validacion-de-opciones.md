@@ -38,7 +38,7 @@ Sin normalizar, los plugins reciben valores que contradicen su propio schema (un
 - global_gate: type
 
 ### S1 — Loader construye el contexto desde parsed.data
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/src/lib/plugins/load-plugins.ts`
 - **Gate**: type
 - acceptance:
@@ -46,7 +46,7 @@ Sin normalizar, los plugins reciben valores que contradicen su propio schema (un
   - "z.coerce/.default/.trim/.transform se aplican antes de register."
 
 ### S2 — Fixture de plugin con opciones transformadas
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/tests/src/lib/plugins/loader-parsed-options.spec.ts`
 - **Gate**: type
 - acceptance:

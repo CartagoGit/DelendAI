@@ -310,6 +310,14 @@ export const loadPlugins = async (
 				});
 				continue;
 			}
+			const parsedOptions =
+				'data' in parsed
+					? (parsed.data as Readonly<Record<string, unknown>>)
+					: ctx.options;
+			ctx = {
+				...ctx,
+				options: parsedOptions,
+			};
 		}
 		resolvedPlugins.push({ specifier, resolved, plugin, ctx });
 		resolvedNames.add(plugin.name);
