@@ -2,7 +2,7 @@
 id: x00216
 title: "error-reporting: dedupe por lastSuccessAt + rate limits y circuit breaker"
 kind: fix
-status: ready
+status: review
 type: proposal
 track: privacy
 date: 2026-08-24

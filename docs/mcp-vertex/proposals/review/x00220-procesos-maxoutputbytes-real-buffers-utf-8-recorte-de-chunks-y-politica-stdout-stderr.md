@@ -2,7 +2,7 @@
 id: x00220
 title: "procesos: maxOutputBytes real (buffers UTF-8), recorte de chunks y política stdout+stderr"
 kind: fix
-status: ready
+status: review
 type: proposal
 track: concurrency
 date: 2026-08-24

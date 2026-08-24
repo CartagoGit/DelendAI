@@ -2,7 +2,7 @@
 id: x00223
 title: "métricas: bytes UTF-8 reales, contar errores y separar tipos de coste"
 kind: fix
-status: ready
+status: review
 type: proposal
 track: metrics
 date: 2026-08-24

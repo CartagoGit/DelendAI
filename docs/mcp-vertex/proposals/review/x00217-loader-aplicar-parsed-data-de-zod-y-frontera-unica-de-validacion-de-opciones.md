@@ -2,7 +2,7 @@
 id: x00217
 title: "loader: aplicar parsed.data de Zod y frontera única de validación de opciones"
 kind: fix
-status: ready
+status: review
 type: proposal
 track: lifecycle
 date: 2026-08-24

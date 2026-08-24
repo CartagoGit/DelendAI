@@ -2,7 +2,7 @@
 id: t00005
 title: "error-reporting: suite adversarial de privacidad (payload invariante ante datos privados)"
 kind: test
-status: ready
+status: review
 type: proposal
 track: privacy
 date: 2026-08-24

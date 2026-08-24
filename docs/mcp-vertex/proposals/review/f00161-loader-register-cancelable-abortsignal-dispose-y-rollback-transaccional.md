@@ -2,7 +2,7 @@
 id: f00161
 title: "loader: register cancelable (AbortSignal), dispose() y rollback transaccional"
 kind: feat
-status: ready
+status: review
 type: proposal
 track: lifecycle
 date: 2026-08-24

@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-08-24T04:36:32.283Z",
+	"generatedAt": "2026-08-24T06:33:03.489Z",
 	"mode": "compact",
 	"tools": [
 		{
@@ -1211,27 +1211,6 @@
 				"kind": "feat"
 			},
 			{
-				"id": "f00159",
-				"title": "f00159",
-				"track": "privacy",
-				"status": "ready",
-				"kind": "feat"
-			},
-			{
-				"id": "f00160",
-				"title": "f00160",
-				"track": "privacy",
-				"status": "ready",
-				"kind": "feat"
-			},
-			{
-				"id": "f00161",
-				"title": "f00161",
-				"track": "lifecycle",
-				"status": "ready",
-				"kind": "feat"
-			},
-			{
 				"id": "f00162",
 				"title": "f00162",
 				"track": "tokens",
@@ -1309,13 +1288,6 @@
 				"kind": "feat"
 			},
 			{
-				"id": "f00173",
-				"title": "f00173",
-				"track": "privacy",
-				"status": "ready",
-				"kind": "feat"
-			},
-			{
 				"id": "i00002",
 				"title": "i00002",
 				"track": "ci-test-docs",
@@ -1363,13 +1335,6 @@
 				"track": "core",
 				"status": "ready",
 				"kind": "refactor"
-			},
-			{
-				"id": "t00005",
-				"title": "t00005",
-				"track": "privacy",
-				"status": "ready",
-				"kind": "unspecified"
 			},
 			{
 				"id": "t00006",
@@ -1445,83 +1410,6 @@
 				"id": "x00213",
 				"title": "x00213",
 				"track": "quality+proposals+lint-baseline",
-				"status": "ready",
-				"kind": "fix"
-			},
-			{
-				"id": "x00214",
-				"title": "x00214",
-				"track": "privacy",
-				"status": "ready",
-				"kind": "fix"
-			},
-			{
-				"id": "x00215",
-				"title": "x00215",
-				"track": "privacy",
-				"status": "ready",
-				"kind": "fix"
-			},
-			{
-				"id": "x00216",
-				"title": "x00216",
-				"track": "privacy",
-				"status": "ready",
-				"kind": "fix"
-			},
-			{
-				"id": "x00217",
-				"title": "x00217",
-				"track": "lifecycle",
-				"status": "ready",
-				"kind": "fix"
-			},
-			{
-				"id": "x00218",
-				"title": "x00218",
-				"track": "lifecycle",
-				"status": "ready",
-				"kind": "fix"
-			},
-			{
-				"id": "x00219",
-				"title": "x00219",
-				"track": "concurrency",
-				"status": "ready",
-				"kind": "fix"
-			},
-			{
-				"id": "x00220",
-				"title": "x00220",
-				"track": "concurrency",
-				"status": "ready",
-				"kind": "fix"
-			},
-			{
-				"id": "x00221",
-				"title": "x00221",
-				"track": "concurrency",
-				"status": "ready",
-				"kind": "fix"
-			},
-			{
-				"id": "x00222",
-				"title": "x00222",
-				"track": "concurrency",
-				"status": "ready",
-				"kind": "fix"
-			},
-			{
-				"id": "x00223",
-				"title": "x00223",
-				"track": "metrics",
-				"status": "ready",
-				"kind": "fix"
-			},
-			{
-				"id": "x00224",
-				"title": "x00224",
-				"track": "metrics",
 				"status": "ready",
 				"kind": "fix"
 			},
@@ -1604,9 +1492,9 @@
 			}
 		],
 		"byStatus": {
-			"ready": 55,
+			"ready": 39,
 			"in-progress": 11,
-			"review": 0,
+			"review": 16,
 			"paused": 1,
 			"done": 347,
 			"blocked": 0,

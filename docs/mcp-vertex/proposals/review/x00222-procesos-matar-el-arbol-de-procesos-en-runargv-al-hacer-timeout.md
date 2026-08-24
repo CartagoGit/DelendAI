@@ -2,7 +2,7 @@
 id: x00222
 title: "procesos: matar el árbol de procesos en runArgv al hacer timeout"
 kind: fix
-status: ready
+status: review
 type: proposal
 track: concurrency
 date: 2026-08-24
