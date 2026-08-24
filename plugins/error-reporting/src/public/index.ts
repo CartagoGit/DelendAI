@@ -52,6 +52,11 @@ export {
 	shouldReport,
 	ghIssueExec,
 } from '../lib/reporter.service';
+export { buildSyntheticExample } from '../lib/synthetic-example.builder';
+export {
+	SYNTHETIC_FIXTURES,
+	selectSyntheticFixture,
+} from '../lib/synthetic-fixtures.constant';
 export type {
 	IEnvironmentClass,
 	IIssueExec,

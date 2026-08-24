@@ -57,7 +57,12 @@ export type SafeScalar =
 
 export interface ISafeSyntheticExample {
 	readonly summary: string;
+	readonly source: 'schema-fixture' | 'fixture-fallback';
+	readonly fixtureId: string;
+	readonly fixtureDomain: string;
+	readonly argumentType: 'object' | 'array' | 'scalar' | 'unknown';
 	readonly context?: Readonly<Record<string, SafeScalar>> | undefined;
+	readonly payload?: SafeScalar | undefined;
 }
 
 export interface IEnvironmentClass {
