@@ -2,7 +2,7 @@
 id: f00165
 title: "context_for_change: contexto de cambio combinado y compacto"
 kind: feat
-status: ready
+status: review
 type: proposal
 track: product
 date: 2026-08-24
@@ -33,7 +33,7 @@ Hoy un agente gasta 8–10 llamadas y muchos tokens reconstruyendo el contexto d
 - global_gate: type
 
 ### S1 — Plugin context-for-change con orquestación
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/context-for-change/src/lib/tools/context-for-change.tool.ts`
 - **Gate**: type
 - acceptance:
@@ -41,7 +41,7 @@ Hoy un agente gasta 8–10 llamadas y muchos tokens reconstruyendo el contexto d
   - "dependsOn declara los plugins que orquesta (git, search, memory, docs)."
 
 ### S2 — Wiring y tests del plugin
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/context-for-change/src/index.ts`
 - **Gate**: type
 - acceptance:
