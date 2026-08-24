@@ -2,7 +2,7 @@
 id: d00006
 title: "docs: modelo operativo dogfooding y north-star (industrializar el crecimiento, dos velocidades y privacidad como lema)"
 kind: docs
-status: ready
+status: review
 type: proposal
 track: dogfooding
 date: 2026-08-24
@@ -29,7 +29,7 @@ La conversación redefine la visión del proyecto (de "creador de propuestas" a 
 - global_gate: none
 
 ### S1 — North-star y modelo operativo (doc único, enlazado)
-- **Status**: pending
+- **Status**: done
 - **Files**: `docs/mcp-vertex/VISION-AND-OPERATING-MODEL.md`
 - **Gate**: none
 - acceptance:
