@@ -18,6 +18,7 @@ describe('createReportScheduler', () => {
 		const decision = scheduler.decide({
 			record: {
 				fingerprint: 'fp',
+				classification: 'BUG',
 				attemptCount: 4,
 				consecutiveFailureCount: 0,
 				issueNumber: 9,
@@ -32,6 +33,7 @@ describe('createReportScheduler', () => {
 		const decision = scheduler.decide({
 			record: {
 				fingerprint: 'fp',
+				classification: 'BUG',
 				attemptCount: 2,
 				lastAttemptAt: '2026-08-24T11:59:00.000Z',
 				consecutiveFailureCount: 1,
@@ -46,12 +48,14 @@ describe('createReportScheduler', () => {
 		const decision = scheduler.decide({
 			record: {
 				fingerprint: 'new',
+				classification: 'NEEDS_REPRODUCTION',
 				attemptCount: 1,
 				consecutiveFailureCount: 0,
 			},
 			records: [
 				{
 					fingerprint: 'done',
+					classification: 'BUG',
 					attemptCount: 1,
 					lastSuccessAt: '2026-08-24T01:00:00.000Z',
 					consecutiveFailureCount: 0,
@@ -75,6 +79,7 @@ describe('createReportScheduler', () => {
 		const failure = scheduler.buildFailureState(
 			{
 				fingerprint: 'fp',
+				classification: 'PERFORMANCE',
 				attemptCount: 3,
 				consecutiveFailureCount: 2,
 			},
@@ -90,6 +95,7 @@ describe('createReportScheduler', () => {
 		const decision = scheduler.decide({
 			record: {
 				fingerprint: 'fp',
+				classification: 'BUG',
 				attemptCount: 2,
 				nextEligibleAt: '2026-08-24T12:01:00.000Z',
 				consecutiveFailureCount: 1,
@@ -108,6 +114,7 @@ describe('createReportScheduler', () => {
 		const decision = scheduler.decide({
 			record: {
 				fingerprint: 'fp',
+				classification: 'BUG',
 				attemptCount: 2,
 				circuitOpenUntil: '2026-08-24T12:01:00.000Z',
 				consecutiveFailureCount: 3,

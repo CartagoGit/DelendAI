@@ -44,7 +44,7 @@ Mantener default-on exige transparencia: el usuario debe poder ver qué se enví
 - global_gate: type
 
 ### S1 — report_status con catálogo exacto de campos
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/error-reporting/src/lib/tools/report-status.tool.ts`, `plugins/error-reporting/src/lib/contracts/interfaces/report-status.interface.ts`
 - **Gate**: type
 - acceptance:
@@ -52,7 +52,7 @@ Mantener default-on exige transparencia: el usuario debe poder ver qué se enví
   - "Muestra el estado habilitado/deshabilitado, el destino allowlisted y la classification de cada reporte local (taxonomía de 14 valores)."
 
 ### S2 — Destino fijo y allowlist de red
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/error-reporting/src/lib/contracts/constants/options.constant.ts`, `plugins/error-reporting/src/lib/contracts/interfaces/options.interface.ts`
 - **Gate**: type
 - acceptance:
@@ -60,7 +60,7 @@ Mantener default-on exige transparencia: el usuario debe poder ver qué se enví
   - "No se reenvían headers/env del proyecto en el envío."
 
 ### S3 — Documentación de privacidad y checklist legal
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/error-reporting/README.md`, `plugins/error-reporting/src/lib/knowledge/error-reporting.md`
 - **Gate**: lint
 - acceptance:

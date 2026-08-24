@@ -142,8 +142,10 @@ describe('createSafeReporter.submitSafeReport', () => {
 
 	it('sends title, body and labels as gh argv', async () => {
 		let captured: readonly string[] = [];
+		let capturedOptions: { readonly cwd?: string | undefined } | undefined;
 		const exec: IIssueExec = async (argv) => {
 			captured = argv;
+			capturedOptions = { cwd: '/tmp/proj' };
 			return {
 				ok: true,
 				code: 0,
@@ -160,5 +162,6 @@ describe('createSafeReporter.submitSafeReport', () => {
 		expect(joined).toContain(
 			'[auto] PERFORMANCE @mcp-vertex/error-reporting: PLUGIN_REGISTER_TIMEOUT',
 		);
+		expect(capturedOptions).toEqual({ cwd: '/tmp/proj' });
 	});
 });

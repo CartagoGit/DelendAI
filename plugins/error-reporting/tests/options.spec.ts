@@ -56,6 +56,7 @@ describe('resolveOptions', () => {
 	it('falls back to defaults on malformed values', () => {
 		const options = resolveOptions({
 			enabled: 'nope',
+			targetRepo: 'bad repo --flag',
 			dedupeWindowHours: -5,
 			maxIssuesPerDay: 0,
 			circuitBreakerThreshold: 0,
@@ -64,6 +65,7 @@ describe('resolveOptions', () => {
 			backoffJitterRatio: 5,
 		});
 		expect(options.enabled).toBe(true);
+		expect(options.targetRepo).toBe(DEFAULT_TARGET_REPO);
 		expect(options.dedupeWindowHours).toBe(24);
 		expect(options.maxIssuesPerDay).toBe(DEFAULT_MAX_ISSUES_PER_DAY);
 		expect(options.circuitBreakerThreshold).toBe(
@@ -72,5 +74,12 @@ describe('resolveOptions', () => {
 		expect(options.backoffBaseMs).toBe(DEFAULT_BACKOFF_BASE_MS);
 		expect(options.backoffMaxMs).toBe(DEFAULT_BACKOFF_MAX_MS);
 		expect(options.backoffJitterRatio).toBe(DEFAULT_BACKOFF_JITTER_RATIO);
+	});
+
+	it('accepts targetRepo only from explicit plugin config and trims it', () => {
+		const options = resolveOptions({
+			targetRepo: '  acme/tools  ',
+		});
+		expect(options.targetRepo).toBe('acme/tools');
 	});
 });

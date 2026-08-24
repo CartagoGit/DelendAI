@@ -13,6 +13,7 @@ import type { IReportSchedulerClock } from './lib/contracts/interfaces/report-sc
 import type { IReportStore } from './lib/contracts/interfaces/report-store.interface';
 import { registerInternalRuntimePaths } from './lib/frame-extractor.helper';
 import { classifyInternalError } from './lib/internal-classifier.helper';
+import { buildErrorReportingKnowledge } from './lib/knowledge/error-reporting';
 import {
 	validateSafeReport,
 	validateSerializedSafeReport,
@@ -23,35 +24,6 @@ import { createSafeReporter } from './lib/reporter.service';
 import { signatureOf } from './lib/signature.helper';
 import { buildSyntheticExample } from './lib/synthetic-example.builder';
 import { buildReportStatusRegistration } from './lib/tools/report-status.tool';
-
-const KNOWLEDGE_BODY = [
-	'# Automatic mcp-vertex error reporting',
-	'',
-	'`@mcp-vertex/error-reporting` detects failures that originate inside',
-	'mcp-vertex itself (not the host project) and opens a de-duplicated,',
-	'safe issue on the target GitHub repository using only MCP Vertex-owned',
-	'metadata.',
-	'',
-	'## Behaviour',
-	'',
-	'- Intrinsic and **enabled by default** in the `standard` preset.',
-	'- Only mcp-vertex-internal failures are reported (typed internal error',
-	'  or `@mcp-vertex/*` frame evidence required). Project errors are never',
-	'  sent.',
-	'- De-duplicated by a stable fingerprint built from safe internal data.',
-	'- Raw message, stack, args, result, cwd and repo/workspace data are not',
-	'  part of the public report contract.',
-	'- Never blocks or breaks the server: without `gh`, auth, or network the',
-	'  report is silently dropped.',
-	'',
-	'## Disable it',
-	'',
-	'```jsonc',
-	'{ "plugins": { "error-reporting": { "options": { "enabled": false } } } }',
-	'```',
-	'',
-	'Inspect state with the `<prefix>_report_status` tool.',
-].join('\n');
 
 const runtimeOf = (): 'node' | 'bun' | 'unknown' => {
 	if ('Bun' in globalThis) return 'bun';
@@ -157,7 +129,10 @@ export const buildReportErrorHandler = (input: {
 			}
 			const nowMs = input.clock.nowMs();
 			const at = new Date(nowMs).toISOString();
-			await input.store.recordAttempt(redactedReport.fingerprint, { at });
+			await input.store.recordAttempt(redactedReport.fingerprint, {
+				at,
+				classification: redactedReport.classification,
+			});
 			const existing = await input.store.get(redactedReport.fingerprint);
 			const decision = scheduler.decide({
 				record: existing,
@@ -237,7 +212,10 @@ export default definePlugin({
 			{
 				id: 'error-reporting-surface',
 				title: 'Automatic mcp-vertex error reporting',
-				body: KNOWLEDGE_BODY,
+				body: buildErrorReportingKnowledge({
+					prefix: ctx.namespacePrefix,
+					targetRepo: options.targetRepo,
+				}),
 			},
 		];
 
