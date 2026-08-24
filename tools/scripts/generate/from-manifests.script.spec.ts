@@ -8,9 +8,6 @@ import {
 	GENERATED_DOCS_JSON_PATH,
 	GENERATED_FIRST_PARTY_INDEX_PATH,
 	GENERATED_WEB_CATALOG_PATH,
-	README_PATH,
-	README_PLUGIN_ROWS_END,
-	README_PLUGIN_ROWS_START,
 	runFromManifestsGenerator,
 	buildCompatibilityMatrix,
 	buildGeneratedFirstPartyEntries,
@@ -238,19 +235,6 @@ const withFixture = async (
 				'};\n',
 			].join('\n'),
 		);
-		await writeFile(
-			join(root, README_PATH),
-			[
-				'# Fixture',
-				'',
-				'| Path | Package | What |',
-				'|---|---|---|',
-				'| packages/core | @mcp-vertex/core | Core |',
-				README_PLUGIN_ROWS_START,
-				'| plugins/old | @mcp-vertex/old | stale |',
-				README_PLUGIN_ROWS_END,
-			].join('\n') + '\n',
-		);
 		await callback(root);
 	} finally {
 		await rm(root, { recursive: true, force: true });
@@ -312,7 +296,7 @@ describe('from-manifests generator', () => {
 		});
 	});
 
-	it('writes the generated registry, web catalog, docs json, and README rows', async () => {
+	it('writes the generated registry, web catalog, and docs outputs', async () => {
 		await withFixture(async (root) => {
 			const run = await runFromManifestsGenerator(
 				[`--root=${root}`],
@@ -340,9 +324,6 @@ describe('from-manifests generator', () => {
 			expect(
 				await readFile(join(root, GENERATED_DOCS_JSON_PATH), 'utf8'),
 			).toContain('filesystem-read');
-			expect(await readFile(join(root, README_PATH), 'utf8')).toContain(
-				'| `plugins/search` | `@mcp-vertex/search` | Code search (semantic + symbol + references). |',
-			);
 		});
 	});
 

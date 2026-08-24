@@ -27,16 +27,16 @@ import testPolicyPlugin from '@mcp-vertex/test-policy';
 import conventionsPlugin from '@mcp-vertex/conventions';
 
 /**
- * Token budget benchmark [N23]. "Low-token" is a measurable promise, not
- * marketing: this drives the REAL server over the protocol and asserts
- * the cold-start payloads stay under explicit byte budgets, and that the
- * `compact` overview is materially cheaper than the full one. The numbers
- * printed here are the documented baseline; tighten the budgets if a
- * change regresses them.
+ * Token budget benchmark [N23]. Invariant: cold-start protocol payloads stay
+ * under explicit byte ceilings, and `overview { compact:true }` stays
+ * materially cheaper than the full surface.
  *
- * Rough token estimate: ~4 bytes/token, so the budgets below are roughly
- * overview-full < ~1.5k tokens, overview-compact < ~400 tokens,
- * agent-catalog-compact < ~325 tokens and agent-catalog-full < ~1.7k tokens.
+ * Why this matters: "low-token" is a measurable product promise, so this spec
+ * guards the real wire payloads instead of prose.
+ *
+ * Risk rule: if a change regresses the measured bytes, tighten the budgets or
+ * the surface deliberately. Rough estimate only: ~4 bytes/token. See N23 and
+ * docs/mcp-vertex/TOKEN-BUDGETS.md.
  */
 const budgetWarning = (label: string, value: number, warning: number): void => {
 	if (value > warning) {

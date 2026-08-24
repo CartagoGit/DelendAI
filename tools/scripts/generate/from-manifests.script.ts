@@ -38,11 +38,6 @@ export const GENERATED_DOCS_MARKDOWN_PATH =
 	'docs/mcp-vertex/generated/plugin-manifests.generated.md';
 export const GENERATED_DOCS_JSON_PATH =
 	'docs/mcp-vertex/generated/plugin-manifests.generated.json';
-export const README_PATH = 'README.md';
-export const README_PLUGIN_ROWS_START =
-	'<!-- BEGIN GENERATED: migrated-plugin-layout-rows -->';
-export const README_PLUGIN_ROWS_END =
-	'<!-- END GENERATED: migrated-plugin-layout-rows -->';
 
 type PresetId = (typeof PRESET_KIND)[number];
 
@@ -326,32 +321,6 @@ const renderWebCatalogTs = (artifact: IPluginManifestArtifact): string =>
 		'',
 	].join('\n');
 
-const renderReadmeRows = (
-	manifests: readonly ILoadedPluginManifest[],
-): string =>
-	manifests
-		.map(
-			({ manifest }) =>
-				`| ${escapeCell(`\`plugins/${manifest.id}\``)} | ${escapeCell(`\`${manifest.package}\``)} | ${escapeCell(manifest.summary)} |`,
-		)
-		.join('\n');
-
-export const injectGeneratedReadmeRows = (
-	readme: string,
-	rows: string,
-): string => {
-	const start = readme.indexOf(README_PLUGIN_ROWS_START);
-	const end = readme.indexOf(README_PLUGIN_ROWS_END);
-	if (start === -1 || end === -1 || end < start) {
-		throw new Error(
-			'README markers for migrated-plugin-layout-rows are missing',
-		);
-	}
-	const before = readme.slice(0, start + README_PLUGIN_ROWS_START.length);
-	const after = readme.slice(end);
-	return `${before}\n${rows}\n${after}`;
-};
-
 const renderMarkdownTable = (
 	headers: readonly string[],
 	rows: readonly (readonly string[])[],
@@ -429,8 +398,6 @@ const resolveGeneratedAt = (io: IGeneratorIo): string =>
 
 const buildOutputs = (
 	artifact: IPluginManifestArtifact,
-	readme: string,
-	manifests: readonly ILoadedPluginManifest[],
 ): Readonly<Record<string, string>> => ({
 	[GENERATED_FIRST_PARTY_INDEX_PATH]: renderRegistryTs(
 		artifact.firstPartyEntries,
@@ -438,10 +405,6 @@ const buildOutputs = (
 	[GENERATED_WEB_CATALOG_PATH]: renderWebCatalogTs(artifact),
 	[GENERATED_DOCS_MARKDOWN_PATH]: renderDocsMarkdown(artifact),
 	[GENERATED_DOCS_JSON_PATH]: `${JSON.stringify(artifact, null, '\t')}\n`,
-	[README_PATH]: injectGeneratedReadmeRows(
-		readme,
-		renderReadmeRows(manifests),
-	),
 });
 
 export const runFromManifestsGenerator = async (
@@ -458,9 +421,7 @@ export const runFromManifestsGenerator = async (
 		const generatedAt = resolveGeneratedAt(io);
 		const manifests = await loadMigratedPluginManifests(root, io);
 		const artifact = buildManifestArtifact(manifests, generatedAt);
-		const readmePath = resolve(root, README_PATH);
-		const readme = (await io.readText(readmePath)) ?? '';
-		const outputs = buildOutputs(artifact, readme, manifests);
+		const outputs = buildOutputs(artifact);
 		let changed = false;
 		for (const [relPath, text] of Object.entries(outputs)) {
 			const absPath = resolve(root, relPath);
