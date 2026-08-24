@@ -8,11 +8,13 @@ import type {
 	IReportRecord,
 	IReportStore,
 } from './contracts/interfaces/report-store.interface';
+import { ISSUE_CLASSIFICATIONS } from './contracts/interfaces/reporter.interface';
 
 type IStateFile = Record<string, IReportRecord>;
 
 type ILegacyStateRecord = {
 	readonly fingerprint?: unknown;
+	readonly classification?: unknown;
 	readonly signature?: unknown;
 	readonly attemptCount?: unknown;
 	readonly count?: unknown;
@@ -46,6 +48,14 @@ const isSafeReporterFailureCode = (
 		value as (typeof SAFE_REPORTER_FAILURE_CODES)[number],
 	);
 
+const isIssueClassification = (
+	value: unknown,
+): value is IReportRecord['classification'] =>
+	typeof value === 'string' &&
+	ISSUE_CLASSIFICATIONS.includes(
+		value as (typeof ISSUE_CLASSIFICATIONS)[number],
+	);
+
 const normalizeRecord = (
 	key: string,
 	value: unknown,
@@ -59,6 +69,9 @@ const normalizeRecord = (
 	const lastFailureCode = isSafeReporterFailureCode(record.lastFailureCode)
 		? record.lastFailureCode
 		: undefined;
+	const classification = isIssueClassification(record.classification)
+		? record.classification
+		: 'UNKNOWN';
 	const fingerprint =
 		typeof record.fingerprint === 'string' && record.fingerprint !== ''
 			? record.fingerprint
@@ -75,6 +88,7 @@ const normalizeRecord = (
 		asIsoOrUndefined(record.lastReportedAt);
 	return {
 		fingerprint,
+		classification,
 		attemptCount:
 			asPositiveInt(record.attemptCount) ??
 			asPositiveInt(record.count) ??
@@ -120,6 +134,7 @@ export const createReportStore = (dirAbs: string): IReportStore => {
 		previous: IReportRecord | undefined,
 	): IReportRecord => ({
 		fingerprint,
+		classification: previous?.classification ?? 'UNKNOWN',
 		attemptCount: previous?.attemptCount ?? 0,
 		...(previous?.lastAttemptAt !== undefined
 			? { lastAttemptAt: previous.lastAttemptAt }
@@ -162,6 +177,7 @@ export const createReportStore = (dirAbs: string): IReportStore => {
 				const next = nextRecord(fingerprint, previous);
 				state[fingerprint] = {
 					...next,
+					classification: input.classification,
 					attemptCount: next.attemptCount + 1,
 					lastAttemptAt: input.at,
 				};
@@ -193,6 +209,7 @@ export const createReportStore = (dirAbs: string): IReportStore => {
 				const next = nextRecord(fingerprint, previous);
 				state[fingerprint] = {
 					fingerprint,
+					classification: next.classification,
 					attemptCount: next.attemptCount,
 					...(next.lastAttemptAt !== undefined
 						? { lastAttemptAt: next.lastAttemptAt }

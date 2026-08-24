@@ -64,6 +64,7 @@ export {
 } from '../lib/reporter.service';
 export { createReportScheduler } from '../lib/report-scheduler.helper';
 export { buildSyntheticExample } from '../lib/synthetic-example.builder';
+export { buildErrorReportingKnowledge } from '../lib/knowledge/error-reporting';
 export {
 	SYNTHETIC_FIXTURES,
 	selectSyntheticFixture,
@@ -104,3 +105,10 @@ export type {
 	IReportStore,
 	IReportSuccessInput,
 } from '../lib/contracts/interfaces/report-store.interface';
+export type {
+	IReportStatusDestination,
+	IReportStatusOutput,
+	IReportStatusRecentReport,
+	IReportStatusToolOptions,
+	IReportStatusTransmittedFieldCatalog,
+} from '../lib/contracts/interfaces/report-status.interface';

@@ -1,5 +1,6 @@
 export interface IErrorReportingOptions {
 	readonly enabled: boolean;
+	/** Fixed `owner/name` destination resolved only from plugin options. */
 	readonly targetRepo: string;
 	readonly labels: readonly string[];
 	readonly internalOnly: boolean;
