@@ -38,7 +38,7 @@ Auditoría 2026-08-24 (hallazgos D1-D13): tres writers de wire-plugin insertan p
 
 ### S2 — Una sola fuente de verdad + índice y carga actualizados
 - **Status**: done
-- **Files**: `packages/core/src/lib/scaffold/create-plugin.tool.ts`, `packages/core/src/lib/scaffold/plugin-blueprint.ts`, `packages/core/src/lib/registry/first-party-index.ts`
+- **Files**: `packages/core/src/lib/scaffold/create-plugin.tool.ts`, `packages/core/src/lib/scaffold/scaffold-host.ts`, `packages/core/src/lib/registry/first-party-index.ts`
 - **Gate**: type
 - acceptance:
   - "Una sola fuente de verdad de scaffold de plugin (blueprint first-party o genérico, no ambos)."
@@ -54,7 +54,7 @@ Auditoría 2026-08-24 (hallazgos D1-D13): tres writers de wire-plugin insertan p
 
 ### S4 — Eliminar copias muertas de plugin_add/plugin_search
 - **Status**: done
-- **Files**: `packages/core/src/lib/tools/plugin-add.tool.ts`, `packages/core/src/lib/tools/plugin-search.tool.ts`
+- **Files**: `packages/core/src/lib/registry/plugin-add.tool.ts`, `packages/core/src/lib/registry/plugin-search.tool.ts`, `packages/core/src/public/index.ts`
 - **Gate**: type
 - acceptance:
   - "Se eliminan las copias muertas lib/tools/plugin-add.tool.ts y lib/tools/plugin-search.tool.ts tras verificar que ningún import/test las referencia."
