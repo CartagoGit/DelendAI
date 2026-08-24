@@ -31,7 +31,7 @@ f00158 lleva los errores a GitHub issues y su triage genera propuestas desde ah�
 
 ### S1 — Contrato incidente→propuesta (DTO + taxonomía de clasificación)
 - **Status**: done
-- **Files**: `plugins/proposals/src/lib/contracts/interfaces/incident-proposal.interface.ts`, `plugins/proposals/src/lib/contracts/constants/incident-taxonomy.ts`
+- **Files**: `plugins/proposals/src/lib/contracts/interfaces/incident-proposal.interface.ts`, `plugins/proposals/src/lib/contracts/constants/incident-taxonomy.constant.ts`
 - **Gate**: type
 - acceptance:
   - "DTO de borrador incidente→propuesta con firma estable (toolName + hash de error redactado)."
