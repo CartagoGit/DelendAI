@@ -20,8 +20,8 @@
  * reported as a schema violation instead of being silently ignored.
  */
 import z from 'zod';
-import { COMMIT_AUTHOR_MODES } from '../contracts/interfaces/commit-author.interface';
 import { PERMISSION_CATEGORIES } from '../contracts/constants/permission-categories.constant';
+import { COMMIT_AUTHOR_MODES } from '../contracts/interfaces/commit-author.interface';
 import { CAPABILITY_TAGS } from '../contracts/interfaces/provider-capabilities.interface';
 
 /** Kebab-case provider id: `claude-sonnet`, `gpt-5-codex`, … */
@@ -141,7 +141,7 @@ export const CONFIG_FILE_SCHEMA = z
 		// The `init` command emits this when its S1 detector picks
 		// a non-default `pluginPathsRoot` (e.g. `libs/` for Angular
 		// or Nx, `packages/` for workspaces). Downstream tooling
-		// (`tools/scripts/create-plugin.ts`, host-entry resolver
+		// (`tools/scripts/scaffold/create-plugin.script.ts`, host-entry resolver
 		// hints) reads it instead of having to re-discover the
 		// project's layout. The loader ignores it; the schema
 		// accepts it for the strict-config validator.

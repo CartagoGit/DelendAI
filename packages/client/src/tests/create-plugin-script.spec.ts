@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
 
-import { scaffoldPluginFiles } from '@mcp-vertex/core/public';
 import { writeScaffoldedFiles } from '@mcp-vertex/client';
+import { scaffoldPluginFiles } from '@mcp-vertex/core/public';
 
 /**
- * f00087 S2 smoke spec for `tools/scripts/create-plugin.ts`.
+ * f00087 S2 smoke spec for `tools/scripts/scaffold/create-plugin.script.ts`.
  *
  * We do not spawn the script as a child process (that would require
  * bun on PATH and a tmp workspace setup); instead we exercise the
@@ -18,7 +18,7 @@ import { writeScaffoldedFiles } from '@mcp-vertex/client';
  * `@mcp-vertex/core/public` subpath.
  */
 
-describe('tools/scripts/create-plugin.ts (f00087 S2 smoke)', () => {
+describe('tools/scripts/scaffold/create-plugin.script.ts (f00087 S2 smoke)', () => {
 	it('generates the canonical nine files for a fresh plugin', async () => {
 		const files = scaffoldPluginFiles({
 			pluginName: 'smoke',
