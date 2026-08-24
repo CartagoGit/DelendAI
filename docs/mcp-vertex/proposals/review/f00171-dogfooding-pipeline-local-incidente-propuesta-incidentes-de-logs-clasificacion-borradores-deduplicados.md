@@ -2,7 +2,7 @@
 id: f00171
 title: "dogfooding: pipeline local incidente→propuesta (incidentes de logs + clasificación → borradores deduplicados)"
 kind: feat
-status: ready
+status: review
 type: proposal
 track: dogfooding
 date: 2026-08-24
@@ -30,7 +30,7 @@ f00158 lleva los errores a GitHub issues y su triage genera propuestas desde ah�
 - global_gate: type
 
 ### S1 — Contrato incidente→propuesta (DTO + taxonomía de clasificación)
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/proposals/src/lib/contracts/interfaces/incident-proposal.interface.ts`, `plugins/proposals/src/lib/contracts/constants/incident-taxonomy.ts`
 - **Gate**: type
 - acceptance:
@@ -39,7 +39,7 @@ f00158 lleva los errores a GitHub issues y su triage genera propuestas desde ah�
   - "Sin dependencias de fs ni red: puro y testeable."
 
 ### S2 — Generador de borradores con dedupe por firma
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/proposals/src/lib/services/incident-proposal.service.ts`
 - **Gate**: type
 - acceptance:
@@ -48,7 +48,7 @@ f00158 lleva los errores a GitHub issues y su triage genera propuestas desde ah�
   - "El borrador se genera desde el cluster redactado, nunca desde args/result reales."
 
 ### S3 — Tool incidente→propuesta + wiring en el plugin proposals
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/proposals/src/lib/tools/incident-proposal.tool.ts`, `plugins/proposals/src/index.ts`
 - **Gate**: type
 - acceptance:
