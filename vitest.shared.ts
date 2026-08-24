@@ -92,6 +92,7 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 	const issues = resolve(workspaceRoot, 'plugins/issues/src');
 	const cache = resolve(workspaceRoot, 'plugins/cache/src');
 	const changelog = resolve(workspaceRoot, 'plugins/changelog/src');
+	const completion = resolve(workspaceRoot, 'plugins/completion/src');
 	const errorReporting = resolve(
 		workspaceRoot,
 		'plugins/error-reporting/src',
@@ -600,6 +601,18 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 		{
 			find: '@mcp-vertex/changelog',
 			replacement: resolve(changelog, 'index.ts'),
+		},
+		{
+			find: '@mcp-vertex/completion/public',
+			replacement: resolve(completion, 'public/index.ts'),
+		},
+		{
+			find: /^@mcp-vertex\/completion\/lib\/(.*)$/,
+			replacement: `${resolve(completion, 'lib')}/$1`,
+		},
+		{
+			find: '@mcp-vertex/completion',
+			replacement: resolve(completion, 'index.ts'),
 		},
 		{
 			find: '@mcp-vertex/error-reporting/public',

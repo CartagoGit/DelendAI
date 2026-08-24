@@ -77,6 +77,9 @@
 				"heartbeatMs": 30000
 			}
 		},
+		"completion": {
+			"options": {}
+		},
 		"logs": {
 			"options": {
 				"retentionCount": 10

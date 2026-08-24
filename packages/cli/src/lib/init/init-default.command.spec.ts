@@ -171,6 +171,7 @@ describe('init:default (f00103)', () => {
 			'diagram',
 			'docs',
 			'env',
+			'error-reporting',
 			'forge',
 			'git',
 			'i18n',
@@ -204,8 +205,9 @@ describe('init:default (f00103)', () => {
 		]) {
 			expect(config.plugins[phantom]).toBeUndefined();
 		}
-		// Exactly 28 vertex plugins rendered, no extras added.
-		expect(Object.keys(config.plugins).length).toBe(28);
+		// Exactly 29 vertex plugins rendered (f00158 added error-reporting),
+		// no extras added.
+		expect(Object.keys(config.plugins).length).toBe(29);
 	});
 
 	it('writes the bundle to disk when --dry-run is absent', async () => {

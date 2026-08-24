@@ -69,7 +69,10 @@ const BUDGET_BYTES = {
 	// `create_plugin` core tool (scaffold + wire + doctor). Full measured
 	// 9792B, compact measured 1256B — both well under their promised
 	// ceilings. The compact mode still saves 87% vs. full.
-	overviewFull: 10_500,
+	// Bumped 10 500 → 10 600 (2026-08-24): f00158 added the error-reporting
+	// plugin to the standard/vertex presets; its `report_status` tool +
+	// knowledge entry raised the full overview 10 500B → 10 545B measured.
+	overviewFull: 10_600,
 	overviewCompact: 1_500,
 	// Bumped 1300 → 1450 (2026-07-03): CORRECTNESS fix in the catalog's
 	// tool-entry construction. Core tools whose id has an underscore
@@ -128,8 +131,11 @@ const BUDGET_BYTES = {
 	// Bumped 5 500 → 5 600 (2026-07-27): auto-plugin-selector (f00142 S1)
 	// added `plugins_recommend` to standard preset, raising overview compact
 	// 5 396B → ~5 510B measured.
+	// Bumped 5 600 → 6 100 (2026-08-24): f00158 added the error-reporting
+	// plugin to standard (⊂ swarm); its report_status tool + knowledge
+	// entry raised swarm overview compact ~5 510B → 6 077B measured.
 	swarmToolsList: 190_000,
-	swarmOverviewCompact: 5_600,
+	swarmOverviewCompact: 6_100,
 	swarmRoundContext: 300,
 	// `lean` was 58 003B against the same fixture, a 63% reduction from swarm.
 	// Bumped 65 000 → 69 000 (2026-07-27): env plugin (f00135) S3 added the `env`
