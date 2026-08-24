@@ -2,7 +2,7 @@
 id: f00167
 title: "quality_policy: interfaz unificada de políticas de calidad"
 kind: feat
-status: ready
+status: review
 type: proposal
 track: product
 date: 2026-08-24
@@ -45,7 +45,7 @@ Cinco plugins solapan parcialmente su dominio de "qué reglas aplicar". Una inte
 - global_gate: type
 
 ### S1 — Plugin quality-policy (interfaz unificada)
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/quality-policy/src/lib/tools/quality-policy.tool.ts`
 - **Gate**: type
 - acceptance:
@@ -53,7 +53,7 @@ Cinco plugins solapan parcialmente su dominio de "qué reglas aplicar". Una inte
   - "Delega internamente a quality/rules/test-policy/test-convention/conventions."
 
 ### S2 — Wiring del plugin
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/quality-policy/src/index.ts`
 - **Gate**: type
 - acceptance:
