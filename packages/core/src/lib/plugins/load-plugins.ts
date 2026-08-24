@@ -4,10 +4,7 @@ import type {
 	IMcpPluginRegistrations,
 } from './plugin-contract';
 import type { IPluginRegisterErrorInfo } from '../contracts/interfaces/plugin-lifecycle-error.interface';
-import {
-	checkPluginDependencies,
-	formatMissingDependenciesError,
-} from './load-plugins-deps.helper';
+import { registerResolvedPluginsWithLifecycle } from './load-plugins-lifecycle.helper';
 import { resolve as resolvePath } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
@@ -196,22 +193,16 @@ interface IResolvedPlugin {
  * server still boots with whatever loaded. Deterministic: plugins are
  * processed in the order requested.
  *
- * Two-phase by design (a00065 S6):
+ * Three-phase by design (a00065 S6, x00218):
  *  1. **Resolve** — import, dedup, and validate options for every
  *     specifier WITHOUT calling `register()`. No plugin side effects
  *     run yet.
- *  2. **Dependency gate** — `checkPluginDependencies` runs over the
- *     RESOLVED set. If any plugin declares a `dependsOn` not satisfied
- *     by the rest of the set, the WHOLE batch is refused: `loaded`
- *     comes back empty and a single combined error lists every missing
- *     dependency. Because this runs *before* phase 3, a plugin with an
- *     unmet hard dependency never executes its `register()` side
- *     effects (timers, sockets, file writes) — the previous order ran
- *     every register() first and only rejected afterwards, leaking
- *     those effects.
- *  3. **Register** — only once dependencies are satisfied, call each
- *     resolved plugin's `register()` in request order. A register()
- *     that throws is collected in `errors` without aborting the rest.
+ *  2. **Dependency graph** — build the DAG from the resolved set,
+ *     detect cycles before side effects, and mark nodes blocked when a
+ *     hard dependency is missing.
+ *  3. **Register** — register in topological order. A plugin whose
+ *     dependency failed or is blocked never runs `register()`; it is
+ *     marked blocked and reported through `errors` + `registerErrors`.
  */
 export const loadPlugins = async (
 	options: ILoadPluginsOptions,
@@ -219,7 +210,6 @@ export const loadPlugins = async (
 	const importer = options.import;
 	const timeoutMs = options.timeoutMs ?? 15_000;
 	const errors: Array<{ specifier: string; message: string }> = [];
-	const registerErrors: IPluginRegisterErrorInfo[] = [];
 	const resolvedPlugins: IResolvedPlugin[] = [];
 	const resolvedNames = new Set<string>();
 	const seenSpecifiers = new Set<string>();
@@ -323,61 +313,15 @@ export const loadPlugins = async (
 		resolvedNames.add(plugin.name);
 	}
 
-	// ── Phase 2: dependency gate — refuse the whole batch BEFORE any
-	//    register() runs if a hard dependency is unmet. ──
-	const missingDependencies = checkPluginDependencies(resolvedPlugins);
-	if (missingDependencies.length > 0) {
-		for (const missing of missingDependencies) {
-			const resolved = resolvedPlugins.find(
-				(entry) => entry.plugin.name === missing.plugin,
-			);
-			registerErrors.push({
-				pluginName: missing.plugin,
-				resolvedSpecifier: resolved?.resolved ?? missing.plugin,
-				phase: 'dependency',
-				error: new Error(
-					`plugin "${missing.plugin}" requires ${missing.missing.join(', ')}`,
-				),
-				missingDependencies: missing.missing,
-			});
-		}
-		return {
-			loaded: [],
-			errors: [
-				...errors,
-				{
-					specifier: '(dependsOn)',
-					message:
-						formatMissingDependenciesError(missingDependencies),
-				},
-			],
-			registerErrors,
-		};
-	}
+	const lifecycle = await registerResolvedPluginsWithLifecycle({
+		resolvedPlugins,
+		timeoutMs,
+		withTimeout,
+	});
 
-	// ── Phase 3: register (side effects) — dependencies are satisfied. ──
-	const loaded: ILoadedPlugin[] = [];
-	for (const { specifier, resolved, plugin, ctx } of resolvedPlugins) {
-		try {
-			const registrations = await withTimeout(
-				Promise.resolve(plugin.register(ctx)),
-				timeoutMs,
-				`plugin "${plugin.name}" register()`,
-			);
-			loaded.push({ specifier, resolved, plugin, registrations });
-		} catch (error) {
-			registerErrors.push({
-				pluginName: plugin.name,
-				resolvedSpecifier: resolved,
-				phase: 'register',
-				error,
-			});
-			errors.push({
-				specifier,
-				message: `plugin "${plugin.name}" register() failed: ${error instanceof Error ? error.message : String(error)}`,
-			});
-		}
-	}
-
-	return { loaded, errors, registerErrors };
+	return {
+		loaded: lifecycle.loaded,
+		errors: [...errors, ...lifecycle.errors],
+		registerErrors: lifecycle.registerErrors,
+	};
 };
