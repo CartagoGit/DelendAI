@@ -9,12 +9,22 @@ export { default } from '../index';
 
 export {
 	OptionsSchema,
+	DEFAULT_BACKOFF_BASE_MS,
+	DEFAULT_BACKOFF_JITTER_RATIO,
+	DEFAULT_BACKOFF_MAX_MS,
+	DEFAULT_CIRCUIT_BREAKER_THRESHOLD,
 	DEFAULT_LABELS,
+	DEFAULT_MAX_ISSUES_PER_DAY,
 	DEFAULT_TARGET_REPO,
 	DEFAULT_DEDUPE_WINDOW_HOURS,
 	resolveOptions,
 } from '../lib/contracts/constants/options.constant';
 export type { IErrorReportingOptions } from '../lib/contracts/interfaces/options.interface';
+export { SAFE_REPORTER_FAILURE_CODES } from '../lib/contracts/constants/safe-reporter-failure-codes.constant';
+export type {
+	SafeReporterFailureCode,
+	SafeReporterTransportFailureCode,
+} from '../lib/contracts/constants/safe-reporter-failure-codes.constant';
 
 export {
 	classifyInternalError,
@@ -52,6 +62,7 @@ export {
 	shouldReport,
 	ghIssueExec,
 } from '../lib/reporter.service';
+export { createReportScheduler } from '../lib/report-scheduler.helper';
 export { buildSyntheticExample } from '../lib/synthetic-example.builder';
 export {
 	SYNTHETIC_FIXTURES,
@@ -66,10 +77,17 @@ export type {
 	ISafeReporterConfig,
 	ISafeSyntheticExample,
 	IssueClassification,
+	ISubmitIssueFailureOutcome,
+	ISubmitIssueOutcome,
+	ISubmitIssueSuccessOutcome,
 	SafeFailureClass,
 	SafeScalar,
-	ISubmitIssueOutcome,
 } from '../lib/contracts/interfaces/reporter.interface';
+export type {
+	IReportFailureState,
+	IReportScheduleDecision,
+	IReportSchedulerClock,
+} from '../lib/contracts/interfaces/report-scheduler.interface';
 export {
 	ISSUE_CLASSIFICATIONS,
 	McpVertexInternalError,
@@ -80,7 +98,9 @@ export type { ISafeMcpFrame } from '../lib/contracts/interfaces/safe-frame.inter
 
 export { createReportStore } from '../lib/report-store.service';
 export type {
+	IReportAttemptInput,
+	IReportFailureInput,
 	IReportRecord,
-	IReportRecordInput,
 	IReportStore,
+	IReportSuccessInput,
 } from '../lib/contracts/interfaces/report-store.interface';

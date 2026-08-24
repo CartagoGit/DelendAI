@@ -24,6 +24,16 @@ export const OptionsSchema = z.object({
 	internalOnly: z.boolean().optional(),
 	/** De-duplication window in hours. Defaults to one day. */
 	dedupeWindowHours: z.number().int().positive().optional(),
+	/** Max new issues a single installation may create per UTC day. */
+	maxIssuesPerDay: z.number().int().positive().optional(),
+	/** Consecutive failed dispatches before opening the circuit breaker. */
+	circuitBreakerThreshold: z.number().int().positive().optional(),
+	/** Base delay for exponential backoff after a failed dispatch. */
+	backoffBaseMs: z.number().int().positive().optional(),
+	/** Upper bound for exponential backoff delays. */
+	backoffMaxMs: z.number().int().positive().optional(),
+	/** Jitter ratio applied on top of computed backoff delays. */
+	backoffJitterRatio: z.number().min(0).max(1).optional(),
 });
 
 export const DEFAULT_TARGET_REPO = 'CartagoGit/mcp-vertex';
@@ -31,6 +41,16 @@ export const DEFAULT_TARGET_REPO = 'CartagoGit/mcp-vertex';
 export const DEFAULT_LABELS: readonly string[] = ['auto-reported', 'bug'];
 
 export const DEFAULT_DEDUPE_WINDOW_HOURS = 24;
+
+export const DEFAULT_MAX_ISSUES_PER_DAY = 10;
+
+export const DEFAULT_CIRCUIT_BREAKER_THRESHOLD = 3;
+
+export const DEFAULT_BACKOFF_BASE_MS = 60_000;
+
+export const DEFAULT_BACKOFF_MAX_MS = 3_600_000;
+
+export const DEFAULT_BACKOFF_JITTER_RATIO = 0.2;
 
 export const resolveOptions = (
 	raw: Readonly<Record<string, unknown>>,
@@ -54,5 +74,12 @@ export const resolveOptions = (
 		internalOnly: data.internalOnly ?? true,
 		dedupeWindowHours:
 			data.dedupeWindowHours ?? DEFAULT_DEDUPE_WINDOW_HOURS,
+		maxIssuesPerDay: data.maxIssuesPerDay ?? DEFAULT_MAX_ISSUES_PER_DAY,
+		circuitBreakerThreshold:
+			data.circuitBreakerThreshold ?? DEFAULT_CIRCUIT_BREAKER_THRESHOLD,
+		backoffBaseMs: data.backoffBaseMs ?? DEFAULT_BACKOFF_BASE_MS,
+		backoffMaxMs: data.backoffMaxMs ?? DEFAULT_BACKOFF_MAX_MS,
+		backoffJitterRatio:
+			data.backoffJitterRatio ?? DEFAULT_BACKOFF_JITTER_RATIO,
 	};
 };
