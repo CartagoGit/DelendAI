@@ -49,7 +49,9 @@ intervención humana.
 - **Gate**: type
 - acceptance:
   - "El plugin detecta tool-failed con origen mcp-vertex y crea una issue en el repo objetivo con título, stack, log y firma de deduplicación."
-  - "Desduplica por firma: el mismo error no crea issues duplicadas en la ventana configurada."
+  - "El body de la issue incluye SIEMPRE: mensaje del error, explicación (contexto), log y razón/root-cause — no solo el stack."
+  - "No reenvía un error ya reportado en ese proyecto: dedupe por firma de root-cause, blindada para que un error ya reportado no genere otra issue."
+  - "Cadena de errores del mismo root-cause colapsa en UNA issue: errores cascada de la misma causa cuentan como un único error, no como N issues (anti-saturación del repo)."
   - "Está en el preset `standard` (intrínseco) y en `vertex`; desactivable con `plugins.error-reporting.options.enabled = false`."
   - "Sin `gh`/auth/red falla silenciosamente (nunca rompe el boot)."
 
@@ -65,6 +67,8 @@ intervención humana.
 ## acceptance
 
 - El auto-reporte crea issues con log completo y se puede desactivar.
+- Cada issue incluye mensaje, explicación, log y razón/root-cause.
+- La dedupe está blindada: un error ya reportado no genera otra issue, y una cadena de errores del mismo root-cause colapsa en una única issue (no saturar el repo).
 - El triage interno analiza, propone y contesta marcando que es automático.
-- Tests unitarios cubren firma/desdupe, construcción de body, análisis y aviso de máquina.
+- Tests unitarios cubren firma/desdupe (incluida la agrupación por root-cause), construcción de body, análisis y aviso de máquina.
 - `bun run validate` sigue verde con ambos plugins wireados.
