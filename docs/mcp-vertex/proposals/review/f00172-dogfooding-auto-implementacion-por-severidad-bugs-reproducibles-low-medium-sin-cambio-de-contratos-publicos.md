@@ -2,7 +2,7 @@
 id: f00172
 title: "dogfooding: auto-implementación por severidad (bugs reproducibles low/medium sin cambio de contratos públicos)"
 kind: feat
-status: ready
+status: review
 type: proposal
 track: dogfooding
 date: 2026-08-24
@@ -30,7 +30,7 @@ La conversación pide exactamente: "Corrige automáticamente únicamente bugs re
 - global_gate: type
 
 ### S1 — Política de severidad/contrato (guard puro)
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/proposals/src/lib/services/auto-fix-policy.ts`
 - **Gate**: type
 - acceptance:
@@ -39,7 +39,7 @@ La conversación pide exactamente: "Corrige automáticamente únicamente bugs re
   - "Cubierto con tests unitarios para cada rama de decisión."
 
 ### S2 — Cola auto-fixable + generación de propuesta (reutiliza auto_work)
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/proposals/src/lib/tools/auto-fix-queue.tool.ts`, `plugins/proposals/src/index.ts`
 - **Gate**: type
 - acceptance:
