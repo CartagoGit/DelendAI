@@ -41,7 +41,7 @@ La conversación señala como problema principal que adoptar Vertex en un repo m
 
 ### S2 — Builder del assessment (recomendación por plugin, coste y conflictos)
 - **Status**: done
-- **Files**: `packages/core/src/lib/adopt/adoption-assessment.ts`, `packages/core/src/lib/contracts/interfaces/adoption-assessment.interface.ts`
+- **Files**: `packages/core/src/lib/adopt/adoption-assessment.service.ts`, `packages/core/src/lib/contracts/interfaces/adoption-assessment.interface.ts`
 - **Gate**: type
 - acceptance:
   - "buildAdoptionAssessment es una función pura: análisis + topLevelDirs → matriz recommended/not-recommended por plugin con rationale de una línea."
@@ -50,7 +50,7 @@ La conversación señala como problema principal que adoptar Vertex en un repo m
 
 ### S3 — Wiring: adopt_project (modo analyze) + CLI mcpv adopt --analyze
 - **Status**: done
-- **Files**: `packages/core/src/lib/adopt/adopt-project.tool.ts`, `packages/core/src/public/index.ts`, `packages/cli/src/commands/init/init.command.ts`
+- **Files**: `packages/core/src/lib/adopt/adopt-project.tool.ts`, `packages/core/src/public/index.ts`, `packages/cli/src/commands/groups/core.ts`
 - **Gate**: type
 - acceptance:
   - "adopt_project devuelve el campo assessment (o un modo analyze) sin escribir."
