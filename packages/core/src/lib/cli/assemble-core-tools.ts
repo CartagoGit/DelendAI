@@ -417,6 +417,9 @@ export const assembleCoreTools = (
 		// pairs with plugin_add so the agent can discover first.
 		buildPluginSearchRegistration({
 			namespacePrefix: corePrefix,
+			...(fileConfig.pluginRegistry?.communitySources !== undefined
+				? { sources: fileConfig.pluginRegistry.communitySources }
+				: {}),
 		}),
 		// f00117 S2: the server-side self-init — any MCP client can derive
 		// (and, with write:true, persist) mcp-vertex.config.json without

@@ -245,4 +245,23 @@ describe('runCreatePlugin (f00120 S4)', () => {
 		expect(fs.writes).toEqual([]);
 		expect(fs.files.has('plugins/dry-run-demo/package.json')).toBe(false);
 	});
+
+	it('uses the default synthetic catalog tool id during dry-run previews', async () => {
+		const fs = createMemoryFs(buildSeed());
+		const report = await runCreatePlugin(
+			{
+				name: 'catalog-demo',
+				description: 'Catalog demo.',
+				dryRun: true,
+			},
+			{
+				workspace: buildWorkspace(),
+				fs,
+				batchWriter: createBatchWriter(fs),
+			},
+		);
+
+		expect(report.ok).toBe(true);
+		expect(fs.writes).toEqual([]);
+	});
 });

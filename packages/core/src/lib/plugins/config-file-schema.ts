@@ -21,6 +21,7 @@
  */
 import z from 'zod';
 import { COMMIT_AUTHOR_MODES } from '../contracts/interfaces/commit-author.interface';
+import { PERMISSION_CATEGORIES } from '../contracts/constants/permission-categories.constant';
 import { CAPABILITY_TAGS } from '../contracts/interfaces/provider-capabilities.interface';
 
 /** Kebab-case provider id: `claude-sonnet`, `gpt-5-codex`, … */
@@ -100,6 +101,27 @@ const PROVIDER_ENTRY_SCHEMA = z
 		]),
 		strengths: z.array(z.enum(CAPABILITY_TAGS)),
 		weaknesses: z.array(z.enum(CAPABILITY_TAGS)),
+	})
+	.strict();
+
+const PLUGIN_REGISTRY_ENTRY_SCHEMA = z
+	.object({
+		id: z.string(),
+		package: z.string(),
+		summary: z.string(),
+		tags: z.array(z.string()),
+		origin: z.enum(['first-party', 'community']),
+		permissions: z.array(z.enum(PERMISSION_CATEGORIES)).optional(),
+		defaultPreset: z
+			.enum(['minimal', 'lean', 'standard', 'swarm', 'full', 'vertex'])
+			.optional(),
+	})
+	.strict();
+
+const PLUGIN_REGISTRY_SOURCE_SCHEMA = z
+	.object({
+		origin: z.literal('community'),
+		entries: z.array(PLUGIN_REGISTRY_ENTRY_SCHEMA),
 	})
 	.strict();
 
@@ -184,6 +206,14 @@ export const CONFIG_FILE_SCHEMA = z
 					path: z.string().optional(),
 				}),
 			)
+			.optional(),
+		pluginRegistry: z
+			.object({
+				communitySources: z
+					.array(PLUGIN_REGISTRY_SOURCE_SCHEMA)
+					.optional(),
+			})
+			.strict()
 			.optional(),
 		// f00067a S1 — root-level provider roster for the multi-model
 		// orchestrator (wiki/07). Optional + additive: a config without

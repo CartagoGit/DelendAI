@@ -18,6 +18,7 @@
  */
 import type {
 	IPluginRegistryEntry,
+	IPluginRegistrySource,
 	IResolvePluginsOptions,
 	IResolvePluginsResult,
 } from '../contracts/interfaces/plugin-registry.interface';
@@ -66,13 +67,22 @@ const rankEntries = (
 	return a.id.localeCompare(b.id);
 };
 
+const resolveSources = (
+	sources: readonly IPluginRegistrySource[] | undefined,
+): readonly IPluginRegistrySource[] => {
+	if (sources === undefined || sources.length === 0) {
+		return [FIRST_PARTY_PLUGIN_INDEX];
+	}
+	if (sources.some((source) => source.origin === 'first-party')) {
+		return sources;
+	}
+	return [FIRST_PARTY_PLUGIN_INDEX, ...sources];
+};
+
 export const resolvePlugins = (
 	options: IResolvePluginsOptions = {},
 ): IResolvePluginsResult => {
-	const sources =
-		options.sources !== undefined && options.sources.length > 0
-			? options.sources
-			: [FIRST_PARTY_PLUGIN_INDEX];
+	const sources = resolveSources(options.sources);
 	const all = sources.flatMap((source) => source.entries);
 	const filtered = all.filter(
 		(entry) =>

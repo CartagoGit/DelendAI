@@ -69,7 +69,6 @@ export const CREATE_PLUGIN_INPUT_SCHEMA = z.object({
 		})
 		.describe('Plugin name or id; normalized to kebab-case.'),
 	description: z.string().trim().min(1),
-	sampleToolId: z.string().trim().min(1).optional(),
 	dryRun: z.boolean().optional(),
 });
 
@@ -100,9 +99,10 @@ export interface IRegenerateCatalogArgs {
 	readonly pluginId: string;
 	readonly fs: IPluginWiringFs;
 	readonly workspaceRoot: string;
-	readonly sampleToolId: string;
 	readonly dryRun: boolean;
 }
+
+const SYNTHETIC_CATALOG_TOOL_ID = 'sample-tool';
 
 const normalizeWired = (
 	wired: readonly {
@@ -192,7 +192,6 @@ const createOverlayFs = (baseFs: IPluginWiringFs): IPluginWiringFs => {
 const appendSyntheticCatalogEntry = async ({
 	pluginId,
 	fs,
-	sampleToolId,
 }: IRegenerateCatalogArgs): Promise<void> => {
 	const path = 'docs/mcp-vertex/agent-catalog.generated.json';
 	const parsed = JSON.parse(await fs.readFile(path)) as {
@@ -202,7 +201,7 @@ const appendSyntheticCatalogEntry = async ({
 	const tools = Array.isArray(parsed.tools) ? parsed.tools : [];
 	if (!tools.some((tool) => tool.plugin === pluginId)) {
 		tools.push({
-			name: `${pluginId}_${sampleToolId.replace(/-/gu, '_')}`,
+			name: `${pluginId}_${SYNTHETIC_CATALOG_TOOL_ID.replace(/-/gu, '_')}`,
 			plugin: pluginId,
 		});
 	}
@@ -276,7 +275,6 @@ export const runCreatePlugin = async (
 	}
 
 	const dryRun = args.dryRun ?? false;
-	const sampleToolId = args.sampleToolId ?? 'sample-tool';
 	const scaffoldedFiles = scaffoldPluginFiles({
 		pluginName: pluginId,
 		description: args.description,
@@ -300,7 +298,6 @@ export const runCreatePlugin = async (
 			pluginId,
 			fs: previewFs,
 			workspaceRoot: options.workspace.root,
-			sampleToolId,
 			dryRun: true,
 		});
 		const doctor = await diagnosePluginWiring(pluginId, previewFs);
@@ -343,7 +340,6 @@ export const runCreatePlugin = async (
 		pluginId,
 		fs,
 		workspaceRoot: options.workspace.root,
-		sampleToolId,
 		dryRun: false,
 	});
 	const doctor = await diagnosePluginWiring(pluginId, fs);
