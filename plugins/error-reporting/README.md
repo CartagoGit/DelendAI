@@ -3,10 +3,9 @@
 Automatic, intrinsic error reporting for [`@mcp-vertex/core`](../../packages/core).
 
 When a tool call fails and the failure **originates inside mcp-vertex itself**
-(the stack/message carries an `mcp-vertex` / `@mcp-vertex` / `packages/core` /
-`plugins/` marker), the plugin opens a detailed GitHub issue on the target
-repository — so every adopter is a live sensor for mcp-vertex bugs, and
-incidents get fixed "almost without noticing".
+(typed internal error or an `@mcp-vertex/*` frame is present), the plugin
+opens a de-duplicated GitHub issue on the target repository using a safe DTO
+built only from MCP Vertex-owned metadata.
 
 ## Status
 
@@ -19,18 +18,23 @@ incidents get fixed "almost without noticing".
   config needed.
 - **Internal-only by default.** Only mcp-vertex-internal failures are
   reported. A host project's own errors are never sent upstream.
-- **De-duplicated.** A stable signature (tool + normalized message) means the
-  same bug opens one issue per window (default 24h), not one per sighting.
+- **Privacy by construction.** Raw error messages, raw stack traces, tool
+  args, cwd, workspace paths, repo metadata and host-specific strings are not
+  part of the public report contract.
+- **De-duplicated.** A stable fingerprint derived from package, code and safe
+  internal frames means the same bug opens one issue per window (default 24h),
+  not one per sighting.
 - **Non-blocking.** The report is fire-and-forget and fully guarded. Without
   `gh`, without auth, or offline, the report is silently dropped and the
   server keeps running.
 
 Each auto-created issue carries:
 
-- the failing tool and namespace,
-- the error message and full stack trace,
-- the (secret-redacted) tool arguments,
-- a de-duplication signature,
+- the failing tool id and package id,
+- the safe failure class and classification,
+- only `@mcp-vertex/*` normalized frames,
+- a de-duplication fingerprint,
+- an optional synthetic example built from safe internal context,
 - instructions to disable the feature.
 
 ## Disable it
@@ -60,6 +64,6 @@ Inspect the current state with the `<prefix>_report_status` tool.
 - The plugin observes tool-call failures through the same lifecycle hook the
   `logs` plugin uses (`onToolCall` with an `error` argument). No polling, no
   separate process.
-- The network seam (`submitIssue`) is injectable; production uses the shared
-  `runExternalTool` runner wrapping the host's authenticated `gh` CLI — the
-  plugin never stores or prompts for a PAT.
+- The network seam accepts only `ISafeMcpVertexReport`; production uses the
+  shared `runExternalTool` runner wrapping the host's authenticated `gh` CLI —
+  the plugin never stores or prompts for a PAT.

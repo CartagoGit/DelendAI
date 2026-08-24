@@ -3,10 +3,12 @@ import { describe, expect, it } from 'vitest';
 import {
 	buildIssueBody,
 	buildIssueTitle,
+	classificationOf,
 	isMcpVertexInternal,
-	normalizeMessage,
+	safeFailureClassOf,
 	signatureOf,
 } from '../src/lib/signature.helper';
+import { McpVertexInternalError } from '../src/lib/contracts/interfaces/reporter.interface';
 
 describe('isMcpVertexInternal', () => {
 	it('detects a stack trace originating inside mcp-vertex', () => {
@@ -19,11 +21,12 @@ describe('isMcpVertexInternal', () => {
 	});
 
 	it('detects the package scope in the message alone', () => {
-		expect(
-			isMcpVertexInternal(
-				new Error('plugin "@mcp-vertex/issues" failed to load'),
-			),
-		).toBe(true);
+		const error = new McpVertexInternalError({
+			code: 'PLUGIN_LOAD_FAILED',
+			packageId: '@mcp-vertex/issues',
+			componentId: 'loader',
+		});
+		expect(isMcpVertexInternal(error)).toBe(true);
 	});
 
 	it('ignores host-project failures with no mcp-vertex marker', () => {
@@ -36,57 +39,111 @@ describe('isMcpVertexInternal', () => {
 	});
 });
 
-describe('normalizeMessage / signatureOf', () => {
-	it('collapses numbers, hex and paths into stable placeholders', () => {
-		const a = normalizeMessage(
-			'port 5432 refused at 0xdeadbeef in /home/alice/proj',
-		);
-		const b = normalizeMessage(
-			'port 9999 refused at 0x1234abcd in /srv/bob/proj',
-		);
+describe('safeFailureClassOf / classificationOf / signatureOf', () => {
+	it('classifies typed timeout errors as performance', () => {
+		const error = new McpVertexInternalError({
+			code: 'PLUGIN_REGISTER_TIMEOUT',
+			packageId: '@mcp-vertex/error-reporting',
+			componentId: 'register',
+		});
+		expect(safeFailureClassOf(error)).toBe('INTERNAL_TIMEOUT');
+		expect(
+			classificationOf({
+				toolId: 'quality_run_quality',
+				errorCode: error.code,
+				failureClass: safeFailureClassOf(error),
+			}),
+		).toBe('PERFORMANCE');
+	});
+
+	it('produces the same signature when raw host data changes but safe data stays the same', () => {
+		const a = signatureOf({
+			packageId: '@mcp-vertex/error-reporting',
+			toolId: 'quality_run_quality',
+			errorCode: 'PLUGIN_REGISTER_TIMEOUT',
+			failureClass: 'INTERNAL_TIMEOUT',
+			classification: 'PERFORMANCE',
+			mcpFrames: [
+				{
+					file: '@mcp-vertex/error-reporting/src/index.ts',
+					line: 10,
+					col: 2,
+				},
+			],
+		});
+		const b = signatureOf({
+			packageId: '@mcp-vertex/error-reporting',
+			toolId: 'quality_run_quality',
+			errorCode: 'PLUGIN_REGISTER_TIMEOUT',
+			failureClass: 'INTERNAL_TIMEOUT',
+			classification: 'PERFORMANCE',
+			mcpFrames: [
+				{
+					file: '@mcp-vertex/error-reporting/src/index.ts',
+					line: 999,
+					col: 9,
+				},
+			],
+		});
 		expect(a).toBe(b);
 	});
 
-	it('produces the same signature for the same bug with different timestamps', () => {
-		const e1 = new Error('timeout after 1200ms in /a/b');
-		const e2 = new Error('timeout after 3ms in /x/y/z');
-		expect(signatureOf('quality_run_quality', e1)).toBe(
-			signatureOf('quality_run_quality', e2),
-		);
-	});
-
-	it('differs across tools', () => {
-		const error = new Error('boom');
-		expect(signatureOf('search_search', error)).not.toBe(
-			signatureOf('git_diff', error),
-		);
+	it('differs across safe package identities', () => {
+		const left = signatureOf({
+			packageId: '@mcp-vertex/error-reporting',
+			toolId: 'search_search',
+			failureClass: 'INTERNAL_RUNTIME_ERROR',
+			classification: 'BUG',
+			mcpFrames: [{ file: '@mcp-vertex/error-reporting/src/index.ts' }],
+		});
+		const right = signatureOf({
+			packageId: '@mcp-vertex/core',
+			toolId: 'search_search',
+			failureClass: 'INTERNAL_RUNTIME_ERROR',
+			classification: 'BUG',
+			mcpFrames: [{ file: '@mcp-vertex/core/src/index.ts' }],
+		});
+		expect(left).not.toBe(right);
 	});
 });
 
 describe('buildIssueTitle / buildIssueBody', () => {
+	const report = {
+		reporterVersion: '0.1.0',
+		mcpVertexVersion: '0.1.0',
+		packageId: '@mcp-vertex/error-reporting',
+		toolId: 'tool_x',
+		errorCode: 'PLUGIN_REGISTER_TIMEOUT',
+		failureClass: 'INTERNAL_TIMEOUT',
+		classification: 'PERFORMANCE',
+		fingerprint: 'abc123',
+		mcpFrames: [
+			{
+				file: '@mcp-vertex/error-reporting/src/index.ts',
+				line: 1,
+				col: 2,
+			},
+		],
+		syntheticExample: {
+			summary:
+				'Synthetic diagnostic context built from MCP Vertex-only metadata.',
+		},
+	} as const;
+
 	it('prefixes the title and bounds its length', () => {
-		const long = new Error(`x${'y'.repeat(300)}`);
-		const title = buildIssueTitle('tool_x', long);
-		expect(title.startsWith('[auto] tool_x:')).toBe(true);
+		const title = buildIssueTitle(report);
+		expect(
+			title.startsWith('[auto] PERFORMANCE @mcp-vertex/error-reporting:'),
+		).toBe(true);
 		expect(title.length).toBeLessThanOrEqual(180);
 	});
 
-	it('renders detail, stack and opt-out instructions', () => {
-		const error = new Error('boom');
-		error.stack = 'Error: boom\n    at x.ts:1';
-		const body = buildIssueBody({
-			toolName: 'tool_x',
-			error,
-			signature: 'tool_x::boom',
-			argsJson: '{"a":1}',
-			elapsedMs: 42,
-			ts: '2026-08-24T00:00:00.000Z',
-			namespacePrefix: 'mcp-vertex',
-		});
+	it('renders safe DTO detail and opt-out instructions', () => {
+		const body = buildIssueBody(report);
 		expect(body).toContain('Automatic error report');
-		expect(body).toContain('tool_x::boom');
-		expect(body).toContain('boom');
-		expect(body).toContain('Error: boom');
+		expect(body).toContain('PLUGIN_REGISTER_TIMEOUT');
+		expect(body).toContain('@mcp-vertex/error-reporting/src/index.ts:1:2');
+		expect(body).not.toContain('Error: boom');
 		expect(body).toContain('"enabled": false');
 	});
 });

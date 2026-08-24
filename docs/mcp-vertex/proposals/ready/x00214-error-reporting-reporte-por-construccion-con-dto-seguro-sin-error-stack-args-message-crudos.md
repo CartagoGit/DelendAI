@@ -46,7 +46,7 @@ Riesgo legal y de privacidad crítico (§1.1 de la auditoría): hoy los `args` p
 - global_gate: e2e
 
 ### S1 — DTO seguro y boundary del reporter
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/error-reporting/src/lib/contracts/interfaces/reporter.interface.ts`, `plugins/error-reporting/src/lib/reporter.service.ts`
 - **Gate**: e2e
 - acceptance:
@@ -55,7 +55,7 @@ Riesgo legal y de privacidad crítico (§1.1 de la auditoría): hoy los `args` p
   - "Existe McpVertexInternalError con code/packageId/componentId/safeContext tipado (SafeScalar)."
 
 ### S2 — Frame extractor + normalización package-relative
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/error-reporting/src/lib/frame-extractor.helper.ts`, `plugins/error-reporting/src/lib/contracts/interfaces/safe-frame.interface.ts`
 - **Gate**: type
 - acceptance:
@@ -64,7 +64,7 @@ Riesgo legal y de privacidad crítico (§1.1 de la auditoría): hoy los `args` p
   - "Nunca se conservan /Users/* /home/* C:\Users\* workspace root node_modules parent repo root."
 
 ### S3 — Privacy validator deny-by-default
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/error-reporting/src/lib/privacy-validator.helper.ts`
 - **Gate**: type
 - acceptance:
@@ -72,7 +72,7 @@ Riesgo legal y de privacidad crítico (§1.1 de la auditoría): hoy los `args` p
   - "Si el validator duda -> NO envía y registra localmente 'report blocked by privacy validator: <reason code>'."
 
 ### S4 — Wiring del pipeline de 18 pasos en el hook
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/error-reporting/src/index.ts`, `plugins/error-reporting/src/lib/signature.helper.ts`
 - **Gate**: e2e
 - acceptance:
