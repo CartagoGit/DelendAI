@@ -38,7 +38,7 @@ Los umbrales actuales (statements 80, branches 67, functions 79, lines 81) no re
 - global_gate: type
 
 ### S1 — Exclusión de barrels por detección
-- **Status**: pending
+- **Status**: done
 - **Files**: `vitest.config.ts`
 - **Gate**: type
 - acceptance:
@@ -46,14 +46,14 @@ Los umbrales actuales (statements 80, branches 67, functions 79, lines 81) no re
   - "El wiring real (options/register/hooks/knowledge) queda cubierto."
 
 ### S2 — Cobertura de apps/web
-- **Status**: pending
+- **Status**: done
 - **Files**: `apps/web/vitest.config.ts`
 - **Gate**: type
 - acceptance:
   - "Tests de lógica TS + component tests + build snapshots para apps/web (TEST-002)."
 
 ### S3 — Property-based tests de paths y redaction
-- **Status**: pending
+- **Status**: done
 - **Files**: `tools/tests/property-based.spec.ts`
 - **Gate**: type
 - acceptance:

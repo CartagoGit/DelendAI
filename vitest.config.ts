@@ -1,4 +1,61 @@
+import { readdirSync, readFileSync } from 'node:fs';
+import { dirname, join, relative } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'vitest/config';
+
+const workspaceRoot = dirname(fileURLToPath(import.meta.url));
+
+const COVERAGE_INDEX_ROOTS = [
+	'packages',
+	'plugins',
+	'apps/shared',
+	'extensions/vscode',
+	'tools/scripts/lib',
+] as const;
+
+const normalizeWorkspacePath = (pathValue: string): string =>
+	relative(workspaceRoot, pathValue).split('\\').join('/');
+
+const PURE_BARREL_STATEMENT =
+	/^(?:export\s+\*\s+from\s+['"][^'"]+['"]|export\s+(?:type\s+)?\{[\s\S]+\}\s+from\s+['"][^'"]+['"]|export\s+type\s+\{[\s\S]+\}|import\s+type\s+[\s\S]+\s+from\s+['"][^'"]+['"])$/;
+
+const listIndexFiles = (dir: string): string[] => {
+	const entries = readdirSync(dir, { withFileTypes: true });
+	const out: string[] = [];
+	for (const entry of entries) {
+		const entryPath = join(dir, entry.name);
+		if (entry.isDirectory()) {
+			out.push(...listIndexFiles(entryPath));
+			continue;
+		}
+		if (entry.isFile() && entry.name === 'index.ts') {
+			out.push(entryPath);
+		}
+	}
+	return out;
+};
+
+const isPureBarrelIndex = (filePath: string): boolean => {
+	const source = readFileSync(filePath, 'utf8')
+		.replace(/\/\*[\s\S]*?\*\//g, '')
+		.replace(/\/\/.*$/gm, '')
+		.trim();
+	if (source.length === 0) return false;
+	const statements = source
+		.split(';')
+		.map((statement) => statement.trim())
+		.filter((statement) => statement.length > 0);
+	return (
+		statements.length > 0 &&
+		statements.every((statement) => PURE_BARREL_STATEMENT.test(statement))
+	);
+};
+
+const pureBarrelCoverageExcludes = COVERAGE_INDEX_ROOTS.flatMap((root) =>
+	listIndexFiles(join(workspaceRoot, root))
+		.filter(isPureBarrelIndex)
+		.map(normalizeWorkspacePath),
+);
 
 export default defineConfig({
 	test: {
@@ -37,19 +94,26 @@ export default defineConfig({
 			// the VS Code extension and the tools/scripts library code
 			// participate too. Pure `*.script.ts` entrypoints stay out
 			// (process.exit orchestrators, exercised by the validate
-			// gates that run them for real); apps/web stays out until
-			// the v8 provider maps .astro sanely.
+			// gates that run them for real). t00006 brings `apps/web`
+			// in selectively: pure TS logic, data builders, controller
+			// helpers and generation scripts — not `.astro` pages nor the
+			// generated/i18n leaf catalogues with little behavioural value.
 			include: [
 				'packages/*/src/**/*.ts',
 				'plugins/*/src/**/*.ts',
 				'apps/shared/src/**/*.ts',
+				'apps/web/src/lib/**/*.ts',
+				'apps/web/src/data/**/*.ts',
+				'apps/web/src/components/ui/**/*.ts',
+				'apps/web/src/i18n/tools/index.ts',
+				'apps/web/scripts/**/*.ts',
 				'extensions/vscode/src/**/*.ts',
 				'tools/scripts/lib/**/*.ts',
 			],
 			exclude: [
 				'**/*.spec.ts',
 				'**/*.test.ts',
-				'**/index.ts',
+				...pureBarrelCoverageExcludes,
 				'**/*.script.ts',
 			],
 			reporter: ['text-summary'],
