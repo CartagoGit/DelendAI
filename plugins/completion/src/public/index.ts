@@ -13,11 +13,11 @@ export {
 	createCompletionStore,
 	recordFileName,
 	recordPath,
-} from '../lib/completion-store';
+} from '../lib/completion-store.service';
 export type {
 	ICompletionRecord,
 	ICompletionStore,
-} from '../lib/completion-store';
+} from '../lib/completion-store.service';
 
 export type { ICompletionToolOptions } from '../lib/tools/completion-tools';
 export {

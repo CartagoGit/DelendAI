@@ -7,8 +7,8 @@ import { redactSecrets, toolError, toolOk } from '@mcp-vertex/core/public';
 import {
 	createCompletionStore,
 	type ICompletionRecord,
-} from '../completion-store';
-import { safeSendLoggingMessage } from '../safe-logging';
+} from '../completion-store.service';
+import { safeSendLoggingMessage } from '../safe-logging.helper';
 
 export interface ICompletionToolOptions {
 	readonly namespacePrefix: string;
