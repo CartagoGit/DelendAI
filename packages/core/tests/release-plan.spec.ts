@@ -91,27 +91,29 @@ describe('PUBLISH_ORDER', async () => {
 	});
 
 	it('publishes every first-party plugin, covering every preset and documented plugin', async () => {
-		const plugins = (
+		const pluginDirs = (
 			await readdir(resolve(root, 'plugins'), {
 				withFileTypes: true,
 			})
 		)
 			.filter((entry) => entry.isDirectory())
-			.map((entry) => entry.name)
-			.filter(async (name) => {
-				// Internal-only plugins (`"private": true`, e.g.
-				// issues-triage) are intentionally absent from
-				// PUBLISH_ORDER — they never ship to npm.
+			.map((entry) => entry.name);
+		// Internal-only plugins (`"private": true`, e.g. issues-triage)
+		// are intentionally absent from PUBLISH_ORDER — they never ship
+		// to npm.
+		const plugins: string[] = [];
+		await Promise.all(
+			pluginDirs.map(async (name) => {
 				const manifest = JSON.parse(
 					await readFile(
 						resolve(root, 'plugins', name, 'package.json'),
 						'utf8',
 					),
 				) as { private?: boolean };
-				return manifest.private !== true;
-			})
-			.map((name) => `plugins/${name}`)
-			.sort();
+				if (manifest.private !== true) plugins.push(`plugins/${name}`);
+			}),
+		);
+		plugins.sort();
 		expect(
 			PUBLISH_ORDER.filter((dir) => dir.startsWith('plugins/')).sort(),
 		).toEqual(plugins);

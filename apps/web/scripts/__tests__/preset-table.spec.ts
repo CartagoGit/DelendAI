@@ -31,13 +31,14 @@ describe('preset-table', () => {
 			// First ids come from minimal (git, search)
 			expect(ids[0]).toBe('git');
 			expect(ids[1]).toBe('search');
-			// x00166: vertex now mirrors mcp-vertex.config.json exactly
-			// (28 members) — the last 8 unique columns are the ones only
-			// vertex introduces (not already seen from minimal/lean/
-			// standard/swarm/full): audit, auto-agent-selector,
-			// link-check, orchestrator-runner, perf, security,
-			// tech-debt, usage-tracking. 35 total columns.
-			expect(ids.length).toBe(35);
+			// x00166: vertex now mirrors mcp-vertex.config.json exactly —
+			// the last 8 unique columns are the ones only vertex
+			// introduces (not already seen from minimal/lean/standard/
+			// swarm/full): audit, auto-agent-selector, link-check,
+			// orchestrator-runner, perf, security, tech-debt,
+			// usage-tracking. 37 total columns (f00158 added
+			// error-reporting, completion added its own plugin).
+			expect(ids.length).toBe(37);
 			const tail = ids.slice(-8);
 			expect(new Set(tail)).toEqual(
 				new Set([
