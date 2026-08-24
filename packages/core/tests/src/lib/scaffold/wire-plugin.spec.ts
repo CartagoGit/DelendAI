@@ -92,9 +92,7 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 
 /** Realistic plugin-defaults.ts with one anchor. */
 const PLUGIN_DEFAULTS_SEED = `export const PLUGIN_DEFAULTS: Readonly<\n\tRecord<string, Readonly<Record<string, unknown>>>\n> = {
-\tproposals: {
-\t\tvalidationCommand: 'bun run validate',
-\t},
+	proposals: {},
 };
 `;
 

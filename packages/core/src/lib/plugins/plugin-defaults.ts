@@ -24,7 +24,7 @@ export const PLUGIN_DEFAULTS: Readonly<
 		maxNotes: 1000,
 	},
 	docs: {
-		roots: ['docs/mcp-vertex', 'README.md'],
+		roots: ['docs', 'README.md'],
 		extensions: ['md', 'mdx'],
 		ignoreDirs: ['node_modules', '.cache', 'dist'],
 	},
@@ -41,7 +41,6 @@ export const PLUGIN_DEFAULTS: Readonly<
 		allowWrite: false,
 	},
 	proposals: {
-		validationCommand: 'bun run validate',
 		namePool: ['falcon', 'owl', 'crow', 'sparrow', 'finch'],
 		orchestration: { delegateAfterToolCalls: 3 },
 	},
@@ -73,7 +72,7 @@ export const PLUGIN_DEFAULTS: Readonly<
 	'tech-debt': {},
 	'link-check': {},
 	issues: {
-		scaffoldDir: 'docs/mcp-vertex/proposals/retired/issues',
+		scaffoldDir: 'docs/proposals/retired/issues',
 	},
 	audit: {
 		auditDir: 'docs/proposals/done/audits',

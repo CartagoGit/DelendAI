@@ -17,10 +17,45 @@ export type IDetectedStackPack =
 	| 'security-hardened'
 	| 'unknown';
 
+export type IDetectedPackageManager =
+	| 'bun'
+	| 'pnpm'
+	| 'yarn'
+	| 'npm'
+	| 'unknown';
+
+export type IDetectedLanguage =
+	| 'typescript'
+	| 'javascript'
+	| 'python'
+	| 'go'
+	| 'rust'
+	| 'unknown';
+
+export type IDetectedTestRunner =
+	| 'vitest'
+	| 'jest'
+	| 'bun'
+	| 'node'
+	| 'pytest'
+	| 'cargo-test'
+	| 'go-test'
+	| 'unknown';
+
 export interface IStackRecommendation {
 	readonly pack: IDetectedStackPack;
 	readonly confidence: number;
 	readonly reasons: readonly string[];
+}
+
+export interface IDetectedProjectDefaults {
+	readonly packageManager: IDetectedPackageManager;
+	readonly language: IDetectedLanguage;
+	readonly testRunner: IDetectedTestRunner;
+	readonly lintCommand: string | undefined;
+	readonly typecheckCommand: string | undefined;
+	readonly docsRoots: readonly string[];
+	readonly sourceRoots: readonly string[];
 }
 
 export interface IStackProbeDeps {
@@ -37,4 +72,5 @@ export interface IStackDetectionResult {
 	readonly top: IDetectedStackPack;
 	readonly detectedLanguages: readonly string[];
 	readonly detectedFrameworks: readonly string[];
+	readonly defaults: IDetectedProjectDefaults;
 }

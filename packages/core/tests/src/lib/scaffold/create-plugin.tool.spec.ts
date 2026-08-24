@@ -50,9 +50,7 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 const PLUGIN_DEFAULTS_SEED = `export const PLUGIN_DEFAULTS: Readonly<
 \tRecord<string, Readonly<Record<string, unknown>>>
 > = {
-\tproposals: {
-\t\tvalidationCommand: 'bun run validate',
-\t},
+	proposals: {},
 };
 `;
 
