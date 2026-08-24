@@ -1,12 +1,13 @@
 import type { IToolRegistration } from '../contracts/interfaces/tool-registration.interface';
 import type { IWorkspacePathProvider } from '../contracts/interfaces/workspace-paths.interface';
-import type { IFileReader } from './analyze-project';
+import type { IFileReader, IProjectAnalysis } from './analyze-project';
 import { buildAnalyzeToolRegistration } from './analyze-tool';
 import { buildCreateToolRegistration } from './create-tool';
 import { buildDriftCheckToolRegistration } from './drift-check-tool';
 import type { IPatternOverrides } from './pattern-catalog-overrides';
 import { buildPlanToolRegistration } from './plan-tool';
 import { createWorkspaceFileReader } from './workspace-file-reader';
+import { analyzeProject } from './analyze-project';
 
 export interface IBootstrapToolOptions {
 	readonly workspace: IWorkspacePathProvider;
@@ -41,6 +42,11 @@ export const buildBootstrapToolRegistrations = (
 ): readonly IToolRegistration[] => {
 	const reader =
 		options.reader ?? createWorkspaceFileReader(options.workspace);
+	let sharedAnalysis: Promise<IProjectAnalysis> | undefined;
+	const analyze = async (): Promise<IProjectAnalysis> => {
+		sharedAnalysis ??= analyzeProject(reader);
+		return await sharedAnalysis;
+	};
 	const patternOverrides =
 		options.patternOverrides === undefined
 			? {}
@@ -49,11 +55,13 @@ export const buildBootstrapToolRegistrations = (
 		buildAnalyzeToolRegistration({
 			namespacePrefix: options.namespacePrefix,
 			reader,
+			analyze,
 			...patternOverrides,
 		}),
 		buildPlanToolRegistration({
 			namespacePrefix: options.namespacePrefix,
 			reader,
+			analyze,
 			...patternOverrides,
 		}),
 		buildCreateToolRegistration({

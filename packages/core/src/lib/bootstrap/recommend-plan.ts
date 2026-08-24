@@ -1,5 +1,6 @@
 import { DEFAULT_CORE_PATHS } from '../contracts/interfaces/core-paths.interface';
 import type { IProjectAnalysis } from './analyze-project';
+import { resolveAdoptionStrategy } from './adoption-strategy';
 import { runnerFor } from './package-runners';
 import { resolvePatternCatalog } from './pattern-catalog-overrides';
 import type { IPatternOverrides } from './pattern-catalog-overrides';
@@ -11,6 +12,7 @@ export interface IServerPlanOptions {
 	readonly cacheDir?: string;
 	readonly docsDir?: string;
 	readonly targetDir?: string;
+	readonly adoption?: unknown;
 	/**
 	 * Optional host-defined pattern overrides (see
 	 * `pattern-catalog-overrides.ts`). When omitted, the hardcoded
@@ -86,6 +88,9 @@ export const recommendServerPlan = (
 	const cacheDir = options.cacheDir ?? DEFAULT_CORE_PATHS.cacheDir;
 	const docsDir = options.docsDir ?? DEFAULT_CORE_PATHS.docsDir;
 	const plugins = pattern.recommendedPlugins;
+	const adoptionStrategy = resolveAdoptionStrategy(options.adoption ?? {}, {
+		hasExistingMcpProject: analysis.hasMcpProject,
+	});
 
 	const args = ['@mcp-vertex/core'];
 	if (plugins.length > 0) args.push(`--plugins=${plugins.join(',')}`);
@@ -113,9 +118,17 @@ export const recommendServerPlan = (
 		cacheDir,
 		docsDir,
 		mcpJson: {
-			servers: {
-				[serverName]: { command: 'bunx', args },
-			},
+			...(adoptionStrategy.operations.some(
+				(operation) =>
+					operation.capability === 'mcp-config' &&
+					operation.action === 'replace',
+			)
+				? {
+						servers: {
+							[serverName]: { command: 'bunx', args },
+						},
+					}
+				: {}),
 		},
 		notes,
 	};

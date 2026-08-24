@@ -1,8 +1,19 @@
 import {
-	scaffoldHostProject,
+	scaffoldAgentFile,
+	scaffoldClaudeAgentFile,
+	scaffoldCodexAgentFile,
+	scaffoldCodexConfigFile,
+	scaffoldHostConfigFile,
+	scaffoldHostPackageFiles,
+	scaffoldInstructionsFile,
 	scaffoldPromptFile,
+	scaffoldServerEntryFiles,
 	scaffoldSkillFile,
 	scaffoldToolFile,
+} from '../scaffold/scaffold-host';
+import type {
+	IScaffoldAgentSlot,
+	IScaffoldHostOptions,
 } from '../scaffold/scaffold-host';
 import type { IScaffoldedFile } from '../scaffold/scaffold-host';
 import type { IProjectAnalysis } from './analyze-project';
@@ -125,6 +136,14 @@ const SUBAGENT_SLOTS = [
 	},
 ] as const;
 
+const SCAFFOLD_AGENT_SLOTS = new Set<IScaffoldAgentSlot>([
+	'orchestrator',
+	'proposal_guardian',
+	'implementation_runner',
+	'delivery_verifier',
+	'technical_investigator',
+]);
+
 const MIGRATION_INTENT_RE =
 	/\b(migrat(?:e|ion|ing)?|refactor|rewrite|replace|regen(?:erate)?|port)\b/i;
 
@@ -163,6 +182,30 @@ const buildBlueprintDefaults = (
 	return { keepLegacy: true, reasons, warnings };
 };
 
+const hasCapabilityAction = (
+	blueprint: IServerBlueprint,
+	capability: 'agents' | 'mcp-config',
+	action: 'replace',
+): boolean =>
+	blueprint.adoptionStrategy.operations.some(
+		(operation) =>
+			operation.capability === capability && operation.action === action,
+	);
+
+const isScaffoldAgentSlot = (slot: string): slot is IScaffoldAgentSlot =>
+	SCAFFOLD_AGENT_SLOTS.has(slot as IScaffoldAgentSlot);
+
+const buildHostScaffoldOptions = (
+	blueprint: IServerBlueprint,
+	projectPackageName?: string,
+): IScaffoldHostOptions => ({
+	projectName: blueprint.serverName,
+	namespacePrefix: blueprint.namespacePrefix,
+	projectPackageName:
+		projectPackageName ?? `@${blueprint.namespacePrefix}/mcp-project`,
+	targetDir: blueprint.targetDir,
+	mcpServerName: blueprint.serverName,
+});
 /** Build the exhaustive blueprint from a project analysis. */
 export const buildServerBlueprint = (
 	analysis: IProjectAnalysis,
@@ -289,22 +332,27 @@ export const buildBlueprintFiles = (
 	projectPackageName?: string,
 ): readonly IScaffoldedFile[] => {
 	const prefix = blueprint.namespacePrefix;
-	const writesMcpConfig = blueprint.adoptionStrategy.operations.some(
-		(operation) =>
-			operation.capability === 'mcp-config' &&
-			operation.action === 'replace',
-	);
-	const files: IScaffoldedFile[] = writesMcpConfig
-		? [
-				...scaffoldHostProject({
-					projectName: blueprint.serverName,
-					namespacePrefix: prefix,
-					projectPackageName:
-						projectPackageName ?? `@${prefix}/mcp-project`,
-					targetDir: blueprint.targetDir,
-				}),
-			]
-		: [];
+	const hostOptions = buildHostScaffoldOptions(blueprint, projectPackageName);
+	const files: IScaffoldedFile[] = [];
+	if (hasCapabilityAction(blueprint, 'mcp-config', 'replace')) {
+		files.push(
+			scaffoldHostConfigFile(hostOptions),
+			...scaffoldServerEntryFiles(hostOptions),
+			...scaffoldHostPackageFiles(hostOptions),
+			scaffoldCodexConfigFile(hostOptions),
+		);
+	}
+	if (hasCapabilityAction(blueprint, 'agents', 'replace')) {
+		for (const agent of blueprint.agents) {
+			if (!isScaffoldAgentSlot(agent.slot)) continue;
+			files.push(
+				scaffoldAgentFile(hostOptions, agent.slot),
+				scaffoldClaudeAgentFile(hostOptions, agent.slot),
+				scaffoldCodexAgentFile(hostOptions, agent.slot),
+			);
+		}
+		files.push(scaffoldInstructionsFile(hostOptions));
+	}
 	for (const tool of blueprint.tools) {
 		files.push(
 			scaffoldToolFile(
@@ -340,7 +388,7 @@ export const buildBlueprintFiles = (
 			),
 		);
 	}
-	// De-duplicate by path (host project already ships a starter skill).
+	// De-duplicate by path so explicit blueprint artefacts win.
 	const byPath = new Map<string, IScaffoldedFile>();
 	for (const file of files) byPath.set(file.path, file);
 	return [...byPath.values()];

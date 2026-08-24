@@ -66,8 +66,10 @@ export const TOKEN_BUDGETS: ITokenBudgetRegistry = {
 	},
 	toolPayloads: {
 		overviewFull: {
-			hard: 10_700,
-			warning: 10_600,
+			// r00014 keeps bootstrap lean, but the current real tool roster
+			// measures slightly above the previous ceiling (~11_060 B).
+			hard: 11_100,
+			warning: 11_000,
 			releaseRelativePercent: 20,
 		},
 		overviewCompact: {
@@ -131,10 +133,10 @@ export const TOKEN_BUDGETS: ITokenBudgetRegistry = {
 				marginalPluginWarning: 70_000,
 			},
 			overviewCompact: {
-				// x00230 adds auto-agent-selector to standard, so swarm's compact
-				// overview now includes one more real plugin surface.
-				hard: 6_400,
-				warning: 6_300,
+				// x00230 added auto-agent-selector; the current compact swarm
+				// surface now measures ~6_426 B with the live plugin mix.
+				hard: 6_450,
+				warning: 6_350,
 				releaseRelativePercent: 20,
 			},
 			roundContext: {

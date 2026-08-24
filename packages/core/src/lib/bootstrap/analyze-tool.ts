@@ -8,7 +8,7 @@
 import z from 'zod';
 
 import type { IToolRegistration } from '../contracts/interfaces/tool-registration.interface';
-import type { IFileReader } from './analyze-project';
+import type { IFileReader, IProjectAnalysis } from './analyze-project';
 import { analyzeProject } from './analyze-project';
 import { recommendServerPlan } from './recommend-plan';
 import { resolveAdoptionStrategy } from './adoption-strategy';
@@ -24,6 +24,7 @@ import { ADOPTION_STRATEGY_SCHEMA } from '../contracts/constants/adoption-strate
 export interface IAnalyzeToolDeps {
 	readonly namespacePrefix: string;
 	readonly reader: IFileReader;
+	readonly analyze?: () => Promise<IProjectAnalysis>;
 	readonly patternOverrides?: IPatternOverrides;
 }
 
@@ -70,7 +71,8 @@ export const buildAnalyzeToolRegistration = (
 					inputSchema: ANALYZE_INPUT_SCHEMA,
 				},
 				async (args: z.infer<typeof ANALYZE_INPUT_SCHEMA>) => {
-					const analysis = await analyzeProject(deps.reader);
+					const analysis = await (deps.analyze?.() ??
+						analyzeProject(deps.reader));
 					const adoptionStrategy = resolveAdoptionStrategy(
 						args.adoption ?? {},
 						{ hasExistingMcpProject: analysis.hasMcpProject },
@@ -91,6 +93,9 @@ export const buildAnalyzeToolRegistration = (
 						...(args.targetDir !== undefined
 							? { targetDir: args.targetDir }
 							: {}),
+						...(args.adoption === undefined
+							? {}
+							: { adoption: args.adoption }),
 						...(deps.patternOverrides !== undefined
 							? { patternOverrides: deps.patternOverrides }
 							: {}),
