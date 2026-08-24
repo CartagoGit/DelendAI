@@ -162,7 +162,7 @@ describe('renderInitBundle (f00084 S2-S5)', () => {
 		// exactly (29 total, f00158 added error-reporting), including
 		// proposals (orchestration/swarm) — no independent-preset chain
 		// inheritance involved, this is just what the live config loads.
-		expect(Object.keys(config.plugins).length).toBe(29);
+		expect(Object.keys(config.plugins).length).toBe(30);
 		for (const required of [
 			'audit',
 			'auto-agent-selector',
