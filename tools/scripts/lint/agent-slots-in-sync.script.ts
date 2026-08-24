@@ -69,7 +69,7 @@ const fail = (message: string): never => {
 const main = async (): Promise<void> => {
 	const sourceOfTruthPath = resolve(
 		ROOT,
-		'packages/core/src/lib/agents/agent-slots.ts',
+		'packages/core/src/lib/contracts/constants/agent-slots.constant.ts',
 	);
 	const sourceOfTruthSource = await readFile(sourceOfTruthPath, 'utf-8');
 	const sourceOfTruthMatch = sourceOfTruthSource.match(
