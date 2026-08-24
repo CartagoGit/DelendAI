@@ -36,7 +36,7 @@ Dos síntomas del mismo problema de fondo (fuentes manuales duplicadas): el reco
 - global_gate: type
 
 ### S1 — auto-plugin-selector en el registry y candidatos
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/src/lib/registry/first-party-index.ts`, `plugins/auto-plugin-selector/src/lib/catalog/first-party-candidates.ts`
 - **Gate**: type
 - acceptance:
@@ -44,7 +44,7 @@ Dos síntomas del mismo problema de fondo (fuentes manuales duplicadas): el reco
   - "Un test evita regresiones (el auto-selector se conoce a sí mismo)."
 
 ### S2 — Alinear backend-api (una sola verdad)
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/api/src/index.ts`, `packages/core/src/lib/plugins/preset-catalog.ts`
 - **Gate**: type
 - acceptance:
