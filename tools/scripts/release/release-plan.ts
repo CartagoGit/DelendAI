@@ -25,6 +25,7 @@ export const PUBLISH_ORDER: readonly string[] = [
 	'plugins/cache',
 	'plugins/completion',
 	'plugins/container',
+	'plugins/context-for-change',
 	'plugins/conventions',
 	'plugins/database',
 	'plugins/deps',

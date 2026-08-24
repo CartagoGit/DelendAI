@@ -220,6 +220,15 @@
 			"@mcp-vertex/cache": ["./plugins/cache/src/index.ts"],
 			"@mcp-vertex/cache/public": ["./plugins/cache/src/public/index.ts"],
 			"@mcp-vertex/cache/*": ["./plugins/cache/src/*"],
+			"@mcp-vertex/context-for-change": [
+				"./plugins/context-for-change/src/index.ts"
+			],
+			"@mcp-vertex/context-for-change/public": [
+				"./plugins/context-for-change/src/public/index.ts"
+			],
+			"@mcp-vertex/context-for-change/*": [
+				"./plugins/context-for-change/src/*"
+			],
 			"@mcp-vertex/changelog": ["./plugins/changelog/src/index.ts"],
 			"@mcp-vertex/changelog/public": [
 				"./plugins/changelog/src/public/index.ts"

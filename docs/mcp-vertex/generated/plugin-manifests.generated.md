@@ -4,24 +4,36 @@
 
 | id | package | visibility | maturity | presets |
 | --- | --- | --- | --- | --- |
+| context-for-change | @mcp-vertex/context-for-change | public | experimental | vertex |
 | search | @mcp-vertex/search | public | stable | minimal, lean, standard, swarm, full, vertex, web-app, backend-api, cli-tool |
 
 ## Token budgets
 
 | id | warning | hard | releaseRelativePercent |
 | --- | --- | --- | --- |
+| context-for-change | 2700 | 3000 | 20 |
 | search | 2700 | 3000 | 20 |
 
 ## Permissions
 
 | id | permissions | toolPermissions |
 | --- | --- | --- |
+| context-for-change | filesystem-read |  |
 | search | filesystem-read |  |
 
 ## Compatibility matrix
 
 | plugin | preset | declared | catalog | matches |
 | --- | --- | --- | --- | --- |
+| context-for-change | minimal | no | no | yes |
+| context-for-change | lean | no | no | yes |
+| context-for-change | standard | no | no | yes |
+| context-for-change | swarm | no | no | yes |
+| context-for-change | full | no | no | yes |
+| context-for-change | vertex | yes | yes | yes |
+| context-for-change | web-app | no | no | yes |
+| context-for-change | backend-api | no | no | yes |
+| context-for-change | cli-tool | no | no | yes |
 | search | minimal | yes | yes | yes |
 | search | lean | yes | yes | yes |
 | search | standard | yes | yes | yes |

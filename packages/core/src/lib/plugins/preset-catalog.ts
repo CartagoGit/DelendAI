@@ -233,6 +233,7 @@ export const PRESET_CATALOG: readonly IPresetDefinition[] = [
 			{ plugin: 'completion' },
 			{ plugin: 'container' },
 			{ plugin: 'conventions' },
+			{ plugin: 'context-for-change' },
 			{ plugin: 'deps' },
 			{ plugin: 'diagram' },
 			{ plugin: 'docs' },
