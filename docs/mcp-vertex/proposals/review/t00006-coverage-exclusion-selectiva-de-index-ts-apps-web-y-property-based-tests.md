@@ -2,7 +2,7 @@
 id: t00006
 title: "coverage: exclusión selectiva de index.ts, apps/web y property-based tests"
 kind: test
-status: ready
+status: review
 type: proposal
 track: ci-test-docs
 date: 2026-08-24
