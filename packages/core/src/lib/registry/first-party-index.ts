@@ -5,6 +5,8 @@
  */
 import type { IPluginRegistrySource } from '../contracts/interfaces/plugin-registry.interface';
 
+import { GENERATED_FIRST_PARTY_MANIFEST_ENTRIES } from './generated/first-party-manifest-entries.generated';
+
 export const FIRST_PARTY_PLUGIN_INDEX: IPluginRegistrySource = {
 	origin: 'first-party',
 	entries: [
@@ -268,13 +270,7 @@ export const FIRST_PARTY_PLUGIN_INDEX: IPluginRegistrySource = {
 			tags: ['rules', 'lint'],
 			defaultPreset: 'standard',
 		},
-		{
-			origin: 'first-party',
-			id: 'search',
-			package: '@mcp-vertex/search',
-			summary: 'Code search (semantic + symbol + references).',
-			tags: ['search', 'symbol', 'f00136'],
-		},
+		...GENERATED_FIRST_PARTY_MANIFEST_ENTRIES,
 		{
 			origin: 'first-party',
 			id: 'security',

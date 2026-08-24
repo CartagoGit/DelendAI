@@ -1,0 +1,157 @@
+{
+	"generatedAt": "2026-08-24T07:28:07.580Z",
+	"manifests": [
+		{
+			"id": "search",
+			"package": "@mcp-vertex/search",
+			"version": "0.1.1",
+			"visibility": "public",
+			"summary": "Code search (semantic + symbol + references).",
+			"tags": ["search", "symbol", "f00136"],
+			"maturity": "stable",
+			"permissions": ["read-workspace"],
+			"presets": [
+				"minimal",
+				"lean",
+				"standard",
+				"swarm",
+				"full",
+				"vertex",
+				"web-app",
+				"backend-api",
+				"cli-tool"
+			],
+			"tokenBudget": {
+				"hard": 3000,
+				"warning": 2700,
+				"releaseRelativePercent": 20
+			},
+			"dependencies": [
+				"@mcp-vertex/core",
+				"@modelcontextprotocol/sdk",
+				"zod"
+			],
+			"capabilities": [
+				"lexical-search",
+				"regex-search",
+				"semantic-search",
+				"hybrid-search"
+			]
+		}
+	],
+	"firstPartyEntries": [
+		{
+			"origin": "first-party",
+			"id": "search",
+			"package": "@mcp-vertex/search",
+			"summary": "Code search (semantic + symbol + references).",
+			"tags": ["search", "symbol", "f00136"]
+		}
+	],
+	"webCatalog": [
+		{
+			"id": "search",
+			"package": "@mcp-vertex/search",
+			"summary": "Code search (semantic + symbol + references).",
+			"tags": ["search", "symbol", "f00136"],
+			"maturity": "stable",
+			"visibility": "public",
+			"presets": [
+				"minimal",
+				"lean",
+				"standard",
+				"swarm",
+				"full",
+				"vertex",
+				"web-app",
+				"backend-api",
+				"cli-tool"
+			],
+			"capabilities": [
+				"lexical-search",
+				"regex-search",
+				"semantic-search",
+				"hybrid-search"
+			]
+		}
+	],
+	"tokenBudgets": [
+		{
+			"id": "search",
+			"warning": 2700,
+			"hard": 3000,
+			"releaseRelativePercent": 20
+		}
+	],
+	"permissionsTable": [
+		{
+			"id": "search",
+			"permissions": ["read-workspace"]
+		}
+	],
+	"compatibilityMatrix": [
+		{
+			"pluginId": "search",
+			"presetId": "minimal",
+			"declared": true,
+			"catalogMember": true,
+			"matches": true
+		},
+		{
+			"pluginId": "search",
+			"presetId": "lean",
+			"declared": true,
+			"catalogMember": true,
+			"matches": true
+		},
+		{
+			"pluginId": "search",
+			"presetId": "standard",
+			"declared": true,
+			"catalogMember": true,
+			"matches": true
+		},
+		{
+			"pluginId": "search",
+			"presetId": "swarm",
+			"declared": true,
+			"catalogMember": true,
+			"matches": true
+		},
+		{
+			"pluginId": "search",
+			"presetId": "full",
+			"declared": true,
+			"catalogMember": true,
+			"matches": true
+		},
+		{
+			"pluginId": "search",
+			"presetId": "vertex",
+			"declared": true,
+			"catalogMember": true,
+			"matches": true
+		},
+		{
+			"pluginId": "search",
+			"presetId": "web-app",
+			"declared": true,
+			"catalogMember": true,
+			"matches": true
+		},
+		{
+			"pluginId": "search",
+			"presetId": "backend-api",
+			"declared": true,
+			"catalogMember": true,
+			"matches": true
+		},
+		{
+			"pluginId": "search",
+			"presetId": "cli-tool",
+			"declared": true,
+			"catalogMember": true,
+			"matches": true
+		}
+	]
+}

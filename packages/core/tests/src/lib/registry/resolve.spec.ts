@@ -29,6 +29,11 @@ describe('FIRST_PARTY_PLUGIN_INDEX', () => {
 	it('is a non-empty, well-formed index', () => {
 		expect(FIRST_PARTY_PLUGIN_INDEX.origin).toBe('first-party');
 		expect(FIRST_PARTY_PLUGIN_INDEX.entries.length).toBeGreaterThan(10);
+		expect(
+			FIRST_PARTY_PLUGIN_INDEX.entries.filter(
+				(entry) => entry.id === 'search',
+			),
+		).toHaveLength(1);
 		for (const entry of FIRST_PARTY_PLUGIN_INDEX.entries) {
 			expect(entry.id).toMatch(/^[a-z][a-z0-9-]*$/u);
 			expect(entry.package).toMatch(/^@mcp-vertex\//u);
