@@ -362,6 +362,7 @@ describe('auto_work (one-call action plan)', async () => {
 		const commitOptions: IAutoWorkToolOptions = {
 			...options,
 			persist: { mode: 'commit' },
+			agentWorktreeEnabled: true,
 		};
 		writeFileSync(
 			commitOptions.indexPathAbs,
@@ -390,6 +391,7 @@ describe('auto_work (one-call action plan)', async () => {
 		const pushOptions: IAutoWorkToolOptions = {
 			...options,
 			persist: { mode: 'commit-and-push', pushTarget: 'origin agent/p1' },
+			agentWorktreeEnabled: true,
 		};
 		writeFileSync(
 			pushOptions.indexPathAbs,
@@ -417,6 +419,34 @@ describe('auto_work (one-call action plan)', async () => {
 			(s: string) => s.includes('agent_worktree') && s.includes('create'),
 		);
 		expect(wtSteps).toHaveLength(0);
+	});
+
+	it("x00231: persist 'commit-and-push' with agentWorktree off orders commit+push on develop and omits the agent_worktree step", async () => {
+		const pushOptions: IAutoWorkToolOptions = {
+			...options,
+			persist: { mode: 'commit-and-push', pushTarget: 'origin develop' },
+		};
+		writeFileSync(
+			pushOptions.indexPathAbs,
+			JSON.stringify({
+				proposals: [{ id: 'p1-x', file: 'p1.md', status: 'pending' }],
+			}),
+		);
+		const out = parse(await runAutoWork(pushOptions));
+		const persistSteps = out.steps.filter((s: string) =>
+			s.includes('Persist the slice'),
+		);
+		expect(persistSteps).toHaveLength(1);
+		expect(persistSteps[0]).toContain('pushTarget: "origin develop"');
+		const wtSteps = out.steps.filter(
+			(s: string) => s.includes('agent_worktree') && s.includes('create'),
+		);
+		expect(wtSteps).toHaveLength(0);
+		const developStep = out.steps.find((s: string) =>
+			s.includes('agentWorktree: false'),
+		);
+		expect(developStep).toBeDefined();
+		expect(developStep).toContain('develop');
 	});
 
 	it('input.persist overrides config.persist.mode (priority chain, l109 §2)', async () => {
