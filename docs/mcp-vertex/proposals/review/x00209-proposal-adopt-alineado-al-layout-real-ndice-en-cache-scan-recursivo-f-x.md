@@ -2,7 +2,7 @@
 id: x00209
 title: "proposal_adopt alineado al layout real (índice en cache, scan recursivo, f/x)"
 kind: fix
-status: ready
+status: review
 type: proposal
 track: proposals
 date: 2026-08-23

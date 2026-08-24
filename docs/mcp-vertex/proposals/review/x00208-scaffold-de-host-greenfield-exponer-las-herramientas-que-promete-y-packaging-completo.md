@@ -2,7 +2,7 @@
 id: x00208
 title: "Scaffold de host greenfield: exponer las herramientas que promete y packaging completo"
 kind: fix
-status: ready
+status: review
 type: proposal
 track: scaffold
 date: 2026-08-23
