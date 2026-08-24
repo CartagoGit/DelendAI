@@ -51,6 +51,7 @@ import {
 	SERVER_BLUEPRINT_SCHEMA,
 	SERVER_PLAN_SCHEMA,
 } from '@mcp-vertex/core/lib/bootstrap/bootstrap-tool';
+import { ADOPTION_STRATEGY_SCHEMA } from '@mcp-vertex/core/lib/contracts/constants/adoption-strategy-schema.constant';
 import { MetricSchema } from '@mcp-vertex/core/lib/metrics/metrics-tool';
 import { SCAFFOLD_REPORT_SCHEMA } from '@mcp-vertex/core/lib/scaffold/scaffold-tool';
 
@@ -62,6 +63,31 @@ const TOOL_COST_SCHEMA = z.object({
 		estimatedTokens4B: z.number(),
 		actualModelTokens: z.number().optional(),
 	}),
+});
+
+const PLAN_COMPACT_SUMMARY_SCHEMA = z.object({
+	serverName: z.string(),
+	namespacePrefix: z.string(),
+	targetDir: z.string(),
+	projectType: z.string(),
+	plugins: z.array(z.string()),
+	counts: z.object({
+		tools: z.number(),
+		prompts: z.number(),
+		skills: z.number(),
+		agents: z.number(),
+	}),
+	tests: z.boolean(),
+	hasExistingServer: z.boolean(),
+	adoptionStrategy: ADOPTION_STRATEGY_SCHEMA,
+});
+
+const PLAN_COMPACT_DETAIL_SCHEMA = z.object({
+	section: z.enum(['tools', 'prompts', 'skills', 'agents', 'files', 'notes']),
+	cursor: z.number(),
+	nextCursor: z.number().nullable(),
+	total: z.number(),
+	items: z.array(z.unknown()),
 });
 
 /**
@@ -82,8 +108,10 @@ const CORE_TOOL_SCHEMAS = {
 	}),
 	create_project: MCP_PROJECT_SKELETON_SCHEMA,
 	plan_mcp_project: z.object({
-		blueprint: SERVER_BLUEPRINT_SCHEMA,
-		files: z.array(SCAFFOLDED_FILE_SCHEMA),
+		blueprint: SERVER_BLUEPRINT_SCHEMA.optional(),
+		files: z.array(SCAFFOLDED_FILE_SCHEMA).optional(),
+		summary: PLAN_COMPACT_SUMMARY_SCHEMA.optional(),
+		detail: PLAN_COMPACT_DETAIL_SCHEMA.optional(),
 	}),
 	scaffold: SCAFFOLD_REPORT_SCHEMA,
 	metrics: z.object({
@@ -266,9 +294,9 @@ describe('r00001 S0 — core outputSchema golden snapshot', async () => {
 			create_project:
 				'43761bcac35e09be864140f7f36191a84eb71ff45f8374e358e5e16dc5a4b6f3',
 			plan_mcp_project:
-				// f00110: blueprint now carries the explicit per-capability
-				// replace/merge/preserve adoption contract.
-				'd3770218e20b5d5454bb07f120926352217ea3fac9ea3af94828ab8d9211b36d',
+				// x00101 + r00014: plan defaults to a compact paged summary and
+				// only emits the exhaustive blueprint/files payload on opt-in.
+				'2494fd2f72da988cc2ae5d51c5b82dd190f29232919d34789a08f57c9568e665',
 			scaffold:
 				'd2f13f06246544b123f1b3dcc98c68e0159ed91002df748df86ad72343a49ffc',
 			metrics:

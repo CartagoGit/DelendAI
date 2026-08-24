@@ -1680,14 +1680,20 @@ export interface McpVertexPlanMcpProjectOutput {
 		tools: {
 			name: string;
 			description: string;
+			body?: string;
+			whenToUse?: string[];
 		}[];
 		prompts: {
 			name: string;
 			description: string;
+			body?: string;
+			whenToUse?: string[];
 		}[];
 		skills: {
 			name: string;
 			description: string;
+			body?: string;
+			whenToUse?: string[];
 		}[];
 		agents: {
 			slot: string;
