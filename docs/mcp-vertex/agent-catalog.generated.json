@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-08-24T01:25:18.768Z",
+	"generatedAt": "2026-08-24T01:36:55.569Z",
 	"mode": "compact",
 	"tools": [
 		{
@@ -1566,10 +1566,17 @@
 				"track": "product",
 				"status": "ready",
 				"kind": "fix"
+			},
+			{
+				"id": "x00231",
+				"title": "x00231",
+				"track": "plugins",
+				"status": "ready",
+				"kind": "fix"
 			}
 		],
 		"byStatus": {
-			"ready": 50,
+			"ready": 51,
 			"in-progress": 11,
 			"review": 0,
 			"paused": 1,
