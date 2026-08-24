@@ -11,6 +11,10 @@ import type {
 } from './tool-registration.interface';
 import type { IValidationMatrix } from './validation-matrix.interface';
 import type { IWorkspacePathProvider } from './workspace-paths.interface';
+import type {
+	IToolSurfacePlan,
+	IToolSurfaceRuntimeAccess,
+} from './tool-surface.interface';
 
 /**
  * Solid-ISP (2026-06-23): `IMcpVertexHostConfig` used to be a single
@@ -165,6 +169,9 @@ export interface IHostRegistrations {
 	readonly extraTools?: readonly IToolRegistration[] | undefined;
 	readonly extraPrompts?: readonly IPromptRegistration[] | undefined;
 	readonly extraResources?: readonly IResourceRegistration[] | undefined;
+	/** Optional runtime plan/access pair for adaptive/compact tool surfaces. */
+	readonly toolSurfacePlan?: IToolSurfacePlan | undefined;
+	readonly toolSurfaceRuntime?: IToolSurfaceRuntimeAccess | undefined;
 }
 
 /**

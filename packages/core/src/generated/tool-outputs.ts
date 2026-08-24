@@ -3468,6 +3468,63 @@ export interface McpVertexUsageTrackingUsageReportOutput {
 		errors: number;
 		autoBypassed: number;
 	}[];
+	pluginKpis: Array<{
+		plugin: string;
+		observedCalls: number;
+		observedSessions: number;
+		tokenTax: {
+			staticSchemaBytes: number;
+			compactTypicalBytes: number;
+			p95ResponseBytes: number;
+			totalBytes: number;
+			estimated: boolean;
+			observedToolCount: number;
+			observedResponseSamples: number;
+			sources: {
+				staticSchemaBytes: string;
+				compactTypicalBytes: string;
+				p95ResponseBytes: string;
+			};
+		};
+		utilityPer1kTokens: number;
+		kpis: {
+			schemaBytes: number;
+			invocationRatePerDay: number;
+			successContribution: number;
+			responseBytesP50: number | null;
+			responseBytesP95: number | null;
+			latencyMsP50: number | null;
+			latencyMsP95: number | null;
+			toolErrorRate: number;
+			pluginActivationRate: number | null;
+			dynamicActivationSavingsBytes: number | null;
+			memoryCompactionSavingsTokens: number;
+			contextRehydrationEffectiveness: number | null;
+			contextRehydrationEffectivenessNote: string | null;
+			privacyGateBlockedReportCount: number | null;
+			privacyGateBlockedReportCountNote: string | null;
+		};
+	}>;
+	kpis: {
+		coldStartCostBytes: number;
+		coldStartCostTokens: number;
+		coldStartCostNote: string;
+		invocationRatePerDay: number;
+		successfulCallRate: number;
+		responseBytesP50: number | null;
+		responseBytesP95: number | null;
+		latencyMsP50: number | null;
+		latencyMsP95: number | null;
+		toolErrorRate: number;
+		averagePluginActivationRate: number | null;
+		dynamicActivationSavingsBytes: number | null;
+		memoryCompactionSavingsTokens: number;
+		memoryCompactionSavingsNote: string;
+		contextRehydrationEffectiveness: number | null;
+		contextRehydrationEffectivenessNote: string;
+		privacyGateBlockedReportCount: number | null;
+		privacyGateBlockedReportCountNote: string;
+	};
 	expensiveCalls: Array<{
 		ts: string;
 		plugin: string;

@@ -34,9 +34,13 @@ import { createCacheEvictionRegistry } from '../cache/eviction-registry';
 import { resolveWorkspaceContained } from '../shared/contain-path';
 import type { ILogsSink } from '../plugins/plugin-contract';
 import { ConsoleLogsSink } from '../plugins/logs-sink';
+import type { IToolSurfaceDescriptor } from '../contracts/interfaces/tool-surface.interface';
+import type { IToolSurfacePlan } from '../contracts/interfaces/tool-surface.interface';
 import { assemblePlugins } from './assemble-plugins';
 import { assembleCoreTools } from './assemble-core-tools';
 import { assembleSkills } from './assemble-skills';
+import { createToolSurfaceRuntimeAccess } from '../project/tool-surface-runtime.service';
+import { BOOTSTRAP_CORE_TOOL_IDS } from '../contracts/constants/bootstrap-core-tool-ids.constant';
 import {
 	mergeCheckpointAdvisories,
 	selectCheckpointAdvisory,
@@ -332,6 +336,7 @@ export const assembleCliConfig = async (
 		beforeToolCallFns,
 		logsSink,
 		activationReport,
+		toolSurfaceDescriptors,
 		configurationPlugins,
 		configurationArtifacts,
 	} = await assemblePlugins({
@@ -364,6 +369,7 @@ export const assembleCliConfig = async (
 		configurationArtifacts,
 	});
 
+	const toolSurfaceRuntime = createToolSurfaceRuntimeAccess();
 	const { tools, catalogToolEntries, metricsRegistry } =
 		await assembleCoreTools({
 			args,
@@ -388,9 +394,65 @@ export const assembleCliConfig = async (
 			configurationArtifacts,
 			fsAuthorizedRoots,
 			keepLegacy,
+			toolSurfaceRuntime,
 			prompts,
 			resources,
 		});
+	const coreSurfaceDescriptors: IToolSurfaceDescriptor[] = tools
+		.filter(
+			(registration) =>
+				!toolSurfaceDescriptors.some(
+					(entry) => entry.registrationId === registration.id,
+				),
+		)
+		.map((registration) => ({
+			registrationId: registration.id,
+			name: `${corePrefix}_${registration.id}`,
+			toolId: registration.id,
+			...(registration.summary !== undefined
+				? { summary: registration.summary }
+				: {}),
+			...(registration.tags !== undefined
+				? { tags: registration.tags }
+				: {}),
+		}));
+	const pluginDescriptorsByPlugin = new Map<
+		string,
+		{
+			namespace: string;
+			toolRegistrationIds: string[];
+			describe?: string | undefined;
+		}
+	>();
+	for (const entry of toolSurfaceDescriptors) {
+		if (entry.pluginId === undefined || entry.namespace === undefined)
+			continue;
+		const existing = pluginDescriptorsByPlugin.get(entry.pluginId) ?? {
+			namespace: entry.namespace,
+			toolRegistrationIds: [],
+			describe: loadResult.loaded.find(
+				(candidate) => candidate.plugin.name === entry.pluginId,
+			)?.plugin.describe,
+		};
+		existing.toolRegistrationIds.push(entry.registrationId);
+		pluginDescriptorsByPlugin.set(entry.pluginId, existing);
+	}
+	const toolSurfacePlan: IToolSurfacePlan = {
+		mode: args.surfaceMode,
+		bootstrapToolIds: [...BOOTSTRAP_CORE_TOOL_IDS],
+		...(args.surfaceMode === 'compact' ? { routerToolId: 'vertex' } : {}),
+		descriptors: [...coreSurfaceDescriptors, ...toolSurfaceDescriptors],
+		plugins: [...pluginDescriptorsByPlugin.entries()].map(
+			([id, entry]) => ({
+				id,
+				namespace: entry.namespace,
+				toolRegistrationIds: entry.toolRegistrationIds,
+				...(entry.describe !== undefined
+					? { describe: entry.describe }
+					: {}),
+			}),
+		),
+	};
 
 	const emitHookError = async (info: {
 		readonly pluginName: string;
@@ -429,6 +491,8 @@ export const assembleCliConfig = async (
 		extraTools: tools,
 		extraPrompts: prompts,
 		extraResources: resources,
+		toolSurfacePlan,
+		toolSurfaceRuntime,
 		...(onToolStarts.length > 0
 			? {
 					onToolStart: async (toolName, toolArgs) => {

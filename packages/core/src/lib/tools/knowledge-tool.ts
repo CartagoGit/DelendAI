@@ -1,6 +1,7 @@
 import z from 'zod';
 
 import type { IKnowledgeEntry } from '../contracts/interfaces/knowledge.interface';
+import type { IToolSurfaceRuntimeAccess } from '../contracts/interfaces/tool-surface.interface';
 import type { IToolRegistration } from '../contracts/interfaces/tool-registration.interface';
 import { toolError, toolJson } from '../shared/tool-response';
 
@@ -13,6 +14,7 @@ import { toolError, toolJson } from '../shared/tool-response';
 export const buildKnowledgeToolRegistration = (
 	namespacePrefix: string,
 	knowledge: () => readonly IKnowledgeEntry[],
+	runtimeAccess?: IToolSurfaceRuntimeAccess,
 ): IToolRegistration => ({
 	id: 'knowledge',
 	summary:
@@ -24,7 +26,10 @@ export const buildKnowledgeToolRegistration = (
 			{
 				description:
 					'Access plugin knowledge on demand. Without `id`: list every entry as {id,title}. With `id`: return that entry. Read-only and low-token (fetch only what you need).',
-				inputSchema: z.object({ id: z.string().optional() }),
+				inputSchema: z.object({
+					id: z.string().optional(),
+					includeToolDocs: z.boolean().optional(),
+				}),
 				outputSchema: z.object({
 					entries: z
 						.array(z.object({ id: z.string(), title: z.string() }))
@@ -34,17 +39,36 @@ export const buildKnowledgeToolRegistration = (
 					body: z.string().optional(),
 				}),
 			},
-			async (args: { id?: string | undefined }) => {
+			async (args: {
+				id?: string | undefined;
+				includeToolDocs?: boolean | undefined;
+			}) => {
 				const entries = knowledge();
 				if (args.id === undefined) {
+					const toolDocs =
+						args.includeToolDocs === true &&
+						runtimeAccess !== undefined
+							? (runtimeAccess
+									.get()
+									?.listToolKnowledgeEntries() ?? [])
+							: [];
 					return toolJson({
-						entries: entries.map((entry) => ({
-							id: entry.id,
-							title: entry.title,
-						})),
+						entries: [
+							...entries.map((entry) => ({
+								id: entry.id,
+								title: entry.title,
+							})),
+							...toolDocs,
+						],
 					});
 				}
 				const found = entries.find((entry) => entry.id === args.id);
+				if (found === undefined && runtimeAccess !== undefined) {
+					const toolDoc = runtimeAccess
+						.get()
+						?.getToolKnowledgeEntry(args.id);
+					if (toolDoc !== undefined) return toolJson(toolDoc);
+				}
 				if (found === undefined) {
 					return toolError(
 						`unknown knowledge id "${args.id}"`,

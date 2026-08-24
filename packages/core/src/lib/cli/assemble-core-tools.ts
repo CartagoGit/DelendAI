@@ -30,6 +30,7 @@ import type {
 	IToolRegistration,
 } from '../contracts/interfaces/tool-registration.interface';
 import type { IWorkspacePathProvider } from '../contracts/interfaces/workspace-paths.interface';
+import type { IToolSurfaceRuntimeAccess } from '../contracts/interfaces/tool-surface.interface';
 import {
 	buildConfigurationCenterSnapshot,
 	serializeConfigurationSchema,
@@ -65,8 +66,15 @@ import { buildOverviewToolRegistration } from '../tools/overview-tool';
 import { buildSkillToolRegistration } from '../tools/skill-tool';
 import { buildStartPromptRegistration } from '../tools/start-prompt';
 import { buildStatusToolRegistration } from '../tools/status-tool';
+import {
+	buildPluginActivateToolRegistration,
+	buildPluginDeactivateToolRegistration,
+	buildProjectContextToolRegistration,
+	buildToolSearchToolRegistration,
+} from '../tools/tool-surface.tool';
 import { findUnusedActivePlugins } from '../tools/unused-active-plugins';
 import { buildValidationMatrixToolRegistration } from '../tools/validation-matrix-tool';
+import { buildVertexRouterToolRegistration } from '../tools/vertex-router.tool';
 import type { assemblePlugins } from './assemble-plugins';
 import type { assembleSkills } from './assemble-skills';
 
@@ -99,6 +107,7 @@ export interface IAssembleCoreToolsInput {
 	readonly configurationArtifacts: IConfigurationArtifact[];
 	readonly fsAuthorizedRoots: readonly string[];
 	readonly keepLegacy: boolean;
+	readonly toolSurfaceRuntime: IToolSurfaceRuntimeAccess;
 	/** Mutated in place: orientation prompts are prepended/appended. */
 	readonly prompts: IPromptRegistration[];
 	/** Mutated in place: knowledge + catalog resources are appended. */
@@ -137,6 +146,7 @@ export const assembleCoreTools = (
 		configurationArtifacts,
 		fsAuthorizedRoots,
 		keepLegacy,
+		toolSurfaceRuntime,
 		prompts,
 		resources,
 	} = input;
@@ -308,9 +318,37 @@ export const assembleCoreTools = (
 	const metricsDirAbs = workspace.resolve(
 		joinRel(corePaths.cacheDir, 'metrics'),
 	);
+	const dynamicSurfaceTools =
+		args.surfaceMode === 'native'
+			? []
+			: [
+					buildProjectContextToolRegistration({
+						namespacePrefix: corePrefix,
+						runtimeAccess: toolSurfaceRuntime,
+						workspaceRoot: workspace.root,
+						corePaths,
+						configIssues: configDiagnostic.issues,
+					}),
+					buildToolSearchToolRegistration({
+						namespacePrefix: corePrefix,
+						runtimeAccess: toolSurfaceRuntime,
+					}),
+					buildPluginActivateToolRegistration({
+						namespacePrefix: corePrefix,
+						runtimeAccess: toolSurfaceRuntime,
+					}),
+					buildPluginDeactivateToolRegistration({
+						namespacePrefix: corePrefix,
+						runtimeAccess: toolSurfaceRuntime,
+					}),
+				];
 
 	coreTools = [
-		buildOverviewToolRegistration(corePrefix, buildSnapshot),
+		buildOverviewToolRegistration(
+			corePrefix,
+			buildSnapshot,
+			toolSurfaceRuntime,
+		),
 		buildConfigurationCenterToolRegistration(
 			corePrefix,
 			() => configurationSnapshot,
@@ -323,7 +361,12 @@ export const assembleCoreTools = (
 				namespacePrefix: corePrefix,
 			},
 		}),
-		buildKnowledgeToolRegistration(corePrefix, () => knowledge),
+		buildKnowledgeToolRegistration(
+			corePrefix,
+			() => knowledge,
+			toolSurfaceRuntime,
+		),
+		...dynamicSurfaceTools,
 		buildSkillToolRegistration(corePrefix, () => skillCatalog),
 		buildValidationMatrixToolRegistration(
 			corePrefix,
@@ -391,6 +434,14 @@ export const assembleCoreTools = (
 			corePaths,
 			reader: createWorkspaceFileReader(workspace),
 		}),
+		...(args.surfaceMode === 'compact'
+			? [
+					buildVertexRouterToolRegistration({
+						namespacePrefix: corePrefix,
+						runtimeAccess: toolSurfaceRuntime,
+					}),
+				]
+			: []),
 	];
 
 	// Core tools keep their bare id (single namespace); plugin tools are
