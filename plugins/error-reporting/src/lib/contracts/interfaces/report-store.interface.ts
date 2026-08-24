@@ -1,4 +1,5 @@
 import type { SafeReporterFailureCode } from '../constants/safe-reporter-failure-codes.constant';
+import type { IssueClassification } from './reporter.interface';
 
 /**
  * Durable de-duplication state. One JSON document maps
@@ -8,6 +9,8 @@ import type { SafeReporterFailureCode } from '../constants/safe-reporter-failure
  */
 export interface IReportRecord {
 	readonly fingerprint: string;
+	/** Canonical privacy-safe classification for this fingerprint. */
+	readonly classification: IssueClassification;
 	/** Total internal sightings recorded for this fingerprint. */
 	readonly attemptCount: number;
 	/** ISO timestamp of the last local sighting of this fingerprint. */
@@ -32,6 +35,7 @@ export interface IReportRecord {
 
 export interface IReportAttemptInput {
 	readonly at: string;
+	readonly classification: IssueClassification;
 }
 
 export interface IReportFailureInput {

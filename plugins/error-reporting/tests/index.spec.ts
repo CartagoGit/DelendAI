@@ -84,6 +84,7 @@ describe('buildReportErrorHandler', () => {
 
 		await reportError('quality_run_quality', internalError());
 		const failed = await store.all();
+		expect(failed[0]?.classification).toBe('BUG');
 		expect(failed[0]?.lastSuccessAt).toBeUndefined();
 		expect(failed[0]?.lastFailureCode).toBe('GH_EXEC_FAILED');
 
@@ -130,6 +131,7 @@ describe('buildReportErrorHandler', () => {
 
 		const record = await store.all();
 		expect(record[0]?.attemptCount).toBe(2);
+		expect(record[0]?.classification).toBe('BUG');
 		expect(record[0]?.issueNumber).toBe(88);
 		expect(reporter.submitSafeReport).toHaveBeenCalledTimes(1);
 	});

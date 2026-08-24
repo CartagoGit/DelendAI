@@ -1,6 +1,8 @@
 import type { IErrorReportingOptions } from '../interfaces/options.interface';
 import z from 'zod';
 
+const TARGET_REPO_PATTERN = /^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/;
+
 /**
  * Options contract for `@mcp-vertex/error-reporting`. Everything is
  * optional: the plugin ships sane defaults so an adopter gets
@@ -12,7 +14,10 @@ export const OptionsSchema = z.object({
 	 * opt-out, not opt-in. Set `false` to disable entirely.
 	 */
 	enabled: z.boolean().optional(),
-	/** `owner/name` to report into. Defaults to the mcp-vertex repo. */
+	/**
+	 * Fixed `owner/name` destination. Only explicit plugin configuration
+	 * may override the default; runtime/project data is never consulted.
+	 */
 	targetRepo: z.string().optional(),
 	/** Labels applied to every auto-created issue. */
 	labels: z.array(z.string()).optional(),
@@ -59,6 +64,9 @@ export const resolveOptions = (
 	const data = parsed.success ? parsed.data : {};
 	const configuredRepo =
 		typeof data.targetRepo === 'string' ? data.targetRepo.trim() : '';
+	const safeConfiguredRepo = TARGET_REPO_PATTERN.test(configuredRepo)
+		? configuredRepo
+		: '';
 	const configuredLabels =
 		Array.isArray(data.labels) && data.labels.length > 0
 			? data.labels.map((label) => label.trim()).filter((l) => l !== '')
@@ -66,7 +74,9 @@ export const resolveOptions = (
 	return {
 		enabled: data.enabled ?? true,
 		targetRepo:
-			configuredRepo !== '' ? configuredRepo : DEFAULT_TARGET_REPO,
+			safeConfiguredRepo !== ''
+				? safeConfiguredRepo
+				: DEFAULT_TARGET_REPO,
 		labels:
 			configuredLabels.length > 0
 				? configuredLabels
