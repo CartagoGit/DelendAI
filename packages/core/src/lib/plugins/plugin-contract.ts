@@ -320,12 +320,12 @@ export interface IMcpPlugin {
 	/**
 	 * Other plugin ids (by `name`) this plugin requires to be present in
 	 * the same load set. Additive/optional: most plugins have no
-	 * dependencies. The loader (`load-plugins.ts`) refuses the entire
-	 * batch — no partial registration — if any loaded plugin names a
-	 * dependency that is not also being loaded, collecting every missing
-	 * dependency into a single combined error instead of failing one at
-	 * a time. Declaring this is the plugin's job; enforcing it is the
-	 * loader's (see `checkPluginDependencies`).
+	 * dependencies. The loader (`load-plugins.ts`) builds a dependency
+	 * graph, registers plugins in topological order, and blocks a plugin
+	 * before `register()` if one of its hard dependencies is missing,
+	 * failed, or is itself blocked. Cycles abort the batch before any
+	 * side effects run. Declaring this is the plugin's job; enforcing it
+	 * is the loader's.
 	 */
 	readonly dependsOn?: readonly string[];
 	/**

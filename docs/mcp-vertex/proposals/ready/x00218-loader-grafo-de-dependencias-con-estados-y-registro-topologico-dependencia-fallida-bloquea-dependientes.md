@@ -36,7 +36,7 @@ Hoy la dependency gate solo comprueba que la dependencia se importó/resolvió, 
 - global_gate: type
 
 ### S1 — Servicio de grafo de dependencias (DAG + topo + ciclos)
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/src/lib/plugins/dependency-graph.service.ts`
 - **Gate**: type
 - acceptance:
@@ -44,7 +44,7 @@ Hoy la dependency gate solo comprueba que la dependencia se importó/resolvió, 
   - "Detecta ciclos (A->B->C->A) y devuelve error claro."
 
 ### S2 — Registro topológico con bloqueo por dependencia
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/src/lib/plugins/load-plugins.ts`
 - **Gate**: type
 - acceptance:
@@ -52,7 +52,7 @@ Hoy la dependency gate solo comprueba que la dependencia se importó/resolvió, 
   - "El orden de registro respeta el orden topológico."
 
 ### S3 — Tests de lifecycle de dependencias
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/tests/src/lib/plugins/dependency-lifecycle.spec.ts`
 - **Gate**: type
 - acceptance:
