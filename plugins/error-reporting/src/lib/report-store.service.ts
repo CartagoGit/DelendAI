@@ -5,7 +5,6 @@ import { withFileMutex, writeFileAtomic } from '@mcp-vertex/core/public';
 
 import type {
 	IReportRecord,
-	IReportRecordInput,
 	IReportStore,
 } from './contracts/interfaces/report-store.interface';
 

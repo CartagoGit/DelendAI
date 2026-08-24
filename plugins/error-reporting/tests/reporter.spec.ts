@@ -1,7 +1,14 @@
 import { describe, expect, it } from 'vitest';
 
-import { shouldReport, submitIssue } from '../src/lib/reporter.service';
-import type { IIssueExec } from '../src/lib/contracts/interfaces/reporter.interface';
+import type {
+	IIssueExec,
+	ISafeMcpVertexReport,
+} from '../src/lib/contracts/interfaces/reporter.interface';
+import { createSafeReporter, shouldReport } from '../src/lib/reporter.service';
+
+// @ts-expect-error raw message must not be accepted by the safe report DTO.
+const _compileRejectsRawMessage: ISafeMcpVertexReport = { message: 'boom' };
+void _compileRejectsRawMessage;
 
 describe('shouldReport', () => {
 	const now = Date.parse('2026-08-24T00:00:00.000Z');
@@ -37,17 +44,30 @@ describe('shouldReport', () => {
 	});
 });
 
-describe('submitIssue', () => {
+describe('createSafeReporter.submitSafeReport', () => {
 	const base = {
+		reporterVersion: '0.1.0',
+		mcpVertexVersion: '0.1.0',
+		packageId: '@mcp-vertex/error-reporting',
+		toolId: 'tool_x',
+		errorCode: 'PLUGIN_REGISTER_TIMEOUT',
+		failureClass: 'INTERNAL_TIMEOUT',
+		classification: 'PERFORMANCE',
+		fingerprint: 'abc123',
+		mcpFrames: [
+			{
+				file: '@mcp-vertex/error-reporting/src/index.ts',
+				line: 12,
+				col: 3,
+				fn: 'reportError',
+			},
+		],
+	} satisfies ISafeMcpVertexReport;
+	const reporter = createSafeReporter({
 		targetRepo: 'CartagoGit/mcp-vertex',
 		labels: ['auto-reported', 'bug'],
 		workspaceRootAbs: '/tmp/proj',
-		toolName: 'tool_x',
-		error: new Error('boom'),
-		signature: 'tool_x::boom',
-		argsJson: '{}',
-		namespacePrefix: 'mcp-vertex',
-	};
+	});
 
 	it('parses the created issue number from gh output', async () => {
 		const exec: IIssueExec = async () => ({
@@ -56,7 +76,7 @@ describe('submitIssue', () => {
 			stdout: 'https://github.com/CartagoGit/mcp-vertex/issues/1234\n',
 			stderr: '',
 		});
-		const outcome = await submitIssue(base, exec);
+		const outcome = await reporter.submitSafeReport(base, exec);
 		expect(outcome.ok).toBe(true);
 		expect(outcome.issueNumber).toBe(1234);
 		expect(outcome.issueUrl).toBe(
@@ -71,7 +91,7 @@ describe('submitIssue', () => {
 			stdout: '',
 			stderr: 'gh auth required\n',
 		});
-		const outcome = await submitIssue(base, exec);
+		const outcome = await reporter.submitSafeReport(base, exec);
 		expect(outcome.ok).toBe(false);
 		expect(outcome.reason).toContain('gh auth required');
 	});
@@ -83,7 +103,7 @@ describe('submitIssue', () => {
 			stdout: '',
 			stderr: '',
 		});
-		const outcome = await submitIssue(base, exec);
+		const outcome = await reporter.submitSafeReport(base, exec);
 		expect(outcome.ok).toBe(false);
 		expect(outcome.reason).toContain('not installed');
 	});
@@ -99,12 +119,14 @@ describe('submitIssue', () => {
 				stderr: '',
 			};
 		};
-		await submitIssue(base, exec);
+		await reporter.submitSafeReport(base, exec);
 		const joined = captured.join(' ');
 		expect(joined).toContain('issue create');
 		expect(joined).toContain('--repo CartagoGit/mcp-vertex');
 		expect(joined).toContain('--label auto-reported');
 		expect(joined).toContain('--label bug');
-		expect(joined).toContain('[auto] tool_x: boom');
+		expect(joined).toContain(
+			'[auto] PERFORMANCE @mcp-vertex/error-reporting: PLUGIN_REGISTER_TIMEOUT',
+		);
 	});
 });
