@@ -159,7 +159,7 @@ describe('buildResumeHint', async () => {
 		expect(hint.proposalId).toBe('p81');
 	});
 
-	it('returns unknown when there is no signal at all', async () => {
+	it('returns next when there is no signal at all (deterministic forward path)', async () => {
 		const hint = buildResumeHint({
 			activeProposalId: 'f00009',
 			currentTaskId: 'unknown',
@@ -168,6 +168,7 @@ describe('buildResumeHint', async () => {
 			activeLocks: [],
 			activeAgents: [],
 		});
-		expect(hint.mode).toBe('unknown');
+		expect(hint.mode).toBe('next');
+		expect(hint.reason).toContain('auto_work');
 	});
 });
