@@ -13,6 +13,15 @@ export const GENERATED_FIRST_PARTY_MANIFEST_ENTRIES: readonly IPluginRegistryEnt
 		},
 		{
 			origin: 'first-party',
+			id: 'impact-analysis',
+			package: '@mcp-vertex/impact-analysis',
+			summary:
+				'Bounded impact analysis and test selection across changed symbols, dependents and related specs.',
+			tags: ['impact', 'tests', 'f00169'],
+			permissions: ['filesystem-read'],
+		},
+		{
+			origin: 'first-party',
 			id: 'search',
 			package: '@mcp-vertex/search',
 			summary: 'Code search (semantic + symbol + references).',

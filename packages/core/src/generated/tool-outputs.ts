@@ -1040,6 +1040,26 @@ export interface McpVertexI18nI18nValidateOutput {
 	worst: string;
 }
 
+export interface McpVertexImpactAnalysisImpactAnalyzeOutput {
+	changedSymbols: string[];
+	dependents: string[];
+	affectedPackages: string[];
+	recommendedTests: string[];
+	risk: "low" | "medium" | "high";
+	dependsOn: string[];
+	bytes: number;
+	truncated: boolean;
+}
+
+export interface McpVertexImpactAnalysisTestsForChangeOutput {
+	run: string[];
+	skip: string[];
+	coverageFocus: string[];
+	likelyRelatedFailures: string[];
+	bytes: number;
+	truncated: boolean;
+}
+
 export interface McpVertexInitConfigOutput {
 	ok: boolean;
 	error?: {
@@ -3623,6 +3643,8 @@ export interface McpVertexToolOutputs {
 	"mcp-vertex_git_worktree": McpVertexGitWorktreeOutput;
 	"mcp-vertex_i18n_i18n_check": McpVertexI18nI18nCheckOutput;
 	"mcp-vertex_i18n_i18n_validate": McpVertexI18nI18nValidateOutput;
+	"mcp-vertex_impact-analysis_impact_analyze": McpVertexImpactAnalysisImpactAnalyzeOutput;
+	"mcp-vertex_impact-analysis_tests_for_change": McpVertexImpactAnalysisTestsForChangeOutput;
 	"mcp-vertex_init_config": McpVertexInitConfigOutput;
 	"mcp-vertex_knowledge": McpVertexKnowledgeOutput;
 	"mcp-vertex_link-check_link_check": McpVertexLinkCheckLinkCheckOutput;

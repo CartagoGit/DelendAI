@@ -95,6 +95,10 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 		workspaceRoot,
 		'plugins/context-for-change/src',
 	);
+	const impactAnalysis = resolve(
+		workspaceRoot,
+		'plugins/impact-analysis/src',
+	);
 	const changelog = resolve(workspaceRoot, 'plugins/changelog/src');
 	const completion = resolve(workspaceRoot, 'plugins/completion/src');
 	const errorReporting = resolve(
@@ -119,6 +123,18 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 		{
 			find: '@mcp-vertex/context-for-change',
 			replacement: resolve(contextForChange, 'index.ts'),
+		},
+		{
+			find: '@mcp-vertex/impact-analysis/public',
+			replacement: resolve(impactAnalysis, 'public/index.ts'),
+		},
+		{
+			find: /^@mcp-vertex\/impact-analysis\/lib\/(.*)$/,
+			replacement: `${resolve(impactAnalysis, 'lib')}/$1`,
+		},
+		{
+			find: '@mcp-vertex/impact-analysis',
+			replacement: resolve(impactAnalysis, 'index.ts'),
 		},
 		{
 			find: '@mcp-vertex/shared/i18n',
