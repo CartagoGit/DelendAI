@@ -5,7 +5,10 @@
 	"docsDir": "docs/mcp-vertex",
 	"agentWorktree": false,
 	"commitAuthor": {
-		"mode": "git"
+		"mode": "named",
+		"humanName": "Cartago",
+		"humanEmail": "cartago.relaxingcup@gmail.com",
+		"modelName": "M3-minimax"
 	},
 	"convention": {
 		"pluginPathsRoot": "packages",
@@ -68,6 +71,10 @@
 				"namePool": ["falcon", "owl", "crow", "sparrow", "finch"],
 				"orchestration": {
 					"delegateAfterToolCalls": 3
+				},
+				"persist": {
+					"mode": "commit-and-push",
+					"pushTarget": "origin develop"
 				}
 			}
 		},
