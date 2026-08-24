@@ -2,7 +2,7 @@
 id: f00162
 title: "tokens: token tax por plugin, utility per 1K y KPIs de uso"
 kind: feat
-status: ready
+status: review
 type: proposal
 track: tokens
 date: 2026-08-24
