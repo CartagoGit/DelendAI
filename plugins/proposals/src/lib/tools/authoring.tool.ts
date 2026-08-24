@@ -1222,8 +1222,7 @@ export const buildReviewRegistration = (
 							if (!identityCheck.ok) {
 								if (
 									sameAgentNameAsImplementer &&
-									identityCheck.reason ===
-										'same-process-approve'
+									identityCheck.reason === 'self-approve'
 								) {
 									throw Object.assign(
 										new Error(

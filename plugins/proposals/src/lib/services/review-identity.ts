@@ -34,7 +34,7 @@ export type IApproveIdentityCheckResult =
 	| { ok: true; submitter: IReviewIdentityRecord }
 	| {
 			ok: false;
-			reason: 'missing-submit-identity' | 'same-process-approve';
+			reason: 'missing-submit-identity' | 'self-approve';
 			nextAction: string;
 			submitter?: IReviewIdentityRecord;
 	  };
@@ -192,14 +192,19 @@ export const checkApproveIdentity = async (input: {
 				'submit the slice for review before approving it so the implementer identity is recorded',
 		};
 	}
-	if (
-		submitter.host === input.approver.host &&
-		submitter.pid === input.approver.pid
-	) {
+	// f00157-fix: independence is keyed on the AGENT, not the process. A
+	// single-host orchestration hands the review to a differently-named
+	// agent (a subagent), which must count as a legitimate peer. Only a
+	// self-approval (the same agent that submitted the slice) is refused.
+	const sameAgent =
+		submitter.agent.trim().toLowerCase() ===
+		input.approver.agent.trim().toLowerCase();
+	if (sameAgent) {
 		return {
 			ok: false,
-			reason: 'same-process-approve',
-			nextAction: 'a different MCP host / PID must call approve',
+			reason: 'self-approve',
+			nextAction:
+				'a different agent must call approve — the implementer submits and a different agent approves the slice',
 			submitter,
 		};
 	}
