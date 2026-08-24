@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
+import { buildSyntheticExample } from '../src/lib/synthetic-example.builder';
 import {
 	buildIssueBody,
 	buildIssueTitle,
@@ -136,7 +137,15 @@ describe('buildIssueTitle / buildIssueBody', () => {
 		],
 		syntheticExample: {
 			summary:
-				'Synthetic diagnostic context built from MCP Vertex-only metadata.',
+				'Synthetic bakery reproduction for PLUGIN_REGISTER_TIMEOUT.',
+			source: 'fixture-fallback',
+			fixtureId: 'bakery',
+			fixtureDomain: 'bakery',
+			argumentType: 'object',
+			payload: {
+				orderId: 'EXAMPLE-001',
+				endpoint: 'https://example.invalid/orders',
+			},
 		},
 	} as const;
 
@@ -153,7 +162,61 @@ describe('buildIssueTitle / buildIssueBody', () => {
 		expect(body).toContain('Automatic error report');
 		expect(body).toContain('PLUGIN_REGISTER_TIMEOUT');
 		expect(body).toContain('@mcp-vertex/error-reporting/src/index.ts:1:2');
+		expect(body).toContain('Synthetic bakery reproduction');
+		expect(body).toContain('EXAMPLE-001');
 		expect(body).not.toContain('Error: boom');
 		expect(body).toContain('"enabled": false');
+	});
+});
+
+describe('buildSyntheticExample', () => {
+	it('builds deterministic fixture fallback examples without real payload input', () => {
+		const left = buildSyntheticExample({
+			packageId: '@mcp-vertex/error-reporting',
+			toolName: 'quality_run_quality',
+			errorCode: 'PROCESS_TIMEOUT',
+			failureClass: 'INTERNAL_TIMEOUT',
+		});
+		const right = buildSyntheticExample({
+			packageId: '@mcp-vertex/error-reporting',
+			toolName: 'quality_run_quality',
+			errorCode: 'PROCESS_TIMEOUT',
+			failureClass: 'INTERNAL_TIMEOUT',
+		});
+		expect(left).toEqual(right);
+		expect(JSON.stringify(left)).toContain('example.invalid');
+		expect(JSON.stringify(left)).toMatch(
+			/EXAMPLE-001|DEMO-123|SYNTHETIC-42/,
+		);
+	});
+
+	it('projects schema-shaped payloads from fixtures when a schema is available', () => {
+		const example = buildSyntheticExample({
+			packageId: '@mcp-vertex/error-reporting',
+			toolName: 'docs_docs_read',
+			errorCode: 'INVALID_OPTIONS',
+			failureClass: 'INTERNAL_VALIDATION_ERROR',
+			toolSchema: {
+				type: 'object',
+				properties: {
+					endpoint: { type: 'string' },
+					requestId: { type: 'string' },
+					windowHours: { type: 'number' },
+					includeAlerts: { type: 'boolean' },
+				},
+			},
+		});
+		expect(example.source).toBe('schema-fixture');
+		expect(example.argumentType).toBe('object');
+		expect(example.payload).toEqual({
+			endpoint: expect.stringMatching(
+				/https:\/\/example\.(invalid|com)\//,
+			),
+			requestId: expect.stringMatching(
+				/EXAMPLE-001|DEMO-123|SYNTHETIC-42/,
+			),
+			windowHours: expect.any(Number),
+			includeAlerts: expect.any(Boolean),
+		});
 	});
 });

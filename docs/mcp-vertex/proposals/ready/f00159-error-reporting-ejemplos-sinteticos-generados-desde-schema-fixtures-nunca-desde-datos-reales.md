@@ -44,7 +44,7 @@ Redactar parcialmente un valor real (p. ej. un JSON de facturación) aún puede 
 - global_gate: type
 
 ### S1 — Librería de fixtures sintéticas
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/error-reporting/src/lib/synthetic-fixtures.ts`
 - **Gate**: type
 - acceptance:
@@ -53,7 +53,7 @@ Redactar parcialmente un valor real (p. ej. un JSON de facturación) aún puede 
   - "IDs EXAMPLE-001 / DEMO-123 / SYNTHETIC-42."
 
 ### S2 — Builder de reproducción sintética desde schema
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/error-reporting/src/lib/synthetic-example.builder.ts`
 - **Gate**: type
 - acceptance:
