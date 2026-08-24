@@ -36,7 +36,6 @@ export default defineConfig({
 		exclude: ['**/node_modules/**', '**/dist/**'],
 		coverage: {
 			provider: 'v8',
-			all: true,
 			include: [
 				'src/lib/**/*.ts',
 				'src/data/**/*.ts',
