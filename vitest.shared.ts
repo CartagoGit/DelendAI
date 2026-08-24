@@ -91,6 +91,10 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 	const database = resolve(workspaceRoot, 'plugins/database/src');
 	const issues = resolve(workspaceRoot, 'plugins/issues/src');
 	const cache = resolve(workspaceRoot, 'plugins/cache/src');
+	const contextForChange = resolve(
+		workspaceRoot,
+		'plugins/context-for-change/src',
+	);
 	const changelog = resolve(workspaceRoot, 'plugins/changelog/src');
 	const completion = resolve(workspaceRoot, 'plugins/completion/src');
 	const errorReporting = resolve(
@@ -104,6 +108,18 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 	const shared = resolve(workspaceRoot, 'apps/shared/src');
 	return [
 		{ find: '@mcp-vertex/cli', replacement: resolve(cli, 'index.ts') },
+		{
+			find: '@mcp-vertex/context-for-change/public',
+			replacement: resolve(contextForChange, 'public/index.ts'),
+		},
+		{
+			find: /^@mcp-vertex\/context-for-change\/lib\/(.*)$/,
+			replacement: `${resolve(contextForChange, 'lib')}/$1`,
+		},
+		{
+			find: '@mcp-vertex/context-for-change',
+			replacement: resolve(contextForChange, 'index.ts'),
+		},
 		{
 			find: '@mcp-vertex/shared/i18n',
 			replacement: resolve(shared, 'i18n/index.ts'),

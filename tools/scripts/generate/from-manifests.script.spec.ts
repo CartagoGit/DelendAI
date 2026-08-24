@@ -72,6 +72,40 @@ const withFixture = async (
 				'};\n',
 			].join('\n'),
 		);
+		await mkdir(join(root, 'plugins/context-for-change'), {
+			recursive: true,
+		});
+		await writeFile(
+			join(root, 'plugins/context-for-change/package.json'),
+			JSON.stringify(
+				{
+					name: '@mcp-vertex/context-for-change',
+					version: '0.1.0',
+					publishConfig: { access: 'public' },
+				},
+				null,
+				'\t',
+			) + '\n',
+		);
+		await writeFile(
+			join(root, 'plugins/context-for-change/plugin.manifest.ts'),
+			[
+				'export const CONTEXT_FOR_CHANGE_PLUGIN_MANIFEST = {',
+				"\tid: 'context-for-change',",
+				"\tpackage: '@mcp-vertex/context-for-change',",
+				"\tversion: '0.1.0',",
+				"\tvisibility: 'public',",
+				"\tsummary: 'Compact task-oriented change context orchestration.',",
+				"\ttags: ['context', 'orchestration', 'compact', 'f00165'],",
+				"\tmaturity: 'experimental',",
+				"\tpermissions: ['filesystem-read'],",
+				"\tpresets: ['vertex'],",
+				'\ttokenBudget: { warning: 2200, hard: 2500, releaseRelativePercent: 20 },',
+				"\tdependencies: ['@mcp-vertex/core', 'zod'],",
+				"\tcapabilities: ['context-orchestration'],",
+				'};\n',
+			].join('\n'),
+		);
 		await writeFile(
 			join(root, README_PATH),
 			[
@@ -113,7 +147,10 @@ describe('from-manifests generator', () => {
 					manifest,
 				})),
 			);
-			expect(entries.map((entry) => entry.id)).toEqual(['search']);
+			expect(entries.map((entry) => entry.id)).toEqual([
+				'context-for-change',
+				'search',
+			]);
 			expect(entries[0]?.permissions).toEqual(['filesystem-read']);
 			const compatibility = buildCompatibilityMatrix(
 				(result?.artifact.manifests ?? []).map((manifest) => ({

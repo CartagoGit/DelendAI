@@ -299,6 +299,37 @@
         "typescript": "7.0.2",
       },
     },
+    "plugins/context-for-change": {
+      "name": "@mcp-vertex/context-for-change",
+      "version": "0.1.0",
+      "dependencies": {
+        "@mcp-vertex/conventions": "workspace:*",
+        "@mcp-vertex/docs": "workspace:*",
+        "@mcp-vertex/git": "workspace:*",
+        "@mcp-vertex/memory": "workspace:*",
+        "@mcp-vertex/refactor": "workspace:*",
+        "@mcp-vertex/search": "workspace:*",
+        "@mcp-vertex/test-policy": "workspace:*",
+        "@modelcontextprotocol/sdk": "^1.29.0",
+        "zod": "^4.4.3",
+      },
+      "devDependencies": {
+        "@mcp-vertex/conventions": "workspace:*",
+        "@mcp-vertex/core": "workspace:*",
+        "@mcp-vertex/docs": "workspace:*",
+        "@mcp-vertex/git": "workspace:*",
+        "@mcp-vertex/memory": "workspace:*",
+        "@mcp-vertex/refactor": "workspace:*",
+        "@mcp-vertex/search": "workspace:*",
+        "@mcp-vertex/test-policy": "workspace:*",
+        "@types/bun": "latest",
+        "typescript": "7.0.2",
+        "vitest": "4.1.10",
+      },
+      "peerDependencies": {
+        "@mcp-vertex/core": "^0.1.1",
+      },
+    },
     "plugins/conventions": {
       "name": "@mcp-vertex/conventions",
       "version": "0.1.1",
@@ -1209,6 +1240,8 @@
     "@mcp-vertex/completion": ["@mcp-vertex/completion@workspace:plugins/completion"],
 
     "@mcp-vertex/container": ["@mcp-vertex/container@workspace:plugins/container"],
+
+    "@mcp-vertex/context-for-change": ["@mcp-vertex/context-for-change@workspace:plugins/context-for-change"],
 
     "@mcp-vertex/conventions": ["@mcp-vertex/conventions@workspace:plugins/conventions"],
 
@@ -2724,6 +2757,8 @@
 
     "@mcp-vertex/completion/@types/bun": ["@types/bun@1.4.0", "", { "dependencies": { "bun-types": "1.4.0" } }, "sha512-K+lZULY23vRgK/CfTjFIV+tyifaNdSMlPh9j+6mQ/cLfpOznLyAuzgV/JQysyECpkBQLVMSyvjlr2fBUSA9wFQ=="],
 
+    "@mcp-vertex/context-for-change/@types/bun": ["@types/bun@1.4.0", "", { "dependencies": { "bun-types": "1.4.0" } }, "sha512-K+lZULY23vRgK/CfTjFIV+tyifaNdSMlPh9j+6mQ/cLfpOznLyAuzgV/JQysyECpkBQLVMSyvjlr2fBUSA9wFQ=="],
+
     "@mcp-vertex/conventions/@types/bun": ["@types/bun@1.4.0", "", { "dependencies": { "bun-types": "1.4.0" } }, "sha512-K+lZULY23vRgK/CfTjFIV+tyifaNdSMlPh9j+6mQ/cLfpOznLyAuzgV/JQysyECpkBQLVMSyvjlr2fBUSA9wFQ=="],
 
     "@mcp-vertex/core/@types/bun": ["@types/bun@1.4.0", "", { "dependencies": { "bun-types": "1.4.0" } }, "sha512-K+lZULY23vRgK/CfTjFIV+tyifaNdSMlPh9j+6mQ/cLfpOznLyAuzgV/JQysyECpkBQLVMSyvjlr2fBUSA9wFQ=="],
@@ -2933,6 +2968,8 @@
     "@mcp-vertex/client/@types/bun/bun-types": ["bun-types@1.4.0", "", { "dependencies": { "@types/node": "*" } }, "sha512-iIKw23BspnQQYd3prITOBxeUsxBHnwzX6YJfGMuNOZzeNcMmVqzIIVGRm1l69ogaPQmb4wB6BN8mA5bE9YuC5Q=="],
 
     "@mcp-vertex/completion/@types/bun/bun-types": ["bun-types@1.4.0", "", { "dependencies": { "@types/node": "*" } }, "sha512-iIKw23BspnQQYd3prITOBxeUsxBHnwzX6YJfGMuNOZzeNcMmVqzIIVGRm1l69ogaPQmb4wB6BN8mA5bE9YuC5Q=="],
+
+    "@mcp-vertex/context-for-change/@types/bun/bun-types": ["bun-types@1.4.0", "", { "dependencies": { "@types/node": "*" } }, "sha512-iIKw23BspnQQYd3prITOBxeUsxBHnwzX6YJfGMuNOZzeNcMmVqzIIVGRm1l69ogaPQmb4wB6BN8mA5bE9YuC5Q=="],
 
     "@mcp-vertex/conventions/@types/bun/bun-types": ["bun-types@1.4.0", "", { "dependencies": { "@types/node": "*" } }, "sha512-iIKw23BspnQQYd3prITOBxeUsxBHnwzX6YJfGMuNOZzeNcMmVqzIIVGRm1l69ogaPQmb4wB6BN8mA5bE9YuC5Q=="],
 

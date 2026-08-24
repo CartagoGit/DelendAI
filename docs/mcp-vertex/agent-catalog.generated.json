@@ -83,6 +83,10 @@
 			"plugin": "container"
 		},
 		{
+			"name": "mcp-vertex_context-for-change_context_for_change",
+			"plugin": "context-for-change"
+		},
+		{
 			"name": "mcp-vertex_conventions_conventions_check",
 			"plugin": "conventions"
 		},

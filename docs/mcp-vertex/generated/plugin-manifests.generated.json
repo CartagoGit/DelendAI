@@ -1,6 +1,35 @@
 {
-	"generatedAt": "2026-08-24T10:42:28.459Z",
+	"generatedAt": "2026-08-24T11:07:16.341Z",
 	"manifests": [
+		{
+			"id": "context-for-change",
+			"package": "@mcp-vertex/context-for-change",
+			"version": "0.1.0",
+			"visibility": "public",
+			"summary": "Compact task-oriented change context orchestration across diff, symbols, tests, docs and conventions.",
+			"tags": ["context", "orchestration", "compact", "f00165"],
+			"maturity": "experimental",
+			"permissions": ["filesystem-read"],
+			"presets": ["vertex"],
+			"tokenBudget": {
+				"hard": 3000,
+				"warning": 2700,
+				"releaseRelativePercent": 20
+			},
+			"dependencies": [
+				"@mcp-vertex/core",
+				"@mcp-vertex/git",
+				"@mcp-vertex/search",
+				"@mcp-vertex/memory",
+				"@mcp-vertex/docs",
+				"@mcp-vertex/conventions",
+				"@mcp-vertex/refactor",
+				"@mcp-vertex/test-policy",
+				"@modelcontextprotocol/sdk",
+				"zod"
+			],
+			"capabilities": ["context-orchestration"]
+		},
 		{
 			"id": "search",
 			"package": "@mcp-vertex/search",
@@ -42,6 +71,14 @@
 	"firstPartyEntries": [
 		{
 			"origin": "first-party",
+			"id": "context-for-change",
+			"package": "@mcp-vertex/context-for-change",
+			"summary": "Compact task-oriented change context orchestration across diff, symbols, tests, docs and conventions.",
+			"tags": ["context", "orchestration", "compact", "f00165"],
+			"permissions": ["filesystem-read"]
+		},
+		{
+			"origin": "first-party",
 			"id": "search",
 			"package": "@mcp-vertex/search",
 			"summary": "Code search (semantic + symbol + references).",
@@ -50,6 +87,16 @@
 		}
 	],
 	"webCatalog": [
+		{
+			"id": "context-for-change",
+			"package": "@mcp-vertex/context-for-change",
+			"summary": "Compact task-oriented change context orchestration across diff, symbols, tests, docs and conventions.",
+			"tags": ["context", "orchestration", "compact", "f00165"],
+			"maturity": "experimental",
+			"visibility": "public",
+			"presets": ["vertex"],
+			"capabilities": ["context-orchestration"]
+		},
 		{
 			"id": "search",
 			"package": "@mcp-vertex/search",
@@ -78,6 +125,12 @@
 	],
 	"tokenBudgets": [
 		{
+			"id": "context-for-change",
+			"warning": 2700,
+			"hard": 3000,
+			"releaseRelativePercent": 20
+		},
+		{
 			"id": "search",
 			"warning": 2700,
 			"hard": 3000,
@@ -86,11 +139,78 @@
 	],
 	"permissionsTable": [
 		{
+			"id": "context-for-change",
+			"permissions": ["filesystem-read"]
+		},
+		{
 			"id": "search",
 			"permissions": ["filesystem-read"]
 		}
 	],
 	"compatibilityMatrix": [
+		{
+			"pluginId": "context-for-change",
+			"presetId": "minimal",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "context-for-change",
+			"presetId": "lean",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "context-for-change",
+			"presetId": "standard",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "context-for-change",
+			"presetId": "swarm",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "context-for-change",
+			"presetId": "full",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "context-for-change",
+			"presetId": "vertex",
+			"declared": true,
+			"catalogMember": true,
+			"matches": true
+		},
+		{
+			"pluginId": "context-for-change",
+			"presetId": "web-app",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "context-for-change",
+			"presetId": "backend-api",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "context-for-change",
+			"presetId": "cli-tool",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
 		{
 			"pluginId": "search",
 			"presetId": "minimal",
