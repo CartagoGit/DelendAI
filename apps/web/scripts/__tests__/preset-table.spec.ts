@@ -76,7 +76,7 @@ describe('preset-table', () => {
 			// error-reporting), exactly mirroring mcp-vertex.config.json
 			// (including `proposals`, the orchestration plugin —
 			// previously excluded, a stale drift).
-			expect(vertex?.effective.length).toBe(29);
+			expect(vertex?.effective.length).toBe(30);
 			expect(vertex?.effective).toContain('perf');
 			expect(vertex?.effective).toContain('audit');
 			expect(vertex?.effective).toContain('auto-agent-selector');
