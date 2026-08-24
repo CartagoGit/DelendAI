@@ -40,6 +40,11 @@
 				"maxBytes": 3000
 			}
 		},
+		"impact-analysis": {
+			"options": {
+				"maxBytes": 3000
+			}
+		},
 		"memory": {
 			"options": {
 				"bm25K1": 1.5,

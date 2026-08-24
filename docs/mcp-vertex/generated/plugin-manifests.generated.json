@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-08-24T11:07:16.341Z",
+	"generatedAt": "2026-08-24T11:35:33.431Z",
 	"manifests": [
 		{
 			"id": "context-for-change",
@@ -29,6 +29,32 @@
 				"zod"
 			],
 			"capabilities": ["context-orchestration"]
+		},
+		{
+			"id": "impact-analysis",
+			"package": "@mcp-vertex/impact-analysis",
+			"version": "0.1.0",
+			"visibility": "public",
+			"summary": "Bounded impact analysis and test selection across changed symbols, dependents and related specs.",
+			"tags": ["impact", "tests", "f00169"],
+			"maturity": "experimental",
+			"permissions": ["filesystem-read"],
+			"presets": ["vertex"],
+			"tokenBudget": {
+				"hard": 3000,
+				"warning": 2700,
+				"releaseRelativePercent": 20
+			},
+			"dependencies": [
+				"@mcp-vertex/core",
+				"@mcp-vertex/git",
+				"@mcp-vertex/search",
+				"@mcp-vertex/refactor",
+				"@mcp-vertex/test-policy",
+				"@modelcontextprotocol/sdk",
+				"zod"
+			],
+			"capabilities": ["impact-analysis", "test-selection"]
 		},
 		{
 			"id": "search",
@@ -79,6 +105,14 @@
 		},
 		{
 			"origin": "first-party",
+			"id": "impact-analysis",
+			"package": "@mcp-vertex/impact-analysis",
+			"summary": "Bounded impact analysis and test selection across changed symbols, dependents and related specs.",
+			"tags": ["impact", "tests", "f00169"],
+			"permissions": ["filesystem-read"]
+		},
+		{
+			"origin": "first-party",
 			"id": "search",
 			"package": "@mcp-vertex/search",
 			"summary": "Code search (semantic + symbol + references).",
@@ -96,6 +130,16 @@
 			"visibility": "public",
 			"presets": ["vertex"],
 			"capabilities": ["context-orchestration"]
+		},
+		{
+			"id": "impact-analysis",
+			"package": "@mcp-vertex/impact-analysis",
+			"summary": "Bounded impact analysis and test selection across changed symbols, dependents and related specs.",
+			"tags": ["impact", "tests", "f00169"],
+			"maturity": "experimental",
+			"visibility": "public",
+			"presets": ["vertex"],
+			"capabilities": ["impact-analysis", "test-selection"]
 		},
 		{
 			"id": "search",
@@ -131,6 +175,12 @@
 			"releaseRelativePercent": 20
 		},
 		{
+			"id": "impact-analysis",
+			"warning": 2700,
+			"hard": 3000,
+			"releaseRelativePercent": 20
+		},
+		{
 			"id": "search",
 			"warning": 2700,
 			"hard": 3000,
@@ -140,6 +190,10 @@
 	"permissionsTable": [
 		{
 			"id": "context-for-change",
+			"permissions": ["filesystem-read"]
+		},
+		{
+			"id": "impact-analysis",
 			"permissions": ["filesystem-read"]
 		},
 		{
@@ -206,6 +260,69 @@
 		},
 		{
 			"pluginId": "context-for-change",
+			"presetId": "cli-tool",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "impact-analysis",
+			"presetId": "minimal",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "impact-analysis",
+			"presetId": "lean",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "impact-analysis",
+			"presetId": "standard",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "impact-analysis",
+			"presetId": "swarm",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "impact-analysis",
+			"presetId": "full",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "impact-analysis",
+			"presetId": "vertex",
+			"declared": true,
+			"catalogMember": true,
+			"matches": true
+		},
+		{
+			"pluginId": "impact-analysis",
+			"presetId": "web-app",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "impact-analysis",
+			"presetId": "backend-api",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "impact-analysis",
 			"presetId": "cli-tool",
 			"declared": false,
 			"catalogMember": false,

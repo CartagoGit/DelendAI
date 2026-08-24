@@ -5,6 +5,7 @@
 | id | package | visibility | maturity | presets |
 | --- | --- | --- | --- | --- |
 | context-for-change | @mcp-vertex/context-for-change | public | experimental | vertex |
+| impact-analysis | @mcp-vertex/impact-analysis | public | experimental | vertex |
 | search | @mcp-vertex/search | public | stable | minimal, lean, standard, swarm, full, vertex, web-app, backend-api, cli-tool |
 
 ## Token budgets
@@ -12,6 +13,7 @@
 | id | warning | hard | releaseRelativePercent |
 | --- | --- | --- | --- |
 | context-for-change | 2700 | 3000 | 20 |
+| impact-analysis | 2700 | 3000 | 20 |
 | search | 2700 | 3000 | 20 |
 
 ## Permissions
@@ -19,6 +21,7 @@
 | id | permissions | toolPermissions |
 | --- | --- | --- |
 | context-for-change | filesystem-read |  |
+| impact-analysis | filesystem-read |  |
 | search | filesystem-read |  |
 
 ## Compatibility matrix
@@ -34,6 +37,15 @@
 | context-for-change | web-app | no | no | yes |
 | context-for-change | backend-api | no | no | yes |
 | context-for-change | cli-tool | no | no | yes |
+| impact-analysis | minimal | no | no | yes |
+| impact-analysis | lean | no | no | yes |
+| impact-analysis | standard | no | no | yes |
+| impact-analysis | swarm | no | no | yes |
+| impact-analysis | full | no | no | yes |
+| impact-analysis | vertex | yes | yes | yes |
+| impact-analysis | web-app | no | no | yes |
+| impact-analysis | backend-api | no | no | yes |
+| impact-analysis | cli-tool | no | no | yes |
 | search | minimal | yes | yes | yes |
 | search | lean | yes | yes | yes |
 | search | standard | yes | yes | yes |

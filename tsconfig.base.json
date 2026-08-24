@@ -229,6 +229,15 @@
 			"@mcp-vertex/context-for-change/*": [
 				"./plugins/context-for-change/src/*"
 			],
+			"@mcp-vertex/impact-analysis": [
+				"./plugins/impact-analysis/src/index.ts"
+			],
+			"@mcp-vertex/impact-analysis/public": [
+				"./plugins/impact-analysis/src/public/index.ts"
+			],
+			"@mcp-vertex/impact-analysis/*": [
+				"./plugins/impact-analysis/src/*"
+			],
 			"@mcp-vertex/changelog": ["./plugins/changelog/src/index.ts"],
 			"@mcp-vertex/changelog/public": [
 				"./plugins/changelog/src/public/index.ts"

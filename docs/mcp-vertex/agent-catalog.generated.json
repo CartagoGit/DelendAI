@@ -297,6 +297,14 @@
 			"plugin": "i18n"
 		},
 		{
+			"name": "mcp-vertex_impact-analysis_impact_analyze",
+			"plugin": "impact-analysis"
+		},
+		{
+			"name": "mcp-vertex_impact-analysis_tests_for_change",
+			"plugin": "impact-analysis"
+		},
+		{
 			"name": "mcp-vertex_init_config"
 		},
 		{

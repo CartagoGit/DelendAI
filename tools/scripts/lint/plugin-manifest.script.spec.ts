@@ -36,6 +36,11 @@ const withFixture = async (
 			name: '@mcp-vertex/context-for-change',
 			version: '0.1.0',
 		});
+		await mkdir(join(root, 'plugins/impact-analysis'), { recursive: true });
+		await writeJson(join(root, 'plugins/impact-analysis/package.json'), {
+			name: '@mcp-vertex/impact-analysis',
+			version: '0.1.0',
+		});
 		await writeFile(
 			join(root, 'plugins/context-for-change/plugin.manifest.ts'),
 			[
@@ -52,6 +57,25 @@ const withFixture = async (
 				'\ttokenBudget: { warning: 2200, hard: 2500, releaseRelativePercent: 20 },',
 				"\tdependencies: ['@mcp-vertex/core', 'zod'],",
 				"\tcapabilities: ['context-orchestration'],",
+				'};\n',
+			].join('\n'),
+		);
+		await writeFile(
+			join(root, 'plugins/impact-analysis/plugin.manifest.ts'),
+			[
+				'export const IMPACT_ANALYSIS_PLUGIN_MANIFEST = {',
+				"\tid: 'impact-analysis',",
+				"\tpackage: '@mcp-vertex/impact-analysis',",
+				"\tversion: '0.1.0',",
+				"\tvisibility: 'public',",
+				"\tsummary: 'Bounded impact analysis and test selection.',",
+				"\ttags: ['impact', 'tests', 'f00169'],",
+				"\tmaturity: 'experimental',",
+				"\tpermissions: ['filesystem-read'],",
+				"\tpresets: ['vertex'],",
+				'\ttokenBudget: { warning: 2200, hard: 2500, releaseRelativePercent: 20 },',
+				"\tdependencies: ['@mcp-vertex/core', 'zod'],",
+				"\tcapabilities: ['impact-analysis', 'test-selection'],",
 				'};\n',
 			].join('\n'),
 		);

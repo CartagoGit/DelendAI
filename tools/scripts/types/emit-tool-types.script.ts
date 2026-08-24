@@ -69,6 +69,10 @@ export const PACKAGE_ROUTES: Readonly<Record<string, IPackageRoute>> = {
 		dir: 'plugins/context-for-change',
 		label: 'ContextForChange',
 	},
+	'impact-analysis': {
+		dir: 'plugins/impact-analysis',
+		label: 'ImpactAnalysis',
+	},
 };
 
 /** Relative path (from a package dir) of the generated module. */
