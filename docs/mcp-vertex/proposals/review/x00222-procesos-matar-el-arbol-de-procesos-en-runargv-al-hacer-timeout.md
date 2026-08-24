@@ -46,7 +46,7 @@ Builds, Docker, package managers y test runners crean hijos. Dejarlos vivos tras
 
 ### S2 — Test de descendientes vivos
 - **Status**: done
-- **Files**: `packages/core/tests/src/lib/external-tool/process-tree-kill.spec.ts`
+- **Files**: `packages/core/tests/src/lib/shared/process-tree-kill.spec.ts`
 - **Gate**: type
 - acceptance:
   - "Padre crea hijo duradero y excede timeout -> no queda ningún proceso vivo."

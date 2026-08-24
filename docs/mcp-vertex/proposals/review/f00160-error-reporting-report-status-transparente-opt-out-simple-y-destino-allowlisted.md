@@ -61,7 +61,7 @@ Mantener default-on exige transparencia: el usuario debe poder ver qué se enví
 
 ### S3 — Documentación de privacidad y checklist legal
 - **Status**: done
-- **Files**: `plugins/error-reporting/README.md`, `plugins/error-reporting/src/lib/knowledge/error-reporting.md`
+- **Files**: `plugins/error-reporting/README.md`, `plugins/error-reporting/src/lib/knowledge/error-reporting.ts`
 - **Gate**: lint
 - acceptance:
   - "README documenta política de privacidad, campos transmitidos y cómo deshabilitar."

@@ -45,7 +45,7 @@ Redactar parcialmente un valor real (p. ej. un JSON de facturación) aún puede 
 
 ### S1 — Librería de fixtures sintéticas
 - **Status**: done
-- **Files**: `plugins/error-reporting/src/lib/synthetic-fixtures.ts`
+- **Files**: `plugins/error-reporting/src/lib/synthetic-fixtures.constant.ts`
 - **Gate**: type
 - acceptance:
   - "Cubre bakery/weather/books/pets/music catalog/fictional inventory."
