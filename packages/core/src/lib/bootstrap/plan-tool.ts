@@ -10,7 +10,7 @@
 import z from 'zod';
 
 import type { IToolRegistration } from '../contracts/interfaces/tool-registration.interface';
-import type { IFileReader } from './analyze-project';
+import type { IFileReader, IProjectAnalysis } from './analyze-project';
 import { analyzeProject } from './analyze-project';
 import { buildBlueprintFiles, buildServerBlueprint } from './build-blueprint';
 import type { IPatternOverrides } from './pattern-catalog-overrides';
@@ -25,6 +25,7 @@ import { ADOPTION_STRATEGY_SCHEMA } from '../contracts/constants/adoption-strate
 export interface IPlanToolDeps {
 	readonly namespacePrefix: string;
 	readonly reader: IFileReader;
+	readonly analyze?: () => Promise<IProjectAnalysis>;
 	readonly patternOverrides?: IPatternOverrides;
 }
 
@@ -119,7 +120,8 @@ export const buildPlanToolRegistration = (
 					inputSchema: PLAN_INPUT_SCHEMA,
 				},
 				async (args: z.infer<typeof PLAN_INPUT_SCHEMA>) => {
-					const analysis = await analyzeProject(deps.reader);
+					const analysis = await (deps.analyze?.() ??
+						analyzeProject(deps.reader));
 					const blueprint = buildServerBlueprint(analysis, {
 						...(args.tests !== undefined
 							? { tests: args.tests }

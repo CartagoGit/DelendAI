@@ -552,7 +552,7 @@ void startServer();
 		content: `${JSON.stringify(
 			{
 				servers: {
-					[`mcp-project-${options.namespacePrefix}`]: {
+					[resolveMcpServerName(options)]: {
 						command: 'bun',
 						args: ['--watch', 'run', 'src/index.ts'],
 						cwd:
@@ -670,7 +670,7 @@ export const scaffoldCodexConfigFile = (
 	return {
 		path: '.codex/config.toml',
 		content: `# Codex CLI MCP server registration (mirrors .vscode/mcp.json).
-[mcp_servers.mcp-project-${options.namespacePrefix}]
+[mcp_servers.${resolveMcpServerName(options)}]
 command = "bun"
 args = ["--watch", "run", "src/index.ts"]
 cwd = "${targetDir === '.' ? '.' : targetDir}"
