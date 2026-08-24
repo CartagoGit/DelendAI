@@ -4,6 +4,7 @@ import {
 } from '@mcp-vertex/core/public';
 import z from 'zod';
 
+import { SAFE_REPORTER_FAILURE_CODES } from '../contracts/constants/safe-reporter-failure-codes.constant';
 import type { IReportStatusToolOptions } from '../contracts/interfaces/report-status.interface';
 
 const ReportStatusInputSchema = z.object({}).strict();
@@ -19,11 +20,15 @@ const ReportStatusOutputSchema = z
 		recentReports: z.array(
 			z
 				.object({
-					signature: z.string(),
+					fingerprint: z.string(),
+					attemptCount: z.number(),
+					lastAttemptAt: z.string().optional(),
+					lastSuccessAt: z.string().optional(),
+					lastFailureCode: z
+						.enum(SAFE_REPORTER_FAILURE_CODES)
+						.optional(),
 					issueNumber: z.number().optional(),
 					issueUrl: z.string().optional(),
-					lastReportedAt: z.string(),
-					count: z.number(),
 				})
 				.strict(),
 		),
@@ -62,21 +67,36 @@ export const buildReportStatusRegistration = (
 						recentReports: recentReports
 							.slice()
 							.sort((a, b) =>
-								b.lastReportedAt.localeCompare(
-									a.lastReportedAt,
+								(
+									b.lastAttemptAt ??
+									b.lastSuccessAt ??
+									''
+								).localeCompare(
+									a.lastAttemptAt ?? a.lastSuccessAt ?? '',
 								),
 							)
 							.slice(0, MAX_RECENT_REPORTS)
 							.map((record) => ({
-								signature: record.signature,
+								fingerprint: record.fingerprint,
+								attemptCount: record.attemptCount,
+								...(record.lastAttemptAt !== undefined
+									? { lastAttemptAt: record.lastAttemptAt }
+									: {}),
+								...(record.lastSuccessAt !== undefined
+									? { lastSuccessAt: record.lastSuccessAt }
+									: {}),
+								...(record.lastFailureCode !== undefined
+									? {
+											lastFailureCode:
+												record.lastFailureCode,
+										}
+									: {}),
 								...(record.issueNumber !== undefined
 									? { issueNumber: record.issueNumber }
 									: {}),
 								...(record.issueUrl !== undefined
 									? { issueUrl: record.issueUrl }
 									: {}),
-								lastReportedAt: record.lastReportedAt,
-								count: record.count,
 							})),
 					}),
 				);

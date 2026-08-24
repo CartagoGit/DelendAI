@@ -51,7 +51,7 @@ Hoy `submitIssue()` registra la firma aunque el envío falle, por lo que un fall
 - global_gate: type
 
 ### S1 — Store con attempt/success separados
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/error-reporting/src/lib/contracts/interfaces/report-store.interface.ts`, `plugins/error-reporting/src/lib/report-store.service.ts`
 - **Gate**: type
 - acceptance:
@@ -60,7 +60,7 @@ Hoy `submitIssue()` registra la firma aunque el envío falle, por lo que un fall
   - "Un envío fallido (sin red/gh) no bloquea el reintento durante la ventana."
 
 ### S2 — Rate limits, backoff y circuit breaker
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/error-reporting/src/lib/report-scheduler.helper.ts`
 - **Gate**: type
 - acceptance:
@@ -70,7 +70,7 @@ Hoy `submitIssue()` registra la firma aunque el envío falle, por lo que un fall
   - "Antes de crear issue nueva se busca el fingerprint existente para comentar/actualizar solo con datos seguros."
 
 ### S3 — El MISMO error deduplica aunque los datos difieran (el tipo NO es el error)
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/error-reporting/src/lib/report-store.service.ts`, `plugins/error-reporting/src/lib/signature.helper.ts`
 - **Gate**: type
 - acceptance:

@@ -16,7 +16,7 @@ describe('shouldReport', () => {
 	it('reports when there is no previous record', () => {
 		expect(
 			shouldReport({
-				lastReportedAt: undefined,
+				lastSuccessAt: undefined,
 				dedupeWindowHours: 24,
 				nowMs: now,
 			}),
@@ -26,7 +26,7 @@ describe('shouldReport', () => {
 	it('suppresses a report inside the window', () => {
 		expect(
 			shouldReport({
-				lastReportedAt: '2026-08-23T23:00:00.000Z',
+				lastSuccessAt: '2026-08-23T23:00:00.000Z',
 				dedupeWindowHours: 24,
 				nowMs: now,
 			}),
@@ -36,7 +36,17 @@ describe('shouldReport', () => {
 	it('reports again after the window expires', () => {
 		expect(
 			shouldReport({
-				lastReportedAt: '2026-08-22T00:00:00.000Z',
+				lastSuccessAt: '2026-08-22T00:00:00.000Z',
+				dedupeWindowHours: 24,
+				nowMs: now,
+			}),
+		).toBe(true);
+	});
+
+	it('does not suppress retries when only a failed attempt timestamp exists', () => {
+		expect(
+			shouldReport({
+				lastSuccessAt: undefined,
 				dedupeWindowHours: 24,
 				nowMs: now,
 			}),
@@ -78,10 +88,12 @@ describe('createSafeReporter.submitSafeReport', () => {
 		});
 		const outcome = await reporter.submitSafeReport(base, exec);
 		expect(outcome.ok).toBe(true);
-		expect(outcome.issueNumber).toBe(1234);
-		expect(outcome.issueUrl).toBe(
-			'https://github.com/CartagoGit/mcp-vertex/issues/1234',
-		);
+		if (outcome.ok) {
+			expect(outcome.issueNumber).toBe(1234);
+			expect(outcome.issueUrl).toBe(
+				'https://github.com/CartagoGit/mcp-vertex/issues/1234',
+			);
+		}
 	});
 
 	it('returns a structured failure when gh exits non-zero', async () => {
@@ -93,7 +105,10 @@ describe('createSafeReporter.submitSafeReport', () => {
 		});
 		const outcome = await reporter.submitSafeReport(base, exec);
 		expect(outcome.ok).toBe(false);
-		expect(outcome.reason).toContain('gh auth required');
+		if (!outcome.ok) {
+			expect(outcome.reason).toContain('gh auth required');
+			expect(outcome.failureCode).toBe('GH_EXEC_FAILED');
+		}
 	});
 
 	it('flags a missing gh binary explicitly', async () => {
@@ -105,7 +120,24 @@ describe('createSafeReporter.submitSafeReport', () => {
 		});
 		const outcome = await reporter.submitSafeReport(base, exec);
 		expect(outcome.ok).toBe(false);
-		expect(outcome.reason).toContain('not installed');
+		if (!outcome.ok) {
+			expect(outcome.reason).toContain('not installed');
+			expect(outcome.failureCode).toBe('GH_NOT_INSTALLED');
+		}
+	});
+
+	it('returns a typed parse failure when gh output has no issue number', async () => {
+		const exec: IIssueExec = async () => ({
+			ok: true,
+			code: 0,
+			stdout: 'created but hidden somewhere else\n',
+			stderr: '',
+		});
+		const outcome = await reporter.submitSafeReport(base, exec);
+		expect(outcome.ok).toBe(false);
+		if (!outcome.ok) {
+			expect(outcome.failureCode).toBe('ISSUE_NUMBER_PARSE_FAILED');
+		}
 	});
 
 	it('sends title, body and labels as gh argv', async () => {

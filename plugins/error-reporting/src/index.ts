@@ -8,14 +8,18 @@ import {
 	resolveOptions,
 } from './lib/contracts/constants/options.constant';
 import type { ISafeMcpVertexReport } from './lib/contracts/interfaces/reporter.interface';
+import type { IErrorReportingOptions } from './lib/contracts/interfaces/options.interface';
+import type { IReportSchedulerClock } from './lib/contracts/interfaces/report-scheduler.interface';
+import type { IReportStore } from './lib/contracts/interfaces/report-store.interface';
 import { registerInternalRuntimePaths } from './lib/frame-extractor.helper';
 import { classifyInternalError } from './lib/internal-classifier.helper';
 import {
 	validateSafeReport,
 	validateSerializedSafeReport,
 } from './lib/privacy-validator.helper';
+import { createReportScheduler } from './lib/report-scheduler.helper';
 import { createReportStore } from './lib/report-store.service';
-import { createSafeReporter, shouldReport } from './lib/reporter.service';
+import { createSafeReporter } from './lib/reporter.service';
 import { signatureOf } from './lib/signature.helper';
 import { buildSyntheticExample } from './lib/synthetic-example.builder';
 import { buildReportStatusRegistration } from './lib/tools/report-status.tool';
@@ -77,6 +81,11 @@ const logPrivacyBlock = (reasonCode: string): void => {
 	console.warn(`report blocked by privacy validator: ${reasonCode}`);
 };
 
+const systemClock: IReportSchedulerClock = {
+	nowMs: () => Date.now(),
+	random: () => Math.random(),
+};
+
 const buildSafeReport = (
 	toolName: string,
 	error: unknown,
@@ -119,6 +128,75 @@ const buildSafeReport = (
 	};
 };
 
+export const buildReportErrorHandler = (input: {
+	readonly options: IErrorReportingOptions;
+	readonly store: IReportStore;
+	readonly reporter: ReturnType<typeof createSafeReporter>;
+	readonly clock: IReportSchedulerClock;
+}) => {
+	const scheduler = createReportScheduler({
+		options: input.options,
+		clock: input.clock,
+	});
+	return async (toolName: string, error: unknown): Promise<void> => {
+		try {
+			const report = buildSafeReport(toolName, error);
+			if (report === undefined) return;
+			const redactedReport = redactReport(report);
+			const validation = validateSafeReport(redactedReport);
+			if (!validation.ok) {
+				logPrivacyBlock(validation.reasonCode ?? 'unknown');
+				return;
+			}
+			const serializedReport = JSON.stringify(redactedReport);
+			const serializedValidation =
+				validateSerializedSafeReport(serializedReport);
+			if (!serializedValidation.ok) {
+				logPrivacyBlock(serializedValidation.reasonCode ?? 'unknown');
+				return;
+			}
+			const nowMs = input.clock.nowMs();
+			const at = new Date(nowMs).toISOString();
+			await input.store.recordAttempt(redactedReport.fingerprint, { at });
+			const existing = await input.store.get(redactedReport.fingerprint);
+			const decision = scheduler.decide({
+				record: existing,
+				records: await input.store.all(),
+				nowMs,
+			});
+			if (decision.action !== 'submit') return;
+			const outcome =
+				await input.reporter.submitSafeReport(redactedReport);
+			if (!outcome.ok) {
+				const failureState = scheduler.buildFailureState(
+					await input.store.get(redactedReport.fingerprint),
+					outcome.failureCode,
+					nowMs,
+				);
+				await input.store.recordFailure(redactedReport.fingerprint, {
+					at,
+					failureCode: failureState.failureCode,
+					nextEligibleAt: failureState.nextEligibleAt,
+					...(failureState.circuitOpenUntil !== undefined
+						? { circuitOpenUntil: failureState.circuitOpenUntil }
+						: {}),
+				});
+				return;
+			}
+			await input.store.recordSuccess(redactedReport.fingerprint, {
+				at,
+				issueNumber: outcome.issueNumber,
+				...(outcome.issueUrl !== undefined
+					? { issueUrl: outcome.issueUrl }
+					: {}),
+			});
+		} catch {
+			// A reporting failure must never surface into the tool call
+			// that triggered it. Intentionally swallowed.
+		}
+	};
+};
+
 /**
  * Intrinsic, opt-out automatic error reporting. Ships in the `standard`
  * preset so every adopter is a live sensor for mcp-vertex bugs. The
@@ -142,6 +220,12 @@ export default definePlugin({
 			targetRepo: options.targetRepo,
 			labels: options.labels,
 			workspaceRootAbs: ctx.workspace.root,
+		});
+		const reportError = buildReportErrorHandler({
+			options,
+			store,
+			reporter,
+			clock: systemClock,
 		});
 		const statusTool = buildReportStatusRegistration({
 			namespacePrefix: ctx.namespacePrefix,
@@ -176,58 +260,6 @@ export default definePlugin({
 				],
 			};
 		}
-
-		const reportError = async (
-			toolName: string,
-			error: unknown,
-		): Promise<void> => {
-			try {
-				const report = buildSafeReport(toolName, error);
-				if (report === undefined) return;
-				const redactedReport = redactReport(report);
-				const validation = validateSafeReport(redactedReport);
-				if (!validation.ok) {
-					logPrivacyBlock(validation.reasonCode ?? 'unknown');
-					return;
-				}
-				const serializedReport = JSON.stringify(redactedReport);
-				const serializedValidation =
-					validateSerializedSafeReport(serializedReport);
-				if (!serializedValidation.ok) {
-					logPrivacyBlock(
-						serializedValidation.reasonCode ?? 'unknown',
-					);
-					return;
-				}
-				const existing = await store.get(redactedReport.fingerprint);
-				if (
-					!shouldReport({
-						lastReportedAt: existing?.lastReportedAt,
-						dedupeWindowHours: options.dedupeWindowHours,
-						nowMs: Date.now(),
-					})
-				) {
-					return;
-				}
-				const outcome = await reporter.submitSafeReport(redactedReport);
-				await store.record(redactedReport.fingerprint, {
-					at: new Date().toISOString(),
-					...(outcome.ok
-						? {
-								...(outcome.issueNumber !== undefined
-									? { issueNumber: outcome.issueNumber }
-									: {}),
-								...(outcome.issueUrl !== undefined
-									? { issueUrl: outcome.issueUrl }
-									: {}),
-							}
-						: {}),
-				});
-			} catch {
-				// A reporting failure must never surface into the tool call
-				// that triggered it. Intentionally swallowed.
-			}
-		};
 
 		return {
 			tools: [statusTool],
