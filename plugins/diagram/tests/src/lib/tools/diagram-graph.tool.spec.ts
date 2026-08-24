@@ -4,6 +4,10 @@ import path from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
+import type {
+	IDiagramDeps,
+	IDiagramModuleDeps,
+} from '../../../../src/lib/contracts/interfaces/graph.interface';
 import { buildDiagramGraphToolRegistrations } from '../../../../src/lib/tools/diagram-graph.tool';
 
 /** Invoke a registration's handler against a minimal fake MCP server. */
@@ -120,5 +124,76 @@ describe('diagram_modules — packageRoot containment (x00168)', () => {
 		} finally {
 			await rm(workspaceRootAbs, { recursive: true, force: true });
 		}
+	});
+});
+
+describe('diagram graph limit support (x00235)', () => {
+	it('truncates diagram_deps deterministically when limit is provided', async () => {
+		const deps: IDiagramDeps = {
+			listWorkspacePackages: async () => [
+				{ name: '@scope/c', dependencies: ['@scope/a'] },
+				{ name: '@scope/a', dependencies: ['@scope/b'] },
+				{ name: '@scope/b', dependencies: [] },
+			],
+		};
+		const registrations = buildDiagramGraphToolRegistrations({
+			namespacePrefix: 'mcp-vertex',
+			workspaceRootAbs: '/workspace',
+			deps,
+		});
+		const tool = registrations.find((r) => r.id === 'diagram_deps');
+		if (!tool) throw new Error('diagram_deps not registered');
+
+		const first = parse(await invoke(tool, { limit: 2 }));
+		const second = parse(await invoke(tool, { limit: 2 }));
+
+		expect(first.nodes).toEqual(['a', 'b']);
+		expect(first.edges).toEqual([{ from: 'a', to: 'b' }]);
+		expect(first.truncated).toBe(true);
+		expect(first).toEqual(second);
+	});
+
+	it('leaves diagram_deps untruncated when limit is absent', async () => {
+		const deps: IDiagramDeps = {
+			listWorkspacePackages: async () => [
+				{ name: '@scope/a', dependencies: ['@scope/b'] },
+				{ name: '@scope/b', dependencies: [] },
+			],
+		};
+		const registrations = buildDiagramGraphToolRegistrations({
+			namespacePrefix: 'mcp-vertex',
+			workspaceRootAbs: '/workspace',
+			deps,
+		});
+		const tool = registrations.find((r) => r.id === 'diagram_deps');
+		if (!tool) throw new Error('diagram_deps not registered');
+
+		const output = parse(await invoke(tool, {}));
+		expect(output.nodes).toEqual(['a', 'b']);
+		expect(output.truncated).toBeUndefined();
+	});
+
+	it('truncates diagram_modules to retained nodes and their internal edges', async () => {
+		const moduleDeps: IDiagramModuleDeps = {
+			listPackageFiles: async () => ['src/c.ts', 'src/a.ts', 'src/b.ts'],
+			readFileImports: async (relativePath) => {
+				if (relativePath === 'src/a.ts') return ['src/b.ts'];
+				if (relativePath === 'src/b.ts') return ['src/c.ts'];
+				return [];
+			},
+		};
+		const registrations = buildDiagramGraphToolRegistrations({
+			namespacePrefix: 'mcp-vertex',
+			workspaceRootAbs: '/workspace',
+			moduleDeps,
+			modulePackageRootAbs: '/workspace/plugins/diagram',
+		});
+		const tool = registrations.find((r) => r.id === 'diagram_modules');
+		if (!tool) throw new Error('diagram_modules not registered');
+
+		const output = parse(await invoke(tool, { limit: 2 }));
+		expect(output.nodes).toEqual(['src/a', 'src/b']);
+		expect(output.edges).toEqual([{ from: 'src/a', to: 'src/b' }]);
+		expect(output.truncated).toBe(true);
 	});
 });
