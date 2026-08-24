@@ -2,7 +2,7 @@
 id: x00230
 title: "auto-agent-selector: cablear la ejecución end-to-end de la selección automática de LLM/agentes"
 kind: fix
-status: ready
+status: review
 type: proposal
 track: product
 date: 2026-08-24
@@ -41,7 +41,7 @@ El usuario reporta que la selección automática de LLM/agentes "no funciona". L
 - global_gate: type
 
 ### S1 — Reproducir y documentar el fallo
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/auto-agent-selector/src/lib/tools/auto-run.tool.ts`
 - **Gate**: type
 - acceptance:
@@ -49,7 +49,7 @@ El usuario reporta que la selección automática de LLM/agentes "no funciona". L
   - "Se confirma que run-with-escalation no está cableado a ninguna tool."
 
 ### S2 — Cablear la ejecución (escalación real)
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/auto-agent-selector/src/lib/tools/auto-run.tool.ts`, `plugins/auto-agent-selector/src/lib/escalate/run-with-escalation.ts`
 - **Gate**: type
 - acceptance:
@@ -58,7 +58,7 @@ El usuario reporta que la selección automática de LLM/agentes "no funciona". L
   - "El cost ceiling y el consentimiento explícito se respetan."
 
 ### S3 — Pertenencia a presets y tests e2e
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/src/lib/plugins/preset-catalog.ts`
 - **Gate**: type
 - acceptance:
