@@ -1340,12 +1340,30 @@ export interface McpVertexMetricsOutput {
 		totalMs: number;
 		maxMs: number;
 		totalBytes: number;
+		cost: {
+			contentTextBytes: number;
+			structuredJsonBytes: number;
+			wireEstimateBytes: number;
+			estimatedTokens: {
+				estimatedTokens4B: number;
+				actualModelTokens?: number;
+			};
+		};
 	}>;
 	totals: {
 		calls: number;
 		errors: number;
 		totalMs: number;
 		totalBytes: number;
+		cost: {
+			contentTextBytes: number;
+			structuredJsonBytes: number;
+			wireEstimateBytes: number;
+			estimatedTokens: {
+				estimatedTokens4B: number;
+				actualModelTokens?: number;
+			};
+		};
 	};
 	persistedTo?: string;
 	snapshots?: number;

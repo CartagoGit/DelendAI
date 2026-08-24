@@ -2,7 +2,10 @@ import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 
 import type { IMcpVertexHostConfig } from '../contracts/interfaces/host-config.interface';
 import type { PluginHookName } from '../contracts/interfaces/plugin-lifecycle-error.interface';
-import { estimateResultBytes } from '../metrics/metrics-registry';
+import {
+	estimateErrorCost,
+	estimateResultCost,
+} from '../metrics/metrics-registry';
 import {
 	injectCheckpointAdvisory,
 	selectCheckpointAdvisory,
@@ -235,9 +238,13 @@ export const instrumentToolHandlers = (
 				}
 				const ms = performance.now() - start;
 				if (config.metricsRegistry) {
+					const cost = isError
+						? estimateErrorCost(result, error)
+						: estimateResultCost(result);
 					config.metricsRegistry.record(name, {
 						ms,
-						bytes: isError ? 0 : estimateResultBytes(result),
+						bytes: cost.wireEstimateBytes,
+						cost,
 						isError,
 					});
 				}

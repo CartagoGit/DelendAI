@@ -137,7 +137,12 @@ const BUDGET_BYTES = {
 	// Bumped 5 600 → 6 100 (2026-08-24): f00158 added the error-reporting
 	// plugin to standard (⊂ swarm); its report_status tool + knowledge
 	// entry raised swarm overview compact ~5 510B → 6 077B measured.
-	swarmToolsList: 190_000,
+	// Bumped 190 000 → 192 000 (2026-08-24): x00223 added the canonical
+	// `cost` breakdown (contentTextBytes/structuredJsonBytes/
+	// wireEstimateBytes/estimatedTokens) to the metrics tool outputSchema,
+	// raising swarm tools/list ~189 000B → 190 327B measured. Round to
+	// 192 000 for headroom.
+	swarmToolsList: 192_000,
 	swarmOverviewCompact: 6_100,
 	swarmRoundContext: 300,
 	// `lean` was 58 003B against the same fixture, a 63% reduction from swarm.

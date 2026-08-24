@@ -15,6 +15,16 @@ import { toolJson } from '../shared/tool-response';
 import type { IToolRegistration } from '../contracts/interfaces/tool-registration.interface';
 import type { IMetricsRegistry } from './metrics-registry';
 
+const ToolCostSchema = z.object({
+	contentTextBytes: z.number(),
+	structuredJsonBytes: z.number(),
+	wireEstimateBytes: z.number(),
+	estimatedTokens: z.object({
+		estimatedTokens4B: z.number(),
+		actualModelTokens: z.number().optional(),
+	}),
+});
+
 // r00001 S0 — exported so the golden snapshot test can pin the schema shape
 // and document why the residual `tools: z.object({}).catchall(MetricSchema)`
 // is the one documented exception in the audit.
@@ -24,6 +34,7 @@ export const MetricSchema = z.object({
 	totalMs: z.number(),
 	maxMs: z.number(),
 	totalBytes: z.number(),
+	cost: ToolCostSchema,
 });
 
 /** Persist a metrics snapshot to `dirAbs`; returns the path + total snapshot count. */
@@ -70,6 +81,7 @@ export const buildMetricsToolRegistration = (
 						errors: z.number(),
 						totalMs: z.number(),
 						totalBytes: z.number(),
+						cost: ToolCostSchema,
 					}),
 					persistedTo: z.string().optional(),
 					snapshots: z.number().optional(),
