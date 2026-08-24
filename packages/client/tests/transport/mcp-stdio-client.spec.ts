@@ -161,6 +161,33 @@ describe('McpStdioClient', async () => {
 		} satisfies Partial<IMcpTransportError>);
 	});
 
+	it('describes a plain Error without a redundant "Error" prefix', async () => {
+		const client = McpStdioClient.fromTransport({
+			async callTool() {
+				throw new Error('server offline');
+			},
+		});
+
+		await expect(client.request('demo_fail', {})).rejects.toMatchObject({
+			message: 'Failed to call MCP tool "demo_fail": server offline',
+		} satisfies Partial<Error>);
+	});
+
+	it('keeps a distinctive Error subclass name when describing the failure', async () => {
+		const client = McpStdioClient.fromTransport({
+			async callTool() {
+				throw Object.assign(new Error('bad input'), {
+					name: 'ValidationError',
+				});
+			},
+		});
+
+		await expect(client.request('demo_fail', {})).rejects.toMatchObject({
+			message:
+				'Failed to call MCP tool "demo_fail": ValidationError: bad input',
+		} satisfies Partial<Error>);
+	});
+
 	it('attaches a logHint from structuredContent on an error result', async () => {
 		const logHint = {
 			path: '/tmp/x/.cache/mcp-vertex/logs/2026-06-22.jsonl',

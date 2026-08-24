@@ -71,7 +71,14 @@ const isMcpTransportError = (value: unknown): value is IMcpTransportError =>
 
 const textFromUnknown = (value: unknown): string | undefined => {
 	if (typeof value === 'string') return value;
-	if (value instanceof Error) return `${value.name} ${value.message}`;
+	if (value instanceof Error) {
+		// A generic `Error` name adds no information over the message
+		// (it would just read "Error <message>"); only prefix a
+		// distinctive subclass name (e.g. "TypeError: message").
+		return value.name === 'Error' || value.name.length === 0
+			? value.message
+			: `${value.name}: ${value.message}`;
+	}
 	if (typeof value === 'object' && value !== null) {
 		const record = value as Record<string, unknown>;
 		return [record.name, record.message, record.code]

@@ -131,8 +131,6 @@ const defaultIo = (): IGeneratorIo => ({
 	error: (message) => console.error(message),
 });
 
-const escapeCell = (value: string): string => value.replace(/\|/gu, '\\|');
-
 const stripGeneratedAt = (text: string): string =>
 	text.replace(/"generatedAt": "[^"]+"/gu, '"generatedAt": "<normalized>"');
 

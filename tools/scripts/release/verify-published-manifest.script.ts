@@ -4,8 +4,8 @@ import { existsSync, readFileSync } from 'node:fs';
 import { basename, join, normalize, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { FIRST_PARTY_PLUGIN_INDEX } from '../../../packages/core/src/lib/registry/first-party-index';
-import { GENERATED_FIRST_PARTY_MANIFEST_ENTRIES } from '../../../packages/core/src/lib/registry/generated/first-party-manifest-entries.generated';
+import { FIRST_PARTY_PLUGIN_INDEX } from '@mcp-vertex/core/public';
+
 import { PUBLISH_ORDER } from './release-plan';
 
 const DEFAULT_ROOT = resolve(
@@ -272,10 +272,7 @@ export const readVerifyPackageInput = async (
 		root,
 		pkgDir,
 		packageJson,
-		registryEntries: [
-			...FIRST_PARTY_PLUGIN_INDEX.entries,
-			...GENERATED_FIRST_PARTY_MANIFEST_ENTRIES,
-		],
+		registryEntries: FIRST_PARTY_PLUGIN_INDEX.entries,
 		...(sourceManifest !== undefined ? { sourceManifest } : {}),
 		...(packedFiles !== undefined ? { packedFiles } : {}),
 	};
