@@ -138,6 +138,63 @@ export interface IUsageSummary {
 	readonly byPlugin: readonly IRollupBucket[];
 	readonly byAgent: readonly IRollupBucket[];
 	readonly byExtension: readonly IRollupBucket[];
+	readonly pluginKpis: readonly {
+		readonly plugin: string;
+		readonly observedCalls: number;
+		readonly observedSessions: number;
+		readonly tokenTax: {
+			readonly staticSchemaBytes: number;
+			readonly compactTypicalBytes: number;
+			readonly p95ResponseBytes: number;
+			readonly totalBytes: number;
+			readonly estimated: boolean;
+			readonly observedToolCount: number;
+			readonly observedResponseSamples: number;
+			readonly sources: {
+				readonly staticSchemaBytes: string;
+				readonly compactTypicalBytes: string;
+				readonly p95ResponseBytes: string;
+			};
+		};
+		readonly utilityPer1kTokens: number;
+		readonly kpis: {
+			readonly schemaBytes: number;
+			readonly invocationRatePerDay: number;
+			readonly successContribution: number;
+			readonly responseBytesP50: number | null;
+			readonly responseBytesP95: number | null;
+			readonly latencyMsP50: number | null;
+			readonly latencyMsP95: number | null;
+			readonly toolErrorRate: number;
+			readonly pluginActivationRate: number | null;
+			readonly dynamicActivationSavingsBytes: number | null;
+			readonly memoryCompactionSavingsTokens: number;
+			readonly contextRehydrationEffectiveness: number | null;
+			readonly contextRehydrationEffectivenessNote: string | null;
+			readonly privacyGateBlockedReportCount: number | null;
+			readonly privacyGateBlockedReportCountNote: string | null;
+		};
+	}[];
+	readonly kpis: {
+		readonly coldStartCostBytes: number;
+		readonly coldStartCostTokens: number;
+		readonly coldStartCostNote: string;
+		readonly invocationRatePerDay: number;
+		readonly successfulCallRate: number;
+		readonly responseBytesP50: number | null;
+		readonly responseBytesP95: number | null;
+		readonly latencyMsP50: number | null;
+		readonly latencyMsP95: number | null;
+		readonly toolErrorRate: number;
+		readonly averagePluginActivationRate: number | null;
+		readonly dynamicActivationSavingsBytes: number | null;
+		readonly memoryCompactionSavingsTokens: number;
+		readonly memoryCompactionSavingsNote: string;
+		readonly contextRehydrationEffectiveness: number | null;
+		readonly contextRehydrationEffectivenessNote: string;
+		readonly privacyGateBlockedReportCount: number | null;
+		readonly privacyGateBlockedReportCountNote: string;
+	};
 	/** Count of auto-bypassed invocations in the window (S7). */
 	readonly autoBypassed: number;
 	/** Rolling session/monthly spend vs the configured caps (S7). */

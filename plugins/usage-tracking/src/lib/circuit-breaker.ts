@@ -15,14 +15,14 @@
  * the rollup; the durable `degradations` log is appended here through the same
  * mutex + atomic + redact pipeline every other write in this plugin uses.
  */
-import { readFile } from 'node:fs/promises';
-
 import {
 	redactSecrets,
 	withFileMutex,
 	writeFileAtomic,
 } from '@mcp-vertex/core/public';
 
+import { EMPTY_LIMITS_STATUS } from './contracts/constants/empty-limits-status.constant';
+import { readSummaryFile } from './summary-file.service';
 import type {
 	IDegradation,
 	IInvocationRecord,
@@ -31,11 +31,14 @@ import type {
 	SpendBreachScope,
 } from './types';
 
+const PERCENT_SCALE = 10;
+
 /** Round money to the micro-dollar to avoid float dust in the summary. */
 const money = (usd: number): number => Math.round(usd * 1e6) / 1e6;
 
 /** Round a percentage to one decimal place. */
-const pct = (fraction: number): number => Math.round(fraction * 1000) / 10;
+const pct = (fraction: number): number =>
+	Math.round(fraction * 1000) / PERCENT_SCALE;
 
 /** Configuration + session anchor the breaker needs to evaluate a window. */
 export interface ILimitsConfig {
@@ -74,15 +77,7 @@ const sumCostSince = (
 };
 
 /** A neutral status (no caps configured, nothing breached). */
-export const emptyLimitsStatus = (): ILimitsStatus => ({
-	sessionSpendUsd: 0,
-	sessionLimitUsd: null,
-	sessionLimitPct: null,
-	monthlySpendUsd: 0,
-	monthlyLimitUsd: null,
-	monthlyLimitPct: null,
-	breached: null,
-});
+export const emptyLimitsStatus = (): ILimitsStatus => EMPTY_LIMITS_STATUS;
 
 /**
  * Fold the log into the two-scope {@link ILimitsStatus}. Session precedes
@@ -131,19 +126,6 @@ export const computeLimitsStatus = (
 		breached,
 	};
 };
-
-/** Best-effort read of the current summary (missing/corrupt → null). */
-const readSummaryFile = async (
-	summaryPath: string,
-): Promise<IUsageSummary | null> => {
-	try {
-		const raw = await readFile(summaryPath, 'utf8');
-		return JSON.parse(raw) as IUsageSummary;
-	} catch {
-		return null;
-	}
-};
-
 /**
  * Durably append a degradation event to `usage-summary.json#degradations`
  * (mutex + atomic + redact). Preserves the rest of the document; a missing
@@ -177,6 +159,31 @@ export const recordDegradation = async (
 						byPlugin: [],
 						byAgent: [],
 						byExtension: [],
+						pluginKpis: [],
+						kpis: {
+							coldStartCostBytes: 0,
+							coldStartCostTokens: 0,
+							coldStartCostNote:
+								'Derived from observed plugins only. Unloaded or never-invoked plugins are intentionally invisible to this local aggregate.',
+							invocationRatePerDay: 0,
+							successfulCallRate: 0,
+							responseBytesP50: null,
+							responseBytesP95: null,
+							latencyMsP50: null,
+							latencyMsP95: null,
+							toolErrorRate: 0,
+							averagePluginActivationRate: null,
+							dynamicActivationSavingsBytes: null,
+							memoryCompactionSavingsTokens: 0,
+							memoryCompactionSavingsNote:
+								'Summed from locally stamped tokensSaved counters only; usage-tracking never inspects prompts, args or outputs.',
+							contextRehydrationEffectiveness: null,
+							contextRehydrationEffectivenessNote:
+								'No local signal links a rehydration event to subsequent task success, so this KPI remains intentionally null.',
+							privacyGateBlockedReportCount: null,
+							privacyGateBlockedReportCountNote:
+								'No local blocked-report counter is emitted today, so this KPI remains intentionally null.',
+						},
 						autoBypassed: 0,
 						limitsStatus: emptyLimitsStatus(),
 						degradations,
