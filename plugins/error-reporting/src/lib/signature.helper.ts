@@ -6,14 +6,19 @@
  */
 import { createHash } from 'node:crypto';
 
-import {
-	McpVertexInternalError,
-	type ISafeMcpVertexReport,
-	type IssueClassification,
-	type SafeFailureClass,
-} from './contracts/interfaces/reporter.interface';
+import type { ISafeMcpVertexReport } from './contracts/interfaces/reporter.interface';
 import type { ISafeFingerprintInput } from './contracts/interfaces/signature.interface';
-import { extractSafeMcpFrames } from './frame-extractor.helper';
+export {
+	classifyInternalError,
+	classificationOf,
+	isMcpVertexInternal,
+	isMarkedInternalBoundary,
+	markErrorAsInternalBoundary,
+	registerInternalPath,
+	registerInternalRuntimePaths,
+	resetInternalPathRegistry,
+	safeFailureClassOf,
+} from './internal-classifier.helper';
 
 const MAX_TITLE_LENGTH = 180;
 
@@ -24,76 +29,46 @@ const packageRank = (value: string): number => {
 	return 3;
 };
 
-/** True when the failure appears to originate inside mcp-vertex. */
-export const isMcpVertexInternal = (error: unknown): boolean => {
-	if (error instanceof McpVertexInternalError) return true;
-	if (extractSafeMcpFrames(error).length > 0) return true;
-	if (typeof error === 'object' && error !== null) {
-		const record = error as {
-			code?: unknown;
-			mcpVertexErrorCode?: unknown;
-		};
-		return (
-			typeof record.code === 'string' ||
-			typeof record.mcpVertexErrorCode === 'string'
-		);
-	}
-	return false;
+const versionMajorMinorOf = (version: string): string => {
+	const [major = '0', minor = '0'] = version.split('.');
+	return `${major}.${minor}`;
 };
 
-export const safeFailureClassOf = (error: unknown): SafeFailureClass => {
-	if (error instanceof McpVertexInternalError) {
-		if (error.code.includes('TIMEOUT')) return 'INTERNAL_TIMEOUT';
-		if (error.code.includes('VALID')) return 'INTERNAL_VALIDATION_ERROR';
-		return 'INTERNAL_TYPED_ERROR';
-	}
-	if (error instanceof Error) {
-		if (error.name === 'TimeoutError') return 'INTERNAL_TIMEOUT';
-		if (error.name.includes('Validation'))
-			return 'INTERNAL_VALIDATION_ERROR';
-		return 'INTERNAL_RUNTIME_ERROR';
-	}
-	return 'UNKNOWN_INTERNAL';
+const topInternalFrameRelativeOf = (
+	frame: ISafeFingerprintInput['mcpFrames'][number] | undefined,
+): string => {
+	if (frame === undefined) return '';
+	const suffix =
+		frame.line !== undefined
+			? `:${frame.line}${frame.col !== undefined ? `:${frame.col}` : ''}`
+			: '';
+	return `${frame.file}${suffix}`;
 };
 
-export const classificationOf = (input: {
-	readonly toolId?: string | undefined;
-	readonly errorCode?: string | undefined;
-	readonly failureClass: SafeFailureClass;
-}): IssueClassification => {
-	const haystack =
-		`${input.toolId ?? ''} ${input.errorCode ?? ''} ${input.failureClass}`.toUpperCase();
-	if (haystack.includes('PRIVACY')) return 'PRIVACY';
-	if (haystack.includes('SECURITY') || haystack.includes('SECRET')) {
-		return 'SECURITY';
-	}
-	if (haystack.includes('TOKEN')) return 'TOKEN_REGRESSION';
-	if (
-		haystack.includes('PERF') ||
-		haystack.includes('TIMEOUT') ||
-		haystack.includes('LATENCY')
-	) {
-		return 'PERFORMANCE';
-	}
-	if (haystack.includes('DOC')) return 'DOC_DRIFT';
-	if (haystack.includes('CONFIG')) return 'CONFIG_DRIFT';
-	return 'BUG';
+const componentIdOf = (input: ISafeFingerprintInput): string => {
+	if (input.componentId !== undefined) return input.componentId;
+	const topFrame = [...input.mcpFrames].sort(
+		(left, right) => packageRank(left.file) - packageRank(right.file),
+	)[0];
+	if (topFrame === undefined) return '';
+	const prefix = `${input.packageId}/`;
+	if (!topFrame.file.startsWith(prefix)) return topFrame.file;
+	return topFrame.file.slice(prefix.length);
 };
 
 export const signatureOf = (input: ISafeFingerprintInput): string => {
 	const firstFrame = [...input.mcpFrames].sort(
 		(left, right) => packageRank(left.file) - packageRank(right.file),
-	)[0]?.file;
+	)[0];
 	return createHash('sha256')
 		.update(
-			JSON.stringify({
-				packageId: input.packageId,
-				toolId: input.toolId ?? null,
-				errorCode: input.errorCode ?? null,
-				failureClass: input.failureClass,
-				classification: input.classification,
-				topFrame: firstFrame ?? null,
-			}),
+			[
+				versionMajorMinorOf(input.mcpVertexVersion),
+				input.packageId,
+				componentIdOf(input),
+				input.errorCode ?? '',
+				topInternalFrameRelativeOf(firstFrame),
+			].join('\n'),
 		)
 		.digest('hex');
 };

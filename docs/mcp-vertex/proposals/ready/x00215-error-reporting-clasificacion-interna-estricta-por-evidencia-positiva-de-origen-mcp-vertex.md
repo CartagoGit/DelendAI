@@ -48,7 +48,7 @@ El marcador `/plugins/` es excesivamente genérico: un consumidor con `/home/emp
 - global_gate: type
 
 ### S1 — Errores tipados: códigos y clase
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/error-reporting/src/lib/contracts/constants/error-codes.constant.ts`, `plugins/error-reporting/src/lib/mcp-internal-error.ts`
 - **Gate**: type
 - acceptance:
@@ -57,7 +57,7 @@ El marcador `/plugins/` es excesivamente genérico: un consumidor con `/home/emp
   - "La taxonomía de clasificación de issues (14 valores) vive como constante tipada `IssueClassification`."
 
 ### S2 — Clasificador por evidencia positiva
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/error-reporting/src/lib/internal-classifier.helper.ts`
 - **Gate**: type
 - acceptance:
@@ -67,7 +67,7 @@ El marcador `/plugins/` es excesivamente genérico: un consumidor con `/home/emp
   - "El clasificador asigna la clase de issue (BUG/REGRESSION/SECURITY/PRIVACY/PERFORMANCE/TOKEN_REGRESSION/DOC_DRIFT/CONFIG_DRIFT/DUPLICATE/NOT_A_BUG/DESIGN_DECISION/PRODUCT_DECISION/NEEDS_REPRODUCTION/UNKNOWN) en el momento de crear la issue."
 
 ### S3 — Fingerprint estable sin datos de usuario
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/error-reporting/src/lib/signature.helper.ts`
 - **Gate**: type
 - acceptance:

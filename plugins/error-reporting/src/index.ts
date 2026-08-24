@@ -12,22 +12,15 @@ import {
 	type ISafeMcpVertexReport,
 	type SafeScalar,
 } from './lib/contracts/interfaces/reporter.interface';
-import {
-	extractSafeMcpFrames,
-	packageIdFromSafeFrame,
-} from './lib/frame-extractor.helper';
+import { registerInternalRuntimePaths } from './lib/frame-extractor.helper';
+import { classifyInternalError } from './lib/internal-classifier.helper';
 import {
 	validateSafeReport,
 	validateSerializedSafeReport,
 } from './lib/privacy-validator.helper';
 import { createReportStore } from './lib/report-store.service';
 import { createSafeReporter, shouldReport } from './lib/reporter.service';
-import {
-	classificationOf,
-	isMcpVertexInternal,
-	safeFailureClassOf,
-	signatureOf,
-} from './lib/signature.helper';
+import { signatureOf } from './lib/signature.helper';
 import { buildReportStatusRegistration } from './lib/tools/report-status.tool';
 
 const KNOWLEDGE_BODY = [
@@ -77,34 +70,6 @@ const platformFamilyOf = (): 'windows' | 'linux' | 'macos' | 'unknown' => {
 			return 'unknown';
 	}
 };
-
-const errorCodeOf = (error: unknown): string | undefined => {
-	if (error instanceof McpVertexInternalError) return error.code;
-	if (typeof error === 'object' && error !== null) {
-		const record = error as {
-			code?: unknown;
-			mcpVertexErrorCode?: unknown;
-		};
-		if (typeof record.mcpVertexErrorCode === 'string') {
-			return record.mcpVertexErrorCode;
-		}
-		if (typeof record.code === 'string') return record.code;
-	}
-	return undefined;
-};
-
-const packageIdOf = (
-	error: unknown,
-	frames: ReturnType<typeof extractSafeMcpFrames>,
-): string | undefined => {
-	if (error instanceof McpVertexInternalError) return error.packageId;
-	for (const frame of frames) {
-		const packageId = packageIdFromSafeFrame(frame);
-		if (packageId !== undefined) return packageId;
-	}
-	return undefined;
-};
-
 const syntheticExampleOf = (
 	error: unknown,
 ):
@@ -136,37 +101,36 @@ const buildSafeReport = (
 	toolName: string,
 	error: unknown,
 ): ISafeMcpVertexReport | undefined => {
-	const mcpFrames = extractSafeMcpFrames(error);
-	if (mcpFrames.length === 0) return undefined;
-	const packageId = packageIdOf(error, mcpFrames);
-	if (packageId === undefined) return undefined;
-	const errorCode = errorCodeOf(error);
-	const failureClass = safeFailureClassOf(error);
-	const classification = classificationOf({
-		toolId: toolName,
-		errorCode,
-		failureClass,
-	});
-	const reportWithoutFingerprint = {
+	const classified = classifyInternalError({ toolId: toolName, error });
+	if (!classified.isInternal || classified.classification === 'UNKNOWN') {
+		return undefined;
+	}
+	if (classified.mcpFrames.length === 0) return undefined;
+	if (classified.packageId === undefined) return undefined;
+	const reportCore = {
 		reporterVersion: reporterPackageJson.version,
 		mcpVertexVersion: monorepoPackageJson.version,
-		packageId,
+		packageId: classified.packageId,
 		toolId: toolName,
-		...(errorCode !== undefined ? { errorCode } : {}),
-		failureClass,
-		classification,
-		mcpFrames,
-		...(syntheticExampleOf(error) !== undefined
-			? { syntheticExample: syntheticExampleOf(error) }
+		...(classified.errorCode !== undefined
+			? { errorCode: classified.errorCode }
 			: {}),
+		failureClass: classified.failureClass,
+		classification: classified.classification,
+		mcpFrames: classified.mcpFrames,
 		environmentClass: {
 			runtime: runtimeOf(),
 			platformFamily: platformFamilyOf(),
 		},
 	};
+	const syntheticExample = syntheticExampleOf(error);
 	return {
-		...reportWithoutFingerprint,
-		fingerprint: signatureOf(reportWithoutFingerprint),
+		...reportCore,
+		fingerprint: signatureOf({
+			...reportCore,
+			componentId: classified.componentId,
+		}),
+		...(syntheticExample !== undefined ? { syntheticExample } : {}),
 	};
 };
 
@@ -186,6 +150,7 @@ export default definePlugin({
 		'Intrinsic automatic error reporting: opens de-duplicated GitHub issues for mcp-vertex-internal failures. Enabled by default; opt out with options.enabled = false.',
 	optionsSchema: OptionsSchema,
 	register(ctx) {
+		registerInternalRuntimePaths(import.meta.url);
 		const options = resolveOptions(ctx.options);
 		const store = createReportStore(ctx.pluginCacheDir);
 		const reporter = createSafeReporter({
@@ -232,7 +197,6 @@ export default definePlugin({
 			error: unknown,
 		): Promise<void> => {
 			try {
-				if (options.internalOnly && !isMcpVertexInternal(error)) return;
 				const report = buildSafeReport(toolName, error);
 				if (report === undefined) return;
 				const redactedReport = redactReport(report);

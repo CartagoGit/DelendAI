@@ -5,9 +5,12 @@ import {
 	buildIssueTitle,
 	classificationOf,
 	isMcpVertexInternal,
+	registerInternalPath,
+	resetInternalPathRegistry,
 	safeFailureClassOf,
 	signatureOf,
 } from '../src/lib/signature.helper';
+import { extractSafeMcpFrames } from '../src/lib/frame-extractor.helper';
 import { McpVertexInternalError } from '../src/lib/contracts/interfaces/reporter.interface';
 
 describe('isMcpVertexInternal', () => {
@@ -50,46 +53,52 @@ describe('safeFailureClassOf / classificationOf / signatureOf', () => {
 		expect(
 			classificationOf({
 				toolId: 'quality_run_quality',
+				packageId: error.packageId,
+				componentId: error.componentId,
 				errorCode: error.code,
 				failureClass: safeFailureClassOf(error),
 			}),
 		).toBe('PERFORMANCE');
 	});
 
-	it('produces the same signature when raw host data changes but safe data stays the same', () => {
+	it('produces the same signature across different workspace roots for the same internal bug', () => {
+		resetInternalPathRegistry();
+		registerInternalPath('/home/user/project-a');
+		registerInternalPath('/srv/build/project-b');
+		const leftError = new Error('workspace a');
+		leftError.stack = [
+			'Error: workspace a',
+			'    at report (/home/user/project-a/plugins/error-reporting/src/index.ts:10:2)',
+		].join('\n');
+		const rightError = new Error('workspace b');
+		rightError.stack = [
+			'Error: workspace b',
+			'    at report (/srv/build/project-b/plugins/error-reporting/src/index.ts:10:2)',
+		].join('\n');
 		const a = signatureOf({
+			mcpVertexVersion: '0.7.5',
 			packageId: '@mcp-vertex/error-reporting',
 			toolId: 'quality_run_quality',
 			errorCode: 'PLUGIN_REGISTER_TIMEOUT',
 			failureClass: 'INTERNAL_TIMEOUT',
 			classification: 'PERFORMANCE',
-			mcpFrames: [
-				{
-					file: '@mcp-vertex/error-reporting/src/index.ts',
-					line: 10,
-					col: 2,
-				},
-			],
+			mcpFrames: extractSafeMcpFrames(leftError),
 		});
 		const b = signatureOf({
+			mcpVertexVersion: '0.7.9',
 			packageId: '@mcp-vertex/error-reporting',
 			toolId: 'quality_run_quality',
 			errorCode: 'PLUGIN_REGISTER_TIMEOUT',
 			failureClass: 'INTERNAL_TIMEOUT',
 			classification: 'PERFORMANCE',
-			mcpFrames: [
-				{
-					file: '@mcp-vertex/error-reporting/src/index.ts',
-					line: 999,
-					col: 9,
-				},
-			],
+			mcpFrames: extractSafeMcpFrames(rightError),
 		});
 		expect(a).toBe(b);
 	});
 
 	it('differs across safe package identities', () => {
 		const left = signatureOf({
+			mcpVertexVersion: '0.1.0',
 			packageId: '@mcp-vertex/error-reporting',
 			toolId: 'search_search',
 			failureClass: 'INTERNAL_RUNTIME_ERROR',
@@ -97,6 +106,7 @@ describe('safeFailureClassOf / classificationOf / signatureOf', () => {
 			mcpFrames: [{ file: '@mcp-vertex/error-reporting/src/index.ts' }],
 		});
 		const right = signatureOf({
+			mcpVertexVersion: '0.1.0',
 			packageId: '@mcp-vertex/core',
 			toolId: 'search_search',
 			failureClass: 'INTERNAL_RUNTIME_ERROR',
