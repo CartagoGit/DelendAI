@@ -1,4 +1,6 @@
 import { describe, expect, it } from 'vitest';
+import { readFile } from 'node:fs/promises';
+import { join } from 'node:path';
 
 import {
 	PRESET_CATALOG,
@@ -35,17 +37,18 @@ describe('PRESET_CATALOG', async () => {
 		expect(PRESET_CATALOG[3]?.members.length).toBe(8);
 		// full: adds 2 host-only + api + changelog on top of swarm
 		expect(PRESET_CATALOG[4]?.members.length).toBe(4);
-		// vertex: 29 members, exactly mirroring mcp-vertex.config.json's
+		// vertex: 30 members, exactly mirroring mcp-vertex.config.json's
 		// `plugins` object (x00166 — corrected a long-stale drift where
 		// this preset had 6 phantom plugins not actually loaded and was
 		// missing 17 real ones, including `proposals`).
-		expect(PRESET_CATALOG[5]?.members.length).toBe(29);
+		expect(PRESET_CATALOG[5]?.members.length).toBe(30);
 	});
 
 	it('defines `lean` as an independent essentials preset', async () => {
 		const lean = PRESET_CATALOG[1];
 		expect(lean?.id).toBe('lean');
 		expect(lean?.independent).toBe(true);
+		expect(lean?.role).toBe('habitual-work');
 		expect(lean?.members.map((m) => m.plugin)).toEqual([
 			'git',
 			'search',
@@ -86,6 +89,7 @@ describe('PRESET_CATALOG', async () => {
 		const vertex = PRESET_CATALOG[5];
 		expect(vertex).toBeDefined();
 		expect(vertex?.independent).toBe(true);
+		expect(vertex?.role).toBe('mcp-vertex-dogfood');
 	});
 
 	it('marks every stack pack (web-app, backend-api, cli-tool) as independent', async () => {
@@ -234,6 +238,10 @@ describe('resolvePresetMembers', async () => {
 
 	it('resolves standard = minimal + memory/docs/rules/quality/refactor/deps/test-policy/database/diagram/container/env', async () => {
 		const resolved = resolvePresetMembers('standard');
+		expect(
+			PRESET_CATALOG.find((definition) => definition.id === 'standard')
+				?.role,
+		).toBe('adaptive-task-aware');
 		expect(resolved).toContain('git');
 		expect(resolved).toContain('search');
 		expect(resolved).toContain('memory');
@@ -274,56 +282,58 @@ describe('resolvePresetMembers', async () => {
 		expect(resolved).toContain('notification');
 	});
 
-	it('resolves vertex to ONLY its declared members (independent, skips chain)', async () => {
-		// x00166: vertex mirrors mcp-vertex.config.json's `plugins` keys
-		// exactly (29 total) — verified live against the root config.
-		// f00158 added error-reporting to the project's own config.
+	it('resolves vertex to ONLY the plugin keys from the live root config', async () => {
 		const resolved = resolvePresetMembers('vertex');
-		expect(resolved.length).toBe(29);
-		for (const required of [
-			'audit',
-			'auto-agent-selector',
-			'container',
-			'conventions',
-			'deps',
-			'diagram',
-			'docs',
-			'env',
-			'error-reporting',
-			'forge',
-			'git',
-			'i18n',
-			'link-check',
-			'logs',
-			'memory',
-			'notification',
-			'orchestrator-runner',
-			'perf',
-			'prompts-pack',
-			'proposals',
-			'quality',
-			'rules',
-			'search',
-			'security',
-			'status-marker',
-			'tech-debt',
-			'test-convention',
-			'test-policy',
-			'usage-tracking',
-		]) {
-			expect(resolved).toContain(required);
-		}
-		// Phantom plugins the old (stale) definition listed but that
-		// were never actually loaded by the live config.
-		for (const phantom of [
-			'web-fetch',
-			'issues',
-			'refactor',
-			'api',
-			'prompt-eval',
-			'database',
-		]) {
-			expect(resolved).not.toContain(phantom);
+		const config = JSON.parse(
+			await readFile(
+				join(process.cwd(), 'mcp-vertex.config.json'),
+				'utf8',
+			),
+		) as {
+			plugins?: Readonly<Record<string, unknown>>;
+		};
+		expect([...resolved].sort()).toEqual(
+			Object.keys(config.plugins ?? {}).sort(),
+		);
+	});
+
+	it('documents the canonical preset roles from PRE-004', async () => {
+		expect(
+			PRESET_CATALOG.slice(0, 5).map((definition) => definition.role),
+		).toEqual([
+			'orientation',
+			'habitual-work',
+			'adaptive-task-aware',
+			'multi-agent',
+			'diagnostic',
+		]);
+	});
+
+	it('declares measured budget metadata for every preset', async () => {
+		for (const definition of PRESET_CATALOG) {
+			expect(definition.budget.toolCount.source).toBe('measured-runtime');
+			expect(definition.budget.toolCount.value).toBeGreaterThan(0);
+			expect(definition.budget.schemaBytes.source).toBe(
+				'measured-runtime',
+			);
+			expect(definition.budget.schemaBytes.value).toBeGreaterThan(0);
+			expect(definition.budget.coldStartTokens.source).toBe(
+				'estimated-from-schema-bytes',
+			);
+			expect(definition.budget.coldStartTokens.value).toBeGreaterThan(0);
+			expect(
+				definition.budget.coldStartTokens.bytesPerEstimatedToken,
+			).toBe(4);
+			expect(definition.budget.permissions.source).toBe(
+				'measured-tool-effects',
+			);
+			expect(definition.budget.permissions.values.length).toBeGreaterThan(
+				0,
+			);
+			expect(definition.budget.capabilities.source).toBe('role-profile');
+			expect(
+				definition.budget.capabilities.values.length,
+			).toBeGreaterThan(0);
 		}
 	});
 

@@ -30,7 +30,7 @@ export type IPluginOptionsMap = Readonly<Record<string, unknown>>;
 /**
  * The overlay table: pack id → plugin id → options. Adding a new
  * pack means adding one entry here + one entry in PRESET_CATALOG.
- * The two stay in sync via the `lint:setup` (no-preset-drift) gate
+ * The two stay in sync via the `lint:setup` (preset-drift) gate
  * which knows the pack membership.
  */
 export const PACK_DEFAULTS_OVERLAY: Readonly<
