@@ -5,6 +5,48 @@ import {
 	renderToolDetailHtml,
 } from '../views/tool-detail-webview';
 
+const metric = (
+	calls: number,
+	errors: number,
+	totalMs: number,
+	maxMs: number,
+	totalBytes: number,
+) => ({
+	calls,
+	errors,
+	totalMs,
+	maxMs,
+	totalBytes,
+	cost: {
+		contentTextBytes: totalBytes,
+		structuredJsonBytes: 0,
+		wireEstimateBytes: totalBytes,
+		estimatedTokens: {
+			estimatedTokens4B: Math.ceil(totalBytes / 4),
+		},
+	},
+});
+
+const totals = (
+	calls: number,
+	errors: number,
+	totalMs: number,
+	totalBytes: number,
+) => ({
+	calls,
+	errors,
+	totalMs,
+	totalBytes,
+	cost: {
+		contentTextBytes: totalBytes,
+		structuredJsonBytes: 0,
+		wireEstimateBytes: totalBytes,
+		estimatedTokens: {
+			estimatedTokens4B: Math.ceil(totalBytes / 4),
+		},
+	},
+});
+
 const MODEL = {
 	tool: {
 		name: 'mcp-vertex_search',
@@ -28,15 +70,9 @@ const MODEL = {
 	knowledgeBody: '# search\n\nLow-token grep.',
 	metrics: {
 		tools: {
-			'mcp-vertex_search': {
-				calls: 318,
-				errors: 1,
-				totalMs: 14_910,
-				maxMs: 420,
-				totalBytes: 0,
-			},
+			'mcp-vertex_search': metric(318, 1, 14_910, 420, 0),
 		},
-		totals: { calls: 318, errors: 1, totalMs: 14_910, totalBytes: 0 },
+		totals: totals(318, 1, 14_910, 0),
 	},
 };
 

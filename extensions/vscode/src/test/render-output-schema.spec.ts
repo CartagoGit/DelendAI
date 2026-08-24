@@ -3,6 +3,48 @@ import { describe, expect, it } from 'vitest';
 import { renderOutputSchema } from '../views/render-output-schema';
 import { renderToolDetailHtml } from '../views/tool-detail-webview';
 
+const metric = (
+	calls: number,
+	errors: number,
+	totalMs: number,
+	maxMs: number,
+	totalBytes: number,
+) => ({
+	calls,
+	errors,
+	totalMs,
+	maxMs,
+	totalBytes,
+	cost: {
+		contentTextBytes: totalBytes,
+		structuredJsonBytes: 0,
+		wireEstimateBytes: totalBytes,
+		estimatedTokens: {
+			estimatedTokens4B: Math.ceil(totalBytes / 4),
+		},
+	},
+});
+
+const totals = (
+	calls: number,
+	errors: number,
+	totalMs: number,
+	totalBytes: number,
+) => ({
+	calls,
+	errors,
+	totalMs,
+	totalBytes,
+	cost: {
+		contentTextBytes: totalBytes,
+		structuredJsonBytes: 0,
+		wireEstimateBytes: totalBytes,
+		estimatedTokens: {
+			estimatedTokens4B: Math.ceil(totalBytes / 4),
+		},
+	},
+});
+
 describe('renderOutputSchema', async () => {
 	it('renders object schemas with required markers', async () => {
 		const html = renderOutputSchema({
@@ -49,20 +91,9 @@ describe('renderToolDetailHtml', async () => {
 			outputSchema: { type: 'object' },
 			metrics: {
 				tools: {
-					demo_tool: {
-						calls: 2,
-						errors: 1,
-						totalMs: 12,
-						maxMs: 9,
-						totalBytes: 256,
-					},
+					demo_tool: metric(2, 1, 12, 9, 256),
 				},
-				totals: {
-					calls: 2,
-					errors: 1,
-					totalMs: 12,
-					totalBytes: 256,
-				},
+				totals: totals(2, 1, 12, 256),
 			},
 		});
 

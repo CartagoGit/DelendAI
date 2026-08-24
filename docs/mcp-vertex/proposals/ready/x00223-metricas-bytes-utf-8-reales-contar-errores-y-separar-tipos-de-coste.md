@@ -39,7 +39,7 @@ Dos definiciones distintas de "byte" conviven hoy (los tests de presupuestos usa
 - global_gate: type
 
 ### S1 — Bytes UTF-8 reales y errores contados
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/src/lib/metrics/metrics-registry.ts`
 - **Gate**: type
 - acceptance:
@@ -47,7 +47,7 @@ Dos definiciones distintas de "byte" conviven hoy (los tests de presupuestos usa
   - "Las respuestas de error se miden (nunca 0 por defecto)."
 
 ### S2 — Tipos de coste y nomenclatura de tokens
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/src/lib/metrics/metrics-tool.ts`
 - **Gate**: type
 - acceptance:
@@ -55,7 +55,7 @@ Dos definiciones distintas de "byte" conviven hoy (los tests de presupuestos usa
   - "Se distingue estimatedTokens4B de actualModelTokens."
 
 ### S3 — Tests de medición
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/tests/src/lib/metrics/bytes-and-errors.spec.ts`
 - **Gate**: type
 - acceptance:
