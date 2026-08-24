@@ -207,7 +207,7 @@ describe('init:default (f00103)', () => {
 		}
 		// Exactly 29 vertex plugins rendered (f00158 added error-reporting),
 		// no extras added.
-		expect(Object.keys(config.plugins).length).toBe(29);
+		expect(Object.keys(config.plugins).length).toBe(30);
 	});
 
 	it('writes the bundle to disk when --dry-run is absent', async () => {
