@@ -40,7 +40,7 @@ El truncador promete `finalBytes <= maxBytes` en un caso donde no puede cumplirl
 - global_gate: type
 
 ### S1 — Contrato de truncación honesto y eficiente
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/src/lib/shared/tool-response.ts`
 - **Gate**: type
 - acceptance:
@@ -49,7 +49,7 @@ El truncador promete `finalBytes <= maxBytes` en un caso donde no puede cumplirl
   - "No se inyecta JSON parcial en head."
 
 ### S2 — Paginación universal y reducción del default
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/src/lib/shared/pagination.helper.ts`
 - **Gate**: type
 - acceptance:
@@ -57,7 +57,7 @@ El truncador promete `finalBytes <= maxBytes` en un caso donde no puede cumplirl
   - "Default general reducido (compact 4–8 KiB) con ceiling explícito de 64 KiB."
 
 ### S3 — Tests de límites y paginación
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/tests/src/lib/shared/truncation-pagination.spec.ts`
 - **Gate**: type
 - acceptance:
