@@ -52,6 +52,8 @@ contains:
         - { id: a00088, kind: audit, required: true }
         - { id: i00003, kind: infra, required: true }
         - { id: c00129, kind: chore, required: true }
+        - { id: f00173, kind: feat, required: true }
+        - { id: x00230, kind: fix, required: true }
 closureGate:
     requirePeerReview: true
     requireAllSlicesDone: true
@@ -108,6 +110,7 @@ Cada propuesta hija cita, en su `## Goal`, la sección exacta de la auditoría q
 | `t00005` | §2 ER-007 | Suite adversarial (payload invariante ante datos privados) |
 | `x00216` | §2 ER-008, §34, §36 ER-NET-004 | `lastSuccessAt`, rate limits, circuit breaker |
 | `f00160` | §2 ER-009, §36 ER-NET-001..003, §1.1, §30 | `report_status`, opt-out, destino allowlisted, docs legales |
+| `f00173` | §24 error-reporting, §30, §35 | Observar todas las superficies de error (tools, lifecycle, LLM/providers, procesos) + análisis de origen |
 
 > `error-reporting` se implementa en `f00158` (existente); este track **endurece** ese flujo al modelo DTO-only. Las seis propuestas del track son secuenciales en espíritu (x00214 → x00215 → f00159 → t00005 → x00216 → f00160) aunque pueden arrancar en paralelo si el agente fija primero el contrato DTO de `x00214`.
 >
@@ -194,6 +197,7 @@ Cada propuesta hija cita, en su `## Goal`, la sección exacta de la auditoría q
 | `f00166` | §23 IDEA-004 | `project_health` (resumen lazy) |
 | `f00167` | §23 IDEA-005 | `quality_policy` unificado |
 | `f00168` | §23 IDEA-006, §9 TOK-012 | Optimizador adaptativo |
+| `x00230` | §24 auto-agent-selector | Cablear la ejecución end-to-end de la selección automática de LLM/agentes |
 
 ### Track `plugin-hardening`
 
