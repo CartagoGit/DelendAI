@@ -80,10 +80,7 @@ export const buildModuleGraph = (
 	return { nodes, edges };
 };
 
-/**
- * Deterministically keep the first `limit` node ids in alphabetical order and
- * retain only the edges whose endpoints both survive the cut.
- */
+/** Module-graph wrapper over the shared {@link limitGraph}. */
 export const limitModuleGraph = (
 	graph: IModuleGraph,
 	limit: number | undefined,
