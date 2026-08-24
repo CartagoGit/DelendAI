@@ -502,17 +502,17 @@ export type {
 // --- commit author policy (f00082) ---
 export {
 	COMMIT_AUTHOR_MODES,
+	type CommitAuthorMode,
+	type ICommitAuthorIdentity,
+	type ICommitAuthorInput,
+	type ICommitAuthorNamed,
+	type ICommitAuthorResolution,
+} from '../lib/contracts/interfaces/commit-author.interface';
+export {
 	createGitConfigReader,
 	resolveCommitAuthor,
 } from '../lib/shared/commit-author';
-export type {
-	CommitAuthorMode,
-	ICommitAuthorIdentity,
-	ICommitAuthorInput,
-	ICommitAuthorNamed,
-	ICommitAuthorResolution,
-	IGitConfigReader,
-} from '../lib/shared/commit-author';
+export type { IGitConfigReader } from '../lib/shared/commit-author';
 
 // f00065 slice F: the canonical shared git-runner contract. Plugins that used
 // to redefine this type (git, proposals) import it from here instead.

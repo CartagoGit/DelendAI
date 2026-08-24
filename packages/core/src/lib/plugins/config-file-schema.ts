@@ -20,8 +20,8 @@
  * reported as a schema violation instead of being silently ignored.
  */
 import z from 'zod';
+import { COMMIT_AUTHOR_MODES } from '../contracts/interfaces/commit-author.interface';
 import { CAPABILITY_TAGS } from '../contracts/interfaces/provider-capabilities.interface';
-import { COMMIT_AUTHOR_MODES } from '../shared/commit-author';
 
 /** Kebab-case provider id: `claude-sonnet`, `gpt-5-codex`, … */
 const PROVIDER_ID_PATTERN = /^[a-z][a-z0-9-]+$/;

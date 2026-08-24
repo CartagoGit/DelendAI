@@ -1,5 +1,5 @@
 import type { ICorePaths } from '../contracts/interfaces/core-paths.interface';
-import type { ICommitAuthorResolution } from '../shared/commit-author';
+import type { ICommitAuthorResolution } from '../contracts/interfaces/commit-author.interface';
 import type { IResolvedHostIdentity } from '../contracts/interfaces/resolved-host-identity.interface';
 import type { IPluginConfigExample } from '../contracts/interfaces/plugin-config-example.interface';
 import type {
