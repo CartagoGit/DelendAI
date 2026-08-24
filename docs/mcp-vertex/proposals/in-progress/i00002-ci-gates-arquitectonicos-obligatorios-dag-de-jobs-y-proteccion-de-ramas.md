@@ -39,7 +39,7 @@ La calidad existe localmente pero no obliga en CI: una PR puede violar preset dr
 - global_gate: type
 
 ### S1 — Descomponer validate en jobs con nombres claros
-- **Status**: pending
+- **Status**: done
 - **Files**: `.github/workflows/ci.yml`
 - **Gate**: type
 - acceptance:
