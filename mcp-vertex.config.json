@@ -5,10 +5,7 @@
 	"docsDir": "docs/mcp-vertex",
 	"agentWorktree": false,
 	"commitAuthor": {
-		"mode": "named",
-		"humanName": "Cartago",
-		"humanEmail": "cartago.relaxingcup@gmail.com",
-		"modelName": "M3-minimax"
+		"mode": "git"
 	},
 	"convention": {
 		"pluginPathsRoot": "packages",
