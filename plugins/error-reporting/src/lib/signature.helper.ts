@@ -10,6 +10,7 @@ import type { ISafeMcpVertexReport } from './contracts/interfaces/reporter.inter
 import type { ISafeFingerprintInput } from './contracts/interfaces/signature.interface';
 export {
 	classifyInternalError,
+	classificationFromEvidence,
 	classificationOf,
 	isMcpVertexInternal,
 	isMarkedInternalBoundary,

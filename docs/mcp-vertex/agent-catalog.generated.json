@@ -530,6 +530,10 @@
 			"plugin": "proposals"
 		},
 		{
+			"name": "mcp-vertex_proposals_incident_proposals",
+			"plugin": "proposals"
+		},
+		{
 			"name": "mcp-vertex_proposals_inherit_host_instructions",
 			"plugin": "proposals"
 		},
