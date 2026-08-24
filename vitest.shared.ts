@@ -99,6 +99,7 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 		workspaceRoot,
 		'plugins/impact-analysis/src',
 	);
+	const projectHealth = resolve(workspaceRoot, 'plugins/project-health/src');
 	const changelog = resolve(workspaceRoot, 'plugins/changelog/src');
 	const completion = resolve(workspaceRoot, 'plugins/completion/src');
 	const errorReporting = resolve(
@@ -135,6 +136,18 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 		{
 			find: '@mcp-vertex/impact-analysis',
 			replacement: resolve(impactAnalysis, 'index.ts'),
+		},
+		{
+			find: '@mcp-vertex/project-health/public',
+			replacement: resolve(projectHealth, 'public/index.ts'),
+		},
+		{
+			find: /^@mcp-vertex\/project-health\/lib\/(.*)$/,
+			replacement: `${resolve(projectHealth, 'lib')}/$1`,
+		},
+		{
+			find: '@mcp-vertex/project-health',
+			replacement: resolve(projectHealth, 'index.ts'),
 		},
 		{
 			find: '@mcp-vertex/shared/i18n',

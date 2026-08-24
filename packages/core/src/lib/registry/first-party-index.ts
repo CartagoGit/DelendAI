@@ -93,15 +93,6 @@ export const FIRST_PARTY_PLUGIN_INDEX: IPluginRegistrySource = {
 		},
 		{
 			origin: 'first-party',
-			id: 'context-for-change',
-			package: '@mcp-vertex/context-for-change',
-			summary:
-				'Compact change-context orchestrator that combines diff, symbols, tests, docs and conventions.',
-			tags: ['context', 'orchestration', 'f00165'],
-			permissions: ['filesystem-read'],
-		},
-		{
-			origin: 'first-party',
 			id: 'conventions',
 			package: '@mcp-vertex/conventions',
 			summary:
@@ -201,15 +192,6 @@ export const FIRST_PARTY_PLUGIN_INDEX: IPluginRegistrySource = {
 			tags: ['i18n', 'l10n', 'f00134'],
 			permissions: ['filesystem-read'],
 			defaultPreset: 'standard',
-		},
-		{
-			origin: 'first-party',
-			id: 'impact-analysis',
-			package: '@mcp-vertex/impact-analysis',
-			summary:
-				'Bounded impact analysis and test selection across changed symbols, dependents and related specs.',
-			tags: ['impact', 'tests', 'f00169'],
-			permissions: ['filesystem-read'],
 		},
 		{
 			origin: 'first-party',
