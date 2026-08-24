@@ -2,7 +2,7 @@
 id: f00166
 title: "project_health: agregador de salud del proyecto con detalles lazy"
 kind: feat
-status: ready
+status: review
 type: proposal
 track: product
 date: 2026-08-24
@@ -46,7 +46,7 @@ Obligar al agente a consultar security, deps, quality y debt por separado cuesta
 - global_gate: type
 
 ### S1 — Plugin project-health (resumen lazy)
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/project-health/src/lib/tools/project-health.tool.ts`
 - **Gate**: type
 - acceptance:
@@ -54,7 +54,7 @@ Obligar al agente a consultar security, deps, quality y debt por separado cuesta
   - "Los detalles se cargan lazy (no se ejecutan escaneos pesados en el resumen)."
 
 ### S2 — Wiring del plugin
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/project-health/src/index.ts`
 - **Gate**: type
 - acceptance:
