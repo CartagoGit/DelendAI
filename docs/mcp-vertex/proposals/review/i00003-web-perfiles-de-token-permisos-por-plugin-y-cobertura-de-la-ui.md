@@ -2,7 +2,7 @@
 id: i00003
 title: "web: perfiles de token/permisos por plugin y cobertura de la UI"
 kind: infra
-status: in-progress
+status: review
 type: proposal
 track: web-release
 date: 2026-08-24
@@ -37,14 +37,14 @@ La web es la cara pública del catálogo: si muestra coste, permisos y maturity 
 - global_gate: type
 
 ### S1 — Perfiles de token/permisos en la página de plugin
-- **Status**: pending
+- **Status**: done
 - **Files**: `apps/web/src/pages/[lang]/plugins/[plugin].astro`
 - **Gate**: type
 - acceptance:
   - "Muestra cost, permissions, maturity y presets por plugin desde manifests (WEB-003)."
 
 ### S2 — Cobertura de la web
-- **Status**: pending
+- **Status**: done
 - **Files**: `apps/web/tests/data/plugin-catalog.spec.ts`
 - **Gate**: type
 - acceptance:
