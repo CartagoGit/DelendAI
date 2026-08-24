@@ -37,7 +37,7 @@ Builds, Docker, package managers y test runners crean hijos. Dejarlos vivos tras
 - global_gate: type
 
 ### S1 — Matar el árbol de procesos en runArgv
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/src/lib/external-tool/run-external-tool.ts`
 - **Gate**: type
 - acceptance:
@@ -45,7 +45,7 @@ Builds, Docker, package managers y test runners crean hijos. Dejarlos vivos tras
   - "El mecanismo es portable (Unix process group; Windows taskkill si aplica)."
 
 ### S2 — Test de descendientes vivos
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/tests/src/lib/external-tool/process-tree-kill.spec.ts`
 - **Gate**: type
 - acceptance:

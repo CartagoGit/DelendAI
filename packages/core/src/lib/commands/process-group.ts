@@ -1,3 +1,5 @@
+import { spawn } from 'node:child_process';
+
 /**
  * Kill a spawned command's whole PROCESS GROUP, not just the leader.
  *
@@ -25,4 +27,51 @@ export const killProcessGroup = (
 			// already gone
 		}
 	}
+};
+
+const killDirectProcess = (
+	pid: number | undefined,
+	signal: NodeJS.Signals = 'SIGKILL',
+): void => {
+	if (pid === undefined) return;
+	try {
+		process.kill(pid, signal);
+	} catch {
+		// already gone
+	}
+};
+
+const killWindowsProcessTree = async (pid: number): Promise<void> =>
+	new Promise((resolve) => {
+		const taskkill = spawn('taskkill', ['/pid', String(pid), '/T', '/F'], {
+			stdio: 'ignore',
+			windowsHide: true,
+		});
+		taskkill.on('error', () => {
+			killDirectProcess(pid);
+			resolve();
+		});
+		taskkill.on('close', (code) => {
+			if (code !== 0) {
+				killDirectProcess(pid);
+			}
+			resolve();
+		});
+	});
+
+/**
+ * `runArgv` is argv-first on every platform, so timeout teardown must stay
+ * shell-free too. POSIX uses a dedicated process group and a negative pid;
+ * Windows uses `taskkill /T /F` to reap the whole descendant tree.
+ */
+export const killProcessTree = async (
+	pid: number | undefined,
+	signal: NodeJS.Signals = 'SIGKILL',
+): Promise<void> => {
+	if (pid === undefined) return;
+	if (process.platform === 'win32') {
+		await killWindowsProcessTree(pid);
+		return;
+	}
+	killProcessGroup(pid, signal);
 };
