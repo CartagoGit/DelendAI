@@ -7,6 +7,7 @@ import {
 	capabilityToolsFor,
 	resolvePluginPurpose,
 } from '#DATA/plugin-catalog';
+import { GENERATED_PLUGIN_MANIFEST_WEB_CATALOG } from '#DATA/../generated/plugin-manifest-catalog.generated';
 
 /**
  * f00053 S1 — the canonical plugin catalog is the single source of
@@ -115,5 +116,34 @@ describe('capabilityCountFor / capabilityToolsFor', () => {
 	it('returns 0 for a plugin absent from the current capabilities snapshot', () => {
 		// A plugin not in the active preset contributes no tools here.
 		expect(capabilityCountFor('definitely-not-loaded')).toBe(0);
+	});
+});
+
+describe('GENERATED_PLUGIN_MANIFEST_WEB_CATALOG', () => {
+	it('includes manifest-backed profile fields for every web entry', () => {
+		for (const entry of GENERATED_PLUGIN_MANIFEST_WEB_CATALOG) {
+			expect(
+				entry.permissions.length,
+				`${entry.id}.permissions`,
+			).toBeGreaterThan(0);
+			expect(entry.presets.length, `${entry.id}.presets`).toBeGreaterThan(
+				0,
+			);
+			expect(
+				entry.maturity.length,
+				`${entry.id}.maturity`,
+			).toBeGreaterThan(0);
+			expect(
+				entry.tokenBudget.warning,
+				`${entry.id}.warning`,
+			).toBeGreaterThan(0);
+			expect(entry.tokenBudget.hard, `${entry.id}.hard`).toBeGreaterThan(
+				0,
+			);
+			expect(
+				entry.tokenBudget.releaseRelativePercent,
+				`${entry.id}.releaseRelativePercent`,
+			).toBeGreaterThan(0);
+		}
 	});
 });

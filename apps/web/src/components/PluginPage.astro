@@ -7,6 +7,7 @@ import PageHeader from '#COMPONENTS/PageHeader.astro';
 import Tabs from '#COMPONENTS/ui/Tabs.astro';
 import PluginInstall from '#COMPONENTS/PluginInstall.astro';
 import Tutorial from '#COMPONENTS/Tutorial.astro';
+import { buildPluginProfile } from '#DATA/plugin-profile';
 
 interface Props {
 	lang: Lang;
@@ -71,6 +72,7 @@ const pluginTutorials = (
 const tools = (capabilities.tools as ITool[])
 	.filter((tool) => tool.namespace === slug)
 	.sort((a, b) => a.name.localeCompare(b.name));
+const pluginProfile = buildPluginProfile(slug, t.pluginpage);
 // Localized description with graceful English fallback.
 // SSR-fast path: use the precomputed `i18n` block when available. Falls
 // back to the runtime `describeTool()` lookup for tools not in the
@@ -108,6 +110,61 @@ const title = pkg?.name ?? `@mcp-vertex/${slug}`;
 			]}
 		>
 			<section data-tab-panel="install" id="panel-install">
+				{pluginProfile && (
+					<section class="plugin-profile" aria-labelledby="plugin-profile-title">
+						<h2 id="plugin-profile-title">{t.pluginpage.profileTitle}</h2>
+						<div class="tools-grid">
+							<div class="tool card">
+								<div class="tool__head">
+									<strong>{t.pluginpage.profileMaturity}</strong>
+								</div>
+								<p>{pluginProfile.maturity}</p>
+							</div>
+
+							<div class="tool card">
+								<div class="tool__head">
+									<strong>{t.pluginpage.profilePresets}</strong>
+								</div>
+								<ul class="plugin-profile__list" aria-label={t.pluginpage.profilePresets}>
+									{pluginProfile.presets.map((preset) => (
+										<li><code>{preset}</code></li>
+									))}
+								</ul>
+							</div>
+
+							<div class="tool card">
+								<div class="tool__head">
+									<strong>{t.pluginpage.profilePermissions}</strong>
+								</div>
+								<ul class="plugin-profile__list" aria-label={t.pluginpage.profilePermissions}>
+									{pluginProfile.permissions.map((permission) => (
+										<li>{permission}</li>
+									))}
+								</ul>
+							</div>
+
+							<div class="tool card">
+								<div class="tool__head">
+									<strong>{t.pluginpage.profileTokenBudget}</strong>
+								</div>
+								<dl class="plugin-profile__metrics">
+									<div class="plugin-profile__metric">
+										<dt>{t.pluginpage.profileBudgetWarning}</dt>
+										<dd>{pluginProfile.tokenBudget.warning}</dd>
+									</div>
+									<div class="plugin-profile__metric">
+										<dt>{t.pluginpage.profileBudgetHard}</dt>
+										<dd>{pluginProfile.tokenBudget.hard}</dd>
+									</div>
+									<div class="plugin-profile__metric">
+										<dt>{t.pluginpage.profileBudgetReleaseRelativePercent}</dt>
+										<dd>{pluginProfile.tokenBudget.releaseRelativePercent}%</dd>
+									</div>
+								</dl>
+							</div>
+						</div>
+					</section>
+				)}
 				<PluginInstall slug={slug} heading={t.pluginpage.install} />
 			</section>
 
@@ -193,6 +250,47 @@ const title = pkg?.name ?? `@mcp-vertex/${slug}`;
 		</Tabs>
 	</div>
 </section>
+
+<style>
+	.plugin-profile {
+		margin-bottom: 1rem;
+	}
+
+	.plugin-profile__list {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.5rem;
+		list-style: none;
+		margin: 0.4rem 0 0;
+		padding: 0;
+	}
+
+	.plugin-profile__list li {
+		margin: 0;
+	}
+
+	.plugin-profile__metrics {
+		display: grid;
+		gap: 0.45rem;
+		margin: 0.4rem 0 0;
+	}
+
+	.plugin-profile__metric {
+		display: flex;
+		align-items: baseline;
+		justify-content: space-between;
+		gap: 1rem;
+	}
+
+	.plugin-profile__metric dt {
+		font-weight: 600;
+	}
+
+	.plugin-profile__metric dd {
+		margin: 0;
+		color: var(--muted);
+	}
+</style>
 
 {pkg?.configExample && (
 	<script is:inline>

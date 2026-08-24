@@ -288,6 +288,14 @@ describe('from-manifests generator', () => {
 				'search',
 			]);
 			expect(entries[0]?.permissions).toEqual(['filesystem-read']);
+			expect(result?.artifact.webCatalog[0]?.permissions).toEqual([
+				'filesystem-read',
+			]);
+			expect(result?.artifact.webCatalog[0]?.tokenBudget).toEqual({
+				warning: 2200,
+				hard: 2500,
+				releaseRelativePercent: 20,
+			});
 			const compatibility = buildCompatibilityMatrix(
 				(result?.artifact.manifests ?? []).map((manifest) => ({
 					id: manifest.id,
@@ -320,6 +328,12 @@ describe('from-manifests generator', () => {
 			expect(
 				await readFile(join(root, GENERATED_WEB_CATALOG_PATH), 'utf8'),
 			).toContain('GENERATED_PLUGIN_MANIFEST_WEB_CATALOG');
+			expect(
+				await readFile(join(root, GENERATED_WEB_CATALOG_PATH), 'utf8'),
+			).toContain('"permissions"');
+			expect(
+				await readFile(join(root, GENERATED_WEB_CATALOG_PATH), 'utf8'),
+			).toContain('"tokenBudget"');
 			expect(
 				await readFile(join(root, GENERATED_DOCS_JSON_PATH), 'utf8'),
 			).toContain('compatibilityMatrix');

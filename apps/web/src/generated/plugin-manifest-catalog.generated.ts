@@ -9,6 +9,12 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG = [
 		visibility: 'public',
 		presets: ['vertex'],
 		capabilities: ['adaptive-optimization'],
+		permissions: ['filesystem-read'],
+		tokenBudget: {
+			warning: 2700,
+			hard: 3000,
+			releaseRelativePercent: 20,
+		},
 	},
 	{
 		id: 'context-for-change',
@@ -20,6 +26,12 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG = [
 		visibility: 'public',
 		presets: ['vertex'],
 		capabilities: ['context-orchestration'],
+		permissions: ['filesystem-read'],
+		tokenBudget: {
+			warning: 2700,
+			hard: 3000,
+			releaseRelativePercent: 20,
+		},
 	},
 	{
 		id: 'impact-analysis',
@@ -31,6 +43,12 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG = [
 		visibility: 'public',
 		presets: ['vertex'],
 		capabilities: ['impact-analysis', 'test-selection'],
+		permissions: ['filesystem-read'],
+		tokenBudget: {
+			warning: 2700,
+			hard: 3000,
+			releaseRelativePercent: 20,
+		},
 	},
 	{
 		id: 'project-health',
@@ -42,6 +60,12 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG = [
 		visibility: 'public',
 		presets: ['vertex'],
 		capabilities: ['health-aggregation'],
+		permissions: ['filesystem-read'],
+		tokenBudget: {
+			warning: 2700,
+			hard: 3000,
+			releaseRelativePercent: 20,
+		},
 	},
 	{
 		id: 'quality-policy',
@@ -53,6 +77,12 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG = [
 		visibility: 'public',
 		presets: ['vertex'],
 		capabilities: ['quality-policy'],
+		permissions: ['filesystem-read'],
+		tokenBudget: {
+			warning: 2700,
+			hard: 3000,
+			releaseRelativePercent: 20,
+		},
 	},
 	{
 		id: 'search',
@@ -78,5 +108,11 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG = [
 			'semantic-search',
 			'hybrid-search',
 		],
+		permissions: ['filesystem-read'],
+		tokenBudget: {
+			warning: 2700,
+			hard: 3000,
+			releaseRelativePercent: 20,
+		},
 	},
 ] as const;

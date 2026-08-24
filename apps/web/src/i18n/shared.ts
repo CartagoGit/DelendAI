@@ -247,6 +247,17 @@ export interface IPluginPageTranslations {
 	readonly back: string;
 	readonly tools: string;
 	readonly install: string;
+	readonly profileTitle: string;
+	readonly profileMaturity: string;
+	readonly profilePresets: string;
+	readonly profilePermissions: string;
+	readonly profileTokenBudget: string;
+	readonly profileBudgetWarning: string;
+	readonly profileBudgetHard: string;
+	readonly profileBudgetReleaseRelativePercent: string;
+	readonly maturityStable: string;
+	readonly maturityExperimental: string;
+	readonly permissionFilesystemRead: string;
 	/** Tab labels for the plugin page strip (l100 s8). */
 	readonly tabInstall: string;
 	readonly tabTools: string;
