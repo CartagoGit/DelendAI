@@ -353,6 +353,7 @@ const findReviewPendingPeerApproval = async (
 				return { proposalId: entry.id, file: entry.file };
 			}
 		} catch {
+			// Unreadable/missing proposal file — skip to the next entry.
 			continue;
 		}
 	}
