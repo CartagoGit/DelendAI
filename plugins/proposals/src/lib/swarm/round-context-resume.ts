@@ -106,10 +106,18 @@ export const buildResumeHint = (input: {
 			taskId: inferredTaskId,
 		};
 	}
+	// Terminal fallback: no checkpoint, no chat context, no lock and no
+	// active agent. `unknown` was honest but not actionable — the
+	// orchestrator, told to follow the resume/next hint, had no forward
+	// path and re-oriented in a loop (observed: repeated `orient`
+	// assignments going to cooldown with no forward signal). The
+	// canonical forward path when nothing is in flight is to advance to
+	// the next claimable slice via `auto_work`, so emit a deterministic
+	// `next` instead of a non-actionable `unknown`.
 	return {
-		mode: 'unknown',
+		mode: 'next',
 		proposalId,
-		reason: 'Sin señal suficiente para decidir resume o next.',
+		reason: 'Sin señal en vuelo: avanzar al siguiente slice reclamable (auto_work) en vez de re-orientar.',
 		...(inferredTaskId !== undefined ? { taskId: inferredTaskId } : {}),
 	};
 };
