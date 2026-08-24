@@ -17,6 +17,7 @@ import type {
 	IModuleEdge,
 	IModuleGraph,
 } from '../contracts/interfaces/graph.interface';
+import { limitGraph, renderNodeEdgeMermaid } from './build-graph';
 
 /**
  * The display name for a file: the path relative to the package root,
@@ -80,22 +81,24 @@ export const buildModuleGraph = (
 };
 
 /**
+ * Deterministically keep the first `limit` node ids in alphabetical order and
+ * retain only the edges whose endpoints both survive the cut.
+ */
+export const limitModuleGraph = (
+	graph: IModuleGraph,
+	limit: number | undefined,
+): { graph: IModuleGraph; truncated: boolean } => {
+	const limited = limitGraph(graph, limit);
+	return {
+		graph: limited.graph as IModuleGraph,
+		truncated: limited.truncated,
+	};
+};
+
+/**
  * Render a module graph as a mermaid `flowchart LR`. Isolated nodes
  * (no edges) are declared so they still appear. Deterministic output
  * — the same input always produces the same string.
  */
-export const renderModuleMermaid = (graph: IModuleGraph): string => {
-	const lines = ['flowchart LR'];
-	const connected = new Set<string>();
-	for (const edge of graph.edges) {
-		connected.add(edge.from);
-		connected.add(edge.to);
-		lines.push(
-			`\t${nodeId(edge.from)}["${edge.from}"] --> ${nodeId(edge.to)}["${edge.to}"]`,
-		);
-	}
-	for (const node of graph.nodes) {
-		if (!connected.has(node)) lines.push(`\t${nodeId(node)}["${node}"]`);
-	}
-	return lines.join('\n');
-};
+export const renderModuleMermaid = (graph: IModuleGraph): string =>
+	renderNodeEdgeMermaid(graph);
