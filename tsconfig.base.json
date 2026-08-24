@@ -238,6 +238,15 @@
 			"@mcp-vertex/impact-analysis/*": [
 				"./plugins/impact-analysis/src/*"
 			],
+			"@mcp-vertex/adaptive-optimizer": [
+				"./plugins/adaptive-optimizer/src/index.ts"
+			],
+			"@mcp-vertex/adaptive-optimizer/public": [
+				"./plugins/adaptive-optimizer/src/public/index.ts"
+			],
+			"@mcp-vertex/adaptive-optimizer/*": [
+				"./plugins/adaptive-optimizer/src/*"
+			],
 			"@mcp-vertex/project-health": [
 				"./plugins/project-health/src/index.ts"
 			],

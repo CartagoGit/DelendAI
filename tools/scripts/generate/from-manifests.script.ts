@@ -14,6 +14,7 @@ import {
 } from '@mcp-vertex/core/public';
 
 export const MIGRATED_PLUGIN_IDS = [
+	'adaptive-optimizer',
 	'context-for-change',
 	'impact-analysis',
 	'project-health',
@@ -21,6 +22,7 @@ export const MIGRATED_PLUGIN_IDS = [
 	'search',
 ] as const;
 export const MIGRATED_MANIFEST_PATHS = [
+	'plugins/adaptive-optimizer/plugin.manifest.ts',
 	'plugins/context-for-change/plugin.manifest.ts',
 	'plugins/impact-analysis/plugin.manifest.ts',
 	'plugins/project-health/plugin.manifest.ts',

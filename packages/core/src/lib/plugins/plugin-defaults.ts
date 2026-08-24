@@ -36,6 +36,9 @@ export const PLUGIN_DEFAULTS: Readonly<
 	observability: {},
 	'context-for-change': {},
 	'impact-analysis': {},
+	'adaptive-optimizer': {
+		maxBytes: 2000,
+	},
 	'project-health': {
 		maxBytes: 2000,
 	},

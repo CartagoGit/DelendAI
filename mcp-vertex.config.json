@@ -55,6 +55,11 @@
 				"maxBytes": 2000
 			}
 		},
+		"adaptive-optimizer": {
+			"options": {
+				"maxBytes": 2000
+			}
+		},
 		"memory": {
 			"options": {
 				"bm25K1": 1.5,

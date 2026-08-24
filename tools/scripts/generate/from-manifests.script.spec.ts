@@ -140,6 +140,40 @@ const withFixture = async (
 				'};\n',
 			].join('\n'),
 		);
+		await mkdir(join(root, 'plugins/adaptive-optimizer'), {
+			recursive: true,
+		});
+		await writeFile(
+			join(root, 'plugins/adaptive-optimizer/package.json'),
+			JSON.stringify(
+				{
+					name: '@mcp-vertex/adaptive-optimizer',
+					version: '0.1.0',
+					publishConfig: { access: 'public' },
+				},
+				null,
+				'\t',
+			) + '\n',
+		);
+		await writeFile(
+			join(root, 'plugins/adaptive-optimizer/plugin.manifest.ts'),
+			[
+				'export const ADAPTIVE_OPTIMIZER_PLUGIN_MANIFEST = {',
+				"\tid: 'adaptive-optimizer',",
+				"\tpackage: '@mcp-vertex/adaptive-optimizer',",
+				"\tversion: '0.1.0',",
+				"\tvisibility: 'public',",
+				"\tsummary: 'Adaptive optimizer for cheap candidate ranking.',",
+				"\ttags: ['optimizer', 'adaptive', 'f00168'],",
+				"\tmaturity: 'experimental',",
+				"\tpermissions: ['filesystem-read'],",
+				"\tpresets: ['vertex'],",
+				'\ttokenBudget: { warning: 2200, hard: 2500, releaseRelativePercent: 20 },',
+				"\tdependencies: ['@mcp-vertex/core', 'zod'],",
+				"\tcapabilities: ['adaptive-optimization'],",
+				'};\n',
+			].join('\n'),
+		);
 		await mkdir(join(root, 'plugins/project-health'), { recursive: true });
 		await writeFile(
 			join(root, 'plugins/project-health/package.json'),
@@ -246,6 +280,7 @@ describe('from-manifests generator', () => {
 				})),
 			);
 			expect(entries.map((entry) => entry.id)).toEqual([
+				'adaptive-optimizer',
 				'context-for-change',
 				'impact-analysis',
 				'project-health',
