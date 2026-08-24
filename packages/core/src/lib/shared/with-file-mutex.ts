@@ -1,7 +1,18 @@
 import { AsyncLocalStorage } from 'node:async_hooks';
 import { randomUUID } from 'node:crypto';
-import { mkdir, open, readFile, rm, stat, utimes } from 'node:fs/promises';
+import {
+	mkdir,
+	open,
+	readFile,
+	rename,
+	rm,
+	stat,
+	utimes,
+} from 'node:fs/promises';
 import { dirname } from 'node:path';
+
+import type { IMutexMetricsCollector } from '../contracts/interfaces/mutex-metrics.interface';
+import { getNoopMutexMetricsCollector } from './mutex-metrics.helper';
 
 /**
  * Reentrance tracker: tracks the set of lock paths currently held by this
@@ -73,7 +84,30 @@ export interface IFileMutexOptions {
 	 * of this option, so the deadlock-avoidance property is preserved either way.
 	 */
 	readonly onContention?: 'steal' | 'fail' | 'wait';
+	/** Optional aggregate-only collector for contention metrics. */
+	readonly metrics?: IMutexMetricsCollector;
 }
+
+interface IObservedLockLease {
+	readonly mtimeMs: number;
+	readonly token: string;
+}
+
+interface IWithFileMutexTestHooks {
+	afterObserveStale?(lease: IObservedLockLease): Promise<void> | void;
+}
+
+let withFileMutexTestHooks: IWithFileMutexTestHooks | undefined;
+
+export const __setWithFileMutexTestHooks = (
+	hooks: IWithFileMutexTestHooks | undefined,
+): void => {
+	withFileMutexTestHooks = hooks;
+};
+
+export const __resetWithFileMutexTestHooks = (): void => {
+	withFileMutexTestHooks = undefined;
+};
 
 /** Thrown by `withFileMutex` under `onContention: 'fail'` when a live holder
  * keeps the lock past `timeoutMs`. Lets a caller back off instead of stealing. */
@@ -90,6 +124,56 @@ export class LockContentionError extends Error {
 const sleep = (ms: number): Promise<void> =>
 	new Promise((resolve) => setTimeout(resolve, ms));
 
+const observeLockLease = async (
+	path: string,
+): Promise<IObservedLockLease | undefined> => {
+	try {
+		const [token, info] = await Promise.all([
+			readFile(path, 'utf8'),
+			stat(path),
+		]);
+		return { token, mtimeMs: info.mtimeMs };
+	} catch (error) {
+		if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
+			return undefined;
+		}
+		throw error;
+	}
+};
+
+const removeIfOwned = async (
+	path: string,
+	expectedToken: string,
+): Promise<void> => {
+	try {
+		const current = await readFile(path, 'utf8');
+		if (current === expectedToken) {
+			await rm(path, { force: true });
+		}
+	} catch {
+		return;
+	}
+};
+
+const restoreReclaimPath = async (
+	reclaimPath: string,
+	lockPath: string,
+): Promise<void> => {
+	try {
+		await rename(reclaimPath, lockPath);
+	} catch (error) {
+		const code = (error as NodeJS.ErrnoException).code;
+		if (code === 'ENOENT') {
+			return;
+		}
+		if (code === 'EEXIST') {
+			await rm(reclaimPath, { force: true }).catch(() => undefined);
+			return;
+		}
+		throw error;
+	}
+};
+
 export const withFileMutex = async <T>(
 	targetPath: string,
 	fn: () => Promise<T>,
@@ -101,6 +185,7 @@ export const withFileMutex = async <T>(
 	const pollMs = options.pollMs ?? 25;
 	const heartbeatMs =
 		options.heartbeatMs ?? Math.max(50, Math.floor(staleMs / 3));
+	const metrics = options.metrics ?? getNoopMutexMetricsCollector();
 	const lockPath = `${targetPath}.mutex`;
 	// Unique per acquisition: identifies *this* holder so release never
 	// deletes a lock that was stolen and is now owned by someone else.
@@ -110,7 +195,7 @@ export const withFileMutex = async <T>(
 	// filesystem mutex entirely. The outer holder still owns the critical
 	// section, so nested calls are safe.
 	const held = lockStack.getStore();
-	if (held !== undefined && held.has(lockPath)) {
+	if (held?.has(lockPath) === true) {
 		return await fn();
 	}
 
@@ -121,6 +206,8 @@ export const withFileMutex = async <T>(
 
 	const deadline = Date.now() + timeoutMs;
 	let acquired = false;
+	let contentionObserved = false;
+	let waitStartedAt: number | undefined;
 	for (;;) {
 		try {
 			const handle = await open(lockPath, 'wx');
@@ -130,15 +217,95 @@ export const withFileMutex = async <T>(
 				await handle.close();
 			}
 			acquired = true;
+			if (waitStartedAt !== undefined) {
+				metrics.recordWaitMs(Date.now() - waitStartedAt);
+			}
 			break;
 		} catch (error) {
 			if ((error as NodeJS.ErrnoException).code !== 'EEXIST') throw error;
+			if (!contentionObserved) {
+				contentionObserved = true;
+				waitStartedAt = Date.now();
+				metrics.recordContention();
+			}
 			// Held by another writer. Steal it if it looks abandoned.
 			try {
-				const info = await stat(lockPath);
-				if (Date.now() - info.mtimeMs > staleMs) {
-					await rm(lockPath, { force: true });
+				const observedLease = await observeLockLease(lockPath);
+				if (observedLease === undefined) {
 					continue;
+				}
+				if (Date.now() - observedLease.mtimeMs > staleMs) {
+					await withFileMutexTestHooks?.afterObserveStale?.(
+						observedLease,
+					);
+					const reclaimPath = `${lockPath}.reclaim.${process.pid}.${randomUUID()}`;
+					try {
+						await rename(lockPath, reclaimPath);
+						const revalidatedLease =
+							await observeLockLease(reclaimPath);
+						if (
+							revalidatedLease !== undefined &&
+							revalidatedLease.token === observedLease.token &&
+							revalidatedLease.mtimeMs === observedLease.mtimeMs
+						) {
+							const guardToken = `${token}\nreclaim-guard`;
+							try {
+								const handle = await open(lockPath, 'wx');
+								try {
+									await handle.writeFile(guardToken);
+								} finally {
+									await handle.close();
+								}
+							} catch (guardError) {
+								if (
+									(guardError as NodeJS.ErrnoException)
+										.code !== 'EEXIST'
+								) {
+									throw guardError;
+								}
+								await rm(reclaimPath, { force: true }).catch(
+									() => undefined,
+								);
+								continue;
+							}
+
+							try {
+								const lockHandle = await open(lockPath, 'r+');
+								try {
+									await lockHandle.truncate(0);
+									await lockHandle.writeFile(token);
+								} finally {
+									await lockHandle.close();
+								}
+								await rm(reclaimPath, { force: true }).catch(
+									() => undefined,
+								);
+								metrics.recordStaleReclaim();
+								acquired = true;
+								if (waitStartedAt !== undefined) {
+									metrics.recordWaitMs(
+										Date.now() - waitStartedAt,
+									);
+								}
+								break;
+							} catch (commitError) {
+								await removeIfOwned(lockPath, guardToken);
+								await restoreReclaimPath(reclaimPath, lockPath);
+								throw commitError;
+							}
+						}
+
+						await restoreReclaimPath(reclaimPath, lockPath);
+						continue;
+					} catch (reclaimError) {
+						if (
+							(reclaimError as NodeJS.ErrnoException).code ===
+							'ENOENT'
+						) {
+							continue;
+						}
+						throw reclaimError;
+					}
 				}
 			} catch {
 				// The sidecar vanished between open and stat: retry now.
@@ -152,6 +319,10 @@ export const withFileMutex = async <T>(
 				// because the ownership token stops the old holder deleting the
 				// lock we create next, but able to clobber the peer's work.
 				if (onContention === 'fail' || onContention === 'wait') {
+					if (waitStartedAt !== undefined) {
+						metrics.recordWaitMs(Date.now() - waitStartedAt);
+					}
+					metrics.recordFailedAcquisition();
 					throw new LockContentionError(lockPath, timeoutMs);
 				}
 				await rm(lockPath, { force: true }).catch(() => undefined);
