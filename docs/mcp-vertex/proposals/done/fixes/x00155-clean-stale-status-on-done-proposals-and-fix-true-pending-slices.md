@@ -170,7 +170,7 @@ fix proposal.
 
 - **Status**: done
 - **Files**:
-  - `docs/mcp-vertex/proposals/done/feats/f00020-skills-and-tools-coverage.md` (status sync only; the skill already exists)
+  - `docs/mcp-vertex/proposals/legacy/closed/feats/f00020-skills-and-tools-coverage.md` (status sync only; the skill already exists)
   - `docs/mcp-vertex/proposals/done/refactors/r00011-auto-config-packs.md` (close any corresponding slice if it exists)
 - **Gate**: `bun run lint:proposals`
 - **Acceptance**:
