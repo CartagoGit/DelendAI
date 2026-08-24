@@ -79,7 +79,7 @@ and adds to config/pack; consent required for community entries. Idempotent.
 ### S3 — registry browse surface + catalog
 
 - **Status**: done
-- **Files**: `packages/core/src/lib/tools/plugin-search.tool.ts`, `packages/core/tests/src/lib/tools/plugin-search.tool.spec.ts`, `apps/web/src/pages/plugins/index.astro`
+- **Files**: `packages/core/src/lib/registry/plugin-search.tool.ts`, `packages/core/tests/src/lib/registry/plugin-search.tool.spec.ts`, `apps/web/src/pages/plugins/index.astro`
 - **Commit**: `faa75958`, `56630bda`
 - **Gate**: bun run validate
 
