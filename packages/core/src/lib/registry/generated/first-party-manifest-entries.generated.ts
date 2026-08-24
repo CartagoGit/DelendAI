@@ -31,6 +31,15 @@ export const GENERATED_FIRST_PARTY_MANIFEST_ENTRIES: readonly IPluginRegistryEnt
 		},
 		{
 			origin: 'first-party',
+			id: 'quality-policy',
+			package: '@mcp-vertex/quality-policy',
+			summary:
+				'Unified quality-policy surface: cheap tests, conventions, lint, types and coverage guidance without running heavy quality commands.',
+			tags: ['quality', 'policy', 'aggregation', 'f00167'],
+			permissions: ['filesystem-read'],
+		},
+		{
+			origin: 'first-party',
 			id: 'search',
 			package: '@mcp-vertex/search',
 			summary: 'Code search (semantic + symbol + references).',

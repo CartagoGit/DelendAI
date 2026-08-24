@@ -33,6 +33,17 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG = [
 		capabilities: ['health-aggregation'],
 	},
 	{
+		id: 'quality-policy',
+		package: '@mcp-vertex/quality-policy',
+		summary:
+			'Unified quality-policy surface: cheap tests, conventions, lint, types and coverage guidance without running heavy quality commands.',
+		tags: ['quality', 'policy', 'aggregation', 'f00167'],
+		maturity: 'experimental',
+		visibility: 'public',
+		presets: ['vertex'],
+		capabilities: ['quality-policy'],
+	},
+	{
 		id: 'search',
 		package: '@mcp-vertex/search',
 		summary: 'Code search (semantic + symbol + references).',

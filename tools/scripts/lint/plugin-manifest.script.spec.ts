@@ -46,6 +46,11 @@ const withFixture = async (
 			name: '@mcp-vertex/project-health',
 			version: '0.1.0',
 		});
+		await mkdir(join(root, 'plugins/quality-policy'), { recursive: true });
+		await writeJson(join(root, 'plugins/quality-policy/package.json'), {
+			name: '@mcp-vertex/quality-policy',
+			version: '0.1.0',
+		});
 		await writeFile(
 			join(root, 'plugins/context-for-change/plugin.manifest.ts'),
 			[
@@ -100,6 +105,25 @@ const withFixture = async (
 				'\ttokenBudget: { warning: 2200, hard: 2500, releaseRelativePercent: 20 },',
 				"\tdependencies: ['@mcp-vertex/core', 'zod'],",
 				"\tcapabilities: ['health-aggregation'],",
+				'};\n',
+			].join('\n'),
+		);
+		await writeFile(
+			join(root, 'plugins/quality-policy/plugin.manifest.ts'),
+			[
+				'export const QUALITY_POLICY_PLUGIN_MANIFEST = {',
+				"\tid: 'quality-policy',",
+				"\tpackage: '@mcp-vertex/quality-policy',",
+				"\tversion: '0.1.0',",
+				"\tvisibility: 'public',",
+				"\tsummary: 'Unified quality policy surface.',",
+				"\ttags: ['quality', 'policy', 'f00167'],",
+				"\tmaturity: 'experimental',",
+				"\tpermissions: ['filesystem-read'],",
+				"\tpresets: ['vertex'],",
+				'\ttokenBudget: { warning: 2200, hard: 2500, releaseRelativePercent: 20 },',
+				"\tdependencies: ['@mcp-vertex/core', 'zod'],",
+				"\tcapabilities: ['quality-policy'],",
 				'};\n',
 			].join('\n'),
 		);

@@ -50,6 +50,11 @@
 				"maxBytes": 2000
 			}
 		},
+		"quality-policy": {
+			"options": {
+				"maxBytes": 2000
+			}
+		},
 		"memory": {
 			"options": {
 				"bm25K1": 1.5,

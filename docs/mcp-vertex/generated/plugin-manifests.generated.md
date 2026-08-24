@@ -7,6 +7,7 @@
 | context-for-change | @mcp-vertex/context-for-change | public | experimental | vertex |
 | impact-analysis | @mcp-vertex/impact-analysis | public | experimental | vertex |
 | project-health | @mcp-vertex/project-health | public | experimental | vertex |
+| quality-policy | @mcp-vertex/quality-policy | public | experimental | vertex |
 | search | @mcp-vertex/search | public | stable | minimal, lean, standard, swarm, full, vertex, web-app, backend-api, cli-tool |
 
 ## Token budgets
@@ -16,6 +17,7 @@
 | context-for-change | 2700 | 3000 | 20 |
 | impact-analysis | 2700 | 3000 | 20 |
 | project-health | 2700 | 3000 | 20 |
+| quality-policy | 2700 | 3000 | 20 |
 | search | 2700 | 3000 | 20 |
 
 ## Permissions
@@ -25,6 +27,7 @@
 | context-for-change | filesystem-read |  |
 | impact-analysis | filesystem-read |  |
 | project-health | filesystem-read |  |
+| quality-policy | filesystem-read |  |
 | search | filesystem-read |  |
 
 ## Compatibility matrix
@@ -58,6 +61,15 @@
 | project-health | web-app | no | no | yes |
 | project-health | backend-api | no | no | yes |
 | project-health | cli-tool | no | no | yes |
+| quality-policy | minimal | no | no | yes |
+| quality-policy | lean | no | no | yes |
+| quality-policy | standard | no | no | yes |
+| quality-policy | swarm | no | no | yes |
+| quality-policy | full | no | no | yes |
+| quality-policy | vertex | yes | yes | yes |
+| quality-policy | web-app | no | no | yes |
+| quality-policy | backend-api | no | no | yes |
+| quality-policy | cli-tool | no | no | yes |
 | search | minimal | yes | yes | yes |
 | search | lean | yes | yes | yes |
 | search | standard | yes | yes | yes |

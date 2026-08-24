@@ -243,6 +243,7 @@ export const PRESET_CATALOG: readonly IPresetDefinition[] = [
 			{ plugin: 'i18n' },
 			{ plugin: 'impact-analysis' },
 			{ plugin: 'project-health' },
+			{ plugin: 'quality-policy' },
 			{ plugin: 'link-check' },
 			{ plugin: 'logs' },
 			{ plugin: 'memory' },

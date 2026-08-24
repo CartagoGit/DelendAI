@@ -17,12 +17,14 @@ export const MIGRATED_PLUGIN_IDS = [
 	'context-for-change',
 	'impact-analysis',
 	'project-health',
+	'quality-policy',
 	'search',
 ] as const;
 export const MIGRATED_MANIFEST_PATHS = [
 	'plugins/context-for-change/plugin.manifest.ts',
 	'plugins/impact-analysis/plugin.manifest.ts',
 	'plugins/project-health/plugin.manifest.ts',
+	'plugins/quality-policy/plugin.manifest.ts',
 	'plugins/search/plugin.manifest.ts',
 ] as const;
 
