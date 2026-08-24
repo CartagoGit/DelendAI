@@ -1,4 +1,5 @@
 import type { ISafeMcpFrame } from './safe-frame.interface';
+import type { SafeReporterTransportFailureCode } from '../constants/safe-reporter-failure-codes.constant';
 import type { McpVertexErrorCode } from '../constants/error-codes.constant';
 import {
 	McpVertexInternalError,
@@ -99,9 +100,19 @@ export interface ISafeReporter {
 	): Promise<ISubmitIssueOutcome>;
 }
 
-export interface ISubmitIssueOutcome {
-	readonly ok: boolean;
-	readonly reason: string;
-	readonly issueNumber?: number | undefined;
+export interface ISubmitIssueSuccessOutcome {
+	readonly ok: true;
+	readonly reason: 'created';
+	readonly issueNumber: number;
 	readonly issueUrl?: string | undefined;
 }
+
+export interface ISubmitIssueFailureOutcome {
+	readonly ok: false;
+	readonly reason: string;
+	readonly failureCode: SafeReporterTransportFailureCode;
+}
+
+export type ISubmitIssueOutcome =
+	| ISubmitIssueSuccessOutcome
+	| ISubmitIssueFailureOutcome;

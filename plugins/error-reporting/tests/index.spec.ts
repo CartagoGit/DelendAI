@@ -1,0 +1,136 @@
+import { mkdtemp, rm } from 'node:fs/promises';
+import { join } from 'node:path';
+import { tmpdir } from 'node:os';
+
+import { afterEach, describe, expect, it, vi } from 'vitest';
+
+import type { ISafeReporter } from '../src/lib/contracts/interfaces/reporter.interface';
+import { createReportStore } from '../src/lib/report-store.service';
+import {
+	registerInternalPath,
+	resetInternalPathRegistry,
+} from '../src/lib/signature.helper';
+import { buildReportErrorHandler } from '../src/index';
+
+const tmpDirs: string[] = [];
+
+const makeDir = async (): Promise<string> => {
+	const dir = await mkdtemp(join(tmpdir(), 'error-reporting-index-'));
+	tmpDirs.push(dir);
+	return dir;
+};
+
+afterEach(async () => {
+	resetInternalPathRegistry();
+	await Promise.all(
+		tmpDirs
+			.splice(0)
+			.map((dir) => rm(dir, { recursive: true, force: true })),
+	);
+});
+
+const internalError = (): Error => {
+	registerInternalPath('/workspace');
+	const error = new Error('runtime secret 123 should never persist');
+	error.stack = [
+		'Error: runtime secret 123 should never persist',
+		'    at report (/workspace/plugins/error-reporting/src/index.ts:10:2)',
+	].join('\n');
+	return error;
+};
+
+describe('buildReportErrorHandler', () => {
+	it('records a failed attempt without creating a synthetic success timestamp, then retries later', async () => {
+		const store = createReportStore(await makeDir());
+		const reporter: ISafeReporter = {
+			submitSafeReport: vi
+				.fn()
+				.mockResolvedValueOnce({
+					ok: false,
+					reason: 'offline',
+					failureCode: 'GH_EXEC_FAILED',
+				})
+				.mockResolvedValueOnce({
+					ok: true,
+					reason: 'created',
+					issueNumber: 77,
+				}),
+		};
+		const clock = {
+			nowMs: vi
+				.fn<() => number>()
+				.mockReturnValueOnce(Date.parse('2026-08-24T10:00:00.000Z'))
+				.mockReturnValueOnce(Date.parse('2026-08-24T10:02:00.000Z'))
+				.mockReturnValue(Date.parse('2026-08-24T10:02:00.000Z')),
+			random: () => 0,
+		};
+		const reportError = buildReportErrorHandler({
+			options: {
+				enabled: true,
+				targetRepo: 'CartagoGit/mcp-vertex',
+				labels: ['auto-reported'],
+				internalOnly: true,
+				dedupeWindowHours: 24,
+				maxIssuesPerDay: 10,
+				circuitBreakerThreshold: 3,
+				backoffBaseMs: 60_000,
+				backoffMaxMs: 3_600_000,
+				backoffJitterRatio: 0,
+			},
+			store,
+			reporter,
+			clock,
+		});
+
+		await reportError('quality_run_quality', internalError());
+		const failed = await store.all();
+		expect(failed[0]?.lastSuccessAt).toBeUndefined();
+		expect(failed[0]?.lastFailureCode).toBe('GH_EXEC_FAILED');
+
+		await reportError('quality_run_quality', internalError());
+		const record = await store.all();
+		expect(record[0]?.issueNumber).toBe(77);
+		expect(record[0]?.lastSuccessAt).toBe('2026-08-24T10:02:00.000Z');
+		expect(reporter.submitSafeReport).toHaveBeenCalledTimes(2);
+	});
+
+	it('does not call gh again once the fingerprint already has an issue number', async () => {
+		const store = createReportStore(await makeDir());
+		const reporter: ISafeReporter = {
+			submitSafeReport: vi.fn().mockResolvedValue({
+				ok: true,
+				reason: 'created',
+				issueNumber: 88,
+			}),
+		};
+		const clock = {
+			nowMs: () => Date.parse('2026-08-24T10:00:00.000Z'),
+			random: () => 0,
+		};
+		const reportError = buildReportErrorHandler({
+			options: {
+				enabled: true,
+				targetRepo: 'CartagoGit/mcp-vertex',
+				labels: ['auto-reported'],
+				internalOnly: true,
+				dedupeWindowHours: 24,
+				maxIssuesPerDay: 10,
+				circuitBreakerThreshold: 3,
+				backoffBaseMs: 60_000,
+				backoffMaxMs: 3_600_000,
+				backoffJitterRatio: 0,
+			},
+			store,
+			reporter,
+			clock,
+		});
+
+		await reportError('quality_run_quality', internalError());
+		await reportError('quality_run_quality', internalError());
+
+		const record = await store.all();
+		expect(record[0]?.attemptCount).toBe(2);
+		expect(record[0]?.issueNumber).toBe(88);
+		expect(reporter.submitSafeReport).toHaveBeenCalledTimes(1);
+	});
+});

@@ -116,6 +116,79 @@ describe('safeFailureClassOf / classificationOf / signatureOf', () => {
 		});
 		expect(left).not.toBe(right);
 	});
+
+	it('collapses the same internal bug even when runtime message and values differ', () => {
+		const left = signatureOf({
+			mcpVertexVersion: '0.1.0',
+			packageId: '@mcp-vertex/error-reporting',
+			componentId: 'src/index.ts',
+			toolId: 'search_search',
+			errorCode: 'PLUGIN_REGISTER_TIMEOUT',
+			failureClass: 'INTERNAL_TIMEOUT',
+			classification: 'PERFORMANCE',
+			mcpFrames: [
+				{
+					file: '@mcp-vertex/error-reporting/src/index.ts',
+					line: 11,
+					col: 2,
+				},
+			],
+		});
+		const right = signatureOf({
+			mcpVertexVersion: '0.1.0',
+			packageId: '@mcp-vertex/error-reporting',
+			componentId: 'src/index.ts',
+			toolId: 'search_search',
+			errorCode: 'PLUGIN_REGISTER_TIMEOUT',
+			failureClass: 'INTERNAL_TIMEOUT',
+			classification: 'PERFORMANCE',
+			mcpFrames: [
+				{
+					file: '@mcp-vertex/error-reporting/src/index.ts',
+					line: 11,
+					col: 2,
+					fn: 'sameBugWithDifferentRuntimeData',
+				},
+			],
+		});
+		expect(left).toBe(right);
+	});
+
+	it('does not collapse different bugs that share only the error code', () => {
+		const left = signatureOf({
+			mcpVertexVersion: '0.1.0',
+			packageId: '@mcp-vertex/error-reporting',
+			componentId: 'src/index.ts',
+			toolId: 'search_search',
+			errorCode: 'PLUGIN_REGISTER_TIMEOUT',
+			failureClass: 'INTERNAL_TIMEOUT',
+			classification: 'PERFORMANCE',
+			mcpFrames: [
+				{
+					file: '@mcp-vertex/error-reporting/src/index.ts',
+					line: 11,
+					col: 2,
+				},
+			],
+		});
+		const right = signatureOf({
+			mcpVertexVersion: '0.1.0',
+			packageId: '@mcp-vertex/error-reporting',
+			componentId: 'src/lib/report-store.service.ts',
+			toolId: 'search_search',
+			errorCode: 'PLUGIN_REGISTER_TIMEOUT',
+			failureClass: 'INTERNAL_TIMEOUT',
+			classification: 'PERFORMANCE',
+			mcpFrames: [
+				{
+					file: '@mcp-vertex/error-reporting/src/lib/report-store.service.ts',
+					line: 11,
+					col: 2,
+				},
+			],
+		});
+		expect(left).not.toBe(right);
+	});
 });
 
 describe('buildIssueTitle / buildIssueBody', () => {

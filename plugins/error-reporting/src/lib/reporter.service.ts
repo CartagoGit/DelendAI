@@ -18,12 +18,12 @@ export const ghIssueExec: IIssueExec = async (argv, options) =>
 
 /** Pure de-duplication decision. */
 export const shouldReport = (input: {
-	readonly lastReportedAt: string | undefined;
+	readonly lastSuccessAt: string | undefined;
 	readonly dedupeWindowHours: number;
 	readonly nowMs: number;
 }): boolean => {
-	if (input.lastReportedAt === undefined) return true;
-	const last = Date.parse(input.lastReportedAt);
+	if (input.lastSuccessAt === undefined) return true;
+	const last = Date.parse(input.lastSuccessAt);
 	if (Number.isNaN(last)) return true;
 	const windowMs = input.dedupeWindowHours * 3_600_000;
 	return input.nowMs - last > windowMs;
@@ -75,7 +75,14 @@ export const createSafeReporter = (
 					: run.code === GH_NOT_FOUND_EXIT
 						? '`gh` is not installed'
 						: `gh exited with code ${run.code}`;
-			return { ok: false, reason };
+			return {
+				ok: false,
+				reason,
+				failureCode:
+					run.code === GH_NOT_FOUND_EXIT
+						? 'GH_NOT_INSTALLED'
+						: 'GH_EXEC_FAILED',
+			};
 		}
 		const issueNumber = parseIssueNumber(run.stdout);
 		const issueUrl = issueUrlOf(run.stdout);
@@ -83,6 +90,7 @@ export const createSafeReporter = (
 			return {
 				ok: false,
 				reason: `Could not parse the created issue number from gh output: ${run.stdout.trim()}`,
+				failureCode: 'ISSUE_NUMBER_PARSE_FAILED',
 			};
 		}
 		return {
