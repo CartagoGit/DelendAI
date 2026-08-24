@@ -16,6 +16,7 @@ export const FIRST_PARTY_PLUGIN_INDEX: IPluginRegistrySource = {
 			package: '@mcp-vertex/api',
 			summary: 'REST/GraphQL API surface for mcp-vertex plugins.',
 			tags: ['api', 'surface'],
+			permissions: ['process', 'network'],
 		},
 		{
 			origin: 'first-party',
@@ -24,6 +25,7 @@ export const FIRST_PARTY_PLUGIN_INDEX: IPluginRegistrySource = {
 			summary:
 				'Multi-model audit planning + consolidation; f00139 adds self_audit dogfood loop.',
 			tags: ['audit', 'multi-model', 'self-improvement', 'f00077'],
+			permissions: ['filesystem-read', 'filesystem-write', 'network'],
 			defaultPreset: 'standard',
 		},
 		{
@@ -33,6 +35,7 @@ export const FIRST_PARTY_PLUGIN_INDEX: IPluginRegistrySource = {
 			summary:
 				'Zero-config multi-agent routing (cost↔quality dial, auto_recommend, escalation).',
 			tags: ['routing', 'agents', 'f00119'],
+			permissions: ['process', 'network'],
 			defaultPreset: 'standard',
 		},
 		{
@@ -42,6 +45,7 @@ export const FIRST_PARTY_PLUGIN_INDEX: IPluginRegistrySource = {
 			summary:
 				'Recommends the best plugin set for this project from its signals (manifest, files, git, task).',
 			tags: ['plugins', 'catalog', 'routing', 'f00142'],
+			permissions: ['filesystem-read'],
 		},
 		{
 			origin: 'first-party',
@@ -49,6 +53,7 @@ export const FIRST_PARTY_PLUGIN_INDEX: IPluginRegistrySource = {
 			package: '@mcp-vertex/browser',
 			summary: 'Headless browser automation tools.',
 			tags: ['browser', 'automation'],
+			permissions: ['browser', 'network'],
 		},
 		{
 			origin: 'first-party',
@@ -57,6 +62,7 @@ export const FIRST_PARTY_PLUGIN_INDEX: IPluginRegistrySource = {
 			summary:
 				'Cache-eviction rules and lifecycle for plugin scratch dirs.',
 			tags: ['cache', 'lifecycle', 'f00072'],
+			permissions: ['filesystem-read', 'filesystem-write'],
 		},
 		{
 			origin: 'first-party',
@@ -64,6 +70,7 @@ export const FIRST_PARTY_PLUGIN_INDEX: IPluginRegistrySource = {
 			package: '@mcp-vertex/changelog',
 			summary: 'Conventional-commits changelog + release plan generator.',
 			tags: ['changelog', 'release', 'f00131'],
+			permissions: ['git-read'],
 		},
 		{
 			origin: 'first-party',
@@ -72,6 +79,7 @@ export const FIRST_PARTY_PLUGIN_INDEX: IPluginRegistrySource = {
 			summary:
 				'Task-completion notifier: records an agent declaring its original task done + reviewed and pushes a notification.',
 			tags: ['completion', 'notification', 'f00159'],
+			permissions: ['filesystem-read', 'filesystem-write'],
 		},
 		{
 			origin: 'first-party',
@@ -80,6 +88,7 @@ export const FIRST_PARTY_PLUGIN_INDEX: IPluginRegistrySource = {
 			summary:
 				'Container inspection + lint (docker ps/images, k8s, Dockerfile rules).',
 			tags: ['container', 'docker', 'kubernetes', 'f00133'],
+			permissions: ['container', 'process'],
 			defaultPreset: 'standard',
 		},
 		{
@@ -89,6 +98,7 @@ export const FIRST_PARTY_PLUGIN_INDEX: IPluginRegistrySource = {
 			summary:
 				'Repo file-convention enforcement (interface, constant, service, tool …).',
 			tags: ['conventions', 'f00037'],
+			permissions: ['filesystem-read'],
 		},
 		{
 			origin: 'first-party',
@@ -97,6 +107,7 @@ export const FIRST_PARTY_PLUGIN_INDEX: IPluginRegistrySource = {
 			summary:
 				'Database schema/introspection tools (read-only, offline).',
 			tags: ['database', 'schema', 'f00128'],
+			permissions: ['database'],
 			defaultPreset: 'standard',
 		},
 		{
@@ -106,6 +117,7 @@ export const FIRST_PARTY_PLUGIN_INDEX: IPluginRegistrySource = {
 			summary:
 				'Dependency inventory + offline health (deps_list, deps_check, deps_audit, deps_licenses, deps_tree).',
 			tags: ['deps', 'licenses', 'f00003', 'f00136'],
+			permissions: ['filesystem-read', 'network'],
 			defaultPreset: 'standard',
 		},
 		{
@@ -114,6 +126,7 @@ export const FIRST_PARTY_PLUGIN_INDEX: IPluginRegistrySource = {
 			package: '@mcp-vertex/diagram',
 			summary: 'Diagram generator (mermaid, dot) from code structure.',
 			tags: ['diagram', 'docs', 'f00132'],
+			permissions: ['filesystem-read', 'filesystem-write'],
 			defaultPreset: 'standard',
 		},
 		{
@@ -122,6 +135,7 @@ export const FIRST_PARTY_PLUGIN_INDEX: IPluginRegistrySource = {
 			package: '@mcp-vertex/docs',
 			summary: 'Doc generation, search, and rendered catalog.',
 			tags: ['docs', 'catalog'],
+			permissions: ['filesystem-read', 'filesystem-write'],
 			defaultPreset: 'standard',
 		},
 		{
@@ -131,6 +145,7 @@ export const FIRST_PARTY_PLUGIN_INDEX: IPluginRegistrySource = {
 			summary:
 				'Environment config validation (.env check + schema + env_explains).',
 			tags: ['env', 'config', 'f00135'],
+			permissions: ['env-read'],
 			defaultPreset: 'standard',
 		},
 		{
@@ -140,6 +155,7 @@ export const FIRST_PARTY_PLUGIN_INDEX: IPluginRegistrySource = {
 			summary:
 				'Automatic mcp-vertex error reporting: opens de-duplicated GitHub issues for internal failures (enabled by default).',
 			tags: ['error-reporting', 'github', 'issues', 'f00158'],
+			permissions: ['network', 'forge-write'],
 			defaultPreset: 'standard',
 		},
 		{
@@ -149,6 +165,7 @@ export const FIRST_PARTY_PLUGIN_INDEX: IPluginRegistrySource = {
 			summary:
 				'Compose third-party MCP servers through the catalog + human ack.',
 			tags: ['external-mcps', 'composition', 'f00068'],
+			permissions: ['network', 'process'],
 		},
 		{
 			origin: 'first-party',
@@ -156,6 +173,7 @@ export const FIRST_PARTY_PLUGIN_INDEX: IPluginRegistrySource = {
 			package: '@mcp-vertex/forge',
 			summary: 'Forge (GitHub/GitLab) wrappers — PRs, CI, issues.',
 			tags: ['forge', 'git', 'ci'],
+			permissions: ['forge-read', 'forge-write', 'network'],
 		},
 		{
 			origin: 'first-party',
@@ -163,6 +181,7 @@ export const FIRST_PARTY_PLUGIN_INDEX: IPluginRegistrySource = {
 			package: '@mcp-vertex/git',
 			summary: 'Git wrappers (PR list/view, diff, changelog, extended).',
 			tags: ['git', 'changelog', 'f00136'],
+			permissions: ['git-read', 'git-write'],
 		},
 		{
 			origin: 'first-party',
@@ -171,6 +190,7 @@ export const FIRST_PARTY_PLUGIN_INDEX: IPluginRegistrySource = {
 			summary:
 				'i18n key/interpolation validation across locale JSON files.',
 			tags: ['i18n', 'l10n', 'f00134'],
+			permissions: ['filesystem-read'],
 			defaultPreset: 'standard',
 		},
 		{
@@ -179,6 +199,7 @@ export const FIRST_PARTY_PLUGIN_INDEX: IPluginRegistrySource = {
 			package: '@mcp-vertex/issues',
 			summary: 'Issue tracker adapters.',
 			tags: ['issues'],
+			permissions: ['forge-read', 'forge-write', 'network'],
 		},
 		{
 			origin: 'first-party',
@@ -186,6 +207,7 @@ export const FIRST_PARTY_PLUGIN_INDEX: IPluginRegistrySource = {
 			package: '@mcp-vertex/link-check',
 			summary: 'Markdown link checker.',
 			tags: ['docs', 'links'],
+			permissions: ['filesystem-read'],
 		},
 		{
 			origin: 'first-party',
@@ -193,6 +215,7 @@ export const FIRST_PARTY_PLUGIN_INDEX: IPluginRegistrySource = {
 			package: '@mcp-vertex/logs',
 			summary: 'Structured logs reader (tail, query, redact).',
 			tags: ['logs', 'observability'],
+			permissions: ['filesystem-read', 'filesystem-write'],
 		},
 		{
 			origin: 'first-party',
@@ -200,6 +223,7 @@ export const FIRST_PARTY_PLUGIN_INDEX: IPluginRegistrySource = {
 			package: '@mcp-vertex/memory',
 			summary: 'Persistent memory store (BM25 + recall, save, search).',
 			tags: ['memory', 'persistence'],
+			permissions: ['filesystem-read', 'filesystem-write'],
 		},
 		{
 			origin: 'first-party',
@@ -207,6 +231,7 @@ export const FIRST_PARTY_PLUGIN_INDEX: IPluginRegistrySource = {
 			package: '@mcp-vertex/notification',
 			summary: 'Notification + lock-await primitives.',
 			tags: ['notification', 'concurrency'],
+			permissions: ['filesystem-read', 'filesystem-write'],
 		},
 		{
 			origin: 'first-party',
@@ -214,6 +239,7 @@ export const FIRST_PARTY_PLUGIN_INDEX: IPluginRegistrySource = {
 			package: '@mcp-vertex/observability',
 			summary: 'Observability surface (metrics, errors, telemetry).',
 			tags: ['observability'],
+			permissions: ['filesystem-read', 'filesystem-write'],
 		},
 		{
 			origin: 'first-party',
@@ -221,6 +247,7 @@ export const FIRST_PARTY_PLUGIN_INDEX: IPluginRegistrySource = {
 			package: '@mcp-vertex/orchestrator-runner',
 			summary: 'Orchestrator-runner runtime utilities.',
 			tags: ['orchestrator', 'runner'],
+			permissions: ['process', 'network'],
 		},
 		{
 			origin: 'first-party',
@@ -228,6 +255,7 @@ export const FIRST_PARTY_PLUGIN_INDEX: IPluginRegistrySource = {
 			package: '@mcp-vertex/perf',
 			summary: 'Performance bench/bundle/profile tools.',
 			tags: ['perf', 'benchmark', 'f00126'],
+			permissions: ['filesystem-read', 'process'],
 		},
 		{
 			origin: 'first-party',
@@ -235,6 +263,7 @@ export const FIRST_PARTY_PLUGIN_INDEX: IPluginRegistrySource = {
 			package: '@mcp-vertex/prompt-eval',
 			summary: 'Prompt-eval harness (golden prompts, scoring).',
 			tags: ['prompts', 'eval'],
+			permissions: ['filesystem-read', 'process'],
 		},
 		{
 			origin: 'first-party',
@@ -243,6 +272,7 @@ export const FIRST_PARTY_PLUGIN_INDEX: IPluginRegistrySource = {
 			summary:
 				'Project-aware MCP prompts (explain-this-code, write-tests-for, review-this-diff, etc.).',
 			tags: ['prompts', 'f00138'],
+			permissions: ['filesystem-read'],
 			defaultPreset: 'standard',
 		},
 		{
@@ -251,6 +281,12 @@ export const FIRST_PARTY_PLUGIN_INDEX: IPluginRegistrySource = {
 			package: '@mcp-vertex/proposals',
 			summary: 'Proposals workflow + multi-agent (swarm) orchestration.',
 			tags: ['proposals', 'swarm', 'orchestration'],
+			permissions: [
+				'filesystem-read',
+				'filesystem-write',
+				'git-read',
+				'git-write',
+			],
 		},
 		{
 			origin: 'first-party',
@@ -259,6 +295,7 @@ export const FIRST_PARTY_PLUGIN_INDEX: IPluginRegistrySource = {
 			summary:
 				'Quality gates: coverage, complexity, lint, type-check orchestration.',
 			tags: ['quality', 'gates', 'f00036', 'f00136'],
+			permissions: ['filesystem-read', 'process'],
 			defaultPreset: 'standard',
 		},
 		{
@@ -268,6 +305,7 @@ export const FIRST_PARTY_PLUGIN_INDEX: IPluginRegistrySource = {
 			summary:
 				'Refactor primitives (symbols, definition, references, rename, codemod).',
 			tags: ['refactor', 'f00123'],
+			permissions: ['filesystem-read', 'filesystem-write'],
 			defaultPreset: 'standard',
 		},
 		{
@@ -276,6 +314,7 @@ export const FIRST_PARTY_PLUGIN_INDEX: IPluginRegistrySource = {
 			package: '@mcp-vertex/rules',
 			summary: 'Lint/type rules engine (frameworks, dogmas, presets).',
 			tags: ['rules', 'lint'],
+			permissions: ['filesystem-read'],
 			defaultPreset: 'standard',
 		},
 		...GENERATED_FIRST_PARTY_MANIFEST_ENTRIES,
@@ -285,6 +324,7 @@ export const FIRST_PARTY_PLUGIN_INDEX: IPluginRegistrySource = {
 			package: '@mcp-vertex/security',
 			summary: 'Security audit (CVEs, SAST, secrets, env).',
 			tags: ['security', 'audit', 'f00122'],
+			permissions: ['filesystem-read', 'env-read'],
 		},
 		{
 			origin: 'first-party',
@@ -293,6 +333,7 @@ export const FIRST_PARTY_PLUGIN_INDEX: IPluginRegistrySource = {
 			summary:
 				'Curated skill pack (debugging, perf, pr-review, security, incident, migration).',
 			tags: ['skills', 'f00137'],
+			permissions: ['filesystem-read'],
 			defaultPreset: 'standard',
 		},
 		{
@@ -301,6 +342,7 @@ export const FIRST_PARTY_PLUGIN_INDEX: IPluginRegistrySource = {
 			package: '@mcp-vertex/status-marker',
 			summary: 'Status marker + closure canonical line.',
 			tags: ['status-marker', 'closure'],
+			permissions: ['filesystem-read'],
 		},
 		{
 			origin: 'first-party',
@@ -308,6 +350,7 @@ export const FIRST_PARTY_PLUGIN_INDEX: IPluginRegistrySource = {
 			package: '@mcp-vertex/tech-debt',
 			summary: 'Tech-debt scanner (TODO/FIXME/HACK inventory).',
 			tags: ['tech-debt'],
+			permissions: ['filesystem-read'],
 		},
 		{
 			origin: 'first-party',
@@ -316,6 +359,7 @@ export const FIRST_PARTY_PLUGIN_INDEX: IPluginRegistrySource = {
 			summary:
 				'Test-file convention enforcement (spec path, mock style, forbidden patterns).',
 			tags: ['tests', 'convention'],
+			permissions: ['filesystem-read'],
 		},
 		{
 			origin: 'first-party',
@@ -323,6 +367,7 @@ export const FIRST_PARTY_PLUGIN_INDEX: IPluginRegistrySource = {
 			package: '@mcp-vertex/test-policy',
 			summary: 'Test policy mode (TDD, tests-after, free, none).',
 			tags: ['tests', 'policy'],
+			permissions: ['filesystem-read', 'filesystem-write'],
 			defaultPreset: 'standard',
 		},
 		{
@@ -331,6 +376,7 @@ export const FIRST_PARTY_PLUGIN_INDEX: IPluginRegistrySource = {
 			package: '@mcp-vertex/usage-tracking',
 			summary: 'Per-token/per-call usage tracking (spend, budget).',
 			tags: ['usage', 'spend'],
+			permissions: ['filesystem-read', 'filesystem-write'],
 		},
 		{
 			origin: 'first-party',
@@ -338,6 +384,7 @@ export const FIRST_PARTY_PLUGIN_INDEX: IPluginRegistrySource = {
 			package: '@mcp-vertex/web-fetch',
 			summary: 'Web fetch (allow-listed URLs only).',
 			tags: ['web', 'fetch'],
+			permissions: ['network'],
 		},
 	],
 };

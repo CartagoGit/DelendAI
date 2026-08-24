@@ -442,6 +442,7 @@ export interface McpVertexConfigurationCenterOutput {
 		optionsSchema?: Record<string, unknown>;
 		schemaStatus: "available" | "unavailable";
 		configExample?: Record<string, unknown>;
+		permissions?: Array<"filesystem-read" | "filesystem-write" | "process" | "network" | "git-read" | "git-write" | "forge-read" | "forge-write" | "env-read" | "secrets" | "browser" | "container" | "database">;
 		capabilities: {
 			tools: number;
 			prompts: number;

@@ -315,6 +315,7 @@ const HelperRule: IRoleRule = rule(
 	(rel) =>
 		hasSegment(rel, 'helpers') ||
 		endsWithBasename(rel, 'helper.ts') ||
+		endsWithBasename(rel, 'schema.ts') ||
 		basename(rel) === 'define-plugin-manifest.ts',
 );
 

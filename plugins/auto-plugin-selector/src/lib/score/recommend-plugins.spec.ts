@@ -10,12 +10,17 @@ import type {
 	IProjectSignals,
 } from '@mcp-vertex/auto-plugin-selector/lib/contracts/interfaces/plugin-fit.interface';
 
+const MANY_CANDIDATES = 10;
+
 const cand = (
 	over: Partial<IPluginCandidate> & { id: string },
 ): IPluginCandidate => ({
 	tags: over.tags ?? [],
 	summary: over.summary ?? '',
 	id: over.id,
+	...(over.permissions === undefined
+		? {}
+		: { permissions: over.permissions }),
 });
 
 describe('recommendPlugins', () => {
@@ -90,6 +95,31 @@ describe('recommendPlugins', () => {
 		expect(fits[0]?.plugin.id).toBe('a');
 	});
 
+	it('prefers the lower-permission candidate when fit is otherwise identical', () => {
+		const signals: IProjectSignals = {
+			pack: 'typescript',
+			languages: ['typescript'],
+			hasBackend: true,
+			hasTests: true,
+		};
+		const fits = recommendPlugins(signals, [
+			cand({
+				id: 'safer',
+				tags: ['typescript', 'backend', 'tests'],
+				summary: 'Same fit, lower risk.',
+				permissions: ['filesystem-read'],
+			}),
+			cand({
+				id: 'riskier',
+				tags: ['typescript', 'backend', 'tests'],
+				summary: 'Same fit, higher risk.',
+				permissions: ['network'],
+			}),
+		]);
+		expect(fits.map((fit) => fit.plugin.id)).toEqual(['safer', 'riskier']);
+		expect(fits[0]?.reasons).toContain('permission-risk:1');
+	});
+
 	it('normalizes so the top plugin is always 1.0', () => {
 		const signals: IProjectSignals = {
 			pack: 'typescript',
@@ -121,7 +151,7 @@ describe('recommendPlugins', () => {
 			pack: 'typescript',
 			languages: ['typescript'],
 		};
-		const candidates = Array.from({ length: 10 }, (_, i) =>
+		const candidates = Array.from({ length: MANY_CANDIDATES }, (_, i) =>
 			cand({ id: `p${i}`, tags: ['typescript'] }),
 		);
 		const fits = recommendPlugins(signals, candidates, { limit: 3 });

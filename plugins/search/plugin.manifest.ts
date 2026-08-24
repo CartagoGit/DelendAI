@@ -8,7 +8,7 @@ export default definePluginManifest({
 	summary: 'Code search (semantic + symbol + references).',
 	tags: ['search', 'symbol', 'f00136'],
 	maturity: 'stable',
-	permissions: ['read-workspace'],
+	permissions: ['filesystem-read'],
 	presets: [
 		'minimal',
 		'lean',

@@ -131,6 +131,14 @@ export type {
 	IConfigurationPlugin,
 	IConfigurationPluginCapabilities,
 } from '../lib/contracts/interfaces/configuration-center.interface';
+export {
+	PERMISSION_CATEGORIES,
+	PERMISSION_RISK_WEIGHTS,
+} from '../lib/contracts/constants/permission-categories.constant';
+export type {
+	IToolPermissionGrant,
+	PermissionCategory,
+} from '../lib/contracts/interfaces/permission.interface';
 export type {
 	IPluginOriginInput,
 	PluginOrigin,
@@ -797,6 +805,12 @@ export {
 	definePluginManifest,
 	parsePluginManifest,
 } from '../lib/manifest/define-plugin-manifest';
+export {
+	permissionCategorySchema,
+	permissionListSchema,
+	toolPermissionGrantSchema,
+	toolPermissionsSchema,
+} from '../lib/manifest/permissions.schema';
 export { FIRST_PARTY_PLUGIN_INDEX } from '../lib/registry/first-party-index';
 export {
 	buildPluginAddRecipe,

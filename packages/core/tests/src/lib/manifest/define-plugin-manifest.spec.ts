@@ -12,7 +12,13 @@ describe('definePluginManifest', () => {
 			summary: 'Code search with low-token result windows.',
 			tags: ['search', 'token-budget'],
 			maturity: 'stable',
-			permissions: ['read-workspace'],
+			permissions: ['filesystem-read'],
+			toolPermissions: [
+				{
+					tool: 'search_search',
+					permissions: ['filesystem-read'],
+				},
+			],
 			presets: ['minimal', 'lean'],
 			tokenBudget: TOKEN_BUDGETS.toolPayloads.search,
 			dependencies: ['@mcp-vertex/core', 'zod'],
@@ -33,7 +39,7 @@ describe('definePluginManifest', () => {
 				summary: 'Code search with low-token result windows.',
 				tags: ['search', 'search'],
 				maturity: 'stable',
-				permissions: ['read-workspace'],
+				permissions: ['filesystem-read'],
 				presets: ['minimal'],
 				tokenBudget: TOKEN_BUDGETS.toolPayloads.search,
 				dependencies: ['@mcp-vertex/core'],
@@ -52,12 +58,60 @@ describe('definePluginManifest', () => {
 				summary: 'Code search with low-token result windows.',
 				tags: ['search'],
 				maturity: 'stable',
-				permissions: ['read-workspace'],
+				permissions: ['filesystem-read'],
 				presets: ['minimal'],
 				tokenBudget: TOKEN_BUDGETS.toolPayloads.search,
 				dependencies: ['@mcp-vertex/core'],
 				capabilities: ['lexical-search'],
 			}),
 		).toThrow(/must match id/u);
+	});
+
+	it('rejects invalid permission categories', () => {
+		expect(() =>
+			definePluginManifest({
+				id: 'search',
+				package: '@mcp-vertex/search',
+				version: '0.1.1',
+				visibility: 'public',
+				summary: 'Code search with low-token result windows.',
+				tags: ['search'],
+				maturity: 'stable',
+				permissions: ['read-workspace' as 'filesystem-read'],
+				presets: ['minimal'],
+				tokenBudget: TOKEN_BUDGETS.toolPayloads.search,
+				dependencies: ['@mcp-vertex/core'],
+				capabilities: ['lexical-search'],
+			}),
+		).toThrow(/Invalid option/u);
+	});
+
+	it('rejects duplicated toolPermissions tool ids', () => {
+		expect(() =>
+			definePluginManifest({
+				id: 'search',
+				package: '@mcp-vertex/search',
+				version: '0.1.1',
+				visibility: 'public',
+				summary: 'Code search with low-token result windows.',
+				tags: ['search'],
+				maturity: 'stable',
+				permissions: ['filesystem-read'],
+				toolPermissions: [
+					{
+						tool: 'search_search',
+						permissions: ['filesystem-read'],
+					},
+					{
+						tool: 'search_search',
+						permissions: ['filesystem-read'],
+					},
+				],
+				presets: ['minimal'],
+				tokenBudget: TOKEN_BUDGETS.toolPayloads.search,
+				dependencies: ['@mcp-vertex/core'],
+				capabilities: ['lexical-search'],
+			}),
+		).toThrow(/toolPermissions tools must be unique/u);
 	});
 });

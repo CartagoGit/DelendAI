@@ -5,6 +5,10 @@ import type {
 	PluginManifestMaturity,
 	PluginManifestVisibility,
 } from '../contracts/interfaces/plugin-manifest.interface';
+import {
+	permissionListSchema,
+	toolPermissionsSchema,
+} from './permissions.schema';
 
 const SEMVER_PATTERN =
 	/^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?$/u;
@@ -51,7 +55,8 @@ const PLUGIN_MANIFEST_SCHEMA = z
 		summary: z.string().trim().min(10, 'summary must be at least 10 chars'),
 		tags: nonEmptyList('tags').min(1, 'tags must not be empty'),
 		maturity: MATURITY_SCHEMA,
-		permissions: nonEmptyList('permissions'),
+		permissions: permissionListSchema,
+		toolPermissions: toolPermissionsSchema.optional(),
 		presets: nonEmptyList('presets'),
 		tokenBudget: z.object({
 			hard: z.number().finite().positive(),
