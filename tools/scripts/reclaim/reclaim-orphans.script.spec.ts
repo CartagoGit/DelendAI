@@ -77,7 +77,7 @@ describe('buildReclaimReport', () => {
 		expect(report.deleteSafeBranches.map((b) => b.name)).toEqual([
 			'agent/orphan',
 		]);
-		expect(report.skipped.sort()).toEqual([
+		expect([...report.skipped].sort()).toEqual([
 			'develop',
 			'main',
 			'master',
