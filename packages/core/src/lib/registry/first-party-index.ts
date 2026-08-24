@@ -37,6 +37,14 @@ export const FIRST_PARTY_PLUGIN_INDEX: IPluginRegistrySource = {
 		},
 		{
 			origin: 'first-party',
+			id: 'auto-plugin-selector',
+			package: '@mcp-vertex/auto-plugin-selector',
+			summary:
+				'Recommends the best plugin set for this project from its signals (manifest, files, git, task).',
+			tags: ['plugins', 'catalog', 'routing', 'f00142'],
+		},
+		{
+			origin: 'first-party',
 			id: 'browser',
 			package: '@mcp-vertex/browser',
 			summary: 'Headless browser automation tools.',

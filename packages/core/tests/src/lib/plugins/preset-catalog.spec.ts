@@ -5,6 +5,7 @@ import {
 	PRESET_KIND,
 	resolvePresetMembers,
 } from '@mcp-vertex/core/lib/plugins/preset-catalog';
+import apiPlugin from '../../../../../../plugins/api/src/index';
 
 describe('PRESET_CATALOG', async () => {
 	it('lists presets in ⊇ order: minimal, lean, standard, swarm, full, vertex, web-app, backend-api, cli-tool', async () => {
@@ -135,6 +136,50 @@ describe('PRESET_CATALOG', async () => {
 				`plugin id "${id}" has no package.json under plugins/ or packages/`,
 			).toBe(true);
 		}
+	});
+
+	it('keeps the api plugin catalog aligned with backend-api preset membership', async () => {
+		const registration = await apiPlugin.register({
+			namespacePrefix: 'api',
+			options: {},
+			cacheDir: '.cache/mcp-vertex',
+			pluginCacheDir: '.cache/mcp-vertex/api',
+			pluginDocsDir: 'docs/plugins/api',
+			workspace: {
+				root: '/workspace',
+				resolve: (path: string) => `/workspace/${path}`,
+			},
+			corePaths: {
+				cacheDir: '.cache/mcp-vertex',
+				docsDir: 'docs/mcp-vertex',
+			},
+			keepLegacy: false,
+			agentWorktreeEnabled: false,
+			commitAuthor: {
+				mode: 'workspace-config',
+				identity: 'Copilot',
+				named: 'Copilot',
+			},
+			args: [],
+			cacheEvictionRegistry: {
+				register: () => undefined,
+			},
+			peerPlugins: {},
+		} as never);
+		const knowledge = registration.knowledge?.find(
+			(entry) => entry.id === 'api-plugin-catalog',
+		);
+		expect(knowledge).toBeDefined();
+		const expectedLine = `- \`backend-api\` — the preset currently ships ${resolvePresetMembers(
+			'backend-api',
+		)
+			.map((plugin) => `\`${plugin}\``)
+			.join(', ')
+			.replace(
+				/, ([^,]+)$/u,
+				', and $1',
+			)}; it does not include \`api\` by default.`;
+		expect(knowledge?.body).toContain(expectedLine);
 	});
 });
 

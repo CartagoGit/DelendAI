@@ -7,7 +7,7 @@
  * `FIRST_PARTY_PLUGIN_INDEX` as the default catalog.
  */
 
-import type { IFinding } from '@mcp-vertex/core/public';
+import type { ProjectPackKind } from '@mcp-vertex/core/public';
 
 /** A plugin the scorer can recommend from the catalog. */
 export interface IPluginCandidate {
@@ -19,14 +19,7 @@ export interface IPluginCandidate {
 
 /** Project-shape signals that drive the scoring. */
 export interface IProjectSignals {
-	readonly pack:
-		| 'generic'
-		| 'javascript'
-		| 'typescript'
-		| 'python'
-		| 'go'
-		| 'rust'
-		| 'mixed';
+	readonly pack: ProjectPackKind;
 	readonly languages: readonly string[];
 	readonly hasDocsSite?: boolean | undefined;
 	readonly isCliTool?: boolean | undefined;

@@ -41,6 +41,15 @@ describe('FIRST_PARTY_PLUGIN_INDEX', () => {
 			expect(entry.origin).toBe('first-party');
 		}
 	});
+
+	it('includes auto-plugin-selector as a bundled first-party plugin', () => {
+		const entry = FIRST_PARTY_PLUGIN_INDEX.entries.find(
+			(candidate) => candidate.id === 'auto-plugin-selector',
+		);
+		expect(entry).toBeDefined();
+		expect(entry?.package).toBe('@mcp-vertex/auto-plugin-selector');
+		expect(entry?.tags).toContain('plugins');
+	});
 });
 
 describe('resolvePlugins', () => {
