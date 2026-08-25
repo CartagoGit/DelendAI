@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-08-25T09:49:08.392Z",
+	"generatedAt": "2026-08-25T09:52:38.477Z",
 	"manifests": [
 		{
 			"id": "adaptive-optimizer",
@@ -707,7 +707,7 @@
 			"tags": ["observability"],
 			"maturity": "stable",
 			"permissions": ["filesystem-read", "filesystem-write"],
-			"presets": ["standard", "swarm", "full"],
+			"presets": [],
 			"tokenBudget": {
 				"hard": 3000,
 				"warning": 2700,
@@ -2082,7 +2082,7 @@
 			"tags": ["observability"],
 			"maturity": "stable",
 			"visibility": "public",
-			"presets": ["standard", "swarm", "full"],
+			"presets": [],
 			"capabilities": ["observability"],
 			"permissions": ["filesystem-read", "filesystem-write"],
 			"tokenBudget": {
@@ -4788,22 +4788,22 @@
 		{
 			"pluginId": "observability",
 			"presetId": "standard",
-			"declared": true,
-			"catalogMember": true,
+			"declared": false,
+			"catalogMember": false,
 			"matches": true
 		},
 		{
 			"pluginId": "observability",
 			"presetId": "swarm",
-			"declared": true,
-			"catalogMember": true,
+			"declared": false,
+			"catalogMember": false,
 			"matches": true
 		},
 		{
 			"pluginId": "observability",
 			"presetId": "full",
-			"declared": true,
-			"catalogMember": true,
+			"declared": false,
+			"catalogMember": false,
 			"matches": true
 		},
 		{

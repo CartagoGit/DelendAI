@@ -31,7 +31,7 @@
 | logs | @mcp-vertex/logs | public | stable | swarm, full, vertex |
 | memory | @mcp-vertex/memory | public | stable | lean, standard, swarm, full, vertex, web-app, backend-api, cli-tool |
 | notification | @mcp-vertex/notification | public | stable | swarm, full, vertex |
-| observability | @mcp-vertex/observability | public | stable | standard, swarm, full |
+| observability | @mcp-vertex/observability | public | stable |  |
 | orchestrator-runner | @mcp-vertex/orchestrator-runner | public | stable | vertex |
 | perf | @mcp-vertex/perf | public | stable | vertex, cli-tool |
 | project-health | @mcp-vertex/project-health | public | experimental | vertex |
@@ -427,9 +427,9 @@
 | notification | cli-tool | no | no | yes |
 | observability | minimal | no | no | yes |
 | observability | lean | no | no | yes |
-| observability | standard | yes | yes | yes |
-| observability | swarm | yes | yes | yes |
-| observability | full | yes | yes | yes |
+| observability | standard | no | no | yes |
+| observability | swarm | no | no | yes |
+| observability | full | no | no | yes |
 | observability | vertex | no | no | yes |
 | observability | web-app | no | no | yes |
 | observability | backend-api | no | no | yes |
