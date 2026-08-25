@@ -3,7 +3,7 @@ id: r00025
 title: "auto-plugin-selector — integrar `tokenTax`, `latencyTax`, `historicalSuccess` en el scoring"
 kind: refactor
 type: proposal
-status: ready
+status: review
 track: selection
 date: 2026-08-25
 plan-parent: q00005
@@ -16,6 +16,8 @@ related:
     - f00179 # tokenBudget
     - f00180 # toolPermissions
     - plugins/auto-plugin-selector/src/lib/score/recommend-plugins.ts
+shipped-in:
+    - ef21c85bb59656debcb35217c25b5db892487abc # refactor(selector): r00025 — tokenTax/latencyTax/historicalSuccess signals
 ---
 
 # r00025 — auto-plugin-selector: integrar tokenTax, latencyTax, historicalSuccess

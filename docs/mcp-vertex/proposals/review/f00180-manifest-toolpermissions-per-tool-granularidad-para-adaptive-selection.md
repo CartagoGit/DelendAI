@@ -3,7 +3,7 @@ id: f00180
 title: "Manifest `toolPermissions` — granularidad por tool para adaptive selection"
 kind: feat
 type: proposal
-status: ready
+status: review
 track: packaging
 date: 2026-08-25
 plan-parent: q00005
@@ -15,6 +15,8 @@ audit-source:
 related:
     - r00025 # auto-plugin-selector scoring
     - f00179 # tokenBudget
+shipped-in:
+    - fc96136290b8129545f29a09e2f298207a0c2103 # feat(manifest): f00180 — toolPermissions per-tool granularity
 ---
 
 # f00180 — Manifest `toolPermissions` per-tool

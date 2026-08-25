@@ -3,7 +3,7 @@ id: t00014
 title: "process runner — regression guard UTF-8 byte boundaries (1/2/3/4 bytes)"
 kind: test
 type: proposal
-status: ready
+status: review
 track: regression
 date: 2026-08-25
 plan-parent: q00005
@@ -16,6 +16,8 @@ related:
     - x00239 # process utf8 edge truncation (already closed)
     - packages/core/src/lib/shared/truncate-utf8.ts
     - packages/core/src/lib/shared/run-command-bytes.ts
+shipped-in:
+    - bd3d1c6c4e354437ca9d1d052f000f27268b5426 # test(utf8): t00014 — UTF-8 byte boundaries regression guard
 ---
 
 # t00014 — process runner: UTF-8 byte boundaries regression
