@@ -1,5 +1,9 @@
-import { readFile } from 'node:fs/promises';
-import { basename, extname, isAbsolute, resolve } from 'node:path';
+import { basename, extname } from 'node:path';
+
+import {
+	SafeWorkspaceReader,
+	WorkspaceContainmentError,
+} from '@mcp-vertex/core/public';
 
 import {
 	POLICY_GUIDANCE,
@@ -49,13 +53,11 @@ const isSourceFile = (filePath: string): boolean => {
 	);
 };
 
-const normalizePath = (workspaceRootAbs: string, filePath: string): string =>
-	filePath.length === 0
-		? filePath
-		: (isAbsolute(filePath)
-				? filePath.replace(new RegExp(`^${workspaceRootAbs}/`, 'u'), '')
-				: filePath
-			).replace(/^\.\//u, '');
+const normalizePath = (
+	reader: SafeWorkspaceReader,
+	filePath: string,
+): string =>
+	filePath.length === 0 ? filePath : reader.resolve(filePath).relativePath;
 
 const stem = (filePath: string): string =>
 	basename(filePath, extname(filePath));
@@ -72,12 +74,18 @@ const parseFilesFromGitDiff = (gitDiff: string): string[] =>
 	);
 
 const readSource = async (
-	workspaceRootAbs: string,
+	reader: SafeWorkspaceReader,
 	filePath: string,
-): Promise<string | undefined> =>
-	readFile(resolve(workspaceRootAbs, filePath), 'utf8').catch(
-		() => undefined,
-	);
+): Promise<string | undefined> => {
+	try {
+		return (await reader.readText(filePath)).content;
+	} catch (error) {
+		if (error instanceof WorkspaceContainmentError) {
+			throw error;
+		}
+		return undefined;
+	}
+};
 
 const collectSymbolsFromFile = (filePath: string, source: string): string[] =>
 	buildNavEngine(filePath, source)
@@ -213,10 +221,9 @@ const resolveAnchorFiles = async (
 	},
 	options: IImpactAnalysisToolOptions,
 ): Promise<string[]> => {
+	const reader = new SafeWorkspaceReader(options.workspaceRootAbs);
 	const normalizedFiles =
-		args.files?.map((file) =>
-			normalizePath(options.workspaceRootAbs, file),
-		) ?? [];
+		args.files?.map((file) => normalizePath(reader, file)) ?? [];
 	const diffFiles =
 		args.gitDiff === undefined ? [] : parseFilesFromGitDiff(args.gitDiff);
 	const runner = createGitRunner(options.workspaceRootAbs);
@@ -240,11 +247,12 @@ export const computeImpactAnalysis = async (
 	args: IImpactAnalyzeToolArgs,
 	options: IImpactAnalysisToolOptions,
 ): Promise<IComputedImpactAnalysis> => {
+	const reader = new SafeWorkspaceReader(options.workspaceRootAbs);
 	const anchorFiles = await resolveAnchorFiles(args, options);
 	const symbolSet = new Set(args.symbols ?? []);
 	for (const file of anchorFiles) {
 		if (isTestFile(file)) continue;
-		const source = await readSource(options.workspaceRootAbs, file);
+		const source = await readSource(reader, file);
 		if (source === undefined) continue;
 		for (const symbol of collectSymbolsFromFile(file, source)) {
 			symbolSet.add(symbol);
