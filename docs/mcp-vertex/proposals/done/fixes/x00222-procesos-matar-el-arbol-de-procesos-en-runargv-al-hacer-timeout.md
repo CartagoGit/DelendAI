@@ -2,7 +2,7 @@
 id: x00222
 title: "procesos: matar el árbol de procesos en runArgv al hacer timeout"
 kind: fix
-status: review
+status: done
 type: proposal
 track: concurrency
 date: 2026-08-24
@@ -43,8 +43,10 @@ Builds, Docker, package managers y test runners crean hijos. Dejarlos vivos tras
 - acceptance:
   - "Al timeout se mata el process group completo (padre + descendientes)."
   - "El mecanismo es portable (Unix process group; Windows taskkill si aplica)."
-- review-state: in_review
+- review-state: done
 - review-implementer: swarm-implementer
+- review-reviewer: orchestrator-fase1-review
+- review-log: approved by orchestrator-fase1-review — Fase 1 review 2026-08-25: validate verde.
 ### S2 — Test de descendientes vivos
 - **Status**: done
 - **Files**: `packages/core/tests/src/lib/shared/process-tree-kill.spec.ts`
