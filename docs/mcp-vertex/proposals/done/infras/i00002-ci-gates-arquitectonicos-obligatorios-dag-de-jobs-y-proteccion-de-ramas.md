@@ -2,7 +2,7 @@
 id: i00002
 title: "CI: gates arquitectónicos obligatorios, DAG de jobs y protección de ramas"
 kind: infra
-status: review
+status: done
 type: proposal
 track: ci-test-docs
 date: 2026-08-24
@@ -48,7 +48,10 @@ La calidad existe localmente pero no obliga en CI: una PR puede violar preset dr
   - "Los jobs se paralelizan en un DAG (CI-003)."
   - "Pack smoke Node, tarball install e2e y site build real se mantienen como checks (CI-006/007/008)."
   - "Se documentan los required checks para develop y main (CI-004/005) en el doc nuevo docs/mcp-vertex/CI-GATES.md."
-
+- review-state: done
+- review-implementer: swarm-implementer
+- review-reviewer: orchestrator-fase1-review
+- review-log: approved by orchestrator-fase1-review — Redo. Fase 1 review 2026-08-25: validate verde.
 ## acceptance
 
 - Cada validación local mapea a un job (lint:biome, lint:architecture, lint:presets, lint:docs, lint:security, typecheck, tests).
