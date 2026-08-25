@@ -11,10 +11,14 @@ export default definePluginManifest({
 	maturity: 'stable',
 	permissions: ['network', 'forge-write'],
 	presets: ['standard', 'swarm', 'full', 'vertex'],
-	// f00179 S2 — error-reporting exposes 4 tools (privacy_validator,
-	// safe_report.submit, retry_policy, severity_classifier). Small
-	// surface, but each tool carries the privacy redaction contract.
-	// Measured 2026-08-25.
+	// f00180 S2 / MAN-004 — per-tool permission map. Even though
+	// error-reporting only ships ONE tool today (`report_status`),
+	// declaring the map explicitly documents what the plugin will
+	// need for future tools (e.g. a triage queue, a redaction
+	// preview) and lets a host run a per-tool grant review now.
+	toolPermissions: {
+		report_status: ['network', 'forge-write'],
+	},
 	tokenBudget: {
 		staticBytes: 3_500,
 		adaptiveActivationBytes: 600,

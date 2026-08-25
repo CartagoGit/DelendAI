@@ -1,6 +1,6 @@
 import type { ITokenBudgetCeiling } from '../constants/token-budgets.constant';
 import type { PermissionCategory } from '../constants/permission-categories.constant';
-import type { IToolPermissionGrant } from './permission.interface';
+import type { IPluginToolPermissions } from './plugin-tool-permissions.interface';
 import type { IPluginTokenBudget } from './plugin-token-budget.interface';
 
 export type PluginManifestVisibility = 'public' | 'private';
@@ -34,8 +34,21 @@ export interface IPluginManifest {
 	readonly summary: string;
 	readonly tags: readonly string[];
 	readonly maturity: PluginManifestMaturity;
+	/**
+	 * Global permission set for the plugin — applies to every tool
+	 * that does NOT have its own entry in `toolPermissions`. Always
+	 * present so the default deny-by-default contract is anchored on
+	 * an explicit declaration.
+	 */
 	readonly permissions: readonly PermissionCategory[];
-	readonly toolPermissions?: readonly IToolPermissionGrant[] | undefined;
+	/**
+	 * Per-tool permission set (f00180 S1, MAN-004). Keys are bare
+	 * tool ids (before the `mcp-vertex_<plugin>_` namespace prefix).
+	 * `resolveToolPermissions(perTool, global, toolId)` returns the
+	 * per-tool entry when present, falling back to the global
+	 * `permissions` set when absent.
+	 */
+	readonly toolPermissions?: IPluginToolPermissions | undefined;
 	readonly presets: readonly string[];
 	readonly tokenBudget: IPluginManifestTokenBudget;
 	readonly dependencies: readonly string[];

@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-08-25T17:02:29.734Z",
+	"generatedAt": "2026-08-25T17:25:23.916Z",
 	"mode": "compact",
 	"tools": [
 		{
@@ -50,6 +50,10 @@
 		{
 			"name": "mcp-vertex_auto-agent-selector_auto_status",
 			"plugin": "auto-agent-selector"
+		},
+		{
+			"name": "mcp-vertex_auto-plugin-selector_plugins_recommend",
+			"plugin": "auto-plugin-selector"
 		},
 		{
 			"name": "mcp-vertex_completion_clear",
@@ -1251,6 +1255,13 @@
 				"kind": "feat"
 			},
 			{
+				"id": "f00181",
+				"title": "f00181",
+				"track": "plugins",
+				"status": "ready",
+				"kind": "feat"
+			},
+			{
 				"id": "q00003",
 				"title": "q00003",
 				"track": "develop-audit-consolidation",
@@ -1322,7 +1333,7 @@
 			}
 		],
 		"byStatus": {
-			"ready": 8,
+			"ready": 9,
 			"in-progress": 11,
 			"review": 28,
 			"paused": 1,

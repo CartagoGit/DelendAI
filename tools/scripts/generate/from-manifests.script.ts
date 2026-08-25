@@ -271,6 +271,9 @@ export const buildGeneratedFirstPartyEntries = (
 			tags: [...manifest.tags],
 			permissions: [...manifest.permissions],
 			tokenBudgetBytes,
+			...(manifest.toolPermissions === undefined
+				? {}
+				: { toolPermissions: manifest.toolPermissions }),
 		};
 	});
 
@@ -340,7 +343,7 @@ export const buildManifestArtifact = (
 		permissions: [...manifest.permissions],
 		...(manifest.toolPermissions === undefined
 			? {}
-			: { toolPermissions: [...manifest.toolPermissions] }),
+			: { toolPermissions: { ...manifest.toolPermissions } }),
 	})),
 	compatibilityMatrix: buildCompatibilityMatrix(manifests),
 });
@@ -368,6 +371,15 @@ const renderRegistryEntry = (entry: IPluginRegistryEntry): string => {
 		lines.push(
 			`\t\t\ttokenBudgetBytes: ${entry.tokenBudgetBytes.toString()},`,
 		);
+	}
+	if (entry.toolPermissions !== undefined) {
+		const entries = Object.entries(entry.toolPermissions)
+			.map(
+				([tool, perms]) =>
+					`${quote(tool)}: [${perms.map(quote).join(', ')}]`,
+			)
+			.join(', ');
+		lines.push(`\t\t\ttoolPermissions: { ${entries} },`);
 	}
 	lines.push('\t\t}');
 	return lines.join('\n');
@@ -494,9 +506,11 @@ const renderDocsMarkdown = (artifact: IPluginManifestArtifact): string => {
 	const permissionRows = artifact.permissionsTable.map((entry) => [
 		entry.id,
 		entry.permissions.join(', '),
-		(entry.toolPermissions ?? [])
-			.map((grant) => `${grant.tool}: ${grant.permissions.join(', ')}`)
-			.join('; '),
+		entry.toolPermissions === undefined
+			? ''
+			: Object.entries(entry.toolPermissions)
+					.map(([tool, perms]) => `${tool}: ${perms.join(', ')}`)
+					.join('; '),
 	]);
 	const compatibilityRows = artifact.compatibilityMatrix.map((entry) => [
 		entry.pluginId,

@@ -1,4 +1,4 @@
-import { definePluginManifest, TOKEN_BUDGETS } from '@mcp-vertex/core/public';
+import { definePluginManifest } from '@mcp-vertex/core/public';
 
 export default definePluginManifest({
 	id: 'forge',
@@ -10,7 +10,31 @@ export default definePluginManifest({
 	maturity: 'stable',
 	permissions: ['forge-read', 'forge-write', 'network'],
 	presets: ['swarm', 'full', 'vertex'],
-	tokenBudget: TOKEN_BUDGETS.toolPayloads.search,
+	// f00180 S2 / MAN-004 — per-tool permission map. `network` is
+	// pinned only on the tools that actually call the GH API
+	// (`search_code`, `pr_create`, `issue_create`); the rest are
+	// pure forge-read/write so a host can grant read-only access
+	// without surfacing network in the prompt.
+	toolPermissions: {
+		pr_list: ['forge-read', 'network'],
+		pr_show: ['forge-read', 'network'],
+		ci_status: ['forge-read', 'network'],
+		issue_list: ['forge-read', 'network'],
+		issue_show: ['forge-read', 'network'],
+		release: ['forge-read', 'forge-write', 'network'],
+		search_code: ['forge-read', 'network'],
+		pr_create: ['forge-write', 'network'],
+		pr_comment: ['forge-write', 'network'],
+		issue_create: ['forge-write', 'network'],
+	},
+	tokenBudget: {
+		staticBytes: 6_800,
+		adaptiveActivationBytes: 1_200,
+		typicalOutput: 1_700,
+		caps: { hard: 8_200, warning: 7_400 },
+		measuredAt: '2026-08-25',
+		source: 'token-budget-real',
+	},
 	dependencies: ['@mcp-vertex/core', '@modelcontextprotocol/sdk', 'zod'],
 	capabilities: ['forge', 'git', 'ci'],
 });

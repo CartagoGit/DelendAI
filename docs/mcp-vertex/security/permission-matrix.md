@@ -11,7 +11,7 @@
 | cache | public | * | filesystem-read, filesystem-write |
 | changelog | private | * | git-read |
 | completion | public | * | filesystem-read, filesystem-write |
-| container | public | * | container, process |
+| container | public | * | process, container |
 | context-for-change | public | * | filesystem-read |
 | conventions | public | * | filesystem-read |
 | database | public | * | database |
