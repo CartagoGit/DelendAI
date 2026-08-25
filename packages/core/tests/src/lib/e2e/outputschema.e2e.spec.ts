@@ -57,10 +57,14 @@ describe('e2e: outputSchema validation over the protocol (N16)', async () => {
 		execFileSync('git', ['add', '.'], { cwd: workspace });
 		execFileSync('git', ['commit', '-q', '-m', 'init'], { cwd: workspace });
 
+		// r00026 (TOK-004): pin native — this suite validates every
+		// registered tool's outputSchema directly by name, not surface
+		// negotiation (adaptive is now the default for a plain client).
 		const args = parseCliArgs(
 			[
 				'--plugins=proposals,rules,memory,git,quality,search,notification,docs,deps',
 				`--workspace=${workspace}`,
+				'--surface=native',
 			],
 			workspace,
 		);

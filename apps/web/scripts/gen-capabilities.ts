@@ -229,8 +229,16 @@ const buildClient = async (
 	 */
 	toolNamespaces: ReadonlyMap<string, string>;
 }> => {
+	// r00026 (TOK-004): pin native — this generator enumerates the FULL
+	// tool surface for the public capabilities snapshot; adaptive (now
+	// the default for a plain client) would only capture the bootstrap
+	// subset.
 	const args = parseCliArgs(
-		[`--plugins=${pluginList}`, `--workspace=${workspace}`],
+		[
+			`--plugins=${pluginList}`,
+			`--workspace=${workspace}`,
+			'--surface=native',
+		],
 		workspace,
 	);
 	const { config, agentCatalogTools } = await assembleCliConfig(args, {
