@@ -15,11 +15,12 @@
  * and `computeCostUsd` returns `null` for them — we never fabricate a
  * per-call figure.
  */
-import { readFile } from 'node:fs/promises';
+import { basename, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import {
 	redactSecrets,
+	SafeWorkspaceReader,
 	withFileMutex,
 	writeFileAtomic,
 } from '@mcp-vertex/core/public';
@@ -85,7 +86,12 @@ const SNAPSHOT_URL = new URL(
 
 /** Read the bundled snapshot that ships with the plugin. */
 export const readBundledSnapshot = async (): Promise<IPricingTable> => {
-	const raw = await readFile(fileURLToPath(SNAPSHOT_URL), 'utf8');
+	const snapshotPath = fileURLToPath(SNAPSHOT_URL);
+	const raw = (
+		await new SafeWorkspaceReader(dirname(snapshotPath)).readText(
+			basename(snapshotPath),
+		)
+	).content;
 	return JSON.parse(raw) as IPricingTable;
 };
 
@@ -110,7 +116,13 @@ export const readPricingCache = async (
 	absPath: string,
 ): Promise<IPricingTable | null> => {
 	try {
-		return parseTable(await readFile(absPath, 'utf8'));
+		return parseTable(
+			(
+				await new SafeWorkspaceReader(dirname(absPath)).readText(
+					basename(absPath),
+				)
+			).content,
+		);
 	} catch (err) {
 		if ((err as NodeJS.ErrnoException).code === 'ENOENT') return null;
 		return null;

@@ -1,10 +1,11 @@
-import { readFile, readdir } from 'node:fs/promises';
+import { readdir } from 'node:fs/promises';
 import path from 'node:path';
 
 import z from 'zod';
 
 import type { IPeerPluginRegistry } from '@mcp-vertex/core/public';
 import {
+	SafeWorkspaceReader,
 	resolveWorkspaceContained,
 	toolError,
 	toolJson,
@@ -192,6 +193,7 @@ export const buildConsolidateRegistration = (
 						);
 					}
 					const absDir = contained.abs;
+					const reader = new SafeWorkspaceReader(absDir);
 					let entries: readonly string[];
 					try {
 						entries = await readdir(absDir);
@@ -214,7 +216,7 @@ export const buildConsolidateRegistration = (
 					for (const name of mdRel) {
 						const abs = path.join(absDir, name);
 						try {
-							const body = await readFile(abs, 'utf8');
+							const body = (await reader.readText(name)).content;
 							docs.push({ path: name, body });
 						} catch {
 							// Skip unreadable files but keep going so a single

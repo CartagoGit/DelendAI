@@ -1,7 +1,11 @@
-import { readdir, readFile, rm } from 'node:fs/promises';
+import { readdir, rm } from 'node:fs/promises';
 import { join } from 'node:path';
 
-import { withFileMutex, writeFileAtomic } from '@mcp-vertex/core/public';
+import {
+	SafeWorkspaceReader,
+	withFileMutex,
+	writeFileAtomic,
+} from '@mcp-vertex/core/public';
 
 /**
  * A durable declaration that an agent finished its ORIGINAL task, reviewed
@@ -69,12 +73,13 @@ export const createCompletionStore = (
 		} catch {
 			return [];
 		}
+		const reader = new SafeWorkspaceReader(recordsDir);
 		const records: ICompletionRecord[] = [];
 		for (const entry of entries) {
 			if (!entry.endsWith('.json')) continue;
 			try {
 				const parsed: unknown = JSON.parse(
-					await readFile(join(recordsDir, entry), 'utf8'),
+					(await reader.readText(entry)).content,
 				);
 				if (!isRecord(parsed)) continue;
 				if (

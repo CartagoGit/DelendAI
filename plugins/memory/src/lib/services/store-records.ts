@@ -14,7 +14,9 @@
  * the durable-memory contract. Moving redaction to a separate module
  * would risk a future caller forgetting to apply it.
  */
-import { readFile } from 'node:fs/promises';
+import { basename, dirname } from 'node:path';
+
+import { SafeWorkspaceReader } from '@mcp-vertex/core/public';
 
 import { redactSecrets } from './redact';
 import { readStore, withStoreLock, writeStore } from './store-io';
@@ -131,9 +133,10 @@ export const removeNote = (absPath: string, id: string): Promise<boolean> =>
  * file is the read path's concern, not the sweeper's).
  */
 const readNotesRaw = async (absPath: string): Promise<INote[]> => {
+	const reader = new SafeWorkspaceReader(dirname(absPath));
 	let raw: string;
 	try {
-		raw = await readFile(absPath, 'utf8');
+		raw = (await reader.readText(basename(absPath))).content;
 	} catch (err) {
 		if ((err as NodeJS.ErrnoException).code === 'ENOENT') return [];
 		throw err;

@@ -1,7 +1,7 @@
-import { mkdir, open, readFile } from 'node:fs/promises';
-import { dirname } from 'node:path';
+import { mkdir, open } from 'node:fs/promises';
+import { basename, dirname } from 'node:path';
 
-import { withFileMutex } from '@mcp-vertex/core/public';
+import { SafeWorkspaceReader, withFileMutex } from '@mcp-vertex/core/public';
 
 /**
  * x00154 S6 — typed error thrown by `readPeerReviewLog` when the
@@ -146,7 +146,11 @@ export const readPeerReviewLog = async (
 ): Promise<readonly IPeerReviewLogEntry[]> => {
 	let raw: string;
 	try {
-		raw = await readFile(logPathAbs, 'utf8');
+		raw = (
+			await new SafeWorkspaceReader(dirname(logPathAbs)).readText(
+				basename(logPathAbs),
+			)
+		).content;
 	} catch (err) {
 		// x00154 S6 — missing file is a legitimate "no history yet"
 		// state. Every other read failure (permissions, EIO, …) is

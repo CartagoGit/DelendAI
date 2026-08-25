@@ -12,10 +12,11 @@
  * include a digest without scanning the queue itself.
  */
 
-import { readFile } from 'node:fs/promises';
+import { basename, dirname } from 'node:path';
 
 import {
 	quarantineCorruptFile,
+	SafeWorkspaceReader,
 	withFileMutex,
 	writeFileAtomic,
 } from '@mcp-vertex/core/public';
@@ -77,7 +78,11 @@ export const readClosedTasks = async (
 ): Promise<IClosedTaskRecord[]> => {
 	let raw: string;
 	try {
-		raw = await readFile(logPath, 'utf8');
+		raw = (
+			await new SafeWorkspaceReader(dirname(logPath)).readText(
+				basename(logPath),
+			)
+		).content;
 	} catch (err: unknown) {
 		if ((err as NodeJS.ErrnoException).code === 'ENOENT') return [];
 		throw err;

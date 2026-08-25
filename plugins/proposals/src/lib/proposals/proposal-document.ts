@@ -9,9 +9,11 @@
  * markdown headings.
  */
 
-import { readFile } from 'node:fs/promises';
+import { basename, dirname } from 'node:path';
 
 import z from 'zod';
+
+import { SafeWorkspaceReader } from '@mcp-vertex/core/public';
 
 import {
 	PROPOSAL_KIND_VALUES,
@@ -254,7 +256,11 @@ const parseBody = (raw: string): IProposalBody => {
 export const parseProposalDocument = async (
 	absolutePath: string,
 ): Promise<IProposalDocument> => {
-	const raw = await readFile(absolutePath, 'utf8');
+	const raw = (
+		await new SafeWorkspaceReader(dirname(absolutePath)).readText(
+			basename(absolutePath),
+		)
+	).content;
 
 	const block = extractYamlBlock(raw);
 	if (block === null) {

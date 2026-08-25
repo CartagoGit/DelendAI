@@ -1,4 +1,6 @@
-import { readFile } from 'node:fs/promises';
+import { basename, dirname } from 'node:path';
+
+import { SafeWorkspaceReader } from '@mcp-vertex/core/public';
 import { createAgentRegistryStore } from '../shared/agent-registry-store';
 import type { IAgentRegistry } from '../shared/agent-registry-store';
 
@@ -53,7 +55,11 @@ const loadLockSnapshotLocal = async (
 }> => {
 	let raw: string;
 	try {
-		raw = await readFile(lockPath, 'utf8');
+		raw = (
+			await new SafeWorkspaceReader(dirname(lockPath)).readText(
+				basename(lockPath),
+			)
+		).content;
 	} catch {
 		// Missing/unreadable lock → no in-flight claims.
 		return { in_flight: [] };

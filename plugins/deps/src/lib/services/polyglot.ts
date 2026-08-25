@@ -1,5 +1,7 @@
-import { resolveWorkspaceContained } from '@mcp-vertex/core/public';
-import { readFile } from 'node:fs/promises';
+import {
+	resolveWorkspaceContained,
+	SafeWorkspaceReader,
+} from '@mcp-vertex/core/public';
 
 /**
  * Polyglot dependency listing (M33) — minimal, hand-rolled parsers for the
@@ -255,13 +257,14 @@ const MANIFESTS: ReadonlyArray<{
 export const listPolyglotDeps = async (
 	rootAbs: string,
 ): Promise<readonly IPolyglotManifest[]> => {
+	const reader = new SafeWorkspaceReader(rootAbs);
 	const out: IPolyglotManifest[] = [];
 	for (const { ecosystem, file, parse } of MANIFESTS) {
 		const contained = resolveWorkspaceContained(rootAbs, file);
 		if (!contained.ok) continue;
 		let raw: string;
 		try {
-			raw = await readFile(contained.abs, 'utf8');
+			raw = (await reader.readText(contained.rel)).content;
 		} catch {
 			continue;
 		}

@@ -1,9 +1,10 @@
-import { readFile } from 'node:fs/promises';
+import { basename, dirname } from 'node:path';
 
 import {
 	CorruptFileError,
 	quarantineCorruptFile,
 	runMigrations,
+	SafeWorkspaceReader,
 	withFileMutex,
 	writeFileAtomic,
 } from '@mcp-vertex/core/public';
@@ -117,7 +118,11 @@ export const createAgentRegistryStore = (path: string): IAgentRegistryStore => {
 	const read = async (): Promise<IAgentRegistry> => {
 		let raw: string;
 		try {
-			raw = await readFile(path, 'utf8');
+			raw = (
+				await new SafeWorkspaceReader(dirname(path)).readText(
+					basename(path),
+				)
+			).content;
 		} catch (err: unknown) {
 			if ((err as NodeJS.ErrnoException).code === 'ENOENT')
 				return emptyRegistry();

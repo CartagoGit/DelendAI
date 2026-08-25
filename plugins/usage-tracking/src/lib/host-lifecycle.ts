@@ -8,6 +8,8 @@
  */
 import z from 'zod';
 
+import { readAbsoluteTextSafe } from '@mcp-vertex/core/public';
+
 import type {
 	HostLifecycleEventKind,
 	IHostLifecycleEvent,
@@ -15,10 +17,12 @@ import type {
 	IObservedHostSession,
 } from './types';
 
+const HOST_SESSION_ID_MAX_LENGTH = 512;
+
 const HostLifecycleEventSchema = z.object({
 	version: z.literal(1),
 	host: z.literal('claude-code'),
-	hostSessionId: z.string().trim().min(1).max(512),
+	hostSessionId: z.string().trim().min(1).max(HOST_SESSION_ID_MAX_LENGTH),
 	event: z.enum(['turn', 'pre-compact', 'post-compact', 'session-end']),
 	at: z.string().datetime(),
 });
@@ -34,9 +38,7 @@ export const readHostLifecycleEvents = async (
 ): Promise<IHostLifecycleEvent[]> => {
 	let raw: string;
 	try {
-		const file = Bun.file(absPath);
-		if (!(await file.exists())) return [];
-		raw = await file.text();
+		raw = await readAbsoluteTextSafe(absPath);
 	} catch {
 		return [];
 	}

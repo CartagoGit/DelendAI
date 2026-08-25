@@ -1,7 +1,11 @@
-import { mkdir, readFile } from 'node:fs/promises';
-import { dirname, join } from 'node:path';
+import { mkdir } from 'node:fs/promises';
+import { basename, dirname, join } from 'node:path';
 
-import { withFileMutex, writeFileAtomic } from '@mcp-vertex/core/public';
+import {
+	SafeWorkspaceReader,
+	withFileMutex,
+	writeFileAtomic,
+} from '@mcp-vertex/core/public';
 
 import {
 	readFrontmatterField,
@@ -63,17 +67,20 @@ const createAutoTransitionRepairDeps = (): IAutoTransitionRepairDeps => ({
 	},
 	now: () => new Date().toISOString(),
 	readText: async (path) =>
-		readFile(path, 'utf8').catch((error: unknown) => {
-			if (
-				error &&
-				typeof error === 'object' &&
-				'code' in error &&
-				error.code === 'ENOENT'
-			) {
-				return '';
-			}
-			throw error;
-		}),
+		new SafeWorkspaceReader(dirname(path))
+			.readText(basename(path))
+			.then((value) => value.content)
+			.catch((error: unknown) => {
+				if (
+					error &&
+					typeof error === 'object' &&
+					'code' in error &&
+					error.code === 'ENOENT'
+				) {
+					return '';
+				}
+				throw error;
+			}),
 	withLock: async (path, work) => withFileMutex(path, work),
 	writeText: async (path, text) => {
 		await writeFileAtomic(path, text);

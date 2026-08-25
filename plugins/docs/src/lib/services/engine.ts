@@ -1,8 +1,9 @@
 import {
 	resolveWorkspaceContained,
+	SafeWorkspaceReader,
 	walkAllowedFiles,
 } from '@mcp-vertex/core/public';
-import { readFile, stat } from 'node:fs/promises';
+import { stat } from 'node:fs/promises';
 import { relative, sep } from 'node:path';
 
 /** One catalogued doc. `path` is relative to the workspace root. */
@@ -101,6 +102,7 @@ export const listDocs = async (
 
 	const docs: IDocEntry[] = [];
 	let truncated = false;
+	const reader = new SafeWorkspaceReader(workspaceRootAbs);
 
 	const addFile = async (abs: string): Promise<void> => {
 		if (truncated) return;
@@ -109,7 +111,7 @@ export const listDocs = async (
 		try {
 			const st = await stat(abs);
 			if (!st.isFile() || st.size > MAX_READ_BYTES) return;
-			raw = await readFile(abs, 'utf8');
+			raw = (await reader.readText(rel(workspaceRootAbs, abs))).content;
 		} catch {
 			return;
 		}
@@ -326,7 +328,9 @@ export const readDoc = async (
 	let raw: string;
 	try {
 		if (!(await stat(abs)).isFile()) return miss();
-		raw = await readFile(abs, 'utf8');
+		raw = (
+			await new SafeWorkspaceReader(workspaceRootAbs).readText(relPath)
+		).content;
 	} catch {
 		return miss();
 	}

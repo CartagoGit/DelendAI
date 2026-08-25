@@ -1,10 +1,11 @@
 import { randomUUID } from 'node:crypto';
-import { readFile, rm } from 'node:fs/promises';
+import { rm } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 
 import {
 	probeTool,
 	realProbeDeps,
+	SafeWorkspaceReader,
 	resolveExecPath,
 	runExternalTool,
 	writeFileAtomic,
@@ -327,7 +328,11 @@ const runInlineRegex = async (
 		input.readTextFile ??
 		(async (absolutePath: string) => {
 			try {
-				return await readFile(absolutePath, 'utf8');
+				const reader = new SafeWorkspaceReader(input.cwd);
+				const relativePath = absolutePath.startsWith(`${input.cwd}/`)
+					? absolutePath.slice(input.cwd.length + 1)
+					: absolutePath;
+				return (await reader.readText(relativePath)).content;
 			} catch {
 				return undefined;
 			}

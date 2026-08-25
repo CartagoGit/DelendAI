@@ -7,11 +7,15 @@
  * counter survives MCP-server restarts.
  */
 
-import { mkdir, readFile } from 'node:fs/promises';
+import { mkdir } from 'node:fs/promises';
 import { cwd } from 'node:process';
-import { dirname, join } from 'node:path';
+import { basename, dirname, join } from 'node:path';
 
-import { writeFileAtomic, withFileMutex } from '@mcp-vertex/core/public';
+import {
+	SafeWorkspaceReader,
+	writeFileAtomic,
+	withFileMutex,
+} from '@mcp-vertex/core/public';
 
 export interface ISessionEntry {
 	readonly ts: string;
@@ -64,7 +68,11 @@ const isMissingFileErrno = (err: unknown): boolean => {
 
 const readSessionLogPrefix = async (path: string): Promise<string> => {
 	try {
-		return await readFile(path, 'utf8');
+		return (
+			await new SafeWorkspaceReader(dirname(path)).readText(
+				basename(path),
+			)
+		).content;
 	} catch (err) {
 		// x00154 S6 — a missing log is the normal "first append"
 		// case. Any other read failure is a real problem and must
@@ -148,7 +156,11 @@ const readSessionBalanceFromFile = async (
 	path: string,
 ): Promise<ISessionBalance> => {
 	try {
-		const text = await readFile(path, 'utf8');
+		const text = (
+			await new SafeWorkspaceReader(dirname(path)).readText(
+				basename(path),
+			)
+		).content;
 		return updateCache(path, deriveBalance(text));
 	} catch {
 		return updateCache(path, EMPTY_BALANCE());
@@ -173,7 +185,16 @@ export const readSessionBalance = async (
 ): Promise<ISessionBalance> => {
 	const path = sessionLogPath(workspaceRootAbs);
 	try {
-		return updateCache(path, deriveBalance(await readFile(path, 'utf8')));
+		return updateCache(
+			path,
+			deriveBalance(
+				(
+					await new SafeWorkspaceReader(dirname(path)).readText(
+						basename(path),
+					)
+				).content,
+			),
+		);
 	} catch {
 		return updateCache(path, EMPTY_BALANCE());
 	}

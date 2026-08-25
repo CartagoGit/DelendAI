@@ -1,4 +1,4 @@
-import { readFile, stat } from 'node:fs/promises';
+import { stat } from 'node:fs/promises';
 import { join, relative, resolve } from 'node:path';
 
 import z from 'zod';
@@ -8,7 +8,7 @@ import type {
 	IToolTextResult,
 	ICommitAuthorResolution,
 } from '@mcp-vertex/core/public';
-import { toolJson } from '@mcp-vertex/core/public';
+import { SafeWorkspaceReader, toolJson } from '@mcp-vertex/core/public';
 
 import { runContinueProposal } from './continue-proposal.tool';
 import type { IContinueProposalToolOptions } from './continue-proposal.tool';
@@ -345,10 +345,11 @@ const findReviewPendingPeerApproval = async (
 			continue;
 		}
 		try {
-			const raw = await readFile(
-				join(options.proposalsDirAbs, entry.file),
-				'utf8',
-			);
+			const raw = (
+				await new SafeWorkspaceReader(options.proposalsDirAbs).readText(
+					entry.file,
+				)
+			).content;
 			if (!hasPeerApprovedReview(raw)) {
 				return { proposalId: entry.id, file: entry.file };
 			}
@@ -609,7 +610,11 @@ export const runAutoWork = async (
 		const docPath = join(options.proposalsDirAbs, next.file);
 		let approved = false;
 		try {
-			const raw = await readFile(docPath, 'utf8');
+			const raw = (
+				await new SafeWorkspaceReader(options.proposalsDirAbs).readText(
+					next.file,
+				)
+			).content;
 			approved = hasPeerApprovedReview(raw);
 		} catch {
 			approved = false;

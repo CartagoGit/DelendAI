@@ -368,6 +368,7 @@ export {
 } from '../lib/shared/contain-path';
 export type { IContainedPath } from '../lib/shared/contain-path';
 export { SafeWorkspaceReader } from '../lib/filesystem/safe-workspace-reader';
+export { readAbsoluteTextSafe } from '../lib/filesystem/safe-workspace-reader.helpers';
 export { WorkspaceContainmentError } from '../lib/filesystem/safe-workspace-reader.errors';
 export type {
 	ContainedPathResult,

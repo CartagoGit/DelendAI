@@ -1,7 +1,11 @@
-import { mkdir, readdir, readFile, rename } from 'node:fs/promises';
-import { dirname, join, relative, resolve, sep } from 'node:path';
+import { mkdir, readdir, rename } from 'node:fs/promises';
+import { basename, dirname, join, relative, resolve, sep } from 'node:path';
 
-import { withFileMutex, writeFileAtomic } from '@mcp-vertex/core/public';
+import {
+	SafeWorkspaceReader,
+	withFileMutex,
+	writeFileAtomic,
+} from '@mcp-vertex/core/public';
 
 import { extractYamlBlock, parseFrontmatterBlock } from './frontmatter-parser';
 import { setFrontmatterStatus } from './proposal-frontmatter-writer';
@@ -220,7 +224,11 @@ const readProposalFile = async (
 	_indexPath: string,
 	proposalsDir: string,
 ): Promise<{ entry: IProposalEntry; warning?: string }> => {
-	const rawStr = await readFile(absFilepath, 'utf8');
+	const rawStr = (
+		await new SafeWorkspaceReader(proposalsDir).readText(
+			relative(proposalsDir, absFilepath).split('\\').join('/'),
+		)
+	).content;
 	const fm = parseFrontmatter(rawStr);
 	const name = absFilepath.split('/').pop() ?? absFilepath;
 	const id = fm.id ?? buildId(name);
@@ -368,7 +376,8 @@ export const reconcileAndArchiveCompletedRootProposals = async (
 		if (!/^p\d+[a-z]*-.+\.md$/iu.test(name)) continue;
 
 		const sourcePath = join(proposalsDir, name);
-		const raw = await readFile(sourcePath, 'utf8');
+		const raw = (await new SafeWorkspaceReader(proposalsDir).readText(name))
+			.content;
 		const reconciled = reconcileCompletedProposalMarkdown(raw);
 		if (
 			reconciled === raw ||
@@ -470,7 +479,11 @@ const scanNewSystemFiles = async (
 			if (!dirent.isFile() || !dirent.name.endsWith('.md')) continue;
 			if (!isNewSystemFilename(dirent.name)) continue;
 			const absPath = join(dirAbs, dirent.name);
-			const raw = await readFile(absPath, 'utf8');
+			const raw = (
+				await new SafeWorkspaceReader(proposalsDirAbs).readText(
+					relative(proposalsDirAbs, absPath).split('\\').join('/'),
+				)
+			).content;
 			const block = extractYamlBlock(raw);
 			if (block === null) continue;
 			const fm = parseFrontmatterBlock(block);
@@ -574,7 +587,12 @@ const scanAllProposalIds = async (
 				dirent.name === 'README.md'
 			)
 				continue;
-			const raw = await readFile(childAbs, 'utf8').catch(() => '');
+			const raw = await new SafeWorkspaceReader(proposalsDirAbs)
+				.readText(
+					relative(proposalsDirAbs, childAbs).split('\\').join('/'),
+				)
+				.then((value) => value.content)
+				.catch(() => '');
 			if (raw.length === 0) continue;
 			const block = extractYamlBlock(raw);
 			// A `.md` with no frontmatter block at all is not a proposal (an
@@ -685,7 +703,13 @@ export const reconcileBlocked = async (
 		if (file.status !== 'blocked' || file.blockedBy.length === 0) continue;
 
 		await withFileMutex(file.absPath, async () => {
-			const raw = await readFile(file.absPath, 'utf8');
+			const raw = (
+				await new SafeWorkspaceReader(proposalsDirAbs).readText(
+					relative(proposalsDirAbs, file.absPath)
+						.split('\\')
+						.join('/'),
+				)
+			).content;
 			const stillBlocked = file.blockedBy.some((token) => {
 				if (token.startsWith('self:')) {
 					const lint = lintProposalMarkdown({
@@ -830,7 +854,11 @@ export async function syncProposalRegistry(
 		const nextText = `${JSON.stringify(index, null, 4)}\n`;
 		let changed = true;
 		try {
-			const current = await readFile(indexPath, 'utf8');
+			const current = (
+				await new SafeWorkspaceReader(dirname(indexPath)).readText(
+					basename(indexPath),
+				)
+			).content;
 			changed = current !== nextText;
 		} catch {
 			// Missing or unreadable index means the generated file will be new.

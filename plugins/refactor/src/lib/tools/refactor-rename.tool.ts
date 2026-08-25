@@ -17,12 +17,13 @@
  * file. The previous raw `await writeFile(` pattern tripped the
  * plugin-drift budget lint; this is the structural fix.
  */
-import { readFile } from 'node:fs/promises';
-
 import z from 'zod';
+
+import { basename, dirname } from 'node:path';
 
 import type { IToolRegistration } from '@mcp-vertex/core/public';
 import {
+	SafeWorkspaceReader,
 	resolveWorkspaceContained,
 	toolError,
 	toolJson,
@@ -97,7 +98,10 @@ export const buildRefactorRenameToolRegistrations = (
 ): readonly IToolRegistration[] => {
 	const prefix = options.namespacePrefix;
 	const read: IFileReader =
-		options.readFile ?? ((p: string) => readFile(p, 'utf8'));
+		options.readFile ??
+		(async (p: string) =>
+			(await new SafeWorkspaceReader(dirname(p)).readText(basename(p)))
+				.content);
 	const write =
 		options.writeFileAtomic ??
 		((p: string, c: string) => writeFileAtomic(p, c));

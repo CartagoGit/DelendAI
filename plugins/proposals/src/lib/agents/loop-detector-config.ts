@@ -19,11 +19,10 @@
  *      tests inject a stub, production uses `node:fs` via
  *      `createFsConfigFileReader()`.
  */
-import { readFile } from 'node:fs/promises';
-
 import {
 	joinRel,
 	parseConfigFile,
+	SafeWorkspaceReader,
 	type IMcpVertexConfigFile,
 	type IWorkspacePathProvider,
 } from '@mcp-vertex/core/public';
@@ -75,7 +74,13 @@ export const createFsConfigFileReader = async (
 	return {
 		async readGlobalConfig() {
 			try {
-				return parseConfigFile(await readFile(path, 'utf8'));
+				return parseConfigFile(
+					(
+						await new SafeWorkspaceReader(workspace.root).readText(
+							path,
+						)
+					).content,
+				);
 			} catch {
 				// Corrupt/missing — fall through to defaults. Matches the
 				// pre-split behaviour (a corrupt config never crashes boot).
