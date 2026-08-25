@@ -215,6 +215,7 @@ const PRESET_SEEDS: readonly IPresetSeed[] = [
 			{ plugin: 'adaptive-optimizer' },
 			{ plugin: 'audit' },
 			{ plugin: 'auto-agent-selector' },
+			{ plugin: 'commit-policy' },
 			{ plugin: 'completion' },
 			{ plugin: 'container' },
 			{ plugin: 'conventions' },
