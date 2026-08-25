@@ -2,7 +2,7 @@
 id: c00004
 title: "lint arquitectónico — bloquear readFile directo en plugins con filesystem-read; forzar SafeWorkspaceReader"
 kind: chore
-status: ready
+status: review
 type: proposal
 track: filesystem
 date: 2026-08-25
@@ -60,10 +60,10 @@ Cero.
 
 **Permitido**:
 
-- `tools/scripts/lint/filesystem-reader-invariant.script.ts` (nuevo).
-- `tools/scripts/lint/filesystem-reader-invariant.spec.ts` (nuevo).
+- `tools/scripts/lint/architecture-readfile-via-safe-reader.script.ts` (nuevo).
+- `tools/scripts/lint/architecture-readfile-via-safe-reader.script.spec.ts` (nuevo).
 - Configuración del runner (p. ej. `tools/scripts/lint/index.ts` o equivalente).
-- `package.json` scripts (`lint:fs-invariant`).
+- `package.json` scripts (`lint:architecture-readfile-via-safe-reader`).
 - Documentación: `docs/mcp-vertex/contributing/lint-rules.md` (nuevo, si no existe).
 
 **No permitido**:
@@ -237,7 +237,7 @@ Añadir a `bun run validate`.
 ### S1 — Lint script
 
 - **Status**: pending
-- **Files**: `tools/scripts/lint/filesystem-reader-invariant.script.ts`
+- **Files**: `tools/scripts/lint/architecture-readfile-via-safe-reader.script.ts`
 - **Gate**: type
 - acceptance:
   - "Detecta imports directos y llamadas."
@@ -246,7 +246,7 @@ Añadir a `bun run validate`.
 ### S2 — Tests del lint
 
 - **Status**: pending
-- **Files**: `tools/scripts/lint/filesystem-reader-invariant.spec.ts`
+- **Files**: `tools/scripts/lint/architecture-readfile-via-safe-reader.script.spec.ts`
 - **Gate**: type
 - acceptance:
   - "≥5 tests verdes."
@@ -262,7 +262,7 @@ Añadir a `bun run validate`.
 
 ## Acceptance
 
-- **Unit**: `tools/scripts/lint/filesystem-reader-invariant.spec.ts` (≥5 tests).
+- **Unit**: `tools/scripts/lint/architecture-readfile-via-safe-reader.script.spec.ts` (≥5 tests).
 - **E2E**: crear un plugin de prueba con el patrón vulnerable, ejecutar lint, esperar violación.
 - **Regression**: tras `x00242`/`x00243`, el lint pasa verde sobre los plugins migrados.
 
