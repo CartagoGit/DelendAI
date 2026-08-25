@@ -297,15 +297,17 @@ resolution:
 
 ### S1 — Tipo `ISafeToolIdentity` + resolver
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/src/lib/contracts/interfaces/safe-tool-identity.interface.ts`, `packages/core/src/lib/contracts/resolvers/safe-tool-identity.resolver.ts`
 - **Gate**: type
 - acceptance:
   - "Tipo `ISafeToolIdentity` exportado y testeado."
   - "Resolver `resolvePublicToolIdentity(toolName, registry)` con semántica documentada."
   - "Tipos branded `Brand<'SafeToolId', '@mcp-vertex/*'>` para reforzar contrato."
-- review-state: in_review
+- review-state: done
 - review-implementer: swarm-implementer
+- review-reviewer: orchestrator-fase1-review
+- review-log: approved by orchestrator-fase1-review — Fase 1 review 2026-08-25: lint:diagram-usage/limit verificado; validate verde.
 ### S2 — Integración en `error-reporting` + DTO actualizado
 
 - **Status**: pending
