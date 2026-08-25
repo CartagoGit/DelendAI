@@ -25,6 +25,7 @@
 		"types": ["bun", "node"],
 		"paths": {
 			"@mcp-vertex/core": ["./packages/core/src/index.ts"],
+			"@mcp-vertex/core/version": ["./packages/core/src/version.ts"],
 			"@mcp-vertex/core/public": ["./packages/core/src/public/index.ts"],
 			"@mcp-vertex/core/*": ["./packages/core/src/*"],
 			"@mcp-vertex/client": ["./packages/client/src/index.ts"],

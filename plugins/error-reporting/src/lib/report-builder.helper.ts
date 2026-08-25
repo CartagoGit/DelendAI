@@ -1,3 +1,5 @@
+import { MCP_VERTEX_VERSION } from '@mcp-vertex/core/version';
+
 import type { McpVertexErrorCode } from './contracts/constants/error-codes.constant';
 import type {
 	ISafeMcpVertexReport,
@@ -9,7 +11,6 @@ import { analyzeErrorOrigin } from './origin-analyzer.helper';
 import { signatureOf } from './signature.helper';
 import { buildSyntheticExample } from './synthetic-example.builder';
 
-import monorepoPackageJson from '../../../../package.json';
 import reporterPackageJson from '../../package.json';
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
@@ -190,7 +191,7 @@ export const buildSafeReport = (
 	if (classified.packageId === undefined) return undefined;
 	const reportCore = {
 		reporterVersion: reporterPackageJson.version,
-		mcpVertexVersion: monorepoPackageJson.version,
+		mcpVertexVersion: MCP_VERTEX_VERSION,
 		packageId: classified.packageId,
 		toolId: toolName,
 		...(classified.errorCode !== undefined

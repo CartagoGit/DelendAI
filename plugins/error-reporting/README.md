@@ -73,6 +73,8 @@ Exact transmitted fields:
 - Safe DTO fields: `reporterVersion`, `mcpVertexVersion`, `packageId`,
   `toolId`, `errorCode`, `failureClass`, `classification`, `fingerprint`,
   `mcpFrames`, `syntheticExample`, `environmentClass`.
+- `mcpVertexVersion` is sourced from the published `@mcp-vertex/core`
+  package version, not the monorepo root `package.json`.
 - Issue-body table fields: `packageId`, `reporterVersion`,
   `mcpVertexVersion`, `classification`, `failureClass`, `fingerprint`,
   `toolId`, `errorCode`, `environmentClass`.
