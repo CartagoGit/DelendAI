@@ -2,7 +2,7 @@
 id: b00238
 title: "Marcar APIs internas como `internal`"
 kind: breaking
-status: ready
+status: in-progress
 type: proposal
 track: architecture
 date: 2026-08-25
