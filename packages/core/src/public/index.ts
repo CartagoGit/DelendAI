@@ -236,6 +236,10 @@ export {
 	type IBootstrapMeasurement,
 } from '../lib/surface/bootstrap';
 export {
+	VALIDATE_EVIDENCE_SCHEMA,
+	type IValidateEvidenceInput,
+} from '../lib/proposals/validate-evidence.schema';
+export {
 	PLUGIN_DEFAULTS,
 	resolvePluginOptions,
 } from '../lib/plugins/plugin-defaults';

@@ -17,6 +17,8 @@
  */
 import z from 'zod';
 
+import { VALIDATE_EVIDENCE_SCHEMA } from '@mcp-vertex/core/public';
+
 import {
 	defineCompatWindow,
 	parseWithCompatWindow,
@@ -33,13 +35,7 @@ const v2Schema = z.object({
 	reason: z.string().min(1),
 	agent: z.string().optional(),
 	force: z.boolean().optional(),
-	validateEvidence: z
-		.object({
-			timestamp: z.string().min(1),
-			exitCode: z.number().int(),
-			logPath: z.string().min(1).optional(),
-		})
-		.optional(),
+	validateEvidence: VALIDATE_EVIDENCE_SCHEMA.optional(),
 });
 
 /** v1 — legacy shape. Today v1 === v2 (seed slice). Future releases will narrow v2. */
@@ -49,13 +45,7 @@ const v1Schema = z.object({
 	reason: z.string().min(1),
 	agent: z.string().optional(),
 	force: z.boolean().optional(),
-	validateEvidence: z
-		.object({
-			timestamp: z.string().min(1),
-			exitCode: z.number().int(),
-			logPath: z.string().min(1).optional(),
-		})
-		.optional(),
+	validateEvidence: VALIDATE_EVIDENCE_SCHEMA.optional(),
 });
 
 /** The compat window for proposal_transition. */
