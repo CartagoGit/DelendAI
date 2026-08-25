@@ -76,12 +76,13 @@ const buildScopedMessage = (
 	autoScope: boolean,
 ): string => {
 	if (!autoScope) return original;
-	// The proposal id is "f00181" or "a00085" — letter(s) + digits.
-	// We only auto-scope when the original message does NOT already
-	// carry a `(scope)` so we never double-scope an agent-crafted
-	// commit message.
-	if (/^\w+(\([^)]+\))?(!)?:/.test(original)) return original;
-	return `feat(${proposalId}): ${original}`;
+	// If the message already carries a Conventional-Commit scope
+	// (e.g. `feat(core): x`) we leave it alone — never double-scope.
+	if (/^\w+\([^)]+\)(!)?:/.test(original)) return original;
+	// If the message is a bare Conventional Commit (no scope), strip
+	// the `type:` prefix and re-wrap it with the proposal id as scope.
+	const stripped = original.replace(/^(\w+)(!)?:\s*/, '');
+	return `feat(${proposalId}): ${stripped}`;
 };
 
 /**

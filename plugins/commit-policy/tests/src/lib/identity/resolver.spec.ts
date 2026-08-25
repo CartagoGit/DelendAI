@@ -11,8 +11,8 @@ import { describe, expect, it } from 'vitest';
 
 import type { IGitRunner, IGitRunResult } from '@mcp-vertex/core/public';
 
-import type { ICommitPolicyIdentity } from '../contracts/options';
-import { resolveAuthor } from './resolver';
+import type { ICommitPolicyIdentity } from '@mcp-vertex/commit-policy/lib/contracts/options';
+import { resolveAuthor } from '@mcp-vertex/commit-policy/lib/identity/resolver';
 
 /**
  * Tiny in-memory git runner. Keys are the args joined with NUL so

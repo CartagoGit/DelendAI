@@ -44,7 +44,20 @@ describe('commit-policy dogfood E2E', () => {
 		await writeFile(join(workspace, 'README.md'), '# init\n', 'utf8');
 		await git(workspace, 'add', '.');
 		await git(workspace, 'commit', '-q', '-m', 'chore: init');
-		await execFileAsync('git', ['init', '-q', '--bare'], { cwd: remote });
+		await execFileAsync(
+			'git',
+			['init', '-q', '--bare', '--initial-branch=develop'],
+			{ cwd: remote },
+		).catch(async () => {
+			await execFileAsync('git', ['init', '-q', '--bare'], {
+				cwd: remote,
+			});
+			await execFileAsync(
+				'git',
+				['symbolic-ref', 'HEAD', 'refs/heads/develop'],
+				{ cwd: remote },
+			);
+		});
 		await git(workspace, 'remote', 'add', 'origin', remote);
 		await git(workspace, 'push', '-q', '-u', 'origin', 'develop');
 
@@ -87,7 +100,7 @@ describe('commit-policy dogfood E2E', () => {
 
 		const commitResult = await runCommitDriver(
 			{
-				message: 'feat(commit-policy): dogfood smoke',
+				message: 'feat: dogfood smoke',
 				files: ['feature.ts'],
 				sliceContext: {
 					proposalId: 'f00181',

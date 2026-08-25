@@ -6,9 +6,9 @@ import { describe, expect, it } from 'vitest';
 
 import type { IGitRunner, IGitRunResult } from '@mcp-vertex/core/public';
 
-import { createThresholdTracker } from './threshold-tracker';
-import { createIntervalTimer } from './interval-timer';
-import { manualTrigger } from './manual-trigger';
+import { createThresholdTracker } from '@mcp-vertex/commit-policy/lib/triggers/threshold-tracker';
+import { createIntervalTimer } from '@mcp-vertex/commit-policy/lib/triggers/interval-timer';
+import { manualTrigger } from '@mcp-vertex/commit-policy/lib/triggers/manual-trigger';
 
 const ok = (output: string): IGitRunResult => ({ ok: true, output });
 const fail = (reason: string): IGitRunResult => ({

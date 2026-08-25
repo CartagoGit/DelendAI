@@ -5,7 +5,7 @@
 
 import { describe, expect, it } from 'vitest';
 
-import { appendAuditTrailer } from './trailer';
+import { appendAuditTrailer } from '@mcp-vertex/commit-policy/lib/audit/trailer';
 
 describe('appendAuditTrailer', () => {
 	const agent = { host: 'vscode-copilot', model: 'minimax-m3' };

@@ -11,7 +11,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import {
 	createSliceListener,
 	readCurrentSliceSnapshot,
-} from './slice-listener';
+} from '@mcp-vertex/commit-policy/lib/triggers/slice-listener';
 
 const writeIndex = async (
 	dir: string,
