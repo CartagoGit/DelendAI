@@ -188,6 +188,14 @@ describe('PRESET_CATALOG', async () => {
 			)}; it does not include \`api\` by default.`;
 		expect(knowledge?.body).toContain(expectedLine);
 	});
+
+	it('derives backend-api summary from actual membership without stale opt-in claims', async () => {
+		const backendApi = PRESET_CATALOG.find((definition) => definition.id === 'backend-api');
+		expect(backendApi).toBeDefined();
+		expect(backendApi?.summary).toContain('16 plugins');
+		expect(backendApi?.summary).not.toContain('audit');
+		expect(backendApi?.summary).not.toContain('perf');
+	});
 });
 
 describe('resolvePresetMembers', async () => {
@@ -340,6 +348,23 @@ describe('resolvePresetMembers', async () => {
 				definition.budget.capabilities.values.length,
 			).toBeGreaterThan(0);
 		}
+	});
+
+	it('derives budget permissions from effective preset membership', async () => {
+		const standard = PRESET_CATALOG.find((definition) => definition.id === 'standard');
+		expect(standard).toBeDefined();
+		expect(standard?.budget.permissions.values).toEqual([
+			'container',
+			'database',
+			'env-read',
+			'filesystem-read',
+			'filesystem-write',
+			'forge-write',
+			'git-read',
+			'git-write',
+			'network',
+			'process',
+		]);
 	});
 
 	it('preserves the ⊇ chain ordering for chain presets', async () => {

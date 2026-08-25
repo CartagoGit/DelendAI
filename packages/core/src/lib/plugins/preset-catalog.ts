@@ -1,5 +1,6 @@
 import { PRESET_METADATA } from '../contracts/constants/preset-metadata.constant';
 import type { IPresetBudgetProfile } from '../contracts/interfaces/preset-budget-profile.interface';
+import { derivePresetBudget, derivePresetSummary } from './preset-derived';
 
 /**
  * Canonical preset catalog for `@mcp-vertex/core`.
@@ -102,6 +103,8 @@ export interface IPresetDefinition {
 	readonly independent?: boolean;
 }
 
+type IPresetSeed = Omit<IPresetDefinition, 'summary' | 'budget'>;
+
 /**
  * Canonical preset catalog. Order is significant: presets are listed
  * from smallest to largest; the last entry in the chain (`full` /
@@ -112,15 +115,12 @@ export interface IPresetDefinition {
  * a superset of `swarm`). Because both are independent, they do NOT
  * alter the resolved membership of the chain presets around them.
  */
-export const PRESET_CATALOG: readonly IPresetDefinition[] = [
+const PRESET_SEEDS: readonly IPresetSeed[] = [
 	{
 		id: 'minimal',
 		title: 'minimal',
-		summary:
-			'Orientation baseline: git + search. Smallest preset for local inspection, onboarding and smoke checks.',
 		role: PRESET_METADATA.minimal.role,
 		members: [{ plugin: 'git' }, { plugin: 'search' }],
-		budget: PRESET_METADATA.minimal.budget,
 	},
 	{
 		// `lean` is the 4-plugin essentials preset: version control
@@ -134,8 +134,6 @@ export const PRESET_CATALOG: readonly IPresetDefinition[] = [
 		// independent defs that are not the target).
 		id: 'lean',
 		title: 'lean',
-		summary:
-			'Everyday work preset: git, search, memory and docs. Independent; keeps routine coding light without orchestration.',
 		role: PRESET_METADATA.lean.role,
 		members: [
 			{ plugin: 'git' },
@@ -143,14 +141,11 @@ export const PRESET_CATALOG: readonly IPresetDefinition[] = [
 			{ plugin: 'memory' },
 			{ plugin: 'docs' },
 		],
-		budget: PRESET_METADATA.lean.budget,
 		independent: true,
 	},
 	{
 		id: 'standard',
 		title: 'standard',
-		summary:
-			'Adaptive/task-aware single-agent toolkit: minimal + memory, docs, i18n, rules, quality, deps, test-policy, database, container, diagram, env, skills-pack, prompts-pack and auto-agent-selector.',
 		role: PRESET_METADATA.standard.role,
 		members: [
 			{ plugin: 'memory' },
@@ -170,14 +165,10 @@ export const PRESET_CATALOG: readonly IPresetDefinition[] = [
 			{ plugin: 'error-reporting' },
 			{ plugin: 'auto-agent-selector' },
 		],
-		budget: PRESET_METADATA.standard.budget,
 	},
 	{
 		id: 'swarm',
 		title: 'swarm',
-		summary:
-			'Explicit multi-agent coordination: standard + proposals, notification, logs, status-marker, test-convention and conventions. ' +
-			'audit is opt-in per project and is NOT in swarm — run it separately after a round finishes.',
 		role: PRESET_METADATA.swarm.role,
 		members: [
 			{ plugin: 'proposals' },
@@ -189,14 +180,10 @@ export const PRESET_CATALOG: readonly IPresetDefinition[] = [
 			{ plugin: 'conventions' },
 			{ plugin: 'forge' },
 		],
-		budget: PRESET_METADATA.swarm.budget,
 	},
 	{
 		id: 'full',
 		title: 'full',
-		summary:
-			'Diagnostic/development surface: everything in swarm + the host-only plugins (web-fetch, issues). ' +
-			'audit is opt-in (load with --plugins=audit) when you need it.',
 		role: PRESET_METADATA.full.role,
 		members: [
 			{ plugin: 'web-fetch', hostOnly: true },
@@ -204,7 +191,6 @@ export const PRESET_CATALOG: readonly IPresetDefinition[] = [
 			{ plugin: 'api' },
 			{ plugin: 'changelog' },
 		],
-		budget: PRESET_METADATA.full.budget,
 	},
 	{
 		// `vertex` mirrors the plugin set of the mcp-vertex project
@@ -223,9 +209,6 @@ export const PRESET_CATALOG: readonly IPresetDefinition[] = [
 		// `mcp-vertex.config.json` plugin keys on every validate pass.
 		id: 'vertex',
 		title: 'vertex',
-		summary:
-			'Snapshot of the mcp-vertex project itself: every plugin its own mcp-vertex.config.json loads, including proposals (orchestration/swarm). ' +
-			'Independent preset (does NOT accumulate swarm); use this for projects that want the exact set the core ships.',
 		role: PRESET_METADATA.vertex.role,
 		members: [
 			{ plugin: 'adaptive-optimizer' },
@@ -264,7 +247,6 @@ export const PRESET_CATALOG: readonly IPresetDefinition[] = [
 			{ plugin: 'usage-tracking' },
 			{ plugin: 'error-reporting' },
 		],
-		budget: PRESET_METADATA.vertex.budget,
 		independent: true,
 	},
 	// r00011 S1 — stack packs. Each resolves to exactly its own
@@ -274,8 +256,6 @@ export const PRESET_CATALOG: readonly IPresetDefinition[] = [
 	{
 		id: 'web-app',
 		title: 'web-app',
-		summary:
-			'Stack pack for web apps (Astro/Next/Remix/SvelteKit/etc): standard + i18n + diagram + container (dockerfile lint) + web-fetch. Independent; user config still wins.',
 		role: PRESET_METADATA['web-app'].role,
 		members: [
 			{ plugin: 'git' },
@@ -297,14 +277,11 @@ export const PRESET_CATALOG: readonly IPresetDefinition[] = [
 			{ plugin: 'skills-pack' },
 			{ plugin: 'prompts-pack' },
 		],
-		budget: PRESET_METADATA['web-app'].budget,
 		independent: true,
 	},
 	{
 		id: 'backend-api',
 		title: 'backend-api',
-		summary:
-			'Stack pack for backend services (Nest/Express/Hono/Fastify/etc): standard + database + container + env + audit (opt-in) + deps + perf. Independent; user config still wins.',
 		role: PRESET_METADATA['backend-api'].role,
 		members: [
 			{ plugin: 'git' },
@@ -324,14 +301,11 @@ export const PRESET_CATALOG: readonly IPresetDefinition[] = [
 			{ plugin: 'skills-pack' },
 			{ plugin: 'prompts-pack' },
 		],
-		budget: PRESET_METADATA['backend-api'].budget,
 		independent: true,
 	},
 	{
 		id: 'cli-tool',
 		title: 'cli-tool',
-		summary:
-			'Stack pack for CLI tools (oclif/commander/cobra/clap): minimal + search + memory + docs + env + changelog + perf. Independent; user config still wins.',
 		role: PRESET_METADATA['cli-tool'].role,
 		members: [
 			{ plugin: 'git' },
@@ -343,10 +317,55 @@ export const PRESET_CATALOG: readonly IPresetDefinition[] = [
 			{ plugin: 'perf' },
 			{ plugin: 'test-policy' },
 		],
-		budget: PRESET_METADATA['cli-tool'].budget,
 		independent: true,
 	},
 ];
+
+const resolvePresetMembersFrom = (
+	definitions: readonly Pick<IPresetDefinition, 'id' | 'members' | 'independent'>[],
+	id: IPresetKind | string | undefined,
+): readonly string[] => {
+	if (id === undefined) return [];
+	const index = PRESET_KIND.indexOf(id as IPresetKind);
+	if (index < 0) return [];
+	const target = definitions[index];
+	if (target === undefined) return [];
+	if (target.independent === true) {
+		return target.members.map((m) => m.plugin);
+	}
+	const seen = new Set<string>();
+	const ordered: string[] = [];
+	for (let i = 0; i <= index; i += 1) {
+		const def = definitions[i];
+		if (def === undefined) continue;
+		if (def.independent === true && def !== target) continue;
+		for (const member of def.members) {
+			if (!seen.has(member.plugin)) {
+				seen.add(member.plugin);
+				ordered.push(member.plugin);
+			}
+		}
+	}
+	return ordered;
+};
+
+export const PRESET_CATALOG: readonly IPresetDefinition[] = PRESET_SEEDS.map(
+	(definition) => {
+		const resolvedMembers = resolvePresetMembersFrom(PRESET_SEEDS, definition.id);
+		return {
+			...definition,
+			summary: derivePresetSummary({
+				id: definition.id,
+				resolvedMembers,
+				...(definition.independent === true ? { independent: true } : {}),
+			}),
+			budget: derivePresetBudget({
+				metadata: PRESET_METADATA[definition.id],
+				resolvedMembers,
+			}),
+		};
+	},
+);
 
 /**
  * Resolves the effective membership of a preset: the union of every
@@ -361,36 +380,7 @@ export const PRESET_CATALOG: readonly IPresetDefinition[] = [
 export const resolvePresetMembers = (
 	id: IPresetKind | string | undefined,
 ): readonly string[] => {
-	if (id === undefined) return [];
-	const index = PRESET_KIND.indexOf(id as IPresetKind);
-	if (index < 0) return [];
-	const target = PRESET_CATALOG[index];
-	if (target === undefined) return [];
-	if (target.independent === true) {
-		// Independent presets resolve to ONLY their own members;
-		// skip the chain accumulation entirely.
-		return target.members.map((m) => m.plugin);
-	}
-	const seen = new Set<string>();
-	const ordered: string[] = [];
-	for (let i = 0; i <= index; i += 1) {
-		const def = PRESET_CATALOG[i];
-		if (def === undefined) continue;
-		// An independent preset in the chain breaks the accumulation:
-		// subsequent chain presets still see the chain above them,
-		// but their own delta is appended fresh. (In practice we
-		// expect `vertex` to be the last preset and independent;
-		// placing any independent preset in the middle of the chain
-		// is intentionally allowed but rare.)
-		if (def.independent === true && def !== target) continue;
-		for (const member of def.members) {
-			if (!seen.has(member.plugin)) {
-				seen.add(member.plugin);
-				ordered.push(member.plugin);
-			}
-		}
-	}
-	return ordered;
+	return resolvePresetMembersFrom(PRESET_CATALOG, id);
 };
 
 /** A preset kind or `undefined` (no preset). */

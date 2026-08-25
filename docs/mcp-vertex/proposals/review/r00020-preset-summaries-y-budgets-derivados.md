@@ -2,7 +2,7 @@
 id: r00020
 title: "presets — summaries y presupuestos derivados del membership real (PRE2-001 + PRE2-002)"
 kind: refactor
-status: ready
+status: review
 type: proposal
 track: quality
 date: 2026-08-25

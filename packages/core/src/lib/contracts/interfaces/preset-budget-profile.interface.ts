@@ -26,5 +26,11 @@ export interface IPresetBudgetProfile {
 
 export interface IPresetMetadataEntry {
 	readonly role: string;
-	readonly budget: IPresetBudgetProfile;
+	readonly measuredAt: string;
+	readonly bytesPerEstimatedToken: number;
+	readonly budgetBaseline: {
+		readonly toolCount: number;
+		readonly schemaBytes: number;
+		readonly coldStartTokens: number;
+	};
 }
