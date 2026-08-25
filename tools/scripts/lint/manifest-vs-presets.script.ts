@@ -56,6 +56,17 @@ export const lintManifestVsPresets = async (
 				});
 			}
 		}
+		// f00177 (MAN-001): a `private` (unpublished) plugin can never
+		// legitimately be a member of ANY preset — installing that preset
+		// outside this monorepo would reference a package that cannot
+		// resolve. Root-cause fix, enforced going forward.
+		if (manifest.visibility === 'private' && manifest.presets.length > 0) {
+			violations.push({
+				plugin: manifest.id,
+				rule: 'MANIFEST-PRESET-004',
+				message: `manifest.visibility is "private" but manifest.presets is non-empty (${JSON.stringify(manifest.presets)}); a private/unpublished plugin cannot be a preset member.`,
+			});
+		}
 	}
 	return violations;
 };

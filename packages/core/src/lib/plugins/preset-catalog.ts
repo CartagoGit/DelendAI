@@ -190,7 +190,8 @@ const PRESET_SEEDS: readonly IPresetSeed[] = [
 			{ plugin: 'issues', hostOnly: true },
 			{ plugin: 'api' },
 			{ plugin: 'prompt-eval' },
-			{ plugin: 'changelog' },
+			// f00177 (MAN-001): `changelog` removed — private, unpublished.
+			// See `plugins/changelog/plugin.manifest.ts`.
 		],
 	},
 	{
@@ -313,7 +314,8 @@ const PRESET_SEEDS: readonly IPresetSeed[] = [
 			{ plugin: 'memory' },
 			{ plugin: 'docs' },
 			{ plugin: 'env' },
-			{ plugin: 'changelog' },
+			// f00177 (MAN-001): `changelog` removed — private, unpublished.
+			// See `plugins/changelog/plugin.manifest.ts`.
 			{ plugin: 'perf' },
 			{ plugin: 'test-policy' },
 		],
