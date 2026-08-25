@@ -9,9 +9,9 @@ import { describe, expect, it } from 'vitest';
 
 import type { IGitRunner, IGitRunResult } from '@mcp-vertex/core/public';
 
-import type { CommitPolicyOptionsSchema } from '../contracts/options';
-import type { ICommitPolicyOptions } from '../contracts/options';
-import { runCommitDriver } from './commit-driver';
+import type { CommitPolicyOptionsSchema } from '@mcp-vertex/commit-policy/lib/contracts/options';
+import type { ICommitPolicyOptions } from '@mcp-vertex/commit-policy/lib/contracts/options';
+import { runCommitDriver } from '@mcp-vertex/commit-policy/lib/services/commit-driver';
 
 type Schema = typeof CommitPolicyOptionsSchema;
 type ParsedOptions = ICommitPolicyOptions;
@@ -79,6 +79,7 @@ const buildFakeGit = (opts: {
 			return ok('committed\n');
 		}
 		if (args[0] === 'push') return ok('pushed\n');
+		if (args[0] === 'add') return ok('added\n');
 		const direct = responses.get(key);
 		if (direct !== undefined) return direct;
 		return fail(`not stubbed: ${key}`);

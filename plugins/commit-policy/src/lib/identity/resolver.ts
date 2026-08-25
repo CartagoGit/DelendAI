@@ -73,9 +73,8 @@ const readGlobalIdentity = async (
 	const name = trimmedOrUndefined(nameResult.output);
 	const email = trimmedOrUndefined(emailResult.output);
 	if (name === undefined && email === undefined) {
-		const reason = nameResult.reason ?? emailResult.reason;
 		return {
-			reason: reason ?? 'no global git user.name / user.email configured',
+			reason: 'no global git user.name / user.email configured',
 		};
 	}
 	return {

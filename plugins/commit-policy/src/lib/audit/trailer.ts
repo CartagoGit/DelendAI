@@ -61,22 +61,13 @@ const stripTrailers = (body: string, kind: AuditTrailerKind): string => {
 		return lines.slice(0, end).join('\n').trimEnd();
 	}
 	if (kind === 'body-metadata') {
-		// Strip a trailing ``` block (fenced) if present.
-		let end = lines.length;
-		while (end > 0) {
-			const last = lines[end - 1];
-			if (last === undefined) break;
-			if (
-				last.trim() === '' ||
-				last.startsWith('```') ||
-				last.startsWith('# ')
-			) {
-				end -= 1;
-				continue;
-			}
-			break;
-		}
-		return lines.slice(0, end).join('\n').trimEnd();
+		// Strip ALL previous agent-metadata fenced blocks (begin→end).
+		// Multi-pass so two stacked trailers both go away.
+		let result = body;
+		const blockRe =
+			/\n*<!-- agent-metadata:begin -->[\s\S]*?<!-- agent-metadata:end -->\n*/g;
+		result = result.replace(blockRe, '');
+		return result.trimEnd();
 	}
 	return body.trimEnd();
 };

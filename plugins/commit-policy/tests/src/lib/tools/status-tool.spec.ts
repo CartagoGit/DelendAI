@@ -7,8 +7,8 @@ import { describe, expect, it } from 'vitest';
 
 import type { IGitRunner, IGitRunResult } from '@mcp-vertex/core/public';
 
-import { CommitPolicyOptionsSchema } from '../contracts/options';
-import { runCommitPolicyStatus } from './status-tool';
+import { CommitPolicyOptionsSchema } from '@mcp-vertex/commit-policy/lib/contracts/options';
+import { runCommitPolicyStatus } from '@mcp-vertex/commit-policy/lib/tools/status-tool';
 
 const ok = (output: string): IGitRunResult => ({ ok: true, output });
 
