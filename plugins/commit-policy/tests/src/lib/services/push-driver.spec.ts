@@ -62,7 +62,7 @@ const basePush = (
 
 describe('runPushDriver', () => {
 	it('refuses when push.enabled is false', async () => {
-		const { run } = buildPushFake({ currentBranch: 'develop' });
+		const { run } = buildPushFake({ currentBranch: 'topic/test' });
 		const result = await runPushDriver(
 			{},
 			basePush({ enabled: false }),
@@ -91,41 +91,41 @@ describe('runPushDriver', () => {
 			{},
 			basePush({
 				remote: 'origin',
-				branch: 'develop',
+				branch: 'topic/test',
 			}),
 			run,
 		);
 		expect(result.ok).toBe(true);
 		if (!result.ok) return;
 		expect(result.remote).toBe('origin');
-		expect(result.branch).toBe('develop');
+		expect(result.branch).toBe('topic/test');
 		expect(pushes.calls[0]).toEqual([
 			'push',
 			'origin',
-			'develop',
+			'topic/test',
 			'--force-with-lease',
 		]);
 	});
 
 	it('uses the upstream when remote+branch are not configured', async () => {
 		const { run, pushes } = buildPushFake({
-			upstream: { remote: 'origin', branch: 'develop' },
+			upstream: { remote: 'origin', branch: 'topic/test' },
 		});
 		const result = await runPushDriver({}, basePush(), run);
 		expect(result.ok).toBe(true);
 		if (!result.ok) return;
 		expect(result.remote).toBe('origin');
-		expect(result.branch).toBe('develop');
+		expect(result.branch).toBe('topic/test');
 		expect(pushes.calls[0]).toEqual([
 			'push',
 			'origin',
-			'develop',
+			'topic/test',
 			'--force-with-lease',
 		]);
 	});
 
 	it('falls back to the current branch when nothing else is resolvable', async () => {
-		const { run, pushes } = buildPushFake({ currentBranch: 'develop' });
+		const { run, pushes } = buildPushFake({ currentBranch: 'topic/test' });
 		const result = await runPushDriver(
 			{},
 			basePush({ remote: 'origin' }),
@@ -133,11 +133,11 @@ describe('runPushDriver', () => {
 		);
 		expect(result.ok).toBe(true);
 		if (!result.ok) return;
-		expect(result.branch).toBe('develop');
+		expect(result.branch).toBe('topic/test');
 		expect(pushes.calls[0]).toEqual([
 			'push',
 			'origin',
-			'develop',
+			'topic/test',
 			'--force-with-lease',
 		]);
 	});
@@ -146,23 +146,31 @@ describe('runPushDriver', () => {
 		const { run, pushes } = buildPushFake();
 		await runPushDriver(
 			{},
-			basePush({ force: 'never', remote: 'origin', branch: 'develop' }),
+			basePush({
+				force: 'never',
+				remote: 'origin',
+				branch: 'topic/test',
+			}),
 			run,
 		);
-		expect(pushes.calls[0]).toEqual(['push', 'origin', 'develop']);
+		expect(pushes.calls[0]).toEqual(['push', 'origin', 'topic/test']);
 	});
 
 	it('uses --force when force policy is "allow"', async () => {
 		const { run, pushes } = buildPushFake();
 		await runPushDriver(
 			{},
-			basePush({ force: 'allow', remote: 'origin', branch: 'develop' }),
+			basePush({
+				force: 'allow',
+				remote: 'origin',
+				branch: 'topic/test',
+			}),
 			run,
 		);
 		expect(pushes.calls[0]).toEqual([
 			'push',
 			'origin',
-			'develop',
+			'topic/test',
 			'--force',
 		]);
 	});
@@ -174,4 +182,18 @@ describe('runPushDriver', () => {
 		if (result.ok) return;
 		expect(result.refusal).toContain('remote/branch');
 	});
+});
+
+it('refuses direct push to develop (x00258 defense in depth)', async () => {
+	const { run, pushes } = buildPushFake();
+	const result = await runPushDriver(
+		{},
+		basePush({ remote: 'origin', branch: 'develop' }),
+		run,
+	);
+	expect(result.ok).toBe(false);
+	if (result.ok) return;
+	expect(result.refusal).toContain('develop');
+	expect(result.refusal).toContain('DIRECT_PUSH_TO_DEVELOP_NOT_ALLOWED');
+	expect(pushes.calls.length).toBe(0);
 });
