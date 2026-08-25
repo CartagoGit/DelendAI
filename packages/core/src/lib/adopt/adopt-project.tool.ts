@@ -35,101 +35,17 @@ import type {
 } from '../contracts/interfaces/adopt-project.interface';
 import type { IToolRegistration } from '../contracts/interfaces/tool-registration.interface';
 import type {
-	IScaffoldAgentSlot,
-	IScaffoldedFile,
 	IScaffoldHostOptions,
 } from '../scaffold/scaffold-host';
 import {
-	scaffoldAgentFile,
-	scaffoldClaudeAgentFile,
-	scaffoldCodexAgentFile,
-	scaffoldInstructionsFile,
-} from '../scaffold/scaffold-host';
+	buildAgentFiles,
+	buildProposalsStoreFiles,
+} from './adopt-project-write-estimate';
 import { writeFileAtomic } from '../shared/atomic-write';
 import { toolError, toolOk } from '../shared/tool-response';
 import { withFileMutex } from '../shared/with-file-mutex';
 
 const CONFIG_FILENAME = 'mcp-vertex.config.json';
-
-/**
- * The four bounded subagent slots the orchestrator delegates to. Mirrors
- * `SUBAGENT_SLOTS` in `scaffold-host.ts` (not exported) — a stable,
- * closed set: one guardian, one runner, one verifier, one investigator.
- */
-const SUBAGENT_SLOTS: readonly IScaffoldAgentSlot[] = [
-	'proposal_guardian',
-	'implementation_runner',
-	'delivery_verifier',
-	'technical_investigator',
-];
-
-/**
- * The canonical proposal status folders. The authoritative taxonomy
- * (statuses, kinds, transitions) lives in the proposals plugin's
- * glossary; this list is only the stable FOLDER SET an empty store must
- * bootstrap. Kept intentionally short — the README below points at the
- * live tools for everything else.
- */
-const PROPOSAL_STATUS_FOLDERS = [
-	'ready',
-	'in-progress',
-	'review',
-	'done',
-	'paused',
-	'blocked',
-	'retired',
-] as const;
-
-/** README the adopt tool seeds — short, pointing at the live tools. */
-const PROPOSALS_README = [
-	'# Proposals',
-	'',
-	'This folder is the proposals store managed by the mcp-vertex',
-	'`proposals` plugin. Each proposal is one markdown file with',
-	'frontmatter (`id`, `kind`, `status`, `type`, `track`) and lives in',
-	'the folder matching its status:',
-	'',
-	'- `ready/` — executable now',
-	'- `in-progress/` — someone is on it',
-	'- `review/` — done, awaiting review',
-	'- `done/` — completed (terminal)',
-	'- `paused/`, `blocked/`, `retired/` — parked states',
-	'',
-	'Create proposals with the `create_proposal` tool (it allocates the',
-	'id and validates slices), move them with `proposal_transition`, and',
-	'ask `get_proposal_workflow` for the full convention. The registry',
-	'index is regenerated at any time via `sync_proposals`.',
-	'',
-].join('\n');
-
-/** One idempotent store file: an empty `.gitkeep` per status folder. */
-const buildProposalsStoreFiles = (docsDir: string): IScaffoldedFile[] => [
-	...PROPOSAL_STATUS_FOLDERS.map((folder) => ({
-		path: `${docsDir}/proposals/${folder}/.gitkeep`,
-		content: '',
-	})),
-	{ path: `${docsDir}/proposals/README.md`, content: PROPOSALS_README },
-];
-
-/**
- * The host/agent contract surface an adopting project needs: the
- * orchestrator + 4 subagents in every supported host format (Copilot
- * `.agent.md`, Claude Code `.claude/agents`, Codex CLI `.codex/agents`)
- * plus the shared instructions pointer. The greenfield host SERVER files
- * (`libs/mcp-project/`, `.vscode/mcp.json`) are deliberately NOT
- * emitted: an adopting project launches mcp-vertex via its own
- * `mcp.json` server block (see CROSS-PROJECT-SETUP.md), not a generated
- * host package.
- */
-const buildAgentFiles = (options: IScaffoldHostOptions): IScaffoldedFile[] => [
-	scaffoldAgentFile(options, 'orchestrator'),
-	...SUBAGENT_SLOTS.map((slot) => scaffoldAgentFile(options, slot)),
-	scaffoldClaudeAgentFile(options, 'orchestrator'),
-	...SUBAGENT_SLOTS.map((slot) => scaffoldClaudeAgentFile(options, slot)),
-	scaffoldCodexAgentFile(options, 'orchestrator'),
-	...SUBAGENT_SLOTS.map((slot) => scaffoldCodexAgentFile(options, slot)),
-	scaffoldInstructionsFile(options),
-];
 
 /** Resolved config (mutated clone) with the optional issues wiring. */
 const configWithIssues = (

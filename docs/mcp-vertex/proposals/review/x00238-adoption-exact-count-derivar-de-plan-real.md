@@ -2,7 +2,7 @@
 id: x00238
 title: "adoption — `EXACT_ADOPTION_WRITE_ESTIMATE` derivado del plan real, no constante 25 (ADOPT2-001)"
 kind: fix
-status: ready
+status: review
 type: proposal
 track: quality
 date: 2026-08-25
