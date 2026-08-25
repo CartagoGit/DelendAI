@@ -322,7 +322,10 @@ const PRESET_SEEDS: readonly IPresetSeed[] = [
 ];
 
 const resolvePresetMembersFrom = (
-	definitions: readonly Pick<IPresetDefinition, 'id' | 'members' | 'independent'>[],
+	definitions: readonly Pick<
+		IPresetDefinition,
+		'id' | 'members' | 'independent'
+	>[],
 	id: IPresetKind | string | undefined,
 ): readonly string[] => {
 	if (id === undefined) return [];
@@ -351,13 +354,18 @@ const resolvePresetMembersFrom = (
 
 export const PRESET_CATALOG: readonly IPresetDefinition[] = PRESET_SEEDS.map(
 	(definition) => {
-		const resolvedMembers = resolvePresetMembersFrom(PRESET_SEEDS, definition.id);
+		const resolvedMembers = resolvePresetMembersFrom(
+			PRESET_SEEDS,
+			definition.id,
+		);
 		return {
 			...definition,
 			summary: derivePresetSummary({
 				id: definition.id,
 				resolvedMembers,
-				...(definition.independent === true ? { independent: true } : {}),
+				...(definition.independent === true
+					? { independent: true }
+					: {}),
 			}),
 			budget: derivePresetBudget({
 				metadata: PRESET_METADATA[definition.id],

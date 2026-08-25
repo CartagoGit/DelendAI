@@ -1,4 +1,8 @@
-import type { IScaffoldAgentSlot, IScaffoldHostOptions, IScaffoldedFile } from '../scaffold/scaffold-host';
+import type {
+	IScaffoldAgentSlot,
+	IScaffoldHostOptions,
+	IScaffoldedFile,
+} from '../scaffold/scaffold-host';
 import {
 	scaffoldAgentFile,
 	scaffoldClaudeAgentFile,
@@ -57,7 +61,9 @@ export interface IAdoptProjectWriteEstimate {
 	readonly breakdown: readonly IAdoptProjectWriteEstimateBreakdownEntry[];
 }
 
-export const buildProposalsStoreFiles = (docsDir: string): IScaffoldedFile[] => [
+export const buildProposalsStoreFiles = (
+	docsDir: string,
+): IScaffoldedFile[] => [
 	...PROPOSAL_STATUS_FOLDERS.map((folder) => ({
 		path: `${docsDir}/proposals/${folder}/.gitkeep`,
 		content: '',
@@ -65,7 +71,9 @@ export const buildProposalsStoreFiles = (docsDir: string): IScaffoldedFile[] => 
 	{ path: `${docsDir}/proposals/README.md`, content: PROPOSALS_README },
 ];
 
-export const buildAgentFiles = (options: IScaffoldHostOptions): IScaffoldedFile[] => [
+export const buildAgentFiles = (
+	options: IScaffoldHostOptions,
+): IScaffoldedFile[] => [
 	scaffoldAgentFile(options, 'orchestrator'),
 	...SUBAGENT_SLOTS.map((slot) => scaffoldAgentFile(options, slot)),
 	scaffoldClaudeAgentFile(options, 'orchestrator'),
@@ -97,7 +105,8 @@ export const buildAdoptProjectWriteEstimate = (input: {
 	if (input.docsDir !== undefined) {
 		breakdown.push({
 			kind: 'proposal-store',
-			description: 'Bootstrapped proposals store files (.gitkeep per status + README).',
+			description:
+				'Bootstrapped proposals store files (.gitkeep per status + README).',
 			count: buildProposalsStoreFiles(input.docsDir).length,
 			exact: true,
 		});
@@ -110,7 +119,10 @@ export const buildAdoptProjectWriteEstimate = (input: {
 		});
 	}
 	return {
-		count: breakdown.reduce((total, entry) => total + (entry.count ?? 0), 0),
+		count: breakdown.reduce(
+			(total, entry) => total + (entry.count ?? 0),
+			0,
+		),
 		exact: breakdown.every((entry) => entry.exact),
 		breakdown,
 	};

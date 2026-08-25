@@ -15,7 +15,9 @@ const titleCase = (value: string): string =>
 		.map((part) => part.charAt(0).toUpperCase() + part.slice(1))
 		.join(' ');
 
-const deriveCapabilities = (pluginIds: readonly string[]): readonly string[] => {
+const deriveCapabilities = (
+	pluginIds: readonly string[],
+): readonly string[] => {
 	const ids = new Set(pluginIds);
 	const capabilities: string[] = [];
 	if (ids.has('git') || ids.has('search')) {
@@ -25,41 +27,71 @@ const deriveCapabilities = (pluginIds: readonly string[]): readonly string[] => 
 		capabilities.push('session-memory');
 	}
 	if (
-		['rules', 'quality', 'refactor', 'test-policy', 'test-convention', 'conventions'].some(
-			(id) => ids.has(id),
-		)
+		[
+			'rules',
+			'quality',
+			'refactor',
+			'test-policy',
+			'test-convention',
+			'conventions',
+		].some((id) => ids.has(id))
 	) {
 		capabilities.push('quality-gates');
 	}
-	if (['docs', 'diagram', 'link-check', 'skills-pack', 'prompts-pack'].some((id) => ids.has(id))) {
+	if (
+		['docs', 'diagram', 'link-check', 'skills-pack', 'prompts-pack'].some(
+			(id) => ids.has(id),
+		)
+	) {
 		capabilities.push('documentation');
 	}
 	if (
-		['database', 'container', 'deps', 'env', 'perf', 'project-health', 'impact-analysis'].some(
-			(id) => ids.has(id),
-		)
+		[
+			'database',
+			'container',
+			'deps',
+			'env',
+			'perf',
+			'project-health',
+			'impact-analysis',
+		].some((id) => ids.has(id))
 	) {
 		capabilities.push('analysis');
 	}
 	if (
-		['proposals', 'notification', 'completion', 'logs', 'status-marker'].some((id) =>
-			ids.has(id),
-		)
+		[
+			'proposals',
+			'notification',
+			'completion',
+			'logs',
+			'status-marker',
+		].some((id) => ids.has(id))
 	) {
 		capabilities.push('multi-agent-coordination');
 	}
 	if (
-		['forge', 'web-fetch', 'issues', 'api', 'adaptive-optimizer', 'orchestrator-runner'].some(
-			(id) => ids.has(id),
-		)
+		[
+			'forge',
+			'web-fetch',
+			'issues',
+			'api',
+			'adaptive-optimizer',
+			'orchestrator-runner',
+		].some((id) => ids.has(id))
 	) {
 		capabilities.push('automation');
 	}
 	return capabilities.length > 0 ? capabilities : ['general'];
 };
 
-const derivePermissions = (pluginIds: readonly string[]): readonly PermissionCategory[] =>
-	[...new Set(pluginIds.flatMap((id) => pluginById.get(id)?.permissions ?? []))].sort();
+const derivePermissions = (
+	pluginIds: readonly string[],
+): readonly PermissionCategory[] =>
+	[
+		...new Set(
+			pluginIds.flatMap((id) => pluginById.get(id)?.permissions ?? []),
+		),
+	].sort();
 
 export const derivePresetSummary = (input: {
 	id: string;
@@ -70,7 +102,8 @@ export const derivePresetSummary = (input: {
 		input.resolvedMembers.length <= 6
 			? input.resolvedMembers.join(', ')
 			: `${input.resolvedMembers.slice(0, 6).join(', ')}, +${input.resolvedMembers.length - 6} more`;
-	const shape = input.independent === true ? 'Independent preset' : 'Chain preset';
+	const shape =
+		input.independent === true ? 'Independent preset' : 'Chain preset';
 	return `${shape} for ${titleCase(input.id)} with ${input.resolvedMembers.length} plugins: ${preview}.`;
 };
 
