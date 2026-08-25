@@ -2,7 +2,7 @@
 id: q00006
 title: "Plan hardening post-auditoría externa ChatGPT 5.6 Sol (CUARTA pasada sobre develop) — develop verde, commit-policy correcto, privacy-by-construction, boundaries, tokens, governance"
 kind: plan
-status: ready
+status: in-progress
 type: plan
 track: develop-audit-hardening-v4
 date: 2026-08-25
@@ -485,7 +485,24 @@ A continuación, cada track tiene:
 
 ---
 
-## Track A — Integridad de `develop` / gobernanza (P0)
+## Slices
+
+This plan orchestrates 15 tracks containing 65 daughter proposals. Each track's daughters are the work items; this plan itself does not introduce additional code slices — it is a coordination layer over the daughters. Closure of the plan requires each daughter to be closed (`done`) with peer review.
+
+### S1 — Track-by-track execution
+
+- **Status**: in-progress
+- **Files**: (this plan; the 65 daughter proposals; per-track daughter `.md` files)
+- **Gate**: type
+- acceptance:
+  - "All 65 daughters are `done` with peer review."
+  - "`proposals_close_plan q00006` returns no blockers."
+  - "`develop` is green and protected."
+
+Each `### Track X` subsection below groups its daughters and is closed when ALL daughters in that track are done with peer review and the track-specific acceptance criteria are met.
+
+
+### Track A — Integridad de `develop` / gobernanza (P0)
 
 > **Audit refs:** AUD-P0-001, AUD-P0-002, AUD-P0-003 (y efecto en cascada
 > sobre el resto del snapshot rojo).
@@ -735,7 +752,7 @@ A continuación, cada track tiene:
 
 ---
 
-## Track B — commit-policy correctness (P0/P1)
+### Track B — commit-policy correctness (P0/P1)
 
 > **Audit refs:** AUD-CP-001 a AUD-CP-012 (12 hallazgos).
 > **Goal:** corregir el plugin `commit-policy` recién integrado
@@ -1209,7 +1226,7 @@ A continuación, cada track tiene:
 
 ---
 
-## Track C — Arquitectura y boundaries (P1)
+### Track C — Arquitectura y boundaries (P1)
 
 > **Audit refs:** §6 (core god package), §7 (plugin-sdk),
 > §8 (packages target), §9 (`core/public` amplio), §22-23 (client
@@ -1334,7 +1351,7 @@ A continuación, cada track tiene:
 
 ---
 
-## Track D — Lifecycle & plugin states (P1)
+### Track D — Lifecycle & plugin states (P1)
 
 > **Audit refs:** §10 (lifecycle prepare/activate), §12 (plugin states).
 > **Goal:** introducir fases `prepare/activate/dispose` explícitas y
@@ -1402,7 +1419,7 @@ A continuación, cada track tiene:
 
 ---
 
-## Track E — Token efficiency & central budgets (P1)
+### Track E — Token efficiency & central budgets (P1)
 
 > **Audit refs:** §13-21.
 > **Goal:** reducir coste de tokens en hotspots (`proposals`,
@@ -1504,7 +1521,7 @@ A continuación, cada track tiene:
 
 ---
 
-## Track F — Security capabilities (P0/P1)
+### Track F — Security capabilities (P0/P1)
 
 > **Audit refs:** §28 (capability model), §29 (dry-run).
 > **Goal:** introducir modelo de capabilities declarativo y
@@ -1574,7 +1591,7 @@ A continuación, cada track tiene:
 
 ---
 
-## Track G — CI scalability (P1)
+### Track G — CI scalability (P1)
 
 > **Audit refs:** §30 (affected CI), §31 (3 tiers), §32 (pack smoke).
 > **Goal:** affected CI + 3 tiers + smoke job con output preservado.
@@ -1627,7 +1644,7 @@ A continuación, cada track tiene:
 
 ---
 
-## Track H — Docs drift / AGENT.md / code-map (P1)
+### Track H — Docs drift / AGENT.md / code-map (P1)
 
 > **Audit refs:** §34 (generated numbers), §35 (proposal ID comments),
 > §36 (AGENT.md), §37 (code-map).
@@ -1684,7 +1701,7 @@ A continuación, cada track tiene:
 
 ---
 
-## Track I — CLI / mcpv doctor / web (P1)
+### Track I — CLI / mcpv doctor / web (P1)
 
 > **Audit refs:** §24 (doctor), §25 (web).
 > **Goal:** introducir `mcpv doctor` y arreglar drift web.
@@ -1718,7 +1735,7 @@ A continuación, cada track tiene:
 
 ---
 
-## Track J — VSCode Agent Timeline + explainability (P2)
+### Track J — VSCode Agent Timeline + explainability (P2)
 
 > **Audit refs:** §26 (timeline), §27 (explain).
 > **Goal:** vista Agent Timeline y `vertex_explain_last_decision`.
@@ -1744,7 +1761,7 @@ A continuación, cada track tiene:
 
 ---
 
-## Track K — External MCPs + capability versioning (P2)
+### Track K — External MCPs + capability versioning (P2)
 
 > **Audit refs:** §39 (external MCPs), §38 (capability versioning).
 > **Goal:** routing de MCPs externos + versionado por capability.
@@ -1775,7 +1792,7 @@ A continuación, cada track tiene:
 
 ---
 
-## Track L — Cost-aware routing & model-aware presets (P2)
+### Track L — Cost-aware routing & model-aware presets (P2)
 
 > **Audit refs:** §40 (routing), §41 (model-aware presets).
 > **Goal:** utility function + modelProfiles.
@@ -1806,7 +1823,7 @@ A continuación, cada track tiene:
 
 ---
 
-## Track M — Envelopes + structuredContent rule + KPIs (P2)
+### Track M — Envelopes + structuredContent rule + KPIs (P2)
 
 > **Audit refs:** §46 (envelopes), §47 (structuredContent), §48 (KPIs).
 > **Goal:** envelopes compartidos + regla structuredContent vs content
@@ -1851,7 +1868,7 @@ A continuación, cada track tiene:
 
 ---
 
-## Track N — API stability + lazy loading + idempotency (P2)
+### Track N — API stability + lazy loading + idempotency (P2)
 
 > **Audit refs:** §50 (API stability), §52 (lazy loading), §54
 > (idempotency).
@@ -1893,7 +1910,7 @@ A continuación, cada track tiene:
 
 ---
 
-## Track O — Workflow transactions (P3)
+### Track O — Workflow transactions (P3)
 
 > **Audit refs:** §55.
 > **Goal:** `vertex_transaction` con compensación declarativa.
@@ -2125,3 +2142,14 @@ Al cerrar `q00006`:
 4. Si quedan hijos abiertos, abrir un sucesor `q00007` con los
    que falten.
 
+
+
+## acceptance
+
+This plan is closed when:
+
+1. Each of the 65 daughter proposals is closed (`done`) with peer review.
+2. The `proposals_close_plan` tool returns no blockers.
+3. The audit criteria R1–R9 are all verified with evidence.
+4. `bun run validate` is green on the closing SHA.
+5. `develop` is protected and the quality gate is enforced.
