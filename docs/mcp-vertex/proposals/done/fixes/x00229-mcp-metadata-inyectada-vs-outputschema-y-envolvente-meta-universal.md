@@ -2,7 +2,7 @@
 id: x00229
 title: "MCP: metadata inyectada vs outputSchema y envolvente _meta universal"
 kind: fix
-status: review
+status: done
 type: proposal
 track: memory-mcp
 date: 2026-08-24
@@ -44,7 +44,10 @@ Si una tool con `outputSchema` estricto recibe propiedades ajenas (advisories) e
 - acceptance:
   - "CHECK-001: se inventarían tools con outputSchema y se valida que la metadata inyectada no viola el schema."
   - "La metadata transversal se reubica en _meta o envolvente { data, meta } (MCP-002)."
-
+- review-state: done
+- review-implementer: swarm-implementer
+- review-reviewer: orchestrator-fase1-review
+- review-log: approved by orchestrator-fase1-review — Fase 1 review 2026-08-25: validate verde.
 ### S2 — Compatibilidad MCP multi-cliente
 - **Status**: done
 - **Files**: `packages/core/tests/src/lib/shared/meta-envelope.spec.ts`
