@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-08-25T17:57:54.325Z",
+	"generatedAt": "2026-08-25T20:11:30.838Z",
 	"mode": "compact",
 	"tools": [
 		{
@@ -54,6 +54,22 @@
 		{
 			"name": "mcp-vertex_auto-plugin-selector_plugins_recommend",
 			"plugin": "auto-plugin-selector"
+		},
+		{
+			"name": "mcp-vertex_commit-policy_commit_policy_commit",
+			"plugin": "commit-policy"
+		},
+		{
+			"name": "mcp-vertex_commit-policy_commit_policy_push",
+			"plugin": "commit-policy"
+		},
+		{
+			"name": "mcp-vertex_commit-policy_commit_policy_run",
+			"plugin": "commit-policy"
+		},
+		{
+			"name": "mcp-vertex_commit-policy_commit_policy_status",
+			"plugin": "commit-policy"
 		},
 		{
 			"name": "mcp-vertex_completion_clear",
@@ -1227,6 +1243,27 @@
 				"kind": "chore"
 			},
 			{
+				"id": "c00019",
+				"title": "c00019",
+				"track": "surface",
+				"status": "ready",
+				"kind": "chore"
+			},
+			{
+				"id": "d00007",
+				"title": "d00007",
+				"track": "filesystem",
+				"status": "ready",
+				"kind": "docs"
+			},
+			{
+				"id": "d00008",
+				"title": "d00008",
+				"track": "filesystem",
+				"status": "ready",
+				"kind": "docs"
+			},
+			{
 				"id": "f00050",
 				"title": "f00050",
 				"track": "lint+architecture+i18n+workflow+release",
@@ -1245,6 +1282,13 @@
 				"title": "q00003",
 				"track": "develop-audit-consolidation",
 				"status": "in-progress",
+				"kind": "plan"
+			},
+			{
+				"id": "q00006",
+				"title": "q00006",
+				"track": "develop-audit-hardening-v4",
+				"status": "ready",
 				"kind": "plan"
 			},
 			{
@@ -1277,11 +1321,11 @@
 			}
 		],
 		"byStatus": {
-			"ready": 1,
+			"ready": 5,
 			"in-progress": 11,
 			"review": 0,
 			"paused": 1,
-			"done": 469,
+			"done": 470,
 			"blocked": 0,
 			"retired": 2,
 			"unspecified": 0

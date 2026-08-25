@@ -8,9 +8,10 @@
 | api | @mcp-vertex/api | public | stable | full |
 | audit | @mcp-vertex/audit | public | stable | vertex |
 | auto-agent-selector | @mcp-vertex/auto-agent-selector | public | stable | standard, swarm, full, vertex |
-| auto-plugin-selector | @mcp-vertex/auto-plugin-selector | public | stable |  |
+| auto-plugin-selector | @mcp-vertex/auto-plugin-selector | public | stable | vertex |
 | browser | @mcp-vertex/browser | public | stable |  |
 | cache | @mcp-vertex/cache | public | stable |  |
+| commit-policy | @mcp-vertex/commit-policy | public | experimental | vertex |
 | completion | @mcp-vertex/completion | public | stable | swarm, full, vertex |
 | container | @mcp-vertex/container | public | stable | standard, swarm, full, vertex, web-app, backend-api |
 | context-for-change | @mcp-vertex/context-for-change | public | experimental | vertex |
@@ -26,7 +27,7 @@
 | git | @mcp-vertex/git | public | stable | minimal, lean, standard, swarm, full, vertex, web-app, backend-api, cli-tool |
 | i18n | @mcp-vertex/i18n | public | stable | standard, swarm, full, vertex, web-app |
 | impact-analysis | @mcp-vertex/impact-analysis | public | experimental | vertex |
-| issues | @mcp-vertex/issues | public | beta | full, vertex |
+| issues | @mcp-vertex/issues | public | beta | full |
 | link-check | @mcp-vertex/link-check | public | stable | vertex |
 | logs | @mcp-vertex/logs | public | stable | swarm, full, vertex |
 | memory | @mcp-vertex/memory | public | stable | lean, standard, swarm, full, vertex, web-app, backend-api, cli-tool |
@@ -64,6 +65,7 @@
 | browser | 2700 | 3000 | 20 |
 | cache | 2700 | 3000 | 20 |
 | changelog | 2700 | 3000 | 20 |
+| commit-policy | 4800 | 5200 | 20 |
 | completion | 2700 | 3000 | 20 |
 | container | 6800 | 7500 | 20 |
 | context-for-change | 2700 | 3000 | 20 |
@@ -118,6 +120,7 @@
 | browser | browser, network |  |
 | cache | filesystem-read, filesystem-write |  |
 | changelog | git-read |  |
+| commit-policy | git-read, git-write | commit_policy_status: git-read; commit_policy_commit: git-write; commit_policy_push: git-write; commit_policy_run: git-write |
 | completion | filesystem-read, filesystem-write |  |
 | container | process, container | container_inspect: container; container_logs: container; container_lint: filesystem-read; k8s_apply: container, process; container_build: container, process |
 | context-for-change | filesystem-read |  |
@@ -205,7 +208,7 @@
 | auto-plugin-selector | standard | no | no | yes |
 | auto-plugin-selector | swarm | no | no | yes |
 | auto-plugin-selector | full | no | no | yes |
-| auto-plugin-selector | vertex | no | no | yes |
+| auto-plugin-selector | vertex | yes | yes | yes |
 | auto-plugin-selector | web-app | no | no | yes |
 | auto-plugin-selector | backend-api | no | no | yes |
 | auto-plugin-selector | cli-tool | no | no | yes |
@@ -236,6 +239,15 @@
 | changelog | web-app | no | no | yes |
 | changelog | backend-api | no | no | yes |
 | changelog | cli-tool | no | no | yes |
+| commit-policy | minimal | no | no | yes |
+| commit-policy | lean | no | no | yes |
+| commit-policy | standard | no | no | yes |
+| commit-policy | swarm | no | no | yes |
+| commit-policy | full | no | no | yes |
+| commit-policy | vertex | yes | yes | yes |
+| commit-policy | web-app | no | no | yes |
+| commit-policy | backend-api | no | no | yes |
+| commit-policy | cli-tool | no | no | yes |
 | completion | minimal | no | no | yes |
 | completion | lean | no | no | yes |
 | completion | standard | no | no | yes |
@@ -376,7 +388,7 @@
 | issues | standard | no | no | yes |
 | issues | swarm | no | no | yes |
 | issues | full | yes | yes | yes |
-| issues | vertex | yes | no | no |
+| issues | vertex | no | no | yes |
 | issues | web-app | no | no | yes |
 | issues | backend-api | no | no | yes |
 | issues | cli-tool | no | no | yes |

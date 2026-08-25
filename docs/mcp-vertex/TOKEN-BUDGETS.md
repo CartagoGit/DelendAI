@@ -3,7 +3,7 @@
 <!-- generated: token-budget-dashboard.script.ts -->
 <!-- generated — do not edit by hand -->
 
-Generated at: 2026-08-25T15:05:41.209Z
+Generated at: 2026-08-25T20:43:38.742Z
 
 This file is generated from the same budget contract the e2e test imports: packages/core/src/lib/contracts/constants/token-budgets.constant.ts. Do not edit this markdown by hand; regenerate it with bun tools/scripts/report/token-budget-dashboard.script.ts.
 
@@ -29,18 +29,18 @@ These are the bounded payloads the e2e spec governs directly today. They use the
 
 | Surface | Bytes | Est. Tokens | Warning | Hard | Status |
 | --- | --- | --- | --- | --- | --- |
-| overview full | 11,700 | 2925 | 11,000 | 11,100 | over hard (11,100B) |
-| overview compact | 1,554 | 389 | 1,450 | 1,500 | over hard (1,500B) |
-| auto_work idle | 159 | 40 | 2,400 | 2,600 | within hard |
-| auto_work work plan | 2,453 | 614 | 2,400 | 2,600 | over warning (2,400B) |
-| agent_catalog compact | 426 | 107 | 800 | 900 | within hard |
-| agent_catalog full | 5,643 | 1411 | 6,500 | 6,800 | within hard |
-| analyze_project {} | 829 | 208 | 1,600 | 1,800 | within hard |
-| plan_mcp_project {} | 836 | 209 | 1,800 | 2,000 | within hard |
-| search_search | 874 | 219 | 2,700 | 3,000 | within hard |
-| docs_docs_list | 209 | 53 | 2,200 | 2,500 | within hard |
-| proposals_round_context | 153 | 39 | 2,700 | 3,000 | within hard |
-| logs_tail | 2,087 | 522 | 5,500 | 6,000 | within hard |
+| overview full | 1,672 | 418 | 11,000 | 11,100 | within hard |
+| overview compact | 554 | 139 | 1,450 | 1,500 | within hard |
+| auto_work idle | 62 | 16 | 2,400 | 2,600 | within hard |
+| auto_work work plan | 62 | 16 | 2,400 | 2,600 | within hard |
+| agent_catalog compact | 56 | 14 | 800 | 900 | within hard |
+| agent_catalog full | 56 | 14 | 6,500 | 6,800 | within hard |
+| analyze_project {} | 58 | 15 | 1,600 | 1,800 | within hard |
+| plan_mcp_project {} | 59 | 15 | 1,800 | 2,000 | within hard |
+| search_search | 56 | 14 | 2,700 | 3,000 | within hard |
+| docs_docs_list | 57 | 15 | 2,200 | 2,500 | within hard |
+| proposals_round_context | 66 | 17 | 2,700 | 3,000 | within hard |
+| logs_tail | 52 | 13 | 5,500 | 6,000 | within hard |
 
 ## Real preset dashboard
 
@@ -58,8 +58,8 @@ This dashboard measures the real preset assemblies through the actual plugin loa
 | swarm | swarm | adaptive | dynamic-client | 26 | 6 | 8,357 | 2090 | 7,121 | 506 | 1,020 | 6,101 | 0 | 1,599 | n/a | within hard | within hard | none |
 | full | full | native | tokens-gate | 30 | 157 | 200,498 | 50125 | 167,051 | 13,310 | 46,004 | 121,047 | 51,834 | 4,359 | 153 | within hard | over hard (0B) | none |
 | full | full | adaptive | dynamic-client | 30 | 6 | 8,357 | 2090 | 7,121 | 506 | 1,020 | 6,101 | 0 | 1,799 | n/a | within hard | within hard | none |
-| vertex | vertex | native | tokens-gate | 34 | 172 | 271,404 | 67851 | 233,400 | 15,630 | 56,172 | 177,228 | 51,834 | 4,947 | 153 | within hard | over hard (0B) | none |
-| vertex | vertex | adaptive | dynamic-client | 34 | 6 | 8,357 | 2090 | 7,121 | 506 | 1,020 | 6,101 | 0 | 1,978 | n/a | within hard | within hard | none |
+| vertex | vertex | native | tokens-gate | 36 | 177 | 280,939 | 70235 | 241,543 | 16,296 | 58,346 | 183,197 | 51,834 | 5,223 | 153 | within hard | over hard (0B) | none |
+| vertex | vertex | adaptive | dynamic-client | 36 | 6 | 8,357 | 2090 | 7,121 | 506 | 1,020 | 6,101 | 0 | 2,104 | n/a | within hard | within hard | none |
 | web-app | web-app | native | tokens-gate | 18 | 81 | 108,853 | 27214 | 91,993 | 6,588 | 23,918 | 68,075 | 8,221 | 2,446 | n/a | n/a | n/a | none |
 | web-app | web-app | adaptive | dynamic-client | 18 | 6 | 8,357 | 2090 | 7,121 | 506 | 1,020 | 6,101 | 0 | 1,202 | n/a | n/a | n/a | none |
 | backend-api | backend-api | native | tokens-gate | 16 | 80 | 107,269 | 26818 | 90,602 | 6,547 | 23,897 | 66,705 | 8,221 | 2,310 | n/a | n/a | n/a | none |
@@ -159,6 +159,8 @@ This dashboard measures the real preset assemblies through the actual plugin loa
 | vertex | native | tokens-gate | adaptive-optimizer | 1 | 2,302 | 2,047 | 114 | 1,136 | 911 |
 | vertex | native | tokens-gate | audit | 4 | 9,116 | 7,888 | 718 | 1,632 | 6,256 |
 | vertex | native | tokens-gate | auto-agent-selector | 5 | 7,327 | 6,010 | 610 | 1,377 | 4,633 |
+| vertex | native | tokens-gate | auto-plugin-selector | 1 | 3,827 | 3,527 | 152 | 1,227 | 2,300 |
+| vertex | native | tokens-gate | commit-policy | 4 | 5,703 | 4,616 | 514 | 947 | 3,669 |
 | vertex | native | tokens-gate | completion | 3 | 2,612 | 1,833 | 390 | 704 | 1,129 |
 | vertex | native | tokens-gate | container | 5 | 3,489 | 2,314 | 570 | 1,627 | 687 |
 | vertex | native | tokens-gate | conventions | 2 | 1,962 | 1,521 | 160 | 433 | 1,088 |
@@ -251,7 +253,7 @@ The repo has no lightweight LLM tokenizer dependency installed today. This repor
 | swarm | adaptive | dynamic-client | 8,357 | 2090 | 2090 | 2090 | heuristic-4-bytes-per-token | estimated fallback (no lightweight tokenizer dependency present) |
 | full | native | tokens-gate | 200,498 | 50125 | 50125 | 50125 | heuristic-4-bytes-per-token | estimated fallback (no lightweight tokenizer dependency present) |
 | full | adaptive | dynamic-client | 8,357 | 2090 | 2090 | 2090 | heuristic-4-bytes-per-token | estimated fallback (no lightweight tokenizer dependency present) |
-| vertex | native | tokens-gate | 271,404 | 67851 | 67851 | 67851 | heuristic-4-bytes-per-token | estimated fallback (no lightweight tokenizer dependency present) |
+| vertex | native | tokens-gate | 280,939 | 70235 | 70235 | 70235 | heuristic-4-bytes-per-token | estimated fallback (no lightweight tokenizer dependency present) |
 | vertex | adaptive | dynamic-client | 8,357 | 2090 | 2090 | 2090 | heuristic-4-bytes-per-token | estimated fallback (no lightweight tokenizer dependency present) |
 | web-app | native | tokens-gate | 108,853 | 27214 | 27214 | 27214 | heuristic-4-bytes-per-token | estimated fallback (no lightweight tokenizer dependency present) |
 | web-app | adaptive | dynamic-client | 8,357 | 2090 | 2090 | 2090 | heuristic-4-bytes-per-token | estimated fallback (no lightweight tokenizer dependency present) |
