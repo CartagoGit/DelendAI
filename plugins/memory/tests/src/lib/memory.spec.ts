@@ -6,6 +6,7 @@ import {
 	rmSync,
 	writeFileSync,
 } from 'node:fs';
+import * as nodeFs from 'node:fs';
 import { basename, join } from 'node:path';
 import { tmpdir } from 'node:os';
 
@@ -482,35 +483,74 @@ describe('memory plugin', async () => {
 	it('disposes the watcher lifecycle and cancels pending debounce timers', async () => {
 		vi.useFakeTimers();
 		const dir = mkdtempSync(join(tmpdir(), 'mem-plugin-'));
-		const ctx = {
-			workspace: {
-				root: dir,
-				resolve: (p: string) => join(dir, p),
-			},
-			corePaths: {
+
+		// t00016 (MEM-001 regression guard) — pin that the watcher the
+		// plugin creates is the one being closed on dispose. We spy on
+		// `fs.watch` BEFORE register() runs, capture the FSWatcher the
+		// plugin takes ownership of, and assert `close()` was called on
+		// the SAME instance after dispose. The ESM live binding for
+		// `import { watch } from 'node:fs'` inside the plugin reflects
+		// the spied implementation; if the plugin ever stops using
+		// `fs.watch` (or stops calling dispose on the returned watcher)
+		// the assertion fails.
+		const closeSpy = vi.fn();
+		const unrefSpy = vi.fn();
+		const watchSpy = vi.spyOn(nodeFs, 'watch').mockImplementation((() => ({
+			close: closeSpy,
+			unref: unrefSpy,
+		})) as unknown as typeof nodeFs.watch);
+		try {
+			const ctx = {
+				workspace: {
+					root: dir,
+					resolve: (p: string) => join(dir, p),
+				},
+				corePaths: {
+					cacheDir: '.cache/mcp-vertex',
+					docsDir: 'docs/mcp-vertex',
+				},
 				cacheDir: '.cache/mcp-vertex',
 				docsDir: 'docs/mcp-vertex',
-			},
-			cacheDir: '.cache/mcp-vertex',
-			docsDir: 'docs/mcp-vertex',
-			keepLegacy: false,
-			pluginCacheDir: '.cache/mcp-vertex/memory',
-			pluginDocsDir: 'docs/mcp-vertex/memory',
-			namespacePrefix: 'memory',
-			options: {},
-			args: {},
-		} satisfies IMcpPluginContext;
-		const reg = await plugin.register(ctx);
+				keepLegacy: false,
+				pluginCacheDir: '.cache/mcp-vertex/memory',
+				pluginDocsDir: 'docs/mcp-vertex/memory',
+				namespacePrefix: 'memory',
+				options: {},
+				args: {},
+			} satisfies IMcpPluginContext;
+			const reg = await plugin.register(ctx);
 
-		reg.onToolCall?.('memory_save', { title: 'session-digest:test' }, {
-			content: [{ text: JSON.stringify({ persisted: true }) }],
-		});
-		expect(vi.getTimerCount()).toBeGreaterThan(0);
-		if ('dispose' in reg) {
-			await reg.dispose?.();
-			await reg.dispose?.();
+			// The plugin must have created exactly one watcher (the store
+			// watcher). The primitive's `unref?.()` call right after
+			// `watch(...)` is the regression marker for "non-blocking
+			// watcher installed".
+			expect(watchSpy).toHaveBeenCalledTimes(1);
+			expect(unrefSpy).toHaveBeenCalledTimes(1);
+			expect(closeSpy).not.toHaveBeenCalled();
+
+			reg.onToolCall?.(
+				'memory_save',
+				{ title: 'session-digest:test' },
+				{
+					content: [{ text: JSON.stringify({ persisted: true }) }],
+				},
+			);
+			// freshnessDebouncer.schedule() set a pending setTimeout.
+			expect(vi.getTimerCount()).toBeGreaterThan(0);
+
+			if ('dispose' in reg) {
+				await reg.dispose?.();
+				// Second dispose must be idempotent — calling close on the
+				// already-closed watcher is the historical leak vector.
+				await reg.dispose?.();
+			}
+			// freshnessDebouncer.cancel() cleared the pending timer.
+			expect(vi.getTimerCount()).toBe(0);
+			// storeWatcher.dispose() closed the underlying fs.watch handle.
+			expect(closeSpy).toHaveBeenCalledTimes(1);
+		} finally {
+			watchSpy.mockRestore();
+			rmSync(dir, { recursive: true, force: true });
 		}
-		expect(vi.getTimerCount()).toBe(0);
-		rmSync(dir, { recursive: true, force: true });
 	});
 });
