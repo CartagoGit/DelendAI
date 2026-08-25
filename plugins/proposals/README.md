@@ -130,6 +130,32 @@ State under `.cache/mcp-vertex/`; disposable agent worktrees under
 `docs/mcp-vertex/proposals/`. All tools share one layout so locks, queue,
 round-context, worktrees and the store always agree.
 
+## Concurrency model
+
+The happy path assumes a **single writer per repo checkout**: one agent edits,
+validates, commits and pushes on the shared `develop` checkout while other
+agents stay read-only or wait on locks. That keeps proposal markdown, the git
+index and the cache-backed registries moving in one predictable order.
+
+When ids are auto-allocated, the proposal counter is serialized through
+`withFileMutex` around `.cache/mcp-vertex/proposal-id-counters.json`, and each
+allocation also reconciles against the highest id already present on disk. That
+protects the shared counter from duplicate ids even when multiple tool calls hit
+`create_proposal` concurrently.
+
+For real multi-agent parallelism, do **not** share one checkout and hope the
+index behaves. Use `agent_worktree` so each agent gets its own worktree while
+still coordinating proposal files through `agent_lock`. The repo bootstrap's
+parallel-work guidance in
+[`docs/mcp-vertex/AGENT-BOOTSTRAP.md`](../../docs/mcp-vertex/AGENT-BOOTSTRAP.md)
+is the source of truth for how to behave when another agent lands changes while
+you are mid-slice.
+
+If a proposals lint fails on a historical baseline, prefer the script's
+`--update` mode over hand-editing the baseline JSON. Today that applies to at
+least `proposal-files-exist` and `proposal-cited-commits`; use the script to
+rebaseline intentional historical drift, not ad-hoc manual edits.
+
 ## Use as a library
 
 ```ts
