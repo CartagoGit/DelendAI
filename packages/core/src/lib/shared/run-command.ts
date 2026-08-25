@@ -5,6 +5,7 @@ import type {
 	IRunArgvOptions,
 	IRunArgvOutcome,
 } from '../contracts/interfaces/run-command.interface';
+import { truncateUtf8Buffer } from './truncate-utf8';
 import { withFileMutex } from './with-file-mutex';
 
 export type {
@@ -107,7 +108,9 @@ const captureUtf8Bytes = (
 };
 
 const decodeUtf8Chunks = (chunks: readonly Buffer[]): string =>
-	Buffer.concat(chunks).toString('utf8');
+	truncateUtf8Buffer(Buffer.concat(chunks), Buffer.concat(chunks).length).toString(
+		'utf8',
+	);
 
 const spawnOnce = (
 	command: string,
