@@ -36,6 +36,13 @@ const capture = async (
 const parse = (r: { content: Array<{ text: string }> }) =>
 	JSON.parse(r.content[0]?.text ?? '{}');
 
+const APPROVE_EVIDENCE = {
+	commitHash: 'abc1234',
+	validateExitCode: 0,
+	testsPassing: 1,
+	testsTotal: 1,
+} as const;
+
 describe('auto transition after approve (a00074 S3)', () => {
 	let root = '';
 	let opts: IAuthoringToolOptions;
@@ -121,6 +128,7 @@ shipped-in: [ship123]
 				sliceId: 's1',
 				action: 'approve',
 				agent: 'owl',
+				evidence: APPROVE_EVIDENCE,
 			}),
 		);
 		expect(approved.status).toBe('done');

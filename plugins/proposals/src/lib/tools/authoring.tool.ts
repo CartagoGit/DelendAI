@@ -117,6 +117,88 @@ const isToolErrorCarryingError = (
 	value: unknown,
 ): value is IToolErrorCarryingError => value instanceof Error;
 
+const REVIEW_APPROVE_COMMIT_HASH_RE = /^[0-9a-f]{7,40}$/i;
+
+export interface IProposalReviewEvidence {
+	readonly commitHash: string;
+	readonly validateExitCode: number;
+	readonly testsPassing: number;
+	readonly testsTotal: number;
+}
+
+export const REVIEW_EVIDENCE_SCHEMA = z
+	.object({
+		commitHash: z
+			.string()
+			.regex(
+				REVIEW_APPROVE_COMMIT_HASH_RE,
+				'evidence.commitHash must be 7-40 hex characters',
+			),
+		validateExitCode: z
+			.number()
+			.int()
+			.refine((value) => value === 0, {
+				message: 'evidence.validateExitCode must be 0',
+			}),
+		testsPassing: z
+			.number()
+			.int()
+			.min(1, 'evidence.testsPassing must be >= 1'),
+		testsTotal: z.number().int().min(1, 'evidence.testsTotal must be >= 1'),
+	})
+	.refine((value) => value.testsPassing <= value.testsTotal, {
+		message: 'evidence.testsPassing must be <= evidence.testsTotal',
+		path: ['testsPassing'],
+	});
+
+export const REVIEW_INPUT_SCHEMA = z.object({
+	proposalId: z.string(),
+	sliceId: z.string(),
+	action: z.enum(['submit', 'approve', 'request_changes', 'status']),
+	agent: z.string().min(1),
+	note: z.string().optional(),
+	evidence: REVIEW_EVIDENCE_SCHEMA.optional(),
+});
+
+export const REVIEW_OUTPUT_SCHEMA = z.object({
+	ok: z.literal(true),
+	proposalId: z.string(),
+	sliceId: z.string(),
+	action: z.string(),
+	status: z.enum(['none', 'in_review', 'changes_requested', 'done']),
+	implementer: z.string().nullable(),
+	reviewer: z.string().nullable(),
+	rounds: z.array(
+		z.object({
+			verdict: z.enum(['requested_changes', 'approved']),
+			agent: z.string(),
+			note: z.string(),
+		}),
+	),
+	lockReleased: z.boolean(),
+	redactedSecrets: z.number().int().nonnegative(),
+});
+
+const toApproveEvidenceError = (reason: string): IToolTextResult =>
+	toolError(`approve requires empirical evidence: ${reason}`);
+
+const requireProposalReviewEvidence = (
+	evidence: IProposalReviewEvidence | undefined,
+): IToolTextResult | null => {
+	if (evidence === undefined) {
+		return toApproveEvidenceError(
+			'provide evidence.commitHash, evidence.validateExitCode=0, evidence.testsPassing>=1, and evidence.testsTotal>=1',
+		);
+	}
+	const parsed = REVIEW_EVIDENCE_SCHEMA.safeParse(evidence);
+	if (!parsed.success) {
+		return toApproveEvidenceError(
+			parsed.error.issues[0]?.message ?? 'invalid evidence payload',
+		);
+	}
+	return null;
+};
+
 type IPeerReviewPersistedEntry = {
 	readonly ts: string;
 	readonly proposal_id: string;
@@ -1118,42 +1200,9 @@ export const buildReviewRegistration = (
 			`${options.namespacePrefix}_proposal_review`,
 			{
 				description:
-					'Peer-review loop for a slice. action=submit: an implementer marks a finished slice ready for review (not done yet). action=approve: a DIFFERENT agent verifies and approves it → slice is set done + lock released. action=request_changes (note required): a different agent records an objection → slice becomes reworkable + lock released; the fixer re-submits and another agent reviews the fix. action=status: read current state. Enforces reviewer ≠ implementer (independent verification).',
-				inputSchema: z.object({
-					proposalId: z.string(),
-					sliceId: z.string(),
-					action: z.enum([
-						'submit',
-						'approve',
-						'request_changes',
-						'status',
-					]),
-					agent: z.string().min(1),
-					note: z.string().optional(),
-				}),
-				outputSchema: z.object({
-					ok: z.literal(true),
-					proposalId: z.string(),
-					sliceId: z.string(),
-					action: z.string(),
-					status: z.enum([
-						'none',
-						'in_review',
-						'changes_requested',
-						'done',
-					]),
-					implementer: z.string().nullable(),
-					reviewer: z.string().nullable(),
-					rounds: z.array(
-						z.object({
-							verdict: z.enum(['requested_changes', 'approved']),
-							agent: z.string(),
-							note: z.string(),
-						}),
-					),
-					lockReleased: z.boolean(),
-					redactedSecrets: z.number().int().nonnegative(),
-				}),
+					'Peer-review loop for a slice. action=submit: an implementer marks a finished slice ready for review (not done yet). action=approve: a DIFFERENT agent verifies and approves it → slice is set done + lock released, and must attach empirical evidence (commit hash, passing validate exit code, and passing test counts). action=request_changes (note required): a different agent records an objection → slice becomes reworkable + lock released; the fixer re-submits and another agent reviews the fix. action=status: read current state. Enforces reviewer ≠ implementer (independent verification).',
+				inputSchema: REVIEW_INPUT_SCHEMA,
+				outputSchema: REVIEW_OUTPUT_SCHEMA,
 			},
 			async (args: {
 				proposalId: string;
@@ -1161,6 +1210,7 @@ export const buildReviewRegistration = (
 				action: 'submit' | 'approve' | 'request_changes' | 'status';
 				agent: string;
 				note?: string | undefined;
+				evidence?: IProposalReviewEvidence | undefined;
 			}) => {
 				// x00106 S1: same one-shot self-heal as close_slice.
 				const resolved = await resolveIndexedDoc(
@@ -1285,6 +1335,17 @@ export const buildReviewRegistration = (
 											identityCheck.reason,
 											identityCheck.nextAction,
 										),
+									},
+								);
+							}
+							const evidenceError = requireProposalReviewEvidence(
+								args.evidence,
+							);
+							if (evidenceError !== null) {
+								throw Object.assign(
+									new Error('missing empirical evidence'),
+									{
+										toolError: evidenceError,
 									},
 								);
 							}

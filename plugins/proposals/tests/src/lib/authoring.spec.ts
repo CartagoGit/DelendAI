@@ -35,6 +35,13 @@ const capture = async (
 const parse = (r: { content: Array<{ text: string }> }): any =>
 	JSON.parse(r.content[0]?.text ?? '{}');
 
+const APPROVE_EVIDENCE = {
+	commitHash: 'abc1234',
+	validateExitCode: 0,
+	testsPassing: 2,
+	testsTotal: 2,
+} as const;
+
 const recentValidate = () => ({
 	timestamp: new Date().toISOString(),
 	exitCode: 0,
@@ -391,6 +398,7 @@ describe('proposal authoring (create → board → close)', async () => {
 				sliceId: 's1',
 				action: 'approve',
 				agent: 'owl',
+				evidence: APPROVE_EVIDENCE,
 			}),
 		);
 		expect(approved.status).toBe('done');
