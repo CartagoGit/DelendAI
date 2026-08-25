@@ -1,7 +1,7 @@
 ---
-id: i00004
+id: c00004
 title: "lint arquitectónico — bloquear readFile directo en plugins con filesystem-read; forzar SafeWorkspaceReader"
-kind: infra
+kind: chore
 status: ready
 type: proposal
 track: filesystem
@@ -22,7 +22,7 @@ related:
 
 # i00004 — lint arquitectónico: bloquear readFile directo
 
-## Problem
+## Goal
 
 El bug FS2-001 / FS2-002 fue posible porque dos plugins distintos podían reproducir el patrón vulnerable (`normalizePath` + `readFile` directo) sin que ninguna herramienta automática lo detectara.
 
@@ -36,31 +36,27 @@ Hoy:
 
 Reglas violadas: R5.2 (invariantes como lints), §5 FS2-003.
 
-## Evidence
 
 (Ver `x00241`, `x00242`, `x00243` para los casos.)
 
 Hoy el patrón vulnerable está en plugins recién creados (`context-for-change`, `impact-analysis`). El lint habría detectado ambos en cuanto se commitean.
 
-## Classification
 
 `MEJORA` — propuesta de infraestructura, no fix de bug directo (los fixes son `x00242`/`x00243`).
 
-## User impact
+## Why
 
 - Agentes futuros: no pueden reintroducir el bug accidentalmente.
 - Operadores: confianza en que la invariante se mantiene.
 - Mantenedores: menos revisión manual.
 
-## Privacy impact
 
 Cero. Es un guard contra fugas futuras.
 
-## Token impact
 
 Cero.
 
-## Scope
+## Non-goals
 
 **Permitido**:
 
@@ -76,12 +72,11 @@ Cero.
 - Cambios en `SafeWorkspaceReader` mismo.
 - Cambios en `core`.
 
-## Out of scope
 
 - Lint equivalente para procesos (SafeProcessRunner) — otra propuesta si se quiere.
 - Lint equivalente para network (SafeNetworkClient) — otra propuesta.
 
-## Design
+## Architecture
 
 ### 1. Detección
 
@@ -235,45 +230,6 @@ describe('filesystem-reader-invariant lint', () => {
 
 Añadir a `bun run validate`.
 
-## Tests
-
-- **Unit**: `tools/scripts/lint/filesystem-reader-invariant.spec.ts` (≥5 tests).
-- **E2E**: crear un plugin de prueba con el patrón vulnerable, ejecutar lint, esperar violación.
-- **Regression**: tras `x00242`/`x00243`, el lint pasa verde sobre los plugins migrados.
-
-## Acceptance criteria
-
-- [ ] Lint `filesystem-reader-invariant` implementado en `tools/scripts/lint/filesystem-reader-invariant.script.ts`.
-- [ ] Detecta: `import readFile from 'node:fs/promises'` y llamadas directas `readFile(...)` con path calculado.
-- [ ] Allowlist por plugin con `allowReason` obligatorio.
-- [ ] Tests del lint verdes (≥5).
-- [ ] Plugins migrados (`context-for-change`, `impact-analysis`) pasan el lint sin allowlist.
-- [ ] Añadido a `bun run validate`.
-- [ ] Documentación: `docs/mcp-vertex/contributing/lint-rules.md` explica el lint, allowlist, y cómo añadir nuevos.
-- [ ] `bun run validate` verde.
-
-## Regression guards
-
-- El lint **es** el regression guard. Cualquier intento futuro de reintroducir el patrón falla en CI.
-- Allowlist requiere `allowReason` documentado; si no, falla.
-- Revisión periódica: cada release revisa las allowlist activas y exige justificación.
-
-## Resolution evidence (template)
-
-```yaml
-resolution:
-  status: implemented
-  evidence:
-    - commit: <hash>
-    - new-files:
-        - tools/scripts/lint/filesystem-reader-invariant.script.ts
-        - tools/scripts/lint/filesystem-reader-invariant.spec.ts
-    - ci-integration: bun run lint:fs-invariant en bun run validate
-    - docs: docs/mcp-vertex/contributing/lint-rules.md (sección filesystem-reader-invariant)
-```
-
----
-
 ## Slices
 
 - global_gate: type
@@ -304,7 +260,22 @@ resolution:
   - "Script añadido a `bun run validate`."
   - "Documentación explica el lint."
 
-## acceptance
+## Acceptance
+
+- **Unit**: `tools/scripts/lint/filesystem-reader-invariant.spec.ts` (≥5 tests).
+- **E2E**: crear un plugin de prueba con el patrón vulnerable, ejecutar lint, esperar violación.
+- **Regression**: tras `x00242`/`x00243`, el lint pasa verde sobre los plugins migrados.
+
+
+- [ ] Lint `filesystem-reader-invariant` implementado en `tools/scripts/lint/filesystem-reader-invariant.script.ts`.
+- [ ] Detecta: `import readFile from 'node:fs/promises'` y llamadas directas `readFile(...)` con path calculado.
+- [ ] Allowlist por plugin con `allowReason` obligatorio.
+- [ ] Tests del lint verdes (≥5).
+- [ ] Plugins migrados (`context-for-change`, `impact-analysis`) pasan el lint sin allowlist.
+- [ ] Añadido a `bun run validate`.
+- [ ] Documentación: `docs/mcp-vertex/contributing/lint-rules.md` explica el lint, allowlist, y cómo añadir nuevos.
+- [ ] `bun run validate` verde.
+
 
 - Lint implementado y añadido a CI.
 - Allowlist con reason obligatorio.
@@ -313,7 +284,27 @@ resolution:
 
 ---
 
-## Cómo se relaciona con el plan y la auditoría
+## Notes
+
+- El lint **es** el regression guard. Cualquier intento futuro de reintroducir el patrón falla en CI.
+- Allowlist requiere `allowReason` documentado; si no, falla.
+- Revisión periódica: cada release revisa las allowlist activas y exige justificación.
+
+
+```yaml
+resolution:
+  status: implemented
+  evidence:
+    - commit: <hash>
+    - new-files:
+        - tools/scripts/lint/filesystem-reader-invariant.script.ts
+        - tools/scripts/lint/filesystem-reader-invariant.spec.ts
+    - ci-integration: bun run lint:fs-invariant en bun run validate
+    - docs: docs/mcp-vertex/contributing/lint-rules.md (sección filesystem-reader-invariant)
+```
+
+---
+
 
 - **Plan padre**: [q00004](../../ready/q00004-plan-hardening-post-auditoria-chatgpt-sol-segunda-pasada.md), Track A.
 - **Auditoría legada**: §5 FS2-003, §22 CORE2-001.

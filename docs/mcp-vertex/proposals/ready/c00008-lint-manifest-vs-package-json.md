@@ -1,7 +1,7 @@
 ---
-id: i00008
+id: c00008
 title: "lint — manifest vs package.json (version, package, visibility, id) — bloquea CI (MAN2-007)"
-kind: infra
+kind: chore
 status: ready
 type: proposal
 track: manifests
@@ -22,7 +22,7 @@ related:
 
 # i00008 — lint: manifest vs package.json
 
-## Problem
+## Goal
 
 Una vez `f00174` migra todos los plugins a manifest, hay riesgo de drift entre:
 
@@ -40,27 +40,23 @@ Una vez `f00174` migra todos los plugins a manifest, hay riesgo de drift entre:
 
 Reglas violadas: R3.2 (one source of truth), §11 MAN2-007.
 
-## Evidence
 
 No existe lint que verifique coherencia. Un plugin puede tener `manifest.version = 1.4.2` pero `package.json#version = 1.4.3` y nadie lo detecta.
 
-## Classification
 
 `MEJORA / CI`.
 
-## User impact
+## Why
 
 Detección temprana de inconsistencias.
 
-## Privacy impact
 
 Cero.
 
-## Token impact
 
 Cero.
 
-## Scope
+## Non-goals
 
 **Permitido**:
 
@@ -74,13 +70,12 @@ Cero.
 - Cambios en plugins.
 - Cambios en manifests.
 
-## Out of scope
 
 - Manifest autodiscovery (`f00174`).
 - Generadores (`f00175`).
 - Manifest vs preset catalog (`i00009`).
 
-## Design
+## Architecture
 
 ### 1. Lint
 
@@ -209,39 +204,6 @@ describe('manifest-vs-package lint', () => {
 
 Añadir a `bun run validate`.
 
-## Tests
-
-- **Unit**: ≥5 tests del lint (id, package, version, visibility, happy path).
-- **E2E**: un plugin con drift rompe CI.
-
-## Acceptance criteria
-
-- [ ] Lint implementado.
-- [ ] Tests verdes.
-- [ ] Integrado en CI y `bun run validate`.
-- [ ] Documentación: `docs/mcp-vertex/contributing/lint-rules.md` explica el lint.
-- [ ] `bun run validate` verde.
-
-## Regression guards
-
-- El lint es el regression guard.
-- Cualquier drift futuro entre manifest y package.json rompe CI.
-
-## Resolution evidence (template)
-
-```yaml
-resolution:
-  status: implemented
-  evidence:
-    - commit: <hash>
-    - new-files:
-        - tools/scripts/lint/manifest-vs-package.script.ts
-        - tools/scripts/lint/manifest-vs-package.spec.ts
-    - ci-integration: bun run lint:manifest-vs-package en CI
-```
-
----
-
 ## Slices
 
 - global_gate: type
@@ -256,7 +218,18 @@ resolution:
   - "Tests verdes."
   - "CI falla con drift."
 
-## acceptance
+## Acceptance
+
+- **Unit**: ≥5 tests del lint (id, package, version, visibility, happy path).
+- **E2E**: un plugin con drift rompe CI.
+
+
+- [ ] Lint implementado.
+- [ ] Tests verdes.
+- [ ] Integrado en CI y `bun run validate`.
+- [ ] Documentación: `docs/mcp-vertex/contributing/lint-rules.md` explica el lint.
+- [ ] `bun run validate` verde.
+
 
 - Lint detecta id/package/version/visibility drift.
 - Tests verdes.
@@ -264,7 +237,25 @@ resolution:
 
 ---
 
-## Cómo se relaciona con el plan y la auditoría
+## Notes
+
+- El lint es el regression guard.
+- Cualquier drift futuro entre manifest y package.json rompe CI.
+
+
+```yaml
+resolution:
+  status: implemented
+  evidence:
+    - commit: <hash>
+    - new-files:
+        - tools/scripts/lint/manifest-vs-package.script.ts
+        - tools/scripts/lint/manifest-vs-package.spec.ts
+    - ci-integration: bun run lint:manifest-vs-package en CI
+```
+
+---
+
 
 - **Plan padre**: [q00004](../../ready/q00004-plan-hardening-post-auditoria-chatgpt-sol-segunda-pasada.md), Track E.
 - **Auditoría legada**: §11 MAN2-007.

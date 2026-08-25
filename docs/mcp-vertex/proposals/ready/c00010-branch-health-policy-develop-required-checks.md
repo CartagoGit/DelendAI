@@ -1,7 +1,7 @@
 ---
-id: i00010
+id: c00010
 title: "CI — required checks en `develop` branch policy (CI2-001)"
-kind: infra
+kind: chore
 status: ready
 type: proposal
 track: ci
@@ -23,7 +23,7 @@ related:
 
 # i00010 — CI: required checks en develop
 
-## Problem
+## Goal
 
 `develop` continúa sin protección requerida:
 
@@ -41,30 +41,26 @@ Esto importa porque:
 
 Reglas violadas: §19 CI2-001.
 
-## Evidence
 
 ```yaml
 # .github/CODEOWNERS / branch-protection / settings (consultar)
 ```
 
-## Classification
 
 `CONFIRMADO`.
 
-## User impact
+## Why
 
 - Ningún agente puede dejar `develop` en rojo silenciosamente.
 - Push se rechaza si los required checks fallan.
 
-## Privacy impact
 
 Cero.
 
-## Token impact
 
 Cero.
 
-## Scope
+## Non-goals
 
 **Permitido**:
 
@@ -77,13 +73,12 @@ Cero.
 - Cambiar otros workflows.
 - Cambiar plugins.
 
-## Out of scope
 
 - Token dashboard check (`i00006`).
 - Generator gates + workflow run evidence (`i00011`).
 - PR humano obligatorio (la auditoría explícitamente dice que no es necesario).
 
-## Design
+## Architecture
 
 ### 1. Definir required checks canónicos
 
@@ -192,7 +187,49 @@ jobs:
 ```md
 # Branch policy: develop
 
-## Required checks (must pass before merge)
+## Slices
+
+- global_gate: type
+
+### S1 — Workflow con nombres canónicos
+
+- **Status**: pending
+- **Files**: `.github/workflows/ci.yml`
+- **Gate**: type
+- acceptance:
+  - "Jobs con nombres canónicos."
+
+### S2 — Branch protection + docs
+
+- **Status**: pending
+- **Files**: branch protection (settings), `docs/mcp-vertex/ci/branch-policy.md`
+- **Gate**: type
+- acceptance:
+  - "≥14 required checks."
+  - "enforce_admins: true."
+  - "Documentación explica política."
+
+## Acceptance
+
+- **E2E**: push que rompe un check → push rechazado.
+- **E2E**: push con todos los checks verdes → push aceptado.
+
+
+- [ ] Workflow CI con jobs canónicos (≥14 jobs).
+- [ ] Branch protection configurada en `develop`.
+- [ ] `enforce_admins: true`.
+- [ ] Documentación: `docs/mcp-vertex/ci/branch-policy.md` explica la política.
+- [ ] Push que rompe check es rechazado (verificado manualmente).
+- [ ] Todos los checks actuales pasan.
+
+
+- Branch protection configurada.
+- ≥14 required checks.
+- Documentación.
+
+---
+
+## Notes
 
 - `typecheck` — TypeScript typecheck
 - `tests` — vitest run
@@ -209,7 +246,6 @@ jobs:
 - `manifests-check` — manifest vs package.json + preset catalog (from `i00008`+`i00009`)
 - `generated-artifacts-check` — manifests/web/docs/permissions sync (from `i00011`)
 
-## Why no PR review required
 
 Agents push directly. Velocity is high. The required checks are the
 quality gate — they ensure correctness without human-in-the-loop.
@@ -219,7 +255,6 @@ If a check fails, the push is rejected. To unblock:
 2. Push the fix.
 3. CI re-runs.
 
-## Bypass
 
 `enforce_admins: true` means admins cannot bypass. There is no escape hatch
 except fixing the issue.
@@ -228,26 +263,10 @@ If a check is genuinely wrong (false positive), open a proposal to fix it
 ("lint X is failing incorrectly because Y") — the proposal is the audit trail.
 ```
 
-## Tests
-
-- **E2E**: push que rompe un check → push rechazado.
-- **E2E**: push con todos los checks verdes → push aceptado.
-
-## Acceptance criteria
-
-- [ ] Workflow CI con jobs canónicos (≥14 jobs).
-- [ ] Branch protection configurada en `develop`.
-- [ ] `enforce_admins: true`.
-- [ ] Documentación: `docs/mcp-vertex/ci/branch-policy.md` explica la política.
-- [ ] Push que rompe check es rechazado (verificado manualmente).
-- [ ] Todos los checks actuales pasan.
-
-## Regression guards
 
 - La branch protection **es** el regression guard.
 - Cualquier intento de pushear código que rompe un check se rechaza.
 
-## Resolution evidence (template)
 
 ```yaml
 resolution:
@@ -264,6 +283,13 @@ resolution:
 ```
 
 ---
+
+
+- **Plan padre**: [q00004](../../ready/q00004-plan-hardening-post-auditoria-chatgpt-sol-segunda-pasada.md), Track G.
+- **Auditoría legada**: §19 CI2-001.
+- **Hermanas**: `i00011` (generators + evidence).
+- **Predecesoras**: `i00005`, `i00006`, `f00175`, `i00008`, `i00009`.
+- **Principio §41**: *"A proposal is not done until the acceptance evidence exists."* Esta propuesta blinda el flujo.
 
 ## Slices
 
@@ -287,18 +313,9 @@ resolution:
   - "enforce_admins: true."
   - "Documentación explica política."
 
-## acceptance
+## Acceptance
 
 - Branch protection configurada.
 - ≥14 required checks.
 - Documentación.
-
----
-
-## Cómo se relaciona con el plan y la auditoría
-
-- **Plan padre**: [q00004](../../ready/q00004-plan-hardening-post-auditoria-chatgpt-sol-segunda-pasada.md), Track G.
-- **Auditoría legada**: §19 CI2-001.
-- **Hermanas**: `i00011` (generators + evidence).
-- **Predecesoras**: `i00005`, `i00006`, `f00175`, `i00008`, `i00009`.
-- **Principio §41**: *"A proposal is not done until the acceptance evidence exists."* Esta propuesta blinda el flujo.
+- `bun run validate` verde.

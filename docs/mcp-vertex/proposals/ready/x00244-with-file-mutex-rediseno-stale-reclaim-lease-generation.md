@@ -21,7 +21,7 @@ related:
 
 # x00244 — with-file-mutex: rediseño del stale reclaim
 
-## Problem
+## Goal
 
 (Resumen del problema — ver `t00007` para el detalle y reproducción.)
 
@@ -36,7 +36,6 @@ Reglas violadas: R5.2 (invariantes), §6 auditoría.
 
 Esta propuesta asume el primer caso y propone el rediseño. Si el segundo caso aplica, la propuesta se reduce a "validación empírica + métricas".
 
-## Evidence
 
 (Ver `t00007` para la reproducción.)
 
@@ -52,26 +51,23 @@ async function acquire(lockPath: string): Promise<LockToken> {
 }
 ```
 
-## Classification
 
 `PROBABLE → mitigación`.
 
-## User impact
+## Why
 
 Si el race se reproduce:
 
 - Corrupción de archivos duraderos (proposals, memory store, locks internos).
 - Pérdida silenciosa de datos.
 
-## Privacy impact
 
 Cero.
 
-## Token impact
 
 Cero.
 
-## Scope
+## Non-goals
 
 **Permitido**:
 
@@ -85,12 +81,11 @@ Cero.
 - Cambios en callers (deben seguir funcionando con la misma API pública).
 - Cambios en otros lugares.
 
-## Out of scope
 
 - Tests (`t00007`, `t00008`).
 - Métricas de contention (`MUT2-002`).
 
-## Design
+## Architecture
 
 ### 1. Lease + Generation
 
@@ -233,46 +228,6 @@ describe('with-file-mutex — lease/generation', () => {
 });
 ```
 
-## Tests
-
-- **Unit**: actualizar `with-file-mutex.spec.ts` con escenarios lease/generation.
-- **Race**: `t00007` debe pasar verde tras este fix.
-- **Property**: `t00008` (siguiente propuesta) verifica invariantes.
-
-## Acceptance criteria
-
-- [ ] Lock file incluye `generation` monotónico.
-- [ ] Heartbeat incrementa `generation`.
-- [ ] Reclaim usa marker visible + grace period + re-verificación.
-- [ ] `t00007` pasa verde (race confirmado → race cerrado).
-- [ ] API pública sin cambios.
-- [ ] Tests existentes siguen pasando.
-- [ ] Documentación interna explica el invariante.
-- [ ] `bun run validate` verde.
-
-## Regression guards
-
-- **Test `t00007`** continua verificación.
-- **Property tests `t00008`** verifican invariantes.
-- **Métricas `MUT2-002`** observan contention empíricamente.
-
-## Resolution evidence (template)
-
-```yaml
-resolution:
-  status: implemented
-  evidence:
-    - commit: <hash>
-    - files-modified:
-        - packages/core/src/lib/shared/with-file-mutex.ts
-    - before/after:
-        before: "Reclaim directo con rename; race window entre observation y rename"
-        after:  "Lease + generation; reclaim marker + grace period + re-verificación"
-    - tests: t00007 verde, t00008 verde (verificaciones separadas)
-```
-
----
-
 ## Slices
 
 - global_gate: type
@@ -308,7 +263,22 @@ resolution:
   - "Tests verdes."
   - "`t00007` pasa verde."
 
-## acceptance
+## Acceptance
+
+- **Unit**: actualizar `with-file-mutex.spec.ts` con escenarios lease/generation.
+- **Race**: `t00007` debe pasar verde tras este fix.
+- **Property**: `t00008` (siguiente propuesta) verifica invariantes.
+
+
+- [ ] Lock file incluye `generation` monotónico.
+- [ ] Heartbeat incrementa `generation`.
+- [ ] Reclaim usa marker visible + grace period + re-verificación.
+- [ ] `t00007` pasa verde (race confirmado → race cerrado).
+- [ ] API pública sin cambios.
+- [ ] Tests existentes siguen pasando.
+- [ ] Documentación interna explica el invariante.
+- [ ] `bun run validate` verde.
+
 
 - Lease + generation implementado.
 - Reclaim marker con grace period.
@@ -317,7 +287,28 @@ resolution:
 
 ---
 
-## Cómo se relaciona con el plan y la auditoría
+## Notes
+
+- **Test `t00007`** continua verificación.
+- **Property tests `t00008`** verifican invariantes.
+- **Métricas `MUT2-002`** observan contention empíricamente.
+
+
+```yaml
+resolution:
+  status: implemented
+  evidence:
+    - commit: <hash>
+    - files-modified:
+        - packages/core/src/lib/shared/with-file-mutex.ts
+    - before/after:
+        before: "Reclaim directo con rename; race window entre observation y rename"
+        after:  "Lease + generation; reclaim marker + grace period + re-verificación"
+    - tests: t00007 verde, t00008 verde (verificaciones separadas)
+```
+
+---
+
 
 - **Plan padre**: [q00004](../../ready/q00004-plan-hardening-post-auditoria-chatgpt-sol-segunda-pasada.md), Track B.
 - **Auditoría legada**: §6 MUT2-001.

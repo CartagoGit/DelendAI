@@ -23,7 +23,7 @@ related:
 
 # t00009 — privacy adversarial regression suite
 
-## Problem
+## Goal
 
 La auditoría §3.2 enuncia la **propiedad fuerte de privacidad**:
 
@@ -41,7 +41,6 @@ Esto convierte la privacidad en una promesa **no verificada**.
 
 Reglas relacionadas: R1.1, R1.5, R1.7, §3.2 auditoría.
 
-## Evidence
 
 Suite actual (extracto — incompleta):
 
@@ -61,17 +60,15 @@ Lo que **falta**:
 - Test adversarial con tool names host-project que incluyan prefijos engañosos, unicode, espacios, prefijos comunes (`mcp_vertex_*`, `mcp-vertex-*`, `vertex_*`).
 - Property tests sobre el DTO serializado: no contiene paths absolutos, no contiene Class C/D, no contiene tool names host-project.
 
-## Classification
 
 `MEJORA / ADVERSARIAL REGRESSION` — propuesta de test, no fix.
 
-## User impact
+## Why
 
 - Operadores: confianza operativa continua de que ningún cambio futuro filtra Class C/D.
 - Equipo de soporte: si un test falla, saben inmediatamente qué cambio rompió la propiedad.
 - Auditores externos (legales): pueden revisar la suite como evidencia de privacy-by-construction.
 
-## Privacy impact
 
 Esta suite **es** la verificación de las reglas R1.1–R1.7. Su objetivo es detectar cualquier regresión que:
 
@@ -79,11 +76,10 @@ Esta suite **es** la verificación de las reglas R1.1–R1.7. Su objetivo es det
 - Filtre Class D (tokens, emails, credentials).
 - Permita identificar al proyecto emisor (huella única).
 
-## Token impact
 
 Cero. No añade tools; añade tests.
 
-## Scope
+## Non-goals
 
 **Permitido**:
 
@@ -97,13 +93,12 @@ Cero. No añade tools; añade tests.
 - Tests que requieran red real (synthetic hosts son locales).
 - Tests que generen telemetría (los issues son capturados en memoria, no enviados).
 
-## Out of scope
 
 - CI dashboard público de privacidad (otra propuesta si se quiere).
 - Test de carga / rate-limit / circuit breaker (`x00214` ya cubre rate limits; este se centra en contenido).
 - Cambios al reporter mismo (las propuestas `x00245`, `x00236`, `x00237` ya endurecen el código; este test verifica que se mantengan endurecidos).
 
-## Design
+## Architecture
 
 ### 1. Estructura de la suite
 
@@ -311,57 +306,6 @@ import { run } from 'vitest';
 
 Añadir a `bun run validate`.
 
-## Tests
-
-- Cobertura obligatoria de esta propuesta (los tests son la propuesta):
-  - `same-internal-error.spec.ts`
-  - `tool-name-leak.spec.ts` (≥13 nombres adversariales)
-  - `path-leak.spec.ts`
-  - `args-leak.spec.ts`
-  - `synthetic-example-only.spec.ts`
-  - `prefix-deception.spec.ts`
-  - `unicode-and-edges.spec.ts`
-  - `two-hosts-equality.spec.ts`
-  - Property tests (≥3 property tests sobre el DTO serializado)
-
-## Acceptance criteria
-
-- [ ] La suite adversarial existe en `plugins/error-reporting/tests/src/lib/adversarial/`.
-- [ ] Al menos 13 nombres adversariales cubiertos en `tool-name-leak.spec.ts`.
-- [ ] Al menos 3 property tests verdes.
-- [ ] El escenario `two-hosts-equality.spec.ts` demuestra la propiedad fuerte: dos hosts distintos → mismo issue (modulo Class A).
-- [ ] `bun run test:privacy-adversarial` integrado en `bun run validate`.
-- [ ] Cualquier regresión que filtre Class C/D rompe al menos un test.
-- [ ] `README.md` de la suite explica qué cubre y qué NO cubre.
-- [ ] La suite corre en <30s en CI (no requiere red real).
-
-## Regression guards
-
-- La suite es la **verificación continua** de R1.1–R1.7. Cualquier cambio futuro que:
-  - Añada un campo nuevo al DTO → debe pasar property test "no Class C/D".
-  - Cambie el resolver de tool identity → debe pasar `tool-name-leak.spec.ts`.
-  - Cambie el classifier → debe pasar `same-internal-error.spec.ts`.
-- Si un test falla, no se commitea el cambio sin corregir el problema.
-
-## Resolution evidence (template)
-
-```yaml
-resolution:
-  status: implemented
-  evidence:
-    - commit: <hash>
-    - tests:
-        - plugins/error-reporting/tests/src/lib/adversarial/**/* (≥8 specs)
-        - packages/core/tests/src/lib/contracts/property/* (≥3 property tests)
-    - ci-integration: bun run test:privacy-adversarial en bun run validate
-    - runtime: <30s en CI
-    - before/after:
-        before: "No existe suite adversarial; propiedad fuerte no verificada"
-        after:  "Suite adversarial verde; cualquier regresión bloquea merge"
-```
-
----
-
 ## Slices
 
 - global_gate: type
@@ -402,7 +346,29 @@ resolution:
   - "README documenta qué cubre y qué NO."
   - "Suite corre en <30s en CI."
 
-## acceptance
+## Acceptance
+
+- Cobertura obligatoria de esta propuesta (los tests son la propuesta):
+  - `same-internal-error.spec.ts`
+  - `tool-name-leak.spec.ts` (≥13 nombres adversariales)
+  - `path-leak.spec.ts`
+  - `args-leak.spec.ts`
+  - `synthetic-example-only.spec.ts`
+  - `prefix-deception.spec.ts`
+  - `unicode-and-edges.spec.ts`
+  - `two-hosts-equality.spec.ts`
+  - Property tests (≥3 property tests sobre el DTO serializado)
+
+
+- [ ] La suite adversarial existe en `plugins/error-reporting/tests/src/lib/adversarial/`.
+- [ ] Al menos 13 nombres adversariales cubiertos en `tool-name-leak.spec.ts`.
+- [ ] Al menos 3 property tests verdes.
+- [ ] El escenario `two-hosts-equality.spec.ts` demuestra la propiedad fuerte: dos hosts distintos → mismo issue (modulo Class A).
+- [ ] `bun run test:privacy-adversarial` integrado en `bun run validate`.
+- [ ] Cualquier regresión que filtre Class C/D rompe al menos un test.
+- [ ] `README.md` de la suite explica qué cubre y qué NO cubre.
+- [ ] La suite corre en <30s en CI (no requiere red real).
+
 
 - Suite adversarial existe y cubre ≥8 specs.
 - ≥13 nombres adversariales.
@@ -413,7 +379,32 @@ resolution:
 
 ---
 
-## Cómo se relaciona con el plan y la auditoría
+## Notes
+
+- La suite es la **verificación continua** de R1.1–R1.7. Cualquier cambio futuro que:
+  - Añada un campo nuevo al DTO → debe pasar property test "no Class C/D".
+  - Cambie el resolver de tool identity → debe pasar `tool-name-leak.spec.ts`.
+  - Cambie el classifier → debe pasar `same-internal-error.spec.ts`.
+- Si un test falla, no se commitea el cambio sin corregir el problema.
+
+
+```yaml
+resolution:
+  status: implemented
+  evidence:
+    - commit: <hash>
+    - tests:
+        - plugins/error-reporting/tests/src/lib/adversarial/**/* (≥8 specs)
+        - packages/core/tests/src/lib/contracts/property/* (≥3 property tests)
+    - ci-integration: bun run test:privacy-adversarial en bun run validate
+    - runtime: <30s en CI
+    - before/after:
+        before: "No existe suite adversarial; propiedad fuerte no verificada"
+        after:  "Suite adversarial verde; cualquier regresión bloquea merge"
+```
+
+---
+
 
 - **Plan padre**: [q00004](../../ready/q00004-plan-hardening-post-auditoria-chatgpt-sol-segunda-pasada.md), Track D.
 - **Auditoría legada**: §3.2 (propiedad fuerte), §30 (privacy classes), §32 (pipeline), §33 (fingerprint).

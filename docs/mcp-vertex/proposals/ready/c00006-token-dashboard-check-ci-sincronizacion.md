@@ -1,7 +1,7 @@
 ---
-id: i00006
+id: c00006
 title: "token dashboard — `tokens:dashboard:check` en CI para evitar drift del artefacto generado (TOK2-003)"
-kind: infra
+kind: chore
 status: ready
 type: proposal
 track: tokens
@@ -21,7 +21,7 @@ related:
 
 # i00006 — token dashboard check
 
-## Problem
+## Goal
 
 El dashboard de tokens (`docs/mcp-vertex/tokens/TOKEN-BUDGETS.md` o equivalente) se genera automáticamente desde una fuente tipada. Pero hoy:
 
@@ -31,7 +31,6 @@ El dashboard de tokens (`docs/mcp-vertex/tokens/TOKEN-BUDGETS.md` o equivalente)
 
 Reglas violadas: R3.2 (one source of truth), §9 TOK2-003.
 
-## Evidence
 
 Dashboard tracked:
 
@@ -42,23 +41,20 @@ vertex      161
 
 Pero el `vertex` actual incluye `adaptive-optimizer`, `context-for-change`, `impact-analysis`, `project-health`, `quality-policy`, `completion`, etc. — no coincide con 161.
 
-## Classification
 
 `MEJORA / CI`.
 
-## User impact
+## Why
 
 Confianza en el dashboard tracked: refleja el HEAD.
 
-## Privacy impact
 
 Cero.
 
-## Token impact
 
 Cero.
 
-## Scope
+## Non-goals
 
 **Permitido**:
 
@@ -72,13 +68,12 @@ Cero.
 - Cambios en la generación del dashboard.
 - Cambios en presets o plugins.
 
-## Out of scope
 
 - Gate de presupuesto real (`i00005`).
 - Reducción de tokens (`r00018`).
 - Vertex budget (`i00007`).
 
-## Design
+## Architecture
 
 ### 1. Script de check
 
@@ -138,12 +133,24 @@ Añadir a `bun run validate`.
 - Al commite cambiar presets/plugins/schemas: regenerar con `bun run tokens:dashboard:generate` y commitear el diff.
 - Si CI falla con "Dashboard is out of sync": ejecutar el comando, commitear, reintentar.
 
-## Tests
+## Slices
+
+- global_gate: type
+
+### S1 — Script de check + integración CI
+
+- **Status**: pending
+- **Files**: `tools/scripts/test/run-token-dashboard-check.script.ts`, `package.json`, `.github/workflows/ci.yml`
+- **Gate**: type
+- acceptance:
+  - "Script detecta drift."
+  - "CI ejecuta el check."
+
+## Acceptance
 
 - **Unit**: el script detecta drift correctamente.
 - **E2E**: cambiar un preset sin regenerar el dashboard rompe el CI.
 
-## Acceptance criteria
 
 - [ ] `bun run tokens:dashboard:check` implementado.
 - [ ] Integrado en CI y `bun run validate`.
@@ -151,12 +158,17 @@ Añadir a `bun run validate`.
 - [ ] Si se cambia un preset sin regenerar, CI falla con mensaje claro.
 - [ ] Documentación: `docs/mcp-vertex/tokens/README.md` explica el flujo.
 
-## Regression guards
+
+- `tokens:dashboard:check` añadido a CI.
+- Drift detectado y reportado.
+
+---
+
+## Notes
 
 - El check es el **regression guard**. Cualquier drift rompe CI.
 - Los hooks de lefthook pueden ejecutar el check pre-commit (opcional).
 
-## Resolution evidence (template)
 
 ```yaml
 resolution:
@@ -172,27 +184,6 @@ resolution:
 
 ---
 
-## Slices
-
-- global_gate: type
-
-### S1 — Script de check + integración CI
-
-- **Status**: pending
-- **Files**: `tools/scripts/test/run-token-dashboard-check.script.ts`, `package.json`, `.github/workflows/ci.yml`
-- **Gate**: type
-- acceptance:
-  - "Script detecta drift."
-  - "CI ejecuta el check."
-
-## acceptance
-
-- `tokens:dashboard:check` añadido a CI.
-- Drift detectado y reportado.
-
----
-
-## Cómo se relaciona con el plan y la auditoría
 
 - **Plan padre**: [q00004](../../ready/q00004-plan-hardening-post-auditoria-chatgpt-sol-segunda-pasada.md), Track C.
 - **Auditoría legada**: §9 TOK2-003, §19 CI2-002.

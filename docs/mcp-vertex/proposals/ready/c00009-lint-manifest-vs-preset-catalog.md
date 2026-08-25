@@ -1,7 +1,7 @@
 ---
-id: i00009
+id: c00009
 title: "lint — manifest vs preset catalog (compatibility matrix completa como gate CI) (MAN2-008)"
-kind: infra
+kind: chore
 status: ready
 type: proposal
 track: manifests
@@ -22,7 +22,7 @@ related:
 
 # i00009 — lint: manifest vs preset catalog
 
-## Problem
+## Goal
 
 Hoy la matriz de compatibilidad entre plugins y presets es parcial. La auditoría §11 MAN2-008 pide que sea **gate completo**.
 
@@ -30,7 +30,6 @@ Una vez `f00174` migra todos los plugins a manifest (cada uno declara `presets: 
 
 Reglas violadas: R3.2 (one source of truth), §11 MAN2-008.
 
-## Evidence
 
 ```ts
 // plugins/memory/plugin.manifest.ts
@@ -42,23 +41,20 @@ Reglas violadas: R3.2 (one source of truth), §11 MAN2-008.
 
 Hoy no hay verificación sistemática.
 
-## Classification
 
 `MEJORA / CI`.
 
-## User impact
+## Why
 
 Coherencia entre `manifest.presets` y la membership real de cada preset.
 
-## Privacy impact
 
 Cero.
 
-## Token impact
 
 Cero.
 
-## Scope
+## Non-goals
 
 **Permitido**:
 
@@ -72,13 +68,12 @@ Cero.
 - Cambios en presets.
 - Cambios en manifests.
 
-## Out of scope
 
 - Manifest autodiscovery (`f00174`).
 - Generadores (`f00175`).
 - Manifest vs package.json (`i00008`).
 
-## Design
+## Architecture
 
 ### 1. Cargar presets y manifests
 
@@ -194,39 +189,6 @@ describe('manifest-vs-presets lint', () => {
 
 Añadir a `bun run validate`.
 
-## Tests
-
-- **Unit**: ≥4 tests del lint (preset inexistente, preset en manifest sin membership, membership sin preset en manifest, happy path).
-- **E2E**: drift rompe CI.
-
-## Acceptance criteria
-
-- [ ] Lint implementado.
-- [ ] Tests verdes.
-- [ ] Integrado en CI y `bun run validate`.
-- [ ] Documentación: `docs/mcp-vertex/contributing/lint-rules.md` explica el lint.
-- [ ] `bun run validate` verde.
-
-## Regression guards
-
-- El lint es el regression guard.
-- Cualquier drift futuro entre manifest.presets y PRESET_DEFINITIONS rompe CI.
-
-## Resolution evidence (template)
-
-```yaml
-resolution:
-  status: implemented
-  evidence:
-    - commit: <hash>
-    - new-files:
-        - tools/scripts/lint/manifest-vs-presets.script.ts
-        - tools/scripts/lint/manifest-vs-presets.spec.ts
-    - ci-integration: bun run lint:manifest-vs-presets en CI
-```
-
----
-
 ## Slices
 
 - global_gate: type
@@ -241,7 +203,18 @@ resolution:
   - "Tests verdes."
   - "CI falla con drift."
 
-## acceptance
+## Acceptance
+
+- **Unit**: ≥4 tests del lint (preset inexistente, preset en manifest sin membership, membership sin preset en manifest, happy path).
+- **E2E**: drift rompe CI.
+
+
+- [ ] Lint implementado.
+- [ ] Tests verdes.
+- [ ] Integrado en CI y `bun run validate`.
+- [ ] Documentación: `docs/mcp-vertex/contributing/lint-rules.md` explica el lint.
+- [ ] `bun run validate` verde.
+
 
 - Lint detecta drift entre manifest y preset catalog.
 - Tests verdes.
@@ -249,7 +222,25 @@ resolution:
 
 ---
 
-## Cómo se relaciona con el plan y la auditoría
+## Notes
+
+- El lint es el regression guard.
+- Cualquier drift futuro entre manifest.presets y PRESET_DEFINITIONS rompe CI.
+
+
+```yaml
+resolution:
+  status: implemented
+  evidence:
+    - commit: <hash>
+    - new-files:
+        - tools/scripts/lint/manifest-vs-presets.script.ts
+        - tools/scripts/lint/manifest-vs-presets.spec.ts
+    - ci-integration: bun run lint:manifest-vs-presets en CI
+```
+
+---
+
 
 - **Plan padre**: [q00004](../../ready/q00004-plan-hardening-post-auditoria-chatgpt-sol-segunda-pasada.md), Track E.
 - **Auditoría legada**: §11 MAN2-008.

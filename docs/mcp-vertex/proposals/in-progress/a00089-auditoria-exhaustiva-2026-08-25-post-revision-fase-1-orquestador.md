@@ -2,7 +2,7 @@
 id: a00089
 title: "Auditoría exhaustiva 2026-08-25 — post-revisión Fase 1 (orquestador)"
 kind: audit
-status: ready
+status: in-progress
 type: proposal
 track: audit+proposals+security+concurrency
 date: 2026-08-25
@@ -11,6 +11,7 @@ date: 2026-08-25
 # a00089 — Auditoría exhaustiva 2026-08-25 — post-revisión Fase 1 (orquestador)
 
 ## Goal
+
 
 Auditoría exhaustiva propia (independiente, previa a leer la auditoría ChatGPT/sol legacy) de packages/core, cada plugin relevante, apps/web, tools/scripts, la extensión VSCode y el propio sistema de propuestas: bugs con evidencia, calidad de código, diseño, arquitectura, naming/duplicación, puntuación 0-10 por eje y roadmap de mejora priorizado.
 
@@ -26,6 +27,7 @@ Cierre de Fase 2 del encargo del usuario 2026-08-25: tras completar la Fase 1 (r
 
 ## Slices
 
+
 - global_gate: none
 
 ### S1 — Informe consolidado de auditoría
@@ -37,8 +39,39 @@ Cierre de Fase 2 del encargo del usuario 2026-08-25: tras completar la Fase 1 (r
   - "Incluye bugs con archivo+línea+escenario, puntuación 0-10 por sección y eje, ranking, lista priorizada de bugs y roadmap."
   - "Sección separada documentando qué se añadió tras leer la auditoría ChatGPT/sol legacy."
 
-## acceptance
 
 - El documento cubre packages/core, plugins/proposals, plugins/error-reporting, plugins/client (transporte), apps/web, tools/scripts, extensión VSCode y el sistema de propuestas.
 - Incluye bugs con archivo+línea+escenario, puntuación 0-10 por sección y eje, ranking, lista priorizada de bugs y roadmap.
 - Sección separada documentando qué se añadió tras leer la auditoría ChatGPT/sol legacy.
+
+## Acceptance
+
+
+- El documento `docs/mcp-vertex/audits/2026-08-25-orchestrator-audit-fase2.md` existe y tiene:
+  - bugs con archivo+línea+escenario,
+  - puntuación 0-10 por sección y eje,
+  - ranking y lista priorizada de bugs,
+  - roadmap de mejora,
+  - sección separada documentando qué se añadió tras leer la auditoría ChatGPT/sol legacy.
+- `bun run validate` sigue verde al cierre.
+
+## Verified state
+
+
+Esta propuesta está en `status: ready` y representa una auditoría exhaustiva de Fase 2. La auditoría todavía no se ha ejecutado completamente; su producto será el documento `docs/mcp-vertex/audits/2026-08-25-orchestrator-audit-fase2.md` (ver slice S1). El "verified state" se completará cuando ese documento exista.
+
+Estado actual:
+
+- **Commit base**: HEAD de `develop` a la fecha de propuesta (2026-08-25).
+- **Phase 0 (inventario)**: pendiente — el agente ejecutor capturará biome + inventario antes de redactar.
+- **Phase 1-10 (lectura y findings)**: pendiente.
+
+## Findings
+
+
+Pendiente. Se generarán como parte de la auditoría misma; cada finding se enlazará a su archivo:línea concreto y se clasificará como CONFIRMADO/PROBABLE/REVISAR/MEJORA/IDEA.
+
+## Scoreboard
+
+
+Pendiente. Se publicará junto con el documento de auditoría; puntuación 0-10 por eje (correctitud, privacidad, arquitectura, mantenibilidad, tokens, CI, performance) y un verdict global.

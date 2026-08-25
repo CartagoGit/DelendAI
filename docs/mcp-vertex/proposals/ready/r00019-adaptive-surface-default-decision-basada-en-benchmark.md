@@ -23,7 +23,7 @@ related:
 
 # r00019 — adaptive surface como default
 
-## Problem
+## Goal
 
 Hoy `surfaceMode` puede ser `native`, `adaptive` o `compact`, pero el default es `native`. Esto significa:
 
@@ -34,7 +34,6 @@ Resultado: swarm real = 229,740 B con `native`, vs ~50–80 KB con `adaptive` ac
 
 Reglas violadas: R4.1, §9 TOK2-004.
 
-## Evidence
 
 ```ts
 // mcp-vertex.config.json (default)
@@ -45,27 +44,24 @@ Reglas violadas: R4.1, §9 TOK2-004.
 
 El usuario que no especifica nada recibe la superficie nativa completa.
 
-## Classification
 
 `REVISAR / DECISIÓN DE PRODUCTO` — el cambio tiene impacto en compatibilidad con clientes MCP. Necesita benchmark antes de aplicar.
 
-## User impact
+## Why
 
 - Si `adaptive` es default, los usuarios consumen menos tokens por defecto.
 - Compatibilidad: clientes que cachean `tools/list` agresivamente pueden necesitar actualización del cache.
 - UX: `listChanged` notification se vuelve parte del flujo normal.
 
-## Privacy impact
 
 Cero.
 
-## Token impact
 
 - **Actual**: swarm 229,740 B (native).
 - **Target con adaptive default**: swarm bootstrap ~30–50 KB; tools adicionales activadas on-demand.
 - **Estimación**: ~5–10x reducción en context inicial.
 
-## Scope
+## Non-goals
 
 **Permitido**:
 
@@ -80,13 +76,12 @@ Cero.
 - Cambios en el runtime adaptive surface (ya implementado).
 - Cambios en plugins (cada uno decide su visibility vía manifest).
 
-## Out of scope
 
 - Schema diet (`r00018`).
 - Token gate (`i00005`).
 - Surface mode by capability (`f00176`).
 
-## Design
+## Architecture
 
 ### 1. Benchmark obligatorio antes del cambio
 
@@ -218,47 +213,6 @@ Si el usuario quiere native, lo declara. Adaptive deja de ser opt-in.
 // - notifications/tools/list_changed cuando aplique
 ```
 
-## Tests
-
-- **Unit**: `decideDefaultSurfaceMode` con varios clientCapabilities.
-- **Benchmark**: `surface-mode-compare.bench.script.ts` con ≥3 clientes.
-- **E2E**: tests de compat por cliente.
-- **Regression**: swarm bootstrap bytes <= 50 KB con adaptive default.
-
-## Acceptance criteria
-
-- [ ] Benchmark ejecutado con ≥3 clientes MCP reales.
-- [ ] Matriz de compatibilidad publicada.
-- [ ] Decision documentada (`docs/mcp-vertex/configuration/surface-mode-decision.yaml`).
-- [ ] Default cambiado a `adaptive` para todos los presets (excepto override explícito).
-- [ ] Fallback automático a `native` o `compact` para clientes sin `listChanged` support.
-- [ ] Bootstrap surface mínimo medido (orient + discover + activate + status + routing).
-- [ ] Token gate verde con adaptive default.
-- [ ] Documentación: `docs/mcp-vertex/configuration/surface-mode.md` explica la decisión, override, fallback.
-
-## Regression guards
-
-- **Token gate CI** (`i00005`) verde.
-- **Benchmark regression**: si un nuevo cliente MCP pierde compat, alerta.
-- **Override explícito**: si el usuario quiere native, sigue funcionando.
-
-## Resolution evidence (template)
-
-```yaml
-resolution:
-  status: implemented
-  evidence:
-    - commit: <hash>
-    - benchmark-output: docs/mcp-vertex/configuration/surface-mode-decision.yaml
-    - clients-tested: ≥3
-    - before/after-bytes:
-        before-bootstrap: "229,740 B (native, swarm)"
-        after-bootstrap:  "<50,000 B (adaptive, swarm)"
-    - compatibility-matrix: published
-```
-
----
-
 ## Slices
 
 - global_gate: type
@@ -291,7 +245,23 @@ resolution:
   - "Override `native` documentado."
   - "Fallback automático documentado."
 
-## acceptance
+## Acceptance
+
+- **Unit**: `decideDefaultSurfaceMode` con varios clientCapabilities.
+- **Benchmark**: `surface-mode-compare.bench.script.ts` con ≥3 clientes.
+- **E2E**: tests de compat por cliente.
+- **Regression**: swarm bootstrap bytes <= 50 KB con adaptive default.
+
+
+- [ ] Benchmark ejecutado con ≥3 clientes MCP reales.
+- [ ] Matriz de compatibilidad publicada.
+- [ ] Decision documentada (`docs/mcp-vertex/configuration/surface-mode-decision.yaml`).
+- [ ] Default cambiado a `adaptive` para todos los presets (excepto override explícito).
+- [ ] Fallback automático a `native` o `compact` para clientes sin `listChanged` support.
+- [ ] Bootstrap surface mínimo medido (orient + discover + activate + status + routing).
+- [ ] Token gate verde con adaptive default.
+- [ ] Documentación: `docs/mcp-vertex/configuration/surface-mode.md` explica la decisión, override, fallback.
+
 
 - Benchmark ejecutado y documentado.
 - Default cambiado a `adaptive`.
@@ -300,7 +270,28 @@ resolution:
 
 ---
 
-## Cómo se relaciona con el plan y la auditoría
+## Notes
+
+- **Token gate CI** (`i00005`) verde.
+- **Benchmark regression**: si un nuevo cliente MCP pierde compat, alerta.
+- **Override explícito**: si el usuario quiere native, sigue funcionando.
+
+
+```yaml
+resolution:
+  status: implemented
+  evidence:
+    - commit: <hash>
+    - benchmark-output: docs/mcp-vertex/configuration/surface-mode-decision.yaml
+    - clients-tested: ≥3
+    - before/after-bytes:
+        before-bootstrap: "229,740 B (native, swarm)"
+        after-bootstrap:  "<50,000 B (adaptive, swarm)"
+    - compatibility-matrix: published
+```
+
+---
+
 
 - **Plan padre**: [q00004](../../ready/q00004-plan-hardening-post-auditoria-chatgpt-sol-segunda-pasada.md), Track C + H.
 - **Auditoría legada**: §9 TOK2-004, §10 SURF2-001/002/003.
