@@ -25,9 +25,7 @@ import {
 } from './token-budget-report-lib';
 import {
 	estimateTokensFromBytes,
-	measurePresetTokenizerCosts,
 	TOKENIZER_MODELS,
-	type ITokenizerPresetMeasurement,
 } from './tokenizer-real.script';
 
 interface IFixtureMeasurements {
@@ -48,6 +46,8 @@ interface IFixtureMeasurements {
 interface IPresetDashboardRow {
 	readonly presetId: string;
 	readonly title: string;
+	readonly surfaceMode: 'native' | 'adaptive';
+	readonly source: 'tokens-gate' | 'dynamic-client';
 	readonly pluginCount: number;
 	readonly toolCount: number;
 	readonly toolsListBytes: number;
@@ -61,6 +61,21 @@ interface IPresetDashboardRow {
 	readonly loadErrors: readonly string[];
 	readonly ownerRows: readonly IToolOwnerMetrics[];
 }
+
+const DASHBOARD_SURFACES = [
+	{
+		surfaceMode: 'native',
+		source: 'tokens-gate',
+		clientInfo: undefined,
+		capabilities: undefined,
+	},
+	{
+		surfaceMode: 'adaptive',
+		source: 'dynamic-client',
+		clientInfo: DYNAMIC_SURFACE_CLIENT_INFO,
+		capabilities: DYNAMIC_SURFACE_CLIENT_CAPABILITIES,
+	},
+] as const;
 
 export const TOKEN_BUDGET_DASHBOARD_PATH = [
 	'docs',
@@ -266,13 +281,19 @@ const maybeMeasure = async (
 const measurePresetDashboard = async (
 	workspace: string,
 	presetId: string,
+	measurement: (typeof DASHBOARD_SURFACES)[number],
 ): Promise<IPresetDashboardRow> => {
 	const preset = PRESET_CATALOG.find((entry) => entry.id === presetId);
 	const connection = await connectTokenBudgetClient(workspace, {
 		pluginList: asPresetId(presetId),
 		preset: true,
-		clientInfo: DYNAMIC_SURFACE_CLIENT_INFO,
-		capabilities: DYNAMIC_SURFACE_CLIENT_CAPABILITIES,
+		surfaceMode: measurement.surfaceMode,
+		...(measurement.clientInfo !== undefined
+			? { clientInfo: measurement.clientInfo }
+			: {}),
+		...(measurement.capabilities !== undefined
+			? { capabilities: measurement.capabilities }
+			: {}),
 	});
 	try {
 		const metrics: IToolListMetrics = await listToolsMetrics(
@@ -292,6 +313,8 @@ const measurePresetDashboard = async (
 		return {
 			presetId,
 			title: preset?.title ?? presetId,
+			surfaceMode: measurement.surfaceMode,
+			source: measurement.source,
 			pluginCount: connection.pluginIds.length,
 			toolCount: metrics.toolCount,
 			toolsListBytes: metrics.toolsListBytes,
@@ -314,7 +337,6 @@ const renderGeneratedMarkdown = (
 	generatedAt: string,
 	fixture: IFixtureMeasurements,
 	presetRows: readonly IPresetDashboardRow[],
-	tokenizerRows: readonly ITokenizerPresetMeasurement[],
 ): string => {
 	const fixtureRows = [
 		[
@@ -445,9 +467,12 @@ const renderGeneratedMarkdown = (
 	const presetSummaryRows = presetRows.map((row) => [
 		row.presetId,
 		row.title,
+		row.surfaceMode,
+		row.source,
 		String(row.pluginCount),
 		String(row.toolCount),
 		formatInt(row.toolsListBytes),
+		String(estimateTokensFromBytes(row.toolsListBytes)),
 		formatInt(row.schemaBytes),
 		formatInt(row.descriptionBytes),
 		formatInt(row.inputSchemaBytes),
@@ -467,6 +492,8 @@ const renderGeneratedMarkdown = (
 	const pluginRows = presetRows.flatMap((row) =>
 		row.ownerRows.map((ownerRow) => [
 			row.presetId,
+			row.surfaceMode,
+			row.source,
 			ownerRow.owner,
 			String(ownerRow.toolCount),
 			formatInt(ownerRow.toolsListBytes),
@@ -477,19 +504,14 @@ const renderGeneratedMarkdown = (
 		]),
 	);
 
-	const tokenizerMap = new Map(
-		tokenizerRows.map((row) => [row.presetId, row]),
-	);
 	const tokenizerSummaryRows = presetRows.map((row) => {
-		const tokenizerRow = tokenizerMap.get(row.presetId);
-		const estimates = TOKENIZER_MODELS.map((model) => {
-			const estimate = tokenizerRow?.estimates.find(
-				(entry) => entry.model === model,
-			);
-			return estimate?.estimatedTokens ?? 0;
-		});
+		const estimates = TOKENIZER_MODELS.map(() =>
+			estimateTokensFromBytes(row.toolsListBytes),
+		);
 		return [
 			row.presetId,
+			row.surfaceMode,
+			row.source,
 			formatInt(row.toolsListBytes),
 			String(estimates[0] ?? 0),
 			String(estimates[1] ?? 0),
@@ -502,11 +524,15 @@ const renderGeneratedMarkdown = (
 	const deficits = presetRows
 		.filter((row) => {
 			const budget = presetToolsBudget(row.presetId);
-			return budget !== undefined && row.toolsListBytes > budget.hard;
+			return (
+				row.source === 'tokens-gate' &&
+				budget !== undefined &&
+				row.toolsListBytes > budget.hard
+			);
 		})
 		.map(
 			(row) =>
-				`- ${row.presetId} tools/list = ${formatInt(row.toolsListBytes)}B, documented hard ceiling = ${formatInt(presetToolsBudget(row.presetId)?.hard ?? 0)}B. Kept as-is per v00123 non-goal: report the deficit, do not auto-bump.`,
+				`- ${row.presetId} ${row.surfaceMode}/${row.source} tools/list = ${formatInt(row.toolsListBytes)}B, documented hard ceiling = ${formatInt(presetToolsBudget(row.presetId)?.hard ?? 0)}B. Derived from the same measurement semantics as tokens:gate; kept as-is per v00123 non-goal: report the deficit, do not auto-bump.`,
 		);
 
 	return [
@@ -544,15 +570,18 @@ const renderGeneratedMarkdown = (
 		'',
 		'## Real preset dashboard',
 		'',
-		'This dashboard measures the real preset assemblies through the actual plugin loader. It treats tools/list as first-order static context cost and breaks the payload down by preset and owner plugin.',
+		'This dashboard measures the real preset assemblies through the actual plugin loader. Each preset is reported twice: `native / tokens-gate` (the hard-budget semantics used by CI) and `adaptive / dynamic-client` (the modern bootstrap surface exposed to clients that support `tools/list_changed`). The two surfaces are intentionally kept separate.',
 		'',
 		markdownTable(
 			[
 				'Preset',
 				'Title',
+				'Surface Mode',
+				'Source',
 				'Plugins',
 				'Tools',
 				'Tools/List Bytes',
+				'Est. Tokens',
 				'Schema Bytes',
 				'Description Bytes',
 				'InputSchema Bytes',
@@ -572,6 +601,8 @@ const renderGeneratedMarkdown = (
 		markdownTable(
 			[
 				'Preset',
+				'Surface Mode',
+				'Source',
 				'Owner',
 				'Tools',
 				'Tools/List Bytes',
@@ -590,6 +621,8 @@ const renderGeneratedMarkdown = (
 		markdownTable(
 			[
 				'Preset',
+				'Surface Mode',
+				'Source',
 				'Tools/List Bytes',
 				`${TOKENIZER_MODELS[0]} Tokens`,
 				`${TOKENIZER_MODELS[1]} Tokens`,
@@ -617,19 +650,23 @@ const renderGeneratedMarkdown = (
 export const buildTokenBudgetDashboardMarkdown = async (): Promise<string> => {
 	const workspace = createTokenBudgetFixtureWorkspace();
 	try {
-		const [fixture, tokenizerRows] = await Promise.all([
-			measureFixtureSurfaces(workspace),
-			measurePresetTokenizerCosts(),
-		]);
+		const fixture = await measureFixtureSurfaces(workspace);
 		const presetRows: IPresetDashboardRow[] = [];
 		for (const presetId of TOKEN_BUDGETS.dashboardPresetIds) {
-			presetRows.push(await measurePresetDashboard(workspace, presetId));
+			for (const measurement of DASHBOARD_SURFACES) {
+				presetRows.push(
+					await measurePresetDashboard(
+						workspace,
+						presetId,
+						measurement,
+					),
+				);
+			}
 		}
 		const markdown = `${renderGeneratedMarkdown(
 			new Date().toISOString(),
 			fixture,
 			presetRows,
-			tokenizerRows,
 		)}\n`;
 		return markdown;
 	} finally {

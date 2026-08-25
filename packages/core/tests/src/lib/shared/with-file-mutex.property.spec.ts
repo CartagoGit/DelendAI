@@ -16,6 +16,7 @@ import {
 	LockContentionError,
 	withFileMutex,
 } from '../../../../src/lib/shared/with-file-mutex';
+import fc from 'fast-check';
 
 const delay = (ms: number): Promise<void> =>
 	new Promise((resolve) => setTimeout(resolve, ms));
@@ -138,6 +139,76 @@ describe('withFileMutex state-machine invariants', () => {
 				false,
 			);
 		}
+	});
+
+	it('fast-check: three contenders never overlap across generated schedules', async () => {
+		const scenarioArb = fc.record({
+			startDelays: fc.tuple(
+				fc.integer({ min: 0, max: 5 }),
+				fc.integer({ min: 0, max: 5 }),
+				fc.integer({ min: 0, max: 5 }),
+			),
+			sectionDurations: fc.tuple(
+				fc.integer({ min: 0, max: 8 }),
+				fc.integer({ min: 0, max: 8 }),
+				fc.integer({ min: 0, max: 8 }),
+			),
+			crashIndex: fc.integer({ min: -1, max: 2 }),
+		});
+
+		await fc.assert(
+			fc.asyncProperty(scenarioArb, async (scenario) => {
+				const scenarioTarget = join(
+					dir,
+					`state-fast-check-${Math.random().toString(36).slice(2)}.json`,
+				);
+				const scenarioLockPath = `${scenarioTarget}.mutex`;
+				writeFileSync(scenarioTarget, '{}');
+
+				let insideCount = 0;
+				let maxConcurrent = 0;
+				const contenders = scenario.startDelays.map(
+					(startDelay, contenderIndex) =>
+						(async () => {
+							await delay(startDelay);
+							await withFileMutex(
+								scenarioTarget,
+								async () => {
+									insideCount += 1;
+									maxConcurrent = Math.max(
+										maxConcurrent,
+										insideCount,
+									);
+									await delay(
+										scenario.sectionDurations[
+											contenderIndex
+										] ?? 0,
+									);
+									insideCount -= 1;
+									if (
+										scenario.crashIndex === contenderIndex
+									) {
+										throw new Error(
+											`simulated-crash-${contenderIndex}`,
+										);
+									}
+								},
+								{
+									heartbeatMs: 10,
+									pollMs: 2,
+									staleMs: 800,
+									timeoutMs: 2_000,
+								},
+							);
+						})().catch(() => undefined),
+				);
+
+				await Promise.all(contenders);
+				expect(maxConcurrent).toBeLessThanOrEqual(1);
+				expect(existsSync(scenarioLockPath)).toBe(false);
+			}),
+			{ numRuns: 200 },
+		);
 	});
 
 	it('reclaims both legacy and structured stale sidecars across bounded ages', async () => {

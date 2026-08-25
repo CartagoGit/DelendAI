@@ -33,30 +33,7 @@ interface IAllowRule {
 	readonly files: readonly string[];
 }
 
-const ALLOWLIST: Readonly<Record<string, IAllowRule>> = {
-	'project-health': {
-		reason: 'Legacy bounded signal readers still use direct reads pending their own safe-reader migration slice.',
-		files: ['src/lib/services/project-health-signals.service.ts'],
-	},
-	'quality-policy': {
-		reason: 'Legacy quality-policy readers still use direct reads pending dedicated migration work.',
-		files: [
-			'src/lib/services/quality-policy-types.service.ts',
-			'src/lib/services/quality-policy.service.ts',
-		],
-	},
-	search: {
-		reason: 'Legacy search readers still use direct reads pending the broader search-engine containment migration.',
-		files: [
-			'src/lib/embed/embed-pipeline.ts',
-			'src/lib/embed/index-store.ts',
-			'src/lib/services/search-engine.in-house.ts',
-			'src/lib/tools/search-references.tool.ts',
-			'src/lib/tools/search-semantic.tool.ts',
-			'src/lib/tools/search-symbol.tool.ts',
-		],
-	},
-};
+const ALLOWLIST: Readonly<Record<string, IAllowRule>> = {};
 
 const normalizeRel = (pathValue: string): string =>
 	pathValue.split('\\').join('/');

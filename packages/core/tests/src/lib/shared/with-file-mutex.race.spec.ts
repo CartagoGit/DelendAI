@@ -2,7 +2,7 @@ import {
 	existsSync,
 	mkdtempSync,
 	rmSync,
-	utimesSync,
+	readFileSync,
 	writeFileSync,
 } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -16,6 +16,20 @@ import {
 	LockContentionError,
 	withFileMutex,
 } from '../../../../src/lib/shared/with-file-mutex';
+
+interface IStructuredLease {
+	readonly acquiredAt: number;
+	readonly generation: number;
+	readonly heartbeatAt: number;
+	readonly token: string;
+}
+
+const readStructuredLease = (path: string): IStructuredLease =>
+	JSON.parse(readFileSync(path, 'utf8')) as IStructuredLease;
+
+const writeStructuredLease = (path: string, lease: IStructuredLease): void => {
+	writeFileSync(path, JSON.stringify(lease));
+};
 
 describe('withFileMutex race window (MUT2-001)', () => {
 	let dir = '';
@@ -67,15 +81,28 @@ describe('withFileMutex race window (MUT2-001)', () => {
 			await new Promise((resolve) => setTimeout(resolve, 5));
 		}
 
-		const staleTime = new Date(Date.now() - 60_000);
-		utimesSync(lockPath, staleTime, staleTime);
+		const liveLease = readStructuredLease(lockPath);
+		writeStructuredLease(lockPath, {
+			...liveLease,
+			generation: liveLease.generation + 1,
+			heartbeatAt: Date.now() - 60_000,
+		});
+
+		let observedStaleCount = 0;
+		let reclaimRenameCount = 0;
 
 		__setWithFileMutexTestHooks({
 			afterObserveStale: () => {
-				const now = new Date();
-				utimesSync(lockPath, now, now);
+				observedStaleCount += 1;
+				const observedLease = readStructuredLease(lockPath);
+				writeStructuredLease(lockPath, {
+					...observedLease,
+					generation: observedLease.generation + 1,
+					heartbeatAt: Date.now(),
+				});
 			},
 			afterReclaimRename: async () => {
+				reclaimRenameCount += 1;
 				if (!contenderStarted) {
 					contenderStarted = true;
 					contenderPromise = withFileMutex(
@@ -107,6 +134,8 @@ describe('withFileMutex race window (MUT2-001)', () => {
 			),
 		).rejects.toBeInstanceOf(LockContentionError);
 
+		expect(observedStaleCount).toBe(1);
+		expect(reclaimRenameCount).toBe(0);
 		expect(contenderStarted).toBe(false);
 		expect(contenderObservedOverlap).toBe(false);
 
