@@ -2,7 +2,7 @@
 id: r00016
 title: "registry: plugin manifests como única fuente de verdad y generadores derivados"
 kind: refactor
-status: review
+status: done
 type: proposal
 track: registry
 date: 2026-08-24
@@ -45,7 +45,10 @@ El catálogo vive duplicado en package.json, FIRST_PARTY_PLUGIN_INDEX, PLUGIN_DE
 - acceptance:
   - "definePluginManifest con id/package/version/visibility/summary/tags/maturity/permissions/presets/tokenBudget/dependencies/capabilities."
   - "Schema validado con Zod; MAN-001 cubierto."
-
+- review-state: done
+- review-implementer: swarm-implementer
+- review-reviewer: orchestrator-fase1-review
+- review-log: approved by orchestrator-fase1-review — Redo. validate verde.
 ### S2 — Lint de manifests y representación
 - **Status**: done
 - **Files**: `tools/scripts/lint/plugin-manifest.script.ts`

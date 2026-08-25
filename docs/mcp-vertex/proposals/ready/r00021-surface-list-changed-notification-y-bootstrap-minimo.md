@@ -1,5 +1,5 @@
 ---
-id: r00221
+id: r00021
 title: "surface — validar `notifications/tools/list_changed` contra clientes MCP reales + bootstrap mínimo medido (SURF2-001 + SURF2-002)"
 kind: refactor
 status: ready
