@@ -18,9 +18,13 @@
  * `round-context-hash.ts` / `round-context-sources.ts` modules.
  */
 
-import { readFile } from 'node:fs/promises';
+import { basename, dirname } from 'node:path';
 
-import { writeFileAtomic, withFileMutex } from '@mcp-vertex/core/public';
+import {
+	SafeWorkspaceReader,
+	writeFileAtomic,
+	withFileMutex,
+} from '@mcp-vertex/core/public';
 
 import { ROUND_CONTEXT_DIGEST_VERSION } from './round-context-types';
 import type {
@@ -97,7 +101,11 @@ export const readRoundContextDigest = async (
 ): Promise<IRoundContextDigest | null> => {
 	let raw: string;
 	try {
-		raw = await readFile(path, 'utf8');
+		raw = (
+			await new SafeWorkspaceReader(dirname(path)).readText(
+				basename(path),
+			)
+		).content;
 	} catch {
 		return null;
 	}

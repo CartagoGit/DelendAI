@@ -1,4 +1,6 @@
-import { readFile } from 'node:fs/promises';
+import { basename, dirname } from 'node:path';
+
+import { SafeWorkspaceReader } from '@mcp-vertex/core/public';
 
 import type { IUsageSummary } from './types';
 
@@ -7,7 +9,11 @@ export const readSummaryFile = async (
 	summaryPath: string,
 ): Promise<IUsageSummary | null> => {
 	try {
-		const raw = await readFile(summaryPath, 'utf8');
+		const raw = (
+			await new SafeWorkspaceReader(dirname(summaryPath)).readText(
+				basename(summaryPath),
+			)
+		).content;
 		return JSON.parse(raw) as IUsageSummary;
 	} catch {
 		return null;

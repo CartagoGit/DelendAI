@@ -23,9 +23,13 @@
  * auto-promoter only touches 'queued' entries.
  */
 
-import { readFile } from 'node:fs/promises';
+import { basename, dirname } from 'node:path';
 
-import { writeFileAtomic, withFileMutex } from '@mcp-vertex/core/public';
+import {
+	SafeWorkspaceReader,
+	writeFileAtomic,
+	withFileMutex,
+} from '@mcp-vertex/core/public';
 
 import type {
 	IPersistentTaskEntry,
@@ -70,7 +74,11 @@ const loadOrEmptyQueue = async (
 ): Promise<IPersistentTaskQueue> => {
 	let raw: string;
 	try {
-		raw = await readFile(queuePath, 'utf8');
+		raw = (
+			await new SafeWorkspaceReader(dirname(queuePath)).readText(
+				basename(queuePath),
+			)
+		).content;
 	} catch {
 		// Missing/unreadable queue → empty.
 		return { version: 1, entries: [] };

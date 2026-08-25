@@ -1,9 +1,10 @@
-import { readFile, readdir } from 'node:fs/promises';
+import { readdir } from 'node:fs/promises';
 import { join } from 'node:path';
 
 import z from 'zod';
 
 import {
+	SafeWorkspaceReader,
 	resolveWorkspaceContained,
 	toolError,
 	toolJson,
@@ -96,14 +97,18 @@ export const buildQualityComplexityToolRegistration = (
 				const srcRel =
 					contained.rel === '.' ? 'src' : `${contained.rel}/src`;
 				const srcAbs = join(options.workspaceRoot, srcRel);
+				const reader = new SafeWorkspaceReader(options.workspaceRoot);
 				const files = await walkTsFiles(srcAbs);
 				const contents = await Promise.all(
 					files.map(async (relativePath) => ({
 						path: `${srcRel}/${relativePath}`.split('\\').join('/'),
-						source: await readFile(
-							join(srcAbs, relativePath),
-							'utf8',
-						),
+						source: (
+							await reader.readText(
+								`${srcRel}/${relativePath}`
+									.split('\\')
+									.join('/'),
+							)
+						).content,
 					})),
 				);
 				const result = scanComplexityProject(contents, threshold);

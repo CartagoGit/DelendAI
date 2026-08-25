@@ -11,8 +11,10 @@
  * and it keeps the I/O layer dependency-free.
  */
 
-import { readdir, readFile } from 'node:fs/promises';
+import { readdir } from 'node:fs/promises';
 import { dirname, join, relative, resolve } from 'node:path';
+
+import { SafeWorkspaceReader } from '@mcp-vertex/core/public';
 
 import type { IDiagramModuleDeps } from '../contracts/interfaces/graph.interface';
 
@@ -92,6 +94,7 @@ export const realDiagramModules = (
 	packageRootAbs: string,
 ): IDiagramModuleDeps => {
 	const allFilesPromise = listTsFiles(packageRootAbs);
+	const reader = new SafeWorkspaceReader(packageRootAbs);
 	return {
 		listPackageFiles: async () => allFilesPromise,
 		readFileImports: async (relativePath) => {
@@ -99,10 +102,7 @@ export const realDiagramModules = (
 			const allSet = new Set(allFiles);
 			let raw: string;
 			try {
-				raw = await readFile(
-					join(packageRootAbs, relativePath),
-					'utf8',
-				);
+				raw = (await reader.readText(relativePath)).content;
 			} catch {
 				return [];
 			}

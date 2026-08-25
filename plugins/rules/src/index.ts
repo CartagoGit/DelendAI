@@ -129,6 +129,7 @@ export default definePlugin({
 				overrides,
 			);
 			await ensureRulesCache({
+				reader,
 				resolve: (rel) => ctx.workspace.resolve(rel),
 				cacheRelDir,
 				manifest,

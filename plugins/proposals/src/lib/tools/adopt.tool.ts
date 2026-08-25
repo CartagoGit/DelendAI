@@ -1,4 +1,4 @@
-import { access, readdir, readFile, stat } from 'node:fs/promises';
+import { access, readdir, stat } from 'node:fs/promises';
 import { join } from 'node:path';
 
 import z from 'zod';
@@ -6,6 +6,7 @@ import z from 'zod';
 import type { IToolRegistration } from '@mcp-vertex/core/public';
 import {
 	resolveWorkspaceContained,
+	SafeWorkspaceReader,
 	toolError,
 	toolOk,
 	writeFileAtomic,
@@ -74,6 +75,7 @@ const lightFrontmatter = (text: string): ILightFrontmatter => {
  */
 const scanDir = async (dirAbs: string): Promise<IScanEntry[]> => {
 	const entries: IScanEntry[] = [];
+	const reader = new SafeWorkspaceReader(dirAbs);
 	const walk = async (abs: string, relPrefix: string): Promise<void> => {
 		const names = await readdir(abs).catch(() => [] as string[]);
 		for (const name of names) {
@@ -86,7 +88,10 @@ const scanDir = async (dirAbs: string): Promise<IScanEntry[]> => {
 				if (relPrefix === '') entries.push({ name: rel, isDir: true });
 				await walk(absPath, rel);
 			} else if (name.toLowerCase().endsWith('.md')) {
-				const text = await readFile(absPath, 'utf8').catch(() => '');
+				const text = await reader
+					.readText(rel)
+					.then((v) => v.content)
+					.catch(() => '');
 				entries.push({
 					name: rel,
 					isDir: false,

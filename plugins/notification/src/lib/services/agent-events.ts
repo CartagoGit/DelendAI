@@ -1,4 +1,7 @@
-import { stat, readFile } from 'node:fs/promises';
+import { stat } from 'node:fs/promises';
+import { basename, dirname } from 'node:path';
+
+import { SafeWorkspaceReader } from '@mcp-vertex/core/public';
 
 export type IAgentEventKind = 'agent-alive' | 'agent-idle' | 'agent-dead';
 
@@ -33,7 +36,13 @@ const readClaims = async (
 	lockFile: string,
 ): Promise<Array<{ taskId: string; agent: string }>> => {
 	try {
-		const parsed = JSON.parse(await readFile(lockFile, 'utf8')) as {
+		const parsed = JSON.parse(
+			(
+				await new SafeWorkspaceReader(dirname(lockFile)).readText(
+					basename(lockFile),
+				)
+			).content,
+		) as {
 			in_flight?: ILockEntryLite[];
 		};
 		return (parsed.in_flight ?? [])

@@ -1,7 +1,10 @@
-import { readFile } from 'node:fs/promises';
-import { dirname, join } from 'node:path';
+import { basename, dirname, join } from 'node:path';
 
-import { writeFileAtomic, withFileMutex } from '@mcp-vertex/core/public';
+import {
+	SafeWorkspaceReader,
+	writeFileAtomic,
+	withFileMutex,
+} from '@mcp-vertex/core/public';
 
 import { DEFAULT_PATH_LAYOUT } from '../contracts/constants/default-path-layout.constant';
 
@@ -93,7 +96,8 @@ const EMPTY_DOCUMENT = (): {
 });
 
 const defaultReadTable = async (path: string): Promise<string> =>
-	readFile(path, 'utf8');
+	(await new SafeWorkspaceReader(dirname(path)).readText(basename(path)))
+		.content;
 
 const defaultWriteTable = async (path: string, body: string): Promise<void> =>
 	writeFileAtomic(path, body);

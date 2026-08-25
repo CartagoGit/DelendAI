@@ -15,12 +15,13 @@
  * records its provenance (`migrated-from:`) which also makes re-runs
  * idempotent; user text runs through `redactSecrets` before persisting.
  */
-import { readFile, readdir, stat } from 'node:fs/promises';
+import { readdir, stat } from 'node:fs/promises';
 import { join, relative } from 'node:path';
 
 import {
 	redactSecrets,
 	resolveWorkspaceContained,
+	SafeWorkspaceReader,
 	writeFileAtomic,
 } from '@mcp-vertex/core/public';
 
@@ -258,6 +259,7 @@ const readMigratedSources = async (
 	proposalsDirAbs: string,
 ): Promise<Set<string>> => {
 	const sources = new Set<string>();
+	const reader = new SafeWorkspaceReader(proposalsDirAbs);
 	const walk = async (dirAbs: string): Promise<void> => {
 		const entries = await readdir(dirAbs, { withFileTypes: true }).catch(
 			() => [],
@@ -266,7 +268,12 @@ const readMigratedSources = async (
 			const abs = join(dirAbs, entry.name);
 			if (entry.isDirectory()) await walk(abs);
 			else if (entry.name.endsWith('.md')) {
-				const text = await readFile(abs, 'utf8').catch(() => '');
+				const text = await reader
+					.readText(
+						relative(proposalsDirAbs, abs).split('\\').join('/'),
+					)
+					.then((value) => value.content)
+					.catch(() => '');
 				for (const match of text.matchAll(
 					/^migrated-from:\s*(.+)$/gm,
 				)) {
@@ -360,10 +367,10 @@ export const migrateForeign = async (
 	}
 
 	for (const rel of files) {
-		const text = await readFile(
-			join(options.workspaceRoot, rel),
-			'utf8',
-		).catch(() => '');
+		const text = await new SafeWorkspaceReader(options.workspaceRoot)
+			.readText(rel)
+			.then((value) => value.content)
+			.catch(() => '');
 		if (text.length === 0) {
 			skipped.push({ source: rel, reason: 'unreadable or empty' });
 			continue;

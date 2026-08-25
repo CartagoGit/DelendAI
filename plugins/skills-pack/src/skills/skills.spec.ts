@@ -1,7 +1,9 @@
-import { readFile, readdir } from 'node:fs/promises';
+import { readdir } from 'node:fs/promises';
 import { resolve } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
+
+import { SafeWorkspaceReader } from '@mcp-vertex/core/public';
 
 import { SKILLS_PACK_SKILLS } from './catalog';
 
@@ -45,6 +47,7 @@ const collectPluginToolIds = async (
 	dir: string,
 	pluginName?: string,
 ): Promise<Set<string>> => {
+	const reader = new SafeWorkspaceReader(workspaceRoot);
 	const entries = await readdir(dir, { withFileTypes: true });
 	const ids = new Set<string>();
 	for (const entry of entries) {
@@ -63,7 +66,7 @@ const collectPluginToolIds = async (
 		) {
 			continue;
 		}
-		const source = await readFile(absPath, 'utf8');
+		const source = (await reader.readText(absPath)).content;
 		for (const match of source.matchAll(/id:\s*'([^']+)'/gu)) {
 			const toolId = match[1];
 			if (toolId) ids.add(`mcp-vertex_${pluginName}_${toolId}`);
@@ -77,7 +80,11 @@ describe('skills-pack skills', () => {
 		await Promise.all(
 			SKILLS_PACK_SKILLS.map(async (skill) => {
 				const absPath = resolve(workspaceRoot, skill.path);
-				const body = await readFile(absPath, 'utf8');
+				const body = (
+					await new SafeWorkspaceReader(workspaceRoot).readText(
+						absPath,
+					)
+				).content;
 				const frontmatter = extractFrontmatter(body);
 
 				expect(extractInlineString(frontmatter, 'name')).toBe(skill.id);
@@ -108,7 +115,13 @@ describe('skills-pack skills', () => {
 	});
 
 	it('references only tools that exist in the generated catalog', async () => {
-		const parsed = JSON.parse(await readFile(agentCatalogPath, 'utf8')) as {
+		const parsed = JSON.parse(
+			(
+				await new SafeWorkspaceReader(workspaceRoot).readText(
+					agentCatalogPath,
+				)
+			).content,
+		) as {
 			tools?: Array<{ name?: string }>;
 		};
 		const catalogTools = new Set(

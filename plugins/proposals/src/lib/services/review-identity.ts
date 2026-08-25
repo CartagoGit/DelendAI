@@ -1,8 +1,12 @@
-import { mkdir, readFile } from 'node:fs/promises';
+import { mkdir } from 'node:fs/promises';
 import { hostname as readHostname } from 'node:os';
-import { dirname, join } from 'node:path';
+import { basename, dirname, join } from 'node:path';
 
-import { withFileMutex, writeFileAtomic } from '@mcp-vertex/core/public';
+import {
+	SafeWorkspaceReader,
+	withFileMutex,
+	writeFileAtomic,
+} from '@mcp-vertex/core/public';
 
 export interface IReviewIdentity {
 	readonly host: string;
@@ -75,8 +79,10 @@ const parseIdentityLine = (line: string): IReviewIdentityRecord | null => {
 export const createReviewIdentityDeps = (): IReviewIdentityDeps => {
 	return {
 		appendLine: async (path, line) => {
-			const existing = await readFile(path, 'utf8').catch(
-				(error: unknown) => {
+			const existing = await new SafeWorkspaceReader(dirname(path))
+				.readText(basename(path))
+				.then((value) => value.content)
+				.catch((error: unknown) => {
 					if (
 						error &&
 						typeof error === 'object' &&
@@ -86,8 +92,7 @@ export const createReviewIdentityDeps = (): IReviewIdentityDeps => {
 						return '';
 					}
 					throw error;
-				},
-			);
+				});
 			const prefix =
 				existing === '' || existing.endsWith('\n')
 					? existing
@@ -98,17 +103,20 @@ export const createReviewIdentityDeps = (): IReviewIdentityDeps => {
 			await mkdir(path, { recursive: true });
 		},
 		readText: async (path) =>
-			readFile(path, 'utf8').catch((error: unknown) => {
-				if (
-					error &&
-					typeof error === 'object' &&
-					'code' in error &&
-					error.code === 'ENOENT'
-				) {
-					return '';
-				}
-				throw error;
-			}),
+			new SafeWorkspaceReader(dirname(path))
+				.readText(basename(path))
+				.then((value) => value.content)
+				.catch((error: unknown) => {
+					if (
+						error &&
+						typeof error === 'object' &&
+						'code' in error &&
+						error.code === 'ENOENT'
+					) {
+						return '';
+					}
+					throw error;
+				}),
 		now: () => new Date().toISOString(),
 		hostname: () => readHostname(),
 		pid: () => process.pid,

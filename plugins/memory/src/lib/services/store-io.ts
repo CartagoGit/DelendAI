@@ -11,11 +11,12 @@
  * interfaces the test harness provides). The production wiring uses
  * the real `readFile` / `writeFileAtomic`.
  */
-import { readFile } from 'node:fs/promises';
+import { basename, dirname } from 'node:path';
 
 import {
 	CorruptFileError,
 	quarantineCorruptFile,
+	SafeWorkspaceReader,
 	withFileMutex,
 	writeFileAtomic,
 } from '@mcp-vertex/core/public';
@@ -39,9 +40,10 @@ const quarantine = async (absPath: string, detail: string): Promise<never> => {
  * Async I/O so the read never blocks the MCP server's event loop. [A1]
  */
 export const readStore = async (absPath: string): Promise<INote[]> => {
+	const reader = new SafeWorkspaceReader(dirname(absPath));
 	let raw: string;
 	try {
-		raw = await readFile(absPath, 'utf8');
+		raw = (await reader.readText(basename(absPath))).content;
 	} catch (err) {
 		if ((err as NodeJS.ErrnoException).code === 'ENOENT') return [];
 		throw err;
