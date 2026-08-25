@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
 
+import type {
+	IToolIdentityRegistry,
+	IToolRegistryEntry,
+} from '@mcp-vertex/core/public';
+
 import {
 	buildIssueBody,
 	classifyInternalError,
@@ -10,6 +15,10 @@ import {
 	validateSerializedSafeReport,
 	type ISafeMcpVertexReport,
 } from '../src/public/index';
+import {
+	asReportableError,
+	buildSafeReport,
+} from '../src/lib/report-builder.helper';
 import {
 	ALL_PRIVATE_MARKERS,
 	EXPECTED_SAFE_MCP_FRAMES,
@@ -25,6 +34,32 @@ import {
 const INTERNAL_ERROR_CODE = 'PLUGIN_REGISTER_TIMEOUT';
 const INTERNAL_COMPONENT_ID = 'createSafeReporter';
 const INTERNAL_PACKAGE_ID = '@mcp-vertex/error-reporting';
+const LLM_TOOL_NAME = 'mcp-vertex_orchestrator-runner_invoke';
+const LLM_SPOOF_TOOL_NAME = 'acme_private_billing_orchestrator-runner_invoke';
+
+const registryOf = (
+	entries: Record<string, IToolRegistryEntry>,
+): IToolIdentityRegistry => ({
+	get: (toolName) => entries[toolName],
+	list: () => new Map(Object.entries(entries)),
+});
+
+const llmToolRegistry = registryOf({
+	[LLM_TOOL_NAME]: {
+		packageName: '@mcp-vertex/orchestrator-runner',
+		owner: 'mcp-vertex',
+		publicToolName: 'invoke',
+		category: 'orchestration',
+	},
+});
+
+const spoofedLlmToolRegistry = registryOf({
+	[LLM_SPOOF_TOOL_NAME]: {
+		packageName: '/workspace/acme/internal-tools.ts',
+		owner: 'host-project',
+		category: 'host-specific',
+	},
+});
 
 const buildInternalError = (
 	fixture: IAdversarialProjectFixture,
@@ -91,6 +126,36 @@ const buildArtifacts = (fixture: IAdversarialProjectFixture) => {
 		report,
 		body,
 		serialized,
+	};
+};
+
+const buildLlmFormatArtifacts = (fixture: IAdversarialProjectFixture) => {
+	const observed = {
+		error: {
+			code: 'LLM_FORMAT',
+			reason: fixture.privateMessage,
+		},
+	};
+	const reportable = asReportableError(
+		LLM_TOOL_NAME,
+		llmToolRegistry,
+		observed,
+	);
+	if (reportable === undefined) {
+		throw new TypeError('Expected llm-format failure to be reportable');
+	}
+	const report = buildSafeReport({
+		toolName: LLM_TOOL_NAME,
+		toolRegistry: llmToolRegistry,
+		error: reportable,
+	});
+	if (report === undefined) {
+		throw new TypeError('Expected llm-format report to be buildable');
+	}
+	return {
+		report,
+		body: buildIssueBody(report),
+		serialized: JSON.stringify(report, null, 2),
 	};
 };
 
@@ -194,5 +259,65 @@ describe('privacy adversarial invariant', () => {
 		expect(projectB.serialized).not.toContain(
 			PROJECT_B_FIXTURE.privateMessage,
 		);
+	});
+
+	it('keeps llm-format reports invariant across hosts and never leaks private markers', () => {
+		const projectA = buildLlmFormatArtifacts(PROJECT_A_FIXTURE);
+		const projectB = buildLlmFormatArtifacts(PROJECT_B_FIXTURE);
+
+		expect(validateSafeReport(projectA.report)).toEqual({ ok: true });
+		expect(validateSafeReport(projectB.report)).toEqual({ ok: true });
+		expect(validateSerializedSafeReport(projectA.serialized)).toEqual({
+			ok: true,
+		});
+		expect(validateSerializedSafeReport(projectB.serialized)).toEqual({
+			ok: true,
+		});
+
+		expect(projectA.report.safeToolId).toBe(
+			'@mcp-vertex/orchestrator-runner.invoke',
+		);
+		expect(projectB.report.safeToolId).toBe(
+			'@mcp-vertex/orchestrator-runner.invoke',
+		);
+		expect(projectA.report.fingerprint).toBe(projectB.report.fingerprint);
+		expect(projectA.body).toBe(projectB.body);
+		expect(projectA.serialized).toBe(projectB.serialized);
+
+		assertNoPrivateLeak(
+			projectA.body,
+			ALL_PRIVATE_MARKERS,
+			'llm issue body A',
+		);
+		assertNoPrivateLeak(
+			projectB.body,
+			ALL_PRIVATE_MARKERS,
+			'llm issue body B',
+		);
+		assertNoPrivateLeak(
+			projectA.serialized,
+			ALL_PRIVATE_MARKERS,
+			'llm serialized payload A',
+		);
+		assertNoPrivateLeak(
+			projectB.serialized,
+			ALL_PRIVATE_MARKERS,
+			'llm serialized payload B',
+		);
+	});
+
+	it('rejects host llm-suffix spoofing before any safe report can be built', () => {
+		const reportable = asReportableError(
+			LLM_SPOOF_TOOL_NAME,
+			spoofedLlmToolRegistry,
+			{
+				error: {
+					code: 'LLM_FORMAT',
+					reason: PROJECT_A_FIXTURE.privateMessage,
+				},
+			},
+		);
+
+		expect(reportable).toBeUndefined();
 	});
 });
