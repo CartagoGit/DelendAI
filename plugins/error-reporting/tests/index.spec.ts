@@ -254,17 +254,6 @@ describe('buildReportErrorHandler', () => {
 								category: 'host-specific',
 							}
 						: undefined,
-				list: () =>
-					new Map([
-						[
-							'acme_private_billing_orchestrator-runner_invoke',
-							{
-								packageName: '/workspace/acme/tools.ts',
-								owner: 'host-project',
-								category: 'host-specific',
-							},
-						],
-					]),
 			},
 		});
 

@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-08-25T07:01:37.658Z",
+	"generatedAt": "2026-08-25T07:09:07.575Z",
 	"mode": "compact",
 	"tools": [
 		{
@@ -1223,13 +1223,6 @@
 				"kind": "chore"
 			},
 			{
-				"id": "c00012",
-				"title": "c00012",
-				"track": "ci",
-				"status": "ready",
-				"kind": "chore"
-			},
-			{
 				"id": "c00013",
 				"title": "c00013",
 				"track": "ci",
@@ -1384,13 +1377,6 @@
 				"kind": "unspecified"
 			},
 			{
-				"id": "t00011",
-				"title": "t00011",
-				"track": "privacy",
-				"status": "ready",
-				"kind": "unspecified"
-			},
-			{
 				"id": "t00012",
 				"title": "t00012",
 				"track": "concurrency",
@@ -1461,30 +1447,9 @@
 				"kind": "fix"
 			},
 			{
-				"id": "x00249",
-				"title": "x00249",
-				"track": "privacy",
-				"status": "ready",
-				"kind": "fix"
-			},
-			{
 				"id": "x00250",
 				"title": "x00250",
 				"track": "concurrency",
-				"status": "ready",
-				"kind": "fix"
-			},
-			{
-				"id": "x00251",
-				"title": "x00251",
-				"track": "ci",
-				"status": "ready",
-				"kind": "fix"
-			},
-			{
-				"id": "x00252",
-				"title": "x00252",
-				"track": "ci",
 				"status": "ready",
 				"kind": "fix"
 			},
@@ -1511,9 +1476,9 @@
 			}
 		],
 		"byStatus": {
-			"ready": 36,
+			"ready": 31,
 			"in-progress": 10,
-			"review": 2,
+			"review": 5,
 			"paused": 1,
 			"done": 432,
 			"blocked": 0,
