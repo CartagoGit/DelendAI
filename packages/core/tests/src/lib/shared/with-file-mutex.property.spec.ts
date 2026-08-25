@@ -111,10 +111,19 @@ describe('withFileMutex state-machine invariants', () => {
 								}
 							},
 							{
+								// These scenarios exercise contention, overlap
+								// and crash-release — not stale reclaim, which
+								// has its own test below. An 80ms stale window
+								// against ≤20ms sections left no margin on a
+								// loaded machine: a descheduled-but-live holder
+								// got reclaimed, and the restored reclaim marker
+								// then outlived its release, leaving the sidecar
+								// behind. Widen the window so only genuine
+								// contention is under test here.
 								heartbeatMs: 10,
 								pollMs: 2,
-								staleMs: 80,
-								timeoutMs: 250,
+								staleMs: 800,
+								timeoutMs: 2000,
 							},
 						);
 					})().catch(() => undefined),
@@ -247,20 +256,24 @@ describe('withFileMutex state-machine invariants', () => {
 
 	it('heartbeat generations are monotonic across bounded runs', async () => {
 		const cases = [3, 4, 5] as const;
+		// A heartbeat already in flight when the lock is released still
+		// resolves (harmlessly) after `withFileMutex` returns, and the test
+		// hook is process-global — so without this, a leftover sample from an
+		// earlier case lands in the next case's samples and looks like a
+		// generation going backwards. Retiring each case's token makes the
+		// attribution exact instead of timing-dependent.
+		const retiredTokens = new Set<string>();
 
 		for (const [caseIndex, targetHeartbeats] of cases.entries()) {
 			const generations: number[] = [];
+			const caseTokens = new Set<string>();
 			const targetCase = join(dir, `state-generation-${caseIndex}.json`);
 			writeFileSync(targetCase, '{}');
 
-			// The hook is process-global, so a heartbeat still in flight from
-			// a previous case would otherwise land in this case's samples and
-			// break monotonicity. Pin recording to this acquisition's token.
-			let caseToken: string | undefined;
 			__setWithFileMutexTestHooks({
 				afterHeartbeat: (lease) => {
-					caseToken ??= lease.token;
-					if (lease.token !== caseToken) return;
+					if (retiredTokens.has(lease.token)) return;
+					caseTokens.add(lease.token);
 					generations.push(lease.generation);
 				},
 			});
@@ -285,10 +298,16 @@ describe('withFileMutex state-machine invariants', () => {
 				},
 			);
 
+			// Let any heartbeat still in flight at release land here, where it
+			// belongs, before this case's tokens are retired.
+			await delay(20);
+			for (const caseToken of caseTokens) retiredTokens.add(caseToken);
+
 			expect(
 				generations.length,
 				`case ${caseIndex}`,
 			).toBeGreaterThanOrEqual(targetHeartbeats);
+			expect(caseTokens.size, `case ${caseIndex}`).toBe(1);
 			for (let index = 1; index < generations.length; index += 1) {
 				const current = generations[index];
 				const previous = generations[index - 1];
