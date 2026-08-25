@@ -49,6 +49,11 @@ import { assembleSkills } from './assemble-skills';
 import { createToolSurfaceRuntimeAccess } from '../project/tool-surface-runtime.service';
 import { BOOTSTRAP_CORE_TOOL_IDS } from '../contracts/constants/bootstrap-core-tool-ids.constant';
 import {
+	resolveExplicitSurfaceMode,
+	resolveInitialSurfaceMode,
+	shouldRegisterSurfaceRouter,
+} from '../surface/decide-mode';
+import {
 	mergeCheckpointAdvisories,
 	selectCheckpointAdvisory,
 } from '../shared/checkpoint-advisory';
@@ -437,6 +442,12 @@ export const assembleCliConfig = async (
 	});
 
 	const toolSurfaceRuntime = createToolSurfaceRuntimeAccess();
+	const explicitSurfaceMode = resolveExplicitSurfaceMode({
+		cliMode: args.surfaceMode,
+		cliSurfaceExplicit: args.tokens.surface !== undefined,
+		configMode: fileConfig.surfaceMode,
+	});
+	const initialSurfaceMode = resolveInitialSurfaceMode(explicitSurfaceMode);
 	const { tools, catalogToolEntries, metricsRegistry } =
 		await assembleCoreTools({
 			args,
@@ -558,9 +569,14 @@ export const assembleCliConfig = async (
 		pluginDescriptorsByPlugin.set(entry.pluginId, existing);
 	}
 	const toolSurfacePlan: IToolSurfacePlan = {
-		mode: args.surfaceMode,
+		mode: initialSurfaceMode,
+		...(explicitSurfaceMode !== undefined
+			? { explicitMode: explicitSurfaceMode }
+			: {}),
 		bootstrapToolIds: [...BOOTSTRAP_CORE_TOOL_IDS],
-		...(args.surfaceMode === 'compact' ? { routerToolId: 'vertex' } : {}),
+		...(shouldRegisterSurfaceRouter(explicitSurfaceMode)
+			? { routerToolId: 'vertex' }
+			: {}),
 		descriptors: [...coreSurfaceDescriptors, ...toolSurfaceDescriptors],
 		plugins: [...pluginDescriptorsByPlugin.entries()].map(
 			([id, entry]) => ({

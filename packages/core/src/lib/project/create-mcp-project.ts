@@ -3,6 +3,7 @@ import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 
 import type { IMcpVertexHostConfig } from '../contracts/interfaces/host-config.interface';
 import type { IToolRegistration } from '../contracts/interfaces/tool-registration.interface';
+import { decideSurfaceModeFromCapabilities } from '../surface/decide-mode';
 import { instrumentToolHandlers } from './instrument-tool-handlers.helper';
 import { createToolSurfaceRuntime } from './tool-surface-runtime.service';
 
@@ -90,6 +91,22 @@ export async function createMcpProject(
 		config.toolSurfaceRuntime !== undefined
 	) {
 		config.toolSurfaceRuntime.bind(toolSurfaceRuntime);
+	}
+	if (toolSurfaceRuntime !== undefined) {
+		const previousOnInitialized = server.server.oninitialized;
+		server.server.oninitialized = () => {
+			previousOnInitialized?.();
+			const decision = decideSurfaceModeFromCapabilities({
+				clientInfo: server.server.getClientVersion(),
+				capabilities: server.server.getClientCapabilities(),
+				explicitMode: config.toolSurfacePlan?.explicitMode,
+			});
+			const change = toolSurfaceRuntime.applySurfaceMode(decision.mode);
+			const client = server.server.getClientVersion();
+			process.stderr.write(
+				`[surface] Client "${client?.name ?? 'unknown'}" v${client?.version ?? 'unknown'}: ${decision.reason} (changed=${change.changedToolNames.length})\n`,
+			);
+		};
 	}
 	let currentRegistration: IToolRegistration | undefined;
 	const registrationServer =

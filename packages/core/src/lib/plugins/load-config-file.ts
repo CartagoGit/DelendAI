@@ -1,6 +1,7 @@
 import type { IProviderCapabilities } from '../contracts/interfaces/provider-capabilities.interface';
 import type { PluginOrigin } from '../contracts/interfaces/plugin-origin.interface';
 import type { CommitAuthorMode } from '../contracts/interfaces/commit-author.interface';
+import type { IMcpToolSurfaceMode } from '../contracts/interfaces/surface-mode.interface';
 import { CONFIG_FILE_SCHEMA } from './config-file-schema';
 
 /**
@@ -228,6 +229,8 @@ export interface IMcpVertexCachePolicyConfig {
 export interface IMcpVertexConfigFile extends IMcpVertexCorePathsConfig {
 	/** Optional editor hint pointing at the published JSON Schema. */
 	readonly $schema?: string;
+	/** Optional explicit surface override. Omitted => negotiate per client. */
+	readonly surfaceMode?: IMcpToolSurfaceMode;
 	/**
 	 * Host-scoped capability gate for `agent_worktree`. Default `false`.
 	 * When `false` (or unset) the proposals plugin's

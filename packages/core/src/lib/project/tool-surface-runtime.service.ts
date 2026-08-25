@@ -5,6 +5,7 @@ import type {
 	IPluginSurfaceChange,
 	IProjectContextSnapshot,
 	IToolSurfacePlan,
+	IToolSurfaceModeChange,
 	IToolSurfaceRuntime,
 	IToolSurfaceRuntimeAccess,
 	IToolSurfaceSearchEntry,
@@ -70,7 +71,7 @@ const matchesFilter = (
 };
 
 class ToolSurfaceRuntime implements IToolSurfaceRuntime {
-	readonly mode;
+	private currentMode;
 
 	private readonly recordsByName = new Map<string, IBoundToolRecord>();
 	private readonly recordsByRegistrationId = new Map<
@@ -87,11 +88,15 @@ class ToolSurfaceRuntime implements IToolSurfaceRuntime {
 	>();
 
 	constructor(private readonly plan: IToolSurfacePlan) {
-		this.mode = plan.mode;
+		this.currentMode = plan.mode;
 		for (const plugin of plan.plugins) {
 			this.pluginIndex.set(plugin.id, plugin);
 			this.pluginIndex.set(plugin.namespace, plugin);
 		}
+	}
+
+	get mode() {
+		return this.currentMode;
 	}
 
 	bindRegisteredTool(input: {
@@ -124,12 +129,35 @@ class ToolSurfaceRuntime implements IToolSurfaceRuntime {
 	}
 
 	finalizeInitialSurface(): void {
+		this.applySurfaceMode(this.currentMode);
+	}
+
+	applySurfaceMode(mode: IToolSurfacePlan['mode']): IToolSurfaceModeChange {
+		const changedToolNames: string[] = [];
+		const visibleToolNames: string[] = [];
+		const previousMode = this.currentMode;
 		for (const record of this.recordsByName.values()) {
-			if (this.shouldExpose(record.registrationId)) {
+			const shouldExpose = this.shouldExpose(record.registrationId, mode);
+			if (shouldExpose) {
+				if (!record.handle.enabled) {
+					record.handle.enable();
+					changedToolNames.push(record.name);
+				}
+				visibleToolNames.push(record.name);
 				continue;
 			}
-			record.handle.disable();
+			if (record.handle.enabled) {
+				record.handle.disable();
+				changedToolNames.push(record.name);
+			}
 		}
+		this.currentMode = mode;
+		return {
+			previousMode,
+			mode,
+			changedToolNames,
+			visibleToolNames,
+		};
 	}
 
 	isToolExposed(name: string): boolean {
@@ -227,7 +255,7 @@ class ToolSurfaceRuntime implements IToolSurfaceRuntime {
 			),
 		].sort();
 		return {
-			surfaceMode: this.mode,
+			surfaceMode: this.currentMode,
 			workspaceRoot: input.workspaceRoot,
 			...(input.cacheDir !== undefined
 				? { cacheDir: input.cacheDir }
@@ -348,13 +376,15 @@ class ToolSurfaceRuntime implements IToolSurfaceRuntime {
 		};
 	}
 
-	private shouldExpose(registrationId: string): boolean {
-		if (this.mode === 'native') return true;
+	private shouldExpose(
+		registrationId: string,
+		mode: IToolSurfacePlan['mode'],
+	): boolean {
+		if (mode === 'native') {
+			return this.plan.routerToolId !== registrationId;
+		}
 		if (this.plan.bootstrapToolIds.includes(registrationId)) return true;
-		if (
-			this.mode === 'compact' &&
-			this.plan.routerToolId === registrationId
-		) {
+		if (mode === 'compact' && this.plan.routerToolId === registrationId) {
 			return true;
 		}
 		return false;

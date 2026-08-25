@@ -20,10 +20,18 @@ export interface IToolSurfacePluginDescriptor {
 
 export interface IToolSurfacePlan {
 	readonly mode: IMcpToolSurfaceMode;
+	readonly explicitMode?: IMcpToolSurfaceMode | undefined;
 	readonly bootstrapToolIds: readonly string[];
 	readonly routerToolId?: string | undefined;
 	readonly descriptors: readonly IToolSurfaceDescriptor[];
 	readonly plugins: readonly IToolSurfacePluginDescriptor[];
+}
+
+export interface IToolSurfaceModeChange {
+	readonly previousMode: IMcpToolSurfaceMode;
+	readonly mode: IMcpToolSurfaceMode;
+	readonly changedToolNames: readonly string[];
+	readonly visibleToolNames: readonly string[];
 }
 
 export interface IToolSurfaceSearchEntry extends IToolSurfaceDescriptor {
@@ -68,6 +76,7 @@ export interface IToolSurfaceRuntime {
 		};
 	}): void;
 	finalizeInitialSurface(): void;
+	applySurfaceMode(mode: IMcpToolSurfaceMode): IToolSurfaceModeChange;
 	publicDescriptionFor(
 		registrationId: string,
 		original: string | undefined,

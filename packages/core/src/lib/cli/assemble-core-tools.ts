@@ -67,6 +67,11 @@ import { buildSkillToolRegistration } from '../tools/skill-tool';
 import { buildStartPromptRegistration } from '../tools/start-prompt';
 import { buildStatusToolRegistration } from '../tools/status-tool';
 import {
+	resolveExplicitSurfaceMode,
+	resolveInitialSurfaceMode,
+	shouldRegisterSurfaceRouter,
+} from '../surface/decide-mode';
+import {
 	buildPluginActivateToolRegistration,
 	buildPluginDeactivateToolRegistration,
 	buildProjectContextToolRegistration,
@@ -318,8 +323,14 @@ export const assembleCoreTools = (
 	const metricsDirAbs = workspace.resolve(
 		joinRel(corePaths.cacheDir, 'metrics'),
 	);
+	const explicitSurfaceMode = resolveExplicitSurfaceMode({
+		cliMode: args.surfaceMode,
+		cliSurfaceExplicit: args.tokens.surface !== undefined,
+		configMode: fileConfig.surfaceMode,
+	});
+	const initialSurfaceMode = resolveInitialSurfaceMode(explicitSurfaceMode);
 	const dynamicSurfaceTools =
-		args.surfaceMode === 'native'
+		initialSurfaceMode === 'native'
 			? []
 			: [
 					buildProjectContextToolRegistration({
@@ -437,7 +448,7 @@ export const assembleCoreTools = (
 			corePaths,
 			reader: createWorkspaceFileReader(workspace),
 		}),
-		...(args.surfaceMode === 'compact'
+		...(shouldRegisterSurfaceRouter(explicitSurfaceMode)
 			? [
 					buildVertexRouterToolRegistration({
 						namespacePrefix: corePrefix,
