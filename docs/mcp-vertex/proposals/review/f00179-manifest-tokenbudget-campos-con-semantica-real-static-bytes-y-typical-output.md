@@ -3,7 +3,7 @@ id: f00179
 title: "Manifest `tokenBudget` con semántica real — `staticBytes`, `adaptiveActivationBytes`, `typicalOutput`"
 kind: feat
 type: proposal
-status: ready
+status: review
 track: packaging
 date: 2026-08-25
 plan-parent: q00005
@@ -15,6 +15,8 @@ audit-source:
 related:
     - r00024 # PRESET_METADATA from real measurement
     - packages/core/src/lib/contracts/constants/preset-metadata.constant.ts
+shipped-in:
+    - 3e7d58fb9b90cd427114d47c3f9337041b85f0c0 # feat(manifest): f00179 — tokenBudget with real semantics
 ---
 
 # f00179 — Manifest `tokenBudget` con semántica real

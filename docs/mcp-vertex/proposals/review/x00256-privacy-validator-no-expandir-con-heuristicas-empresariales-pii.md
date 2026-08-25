@@ -3,7 +3,7 @@ id: x00256
 title: "Privacy validator — no expandir con heurísticas empresariales (PRIV-002)"
 kind: fix
 type: proposal
-status: ready
+status: review
 track: privacy
 date: 2026-08-25
 plan-parent: q00005
@@ -16,6 +16,8 @@ related:
     - x00249 # LLM tool provenance (Track B)
     - t00011 # privacy adversarial suite (Track B)
     - plugins/error-reporting/src/lib/privacy-validator.ts
+shipped-in:
+    - aaedcf35ec3991bc2b46dafa33e178e1270e5688 # fix(privacy): x00256 — no-expansion guardrail for privacy validator
 ---
 
 # x00256 — Privacy validator: no expandir con heurísticas empresariales

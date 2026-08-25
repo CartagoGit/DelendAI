@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-08-25T17:25:23.916Z",
+	"generatedAt": "2026-08-25T17:43:56.323Z",
 	"mode": "compact",
 	"tools": [
 		{
@@ -1234,27 +1234,6 @@
 				"kind": "feat"
 			},
 			{
-				"id": "f00178",
-				"title": "f00178",
-				"track": "packaging",
-				"status": "ready",
-				"kind": "feat"
-			},
-			{
-				"id": "f00179",
-				"title": "f00179",
-				"track": "packaging",
-				"status": "ready",
-				"kind": "feat"
-			},
-			{
-				"id": "f00180",
-				"title": "f00180",
-				"track": "packaging",
-				"status": "ready",
-				"kind": "feat"
-			},
-			{
 				"id": "f00181",
 				"title": "f00181",
 				"track": "plugins",
@@ -1276,34 +1255,6 @@
 				"kind": "refactor"
 			},
 			{
-				"id": "r00025",
-				"title": "r00025",
-				"track": "selection",
-				"status": "ready",
-				"kind": "refactor"
-			},
-			{
-				"id": "t00014",
-				"title": "t00014",
-				"track": "regression",
-				"status": "ready",
-				"kind": "unspecified"
-			},
-			{
-				"id": "t00015",
-				"title": "t00015",
-				"track": "regression",
-				"status": "ready",
-				"kind": "unspecified"
-			},
-			{
-				"id": "t00016",
-				"title": "t00016",
-				"track": "regression",
-				"status": "ready",
-				"kind": "unspecified"
-			},
-			{
 				"id": "x00203",
 				"title": "x00203",
 				"track": "plugins+fix",
@@ -1323,19 +1274,12 @@
 				"track": "privacy",
 				"status": "in-progress",
 				"kind": "fix"
-			},
-			{
-				"id": "x00256",
-				"title": "x00256",
-				"track": "privacy",
-				"status": "ready",
-				"kind": "fix"
 			}
 		],
 		"byStatus": {
-			"ready": 9,
+			"ready": 1,
 			"in-progress": 11,
-			"review": 28,
+			"review": 36,
 			"paused": 1,
 			"done": 432,
 			"blocked": 0,

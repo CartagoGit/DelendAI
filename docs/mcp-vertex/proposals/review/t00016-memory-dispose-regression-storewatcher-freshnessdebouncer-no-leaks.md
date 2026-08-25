@@ -3,7 +3,7 @@ id: t00016
 title: "memory plugin — regression guard de dispose (storeWatcher + freshnessDebouncer)"
 kind: test
 type: proposal
-status: ready
+status: review
 track: regression
 date: 2026-08-25
 plan-parent: q00005
@@ -15,6 +15,8 @@ audit-source:
 related:
     - x00240 # memory watcher dispose cleanup (already closed)
     - plugins/memory/tests/src/lib/memory.spec.ts (existing test at line 482)
+shipped-in:
+    - 20f495b6733bde651e7068f36ac19e81d9e06c7a # test(memory): t00016 — memory dispose regression guard
 ---
 
 # t00016 — memory dispose regression guard
