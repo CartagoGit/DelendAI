@@ -98,9 +98,10 @@ const printMeasuredSurface = (surface: IMeasuredSurface): void => {
 
 const main = async (): Promise<number> => {
 	const presets = parsePresetArgs();
-	const surfaceMode = parseSurfaceMode();
-	const useDynamicClient =
-		hasFlag('--dynamic-client') || !prefersStaticClient();
+	const surfaceMode = parseSurfaceMode() ?? 'native';
+	const useDynamicClient = hasFlag('--static-client')
+		? false
+		: hasFlag('--dynamic-client') || surfaceMode === 'adaptive';
 	const capabilities = useDynamicClient
 		? DYNAMIC_SURFACE_CLIENT_CAPABILITIES
 		: undefined;

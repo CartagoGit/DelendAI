@@ -1,9 +1,8 @@
 import { join } from 'node:path';
-import { readFile } from 'node:fs/promises';
 
 import z from 'zod';
 
-import { joinUnderRoot } from '@mcp-vertex/core/public';
+import { SafeWorkspaceReader, joinUnderRoot } from '@mcp-vertex/core/public';
 
 import type { IRankedHit } from '../contracts/interfaces/hybrid-rank.interface';
 import {
@@ -148,8 +147,10 @@ const buildSyntheticHit = async (
 	workspaceRootAbs: string,
 	relPath: string,
 ): Promise<ISearchHit> => {
-	const absPath = joinUnderRoot(workspaceRootAbs, relPath);
-	const content = await readFile(absPath, 'utf8').catch(() => '');
+	const content = await new SafeWorkspaceReader(workspaceRootAbs)
+		.readText(relPath)
+		.then((result) => result.content)
+		.catch(() => '');
 	const rawLines = content.split('\n');
 	const lines =
 		rawLines.length > 0 && rawLines[rawLines.length - 1] === ''

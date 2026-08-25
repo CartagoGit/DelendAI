@@ -1,5 +1,6 @@
-import { readFile } from 'node:fs/promises';
 import { dirname, join, normalize, relative, resolve } from 'node:path';
+
+import { SafeWorkspaceReader } from '@mcp-vertex/core/public';
 
 import type { IQualityPolicyEntry } from '../contracts/interfaces/quality-policy.interface';
 
@@ -12,9 +13,13 @@ interface ITsFlags {
 }
 
 const readJsonObject = async (
-	absolutePath: string,
+	reader: SafeWorkspaceReader,
+	relativePath: string,
 ): Promise<Record<string, unknown> | undefined> => {
-	const raw = await readFile(absolutePath, 'utf8').catch(() => undefined);
+	const raw = await reader
+		.readText(relativePath)
+		.then((result) => result.content)
+		.catch(() => undefined);
 	if (raw === undefined) return undefined;
 	try {
 		const parsed = JSON.parse(raw) as unknown;
@@ -27,6 +32,7 @@ const readJsonObject = async (
 };
 
 const resolveTsConfigFlags = async (
+	reader: SafeWorkspaceReader,
 	workspaceRootAbs: string,
 	relativePath = 'tsconfig.json',
 	seen = new Set<string>(),
@@ -37,7 +43,7 @@ const resolveTsConfigFlags = async (
 	}
 	seen.add(normalizedRel);
 	const absolutePath = join(workspaceRootAbs, normalizedRel);
-	const current = await readJsonObject(absolutePath);
+	const current = await readJsonObject(reader, normalizedRel);
 	if (current === undefined) {
 		return { tsconfigChain: [] };
 	}
@@ -52,6 +58,7 @@ const resolveTsConfigFlags = async (
 		parentRef === undefined
 			? { tsconfigChain: [] as readonly string[] }
 			: await resolveTsConfigFlags(
+					reader,
 					workspaceRootAbs,
 					relative(
 						dirname(normalizedRel),
@@ -100,7 +107,10 @@ const resolveTsConfigFlags = async (
 export const buildTypesEntry = async (
 	workspaceRootAbs: string,
 ): Promise<IQualityPolicyEntry> => {
-	const flags = await resolveTsConfigFlags(workspaceRootAbs);
+	const flags = await resolveTsConfigFlags(
+		new SafeWorkspaceReader(workspaceRootAbs),
+		workspaceRootAbs,
+	);
 	const strictLabel =
 		flags.strict === true
 			? 'strict'

@@ -53,6 +53,7 @@ jobs:
           set -euo pipefail
           bun run lint:cli-imports
           bun run lint:cli-coverage
+          bun run lint:architecture-readfile-via-safe-reader
           bun run lint:tools
           bun run lint:self-host-dogfood
           bun run lint:solid
@@ -133,6 +134,7 @@ jobs:
       - name: Run security and hygiene lints
         run: |
           set -euo pipefail
+          bun run lint:privacy
           bun run lint:no-cleartext-secrets
           bun run lint:ephemeral
           bun run lint:stray-cache-files

@@ -1,7 +1,7 @@
-import { readFile } from 'node:fs/promises';
-import { join } from 'node:path';
+import { basename, dirname, join } from 'node:path';
 
 import {
+	SafeWorkspaceReader,
 	joinUnderRoot,
 	withFileMutex,
 	writeFileAtomic,
@@ -126,12 +126,15 @@ export const createEmbedIndexStore = (
 	return {
 		indexPath,
 		load: async () => {
-			const raw = await readFile(indexPath, 'utf8').catch((error) => {
-				if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
-					return undefined;
-				}
-				throw error;
-			});
+			const raw = await new SafeWorkspaceReader(dirname(indexPath))
+				.readText(basename(indexPath))
+				.then((result) => result.content)
+				.catch((error) => {
+					if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
+						return undefined;
+					}
+					throw error;
+				});
 			if (raw === undefined) {
 				return {};
 			}
