@@ -16,7 +16,7 @@ audit-source:
 related:
     - q00004
     - x00214 # DTO seguro (predecesor)
-    - x00235 # safe tool identity (hermano)
+    - x00245 # safe tool identity (hermano)
     - x00237 # runtime version source (hermano)
     - t00009 # privacy adversarial regression
     - f00158 # error-reporting base
@@ -118,7 +118,7 @@ Cero. No añade tools ni cambia schema de salida.
 
 ## Out of scope
 
-- `x00235` (safe tool identity): sigue siendo necesario independiente de esta opción.
+- `x00245` (safe tool identity): sigue siendo necesario independiente de esta opción.
 - `x00237` (runtime version): ortogonal.
 - `t00009` (privacy adversarial): cubre la verificación final.
 
@@ -294,6 +294,6 @@ resolution:
 
 - **Plan padre**: [q00004](../../ready/q00004-plan-hardening-post-auditoria-chatgpt-sol-segunda-pasada.md), Track D (Privacidad P0).
 - **Auditoría legada**: §3 (invariante) + §4 (ER2-002).
-- **Hermanas**: `x00235` (provenance), `x00237` (version), `t00009` (adversarial suite).
+- **Hermanas**: `x00245` (provenance), `x00237` (version), `t00009` (adversarial suite).
 - **Predecesora**: `x00214` (DTO seguro).
 - **Principio**: §41 de la auditoría, principio 1: *"Privacy by construction, no by redaction."*

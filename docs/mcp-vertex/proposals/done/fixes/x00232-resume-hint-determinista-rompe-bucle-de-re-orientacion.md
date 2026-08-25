@@ -2,7 +2,7 @@
 id: x00232
 title: "resume-hint determinista: romper el bucle de re-orientación del orquestador"
 kind: fix
-status: review
+status: done
 type: proposal
 track: plugins+fix
 date: 2026-08-24
@@ -40,7 +40,10 @@ Este fix hace el fallback terminal determinista: `mode: "next"` con un motivo ac
   - "Sin señal (sin checkpoint/chat/locks/agentes) devuelve `mode: 'next'`, no `'unknown'`."
   - "El motivo es accionable y apunta a `auto_work`."
   - "Las ramas resume/next existentes no cambian."
-
+- review-state: done
+- review-implementer: swarm-implementer
+- review-reviewer: orchestrator-fase1-review
+- review-log: approved by orchestrator-fase1-review — Redo. validate verde (a nivel de mi lote).
 ## acceptance
 
 - `buildResumeHint` sin señal devuelve `mode: 'next'` con motivo accionable.

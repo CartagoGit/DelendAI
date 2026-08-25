@@ -1,5 +1,5 @@
 ---
-id: x00231
+id: x00241
 title: "core — SafeWorkspaceReader API pública (symlink-aware, única vía para tools con filesystem-read)"
 kind: fix
 status: ready
@@ -15,15 +15,15 @@ audit-source:
     sha256: fc2494af135f18cdc2de8c36c110d6296e2a1c511e602afa0a1e4d2a566f339d
 related:
     - q00004
-    - x00232 # context-for-change containment (hermano)
-    - x00233 # impact-analysis containment (hermano)
+    - x00242 # context-for-change containment (hermano)
+    - x00243 # impact-analysis containment (hermano)
     - i00004 # lint arquitectónico (hermano)
     - f00165 # context-for-change
     - f00169 # impact-analysis + tests-for-change
     - f00158 # error-reporting base (referencia arquitectónica)
 ---
 
-# x00231 — core: SafeWorkspaceReader API pública
+# x00241 — core: SafeWorkspaceReader API pública
 
 ## Problem
 
@@ -145,13 +145,13 @@ Cero. No añade tools; reemplaza implementación.
 
 **No permitido**:
 
-- Reescribir plugins afectados aquí (cada plugin tiene su propia propuesta: `x00232`, `x00233`).
+- Reescribir plugins afectados aquí (cada plugin tiene su propia propuesta: `x00242`, `x00243`).
 - Eliminar `resolveWorkspaceContained` existente (esta propuesta lo **centraliza**, no lo borra; ver Out of scope).
 
 ## Out of scope
 
-- Reescritura de `context-for-change` (`x00232`).
-- Reescritura de `impact-analysis` (`x00233`).
+- Reescritura de `context-for-change` (`x00242`).
+- Reescritura de `impact-analysis` (`x00243`).
 - Lint arquitectónico que bloquee el patrón (`i00004`).
 - División de paquetes (`CORE2-001`).
 - Cambiar otros plugins que ya usan `resolveWorkspaceContained` correctamente.
@@ -556,7 +556,7 @@ resolution:
     - tests-pass: ≥20 unit + ≥3 property
     - before/after:
         before: "Patrón vulnerable duplicado en context-for-change e impact-analysis"
-        after:  "API única SafeWorkspaceReader; ambos plugins migran en x00232/x00233"
+        after:  "API única SafeWorkspaceReader; ambos plugins migran en x00242/x00243"
 ```
 
 ---
@@ -616,6 +616,6 @@ resolution:
 
 - **Plan padre**: [q00004](../../ready/q00004-plan-hardening-post-auditoria-chatgpt-sol-segunda-pasada.md), Track A.
 - **Auditoría legada**: §5 FS2-001, §22 CORE2-002.
-- **Hermanas**: `x00232` (context-for-change), `x00233` (impact-analysis), `i00004` (lint).
+- **Hermanas**: `x00242` (context-for-change), `x00243` (impact-analysis), `i00004` (lint).
 - **Predecesora conceptual**: `resolveWorkspaceContained` ya existente — esta propuesta la **eleva a API pública** sin romperla.
 - **Principio §41**: *"Internal invariants must be APIs/lints, not tribal knowledge."* Esta propuesta convierte la invariante "no leas fuera del workspace" en API.

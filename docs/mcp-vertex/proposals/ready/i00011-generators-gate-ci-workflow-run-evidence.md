@@ -235,7 +235,7 @@ export async function transitionToReview(proposalId: string, opts: { requireEvid
 
 ```yaml
 ---
-id: x00235
+id: x00245
 title: ...
 kind: fix
 status: review

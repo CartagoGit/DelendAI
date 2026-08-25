@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-08-25T00:09:32.012Z",
+	"generatedAt": "2026-08-25T00:12:50.670Z",
 	"mode": "compact",
 	"tools": [
 		{
@@ -1355,41 +1355,6 @@
 				"kind": "fix"
 			},
 			{
-				"id": "x00231",
-				"title": "x00231",
-				"track": "filesystem",
-				"status": "ready",
-				"kind": "fix"
-			},
-			{
-				"id": "x00232",
-				"title": "x00232",
-				"track": "filesystem",
-				"status": "ready",
-				"kind": "fix"
-			},
-			{
-				"id": "x00233",
-				"title": "x00233",
-				"track": "filesystem",
-				"status": "ready",
-				"kind": "fix"
-			},
-			{
-				"id": "x00234",
-				"title": "x00234",
-				"track": "concurrency",
-				"status": "ready",
-				"kind": "fix"
-			},
-			{
-				"id": "x00235",
-				"title": "x00235",
-				"track": "privacy",
-				"status": "ready",
-				"kind": "fix"
-			},
-			{
 				"id": "x00236",
 				"title": "x00236",
 				"track": "privacy",
@@ -1423,14 +1388,49 @@
 				"track": "quality",
 				"status": "ready",
 				"kind": "fix"
+			},
+			{
+				"id": "x00241",
+				"title": "x00241",
+				"track": "filesystem",
+				"status": "ready",
+				"kind": "fix"
+			},
+			{
+				"id": "x00242",
+				"title": "x00242",
+				"track": "filesystem",
+				"status": "ready",
+				"kind": "fix"
+			},
+			{
+				"id": "x00243",
+				"title": "x00243",
+				"track": "filesystem",
+				"status": "ready",
+				"kind": "fix"
+			},
+			{
+				"id": "x00244",
+				"title": "x00244",
+				"track": "concurrency",
+				"status": "ready",
+				"kind": "fix"
+			},
+			{
+				"id": "x00245",
+				"title": "x00245",
+				"track": "privacy",
+				"status": "ready",
+				"kind": "fix"
 			}
 		],
 		"byStatus": {
 			"ready": 29,
 			"in-progress": 7,
-			"review": 5,
+			"review": 3,
 			"paused": 1,
-			"done": 401,
+			"done": 403,
 			"blocked": 0,
 			"retired": 2,
 			"unspecified": 0
