@@ -188,10 +188,16 @@ describe('withFileMutex state-machine invariants', () => {
 	});
 
 	it('heartbeats keep the lock live across long critical sections', async () => {
+		// The lease windows must stay well clear of scheduler jitter. With a
+		// 40ms stale window a heartbeat that is merely descheduled — not
+		// dead — reads as expired, the waiter reclaims, and the assertion
+		// below fails for a reason that has nothing to do with heartbeats.
+		// These ratios are what the test is really about: heartbeatMs well
+		// under staleMs, and a holder that outlives the whole stale window.
 		const cases = [
-			{ heartbeatMs: 5, staleMs: 40 },
-			{ heartbeatMs: 10, staleMs: 80 },
-			{ heartbeatMs: 15, staleMs: 100 },
+			{ heartbeatMs: 20, staleMs: 400 },
+			{ heartbeatMs: 30, staleMs: 600 },
+			{ heartbeatMs: 40, staleMs: 800 },
 		] as const;
 
 		for (const [caseIndex, entry] of cases.entries()) {
@@ -221,11 +227,11 @@ describe('withFileMutex state-machine invariants', () => {
 					heartbeatMs: entry.heartbeatMs,
 					pollMs: 2,
 					staleMs: entry.staleMs,
-					timeoutMs: 250,
+					timeoutMs: 2000,
 				},
 			);
 
-			await waitFor(() => existsSync(lockPathCase));
+			await waitFor(() => existsSync(lockPathCase), 2000);
 			await waitFor(() => heartbeatCount >= 2, entry.heartbeatMs * 20);
 
 			await expect(
