@@ -46,6 +46,13 @@ export const GENERATED_WEB_PLUGIN_CATALOG = [
 		category: 'observability',
 	},
 	{
+		slug: 'commit-policy',
+		displayName: 'Commit Policy',
+		purpose:
+			'Commit-authority plugin: configurable identity, cadence and audit-trail policy wrapping the git plugin primitives. Off by default — opt in via plugins.commit-policy.options.',
+		category: 'code-intelligence',
+	},
+	{
 		slug: 'completion',
 		displayName: 'Completion',
 		purpose:

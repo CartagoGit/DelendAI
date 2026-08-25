@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-08-25T17:25:11.758Z",
+	"generatedAt": "2026-08-25T20:45:05.060Z",
 	"manifests": [
 		{
 			"id": "adaptive-optimizer",
@@ -99,7 +99,7 @@
 			"tags": ["plugins", "catalog", "routing"],
 			"maturity": "stable",
 			"permissions": ["filesystem-read"],
-			"presets": [],
+			"presets": ["vertex"],
 			"tokenBudget": {
 				"hard": 3000,
 				"warning": 2700,
@@ -172,6 +172,40 @@
 			"capabilities": ["changelog", "release"]
 		},
 		{
+			"id": "commit-policy",
+			"package": "@mcp-vertex/commit-policy",
+			"version": "0.1.0",
+			"visibility": "public",
+			"summary": "Commit-authority plugin: configurable identity, cadence and audit-trail policy wrapping the git plugin primitives. Off by default — opt in via plugins.commit-policy.options.",
+			"tags": ["commit", "policy", "git", "agent", "f00181"],
+			"maturity": "experimental",
+			"permissions": ["git-read", "git-write"],
+			"toolPermissions": {
+				"commit_policy_status": ["git-read"],
+				"commit_policy_commit": ["git-write"],
+				"commit_policy_push": ["git-write"],
+				"commit_policy_run": ["git-write"]
+			},
+			"presets": ["vertex"],
+			"tokenBudget": {
+				"staticBytes": 4200,
+				"adaptiveActivationBytes": 800,
+				"typicalOutput": 600,
+				"caps": {
+					"hard": 5200,
+					"warning": 4800
+				},
+				"measuredAt": "2026-08-25",
+				"source": "token-budget-real"
+			},
+			"dependencies": [
+				"@mcp-vertex/core",
+				"@modelcontextprotocol/sdk",
+				"zod"
+			],
+			"capabilities": ["commit-policy"]
+		},
+		{
 			"id": "completion",
 			"package": "@mcp-vertex/completion",
 			"version": "0.1.0",
@@ -196,7 +230,7 @@
 		{
 			"id": "container",
 			"package": "@mcp-vertex/container",
-			"version": "0.1.0",
+			"version": "0.1.1",
 			"visibility": "public",
 			"summary": "Container inspection + lint (docker ps/images, k8s, Dockerfile rules).",
 			"tags": ["container", "docker", "kubernetes"],
@@ -615,7 +649,7 @@
 		{
 			"id": "issues",
 			"package": "@mcp-vertex/issues",
-			"version": "0.1.0",
+			"version": "0.1.1",
 			"visibility": "public",
 			"summary": "Issue tracker (GitHub) integration — list/fetch/analyze/ingest/resolve.",
 			"tags": ["issues", "forge", "triage"],
@@ -629,7 +663,7 @@
 				"issues_resolve": ["forge-write", "network"],
 				"setup_github": ["forge-write", "network", "secrets"]
 			},
-			"presets": ["full", "vertex"],
+			"presets": ["full"],
 			"tokenBudget": {
 				"staticBytes": 4900,
 				"adaptiveActivationBytes": 880,
@@ -1390,6 +1424,21 @@
 		},
 		{
 			"origin": "first-party",
+			"id": "commit-policy",
+			"package": "@mcp-vertex/commit-policy",
+			"summary": "Commit-authority plugin: configurable identity, cadence and audit-trail policy wrapping the git plugin primitives. Off by default — opt in via plugins.commit-policy.options.",
+			"tags": ["commit", "policy", "git", "agent", "f00181"],
+			"permissions": ["git-read", "git-write"],
+			"tokenBudgetBytes": 4200,
+			"toolPermissions": {
+				"commit_policy_status": ["git-read"],
+				"commit_policy_commit": ["git-write"],
+				"commit_policy_push": ["git-write"],
+				"commit_policy_run": ["git-write"]
+			}
+		},
+		{
+			"origin": "first-party",
 			"id": "completion",
 			"package": "@mcp-vertex/completion",
 			"summary": "Task-completion notifier: records an agent declaring its original task done + reviewed and pushes a notification.",
@@ -1918,7 +1967,7 @@
 			"tags": ["plugins", "catalog", "routing"],
 			"maturity": "stable",
 			"visibility": "public",
-			"presets": [],
+			"presets": ["vertex"],
 			"capabilities": ["plugins", "catalog", "routing"],
 			"permissions": ["filesystem-read"],
 			"tokenBudget": {
@@ -1956,6 +2005,22 @@
 			"tokenBudget": {
 				"warning": 2700,
 				"hard": 3000,
+				"releaseRelativePercent": 20
+			}
+		},
+		{
+			"id": "commit-policy",
+			"package": "@mcp-vertex/commit-policy",
+			"summary": "Commit-authority plugin: configurable identity, cadence and audit-trail policy wrapping the git plugin primitives. Off by default — opt in via plugins.commit-policy.options.",
+			"tags": ["commit", "policy", "git", "agent", "f00181"],
+			"maturity": "experimental",
+			"visibility": "public",
+			"presets": ["vertex"],
+			"capabilities": ["commit-policy"],
+			"permissions": ["git-read", "git-write"],
+			"tokenBudget": {
+				"warning": 4800,
+				"hard": 5200,
 				"releaseRelativePercent": 20
 			}
 		},
@@ -2254,7 +2319,7 @@
 			"tags": ["issues", "forge", "triage"],
 			"maturity": "beta",
 			"visibility": "public",
-			"presets": ["full", "vertex"],
+			"presets": ["full"],
 			"capabilities": ["issues", "forge", "triage"],
 			"permissions": ["forge-read", "forge-write", "network"],
 			"tokenBudget": {
@@ -2749,6 +2814,12 @@
 			"releaseRelativePercent": 20
 		},
 		{
+			"id": "commit-policy",
+			"warning": 4800,
+			"hard": 5200,
+			"releaseRelativePercent": 20
+		},
+		{
 			"id": "completion",
 			"warning": 2700,
 			"hard": 3000,
@@ -3027,6 +3098,16 @@
 		{
 			"id": "changelog",
 			"permissions": ["git-read"]
+		},
+		{
+			"id": "commit-policy",
+			"permissions": ["git-read", "git-write"],
+			"toolPermissions": {
+				"commit_policy_status": ["git-read"],
+				"commit_policy_commit": ["git-write"],
+				"commit_policy_push": ["git-write"],
+				"commit_policy_run": ["git-write"]
+			}
 		},
 		{
 			"id": "completion",
@@ -3572,8 +3653,8 @@
 		{
 			"pluginId": "auto-plugin-selector",
 			"presetId": "vertex",
-			"declared": false,
-			"catalogMember": false,
+			"declared": true,
+			"catalogMember": true,
 			"matches": true
 		},
 		{
@@ -3787,6 +3868,69 @@
 			"matches": true
 		},
 		{
+			"pluginId": "commit-policy",
+			"presetId": "minimal",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "commit-policy",
+			"presetId": "lean",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "commit-policy",
+			"presetId": "standard",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "commit-policy",
+			"presetId": "swarm",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "commit-policy",
+			"presetId": "full",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "commit-policy",
+			"presetId": "vertex",
+			"declared": true,
+			"catalogMember": true,
+			"matches": true
+		},
+		{
+			"pluginId": "commit-policy",
+			"presetId": "web-app",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "commit-policy",
+			"presetId": "backend-api",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "commit-policy",
+			"presetId": "cli-tool",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
 			"pluginId": "completion",
 			"presetId": "minimal",
 			"declared": false,
@@ -4769,9 +4913,9 @@
 		{
 			"pluginId": "issues",
 			"presetId": "vertex",
-			"declared": true,
+			"declared": false,
 			"catalogMember": false,
-			"matches": false
+			"matches": true
 		},
 		{
 			"pluginId": "issues",

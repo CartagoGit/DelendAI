@@ -10,7 +10,7 @@ export default definePluginManifest({
 	tags: ['plugins', 'catalog', 'routing'],
 	maturity: 'stable',
 	permissions: ['filesystem-read'],
-	presets: [],
+	presets: ['vertex'],
 	tokenBudget: TOKEN_BUDGETS.toolPayloads.search,
 	dependencies: [
 		'@mcp-vertex/auto-agent-selector',

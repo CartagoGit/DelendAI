@@ -1,9 +1,9 @@
 ---
 id: issues
 package: @mcp-vertex/issues
-version: 0.1.0
+version: 0.1.1
 maturity: beta
-generated: 2026-08-25T17:25:11.758Z
+generated: 2026-08-25T20:45:05.060Z
 ---
 
 # Issues
@@ -23,7 +23,6 @@ Issue tracker (GitHub) integration — list/fetch/analyze/ingest/resolve.
 ## Presets
 
 - full
-- vertex
 
 ## Permissions
 
