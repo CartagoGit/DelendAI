@@ -78,7 +78,7 @@
 		"generate:plugin-docs": "bun tools/scripts/generate/plugin-docs.script.ts",
 		"generate:permission-matrix": "bun tools/scripts/generate/permission-matrix.script.ts",
 		"lint:privacy-internal-only": "bun tools/scripts/lint/privacy-internal-only.script.ts",
-		"lint:privacy": "bun tools/scripts/lint/privacy-tool-id.script.ts && bun tools/scripts/lint/privacy-internal-only.script.ts",
+		"lint:privacy": "bun tools/scripts/lint/privacy-tool-id.script.ts && bun tools/scripts/lint/privacy-internal-only.script.ts && bun tools/scripts/lint/privacy-validator-no-expansion.script.ts --apply",
 		"lint:brand-hex": "bun tools/scripts/lint/no-duplicate-brand-hex.script.ts",
 		"lint:skills": "bun tools/scripts/lint/skills-script.ts",
 		"lint:cache": "bun tools/scripts/lint/check-cache.script.ts",

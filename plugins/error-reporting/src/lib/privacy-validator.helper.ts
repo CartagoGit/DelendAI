@@ -3,6 +3,35 @@ import type { IPrivacyValidationResult } from './contracts/interfaces/privacy-va
 
 const MAX_SAFE_STRING_LENGTH = 240;
 const UUID_TAIL_HEX_LENGTH = 12;
+
+// PRIV-002 SET START — the canonical list of classes the privacy
+// validator refuses by construction. Each entry is one of the
+// regex / literal constants immediately below this marker, paired
+// with its `stringReason` short code. The regression test in
+// `plugins/error-reporting/tests/src/lib/privacy-validator.spec.ts`
+// reads the count of these entries to assert no new heuristic has
+// slipped in (lint `privacy-validator-no-expansion` blocks the
+// obvious bypass). Update this list when adding a legitimate class;
+// do not add heuristic / "looks like a company name" stopwords —
+// provenance (Track B) is the only sanctioned way to keep private
+// data out of the DTO.
+export const PRIVACY_VALIDATOR_BLOCKED_CLASSES = [
+	'absolute-path',
+	'windows-path',
+	'url-not-allowlisted',
+	'email',
+	'ip-address',
+	'uuid',
+	'token',
+	'git-metadata',
+	'branch-name',
+	'json-fragment',
+	'xml-fragment',
+	'sql-fragment',
+] as const;
+export type IPrivacyValidatorBlockedClass = (typeof PRIVACY_VALIDATOR_BLOCKED_CLASSES)[number];
+// PRIV-002 SET END
+
 const ABSOLUTE_UNIX_PATH =
 	/(^|[\s(])\/(Users|home|srv|opt|tmp|var|mnt|private|etc|proc|dev)\//i;
 const WINDOWS_PATH =
