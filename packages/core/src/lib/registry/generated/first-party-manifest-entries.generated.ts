@@ -6,8 +6,7 @@ export const GENERATED_FIRST_PARTY_MANIFEST_ENTRIES: readonly IPluginRegistryEnt
 			origin: 'first-party',
 			id: 'adaptive-optimizer',
 			package: '@mcp-vertex/adaptive-optimizer',
-			summary:
-				'Adaptive optimizer: cheaply rank model, plugin-set and prompt candidates with explicit budget and consent guards.',
+			summary: 'Adaptive optimizer: cheaply rank model, plugin-set and prompt candidates with explicit budget and consent guards.',
 			tags: ['optimizer', 'adaptive', 'prompt', 'f00168'],
 			permissions: ['filesystem-read'],
 		},
@@ -23,8 +22,7 @@ export const GENERATED_FIRST_PARTY_MANIFEST_ENTRIES: readonly IPluginRegistryEnt
 			origin: 'first-party',
 			id: 'audit',
 			package: '@mcp-vertex/audit',
-			summary:
-				'Multi-model audit planning + consolidation; f00139 adds self_audit dogfood loop.',
+			summary: 'Multi-model audit planning + consolidation; f00139 adds self_audit dogfood loop.',
 			tags: ['audit', 'multi-model', 'self-improvement'],
 			permissions: ['filesystem-read', 'filesystem-write', 'network'],
 		},
@@ -32,8 +30,7 @@ export const GENERATED_FIRST_PARTY_MANIFEST_ENTRIES: readonly IPluginRegistryEnt
 			origin: 'first-party',
 			id: 'auto-agent-selector',
 			package: '@mcp-vertex/auto-agent-selector',
-			summary:
-				'Zero-config multi-agent routing (cost↔quality dial, auto_recommend, escalation).',
+			summary: 'Zero-config multi-agent routing (cost↔quality dial, auto_recommend, escalation).',
 			tags: ['routing', 'agents'],
 			permissions: ['process', 'network'],
 		},
@@ -41,8 +38,7 @@ export const GENERATED_FIRST_PARTY_MANIFEST_ENTRIES: readonly IPluginRegistryEnt
 			origin: 'first-party',
 			id: 'auto-plugin-selector',
 			package: '@mcp-vertex/auto-plugin-selector',
-			summary:
-				'Recommends the best plugin set for this project from its signals (manifest, files, git, task).',
+			summary: 'Recommends the best plugin set for this project from its signals (manifest, files, git, task).',
 			tags: ['plugins', 'catalog', 'routing'],
 			permissions: ['filesystem-read'],
 		},
@@ -58,8 +54,7 @@ export const GENERATED_FIRST_PARTY_MANIFEST_ENTRIES: readonly IPluginRegistryEnt
 			origin: 'first-party',
 			id: 'cache',
 			package: '@mcp-vertex/cache',
-			summary:
-				'Cache-eviction rules and lifecycle for plugin scratch dirs.',
+			summary: 'Cache-eviction rules and lifecycle for plugin scratch dirs.',
 			tags: ['cache', 'lifecycle'],
 			permissions: ['filesystem-read', 'filesystem-write'],
 		},
@@ -75,8 +70,7 @@ export const GENERATED_FIRST_PARTY_MANIFEST_ENTRIES: readonly IPluginRegistryEnt
 			origin: 'first-party',
 			id: 'completion',
 			package: '@mcp-vertex/completion',
-			summary:
-				'Task-completion notifier: records an agent declaring its original task done + reviewed and pushes a notification.',
+			summary: 'Task-completion notifier: records an agent declaring its original task done + reviewed and pushes a notification.',
 			tags: ['completion', 'notification'],
 			permissions: ['filesystem-read', 'filesystem-write'],
 		},
@@ -84,8 +78,7 @@ export const GENERATED_FIRST_PARTY_MANIFEST_ENTRIES: readonly IPluginRegistryEnt
 			origin: 'first-party',
 			id: 'container',
 			package: '@mcp-vertex/container',
-			summary:
-				'Container inspection + lint (docker ps/images, k8s, Dockerfile rules).',
+			summary: 'Container inspection + lint (docker ps/images, k8s, Dockerfile rules).',
 			tags: ['container', 'docker', 'kubernetes'],
 			permissions: ['container', 'process'],
 		},
@@ -93,8 +86,7 @@ export const GENERATED_FIRST_PARTY_MANIFEST_ENTRIES: readonly IPluginRegistryEnt
 			origin: 'first-party',
 			id: 'context-for-change',
 			package: '@mcp-vertex/context-for-change',
-			summary:
-				'Compact task-oriented change context orchestration across diff, symbols, tests, docs and conventions.',
+			summary: 'Compact task-oriented change context orchestration across diff, symbols, tests, docs and conventions.',
 			tags: ['context', 'orchestration', 'compact', 'f00165'],
 			permissions: ['filesystem-read'],
 		},
@@ -102,8 +94,7 @@ export const GENERATED_FIRST_PARTY_MANIFEST_ENTRIES: readonly IPluginRegistryEnt
 			origin: 'first-party',
 			id: 'conventions',
 			package: '@mcp-vertex/conventions',
-			summary:
-				'Repo file-convention enforcement (interface, constant, service, tool …).',
+			summary: 'Repo file-convention enforcement (interface, constant, service, tool …).',
 			tags: ['conventions'],
 			permissions: ['filesystem-read'],
 		},
@@ -111,8 +102,7 @@ export const GENERATED_FIRST_PARTY_MANIFEST_ENTRIES: readonly IPluginRegistryEnt
 			origin: 'first-party',
 			id: 'database',
 			package: '@mcp-vertex/database',
-			summary:
-				'Database schema/introspection tools (read-only, offline).',
+			summary: 'Database schema/introspection tools (read-only, offline).',
 			tags: ['database', 'schema'],
 			permissions: ['database'],
 		},
@@ -120,8 +110,7 @@ export const GENERATED_FIRST_PARTY_MANIFEST_ENTRIES: readonly IPluginRegistryEnt
 			origin: 'first-party',
 			id: 'deps',
 			package: '@mcp-vertex/deps',
-			summary:
-				'Dependency inventory + offline health (deps_list, deps_check, deps_audit, deps_licenses, deps_tree).',
+			summary: 'Dependency inventory + offline health (deps_list, deps_check, deps_audit, deps_licenses, deps_tree).',
 			tags: ['deps', 'licenses'],
 			permissions: ['filesystem-read', 'network'],
 		},
@@ -145,8 +134,7 @@ export const GENERATED_FIRST_PARTY_MANIFEST_ENTRIES: readonly IPluginRegistryEnt
 			origin: 'first-party',
 			id: 'env',
 			package: '@mcp-vertex/env',
-			summary:
-				'Environment config validation (.env check + schema + env_explains).',
+			summary: 'Environment config validation (.env check + schema + env_explains).',
 			tags: ['env', 'config'],
 			permissions: ['env-read'],
 		},
@@ -154,8 +142,7 @@ export const GENERATED_FIRST_PARTY_MANIFEST_ENTRIES: readonly IPluginRegistryEnt
 			origin: 'first-party',
 			id: 'error-reporting',
 			package: '@mcp-vertex/error-reporting',
-			summary:
-				'Automatic mcp-vertex error reporting: opens de-duplicated GitHub issues for internal failures (enabled by default).',
+			summary: 'Automatic mcp-vertex error reporting: opens de-duplicated GitHub issues for internal failures (enabled by default).',
 			tags: ['error-reporting', 'github', 'issues'],
 			permissions: ['network', 'forge-write'],
 		},
@@ -163,8 +150,7 @@ export const GENERATED_FIRST_PARTY_MANIFEST_ENTRIES: readonly IPluginRegistryEnt
 			origin: 'first-party',
 			id: 'external-mcps',
 			package: '@mcp-vertex/external-mcps',
-			summary:
-				'Compose third-party MCP servers through the catalog + human ack.',
+			summary: 'Compose third-party MCP servers through the catalog + human ack.',
 			tags: ['external-mcps', 'composition'],
 			permissions: ['network', 'process'],
 		},
@@ -188,8 +174,7 @@ export const GENERATED_FIRST_PARTY_MANIFEST_ENTRIES: readonly IPluginRegistryEnt
 			origin: 'first-party',
 			id: 'i18n',
 			package: '@mcp-vertex/i18n',
-			summary:
-				'i18n key/interpolation validation across locale JSON files.',
+			summary: 'i18n key/interpolation validation across locale JSON files.',
 			tags: ['i18n', 'l10n'],
 			permissions: ['filesystem-read'],
 		},
@@ -197,8 +182,7 @@ export const GENERATED_FIRST_PARTY_MANIFEST_ENTRIES: readonly IPluginRegistryEnt
 			origin: 'first-party',
 			id: 'impact-analysis',
 			package: '@mcp-vertex/impact-analysis',
-			summary:
-				'Bounded impact analysis and test selection across changed symbols, dependents and related specs.',
+			summary: 'Bounded impact analysis and test selection across changed symbols, dependents and related specs.',
 			tags: ['impact', 'tests', 'f00169'],
 			permissions: ['filesystem-read'],
 		},
@@ -214,16 +198,9 @@ export const GENERATED_FIRST_PARTY_MANIFEST_ENTRIES: readonly IPluginRegistryEnt
 			origin: 'first-party',
 			id: 'issues-triage',
 			package: '@mcp-vertex/issues-triage',
-			summary:
-				'INTERNAL-ONLY issue triage bot for the mcp-vertex repository: reads GitHub issues, classifies them mechanically, drafts fix proposals and replies automatically with a machine-disclosure notice. Never published to npm.',
+			summary: 'INTERNAL-ONLY issue triage bot for the mcp-vertex repository: reads GitHub issues, classifies them mechanically, drafts fix proposals and replies automatically with a machine-disclosure notice. Never published to npm.',
 			tags: ['github', 'issues', 'triage', 'bot', 'internal'],
-			permissions: [
-				'forge-read',
-				'forge-write',
-				'filesystem-read',
-				'filesystem-write',
-				'network',
-			],
+			permissions: ['forge-read', 'forge-write', 'filesystem-read', 'filesystem-write', 'network'],
 		},
 		{
 			origin: 'first-party',
@@ -285,8 +262,7 @@ export const GENERATED_FIRST_PARTY_MANIFEST_ENTRIES: readonly IPluginRegistryEnt
 			origin: 'first-party',
 			id: 'project-health',
 			package: '@mcp-vertex/project-health',
-			summary:
-				'Compact project-health aggregator: cheap summary first, lazy domain details on demand.',
+			summary: 'Compact project-health aggregator: cheap summary first, lazy domain details on demand.',
 			tags: ['health', 'aggregation', 'f00166'],
 			permissions: ['filesystem-read'],
 		},
@@ -302,8 +278,7 @@ export const GENERATED_FIRST_PARTY_MANIFEST_ENTRIES: readonly IPluginRegistryEnt
 			origin: 'first-party',
 			id: 'prompts-pack',
 			package: '@mcp-vertex/prompts-pack',
-			summary:
-				'Project-aware MCP prompts (explain-this-code, write-tests-for, review-this-diff, etc.).',
+			summary: 'Project-aware MCP prompts (explain-this-code, write-tests-for, review-this-diff, etc.).',
 			tags: ['prompts'],
 			permissions: ['filesystem-read'],
 		},
@@ -313,19 +288,13 @@ export const GENERATED_FIRST_PARTY_MANIFEST_ENTRIES: readonly IPluginRegistryEnt
 			package: '@mcp-vertex/proposals',
 			summary: 'Proposals workflow + multi-agent (swarm) orchestration.',
 			tags: ['proposals', 'swarm', 'orchestration'],
-			permissions: [
-				'filesystem-read',
-				'filesystem-write',
-				'git-read',
-				'git-write',
-			],
+			permissions: ['filesystem-read', 'filesystem-write', 'git-read', 'git-write'],
 		},
 		{
 			origin: 'first-party',
 			id: 'quality',
 			package: '@mcp-vertex/quality',
-			summary:
-				'Quality gates: coverage, complexity, lint, type-check orchestration.',
+			summary: 'Quality gates: coverage, complexity, lint, type-check orchestration.',
 			tags: ['quality', 'gates'],
 			permissions: ['filesystem-read', 'process'],
 		},
@@ -333,8 +302,7 @@ export const GENERATED_FIRST_PARTY_MANIFEST_ENTRIES: readonly IPluginRegistryEnt
 			origin: 'first-party',
 			id: 'quality-policy',
 			package: '@mcp-vertex/quality-policy',
-			summary:
-				'Unified quality-policy surface: cheap tests, conventions, lint, types and coverage guidance without running heavy quality commands.',
+			summary: 'Unified quality-policy surface: cheap tests, conventions, lint, types and coverage guidance without running heavy quality commands.',
 			tags: ['quality', 'policy', 'aggregation', 'f00167'],
 			permissions: ['filesystem-read'],
 		},
@@ -342,8 +310,7 @@ export const GENERATED_FIRST_PARTY_MANIFEST_ENTRIES: readonly IPluginRegistryEnt
 			origin: 'first-party',
 			id: 'refactor',
 			package: '@mcp-vertex/refactor',
-			summary:
-				'Refactor primitives (symbols, definition, references, rename, codemod).',
+			summary: 'Refactor primitives (symbols, definition, references, rename, codemod).',
 			tags: ['refactor'],
 			permissions: ['filesystem-read', 'filesystem-write'],
 		},
@@ -375,8 +342,7 @@ export const GENERATED_FIRST_PARTY_MANIFEST_ENTRIES: readonly IPluginRegistryEnt
 			origin: 'first-party',
 			id: 'skills-pack',
 			package: '@mcp-vertex/skills-pack',
-			summary:
-				'Curated skill pack (debugging, perf, pr-review, security, incident, migration).',
+			summary: 'Curated skill pack (debugging, perf, pr-review, security, incident, migration).',
 			tags: ['skills'],
 			permissions: ['filesystem-read'],
 		},
@@ -400,8 +366,7 @@ export const GENERATED_FIRST_PARTY_MANIFEST_ENTRIES: readonly IPluginRegistryEnt
 			origin: 'first-party',
 			id: 'test-convention',
 			package: '@mcp-vertex/test-convention',
-			summary:
-				'Test-file convention enforcement (spec path, mock style, forbidden patterns).',
+			summary: 'Test-file convention enforcement (spec path, mock style, forbidden patterns).',
 			tags: ['tests', 'convention'],
 			permissions: ['filesystem-read'],
 		},
@@ -428,5 +393,5 @@ export const GENERATED_FIRST_PARTY_MANIFEST_ENTRIES: readonly IPluginRegistryEnt
 			summary: 'Web fetch (allow-listed URLs only).',
 			tags: ['web', 'fetch'],
 			permissions: ['network'],
-		},
+		}
 	];
