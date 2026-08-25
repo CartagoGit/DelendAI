@@ -107,10 +107,12 @@ const captureUtf8Bytes = (
 	}
 };
 
-const decodeUtf8Chunks = (chunks: readonly Buffer[]): string =>
-	truncateUtf8Buffer(Buffer.concat(chunks), Buffer.concat(chunks).length).toString(
-		'utf8',
-	);
+const decodeUtf8Chunks = (chunks: readonly Buffer[]): string => {
+	// Concatenate once: this runs over whole process output, and doing it
+	// twice doubled the peak allocation for no benefit.
+	const combined = Buffer.concat(chunks);
+	return truncateUtf8Buffer(combined, combined.length).toString('utf8');
+};
 
 const spawnOnce = (
 	command: string,
