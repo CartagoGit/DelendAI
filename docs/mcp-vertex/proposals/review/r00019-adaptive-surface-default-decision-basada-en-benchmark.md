@@ -19,8 +19,6 @@ related:
     - r00018 # proposals schema diet
     - f00176 # surface mode by capability (hermano)
     - r00021 # notifications/list_changed + bootstrap (hermano)
-shipped-in:
-  - 82c54bcc # feat(track-c-e): manifests + token budgets + surface-mode defaults
 ---
 
 # r00019 — adaptive surface como default
@@ -221,7 +219,7 @@ Si el usuario quiere native, lo declara. Adaptive deja de ser opt-in.
 
 ### S1 — Benchmark + compat matrix
 
-- **Status**: done
+- **Status**: pending
 - **Files**: `tools/scripts/bench/surface-mode-compare.bench.script.ts`, `docs/mcp-vertex/configuration/surface-mode-decision.yaml`
 - **Gate**: type
 - acceptance:
@@ -230,8 +228,8 @@ Si el usuario quiere native, lo declara. Adaptive deja de ser opt-in.
 
 ### S2 — Default decision logic
 
-- **Status**: done
-- **Files**: `packages/core/src/lib/surface/decide-mode.ts`
+- **Status**: pending
+- **Files**: `packages/core/src/lib/surface/default-mode.ts`
 - **Gate**: type
 - acceptance:
   - "Función decideDefaultSurfaceMode implementada."
@@ -239,7 +237,7 @@ Si el usuario quiere native, lo declara. Adaptive deja de ser opt-in.
 
 ### S3 — Cambio de default + override
 
-- **Status**: done
+- **Status**: pending
 - **Files**: `mcp-vertex.config.json` schema, `docs/mcp-vertex/configuration/surface-mode.md`
 - **Gate**: type
 - acceptance:

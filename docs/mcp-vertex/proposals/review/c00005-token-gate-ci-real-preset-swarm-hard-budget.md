@@ -18,8 +18,6 @@ related:
     - i00006 # dashboard check (hermano)
     - r00018 # proposals schema diet
     - i00007 # vertex budget
-shipped-in:
-  - 82c54bcc # feat(track-c-e): manifests + token budgets + surface-mode defaults
 ---
 
 # i00005 — token gate CI real con ensamblado real del preset swarm
@@ -232,8 +230,8 @@ Top contributors:
 
 ### S1 — Budgets como código + loader real
 
-- **Status**: done
-- **Files**: `packages/core/src/lib/contracts/constants/token-budgets.constant.ts`, `packages/core/tests/src/lib/e2e/token-budget.e2e.spec.ts`
+- **Status**: pending
+- **Files**: `tools/scripts/test/token-budgets.ts`, `tools/scripts/test/token-budget.spec.ts` (rewrite)
 - **Gate**: type
 - acceptance:
   - "Importe sintético eliminado."
@@ -241,7 +239,7 @@ Top contributors:
 
 ### S2 — Script ejecutable + CI
 
-- **Status**: done
+- **Status**: pending
 - **Files**: `tools/scripts/test/run-actual-preset-budget.script.ts`, `package.json`, `.github/workflows/ci.yml`
 - **Gate**: type
 - acceptance:
