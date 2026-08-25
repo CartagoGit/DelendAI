@@ -2,7 +2,7 @@
 id: x00219
 title: "mutex: reclaim seguro de stale lock (CAS/lease) y métricas de contención"
 kind: fix
-status: review
+status: done
 type: proposal
 track: concurrency
 date: 2026-08-24
@@ -45,7 +45,10 @@ El token evita que el antiguo propietario borre el lock del nuevo, pero no evita
 - acceptance:
   - "El reclaim lee token+mtime, valida lease, renombra a reclaim path y revalida token antes de adquirir."
   - "Un lock renovado (heartbeat) durante la observación NO es reclamado."
-
+- review-state: done
+- review-implementer: swarm-implementer
+- review-reviewer: orchestrator-fase1-review
+- review-log: approved by orchestrator-fase1-review — Fase 1 review 2026-08-25: spec dedicado confirmado (sync-proposal-registry-mutex.spec.ts); validate verde.
 ### S2 — Métricas de contención
 - **Status**: done
 - **Files**: `packages/core/src/lib/shared/mutex-metrics.helper.ts`
