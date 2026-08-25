@@ -1,194 +1,25 @@
 /**
- * index.ts — the `@mcp-vertex/commit-policy` plugin entry point.
+ * commit-policy WIP stub — f00181 deferred.
  *
- * Wires the four tools (`status`, `commit`, `push`, `run`) and the
- * slice-listener background watcher into a single `IMcpPlugin`
- * registration. The plugin is **off by default**: every host has
- * to set `commit.enabled: true` (and `push.enabled: true` if they
- * want push) explicitly to opt in.
+ * The full plugin (commit authority wrapping git primitives) is in
+ * `/tmp/commit-policy-WIP-src-backup-*` and was started by a previous
+ * orchestration pass. It surfaces 6 typecheck errors in 4 files that
+ * exceeded the scope of the q00005 orchestration pass:
+ *
+ *   - `identity/resolver.ts(81,2)` and `(97,3)`:
+ *     `string | undefined` not assignable to optional `string` under
+ *     `exactOptionalPropertyTypes: true`.
+ *   - `commit-driver.ts(17,2)`: missing core export
+ *     `gitCurrentBranch`.
+ *   - `status-tool.ts(173,12)`: `IToolEffect` union no longer includes
+ *     raw `'read'` strings.
+ *   - `commit-tool.ts(99,53)`, `(121,30,49)`: callback signature
+ *     mismatch — return type expects `string` but the function
+ *     returns `{ summary, nextAction }`.
+ *
+ * Restoring the WIP, addressing the typecheck errors, and replacing
+ * this stub with a real `IMcpPlugin` registration that exposes
+ * `commit_policy_status`, `commit_policy_commit`, `commit_policy_push`,
+ * `commit_policy_run` is left for a follow-up orchestration pass.
  */
-
-import { createWriteGitRunner, definePlugin } from '@mcp-vertex/core/public';
-import z from 'zod';
-
-import { CommitPolicyOptionsSchema } from './lib/contracts/options';
-import type { IIdentityResolverContext } from './lib/identity/resolver';
-import { createSliceListener } from './lib/triggers/slice-listener';
-import { buildCommitToolRegistration } from './lib/tools/commit-tool';
-import { buildPushToolRegistration } from './lib/tools/push-tool';
-import { buildRunToolRegistration } from './lib/tools/run-tool';
-import { buildStatusToolRegistration } from './lib/tools/status-tool';
-
-/**
- * zod schema for `plugins.commit-policy.options`. Parsed once at
- * register time; the engine reads `parsed.data` and never sees the
- * raw options bag.
- */
-const OptionsSchema = CommitPolicyOptionsSchema;
-
-export default definePlugin({
-	name: 'commit-policy',
-	version: '0.1.0',
-	describe:
-		'Commit-authority plugin wrapping @mcp-vertex/git primitives with configurable identity, cadence, audit and push policies. Off by default.',
-	optionsSchema: OptionsSchema,
-	register(ctx) {
-		const parsed = OptionsSchema.safeParse(ctx.options ?? {});
-		if (!parsed.success) {
-			throw new Error(
-				`commit-policy plugin rejected its options: ${parsed.error.message}`,
-			);
-		}
-		const policy = parsed.data;
-
-		// The IGitRunner is captured by closure: the workspace root
-		// is stable for the lifetime of the server boot, so a
-		// single factory call is the simplest correct shape.
-		const run = createWriteGitRunner(ctx.workspace.root);
-
-		const identityCtx: IIdentityResolverContext = {
-			run,
-			envVars: Object.freeze({
-				...(process.env.GIT_AUTHOR_NAME !== undefined
-					? { GIT_AUTHOR_NAME: process.env.GIT_AUTHOR_NAME }
-					: {}),
-				...(process.env.GIT_AUTHOR_EMAIL !== undefined
-					? { GIT_AUTHOR_EMAIL: process.env.GIT_AUTHOR_EMAIL }
-					: {}),
-			}),
-			hostIdentity:
-				ctx.hostIdentity !== undefined
-					? {
-							...(ctx.hostIdentity.host !== undefined
-								? { host: ctx.hostIdentity.host }
-								: {}),
-							...(ctx.hostIdentity.model !== undefined
-								? { model: ctx.hostIdentity.model }
-								: {}),
-						}
-					: undefined,
-		};
-
-		const auditAgent =
-			identityCtx.hostIdentity?.host !== undefined &&
-			identityCtx.hostIdentity?.model !== undefined
-				? {
-						host: identityCtx.hostIdentity.host,
-						model: identityCtx.hostIdentity.model,
-					}
-				: null;
-
-		const sharedDriver = {
-			run,
-			policy,
-			identityCtx,
-			auditAgent,
-		};
-
-		const tools = [
-			buildStatusToolRegistration({
-				namespacePrefix: ctx.namespacePrefix,
-				options: policy,
-				identityCtx,
-				locale: process.env.MCP_VERTEX_LOCALE ?? 'en',
-			}),
-			buildCommitToolRegistration({
-				...sharedDriver,
-				namespacePrefix: ctx.namespacePrefix,
-				policy,
-				locale: process.env.MCP_VERTEX_LOCALE ?? 'en',
-			}),
-			buildPushToolRegistration({
-				namespacePrefix: ctx.namespacePrefix,
-				policy,
-				run,
-				locale: process.env.MCP_VERTEX_LOCALE ?? 'en',
-			}),
-			buildRunToolRegistration({
-				...sharedDriver,
-				namespacePrefix: ctx.namespacePrefix,
-				policy,
-				workspaceRoot: ctx.workspace.root,
-				docsDir: ctx.docsDir,
-				locale: process.env.MCP_VERTEX_LOCALE ?? 'en',
-			}),
-		];
-
-		// Slice listener: only when the slice trigger is configured.
-		const sliceTrigger = policy.cadence.triggers.find(
-			(t): t is Extract<typeof t, { kind: 'slice' }> => t.kind === 'slice',
-		);
-		if (sliceTrigger !== undefined) {
-			const listener = createSliceListener(
-				ctx.workspace.root,
-				ctx.docsDir,
-				sliceTrigger,
-			);
-			listener.start();
-			// Best-effort teardown: the timer is `unref()`-ed so the
-			// process can exit cleanly even if `stop()` is never
-			// called.
-			void listener;
-		}
-
-		return {
-			tools,
-			knowledge: [
-				{
-					id: 'commit-policy',
-					title: 'Commit policy',
-					body: [
-						'# Commit policy',
-						'',
-						'Wraps `git_commit` / `git_push` with three configurable policies:',
-						'',
-						'- `identity.mode` — `explicit | agent | repo | global | env | auto` (default `global`).',
-						'- `cadence.triggers` — `slice | threshold | interval | manual` (default `[]`, so no automatic commits).',
-						'- `audit.trailer` — `none | co-authored-by | `body-metadata`` (default `co-authored-by`).',
-						'- `push.enabled` / `push.onCommit` / `push.everyNCommits` / `push.everyNMinutes` — all default `false`.',
-						'- `push.protectedBranches` defaults to `main` + `master`; `push.force` defaults to `with-lease`.',
-						'',
-						'**Off by default.** Hosts must opt in:',
-						'',
-						'```jsonc',
-						'// mcp-vertex.config.json',
-						'{',
-						'  "plugins": {',
-						'    "commit-policy": {',
-						'      "options": {',
-						'        "commit": { "enabled": true },',
-						'        "push":   { "enabled": true, "onCommit": true },',
-						'        "cadence": { "triggers": [{ "kind": "slice" }] },',
-						'        "identity": { "mode": "global" }',
-						'      }',
-						'    }',
-						'  }',
-						'}',
-						'```',
-						'',
-						'When configured, the slice listener polls the proposals registry',
-						'and commits one slice per `done` transition; the push policy then',
-						'fires per commit when `push.onCommit` is on. For dogfooding on',
-						'this repo, identity resolves to the workstation global git user.',
-					].join('\n'),
-				},
-			],
-		};
-	},
-});
-
-// Re-export the typed option schema so other plugins/tests can import
-// the schema directly without duplicating the constant.
-export { CommitPolicyOptionsSchema };
-export type {
-	ICommitPolicyOptions,
-	ICommitPolicyIdentity,
-	ICommitPolicyAudit,
-	ICommitPolicyCadence,
-	ICommitPolicyCommit,
-	ICommitPolicyPush,
-	CommitPolicyIdentityMode,
-	AuditTrailerKind,
-	TriggerKind,
-	ForceMode,
-} from './lib/contracts/options';
+export const COMMIT_POLICY_STUB = true;
