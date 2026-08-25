@@ -2,7 +2,7 @@
 id: x00240
 title: "memory — disposer cierra `fs.watch` + debounce timer; lifecycle correcto (MEM2-002)"
 kind: fix
-status: ready
+status: review
 type: proposal
 track: quality
 date: 2026-08-25

@@ -9,7 +9,7 @@ import {
 import { basename, join } from 'node:path';
 import { tmpdir } from 'node:os';
 
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import {
 	getRecallMetricsSnapshot,
@@ -442,6 +442,10 @@ describe('memory store — corrupt ≠ empty (M10)', async () => {
 });
 
 describe('memory plugin', async () => {
+	afterEach(() => {
+		vi.useRealTimers();
+	});
+
 	it('registers the memory tools + knowledge', async () => {
 		const ctx = {
 			workspace: { root: '/ws', resolve: (p: string) => `/ws/${p}` },
@@ -473,5 +477,40 @@ describe('memory plugin', async () => {
 		// The registered MCP names are single-prefixed (`memory_save`, …),
 		// not double-prefixed (`memory_memory_save`). [e2e regression guard]
 		expect(reg.knowledge?.[0]?.id).toBe('memory-usage');
+	});
+
+	it('disposes the watcher lifecycle and cancels pending debounce timers', async () => {
+		vi.useFakeTimers();
+		const dir = mkdtempSync(join(tmpdir(), 'mem-plugin-'));
+		const ctx = {
+			workspace: {
+				root: dir,
+				resolve: (p: string) => join(dir, p),
+			},
+			corePaths: {
+				cacheDir: '.cache/mcp-vertex',
+				docsDir: 'docs/mcp-vertex',
+			},
+			cacheDir: '.cache/mcp-vertex',
+			docsDir: 'docs/mcp-vertex',
+			keepLegacy: false,
+			pluginCacheDir: '.cache/mcp-vertex/memory',
+			pluginDocsDir: 'docs/mcp-vertex/memory',
+			namespacePrefix: 'memory',
+			options: {},
+			args: {},
+		} satisfies IMcpPluginContext;
+		const reg = await plugin.register(ctx);
+
+		reg.onToolCall?.('memory_save', { title: 'session-digest:test' }, {
+			content: [{ text: JSON.stringify({ persisted: true }) }],
+		});
+		expect(vi.getTimerCount()).toBeGreaterThan(0);
+		if ('dispose' in reg) {
+			await reg.dispose?.();
+			await reg.dispose?.();
+		}
+		expect(vi.getTimerCount()).toBe(0);
+		rmSync(dir, { recursive: true, force: true });
 	});
 });
