@@ -253,18 +253,36 @@ describe('withFileMutex state-machine invariants', () => {
 			const targetCase = join(dir, `state-generation-${caseIndex}.json`);
 			writeFileSync(targetCase, '{}');
 
+			// The hook is process-global, so a heartbeat still in flight from
+			// a previous case would otherwise land in this case's samples and
+			// break monotonicity. Pin recording to this acquisition's token.
+			let caseToken: string | undefined;
 			__setWithFileMutexTestHooks({
 				afterHeartbeat: (lease) => {
+					caseToken ??= lease.token;
+					if (lease.token !== caseToken) return;
 					generations.push(lease.generation);
 				},
 			});
 
+			// Hold the lock until the heartbeats have actually been observed
+			// rather than for a wall-clock window sized as heartbeatMs * N:
+			// under load the timer fires fewer times than the division
+			// predicts, which made this assertion flaky.
 			await withFileMutex(
 				targetCase,
 				async () => {
-					await delay(targetHeartbeats * 8);
+					await waitFor(
+						() => generations.length >= targetHeartbeats,
+						15_000,
+					);
 				},
-				{ heartbeatMs: 5, pollMs: 2, staleMs: 120, timeoutMs: 250 },
+				{
+					heartbeatMs: 5,
+					pollMs: 2,
+					staleMs: 30_000,
+					timeoutMs: 30_000,
+				},
 			);
 
 			expect(
