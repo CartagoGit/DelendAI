@@ -47,7 +47,8 @@ La superficie estática (hasta ~190 KB en swarm) es el mayor coste de contexto d
   - "Genera el report por preset/plugin (tool count, schema/description/inputSchema/outputSchema bytes, marginal por plugin)."
   - "Escribe docs/mcp-vertex/TOKEN-BUDGETS.md desde la misma fuente que el test."
   - "El script generador nuevo se crea en tools/scripts/report/token-budget-dashboard.script.ts."
-
+- review-state: in_review
+- review-implementer: swarm-implementer
 ### S2 — Presupuestos absolutos en el test e2e
 - **Status**: done
 - **Files**: `packages/core/tests/src/lib/e2e/token-budget.e2e.spec.ts`
