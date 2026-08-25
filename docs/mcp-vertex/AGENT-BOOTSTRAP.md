@@ -171,6 +171,20 @@ persist proposal/slice state → release unnecessary locks → new session →
 orient → resume from `memory_checkpoint_packet`. Session age by itself must
 never hard-block work.
 
+### 4.e Rebaseline with `--update`
+
+When a lint fails because a **baselined historical value** drifted (for example,
+an already-closed proposal still cites an old path or an old orphan commit), do
+not hand-edit the baseline JSON unless the script explicitly tells you to. First
+check whether the lint supports `--update` and re-run the lint through that
+entrypoint so the script itself rewrites its canonical baseline format. Manual
+edits are the fallback only when no `--update` mode exists.
+
+| Lint / script | `--update` support | Use case |
+| --- | --- | --- |
+| `bun tools/scripts/lint/proposal-files-exist.script.ts` | Yes | Rebaseline known dangling `Files:` references in historical `done/`, `review/` or `in-progress` proposals after an intentional rename or archived path drift. |
+| `bun tools/scripts/lint/proposal-cited-commits.script.ts` | Yes | Rebaseline known orphan commit citations in historical `done/*` proposals when the commit was intentionally rebased away or documented as legacy debt. |
+
 ### 4.b Coexistence with parallel work (c00012)
 
 This workspace is shared. Other agents, CI bots, and humans commit
