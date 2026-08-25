@@ -48,6 +48,12 @@ export interface McpVertexAdoptProjectOutput {
 			severity: "info" | "warning";
 			count?: number;
 			exact: boolean;
+			breakdown?: Array<{
+				kind: "config" | "proposal-store" | "generated";
+				description: string;
+				count?: number;
+				exact: boolean;
+			}>;
 		}>;
 		cost: {
 			presetId: string;
