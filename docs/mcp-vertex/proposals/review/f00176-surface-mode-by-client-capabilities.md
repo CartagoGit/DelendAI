@@ -2,7 +2,7 @@
 id: f00176
 title: "surface — modo por `clientInfo/capabilities` (adaptive si soporta listChanged, native/compact si no) (SURF2-003)"
 kind: feat
-status: ready
+status: review
 type: proposal
 track: surface
 date: 2026-08-25

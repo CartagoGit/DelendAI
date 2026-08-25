@@ -5,6 +5,10 @@ import { join } from 'node:path';
 
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
+import type {
+	ClientCapabilities,
+	Implementation,
+} from '@modelcontextprotocol/sdk/types.js';
 import { ToolListChangedNotificationSchema } from '@modelcontextprotocol/sdk/types.js';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
@@ -37,7 +41,12 @@ describe('e2e: dynamic and compact tool surfaces', async () => {
 		rmSync(workspace, { recursive: true, force: true });
 	});
 
-	const connect = async (argv: readonly string[]) => {
+	const connect = async (input: {
+		argv: readonly string[];
+		clientInfo?: Implementation;
+		capabilities?: ClientCapabilities;
+	}) => {
+		const { argv, clientInfo, capabilities } = input;
 		const args = parseCliArgs(argv, workspace);
 		const { config } = await assembleCliConfig(args, {
 			import: async (specifier: string) => {
@@ -56,8 +65,8 @@ describe('e2e: dynamic and compact tool surfaces', async () => {
 			InMemoryTransport.createLinkedPair();
 		await assembled.server.connect(serverTransport);
 		client = new Client(
-			{ name: 'tool-surface-test', version: '0.0.0' },
-			{ capabilities: {} },
+			clientInfo ?? { name: 'tool-surface-test', version: '0.0.0' },
+			{ capabilities: capabilities ?? {} },
 		);
 		await client.connect(clientTransport);
 		close = async () => {
@@ -66,12 +75,20 @@ describe('e2e: dynamic and compact tool surfaces', async () => {
 		};
 	};
 
-	it('adaptive starts with bootstrap tools, then activates/deactivates a plugin and emits list_changed', async () => {
-		await connect([
-			'--surface=adaptive',
-			'--plugins=memory',
-			`--workspace=${workspace}`,
-		]);
+	const toolListChangedClientCaps: ClientCapabilities = {
+		extensions: {
+			'mcp-vertex/surface': {
+				toolsListChanged: true,
+			},
+		},
+	};
+
+	it('negotiates adaptive from client capabilities, keeps bootstrap minimal, and emits list_changed', async () => {
+		await connect({
+			argv: ['--plugins=memory', `--workspace=${workspace}`],
+			clientInfo: { name: 'claude-code', version: '1.0.0' },
+			capabilities: toolListChangedClientCaps,
+		});
 		const changed = new Promise<number>((resolve) => {
 			let count = 0;
 			client.setNotificationHandler(
@@ -87,6 +104,10 @@ describe('e2e: dynamic and compact tool surfaces', async () => {
 		expect(initialNames).toContain('mcp-vertex_overview');
 		expect(initialNames).toContain('mcp-vertex_plugin_activate');
 		expect(initialNames).toContain('mcp-vertex_tool_search');
+		expect(initialNames).toContain('mcp-vertex_status');
+		expect(initialNames).toContain('mcp-vertex_vertex');
+		expect(initialNames).not.toContain('mcp-vertex_project_context');
+		expect(initialNames).not.toContain('mcp-vertex_configuration_center');
 		expect(initialNames).not.toContain('mcp-vertex_memory_save');
 
 		const adaptiveOverview = await client.callTool({
@@ -137,14 +158,17 @@ describe('e2e: dynamic and compact tool surfaces', async () => {
 	});
 
 	it('compact exposes the vertex router while keeping long tool docs in knowledge', async () => {
-		await connect([
-			'--surface=compact',
-			'--plugins=git,memory',
-			`--workspace=${workspace}`,
-		]);
+		await connect({
+			argv: [
+				'--surface=compact',
+				'--plugins=git,memory',
+				`--workspace=${workspace}`,
+			],
+		});
 		const initial = await client.listTools();
 		const names = initial.tools.map((tool) => tool.name);
 		expect(names).toContain('mcp-vertex_vertex');
+		expect(names).not.toContain('mcp-vertex_knowledge');
 		expect(names).not.toContain('mcp-vertex_git_status');
 		expect(names).not.toContain('mcp-vertex_memory_list');
 
@@ -166,13 +190,7 @@ describe('e2e: dynamic and compact tool surfaces', async () => {
 		);
 		expect(hiddenMemoryList?.active).toBe(false);
 
-		const knowledge = await client.callTool({
-			name: 'mcp-vertex_knowledge',
-			arguments: { id: hiddenMemoryList?.detailsId },
-		});
-		expect(
-			(knowledge.structuredContent as { title: string }).title,
-		).toContain('mcp-vertex_memory_list');
+		expect(hiddenMemoryList?.detailsId).toContain('tool:');
 
 		const routedMemory = await client.callTool({
 			name: 'mcp-vertex_vertex',
@@ -202,5 +220,34 @@ describe('e2e: dynamic and compact tool surfaces', async () => {
 				}
 			).tool,
 		).toBe('mcp-vertex_git_status');
+	});
+
+	it('falls back to native when the client does not declare list-changed support', async () => {
+		await connect({
+			argv: ['--plugins=memory', `--workspace=${workspace}`],
+			clientInfo: { name: 'plain-client', version: '1.0.0' },
+			capabilities: {},
+		});
+		const initial = await client.listTools();
+		const names = initial.tools.map((tool) => tool.name);
+		expect(names).toContain('mcp-vertex_memory_save');
+		expect(names).toContain('mcp-vertex_memory_recall');
+		expect(names).not.toContain('mcp-vertex_vertex');
+	});
+
+	it('respects an explicit surface override over client capabilities', async () => {
+		await connect({
+			argv: [
+				'--surface=native',
+				'--plugins=memory',
+				`--workspace=${workspace}`,
+			],
+			clientInfo: { name: 'cursor', version: '1.0.0' },
+			capabilities: toolListChangedClientCaps,
+		});
+		const initial = await client.listTools();
+		expect(initial.tools.map((tool) => tool.name)).toContain(
+			'mcp-vertex_memory_save',
+		);
 	});
 });
