@@ -2,7 +2,7 @@
 id: q00005
 title: "Plan hardening post-auditoría externa ChatGPT 5.6 Sol (TERCERA pasada sobre develop) — universalización de invariantes: filesystem, privacidad, mutex, tokens, CI y gobernanza"
 kind: plan
-status: ready
+status: in-progress
 type: plan
 track: develop-audit-hardening-v3
 date: 2026-08-25
@@ -41,7 +41,7 @@ contains:
     # ─── Track D — CI real + DoD enforcement (P1/P2) ──────────────────────────
     - { id: x00251, kind: fix, required: true, priority: P1, track: ci }
     - { id: x00252, kind: fix, required: true, priority: P1, track: ci }
-    - { id: c00012, kind: chore, required: true, priority: P2, track: ci }
+    - { id: c00020, kind: chore, required: true, priority: P2, track: ci }
     - { id: c00013, kind: chore, required: true, priority: P2, track: ci }
     - { id: c00014, kind: chore, required: true, priority: P2, track: ci }
 
@@ -151,7 +151,7 @@ La auditoría externa tercera detecta que **la velocidad de creación de feature
 La prioridad es:
 
 1. **Track B privacidad P0** (`x00249` + `t00011`) — precedencia absoluta sobre el resto; si bloquea otros, se desbloquea primero.
-2. **Track D CI real** (`x00251`, `x00252`, `c00012..c00014`) — conseguir SHA candidato completamente verde antes de seguir declarando cierres.
+2. **Track D CI real** (`x00251`, `x00252`, `c00020..c00014`) — conseguir SHA candidato completamente verde antes de seguir declarando cierres.
 3. **Track A filesystem search** (`x00246..x00248`, `t00010`).
 4. **Track C mutex** (`t00012`, `x00250`, `t00013`).
 5. **Track E tokens** (`c00015`, `r00022`, `r00023`).
@@ -324,7 +324,7 @@ Cada caso se ejecuta en dos hosts distintos (fixture A y fixture B). El payload 
 |-----------|--------|-----------|---------------------------------------------------------------------|
 | `x00251`  | fix    | P1        | CI-001 — `tests` CI job root cause + remediation                   |
 | `x00252`  | fix    | P1        | CI-002 — `lint-governance` CI job root cause + remediation         |
-| `c00012`  | chore  | P2        | CI-003 — CI evidence required para cierre de proposal / plan        |
+| `c00020`  | chore  | P2        | CI-003 — CI evidence required para cierre de proposal / plan        |
 | `c00013`  | chore  | P2        | CI-004 — `lint:architecture-readfile-via-safe-reader` en CI required |
 | `c00014`  | chore  | P2        | CI-004 — `lint:privacy` en CI required                              |
 
@@ -508,7 +508,7 @@ Criterios de aceptación globales (verificados a través de las hijas):
 - `lint:privacy` en CI required (`c00014`).
 - Branch / ruleset protection real activo en GitHub (`c00017`).
 - Integración evita `develop` rojo (`c00018`).
-- CI evidence required para cierre (`c00012`).
+- CI evidence required para cierre (`c00020`).
 
 ### Packaging (Track G)
 
