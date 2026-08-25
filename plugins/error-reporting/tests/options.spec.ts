@@ -8,8 +8,11 @@ import {
 	DEFAULT_LABELS,
 	DEFAULT_MAX_ISSUES_PER_DAY,
 	DEFAULT_TARGET_REPO,
-	resolveOptions,
 } from '../src/lib/contracts/constants/options.constant';
+import {
+	ERR_REPORTING_OPTION_DEPRECATED,
+	resolveOptions,
+} from '../src/lib/options.service';
 
 describe('resolveOptions', () => {
 	it('applies the intrinsic defaults when nothing is configured', () => {
@@ -17,7 +20,6 @@ describe('resolveOptions', () => {
 		expect(options.enabled).toBe(true);
 		expect(options.targetRepo).toBe(DEFAULT_TARGET_REPO);
 		expect(options.labels).toEqual([...DEFAULT_LABELS]);
-		expect(options.internalOnly).toBe(true);
 		expect(options.dedupeWindowHours).toBe(24);
 		expect(options.maxIssuesPerDay).toBe(DEFAULT_MAX_ISSUES_PER_DAY);
 		expect(options.circuitBreakerThreshold).toBe(
@@ -33,7 +35,6 @@ describe('resolveOptions', () => {
 			enabled: false,
 			targetRepo: 'acme/tools',
 			labels: ['custom'],
-			internalOnly: false,
 			dedupeWindowHours: 1,
 			maxIssuesPerDay: 2,
 			circuitBreakerThreshold: 4,
@@ -44,7 +45,6 @@ describe('resolveOptions', () => {
 		expect(options.enabled).toBe(false);
 		expect(options.targetRepo).toBe('acme/tools');
 		expect(options.labels).toEqual(['custom']);
-		expect(options.internalOnly).toBe(false);
 		expect(options.dedupeWindowHours).toBe(1);
 		expect(options.maxIssuesPerDay).toBe(2);
 		expect(options.circuitBreakerThreshold).toBe(4);
@@ -81,5 +81,48 @@ describe('resolveOptions', () => {
 			targetRepo: '  acme/tools  ',
 		});
 		expect(options.targetRepo).toBe('acme/tools');
+	});
+
+	it('warns and ignores legacy internalOnly=false', () => {
+		const warnings: string[] = [];
+		const options = resolveOptions(
+			{
+				internalOnly: false,
+				targetRepo: 'acme/tools',
+			},
+			(warning) => {
+				warnings.push(`${warning.code}: ${warning.message}`);
+			},
+		);
+		expect(options.targetRepo).toBe('acme/tools');
+		expect(warnings).toEqual([
+			`${ERR_REPORTING_OPTION_DEPRECATED}: "internalOnly" is deprecated and ignored. External project data is non-reportable by construction.`,
+		]);
+	});
+
+	it('warns and ignores legacy internalOnly=true', () => {
+		const warnings: string[] = [];
+		resolveOptions(
+			{
+				internalOnly: true,
+			},
+			(warning) => {
+				warnings.push(warning.code);
+			},
+		);
+		expect(warnings).toEqual([ERR_REPORTING_OPTION_DEPRECATED]);
+	});
+
+	it('does not warn when internalOnly is absent', () => {
+		const warnings: string[] = [];
+		resolveOptions(
+			{
+				enabled: false,
+			},
+			(warning) => {
+				warnings.push(warning.code);
+			},
+		);
+		expect(warnings).toEqual([]);
 	});
 });

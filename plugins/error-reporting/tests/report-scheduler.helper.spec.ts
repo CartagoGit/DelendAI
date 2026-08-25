@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { resolveOptions } from '../src/lib/contracts/constants/options.constant';
+import { resolveOptions } from '../src/lib/options.service';
 import { createReportScheduler } from '../src/lib/report-scheduler.helper';
 
 const buildScheduler = (overrides: Record<string, unknown> = {}) =>

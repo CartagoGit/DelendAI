@@ -16,8 +16,10 @@ built only from MCP Vertex-owned metadata.
 
 - **Intrinsic & enabled by default.** Loaded with the standard preset; no
   config needed.
-- **Internal-only by default.** Only mcp-vertex-internal failures are
-  reported. A host project's own errors are never sent upstream.
+- **External project data is non-reportable by construction.** The reporter
+  accepts only mcp-vertex-internal failures backed by typed internal errors
+  or `@mcp-vertex/*` frame evidence. A host project's own errors are never
+  sent upstream, and there is no runtime flag that re-enables them.
 - **Privacy by construction.** Raw error messages, raw stack traces, tool
   args, cwd, workspace paths, repo metadata and host-specific strings are not
   part of the public report contract.
@@ -45,6 +47,17 @@ destination from runtime/project data.
 Dispatch uses the host's authenticated `gh issue create` command via the
 shared CLI runner. The plugin passes only the `gh` argv and a `cwd`; it does
 not forward project-specific headers or environment variables.
+
+## Reporting policy
+
+External project data is **non-reportable by construction**.
+
+This is not a configurable option. The reporter accepts only
+`ISafeMcpVertexReport` DTOs whose provenance has been resolved through
+MCP Vertex-owned metadata and whose frames have been normalized to
+package-relative `@mcp-vertex/*` paths. There is no API surface, schema
+field, runtime option or feature flag that re-enables reporting of external
+project data.
 
 Each auto-created issue carries:
 
@@ -85,8 +98,13 @@ Inspect the current state with the `<prefix>_report_status` tool.
 | `enabled` | `boolean` | `true` | Master switch. `false` disables reporting entirely. |
 | `targetRepo` | `string` | `CartagoGit/mcp-vertex` | Fixed `owner/name` destination. Only explicit plugin config may override the default. |
 | `labels` | `string[]` | `["auto-reported", "bug"]` | Labels on auto-created issues. |
-| `internalOnly` | `boolean` | `true` | Report only mcp-vertex-internal failures. |
 | `dedupeWindowHours` | `number` | `24` | De-duplication window in hours. |
+
+## Removed option
+
+- `internalOnly` — removed in `x00236`. Legacy values emit a deprecation
+  warning and are ignored because external project data is non-reportable by
+  construction.
 
 ## Design notes
 

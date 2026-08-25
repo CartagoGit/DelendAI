@@ -17,9 +17,12 @@ export {
 	DEFAULT_MAX_ISSUES_PER_DAY,
 	DEFAULT_TARGET_REPO,
 	DEFAULT_DEDUPE_WINDOW_HOURS,
-	resolveOptions,
 } from '../lib/contracts/constants/options.constant';
 export type { IErrorReportingOptions } from '../lib/contracts/interfaces/options.interface';
+export {
+	ERR_REPORTING_OPTION_DEPRECATED,
+	resolveOptions,
+} from '../lib/options.service';
 export { SAFE_REPORTER_FAILURE_CODES } from '../lib/contracts/constants/safe-reporter-failure-codes.constant';
 export type {
 	SafeReporterFailureCode,

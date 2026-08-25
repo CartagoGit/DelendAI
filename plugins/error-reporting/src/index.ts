@@ -1,11 +1,12 @@
 import { definePlugin, redactSecrets } from '@mcp-vertex/core/public';
 
-import {
-	OptionsSchema,
-	resolveOptions,
-} from './lib/contracts/constants/options.constant';
+import { OptionsSchema } from './lib/contracts/constants/options.constant';
 import type { ISafeMcpVertexReport } from './lib/contracts/interfaces/reporter.interface';
 import type { IErrorReportingOptions } from './lib/contracts/interfaces/options.interface';
+import {
+	ERR_REPORTING_OPTION_DEPRECATED,
+	resolveOptions,
+} from './lib/options.service';
 import type { IReportSchedulerClock } from './lib/contracts/interfaces/report-scheduler.interface';
 import type { IReportStore } from './lib/contracts/interfaces/report-store.interface';
 import { registerInternalRuntimePaths } from './lib/frame-extractor.helper';
@@ -149,7 +150,11 @@ export default definePlugin({
 	optionsSchema: OptionsSchema,
 	register(ctx) {
 		registerInternalRuntimePaths(import.meta.url);
-		const options = resolveOptions(ctx.options);
+		const options = resolveOptions(ctx.options, (warning) => {
+			console.warn(
+				`${ERR_REPORTING_OPTION_DEPRECATED}: ${warning.message}`,
+			);
+		});
 		const store = createReportStore(ctx.pluginCacheDir);
 		const reporter = createSafeReporter({
 			targetRepo: options.targetRepo,
