@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-08-25T06:06:18.090Z",
+	"generatedAt": "2026-08-25T06:47:01.642Z",
 	"mode": "compact",
 	"tools": [
 		{
@@ -1216,10 +1216,59 @@
 				"kind": "audit"
 			},
 			{
+				"id": "c00012",
+				"title": "c00012",
+				"track": "ci",
+				"status": "ready",
+				"kind": "chore"
+			},
+			{
+				"id": "c00013",
+				"title": "c00013",
+				"track": "ci",
+				"status": "ready",
+				"kind": "chore"
+			},
+			{
+				"id": "c00014",
+				"title": "c00014",
+				"track": "ci",
+				"status": "ready",
+				"kind": "chore"
+			},
+			{
+				"id": "c00015",
+				"title": "c00015",
+				"track": "tokens",
+				"status": "ready",
+				"kind": "chore"
+			},
+			{
+				"id": "c00016",
+				"title": "c00016",
+				"track": "filesystem",
+				"status": "ready",
+				"kind": "chore"
+			},
+			{
 				"id": "f00050",
 				"title": "f00050",
 				"track": "lint+architecture+i18n+workflow+release",
 				"status": "paused",
+				"kind": "feat"
+			},
+			{
+				"id": "f00177",
+				"title": "f00177",
+				"track": "packaging",
+				"status": "ready",
+				"kind": "feat"
+			},
+			{
+				"id": "f00178",
+				"title": "f00178",
+				"track": "packaging",
+				"status": "ready",
 				"kind": "feat"
 			},
 			{
@@ -1228,6 +1277,48 @@
 				"track": "develop-audit-consolidation",
 				"status": "in-progress",
 				"kind": "plan"
+			},
+			{
+				"id": "r00022",
+				"title": "r00022",
+				"track": "tokens",
+				"status": "ready",
+				"kind": "refactor"
+			},
+			{
+				"id": "r00023",
+				"title": "r00023",
+				"track": "tokens",
+				"status": "ready",
+				"kind": "refactor"
+			},
+			{
+				"id": "t00010",
+				"title": "t00010",
+				"track": "filesystem",
+				"status": "ready",
+				"kind": "unspecified"
+			},
+			{
+				"id": "t00011",
+				"title": "t00011",
+				"track": "privacy",
+				"status": "ready",
+				"kind": "unspecified"
+			},
+			{
+				"id": "t00012",
+				"title": "t00012",
+				"track": "concurrency",
+				"status": "ready",
+				"kind": "unspecified"
+			},
+			{
+				"id": "t00013",
+				"title": "t00013",
+				"track": "concurrency",
+				"status": "ready",
+				"kind": "unspecified"
 			},
 			{
 				"id": "x00203",
@@ -1242,10 +1333,73 @@
 				"track": "plugins+fix",
 				"status": "in-progress",
 				"kind": "fix"
+			},
+			{
+				"id": "x00246",
+				"title": "x00246",
+				"track": "filesystem",
+				"status": "ready",
+				"kind": "fix"
+			},
+			{
+				"id": "x00247",
+				"title": "x00247",
+				"track": "filesystem",
+				"status": "ready",
+				"kind": "fix"
+			},
+			{
+				"id": "x00248",
+				"title": "x00248",
+				"track": "filesystem",
+				"status": "ready",
+				"kind": "fix"
+			},
+			{
+				"id": "x00249",
+				"title": "x00249",
+				"track": "privacy",
+				"status": "ready",
+				"kind": "fix"
+			},
+			{
+				"id": "x00250",
+				"title": "x00250",
+				"track": "concurrency",
+				"status": "ready",
+				"kind": "fix"
+			},
+			{
+				"id": "x00251",
+				"title": "x00251",
+				"track": "ci",
+				"status": "ready",
+				"kind": "fix"
+			},
+			{
+				"id": "x00252",
+				"title": "x00252",
+				"track": "ci",
+				"status": "ready",
+				"kind": "fix"
+			},
+			{
+				"id": "x00254",
+				"title": "x00254",
+				"track": "filesystem",
+				"status": "ready",
+				"kind": "fix"
+			},
+			{
+				"id": "x00255",
+				"title": "x00255",
+				"track": "filesystem",
+				"status": "ready",
+				"kind": "fix"
 			}
 		],
 		"byStatus": {
-			"ready": 0,
+			"ready": 22,
 			"in-progress": 8,
 			"review": 28,
 			"paused": 1,
