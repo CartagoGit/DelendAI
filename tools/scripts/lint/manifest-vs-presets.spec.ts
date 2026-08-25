@@ -82,6 +82,64 @@ describe('manifest-vs-presets lint', () => {
 		});
 	});
 
+	it('flags a private-visibility manifest that lists any preset (f00177 / MAN-001)', async () => {
+		await withFixture(async (root) => {
+			await writeFile(
+				join(root, 'plugins/search/plugin.manifest.ts'),
+				[
+					'export default {',
+					"\tid: 'search',",
+					"\tpackage: '@mcp-vertex/search',",
+					"\tversion: '0.1.1',",
+					"\tvisibility: 'private',",
+					"\tsummary: 'Code search with low-token result windows.',",
+					"\ttags: ['search'],",
+					"\tmaturity: 'stable',",
+					"\tpermissions: ['filesystem-read'],",
+					"\tpresets: ['minimal'],",
+					'\ttokenBudget: { warning: 2200, hard: 2500, releaseRelativePercent: 20 },',
+					"\tdependencies: ['@mcp-vertex/core'],",
+					"\tcapabilities: ['search'],",
+					'};\n',
+				].join('\n'),
+				'utf8',
+			);
+			const violations = await lintManifestVsPresets(root);
+			expect(
+				violations.some((v) => v.rule === 'MANIFEST-PRESET-004'),
+			).toBe(true);
+		});
+	});
+
+	it('passes for a private-visibility manifest with an empty presets array', async () => {
+		await withFixture(async (root) => {
+			await writeFile(
+				join(root, 'plugins/search/plugin.manifest.ts'),
+				[
+					'export default {',
+					"\tid: 'search',",
+					"\tpackage: '@mcp-vertex/search',",
+					"\tversion: '0.1.1',",
+					"\tvisibility: 'private',",
+					"\tsummary: 'Code search with low-token result windows.',",
+					"\ttags: ['search'],",
+					"\tmaturity: 'stable',",
+					"\tpermissions: ['filesystem-read'],",
+					'\tpresets: [],',
+					'\ttokenBudget: { warning: 2200, hard: 2500, releaseRelativePercent: 20 },',
+					"\tdependencies: ['@mcp-vertex/core'],",
+					"\tcapabilities: ['search'],",
+					'};\n',
+				].join('\n'),
+				'utf8',
+			);
+			const violations = await lintManifestVsPresets(root);
+			expect(
+				violations.some((v) => v.rule === 'MANIFEST-PRESET-004'),
+			).toBe(false);
+		});
+	});
+
 	it('flags presets listed in the manifest but absent from resolved catalog membership', async () => {
 		await withFixture(async (root) => {
 			await mkdir(join(root, 'plugins/docs'), { recursive: true });

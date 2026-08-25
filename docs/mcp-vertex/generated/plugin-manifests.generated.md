@@ -231,11 +231,11 @@
 | changelog | lean | no | no | yes |
 | changelog | standard | no | no | yes |
 | changelog | swarm | no | no | yes |
-| changelog | full | yes | yes | yes |
+| changelog | full | no | no | yes |
 | changelog | vertex | no | no | yes |
 | changelog | web-app | no | no | yes |
 | changelog | backend-api | no | no | yes |
-| changelog | cli-tool | yes | yes | yes |
+| changelog | cli-tool | no | no | yes |
 | completion | minimal | no | no | yes |
 | completion | lean | no | no | yes |
 | completion | standard | no | no | yes |
