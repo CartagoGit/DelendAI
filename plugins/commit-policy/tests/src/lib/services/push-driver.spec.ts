@@ -8,8 +8,8 @@ import { describe, expect, it } from 'vitest';
 
 import type { IGitRunner, IGitRunResult } from '@mcp-vertex/core/public';
 
-import type { ICommitPolicyPush } from '../contracts/options';
-import { runPushDriver } from './push-driver';
+import type { ICommitPolicyPush } from '@mcp-vertex/commit-policy/lib/contracts/options';
+import { runPushDriver } from '@mcp-vertex/commit-policy/lib/services/push-driver';
 
 const ok = (output: string): IGitRunResult => ({ ok: true, output });
 
@@ -126,7 +126,11 @@ describe('runPushDriver', () => {
 
 	it('falls back to the current branch when nothing else is resolvable', async () => {
 		const { run, pushes } = buildPushFake({ currentBranch: 'develop' });
-		const result = await runPushDriver({}, basePush(), run);
+		const result = await runPushDriver(
+			{},
+			basePush({ remote: 'origin' }),
+			run,
+		);
 		expect(result.ok).toBe(true);
 		if (!result.ok) return;
 		expect(result.branch).toBe('develop');

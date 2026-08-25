@@ -261,13 +261,25 @@ export type ICommitPolicyCommit = z.infer<typeof CommitSchema>;
  * register time; the resolver never sees the raw options object.
  */
 export const CommitPolicyOptionsSchema = z.object({
-	commit: CommitSchema,
+	commit: CommitSchema.default({
+		enabled: false,
+		requireConventional: true,
+		autoScopeFromProposal: true,
+		refuseWhenDisabled: true,
+	}),
 	identity: IdentitySchema.default({ mode: 'global' }),
-	audit: AuditSchema,
-	cadence: CadenceSchema,
-	push: PushSchema,
+	audit: AuditSchema.default({
+		trailer: 'co-authored-by',
+		agentFormat: '${host}/${model}',
+	}),
+	cadence: CadenceSchema.default({ triggers: [], sliceScoping: true }),
+	push: PushSchema.default({
+		enabled: false,
+		onCommit: false,
+		force: 'with-lease',
+		protectedBranches: ['main', 'master'],
+	}),
 });
-
 export type ICommitPolicyOptions = z.infer<typeof CommitPolicyOptionsSchema>;
 
 /** Resolve raw host options through the schema with conservative defaults. */
