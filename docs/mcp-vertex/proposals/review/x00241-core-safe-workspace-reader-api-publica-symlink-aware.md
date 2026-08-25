@@ -527,7 +527,7 @@ it('reserved paths always rejected', () => {
 - review-log: approved by orchestrator-fase1-review — Fase 1 review 2026-08-25: validate verde, mecanismo verificado empíricamente contra git config real.
 ### S2 — Implementación SafeWorkspaceReader
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/src/lib/filesystem/safe-workspace-reader.ts`, `packages/core/src/lib/filesystem/safe-workspace-reader.errors.ts`
 - **Gate**: type
 - acceptance:
@@ -536,7 +536,7 @@ it('reserved paths always rejected', () => {
 
 ### S3 — Tests adversariales + property tests
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/tests/src/lib/filesystem/safe-workspace-reader.spec.ts`, `packages/core/tests/src/lib/filesystem/safe-workspace-reader.property.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -545,7 +545,7 @@ it('reserved paths always rejected', () => {
 
 ### S4 — Documentación pública
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `docs/mcp-vertex/core/safe-workspace-reader.md`
 - **Gate**: type
 - acceptance:

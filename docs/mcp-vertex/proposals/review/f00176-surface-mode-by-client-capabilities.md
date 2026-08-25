@@ -174,7 +174,7 @@ Para análisis futuro (sin enviar a ningún lado):
 
 ### S1 — Detect capabilities + decide mode
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/src/lib/surface/client-capabilities.ts`, `packages/core/src/lib/surface/decide-mode.ts`
 - **Gate**: type
 - acceptance:
@@ -183,7 +183,7 @@ Para análisis futuro (sin enviar a ningún lado):
 
 ### S2 — Tests + docs
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/tests/src/lib/surface/`, `docs/mcp-vertex/surface/mode-decision.md`
 - **Gate**: type
 - acceptance:

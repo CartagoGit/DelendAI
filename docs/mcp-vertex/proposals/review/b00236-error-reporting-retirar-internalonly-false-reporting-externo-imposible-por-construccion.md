@@ -170,7 +170,7 @@ Ausente → silencio.
 
 ### S1 — Schema + service
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/error-reporting/src/lib/contracts/constants/options.constant.ts`, `plugins/error-reporting/src/lib/options.service.ts`
 - **Gate**: type
 - acceptance:
@@ -179,7 +179,7 @@ Ausente → silencio.
 
 ### S2 — Reporter sin rama de internalOnly
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/error-reporting/src/lib/reporter.service.ts`
 - **Gate**: type
 - acceptance:
@@ -188,7 +188,7 @@ Ausente → silencio.
 
 ### S3 — Documentación + lint + grep test
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `docs/mcp-vertex/plugins/error-reporting.md`, `tools/scripts/lint/privacy-internal-only.script.ts`
 - **Gate**: type
 - acceptance:
@@ -295,7 +295,7 @@ resolution:
 
 ### S1 — Schema + service
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/error-reporting/src/lib/contracts/constants/options.constant.ts`, `plugins/error-reporting/src/lib/options.service.ts`
 - **Gate**: type
 - acceptance:
@@ -304,7 +304,7 @@ resolution:
 
 ### S2 — Reporter sin rama de internalOnly
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/error-reporting/src/lib/reporter.service.ts`
 - **Gate**: type
 - acceptance:
@@ -313,7 +313,7 @@ resolution:
 
 ### S3 — Documentación + lint + grep test
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `docs/mcp-vertex/plugins/error-reporting.md`, `tools/scripts/lint/privacy-internal-only.script.ts`
 - **Gate**: type
 - acceptance:
