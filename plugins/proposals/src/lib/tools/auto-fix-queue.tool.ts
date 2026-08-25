@@ -32,21 +32,10 @@ const AUTO_FIX_QUEUE_INPUT_SCHEMA = z.object({
 	limit: z.number().int().positive().max(MAX_AUTO_FIX_QUEUE_ITEMS).optional(),
 });
 
-const QUEUE_ITEM_SCHEMA = incidentProposalDraftSchema()
-	.extend({
-		severity: z.enum(['critical', 'high', 'medium', 'low']),
-		reproducible: z.boolean(),
-		affectedPaths: z.array(z.string()),
-		affectsPublishedOutputSchema: z.boolean(),
-		decision: z.enum(['auto-fixable', 'needs-human']),
-		reason: z.string(),
-	})
-	.strict();
-
 const AUTO_FIX_QUEUE_OUTPUT_SCHEMA = buildIncidentProposalWriteSummarySchema({
 	ok: z.literal(true),
-	autoFixable: z.array(QUEUE_ITEM_SCHEMA),
-	needsHuman: z.array(QUEUE_ITEM_SCHEMA),
+	autoFixable: z.unknown(),
+	needsHuman: z.unknown(),
 	deduped: z.number(),
 	totalClusters: z.number(),
 });

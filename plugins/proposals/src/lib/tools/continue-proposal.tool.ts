@@ -22,8 +22,8 @@ import {
 } from '../contracts/constants/proposal-glossary.constant';
 import { buildCascadeSummary } from '../cascade/cascade-summary';
 import { buildDefaultCascadeChain } from '../cascade/cascade-chain';
-import type { TCascadeBoost } from '../cascade/cascade-priority';
 import { blockedByFor } from '../proposals/blocked-by';
+import { DEFAULT_STALE_AFTER_MINUTES } from '../shared/branch-tool-helpers';
 import type { IProposalIndexEntry } from '../proposals/index-reader';
 import {
 	readJsonOrNull,
@@ -88,69 +88,6 @@ const json = toolJson;
 
 const ACTIONABLE = new Set(['pending', 'ready', 'in_progress']);
 const SLICE_GATE_SCHEMA = z.enum(['lint', 'type', 'e2e', 'none']);
-const SLICE_STATUS_SCHEMA = z.enum([
-	'pending',
-	'in-progress',
-	'done',
-	'blocked',
-]);
-const CLAIM_BLOCKER_SCHEMA = z.enum([
-	'none',
-	'unknown-slice',
-	'deps-not-done',
-	'overlap-in-progress',
-	'already-done',
-	'already-in-progress',
-]);
-
-const CASCADE_BOOST_VALUES = [
-	'shipped-blocking',
-	'customer-reported',
-	'security',
-] as const satisfies readonly [TCascadeBoost, ...TCascadeBoost[]];
-
-const PROPOSAL_SLICE_SCHEMA = z.object({
-	proposalId: z.string(),
-	sliceId: z.string(),
-	title: z.string(),
-	owner: z.string().nullable(),
-	files: z.array(z.string()),
-	dependsOn: z.array(z.string()),
-	gate: SLICE_GATE_SCHEMA,
-	status: SLICE_STATUS_SCHEMA,
-	acceptanceCriteria: z.array(z.string()),
-});
-
-const PROPOSAL_SLICE_PLAN_SCHEMA = z.object({
-	proposalId: z.string(),
-	slices: z.array(PROPOSAL_SLICE_SCHEMA),
-	globalGate: SLICE_GATE_SCHEMA,
-});
-
-const CLAIM_VALIDATION_SCHEMA = z.object({
-	ok: z.boolean(),
-	reason: z.string(),
-	blockerType: CLAIM_BLOCKER_SCHEMA,
-});
-
-const SLICE_OVERLAP_SCHEMA = z.object({
-	first: z.string(),
-	second: z.string(),
-	file: z.string(),
-});
-
-const EXECUTION_GUIDE_SCHEMA = z.object({
-	files: z.array(z.string()),
-	acceptanceCriteria: z.array(z.string()),
-	gate: SLICE_GATE_SCHEMA,
-	rules: z.array(z.string()),
-});
-
-const CASCADE_TRACE_SCHEMA = z.object({
-	priority: z.number().optional(),
-	cascadeOverrideReason: z.string().optional(),
-	cascadeBoost: z.enum(CASCADE_BOOST_VALUES).optional(),
-});
 
 const CONTINUE_PROPOSAL_OUTPUT_SCHEMA = z.object({
 	kind: z.enum([
@@ -169,14 +106,14 @@ const CONTINUE_PROPOSAL_OUTPUT_SCHEMA = z.object({
 	status: z.string().optional(),
 	relaunchCommand: z.string().optional(),
 	guide: z.array(z.string()).optional(),
-	plan: PROPOSAL_SLICE_PLAN_SCHEMA.optional(),
-	disjointnessIssues: z.array(SLICE_OVERLAP_SCHEMA).optional(),
+	plan: z.unknown().optional(),
+	disjointnessIssues: z.unknown().optional(),
 	claimableSliceIds: z.array(z.string()).optional(),
 	sliceId: z.string().optional(),
-	validation: CLAIM_VALIDATION_SCHEMA.optional(),
-	slice: PROPOSAL_SLICE_SCHEMA.nullable().optional(),
-	executionGuide: EXECUTION_GUIDE_SCHEMA.optional(),
-	cascadeTrace: CASCADE_TRACE_SCHEMA.optional(),
+	validation: z.unknown().optional(),
+	slice: z.unknown().nullable().optional(),
+	executionGuide: z.unknown().optional(),
+	cascadeTrace: z.unknown().optional(),
 	error: z.string().optional(),
 	blockedBy: z.array(z.string()).optional(),
 	/**
@@ -264,7 +201,8 @@ const readActiveLocks = async (
 		}>;
 	}>(lockPath);
 	if (lock === null) return [];
-	const staleMinutes = lock.stale_after_minutes ?? 10;
+	const staleMinutes =
+		lock.stale_after_minutes ?? DEFAULT_STALE_AFTER_MINUTES;
 	const now = Date.now();
 	return (lock.in_flight ?? [])
 		.filter((entry) => {

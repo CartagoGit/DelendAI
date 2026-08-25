@@ -10,7 +10,7 @@ export default definePluginManifest({
 	tags: ['prompts'],
 	maturity: 'stable',
 	permissions: ['filesystem-read'],
-	presets: ['standard', 'swarm', 'full', 'vertex', 'web-app', 'backend-api'],
+	presets: ['standard', 'swarm', 'full', 'web-app', 'backend-api'],
 	tokenBudget: TOKEN_BUDGETS.toolPayloads.search,
 	dependencies: ['@mcp-vertex/core'],
 	capabilities: ['prompts'],

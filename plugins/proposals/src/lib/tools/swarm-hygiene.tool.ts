@@ -1,11 +1,19 @@
-import { execFile } from 'node:child_process';
 import z from 'zod';
 
 import type { IToolRegistration } from '@mcp-vertex/core/public';
 
-import type { IGitRunner, IGitRunResult } from '../shared/git-runner';
+import { createGitRunner, type IGitRunner } from '../shared/git-runner';
 import { runSwarmHygieneEngine } from '../shared/swarm-hygiene-engine';
 import { createPendingIntegrationStore } from '../shared/pending-integration-store';
+import {
+	resolveBaseBranchAndStaleMinutes,
+	toolJsonWithErrorFlag,
+} from '../shared/branch-tool-helpers';
+import {
+	optionalBoolean,
+	optionalString,
+	optionalUnknown,
+} from '../shared/tool-schema-shortcuts';
 
 export interface ISwarmHygieneToolOptions {
 	readonly namespacePrefix: string;
@@ -32,40 +40,21 @@ export interface ISwarmHygieneToolOptions {
 	readonly staleBehindThreshold?: number;
 }
 
-const SWARM_BRANCH_ENTRY_SCHEMA = z
-	.object({
-		branch: z.string().optional(),
-		path: z.string().optional(),
-		worktreePath: z.string().optional(),
-		proposalId: z.string().optional(),
-		sliceId: z.string().optional(),
-	})
-	.passthrough();
-
-const SUMMARY = z.object({
-	rescueCandidatesCount: z.number().int().nonnegative(),
-	gcEligibleCount: z.number().int().nonnegative(),
-	outOfCacheCount: z.number().int().nonnegative(),
-	pendingIntegrationCount: z.number().int().nonnegative(),
-	nonConformingBranchesCount: z.number().int().nonnegative(),
-	staleUnmergedCount: z.number().int().nonnegative(),
-});
-
 const SWARM_HYGIENE_OUTPUT_SCHEMA = z
 	.object({
 		ok: z.boolean(),
-		reason: z.string().optional(),
-		baseBranch: z.string().optional(),
-		generatedAt: z.string().optional(),
-		rescueCandidates: z.array(SWARM_BRANCH_ENTRY_SCHEMA).optional(),
-		gcEligible: z.array(SWARM_BRANCH_ENTRY_SCHEMA).optional(),
-		outOfCache: z.array(SWARM_BRANCH_ENTRY_SCHEMA).optional(),
-		mainCheckoutBranch: z.string().optional(),
-		mainCheckoutDrift: z.boolean().optional(),
-		pendingIntegration: z.array(SWARM_BRANCH_ENTRY_SCHEMA).optional(),
-		nonConformingBranches: z.array(SWARM_BRANCH_ENTRY_SCHEMA).optional(),
-		staleUnmerged: z.array(SWARM_BRANCH_ENTRY_SCHEMA).optional(),
-		summary: SUMMARY.optional(),
+		reason: optionalString(),
+		baseBranch: optionalString(),
+		generatedAt: optionalString(),
+		rescueCandidates: optionalUnknown(),
+		gcEligible: optionalUnknown(),
+		outOfCache: optionalUnknown(),
+		mainCheckoutBranch: optionalString(),
+		mainCheckoutDrift: optionalBoolean(),
+		pendingIntegration: optionalUnknown(),
+		nonConformingBranches: optionalUnknown(),
+		staleUnmerged: optionalUnknown(),
+		summary: optionalUnknown(),
 	})
 	.passthrough();
 
@@ -121,18 +110,12 @@ export const buildSwarmHygieneRegistration = (
 					const engineOptions = {
 						run:
 							options.run ??
-							createDefaultRunner(options.workspaceRoot),
+							createGitRunner(options.workspaceRoot),
 						workspaceRoot: options.workspaceRoot,
-						...(args.baseBranch !== undefined
-							? { baseBranch: args.baseBranch }
-							: options.defaultBaseBranch !== undefined
-								? { baseBranch: options.defaultBaseBranch }
-								: {}),
-						...(args.staleMinutes !== undefined
-							? { staleMinutes: args.staleMinutes }
-							: options.defaultStaleMinutes !== undefined
-								? { staleMinutes: options.defaultStaleMinutes }
-								: {}),
+						...resolveBaseBranchAndStaleMinutes(args, {
+							baseBranch: options.defaultBaseBranch,
+							staleMinutes: options.defaultStaleMinutes,
+						}),
 						...(args.force !== undefined
 							? { force: args.force }
 							: {}),
@@ -165,51 +148,9 @@ export const buildSwarmHygieneRegistration = (
 							: {}),
 					};
 					const result = await runSwarmHygieneEngine(engineOptions);
-					return {
-						content: [
-							{
-								type: 'text' as const,
-								text: JSON.stringify(result),
-							},
-						],
-						structuredContent: result as unknown as Record<
-							string,
-							unknown
-						>,
-						...(result.ok ? {} : { isError: true }),
-					};
+					return toolJsonWithErrorFlag(result);
 				},
 			);
 		},
 	};
 };
-
-const createDefaultRunner =
-	(cwd: string): IGitRunner =>
-	(args) =>
-		new Promise<IGitRunResult>((resolve) => {
-			execFile(
-				'git',
-				[...args],
-				{
-					cwd,
-					encoding: 'utf8',
-					timeout: 15_000,
-					maxBuffer: 8 * 1024 * 1024,
-				},
-				(error, stdout, stderr) => {
-					if (!error) {
-						resolve({ ok: true, output: stdout });
-						return;
-					}
-					resolve({
-						ok: false,
-						output: '',
-						reason:
-							(stderr || error.message || 'git command failed')
-								.trim()
-								.split('\n')[0] ?? 'git command failed',
-					});
-				},
-			);
-		});

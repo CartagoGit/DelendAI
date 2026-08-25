@@ -65,18 +65,23 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 	const promptEval = resolve(workspaceRoot, 'plugins/prompt-eval/src');
 	const notification = resolve(workspaceRoot, 'plugins/notification/src');
 	const observability = resolve(workspaceRoot, 'plugins/observability/src');
+	const orchestratorRunner = resolve(
+		workspaceRoot,
+		'plugins/orchestrator-runner/src',
+	);
 	const statusMarker = resolve(workspaceRoot, 'plugins/status-marker/src');
 	const testConvention = resolve(
 		workspaceRoot,
 		'plugins/test-convention/src',
 	);
+	const testPolicy = resolve(workspaceRoot, 'plugins/test-policy/src');
+	const usageTracking = resolve(workspaceRoot, 'plugins/usage-tracking/src');
 	// x00189: token-budget.e2e imports `@mcp-vertex/test-policy` (it
 	// is the only plugin used by a core spec that wasn't already in
 	// the alias list). Without this entry the test resolves through
 	// the package's published `main` (which points at `dist/index.js`)
 	// and the bundled dist still uses the broken `import { z } from
 	// 'zod'` form, surfacing the rolldown interop bug at test time.
-	const testPolicy = resolve(workspaceRoot, 'plugins/test-policy/src');
 	const webFetch = resolve(workspaceRoot, 'plugins/web-fetch/src');
 	const autoAgentSelector = resolve(
 		workspaceRoot,
@@ -85,6 +90,18 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 	const autoPluginSelector = resolve(
 		workspaceRoot,
 		'plugins/auto-plugin-selector/src',
+		{
+			find: '@mcp-vertex/orchestrator-runner/public',
+			replacement: resolve(orchestratorRunner, 'public/index.ts'),
+		},
+		{
+			find: /^@mcp-vertex\/orchestrator-runner\/lib\/(.*)$/,
+			replacement: `${resolve(orchestratorRunner, 'lib')}/$1`,
+		},
+		{
+			find: '@mcp-vertex/orchestrator-runner',
+			replacement: resolve(orchestratorRunner, 'index.ts'),
+		},
 	);
 	const api = resolve(workspaceRoot, 'plugins/api/src');
 	const conventions = resolve(workspaceRoot, 'plugins/conventions/src');
@@ -583,6 +600,18 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 		{
 			find: '@mcp-vertex/test-policy',
 			replacement: resolve(testPolicy, 'index.ts'),
+		},
+		{
+			find: '@mcp-vertex/usage-tracking/public',
+			replacement: resolve(usageTracking, 'public/index.ts'),
+		},
+		{
+			find: /^@mcp-vertex\/usage-tracking\/lib\/(.*)$/,
+			replacement: `${resolve(usageTracking, 'lib')}/$1`,
+		},
+		{
+			find: '@mcp-vertex/usage-tracking',
+			replacement: resolve(usageTracking, 'index.ts'),
 		},
 		{
 			find: '@mcp-vertex/auto-agent-selector/public',

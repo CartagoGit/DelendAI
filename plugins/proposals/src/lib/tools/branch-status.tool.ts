@@ -2,11 +2,21 @@ import z from 'zod';
 
 import type { IToolRegistration } from '@mcp-vertex/core/public';
 
-import type { IGitRunner } from '../shared/git-runner';
+import { createGitRunner, type IGitRunner } from '../shared/git-runner';
 import {
 	parseBranchList,
 	runBranchStatusEngine,
 } from '../shared/branch-status-engine';
+import {
+	DECIMAL_RADIX,
+	DEFAULT_STRANDED_BEHIND_THRESHOLD,
+	toolJsonWithErrorFlag,
+} from '../shared/branch-tool-helpers';
+import {
+	optionalBoolean,
+	optionalString,
+	optionalUnknown,
+} from '../shared/tool-schema-shortcuts';
 
 export interface IBranchStatusToolOptions {
 	readonly namespacePrefix: string;
@@ -38,64 +48,25 @@ export interface IDetectStrandedBranchesDeps {
 	readonly thresholdBehind?: number;
 }
 
-const BRANCH_ENTRY = z.object({
-	name: z.string(),
-	head: z.string(),
-	ahead: z.number().int().nonnegative(),
-	behind: z.number().int().nonnegative(),
-	mergedIntoBase: z.boolean(),
-	lastCommitMinutesAgo: z.number().int(),
-	worktreePath: z.string(),
-});
-
-const WORKTREE_ENTRY = z.object({
-	path: z.string(),
-	head: z.string(),
-	branch: z.string(),
-	outOfCache: z.boolean(),
-	dirtyFiles: z.number().int().nonnegative(),
-	untrackedFiles: z.number().int().nonnegative(),
-	ageLabel: z.string(),
-});
-
-const STRANDED_BRANCH_ENTRY = z.object({
-	branch: z.string(),
-	ahead: z.number().int().nonnegative(),
-	behind: z.number().int().nonnegative(),
-	lastCommitIso: z.string(),
-	worktreePath: z.string().nullable(),
-});
-
-const SUMMARY = z.object({
-	totalBranches: z.number().int().nonnegative(),
-	totalWorktrees: z.number().int().nonnegative(),
-	mergedCount: z.number().int().nonnegative(),
-	aheadOfBaseCount: z.number().int().nonnegative(),
-	behindBaseCount: z.number().int().nonnegative(),
-	dirtyWorktrees: z.number().int().nonnegative(),
-	untrackedWorktrees: z.number().int().nonnegative(),
-	outOfCacheWorktrees: z.number().int().nonnegative(),
-});
-
 const BRANCH_STATUS_OUTPUT_SCHEMA = z.object({
 	ok: z.boolean(),
-	reason: z.string().optional(),
-	baseBranch: z.string().optional(),
-	branches: z.array(BRANCH_ENTRY).optional(),
-	stranded: z.array(STRANDED_BRANCH_ENTRY).optional(),
-	worktrees: z.array(WORKTREE_ENTRY).optional(),
-	mainCheckoutBranch: z.string().optional(),
-	mainCheckoutDrift: z.boolean().optional(),
-	summary: SUMMARY.optional(),
-	generatedAt: z.string().optional(),
+	reason: optionalString(),
+	baseBranch: optionalString(),
+	branches: optionalUnknown(),
+	stranded: optionalUnknown(),
+	worktrees: optionalUnknown(),
+	mainCheckoutBranch: optionalString(),
+	mainCheckoutDrift: optionalBoolean(),
+	summary: optionalUnknown(),
+	generatedAt: optionalString(),
 });
 
 const parseAheadBehindCounts = (
 	raw: string,
 ): { ahead: number; behind: number } => {
 	const parts = raw.trim().split(/\s+/u);
-	const behind = Number.parseInt(parts[0] ?? '0', 10);
-	const ahead = Number.parseInt(parts[1] ?? '0', 10);
+	const behind = Number.parseInt(parts[0] ?? '0', DECIMAL_RADIX);
+	const ahead = Number.parseInt(parts[1] ?? '0', DECIMAL_RADIX);
 	return {
 		ahead: Number.isFinite(ahead) ? ahead : 0,
 		behind: Number.isFinite(behind) ? behind : 0,
@@ -191,7 +162,8 @@ export const detectStrandedBranches = async (
 ): Promise<readonly IStrandedBranch[]> => {
 	const listAgentBranches = deps.listAgentBranches;
 	if (listAgentBranches === undefined) return [];
-	const thresholdBehind = deps.thresholdBehind ?? 10;
+	const thresholdBehind =
+		deps.thresholdBehind ?? DEFAULT_STRANDED_BEHIND_THRESHOLD;
 	const branches = await listAgentBranches('.');
 	return branches.filter(
 		(branch) => branch.ahead === 0 && branch.behind >= thresholdBehind,
@@ -208,7 +180,7 @@ export const buildBranchStatusRegistration = (
 	options: IBranchStatusToolOptions,
 ): IToolRegistration => {
 	const toolName = `${options.namespacePrefix}_branch_status`;
-	const run = options.run ?? createDefaultRunner(options.workspaceRoot);
+	const run = options.run ?? createGitRunner(options.workspaceRoot);
 	return {
 		id: 'branch_status',
 		summary:
@@ -264,60 +236,9 @@ export const buildBranchStatusRegistration = (
 								}),
 							}
 						: result;
-					return {
-						content: [
-							{
-								type: 'text' as const,
-								text: JSON.stringify(response),
-							},
-						],
-						structuredContent: response as unknown as Record<
-							string,
-							unknown
-						>,
-						...(response.ok ? {} : { isError: true }),
-					};
+					return toolJsonWithErrorFlag(response);
 				},
 			);
 		},
 	};
 };
-
-import { execFile } from 'node:child_process';
-import type { IGitRunResult } from '../shared/git-runner';
-
-/**
- * Default runner used when the host does not inject one. Mirrors
- * `createGitRunner` in `shared/git-runner.ts` but stays local so this
- * file can be imported without pulling `node:child_process` into a
- * test that never invokes git.
- */
-const createDefaultRunner =
-	(cwd: string): IGitRunner =>
-	(args) =>
-		new Promise<IGitRunResult>((resolve) => {
-			execFile(
-				'git',
-				[...args],
-				{
-					cwd,
-					encoding: 'utf8',
-					timeout: 15_000,
-					maxBuffer: 8 * 1024 * 1024,
-				},
-				(error, stdout, stderr) => {
-					if (!error) {
-						resolve({ ok: true, output: stdout });
-						return;
-					}
-					resolve({
-						ok: false,
-						output: '',
-						reason:
-							(stderr || error.message || 'git command failed')
-								.trim()
-								.split('\n')[0] ?? 'git command failed',
-					});
-				},
-			);
-		});

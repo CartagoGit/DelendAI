@@ -3,7 +3,7 @@ id: prompts-pack
 package: @mcp-vertex/prompts-pack
 version: 0.1.1
 maturity: stable
-generated: 2026-08-25T01:07:05.846Z
+generated: 2026-08-25T09:11:25.153Z
 ---
 
 # Prompts Pack
@@ -23,7 +23,6 @@ Project-aware MCP prompts (explain-this-code, write-tests-for, review-this-diff,
 - standard
 - swarm
 - full
-- vertex
 - web-app
 - backend-api
 

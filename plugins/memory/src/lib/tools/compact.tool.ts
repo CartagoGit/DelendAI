@@ -105,14 +105,8 @@ export const buildCompactToolRegistration = (
 					}),
 					outputSchema: z.object({
 						digest: z.string(),
-						sections: z.array(
-							z.object({
-								kind: z.enum(CONTEXT_ITEM_KINDS),
-								heading: z.string(),
-								bullets: z.array(z.string()),
-							}),
-						),
-						tokenAccounting: TokenAccountingSchema,
+						sections: z.unknown(),
+						tokenAccounting: z.unknown(),
 						persisted: z.boolean(),
 						noteId: z.string().optional(),
 						redactedSecrets: z.number(),

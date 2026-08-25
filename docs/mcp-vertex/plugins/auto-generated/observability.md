@@ -3,7 +3,7 @@ id: observability
 package: @mcp-vertex/observability
 version: 0.1.1
 maturity: stable
-generated: 2026-08-25T01:07:05.846Z
+generated: 2026-08-25T09:49:08.392Z
 ---
 
 # Observability
@@ -20,7 +20,9 @@ Observability surface (metrics, errors, telemetry).
 
 ## Presets
 
-- none
+- standard
+- swarm
+- full
 
 ## Permissions
 

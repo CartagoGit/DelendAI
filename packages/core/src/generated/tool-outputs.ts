@@ -1173,67 +1173,20 @@ export interface McpVertexLinkCheckLinkCheckOutput {
 }
 
 export interface McpVertexLogsCorrelateOutput {
-	chain: Array<{
-		ts: string;
-		kind: string;
-		agent: string | null;
-		taskId: string | null;
-		outcome: "ok" | "failed" | "timed-out" | "cancelled" | "dead" | "idle" | "unknown";
-		severity: "debug" | "info" | "notice" | "warning" | "error" | "critical" | "alert" | "emergency";
-		incidentType: string | null;
-		files: string[];
-		summary: string;
-		meta: Record<string, unknown>;
-	}>;
+	chain: unknown[];
 	firstTs: string | null;
 	lastTs: string | null;
-	gaps: {
-		startTs: string;
-		endTs: string;
-		durationMs: number;
-	}[];
+	gaps: unknown;
 }
 
 export interface McpVertexLogsErrorsTailOutput {
-	events: Array<{
-		ts: string;
-		kind: string;
-		agent: string | null;
-		taskId: string | null;
-		outcome: "ok" | "failed" | "timed-out" | "cancelled" | "dead" | "idle" | "unknown";
-		severity: "debug" | "info" | "notice" | "warning" | "error" | "critical" | "alert" | "emergency";
-		incidentType: string | null;
-		files: string[];
-		summary: string;
-		meta: Record<string, unknown>;
-	}>;
+	events: unknown[];
 	oldestTs: string | null;
 	newestTs: string | null;
 }
 
 export interface McpVertexLogsIncidentsOutput {
-	incidents: Array<{
-		incidentType: string;
-		toolName: string;
-		count: number;
-		distinctAgents: number;
-		firstSeen: string;
-		lastSeen: string;
-		sampleSummary: string;
-		sampleError: string;
-		recentEvents: Array<{
-			ts: string;
-			kind: string;
-			agent: string | null;
-			taskId: string | null;
-			outcome: "ok" | "failed" | "timed-out" | "cancelled" | "dead" | "idle" | "unknown";
-			severity: "debug" | "info" | "notice" | "warning" | "error" | "critical" | "alert" | "emergency";
-			incidentType: string | null;
-			files: string[];
-			summary: string;
-			meta: Record<string, unknown>;
-		}>;
-	}>;
+	incidents: unknown;
 	totalIncidents: number;
 }
 
@@ -1245,18 +1198,7 @@ export interface McpVertexLogsLogOutput {
 }
 
 export interface McpVertexLogsQueryOutput {
-	events: Array<{
-		ts: string;
-		kind: string;
-		agent: string | null;
-		taskId: string | null;
-		outcome: "ok" | "failed" | "timed-out" | "cancelled" | "dead" | "idle" | "unknown";
-		severity: "debug" | "info" | "notice" | "warning" | "error" | "critical" | "alert" | "emergency";
-		incidentType: string | null;
-		files: string[];
-		summary: string;
-		meta: Record<string, unknown>;
-	}>;
+	events: unknown[];
 	cursor: string | null;
 	hasMore: boolean;
 }
@@ -1267,89 +1209,32 @@ export interface McpVertexLogsRedactTestOutput {
 }
 
 export interface McpVertexLogsSearchOutput {
-	events: Array<{
-		ts: string;
-		kind: string;
-		agent: string | null;
-		taskId: string | null;
-		outcome: "ok" | "failed" | "timed-out" | "cancelled" | "dead" | "idle" | "unknown";
-		severity: "debug" | "info" | "notice" | "warning" | "error" | "critical" | "alert" | "emergency";
-		incidentType: string | null;
-		files: string[];
-		summary: string;
-		meta: Record<string, unknown>;
-	}>;
+	events: unknown[];
 	matched: number;
 	hasMore: boolean;
 }
 
 export interface McpVertexLogsSubscribeOutput {
-	events: Array<{
-		ts: string;
-		kind: string;
-		agent: string | null;
-		taskId: string | null;
-		outcome: "ok" | "failed" | "timed-out" | "cancelled" | "dead" | "idle" | "unknown";
-		severity: "debug" | "info" | "notice" | "warning" | "error" | "critical" | "alert" | "emergency";
-		incidentType: string | null;
-		files: string[];
-		summary: string;
-		meta: Record<string, unknown>;
-	}>;
+	events: unknown[];
 	stream: "logs";
 }
 
 export interface McpVertexLogsTailOutput {
-	events: Array<{
-		ts: string;
-		kind: string;
-		agent: string | null;
-		taskId: string | null;
-		outcome: "ok" | "failed" | "timed-out" | "cancelled" | "dead" | "idle" | "unknown";
-		severity: "debug" | "info" | "notice" | "warning" | "error" | "critical" | "alert" | "emergency";
-		incidentType: string | null;
-		files: string[];
-		summary: string;
-		meta: Record<string, unknown>;
-	}>;
+	events: unknown[];
 	oldestTs: string | null;
 	newestTs: string | null;
 }
 
 export interface McpVertexMemoryCheckpointPacketOutput {
 	available: boolean;
-	packet: {
-		digest: string;
-		pointers: string[];
-		nextAction: string | null;
-	} | null;
-	advisory?: {
-		hostEvent: "pre-compact" | "session-end";
-		freshness: {
-			state: "missing" | "fresh" | "stale";
-			latestCheckpointAt: string | null;
-			ageMs: number | null;
-			maxAgeMs: number;
-		};
-		shouldCreateSemanticCheckpoint: boolean;
-		recommendedAction: "create-semantic-checkpoint" | "continue-with-current-checkpoint";
-	};
+	packet: unknown | null;
+	advisory?: unknown;
 }
 
 export interface McpVertexMemoryCompactOutput {
 	digest: string;
-	sections: Array<{
-		kind: "decision" | "open" | "fact" | "pointer" | "output" | "exploration" | "superseded";
-		heading: string;
-		bullets: string[];
-	}>;
-	tokenAccounting: {
-		inputEstimate: number;
-		digestEstimate: number;
-		savedEstimate: number;
-		keptCount: number;
-		discardedCount: number;
-	};
+	sections: unknown;
+	tokenAccounting: unknown;
 	persisted: boolean;
 	noteId?: string;
 	redactedSecrets: number;
@@ -1890,10 +1775,7 @@ export interface McpVertexProposalsAgentLockOutput {
 	lock_path?: string;
 	task_id?: string;
 	agent?: string;
-	error?: string | {
-		reason: string;
-		nextAction?: string;
-	};
+	error?: unknown;
 	blockerType?: string;
 	nextAction?: string;
 	summary?: string;
@@ -1913,26 +1795,10 @@ export interface McpVertexProposalsAgentLockOutput {
 	dropped?: number;
 	version?: number;
 	stale_after_minutes?: number;
-	in_flight?: {
-		task_id: string;
-		agent: string;
-		ownership: string[];
-		started_at: string;
-		last_seen: string;
-		parent_task_id?: string;
-	}[];
+	in_flight?: unknown;
 	ok: boolean;
-	session?: {
-		claims: number;
-		releases: number;
-		imbalance: number;
-	};
-	identity?: {
-		host?: string;
-		model?: string;
-		agent_name?: string;
-		task_id?: string;
-	};
+	session?: unknown;
+	identity?: unknown;
 }
 
 export interface McpVertexProposalsAgentLockReleaseOrphanOutput {
@@ -1996,49 +1862,11 @@ export interface McpVertexProposalsAgentNamesOutput {
 	task_id?: string;
 	agent_name?: string;
 	agent_slot?: string;
-	summary?: {
-		active: number;
-		cooldown: number;
-		orphan: number;
-		adopted: number;
-	};
+	summary?: unknown;
 	released?: string[];
-	assignments?: Array<{
-		task_id: string;
-		agent_name: string;
-		agent_slot: string;
-		parent_task_id: string | null;
-		depth: number;
-		topic: string;
-		adopted: boolean;
-		assigned_at: string;
-		last_seen: string;
-		cooldown_until: string | null;
-		status: "active" | "cooldown" | "orphan";
-		host?: string | null;
-		model?: string | null;
-		children?: unknown[];
-	}>;
-	tree?: Array<{
-		task_id: string;
-		agent_name: string;
-		agent_slot: string;
-		parent_task_id: string | null;
-		depth: number;
-		topic: string;
-		adopted: boolean;
-		assigned_at: string;
-		last_seen: string;
-		cooldown_until: string | null;
-		status: "active" | "cooldown" | "orphan";
-		host?: string | null;
-		model?: string | null;
-		children?: unknown[];
-	}>;
-	adopted?: {
-		name: string;
-		task_id: string;
-	}[];
+	assignments?: unknown;
+	tree?: unknown;
+	adopted?: unknown;
 	[key: string]: unknown;
 }
 
@@ -2101,56 +1929,8 @@ export interface McpVertexProposalsAgentsLockDiagnoseOutput {
 
 export interface McpVertexProposalsAutoFixQueueOutput {
 	ok: true;
-	autoFixable: Array<{
-		signature: string;
-		toolName: string;
-		incidentType: string;
-		classification: string;
-		title: string;
-		summary: string;
-		rationale: string;
-		suggestedTrack: string;
-		sourceCluster: {
-			count: number;
-			distinctAgents: number;
-			firstSeen: string;
-			lastSeen: string;
-			sampleSummary: string;
-			sampleError: string;
-			recentEventsCount: number;
-		};
-		severity: "critical" | "high" | "medium" | "low";
-		reproducible: boolean;
-		affectedPaths: string[];
-		affectsPublishedOutputSchema: boolean;
-		decision: "auto-fixable" | "needs-human";
-		reason: string;
-	}>;
-	needsHuman: Array<{
-		signature: string;
-		toolName: string;
-		incidentType: string;
-		classification: string;
-		title: string;
-		summary: string;
-		rationale: string;
-		suggestedTrack: string;
-		sourceCluster: {
-			count: number;
-			distinctAgents: number;
-			firstSeen: string;
-			lastSeen: string;
-			sampleSummary: string;
-			sampleError: string;
-			recentEventsCount: number;
-		};
-		severity: "critical" | "high" | "medium" | "low";
-		reproducible: boolean;
-		affectedPaths: string[];
-		affectsPublishedOutputSchema: boolean;
-		decision: "auto-fixable" | "needs-human";
-		reason: string;
-	}>;
+	autoFixable: unknown;
+	needsHuman: unknown;
 	deduped: number;
 	totalClusters: number;
 	written?: number;
@@ -2168,51 +1948,18 @@ export interface McpVertexProposalsAutoWorkOutput {
 	proposalId?: string;
 	file?: string;
 	pickedFromPaused?: true;
-	orchestration?: {
-		lane: "inspect-then-delegate";
-		delegateAfterToolCalls: number;
-		next: string;
-		policy: string;
-	};
+	orchestration?: unknown;
 	validationCommand?: string;
-	persist?: {
-		mode: "none" | "commit" | "commit-and-push";
-		messageTemplate?: string;
-		pushTarget?: string;
-	};
-	claimReady?: {
-		sliceId: string;
-		files: string[];
-		gate: "lint" | "type" | "e2e" | "none";
-		agent_lock_args: {
-			action: "claim";
-			task_id: string;
-			agent: "<host-resolved-agent>";
-			files: string[];
-		};
-	};
+	persist?: unknown;
+	claimReady?: unknown;
 	steps?: string[];
 	branchStatusWarnings?: string[];
 	executionMode?: "normal" | "confirm-required" | "blocked";
 	hygieneBlockers?: string[];
 	hygieneActions?: string[];
 	hygieneWarnings?: string[];
-	stashes?: Array<{
-		index: number;
-		ref: string;
-		branch: string | null;
-		message: string;
-		date: string | null;
-	}>;
-	rescueCandidates?: {
-		branch: string;
-		ahead: number;
-		behind: number;
-		lastCommitMinutesAgo: number;
-		worktreePath: string;
-		diffStat: string;
-		cherryPickHint: string;
-	}[];
+	stashes?: unknown;
+	rescueCandidates?: unknown;
 	ok?: boolean;
 	blockers?: string[];
 }
@@ -2249,43 +1996,12 @@ export interface McpVertexProposalsBranchStatusOutput {
 	ok: boolean;
 	reason?: string;
 	baseBranch?: string;
-	branches?: {
-		name: string;
-		head: string;
-		ahead: number;
-		behind: number;
-		mergedIntoBase: boolean;
-		lastCommitMinutesAgo: number;
-		worktreePath: string;
-	}[];
-	stranded?: Array<{
-		branch: string;
-		ahead: number;
-		behind: number;
-		lastCommitIso: string;
-		worktreePath: string | null;
-	}>;
-	worktrees?: {
-		path: string;
-		head: string;
-		branch: string;
-		outOfCache: boolean;
-		dirtyFiles: number;
-		untrackedFiles: number;
-		ageLabel: string;
-	}[];
+	branches?: unknown;
+	stranded?: unknown;
+	worktrees?: unknown;
 	mainCheckoutBranch?: string;
 	mainCheckoutDrift?: boolean;
-	summary?: {
-		totalBranches: number;
-		totalWorktrees: number;
-		mergedCount: number;
-		aheadOfBaseCount: number;
-		behindBaseCount: number;
-		dirtyWorktrees: number;
-		untrackedWorktrees: number;
-		outOfCacheWorktrees: number;
-	};
+	summary?: unknown;
 	generatedAt?: string;
 }
 
@@ -2342,55 +2058,14 @@ export interface McpVertexProposalsContinueProposalOutput {
 	status?: string;
 	relaunchCommand?: string;
 	guide?: string[];
-	plan?: {
-		proposalId: string;
-		slices: Array<{
-			proposalId: string;
-			sliceId: string;
-			title: string;
-			owner: string | null;
-			files: string[];
-			dependsOn: string[];
-			gate: "lint" | "type" | "e2e" | "none";
-			status: "pending" | "in-progress" | "done" | "blocked";
-			acceptanceCriteria: string[];
-		}>;
-		globalGate: "lint" | "type" | "e2e" | "none";
-	};
-	disjointnessIssues?: {
-		first: string;
-		second: string;
-		file: string;
-	}[];
+	plan?: unknown;
+	disjointnessIssues?: unknown;
 	claimableSliceIds?: string[];
 	sliceId?: string;
-	validation?: {
-		ok: boolean;
-		reason: string;
-		blockerType: "none" | "unknown-slice" | "deps-not-done" | "overlap-in-progress" | "already-done" | "already-in-progress";
-	};
-	slice?: {
-		proposalId: string;
-		sliceId: string;
-		title: string;
-		owner: string | null;
-		files: string[];
-		dependsOn: string[];
-		gate: "lint" | "type" | "e2e" | "none";
-		status: "pending" | "in-progress" | "done" | "blocked";
-		acceptanceCriteria: string[];
-	} | null;
-	executionGuide?: {
-		files: string[];
-		acceptanceCriteria: string[];
-		gate: "lint" | "type" | "e2e" | "none";
-		rules: string[];
-	};
-	cascadeTrace?: {
-		priority?: number;
-		cascadeOverrideReason?: string;
-		cascadeBoost?: "shipped-blocking" | "customer-reported" | "security";
-	};
+	validation?: unknown;
+	slice?: unknown | null;
+	executionGuide?: unknown;
+	cascadeTrace?: unknown;
 	error?: string;
 	blockedBy?: string[];
 	pickedFromPaused?: boolean;
@@ -2857,56 +2532,9 @@ export interface McpVertexProposalsStateHealthOutput {
 
 export interface McpVertexProposalsStateRepairOutput {
 	mode: "dry-run" | "execute";
-	diagnosis: {
-		locks: {
-			active: number;
-			stale: number;
-			livelocks: number;
-			sessionBalance: {
-				claims: number;
-				releases: number;
-				imbalance: number;
-			};
-			sessionClaims: number;
-			sessionReleases: number;
-			sessionImbalance: number;
-			[key: string]: unknown;
-		};
-		stale: {
-			count: number;
-			[key: string]: unknown;
-		};
-		peerReviewBypasses: number;
-		autoTransitionRepairs: {
-			count: number;
-			[key: string]: unknown;
-		};
-		queue: {
-			queueLength: number;
-			queuedCount: number;
-			waiterOrphans: number;
-			oldestAgeMinutes: number;
-			threshold: string;
-			[key: string]: unknown;
-		} | null;
-		registry: {
-			orphans: number;
-			threshold: string;
-			[key: string]: unknown;
-		};
-		healthy: boolean;
-		[key: string]: unknown;
-	};
-	wouldRepair?: {
-		staleLocks: number;
-		dueQueueEntries: number;
-		orphanAssignments: number;
-	};
-	repaired?: {
-		staleLocks: number;
-		expiredQueueEntries: number;
-		orphanAssignments: number;
-	};
+	diagnosis: unknown;
+	wouldRepair?: unknown;
+	repaired?: unknown;
 	nextAction?: string;
 	[key: string]: unknown;
 }
@@ -2916,64 +2544,15 @@ export interface McpVertexProposalsSwarmHygieneOutput {
 	reason?: string;
 	baseBranch?: string;
 	generatedAt?: string;
-	rescueCandidates?: {
-		branch?: string;
-		path?: string;
-		worktreePath?: string;
-		proposalId?: string;
-		sliceId?: string;
-		[key: string]: unknown;
-	}[];
-	gcEligible?: {
-		branch?: string;
-		path?: string;
-		worktreePath?: string;
-		proposalId?: string;
-		sliceId?: string;
-		[key: string]: unknown;
-	}[];
-	outOfCache?: {
-		branch?: string;
-		path?: string;
-		worktreePath?: string;
-		proposalId?: string;
-		sliceId?: string;
-		[key: string]: unknown;
-	}[];
+	rescueCandidates?: unknown;
+	gcEligible?: unknown;
+	outOfCache?: unknown;
 	mainCheckoutBranch?: string;
 	mainCheckoutDrift?: boolean;
-	pendingIntegration?: {
-		branch?: string;
-		path?: string;
-		worktreePath?: string;
-		proposalId?: string;
-		sliceId?: string;
-		[key: string]: unknown;
-	}[];
-	nonConformingBranches?: {
-		branch?: string;
-		path?: string;
-		worktreePath?: string;
-		proposalId?: string;
-		sliceId?: string;
-		[key: string]: unknown;
-	}[];
-	staleUnmerged?: {
-		branch?: string;
-		path?: string;
-		worktreePath?: string;
-		proposalId?: string;
-		sliceId?: string;
-		[key: string]: unknown;
-	}[];
-	summary?: {
-		rescueCandidatesCount: number;
-		gcEligibleCount: number;
-		outOfCacheCount: number;
-		pendingIntegrationCount: number;
-		nonConformingBranchesCount: number;
-		staleUnmergedCount: number;
-	};
+	pendingIntegration?: unknown;
+	nonConformingBranches?: unknown;
+	staleUnmerged?: unknown;
+	summary?: unknown;
 	[key: string]: unknown;
 }
 
