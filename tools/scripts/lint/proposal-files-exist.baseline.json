@@ -41,5 +41,9 @@
 	"docs/mcp-vertex/proposals/done/feats/f00180-manifest-toolpermissions-per-tool-granularidad-para-adaptive-selection.md": 1,
 	"docs/mcp-vertex/proposals/done/feats/f00069-tabs-cross-fade-and-iconography.md": 2,
 	"docs/mcp-vertex/proposals/done/chores/c00075-proposal-guardian-cannot-pause-without-user-consent.md": 4,
-	"docs/mcp-vertex/proposals/done/refactors/r00011-auto-config-packs.md": 1
+	"docs/mcp-vertex/proposals/done/refactors/r00011-auto-config-packs.md": 1,
+	"docs/mcp-vertex/proposals/in-progress/b00238-marcar-apis-internas-como-internal.md": 2,
+	"docs/mcp-vertex/proposals/in-progress/b00237-deprecar-nodedynamicimport-core-public.md": 4,
+	"docs/mcp-vertex/proposals/in-progress/v00126-verify-ci-local-reproduce-fallos-reales.md": 3,
+	"docs/mcp-vertex/proposals/in-progress/v00125-verificar-estado-real-develop-verde-protegida.md": 4
 }
