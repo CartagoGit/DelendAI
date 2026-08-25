@@ -15,12 +15,12 @@
  *
  * Pure over the injected roster: same inputs -> same output.
  */
-import { rankProviders } from '@mcp-vertex/auto-agent-selector/lib/routing/rank-providers';
-import type {
-	IRankInput,
-	IRankedProvider,
-} from '@mcp-vertex/auto-agent-selector/lib/contracts/interfaces/ranking.interface';
-import type { IProviderCandidate } from '@mcp-vertex/auto-agent-selector/lib/contracts/interfaces/roster.interface';
+import {
+	rankProviders,
+	type IRankInput,
+	type IRankedProvider,
+	type IProviderCandidate,
+} from '@mcp-vertex/auto-agent-selector/public';
 
 import type {
 	IPluginFit,
