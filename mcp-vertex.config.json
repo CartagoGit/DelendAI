@@ -164,6 +164,17 @@
 				"costQualityTradeoff": 8
 			}
 		},
+		"auto-plugin-selector": {
+			"options": {
+				"weights": {
+					"match": 0.2,
+					"tokenTax": 0.25,
+					"latencyTax": 0.15,
+					"historicalSuccess": 0.2,
+					"permissionRisk": 0.2
+				}
+			}
+		},
 		"container": {
 			"options": {}
 		},
