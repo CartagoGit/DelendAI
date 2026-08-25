@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-08-25T06:47:59.089Z",
+	"generatedAt": "2026-08-25T07:01:37.658Z",
 	"mode": "compact",
 	"tools": [
 		{
@@ -1216,6 +1216,13 @@
 				"kind": "audit"
 			},
 			{
+				"id": "c00010",
+				"title": "c00010",
+				"track": "ci",
+				"status": "in-progress",
+				"kind": "chore"
+			},
+			{
 				"id": "c00012",
 				"title": "c00012",
 				"track": "ci",
@@ -1326,6 +1333,13 @@
 				"track": "develop-audit-consolidation",
 				"status": "in-progress",
 				"kind": "plan"
+			},
+			{
+				"id": "r00018",
+				"title": "r00018",
+				"track": "tokens",
+				"status": "in-progress",
+				"kind": "refactor"
 			},
 			{
 				"id": "r00022",
@@ -1498,10 +1512,10 @@
 		],
 		"byStatus": {
 			"ready": 36,
-			"in-progress": 8,
-			"review": 28,
+			"in-progress": 10,
+			"review": 2,
 			"paused": 1,
-			"done": 406,
+			"done": 432,
 			"blocked": 0,
 			"retired": 2,
 			"unspecified": 0
