@@ -1,11 +1,9 @@
 #!/usr/bin/env bun
-import { readFile, rm } from 'node:fs/promises';
-import { join, resolve } from 'node:path';
-
-import { withFileMutex, writeFileAtomic } from '@mcp-vertex/core/public';
+import { readFile } from 'node:fs/promises';
+import { resolve } from 'node:path';
 
 import { runFromManifestsGenerator } from '../generate/from-manifests.script.ts';
-import { generateTokenBudgetDashboard } from '../report/token-budget-dashboard.script.ts';
+import { buildTokenBudgetDashboardMarkdown } from '../report/token-budget-dashboard.script.ts';
 
 const DASHBOARD_RELATIVE_PATH = 'docs/mcp-vertex/TOKEN-BUDGETS.md';
 
@@ -18,19 +16,6 @@ const normalizeDashboard = (text: string | null): string | null =>
 					/^\| logs_tail \| .*$/gmu,
 					'| logs_tail | <normalized> |',
 				);
-
-const restoreDashboard = async (
-	outputPath: string,
-	previous: string | null,
-): Promise<void> => {
-	if (previous === null) {
-		await rm(outputPath, { force: true }).catch(() => undefined);
-		return;
-	}
-	await withFileMutex(outputPath, async () => {
-		await writeFileAtomic(outputPath, previous);
-	});
-};
 
 const main = async (): Promise<number> => {
 	const workspaceRoot = process.cwd();
@@ -62,24 +47,19 @@ const main = async (): Promise<number> => {
 	);
 
 	try {
-		const generatedDashboard = await generateTokenBudgetDashboard();
+		const generatedDashboard = await buildTokenBudgetDashboardMarkdown();
 		if (
-			normalizeDashboard(generatedDashboard.markdown) !==
+			normalizeDashboard(generatedDashboard) !==
 			normalizeDashboard(previousDashboard)
 		) {
 			failures.push(
 				`TOKEN_DASHBOARD: drift detected. Run bun tools/scripts/report/token-budget-dashboard.script.ts and commit ${DASHBOARD_RELATIVE_PATH}.`,
-			);
-			await restoreDashboard(
-				generatedDashboard.outputPath,
-				previousDashboard,
 			);
 		}
 	} catch (error: unknown) {
 		failures.push(
 			`TOKEN_DASHBOARD: generation failed. ${error instanceof Error ? error.message : String(error)}`,
 		);
-		await restoreDashboard(dashboardPath, previousDashboard);
 	}
 
 	if (failures.length > 0) {
