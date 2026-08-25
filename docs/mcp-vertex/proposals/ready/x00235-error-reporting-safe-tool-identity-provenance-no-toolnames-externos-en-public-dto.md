@@ -304,7 +304,8 @@ resolution:
   - "Tipo `ISafeToolIdentity` exportado y testeado."
   - "Resolver `resolvePublicToolIdentity(toolName, registry)` con semántica documentada."
   - "Tipos branded `Brand<'SafeToolId', '@mcp-vertex/*'>` para reforzar contrato."
-
+- review-state: in_review
+- review-implementer: swarm-implementer
 ### S2 — Integración en `error-reporting` + DTO actualizado
 
 - **Status**: pending

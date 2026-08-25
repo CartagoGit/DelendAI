@@ -279,13 +279,16 @@ resolution:
 
 ### S1 — Lease + generation + heartbeat
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/src/lib/shared/with-file-mutex.ts`
 - **Gate**: type
 - acceptance:
   - "Lock file con generation monotónico."
   - "Heartbeat incrementa generation."
-
+- review-state: done
+- review-implementer: swarm-implementer
+- review-reviewer: orchestrator-fase1-review
+- review-log: approved by orchestrator-fase1-review — Fase 1 review 2026-08-25: validate verde.
 ### S2 — Reclaim marker + grace period
 
 - **Status**: pending

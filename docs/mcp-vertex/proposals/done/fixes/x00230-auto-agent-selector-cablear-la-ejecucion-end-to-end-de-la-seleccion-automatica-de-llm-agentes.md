@@ -2,7 +2,7 @@
 id: x00230
 title: "auto-agent-selector: cablear la ejecución end-to-end de la selección automática de LLM/agentes"
 kind: fix
-status: review
+status: done
 type: proposal
 track: product
 date: 2026-08-24
@@ -47,7 +47,10 @@ El usuario reporta que la selección automática de LLM/agentes "no funciona". L
 - acceptance:
   - "Se reproduce auto_status/auto_recommend/auto_run en un entorno limpio y se documenta qué falta para que la selección ejecute."
   - "Se confirma que run-with-escalation no está cableado a ninguna tool."
-
+- review-state: done
+- review-implementer: swarm-implementer
+- review-reviewer: orchestrator-fase1-review
+- review-log: approved by orchestrator-fase1-review — Fase 1 review 2026-08-25: validate verde.
 ### S2 — Cablear la ejecución (escalación real)
 - **Status**: done
 - **Files**: `plugins/auto-agent-selector/src/lib/tools/auto-run.tool.ts`, `plugins/auto-agent-selector/src/lib/escalate/run-with-escalation.ts`
