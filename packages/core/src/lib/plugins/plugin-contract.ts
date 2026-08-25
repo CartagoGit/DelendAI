@@ -6,6 +6,7 @@ import type {
 	IKnowledgeEntry,
 	ISkillEntry,
 } from '../contracts/interfaces/knowledge.interface';
+import type { IToolIdentityRegistry } from '../contracts/interfaces/safe-tool-identity.interface';
 import type {
 	IPromptRegistration,
 	IResourceRegistration,
@@ -142,6 +143,12 @@ export interface IMcpPluginContext {
 	 * redacted JSON lines to stderr so no event is silently dropped.
 	 */
 	readonly logsSink?: ILogsSink | undefined;
+	/**
+	 * Read-only registry of public-safe tool provenance. The core populates it
+	 * after assembling the tool surface; plugins must not infer provenance from
+	 * arbitrary tool-name strings.
+	 */
+	readonly toolRegistry?: IToolIdentityRegistry | undefined;
 }
 
 /**

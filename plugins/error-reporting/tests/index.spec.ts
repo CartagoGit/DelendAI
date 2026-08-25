@@ -4,6 +4,7 @@ import { tmpdir } from 'node:os';
 
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
+import type { IToolIdentityRegistry } from '@mcp-vertex/core/public';
 import type { ISafeReporter } from '../src/lib/contracts/interfaces/reporter.interface';
 import { createReportStore } from '../src/lib/report-store.service';
 import {
@@ -21,6 +22,11 @@ const makeDir = async (): Promise<string> => {
 	const dir = await mkdtemp(join(tmpdir(), 'error-reporting-index-'));
 	tmpDirs.push(dir);
 	return dir;
+};
+
+const emptyToolRegistry: IToolIdentityRegistry = {
+	get: () => undefined,
+	list: () => new Map(),
 };
 
 afterEach(async () => {
@@ -82,6 +88,7 @@ describe('buildReportErrorHandler', () => {
 			store,
 			reporter,
 			clock,
+			toolRegistry: emptyToolRegistry,
 		});
 
 		await reportError('quality_run_quality', internalError());
@@ -125,6 +132,7 @@ describe('buildReportErrorHandler', () => {
 			store,
 			reporter,
 			clock,
+			toolRegistry: emptyToolRegistry,
 		});
 
 		await reportError('quality_run_quality', internalError());
@@ -164,6 +172,7 @@ describe('buildReportErrorHandler', () => {
 				nowMs: () => Date.parse('2026-08-24T10:00:00.000Z'),
 				random: () => 0,
 			},
+			toolRegistry: emptyToolRegistry,
 		});
 
 		await observe(
@@ -211,6 +220,7 @@ describe('buildReportErrorHandler', () => {
 				nowMs: () => Date.parse('2026-08-24T10:00:00.000Z'),
 				random: () => 0,
 			},
+			toolRegistry: emptyToolRegistry,
 		});
 
 		await observe(

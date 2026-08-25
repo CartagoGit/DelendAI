@@ -1,11 +1,18 @@
 import { MCP_VERTEX_VERSION } from '@mcp-vertex/core/version';
+import {
+	resolvePublicToolIdentity,
+	type IToolIdentityRegistry,
+} from '@mcp-vertex/core/public';
 
 import type { McpVertexErrorCode } from './contracts/constants/error-codes.constant';
 import type {
 	ISafeMcpVertexReport,
 	SafeFailureClass,
 } from './contracts/interfaces/reporter.interface';
-import { classifyInternalError } from './internal-classifier.helper';
+import {
+	classificationFromEvidence,
+	classifyInternalError,
+} from './internal-classifier.helper';
 import { McpVertexInternalError } from './mcp-internal-error.helper';
 import { analyzeErrorOrigin } from './origin-analyzer.helper';
 import { signatureOf } from './signature.helper';
@@ -126,12 +133,14 @@ const lifecycleComponentIdOf = (error: unknown): string => {
 const syntheticExampleOf = (input: {
 	readonly packageId: string;
 	readonly toolName: string;
+	readonly toolSeed?: string | undefined;
 	readonly errorCode?: McpVertexErrorCode | undefined;
 	readonly failureClass: SafeFailureClass;
 }) =>
 	buildSyntheticExample({
 		packageId: input.packageId,
 		toolName: input.toolName,
+		...(input.toolSeed !== undefined ? { toolSeed: input.toolSeed } : {}),
 		errorCode: input.errorCode,
 		failureClass: input.failureClass,
 	});
@@ -179,26 +188,51 @@ export const asReportableError = (
 	return undefined;
 };
 
-export const buildSafeReport = (
-	toolName: string,
-	error: unknown,
-): ISafeMcpVertexReport | undefined => {
-	const classified = classifyInternalError({ toolId: toolName, error });
+export const buildSafeReport = (input: {
+	readonly toolName: string;
+	readonly toolRegistry: Pick<IToolIdentityRegistry, 'get'>;
+	readonly error: unknown;
+}): ISafeMcpVertexReport | undefined => {
+	const classified = classifyInternalError({
+		toolId: input.toolName,
+		error: input.error,
+	});
 	if (!classified.isInternal || classified.classification === 'UNKNOWN') {
 		return undefined;
 	}
 	if (classified.mcpFrames.length === 0) return undefined;
 	if (classified.packageId === undefined) return undefined;
-	const reportCore = {
-		reporterVersion: reporterPackageJson.version,
-		mcpVertexVersion: MCP_VERTEX_VERSION,
+	const identity = resolvePublicToolIdentity(
+		input.toolName,
+		input.toolRegistry,
+	);
+	const classification = classificationFromEvidence({
+		...(identity.safeToolId !== undefined
+			? { toolId: identity.safeToolId }
+			: {}),
 		packageId: classified.packageId,
-		toolId: toolName,
+		...(classified.componentId !== undefined
+			? { componentId: classified.componentId }
+			: {}),
 		...(classified.errorCode !== undefined
 			? { errorCode: classified.errorCode }
 			: {}),
 		failureClass: classified.failureClass,
-		classification: classified.classification,
+	});
+	const reportCore = {
+		reporterVersion: reporterPackageJson.version,
+		mcpVertexVersion: MCP_VERTEX_VERSION,
+		packageId: classified.packageId,
+		...(identity.safeToolId !== undefined
+			? { safeToolId: identity.safeToolId }
+			: {}),
+		toolOwner: identity.owner,
+		toolCategory: identity.category,
+		...(classified.errorCode !== undefined
+			? { errorCode: classified.errorCode }
+			: {}),
+		failureClass: classified.failureClass,
+		classification,
 		mcpFrames: classified.mcpFrames,
 		environmentClass: {
 			runtime: runtimeOf(),
@@ -207,7 +241,9 @@ export const buildSafeReport = (
 	};
 	const syntheticExample = syntheticExampleOf({
 		packageId: classified.packageId,
-		toolName,
+		toolName: input.toolName,
+		toolSeed:
+			identity.safeToolId ?? `${identity.owner}:${identity.category}`,
 		errorCode: classified.errorCode,
 		failureClass: classified.failureClass,
 	});

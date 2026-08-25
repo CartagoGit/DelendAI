@@ -149,6 +149,7 @@ export const SYNTHETIC_FIXTURES = deepFreeze([
 export const selectSyntheticFixture = (input: {
 	readonly packageId: string;
 	readonly toolName: string;
+	readonly toolSeed?: string | undefined;
 	readonly errorCode?: string | undefined;
 	readonly failureClass: string;
 }): ISyntheticFixture =>
@@ -156,7 +157,7 @@ export const selectSyntheticFixture = (input: {
 		stableIndexOf({
 			seed: [
 				input.packageId,
-				input.toolName,
+				input.toolSeed ?? input.toolName,
 				input.errorCode ?? '',
 				input.failureClass,
 			].join(':'),
