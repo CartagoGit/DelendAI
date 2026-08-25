@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { loadPlugins } from '@mcp-vertex/core/lib/plugins/load-plugins';
 import type { IMcpPluginContext } from '@mcp-vertex/core/lib/plugins/plugin-contract';
 import type { IPluginRuntime } from '@mcp-vertex/core/lib/contracts/interfaces/plugin-runtime.interface';
+import { extractPartialRuntime } from '@mcp-vertex/core/lib/plugins/load-plugins-runtime.helper';
 
 const ctx = (name: string, cacheNamespace?: string): IMcpPluginContext => ({
 	workspace: { root: '/ws', resolve: (path: string) => `/ws/${path}` },
@@ -227,5 +228,98 @@ describe('loadPlugins register cancel and dispose lifecycle', async () => {
 			'legacy_tool',
 		);
 		expect(result.loaded[0]?.runtime.abortable).toBe(false);
+	});
+
+	// t00015 (LIFE-001 regression guard, case #10) — a plugin whose
+	// `register()` throws AFTER constructing a runtime (the "late
+	// resolution" pattern: the runtime is built at the moment of
+	// failure rather than before register ran) MUST have its late-
+	// attached runtime disposed on the rollback path. The lifecycle
+	// extracts the runtime from the thrown error via
+	// `extractPartialRuntime` and runs `dispose()` BEFORE reverting
+	// the DAG state. Without this guard a plugin that "leaked" a
+	// runtime into the error path would silently keep timers / file
+	// handles alive past the abort.
+	it('t00015: disposes a LATE-RESOLVED runtime extracted from a thrown error', async () => {
+		const events: string[] = [];
+		const partialDispose = vi.fn(() => {
+			events.push('dispose:partial');
+		});
+		const plugin = {
+			name: 'late-resolution',
+			register: () => {
+				const error = new Error('late boom') as Error & {
+					runtime?: IPluginRuntime<{ tools: [] }>;
+				};
+				error.runtime = {
+					registrations: { tools: [] },
+					dispose: partialDispose,
+				};
+				throw error;
+			},
+		};
+
+		const result = await loadPlugins({
+			specifiers: ['late-resolution'],
+			buildContext: ctx,
+			import: asImport({ 'late-resolution': plugin }),
+		});
+
+		expect(result.loaded).toEqual([]);
+		expect(partialDispose).toHaveBeenCalledTimes(1);
+		expect(events).toEqual(['dispose:partial']);
+		expect(result.registerErrors[0]?.error).toBeInstanceOf(Error);
+	});
+});
+
+describe('extractPartialRuntime (t00015 primitive)', () => {
+	it('returns a normalised runtime when one is attached via error.runtime', () => {
+		const dispose = vi.fn();
+		const error = Object.assign(new Error('boom'), {
+			runtime: {
+				registrations: { tools: [] },
+				dispose,
+			},
+		});
+
+		const extracted = extractPartialRuntime(error);
+		expect(extracted?.registrations.tools).toEqual([]);
+		expect(extracted?.dispose).toBe(dispose);
+		expect(extracted?.abortable).toBe(true);
+	});
+
+	it('returns a normalised runtime when registrations are attached directly to the error', () => {
+		const dispose = vi.fn();
+		const error = Object.assign(new Error('boom'), {
+			registrations: { tools: [{ id: 'late-tool' }] },
+			dispose,
+		});
+
+		const extracted = extractPartialRuntime(error);
+		expect(extracted?.registrations.tools).toEqual([{ id: 'late-tool' }]);
+		expect(extracted?.dispose).toBe(dispose);
+	});
+
+	it('returns undefined for a plain Error with no runtime hint', () => {
+		expect(extractPartialRuntime(new Error('boom'))).toBeUndefined();
+	});
+
+	it('returns undefined for non-object inputs', () => {
+		expect(extractPartialRuntime('boom')).toBeUndefined();
+		expect(extractPartialRuntime(null)).toBeUndefined();
+		expect(extractPartialRuntime(undefined)).toBeUndefined();
+	});
+
+	it('respects an explicit abortable: false override on a late runtime', () => {
+		const error = Object.assign(new Error('boom'), {
+			runtime: {
+				registrations: { tools: [] },
+				dispose: vi.fn(),
+				abortable: false,
+			},
+		});
+
+		const extracted = extractPartialRuntime(error);
+		expect(extracted?.abortable).toBe(false);
 	});
 });
