@@ -1,11 +1,12 @@
 import { basename, extname, isAbsolute, resolve } from 'node:path';
-import { readFile } from 'node:fs/promises';
 
 import type { IToolTextResult } from '@mcp-vertex/core/public';
 import {
+	SafeWorkspaceReader,
 	toolError,
 	toolJson,
 	truncateIfTooLarge,
+	WorkspaceContainmentError,
 } from '@mcp-vertex/core/public';
 import { classifyPath } from '@mcp-vertex/conventions/public';
 import { readDoc, searchDocs } from '@mcp-vertex/docs/public';
@@ -53,18 +54,10 @@ const isSourceFile = (filePath: string): boolean => {
 };
 
 const toWorkspacePath = (
-	workspaceRootAbs: string,
+	reader: SafeWorkspaceReader,
 	inputPath: string,
-): string => {
-	if (inputPath.length === 0) return inputPath;
-	if (isAbsolute(inputPath)) {
-		const prefix = `${workspaceRootAbs}/`;
-		return inputPath.startsWith(prefix)
-			? inputPath.slice(prefix.length)
-			: inputPath;
-	}
-	return inputPath.replace(/^\.\//u, '');
-};
+): string =>
+	inputPath.length === 0 ? inputPath : reader.resolve(inputPath).relativePath;
 
 const unique = (values: readonly string[]): string[] => [...new Set(values)];
 
@@ -88,15 +81,26 @@ const parseFilesFromGitDiff = (gitDiff: string): string[] => {
 };
 
 const readSource = async (
-	workspaceRootAbs: string,
+	reader: SafeWorkspaceReader,
 	filePath: string,
 ): Promise<string | undefined> => {
 	try {
-		return await readFile(resolve(workspaceRootAbs, filePath), 'utf8');
-	} catch {
+		return (await reader.readText(filePath)).content;
+	} catch (error) {
+		if (error instanceof WorkspaceContainmentError) {
+			throw error;
+		}
 		return undefined;
 	}
 };
+
+const toContainmentToolError = (
+	error: WorkspaceContainmentError,
+): IToolTextResult =>
+	toolError(
+		`workspace-containment: ${error.message}`,
+		'Pass only workspace-contained source paths; absolute paths outside the workspace and reserved paths like .git, .env and node_modules are rejected.',
+	);
 
 const collectSymbolNames = (source: string, filePath: string): string[] =>
 	buildNavEngine(filePath, source)
@@ -228,6 +232,7 @@ export const runContextForChangeService = async (
 	args: IContextForChangeToolArgs,
 	options: IContextForChangeToolOptions,
 ): Promise<IToolTextResult> => {
+	const reader = new SafeWorkspaceReader(options.workspaceRootAbs);
 	if (
 		args.files === undefined &&
 		args.gitDiff === undefined &&
@@ -239,161 +244,176 @@ export const runContextForChangeService = async (
 		);
 	}
 
-	const gitDiffFiles =
-		args.gitDiff !== undefined ? parseFilesFromGitDiff(args.gitDiff) : [];
-	const inputFiles =
-		args.files?.map((file) =>
-			toWorkspacePath(options.workspaceRootAbs, file),
-		) ?? [];
-	const runner = createGitRunner(options.workspaceRootAbs);
-	const repo = await checkRepo(runner);
-	const changedFiles = repo.ok ? await gitChanged(runner) : [];
-	const anchorFiles = unique([
-		...inputFiles,
-		...gitDiffFiles,
-		...changedFiles,
-	])
-		.filter((file) => isSourceFile(file))
-		.slice(0, MAX_CONTEXT_FOR_CHANGE_SOURCE_FILES);
+	try {
+		const gitDiffFiles =
+			args.gitDiff !== undefined
+				? parseFilesFromGitDiff(args.gitDiff)
+				: [];
+		const inputFiles =
+			args.files?.map((file) => toWorkspacePath(reader, file)) ?? [];
+		const runner = createGitRunner(options.workspaceRootAbs);
+		const repo = await checkRepo(runner);
+		const changedFiles = repo.ok ? await gitChanged(runner) : [];
+		const anchorFiles = unique([
+			...inputFiles,
+			...gitDiffFiles,
+			...changedFiles,
+		])
+			.filter((file) => isSourceFile(file))
+			.slice(0, MAX_CONTEXT_FOR_CHANGE_SOURCE_FILES);
 
-	if (anchorFiles.length === 0 && args.symbol !== undefined) {
-		const symbolHits = await searchWorkspace(
-			options.workspaceRootAbs,
-			args.symbol,
-			{
-				roots: ['packages', 'plugins', 'apps', 'tools', 'extensions'],
-				extensions: [...CONTEXT_FOR_CHANGE_SOURCE_EXTENSIONS],
-				maxResults: CONTEXT_FOR_CHANGE_SEARCH_MAX_RESULTS,
-			},
-		);
-		anchorFiles.push(
-			...unique(symbolHits.hits.map((hit) => hit.file)).slice(
-				0,
-				MAX_CONTEXT_FOR_CHANGE_SOURCE_FILES,
-			),
-		);
-	}
-
-	const sections: IContextForChangeSection[] = [];
-	if (args.gitDiff !== undefined || changedFiles.length > 0) {
-		const diffPath = anchorFiles[0];
-		const diffSummary =
-			repo.ok && diffPath !== undefined
-				? await gitDiffStat(runner, { path: diffPath })
-				: undefined;
-		const gitParts = [
-			gitDiffFiles.length > 0
-				? `diff files: ${gitDiffFiles.join(', ')}`
-				: undefined,
-			changedFiles.length > 0
-				? `working tree: ${changedFiles.slice(0, 4).join(', ')}${changedFiles.length > 4 ? ` (+${changedFiles.length - 4})` : ''}`
-				: undefined,
-			diffSummary && diffSummary.length > 0 ? diffSummary : undefined,
-			repo.ok ? undefined : repo.reason,
-		].filter(
-			(part): part is string => part !== undefined && part.length > 0,
-		);
-		sections.push(makeContextSection('git', gitParts.join(' | ')));
-	}
-
-	const symbolNames = new Set<string>();
-	for (const file of anchorFiles) {
-		const source = await readSource(options.workspaceRootAbs, file);
-		if (source === undefined) continue;
-		for (const symbolName of collectSymbolNames(source, file)) {
-			symbolNames.add(symbolName);
+		if (anchorFiles.length === 0 && args.symbol !== undefined) {
+			const symbolHits = await searchWorkspace(
+				options.workspaceRootAbs,
+				args.symbol,
+				{
+					roots: [
+						'packages',
+						'plugins',
+						'apps',
+						'tools',
+						'extensions',
+					],
+					extensions: [...CONTEXT_FOR_CHANGE_SOURCE_EXTENSIONS],
+					maxResults: CONTEXT_FOR_CHANGE_SEARCH_MAX_RESULTS,
+				},
+			);
+			anchorFiles.push(
+				...unique(symbolHits.hits.map((hit) => hit.file)).slice(
+					0,
+					MAX_CONTEXT_FOR_CHANGE_SOURCE_FILES,
+				),
+			);
 		}
-	}
-	if (args.symbol !== undefined) {
-		symbolNames.add(args.symbol);
-	}
-	const compactSymbols = [...symbolNames].slice(
-		0,
-		MAX_CONTEXT_FOR_CHANGE_SOURCE_FILES *
-			MAX_CONTEXT_FOR_CHANGE_SYMBOLS_PER_FILE,
-	);
-	if (compactSymbols.length > 0) {
-		sections.push(makeContextSection('symbols', compactSymbols.join(', ')));
+
+		const sections: IContextForChangeSection[] = [];
+		if (args.gitDiff !== undefined || changedFiles.length > 0) {
+			const diffPath = anchorFiles[0];
+			const diffSummary =
+				repo.ok && diffPath !== undefined
+					? await gitDiffStat(runner, { path: diffPath })
+					: undefined;
+			const gitParts = [
+				gitDiffFiles.length > 0
+					? `diff files: ${gitDiffFiles.join(', ')}`
+					: undefined,
+				changedFiles.length > 0
+					? `working tree: ${changedFiles.slice(0, 4).join(', ')}${changedFiles.length > 4 ? ` (+${changedFiles.length - 4})` : ''}`
+					: undefined,
+				diffSummary && diffSummary.length > 0 ? diffSummary : undefined,
+				repo.ok ? undefined : repo.reason,
+			].filter(
+				(part): part is string => part !== undefined && part.length > 0,
+			);
+			sections.push(makeContextSection('git', gitParts.join(' | ')));
+		}
+
+		const symbolNames = new Set<string>();
+		for (const file of anchorFiles) {
+			const source = await readSource(reader, file);
+			if (source === undefined) continue;
+			for (const symbolName of collectSymbolNames(source, file)) {
+				symbolNames.add(symbolName);
+			}
+		}
+		if (args.symbol !== undefined) {
+			symbolNames.add(args.symbol);
+		}
+		const compactSymbols = [...symbolNames].slice(
+			0,
+			MAX_CONTEXT_FOR_CHANGE_SOURCE_FILES *
+				MAX_CONTEXT_FOR_CHANGE_SYMBOLS_PER_FILE,
+		);
+		if (compactSymbols.length > 0) {
+			sections.push(
+				makeContextSection('symbols', compactSymbols.join(', ')),
+			);
+			sections.push(
+				makeContextSection(
+					'references',
+					await collectReferenceSummary(
+						options.workspaceRootAbs,
+						compactSymbols,
+						anchorFiles,
+					),
+				),
+			);
+		}
+
+		const relatedTests = await collectRelatedTests(
+			options.workspaceRootAbs,
+			anchorFiles,
+			args.symbol,
+		);
 		sections.push(
 			makeContextSection(
-				'references',
-				await collectReferenceSummary(
+				'tests',
+				relatedTests.length > 0
+					? relatedTests.join(', ')
+					: 'No related test files found in the bounded lexical scan.',
+			),
+		);
+
+		if (anchorFiles.length > 0) {
+			sections.push(
+				makeContextSection(
+					'conventions',
+					formatConventionsSummary(anchorFiles),
+				),
+			);
+		}
+
+		sections.push(
+			makeContextSection(
+				'docs',
+				await collectDocsSummary(
 					options.workspaceRootAbs,
-					compactSymbols,
+					anchorFiles,
+					args.task,
+					args.symbol,
+					options.docsRoots,
+				),
+			),
+		);
+		sections.push(
+			makeContextSection(
+				'test-policy',
+				formatTestPolicySummary(options.testPolicyMode),
+			),
+		);
+		sections.push(
+			makeContextSection(
+				'memory',
+				await collectMemorySummary(
+					options.workspaceRootAbs,
+					options.memoryStorePath,
+					args.task,
+					args.symbol,
 					anchorFiles,
 				),
 			),
 		);
+
+		const rawOutput = {
+			dependsOn: [...CONTEXT_FOR_CHANGE_DEPENDS_ON],
+			files: anchorFiles,
+			sections,
+		};
+		const truncation = truncateIfTooLarge(rawOutput, options.maxBytes);
+		const output: IContextForChangeOutput = truncation.truncated
+			? buildTruncatedContextOutput(truncation, anchorFiles)
+			: {
+					dependsOn: [...CONTEXT_FOR_CHANGE_DEPENDS_ON],
+					files: anchorFiles,
+					sections,
+					bytes: truncation.finalBytes,
+					truncated: false,
+				};
+		return toolJson(output);
+	} catch (error) {
+		if (error instanceof WorkspaceContainmentError) {
+			return toContainmentToolError(error);
+		}
+		throw error;
 	}
-
-	const relatedTests = await collectRelatedTests(
-		options.workspaceRootAbs,
-		anchorFiles,
-		args.symbol,
-	);
-	sections.push(
-		makeContextSection(
-			'tests',
-			relatedTests.length > 0
-				? relatedTests.join(', ')
-				: 'No related test files found in the bounded lexical scan.',
-		),
-	);
-
-	if (anchorFiles.length > 0) {
-		sections.push(
-			makeContextSection(
-				'conventions',
-				formatConventionsSummary(anchorFiles),
-			),
-		);
-	}
-
-	sections.push(
-		makeContextSection(
-			'docs',
-			await collectDocsSummary(
-				options.workspaceRootAbs,
-				anchorFiles,
-				args.task,
-				args.symbol,
-				options.docsRoots,
-			),
-		),
-	);
-	sections.push(
-		makeContextSection(
-			'test-policy',
-			formatTestPolicySummary(options.testPolicyMode),
-		),
-	);
-	sections.push(
-		makeContextSection(
-			'memory',
-			await collectMemorySummary(
-				options.workspaceRootAbs,
-				options.memoryStorePath,
-				args.task,
-				args.symbol,
-				anchorFiles,
-			),
-		),
-	);
-
-	const rawOutput = {
-		dependsOn: [...CONTEXT_FOR_CHANGE_DEPENDS_ON],
-		files: anchorFiles,
-		sections,
-	};
-	const truncation = truncateIfTooLarge(rawOutput, options.maxBytes);
-	const output: IContextForChangeOutput = truncation.truncated
-		? buildTruncatedContextOutput(truncation, anchorFiles)
-		: {
-				dependsOn: [...CONTEXT_FOR_CHANGE_DEPENDS_ON],
-				files: anchorFiles,
-				sections,
-				bytes: truncation.finalBytes,
-				truncated: false,
-			};
-	return toolJson(output);
 };
