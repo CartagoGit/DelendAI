@@ -4,6 +4,7 @@ import { mkdir, readdir, readFile, writeFile } from 'node:fs/promises';
 import { pathToFileURL } from 'node:url';
 
 import {
+	discoverPluginManifests,
 	parsePluginManifest,
 	PRESET_KIND,
 	resolvePresetMembers,
@@ -13,31 +14,20 @@ import {
 	type PermissionCategory,
 } from '@mcp-vertex/core/public';
 
-export const MIGRATED_PLUGIN_IDS = [
-	'adaptive-optimizer',
-	'context-for-change',
-	'impact-analysis',
-	'project-health',
-	'quality-policy',
-	'search',
-] as const;
-export const MIGRATED_MANIFEST_PATHS = [
-	'plugins/adaptive-optimizer/plugin.manifest.ts',
-	'plugins/context-for-change/plugin.manifest.ts',
-	'plugins/impact-analysis/plugin.manifest.ts',
-	'plugins/project-health/plugin.manifest.ts',
-	'plugins/quality-policy/plugin.manifest.ts',
-	'plugins/search/plugin.manifest.ts',
-] as const;
-
 export const GENERATED_FIRST_PARTY_INDEX_PATH =
 	'packages/core/src/lib/registry/generated/first-party-manifest-entries.generated.ts';
 export const GENERATED_WEB_CATALOG_PATH =
 	'apps/web/src/generated/plugin-manifest-catalog.generated.ts';
+export const GENERATED_WEB_DATA_CATALOG_PATH =
+	'apps/web/src/data/plugins/catalog.generated.ts';
 export const GENERATED_DOCS_MARKDOWN_PATH =
 	'docs/mcp-vertex/generated/plugin-manifests.generated.md';
 export const GENERATED_DOCS_JSON_PATH =
 	'docs/mcp-vertex/generated/plugin-manifests.generated.json';
+export const GENERATED_PLUGIN_DOCS_DIR =
+	'docs/mcp-vertex/plugins/auto-generated';
+export const GENERATED_PERMISSION_MATRIX_PATH =
+	'docs/mcp-vertex/security/permission-matrix.md';
 
 type PresetId = (typeof PRESET_KIND)[number];
 
@@ -97,6 +87,14 @@ export interface IPluginManifestArtifact {
 	readonly compatibilityMatrix: readonly ICompatibilityRow[];
 }
 
+type WebCatalogCategory =
+	| 'workflow'
+	| 'quality'
+	| 'code-intelligence'
+	| 'knowledge'
+	| 'observability'
+	| 'integration';
+
 export interface IGeneratorIo {
 	readonly readText: (absPath: string) => Promise<string | undefined>;
 	readonly writeText: (absPath: string, text: string) => Promise<void>;
@@ -132,7 +130,9 @@ const defaultIo = (): IGeneratorIo => ({
 });
 
 const stripGeneratedAt = (text: string): string =>
-	text.replace(/"generatedAt": "[^"]+"/gu, '"generatedAt": "<normalized>"');
+	text
+		.replace(/"generatedAt": "[^"]+"/gu, '"generatedAt": "<normalized>"')
+		.replace(/^generated: .+$/gmu, 'generated: <normalized>');
 
 const compareContent = (left: string | undefined, right: string): boolean =>
 	stripGeneratedAt(left ?? '') === stripGeneratedAt(right);
@@ -180,15 +180,16 @@ export const discoverPluginPackages = async (
 	return records;
 };
 
-export const loadMigratedPluginManifests = async (
+export const loadPluginManifests = async (
 	root: string,
 	io: Pick<IGeneratorIo, 'readText'> = defaultIo(),
 ): Promise<readonly ILoadedPluginManifest[]> => {
 	const packages = await discoverPluginPackages(root, io);
 	const packageById = new Map(packages.map((pkg) => [pkg.id, pkg] as const));
+	const manifestPaths = await discoverPluginManifests(root);
 	const loaded: ILoadedPluginManifest[] = [];
-	for (const relPath of MIGRATED_MANIFEST_PATHS) {
-		const absPath = resolve(root, relPath);
+	for (const absPath of manifestPaths) {
+		const relPath = relative(root, absPath).replaceAll('\\', '/');
 		const pluginId = relPath.split('/')[1] ?? '';
 		const pkg = packageById.get(pluginId);
 		if (pkg === undefined) {
@@ -202,7 +203,7 @@ export const loadMigratedPluginManifests = async (
 			manifest: manifestFromModule(mod),
 		});
 	}
-	return loaded;
+	return loaded.sort((left, right) => left.id.localeCompare(right.id));
 };
 
 export const buildGeneratedFirstPartyEntries = (
@@ -246,22 +247,25 @@ export const buildManifestArtifact = (
 	generatedAt,
 	manifests: manifests.map(({ manifest }) => manifest),
 	firstPartyEntries: buildGeneratedFirstPartyEntries(manifests),
-	webCatalog: manifests.map(({ manifest }) => ({
-		id: manifest.id,
-		package: manifest.package,
-		summary: manifest.summary,
-		tags: [...manifest.tags],
-		maturity: manifest.maturity,
-		visibility: manifest.visibility,
-		presets: [...manifest.presets],
-		capabilities: [...manifest.capabilities],
-		permissions: [...manifest.permissions],
-		tokenBudget: {
-			warning: manifest.tokenBudget.warning,
-			hard: manifest.tokenBudget.hard,
-			releaseRelativePercent: manifest.tokenBudget.releaseRelativePercent,
-		},
-	})),
+	webCatalog: manifests
+		.filter(({ manifest }) => manifest.visibility === 'public')
+		.map(({ manifest }) => ({
+			id: manifest.id,
+			package: manifest.package,
+			summary: manifest.summary,
+			tags: [...manifest.tags],
+			maturity: manifest.maturity,
+			visibility: manifest.visibility,
+			presets: [...manifest.presets],
+			capabilities: [...manifest.capabilities],
+			permissions: [...manifest.permissions],
+			tokenBudget: {
+				warning: manifest.tokenBudget.warning,
+				hard: manifest.tokenBudget.hard,
+				releaseRelativePercent:
+					manifest.tokenBudget.releaseRelativePercent,
+			},
+		})),
 	tokenBudgets: manifests.map(({ manifest }) => ({
 		id: manifest.id,
 		warning: manifest.tokenBudget.warning,
@@ -319,6 +323,82 @@ const renderWebCatalogTs = (artifact: IPluginManifestArtifact): string =>
 		'',
 	].join('\n');
 
+const titleCase = (value: string): string =>
+	value
+		.split(/[-_]/u)
+		.filter((segment) => segment.length > 0)
+		.map((segment) => segment[0]!.toUpperCase() + segment.slice(1))
+		.join(' ');
+
+const TAG_CATEGORY_MAP: Readonly<Record<string, WebCatalogCategory>> = {
+	workflow: 'workflow',
+	proposals: 'workflow',
+	swarm: 'workflow',
+	notification: 'workflow',
+	status: 'workflow',
+	quality: 'quality',
+	rules: 'quality',
+	tests: 'quality',
+	convention: 'quality',
+	security: 'quality',
+	'tech-debt': 'quality',
+	search: 'code-intelligence',
+	refactor: 'code-intelligence',
+	git: 'code-intelligence',
+	api: 'integration',
+	browser: 'integration',
+	forge: 'integration',
+	issues: 'integration',
+	container: 'integration',
+	database: 'integration',
+	web: 'integration',
+	docs: 'knowledge',
+	memory: 'knowledge',
+	prompts: 'knowledge',
+	skills: 'knowledge',
+	logs: 'observability',
+	observability: 'observability',
+	perf: 'observability',
+	usage: 'observability',
+	cache: 'observability',
+};
+
+const resolveWebCatalogCategory = (
+	tags: readonly string[],
+	permissions: readonly PermissionCategory[],
+): WebCatalogCategory => {
+	for (const tag of tags) {
+		const mapped = TAG_CATEGORY_MAP[tag];
+		if (mapped !== undefined) return mapped;
+	}
+	if (
+		permissions.includes('network') ||
+		permissions.includes('browser') ||
+		permissions.includes('container') ||
+		permissions.includes('database') ||
+		permissions.includes('forge-read') ||
+		permissions.includes('forge-write')
+	) {
+		return 'integration';
+	}
+	if (permissions.includes('filesystem-write')) return 'workflow';
+	return 'code-intelligence';
+};
+
+const renderWebDataCatalogTs = (artifact: IPluginManifestArtifact): string => {
+	const entries = artifact.webCatalog.map((entry) => ({
+		slug: entry.id,
+		displayName: titleCase(entry.id),
+		purpose: entry.summary,
+		category: resolveWebCatalogCategory(entry.tags, entry.permissions),
+	}));
+	return [
+		'export const GENERATED_WEB_PLUGIN_CATALOG =',
+		`${JSON.stringify(entries, null, '\t')} as const;`,
+		'',
+	].join('\n');
+};
+
 const renderMarkdownTable = (
 	headers: readonly string[],
 	rows: readonly (readonly string[])[],
@@ -360,7 +440,7 @@ const renderDocsMarkdown = (artifact: IPluginManifestArtifact): string => {
 	return [
 		'<!-- Auto-generated by bun tools/scripts/generate/from-manifests.script.ts -->',
 		'',
-		'# Plugin manifests (migrated subset)',
+		'# Plugin manifests',
 		'',
 		renderMarkdownTable(
 			['id', 'package', 'visibility', 'maturity', 'presets'],
@@ -391,6 +471,97 @@ const renderDocsMarkdown = (artifact: IPluginManifestArtifact): string => {
 	].join('\n');
 };
 
+const renderPluginDocMarkdown = (
+	manifest: IPluginManifest,
+	generatedAt: string,
+): string =>
+	[
+		'---',
+		`id: ${manifest.id}`,
+		`package: ${manifest.package}`,
+		`version: ${manifest.version}`,
+		`maturity: ${manifest.maturity}`,
+		`generated: ${generatedAt}`,
+		'---',
+		'',
+		`# ${titleCase(manifest.id)}`,
+		'',
+		'> Auto-generated. Do not edit. Regenerate with bun run generate:from-manifests.',
+		'',
+		'## Summary',
+		'',
+		manifest.summary,
+		'',
+		'## Tags',
+		'',
+		manifest.tags.length === 0
+			? '- none'
+			: manifest.tags.map((tag) => `- ${tag}`).join('\n'),
+		'',
+		'## Presets',
+		'',
+		manifest.presets.length === 0
+			? '- none'
+			: manifest.presets.map((preset) => `- ${preset}`).join('\n'),
+		'',
+		'## Permissions',
+		'',
+		manifest.permissions.length === 0
+			? '- none'
+			: manifest.permissions
+					.map((permission) => `- ${permission}`)
+					.join('\n'),
+		'',
+		'## Dependencies',
+		'',
+		manifest.dependencies.length === 0
+			? '- none'
+			: manifest.dependencies
+					.map((dependency) => `- ${dependency}`)
+					.join('\n'),
+		'',
+		'## Capabilities',
+		'',
+		manifest.capabilities.length === 0
+			? '- none'
+			: manifest.capabilities
+					.map((capability) => `- ${capability}`)
+					.join('\n'),
+		'',
+	].join('\n');
+
+const renderPermissionMatrixMarkdown = (
+	artifact: IPluginManifestArtifact,
+): string => {
+	const rows = artifact.manifests.flatMap((manifest) => {
+		if ((manifest.toolPermissions?.length ?? 0) > 0) {
+			return manifest.toolPermissions!.map((grant) => [
+				manifest.id,
+				manifest.visibility,
+				grant.tool,
+				grant.permissions.join(', '),
+			]);
+		}
+		return [
+			[
+				manifest.id,
+				manifest.visibility,
+				'*',
+				manifest.permissions.join(', '),
+			],
+		];
+	});
+	return [
+		'# Permission Matrix',
+		'',
+		renderMarkdownTable(
+			['Plugin', 'Visibility', 'Tool', 'Permissions'],
+			rows,
+		),
+		'',
+	].join('\n');
+};
+
 const resolveGeneratedAt = (io: IGeneratorIo): string =>
 	io.fixedGeneratedAt ?? new Date().toISOString();
 
@@ -401,8 +572,17 @@ const buildOutputs = (
 		artifact.firstPartyEntries,
 	),
 	[GENERATED_WEB_CATALOG_PATH]: renderWebCatalogTs(artifact),
+	[GENERATED_WEB_DATA_CATALOG_PATH]: renderWebDataCatalogTs(artifact),
 	[GENERATED_DOCS_MARKDOWN_PATH]: renderDocsMarkdown(artifact),
 	[GENERATED_DOCS_JSON_PATH]: `${JSON.stringify(artifact, null, '\t')}\n`,
+	[GENERATED_PERMISSION_MATRIX_PATH]:
+		renderPermissionMatrixMarkdown(artifact),
+	...Object.fromEntries(
+		artifact.manifests.map((manifest) => [
+			`${GENERATED_PLUGIN_DOCS_DIR}/${manifest.id}.md`,
+			renderPluginDocMarkdown(manifest, artifact.generatedAt),
+		]),
+	),
 });
 
 export const runFromManifestsGenerator = async (
@@ -417,7 +597,7 @@ export const runFromManifestsGenerator = async (
 	const root = resolve(rootArg?.slice('--root='.length) ?? process.cwd());
 	try {
 		const generatedAt = resolveGeneratedAt(io);
-		const manifests = await loadMigratedPluginManifests(root, io);
+		const manifests = await loadPluginManifests(root, io);
 		const artifact = buildManifestArtifact(manifests, generatedAt);
 		const outputs = buildOutputs(artifact);
 		let changed = false;

@@ -42,6 +42,13 @@
 			},
 			"types": "./dist/public/index.d.ts",
 			"import": "./dist/public/index.js"
+		},
+		"./manifest": {
+			"@mcp-vertex/source": {
+				"types": "./src/public/index.ts"
+			},
+			"types": "./dist/public/index.d.ts",
+			"import": "./dist/public/index.js"
 		}
 	},
 	"scripts": {

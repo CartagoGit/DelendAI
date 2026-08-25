@@ -296,7 +296,7 @@ overridden by a human reviewer).
 ### S2 — Collect evidence + transition validation
 
 - **Status**: pending
-- **Files**: `tools/scripts/proposals/collect-evidence.script.ts`, `plugins/proposals/src/lib/proposals/transition.service.ts`
+- **Files**: `tools/scripts/proposals/collect-evidence.script.ts`, `plugins/proposals/src/lib/services/transition-evidence.ts`
 - **Gate**: type
 - acceptance:
   - "Evidence recolectable."
@@ -375,7 +375,7 @@ resolution:
 ### S2 — Collect evidence + transition validation
 
 - **Status**: pending
-- **Files**: `tools/scripts/proposals/collect-evidence.script.ts`, `plugins/proposals/src/lib/proposals/transition.service.ts`
+- **Files**: `tools/scripts/proposals/collect-evidence.script.ts`, `plugins/proposals/src/lib/services/transition-evidence.ts`
 - **Gate**: type
 - acceptance:
   - "Evidence recolectable."

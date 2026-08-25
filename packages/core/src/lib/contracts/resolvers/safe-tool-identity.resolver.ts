@@ -11,7 +11,13 @@ export const resolvePublicToolIdentity = (
 	registry: Pick<IToolIdentityRegistry, 'get'>,
 ): ISafeToolIdentity => {
 	const entry = registry.get(toolName);
-	if (entry === undefined) {
+	if (
+		entry === undefined ||
+		entry === null ||
+		typeof entry !== 'object' ||
+		!('packageName' in entry) ||
+		typeof entry.packageName !== 'string'
+	) {
 		return {
 			owner: 'host-project',
 			category: 'unknown',

@@ -855,6 +855,7 @@ describe('a00069 S7 peer-review gate on review → done', () => {
 		const previousCi = process.env.CI;
 		process.env.CI = 'true';
 		try {
+			const validateEvidence = await recentValidateWithLog(root);
 			const dir = join(root, 'in-progress');
 			await mkdir(dir, { recursive: true });
 			await writeFile(
@@ -883,7 +884,7 @@ describe('a00069 S7 peer-review gate on review → done', () => {
 					id: 'f00973',
 					to: 'review',
 					reason: 'ready for review',
-					validateEvidence: RECENT_VALIDATE,
+					validateEvidence,
 				},
 				options,
 			);

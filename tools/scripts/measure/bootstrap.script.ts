@@ -1,7 +1,9 @@
 #!/usr/bin/env bun
-import { assembleCliConfig } from '@mcp-vertex/core/lib/cli/assemble';
-import { parseCliArgs } from '@mcp-vertex/core/lib/plugins/parse-cli-args';
-import { measureBootstrapBytes } from '@mcp-vertex/core/lib/surface/bootstrap';
+import {
+	assembleCliConfig,
+	measureBootstrapBytes,
+	parseCliArgs,
+} from '@mcp-vertex/core/public';
 
 const MODES = ['native', 'adaptive', 'compact'] as const;
 

@@ -6,8 +6,6 @@
  * output, quota or inferred turn. A matching MCP id is evidence only when a
  * host has explicitly supplied that exact opaque id to both channels.
  */
-import { readFile } from 'node:fs/promises';
-
 import z from 'zod';
 
 import type {
@@ -36,10 +34,11 @@ export const readHostLifecycleEvents = async (
 ): Promise<IHostLifecycleEvent[]> => {
 	let raw: string;
 	try {
-		raw = await readFile(absPath, 'utf8');
-	} catch (error) {
-		if ((error as NodeJS.ErrnoException).code === 'ENOENT') return [];
-		throw error;
+		const file = Bun.file(absPath);
+		if (!(await file.exists())) return [];
+		raw = await file.text();
+	} catch {
+		return [];
 	}
 	const events: IHostLifecycleEvent[] = [];
 	for (const line of raw.split('\n')) {

@@ -207,7 +207,7 @@ Bootstrap is designed to fit in **<50 KB** with `surfaceMode: 'adaptive'`.
 ### S1 — E2E listChanged
 
 - **Status**: pending
-- **Files**: `tools/scripts/test/surface-list-changed.e2e.spec.ts`
+- **Files**: `packages/core/tests/src/lib/e2e/tool-surface.e2e.spec.ts`
 - **Gate**: type
 - acceptance:
   - "≥3 clientes probados."

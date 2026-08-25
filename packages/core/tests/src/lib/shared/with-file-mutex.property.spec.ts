@@ -188,6 +188,9 @@ describe('withFileMutex state-machine invariants', () => {
 		for (const [caseIndex, entry] of cases.entries()) {
 			let heartbeatCount = 0;
 			let waiterEntered = false;
+			const targetCase = join(dir, `state-heartbeat-${caseIndex}.json`);
+			const lockPathCase = `${targetCase}.mutex`;
+			writeFileSync(targetCase, '{}');
 			const holderDurationMs = Math.max(
 				entry.heartbeatMs * 8,
 				entry.staleMs + 20,
@@ -201,7 +204,7 @@ describe('withFileMutex state-machine invariants', () => {
 			});
 
 			const holder = withFileMutex(
-				target,
+				targetCase,
 				async () => {
 					await delay(holderDurationMs);
 				},
@@ -213,12 +216,12 @@ describe('withFileMutex state-machine invariants', () => {
 				},
 			);
 
-			await waitFor(() => existsSync(lockPath));
+			await waitFor(() => existsSync(lockPathCase));
 			await waitFor(() => heartbeatCount >= 2, entry.heartbeatMs * 20);
 
 			await expect(
 				withFileMutex(
-					target,
+					targetCase,
 					async () => {
 						waiterEntered = true;
 					},
@@ -247,6 +250,8 @@ describe('withFileMutex state-machine invariants', () => {
 
 		for (const [caseIndex, targetHeartbeats] of cases.entries()) {
 			const generations: number[] = [];
+			const targetCase = join(dir, `state-generation-${caseIndex}.json`);
+			writeFileSync(targetCase, '{}');
 
 			__setWithFileMutexTestHooks({
 				afterHeartbeat: (lease) => {
@@ -255,7 +260,7 @@ describe('withFileMutex state-machine invariants', () => {
 			});
 
 			await withFileMutex(
-				target,
+				targetCase,
 				async () => {
 					await delay(targetHeartbeats * 8);
 				},

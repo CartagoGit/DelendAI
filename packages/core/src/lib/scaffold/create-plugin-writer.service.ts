@@ -73,7 +73,7 @@ export const writeHostConfig = async ({
 
 export const writeFirstPartyIndex = async ({
 	pluginId,
-	description,
+	description: _description,
 	fs,
 }: {
 	readonly pluginId: string;
@@ -85,30 +85,10 @@ export const writeFirstPartyIndex = async ({
 	if (new RegExp(`id:\\s*'${escapeRegex(pluginId)}'`, 'u').test(previous)) {
 		return;
 	}
-	const anchor = '\t\t...GENERATED_FIRST_PARTY_MANIFEST_ENTRIES,';
-	const anchorIndex = previous.indexOf(anchor);
-	if (anchorIndex < 0) {
-		throw new Error(
-			`Could not find GENERATED_FIRST_PARTY_MANIFEST_ENTRIES anchor in ${path}`,
-		);
-	}
-	const tags = deriveRegistryTags(pluginId)
-		.map((tag) => `'${escapeSingleQuotes(tag)}'`)
-		.join(', ');
-	const block = [
-		'\t\t{',
-		"\t\t\torigin: 'first-party',",
-		`\t\t\tid: '${pluginId}',`,
-		`\t\t\tpackage: '@mcp-vertex/${pluginId}',`,
-		`\t\t\tsummary: '${escapeSingleQuotes(sanitizeSummary(description))}',`,
-		`\t\t\ttags: [${tags}],`,
-		'\t\t\tpermissions: [],',
-		"\t\t\tdefaultPreset: 'vertex',",
-		'\t\t},',
-	].join('\n');
-	const next = `${previous.slice(0, anchorIndex)}${block}\n${previous.slice(anchorIndex)}`;
-	validateStructuredText(path, next);
-	await fs.writeFile(path, next);
+	// f00175: the first-party registry is now 100% generated from
+	// plugin.manifest.ts files. Scaffolding no longer patches manual
+	// entries here; the new plugin appears after its manifest is added and
+	// the manifest generators are run.
 };
 
 export const stagePluginScaffold = async ({

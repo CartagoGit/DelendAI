@@ -232,6 +232,10 @@ export type {
 } from '../lib/contracts/interfaces/checkpoint-advisory.interface';
 export { CHECKPOINT_ADVISORY_SEVERITIES } from '../lib/contracts/interfaces/checkpoint-advisory.interface';
 export {
+	measureBootstrapBytes,
+	type IBootstrapMeasurement,
+} from '../lib/surface/bootstrap';
+export {
 	PLUGIN_DEFAULTS,
 	resolvePluginOptions,
 } from '../lib/plugins/plugin-defaults';
@@ -829,6 +833,11 @@ export {
 	definePluginManifest,
 	parsePluginManifest,
 } from '../lib/manifest/define-plugin-manifest';
+export {
+	discoverPluginManifests,
+	loadAllPluginManifests,
+} from '../lib/manifest/discovery';
+export { validatePluginManifest } from '../lib/manifest/validation';
 export {
 	permissionCategorySchema,
 	permissionListSchema,

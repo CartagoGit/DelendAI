@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-08-25T01:00:31.937Z",
+	"generatedAt": "2026-08-25T02:52:28.614Z",
 	"mode": "compact",
 	"tools": [
 		{
@@ -1216,59 +1216,10 @@
 				"kind": "audit"
 			},
 			{
-				"id": "c00005",
-				"title": "c00005",
-				"track": "tokens",
-				"status": "ready",
-				"kind": "chore"
-			},
-			{
-				"id": "c00006",
-				"title": "c00006",
-				"track": "tokens",
-				"status": "ready",
-				"kind": "chore"
-			},
-			{
-				"id": "c00007",
-				"title": "c00007",
-				"track": "tokens",
-				"status": "ready",
-				"kind": "chore"
-			},
-			{
-				"id": "c00008",
-				"title": "c00008",
-				"track": "manifests",
-				"status": "ready",
-				"kind": "chore"
-			},
-			{
-				"id": "c00009",
-				"title": "c00009",
-				"track": "manifests",
-				"status": "ready",
-				"kind": "chore"
-			},
-			{
 				"id": "f00050",
 				"title": "f00050",
 				"track": "lint+architecture+i18n+workflow+release",
 				"status": "paused",
-				"kind": "feat"
-			},
-			{
-				"id": "f00174",
-				"title": "f00174",
-				"track": "manifests",
-				"status": "ready",
-				"kind": "feat"
-			},
-			{
-				"id": "f00175",
-				"title": "f00175",
-				"track": "manifests",
-				"status": "ready",
 				"kind": "feat"
 			},
 			{
@@ -1286,27 +1237,6 @@
 				"kind": "plan"
 			},
 			{
-				"id": "r00018",
-				"title": "r00018",
-				"track": "tokens",
-				"status": "ready",
-				"kind": "refactor"
-			},
-			{
-				"id": "r00019",
-				"title": "r00019",
-				"track": "surface",
-				"status": "ready",
-				"kind": "refactor"
-			},
-			{
-				"id": "r00020",
-				"title": "r00020",
-				"track": "quality",
-				"status": "ready",
-				"kind": "refactor"
-			},
-			{
 				"id": "x00203",
 				"title": "x00203",
 				"track": "plugins+fix",
@@ -1319,33 +1249,12 @@
 				"track": "plugins+fix",
 				"status": "in-progress",
 				"kind": "fix"
-			},
-			{
-				"id": "x00238",
-				"title": "x00238",
-				"track": "quality",
-				"status": "ready",
-				"kind": "fix"
-			},
-			{
-				"id": "x00239",
-				"title": "x00239",
-				"track": "quality",
-				"status": "ready",
-				"kind": "fix"
-			},
-			{
-				"id": "x00240",
-				"title": "x00240",
-				"track": "quality",
-				"status": "ready",
-				"kind": "fix"
 			}
 		],
 		"byStatus": {
-			"ready": 13,
+			"ready": 0,
 			"in-progress": 9,
-			"review": 15,
+			"review": 28,
 			"paused": 1,
 			"done": 406,
 			"blocked": 0,

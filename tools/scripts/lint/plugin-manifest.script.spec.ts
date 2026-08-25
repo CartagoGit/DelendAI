@@ -181,20 +181,36 @@ const withFixture = async (
 };
 
 describe('plugin-manifest lint', () => {
-	it('coexists with incremental migration in migrated-only mode', async () => {
+	it('passes when every public plugin has a manifest', async () => {
 		await withFixture(async (root) => {
-			const report = await lintPluginManifests(root, 'migrated-only');
-			expect(report.ok).toBe(true);
-			expect(report.pending).toBe(1);
-			expect(formatPluginManifestLintReport(report)).toContain(
-				'pending migration',
+			await writeFile(
+				join(root, 'plugins/docs/plugin.manifest.ts'),
+				[
+					'export const DOCS_PLUGIN_MANIFEST = {',
+					"\tid: 'docs',",
+					"\tpackage: '@mcp-vertex/docs',",
+					"\tversion: '0.1.1',",
+					"\tvisibility: 'public',",
+					"\tsummary: 'Doc generation, search, and rendered catalog.',",
+					"\ttags: ['docs', 'catalog'],",
+					"\tmaturity: 'stable',",
+					"\tpermissions: ['filesystem-read'],",
+					"\tpresets: ['lean', 'standard', 'vertex'],",
+					'\ttokenBudget: { warning: 2200, hard: 2500, releaseRelativePercent: 20 },',
+					"\tdependencies: ['@mcp-vertex/core', 'zod'],",
+					"\tcapabilities: ['docs-catalog'],",
+					'};\n',
+				].join('\n'),
 			);
+			const report = await lintPluginManifests(root);
+			expect(report.ok).toBe(true);
+			expect(report.findings).toHaveLength(0);
 		});
 	});
 
-	it('fails in strict-all mode when a public plugin still lacks a manifest', async () => {
+	it('fails when a public plugin still lacks a manifest', async () => {
 		await withFixture(async (root) => {
-			const report = await lintPluginManifests(root, 'strict-all');
+			const report = await lintPluginManifests(root);
 			expect(report.ok).toBe(false);
 			expect(
 				report.findings.some(
@@ -208,7 +224,7 @@ describe('plugin-manifest lint', () => {
 	it('fails when the migrated plugin package exists but its manifest is missing', async () => {
 		await withFixture(
 			async (root) => {
-				const report = await lintPluginManifests(root, 'migrated-only');
+				const report = await lintPluginManifests(root);
 				expect(report.ok).toBe(false);
 				expect(
 					report.findings.some(
@@ -219,5 +235,38 @@ describe('plugin-manifest lint', () => {
 			},
 			{ includeSearchManifest: false },
 		);
+	});
+
+	it('fails when manifest metadata does not match the package identity', async () => {
+		await withFixture(async (root) => {
+			await writeFile(
+				join(root, 'plugins/docs/plugin.manifest.ts'),
+				[
+					'export default {',
+					"\tid: 'search',",
+					"\tpackage: '@mcp-vertex/docs',",
+					"\tversion: '0.1.1',",
+					"\tvisibility: 'public',",
+					"\tsummary: 'Doc generation, search, and rendered catalog.',",
+					"\ttags: ['docs', 'catalog'],",
+					"\tmaturity: 'stable',",
+					"\tpermissions: ['filesystem-read'],",
+					"\tpresets: ['lean'],",
+					'\ttokenBudget: { warning: 2200, hard: 2500, releaseRelativePercent: 20 },',
+					"\tdependencies: ['@mcp-vertex/core'],",
+					"\tcapabilities: ['docs-catalog'],",
+					'};\n',
+				].join('\n'),
+			);
+			const report = await lintPluginManifests(root);
+			expect(report.ok).toBe(false);
+			expect(
+				report.findings.some(
+					(finding) =>
+						finding.kind === 'metadata-mismatch' ||
+						finding.kind === 'manifest-without-package',
+				),
+			).toBe(true);
+		});
 	});
 });
