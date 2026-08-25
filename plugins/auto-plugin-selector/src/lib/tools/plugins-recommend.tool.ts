@@ -30,7 +30,7 @@ import type {
 	IProjectSignals,
 	IRecommendPluginsOptions,
 } from '../contracts/interfaces/plugin-fit.interface';
-import type { IProviderCandidate } from '@mcp-vertex/auto-agent-selector/lib/contracts/interfaces/roster.interface';
+import type { IProviderCandidate } from '@mcp-vertex/auto-agent-selector/public';
 
 export interface IPluginsRecommendToolOptions {
 	readonly namespacePrefix: string;
