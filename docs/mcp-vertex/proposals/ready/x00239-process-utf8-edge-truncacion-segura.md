@@ -20,7 +20,7 @@ related:
 
 # x00239 — process: UTF-8 safe truncation
 
-## Problem
+## Goal
 
 El recorte actual de chunks de proceso puede dejar una secuencia UTF-8 incompleta si corta justo después del byte inicial de una secuencia multibyte:
 
@@ -43,28 +43,24 @@ Problemas:
 
 Reglas violadas: §7 PROC2-001.
 
-## Evidence
 
 Tests existentes no cubren emoji, CJK, secuencias 2/3/4-byte en todos los offsets.
 
-## Classification
 
 `PROBABLE / MENOR` — código muestra el riesgo, falta reproducción.
 
-## User impact
+## Why
 
 - Caracteres `�` en output.
 - Bytes accounting inconsistente.
 
-## Privacy impact
 
 Cero.
 
-## Token impact
 
 Cero.
 
-## Scope
+## Non-goals
 
 **Permitido**:
 
@@ -76,11 +72,10 @@ Cero.
 
 - Cambios en otros truncation paths (la truncation genérica ya está endurecida; aquí es específico de process output).
 
-## Out of scope
 
 - Cambios en el process runner top-level.
 
-## Design
+## Architecture
 
 ### 1. Helper compartido
 
@@ -234,44 +229,6 @@ it('property: result is valid UTF-8 (no replacement chars)', () => {
 });
 ```
 
-## Tests
-
-- **Unit**: cobertura de cada input en todos los offsets.
-- **Property**: byte length invariant + no replacement chars.
-- **Integration**: el runner usa el helper y los tests de process pasan.
-
-## Acceptance criteria
-
-- [ ] Helper `truncateUtf8` implementado.
-- [ ] Process runner usa el helper.
-- [ ] Tests adversariales verdes para emoji, CJK, 2/3/4-byte sequences en todos los offsets.
-- [ ] Property tests verdes.
-- [ ] Sin `�` en el output truncado.
-- [ ] `Buffer.byteLength(result, 'utf8') <= maxBytes` siempre.
-- [ ] `bun run validate` verde.
-
-## Regression guards
-
-- **Property test** integrado en CI.
-- **Snapshot test** sobre un set fijo de inputs/outputs.
-
-## Resolution evidence (template)
-
-```yaml
-resolution:
-  status: implemented
-  evidence:
-    - commit: <hash>
-    - new-files:
-        - packages/core/src/lib/process/truncate-utf8.ts
-        - packages/core/tests/src/lib/process/truncate-utf8.spec.ts
-    - before/after:
-        before: "slice(0, -1) puede cortar UTF-8"
-        after:  "truncateUtf8 garantiza boundary seguro"
-```
-
----
-
 ## Slices
 
 - global_gate: type
@@ -294,7 +251,21 @@ resolution:
   - "≥30 unit tests verdes."
   - "Property tests verdes."
 
-## acceptance
+## Acceptance
+
+- **Unit**: cobertura de cada input en todos los offsets.
+- **Property**: byte length invariant + no replacement chars.
+- **Integration**: el runner usa el helper y los tests de process pasan.
+
+
+- [ ] Helper `truncateUtf8` implementado.
+- [ ] Process runner usa el helper.
+- [ ] Tests adversariales verdes para emoji, CJK, 2/3/4-byte sequences en todos los offsets.
+- [ ] Property tests verdes.
+- [ ] Sin `�` en el output truncado.
+- [ ] `Buffer.byteLength(result, 'utf8') <= maxBytes` siempre.
+- [ ] `bun run validate` verde.
+
 
 - Helper implementado y usado.
 - Tests verdes.
@@ -302,7 +273,27 @@ resolution:
 
 ---
 
-## Cómo se relaciona con el plan y la auditoría
+## Notes
+
+- **Property test** integrado en CI.
+- **Snapshot test** sobre un set fijo de inputs/outputs.
+
+
+```yaml
+resolution:
+  status: implemented
+  evidence:
+    - commit: <hash>
+    - new-files:
+        - packages/core/src/lib/process/truncate-utf8.ts
+        - packages/core/tests/src/lib/process/truncate-utf8.spec.ts
+    - before/after:
+        before: "slice(0, -1) puede cortar UTF-8"
+        after:  "truncateUtf8 garantiza boundary seguro"
+```
+
+---
+
 
 - **Plan padre**: [q00004](../../ready/q00004-plan-hardening-post-auditoria-chatgpt-sol-segunda-pasada.md), Track F.
 - **Auditoría legada**: §7 PROC2-001.

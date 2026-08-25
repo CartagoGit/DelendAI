@@ -1,7 +1,7 @@
 ---
-id: i00007
+id: c00007
 title: "vertex budget — hard/warning explícitos para `vertex` preset (TOK2-006)"
-kind: infra
+kind: chore
 status: ready
 type: proposal
 track: tokens
@@ -21,7 +21,7 @@ related:
 
 # i00007 — vertex budget explícito
 
-## Problem
+## Goal
 
 Hoy el dashboard tracked da `vertex = 161 tools, 301,503 B` (probablemente desactualizado, pero la cifra actual es aún mayor — ~35 plugins).
 
@@ -29,7 +29,6 @@ Pero los **budgets hard/warning** solo están definidos para `swarm` y `lean` (l
 
 Reglas violadas: R4.1, §9 TOK2-006.
 
-## Evidence
 
 ```ts
 // tools/scripts/test/token-budgets.ts (aprox)
@@ -45,25 +44,22 @@ export const BUDGETS = {
 
 `vertex` es el preset más completo y debería tener un techo explícito para detectar regresiones.
 
-## Classification
 
 `REVISAR / MEJORA`.
 
-## User impact
+## Why
 
 Detección temprana de regresiones en el preset más completo.
 
-## Privacy impact
 
 Cero.
 
-## Token impact
 
 - **Actual vertex**: ~350,000 B (medido en HEAD).
 - **Hard propuesto**: 384,000 B (admite crecimiento moderado; el preset es el más completo).
 - **Warning propuesto**: 320,000 B.
 
-## Scope
+## Non-goals
 
 **Permitido**:
 
@@ -76,12 +72,11 @@ Cero.
 - Cambios en plugins.
 - Cambios en el gate (`i00005`).
 
-## Out of scope
 
 - Reducción del coste de `vertex` (esta propuesta solo define el budget; las reducciones van en sus propias propuestas).
 - Schema diet (`r00018`).
 
-## Design
+## Architecture
 
 ### 1. Definir budgets para `vertex`
 
@@ -116,7 +111,40 @@ export const BUDGETS = {
 ### 4. Documentación
 
 ```md
-## Vertex preset budget
+
+## Slices
+
+- global_gate: type
+
+### S1 — Definir budget vertex + documentar
+
+- **Status**: pending
+- **Files**: `tools/scripts/test/token-budgets.ts`, `docs/mcp-vertex/tokens/README.md`
+- **Gate**: type
+- acceptance:
+  - "Entry `vertex` añadida."
+  - "Gate la cubre."
+  - "Documentación actualizada."
+
+## Acceptance
+
+- **Unit**: el gate incluye `vertex` y reporta correctamente.
+- **E2E**: si vertex excede el hard, CI falla.
+
+
+- [ ] Entry `vertex` añadida a `BUDGETS`.
+- [ ] Gate `i00005` cubre `vertex`.
+- [ ] Dashboard regenerado refleja los budgets.
+- [ ] Documentación explica la justificación.
+- [ ] `bun run validate` verde.
+
+
+- `vertex` tiene budget explícito.
+- Gate lo cubre.
+
+---
+
+## Notes
 
 The `vertex` preset bundles every public plugin in the monorepo. It is the
 largest preset and has its own explicit budget:
@@ -130,25 +158,10 @@ before considering raising the ceiling — budgets are constraints, not numbers
 to auto-increase (R4.1).
 ```
 
-## Tests
-
-- **Unit**: el gate incluye `vertex` y reporta correctamente.
-- **E2E**: si vertex excede el hard, CI falla.
-
-## Acceptance criteria
-
-- [ ] Entry `vertex` añadida a `BUDGETS`.
-- [ ] Gate `i00005` cubre `vertex`.
-- [ ] Dashboard regenerado refleja los budgets.
-- [ ] Documentación explica la justificación.
-- [ ] `bun run validate` verde.
-
-## Regression guards
 
 - El gate CI (`i00005`) verde.
 - Si vertex crece más allá de 384,000 B, el CI falla.
 
-## Resolution evidence (template)
 
 ```yaml
 resolution:
@@ -166,6 +179,12 @@ resolution:
 
 ---
 
+
+- **Plan padre**: [q00004](../../ready/q00004-plan-hardening-post-auditoria-chatgpt-sol-segunda-pasada.md), Track C.
+- **Auditoría legada**: §9 TOK2-006.
+- **Predecesor**: `i00005` (gate).
+- **Principio §41**: *"Budgets are constraints, not numbers to auto-increase."*
+
 ## Slices
 
 - global_gate: type
@@ -180,16 +199,8 @@ resolution:
   - "Gate la cubre."
   - "Documentación actualizada."
 
-## acceptance
+## Acceptance
 
 - `vertex` tiene budget explícito.
 - Gate lo cubre.
-
----
-
-## Cómo se relaciona con el plan y la auditoría
-
-- **Plan padre**: [q00004](../../ready/q00004-plan-hardening-post-auditoria-chatgpt-sol-segunda-pasada.md), Track C.
-- **Auditoría legada**: §9 TOK2-006.
-- **Predecesor**: `i00005` (gate).
-- **Principio §41**: *"Budgets are constraints, not numbers to auto-increase."*
+- `bun run validate` verde.

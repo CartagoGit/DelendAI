@@ -22,7 +22,7 @@ related:
 
 # r00020 — presets: summaries + budgets derivados
 
-## Problem
+## Goal
 
 Dos problemas relacionados:
 
@@ -33,7 +33,6 @@ Hoy, ambos campos son manuales y pueden derivarse.
 
 Reglas violadas: R3.2 (one source of truth), §12 PRE2-001/002.
 
-## Evidence
 
 ```ts
 // packages/presets/src/definitions.ts (aprox)
@@ -47,25 +46,22 @@ export const PRESETS = {
 };
 ```
 
-## Classification
 
 `CONFIRMADO / MENOR`.
 
-## User impact
+## Why
 
 - Summaries precisos.
 - Budgets verificables.
 - Menos drift entre summary y membership.
 
-## Privacy impact
 
 Cero.
 
-## Token impact
 
 - Budgets por preset mejoran tracking, no cambian tokens directamente.
 
-## Scope
+## Non-goals
 
 **Permitido**:
 
@@ -79,12 +75,11 @@ Cero.
 - Cambiar la membership de presets.
 - Cambiar manifests.
 
-## Out of scope
 
 - Reducción del coste de presets (cada reducción va en su propuesta).
 - Decisión de qué plugins incluir en `standard` (PRE2-003 — separado).
 
-## Design
+## Architecture
 
 ### 1. Summary derivado
 
@@ -223,44 +218,6 @@ describe('derivePresetBudget', () => {
 });
 ```
 
-## Tests
-
-- **Unit**: `derivePresetSummary` + `derivePresetBudget`.
-- **Snapshot**: el summary derivado es estable.
-- **Drift detection**: si un plugin se quita de un preset, el summary cambia automáticamente.
-
-## Acceptance criteria
-
-- [ ] `derivePresetSummary` implementado y exportado.
-- [ ] `derivePresetBudget` implementado y exportado.
-- [ ] Summary manual eliminado de `PRESETS`.
-- [ ] Budget manual eliminado de `PRESETS`.
-- [ ] Documentación: `docs/mcp-vertex/presets.md` explica la derivación.
-- [ ] Tests verdes.
-- [ ] `bun run validate` verde.
-
-## Regression guards
-
-- **Drift detection**: si el summary derivado no coincide con uno manual, falla el test.
-- **Snapshot**: el derivado es estable entre runs.
-
-## Resolution evidence (template)
-
-```yaml
-resolution:
-  status: implemented
-  evidence:
-    - commit: <hash>
-    - new-files:
-        - packages/presets/src/lib/derive-summary.ts
-        - packages/presets/src/lib/derive-budget.ts
-    - before/after:
-        before: "Summary + budget manuales; drift frecuente"
-        after:  "Derivados del membership real; imposible drift"
-```
-
----
-
 ## Slices
 
 - global_gate: type
@@ -283,14 +240,48 @@ resolution:
   - "Tests verdes."
   - "Documentación actualizada."
 
-## acceptance
+## Acceptance
+
+- **Unit**: `derivePresetSummary` + `derivePresetBudget`.
+- **Snapshot**: el summary derivado es estable.
+- **Drift detection**: si un plugin se quita de un preset, el summary cambia automáticamente.
+
+
+- [ ] `derivePresetSummary` implementado y exportado.
+- [ ] `derivePresetBudget` implementado y exportado.
+- [ ] Summary manual eliminado de `PRESETS`.
+- [ ] Budget manual eliminado de `PRESETS`.
+- [ ] Documentación: `docs/mcp-vertex/presets.md` explica la derivación.
+- [ ] Tests verdes.
+- [ ] `bun run validate` verde.
+
 
 - Summary + budget derivados.
 - Tests verdes.
 
 ---
 
-## Cómo se relaciona con el plan y la auditoría
+## Notes
+
+- **Drift detection**: si el summary derivado no coincide con uno manual, falla el test.
+- **Snapshot**: el derivado es estable entre runs.
+
+
+```yaml
+resolution:
+  status: implemented
+  evidence:
+    - commit: <hash>
+    - new-files:
+        - packages/presets/src/lib/derive-summary.ts
+        - packages/presets/src/lib/derive-budget.ts
+    - before/after:
+        before: "Summary + budget manuales; drift frecuente"
+        after:  "Derivados del membership real; imposible drift"
+```
+
+---
+
 
 - **Plan padre**: [q00004](../../ready/q00004-plan-hardening-post-auditoria-chatgpt-sol-segunda-pasada.md), Track F.
 - **Auditoría legada**: §12 PRE2-001/002, §25 REG2-003.

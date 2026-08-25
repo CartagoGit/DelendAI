@@ -22,7 +22,7 @@ related:
 
 # r00018 — proposals: schema diet
 
-## Problem
+## Goal
 
 `plugins/proposals/` aporta:
 
@@ -45,7 +45,6 @@ Reglas violadas: R4.1 (presupuestos son constraints), §9 TOK2-005.
 - Mantener la cobertura de tests.
 - Mantener el manifest obligatorio (Track E).
 
-## Evidence
 
 Dashboard tracked (medición aprox):
 
@@ -58,27 +57,24 @@ Dashboard tracked (medición aprox):
 
 El coste de `proposals` es **5x** el siguiente mayor.
 
-## Classification
 
 `CONFIRMADO / MEJORA` — cuantificación y diagnóstico.
 
-## User impact
+## Why
 
 - Contexto swarm ~37KB más barato.
 - API más limpia y mantenible.
 - Schemas más pequeños (mejor validación).
 
-## Privacy impact
 
 Cero.
 
-## Token impact
 
 - **Actual**: 76,776 B.
 - **Target**: <40,000 B (reducción ~50%).
 - **Stretch**: <25,000 B si se logra.
 
-## Scope
+## Non-goals
 
 **Permitido**:
 
@@ -94,14 +90,13 @@ Cero.
 - Cambios en multi-agent coordination primitives.
 - Cambios en tests que asuman nombres de tools específicos (se actualizan aquí, no se mantienen alias).
 
-## Out of scope
 
 - Gate de presupuesto (`i00005`).
 - Dashboard check (`i00006`).
 - Adaptive default (`r00019`).
 - Vertex budget (`i00007`).
 
-## Design
+## Architecture
 
 ### 1. Análisis: ¿qué herramientas pueden consolidarse?
 
@@ -219,49 +214,6 @@ bun run tokens:gate swarm
 
 El commit debe mostrar el delta.
 
-## Tests
-
-- **Unit**: actualizar tests existentes para usar las nuevas APIs.
-- **Integration**: el workflow multi-agent sigue funcionando.
-- **E2E**: una propuesta pasa por todo el ciclo (create → ready → in-progress → review → done).
-- **Token gate**: `i00005` pasa verde.
-
-## Acceptance criteria
-
-- [ ] 31 tools consolidados en ≤10 surfaces.
-- [ ] Cada surface usa discriminated unions o tipos estrictos equivalentes (NO `action: string` libre).
-- [ ] Tipos Zod estrictos en input y output.
-- [ ] Resources para datos grandes (templates, catalogs).
-- [ ] Description strings reducidos a 1 frase corta.
-- [ ] Workflow multi-agent intacto (DFA, locks, peer review, close_plan).
-- [ ] Tests verdes (≥80% coverage).
-- [ ] `bun run tokens:gate swarm` pasa verde (swarm <= 192,000 B).
-- [ ] Documentación actualizada con la nueva API.
-
-## Regression guards
-
-- **Token gate CI** (`i00005`) verde.
-- **Property tests**: cada surface rechaza inputs inválidos con errores tipados.
-- **API contract test**: la API pública no rompe (o se documenta el breaking change).
-
-## Resolution evidence (template)
-
-```yaml
-resolution:
-  status: implemented
-  evidence:
-    - commit: <hash>
-    - before/after-bytes:
-        before: "proposals: 76,776 B (31 tools)"
-        after:  "proposals: <40,000 B (<=10 tools)"
-        swarm-total-before: "229,740 B"
-        swarm-total-after:  "<200,000 B (idealmente <180,000 B)"
-    - tests: ≥80% coverage preservada
-    - workflow-intact: DFA + locks + peer review + close_plan verde
-```
-
----
-
 ## Slices
 
 - global_gate: type
@@ -302,7 +254,24 @@ resolution:
   - "Tests verdes."
   - "Token gate verde (swarm <= 192,000 B)."
 
-## acceptance
+## Acceptance
+
+- **Unit**: actualizar tests existentes para usar las nuevas APIs.
+- **Integration**: el workflow multi-agent sigue funcionando.
+- **E2E**: una propuesta pasa por todo el ciclo (create → ready → in-progress → review → done).
+- **Token gate**: `i00005` pasa verde.
+
+
+- [ ] 31 tools consolidados en ≤10 surfaces.
+- [ ] Cada surface usa discriminated unions o tipos estrictos equivalentes (NO `action: string` libre).
+- [ ] Tipos Zod estrictos en input y output.
+- [ ] Resources para datos grandes (templates, catalogs).
+- [ ] Description strings reducidos a 1 frase corta.
+- [ ] Workflow multi-agent intacto (DFA, locks, peer review, close_plan).
+- [ ] Tests verdes (≥80% coverage).
+- [ ] `bun run tokens:gate swarm` pasa verde (swarm <= 192,000 B).
+- [ ] Documentación actualizada con la nueva API.
+
 
 - 31 tools → ≤10 surfaces.
 - Tipos estrictos mantenidos.
@@ -311,7 +280,29 @@ resolution:
 
 ---
 
-## Cómo se relaciona con el plan y la auditoría
+## Notes
+
+- **Token gate CI** (`i00005`) verde.
+- **Property tests**: cada surface rechaza inputs inválidos con errores tipados.
+- **API contract test**: la API pública no rompe (o se documenta el breaking change).
+
+
+```yaml
+resolution:
+  status: implemented
+  evidence:
+    - commit: <hash>
+    - before/after-bytes:
+        before: "proposals: 76,776 B (31 tools)"
+        after:  "proposals: <40,000 B (<=10 tools)"
+        swarm-total-before: "229,740 B"
+        swarm-total-after:  "<200,000 B (idealmente <180,000 B)"
+    - tests: ≥80% coverage preservada
+    - workflow-intact: DFA + locks + peer review + close_plan verde
+```
+
+---
+
 
 - **Plan padre**: [q00004](../../ready/q00004-plan-hardening-post-auditoria-chatgpt-sol-segunda-pasada.md), Track C.
 - **Auditoría legada**: §9 TOK2-005.

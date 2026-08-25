@@ -2,7 +2,7 @@
 id: q00004
 title: "Plan hardening post-auditoría externa ChatGPT 5.6 Sol (segunda pasada sobre develop) — privacidad P0, filesystem, mutex, tokens, manifests y gobernanza"
 kind: plan
-status: ready
+status: in-progress
 type: plan
 track: develop-audit-hardening-v2
 date: 2026-08-25
@@ -27,7 +27,7 @@ contains:
         - { id: x00241, kind: fix, required: true, priority: P1, track: filesystem }
         - { id: x00242, kind: fix, required: true, priority: P1, track: filesystem }
         - { id: x00243, kind: fix, required: true, priority: P1, track: filesystem }
-        - { id: i00004, kind: infra, required: true, priority: P2, track: filesystem }
+        - { id: c00004, kind: infra, required: true, priority: P2, track: filesystem }
 
         # ─── Track B — Concurrency (P1) ─────────────────────────────────────────────
         - { id: t00007, kind: test, required: true, priority: P1, track: concurrency }
@@ -35,11 +35,11 @@ contains:
         - { id: t00008, kind: test, required: true, priority: P1, track: concurrency }
 
         # ─── Track C — Tokens (P1/P2) ───────────────────────────────────────────────
-        - { id: i00005, kind: infra, required: true, priority: P1, track: tokens }
-        - { id: i00006, kind: infra, required: true, priority: P2, track: tokens }
+        - { id: c00005, kind: infra, required: true, priority: P1, track: tokens }
+        - { id: c00006, kind: infra, required: true, priority: P2, track: tokens }
         - { id: r00018, kind: refactor, required: true, priority: P2, track: tokens }
         - { id: r00019, kind: refactor, required: true, priority: P2, track: tokens }
-        - { id: i00007, kind: infra, required: true, priority: P2, track: tokens }
+        - { id: c00007, kind: infra, required: true, priority: P2, track: tokens }
 
         # ─── Track D — PRIVACY (P0 — LEY/LEGAL — máximo énfasis) ────────────────────
         - { id: x00245, kind: fix, required: true, priority: P0, track: privacy }
@@ -50,8 +50,8 @@ contains:
         # ─── Track E — Manifests (P2) ───────────────────────────────────────────────
         - { id: f00174, kind: feat, required: true, priority: P2, track: manifests }
         - { id: f00175, kind: feat, required: true, priority: P2, track: manifests }
-        - { id: i00008, kind: infra, required: true, priority: P2, track: manifests }
-        - { id: i00009, kind: infra, required: true, priority: P2, track: manifests }
+        - { id: c00008, kind: infra, required: true, priority: P2, track: manifests }
+        - { id: c00009, kind: infra, required: true, priority: P2, track: manifests }
 
         # ─── Track F — Quality (P2/P3) ──────────────────────────────────────────────
         - { id: x00238, kind: fix, required: true, priority: P3, track: quality }
@@ -60,8 +60,8 @@ contains:
         - { id: r00020, kind: refactor, required: true, priority: P2, track: quality }
 
         # ─── Track G — CI / gobernanza (P2) ─────────────────────────────────────────
-        - { id: i00010, kind: infra, required: true, priority: P2, track: ci }
-        - { id: i00011, kind: infra, required: true, priority: P2, track: ci }
+        - { id: c00010, kind: infra, required: true, priority: P2, track: ci }
+        - { id: c00011, kind: infra, required: true, priority: P2, track: ci }
 
         # ─── Track H — Surface runtime (P2) ─────────────────────────────────────────
         - { id: r00021, kind: refactor, required: true, priority: P2, track: surface }
@@ -145,7 +145,7 @@ Sin añadir features nuevas.
 
 Estas reglas son **invariantes de producto** y deben respetarse en cada propuesta hija. Si una hija las viola, debe declarar la excepción explícitamente en `non-goals` y justificar el motivo. Las reglas ya son parte de `docs/mcp-vertex/AGENT-BOOTSTRAP.md §6`; este plan las re-enfatiza porque las hijas nuevas tienen alta densidad de cambios cross-cutting.
 
-## R1 — Privacidad por construcción (P0 / LEGAL)
+### N. R1 — Privacidad por construcción (P0 / LEGAL)
 
 Esta es la regla más importante del proyecto, sin excepciones.
 
@@ -157,7 +157,7 @@ Esta es la regla más importante del proyecto, sin excepciones.
 - **R1.6 — Reporter no acepta `toolName` arbitrario** (Track D — x00245). Solo `ISafeToolIdentity` resuelto vía registry metadata.
 - **R1.7 — `internalOnly:false` no existe** (Track D — x00236). El reporting externo es imposible por configuración; cualquier valor histórico debe fallar cerrado o ignorarse con warning de deprecación.
 
-## R2 — Code quality (Clean Code + SOLID + reuse)
+### N. R2 — Code quality (Clean Code + SOLID + reuse)
 
 Reflejado en `AGENT-BOOTSTRAP.md §6`. Cada hija debe respetarlo:
 
@@ -168,25 +168,25 @@ Reflejado en `AGENT-BOOTSTRAP.md §6`. Cada hija debe respetarlo:
 
 Excepciones aceptables únicamente si: (a) el usuario pide relajación explícita, o (b) las instrucciones vinculantes del propio proyecto lo imponen. Si una excepción aplica, declararla en `non-goals`.
 
-## R3 — Mantenibilidad de carpetas/archivos/naming
+### N. R3 — Mantenibilidad de carpetas/archivos/naming
 
 - **R3.1 — Coherencia de naming** con el resto del repo. Kebab-case para archivos `.md` de propuestas; `<prefijo><NNNNN>-<título-kebab>.md`.
 - **R3.2 — Una sola fuente de verdad** para datos machine-readable (plugin id, summary, permissions, presets, version, maturity, token budget). Lo manual es solo editorial.
 - **R3.3 — Naming architecture estable**: los plugins, services, contracts, helpers, tests siguen la misma jerarquía ya existente. No crear nuevas formas a menos que la propuesta justifique el cambio arquitectónico.
 - **R3.4 — Documentación actualizada** en cada cambio de superficie pública (tool list, output schema, permissions). El catálogo web se regenera desde manifests; las páginas `apps/web/src/data/pages/...` no mantienen listas de plugins a mano.
 
-## R4 — Tokens son constraints, no números a subir
+### N. R4 — Tokens son constraints, no números a subir
 
 - **R4.1** — Nunca se sube un presupuesto para hacer pasar un test. Si un preset rompe su hard budget, se reduce el coste primero.
 - **R4.2** — Toda propuesta que añada tools o schemas debe medir `staticBytes` antes/después.
 - **R4.3** — El dashboard de tokens se regenera automáticamente; `tokens:dashboard:check` debe pasar.
 
-## R5 — Invariantes como APIs/lints, no tribal knowledge
+### N. R5 — Invariantes como APIs/lints, no tribal knowledge
 
 - **R5.1** — Si dos plugins pueden necesitar la misma garantía (filesystem containment, network allowlist, process safety), esa garantía se convierte en API pública del core.
 - **R5.2** — Si una clase de bug puede reintroducirse (p. ej. `readFile(resolve(workspaceRootAbs, userPath))`), se añade un lint arquitectónico que lo bloquee en CI.
 
-## R6 — Cerrar con evidencia
+### N. R6 — Cerrar con evidencia
 
 Cada hija debe cerrar con `resolution.evidence` que incluya al menos:
 
@@ -199,18 +199,18 @@ Cada hija debe cerrar con `resolution.evidence` que incluya al menos:
 
 # Tracks y propuesta-a-propuesta
 
-## Track A — Filesystem security (P1)
+### N. Track A — Filesystem security (P1)
 
 | Propuesta | ID    | Prioridad | Hallazgos cubiertos                                                |
 |-----------|-------|-----------|---------------------------------------------------------------------|
 | `x00241`  | fix   | P1        | FS2-001 + FS2-002 (parcial) — `SafeWorkspaceReader` API pública     |
 | `x00242`  | fix   | P1        | FS2-001 — `context-for-change` containment                          |
 | `x00243`  | fix   | P1        | FS2-002 — `impact-analysis` + `tests-for-change` containment        |
-| `i00004`  | infra | P2        | FS2-003 — lint arquitectónico que bloquea nuevos escapes            |
+| `c00004`  | infra | P2        | FS2-003 — lint arquitectónico que bloquea nuevos escapes            |
 
 **Objetivo del track**: hacer **técnicamente imposible** que un plugin con permiso `filesystem-read` pueda abrir una ruta exterior al workspace. La garantía se centraliza en una API `SafeWorkspaceReader` (Track A) y se blinda con un lint arquitectónico que falla el CI si alguien la esquiva.
 
-## Track B — Concurrency (P1)
+### N. Track B — Concurrency (P1)
 
 | Propuesta | ID    | Prioridad | Hallazgos cubiertos                                                |
 |-----------|-------|-----------|---------------------------------------------------------------------|
@@ -220,19 +220,19 @@ Cada hija debe cerrar con `resolution.evidence` que incluya al menos:
 
 **Objetivo del track**: reproducir o descartar la race window entre `observation` y `rename` durante stale reclaim. Si se reproduce, rediseñar el reclaim (lease/generation, reclaim marker visible, rename protocol atómico). Nunca dos holders simultáneos bajo heartbeat concurrente, crash, stale reclaim o 3+ contenders.
 
-## Track C — Tokens (P1/P2)
+### N. Track C — Tokens (P1/P2)
 
 | Propuesta | ID     | Prioridad | Hallazgos cubiertos                                                       |
 |-----------|--------|-----------|---------------------------------------------------------------------------|
-| `i00005`  | infra  | P1        | TOK2-001 + TOK2-002 — gate CI real con ensamblado real del preset swarm   |
-| `i00006`  | infra  | P2        | TOK2-003 — `tokens:dashboard:check` en CI                                 |
+| `c00005`  | infra  | P1        | TOK2-001 + TOK2-002 — gate CI real con ensamblado real del preset swarm   |
+| `c00006`  | infra  | P2        | TOK2-003 — `tokens:dashboard:check` en CI                                 |
 | `r00018`  | refac  | P2        | TOK2-005 — reducción del coste estático de `proposals` (target <40 KB)    |
 | `r00019`  | refac  | P2        | TOK2-004 — estrategia default `adaptive` con benchmark                    |
-| `i00007`  | infra  | P2        | TOK2-006 — presupuesto explícito para `vertex`                            |
+| `c00007`  | infra  | P2        | TOK2-006 — presupuesto explícito para `vertex`                            |
 
 **Objetivo del track**: que el `swarm` real quede **<= hard budget** y preferiblemente **<= warning**; que el CI falle si el preset real supera el techo; que el dashboard tracked esté sincronizado con HEAD; que `proposals` pierda ~50% de su coste estático sin perder tipado estricto.
 
-## Track D — PRIVACY (P0 — MÁXIMO ÉNFASIS LEGAL)
+### N. Track D — PRIVACY (P0 — MÁXIMO ÉNFASIS LEGAL)
 
 | Propuesta | ID       | Prioridad | Hallazgos cubiertos                                                       |
 |-----------|----------|-----------|---------------------------------------------------------------------------|
@@ -245,18 +245,18 @@ Cada hija debe cerrar con `resolution.evidence` que incluya al menos:
 
 **Reglas R1.1–R1.7** son invariantes. Cualquier regresión aquí es P0 + escalation al owner.
 
-## Track E — Manifests (P2)
+### N. Track E — Manifests (P2)
 
 | Propuesta | ID     | Prioridad | Hallazgos cubiertos                                                |
 |-----------|--------|-----------|---------------------------------------------------------------------|
 | `f00174`  | feat   | P2        | MAN2-001 + MAN2-002 — autodiscovery + manifest obligatorio          |
 | `f00175`  | feat   | P2        | MAN2-003..006 — registry/web/docs/permissions generados             |
-| `i00008`  | infra  | P2        | MAN2-007 — validación manifest ↔ package.json + visibility          |
-| `i00009`  | infra  | P2        | MAN2-008 — validación manifest ↔ preset catalog (gate completo)     |
+| `c00008`  | infra  | P2        | MAN2-007 — validación manifest ↔ package.json + visibility          |
+| `c00009`  | infra  | P2        | MAN2-008 — validación manifest ↔ preset catalog (gate completo)     |
 
 **Objetivo del track**: que `plugin.manifest.ts` sea la **única** fuente para id, package, version, visibility, summary, tags, maturity, permissions, toolPermissions, presets, tokenBudget, dependencies, capabilities. Eliminar `MIGRATED_PLUGIN_IDS`. Registry, web catalog, docs, permission matrix y preset compatibility matrix se generan automáticamente desde manifests.
 
-## Track F — Quality (P2/P3)
+### N. Track F — Quality (P2/P3)
 
 | Propuesta | ID     | Prioridad | Hallazgos cubiertos                                                |
 |-----------|--------|-----------|---------------------------------------------------------------------|
@@ -267,16 +267,16 @@ Cada hija debe cerrar con `resolution.evidence` que incluya al menos:
 
 **Objetivo del track**: precisión (adoption ya no miente con un 25 fijo), seguridad de bytes en procesos, lifecycle de memory (watcher dispose), y coherencia entre summaries editados y membership real.
 
-## Track G — CI / gobernanza (P2)
+### N. Track G — CI / gobernanza (P2)
 
 | Propuesta | ID     | Prioridad | Hallazgos cubiertos                                                |
 |-----------|--------|-----------|---------------------------------------------------------------------|
-| `i00010`  | infra  | P2        | CI2-001 — required checks en branch policy                         |
-| `i00011`  | infra  | P2        | CI2-003 + CI2-005 — generator checks + workflow run evidence       |
+| `c00010`  | infra  | P2        | CI2-001 — required checks en branch policy                         |
+| `c00011`  | infra  | P2        | CI2-003 + CI2-005 — generator checks + workflow run evidence       |
 
 **Objetivo del track**: que ningún agente pueda dejar `develop` en rojo silenciosamente. Required checks mínimos: typecheck, tests, architecture, security, runtime verify, token budget real. Los generadores (manifests, token dashboard, web catalog) deben fallar CI si quedan desincronizados.
 
-## Track H — Surface runtime (P2)
+### N. Track H — Surface runtime (P2)
 
 | Propuesta | ID     | Prioridad | Hallazgos cubiertos                                                |
 |-----------|--------|-----------|---------------------------------------------------------------------|
@@ -329,7 +329,7 @@ Criterios de aceptación globales (verificados a través de las hijas):
 - `impact-analysis` no abre rutas exteriores (`x00243` + tests).
 - `SafeWorkspaceReader` es API pública usada por ambos plugins (`x00241`).
 - Symlink escape bloqueado (test adversarial en `x00241`).
-- El lint arquitectónico (`i00004`) falla si algún plugin futuro evade la API.
+- El lint arquitectónico (`c00004`) falla si algún plugin futuro evade la API.
 - `error-reporting` no envía tool ids externos (`x00245`).
 - `internalOnly:false` no existe en schema ni en runtime (`x00236`).
 - `mcpVertexVersion` proviene de la versión publicada, no del root `package.json` (`x00237`).
@@ -343,11 +343,11 @@ Criterios de aceptación globales (verificados a través de las hijas):
 
 ### Tokens
 
-- Real swarm <= hard budget (medición con ensamblado real, `i00005`).
-- CI falla si real swarm > hard budget (`i00005`).
-- `tokens:dashboard:check` integrado en CI (`i00006`).
+- Real swarm <= hard budget (medición con ensamblado real, `c00005`).
+- CI falla si real swarm > hard budget (`c00005`).
+- `tokens:dashboard:check` integrado en CI (`c00006`).
 - `proposals` static cost reducido a target <40 KB (`r00018`) o justificado.
-- `vertex` tiene hard/warning explícitos (`i00007`).
+- `vertex` tiene hard/warning explícitos (`c00007`).
 - Decisión de default `adaptive` documentada con benchmark (`r00019`).
 
 ### Manifests
@@ -355,8 +355,8 @@ Criterios de aceptación globales (verificados a través de las hijas):
 - Todos los plugins públicos con manifest (`f00174`).
 - `MIGRATED_PLUGIN_IDS` eliminado; autodiscovery activa (`f00174`).
 - Registry/web catalog/docs/permissions generados desde manifests (`f00175`).
-- `manifest ↔ package.json` validado en CI (`i00008`).
-- `manifest ↔ preset catalog` validado como gate completo (`i00009`).
+- `manifest ↔ package.json` validado en CI (`c00008`).
+- `manifest ↔ preset catalog` validado como gate completo (`c00009`).
 
 ### Quality
 
@@ -367,8 +367,8 @@ Criterios de aceptación globales (verificados a través de las hijas):
 
 ### CI / gobernanza
 
-- Required checks definidos en `develop` policy (`i00010`).
-- Manifest generator + token dashboard + workflow run evidence en CI (`i00011`).
+- Required checks definidos en `develop` policy (`c00010`).
+- Manifest generator + token dashboard + workflow run evidence en CI (`c00011`).
 
 ### Surface
 
@@ -383,12 +383,12 @@ Criterios de aceptación globales (verificados a través de las hijas):
 El orden refleja precedencia técnica y legal. Track D es **P0** y bloquea por defecto.
 
 1. **Track D privacidad** completo: `x00245` → `x00236` → `x00237` → `t00009`. **NO continuar con otros tracks hasta que Track D esté `done` con peer review verde.**
-2. **Track A filesystem**: `x00241` (API) → `x00242` (context-for-change) → `x00243` (impact-analysis) → `i00004` (lint). El lint (`i00004`) cierra el track.
+2. **Track A filesystem**: `x00241` (API) → `x00242` (context-for-change) → `x00243` (impact-analysis) → `c00004` (lint). El lint (`c00004`) cierra el track.
 3. **Track B concurrency**: `t00007` (repro) → `x00244` (fix) → `t00008` (property tests). El test de repro precede al fix.
-4. **Track C tokens**: `i00005` (gate real) → `i00006` (dashboard check) → `r00018` (schema diet) → `r00019` (adaptive default) → `i00007` (vertex budget).
-5. **Track E manifests**: `f00174` (autodiscovery) → `f00175` (generated artifacts) → `i00008` (validación package) → `i00009` (validación preset).
+4. **Track C tokens**: `c00005` (gate real) → `c00006` (dashboard check) → `r00018` (schema diet) → `r00019` (adaptive default) → `c00007` (vertex budget).
+5. **Track E manifests**: `f00174` (autodiscovery) → `f00175` (generated artifacts) → `c00008` (validación package) → `c00009` (validación preset).
 6. **Track F quality**: `x00238` (adoption exact) → `x00239` (utf-8) → `x00240` (memory dispose) → `r00020` (preset summaries).
-7. **Track G CI**: `i00010` (branch policy) → `i00011` (generator gates + evidence).
+7. **Track G CI**: `c00010` (branch policy) → `c00011` (generator gates + evidence).
 8. **Track H surface**: `r00021` (listChanged + bootstrap) → `f00176` (surface mode capability).
 
 Cuando q00003 y q00004 estén ambos `done` con peer review, MCP Vertex queda aproximadamente en la posición objetivo definida en la auditoría §48.

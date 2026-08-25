@@ -22,7 +22,7 @@ related:
 
 # f00174 — manifests: autodiscovery + manifest obligatorio
 
-## Problem
+## Goal
 
 Hoy solo 6 plugins tienen `plugin.manifest.ts`:
 
@@ -45,7 +45,6 @@ Esto es una **lista manual de plugins migrados** — exactamente lo opuesto a "s
 
 Reglas violadas: R3.2 (one source of truth), §11 MAN2-001.
 
-## Evidence
 
 ```ts
 // plugins/proposals/src/lib/manifest-migrated-ids.ts (aprox)
@@ -61,25 +60,22 @@ export const MIGRATED_PLUGIN_IDS = [
 
 El sistema descubre estos 6 automáticamente; el resto requiere registration manual.
 
-## Classification
 
 `CONFIRMADO / ARQUITECTURA PARCIAL`.
 
-## User impact
+## Why
 
 - Nuevo plugin: si tiene manifest, se descubre automáticamente.
 - Web/docs/registry: coherentes con HEAD.
 - Mantenedores: menos duplicación.
 
-## Privacy impact
 
 Cero.
 
-## Token impact
 
 Cero (no cambia surface directamente).
 
-## Scope
+## Non-goals
 
 **Permitido**:
 
@@ -94,13 +90,12 @@ Cero (no cambia surface directamente).
 - Cambios en plugins existentes que ya tienen manifest.
 - Cambios en la lógica de manifests en sí (esquema definido en otros lugares).
 
-## Out of scope
 
 - Generador de registry/web/docs/permissions (`f00175`).
 - Validación manifest vs package.json (`i00008`).
 - Validación manifest vs preset catalog (`i00009`).
 
-## Design
+## Architecture
 
 ### 1. Discovery
 
@@ -225,48 +220,6 @@ El sistema definitivo no tiene esta lista. El registry se carga completamente de
 
 Plugins privados internos usan el mismo schema con `visibility: 'private'`. No se exponen en web catalog ni en registry público.
 
-## Tests
-
-- **Unit**: `validatePluginManifest` con manifests válidos e inválidos.
-- **Integration**: `discoverPluginManifests` encuentra todos los manifests.
-- **Migration tests**: cada plugin migrado carga su manifest correctamente.
-- **CI**: el conteo de plugins con manifest == el conteo de plugins registrados.
-
-## Acceptance criteria
-
-- [ ] `definePluginManifest` + `validatePluginManifest` exportados desde `@mcp-vertex/core/manifest`.
-- [ ] `loadAllPluginManifests` descubre todos los manifests.
-- [ ] Los 43 plugins restantes tienen `plugin.manifest.ts`.
-- [ ] `MIGRATED_PLUGIN_IDS` eliminado del código.
-- [ ] `FIRST_PARTY_PLUGIN_INDEX` generado desde manifests.
-- [ ] Lint CI: cada plugin público con manifest.
-- [ ] Documentación: `docs/mcp-vertex/plugins/authoring/manifest.md` explica el esquema y la migración.
-- [ ] `bun run validate` verde.
-
-## Regression guards
-
-- **Lint arquitectónico** (`i00008`): valida manifest vs package.json.
-- **CI gate**: el conteo de manifests debe coincidir con plugins registrados.
-
-## Resolution evidence (template)
-
-```yaml
-resolution:
-  status: implemented
-  evidence:
-    - commit: <hash>
-    - new-files:
-        - packages/core/src/lib/manifest/discovery.ts
-        - packages/core/src/lib/manifest/validation.ts
-        - plugins/*/plugin.manifest.ts (43 plugins migrados)
-    - removed-files:
-        - plugins/proposals/src/lib/manifest-migrated-ids.ts
-    - first-party-index: regenerated
-    - tests: discovery + validation + migration verdes
-```
-
----
-
 ## Slices
 
 - global_gate: type
@@ -308,7 +261,23 @@ resolution:
   - "Lint falla si un plugin público no tiene manifest."
   - "Documentación explica esquema y migración."
 
-## acceptance
+## Acceptance
+
+- **Unit**: `validatePluginManifest` con manifests válidos e inválidos.
+- **Integration**: `discoverPluginManifests` encuentra todos los manifests.
+- **Migration tests**: cada plugin migrado carga su manifest correctamente.
+- **CI**: el conteo de plugins con manifest == el conteo de plugins registrados.
+
+
+- [ ] `definePluginManifest` + `validatePluginManifest` exportados desde `@mcp-vertex/core/manifest`.
+- [ ] `loadAllPluginManifests` descubre todos los manifests.
+- [ ] Los 43 plugins restantes tienen `plugin.manifest.ts`.
+- [ ] `MIGRATED_PLUGIN_IDS` eliminado del código.
+- [ ] `FIRST_PARTY_PLUGIN_INDEX` generado desde manifests.
+- [ ] Lint CI: cada plugin público con manifest.
+- [ ] Documentación: `docs/mcp-vertex/plugins/authoring/manifest.md` explica el esquema y la migración.
+- [ ] `bun run validate` verde.
+
 
 - 43 plugins migrados.
 - `MIGRATED_PLUGIN_IDS` eliminado.
@@ -316,7 +285,29 @@ resolution:
 
 ---
 
-## Cómo se relaciona con el plan y la auditoría
+## Notes
+
+- **Lint arquitectónico** (`i00008`): valida manifest vs package.json.
+- **CI gate**: el conteo de manifests debe coincidir con plugins registrados.
+
+
+```yaml
+resolution:
+  status: implemented
+  evidence:
+    - commit: <hash>
+    - new-files:
+        - packages/core/src/lib/manifest/discovery.ts
+        - packages/core/src/lib/manifest/validation.ts
+        - plugins/*/plugin.manifest.ts (43 plugins migrados)
+    - removed-files:
+        - plugins/proposals/src/lib/manifest-migrated-ids.ts
+    - first-party-index: regenerated
+    - tests: discovery + validation + migration verdes
+```
+
+---
+
 
 - **Plan padre**: [q00004](../../ready/q00004-plan-hardening-post-auditoria-chatgpt-sol-segunda-pasada.md), Track E.
 - **Auditoría legada**: §11 MAN2-001 + MAN2-002.

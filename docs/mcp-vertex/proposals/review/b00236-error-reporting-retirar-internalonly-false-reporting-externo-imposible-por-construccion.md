@@ -1,5 +1,5 @@
 ---
-id: x00236
+id: b00236
 title: "error-reporting — retirar internalOnly:false (breaking) — reporting externo es imposible por construcción, no configurable"
 kind: breaking
 status: review
@@ -25,7 +25,7 @@ breaking-change: true
 
 # x00236 — error-reporting: retirar `internalOnly:false`
 
-## Problem
+## Goal
 
 La API pública de `error-reporting` aún permite, **conceptualmente**:
 
@@ -43,7 +43,6 @@ Aunque el pipeline actual mantiene filtros más estrictos (DTO seguro, classifie
 
 Reglas violadas: R1.1 (privacidad por construcción), R1.2 (no por redacción), §3 auditoría.
 
-## Evidence
 
 ```ts
 // plugins/error-reporting/src/lib/contracts/constants/options.constant.ts
@@ -66,11 +65,10 @@ Reproducción conceptual:
 3. Provocar una `Error` cualquiera dentro de esa tool.
 4. **Si** en el futuro el classifier se "arregla" para aceptar ese path, el report incluirá información de `acme_hr_onboarding`. El schema ya anuncia el camino.
 
-## Classification
 
 `MEJORA / SEGURIDAD DE DISEÑO` — no hay fuga activa hoy, pero el diseño permite que aparezca.
 
-## User impact
+## Why
 
 **Neutro** en operación normal. Quien use la API verá:
 
@@ -85,7 +83,6 @@ Si en el futuro alguien pide "poder reportar errores externos" para una feature 
 2. Pasar revisión legal.
 3. No usar este flag como puerta de entrada.
 
-## Privacy impact
 
 | Antes                                          | Después                                              |
 |------------------------------------------------|------------------------------------------------------|
@@ -95,11 +92,10 @@ Si en el futuro alguien pide "poder reportar errores externos" para una feature 
 
 Refuerza R1.1 y R1.2.
 
-## Token impact
 
 Cero. No añade tools ni cambia schema de salida.
 
-## Scope
+## Non-goals
 
 **Permitido**:
 
@@ -116,13 +112,12 @@ Cero. No añade tools ni cambia schema de salida.
 - Cualquier cambio que reactive la posibilidad de reportar errores externos.
 - Cambios en el pipeline seguro (ya cubierto por `x00214`).
 
-## Out of scope
 
 - `x00245` (safe tool identity): sigue siendo necesario independiente de esta opción.
 - `x00237` (runtime version): ortogonal.
 - `t00009` (privacy adversarial): cubre la verificación final.
 
-## Design
+## Architecture
 
 ### 1. Schema
 
@@ -168,7 +163,65 @@ Ausente → silencio.
 `docs/mcp-vertex/plugins/error-reporting.md` reescribe la sección:
 
 ```md
-## Reporting policy
+
+## Slices
+
+- global_gate: type
+
+### S1 — Schema + service
+
+- **Status**: pending
+- **Files**: `plugins/error-reporting/src/lib/contracts/constants/options.constant.ts`, `plugins/error-reporting/src/lib/options.service.ts`
+- **Gate**: type
+- acceptance:
+  - "`internalOnly` eliminado del schema; warning deprecación si aparece."
+  - "Tests pasan con/sin `internalOnly` en config."
+
+### S2 — Reporter sin rama de internalOnly
+
+- **Status**: pending
+- **Files**: `plugins/error-reporting/src/lib/reporter.service.ts`
+- **Gate**: type
+- acceptance:
+  - "No existe `if (!internalOnly)` ni equivalente."
+  - "El flujo del reporter no consulta la opción."
+
+### S3 — Documentación + lint + grep test
+
+- **Status**: pending
+- **Files**: `docs/mcp-vertex/plugins/error-reporting.md`, `tools/scripts/lint/privacy-internal-only.script.ts`
+- **Gate**: type
+- acceptance:
+  - "Sección 'Reporting policy' reescrita con el invariante."
+  - "Lint añadido a `bun run validate`."
+  - "Doc grep test integrado."
+
+## Acceptance
+
+- **Unit**: `plugins/error-reporting/tests/src/lib/options.service.spec.ts` (extender).
+- **Unit**: `plugins/error-reporting/tests/src/lib/reporter.service.spec.ts` (verificar que el flujo sigue funcionando).
+- **Snapshot test**: schema de options no contiene `internalOnly` en JSON serializado.
+- **Doc test**: grep `internalOnly` en `docs/mcp-vertex/plugins/error-reporting.md` no debe encontrarlo en la sección "Configurable options" (puede aparecer solo en "removed in 2026-08-25").
+
+
+- [ ] El campo `internalOnly` ya no aparece en `ERROR_REPORTING_OPTIONS_SCHEMA`.
+- [ ] Ningún path de runtime consulta `options.internalOnly`.
+- [ ] Configuraciones con `internalOnly` producen un warning `ERR_REPORTING_OPTION_DEPRECATED` y son ignoradas.
+- [ ] `docs/mcp-vertex/plugins/error-reporting.md` reescrito: sección "Reporting policy" explica el invariante; sección "Configurable options" NO lista `internalOnly`.
+- [ ] `mcp-vertex.config.json` schema (si aplica) marca `internalOnly` como `@deprecated` con comentario explicativo.
+- [ ] Tests verdes; coverage no cae.
+- [ ] `bun run validate` verde.
+
+
+- El campo `internalOnly` ya no aparece en `ERROR_REPORTING_OPTIONS_SCHEMA`.
+- Ningún path de runtime consulta `options.internalOnly`.
+- Configuraciones con `internalOnly` producen un warning y son ignoradas.
+- Documentación reescrita explicando el invariante.
+- `bun run validate` verde.
+
+---
+
+## Notes
 
 External project data is **non-reportable by construction**.
 
@@ -206,24 +259,6 @@ The following options were removed in 2026-08-25 (`x00236`):
 | Schema de options no contiene `internalOnly`                   | Aserción de tipo                      |
 | Documentación no menciona `internalOnly` como opción           | grep sobre docs devuelve 0            |
 
-## Tests
-
-- **Unit**: `plugins/error-reporting/tests/src/lib/options.service.spec.ts` (extender).
-- **Unit**: `plugins/error-reporting/tests/src/lib/reporter.service.spec.ts` (verificar que el flujo sigue funcionando).
-- **Snapshot test**: schema de options no contiene `internalOnly` en JSON serializado.
-- **Doc test**: grep `internalOnly` en `docs/mcp-vertex/plugins/error-reporting.md` no debe encontrarlo en la sección "Configurable options" (puede aparecer solo en "removed in 2026-08-25").
-
-## Acceptance criteria
-
-- [ ] El campo `internalOnly` ya no aparece en `ERROR_REPORTING_OPTIONS_SCHEMA`.
-- [ ] Ningún path de runtime consulta `options.internalOnly`.
-- [ ] Configuraciones con `internalOnly` producen un warning `ERR_REPORTING_OPTION_DEPRECATED` y son ignoradas.
-- [ ] `docs/mcp-vertex/plugins/error-reporting.md` reescrito: sección "Reporting policy" explica el invariante; sección "Configurable options" NO lista `internalOnly`.
-- [ ] `mcp-vertex.config.json` schema (si aplica) marca `internalOnly` como `@deprecated` con comentario explicativo.
-- [ ] Tests verdes; coverage no cae.
-- [ ] `bun run validate` verde.
-
-## Regression guards
 
 - **Lint arquitectónico**: `tools/scripts/lint/privacy-internal-only.script.ts`:
   - Busca `internalOnly` en el código del reporter y falla si encuentra una rama que afecte el flujo (`if (!options.internalOnly)` o equivalente).
@@ -231,7 +266,6 @@ The following options were removed in 2026-08-25 (`x00236`):
 - **Property test**: una config con cualquier valor de `internalOnly` (true/false/0/1/"yes") produce el mismo set de reports que sin ese campo.
 - **Doc grep test** integrado en CI: `grep -nR 'internalOnly' docs/mcp-vertex/plugins/error-reporting.md` debe devolver 0 hits fuera de la sección "removed".
 
-## Resolution evidence (template)
 
 ```yaml
 resolution:
@@ -247,6 +281,13 @@ resolution:
 ```
 
 ---
+
+
+- **Plan padre**: [q00004](../../ready/q00004-plan-hardening-post-auditoria-chatgpt-sol-segunda-pasada.md), Track D (Privacidad P0).
+- **Auditoría legada**: §3 (invariante) + §4 (ER2-002).
+- **Hermanas**: `x00245` (provenance), `x00237` (version), `t00009` (adversarial suite).
+- **Predecesora**: `x00214` (DTO seguro).
+- **Principio**: §41 de la auditoría, principio 1: *"Privacy by construction, no by redaction."*
 
 ## Slices
 
@@ -280,20 +321,10 @@ resolution:
   - "Lint añadido a `bun run validate`."
   - "Doc grep test integrado."
 
-## acceptance
+## Acceptance
 
 - El campo `internalOnly` ya no aparece en `ERROR_REPORTING_OPTIONS_SCHEMA`.
 - Ningún path de runtime consulta `options.internalOnly`.
 - Configuraciones con `internalOnly` producen un warning y son ignoradas.
 - Documentación reescrita explicando el invariante.
 - `bun run validate` verde.
-
----
-
-## Cómo se relaciona con el plan y la auditoría
-
-- **Plan padre**: [q00004](../../ready/q00004-plan-hardening-post-auditoria-chatgpt-sol-segunda-pasada.md), Track D (Privacidad P0).
-- **Auditoría legada**: §3 (invariante) + §4 (ER2-002).
-- **Hermanas**: `x00245` (provenance), `x00237` (version), `t00009` (adversarial suite).
-- **Predecesora**: `x00214` (DTO seguro).
-- **Principio**: §41 de la auditoría, principio 1: *"Privacy by construction, no by redaction."*

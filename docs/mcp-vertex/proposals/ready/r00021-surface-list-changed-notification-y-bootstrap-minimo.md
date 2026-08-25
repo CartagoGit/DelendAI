@@ -21,7 +21,7 @@ related:
 
 # r00221 — surface: listChanged notification + bootstrap mínimo
 
-## Problem
+## Goal
 
 Dos problemas relacionados:
 
@@ -31,28 +31,24 @@ Dos problemas relacionados:
 
 Reglas violadas: §10 SURF2-001/002.
 
-## Evidence
 
 `r00019` cambia el default a `adaptive`; aquí validamos que el cambio funciona end-to-end.
 
-## Classification
 
 `REVISAR / MEJORA`.
 
-## User impact
+## Why
 
 - Confianza en `listChanged` funciona con clientes reales.
 - Bootstrap mide lo que cuesta.
 
-## Privacy impact
 
 Cero.
 
-## Token impact
 
 - Bootstrap debe medir < 50 KB con adaptive default.
 
-## Scope
+## Non-goals
 
 **Permitido**:
 
@@ -64,12 +60,11 @@ Cero.
 
 - Cambios en plugins.
 
-## Out of scope
 
 - Adaptive default (`r00019`).
 - Surface mode by capability (`f00176`).
 
-## Design
+## Architecture
 
 ### 1. Tests E2E con clientes reales
 
@@ -205,45 +200,6 @@ All other tools are activated on demand via `activate`.
 Bootstrap is designed to fit in **<50 KB** with `surfaceMode: 'adaptive'`.
 ```
 
-## Tests
-
-- **E2E**: 3 clientes MCP reales × 3 surface modes = 9 escenarios.
-- **Measurement**: bootstrap bytes <= 50 KB con adaptive.
-- **Regression**: si un nuevo tool entra al bootstrap por error, el test falla.
-
-## Acceptance criteria
-
-- [ ] E2E con ≥3 clientes MCP reales.
-- [ ] `listChanged` notification funciona end-to-end.
-- [ ] `measureBootstrapBytes` implementado.
-- [ ] Adaptive bootstrap <= 50 KB.
-- [ ] CI ejecuta la medición.
-- [ ] Documentación: `docs/mcp-vertex/surface/bootstrap.md` explica el flujo.
-- [ ] `bun run validate` verde.
-
-## Regression guards
-
-- **E2E test** verde con todos los clientes probados.
-- **Bootstrap measurement** verde (no excede 50 KB).
-- Si un nuevo tool entra al bootstrap, el test detecta el coste.
-
-## Resolution evidence (template)
-
-```yaml
-resolution:
-  status: implemented
-  evidence:
-    - commit: <hash>
-    - new-files:
-        - tools/scripts/test/surface-list-changed.e2e.spec.ts
-        - tools/scripts/measure/bootstrap.script.ts
-    - before/after:
-        before: "listChanged no validado contra clientes reales; bootstrap sin medir"
-        after:  "E2E verde con ≥3 clientes; bootstrap <= 50 KB medido en CI"
-```
-
----
-
 ## Slices
 
 - global_gate: type
@@ -275,7 +231,21 @@ resolution:
   - "CI ejecuta medición."
   - "Documentación."
 
-## acceptance
+## Acceptance
+
+- **E2E**: 3 clientes MCP reales × 3 surface modes = 9 escenarios.
+- **Measurement**: bootstrap bytes <= 50 KB con adaptive.
+- **Regression**: si un nuevo tool entra al bootstrap por error, el test falla.
+
+
+- [ ] E2E con ≥3 clientes MCP reales.
+- [ ] `listChanged` notification funciona end-to-end.
+- [ ] `measureBootstrapBytes` implementado.
+- [ ] Adaptive bootstrap <= 50 KB.
+- [ ] CI ejecuta la medición.
+- [ ] Documentación: `docs/mcp-vertex/surface/bootstrap.md` explica el flujo.
+- [ ] `bun run validate` verde.
+
 
 - E2E verde con ≥3 clientes.
 - Bootstrap medido y <= 50 KB.
@@ -283,7 +253,28 @@ resolution:
 
 ---
 
-## Cómo se relaciona con el plan y la auditoría
+## Notes
+
+- **E2E test** verde con todos los clientes probados.
+- **Bootstrap measurement** verde (no excede 50 KB).
+- Si un nuevo tool entra al bootstrap, el test detecta el coste.
+
+
+```yaml
+resolution:
+  status: implemented
+  evidence:
+    - commit: <hash>
+    - new-files:
+        - tools/scripts/test/surface-list-changed.e2e.spec.ts
+        - tools/scripts/measure/bootstrap.script.ts
+    - before/after:
+        before: "listChanged no validado contra clientes reales; bootstrap sin medir"
+        after:  "E2E verde con ≥3 clientes; bootstrap <= 50 KB medido en CI"
+```
+
+---
+
 
 - **Plan padre**: [q00004](../../ready/q00004-plan-hardening-post-auditoria-chatgpt-sol-segunda-pasada.md), Track H.
 - **Auditoría legada**: §10 SURF2-001 + SURF2-002.

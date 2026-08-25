@@ -23,7 +23,7 @@ related:
 
 # x00243 — impact-analysis + tests-for-change: usar SafeWorkspaceReader
 
-## Problem
+## Goal
 
 `plugins/impact-analysis/src/lib/services/impact-analysis.service.ts` tiene el mismo patrón vulnerable que `context-for-change`:
 
@@ -53,7 +53,6 @@ El mismo bug afecta a:
 
 Reglas violadas: R5.1, §5 FS2-002.
 
-## Evidence
 
 (Ver `x00241` para el patrón general; este es el caso concreto en `impact-analysis`.)
 
@@ -69,11 +68,10 @@ test('impact-analysis rejects /outside/secret.ts', async () => {
 // ↑ falla en HEAD porque el patrón actual acepta el path
 ```
 
-## Classification
 
 `CONFIRMADO POR CÓDIGO` (FS2-002).
 
-## User impact
+## Why
 
 Idéntico a `x00242` pero en el dominio de análisis de impacto:
 
@@ -81,16 +79,14 @@ Idéntico a `x00242` pero en el dominio de análisis de impacto:
 - El resultado puede incluir símbolos, referencias y tests relacionados — todo extraído de código del caller o de terceros.
 - Tests seleccionados pueden disparar ejecuciones no intencionadas si `tests_for_change` devuelve paths a ejecutar.
 
-## Privacy impact
 
 - **Class C** (project data): paths, filenames, símbolos, referencias — todos pueden fugarse.
 - Mayor superficie que `context-for-change`: `impact_analyze` se usa típicamente como input para `tests_for_change`, que **ejecuta** código.
 
-## Token impact
 
 Cero. No cambia tools ni schemas.
 
-## Scope
+## Non-goals
 
 **Permitido**:
 
@@ -105,13 +101,12 @@ Cero. No cambia tools ni schemas.
 - Cambios en el benchmark de test selection (IMP2-003).
 - Cambios en otros plugins.
 
-## Out of scope
 
 - API `SafeWorkspaceReader` (`x00241`).
 - Lint arquitectónico (`i00004`).
 - Cambios en `context-for-change` (`x00242`).
 
-## Design
+## Architecture
 
 ### 1. Reemplazar `normalizePath` por `resolve` de `SafeWorkspaceReader`
 
@@ -230,50 +225,6 @@ describe('impact-analysis — workspace containment', () => {
 
 Idénticos a `x00242`, adaptados al dominio de impact-analysis.
 
-## Tests
-
-- **Unit**: actualizar tests existentes; añadir suite `workspace-containment.spec.ts` (≥15 casos).
-- **Integration**: tests con filesystem real (symlinks, cleanup).
-- **Property**: ≥1 property test sobre paths adversariales.
-- **E2E**: `impact_analyze` con un path exterior devuelve `workspace-containment` en la respuesta estructurada.
-
-## Acceptance criteria
-
-- [ ] `normalizePath` local eliminado.
-- [ ] `readFileSync` reemplazado por versión async (cumple R5 de AGENT-BOOTSTRAP: async I/O en hot paths).
-- [ ] Reader inyectado; todas las lecturas pasan por `SafeWorkspaceReader`.
-- [ ] Suite adversarial verde: ≥15 casos rechazados.
-- [ ] Symlink chain (dentro→fuera) rechazado.
-- [ ] Reserved paths rechazados.
-- [ ] `computeImpact` y `computeTestsForChange` devuelven respuesta estructurada cuando hay containment error (no crash).
-- [ ] Documentation: `docs/mcp-vertex/plugins/impact-analysis.md` explica el comportamiento.
-- [ ] `bun run validate` verde.
-
-## Regression guards
-
-- **Lint arquitectónico** (`i00004`): bloquea nuevos `readFile` directos en el plugin.
-- **Property test**: cualquier input absoluto fuera del workspace es rechazado.
-- **Snapshot del error**: el reporte de impacto nunca incluye contenido de archivos exteriores.
-
-## Resolution evidence (template)
-
-```yaml
-resolution:
-  status: implemented
-  evidence:
-    - commit: <hash>
-    - files-modified:
-        - plugins/impact-analysis/src/lib/services/impact-analysis.service.ts
-        - plugins/impact-analysis/src/lib/**
-        - plugins/impact-analysis/tests/**
-    - before/after:
-        before: "normalizePath local con escape; readFileSync directo"
-        after:  "SafeWorkspaceReader; readFile async; errores estructurados"
-    - tests: ≥15 unit + ≥1 property
-```
-
----
-
 ## Slices
 
 - global_gate: type
@@ -309,7 +260,24 @@ resolution:
 - acceptance:
   - "Sección 'Filesystem safety' explica comportamiento."
 
-## acceptance
+## Acceptance
+
+- **Unit**: actualizar tests existentes; añadir suite `workspace-containment.spec.ts` (≥15 casos).
+- **Integration**: tests con filesystem real (symlinks, cleanup).
+- **Property**: ≥1 property test sobre paths adversariales.
+- **E2E**: `impact_analyze` con un path exterior devuelve `workspace-containment` en la respuesta estructurada.
+
+
+- [ ] `normalizePath` local eliminado.
+- [ ] `readFileSync` reemplazado por versión async (cumple R5 de AGENT-BOOTSTRAP: async I/O en hot paths).
+- [ ] Reader inyectado; todas las lecturas pasan por `SafeWorkspaceReader`.
+- [ ] Suite adversarial verde: ≥15 casos rechazados.
+- [ ] Symlink chain (dentro→fuera) rechazado.
+- [ ] Reserved paths rechazados.
+- [ ] `computeImpact` y `computeTestsForChange` devuelven respuesta estructurada cuando hay containment error (no crash).
+- [ ] Documentation: `docs/mcp-vertex/plugins/impact-analysis.md` explica el comportamiento.
+- [ ] `bun run validate` verde.
+
 
 - `normalizePath` local eliminado.
 - Reader inyectado; lecturas por `SafeWorkspaceReader`.
@@ -318,7 +286,30 @@ resolution:
 
 ---
 
-## Cómo se relaciona con el plan y la auditoría
+## Notes
+
+- **Lint arquitectónico** (`i00004`): bloquea nuevos `readFile` directos en el plugin.
+- **Property test**: cualquier input absoluto fuera del workspace es rechazado.
+- **Snapshot del error**: el reporte de impacto nunca incluye contenido de archivos exteriores.
+
+
+```yaml
+resolution:
+  status: implemented
+  evidence:
+    - commit: <hash>
+    - files-modified:
+        - plugins/impact-analysis/src/lib/services/impact-analysis.service.ts
+        - plugins/impact-analysis/src/lib/**
+        - plugins/impact-analysis/tests/**
+    - before/after:
+        before: "normalizePath local con escape; readFileSync directo"
+        after:  "SafeWorkspaceReader; readFile async; errores estructurados"
+    - tests: ≥15 unit + ≥1 property
+```
+
+---
+
 
 - **Plan padre**: [q00004](../../ready/q00004-plan-hardening-post-auditoria-chatgpt-sol-segunda-pasada.md), Track A.
 - **Auditoría legada**: §5 FS2-002, §16 IMP2-001.

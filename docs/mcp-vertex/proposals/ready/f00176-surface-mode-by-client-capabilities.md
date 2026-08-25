@@ -21,7 +21,7 @@ related:
 
 # f00176 — surface: mode by clientInfo/capabilities
 
-## Problem
+## Goal
 
 `r00019` cambia el default a `adaptive`. Pero algunos clientes MCP no soportan `notifications/tools/list_changed`, lo que rompe la experiencia (cache obsoleto).
 
@@ -29,29 +29,25 @@ Solución propuesta (SURF2-003): decidir el surface mode automáticamente según
 
 Reglas violadas: §10 SURF2-003.
 
-## Evidence
 
 Hoy, el surface mode es estático (config file). No hay decisión basada en capabilities.
 
-## Classification
 
 `IDEA → PRODUCTO`.
 
-## User impact
+## Why
 
 - Adaptive funciona con clientes compatibles.
 - Native/compact fallback automático para clientes que no soportan `listChanged`.
 - No requiere configuración manual.
 
-## Privacy impact
 
 Cero.
 
-## Token impact
 
 Cero (no añade tools).
 
-## Scope
+## Non-goals
 
 **Permitido**:
 
@@ -64,12 +60,11 @@ Cero (no añade tools).
 - Cambiar el handshake MCP.
 - Cambiar en plugins.
 
-## Out of scope
 
 - Adaptive default (`r00019`).
 - ListChanged validation (`r00221`).
 
-## Design
+## Architecture
 
 ### 1. Detección de capabilities
 
@@ -173,46 +168,6 @@ Para análisis futuro (sin enviar a ningún lado):
 // Esto NO se envía a un servidor externo.
 ```
 
-## Tests
-
-- **Unit**: `detectCapabilities` con varios `clientInfo` + `initializeResponse`.
-- **Unit**: `decideSurfaceModeFromCapabilities` con varias combinaciones.
-- **Override**: config explícito toma precedencia.
-- **E2E**: handshake con un cliente real → surface mode correcto.
-
-## Acceptance criteria
-
-- [ ] `detectCapabilities` implementado y exportado.
-- [ ] `decideSurfaceModeFromCapabilities` implementado y exportado.
-- [ ] Override explícito respetado.
-- [ ] Logging en startup.
-- [ ] Tests verdes.
-- [ ] Documentación: `docs/mcp-vertex/surface/mode-decision.md` explica el flujo.
-- [ ] `bun run validate` verde.
-
-## Regression guards
-
-- **E2E test** con cliente conocido (claude-code) → adaptive.
-- **E2E test** con cliente simulado sin listChanged → native o compact.
-- **Property test**: cualquier combinación de capabilities produce un mode válido.
-
-## Resolution evidence (template)
-
-```yaml
-resolution:
-  status: implemented
-  evidence:
-    - commit: <hash>
-    - new-files:
-        - packages/core/src/lib/surface/client-capabilities.ts
-        - packages/core/src/lib/surface/decide-mode.ts
-    - before/after:
-        before: "Surface mode estático desde config"
-        after:  "Surface mode dinámico según capabilities del cliente (con override)"
-```
-
----
-
 ## Slices
 
 - global_gate: type
@@ -235,7 +190,22 @@ resolution:
   - "Tests verdes."
   - "Documentación."
 
-## acceptance
+## Acceptance
+
+- **Unit**: `detectCapabilities` con varios `clientInfo` + `initializeResponse`.
+- **Unit**: `decideSurfaceModeFromCapabilities` con varias combinaciones.
+- **Override**: config explícito toma precedencia.
+- **E2E**: handshake con un cliente real → surface mode correcto.
+
+
+- [ ] `detectCapabilities` implementado y exportado.
+- [ ] `decideSurfaceModeFromCapabilities` implementado y exportado.
+- [ ] Override explícito respetado.
+- [ ] Logging en startup.
+- [ ] Tests verdes.
+- [ ] Documentación: `docs/mcp-vertex/surface/mode-decision.md` explica el flujo.
+- [ ] `bun run validate` verde.
+
 
 - Decisión dinámica implementada.
 - Override explícito funciona.
@@ -243,7 +213,28 @@ resolution:
 
 ---
 
-## Cómo se relaciona con el plan y la auditoría
+## Notes
+
+- **E2E test** con cliente conocido (claude-code) → adaptive.
+- **E2E test** con cliente simulado sin listChanged → native o compact.
+- **Property test**: cualquier combinación de capabilities produce un mode válido.
+
+
+```yaml
+resolution:
+  status: implemented
+  evidence:
+    - commit: <hash>
+    - new-files:
+        - packages/core/src/lib/surface/client-capabilities.ts
+        - packages/core/src/lib/surface/decide-mode.ts
+    - before/after:
+        before: "Surface mode estático desde config"
+        after:  "Surface mode dinámico según capabilities del cliente (con override)"
+```
+
+---
+
 
 - **Plan padre**: [q00004](../../ready/q00004-plan-hardening-post-auditoria-chatgpt-sol-segunda-pasada.md), Track H.
 - **Auditoría legada**: §10 SURF2-003.
