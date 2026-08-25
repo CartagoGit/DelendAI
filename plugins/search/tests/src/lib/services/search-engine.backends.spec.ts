@@ -1,3 +1,13 @@
+import {
+	mkdirSync,
+	mkdtempSync,
+	rmSync,
+	symlinkSync,
+	writeFileSync,
+} from 'node:fs';
+import { dirname, join } from 'node:path';
+import { tmpdir } from 'node:os';
+
 import { describe, expect, it } from 'vitest';
 
 import {
@@ -17,6 +27,12 @@ import type {
 	ISearchBackend,
 	ISearchResult,
 } from '@mcp-vertex/search/lib/services/search-engine.types';
+
+const write = (root: string, rel: string, body: string): void => {
+	const abs = join(root, rel);
+	mkdirSync(dirname(abs), { recursive: true });
+	writeFileSync(abs, body, 'utf8');
+};
 
 const stubBackend = (
 	id: string,
@@ -88,6 +104,40 @@ describe('search-engine dispatcher (Solid Strategy)', async () => {
 				truncated: false,
 				scanned: 0,
 			});
+		});
+
+		it('rejects explicit symlink roots before invoking rg', async () => {
+			const root = mkdtempSync(join(tmpdir(), 'search-rg-root-'));
+			const outsideRoot = mkdtempSync(
+				join(tmpdir(), 'search-rg-outside-'),
+			);
+			try {
+				write(root, 'src/a.ts', 'export const safe = true;\n');
+				write(
+					outsideRoot,
+					'secret.ts',
+					'export const leaked = true;\n',
+				);
+				symlinkSync(outsideRoot, join(root, 'linked-outside'));
+				const rg = await createRgBackend({
+					rgAvailable: async () => true,
+				});
+				const result = await rg.execute({
+					workspaceRootAbs: root,
+					query: 'leaked',
+					options: { roots: ['linked-outside'] },
+				});
+				expect(result).toEqual({
+					query: 'leaked',
+					hits: [],
+					truncated: false,
+					scanned: 0,
+					usedRg: true,
+				});
+			} finally {
+				rmSync(root, { recursive: true, force: true });
+				rmSync(outsideRoot, { recursive: true, force: true });
+			}
 		});
 	});
 

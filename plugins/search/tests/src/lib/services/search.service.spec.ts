@@ -1,4 +1,10 @@
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import {
+	mkdirSync,
+	mkdtempSync,
+	rmSync,
+	symlinkSync,
+	writeFileSync,
+} from 'node:fs';
 import { dirname, join } from 'node:path';
 import { tmpdir } from 'node:os';
 
@@ -17,8 +23,10 @@ const write = (root: string, rel: string, body: string): void => {
 
 describe('searchWorkspace', async () => {
 	let root = '';
+	let outsideRoot = '';
 	beforeEach(() => {
 		root = mkdtempSync(join(tmpdir(), 'search-'));
+		outsideRoot = mkdtempSync(join(tmpdir(), 'search-outside-'));
 		write(
 			root,
 			'src/a.ts',
@@ -27,8 +35,12 @@ describe('searchWorkspace', async () => {
 		write(root, 'src/b.md', '# Title\nmentions foo in prose\n');
 		write(root, 'node_modules/dep/index.js', 'foo everywhere foo\n');
 		write(root, 'data.bin.png', 'foo binary not matched by ext\n');
+		write(outsideRoot, 'secret.ts', 'export const foo = 99;\n');
 	});
-	afterEach(() => rmSync(root, { recursive: true, force: true }));
+	afterEach(() => {
+		rmSync(root, { recursive: true, force: true });
+		rmSync(outsideRoot, { recursive: true, force: true });
+	});
 
 	it('finds matches with file (relative) and 1-based line numbers', async () => {
 		const res = await searchWorkspace(root, 'foo');
@@ -72,7 +84,18 @@ describe('searchWorkspace', async () => {
 		});
 		expect(res.scanned).toBe(0);
 		expect(res.diagnostic).toBeDefined();
-		expect(res.diagnostic).toContain('workspace-relative');
+		expect(res.diagnostic).toContain('stay inside the workspace');
+	});
+
+	it('rejects roots that lexically stay inside the workspace but resolve outside via symlink', async () => {
+		symlinkSync(outsideRoot, join(root, 'linked-outside'));
+		const res = await searchWorkspace(root, 'foo', {
+			roots: ['linked-outside'],
+		});
+		expect(res.scanned).toBe(0);
+		expect(res.hits).toEqual([]);
+		expect(res.diagnostic).toContain('linked-outside');
+		expect(res.diagnostic).toContain('stay inside the workspace');
 	});
 
 	it('a00063: no diagnostic when files were actually scanned', async () => {

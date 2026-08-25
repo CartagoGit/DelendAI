@@ -5,10 +5,13 @@
  * (`project-health.service.ts`) turns these signals into the compact
  * summary + lazy domain hints; the real domain tools stay on-demand.
  */
-import { readdir, readFile, stat } from 'node:fs/promises';
-import { basename, extname, join } from 'node:path';
+import { basename, extname } from 'node:path';
 
-import type { FindingSeverity, IFileReader } from '@mcp-vertex/core/public';
+import {
+	SafeWorkspaceReader,
+	type FindingSeverity,
+	type IFileReader,
+} from '@mcp-vertex/core/public';
 import { resolveScopes } from '@mcp-vertex/quality/public';
 import { scanMarkers } from '@mcp-vertex/tech-debt/public';
 
@@ -64,78 +67,70 @@ const SUSPICIOUS_FILE_RE =
 const clampScore = (value: number): number =>
 	Math.max(0, Math.min(100, Math.round(value)));
 
-const createReader = (workspaceRootAbs: string): IFileReader => ({
-	readFile: async (filePath: string) => {
-		try {
-			return await readFile(join(workspaceRootAbs, filePath), 'utf8');
-		} catch {
-			return undefined;
-		}
-	},
-	exists: async (filePath: string) => {
-		try {
-			await readFile(join(workspaceRootAbs, filePath), 'utf8');
-			return true;
-		} catch {
-			return false;
-		}
-	},
-	listDir: async (relativePath: string) => {
-		try {
-			return await readdir(join(workspaceRootAbs, relativePath), 'utf8');
-		} catch {
-			return [];
-		}
-	},
-});
+const createReader = (workspaceRootAbs: string): IFileReader => {
+	const reader = new SafeWorkspaceReader(workspaceRootAbs);
+	return {
+		readFile: async (filePath: string) => {
+			try {
+				return (await reader.readText(filePath)).content;
+			} catch {
+				return undefined;
+			}
+		},
+		exists: async (filePath: string) => {
+			try {
+				return (await reader.exists(filePath)) !== null;
+			} catch {
+				return false;
+			}
+		},
+		listDir: async (relativePath: string) => {
+			try {
+				const listing = await reader.list(relativePath);
+				return listing.entries.map((entry) =>
+					basename(entry.path.relativePath),
+				);
+			} catch {
+				return [];
+			}
+		},
+	};
+};
 
 const hasConfig = async (
-	workspaceRootAbs: string,
+	reader: SafeWorkspaceReader,
 	paths: readonly string[],
 ): Promise<boolean> => {
 	for (const path of paths) {
-		try {
-			await readFile(join(workspaceRootAbs, path), 'utf8');
-			return true;
-		} catch {
-			// Continue.
-		}
+		if ((await reader.exists(path)) !== null) return true;
 	}
 	return false;
 };
 
 const collectSampleFiles = async (
-	workspaceRootAbs: string,
+	reader: SafeWorkspaceReader,
 	limit: number,
 	includeAllExtensions: boolean,
 ): Promise<string[]> => {
-	const queue: Array<{ abs: string; rel: string }> =
-		PROJECT_HEALTH_SAMPLE_ROOTS.map((root) => ({
-			abs: join(workspaceRootAbs, root),
-			rel: root,
-		}));
+	const queue: string[] = [...PROJECT_HEALTH_SAMPLE_ROOTS];
 	const collected: string[] = [];
 	while (queue.length > 0 && collected.length < limit) {
 		const next = queue.shift();
 		if (next === undefined) break;
-		let entries: readonly string[] = [];
+		let entries: Awaited<
+			ReturnType<SafeWorkspaceReader['list']>
+		>['entries'] = [];
 		try {
-			entries = await readdir(next.abs, 'utf8');
+			entries = (await reader.list(next)).entries;
 		} catch {
 			continue;
 		}
-		for (const entryName of entries) {
+		for (const entry of entries) {
+			const entryName = basename(entry.path.relativePath);
 			if (PROJECT_HEALTH_IGNORE_DIRS.has(entryName)) continue;
-			const relPath = `${next.rel}/${entryName}`;
-			const absPath = join(next.abs, entryName);
-			let isDirectory = false;
-			try {
-				isDirectory = (await stat(absPath)).isDirectory();
-			} catch {
-				continue;
-			}
-			if (isDirectory) {
-				queue.push({ abs: absPath, rel: relPath });
+			const relPath = entry.path.relativePath;
+			if (entry.stats.isDirectory()) {
+				queue.push(relPath);
 				continue;
 			}
 			if (
@@ -165,14 +160,11 @@ const scoreDebt = (severityCounts: readonly FindingSeverity[]): number => {
 };
 
 const detectLockfile = async (
-	workspaceRootAbs: string,
+	reader: SafeWorkspaceReader,
 ): Promise<string | undefined> => {
 	for (const candidate of LOCKFILES) {
-		try {
-			await readFile(join(workspaceRootAbs, candidate), 'utf8');
+		if ((await reader.exists(candidate)) !== null) {
 			return candidate;
-		} catch {
-			// Continue.
 		}
 	}
 	return undefined;
@@ -194,15 +186,16 @@ const buildScore = (
 export const summarizeSignals = async (
 	options: IProjectHealthToolOptions,
 ): Promise<IProjectHealthSignals> => {
-	const lockfile = await detectLockfile(options.workspaceRootAbs);
+	const safeReader = new SafeWorkspaceReader(options.workspaceRootAbs);
+	const lockfile = await detectLockfile(safeReader);
 	const reader = createReader(options.workspaceRootAbs);
 	const resolvedScopes = Object.keys(await resolveScopes(reader, {})).sort(
 		(left, right) => left.localeCompare(right),
 	);
-	const lintConfig = await hasConfig(options.workspaceRootAbs, LINT_CONFIGS);
-	const testConfig = await hasConfig(options.workspaceRootAbs, TEST_CONFIGS);
+	const lintConfig = await hasConfig(safeReader, LINT_CONFIGS);
+	const testConfig = await hasConfig(safeReader, TEST_CONFIGS);
 	const securityPaths = await collectSampleFiles(
-		options.workspaceRootAbs,
+		safeReader,
 		PROJECT_HEALTH_MAX_SECURITY_PATHS,
 		true,
 	);
@@ -210,16 +203,17 @@ export const summarizeSignals = async (
 		SUSPICIOUS_FILE_RE.test(basename(path)),
 	);
 	const markerPaths = await collectSampleFiles(
-		options.workspaceRootAbs,
+		safeReader,
 		PROJECT_HEALTH_MAX_MARKER_FILES,
 		false,
 	);
 	const markerFiles = await Promise.all(
 		markerPaths.map(async (path) => ({
 			path,
-			content: (
-				await readFile(join(options.workspaceRootAbs, path), 'utf8')
-			).slice(0, PROJECT_HEALTH_MARKER_CONTENT_LIMIT),
+			content: (await safeReader.readText(path)).content.slice(
+				0,
+				PROJECT_HEALTH_MARKER_CONTENT_LIMIT,
+			),
 		})),
 	);
 	const findings = scanMarkers(markerFiles);

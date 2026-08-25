@@ -1,8 +1,8 @@
 /** Cheap quality-policy aggregator only: pure helpers + config reads, never runners. */
-import { readdir, readFile, stat } from 'node:fs/promises';
-import { extname, join } from 'node:path';
+import { basename, extname, join } from 'node:path';
 
 import {
+	SafeWorkspaceReader,
 	createWorkspaceFileReader,
 	parseConfigFile,
 	type IFileReader,
@@ -50,10 +50,10 @@ interface IWorkspaceConfigSignals {
 const readWorkspaceSignals = async (
 	workspaceRootAbs: string,
 ): Promise<IWorkspaceConfigSignals> => {
-	const raw = await readFile(
-		join(workspaceRootAbs, 'mcp-vertex.config.json'),
-		'utf8',
-	).catch(() => undefined);
+	const raw = await new SafeWorkspaceReader(workspaceRootAbs)
+		.readText('mcp-vertex.config.json')
+		.then((result) => result.content)
+		.catch(() => undefined);
 	const parsed = parseConfigFile(raw);
 	const plugins = parsed.plugins ?? {};
 	const testPolicyOptions = plugins['test-policy']?.options as
@@ -95,33 +95,26 @@ const readWorkspaceSignals = async (
 const collectSamplePaths = async (
 	workspaceRootAbs: string,
 ): Promise<readonly string[]> => {
-	const queue: Array<{ absolute: string; relative: string }> =
-		QUALITY_POLICY_SAMPLE_ROOTS.map((root) => ({
-			absolute: join(workspaceRootAbs, root),
-			relative: root,
-		}));
+	const reader = new SafeWorkspaceReader(workspaceRootAbs);
+	const queue: string[] = [...QUALITY_POLICY_SAMPLE_ROOTS];
 	const collected: string[] = [];
 	while (queue.length > 0 && collected.length < QUALITY_POLICY_SAMPLE_LIMIT) {
 		const next = queue.shift();
 		if (next === undefined) break;
-		let entries: readonly string[] = [];
+		let entries: Awaited<
+			ReturnType<SafeWorkspaceReader['list']>
+		>['entries'] = [];
 		try {
-			entries = await readdir(next.absolute, 'utf8');
+			entries = (await reader.list(next)).entries;
 		} catch {
 			continue;
 		}
-		for (const entryName of entries) {
+		for (const entry of entries) {
+			const entryName = basename(entry.path.relativePath);
 			if (entryName === 'node_modules' || entryName === 'dist') continue;
-			const absolutePath = join(next.absolute, entryName);
-			const relativePath = `${next.relative}/${entryName}`;
-			let currentStat: Awaited<ReturnType<typeof stat>>;
-			try {
-				currentStat = await stat(absolutePath);
-			} catch {
-				continue;
-			}
-			if (currentStat.isDirectory()) {
-				queue.push({ absolute: absolutePath, relative: relativePath });
+			const relativePath = entry.path.relativePath;
+			if (entry.stats.isDirectory()) {
+				queue.push(relativePath);
 				continue;
 			}
 			if (!QUALITY_POLICY_TYPESCRIPT_EXTENSIONS.has(extname(entryName))) {
@@ -266,9 +259,10 @@ export const buildQualityPolicyPayload = async (
 	args: IQualityPolicyToolArgs,
 	options: IQualityPolicyToolOptions,
 ): Promise<IQualityPolicyOutput> => {
+	const safeReader = new SafeWorkspaceReader(options.workspaceRootAbs);
 	const reader = createWorkspaceFileReader({
 		root: options.workspaceRootAbs,
-		resolve: (path: string) => join(options.workspaceRootAbs, path),
+		resolve: (path: string) => safeReader.resolve(path).absolutePath,
 	});
 	const workspaceSignals = await readWorkspaceSignals(
 		options.workspaceRootAbs,
