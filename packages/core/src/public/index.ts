@@ -52,6 +52,14 @@ export type {
 	IKnowledgeEntry,
 	ISkillEntry,
 } from '../lib/contracts/interfaces/knowledge.interface';
+export type {
+	ISafeToolIdentity,
+	IToolIdentityRegistry,
+	IToolRegistryEntry,
+	SafeToolCategory,
+	SafeToolId,
+	ToolOwner,
+} from '../lib/contracts/interfaces/safe-tool-identity.interface';
 export type { IPluginConfigExample } from '../lib/contracts/interfaces/plugin-config-example.interface';
 export type { IMcpVertexProjectMetadata } from '../lib/contracts/interfaces/project-metadata.interface';
 export type {
@@ -154,6 +162,7 @@ export {
 	classifyOrigin,
 	isFirstPartySpecifier,
 } from '../lib/plugins/classify-origin';
+export { resolvePublicToolIdentity } from '../lib/contracts/resolvers/safe-tool-identity.resolver';
 export { diagnoseWorkspaceLayout } from '../lib/plugins/diagnose-workspace-layout';
 export {
 	CONFIG_FILE_SCHEMA,
@@ -354,6 +363,17 @@ export {
 	resolveWorkspaceContained,
 } from '../lib/shared/contain-path';
 export type { IContainedPath } from '../lib/shared/contain-path';
+export { SafeWorkspaceReader } from '../lib/filesystem/safe-workspace-reader';
+export { WorkspaceContainmentError } from '../lib/filesystem/safe-workspace-reader.errors';
+export type {
+	ContainedPathResult,
+	ISafeWorkspaceReader,
+	SafeListEntry,
+	SafeListResult,
+	SafeReadResult,
+	SafeStatResult,
+	WorkspaceContainmentReason,
+} from '../lib/filesystem/safe-workspace-reader.types';
 export { joinUnderRoot } from '../lib/shared/join-under-root';
 export { joinRel } from '../lib/shared/paths';
 // f00087 S2: batch atomic writer for consumers that want to apply
