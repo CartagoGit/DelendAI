@@ -567,13 +567,16 @@ resolution:
 
 ### S1 — Tipos + interfaz pública
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/src/lib/filesystem/safe-workspace-reader.types.ts`, `packages/core/src/public.ts`
 - **Gate**: type
 - acceptance:
   - "`ISafeWorkspaceReader`, `ContainedPathResult`, `SafeReadResult`, etc., exportados."
   - "Documentación JSDoc completa."
-
+- review-state: done
+- review-implementer: swarm-implementer
+- review-reviewer: orchestrator-fase1-review
+- review-log: approved by orchestrator-fase1-review — Fase 1 review 2026-08-25: validate verde, mecanismo verificado empíricamente contra git config real.
 ### S2 — Implementación SafeWorkspaceReader
 
 - **Status**: pending

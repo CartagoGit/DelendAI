@@ -2,7 +2,7 @@
 id: x00228
 title: "client: versión inyectada, payload validation opcional y errores de transporte"
 kind: fix
-status: review
+status: done
 type: proposal
 track: core
 date: 2026-08-24
@@ -43,7 +43,10 @@ Una versión hardcoded en el anuncio del client es un bug menor pero sintomátic
 - **Gate**: type
 - acceptance:
   - "La versión anunciada se genera desde package metadata (CLIEN-001, REL-004)."
-
+- review-state: done
+- review-implementer: swarm-implementer
+- review-reviewer: orchestrator-fase1-review
+- review-log: approved by orchestrator-fase1-review — Fase 1 review 2026-08-25: regresión de mensaje corregida + tests nuevos; validate verde.
 ### S2 — Payload validation opcional y errores de transporte
 - **Status**: done
 - **Files**: `packages/client/src/lib/transport/mcp-stdio-client.ts`

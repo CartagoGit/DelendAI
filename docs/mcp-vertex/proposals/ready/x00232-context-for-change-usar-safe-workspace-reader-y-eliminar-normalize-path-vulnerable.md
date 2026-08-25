@@ -281,14 +281,17 @@ resolution:
 
 ### S1 — Migración a SafeWorkspaceReader
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/context-for-change/src/lib/services/context-for-change.service.ts`, `plugins/context-for-change/src/lib/**`
 - **Gate**: type
 - acceptance:
   - "`normalizePath` local eliminado."
   - "Reader inyectado en constructor; todas las lecturas pasan por él."
   - "Errores mapeados a `ContextForChangeError` con info útil."
-
+- review-state: done
+- review-implementer: swarm-implementer
+- review-reviewer: orchestrator-fase1-review
+- review-log: approved by orchestrator-fase1-review — Fase 1 review 2026-08-25: validate verde.
 ### S2 — Tests adversariales
 
 - **Status**: pending

@@ -2,7 +2,7 @@
 id: x00227
 title: "config: defaults project-agnostic y project analyzer como fuente"
 kind: fix
-status: review
+status: done
 type: proposal
 track: core
 date: 2026-08-24
@@ -43,7 +43,10 @@ Defaults como `bun run validate` o `docs/mcp-vertex` rompen la promesa project-a
 - acceptance:
   - "Los defaults no hardcodean docs/mcp-vertex ni bun run validate (CFG-001)."
   - "La config específica del repo se mueve a la config del repo."
-
+- review-state: done
+- review-implementer: swarm-implementer
+- review-reviewer: orchestrator-fase1-review
+- review-log: approved by orchestrator-fase1-review — Fase 1 review 2026-08-25: validate verde.
 ### S2 — Project analyzer como fuente de defaults
 - **Status**: done
 - **Files**: `packages/core/src/lib/config/detect-stack.ts`
