@@ -3,7 +3,7 @@ id: t00015
 title: "Plugin lifecycle — regression suite (DAG, cycle, rollback, AbortSignal, timeout)"
 kind: test
 type: proposal
-status: ready
+status: review
 track: regression
 date: 2026-08-25
 plan-parent: q00005
@@ -16,6 +16,8 @@ related:
     - x00240 # lifecycle dispose (already closed)
     - plugins/usage-tracking/tests/src/lib/lifecycle-races.spec.ts (existing test)
     - packages/core/src/lib/lifecycle/
+shipped-in:
+    - 44e9cc529bcce5853d3fb5c024a9bc2515a8fe05 # test(lifecycle): t00015 — plugin lifecycle DAG/cycle/rollback/AbortSignal
 ---
 
 # t00015 — Plugin lifecycle regression suite

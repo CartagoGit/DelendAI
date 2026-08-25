@@ -3,7 +3,7 @@ id: f00178
 title: "Pack smoke external install — extender a TODOS los presets distribuibles"
 kind: feat
 type: proposal
-status: ready
+status: review
 track: packaging
 date: 2026-08-25
 plan-parent: q00005
@@ -17,6 +17,8 @@ related:
     - r00024 # PRESET_METADATA from real measurement
     - tools/scripts/smoke/pack.script.ts # existing tarball smoke
     - tools/scripts/release/release-plan.ts # PUBLISH_ORDER
+shipped-in:
+    - 9d943405620cfac03086cc0f84956fe900425d4a # feat(smoke): f00178 — pack smoke for all 9 distribuible presets
 ---
 
 # f00178 — Pack smoke external install para todos los presets distribuibles
