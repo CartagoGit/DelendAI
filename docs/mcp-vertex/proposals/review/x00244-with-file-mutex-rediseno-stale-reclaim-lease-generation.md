@@ -2,7 +2,7 @@
 id: x00244
 title: "with-file-mutex — rediseño del stale reclaim con lease/generation + reclaim marker visible (MUT2-001)"
 kind: fix
-status: ready
+status: review
 type: proposal
 track: concurrency
 date: 2026-08-25
@@ -246,7 +246,7 @@ describe('with-file-mutex — lease/generation', () => {
 - review-log: approved by orchestrator-fase1-review — Fase 1 review 2026-08-25: validate verde.
 ### S2 — Reclaim marker + grace period
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/src/lib/shared/with-file-mutex.ts`
 - **Gate**: type
 - acceptance:
@@ -256,7 +256,7 @@ describe('with-file-mutex — lease/generation', () => {
 
 ### S3 — Tests actualizados
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/tests/src/lib/shared/with-file-mutex.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -270,13 +270,13 @@ describe('with-file-mutex — lease/generation', () => {
 - **Property**: `t00008` (siguiente propuesta) verifica invariantes.
 
 
-- [ ] Lock file incluye `generation` monotónico.
-- [ ] Heartbeat incrementa `generation`.
-- [ ] Reclaim usa marker visible + grace period + re-verificación.
-- [ ] `t00007` pasa verde (race confirmado → race cerrado).
-- [ ] API pública sin cambios.
-- [ ] Tests existentes siguen pasando.
-- [ ] Documentación interna explica el invariante.
+- [x] Lock file incluye `generation` monotónico.
+- [x] Heartbeat incrementa `generation`.
+- [x] Reclaim usa marker visible + grace period + re-verificación.
+- [x] `t00007` pasa verde (race confirmado → race cerrado).
+- [x] API pública sin cambios.
+- [x] Tests existentes siguen pasando.
+- [x] Documentación interna explica el invariante.
 - [ ] `bun run validate` verde.
 
 
@@ -292,6 +292,7 @@ describe('with-file-mutex — lease/generation', () => {
 - **Test `t00007`** continua verificación.
 - **Property tests `t00008`** verifican invariantes.
 - **Métricas `MUT2-002`** observan contention empíricamente.
+- `bun run validate` queda bloqueado por cambios ajenos en formato y por `plugins/context-for-change/src/lib/services/context-for-change.service.ts` (`isAbsolute` no resuelto), fuera de este slice.
 
 
 ```yaml
@@ -301,10 +302,17 @@ resolution:
     - commit: <hash>
     - files-modified:
         - packages/core/src/lib/shared/with-file-mutex.ts
+    - packages/core/tests/src/lib/shared/with-file-mutex.race.spec.ts
+    - packages/core/tests/src/lib/shared/with-file-mutex.property.spec.ts
     - before/after:
         before: "Reclaim directo con rename; race window entre observation y rename"
         after:  "Lease + generation; reclaim marker + grace period + re-verificación"
-    - tests: t00007 verde, t00008 verde (verificaciones separadas)
+  - tests:
+    - "bun x vitest run packages/core/tests/src/lib/shared/with-file-mutex.spec.ts packages/core/tests/src/lib/shared/with-file-mutex-reclaim.spec.ts packages/core/tests/src/lib/shared/with-file-mutex.race.spec.ts packages/core/tests/src/lib/shared/with-file-mutex.property.spec.ts"
+    - "bun x tsc -p tsconfig.json --noEmit"
+  - validate:
+    status: blocked-external
+    reason: "Formato pendiente en archivos ajenos y error externo de context-for-change fuera del mutex."
 ```
 
 ---
