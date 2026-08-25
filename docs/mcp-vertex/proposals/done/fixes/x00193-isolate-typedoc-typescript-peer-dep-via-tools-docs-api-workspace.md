@@ -2,7 +2,7 @@
 id: x00193
 title: "Two more pre-existing CI breaks unmasked by x00192: Node-vs-Bun plugin resolution gap + typedoc/TypeScript-7 incompatibility"
 kind: fix
-status: review
+status: done
 type: proposal
 track: ci+audit-followup
 date: 2026-07-30
@@ -48,7 +48,10 @@ Both are required CI checks blocking every PR in this repo, including all 11 cur
   - "`tools/scripts/smoke/cli.script.ts` and the CI's 'Smoke — Node runs the compiled CLI' step both pass under real Node"
 - implementation:
   - "Verificado 2026-08-24 con Node v26.5.1: `node packages/core/dist/cli.js --check` carga los plugins del preset por defecto sin errores `Cannot find package`; `tools/scripts/smoke/cli.script.ts` sirve el CLI compilado sobre stdio (20 core tools). La brecha ya no se reproduce; la instalación real de paquetes de plugin bajo Node la cubre el tarball-install e2e (verify:external-install)."
-
+- review-state: done
+- review-implementer: swarm-implementer
+- review-reviewer: orchestrator-fase1-review
+- review-log: approved by orchestrator-fase1-review — Fase 1 review 2026-08-25: validate verde.
 ### S2 — Isolate typedoc's TypeScript peer dependency
 - **Status**: done
 - **ShippedIn**: 0a16172f # fix(x00193): isolate typedoc's typescript peer dep via tools/docs-api workspace

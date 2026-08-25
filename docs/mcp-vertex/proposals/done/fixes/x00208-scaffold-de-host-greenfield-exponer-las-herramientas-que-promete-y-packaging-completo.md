@@ -2,7 +2,7 @@
 id: x00208
 title: "Scaffold de host greenfield: exponer las herramientas que promete y packaging completo"
 kind: fix
-status: review
+status: done
 type: proposal
 track: scaffold
 date: 2026-08-23
@@ -38,7 +38,10 @@ Auditoría 2026-08-24 (hallazgos A1, A3, A5, A6, A7): `createMcpProject` llama `
   - "El greenfield emite package.json, tsconfig.json y README con instrucciones de arranque."
   - "Se emite .codex/config.toml junto a los agentes Codex."
   - "El texto de instrucciones y agentes solo nombra herramientas que el host realmente expone."
-
+- review-state: done
+- review-implementer: swarm-implementer
+- review-reviewer: orchestrator-fase1-review
+- review-log: approved by orchestrator-fase1-review — Fase 1 review 2026-08-25: validate verde.
 ### S2 — Una sola estrategia de mcp.json
 - **Status**: done
 - **Files**: `packages/core/src/lib/scaffold/scaffold-host.ts`, `packages/core/src/lib/scaffold/detect-existing-install.ts`

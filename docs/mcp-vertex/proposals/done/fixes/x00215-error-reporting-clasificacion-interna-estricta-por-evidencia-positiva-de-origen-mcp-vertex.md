@@ -55,7 +55,8 @@ El marcador `/plugins/` es excesivamente genérico: un consumidor con `/home/emp
   - "McpVertexErrorCode cubre las clases de fallo internas conocidas (PLUGIN_REGISTER_TIMEOUT, etc.)."
   - "McpVertexInternalError expone code/packageId/componentId/safeContext inmutable."
   - "La taxonomía de clasificación de issues (14 valores) vive como constante tipada `IssueClassification`."
-
+- review-state: in_review
+- review-implementer: swarm-implementer
 ### S2 — Clasificador por evidencia positiva
 - **Status**: done
 - **Files**: `plugins/error-reporting/src/lib/internal-classifier.helper.ts`

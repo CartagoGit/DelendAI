@@ -2,7 +2,7 @@
 id: v00124
 title: "memory: freshness event-driven, debounce de invalidaciones y métricas de hit-rate"
 kind: perf
-status: review
+status: done
 type: proposal
 track: memory-mcp
 date: 2026-08-24
@@ -44,7 +44,10 @@ El refresco global en cada tool call añade I/O y cálculo sin aportar frescura 
 - acceptance:
   - "El refresh se dispara por mutation/checkpoint/mtime, no en cada tool call (MEM-001)."
   - "Debounce de 100-500 ms evita lecturas simultáneas repetidas (MEM-002)."
-
+- review-state: done
+- review-implementer: swarm-implementer
+- review-reviewer: orchestrator-fase1-review
+- review-log: approved by orchestrator-fase1-review — Fase 1 review 2026-08-25: validate verde.
 ### S2 — Métricas de hit-rate
 - **Status**: done
 - **Files**: `plugins/memory/src/lib/services/store-recall.ts`

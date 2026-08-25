@@ -2,7 +2,7 @@
 id: x00212
 title: "Habilitar commit+push automático en nombre del autor y guía de adopción de plugins para LLMs"
 kind: fix
-status: review
+status: done
 type: proposal
 track: plugins+adoption
 date: 2026-08-23
@@ -35,7 +35,10 @@ Los agentes no commitean ni pushean al terminar una tarea y el usuario tiene que
 - acceptance:
   - "La config fija git.options.allowWrite=true manteniendo allowForge."
   - "La config declara commitAuthor explícito (modo git, autor = Cartago)."
-
+- review-state: done
+- review-implementer: swarm-implementer
+- review-reviewer: orchestrator-fase1-review
+- review-log: approved by orchestrator-fase1-review — Fase 1 review 2026-08-25: mecanismo commitAuthor mode:git verificado empíricamente (git config resuelve Cartago/cartago.relaxingcup@gmail.com correctamente). validate verde.
 ### S2 — DoD y knowledge del plugin git: commit+push al terminar
 - **Status**: done
 - **Files**: `docs/mcp-vertex/AGENT-BOOTSTRAP.md`, `plugins/git/src/index.ts`
