@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-08-25T16:48:41.271Z",
+	"generatedAt": "2026-08-25T17:02:29.734Z",
 	"mode": "compact",
 	"tools": [
 		{
@@ -1223,27 +1223,6 @@
 				"kind": "chore"
 			},
 			{
-				"id": "c00019",
-				"title": "c00019",
-				"track": "surface",
-				"status": "ready",
-				"kind": "chore"
-			},
-			{
-				"id": "d00007",
-				"title": "d00007",
-				"track": "filesystem",
-				"status": "ready",
-				"kind": "docs"
-			},
-			{
-				"id": "d00008",
-				"title": "d00008",
-				"track": "filesystem",
-				"status": "ready",
-				"kind": "docs"
-			},
-			{
 				"id": "f00050",
 				"title": "f00050",
 				"track": "lint+architecture+i18n+workflow+release",
@@ -1343,9 +1322,9 @@
 			}
 		],
 		"byStatus": {
-			"ready": 11,
+			"ready": 8,
 			"in-progress": 11,
-			"review": 25,
+			"review": 28,
 			"paused": 1,
 			"done": 432,
 			"blocked": 0,
