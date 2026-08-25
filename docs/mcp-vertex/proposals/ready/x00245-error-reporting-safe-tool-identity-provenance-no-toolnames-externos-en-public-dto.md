@@ -1,5 +1,5 @@
 ---
-id: x00235
+id: x00245
 title: "error-reporting — provenance segura de toolId: ningún toolName externo entra al DTO público (ISafeToolIdentity registry-driven)"
 kind: fix
 status: ready
@@ -22,7 +22,7 @@ related:
     - f00158 # error-reporting + issues-triage base
 ---
 
-# x00235 — error-reporting: provenance segura de toolId
+# x00245 — error-reporting: provenance segura de toolId
 
 ## Problem
 

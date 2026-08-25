@@ -16,14 +16,14 @@ audit-source:
 related:
     - q00004
     - t00007 # test determinista (predecesor)
-    - x00234 # rediseño (siguiente)
+    - x00244 # rediseño (siguiente)
 ---
 
 # t00008 — with-file-mutex: property tests
 
 ## Problem
 
-`x00234` rediseña el reclaim con lease/generation. `t00007` verifica el race window específico. Pero **ninguno** verifica la invariante general:
+`x00244` rediseña el reclaim con lease/generation. `t00007` verifica el race window específico. Pero **ninguno** verifica la invariante general:
 
 > Bajo cualquier secuencia arbitraria de acquires / heartbeats / releases / stale-reclaims / crashes simulados, nunca hay dos holders dentro de la sección crítica simultáneamente.
 
@@ -67,7 +67,7 @@ Cero.
 ## Out of scope
 
 - Test determinista (`t00007`).
-- Rediseño (`x00234`).
+- Rediseño (`x00244`).
 - Métricas (`MUT2-002`).
 
 ## Design
@@ -318,5 +318,5 @@ resolution:
 
 - **Plan padre**: [q00004](../../ready/q00004-plan-hardening-post-auditoria-chatgpt-sol-segunda-pasada.md), Track B.
 - **Auditoría legada**: §6 MUT2-001, §20 TEST2-003.
-- **Predecesores**: `t00007` (test determinista), `x00234` (rediseño).
+- **Predecesores**: `t00007` (test determinista), `x00244` (rediseño).
 - **Cierra el Track B**: tras estas 3 propuestas, la invariante del mutex queda verificada por tests reproducibles + property-based.

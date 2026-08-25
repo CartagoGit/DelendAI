@@ -15,7 +15,7 @@ audit-source:
     sha256: fc2494af135f18cdc2de8c36c110d6296e2a1c511e602afa0a1e4d2a566f339d
 related:
     - q00004
-    - x00235 # safe tool identity
+    - x00245 # safe tool identity
     - x00236 # internalOnly:false
     - x00237 # runtime version source
     - x00214 # DTO seguro
@@ -101,7 +101,7 @@ Cero. No añade tools; añade tests.
 
 - CI dashboard público de privacidad (otra propuesta si se quiere).
 - Test de carga / rate-limit / circuit breaker (`x00214` ya cubre rate limits; este se centra en contenido).
-- Cambios al reporter mismo (las propuestas `x00235`, `x00236`, `x00237` ya endurecen el código; este test verifica que se mantengan endurecidos).
+- Cambios al reporter mismo (las propuestas `x00245`, `x00236`, `x00237` ya endurecen el código; este test verifica que se mantengan endurecidos).
 
 ## Design
 
@@ -282,7 +282,7 @@ describe('Privacy — property tests on serialized DTO', () => {
 1. capture
 2. classify
 3. extract frames
-4. **resolve safe tool identity** (`x00235`)
+4. **resolve safe tool identity** (`x00245`)
 5. synthetic example
 6. redact
 7. validate
@@ -417,6 +417,6 @@ resolution:
 
 - **Plan padre**: [q00004](../../ready/q00004-plan-hardening-post-auditoria-chatgpt-sol-segunda-pasada.md), Track D.
 - **Auditoría legada**: §3.2 (propiedad fuerte), §30 (privacy classes), §32 (pipeline), §33 (fingerprint).
-- **Hermanas**: `x00235` (provenance), `x00236` (internalOnly:false), `x00237` (version source).
+- **Hermanas**: `x00245` (provenance), `x00236` (internalOnly:false), `x00237` (version source).
 - **Predecesora**: `x00214` (DTO seguro base).
 - **Cierra el Track D**: tras este test verde, el Track D entero queda blindado por la suite adversarial.

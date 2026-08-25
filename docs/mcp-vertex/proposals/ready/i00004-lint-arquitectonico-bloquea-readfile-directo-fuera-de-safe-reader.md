@@ -15,9 +15,9 @@ audit-source:
     sha256: fc2494af135f18cdc2de8c36c110d6296e2a1c511e602afa0a1e4d2a566f339d
 related:
     - q00004
-    - x00231 # SafeWorkspaceReader API (predecesor)
-    - x00232 # context-for-change (consumidor)
-    - x00233 # impact-analysis (consumidor)
+    - x00241 # SafeWorkspaceReader API (predecesor)
+    - x00242 # context-for-change (consumidor)
+    - x00243 # impact-analysis (consumidor)
 ---
 
 # i00004 — lint arquitectónico: bloquear readFile directo
@@ -26,7 +26,7 @@ related:
 
 El bug FS2-001 / FS2-002 fue posible porque dos plugins distintos podían reproducir el patrón vulnerable (`normalizePath` + `readFile` directo) sin que ninguna herramienta automática lo detectara.
 
-`x00231` crea la API correcta y `x00232`/`x00233` migran los plugins. Pero **falta el guard que evita que esto vuelva a pasar**.
+`x00241` crea la API correcta y `x00242`/`x00243` migran los plugins. Pero **falta el guard que evita que esto vuelva a pasar**.
 
 Hoy:
 
@@ -38,13 +38,13 @@ Reglas violadas: R5.2 (invariantes como lints), §5 FS2-003.
 
 ## Evidence
 
-(Ver `x00231`, `x00232`, `x00233` para los casos.)
+(Ver `x00241`, `x00242`, `x00243` para los casos.)
 
 Hoy el patrón vulnerable está en plugins recién creados (`context-for-change`, `impact-analysis`). El lint habría detectado ambos en cuanto se commitean.
 
 ## Classification
 
-`MEJORA` — propuesta de infraestructura, no fix de bug directo (los fixes son `x00232`/`x00233`).
+`MEJORA` — propuesta de infraestructura, no fix de bug directo (los fixes son `x00242`/`x00243`).
 
 ## User impact
 
@@ -72,7 +72,7 @@ Cero.
 
 **No permitido**:
 
-- Cambios en plugins existentes (sus fixes están en `x00232`/`x00233`).
+- Cambios en plugins existentes (sus fixes están en `x00242`/`x00243`).
 - Cambios en `SafeWorkspaceReader` mismo.
 - Cambios en `core`.
 
@@ -239,7 +239,7 @@ Añadir a `bun run validate`.
 
 - **Unit**: `tools/scripts/lint/filesystem-reader-invariant.spec.ts` (≥5 tests).
 - **E2E**: crear un plugin de prueba con el patrón vulnerable, ejecutar lint, esperar violación.
-- **Regression**: tras `x00232`/`x00233`, el lint pasa verde sobre los plugins migrados.
+- **Regression**: tras `x00242`/`x00243`, el lint pasa verde sobre los plugins migrados.
 
 ## Acceptance criteria
 
@@ -317,5 +317,5 @@ resolution:
 
 - **Plan padre**: [q00004](../../ready/q00004-plan-hardening-post-auditoria-chatgpt-sol-segunda-pasada.md), Track A.
 - **Auditoría legada**: §5 FS2-003, §22 CORE2-001.
-- **Predecesoras**: `x00231` (API), `x00232` (context-for-change), `x00233` (impact-analysis).
+- **Predecesoras**: `x00241` (API), `x00242` (context-for-change), `x00243` (impact-analysis).
 - **Cierra el Track A**: tras este lint, la invariante está blindada.

@@ -1,5 +1,5 @@
 ---
-id: x00232
+id: x00242
 title: "context-for-change — usar SafeWorkspaceReader; eliminar normalizePath vulnerable (FS2-001)"
 kind: fix
 status: ready
@@ -15,13 +15,13 @@ audit-source:
     sha256: fc2494af135f18cdc2de8c36c110d6296e2a1c511e602afa0a1e4d2a566f339d
 related:
     - q00004
-    - x00231 # SafeWorkspaceReader API (predecesor)
-    - x00233 # impact-analysis containment (hermano)
+    - x00241 # SafeWorkspaceReader API (predecesor)
+    - x00243 # impact-analysis containment (hermano)
     - i00004 # lint arquitectónico (hermano)
     - f00165 # context-for-change (plugin afectado)
 ---
 
-# x00232 — context-for-change: usar SafeWorkspaceReader
+# x00242 — context-for-change: usar SafeWorkspaceReader
 
 ## Problem
 
@@ -51,7 +51,7 @@ Reglas violadas: R5.1 (invariantes como APIs), §5 FS2-001.
 
 ## Evidence
 
-(Ver `x00231` para el patrón general; este es el caso concreto en `context-for-change`.)
+(Ver `x00241` para el patrón general; este es el caso concreto en `context-for-change`.)
 
 Reproducción:
 
@@ -100,9 +100,9 @@ Cero. No cambia tools ni schemas.
 
 ## Out of scope
 
-- API `SafeWorkspaceReader` (`x00231`).
+- API `SafeWorkspaceReader` (`x00241`).
 - Lint arquitectónico (`i00004`).
-- Cambios en `impact-analysis` (`x00233`).
+- Cambios en `impact-analysis` (`x00243`).
 
 ## Design
 
@@ -323,5 +323,5 @@ resolution:
 
 - **Plan padre**: [q00004](../../ready/q00004-plan-hardening-post-auditoria-chatgpt-sol-segunda-pasada.md), Track A.
 - **Auditoría legada**: §5 FS2-001.
-- **Predecesora**: `x00231` (API SafeWorkspaceReader).
-- **Hermanas**: `x00233` (impact-analysis), `i00004` (lint).
+- **Predecesora**: `x00241` (API SafeWorkspaceReader).
+- **Hermanas**: `x00243` (impact-analysis), `i00004` (lint).

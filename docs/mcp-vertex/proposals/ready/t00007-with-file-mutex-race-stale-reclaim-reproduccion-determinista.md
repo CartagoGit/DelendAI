@@ -15,7 +15,7 @@ audit-source:
     sha256: fc2494af135f18cdc2de8c36c110d6296e2a1c511e602afa0a1e4d2a566f339d
 related:
     - q00004
-    - x00234 # mutex reclaim redesign (siguiente paso)
+    - x00244 # mutex reclaim redesign (siguiente paso)
     - t00008 # property tests (siguiente)
 ---
 
@@ -51,7 +51,7 @@ Hoy **no existe un test** que reproduzca este escenario con:
 - Barreras/promises para sincronizar exactamente el heartbeat entre `observation` y `rename`.
 - ≥3 contendores.
 
-Sin este test, el rediseño (`x00234`) opera sin evidencia. Si el race **no se reproduce**, la propuesta `x00234` debe replantearse (probablemente como "ya está resuelto" con justificación).
+Sin este test, el rediseño (`x00244`) opera sin evidencia. Si el race **no se reproduce**, la propuesta `x00244` debe replantearse (probablemente como "ya está resuelto" con justificación).
 
 Reglas relacionadas: R5.2 (invariantes como lints/tests), §6 auditoría.
 
@@ -79,7 +79,7 @@ Si el race se reproduce:
 
 Si **no** se reproduce:
 
-- La propuesta `x00234` puede re-enfocarse a "ya está resuelto por generación implícita / heartbeat window es < 1 tick".
+- La propuesta `x00244` puede re-enfocarse a "ya está resuelto por generación implícita / heartbeat window es < 1 tick".
 
 ## Privacy impact
 
@@ -95,7 +95,7 @@ Cero. No añade tools.
 
 - `packages/core/tests/src/lib/shared/with-file-mutex.race.spec.ts` (nuevo).
 - Helpers de inyección: `packages/core/tests/src/lib/shared/fake-clock.ts`, `fake-fs.ts`, `barrier.ts` (nuevos si no existen).
-- Ajustes menores a `with-file-mutex.ts` para extraer dependencias inyectables (clock, fs). Si requiere refactor mayor, se hace en `x00234`.
+- Ajustes menores a `with-file-mutex.ts` para extraer dependencias inyectables (clock, fs). Si requiere refactor mayor, se hace en `x00244`.
 
 **No permitido**:
 
@@ -104,7 +104,7 @@ Cero. No añade tools.
 
 ## Out of scope
 
-- Rediseño del reclaim (`x00234`).
+- Rediseño del reclaim (`x00244`).
 - Property tests adicionales (`t00008`).
 - Métricas de contention (`MUT2-002`).
 
@@ -312,7 +312,7 @@ RACE CONFIRMED: B entered critical section while A was inside.
 Entries: ["A-start", "B", "A-end", "C"]
 ```
 
-Esto es **evidencia** de que el race window existe. Se adjunta al commit de `x00234`.
+Esto es **evidencia** de que el race window existe. Se adjunta al commit de `x00244`.
 
 ### 4. Si el test pasa → race NO se reproduce con estos parámetros
 
@@ -324,7 +324,7 @@ parameters: heartbeat-delay=0, fs-injected, clock-injected, 3 contenders
 production-extrapolation: uncertain
 ```
 
-`x00234` puede entonces elegir entre:
+`x00244` puede entonces elegir entre:
 
 - (a) Rediseñar el reclaim igualmente, por defensa en profundidad.
 - (b) Documentar la propiedad empírica y añadir métricas (`MUT2-002`).
@@ -341,7 +341,7 @@ production-extrapolation: uncertain
 - [ ] Clock + fs inyectables.
 - [ ] Escenario MUT2-001 cubiert: heartbeat entre observation y rename.
 - [ ] Test con 3 contendores.
-- [ ] Si el test **falla**, se documenta como evidencia para `x00234`.
+- [ ] Si el test **falla**, se documenta como evidencia para `x00244`.
 - [ ] Si el test **pasa**, se documenta con parámetros y se extrapola a producción.
 - [ ] Helpers `fake-clock.ts`, `fake-fs.ts`, `barrier.ts` reutilizables.
 
@@ -360,7 +360,7 @@ resolution:
     - tests:
         - packages/core/tests/src/lib/shared/with-file-mutex.race.spec.ts
     - result:
-        if-failed: "Race confirmado; ver mensaje + entries; x00234 debe rediseñar"
+        if-failed: "Race confirmado; ver mensaje + entries; x00244 debe rediseñar"
         if-passed: "Race no reproducible con estos parámetros; documentar + considerar rediseño preventivo"
     - before/after:
         before: "Race window existe teóricamente; sin test"
@@ -403,5 +403,5 @@ resolution:
 
 - **Plan padre**: [q00004](../../ready/q00004-plan-hardening-post-auditoria-chatgpt-sol-segunda-pasada.md), Track B.
 - **Auditoría legada**: §6 MUT2-001.
-- **Siguientes**: `x00234` (rediseño si race confirmado), `t00008` (property tests).
+- **Siguientes**: `x00244` (rediseño si race confirmado), `t00008` (property tests).
 - **Principio §41**: *"Internal invariants must be APIs/lints, not tribal knowledge."* Aquí la invariante se verifica con tests reproducibles.

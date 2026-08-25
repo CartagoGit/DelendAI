@@ -24,14 +24,14 @@ related:
 contains:
     proposals:
         # ─── Track A — Filesystem security (P1) ─────────────────────────────────────
-        - { id: x00231, kind: fix, required: true, priority: P1, track: filesystem }
-        - { id: x00232, kind: fix, required: true, priority: P1, track: filesystem }
-        - { id: x00233, kind: fix, required: true, priority: P1, track: filesystem }
+        - { id: x00241, kind: fix, required: true, priority: P1, track: filesystem }
+        - { id: x00242, kind: fix, required: true, priority: P1, track: filesystem }
+        - { id: x00243, kind: fix, required: true, priority: P1, track: filesystem }
         - { id: i00004, kind: infra, required: true, priority: P2, track: filesystem }
 
         # ─── Track B — Concurrency (P1) ─────────────────────────────────────────────
         - { id: t00007, kind: test, required: true, priority: P1, track: concurrency }
-        - { id: x00234, kind: fix, required: true, priority: P1, track: concurrency }
+        - { id: x00244, kind: fix, required: true, priority: P1, track: concurrency }
         - { id: t00008, kind: test, required: true, priority: P1, track: concurrency }
 
         # ─── Track C — Tokens (P1/P2) ───────────────────────────────────────────────
@@ -42,7 +42,7 @@ contains:
         - { id: i00007, kind: infra, required: true, priority: P2, track: tokens }
 
         # ─── Track D — PRIVACY (P0 — LEY/LEGAL — máximo énfasis) ────────────────────
-        - { id: x00235, kind: fix, required: true, priority: P0, track: privacy }
+        - { id: x00245, kind: fix, required: true, priority: P0, track: privacy }
         - { id: x00236, kind: breaking, required: true, priority: P0, track: privacy }
         - { id: x00237, kind: fix, required: true, priority: P0, track: privacy }
         - { id: t00009, kind: test, required: true, priority: P0, track: privacy }
@@ -154,7 +154,7 @@ Esta es la regla más importante del proyecto, sin excepciones.
 - **R1.3 — Fail-closed ante la duda.** Si el validator duda → `NO SE ENVÍA`. Se registra localmente `report blocked by privacy validator: <reason code>`.
 - **R1.4 — Synthetic examples only.** No "redactar datos reales" para hacer ejemplos. Construir desde cero con dominios `example.invalid`, IDs `demo-123`, temas bakery/books/pets/planets.
 - **R1.5 — Dos proyectos distintos con el mismo bug Vertex deben producir el mismo issue público** salvo metadata segura (versión, package id, error code, runtime family, OS family). Esta es la propiedad fuerte de privacidad de §3.2.
-- **R1.6 — Reporter no acepta `toolName` arbitrario** (Track D — x00235). Solo `ISafeToolIdentity` resuelto vía registry metadata.
+- **R1.6 — Reporter no acepta `toolName` arbitrario** (Track D — x00245). Solo `ISafeToolIdentity` resuelto vía registry metadata.
 - **R1.7 — `internalOnly:false` no existe** (Track D — x00236). El reporting externo es imposible por configuración; cualquier valor histórico debe fallar cerrado o ignorarse con warning de deprecación.
 
 ## R2 — Code quality (Clean Code + SOLID + reuse)
@@ -203,9 +203,9 @@ Cada hija debe cerrar con `resolution.evidence` que incluya al menos:
 
 | Propuesta | ID    | Prioridad | Hallazgos cubiertos                                                |
 |-----------|-------|-----------|---------------------------------------------------------------------|
-| `x00231`  | fix   | P1        | FS2-001 + FS2-002 (parcial) — `SafeWorkspaceReader` API pública     |
-| `x00232`  | fix   | P1        | FS2-001 — `context-for-change` containment                          |
-| `x00233`  | fix   | P1        | FS2-002 — `impact-analysis` + `tests-for-change` containment        |
+| `x00241`  | fix   | P1        | FS2-001 + FS2-002 (parcial) — `SafeWorkspaceReader` API pública     |
+| `x00242`  | fix   | P1        | FS2-001 — `context-for-change` containment                          |
+| `x00243`  | fix   | P1        | FS2-002 — `impact-analysis` + `tests-for-change` containment        |
 | `i00004`  | infra | P2        | FS2-003 — lint arquitectónico que bloquea nuevos escapes            |
 
 **Objetivo del track**: hacer **técnicamente imposible** que un plugin con permiso `filesystem-read` pueda abrir una ruta exterior al workspace. La garantía se centraliza en una API `SafeWorkspaceReader` (Track A) y se blinda con un lint arquitectónico que falla el CI si alguien la esquiva.
@@ -215,7 +215,7 @@ Cada hija debe cerrar con `resolution.evidence` que incluya al menos:
 | Propuesta | ID    | Prioridad | Hallazgos cubiertos                                                |
 |-----------|-------|-----------|---------------------------------------------------------------------|
 | `t00007`  | test  | P1        | MUT2-001 — test determinista de race de stale reclaim               |
-| `x00234`  | fix   | P1        | MUT2-001 — rediseño del reclaim con lease/generation o equivalente |
+| `x00244`  | fix   | P1        | MUT2-001 — rediseño del reclaim con lease/generation o equivalente |
 | `t00008`  | test  | P1        | MUT2-001 — property tests sobre la state machine del mutex         |
 
 **Objetivo del track**: reproducir o descartar la race window entre `observation` y `rename` durante stale reclaim. Si se reproduce, rediseñar el reclaim (lease/generation, reclaim marker visible, rename protocol atómico). Nunca dos holders simultáneos bajo heartbeat concurrente, crash, stale reclaim o 3+ contenders.
@@ -236,7 +236,7 @@ Cada hija debe cerrar con `resolution.evidence` que incluya al menos:
 
 | Propuesta | ID       | Prioridad | Hallazgos cubiertos                                                       |
 |-----------|----------|-----------|---------------------------------------------------------------------------|
-| `x00235`  | fix      | P0        | ER2-001 — provenance segura de `toolId` (`ISafeToolIdentity` registry)   |
+| `x00245`  | fix      | P0        | ER2-001 — provenance segura de `toolId` (`ISafeToolIdentity` registry)   |
 | `x00236`  | breaking | P0        | ER2-002 — retirar `internalOnly:false`; reporting imposible por config   |
 | `x00237`  | fix      | P0        | ER2-003 — fuente canónica de `mcpVertexVersion` (build-time injected)    |
 | `t00009`  | test     | P0        | Privacy adversarial regression suite (dos hosts, mismo bug, mismo issue) |
@@ -296,7 +296,7 @@ Cada hija debe cerrar con `resolution.evidence` que incluya al menos:
 - **§22 (core split)** → `CORE2-001`: no dividir paquetes todavía. Se respeta como non-goal global.
 - **§29 (KPIs)** → métricas locales que las hijas exponen en sus `resolution.evidence` (no se reportan externamente).
 - **§30 (privacy classes)** → R1.1 + clase A en `ISafeMcpVertexReport`; clases B/C/D prohibidas en el DTO.
-- **§32 (pipeline seguro)** → x00214 (predecesor) + x00235/x00236/x00237 de este plan.
+- **§32 (pipeline seguro)** → x00214 (predecesor) + x00245/x00236/x00237 de este plan.
 - **§37 (P0–P3)** → reflejan el orden de tracks de este plan.
 - **§41 (10 principios)** → re-enumerados como R1–R6 + resto de las reglas globales.
 
@@ -325,12 +325,12 @@ Criterios de aceptación globales (verificados a través de las hijas):
 
 ### Seguridad
 
-- `context-for-change` no abre rutas exteriores (`x00232` + tests).
-- `impact-analysis` no abre rutas exteriores (`x00233` + tests).
-- `SafeWorkspaceReader` es API pública usada por ambos plugins (`x00231`).
-- Symlink escape bloqueado (test adversarial en `x00231`).
+- `context-for-change` no abre rutas exteriores (`x00242` + tests).
+- `impact-analysis` no abre rutas exteriores (`x00243` + tests).
+- `SafeWorkspaceReader` es API pública usada por ambos plugins (`x00241`).
+- Symlink escape bloqueado (test adversarial en `x00241`).
 - El lint arquitectónico (`i00004`) falla si algún plugin futuro evade la API.
-- `error-reporting` no envía tool ids externos (`x00235`).
+- `error-reporting` no envía tool ids externos (`x00245`).
 - `internalOnly:false` no existe en schema ni en runtime (`x00236`).
 - `mcpVertexVersion` proviene de la versión publicada, no del root `package.json` (`x00237`).
 - Privacy adversarial suite verde: dos hosts distintos con el mismo bug Vertex producen el mismo issue público (`t00009`).
@@ -338,7 +338,7 @@ Criterios de aceptación globales (verificados a través de las hijas):
 ### Concurrencia
 
 - Stale reclaim race reproducido o descartado con test determinista (`t00007`).
-- Rediseño aplicado si se reproduce; nunca dos holders simultáneos bajo heartbeat concurrente, crash, stale reclaim o 3+ contenders (`x00234`).
+- Rediseño aplicado si se reproduce; nunca dos holders simultáneos bajo heartbeat concurrente, crash, stale reclaim o 3+ contenders (`x00244`).
 - Property tests sobre la state machine del mutex (`t00008`).
 
 ### Tokens
@@ -382,9 +382,9 @@ Criterios de aceptación globales (verificados a través de las hijas):
 
 El orden refleja precedencia técnica y legal. Track D es **P0** y bloquea por defecto.
 
-1. **Track D privacidad** completo: `x00235` → `x00236` → `x00237` → `t00009`. **NO continuar con otros tracks hasta que Track D esté `done` con peer review verde.**
-2. **Track A filesystem**: `x00231` (API) → `x00232` (context-for-change) → `x00233` (impact-analysis) → `i00004` (lint). El lint (`i00004`) cierra el track.
-3. **Track B concurrency**: `t00007` (repro) → `x00234` (fix) → `t00008` (property tests). El test de repro precede al fix.
+1. **Track D privacidad** completo: `x00245` → `x00236` → `x00237` → `t00009`. **NO continuar con otros tracks hasta que Track D esté `done` con peer review verde.**
+2. **Track A filesystem**: `x00241` (API) → `x00242` (context-for-change) → `x00243` (impact-analysis) → `i00004` (lint). El lint (`i00004`) cierra el track.
+3. **Track B concurrency**: `t00007` (repro) → `x00244` (fix) → `t00008` (property tests). El test de repro precede al fix.
 4. **Track C tokens**: `i00005` (gate real) → `i00006` (dashboard check) → `r00018` (schema diet) → `r00019` (adaptive default) → `i00007` (vertex budget).
 5. **Track E manifests**: `f00174` (autodiscovery) → `f00175` (generated artifacts) → `i00008` (validación package) → `i00009` (validación preset).
 6. **Track F quality**: `x00238` (adoption exact) → `x00239` (utf-8) → `x00240` (memory dispose) → `r00020` (preset summaries).

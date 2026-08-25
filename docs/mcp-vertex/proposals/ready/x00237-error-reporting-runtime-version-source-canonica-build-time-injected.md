@@ -16,7 +16,7 @@ audit-source:
 related:
     - q00004
     - x00214 # DTO seguro (predecesor)
-    - x00235 # safe tool identity (hermano)
+    - x00245 # safe tool identity (hermano)
     - x00236 # internalOnly:false (hermano)
     - t00009 # privacy adversarial regression
 ---
@@ -300,6 +300,6 @@ resolution:
 
 - **Plan padre**: [q00004](../../ready/q00004-plan-hardening-post-auditoria-chatgpt-sol-segunda-pasada.md), Track D.
 - **Auditoría legada**: §4 ER2-003.
-- **Hermanas**: `x00235` (provenance), `x00236` (internalOnly:false), `t00009` (adversarial).
+- **Hermanas**: `x00245` (provenance), `x00236` (internalOnly:false), `t00009` (adversarial).
 - **Predecesora**: `x00214` (DTO seguro).
 - **Nota**: aunque es P0 en este plan, no hay riesgo legal directo. La prioridad alta viene de mantener Track D completo y consistente.

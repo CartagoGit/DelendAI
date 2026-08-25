@@ -1,5 +1,5 @@
 ---
-id: x00233
+id: x00243
 title: "impact-analysis + tests-for-change — usar SafeWorkspaceReader; eliminar normalizePath vulnerable (FS2-002)"
 kind: fix
 status: ready
@@ -15,13 +15,13 @@ audit-source:
     sha256: fc2494af135f18cdc2de8c36c110d6296e2a1c511e602afa0a1e4d2a566f339d
 related:
     - q00004
-    - x00231 # SafeWorkspaceReader API (predecesor)
-    - x00232 # context-for-change containment (hermano)
+    - x00241 # SafeWorkspaceReader API (predecesor)
+    - x00242 # context-for-change containment (hermano)
     - i00004 # lint arquitectónico (hermano)
     - f00169 # impact-analysis + tests-for-change (plugin afectado)
 ---
 
-# x00233 — impact-analysis + tests-for-change: usar SafeWorkspaceReader
+# x00243 — impact-analysis + tests-for-change: usar SafeWorkspaceReader
 
 ## Problem
 
@@ -55,7 +55,7 @@ Reglas violadas: R5.1, §5 FS2-002.
 
 ## Evidence
 
-(Ver `x00231` para el patrón general; este es el caso concreto en `impact-analysis`.)
+(Ver `x00241` para el patrón general; este es el caso concreto en `impact-analysis`.)
 
 Reproducción:
 
@@ -75,7 +75,7 @@ test('impact-analysis rejects /outside/secret.ts', async () => {
 
 ## User impact
 
-Idéntico a `x00232` pero en el dominio de análisis de impacto:
+Idéntico a `x00242` pero en el dominio de análisis de impacto:
 
 - Un caller puede inyectar paths exteriores y obtener análisis de archivos ajenos al workspace.
 - El resultado puede incluir símbolos, referencias y tests relacionados — todo extraído de código del caller o de terceros.
@@ -107,9 +107,9 @@ Cero. No cambia tools ni schemas.
 
 ## Out of scope
 
-- API `SafeWorkspaceReader` (`x00231`).
+- API `SafeWorkspaceReader` (`x00241`).
 - Lint arquitectónico (`i00004`).
-- Cambios en `context-for-change` (`x00232`).
+- Cambios en `context-for-change` (`x00242`).
 
 ## Design
 
@@ -228,7 +228,7 @@ describe('impact-analysis — workspace containment', () => {
 
 ### 6. Symlink + property tests
 
-Idénticos a `x00232`, adaptados al dominio de impact-analysis.
+Idénticos a `x00242`, adaptados al dominio de impact-analysis.
 
 ## Tests
 
@@ -322,5 +322,5 @@ resolution:
 
 - **Plan padre**: [q00004](../../ready/q00004-plan-hardening-post-auditoria-chatgpt-sol-segunda-pasada.md), Track A.
 - **Auditoría legada**: §5 FS2-002, §16 IMP2-001.
-- **Predecesora**: `x00231` (API).
-- **Hermanas**: `x00232` (context-for-change), `i00004` (lint).
+- **Predecesora**: `x00241` (API).
+- **Hermanas**: `x00242` (context-for-change), `i00004` (lint).

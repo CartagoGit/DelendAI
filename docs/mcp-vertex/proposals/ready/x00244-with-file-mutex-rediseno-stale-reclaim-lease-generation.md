@@ -1,5 +1,5 @@
 ---
-id: x00234
+id: x00244
 title: "with-file-mutex — rediseño del stale reclaim con lease/generation + reclaim marker visible (MUT2-001)"
 kind: fix
 status: ready
@@ -19,7 +19,7 @@ related:
     - t00008 # property tests (siguiente)
 ---
 
-# x00234 — with-file-mutex: rediseño del stale reclaim
+# x00244 — with-file-mutex: rediseño del stale reclaim
 
 ## Problem
 
@@ -31,8 +31,8 @@ Reglas violadas: R5.2 (invariantes), §6 auditoría.
 
 **Estado de la clasificación**: depende del resultado de `t00007`.
 
-- Si `t00007` **reproduce** el race → `x00234` es fix obligatorio (P1).
-- Si `t00007` **no reproduce** con los parámetros del test → `x00234` opera como **defensa en profundidad** (P2) + métricas (`MUT2-002`).
+- Si `t00007` **reproduce** el race → `x00244` es fix obligatorio (P1).
+- Si `t00007` **no reproduce** con los parámetros del test → `x00244` opera como **defensa en profundidad** (P2) + métricas (`MUT2-002`).
 
 Esta propuesta asume el primer caso y propone el rediseño. Si el segundo caso aplica, la propuesta se reduce a "validación empírica + métricas".
 
