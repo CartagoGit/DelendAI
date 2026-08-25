@@ -28,8 +28,15 @@ describe('e2e: agent catalog', async () => {
 		client: Client;
 		close: () => Promise<void>;
 	}> => {
+		// r00026 (TOK-004): pin native — this suite calls tools directly
+		// by name to test the catalog/protocol, not surface negotiation
+		// (adaptive is now the default for a plain client).
 		const args = parseCliArgs(
-			['--plugins=proposals', `--workspace=${workspace}`],
+			[
+				'--plugins=proposals',
+				`--workspace=${workspace}`,
+				'--surface=native',
+			],
 			workspace,
 		);
 		const { config } = await assembleCliConfig(args, {
