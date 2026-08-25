@@ -252,14 +252,27 @@ export const loadPluginManifests = async (
 export const buildGeneratedFirstPartyEntries = (
 	manifests: readonly ILoadedPluginManifest[],
 ): readonly IPluginRegistryEntry[] =>
-	manifests.map(({ manifest }) => ({
-		origin: 'first-party',
-		id: manifest.id,
-		package: manifest.package,
-		summary: manifest.summary,
-		tags: [...manifest.tags],
-		permissions: [...manifest.permissions],
-	}));
+	manifests.map(({ manifest }) => {
+		const tb = manifest.tokenBudget;
+		// f00179 S2: prefer the new shape's `staticBytes`; fall back to
+		// the legacy `warning` ceiling. A bare number is the
+		// `staticBytes` itself.
+		const tokenBudgetBytes =
+			typeof tb === 'number'
+				? tb
+				: 'caps' in tb
+					? tb.staticBytes
+					: tb.warning;
+		return {
+			origin: 'first-party',
+			id: manifest.id,
+			package: manifest.package,
+			summary: manifest.summary,
+			tags: [...manifest.tags],
+			permissions: [...manifest.permissions],
+			tokenBudgetBytes,
+		};
+	});
 
 export const buildCompatibilityMatrix = (
 	manifests: readonly ILoadedPluginManifest[],
@@ -292,29 +305,36 @@ export const buildManifestArtifact = (
 	firstPartyEntries: buildGeneratedFirstPartyEntries(manifests),
 	webCatalog: manifests
 		.filter(({ manifest }) => manifest.visibility === 'public')
-		.map(({ manifest }) => ({
+		.map(({ manifest }) => {
+			const tb = manifest.tokenBudget;
+			return {
+				id: manifest.id,
+				package: manifest.package,
+				summary: manifest.summary,
+				tags: [...manifest.tags],
+				maturity: manifest.maturity,
+				visibility: manifest.visibility,
+				presets: [...manifest.presets],
+				capabilities: [...manifest.capabilities],
+				permissions: [...manifest.permissions],
+				tokenBudget: {
+					warning: 'caps' in tb ? tb.caps.warning : tb.warning,
+					hard: 'caps' in tb ? tb.caps.hard : tb.hard,
+					releaseRelativePercent:
+						'caps' in tb ? 20 : tb.releaseRelativePercent,
+				},
+			};
+		}),
+	tokenBudgets: manifests.map(({ manifest }) => {
+		const tb = manifest.tokenBudget;
+		return {
 			id: manifest.id,
-			package: manifest.package,
-			summary: manifest.summary,
-			tags: [...manifest.tags],
-			maturity: manifest.maturity,
-			visibility: manifest.visibility,
-			presets: [...manifest.presets],
-			capabilities: [...manifest.capabilities],
-			permissions: [...manifest.permissions],
-			tokenBudget: {
-				warning: manifest.tokenBudget.warning,
-				hard: manifest.tokenBudget.hard,
-				releaseRelativePercent:
-					manifest.tokenBudget.releaseRelativePercent,
-			},
-		})),
-	tokenBudgets: manifests.map(({ manifest }) => ({
-		id: manifest.id,
-		warning: manifest.tokenBudget.warning,
-		hard: manifest.tokenBudget.hard,
-		releaseRelativePercent: manifest.tokenBudget.releaseRelativePercent,
-	})),
+			warning: 'caps' in tb ? tb.caps.warning : tb.warning,
+			hard: 'caps' in tb ? tb.caps.hard : tb.hard,
+			releaseRelativePercent:
+				'caps' in tb ? 20 : tb.releaseRelativePercent,
+		};
+	}),
 	permissionsTable: manifests.map(({ manifest }) => ({
 		id: manifest.id,
 		permissions: [...manifest.permissions],
@@ -343,6 +363,11 @@ const renderRegistryEntry = (entry: IPluginRegistryEntry): string => {
 	}
 	if (entry.defaultPreset !== undefined) {
 		lines.push(`\t\t\tdefaultPreset: ${quote(entry.defaultPreset)},`);
+	}
+	if (entry.tokenBudgetBytes !== undefined) {
+		lines.push(
+			`\t\t\ttokenBudgetBytes: ${entry.tokenBudgetBytes.toString()},`,
+		);
 	}
 	lines.push('\t\t}');
 	return lines.join('\n');

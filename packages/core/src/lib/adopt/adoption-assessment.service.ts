@@ -170,6 +170,31 @@ const coversAll = (
 	return true;
 };
 
+/**
+ * f00179 S3: when no preset covers the recommended set, sum the
+ * `tokenBudgetBytes` exposed by every plugin in
+ * `FIRST_PARTY_PLUGIN_INDEX` (populated from each manifest's
+ * `IPluginTokenBudget.staticBytes` or legacy `warning`). Returns
+ * `undefined` when any plugin lacks a measurement — in that case
+ * the caller falls back to the conservative swarm-marginal estimate.
+ */
+const aggregatePluginBytes = (
+	recommendedPluginIds: readonly string[],
+): readonly { plugin: string; bytes: number }[] | undefined => {
+	const entriesById = new Map(
+		FIRST_PARTY_PLUGIN_INDEX.entries.map((entry) => [entry.id, entry]),
+	);
+	const rows: { plugin: string; bytes: number }[] = [];
+	for (const id of recommendedPluginIds) {
+		const entry = entriesById.get(id);
+		if (entry === undefined || entry.tokenBudgetBytes === undefined) {
+			return undefined;
+		}
+		rows.push({ plugin: id, bytes: entry.tokenBudgetBytes });
+	}
+	return rows;
+};
+
 const buildCost = (
 	recommendedPluginIds: readonly string[],
 ): IAssessmentCost => {
@@ -189,6 +214,25 @@ const buildCost = (
 			source: 'preset-budget',
 			surfaceMode: coveringPreset.budget.surfaceMode,
 			note: `Measured runtime budget reused from preset ${coveringPreset.id} (${coveringPreset.budget.surfaceMode} surface).`,
+		};
+	}
+	// f00179 S3: per-plugin staticBytes aggregation (preferred over
+	// the swarm marginal upper bound when every plugin in the set has
+	// a real measurement on its manifest).
+	const perPlugin = aggregatePluginBytes(recommendedPluginIds);
+	if (perPlugin !== undefined) {
+		const totalBytes = perPlugin.reduce((sum, row) => sum + row.bytes, 0);
+		return {
+			presetId: 'plugin-budget',
+			schemaBytes: totalBytes,
+			estimatedTokens: Math.ceil(
+				totalBytes / TOKEN_BUDGETS.bytesPerEstimatedToken,
+			),
+			recommendedPluginCount: recommendedPluginIds.length,
+			source: 'plugin-budget',
+			surfaceMode: 'estimated',
+			note: `Sum of staticBytes from ${perPlugin.length} plugin manifest(s); no preset covers the recommendation.`,
+			perPluginBytes: perPlugin,
 		};
 	}
 	const fallbackBytes =
