@@ -40,7 +40,9 @@ Both are required CI checks blocking every PR in this repo, including all 11 cur
 
 ### S1 — Node-vs-Bun plugin resolution investigation
 - **Status**: done
-- **Files**: `packages/core/dist/cli.js`, `tools/scripts/compile/build.script.ts`
+- **Files**: `tools/scripts/compile/build.script.ts` (produces the
+  `packages/core/dist/cli.js` build output exercised below — build
+  output is gitignored, never a `Files:` entry)
 - **Gate**: e2e
 - acceptance:
   - "Reproduce locally with a REAL node binary (this session's sandbox has none — only Bun): `node packages/core/dist/cli.js --check --plugins=` from a fresh `bun install` + `bun run build`"
