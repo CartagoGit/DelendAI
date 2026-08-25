@@ -821,6 +821,85 @@ describe('a00069 S7 peer-review gate on review → done', () => {
 		expect(body.to).toBe('done');
 	});
 
+	it('requires attached CI evidence before in-progress → review in CI', async () => {
+		const previousCi = process.env.CI;
+		process.env.CI = 'true';
+		try {
+			await writeProposal(root, 'in-progress', 'f00972-ci-review.md', {
+				id: 'f00972',
+				status: 'in-progress',
+				type: 'feat',
+			});
+			const result = await runProposalTransition(
+				{
+					id: 'f00972',
+					to: 'review',
+					reason: 'ready for review',
+					validateEvidence: RECENT_VALIDATE,
+				},
+				options,
+			);
+			expect(result.isError).toBe(true);
+			const body = JSON.parse(result.content[0]?.text ?? '{}');
+			expect(body.error.code).toBe('missing-ci-evidence');
+		} finally {
+			if (previousCi === undefined) {
+				delete process.env.CI;
+			} else {
+				process.env.CI = previousCi;
+			}
+		}
+	});
+
+	it('allows in-progress → review in CI when frontmatter evidence is attached', async () => {
+		const previousCi = process.env.CI;
+		process.env.CI = 'true';
+		try {
+			const dir = join(root, 'in-progress');
+			await mkdir(dir, { recursive: true });
+			await writeFile(
+				join(dir, 'f00973-ci-review.md'),
+				[
+					'---',
+					'id: f00973',
+					'status: in-progress',
+					'type: feat',
+					'evidence:',
+					'  commit: "abc123"',
+					'  ci-runs:',
+					'    - name: "CI"',
+					'      status: "success"',
+					'      runId: "101"',
+					'---',
+					'',
+					'## Goal',
+					'',
+					'p.',
+				].join('\n'),
+				'utf8',
+			);
+			const result = await runProposalTransition(
+				{
+					id: 'f00973',
+					to: 'review',
+					reason: 'ready for review',
+					validateEvidence: RECENT_VALIDATE,
+				},
+				options,
+			);
+			expect(result.isError).toBeUndefined();
+			const body = JSON.parse(result.content[0]?.text ?? '{}');
+			expect(body.ok).toBe(true);
+			expect(body.to).toBe('review');
+		} finally {
+			if (previousCi === undefined) {
+				delete process.env.CI;
+			} else {
+				process.env.CI = previousCi;
+			}
+		}
+	});
+
 	it('a00063: rejects review → done when the only approval is self-review', async () => {
 		await writeProposal(
 			root,
