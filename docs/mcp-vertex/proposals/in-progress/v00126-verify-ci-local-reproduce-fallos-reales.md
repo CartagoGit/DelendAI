@@ -2,7 +2,7 @@
 id: v00126
 title: "Verify CI local reproduce fallos reales"
 kind: perf
-status: ready
+status: in-progress
 type: proposal
 track: ci
 date: 2026-08-25

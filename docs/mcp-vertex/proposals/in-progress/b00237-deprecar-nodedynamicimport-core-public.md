@@ -2,7 +2,7 @@
 id: b00237
 title: "Deprecar `nodeDynamicImport` exportado por `core/public`"
 kind: breaking
-status: ready
+status: in-progress
 type: proposal
 track: architecture
 date: 2026-08-25
