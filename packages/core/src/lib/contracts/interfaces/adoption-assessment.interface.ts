@@ -1,5 +1,12 @@
 import type { IProjectAnalysis } from '../../bootstrap/analyze-project';
 
+export interface IWriteEstimateBreakdownEntry {
+	readonly kind: 'config' | 'proposal-store' | 'generated';
+	readonly description: string;
+	readonly count?: number;
+	readonly exact: boolean;
+}
+
 export interface IPluginRecommendation {
 	readonly id: string;
 	readonly recommended: boolean;
@@ -12,6 +19,7 @@ export interface IAssessmentConflict {
 	readonly severity: 'info' | 'warning';
 	readonly count?: number;
 	readonly exact: boolean;
+	readonly breakdown?: readonly IWriteEstimateBreakdownEntry[];
 }
 
 export interface IAssessmentCost {

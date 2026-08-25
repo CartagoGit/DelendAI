@@ -6,6 +6,7 @@ import {
 } from '../plugins/preset-catalog';
 import { FIRST_PARTY_PLUGIN_INDEX } from '../registry/first-party-index';
 import { TOKEN_BUDGETS } from '../contracts/constants/token-budgets.constant';
+import { buildAdoptProjectWriteEstimate } from './adopt-project-write-estimate';
 import type {
 	IAdoptionAssessment,
 	IAssessmentConflict,
@@ -43,8 +44,6 @@ const WEB_FRAMEWORKS = new Set([
 	'vue',
 	'nuxt',
 ]);
-const EXACT_ADOPTION_WRITE_ESTIMATE = 25;
-
 const toEntrySet = (entries: readonly string[]): ReadonlySet<string> =>
 	new Set(entries.map((entry) => entry.toLowerCase()));
 
@@ -208,6 +207,7 @@ const buildCost = (
 
 const buildConflicts = (
 	analysis: IProjectAnalysis,
+	options: IBuildAdoptionAssessmentOptions,
 ): readonly IAssessmentConflict[] => [
 	...(analysis.conflicts ?? []).map(
 		(summary): IAssessmentConflict => ({
@@ -217,14 +217,33 @@ const buildConflicts = (
 			exact: true,
 		}),
 	),
-	{
-		kind: 'write-estimate',
-		summary:
-			'Estimated adopt_project write surface (config + agents/instructions + proposals store).',
-		severity: 'info',
-		count: EXACT_ADOPTION_WRITE_ESTIMATE,
-		exact: true,
-	},
+	((): IAssessmentConflict => {
+		const hostOptions = {
+			projectName: options.projectName ?? analysis.name ?? 'Workspace',
+			namespacePrefix: options.namespacePrefix ?? 'mcp-vertex',
+			projectPackageName: '@mcp-vertex/adopted',
+			mcpServerName: options.mcpServerName ?? 'mcp-vertex',
+			existingMcpVertex: true,
+			...(options.defaultModel !== undefined
+				? { defaultModel: options.defaultModel }
+				: {}),
+		} as const;
+		const estimate = buildAdoptProjectWriteEstimate({
+			hostOptions,
+			...(options.docsDir !== undefined
+				? { docsDir: options.docsDir }
+				: {}),
+		});
+		return {
+			kind: 'write-estimate',
+			summary:
+				'Estimated adopt_project write surface (config + agents/instructions + proposals store).',
+			severity: 'info',
+			count: estimate.count,
+			exact: estimate.exact,
+			breakdown: estimate.breakdown,
+		};
+	})(),
 ];
 
 export const buildAdoptionAssessment = (
@@ -249,7 +268,7 @@ export const buildAdoptionAssessment = (
 		recommendedPresetId,
 		recommendedPluginIds,
 		pluginRecommendations,
-		conflicts: buildConflicts(analysis),
+		conflicts: buildConflicts(analysis, _options),
 		cost: buildCost(recommendedPluginIds),
 		summary: {
 			projectType: analysis.projectType,

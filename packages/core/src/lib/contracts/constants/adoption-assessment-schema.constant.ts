@@ -1,5 +1,12 @@
 import z from 'zod';
 
+const WriteEstimateBreakdownEntrySchema = z.object({
+	kind: z.enum(['config', 'proposal-store', 'generated']),
+	description: z.string(),
+	count: z.number().optional(),
+	exact: z.boolean(),
+});
+
 export const ADOPTION_ASSESSMENT_SCHEMA = z.object({
 	recommendedPresetId: z.string(),
 	recommendedPluginIds: z.array(z.string()),
@@ -17,6 +24,7 @@ export const ADOPTION_ASSESSMENT_SCHEMA = z.object({
 			severity: z.enum(['info', 'warning']),
 			count: z.number().optional(),
 			exact: z.boolean(),
+			breakdown: z.array(WriteEstimateBreakdownEntrySchema).optional(),
 		}),
 	),
 	cost: z.object({
