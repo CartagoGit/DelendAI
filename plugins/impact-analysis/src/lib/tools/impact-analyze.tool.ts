@@ -1,7 +1,11 @@
 import z from 'zod';
 
 import type { IToolRegistration } from '@mcp-vertex/core/public';
-import { toolError, toolJson } from '@mcp-vertex/core/public';
+import {
+	toolError,
+	toolJson,
+	WorkspaceContainmentError,
+} from '@mcp-vertex/core/public';
 
 import {
 	IMPACT_ANALYSIS_DEPENDS_ON,
@@ -54,8 +58,18 @@ export const runImpactAnalyze = async (
 			'Provide the changed files, a git diff, or explicit symbols.',
 		);
 	}
-	const payload = await buildImpactAnalyzePayload(parsed.data, options);
-	return toolJson(finalizeImpactAnalyzeOutput(payload, options.maxBytes));
+	try {
+		const payload = await buildImpactAnalyzePayload(parsed.data, options);
+		return toolJson(finalizeImpactAnalyzeOutput(payload, options.maxBytes));
+	} catch (error) {
+		if (error instanceof WorkspaceContainmentError) {
+			return toolError(
+				`workspace-containment: ${error.message}`,
+				'Pass only workspace-contained source paths; absolute paths outside the workspace and reserved paths like .git, .env and node_modules are rejected.',
+			);
+		}
+		throw error;
+	}
 };
 
 export const buildImpactAnalyzeToolRegistrations = (

@@ -1,7 +1,11 @@
 import z from 'zod';
 
 import type { IToolRegistration } from '@mcp-vertex/core/public';
-import { toolError, toolJson } from '@mcp-vertex/core/public';
+import {
+	toolError,
+	toolJson,
+	WorkspaceContainmentError,
+} from '@mcp-vertex/core/public';
 
 import type {
 	IImpactAnalysisToolOptions,
@@ -41,18 +45,28 @@ export const runTestsForChange = async (
 			'Provide changed files or symbols to select tests.',
 		);
 	}
-	const selection = await computeTestsForChange(parsed.data, options);
-	return toolJson(
-		finalizeTestsForChangeOutput(
-			{
-				run: selection.run,
-				skip: selection.skip,
-				coverageFocus: selection.coverageFocus,
-				likelyRelatedFailures: selection.likelyRelatedFailures,
-			},
-			options.maxBytes,
-		),
-	);
+	try {
+		const selection = await computeTestsForChange(parsed.data, options);
+		return toolJson(
+			finalizeTestsForChangeOutput(
+				{
+					run: selection.run,
+					skip: selection.skip,
+					coverageFocus: selection.coverageFocus,
+					likelyRelatedFailures: selection.likelyRelatedFailures,
+				},
+				options.maxBytes,
+			),
+		);
+	} catch (error) {
+		if (error instanceof WorkspaceContainmentError) {
+			return toolError(
+				`workspace-containment: ${error.message}`,
+				'Pass only workspace-contained source paths; absolute paths outside the workspace and reserved paths like .git, .env and node_modules are rejected.',
+			);
+		}
+		throw error;
+	}
 };
 
 export const buildTestsForChangeToolRegistrations = (
