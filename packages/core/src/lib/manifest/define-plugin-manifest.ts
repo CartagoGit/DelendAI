@@ -2,9 +2,11 @@ import { z } from 'zod';
 
 import type {
 	IPluginManifest,
+	IPluginManifestTokenBudget,
 	PluginManifestMaturity,
 	PluginManifestVisibility,
 } from '../contracts/interfaces/plugin-manifest.interface';
+import type { IPluginTokenBudget } from '../contracts/interfaces/plugin-token-budget.interface';
 import {
 	permissionListSchema,
 	toolPermissionsSchema,
@@ -42,6 +44,57 @@ const MATURITY_SCHEMA = z.enum([
 	'stable',
 ]) satisfies z.ZodType<PluginManifestMaturity>;
 
+/**
+ * f00179 S1 / MAN-003: `tokenBudget` accepts the new real-semantics
+ * `IPluginTokenBudget` shape, the legacy `ITokenBudgetCeiling` (with
+ * `releaseRelativePercent`), or a bare number. The discriminator is
+ * the presence of `staticBytes` (only the new shape carries it). See
+ * `plugin-token-budget.interface.ts#resolveTokenBudget` for the
+ * canonical normaliser.
+ */
+const TOKEN_BUDGET_NEW_SCHEMA = z
+	.object({
+		staticBytes: z.number().finite().positive(),
+		adaptiveActivationBytes: z.number().finite().nonnegative().optional(),
+		typicalOutput: z.number().finite().nonnegative().optional(),
+		caps: z.object({
+			hard: z.number().finite().positive(),
+			warning: z.number().finite().positive(),
+		}),
+		measuredAt: z
+			.string()
+			.regex(
+				/^\d{4}-\d{2}-\d{2}$/u,
+				'measuredAt must be an ISO date (YYYY-MM-DD)',
+			),
+		source: z.string().trim().min(1, 'source must be non-empty'),
+	})
+	.superRefine((value, ctx) => {
+		if (value.caps.warning > value.caps.hard) {
+			ctx.addIssue({
+				code: z.ZodIssueCode.custom,
+				path: ['caps', 'warning'],
+				message: 'caps.warning must be <= caps.hard',
+			});
+		}
+	}) satisfies z.ZodType<IPluginTokenBudget>;
+
+const TOKEN_BUDGET_LEGACY_SCHEMA = z.object({
+	hard: z.number().finite().positive(),
+	warning: z.number().finite().positive(),
+	releaseRelativePercent: z.number().finite().nonnegative(),
+}) satisfies z.ZodType<{
+	readonly hard: number;
+	readonly warning: number;
+	readonly releaseRelativePercent: number;
+}>;
+
+const TOKEN_BUDGET_SCHEMA = z.union([
+	z.number().finite().positive(),
+	TOKEN_BUDGET_LEGACY_SCHEMA,
+	TOKEN_BUDGET_NEW_SCHEMA,
+]) satisfies z.ZodType<IPluginManifestTokenBudget>;
+
 const PLUGIN_MANIFEST_SCHEMA = z
 	.object({
 		id: z.string().regex(PLUGIN_ID_PATTERN, 'id must be kebab-case'),
@@ -58,11 +111,7 @@ const PLUGIN_MANIFEST_SCHEMA = z
 		permissions: permissionListSchema,
 		toolPermissions: toolPermissionsSchema.optional(),
 		presets: nonEmptyList('presets'),
-		tokenBudget: z.object({
-			hard: z.number().finite().positive(),
-			warning: z.number().finite().positive(),
-			releaseRelativePercent: z.number().finite().nonnegative(),
-		}),
+		tokenBudget: TOKEN_BUDGET_SCHEMA,
 		dependencies: nonEmptyList('dependencies'),
 		capabilities: nonEmptyList('capabilities'),
 	})
@@ -75,7 +124,15 @@ const PLUGIN_MANIFEST_SCHEMA = z
 				message: `package must match id (${expectedPackage})`,
 			});
 		}
-		if (manifest.tokenBudget.warning > manifest.tokenBudget.hard) {
+		// Legacy-shape-only invariant: `warning <= hard`. The new
+		// shape's superRefine handles the same invariant inside
+		// `caps`. A bare-number shape has no warning to check.
+		if (
+			typeof manifest.tokenBudget === 'object' &&
+			'warning' in manifest.tokenBudget &&
+			'releaseRelativePercent' in manifest.tokenBudget &&
+			manifest.tokenBudget.warning > manifest.tokenBudget.hard
+		) {
 			ctx.addIssue({
 				code: z.ZodIssueCode.custom,
 				path: ['tokenBudget', 'warning'],

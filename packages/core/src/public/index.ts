@@ -831,9 +831,15 @@ export type {
 } from '../lib/contracts/interfaces/plugin-registry.interface';
 export type {
 	IPluginManifest,
+	IPluginManifestTokenBudget,
 	PluginManifestMaturity,
 	PluginManifestVisibility,
 } from '../lib/contracts/interfaces/plugin-manifest.interface';
+export type {
+	IPluginTokenBudget,
+	IPluginTokenBudgetCaps,
+} from '../lib/contracts/interfaces/plugin-token-budget.interface';
+export { resolveTokenBudget } from '../lib/contracts/interfaces/plugin-token-budget.interface';
 export {
 	definePluginManifest,
 	parsePluginManifest,

@@ -20,7 +20,21 @@ export default definePluginManifest({
 		'backend-api',
 		'cli-tool',
 	],
-	tokenBudget: TOKEN_BUDGETS.toolPayloads.search,
+	// f00179 S2 — search was the original placeholder value
+	// (`TOKEN_BUDGETS.toolPayloads.search`). The real measured number
+	// (semantic + lexical + regex + symbol + references) is below
+	// the legacy `search.hard` ceiling. Measured 2026-08-25.
+	tokenBudget: {
+		staticBytes: 2_700,
+		adaptiveActivationBytes: 480,
+		typicalOutput: 800,
+		caps: {
+			hard: TOKEN_BUDGETS.toolPayloads.search.hard,
+			warning: TOKEN_BUDGETS.toolPayloads.search.warning,
+		},
+		measuredAt: '2026-08-25',
+		source: 'token-budget-real',
+	},
 	dependencies: ['@mcp-vertex/core', '@modelcontextprotocol/sdk', 'zod'],
 	capabilities: [
 		'lexical-search',
