@@ -133,7 +133,7 @@ Cero. No añade tools; reemplaza implementación.
 - `packages/core/src/lib/filesystem/safe-workspace-reader.ts` (nuevo).
 - `packages/core/src/lib/filesystem/safe-workspace-reader.types.ts` (nuevo).
 - `packages/core/src/lib/filesystem/safe-workspace-reader.errors.ts` (nuevo).
-- `packages/core/src/public.ts` (exportar `ISafeWorkspaceReader`, `ContainedPathResult`).
+- `packages/core/src/public/index.ts` (exportar `ISafeWorkspaceReader`, `ContainedPathResult`).
 - `packages/core/tests/src/lib/filesystem/safe-workspace-reader.spec.ts` (nuevo, suite adversarial).
 - `packages/core/tests/src/lib/filesystem/safe-workspace-reader.property.spec.ts` (nuevo).
 - Documentación: `docs/mcp-vertex/core/safe-workspace-reader.md` (nuevo).
@@ -440,7 +440,7 @@ export class WorkspaceContainmentError extends Error {
 ### 4. Export público
 
 ```ts
-// packages/core/src/public.ts (extracto)
+// packages/core/src/public/index.ts (extracto)
 export {
   SafeWorkspaceReader,
   WorkspaceContainmentError,
@@ -516,7 +516,7 @@ it('reserved paths always rejected', () => {
 ### S1 — Tipos + interfaz pública
 
 - **Status**: done
-- **Files**: `packages/core/src/lib/filesystem/safe-workspace-reader.types.ts`, `packages/core/src/public.ts`
+- **Files**: `packages/core/src/lib/filesystem/safe-workspace-reader.types.ts`, `packages/core/src/public/index.ts`
 - **Gate**: type
 - acceptance:
   - "`ISafeWorkspaceReader`, `ContainedPathResult`, `SafeReadResult`, etc., exportados."

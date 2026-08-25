@@ -161,7 +161,7 @@ Cada hit se reemplaza por una llamada al reader (a menos que sea operación inte
 ### 4. Tests adversariales nuevos
 
 ```ts
-// plugins/context-for-change/tests/src/lib/services/context-for-change.service.spec.ts
+// plugins/context-for-change/tests/src/context-for-change.tool.spec.ts
 import { ContextForChangeService } from '../../../../src/lib/services/context-for-change.service';
 
 describe('context-for-change — workspace containment', () => {
@@ -249,7 +249,7 @@ it('any absolute path outside workspace is rejected', () => {
 ### S2 — Tests adversariales
 
 - **Status**: pending
-- **Files**: `plugins/context-for-change/tests/src/lib/services/context-for-change.service.spec.ts`, `plugins/context-for-change/tests/src/lib/services/workspace-containment.spec.ts`
+- **Files**: `plugins/context-for-change/tests/src/context-for-change.tool.spec.ts`
 - **Gate**: type
 - acceptance:
   - "≥15 casos adversariales rechazados."
@@ -266,7 +266,7 @@ it('any absolute path outside workspace is rejected', () => {
 
 ## Acceptance
 
-- **Unit**: actualizar tests existentes; añadir suite `workspace-containment.spec.ts` (≥15 casos).
+- **Unit**: actualizar `plugins/context-for-change/tests/src/context-for-change.tool.spec.ts` con ≥15 casos adversariales.
 - **Integration**: tests con filesystem real (`mklink`, cleanup).
 - **Property**: ≥1 property test sobre paths adversariales.
 
