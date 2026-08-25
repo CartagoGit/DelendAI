@@ -90,18 +90,6 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 	const autoPluginSelector = resolve(
 		workspaceRoot,
 		'plugins/auto-plugin-selector/src',
-		{
-			find: '@mcp-vertex/orchestrator-runner/public',
-			replacement: resolve(orchestratorRunner, 'public/index.ts'),
-		},
-		{
-			find: /^@mcp-vertex\/orchestrator-runner\/lib\/(.*)$/,
-			replacement: `${resolve(orchestratorRunner, 'lib')}/$1`,
-		},
-		{
-			find: '@mcp-vertex/orchestrator-runner',
-			replacement: resolve(orchestratorRunner, 'index.ts'),
-		},
 	);
 	const api = resolve(workspaceRoot, 'plugins/api/src');
 	const conventions = resolve(workspaceRoot, 'plugins/conventions/src');
@@ -636,6 +624,18 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 		{
 			find: '@mcp-vertex/auto-plugin-selector',
 			replacement: resolve(autoPluginSelector, 'index.ts'),
+		},
+		{
+			find: '@mcp-vertex/orchestrator-runner/public',
+			replacement: resolve(orchestratorRunner, 'public/index.ts'),
+		},
+		{
+			find: /^@mcp-vertex\/orchestrator-runner\/lib\/(.*)$/,
+			replacement: `${resolve(orchestratorRunner, 'lib')}/$1`,
+		},
+		{
+			find: '@mcp-vertex/orchestrator-runner',
+			replacement: resolve(orchestratorRunner, 'index.ts'),
 		},
 		{
 			find: '@mcp-vertex/api/public',
