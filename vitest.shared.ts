@@ -211,6 +211,10 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 			replacement: resolve(shared, 'public/index.ts'),
 		},
 		{
+			find: '@mcp-vertex/core/version',
+			replacement: resolve(core, 'version.ts'),
+		},
+		{
 			find: '@mcp-vertex/core/public',
 			replacement: resolve(core, 'public/index.ts'),
 		},

@@ -2,7 +2,7 @@
 id: x00237
 title: "error-reporting — fuente canónica de mcpVertexVersion: build-time injected desde @mcp-vertex/core (no del root package.json)"
 kind: fix
-status: ready
+status: review
 type: proposal
 track: privacy
 date: 2026-08-25
@@ -23,7 +23,7 @@ related:
 
 # x00237 — error-reporting: fuente canónica de `mcpVertexVersion`
 
-## Problem
+## Goal
 
 `mcpVertexVersion` se deriva del `package.json` raíz privado del monorepo. Ese valor (`version: 0.1.0` por defecto del root privado) **no necesariamente coincide** con la versión pública real de `@mcp-vertex/core`.
 
@@ -38,7 +38,6 @@ No es seguridad; es **correctitud diagnóstica** y operabilidad.
 
 Reglas relacionadas: §3 auditoría (la versión de Vertex SÍ es Class A — permitida — pero debe ser la real).
 
-## Evidence
 
 ```ts
 // plugins/error-reporting/src/lib/report-builder.helper.ts (extracto)
@@ -76,25 +75,22 @@ test('mcpVertexVersion matches @mcp-vertex/core', () => {
 });
 ```
 
-## Classification
 
 `MEJORA / CORRECTITUD DIAGNÓSTICA` — bug confirmado pero severidad moderada (P0 en este plan por consistencia del Track D).
 
-## User impact
+## Why
 
 - Operadores de Vertex: ven la versión correcta en cada issue.
 - Equipo de soporte: puede mapear issues a releases reales.
 - No hay impacto en privacidad: `mcpVertexVersion` ya era Class A (permitida).
 
-## Privacy impact
 
 Neutro. La versión de Vertex es Class A — siempre permitida. El cambio mejora la fidelidad de la metadata pública sin ampliar superficie.
 
-## Token impact
 
 Cero. No afecta el reporter payload.
 
-## Scope
+## Non-goals
 
 **Permitido**:
 
@@ -110,13 +106,12 @@ Cero. No afecta el reporter payload.
 - Cambiar la política de qué versiones se reportan.
 - Cualquier cosa que añada versiones distintas a la del paquete publicado (build hash, commit SHA, etc.) — eso pertenece a otra propuesta si se quiere.
 
-## Out of scope
 
 - Renombrar el campo en el DTO.
 - Añadir release channel / nightly detection.
 - Cambiar la frecuencia de release o versionado.
 
-## Design
+## Architecture
 
 ### 1. Fuente única: `@mcp-vertex/core/package.json`
 
@@ -214,47 +209,6 @@ describe('report uses correct mcpVertexVersion', () => {
 });
 ```
 
-## Tests
-
-- **Unit**: `packages/core/tests/src/lib/version.spec.ts` (nuevo).
-- **Unit**: `plugins/error-reporting/tests/src/lib/report-builder.spec.ts` (extender con `mcpVertexVersion` check).
-- **Cross-package**: import real desde `@mcp-vertex/core` resuelve y la versión coincide con `package.json`.
-- **Snapshot**: el report serializado contiene `mcpVertexVersion` que pasa la regex semver.
-
-## Acceptance criteria
-
-- [ ] `packages/core/src/lib/version.ts` exporta `MCP_VERTEX_VERSION` desde su propio `package.json`.
-- [ ] `plugins/error-reporting/src/lib/report-builder.helper.ts` ya no importa del root `package.json`.
-- [ ] `mcpVertexVersion` en cualquier issue generada coincide con `@mcp-vertex/core@X.Y.Z` que el usuario está corriendo.
-- [ ] Tests verdes (`version.spec.ts`, `report-builder.spec.ts`).
-- [ ] Si se usa el fallback build-time, el script está integrado en `bun run build`.
-- [ ] Documentación (`docs/mcp-vertex/plugins/error-reporting.md`) menciona explícitamente que `mcpVertexVersion` proviene del paquete publicado, no del root.
-- [ ] `bun run validate` verde.
-
-## Regression guards
-
-- **Test en CI**: `version.spec.ts` corre en cada build; falla si `MCP_VERTEX_VERSION !== corePackageJson.version`.
-- **Doc grep test**: `grep -nR "from.*'\.\./\.\./\.\./package\.json'" plugins/error-reporting/src` no debe encontrar matches que importen `version` (otros campos del package.json pueden seguir importándose si se justifica).
-- **Snapshot** del report: si cambia la versión, el snapshot se actualiza **explícitamente** con un commit que explique el bump.
-
-## Resolution evidence (template)
-
-```yaml
-resolution:
-  status: implemented
-  evidence:
-    - commit: <hash>
-    - before/after:
-        before: "MCP_VERTEX_VERSION = monorepo root package.json#version (0.1.0)"
-        after:  "MCP_VERTEX_VERSION = @mcp-vertex/core/package.json#version (real)"
-    - tests:
-        - packages/core/tests/src/lib/version.spec.ts
-        - plugins/error-reporting/tests/src/lib/report-builder.spec.ts
-    - cross-check: "issue real con version '1.4.2' coincide con packages/core/package.json"
-```
-
----
-
 ## Slices
 
 - global_gate: type
@@ -287,7 +241,22 @@ resolution:
   - "Si el bundler del consumidor no soporta `import attributes`, el fallback genera `version.generated.ts`."
   - "Documentación actualizada mencionando el origen de la versión."
 
-## acceptance
+## Acceptance
+
+- **Unit**: `packages/core/tests/src/lib/version.spec.ts` (nuevo).
+- **Unit**: `plugins/error-reporting/tests/src/lib/report-builder.spec.ts` (extender con `mcpVertexVersion` check).
+- **Cross-package**: import real desde `@mcp-vertex/core` resuelve y la versión coincide con `package.json`.
+- **Snapshot**: el report serializado contiene `mcpVertexVersion` que pasa la regex semver.
+
+
+- [ ] `packages/core/src/lib/version.ts` exporta `MCP_VERTEX_VERSION` desde su propio `package.json`.
+- [ ] `plugins/error-reporting/src/lib/report-builder.helper.ts` ya no importa del root `package.json`.
+- [ ] `mcpVertexVersion` en cualquier issue generada coincide con `@mcp-vertex/core@X.Y.Z` que el usuario está corriendo.
+- [ ] Tests verdes (`version.spec.ts`, `report-builder.spec.ts`).
+- [ ] Si se usa el fallback build-time, el script está integrado en `bun run build`.
+- [ ] Documentación (`docs/mcp-vertex/plugins/error-reporting.md`) menciona explícitamente que `mcpVertexVersion` proviene del paquete publicado, no del root.
+- [ ] `bun run validate` verde.
+
 
 - `MCP_VERTEX_VERSION` exportado desde el paquete `@mcp-vertex/core`.
 - El reporter importa desde `@mcp-vertex/core`, no desde el root.
@@ -296,7 +265,29 @@ resolution:
 
 ---
 
-## Cómo se relaciona con el plan y la auditoría
+## Notes
+
+- **Test en CI**: `version.spec.ts` corre en cada build; falla si `MCP_VERTEX_VERSION !== corePackageJson.version`.
+- **Doc grep test**: `grep -nR "from.*'\.\./\.\./\.\./package\.json'" plugins/error-reporting/src` no debe encontrar matches que importen `version` (otros campos del package.json pueden seguir importándose si se justifica).
+- **Snapshot** del report: si cambia la versión, el snapshot se actualiza **explícitamente** con un commit que explique el bump.
+
+
+```yaml
+resolution:
+  status: implemented
+  evidence:
+    - commit: <hash>
+    - before/after:
+        before: "MCP_VERTEX_VERSION = monorepo root package.json#version (0.1.0)"
+        after:  "MCP_VERTEX_VERSION = @mcp-vertex/core/package.json#version (real)"
+    - tests:
+        - packages/core/tests/src/lib/version.spec.ts
+        - plugins/error-reporting/tests/src/lib/report-builder.spec.ts
+    - cross-check: "issue real con version '1.4.2' coincide con packages/core/package.json"
+```
+
+---
+
 
 - **Plan padre**: [q00004](../../ready/q00004-plan-hardening-post-auditoria-chatgpt-sol-segunda-pasada.md), Track D.
 - **Auditoría legada**: §4 ER2-003.

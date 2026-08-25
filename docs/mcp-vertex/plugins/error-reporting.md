@@ -13,6 +13,9 @@ plugin registry and whose frames have been normalized to package-relative
 `@mcp-vertex/*` paths. There is no API surface, schema field, runtime option
 or feature flag that re-enables reporting of external project data.
 
+`mcpVertexVersion` in the public DTO comes from the published
+`@mcp-vertex/core` package version, not the monorepo root `package.json`.
+
 If you need to disable the reporter entirely, do so at the host
 configuration level with `plugins.error-reporting.options.enabled = false`.
 The privacy boundary is on the content, not on a per-error opt-out.
