@@ -1,5 +1,7 @@
-import { readdir, readFile } from 'node:fs/promises';
+import { readdir } from 'node:fs/promises';
 import { join, relative, resolve } from 'node:path';
+
+import { SafeWorkspaceReader } from '@mcp-vertex/core/public';
 
 import {
 	applyCodemodEdits,
@@ -108,8 +110,15 @@ export const runCodemod = async (
 ): Promise<ICodemodRunResult> => {
 	void request.dryRun;
 	const listFiles = deps.listFiles ?? walkFiles;
-	const reader = deps.readFile ?? ((path: string) => readFile(path, 'utf8'));
 	const cwd = resolve(request.cwd);
+	const reader =
+		deps.readFile ??
+		(async (path: string) =>
+			(
+				await new SafeWorkspaceReader(cwd).readText(
+					normalizePath(cwd, path),
+				)
+			).content);
 
 	let discovered: readonly string[];
 	try {

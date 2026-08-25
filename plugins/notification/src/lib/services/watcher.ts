@@ -1,7 +1,9 @@
 import { watch } from 'node:fs';
 import type { FSWatcher } from 'node:fs';
-import { readFile, readdir, stat } from 'node:fs/promises';
-import { dirname, join } from 'node:path';
+import { readdir, stat } from 'node:fs/promises';
+import { basename, dirname, join } from 'node:path';
+
+import { SafeWorkspaceReader } from '@mcp-vertex/core/public';
 
 /** `fs/promises.stat` rejects on ENOENT; we only care whether the path exists. */
 const pathExists = async (path: string): Promise<boolean> => {
@@ -36,7 +38,11 @@ export const readInFlight = async (
 ): Promise<Map<string, IReleasedClaim>> => {
 	const map = new Map<string, IReleasedClaim>();
 	try {
-		const raw = await readFile(lockFile, 'utf8');
+		const raw = (
+			await new SafeWorkspaceReader(dirname(lockFile)).readText(
+				basename(lockFile),
+			)
+		).content;
 		const parsed = JSON.parse(raw) as {
 			in_flight?: ILockEntryLite[];
 		};
@@ -304,7 +310,11 @@ export const createHandoffWatcher = (params: {
 			seenFiles.add(file);
 			const pathAbs = join(params.handoffDir, file);
 			try {
-				const content = await readFile(pathAbs, 'utf8');
+				const content = (
+					await new SafeWorkspaceReader(params.handoffDir).readText(
+						file,
+					)
+				).content;
 				const parsed = JSON.parse(content);
 				if (
 					parsed &&

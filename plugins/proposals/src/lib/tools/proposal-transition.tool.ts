@@ -31,13 +31,14 @@
  *   cleanly without needing a feature flag.
  */
 
-import { mkdir, readFile, rename } from 'node:fs/promises';
-import { dirname, join, relative } from 'node:path';
+import { mkdir, rename } from 'node:fs/promises';
+import { basename, dirname, join, relative } from 'node:path';
 
 import z from 'zod';
 
 import type { IToolRegistration } from '@mcp-vertex/core/public';
 import {
+	SafeWorkspaceReader,
 	toolError,
 	toolOk,
 	withFileMutex,
@@ -128,17 +129,20 @@ export interface IValidateEvidenceDeps {
 const readValidateLogEntries = async (
 	logPathAbs: string,
 ): Promise<readonly IValidateLogEntry[]> => {
-	const raw = await readFile(logPathAbs, 'utf8').catch((error: unknown) => {
-		if (
-			error &&
-			typeof error === 'object' &&
-			'code' in error &&
-			error.code === 'ENOENT'
-		) {
-			return '';
-		}
-		throw error;
-	});
+	const raw = await new SafeWorkspaceReader(dirname(logPathAbs))
+		.readText(basename(logPathAbs))
+		.then((value) => value.content)
+		.catch((error: unknown) => {
+			if (
+				error &&
+				typeof error === 'object' &&
+				'code' in error &&
+				error.code === 'ENOENT'
+			) {
+				return '';
+			}
+			throw error;
+		});
 	if (raw.trim() === '') return [];
 	const entries: IValidateLogEntry[] = [];
 	for (const line of raw.split('\n')) {
@@ -266,7 +270,10 @@ const resolveTargetFolder = async (
 	proposalsDirAbs: string,
 ): Promise<string> => {
 	if (to !== 'done') return STATUS_TO_FOLDER[to];
-	const raw = await readFile(found.absPath, 'utf8').catch(() => '');
+	const raw = await new SafeWorkspaceReader(proposalsDirAbs)
+		.readText(relative(proposalsDirAbs, found.absPath))
+		.then((value) => value.content)
+		.catch(() => '');
 	const kindRaw = readFrontmatterField(raw, 'kind');
 	const kind =
 		kindRaw !== undefined && isKnownKind(kindRaw) ? kindRaw : undefined;
@@ -426,7 +433,10 @@ export const runProposalTransition = async (
 
 	const from = validateCurrentStatus(args.id, found);
 	if (typeof from !== 'string') return from;
-	const raw = await readFile(found.absPath, 'utf8').catch(() => '');
+	const raw = await new SafeWorkspaceReader(options.proposalsDirAbs)
+		.readText(relative(options.proposalsDirAbs, found.absPath))
+		.then((value) => value.content)
+		.catch(() => '');
 
 	let finalTo = to;
 	let depId: string | undefined;
@@ -469,7 +479,6 @@ export const runProposalTransition = async (
 	if (!regressionGuard.ok) {
 		return buildCodeError(regressionGuard.code, regressionGuard.reason);
 	}
-
 	if (
 		args.reason.trim() === '' &&
 		!(from === 'done' && finalTo === 'review' && args.force === true)
@@ -597,9 +606,17 @@ export const runProposalTransition = async (
 							args.id,
 						)
 					: hasIndependentPeerApproval(
-							await readFile(found.absPath, 'utf8').catch(
-								() => '',
-							),
+							await new SafeWorkspaceReader(
+								options.proposalsDirAbs,
+							)
+								.readText(
+									relative(
+										options.proposalsDirAbs,
+										found.absPath,
+									),
+								)
+								.then((value) => value.content)
+								.catch(() => ''),
 						);
 			if (!approved) {
 				const envelope = {
@@ -765,7 +782,11 @@ const maybeApplyPlanClosureGuard = async (
 	// matched (no re-read of the file). The plan-closure guard needs
 	// the full markdown, so we re-read it here. Cheap and keeps the
 	// locate helper single-responsibility.
-	const raw = await readFile(found.absPath, 'utf8');
+	const raw = (
+		await new SafeWorkspaceReader(options.proposalsDirAbs).readText(
+			relative(options.proposalsDirAbs, found.absPath),
+		)
+	).content;
 	if (!isPlanProposal(raw)) return null;
 
 	const guard = await runPlanClosureGuard({
@@ -814,7 +835,11 @@ const applyTransition = async (
 	const movedFromRel = relative(options.proposalsDirAbs, found.absPath);
 	const movedToRel = relative(options.proposalsDirAbs, newAbsPath);
 	await withFileMutex(found.absPath, async () => {
-		const current = await readFile(found.absPath, 'utf8');
+		const current = (
+			await new SafeWorkspaceReader(options.proposalsDirAbs).readText(
+				relative(options.proposalsDirAbs, found.absPath),
+			)
+		).content;
 		let updated = setFrontmatterStatus(current, args.to);
 		if (args.to === 'blocked' && depId) {
 			updated = setFrontmatterField(updated, 'blocked-by', `[${depId}]`);

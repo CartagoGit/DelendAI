@@ -8,12 +8,13 @@
  * `DEFAULT_PATH_LAYOUT`.
  */
 
-import { mkdir, readFile, readdir, rm, stat } from 'node:fs/promises';
+import { mkdir, readdir, rm, stat } from 'node:fs/promises';
 import { hostname } from 'node:os';
 import { basename, dirname, join } from 'node:path';
 
 import {
 	LockContentionError,
+	SafeWorkspaceReader,
 	writeFileAtomic,
 	withFileMutex,
 } from '@mcp-vertex/core/public';
@@ -149,7 +150,11 @@ const appendReleaseAuditEntry = async (
 	await withFileMutex(auditPath, async () => {
 		await mkdir(dirname(auditPath), { recursive: true });
 		try {
-			const prefix = await readFile(auditPath, 'utf8');
+			const prefix = (
+				await new SafeWorkspaceReader(dirname(auditPath)).readText(
+					basename(auditPath),
+				)
+			).content;
 			await writeFileAtomic(
 				auditPath,
 				`${prefix}${JSON.stringify(entry)}\n`,
@@ -538,7 +543,11 @@ const loadLock = async (deps: IAgentLockDeps = {}): Promise<ILockFile> => {
 	const lockPath = getLockPath(deps);
 	let raw: string;
 	try {
-		raw = await readFile(lockPath, 'utf8');
+		raw = (
+			await new SafeWorkspaceReader(dirname(lockPath)).readText(
+				basename(lockPath),
+			)
+		).content;
 	} catch {
 		return EMPTY_LOCK();
 	}

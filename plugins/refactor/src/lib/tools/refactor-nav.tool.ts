@@ -7,12 +7,13 @@
  * `{file,line,column,kind,name,isDefinition}` projection so an LLM agent
  * can ground rename/codemod decisions in the AST.
  */
-import { readFile } from 'node:fs/promises';
-
 import z from 'zod';
+
+import { basename, dirname } from 'node:path';
 
 import type { IToolRegistration } from '@mcp-vertex/core/public';
 import {
+	SafeWorkspaceReader,
 	resolveWorkspaceContained,
 	toolError,
 	toolJson,
@@ -57,7 +58,11 @@ export const buildRefactorNavToolRegistrations = (
 	options: IRefactorNavToolOptions,
 ): readonly IToolRegistration[] => {
 	const prefix = options.namespacePrefix;
-	const read = options.readFile ?? ((p: string) => readFile(p, 'utf8'));
+	const read =
+		options.readFile ??
+		(async (p: string) =>
+			(await new SafeWorkspaceReader(dirname(p)).readText(basename(p)))
+				.content);
 
 	const loadEngine = async (path: string) => {
 		// x00184 (F17): `path` used to be passed straight through when it

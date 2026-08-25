@@ -1,6 +1,7 @@
-import { mkdir, readFile, readdir, stat, unlink } from 'node:fs/promises';
-import { join } from 'node:path';
+import { mkdir, readdir, stat, unlink } from 'node:fs/promises';
+import { basename, dirname, join } from 'node:path';
 import {
+	SafeWorkspaceReader,
 	writeFileAtomic,
 	redactSecrets,
 	type IMcpPluginContext,
@@ -157,7 +158,11 @@ export class AgentLoopDetectorService {
 
 	private async getActiveAgent(): Promise<string> {
 		try {
-			const raw = await readFile(this.lockPath, 'utf8');
+			const raw = (
+				await new SafeWorkspaceReader(this.ctx.workspace.root).readText(
+					this.lockPath,
+				)
+			).content;
 			const locks = JSON.parse(raw);
 			if (Array.isArray(locks.in_flight) && locks.in_flight.length > 0) {
 				const agent = locks.in_flight[0].agent;
@@ -539,9 +544,12 @@ export class AgentLoopDetectorService {
 	): Promise<void> {
 		let activeLocks = [];
 		let currentProposal = null;
+		const workspaceReader = new SafeWorkspaceReader(
+			this.ctx.workspace.root,
+		);
 
 		try {
-			const raw = await readFile(this.lockPath, 'utf8');
+			const raw = (await workspaceReader.readText(this.lockPath)).content;
 			const locks = JSON.parse(raw);
 			activeLocks = locks.in_flight ?? [];
 		} catch {
@@ -549,7 +557,8 @@ export class AgentLoopDetectorService {
 		}
 
 		try {
-			const raw = await readFile(this.proposalIndexPath, 'utf8');
+			const raw = (await workspaceReader.readText(this.proposalIndexPath))
+				.content;
 			const index = JSON.parse(raw);
 			// Find matching active proposal
 			const activeTaskIds = new Set(
@@ -706,7 +715,11 @@ export const computeProgressHash = async (
 	gitRunner: IGitRunner,
 ): Promise<string | null> => {
 	try {
-		const lockRaw = await readFile(lockPath, 'utf8');
+		const lockRaw = (
+			await new SafeWorkspaceReader(dirname(lockPath)).readText(
+				basename(lockPath),
+			)
+		).content;
 		const diffRes = await gitRunner(['diff', '--stat']);
 		if (!diffRes.ok) {
 			throw new Error('git diff failed');

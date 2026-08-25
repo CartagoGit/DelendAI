@@ -11,6 +11,7 @@
  * every other durable write in this plugin.
  */
 import {
+	readAbsoluteTextSafe,
 	redactSecrets,
 	withFileMutex,
 	writeFileAtomic,
@@ -45,9 +46,7 @@ export const readInvocations = async (
 ): Promise<IInvocationRecord[]> => {
 	let raw: string;
 	try {
-		const file = Bun.file(absPath);
-		if (!(await file.exists())) return [];
-		raw = await file.text();
+		raw = await readAbsoluteTextSafe(absPath);
 	} catch {
 		return [];
 	}

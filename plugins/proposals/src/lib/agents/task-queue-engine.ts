@@ -20,13 +20,14 @@
  *     friendly message.
  */
 
-import { mkdir, readFile, stat } from 'node:fs/promises';
-import { dirname, resolve } from 'node:path';
+import { mkdir, stat } from 'node:fs/promises';
+import { basename, dirname, resolve } from 'node:path';
 
 import z from 'zod';
 
 import {
 	quarantineCorruptFile,
+	SafeWorkspaceReader,
 	withFileMutex,
 	writeFileAtomic,
 } from '@mcp-vertex/core/public';
@@ -234,7 +235,11 @@ const loadOrEmptyQueue = async (
 ): Promise<IPersistentTaskQueue> => {
 	let raw: string;
 	try {
-		raw = await readFile(queuePath, 'utf8');
+		raw = (
+			await new SafeWorkspaceReader(dirname(queuePath)).readText(
+				basename(queuePath),
+			)
+		).content;
 	} catch (err: unknown) {
 		if ((err as NodeJS.ErrnoException).code === 'ENOENT')
 			return { version: 1, entries: [] };
@@ -322,7 +327,11 @@ const deliveredSidecarPath = (queuePath: string): string =>
 const loadDeliveredSet = async (sidecarPath: string): Promise<Set<string>> => {
 	let raw: string;
 	try {
-		raw = await readFile(sidecarPath, 'utf8');
+		raw = (
+			await new SafeWorkspaceReader(dirname(sidecarPath)).readText(
+				basename(sidecarPath),
+			)
+		).content;
 	} catch (err: unknown) {
 		if ((err as NodeJS.ErrnoException).code === 'ENOENT') return new Set();
 		throw err;

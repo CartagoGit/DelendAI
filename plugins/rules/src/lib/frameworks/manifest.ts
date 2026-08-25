@@ -1,6 +1,8 @@
-import { readFile } from 'node:fs/promises';
+import { basename, dirname } from 'node:path';
+
 import {
 	joinRel,
+	SafeWorkspaceReader,
 	withFileMutex,
 	writeFileAtomic,
 } from '@mcp-vertex/core/public';
@@ -191,6 +193,7 @@ const computeFingerprint = (
 };
 
 export interface IEnsureCacheOptions {
+	readonly reader?: IFileReader;
 	/** Resolve a workspace-relative path to absolute. */
 	readonly resolve: (relativePath: string) => string;
 	readonly cacheRelDir: string;
@@ -246,8 +249,26 @@ export const ensureRulesCache = async (
 	const manifestWritten = await withFileMutex(manifestAbs, async () => {
 		let existingFingerprint: string | undefined;
 		try {
+			const reader =
+				options.reader ??
+				({
+					readFile: async (relativePath: string) =>
+						(
+							await new SafeWorkspaceReader(
+								dirname(manifestAbs),
+							).readText(
+								relativePath === options.manifestRelPath
+									? basename(manifestAbs)
+									: relativePath,
+							)
+						).content,
+					exists: async () => false,
+					listDir: async () => [],
+				} satisfies IFileReader);
 			existingFingerprint = (
-				JSON.parse(await readFile(manifestAbs, 'utf8')) as {
+				JSON.parse(
+					(await reader.readFile(options.manifestRelPath)) ?? '',
+				) as {
 					fingerprint?: string;
 				}
 			).fingerprint;

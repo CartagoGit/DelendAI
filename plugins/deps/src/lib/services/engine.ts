@@ -1,5 +1,8 @@
-import { resolveWorkspaceContained } from '@mcp-vertex/core/public';
-import { readFile, stat } from 'node:fs/promises';
+import {
+	resolveWorkspaceContained,
+	SafeWorkspaceReader,
+} from '@mcp-vertex/core/public';
+import { stat } from 'node:fs/promises';
 import { join } from 'node:path';
 
 export type IDepSection =
@@ -38,9 +41,10 @@ const readManifest = async (
 	// `manifest: '../../etc/...'` must not read outside what the host exposes.
 	const contained = resolveWorkspaceContained(rootAbs, manifestRel);
 	if (!contained.ok) return { found: false, manifest: {} };
+	const reader = new SafeWorkspaceReader(rootAbs);
 	try {
 		const parsed = JSON.parse(
-			await readFile(contained.abs, 'utf8'),
+			(await reader.readText(contained.rel)).content,
 		) as IManifest;
 		return { found: true, manifest: parsed ?? {} };
 	} catch {
@@ -428,12 +432,13 @@ export const buildDepTree = async (
 	let lockfile: IBunLock = {};
 	let lockfileFound = false;
 	if (containedLock.ok) {
+		const reader = new SafeWorkspaceReader(rootAbs);
 		try {
 			// bun.lock uses JSON5 (trailing commas, unquoted keys) — strip the
 			// trailing commas that strict JSON rejects, then parse. Errors are
 			// swallowed: a malformed lockfile still reports `lockfileFound: true`
 			// and the tool falls back to manifest-only data.
-			const raw = await readFile(containedLock.abs, 'utf8');
+			const raw = (await reader.readText(containedLock.rel)).content;
 			const stripped = raw.replace(/,(\s*[}\]])/gu, '$1');
 			lockfile = JSON.parse(stripped) as IBunLock;
 			lockfileFound = true;

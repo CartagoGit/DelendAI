@@ -8,11 +8,15 @@
  * must treat specially.
  */
 
-import { mkdir, readFile } from 'node:fs/promises';
+import { mkdir } from 'node:fs/promises';
 import { hostname } from 'node:os';
-import { dirname, join } from 'node:path';
+import { basename, dirname, join } from 'node:path';
 
-import { withFileMutex, writeFileAtomic } from '@mcp-vertex/core/public';
+import {
+	SafeWorkspaceReader,
+	withFileMutex,
+	writeFileAtomic,
+} from '@mcp-vertex/core/public';
 
 export type IDoneToReviewRegressionResult =
 	| { ok: true }
@@ -111,8 +115,10 @@ export const logForcedRegression = async (input: {
 
 	await mkdir(dirname(logPath), { recursive: true });
 	await withFileMutex(logPath, async () => {
-		const existing = await readFile(logPath, 'utf8').catch(
-			(error: unknown) => {
+		const existing = await new SafeWorkspaceReader(dirname(logPath))
+			.readText(basename(logPath))
+			.then((value) => value.content)
+			.catch((error: unknown) => {
 				if (
 					error &&
 					typeof error === 'object' &&
@@ -122,8 +128,7 @@ export const logForcedRegression = async (input: {
 					return '';
 				}
 				throw error;
-			},
-		);
+			});
 		const prefix =
 			existing === '' || existing.endsWith('\n')
 				? existing

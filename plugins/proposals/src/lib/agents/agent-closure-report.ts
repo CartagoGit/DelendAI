@@ -1,4 +1,6 @@
-import { readFile } from 'node:fs/promises';
+import { basename, dirname } from 'node:path';
+
+import { SafeWorkspaceReader } from '@mcp-vertex/core/public';
 
 import { appendToClosedTasks } from './closed-tasks-log';
 import { AGENT_CANONICAL_ROLES } from '../shared/agent-conventions';
@@ -244,7 +246,11 @@ const isKnownModel = (
 
 const readJson = async (absolutePath: string): Promise<unknown> => {
 	try {
-		const raw = await readFile(absolutePath, 'utf8');
+		const raw = (
+			await new SafeWorkspaceReader(dirname(absolutePath)).readText(
+				basename(absolutePath),
+			)
+		).content;
 		return JSON.parse(raw) as unknown;
 	} catch (error) {
 		const detail = error instanceof Error ? error.message : String(error);

@@ -3,8 +3,7 @@
  * existing repo path (files + ancestor dirs) so relative links can be resolved.
  * The only module here that touches the OS. Never throws.
  */
-import { readFile } from 'node:fs/promises';
-import { join } from 'node:path';
+import { SafeWorkspaceReader } from '@mcp-vertex/core/public';
 
 import type {
 	ILinkScanDeps,
@@ -43,6 +42,7 @@ const addWithAncestors = (set: Set<string>, rel: string): void => {
 /** Production link-check deps rooted at `workspaceRootAbs`, via Bun.Glob. */
 export const realLinkScanDeps = (workspaceRootAbs: string): ILinkScanDeps => ({
 	listDocs: async () => {
+		const reader = new SafeWorkspaceReader(workspaceRootAbs);
 		const out: ISourceDoc[] = [];
 		const glob = new Bun.Glob('**/*.md');
 		for await (const rel of glob.scan({
@@ -53,10 +53,7 @@ export const realLinkScanDeps = (workspaceRootAbs: string): ILinkScanDeps => ({
 			if (out.length >= MAX_DOCS) break;
 			if (isExcluded(rel)) continue;
 			try {
-				const content = await readFile(
-					join(workspaceRootAbs, rel),
-					'utf8',
-				);
+				const content = (await reader.readText(rel)).content;
 				if (content.length <= MAX_DOC_BYTES) {
 					out.push({ path: rel, content });
 				}

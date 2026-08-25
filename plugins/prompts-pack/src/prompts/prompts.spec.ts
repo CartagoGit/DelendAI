@@ -1,8 +1,9 @@
-import { readFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { describe, expect, it } from 'vitest';
+
+import { SafeWorkspaceReader } from '@mcp-vertex/core/public';
 
 import { buildGenerateDocstringsPrompt } from './docstrings';
 import { buildExplainThisCodePrompt } from './explain';
@@ -79,10 +80,11 @@ const fakeServer = () => {
 };
 
 const loadCatalogToolIds = async (): Promise<Set<string>> => {
-	const source = await readFile(
-		resolve(workspaceRoot, 'packages/core/src/generated/tool-outputs.ts'),
-		'utf8',
-	);
+	const source = (
+		await new SafeWorkspaceReader(workspaceRoot).readText(
+			'packages/core/src/generated/tool-outputs.ts',
+		)
+	).content;
 	const ids = source.match(/"mcp-vertex_[^"]+"/g) ?? [];
 	return new Set(ids.map((entry) => entry.slice(1, -1)));
 };

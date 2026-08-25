@@ -7,9 +7,12 @@
  * `readdir(..., { withFileTypes: true })` entries adapted to the
  * narrow `IDirEntry` port, keeping `scan.ts` pure and testable.
  */
-import { readdir, readFile } from 'node:fs/promises';
+import { readdir } from 'node:fs/promises';
 
-import { resolveWorkspaceContained } from '@mcp-vertex/core/public';
+import {
+	resolveWorkspaceContained,
+	SafeWorkspaceReader,
+} from '@mcp-vertex/core/public';
 
 import type { IDirEntry, IScanReader } from './scan';
 
@@ -30,7 +33,9 @@ export const createFsScanReader = (rootDir: string): IScanReader => ({
 		const contained = resolveWorkspaceContained(rootDir, relPath);
 		if (!contained.ok) return undefined;
 		try {
-			return await readFile(contained.abs, 'utf8');
+			return (
+				await new SafeWorkspaceReader(rootDir).readText(contained.rel)
+			).content;
 		} catch {
 			return undefined;
 		}
