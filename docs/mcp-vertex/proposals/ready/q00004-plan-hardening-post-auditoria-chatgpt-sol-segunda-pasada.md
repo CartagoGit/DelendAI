@@ -94,7 +94,7 @@ project-rules:
 
 ## Goal
 
-Orquestar la conversión de la **segunda auditoría externa** (`docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol.md`, sha256 `fc2494af135f18cdc2de8c36c110d6296e2a1c511e602afa0a1e4d2a566f339d`) en trabajo trazable, verificable y cerrable. Este plan agrupa **27 propuestas hijas** distribuidas en **8 tracks** (A filesystem, B concurrency, C tokens, D privacy, E manifests, F quality, G CI/gobernanza, H surface runtime) y define las reglas de proyecto que todas las hijas deben respetar obligatoriamente.
+Orquestar la conversión de la **segunda auditoría externa** (`docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol.md`, sha256 `fc2494af135f18cdc2de8c36c110d6296e2a1c511e602afa0a1e4d2a566f339d`) en trabajo trazable, verificable y cerrable. Este plan agrupa **28 propuestas hijas** distribuidas en **8 tracks** (A filesystem, B concurrency, C tokens, D privacy, E manifests, F quality, G CI/gobernanza, H surface runtime) y define las reglas de proyecto que todas las hijas deben respetar obligatoriamente.
 
 **Predecesor**: `q00003` (auditoría 2026-08-24, 43 hijas, sigue en progreso). El presente plan NO duplica trabajo previo: las hijas de q00003 que sigan abiertas continúan ahí; este plan cubre hallazgos de la segunda pasada que o son nuevos, o son profundizaciones del mismo dominio.
 
@@ -107,7 +107,7 @@ Orquestar la conversión de la **segunda auditoría externa** (`docs/mcp-vertex/
 
 ### Naturaleza de este plan
 
-**El plan no produce código por sí mismo**: es un **orquestador**. El trabajo real lo entregan las 27 hijas, y el plan no puede cerrarse (`done`) hasta que:
+**El plan no produce código por sí mismo**: es un **orquestador**. El trabajo real lo entregan las 28 hijas, y el plan no puede cerrarse (`done`) hasta que:
 
 1. Cada hija cierre sus slices y pase peer review (`requireAllChildrenDone + requireAllSlicesDone`).
 2. La tabla de tracks/propuestas al final de este documento refleje el estado real.
@@ -308,7 +308,7 @@ Cada hija debe cerrar con `resolution.evidence` que incluya al menos:
 
 ## Slices
 
-### S1 — Orquestar las 27 hijas a `done`
+### S1 — Orquestar las 28 hijas a `done`
 
 - **Status**: pending
 - **Files**: `docs/mcp-vertex/proposals/ready/q00004-plan-hardening-post-auditoria-chatgpt-sol-segunda-pasada.md`
@@ -397,7 +397,7 @@ Cuando q00003 y q00004 estén ambos `done` con peer review, MCP Vertex queda apr
 
 # Definition of Done de este plan
 
-- Las 27 hijas están `done` con peer review verde.
+- Las 28 hijas están `done` con peer review verde.
 - Los criterios de aceptación globales están todos verificados con evidencia (`resolution.evidence`).
 - Los generated artifacts (registry, web catalog, docs, permissions, token dashboard) están sincronizados con HEAD.
 - `bun run validate` verde en el commit de cierre.
