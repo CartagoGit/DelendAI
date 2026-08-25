@@ -29,7 +29,7 @@ const truncateHint = (value: string): string =>
 		? value
 		: `${value.slice(0, PROJECT_HEALTH_MAX_HINT_LENGTH - 1)}…`;
 
-const buildNextActions = (
+export const buildNextActions = (
 	score: IProjectHealthScore,
 	signals: IProjectHealthSignals,
 ): IProjectHealthNextAction[] => {
@@ -77,7 +77,7 @@ const buildNextActions = (
 			];
 };
 
-const buildDomainHint = (
+export const buildDomainHint = (
 	domain: Exclude<TProjectHealthDomain, 'summary'>,
 	signals: IProjectHealthSignals,
 ): string => {
@@ -105,7 +105,7 @@ const buildDomainHint = (
 	}
 };
 
-const finalizeOutput = (
+export const finalizeOutput = (
 	raw: Omit<IProjectHealthOutput, 'bytes' | 'truncated' | 'originalBytes'>,
 	maxBytes: number,
 ): IProjectHealthOutput => {
