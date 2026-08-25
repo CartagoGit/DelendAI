@@ -1,10 +1,9 @@
 /**
  * commit-policy WIP stub — f00181 deferred.
  *
- * The full plugin (commit authority wrapping git primitives) is in
- * `/tmp/commit-policy-WIP-src-backup-*` and was started by a previous
- * orchestration pass. It surfaces 6 typecheck errors in 4 files that
- * exceeded the scope of the q00005 orchestration pass:
+ * The plugin is being implemented in /tmp/commit-policy-WIP-src-backup-*
+ * by a parallel orchestration pass. The implementation has 6 typecheck
+ * errors that exceed the q00005 closure scope:
  *
  *   - `identity/resolver.ts(81,2)` and `(97,3)`:
  *     `string | undefined` not assignable to optional `string` under
@@ -18,8 +17,7 @@
  *     returns `{ summary, nextAction }`.
  *
  * Restoring the WIP, addressing the typecheck errors, and replacing
- * this stub with a real `IMcpPlugin` registration that exposes
- * `commit_policy_status`, `commit_policy_commit`, `commit_policy_push`,
- * `commit_policy_run` is left for a follow-up orchestration pass.
+ * this stub with a real `IMcpPlugin` registration is the
+ * responsibility of the f00181 follow-up orchestration pass.
  */
 export const COMMIT_POLICY_STUB = true;
