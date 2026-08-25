@@ -7,7 +7,7 @@ import {
 	rename,
 	rm,
 	stat,
-	utimes,
+	writeFile,
 } from 'node:fs/promises';
 import { dirname } from 'node:path';
 
@@ -89,12 +89,27 @@ export interface IFileMutexOptions {
 }
 
 interface IObservedLockLease {
+	readonly acquiredAt: number;
+	readonly generation: number;
+	readonly heartbeatAt: number;
 	readonly mtimeMs: number;
 	readonly token: string;
 }
 
 interface IWithFileMutexTestHooks {
 	afterObserveStale?(lease: IObservedLockLease): Promise<void> | void;
+	afterHeartbeat?(lease: IObservedLockLease): Promise<void> | void;
+	afterReclaimRename?(context: {
+		readonly reclaimPath: string;
+		readonly observedLease: IObservedLockLease;
+	}): Promise<void> | void;
+}
+
+interface ILockLeasePayload {
+	readonly acquiredAt: number;
+	readonly generation: number;
+	readonly heartbeatAt: number;
+	readonly token: string;
 }
 
 let withFileMutexTestHooks: IWithFileMutexTestHooks | undefined;
@@ -124,15 +139,99 @@ export class LockContentionError extends Error {
 const sleep = (ms: number): Promise<void> =>
 	new Promise((resolve) => setTimeout(resolve, ms));
 
+const RECLAIM_GRACE_MS = 50;
+
+const isLockLeasePayload = (value: unknown): value is ILockLeasePayload => {
+	if (typeof value !== 'object' || value === null) {
+		return false;
+	}
+	const candidate = value as Record<string, unknown>;
+	return (
+		typeof candidate.token === 'string' &&
+		typeof candidate.acquiredAt === 'number' &&
+		Number.isFinite(candidate.acquiredAt) &&
+		typeof candidate.heartbeatAt === 'number' &&
+		Number.isFinite(candidate.heartbeatAt) &&
+		typeof candidate.generation === 'number' &&
+		Number.isInteger(candidate.generation) &&
+		candidate.generation >= 0
+	);
+};
+
+const createLeasePayload = (
+	token: string,
+	nowMs: number,
+	previous?: IObservedLockLease,
+): ILockLeasePayload => ({
+	acquiredAt: previous?.acquiredAt ?? nowMs,
+	generation: previous?.generation ?? 0,
+	heartbeatAt: nowMs,
+	token,
+});
+
+const serializeLeasePayload = (lease: ILockLeasePayload): string =>
+	JSON.stringify(lease);
+
+const parseObservedLockLease = (
+	raw: string,
+	mtimeMs: number,
+): IObservedLockLease => {
+	try {
+		const parsed = JSON.parse(raw) as unknown;
+		if (isLockLeasePayload(parsed)) {
+			return {
+				acquiredAt: parsed.acquiredAt,
+				generation: parsed.generation,
+				heartbeatAt: parsed.heartbeatAt,
+				mtimeMs,
+				token: parsed.token,
+			};
+		}
+	} catch {
+		// Legacy sidecars and transient partial writes fall back to the
+		// historical token + mtime semantics.
+	}
+
+	return {
+		acquiredAt: mtimeMs,
+		generation: 0,
+		heartbeatAt: mtimeMs,
+		mtimeMs,
+		token: raw,
+	};
+};
+
+const isSameLeaseObservation = (
+	left: IObservedLockLease,
+	right: IObservedLockLease,
+): boolean =>
+	left.token === right.token &&
+	left.generation === right.generation &&
+	left.heartbeatAt === right.heartbeatAt;
+
+const isLeaseStale = (
+	lease: IObservedLockLease,
+	nowMs: number,
+	staleMs: number,
+): boolean => nowMs - lease.heartbeatAt > staleMs;
+
+const writeLeaseToHandle = async (
+	handle: Awaited<ReturnType<typeof open>>,
+	lease: ILockLeasePayload,
+): Promise<void> => {
+	await handle.truncate(0);
+	await handle.write(serializeLeasePayload(lease), 0, 'utf8');
+};
+
 const observeLockLease = async (
 	path: string,
 ): Promise<IObservedLockLease | undefined> => {
 	try {
-		const [token, info] = await Promise.all([
+		const [contents, info] = await Promise.all([
 			readFile(path, 'utf8'),
 			stat(path),
 		]);
-		return { token, mtimeMs: info.mtimeMs };
+		return parseObservedLockLease(contents, info.mtimeMs);
 	} catch (error) {
 		if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
 			return undefined;
@@ -146,12 +245,51 @@ const removeIfOwned = async (
 	expectedToken: string,
 ): Promise<void> => {
 	try {
-		const current = await readFile(path, 'utf8');
-		if (current === expectedToken) {
+		const current = await observeLockLease(path);
+		if (current?.token === expectedToken) {
 			await rm(path, { force: true });
 		}
 	} catch {
 		return;
+	}
+};
+
+const refreshLeaseHeartbeat = async (
+	lockPath: string,
+	token: string,
+): Promise<void> => {
+	let handle: Awaited<ReturnType<typeof open>> | undefined;
+	try {
+		handle = await open(lockPath, 'r+');
+	} catch (error) {
+		if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
+			return;
+		}
+		throw error;
+	}
+
+	try {
+		const [contents, info] = await Promise.all([
+			handle.readFile({ encoding: 'utf8' }),
+			handle.stat(),
+		]);
+		const current = parseObservedLockLease(contents, info.mtimeMs);
+		if (current.token !== token) {
+			return;
+		}
+		const nextLease: ILockLeasePayload = {
+			acquiredAt: current.acquiredAt,
+			generation: current.generation + 1,
+			heartbeatAt: Date.now(),
+			token,
+		};
+		await writeLeaseToHandle(handle, nextLease);
+		await withFileMutexTestHooks?.afterHeartbeat?.({
+			...nextLease,
+			mtimeMs: nextLease.heartbeatAt,
+		});
+	} finally {
+		await handle.close();
 	}
 };
 
@@ -187,6 +325,10 @@ export const withFileMutex = async <T>(
 		options.heartbeatMs ?? Math.max(50, Math.floor(staleMs / 3));
 	const metrics = options.metrics ?? getNoopMutexMetricsCollector();
 	const lockPath = `${targetPath}.mutex`;
+	const reclaimGraceMs = Math.max(
+		pollMs,
+		Math.min(RECLAIM_GRACE_MS, staleMs),
+	);
 	// Unique per acquisition: identifies *this* holder so release never
 	// deletes a lock that was stolen and is now owned by someone else.
 	const token = `${process.pid}\n${Date.now()}\n${randomUUID()}`;
@@ -210,9 +352,11 @@ export const withFileMutex = async <T>(
 	let waitStartedAt: number | undefined;
 	for (;;) {
 		try {
+			const nowMs = Date.now();
+			const initialLease = createLeasePayload(token, nowMs);
 			const handle = await open(lockPath, 'wx');
 			try {
-				await handle.writeFile(token);
+				await handle.writeFile(serializeLeasePayload(initialLease));
 			} finally {
 				await handle.close();
 			}
@@ -234,25 +378,70 @@ export const withFileMutex = async <T>(
 				if (observedLease === undefined) {
 					continue;
 				}
-				if (Date.now() - observedLease.mtimeMs > staleMs) {
+				if (isLeaseStale(observedLease, Date.now(), staleMs)) {
 					await withFileMutexTestHooks?.afterObserveStale?.(
 						observedLease,
 					);
-					const reclaimPath = `${lockPath}.reclaim.${process.pid}.${randomUUID()}`;
+					// A stale observation must survive a visible grace/recheck round
+					// before we rename the lock away. That closes the window where a
+					// live holder refreshed after observation and a third contender
+					// could otherwise slip into an empty lock path.
+					const markerPath = `${lockPath}.reclaim-marker.${process.pid}.${randomUUID()}`;
+					await writeFile(
+						markerPath,
+						JSON.stringify({
+							observedAt: Date.now(),
+							observedGeneration: observedLease.generation,
+							observedHeartbeatAt: observedLease.heartbeatAt,
+							observedToken: observedLease.token,
+						}),
+					);
 					try {
+						await sleep(reclaimGraceMs);
+						const recheckedLease = await observeLockLease(lockPath);
+						if (recheckedLease === undefined) {
+							continue;
+						}
+						if (
+							!isLeaseStale(
+								recheckedLease,
+								Date.now(),
+								staleMs,
+							) ||
+							!isSameLeaseObservation(
+								recheckedLease,
+								observedLease,
+							)
+						) {
+							continue;
+						}
+
+						const reclaimPath = `${lockPath}.reclaim.${process.pid}.${randomUUID()}`;
 						await rename(lockPath, reclaimPath);
+						await withFileMutexTestHooks?.afterReclaimRename?.({
+							reclaimPath,
+							observedLease: recheckedLease,
+						});
 						const revalidatedLease =
 							await observeLockLease(reclaimPath);
 						if (
 							revalidatedLease !== undefined &&
-							revalidatedLease.token === observedLease.token &&
-							revalidatedLease.mtimeMs === observedLease.mtimeMs
+							isSameLeaseObservation(
+								revalidatedLease,
+								recheckedLease,
+							)
 						) {
-							const guardToken = `${token}\nreclaim-guard`;
 							try {
 								const handle = await open(lockPath, 'wx');
 								try {
-									await handle.writeFile(guardToken);
+									await handle.writeFile(
+										serializeLeasePayload(
+											createLeasePayload(
+												token,
+												Date.now(),
+											),
+										),
+									);
 								} finally {
 									await handle.close();
 								}
@@ -270,13 +459,6 @@ export const withFileMutex = async <T>(
 							}
 
 							try {
-								const lockHandle = await open(lockPath, 'r+');
-								try {
-									await lockHandle.truncate(0);
-									await lockHandle.writeFile(token);
-								} finally {
-									await lockHandle.close();
-								}
 								await rm(reclaimPath, { force: true }).catch(
 									() => undefined,
 								);
@@ -289,7 +471,7 @@ export const withFileMutex = async <T>(
 								}
 								break;
 							} catch (commitError) {
-								await removeIfOwned(lockPath, guardToken);
+								await removeIfOwned(lockPath, token);
 								await restoreReclaimPath(reclaimPath, lockPath);
 								throw commitError;
 							}
@@ -305,6 +487,10 @@ export const withFileMutex = async <T>(
 							continue;
 						}
 						throw reclaimError;
+					} finally {
+						await rm(markerPath, { force: true }).catch(
+							() => undefined,
+						);
 					}
 				}
 			} catch {
@@ -334,8 +520,7 @@ export const withFileMutex = async <T>(
 
 	// Keep the lock fresh so a slow-but-alive holder is not declared stale.
 	const heartbeat = setInterval(() => {
-		const now = new Date();
-		void utimes(lockPath, now, now).catch(() => undefined);
+		void refreshLeaseHeartbeat(lockPath, token).catch(() => undefined);
 	}, heartbeatMs);
 	heartbeat.unref?.();
 
@@ -355,8 +540,10 @@ export const withFileMutex = async <T>(
 				// Remove the lock only if it is still ours. If a stealer replaced
 				// it, deleting it would unprotect the new holder.
 				try {
-					const current = await readFile(lockPath, 'utf8');
-					if (current === token) await rm(lockPath, { force: true });
+					const current = await observeLockLease(lockPath);
+					if (current?.token === token) {
+						await rm(lockPath, { force: true });
+					}
 				} catch (releaseError) {
 					// f00154 S2 audit: only ENOENT (file gone — stolen and
 					// released by another holder) is benign. Other errors

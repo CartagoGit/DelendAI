@@ -2,7 +2,7 @@
 id: t00008
 title: "with-file-mutex — property tests sobre la state machine: nunca dos holders simultáneos bajo cualquier secuencia"
 kind: test
-status: ready
+status: review
 type: proposal
 track: concurrency
 date: 2026-08-25
@@ -256,7 +256,7 @@ it('lock file generations are monotonic', async () => {
 
 ### S1 — Property tests
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/tests/src/lib/shared/with-file-mutex.property.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -269,13 +269,13 @@ it('lock file generations are monotonic', async () => {
 - **Tiempo total**: <60s en CI.
 
 
-- [ ] `with-file-mutex.property.spec.ts` existe.
-- [ ] Property 1 (no concurrencia) verde con 200 runs.
-- [ ] Property 2 (post-crash acquire) verde con 100 runs.
-- [ ] Property 3 (heartbeat mantiene lock) verde con 50 runs.
-- [ ] Property 4 (generaciones monotónicas) verde con 100 runs.
-- [ ] Tiempo <60s en CI.
-- [ ] Si una property falla, mensaje claro con seed reproducible.
+- [x] `with-file-mutex.property.spec.ts` existe.
+- [x] Property 1 (no concurrencia) verde con 200 runs.
+- [x] Property 2 (post-crash acquire) verde con 100 runs.
+- [x] Property 3 (heartbeat mantiene lock) verde con 50 runs.
+- [x] Property 4 (generaciones monotónicas) verde con 100 runs.
+- [x] Tiempo <60s en CI.
+- [x] Si una property falla, mensaje claro con seed reproducible.
 
 
 - Property tests implementados.
@@ -298,7 +298,9 @@ resolution:
     - tests:
         - packages/core/tests/src/lib/shared/with-file-mutex.property.spec.ts
     - properties: 4 (concurrencia, crash, heartbeat, generaciones)
-    - runs: 200 + 100 + 50 + 100
+  - runs: 200 + 100 + 50 + 100
+  - validation:
+    - "bun x vitest run packages/core/tests/src/lib/shared/with-file-mutex.property.spec.ts"
     - before/after:
         before: "Sin property tests; invariante general no verificada"
         after:  "4 properties verdes; state machine verificada continuamente"
