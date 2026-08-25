@@ -1,4 +1,4 @@
-import { mkdtemp, mkdir, rm, writeFile } from 'node:fs/promises';
+import { mkdtemp, mkdir, rm, symlink, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -49,6 +49,32 @@ const makeWorkspace = async (): Promise<string> => {
 		join(root, 'README.md'),
 		['# Temp', '', 'foo project'].join('\n'),
 		'utf8',
+	);
+	await mkdir(join(root, '.git'), { recursive: true });
+	await mkdir(join(root, 'node_modules/demo'), { recursive: true });
+	await writeFile(join(root, '.env'), 'TOKEN=secret', 'utf8');
+	await writeFile(join(root, '.git/HEAD'), 'ref: refs/heads/develop', 'utf8');
+	await writeFile(
+		join(root, 'node_modules/demo/index.js'),
+		'module.exports = true;',
+		'utf8',
+	);
+	const outside = await mkdtemp(
+		join(tmpdir(), 'context-for-change-outside-'),
+	);
+	createdRoots.push(outside);
+	await writeFile(
+		join(outside, 'secret.ts'),
+		'export const secret = true;',
+		'utf8',
+	);
+	await symlink(
+		join(outside, 'secret.ts'),
+		join(root, 'src/lib/link-outside.ts'),
+	);
+	await symlink(
+		join(root, 'src/lib/foo.ts'),
+		join(root, 'src/lib/link-inside.ts'),
 	);
 	return root;
 };
@@ -127,5 +153,82 @@ describe('context_for_change', () => {
 		expect(output.truncated).toBe(true);
 		expect(output.bytes).toBeLessThanOrEqual(220);
 		expect(output.sections.length).toBeGreaterThan(0);
+	});
+
+	it('rejects adversarial workspace-escape and reserved paths with a structured error', async () => {
+		const root = await makeWorkspace();
+		const outside = await mkdtemp(
+			join(tmpdir(), 'context-for-change-external-'),
+		);
+		createdRoots.push(outside);
+		const adversarialPaths = [
+			'../outside.ts',
+			'../../etc/passwd',
+			join(outside, 'secret.ts'),
+			`${root}-secret/file.ts`,
+			'.env',
+			'.git/HEAD',
+			'node_modules/demo/index.js',
+			'src/lib/link-outside.ts',
+			'tests/../../outside.ts',
+			'./../outside.ts',
+			'.././outside.ts',
+			'../../outside.ts',
+			'../../../outside.ts',
+			'../../../../outside.ts',
+			'../outside.ts/../secret.ts',
+		];
+
+		for (const file of adversarialPaths) {
+			const result = await runContextForChange(
+				{ files: [file], task: 'reject containment bypass' },
+				{
+					namespacePrefix: 'mcp-vertex',
+					workspaceRootAbs: root,
+					maxBytes: 3000,
+					docsRoots: ['docs'],
+				},
+			);
+			expect(result.isError).toBe(true);
+			expect(result.structuredContent?.ok).toBe(false);
+			expect(
+				(result.structuredContent?.error as { reason: string }).reason,
+			).toContain('workspace-containment');
+		}
+	});
+
+	it('follows a symlink that still resolves inside the workspace', async () => {
+		const root = await makeWorkspace();
+		const result = await runContextForChange(
+			{ files: ['src/lib/link-inside.ts'], task: 'follow safe link' },
+			{
+				namespacePrefix: 'mcp-vertex',
+				workspaceRootAbs: root,
+				maxBytes: 3000,
+				docsRoots: ['docs'],
+			},
+		);
+		expect(result.isError).toBeUndefined();
+	});
+
+	it('rejects every generated absolute outside path in the bounded property loop', async () => {
+		const root = await makeWorkspace();
+		for (let index = 0; index < 16; index += 1) {
+			const result = await runContextForChange(
+				{
+					files: [
+						`/tmp/context-for-change-generated-${index}/secret.ts`,
+					],
+					task: 'property containment check',
+				},
+				{
+					namespacePrefix: 'mcp-vertex',
+					workspaceRootAbs: root,
+					maxBytes: 3000,
+					docsRoots: ['docs'],
+				},
+			);
+			expect(result.isError).toBe(true);
+		}
 	});
 });
