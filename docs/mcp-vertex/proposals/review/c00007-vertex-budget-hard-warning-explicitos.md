@@ -118,7 +118,7 @@ export const BUDGETS = {
 
 ### S1 — Definir budget vertex + documentar
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/src/lib/contracts/constants/token-budgets.constant.ts`, `docs/mcp-vertex/TOKEN-BUDGETS.md`
 - **Gate**: type
 - acceptance:
@@ -191,7 +191,7 @@ resolution:
 
 ### S1 — Definir budget vertex + documentar
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/src/lib/contracts/constants/token-budgets.constant.ts`, `docs/mcp-vertex/TOKEN-BUDGETS.md`
 - **Gate**: type
 - acceptance:

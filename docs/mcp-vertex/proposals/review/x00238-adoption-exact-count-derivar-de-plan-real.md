@@ -191,7 +191,7 @@ El usuario ve exactamente qué se va a escribir.
 
 ### S1 — Derivar count + breakdown
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/src/lib/adopt/adoption-assessment.service.ts`
 - **Gate**: type
 - acceptance:
@@ -200,7 +200,7 @@ El usuario ve exactamente qué se va a escribir.
 
 ### S2 — Tests + UI
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/tests/src/lib/adopt/adoption-assessment.spec.ts`, UI updates
 - **Gate**: type
 - acceptance:

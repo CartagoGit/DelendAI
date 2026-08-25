@@ -167,7 +167,7 @@ generated: <timestamp>
 
 ### S1 — Generador FIRST_PARTY_PLUGIN_INDEX
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `tools/scripts/generate/first-party-plugin-index.script.ts`, output generado
 - **Gate**: type
 - acceptance:
@@ -176,7 +176,7 @@ generated: <timestamp>
 
 ### S2 — Generador web catalog
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `tools/scripts/generate/web-catalog.script.ts`, output generado
 - **Gate**: type
 - acceptance:
@@ -184,7 +184,7 @@ generated: <timestamp>
 
 ### S3 — Generador plugin docs + permission matrix
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `tools/scripts/generate/plugin-docs.script.ts`, `tools/scripts/generate/permission-matrix.script.ts`, outputs generados
 - **Gate**: type
 - acceptance:
@@ -193,7 +193,7 @@ generated: <timestamp>
 
 ### S4 — CI check
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `tools/scripts/lint/check-generated-artifacts.script.ts`, `.github/workflows/ci.yml`
 - **Gate**: type
 - acceptance:
@@ -344,7 +344,7 @@ resolution:
 
 ### S1 — Generador FIRST_PARTY_PLUGIN_INDEX
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `tools/scripts/generate/first-party-plugin-index.script.ts`, output generado
 - **Gate**: type
 - acceptance:
@@ -353,7 +353,7 @@ resolution:
 
 ### S2 — Generador web catalog
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `tools/scripts/generate/web-catalog.script.ts`, output generado
 - **Gate**: type
 - acceptance:
@@ -361,7 +361,7 @@ resolution:
 
 ### S3 — Generador plugin docs + permission matrix
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `tools/scripts/generate/plugin-docs.script.ts`, `tools/scripts/generate/permission-matrix.script.ts`, outputs generados
 - **Gate**: type
 - acceptance:
@@ -370,7 +370,7 @@ resolution:
 
 ### S4 — CI check
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `tools/scripts/lint/check-generated-artifacts.script.ts`, `.github/workflows/ci.yml`
 - **Gate**: type
 - acceptance:

@@ -215,7 +215,7 @@ describe('report uses correct mcpVertexVersion', () => {
 
 ### S1 — Constante en `packages/core`
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/src/lib/version.ts`
 - **Gate**: type
 - acceptance:
@@ -224,7 +224,7 @@ describe('report uses correct mcpVertexVersion', () => {
 
 ### S2 — Integración en `error-reporting`
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/error-reporting/src/lib/report-builder.helper.ts`
 - **Gate**: type
 - acceptance:
@@ -234,7 +234,7 @@ describe('report uses correct mcpVertexVersion', () => {
 
 ### S3 — Fallback build-time (si aplica) + docs
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/build/inject-version.script.ts` (opcional), `docs/mcp-vertex/plugins/error-reporting.md`
 - **Gate**: type
 - acceptance:

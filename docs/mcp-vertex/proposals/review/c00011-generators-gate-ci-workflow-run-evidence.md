@@ -286,7 +286,7 @@ overridden by a human reviewer).
 
 ### S1 — Generators gate unificado
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `tools/scripts/lint/check-generated-artifacts.script.ts`
 - **Gate**: type
 - acceptance:
@@ -295,7 +295,7 @@ overridden by a human reviewer).
 
 ### S2 — Collect evidence + transition validation
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `tools/scripts/proposals/collect-evidence.script.ts`, `plugins/proposals/src/lib/services/transition-evidence.ts`
 - **Gate**: type
 - acceptance:
@@ -304,7 +304,7 @@ overridden by a human reviewer).
 
 ### S3 — Documentación
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `docs/mcp-vertex/ci/evidence.md`
 - **Gate**: type
 - acceptance:
@@ -365,7 +365,7 @@ resolution:
 
 ### S1 — Generators gate unificado
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `tools/scripts/lint/check-generated-artifacts.script.ts`
 - **Gate**: type
 - acceptance:
@@ -374,7 +374,7 @@ resolution:
 
 ### S2 — Collect evidence + transition validation
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `tools/scripts/proposals/collect-evidence.script.ts`, `plugins/proposals/src/lib/services/transition-evidence.ts`
 - **Gate**: type
 - acceptance:
@@ -383,7 +383,7 @@ resolution:
 
 ### S3 — Documentación
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `docs/mcp-vertex/ci/evidence.md`
 - **Gate**: type
 - acceptance:

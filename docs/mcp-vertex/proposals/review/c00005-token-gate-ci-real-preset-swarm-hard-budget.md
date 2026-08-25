@@ -230,7 +230,7 @@ Top contributors:
 
 ### S1 — Budgets como código + loader real
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/src/lib/contracts/constants/token-budgets.constant.ts`, `packages/core/tests/src/lib/e2e/token-budget.e2e.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -239,7 +239,7 @@ Top contributors:
 
 ### S2 — Script ejecutable + CI
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `tools/scripts/test/run-actual-preset-budget.script.ts`, `package.json`, `.github/workflows/ci.yml`
 - **Gate**: type
 - acceptance:

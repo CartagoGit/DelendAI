@@ -219,7 +219,7 @@ Si el usuario quiere native, lo declara. Adaptive deja de ser opt-in.
 
 ### S1 — Benchmark + compat matrix
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `tools/scripts/bench/surface-mode-compare.bench.script.ts`, `docs/mcp-vertex/configuration/surface-mode-decision.yaml`
 - **Gate**: type
 - acceptance:
@@ -228,7 +228,7 @@ Si el usuario quiere native, lo declara. Adaptive deja de ser opt-in.
 
 ### S2 — Default decision logic
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/src/lib/surface/decide-mode.ts`
 - **Gate**: type
 - acceptance:
@@ -237,7 +237,7 @@ Si el usuario quiere native, lo declara. Adaptive deja de ser opt-in.
 
 ### S3 — Cambio de default + override
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `mcp-vertex.config.json` schema, `docs/mcp-vertex/configuration/surface-mode.md`
 - **Gate**: type
 - acceptance:
