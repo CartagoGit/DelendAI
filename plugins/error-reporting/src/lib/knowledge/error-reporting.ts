@@ -42,6 +42,8 @@ export function buildErrorReportingKnowledge(
 		'- Safe DTO fields: `reporterVersion`, `mcpVertexVersion`, `packageId`,',
 		'  `toolId`, `errorCode`, `failureClass`, `classification`,',
 		'  `fingerprint`, `mcpFrames`, `syntheticExample`, `environmentClass`.',
+		'- `mcpVertexVersion` comes from the published `@mcp-vertex/core` package',
+		'  version, never from the monorepo root `package.json`.',
 		'- Issue-body table fields: `packageId`, `reporterVersion`,',
 		'  `mcpVertexVersion`, `classification`, `failureClass`, `fingerprint`,',
 		'  `toolId`, `errorCode`, `environmentClass`.',
