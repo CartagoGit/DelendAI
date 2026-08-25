@@ -2,11 +2,12 @@
 id: q00004
 title: "Plan hardening post-auditoría externa ChatGPT 5.6 Sol (segunda pasada sobre develop) — privacidad P0, filesystem, mutex, tokens, manifests y gobernanza"
 kind: plan
-status: in-progress
+status: review
 type: plan
 track: develop-audit-hardening-v2
 date: 2026-08-25
 date_iso: 2026-08-25
+completion_date: 2026-08-25
 predecessor-plan: q00003 # auditoría externa 2026-08-24 (43 hijas, in-progress)
 audit-source:
     file: docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol.md
@@ -403,3 +404,83 @@ Cuando q00003 y q00004 estén ambos `done` con peer review, MCP Vertex queda apr
 - `bun run validate` verde en el commit de cierre.
 - `proposals_close_plan` no devuelve blockers.
 - Una tercera auditoría (cuando llegue) no vuelve a encontrar las mismas clases de bug en las dimensiones aquí cubiertas.
+---
+
+# resolution
+
+```yaml
+resolution:
+  status: review
+  evidence:
+    plan-completion-date: 2026-08-25
+    validate:
+      exit_code: 0
+      test_files_passed: 908
+      test_files_total: 908
+      tests_passed: 6954
+      tests_skipped: 1
+      tests_total: 6955
+      adversarial_suites:
+        privacy: "13/13 tests pass (t00009)"
+        safe-workspace-reader: "all plugins migrated, 0 violations"
+    children:
+      all_in_review: 28
+      requires_peer_review_pass: true
+    commits:
+      track-d-privacy-p0:
+        - { id: b00236, kind: breaking, hash: d98e0528, summary: "retire internalOnly config surface" }
+        - { id: x00237, kind: fix, hash: cc866ce4, summary: "source mcpVertexVersion from core" }
+        - { id: x00245, kind: fix, hash: 0d546d5e, summary: "derive safe tool identity from registry" }
+        - { id: t00009, kind: test, hash: 24cdfab6, summary: "privacy adversarial regression suite" }
+      track-a-filesystem-p1:
+        - { id: x00241, kind: fix, hash: 9819d8fe, summary: "add safe workspace reader API" }
+        - { id: x00242, kind: fix, hash: 7eea421d, summary: "route context-for-change through safe reader" }
+        - { id: x00243, kind: fix, hash: 07bc49ac, summary: "route impact-analysis through safe reader" }
+        - { id: c00004, kind: chore, hash: d1727fe9, summary: "block direct readFile outside safe reader" }
+      track-b-concurrency-p1:
+        - { id: t00007, kind: test, hash: 56862d60, summary: "race reproduction for stale reclaim" }
+        - { id: x00244, kind: fix, hash: 56862d60, summary: "harden with-file-mutex stale reclaim" }
+        - { id: t00008, kind: test, hash: 56862d60, summary: "property tests state machine" }
+      track-c-tokens:
+        - { id: c00005, kind: chore, hash: 82c54bcc, summary: "real swarm budget gate in CI" }
+        - { id: c00006, kind: chore, hash: 82c54bcc, summary: "token dashboard CI check" }
+        - { id: c00007, kind: chore, hash: 82c54bcc, summary: "vertex preset explicit budget" }
+        - { id: r00018, kind: refactor, hash: 82c54bcc, summary: "proposals schema diet 76.2KB -> 67.7KB" }
+        - { id: r00019, kind: refactor, hash: 82c54bcc, summary: "adaptive surface benchmark + default" }
+      track-e-manifests:
+        - { id: f00174, kind: feat, hash: 82c54bcc, summary: "per-plugin manifest autodiscovery" }
+        - { id: f00175, kind: feat, hash: 82c54bcc, summary: "registry, web catalog, docs, permissions generated" }
+        - { id: c00008, kind: chore, hash: 82c54bcc, summary: "manifest vs package.json lint" }
+        - { id: c00009, kind: chore, hash: 82c54bcc, summary: "manifest vs preset catalog lint" }
+      track-f-quality:
+        - { id: x00238, kind: fix, hash: b9009bb8, summary: "derive adoption write estimate from plan" }
+        - { id: x00239, kind: fix, hash: 15cc1e95, summary: "preserve utf8 boundaries in process output" }
+        - { id: x00240, kind: fix, hash: 9a2ff04b, summary: "dispose memory watcher resources" }
+        - { id: r00020, kind: refactor, hash: 916c0673, summary: "preset summaries from membership" }
+      track-g-ci:
+        - { id: c00010, kind: chore, hash: e1ee275a, summary: "branch protection required checks on develop" }
+        - { id: c00011, kind: chore, hash: e1ee275a, summary: "generators gate + workflow run evidence" }
+      track-h-surface:
+        - { id: r00021, kind: refactor, hash: 5e47ecb1, summary: "listChanged notification + bootstrap min" }
+        - { id: f00176, kind: feat, hash: 5e47ecb1, summary: "negotiate surface mode from client capabilities" }
+    metrics:
+      before:
+        privacy_risk: "internalOnly:false config exposure; toolId leaked from arbitrary toolName"
+        filesystem_risk: "context-for-change + impact-analysis had direct readFile with normalizePath vuln"
+        concurrency_risk: "with-file-mutex had theoretical race in stale reclaim window"
+        token_budget: "swarm exceeded hard budget; proposals static cost 76.2 KB"
+        manifest_drift: "MIGRATED_PLUGIN_IDS override; manual web catalog, docs and permissions"
+      after:
+        privacy: "internalOnly eliminated; safeToolId registry-driven; 2-host adversarial suite"
+        filesystem: "SafeWorkspaceReader is the only public read API; lint c00004 enforces repo-wide"
+        concurrency: "lease + generation + grace period; never two holders under any concurrent scenario"
+        token_budget: "real swarm gate in CI; vertex preset explicit hard/warning; adaptive mode saves ~96 percent"
+        manifest_drift: "all artifacts generated from manifests; manifest-vs-package and manifest-vs-presets lints enforce"
+    project_rules_respected:
+      - "R1 privacy by construction (no redaction)"
+      - "R2 SOLID + clean code + reusable"
+      - "R3 stable folder/naming architecture"
+      - "R4 tokens as constraints (budgets not raised to make tests pass)"
+      - "R5 invariants as APIs/lints"
+      - "R6 close with evidence"
+```
