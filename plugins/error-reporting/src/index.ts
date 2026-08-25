@@ -142,7 +142,11 @@ export const buildObservedFailureHandler = (input: {
 	): Promise<void> => {
 		const observed = extractObservedFailure(result, error);
 		if (observed === undefined) return;
-		const reportable = asReportableError(toolName, observed);
+		const reportable = asReportableError(
+			toolName,
+			input.toolRegistry,
+			observed,
+		);
 		if (reportable === undefined) return;
 		await reportError(toolName, reportable);
 	};
@@ -236,6 +240,7 @@ export default definePlugin({
 			onRegisterError: async (info) => {
 				const reportable = asReportableError(
 					`plugin:${info.pluginName}:register`,
+					ctx.toolRegistry ?? EMPTY_TOOL_REGISTRY,
 					info,
 				);
 				if (reportable === undefined) return;
@@ -247,6 +252,7 @@ export default definePlugin({
 			onHookError: async (info) => {
 				const reportable = asReportableError(
 					`plugin:${info.pluginName}:${info.hookName}`,
+					ctx.toolRegistry ?? EMPTY_TOOL_REGISTRY,
 					info,
 				);
 				if (reportable === undefined) return;
