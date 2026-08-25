@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-08-24T23:59:47.244Z",
+	"generatedAt": "2026-08-25T00:07:18.022Z",
 	"mode": "compact",
 	"tools": [
 		{
@@ -1201,9 +1201,79 @@
 				"kind": "feat"
 			},
 			{
+				"id": "f00174",
+				"title": "f00174",
+				"track": "manifests",
+				"status": "ready",
+				"kind": "feat"
+			},
+			{
+				"id": "f00175",
+				"title": "f00175",
+				"track": "manifests",
+				"status": "ready",
+				"kind": "feat"
+			},
+			{
+				"id": "f00176",
+				"title": "f00176",
+				"track": "surface",
+				"status": "ready",
+				"kind": "feat"
+			},
+			{
 				"id": "i00004",
 				"title": "i00004",
 				"track": "filesystem",
+				"status": "ready",
+				"kind": "unspecified"
+			},
+			{
+				"id": "i00005",
+				"title": "i00005",
+				"track": "tokens",
+				"status": "ready",
+				"kind": "unspecified"
+			},
+			{
+				"id": "i00006",
+				"title": "i00006",
+				"track": "tokens",
+				"status": "ready",
+				"kind": "unspecified"
+			},
+			{
+				"id": "i00007",
+				"title": "i00007",
+				"track": "tokens",
+				"status": "ready",
+				"kind": "unspecified"
+			},
+			{
+				"id": "i00008",
+				"title": "i00008",
+				"track": "manifests",
+				"status": "ready",
+				"kind": "unspecified"
+			},
+			{
+				"id": "i00009",
+				"title": "i00009",
+				"track": "manifests",
+				"status": "ready",
+				"kind": "unspecified"
+			},
+			{
+				"id": "i00010",
+				"title": "i00010",
+				"track": "ci",
+				"status": "ready",
+				"kind": "unspecified"
+			},
+			{
+				"id": "i00011",
+				"title": "i00011",
+				"track": "ci",
 				"status": "ready",
 				"kind": "unspecified"
 			},
@@ -1220,6 +1290,48 @@
 				"track": "develop-audit-hardening-v2",
 				"status": "ready",
 				"kind": "plan"
+			},
+			{
+				"id": "r00018",
+				"title": "r00018",
+				"track": "tokens",
+				"status": "ready",
+				"kind": "refactor"
+			},
+			{
+				"id": "r00019",
+				"title": "r00019",
+				"track": "surface",
+				"status": "ready",
+				"kind": "refactor"
+			},
+			{
+				"id": "r00020",
+				"title": "r00020",
+				"track": "quality",
+				"status": "ready",
+				"kind": "refactor"
+			},
+			{
+				"id": "r00221",
+				"title": "r00221",
+				"track": "surface",
+				"status": "ready",
+				"kind": "refactor"
+			},
+			{
+				"id": "t00007",
+				"title": "t00007",
+				"track": "concurrency",
+				"status": "ready",
+				"kind": "unspecified"
+			},
+			{
+				"id": "t00008",
+				"title": "t00008",
+				"track": "concurrency",
+				"status": "ready",
+				"kind": "unspecified"
 			},
 			{
 				"id": "t00009",
@@ -1264,6 +1376,13 @@
 				"kind": "fix"
 			},
 			{
+				"id": "x00234",
+				"title": "x00234",
+				"track": "concurrency",
+				"status": "ready",
+				"kind": "fix"
+			},
+			{
 				"id": "x00235",
 				"title": "x00235",
 				"track": "privacy",
@@ -1283,14 +1402,35 @@
 				"track": "privacy",
 				"status": "ready",
 				"kind": "fix"
+			},
+			{
+				"id": "x00238",
+				"title": "x00238",
+				"track": "quality",
+				"status": "ready",
+				"kind": "fix"
+			},
+			{
+				"id": "x00239",
+				"title": "x00239",
+				"track": "quality",
+				"status": "ready",
+				"kind": "fix"
+			},
+			{
+				"id": "x00240",
+				"title": "x00240",
+				"track": "quality",
+				"status": "ready",
+				"kind": "fix"
 			}
 		],
 		"byStatus": {
-			"ready": 9,
+			"ready": 29,
 			"in-progress": 7,
-			"review": 54,
+			"review": 11,
 			"paused": 1,
-			"done": 372,
+			"done": 395,
 			"blocked": 0,
 			"retired": 2,
 			"unspecified": 0

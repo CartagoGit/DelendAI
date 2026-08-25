@@ -2,7 +2,7 @@
 id: f00173
 title: "error-reporting: observar todas las superficies de error (tools, lifecycle, LLM/providers, procesos) con análisis de origen"
 kind: feat
-status: review
+status: done
 type: proposal
 track: privacy
 date: 2026-08-24
@@ -47,7 +47,10 @@ Hoy solo se observan los fallos de tool (`onToolCall`). Los fallos de `register`
 - acceptance:
   - "Se añaden hooks de lifecycle de error (onRegisterError / onHookError) al contrato IMcpPluginRegistrations."
   - "El loader emite fallos de register, hooks que lanzan y dependencias fallidas a través de esos hooks."
-
+- review-state: done
+- review-implementer: swarm-implementer
+- review-reviewer: orchestrator-fase1-review
+- review-log: approved by orchestrator-fase1-review — Redo. Fase 1 review 2026-08-25: validate verde.
 ### S2 — error-reporting suscribe todas las superficies + análisis de origen
 - **Status**: done
 - **Files**: `plugins/error-reporting/src/index.ts`, `plugins/error-reporting/src/lib/origin-analyzer.helper.ts`
