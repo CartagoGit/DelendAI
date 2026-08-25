@@ -2,7 +2,7 @@
 id: c00018
 title: "develop nunca rojo — diseño de integración (CI-006)"
 kind: chore
-status: ready
+status: review
 type: proposal
 track: ci
 date: 2026-08-25
@@ -10,6 +10,8 @@ parent-plan: q00005
 audit-source:
     file: docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol-tercera-pasada.md
     section: "CI-006 — Direct pushes + CI post-push no garantizan que `develop` nunca quede rojo"
+shipped-in:
+    - 1f82d68b # docs(proposals): Track I evidence + explicit CI-005/CI-006 decisions (c00017, c00018)
 ---
 
 # c00018 — develop nunca rojo — diseño de integración (CI-006)

@@ -2,7 +2,7 @@
 id: r00024
 title: "preset metadata generada desde medición real; adoption assessment indica surface (PRESET-001)"
 kind: refactor
-status: ready
+status: review
 type: proposal
 track: presets
 date: 2026-08-25
@@ -10,6 +10,9 @@ parent-plan: q00005
 audit-source:
     file: docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol-tercera-pasada.md
     section: "PRESET-001 — `PRESET_METADATA` mantiene snapshots hardcodeados que ya no representan la surface actual"
+shipped-in:
+    - a23f45d4 # refactor(presets): generate PRESET_METADATA from a real measurement (r00024)
+    - 0bd0d1a9 # fix(presets): generator's raw output never matched Biome-formatted commit
 ---
 
 # r00024 — preset metadata generada desde medición real; adoption assessment indica surface (PRESET-001)

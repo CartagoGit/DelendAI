@@ -2,7 +2,7 @@
 id: f00177
 title: "changelog publicable o eliminado de presets distribuibles (MAN-001)"
 kind: feat
-status: in-progress
+status: review
 type: proposal
 track: packaging
 date: 2026-08-25
@@ -10,6 +10,8 @@ parent-plan: q00005
 audit-source:
     file: docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol-tercera-pasada.md
     section: "MAN-001 — `changelog` es privado pero aparece en presets distribuibles"
+shipped-in:
+    - c24a89d8 # fix(packaging): remove private changelog plugin from distributable presets (f00177)
 ---
 
 # f00177 — changelog publicable o eliminado de presets distribuibles (MAN-001)

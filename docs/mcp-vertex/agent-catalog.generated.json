@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-08-25T15:23:04.457Z",
+	"generatedAt": "2026-08-25T16:48:41.271Z",
 	"mode": "compact",
 	"tools": [
 		{
@@ -1223,20 +1223,6 @@
 				"kind": "chore"
 			},
 			{
-				"id": "c00017",
-				"title": "c00017",
-				"track": "ci",
-				"status": "ready",
-				"kind": "chore"
-			},
-			{
-				"id": "c00018",
-				"title": "c00018",
-				"track": "ci",
-				"status": "ready",
-				"kind": "chore"
-			},
-			{
 				"id": "c00019",
 				"title": "c00019",
 				"track": "surface",
@@ -1262,13 +1248,6 @@
 				"title": "f00050",
 				"track": "lint+architecture+i18n+workflow+release",
 				"status": "paused",
-				"kind": "feat"
-			},
-			{
-				"id": "f00177",
-				"title": "f00177",
-				"track": "packaging",
-				"status": "in-progress",
 				"kind": "feat"
 			},
 			{
@@ -1307,23 +1286,9 @@
 				"kind": "refactor"
 			},
 			{
-				"id": "r00024",
-				"title": "r00024",
-				"track": "presets",
-				"status": "ready",
-				"kind": "refactor"
-			},
-			{
 				"id": "r00025",
 				"title": "r00025",
 				"track": "selection",
-				"status": "ready",
-				"kind": "refactor"
-			},
-			{
-				"id": "r00026",
-				"title": "r00026",
-				"track": "surface",
 				"status": "ready",
 				"kind": "refactor"
 			},
@@ -1370,13 +1335,6 @@
 				"kind": "fix"
 			},
 			{
-				"id": "x00237",
-				"title": "x00237",
-				"track": "privacy",
-				"status": "in-progress",
-				"kind": "fix"
-			},
-			{
 				"id": "x00256",
 				"title": "x00256",
 				"track": "privacy",
@@ -1385,9 +1343,9 @@
 			}
 		],
 		"byStatus": {
-			"ready": 15,
-			"in-progress": 13,
-			"review": 46,
+			"ready": 11,
+			"in-progress": 11,
+			"review": 25,
 			"paused": 1,
 			"done": 432,
 			"blocked": 0,
