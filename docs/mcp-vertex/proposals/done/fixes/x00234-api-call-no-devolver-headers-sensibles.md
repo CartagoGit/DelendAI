@@ -2,7 +2,7 @@
 id: x00234
 title: "api_call: no devolver headers sensibles (Authorization/Cookie) en el output"
 kind: fix
-status: review
+status: done
 type: proposal
 track: plugins+fix
 date: 2026-08-24
@@ -41,7 +41,10 @@ Hallazgo a00086 #8 (confirmed · media). Es una fuga de secretos al output que c
   - "Los headers no sensibles (`content-type`, `accept`) se devuelven intactos."
   - "El request enviado por la red conserva los headers originales."
   - "Los specs cubren header sensible redactado y header neutro intacto."
-
+- review-state: done
+- review-implementer: swarm-implementer
+- review-reviewer: orchestrator-fase1-review
+- review-log: approved by orchestrator-fase1-review — Redo. validate verde (a nivel de mi lote).
 ## acceptance
 
 - El output de `api_call` nunca incluye valores literales de `authorization`/`cookie`/`x-api-key`.

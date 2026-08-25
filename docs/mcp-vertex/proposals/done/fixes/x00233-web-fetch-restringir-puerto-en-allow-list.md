@@ -2,7 +2,7 @@
 id: x00233
 title: "web-fetch: restringir el puerto en el allow-list (SSRF a puertos no-web)"
 kind: fix
-status: review
+status: done
 type: proposal
 track: plugins+fix
 date: 2026-08-24
@@ -41,7 +41,10 @@ Hallazgo a00086 #1 (confirmed · media). La mitigación SSRF del plugin está bi
   - "Los puertos por defecto (80/443) se aceptan; una entrada `host:port` permite explícitamente ese puerto."
   - "`*.suffix` sigue funcionando junto con la restricción de puerto."
   - "Los specs de engine cubren puerto bloqueado, puerto explícito y puerto por defecto."
-
+- review-state: done
+- review-implementer: swarm-implementer
+- review-reviewer: orchestrator-fase1-review
+- review-log: approved by orchestrator-fase1-review — Redo. validate verde (a nivel de mi lote).
 ## acceptance
 
 - El allow-list valida hostname + puerto (default 80/443; `host:port` para puertos explícitos).
