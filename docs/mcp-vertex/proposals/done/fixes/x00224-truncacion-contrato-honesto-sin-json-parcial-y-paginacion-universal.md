@@ -2,7 +2,7 @@
 id: x00224
 title: "truncación: contrato honesto, sin JSON parcial y paginación universal"
 kind: fix
-status: review
+status: done
 type: proposal
 track: metrics
 date: 2026-08-24
@@ -47,8 +47,10 @@ El truncador promete `finalBytes <= maxBytes` en un caso donde no puede cumplirl
   - "finalBytes <= maxBytes o error/clamp explícito (nunca una promesa falsa)."
   - "Truncación con búsqueda binaria/overhead, no decremento byte a byte."
   - "No se inyecta JSON parcial en head."
-- review-state: in_review
+- review-state: done
 - review-implementer: swarm-implementer
+- review-reviewer: orchestrator-fase1-review
+- review-log: approved by orchestrator-fase1-review — Fase 1 review 2026-08-25: truncation-pagination.spec.ts revisado; validate verde.
 ### S2 — Paginación universal y reducción del default
 - **Status**: done
 - **Files**: `packages/core/src/lib/shared/pagination.helper.ts`
