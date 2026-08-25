@@ -394,16 +394,26 @@ const buildCodeError = (code: string, reason: string) => {
 const isCiEnvironment = (): boolean =>
 	process.env.CI === 'true' || process.env.GITHUB_ACTIONS === 'true';
 
+const readProposalCiEvidenceCommit = (raw: string): string | null => {
+	const yamlBlock = extractYamlBlock(raw);
+	if (yamlBlock === null) return null;
+	const match = yamlBlock.match(/^\s+commit:\s*"?([^"\n]+)"?\s*$/mu);
+	return match?.[1]?.trim() || null;
+};
+
 const hasProposalCiEvidence = (raw: string): boolean => {
 	const yamlBlock = extractYamlBlock(raw);
 	if (yamlBlock === null) return false;
-	const hasCommit = /^evidence:\s*$[\s\S]*?^\s+commit:\s*.+$/mu.test(
-		yamlBlock,
-	);
-	if (!hasCommit) return false;
+	if (readProposalCiEvidenceCommit(raw) === null) return false;
 	return /^evidence:\s*$[\s\S]*?^\s+ci-runs:\s*$[\s\S]*?^\s+-\s+name:\s*.+$[\s\S]*?^\s+status:\s*.+$/mu.test(
 		yamlBlock,
 	);
+};
+
+const hasExactCiCommitEvidence = (raw: string): boolean => {
+	const currentSha = process.env.GITHUB_SHA?.trim();
+	if (currentSha === undefined || currentSha === '') return false;
+	return readProposalCiEvidenceCommit(raw) === currentSha;
 };
 
 export const runProposalTransition = async (
@@ -572,6 +582,18 @@ export const runProposalTransition = async (
 		return buildCodeError(
 			'missing-ci-evidence',
 			`CI requires frontmatter evidence.commit and at least one evidence.ci-runs entry before moving a proposal to ${finalTo}`,
+		);
+	}
+
+	if (
+		isCiEnvironment() &&
+		args.force !== true &&
+		(finalTo === 'review' || finalTo === 'done') &&
+		!hasExactCiCommitEvidence(raw)
+	) {
+		return buildCodeError(
+			'ci-evidence-sha-mismatch',
+			`CI requires evidence.commit to match GITHUB_SHA before moving a proposal to ${finalTo}`,
 		);
 	}
 
