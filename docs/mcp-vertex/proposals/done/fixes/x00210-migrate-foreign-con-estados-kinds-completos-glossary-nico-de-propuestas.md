@@ -2,7 +2,7 @@
 id: x00210
 title: "migrate-foreign con estados/kinds completos + glossary único de propuestas"
 kind: fix
-status: review
+status: done
 type: proposal
 track: proposals
 date: 2026-08-23
@@ -35,7 +35,10 @@ Auditoría 2026-08-24 (hallazgos B6, B7, B8, B9): migrate-foreign solo reconoce 
 - acceptance:
   - "Un solo módulo define los 7 estados + kinds canónicos + PROPOSAL_SCAN_FOLDERS (incluyendo retired/issues)."
   - "Sin duplicación de listas de estados entre archivos."
-
+- review-state: done
+- review-implementer: swarm-implementer
+- review-reviewer: orchestrator-fase1-review
+- review-log: approved by orchestrator-fase1-review — Fase 1 review 2026-08-25: 4/4 slices done confirmados en doc; validate verde.
 ### S2 — migrate-foreign: estados y kinds completos
 - **Status**: done
 - **Files**: `plugins/proposals/src/lib/proposals/migrate-foreign.ts`

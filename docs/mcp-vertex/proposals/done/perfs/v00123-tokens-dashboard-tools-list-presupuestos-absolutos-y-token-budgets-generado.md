@@ -2,7 +2,7 @@
 id: v00123
 title: "tokens: dashboard tools/list, presupuestos absolutos y TOKEN-BUDGETS generado"
 kind: perf
-status: review
+status: done
 type: proposal
 track: tokens
 date: 2026-08-24
@@ -47,8 +47,10 @@ La superficie estática (hasta ~190 KB en swarm) es el mayor coste de contexto d
   - "Genera el report por preset/plugin (tool count, schema/description/inputSchema/outputSchema bytes, marginal por plugin)."
   - "Escribe docs/mcp-vertex/TOKEN-BUDGETS.md desde la misma fuente que el test."
   - "El script generador nuevo se crea en tools/scripts/report/token-budget-dashboard.script.ts."
-- review-state: in_review
+- review-state: done
 - review-implementer: swarm-implementer
+- review-reviewer: orchestrator-fase1-review
+- review-log: approved by orchestrator-fase1-review — Fase 1 review 2026-08-25: validate verde.
 ### S2 — Presupuestos absolutos en el test e2e
 - **Status**: done
 - **Files**: `packages/core/tests/src/lib/e2e/token-budget.e2e.spec.ts`
