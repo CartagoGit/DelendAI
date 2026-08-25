@@ -83,13 +83,25 @@ const measureAllPresets = async (): Promise<
 	}
 };
 
+/**
+ * Single-quoted string literal — matches this repo's Biome style
+ * exactly (a `JSON.stringify`-produced double-quoted literal gets
+ * silently rewritten to single quotes by the pre-commit format hook,
+ * which means the generator's raw output would never byte-match the
+ * committed file and `check:generated` would report permanent false
+ * drift — reproduced once via a clean clone before this fix). None of
+ * these values can contain a `'` (an ISO timestamp, a fixed estimator
+ * id, or a preset id), so a plain wrap is safe.
+ */
+const sq = (value: string): string => `'${value}'`;
+
 const renderEntry = (entry: IGeneratedPresetEntry): string =>
 	[
-		`\t${/^[a-z][a-zA-Z0-9]*$/.test(entry.presetId) ? entry.presetId : JSON.stringify(entry.presetId)}: {`,
-		`\t\tsurfaceMode: ${JSON.stringify(entry.surfaceMode)},`,
+		`\t${/^[a-z][a-zA-Z0-9]*$/.test(entry.presetId) ? entry.presetId : sq(entry.presetId)}: {`,
+		`\t\tsurfaceMode: ${sq(entry.surfaceMode)},`,
 		`\t\tsource: 'generated-runtime-measurement',`,
-		`\t\tmeasuredAt: ${JSON.stringify(entry.measuredAt)},`,
-		`\t\testimator: ${JSON.stringify(ESTIMATOR_ID)},`,
+		`\t\tmeasuredAt: ${sq(entry.measuredAt)},`,
+		`\t\testimator: ${sq(ESTIMATOR_ID)},`,
 		`\t\tbytesPerEstimatedToken: TOKEN_BUDGETS.bytesPerEstimatedToken,`,
 		`\t\tbudgetBaseline: {`,
 		`\t\t\ttoolCount: ${entry.toolCount},`,
