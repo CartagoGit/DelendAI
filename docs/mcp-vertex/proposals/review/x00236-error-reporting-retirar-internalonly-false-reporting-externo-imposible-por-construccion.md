@@ -2,7 +2,7 @@
 id: x00236
 title: "error-reporting — retirar internalOnly:false (breaking) — reporting externo es imposible por construcción, no configurable"
 kind: breaking
-status: ready
+status: review
 type: proposal
 track: privacy
 date: 2026-08-25

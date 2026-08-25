@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-08-25T00:14:07.506Z",
+	"generatedAt": "2026-08-25T00:16:33.407Z",
 	"mode": "compact",
 	"tools": [
 		{
@@ -1194,6 +1194,13 @@
 				"kind": "audit"
 			},
 			{
+				"id": "a00089",
+				"title": "a00089",
+				"track": "audit+proposals+security+concurrency",
+				"status": "ready",
+				"kind": "audit"
+			},
+			{
 				"id": "f00050",
 				"title": "f00050",
 				"track": "lint+architecture+i18n+workflow+release",
@@ -1358,7 +1365,7 @@
 				"id": "x00236",
 				"title": "x00236",
 				"track": "privacy",
-				"status": "ready",
+				"status": "in-progress",
 				"kind": "fix"
 			},
 			{
@@ -1427,7 +1434,7 @@
 		],
 		"byStatus": {
 			"ready": 29,
-			"in-progress": 7,
+			"in-progress": 8,
 			"review": 0,
 			"paused": 1,
 			"done": 406,
