@@ -2,7 +2,7 @@
 id: t00005
 title: "error-reporting: suite adversarial de privacidad (payload invariante ante datos privados)"
 kind: test
-status: review
+status: done
 type: proposal
 track: privacy
 date: 2026-08-24
@@ -48,7 +48,10 @@ Sin una propiedad comprobable, cualquier cambio futuro puede reintroducir una fu
 - **Gate**: type
 - acceptance:
   - "Cubren paths Unix/Windows, secrets (AWS/GitHub/JWT/OpenAI/Anthropic), connection strings, URLs internas, IPs privadas, emails, nombres de empresa/cliente, SQL/GraphQL/JSON/source embebidos, Unicode, strings enormes."
-
+- review-state: done
+- review-implementer: swarm-implementer
+- review-reviewer: orchestrator-fase1-review
+- review-log: approved by orchestrator-fase1-review — Redo. validate verde.
 ### S2 — Invariante de invarianza del payload
 - **Status**: done
 - **Files**: `plugins/error-reporting/tests/privacy-adversarial.spec.ts`
