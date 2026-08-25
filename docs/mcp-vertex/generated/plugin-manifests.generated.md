@@ -26,7 +26,7 @@
 | git | @mcp-vertex/git | public | stable | minimal, lean, standard, swarm, full, vertex, web-app, backend-api, cli-tool |
 | i18n | @mcp-vertex/i18n | public | stable | standard, swarm, full, vertex, web-app |
 | impact-analysis | @mcp-vertex/impact-analysis | public | experimental | vertex |
-| issues | @mcp-vertex/issues | public | stable | full |
+| issues | @mcp-vertex/issues | public | beta | full, vertex |
 | link-check | @mcp-vertex/link-check | public | stable | vertex |
 | logs | @mcp-vertex/logs | public | stable | swarm, full, vertex |
 | memory | @mcp-vertex/memory | public | stable | lean, standard, swarm, full, vertex, web-app, backend-api, cli-tool |
@@ -65,7 +65,7 @@
 | cache | 2700 | 3000 | 20 |
 | changelog | 2700 | 3000 | 20 |
 | completion | 2700 | 3000 | 20 |
-| container | 2700 | 3000 | 20 |
+| container | 6800 | 7500 | 20 |
 | context-for-change | 2700 | 3000 | 20 |
 | conventions | 2700 | 3000 | 20 |
 | database | 2700 | 3000 | 20 |
@@ -75,11 +75,11 @@
 | env | 2700 | 3000 | 20 |
 | error-reporting | 3800 | 4200 | 20 |
 | external-mcps | 2700 | 3000 | 20 |
-| forge | 2700 | 3000 | 20 |
+| forge | 7400 | 8200 | 20 |
 | git | 6200 | 6800 | 20 |
 | i18n | 2700 | 3000 | 20 |
 | impact-analysis | 2700 | 3000 | 20 |
-| issues | 2700 | 3000 | 20 |
+| issues | 5300 | 5900 | 20 |
 | issues-triage | 2700 | 3000 | 20 |
 | link-check | 2700 | 3000 | 20 |
 | logs | 2700 | 3000 | 20 |
@@ -119,7 +119,7 @@
 | cache | filesystem-read, filesystem-write |  |
 | changelog | git-read |  |
 | completion | filesystem-read, filesystem-write |  |
-| container | container, process |  |
+| container | process, container | container_inspect: container; container_logs: container; container_lint: filesystem-read; k8s_apply: container, process; container_build: container, process |
 | context-for-change | filesystem-read |  |
 | conventions | filesystem-read |  |
 | database | database |  |
@@ -127,13 +127,13 @@
 | diagram | filesystem-read, filesystem-write |  |
 | docs | filesystem-read, filesystem-write |  |
 | env | env-read |  |
-| error-reporting | network, forge-write |  |
+| error-reporting | network, forge-write | report_status: network, forge-write |
 | external-mcps | network, process |  |
-| forge | forge-read, forge-write, network |  |
-| git | git-read, git-write |  |
+| forge | forge-read, forge-write, network | pr_list: forge-read, network; pr_show: forge-read, network; ci_status: forge-read, network; issue_list: forge-read, network; issue_show: forge-read, network; release: forge-read, forge-write, network; search_code: forge-read, network; pr_create: forge-write, network; pr_comment: forge-write, network; issue_create: forge-write, network |
+| git | git-read, git-write | status: git-read; changed: git-read; diff: git-read; log: git-read; blame: git-read; show: git-read; worktree: git-read; changelog: git-read; commit: git-write; push: git-write |
 | i18n | filesystem-read |  |
 | impact-analysis | filesystem-read |  |
-| issues | forge-read, forge-write, network |  |
+| issues | forge-read, forge-write, network | issues_list: forge-read, network; issues_fetch: forge-read, network; issues_analyze: forge-read; issues_ingest: forge-read, network; issues_resolve: forge-write, network; setup_github: forge-write, network, secrets |
 | issues-triage | forge-read, forge-write, filesystem-read, filesystem-write, network |  |
 | link-check | filesystem-read |  |
 | logs | filesystem-read, filesystem-write |  |
@@ -145,7 +145,7 @@
 | project-health | filesystem-read |  |
 | prompt-eval | filesystem-read, process |  |
 | prompts-pack | filesystem-read |  |
-| proposals | filesystem-read, filesystem-write, git-read, git-write |  |
+| proposals | filesystem-read, filesystem-write, git-read, git-write | auto_work: filesystem-read, filesystem-write, git-read; plan: filesystem-read, filesystem-write; delegate: filesystem-read, filesystem-write; get_proposal_workflow: filesystem-read; round_context: filesystem-read; agent_lock: filesystem-read, filesystem-write; agent_worktree: filesystem-read, filesystem-write, git-write; agent_names: filesystem-read; branch_status: git-read; branch_gc: git-read, git-write; close_slice: filesystem-read, filesystem-write; proposal_transition: filesystem-read, filesystem-write; proposal_review: filesystem-read; proposal_adopt: filesystem-read, filesystem-write, git-write; proposal_diagnose: filesystem-read; state_health: filesystem-read; state_repair: filesystem-read, filesystem-write; agent_lock_release_orphan: filesystem-read, filesystem-write |
 | quality | filesystem-read, process |  |
 | quality-policy | filesystem-read |  |
 | refactor | filesystem-read, filesystem-write |  |
@@ -376,7 +376,7 @@
 | issues | standard | no | no | yes |
 | issues | swarm | no | no | yes |
 | issues | full | yes | yes | yes |
-| issues | vertex | no | no | yes |
+| issues | vertex | yes | no | no |
 | issues | web-app | no | no | yes |
 | issues | backend-api | no | no | yes |
 | issues | cli-tool | no | no | yes |

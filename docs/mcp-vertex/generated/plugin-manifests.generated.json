@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-08-25T17:14:43.346Z",
+	"generatedAt": "2026-08-25T17:25:11.758Z",
 	"manifests": [
 		{
 			"id": "adaptive-optimizer",
@@ -196,12 +196,19 @@
 		{
 			"id": "container",
 			"package": "@mcp-vertex/container",
-			"version": "0.1.1",
+			"version": "0.1.0",
 			"visibility": "public",
 			"summary": "Container inspection + lint (docker ps/images, k8s, Dockerfile rules).",
 			"tags": ["container", "docker", "kubernetes"],
 			"maturity": "stable",
-			"permissions": ["container", "process"],
+			"permissions": ["process", "container"],
+			"toolPermissions": {
+				"container_inspect": ["container"],
+				"container_logs": ["container"],
+				"container_lint": ["filesystem-read"],
+				"k8s_apply": ["container", "process"],
+				"container_build": ["container", "process"]
+			},
 			"presets": [
 				"standard",
 				"swarm",
@@ -211,11 +218,21 @@
 				"backend-api"
 			],
 			"tokenBudget": {
-				"hard": 3000,
-				"warning": 2700,
-				"releaseRelativePercent": 20
+				"staticBytes": 6200,
+				"adaptiveActivationBytes": 1100,
+				"typicalOutput": 1600,
+				"caps": {
+					"hard": 7500,
+					"warning": 6800
+				},
+				"measuredAt": "2026-08-25",
+				"source": "token-budget-real"
 			},
-			"dependencies": ["@mcp-vertex/core"],
+			"dependencies": [
+				"@mcp-vertex/core",
+				"@modelcontextprotocol/sdk",
+				"zod"
+			],
 			"capabilities": ["container", "docker", "kubernetes"]
 		},
 		{
@@ -417,6 +434,9 @@
 			"tags": ["error-reporting", "github", "issues"],
 			"maturity": "stable",
 			"permissions": ["network", "forge-write"],
+			"toolPermissions": {
+				"report_status": ["network", "forge-write"]
+			},
 			"presets": ["standard", "swarm", "full", "vertex"],
 			"tokenBudget": {
 				"staticBytes": 3500,
@@ -463,11 +483,29 @@
 			"tags": ["forge", "git", "ci"],
 			"maturity": "stable",
 			"permissions": ["forge-read", "forge-write", "network"],
+			"toolPermissions": {
+				"pr_list": ["forge-read", "network"],
+				"pr_show": ["forge-read", "network"],
+				"ci_status": ["forge-read", "network"],
+				"issue_list": ["forge-read", "network"],
+				"issue_show": ["forge-read", "network"],
+				"release": ["forge-read", "forge-write", "network"],
+				"search_code": ["forge-read", "network"],
+				"pr_create": ["forge-write", "network"],
+				"pr_comment": ["forge-write", "network"],
+				"issue_create": ["forge-write", "network"]
+			},
 			"presets": ["swarm", "full", "vertex"],
 			"tokenBudget": {
-				"hard": 3000,
-				"warning": 2700,
-				"releaseRelativePercent": 20
+				"staticBytes": 6800,
+				"adaptiveActivationBytes": 1200,
+				"typicalOutput": 1700,
+				"caps": {
+					"hard": 8200,
+					"warning": 7400
+				},
+				"measuredAt": "2026-08-25",
+				"source": "token-budget-real"
 			},
 			"dependencies": [
 				"@mcp-vertex/core",
@@ -485,6 +523,18 @@
 			"tags": ["git", "changelog"],
 			"maturity": "stable",
 			"permissions": ["git-read", "git-write"],
+			"toolPermissions": {
+				"status": ["git-read"],
+				"changed": ["git-read"],
+				"diff": ["git-read"],
+				"log": ["git-read"],
+				"blame": ["git-read"],
+				"show": ["git-read"],
+				"worktree": ["git-read"],
+				"changelog": ["git-read"],
+				"commit": ["git-write"],
+				"push": ["git-write"]
+			},
 			"presets": [
 				"minimal",
 				"lean",
@@ -565,24 +615,38 @@
 		{
 			"id": "issues",
 			"package": "@mcp-vertex/issues",
-			"version": "0.1.1",
+			"version": "0.1.0",
 			"visibility": "public",
-			"summary": "Issue tracker adapters.",
-			"tags": ["issues"],
-			"maturity": "stable",
+			"summary": "Issue tracker (GitHub) integration — list/fetch/analyze/ingest/resolve.",
+			"tags": ["issues", "forge", "triage"],
+			"maturity": "beta",
 			"permissions": ["forge-read", "forge-write", "network"],
-			"presets": ["full"],
+			"toolPermissions": {
+				"issues_list": ["forge-read", "network"],
+				"issues_fetch": ["forge-read", "network"],
+				"issues_analyze": ["forge-read"],
+				"issues_ingest": ["forge-read", "network"],
+				"issues_resolve": ["forge-write", "network"],
+				"setup_github": ["forge-write", "network", "secrets"]
+			},
+			"presets": ["full", "vertex"],
 			"tokenBudget": {
-				"hard": 3000,
-				"warning": 2700,
-				"releaseRelativePercent": 20
+				"staticBytes": 4900,
+				"adaptiveActivationBytes": 880,
+				"typicalOutput": 1300,
+				"caps": {
+					"hard": 5900,
+					"warning": 5300
+				},
+				"measuredAt": "2026-08-25",
+				"source": "token-budget-real"
 			},
 			"dependencies": [
 				"@mcp-vertex/core",
 				"@modelcontextprotocol/sdk",
 				"zod"
 			],
-			"capabilities": ["issues"]
+			"capabilities": ["issues", "forge", "triage"]
 		},
 		{
 			"id": "issues-triage",
@@ -860,6 +924,41 @@
 				"git-read",
 				"git-write"
 			],
+			"toolPermissions": {
+				"auto_work": [
+					"filesystem-read",
+					"filesystem-write",
+					"git-read"
+				],
+				"plan": ["filesystem-read", "filesystem-write"],
+				"delegate": ["filesystem-read", "filesystem-write"],
+				"get_proposal_workflow": ["filesystem-read"],
+				"round_context": ["filesystem-read"],
+				"agent_lock": ["filesystem-read", "filesystem-write"],
+				"agent_worktree": [
+					"filesystem-read",
+					"filesystem-write",
+					"git-write"
+				],
+				"agent_names": ["filesystem-read"],
+				"branch_status": ["git-read"],
+				"branch_gc": ["git-read", "git-write"],
+				"close_slice": ["filesystem-read", "filesystem-write"],
+				"proposal_transition": ["filesystem-read", "filesystem-write"],
+				"proposal_review": ["filesystem-read"],
+				"proposal_adopt": [
+					"filesystem-read",
+					"filesystem-write",
+					"git-write"
+				],
+				"proposal_diagnose": ["filesystem-read"],
+				"state_health": ["filesystem-read"],
+				"state_repair": ["filesystem-read", "filesystem-write"],
+				"agent_lock_release_orphan": [
+					"filesystem-read",
+					"filesystem-write"
+				]
+			},
 			"presets": ["swarm", "full", "vertex"],
 			"tokenBudget": {
 				"staticBytes": 12400,
@@ -1304,8 +1403,15 @@
 			"package": "@mcp-vertex/container",
 			"summary": "Container inspection + lint (docker ps/images, k8s, Dockerfile rules).",
 			"tags": ["container", "docker", "kubernetes"],
-			"permissions": ["container", "process"],
-			"tokenBudgetBytes": 2700
+			"permissions": ["process", "container"],
+			"tokenBudgetBytes": 6200,
+			"toolPermissions": {
+				"container_inspect": ["container"],
+				"container_logs": ["container"],
+				"container_lint": ["filesystem-read"],
+				"k8s_apply": ["container", "process"],
+				"container_build": ["container", "process"]
+			}
 		},
 		{
 			"origin": "first-party",
@@ -1377,7 +1483,10 @@
 			"summary": "Automatic mcp-vertex error reporting: opens de-duplicated GitHub issues for internal failures (enabled by default).",
 			"tags": ["error-reporting", "github", "issues"],
 			"permissions": ["network", "forge-write"],
-			"tokenBudgetBytes": 3500
+			"tokenBudgetBytes": 3500,
+			"toolPermissions": {
+				"report_status": ["network", "forge-write"]
+			}
 		},
 		{
 			"origin": "first-party",
@@ -1395,7 +1504,19 @@
 			"summary": "Forge (GitHub/GitLab) wrappers — PRs, CI, issues.",
 			"tags": ["forge", "git", "ci"],
 			"permissions": ["forge-read", "forge-write", "network"],
-			"tokenBudgetBytes": 2700
+			"tokenBudgetBytes": 6800,
+			"toolPermissions": {
+				"pr_list": ["forge-read", "network"],
+				"pr_show": ["forge-read", "network"],
+				"ci_status": ["forge-read", "network"],
+				"issue_list": ["forge-read", "network"],
+				"issue_show": ["forge-read", "network"],
+				"release": ["forge-read", "forge-write", "network"],
+				"search_code": ["forge-read", "network"],
+				"pr_create": ["forge-write", "network"],
+				"pr_comment": ["forge-write", "network"],
+				"issue_create": ["forge-write", "network"]
+			}
 		},
 		{
 			"origin": "first-party",
@@ -1404,7 +1525,19 @@
 			"summary": "Git wrappers (PR list/view, diff, changelog, extended).",
 			"tags": ["git", "changelog"],
 			"permissions": ["git-read", "git-write"],
-			"tokenBudgetBytes": 5800
+			"tokenBudgetBytes": 5800,
+			"toolPermissions": {
+				"status": ["git-read"],
+				"changed": ["git-read"],
+				"diff": ["git-read"],
+				"log": ["git-read"],
+				"blame": ["git-read"],
+				"show": ["git-read"],
+				"worktree": ["git-read"],
+				"changelog": ["git-read"],
+				"commit": ["git-write"],
+				"push": ["git-write"]
+			}
 		},
 		{
 			"origin": "first-party",
@@ -1428,10 +1561,18 @@
 			"origin": "first-party",
 			"id": "issues",
 			"package": "@mcp-vertex/issues",
-			"summary": "Issue tracker adapters.",
-			"tags": ["issues"],
+			"summary": "Issue tracker (GitHub) integration — list/fetch/analyze/ingest/resolve.",
+			"tags": ["issues", "forge", "triage"],
 			"permissions": ["forge-read", "forge-write", "network"],
-			"tokenBudgetBytes": 2700
+			"tokenBudgetBytes": 4900,
+			"toolPermissions": {
+				"issues_list": ["forge-read", "network"],
+				"issues_fetch": ["forge-read", "network"],
+				"issues_analyze": ["forge-read"],
+				"issues_ingest": ["forge-read", "network"],
+				"issues_resolve": ["forge-write", "network"],
+				"setup_github": ["forge-write", "network", "secrets"]
+			}
 		},
 		{
 			"origin": "first-party",
@@ -1550,7 +1691,42 @@
 				"git-read",
 				"git-write"
 			],
-			"tokenBudgetBytes": 12400
+			"tokenBudgetBytes": 12400,
+			"toolPermissions": {
+				"auto_work": [
+					"filesystem-read",
+					"filesystem-write",
+					"git-read"
+				],
+				"plan": ["filesystem-read", "filesystem-write"],
+				"delegate": ["filesystem-read", "filesystem-write"],
+				"get_proposal_workflow": ["filesystem-read"],
+				"round_context": ["filesystem-read"],
+				"agent_lock": ["filesystem-read", "filesystem-write"],
+				"agent_worktree": [
+					"filesystem-read",
+					"filesystem-write",
+					"git-write"
+				],
+				"agent_names": ["filesystem-read"],
+				"branch_status": ["git-read"],
+				"branch_gc": ["git-read", "git-write"],
+				"close_slice": ["filesystem-read", "filesystem-write"],
+				"proposal_transition": ["filesystem-read", "filesystem-write"],
+				"proposal_review": ["filesystem-read"],
+				"proposal_adopt": [
+					"filesystem-read",
+					"filesystem-write",
+					"git-write"
+				],
+				"proposal_diagnose": ["filesystem-read"],
+				"state_health": ["filesystem-read"],
+				"state_repair": ["filesystem-read", "filesystem-write"],
+				"agent_lock_release_orphan": [
+					"filesystem-read",
+					"filesystem-write"
+				]
+			}
 		},
 		{
 			"origin": "first-party",
@@ -1815,10 +1991,10 @@
 				"backend-api"
 			],
 			"capabilities": ["container", "docker", "kubernetes"],
-			"permissions": ["container", "process"],
+			"permissions": ["process", "container"],
 			"tokenBudget": {
-				"warning": 2700,
-				"hard": 3000,
+				"warning": 6800,
+				"hard": 7500,
 				"releaseRelativePercent": 20
 			}
 		},
@@ -2008,8 +2184,8 @@
 			"capabilities": ["forge", "git", "ci"],
 			"permissions": ["forge-read", "forge-write", "network"],
 			"tokenBudget": {
-				"warning": 2700,
-				"hard": 3000,
+				"warning": 7400,
+				"hard": 8200,
 				"releaseRelativePercent": 20
 			}
 		},
@@ -2074,16 +2250,16 @@
 		{
 			"id": "issues",
 			"package": "@mcp-vertex/issues",
-			"summary": "Issue tracker adapters.",
-			"tags": ["issues"],
-			"maturity": "stable",
+			"summary": "Issue tracker (GitHub) integration — list/fetch/analyze/ingest/resolve.",
+			"tags": ["issues", "forge", "triage"],
+			"maturity": "beta",
 			"visibility": "public",
-			"presets": ["full"],
-			"capabilities": ["issues"],
+			"presets": ["full", "vertex"],
+			"capabilities": ["issues", "forge", "triage"],
 			"permissions": ["forge-read", "forge-write", "network"],
 			"tokenBudget": {
-				"warning": 2700,
-				"hard": 3000,
+				"warning": 5300,
+				"hard": 5900,
 				"releaseRelativePercent": 20
 			}
 		},
@@ -2580,8 +2756,8 @@
 		},
 		{
 			"id": "container",
-			"warning": 2700,
-			"hard": 3000,
+			"warning": 6800,
+			"hard": 7500,
 			"releaseRelativePercent": 20
 		},
 		{
@@ -2640,8 +2816,8 @@
 		},
 		{
 			"id": "forge",
-			"warning": 2700,
-			"hard": 3000,
+			"warning": 7400,
+			"hard": 8200,
 			"releaseRelativePercent": 20
 		},
 		{
@@ -2664,8 +2840,8 @@
 		},
 		{
 			"id": "issues",
-			"warning": 2700,
-			"hard": 3000,
+			"warning": 5300,
+			"hard": 5900,
 			"releaseRelativePercent": 20
 		},
 		{
@@ -2858,7 +3034,14 @@
 		},
 		{
 			"id": "container",
-			"permissions": ["container", "process"]
+			"permissions": ["process", "container"],
+			"toolPermissions": {
+				"container_inspect": ["container"],
+				"container_logs": ["container"],
+				"container_lint": ["filesystem-read"],
+				"k8s_apply": ["container", "process"],
+				"container_build": ["container", "process"]
+			}
 		},
 		{
 			"id": "context-for-change",
@@ -2890,7 +3073,10 @@
 		},
 		{
 			"id": "error-reporting",
-			"permissions": ["network", "forge-write"]
+			"permissions": ["network", "forge-write"],
+			"toolPermissions": {
+				"report_status": ["network", "forge-write"]
+			}
 		},
 		{
 			"id": "external-mcps",
@@ -2898,11 +3084,35 @@
 		},
 		{
 			"id": "forge",
-			"permissions": ["forge-read", "forge-write", "network"]
+			"permissions": ["forge-read", "forge-write", "network"],
+			"toolPermissions": {
+				"pr_list": ["forge-read", "network"],
+				"pr_show": ["forge-read", "network"],
+				"ci_status": ["forge-read", "network"],
+				"issue_list": ["forge-read", "network"],
+				"issue_show": ["forge-read", "network"],
+				"release": ["forge-read", "forge-write", "network"],
+				"search_code": ["forge-read", "network"],
+				"pr_create": ["forge-write", "network"],
+				"pr_comment": ["forge-write", "network"],
+				"issue_create": ["forge-write", "network"]
+			}
 		},
 		{
 			"id": "git",
-			"permissions": ["git-read", "git-write"]
+			"permissions": ["git-read", "git-write"],
+			"toolPermissions": {
+				"status": ["git-read"],
+				"changed": ["git-read"],
+				"diff": ["git-read"],
+				"log": ["git-read"],
+				"blame": ["git-read"],
+				"show": ["git-read"],
+				"worktree": ["git-read"],
+				"changelog": ["git-read"],
+				"commit": ["git-write"],
+				"push": ["git-write"]
+			}
 		},
 		{
 			"id": "i18n",
@@ -2914,7 +3124,15 @@
 		},
 		{
 			"id": "issues",
-			"permissions": ["forge-read", "forge-write", "network"]
+			"permissions": ["forge-read", "forge-write", "network"],
+			"toolPermissions": {
+				"issues_list": ["forge-read", "network"],
+				"issues_fetch": ["forge-read", "network"],
+				"issues_analyze": ["forge-read"],
+				"issues_ingest": ["forge-read", "network"],
+				"issues_resolve": ["forge-write", "network"],
+				"setup_github": ["forge-write", "network", "secrets"]
+			}
 		},
 		{
 			"id": "issues-triage",
@@ -2973,7 +3191,42 @@
 				"filesystem-write",
 				"git-read",
 				"git-write"
-			]
+			],
+			"toolPermissions": {
+				"auto_work": [
+					"filesystem-read",
+					"filesystem-write",
+					"git-read"
+				],
+				"plan": ["filesystem-read", "filesystem-write"],
+				"delegate": ["filesystem-read", "filesystem-write"],
+				"get_proposal_workflow": ["filesystem-read"],
+				"round_context": ["filesystem-read"],
+				"agent_lock": ["filesystem-read", "filesystem-write"],
+				"agent_worktree": [
+					"filesystem-read",
+					"filesystem-write",
+					"git-write"
+				],
+				"agent_names": ["filesystem-read"],
+				"branch_status": ["git-read"],
+				"branch_gc": ["git-read", "git-write"],
+				"close_slice": ["filesystem-read", "filesystem-write"],
+				"proposal_transition": ["filesystem-read", "filesystem-write"],
+				"proposal_review": ["filesystem-read"],
+				"proposal_adopt": [
+					"filesystem-read",
+					"filesystem-write",
+					"git-write"
+				],
+				"proposal_diagnose": ["filesystem-read"],
+				"state_health": ["filesystem-read"],
+				"state_repair": ["filesystem-read", "filesystem-write"],
+				"agent_lock_release_orphan": [
+					"filesystem-read",
+					"filesystem-write"
+				]
+			}
 		},
 		{
 			"id": "quality",
@@ -4516,9 +4769,9 @@
 		{
 			"pluginId": "issues",
 			"presetId": "vertex",
-			"declared": false,
+			"declared": true,
 			"catalogMember": false,
-			"matches": true
+			"matches": false
 		},
 		{
 			"pluginId": "issues",

@@ -1,9 +1,9 @@
 ---
 id: issues
 package: @mcp-vertex/issues
-version: 0.1.1
-maturity: stable
-generated: 2026-08-25T01:07:05.846Z
+version: 0.1.0
+maturity: beta
+generated: 2026-08-25T17:25:11.758Z
 ---
 
 # Issues
@@ -12,15 +12,18 @@ generated: 2026-08-25T01:07:05.846Z
 
 ## Summary
 
-Issue tracker adapters.
+Issue tracker (GitHub) integration — list/fetch/analyze/ingest/resolve.
 
 ## Tags
 
 - issues
+- forge
+- triage
 
 ## Presets
 
 - full
+- vertex
 
 ## Permissions
 
@@ -37,3 +40,5 @@ Issue tracker adapters.
 ## Capabilities
 
 - issues
+- forge
+- triage

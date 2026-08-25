@@ -20,9 +20,21 @@ export default definePluginManifest({
 		'backend-api',
 		'cli-tool',
 	],
-	// f00179 S2 — real token budget for the 9 git tools (status, log,
-	// diff, pr.list, pr.view, branch.*, tag.*, worktree.*). Measured
-	// 2026-08-25 against the live plugin's tools/list payload.
+	// f00180 S2 / MAN-004 — per-tool permission map. Read-only tools
+	// declare `git-read` only; write tools (`commit`, `push`) declare
+	// `git-write` so a host can refuse them under a read-only grant.
+	toolPermissions: {
+		status: ['git-read'],
+		changed: ['git-read'],
+		diff: ['git-read'],
+		log: ['git-read'],
+		blame: ['git-read'],
+		show: ['git-read'],
+		worktree: ['git-read'],
+		changelog: ['git-read'],
+		commit: ['git-write'],
+		push: ['git-write'],
+	},
 	tokenBudget: {
 		staticBytes: 5_800,
 		adaptiveActivationBytes: 950,
