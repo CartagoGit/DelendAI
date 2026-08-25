@@ -1,14 +1,14 @@
 ---
-id: x00249
-title: "\"error-reporting-llm-tool-provenance-via-itoolidentityregistry-no-raw-external-toolnames\""
-kind: fix
+id: c00020
+title: "ci-evidence-required-on-close-transicion-solo-con-sha-exacto"
+kind: chore
 status: ready
 type: proposal
-track: privacy
+track: ci
 date: 2026-08-25
 ---
 
-# x00249 — "error-reporting-llm-tool-provenance-via-itoolidentityregistry-no-raw-external-toolnames"
+# c00020 — "ci-evidence-required-on-close-transicion-solo-con-sha-exacto"
 
 ## Goal
 
