@@ -283,6 +283,13 @@
 				"./plugins/quality-policy/src/public/index.ts"
 			],
 			"@mcp-vertex/quality-policy/*": ["./plugins/quality-policy/src/*"],
+			"@mcp-vertex/commit-policy": [
+				"./plugins/commit-policy/src/index.ts"
+			],
+			"@mcp-vertex/commit-policy/public": [
+				"./plugins/commit-policy/src/public/index.ts"
+			],
+			"@mcp-vertex/commit-policy/*": ["./plugins/commit-policy/src/*"],
 			"@mcp-vertex/changelog": ["./plugins/changelog/src/index.ts"],
 			"@mcp-vertex/changelog/public": [
 				"./plugins/changelog/src/public/index.ts"
