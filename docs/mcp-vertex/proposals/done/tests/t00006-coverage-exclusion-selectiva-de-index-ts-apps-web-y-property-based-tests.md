@@ -2,7 +2,7 @@
 id: t00006
 title: "coverage: exclusión selectiva de index.ts, apps/web y property-based tests"
 kind: test
-status: review
+status: done
 type: proposal
 track: ci-test-docs
 date: 2026-08-24
@@ -44,7 +44,10 @@ Los umbrales actuales (statements 80, branches 67, functions 79, lines 81) no re
 - acceptance:
   - "Solo se excluyen barrels puros por detección, no todos los index.ts (TEST-001)."
   - "El wiring real (options/register/hooks/knowledge) queda cubierto."
-
+- review-state: done
+- review-implementer: swarm-implementer
+- review-reviewer: orchestrator-fase1-review
+- review-log: approved by orchestrator-fase1-review — Redo. validate verde.
 ### S2 — Cobertura de apps/web
 - **Status**: done
 - **Files**: `apps/web/vitest.config.ts`
