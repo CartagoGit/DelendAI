@@ -384,6 +384,43 @@ const buildCodeError = (code: string, reason: string) => {
 	};
 };
 
+const isCiEnvironment = (): boolean =>
+	process.env.CI === 'true' || process.env.GITHUB_ACTIONS === 'true';
+
+const hasProposalCiEvidence = (raw: string): boolean => {
+	const yamlBlock = extractYamlBlock(raw);
+	if (yamlBlock === null) return false;
+	const frontmatter = parseFrontmatterBlock(yamlBlock) as Record<
+		string,
+		unknown
+	>;
+	const evidence = frontmatter.evidence;
+	if (
+		evidence === null ||
+		typeof evidence !== 'object' ||
+		Array.isArray(evidence)
+	) {
+		return false;
+	}
+	const commit = evidence.commit;
+	const runs = evidence['ci-runs'];
+	if (typeof commit !== 'string' || commit.trim() === '') return false;
+	if (!Array.isArray(runs) || runs.length === 0) return false;
+	return runs.some((run) => {
+		if (run === null || typeof run !== 'object' || Array.isArray(run)) {
+			return false;
+		}
+		const name = run.name;
+		const status = run.status;
+		return (
+			typeof name === 'string' &&
+			name.trim() !== '' &&
+			typeof status === 'string' &&
+			status.trim() !== ''
+		);
+	});
+};
+
 export const runProposalTransition = async (
 	args: IProposalTransitionArgs,
 	options: IProposalTransitionToolOptions,
@@ -537,6 +574,18 @@ export const runProposalTransition = async (
 				isError: true,
 			};
 		}
+	}
+
+	if (
+		isCiEnvironment() &&
+		args.force !== true &&
+		(finalTo === 'review' || finalTo === 'done') &&
+		!hasProposalCiEvidence(raw)
+	) {
+		return buildCodeError(
+			'missing-ci-evidence',
+			`CI requires frontmatter evidence.commit and at least one evidence.ci-runs entry before moving a proposal to ${finalTo}`,
+		);
 	}
 
 	if (finalTo === 'done') {

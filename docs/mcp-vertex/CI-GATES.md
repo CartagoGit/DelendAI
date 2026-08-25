@@ -66,6 +66,10 @@ Este documento define qué validaciones locales bloquean pull requests en GitHub
 | `verify:scaffolds` | `verify-runtime` | `bun run verify:scaffolds` |
 | `verify:dev-bundles` | `verify-runtime` | `bun run verify:dev-bundles` |
 | `verify:host-capability-packs` | `verify-runtime` | `bun run verify:host-capability-packs` |
+| `token-budget.e2e.spec.ts` | `tokens-budget-real` | `bunx vitest run packages/core/tests/src/lib/e2e/token-budget.e2e.spec.ts` |
+| `plugin-manifest lint` | `manifests-check` | `bun tools/scripts/lint/plugin-manifest.script.ts` |
+| `from-manifests --check` | `manifests-check` | `bun tools/scripts/generate/from-manifests.script.ts --check` |
+| `generated artifact drift` | `generated-artifacts-check` | `bun tools/scripts/generate/from-manifests.script.ts --check` + token dashboard drift check |
 
 ## Checks operativos que se mantienen
 
@@ -95,6 +99,9 @@ Jobs paralelos:
 | `tests` | none |
 | `quality-gate` | none |
 | `verify-runtime` | none |
+| `tokens-budget-real` | none |
+| `manifests-check` | none |
+| `generated-artifacts-check` | none |
 | `web site build` | none |
 | `pack smoke (publishable packages)` | none |
 | `metrics longitudinal regression gate (f00027)` | none |
@@ -105,7 +112,7 @@ Jobs paralelos:
 
 | Rama | Required checks |
 | --- | --- |
-| `develop` | `lint-biome`, `lint-architecture`, `lint-presets`, `lint-docs`, `lint-security`, `lint-governance`, `typecheck`, `tests`, `quality-gate`, `verify-runtime`, `web site build`, `pack smoke (publishable packages)`, `metrics longitudinal regression gate (f00027)` |
-| `main` | `lint-biome`, `lint-architecture`, `lint-presets`, `lint-docs`, `lint-security`, `lint-governance`, `typecheck`, `tests`, `quality-gate`, `verify-runtime`, `web site build`, `pack smoke (publishable packages)`, `metrics longitudinal regression gate (f00027)` |
+| `develop` | `lint-biome`, `lint-architecture`, `lint-presets`, `lint-docs`, `lint-security`, `lint-governance`, `typecheck`, `tests`, `quality-gate`, `verify-runtime`, `tokens-budget-real`, `manifests-check`, `generated-artifacts-check`, `web site build`, `pack smoke (publishable packages)`, `metrics longitudinal regression gate (f00027)` |
+| `main` | `lint-biome`, `lint-architecture`, `lint-presets`, `lint-docs`, `lint-security`, `lint-governance`, `typecheck`, `tests`, `quality-gate`, `verify-runtime`, `tokens-budget-real`, `manifests-check`, `generated-artifacts-check`, `web site build`, `pack smoke (publishable packages)`, `metrics longitudinal regression gate (f00027)` |
 
-Además de marcar estos checks como required, la protección de ramas debe exigir merge vía pull request y branch actualizado antes de mergear.
+Además de marcar estos checks como required, la protección de ramas debe exigir branch actualizado antes de integrar. En `develop` no se exige review humana obligatoria: el control es la batería de checks required más `enforce_admins: true`.
