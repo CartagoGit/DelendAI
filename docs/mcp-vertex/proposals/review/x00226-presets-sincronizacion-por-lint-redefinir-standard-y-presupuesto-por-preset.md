@@ -44,7 +44,8 @@ Los presets son la superficie de carga real del runtime; si su membership se sin
 - acceptance:
   - "Las comparaciones manuales se convierten en lint (PRE-001)."
   - "La membership de vertex se valida contra la config real (PRE-002)."
-
+- review-state: in_review
+- review-implementer: swarm-implementer
 ### S2 — Roles de presets y budget por preset
 - **Status**: done
 - **Files**: `packages/core/src/lib/plugins/preset-catalog.ts`

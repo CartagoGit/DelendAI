@@ -2,7 +2,7 @@
 id: x00225
 title: "registry: auto-plugin-selector en el índice y drift de backend-api"
 kind: fix
-status: review
+status: done
 type: proposal
 track: registry
 date: 2026-08-24
@@ -42,7 +42,10 @@ Dos síntomas del mismo problema de fondo (fuentes manuales duplicadas): el reco
 - acceptance:
   - "auto-plugin-selector aparece en FIRST_PARTY_PLUGIN_INDEX y en sus propios candidatos."
   - "Un test evita regresiones (el auto-selector se conoce a sí mismo)."
-
+- review-state: done
+- review-implementer: swarm-implementer
+- review-reviewer: orchestrator-fase1-review
+- review-log: approved by orchestrator-fase1-review — Fase 1 review 2026-08-25: validate verde.
 ### S2 — Alinear backend-api (una sola verdad)
 - **Status**: done
 - **Files**: `plugins/api/src/index.ts`, `packages/core/src/lib/plugins/preset-catalog.ts`
