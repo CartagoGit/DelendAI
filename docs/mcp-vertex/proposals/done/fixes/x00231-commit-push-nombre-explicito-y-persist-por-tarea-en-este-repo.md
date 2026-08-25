@@ -2,7 +2,7 @@
 id: x00231
 title: "Commit+push recuperando el autor del git y persist por tarea en este repo"
 kind: fix
-status: review
+status: done
 type: proposal
 track: plugins
 date: 2026-08-24
@@ -36,7 +36,10 @@ Además, el persist de `auto_work` seguía en `none` (default), así que el plan
   - "`commitAuthor` declara `mode: "git"` (recuperar `user.name`/`user.email` del git config del repo)."
   - "El `git config` local del repo fija `user.name: Cartago` y `user.email: cartago.relaxingcup@gmail.com` para que el modo `git` recupere siempre al autor."
   - "`plugins.proposals.persist` declara `mode: "commit-and-push"` con `pushTarget: "origin develop"`."
-
+- review-state: done
+- review-implementer: swarm-implementer
+- review-reviewer: orchestrator-fase1-review
+- review-log: approved by orchestrator-fase1-review — Redo. validate verde (a nivel de mi lote).
 ### S2 — Guía de persist de `auto_work` aware de la política de ramas
 - **Status**: done
 - **Files**: `plugins/proposals/src/lib/tools/auto-work.tool.ts`, `plugins/proposals/tests/src/lib/auto-work.spec.ts`
