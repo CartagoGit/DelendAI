@@ -34,9 +34,7 @@ import type {
 	IBuildAdoptProjectPlanInput,
 } from '../contracts/interfaces/adopt-project.interface';
 import type { IToolRegistration } from '../contracts/interfaces/tool-registration.interface';
-import type {
-	IScaffoldHostOptions,
-} from '../scaffold/scaffold-host';
+import type { IScaffoldHostOptions } from '../scaffold/scaffold-host';
 import {
 	buildAgentFiles,
 	buildProposalsStoreFiles,
