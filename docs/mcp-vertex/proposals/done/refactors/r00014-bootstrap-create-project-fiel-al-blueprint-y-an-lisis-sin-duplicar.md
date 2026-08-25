@@ -2,7 +2,7 @@
 id: r00014
 title: "Bootstrap: create_project fiel al blueprint y análisis sin duplicar"
 kind: refactor
-status: review
+status: done
 type: proposal
 track: bootstrap
 date: 2026-08-23
@@ -35,7 +35,10 @@ Auditoría 2026-08-24 (hallazgos A4, A8, A9, A10 y el gasto de tokens): la caden
 - acceptance:
   - "El esquema de entrada de create_project acepta el blueprint completo (tools/prompts/skills/agents/tests) + targetDir + adoptionStrategy."
   - "No se rompe el contrato actual (back-compat de flags existentes)."
-
+- review-state: done
+- review-implementer: swarm-implementer
+- review-reviewer: orchestrator-fase1-review
+- review-log: approved by orchestrator-fase1-review — Redo. Revisado en profundidad. validate verde.
 ### S2 — create_project consume el blueprint fielmente
 - **Status**: done
 - **Files**: `packages/core/src/lib/bootstrap/create-tool.ts`
