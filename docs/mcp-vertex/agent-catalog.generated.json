@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-08-25T02:52:28.614Z",
+	"generatedAt": "2026-08-25T06:06:18.090Z",
 	"mode": "compact",
 	"tools": [
 		{
@@ -1230,13 +1230,6 @@
 				"kind": "plan"
 			},
 			{
-				"id": "q00004",
-				"title": "q00004",
-				"track": "develop-audit-hardening-v2",
-				"status": "in-progress",
-				"kind": "plan"
-			},
-			{
 				"id": "x00203",
 				"title": "x00203",
 				"track": "plugins+fix",
@@ -1253,7 +1246,7 @@
 		],
 		"byStatus": {
 			"ready": 0,
-			"in-progress": 9,
+			"in-progress": 8,
 			"review": 28,
 			"paused": 1,
 			"done": 406,
