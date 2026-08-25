@@ -2,7 +2,7 @@
 id: x00223
 title: "métricas: bytes UTF-8 reales, contar errores y separar tipos de coste"
 kind: fix
-status: review
+status: done
 type: proposal
 track: metrics
 date: 2026-08-24
@@ -45,7 +45,10 @@ Dos definiciones distintas de "byte" conviven hoy (los tests de presupuestos usa
 - acceptance:
   - "estimateResultBytes usa Buffer.byteLength(text,'utf8')."
   - "Las respuestas de error se miden (nunca 0 por defecto)."
-
+- review-state: done
+- review-implementer: swarm-implementer
+- review-reviewer: orchestrator-fase1-review
+- review-log: approved by orchestrator-fase1-review — Fase 1 review 2026-08-25: validate verde.
 ### S2 — Tipos de coste y nomenclatura de tokens
 - **Status**: done
 - **Files**: `packages/core/src/lib/metrics/metrics-tool.ts`
