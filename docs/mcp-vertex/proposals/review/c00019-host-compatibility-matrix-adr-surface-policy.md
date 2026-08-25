@@ -3,7 +3,7 @@ id: c00019
 title: "Host compatibility matrix — ADR de surface policy"
 kind: chore
 type: proposal
-status: ready
+status: review
 track: surface
 date: 2026-08-25
 plan-parent: q00005
@@ -15,6 +15,8 @@ related:
     - r00019 # decisión surface-adaptive inicial (q00004)
     - r00026 # flip default adaptive para plain clients
     - c00018 # develop-nunca-rojo integration design
+shipped-in:
+    - 11d31317 # docs(filesystem+surface): d00007 + d00008 + c00019 ADRs and implementation
 ---
 
 # c00019 — Host compatibility matrix + ADR de surface policy
