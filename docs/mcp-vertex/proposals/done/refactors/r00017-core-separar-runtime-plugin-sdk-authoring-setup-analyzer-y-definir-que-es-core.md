@@ -2,7 +2,7 @@
 id: r00017
 title: "core: separar runtime/plugin-sdk/authoring/setup/analyzer y definir qué es core"
 kind: refactor
-status: review
+status: done
 type: proposal
 track: core
 date: 2026-08-24
@@ -45,7 +45,10 @@ El core ya contiene agents, bootstrap, cache, catalog, CLI assembly, config, hos
 - acceptance:
   - "Documenta qué es core (invariantes runtime) y qué no (authoring/setup/analyzer)."
   - "CORE-002 resuelto con una definición explícita."
-
+- review-state: done
+- review-implementer: swarm-implementer
+- review-reviewer: orchestrator-fase1-review
+- review-log: approved by orchestrator-fase1-review — Redo. Revisado en profundidad (cold-start re-ejecutado). validate verde.
 ### S2 — Medición cold-start antes/después
 - **Status**: done
 - **Files**: `tools/scripts/perf/cold-start.script.ts`

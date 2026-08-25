@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-08-25T00:08:20.695Z",
+	"generatedAt": "2026-08-25T00:09:00.419Z",
 	"mode": "compact",
 	"tools": [
 		{
@@ -1313,8 +1313,8 @@
 				"kind": "refactor"
 			},
 			{
-				"id": "r00221",
-				"title": "r00221",
+				"id": "r00021",
+				"title": "r00021",
 				"track": "surface",
 				"status": "ready",
 				"kind": "refactor"
@@ -1428,9 +1428,9 @@
 		"byStatus": {
 			"ready": 29,
 			"in-progress": 7,
-			"review": 9,
+			"review": 7,
 			"paused": 1,
-			"done": 397,
+			"done": 399,
 			"blocked": 0,
 			"retired": 2,
 			"unspecified": 0
