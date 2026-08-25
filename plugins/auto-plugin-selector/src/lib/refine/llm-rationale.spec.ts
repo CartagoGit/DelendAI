@@ -6,7 +6,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { buildLlmRationale } from '@mcp-vertex/auto-plugin-selector/lib/refine/llm-rationale';
-import type { IProviderCandidate } from '@mcp-vertex/auto-agent-selector/lib/contracts/interfaces/roster.interface';
+import type { IProviderCandidate } from '@mcp-vertex/auto-agent-selector/public';
 import type {
 	IPluginFit,
 	IProjectSignals,
