@@ -1,0 +1,40 @@
+---
+id: prompts-pack
+package: @mcp-vertex/prompts-pack
+version: 0.1.1
+maturity: stable
+generated: 2026-08-25T01:07:05.846Z
+---
+
+# Prompts Pack
+
+> Auto-generated. Do not edit. Regenerate with bun run generate:from-manifests.
+
+## Summary
+
+Project-aware MCP prompts (explain-this-code, write-tests-for, review-this-diff, etc.).
+
+## Tags
+
+- prompts
+
+## Presets
+
+- standard
+- swarm
+- full
+- vertex
+- web-app
+- backend-api
+
+## Permissions
+
+- filesystem-read
+
+## Dependencies
+
+- @mcp-vertex/core
+
+## Capabilities
+
+- prompts

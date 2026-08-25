@@ -132,96 +132,82 @@ interface IStateDiagnosis {
 	readonly healthy: boolean;
 }
 
-const STATE_DIAGNOSIS_SCHEMA = z.object({
-	locks: z.object({
-		active: z.number(),
-		stale: z.number(),
-		staleTaskIds: z.array(z.string()),
-		lastStaleSeen: z.string().nullable(),
-		livelocks: z.number(),
-		livelockPairs: z.array(
-			z.object({
-				agentA: z.string(),
-				agentB: z.string(),
-				files: z.array(z.string()),
-				heldMs: z.number(),
-			}),
-		),
-		crossProposal: z.array(
-			z.object({
-				id: z.string(),
+const STATE_DIAGNOSIS_SCHEMA = z
+	.object({
+		locks: z
+			.object({
+				active: z.number(),
+				stale: z.number(),
+				livelocks: z.number(),
+				sessionBalance: z.object({
+					claims: z.number(),
+					releases: z.number(),
+					imbalance: z.number(),
+				}),
+				sessionClaims: z.number(),
+				sessionReleases: z.number(),
+				sessionImbalance: z.number(),
+			})
+			.passthrough(),
+		/**
+		 * a00072 S1.a: stale locks the smoke detector sees right now.
+		 * When `stale.count > 0` the host should suggest `state_repair
+		 * { mode: "execute" }` (or the explicit `agent_lock_release_orphan`
+		 * tool for a targeted release).
+		 */
+		stale: z
+			.object({
 				count: z.number(),
-				taskIds: z.array(z.string()),
-			}),
-		),
-		sessionBalance: z.object({
-			claims: z.number(),
-			releases: z.number(),
-			imbalance: z.number(),
-		}),
-		sessionClaims: z.number(),
-		sessionReleases: z.number(),
-		sessionImbalance: z.number(),
-	}),
-	/**
-	 * a00072 S1.a: stale locks the smoke detector sees right now.
-	 * When `stale.count > 0` the host should suggest `state_repair
-	 * { mode: "execute" }` (or the explicit `agent_lock_release_orphan`
-	 * tool for a targeted release).
-	 */
-	stale: z.object({
-		count: z.number(),
-		taskIds: z.array(z.string()),
-		lastStaleSeen: z.string().nullable(),
-	}),
-	/** a00069 S11: force/skipPeerReview peer-review bypasses this session. */
-	peerReviewBypasses: z.number(),
-	autoTransitionRepairs: z.object({
-		count: z.number(),
-		entries: z.array(
-			z.object({
-				proposalId: z.string(),
-				path: z.string(),
-				reason: z.string(),
-				ts: z.string(),
-			}),
-		),
-	}),
-	queue: z
-		.object({
-			queueLength: z.number(),
-			queuedCount: z.number(),
-			waiterOrphans: z.number(),
-			oldestAgeMinutes: z.number(),
-			threshold: z.string(),
-		})
-		.nullable(),
-	registry: z.object({
-		orphans: z.number(),
-		threshold: z.string(),
-	}),
-	healthy: z.boolean(),
-});
+			})
+			.passthrough(),
+		/** a00069 S11: force/skipPeerReview peer-review bypasses this session. */
+		peerReviewBypasses: z.number(),
+		autoTransitionRepairs: z
+			.object({
+				count: z.number(),
+			})
+			.passthrough(),
+		queue: z
+			.object({
+				queueLength: z.number(),
+				queuedCount: z.number(),
+				waiterOrphans: z.number(),
+				oldestAgeMinutes: z.number(),
+				threshold: z.string(),
+			})
+			.passthrough()
+			.nullable(),
+		registry: z
+			.object({
+				orphans: z.number(),
+				threshold: z.string(),
+			})
+			.passthrough(),
+		healthy: z.boolean(),
+	})
+	.passthrough();
 
-const STATE_REPAIR_OUTPUT_SCHEMA = z.object({
-	mode: z.enum(['dry-run', 'execute']),
-	diagnosis: STATE_DIAGNOSIS_SCHEMA,
-	wouldRepair: z
-		.object({
-			staleLocks: z.number(),
-			dueQueueEntries: z.number(),
-			orphanAssignments: z.number(),
-		})
-		.optional(),
-	repaired: z
-		.object({
-			staleLocks: z.number(),
-			expiredQueueEntries: z.number(),
-			orphanAssignments: z.number(),
-		})
-		.optional(),
-	nextAction: z.string().optional(),
-});
+const STATE_REPAIR_OUTPUT_SCHEMA = z
+	.object({
+		mode: z.enum(['dry-run', 'execute']),
+		diagnosis: STATE_DIAGNOSIS_SCHEMA,
+		wouldRepair: z
+			.object({
+				staleLocks: z.number(),
+				dueQueueEntries: z.number(),
+				orphanAssignments: z.number(),
+			})
+			.optional(),
+		repaired: z
+			.object({
+				staleLocks: z.number(),
+				expiredQueueEntries: z.number(),
+				orphanAssignments: z.number(),
+			})
+			.optional(),
+		nextAction: z.string().optional(),
+	})
+	.passthrough();
 
 const EMPTY_LOCK = (): ILockFile => ({
 	version: 1,

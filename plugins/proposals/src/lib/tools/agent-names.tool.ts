@@ -157,50 +157,32 @@ const ZOMBIE_ORPHAN_SCHEMA = z.object({
 	recommendedAction: z.enum(['force_release', 'extend_cooldown', 'escalate']),
 });
 
-const AGENT_NAMES_OUTPUT_SCHEMA = z.object({
-	error: z.string().optional(),
-	backup: z.string().nullable().optional(),
-	nextAction: z.string().optional(),
-	summary: z
-		.object({
-			active: z.number(),
-			cooldown: z.number(),
-			orphan: z.number(),
-			adopted: z.number(),
-		})
-		.optional(),
-	assignments: z.array(AGENT_ASSIGNMENT_SCHEMA).optional(),
-	adopted: z.array(AGENT_ADOPTION_SCHEMA).optional(),
-	tree: z.array(AGENT_ASSIGNMENT_SCHEMA).optional(),
-	agent: z.string().optional(),
-	status: z.string().optional(),
-	in_cooldown: z.boolean().optional(),
-	task_id: z.string().optional(),
-	released: z.array(z.string()).optional(),
-	promoted: z.number().optional(),
-	freed: z.number().optional(),
-	blocked: z.boolean().optional(),
-	blockerType: z.string().optional(),
-	reason: z.string().optional(),
-	depth: z.number().optional(),
-	max_depth: z.number().optional(),
-	allowed: z.array(z.string()).optional(),
-	pool_size: z.number().optional(),
-	agent_name: z.string().optional(),
-	agent_slot: z.string().optional(),
-	parent_task_id: z.string().nullable().optional(),
-	topic: z.string().optional(),
-	assigned_at: z.string().optional(),
-	last_seen: z.string().optional(),
-	cooldown_until: z.string().nullable().optional(),
-	host: z.string().nullable().optional(),
-	model: z.string().nullable().optional(),
-	scannedAt: z.string().optional(),
-	staleAfterMinutes: z.number().optional(),
-	orphans: z.array(ZOMBIE_ORPHAN_SCHEMA).optional(),
-	threshold: z.enum(['green', 'yellow', 'red']).optional(),
-	recommendation: z.string().optional(),
-});
+const AGENT_NAMES_OUTPUT_SCHEMA = z
+	.object({
+		error: z.string().optional(),
+		nextAction: z.string().optional(),
+		blocked: z.boolean().optional(),
+		blockerType: z.string().optional(),
+		reason: z.string().optional(),
+		agent: z.string().optional(),
+		status: z.string().optional(),
+		task_id: z.string().optional(),
+		agent_name: z.string().optional(),
+		agent_slot: z.string().optional(),
+		summary: z
+			.object({
+				active: z.number(),
+				cooldown: z.number(),
+				orphan: z.number(),
+				adopted: z.number(),
+			})
+			.optional(),
+		released: z.array(z.string()).optional(),
+		assignments: z.array(AGENT_ASSIGNMENT_SCHEMA).optional(),
+		tree: z.array(AGENT_ASSIGNMENT_SCHEMA).optional(),
+		adopted: z.array(AGENT_ADOPTION_SCHEMA).optional(),
+	})
+	.passthrough();
 
 const isCanonicalRole = (value: string): value is IAgentCanonicalRole =>
 	(AGENT_CANONICAL_ROLES as readonly string[]).includes(value);

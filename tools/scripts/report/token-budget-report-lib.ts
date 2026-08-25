@@ -4,6 +4,10 @@ import { dirname, join } from 'node:path';
 
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
+import type {
+	ClientCapabilities,
+	Implementation,
+} from '@modelcontextprotocol/sdk/types.js';
 
 import {
 	assembleCliConfig,
@@ -20,6 +24,19 @@ export interface IConnectedBudgetClient {
 	readonly loadErrors: readonly string[];
 	readonly close: () => Promise<void>;
 }
+
+export const DYNAMIC_SURFACE_CLIENT_CAPABILITIES: ClientCapabilities = {
+	extensions: {
+		'mcp-vertex/surface': {
+			toolsListChanged: true,
+		},
+	},
+};
+
+export const DYNAMIC_SURFACE_CLIENT_INFO: Implementation = {
+	name: 'token-budget-report',
+	version: '0.0.0',
+};
 
 export interface IToolOwnerMetrics {
 	readonly owner: string;
@@ -216,15 +233,19 @@ export const connectTokenBudgetClient = async (
 	options: {
 		readonly pluginList: string;
 		readonly preset?: boolean;
+		readonly surfaceMode?: 'native' | 'adaptive' | 'compact';
+		readonly clientInfo?: Implementation;
+		readonly capabilities?: ClientCapabilities;
 	},
 ): Promise<IConnectedBudgetClient> => {
-	const args = parseCliArgs(
-		[
-			`--${options.preset === true ? 'preset' : 'plugins'}=${options.pluginList}`,
-			`--workspace=${workspace}`,
-		],
-		workspace,
-	);
+	const argv = [
+		`--${options.preset === true ? 'preset' : 'plugins'}=${options.pluginList}`,
+		`--workspace=${workspace}`,
+		...(options.surfaceMode !== undefined
+			? [`--surface=${options.surfaceMode}`]
+			: []),
+	];
+	const args = parseCliArgs(argv, workspace);
 	const assembledConfig = await assembleCliConfig(args, {
 		import: async (specifier: string) =>
 			(await nodeDynamicImport(specifier)) as { default: unknown },
@@ -235,8 +256,8 @@ export const connectTokenBudgetClient = async (
 		InMemoryTransport.createLinkedPair();
 	await assembledProject.server.connect(serverTransport);
 	const client = new Client(
-		{ name: 'token-budget-report', version: '0.0.0' },
-		{ capabilities: {} },
+		options.clientInfo ?? DYNAMIC_SURFACE_CLIENT_INFO,
+		{ capabilities: options.capabilities ?? {} },
 	);
 	await client.connect(clientTransport);
 	return {

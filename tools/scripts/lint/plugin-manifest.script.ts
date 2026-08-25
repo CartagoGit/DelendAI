@@ -2,12 +2,11 @@
 import { resolve } from 'node:path';
 
 import {
-	MIGRATED_PLUGIN_IDS,
 	discoverPluginPackages,
-	loadMigratedPluginManifests,
+	loadPluginManifests,
 } from '../generate/from-manifests.script.ts';
 
-type LintMode = 'migrated-only' | 'strict-all';
+type LintMode = 'strict-all';
 
 export interface IPluginManifestLintFinding {
 	readonly kind:
@@ -24,7 +23,6 @@ export interface IPluginManifestLintReport {
 	readonly mode: LintMode;
 	readonly findings: readonly IPluginManifestLintFinding[];
 	readonly errors: number;
-	readonly pending: number;
 	readonly ok: boolean;
 }
 
@@ -33,12 +31,11 @@ const formatFinding = (finding: IPluginManifestLintFinding): string =>
 
 export const lintPluginManifests = async (
 	root = process.cwd(),
-	mode: LintMode = 'migrated-only',
+	mode: LintMode = 'strict-all',
 ): Promise<IPluginManifestLintReport> => {
 	const findings: IPluginManifestLintFinding[] = [];
 	const packages = await discoverPluginPackages(root);
-	const packageById = new Map(packages.map((pkg) => [pkg.id, pkg] as const));
-	const loaded = await loadMigratedPluginManifests(root).catch((error) => {
+	const loaded = await loadPluginManifests(root).catch((error) => {
 		findings.push({
 			kind: 'manifest-without-package',
 			relPath: 'plugins',
@@ -51,28 +48,20 @@ export const lintPluginManifests = async (
 		loaded.map((entry) => [entry.id, entry] as const),
 	);
 
-	for (const pluginId of MIGRATED_PLUGIN_IDS) {
-		const pkg = packageById.get(pluginId);
-		const manifest = loadedById.get(pluginId);
-		if (pkg === undefined) {
-			findings.push({
-				kind: 'manifest-without-package',
-				relPath: `plugins/${pluginId}/plugin.manifest.ts`,
-				detail: 'migrated manifest points at a plugin directory without package.json',
-				severity: 'error',
-			});
-			continue;
-		}
+	for (const pkg of packages) {
+		const manifest = loadedById.get(pkg.id);
 		if (manifest === undefined) {
+			if (pkg.private) continue;
 			findings.push({
 				kind: 'public-package-missing-manifest',
 				relPath: pkg.packagePath,
-				detail: 'migrated public plugin is missing plugin.manifest.ts',
+				detail: 'public plugin package is missing plugin.manifest.ts',
 				severity: 'error',
 			});
 			continue;
 		}
 		if (
+			manifest.manifest.id !== pkg.id ||
 			manifest.manifest.package !== pkg.packageName ||
 			manifest.manifest.version !== pkg.version ||
 			(manifest.manifest.visibility === 'public') === pkg.private
@@ -86,37 +75,13 @@ export const lintPluginManifests = async (
 		}
 	}
 
-	for (const pkg of packages) {
-		if (loadedById.has(pkg.id)) continue;
-		if (pkg.private) continue;
-		if (mode === 'strict-all') {
-			findings.push({
-				kind: 'public-package-missing-manifest',
-				relPath: pkg.packagePath,
-				detail: 'public plugin package has no manifest; strict-all treats every public plugin as migrated',
-				severity: 'error',
-			});
-			continue;
-		}
-		findings.push({
-			kind: 'pending-migration',
-			relPath: pkg.packagePath,
-			detail: 'public plugin package is still on the manual catalog; migrated-only mode reports it but does not fail',
-			severity: 'info',
-		});
-	}
-
 	const errors = findings.filter(
 		(finding) => finding.severity === 'error',
-	).length;
-	const pending = findings.filter(
-		(finding) => finding.kind === 'pending-migration',
 	).length;
 	return {
 		mode,
 		findings,
 		errors,
-		pending,
 		ok: errors === 0,
 	};
 };
@@ -125,16 +90,14 @@ export const formatPluginManifestLintReport = (
 	report: IPluginManifestLintReport,
 ): string => {
 	const lines = [
-		`plugin-manifest lint (${report.mode}): ${report.errors} error(s), ${report.pending} pending migration(s).`,
+		`plugin-manifest lint (${report.mode}): ${report.errors} error(s).`,
 	];
 	for (const finding of report.findings) lines.push(formatFinding(finding));
 	return `${lines.join('\n')}\n`;
 };
 
 export const main = async (argv: readonly string[]): Promise<number> => {
-	const mode: LintMode = argv.includes('--strict-all')
-		? 'strict-all'
-		: 'migrated-only';
+	const mode: LintMode = 'strict-all';
 	const rootArg = argv.find((arg) => arg.startsWith('--root='));
 	const root = resolve(rootArg?.slice('--root='.length) ?? process.cwd());
 	const report = await lintPluginManifests(root, mode);

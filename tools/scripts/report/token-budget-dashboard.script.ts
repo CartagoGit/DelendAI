@@ -13,6 +13,8 @@ import {
 	asPresetId,
 	connectTokenBudgetClient,
 	createTokenBudgetFixtureWorkspace,
+	DYNAMIC_SURFACE_CLIENT_CAPABILITIES,
+	DYNAMIC_SURFACE_CLIENT_INFO,
 	destroyTokenBudgetFixtureWorkspace,
 	listToolsMetrics,
 	measureToolTextBytes,
@@ -60,6 +62,12 @@ interface IPresetDashboardRow {
 	readonly ownerRows: readonly IToolOwnerMetrics[];
 }
 
+export const TOKEN_BUDGET_DASHBOARD_PATH = [
+	'docs',
+	'mcp-vertex',
+	'TOKEN-BUDGETS.md',
+] as const;
+
 const GENERATED_MARKER = [
 	'<!-- generated: token-budget-dashboard.script.ts -->',
 	'<!-- generated — do not edit by hand -->',
@@ -94,15 +102,24 @@ const presetToolsBudget = (
 	| {
 			readonly hard: number;
 			readonly warning: number;
+			readonly marginalPluginHard?: number;
+			readonly marginalPluginWarning?: number;
 	  }
 	| undefined => {
-	if (presetId === 'swarm') {
-		return TOKEN_BUDGETS.presets.swarm.toolsList;
-	}
-	if (presetId === 'lean') {
-		return TOKEN_BUDGETS.presets.lean.toolsList;
-	}
-	return undefined;
+	const budgets = TOKEN_BUDGETS.presets as Readonly<
+		Record<
+			string,
+			{
+				readonly toolsList: {
+					readonly hard: number;
+					readonly warning: number;
+					readonly marginalPluginHard?: number;
+					readonly marginalPluginWarning?: number;
+				};
+			}
+		>
+	>;
+	return budgets[presetId]?.toolsList;
 };
 
 const presetMarginalBudget = (
@@ -113,22 +130,12 @@ const presetMarginalBudget = (
 			readonly warning: number;
 	  }
 	| undefined => {
-	if (presetId === 'swarm') {
-		return {
-			hard: TOKEN_BUDGETS.presets.swarm.toolsList.marginalPluginHard ?? 0,
-			warning:
-				TOKEN_BUDGETS.presets.swarm.toolsList.marginalPluginWarning ??
-				0,
-		};
-	}
-	if (presetId === 'lean') {
-		return {
-			hard: TOKEN_BUDGETS.presets.lean.toolsList.marginalPluginHard ?? 0,
-			warning:
-				TOKEN_BUDGETS.presets.lean.toolsList.marginalPluginWarning ?? 0,
-		};
-	}
-	return undefined;
+	const toolsListBudget = presetToolsBudget(presetId);
+	if (toolsListBudget === undefined) return undefined;
+	return {
+		hard: toolsListBudget.marginalPluginHard ?? 0,
+		warning: toolsListBudget.marginalPluginWarning ?? 0,
+	};
 };
 
 const markdownTable = (
@@ -264,6 +271,8 @@ const measurePresetDashboard = async (
 	const connection = await connectTokenBudgetClient(workspace, {
 		pluginList: asPresetId(presetId),
 		preset: true,
+		clientInfo: DYNAMIC_SURFACE_CLIENT_INFO,
+		capabilities: DYNAMIC_SURFACE_CLIENT_CAPABILITIES,
 	});
 	try {
 		const metrics: IToolListMetrics = await listToolsMetrics(
@@ -605,10 +614,7 @@ const renderGeneratedMarkdown = (
 	].join('\n');
 };
 
-export const generateTokenBudgetDashboard = async (): Promise<{
-	readonly markdown: string;
-	readonly outputPath: string;
-}> => {
+export const buildTokenBudgetDashboardMarkdown = async (): Promise<string> => {
 	const workspace = createTokenBudgetFixtureWorkspace();
 	try {
 		const [fixture, tokenizerRows] = await Promise.all([
@@ -625,19 +631,22 @@ export const generateTokenBudgetDashboard = async (): Promise<{
 			presetRows,
 			tokenizerRows,
 		)}\n`;
-		const outputPath = join(
-			repoRoot(),
-			'docs',
-			'mcp-vertex',
-			'TOKEN-BUDGETS.md',
-		);
-		await withFileMutex(outputPath, async () => {
-			await writeFileAtomic(outputPath, markdown);
-		});
-		return { markdown, outputPath };
+		return markdown;
 	} finally {
 		destroyTokenBudgetFixtureWorkspace(workspace);
 	}
+};
+
+export const generateTokenBudgetDashboard = async (): Promise<{
+	readonly markdown: string;
+	readonly outputPath: string;
+}> => {
+	const markdown = await buildTokenBudgetDashboardMarkdown();
+	const outputPath = join(repoRoot(), ...TOKEN_BUDGET_DASHBOARD_PATH);
+	await withFileMutex(outputPath, async () => {
+		await writeFileAtomic(outputPath, markdown);
+	});
+	return { markdown, outputPath };
 };
 
 const isMainModule = (): boolean => {
@@ -646,14 +655,17 @@ const isMainModule = (): boolean => {
 };
 
 if (isMainModule()) {
-	generateTokenBudgetDashboard()
+	const exitCode = await generateTokenBudgetDashboard()
 		.then((result) => {
 			console.log(`wrote ${result.outputPath}`);
+			return 0;
 		})
 		.catch((error: unknown) => {
 			console.error(
 				`token-budget-dashboard failed: ${error instanceof Error ? error.message : String(error)}`,
 			);
-			process.exit(1);
+			return 1;
 		});
+
+	process.exit(exitCode);
 }

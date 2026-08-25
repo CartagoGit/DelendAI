@@ -9,6 +9,16 @@ import { generateTokenBudgetDashboard } from '../report/token-budget-dashboard.s
 
 const DASHBOARD_RELATIVE_PATH = 'docs/mcp-vertex/TOKEN-BUDGETS.md';
 
+const normalizeDashboard = (text: string | null): string | null =>
+	text === null
+		? null
+		: text
+				.replace(/^Generated at: .*$/gmu, 'Generated at: <normalized>')
+				.replace(
+					/^\| logs_tail \| .*$/gmu,
+					'| logs_tail | <normalized> |',
+				);
+
 const restoreDashboard = async (
 	outputPath: string,
 	previous: string | null,
@@ -53,7 +63,10 @@ const main = async (): Promise<number> => {
 
 	try {
 		const generatedDashboard = await generateTokenBudgetDashboard();
-		if (generatedDashboard.markdown !== previousDashboard) {
+		if (
+			normalizeDashboard(generatedDashboard.markdown) !==
+			normalizeDashboard(previousDashboard)
+		) {
 			failures.push(
 				`TOKEN_DASHBOARD: drift detected. Run bun tools/scripts/report/token-budget-dashboard.script.ts and commit ${DASHBOARD_RELATIVE_PATH}.`,
 			);

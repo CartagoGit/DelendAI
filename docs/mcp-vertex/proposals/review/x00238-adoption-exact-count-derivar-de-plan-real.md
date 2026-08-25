@@ -192,7 +192,7 @@ El usuario ve exactamente qué se va a escribir.
 ### S1 — Derivar count + breakdown
 
 - **Status**: pending
-- **Files**: `packages/adoption/src/lib/assessment.service.ts`
+- **Files**: `packages/core/src/lib/adopt/adoption-assessment.service.ts`
 - **Gate**: type
 - acceptance:
   - "Constant eliminada."
@@ -201,7 +201,7 @@ El usuario ve exactamente qué se va a escribir.
 ### S2 — Tests + UI
 
 - **Status**: pending
-- **Files**: `packages/adoption/tests/src/lib/assessment.spec.ts`, UI updates
+- **Files**: `packages/core/tests/src/lib/adopt/adoption-assessment.spec.ts`, UI updates
 - **Gate**: type
 - acceptance:
   - "Tests verdes."

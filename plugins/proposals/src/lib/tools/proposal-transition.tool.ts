@@ -390,35 +390,13 @@ const isCiEnvironment = (): boolean =>
 const hasProposalCiEvidence = (raw: string): boolean => {
 	const yamlBlock = extractYamlBlock(raw);
 	if (yamlBlock === null) return false;
-	const frontmatter = parseFrontmatterBlock(yamlBlock) as Record<
-		string,
-		unknown
-	>;
-	const evidence = frontmatter.evidence;
-	if (
-		evidence === null ||
-		typeof evidence !== 'object' ||
-		Array.isArray(evidence)
-	) {
-		return false;
-	}
-	const commit = evidence.commit;
-	const runs = evidence['ci-runs'];
-	if (typeof commit !== 'string' || commit.trim() === '') return false;
-	if (!Array.isArray(runs) || runs.length === 0) return false;
-	return runs.some((run) => {
-		if (run === null || typeof run !== 'object' || Array.isArray(run)) {
-			return false;
-		}
-		const name = run.name;
-		const status = run.status;
-		return (
-			typeof name === 'string' &&
-			name.trim() !== '' &&
-			typeof status === 'string' &&
-			status.trim() !== ''
-		);
-	});
+	const hasCommit = /^evidence:\s*$[\s\S]*?^\s+commit:\s*.+$/mu.test(
+		yamlBlock,
+	);
+	if (!hasCommit) return false;
+	return /^evidence:\s*$[\s\S]*?^\s+ci-runs:\s*$[\s\S]*?^\s+-\s+name:\s*.+$[\s\S]*?^\s+status:\s*.+$/mu.test(
+		yamlBlock,
+	);
 };
 
 export const runProposalTransition = async (

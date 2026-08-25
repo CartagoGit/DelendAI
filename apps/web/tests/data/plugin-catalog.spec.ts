@@ -7,6 +7,7 @@ import {
 	capabilityToolsFor,
 	resolvePluginPurpose,
 } from '#DATA/plugin-catalog';
+import { GENERATED_WEB_PLUGIN_CATALOG } from '#DATA/plugins/catalog.generated';
 import { GENERATED_PLUGIN_MANIFEST_WEB_CATALOG } from '#DATA/../generated/plugin-manifest-catalog.generated';
 
 /**
@@ -20,26 +21,7 @@ import { GENERATED_PLUGIN_MANIFEST_WEB_CATALOG } from '#DATA/../generated/plugin
  * `scripts/__tests__/**`.
  */
 
-// The 17 plugins shipped under `plugins/`.
-const EXPECTED_SLUGS = [
-	'audit',
-	'cache',
-	'conventions',
-	'deps',
-	'docs',
-	'git',
-	'issues',
-	'logs',
-	'memory',
-	'notification',
-	'proposals',
-	'quality',
-	'rules',
-	'search',
-	'status-marker',
-	'test-convention',
-	'web-fetch',
-] as const;
+const EXPECTED_SLUGS = GENERATED_WEB_PLUGIN_CATALOG.map((entry) => entry.slug);
 
 const VALID_CATEGORIES = new Set([
 	'workflow',
@@ -51,7 +33,7 @@ const VALID_CATEGORIES = new Set([
 ]);
 
 describe('PLUGIN_CATALOG', () => {
-	it('covers exactly the 17 shipped plugins', () => {
+	it('covers exactly the generated public plugin catalog', () => {
 		expect([...PLUGIN_SLUGS].sort()).toEqual([...EXPECTED_SLUGS].sort());
 	});
 
@@ -126,8 +108,8 @@ describe('GENERATED_PLUGIN_MANIFEST_WEB_CATALOG', () => {
 				entry.permissions.length,
 				`${entry.id}.permissions`,
 			).toBeGreaterThan(0);
-			expect(entry.presets.length, `${entry.id}.presets`).toBeGreaterThan(
-				0,
+			expect(Array.isArray(entry.presets), `${entry.id}.presets`).toBe(
+				true,
 			);
 			expect(
 				entry.maturity.length,

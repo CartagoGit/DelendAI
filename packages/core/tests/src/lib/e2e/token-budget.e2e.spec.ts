@@ -4,27 +4,18 @@ import { dirname, join } from 'node:path';
 
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
+import type {
+	ClientCapabilities,
+	Implementation,
+} from '@modelcontextprotocol/sdk/types.js';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import { assembleCliConfig } from '@mcp-vertex/core/lib/cli/assemble';
 import { createMcpProject } from '@mcp-vertex/core/lib/project/create-mcp-project';
+import { nodeDynamicImport } from '@mcp-vertex/core/lib/plugins/load-plugins';
 import { parseCliArgs } from '@mcp-vertex/core/lib/plugins/parse-cli-args';
 import { SKILL_MANIFEST_REL } from '@mcp-vertex/core/lib/skills/skill-paths';
 import { TOKEN_BUDGETS } from '@mcp-vertex/core/public';
-import proposalsPlugin from '@mcp-vertex/proposals';
-import rulesPlugin from '@mcp-vertex/rules';
-import memoryPlugin from '@mcp-vertex/memory';
-import gitPlugin from '@mcp-vertex/git';
-import qualityPlugin from '@mcp-vertex/quality';
-import searchPlugin from '@mcp-vertex/search';
-import notificationPlugin from '@mcp-vertex/notification';
-import docsPlugin from '@mcp-vertex/docs';
-import depsPlugin from '@mcp-vertex/deps';
-import logsPlugin from '@mcp-vertex/logs';
-import statusMarkerPlugin from '@mcp-vertex/status-marker';
-import testConventionPlugin from '@mcp-vertex/test-convention';
-import testPolicyPlugin from '@mcp-vertex/test-policy';
-import conventionsPlugin from '@mcp-vertex/conventions';
 
 /**
  * Token budget benchmark [N23]. Invariant: cold-start protocol payloads stay
@@ -57,6 +48,19 @@ const expectWithinBudget = (
 
 const jsonBytes = (value: unknown): number =>
 	Buffer.byteLength(JSON.stringify(value), 'utf8');
+
+const dynamicSurfaceCapabilities: ClientCapabilities = {
+	extensions: {
+		'mcp-vertex/surface': {
+			toolsListChanged: true,
+		},
+	},
+};
+
+const modernClientInfo: Implementation = {
+	name: 'vscode-copilot',
+	version: '1.0.0',
+};
 
 const classifyToolOwner = (
 	toolName: string,
@@ -104,6 +108,10 @@ describe('e2e: token budget (cold-start payloads)', async () => {
 	const connectClient = async (
 		pluginList: string,
 		preset = false,
+		input?: {
+			readonly clientInfo?: Implementation;
+			readonly capabilities?: ClientCapabilities;
+		},
 	): Promise<{
 		client: Client;
 		close: () => Promise<void>;
@@ -116,24 +124,9 @@ describe('e2e: token budget (cold-start payloads)', async () => {
 			],
 			workspace,
 		);
-		const plugins: Record<string, { default: unknown }> = {
-			'@mcp-vertex/proposals': { default: proposalsPlugin },
-			'@mcp-vertex/rules': { default: rulesPlugin },
-			'@mcp-vertex/memory': { default: memoryPlugin },
-			'@mcp-vertex/git': { default: gitPlugin },
-			'@mcp-vertex/quality': { default: qualityPlugin },
-			'@mcp-vertex/search': { default: searchPlugin },
-			'@mcp-vertex/notification': { default: notificationPlugin },
-			'@mcp-vertex/docs': { default: docsPlugin },
-			'@mcp-vertex/deps': { default: depsPlugin },
-			'@mcp-vertex/logs': { default: logsPlugin },
-			'@mcp-vertex/status-marker': { default: statusMarkerPlugin },
-			'@mcp-vertex/test-convention': { default: testConventionPlugin },
-			'@mcp-vertex/test-policy': { default: testPolicyPlugin },
-			'@mcp-vertex/conventions': { default: conventionsPlugin },
-		};
 		const assembledConfig = await assembleCliConfig(args, {
-			import: async (specifier: string) => plugins[specifier]!,
+			import: async (specifier: string) =>
+				(await nodeDynamicImport(specifier)) as { default: unknown },
 			readFile: async () => undefined,
 		});
 		const assembled = await createMcpProject(assembledConfig.config);
@@ -141,8 +134,8 @@ describe('e2e: token budget (cold-start payloads)', async () => {
 			InMemoryTransport.createLinkedPair();
 		await assembled.server.connect(serverTransport);
 		const connectedClient = new Client(
-			{ name: 'tok', version: '0' },
-			{ capabilities: {} },
+			input?.clientInfo ?? { name: 'tok', version: '0' },
+			{ capabilities: input?.capabilities ?? {} },
 		);
 		await connectedClient.connect(clientTransport);
 		return {
@@ -244,30 +237,64 @@ describe('e2e: token budget (cold-start payloads)', async () => {
 	};
 
 	it('cold-start overview stays under budget; compact is much cheaper', async () => {
-		const full = await textBytes('mcp-vertex_overview', {});
-		const compact = await textBytes('mcp-vertex_overview', {
-			compact: true,
-		});
+		const adaptive = await connectClient(
+			TOKEN_BUDGETS.fixturePluginIds.join(','),
+			false,
+			{
+				clientInfo: modernClientInfo,
+				capabilities: dynamicSurfaceCapabilities,
+			},
+		);
+		try {
+			const adaptiveTextBytes = async (
+				name: string,
+				args: Record<string, unknown>,
+			): Promise<number> => {
+				const res = await adaptive.client.callTool({
+					name,
+					arguments: args,
+				});
+				const text = (
+					res.content as Array<{ type: string; text: string }>
+				)[0]?.text;
+				return Buffer.byteLength(text ?? '', 'utf8');
+			};
+			const full = await adaptiveTextBytes('mcp-vertex_overview', {});
+			const compact = await adaptiveTextBytes('mcp-vertex_overview', {
+				compact: true,
+			});
 
-		// Documented baseline (printed for visibility on failures):
-		expectWithinBudget(
-			'overview full',
-			full,
-			TOKEN_BUDGETS.toolPayloads.overviewFull,
-		);
-		expectWithinBudget(
-			'overview compact',
-			compact,
-			TOKEN_BUDGETS.toolPayloads.overviewCompact,
-		);
-		// Compact must be a real saving, not cosmetic.
-		expect(compact).toBeLessThan(
-			full * TOKEN_BUDGETS.invariants.compactVsFullMaxRatio,
-		);
+			// Documented baseline (printed for visibility on failures):
+			expectWithinBudget(
+				'overview full',
+				full,
+				TOKEN_BUDGETS.toolPayloads.overviewFull,
+			);
+			expectWithinBudget(
+				'overview compact',
+				compact,
+				TOKEN_BUDGETS.toolPayloads.overviewCompact,
+			);
+			// Compact must be a real saving, not cosmetic.
+			expect(compact).toBeLessThan(
+				full * TOKEN_BUDGETS.invariants.compactVsFullMaxRatio,
+			);
+		} finally {
+			await adaptive.close();
+		}
 	});
 
 	it('swarm preset keeps its real static and resume surfaces bounded', async () => {
-		const swarm = await connectClient('swarm', true);
+		const swarmOverviewCompactBudget =
+			TOKEN_BUDGETS.presets.swarm.overviewCompact;
+		const swarmRoundContextBudget =
+			TOKEN_BUDGETS.presets.swarm.roundContext;
+		expect(swarmOverviewCompactBudget).toBeDefined();
+		expect(swarmRoundContextBudget).toBeDefined();
+		const swarm = await connectClient('swarm', true, {
+			clientInfo: modernClientInfo,
+			capabilities: dynamicSurfaceCapabilities,
+		});
 		try {
 			const toolList = await swarm.client.listTools();
 			const toolsListBytes = Buffer.byteLength(
@@ -308,12 +335,12 @@ describe('e2e: token budget (cold-start payloads)', async () => {
 			expectWithinBudget(
 				'swarm overview compact',
 				overviewCompact,
-				TOKEN_BUDGETS.presets.swarm.overviewCompact,
+				swarmOverviewCompactBudget!,
 			);
 			expectWithinBudget(
 				'swarm round context',
 				roundContext,
-				TOKEN_BUDGETS.presets.swarm.roundContext,
+				swarmRoundContextBudget!,
 			);
 			expectWithinBudget('swarm marginal plugin bytes', maxPluginBytes, {
 				hard:
@@ -329,7 +356,10 @@ describe('e2e: token budget (cold-start payloads)', async () => {
 	});
 
 	it('lean preset remains materially smaller than the collaboration surface', async () => {
-		const lean = await connectClient('lean', true);
+		const lean = await connectClient('lean', true, {
+			clientInfo: modernClientInfo,
+			capabilities: dynamicSurfaceCapabilities,
+		});
 		try {
 			const toolList = await lean.client.listTools();
 			const toolsListBytes = Buffer.byteLength(
