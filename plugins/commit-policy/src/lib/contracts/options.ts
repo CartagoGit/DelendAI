@@ -214,8 +214,10 @@ export const PushSchema = z.object({
 	everyNMinutes: z.number().int().positive().optional(),
 	/** Force policy. Default `with-lease` (the safe one). */
 	force: z.enum(FORCE_MODES).default('with-lease'),
-	/** Protected branches — push is always refused. Default `main` + `master`. */
-	protectedBranches: z.array(z.string()).default(['main', 'master']),
+	/** Protected branches — push is always refused. Default `main` + `master` + `develop`. */
+	protectedBranches: z
+		.array(z.string())
+		.default(['main', 'master', 'develop']),
 	/** Remote name. Defaults to whatever `git config push.default` resolves. */
 	remote: z.string().optional(),
 	/** Branch name. Defaults to the current branch. */
@@ -277,7 +279,7 @@ export const CommitPolicyOptionsSchema = z.object({
 		enabled: false,
 		onCommit: false,
 		force: 'with-lease',
-		protectedBranches: ['main', 'master'],
+		protectedBranches: ['main', 'master', 'develop'],
 	}),
 });
 export type ICommitPolicyOptions = z.infer<typeof CommitPolicyOptionsSchema>;
