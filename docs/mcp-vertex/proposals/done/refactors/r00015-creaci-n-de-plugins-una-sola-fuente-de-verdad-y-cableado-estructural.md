@@ -2,7 +2,7 @@
 id: r00015
 title: "Creación de plugins: una sola fuente de verdad y cableado estructural"
 kind: refactor
-status: review
+status: done
 type: proposal
 track: plugins
 date: 2026-08-23
@@ -35,7 +35,10 @@ Auditoría 2026-08-24 (hallazgos D1-D13): tres writers de wire-plugin insertan p
 - acceptance:
   - "PLUGIN_DEFAULTS, PUBLISH_ORDER y PRESET_CATALOG se editan por estructura (AST/anchors específicos y testeados), nunca 'antes de la última };'."
   - "Los writers fallan si el archivo no parsea tras editar."
-
+- review-state: done
+- review-implementer: swarm-implementer
+- review-reviewer: orchestrator-fase1-review
+- review-log: approved by orchestrator-fase1-review — Fase 1 review 2026-08-25: revisado en profundidad, validate verde.
 ### S2 — Una sola fuente de verdad + índice y carga actualizados
 - **Status**: done
 - **Files**: `packages/core/src/lib/scaffold/create-plugin.tool.ts`, `packages/core/src/lib/scaffold/scaffold-host.ts`, `packages/core/src/lib/registry/first-party-index.ts`
