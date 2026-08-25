@@ -17,8 +17,6 @@ related:
     - q00004
     - i00005 # token gate (predecesor)
     - i00006 # dashboard check
-shipped-in:
-  - 82c54bcc # feat(track-c-e): manifests + token budgets + surface-mode defaults
 ---
 
 # i00007 — vertex budget explícito
@@ -120,8 +118,8 @@ export const BUDGETS = {
 
 ### S1 — Definir budget vertex + documentar
 
-- **Status**: done
-- **Files**: `packages/core/src/lib/contracts/constants/token-budgets.constant.ts`, `docs/mcp-vertex/TOKEN-BUDGETS.md`
+- **Status**: pending
+- **Files**: `tools/scripts/test/token-budgets.ts`, `docs/mcp-vertex/tokens/README.md`
 - **Gate**: type
 - acceptance:
   - "Entry `vertex` añadida."
@@ -193,8 +191,8 @@ resolution:
 
 ### S1 — Definir budget vertex + documentar
 
-- **Status**: done
-- **Files**: `packages/core/src/lib/contracts/constants/token-budgets.constant.ts`, `docs/mcp-vertex/TOKEN-BUDGETS.md`
+- **Status**: pending
+- **Files**: `tools/scripts/test/token-budgets.ts`, `docs/mcp-vertex/tokens/README.md`
 - **Gate**: type
 - acceptance:
   - "Entry `vertex` añadida."

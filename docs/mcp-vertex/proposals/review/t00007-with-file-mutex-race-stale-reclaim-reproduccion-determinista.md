@@ -17,9 +17,6 @@ related:
     - q00004
     - x00244 # mutex reclaim redesign (siguiente paso)
     - t00008 # property tests (siguiente)
-shipped-in:
-  - 56862d60 # fix(core): harden with-file-mutex stale reclaim
-  - 7365c1cd # test(core): stabilize with-file-mutex property test timings under CI scheduler
 ---
 
 # t00007 — with-file-mutex: test determinista del race window
@@ -335,7 +332,7 @@ production-extrapolation: uncertain
 ### S1 — Helpers de inyección
 
 - **Status**: done
-- **Files**: `packages/core/src/lib/shared/with-file-mutex.ts`
+- **Files**: `packages/core/tests/src/lib/shared/fake-clock.ts`, `fake-fs.ts`, `barrier.ts`
 - **Gate**: type
 - acceptance:
   - "Helpers reutilizables; tests existentes pueden usarlos."

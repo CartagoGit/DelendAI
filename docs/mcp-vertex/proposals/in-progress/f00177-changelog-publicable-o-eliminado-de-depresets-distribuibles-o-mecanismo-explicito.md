@@ -2,7 +2,7 @@
 id: f00177
 title: "changelog publicable o eliminado de presets distribuibles (MAN-001)"
 kind: feat
-status: ready
+status: in-progress
 type: proposal
 track: packaging
 date: 2026-08-25
@@ -62,7 +62,8 @@ mechanism, no new publish surface, reuses the pattern already proven for
     hygiene" summary text)
 - **Gate**: `bun run lint:manifest-vs-presets` (was already green — this
   slice keeps it green while fixing the manifest ⊆ catalog coherence)
-
+- review-state: in_review
+- review-implementer: orchestrator-f00177
 ### S2 — close the class of bug with a lint (R5: invariants-as-lints)
 - **Status**: done
 - **Files**: `tools/scripts/lint/manifest-vs-presets.script.ts` (new rule
@@ -73,7 +74,8 @@ mechanism, no new publish surface, reuses the pattern already proven for
   (6/6 pass, including the 2 new cases) + `bun run lint:manifest-vs-presets`
   (OK against the real manifest set — no other private plugin was in
   violation).
-
+- review-state: in_review
+- review-implementer: orchestrator-f00177
 ### S3 — update dependent tests + regenerate derived artifacts
 - **Status**: done
 - **Files**:
@@ -84,14 +86,14 @@ mechanism, no new publish surface, reuses the pattern already proven for
   - `apps/web/scripts/__tests__/preset-table.spec.ts` (deduplicated column
     count 43 → 42)
   - `docs/mcp-vertex/generated/plugin-manifests.generated.{md,json}`,
-    `docs/mcp-vertex/plugins/auto-generated/changelog.md` (via
-    `bun run generate:from-manifests`)
-  - `docs/mcp-vertex/TOKEN-BUDGETS.md` (via
-    `bun run tokens:dashboard:generate`, after `bun run --cwd packages/core
-    build`)
+    `docs/mcp-vertex/plugins/auto-generated/changelog.md` (via `bun run
+    generate:from-manifests`)
+  - `docs/mcp-vertex/TOKEN-BUDGETS.md` (via `bun run
+    tokens:dashboard:generate`, after rebuilding `packages/core`)
 - **Gate**: `bun run check:generated` → "All generated artifacts are in
   sync."
-
+- review-state: in_review
+- review-implementer: orchestrator-f00177
 ## acceptance
 
 - `changelog`'s manifest and the preset catalog agree: `changelog` is not

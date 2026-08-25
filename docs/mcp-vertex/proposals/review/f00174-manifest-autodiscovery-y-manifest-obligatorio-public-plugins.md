@@ -18,8 +18,6 @@ related:
     - f00175 # generated registry/docs/web/permissions (consumidor)
     - i00008 # manifest vs package.json (consumidor)
     - i00009 # manifest vs preset catalog (consumidor)
-shipped-in:
-  - 82c54bcc # feat(track-c-e): manifests + token budgets + surface-mode defaults
 ---
 
 # f00174 — manifests: autodiscovery + manifest obligatorio
@@ -228,7 +226,7 @@ Plugins privados internos usan el mismo schema con `visibility: 'private'`. No s
 
 ### S1 — Discovery + Validation
 
-- **Status**: done
+- **Status**: pending
 - **Files**: `packages/core/src/lib/manifest/discovery.ts`, `packages/core/src/lib/manifest/validation.ts`
 - **Gate**: type
 - acceptance:
@@ -237,7 +235,7 @@ Plugins privados internos usan el mismo schema con `visibility: 'private'`. No s
 
 ### S2 — Migración de los 43 plugins restantes
 
-- **Status**: done
+- **Status**: pending
 - **Files**: `plugins/*/plugin.manifest.ts` (43 archivos nuevos)
 - **Gate**: type
 - acceptance:
@@ -247,8 +245,8 @@ Plugins privados internos usan el mismo schema con `visibility: 'private'`. No s
 
 ### S3 — Eliminación de `MIGRATED_PLUGIN_IDS`
 
-- **Status**: done
-- **Files**: `packages/core/src/lib/registry/first-party-index.ts`, `packages/core/src/lib/registry/generated/first-party-manifest-entries.generated.ts`
+- **Status**: pending
+- **Files**: `plugins/proposals/src/lib/manifest-migrated-ids.ts` (eliminado)
 - **Gate**: type
 - acceptance:
   - "Lista eliminada."
@@ -256,8 +254,8 @@ Plugins privados internos usan el mismo schema con `visibility: 'private'`. No s
 
 ### S4 — Lint + documentación
 
-- **Status**: done
-- **Files**: `tools/scripts/lint/plugin-manifest.script.ts`, `docs/mcp-vertex/plugins/authoring/manifest.md`
+- **Status**: pending
+- **Files**: `tools/scripts/lint/manifest-required.script.ts`, `docs/mcp-vertex/plugins/authoring/manifest.md`
 - **Gate**: type
 - acceptance:
   - "Lint falla si un plugin público no tiene manifest."

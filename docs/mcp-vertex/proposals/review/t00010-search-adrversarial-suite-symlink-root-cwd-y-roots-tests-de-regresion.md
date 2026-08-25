@@ -1,40 +1,67 @@
 ---
 id: t00010
-title: "\"search-adrversarial-suite-symlink-root-cwd-y-roots-tests-de-regresion\""
+title: "Search adversarial suite — symlink-root cwd/roots, tests de regresión"
 kind: test
 status: review
 type: proposal
 track: filesystem
 date: 2026-08-25
+audit-source:
+  file: docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol-tercera-pasada.md
+  commit-audited: 866c44c1bce3a5597c51b9909bb1550a13f5141d
+  priority: P1
+  finding: SRCH-001 + SRCH-002 + SRCH-003
+  reviewer: ChatGPT-5.6-Sol (external, high reasoning)
+plan-parent: q00005
+related:
+  - x00246
+  - x00247
+  - x00248
 parent-plan: q00005
 ---
 
-# t00010 — suite adversarial de symlink-root para search
+# t00010 — Search adversarial suite — symlink-root cwd/roots, tests de regresión
 
 ## Goal
 
-Cubrir con tests de regresión los tres caminos vulnerables del track A: `search_symbol.cwd`, `search_references.cwd` y `search_search.roots` cuando una ruta léxicamente interna resuelve fuera del workspace por symlink.
+Construir una suite adversarial que cubra las 3 vías de escape de filesystem en search con fixtures reproducibles y plataforma-aware.
+
+**Hallazgo auditoría externa:** `SRCH-001 + SRCH-002 + SRCH-003`
+
+**Propuestas relacionadas**: `x00246`, `x00247`, `x00248`.
+
+**PLAN padre**: `q00005` (ver `docs/mcp-vertex/proposals/ready/plans/q00005-...md`). La tabla de tracks/propuestas del plan padre mantiene el estado real de esta hija; al avanzar, actualizar su estado en el plan.
+
+**Auditoría externa (referencia legada)**: `docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol-tercera-pasada.md` — este archivo conserva la crítica narrativa completa y el TODO ejecutable; esta propuesta cierra los puntos `SRCH-001`, `SRCH-002`, `SRCH-003` del TODO ejecutable.
 
 ## why
 
-Sin una suite adversarial dedicada, la regresión puede volver aunque exista `SafeWorkspaceReader`. El fallo original dependía de una diferencia entre containment léxico y realpath, así que la evidencia correcta es un fixture con symlink real en disco.
+Sin tests adversariales las hijas x00246..x00248 podrían marcarse como 'fix' sin haber demostrado que el bug ya no existe. La suite es **prerequisite** de los fixes: se observa rojo, luego se aplica fix, luego se observa verde.
 
 ## non-goals
 
-- No añade tests de permisos, reserved paths ni otros invariantes de filesystem ajenos a este track.
-- No reemplaza las specs funcionales existentes; las complementa con casos adversariales concretos.
+- No incluir tests de performance.
+- No cubrir symlinks de fichero (no es el ataque descrito por SRCH).
+- No crear fixtures que dependan de binarios externos.
+
+## Slices
+- global_gate: type
 
 ## Slices
 
-- global_gate: none
+### SS1 — Fixture platform-aware (Linux/macOS real symlinks, Windows skip condicional) y los 3 tests adversariales
+- **Status**: pending
+- **Files**: `plugins/search/tests/src/fixtures/symlink-root-fixture.ts`, `plugins/search/tests/src/lib/tools/search-symbol.tool.symlink.spec.ts`, `plugins/search/tests/src/lib/tools/search-references.tool.symlink.spec.ts`, `plugins/search/tests/src/lib/tools/search.tool.symlink.spec.ts`
+- **Gate**: type
 
-### S1 — Añadir regresiones de symlink fuera del workspace
-- **Status**: done
-- **Files**: `plugins/search/tests/src/lib/tools/search-symbol.tool.spec.ts`, `plugins/search/tests/src/lib/tools/search-references.tool.spec.ts`, `plugins/search/tests/src/lib/services/search.service.spec.ts`, `plugins/search/tests/src/lib/services/search-engine.backends.spec.ts`
-- **Gate**: none
 
 ## acceptance
 
-- Las specs de `search_symbol` y `search_references` fallan cerrado cuando `cwd` es un symlink a un directorio externo.
-- Las specs de `searchWorkspace` y del backend `rg` fallan cerrado cuando `roots` contiene un symlink externo.
-- La suite focalizada del plugin search pasa con esos casos adversariales activos.
+Criterios verificables, ideales como tests rojos → verdes. Acceptance global del plan padre en `docs/mcp-vertex/proposals/ready/plans/q00005-...md`. Cada criterio debe quedar evidenciado con commit hash + métrica before/after cuando aplique, en `resolution.evidence`.
+
+- Test 1: search_symbol con cwd = symlink-root → 0 hits externos y la tool devuelve error/diagnóstico de containment.
+- Test 2: search_references análogo.
+- Test 3: search_search con roots = [symlink-root] → 0 hits externos.
+- Windows: si `canCreateSymlinks` es false, los tests se saltan con mensaje explícito (no fallan).
+- Los 3 tests son rojos antes de x00246..x00248 y verdes después.
+- Evidence archivada con before/after fixture + hash del binario bun usado.
