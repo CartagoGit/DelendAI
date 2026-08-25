@@ -3,7 +3,7 @@ import { definePluginManifest } from '@mcp-vertex/core/public';
 export default definePluginManifest({
 	id: 'container',
 	package: '@mcp-vertex/container',
-	version: '0.1.0',
+	version: '0.1.1',
 	visibility: 'public',
 	summary:
 		'Container inspection + lint (docker ps/images, k8s, Dockerfile rules).',

@@ -43,11 +43,10 @@ export const PRESET_KIND = [
 	'swarm',
 	'full',
 	'vertex',
-	// r00011 S1 — stack packs. Independent: each pack resolves to
-	// exactly its own plugin set + tuned defaults; they never
-	// accumulate the chain and never perturb the resolved
-	// membership of `minimal`/`lean`/`standard`/`swarm`/`full`/
-	// `vertex`.
+	// Stack packs. Independent: each pack resolves to exactly its
+	// own plugin set + tuned defaults; they never accumulate the
+	// chain and never perturb the resolved membership of
+	// `minimal`/`lean`/`standard`/`swarm`/`full`/`vertex`.
 	'web-app',
 	'backend-api',
 	'cli-tool',
@@ -189,8 +188,7 @@ const PRESET_SEEDS: readonly IPresetSeed[] = [
 			{ plugin: 'issues', hostOnly: true },
 			{ plugin: 'api' },
 			{ plugin: 'prompt-eval' },
-			// f00177 (MAN-001): `changelog` removed — private, unpublished.
-			// See `plugins/changelog/plugin.manifest.ts`.
+			// `changelog` removed — private, unpublished.
 		],
 	},
 	{
@@ -215,6 +213,7 @@ const PRESET_SEEDS: readonly IPresetSeed[] = [
 			{ plugin: 'adaptive-optimizer' },
 			{ plugin: 'audit' },
 			{ plugin: 'auto-agent-selector' },
+			{ plugin: 'auto-plugin-selector' },
 			{ plugin: 'commit-policy' },
 			{ plugin: 'completion' },
 			{ plugin: 'container' },
@@ -250,8 +249,8 @@ const PRESET_SEEDS: readonly IPresetSeed[] = [
 		],
 		independent: true,
 	},
-	// r00011 S1 — stack packs. Each resolves to exactly its own
-	// members; never accumulates the ⊇ chain. `resolvePackOptions`
+	// Stack packs. Each resolves to exactly its own members;
+	// never accumulates the ⊇ chain. `resolvePackOptions`
 	// (in `pack-defaults.ts`) overlays tuned per-plugin defaults on
 	// top of `PLUGIN_DEFAULTS` and below the user's explicit config.
 	{
@@ -314,8 +313,7 @@ const PRESET_SEEDS: readonly IPresetSeed[] = [
 			{ plugin: 'memory' },
 			{ plugin: 'docs' },
 			{ plugin: 'env' },
-			// f00177 (MAN-001): `changelog` removed — private, unpublished.
-			// See `plugins/changelog/plugin.manifest.ts`.
+			// `changelog` removed — private, unpublished.
 			{ plugin: 'perf' },
 			{ plugin: 'test-policy' },
 		],

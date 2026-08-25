@@ -3,14 +3,14 @@ import { definePluginManifest } from '@mcp-vertex/core/public';
 export default definePluginManifest({
 	id: 'issues',
 	package: '@mcp-vertex/issues',
-	version: '0.1.0',
+	version: '0.1.1',
 	visibility: 'public',
 	summary:
 		'Issue tracker (GitHub) integration — list/fetch/analyze/ingest/resolve.',
 	tags: ['issues', 'forge', 'triage'],
 	maturity: 'beta',
 	permissions: ['forge-read', 'forge-write', 'network'],
-	presets: ['full', 'vertex'],
+	presets: ['full'],
 	// f00180 S2 / MAN-004 — per-tool permission map. Read tools
 	// declare `forge-read` + `network`; write tools add `forge-write`.
 	// `setup_github` is a one-shot credential bootstrap tool — it

@@ -83,13 +83,7 @@ export const createSliceListener = (
 	let prev = new Map<string, { status: string; proposalId: string }>();
 	let initialized = false;
 	let timer: ReturnType<typeof setInterval> | undefined;
-	let reader: SafeWorkspaceReader;
-
-	try {
-		reader = new SafeWorkspaceReader(workspaceRoot);
-	} catch {
-		reader = new SafeWorkspaceReader(process.cwd());
-	}
+	const reader = new SafeWorkspaceReader(workspaceRoot);
 
 	const checkImpl = async (): Promise<readonly ITriggerEvent[]> => {
 		let raw = '';

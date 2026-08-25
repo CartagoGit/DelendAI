@@ -74,7 +74,7 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG = [
 		tags: ['plugins', 'catalog', 'routing'],
 		maturity: 'stable',
 		visibility: 'public',
-		presets: [],
+		presets: ['vertex'],
 		capabilities: ['plugins', 'catalog', 'routing'],
 		permissions: ['filesystem-read'],
 		tokenBudget: {
@@ -112,6 +112,23 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG = [
 		tokenBudget: {
 			warning: 2700,
 			hard: 3000,
+			releaseRelativePercent: 20,
+		},
+	},
+	{
+		id: 'commit-policy',
+		package: '@mcp-vertex/commit-policy',
+		summary:
+			'Commit-authority plugin: configurable identity, cadence and audit-trail policy wrapping the git plugin primitives. Off by default — opt in via plugins.commit-policy.options.',
+		tags: ['commit', 'policy', 'git', 'agent', 'f00181'],
+		maturity: 'experimental',
+		visibility: 'public',
+		presets: ['vertex'],
+		capabilities: ['commit-policy'],
+		permissions: ['git-read', 'git-write'],
+		tokenBudget: {
+			warning: 4800,
+			hard: 5200,
 			releaseRelativePercent: 20,
 		},
 	},
@@ -420,7 +437,7 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG = [
 		tags: ['issues', 'forge', 'triage'],
 		maturity: 'beta',
 		visibility: 'public',
-		presets: ['full', 'vertex'],
+		presets: ['full'],
 		capabilities: ['issues', 'forge', 'triage'],
 		permissions: ['forge-read', 'forge-write', 'network'],
 		tokenBudget: {

@@ -3,7 +3,7 @@ id: auto-plugin-selector
 package: @mcp-vertex/auto-plugin-selector
 version: 0.1.1
 maturity: stable
-generated: 2026-08-25T01:07:05.846Z
+generated: 2026-08-25T20:45:05.060Z
 ---
 
 # Auto Plugin Selector
@@ -22,7 +22,7 @@ Recommends the best plugin set for this project from its signals (manifest, file
 
 ## Presets
 
-- none
+- vertex
 
 ## Permissions
 

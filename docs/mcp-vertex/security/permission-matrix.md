@@ -10,6 +10,7 @@
 | browser | public | * | browser, network |
 | cache | public | * | filesystem-read, filesystem-write |
 | changelog | private | * | git-read |
+| commit-policy | public | * | git-read, git-write |
 | completion | public | * | filesystem-read, filesystem-write |
 | container | public | * | process, container |
 | context-for-change | public | * | filesystem-read |
