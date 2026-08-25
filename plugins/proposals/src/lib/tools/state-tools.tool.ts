@@ -1,4 +1,4 @@
-import { stat } from 'node:fs/promises';
+import { access, stat } from 'node:fs/promises';
 
 import z from 'zod';
 
@@ -18,18 +18,19 @@ import { runAgentLockEngine } from '../locks/agent-lock-engine';
 import { readSessionBalance } from '../locks/agent-lock-session-store';
 import { readJsonOrNull } from '../proposals/index-reader';
 import { getPeerReviewBypassCount } from '../shared/peer-review-bypass-log';
+import { DEFAULT_STALE_AFTER_MINUTES } from '../shared/branch-tool-helpers';
 import { purgeStaleLocks } from '../shared/purge-stale-locks';
+import {
+	optionalString,
+	optionalUnknown,
+} from '../shared/tool-schema-shortcuts';
 import { readAutoTransitionRepairs } from '../services/auto-transition';
 
 /** Async existence check (H2): never blocks the event loop. */
-const fileExists = async (path: string): Promise<boolean> => {
-	try {
-		await stat(path);
-		return true;
-	} catch {
-		return false;
-	}
-};
+const fileExists = async (path: string): Promise<boolean> =>
+	access(path)
+		.then(() => true)
+		.catch(() => false);
 
 /** In-flight claim count straight from the lock file (0 if missing/corrupt). */
 const rawInFlightCount = async (lockPath: string): Promise<number> => {
@@ -190,28 +191,16 @@ const STATE_DIAGNOSIS_SCHEMA = z
 const STATE_REPAIR_OUTPUT_SCHEMA = z
 	.object({
 		mode: z.enum(['dry-run', 'execute']),
-		diagnosis: STATE_DIAGNOSIS_SCHEMA,
-		wouldRepair: z
-			.object({
-				staleLocks: z.number(),
-				dueQueueEntries: z.number(),
-				orphanAssignments: z.number(),
-			})
-			.optional(),
-		repaired: z
-			.object({
-				staleLocks: z.number(),
-				expiredQueueEntries: z.number(),
-				orphanAssignments: z.number(),
-			})
-			.optional(),
-		nextAction: z.string().optional(),
+		diagnosis: z.unknown(),
+		wouldRepair: optionalUnknown(),
+		repaired: optionalUnknown(),
+		nextAction: optionalString(),
 	})
 	.passthrough();
 
 const EMPTY_LOCK = (): ILockFile => ({
 	version: 1,
-	stale_after_minutes: 10,
+	stale_after_minutes: DEFAULT_STALE_AFTER_MINUTES,
 	in_flight: [],
 });
 
@@ -222,7 +211,8 @@ const readLockSnapshot = async (lockPath: string): Promise<ILockFile> => {
 	}
 	return {
 		version: parsed.version ?? 1,
-		stale_after_minutes: parsed.stale_after_minutes ?? 10,
+		stale_after_minutes:
+			parsed.stale_after_minutes ?? DEFAULT_STALE_AFTER_MINUTES,
 		in_flight: Array.isArray(parsed.in_flight) ? parsed.in_flight : [],
 	};
 };

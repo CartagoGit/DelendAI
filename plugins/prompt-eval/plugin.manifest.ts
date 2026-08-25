@@ -9,7 +9,7 @@ export default definePluginManifest({
 	tags: ['prompts', 'eval'],
 	maturity: 'stable',
 	permissions: ['filesystem-read', 'process'],
-	presets: [],
+	presets: ['full'],
 	tokenBudget: TOKEN_BUDGETS.toolPayloads.search,
 	dependencies: [
 		'@mcp-vertex/auto-agent-selector',

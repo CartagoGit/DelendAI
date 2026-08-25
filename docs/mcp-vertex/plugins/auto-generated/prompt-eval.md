@@ -3,7 +3,7 @@ id: prompt-eval
 package: @mcp-vertex/prompt-eval
 version: 0.1.1
 maturity: stable
-generated: 2026-08-25T01:07:05.846Z
+generated: 2026-08-25T09:11:25.153Z
 ---
 
 # Prompt Eval
@@ -21,7 +21,7 @@ Prompt-eval harness (golden prompts, scoring).
 
 ## Presets
 
-- none
+- full
 
 ## Permissions
 

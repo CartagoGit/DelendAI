@@ -31,12 +31,12 @@
 | logs | @mcp-vertex/logs | public | stable | swarm, full, vertex |
 | memory | @mcp-vertex/memory | public | stable | lean, standard, swarm, full, vertex, web-app, backend-api, cli-tool |
 | notification | @mcp-vertex/notification | public | stable | swarm, full, vertex |
-| observability | @mcp-vertex/observability | public | stable |  |
+| observability | @mcp-vertex/observability | public | stable | standard, swarm, full |
 | orchestrator-runner | @mcp-vertex/orchestrator-runner | public | stable | vertex |
 | perf | @mcp-vertex/perf | public | stable | vertex, cli-tool |
 | project-health | @mcp-vertex/project-health | public | experimental | vertex |
-| prompt-eval | @mcp-vertex/prompt-eval | public | stable |  |
-| prompts-pack | @mcp-vertex/prompts-pack | public | stable | standard, swarm, full, vertex, web-app, backend-api |
+| prompt-eval | @mcp-vertex/prompt-eval | public | stable | full |
+| prompts-pack | @mcp-vertex/prompts-pack | public | stable | standard, swarm, full, web-app, backend-api |
 | proposals | @mcp-vertex/proposals | public | stable | swarm, full, vertex |
 | quality | @mcp-vertex/quality | public | stable | standard, swarm, full, vertex, web-app, backend-api |
 | quality-policy | @mcp-vertex/quality-policy | public | experimental | vertex |
@@ -427,9 +427,9 @@
 | notification | cli-tool | no | no | yes |
 | observability | minimal | no | no | yes |
 | observability | lean | no | no | yes |
-| observability | standard | no | no | yes |
-| observability | swarm | no | no | yes |
-| observability | full | no | no | yes |
+| observability | standard | yes | yes | yes |
+| observability | swarm | yes | yes | yes |
+| observability | full | yes | yes | yes |
 | observability | vertex | no | no | yes |
 | observability | web-app | no | no | yes |
 | observability | backend-api | no | no | yes |
@@ -465,7 +465,7 @@
 | prompt-eval | lean | no | no | yes |
 | prompt-eval | standard | no | no | yes |
 | prompt-eval | swarm | no | no | yes |
-| prompt-eval | full | no | no | yes |
+| prompt-eval | full | yes | yes | yes |
 | prompt-eval | vertex | no | no | yes |
 | prompt-eval | web-app | no | no | yes |
 | prompt-eval | backend-api | no | no | yes |
@@ -475,7 +475,7 @@
 | prompts-pack | standard | yes | yes | yes |
 | prompts-pack | swarm | yes | yes | yes |
 | prompts-pack | full | yes | yes | yes |
-| prompts-pack | vertex | yes | yes | yes |
+| prompts-pack | vertex | no | no | yes |
 | prompts-pack | web-app | yes | yes | yes |
 | prompts-pack | backend-api | yes | yes | yes |
 | prompts-pack | cli-tool | no | no | yes |

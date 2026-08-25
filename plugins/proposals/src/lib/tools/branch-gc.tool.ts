@@ -1,10 +1,13 @@
-import { execFile } from 'node:child_process';
 import z from 'zod';
 
 import type { IToolRegistration } from '@mcp-vertex/core/public';
 
-import type { IGitRunner, IGitRunResult } from '../shared/git-runner';
+import { createGitRunner, type IGitRunner } from '../shared/git-runner';
 import { runBranchGcEngine } from '../shared/branch-gc-engine';
+import {
+	resolveBaseBranchAndStaleMinutes,
+	toolJsonWithErrorFlag,
+} from '../shared/branch-tool-helpers';
 
 export interface IBranchGcToolOptions {
 	readonly namespacePrefix: string;
@@ -102,18 +105,12 @@ export const buildBranchGcRegistration = (
 					const engineOptions = {
 						run:
 							options.run ??
-							createDefaultRunner(options.workspaceRoot),
+							createGitRunner(options.workspaceRoot),
 						workspaceRoot: options.workspaceRoot,
-						...(args.baseBranch !== undefined
-							? { baseBranch: args.baseBranch }
-							: options.defaultBaseBranch !== undefined
-								? { baseBranch: options.defaultBaseBranch }
-								: {}),
-						...(args.staleMinutes !== undefined
-							? { staleMinutes: args.staleMinutes }
-							: options.defaultStaleMinutes !== undefined
-								? { staleMinutes: options.defaultStaleMinutes }
-								: {}),
+						...resolveBaseBranchAndStaleMinutes(args, {
+							baseBranch: options.defaultBaseBranch,
+							staleMinutes: options.defaultStaleMinutes,
+						}),
 						...(args.dryRun !== undefined
 							? { dryRun: args.dryRun }
 							: {}),
@@ -128,51 +125,9 @@ export const buildBranchGcRegistration = (
 							: {}),
 					};
 					const result = await runBranchGcEngine(engineOptions);
-					return {
-						content: [
-							{
-								type: 'text' as const,
-								text: JSON.stringify(result),
-							},
-						],
-						structuredContent: result as unknown as Record<
-							string,
-							unknown
-						>,
-						...(result.ok ? {} : { isError: true }),
-					};
+					return toolJsonWithErrorFlag(result);
 				},
 			);
 		},
 	};
 };
-
-const createDefaultRunner =
-	(cwd: string): IGitRunner =>
-	(args) =>
-		new Promise<IGitRunResult>((resolve) => {
-			execFile(
-				'git',
-				[...args],
-				{
-					cwd,
-					encoding: 'utf8',
-					timeout: 15_000,
-					maxBuffer: 8 * 1024 * 1024,
-				},
-				(error, stdout, stderr) => {
-					if (!error) {
-						resolve({ ok: true, output: stdout });
-						return;
-					}
-					resolve({
-						ok: false,
-						output: '',
-						reason:
-							(stderr || error.message || 'git command failed')
-								.trim()
-								.split('\n')[0] ?? 'git command failed',
-					});
-				},
-			);
-		});

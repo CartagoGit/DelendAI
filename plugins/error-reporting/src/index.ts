@@ -174,7 +174,9 @@ export default definePlugin({
 				`${ERR_REPORTING_OPTION_DEPRECATED}: ${warning.message}`,
 			);
 		});
-		const store = createReportStore(ctx.pluginCacheDir);
+		const store = createReportStore(
+			ctx.workspace.resolve(ctx.pluginCacheDir),
+		);
 		const reporter = createSafeReporter({
 			targetRepo: options.targetRepo,
 			labels: options.labels,

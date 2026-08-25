@@ -33,12 +33,13 @@ describe('preset-table', () => {
 			expect(ids[1]).toBe('search');
 			// x00166: vertex now mirrors mcp-vertex.config.json exactly —
 			// its tail now also carries the manifest-driven plugins that only
-			// appear there. 42 total columns after the vertex-only additions
+			// appear there. Adding prompt-eval to full raises the total unique
+			// plugin columns to 43.
 			// (adaptive-optimizer, context-for-change, impact-analysis,
 			// project-health, quality-policy) alongside the existing audit /
 			// link-check / orchestrator-runner / perf / security /
 			// tech-debt / usage-tracking tail.
-			expect(ids.length).toBe(42);
+			expect(ids.length).toBe(43);
 			const tail = ids.slice(-12);
 			expect(new Set(tail)).toEqual(
 				new Set([
@@ -76,11 +77,11 @@ describe('preset-table', () => {
 			// `issues` stays in `full` (host-only).
 			expect(full?.effective).toContain('issues');
 			// x00166: `vertex` is independent — its effective membership
-			// equals its 35 declared members, exactly mirroring
+			// equals its 34 declared members, exactly mirroring
 			// mcp-vertex.config.json
 			// (including `proposals`, the orchestration plugin —
 			// previously excluded, a stale drift).
-			expect(vertex?.effective.length).toBe(35);
+			expect(vertex?.effective.length).toBe(34);
 			expect(vertex?.effective).toContain('perf');
 			expect(vertex?.effective).toContain('audit');
 			expect(vertex?.effective).toContain('auto-agent-selector');

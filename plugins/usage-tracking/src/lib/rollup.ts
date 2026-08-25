@@ -10,6 +10,9 @@
  * piped through `redactSecrets` first (AGENTS.md rules 4 + 6), same as
  * every other durable write in this plugin.
  */
+import { readdir, rm } from 'node:fs/promises';
+import { basename, dirname, join } from 'node:path';
+
 import {
 	readAbsoluteTextSafe,
 	redactSecrets,
@@ -37,6 +40,22 @@ import { summarizeLocalKpis } from './usage-kpis.helper';
 
 const HOURS_PER_DAY = 24;
 const DAY_MS = HOURS_PER_DAY * 60 * 60 * 1000;
+
+const removeSummarySiblingTmpFiles = async (absPath: string): Promise<void> => {
+	const dir = dirname(absPath);
+	const prefix = `${basename(absPath)}.`;
+	const entries = await readdir(dir, { withFileTypes: true }).catch(() => []);
+	await Promise.all(
+		entries
+			.filter(
+				(entry) =>
+					entry.isFile() &&
+					entry.name.startsWith(prefix) &&
+					entry.name.endsWith('.tmp'),
+			)
+			.map((entry) => rm(join(dir, entry.name), { force: true })),
+	);
+};
 
 export { summarizeLocalKpis } from './usage-kpis.helper';
 
@@ -215,6 +234,7 @@ const writeSummaryUnlocked = async (
 	absPath: string,
 	summary: IUsageSummary,
 ): Promise<void> => {
+	await removeSummarySiblingTmpFiles(absPath);
 	const { text } = redactSecrets(`${JSON.stringify(summary, null, '\t')}\n`);
 	await writeFileAtomic(absPath, text);
 };

@@ -181,7 +181,6 @@ describe('init:default (f00103)', () => {
 			'notification',
 			'orchestrator-runner',
 			'perf',
-			'prompts-pack',
 			'proposals',
 			'quality',
 			'rules',
@@ -205,9 +204,9 @@ describe('init:default (f00103)', () => {
 		]) {
 			expect(config.plugins[phantom]).toBeUndefined();
 		}
-		// Exactly 35 vertex plugins rendered in the current dogfood snapshot,
+		// Exactly 34 vertex plugins rendered in the current dogfood snapshot,
 		// no extras added.
-		expect(Object.keys(config.plugins).length).toBe(35);
+		expect(Object.keys(config.plugins).length).toBe(34);
 	});
 
 	it('writes the bundle to disk when --dry-run is absent', async () => {

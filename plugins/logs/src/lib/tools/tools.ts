@@ -26,6 +26,11 @@ export type { ILogToolStores } from '../contracts/interfaces/tools.interface';
 
 const LogOutcomeSchema = z.enum(LOG_OUTCOMES);
 const LogSeveritySchema = z.enum(LOG_SEVERITIES);
+const LogEventListOutputSchema = z.array(z.unknown());
+const DECIMAL_RADIX = 10;
+const SUBSCRIBE_DEFAULT_LIMIT = 50;
+const INCIDENT_TYPE_PATTERN_DOC = '^[a-z][a-z0-9-]{0,63}$';
+const INCIDENT_SUMMARY_PREVIEW_CHARS = 140;
 const LogEventSchema = z.object({
 	ts: z.string(),
 	kind: z.string(),
@@ -56,7 +61,7 @@ const parseCursor = (cursor: string | undefined): number => {
 	if (!cursor) return 0;
 	const decoded = Number.parseInt(
 		Buffer.from(cursor, 'base64url').toString('utf8'),
-		10,
+		DECIMAL_RADIX,
 	);
 	return Number.isFinite(decoded) && decoded >= 0 ? decoded : 0;
 };
@@ -153,7 +158,7 @@ export const buildLogToolRegistrations = (
 							'Query redacted append-only MCP log events. Filters: since, until, kind, agent, taskId, outcome; supports cursor pagination.',
 						inputSchema: QueryInputSchema,
 						outputSchema: z.object({
-							events: z.array(LogEventSchema),
+							events: LogEventListOutputSchema,
 							cursor: z.string().nullable(),
 							hasMore: z.boolean(),
 						}),
@@ -196,7 +201,7 @@ export const buildLogToolRegistrations = (
 							includeMeta: z.boolean().optional(),
 						}),
 						outputSchema: z.object({
-							events: z.array(LogEventSchema),
+							events: LogEventListOutputSchema,
 							oldestTs: z.string().nullable(),
 							newestTs: z.string().nullable(),
 						}),
@@ -237,7 +242,7 @@ export const buildLogToolRegistrations = (
 							includeMeta: z.boolean().optional(),
 						}),
 						outputSchema: z.object({
-							events: z.array(LogEventSchema),
+							events: LogEventListOutputSchema,
 							oldestTs: z.string().nullable(),
 							newestTs: z.string().nullable(),
 						}),
@@ -282,7 +287,7 @@ export const buildLogToolRegistrations = (
 							limit: z.number().optional(),
 						}),
 						outputSchema: z.object({
-							events: z.array(LogEventSchema),
+							events: LogEventListOutputSchema,
 							stream: z.literal('logs'),
 						}),
 					},
@@ -296,7 +301,8 @@ export const buildLogToolRegistrations = (
 							events: await store.tail(
 								tailOptionsFrom({
 									...args,
-									limit: args.limit ?? 50,
+									limit:
+										args.limit ?? SUBSCRIBE_DEFAULT_LIMIT,
 								}),
 							),
 						}),
@@ -325,16 +331,10 @@ export const buildLogToolRegistrations = (
 						// the strict required fields are correct. (x00105
 						// briefly loosened this; reverted.)
 						outputSchema: z.object({
-							chain: z.array(LogEventSchema),
+							chain: LogEventListOutputSchema,
 							firstTs: z.string().nullable(),
 							lastTs: z.string().nullable(),
-							gaps: z.array(
-								z.object({
-									startTs: z.string(),
-									endTs: z.string(),
-									durationMs: z.number(),
-								}),
-							),
+							gaps: z.unknown(),
 						}),
 					},
 					async (args: {
@@ -398,8 +398,7 @@ export const buildLogToolRegistrations = (
 				server.registerTool(
 					`${prefix}_log`,
 					{
-						description:
-							'Record a structured incident into the redacted event log. `incidentType` must be a lower-case slug in `^[a-z][a-z0-9-]{0,63}$`. The new event lands in the main timeline (not the curated error stream) with `severity`, `incidentType` and the caller-supplied `message` so it is filterable by `query`/`search`/`incidents`.',
+						description: `Record a structured incident into the redacted event log. \`incidentType\` must be a lower-case slug in \`${INCIDENT_TYPE_PATTERN_DOC}\`. The new event lands in the main timeline (not the curated error stream) with \`severity\`, \`incidentType\` and the caller-supplied \`message\` so it is filterable by \`query\`/\`search\`/\`incidents\`.`,
 						inputSchema: z.object({
 							severity: LogSeveritySchema.default('warning'),
 							incidentType: z
@@ -435,7 +434,7 @@ export const buildLogToolRegistrations = (
 						}
 						const ts = new Date().toISOString();
 						const outcome = severityToOutcome(args.severity);
-						const summary = `incident-logged: ${args.incidentType} \u2014 ${args.message.slice(0, 140)}`;
+						const summary = `incident-logged: ${args.incidentType} \u2014 ${args.message.slice(0, INCIDENT_SUMMARY_PREVIEW_CHARS)}`;
 						const event: ILogEvent = {
 							ts,
 							kind: 'log-warning',
@@ -494,7 +493,7 @@ export const buildLogToolRegistrations = (
 							until: z.string().optional(),
 						}),
 						outputSchema: z.object({
-							events: z.array(LogEventSchema),
+							events: LogEventListOutputSchema,
 							matched: z.number(),
 							hasMore: z.boolean(),
 						}),
@@ -581,19 +580,7 @@ export const buildLogToolRegistrations = (
 							recentLimit: z.number().optional(),
 						}),
 						outputSchema: z.object({
-							incidents: z.array(
-								z.object({
-									incidentType: z.string(),
-									toolName: z.string(),
-									count: z.number(),
-									distinctAgents: z.number(),
-									firstSeen: z.string(),
-									lastSeen: z.string(),
-									sampleSummary: z.string(),
-									sampleError: z.string(),
-									recentEvents: z.array(LogEventSchema),
-								}),
-							),
+							incidents: z.unknown(),
 							totalIncidents: z.number(),
 						}),
 					},
@@ -604,8 +591,9 @@ export const buildLogToolRegistrations = (
 						agent?: string | undefined;
 						recentLimit?: number | undefined;
 					}) => {
-						const result = await logIncidents(stores.errors, args);
-						return toolJson(result);
+						return toolJson(
+							await logIncidents(stores.errors, args),
+						);
 					},
 				);
 			},

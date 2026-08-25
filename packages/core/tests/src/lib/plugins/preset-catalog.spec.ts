@@ -9,6 +9,12 @@ import {
 } from '@mcp-vertex/core/lib/plugins/preset-catalog';
 import apiPlugin from '../../../../../../plugins/api/src/index';
 
+const repoRootFromSpec = (): string => {
+	const here = new URL(import.meta.url).pathname;
+	const specDir = here.replace(/\/[^/]*$/, '');
+	return join(specDir, '..', '..', '..', '..', '..', '..');
+};
+
 describe('PRESET_CATALOG', async () => {
 	it('lists presets in ⊇ order: minimal, lean, standard, swarm, full, vertex, web-app, backend-api, cli-tool', async () => {
 		expect(PRESET_CATALOG.map((def) => def.id)).toEqual(PRESET_KIND);
@@ -35,16 +41,16 @@ describe('PRESET_CATALOG', async () => {
 		// swarm: adds 8 on top of standard (f00121 S3 added forge,
 		// completion added by the completion plugin)
 		expect(PRESET_CATALOG[3]?.members.length).toBe(8);
-		// full: adds 2 host-only + api + changelog on top of swarm
-		expect(PRESET_CATALOG[4]?.members.length).toBe(4);
-		// vertex: 35 members, exactly mirroring mcp-vertex.config.json's
+		// full: adds 2 host-only + api + prompt-eval + changelog on top of swarm
+		expect(PRESET_CATALOG[4]?.members.length).toBe(5);
+		// vertex: 34 members, exactly mirroring mcp-vertex.config.json's
 		// `plugins` object (x00166 — corrected a long-stale drift where
 		// this preset had 6 phantom plugins not actually loaded and was
 		// missing 17 real ones, including `proposals`; f00165 added
 		// context-for-change; f00169 adds impact-analysis; f00166 adds
 		// project-health; f00167 adds quality-policy; f00168 adds
 		// adaptive-optimizer.
-		expect(PRESET_CATALOG[5]?.members.length).toBe(35);
+		expect(PRESET_CATALOG[5]?.members.length).toBe(34);
 	});
 
 	it('defines `lean` as an independent essentials preset', async () => {
@@ -119,10 +125,7 @@ describe('PRESET_CATALOG', async () => {
 	it('every catalog plugin id corresponds to a real package on disk', async () => {
 		const { stat } = await import('node:fs/promises');
 		const { join } = await import('node:path');
-		// The repo root is 4 levels up from this spec: tests/src/lib/plugins → src.
-		const here = new URL(import.meta.url).pathname;
-		const specDir = here.replace(/\/[^/]*$/, '');
-		const repoRoot = join(specDir, '..', '..', '..', '..', '..', '..');
+		const repoRoot = repoRootFromSpec();
 		const ids = new Set<string>();
 		for (const def of PRESET_CATALOG) {
 			for (const member of def.members) ids.add(member.plugin);
@@ -190,7 +193,9 @@ describe('PRESET_CATALOG', async () => {
 	});
 
 	it('derives backend-api summary from actual membership without stale opt-in claims', async () => {
-		const backendApi = PRESET_CATALOG.find((definition) => definition.id === 'backend-api');
+		const backendApi = PRESET_CATALOG.find(
+			(definition) => definition.id === 'backend-api',
+		);
 		expect(backendApi).toBeDefined();
 		expect(backendApi?.summary).toContain('16 plugins');
 		expect(backendApi?.summary).not.toContain('audit');
@@ -244,7 +249,7 @@ describe('resolvePresetMembers', async () => {
 			'auto-agent-selector',
 		]);
 		expect(resolvePresetMembers('swarm').length).toBe(26);
-		expect(resolvePresetMembers('full').length).toBe(30);
+		expect(resolvePresetMembers('full').length).toBe(31);
 		expect(resolvePresetMembers('swarm')).not.toContain('lean');
 	});
 
@@ -299,7 +304,7 @@ describe('resolvePresetMembers', async () => {
 		const resolved = resolvePresetMembers('vertex');
 		const config = JSON.parse(
 			await readFile(
-				join(process.cwd(), 'mcp-vertex.config.json'),
+				join(repoRootFromSpec(), 'mcp-vertex.config.json'),
 				'utf8',
 			),
 		) as {
@@ -351,7 +356,9 @@ describe('resolvePresetMembers', async () => {
 	});
 
 	it('derives budget permissions from effective preset membership', async () => {
-		const standard = PRESET_CATALOG.find((definition) => definition.id === 'standard');
+		const standard = PRESET_CATALOG.find(
+			(definition) => definition.id === 'standard',
+		);
 		expect(standard).toBeDefined();
 		expect(standard?.budget.permissions.values).toEqual([
 			'container',
