@@ -508,7 +508,7 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG = [
 		tags: ['observability'],
 		maturity: 'stable',
 		visibility: 'public',
-		presets: ['standard', 'swarm', 'full'],
+		presets: [],
 		capabilities: ['observability'],
 		permissions: ['filesystem-read', 'filesystem-write'],
 		tokenBudget: {
