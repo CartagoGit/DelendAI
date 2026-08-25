@@ -16,6 +16,10 @@ or feature flag that re-enables reporting of external project data.
 `mcpVertexVersion` in the public DTO comes from the published
 `@mcp-vertex/core` package version, not the monorepo root `package.json`.
 
+`safeToolId` is present only for registry-verified `@mcp-vertex/*` tools.
+Host/project tools never expose their raw names; the public DTO reduces them
+to the coarse fields `toolOwner` and `toolCategory`.
+
 If you need to disable the reporter entirely, do so at the host
 configuration level with `plugins.error-reporting.options.enabled = false`.
 The privacy boundary is on the content, not on a per-error opt-out.

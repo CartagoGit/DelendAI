@@ -2,7 +2,7 @@
 id: x00245
 title: "error-reporting — provenance segura de toolId: ningún toolName externo entra al DTO público (ISafeToolIdentity registry-driven)"
 kind: fix
-status: ready
+status: review
 type: proposal
 track: privacy
 date: 2026-08-25
@@ -257,7 +257,7 @@ export function buildSafeReport(input: {
 - review-log: approved by orchestrator-fase1-review — Fase 1 review 2026-08-25: lint:diagram-usage/limit verificado; validate verde.
 ### S2 — Integración en `error-reporting` + DTO actualizado
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/error-reporting/src/lib/report-builder.helper.ts`, `plugins/error-reporting/src/lib/contracts/interfaces/reporter.interface.ts`
 - **Gate**: type
 - acceptance:
@@ -267,7 +267,7 @@ export function buildSafeReport(input: {
 
 ### S3 — Lint arquitectónico `privacy-tool-id`
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `tools/scripts/lint/privacy-tool-id.script.ts`
 - **Gate**: type
 - acceptance:
@@ -276,8 +276,8 @@ export function buildSafeReport(input: {
 
 ### S4 — Tests adversariales + snapshot
 
-- **Status**: pending
-- **Files**: `packages/core/tests/src/lib/contracts/resolvers/safe-tool-identity.resolver.spec.ts`, `packages/core/tests/src/lib/contracts/resolvers/safe-tool-identity.property.spec.ts`, `plugins/error-reporting/tests/src/lib/report-builder.spec.ts`
+- **Status**: done
+- **Files**: `packages/core/tests/src/lib/contracts/resolvers/safe-tool-identity.resolver.spec.ts`, `packages/core/tests/src/lib/contracts/resolvers/safe-tool-identity.property.spec.ts`, `plugins/error-reporting/tests/report-builder.spec.ts`, `plugins/error-reporting/tests/privacy-adversarial.spec.ts`
 - **Gate**: type
 - acceptance:
   - "≥10 tests unitarios pasan, incluyendo prefijo engañoso, unicode, longitud máxima."
@@ -286,7 +286,7 @@ export function buildSafeReport(input: {
 
 ## Acceptance
 
-- **Unit**: `plugins/error-reporting/tests/src/lib/report-builder.spec.ts` (existente, ampliar).
+- **Unit**: `plugins/error-reporting/tests/report-builder.spec.ts` (existente, ampliar).
 - **Unit**: `packages/core/tests/src/lib/contracts/resolvers/safe-tool-identity.resolver.spec.ts` (nuevo).
 - **Property**: `packages/core/tests/src/lib/contracts/resolvers/safe-tool-identity.property.spec.ts` (nuevo) — fast-check sobre nombres adversariales (prefijo engañoso, unicode, espacios, longitud máxima).
 - **Integration**: dos hosts ficticios registran sus tools; mismo error Vertex → mismo report (o ambos sin `safeToolId`).
@@ -329,7 +329,7 @@ resolution:
   evidence:
     - commit: <hash>
     - tests:
-        - plugins/error-reporting/tests/src/lib/report-builder.spec.ts
+        - plugins/error-reporting/tests/report-builder.spec.ts
         - packages/core/tests/src/lib/contracts/resolvers/safe-tool-identity.resolver.spec.ts
         - packages/core/tests/src/lib/contracts/resolvers/safe-tool-identity.property.spec.ts
         - t00009-privacy-adversarial-regression

@@ -10,7 +10,10 @@ const baseReport: ISafeMcpVertexReport = {
 	reporterVersion: '0.1.0',
 	mcpVertexVersion: '0.1.0',
 	packageId: '@mcp-vertex/error-reporting',
-	toolId: 'tool_x',
+	safeToolId:
+		'@mcp-vertex/quality.run_quality' as ISafeMcpVertexReport['safeToolId'],
+	toolOwner: 'mcp-vertex',
+	toolCategory: 'analysis',
 	errorCode: 'PLUGIN_REGISTER_TIMEOUT',
 	failureClass: 'INTERNAL_TIMEOUT',
 	classification: 'PERFORMANCE',

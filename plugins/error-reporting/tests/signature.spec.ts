@@ -196,7 +196,8 @@ describe('buildIssueTitle / buildIssueBody', () => {
 		reporterVersion: '0.1.0',
 		mcpVertexVersion: '0.1.0',
 		packageId: '@mcp-vertex/error-reporting',
-		toolId: 'tool_x',
+		toolOwner: 'host-project',
+		toolCategory: 'host-specific',
 		errorCode: 'PLUGIN_REGISTER_TIMEOUT',
 		failureClass: 'INTERNAL_TIMEOUT',
 		classification: 'PERFORMANCE',
@@ -237,6 +238,7 @@ describe('buildIssueTitle / buildIssueBody', () => {
 		expect(body).toContain('@mcp-vertex/error-reporting/src/index.ts:1:2');
 		expect(body).toContain('Synthetic bakery reproduction');
 		expect(body).toContain('EXAMPLE-001');
+		expect(body).toContain('Tool owner');
 		expect(body).not.toContain('Error: boom');
 		expect(body).toContain('"enabled": false');
 	});
