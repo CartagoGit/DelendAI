@@ -1,6 +1,6 @@
 import { mkdtemp, mkdir, rm, symlink, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { join, relative } from 'node:path';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 
@@ -191,9 +191,50 @@ describe('context_for_change', () => {
 			);
 			expect(result.isError).toBe(true);
 			expect(result.structuredContent?.ok).toBe(false);
-			expect(
-				(result.structuredContent?.error as { reason: string }).reason,
-			).toContain('workspace-containment');
+			const containmentError = result.structuredContent?.error as
+				| { reason: string }
+				| undefined;
+			expect(containmentError?.reason).toContain('workspace-containment');
+		}
+	});
+
+	it('rejects workspace-escaping paths that arrive through gitDiff', async () => {
+		const root = await makeWorkspace();
+		const outside = await mkdtemp(
+			join(tmpdir(), 'context-for-change-diff-external-'),
+		);
+		createdRoots.push(outside);
+		await writeFile(
+			join(outside, 'secret.ts'),
+			'export const diffLeakedSymbol = true;',
+			'utf8',
+		);
+		// Must be a path that really resolves onto the secret file, or the
+		// assertion below would pass vacuously against vulnerable code.
+		const escapingPaths = [
+			relative(root, join(outside, 'secret.ts')),
+			'../../etc/passwd',
+		];
+
+		for (const escapingPath of escapingPaths) {
+			const result = await runContextForChange(
+				{
+					gitDiff: [
+						`diff --git a/${escapingPath} b/${escapingPath}`,
+						`+++ b/${escapingPath}`,
+						'',
+					].join('\n'),
+					task: 'reject containment bypass through gitDiff',
+				},
+				{
+					namespacePrefix: 'mcp-vertex',
+					workspaceRootAbs: root,
+					maxBytes: 3000,
+					docsRoots: ['docs'],
+				},
+			);
+			expect(JSON.stringify(result)).not.toContain('diffLeakedSymbol');
+			expect(JSON.stringify(result)).not.toContain('root:x:0:0');
 		}
 	});
 
