@@ -2,7 +2,7 @@
 id: x00239
 title: "process — UTF-8 safe truncation al recortar chunks (PROC2-001)"
 kind: fix
-status: ready
+status: review
 type: proposal
 track: quality
 date: 2026-08-25

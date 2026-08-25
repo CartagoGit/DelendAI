@@ -26,11 +26,19 @@ describe('runArgv byte budgets (x00220)', () => {
 			{ maxOutputBytes: 3 },
 		);
 		expect(result.code).toBe(0);
-		expect(result.stdout).toBe(
-			Buffer.from(payload).subarray(0, 3).toString('utf8'),
-		);
-		expect(result.stdout).toBe('\uFFFD');
+		expect(result.stdout).toBe('');
 		expect(result.stderr).toBe('');
+	});
+
+	it('never leaves a replacement character when the combined budget cuts inside a multibyte character', async () => {
+		const payload = 'ab🙂';
+		const result = await execEval(
+			`process.stdout.write(${JSON.stringify(payload)});`,
+			{ maxOutputBytes: 5 },
+		);
+		expect(result.code).toBe(0);
+		expect(result.stdout).toBe('ab');
+		expect(result.stdout).not.toContain('\uFFFD');
 	});
 
 	it('enforces maxOutputBytes across stdout and stderr combined', async () => {
