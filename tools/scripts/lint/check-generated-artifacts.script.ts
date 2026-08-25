@@ -28,7 +28,7 @@ const normalizeDashboard = (text: string | null): string | null =>
 const normalizePresetMetadata = (text: string | null): string | null =>
 	text === null
 		? null
-		: text.replace(/measuredAt: ".*?"/gu, 'measuredAt: "<normalized>"');
+		: text.replace(/measuredAt: '.*?'/gu, "measuredAt: '<normalized>'");
 
 const main = async (): Promise<number> => {
 	const workspaceRoot = process.cwd();
