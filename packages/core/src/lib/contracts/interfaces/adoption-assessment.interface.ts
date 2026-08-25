@@ -28,6 +28,13 @@ export interface IAssessmentCost {
 	readonly estimatedTokens: number;
 	readonly recommendedPluginCount: number;
 	readonly source: 'preset-budget' | 'fallback-budget';
+	/**
+	 * r00024 (PRESET-001): which surface the reused preset budget was
+	 * measured under. `'estimated'` for the `fallback-budget` source,
+	 * where no preset covers the recommendation and there is no
+	 * measurement to attribute a surface to.
+	 */
+	readonly surfaceMode: 'native' | 'adaptive' | 'estimated';
 	readonly note: string;
 }
 

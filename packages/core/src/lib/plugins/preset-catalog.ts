@@ -1,4 +1,5 @@
-import { PRESET_METADATA } from '../contracts/constants/preset-metadata.constant';
+import { PRESET_METADATA } from '../contracts/constants/preset-metadata.generated';
+import { PRESET_ROLES } from '../contracts/constants/preset-roles.constant';
 import type { IPresetBudgetProfile } from '../contracts/interfaces/preset-budget-profile.interface';
 import { derivePresetBudget, derivePresetSummary } from './preset-derived';
 
@@ -80,15 +81,13 @@ export interface IPresetDefinition {
 	 */
 	readonly members: readonly IPresetMember[];
 	/**
-	 * Runtime budget snapshot for this preset.
-	 *
-	 * `toolCount` and `schemaBytes` were measured against the live
-	 * runtime on 2026-08-24 via the same in-memory MCP flow used by
-	 * `token-budget.e2e.spec.ts`. `coldStartTokens` is an estimate
-	 * derived from `schemaBytes / TOKEN_BUDGETS.bytesPerEstimatedToken`.
-	 * `permissions` is the union of real tool effects for the preset;
-	 * `capabilities` is the role-profile summary that explains what the
-	 * preset is for at a glance.
+	 * Runtime budget snapshot. `toolCount`/`schemaBytes` come from
+	 * `PRESET_METADATA` (`preset-metadata.generated.ts`, r00024 /
+	 * PRESET-001) — generated against the live runtime by
+	 * `tools/scripts/generate/preset-metadata.script.ts`, the SAME
+	 * measurement the token dashboard uses; `check:generated` fails on
+	 * drift. `surfaceMode` is which surface was measured. `permissions`
+	 * is real tool effects; `capabilities` is the role-profile summary.
 	 */
 	readonly budget: IPresetBudgetProfile;
 	/**
@@ -119,7 +118,7 @@ const PRESET_SEEDS: readonly IPresetSeed[] = [
 	{
 		id: 'minimal',
 		title: 'minimal',
-		role: PRESET_METADATA.minimal.role,
+		role: PRESET_ROLES.minimal!,
 		members: [{ plugin: 'git' }, { plugin: 'search' }],
 	},
 	{
@@ -134,7 +133,7 @@ const PRESET_SEEDS: readonly IPresetSeed[] = [
 		// independent defs that are not the target).
 		id: 'lean',
 		title: 'lean',
-		role: PRESET_METADATA.lean.role,
+		role: PRESET_ROLES.lean!,
 		members: [
 			{ plugin: 'git' },
 			{ plugin: 'search' },
@@ -146,7 +145,7 @@ const PRESET_SEEDS: readonly IPresetSeed[] = [
 	{
 		id: 'standard',
 		title: 'standard',
-		role: PRESET_METADATA.standard.role,
+		role: PRESET_ROLES.standard!,
 		members: [
 			{ plugin: 'memory' },
 			{ plugin: 'docs' },
@@ -169,7 +168,7 @@ const PRESET_SEEDS: readonly IPresetSeed[] = [
 	{
 		id: 'swarm',
 		title: 'swarm',
-		role: PRESET_METADATA.swarm.role,
+		role: PRESET_ROLES.swarm!,
 		members: [
 			{ plugin: 'proposals' },
 			{ plugin: 'notification' },
@@ -184,7 +183,7 @@ const PRESET_SEEDS: readonly IPresetSeed[] = [
 	{
 		id: 'full',
 		title: 'full',
-		role: PRESET_METADATA.full.role,
+		role: PRESET_ROLES.full!,
 		members: [
 			{ plugin: 'web-fetch', hostOnly: true },
 			{ plugin: 'issues', hostOnly: true },
@@ -211,7 +210,7 @@ const PRESET_SEEDS: readonly IPresetSeed[] = [
 		// `mcp-vertex.config.json` plugin keys on every validate pass.
 		id: 'vertex',
 		title: 'vertex',
-		role: PRESET_METADATA.vertex.role,
+		role: PRESET_ROLES.vertex!,
 		members: [
 			{ plugin: 'adaptive-optimizer' },
 			{ plugin: 'audit' },
@@ -257,7 +256,7 @@ const PRESET_SEEDS: readonly IPresetSeed[] = [
 	{
 		id: 'web-app',
 		title: 'web-app',
-		role: PRESET_METADATA['web-app'].role,
+		role: PRESET_ROLES['web-app']!,
 		members: [
 			{ plugin: 'git' },
 			{ plugin: 'search' },
@@ -283,7 +282,7 @@ const PRESET_SEEDS: readonly IPresetSeed[] = [
 	{
 		id: 'backend-api',
 		title: 'backend-api',
-		role: PRESET_METADATA['backend-api'].role,
+		role: PRESET_ROLES['backend-api']!,
 		members: [
 			{ plugin: 'git' },
 			{ plugin: 'search' },
@@ -307,7 +306,7 @@ const PRESET_SEEDS: readonly IPresetSeed[] = [
 	{
 		id: 'cli-tool',
 		title: 'cli-tool',
-		role: PRESET_METADATA['cli-tool'].role,
+		role: PRESET_ROLES['cli-tool']!,
 		members: [
 			{ plugin: 'git' },
 			{ plugin: 'search' },
