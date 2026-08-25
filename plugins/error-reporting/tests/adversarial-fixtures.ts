@@ -81,7 +81,7 @@ export const FIXED_ENVIRONMENT_CLASS: IEnvironmentClass = {
 
 export const FIXED_MCP_VERTEX_VERSION = '9.8.7';
 export const FIXED_REPORTER_VERSION = '1.2.3';
-export const FIXED_TOOL_ID = 'error-reporting_report_status';
+export const FIXED_SAFE_TOOL_ID = '@mcp-vertex/error-reporting.report_status';
 
 export const PROJECT_A_FIXTURE: IAdversarialProjectFixture = {
 	projectId: 'project-a',
