@@ -13,7 +13,14 @@ node_modules/
 # Per-package dist/ inside packages/*/ and plugins/*/ is intentionally kept
 # tracked — each package.json `main` / `exports` points there, and the
 # publishable surface is what consumers import. Those entries are NOT ignored.
-build/
+#
+# Anchored to repo root (`/build/`): an unanchored `build/` also matched
+# `tools/scripts/build/` — a real, wired-in (`package.json#build:stable-manifest`)
+# SOURCE directory, not a build-output one — silently excluding it from git
+# since it was created (f00152). Found via the CI reality-gate investigation
+# in q00005's Track D (x00251/x00252 follow-up); root-cause fixed here rather
+# than baselined away.
+/build/
 dist/
 
 # Legacy per-package build output name (pre-convention). Safe to remove.

@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-08-25T09:47:11.110Z",
+	"generatedAt": "2026-08-25T15:23:04.457Z",
 	"mode": "compact",
 	"tools": [
 		{
@@ -1268,7 +1268,7 @@
 				"id": "f00177",
 				"title": "f00177",
 				"track": "packaging",
-				"status": "ready",
+				"status": "in-progress",
 				"kind": "feat"
 			},
 			{
@@ -1363,6 +1363,20 @@
 				"kind": "fix"
 			},
 			{
+				"id": "x00236",
+				"title": "x00236",
+				"track": "privacy",
+				"status": "in-progress",
+				"kind": "fix"
+			},
+			{
+				"id": "x00237",
+				"title": "x00237",
+				"track": "privacy",
+				"status": "in-progress",
+				"kind": "fix"
+			},
+			{
 				"id": "x00256",
 				"title": "x00256",
 				"track": "privacy",
@@ -1371,9 +1385,9 @@
 			}
 		],
 		"byStatus": {
-			"ready": 16,
-			"in-progress": 10,
-			"review": 20,
+			"ready": 15,
+			"in-progress": 13,
+			"review": 46,
 			"paused": 1,
 			"done": 432,
 			"blocked": 0,

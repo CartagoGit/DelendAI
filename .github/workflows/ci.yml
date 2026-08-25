@@ -78,6 +78,16 @@ jobs:
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
+      - name: Rebuild the proposal registry cache
+        # A fresh checkout has no `.cache/mcp-vertex/proposals/index.json`
+        # (gitignored — it's a derived cache, see r00010). `catalog:check`
+        # below needs it to exist to resolve at all. This mirrors what the
+        # MCP server does lazily on its own `auto_work`/`continue_proposal`
+        # calls; it is NOT a proposal-integrity gate (that lives in
+        # `lint-governance` via `lint:proposals`), so a nonzero exit here
+        # (e.g. duplicate ids mid-swarm) must not fail this job.
+        run: bun run sync:proposals || true
+
       - name: Run preset and release-surface checks
         run: |
           set -euo pipefail
