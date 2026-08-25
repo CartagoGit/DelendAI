@@ -222,7 +222,7 @@ describe('e2e: dynamic and compact tool surfaces', async () => {
 		).toBe('mcp-vertex_git_status');
 	});
 
-	it('falls back to native when the client does not declare list-changed support', async () => {
+	it('defaults an ordinary MCP client (no private capability) to adaptive, not native (r00026 / TOK-004)', async () => {
 		await connect({
 			argv: ['--plugins=memory', `--workspace=${workspace}`],
 			clientInfo: { name: 'plain-client', version: '1.0.0' },
@@ -230,9 +230,57 @@ describe('e2e: dynamic and compact tool surfaces', async () => {
 		});
 		const initial = await client.listTools();
 		const names = initial.tools.map((tool) => tool.name);
-		expect(names).toContain('mcp-vertex_memory_save');
-		expect(names).toContain('mcp-vertex_memory_recall');
-		expect(names).not.toContain('mcp-vertex_vertex');
+		// Bootstrap-only: memory's tools are not activated yet.
+		expect(names).not.toContain('mcp-vertex_memory_save');
+		expect(names).not.toContain('mcp-vertex_memory_recall');
+		// The default is adaptive, so the bootstrap surface (including
+		// the vertex router) is present even without the private
+		// capability extension.
+		expect(names).toContain('mcp-vertex_overview');
+		expect(names).toContain('mcp-vertex_tool_search');
+		expect(names).toContain('mcp-vertex_vertex');
+	});
+
+	it('a client that never refreshes tools/list can still reach an activated tool via the vertex router (r00026 / TOK-004)', async () => {
+		// r00026: the class of risk TOK-004 flagged — a client that
+		// receives (or ignores) notifications/tools/list_changed and
+		// never re-calls tools/list. Proves adaptive-as-default does not
+		// silently strand such a client: it can still discover and
+		// invoke a just-activated tool through mcp-vertex_vertex without
+		// ever refreshing its cached tool list.
+		await connect({
+			argv: ['--plugins=memory', `--workspace=${workspace}`],
+			clientInfo: { name: 'never-refreshes', version: '1.0.0' },
+			capabilities: {},
+		});
+		// Deliberately no `setNotificationHandler` registration and no
+		// second `listTools()` call after this point — simulating a
+		// client that ignores/never acts on list_changed.
+		const initial = await client.listTools();
+		expect(initial.tools.map((tool) => tool.name)).not.toContain(
+			'mcp-vertex_memory_save',
+		);
+
+		await client.callTool({
+			name: 'mcp-vertex_plugin_activate',
+			arguments: { plugin: 'memory' },
+		});
+
+		const routed = await client.callTool({
+			name: 'mcp-vertex_vertex',
+			arguments: {
+				domain: 'memory',
+				action: 'save',
+				args: { title: 'never-refresh-check', body: 'reachable' },
+			},
+		});
+		expect(
+			(routed.structuredContent as { tool: string; isError: boolean })
+				.tool,
+		).toBe('mcp-vertex_memory_save');
+		expect((routed.structuredContent as { isError: boolean }).isError).toBe(
+			false,
+		);
 	});
 
 	it('respects an explicit surface override over client capabilities', async () => {

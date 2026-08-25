@@ -26,7 +26,7 @@ describe('surface capability negotiation', () => {
 		expect(detected.source).toBe('extensions');
 	});
 
-	it('negotiates adaptive only when the client declares support', () => {
+	it('negotiates adaptive for a declaring client AND as the default for a plain one (r00026 / TOK-004)', () => {
 		expect(
 			decideSurfaceModeFromCapabilities({
 				capabilities: {
@@ -36,8 +36,16 @@ describe('surface capability negotiation', () => {
 				},
 			}).mode,
 		).toBe('adaptive');
+		// r00026: adaptive is now the default even without the private
+		// capability extension — native is an explicit opt-out only.
 		expect(
 			decideSurfaceModeFromCapabilities({ capabilities: {} }).mode,
+		).toBe('adaptive');
+		expect(
+			decideSurfaceModeFromCapabilities({
+				capabilities: {},
+				explicitMode: 'native',
+			}).mode,
 		).toBe('native');
 	});
 

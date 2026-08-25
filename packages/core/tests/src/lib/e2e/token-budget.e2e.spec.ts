@@ -121,6 +121,19 @@ describe('e2e: token budget (cold-start payloads)', async () => {
 			[
 				`--${preset ? 'preset' : 'plugins'}=${pluginList}`,
 				`--workspace=${workspace}`,
+				// r00026 (TOK-004) made `adaptive` the default surface for a
+				// plain client with no capability negotiation. This suite
+				// measures raw cold-start payload sizes for the FULL/native
+				// surface (the historical budget baseline every threshold
+				// here was calibrated against) UNLESS the caller passes
+				// `capabilities` explicitly to exercise real adaptive
+				// negotiation (a couple of tests below do exactly that) —
+				// an explicit `--surface` flag would override capability
+				// detection entirely, so only pin it when there is no
+				// capability-driven case to preserve.
+				...(input?.capabilities === undefined
+					? ['--surface=native']
+					: []),
 			],
 			workspace,
 		);

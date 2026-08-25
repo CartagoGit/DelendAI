@@ -91,6 +91,10 @@ export const createAssembledProposalsServer = async (
 		[
 			'--plugins=proposals',
 			`--workspace=${workspace}`,
+			// r00026 (TOK-004): pin native — this harness calls proposals
+			// tools directly by name across many e2e specs, not surface
+			// negotiation (adaptive is now the default for a plain client).
+			'--surface=native',
 			...(options.enableAgentWorktree ? ['--agent-worktree=true'] : []),
 		],
 		workspace,
