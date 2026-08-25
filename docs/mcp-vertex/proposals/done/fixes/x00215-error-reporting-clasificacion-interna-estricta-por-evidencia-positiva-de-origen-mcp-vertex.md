@@ -2,7 +2,7 @@
 id: x00215
 title: "error-reporting: clasificación interna estricta por evidencia positiva de origen MCP Vertex"
 kind: fix
-status: review
+status: done
 type: proposal
 track: privacy
 date: 2026-08-24
@@ -55,8 +55,10 @@ El marcador `/plugins/` es excesivamente genérico: un consumidor con `/home/emp
   - "McpVertexErrorCode cubre las clases de fallo internas conocidas (PLUGIN_REGISTER_TIMEOUT, etc.)."
   - "McpVertexInternalError expone code/packageId/componentId/safeContext inmutable."
   - "La taxonomía de clasificación de issues (14 valores) vive como constante tipada `IssueClassification`."
-- review-state: in_review
+- review-state: done
 - review-implementer: swarm-implementer
+- review-reviewer: orchestrator-fase1-review
+- review-log: approved by orchestrator-fase1-review — Fase 1 review 2026-08-25: validate verde.
 ### S2 — Clasificador por evidencia positiva
 - **Status**: done
 - **Files**: `plugins/error-reporting/src/lib/internal-classifier.helper.ts`

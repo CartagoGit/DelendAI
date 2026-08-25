@@ -2,7 +2,7 @@
 id: x00221
 title: "filesystem: revisión TOCTOU, threat model explícito y tests Windows"
 kind: fix
-status: review
+status: done
 type: proposal
 track: concurrency
 date: 2026-08-24
@@ -42,7 +42,10 @@ La contención del filesystem es una de las fortalezas del proyecto; documentar 
 - acceptance:
   - "El threat model TOCTOU queda documentado en el propio módulo (qué se cubre, qué no)."
   - "Se evalúan O_NOFOLLOW / fd-relative con decisión registrada."
-
+- review-state: done
+- review-implementer: swarm-implementer
+- review-reviewer: orchestrator-fase1-review
+- review-log: approved by orchestrator-fase1-review — Fase 1 review 2026-08-25: fs-tools-windows.spec.ts dedicado confirmado; validate verde.
 ### S2 — Tests Windows de contención
 - **Status**: done
 - **Files**: `packages/core/tests/src/lib/shared/fs-tools-windows.spec.ts`
