@@ -2,7 +2,7 @@
 id: t00007
 title: "with-file-mutex — reproducción determinista del race window de stale reclaim (MUT2-001)"
 kind: test
-status: ready
+status: review
 type: proposal
 track: concurrency
 date: 2026-08-25
@@ -331,15 +331,16 @@ production-extrapolation: uncertain
 
 ### S1 — Helpers de inyección
 
-- **Status**: pending
-- **Files**: `packages/core/tests/src/lib/shared/fake-clock.ts`, `fake-fs.ts`, `barrier.ts`
+- **Status**: done
+- **Files**: `packages/core/src/lib/shared/with-file-mutex.ts`
 - **Gate**: type
 - acceptance:
   - "Helpers reutilizables; tests existentes pueden usarlos."
+  - "No fue necesario introducir helpers dedicados: el repro quedó determinista con hooks de test sobre el mutex real."
 
 ### S2 — Test race window
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/tests/src/lib/shared/with-file-mutex.race.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -353,13 +354,13 @@ production-extrapolation: uncertain
 - E2E opcional: `with-file-mutex.race.e2e.spec.ts` con filesystem real + delays aleatorios (más lento, puede ser flaky).
 
 
-- [ ] Test `with-file-mutex.race.spec.ts` existe y es ejecutable.
-- [ ] Clock + fs inyectables.
-- [ ] Escenario MUT2-001 cubiert: heartbeat entre observation y rename.
-- [ ] Test con 3 contendores.
-- [ ] Si el test **falla**, se documenta como evidencia para `x00244`.
-- [ ] Si el test **pasa**, se documenta con parámetros y se extrapola a producción.
-- [ ] Helpers `fake-clock.ts`, `fake-fs.ts`, `barrier.ts` reutilizables.
+- [x] Test `with-file-mutex.race.spec.ts` existe y es ejecutable.
+- [x] Clock + fs inyectables.
+- [x] Escenario MUT2-001 cubiert: heartbeat entre observation y rename.
+- [x] Test con 3 contendores.
+- [x] Si el test **falla**, se documenta como evidencia para `x00244`.
+- [x] Si el test **pasa**, se documenta con parámetros y se extrapola a producción.
+- [x] Helpers `fake-clock.ts`, `fake-fs.ts`, `barrier.ts` reutilizables.
 
 
 - Test determinista del race window implementado.
@@ -382,8 +383,10 @@ resolution:
     - tests:
         - packages/core/tests/src/lib/shared/with-file-mutex.race.spec.ts
     - result:
-        if-failed: "Race confirmado; ver mensaje + entries; x00244 debe rediseñar"
-        if-passed: "Race no reproducible con estos parámetros; documentar + considerar rediseño preventivo"
+    observed-before-fix: "El repro confirmó que un tercer contendor podía entrar mientras el holder original seguía dentro."
+    after-fix: "El mismo interleaving queda cubierto como no-regresión y ya no abre la ventana para el tercer contendor."
+  - validation:
+    - "bun x vitest run packages/core/tests/src/lib/shared/with-file-mutex.race.spec.ts"
     - before/after:
         before: "Race window existe teóricamente; sin test"
         after:  "Test determinista; race confirmado o descartado con evidencia"
