@@ -245,7 +245,7 @@ Idénticos a `x00242`, adaptados al dominio de impact-analysis.
 ### S2 — Tests adversariales
 
 - **Status**: pending
-- **Files**: `plugins/impact-analysis/tests/src/lib/services/workspace-containment.spec.ts`
+- **Files**: `plugins/impact-analysis/tests/src/impact-analysis.tool.spec.ts`
 - **Gate**: type
 - acceptance:
   - "≥15 casos adversariales rechazados."
@@ -262,7 +262,7 @@ Idénticos a `x00242`, adaptados al dominio de impact-analysis.
 
 ## Acceptance
 
-- **Unit**: actualizar tests existentes; añadir suite `workspace-containment.spec.ts` (≥15 casos).
+- **Unit**: actualizar `plugins/impact-analysis/tests/src/impact-analysis.tool.spec.ts` con ≥15 casos adversariales.
 - **Integration**: tests con filesystem real (symlinks, cleanup).
 - **Property**: ≥1 property test sobre paths adversariales.
 - **E2E**: `impact_analyze` con un path exterior devuelve `workspace-containment` en la respuesta estructurada.
