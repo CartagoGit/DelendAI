@@ -187,7 +187,8 @@ const buildCost = (
 			estimatedTokens: coveringPreset.budget.coldStartTokens.value,
 			recommendedPluginCount: recommendedPluginIds.length,
 			source: 'preset-budget',
-			note: `Measured runtime budget reused from preset ${coveringPreset.id}.`,
+			surfaceMode: coveringPreset.budget.surfaceMode,
+			note: `Measured runtime budget reused from preset ${coveringPreset.id} (${coveringPreset.budget.surfaceMode} surface).`,
 		};
 	}
 	const fallbackBytes =
@@ -201,6 +202,7 @@ const buildCost = (
 		),
 		recommendedPluginCount: recommendedPluginIds.length,
 		source: 'fallback-budget',
+		surfaceMode: 'estimated',
 		note: 'Fallback upper bound using the existing swarm marginal-plugin warning budget.',
 	};
 };
