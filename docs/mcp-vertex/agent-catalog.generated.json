@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-08-25T00:16:33.407Z",
+	"generatedAt": "2026-08-25T01:00:31.937Z",
 	"mode": "compact",
 	"tools": [
 		{
@@ -464,10 +464,19 @@
 			"name": "mcp-vertex_plan_mcp_project"
 		},
 		{
+			"name": "mcp-vertex_plugin_activate"
+		},
+		{
 			"name": "mcp-vertex_plugin_add"
 		},
 		{
+			"name": "mcp-vertex_plugin_deactivate"
+		},
+		{
 			"name": "mcp-vertex_plugin_search"
+		},
+		{
+			"name": "mcp-vertex_project_context"
 		},
 		{
 			"name": "mcp-vertex_project-health_project_health",
@@ -727,6 +736,9 @@
 			"plugin": "test-policy"
 		},
 		{
+			"name": "mcp-vertex_tool_search"
+		},
+		{
 			"name": "mcp-vertex_usage-tracking_session_hygiene",
 			"plugin": "usage-tracking"
 		},
@@ -737,6 +749,9 @@
 		{
 			"name": "mcp-vertex_usage-tracking_usage_report",
 			"plugin": "usage-tracking"
+		},
+		{
+			"name": "mcp-vertex_vertex"
 		}
 	],
 	"skills": [
@@ -1197,8 +1212,43 @@
 				"id": "a00089",
 				"title": "a00089",
 				"track": "audit+proposals+security+concurrency",
-				"status": "ready",
+				"status": "in-progress",
 				"kind": "audit"
+			},
+			{
+				"id": "c00005",
+				"title": "c00005",
+				"track": "tokens",
+				"status": "ready",
+				"kind": "chore"
+			},
+			{
+				"id": "c00006",
+				"title": "c00006",
+				"track": "tokens",
+				"status": "ready",
+				"kind": "chore"
+			},
+			{
+				"id": "c00007",
+				"title": "c00007",
+				"track": "tokens",
+				"status": "ready",
+				"kind": "chore"
+			},
+			{
+				"id": "c00008",
+				"title": "c00008",
+				"track": "manifests",
+				"status": "ready",
+				"kind": "chore"
+			},
+			{
+				"id": "c00009",
+				"title": "c00009",
+				"track": "manifests",
+				"status": "ready",
+				"kind": "chore"
 			},
 			{
 				"id": "f00050",
@@ -1222,69 +1272,6 @@
 				"kind": "feat"
 			},
 			{
-				"id": "f00176",
-				"title": "f00176",
-				"track": "surface",
-				"status": "ready",
-				"kind": "feat"
-			},
-			{
-				"id": "i00004",
-				"title": "i00004",
-				"track": "filesystem",
-				"status": "ready",
-				"kind": "unspecified"
-			},
-			{
-				"id": "i00005",
-				"title": "i00005",
-				"track": "tokens",
-				"status": "ready",
-				"kind": "unspecified"
-			},
-			{
-				"id": "i00006",
-				"title": "i00006",
-				"track": "tokens",
-				"status": "ready",
-				"kind": "unspecified"
-			},
-			{
-				"id": "i00007",
-				"title": "i00007",
-				"track": "tokens",
-				"status": "ready",
-				"kind": "unspecified"
-			},
-			{
-				"id": "i00008",
-				"title": "i00008",
-				"track": "manifests",
-				"status": "ready",
-				"kind": "unspecified"
-			},
-			{
-				"id": "i00009",
-				"title": "i00009",
-				"track": "manifests",
-				"status": "ready",
-				"kind": "unspecified"
-			},
-			{
-				"id": "i00010",
-				"title": "i00010",
-				"track": "ci",
-				"status": "ready",
-				"kind": "unspecified"
-			},
-			{
-				"id": "i00011",
-				"title": "i00011",
-				"track": "ci",
-				"status": "ready",
-				"kind": "unspecified"
-			},
-			{
 				"id": "q00003",
 				"title": "q00003",
 				"track": "develop-audit-consolidation",
@@ -1295,7 +1282,7 @@
 				"id": "q00004",
 				"title": "q00004",
 				"track": "develop-audit-hardening-v2",
-				"status": "ready",
+				"status": "in-progress",
 				"kind": "plan"
 			},
 			{
@@ -1320,34 +1307,6 @@
 				"kind": "refactor"
 			},
 			{
-				"id": "r00021",
-				"title": "r00021",
-				"track": "surface",
-				"status": "ready",
-				"kind": "refactor"
-			},
-			{
-				"id": "t00007",
-				"title": "t00007",
-				"track": "concurrency",
-				"status": "ready",
-				"kind": "unspecified"
-			},
-			{
-				"id": "t00008",
-				"title": "t00008",
-				"track": "concurrency",
-				"status": "ready",
-				"kind": "unspecified"
-			},
-			{
-				"id": "t00009",
-				"title": "t00009",
-				"track": "privacy",
-				"status": "ready",
-				"kind": "unspecified"
-			},
-			{
 				"id": "x00203",
 				"title": "x00203",
 				"track": "plugins+fix",
@@ -1359,20 +1318,6 @@
 				"title": "x00204",
 				"track": "plugins+fix",
 				"status": "in-progress",
-				"kind": "fix"
-			},
-			{
-				"id": "x00236",
-				"title": "x00236",
-				"track": "privacy",
-				"status": "in-progress",
-				"kind": "fix"
-			},
-			{
-				"id": "x00237",
-				"title": "x00237",
-				"track": "privacy",
-				"status": "ready",
 				"kind": "fix"
 			},
 			{
@@ -1395,47 +1340,12 @@
 				"track": "quality",
 				"status": "ready",
 				"kind": "fix"
-			},
-			{
-				"id": "x00241",
-				"title": "x00241",
-				"track": "filesystem",
-				"status": "ready",
-				"kind": "fix"
-			},
-			{
-				"id": "x00242",
-				"title": "x00242",
-				"track": "filesystem",
-				"status": "ready",
-				"kind": "fix"
-			},
-			{
-				"id": "x00243",
-				"title": "x00243",
-				"track": "filesystem",
-				"status": "ready",
-				"kind": "fix"
-			},
-			{
-				"id": "x00244",
-				"title": "x00244",
-				"track": "concurrency",
-				"status": "ready",
-				"kind": "fix"
-			},
-			{
-				"id": "x00245",
-				"title": "x00245",
-				"track": "privacy",
-				"status": "ready",
-				"kind": "fix"
 			}
 		],
 		"byStatus": {
-			"ready": 29,
-			"in-progress": 8,
-			"review": 0,
+			"ready": 13,
+			"in-progress": 9,
+			"review": 15,
 			"paused": 1,
 			"done": 406,
 			"blocked": 0,
