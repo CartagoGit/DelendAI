@@ -2,7 +2,7 @@
 id: x00235
 title: "diagram: acotar el tamaño del grafo (limit + truncated) en diagram_deps/diagram_modules"
 kind: fix
-status: review
+status: done
 type: proposal
 track: plugins+fix
 date: 2026-08-24
@@ -41,7 +41,10 @@ Hallazgo a00087 #1 (confirmed · media). La dimensión de coste de tokens es par
   - "`truncated: true` aparece en el output cuando se recorta; ausente cuando no."
   - "Sin `limit` el comportamiento por defecto sigue siendo razonable (o hereda un tope por defecto documentado)."
   - "Los specs cubren grafo recortado, flag `truncated` y determinismo."
-
+- review-state: done
+- review-implementer: swarm-implementer
+- review-reviewer: orchestrator-fase1-review
+- review-log: approved by orchestrator-fase1-review — Redo. validate verde (a nivel de mi lote).
 ## acceptance
 
 - El output de `diagram_deps`/`diagram_modules` acepta `limit` y devuelve `truncated` cuando recorta.
