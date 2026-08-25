@@ -2,7 +2,7 @@
 id: x00217
 title: "loader: aplicar parsed.data de Zod y frontera única de validación de opciones"
 kind: fix
-status: review
+status: done
 type: proposal
 track: lifecycle
 date: 2026-08-24
@@ -44,7 +44,10 @@ Sin normalizar, los plugins reciben valores que contradicen su propio schema (un
 - acceptance:
   - "El loader usa parsed.data para construir el contexto final del plugin."
   - "z.coerce/.default/.trim/.transform se aplican antes de register."
-
+- review-state: done
+- review-implementer: swarm-implementer
+- review-reviewer: orchestrator-fase1-review
+- review-log: approved by orchestrator-fase1-review — Fase 1 review 2026-08-25: validate verde.
 ### S2 — Fixture de plugin con opciones transformadas
 - **Status**: done
 - **Files**: `packages/core/tests/src/lib/plugins/loader-parsed-options.spec.ts`

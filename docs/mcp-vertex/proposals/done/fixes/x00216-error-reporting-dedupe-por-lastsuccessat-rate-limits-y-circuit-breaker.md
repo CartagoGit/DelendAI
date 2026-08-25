@@ -2,7 +2,7 @@
 id: x00216
 title: "error-reporting: dedupe por lastSuccessAt + rate limits y circuit breaker"
 kind: fix
-status: review
+status: done
 type: proposal
 track: privacy
 date: 2026-08-24
@@ -58,7 +58,10 @@ Hoy `submitIssue()` registra la firma aunque el envío falle, por lo que un fall
   - "IReportRecord incluye attemptCount, lastAttemptAt, lastSuccessAt, lastFailureCode, issueNumber."
   - "shouldReport() usa lastSuccessAt para la ventana de deduplicación."
   - "Un envío fallido (sin red/gh) no bloquea el reintento durante la ventana."
-
+- review-state: done
+- review-implementer: swarm-implementer
+- review-reviewer: orchestrator-fase1-review
+- review-log: approved by orchestrator-fase1-review — Fase 1 review 2026-08-25: validate verde.
 ### S2 — Rate limits, backoff y circuit breaker
 - **Status**: done
 - **Files**: `plugins/error-reporting/src/lib/report-scheduler.helper.ts`

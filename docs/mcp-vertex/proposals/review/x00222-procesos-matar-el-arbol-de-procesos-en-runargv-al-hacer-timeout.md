@@ -43,7 +43,8 @@ Builds, Docker, package managers y test runners crean hijos. Dejarlos vivos tras
 - acceptance:
   - "Al timeout se mata el process group completo (padre + descendientes)."
   - "El mecanismo es portable (Unix process group; Windows taskkill si aplica)."
-
+- review-state: in_review
+- review-implementer: swarm-implementer
 ### S2 — Test de descendientes vivos
 - **Status**: done
 - **Files**: `packages/core/tests/src/lib/shared/process-tree-kill.spec.ts`

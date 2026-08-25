@@ -2,7 +2,7 @@
 id: x00218
 title: "loader: grafo de dependencias con estados y registro topológico (dependencia fallida bloquea dependientes)"
 kind: fix
-status: review
+status: done
 type: proposal
 track: lifecycle
 date: 2026-08-24
@@ -42,7 +42,10 @@ Hoy la dependency gate solo comprueba que la dependencia se importó/resolvió, 
 - acceptance:
   - "Construye el DAG desde dependsOn con estados discovered/resolved/validated/registering/active/failed/blocked/disposed."
   - "Detecta ciclos (A->B->C->A) y devuelve error claro."
-
+- review-state: done
+- review-implementer: swarm-implementer
+- review-reviewer: orchestrator-fase1-review
+- review-log: approved by orchestrator-fase1-review — Fase 1 review 2026-08-25: validate verde.
 ### S2 — Registro topológico con bloqueo por dependencia
 - **Status**: done
 - **Files**: `packages/core/src/lib/plugins/load-plugins.ts`
