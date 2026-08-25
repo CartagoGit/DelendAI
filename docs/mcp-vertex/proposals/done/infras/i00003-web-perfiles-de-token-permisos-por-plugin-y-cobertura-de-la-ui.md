@@ -2,7 +2,7 @@
 id: i00003
 title: "web: perfiles de token/permisos por plugin y cobertura de la UI"
 kind: infra
-status: review
+status: done
 type: proposal
 track: web-release
 date: 2026-08-24
@@ -42,7 +42,10 @@ La web es la cara pública del catálogo: si muestra coste, permisos y maturity 
 - **Gate**: type
 - acceptance:
   - "Muestra cost, permissions, maturity y presets por plugin desde manifests (WEB-003)."
-
+- review-state: done
+- review-implementer: swarm-implementer
+- review-reviewer: orchestrator-fase1-review
+- review-log: approved by orchestrator-fase1-review — Redo. validate verde.
 ### S2 — Cobertura de la web
 - **Status**: done
 - **Files**: `apps/web/tests/data/plugin-catalog.spec.ts`
