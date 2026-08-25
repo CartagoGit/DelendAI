@@ -13,12 +13,9 @@ describe('definePluginManifest', () => {
 			tags: ['search', 'token-budget'],
 			maturity: 'stable',
 			permissions: ['filesystem-read'],
-			toolPermissions: [
-				{
-					tool: 'search_search',
-					permissions: ['filesystem-read'],
-				},
-			],
+			toolPermissions: {
+				search_search: ['filesystem-read'],
+			},
 			presets: ['minimal', 'lean'],
 			tokenBudget: TOKEN_BUDGETS.toolPayloads.search,
 			dependencies: ['@mcp-vertex/core', 'zod'],
@@ -86,7 +83,7 @@ describe('definePluginManifest', () => {
 		).toThrow(/Invalid option/u);
 	});
 
-	it('rejects duplicated toolPermissions tool ids', () => {
+	it('rejects empty tool id keys in toolPermissions', () => {
 		expect(() =>
 			definePluginManifest({
 				id: 'search',
@@ -97,22 +94,37 @@ describe('definePluginManifest', () => {
 				tags: ['search'],
 				maturity: 'stable',
 				permissions: ['filesystem-read'],
-				toolPermissions: [
-					{
-						tool: 'search_search',
-						permissions: ['filesystem-read'],
-					},
-					{
-						tool: 'search_search',
-						permissions: ['filesystem-read'],
-					},
-				],
+				toolPermissions: {
+					'': ['filesystem-read'],
+				},
 				presets: ['minimal'],
 				tokenBudget: TOKEN_BUDGETS.toolPayloads.search,
 				dependencies: ['@mcp-vertex/core'],
 				capabilities: ['lexical-search'],
 			}),
-		).toThrow(/toolPermissions tools must be unique/u);
+		).toThrow(/tool id must be non-empty/u);
+	});
+
+	it('rejects empty permission arrays inside toolPermissions', () => {
+		expect(() =>
+			definePluginManifest({
+				id: 'search',
+				package: '@mcp-vertex/search',
+				version: '0.1.1',
+				visibility: 'public',
+				summary: 'Code search with low-token result windows.',
+				tags: ['search'],
+				maturity: 'stable',
+				permissions: ['filesystem-read'],
+				toolPermissions: {
+					search_search: [],
+				},
+				presets: ['minimal'],
+				tokenBudget: TOKEN_BUDGETS.toolPayloads.search,
+				dependencies: ['@mcp-vertex/core'],
+				capabilities: ['lexical-search'],
+			}),
+		).toThrow(/tool permission set must be non-empty/u);
 	});
 });
 
@@ -273,5 +285,149 @@ describe('resolveTokenBudget — f00179 normalisation', () => {
 			measuredAt: TODAY,
 			source: 'token-budget-fallback',
 		});
+	});
+});
+
+// f00180 S1 — `toolPermissions` is a per-tool map (keyed by bare
+// tool id) instead of the old `IToolPermissionGrant[]` array shape.
+// `resolveToolPermissions()` returns the per-tool entry when
+// present, falling back to the global `permissions` array.
+describe('definePluginManifest — f00180 toolPermissions (MAN-004)', () => {
+	it('accepts the per-tool map shape (Record<toolId, PermissionCategory[]>)', () => {
+		const manifest = definePluginManifest({
+			id: 'git',
+			package: '@mcp-vertex/git',
+			version: '0.1.1',
+			visibility: 'public',
+			summary: 'Git wrappers (PR list/view, diff, changelog, extended).',
+			tags: ['git'],
+			maturity: 'stable',
+			permissions: ['git-read', 'git-write'],
+			toolPermissions: {
+				status: ['git-read'],
+				commit: ['git-write'],
+				push: ['git-write'],
+			},
+			presets: ['minimal'],
+			tokenBudget: TOKEN_BUDGETS.toolPayloads.search,
+			dependencies: ['@mcp-vertex/core'],
+			capabilities: ['git'],
+		});
+		expect(manifest.toolPermissions).toEqual({
+			status: ['git-read'],
+			commit: ['git-write'],
+			push: ['git-write'],
+		});
+	});
+
+	it('accepts a manifest without toolPermissions (only the global array)', () => {
+		const manifest = definePluginManifest({
+			id: 'search',
+			package: '@mcp-vertex/search',
+			version: '0.1.1',
+			visibility: 'public',
+			summary: 'Code search (semantic + symbol + references).',
+			tags: ['search'],
+			maturity: 'stable',
+			permissions: ['filesystem-read'],
+			presets: ['minimal'],
+			tokenBudget: TOKEN_BUDGETS.toolPayloads.search,
+			dependencies: ['@mcp-vertex/core'],
+			capabilities: ['search'],
+		});
+		// `toolPermissions` is optional — narrow with a runtime check
+		// rather than `manifest.toolPermissions` (which the type
+		// thinks exists).
+		expect(
+			(manifest as { toolPermissions?: unknown }).toolPermissions,
+		).toBeUndefined();
+	});
+
+	it('rejects a toolPermissions map with empty tool id keys', () => {
+		expect(() =>
+			definePluginManifest({
+				id: 'git',
+				package: '@mcp-vertex/git',
+				version: '0.1.1',
+				visibility: 'public',
+				summary:
+					'Git wrappers (PR list/view, diff, changelog, extended).',
+				tags: ['git'],
+				maturity: 'stable',
+				permissions: ['git-read', 'git-write'],
+				toolPermissions: {
+					'': ['git-read'],
+				},
+				presets: ['minimal'],
+				tokenBudget: TOKEN_BUDGETS.toolPayloads.search,
+				dependencies: ['@mcp-vertex/core'],
+				capabilities: ['git'],
+			}),
+		).toThrow(/tool id must be non-empty/u);
+	});
+
+	it('rejects a toolPermissions map with empty permission arrays', () => {
+		expect(() =>
+			definePluginManifest({
+				id: 'git',
+				package: '@mcp-vertex/git',
+				version: '0.1.1',
+				visibility: 'public',
+				summary:
+					'Git wrappers (PR list/view, diff, changelog, extended).',
+				tags: ['git'],
+				maturity: 'stable',
+				permissions: ['git-read', 'git-write'],
+				toolPermissions: {
+					status: [],
+				},
+				presets: ['minimal'],
+				tokenBudget: TOKEN_BUDGETS.toolPayloads.search,
+				dependencies: ['@mcp-vertex/core'],
+				capabilities: ['git'],
+			}),
+		).toThrow(/tool permission set must be non-empty/u);
+	});
+});
+
+describe('resolveToolPermissions — f00180 fallback', () => {
+	it('returns the per-tool entry when present', async () => {
+		const { resolveToolPermissions } = await import(
+			'@mcp-vertex/core/public'
+		);
+		const perTool = {
+			commit: ['git-write' as const],
+			status: ['git-read' as const],
+		};
+		expect(
+			resolveToolPermissions(
+				perTool,
+				['git-read', 'git-write'],
+				'commit',
+			),
+		).toEqual(['git-write']);
+	});
+
+	it('falls back to the global permissions array when no per-tool entry', async () => {
+		const { resolveToolPermissions } = await import(
+			'@mcp-vertex/core/public'
+		);
+		const perTool = { commit: ['git-write' as const] };
+		expect(
+			resolveToolPermissions(
+				perTool,
+				['git-read', 'git-write'],
+				'status',
+			),
+		).toEqual(['git-read', 'git-write']);
+	});
+
+	it('returns an empty array when neither per-tool nor global is set (deny-by-default)', async () => {
+		const { resolveToolPermissions } = await import(
+			'@mcp-vertex/core/public'
+		);
+		expect(
+			resolveToolPermissions(undefined, undefined, 'any-tool'),
+		).toEqual([]);
 	});
 });

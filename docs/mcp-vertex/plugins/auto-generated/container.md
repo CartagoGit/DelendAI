@@ -1,9 +1,9 @@
 ---
 id: container
 package: @mcp-vertex/container
-version: 0.1.1
+version: 0.1.0
 maturity: stable
-generated: 2026-08-25T01:07:05.846Z
+generated: 2026-08-25T17:25:11.758Z
 ---
 
 # Container
@@ -31,12 +31,14 @@ Container inspection + lint (docker ps/images, k8s, Dockerfile rules).
 
 ## Permissions
 
-- container
 - process
+- container
 
 ## Dependencies
 
 - @mcp-vertex/core
+- @modelcontextprotocol/sdk
+- zod
 
 ## Capabilities
 

@@ -8,6 +8,7 @@
  */
 
 import type { PermissionCategory } from './permission.interface';
+import type { IPluginToolPermissions } from './plugin-tool-permissions.interface';
 
 export type PluginRegistryOrigin = 'first-party' | 'community';
 
@@ -41,6 +42,14 @@ export interface IPluginRegistryEntry {
 	 * number (defensive: surfaces "we don't know" instead of 0).
 	 */
 	readonly tokenBudgetBytes?: number | undefined;
+	/**
+	 * f00180 S3 — per-tool permission map for the plugin's tool
+	 * surface. When present, the auto-plugin-selector scorer
+	 * consults this map (keyed by tool id) for per-tool risk instead
+	 * of the global `permissions` array. `undefined` when the
+	 * manifest only declares the legacy global set.
+	 */
+	readonly toolPermissions?: IPluginToolPermissions | undefined;
 }
 
 /** A registry source — a list of entries plus its origin label. */

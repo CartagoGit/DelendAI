@@ -840,6 +840,8 @@ export type {
 	IPluginTokenBudgetCaps,
 } from '../lib/contracts/interfaces/plugin-token-budget.interface';
 export { resolveTokenBudget } from '../lib/contracts/interfaces/plugin-token-budget.interface';
+export type { IPluginToolPermissions } from '../lib/contracts/interfaces/plugin-tool-permissions.interface';
+export { resolveToolPermissions } from '../lib/contracts/interfaces/plugin-tool-permissions.interface';
 export {
 	definePluginManifest,
 	parsePluginManifest,
