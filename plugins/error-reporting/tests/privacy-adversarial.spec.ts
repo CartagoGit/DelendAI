@@ -16,7 +16,7 @@ import {
 	FIXED_ENVIRONMENT_CLASS,
 	FIXED_MCP_VERTEX_VERSION,
 	FIXED_REPORTER_VERSION,
-	FIXED_TOOL_ID,
+	FIXED_SAFE_TOOL_ID,
 	PROJECT_A_FIXTURE,
 	PROJECT_B_FIXTURE,
 	type IAdversarialProjectFixture,
@@ -47,7 +47,7 @@ const buildArtifacts = (fixture: IAdversarialProjectFixture) => {
 	const mcpFrames = extractSafeMcpFrames(error);
 	const classification = classifyInternalError({
 		error,
-		toolId: FIXED_TOOL_ID,
+		toolId: FIXED_SAFE_TOOL_ID,
 	});
 	if (
 		classification.packageId === undefined ||
@@ -62,7 +62,7 @@ const buildArtifacts = (fixture: IAdversarialProjectFixture) => {
 		mcpVertexVersion: FIXED_MCP_VERTEX_VERSION,
 		packageId: classification.packageId,
 		componentId: classification.componentId,
-		toolId: FIXED_TOOL_ID,
+		toolId: FIXED_SAFE_TOOL_ID,
 		errorCode: classification.errorCode,
 		failureClass: classification.failureClass,
 		classification: classification.classification,
@@ -72,7 +72,9 @@ const buildArtifacts = (fixture: IAdversarialProjectFixture) => {
 		reporterVersion: FIXED_REPORTER_VERSION,
 		mcpVertexVersion: FIXED_MCP_VERTEX_VERSION,
 		packageId: classification.packageId,
-		toolId: FIXED_TOOL_ID,
+		safeToolId: FIXED_SAFE_TOOL_ID as ISafeMcpVertexReport['safeToolId'],
+		toolOwner: 'mcp-vertex',
+		toolCategory: 'reporting',
 		errorCode: classification.errorCode,
 		failureClass: classification.failureClass,
 		classification: classification.classification,

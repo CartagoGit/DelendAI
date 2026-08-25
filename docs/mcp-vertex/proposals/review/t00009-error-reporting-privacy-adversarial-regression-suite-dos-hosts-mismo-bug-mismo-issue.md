@@ -2,7 +2,7 @@
 id: t00009
 title: "error-reporting — privacy adversarial regression suite: dos hosts distintos, mismo bug Vertex, mismo issue público (propiedad fuerte de privacidad)"
 kind: test
-status: ready
+status: review
 type: proposal
 track: privacy
 date: 2026-08-25
@@ -312,8 +312,8 @@ Añadir a `bun run validate`.
 
 ### S1 — Pipeline ejecutable + fixtures
 
-- **Status**: pending
-- **Files**: `plugins/error-reporting/tests/src/lib/pipeline/run-full-pipeline.ts`, `plugins/error-reporting/tests/src/lib/hosts/*.fixture.ts`, `plugins/error-reporting/tests/src/lib/fixtures/`
+- **Status**: done
+- **Files**: `plugins/error-reporting/tests/adversarial-fixtures.ts`, `plugins/error-reporting/tests/report-builder.spec.ts`, `plugins/error-reporting/tests/privacy-adversarial.spec.ts`
 - **Gate**: type
 - acceptance:
   - "Función `runFullPipeline` ejecuta los 18 pasos del §32 sin envío real."
@@ -321,8 +321,8 @@ Añadir a `bun run validate`.
 
 ### S2 — Escenarios adversariales
 
-- **Status**: pending
-- **Files**: `plugins/error-reporting/tests/src/lib/adversarial/scenarios/*.spec.ts`
+- **Status**: done
+- **Files**: `plugins/error-reporting/tests/report-builder.spec.ts`, `plugins/error-reporting/tests/privacy-adversarial.spec.ts`
 - **Gate**: type
 - acceptance:
   - "≥8 specs cubren: same-error, tool-name-leak, path-leak, args-leak, synthetic-example, prefix-deception, unicode-and-edges, two-hosts-equality."
@@ -330,16 +330,16 @@ Añadir a `bun run validate`.
 
 ### S3 — Property tests sobre DTO serializado
 
-- **Status**: pending
-- **Files**: `packages/core/tests/src/lib/contracts/property/*.spec.ts`
+- **Status**: done
+- **Files**: `packages/core/tests/src/lib/contracts/resolvers/safe-tool-identity.property.spec.ts`
 - **Gate**: type
 - acceptance:
   - "≥3 property tests verdes (paths, emails, safeToolId)."
 
 ### S4 — Integración CI + README
 
-- **Status**: pending
-- **Files**: `tools/scripts/test/run-privacy-adversarial.script.ts`, `plugins/error-reporting/tests/src/lib/adversarial/README.md`
+- **Status**: done
+- **Files**: `tools/scripts/test/run-privacy-adversarial.script.ts`, `plugins/error-reporting/tests/adversarial/README.md`, `package.json`
 - **Gate**: type
 - acceptance:
   - "Script añadido a `bun run validate`."
