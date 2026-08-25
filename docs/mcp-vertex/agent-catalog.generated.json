@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-08-25T06:47:01.642Z",
+	"generatedAt": "2026-08-25T06:47:59.089Z",
 	"mode": "compact",
 	"tools": [
 		{
@@ -1251,6 +1251,41 @@
 				"kind": "chore"
 			},
 			{
+				"id": "c00017",
+				"title": "c00017",
+				"track": "ci",
+				"status": "ready",
+				"kind": "chore"
+			},
+			{
+				"id": "c00018",
+				"title": "c00018",
+				"track": "ci",
+				"status": "ready",
+				"kind": "chore"
+			},
+			{
+				"id": "c00019",
+				"title": "c00019",
+				"track": "surface",
+				"status": "ready",
+				"kind": "chore"
+			},
+			{
+				"id": "d00007",
+				"title": "d00007",
+				"track": "filesystem",
+				"status": "ready",
+				"kind": "docs"
+			},
+			{
+				"id": "d00008",
+				"title": "d00008",
+				"track": "filesystem",
+				"status": "ready",
+				"kind": "docs"
+			},
+			{
 				"id": "f00050",
 				"title": "f00050",
 				"track": "lint+architecture+i18n+workflow+release",
@@ -1267,6 +1302,20 @@
 			{
 				"id": "f00178",
 				"title": "f00178",
+				"track": "packaging",
+				"status": "ready",
+				"kind": "feat"
+			},
+			{
+				"id": "f00179",
+				"title": "f00179",
+				"track": "packaging",
+				"status": "ready",
+				"kind": "feat"
+			},
+			{
+				"id": "f00180",
+				"title": "f00180",
 				"track": "packaging",
 				"status": "ready",
 				"kind": "feat"
@@ -1289,6 +1338,27 @@
 				"id": "r00023",
 				"title": "r00023",
 				"track": "tokens",
+				"status": "ready",
+				"kind": "refactor"
+			},
+			{
+				"id": "r00024",
+				"title": "r00024",
+				"track": "presets",
+				"status": "ready",
+				"kind": "refactor"
+			},
+			{
+				"id": "r00025",
+				"title": "r00025",
+				"track": "selection",
+				"status": "ready",
+				"kind": "refactor"
+			},
+			{
+				"id": "r00026",
+				"title": "r00026",
+				"track": "surface",
 				"status": "ready",
 				"kind": "refactor"
 			},
@@ -1317,6 +1387,27 @@
 				"id": "t00013",
 				"title": "t00013",
 				"track": "concurrency",
+				"status": "ready",
+				"kind": "unspecified"
+			},
+			{
+				"id": "t00014",
+				"title": "t00014",
+				"track": "regression",
+				"status": "ready",
+				"kind": "unspecified"
+			},
+			{
+				"id": "t00015",
+				"title": "t00015",
+				"track": "regression",
+				"status": "ready",
+				"kind": "unspecified"
+			},
+			{
+				"id": "t00016",
+				"title": "t00016",
+				"track": "regression",
 				"status": "ready",
 				"kind": "unspecified"
 			},
@@ -1396,10 +1487,17 @@
 				"track": "filesystem",
 				"status": "ready",
 				"kind": "fix"
+			},
+			{
+				"id": "x00256",
+				"title": "x00256",
+				"track": "privacy",
+				"status": "ready",
+				"kind": "fix"
 			}
 		],
 		"byStatus": {
-			"ready": 22,
+			"ready": 36,
 			"in-progress": 8,
 			"review": 28,
 			"paused": 1,
