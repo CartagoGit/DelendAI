@@ -78,7 +78,10 @@ const readGlobalIdentity = async (
 			reason: reason ?? 'no global git user.name / user.email configured',
 		};
 	}
-	return { name, email };
+	return {
+		...(name !== undefined ? { name } : {}),
+		...(email !== undefined ? { email } : {}),
+	};
 };
 
 /**
@@ -94,7 +97,10 @@ const readRepoOrGlobalIdentity = async (
 	const name = trimmedOrUndefined(repoName.output);
 	const email = trimmedOrUndefined(repoEmail.output);
 	if (name !== undefined || email !== undefined) {
-		return { name, email };
+		return {
+			...(name !== undefined ? { name } : {}),
+			...(email !== undefined ? { email } : {}),
+		};
 	}
 	return readGlobalIdentity(run);
 };
