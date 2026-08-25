@@ -2,7 +2,7 @@
 id: x00209
 title: "proposal_adopt alineado al layout real (índice en cache, scan recursivo, f/x)"
 kind: fix
-status: review
+status: done
 type: proposal
 track: proposals
 date: 2026-08-23
@@ -37,7 +37,10 @@ Auditoría 2026-08-24 (hallazgos B1, B2, B3, B4, B5): proposal_adopt mide hasInd
   - "El scan es recursivo sobre ready/in-progress/review/done/... y clasifica propuestas dentro de carpetas."
   - "La taxonomía es la canónica (f=feat, x=fix) consumida del glossary."
   - "ready exige index + README + carpetas canónicas + recolocación de done."
-
+- review-state: done
+- review-implementer: swarm-implementer
+- review-reviewer: orchestrator-fase1-review
+- review-log: approved by orchestrator-fase1-review — Fase 1 review 2026-08-25: validate verde.
 ### S2 — adopt.tool.ts: dir coherente en bootstrap+migrate+sync
 - **Status**: done
 - **Files**: `plugins/proposals/src/lib/tools/adopt.tool.ts`

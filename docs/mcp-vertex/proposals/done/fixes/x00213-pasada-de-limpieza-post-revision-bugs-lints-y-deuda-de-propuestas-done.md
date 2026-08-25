@@ -2,7 +2,7 @@
 id: x00213
 title: "Pasada de limpieza post-revisión: bugs, lints rotos y deuda de propuestas 'done'"
 kind: fix
-status: review
+status: done
 type: proposal
 track: quality+proposals+lint-baseline
 date: 2026-08-24
@@ -36,7 +36,10 @@ La revisión de las propuestas `done` (siguiendo las instrucciones iniciales: "r
   - "Los 8 hallazgos 'reales' quedan corregidos: 3 `process.cwd()` (2 son falsos positivos por docstring/comentario y se arregla el detector para excluir comentarios), 4 `sync node:fs import` y 1 `empty catch`."
   - "El detector `dip-violation.ts` ignora líneas de comentario/docstring (el regex `process\.cwd\s*\(` no debe disparar sobre `// ...` o `* ...`)."
   - "Los 173 `duplicated across` y 343 `magic number` restantes se resuelven con un rebaseline deliberado (`--update`) documentando la deuda aceptada, o se refactorizan; nunca quedan como fallo silencioso."
-
+- review-state: done
+- review-implementer: swarm-implementer
+- review-reviewer: orchestrator-fase1-review
+- review-log: approved by orchestrator-fase1-review — Fase 1 review 2026-08-25: bun run validate verde confirmado empíricamente tras corregir el drift residual que x00213 no había cerrado del todo.
 ### S2 — `lint:tools`: escáner no excluye `node_modules`
 - **Status**: done
 - **Files**: `tools/scripts/lint/no-shell-python.script.ts`

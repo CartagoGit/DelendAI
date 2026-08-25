@@ -2,7 +2,7 @@
 id: x00214
 title: "error-reporting: reporte por construcción con DTO seguro (sin Error/stack/args/message crudos)"
 kind: fix
-status: review
+status: done
 type: proposal
 track: privacy
 date: 2026-08-24
@@ -53,7 +53,10 @@ Riesgo legal y de privacidad crítico (§1.1 de la auditoría): hoy los `args` p
   - "El reporter no acepta Error/args/stack/workspace/cwd/strings arbitrarias; solo ISafeMcpVertexReport."
   - "Los tipos prohíben message/stack/args/workspace/path/repo/cwd/hostName en tiempo de compilación."
   - "Existe McpVertexInternalError con code/packageId/componentId/safeContext tipado (SafeScalar)."
-
+- review-state: done
+- review-implementer: swarm-implementer
+- review-reviewer: orchestrator-fase1-review
+- review-log: approved by orchestrator-fase1-review — Fase 1 review 2026-08-25: validate verde.
 ### S2 — Frame extractor + normalización package-relative
 - **Status**: done
 - **Files**: `plugins/error-reporting/src/lib/frame-extractor.helper.ts`, `plugins/error-reporting/src/lib/contracts/interfaces/safe-frame.interface.ts`
