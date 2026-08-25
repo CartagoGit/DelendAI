@@ -8,6 +8,7 @@ const here = dirname(fileURLToPath(import.meta.url));
 const workspaceRoot = resolve(here, '../..');
 
 export default defineConfig({
+	cacheDir: resolve(workspaceRoot, '.cache/vitest/packages-core'),
 	resolve: { alias: workspaceAliases(workspaceRoot) },
 	test: {
 		// Concurrency/IO tests can exceed the 5s default under heavy

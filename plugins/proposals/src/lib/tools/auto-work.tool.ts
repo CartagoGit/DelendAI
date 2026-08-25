@@ -842,31 +842,6 @@ const INPUT_SCHEMA = z
 	})
 	.strict();
 
-const AUTO_WORK_ORCHESTRATION_OUTPUT_SCHEMA = z.object({
-	lane: z.literal('inspect-then-delegate'),
-	delegateAfterToolCalls: z.number().int().positive(),
-	next: z.string(),
-	policy: z.string(),
-});
-
-const AUTO_WORK_PERSIST_OUTPUT_SCHEMA = z.object({
-	mode: z.enum(['none', 'commit', 'commit-and-push']),
-	messageTemplate: z.string().optional(),
-	pushTarget: z.string().optional(),
-});
-
-const AUTO_WORK_CLAIM_READY_OUTPUT_SCHEMA = z.object({
-	sliceId: z.string(),
-	files: z.array(z.string()),
-	gate: z.enum(['lint', 'type', 'e2e', 'none']),
-	agent_lock_args: z.object({
-		action: z.literal('claim'),
-		task_id: z.string(),
-		agent: z.literal('<host-resolved-agent>'),
-		files: z.array(z.string()),
-	}),
-});
-
 const AUTO_WORK_OUTPUT_SCHEMA = z.object({
 	state: z.enum(['idle', 'work']),
 	idleStreak: z.number().int().positive().optional(),
@@ -877,10 +852,10 @@ const AUTO_WORK_OUTPUT_SCHEMA = z.object({
 	proposalId: z.string().optional(),
 	file: z.string().optional(),
 	pickedFromPaused: z.literal(true).optional(),
-	orchestration: AUTO_WORK_ORCHESTRATION_OUTPUT_SCHEMA.optional(),
+	orchestration: z.unknown().optional(),
 	validationCommand: z.string().optional(),
-	persist: AUTO_WORK_PERSIST_OUTPUT_SCHEMA.optional(),
-	claimReady: AUTO_WORK_CLAIM_READY_OUTPUT_SCHEMA.optional(),
+	persist: z.unknown().optional(),
+	claimReady: z.unknown().optional(),
 	steps: z.array(z.string()).optional(),
 	// f00073: optional array of warnings about other agents' branch /
 	// worktree state. Empty when the swarm is clean.
@@ -895,30 +870,8 @@ const AUTO_WORK_OUTPUT_SCHEMA = z.object({
 	hygieneBlockers: z.array(z.string()).optional(),
 	hygieneActions: z.array(z.string()).optional(),
 	hygieneWarnings: z.array(z.string()).optional(),
-	stashes: z
-		.array(
-			z.object({
-				index: z.number().int().nonnegative(),
-				ref: z.string(),
-				branch: z.string().nullable(),
-				message: z.string(),
-				date: z.string().nullable(),
-			}),
-		)
-		.optional(),
-	rescueCandidates: z
-		.array(
-			z.object({
-				branch: z.string(),
-				ahead: z.number().int().nonnegative(),
-				behind: z.number().int().nonnegative(),
-				lastCommitMinutesAgo: z.number().int(),
-				worktreePath: z.string(),
-				diffStat: z.string(),
-				cherryPickHint: z.string(),
-			}),
-		)
-		.optional(),
+	stashes: z.unknown().optional(),
+	rescueCandidates: z.unknown().optional(),
 	// Strict-mode envelope: when the front-hook blocks, the plan also
 	// sets `ok: false` and `reason: 'hygiene-blocked'`. The fields
 	// below are the structured payload so the orchestrator can render

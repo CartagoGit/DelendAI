@@ -164,6 +164,27 @@
 			"@mcp-vertex/test-convention/*": [
 				"./plugins/test-convention/src/*"
 			],
+			"@mcp-vertex/test-policy": ["./plugins/test-policy/src/index.ts"],
+			"@mcp-vertex/test-policy/public": [
+				"./plugins/test-policy/src/public/index.ts"
+			],
+			"@mcp-vertex/test-policy/*": ["./plugins/test-policy/src/*"],
+			"@mcp-vertex/usage-tracking": [
+				"./plugins/usage-tracking/src/index.ts"
+			],
+			"@mcp-vertex/usage-tracking/public": [
+				"./plugins/usage-tracking/src/public/index.ts"
+			],
+			"@mcp-vertex/usage-tracking/*": ["./plugins/usage-tracking/src/*"],
+			"@mcp-vertex/orchestrator-runner": [
+				"./plugins/orchestrator-runner/src/index.ts"
+			],
+			"@mcp-vertex/orchestrator-runner/public": [
+				"./plugins/orchestrator-runner/src/public/index.ts"
+			],
+			"@mcp-vertex/orchestrator-runner/*": [
+				"./plugins/orchestrator-runner/src/*"
+			],
 			"@mcp-vertex/audit": ["./plugins/audit/src/index.ts"],
 			"@mcp-vertex/audit/public": ["./plugins/audit/src/public/index.ts"],
 			"@mcp-vertex/audit/*": ["./plugins/audit/src/*"],

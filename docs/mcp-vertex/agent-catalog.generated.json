@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-08-25T07:17:06.166Z",
+	"generatedAt": "2026-08-25T09:05:41.253Z",
 	"mode": "compact",
 	"tools": [
 		{
@@ -1223,34 +1223,6 @@
 				"kind": "chore"
 			},
 			{
-				"id": "c00013",
-				"title": "c00013",
-				"track": "ci",
-				"status": "ready",
-				"kind": "chore"
-			},
-			{
-				"id": "c00014",
-				"title": "c00014",
-				"track": "ci",
-				"status": "ready",
-				"kind": "chore"
-			},
-			{
-				"id": "c00015",
-				"title": "c00015",
-				"track": "tokens",
-				"status": "ready",
-				"kind": "chore"
-			},
-			{
-				"id": "c00016",
-				"title": "c00016",
-				"track": "filesystem",
-				"status": "ready",
-				"kind": "chore"
-			},
-			{
 				"id": "c00017",
 				"title": "c00017",
 				"track": "ci",
@@ -1335,20 +1307,6 @@
 				"kind": "refactor"
 			},
 			{
-				"id": "r00022",
-				"title": "r00022",
-				"track": "tokens",
-				"status": "ready",
-				"kind": "refactor"
-			},
-			{
-				"id": "r00023",
-				"title": "r00023",
-				"track": "tokens",
-				"status": "ready",
-				"kind": "refactor"
-			},
-			{
 				"id": "r00024",
 				"title": "r00024",
 				"track": "presets",
@@ -1368,27 +1326,6 @@
 				"track": "surface",
 				"status": "ready",
 				"kind": "refactor"
-			},
-			{
-				"id": "t00010",
-				"title": "t00010",
-				"track": "filesystem",
-				"status": "ready",
-				"kind": "unspecified"
-			},
-			{
-				"id": "t00012",
-				"title": "t00012",
-				"track": "concurrency",
-				"status": "ready",
-				"kind": "unspecified"
-			},
-			{
-				"id": "t00013",
-				"title": "t00013",
-				"track": "concurrency",
-				"status": "ready",
-				"kind": "unspecified"
 			},
 			{
 				"id": "t00014",
@@ -1426,48 +1363,6 @@
 				"kind": "fix"
 			},
 			{
-				"id": "x00246",
-				"title": "x00246",
-				"track": "filesystem",
-				"status": "ready",
-				"kind": "fix"
-			},
-			{
-				"id": "x00247",
-				"title": "x00247",
-				"track": "filesystem",
-				"status": "ready",
-				"kind": "fix"
-			},
-			{
-				"id": "x00248",
-				"title": "x00248",
-				"track": "filesystem",
-				"status": "ready",
-				"kind": "fix"
-			},
-			{
-				"id": "x00250",
-				"title": "x00250",
-				"track": "concurrency",
-				"status": "ready",
-				"kind": "fix"
-			},
-			{
-				"id": "x00254",
-				"title": "x00254",
-				"track": "filesystem",
-				"status": "ready",
-				"kind": "fix"
-			},
-			{
-				"id": "x00255",
-				"title": "x00255",
-				"track": "filesystem",
-				"status": "ready",
-				"kind": "fix"
-			},
-			{
 				"id": "x00256",
 				"title": "x00256",
 				"track": "privacy",
@@ -1476,9 +1371,9 @@
 			}
 		],
 		"byStatus": {
-			"ready": 31,
+			"ready": 16,
 			"in-progress": 10,
-			"review": 5,
+			"review": 20,
 			"paused": 1,
 			"done": 432,
 			"blocked": 0,

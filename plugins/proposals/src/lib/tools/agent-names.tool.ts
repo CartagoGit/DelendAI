@@ -169,18 +169,11 @@ const AGENT_NAMES_OUTPUT_SCHEMA = z
 		task_id: z.string().optional(),
 		agent_name: z.string().optional(),
 		agent_slot: z.string().optional(),
-		summary: z
-			.object({
-				active: z.number(),
-				cooldown: z.number(),
-				orphan: z.number(),
-				adopted: z.number(),
-			})
-			.optional(),
+		summary: z.unknown().optional(),
 		released: z.array(z.string()).optional(),
-		assignments: z.array(AGENT_ASSIGNMENT_SCHEMA).optional(),
-		tree: z.array(AGENT_ASSIGNMENT_SCHEMA).optional(),
-		adopted: z.array(AGENT_ADOPTION_SCHEMA).optional(),
+		assignments: z.unknown().optional(),
+		tree: z.unknown().optional(),
+		adopted: z.unknown().optional(),
 	})
 	.passthrough();
 

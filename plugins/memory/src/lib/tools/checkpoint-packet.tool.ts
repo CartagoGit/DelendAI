@@ -81,8 +81,8 @@ export const buildCheckpointPacketToolRegistration = (
 				}),
 				outputSchema: z.object({
 					available: z.boolean(),
-					packet: PacketSchema.nullable(),
-					advisory: AdvisorySchema.optional(),
+					packet: z.unknown().nullable(),
+					advisory: z.unknown().optional(),
 				}),
 			},
 			async (args: {
