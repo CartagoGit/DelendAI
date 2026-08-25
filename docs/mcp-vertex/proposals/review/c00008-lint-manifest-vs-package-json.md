@@ -210,7 +210,7 @@ Añadir a `bun run validate`.
 
 ### S1 — Lint + tests + CI
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `tools/scripts/lint/manifest-vs-package.script.ts`, `tools/scripts/lint/manifest-vs-package.spec.ts`, `package.json`
 - **Gate**: type
 - acceptance:

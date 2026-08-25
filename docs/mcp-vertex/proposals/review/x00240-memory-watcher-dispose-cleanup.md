@@ -249,7 +249,7 @@ describe('memory lifecycle E2E', () => {
 
 ### S1 — WatcherService + dispose
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/memory/src/lib/services/store-watcher.ts`, `plugins/memory/src/index.ts`
 - **Gate**: type
 - acceptance:
@@ -258,7 +258,7 @@ describe('memory lifecycle E2E', () => {
 
 ### S2 — Tests de lifecycle
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/memory/tests/src/lib/store-watcher.spec.ts`, `plugins/memory/tests/src/lib/memory.spec.ts`
 - **Gate**: type
 - acceptance:

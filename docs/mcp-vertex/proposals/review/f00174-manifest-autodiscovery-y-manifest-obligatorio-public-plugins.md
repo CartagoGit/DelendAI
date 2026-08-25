@@ -226,7 +226,7 @@ Plugins privados internos usan el mismo schema con `visibility: 'private'`. No s
 
 ### S1 — Discovery + Validation
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/src/lib/manifest/discovery.ts`, `packages/core/src/lib/manifest/validation.ts`
 - **Gate**: type
 - acceptance:
@@ -235,7 +235,7 @@ Plugins privados internos usan el mismo schema con `visibility: 'private'`. No s
 
 ### S2 — Migración de los 43 plugins restantes
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/*/plugin.manifest.ts` (43 archivos nuevos)
 - **Gate**: type
 - acceptance:
@@ -245,7 +245,7 @@ Plugins privados internos usan el mismo schema con `visibility: 'private'`. No s
 
 ### S3 — Eliminación de `MIGRATED_PLUGIN_IDS`
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/src/lib/registry/first-party-index.ts`, `packages/core/src/lib/registry/generated/first-party-manifest-entries.generated.ts`
 - **Gate**: type
 - acceptance:
@@ -254,7 +254,7 @@ Plugins privados internos usan el mismo schema con `visibility: 'private'`. No s
 
 ### S4 — Lint + documentación
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `tools/scripts/lint/plugin-manifest.script.ts`, `docs/mcp-vertex/plugins/authoring/manifest.md`
 - **Gate**: type
 - acceptance:

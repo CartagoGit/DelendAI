@@ -236,7 +236,7 @@ Añadir a `bun run validate`.
 
 ### S1 — Lint script
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `tools/scripts/lint/architecture-readfile-via-safe-reader.script.ts`
 - **Gate**: type
 - acceptance:
@@ -245,7 +245,7 @@ Añadir a `bun run validate`.
 
 ### S2 — Tests del lint
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `tools/scripts/lint/architecture-readfile-via-safe-reader.script.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -253,7 +253,7 @@ Añadir a `bun run validate`.
 
 ### S3 — Integración CI + docs
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `package.json`, `bun run validate`, `docs/mcp-vertex/contributing/lint-rules.md`
 - **Gate**: type
 - acceptance:

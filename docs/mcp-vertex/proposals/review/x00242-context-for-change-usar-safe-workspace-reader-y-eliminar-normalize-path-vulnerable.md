@@ -248,7 +248,7 @@ it('any absolute path outside workspace is rejected', () => {
 - review-log: approved by orchestrator-fase1-review — Fase 1 review 2026-08-25: validate verde.
 ### S2 — Tests adversariales
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/context-for-change/tests/src/context-for-change.tool.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -258,7 +258,7 @@ it('any absolute path outside workspace is rejected', () => {
 
 ### S3 — Documentación
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `docs/mcp-vertex/plugins/context-for-change.md`
 - **Gate**: type
 - acceptance:

@@ -235,7 +235,7 @@ it('property: result is valid UTF-8 (no replacement chars)', () => {
 
 ### S1 — Helper + uso
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/src/lib/shared/truncate-utf8.ts`, `packages/core/src/lib/shared/run-command.ts`
 - **Gate**: type
 - acceptance:
@@ -244,7 +244,7 @@ it('property: result is valid UTF-8 (no replacement chars)', () => {
 
 ### S2 — Tests adversariales + property
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/tests/src/lib/shared/truncate-utf8.spec.ts`
 - **Gate**: type
 - acceptance:

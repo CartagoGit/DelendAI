@@ -206,7 +206,7 @@ Bootstrap is designed to fit in **<50 KB** with `surfaceMode: 'adaptive'`.
 
 ### S1 — E2E listChanged
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/tests/src/lib/e2e/tool-surface.e2e.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -215,7 +215,7 @@ Bootstrap is designed to fit in **<50 KB** with `surfaceMode: 'adaptive'`.
 
 ### S2 — Bootstrap measurement
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `tools/scripts/measure/bootstrap.script.ts`, `packages/core/src/lib/surface/bootstrap.ts`
 - **Gate**: type
 - acceptance:
@@ -224,7 +224,7 @@ Bootstrap is designed to fit in **<50 KB** with `surfaceMode: 'adaptive'`.
 
 ### S3 — CI + docs
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `.github/workflows/ci.yml`, `docs/mcp-vertex/surface/bootstrap.md`
 - **Gate**: type
 - acceptance:

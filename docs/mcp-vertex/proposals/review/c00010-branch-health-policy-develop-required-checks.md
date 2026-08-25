@@ -193,7 +193,7 @@ jobs:
 
 ### S1 — Workflow con nombres canónicos
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `.github/workflows/ci.yml`
 - **Gate**: type
 - acceptance:
@@ -201,7 +201,7 @@ jobs:
 
 ### S2 — Branch protection + docs
 
-- **Status**: pending
+- **Status**: done
 - **Files**: branch protection (settings), `docs/mcp-vertex/ci/branch-policy.md`
 - **Gate**: type
 - acceptance:
@@ -297,7 +297,7 @@ resolution:
 
 ### S1 — Workflow con nombres canónicos
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `.github/workflows/ci.yml`
 - **Gate**: type
 - acceptance:
@@ -305,7 +305,7 @@ resolution:
 
 ### S2 — Branch protection + docs
 
-- **Status**: pending
+- **Status**: done
 - **Files**: branch protection (settings), `docs/mcp-vertex/ci/branch-policy.md`
 - **Gate**: type
 - acceptance:

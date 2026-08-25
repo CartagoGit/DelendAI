@@ -244,7 +244,7 @@ Idénticos a `x00242`, adaptados al dominio de impact-analysis.
 - review-log: approved by orchestrator-fase1-review — Fase 1 review 2026-08-25: validate verde.
 ### S2 — Tests adversariales
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/impact-analysis/tests/src/impact-analysis.tool.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -254,7 +254,7 @@ Idénticos a `x00242`, adaptados al dominio de impact-analysis.
 
 ### S3 — Documentación
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `docs/mcp-vertex/plugins/impact-analysis.md`
 - **Gate**: type
 - acceptance:

@@ -139,7 +139,7 @@ Añadir a `bun run validate`.
 
 ### S1 — Script de check + integración CI
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `tools/scripts/test/run-token-dashboard-check.script.ts`, `package.json`, `.github/workflows/ci.yml`
 - **Gate**: type
 - acceptance:
