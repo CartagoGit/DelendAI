@@ -111,6 +111,7 @@ export const derivePresetBudget = (input: {
 	metadata: IPresetMetadataEntry;
 	resolvedMembers: readonly string[];
 }): IPresetBudgetProfile => ({
+	surfaceMode: input.metadata.surfaceMode,
 	toolCount: {
 		value: input.metadata.budgetBaseline.toolCount,
 		source: 'measured-runtime',
@@ -126,6 +127,7 @@ export const derivePresetBudget = (input: {
 		source: 'estimated-from-schema-bytes',
 		measuredAt: input.metadata.measuredAt,
 		bytesPerEstimatedToken: input.metadata.bytesPerEstimatedToken,
+		estimator: input.metadata.estimator,
 	},
 	permissions: {
 		source: 'measured-tool-effects',

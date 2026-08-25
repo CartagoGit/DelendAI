@@ -136,6 +136,7 @@
 		"tokens:gate": "bun tools/scripts/test/run-actual-preset-budget.script.ts",
 		"tokens:dashboard:generate": "bun tools/scripts/report/token-budget-dashboard.script.ts",
 		"tokens:dashboard:check": "bun tools/scripts/test/run-token-dashboard-check.script.ts",
+		"generate:preset-metadata": "bun tools/scripts/generate/preset-metadata.script.ts",
 		"quality:gate": "bun tools/scripts/quality/quality-gate.script.ts",
 		"types:generate": "bun tools/scripts/types/generate-tool-types.script.ts",
 		"config:schema": "bun tools/scripts/types/generate-config-schema.script.ts",

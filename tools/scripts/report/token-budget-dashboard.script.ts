@@ -62,7 +62,10 @@ interface IPresetDashboardRow {
 	readonly ownerRows: readonly IToolOwnerMetrics[];
 }
 
-const DASHBOARD_SURFACES = [
+// r00024 (PRESET-001): exported so `generate/preset-metadata.script.ts` reuses
+// the exact same measurement `preset-metadata.generated.ts` is built from —
+// no second, drift-prone measurement path.
+export const DASHBOARD_SURFACES = [
 	{
 		surfaceMode: 'native',
 		source: 'tokens-gate',
@@ -278,7 +281,7 @@ const maybeMeasure = async (
 	return measureToolTextBytes(connection.client, toolName, args);
 };
 
-const measurePresetDashboard = async (
+export const measurePresetDashboard = async (
 	workspace: string,
 	presetId: string,
 	measurement: (typeof DASHBOARD_SURFACES)[number],
