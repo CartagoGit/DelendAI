@@ -1,4 +1,4 @@
-import { mkdtemp, mkdir, rm, writeFile } from 'node:fs/promises';
+import { mkdtemp, mkdir, rm, symlink, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -77,6 +77,30 @@ const makeWorkspace = async (): Promise<string> => {
 			'});',
 		].join('\n'),
 		'utf8',
+	);
+	await mkdir(join(root, '.git'), { recursive: true });
+	await mkdir(join(root, 'node_modules/demo'), { recursive: true });
+	await writeFile(join(root, '.env'), 'TOKEN=secret', 'utf8');
+	await writeFile(join(root, '.git/HEAD'), 'ref: refs/heads/develop', 'utf8');
+	await writeFile(
+		join(root, 'node_modules/demo/index.js'),
+		'module.exports = true;',
+		'utf8',
+	);
+	const outside = await mkdtemp(join(tmpdir(), 'impact-analysis-outside-'));
+	createdRoots.push(outside);
+	await writeFile(
+		join(outside, 'secret.ts'),
+		'export const secret = true;',
+		'utf8',
+	);
+	await symlink(
+		join(outside, 'secret.ts'),
+		join(root, 'plugins/demo/src/link-outside.ts'),
+	);
+	await symlink(
+		join(root, 'packages/core/src/lib/foo.ts'),
+		join(root, 'plugins/demo/src/link-inside.ts'),
 	);
 	return root;
 };
@@ -157,5 +181,78 @@ describe('impact-analysis tools', () => {
 		);
 		expect(Number.isFinite(output.bytes)).toBe(true);
 		expect(output.bytes).toBeLessThanOrEqual(3000);
+	});
+
+	it('returns a structured containment error for outside, reserved and symlink-escape paths', async () => {
+		const root = await makeWorkspace();
+		const outside = await mkdtemp(
+			join(tmpdir(), 'impact-analysis-external-'),
+		);
+		createdRoots.push(outside);
+		const adversarialPaths = [
+			'../outside.ts',
+			'../../etc/passwd',
+			join(outside, 'secret.ts'),
+			`${root}-secret/file.ts`,
+			'.env',
+			'.git/HEAD',
+			'node_modules/demo/index.js',
+			'plugins/demo/src/link-outside.ts',
+			'tests/../../outside.ts',
+			'./../outside.ts',
+			'.././outside.ts',
+			'../../outside.ts',
+			'../../../outside.ts',
+			'../../../../outside.ts',
+			'../outside.ts/../secret.ts',
+		];
+
+		for (const file of adversarialPaths) {
+			const result = await runTestsForChange(
+				{ files: [file] },
+				{
+					namespacePrefix: 'mcp-vertex',
+					workspaceRootAbs: root,
+					maxBytes: 3000,
+				},
+			);
+			expect(result.isError).toBe(true);
+			expect(result.structuredContent?.ok).toBe(false);
+			expect(
+				(result.structuredContent?.error as { reason: string }).reason,
+			).toContain('workspace-containment');
+		}
+	});
+
+	it('accepts a symlink that still resolves inside the workspace', async () => {
+		const root = await makeWorkspace();
+		const result = await runTestsForChange(
+			{ files: ['plugins/demo/src/link-inside.ts'] },
+			{
+				namespacePrefix: 'mcp-vertex',
+				workspaceRootAbs: root,
+				maxBytes: 3000,
+			},
+		);
+		expect(result.isError).toBeUndefined();
+	});
+
+	it('rejects every generated absolute outside path in the bounded property loop', async () => {
+		const root = await makeWorkspace();
+		for (let index = 0; index < 16; index += 1) {
+			const result = await runTestsForChange(
+				{
+					files: [
+						`/tmp/impact-analysis-generated-${index}/secret.ts`,
+					],
+				},
+				{
+					namespacePrefix: 'mcp-vertex',
+					workspaceRootAbs: root,
+					maxBytes: 3000,
+				},
+			);
+			expect(result.isError).toBe(true);
+		}
 	});
 });
