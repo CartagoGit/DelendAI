@@ -134,8 +134,51 @@ const stripGeneratedAt = (text: string): string =>
 		.replace(/"generatedAt": "[^"]+"/gu, '"generatedAt": "<normalized>"')
 		.replace(/^generated: .+$/gmu, 'generated: <normalized>');
 
-const compareContent = (left: string | undefined, right: string): boolean =>
-	stripGeneratedAt(left ?? '') === stripGeneratedAt(right);
+const normalizeJsonArtifact = (text: string): string => {
+	const parsed = JSON.parse(text) as Record<string, unknown>;
+	if ('generatedAt' in parsed) {
+		parsed.generatedAt = '<normalized>';
+	}
+	return JSON.stringify(parsed);
+};
+
+const GENERATED_TS_EXPORT_PATTERN =
+	/export const \w+ =\s*([\s\S]+?)\s+as const;\s*$/u;
+
+const normalizeGeneratedTsArtifact = (text: string): string => {
+	const match = GENERATED_TS_EXPORT_PATTERN.exec(text);
+	if (match?.[1] === undefined) {
+		throw new Error(
+			'generated TypeScript artifact does not match expected export shape',
+		);
+	}
+	const value = Function(`return (${match[1]});`)() as unknown;
+	return JSON.stringify(value);
+};
+
+const compareContent = (
+	relPath: string,
+	left: string | undefined,
+	right: string,
+): boolean => {
+	try {
+		if (relPath === GENERATED_DOCS_JSON_PATH) {
+			return (
+				normalizeJsonArtifact(left ?? '{}') ===
+				normalizeJsonArtifact(right)
+			);
+		}
+		if (relPath === GENERATED_WEB_CATALOG_PATH) {
+			return (
+				normalizeGeneratedTsArtifact(left ?? '') ===
+				normalizeGeneratedTsArtifact(right)
+			);
+		}
+	} catch {
+		// Fall back to byte-oriented comparison when semantic normalization fails.
+	}
+	return stripGeneratedAt(left ?? '') === stripGeneratedAt(right);
+};
 
 const manifestFromModule = (
 	module: Record<string, unknown>,
@@ -604,7 +647,7 @@ export const runFromManifestsGenerator = async (
 		for (const [relPath, text] of Object.entries(outputs)) {
 			const absPath = resolve(root, relPath);
 			const current = await io.readText(absPath);
-			if (!compareContent(current, text)) {
+			if (!compareContent(relPath, current, text)) {
 				changed = true;
 				if (check) {
 					io.error(`stale: ${relative(root, absPath)}`);
