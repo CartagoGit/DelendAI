@@ -2,22 +2,16 @@
 id: f00181
 title: "Plugin `commit-policy` — autoridad de commit para LLMs en el nombre del humano"
 kind: feat
-status: ready
+status: done
 type: proposal
 track: plugins
 date: 2026-08-25
-deferred-by: q00005 orchestration pass 2026-08-25
-deferred-reason: |
-  The plugin scaffold (package.json, plugin.manifest.ts, tsconfig.json,
-  vitest.shared.ts/tsconfig.base.json entries) is committed at
-  `plugins/commit-policy/`. The src/ tree was reduced to a stub
-  `src/index.ts` exporting `COMMIT_POLICY_STUB = true` after the
-  parallel agent's WIP produced 6 typecheck errors in 4 files
-  (see commit `6e72ac3e` for the full list). Restoring the WIP from
-  `/tmp/commit-policy-WIP-src-backup-*` and resolving those errors
-  is left for a follow-up orchestration pass.
 shipped-in:
     - 6e72ac3e # chore(commit-policy): scaffold + WIP stub (f00181 deferred)
+    - 9daf8e9f # feat(commit-policy): full plugin — resolver, drivers, triggers, tools, public surface
+    - b51125bc # fix(commit-policy): schema defaults + restructure specs under tests/src/lib + green tests
+    - 1f9fe60e # feat(commit-policy): wire into vertex preset + READMEs (en/es) + project dogfood config
+    - aedf9ecb # fix(commit-policy): drop unused preset memberships (only vertex)
 ---
 
 # f00181 — Plugin `commit-policy` — autoridad de commit para LLMs en el nombre del humano

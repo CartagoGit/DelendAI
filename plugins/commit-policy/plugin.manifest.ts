@@ -10,7 +10,7 @@ export default definePluginManifest({
 	tags: ['commit', 'policy', 'git', 'agent', 'f00181'],
 	maturity: 'experimental',
 	permissions: ['git-read', 'git-write'],
-	presets: ['swarm', 'full', 'vertex'],
+	presets: ['vertex'],
 	// Per-tool permissions: read-only inspection on `_status`, write
 	// effects on `_commit`/`_push`/`_run` (only when the host has
 	// granted `git-write`). Matches the same split as the git plugin
