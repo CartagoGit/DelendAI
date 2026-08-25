@@ -3,7 +3,7 @@ id: d00008
 title: "Reserved paths: política explícita para `.env`, `.env.local`, `.env.production`, `.env.secret`"
 kind: docs
 type: proposal
-status: ready
+status: review
 track: filesystem
 date: 2026-08-25
 plan-parent: q00005
@@ -15,6 +15,8 @@ related:
     - x00241 # SafeWorkspaceReader
     - x00242 # context-for-change usa SafeReader
     - x00243 # impact-analysis usa SafeReader
+shipped-in:
+    - 11d31317 # docs(filesystem+surface): d00007 + d00008 + c00019 ADRs and implementation
 ---
 
 # d00008 — Reserved paths: `.env`, `.env.local`, `.env.production`, `.env.secret`
