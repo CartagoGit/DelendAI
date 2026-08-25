@@ -8,6 +8,7 @@ import type {
 } from '@mcp-vertex/core/public';
 import {
 	redactSecrets,
+	VALIDATE_EVIDENCE_SCHEMA,
 	toolError,
 	toolJson,
 	toolOk,
@@ -117,7 +118,12 @@ const isToolErrorCarryingError = (
 	value: unknown,
 ): value is IToolErrorCarryingError => value instanceof Error;
 
-const REVIEW_APPROVE_COMMIT_HASH_RE = /^[0-9a-f]{7,40}$/i;
+export const REVIEW_APPROVE_COMMIT_HASH_MIN_LEN = 7;
+export const REVIEW_APPROVE_COMMIT_HASH_MAX_LEN = 40;
+export const REVIEW_APPROVE_COMMIT_HASH_RE = new RegExp(
+	`^[0-9a-f]{${REVIEW_APPROVE_COMMIT_HASH_MIN_LEN},${REVIEW_APPROVE_COMMIT_HASH_MAX_LEN}}$`,
+	'i',
+);
 
 export interface IProposalReviewEvidence {
 	readonly commitHash: string;
@@ -132,7 +138,7 @@ export const REVIEW_EVIDENCE_SCHEMA = z
 			.string()
 			.regex(
 				REVIEW_APPROVE_COMMIT_HASH_RE,
-				'evidence.commitHash must be 7-40 hex characters',
+				`evidence.commitHash must be ${REVIEW_APPROVE_COMMIT_HASH_MIN_LEN}-${REVIEW_APPROVE_COMMIT_HASH_MAX_LEN} hex characters`,
 			),
 		validateExitCode: z
 			.number()
@@ -929,13 +935,7 @@ export const buildCloseSliceRegistration = (
 					sliceId: z.string(),
 					releaseLock: z.boolean().optional(),
 					force: z.boolean().optional(),
-					validateEvidence: z
-						.object({
-							timestamp: z.string().min(1),
-							exitCode: z.number().int(),
-							logPath: z.string().min(1).optional(),
-						})
-						.optional(),
+					validateEvidence: VALIDATE_EVIDENCE_SCHEMA.optional(),
 				}),
 			},
 			async (args: {
