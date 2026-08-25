@@ -29,6 +29,30 @@ const emptyToolRegistry: IToolIdentityRegistry = {
 	list: () => new Map(),
 };
 
+const llmToolRegistry: IToolIdentityRegistry = {
+	get: (toolName) =>
+		toolName === 'mcp-vertex_orchestrator-runner_invoke'
+			? {
+					packageName: '@mcp-vertex/orchestrator-runner',
+					owner: 'mcp-vertex',
+					publicToolName: 'invoke',
+					category: 'orchestration',
+				}
+			: undefined,
+	list: () =>
+		new Map([
+			[
+				'mcp-vertex_orchestrator-runner_invoke',
+				{
+					packageName: '@mcp-vertex/orchestrator-runner',
+					owner: 'mcp-vertex',
+					publicToolName: 'invoke',
+					category: 'orchestration',
+				},
+			],
+		]),
+};
+
 afterEach(async () => {
 	resetInternalPathRegistry();
 	await Promise.all(
@@ -172,7 +196,7 @@ describe('buildReportErrorHandler', () => {
 				nowMs: () => Date.parse('2026-08-24T10:00:00.000Z'),
 				random: () => 0,
 			},
-			toolRegistry: emptyToolRegistry,
+			toolRegistry: llmToolRegistry,
 		});
 
 		await observe(
@@ -191,6 +215,74 @@ describe('buildReportErrorHandler', () => {
 		expect(reporter.submitSafeReport).toHaveBeenCalledTimes(1);
 		const record = await store.all();
 		expect(record[0]?.issueNumber).toBe(101);
+	});
+
+	it('does not report host tools that spoof an internal llm suffix', async () => {
+		const store = createReportStore(await makeDir());
+		const reporter: ISafeReporter = {
+			submitSafeReport: vi.fn().mockResolvedValue({
+				ok: true,
+				reason: 'created',
+				issueNumber: 303,
+			}),
+		};
+		const observe = buildObservedFailureHandler({
+			options: {
+				enabled: true,
+				targetRepo: 'CartagoGit/mcp-vertex',
+				labels: ['auto-reported'],
+				dedupeWindowHours: 24,
+				maxIssuesPerDay: 10,
+				circuitBreakerThreshold: 3,
+				backoffBaseMs: 60_000,
+				backoffMaxMs: 3_600_000,
+				backoffJitterRatio: 0,
+			},
+			store,
+			reporter,
+			clock: {
+				nowMs: () => Date.parse('2026-08-24T10:00:00.000Z'),
+				random: () => 0,
+			},
+			toolRegistry: {
+				get: (toolName) =>
+					toolName ===
+					'acme_private_billing_orchestrator-runner_invoke'
+						? {
+								packageName: '/workspace/acme/tools.ts',
+								owner: 'host-project',
+								category: 'host-specific',
+							}
+						: undefined,
+				list: () =>
+					new Map([
+						[
+							'acme_private_billing_orchestrator-runner_invoke',
+							{
+								packageName: '/workspace/acme/tools.ts',
+								owner: 'host-project',
+								category: 'host-specific',
+							},
+						],
+					]),
+			},
+		});
+
+		await observe(
+			'acme_private_billing_orchestrator-runner_invoke',
+			{
+				structuredContent: {
+					error: {
+						code: 'LLM_FORMAT',
+						reason: 'provider rejected invalid request body after schema validation failed',
+					},
+				},
+			},
+			undefined,
+		);
+
+		expect(reporter.submitSafeReport).not.toHaveBeenCalled();
+		expect(await store.all()).toEqual([]);
 	});
 
 	it('does not report external provider failures surfaced through tool result envelopes', async () => {

@@ -14,7 +14,10 @@ import {
 	classifyInternalError,
 } from './internal-classifier.helper';
 import { McpVertexInternalError } from './mcp-internal-error.helper';
-import { analyzeErrorOrigin } from './origin-analyzer.helper';
+import {
+	analyzeErrorOrigin,
+	resolveFirstPartyLlmToolProvenance,
+} from './origin-analyzer.helper';
 import { signatureOf } from './signature.helper';
 import { buildSyntheticExample } from './synthetic-example.builder';
 
@@ -40,16 +43,6 @@ const platformFamilyOf = (): 'windows' | 'linux' | 'macos' | 'unknown' => {
 		default:
 			return 'unknown';
 	}
-};
-
-const packageIdFromToolName = (toolName: string): string | undefined => {
-	if (toolName.endsWith('_orchestrator-runner_invoke')) {
-		return '@mcp-vertex/orchestrator-runner';
-	}
-	if (toolName.endsWith('_auto-agent-selector_auto_run')) {
-		return '@mcp-vertex/auto-agent-selector';
-	}
-	return undefined;
 };
 
 const packageIdOf = (
@@ -147,9 +140,10 @@ const syntheticExampleOf = (input: {
 
 export const asReportableError = (
 	toolName: string,
+	toolRegistry: Pick<IToolIdentityRegistry, 'get'>,
 	error: unknown,
 ): unknown | undefined => {
-	const origin = analyzeErrorOrigin({ toolName, error });
+	const origin = analyzeErrorOrigin({ toolName, toolRegistry, error });
 	if (origin.origin === 'project') return undefined;
 	if (origin.origin === 'provider') return undefined;
 	if (origin.origin === 'environment') return undefined;
@@ -171,17 +165,20 @@ export const asReportableError = (
 		);
 	}
 	if (origin.origin === 'llm-format') {
-		const packageId = packageIdFromToolName(toolName);
-		if (packageId === undefined) return undefined;
-		const componentId = `tools/${toolName}/llm-format`;
+		const llmTool = resolveFirstPartyLlmToolProvenance(
+			toolName,
+			toolRegistry,
+		);
+		if (llmTool === undefined) return undefined;
+		const componentId = `tools/${llmTool.safeToolId}/llm-format`;
 		return withSyntheticSafeStack(
 			new McpVertexInternalError({
 				code: 'TOOL_EXECUTION_FAILED',
-				packageId,
+				packageId: llmTool.packageId,
 				componentId,
 				cause: error,
 			}),
-			packageId,
+			llmTool.packageId,
 			componentId,
 		);
 	}
