@@ -1,4 +1,3 @@
-import { watch } from 'node:fs';
 import { basename, dirname } from 'node:path';
 
 import { definePlugin, joinRel } from '@mcp-vertex/core/public';
@@ -13,6 +12,7 @@ import {
 } from './lib/services/checkpoint-freshness';
 import { SESSION_DIGEST_TITLE_PREFIX } from './lib/contracts/constants/session-digest.constant';
 import { createFreshnessDebouncer } from './lib/services/freshness-debounce';
+import { createStoreWatcher } from './lib/services/store-watcher';
 import type { ICheckpointAdvisory } from '@mcp-vertex/core/public';
 
 const MAX_TITLE_WEIGHT = 10;
@@ -139,28 +139,13 @@ export default definePlugin({
 			freshnessDebouncer.schedule();
 		};
 
-		try {
-			const watchedDir = dirname(storePathAbs);
-			const watchedName = basename(storePathAbs);
-			const watcher = watch(
-				watchedDir,
-				{ persistent: false },
-				(_eventType, fileName) => {
-					if (
-						fileName !== null &&
-						fileName !== undefined &&
-						String(fileName) !== watchedName
-					) {
-						return;
-					}
-					void scheduleIfStoreMtimeChanged();
-				},
-			);
-			watcher.unref?.();
-		} catch {
-			// Best-effort only: unsupported watcher / missing dir means
-			// external changes are picked up on the next local mutation.
-		}
+		const storeWatcher = createStoreWatcher({
+			dir: dirname(storePathAbs),
+			fileName: basename(storePathAbs),
+			onChange: () => {
+				void scheduleIfStoreMtimeChanged();
+			},
+		});
 		void refreshFreshnessAdvisory();
 
 		const isTool = (toolName: string, toolId: string): boolean =>
@@ -238,6 +223,10 @@ export default definePlugin({
 				}
 			},
 			getCheckpointAdvisory: () => lastFreshnessAdvisory,
+			dispose: () => {
+				storeWatcher.dispose();
+				freshnessDebouncer.cancel();
+			},
 			knowledge: [
 				{
 					id: 'memory-usage',

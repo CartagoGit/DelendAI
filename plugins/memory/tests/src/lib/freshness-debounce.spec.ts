@@ -16,9 +16,11 @@ describe('freshness debounce', () => {
 		debouncer.schedule();
 		debouncer.schedule();
 
-		await vi.advanceTimersByTimeAsync(149);
+		vi.advanceTimersByTime(149);
+		await Promise.resolve();
 		expect(refresh).not.toHaveBeenCalled();
-		await vi.advanceTimersByTimeAsync(1);
+		vi.advanceTimersByTime(1);
+		await Promise.resolve();
 		expect(refresh).toHaveBeenCalledTimes(1);
 	});
 
@@ -34,19 +36,37 @@ describe('freshness debounce', () => {
 		const debouncer = createFreshnessDebouncer(refresh, { waitMs: 200 });
 
 		debouncer.schedule();
-		await vi.advanceTimersByTimeAsync(200);
+		vi.advanceTimersByTime(200);
+		await Promise.resolve();
 		expect(refresh).toHaveBeenCalledTimes(1);
 
 		debouncer.schedule();
 		debouncer.schedule();
-		await vi.advanceTimersByTimeAsync(500);
+		vi.advanceTimersByTime(500);
+		await Promise.resolve();
 		expect(refresh).toHaveBeenCalledTimes(1);
 
 		resolveRefresh?.();
 		await Promise.resolve();
-		await vi.advanceTimersByTimeAsync(199);
+		vi.advanceTimersByTime(199);
+		await Promise.resolve();
 		expect(refresh).toHaveBeenCalledTimes(1);
-		await vi.advanceTimersByTimeAsync(1);
+		vi.advanceTimersByTime(1);
+		await Promise.resolve();
 		expect(refresh).toHaveBeenCalledTimes(2);
+	});
+
+	it('cancel clears a pending timer before it fires', async () => {
+		vi.useFakeTimers();
+		const refresh = vi.fn(async () => undefined);
+		const debouncer = createFreshnessDebouncer(refresh, { waitMs: 150 });
+
+		debouncer.schedule();
+		expect(vi.getTimerCount()).toBe(1);
+		debouncer.cancel();
+		expect(vi.getTimerCount()).toBe(0);
+		vi.advanceTimersByTime(150);
+		await Promise.resolve();
+		expect(refresh).not.toHaveBeenCalled();
 	});
 });
