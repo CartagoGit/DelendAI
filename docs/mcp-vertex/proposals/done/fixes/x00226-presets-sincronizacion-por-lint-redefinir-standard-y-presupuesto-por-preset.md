@@ -2,7 +2,7 @@
 id: x00226
 title: "presets: sincronización por lint, redefinir standard y presupuesto por preset"
 kind: fix
-status: review
+status: done
 type: proposal
 track: registry
 date: 2026-08-24
@@ -44,8 +44,10 @@ Los presets son la superficie de carga real del runtime; si su membership se sin
 - acceptance:
   - "Las comparaciones manuales se convierten en lint (PRE-001)."
   - "La membership de vertex se valida contra la config real (PRE-002)."
-- review-state: in_review
+- review-state: done
 - review-implementer: swarm-implementer
+- review-reviewer: orchestrator-fase1-review
+- review-log: approved by orchestrator-fase1-review — Fase 1 review 2026-08-25: lint:preset-drift confirmado 0 findings; validate verde.
 ### S2 — Roles de presets y budget por preset
 - **Status**: done
 - **Files**: `packages/core/src/lib/plugins/preset-catalog.ts`
