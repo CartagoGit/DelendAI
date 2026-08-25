@@ -3,7 +3,7 @@
 <!-- generated: token-budget-dashboard.script.ts -->
 <!-- generated — do not edit by hand -->
 
-Generated at: 2026-08-25T06:01:43.905Z
+Generated at: 2026-08-25T06:24:34.671Z
 
 This file is generated from the same budget contract the e2e test imports: packages/core/src/lib/contracts/constants/token-budgets.constant.ts. Do not edit this markdown by hand; regenerate it with bun tools/scripts/report/token-budget-dashboard.script.ts.
 
@@ -40,7 +40,7 @@ These are the bounded payloads the e2e spec governs directly today. They use the
 | search_search | 874 | 219 | 2,700 | 3,000 | within hard |
 | docs_docs_list | 209 | 53 | 2,200 | 2,500 | within hard |
 | proposals_round_context | 153 | 39 | 2,700 | 3,000 | within hard |
-| logs_tail | 2,609 | 653 | 5,500 | 6,000 | within hard |
+| logs_tail | 2,087 | 522 | 5,500 | 6,000 | within hard |
 
 ## Real preset dashboard
 
@@ -81,9 +81,9 @@ The repo has no lightweight LLM tokenizer dependency installed today. This repor
 | minimal | 8,357 | 14434 | 14434 | 14434 | heuristic-4-bytes-per-token | estimated fallback (no lightweight tokenizer dependency present) |
 | lean | 8,357 | 17479 | 17479 | 17479 | heuristic-4-bytes-per-token | estimated fallback (no lightweight tokenizer dependency present) |
 | standard | 8,357 | 30514 | 30514 | 30514 | heuristic-4-bytes-per-token | estimated fallback (no lightweight tokenizer dependency present) |
-| swarm | 8,357 | 54747 | 54747 | 54747 | heuristic-4-bytes-per-token | estimated fallback (no lightweight tokenizer dependency present) |
-| full | 8,357 | 56505 | 56505 | 56505 | heuristic-4-bytes-per-token | estimated fallback (no lightweight tokenizer dependency present) |
-| vertex | 8,357 | 74644 | 74644 | 74644 | heuristic-4-bytes-per-token | estimated fallback (no lightweight tokenizer dependency present) |
+| swarm | 8,357 | 54850 | 54850 | 54850 | heuristic-4-bytes-per-token | estimated fallback (no lightweight tokenizer dependency present) |
+| full | 8,357 | 56609 | 56609 | 56609 | heuristic-4-bytes-per-token | estimated fallback (no lightweight tokenizer dependency present) |
+| vertex | 8,357 | 74747 | 74747 | 74747 | heuristic-4-bytes-per-token | estimated fallback (no lightweight tokenizer dependency present) |
 | web-app | 8,357 | 28550 | 28550 | 28550 | heuristic-4-bytes-per-token | estimated fallback (no lightweight tokenizer dependency present) |
 | backend-api | 8,357 | 28154 | 28154 | 28154 | heuristic-4-bytes-per-token | estimated fallback (no lightweight tokenizer dependency present) |
 | cli-tool | 8,357 | 20022 | 20022 | 20022 | heuristic-4-bytes-per-token | estimated fallback (no lightweight tokenizer dependency present) |
