@@ -1767,6 +1767,17 @@ export interface McpVertexPlanMcpProjectOutput {
 	};
 }
 
+export interface McpVertexPluginActivateOutput {
+	change: {
+		pluginId: string;
+		namespace: string;
+		active: boolean;
+		changedToolNames: string[];
+		visibleToolNames: string[];
+		note?: string;
+	} | null;
+}
+
 export interface McpVertexPluginAddOutput {
 	entry: {
 		id: string;
@@ -1784,6 +1795,17 @@ export interface McpVertexPluginAddOutput {
 	alreadyAdopted: boolean;
 }
 
+export interface McpVertexPluginDeactivateOutput {
+	change: {
+		pluginId: string;
+		namespace: string;
+		active: boolean;
+		changedToolNames: string[];
+		visibleToolNames: string[];
+		note?: string;
+	} | null;
+}
+
 export interface McpVertexPluginSearchOutput {
 	entries: Array<{
 		id: string;
@@ -1795,6 +1817,18 @@ export interface McpVertexPluginSearchOutput {
 	}>;
 	total: number;
 	truncated: boolean;
+}
+
+export interface McpVertexProjectContextOutput {
+	surfaceMode: "native" | "adaptive" | "compact";
+	workspaceRoot: string;
+	cacheDir?: string;
+	docsDir?: string;
+	configIssues: string[];
+	loadedPlugins: string[];
+	visibleToolCount: number;
+	hiddenToolCount: number;
+	visibleDomains: string[];
 }
 
 export interface McpVertexProjectHealthProjectHealthOutput {
@@ -1953,15 +1987,39 @@ export interface McpVertexProposalsAgentLockReleaseOrphanOutput {
 
 export interface McpVertexProposalsAgentNamesOutput {
 	error?: string;
-	backup?: string | null;
 	nextAction?: string;
+	blocked?: boolean;
+	blockerType?: string;
+	reason?: string;
+	agent?: string;
+	status?: string;
+	task_id?: string;
+	agent_name?: string;
+	agent_slot?: string;
 	summary?: {
 		active: number;
 		cooldown: number;
 		orphan: number;
 		adopted: number;
 	};
+	released?: string[];
 	assignments?: Array<{
+		task_id: string;
+		agent_name: string;
+		agent_slot: string;
+		parent_task_id: string | null;
+		depth: number;
+		topic: string;
+		adopted: boolean;
+		assigned_at: string;
+		last_seen: string;
+		cooldown_until: string | null;
+		status: "active" | "cooldown" | "orphan";
+		host?: string | null;
+		model?: string | null;
+		children?: unknown[];
+	}>;
+	tree?: Array<{
 		task_id: string;
 		agent_name: string;
 		agent_slot: string;
@@ -1981,58 +2039,7 @@ export interface McpVertexProposalsAgentNamesOutput {
 		name: string;
 		task_id: string;
 	}[];
-	tree?: Array<{
-		task_id: string;
-		agent_name: string;
-		agent_slot: string;
-		parent_task_id: string | null;
-		depth: number;
-		topic: string;
-		adopted: boolean;
-		assigned_at: string;
-		last_seen: string;
-		cooldown_until: string | null;
-		status: "active" | "cooldown" | "orphan";
-		host?: string | null;
-		model?: string | null;
-		children?: unknown[];
-	}>;
-	agent?: string;
-	status?: string;
-	in_cooldown?: boolean;
-	task_id?: string;
-	released?: string[];
-	promoted?: number;
-	freed?: number;
-	blocked?: boolean;
-	blockerType?: string;
-	reason?: string;
-	depth?: number;
-	max_depth?: number;
-	allowed?: string[];
-	pool_size?: number;
-	agent_name?: string;
-	agent_slot?: string;
-	parent_task_id?: string | null;
-	topic?: string;
-	assigned_at?: string;
-	last_seen?: string;
-	cooldown_until?: string | null;
-	host?: string | null;
-	model?: string | null;
-	scannedAt?: string;
-	staleAfterMinutes?: number;
-	orphans?: Array<{
-		agentName: string;
-		taskId: string;
-		agentSlot: string;
-		lastSeen: string;
-		ageMinutes: number;
-		reason: "cooldown_null" | "stale_no_lock" | "stale_with_orphaned_lock" | "status_orphan" | "stale_not_adopted";
-		recommendedAction: "force_release" | "extend_cooldown" | "escalate";
-	}>;
-	threshold?: "green" | "yellow" | "red";
-	recommendation?: string;
+	[key: string]: unknown;
 }
 
 export interface McpVertexProposalsAgentWorktreeOutput {
@@ -2797,106 +2804,21 @@ export interface McpVertexProposalsRoundContextOutput {
 		roundId: string;
 		activeProposalId: string;
 		currentTaskId: string;
-		activeLocks: {
-			taskId: string;
-			agent: string;
-			ownershipCount: number;
-			filesPreview: string[];
-			lastSeen: string;
-			parentTaskId?: string;
-		}[];
-		activeAgents: {
-			agent: string;
-			taskId: string;
-			slot: string;
-			depth: number;
-			lastSeen: string;
-			adopted: boolean;
-		}[];
-		coreDocHashes: Record<string, string>;
-		sources: {
-			chatContext: {
-				state: "ok" | "missing" | "corrupt";
-				fingerprint: string;
-				timestamp: string | null;
-				ageMinutes: number | null;
-				temporallyStale: boolean;
-			};
-			checkpoint: {
-				state: "ok" | "missing" | "corrupt";
-				fingerprint: string;
-				timestamp: string | null;
-				ageMinutes: number | null;
-				temporallyStale: boolean;
-			};
-			lock: {
-				state: "ok" | "missing" | "corrupt";
-				fingerprint: string;
-				timestamp: string | null;
-				ageMinutes: number | null;
-				temporallyStale: boolean;
-			};
-			registry: {
-				state: "ok" | "missing" | "corrupt";
-				fingerprint: string;
-				timestamp: string | null;
-				ageMinutes: number | null;
-				temporallyStale: boolean;
-			};
-		};
-		chatContext: {
-			proposalIds: string[];
-			topic?: string;
-			lastUpdated?: string;
-		};
-		checkpoint: {
-			proposalId?: string;
-			status?: string;
-			selectedTask?: string;
-			nextAction?: string;
-			updatedAt?: string;
-		};
-		proposalPortfolio: {
-			sourceState: "ok" | "missing" | "corrupt";
-			strategy: "index" | "fallback-scan";
-			activeIds: string[];
-			activeOverflowCount: number;
-			activeCount: number;
-			pendingCount: number;
-			inProgressCount: number;
-		};
-		resumeHint: {
-			mode: "resume" | "next" | "unknown";
-			proposalId: string;
-			reason: string;
-			taskId?: string;
-		};
 		createdAt: string;
 		digestVersion: 1;
+		[key: string]: unknown;
 	} | null;
 	stale: boolean;
 	recomputedAt: string;
 	digestPath: string;
+	[key: string]: unknown;
 }
 
 export interface McpVertexProposalsStateHealthOutput {
 	locks: {
 		active: number;
 		stale: number;
-		staleTaskIds: string[];
-		lastStaleSeen: string | null;
 		livelocks: number;
-		livelockPairs: {
-			agentA: string;
-			agentB: string;
-			files: string[];
-			heldMs: number;
-		}[];
-		crossProposal: {
-			id: string;
-			count: number;
-			taskIds: string[];
-		}[];
 		sessionBalance: {
 			claims: number;
 			releases: number;
@@ -2905,21 +2827,16 @@ export interface McpVertexProposalsStateHealthOutput {
 		sessionClaims: number;
 		sessionReleases: number;
 		sessionImbalance: number;
+		[key: string]: unknown;
 	};
 	stale: {
 		count: number;
-		taskIds: string[];
-		lastStaleSeen: string | null;
+		[key: string]: unknown;
 	};
 	peerReviewBypasses: number;
 	autoTransitionRepairs: {
 		count: number;
-		entries: {
-			proposalId: string;
-			path: string;
-			reason: string;
-			ts: string;
-		}[];
+		[key: string]: unknown;
 	};
 	queue: {
 		queueLength: number;
@@ -2927,12 +2844,15 @@ export interface McpVertexProposalsStateHealthOutput {
 		waiterOrphans: number;
 		oldestAgeMinutes: number;
 		threshold: string;
+		[key: string]: unknown;
 	} | null;
 	registry: {
 		orphans: number;
 		threshold: string;
+		[key: string]: unknown;
 	};
 	healthy: boolean;
+	[key: string]: unknown;
 }
 
 export interface McpVertexProposalsStateRepairOutput {
@@ -2941,20 +2861,7 @@ export interface McpVertexProposalsStateRepairOutput {
 		locks: {
 			active: number;
 			stale: number;
-			staleTaskIds: string[];
-			lastStaleSeen: string | null;
 			livelocks: number;
-			livelockPairs: {
-				agentA: string;
-				agentB: string;
-				files: string[];
-				heldMs: number;
-			}[];
-			crossProposal: {
-				id: string;
-				count: number;
-				taskIds: string[];
-			}[];
 			sessionBalance: {
 				claims: number;
 				releases: number;
@@ -2963,21 +2870,16 @@ export interface McpVertexProposalsStateRepairOutput {
 			sessionClaims: number;
 			sessionReleases: number;
 			sessionImbalance: number;
+			[key: string]: unknown;
 		};
 		stale: {
 			count: number;
-			taskIds: string[];
-			lastStaleSeen: string | null;
+			[key: string]: unknown;
 		};
 		peerReviewBypasses: number;
 		autoTransitionRepairs: {
 			count: number;
-			entries: {
-				proposalId: string;
-				path: string;
-				reason: string;
-				ts: string;
-			}[];
+			[key: string]: unknown;
 		};
 		queue: {
 			queueLength: number;
@@ -2985,12 +2887,15 @@ export interface McpVertexProposalsStateRepairOutput {
 			waiterOrphans: number;
 			oldestAgeMinutes: number;
 			threshold: string;
+			[key: string]: unknown;
 		} | null;
 		registry: {
 			orphans: number;
 			threshold: string;
+			[key: string]: unknown;
 		};
 		healthy: boolean;
+		[key: string]: unknown;
 	};
 	wouldRepair?: {
 		staleLocks: number;
@@ -3003,6 +2908,7 @@ export interface McpVertexProposalsStateRepairOutput {
 		orphanAssignments: number;
 	};
 	nextAction?: string;
+	[key: string]: unknown;
 }
 
 export interface McpVertexProposalsSwarmHygieneOutput {
@@ -3011,50 +2917,54 @@ export interface McpVertexProposalsSwarmHygieneOutput {
 	baseBranch?: string;
 	generatedAt?: string;
 	rescueCandidates?: {
-		branch: string;
-		ahead: number;
-		behind: number;
-		lastCommitMinutesAgo: number;
-		worktreePath: string;
-		diffStat: string;
-		cherryPickHint: string;
+		branch?: string;
+		path?: string;
+		worktreePath?: string;
+		proposalId?: string;
+		sliceId?: string;
+		[key: string]: unknown;
 	}[];
-	gcEligible?: Array<{
-		path: string;
-		branch: string;
-		reason: "merged-and-clean" | "merged-and-clean-with-force" | "behind-only" | "no-branch";
-		dirtyFiles: number;
-		untrackedFiles: number;
-		outOfCache: boolean;
-		ageLabel: string;
-	}>;
+	gcEligible?: {
+		branch?: string;
+		path?: string;
+		worktreePath?: string;
+		proposalId?: string;
+		sliceId?: string;
+		[key: string]: unknown;
+	}[];
 	outOfCache?: {
-		path: string;
-		branch: string;
-		head: string;
-		lastCommitMinutesAgo: number;
+		branch?: string;
+		path?: string;
+		worktreePath?: string;
+		proposalId?: string;
+		sliceId?: string;
+		[key: string]: unknown;
 	}[];
 	mainCheckoutBranch?: string;
 	mainCheckoutDrift?: boolean;
 	pendingIntegration?: {
-		branch: string;
-		worktreePath: string;
-		sliceId: string;
-		proposalId: string;
-		recordedAt: string;
+		branch?: string;
+		path?: string;
+		worktreePath?: string;
+		proposalId?: string;
+		sliceId?: string;
+		[key: string]: unknown;
 	}[];
 	nonConformingBranches?: {
-		path: string;
-		branch: string;
-		head: string;
-		reason: "non-agent-prefix";
+		branch?: string;
+		path?: string;
+		worktreePath?: string;
+		proposalId?: string;
+		sliceId?: string;
+		[key: string]: unknown;
 	}[];
 	staleUnmerged?: {
-		path: string;
-		branch: string;
-		ahead: number;
-		behind: number;
-		lastCommitMinutesAgo: number;
+		branch?: string;
+		path?: string;
+		worktreePath?: string;
+		proposalId?: string;
+		sliceId?: string;
+		[key: string]: unknown;
 	}[];
 	summary?: {
 		rescueCandidatesCount: number;
@@ -3064,6 +2974,7 @@ export interface McpVertexProposalsSwarmHygieneOutput {
 		nonConformingBranchesCount: number;
 		staleUnmergedCount: number;
 	};
+	[key: string]: unknown;
 }
 
 export interface McpVertexProposalsSyncProposalsOutput {
@@ -3762,6 +3673,20 @@ export interface McpVertexTestConventionSuggestSpecPathOutput {
 	skeleton: string;
 }
 
+export interface McpVertexToolSearchOutput {
+	entries: {
+		registrationId: string;
+		name: string;
+		toolId: string;
+		pluginId?: string;
+		namespace?: string;
+		summary?: string;
+		tags?: string[];
+		active: boolean;
+		detailsId: string;
+	}[];
+}
+
 export interface McpVertexUsageTrackingSessionHygieneOutput {
 	observedMcpOnly: true;
 	hostLifecycle: {
@@ -3913,6 +3838,17 @@ export interface McpVertexUsageTrackingUsageReportOutput {
 	}>;
 }
 
+export interface McpVertexVertexOutput {
+	routed: true;
+	domain: string;
+	action: string;
+	tool: string;
+	active: boolean;
+	isError: boolean;
+	text?: string;
+	structuredContent?: unknown;
+}
+
 export interface McpVertexWebFetchWebFetchOutput {
 	ok: boolean;
 	url?: string;
@@ -4022,8 +3958,11 @@ export interface McpVertexToolOutputs {
 	"mcp-vertex_perf_perf_bundle": McpVertexPerfPerfBundleOutput;
 	"mcp-vertex_perf_perf_profile": McpVertexPerfPerfProfileOutput;
 	"mcp-vertex_plan_mcp_project": McpVertexPlanMcpProjectOutput;
+	"mcp-vertex_plugin_activate": McpVertexPluginActivateOutput;
 	"mcp-vertex_plugin_add": McpVertexPluginAddOutput;
+	"mcp-vertex_plugin_deactivate": McpVertexPluginDeactivateOutput;
 	"mcp-vertex_plugin_search": McpVertexPluginSearchOutput;
+	"mcp-vertex_project_context": McpVertexProjectContextOutput;
 	"mcp-vertex_project-health_project_health": McpVertexProjectHealthProjectHealthOutput;
 	"mcp-vertex_prompt-eval_eval_report": McpVertexPromptEvalEvalReportOutput;
 	"mcp-vertex_prompt-eval_eval_run": McpVertexPromptEvalEvalRunOutput;
@@ -4089,8 +4028,10 @@ export interface McpVertexToolOutputs {
 	"mcp-vertex_test-convention_get_convention": McpVertexTestConventionGetConventionOutput;
 	"mcp-vertex_test-convention_scan_drift": McpVertexTestConventionScanDriftOutput;
 	"mcp-vertex_test-convention_suggest_spec_path": McpVertexTestConventionSuggestSpecPathOutput;
+	"mcp-vertex_tool_search": McpVertexToolSearchOutput;
 	"mcp-vertex_usage-tracking_session_hygiene": McpVertexUsageTrackingSessionHygieneOutput;
 	"mcp-vertex_usage-tracking_usage_clear": McpVertexUsageTrackingUsageClearOutput;
 	"mcp-vertex_usage-tracking_usage_report": McpVertexUsageTrackingUsageReportOutput;
+	"mcp-vertex_vertex": McpVertexVertexOutput;
 	"mcp-vertex_web-fetch_web_fetch": McpVertexWebFetchWebFetchOutput;
 }

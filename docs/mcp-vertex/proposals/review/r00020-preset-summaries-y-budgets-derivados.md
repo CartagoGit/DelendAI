@@ -225,7 +225,7 @@ describe('derivePresetBudget', () => {
 ### S1 — Derive summary + budget
 
 - **Status**: pending
-- **Files**: `packages/presets/src/lib/derive-summary.ts`, `packages/presets/src/lib/derive-budget.ts`
+- **Files**: `packages/core/src/lib/plugins/preset-catalog.ts`, `packages/core/src/lib/contracts/constants/token-budgets.constant.ts`
 - **Gate**: type
 - acceptance:
   - "Funciones exportadas."
@@ -234,7 +234,7 @@ describe('derivePresetBudget', () => {
 ### S2 — Tests + docs
 
 - **Status**: pending
-- **Files**: `packages/presets/tests/src/derive.spec.ts`, `docs/mcp-vertex/presets.md`
+- **Files**: `packages/core/tests/src/lib/plugins/preset-catalog.spec.ts`, `docs/mcp-vertex/TOKEN-BUDGETS.md`
 - **Gate**: type
 - acceptance:
   - "Tests verdes."

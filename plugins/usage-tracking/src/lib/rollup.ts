@@ -10,8 +10,6 @@
  * piped through `redactSecrets` first (AGENTS.md rules 4 + 6), same as
  * every other durable write in this plugin.
  */
-import { readFile } from 'node:fs/promises';
-
 import {
 	redactSecrets,
 	withFileMutex,
@@ -47,10 +45,11 @@ export const readInvocations = async (
 ): Promise<IInvocationRecord[]> => {
 	let raw: string;
 	try {
-		raw = await readFile(absPath, 'utf8');
-	} catch (err) {
-		if ((err as NodeJS.ErrnoException).code === 'ENOENT') return [];
-		throw err;
+		const file = Bun.file(absPath);
+		if (!(await file.exists())) return [];
+		raw = await file.text();
+	} catch {
+		return [];
 	}
 	const out: IInvocationRecord[] = [];
 	for (const line of raw.split('\n')) {

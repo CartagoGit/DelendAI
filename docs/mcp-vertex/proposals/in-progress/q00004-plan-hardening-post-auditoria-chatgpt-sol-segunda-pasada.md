@@ -27,7 +27,7 @@ contains:
         - { id: x00241, kind: fix, required: true, priority: P1, track: filesystem }
         - { id: x00242, kind: fix, required: true, priority: P1, track: filesystem }
         - { id: x00243, kind: fix, required: true, priority: P1, track: filesystem }
-        - { id: c00004, kind: infra, required: true, priority: P2, track: filesystem }
+        - { id: c00004, kind: chore, required: true, priority: P2, track: filesystem }
 
         # ─── Track B — Concurrency (P1) ─────────────────────────────────────────────
         - { id: t00007, kind: test, required: true, priority: P1, track: concurrency }
@@ -35,23 +35,23 @@ contains:
         - { id: t00008, kind: test, required: true, priority: P1, track: concurrency }
 
         # ─── Track C — Tokens (P1/P2) ───────────────────────────────────────────────
-        - { id: c00005, kind: infra, required: true, priority: P1, track: tokens }
-        - { id: c00006, kind: infra, required: true, priority: P2, track: tokens }
+        - { id: c00005, kind: chore, required: true, priority: P1, track: tokens }
+        - { id: c00006, kind: chore, required: true, priority: P2, track: tokens }
         - { id: r00018, kind: refactor, required: true, priority: P2, track: tokens }
         - { id: r00019, kind: refactor, required: true, priority: P2, track: tokens }
-        - { id: c00007, kind: infra, required: true, priority: P2, track: tokens }
+        - { id: c00007, kind: chore, required: true, priority: P2, track: tokens }
 
         # ─── Track D — PRIVACY (P0 — LEY/LEGAL — máximo énfasis) ────────────────────
         - { id: x00245, kind: fix, required: true, priority: P0, track: privacy }
-        - { id: x00236, kind: breaking, required: true, priority: P0, track: privacy }
+        - { id: b00236, kind: breaking, required: true, priority: P0, track: privacy }
         - { id: x00237, kind: fix, required: true, priority: P0, track: privacy }
         - { id: t00009, kind: test, required: true, priority: P0, track: privacy }
 
         # ─── Track E — Manifests (P2) ───────────────────────────────────────────────
         - { id: f00174, kind: feat, required: true, priority: P2, track: manifests }
         - { id: f00175, kind: feat, required: true, priority: P2, track: manifests }
-        - { id: c00008, kind: infra, required: true, priority: P2, track: manifests }
-        - { id: c00009, kind: infra, required: true, priority: P2, track: manifests }
+        - { id: c00008, kind: chore, required: true, priority: P2, track: manifests }
+        - { id: c00009, kind: chore, required: true, priority: P2, track: manifests }
 
         # ─── Track F — Quality (P2/P3) ──────────────────────────────────────────────
         - { id: x00238, kind: fix, required: true, priority: P3, track: quality }
@@ -60,8 +60,8 @@ contains:
         - { id: r00020, kind: refactor, required: true, priority: P2, track: quality }
 
         # ─── Track G — CI / gobernanza (P2) ─────────────────────────────────────────
-        - { id: c00010, kind: infra, required: true, priority: P2, track: ci }
-        - { id: c00011, kind: infra, required: true, priority: P2, track: ci }
+        - { id: c00010, kind: chore, required: true, priority: P2, track: ci }
+        - { id: c00011, kind: chore, required: true, priority: P2, track: ci }
 
         # ─── Track H — Surface runtime (P2) ─────────────────────────────────────────
         - { id: r00021, kind: refactor, required: true, priority: P2, track: surface }
@@ -155,7 +155,7 @@ Esta es la regla más importante del proyecto, sin excepciones.
 - **R1.4 — Synthetic examples only.** No "redactar datos reales" para hacer ejemplos. Construir desde cero con dominios `example.invalid`, IDs `demo-123`, temas bakery/books/pets/planets.
 - **R1.5 — Dos proyectos distintos con el mismo bug Vertex deben producir el mismo issue público** salvo metadata segura (versión, package id, error code, runtime family, OS family). Esta es la propiedad fuerte de privacidad de §3.2.
 - **R1.6 — Reporter no acepta `toolName` arbitrario** (Track D — x00245). Solo `ISafeToolIdentity` resuelto vía registry metadata.
-- **R1.7 — `internalOnly:false` no existe** (Track D — x00236). El reporting externo es imposible por configuración; cualquier valor histórico debe fallar cerrado o ignorarse con warning de deprecación.
+- **R1.7 — `internalOnly:false` no existe** (Track D — b00236). El reporting externo es imposible por configuración; cualquier valor histórico debe fallar cerrado o ignorarse con warning de deprecación.
 
 ### N. R2 — Code quality (Clean Code + SOLID + reuse)
 
@@ -206,7 +206,7 @@ Cada hija debe cerrar con `resolution.evidence` que incluya al menos:
 | `x00241`  | fix   | P1        | FS2-001 + FS2-002 (parcial) — `SafeWorkspaceReader` API pública     |
 | `x00242`  | fix   | P1        | FS2-001 — `context-for-change` containment                          |
 | `x00243`  | fix   | P1        | FS2-002 — `impact-analysis` + `tests-for-change` containment        |
-| `c00004`  | infra | P2        | FS2-003 — lint arquitectónico que bloquea nuevos escapes            |
+| `c00004`  | chore | P2        | FS2-003 — lint arquitectónico que bloquea nuevos escapes            |
 
 **Objetivo del track**: hacer **técnicamente imposible** que un plugin con permiso `filesystem-read` pueda abrir una ruta exterior al workspace. La garantía se centraliza en una API `SafeWorkspaceReader` (Track A) y se blinda con un lint arquitectónico que falla el CI si alguien la esquiva.
 
@@ -237,7 +237,7 @@ Cada hija debe cerrar con `resolution.evidence` que incluya al menos:
 | Propuesta | ID       | Prioridad | Hallazgos cubiertos                                                       |
 |-----------|----------|-----------|---------------------------------------------------------------------------|
 | `x00245`  | fix      | P0        | ER2-001 — provenance segura de `toolId` (`ISafeToolIdentity` registry)   |
-| `x00236`  | breaking | P0        | ER2-002 — retirar `internalOnly:false`; reporting imposible por config   |
+| `b00236`  | breaking | P0        | ER2-002 — retirar `internalOnly:false`; reporting imposible por config   |
 | `x00237`  | fix      | P0        | ER2-003 — fuente canónica de `mcpVertexVersion` (build-time injected)    |
 | `t00009`  | test     | P0        | Privacy adversarial regression suite (dos hosts, mismo bug, mismo issue) |
 
@@ -296,7 +296,7 @@ Cada hija debe cerrar con `resolution.evidence` que incluya al menos:
 - **§22 (core split)** → `CORE2-001`: no dividir paquetes todavía. Se respeta como non-goal global.
 - **§29 (KPIs)** → métricas locales que las hijas exponen en sus `resolution.evidence` (no se reportan externamente).
 - **§30 (privacy classes)** → R1.1 + clase A en `ISafeMcpVertexReport`; clases B/C/D prohibidas en el DTO.
-- **§32 (pipeline seguro)** → x00214 (predecesor) + x00245/x00236/x00237 de este plan.
+- **§32 (pipeline seguro)** → x00214 (predecesor) + x00245/b00236/x00237 de este plan.
 - **§37 (P0–P3)** → reflejan el orden de tracks de este plan.
 - **§41 (10 principios)** → re-enumerados como R1–R6 + resto de las reglas globales.
 
@@ -331,7 +331,7 @@ Criterios de aceptación globales (verificados a través de las hijas):
 - Symlink escape bloqueado (test adversarial en `x00241`).
 - El lint arquitectónico (`c00004`) falla si algún plugin futuro evade la API.
 - `error-reporting` no envía tool ids externos (`x00245`).
-- `internalOnly:false` no existe en schema ni en runtime (`x00236`).
+- `internalOnly:false` no existe en schema ni en runtime (`b00236`).
 - `mcpVertexVersion` proviene de la versión publicada, no del root `package.json` (`x00237`).
 - Privacy adversarial suite verde: dos hosts distintos con el mismo bug Vertex producen el mismo issue público (`t00009`).
 
@@ -382,7 +382,7 @@ Criterios de aceptación globales (verificados a través de las hijas):
 
 El orden refleja precedencia técnica y legal. Track D es **P0** y bloquea por defecto.
 
-1. **Track D privacidad** completo: `x00245` → `x00236` → `x00237` → `t00009`. **NO continuar con otros tracks hasta que Track D esté `done` con peer review verde.**
+1. **Track D privacidad** completo: `x00245` → `b00236` → `x00237` → `t00009`. **NO continuar con otros tracks hasta que Track D esté `done` con peer review verde.**
 2. **Track A filesystem**: `x00241` (API) → `x00242` (context-for-change) → `x00243` (impact-analysis) → `c00004` (lint). El lint (`c00004`) cierra el track.
 3. **Track B concurrency**: `t00007` (repro) → `x00244` (fix) → `t00008` (property tests). El test de repro precede al fix.
 4. **Track C tokens**: `c00005` (gate real) → `c00006` (dashboard check) → `r00018` (schema diet) → `r00019` (adaptive default) → `c00007` (vertex budget).

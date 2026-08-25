@@ -38,7 +38,7 @@ import {
 
 import {
 	buildCompatibilityMatrix,
-	loadMigratedPluginManifests,
+	loadPluginManifests,
 	type ICompatibilityRow,
 } from '../generate/from-manifests.script.ts';
 
@@ -383,9 +383,7 @@ export const detectCatalogPresetDrift = async (
 		});
 	}
 
-	const manifests = await loadMigratedPluginManifests(rootDir).catch(
-		() => [],
-	);
+	const manifests = await loadPluginManifests(rootDir).catch(() => []);
 	if (manifests.length > 0) {
 		findings.push(
 			...findManifestPresetDrift(buildCompatibilityMatrix(manifests)),

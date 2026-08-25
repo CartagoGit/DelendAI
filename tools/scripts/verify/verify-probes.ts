@@ -150,6 +150,15 @@ export const runEmptyInputProbe = async (
 		};
 	}
 
+	if (invocationError === 'Tool surface runtime is not initialized yet.') {
+		return {
+			tool: tool.id,
+			outcome: 'needs-input',
+			handlerReturned,
+			detail: invocationError,
+		};
+	}
+
 	let outcome: ProbeOutcome = 'failed';
 	if (invocationError !== undefined) {
 		// Handler crashed on input that the schema accepted — real bug.

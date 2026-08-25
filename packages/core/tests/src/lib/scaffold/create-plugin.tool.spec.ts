@@ -201,7 +201,7 @@ describe('runCreatePlugin (f00120 S4)', () => {
 		expect(
 			fs.files
 				.get('packages/core/src/lib/registry/first-party-index.ts')
-				?.includes("id: 'demo-plugin'"),
+				?.includes('GENERATED_FIRST_PARTY_MANIFEST_ENTRIES'),
 		).toBe(true);
 		expect(
 			JSON.parse(fs.files.get('mcp-vertex.config.json') ?? '{}').plugins[

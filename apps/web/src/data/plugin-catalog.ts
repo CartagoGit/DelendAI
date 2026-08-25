@@ -24,6 +24,7 @@
  */
 import capabilities from '#MANIFESTS/capabilities.json';
 import { SERVER_NAME } from '#DATA/install';
+import { GENERATED_WEB_PLUGIN_CATALOG } from '#DATA/plugins/catalog.generated';
 
 /** The category buckets used to group plugins in the UI. */
 export type PluginCategory =
@@ -45,131 +46,18 @@ export interface IPluginCatalogEntry {
 	readonly category: PluginCategory;
 }
 
-/**
- * The 17 plugins shipped under `plugins/`. DATA only — adding a plugin
- * is a new entry here (Open/Closed: no consumer needs to change).
- */
-export const PLUGIN_CATALOG: Readonly<Record<string, IPluginCatalogEntry>> = {
-	audit: {
-		slug: 'audit',
-		displayName: 'Audit',
-		purpose:
-			'Runs exhaustive, scored repository audits per scope (architecture, plugins, apps) and consolidates the findings into an actionable brief.',
-		category: 'quality',
-	},
-	cache: {
-		slug: 'cache',
-		displayName: 'Cache',
-		purpose:
-			'Makes the shared `.cache/mcp-vertex` root self-cleaning via declarative TTL/keep-last eviction rules and an opt-in `cache_gc` tool that previews or applies the sweep.',
-		category: 'observability',
-	},
-	conventions: {
-		slug: 'conventions',
-		displayName: 'Conventions',
-		purpose:
-			'Detects and enforces the project’s file/folder naming and structural conventions so the codebase stays consistent as it grows.',
-		category: 'quality',
-	},
-	deps: {
-		slug: 'deps',
-		displayName: 'Dependencies',
-		purpose:
-			'Inspects dependency health across package managers — listing, checking and polyglot reporting of outdated or risky dependencies.',
-		category: 'integration',
-	},
-	docs: {
-		slug: 'docs',
-		displayName: 'Docs',
-		purpose:
-			'Lists, reads and searches the project’s own documentation so agents ground their answers in the repo’s docs instead of guessing.',
-		category: 'knowledge',
-	},
-	git: {
-		slug: 'git',
-		displayName: 'Git',
-		purpose:
-			'Read-only git intelligence — status, diff, blame, log, show and worktree — so agents inspect history without ever mutating the repo.',
-		category: 'code-intelligence',
-	},
-	issues: {
-		slug: 'issues',
-		displayName: 'Issues',
-		purpose:
-			'Ingests, analyzes and resolves GitHub issues, turning tracked work into actionable context. Depends on the proposals plugin.',
-		category: 'integration',
-	},
-	logs: {
-		slug: 'logs',
-		displayName: 'Logs',
-		purpose:
-			'Queries, tails, correlates and redacts the operational event log so agents can debug runtime behaviour safely.',
-		category: 'observability',
-	},
-	memory: {
-		slug: 'memory',
-		displayName: 'Memory',
-		purpose:
-			'Durable, portable agent memory — save, recall, list, export and import facts that survive across sessions.',
-		category: 'knowledge',
-	},
-	notification: {
-		slug: 'notification',
-		displayName: 'Notification',
-		purpose:
-			'Coordinates agents with status notifications and lock-await primitives for safe multi-agent handoffs.',
-		category: 'workflow',
-	},
-	proposals: {
-		slug: 'proposals',
-		displayName: 'Proposals',
-		purpose:
-			'The multi-agent workflow engine — proposals, slices, locks, a task queue and worktree coordination that drive the swarm.',
-		category: 'workflow',
-	},
-	quality: {
-		slug: 'quality',
-		displayName: 'Quality',
-		purpose:
-			'Runs the project’s quality gates (lint, typecheck, test, build) per scope and reports pass/fail back to the agent.',
-		category: 'quality',
-	},
-	rules: {
-		slug: 'rules',
-		displayName: 'Rules',
-		purpose:
-			'Project-agnostic, language-aware coding rules — detects each area’s stack and emits the right lint/format/typecheck commands and idioms.',
-		category: 'quality',
-	},
-	search: {
-		slug: 'search',
-		displayName: 'Search',
-		purpose:
-			'Fast workspace code and text search so agents locate symbols and files without shelling out.',
-		category: 'code-intelligence',
-	},
-	'status-marker': {
-		slug: 'status-marker',
-		displayName: 'Status Marker',
-		purpose:
-			'Tracks and validates per-agent status markers (ping/close) that back the multi-agent status table.',
-		category: 'workflow',
-	},
-	'test-convention': {
-		slug: 'test-convention',
-		displayName: 'Test Convention',
-		purpose:
-			'Knows the project’s test conventions and runners — suggests spec paths and scans for convention drift.',
-		category: 'quality',
-	},
-	'web-fetch': {
-		slug: 'web-fetch',
-		displayName: 'Web Fetch',
-		purpose:
-			'Fetches remote web content for agents that need external context, behind a host-controlled allowlist.',
-		category: 'integration',
-	},
-};
+export const PLUGIN_CATALOG: Readonly<Record<string, IPluginCatalogEntry>> =
+	Object.fromEntries(
+		GENERATED_WEB_PLUGIN_CATALOG.map((entry) => [
+			entry.slug,
+			{
+				slug: entry.slug,
+				displayName: entry.displayName,
+				purpose: entry.purpose,
+				category: entry.category as PluginCategory,
+			},
+		]),
+	);
 
 /** Every plugin slug shipped under `plugins/`, in catalog order. */
 export const PLUGIN_SLUGS: readonly string[] = Object.keys(PLUGIN_CATALOG);

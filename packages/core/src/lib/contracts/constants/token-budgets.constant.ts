@@ -9,10 +9,17 @@ export type ITokenBudgetSurface = ITokenBudgetCeiling & {
 	readonly marginalPluginWarning?: number;
 };
 
+export type IPresetTokenBudgetProfile = {
+	readonly toolsList: ITokenBudgetSurface;
+	readonly overviewCompact?: ITokenBudgetSurface;
+	readonly roundContext?: ITokenBudgetSurface;
+};
+
 export type ITokenBudgetRegistry = {
 	readonly bytesPerEstimatedToken: number;
 	readonly fixturePluginIds: readonly string[];
 	readonly dashboardPresetIds: readonly string[];
+	readonly governedPresetIds: readonly string[];
 	readonly invariants: {
 		readonly compactVsFullMaxRatio: number;
 		readonly leanVsSwarmToolsListMaxRatio: number;
@@ -31,14 +38,12 @@ export type ITokenBudgetRegistry = {
 		readonly planCompact: ITokenBudgetSurface;
 	};
 	readonly presets: {
-		readonly swarm: {
-			readonly toolsList: ITokenBudgetSurface;
-			readonly overviewCompact: ITokenBudgetSurface;
-			readonly roundContext: ITokenBudgetSurface;
-		};
-		readonly lean: {
-			readonly toolsList: ITokenBudgetSurface;
-		};
+		readonly minimal: IPresetTokenBudgetProfile;
+		readonly lean: IPresetTokenBudgetProfile;
+		readonly standard: IPresetTokenBudgetProfile;
+		readonly swarm: IPresetTokenBudgetProfile;
+		readonly full: IPresetTokenBudgetProfile;
+		readonly vertex: IPresetTokenBudgetProfile;
 	};
 	readonly bumpPolicy: {
 		readonly summary: string;
@@ -59,6 +64,14 @@ export const TOKEN_BUDGETS: ITokenBudgetRegistry = {
 		'web-app',
 		'backend-api',
 		'cli-tool',
+	],
+	governedPresetIds: [
+		'minimal',
+		'lean',
+		'standard',
+		'swarm',
+		'full',
+		'vertex',
 	],
 	invariants: {
 		compactVsFullMaxRatio: 0.7,
@@ -124,6 +137,29 @@ export const TOKEN_BUDGETS: ITokenBudgetRegistry = {
 		},
 	},
 	presets: {
+		minimal: {
+			toolsList: {
+				hard: 64_000,
+				warning: 58_000,
+				releaseRelativePercent: 20,
+			},
+		},
+		lean: {
+			toolsList: {
+				hard: 69_000,
+				warning: 68_150,
+				releaseRelativePercent: 20,
+				marginalPluginHard: 30_000,
+				marginalPluginWarning: 24_000,
+			},
+		},
+		standard: {
+			toolsList: {
+				hard: 144_000,
+				warning: 132_000,
+				releaseRelativePercent: 20,
+			},
+		},
 		swarm: {
 			toolsList: {
 				hard: 192_000,
@@ -145,13 +181,18 @@ export const TOKEN_BUDGETS: ITokenBudgetRegistry = {
 				releaseRelativePercent: 20,
 			},
 		},
-		lean: {
+		full: {
 			toolsList: {
-				hard: 69_000,
-				warning: 68_150,
+				hard: 256_000,
+				warning: 236_000,
 				releaseRelativePercent: 20,
-				marginalPluginHard: 30_000,
-				marginalPluginWarning: 24_000,
+			},
+		},
+		vertex: {
+			toolsList: {
+				hard: 384_000,
+				warning: 320_000,
+				releaseRelativePercent: 20,
 			},
 		},
 	},
