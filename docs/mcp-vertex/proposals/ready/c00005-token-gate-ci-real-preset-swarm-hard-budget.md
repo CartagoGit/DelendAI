@@ -1,7 +1,7 @@
 ---
-id: i00005
+id: c00005
 title: "token gate CI real — el swarm real debe ensamblarse desde el loader real, no un importer sintético (TOK2-001 + TOK2-002)"
-kind: infra
+kind: chore
 status: ready
 type: proposal
 track: tokens
@@ -22,7 +22,7 @@ related:
 
 # i00005 — token gate CI real con ensamblado real del preset swarm
 
-## Problem
+## Goal
 
 Hoy el test E2E de budget de tokens usa un **importer sintético** con un subconjunto manual de plugins:
 
@@ -45,7 +45,6 @@ Esto es un P1 de producto: la promesa "low-token" está rota en la superficie na
 
 Reglas violadas: R4.1 (presupuestos son constraints), §9 TOK2-001 + TOK2-002.
 
-## Evidence
 
 Dashboard tracked (`docs/mcp-vertex/tokens/TOKEN-BUDGETS.md` o equivalente):
 
@@ -61,28 +60,25 @@ vertex      161     301,503 B
 
 Test E2E pasa porque importa solo 14 plugins, no los ~35 del swarm real.
 
-## Classification
 
 `CONFIRMADO EN DASHBOARD GENERADO` — discrepancia reproducible leyendo el dashboard y el test.
 
-## User impact
+## Why
 
 - Usuarios que cargan swarm preset consumen ~38KB extra de context sin saberlo.
 - La promesa "low-token" no se cumple en nativo.
 - Adaptive surface mitiga pero no resuelve (no es default).
 
-## Privacy impact
 
 Cero.
 
-## Token impact
 
 - **Medición actual**: swarm real = 229,740 B.
 - **Target**: swarm real <= 192,000 B (hard).
 - **Stretch**: swarm real <= warning threshold.
 - **Coste del gate**: añadir ~5–10s al CI (medición real en lugar de sintética).
 
-## Scope
+## Non-goals
 
 **Permitido**:
 
@@ -98,14 +94,13 @@ Cero.
 - Cambios en plugins para reducir tokens (cada reducción va en su propuesta: `r00018`, etc.).
 - Cambios en budgets hard/warning (otra propuesta si se quiere; **no** se suben los presupuestos sin aprobación).
 
-## Out of scope
 
 - Reducción del coste de `proposals` (`r00018`).
 - Dashboard check independiente (`i00006`).
 - Vertex budget (`i00007`).
 - Adaptive default (`r00019`).
 
-## Design
+## Architecture
 
 ### 1. Eliminar el importer sintético
 
@@ -229,47 +224,6 @@ Top contributors:
 ...
 ```
 
-## Tests
-
-- **Unit**: el script `run-actual-preset-budget.script.ts` corre standalone y reporta breach correctamente.
-- **Integration**: el test E2E con loader real se ejecuta en CI.
-- **Snapshot del breach**: cuando un preset falla, el output incluye los top contributors (ayuda al siguiente fix).
-
-## Acceptance criteria
-
-- [ ] Importer sintético eliminado del test E2E.
-- [ ] Loader real usado en su lugar.
-- [ ] Budgets como código (en `tools/scripts/test/token-budgets.ts`).
-- [ ] `hard` no se sube automáticamente; regla documentada.
-- [ ] `bun run tokens:gate` añadido a `bun run validate` y al CI workflow.
-- [ ] Si swarm sigue excediendo, el test falla con el desglose.
-- [ ] Reports muestran top contributors cuando hay breach.
-- [ ] `bun run validate` verde (o rojo, pero justificando).
-
-## Regression guards
-
-- El gate es el **regression guard**. Cualquier aumento de coste futuro en plugins rompe el CI.
-- Si alguien sube `hard`, debe pasar por aprobación explícita (code review + decisión documentada).
-
-## Resolution evidence (template)
-
-```yaml
-resolution:
-  status: implemented
-  evidence:
-    - commit: <hash>
-    - files-modified:
-        - tools/scripts/test/token-budget.spec.ts (eliminado synthetic)
-        - tools/scripts/test/run-actual-preset-budget.script.ts (nuevo)
-        - tools/scripts/test/token-budgets.ts (nuevo)
-    - before/after:
-        before: "Test E2E usa importer sintético; pasa aunque swarm real exceda"
-        after:  "Loader real; si swarm excede, CI falla con desglose"
-    - current-status: "swarm = 229,740 B / hard = 192,000 B (BREACH; pendiente r00018 para reducir)"
-```
-
----
-
 ## Slices
 
 - global_gate: type
@@ -292,7 +246,22 @@ resolution:
   - "`bun run tokens:gate` añadido."
   - "CI ejecuta el gate."
 
-## acceptance
+## Acceptance
+
+- **Unit**: el script `run-actual-preset-budget.script.ts` corre standalone y reporta breach correctamente.
+- **Integration**: el test E2E con loader real se ejecuta en CI.
+- **Snapshot del breach**: cuando un preset falla, el output incluye los top contributors (ayuda al siguiente fix).
+
+
+- [ ] Importer sintético eliminado del test E2E.
+- [ ] Loader real usado en su lugar.
+- [ ] Budgets como código (en `tools/scripts/test/token-budgets.ts`).
+- [ ] `hard` no se sube automáticamente; regla documentada.
+- [ ] `bun run tokens:gate` añadido a `bun run validate` y al CI workflow.
+- [ ] Si swarm sigue excediendo, el test falla con el desglose.
+- [ ] Reports muestran top contributors cuando hay breach.
+- [ ] `bun run validate` verde (o rojo, pero justificando).
+
 
 - Gate CI usa loader real.
 - Budgets como código.
@@ -300,7 +269,29 @@ resolution:
 
 ---
 
-## Cómo se relaciona con el plan y la auditoría
+## Notes
+
+- El gate es el **regression guard**. Cualquier aumento de coste futuro en plugins rompe el CI.
+- Si alguien sube `hard`, debe pasar por aprobación explícita (code review + decisión documentada).
+
+
+```yaml
+resolution:
+  status: implemented
+  evidence:
+    - commit: <hash>
+    - files-modified:
+        - tools/scripts/test/token-budget.spec.ts (eliminado synthetic)
+        - tools/scripts/test/run-actual-preset-budget.script.ts (nuevo)
+        - tools/scripts/test/token-budgets.ts (nuevo)
+    - before/after:
+        before: "Test E2E usa importer sintético; pasa aunque swarm real exceda"
+        after:  "Loader real; si swarm excede, CI falla con desglose"
+    - current-status: "swarm = 229,740 B / hard = 192,000 B (BREACH; pendiente r00018 para reducir)"
+```
+
+---
+
 
 - **Plan padre**: [q00004](../../ready/q00004-plan-hardening-post-auditoria-chatgpt-sol-segunda-pasada.md), Track C.
 - **Auditoría legada**: §9 TOK2-001 + TOK2-002.

@@ -21,7 +21,7 @@ related:
 
 # t00008 — with-file-mutex: property tests
 
-## Problem
+## Goal
 
 `x00244` rediseña el reclaim con lease/generation. `t00007` verifica el race window específico. Pero **ninguno** verifica la invariante general:
 
@@ -31,27 +31,23 @@ Esta propiedad es difícil de expresar como test determinista. Property-based te
 
 Reglas relacionadas: R5.2, §20 TEST2-003 auditoría.
 
-## Evidence
 
 Hoy `with-file-mutex.spec.ts` cubre casos puntuales pero no secuencias arbitrarias.
 
-## Classification
 
 `MEJORA / INVARIANTE TRANSVERSAL` — propuesta de test, no fix.
 
-## User impact
+## Why
 
 Confianza operativa continua: cualquier secuencia "rara" queda cubierta.
 
-## Privacy impact
 
 Cero.
 
-## Token impact
 
 Cero.
 
-## Scope
+## Non-goals
 
 **Permitido**:
 
@@ -64,13 +60,12 @@ Cero.
 - Cambios en `with-file-mutex.ts`.
 - Cambios en otros lugares.
 
-## Out of scope
 
 - Test determinista (`t00007`).
 - Rediseño (`x00244`).
 - Métricas (`MUT2-002`).
 
-## Design
+## Architecture
 
 ### 1. Property 1: nunca dos holders simultáneos
 
@@ -255,13 +250,24 @@ it('lock file generations are monotonic', async () => {
 });
 ```
 
-## Tests
+## Slices
+
+- global_gate: type
+
+### S1 — Property tests
+
+- **Status**: pending
+- **Files**: `packages/core/tests/src/lib/shared/with-file-mutex.property.spec.ts`
+- **Gate**: type
+- acceptance:
+  - "4 properties verdes (≥450 runs totales)."
+
+## Acceptance
 
 - **Property**: 4 properties (concurrencia, crash-recovery, heartbeat, generaciones).
 - **Runs**: ≥100 por property (configurable; 200 para property 1).
 - **Tiempo total**: <60s en CI.
 
-## Acceptance criteria
 
 - [ ] `with-file-mutex.property.spec.ts` existe.
 - [ ] Property 1 (no concurrencia) verde con 200 runs.
@@ -271,12 +277,18 @@ it('lock file generations are monotonic', async () => {
 - [ ] Tiempo <60s en CI.
 - [ ] Si una property falla, mensaje claro con seed reproducible.
 
-## Regression guards
+
+- Property tests implementados.
+- ≥450 runs totales.
+- Tiempo <60s en CI.
+
+---
+
+## Notes
 
 - Las properties son la **verificación continua** del state machine. Cualquier cambio futuro que rompa una invariante falla el test.
 - Si se reduce `numRuns` por motivos de velocidad, documentar la razón.
 
-## Resolution evidence (template)
 
 ```yaml
 resolution:
@@ -294,27 +306,6 @@ resolution:
 
 ---
 
-## Slices
-
-- global_gate: type
-
-### S1 — Property tests
-
-- **Status**: pending
-- **Files**: `packages/core/tests/src/lib/shared/with-file-mutex.property.spec.ts`
-- **Gate**: type
-- acceptance:
-  - "4 properties verdes (≥450 runs totales)."
-
-## acceptance
-
-- Property tests implementados.
-- ≥450 runs totales.
-- Tiempo <60s en CI.
-
----
-
-## Cómo se relaciona con el plan y la auditoría
 
 - **Plan padre**: [q00004](../../ready/q00004-plan-hardening-post-auditoria-chatgpt-sol-segunda-pasada.md), Track B.
 - **Auditoría legada**: §6 MUT2-001, §20 TEST2-003.

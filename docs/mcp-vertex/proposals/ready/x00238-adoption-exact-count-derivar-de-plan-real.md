@@ -20,7 +20,7 @@ related:
 
 # x00238 — adoption: exact count derivado del plan
 
-## Problem
+## Goal
 
 ```ts
 // packages/adoption/src/lib/assessment.service.ts (aprox)
@@ -38,27 +38,23 @@ Esto reporta `exact: true` con un número hardcoded que **no refleja el plan rea
 
 Reglas violadas: §13 ADOPT2-001.
 
-## Evidence
 
 El constant existe en el código y se reporta como `exact: true` sin derivar del plan.
 
-## Classification
 
 `CONFIRMADO / PRECISIÓN`.
 
-## User impact
+## Why
 
 Confianza en el assessment. Si el plan cambia, el count sigue correcto automáticamente.
 
-## Privacy impact
 
 Cero.
 
-## Token impact
 
 Cero.
 
-## Scope
+## Non-goals
 
 **Permitido**:
 
@@ -71,11 +67,10 @@ Cero.
 - Cambios en la lógica de adoption.
 - Cambios en otros plugins.
 
-## Out of scope
 
 - Adoption assessment refinements (`ADOPT2-002`, `ADOPT2-003`).
 
-## Design
+## Architecture
 
 ### 1. Derivar count del plan
 
@@ -190,44 +185,6 @@ El assessment ahora muestra el breakdown:
 
 El usuario ve exactamente qué se va a escribir.
 
-## Tests
-
-- **Unit**: count refleja `buildAgentFiles()` cambios.
-- **Unit**: `exact: true` cuando todo se deriva.
-- **Unit**: `exact: false` cuando hay heurística.
-- **Regression**: cambiar `buildAgentFiles()` no rompe el assessment.
-
-## Acceptance criteria
-
-- [ ] Constant `EXACT_ADOPTION_WRITE_ESTIMATE = 25` eliminado.
-- [ ] Count derivado del plan real (config + proposal store + buildAgentFiles + other).
-- [ ] `exact: true` solo cuando todo es derivable.
-- [ ] UI muestra breakdown.
-- [ ] Tests verdes.
-- [ ] `bun run validate` verde.
-
-## Regression guards
-
-- **Test**: cambiar `buildAgentFiles()` actualiza count automáticamente.
-- **Property test**: count nunca negativo; suma de breakdown == count total.
-
-## Resolution evidence (template)
-
-```yaml
-resolution:
-  status: implemented
-  evidence:
-    - commit: <hash>
-    - files-modified:
-        - packages/adoption/src/lib/assessment.service.ts
-        - packages/adoption/tests/src/lib/assessment.spec.ts
-    - before/after:
-        before: "Constante 25 hardcoded; exact: true mentiroso"
-        after:  "Count derivado del plan; breakdown visible; exact honesto"
-```
-
----
-
 ## Slices
 
 - global_gate: type
@@ -250,7 +207,21 @@ resolution:
   - "Tests verdes."
   - "UI muestra breakdown."
 
-## acceptance
+## Acceptance
+
+- **Unit**: count refleja `buildAgentFiles()` cambios.
+- **Unit**: `exact: true` cuando todo se deriva.
+- **Unit**: `exact: false` cuando hay heurística.
+- **Regression**: cambiar `buildAgentFiles()` no rompe el assessment.
+
+
+- [ ] Constant `EXACT_ADOPTION_WRITE_ESTIMATE = 25` eliminado.
+- [ ] Count derivado del plan real (config + proposal store + buildAgentFiles + other).
+- [ ] `exact: true` solo cuando todo es derivable.
+- [ ] UI muestra breakdown.
+- [ ] Tests verdes.
+- [ ] `bun run validate` verde.
+
 
 - Count derivado del plan.
 - `exact` honesto.
@@ -258,7 +229,27 @@ resolution:
 
 ---
 
-## Cómo se relaciona con el plan y la auditoría
+## Notes
+
+- **Test**: cambiar `buildAgentFiles()` actualiza count automáticamente.
+- **Property test**: count nunca negativo; suma de breakdown == count total.
+
+
+```yaml
+resolution:
+  status: implemented
+  evidence:
+    - commit: <hash>
+    - files-modified:
+        - packages/adoption/src/lib/assessment.service.ts
+        - packages/adoption/tests/src/lib/assessment.spec.ts
+    - before/after:
+        before: "Constante 25 hardcoded; exact: true mentiroso"
+        after:  "Count derivado del plan; breakdown visible; exact honesto"
+```
+
+---
+
 
 - **Plan padre**: [q00004](../../ready/q00004-plan-hardening-post-auditoria-chatgpt-sol-segunda-pasada.md), Track F.
 - **Auditoría legada**: §13 ADOPT2-001.

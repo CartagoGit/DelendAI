@@ -21,7 +21,7 @@ related:
 
 # t00007 — with-file-mutex: test determinista del race window
 
-## Problem
+## Goal
 
 `packages/core/src/lib/shared/with-file-mutex.ts` implementa un mutex basado en archivos con:
 
@@ -55,7 +55,6 @@ Sin este test, el rediseño (`x00244`) opera sin evidencia. Si el race **no se r
 
 Reglas relacionadas: R5.2 (invariantes como lints/tests), §6 auditoría.
 
-## Evidence
 
 `packages/core/src/lib/shared/with-file-mutex.ts` opera con:
 
@@ -65,11 +64,10 @@ Reglas relacionadas: R5.2 (invariantes como lints/tests), §6 auditoría.
 
 No existe suite de tests concurrentes para esta lógica.
 
-## Classification
 
 `PROBABLE` — el código muestra la condición peligrosa; hace falta el test para confirmar.
 
-## User impact
+## Why
 
 Si el race se reproduce:
 
@@ -81,15 +79,13 @@ Si **no** se reproduce:
 
 - La propuesta `x00244` puede re-enfocarse a "ya está resuelto por generación implícita / heartbeat window es < 1 tick".
 
-## Privacy impact
 
 Cero. No toca datos del usuario.
 
-## Token impact
 
 Cero. No añade tools.
 
-## Scope
+## Non-goals
 
 **Permitido**:
 
@@ -102,13 +98,12 @@ Cero. No añade tools.
 - Cambios de comportamiento en `with-file-mutex.ts` (la propuesta es solo de test).
 - Cambios en otros lugares que usen el mutex.
 
-## Out of scope
 
 - Rediseño del reclaim (`x00244`).
 - Property tests adicionales (`t00008`).
 - Métricas de contention (`MUT2-002`).
 
-## Design
+## Architecture
 
 ### 1. Helpers de inyección
 
@@ -330,45 +325,6 @@ production-extrapolation: uncertain
 - (b) Documentar la propiedad empírica y añadir métricas (`MUT2-002`).
 - (c) Reducir a un test E2E con filesystem real (más lento, más flaky).
 
-## Tests
-
-- Cobertura mínima: 3 specs (escenario MUT2-001, 3 contendores, no-reproducción empírica).
-- E2E opcional: `with-file-mutex.race.e2e.spec.ts` con filesystem real + delays aleatorios (más lento, puede ser flaky).
-
-## Acceptance criteria
-
-- [ ] Test `with-file-mutex.race.spec.ts` existe y es ejecutable.
-- [ ] Clock + fs inyectables.
-- [ ] Escenario MUT2-001 cubiert: heartbeat entre observation y rename.
-- [ ] Test con 3 contendores.
-- [ ] Si el test **falla**, se documenta como evidencia para `x00244`.
-- [ ] Si el test **pasa**, se documenta con parámetros y se extrapola a producción.
-- [ ] Helpers `fake-clock.ts`, `fake-fs.ts`, `barrier.ts` reutilizables.
-
-## Regression guards
-
-- El test es la **verificación continua** de MUT2-001. Cualquier cambio en `with-file-mutex.ts` debe mantenerlo verde.
-- Si un agente futuro "optimiza" el reclaim (p. ej. quitando el quarantine) y esto reintroduce el race, el test falla.
-
-## Resolution evidence (template)
-
-```yaml
-resolution:
-  status: implemented
-  evidence:
-    - commit: <hash>
-    - tests:
-        - packages/core/tests/src/lib/shared/with-file-mutex.race.spec.ts
-    - result:
-        if-failed: "Race confirmado; ver mensaje + entries; x00244 debe rediseñar"
-        if-passed: "Race no reproducible con estos parámetros; documentar + considerar rediseño preventivo"
-    - before/after:
-        before: "Race window existe teóricamente; sin test"
-        after:  "Test determinista; race confirmado o descartado con evidencia"
-```
-
----
-
 ## Slices
 
 - global_gate: type
@@ -391,7 +347,20 @@ resolution:
   - "Test con 3 contendores."
   - "Mensaje claro si race confirmado."
 
-## acceptance
+## Acceptance
+
+- Cobertura mínima: 3 specs (escenario MUT2-001, 3 contendores, no-reproducción empírica).
+- E2E opcional: `with-file-mutex.race.e2e.spec.ts` con filesystem real + delays aleatorios (más lento, puede ser flaky).
+
+
+- [ ] Test `with-file-mutex.race.spec.ts` existe y es ejecutable.
+- [ ] Clock + fs inyectables.
+- [ ] Escenario MUT2-001 cubiert: heartbeat entre observation y rename.
+- [ ] Test con 3 contendores.
+- [ ] Si el test **falla**, se documenta como evidencia para `x00244`.
+- [ ] Si el test **pasa**, se documenta con parámetros y se extrapola a producción.
+- [ ] Helpers `fake-clock.ts`, `fake-fs.ts`, `barrier.ts` reutilizables.
+
 
 - Test determinista del race window implementado.
 - Resultado (pass/fail) documentado con evidencia.
@@ -399,7 +368,29 @@ resolution:
 
 ---
 
-## Cómo se relaciona con el plan y la auditoría
+## Notes
+
+- El test es la **verificación continua** de MUT2-001. Cualquier cambio en `with-file-mutex.ts` debe mantenerlo verde.
+- Si un agente futuro "optimiza" el reclaim (p. ej. quitando el quarantine) y esto reintroduce el race, el test falla.
+
+
+```yaml
+resolution:
+  status: implemented
+  evidence:
+    - commit: <hash>
+    - tests:
+        - packages/core/tests/src/lib/shared/with-file-mutex.race.spec.ts
+    - result:
+        if-failed: "Race confirmado; ver mensaje + entries; x00244 debe rediseñar"
+        if-passed: "Race no reproducible con estos parámetros; documentar + considerar rediseño preventivo"
+    - before/after:
+        before: "Race window existe teóricamente; sin test"
+        after:  "Test determinista; race confirmado o descartado con evidencia"
+```
+
+---
+
 
 - **Plan padre**: [q00004](../../ready/q00004-plan-hardening-post-auditoria-chatgpt-sol-segunda-pasada.md), Track B.
 - **Auditoría legada**: §6 MUT2-001.

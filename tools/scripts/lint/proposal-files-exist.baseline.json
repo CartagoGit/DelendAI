@@ -31,5 +31,6 @@
 	"docs/mcp-vertex/proposals/done/feats/f00068-external-mcps-plugin.md": 3,
 	"docs/mcp-vertex/proposals/done/feats/f00069-tabs-cross-fade-and-iconography.md": 2,
 	"docs/mcp-vertex/proposals/done/chores/c00075-proposal-guardian-cannot-pause-without-user-consent.md": 4,
-	"docs/mcp-vertex/proposals/done/refactors/r00011-auto-config-packs.md": 1
+	"docs/mcp-vertex/proposals/done/refactors/r00011-auto-config-packs.md": 1,
+	"docs/mcp-vertex/proposals/review/x00237-error-reporting-runtime-version-source-canonica-build-time-injected.md": 1
 }

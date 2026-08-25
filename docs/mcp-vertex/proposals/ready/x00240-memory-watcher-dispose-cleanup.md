@@ -20,7 +20,7 @@ related:
 
 # x00240 — memory: disposer cierra watcher + debounce timer
 
-## Problem
+## Goal
 
 `fs.watch()` se crea durante `register()` del plugin memory. Hoy:
 
@@ -30,7 +30,6 @@ related:
 
 Reglas violadas: §18 MEM2-002.
 
-## Evidence
 
 ```ts
 // plugins/memory/src/index.ts (aprox)
@@ -60,25 +59,22 @@ test('memory dispose closes watcher + clears debounce', async () => {
 });
 ```
 
-## Classification
 
 `REVISAR / MEJORA`.
 
-## User impact
+## Why
 
 - Proceso termina limpio (no queda colgado).
 - Tests que cargan + descargan el plugin no acumulan handles.
 - Lifecycle determinista.
 
-## Privacy impact
 
 Cero.
 
-## Token impact
 
 Cero.
 
-## Scope
+## Non-goals
 
 **Permitido**:
 
@@ -91,12 +87,11 @@ Cero.
 - Cambios en la lógica de memory.
 - Cambios en otros plugins.
 
-## Out of scope
 
 - Memory freshness (ya event-driven, no reabrir).
 - BM25/recall/TTL/compaction (cubierto por otras proposals).
 
-## Design
+## Architecture
 
 ### 1. Disposer correcto
 
@@ -248,46 +243,6 @@ describe('memory lifecycle E2E', () => {
 });
 ```
 
-## Tests
-
-- **Unit**: dispose cierra watcher.
-- **Unit**: dispose cancela debounce timer.
-- **Unit**: dispose idempotente.
-- **E2E**: 5 ciclos load → dispose no acumulan handles.
-
-## Acceptance criteria
-
-- [ ] `dispose()` cierra el `fs.watch` watcher.
-- [ ] `dispose()` cancela el debounce timer pendiente.
-- [ ] Double dispose es idempotente.
-- [ ] Después de dispose, no quedan handles activos (verificable con `process.getActiveResourcesInfo()`).
-- [ ] E2E: 5 ciclos load → dispose sin acumulación.
-- [ ] Documentación: `docs/mcp-vertex/plugins/memory.md` menciona el lifecycle.
-- [ ] `bun run validate` verde.
-
-## Regression guards
-
-- **Lifecycle test E2E** verde en CI.
-- **Property test**: dispose N veces == dispose 1 vez (idempotencia).
-
-## Resolution evidence (template)
-
-```yaml
-resolution:
-  status: implemented
-  evidence:
-    - commit: <hash>
-    - files-modified:
-        - plugins/memory/src/index.ts
-        - plugins/memory/src/lib/services/watcher.service.ts (nuevo)
-        - plugins/memory/tests/** (tests de lifecycle)
-    - before/after:
-        before: "Dispose no cierra watcher; handles pueden quedar activos"
-        after:  "Dispose cierra watcher + cancela debounce; lifecycle determinista"
-```
-
----
-
 ## Slices
 
 - global_gate: type
@@ -310,7 +265,22 @@ resolution:
   - "Tests verdes."
   - "E2E lifecycle verde."
 
-## acceptance
+## Acceptance
+
+- **Unit**: dispose cierra watcher.
+- **Unit**: dispose cancela debounce timer.
+- **Unit**: dispose idempotente.
+- **E2E**: 5 ciclos load → dispose no acumulan handles.
+
+
+- [ ] `dispose()` cierra el `fs.watch` watcher.
+- [ ] `dispose()` cancela el debounce timer pendiente.
+- [ ] Double dispose es idempotente.
+- [ ] Después de dispose, no quedan handles activos (verificable con `process.getActiveResourcesInfo()`).
+- [ ] E2E: 5 ciclos load → dispose sin acumulación.
+- [ ] Documentación: `docs/mcp-vertex/plugins/memory.md` menciona el lifecycle.
+- [ ] `bun run validate` verde.
+
 
 - Dispose cierra watcher + cancela debounce.
 - Idempotente.
@@ -318,7 +288,28 @@ resolution:
 
 ---
 
-## Cómo se relaciona con el plan y la auditoría
+## Notes
+
+- **Lifecycle test E2E** verde en CI.
+- **Property test**: dispose N veces == dispose 1 vez (idempotencia).
+
+
+```yaml
+resolution:
+  status: implemented
+  evidence:
+    - commit: <hash>
+    - files-modified:
+        - plugins/memory/src/index.ts
+        - plugins/memory/src/lib/services/watcher.service.ts (nuevo)
+        - plugins/memory/tests/** (tests de lifecycle)
+    - before/after:
+        before: "Dispose no cierra watcher; handles pueden quedar activos"
+        after:  "Dispose cierra watcher + cancela debounce; lifecycle determinista"
+```
+
+---
+
 
 - **Plan padre**: [q00004](../../ready/q00004-plan-hardening-post-auditoria-chatgpt-sol-segunda-pasada.md), Track F.
 - **Auditoría legada**: §18 MEM2-002.

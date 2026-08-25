@@ -1,7 +1,7 @@
 ---
-id: i00011
+id: c00011
 title: "CI — generators gate + workflow run evidence en cada proposal (CI2-003 + CI2-005)"
-kind: infra
+kind: chore
 status: ready
 type: proposal
 track: ci
@@ -23,7 +23,7 @@ related:
 
 # i00011 — CI: generators gate + workflow run evidence
 
-## Problem
+## Goal
 
 Dos problemas relacionados:
 
@@ -33,7 +33,6 @@ Dos problemas relacionados:
 
 Reglas violadas: §19 CI2-003 + CI2-005.
 
-## Evidence
 
 Generadores actuales:
 
@@ -44,24 +43,21 @@ Workflow run evidence:
 
 - Hoy, las proposals pueden transicionar a `review`/`done` sin documentar qué gates corrieron.
 
-## Classification
 
 `MEJORA / CI`.
 
-## User impact
+## Why
 
 - Generators desincronizados se detectan automáticamente.
 - Proposals tienen evidencia verificable de CI.
 
-## Privacy impact
 
 Cero.
 
-## Token impact
 
 Cero.
 
-## Scope
+## Non-goals
 
 **Permitido**:
 
@@ -75,12 +71,11 @@ Cero.
 
 - Cambios en plugins.
 
-## Out of scope
 
 - Token dashboard check (`i00006`, ya implementado).
 - Branch policy (`i00010`).
 
-## Design
+## Architecture
 
 ### 1. Generators gate unificado
 
@@ -285,13 +280,42 @@ A proposal without evidence cannot transition to `done` (unless explicitly
 overridden by a human reviewer).
 ```
 
-## Tests
+## Slices
+
+- global_gate: type
+
+### S1 — Generators gate unificado
+
+- **Status**: pending
+- **Files**: `tools/scripts/lint/check-generated-artifacts.script.ts`
+- **Gate**: type
+- acceptance:
+  - "5 generadores cubiertos."
+  - "Drift detectado."
+
+### S2 — Collect evidence + transition validation
+
+- **Status**: pending
+- **Files**: `tools/scripts/proposals/collect-evidence.script.ts`, `plugins/proposals/src/lib/proposals/transition.service.ts`
+- **Gate**: type
+- acceptance:
+  - "Evidence recolectable."
+  - "Transición exige evidence en CI."
+
+### S3 — Documentación
+
+- **Status**: pending
+- **Files**: `docs/mcp-vertex/ci/evidence.md`
+- **Gate**: type
+- acceptance:
+  - "Flujo documentado."
+
+## Acceptance
 
 - **Unit**: `collectProposalEvidence` parsea correctamente el output de `gh run list`.
 - **Integration**: una proposal sin evidence no puede transicionar a `review` (en CI).
 - **E2E**: drift en artifacts rompe CI.
 
-## Acceptance criteria
 
 - [ ] `check-generated-artifacts.script.ts` unifica los 5 checks.
 - [ ] CI ejecuta el check.
@@ -300,13 +324,19 @@ overridden by a human reviewer).
 - [ ] Documentación: `docs/mcp-vertex/ci/evidence.md` explica el flujo.
 - [ ] `bun run validate` verde.
 
-## Regression guards
+
+- Generators gate verde.
+- Evidence recolectable.
+- Transición validada.
+
+---
+
+## Notes
 
 - **Generators CI** verde.
 - **Transition validation** en CI exige evidence.
 - **Dev override** documentado (agentes locales pueden omitir evidence).
 
-## Resolution evidence (template)
 
 ```yaml
 resolution:
@@ -321,6 +351,13 @@ resolution:
 ```
 
 ---
+
+
+- **Plan padre**: [q00004](../../ready/q00004-plan-hardening-post-auditoria-chatgpt-sol-segunda-pasada.md), Track G.
+- **Auditoría legada**: §19 CI2-003 + CI2-005.
+- **Predecesor**: `i00010` (branch policy).
+- **Hermanas**: `f00175`, `i00006`.
+- **Principio §41**: *"A proposal is not done until the acceptance evidence exists."*
 
 ## Slices
 
@@ -352,18 +389,9 @@ resolution:
 - acceptance:
   - "Flujo documentado."
 
-## acceptance
+## Acceptance
 
 - Generators gate verde.
 - Evidence recolectable.
 - Transición validada.
-
----
-
-## Cómo se relaciona con el plan y la auditoría
-
-- **Plan padre**: [q00004](../../ready/q00004-plan-hardening-post-auditoria-chatgpt-sol-segunda-pasada.md), Track G.
-- **Auditoría legada**: §19 CI2-003 + CI2-005.
-- **Predecesor**: `i00010` (branch policy).
-- **Hermanas**: `f00175`, `i00006`.
-- **Principio §41**: *"A proposal is not done until the acceptance evidence exists."*
+- `bun run validate` verde.

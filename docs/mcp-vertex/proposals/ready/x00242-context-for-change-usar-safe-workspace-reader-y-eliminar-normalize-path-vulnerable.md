@@ -23,7 +23,7 @@ related:
 
 # x00242 — context-for-change: usar SafeWorkspaceReader
 
-## Problem
+## Goal
 
 `plugins/context-for-change/src/lib/services/context-for-change.service.ts` contiene un patrón vulnerable:
 
@@ -49,7 +49,6 @@ Un caller puede pasar `/otro/proyecto/private.ts` y el servicio lo lee, extrae s
 
 Reglas violadas: R5.1 (invariantes como APIs), §5 FS2-001.
 
-## Evidence
 
 (Ver `x00241` para el patrón general; este es el caso concreto en `context-for-change`.)
 
@@ -64,26 +63,23 @@ test('context-for-change rejects /outside/secret.ts', async () => {
 // ↑ falla en HEAD porque el patrón actual acepta el path
 ```
 
-## Classification
 
 `CONFIRMADO POR CÓDIGO` (FS2-001).
 
-## User impact
+## Why
 
 - **Seguridad**: agentes externos pueden leer archivos de otros proyectos a través de `context_for_change`.
 - **Privacidad**: código del proyecto puede filtrarse vía metadatos derivados (símbolos, referencias).
 - **Estabilidad**: paths arbitrarios del usuario pueden provocar crashes.
 
-## Privacy impact
 
 - **Class C** (project data): paths, filenames, contenido — todos pueden fugarse.
 - Riesgo legal si el caller es un agente externo y el workspace contiene código de cliente.
 
-## Token impact
 
 Cero. No cambia tools ni schemas.
 
-## Scope
+## Non-goals
 
 **Permitido**:
 
@@ -98,13 +94,12 @@ Cero. No cambia tools ni schemas.
 - Reescritura de la lógica de extracción de símbolos.
 - Cambios en otros plugins.
 
-## Out of scope
 
 - API `SafeWorkspaceReader` (`x00241`).
 - Lint arquitectónico (`i00004`).
 - Cambios en `impact-analysis` (`x00243`).
 
-## Design
+## Architecture
 
 ### 1. Reemplazar `normalizePath` por `resolve` de `SafeWorkspaceReader`
 
@@ -234,47 +229,6 @@ it('any absolute path outside workspace is rejected', () => {
 });
 ```
 
-## Tests
-
-- **Unit**: actualizar tests existentes; añadir suite `workspace-containment.spec.ts` (≥15 casos).
-- **Integration**: tests con filesystem real (`mklink`, cleanup).
-- **Property**: ≥1 property test sobre paths adversariales.
-
-## Acceptance criteria
-
-- [ ] `normalizePath` local eliminado; todas las lecturas pasan por `SafeWorkspaceReader`.
-- [ ] No quedan `import` directos de `node:fs/promises#readFile` en el plugin (excepto allowlist documentada si existe necesidad legítima).
-- [ ] Suite adversarial verde: ≥15 casos rechazados.
-- [ ] Symlink chain (dentro→fuera) rechazado.
-- [ ] Prefix collision detectado.
-- [ ] Reserved paths (`.git`, `.env`, `node_modules`) rechazados.
-- [ ] Documentation: `docs/mcp-vertex/plugins/context-for-change.md` explica el comportamiento de filesystem safety.
-- [ ] `bun run validate` verde.
-
-## Regression guards
-
-- **Lint arquitectónico** (`i00004`): bloquea nuevos `readFile` directos en el plugin.
-- **Property test**: cualquier input absoluto fuera del workspace es rechazado.
-- **Snapshot del error**: `ContextForChangeError` no filtra el contenido del archivo exterior (solo el path original).
-
-## Resolution evidence (template)
-
-```yaml
-resolution:
-  status: implemented
-  evidence:
-    - commit: <hash>
-    - files-modified:
-        - plugins/context-for-change/src/lib/services/context-for-change.service.ts
-        - plugins/context-for-change/tests/...
-    - before/after:
-        before: "normalizePath local con escape; readFile directo"
-        after:  "SafeWorkspaceReader; sin imports directos de node:fs/promises#readFile"
-    - tests: ≥15 unit + ≥1 property
-```
-
----
-
 ## Slices
 
 - global_gate: type
@@ -310,7 +264,22 @@ resolution:
 - acceptance:
   - "Sección 'Filesystem safety' explica comportamiento y casos rechazados."
 
-## acceptance
+## Acceptance
+
+- **Unit**: actualizar tests existentes; añadir suite `workspace-containment.spec.ts` (≥15 casos).
+- **Integration**: tests con filesystem real (`mklink`, cleanup).
+- **Property**: ≥1 property test sobre paths adversariales.
+
+
+- [ ] `normalizePath` local eliminado; todas las lecturas pasan por `SafeWorkspaceReader`.
+- [ ] No quedan `import` directos de `node:fs/promises#readFile` en el plugin (excepto allowlist documentada si existe necesidad legítima).
+- [ ] Suite adversarial verde: ≥15 casos rechazados.
+- [ ] Symlink chain (dentro→fuera) rechazado.
+- [ ] Prefix collision detectado.
+- [ ] Reserved paths (`.git`, `.env`, `node_modules`) rechazados.
+- [ ] Documentation: `docs/mcp-vertex/plugins/context-for-change.md` explica el comportamiento de filesystem safety.
+- [ ] `bun run validate` verde.
+
 
 - `normalizePath` local eliminado.
 - Reader inyectado; todas las lecturas por `SafeWorkspaceReader`.
@@ -319,7 +288,29 @@ resolution:
 
 ---
 
-## Cómo se relaciona con el plan y la auditoría
+## Notes
+
+- **Lint arquitectónico** (`i00004`): bloquea nuevos `readFile` directos en el plugin.
+- **Property test**: cualquier input absoluto fuera del workspace es rechazado.
+- **Snapshot del error**: `ContextForChangeError` no filtra el contenido del archivo exterior (solo el path original).
+
+
+```yaml
+resolution:
+  status: implemented
+  evidence:
+    - commit: <hash>
+    - files-modified:
+        - plugins/context-for-change/src/lib/services/context-for-change.service.ts
+        - plugins/context-for-change/tests/...
+    - before/after:
+        before: "normalizePath local con escape; readFile directo"
+        after:  "SafeWorkspaceReader; sin imports directos de node:fs/promises#readFile"
+    - tests: ≥15 unit + ≥1 property
+```
+
+---
+
 
 - **Plan padre**: [q00004](../../ready/q00004-plan-hardening-post-auditoria-chatgpt-sol-segunda-pasada.md), Track A.
 - **Auditoría legada**: §5 FS2-001.

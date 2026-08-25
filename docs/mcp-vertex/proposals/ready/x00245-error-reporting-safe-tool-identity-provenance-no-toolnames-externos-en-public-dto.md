@@ -24,7 +24,7 @@ related:
 
 # x00245 — error-reporting: provenance segura de toolId
 
-## Problem
+## Goal
 
 `plugins/error-reporting/src/lib/report-builder.helper.ts` construye el report público con `toolId: toolName`. Aunque el error sea legítimamente interno a Vertex, `toolName` puede pertenecer a una tool registrada por el host/proyecto. Ejemplo conceptual: una tool llamada `superbank_internal_fraud_reconciliation` o `acme_hr_onboarding` provoca un fallo interno Vertex y, al pasar por el pipeline actual, su nombre puede llegar al DTO público.
 
@@ -32,7 +32,6 @@ Esto es un riesgo legal y de privacidad **P0**. La auditoría §3 marca los tool
 
 **Reglas violadas actualmente**: R1.1 (privacidad por construcción), R1.5 (dos proyectos con el mismo bug → mismo issue), §3.2 de la auditoría, ER2-001.
 
-## Evidence
 
 ```ts
 // plugins/error-reporting/src/lib/report-builder.helper.ts (extracto relevante)
@@ -56,11 +55,10 @@ Reproducción (test que falla en el HEAD actual):
 3. Capturar el `ISafeMcpVertexReport` antes de la fase de submit.
 4. `report.toolId === 'privatecompany_reconciliation_execute'` → **FUGA**.
 
-## Classification
 
 `CONFIRMADO` (ER2-001) — el patrón está visible en el código y se reproduce trivialmente.
 
-## User impact
+## Why
 
 Ninguno observable para el usuario en operación normal. El impacto es de **riesgo legal**: publicación de identificadores del proyecto del consumidor en issues públicos de Vertex sin consentimiento. Esto puede violar:
 
@@ -70,7 +68,6 @@ Ninguno observable para el usuario en operación normal. El impacto es de **ries
 
 **Severidad legal: ALTA.** Sin acción correctiva, cada issue generada por un consumidor puede exponer metadatos comercialmente sensibles.
 
-## Privacy impact
 
 - **Class A** (MCP Vertex internal): permitido, p. ej. `safeToolId: '@mcp-vertex/proposals.create_proposal'`.
 - **Class C** (project data): **PROHIBIDO** — cualquier tool name del host/proyecto.
@@ -85,11 +82,10 @@ Reglas de privacy impact para esta propuesta:
 | Tool externa con prefijo engañoso   | NO; verificación por registry, no por string match |
 | Tool cuyo nombre parece Vertex pero no está registrada | NO; **no confiar en prefijo** |
 
-## Token impact
 
 Cero. Esta propuesta **reduce** el coste del reporter (no incluye toolId externo cuando es privado). No añade tools.
 
-## Scope
+## Non-goals
 
 **Permitido**:
 
@@ -103,14 +99,13 @@ Cero. Esta propuesta **reduce** el coste del reporter (no incluye toolId externo
 - Cualquier cambio en plugins terceros (host/proyecto) que ya registran tools.
 - `plugins/issues-triage/**` (es interno y recibe el DTO ya seguro; no toca provenance).
 
-## Out of scope
 
 - Política de qué tools Vertex decide reportar internamente (`internalOnly` se trata en `x00236`).
 - Cambio de la versión del runtime (`x00237`).
 - Privacy adversarial suite completa (`t00009`).
 - Synthetic examples generator (ya existe como parte de `x00214`).
 
-## Design
+## Architecture
 
 ### 1. Tipo canónico de provenance
 
@@ -243,54 +238,6 @@ export function buildSafeReport(input: {
 
 `t00009` ejecuta la suite anterior dentro de la privacy adversarial regression.
 
-## Tests
-
-- **Unit**: `plugins/error-reporting/tests/src/lib/report-builder.spec.ts` (existente, ampliar).
-- **Unit**: `packages/core/tests/src/lib/contracts/resolvers/safe-tool-identity.resolver.spec.ts` (nuevo).
-- **Property**: `packages/core/tests/src/lib/contracts/resolvers/safe-tool-identity.property.spec.ts` (nuevo) — fast-check sobre nombres adversariales (prefijo engañoso, unicode, espacios, longitud máxima).
-- **Integration**: dos hosts ficticios registran sus tools; mismo error Vertex → mismo report (o ambos sin `safeToolId`).
-- **Snapshot** del DTO serializado (con y sin tool) — la regex sobre la serialización debe pasar.
-
-## Acceptance criteria
-
-- [ ] El reporter no acepta `toolName` sin `toolRegistry`; el tipo lo exige.
-- [ ] `resolvePublicToolIdentity` está cubierto con ≥10 tests unitarios (incluyendo prefijos engañosos).
-- [ ] Ningún test adversario logra que un nombre `host-project` llegue a `safeToolId`.
-- [ ] La regex adversarial `/(privatecompany|acme|superbank|...)/i` sobre el JSON serializado no encuentra coincidencias en casos host-project.
-- [ ] Dos hosts con tools distintas que provocan el mismo error interno producen reports idénticos (mismo `safeToolId` ausente o mismo `safeToolId` Vertex).
-- [ ] Documentación actualizada en `docs/mcp-vertex/plugins/error-reporting.md`: sección "Tool provenance" explica que el reporter nunca incluye tool names externos.
-- [ ] `bun run lint:privacy` (nuevo o existente) verde.
-- [ ] `bun run validate` verde.
-
-## Regression guards
-
-- **Lint arquitectónico**: nuevo `tools/scripts/lint/privacy-tool-id.script.ts` que:
-  - Lee `plugins/error-reporting/src/lib/report-builder.helper.ts`.
-  - Falla si ve `toolId: input.toolName` o cualquier asignación directa sin pasar por `resolvePublicToolIdentity`.
-- **Type-level guard**: `ISafeMcpVertexReport.toolId` se renombra a `safeToolId` y se marca como `?: never` cuando `toolOwner !== 'mcp-vertex'`. Tipo branded `Brand<'SafeToolId', '@mcp-vertex/*'>` para reforzar el contrato.
-- **Property test**: corre en CI; cualquier herramienta registrada que no sea Vertex y se cuele en `safeToolId` rompe el build.
-
-## Resolution evidence (template)
-
-```yaml
-resolution:
-  status: implemented
-  evidence:
-    - commit: <hash>
-    - tests:
-        - plugins/error-reporting/tests/src/lib/report-builder.spec.ts
-        - packages/core/tests/src/lib/contracts/resolvers/safe-tool-identity.resolver.spec.ts
-        - packages/core/tests/src/lib/contracts/resolvers/safe-tool-identity.property.spec.ts
-        - t00009-privacy-adversarial-regression
-    - lint: tools/scripts/lint/privacy-tool-id.script.ts
-    - privacy-adversarial-suite: green
-    - before/after:
-        before: "toolId: toolName — fuga confirmada en test"
-        after:  "safeToolId: undefined|@mcp-vertex/* — fuga cerrada"
-```
-
----
-
 ## Slices
 
 - global_gate: type
@@ -337,7 +284,24 @@ resolution:
   - "Property tests verdes (fast-check)."
   - "Snapshot del DTO serializado no contiene nombres host-project en ningún caso de prueba."
 
-## acceptance
+## Acceptance
+
+- **Unit**: `plugins/error-reporting/tests/src/lib/report-builder.spec.ts` (existente, ampliar).
+- **Unit**: `packages/core/tests/src/lib/contracts/resolvers/safe-tool-identity.resolver.spec.ts` (nuevo).
+- **Property**: `packages/core/tests/src/lib/contracts/resolvers/safe-tool-identity.property.spec.ts` (nuevo) — fast-check sobre nombres adversariales (prefijo engañoso, unicode, espacios, longitud máxima).
+- **Integration**: dos hosts ficticios registran sus tools; mismo error Vertex → mismo report (o ambos sin `safeToolId`).
+- **Snapshot** del DTO serializado (con y sin tool) — la regex sobre la serialización debe pasar.
+
+
+- [ ] El reporter no acepta `toolName` sin `toolRegistry`; el tipo lo exige.
+- [ ] `resolvePublicToolIdentity` está cubierto con ≥10 tests unitarios (incluyendo prefijos engañosos).
+- [ ] Ningún test adversario logra que un nombre `host-project` llegue a `safeToolId`.
+- [ ] La regex adversarial `/(privatecompany|acme|superbank|...)/i` sobre el JSON serializado no encuentra coincidencias en casos host-project.
+- [ ] Dos hosts con tools distintas que provocan el mismo error interno producen reports idénticos (mismo `safeToolId` ausente o mismo `safeToolId` Vertex).
+- [ ] Documentación actualizada en `docs/mcp-vertex/plugins/error-reporting.md`: sección "Tool provenance" explica que el reporter nunca incluye tool names externos.
+- [ ] `bun run lint:privacy` (nuevo o existente) verde.
+- [ ] `bun run validate` verde.
+
 
 - El reporter no acepta `toolName` sin `toolRegistry`; el tipo lo exige.
 - `resolvePublicToolIdentity` está cubierto con ≥10 tests unitarios (incluyendo prefijos engañosos).
@@ -350,7 +314,34 @@ resolution:
 
 ---
 
-## Cómo se relaciona con el plan y la auditoría
+## Notes
+
+- **Lint arquitectónico**: nuevo `tools/scripts/lint/privacy-tool-id.script.ts` que:
+  - Lee `plugins/error-reporting/src/lib/report-builder.helper.ts`.
+  - Falla si ve `toolId: input.toolName` o cualquier asignación directa sin pasar por `resolvePublicToolIdentity`.
+- **Type-level guard**: `ISafeMcpVertexReport.toolId` se renombra a `safeToolId` y se marca como `?: never` cuando `toolOwner !== 'mcp-vertex'`. Tipo branded `Brand<'SafeToolId', '@mcp-vertex/*'>` para reforzar el contrato.
+- **Property test**: corre en CI; cualquier herramienta registrada que no sea Vertex y se cuele en `safeToolId` rompe el build.
+
+
+```yaml
+resolution:
+  status: implemented
+  evidence:
+    - commit: <hash>
+    - tests:
+        - plugins/error-reporting/tests/src/lib/report-builder.spec.ts
+        - packages/core/tests/src/lib/contracts/resolvers/safe-tool-identity.resolver.spec.ts
+        - packages/core/tests/src/lib/contracts/resolvers/safe-tool-identity.property.spec.ts
+        - t00009-privacy-adversarial-regression
+    - lint: tools/scripts/lint/privacy-tool-id.script.ts
+    - privacy-adversarial-suite: green
+    - before/after:
+        before: "toolId: toolName — fuga confirmada en test"
+        after:  "safeToolId: undefined|@mcp-vertex/* — fuga cerrada"
+```
+
+---
+
 
 - **Plan padre**: [q00004](../../ready/q00004-plan-hardening-post-auditoria-chatgpt-sol-segunda-pasada.md), Track D (Privacidad P0).
 - **Auditoría legada**: `docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol.md`, §3 (invariante de privacidad) + §4 (ER2-001).

@@ -25,7 +25,7 @@ related:
 
 # x00241 — core: SafeWorkspaceReader API pública
 
-## Problem
+## Goal
 
 Dos plugins nuevos (`context-for-change` y `impact-analysis`) han reproducido un patrón de **filesystem containment roto**:
 
@@ -57,7 +57,6 @@ El core **ya tiene** un helper `resolveWorkspaceContained`. La auditoría §22 C
 
 Reglas violadas: R5.1 (invariantes como APIs), R3.1 (coherencia arquitectónica), §5 auditoría.
 
-## Evidence
 
 ```ts
 // plugins/context-for-change/src/lib/services/context-for-change.service.ts (extracto)
@@ -109,28 +108,25 @@ test('context-for-change rejects /outside/secret.ts', async () => {
 });
 ```
 
-## Classification
 
 `CONFIRMADO POR CÓDIGO` — patrón visible, reproducible con un test trivial.
 
-## User impact
+## Why
 
 - **Seguridad**: rutas exteriores pueden leerse, exponiendo código de otros proyectos, secretos, configuraciones internas.
 - **Privacidad**: si el caller es un agente externo (chat, IDE), el boundary está roto: el agente puede ver `/Users/alice/private-server/secrets.ts`.
 - **Estabilidad**: plugins pueden romperse con paths arbitrarios del usuario.
 
-## Privacy impact
 
 - **Class C** (project data): paths, filenames, contenido — todos pueden fugarse.
 - **Class D** (secrets): si el archivo abierto contiene secretos, esos secretos llegan al response del caller (que NO es lo mismo que el reporter público, pero sigue siendo una superficie de fuga local).
 
 Regla: el boundary de filesystem es **defensa en profundidad** para Class C/D, no solo para evitar crashes.
 
-## Token impact
 
 Cero. No añade tools; reemplaza implementación.
 
-## Scope
+## Non-goals
 
 **Permitido**:
 
@@ -148,7 +144,6 @@ Cero. No añade tools; reemplaza implementación.
 - Reescribir plugins afectados aquí (cada plugin tiene su propia propuesta: `x00242`, `x00243`).
 - Eliminar `resolveWorkspaceContained` existente (esta propuesta lo **centraliza**, no lo borra; ver Out of scope).
 
-## Out of scope
 
 - Reescritura de `context-for-change` (`x00242`).
 - Reescritura de `impact-analysis` (`x00243`).
@@ -156,7 +151,7 @@ Cero. No añade tools; reemplaza implementación.
 - División de paquetes (`CORE2-001`).
 - Cambiar otros plugins que ya usan `resolveWorkspaceContained` correctamente.
 
-## Design
+## Architecture
 
 ### 1. Interfaz pública
 
@@ -514,53 +509,6 @@ it('reserved paths always rejected', () => {
 });
 ```
 
-## Tests
-
-- **Unit**: `packages/core/tests/src/lib/filesystem/safe-workspace-reader.spec.ts` (≥20 tests adversariales).
-- **Property**: `packages/core/tests/src/lib/filesystem/safe-workspace-reader.property.spec.ts` (≥3 properties).
-- **Cross-platform**: tests que mockean `path.sep` y verifican comportamiento en Windows-style paths.
-- **Symlink**: tests con fs symlinks reales (crear symlink antes del test, cleanup después).
-
-## Acceptance criteria
-
-- [ ] `ISafeWorkspaceReader` exportado desde `@mcp-vertex/core` (public).
-- [ ] Implementación symlink-aware; no abre archivos fuera del workspace bajo ningún input adversarial.
-- [ ] Reserved paths (`.git`, `.env`, `node_modules`) bloqueados por defecto.
-- [ ] Prefix collision detectado (`/foo/bar` vs `/foo/bar-secret`).
-- [ ] Errores tipados (`WorkspaceContainmentError`) con razón específica.
-- [ ] ≥20 tests adversariales verdes (incluyendo los 15 listados arriba).
-- [ ] ≥3 property tests verdes.
-- [ ] Documentación: `docs/mcp-vertex/core/safe-workspace-reader.md` con ejemplos y casos adversariales.
-- [ ] `bun run validate` verde.
-
-## Regression guards
-
-- **Lint arquitectónico** (`i00004`) que detecta uso directo de `node:fs/promises#readFile` en plugins con permiso `filesystem-read`.
-- **Property test** sobre DTO de respuesta: ningún plugin devuelve contenido con paths absolutos (`/Users/`, `/home/`, `C:\`).
-- **Snapshot test** del error: `WorkspaceContainmentError` siempre lleva `originalPath` + `workspaceRoot` + `reason`, sin filtrar contenido del path exterior.
-
-## Resolution evidence (template)
-
-```yaml
-resolution:
-  status: implemented
-  evidence:
-    - commit: <hash>
-    - new-files:
-        - packages/core/src/lib/filesystem/safe-workspace-reader.ts
-        - packages/core/src/lib/filesystem/safe-workspace-reader.types.ts
-        - packages/core/src/lib/filesystem/safe-workspace-reader.errors.ts
-        - packages/core/tests/src/lib/filesystem/safe-workspace-reader.spec.ts
-        - packages/core/tests/src/lib/filesystem/safe-workspace-reader.property.spec.ts
-        - docs/mcp-vertex/core/safe-workspace-reader.md
-    - tests-pass: ≥20 unit + ≥3 property
-    - before/after:
-        before: "Patrón vulnerable duplicado en context-for-change e impact-analysis"
-        after:  "API única SafeWorkspaceReader; ambos plugins migran en x00242/x00243"
-```
-
----
-
 ## Slices
 
 - global_gate: type
@@ -603,7 +551,24 @@ resolution:
 - acceptance:
   - "Documento explica API + casos adversariales cubiertos + cómo migrar plugins."
 
-## acceptance
+## Acceptance
+
+- **Unit**: `packages/core/tests/src/lib/filesystem/safe-workspace-reader.spec.ts` (≥20 tests adversariales).
+- **Property**: `packages/core/tests/src/lib/filesystem/safe-workspace-reader.property.spec.ts` (≥3 properties).
+- **Cross-platform**: tests que mockean `path.sep` y verifican comportamiento en Windows-style paths.
+- **Symlink**: tests con fs symlinks reales (crear symlink antes del test, cleanup después).
+
+
+- [ ] `ISafeWorkspaceReader` exportado desde `@mcp-vertex/core` (public).
+- [ ] Implementación symlink-aware; no abre archivos fuera del workspace bajo ningún input adversarial.
+- [ ] Reserved paths (`.git`, `.env`, `node_modules`) bloqueados por defecto.
+- [ ] Prefix collision detectado (`/foo/bar` vs `/foo/bar-secret`).
+- [ ] Errores tipados (`WorkspaceContainmentError`) con razón específica.
+- [ ] ≥20 tests adversariales verdes (incluyendo los 15 listados arriba).
+- [ ] ≥3 property tests verdes.
+- [ ] Documentación: `docs/mcp-vertex/core/safe-workspace-reader.md` con ejemplos y casos adversariales.
+- [ ] `bun run validate` verde.
+
 
 - `ISafeWorkspaceReader` exportado y usable desde `@mcp-vertex/core`.
 - Implementación robusta (symlink-aware, reserved paths, prefix collision).
@@ -612,7 +577,33 @@ resolution:
 
 ---
 
-## Cómo se relaciona con el plan y la auditoría
+## Notes
+
+- **Lint arquitectónico** (`i00004`) que detecta uso directo de `node:fs/promises#readFile` en plugins con permiso `filesystem-read`.
+- **Property test** sobre DTO de respuesta: ningún plugin devuelve contenido con paths absolutos (`/Users/`, `/home/`, `C:\`).
+- **Snapshot test** del error: `WorkspaceContainmentError` siempre lleva `originalPath` + `workspaceRoot` + `reason`, sin filtrar contenido del path exterior.
+
+
+```yaml
+resolution:
+  status: implemented
+  evidence:
+    - commit: <hash>
+    - new-files:
+        - packages/core/src/lib/filesystem/safe-workspace-reader.ts
+        - packages/core/src/lib/filesystem/safe-workspace-reader.types.ts
+        - packages/core/src/lib/filesystem/safe-workspace-reader.errors.ts
+        - packages/core/tests/src/lib/filesystem/safe-workspace-reader.spec.ts
+        - packages/core/tests/src/lib/filesystem/safe-workspace-reader.property.spec.ts
+        - docs/mcp-vertex/core/safe-workspace-reader.md
+    - tests-pass: ≥20 unit + ≥3 property
+    - before/after:
+        before: "Patrón vulnerable duplicado en context-for-change e impact-analysis"
+        after:  "API única SafeWorkspaceReader; ambos plugins migran en x00242/x00243"
+```
+
+---
+
 
 - **Plan padre**: [q00004](../../ready/q00004-plan-hardening-post-auditoria-chatgpt-sol-segunda-pasada.md), Track A.
 - **Auditoría legada**: §5 FS2-001, §22 CORE2-002.

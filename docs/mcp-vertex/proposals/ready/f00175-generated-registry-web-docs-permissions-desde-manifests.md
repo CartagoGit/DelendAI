@@ -22,7 +22,7 @@ related:
 
 # f00175 — generators: registry/web/docs/permissions
 
-## Problem
+## Goal
 
 Tras `f00174`, todos los plugins tienen manifest. Pero:
 
@@ -33,7 +33,6 @@ Tras `f00174`, todos los plugins tienen manifest. Pero:
 
 Reglas violadas: R3.2 (one source of truth), §11 MAN2-003..006.
 
-## Evidence
 
 ```ts
 // plugins/proposals/src/lib/first-party-plugin-index.ts (aprox)
@@ -52,25 +51,22 @@ export const PLUGIN_REGISTRY = [
 ];
 ```
 
-## Classification
 
 `MEJORA / GENERATORS`.
 
-## User impact
+## Why
 
 - Web/docs siempre frescos.
 - Permission matrix siempre coherente.
 - Menos duplicación manual.
 
-## Privacy impact
 
 Cero.
 
-## Token impact
 
 Cero (no afecta tools/list).
 
-## Scope
+## Non-goals
 
 **Permitido**:
 
@@ -85,13 +81,12 @@ Cero (no afecta tools/list).
 - Cambios en manifests (cubierto por `f00174`).
 - Cambios en plugins.
 
-## Out of scope
 
 - Migración de plugins a manifest (`f00174`).
 - Validación manifest vs package.json (`i00008`).
 - Validación manifest vs preset catalog (`i00009`).
 
-## Design
+## Architecture
 
 ### 1. FIRST_PARTY_PLUGIN_INDEX generado
 
@@ -166,35 +161,90 @@ generated: <timestamp>
 
 > **Auto-generated**. Do not edit. Regenerate with `bun run generate:plugin-docs`.
 
-## Summary
+## Slices
+
+- global_gate: type
+
+### S1 — Generador FIRST_PARTY_PLUGIN_INDEX
+
+- **Status**: pending
+- **Files**: `tools/scripts/generate/first-party-plugin-index.script.ts`, output generado
+- **Gate**: type
+- acceptance:
+  - "Index 100% generado."
+  - "Manual entries eliminadas."
+
+### S2 — Generador web catalog
+
+- **Status**: pending
+- **Files**: `tools/scripts/generate/web-catalog.script.ts`, output generado
+- **Gate**: type
+- acceptance:
+  - "Web catalog 100% generado."
+
+### S3 — Generador plugin docs + permission matrix
+
+- **Status**: pending
+- **Files**: `tools/scripts/generate/plugin-docs.script.ts`, `tools/scripts/generate/permission-matrix.script.ts`, outputs generados
+- **Gate**: type
+- acceptance:
+  - "Docs generadas."
+  - "Permission matrix generada."
+
+### S4 — CI check
+
+- **Status**: pending
+- **Files**: `tools/scripts/lint/check-generated-artifacts.script.ts`, `.github/workflows/ci.yml`
+- **Gate**: type
+- acceptance:
+  - "Check implementado."
+  - "CI falla con drift."
+
+## Acceptance
+
+- **Unit**: cada generador produce output esperado.
+- **Snapshot**: el output generado es byte-idéntico a la versión commiteada.
+- **E2E**: cambiar un manifest sin regenerar los artifacts rompe CI.
+
+
+- [ ] 4 generadores implementados.
+- [ ] `bun run generate:from-manifests` ejecuta los 4.
+- [ ] `bun run check:generated` detecta drift.
+- [ ] CI falla si drift.
+- [ ] Manual entries eliminadas de `FIRST_PARTY_PLUGIN_INDEX`.
+- [ ] Web catalog regenerado.
+- [ ] Plugin docs regeneradas (auto-generated).
+- [ ] Permission matrix generada.
+- [ ] `bun run validate` verde.
+
+
+- 4 generadores + CI check verdes.
+- Manual entries eliminadas.
+
+---
+
+## Notes
 
 <summary>
 
-## Tags
 
 <tags>
 
-## Permissions
 
 <permissions>
 
-## Tools
 
 <tools with descriptions>
 
-## Maturity
 
 <maturity>
 
-## Token budget
 
 <tokenBudget>
 
-## Dependencies
 
 <dependencies>
 
-## Capabilities
 
 <capabilities>
 ```
@@ -253,30 +303,10 @@ Markdown output:
 
 Añadir a `bun run validate`.
 
-## Tests
-
-- **Unit**: cada generador produce output esperado.
-- **Snapshot**: el output generado es byte-idéntico a la versión commiteada.
-- **E2E**: cambiar un manifest sin regenerar los artifacts rompe CI.
-
-## Acceptance criteria
-
-- [ ] 4 generadores implementados.
-- [ ] `bun run generate:from-manifests` ejecuta los 4.
-- [ ] `bun run check:generated` detecta drift.
-- [ ] CI falla si drift.
-- [ ] Manual entries eliminadas de `FIRST_PARTY_PLUGIN_INDEX`.
-- [ ] Web catalog regenerado.
-- [ ] Plugin docs regeneradas (auto-generated).
-- [ ] Permission matrix generada.
-- [ ] `bun run validate` verde.
-
-## Regression guards
 
 - **CI check** verde.
 - Si alguien edita un archivo `.generated.ts`, el CI falla con instrucción de regenerar.
 
-## Resolution evidence (template)
 
 ```yaml
 resolution:
@@ -300,6 +330,13 @@ resolution:
 ```
 
 ---
+
+
+- **Plan padre**: [q00004](../../ready/q00004-plan-hardening-post-auditoria-chatgpt-sol-segunda-pasada.md), Track E.
+- **Auditoría legada**: §11 MAN2-003..006, §25 REG2-001/002.
+- **Predecesor**: `f00174` (autodiscovery).
+- **Hermanas**: `i00008`, `i00009`.
+- **Principio §41**: *"One source of truth for machine-readable metadata."*
 
 ## Slices
 
@@ -340,17 +377,8 @@ resolution:
   - "Check implementado."
   - "CI falla con drift."
 
-## acceptance
+## Acceptance
 
 - 4 generadores + CI check verdes.
 - Manual entries eliminadas.
-
----
-
-## Cómo se relaciona con el plan y la auditoría
-
-- **Plan padre**: [q00004](../../ready/q00004-plan-hardening-post-auditoria-chatgpt-sol-segunda-pasada.md), Track E.
-- **Auditoría legada**: §11 MAN2-003..006, §25 REG2-001/002.
-- **Predecesor**: `f00174` (autodiscovery).
-- **Hermanas**: `i00008`, `i00009`.
-- **Principio §41**: *"One source of truth for machine-readable metadata."*
+- `bun run validate` verde.
