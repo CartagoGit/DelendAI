@@ -39,7 +39,10 @@ describe('preset-table', () => {
 			// project-health, quality-policy) alongside the existing audit /
 			// link-check / orchestrator-runner / perf / security /
 			// tech-debt / usage-tracking tail.
-			expect(ids.length).toBe(43);
+			// f00177 / MAN-001: `changelog` removed from `full`/`cli-tool`
+			// (private, never published to npm) drops the total to 42 — it
+			// was the only preset-visible use of that column.
+			expect(ids.length).toBe(42);
 			const tail = ids.slice(-12);
 			expect(new Set(tail)).toEqual(
 				new Set([

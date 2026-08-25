@@ -41,8 +41,11 @@ describe('PRESET_CATALOG', async () => {
 		// swarm: adds 8 on top of standard (f00121 S3 added forge,
 		// completion added by the completion plugin)
 		expect(PRESET_CATALOG[3]?.members.length).toBe(8);
-		// full: adds 2 host-only + api + prompt-eval + changelog on top of swarm
-		expect(PRESET_CATALOG[4]?.members.length).toBe(5);
+		// full: adds 2 host-only + api + prompt-eval on top of swarm
+		// (f00177 / MAN-001: `changelog` removed — `private: true`, never
+		// published to npm, cannot be a member of a preset an external
+		// adopter installs)
+		expect(PRESET_CATALOG[4]?.members.length).toBe(4);
 		// vertex: 34 members, exactly mirroring mcp-vertex.config.json's
 		// `plugins` object (x00166 — corrected a long-stale drift where
 		// this preset had 6 phantom plugins not actually loaded and was
@@ -249,7 +252,9 @@ describe('resolvePresetMembers', async () => {
 			'auto-agent-selector',
 		]);
 		expect(resolvePresetMembers('swarm').length).toBe(26);
-		expect(resolvePresetMembers('full').length).toBe(31);
+		// f00177 / MAN-001: `changelog` removed from `full` (private,
+		// never published to npm).
+		expect(resolvePresetMembers('full').length).toBe(30);
 		expect(resolvePresetMembers('swarm')).not.toContain('lean');
 	});
 

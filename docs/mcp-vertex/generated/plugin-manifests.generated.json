@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-08-25T10:12:56.076Z",
+	"generatedAt": "2026-08-25T15:05:09.716Z",
 	"manifests": [
 		{
 			"id": "adaptive-optimizer",
@@ -162,7 +162,7 @@
 			"tags": ["changelog", "release"],
 			"maturity": "experimental",
 			"permissions": ["git-read"],
-			"presets": ["full", "cli-tool"],
+			"presets": [],
 			"tokenBudget": {
 				"hard": 3000,
 				"warning": 2700,
@@ -3416,8 +3416,8 @@
 		{
 			"pluginId": "changelog",
 			"presetId": "full",
-			"declared": true,
-			"catalogMember": true,
+			"declared": false,
+			"catalogMember": false,
 			"matches": true
 		},
 		{
@@ -3444,8 +3444,8 @@
 		{
 			"pluginId": "changelog",
 			"presetId": "cli-tool",
-			"declared": true,
-			"catalogMember": true,
+			"declared": false,
+			"catalogMember": false,
 			"matches": true
 		},
 		{
