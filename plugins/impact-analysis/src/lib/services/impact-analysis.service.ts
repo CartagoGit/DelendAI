@@ -112,7 +112,7 @@ const toPackageScope = (filePath: string): string | undefined => {
 	return undefined;
 };
 
-const inferRisk = (
+export const inferRisk = (
 	affectedPackages: readonly string[],
 	dependents: readonly string[],
 ): TImpactAnalysisRisk => {
@@ -192,7 +192,7 @@ const collectAllKnownTests = async (
 	return unique(result.hits.map((hit) => hit.file).filter(isTestFile));
 };
 
-const selectSkipSample = (
+export const selectSkipSample = (
 	allTests: readonly string[],
 	run: readonly string[],
 ): string[] =>
@@ -200,7 +200,7 @@ const selectSkipSample = (
 		.filter((file) => !run.includes(file))
 		.slice(0, MAX_IMPACT_ANALYSIS_SKIP_TESTS);
 
-const buildCoverageFocus = (
+export const buildCoverageFocus = (
 	affectedPackages: readonly string[],
 	run: readonly string[],
 ): string[] => {
