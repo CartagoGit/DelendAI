@@ -2,12 +2,13 @@
 id: q00005
 title: "Plan hardening post-auditoría externa ChatGPT 5.6 Sol (TERCERA pasada sobre develop) — universalización de invariantes: filesystem, privacidad, mutex, tokens, CI y gobernanza"
 kind: plan
-status: in-progress
+status: done
 type: plan
 track: develop-audit-hardening-v3
 date: 2026-08-25
 date_iso: 2026-08-25
-predecessor-plan: q00004 # auditoría externa 2026-08-25 (segunda pasada, 28 hijas, review)
+closed-by: cartago (q00005 orchestration pass 2026-08-25)
+predecessor-plan: q00004
 audit-source:
   file: docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol-tercera-pasada.md
   reviewer: ChatGPT-5.6-Sol (external, high reasoning, TERCERA pasada)
