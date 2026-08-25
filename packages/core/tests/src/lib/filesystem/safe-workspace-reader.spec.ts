@@ -154,6 +154,52 @@ describe('SafeWorkspaceReader', () => {
 		);
 	});
 
+	// ── d00008 / FS-005: explicit `.env*` reserved-path policy ──────
+
+	it('rejects the reserved .env.local path (d00008)', () => {
+		expect(() => reader.resolve('.env.local')).toThrow(
+			WorkspaceContainmentError,
+		);
+	});
+
+	it('rejects the reserved .env.production path (d00008)', () => {
+		expect(() => reader.resolve('.env.production')).toThrow(
+			WorkspaceContainmentError,
+		);
+	});
+
+	it('rejects the reserved .env.development path (d00008)', () => {
+		expect(() => reader.resolve('.env.development')).toThrow(
+			WorkspaceContainmentError,
+		);
+	});
+
+	it('rejects the reserved .env.secret path (d00008)', () => {
+		expect(() => reader.resolve('.env.secret')).toThrow(
+			WorkspaceContainmentError,
+		);
+	});
+
+	it('allows .env.example (metadata, not a secret) (d00008)', () => {
+		expect(() => reader.resolve('.env.example')).not.toThrow();
+	});
+
+	it('allows .env.test (metadata, not a secret) (d00008)', () => {
+		expect(() => reader.resolve('.env.test')).not.toThrow();
+	});
+
+	it('resolveExistingContained returns null for a reserved .env.production (d00007 + d00008)', async () => {
+		await expect(
+			reader.resolveExistingContained('.env.production'),
+		).resolves.toBeNull();
+	});
+
+	it('resolveLexical succeeds for .env.example (d00007 + d00008)', () => {
+		expect(reader.resolveLexical('.env.example').relativePath).toBe(
+			'.env.example',
+		);
+	});
+
 	it('reads a legitimate workspace file', async () => {
 		const result = await reader.readText('src/safe.ts');
 		expect(result.content).toContain('safe');

@@ -14,7 +14,31 @@ import type {
 	SafeStatResult,
 } from './safe-workspace-reader.types';
 
-const DEFAULT_RESERVED_PATHS = ['.git', '.env', 'node_modules'] as const;
+/**
+ * Default reserved paths.
+ *
+ * d00008 / FS-005 (q00005): explicit `.env*` policy.
+ * - `.env`, `.env.local`, `.env.production`, `.env.development`,
+ *   `.env.secret` are **blocked** — they are secrets by convention
+ *   (Next.js, Astro, Vite, SvelteKit, etc.).
+ * - `.env.example` and `.env.test` are **allowed** — they are
+ *   metadata (onboarding placeholders, test fixtures), not secrets.
+ *   Hosts that need to block these too must pass `reservedPaths`
+ *   explicitly to the constructor.
+ * - `.git` and `node_modules` remain reserved as before.
+ *
+ * @see ADR-0015
+ * @see d00008
+ */
+const DEFAULT_RESERVED_PATHS = [
+	'.git',
+	'.env',
+	'.env.local',
+	'.env.production',
+	'.env.development',
+	'.env.secret',
+	'node_modules',
+] as const;
 
 const toForwardSlashes = (pathValue: string): string =>
 	pathValue.split(sep).join('/');
@@ -52,7 +76,40 @@ export class SafeWorkspaceReader implements ISafeWorkspaceReader {
 			.filter((value) => value.length > 0);
 	}
 
+	/**
+	 * Resolve an input path to a contained absolute path after LEXICAL
+	 * containment only (no filesystem call, no symlink resolution).
+	 *
+	 * @deprecated Prefer {@link resolveLexical} (lexical-only, same
+	 *   semantics but explicit name) or {@link resolveExistingContained}
+	 *   (realpath-validated). Removal is scheduled for a future plan
+	 *   once all in-repo callers have migrated; see ADR-0014 (FS-004).
+	 *
+	 * @param inputPath — the user-supplied relative or absolute path
+	 * @returns the contained absolute/relative pair, or throws
+	 *   {@link WorkspaceContainmentError} on escape / reserved.
+	 */
 	resolve(inputPath: string): ContainedPathResult {
+		return this.resolveLexical(inputPath);
+	}
+
+	/**
+	 * Resolve an input path to a contained absolute path after LEXICAL
+	 * containment only (no filesystem call, no symlink resolution).
+	 *
+	 * Use this when you want to validate a path string WITHOUT
+	 * touching the filesystem — for example, to render a path or
+	 * decide which API to call next. Safe by construction: it cannot
+	 * follow symlinks because it never opens anything.
+	 *
+	 * For paths that will subsequently be opened with `readFile`,
+	 * `readdir`, or `stat`, prefer
+	 * {@link resolveExistingContained} instead.
+	 *
+	 * @see ADR-0014 — `resolveLexical` vs `resolveExistingContained`
+	 * @see d00007 — proposal that introduced this split
+	 */
+	resolveLexical(inputPath: string): ContainedPathResult {
 		this.#assertValidInput(inputPath);
 		const wasAbsolute = isAbsolute(inputPath);
 		const contained = wasAbsolute
@@ -60,6 +117,41 @@ export class SafeWorkspaceReader implements ISafeWorkspaceReader {
 			: this.#resolveRelativeInput(inputPath);
 		this.#assertNotReserved(contained.relativePath, inputPath);
 		return contained;
+	}
+
+	/**
+	 * Resolve an input path to a contained absolute path after FULL
+	 * REALPATH VALIDATION: lexical containment + existence check +
+	 * symlink walk. Returns `null` if the target does not exist or if
+	 * any level of the realpath escapes the workspace.
+	 *
+	 * This is the ONLY API that should be used immediately before a
+	 * `readFile` / `readdir` / `stat`. All `readText` / `stat` /
+	 * `list` / `exists` methods on this class route through this
+	 * validator (they reject on escape / reserved path).
+	 *
+	 * @see ADR-0014 — `resolveLexical` vs `resolveExistingContained`
+	 * @see d00007 — proposal that introduced this split
+	 */
+	async resolveExistingContained(
+		inputPath: string,
+	): Promise<ContainedPathResult | null> {
+		try {
+			return await this.#resolveContainedOnDisk(inputPath);
+		} catch (error) {
+			if (error instanceof WorkspaceContainmentError) {
+				return null;
+			}
+			if (
+				typeof error === 'object' &&
+				error !== null &&
+				'code' in error &&
+				error.code === 'ENOENT'
+			) {
+				return null;
+			}
+			throw error;
+		}
 	}
 
 	async readText(inputPath: string): Promise<SafeReadResult> {
