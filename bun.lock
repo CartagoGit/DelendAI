@@ -300,6 +300,23 @@
         "vitest": "^4.1.11",
       },
     },
+    "plugins/commit-policy": {
+      "name": "@mcp-vertex/commit-policy",
+      "version": "0.1.0",
+      "dependencies": {
+        "@modelcontextprotocol/sdk": "^1.29.0",
+        "zod": "^4.4.3",
+      },
+      "devDependencies": {
+        "@mcp-vertex/core": "workspace:*",
+        "@types/bun": "latest",
+        "typescript": "7.0.2",
+        "vitest": "4.1.11",
+      },
+      "peerDependencies": {
+        "@mcp-vertex/core": "^0.1.1",
+      },
+    },
     "plugins/completion": {
       "name": "@mcp-vertex/completion",
       "version": "0.1.0",
@@ -1349,6 +1366,8 @@
     "@mcp-vertex/cli": ["@mcp-vertex/cli@workspace:packages/cli"],
 
     "@mcp-vertex/client": ["@mcp-vertex/client@workspace:packages/client"],
+
+    "@mcp-vertex/commit-policy": ["@mcp-vertex/commit-policy@workspace:plugins/commit-policy"],
 
     "@mcp-vertex/completion": ["@mcp-vertex/completion@workspace:plugins/completion"],
 
