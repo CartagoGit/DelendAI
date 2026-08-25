@@ -1,7 +1,7 @@
 ---
 id: v00125
 title: "Verificar estado real de `develop` (verde + protegida) antes de cerrar este track"
-kind: verification
+kind: perf
 status: ready
 type: proposal
 track: governance
