@@ -1,7 +1,7 @@
 ---
 id: v00126
 title: "Verify CI local reproduce fallos reales"
-kind: verification
+kind: perf
 status: ready
 type: proposal
 track: ci
