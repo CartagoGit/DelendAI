@@ -519,8 +519,26 @@ export const withFileMutex = async <T>(
 	}
 
 	// Keep the lock fresh so a slow-but-alive holder is not declared stale.
+	//
+	// The tick must not overlap itself. `refreshLeaseHeartbeat` is a
+	// read-modify-write (open → read generation → write generation + 1), and
+	// a single `open`/`write` round trip routinely outlives `heartbeatMs`
+	// under load. Two overlapping ticks then both read generation G and both
+	// write G + 1, so the generation stops being monotonic — and two
+	// concurrent writes to the same lease file can leave it partially
+	// written, which parses back as an empty token. Both outcomes make a
+	// live holder look stale to a reclaimer, which is precisely how two
+	// holders end up inside the lock at once. Skipping a tick is safe: the
+	// in-flight refresh is already writing a newer heartbeatAt.
+	let heartbeatInFlight = false;
 	const heartbeat = setInterval(() => {
-		void refreshLeaseHeartbeat(lockPath, token).catch(() => undefined);
+		if (heartbeatInFlight) return;
+		heartbeatInFlight = true;
+		void refreshLeaseHeartbeat(lockPath, token)
+			.catch(() => undefined)
+			.finally(() => {
+				heartbeatInFlight = false;
+			});
 	}, heartbeatMs);
 	heartbeat.unref?.();
 
