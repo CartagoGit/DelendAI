@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-08-25T15:05:09.716Z",
+	"generatedAt": "2026-08-25T17:14:43.346Z",
 	"manifests": [
 		{
 			"id": "adaptive-optimizer",
@@ -419,9 +419,15 @@
 			"permissions": ["network", "forge-write"],
 			"presets": ["standard", "swarm", "full", "vertex"],
 			"tokenBudget": {
-				"hard": 3000,
-				"warning": 2700,
-				"releaseRelativePercent": 20
+				"staticBytes": 3500,
+				"adaptiveActivationBytes": 600,
+				"typicalOutput": 900,
+				"caps": {
+					"hard": 4200,
+					"warning": 3800
+				},
+				"measuredAt": "2026-08-25",
+				"source": "token-budget-real"
 			},
 			"dependencies": [
 				"@mcp-vertex/core",
@@ -491,9 +497,15 @@
 				"cli-tool"
 			],
 			"tokenBudget": {
-				"hard": 3000,
-				"warning": 2700,
-				"releaseRelativePercent": 20
+				"staticBytes": 5800,
+				"adaptiveActivationBytes": 950,
+				"typicalOutput": 1400,
+				"caps": {
+					"hard": 6800,
+					"warning": 6200
+				},
+				"measuredAt": "2026-08-25",
+				"source": "token-budget-real"
 			},
 			"dependencies": [
 				"@mcp-vertex/core",
@@ -665,9 +677,15 @@
 				"cli-tool"
 			],
 			"tokenBudget": {
-				"hard": 3000,
-				"warning": 2700,
-				"releaseRelativePercent": 20
+				"staticBytes": 4500,
+				"adaptiveActivationBytes": 720,
+				"typicalOutput": 1100,
+				"caps": {
+					"hard": 5400,
+					"warning": 4900
+				},
+				"measuredAt": "2026-08-25",
+				"source": "token-budget-real"
 			},
 			"dependencies": [
 				"@mcp-vertex/core",
@@ -844,9 +862,15 @@
 			],
 			"presets": ["swarm", "full", "vertex"],
 			"tokenBudget": {
-				"hard": 3000,
-				"warning": 2700,
-				"releaseRelativePercent": 20
+				"staticBytes": 12400,
+				"adaptiveActivationBytes": 2100,
+				"typicalOutput": 3200,
+				"caps": {
+					"hard": 15000,
+					"warning": 13500
+				},
+				"measuredAt": "2026-08-25",
+				"source": "token-budget-real"
 			},
 			"dependencies": [
 				"@mcp-vertex/core",
@@ -875,9 +899,15 @@
 				"backend-api"
 			],
 			"tokenBudget": {
-				"hard": 3000,
-				"warning": 2700,
-				"releaseRelativePercent": 20
+				"staticBytes": 8200,
+				"adaptiveActivationBytes": 1400,
+				"typicalOutput": 2200,
+				"caps": {
+					"hard": 9800,
+					"warning": 9000
+				},
+				"measuredAt": "2026-08-25",
+				"source": "token-budget-real"
 			},
 			"dependencies": [
 				"@mcp-vertex/core",
@@ -981,9 +1011,15 @@
 				"cli-tool"
 			],
 			"tokenBudget": {
-				"hard": 3000,
-				"warning": 2700,
-				"releaseRelativePercent": 20
+				"staticBytes": 2700,
+				"adaptiveActivationBytes": 480,
+				"typicalOutput": 800,
+				"caps": {
+					"hard": 3000,
+					"warning": 2700
+				},
+				"measuredAt": "2026-08-25",
+				"source": "token-budget-real"
 			},
 			"dependencies": [
 				"@mcp-vertex/core",
@@ -1187,7 +1223,8 @@
 			"package": "@mcp-vertex/adaptive-optimizer",
 			"summary": "Adaptive optimizer: cheaply rank model, plugin-set and prompt candidates with explicit budget and consent guards.",
 			"tags": ["optimizer", "adaptive", "prompt", "f00168"],
-			"permissions": ["filesystem-read"]
+			"permissions": ["filesystem-read"],
+			"tokenBudgetBytes": 2700
 		},
 		{
 			"origin": "first-party",
@@ -1195,7 +1232,8 @@
 			"package": "@mcp-vertex/api",
 			"summary": "REST/GraphQL API surface for mcp-vertex plugins.",
 			"tags": ["api", "surface"],
-			"permissions": ["process", "network"]
+			"permissions": ["process", "network"],
+			"tokenBudgetBytes": 2700
 		},
 		{
 			"origin": "first-party",
@@ -1203,7 +1241,8 @@
 			"package": "@mcp-vertex/audit",
 			"summary": "Multi-model audit planning + consolidation; f00139 adds self_audit dogfood loop.",
 			"tags": ["audit", "multi-model", "self-improvement"],
-			"permissions": ["filesystem-read", "filesystem-write", "network"]
+			"permissions": ["filesystem-read", "filesystem-write", "network"],
+			"tokenBudgetBytes": 2700
 		},
 		{
 			"origin": "first-party",
@@ -1211,7 +1250,8 @@
 			"package": "@mcp-vertex/auto-agent-selector",
 			"summary": "Zero-config multi-agent routing (cost↔quality dial, auto_recommend, escalation).",
 			"tags": ["routing", "agents"],
-			"permissions": ["process", "network"]
+			"permissions": ["process", "network"],
+			"tokenBudgetBytes": 2700
 		},
 		{
 			"origin": "first-party",
@@ -1219,7 +1259,8 @@
 			"package": "@mcp-vertex/auto-plugin-selector",
 			"summary": "Recommends the best plugin set for this project from its signals (manifest, files, git, task).",
 			"tags": ["plugins", "catalog", "routing"],
-			"permissions": ["filesystem-read"]
+			"permissions": ["filesystem-read"],
+			"tokenBudgetBytes": 2700
 		},
 		{
 			"origin": "first-party",
@@ -1227,7 +1268,8 @@
 			"package": "@mcp-vertex/browser",
 			"summary": "Headless browser automation tools.",
 			"tags": ["browser", "automation"],
-			"permissions": ["browser", "network"]
+			"permissions": ["browser", "network"],
+			"tokenBudgetBytes": 2700
 		},
 		{
 			"origin": "first-party",
@@ -1235,7 +1277,8 @@
 			"package": "@mcp-vertex/cache",
 			"summary": "Cache-eviction rules and lifecycle for plugin scratch dirs.",
 			"tags": ["cache", "lifecycle"],
-			"permissions": ["filesystem-read", "filesystem-write"]
+			"permissions": ["filesystem-read", "filesystem-write"],
+			"tokenBudgetBytes": 2700
 		},
 		{
 			"origin": "first-party",
@@ -1243,7 +1286,8 @@
 			"package": "@mcp-vertex/changelog",
 			"summary": "Conventional-commits changelog + release plan generator.",
 			"tags": ["changelog", "release"],
-			"permissions": ["git-read"]
+			"permissions": ["git-read"],
+			"tokenBudgetBytes": 2700
 		},
 		{
 			"origin": "first-party",
@@ -1251,7 +1295,8 @@
 			"package": "@mcp-vertex/completion",
 			"summary": "Task-completion notifier: records an agent declaring its original task done + reviewed and pushes a notification.",
 			"tags": ["completion", "notification"],
-			"permissions": ["filesystem-read", "filesystem-write"]
+			"permissions": ["filesystem-read", "filesystem-write"],
+			"tokenBudgetBytes": 2700
 		},
 		{
 			"origin": "first-party",
@@ -1259,7 +1304,8 @@
 			"package": "@mcp-vertex/container",
 			"summary": "Container inspection + lint (docker ps/images, k8s, Dockerfile rules).",
 			"tags": ["container", "docker", "kubernetes"],
-			"permissions": ["container", "process"]
+			"permissions": ["container", "process"],
+			"tokenBudgetBytes": 2700
 		},
 		{
 			"origin": "first-party",
@@ -1267,7 +1313,8 @@
 			"package": "@mcp-vertex/context-for-change",
 			"summary": "Compact task-oriented change context orchestration across diff, symbols, tests, docs and conventions.",
 			"tags": ["context", "orchestration", "compact", "f00165"],
-			"permissions": ["filesystem-read"]
+			"permissions": ["filesystem-read"],
+			"tokenBudgetBytes": 2700
 		},
 		{
 			"origin": "first-party",
@@ -1275,7 +1322,8 @@
 			"package": "@mcp-vertex/conventions",
 			"summary": "Repo file-convention enforcement (interface, constant, service, tool …).",
 			"tags": ["conventions"],
-			"permissions": ["filesystem-read"]
+			"permissions": ["filesystem-read"],
+			"tokenBudgetBytes": 2700
 		},
 		{
 			"origin": "first-party",
@@ -1283,7 +1331,8 @@
 			"package": "@mcp-vertex/database",
 			"summary": "Database schema/introspection tools (read-only, offline).",
 			"tags": ["database", "schema"],
-			"permissions": ["database"]
+			"permissions": ["database"],
+			"tokenBudgetBytes": 2700
 		},
 		{
 			"origin": "first-party",
@@ -1291,7 +1340,8 @@
 			"package": "@mcp-vertex/deps",
 			"summary": "Dependency inventory + offline health (deps_list, deps_check, deps_audit, deps_licenses, deps_tree).",
 			"tags": ["deps", "licenses"],
-			"permissions": ["filesystem-read", "network"]
+			"permissions": ["filesystem-read", "network"],
+			"tokenBudgetBytes": 2700
 		},
 		{
 			"origin": "first-party",
@@ -1299,7 +1349,8 @@
 			"package": "@mcp-vertex/diagram",
 			"summary": "Diagram generator (mermaid, dot) from code structure.",
 			"tags": ["diagram", "docs"],
-			"permissions": ["filesystem-read", "filesystem-write"]
+			"permissions": ["filesystem-read", "filesystem-write"],
+			"tokenBudgetBytes": 2700
 		},
 		{
 			"origin": "first-party",
@@ -1307,7 +1358,8 @@
 			"package": "@mcp-vertex/docs",
 			"summary": "Doc generation, search, and rendered catalog.",
 			"tags": ["docs", "catalog"],
-			"permissions": ["filesystem-read", "filesystem-write"]
+			"permissions": ["filesystem-read", "filesystem-write"],
+			"tokenBudgetBytes": 2700
 		},
 		{
 			"origin": "first-party",
@@ -1315,7 +1367,8 @@
 			"package": "@mcp-vertex/env",
 			"summary": "Environment config validation (.env check + schema + env_explains).",
 			"tags": ["env", "config"],
-			"permissions": ["env-read"]
+			"permissions": ["env-read"],
+			"tokenBudgetBytes": 2700
 		},
 		{
 			"origin": "first-party",
@@ -1323,7 +1376,8 @@
 			"package": "@mcp-vertex/error-reporting",
 			"summary": "Automatic mcp-vertex error reporting: opens de-duplicated GitHub issues for internal failures (enabled by default).",
 			"tags": ["error-reporting", "github", "issues"],
-			"permissions": ["network", "forge-write"]
+			"permissions": ["network", "forge-write"],
+			"tokenBudgetBytes": 3500
 		},
 		{
 			"origin": "first-party",
@@ -1331,7 +1385,8 @@
 			"package": "@mcp-vertex/external-mcps",
 			"summary": "Compose third-party MCP servers through the catalog + human ack.",
 			"tags": ["external-mcps", "composition"],
-			"permissions": ["network", "process"]
+			"permissions": ["network", "process"],
+			"tokenBudgetBytes": 2700
 		},
 		{
 			"origin": "first-party",
@@ -1339,7 +1394,8 @@
 			"package": "@mcp-vertex/forge",
 			"summary": "Forge (GitHub/GitLab) wrappers — PRs, CI, issues.",
 			"tags": ["forge", "git", "ci"],
-			"permissions": ["forge-read", "forge-write", "network"]
+			"permissions": ["forge-read", "forge-write", "network"],
+			"tokenBudgetBytes": 2700
 		},
 		{
 			"origin": "first-party",
@@ -1347,7 +1403,8 @@
 			"package": "@mcp-vertex/git",
 			"summary": "Git wrappers (PR list/view, diff, changelog, extended).",
 			"tags": ["git", "changelog"],
-			"permissions": ["git-read", "git-write"]
+			"permissions": ["git-read", "git-write"],
+			"tokenBudgetBytes": 5800
 		},
 		{
 			"origin": "first-party",
@@ -1355,7 +1412,8 @@
 			"package": "@mcp-vertex/i18n",
 			"summary": "i18n key/interpolation validation across locale JSON files.",
 			"tags": ["i18n", "l10n"],
-			"permissions": ["filesystem-read"]
+			"permissions": ["filesystem-read"],
+			"tokenBudgetBytes": 2700
 		},
 		{
 			"origin": "first-party",
@@ -1363,7 +1421,8 @@
 			"package": "@mcp-vertex/impact-analysis",
 			"summary": "Bounded impact analysis and test selection across changed symbols, dependents and related specs.",
 			"tags": ["impact", "tests", "f00169"],
-			"permissions": ["filesystem-read"]
+			"permissions": ["filesystem-read"],
+			"tokenBudgetBytes": 2700
 		},
 		{
 			"origin": "first-party",
@@ -1371,7 +1430,8 @@
 			"package": "@mcp-vertex/issues",
 			"summary": "Issue tracker adapters.",
 			"tags": ["issues"],
-			"permissions": ["forge-read", "forge-write", "network"]
+			"permissions": ["forge-read", "forge-write", "network"],
+			"tokenBudgetBytes": 2700
 		},
 		{
 			"origin": "first-party",
@@ -1385,7 +1445,8 @@
 				"filesystem-read",
 				"filesystem-write",
 				"network"
-			]
+			],
+			"tokenBudgetBytes": 2700
 		},
 		{
 			"origin": "first-party",
@@ -1393,7 +1454,8 @@
 			"package": "@mcp-vertex/link-check",
 			"summary": "Markdown link checker.",
 			"tags": ["docs", "links"],
-			"permissions": ["filesystem-read"]
+			"permissions": ["filesystem-read"],
+			"tokenBudgetBytes": 2700
 		},
 		{
 			"origin": "first-party",
@@ -1401,7 +1463,8 @@
 			"package": "@mcp-vertex/logs",
 			"summary": "Structured logs reader (tail, query, redact).",
 			"tags": ["logs", "observability"],
-			"permissions": ["filesystem-read", "filesystem-write"]
+			"permissions": ["filesystem-read", "filesystem-write"],
+			"tokenBudgetBytes": 2700
 		},
 		{
 			"origin": "first-party",
@@ -1409,7 +1472,8 @@
 			"package": "@mcp-vertex/memory",
 			"summary": "Persistent memory store (BM25 + recall, save, search).",
 			"tags": ["memory", "persistence"],
-			"permissions": ["filesystem-read", "filesystem-write"]
+			"permissions": ["filesystem-read", "filesystem-write"],
+			"tokenBudgetBytes": 4500
 		},
 		{
 			"origin": "first-party",
@@ -1417,7 +1481,8 @@
 			"package": "@mcp-vertex/notification",
 			"summary": "Notification + lock-await primitives.",
 			"tags": ["notification", "concurrency"],
-			"permissions": ["filesystem-read", "filesystem-write"]
+			"permissions": ["filesystem-read", "filesystem-write"],
+			"tokenBudgetBytes": 2700
 		},
 		{
 			"origin": "first-party",
@@ -1425,7 +1490,8 @@
 			"package": "@mcp-vertex/observability",
 			"summary": "Observability surface (metrics, errors, telemetry).",
 			"tags": ["observability"],
-			"permissions": ["filesystem-read", "filesystem-write"]
+			"permissions": ["filesystem-read", "filesystem-write"],
+			"tokenBudgetBytes": 2700
 		},
 		{
 			"origin": "first-party",
@@ -1433,7 +1499,8 @@
 			"package": "@mcp-vertex/orchestrator-runner",
 			"summary": "Orchestrator-runner runtime utilities.",
 			"tags": ["orchestrator", "runner"],
-			"permissions": ["process", "network"]
+			"permissions": ["process", "network"],
+			"tokenBudgetBytes": 2700
 		},
 		{
 			"origin": "first-party",
@@ -1441,7 +1508,8 @@
 			"package": "@mcp-vertex/perf",
 			"summary": "Performance bench/bundle/profile tools.",
 			"tags": ["perf", "benchmark"],
-			"permissions": ["filesystem-read", "process"]
+			"permissions": ["filesystem-read", "process"],
+			"tokenBudgetBytes": 2700
 		},
 		{
 			"origin": "first-party",
@@ -1449,7 +1517,8 @@
 			"package": "@mcp-vertex/project-health",
 			"summary": "Compact project-health aggregator: cheap summary first, lazy domain details on demand.",
 			"tags": ["health", "aggregation", "f00166"],
-			"permissions": ["filesystem-read"]
+			"permissions": ["filesystem-read"],
+			"tokenBudgetBytes": 2700
 		},
 		{
 			"origin": "first-party",
@@ -1457,7 +1526,8 @@
 			"package": "@mcp-vertex/prompt-eval",
 			"summary": "Prompt-eval harness (golden prompts, scoring).",
 			"tags": ["prompts", "eval"],
-			"permissions": ["filesystem-read", "process"]
+			"permissions": ["filesystem-read", "process"],
+			"tokenBudgetBytes": 2700
 		},
 		{
 			"origin": "first-party",
@@ -1465,7 +1535,8 @@
 			"package": "@mcp-vertex/prompts-pack",
 			"summary": "Project-aware MCP prompts (explain-this-code, write-tests-for, review-this-diff, etc.).",
 			"tags": ["prompts"],
-			"permissions": ["filesystem-read"]
+			"permissions": ["filesystem-read"],
+			"tokenBudgetBytes": 2700
 		},
 		{
 			"origin": "first-party",
@@ -1478,7 +1549,8 @@
 				"filesystem-write",
 				"git-read",
 				"git-write"
-			]
+			],
+			"tokenBudgetBytes": 12400
 		},
 		{
 			"origin": "first-party",
@@ -1486,7 +1558,8 @@
 			"package": "@mcp-vertex/quality",
 			"summary": "Quality gates: coverage, complexity, lint, type-check orchestration.",
 			"tags": ["quality", "gates"],
-			"permissions": ["filesystem-read", "process"]
+			"permissions": ["filesystem-read", "process"],
+			"tokenBudgetBytes": 8200
 		},
 		{
 			"origin": "first-party",
@@ -1494,7 +1567,8 @@
 			"package": "@mcp-vertex/quality-policy",
 			"summary": "Unified quality-policy surface: cheap tests, conventions, lint, types and coverage guidance without running heavy quality commands.",
 			"tags": ["quality", "policy", "aggregation", "f00167"],
-			"permissions": ["filesystem-read"]
+			"permissions": ["filesystem-read"],
+			"tokenBudgetBytes": 2700
 		},
 		{
 			"origin": "first-party",
@@ -1502,7 +1576,8 @@
 			"package": "@mcp-vertex/refactor",
 			"summary": "Refactor primitives (symbols, definition, references, rename, codemod).",
 			"tags": ["refactor"],
-			"permissions": ["filesystem-read", "filesystem-write"]
+			"permissions": ["filesystem-read", "filesystem-write"],
+			"tokenBudgetBytes": 2700
 		},
 		{
 			"origin": "first-party",
@@ -1510,7 +1585,8 @@
 			"package": "@mcp-vertex/rules",
 			"summary": "Lint/type rules engine (frameworks, dogmas, presets).",
 			"tags": ["rules", "lint"],
-			"permissions": ["filesystem-read"]
+			"permissions": ["filesystem-read"],
+			"tokenBudgetBytes": 2700
 		},
 		{
 			"origin": "first-party",
@@ -1518,7 +1594,8 @@
 			"package": "@mcp-vertex/search",
 			"summary": "Code search (semantic + symbol + references).",
 			"tags": ["search", "symbol", "f00136"],
-			"permissions": ["filesystem-read"]
+			"permissions": ["filesystem-read"],
+			"tokenBudgetBytes": 2700
 		},
 		{
 			"origin": "first-party",
@@ -1526,7 +1603,8 @@
 			"package": "@mcp-vertex/security",
 			"summary": "Security audit (CVEs, SAST, secrets, env).",
 			"tags": ["security", "audit"],
-			"permissions": ["filesystem-read", "env-read"]
+			"permissions": ["filesystem-read", "env-read"],
+			"tokenBudgetBytes": 2700
 		},
 		{
 			"origin": "first-party",
@@ -1534,7 +1612,8 @@
 			"package": "@mcp-vertex/skills-pack",
 			"summary": "Curated skill pack (debugging, perf, pr-review, security, incident, migration).",
 			"tags": ["skills"],
-			"permissions": ["filesystem-read"]
+			"permissions": ["filesystem-read"],
+			"tokenBudgetBytes": 2700
 		},
 		{
 			"origin": "first-party",
@@ -1542,7 +1621,8 @@
 			"package": "@mcp-vertex/status-marker",
 			"summary": "Status marker + closure canonical line.",
 			"tags": ["status-marker", "closure"],
-			"permissions": ["filesystem-read"]
+			"permissions": ["filesystem-read"],
+			"tokenBudgetBytes": 2700
 		},
 		{
 			"origin": "first-party",
@@ -1550,7 +1630,8 @@
 			"package": "@mcp-vertex/tech-debt",
 			"summary": "Tech-debt scanner (TODO/FIXME/HACK inventory).",
 			"tags": ["tech-debt"],
-			"permissions": ["filesystem-read"]
+			"permissions": ["filesystem-read"],
+			"tokenBudgetBytes": 2700
 		},
 		{
 			"origin": "first-party",
@@ -1558,7 +1639,8 @@
 			"package": "@mcp-vertex/test-convention",
 			"summary": "Test-file convention enforcement (spec path, mock style, forbidden patterns).",
 			"tags": ["tests", "convention"],
-			"permissions": ["filesystem-read"]
+			"permissions": ["filesystem-read"],
+			"tokenBudgetBytes": 2700
 		},
 		{
 			"origin": "first-party",
@@ -1566,7 +1648,8 @@
 			"package": "@mcp-vertex/test-policy",
 			"summary": "Test policy mode (TDD, tests-after, free, none).",
 			"tags": ["tests", "policy"],
-			"permissions": ["filesystem-read", "filesystem-write"]
+			"permissions": ["filesystem-read", "filesystem-write"],
+			"tokenBudgetBytes": 2700
 		},
 		{
 			"origin": "first-party",
@@ -1574,7 +1657,8 @@
 			"package": "@mcp-vertex/usage-tracking",
 			"summary": "Per-token/per-call usage tracking (spend, budget).",
 			"tags": ["usage", "spend"],
-			"permissions": ["filesystem-read", "filesystem-write"]
+			"permissions": ["filesystem-read", "filesystem-write"],
+			"tokenBudgetBytes": 2700
 		},
 		{
 			"origin": "first-party",
@@ -1582,7 +1666,8 @@
 			"package": "@mcp-vertex/web-fetch",
 			"summary": "Web fetch (allow-listed URLs only).",
 			"tags": ["web", "fetch"],
-			"permissions": ["network"]
+			"permissions": ["network"],
+			"tokenBudgetBytes": 2700
 		}
 	],
 	"webCatalog": [
@@ -1891,8 +1976,8 @@
 			"capabilities": ["error-reporting", "github", "issues"],
 			"permissions": ["network", "forge-write"],
 			"tokenBudget": {
-				"warning": 2700,
-				"hard": 3000,
+				"warning": 3800,
+				"hard": 4200,
 				"releaseRelativePercent": 20
 			}
 		},
@@ -1949,8 +2034,8 @@
 			"capabilities": ["git", "changelog"],
 			"permissions": ["git-read", "git-write"],
 			"tokenBudget": {
-				"warning": 2700,
-				"hard": 3000,
+				"warning": 6200,
+				"hard": 6800,
 				"releaseRelativePercent": 20
 			}
 		},
@@ -2054,8 +2139,8 @@
 			"capabilities": ["memory", "persistence"],
 			"permissions": ["filesystem-read", "filesystem-write"],
 			"tokenBudget": {
-				"warning": 2700,
-				"hard": 3000,
+				"warning": 4900,
+				"hard": 5400,
 				"releaseRelativePercent": 20
 			}
 		},
@@ -2187,8 +2272,8 @@
 				"git-write"
 			],
 			"tokenBudget": {
-				"warning": 2700,
-				"hard": 3000,
+				"warning": 13500,
+				"hard": 15000,
 				"releaseRelativePercent": 20
 			}
 		},
@@ -2210,8 +2295,8 @@
 			"capabilities": ["quality", "gates"],
 			"permissions": ["filesystem-read", "process"],
 			"tokenBudget": {
-				"warning": 2700,
-				"hard": 3000,
+				"warning": 9000,
+				"hard": 9800,
 				"releaseRelativePercent": 20
 			}
 		},
@@ -2543,8 +2628,8 @@
 		},
 		{
 			"id": "error-reporting",
-			"warning": 2700,
-			"hard": 3000,
+			"warning": 3800,
+			"hard": 4200,
 			"releaseRelativePercent": 20
 		},
 		{
@@ -2561,8 +2646,8 @@
 		},
 		{
 			"id": "git",
-			"warning": 2700,
-			"hard": 3000,
+			"warning": 6200,
+			"hard": 6800,
 			"releaseRelativePercent": 20
 		},
 		{
@@ -2603,8 +2688,8 @@
 		},
 		{
 			"id": "memory",
-			"warning": 2700,
-			"hard": 3000,
+			"warning": 4900,
+			"hard": 5400,
 			"releaseRelativePercent": 20
 		},
 		{
@@ -2651,14 +2736,14 @@
 		},
 		{
 			"id": "proposals",
-			"warning": 2700,
-			"hard": 3000,
+			"warning": 13500,
+			"hard": 15000,
 			"releaseRelativePercent": 20
 		},
 		{
 			"id": "quality",
-			"warning": 2700,
-			"hard": 3000,
+			"warning": 9000,
+			"hard": 9800,
 			"releaseRelativePercent": 20
 		},
 		{

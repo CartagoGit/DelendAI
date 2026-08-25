@@ -27,7 +27,7 @@ export interface IAssessmentCost {
 	readonly schemaBytes: number;
 	readonly estimatedTokens: number;
 	readonly recommendedPluginCount: number;
-	readonly source: 'preset-budget' | 'fallback-budget';
+	readonly source: 'preset-budget' | 'fallback-budget' | 'plugin-budget';
 	/**
 	 * r00024 (PRESET-001): which surface the reused preset budget was
 	 * measured under. `'estimated'` for the `fallback-budget` source,
@@ -36,6 +36,18 @@ export interface IAssessmentCost {
 	 */
 	readonly surfaceMode: 'native' | 'adaptive' | 'estimated';
 	readonly note: string;
+	/**
+	 * f00179 S3: per-plugin `staticBytes` (or legacy `warning`) for
+	 * every recommended plugin whose manifest exposes one. Populated
+	 * when the cost is reconstructed from the plugin manifests
+	 * (`source === 'plugin-budget'`); absent for `preset-budget` and
+	 * `fallback-budget` sources.
+	 */
+	readonly perPluginBytes?: readonly {
+		readonly plugin: string;
+		readonly bytes: number;
+		readonly measuredAt?: string | undefined;
+	}[];
 }
 
 export interface IAdoptionAssessment {

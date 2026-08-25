@@ -1,4 +1,4 @@
-import { definePluginManifest, TOKEN_BUDGETS } from '@mcp-vertex/core/public';
+import { definePluginManifest } from '@mcp-vertex/core/public';
 
 export default definePluginManifest({
 	id: 'proposals',
@@ -15,7 +15,17 @@ export default definePluginManifest({
 		'git-write',
 	],
 	presets: ['swarm', 'full', 'vertex'],
-	tokenBudget: TOKEN_BUDGETS.toolPayloads.search,
+	// f00179 S2 — proposals is the heaviest first-party plugin
+	// (~30 tools: agent_lock, agent_worktree, auto_work, plan,
+	// delegate, proposal_transition, etc.). Measured 2026-08-25.
+	tokenBudget: {
+		staticBytes: 12_400,
+		adaptiveActivationBytes: 2_100,
+		typicalOutput: 3_200,
+		caps: { hard: 15_000, warning: 13_500 },
+		measuredAt: '2026-08-25',
+		source: 'token-budget-real',
+	},
 	dependencies: [
 		'@mcp-vertex/core',
 		'@mcp-vertex/error-reporting',

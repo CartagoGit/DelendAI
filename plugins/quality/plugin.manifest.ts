@@ -1,4 +1,4 @@
-import { definePluginManifest, TOKEN_BUDGETS } from '@mcp-vertex/core/public';
+import { definePluginManifest } from '@mcp-vertex/core/public';
 
 export default definePluginManifest({
 	id: 'quality',
@@ -11,7 +11,18 @@ export default definePluginManifest({
 	maturity: 'stable',
 	permissions: ['filesystem-read', 'process'],
 	presets: ['standard', 'swarm', 'full', 'vertex', 'web-app', 'backend-api'],
-	tokenBudget: TOKEN_BUDGETS.toolPayloads.search,
+	// f00179 S2 — quality exposes 8 tools (run_quality, get_scopes,
+	// get_rules, evidence_collect, plan_apply, etc.). Lint+typecheck
+	// policy blobs are the bulk of the registration cost. Measured
+	// 2026-08-25.
+	tokenBudget: {
+		staticBytes: 8_200,
+		adaptiveActivationBytes: 1_400,
+		typicalOutput: 2_200,
+		caps: { hard: 9_800, warning: 9_000 },
+		measuredAt: '2026-08-25',
+		source: 'token-budget-real',
+	},
 	dependencies: ['@mcp-vertex/core', '@modelcontextprotocol/sdk', 'zod'],
 	capabilities: ['quality', 'gates'],
 });

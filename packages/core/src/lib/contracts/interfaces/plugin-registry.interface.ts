@@ -33,6 +33,14 @@ export interface IPluginRegistryEntry {
 		| 'swarm'
 		| 'full'
 		| 'vertex';
+	/**
+	 * f00179 S2/S3 — measured `staticBytes` for this plugin when its
+	 * manifest uses the new `IPluginTokenBudget` shape. Falls back to
+	 * the legacy `warning` ceiling when only the legacy shape is
+	 * present. `undefined` when the manifest declares no usable
+	 * number (defensive: surfaces "we don't know" instead of 0).
+	 */
+	readonly tokenBudgetBytes?: number | undefined;
 }
 
 /** A registry source — a list of entries plus its origin label. */
