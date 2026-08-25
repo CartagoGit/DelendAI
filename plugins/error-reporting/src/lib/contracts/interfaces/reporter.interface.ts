@@ -1,4 +1,9 @@
 import type { ISafeMcpFrame } from './safe-frame.interface';
+import type {
+	SafeToolCategory,
+	SafeToolId,
+	ToolOwner,
+} from '@mcp-vertex/core/public';
 import type { SafeReporterTransportFailureCode } from '../constants/safe-reporter-failure-codes.constant';
 import type { McpVertexErrorCode } from '../constants/error-codes.constant';
 import {
@@ -75,7 +80,9 @@ export interface ISafeMcpVertexReport {
 	readonly reporterVersion: string;
 	readonly mcpVertexVersion: string;
 	readonly packageId: string;
-	readonly toolId?: string | undefined;
+	readonly safeToolId?: SafeToolId | undefined;
+	readonly toolOwner: ToolOwner;
+	readonly toolCategory: SafeToolCategory;
 	readonly errorCode?: McpVertexErrorCode | undefined;
 	readonly failureClass: SafeFailureClass;
 	readonly classification: IssueClassification;

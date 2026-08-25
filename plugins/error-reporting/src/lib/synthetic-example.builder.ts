@@ -24,6 +24,7 @@ interface ISyntheticToolShape {
 interface IBuildSyntheticExampleInput {
 	readonly packageId: string;
 	readonly toolName: string;
+	readonly toolSeed?: string | undefined;
 	readonly errorCode?: McpVertexErrorCode | undefined;
 	readonly failureClass: SafeFailureClass;
 	readonly toolSchema?: unknown;
@@ -319,7 +320,7 @@ export const buildSyntheticExample = (
 	const fixture = selectSyntheticFixture(input);
 	const seed = [
 		input.packageId,
-		input.toolName,
+		input.toolSeed ?? input.toolName,
 		input.errorCode ?? '',
 		input.failureClass,
 	].join(':');

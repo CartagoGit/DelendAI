@@ -99,10 +99,12 @@ export const buildIssueBody = (report: ISafeMcpVertexReport): string => {
 		`| MCP Vertex version | \`${report.mcpVertexVersion}\` |`,
 		`| Classification | \`${report.classification}\` |`,
 		`| Failure class | \`${report.failureClass}\` |`,
+		`| Tool owner | \`${report.toolOwner}\` |`,
+		`| Tool category | \`${report.toolCategory}\` |`,
 		`| Fingerprint | \`${report.fingerprint}\` |`,
 	];
-	if (report.toolId !== undefined) {
-		lines.push(`| Tool | \`${report.toolId}\` |`);
+	if (report.safeToolId !== undefined) {
+		lines.push(`| Safe tool | \`${report.safeToolId}\` |`);
 	}
 	if (report.errorCode !== undefined) {
 		lines.push(`| Error code | \`${report.errorCode}\` |`);

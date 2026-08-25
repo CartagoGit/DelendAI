@@ -1,4 +1,8 @@
-import { definePlugin, redactSecrets } from '@mcp-vertex/core/public';
+import {
+	definePlugin,
+	redactSecrets,
+	type IToolIdentityRegistry,
+} from '@mcp-vertex/core/public';
 
 import { OptionsSchema } from './lib/contracts/constants/options.constant';
 import type { ISafeMcpVertexReport } from './lib/contracts/interfaces/reporter.interface';
@@ -41,11 +45,17 @@ const systemClock: IReportSchedulerClock = {
 
 registerInternalRuntimePaths(import.meta.url);
 
+const EMPTY_TOOL_REGISTRY: IToolIdentityRegistry = {
+	get: () => undefined,
+	list: () => new Map(),
+};
+
 export const buildReportErrorHandler = (input: {
 	readonly options: IErrorReportingOptions;
 	readonly store: IReportStore;
 	readonly reporter: ReturnType<typeof createSafeReporter>;
 	readonly clock: IReportSchedulerClock;
+	readonly toolRegistry: Pick<IToolIdentityRegistry, 'get'>;
 }) => {
 	const scheduler = createReportScheduler({
 		options: input.options,
@@ -53,7 +63,11 @@ export const buildReportErrorHandler = (input: {
 	});
 	return async (toolName: string, error: unknown): Promise<void> => {
 		try {
-			const report = buildSafeReport(toolName, error);
+			const report = buildSafeReport({
+				toolName,
+				toolRegistry: input.toolRegistry,
+				error,
+			});
 			if (report === undefined) return;
 			const redactedReport = redactReport(report);
 			const validation = validateSafeReport(redactedReport);
@@ -118,6 +132,7 @@ export const buildObservedFailureHandler = (input: {
 	readonly store: IReportStore;
 	readonly reporter: ReturnType<typeof createSafeReporter>;
 	readonly clock: IReportSchedulerClock;
+	readonly toolRegistry: Pick<IToolIdentityRegistry, 'get'>;
 }) => {
 	const reportError = buildReportErrorHandler(input);
 	return async (
@@ -166,12 +181,14 @@ export default definePlugin({
 			store,
 			reporter,
 			clock: systemClock,
+			toolRegistry: ctx.toolRegistry ?? EMPTY_TOOL_REGISTRY,
 		});
 		const reportObservedFailure = buildObservedFailureHandler({
 			options,
 			store,
 			reporter,
 			clock: systemClock,
+			toolRegistry: ctx.toolRegistry ?? EMPTY_TOOL_REGISTRY,
 		});
 		const statusTool = buildReportStatusRegistration({
 			namespacePrefix: ctx.namespacePrefix,

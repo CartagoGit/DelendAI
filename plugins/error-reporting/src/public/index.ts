@@ -66,6 +66,7 @@ export {
 	shouldReport,
 	ghIssueExec,
 } from '../lib/reporter.service';
+export { buildSafeReport } from '../lib/report-builder.helper';
 export { createReportScheduler } from '../lib/report-scheduler.helper';
 export { buildSyntheticExample } from '../lib/synthetic-example.builder';
 export { buildErrorReportingKnowledge } from '../lib/knowledge/error-reporting';

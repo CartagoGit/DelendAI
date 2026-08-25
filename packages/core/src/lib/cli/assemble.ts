@@ -5,6 +5,12 @@ import { join, resolve } from 'node:path';
 import { DEFAULT_CORE_PATHS } from '../contracts/interfaces/core-paths.interface';
 import type { IResolvedHostIdentity } from '../contracts/interfaces/resolved-host-identity.interface';
 import type { IMcpVertexHostConfig } from '../contracts/interfaces/host-config.interface';
+import type {
+	IToolIdentityRegistry,
+	IToolRegistryEntry,
+	SafeToolCategory,
+	ToolOwner,
+} from '../contracts/interfaces/safe-tool-identity.interface';
 import {
 	DEFAULT_CONFIG_FILENAME,
 	diagnoseConfigFile,
@@ -18,6 +24,7 @@ import type { IPluginLoadResult } from '../plugins/load-plugins';
 import type { IMcpPluginContext } from '../plugins/plugin-contract';
 import { createPeerPluginRegistry } from '../plugins/peer-plugin-registry';
 import type { IMcpVertexCliArgs } from '../plugins/parse-cli-args';
+import { classifyOrigin } from '../plugins/classify-origin';
 import { joinRel } from '../shared/paths';
 import {
 	createGitConfigReader,
@@ -45,6 +52,60 @@ import {
 	mergeCheckpointAdvisories,
 	selectCheckpointAdvisory,
 } from '../shared/checkpoint-advisory';
+
+const toolOwnerFromOrigin = (
+	origin: 'bundled' | 'user-local' | 'external',
+): ToolOwner => {
+	switch (origin) {
+		case 'bundled':
+			return 'mcp-vertex';
+		case 'external':
+			return 'external-mcp';
+		default:
+			return 'host-project';
+	}
+};
+
+const toolCategoryOf = (input: {
+	readonly packageName: string;
+	readonly tags?: readonly string[] | undefined;
+	readonly effects?:
+		| readonly ('write' | 'spawn' | 'network' | 'destructive')[]
+		| undefined;
+}): SafeToolCategory => {
+	const tags = new Set((input.tags ?? []).map((tag) => tag.toLowerCase()));
+	const effects = new Set(input.effects ?? []);
+	if (
+		input.packageName === '@mcp-vertex/error-reporting' ||
+		tags.has('reporting') ||
+		tags.has('issues') ||
+		tags.has('logs')
+	) {
+		return 'reporting';
+	}
+	if (
+		tags.has('routing') ||
+		tags.has('orchestration') ||
+		tags.has('coordination') ||
+		tags.has('agents')
+	) {
+		return 'orchestration';
+	}
+	if (tags.has('analysis') || tags.has('audit') || tags.has('search')) {
+		return 'analysis';
+	}
+	if (
+		input.packageName.includes('external-mcps') ||
+		tags.has('external-mcps') ||
+		tags.has('browser')
+	) {
+		return 'external-bridge';
+	}
+	if (effects.has('network')) return 'network';
+	if (effects.has('spawn')) return 'process';
+	if (effects.has('write')) return 'file';
+	return 'unknown';
+};
 
 export interface IAssembledCliConfig {
 	readonly config: IMcpVertexHostConfig;
@@ -232,6 +293,11 @@ export const assembleCliConfig = async (
 	// final peer set. Created empty here; `peerPluginRegistrySet(...)`
 	// is called once we know which plugins loaded successfully.
 	const peerRegistry = createPeerPluginRegistry();
+	const toolRegistryEntries = new Map<string, IToolRegistryEntry>();
+	const toolRegistry: IToolIdentityRegistry = {
+		get: (toolName) => toolRegistryEntries.get(toolName),
+		list: () => new Map(toolRegistryEntries),
+	};
 
 	// f00082: resolve the commit-author policy ONCE (the git lookup
 	// runs at boot, not per commit). The CLI loader fills the identity
@@ -313,6 +379,7 @@ export const assembleCliConfig = async (
 			args: args.extra,
 			cacheEvictionRegistry,
 			peerPlugins: peerRegistry.registry,
+			toolRegistry,
 			...(resolvedLogsSink !== undefined
 				? { logsSink: resolvedLogsSink }
 				: {}),
@@ -416,6 +483,59 @@ export const assembleCliConfig = async (
 				? { tags: registration.tags }
 				: {}),
 		}));
+	const pluginDescriptorsByRegistrationId = new Map(
+		toolSurfaceDescriptors.map(
+			(entry) => [entry.registrationId, entry] as const,
+		),
+	);
+	for (const registration of tools) {
+		const descriptor = pluginDescriptorsByRegistrationId.get(
+			registration.id,
+		);
+		if (descriptor?.pluginId !== undefined) {
+			const loadedPlugin = loadResult.loaded.find(
+				(entry) => entry.plugin.name === descriptor.pluginId,
+			);
+			const pluginConfig = pluginConfigFor(
+				fileConfig,
+				descriptor.pluginId,
+			);
+			const origin = classifyOrigin({
+				name: descriptor.pluginId,
+				resolvedSpecifier:
+					loadedPlugin?.resolved ?? descriptor.pluginId,
+				hasExplicitPath:
+					typeof pluginConfig.path === 'string' &&
+					pluginConfig.path !== '',
+				isExternalServer: descriptor.pluginId.startsWith('ext.'),
+			});
+			const packageName = loadedPlugin?.resolved ?? descriptor.pluginId;
+			toolRegistryEntries.set(descriptor.name, {
+				packageName,
+				owner: toolOwnerFromOrigin(origin),
+				...(origin === 'bundled'
+					? { publicToolName: descriptor.toolId }
+					: {}),
+				category: toolCategoryOf({
+					packageName,
+					tags: registration.tags,
+					effects: registration.effects,
+				}),
+			});
+			continue;
+		}
+
+		toolRegistryEntries.set(`${corePrefix}_${registration.id}`, {
+			packageName: '@mcp-vertex/core',
+			owner: 'mcp-vertex',
+			publicToolName: registration.id,
+			category: toolCategoryOf({
+				packageName: '@mcp-vertex/core',
+				tags: registration.tags,
+				effects: registration.effects,
+			}),
+		});
+	}
 	const pluginDescriptorsByPlugin = new Map<
 		string,
 		{
