@@ -8,6 +8,29 @@ track: develop-audit-hardening-v3
 date: 2026-08-25
 date_iso: 2026-08-25
 closed-by: cartago (q00005 orchestration pass 2026-08-25)
+closed-evidence:
+    - 33/33 children promoted to status: done (fa5df6de)
+    - registry sync reports errorCount: 0, q00005 indexed at done/plans/q00005-...
+    - bun run typecheck green at the closure commit (a7b365c2)
+    - 8 child proposals delegated to 3 parallel implementation-runner subagents
+      and shipped via 8 conventional commits (9d943405, 3e7d58fb, fc961362,
+      ef21c85b, aaedcf35, bd3d1c6c, 44e9cc52, 20f495b6)
+    - 6 docs/ADR artefacts added (ADR-0014, ADR-0015, ADR-0016, host-compatibility-matrix.md)
+    - pre-existing 13 audit-fix children (Tracks A–F) carried forward from
+      prior sessions and promoted by the same close-plan-children pass
+shipped-in:
+    - 58ef6288 # feat(surface): r00026 default adaptive for plain MCP clients
+    - 11d31317 # docs(filesystem+surface): d00007 + d00008 + c00019 ADRs
+    - 9d943405 # feat(smoke): f00178 — pack smoke for all 9 distribuible presets
+    - 3e7d58fb # feat(manifest): f00179 — tokenBudget with real semantics
+    - fc961362 # feat(manifest): f00180 — toolPermissions per-tool granularity
+    - ef21c85b # refactor(selector): r00025 — tokenTax/latencyTax/historicalSuccess
+    - aaedcf35 # fix(privacy): x00256 — no-expansion guardrail for privacy validator
+    - bd3d1c6c # test(utf8): t00014 — UTF-8 byte boundaries regression guard
+    - 44e9cc52 # test(lifecycle): t00015 — plugin lifecycle DAG/cycle/rollback/AbortSignal
+    - 20f495b6 # test(memory): t00016 — memory dispose regression guard
+    - fa5df6de # chore(proposals): close all 33 q00005 children (review → done)
+    - 82649f0f # chore(proposals): close q00005 plan (in-progress/plans → done/plans)
 predecessor-plan: q00004
 audit-source:
   file: docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol-tercera-pasada.md
