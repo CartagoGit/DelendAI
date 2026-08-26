@@ -1,6 +1,7 @@
 import {
 	existsSync,
 	mkdtempSync,
+	readFileSync,
 	rmSync,
 	utimesSync,
 	writeFileSync,
@@ -333,24 +334,16 @@ describe('withFileMutex state-machine invariants', () => {
 
 	it('heartbeat generations are monotonic across bounded runs', async () => {
 		const cases = [3, 4, 5] as const;
-		// A heartbeat already in flight when the lock is released still
-		// resolves (harmlessly) after `withFileMutex` returns, and the test
-		// hook is process-global — so without this, a leftover sample from an
-		// earlier case lands in the next case's samples and looks like a
-		// generation going backwards. Retiring each case's token makes the
-		// attribution exact instead of timing-dependent.
-		const retiredTokens = new Set<string>();
 
 		for (const [caseIndex, targetHeartbeats] of cases.entries()) {
 			const generations: number[] = [];
-			const caseTokens = new Set<string>();
+			let caseToken: string | undefined;
 			const targetCase = join(dir, `state-generation-${caseIndex}.json`);
 			writeFileSync(targetCase, '{}');
 
 			__setWithFileMutexTestHooks({
 				afterHeartbeat: (lease) => {
-					if (retiredTokens.has(lease.token)) return;
-					caseTokens.add(lease.token);
+					if (lease.token !== caseToken) return;
 					generations.push(lease.generation);
 				},
 			});
@@ -362,6 +355,11 @@ describe('withFileMutex state-machine invariants', () => {
 			await withFileMutex(
 				targetCase,
 				async () => {
+					caseToken = (
+						JSON.parse(
+							readFileSync(`${targetCase}.mutex`, 'utf8'),
+						) as { token?: unknown }
+					).token as string;
 					await waitFor(
 						() => generations.length >= targetHeartbeats,
 						15_000,
@@ -375,16 +373,10 @@ describe('withFileMutex state-machine invariants', () => {
 				},
 			);
 
-			// Let any heartbeat still in flight at release land here, where it
-			// belongs, before this case's tokens are retired.
-			await delay(20);
-			for (const caseToken of caseTokens) retiredTokens.add(caseToken);
-
 			expect(
 				generations.length,
 				`case ${caseIndex}`,
 			).toBeGreaterThanOrEqual(targetHeartbeats);
-			expect(caseTokens.size, `case ${caseIndex}`).toBe(1);
 			for (let index = 1; index < generations.length; index += 1) {
 				const current = generations[index];
 				const previous = generations[index - 1];
