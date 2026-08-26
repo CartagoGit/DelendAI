@@ -9,6 +9,11 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Added
+- **Agnostic core error collector** (`f00251`): a host-agnostic `IErrorCollector`
+  engine in core, wired into the plugin context via `assembleErrorCollector`;
+  `@mcp-vertex/logs` and `@mcp-vertex/issues` each register an `IErrorSink`
+  adapter so errors surface in the operational log and as issues automatically.
+  Skill + knowledge entries included. (13 source files, 5 test files, 167+ tests.)
 - **Peer-review loop for slices** (`proposals_proposal_review`): submit a finished
   slice for review (not done yet); a *different* agent approves it (→ done) or
   requests changes with an objection (→ reworkable). Loops until a reviewer has no

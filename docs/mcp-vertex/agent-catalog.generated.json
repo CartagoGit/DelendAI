@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-08-26T02:30:10.311Z",
+	"generatedAt": "2026-08-26T04:03:43.203Z",
 	"mode": "compact",
 	"tools": [
 		{
@@ -1284,13 +1284,6 @@
 				"kind": "feat"
 			},
 			{
-				"id": "f00251",
-				"title": "f00251",
-				"track": "error-collection",
-				"status": "in-progress",
-				"kind": "feat"
-			},
-			{
 				"id": "q00003",
 				"title": "q00003",
 				"track": "develop-audit-consolidation",
@@ -1335,10 +1328,10 @@
 		],
 		"byStatus": {
 			"ready": 0,
-			"in-progress": 15,
+			"in-progress": 14,
 			"review": 0,
 			"paused": 1,
-			"done": 470,
+			"done": 471,
 			"blocked": 0,
 			"retired": 2,
 			"unspecified": 0
