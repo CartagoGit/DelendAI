@@ -26,7 +26,10 @@ export interface IPresetBudgetStringList {
 }
 
 export interface IPresetBudgetProfile {
+	/** The surface used to capture the budget metrics. */
 	readonly surfaceMode: IPresetSurfaceMode;
+	/** The normal host surface these metrics are intended to describe. */
+	readonly runtimeSurface: 'managed';
 	readonly toolCount: IPresetBudgetMetric;
 	readonly schemaBytes: IPresetBudgetMetric;
 	readonly coldStartTokens: IPresetTokenEstimate;
