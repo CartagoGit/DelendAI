@@ -44,22 +44,54 @@ export interface ISliceListenerEmissions {
 
 const parseIndex = (
 	raw: string,
-): { slices: Map<string, { status: string; proposalId: string }> } => {
-	const slices = new Map<string, { status: string; proposalId: string }>();
+): {
+	slices: Map<
+		string,
+		{
+			status: string;
+			proposalId: string;
+			/**
+			 * x00263 (AUD-CP-005): paths the slice owns. The
+			 * proposals registry does not always persist this
+			 * field, so the listener treats its absence as a
+			 * refusal (`SLICE_HAS_NO_FILES`) — never as an empty
+			 * implicit skipAdd. Tests that want a clean path
+			 * inject the field directly.
+			 */
+			files?: readonly string[];
+		}
+	>;
+} => {
+	const slices = new Map<
+		string,
+		{
+			status: string;
+			proposalId: string;
+			files?: readonly string[];
+		}
+	>();
 	try {
 		const parsed = JSON.parse(raw) as {
 			proposals?: readonly {
 				id?: string;
-				slices?: readonly { id?: string; status?: string }[];
+				slices?: readonly {
+					id?: string;
+					status?: string;
+					files?: readonly unknown[];
+				}[];
 			}[];
 		};
 		for (const proposal of parsed.proposals ?? []) {
 			if (typeof proposal.id !== 'string') continue;
 			for (const slice of proposal.slices ?? []) {
 				if (typeof slice.id !== 'string') continue;
+				const files = (slice.files ?? []).filter(
+					(f): f is string => typeof f === 'string' && f.length > 0,
+				);
 				slices.set(`${proposal.id}-${slice.id}`, {
 					status: slice.status ?? 'unknown',
 					proposalId: proposal.id,
+					...(files.length > 0 ? { files } : {}),
 				});
 			}
 		}
@@ -70,36 +102,82 @@ const parseIndex = (
 };
 
 const diffSlices = (
-	prev: ReadonlyMap<string, { status: string; proposalId: string }>,
-	curr: ReadonlyMap<string, { status: string; proposalId: string }>,
+	prev: ReadonlyMap<
+		string,
+		{
+			status: string;
+			proposalId: string;
+			files?: readonly string[];
+		}
+	>,
+	curr: ReadonlyMap<
+		string,
+		{
+			status: string;
+			proposalId: string;
+			files?: readonly string[];
+		}
+	>,
 	onStatuses: readonly string[],
-): ITriggerEvent[] => {
+): {
+	events: ITriggerEvent[];
+	refusals: readonly { readonly key: string; readonly reason: string }[];
+} => {
 	const events: ITriggerEvent[] = [];
+	const refusals: { key: string; reason: string }[] = [];
 	for (const [key, entry] of curr) {
 		const prior = prev.get(key);
 		const wasPresent = prior !== undefined;
 		const statusChanged =
 			wasPresent && prior !== undefined && prior.status !== entry.status;
 		if (!wasPresent || statusChanged) {
-			if (onStatuses.includes(entry.status)) {
-				const dash = key.indexOf('-');
-				const sliceId = dash >= 0 ? key.slice(dash + 1) : key;
-				events.push({
-					kind: 'slice',
-					proposalId: entry.proposalId,
-					sliceId,
-					status: entry.status,
+			if (!onStatuses.includes(entry.status)) continue;
+			const dash = key.indexOf('-');
+			const sliceId = dash >= 0 ? key.slice(dash + 1) : key;
+			// x00263 (AUD-CP-005): slices without a `files` field
+			// trigger a refusal instead of an implicit empty
+			// skipAdd. The driver must never stage a superset.
+			if (entry.files === undefined || entry.files.length === 0) {
+				refusals.push({
+					key,
+					reason: `SLICE_HAS_NO_FILES: ${key}`,
 				});
+				continue;
 			}
+			events.push({
+				kind: 'slice',
+				proposalId: entry.proposalId,
+				sliceId,
+				status: entry.status,
+				files: { paths: entry.files },
+			});
 		}
 	}
-	return events;
+	return { events, refusals };
 };
+
+/**
+ * x00263 (AUD-CP-005): a structured refusal from the listener.
+ * The engine never stages an empty `files` list; instead it
+ * receives this refusal and decides what to do (log, escalate,
+ * or pass an explicit `skipStageEmpty` flag).
+ */
+export interface ISliceRefusal {
+	readonly key: string;
+	readonly reason: string;
+}
 
 export interface ISliceListener {
 	check(): Promise<readonly ITriggerEvent[]>;
 	/** Drain the pending-events queue (events the engine has not acked yet). */
 	drainPending(): readonly ITriggerEvent[];
+	/**
+	 * x00263: drain refusals emitted by the listener since the last
+	 * drain. The engine logs / escalates these — they are never
+	 * re-emitted, but they ARE preserved across polls because the
+	 * underlying slice did not change (it is still missing files).
+	 */
+	drainRefusals(): readonly ISliceRefusal[];
 	start(): void;
 	stop(): void;
 }
@@ -112,10 +190,18 @@ export const createSliceListener = (
 	pollMs: number = DEFAULT_POLL_MS,
 ): ISliceListener => {
 	const indexRel = join(docsDir, 'proposals', 'index.json');
-	let prev = new Map<string, { status: string; proposalId: string }>();
+	let prev = new Map<
+		string,
+		{
+			status: string;
+			proposalId: string;
+			files?: readonly string[];
+		}
+	>();
 	let initialized = false;
 	let timer: ReturnType<typeof setInterval> | undefined;
 	const pending: ITriggerEvent[] = [];
+	const refusals: ISliceRefusal[] = [];
 	const reader = new SafeWorkspaceReader(workspaceRoot);
 
 	/** Apply a single event against the engine; mark seen only on OK. */
@@ -141,11 +227,12 @@ export const createSliceListener = (
 			return [];
 		}
 		const curr = parseIndex(raw).slices;
-		const newEvents = initialized
+		const { events: newEvents, refusals: newRefusals } = initialized
 			? diffSlices(prev, curr, config.onStatuses)
-			: [];
+			: { events: [], refusals: [] };
 		prev = curr;
 		initialized = true;
+		if (newRefusals.length > 0) refusals.push(...newRefusals);
 		if (newEvents.length > 0) {
 			pending.push(...newEvents);
 			// Deliver in parallel; each delivery either marks or leaves.
@@ -156,7 +243,20 @@ export const createSliceListener = (
 
 	return {
 		check: checkImpl,
-		drainPending: () => pending.slice(),
+		// x00263: both drain helpers are *true* drains — they
+		// clear the queue. Pending events are also cleared by
+		// `deliverOne` on OK; refusals have no auto-clear path,
+		// so the engine must drain them to keep memory bounded.
+		drainPending: () => {
+			const out = pending.slice();
+			pending.length = 0;
+			return out;
+		},
+		drainRefusals: () => {
+			const out = refusals.slice();
+			refusals.length = 0;
+			return out;
+		},
 		start() {
 			if (timer !== undefined) return;
 			timer = setInterval(() => {
@@ -176,7 +276,16 @@ export const createSliceListener = (
 export const readCurrentSliceSnapshot = async (
 	workspaceRoot: string,
 	docsDir: string,
-): Promise<Map<string, { status: string; proposalId: string }>> => {
+): Promise<
+	Map<
+		string,
+		{
+			status: string;
+			proposalId: string;
+			files?: readonly string[];
+		}
+	>
+> => {
 	const indexRel = join(docsDir, 'proposals', 'index.json');
 	let raw = '';
 	try {
