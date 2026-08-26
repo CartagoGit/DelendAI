@@ -203,7 +203,8 @@ describe('runCommitDriver', () => {
 			},
 		);
 		expect(result.committed).toBe(false);
-		expect(result.refusal).toContain('protected branch "main"');
+		expect(result.refusal).toContain('BRANCH_PROTECTED');
+		expect(result.refusal).toContain('"main"');
 	});
 
 	it('commits with the resolved global author + audit trailer', async () => {
