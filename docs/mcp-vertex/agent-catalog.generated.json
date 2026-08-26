@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-08-25T20:11:30.838Z",
+	"generatedAt": "2026-08-26T02:30:10.311Z",
 	"mode": "compact",
 	"tools": [
 		{
@@ -1240,32 +1240,25 @@
 				"kind": "audit"
 			},
 			{
+				"id": "b00237",
+				"title": "b00237",
+				"track": "architecture",
+				"status": "in-progress",
+				"kind": "unspecified"
+			},
+			{
+				"id": "b00238",
+				"title": "b00238",
+				"track": "architecture",
+				"status": "in-progress",
+				"kind": "unspecified"
+			},
+			{
 				"id": "c00010",
 				"title": "c00010",
 				"track": "ci",
 				"status": "in-progress",
 				"kind": "chore"
-			},
-			{
-				"id": "c00019",
-				"title": "c00019",
-				"track": "surface",
-				"status": "ready",
-				"kind": "chore"
-			},
-			{
-				"id": "d00007",
-				"title": "d00007",
-				"track": "filesystem",
-				"status": "ready",
-				"kind": "docs"
-			},
-			{
-				"id": "d00008",
-				"title": "d00008",
-				"track": "filesystem",
-				"status": "ready",
-				"kind": "docs"
 			},
 			{
 				"id": "f00050",
@@ -1275,10 +1268,10 @@
 				"kind": "feat"
 			},
 			{
-				"id": "f00181",
-				"title": "f00181",
-				"track": "plugins",
-				"status": "ready",
+				"id": "f00251",
+				"title": "f00251",
+				"track": "error-collection",
+				"status": "in-progress",
 				"kind": "feat"
 			},
 			{
@@ -1289,18 +1282,25 @@
 				"kind": "plan"
 			},
 			{
-				"id": "q00006",
-				"title": "q00006",
-				"track": "develop-audit-hardening-v4",
-				"status": "ready",
-				"kind": "plan"
-			},
-			{
 				"id": "r00018",
 				"title": "r00018",
 				"track": "tokens",
 				"status": "in-progress",
 				"kind": "refactor"
+			},
+			{
+				"id": "v00125",
+				"title": "v00125",
+				"track": "governance",
+				"status": "in-progress",
+				"kind": "unspecified"
+			},
+			{
+				"id": "v00126",
+				"title": "v00126",
+				"track": "ci",
+				"status": "in-progress",
+				"kind": "unspecified"
 			},
 			{
 				"id": "x00203",
@@ -1315,18 +1315,11 @@
 				"track": "plugins+fix",
 				"status": "in-progress",
 				"kind": "fix"
-			},
-			{
-				"id": "x00236",
-				"title": "x00236",
-				"track": "privacy",
-				"status": "in-progress",
-				"kind": "fix"
 			}
 		],
 		"byStatus": {
-			"ready": 5,
-			"in-progress": 11,
+			"ready": 0,
+			"in-progress": 15,
 			"review": 0,
 			"paused": 1,
 			"done": 470,
