@@ -34,6 +34,11 @@ export default definePlugin({
 		}
 		const policy = parsed.data;
 
+		// x00261 (AUD-CP-003): every timer + listener the plugin
+		// creates gets a teardown appended here so the host's
+		// `dispose()` cleans up exactly once on unload / hot-reload.
+		const disposables: Array<() => void> = [];
+
 		const run = createWriteGitRunner(ctx.workspace.root);
 
 		const identityCtx: IIdentityResolverContext = {
@@ -124,7 +129,11 @@ export default definePlugin({
 				handler,
 			);
 			listener.start();
-			void listener;
+			// x00261 (AUD-CP-003): track every listener/timer the
+			// plugin owns so `dispose()` can tear them down on
+			// host unload. Until x00266 lands the interval
+			// scheduler, the slice listener is the only one.
+			disposables.push(() => listener.stop());
 		}
 
 		return {
@@ -169,6 +178,21 @@ export default definePlugin({
 					].join('\n'),
 				},
 			],
+			// x00261 (AUD-CP-003): the host calls `dispose()` on unload
+			// or hot-reload. The plugin tears down every listener and
+			// timer it created during `register`. Idempotent: a second
+			// call is a no-op.
+			dispose: () => {
+				for (const teardown of disposables) {
+					try {
+						teardown();
+					} catch {
+						// best-effort cleanup — a leaked listener is
+						// better than a refused dispose.
+					}
+				}
+				disposables.length = 0;
+			},
 		};
 	},
 });
