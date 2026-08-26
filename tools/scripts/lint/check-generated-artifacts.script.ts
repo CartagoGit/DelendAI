@@ -7,9 +7,12 @@ import {
 	buildPresetMetadataSource,
 	GENERATED_PRESET_METADATA_PATH,
 } from '../generate/preset-metadata.script.ts';
+import { buildCapabilityMatrixMarkdown } from '../gen/capability-matrix.script.ts';
 import { buildTokenBudgetDashboardMarkdown } from '../report/token-budget-dashboard.script.ts';
 
 const DASHBOARD_RELATIVE_PATH = 'docs/mcp-vertex/TOKEN-BUDGETS.md';
+const CAPABILITY_MATRIX_RELATIVE_PATH =
+	'docs/mcp-vertex/security/capability-matrix.md';
 
 const normalizeDashboard = (text: string | null): string | null =>
 	text === null
@@ -29,6 +32,15 @@ const normalizePresetMetadata = (text: string | null): string | null =>
 	text === null
 		? null
 		: text.replace(/measuredAt: '.*?'/gu, "measuredAt: '<normalized>'");
+
+// d00009 (Track F): the matrix carries the date it was
+// generated — normalize that line away so the check is robust to
+// regeneration. A REAL drift (a different cell symbol, a new
+// plugin row, a renamed capability) still fails.
+const normalizeCapabilityMatrix = (text: string | null): string | null =>
+	text === null
+		? null
+		: text.replace(/^> Generated .*$/gmu, '> Generated <normalized>');
 
 const main = async (): Promise<number> => {
 	const workspaceRoot = process.cwd();
@@ -106,6 +118,40 @@ const main = async (): Promise<number> => {
 	} catch (error: unknown) {
 		failures.push(
 			`PRESET_METADATA: generation failed. ${error instanceof Error ? error.message : String(error)}`,
+		);
+	}
+
+	const capabilityMatrixPath = resolve(
+		workspaceRoot,
+		CAPABILITY_MATRIX_RELATIVE_PATH,
+	);
+	const previousCapabilityMatrix = await readFile(
+		capabilityMatrixPath,
+		'utf8',
+	).catch((error: unknown) => {
+		if (
+			error &&
+			typeof error === 'object' &&
+			'code' in error &&
+			error.code === 'ENOENT'
+		) {
+			return null;
+		}
+		throw error;
+	});
+	try {
+		const { markdown } = await buildCapabilityMatrixMarkdown(workspaceRoot);
+		if (
+			normalizeCapabilityMatrix(markdown) !==
+			normalizeCapabilityMatrix(previousCapabilityMatrix)
+		) {
+			failures.push(
+				`CAPABILITY_MATRIX: drift detected. Run bun tools/scripts/gen/capability-matrix.script.ts and commit ${CAPABILITY_MATRIX_RELATIVE_PATH}.`,
+			);
+		}
+	} catch (error: unknown) {
+		failures.push(
+			`CAPABILITY_MATRIX: generation failed. ${error instanceof Error ? error.message : String(error)}`,
 		);
 	}
 
