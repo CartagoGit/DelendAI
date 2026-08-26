@@ -271,14 +271,14 @@
 		"duplicated-cross-plugin:plugins/changelog/src/lib/tools/release-plan.tool.ts:54",
 		"duplicated-cross-plugin:plugins/changelog/src/lib/tools/release-plan.tool.ts:55",
 		"duplicated-cross-plugin:plugins/changelog/src/lib/tools/release-plan.tool.ts:56",
-		"duplicated-cross-plugin:plugins/commit-policy/src/lib/services/git-extra.ts:77",
-		"duplicated-cross-plugin:plugins/commit-policy/src/lib/services/git-extra.ts:78",
-		"duplicated-cross-plugin:plugins/commit-policy/src/lib/services/git-extra.ts:79",
-		"duplicated-cross-plugin:plugins/commit-policy/src/lib/services/git-extra.ts:80",
+		"duplicated-cross-plugin:plugins/commit-policy/src/lib/services/git-extra.ts:116",
+		"duplicated-cross-plugin:plugins/commit-policy/src/lib/services/git-extra.ts:117",
+		"duplicated-cross-plugin:plugins/commit-policy/src/lib/services/git-extra.ts:118",
+		"duplicated-cross-plugin:plugins/commit-policy/src/lib/services/git-extra.ts:119",
 		"duplicated-cross-plugin:plugins/commit-policy/src/lib/tools/commit-tool.ts:10",
 		"duplicated-cross-plugin:plugins/commit-policy/src/lib/tools/commit-tool.ts:11",
 		"duplicated-cross-plugin:plugins/commit-policy/src/lib/tools/commit-tool.ts:12",
-		"duplicated-cross-plugin:plugins/commit-policy/src/lib/tools/commit-tool.ts:136",
+		"duplicated-cross-plugin:plugins/commit-policy/src/lib/tools/commit-tool.ts:156",
 		"duplicated-cross-plugin:plugins/commit-policy/src/lib/tools/commit-tool.ts:8",
 		"duplicated-cross-plugin:plugins/commit-policy/src/lib/tools/commit-tool.ts:9",
 		"duplicated-cross-plugin:plugins/commit-policy/src/lib/tools/push-tool.ts:6",
@@ -3190,6 +3190,8 @@
 		"oversized-file:plugins/rules/tests/src/lib/online-preset.spec.ts:1",
 		"oversized-file:plugins/security/src/lib/sast/runner.ts:1",
 		"oversized-file:plugins/status-marker/tests/markers.spec.ts:1",
-		"oversized-file:plugins/usage-tracking/src/index.ts:1"
+		"oversized-file:plugins/usage-tracking/src/index.ts:1",
+		"oversized-file:plugins/commit-policy/tests/src/lib/services/commit-driver.spec.ts:1",
+		"oversized-file:plugins/commit-policy/tests/src/lib/triggers/slice-listener.spec.ts:1"
 	]
 }

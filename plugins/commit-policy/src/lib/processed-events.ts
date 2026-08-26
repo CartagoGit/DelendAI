@@ -14,8 +14,10 @@
  * policy (when to consult / when to add).
  */
 
-import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { mkdir, readFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
+
+import { writeFileAtomic } from '@mcp-vertex/core/public';
 
 import type { IEngineEvent } from './engine';
 
@@ -115,7 +117,7 @@ export const createProcessedEventsStore = (
 			lines.push(JSON.stringify(rec));
 		}
 		await mkdir(dirname(filePath), { recursive: true });
-		await writeFile(filePath, `${lines.join('\n')}\n`, 'utf8');
+		await writeFileAtomic(filePath, `${lines.join('\n')}\n`);
 	};
 
 	return {
