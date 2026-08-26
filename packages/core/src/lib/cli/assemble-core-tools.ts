@@ -47,6 +47,7 @@ import type { IMcpVertexCliArgs } from '../plugins/parse-cli-args';
 import { buildAgentBootstrapPromptRegistration } from '../prompts/agent-bootstrap.prompt';
 import { buildSkillPromptRegistrations } from '../prompts/skill-prompts';
 import { buildAgentCatalogResourceRegistration } from '../resources/agent-catalog-resource';
+import { buildCodeMapResourceRegistration } from '../code-map/resource';
 import { buildScaffoldToolRegistration } from '../scaffold/scaffold-tool';
 import { buildCreatePluginToolRegistration } from '../scaffold/create-plugin.tool';
 import { buildPluginAddRegistration } from '../registry/plugin-add.tool';
@@ -511,6 +512,10 @@ export const assembleCoreTools = (
 				namespacePrefix: corePrefix,
 			},
 		}),
+		// d00010 (Track H / q00006): structural map resource so any
+		// client can fetch the repo-wide orientation in one round
+		// trip (packages, plugins, hotspots).
+		buildCodeMapResourceRegistration(),
 	);
 
 	// A "start" workflow prompt for one-click orientation in clients.
