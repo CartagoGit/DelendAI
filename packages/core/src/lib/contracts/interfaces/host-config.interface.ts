@@ -179,6 +179,10 @@ export interface IHostRegistrations {
 			import('./tool-surface.interface').IToolSurfaceLazyBinding
 		>
 	>;
+	/** Managed-only plugin loaders used by explicit plugin activation. */
+	readonly lazyPluginActivators?:
+		| ReadonlyMap<string, () => Promise<void>>
+		| undefined;
 	/**
 	 * Drains non-tool registrations produced by managed lazy activation.
 	 * The project registers them after the first routed use; their bodies are
