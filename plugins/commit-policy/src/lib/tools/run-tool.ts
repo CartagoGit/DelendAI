@@ -166,17 +166,44 @@ const intervalRefusal = async (
 	return event;
 };
 
+/**
+ * x00263 (AUD-CP-005): the slice event carries the paths the
+ * slice owns. We propagate them verbatim so the driver stages
+ * exactly that set — not whatever happened to be staged when
+ * the trigger fired. Empty arrays are no longer accepted here;
+ * the listener refuses them as `SLICE_HAS_NO_FILES` upstream.
+ */
 const pinSliceContext = (
 	event: ITriggerEvent,
-): { proposalId: string; sliceId: string; files: readonly string[] } | null => {
-	if (event.proposalId === undefined || event.sliceId === undefined) {
+): {
+	proposalId: string;
+	sliceId: string;
+	files: readonly string[];
+} | null => {
+	if (
+		event.proposalId === undefined ||
+		event.sliceId === undefined ||
+		event.files === undefined
+	) {
 		return null;
 	}
 	return {
 		proposalId: event.proposalId,
 		sliceId: event.sliceId,
-		files: [],
+		files: event.files.paths,
 	};
+};
+
+/**
+ * x00264 (AUD-CP-006): non-slice triggers carry the dirty paths
+ * the trigger saw, so the driver stages the same set.
+ */
+const pinTriggerContext = (
+	event: ITriggerEvent,
+): { kind: 'threshold' | 'interval'; files: readonly string[] } | null => {
+	if (event.kind === 'slice' || event.kind === 'manual') return null;
+	if (event.files === undefined) return null;
+	return { kind: event.kind, files: event.files.paths };
 };
 
 export const runCommitPolicyRun = async (
@@ -222,6 +249,8 @@ export const runCommitPolicyRun = async (
 
 	const triggerEvent = event as ITriggerEvent;
 	const slicePin = pinSliceContext(triggerEvent);
+	const triggerPin =
+		slicePin === null ? pinTriggerContext(triggerEvent) : null;
 
 	const commitInput =
 		slicePin !== null
@@ -229,10 +258,15 @@ export const runCommitPolicyRun = async (
 					message: `feat(${slicePin.proposalId}): commit via ${triggerEvent.kind}`,
 					sliceContext: slicePin,
 				}
-			: {
-					message: `chore: commit via ${triggerEvent.kind}`,
-					files: [] as readonly string[],
-				};
+			: triggerPin !== null
+				? {
+						message: `chore: commit via ${triggerEvent.kind}`,
+						triggerContext: triggerPin,
+					}
+				: {
+						message: `chore: commit via ${triggerEvent.kind}`,
+						files: [] as readonly string[],
+					};
 
 	const result: ICommitDriverResult = await runCommitDriver(
 		commitInput,

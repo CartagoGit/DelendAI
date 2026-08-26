@@ -56,6 +56,42 @@ export const gitDirtyFileCount = async (run: IGitRunner): Promise<number> => {
 };
 
 /**
+ * x00264 (AUD-CP-006): list of paths currently dirty in the
+ * worktree, parsed from `git status --porcelain=v1`. The
+ * trigger carries these in the event so the driver can stage
+ * the SAME set that crossed the threshold — eliminating the
+ * "predicate ≠ action" bug where `gitDirtyFileCount` saw N
+ * files but the commit ran on whatever happened to be staged.
+ *
+ * Returns `[]` when git is not a repo or `status` fails.
+ */
+export const gitDirtyFilePaths = async (
+	run: IGitRunner,
+): Promise<readonly string[]> => {
+	const result = await run(['status', '--porcelain=v1']);
+	if (!result.ok) return [];
+	const paths: string[] = [];
+	for (const raw of result.output.split('\n')) {
+		const line = raw.trimEnd();
+		if (line.length < 4) continue;
+		// Porcelain v1: "XY <path>" (XY = 2 chars + space).
+		// Untracked files use "?? <path>"; rename/copy use "R "
+		// or "C " followed by "<orig> -> <new>"; everything
+		// else uses the raw path.
+		const rest = line.slice(3);
+		if (rest.length === 0) continue;
+		if (line.startsWith('R ') || line.startsWith('C ')) {
+			const arrow = rest.indexOf('->');
+			const target = arrow >= 0 ? rest.slice(arrow + 2).trim() : rest;
+			if (target.length > 0) paths.push(target);
+		} else {
+			paths.push(rest);
+		}
+	}
+	return paths;
+};
+
+/**
  * Count unpushed commits on the current branch (ahead-of-upstream).
  * `0` when there is no upstream or the branch is clean.
  */

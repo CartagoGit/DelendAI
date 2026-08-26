@@ -24,6 +24,17 @@ import type { IIdentityResolverContext } from '../identity/resolver';
 import { resolveAuthor } from '../identity/resolver';
 import { gitCachedNames, gitCurrentBranch } from './git-extra';
 
+/**
+ * Non-slice trigger context. Threshold and interval events carry
+ * `files` so the driver stages exactly the paths the trigger saw —
+ * x00264 (AUD-CP-006) closes the "predicate ≠ action" gap that
+ * previously allowed an implicit `skipAdd: true`.
+ */
+export interface ITriggerContext {
+	readonly kind: 'threshold' | 'interval';
+	readonly files: readonly string[];
+}
+
 /** Inputs the driver consumes. Pure data — no MCP. */
 export interface ICommitDriverInput {
 	/** Original commit message (Conventional Commit prefix expected). */
@@ -42,6 +53,13 @@ export interface ICommitDriverInput {
 				readonly files: readonly string[];
 		  }
 		| undefined;
+	/**
+	 * x00264: optional non-slice trigger context. Carries the
+	 * exact paths the trigger saw so the driver stages that
+	 * same set. Refused as `TRIGGER_HAS_NO_FILES` when the list
+	 * is empty (the trigger fired with zero dirty paths).
+	 */
+	readonly triggerContext?: ITriggerContext | undefined;
 }
 
 export interface ICommitDriverResult extends ICommitAndPushResult {
@@ -234,9 +252,11 @@ export const runCommitDriver = async (
 
 	const files =
 		input.files ??
-		(options.policy.cadence.sliceScoping && input.sliceContext
-			? input.sliceContext.files
-			: []);
+		(input.triggerContext !== undefined
+			? input.triggerContext.files
+			: options.policy.cadence.sliceScoping && input.sliceContext
+				? input.sliceContext.files
+				: []);
 
 	// x00263 (AUD-CP-005): when sliceScoping is on and the slice
 	// declared no files, refuse rather than fall back to
@@ -255,6 +275,19 @@ export const runCommitDriver = async (
 		};
 	}
 
+	// x00264 (AUD-CP-006): a non-slice trigger fired with zero
+	// dirty paths. Same fail-closed semantics as the slice case
+	// — an implicit `skipAdd: true` would let the driver commit
+	// whatever happened to be staged, which has nothing to do
+	// with the predicate that fired.
+	if (input.triggerContext !== undefined && files.length === 0) {
+		return {
+			committed: false,
+			pushed: false,
+			refusal: `TRIGGER_HAS_NO_FILES: ${input.triggerContext.kind} fired with zero dirty paths`,
+		};
+	}
+
 	const result = await commitAndPush({
 		git: options.run,
 		message: finalMessage,
@@ -266,16 +299,18 @@ export const runCommitDriver = async (
 		...(files.length > 0 ? { files } : { skipAdd: true }),
 	});
 
-	// x00263 (AUD-CP-005): post-stage check. When the driver was
-	// given an explicit slice file list, the cached index MUST be
-	// a subset. Anything staged by another path (manual
-	// `git add`, a leaked sub-agent, a hook) is contamination —
-	// the commit is refused before it reaches the git layer.
+	// x00263 / x00264: post-stage subset check. When the driver
+	// was given an explicit file list from a trigger, the cached
+	// index MUST be a subset. Anything staged by another path
+	// (manual `git add`, a leaked sub-agent, a hook) is
+	// contamination — the commit is refused before it reaches
+	// the git layer.
 	if (
 		result.committed &&
-		options.policy.cadence.sliceScoping &&
-		input.sliceContext !== undefined &&
-		files.length > 0
+		files.length > 0 &&
+		(input.triggerContext !== undefined ||
+			(options.policy.cadence.sliceScoping &&
+				input.sliceContext !== undefined))
 	) {
 		const cached = await gitCachedNames(options.run);
 		const expected = new Set(files.map(normalizeRepoPath));
@@ -286,7 +321,7 @@ export const runCommitDriver = async (
 			return {
 				committed: false,
 				pushed: false,
-				refusal: `CROSS_AGENT_CONTAMINATION: staged extras not in slice files=${extras.join(',')}`,
+				refusal: `CROSS_AGENT_CONTAMINATION: staged extras not in trigger files=${extras.join(',')}`,
 			};
 		}
 	}
