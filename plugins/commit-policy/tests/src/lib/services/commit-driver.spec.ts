@@ -40,6 +40,13 @@ const buildFakeGit = (opts: {
 	currentBranch?: string;
 	globalName?: string;
 	globalEmail?: string;
+	/**
+	 * x00263 (AUD-CP-005): pretend `git diff --cached --name-only`
+	 * returned these paths. Lets the new post-stage subset
+	 * check exercise both the contamination path and the
+	 * clean-subset path without a real git repo.
+	 */
+	cached?: readonly string[];
 }): IFakeGit => {
 	const committed = { count: 0, messages: [] as string[] };
 	const responses = new Map<string, IGitRunResult>();
@@ -64,6 +71,12 @@ const buildFakeGit = (opts: {
 		responses.set(
 			'config\u0000--global\u0000user.email',
 			ok(`${opts.globalEmail}\n`),
+		);
+	}
+	if (opts.cached !== undefined) {
+		responses.set(
+			'diff\u0000--cached\u0000--name-only',
+			ok(`${opts.cached.join('\n')}\n`),
 		);
 	}
 	const run: IGitRunner = async (
@@ -261,7 +274,11 @@ describe('runCommitDriver', () => {
 				sliceContext: {
 					proposalId: 'f00181',
 					sliceId: 'S3',
-					files: [],
+					// x00263: declare the slice's actual files so the
+					// driver can stage them; previously `[]` meant
+					// "skipAdd" — that implicit behaviour was the
+					// root cause of the cross-agent contamination.
+					files: ['src/commit-driver.ts'],
 				},
 			},
 			{
@@ -296,5 +313,106 @@ describe('runCommitDriver', () => {
 		const committed = fake.committed.messages[0] ?? '';
 		expect(committed).not.toContain('Co-authored-by:');
 		expect(committed).not.toContain('agent-metadata');
+	});
+
+	describe('x00263 — sliceScoping refuses empty + detects cross-agent contamination', () => {
+		const sliceScopingPolicy = (): ICommitPolicyOptions => {
+			const base = basePolicy();
+			return {
+				...base,
+				cadence: {
+					...base.cadence,
+					sliceScoping: true,
+				},
+			};
+		};
+
+		it('refuses SLICE_HAS_NO_FILES when the slice has no declared files', async () => {
+			const fake = buildFakeGit({
+				currentBranch: 'develop',
+				globalName: 'Cartago',
+				globalEmail: 'cartago@example.com',
+			});
+			const result = await runCommitDriver(
+				{
+					message: 'feat: empty slice',
+					sliceContext: {
+						proposalId: 'f00181',
+						sliceId: 'S3',
+						files: [],
+					},
+				},
+				{
+					run: fake.run,
+					policy: sliceScopingPolicy(),
+					identityCtx: { run: fake.run, envVars: Object.freeze({}) },
+					auditAgent: null,
+				},
+			);
+			expect(result.committed).toBe(false);
+			expect(result.refusal).toContain('SLICE_HAS_NO_FILES');
+			expect(fake.committed.count).toBe(0);
+		});
+
+		it('refuses CROSS_AGENT_CONTAMINATION when the index carries paths outside the slice', async () => {
+			const fake = buildFakeGit({
+				currentBranch: 'develop',
+				globalName: 'Cartago',
+				globalEmail: 'cartago@example.com',
+				// Pretend the index already has unrelated work
+				// staged — simulates a leaked sub-agent.
+				cached: [
+					'plugins/commit-policy/src/lib/services/commit-driver.ts',
+					'some-other-agent.ts',
+				],
+			});
+			const result = await runCommitDriver(
+				{
+					message: 'feat: scoped',
+					sliceContext: {
+						proposalId: 'f00181',
+						sliceId: 'S3',
+						files: [
+							'plugins/commit-policy/src/lib/services/commit-driver.ts',
+						],
+					},
+				},
+				{
+					run: fake.run,
+					policy: sliceScopingPolicy(),
+					identityCtx: { run: fake.run, envVars: Object.freeze({}) },
+					auditAgent: null,
+				},
+			);
+			expect(result.committed).toBe(false);
+			expect(result.refusal).toContain('CROSS_AGENT_CONTAMINATION');
+			expect(result.refusal).toContain('some-other-agent.ts');
+		});
+
+		it('passes the subset check when the index matches the slice exactly', async () => {
+			const fake = buildFakeGit({
+				currentBranch: 'develop',
+				globalName: 'Cartago',
+				globalEmail: 'cartago@example.com',
+				cached: ['only-this.ts'],
+			});
+			const result = await runCommitDriver(
+				{
+					message: 'feat: scoped',
+					sliceContext: {
+						proposalId: 'f00181',
+						sliceId: 'S3',
+						files: ['only-this.ts'],
+					},
+				},
+				{
+					run: fake.run,
+					policy: sliceScopingPolicy(),
+					identityCtx: { run: fake.run, envVars: Object.freeze({}) },
+					auditAgent: null,
+				},
+			);
+			expect(result.committed).toBe(true);
+		});
 	});
 });

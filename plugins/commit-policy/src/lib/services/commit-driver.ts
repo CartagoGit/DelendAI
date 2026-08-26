@@ -22,7 +22,7 @@ import { appendAuditTrailer, type IAuditAgent } from '../audit/trailer';
 import type { ICommitPolicyOptions } from '../contracts/options';
 import type { IIdentityResolverContext } from '../identity/resolver';
 import { resolveAuthor } from '../identity/resolver';
-import { gitCurrentBranch } from './git-extra';
+import { gitCachedNames, gitCurrentBranch } from './git-extra';
 
 /** Inputs the driver consumes. Pure data — no MCP. */
 export interface ICommitDriverInput {
@@ -158,6 +158,18 @@ export const buildScopedMessage = (
  * surfaces as a structured `refusal` or as the `reason` field of
  * the underlying `commitAndPush` result.
  */
+/**
+ * x00263 (AUD-CP-005): normalise a path to its repo-relative
+ * POSIX form so the post-stage `git diff --cached --name-only`
+ * subset check compares apples to apples regardless of whether
+ * the caller passed a workspace-relative or absolute path.
+ * Strips a leading `./` and converts `\\` to `/`.
+ */
+const normalizeRepoPath = (raw: string): string => {
+	const replaced = raw.replace(/\\/gu, '/');
+	return replaced.startsWith('./') ? replaced.slice(2) : replaced;
+};
+
 export const runCommitDriver = async (
 	input: ICommitDriverInput,
 	options: ICommitDriverOptions,
@@ -226,6 +238,23 @@ export const runCommitDriver = async (
 			? input.sliceContext.files
 			: []);
 
+	// x00263 (AUD-CP-005): when sliceScoping is on and the slice
+	// declared no files, refuse rather than fall back to
+	// `skipAdd: true`. The previous behaviour allowed an empty
+	// list to "stage whatever the worktree had", which is the
+	// root cause of the cross-agent contamination finding.
+	if (
+		input.sliceContext !== undefined &&
+		options.policy.cadence.sliceScoping &&
+		files.length === 0
+	) {
+		return {
+			committed: false,
+			pushed: false,
+			refusal: `SLICE_HAS_NO_FILES: ${input.sliceContext.proposalId}-${input.sliceContext.sliceId}`,
+		};
+	}
+
 	const result = await commitAndPush({
 		git: options.run,
 		message: finalMessage,
@@ -236,6 +265,31 @@ export const runCommitDriver = async (
 		// or there is nothing to commit).
 		...(files.length > 0 ? { files } : { skipAdd: true }),
 	});
+
+	// x00263 (AUD-CP-005): post-stage check. When the driver was
+	// given an explicit slice file list, the cached index MUST be
+	// a subset. Anything staged by another path (manual
+	// `git add`, a leaked sub-agent, a hook) is contamination —
+	// the commit is refused before it reaches the git layer.
+	if (
+		result.committed &&
+		options.policy.cadence.sliceScoping &&
+		input.sliceContext !== undefined &&
+		files.length > 0
+	) {
+		const cached = await gitCachedNames(options.run);
+		const expected = new Set(files.map(normalizeRepoPath));
+		const extras = cached.filter(
+			(name) => !expected.has(normalizeRepoPath(name)),
+		);
+		if (extras.length > 0) {
+			return {
+				committed: false,
+				pushed: false,
+				refusal: `CROSS_AGENT_CONTAMINATION: staged extras not in slice files=${extras.join(',')}`,
+			};
+		}
+	}
 
 	return {
 		...result,

@@ -35,7 +35,24 @@ export interface IManualTriggerConfig {
 	readonly kind: 'manual';
 }
 
-/** Event emitted by a trigger when it fires. */
+/**
+ * x00263 (AUD-CP-005): non-empty list of paths a slice owns.
+ * Always carries the `paths` array — empty arrays are an
+ * upstream refusal, never a default. The driver asserts that
+ * staged paths ⊆ `paths` after `git add --` runs.
+ */
+export interface SliceFiles {
+	readonly paths: readonly string[];
+}
+
+/**
+ * Event emitted by a trigger when it fires.
+ *
+ * x00263: slice events MUST carry `files` when the slice has
+ * any. `SLICE_HAS_NO_FILES` is emitted upstream instead of an
+ * empty `files` array, so this field is non-empty whenever it
+ * is present.
+ */
 export interface ITriggerEvent {
 	readonly kind: TriggerKind;
 	readonly proposalId?: string;
@@ -43,6 +60,13 @@ export interface ITriggerEvent {
 	readonly status?: string;
 	readonly dirtyCount?: number;
 	readonly unpushedCount?: number;
+	/**
+	 * x00263: paths the slice owns. Only set on slice events.
+	 * Drivers that receive an event without `files` MUST refuse
+	 * with `SLICE_HAS_NO_FILES` (or honour the explicit skip
+	 * flag) — never stage a superset.
+	 */
+	readonly files?: SliceFiles;
 }
 
 /** Snapshot of trigger state for status output. */

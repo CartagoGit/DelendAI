@@ -96,3 +96,21 @@ export const isConventionalCommitMessage = (message: string): boolean => {
 	const first = message.trim().split('\n')[0] ?? '';
 	return CONVENTIONAL_RE.test(first);
 };
+
+/**
+ * x00263 (AUD-CP-005): list of paths currently in the index
+ * (`git diff --cached --name-only`). Returns `[]` when git is not
+ * a repo, when the index is empty, or when the command fails —
+ * never throws. Used by `commit-driver` to assert that the slice
+ * only staged paths it owns.
+ */
+export const gitCachedNames = async (
+	run: IGitRunner,
+): Promise<readonly string[]> => {
+	const result = await run(['diff', '--cached', '--name-only']);
+	if (!result.ok) return [];
+	return result.output
+		.split('\n')
+		.map((line) => line.trim())
+		.filter((line) => line.length > 0);
+};
