@@ -1,16 +1,8 @@
 import z from 'zod';
-import { fileURLToPath } from 'node:url';
-import { dirname, resolve } from 'node:path';
 
 import type { IToolRegistration } from '../contracts/interfaces/tool-registration.interface';
 import type { ISkillCatalog } from '../skills/skill-catalog';
-import { loadSkillCached } from '../skills/registry';
 import { toolJson } from '../shared/tool-response';
-
-const WORKSPACE_ROOT = resolve(
-	dirname(fileURLToPath(import.meta.url)),
-	'../../../../..',
-);
 
 /**
  * On-demand access to the project's + active plugins' skills (f00065 slice-B).
@@ -69,10 +61,8 @@ export const buildSkillToolRegistration = (
 						})),
 					});
 				}
-				const loaded = await loadSkillCached(args.id, {
-					workspaceRoot: WORKSPACE_ROOT,
-				});
-				if (loaded === null) {
+				const body = await catalog().loadBody(args.id);
+				if (body === undefined) {
 					const error = {
 						ok: false as const,
 						error: 'unknown skill',
@@ -89,7 +79,7 @@ export const buildSkillToolRegistration = (
 						isError: true,
 					};
 				}
-				return toolJson({ id: loaded.id, body: loaded.body });
+				return toolJson({ id: args.id, body });
 			},
 		);
 	},

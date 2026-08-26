@@ -84,6 +84,15 @@ export type {
 	IValidationCommand,
 	IValidationMatrix,
 } from '../lib/contracts/interfaces/validation-matrix.interface';
+export type {
+	EvidenceType,
+	IEvidenceStore,
+} from '../lib/contracts/interfaces/evidence.interface';
+export {
+	createEvidenceStore,
+	EVIDENCE_TYPES,
+} from '../lib/evidence/evidence-store';
+export type { IEvidenceStoreWithCleanup } from '../lib/evidence/evidence-store';
 export { buildHostAdapterPack } from '../lib/hosts/host-adapter-pack';
 export type {
 	IHostAdapterPack,
@@ -269,6 +278,30 @@ export type {
 	IPresetMember,
 } from '../lib/plugins/preset-catalog';
 export type { ProjectPackKind } from '../lib/contracts/interfaces/project-signals.interface';
+
+// --- managed-surface startup diagnostics (q00009) -------------------------
+export {
+	buildStartupReport,
+	isStartupReportLevelVisible,
+	levelIncludesPluginCostTable,
+	resolveStartupReportLevel,
+	STARTUP_REPORT_DEFAULT_LEVEL,
+	STARTUP_REPORT_LEVELS,
+	STARTUP_REPORT_LEVEL_INPUTS,
+} from '../lib/startup-report';
+export type {
+	IStartupReport,
+	IStartupReportBaseline,
+	IStartupReportBudget,
+	IStartupReportCatalogCounts,
+	IStartupReportInput,
+	IStartupReportLevel,
+	IStartupReportLevelInput,
+	IStartupReportManagedRuntime,
+	IStartupReportServerIdentity,
+	IStartupReportWarning,
+} from '../lib/startup-report';
+
 // f00120 S2: monorepo-wiring writer for first-party plugins.
 export {
 	buildTsconfigPathsEntry,
@@ -964,6 +997,16 @@ export type {
 	ISkillCatalog,
 	ISkillCatalogEntry,
 } from '../lib/skills/skill-catalog';
+export { packageSkillSource } from '../lib/skills/sources/package-skill-source';
+export { buildSkillResolver } from '../lib/skills/sources/resolver';
+export type { ISkillResolver } from '../lib/skills/sources/resolver';
+export type {
+	ILoadedSkill,
+	ISkillDescriptor,
+	ISkillResolverListResult,
+	ISkillResolverLoadResult,
+	ISkillSource,
+} from '../lib/skills/sources/types';
 export {
 	CORE_SKILLS_ROOT,
 	ownerRootForAppliesTo,

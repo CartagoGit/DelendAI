@@ -29,7 +29,10 @@ const readSurfaceExtension = (
 };
 
 const readPreferredMode = (value: unknown): IMcpToolSurfaceMode | undefined => {
-	return value === 'adaptive' || value === 'compact' || value === 'native'
+	return value === 'managed' ||
+		value === 'adaptive' ||
+		value === 'compact' ||
+		value === 'native'
 		? value
 		: undefined;
 };

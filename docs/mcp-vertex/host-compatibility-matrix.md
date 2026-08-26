@@ -1,8 +1,7 @@
 # Host Compatibility Matrix — MCP surface & capabilities
 
-> Canonical reference for which `surfaceMode` each known MCP host
-> receives from `mcp-vertex`, what private capabilities it declares,
-> and how to opt it into `native`.
+> Canonical reference for the stable `surfaceMode` policy. The default is
+> `managed`; the full `native` surface is always an explicit opt-in.
 >
 > See ADR-0016 for the policy rationale; this file is the *applied*
 > version of that policy.
@@ -12,8 +11,8 @@
 | Column                         | Meaning |
 |--------------------------------|---------|
 | **Host**                       | Name of the MCP client integration. |
-| **`mcp-vertex/surface` declared** | Whether the host sets the private capability. |
-| **Default surface received**   | What `decideSurfaceModeFromCapabilities` returns with no explicit override. |
+| **`mcp-vertex/surface` declared** | Kept for compatibility; it no longer silently changes the mode. |
+| **Default surface received**   | `managed` unless config or CLI selects another mode. |
 | **Override to `native`**       | How to force `native` if needed. |
 
 The bootstrap set (always present regardless of surface) is
@@ -25,32 +24,31 @@ The bootstrap set (always present regardless of surface) is
 
 | Host                | `mcp-vertex/surface` declared | Default surface | Override to `native` |
 |---------------------|--------------------------------|-----------------|----------------------|
-| Claude Code         | No                             | `adaptive`      | Private capability OR `--surface=native` |
-| Cursor              | No                             | `adaptive`      | `--surface=native` (config setting) |
-| VS Code Copilot Chat| No                             | `adaptive`      | `mcp-vertex.config.json#surfaceMode=native` |
-| Aider               | No                             | `adaptive`      | `--surface=native` |
-| Codex               | No                             | `adaptive`      | `--surface=native` |
-| MCP Inspector       | No                             | `adaptive`      | `--surface=native` |
-| Plain MCP client (any spec-compliant host without the Vertex capability) | No | `adaptive` | `--surface=native` or config |
-| Vertex-aware client (declares `mcp-vertex/surface: 'adaptive'`) | Yes — `adaptive` | `adaptive` | override to native via `--surface=native` |
-| Vertex-aware client needing full bootstrap (declares `mcp-vertex/surface: 'native'`) | Yes — `native` | `native` | already native |
-| `mcp-vertex_vertex` itself (when acting as client to another instance) | Yes — depends on use | mirrors declared value | `--surface=native` |
+| Claude Code         | No                             | `managed`      | `--surface=native` |
+| Cursor              | No                             | `managed`      | `--surface=native` (config setting) |
+| VS Code Copilot Chat| No                             | `managed`      | `mcp-vertex.config.json#surfaceMode=native` |
+| Aider               | No                             | `managed`      | `--surface=native` |
+| Codex               | No                             | `managed`      | `--surface=native` |
+| MCP Inspector       | No                             | `managed`      | `--surface=native` |
+| Plain MCP client (any spec-compliant host) | No | `managed` | `--surface=native` or config |
+| Vertex-aware client | Optional | `managed` | explicit `--surface=...` or config |
+| `mcp-vertex_vertex` itself (when acting as client to another instance) | Optional | `managed` | explicit `--surface=...` |
 
 ## How to verify
 
 For any host above, run:
 
 ```bash
-bun tools/scripts/test/run-actual-preset-budget.script.ts --dynamic-client --preset=swarm
-# default → measures adaptive surface cost for an ordinary client
+bun tools/scripts/test/run-actual-preset-budget.script.ts --preset=swarm
+# default → measures the stable managed/bootstrap surface
 
 bun tools/scripts/test/run-actual-preset-budget.script.ts --static-client --preset=swarm --surface=native
 # → measures native surface cost (the historical baseline)
 ```
 
-The two outputs should differ by roughly the bootstrap-vs-full
-ratio: `adaptive` ~6 tools, `native` ~all registered tools for that
-preset.
+The two outputs should differ by roughly the bootstrap-vs-full ratio:
+`managed`/`adaptive` expose the bootstrap surface, while `native` exposes
+all registered tools for that preset.
 
 ## Edge case: never-refreshing clients
 
@@ -64,7 +62,7 @@ activated tool via the vertex router"* (in
 
 ## References
 
-- ADR-0016 — `surface-policy-adaptive-default`
+- ADR-0017 — `surface-policy-managed-default`
 - `r00019` (q00004) — initial surface policy
 - `r00026` (commit `58ef6288`) — flip default
 - `c00018` — `develop nunca rojo` integration design

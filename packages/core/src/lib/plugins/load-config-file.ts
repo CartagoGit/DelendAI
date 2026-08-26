@@ -2,6 +2,7 @@ import type { IProviderCapabilities } from '../contracts/interfaces/provider-cap
 import type { PluginOrigin } from '../contracts/interfaces/plugin-origin.interface';
 import type { CommitAuthorMode } from '../contracts/interfaces/commit-author.interface';
 import type { IMcpToolSurfaceMode } from '../contracts/interfaces/surface-mode.interface';
+import type { IStartupReportLevelInput } from '../startup-report/level';
 import { CONFIG_FILE_SCHEMA } from './config-file-schema';
 
 /**
@@ -59,6 +60,26 @@ export interface IMcpVertexCorePathsConfig {
 	 * files under legacy/ before writing fresh templates.
 	 */
 	readonly keepLegacy?: boolean;
+}
+
+/** Operator-only startup diagnostics. Defaults are resolved centrally. */
+export interface IStartupReportConfig {
+	readonly level?: IStartupReportLevelInput;
+	readonly color?: 'auto' | 'always' | 'never';
+}
+
+/** Managed-surface working-set policy. Null disables that bound. */
+export interface IManagedSurfaceConfig {
+	readonly idleTtlMs?: number | null;
+	readonly maxWarmPlugins?: number | null;
+}
+
+/** Runtime evidence retention and boot cleanup policy. */
+export interface IEvidenceConfig {
+	/** Number of days to retain evidence files. Default 30. */
+	readonly retentionDays?: number;
+	/** Default on-boot cleanup; dry-run reports without deleting. */
+	readonly cleanup?: 'on-boot' | 'dry-run' | 'off';
 }
 
 /**
@@ -229,8 +250,14 @@ export interface IMcpVertexCachePolicyConfig {
 export interface IMcpVertexConfigFile extends IMcpVertexCorePathsConfig {
 	/** Optional editor hint pointing at the published JSON Schema. */
 	readonly $schema?: string;
-	/** Optional explicit surface override. Omitted => negotiate per client. */
+	/** Optional explicit surface override. Omitted => managed. */
 	readonly surfaceMode?: IMcpToolSurfaceMode;
+	/** Optional operator-facing startup report configuration. */
+	readonly startupReport?: IStartupReportConfig;
+	/** Optional managed-surface working-set policy. */
+	readonly managedSurface?: IManagedSurfaceConfig;
+	/** Optional runtime evidence retention policy. */
+	readonly evidence?: IEvidenceConfig;
 	/**
 	 * Host-scoped capability gate for `agent_worktree`. Default `false`.
 	 * When `false` (or unset) the proposals plugin's

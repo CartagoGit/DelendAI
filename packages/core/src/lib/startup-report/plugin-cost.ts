@@ -50,6 +50,10 @@ export interface IPluginBudget {
 export interface IPluginCostInput {
 	readonly pluginId: string;
 	readonly pluginName?: string | undefined;
+	/** Number of catalogued skills applicable to this plugin. */
+	readonly availableSkillsCount?: number | undefined;
+	/** Compact ids used by the high/full operator report. */
+	readonly availableSkillIds?: readonly string[] | undefined;
 	readonly status:
 		| 'unloaded'
 		| 'loaded-hidden'
@@ -58,6 +62,10 @@ export interface IPluginCostInput {
 		| 'failed';
 	readonly availableTools: readonly IToolSurfaceDescriptor[];
 	readonly exposedTools: readonly IToolSurfaceDescriptor[];
+	/** Runtime-measured MCP definition bytes, keyed by registration id. */
+	readonly schemaBytesByRegistrationId?:
+		| Readonly<Record<string, number>>
+		| undefined;
 	readonly budget?: IPluginBudget | undefined;
 }
 
@@ -66,6 +74,9 @@ export interface IPluginCostSnapshot {
 	readonly pluginName: string;
 	readonly status: IPluginCostInput['status'];
 	readonly availableToolsCount: number;
+	readonly availableSkillsCount?: number;
+	readonly availableToolIds?: readonly string[];
+	readonly availableSkillIds?: readonly string[];
 	readonly exposedToolsCount: number;
 	readonly exposedSchemaBytesPerRequest: number;
 	readonly estimatedSchemaTokensPerRequest: number;
@@ -106,8 +117,17 @@ export const EMPTY_BUDGET: IPluginBudget = {
  */
 const measureDescriptorsBytes = (
 	descriptors: readonly IToolSurfaceDescriptor[],
+	schemaBytesByRegistrationId?: Readonly<Record<string, number>>,
 ): number => {
 	if (descriptors.length === 0) return 0;
+	if (schemaBytesByRegistrationId !== undefined) {
+		return descriptors.reduce(
+			(sum, descriptor) =>
+				sum +
+				(schemaBytesByRegistrationId[descriptor.registrationId] ?? 0),
+			0,
+		);
+	}
 	return Buffer.byteLength(
 		JSON.stringify(
 			descriptors.map((d) => ({
@@ -134,7 +154,10 @@ export const computePluginCostSnapshot = (
 	input: IPluginCostInput,
 	totalExposedBytes: number,
 ): IPluginCostSnapshot => {
-	const exposedBytes = measureDescriptorsBytes(input.exposedTools);
+	const exposedBytes = measureDescriptorsBytes(
+		input.exposedTools,
+		input.schemaBytesByRegistrationId,
+	);
 	const exposedTokens = bytesToTokens(exposedBytes);
 	const percentage =
 		totalExposedBytes > 0
@@ -146,6 +169,10 @@ export const computePluginCostSnapshot = (
 		pluginName: input.pluginName ?? input.pluginId,
 		status: input.status,
 		availableToolsCount: input.availableTools.length,
+		availableSkillsCount:
+			input.availableSkillsCount ?? input.availableSkillIds?.length ?? 0,
+		availableToolIds: input.availableTools.map((tool) => tool.toolId),
+		availableSkillIds: input.availableSkillIds ?? [],
 		exposedToolsCount: input.exposedTools.length,
 		exposedSchemaBytesPerRequest: exposedBytes,
 		estimatedSchemaTokensPerRequest: exposedTokens,
@@ -174,7 +201,13 @@ export const reconcileSurfaceCost = (
 	const epsilon = options.epsilonBytes ?? 0;
 
 	const exposedTotalBytes = inputs.reduce((sum, input) => {
-		return sum + measureDescriptorsBytes(input.exposedTools);
+		return (
+			sum +
+			measureDescriptorsBytes(
+				input.exposedTools,
+				input.schemaBytesByRegistrationId,
+			)
+		);
 	}, 0);
 
 	const plugins = inputs.map((input) =>

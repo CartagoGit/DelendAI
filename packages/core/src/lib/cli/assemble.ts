@@ -53,6 +53,10 @@ import { assemblePlugins } from './assemble-plugins';
 import { assembleCoreTools } from './assemble-core-tools';
 import { assembleSkills } from './assemble-skills';
 import { createToolSurfaceRuntimeAccess } from '../project/tool-surface-runtime.service';
+import {
+	createEvidenceStore,
+	type IEvidenceStoreWithCleanup,
+} from '../evidence/evidence-store';
 import { BOOTSTRAP_CORE_TOOL_IDS } from '../contracts/constants/bootstrap-core-tool-ids.constant';
 import {
 	resolveExplicitSurfaceMode,
@@ -62,6 +66,8 @@ import {
 	mergeCheckpointAdvisories,
 	selectCheckpointAdvisory,
 } from '../shared/checkpoint-advisory';
+import { buildStartupReportForAssembly } from '../startup-report/assembly';
+import { resolveStartupReportLevel } from '../startup-report/level';
 
 const toolOwnerFromOrigin = (
 	origin: 'bundled' | 'user-local' | 'external',
@@ -119,6 +125,13 @@ const toolCategoryOf = (input: {
 
 export interface IAssembledCliConfig {
 	readonly config: IMcpVertexHostConfig;
+	/** Operator-only report; never sent through the MCP protocol. */
+	readonly startupReport: import('../startup-report/model').IStartupReport;
+	/** Rebuild the report after MCP registration exposes the real schemas. */
+	readonly buildStartupReport: (
+		schemaBytesByRegistrationId?: Readonly<Record<string, number>>,
+	) => import('../startup-report/model').IStartupReport;
+	readonly startupReportColor: 'auto' | 'always' | 'never';
 	readonly loadResult: IPluginLoadResult;
 	/** Config-file diagnostic from the SAME read used to assemble (so the
 	 * doctor doesn't read the file twice). */
@@ -150,6 +163,9 @@ export interface IAssembledCliConfig {
 	readonly agentCatalogTools: readonly IToolSummary[];
 	/** f00251 — the assembled error collector (always defined; ConsoleErrorSink fallback when no plugin registers a sink). */
 	readonly errorCollector: IErrorCollector;
+	/** Runtime evidence store under `<cacheDir>/evidence`. */
+	readonly evidenceStore: IEvidenceStoreWithCleanup;
+	readonly evidenceCleanupReport: ICacheEvictionReport;
 }
 
 export interface IAssembleCliDeps {
@@ -299,6 +315,15 @@ export const assembleCliConfig = async (
 		workspaceRootAbs: workspace.root,
 		cacheDirAbs: cacheDirContained.abs,
 	});
+	const evidenceStore = createEvidenceStore({
+		evidenceRootAbs: join(cacheDirContained.abs, 'evidence'),
+		evictionRegistry: cacheEvictionRegistry,
+		retentionDays: fileConfig.evidence?.retentionDays ?? 30,
+	});
+	// A server use always leaves the evidence root in place, even when no
+	// optional report is enabled. This gives every host the same durable,
+	// typed location without writing evidence into the repository.
+	await evidenceStore.ensureLayout();
 
 	// Peer-plugin registry: populated AFTER loadPlugins returns, so
 	// handlers can lazily consult `ctx.peerPlugins.list()` and see the
@@ -587,13 +612,23 @@ export const assembleCliConfig = async (
 			? { explicitMode: explicitSurfaceMode }
 			: {}),
 		bootstrapToolIds: [...BOOTSTRAP_CORE_TOOL_IDS],
-		// r00027: the vertex router is ALWAYS registered as a tool
+		// q00009: the vertex router is ALWAYS registered as a tool
 		// (see assemble-core-tools.ts) and the plan records its id so
 		// the runtime can hide it in `native` mode (the operator has
-		// every tool listed) and expose it in `adaptive`/`compact`
+		// every tool listed) and expose it in `managed`/`adaptive`/`compact`
 		// mode as the fallback entry point for tools outside the
 		// bootstrap set.
 		routerToolId: 'vertex',
+		workingSet: {
+			idleTtlMs:
+				fileConfig.managedSurface?.idleTtlMs !== undefined
+					? fileConfig.managedSurface.idleTtlMs
+					: 5 * 60_000,
+			maxWarmPlugins:
+				fileConfig.managedSurface?.maxWarmPlugins !== undefined
+					? fileConfig.managedSurface.maxWarmPlugins
+					: 8,
+		},
 		descriptors: [...coreSurfaceDescriptors, ...toolSurfaceDescriptors],
 		plugins: [...pluginDescriptorsByPlugin.entries()].map(
 			([id, entry]) => ({
@@ -785,6 +820,63 @@ export const assembleCliConfig = async (
 	});
 	resolvedErrorCollector = errorCollector;
 
+	const startupLevel = resolveStartupReportLevel({
+		configLevel: fileConfig.startupReport?.level,
+		cliLevel: args.startupReportLevel,
+	});
+	const skillsByPlugin = Object.fromEntries(
+		['core', ...effectivePlugins].map((pluginId) => [
+			pluginId,
+			skillSummaries
+				.filter((skill) =>
+					skill.appliesTo.some(
+						(owner) =>
+							owner === '@mcp-vertex/*' ||
+							owner === `@mcp-vertex/${pluginId}`,
+					),
+				)
+				.map((skill) => skill.id),
+		]),
+	);
+	const buildStartupReport = (
+		schemaBytesByRegistrationId?: Readonly<Record<string, number>>,
+	) =>
+		buildStartupReportForAssembly({
+			plan: toolSurfacePlan,
+			level: startupLevel.level,
+			version: args.serverVersion,
+			workspace: args.workspace,
+			preset: args.tokens.preset ?? 'custom',
+			configuredPluginIds: effectivePlugins,
+			loadedPluginIds: loadResult.loaded.map(
+				(entry) => entry.plugin.name,
+			),
+			skillsByPlugin,
+			failedPluginCount: loadResult.errors.length,
+			skillsAvailable: skillSummaries.length,
+			resourcesAvailable: resources.length,
+			...(schemaBytesByRegistrationId !== undefined
+				? { schemaBytesByRegistrationId }
+				: {}),
+			warnings: [
+				...configDiagnostic.issues.map((message) => ({
+					severity: 'warning' as const,
+					code: 'config',
+					message,
+				})),
+				...(startupLevel.requested !== undefined
+					? [
+							{
+								severity: 'warning' as const,
+								code: 'startup-report-level',
+								message: `Unknown startup report level "${startupLevel.requested}"; using ${startupLevel.level}.`,
+							},
+						]
+					: []),
+			],
+		});
+	const startupReport = buildStartupReport();
+
 	// f00072 slice S1/S3: boot sweep. Runs once, AFTER every plugin has
 	// registered its rules. The result is surfaced in
 	// `IAssembledCliConfig.cacheEvictionBootReport` so the doctor
@@ -815,9 +907,15 @@ export const assembleCliConfig = async (
 					rulesEvaluated: 0,
 				}
 			: await cacheEvictionRegistry.run({ dryRun: !cacheEvictionApply });
+	const evidenceCleanupReport = await evidenceStore.cleanup(
+		fileConfig.evidence?.cleanup ?? 'on-boot',
+	);
 
 	return {
 		config,
+		startupReport,
+		buildStartupReport,
+		startupReportColor: fileConfig.startupReport?.color ?? 'auto',
 		loadResult,
 		configDiagnostic,
 		configPath,
@@ -825,5 +923,7 @@ export const assembleCliConfig = async (
 		cacheEvictionBootReport,
 		agentCatalogTools: catalogToolEntries,
 		errorCollector,
+		evidenceStore,
+		evidenceCleanupReport,
 	};
 };

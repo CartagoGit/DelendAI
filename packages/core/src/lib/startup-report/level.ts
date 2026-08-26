@@ -28,6 +28,15 @@ export const STARTUP_REPORT_LEVELS = [
 
 export type IStartupReportLevel = (typeof STARTUP_REPORT_LEVELS)[number];
 
+/** Accepted input values, including the pre-q00009 compatibility alias. */
+export const STARTUP_REPORT_LEVEL_INPUTS = [
+	...STARTUP_REPORT_LEVELS,
+	'extended',
+] as const;
+
+export type IStartupReportLevelInput =
+	(typeof STARTUP_REPORT_LEVEL_INPUTS)[number];
+
 /**
  * Default when the operator says nothing about the level. The spec
  * (q00009 §8.1) marks this as a non-negotiable acceptance criterion:

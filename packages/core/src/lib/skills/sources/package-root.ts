@@ -18,7 +18,7 @@
  * system root if no package.json is found (return null).
  */
 
-import { dirname } from 'node:path';
+import { dirname as dirnamePath } from 'node:path';
 
 export interface IResolvePackageRootInput {
 	/** Module URL of a file known to live inside the target package. */
@@ -53,9 +53,7 @@ export const fileUrlToPath = (url: string): string => {
 export const resolvePackageRoot = async (
 	input: IResolvePackageRootInput,
 ): Promise<string | null> => {
-	const dirname =
-		input.dirnameFn ??
-		((p: string): string => require('node:path').dirname(p));
+	const dirname = input.dirnameFn ?? ((p: string): string => dirnamePath(p));
 	const readJson = input.readJson;
 	let dir = dirname(fileUrlToPath(input.moduleUrl));
 	let guard = 0;

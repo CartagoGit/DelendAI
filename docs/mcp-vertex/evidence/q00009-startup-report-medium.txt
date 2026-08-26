@@ -6,8 +6,8 @@ surface        managed
 startup report medium (default)
 
 Catalog
-plugins        51 configured · 6 warm · 0 failed
-tools          199 available · 4 exposed to model
+plugins        51 configured · 51 loaded · 0 warm · 0 failed
+tools          199 available · 6 exposed to model
 skills         37 available · 0 bodies preloaded
 resources      12 available
 
@@ -18,16 +18,17 @@ avoided        ~51,098/request · 99.9%
 
 Plugin cost / request
   plugin                       tools skills  schema/request  tokens/request  budget
-  core                          4/ 12           278 B             ~70    shared              
+  core                          6/ 12           278 B             ~70    shared
   git                           0/ 10             0 B               0    8000 inherited      
   proposals                     0/ 34             0 B               0    18000 dedicated     
   agent-orchestrator            0/  8             0 B               0    50000 dedicated     
-  TOTAL                          4/ 64           278 B             ~70    n/a*
+  TOTAL                          6/ 64           278 B             ~70    n/a*
 
 * Budgets heterogeneous do not sum when dimensions differ.
 
 Managed runtime
 lazy activation      enabled
+module loading       eager
 internal routing     enabled
 idle eviction        5m
 max warm plugins     8

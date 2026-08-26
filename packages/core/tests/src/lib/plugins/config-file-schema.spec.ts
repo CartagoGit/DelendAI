@@ -29,6 +29,27 @@ describe('config-file-schema (Solid SRP extraction)', async () => {
 			expect(res.success).toBe(true);
 		});
 
+		it('accepts a managed-surface working-set policy', async () => {
+			const res = CONFIG_FILE_SCHEMA.safeParse({
+				managedSurface: { idleTtlMs: 300_000, maxWarmPlugins: 8 },
+			});
+			expect(res.success).toBe(true);
+		});
+
+		it('allows null to disable managed-surface working-set bounds', async () => {
+			const res = CONFIG_FILE_SCHEMA.safeParse({
+				managedSurface: { idleTtlMs: null, maxWarmPlugins: null },
+			});
+			expect(res.success).toBe(true);
+		});
+
+		it('accepts an evidence retention and cleanup policy', async () => {
+			const res = CONFIG_FILE_SCHEMA.safeParse({
+				evidence: { retentionDays: 14, cleanup: 'on-boot' },
+			});
+			expect(res.success).toBe(true);
+		});
+
 		it('accepts a config with validationMatrix', async () => {
 			const res = CONFIG_FILE_SCHEMA.safeParse({
 				validationMatrix: {

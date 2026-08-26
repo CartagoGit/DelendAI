@@ -1,0 +1,133 @@
+import type { IToolSurfacePlan } from '../contracts/interfaces/tool-surface.interface';
+import { buildStartupReport, type IStartupReport } from './model';
+import { reconcileSurfaceCost, type IPluginCostInput } from './plugin-cost';
+import type { IStartupReportLevel } from './level';
+
+const isExposed = (
+	registrationId: string,
+	plan: IToolSurfacePlan,
+	mode: IToolSurfacePlan['mode'],
+): boolean => {
+	if (mode === 'native') return plan.routerToolId !== registrationId;
+	return (
+		plan.bootstrapToolIds.includes(registrationId) ||
+		(mode === 'compact' && plan.routerToolId === registrationId)
+	);
+};
+
+const descriptorsFor = (plan: IToolSurfacePlan, pluginId: string | undefined) =>
+	plan.descriptors.filter((descriptor) =>
+		pluginId === undefined
+			? descriptor.pluginId === undefined
+			: descriptor.pluginId === pluginId,
+	);
+
+/**
+ * Build the operator report from the same surface plan used by MCP
+ * registration. This keeps available/exposed accounting honest: hidden
+ * plugin tools remain available to the internal router but contribute zero
+ * to the recurrent managed-surface tax.
+ */
+export const buildStartupReportForAssembly = (input: {
+	readonly plan: IToolSurfacePlan;
+	readonly level: IStartupReportLevel;
+	readonly version: string;
+	readonly workspace: string;
+	readonly preset: string;
+	readonly configuredPluginIds: readonly string[];
+	readonly loadedPluginIds: readonly string[];
+	readonly skillsByPlugin: Readonly<Record<string, readonly string[]>>;
+	readonly failedPluginCount: number;
+	readonly skillsAvailable: number;
+	readonly resourcesAvailable: number;
+	readonly warnings?: readonly import('./model').IStartupReportWarning[];
+	readonly schemaBytesByRegistrationId?:
+		| Readonly<Record<string, number>>
+		| undefined;
+	readonly now?: () => Date;
+}): IStartupReport => {
+	const pluginIds = [
+		'core',
+		...input.configuredPluginIds.filter((id) => id !== 'core'),
+	];
+	const pluginInputs = (mode: IToolSurfacePlan['mode']): IPluginCostInput[] =>
+		pluginIds.map((pluginId) => {
+			const id = pluginId === 'core' ? undefined : pluginId;
+			const availableTools = descriptorsFor(input.plan, id);
+			return {
+				pluginId,
+				pluginName: pluginId,
+				availableSkillIds: input.skillsByPlugin[pluginId] ?? [],
+				status:
+					pluginId === 'core' ||
+					input.loadedPluginIds.includes(pluginId)
+						? mode === 'managed'
+							? 'active-internal'
+							: 'loaded-hidden'
+						: 'failed',
+				availableTools,
+				exposedTools: availableTools.filter((descriptor) =>
+					isExposed(descriptor.registrationId, input.plan, mode),
+				),
+				schemaBytesByRegistrationId: input.schemaBytesByRegistrationId,
+			};
+		});
+
+	const native = reconcileSurfaceCost(pluginInputs('native'));
+	const managed = reconcileSurfaceCost(pluginInputs(input.plan.mode), {
+		nativeEquivalentTokensPerRequest:
+			native.estimatedSchemaTokensPerRequest,
+	});
+	const toolsExposed = managed.plugins.reduce(
+		(sum, plugin) => sum + plugin.exposedToolsCount,
+		0,
+	);
+
+	return buildStartupReport(
+		{
+			identity: {
+				version: input.version,
+				workspace: input.workspace,
+				preset: input.preset,
+				surfaceMode: input.plan.mode,
+			},
+			catalog: {
+				pluginsConfigured: input.configuredPluginIds.length,
+				pluginsLoaded: input.loadedPluginIds.length,
+				// Module loading is currently eager; the managed working set starts
+				// empty and is populated by routed use.
+				pluginsWarm:
+					input.plan.mode === 'managed'
+						? 0
+						: input.loadedPluginIds.length,
+				pluginsFailed: input.failedPluginCount,
+				toolsAvailable: input.plan.descriptors.length,
+				toolsExposed,
+				skillsAvailable: input.skillsAvailable,
+				skillsBodiesPreloaded: 0,
+				resourcesAvailable: input.resourcesAvailable,
+			},
+			pluginCosts: managed.plugins,
+			runtime: {
+				lazyActivation: input.plan.mode === 'managed',
+				// Plugins currently return their registrations from register(), so
+				// the assembly path imports them at boot. Keep this explicit until
+				// manifests can describe registrations without importing modules.
+				moduleLoading: 'eager',
+				internalRouting: input.plan.routerToolId !== undefined,
+				idleEvictionMs: input.plan.workingSet?.idleTtlMs ?? 5 * 60_000,
+				maxWarmPlugins: input.plan.workingSet?.maxWarmPlugins ?? 8,
+				listChangedRequired: false,
+			},
+			baseline: {
+				tokensPerRequest: native.estimatedSchemaTokensPerRequest,
+				source: 'estimated',
+			},
+			...(input.warnings !== undefined
+				? { warnings: input.warnings }
+				: {}),
+			...(input.now !== undefined ? { now: input.now } : {}),
+		},
+		input.level,
+	);
+};

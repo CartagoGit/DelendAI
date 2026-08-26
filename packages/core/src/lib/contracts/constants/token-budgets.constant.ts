@@ -162,7 +162,7 @@ export const TOKEN_BUDGETS: ITokenBudgetRegistry = {
 		},
 		swarm: {
 			toolsList: {
-				// r00027: native is now the silent default, so the dynamic
+				// q00009: managed is now the silent default, so the dynamic
 				// surface tools (project_context, tool_search,
 				// plugin_activate, plugin_deactivate, vertex router) are
 				// ALWAYS registered. The runtime gates exposure per-client,

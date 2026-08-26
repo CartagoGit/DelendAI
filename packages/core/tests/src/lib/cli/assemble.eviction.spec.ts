@@ -11,7 +11,7 @@
  * The plugin records the context it received and the rules it
  * registered so the test can assert the wiring end-to-end.
  */
-import { mkdtemp, mkdir, rm, stat, writeFile } from 'node:fs/promises';
+import { mkdtemp, mkdir, readdir, rm, stat, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -105,6 +105,17 @@ describe('assembleCliConfig — cache eviction boot wiring (f00068 A)', () => {
 		// 3. Boot sweep was a dry-run, so the file is still on disk.
 		const info = await stat(join(cacheDir, 'capture', '2026-06-01.jsonl'));
 		expect(info.isFile()).toBe(true);
+
+		// Every real assembly creates the typed runtime evidence root, even
+		// when the operator has disabled the human-facing startup report.
+		expect((await readdir(join(cacheDir, 'evidence'))).sort()).toEqual([
+			'diagnostic',
+			'skills',
+			'startup-report',
+			'surface',
+			'verification',
+		]);
+		expect(assembled.evidenceCleanupReport.dryRun).toBe(false);
 	});
 
 	it('applies (deletes) on boot when config.cache.runOnBoot=apply AND the cache plugin is loaded (f00072 S3)', async () => {

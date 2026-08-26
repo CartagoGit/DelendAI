@@ -258,6 +258,7 @@ export const buildOverviewToolRegistration = (
 					projectContext: z
 						.object({
 							surfaceMode: z.enum([
+								'managed',
 								'native',
 								'adaptive',
 								'compact',
