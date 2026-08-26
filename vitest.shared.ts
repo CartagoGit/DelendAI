@@ -237,6 +237,22 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 			replacement: resolve(core, 'public/index.ts'),
 		},
 		{
+			find: '@mcp-vertex/core/contracts',
+			replacement: resolve(core, 'contracts/index.ts'),
+		},
+		{
+			find: '@mcp-vertex/core/runtime',
+			replacement: resolve(core, 'runtime/index.ts'),
+		},
+		{
+			find: '@mcp-vertex/core/plugin',
+			replacement: resolve(core, 'plugin/index.ts'),
+		},
+		{
+			find: '@mcp-vertex/core/node',
+			replacement: resolve(core, 'node/index.ts'),
+		},
+		{
 			find: /^@mcp-vertex\/core\/lib\/(.*)$/,
 			replacement: `${resolve(core, 'lib')}/$1`,
 		},

@@ -1,16 +1,17 @@
 /**
  * contracts/index.ts — subpath export for @mcp-vertex/core/contracts.
  *
- * r00028 (Track C / §9): a thin barrel that re-exports ONLY the
- * type-only contracts — no runtime values, no Node-only modules.
+ * r00028 (Track C / §9): a thin barrel that re-exports the
+ * type-only contracts and the small shared envelope helpers — no
+ * Node-only modules.
  * Plugins and external consumers that need a type (e.g. for
  * declaration files, mocks, or test fixtures) can import from
  * `@mcp-vertex/core/contracts` and stay free of the runtime
  * weight of `@mcp-vertex/core/public`.
  *
- * For runtime values (constants, classes, functions), keep using
- * `@mcp-vertex/core/public`. The two subpaths are complementary,
- * not a replacement.
+ * For other runtime values (constants, classes, functions), keep using
+ * `@mcp-vertex/core/public`. The two subpaths are complementary, not a
+ * replacement.
  */
 
 export type { IGracefulShutdownOptions } from '../lib/cli/graceful-shutdown';
