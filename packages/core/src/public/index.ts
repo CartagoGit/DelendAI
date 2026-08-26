@@ -211,12 +211,26 @@ export {
 	parseCliArgs,
 } from '../lib/plugins/parse-cli-args';
 export type { IMcpVertexCliArgs } from '../lib/plugins/parse-cli-args';
-export { definePlugin } from '../lib/plugins/plugin-contract';
+export {
+	adaptLegacyPlugin,
+	definePlugin,
+} from '../lib/plugins/plugin-contract';
 export type {
 	IMcpPlugin,
 	IMcpPluginContext,
 	IMcpPluginRegistrations,
 } from '../lib/plugins/plugin-contract';
+// f00184 (Track D): phased plugin lifecycle.
+export {
+	hasPhasedLifecycle,
+	runLifecycle,
+	safeDispose,
+} from '../lib/plugins/lifecycle';
+export type {
+	IActivateContext,
+	IPhasedLifecycle,
+	IPrepareContext,
+} from '../lib/plugins/lifecycle';
 export type { IPluginRuntime } from '../lib/contracts/interfaces/plugin-runtime.interface';
 export {
 	injectCheckpointAdvisory,
@@ -652,6 +666,16 @@ export type {
 	IToolMetric,
 } from '../lib/metrics/metrics-registry';
 export { buildMetricsToolRegistration } from '../lib/metrics/metrics-tool';
+// c00134 (Track D): plugin lifecycle metrics.
+export { createPluginMetrics } from '../lib/observability/plugin-metrics';
+export type {
+	IPluginMetrics,
+	IPluginMetricsCounters,
+	IPluginMetricsHistogram,
+	IPluginMetricsSnapshot,
+	PluginEvent,
+	PluginHistogramEvent,
+} from '../lib/observability/plugin-metrics';
 export {
 	MigrationError,
 	runMigrations,
@@ -842,6 +866,17 @@ export type {
 export { resolveTokenBudget } from '../lib/contracts/interfaces/plugin-token-budget.interface';
 export type { IPluginToolPermissions } from '../lib/contracts/interfaces/plugin-tool-permissions.interface';
 export { resolveToolPermissions } from '../lib/contracts/interfaces/plugin-tool-permissions.interface';
+// f00185 (Track D): plugin state machine.
+export {
+	canTransition,
+	createPluginStateMachine,
+	PluginStateError,
+} from '../lib/plugins/states';
+export type {
+	IPluginStateMachine,
+	ITransitionReason,
+	PluginState,
+} from '../lib/plugins/states';
 export {
 	definePluginManifest,
 	parsePluginManifest,
