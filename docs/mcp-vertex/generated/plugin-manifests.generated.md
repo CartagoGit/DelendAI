@@ -181,10 +181,10 @@
 | adaptive-optimizer | cli-tool | no | no | yes |
 | agent-orchestrator | minimal | no | no | yes |
 | agent-orchestrator | lean | no | no | yes |
-| agent-orchestrator | standard | yes | no | no |
-| agent-orchestrator | swarm | yes | no | no |
-| agent-orchestrator | full | yes | no | no |
-| agent-orchestrator | vertex | yes | no | no |
+| agent-orchestrator | standard | yes | yes | yes |
+| agent-orchestrator | swarm | yes | yes | yes |
+| agent-orchestrator | full | yes | yes | yes |
+| agent-orchestrator | vertex | yes | yes | yes |
 | agent-orchestrator | web-app | no | no | yes |
 | agent-orchestrator | backend-api | no | no | yes |
 | agent-orchestrator | cli-tool | no | no | yes |
