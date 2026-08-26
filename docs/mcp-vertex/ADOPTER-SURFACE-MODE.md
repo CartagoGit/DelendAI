@@ -112,10 +112,10 @@ changed (or disabled with `null`) without changing the exposed bootstrap:
 }
 ```
 
-Plugin modules are loaded lazily when `managedSurface.loading` is `lazy`; the
-normal repository configuration uses that mode. A legacy host with no loading
-setting keeps the compatible eager path. The startup report shows the
-effective choice explicitly as `module loading lazy` or `eager`.
+Plugin modules are loaded lazily by default for a managed surface. Set
+`managedSurface.loading` to `eager` only for a compatibility host that needs
+the historical assembly behavior. The startup report shows the effective
+choice explicitly as `module loading lazy` or `eager`.
 
 When lazy loading is active, the compact tool index is generated from the
 plugin registrations and the first routed call imports only its owning
