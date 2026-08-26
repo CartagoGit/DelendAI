@@ -279,12 +279,12 @@
 	},
 	{
 		"path": "packages/core/src/lib/cli/assemble-core-tools.ts",
-		"lines": [194, 218, 412, 421, 427, 435, 443, 529],
+		"lines": [195, 219, 413, 422, 428, 436, 444, 515, 534],
 		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
 	},
 	{
 		"path": "packages/core/src/lib/cli/assemble-plugins.ts",
-		"lines": [146, 186, 264],
+		"lines": [148, 188, 266, 270],
 		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
 	},
 	{
@@ -294,7 +294,7 @@
 	},
 	{
 		"path": "packages/core/src/lib/cli/assemble.ts",
-		"lines": [200, 222, 255, 263, 271, 307, 313, 356, 745, 754],
+		"lines": [208, 230, 263, 271, 279, 315, 321, 364, 371, 759, 768, 785],
 		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
 	},
 	{
@@ -380,8 +380,8 @@
 	{
 		"path": "packages/core/src/public/index.ts",
 		"lines": [
-			75, 79, 223, 272, 284, 402, 564, 570, 579, 680, 693, 716, 765, 965,
-			1074
+			75, 79, 223, 272, 284, 402, 564, 570, 579, 680, 693, 716, 765, 968,
+			1077
 		],
 		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
 	},
@@ -572,7 +572,7 @@
 	},
 	{
 		"path": "plugins/logs/src/index.ts",
-		"lines": [95, 120, 133, 189, 268],
+		"lines": [98, 123, 136, 192, 197, 276],
 		"reason": "Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice."
 	},
 	{
