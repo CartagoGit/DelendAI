@@ -1493,6 +1493,13 @@ export interface McpVertexOverviewOutput {
 		totalTools: number;
 	};
 	unusedActivePlugins?: string[];
+	projectContext?: {
+		surfaceMode: "managed" | "native" | "adaptive" | "compact";
+		visibleToolCount: number;
+		hiddenToolCount: number;
+		loadedPluginCount: number;
+		loadedToolCount: number;
+	};
 	recommendedNextAction: string;
 }
 
@@ -1705,7 +1712,7 @@ export interface McpVertexPluginSearchOutput {
 }
 
 export interface McpVertexProjectContextOutput {
-	surfaceMode: "native" | "adaptive" | "compact";
+	surfaceMode: "managed" | "native" | "adaptive" | "compact";
 	workspaceRoot: string;
 	cacheDir?: string;
 	docsDir?: string;

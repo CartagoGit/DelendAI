@@ -14,7 +14,7 @@ describe('parseCliArgs', async () => {
 		expect(args.cacheDir).toBe('.cache/mcp-vertex');
 		expect(args.docsDir).toBe('docs/mcp-vertex');
 		expect(args.workspace).toBe('/cwd');
-		expect(args.surfaceMode).toBe('native');
+		expect(args.surfaceMode).toBe('managed');
 		expect(args.mcpProjectCreate).toBe(true);
 		expect(args.mcpProjectTests).toBe(true);
 	});
@@ -25,6 +25,9 @@ describe('parseCliArgs', async () => {
 		);
 		expect(parseCliArgs(['--surface=compact'], '/cwd').surfaceMode).toBe(
 			'compact',
+		);
+		expect(parseCliArgs(['--surface=extended'], '/cwd').surfaceMode).toBe(
+			'adaptive',
 		);
 		expect(() => parseCliArgs(['--surface=wide'], '/cwd')).toThrow(
 			/Invalid value for --surface: "wide"/,

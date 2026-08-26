@@ -9,6 +9,7 @@ import type {
 	IToolSurfaceRuntime,
 	IToolSurfaceRuntimeAccess,
 	IToolSurfaceSearchEntry,
+	IToolSurfaceWorkingSetPolicy,
 } from '../contracts/interfaces/tool-surface.interface';
 import {
 	buildToolKnowledgeEntry,
@@ -18,6 +19,10 @@ import {
 import { TOOL_DETAILS_PREFIX } from '../contracts/constants/tool-details-prefix.constant';
 
 const DEFAULT_SEARCH_LIMIT = 20;
+const DEFAULT_WORKING_SET_POLICY = {
+	idleTtlMs: 5 * 60_000,
+	maxWarmPlugins: 8,
+} as const;
 
 interface IBoundToolRecord {
 	readonly registrationId: string;
@@ -86,8 +91,11 @@ class ToolSurfaceRuntime implements IToolSurfaceRuntime {
 			toolRegistrationIds: readonly string[];
 		}
 	>();
+	private readonly warmAtByPlugin = new Map<string, number>();
+	private readonly workingSetPolicy: IToolSurfaceWorkingSetPolicy;
 
 	constructor(private readonly plan: IToolSurfacePlan) {
+		this.workingSetPolicy = plan.workingSet ?? DEFAULT_WORKING_SET_POLICY;
 		this.currentMode = plan.mode;
 		for (const plugin of plan.plugins) {
 			this.pluginIndex.set(plugin.id, plugin);
@@ -130,6 +138,12 @@ class ToolSurfaceRuntime implements IToolSurfaceRuntime {
 
 	finalizeInitialSurface(): void {
 		this.applySurfaceMode(this.currentMode);
+		if (this.currentMode === 'native') {
+			const now = Date.now();
+			for (const plugin of this.plan.plugins) {
+				this.warmAtByPlugin.set(plugin.id, now);
+			}
+		}
 	}
 
 	applySurfaceMode(mode: IToolSurfacePlan['mode']): IToolSurfaceModeChange {
@@ -227,6 +241,35 @@ class ToolSurfaceRuntime implements IToolSurfaceRuntime {
 			}));
 	}
 
+	measureSchemaBytes(
+		mode: IToolSurfacePlan['mode'],
+	): Readonly<Record<string, number>> {
+		const result: Record<string, number> = {};
+		for (const record of this.recordsByName.values()) {
+			if (!this.shouldExpose(record.registrationId, mode)) continue;
+			const inputSchema = toJsonSchema(record.inputSchema) ?? {
+				type: 'object',
+				properties: {},
+			};
+			const definition: Record<string, unknown> = {
+				name: record.name,
+				description: compactDescription(
+					record.description,
+					record.summary,
+				),
+				inputSchema,
+			};
+			const outputSchema = toJsonSchema(record.outputSchema);
+			if (outputSchema !== undefined)
+				definition.outputSchema = outputSchema;
+			result[record.registrationId] = Buffer.byteLength(
+				JSON.stringify(definition),
+				'utf8',
+			);
+		}
+		return result;
+	}
+
 	activatePlugin(identifier: string): IPluginSurfaceChange | null {
 		return this.setPluginState(identifier, true);
 	}
@@ -241,6 +284,7 @@ class ToolSurfaceRuntime implements IToolSurfaceRuntime {
 		readonly docsDir?: string | undefined;
 		readonly configIssues?: readonly string[] | undefined;
 	}): IProjectContextSnapshot {
+		this.evictIdlePlugins();
 		const visibleToolCount = [...this.recordsByName.values()].filter(
 			(record) => record.handle.enabled,
 		).length;
@@ -265,6 +309,7 @@ class ToolSurfaceRuntime implements IToolSurfaceRuntime {
 			loadedPlugins: [
 				...new Set(this.plan.plugins.map((plugin) => plugin.id)),
 			].sort(),
+			warmPlugins: [...this.warmAtByPlugin.keys()].sort(),
 			visibleToolCount,
 			hiddenToolCount: this.recordsByName.size - visibleToolCount,
 			visibleDomains,
@@ -286,6 +331,7 @@ class ToolSurfaceRuntime implements IToolSurfaceRuntime {
 		);
 		const found = matches[0];
 		if (found === undefined) return undefined;
+		this.touchPlugin(found);
 		return {
 			registrationId: found.registrationId,
 			name: found.name,
@@ -312,6 +358,7 @@ class ToolSurfaceRuntime implements IToolSurfaceRuntime {
 		if (record === undefined) {
 			throw new Error(`Unknown routed tool: ${name}`);
 		}
+		this.touchPlugin(record);
 		const parsed = await safeParseSurfaceArgs(record.inputSchema, args);
 		if (!parsed.ok) {
 			return {
@@ -348,6 +395,8 @@ class ToolSurfaceRuntime implements IToolSurfaceRuntime {
 	): IPluginSurfaceChange | null {
 		const plugin = this.pluginIndex.get(identifier);
 		if (plugin === undefined) return null;
+		if (active) this.warmAtByPlugin.set(plugin.id, Date.now());
+		else this.warmAtByPlugin.delete(plugin.id);
 		const changedToolNames: string[] = [];
 		const visibleToolNames: string[] = [];
 		for (const registrationId of plugin.toolRegistrationIds) {
@@ -376,6 +425,36 @@ class ToolSurfaceRuntime implements IToolSurfaceRuntime {
 		};
 	}
 
+	evictIdlePlugins(nowMs = Date.now()): readonly string[] {
+		const evicted: string[] = [];
+		const ttl = this.workingSetPolicy.idleTtlMs;
+		if (ttl !== null) {
+			for (const [pluginId, touchedAt] of this.warmAtByPlugin) {
+				if (nowMs - touchedAt >= ttl) {
+					this.warmAtByPlugin.delete(pluginId);
+					evicted.push(pluginId);
+				}
+			}
+		}
+		const max = this.workingSetPolicy.maxWarmPlugins;
+		if (max !== null && this.warmAtByPlugin.size > max) {
+			const oldest = [...this.warmAtByPlugin.entries()]
+				.sort((a, b) => a[1] - b[1])
+				.slice(0, this.warmAtByPlugin.size - max);
+			for (const [pluginId] of oldest) {
+				this.warmAtByPlugin.delete(pluginId);
+				if (!evicted.includes(pluginId)) evicted.push(pluginId);
+			}
+		}
+		return evicted;
+	}
+
+	private touchPlugin(record: IBoundToolRecord): void {
+		if (record.pluginId === undefined) return;
+		this.warmAtByPlugin.set(record.pluginId, Date.now());
+		this.evictIdlePlugins();
+	}
+
 	private shouldExpose(
 		registrationId: string,
 		mode: IToolSurfacePlan['mode'],
@@ -390,6 +469,26 @@ class ToolSurfaceRuntime implements IToolSurfaceRuntime {
 		return false;
 	}
 }
+
+/** Convert Zod 4 schemas to the JSON shape sent over MCP. Raw shapes and
+ * already-serialisable schemas are retained as-is for compatibility with
+ * programmatic hosts. */
+const toJsonSchema = (schema: unknown): unknown => {
+	if (schema === undefined) return undefined;
+	if (
+		typeof schema === 'object' &&
+		schema !== null &&
+		'toJSONSchema' in schema &&
+		typeof schema.toJSONSchema === 'function'
+	) {
+		try {
+			return schema.toJSONSchema();
+		} catch {
+			return schema;
+		}
+	}
+	return schema;
+};
 
 export const createToolSurfaceRuntime = (
 	plan: IToolSurfacePlan,

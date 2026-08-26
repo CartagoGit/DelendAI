@@ -85,7 +85,8 @@ export interface IPresetDefinition {
 	 * PRESET-001) — generated against the live runtime by
 	 * `tools/scripts/generate/preset-metadata.script.ts`, the SAME
 	 * measurement the token dashboard uses; `check:generated` fails on
-	 * drift. `surfaceMode` is which surface was measured. `permissions`
+	 * drift. `measurementSurface` is which surface was measured, not the
+	 * runtime exposure default. `permissions`
 	 * is real tool effects; `capabilities` is the role-profile summary.
 	 */
 	readonly budget: IPresetBudgetProfile;

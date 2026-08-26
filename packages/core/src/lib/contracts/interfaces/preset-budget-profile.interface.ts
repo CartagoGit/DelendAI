@@ -43,7 +43,10 @@ export interface IPresetBudgetProfile {
  * lives in `PRESET_ROLES` (`preset-roles.constant.ts`) instead.
  */
 export interface IPresetMetadataEntry {
-	readonly surfaceMode: IPresetSurfaceMode;
+	/** The surface used to capture `budgetBaseline`, not the runtime default. */
+	readonly measurementSurface: IPresetSurfaceMode;
+	/** Normal host surface; separate from the full-surface measurement baseline. */
+	readonly runtimeSurface?: 'managed';
 	readonly source: 'generated-runtime-measurement';
 	readonly measuredAt: string;
 	readonly estimator: string;

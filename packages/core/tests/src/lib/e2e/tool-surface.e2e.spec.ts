@@ -83,9 +83,13 @@ describe('e2e: dynamic and compact tool surfaces', async () => {
 		},
 	};
 
-	it('negotiates adaptive from client capabilities, keeps bootstrap minimal, and emits list_changed', async () => {
+	it('supports explicit adaptive mode and emits list_changed', async () => {
 		await connect({
-			argv: ['--plugins=memory', `--workspace=${workspace}`],
+			argv: [
+				'--surface=adaptive',
+				'--plugins=memory',
+				`--workspace=${workspace}`,
+			],
 			clientInfo: { name: 'claude-code', version: '1.0.0' },
 			capabilities: toolListChangedClientCaps,
 		});
@@ -222,12 +226,9 @@ describe('e2e: dynamic and compact tool surfaces', async () => {
 		).toBe('mcp-vertex_git_status');
 	});
 
-	it('defaults an ordinary MCP client (no private capability) to native (r00027 / TOK-004 follow-up)', async () => {
-		// r00027: silent default is `native` again, so the first
-		// `tools/list` enumerates every tool of every loaded plugin —
-		// including the just-loaded `memory` plugin's tools, even when
-		// the client never declared the private `mcp-vertex/surface`
-		// capability.
+	it('defaults an ordinary MCP client (no private capability) to managed', async () => {
+		// Managed is the stable default. The first tools/list is the small
+		// bootstrap surface and does not depend on list_changed support.
 		await connect({
 			argv: ['--plugins=memory', `--workspace=${workspace}`],
 			clientInfo: { name: 'plain-client', version: '1.0.0' },
@@ -235,27 +236,17 @@ describe('e2e: dynamic and compact tool surfaces', async () => {
 		});
 		const initial = await client.listTools();
 		const names = initial.tools.map((tool) => tool.name);
-		expect(names).toContain('mcp-vertex_memory_save');
-		expect(names).toContain('mcp-vertex_memory_recall');
-		// The bootstrap set is still present so the operator has the
-		// agent catalog + tool search as fallbacks. The vertex router is
-		// intentionally hidden in native mode (the operator already sees
-		// every loaded tool directly, so the meta-router would only add
-		// noise to the system prompt).
+		expect(names).not.toContain('mcp-vertex_memory_save');
+		expect(names).not.toContain('mcp-vertex_memory_recall');
+		// The stable bootstrap remains visible, including the internal router.
 		expect(names).toContain('mcp-vertex_overview');
 		expect(names).toContain('mcp-vertex_tool_search');
-		expect(names).not.toContain('mcp-vertex_vertex');
+		expect(names).toContain('mcp-vertex_vertex');
 	});
 
 	it('a client that never refreshes tools/list can still reach an activated tool (r00027 / TOK-004 follow-up)', async () => {
-		// r00027: the original r00026 risk (a client that ignores
-		// `notifications/tools/list_changed` and never re-calls
-		// `tools/list`) is no longer relevant in `native` mode — the
-		// first `listTools` already shows every loaded tool. This
-		// test now proves the broader property: a non-refreshing
-		// client can still reach any tool, even after a
-		// `plugin_activate` round-trip, because every tool is in the
-		// initial listing.
+		// Managed routing remains usable even when a client never refreshes
+		// tools/list after startup.
 		await connect({
 			argv: ['--plugins=memory', `--workspace=${workspace}`],
 			clientInfo: { name: 'never-refreshes', version: '1.0.0' },
@@ -265,17 +256,17 @@ describe('e2e: dynamic and compact tool surfaces', async () => {
 		// second `listTools()` call after this point — simulating a
 		// client that ignores/never acts on list_changed.
 		const initial = await client.listTools();
-		// Native mode ⇒ every loaded tool is visible on the first
-		// `listTools`, including the memory plugin's tools. The client
-		// can reach them directly without going through the vertex
-		// router (which is hidden in native mode by design).
-		expect(initial.tools.map((tool) => tool.name)).toContain(
+		expect(initial.tools.map((tool) => tool.name)).not.toContain(
 			'mcp-vertex_memory_save',
 		);
 
 		const direct = await client.callTool({
-			name: 'mcp-vertex_memory_save',
-			arguments: { title: 'never-refresh-check', body: 'reachable' },
+			name: 'mcp-vertex_vertex',
+			arguments: {
+				domain: 'memory',
+				action: 'save',
+				args: { title: 'never-refresh-check', body: 'reachable' },
+			},
 		});
 		// `direct.isError === undefined` means the call succeeded
 		// (the SDK only sets the flag on error responses).

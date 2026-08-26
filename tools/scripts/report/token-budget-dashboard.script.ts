@@ -1,5 +1,6 @@
 #!/usr/bin/env bun
 import { join } from 'node:path';
+import { readFile } from 'node:fs/promises';
 
 import {
 	PRESET_CATALOG,
@@ -652,7 +653,7 @@ const renderGeneratedMarkdown = (
 		'',
 		'## Real preset dashboard',
 		'',
-		'This dashboard measures the real preset assemblies through the actual plugin loader. Each preset is reported twice: `native / tokens-gate` (the hard-budget semantics used by CI) and `adaptive / dynamic-client` (the modern bootstrap surface exposed to clients that support `tools/list_changed`). The two surfaces are intentionally kept separate.',
+		'This dashboard measures the real preset assemblies through the actual plugin loader. Each preset is reported twice: `native / tokens-gate` (the full-surface budget baseline) and explicit `adaptive / dynamic-client` (the compact bootstrap surface). The managed default uses the same bootstrap exposure contract; the measurements remain intentionally separate from the native baseline.',
 		'',
 		markdownTable(
 			[
@@ -756,7 +757,9 @@ const renderGeneratedMarkdown = (
 	].join('\n');
 };
 
-export const buildTokenBudgetDashboardMarkdown = async (): Promise<string> => {
+export const buildTokenBudgetDashboardMarkdown = async (
+	input: { readonly generatedAt?: string } = {},
+): Promise<string> => {
 	const workspace = createTokenBudgetFixtureWorkspace();
 	try {
 		const fixture = await measureFixtureSurfaces(workspace);
@@ -773,7 +776,7 @@ export const buildTokenBudgetDashboardMarkdown = async (): Promise<string> => {
 			}
 		}
 		const markdown = `${renderGeneratedMarkdown(
-			new Date().toISOString(),
+			input.generatedAt ?? new Date().toISOString(),
 			fixture,
 			presetRows,
 		)}\n`;
@@ -787,8 +790,24 @@ export const generateTokenBudgetDashboard = async (): Promise<{
 	readonly markdown: string;
 	readonly outputPath: string;
 }> => {
-	const markdown = await buildTokenBudgetDashboardMarkdown();
 	const outputPath = join(repoRoot(), ...TOKEN_BUDGET_DASHBOARD_PATH);
+	const existing = await readFile(outputPath, 'utf8').catch(() => null);
+	const fresh = await buildTokenBudgetDashboardMarkdown();
+	const normalizeGeneratedAt = (text: string): string =>
+		text.replace(/^Generated at: .*$/mu, 'Generated at: <normalized>');
+	const existingGeneratedAt = existing?.match(/^Generated at: (.*?)$/mu)?.[1];
+	// The timestamp is provenance, not content. Preserve it when the measured
+	// dashboard is unchanged so a routine regeneration does not create a noisy
+	// commit every time the generator runs.
+	const markdown =
+		existing !== null &&
+		existingGeneratedAt !== undefined &&
+		normalizeGeneratedAt(existing) === normalizeGeneratedAt(fresh)
+			? fresh.replace(
+					/^Generated at: .*$/mu,
+					`Generated at: ${existingGeneratedAt}`,
+				)
+			: fresh;
 	await withFileMutex(outputPath, async () => {
 		await writeFileAtomic(outputPath, markdown);
 	});

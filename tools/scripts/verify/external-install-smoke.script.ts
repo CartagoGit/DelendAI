@@ -39,6 +39,33 @@ interface IWrittenMcpConfig {
 	>;
 }
 
+interface IToolCallResult {
+	readonly isError?: boolean;
+	readonly structuredContent?: Record<string, unknown>;
+	readonly content?: readonly {
+		readonly type?: string;
+		readonly text?: string;
+	}[];
+}
+
+const structured = (result: IToolCallResult): Record<string, unknown> => {
+	if (result.structuredContent !== undefined) return result.structuredContent;
+	const text = result.content?.find((entry) => entry.type === 'text')?.text;
+	if (text === undefined)
+		throw new Error('MCP tool returned no structured payload');
+	return JSON.parse(text) as Record<string, unknown>;
+};
+
+const routedPayload = (result: IToolCallResult): Record<string, unknown> => {
+	const outer = structured(result);
+	const nested = outer.structuredContent;
+	return nested !== null &&
+		typeof nested === 'object' &&
+		!Array.isArray(nested)
+		? (nested as Record<string, unknown>)
+		: outer;
+};
+
 const run = (command: string, args: readonly string[], cwd: string): string => {
 	// Bootstrap invariant: every agent/tool shell goes through a clean bash.
 	// `exec "$@"` passes argv without interpolation, so paths remain safe.
@@ -183,6 +210,40 @@ const main = async (): Promise<void> => {
 			throw new Error('init did not write a valid .mcp.json stdio entry');
 		}
 
+		// Keep this smoke intentionally small and consumer-like. `init` proves
+		// the full preset can be rendered, while the installed-server checks
+		// below isolate the portable package path with one published plugin.
+		writeFileSync(
+			join(project, 'mcp-vertex.config.json'),
+			`${JSON.stringify(
+				{
+					$schema:
+						'https://unpkg.com/@mcp-vertex/core/schema/mcp-vertex.config.schema.json',
+					surfaceMode: 'managed',
+					startupReport: { level: 'full', color: 'never' },
+					plugins: { proposals: { options: {} } },
+				},
+				null,
+				2,
+			)}\n`,
+		);
+		mkdirSync(
+			join(project, '.mcp-vertex', 'skills', 'mcp-vertex-operator'),
+			{
+				recursive: true,
+			},
+		);
+		writeFileSync(
+			join(
+				project,
+				'.mcp-vertex',
+				'skills',
+				'mcp-vertex-operator',
+				'SKILL.md',
+			),
+			'---\nname: mcp-vertex-operator\ndescription: Consumer override\n---\nWORKSPACE OVERRIDE\n',
+		);
+
 		const expected = buildCanonicalLaunch({ workspace: '.' });
 		if (
 			written.command !== expected.command ||
@@ -194,10 +255,17 @@ const main = async (): Promise<void> => {
 		}
 
 		const transport = new StdioClientTransport({
-			command: written.command,
-			args: written.args as string[],
+			// The generated host entry is intentionally `bunx`-portable and is
+			// asserted above. For this smoke, execute the freshly installed bin
+			// directly so a global/cache copy can never mask a broken tarball.
+			command: installedBin,
+			args: ['__serve', '--workspace', project],
 			cwd: project,
 			stderr: 'pipe',
+		});
+		let childStderr = '';
+		transport.stderr?.on('data', (chunk: Buffer | string) => {
+			childStderr += String(chunk);
 		});
 		const client = new Client(
 			{ name: 'mcp-vertex-external-smoke', version: '0.0.0' },
@@ -208,10 +276,10 @@ const main = async (): Promise<void> => {
 			const result = (await withTimeout(
 				client.callTool({
 					name: 'mcp-vertex_overview',
-					arguments: { compact: true },
+					arguments: { compact: true, activation: true },
 				}),
 				'overview call',
-			)) as { readonly isError?: boolean; readonly content?: unknown[] };
+			)) as IToolCallResult;
 			if (
 				result.isError ||
 				!Array.isArray(result.content) ||
@@ -221,6 +289,135 @@ const main = async (): Promise<void> => {
 					'installed server returned no overview payload',
 				);
 			}
+			const overview = structured(result);
+			const context = overview.projectContext as
+				| {
+						surfaceMode?: string;
+						visibleToolCount?: number;
+						loadedToolCount?: number;
+				  }
+				| undefined;
+			if (
+				context?.surfaceMode !== 'managed' ||
+				typeof context.visibleToolCount !== 'number' ||
+				typeof context.loadedToolCount !== 'number' ||
+				context.loadedToolCount <= context.visibleToolCount
+			) {
+				throw new Error(
+					`managed overview counts are not honest: ${JSON.stringify(context)}`,
+				);
+			}
+
+			const listed = await withTimeout(client.listTools(), 'tools/list');
+			if (listed.tools.length >= context.loadedToolCount) {
+				throw new Error(
+					`managed tools/list is not compact: ${listed.tools.length} visible vs ${context.loadedToolCount} loaded`,
+				);
+			}
+			if (
+				!listed.tools.some((tool) => tool.name === 'mcp-vertex_vertex')
+			) {
+				throw new Error(
+					'managed tools/list omitted the internal router',
+				);
+			}
+			if (listed.tools.some((tool) => tool.name === 'mcp-vertex_skill')) {
+				throw new Error(
+					'managed tools/list leaked the internal skill tool',
+				);
+			}
+
+			const compactSkills = routedPayload(
+				(await withTimeout(
+					client.callTool({
+						name: 'mcp-vertex_vertex',
+						arguments: {
+							domain: 'core',
+							action: 'skill',
+							args: {},
+						},
+					}),
+					'compact skill call',
+				)) as IToolCallResult,
+			);
+			const compactSkillRows = compactSkills as
+				| { skills?: readonly { id?: string }[] }
+				| undefined;
+			if (
+				!compactSkillRows?.skills?.some(
+					(skill) => skill.id === 'mcp-vertex-operator',
+				)
+			) {
+				throw new Error(
+					'portable core skill was not listed with its canonical id',
+				);
+			}
+
+			const workspaceSkill = routedPayload(
+				(await withTimeout(
+					client.callTool({
+						name: 'mcp-vertex_vertex',
+						arguments: {
+							domain: 'core',
+							action: 'skill',
+							args: { id: 'mcp-vertex-operator' },
+						},
+					}),
+					'workspace skill call',
+				)) as IToolCallResult,
+			);
+			if (
+				!String(workspaceSkill.body ?? '').includes(
+					'WORKSPACE OVERRIDE',
+				)
+			) {
+				throw new Error(
+					`workspace skill did not win package precedence: ${JSON.stringify(workspaceSkill)}`,
+				);
+			}
+
+			const pluginSkill = routedPayload(
+				(await withTimeout(
+					client.callTool({
+						name: 'mcp-vertex_vertex',
+						arguments: {
+							domain: 'core',
+							action: 'skill',
+							args: { id: 'mcp-vertex-proposal-swarm-runner' },
+						},
+					}),
+					'plugin skill call',
+				)) as IToolCallResult,
+			);
+			if (
+				!String(pluginSkill.body ?? '').includes(
+					'canonical proposals workflow',
+				)
+			) {
+				throw new Error('published plugin skill body was not loadable');
+			}
+			const routedSkill = structured(
+				(await withTimeout(
+					client.callTool({
+						name: 'mcp-vertex_vertex',
+						arguments: {
+							domain: 'core',
+							action: 'skill',
+							args: { id: 'mcp-vertex-operator' },
+						},
+					}),
+					'routed internal call',
+				)) as IToolCallResult,
+			);
+			if (routedSkill.routed !== true || routedSkill.active !== false) {
+				throw new Error(
+					'hidden internal tool was not callable through the router',
+				);
+			}
+		} catch (error) {
+			throw new Error(
+				`${error instanceof Error ? error.message : String(error)}\ninstalled server stderr:\n${childStderr}`,
+			);
 		} finally {
 			await client.close().catch(() => undefined);
 		}

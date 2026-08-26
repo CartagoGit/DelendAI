@@ -22,6 +22,11 @@ import {
 	type IBlueprintWriter,
 } from '../shared/blueprint-writer';
 import { assembleCliConfig, type IAssembleCliDeps } from './assemble';
+import {
+	renderStartupReportAnsi,
+	renderStartupReportPlain,
+	shouldUseAnsiColors,
+} from '../startup-report/renderer';
 
 export interface IDoctorReport {
 	readonly ok: boolean;
@@ -235,8 +240,14 @@ export const runCli = async (
 		return;
 	}
 
-	const { config, loadResult, configDiagnostic } =
-		await assembleCliConfig(args);
+	const {
+		config,
+		loadResult,
+		configDiagnostic,
+		startupReportColor,
+		buildStartupReport,
+		evidenceStore,
+	} = await assembleCliConfig(args);
 	for (const error of loadResult.errors) {
 		// stderr only: stdout is the MCP stdio transport.
 		process.stderr.write(`[mcp-vertex] plugin error: ${error.message}\n`);
@@ -248,6 +259,34 @@ export const runCli = async (
 		process.stderr.write(`[mcp-vertex] config warning: ${issue}\n`);
 	}
 	const assembled = await createMcpProject(config);
+	const surfaceRuntime = config.toolSurfaceRuntime?.get();
+	const surfaceMode = config.toolSurfacePlan?.mode ?? 'managed';
+	const schemaBytesByRegistrationId =
+		surfaceRuntime === undefined
+			? undefined
+			: {
+					// The native map supplies the full comparable baseline; the
+					// effective map adds router/bootstrap entries that native may
+					// intentionally hide.
+					...surfaceRuntime.measureSchemaBytes('native'),
+					...surfaceRuntime.measureSchemaBytes(surfaceMode),
+				};
+	const startupReport = buildStartupReport(schemaBytesByRegistrationId);
+	await evidenceStore.write('startup-report', startupReport, {
+		recordedAt: new Date(startupReport.generatedAtIso),
+	});
+	const startupText =
+		startupReportColor === 'always'
+			? renderStartupReportAnsi(startupReport, {
+					...process.env,
+					FORCE_COLOR: '1',
+				})
+			: startupReportColor === 'never'
+				? renderStartupReportPlain(startupReport)
+				: shouldUseAnsiColors()
+					? renderStartupReportAnsi(startupReport)
+					: renderStartupReportPlain(startupReport);
+	if (startupText.length > 0) process.stderr.write(`${startupText}\n`);
 	// `--verbose`: dump an assembly diagnostic to stderr before going live.
 	if (args.tokens.verbose !== undefined) {
 		process.stderr.write(

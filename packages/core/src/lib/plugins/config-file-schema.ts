@@ -24,6 +24,7 @@ import { PERMISSION_CATEGORIES } from '../contracts/constants/permission-categor
 import { COMMIT_AUTHOR_MODES } from '../contracts/interfaces/commit-author.interface';
 import { MCP_TOOL_SURFACE_MODE } from '../contracts/interfaces/surface-mode.interface';
 import { CAPABILITY_TAGS } from '../contracts/interfaces/provider-capabilities.interface';
+import { STARTUP_REPORT_LEVEL_INPUTS } from '../startup-report/level';
 
 /** Kebab-case provider id: `claude-sonnet`, `gpt-5-codex`, … */
 const PROVIDER_ID_PATTERN = /^[a-z][a-z0-9-]+$/;
@@ -133,6 +134,32 @@ export const CONFIG_FILE_SCHEMA = z
 		cacheDir: z.string().optional(),
 		docsDir: z.string().optional(),
 		surfaceMode: z.enum(MCP_TOOL_SURFACE_MODE).optional(),
+		startupReport: z
+			.object({
+				level: z.enum(STARTUP_REPORT_LEVEL_INPUTS).optional(),
+				color: z.enum(['auto', 'always', 'never']).optional(),
+			})
+			.strict()
+			.optional(),
+		managedSurface: z
+			.object({
+				idleTtlMs: z.number().int().nonnegative().nullable().optional(),
+				maxWarmPlugins: z
+					.number()
+					.int()
+					.nonnegative()
+					.nullable()
+					.optional(),
+			})
+			.strict()
+			.optional(),
+		evidence: z
+			.object({
+				retentionDays: z.number().int().min(1).optional(),
+				cleanup: z.enum(['on-boot', 'dry-run', 'off']).optional(),
+			})
+			.strict()
+			.optional(),
 		keepLegacy: z.boolean().optional(),
 		agentWorktree: z.boolean().optional(),
 		// f00152 S5 (L3 — feature flags): optional top-level feature

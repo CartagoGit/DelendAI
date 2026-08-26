@@ -18,11 +18,19 @@ export interface IToolSurfacePluginDescriptor {
 	readonly toolRegistrationIds: readonly string[];
 }
 
+export interface IToolSurfaceWorkingSetPolicy {
+	/** Idle time after the last routed use before a plugin leaves the warm set. */
+	readonly idleTtlMs: number | null;
+	/** Maximum number of non-core plugins kept warm; null means unlimited. */
+	readonly maxWarmPlugins: number | null;
+}
+
 export interface IToolSurfacePlan {
 	readonly mode: IMcpToolSurfaceMode;
 	readonly explicitMode?: IMcpToolSurfaceMode | undefined;
 	readonly bootstrapToolIds: readonly string[];
 	readonly routerToolId?: string | undefined;
+	readonly workingSet?: IToolSurfaceWorkingSetPolicy | undefined;
 	readonly descriptors: readonly IToolSurfaceDescriptor[];
 	readonly plugins: readonly IToolSurfacePluginDescriptor[];
 }
@@ -55,6 +63,7 @@ export interface IProjectContextSnapshot {
 	readonly docsDir?: string | undefined;
 	readonly configIssues: readonly string[];
 	readonly loadedPlugins: readonly string[];
+	readonly warmPlugins?: readonly string[];
 	readonly visibleToolCount: number;
 	readonly hiddenToolCount: number;
 	readonly visibleDomains: readonly string[];
@@ -94,8 +103,14 @@ export interface IToolSurfaceRuntime {
 		readonly tag?: string | undefined;
 		readonly limit?: number | undefined;
 	}): readonly IToolSurfaceSearchEntry[];
+	/** Measure the registered MCP tool definitions for a surface mode. */
+	measureSchemaBytes(
+		mode: IMcpToolSurfaceMode,
+	): Readonly<Record<string, number>>;
 	activatePlugin(identifier: string): IPluginSurfaceChange | null;
 	deactivatePlugin(identifier: string): IPluginSurfaceChange | null;
+	/** Evict idle/least-recently-used plugin working-set entries. */
+	evictIdlePlugins(nowMs?: number): readonly string[];
 	getProjectContext(input: {
 		readonly workspaceRoot: string;
 		readonly cacheDir?: string | undefined;

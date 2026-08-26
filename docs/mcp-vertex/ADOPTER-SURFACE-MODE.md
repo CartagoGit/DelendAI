@@ -33,29 +33,27 @@ listed in `mcp-vertex.config.json` on top of the preset.
 
 ## 2. "I only see 8 tools" — the surface mode gotcha
 
-**Since r00027 the silent default is `native`** — every loaded
-tool is enumerated on the first `tools/list` without depending
-on `notifications/tools/list_changed` notification handling.
-You should not have to configure anything for the common case.
-If you ever want a smaller surface, opt in explicitly.
+**Since q00009 the silent default is `managed`** — the first
+`tools/list` is a stable bootstrap surface and the remaining catalog
+is reachable through the server-side router. It does not depend on
+`notifications/tools/list_changed`, so clients that never refresh their
+tool list remain functional.
 
 When the host boots, it picks a `surfaceMode` (how many tools the
 first `tools/list` should expose):
 
 | `surfaceMode` | First `tools/list` | When to use it |
 | --- | --- | --- |
-| `native` (default since r00027) | Every tool of every loaded plugin (≈ 159 with the `swarm` preset + a couple of standalone plugins) | The common case — operator sees every tool, no refresh dance needed |
+| `native` | Every tool of every loaded plugin (≈ 159 with the `swarm` preset + a couple of standalone plugins) | Compatibility mode when the host needs the full first `tools/list` |
 | `adaptive` | 6 core tools (`overview`, `tool_search`, `plugin_activate`, `plugin_deactivate`, `status`, `vertex`); the rest via `plugin_activate` + `tool_search` | Token-optimised, for clients that re-fetch on `list_changed` |
 | `compact` | A small curated subset | Specialised, opt-in only |
-| `managed` (q00009) | Bootstrap surface (`overview`, `tool_search`, `vertex`, `status`) — the rest of the catalog is reachable via the `vertex` router without being exposed in `tools/list` | Recommended for token-sensitive hosts; no functional dependence on `tools/list_changed` |
+| `managed` (default) | 6-tool bootstrap surface (`overview`, `tool_search`, `plugin_activate`, `plugin_deactivate`, `status`, `vertex`) — the rest of the catalog is reachable via the `vertex` router without being exposed in `tools/list` | Recommended default; no functional dependence on `tools/list_changed` |
 
 The MCP spec lets the server **notify** the client of new tools
-via `notifications/tools/list_changed`. In practice, VS Code's
-MCP client does **not** re-fetch on that notification when the
-client never declared the capability. That is why r00027 flipped
-the default back to `native`: the operator sees every tool on
-the first `tools/list`, regardless of the client's notification
-handling.
+via `notifications/tools/list_changed`. In practice, a client may
+not re-fetch on that notification, especially when it never declared
+the capability. The managed default therefore keeps the router visible
+so the operator can reach every tool even when no refresh happens.
 
 **Opting into `adaptive` (rare)** — pick one, do not do both:
 
@@ -95,27 +93,69 @@ handling.
 `managed`. In managed mode the catalog stays server-side; the host
 sees only the bootstrap surface and uses the `vertex` router to
 reach the rest. The startup report (see §5) makes the split
-visible: `199 available · 4 exposed`.
+visible: `199 available · 6 exposed`.
 
 The legacy alias `extended` maps to `adaptive` for backwards
 compatibility with older configs — no operator action required.
 
+The managed working set is bounded independently of `tools/list`. The
+defaults are a 5-minute idle TTL and at most 8 warm plugins. They can be
+changed (or disabled with `null`) without changing the exposed bootstrap:
+
+```jsonc
+{
+  "surfaceMode": "managed",
+  "managedSurface": {
+    "idleTtlMs": 300000,
+    "maxWarmPlugins": 8
+  }
+}
+```
+
+This working set currently evicts routing state only. Plugin modules are
+still imported during assembly because the existing plugin contract obtains
+tool schemas and handlers from `register()`. The startup report shows this
+explicitly as `module loading eager`; it must not be confused with the
+managed surface's lazy activation.
+
+## 2.1 Runtime evidence and retention
+
+Every core assembly creates the runtime-only directory
+`.cache/mcp-vertex/evidence/`, with separate subdirectories for
+`startup-report`, `surface`, `skills`, `verification` and `diagnostic`.
+Startup reports are written there as JSON envelopes and are not part of the
+repository's committed `docs/mcp-vertex/evidence/` acceptance fixtures.
+
+Evidence is cleaned automatically on boot after 30 days by default. To tune
+or disable that cleanup:
+
+```jsonc
+{
+  "evidence": {
+    "retentionDays": 14,
+    "cleanup": "on-boot"
+  }
+}
+```
+
+Use `"dry-run"` to inspect candidates without deleting them, or `"off"` to
+disable evidence cleanup. The cleanup is scoped to the evidence owner and
+does not delete plugin cache data.
+
 ## 3. The warning you may still see
 
-With the r00027 default of `native`, the host's stderr is clean
-for plain MCP clients. The `[surface]` log only fires for
-capability-driven decisions (the client declared the private
-`mcp-vertex/surface` extension) and for real surface transitions
-(the runtime actually hid/showed tools). When you see one, it
-looks like:
+With the q00009 default of `managed`, stderr also contains the operator
+startup report (configurable with `startupReport.level`). The `[surface]`
+log only fires for a real surface transition; the stable default does not
+emit a redundant capability-negotiation line on every boot. When a transition
+does occur, it looks like:
 
 ```
-[surface] Client "Visual Studio Code" v1.134.0: client declared tools list-changed support; using adaptive surface
+[surface] Client "Visual Studio Code" v1.134.0: explicit surface override -> adaptive (changed=4)
 ```
 
-That is **informational**, not an error. The decision is honoured
-(`adaptive` was requested) and the rest of the host behaves
-accordingly.
+That is **informational**, not an error. The explicit decision is honoured
+and the rest of the host behaves accordingly.
 
 ## 4. Adding `agent-orchestrator` to your project
 
@@ -156,9 +196,10 @@ project that doesn't pick a preset:
 
 With `surfaceMode: "native"`, the four tools
 `agent-orchestrator_{plan, dispatch, budget, plan_ref}` appear in
-the first `tools/list`. With `adaptive`, they only appear once the
-client re-fetches after a `list_changed` notification (rare in
-practice).
+the first `tools/list`. With the default `managed`, they remain
+server-side and are reached through `vertex`; this does not require a
+`list_changed` refresh. `adaptive` remains an explicit mode for hosts that
+want its historical dynamic behaviour.
 
 ## 5. Sanity-check the wiring
 
@@ -207,16 +248,15 @@ knows about) from **`exposed`** (the subset the LLM actually sees).
 A `managed` host will read something like:
 
 ```
-plugins        51 configured · 6 warm · 0 failed
-tools          199 available · 4 exposed to model
+plugins        51 configured · 51 loaded · 0 warm · 0 failed
+tools          199 available · 6 exposed to model
 skills         37 available · 0 bodies preloaded
 ```
 
-Even though the host says `Discovered 4 tools`, MCP-Vertex still
+Even though the host says `Discovered 6 tools`, MCP-Vertex still
 holds the full catalog server-side and reaches the other 195 via
 the `vertex` router. **You do not need to depend on
 `tools/list_changed` for this to work.**
 
 Sample outputs for all five levels are in
 [`evidence/q00009-startup-report-{off,compact,medium,high,full}.txt`](evidence/).
-
