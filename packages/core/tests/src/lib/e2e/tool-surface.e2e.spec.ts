@@ -50,10 +50,16 @@ describe('e2e: dynamic and compact tool surfaces', async () => {
 		const args = parseCliArgs(argv, workspace);
 		const { config } = await assembleCliConfig(args, {
 			import: async (specifier: string) => {
-				if (specifier.includes('mcp-memory')) {
+				if (
+					specifier.includes('mcp-memory') ||
+					specifier.includes('mcp-vertex/memory')
+				) {
 					return { default: memoryPlugin };
 				}
-				if (specifier.includes('mcp-git')) {
+				if (
+					specifier.includes('mcp-git') ||
+					specifier.includes('mcp-vertex/git')
+				) {
 					return { default: gitPlugin };
 				}
 				return { default: undefined };
