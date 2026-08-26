@@ -21,6 +21,7 @@ import { buildPushToolRegistration } from './lib/tools/push-tool';
 import { buildRunToolRegistration } from './lib/tools/run-tool';
 import { buildStatusToolRegistration } from './lib/tools/status-tool';
 import { createPushScheduler } from './lib/services/push-scheduler';
+import { createCommitPolicyEngine } from './lib/engine';
 
 const OptionsSchema = CommitPolicyOptionsSchema;
 
@@ -122,23 +123,58 @@ export default definePlugin({
 			}),
 		];
 
+		// f00182 (AUD-CP-002/006/008/010/011): the central
+		// orchestrator. Every trigger dispatches into the engine
+		// via the IEngineEvent interface; the engine owns the
+		// pipeline (selector → branch → conventional → files →
+		// stage → commit → push).
+		const engine = createCommitPolicyEngine({
+			driver: sharedDriver,
+			branchPolicy: {
+				protected: policy.push.protectedBranches,
+				...(policy.push.protectedPrefixes !== undefined
+					? { protectedPrefixes: policy.push.protectedPrefixes }
+					: {}),
+			},
+			onCommitSucceeded: () => pushScheduler.onCommitSucceeded(),
+		});
+		disposables.push(() => engine.dispose());
+
 		const sliceTrigger = policy.cadence.triggers.find(
 			(t): t is Extract<typeof t, { kind: 'slice' }> =>
 				t.kind === 'slice',
 		);
 		if (sliceTrigger !== undefined) {
-			// x00260 (AUD-CP-002): wire the listener to the engine via a
-			// handler. The full `CommitPolicyEngine` is delivered by
-			// f00182; until that lands we ack every event so the
-			// listener still progresses (no events are silently lost).
+			// x00260 + f00182: the listener dispatches every
+			// emitted event into the engine. The engine decides
+			// what (if anything) gets committed; the ack flows
+			// back so the listener can drain its pending queue.
 			const handler = async (
 				event: ITriggerEvent,
 			): Promise<ITriggerAck> => {
-				// Future: dispatch through `commitPolicyEngine.handle(event)`.
-				// For now, the slice trigger is observational — every
-				// emitted event is acked OK so the listener drains its
-				// pending queue.
-				return { ack: 'OK' };
+				if (event.files === undefined) {
+					// Refusal already surfaced via the listener's
+					// `drainRefusals()`; ack OK so the queue
+					// clears.
+					return { ack: 'OK' };
+				}
+				if (
+					event.kind !== 'slice' ||
+					event.proposalId === undefined ||
+					event.sliceId === undefined
+				) {
+					return { ack: 'OK' };
+				}
+				const result = await engine.handle({
+					kind: 'slice',
+					proposalId: event.proposalId,
+					sliceId: event.sliceId,
+					files: event.files.paths,
+					eventId: `${event.proposalId}-${event.sliceId}`,
+				});
+				return result.ack === 'OK'
+					? { ack: 'OK' }
+					: { ack: 'ERR', reason: result.reason };
 			};
 			const listener = createSliceListener(
 				ctx.workspace.root,
@@ -147,10 +183,6 @@ export default definePlugin({
 				handler,
 			);
 			listener.start();
-			// x00261 (AUD-CP-003): track every listener/timer the
-			// plugin owns so `dispose()` can tear them down on
-			// host unload. Until x00266 lands the interval
-			// scheduler, the slice listener is the only one.
 			disposables.push(() => listener.stop());
 		}
 
