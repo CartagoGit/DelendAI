@@ -12,6 +12,7 @@ import { buildIssuesToolRegistrations } from './lib/tools';
 import { buildSetupGithubRegistration } from './lib/tools/setup-github.tool';
 import { createIssuesErrorSinkAdapter } from './lib/services/error-sink-adapter';
 import type { IGithubClient as IAdapterGithubClient } from './lib/services/error-sink-adapter';
+import { buildIssuesErrorCollectorKnowledge } from './lib/knowledge/error-collector';
 
 /** Default scaffold directory (workspace-relative), per the proposal's S3 spec. */
 const DEFAULT_SCAFFOLD_DIR = 'docs/mcp-vertex/proposals/retired/issues';
@@ -175,6 +176,15 @@ export default definePlugin({
 		return {
 			tools: [...tools, setupGithubTool],
 			errorSinks: [errorAdapter.sink],
+			knowledge: [
+				{
+					id: 'issues-error-collector',
+					title: 'Error-collector sink adapter (f00251)',
+					body: buildIssuesErrorCollectorKnowledge({
+						prefix: ctx.namespacePrefix,
+					}),
+				},
+			],
 		};
 	},
 });
