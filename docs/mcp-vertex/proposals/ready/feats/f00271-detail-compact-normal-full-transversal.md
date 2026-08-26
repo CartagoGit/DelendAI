@@ -1,5 +1,5 @@
 ---
-id: f00187
+id: f00271
 title: "`detail: compact | normal | full` transversal"
 kind: feat
 status: ready
@@ -10,16 +10,16 @@ priority: P1
 parent-plan: q00006
 audit-source:
     file: docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol-cuarta-pasada.md
-    section: "Track E / f00187"
+    section: "Track E / f00271"
     sha256: 2374da0f620dc2cfab21e0d435e143f10174731864efce9f26f2d3a00104232a
 related:
     - q00006
     - r00031 # proposal_get (canary del patrón)
     - r00032 # orchestrator-runner (canary)
-    - f00186 # TokenBudgetRegistry (mide los 3 niveles)
+    - f00270 # TokenBudgetRegistry (mide los 3 niveles)
 ---
 
-# f00187 — `detail: compact | normal | full` transversal
+# f00271 — `detail: compact | normal | full` transversal
 
 ## Goal
 
@@ -77,7 +77,7 @@ cualquier tool a partir de un solo campo de input.
   transversal.
 - Sin transversalidad, cada plugin reinventa el shape, y los
   agentes no pueden predecir coste.
-- Habilita que el `TokenBudgetRegistry` (`f00186`) reporte
+- Habilita que el `TokenBudgetRegistry` (`f00270`) reporte
   presupuestos por nivel, no solo totales.
 - Compatibilidad aditiva: tools sin `detail` explícito
   mantienen su comportamiento actual.
@@ -107,7 +107,7 @@ cualquier tool a partir de un solo campo de input.
   - Importa `WithDetail` y lo extiende en su `inputSchema`.
   - Implementa `projectCompact|projectNormal|projectFull`.
   - Mide tamaños antes/después con `TokenBudgetRegistry`
-    (`f00186`).
+    (`f00270`).
   - Añade tests por nivel.
 
 ### 3. Lint arquitectónico (opcional, scope de esta hija)

@@ -644,7 +644,7 @@ criteria are met.
 
 ---
 
-# acceptance
+## acceptance
 
 This plan is closed when:
 
