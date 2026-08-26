@@ -56,8 +56,9 @@ describe('resolvePlugins', () => {
 	it('returns the bundled first-party index when no sources are supplied', () => {
 		const out = resolvePlugins();
 		expect(out.entries.length).toBeGreaterThan(10);
-		expect(out.total).toBe(out.entries.length);
-		expect(out.truncated).toBe(false);
+		expect(out.total).toBe(51);
+		expect(out.entries).toHaveLength(50);
+		expect(out.truncated).toBe(true);
 	});
 
 	it('filters entries by AND-matched tags', () => {

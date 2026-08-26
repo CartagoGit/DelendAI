@@ -1718,6 +1718,7 @@ export interface McpVertexProjectContextOutput {
 	docsDir?: string;
 	configIssues: string[];
 	loadedPlugins: string[];
+	warmPlugins?: string[];
 	visibleToolCount: number;
 	hiddenToolCount: number;
 	visibleDomains: string[];
@@ -3145,9 +3146,14 @@ export interface McpVertexSecuritySecuritySecretsOutput {
 export interface McpVertexSkillOutput {
 	skills?: {
 		id: string;
+		version: string;
 		description: string;
 		appliesTo: string[];
 		tags: string[];
+		source?: string;
+		owner?: string;
+		hash?: string;
+		estimatedBodyTokens?: number;
 	}[];
 	id?: string;
 	body?: string;

@@ -36,24 +36,24 @@ describe('PRESET_CATALOG', async () => {
 		expect(PRESET_CATALOG[0]?.members.length).toBe(2);
 		// lean: 4 members, independent essentials preset
 		expect(PRESET_CATALOG[1]?.members.length).toBe(4);
-		// standard: adds 16 on top of minimal (f00115 added test-policy, f00123 added refactor, f00128 S1 added database, f00132 S1 added diagram, f00133 added container, f00135 added env, f00137 added skills-pack, f00138 added prompts-pack, f00158 added error-reporting, x00230 added auto-agent-selector)
-		expect(PRESET_CATALOG[2]?.members.length).toBe(16);
-		// swarm: adds 8 on top of standard (f00121 S3 added forge,
+		// standard: adds 17 on top of minimal (f00115 added test-policy, f00123 added refactor, f00128 S1 added database, f00132 S1 added diagram, f00133 added container, f00135 added env, f00137 added skills-pack, f00138 added prompts-pack, f00158 added error-reporting, x00230 added auto-agent-selector, q00007 added agent-orchestrator)
+		expect(PRESET_CATALOG[2]?.members.length).toBe(17);
+		// swarm: adds 9 on top of standard (f00121 S3 added forge,
 		// completion added by the completion plugin)
-		expect(PRESET_CATALOG[3]?.members.length).toBe(8);
-		// full: adds 2 host-only + api + prompt-eval on top of swarm
+		expect(PRESET_CATALOG[3]?.members.length).toBe(9);
+		// full: adds 2 host-only + api + prompt-eval + orchestrator on top of swarm
 		// (f00177 / MAN-001: `changelog` removed — `private: true`, never
 		// published to npm, cannot be a member of a preset an external
 		// adopter installs)
-		expect(PRESET_CATALOG[4]?.members.length).toBe(4);
-		// vertex: 36 members, exactly mirroring mcp-vertex.config.json's
+		expect(PRESET_CATALOG[4]?.members.length).toBe(5);
+		// vertex: 37 members, exactly mirroring mcp-vertex.config.json's
 		// `plugins` object (x00166 — corrected a long-stale drift where
 		// this preset had 6 phantom plugins not actually loaded and was
 		// missing 17 real ones, including `proposals`; f00165 added
 		// context-for-change; f00169 adds impact-analysis; f00166 adds
 		// project-health; f00167 adds quality-policy; f00168 adds
 		// adaptive-optimizer.
-		expect(PRESET_CATALOG[5]?.members.length).toBe(36);
+		expect(PRESET_CATALOG[5]?.members.length).toBe(37);
 	});
 
 	it('defines `lean` as an independent essentials preset', async () => {
@@ -113,7 +113,7 @@ describe('PRESET_CATALOG', async () => {
 	});
 
 	it('stack packs resolve to exactly their own members (no chain accumulation)', async () => {
-		// `standard` resolves to 18 plugins. None of those should leak
+		// `standard` resolves to 19 plugins. None of those should leak
 		// into `web-app` just because `web-app` is added after them in
 		// the catalog order.
 		const standardResolved = resolvePresetMembers('standard');
@@ -250,11 +250,12 @@ describe('resolvePresetMembers', async () => {
 			'skills-pack',
 			'error-reporting',
 			'auto-agent-selector',
+			'agent-orchestrator',
 		]);
-		expect(resolvePresetMembers('swarm').length).toBe(26);
+		expect(resolvePresetMembers('swarm').length).toBe(27);
 		// f00177 / MAN-001: `changelog` removed from `full` (private,
 		// never published to npm).
-		expect(resolvePresetMembers('full').length).toBe(30);
+		expect(resolvePresetMembers('full').length).toBe(31);
 		expect(resolvePresetMembers('swarm')).not.toContain('lean');
 	});
 
@@ -281,7 +282,7 @@ describe('resolvePresetMembers', async () => {
 		expect(resolved).toContain('prompts-pack');
 		expect(resolved).toContain('error-reporting');
 		expect(resolved).toContain('auto-agent-selector');
-		expect(resolved.length).toBe(18);
+		expect(resolved.length).toBe(19);
 	});
 
 	it('resolves swarm = standard + proposals/notification/logs/status-marker/test-convention', async () => {

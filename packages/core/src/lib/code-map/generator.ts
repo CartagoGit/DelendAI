@@ -18,10 +18,32 @@
  * objects) so consumers can read it with `jq` without surprises.
  */
 
+import { existsSync } from 'node:fs';
 import { readFile, readdir, stat } from 'node:fs/promises';
 import { join, relative } from 'node:path';
 
-const REPO_ROOT = process.cwd();
+/**
+ * Resolve the workspace root from the launch directory. Tests may execute
+ * with `packages/core` as their cwd, while a published host starts from its
+ * project root; both must produce workspace-relative paths.
+ */
+const findWorkspaceRoot = (start: string): string => {
+	let current = start;
+	for (let depth = 0; depth < 8; depth += 1) {
+		if (
+			existsSync(join(current, 'mcp-vertex.config.json')) ||
+			existsSync(join(current, '.git'))
+		) {
+			return current;
+		}
+		const parent = join(current, '..');
+		if (parent === current) break;
+		current = parent;
+	}
+	return start;
+};
+
+const REPO_ROOT = findWorkspaceRoot(process.cwd());
 
 /** Schema-versioned snapshot of the repo's structural map. */
 export const CODE_MAP_SCHEMA_VERSION = 1;

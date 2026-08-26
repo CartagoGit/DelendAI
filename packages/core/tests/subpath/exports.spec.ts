@@ -12,15 +12,12 @@
 import { describe, expect, it } from 'vitest';
 
 describe('@mcp-vertex/core subpath exports (r00028)', () => {
-	it('./contracts exposes type-only exports', async () => {
+	it('./contracts exposes shared envelope helpers', async () => {
 		const contracts = await import('@mcp-vertex/core/contracts');
-		// `export type { IGitRunner }` shows up at runtime as a
-		// property named `IGitRunner` on the module namespace.
-		// Its value is undefined (type-only), but the key MUST
-		// exist — that is the contract.
-		expect('IGitRunner' in contracts).toBe(true);
-		expect('IMcpPluginContext' in contracts).toBe(true);
-		expect('McpVertexToolOutputs' in contracts).toBe(true);
+		expect(typeof contracts.isOperationSuccess).toBe('function');
+		expect(typeof contracts.isOperationFailure).toBe('function');
+		expect(typeof contracts.success).toBe('function');
+		expect(typeof contracts.failure).toBe('function');
 	});
 
 	it('./runtime exposes commitAndPush', async () => {

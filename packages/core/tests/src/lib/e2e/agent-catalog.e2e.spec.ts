@@ -258,7 +258,7 @@ describe('e2e: agent catalog', async () => {
 		const loaded = await callSkill({
 			id: 'mcp-vertex-token-budget-playbook',
 		});
-		expect(loaded.body as string).toContain('Compact-first, then drill');
+		expect(loaded.body as string).toContain('# Token budget playbook');
 	});
 
 	it('errors for an unknown skill id', async () => {

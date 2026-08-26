@@ -48,6 +48,13 @@
 		"managedSurface": {
 			"type": "object",
 			"properties": {
+				"loading": {
+					"type": "string",
+					"enum": [
+						"lazy",
+						"eager"
+					]
+				},
 				"idleTtlMs": {
 					"anyOf": [
 						{
