@@ -944,6 +944,36 @@ export const assembleCliConfig = async (
 			},
 		});
 	const startupReport = buildStartupReport();
+	// Runtime evidence is cache data, not repository output. Keep the surface
+	// and skill snapshots compact: they make the typed evidence directories
+	// useful to operators without persisting tool schemas or skill bodies.
+	await evidenceStore.write('surface', {
+		mode: startupReport.identity.surfaceMode,
+		availableTools: startupReport.catalog.toolsAvailable,
+		exposedTools: startupReport.catalog.toolsExposed,
+		exposedSchemaBytesPerRequest:
+			startupReport.reconciliation.exposedSchemaBytesPerRequest,
+		nativeEquivalentTokensPerRequest:
+			startupReport.reconciliation.nativeEquivalentTokensPerRequest,
+		avoidedTokensPerRequest:
+			startupReport.reconciliation.avoidedTokensPerRequest,
+	});
+	await evidenceStore.write('skills', {
+		available: startupReport.catalog.skillsAvailable,
+		bodiesPreloaded: startupReport.catalog.skillsBodiesPreloaded,
+		byPlugin: skillsByPlugin,
+	});
+	if (startupReport.warnings.length > 0) {
+		await evidenceStore.write('diagnostic', {
+			warnings: startupReport.warnings.map(
+				({ code, message, severity }) => ({
+					code,
+					message,
+					severity,
+				}),
+			),
+		});
+	}
 
 	// slice S1/S3: boot sweep. Runs once, AFTER every plugin has
 	// registered its rules. The result is surfaced in
