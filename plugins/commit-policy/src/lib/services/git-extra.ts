@@ -9,6 +9,9 @@
 
 import type { IGitRunner } from '@mcp-vertex/core/public';
 
+/** Radix for `Number.parseInt` of `git rev-list --count` output. */
+const DEC_RADIX = 10;
+
 /**
  * Current branch (short name, no refs/heads/ prefix). Returns
  * `undefined` when git is not a repo, the HEAD is detached, or the
@@ -100,7 +103,7 @@ export const gitUnpushedCommitCount = async (
 ): Promise<number> => {
 	const result = await run(['rev-list', '--count', '@{upstream}..HEAD']);
 	if (!result.ok) return 0;
-	const n = Number.parseInt(result.output.trim(), 10);
+	const n = Number.parseInt(result.output.trim(), DEC_RADIX);
 	return Number.isFinite(n) ? n : 0;
 };
 
