@@ -20,6 +20,8 @@ import type {
 	IPluginRegisterErrorInfo,
 } from '../contracts/interfaces/plugin-lifecycle-error.interface';
 import type { IPluginRuntime } from '../contracts/interfaces/plugin-runtime.interface';
+import type { IErrorSink } from '../error-collection/sink.interface';
+import type { IErrorCollector } from '../error-collection/collector.interface';
 
 /**
  * What the core hands a plugin at registration time. A plugin is
@@ -143,6 +145,13 @@ export interface IMcpPluginContext {
 	 * redacted JSON lines to stderr so no event is silently dropped.
 	 */
 	readonly logsSink?: ILogsSink | undefined;
+	/**
+	 * f00251 — the error collector the host has assembled from every
+	 * plugin's errorSinks. When no plugin contributes one, the core
+	 * injects a ConsoleErrorSink fallback so the field is never
+	 * undefined in production hosts.
+	 */
+	readonly errorCollector?: IErrorCollector | undefined;
 	/**
 	 * Read-only registry of public-safe tool provenance. The core populates it
 	 * after assembling the tool surface; plugins must not infer provenance from
@@ -311,6 +320,13 @@ export interface IMcpPluginRegistrations {
 	 * core picks the first one that registers.
 	 */
 	readonly logsSink?: ILogsSink | undefined;
+	/**
+	 * f00251 — the error sinks a plugin wants the core to fan-out to.
+	 * Multiple sinks coexist (logs, issues, SIEM). The core aggregates
+	 * every plugin's errorSinks and exposes a single IErrorCollector
+	 * built from them via IMcpPluginContext.errorCollector.
+	 */
+	readonly errorSinks?: readonly IErrorSink[] | undefined;
 }
 
 /**

@@ -1100,3 +1100,32 @@ export type {
 	IShingleHit,
 	IShingleOptions,
 } from '../lib/scan';
+// --- error collection (f00251) -------------------------------------------
+export type { IErrorSink } from '../lib/error-collection/sink.interface';
+export type {
+	IErrorCollector,
+	ICreateErrorCollectorOptions,
+	IRedactionPolicy,
+	ISeverityClassifier,
+} from '../lib/error-collection/collector.interface';
+export type {
+	ICapturedError,
+	ICapturedErrorContext,
+	ISeverityBand,
+	ISinkId,
+	IErrorSinkRecordInput,
+} from '../lib/error-collection/types';
+export type {
+	TSeverityBand,
+	TClassification,
+} from '../lib/error-collection/severity-classifier';
+export { createErrorCollector } from '../lib/error-collection/collector.service';
+export { ConsoleErrorSink } from '../lib/error-collection/console-sink';
+export { BufferingErrorSink } from '../lib/error-collection/buffering-sink';
+export { withErrorCollection } from '../lib/error-collection/with-error-collection';
+export type {
+	IToolMetaForError,
+	IWithErrorCollectionOptions,
+} from '../lib/error-collection/with-error-collection';
+export { createDefaultRedactionPolicy } from '../lib/error-collection/redaction-policy';
+export { createDefaultSeverityClassifier } from '../lib/error-collection/severity-classifier';
