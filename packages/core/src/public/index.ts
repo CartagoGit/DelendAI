@@ -791,6 +791,23 @@ export type {
 	PluginEvent,
 	PluginHistogramEvent,
 } from '../lib/observability/plugin-metrics';
+// --- f00192 (Track J / agent timeline): host-agnostic append-only log ---
+export {
+	DEFAULT_MAX_EVENTS,
+	TimelineBuffer,
+	formatEventTimestamp,
+	isTimelineLog,
+	mergeTimelineLogs,
+	nowEvent,
+	redactFreeText,
+	truncateRedactor,
+} from '../lib/observability/timeline';
+export type {
+	ITimelineBufferOptions,
+	ITimelineEvent,
+	ITimelineLog,
+	TimelineEventKind,
+} from '../lib/observability/timeline';
 export {
 	MigrationError,
 	runMigrations,
