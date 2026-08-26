@@ -6,10 +6,12 @@ import {
 import z from 'zod';
 
 import { createGithubSetupDeps } from './lib/github-setup';
-import { fetchIssue, listIssues } from './lib/github-client';
+import { createIssueViaGh, fetchIssue, listIssues } from './lib/github-client';
 import type { IGithubClient } from './lib/tools';
 import { buildIssuesToolRegistrations } from './lib/tools';
 import { buildSetupGithubRegistration } from './lib/tools/setup-github.tool';
+import { createIssuesErrorSinkAdapter } from './lib/services/error-sink-adapter';
+import type { IGithubClient as IAdapterGithubClient } from './lib/services/error-sink-adapter';
 
 /** Default scaffold directory (workspace-relative), per the proposal's S3 spec. */
 const DEFAULT_SCAFFOLD_DIR = 'docs/mcp-vertex/proposals/retired/issues';
@@ -86,6 +88,10 @@ export default definePlugin({
 		repo: z.string().optional(),
 		/** Defaults to `docs/mcp-vertex/proposals/retired/issues`. */
 		scaffoldDir: z.string().optional(),
+		/** When `true`, opens a live issue for critical/alert/emergency errors. Default `false`. */
+		autoReport: z.boolean().optional(),
+		/** Maximum live issues opened per rolling hour. Default `5`. */
+		maxReportsPerHour: z.number().int().positive().optional(),
 	}),
 	register(ctx) {
 		const repo =
@@ -149,6 +155,26 @@ export default definePlugin({
 			githubClient,
 		});
 
-		return { tools: [...tools, setupGithubTool] };
+		// f00251 S4: error-sink adapter (safe-mode by default, opt-in autoReport).
+		const adapterClient: IAdapterGithubClient = {
+			createIssue: (input) => createIssueViaGh(repo, input),
+		};
+		const errorAdapter = createIssuesErrorSinkAdapter({
+			githubClient: adapterClient,
+			scaffoldDir: contained.abs,
+			autoReport:
+				typeof ctx.options.autoReport === 'boolean'
+					? ctx.options.autoReport
+					: false,
+			maxReportsPerHour:
+				typeof ctx.options.maxReportsPerHour === 'number'
+					? ctx.options.maxReportsPerHour
+					: 5,
+		});
+
+		return {
+			tools: [...tools, setupGithubTool],
+			errorSinks: [errorAdapter.sink],
+		};
 	},
 });
