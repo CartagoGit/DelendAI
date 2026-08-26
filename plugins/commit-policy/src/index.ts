@@ -22,6 +22,7 @@ import { buildRunToolRegistration } from './lib/tools/run-tool';
 import { buildStatusToolRegistration } from './lib/tools/status-tool';
 import { createPushScheduler } from './lib/services/push-scheduler';
 import { createCommitPolicyEngine } from './lib/engine';
+import { createProcessedEventsStore } from './lib/processed-events';
 
 const OptionsSchema = CommitPolicyOptionsSchema;
 
@@ -123,6 +124,14 @@ export default definePlugin({
 			}),
 		];
 
+		// f00183 (AUD-CP-012): the idempotency store lives at
+		// `<workspaceRoot>/.commit-policy/processed-events.jsonl`.
+		// Created BEFORE the engine so the engine constructor
+		// can receive a reference; disposed by `engine.dispose()`.
+		const processedEvents = createProcessedEventsStore({
+			workspaceRoot: ctx.workspace.root,
+		});
+
 		// f00182 (AUD-CP-002/006/008/010/011): the central
 		// orchestrator. Every trigger dispatches into the engine
 		// via the IEngineEvent interface; the engine owns the
@@ -137,6 +146,7 @@ export default definePlugin({
 					: {}),
 			},
 			onCommitSucceeded: () => pushScheduler.onCommitSucceeded(),
+			processedEvents,
 		});
 		disposables.push(() => engine.dispose());
 
@@ -172,9 +182,13 @@ export default definePlugin({
 					files: event.files.paths,
 					eventId: `${event.proposalId}-${event.sliceId}`,
 				});
-				return result.ack === 'OK'
-					? { ack: 'OK' }
-					: { ack: 'ERR', reason: result.reason };
+				// `ALREADY_PROCESSED` is the idempotency win: the
+				// replay produced no commit but the listener must
+				// still ack OK so the pending queue clears.
+				if (result.ack === 'OK' || result.ack === 'ALREADY_PROCESSED') {
+					return { ack: 'OK' };
+				}
+				return { ack: 'ERR', reason: result.reason };
 			};
 			const listener = createSliceListener(
 				ctx.workspace.root,

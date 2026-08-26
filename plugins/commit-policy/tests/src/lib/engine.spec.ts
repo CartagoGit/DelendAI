@@ -3,13 +3,33 @@
  * central orchestrator that every trigger dispatches through.
  */
 
-import { describe, expect, it } from 'vitest';
+import { mkdtemp, rm } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import type { IGitRunner, IGitRunResult } from '@mcp-vertex/core/public';
 
 import { DEFAULT_BRANCH_POLICY } from '@mcp-vertex/commit-policy/lib/contracts/branch';
 import type { ICommitPolicyOptions } from '@mcp-vertex/commit-policy/lib/contracts/options';
-import { createCommitPolicyEngine } from '@mcp-vertex/commit-policy/lib/engine';
+import {
+	createCommitPolicyEngine,
+	type IEngineEvent,
+} from '@mcp-vertex/commit-policy/lib/engine';
+import { createProcessedEventsStore } from '@mcp-vertex/commit-policy/lib/processed-events';
+
+let workspace = '';
+
+beforeEach(async () => {
+	workspace = await mkdtemp(join(tmpdir(), 'commit-policy-engine-'));
+});
+
+afterEach(async () => {
+	if (workspace.length > 0) {
+		await rm(workspace, { recursive: true, force: true });
+	}
+});
 
 const ok = (output: string): IGitRunResult => ({ ok: true, output });
 const fail = (reason: string): IGitRunResult => ({
@@ -207,5 +227,53 @@ describe('CommitPolicyEngine (f00182)', () => {
 			branchPolicy: DEFAULT_BRANCH_POLICY,
 		});
 		engine.dispose();
+	});
+
+	it('f00183 — replay of the same eventId returns ALREADY_PROCESSED', async () => {
+		let commitCount = 0;
+		const runner: IGitRunner = (async (
+			args: readonly string[],
+		): Promise<IGitRunResult> => {
+			if (args[0] === 'rev-parse' && args.includes('--abbrev-ref')) {
+				return ok('feature/x\n');
+			}
+			if (args[0] === 'commit') {
+				commitCount += 1;
+				return ok('committed\n');
+			}
+			if (args[0] === 'add') return ok('added\n');
+			if (args[0] === 'push') return ok('pushed\n');
+			return ok('cartago@example.com\n');
+		}) as IGitRunner;
+		const store = createProcessedEventsStore({ workspaceRoot: workspace });
+		const engine = createCommitPolicyEngine({
+			driver: {
+				run: runner,
+				policy: basePolicy(),
+				identityCtx: {
+					run: runner,
+					envVars: Object.freeze({}),
+				},
+				auditAgent: null,
+			},
+			branchPolicy: DEFAULT_BRANCH_POLICY,
+			processedEvents: store,
+		});
+		const event: IEngineEvent = {
+			kind: 'manual',
+			message: 'feat: add replay test',
+			files: ['only-this.ts'],
+			eventId: 'replay-1',
+		};
+		const first = await engine.handle(event);
+		expect(first.ack).toBe('OK');
+		if (first.ack === 'OK') expect(first.committed).toBe(true);
+		const second = await engine.handle(event);
+		expect(second.ack).toBe('ALREADY_PROCESSED');
+		// The driver was NOT called the second time — replay
+		// short-circuits before staging.
+		expect(commitCount).toBe(1);
+		await store.dispose();
+		await engine.dispose();
 	});
 });
