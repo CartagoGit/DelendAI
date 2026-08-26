@@ -492,4 +492,119 @@ describe('runCommitDriver', () => {
 			expect(result.committed).toBe(true);
 		});
 	});
+
+	describe('x00265 — requireConventional rejects non-conventional messages', () => {
+		const requireConventionalPolicy = (
+			overrides: Partial<ParsedOptions> = {},
+		): ParsedOptions => ({
+			...basePolicy(),
+			commit: {
+				enabled: true,
+				requireConventional: true,
+				autoScopeFromProposal: true,
+				refuseWhenDisabled: true,
+			},
+			...overrides,
+		});
+
+		it('refuses NON_CONVENTIONAL_MESSAGE: MALFORMED_HEADER for "hola"', async () => {
+			const fake = buildFakeGit({
+				currentBranch: 'develop',
+				globalName: 'Cartago',
+				globalEmail: 'cartago@example.com',
+			});
+			const result = await runCommitDriver(
+				{ message: 'hola', files: ['only-this.ts'] },
+				{
+					run: fake.run,
+					policy: requireConventionalPolicy(),
+					identityCtx: { run: fake.run, envVars: Object.freeze({}) },
+					auditAgent: null,
+				},
+			);
+			expect(result.committed).toBe(false);
+			expect(result.refusal).toContain('NON_CONVENTIONAL_MESSAGE');
+			expect(result.refusal).toContain('MALFORMED_HEADER');
+			expect(fake.committed.count).toBe(0);
+		});
+
+		it('refuses NON_CONVENTIONAL_MESSAGE: EMPTY_HEADER for empty input', async () => {
+			const fake = buildFakeGit({
+				currentBranch: 'develop',
+				globalName: 'Cartago',
+				globalEmail: 'cartago@example.com',
+			});
+			const result = await runCommitDriver(
+				{ message: '', files: ['only-this.ts'] },
+				{
+					run: fake.run,
+					policy: requireConventionalPolicy(),
+					identityCtx: { run: fake.run, envVars: Object.freeze({}) },
+					auditAgent: null,
+				},
+			);
+			expect(result.refusal).toContain('EMPTY_HEADER');
+		});
+
+		it('refuses NON_CONVENTIONAL_MESSAGE: UNKNOWN_TYPE for "WIP: stuff"', async () => {
+			const fake = buildFakeGit({
+				currentBranch: 'develop',
+				globalName: 'Cartago',
+				globalEmail: 'cartago@example.com',
+			});
+			const result = await runCommitDriver(
+				{ message: 'WIP: stuff', files: ['only-this.ts'] },
+				{
+					run: fake.run,
+					policy: requireConventionalPolicy(),
+					identityCtx: { run: fake.run, envVars: Object.freeze({}) },
+					auditAgent: null,
+				},
+			);
+			expect(result.refusal).toContain('UNKNOWN_TYPE');
+		});
+
+		it('passes a Conventional Commit header (feat: x)', async () => {
+			const fake = buildFakeGit({
+				currentBranch: 'develop',
+				globalName: 'Cartago',
+				globalEmail: 'cartago@example.com',
+			});
+			const result = await runCommitDriver(
+				{ message: 'feat: add commit driver', files: ['only-this.ts'] },
+				{
+					run: fake.run,
+					policy: requireConventionalPolicy(),
+					identityCtx: { run: fake.run, envVars: Object.freeze({}) },
+					auditAgent: null,
+				},
+			);
+			expect(result.committed).toBe(true);
+		});
+
+		it('passes a non-conventional message when requireConventional=false', async () => {
+			const fake = buildFakeGit({
+				currentBranch: 'develop',
+				globalName: 'Cartago',
+				globalEmail: 'cartago@example.com',
+			});
+			const permissivePolicy = requireConventionalPolicy();
+			const result = await runCommitDriver(
+				{ message: 'hola', files: ['only-this.ts'] },
+				{
+					run: fake.run,
+					policy: {
+						...permissivePolicy,
+						commit: {
+							...permissivePolicy.commit,
+							requireConventional: false,
+						},
+					},
+					identityCtx: { run: fake.run, envVars: Object.freeze({}) },
+					auditAgent: null,
+				},
+			);
+			expect(result.committed).toBe(true);
+		});
+	});
 });
