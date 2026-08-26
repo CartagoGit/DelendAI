@@ -492,10 +492,19 @@
 			"name": "mcp-vertex_plan_mcp_project"
 		},
 		{
+			"name": "mcp-vertex_plugin_activate"
+		},
+		{
 			"name": "mcp-vertex_plugin_add"
 		},
 		{
+			"name": "mcp-vertex_plugin_deactivate"
+		},
+		{
 			"name": "mcp-vertex_plugin_search"
+		},
+		{
+			"name": "mcp-vertex_project_context"
 		},
 		{
 			"name": "mcp-vertex_project-health_project_health",
@@ -759,6 +768,9 @@
 			"plugin": "test-policy"
 		},
 		{
+			"name": "mcp-vertex_tool_search"
+		},
+		{
 			"name": "mcp-vertex_usage-tracking_session_hygiene",
 			"plugin": "usage-tracking"
 		},
@@ -769,6 +781,9 @@
 		{
 			"name": "mcp-vertex_usage-tracking_usage_report",
 			"plugin": "usage-tracking"
+		},
+		{
+			"name": "mcp-vertex_vertex"
 		}
 	],
 	"skills": [

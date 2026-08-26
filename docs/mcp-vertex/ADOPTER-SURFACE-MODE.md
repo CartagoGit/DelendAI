@@ -33,37 +33,43 @@ listed in `mcp-vertex.config.json` on top of the preset.
 
 ## 2. "I only see 8 tools" — the surface mode gotcha
 
+**Since r00027 the silent default is `native`** — every loaded
+tool is enumerated on the first `tools/list` without depending
+on `notifications/tools/list_changed` notification handling.
+You should not have to configure anything for the common case.
+If you ever want a smaller surface, opt in explicitly.
+
 When the host boots, it picks a `surfaceMode` (how many tools the
 first `tools/list` should expose):
 
-| `surfaceMode` | First `tools/list` | When the client re-fetches after `listChanged`? |
+| `surfaceMode` | First `tools/list` | When to use it |
 | --- | --- | --- |
-| `adaptive` (default) | 6 core tools (`overview`, `tool_search`, `plugin_activate`, `plugin_deactivate`, `status`, `vertex`) | Required to see the rest |
-| `native` | Every tool of every loaded plugin (≈ 159 with the `swarm` preset + a couple of standalone plugins) | Not required |
-| `compact` | A small curated subset | Required to see the rest |
+| `native` (default since r00027) | Every tool of every loaded plugin (≈ 159 with the `swarm` preset + a couple of standalone plugins) | The common case — operator sees every tool, no refresh dance needed |
+| `adaptive` | 6 core tools (`overview`, `tool_search`, `plugin_activate`, `plugin_deactivate`, `status`, `vertex`); the rest via `plugin_activate` + `tool_search` | Token-optimised, for clients that re-fetch on `list_changed` |
+| `compact` | A small curated subset | Specialised, opt-in only |
 
-The MCP spec lets the server **notify** the client of new tools via
-`notifications/tools/list_changed`. In practice, VS Code's MCP
-client does **not** re-fetch on that notification when the client
-never declared the capability (and the spec doesn't make clients
-do it by default). The result: with `adaptive`, the operator sees
-"Discovered 6 tools" and never sees the rest, even though the server
-has more.
+The MCP spec lets the server **notify** the client of new tools
+via `notifications/tools/list_changed`. In practice, VS Code's
+MCP client does **not** re-fetch on that notification when the
+client never declared the capability. That is why r00027 flipped
+the default back to `native`: the operator sees every tool on
+the first `tools/list`, regardless of the client's notification
+handling.
 
-**Two ways to fix it** (pick one, do not do both):
+**Opting into `adaptive` (rare)** — pick one, do not do both:
 
-### Option A — pin `surfaceMode: "native"` in your project config
+### Option A — pin `surfaceMode: "adaptive"` in your project config
 
 ```jsonc
 // ${workspaceFolder}/mcp-vertex.config.json
 {
   "$schema": "https://unpkg.com/@mcp-vertex/core/schema/mcp-vertex.config.schema.json",
-  "surfaceMode": "native",
+  "surfaceMode": "adaptive",
   "plugins": { /* ... your plugin selection ... */ }
 }
 ```
 
-### Option B — pass `--surface=native` on the host args
+### Option B — pass `--surface=adaptive` on the host args
 
 ```jsonc
 {
@@ -75,33 +81,31 @@ has more.
         "<repo>/tools/scripts/host/host-server.script.ts",
         "--workspace=${workspaceFolder}",
         "--config=${workspaceFolder}/mcp-vertex.config.json",
-        "--surface=native"
+        "--surface=adaptive"
       ]
     }
   }
 }
 ```
 
-Either option yields the same result: every loaded tool is
-enumerated on the first `tools/list` (≈ 159 with the `swarm`
-preset). The host's stderr is also clean — the `[surface]` log line
-only fires for capability-driven decisions and real surface
-transitions, not for the explicit-override case.
+**Opting into `compact`**: same pattern, value `compact`.
 
 ## 3. The warning you may still see
 
-If you keep the default `adaptive` and the warning is genuinely
-useful (it tells you which surface the host chose and why), the
-line looks like:
+With the r00027 default of `native`, the host's stderr is clean
+for plain MCP clients. The `[surface]` log only fires for
+capability-driven decisions (the client declared the private
+`mcp-vertex/surface` extension) and for real surface transitions
+(the runtime actually hid/showed tools). When you see one, it
+looks like:
 
 ```
-[surface] Client "Visual Studio Code" v1.134.0: client did not declare tools list-changed support; using adaptive surface (default since r00026 / TOK-004) — native remains available as an explicit override (changed=0)
+[surface] Client "Visual Studio Code" v1.134.0: client declared tools list-changed support; using adaptive surface
 ```
 
-This is **informational**, not an error. The `changed=0` suffix
-means the surface the host picked was already the one in effect,
-no tools were hidden or shown as a result. To silence it, use
-Option A or B above.
+That is **informational**, not an error. The decision is honoured
+(`adaptive` was requested) and the rest of the host behaves
+accordingly.
 
 ## 4. Adding `agent-orchestrator` to your project
 

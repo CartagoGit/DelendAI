@@ -70,7 +70,6 @@ import { buildStatusToolRegistration } from '../tools/status-tool';
 import {
 	resolveExplicitSurfaceMode,
 	resolveInitialSurfaceMode,
-	shouldRegisterSurfaceRouter,
 } from '../surface/decide-mode';
 import {
 	buildPluginActivateToolRegistration,
@@ -215,6 +214,11 @@ export const assembleCoreTools = (
 	const buildSnapshot = (): IOverviewSnapshot => ({
 		server: { name: args.serverName, version: args.serverVersion },
 		namespacePrefix: corePrefix,
+		// r00027: include workspaceRoot so the overview tool can ask
+		// the tool-surface runtime for getProjectContext (which
+		// requires a workspaceRoot) and surface the surface-mode +
+		// tool counts the operator asked for.
+		workspaceRoot: args.workspace,
 		corePaths,
 		// f00109 S1: config problems (schema violations, dead docsDir/roots)
 		// belong in the agent's first orientation call. Omitted when clean
@@ -330,30 +334,28 @@ export const assembleCoreTools = (
 		configMode: fileConfig.surfaceMode,
 	});
 	const initialSurfaceMode = resolveInitialSurfaceMode(explicitSurfaceMode);
-	const dynamicSurfaceTools =
-		initialSurfaceMode === 'native'
-			? []
-			: [
-					buildProjectContextToolRegistration({
-						namespacePrefix: corePrefix,
-						runtimeAccess: toolSurfaceRuntime,
-						workspaceRoot: workspace.root,
-						corePaths,
-						configIssues: configDiagnostic.issues,
-					}),
-					buildToolSearchToolRegistration({
-						namespacePrefix: corePrefix,
-						runtimeAccess: toolSurfaceRuntime,
-					}),
-					buildPluginActivateToolRegistration({
-						namespacePrefix: corePrefix,
-						runtimeAccess: toolSurfaceRuntime,
-					}),
-					buildPluginDeactivateToolRegistration({
-						namespacePrefix: corePrefix,
-						runtimeAccess: toolSurfaceRuntime,
-					}),
-				];
+	// r00027: dynamic surface tools are ALWAYS registered.
+	const dynamicSurfaceTools = [
+		buildProjectContextToolRegistration({
+			namespacePrefix: corePrefix,
+			runtimeAccess: toolSurfaceRuntime,
+			workspaceRoot: workspace.root,
+			corePaths,
+			configIssues: configDiagnostic.issues,
+		}),
+		buildToolSearchToolRegistration({
+			namespacePrefix: corePrefix,
+			runtimeAccess: toolSurfaceRuntime,
+		}),
+		buildPluginActivateToolRegistration({
+			namespacePrefix: corePrefix,
+			runtimeAccess: toolSurfaceRuntime,
+		}),
+		buildPluginDeactivateToolRegistration({
+			namespacePrefix: corePrefix,
+			runtimeAccess: toolSurfaceRuntime,
+		}),
+	];
 
 	coreTools = [
 		buildOverviewToolRegistration(
@@ -449,14 +451,14 @@ export const assembleCoreTools = (
 			corePaths,
 			reader: createWorkspaceFileReader(workspace),
 		}),
-		...(shouldRegisterSurfaceRouter(explicitSurfaceMode)
-			? [
-					buildVertexRouterToolRegistration({
-						namespacePrefix: corePrefix,
-						runtimeAccess: toolSurfaceRuntime,
-					}),
-				]
-			: []),
+		// r00027: vertex router is ALWAYS registered; the runtime's
+		// `applySurfaceMode` decides whether to expose it. In native
+		// mode it stays hidden; in adaptive/compact it is the fallback
+		// entry point for tools outside the bootstrap set.
+		buildVertexRouterToolRegistration({
+			namespacePrefix: corePrefix,
+			runtimeAccess: toolSurfaceRuntime,
+		}),
 	];
 
 	// Core tools keep their bare id (single namespace); plugin tools are

@@ -20,11 +20,14 @@ export const resolveExplicitSurfaceMode = (input: {
 
 export const resolveInitialSurfaceMode = (
 	explicitMode: IMcpToolSurfaceMode | undefined,
-): IMcpToolSurfaceMode => explicitMode ?? 'adaptive';
+): IMcpToolSurfaceMode => explicitMode ?? 'native';
 
 export const shouldRegisterSurfaceRouter = (
+	// r00027 (TOK-004 follow-up): the silent default is now `native`, so
+	// the router is no longer needed for ordinary MCP clients. Only opt
+	// in (compact / adaptive) flips the router on.
 	explicitMode: IMcpToolSurfaceMode | undefined,
-): boolean => explicitMode !== 'native';
+): boolean => explicitMode === 'adaptive' || explicitMode === 'compact';
 
 export const decideSurfaceModeFromCapabilities = (input: {
 	clientInfo?: Implementation | undefined;
@@ -50,25 +53,24 @@ export const decideSurfaceModeFromCapabilities = (input: {
 			reason: 'client requested compact surface without tools list-changed support',
 		};
 	}
-	// r00026 (TOK-004): `adaptive` is now the default for every MCP client,
-	// not only ones that declare the private `mcp-vertex/surface`
-	// extension. The MCP spec has no client-side capability to negotiate
-	// `notifications/tools/list_changed` handling — any spec-compliant
-	// client is already expected to tolerate it — so gating the smaller,
-	// cheaper surface behind a Vertex-private opt-in left every ordinary
-	// MCP host on the full `native` surface by default, the opposite of
-	// what r00019 (q00004) already decided and the token dashboard
-	// measures against. A client that never re-fetches `tools/list`
-	// after the notification is NOT left broken: `mcp-vertex_vertex`
-	// (the domain/action router) and `mcp-vertex_tool_search` stay in the
-	// bootstrap set precisely so any tool remains reachable without a
-	// refresh (see `tool-surface.e2e.spec.ts`'s
-	// "does not leave a client that never refreshes tools/list unable to
-	// reach an activated tool" case). `native` is the explicit,
-	// documented compatibility fallback (`--surface=native` /
-	// `mcp-vertex.config.json#surfaceMode`), never the silent default.
+	// r00027 (TOK-004 follow-up): invert the default once more. r00026 made
+	// `adaptive` the silent default on the theory that spec-compliant
+	// MCP clients are obliged to re-fetch `tools/list` after a
+	// `notifications/tools/list_changed` notification. In practice the
+	// most common clients (VS Code's MCP extension, the
+	// `mcp-vertex` shim, several generic hosts) do NOT re-fetch on
+	// that notification when the client never declared the capability,
+	// which is the default for every spec-compliant client. The result
+	// is the operator sees "Discovered 6 tools" and never sees the
+	// rest, even though the server has more. `native` is the right
+	// default: every tool of every loaded plugin shows up on the
+	// first `tools/list` without depending on notification handling.
+	// The token cost is bounded by the preset-metadata measurement
+	// (r00024 / PRESET-001) and the `tokens:gate` lint. Adopters that
+	// want `adaptive` (token-optimised) can opt in via
+	// `--surface=adaptive` or `mcp-vertex.config.json#surfaceMode`.
 	return {
-		mode: 'adaptive',
-		reason: 'client did not declare tools list-changed support; using adaptive surface (default since r00026 / TOK-004) — native remains available as an explicit override',
+		mode: 'native',
+		reason: 'using native surface as the silent default (r00027); adaptive remains available as an explicit override',
 	};
 };
