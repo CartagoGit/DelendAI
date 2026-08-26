@@ -8,25 +8,31 @@
  * lands in the internal bucket.
  */
 
-import { spawn } from 'bun';
+import { spawn } from 'node:child_process';
 import { describe, expect, it } from 'vitest';
 
 const runInventory = async (
 	args: readonly string[],
 ): Promise<{ stdout: string; stderr: string; exit: number }> => {
-	const proc = spawn({
-		cmd: [
+	return new Promise((resolve) => {
+		const proc = spawn(
 			'bun',
-			'tools/scripts/inspect/core-public-inventory.script.ts',
-			...args,
-		],
-		stdout: 'pipe',
-		stderr: 'pipe',
+			['tools/scripts/inspect/core-public-inventory.script.ts', ...args],
+			{ stdio: ['ignore', 'pipe', 'pipe'] },
+		);
+		let stdout = '';
+		let stderr = '';
+		proc.stdout?.on('data', (chunk: Buffer) => {
+			stdout += chunk.toString();
+		});
+		proc.stderr?.on('data', (chunk: Buffer) => {
+			stderr += chunk.toString();
+		});
+		proc.once('error', () => resolve({ stdout, stderr, exit: 1 }));
+		proc.once('close', (code) =>
+			resolve({ stdout, stderr, exit: code ?? 1 }),
+		);
 	});
-	const text = await new Response(proc.stdout).text();
-	const errText = await new Response(proc.stderr).text();
-	const exit = await proc.exited;
-	return { stdout: text, stderr: errText, exit };
 };
 
 interface IInventoryExport {
