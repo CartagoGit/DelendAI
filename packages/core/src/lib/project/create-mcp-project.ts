@@ -103,62 +103,101 @@ export async function createMcpProject(
 				readonly handler: unknown;
 			}>
 		>();
+		const lazyToolActivators = new Map<
+			string,
+			() => Promise<{
+				readonly description?: string | undefined;
+				readonly inputSchema?: unknown;
+				readonly outputSchema?: unknown;
+				readonly handler: unknown;
+			}>
+		>();
+		const drainLazyPluginRegistrations = async (): Promise<void> => {
+			for (const registrations of config.consumeLazyPluginRegistrations?.() ??
+				[]) {
+				for (const prompt of registrations.prompts ?? []) {
+					await prompt.register(server);
+				}
+				for (const resource of registrations.resources ?? []) {
+					await resource.register(server);
+				}
+				for (const resource of buildKnowledgeResourceRegistrations(
+					registrations.knowledge ?? [],
+				)) {
+					await resource.register(server);
+				}
+			}
+		};
+		const materializeLazyTool = async (
+			registrationId: string,
+			activate: () => Promise<{
+				readonly description?: string | undefined;
+				readonly inputSchema?: unknown;
+				readonly outputSchema?: unknown;
+				readonly handler: unknown;
+			}>,
+		): Promise<{
+			readonly description?: string | undefined;
+			readonly inputSchema?: unknown;
+			readonly outputSchema?: unknown;
+			readonly handler: unknown;
+		}> => {
+			const existing = materializedLazyTools.get(registrationId);
+			if (existing !== undefined) return existing;
+			const materialization = (async () => {
+				const binding = await activate();
+				await drainLazyPluginRegistrations();
+				const descriptor = config.toolSurfacePlan?.descriptors.find(
+					(entry) => entry.registrationId === registrationId,
+				);
+				if (descriptor === undefined) return binding;
+				// Register through the already-instrumented MCP server so a
+				// first-use tool keeps metrics, lifecycle hooks, abort handling,
+				// and error/result decoration identical to an eager tool.
+				const handle = server.registerTool(
+					descriptor.name,
+					{
+						...(binding.description !== undefined
+							? { description: binding.description }
+							: {}),
+						...(binding.inputSchema !== undefined
+							? { inputSchema: binding.inputSchema }
+							: {}),
+						...(binding.outputSchema !== undefined
+							? { outputSchema: binding.outputSchema }
+							: {}),
+					} as never,
+					binding.handler as never,
+				);
+				const instrumentedBinding = {
+					...binding,
+					handler: handle.handler,
+				};
+				// Keep the runtime record tied to the real SDK handle. This makes
+				// explicit plugin activation visible to tools/list and lets the
+				// SDK emit tools/list_changed. The managed surface still starts
+				// hidden until the plugin is explicitly activated.
+				toolSurfaceRuntime.bindRegisteredTool({
+					registrationId,
+					name: descriptor.name,
+					description: instrumentedBinding.description,
+					inputSchema: instrumentedBinding.inputSchema,
+					outputSchema: instrumentedBinding.outputSchema,
+					handler: instrumentedBinding.handler,
+					handle,
+				});
+				handle.disable();
+				return instrumentedBinding;
+			})();
+			materializedLazyTools.set(registrationId, materialization);
+			return materialization;
+		};
 		for (const [registrationId, activate] of config.lazyToolActivators ??
 			[]) {
+			lazyToolActivators.set(registrationId, activate);
 			toolSurfaceRuntime.bindLazyTool({
 				registrationId,
-				activate: () => {
-					const existing = materializedLazyTools.get(registrationId);
-					if (existing !== undefined) return existing;
-					const materialization = (async () => {
-						const binding = await activate();
-						for (const registrations of config.consumeLazyPluginRegistrations?.() ??
-							[]) {
-							for (const prompt of registrations.prompts ?? []) {
-								await prompt.register(server);
-							}
-							for (const resource of registrations.resources ??
-								[]) {
-								await resource.register(server);
-							}
-							for (const resource of buildKnowledgeResourceRegistrations(
-								registrations.knowledge ?? [],
-							)) {
-								await resource.register(server);
-							}
-						}
-						const descriptor =
-							config.toolSurfacePlan?.descriptors.find(
-								(entry) =>
-									entry.registrationId === registrationId,
-							);
-						if (descriptor === undefined) return binding;
-						// Register through the already-instrumented MCP server so a
-						// first-use tool keeps metrics, lifecycle hooks, abort handling,
-						// and error/result decoration identical to an eager tool. Keep
-						// the SDK handle disabled: managed mode exposes the router and
-						// bootstrap set, not the activated plugin definition itself.
-						const handle = server.registerTool(
-							descriptor.name,
-							{
-								...(binding.description !== undefined
-									? { description: binding.description }
-									: {}),
-								...(binding.inputSchema !== undefined
-									? { inputSchema: binding.inputSchema }
-									: {}),
-								...(binding.outputSchema !== undefined
-									? { outputSchema: binding.outputSchema }
-									: {}),
-							} as never,
-							binding.handler as never,
-						);
-						handle.disable();
-						return { ...binding, handler: handle.handler };
-					})();
-					materializedLazyTools.set(registrationId, materialization);
-					return materialization;
-				},
+				activate: () => materializeLazyTool(registrationId, activate),
 			});
 		}
 		if (
@@ -170,20 +209,17 @@ export async function createMcpProject(
 					config.lazyPluginActivators?.get(pluginId);
 				if (activatePlugin === undefined) return;
 				await activatePlugin();
-				for (const registrations of config.consumeLazyPluginRegistrations?.() ??
+				const plugin = config.toolSurfacePlan?.plugins.find(
+					(entry) => entry.id === pluginId,
+				);
+				for (const registrationId of plugin?.toolRegistrationIds ??
 					[]) {
-					for (const prompt of registrations.prompts ?? []) {
-						await prompt.register(server);
-					}
-					for (const resource of registrations.resources ?? []) {
-						await resource.register(server);
-					}
-					for (const resource of buildKnowledgeResourceRegistrations(
-						registrations.knowledge ?? [],
-					)) {
-						await resource.register(server);
+					const materialize = lazyToolActivators.get(registrationId);
+					if (materialize !== undefined) {
+						await materializeLazyTool(registrationId, materialize);
 					}
 				}
+				await drainLazyPluginRegistrations();
 			});
 		}
 		const previousOnInitialized = server.server.oninitialized;

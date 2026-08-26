@@ -222,7 +222,10 @@ const main = async (): Promise<void> => {
 					surfaceMode: 'managed',
 					managedSurface: { loading: 'lazy' },
 					startupReport: { level: 'full', color: 'never' },
-					plugins: { proposals: { options: {} } },
+					plugins: {
+						proposals: { options: {} },
+						'prompts-pack': { options: {} },
+					},
 				},
 				null,
 				2,
@@ -325,6 +328,44 @@ const main = async (): Promise<void> => {
 			if (listed.tools.some((tool) => tool.name === 'mcp-vertex_skill')) {
 				throw new Error(
 					'managed tools/list leaked the internal skill tool',
+				);
+			}
+
+			const activation = (await withTimeout(
+				client.callTool({
+					name: 'mcp-vertex_plugin_activate',
+					arguments: { plugin: 'prompts-pack' },
+				}),
+				'prompt plugin activation',
+			)) as IToolCallResult;
+			if (activation.isError) {
+				throw new Error('managed prompt plugin activation failed');
+			}
+			const prompts = await withTimeout(
+				client.listPrompts(),
+				'prompt list after lazy activation',
+			);
+			if (
+				!prompts.prompts.some(
+					(prompt) =>
+						prompt.name ===
+						'mcp-vertex_prompts-pack_explain-this-code',
+				)
+			) {
+				throw new Error('lazy plugin prompt was not registered');
+			}
+			const resources = await withTimeout(
+				client.listResources(),
+				'resource list after lazy activation',
+			);
+			if (
+				!resources.resources.some(
+					(resource) =>
+						resource.uri === 'knowledge://prompts-pack-overview',
+				)
+			) {
+				throw new Error(
+					'lazy plugin knowledge resource was not registered',
 				);
 			}
 

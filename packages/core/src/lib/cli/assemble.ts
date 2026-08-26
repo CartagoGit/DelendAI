@@ -624,6 +624,19 @@ export const assembleCliConfig = async (
 			describe?: string | undefined;
 		}
 	>();
+	// Keep plugins that only contribute prompts, resources, knowledge, or
+	// skills in the surface index too. They have no tool descriptor to seed
+	// this map, but `plugin_activate` still needs to resolve their id so a
+	// lazy module can reconnect those non-tool registrations on demand.
+	for (const plugin of configurationPlugins) {
+		pluginDescriptorsByPlugin.set(plugin.id, {
+			namespace: plugin.prefix ?? plugin.id,
+			toolRegistrationIds: [],
+			describe: pluginSummaries.find(
+				(summary) => summary.name === plugin.id,
+			)?.describe,
+		});
+	}
 	for (const entry of toolSurfaceDescriptors) {
 		if (entry.pluginId === undefined || entry.namespace === undefined)
 			continue;
@@ -893,7 +906,15 @@ export const assembleCliConfig = async (
 			skillsByPlugin,
 			failedPluginCount: loadResult.errors.length,
 			skillsAvailable: skillSummaries.length,
-			resourcesAvailable: resources.length,
+			resourcesAvailable:
+				resources.length +
+				(moduleLoading === 'lazy'
+					? configurationPlugins.reduce(
+							(total, plugin) =>
+								total + plugin.capabilities.resources,
+							0,
+						)
+					: 0),
 			moduleLoading,
 			...(schemaBytesByRegistrationId !== undefined
 				? { schemaBytesByRegistrationId }
