@@ -21,9 +21,11 @@
  * both consume the object this returns; neither re-reads the manifest or
  * re-parses frontmatter.
  */
+import { createHash } from 'node:crypto';
 import { join } from 'node:path';
 
 import type { ISkillBundle } from './load-skills';
+import type { ISkillDescriptor } from './sources/types';
 
 /** A compact, actionable catalog row. No body — that is loaded on demand. */
 export interface ISkillCatalogEntry {
@@ -35,6 +37,11 @@ export interface ISkillCatalogEntry {
 	readonly appliesTo: readonly string[];
 	readonly tags: readonly string[];
 	readonly bodyPath: string;
+	/** Portable provenance metadata; absent only when the body could not be read. */
+	readonly source?: ISkillDescriptor['source'];
+	readonly owner?: string;
+	readonly hash?: string;
+	readonly estimatedBodyTokens?: number;
 }
 
 /** The skill catalog plus an on-demand body loader. */
@@ -127,9 +134,35 @@ export const buildSkillCatalog = async (
 	const entries: ISkillCatalogEntry[] = [];
 	for (const bundle of bundles) {
 		let description: string;
+		let bodyMetadata:
+			| Pick<
+					ISkillCatalogEntry,
+					'source' | 'owner' | 'hash' | 'estimatedBodyTokens'
+			  >
+			| undefined;
 		try {
 			const body = await readFile(absFor(bundle.bodyPath));
 			description = extractSkillDescription(bundle.id, body);
+			const primaryOwner = bundle.appliesTo[0] ?? '@mcp-vertex/core';
+			const owner =
+				primaryOwner === '@mcp-vertex/*' ||
+				primaryOwner === '@mcp-vertex/core'
+					? '@mcp-vertex/core'
+					: primaryOwner;
+			const source: ISkillDescriptor['source'] =
+				bundle.bodyPath.startsWith('.mcp-vertex/')
+					? 'workspace'
+					: owner === '@mcp-vertex/core'
+						? 'core'
+						: 'plugin';
+			bodyMetadata = {
+				source,
+				owner,
+				hash: `sha256:${createHash('sha256').update(body).digest('hex')}`,
+				estimatedBodyTokens: Math.ceil(
+					Buffer.byteLength(body, 'utf8') / 4,
+				),
+			};
 		} catch {
 			// A missing body is not fatal: still advertise the skill so the AI
 			// knows it exists, with a minimal description.
@@ -143,6 +176,7 @@ export const buildSkillCatalog = async (
 			appliesTo: [...bundle.appliesTo],
 			tags: [...bundle.tags],
 			bodyPath: bundle.bodyPath,
+			...(bodyMetadata ?? {}),
 		});
 	}
 
