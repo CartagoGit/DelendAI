@@ -39,12 +39,7 @@ const REPO_ROOT = process.cwd();
 
 const MARKER_BEGIN = '<!-- mcp-vertex:begin quantitative -->';
 const MARKER_END = '<!-- mcp-vertex:end quantitative -->';
-// A full match spans from the BEGIN line to the END line. The body
-// between them is the snapshot block (including the code fence).
-const BLOCK_RE = new RegExp(
-	`${escapeForRegex(MARKER_BEGIN)}[\\s\\S]*?${escapeForRegex(MARKER_END)}`,
-	'g',
-);
+const GENERATED_AT_RE = /(Generated at: )[^\n]+/;
 
 function escapeForRegex(text: string): string {
 	return text.replace(/[-\\^$*+?.()|[\]{}]/g, '\\$&');
@@ -418,7 +413,37 @@ export const updateDocBlock = (
 		`${escapeForRegex(MARKER_BEGIN)}[\\s\\S]*?${escapeForRegex(MARKER_END)}`,
 		'g',
 	);
-	const block = renderBlock(snap);
+	const currentBlock =
+		docText.match(
+			new RegExp(
+				`${escapeForRegex(MARKER_BEGIN)}[\\s\\S]*?${escapeForRegex(MARKER_END)}`,
+			),
+		)?.[0] ?? '';
+	const currentGeneratedAt = currentBlock?.match(GENERATED_AT_RE)?.[0];
+	const stableSnap =
+		currentGeneratedAt !== undefined &&
+		currentGeneratedAt !== 'Generated at: <<snapshot>>'
+			? (() => {
+					const normalizedCurrent = currentBlock.replace(
+						GENERATED_AT_RE,
+						'Generated at: <<snapshot>>',
+					);
+					const normalizedNext = renderBlock({
+						...snap,
+						generatedAt: '<<snapshot>>',
+					}).replace(GENERATED_AT_RE, 'Generated at: <<snapshot>>');
+					return normalizedCurrent === normalizedNext
+						? {
+								...snap,
+								generatedAt: currentGeneratedAt.replace(
+									'Generated at: ',
+									'',
+								),
+							}
+						: snap;
+				})()
+			: snap;
+	const block = renderBlock(stableSnap);
 	const replaced = docText.replace(blockRe, block);
 	if (replaced !== docText) return { text: replaced, changed: true };
 	// `replace` returned `docText` unchanged. Two possible reasons:

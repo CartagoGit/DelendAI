@@ -97,6 +97,17 @@ describe('updateDocBlock', () => {
 		const twice = updateDocBlock(once.text, SAMPLE_SNAP);
 		expect(twice.changed).toBe(false);
 	});
+
+	it('preserves the generated timestamp when only the clock changed', () => {
+		const updated = updateDocBlock(docWithBlock, {
+			...SAMPLE_SNAP,
+			generatedAt: '2026-08-26T18:00:00.000Z',
+		});
+		expect(updated.changed).toBe(false);
+		expect(updated.text).toContain(
+			'Generated at: 2026-08-26T00:00:00.000Z',
+		);
+	});
 });
 
 describe('buildSnapshot (live repo)', () => {
