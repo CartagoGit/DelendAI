@@ -19,6 +19,7 @@ import {
 } from '@mcp-vertex/core/public';
 
 import { appendAuditTrailer, type IAuditAgent } from '../audit/trailer';
+import { branchProtectedRefusal, isBranchProtected } from '../contracts/branch';
 import type { ICommitPolicyOptions } from '../contracts/options';
 import type { IIdentityResolverContext } from '../identity/resolver';
 import { resolveAuthor } from '../identity/resolver';
@@ -227,14 +228,25 @@ export const runCommitDriver = async (
 				'commit refused: HEAD is detached. Check out a branch first.',
 		};
 	}
+	// x00267 (AUD-CP-009): branch protection is unified across
+	// every commit path — manual, slice, threshold, interval.
+	// The previous behaviour gated the check on `sliceContext`
+	// which let threshold / interval commits bypass the
+	// `develop` / `main` policy entirely. The same list feeds
+	// the push scheduler (x00266).
 	if (
-		input.sliceContext !== undefined &&
-		options.policy.push.protectedBranches.includes(branch)
+		isBranchProtected(branch, {
+			protected: options.policy.push.protectedBranches,
+			protectedPrefixes: options.policy.push.protectedPrefixes,
+		})
 	) {
 		return {
 			committed: false,
 			pushed: false,
-			refusal: `commit refused: slice would commit onto protected branch "${branch}"`,
+			refusal: branchProtectedRefusal(branch ?? '(detached)', {
+				protected: options.policy.push.protectedBranches,
+				protectedPrefixes: options.policy.push.protectedPrefixes,
+			}),
 		};
 	}
 

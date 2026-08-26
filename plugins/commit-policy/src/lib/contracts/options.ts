@@ -218,6 +218,19 @@ export const PushSchema = z.object({
 	protectedBranches: z
 		.array(z.string())
 		.default(['main', 'master', 'develop']),
+	/**
+	 * x00267 (AUD-CP-009): branch-name prefixes that are also
+	 * protected (e.g. `release/`, `hotfix/`). The unified branch
+	 * policy applies the same list to every commit path AND to
+	 * the push scheduler. Defaults to `['release/', 'hotfix/']`.
+	 * Optional in the type so existing test fixtures (built as
+	 * raw objects) keep compiling; `parseCommitPolicyOptions`
+	 * fills the default at parse time.
+	 */
+	protectedPrefixes: z
+		.array(z.string())
+		.default(['release/', 'hotfix/'])
+		.optional(),
 	/** Remote name. Defaults to whatever `git config push.default` resolves. */
 	remote: z.string().optional(),
 	/** Branch name. Defaults to the current branch. */
@@ -280,6 +293,7 @@ export const CommitPolicyOptionsSchema = z.object({
 		onCommit: false,
 		force: 'with-lease',
 		protectedBranches: ['main', 'master', 'develop'],
+		protectedPrefixes: ['release/', 'hotfix/'],
 	}),
 });
 export type ICommitPolicyOptions = z.infer<typeof CommitPolicyOptionsSchema>;
