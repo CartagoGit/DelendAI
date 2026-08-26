@@ -336,11 +336,90 @@ export const measurePresetDashboard = async (
 	}
 };
 
+/**
+ * c00135 — Per-surface columns. Pairs the `native` and `adaptive` rows of
+ * the same preset side-by-side so a reader can compare without scanning
+ * the dual rows of the main table. `deficits` are reported per surface,
+ * never mixed.
+ */
+export interface IPerSurfaceColumn {
+	readonly presetId: string;
+	readonly adaptiveBytes: number | null;
+	readonly adaptiveStatus: 'ok' | 'warning' | 'breach' | 'n/a';
+	readonly nativeBytes: number | null;
+	readonly nativeStatus: 'ok' | 'warning' | 'breach' | 'n/a';
+	readonly adaptiveDeficit: string | null;
+	readonly nativeDeficit: string | null;
+}
+
+const statusFromRow = (
+	row: IPresetDashboardRow | undefined,
+): 'ok' | 'warning' | 'breach' | 'n/a' => {
+	if (row === undefined) return 'n/a';
+	const budget = presetToolsBudget(row.presetId);
+	if (budget === undefined) return 'n/a';
+	if (row.toolsListBytes > budget.hard) return 'breach';
+	if (row.toolsListBytes > budget.warning) return 'warning';
+	return 'ok';
+};
+
+export const buildPerSurfaceColumns = (
+	presetRows: readonly IPresetDashboardRow[],
+): readonly IPerSurfaceColumn[] => {
+	const byPreset = new Map<
+		string,
+		{ adaptive?: IPresetDashboardRow; native?: IPresetDashboardRow }
+	>();
+	for (const row of presetRows) {
+		const entry = byPreset.get(row.presetId) ?? {};
+		if (row.surfaceMode === 'adaptive') entry.adaptive = row;
+		else if (row.surfaceMode === 'native') entry.native = row;
+		byPreset.set(row.presetId, entry);
+	}
+	const out: IPerSurfaceColumn[] = [];
+	for (const [presetId, entry] of byPreset) {
+		const adaptiveRow = entry.adaptive;
+		const nativeRow = entry.native;
+		const adaptiveBudget = adaptiveRow
+			? presetToolsBudget(adaptiveRow.presetId)
+			: undefined;
+		const nativeBudget = nativeRow
+			? presetToolsBudget(nativeRow.presetId)
+			: undefined;
+		const adaptiveDeficit =
+			adaptiveRow !== undefined &&
+			adaptiveBudget !== undefined &&
+			adaptiveRow.toolsListBytes > adaptiveBudget.hard
+				? `breach: ${formatInt(adaptiveRow.toolsListBytes)}B > hard ${formatInt(adaptiveBudget.hard)}B`
+				: null;
+		const nativeDeficit =
+			nativeRow !== undefined &&
+			nativeBudget !== undefined &&
+			nativeRow.toolsListBytes > nativeBudget.hard
+				? `breach: ${formatInt(nativeRow.toolsListBytes)}B > hard ${formatInt(nativeBudget.hard)}B`
+				: null;
+		out.push({
+			presetId,
+			adaptiveBytes: adaptiveRow?.toolsListBytes ?? null,
+			adaptiveStatus: statusFromRow(adaptiveRow),
+			nativeBytes: nativeRow?.toolsListBytes ?? null,
+			nativeStatus: statusFromRow(nativeRow),
+			adaptiveDeficit,
+			nativeDeficit,
+		});
+	}
+	return out;
+};
+
 const renderGeneratedMarkdown = (
 	generatedAt: string,
 	fixture: IFixtureMeasurements,
 	presetRows: readonly IPresetDashboardRow[],
 ): string => {
+	// c00135: per-surface columns so the dashboard never mixes adaptive
+	// bytes with native tokens. Each preset gets one row with two
+	// measurements side-by-side, plus per-surface deficits.
+	const perSurfaceColumns = buildPerSurfaceColumns(presetRows);
 	const fixtureRows = [
 		[
 			'overview full',
@@ -639,6 +718,33 @@ const renderGeneratedMarkdown = (
 		'## Documented deficits (kept, not auto-bumped)',
 		'',
 		...(deficits.length === 0 ? ['- none'] : deficits),
+		'',
+		'## Per-surface columns (c00135)',
+		'',
+		'Each preset is reported with its adaptive (output-schema bytes via the dynamic client) and native (estimated prompt tokens via the tokens gate) measurements side-by-side. Status reflects the surface-specific hard ceiling; mixing the two columns is intentionally avoided.',
+		'',
+		markdownTable(
+			[
+				'Preset',
+				'Adaptive Bytes',
+				'Adaptive Status',
+				'Adaptive Deficit',
+				'Native Bytes',
+				'Native Status',
+				'Native Deficit',
+			],
+			perSurfaceColumns.map((col) => [
+				col.presetId,
+				col.adaptiveBytes === null
+					? 'n/a'
+					: formatInt(col.adaptiveBytes),
+				col.adaptiveStatus,
+				col.adaptiveDeficit ?? '—',
+				col.nativeBytes === null ? 'n/a' : formatInt(col.nativeBytes),
+				col.nativeStatus,
+				col.nativeDeficit ?? '—',
+			]),
+		),
 		'',
 		'## Reproduce',
 		'',
