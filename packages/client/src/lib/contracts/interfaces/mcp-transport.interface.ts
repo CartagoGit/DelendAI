@@ -49,4 +49,11 @@ export interface IMcpStdioClientOptions {
 	 * status banners do not leak into the test output stream.
 	 */
 	readonly stderr?: 'inherit' | 'pipe' | 'ignore';
+	/**
+	 * Receives human-facing stderr from the child process. When present,
+	 * the transport is piped even if `stderr` was not specified, allowing
+	 * hosts such as VS Code to route startup diagnostics to their own log
+	 * surface without contaminating MCP stdout.
+	 */
+	readonly onStderr?: (chunk: string) => void;
 }

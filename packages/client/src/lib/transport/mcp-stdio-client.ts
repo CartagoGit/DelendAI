@@ -208,9 +208,17 @@ export class McpStdioClient {
 			// The MCP SDK defaults stderr to 'inherit'. We forward the
 			// caller's override (or fall back to 'inherit' so prod is
 			// unchanged) so tests can silence the child server.
-			stderr: options.stderr ?? 'inherit',
+			stderr:
+				options.onStderr === undefined
+					? (options.stderr ?? 'inherit')
+					: 'pipe',
 		};
 		const transport = new StdioClientTransport(transportOptions);
+		if (options.onStderr !== undefined) {
+			transport.stderr?.on('data', (chunk: Buffer | string) => {
+				options.onStderr?.(String(chunk));
+			});
+		}
 		try {
 			await client.connect(transport);
 		} catch (error) {
