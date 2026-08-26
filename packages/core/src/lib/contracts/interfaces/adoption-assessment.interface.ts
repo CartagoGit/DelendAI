@@ -1,4 +1,5 @@
 import type { IProjectAnalysis } from '../../bootstrap/analyze-project';
+import type { IMcpToolSurfaceMode } from './surface-mode.interface';
 
 export interface IWriteEstimateBreakdownEntry {
 	readonly kind: 'config' | 'proposal-store' | 'generated';
@@ -35,6 +36,8 @@ export interface IAssessmentCost {
 	 * measurement to attribute a surface to.
 	 */
 	readonly surfaceMode: 'native' | 'adaptive' | 'estimated';
+	/** Runtime surface for the reused budget; distinct from measured surface. */
+	readonly runtimeSurface?: IMcpToolSurfaceMode;
 	readonly note: string;
 	/**
 	 * f00179 S3: per-plugin `staticBytes` (or legacy `warning`) for

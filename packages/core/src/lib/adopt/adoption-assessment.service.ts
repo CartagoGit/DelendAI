@@ -213,6 +213,7 @@ const buildCost = (
 			recommendedPluginCount: recommendedPluginIds.length,
 			source: 'preset-budget',
 			surfaceMode: coveringPreset.budget.surfaceMode,
+			runtimeSurface: coveringPreset.budget.runtimeSurface,
 			note: `Measured runtime budget reused from preset ${coveringPreset.id} (${coveringPreset.budget.surfaceMode} surface).`,
 		};
 	}

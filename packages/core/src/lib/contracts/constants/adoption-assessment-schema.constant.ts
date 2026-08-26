@@ -32,7 +32,10 @@ export const ADOPTION_ASSESSMENT_SCHEMA = z.object({
 		schemaBytes: z.number(),
 		estimatedTokens: z.number(),
 		recommendedPluginCount: z.number(),
-		source: z.enum(['preset-budget', 'fallback-budget']),
+		source: z.enum(['preset-budget', 'fallback-budget', 'plugin-budget']),
+		runtimeSurface: z
+			.enum(['managed', 'native', 'adaptive', 'compact'])
+			.optional(),
 		note: z.string(),
 	}),
 	summary: z.object({
