@@ -115,6 +115,17 @@ export const EMPTY_BUDGET: IPluginBudget = {
  * §14.1) is that an unloaded / hidden plugin contributes exactly 0 to
  * the per-request schema tax.
  */
+
+const estimateDescriptorBytes = (descriptor: IToolSurfaceDescriptor): number =>
+	Buffer.byteLength(
+		JSON.stringify({
+			name: descriptor.name,
+			toolId: descriptor.toolId,
+			summary: descriptor.summary,
+		}),
+		'utf8',
+	);
+
 const measureDescriptorsBytes = (
 	descriptors: readonly IToolSurfaceDescriptor[],
 	schemaBytesByRegistrationId?: Readonly<Record<string, number>>,
@@ -124,16 +135,17 @@ const measureDescriptorsBytes = (
 		return descriptors.reduce(
 			(sum, descriptor) =>
 				sum +
-				(schemaBytesByRegistrationId[descriptor.registrationId] ?? 0),
+				(schemaBytesByRegistrationId[descriptor.registrationId] ??
+					estimateDescriptorBytes(descriptor)),
 			0,
 		);
 	}
 	return Buffer.byteLength(
 		JSON.stringify(
-			descriptors.map((d) => ({
-				name: d.name,
-				toolId: d.toolId,
-				summary: d.summary,
+			descriptors.map((descriptor) => ({
+				name: descriptor.name,
+				toolId: descriptor.toolId,
+				summary: descriptor.summary,
 			})),
 		),
 		'utf8',

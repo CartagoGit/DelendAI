@@ -35,6 +35,11 @@ export interface IAssembleSkillsInput {
 	readonly configPresent: boolean;
 	readonly readFile: (absolutePath: string) => Promise<string | undefined>;
 	readonly loadResult: IPluginLoadResult;
+	readonly portablePluginPackages?: readonly {
+		readonly name: string;
+		readonly resolved: string;
+		readonly version?: string;
+	}[];
 	/** Mutated in place: skills append their configuration-center rows. */
 	readonly configurationArtifacts: IConfigurationArtifact[];
 }
@@ -122,7 +127,11 @@ const packageRootFor = async (
 const buildPortableSkillCatalog = async (input: {
 	readonly workspace: string;
 	readonly coreVersion: string;
-	readonly loadedPlugins: IPluginLoadResult['loaded'];
+	readonly loadedPlugins: readonly {
+		readonly name: string;
+		readonly resolved: string;
+		readonly version?: string;
+	}[];
 }) => {
 	const sources = [
 		workspaceSkillSource({
@@ -146,15 +155,15 @@ const buildPortableSkillCatalog = async (input: {
 		...(await Promise.all(
 			input.loadedPlugins.map(async (loaded) =>
 				packageSkillSource({
-					id: `plugin-${loaded.plugin.name}`,
+					id: `plugin-${loaded.name}`,
 					source: 'plugin',
 					packageRoot: await packageRootFor(
 						loaded.resolved,
 						input.workspace,
-						loaded.plugin.name,
+						loaded.name,
 					),
-					owner: `@mcp-vertex/${loaded.plugin.name}`,
-					packageVersion: loaded.plugin.version ?? input.coreVersion,
+					owner: `@mcp-vertex/${loaded.name}`,
+					packageVersion: loaded.version ?? input.coreVersion,
 					listDir: diskList,
 					readFile: diskRead,
 				}),
@@ -244,8 +253,18 @@ export const assembleSkills = async (
 		configPresent,
 		readFile,
 		loadResult,
+		portablePluginPackages,
 		configurationArtifacts,
 	} = input;
+	const pluginPackages =
+		portablePluginPackages ??
+		loadResult.loaded.map((loaded) => ({
+			name: loaded.plugin.name,
+			resolved: loaded.resolved,
+			...(loaded.plugin.version !== undefined
+				? { version: loaded.plugin.version }
+				: {}),
+		}));
 	const validationMatrix = fileConfig.validationMatrix ?? { scopes: {} };
 	// Skill manifest location is defined once in `skill-paths.ts`
 	// (`packages/core/skills/manifest.json`). We still fall back to the legacy
@@ -279,7 +298,7 @@ export const assembleSkills = async (
 			? await buildPortableSkillCatalog({
 					workspace: args.workspace,
 					coreVersion: args.serverVersion,
-					loadedPlugins: loadResult.loaded,
+					loadedPlugins: pluginPackages,
 				})
 			: await applyWorkspaceOverrides({
 					workspace: args.workspace,
@@ -299,7 +318,7 @@ export const assembleSkills = async (
 						await buildPortableSkillCatalog({
 							workspace: args.workspace,
 							coreVersion: args.serverVersion,
-							loadedPlugins: loadResult.loaded,
+							loadedPlugins: pluginPackages,
 						}),
 					),
 				});

@@ -70,6 +70,8 @@ export interface IStartupReportConfig {
 
 /** Managed-surface working-set policy. Null disables that bound. */
 export interface IManagedSurfaceConfig {
+	/** Module strategy for managed plugins. Defaults to eager for legacy hosts. */
+	readonly loading?: 'lazy' | 'eager';
 	readonly idleTtlMs?: number | null;
 	readonly maxWarmPlugins?: number | null;
 }

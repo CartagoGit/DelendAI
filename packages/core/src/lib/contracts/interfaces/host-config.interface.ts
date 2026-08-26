@@ -172,6 +172,13 @@ export interface IHostRegistrations {
 	/** Optional runtime plan/access pair for adaptive/compact tool surfaces. */
 	readonly toolSurfacePlan?: IToolSurfacePlan | undefined;
 	readonly toolSurfaceRuntime?: IToolSurfaceRuntimeAccess | undefined;
+	/** Managed-only tool activators keyed by their stable registration id. */
+	readonly lazyToolActivators?: ReadonlyMap<
+		string,
+		() => Promise<
+			import('./tool-surface.interface').IToolSurfaceLazyBinding
+		>
+	>;
 }
 
 /**

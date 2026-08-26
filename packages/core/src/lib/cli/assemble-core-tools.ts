@@ -96,6 +96,12 @@ export interface IAssembleCoreToolsInput {
 	readonly effectivePlugins: readonly string[];
 	readonly activationReport: TPluginPhase['activationReport'];
 	readonly loadResult: IPluginLoadResult;
+	readonly pluginSummaries: readonly {
+		readonly name: string;
+		readonly version?: string | undefined;
+		readonly describe?: string | undefined;
+	}[];
+	readonly moduleLoading: 'lazy' | 'eager';
 	readonly pluginToolEntries: IOverviewToolEntry[];
 	readonly qualifiedPluginTools: IToolRegistration[];
 	readonly knowledge: IKnowledgeEntry[];
@@ -135,6 +141,8 @@ export const assembleCoreTools = (
 		effectivePlugins,
 		activationReport,
 		loadResult,
+		pluginSummaries,
+		moduleLoading,
 		pluginToolEntries,
 		qualifiedPluginTools,
 		knowledge,
@@ -222,55 +230,60 @@ export const assembleCoreTools = (
 		...(configDiagnostic.issues.length > 0
 			? { configIssues: configDiagnostic.issues }
 			: {}),
-		pluginDiagnostic: (() => {
-			const missingPlugins = effectivePlugins.filter(
-				(name) =>
-					!loadResult.loaded.some(
-						(entry) => entry.plugin.name === name,
-					),
-			);
-			const missingReasonsEntries = missingPlugins
-				.map((name): [string, string] | undefined => {
-					const error = loadResult.errors.find(
-						(candidate) => candidate.specifier === name,
-					);
-					return error === undefined
-						? undefined
-						: [name, error.message];
-				})
-				.filter(
-					(entry): entry is [string, string] => entry !== undefined,
-				);
-			// Token economy: the diagnostic only earns its bytes when the
-			// requested plugin set diverged from what actually loaded. In the
-			// healthy case (nothing missing, no errors) it repeats the plugin
-			// name list three times (requested/loaded/configPlugins) on every
-			// cold-start `overview` — pure noise, since `plugins` already
-			// conveys the active set. Omit it when clean so the divergence, when
-			// it happens, is the ONLY reason this block appears.
-			if (missingPlugins.length === 0 && loadResult.errors.length === 0) {
-				return undefined;
-			}
-			return {
-				requested: effectivePlugins,
-				loaded: loadResult.loaded.map((entry) => entry.plugin.name),
-				missing: missingPlugins,
-				...(missingReasonsEntries.length > 0
-					? {
-							missingReasons: Object.fromEntries(
-								missingReasonsEntries,
-							),
+		pluginDiagnostic:
+			moduleLoading === 'lazy'
+				? undefined
+				: (() => {
+						const missingPlugins = effectivePlugins.filter(
+							(name) =>
+								!loadResult.loaded.some(
+									(entry) => entry.plugin.name === name,
+								),
+						);
+						const missingReasonsEntries = missingPlugins
+							.map((name): [string, string] | undefined => {
+								const error = loadResult.errors.find(
+									(candidate) => candidate.specifier === name,
+								);
+								return error === undefined
+									? undefined
+									: [name, error.message];
+							})
+							.filter(
+								(entry): entry is [string, string] =>
+									entry !== undefined,
+							);
+						// Token economy: the diagnostic only earns its bytes when the
+						// requested plugin set diverged from what actually loaded. In the
+						// healthy case (nothing missing, no errors) it repeats the plugin
+						// name list three times (requested/loaded/configPlugins) on every
+						// cold-start `overview` — pure noise, since `plugins` already
+						// conveys the active set. Omit it when clean so the divergence, when
+						// it happens, is the ONLY reason this block appears.
+						if (
+							missingPlugins.length === 0 &&
+							loadResult.errors.length === 0
+						) {
+							return undefined;
 						}
-					: {}),
-				configPlugins: configPluginNames,
-				errors: loadResult.errors.length,
-			};
-		})(),
-		plugins: loadResult.loaded.map((entry) => ({
-			name: entry.plugin.name,
-			version: entry.plugin.version,
-			describe: entry.plugin.describe,
-		})),
+						return {
+							requested: effectivePlugins,
+							loaded: loadResult.loaded.map(
+								(entry) => entry.plugin.name,
+							),
+							missing: missingPlugins,
+							...(missingReasonsEntries.length > 0
+								? {
+										missingReasons: Object.fromEntries(
+											missingReasonsEntries,
+										),
+									}
+								: {}),
+							configPlugins: configPluginNames,
+							errors: loadResult.errors.length,
+						};
+					})(),
+		plugins: pluginSummaries,
 		tools: [
 			...coreTools.map((reg) => ({
 				name: `${corePrefix}_${reg.id}`,

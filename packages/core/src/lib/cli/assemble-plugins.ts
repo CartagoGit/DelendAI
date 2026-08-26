@@ -39,6 +39,12 @@ import type { IOverviewToolEntry } from '../tools/overview-tool';
 import type { IToolSurfaceDescriptor } from '../contracts/interfaces/tool-surface.interface';
 import { FIRST_PARTY_PLUGIN_INDEX } from '../registry/first-party-index';
 import type { IErrorSink } from '../error-collection/sink.interface';
+import {
+	MANAGED_LAZY_PLUGIN_BY_ID,
+	type MANAGED_LAZY_PLUGIN_CATALOG,
+} from '../plugins/managed-lazy-catalog.generated';
+import { createManagedLazyRuntime } from '../plugins/managed-lazy-runtime';
+import type { IToolSurfaceLazyBinding } from '../contracts/interfaces/tool-surface.interface';
 
 /** Inputs `assemblePlugins` needs from the config-resolution phase. */
 export interface IAssemblePluginsInput {
@@ -83,6 +89,23 @@ export interface IAssemblePluginsResult {
 	readonly toolSurfaceDescriptors: readonly IToolSurfaceDescriptor[];
 	readonly configurationPlugins: IConfigurationPlugin[];
 	readonly configurationArtifacts: IConfigurationArtifact[];
+	readonly pluginSummaries: readonly IOverviewPluginEntry[];
+	readonly lazyToolActivators?: ReadonlyMap<
+		string,
+		() => Promise<IToolSurfaceLazyBinding>
+	>;
+	readonly lazyPluginPackages?: readonly {
+		readonly name: string;
+		readonly resolved: string;
+		readonly version?: string;
+	}[];
+	readonly moduleLoading: 'lazy' | 'eager';
+}
+
+interface IOverviewPluginEntry {
+	readonly name: string;
+	readonly version?: string | undefined;
+	readonly describe?: string | undefined;
 }
 
 interface IPluginToolCallObserver {
@@ -131,6 +154,242 @@ const replayRegisterErrors = async (
 	}
 };
 
+const lazyPluginIdFor = (specifier: string): string | undefined => {
+	if (MANAGED_LAZY_PLUGIN_BY_ID.has(specifier)) return specifier;
+	const prefix = '@mcp-vertex/';
+	if (specifier.startsWith(prefix)) {
+		const id = specifier.slice(prefix.length);
+		return MANAGED_LAZY_PLUGIN_BY_ID.has(id) ? id : undefined;
+	}
+	return undefined;
+};
+
+const sourceForLazyPlugin = (input: {
+	readonly id: string;
+	readonly args: IMcpVertexCliArgs;
+	readonly configPluginNames: readonly string[];
+	readonly disabledConfigPlugins: ReadonlySet<string>;
+}): 'preset' | 'config' | 'flag' => {
+	if (input.args.flagPlugins.includes(input.id)) return 'flag';
+	if (input.configPluginNames.includes(input.id)) return 'config';
+	if (input.args.presetPlugins.includes(input.id)) return 'preset';
+	if (input.disabledConfigPlugins.has(input.id)) return 'config';
+	return 'preset';
+};
+
+const tryAssembleManagedLazy = (input: {
+	readonly args: IMcpVertexCliArgs;
+	readonly fileConfig: IMcpVertexConfigFile;
+	readonly corePrefix: string;
+	readonly configPluginNames: readonly string[];
+	readonly disabledConfigPlugins: ReadonlySet<string>;
+	readonly peerRegistry: IAssemblePluginsInput['peerRegistry'];
+	readonly effectivePlugins: readonly string[];
+	readonly buildContext: IAssemblePluginsInput['buildContext'];
+	readonly importFn: (specifier: string) => Promise<unknown>;
+}): IAssemblePluginsResult | undefined => {
+	if (input.fileConfig.managedSurface?.loading !== 'lazy') return undefined;
+	// Native is an explicit compatibility contract: it needs real eager MCP
+	// registrations, so never pair it with the managed lazy activator table.
+	if (
+		input.args.tokens.surface === 'native' ||
+		input.fileConfig.surfaceMode === 'native'
+	)
+		return undefined;
+	const ids = input.effectivePlugins.map(lazyPluginIdFor);
+	if (ids.some((id): id is undefined => id === undefined)) return undefined;
+	const pluginIds = ids as string[];
+	const namespaces = new Map(
+		pluginIds.map((id) => [
+			id,
+			pluginConfigFor(input.fileConfig, id).prefix ?? id,
+		]),
+	);
+	const definitions = pluginIds
+		.map((id) => MANAGED_LAZY_PLUGIN_BY_ID.get(id))
+		.filter(
+			(entry): entry is (typeof MANAGED_LAZY_PLUGIN_CATALOG)[number] =>
+				entry !== undefined,
+		);
+	input.peerRegistry.set(pluginIds);
+	const onToolCalls: IPluginToolCallObserver[] = [];
+	const onToolStarts: IPluginToolStartObserver[] = [];
+	const onToolCancels: IPluginToolCancelObserver[] = [];
+	const onHookErrors: IPluginHookErrorObserver[] = [];
+	const getCheckpointAdvisoryFns: Array<
+		NonNullable<IMcpVertexHostConfig['getCheckpointAdvisory']>
+	> = [];
+	const beforeToolCallFns: Array<
+		NonNullable<IMcpVertexHostConfig['beforeToolCall']>
+	> = [];
+	let isAgentStuckFn: IMcpVertexHostConfig['isAgentStuck'];
+	let resolvedLogsSink: import('../plugins/logs-sink').ILogsSink | undefined;
+	let resolvedErrorSinks: IErrorSink[] = [];
+	const lazyRuntime = createManagedLazyRuntime({
+		namespacePrefix: input.corePrefix,
+		plugins: definitions,
+		namespaces,
+		buildContext: input.buildContext,
+		importFn: input.importFn,
+		onActivated: ({ plugin, registrations, resolvedSpecifier }) => {
+			if (registrations.onToolCall)
+				onToolCalls.push({
+					pluginName: plugin.name,
+					resolvedSpecifier,
+					handler: registrations.onToolCall,
+				});
+			if (registrations.onToolStart)
+				onToolStarts.push({
+					pluginName: plugin.name,
+					resolvedSpecifier,
+					handler: registrations.onToolStart,
+				});
+			if (registrations.onToolCancel)
+				onToolCancels.push({
+					pluginName: plugin.name,
+					resolvedSpecifier,
+					handler: registrations.onToolCancel,
+				});
+			if (registrations.onHookError)
+				onHookErrors.push({
+					pluginName: plugin.name,
+					resolvedSpecifier,
+					handler: registrations.onHookError,
+				});
+			if (registrations.isAgentStuck) {
+				isAgentStuckFn = registrations.isAgentStuck;
+			}
+			if (registrations.getCheckpointAdvisory)
+				getCheckpointAdvisoryFns.push(
+					registrations.getCheckpointAdvisory,
+				);
+			if (registrations.beforeToolCall)
+				beforeToolCallFns.push(registrations.beforeToolCall);
+			if (registrations.logsSink && resolvedLogsSink === undefined)
+				resolvedLogsSink = registrations.logsSink;
+			if (registrations.errorSinks)
+				resolvedErrorSinks = [
+					...resolvedErrorSinks,
+					...registrations.errorSinks.filter(
+						(sink) =>
+							!resolvedErrorSinks.some(
+								(existing) => existing.id === sink.id,
+							),
+					),
+				];
+		},
+	});
+	const pluginToolEntries: IOverviewToolEntry[] = [];
+	const toolSurfaceDescriptors: IToolSurfaceDescriptor[] = [];
+	const lazyToolActivators = new Map<
+		string,
+		() => Promise<IToolSurfaceLazyBinding>
+	>();
+	for (const plugin of definitions) {
+		const namespace = namespaces.get(plugin.id) ?? plugin.id;
+		for (const toolId of plugin.toolIds) {
+			const name = `${input.corePrefix}_${namespace}_${toolId}`;
+			pluginToolEntries.push({
+				name,
+				plugin: namespace,
+				id: toolId,
+				tags: ['lazy'],
+			});
+			toolSurfaceDescriptors.push({
+				registrationId: name,
+				name,
+				toolId,
+				pluginId: plugin.id,
+				namespace,
+				tags: ['lazy'],
+			});
+			lazyToolActivators.set(name, () => lazyRuntime.activateTool(name));
+		}
+	}
+	const contributions = pluginIds.map((id) => ({
+		id,
+		origin: 'bundled' as const,
+		source: sourceForLazyPlugin({
+			id,
+			args: input.args,
+			configPluginNames: input.configPluginNames,
+			disabledConfigPlugins: input.disabledConfigPlugins,
+		}),
+		active: false,
+		toolCount: MANAGED_LAZY_PLUGIN_BY_ID.get(id)?.toolIds.length ?? 0,
+	}));
+	const activationReport = buildActivationReport(
+		[],
+		{
+			fromFlag: new Set(input.args.flagPlugins),
+			fromConfig: new Set(input.configPluginNames),
+			fromPreset: new Set(input.args.presetPlugins),
+		},
+		contributions,
+	);
+	const activationById = new Map(
+		activationReport.entries.map((entry) => [entry.id, entry]),
+	);
+	const configurationPlugins: IConfigurationPlugin[] = pluginIds.map((id) => {
+		const configEntry = pluginConfigFor(input.fileConfig, id);
+		return {
+			id,
+			origin: 'bundled',
+			active: false,
+			source: activationById.get(id)?.source ?? 'config',
+			...(configEntry.path === undefined
+				? {}
+				: { path: configEntry.path }),
+			...(configEntry.prefix === undefined
+				? {}
+				: { prefix: configEntry.prefix }),
+			options: configEntry.options ?? {},
+			schemaStatus: 'unavailable',
+			capabilities: {
+				tools: MANAGED_LAZY_PLUGIN_BY_ID.get(id)?.toolIds.length ?? 0,
+				prompts: 0,
+				resources: 0,
+				knowledge: 0,
+				skills: 0,
+			},
+		};
+	});
+	return {
+		effectivePlugins: input.effectivePlugins,
+		loadResult: { loaded: [], errors: [], registerErrors: [] },
+		prompts: [],
+		resources: [],
+		knowledge: [],
+		pluginToolEntries,
+		qualifiedPluginTools: [],
+		onToolCalls,
+		onToolStarts,
+		onToolCancels,
+		onHookErrors,
+		isAgentStuckFn,
+		getCheckpointAdvisoryFns,
+		beforeToolCallFns,
+		logsSink: resolvedLogsSink,
+		errorSinks: resolvedErrorSinks,
+		activationReport,
+		activationById,
+		toolSurfaceDescriptors,
+		configurationPlugins,
+		configurationArtifacts: [],
+		pluginSummaries: pluginIds.map((id) => ({
+			name: id,
+			version: '0.1.1',
+		})),
+		lazyToolActivators,
+		lazyPluginPackages: pluginIds.map((id) => ({
+			name: id,
+			resolved: MANAGED_LAZY_PLUGIN_BY_ID.get(id)?.packageSpecifier ?? id,
+			version: '0.1.1',
+		})),
+		moduleLoading: 'lazy',
+	};
+};
+
 export const assemblePlugins = async (
 	input: IAssemblePluginsInput,
 ): Promise<IAssemblePluginsResult> => {
@@ -177,6 +436,18 @@ export const assemblePlugins = async (
 			!disabledConfigPlugins.has(matchedKey)
 		);
 	});
+	const managedLazy = tryAssembleManagedLazy({
+		args,
+		fileConfig,
+		corePrefix,
+		configPluginNames,
+		disabledConfigPlugins,
+		peerRegistry,
+		effectivePlugins,
+		buildContext,
+		importFn: importFn ?? nodeDynamicImport,
+	});
+	if (managedLazy !== undefined) return managedLazy;
 
 	let loadResult: IPluginLoadResult = await loadPlugins({
 		specifiers: effectivePlugins,
@@ -564,5 +835,11 @@ export const assemblePlugins = async (
 		toolSurfaceDescriptors,
 		configurationPlugins,
 		configurationArtifacts,
+		pluginSummaries: loadResult.loaded.map((entry) => ({
+			name: entry.plugin.name,
+			version: entry.plugin.version,
+			describe: entry.plugin.describe,
+		})),
+		moduleLoading: 'eager',
 	};
 };
