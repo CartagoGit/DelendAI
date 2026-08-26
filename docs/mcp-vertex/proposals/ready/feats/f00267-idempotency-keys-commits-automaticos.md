@@ -1,5 +1,5 @@
 ---
-id: f00183
+id: f00267
 title: "AUD-CP-012/§54 — Idempotency keys para commits automáticos"
 kind: feat
 status: ready
@@ -11,16 +11,16 @@ classification: CONFIRMADO
 parent-plan: q00006
 audit-source:
     file: docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol-cuarta-pasada.md
-    section: "Track B / f00183"
+    section: "Track B / f00267"
     sha256: 2374da0f620dc2cfab21e0d435e143f10174731864efce9f26f2d3a00104232a
     finding: AUD-CP-012, §54
 related:
     - q00006
-    - f00182 # engine usa processedEvents internamente
+    - f00266 # engine usa processedEvents internamente
     - t00021 # test de replay
 ---
 
-# f00183 — Idempotency keys para commits automáticos
+# f00267 — Idempotency keys para commits automáticos
 
 ## Goal
 
@@ -121,7 +121,7 @@ Implementación: JSONL append-only en
 
 ### 3. Integración con el engine
 
-En `CommitPolicyEngine.handle()` (`f00182`), antes del stage:
+En `CommitPolicyEngine.handle()` (`f00266`), antes del stage:
 
 ```ts
 const key = computeIdempotencyKey(event);
@@ -162,7 +162,7 @@ Política:
 - **Status**: pending
 - **Files**: `plugins/commit-policy/src/lib/processed-events.ts`, `plugins/commit-policy/src/lib/engine.ts`, `plugins/commit-policy/tests/src/lib/processed-events.spec.ts`
 - **Gate**: type
-- **Dependency**: `f00182`
+- **Dependency**: `f00266`
 - acceptance:
   - "primer `handle(event)` → commit + key persisted"
   - "replay del mismo evento → ALREADY_PROCESSED, sin commit"

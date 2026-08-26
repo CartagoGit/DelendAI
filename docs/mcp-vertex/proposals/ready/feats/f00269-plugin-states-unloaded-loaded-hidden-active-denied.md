@@ -1,5 +1,5 @@
 ---
-id: f00185
+id: f00269
 title: "Plugin states: UNLOADED / LOADED_HIDDEN / ACTIVE / DENIED"
 kind: feat
 status: ready
@@ -10,16 +10,16 @@ priority: P1
 parent-plan: q00006
 audit-source:
     file: docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol-cuarta-pasada.md
-    section: "Track D / f00185"
+    section: "Track D / f00269"
     sha256: 2374da0f620dc2cfab21e0d435e143f10174731864efce9f26f2d3a00104232a
 related:
     - q00006
-    - f00184 # lifecycle phases (prerequisito)
+    - f00268 # lifecycle phases (prerequisito)
     - c00134 # métricas de lifecycle (Track D)
     - f00188 # capability enforcement (Track F)
 ---
 
-# f00185 — Plugin states: UNLOADED / LOADED_HIDDEN / ACTIVE / DENIED
+# f00269 — Plugin states: UNLOADED / LOADED_HIDDEN / ACTIVE / DENIED
 
 ## Goal
 

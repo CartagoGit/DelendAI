@@ -75,7 +75,7 @@ The architecture mirrors the existing `logsSink` pattern (f00154 S2) that the `l
 - Adding telemetry hooks, performance counters, or dashboards. The proposal stays a contract + 2 adapters + 1 smoke test — any observability beyond per-sink `console.warn` on sink failure is a follow-up.
 - Replacing `onToolCall` / `onToolStart` lifecycle hooks. The collector piggybacks on them; the lifecycle surface stays unchanged.
 
-## Architecture (as-shipped)
+## architecture
 
 ### 1. Core contracts (`packages/core/src/lib/error-collection/`)
 
@@ -133,16 +133,51 @@ Boots a real `assembleCliConfig` with the real `logs` plugin + a stub inline plu
 - `plugins/logs/src/lib/knowledge/error-collector.ts` — entry `logs-error-collector` describing how the adapter routes through existing JSONL streams.
 - `plugins/issues/src/lib/knowledge/error-collector.ts` — entry `issues-error-collector` describing safe-mode drafts vs autoReport live-mode + rate-limit semantics.
 
-## Slices (delivery record)
+## slices
 
-- **S1** (commit `cc42417f`) — Core engine: contracts + collector + redaction + classifier + wrapper + 4 unit specs (55 tests).
-- **S2** (commit `639ca43d`) — Public surface + assemble wiring + 2 integration specs (7 tests).
-- **S3** (commit `3a104647`, combined with S4) — Logs plugin adapter (unit + integration spec).
-- **S4** (commit `3a104647`, combined with S3) — Issues plugin adapter (unit + integration spec) + `IGithubClient.createIssue` widening.
-- **S5** (commit `becfdd4a`) — End-to-end smoke test + skill + knowledge entries.
-- **S6** (commit `4dbb9454`) — CHANGELOG entry + close.
+### S1 — Core error collector
 
-## Closure record
+- **Status**: done
+- **Files**: `packages/core/src/lib/error-collection/` and its unit specs
+- **Gate**: `bunx vitest run packages/core/tests/src/lib/error-collection/`
+- Commit `cc42417f`: contracts, collector, redaction, classifier, wrapper and 55 tests.
+
+### S2 — Public surface and assembly wiring
+
+- **Status**: done
+- **Files**: `packages/core/src/public/index.ts` and assembly integration specs
+- **Gate**: `bunx vitest run packages/core/tests/src/lib/cli/error-collector-wiring.spec.ts`
+- Commit `639ca43d`: public exports, plugin registrations and assembly wiring; 7 tests.
+
+### S3 — Logs adapter
+
+- **Status**: done
+- **Files**: `plugins/logs/src/lib/services/error-sink-adapter.ts` and specs
+- **Gate**: `bunx vitest run plugins/logs/`
+- Commit `3a104647` (combined with S4): logs adapter and integration coverage.
+
+### S4 — Issues adapter
+
+- **Status**: done
+- **Files**: `plugins/issues/src/lib/services/error-sink-adapter.ts` and specs
+- **Gate**: `bunx vitest run plugins/issues/`
+- Commit `3a104647` (combined with S3): issues adapter and `IGithubClient.createIssue`.
+
+### S5 — Smoke, skill and knowledge
+
+- **Status**: done
+- **Files**: smoke test, `SKILL.md` and logs/issues knowledge entries
+- **Gate**: `bunx vitest run packages/core/tests/smoke/error-collection.smoke.spec.ts`
+- Commit `becfdd4a`: end-to-end smoke test, skill and knowledge entries.
+
+### S6 — Changelog and close
+
+- **Status**: done
+- **Files**: `CHANGELOG.md`
+- **Gate**: `bun run validate`
+- Commit `4dbb9454`: CHANGELOG entry and close.
+
+## notes
 
 This proposal was authored via `mcp-vertex_proposals_create_proposal` on 2026-08-26. The proposal markdown was created on disk and transitioned to `in-progress` but a parallel-agent cleanup deleted it before any slice committed. The five implementation slices landed on `develop` independently (refs `f00251` in each commit message), and this file has been reconstructed post-fact to provide a single auditable record. The CHANGELOG entry and `bun run validate` findings for f00251-specific work were already recorded by S6.
 

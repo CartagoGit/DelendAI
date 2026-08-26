@@ -1,5 +1,5 @@
 ---
-id: c00144
+id: c00156
 title: "Track A.split — Branch protection bifurcada: `main` estricto, `develop` flexible (carve-out explícito para `agent/*`)"
 kind: chore
 status: ready
@@ -22,7 +22,7 @@ related:
     - v00125 # verifica develop verde + protegida (superseded por v00127 tras retractación)
 ---
 
-# c00144 — Track A.split: branch protection bifurcada (main estricto, develop flexible)
+# c00156 — Track A.split: branch protection bifurcada (main estricto, develop flexible)
 
 ## Goal
 

@@ -181,6 +181,9 @@ duplicating any of them.
 
 **Status**: ✅ **done** in this proposal commit.
 
+- **Files**: `plugins/agent-orchestrator/` source, public contracts and tests
+- **Gate**: `bun run typecheck && bun run test`
+
 **Deliverables**:
 
 - `plugins/agent-orchestrator/{package.json, plugin.manifest.ts,
@@ -204,6 +207,10 @@ duplicating any of them.
 
 ### S2 — linear dispatch + per-mode budget + rotation wiring
 
+- **Status**: pending
+- **Files**: `plugins/agent-orchestrator/src/lib/dispatch/` and related tests
+- **Gate**: `bun run test`
+
 **Goal**: make the linear plan actually execute. Host dispatches via
 `<ns>_dispatch { plan, slot }`; the plugin records tokens via
 `BudgetTracker`, evaluates `LoopDetector`, and emits mid-task rotations
@@ -218,6 +225,10 @@ records token spend per subagent.
 
 ### S3 — swarm parallel dispatch + join + dedupe
 
+- **Status**: pending
+- **Files**: `plugins/agent-orchestrator/src/lib/policy/modes/` and related tests
+- **Gate**: `bun run test`
+
 **Goal**: parallel subagents with deterministic join; on
 `schema-violation` of *any* slice, replace that slice only.
 
@@ -226,6 +237,10 @@ step sees a coherent merged change; a forced `schema-violation` on
 slice A spawns slice A' rather than blowing the whole swarm.
 
 ### S4 — auto wiring tests + classifier regression + telemetry
+
+- **Status**: pending
+- **Files**: classifier, telemetry and auto-mode sources/tests
+- **Gate**: `bun run test`
 
 **Goal**: the `auto` mode is the default for dogfooding. So we need:
 
@@ -240,6 +255,10 @@ event; `classify` tool passes E2E via `assembleCliConfig`.
 
 ### S5 — dogfood on `develop` + open-source docs
 
+- **Status**: pending
+- **Files**: `mcp-vertex.config.json`, `apps/web/` docs and integration tests
+- **Gate**: `bun run validate`
+
 **Goal**: this repo adopts `agent-orchestrator` with `defaultMode: "auto"`
 via `mcp-vertex.config.json → orchestrator.policy`. Proves the plugin
 on the most demanding dogfood: the repo's own proposal machinery.
@@ -248,6 +267,10 @@ on the most demanding dogfood: the repo's own proposal machinery.
 short docs page in `apps/web/` describing the four modes.
 
 ### S6 — i18n keys for the 6 tool-strings
+
+- **Status**: pending
+- **Files**: `plugins/agent-orchestrator/` i18n resources and tests
+- **Gate**: `bun run --cwd extensions/vscode check:i18n`
 
 **Goal**: every visible tool string gets the `apps/web`-style i18n
 entry. Already-prepared English defaults are kept as fallback.
@@ -265,7 +288,7 @@ override on the tool actually changes the plan mode.
 
 **Acceptance**: ≥ 90% line + branch coverage; smoke passes.
 
-## Subagent-driven execution plan
+## notes
 
 The user authorised autonomous multi-turn execution. From here on:
 
@@ -277,7 +300,7 @@ The user authorised autonomous multi-turn execution. From here on:
    heavier slices; subagents (`technical-investigator`,
    `implementation-runner`) are used for the contained parts.
 
-## Edge cases explicitly handled in v1
+## risks and mitigations
 
 - **Plandown (default mode declines)** — engine silently falls back
   to `auto`, which routes through the classifier. Tested in
@@ -295,7 +318,7 @@ The user authorised autonomous multi-turn execution. From here on:
   `null` ⇒ no rotation; the executor surfaces it as a config bug
   instead of rotating on a forbidden trigger.
 
-## Trust contract
+## acceptance
 
 Everything in S1 compiles + tests + builds clean under today's repo
 rules (`bun run typecheck`, `bun run test`, `bun run build`). The

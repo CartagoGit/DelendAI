@@ -1,5 +1,5 @@
 ---
-id: f00184
+id: f00268
 title: "Lifecycle phases: `prepare()` / `activate()` separadas"
 kind: feat
 status: ready
@@ -10,15 +10,15 @@ priority: P1
 parent-plan: q00006
 audit-source:
     file: docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol-cuarta-pasada.md
-    section: "Track D / f00184"
+    section: "Track D / f00268"
     sha256: 2374da0f620dc2cfab21e0d435e143f10174731864efce9f26f2d3a00104232a
 related:
     - q00006
-    - f00185 # plugin states (consume el resultado de activate)
+    - f00269 # plugin states (consume el resultado de activate)
     - f00188 # capabilities se conceden en activate (Track F)
 ---
 
-# f00184 — Lifecycle phases: `prepare()` / `activate()` separadas
+# f00268 — Lifecycle phases: `prepare()` / `activate()` separadas
 
 ## Goal
 
@@ -74,7 +74,7 @@ interface PluginLifecycle<P, A> {
 - Habilita validación de manifests en CI (sin side effects).
 - Habilita tests deterministas: `prepare()` es puro, se puede probar
   sin mocks.
-- Habilita `f00185` (plugin states): el estado `LOADED_HIDDEN`
+- Habilita `f00269` (plugin states): el estado `LOADED_HIDDEN`
   corresponde a un plugin que terminó `prepare()` pero no
   `activate()`.
 

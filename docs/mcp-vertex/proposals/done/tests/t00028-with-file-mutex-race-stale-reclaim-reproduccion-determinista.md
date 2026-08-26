@@ -1,5 +1,5 @@
 ---
-id: t00007
+id: t00028
 title: "with-file-mutex — reproducción determinista del race window de stale reclaim (MUT2-001)"
 kind: test
 status: done
@@ -22,7 +22,7 @@ shipped-in:
   - 7365c1cd # test(core): stabilize with-file-mutex property test timings under CI scheduler
 ---
 
-# t00007 — with-file-mutex: test determinista del race window
+# t00028 — with-file-mutex: test determinista del race window
 
 ## Goal
 
