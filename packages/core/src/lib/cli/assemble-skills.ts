@@ -180,6 +180,10 @@ const buildPortableSkillCatalog = async (input: {
 		appliesTo: [...descriptor.appliesTo],
 		tags: [...descriptor.tags],
 		bodyPath: `${descriptor.source}/${descriptor.owner}/${descriptor.id}/SKILL.md`,
+		source: descriptor.source,
+		owner: descriptor.owner,
+		hash: descriptor.hash,
+		estimatedBodyTokens: descriptor.estimatedBodyTokens,
 	}));
 	return {
 		entries,
@@ -212,6 +216,10 @@ const applyWorkspaceOverrides = async (input: {
 			appliesTo: [...descriptor.appliesTo],
 			tags: [...descriptor.tags],
 			bodyPath: `.mcp-vertex/skills/${descriptor.id}/SKILL.md`,
+			source: descriptor.source,
+			owner: descriptor.owner,
+			hash: descriptor.hash,
+			estimatedBodyTokens: descriptor.estimatedBodyTokens,
 		});
 	}
 	return {
@@ -335,6 +343,12 @@ export const assembleSkills = async (
 			appliesTo: [...entry.appliesTo],
 			tags: [...entry.tags],
 			bodyPath: entry.bodyPath,
+			...(entry.source === undefined ? {} : { source: entry.source }),
+			...(entry.owner === undefined ? {} : { owner: entry.owner }),
+			...(entry.hash === undefined ? {} : { hash: entry.hash }),
+			...(entry.estimatedBodyTokens === undefined
+				? {}
+				: { estimatedBodyTokens: entry.estimatedBodyTokens }),
 		}),
 	);
 	for (const skill of skillCatalog.entries) {

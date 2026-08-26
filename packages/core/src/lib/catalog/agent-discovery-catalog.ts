@@ -41,6 +41,12 @@ const cloneSkill = (skill: ISkillSummary): ISkillSummary => ({
 	appliesTo: [...skill.appliesTo],
 	tags: [...skill.tags],
 	bodyPath: skill.bodyPath,
+	...(skill.source === undefined ? {} : { source: skill.source }),
+	...(skill.owner === undefined ? {} : { owner: skill.owner }),
+	...(skill.hash === undefined ? {} : { hash: skill.hash }),
+	...(skill.estimatedBodyTokens === undefined
+		? {}
+		: { estimatedBodyTokens: skill.estimatedBodyTokens }),
 });
 
 /**

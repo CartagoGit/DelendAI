@@ -84,6 +84,12 @@ describe('buildSkillCatalog', () => {
 		expect(catalog.entries).toHaveLength(1);
 		expect(catalog.entries[0]?.description).toBe('Orient first.');
 		expect(catalog.entries[0]?.appliesTo).toEqual(['@mcp-vertex/*']);
+		expect(catalog.entries[0]).toMatchObject({
+			source: 'core',
+			owner: '@mcp-vertex/core',
+			hash: expect.stringMatching(/^sha256:/u),
+			estimatedBodyTokens: expect.any(Number),
+		});
 		// One read at build time (for the description).
 		expect(reads).toHaveLength(1);
 	});
