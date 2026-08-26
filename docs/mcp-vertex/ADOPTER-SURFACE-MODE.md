@@ -112,11 +112,15 @@ changed (or disabled with `null`) without changing the exposed bootstrap:
 }
 ```
 
-This working set currently evicts routing state only. Plugin modules are
-still imported during assembly because the existing plugin contract obtains
-tool schemas and handlers from `register()`. The startup report shows this
-explicitly as `module loading eager`; it must not be confused with the
-managed surface's lazy activation.
+Plugin modules are loaded lazily when `managedSurface.loading` is `lazy`; the
+normal repository configuration uses that mode. A legacy host with no loading
+setting keeps the compatible eager path. The startup report shows the
+effective choice explicitly as `module loading lazy` or `eager`.
+
+When lazy loading is active, the compact tool index is generated from the
+plugin registrations and the first routed call imports only its owning
+package. The real schema is then captured server-side and used to validate
+the routed arguments before execution.
 
 ## 2.1 Runtime evidence and retention
 

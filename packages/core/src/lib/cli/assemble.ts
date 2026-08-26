@@ -449,6 +449,10 @@ export const assembleCliConfig = async (
 		toolSurfaceDescriptors,
 		configurationPlugins,
 		configurationArtifacts,
+		pluginSummaries,
+		lazyToolActivators,
+		moduleLoading,
+		lazyPluginPackages,
 	} = await assemblePlugins({
 		args,
 		fileConfig,
@@ -477,6 +481,9 @@ export const assembleCliConfig = async (
 		readFile,
 		loadResult,
 		configurationArtifacts,
+		...(lazyPluginPackages !== undefined
+			? { portablePluginPackages: lazyPluginPackages }
+			: {}),
 	});
 
 	const toolSurfaceRuntime = createToolSurfaceRuntimeAccess();
@@ -498,6 +505,8 @@ export const assembleCliConfig = async (
 			effectivePlugins,
 			activationReport,
 			loadResult,
+			pluginSummaries,
+			moduleLoading,
 			pluginToolEntries,
 			qualifiedPluginTools,
 			knowledge,
@@ -681,7 +690,8 @@ export const assembleCliConfig = async (
 		extraResources: resources,
 		toolSurfacePlan,
 		toolSurfaceRuntime,
-		...(onToolStarts.length > 0
+		...(lazyToolActivators !== undefined ? { lazyToolActivators } : {}),
+		...(moduleLoading === 'lazy' || onToolStarts.length > 0
 			? {
 					onToolStart: async (toolName, toolArgs) => {
 						for (const observer of onToolStarts) {
@@ -705,7 +715,7 @@ export const assembleCliConfig = async (
 					},
 				}
 			: {}),
-		...(onToolCancels.length > 0
+		...(moduleLoading === 'lazy' || onToolCancels.length > 0
 			? {
 					onToolCancel: async (toolName, toolArgs, elapsedMs) => {
 						for (const observer of onToolCancels) {
@@ -734,7 +744,7 @@ export const assembleCliConfig = async (
 					},
 				}
 			: {}),
-		...(onToolCalls.length > 0
+		...(moduleLoading === 'lazy' || onToolCalls.length > 0
 			? {
 					onToolCall: async (
 						toolName,
@@ -773,10 +783,13 @@ export const assembleCliConfig = async (
 					},
 				}
 			: {}),
-		...(isAgentStuckFn !== undefined
-			? { isAgentStuck: isAgentStuckFn }
+		...(moduleLoading === 'lazy' || isAgentStuckFn !== undefined
+			? {
+					isAgentStuck: (toolName, toolArgs) =>
+						isAgentStuckFn?.(toolName, toolArgs) ?? null,
+				}
 			: {}),
-		...(getCheckpointAdvisoryFns.length > 0
+		...(moduleLoading === 'lazy' || getCheckpointAdvisoryFns.length > 0
 			? {
 					getCheckpointAdvisory: (context) =>
 						selectCheckpointAdvisory(
@@ -784,7 +797,7 @@ export const assembleCliConfig = async (
 						),
 				}
 			: {}),
-		...(beforeToolCallFns.length > 0
+		...(moduleLoading === 'lazy' || beforeToolCallFns.length > 0
 			? {
 					beforeToolCall: (context) =>
 						mergeCheckpointAdvisories(
@@ -855,6 +868,7 @@ export const assembleCliConfig = async (
 			failedPluginCount: loadResult.errors.length,
 			skillsAvailable: skillSummaries.length,
 			resourcesAvailable: resources.length,
+			moduleLoading,
 			...(schemaBytesByRegistrationId !== undefined
 				? { schemaBytesByRegistrationId }
 				: {}),

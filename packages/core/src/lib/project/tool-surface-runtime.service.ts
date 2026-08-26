@@ -9,6 +9,7 @@ import type {
 	IToolSurfaceRuntime,
 	IToolSurfaceRuntimeAccess,
 	IToolSurfaceSearchEntry,
+	IToolSurfaceLazyBinding,
 	IToolSurfaceWorkingSetPolicy,
 } from '../contracts/interfaces/tool-surface.interface';
 import {
@@ -36,8 +37,15 @@ interface IBoundToolRecord {
 	readonly description?: string | undefined;
 	readonly inputSchema?: unknown;
 	readonly outputSchema?: unknown;
-	readonly handler: unknown;
-	readonly handle: RegisteredTool;
+	readonly handler?: unknown;
+	readonly handle: {
+		enabled: boolean;
+		enable(): void;
+		disable(): void;
+	};
+	readonly lazyActivate?:
+		| (() => Promise<IToolSurfaceLazyBinding>)
+		| undefined;
 }
 const matchesFilter = (
 	record: IBoundToolRecord,
@@ -92,6 +100,7 @@ class ToolSurfaceRuntime implements IToolSurfaceRuntime {
 		}
 	>();
 	private readonly warmAtByPlugin = new Map<string, number>();
+	private readonly loadedPluginIds = new Set<string>();
 	private readonly workingSetPolicy: IToolSurfaceWorkingSetPolicy;
 
 	constructor(private readonly plan: IToolSurfacePlan) {
@@ -131,6 +140,35 @@ class ToolSurfaceRuntime implements IToolSurfaceRuntime {
 			outputSchema: input.outputSchema,
 			handler: input.handler,
 			handle: input.handle,
+		};
+		this.recordsByName.set(record.name, record);
+		this.recordsByRegistrationId.set(record.registrationId, record);
+		if (record.pluginId !== undefined)
+			this.loadedPluginIds.add(record.pluginId);
+	}
+
+	bindLazyTool(input: {
+		readonly registrationId: string;
+		readonly activate: () => Promise<IToolSurfaceLazyBinding>;
+	}): void {
+		const descriptor = this.plan.descriptors.find(
+			(entry) => entry.registrationId === input.registrationId,
+		);
+		if (descriptor === undefined) return;
+		const handle = {
+			enabled: false,
+			enable() {
+				this.enabled = true;
+			},
+			disable() {
+				this.enabled = false;
+			},
+		};
+		const record: IBoundToolRecord = {
+			...descriptor,
+			detailsId: `${TOOL_DETAILS_PREFIX}${descriptor.name}`,
+			handle: handle,
+			lazyActivate: input.activate,
 		};
 		this.recordsByName.set(record.name, record);
 		this.recordsByRegistrationId.set(record.registrationId, record);
@@ -306,9 +344,7 @@ class ToolSurfaceRuntime implements IToolSurfaceRuntime {
 				: {}),
 			...(input.docsDir !== undefined ? { docsDir: input.docsDir } : {}),
 			configIssues: [...(input.configIssues ?? [])],
-			loadedPlugins: [
-				...new Set(this.plan.plugins.map((plugin) => plugin.id)),
-			].sort(),
+			loadedPlugins: [...this.loadedPluginIds].sort(),
 			warmPlugins: [...this.warmAtByPlugin.keys()].sort(),
 			visibleToolCount,
 			hiddenToolCount: this.recordsByName.size - visibleToolCount,
@@ -354,9 +390,21 @@ class ToolSurfaceRuntime implements IToolSurfaceRuntime {
 		args: unknown,
 		extra: unknown,
 	): Promise<unknown> {
-		const record = this.recordsByName.get(name);
+		let record = this.recordsByName.get(name);
 		if (record === undefined) {
 			throw new Error(`Unknown routed tool: ${name}`);
+		}
+		if (record.handler === undefined && record.lazyActivate !== undefined) {
+			const binding = await record.lazyActivate();
+			record = {
+				...record,
+				...binding,
+				lazyActivate: undefined,
+			};
+			this.recordsByName.set(record.name, record);
+			this.recordsByRegistrationId.set(record.registrationId, record);
+			if (record.pluginId !== undefined)
+				this.loadedPluginIds.add(record.pluginId);
 		}
 		this.touchPlugin(record);
 		const parsed = await safeParseSurfaceArgs(record.inputSchema, args);

@@ -220,6 +220,7 @@ const main = async (): Promise<void> => {
 					$schema:
 						'https://unpkg.com/@mcp-vertex/core/schema/mcp-vertex.config.schema.json',
 					surfaceMode: 'managed',
+					managedSurface: { loading: 'lazy' },
 					startupReport: { level: 'full', color: 'never' },
 					plugins: { proposals: { options: {} } },
 				},
@@ -412,6 +413,27 @@ const main = async (): Promise<void> => {
 			if (routedSkill.routed !== true || routedSkill.active !== false) {
 				throw new Error(
 					'hidden internal tool was not callable through the router',
+				);
+			}
+			const lazyPluginCall = (await withTimeout(
+				client.callTool({
+					name: 'mcp-vertex_vertex',
+					arguments: {
+						domain: 'proposals',
+						action: 'get_proposal_workflow',
+						args: {},
+					},
+				}),
+				'lazy plugin route call',
+			)) as IToolCallResult;
+			if (lazyPluginCall.isError) {
+				throw new Error(
+					`managed lazy plugin route failed: ${JSON.stringify(lazyPluginCall)}`,
+				);
+			}
+			if (!/module loading\s+lazy/u.test(childStderr)) {
+				throw new Error(
+					`startup report did not record lazy module loading:\n${childStderr}`,
 				);
 			}
 		} catch (error) {

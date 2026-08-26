@@ -93,6 +93,41 @@ export async function createMcpProject(
 		config.toolSurfaceRuntime.bind(toolSurfaceRuntime);
 	}
 	if (toolSurfaceRuntime !== undefined) {
+		for (const [registrationId, activate] of config.lazyToolActivators ??
+			[]) {
+			toolSurfaceRuntime.bindLazyTool({
+				registrationId,
+				activate: async () => {
+					const binding = await activate();
+					const descriptor = config.toolSurfacePlan?.descriptors.find(
+						(entry) => entry.registrationId === registrationId,
+					);
+					if (descriptor === undefined) return binding;
+					// Register through the already-instrumented MCP server so a
+					// first-use tool keeps metrics, lifecycle hooks, abort handling,
+					// and error/result decoration identical to an eager tool. Keep
+					// the SDK handle disabled: managed mode exposes the router and
+					// bootstrap set, not the activated plugin definition itself.
+					const handle = server.registerTool(
+						descriptor.name,
+						{
+							...(binding.description !== undefined
+								? { description: binding.description }
+								: {}),
+							...(binding.inputSchema !== undefined
+								? { inputSchema: binding.inputSchema }
+								: {}),
+							...(binding.outputSchema !== undefined
+								? { outputSchema: binding.outputSchema }
+								: {}),
+						} as never,
+						binding.handler as never,
+					);
+					handle.disable();
+					return { ...binding, handler: handle.handler };
+				},
+			});
+		}
 		const previousOnInitialized = server.server.oninitialized;
 		server.server.oninitialized = () => {
 			previousOnInitialized?.();

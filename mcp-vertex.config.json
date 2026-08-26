@@ -8,6 +8,9 @@
 		"mode": "git"
 	},
 	"surfaceMode": "managed",
+	"managedSurface": {
+		"loading": "lazy"
+	},
 	"convention": {
 		"pluginPathsRoot": "packages",
 		"sourceRoot": "packages"
