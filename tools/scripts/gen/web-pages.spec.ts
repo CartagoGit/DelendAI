@@ -1,0 +1,190 @@
+/**
+ * gen/web-pages.spec.ts — c00142 / q00006 Track I.
+ *
+ * Pure tests for the web-pages drift-check orchestration. We never
+ * touch the real filesystem or the real generators — `Bun.spawn`
+ * is replaced with a fake that records every invocation and returns
+ * a pre-programmed result. The integration scenario (run all
+ * generators + diff against the tree) is covered by the existing
+ * tier3 `drift` job; this file locks down the script's own logic —
+ * step ordering, exit-code mapping, --only / --list behaviour, and
+ * the per-step drift reporter.
+ */
+import { afterEach, describe, expect, it, vi } from 'vitest';
+
+import { run } from './web-pages.script';
+
+interface IRecordedCall {
+	readonly cmd: readonly string[];
+}
+
+const calls: IRecordedCall[] = [];
+let stdoutText = '';
+
+const makeSpawn =
+	(diffExit: number, statusPorcelain: string) =>
+	(cmd: readonly string[]): unknown => {
+		calls.push({ cmd });
+		if (cmd[0] === 'git' && cmd[1] === 'diff' && cmd[2] === '--exit-code') {
+			return {
+				exited: Promise.resolve(diffExit),
+				stdout: undefined,
+				stderr: undefined,
+			};
+		}
+		if (
+			cmd[0] === 'git' &&
+			cmd[1] === 'status' &&
+			cmd[2] === '--porcelain'
+		) {
+			return {
+				exited: Promise.resolve(0),
+				stdout: new ReadableStream<Uint8Array>({
+					start(controller) {
+						controller.enqueue(
+							new TextEncoder().encode(statusPorcelain),
+						);
+						controller.close();
+					},
+				}),
+				stderr: undefined,
+			};
+		}
+		return {
+			exited: Promise.resolve(stdoutText === 'fail' ? 1 : 0),
+			stdout: undefined,
+			stderr: undefined,
+		};
+	};
+
+afterEach(() => {
+	calls.length = 0;
+	stdoutText = '';
+	vi.restoreAllMocks();
+});
+
+const captureStderr = (): { text: () => string; restore: () => void } => {
+	const chunks: string[] = [];
+	const spy = vi
+		.spyOn(process.stderr, 'write')
+		.mockImplementation((chunk) => {
+			chunks.push(typeof chunk === 'string' ? chunk : String(chunk));
+			return true;
+		});
+	return {
+		restore: () => spy.mockRestore(),
+		text: () => chunks.join(''),
+	};
+};
+
+const captureStdout = (): { restore: () => void; text: () => string } => {
+	const chunks: string[] = [];
+	const spy = vi
+		.spyOn(process.stdout, 'write')
+		.mockImplementation((chunk) => {
+			chunks.push(typeof chunk === 'string' ? chunk : String(chunk));
+			return true;
+		});
+	return {
+		restore: () => spy.mockRestore(),
+		text: () => chunks.join(''),
+	};
+};
+
+describe('web-pages.script.ts (c00142)', () => {
+	it('runs every step in --check mode and exits 0 when fresh', async () => {
+		const exit = await run({
+			argv: ['--check'],
+			spawn: makeSpawn(0, '') as typeof Bun.spawn,
+		});
+		expect(exit).toBe(0);
+		// 5 generator spawns + 1 `git diff --exit-code`.
+		expect(calls.length).toBe(6);
+		expect(calls[0]?.cmd[0]).toBe('bun');
+		expect(calls[5]?.cmd.slice(0, 3)).toEqual([
+			'git',
+			'diff',
+			'--exit-code',
+		]);
+	});
+
+	it('exits 1 with a per-step report when a tracked output drifted', async () => {
+		const stderr = captureStderr();
+		const exit = await run({
+			argv: ['--check'],
+			spawn: makeSpawn(
+				1,
+				' M apps/web/src/data/manifests/capabilities.json\n M apps/web/src/data/manifests/pages.json\n',
+			) as typeof Bun.spawn,
+		});
+		const text = stderr.text();
+		stderr.restore();
+		expect(exit).toBe(1);
+		expect(text).toContain('capabilities drifted');
+		expect(text).toContain('apps/web/src/data/manifests/capabilities.json');
+		expect(text).toContain('gen-capabilities.ts');
+		expect(text).toContain('pages drifted');
+		expect(text).toContain('gen-pages.ts');
+	});
+
+	it('exits 2 for an unknown --only selector', async () => {
+		const exit = await run({
+			argv: ['--only', 'bogus'],
+			spawn: makeSpawn(0, '') as typeof Bun.spawn,
+		});
+		expect(exit).toBe(2);
+		expect(calls).toHaveLength(0);
+	});
+
+	it('prints the step list with --list and exits 0', async () => {
+		const stdout = captureStdout();
+		const exit = await run({
+			argv: ['--list'],
+			spawn: makeSpawn(0, '') as typeof Bun.spawn,
+		});
+		const text = stdout.text();
+		stdout.restore();
+		expect(exit).toBe(0);
+		expect(text).toContain('pages:');
+		expect(text).toContain('capabilities:');
+		expect(text).toContain('skills:');
+		expect(text).toContain('from-manifests:');
+		expect(text).toContain('web-catalog:');
+	});
+
+	it('runs only the named step with --only', async () => {
+		const exit = await run({
+			argv: ['--only', 'pages'],
+			spawn: makeSpawn(0, '') as typeof Bun.spawn,
+		});
+		expect(exit).toBe(0);
+		expect(calls).toHaveLength(1);
+		expect(calls[0]?.cmd[1]).toBe('apps/web/scripts/gen-pages.ts');
+	});
+
+	it('returns 1 when a generator step exits non-zero', async () => {
+		const stderr = captureStderr();
+		// Tag the capabilities step to fail by name. Our fake doesn't
+		// inspect cmd args, so we encode the desired exit into
+		// stdoutText — simpler: build a custom fake here.
+		const customSpawn = (cmd: readonly string[]): unknown => {
+			calls.push({ cmd });
+			const wantsFail =
+				cmd[0] === 'bun' &&
+				cmd[1] === 'apps/web/scripts/gen-capabilities.ts';
+			return {
+				exited: Promise.resolve(wantsFail ? 2 : 0),
+				stdout: undefined,
+				stderr: undefined,
+			};
+		};
+		const exit = await run({
+			argv: [],
+			spawn: customSpawn as typeof Bun.spawn,
+		});
+		const text = stderr.text();
+		stderr.restore();
+		expect(exit).toBe(1);
+		expect(text).toContain('capabilities');
+	});
+});
