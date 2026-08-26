@@ -166,9 +166,9 @@ describe('issues plugin — UX guard when `repo` is missing', async () => {
 			'issues_resolve',
 			'setup_github',
 		]);
-		// No knowledge entry when fully configured — the hint is
-		// irrelevant and would just be noise.
-		expect(result.knowledge).toBeUndefined();
+		// f00251 S5: error-collector knowledge entry is published when fully configured.
+		expect(result.knowledge).toHaveLength(1);
+		expect(result.knowledge?.[0]?.id).toBe('issues-error-collector');
 	});
 
 	it('throws on invalid `scaffoldDir` (workspace escape)', async () => {
