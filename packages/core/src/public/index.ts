@@ -778,6 +778,19 @@ export type {
 	IModelProfileOverride,
 	TModelTier,
 } from '../lib/presets/model-profiles';
+// f00197 — Memory utility score (Track M, P2).
+export {
+	DEFAULT_MEMORY_COST_THRESHOLD,
+	DEFAULT_MEMORY_UTILITY_WEIGHTS,
+	filterByUtility,
+	utility as computeMemoryUtility,
+} from '../lib/memory/utility';
+export type {
+	IMemoryEntry,
+	IMemoryUtilityContext,
+	IMemoryUtilityScore,
+	IMemoryUtilityWeights,
+} from '../lib/memory/utility';
 
 // --- core meta-tools (overview / knowledge / validation matrix) ------------
 export { buildCatalog } from '../lib/catalog/agent-discovery-catalog';
