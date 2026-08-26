@@ -77,7 +77,7 @@ const CODE_BY_STATUS: Record<SectionStatus, ICliCommandResult['code']> = {
 	error: EXIT_CODE.RUNTIME,
 };
 
-// a00064: the config-vs-reality preflight lives in lib/ (pure,
+// The config-vs-reality preflight lives in lib/ (pure,
 // fs-free) — see analyze-config-roots.service.ts for the rationale.
 // Re-exported so doctor's spec exercises it alongside the command.
 export { analyzeConfigRoots };

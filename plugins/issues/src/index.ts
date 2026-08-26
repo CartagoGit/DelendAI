@@ -106,7 +106,7 @@ export default definePlugin({
 				? ctx.options.scaffoldDir
 				: DEFAULT_SCAFFOLD_DIR;
 
-		// f00030 S2: the setup-github guide is available regardless of
+		// S2: the setup-github guide is available regardless of
 		// whether `repo` is configured — its whole point is to help the
 		// user reach a configured state.
 		const setupGithubTool = buildSetupGithubRegistration({
@@ -156,7 +156,7 @@ export default definePlugin({
 			githubClient,
 		});
 
-		// f00251 S4: error-sink adapter (safe-mode by default, opt-in autoReport).
+		// S4: error-sink adapter (safe-mode by default, opt-in autoReport).
 		const adapterClient: IAdapterGithubClient = {
 			createIssue: (input) => createIssueViaGh(repo, input),
 		};

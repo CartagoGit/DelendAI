@@ -458,7 +458,7 @@ export const assemblePlugins = async (
 		importFn,
 	} = input;
 	const excludedPlugins = new Set(args.excludePlugins);
-	// f00087 S1: replace each plugin entry's bare name with its resolved
+	// S1: replace each plugin entry's bare name with its resolved
 	// `path` when the config declares one. Entries without `path`
 	// contribute their key as-is, preserving the historical behaviour
 	// (`loadPlugins` runs the scoped-name fallback chain against it).
@@ -510,7 +510,7 @@ export const assemblePlugins = async (
 		import: importFn ?? nodeDynamicImport,
 	});
 
-	// f00154 S4 — `--strict-logs` auto-injects the `logs` plugin when
+	// S4 — `--strict-logs` auto-injects the `logs` plugin when
 	// the host did not name it explicitly. The injection is a no-op if
 	// `logs` is already in the load set; otherwise we re-load with the
 	// added specifier and warn once on stderr. The auto-load is
@@ -588,11 +588,11 @@ export const assemblePlugins = async (
 	const beforeToolCallFns: Array<
 		NonNullable<IMcpVertexHostConfig['beforeToolCall']>
 	> = [];
-	// f00154 S2 — every plugin can register a logsSink; we pick the
+	// S2 — every plugin can register a logsSink; we pick the
 	// first one that does. The `logs` plugin's sink is the canonical
 	// choice when both are present.
 	let resolvedLogsSink: import('../plugins/logs-sink').ILogsSink | undefined;
-	// f00251 — collect all error sinks from every plugin; dedupe by id.
+	// Collect all error sinks from every plugin; dedupe by id.
 	let resolvedErrorSinks: readonly IErrorSink[] = [];
 	for (const { plugin, registrations } of loadResult.loaded) {
 		const resolvedSpecifier =

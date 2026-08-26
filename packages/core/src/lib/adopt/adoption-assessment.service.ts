@@ -217,7 +217,7 @@ const buildCost = (
 			note: `Measured runtime budget reused from preset ${coveringPreset.id} (${coveringPreset.budget.surfaceMode} surface).`,
 		};
 	}
-	// f00179 S3: per-plugin staticBytes aggregation (preferred over
+	// S3: per-plugin staticBytes aggregation (preferred over
 	// the swarm marginal upper bound when every plugin in the set has
 	// a real measurement on its manifest).
 	const perPlugin = aggregatePluginBytes(recommendedPluginIds);

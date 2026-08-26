@@ -54,7 +54,7 @@ const PROVIDER_INVOKE_SCHEMA = z.discriminatedUnion('kind', [
 	z
 		.object({
 			kind: z.literal('subscription'),
-			// x00183 (F7): any non-empty id is accepted — core no longer
+			// (F7): any non-empty id is accepted — core no longer
 			// closes this to the hosts it happened to know about at
 			// authoring time. orchestrator-runner owns validating it
 			// against the hosts it can actually drive.
@@ -163,11 +163,11 @@ export const CONFIG_FILE_SCHEMA = z
 			.optional(),
 		keepLegacy: z.boolean().optional(),
 		agentWorktree: z.boolean().optional(),
-		// f00152 S5 (L3 — feature flags): optional top-level feature
+		// S5 (L3 — feature flags): optional top-level feature
 		// flags block. Default-off; see `docs/mcp-vertex/api/feature-flags.md`.
 		// Per-plugin flags live under `plugins.<name>.options.featureFlags`.
 		featureFlags: z.record(z.string(), z.boolean()).optional(),
-		// f00088 S4 — operator-chosen source/conventions block.
+		// S4 — operator-chosen source/conventions block.
 		// The `init` command emits this when its S1 detector picks
 		// a non-default `pluginPathsRoot` (e.g. `libs/` for Angular
 		// or Nx, `packages/` for workspaces). Downstream tooling
@@ -182,7 +182,7 @@ export const CONFIG_FILE_SCHEMA = z
 			})
 			.strict()
 			.optional(),
-		// f00089 U5 — native authorized-roots filesystem allowlist.
+		// U5 — native authorized-roots filesystem allowlist.
 		// Extra absolute roots the operator authorizes for `fs_read` /
 		// `fs_write` beyond the workspace root. Default `[]` (off): with
 		// no entries the native fs tools keep their single-root,
@@ -229,7 +229,7 @@ export const CONFIG_FILE_SCHEMA = z
 						.optional(),
 					prefix: z.string().optional(),
 					options: z.record(z.string(), z.unknown()).optional(),
-					// f00087 S1: explicit module path for a local plugin.
+					// S1: explicit module path for a local plugin.
 					// Relative paths resolve against the workspace root;
 					// absolute paths and `file:`/`./`/`/`-prefixed values
 					// are forwarded verbatim to `loadPlugins`.
@@ -272,7 +272,7 @@ export const CONFIG_FILE_SCHEMA = z
 			// source of truth for `--check`).
 			.meta({ uniqueItems: true })
 			.optional(),
-		// f00072 S3 — cache eviction policy. Additive + backward
+		// S3 — cache eviction policy. Additive + backward
 		// compatible: a config without this block defaults to
 		// `runOnBoot: 'dry-run'` (the boot sweep only logs a report).
 		cache: z
@@ -328,7 +328,7 @@ export const CONFIG_FILE_SCHEMA = z
 			})
 			.strict()
 			.optional(),
-		// f00152 S1 (L1 — version pin): optional semver string pinning the
+		// S1 (L1 — version pin): optional semver string pinning the
 		// self-host agent to a specific published `@mcp-vertex/core`
 		// version. When omitted, the lint treats the pin as the latest
 		// published tag (`'latest-published'` sentinel). Strict semver
