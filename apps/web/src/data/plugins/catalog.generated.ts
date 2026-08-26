@@ -7,6 +7,12 @@ export const GENERATED_WEB_PLUGIN_CATALOG =
 		"category": "code-intelligence"
 	},
 	{
+		"slug": "agent-orchestrator",
+		"displayName": "Agent Orchestrator",
+		"purpose": "Workflow policy plugin: single / linear / swarm / auto modes with token budgets, iteration caps, and mid-task subagent rotation.",
+		"category": "workflow"
+	},
+	{
 		"slug": "api",
 		"displayName": "Api",
 		"purpose": "REST/GraphQL API surface for mcp-vertex plugins.",

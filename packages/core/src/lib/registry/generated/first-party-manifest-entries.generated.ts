@@ -13,6 +13,15 @@ export const GENERATED_FIRST_PARTY_MANIFEST_ENTRIES: readonly IPluginRegistryEnt
 		},
 		{
 			origin: 'first-party',
+			id: 'agent-orchestrator',
+			package: '@mcp-vertex/agent-orchestrator',
+			summary: 'Workflow policy plugin: single / linear / swarm / auto modes with token budgets, iteration caps, and mid-task subagent rotation.',
+			tags: ['orchestrator', 'policy', 'workflow', 'subagent'],
+			permissions: ['process'],
+			tokenBudgetBytes: 2700,
+		},
+		{
+			origin: 'first-party',
 			id: 'api',
 			package: '@mcp-vertex/api',
 			summary: 'REST/GraphQL API surface for mcp-vertex plugins.',
