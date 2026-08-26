@@ -35,6 +35,7 @@
  *                         only, full context; see plugins/logs)
  *       memory/          (agent memory store)
  *       usage-tracking/  (accrued spend/usage history)
+ *     evidence/       (typed runtime evidence, partitioned by evidence type)
  *     <pluginCacheDir>/exec/ (f00080 ephemeral exec paths per plugin)
  *     .worktrees/<agent>/    (per-agent git worktrees, NOT code)
  *
@@ -56,6 +57,7 @@ const SANCTIONED_TOP_LEVEL: ReadonlySet<string> = new Set([
 	'bootstrap',
 	'drift',
 	'exec',
+	'evidence',
 	'handoff',
 	'logs-errors',
 	'proposals',
@@ -81,6 +83,7 @@ const SANCTIONED_TOP_LEVEL: ReadonlySet<string> = new Set([
  */
 const SANCTIONED_SUBPATH_PREFIXES: readonly string[] = [
 	'verify/',
+	'evidence/',
 	'handoff/',
 	'results/logs/',
 	'results/logs-errors/',
