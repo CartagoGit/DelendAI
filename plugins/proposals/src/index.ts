@@ -37,6 +37,7 @@ import { buildAdoptRegistration } from './lib/tools/adopt.tool';
 import { buildInheritHostInstructionsRegistration } from './lib/tools/inherit-host-instructions.tool';
 import type { IAgentNamesToolOptions } from './lib/tools/agent-names.tool';
 import { buildGetProposalWorkflowRegistration } from './lib/tools/get-proposal-workflow.tool';
+import { buildProposalGetRegistration } from './lib/tools/proposal-get.tool';
 import { buildRoundContextRegistration } from './lib/tools/round-context.tool';
 import { buildSyncProposalsRegistration } from './lib/tools/sync-proposals.tool';
 import { buildTaskQueueRegistration } from './lib/tools/task-queue.tool';
@@ -382,6 +383,12 @@ export default definePlugin({
 					namespacePrefix: ctx.namespacePrefix,
 					proposalsDir: layout.proposalsDir,
 					indexFile: layout.proposalIndexFile,
+				}),
+				// r00031: `proposal_get` — compact | normal | full.
+				buildProposalGetRegistration({
+					namespacePrefix: ctx.namespacePrefix,
+					proposalsDirAbs: abs(layout.proposalsDir),
+					indexPathAbs: abs(layout.proposalIndexFile),
 				}),
 				buildRoundContextRegistration({
 					namespacePrefix: ctx.namespacePrefix,
