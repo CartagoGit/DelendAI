@@ -134,6 +134,49 @@ export const isConventionalCommitMessage = (message: string): boolean => {
 };
 
 /**
+ * x00265 (AUD-CP-007): specific failure codes for non-conventional
+ * commit messages. The driver (and later the engine from `f00182`)
+ * uses these to give actionable refusals instead of a single
+ * umbrella string.
+ */
+export type ConventionalHeaderStatus =
+	| 'OK'
+	| 'EMPTY_HEADER'
+	| 'MALFORMED_HEADER'
+	| 'UNKNOWN_TYPE';
+
+export interface IConventionalHeaderResult {
+	readonly status: ConventionalHeaderStatus;
+	readonly first: string;
+}
+
+/**
+ * x00265: validate a message's first line as a Conventional
+ * Commit. Returns the structured status instead of a boolean so
+ * callers can surface specific codes (`EMPTY_HEADER`,
+ * `MALFORMED_HEADER`, `UNKNOWN_TYPE`) in their refusal envelope.
+ */
+export const validateConventionalHeader = (
+	message: string,
+): IConventionalHeaderResult => {
+	const first = message.trim().split('\n')[0] ?? '';
+	if (first.length === 0) return { status: 'EMPTY_HEADER', first };
+	const match = /^([A-Za-z][A-Za-z0-9_.-]*)(?:\([^)]+\))?!?:\s/u.exec(first);
+	if (match === null) {
+		return { status: 'MALFORMED_HEADER', first };
+	}
+	const type = match[1] ?? '';
+	if (
+		!CONVENTIONAL_PREFIXES.includes(
+			type as (typeof CONVENTIONAL_PREFIXES)[number],
+		)
+	) {
+		return { status: 'UNKNOWN_TYPE', first };
+	}
+	return { status: 'OK', first };
+};
+
+/**
  * x00263 (AUD-CP-005): list of paths currently in the index
  * (`git diff --cached --name-only`). Returns `[]` when git is not
  * a repo, when the index is empty, or when the command fails —

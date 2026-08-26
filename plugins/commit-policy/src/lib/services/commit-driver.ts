@@ -22,7 +22,11 @@ import { appendAuditTrailer, type IAuditAgent } from '../audit/trailer';
 import type { ICommitPolicyOptions } from '../contracts/options';
 import type { IIdentityResolverContext } from '../identity/resolver';
 import { resolveAuthor } from '../identity/resolver';
-import { gitCachedNames, gitCurrentBranch } from './git-extra';
+import {
+	gitCachedNames,
+	gitCurrentBranch,
+	validateConventionalHeader,
+} from './git-extra';
 
 /**
  * Non-slice trigger context. Threshold and interval events carry
@@ -242,6 +246,23 @@ export const runCommitDriver = async (
 					options.policy.commit.autoScopeFromProposal,
 				)
 			: input.message;
+
+	// x00265 (AUD-CP-007): when requireConventional is on, validate
+	// the header before passing the message to git. The previous
+	// behaviour let agents commit `"hola"`, `"updated stuff"`, `"WIP"`
+	// and break the repo's traceability. Refusal codes are specific
+	// so the caller can correct the input. f00182 will lift this
+	// into the engine layer.
+	if (options.policy.commit.requireConventional) {
+		const verdict = validateConventionalHeader(baseMessage);
+		if (verdict.status !== 'OK') {
+			return {
+				committed: false,
+				pushed: false,
+				refusal: `NON_CONVENTIONAL_MESSAGE: ${verdict.status}`,
+			};
+		}
+	}
 
 	const finalMessage = appendAuditTrailer(
 		baseMessage,
