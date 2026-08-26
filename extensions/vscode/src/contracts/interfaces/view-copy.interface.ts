@@ -43,4 +43,23 @@ export interface IViewCopy {
 	readonly required: string;
 	readonly optional: string;
 	readonly enumLabel: string;
+	readonly timelineTitle: string;
+	readonly timelineRefresh: string;
+	readonly timelinePlugin: string;
+	readonly timelineKind: string;
+	readonly timelineSlice: string;
+	readonly timelineCost: string;
+	readonly timelineTokens: string;
+	readonly timelineCommit: string;
+	readonly timelineWhy: string;
+	readonly timelineInputs: string;
+	readonly timelineOutputs: string;
+	readonly timelineAnyPlugin: string;
+	readonly timelineAnyKind: string;
+	readonly timelineApply: string;
+	readonly timelineReset: string;
+	readonly timelineNoMatches: string;
+	readonly timelineShowingTotal: string;
+	readonly timelineTotalEvents: string;
+	readonly timelineEmptyValue: string;
 }

@@ -5,6 +5,10 @@ import { renderAgentCatalogWebview } from '../views/agent-catalog-webview';
 import { renderMetricsHtml } from '../views/metrics-sparkline';
 import { renderProposalDetailHtml } from '../views/proposal-detail-webview';
 import { renderToolDetailHtml } from '../views/tool-detail-webview';
+import {
+	projectTimelineView,
+	renderAgentTimeline,
+} from '../views/agent-timeline';
 
 const zeroCost = {
 	contentTextBytes: 0,
@@ -60,5 +64,17 @@ describe('secondary webview content i18n', () => {
 		});
 		expect(tool).toContain('No hay esquema de entrada.');
 		expect(tool).toContain('No hay llamadas registradas.');
+	});
+
+	it('renders the agent timeline chrome in Spanish', () => {
+		const timeline = renderAgentTimeline(
+			projectTimelineView({ version: 1, events: [] }, {}),
+			{ refreshHref: '?refresh=1', copy: es },
+		);
+		expect(timeline).toContain('<html lang="es">');
+		expect(timeline).toContain('<title>Línea de tiempo de agentes</title>');
+		expect(timeline).toContain('cualquier plugin');
+		expect(timeline).toContain('Aplicar');
+		expect(timeline).toContain('No hay eventos que coincidan');
 	});
 });
