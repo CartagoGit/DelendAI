@@ -18,6 +18,7 @@
  */
 
 import type { IMcpToolSurfaceMode } from '../contracts/interfaces/surface-mode.interface';
+import type { IConfigurationCenterSnapshot } from '../contracts/interfaces/configuration-center.interface';
 
 import type {
 	IPluginCostSnapshot,
@@ -81,6 +82,12 @@ export interface IStartupReportBudget {
 	readonly unit: 'tokens' | 'bytes' | 'subagent-invocations' | 'unspecified';
 }
 
+/** Safe operator diagnostics; configuration is already redacted by the
+ * configuration-center builder and plugin rows contain counts, not schemas. */
+export interface IStartupReportDiagnostics {
+	readonly configuration: IConfigurationCenterSnapshot;
+}
+
 /**
  * The full Startup Report. Immutable; built via {@link buildStartupReport}.
  */
@@ -91,6 +98,7 @@ export interface IStartupReport {
 	readonly runtime: IStartupReportManagedRuntime;
 	readonly baseline: IStartupReportBaseline;
 	readonly budgets: readonly IStartupReportBudget[];
+	readonly diagnostics?: IStartupReportDiagnostics | undefined;
 	readonly warnings: readonly IStartupReportWarning[];
 	readonly generatedAtIso: string;
 }
@@ -106,6 +114,7 @@ export interface IStartupReportInput {
 	readonly runtime: IStartupReportManagedRuntime;
 	readonly baseline: IStartupReportBaseline;
 	readonly budgets?: readonly IStartupReportBudget[];
+	readonly diagnostics?: IStartupReportDiagnostics | undefined;
 	readonly warnings?: readonly IStartupReportWarning[];
 	/** Injected clock; defaults to `new Date()`. */
 	readonly now?: () => Date;
@@ -193,6 +202,9 @@ export const buildStartupReport = (
 		runtime: input.runtime,
 		baseline: input.baseline,
 		budgets: ensureBudgetsArray(input.budgets),
+		...(input.diagnostics === undefined
+			? {}
+			: { diagnostics: input.diagnostics }),
 		warnings: input.warnings ?? [],
 		generatedAtIso: now().toISOString(),
 	};

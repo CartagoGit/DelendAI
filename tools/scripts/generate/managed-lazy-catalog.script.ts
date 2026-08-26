@@ -97,6 +97,7 @@ export const buildManagedLazyCatalogSource = async (): Promise<string> => {
 		'\treadonly resourceIds: readonly string[];',
 		'\treadonly knowledgeIds: readonly string[];',
 		'\treadonly skillIds: readonly string[];',
+		'\treadonly dependencies: readonly string[];',
 		'\treadonly summary?: string | undefined;',
 		'\treadonly tags?: readonly string[] | undefined;',
 		'}',
@@ -109,6 +110,7 @@ export const buildManagedLazyCatalogSource = async (): Promise<string> => {
 		'\tresourceIds: readonly string[],',
 		'\tknowledgeIds: readonly string[],',
 		'\tskillIds: readonly string[],',
+		'\tdependencies: readonly string[],',
 		"\tmetadata: Pick<IManagedLazyPluginCatalogEntry, 'summary' | 'tags'> = {},",
 		'): IManagedLazyPluginCatalogEntry => ({',
 		'\tid,',
@@ -119,6 +121,7 @@ export const buildManagedLazyCatalogSource = async (): Promise<string> => {
 		'\tresourceIds,',
 		'\tknowledgeIds,',
 		'\tskillIds,',
+		'\tdependencies,',
 		'});',
 		'',
 		'export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntry[] =',
@@ -130,7 +133,7 @@ export const buildManagedLazyCatalogSource = async (): Promise<string> => {
 					? '{}'
 					: `{ summary: ${quote(metadata.summary)}, tags: ${renderTools(metadata.tags)} }`;
 			return [
-				`\t\ttools(${quote(id)}, ${quote(metadata?.package ?? `@mcp-vertex/${id}`)}, ${renderTools((registrations.tools ?? []).map((tool) => tool.id))}, ${renderTools((registrations.prompts ?? []).map((prompt) => prompt.id))}, ${renderTools((registrations.resources ?? []).map((resource) => resource.id))}, ${renderTools((registrations.knowledge ?? []).map((entry) => entry.id))}, ${renderTools((registrations.skills ?? []).map((skill) => skill.id))}, ${metadataLiteral}),`,
+				`\t\ttools(${quote(id)}, ${quote(metadata?.package ?? `@mcp-vertex/${id}`)}, ${renderTools((registrations.tools ?? []).map((tool) => tool.id))}, ${renderTools((registrations.prompts ?? []).map((prompt) => prompt.id))}, ${renderTools((registrations.resources ?? []).map((resource) => resource.id))}, ${renderTools((registrations.knowledge ?? []).map((entry) => entry.id))}, ${renderTools((registrations.skills ?? []).map((skill) => skill.id))}, ${renderTools(assembled.loadResult.loaded.find((entry) => entry.plugin.name === id)?.plugin.dependsOn ?? [])}, ${metadataLiteral}),`,
 			];
 		}),
 		'\t];',

@@ -495,36 +495,40 @@ export const assembleCliConfig = async (
 		configMode: fileConfig.surfaceMode,
 	});
 	const initialSurfaceMode = resolveInitialSurfaceMode(explicitSurfaceMode);
-	const { tools, catalogToolEntries, metricsRegistry } =
-		await assembleCoreTools({
-			args,
-			corePrefix,
-			corePaths,
-			workspace,
-			fileConfig,
-			configDiagnostic,
-			configPluginNames,
-			effectivePlugins,
-			activationReport,
-			loadResult,
-			pluginSummaries,
-			moduleLoading,
-			pluginToolEntries,
-			qualifiedPluginTools,
-			knowledge,
-			skillSummaries,
-			skillCatalog,
-			proposalSummaries,
-			validationMatrix,
-			recommendedNextAction,
-			configurationPlugins,
-			configurationArtifacts,
-			fsAuthorizedRoots,
-			keepLegacy,
-			toolSurfaceRuntime,
-			prompts,
-			resources,
-		});
+	const {
+		tools,
+		catalogToolEntries,
+		metricsRegistry,
+		configurationSnapshot,
+	} = await assembleCoreTools({
+		args,
+		corePrefix,
+		corePaths,
+		workspace,
+		fileConfig,
+		configDiagnostic,
+		configPluginNames,
+		effectivePlugins,
+		activationReport,
+		loadResult,
+		pluginSummaries,
+		moduleLoading,
+		pluginToolEntries,
+		qualifiedPluginTools,
+		knowledge,
+		skillSummaries,
+		skillCatalog,
+		proposalSummaries,
+		validationMatrix,
+		recommendedNextAction,
+		configurationPlugins,
+		configurationArtifacts,
+		fsAuthorizedRoots,
+		keepLegacy,
+		toolSurfaceRuntime,
+		prompts,
+		resources,
+	});
 	const coreSurfaceDescriptors: IToolSurfaceDescriptor[] = tools
 		.filter(
 			(registration) =>
@@ -935,6 +939,9 @@ export const assembleCliConfig = async (
 						]
 					: []),
 			],
+			diagnostics: {
+				configuration: configurationSnapshot,
+			},
 		});
 	const startupReport = buildStartupReport();
 

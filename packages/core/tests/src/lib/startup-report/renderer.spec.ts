@@ -120,6 +120,40 @@ const baseInput = (
 			listChangedRequired: false,
 		},
 		baseline: { tokensPerRequest: 51168, source: 'estimated' },
+		diagnostics: {
+			configuration: {
+				config: { token: '[REDACTED]' },
+				configSchema: {},
+				redactions: 1,
+				plugins: [
+					{
+						id: 'git',
+						origin: 'bundled',
+						active: false,
+						source: 'preset',
+						options: {},
+						schemaStatus: 'unavailable',
+						permissions: ['git-read'],
+						dependencies: ['core'],
+						capabilities: {
+							tools: 10,
+							prompts: 0,
+							resources: 1,
+							knowledge: 0,
+							skills: 1,
+						},
+					},
+				],
+				artifacts: [
+					{
+						id: 'git-orientation',
+						kind: 'skill',
+						owner: { id: 'git', origin: 'bundled' },
+					},
+				],
+				unavailableArtifactKinds: ['agent'],
+			},
+		},
 		budgets: [
 			{
 				name: 'core',
@@ -224,6 +258,13 @@ describe('startup-report/renderer (q00009 / f00258)', () => {
 			const out = renderStartupReportPlain(report);
 			expect(out).toContain('Configuration (sanitised)');
 			expect(out).toContain('baseline.tokens/request');
+			expect(out).toContain('redactions                1');
+			expect(out).toContain('permissions=git-read');
+			expect(out).toContain(
+				'capabilities=tools:10,prompts:0,resources:1,knowledge:0,skills:1',
+			);
+			expect(out).toContain('dependencies=core');
+			expect(out).toContain('"token":"[REDACTED]"');
 		});
 
 		it('never emits ANSI codes', () => {

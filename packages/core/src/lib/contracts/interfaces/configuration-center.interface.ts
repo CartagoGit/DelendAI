@@ -48,6 +48,7 @@ export interface IConfigurationPlugin {
 	readonly schemaStatus: 'available' | 'unavailable';
 	readonly configExample?: Readonly<Record<string, unknown>> | undefined;
 	readonly permissions?: readonly PermissionCategory[] | undefined;
+	readonly dependencies?: readonly string[] | undefined;
 	readonly capabilities: IConfigurationPluginCapabilities;
 }
 
