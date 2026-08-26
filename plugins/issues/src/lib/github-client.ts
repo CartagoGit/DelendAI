@@ -38,6 +38,23 @@ import type {
 
 export type { ISpawn } from './contracts/interfaces/github-client.interface';
 
+// ---------------------------------------------------------------------------
+// Issue-create contract (f00251 S4 — plugin-internal widening)
+// ---------------------------------------------------------------------------
+
+/** Input for creating a new issue via the CLI. */
+export interface IIssueCreateInput {
+	readonly title: string;
+	readonly body: string;
+	readonly labels?: readonly string[] | undefined;
+}
+
+/** Result returned after a successful issue creation. */
+export interface IIssueCreateResult {
+	readonly issueNumber: number;
+	readonly issueUrl: string;
+}
+
 export type IGithubClientTier = 'gh' | 'rest-authed' | 'rest-anon';
 
 export interface IFetchIssueResult {
@@ -381,4 +398,46 @@ export const listIssues = async (
 
 	const viaAnon = await restListIssues(fetchFn, repo, opts);
 	return { issues: viaAnon, tier: 'rest-anon' };
+};
+
+// ---------------------------------------------------------------------------
+// Issue creation via gh CLI (f00251 S4)
+// ---------------------------------------------------------------------------
+
+/**
+ * Creates a GitHub issue via `gh issue create` (argv-first, no shell).
+ * Throws when the `gh` binary fails — callers are responsible for catching.
+ */
+export const createIssueViaGh = async (
+	repo: string,
+	input: IIssueCreateInput,
+	spawnFn: ISpawn = defaultSpawn,
+): Promise<IIssueCreateResult> => {
+	const argv: readonly string[] = [
+		'gh',
+		'issue',
+		'create',
+		'--repo',
+		repo,
+		'--title',
+		input.title,
+		'--body',
+		input.body,
+		'--json',
+		'number,url',
+		...(input.labels !== undefined && input.labels.length > 0
+			? input.labels.flatMap((l) => ['--label', l])
+			: []),
+	];
+	const result = await spawnFn(argv);
+	if (result.exitCode !== 0) {
+		throw new Error(
+			`gh issue create failed: ${decode(result.stderr).trim() || `exit ${result.exitCode}`}`,
+		);
+	}
+	const parsed = JSON.parse(decode(result.stdout)) as {
+		number: number;
+		url: string;
+	};
+	return { issueNumber: parsed.number, issueUrl: parsed.url };
 };

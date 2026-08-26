@@ -7,6 +7,7 @@ import z from 'zod';
 import { buildOperationalEventLogKnowledge } from './lib/knowledge/logs-knowledge';
 import { type LogSeverity, severityForOutcome } from './lib/services/kinds';
 import { createLogStore } from './lib/services/log-store';
+import { createLogsErrorSinkAdapter } from './lib/services/error-sink-adapter';
 import {
 	extractAgentHint,
 	extractFilesHint,
@@ -91,6 +92,12 @@ export default definePlugin({
 				await errorStore.appendEvent(event);
 			}
 		};
+
+		// f00251 S3 — adapter that forwards ICapturedError events from
+		// the core collector into the same JSONL streams used by the
+		// lifecycle hooks. Instantiated here so it shares the
+		// `appendEvent` closure and inherits both-stream fan-out for free.
+		const adapter = createLogsErrorSinkAdapter({ appendEvent });
 
 		// f00072 S4 / rotation rework: register retention as DATA against
 		// the shared cache-eviction registry instead of an inline
@@ -186,6 +193,10 @@ export default definePlugin({
 				main: mainStore,
 				errors: errorStore,
 			}),
+			// f00251 S3 — expose the adapter so the assembler registers
+			// it with the core error collector. Shares `appendEvent`
+			// and inherits the error-stream fan-out for free.
+			errorSinks: [adapter.sink],
 			// f00154 S2 — publish our appendEvent as the canonical
 			// sink. The core routes every `onToolStart` / `onToolCall`
 			// / `onToolCancel` (across ALL plugins) through this sink,
