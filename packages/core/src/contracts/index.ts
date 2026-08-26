@@ -119,3 +119,8 @@ export type {
 	IMutexMetricsSnapshot,
 } from '../lib/contracts/interfaces/mutex-metrics.interface';
 export type { McpVertexToolOutputs } from '../generated/tool-outputs';
+export type {
+	IPrepareContext,
+	IActivateContext,
+	IPhasedLifecycle,
+} from '../lib/plugins/lifecycle';

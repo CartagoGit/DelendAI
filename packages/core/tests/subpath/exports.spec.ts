@@ -14,11 +14,13 @@ import { describe, expect, it } from 'vitest';
 describe('@mcp-vertex/core subpath exports (r00028)', () => {
 	it('./contracts exposes type-only exports', async () => {
 		const contracts = await import('@mcp-vertex/core/contracts');
-		// A representative sample — each is a TYPE, not a value,
-		// so we check the type is present via a type-position usage.
-		const _typeProbe: (typeof contracts)['IGitRunner'] = () =>
-			Promise.resolve({ ok: true, output: '' });
-		expect(typeof _typeProbe).toBe('function');
+		// `export type { IGitRunner }` shows up at runtime as a
+		// property named `IGitRunner` on the module namespace.
+		// Its value is undefined (type-only), but the key MUST
+		// exist — that is the contract.
+		expect('IGitRunner' in contracts).toBe(true);
+		expect('IMcpPluginContext' in contracts).toBe(true);
+		expect('McpVertexToolOutputs' in contracts).toBe(true);
 	});
 
 	it('./runtime exposes commitAndPush', async () => {

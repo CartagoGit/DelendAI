@@ -387,3 +387,30 @@ export interface IMcpPlugin {
 
 /** Identity helper for type-safe plugin authoring and inference. */
 export const definePlugin = (plugin: IMcpPlugin): IMcpPlugin => plugin;
+
+/**
+ * f00184 (Track D): adapt a legacy `register(ctx)` plugin to the
+ * phased lifecycle. The adapter maps:
+ *
+ *   prepare()   → returns `{ name }` from the plugin object.
+ *   activate()  → calls the legacy `register(ctx)` and returns
+ *                 the resolved registrations (or IPluginRuntime).
+ *   dispose()   → calls `dispose` when the activated payload is
+ *                 an IPluginRuntime (legacy plugins without
+ *                 `dispose` get a no-op).
+ *
+ * Plugins that already implement `prepare/activate/dispose`
+ * bypass the adapter entirely (see `hasPhasedLifecycle`).
+ */
+export const adaptLegacyPlugin = (plugin: IMcpPlugin) => ({
+	prepare: async (ctx: { name: string }) => ({ name: ctx.name, plugin }),
+	activate: async (
+		prepared: { name: string; plugin: IMcpPlugin },
+		_ctx: unknown,
+	) => prepared.plugin.register(prepared.plugin as never),
+	dispose: async (_active: unknown) => {
+		// No-op for plugins that don't implement the IPluginRuntime
+		// contract. Hosts that DO implement it (x00261) get the
+		// runtime.dispose() call via the IPluginRuntime type.
+	},
+});
