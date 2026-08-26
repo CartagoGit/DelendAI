@@ -20,6 +20,7 @@ import { z } from 'zod';
 
 import { definePlugin, toolError } from '@mcp-vertex/core/public';
 
+import { TaskClassifier } from './lib/classifier/task-classifier.js';
 import { FakeDispatchPort } from './lib/dispatch/fake-port.js';
 import type { IDispatchPort } from './lib/dispatch/contracts.js';
 import {
@@ -31,8 +32,10 @@ import {
 } from './lib/policy/policy.js';
 import type { IOrchestratorPolicy } from './lib/policy/policy.js';
 import type { OrchestratorEngine } from './lib/policy/policy.js';
+import { InMemoryTelemetrySink } from './lib/telemetry/event.js';
 import { buildDispatchRegistration } from './lib/tools/dispatch.tool.js';
 import { buildPlanToolRegistration } from './lib/tools/plan.tool.js';
+import { buildReadOnlyToolRegistration } from './lib/tools/telemetry.tool.js';
 
 const DEFAULT_POLICY: IOrchestratorPolicy = {
 	defaultMode: 'auto',
