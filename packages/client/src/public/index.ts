@@ -237,3 +237,51 @@ export type {
 	IPluginFieldType,
 	IPluginToolSpec,
 } from '../lib/scaffold/author-plugin';
+
+// --- f00193 (Track K / external MCPs): control-plane registry + router ----
+// f00193 ships the registry + router that lets the host talk to multiple
+// external MCP providers and pick the best one per capability. Re-exports
+// the pure types and helpers; runtime values (the `ExternalMcpRegistry`
+// class) are exposed alongside.
+export {
+	ExternalMcpRegistry,
+	formatRegistrySnapshot,
+	sanitizeProbeReason,
+	scoreAll,
+} from '../services/external-mcp/registry';
+export type {
+	IRegistryOptions,
+	IRegisteredProviderSnapshot,
+} from '../services/external-mcp/registry';
+export {
+	classifyHealth,
+	DEFAULT_DEGRADED_LATENCY_MS,
+	DEFAULT_DOWN_LATENCY_MS,
+	probeProvider,
+	worstOf,
+} from '../services/external-mcp/health';
+export type { IClassifyHealthOptions } from '../services/external-mcp/health';
+export {
+	redactProviderId,
+	scoreProvider,
+	selectProvider,
+	selectWithFailover,
+} from '../services/external-mcp/router';
+export type {
+	IRouterInput,
+	IRouterInputEnvelope,
+} from '../services/external-mcp/router';
+export { DEFAULT_ROUTER_WEIGHTS } from '../services/external-mcp/types';
+export type {
+	ExternalMcpTransport,
+	ExternalMcpCapability,
+	IExternalMcpConnection,
+	IExternalMcpCost,
+	IExternalMcpHealth,
+	IExternalMcpProvider,
+	IExternalMcpRefusal,
+	IExternalMcpRouterOptions,
+	IExternalMcpSelection,
+	ProviderHealthState,
+	RedactedProviderId,
+} from '../services/external-mcp/types';
