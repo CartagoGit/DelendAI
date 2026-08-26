@@ -112,8 +112,7 @@ const PLUGIN_SPECIFIER_ENTRIES = Object.entries(PLUGIN_SPECIFIERS).sort(
 );
 
 const PLUGIN_LIST =
-	'proposals,rules,memory,git,quality,search,notification,completion,context-for-change,docs,deps,logs,audit,status-marker,test-convention,web-fetch,cache,container,security,diagram,env,i18n,impact-analysis,adaptive-optimizer,project-health,quality-policy,perf,tech-debt,link-check,usage-tracking,browser,refactor,prompt-eval,observability';
-
+	'proposals,rules,memory,git,quality,search,notification,completion,context-for-change,docs,deps,logs,audit,status-marker,test-convention,web-fetch,cache,container,security,diagram,env,i18n,impact-analysis,adaptive-optimizer,project-health,quality-policy,perf,tech-debt,link-check,usage-tracking,browser,refactor,prompt-eval,observability,agent-orchestrator';
 /**
  * Assemble the reference server with every plugin and harvest each
  * tool's output JSON Schema. Closes the server before returning so no

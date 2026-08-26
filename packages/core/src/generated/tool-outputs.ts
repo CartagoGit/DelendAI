@@ -2314,6 +2314,12 @@ export interface McpVertexProposalsProposalForceTransitionOutput {
 	crossProposalStaleAgents?: string[];
 }
 
+export interface McpVertexProposalsProposalGetOutput {
+	id: string;
+	view: unknown;
+	level: "compact" | "normal" | "full";
+}
+
 export interface McpVertexProposalsProposalReconcileFolderOutput {
 	ok: boolean;
 	error?: {
@@ -3567,6 +3573,7 @@ export interface McpVertexToolOutputs {
 	"mcp-vertex_proposals_proposal_board": McpVertexProposalsProposalBoardOutput;
 	"mcp-vertex_proposals_proposal_diagnose": McpVertexProposalsProposalDiagnoseOutput;
 	"mcp-vertex_proposals_proposal_force_transition": McpVertexProposalsProposalForceTransitionOutput;
+	"mcp-vertex_proposals_proposal_get": McpVertexProposalsProposalGetOutput;
 	"mcp-vertex_proposals_proposal_reconcile_folder": McpVertexProposalsProposalReconcileFolderOutput;
 	"mcp-vertex_proposals_proposal_review": McpVertexProposalsProposalReviewOutput;
 	"mcp-vertex_proposals_proposal_stale_list": McpVertexProposalsProposalStaleListOutput;
