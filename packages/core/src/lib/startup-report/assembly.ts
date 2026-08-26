@@ -1,5 +1,9 @@
 import type { IToolSurfacePlan } from '../contracts/interfaces/tool-surface.interface';
-import { buildStartupReport, type IStartupReport } from './model';
+import {
+	buildStartupReport,
+	type IStartupReport,
+	type IStartupReportDiagnostics,
+} from './model';
 import { reconcileSurfaceCost, type IPluginCostInput } from './plugin-cost';
 import type { IStartupReportLevel } from './level';
 
@@ -46,6 +50,7 @@ export const buildStartupReportForAssembly = (input: {
 		| Readonly<Record<string, number>>
 		| undefined;
 	readonly now?: () => Date;
+	readonly diagnostics?: IStartupReportDiagnostics | undefined;
 }): IStartupReport => {
 	const pluginIds = [
 		'core',
@@ -125,6 +130,9 @@ export const buildStartupReportForAssembly = (input: {
 				? { warnings: input.warnings }
 				: {}),
 			...(input.now !== undefined ? { now: input.now } : {}),
+			...(input.diagnostics === undefined
+				? {}
+				: { diagnostics: input.diagnostics }),
 		},
 		input.level,
 	);

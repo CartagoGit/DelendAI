@@ -374,6 +374,7 @@ const tryAssembleManagedLazy = (input: {
 				: { prefix: configEntry.prefix }),
 			options: configEntry.options ?? {},
 			schemaStatus: 'unavailable',
+			dependencies: catalogEntry?.dependencies ?? [],
 			...(permissions === undefined ? {} : { permissions }),
 			capabilities: {
 				tools: catalogEntry?.toolIds.length ?? 0,
@@ -831,6 +832,7 @@ export const assemblePlugins = async (
 						? {}
 						: { configExample: contributed.configExample }),
 				...(permissions === undefined ? {} : { permissions }),
+				dependencies: loaded?.plugin.dependsOn ?? [],
 				capabilities: {
 					tools: loaded?.registrations.tools?.length ?? 0,
 					prompts: loaded?.registrations.prompts?.length ?? 0,
