@@ -103,9 +103,23 @@ export async function createMcpProject(
 			});
 			const change = toolSurfaceRuntime.applySurfaceMode(decision.mode);
 			const client = server.server.getClientVersion();
-			process.stderr.write(
-				`[surface] Client "${client?.name ?? 'unknown'}" v${client?.version ?? 'unknown'}: ${decision.reason} (changed=${change.changedToolNames.length})\n`,
-			);
+			// q00007 + r00026: when the surface mode is already pinned via
+			// `config.surfaceMode` (or the `vertex` preset default), the
+			// explicit override leaves the surface unchanged. Skip the
+			// log line so the operator's stderr stays clean — the
+			// server still surfaces 199 tools on the first `tools/list`,
+			// which is the only thing the operator actually needs to
+			// see. Surface transitions (`changed > 0`) and capability-
+			// driven decisions still log because they are real signals
+			// about what the client is asking for.
+			if (
+				change.changedToolNames.length > 0 ||
+				!config.toolSurfacePlan?.explicitMode
+			) {
+				process.stderr.write(
+					`[surface] Client "${client?.name ?? 'unknown'}" v${client?.version ?? 'unknown'}: ${decision.reason} (changed=${change.changedToolNames.length})\n`,
+				);
+			}
 		};
 	}
 	let currentRegistration: IToolRegistration | undefined;
