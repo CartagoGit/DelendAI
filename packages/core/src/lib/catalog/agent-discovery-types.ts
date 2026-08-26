@@ -22,10 +22,6 @@ export interface ISkillSummary {
 	readonly appliesTo: readonly string[];
 	readonly tags: readonly string[];
 	readonly bodyPath: string;
-	readonly source?: 'workspace' | 'package' | 'plugin' | 'core' | 'remote';
-	readonly owner?: string;
-	readonly hash?: string;
-	readonly estimatedBodyTokens?: number;
 }
 
 export type ProposalStatus =
