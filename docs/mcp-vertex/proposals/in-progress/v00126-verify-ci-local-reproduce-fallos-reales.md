@@ -100,7 +100,7 @@ Demostrarlo con un fallo real reciente.
 
 ### 3. Demostración
 
-- `tools/scripts/ci/local-repro.demo.sh`:
+- `tools/scripts/ci/local-repro.demo.script.ts`:
   - Toma un run real reciente y muestra el flujo.
 
 ## Slices
@@ -108,7 +108,7 @@ Demostrarlo con un fallo real reciente.
 ### S1 — Script + tests + demo con un fallo real
 
 - **Status**: pending
-- **Files**: `tools/scripts/ci/local-repro.script.ts`, `tools/scripts/ci/local-repro.spec.ts`, `tools/scripts/ci/local-repro.demo.sh`
+- **Files**: `tools/scripts/ci/local-repro.script.ts`, `tools/scripts/ci/local-repro.spec.ts`, `tools/scripts/ci/local-repro.demo.script.ts`
 - **Gate**: type
 
 ## acceptance

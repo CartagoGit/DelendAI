@@ -1,17 +1,14 @@
 /**
  * pack-smoke.spec.ts — covers x00268 (Track G, audit §32).
  *
- * Spawns `tools/scripts/ci/pack-smoke.sh` against a known
+ * Spawns `tools/scripts/ci/pack-smoke.script.ts` against a known
  * success + a known failure command and asserts the wrapper
  * preserves the output verbatim and exits with the inner
  * command's code.
  *
- * The script is bash (not TypeScript) on purpose: GitHub
- * Actions shell steps run under `/bin/bash`, and the
- * `::group::` / `::endgroup::` / `::error::` markers are a
- * runner protocol — keeping the script in shell lets the
- * spec run it under the same interpreter the runner uses,
- * with no extra translation layer.
+ * The wrapper is TypeScript so it follows the repository's
+ * tools-only Bun rule; the emitted markers remain the native
+ * GitHub Actions runner protocol.
  */
 
 import { spawnSync } from 'node:child_process';
@@ -23,7 +20,13 @@ import { describe, expect, it } from 'vitest';
 const here = dirname(fileURLToPath(import.meta.url));
 // tools/tests/ci/pack-smoke.spec.ts → repo root is 3 levels up.
 const repoRoot = join(here, '..', '..', '..');
-const scriptPath = join(repoRoot, 'tools', 'scripts', 'ci', 'pack-smoke.sh');
+const scriptPath = join(
+	repoRoot,
+	'tools',
+	'scripts',
+	'ci',
+	'pack-smoke.script.ts',
+);
 
 interface IRunResult {
 	readonly stdout: string;
@@ -39,7 +42,7 @@ interface IRunResult {
  */
 const runWrapper = (innerCmd: readonly string[]): IRunResult => {
 	const args = ['--command', ...innerCmd];
-	const res = spawnSync('bash', [scriptPath, ...args], {
+	const res = spawnSync('bun', [scriptPath, ...args], {
 		encoding: 'utf8',
 		cwd: repoRoot,
 	});
@@ -50,7 +53,7 @@ const runWrapper = (innerCmd: readonly string[]): IRunResult => {
 	};
 };
 
-describe('pack-smoke.sh (x00268)', () => {
+describe('pack-smoke.script.ts (x00268)', () => {
 	it('preserves output verbatim on success', () => {
 		const result = runWrapper([
 			'sh',
@@ -80,7 +83,9 @@ describe('pack-smoke.sh (x00268)', () => {
 		expect(result.stdout).toContain('first failure line');
 		expect(result.stdout).toContain('second failure line');
 		// ::error:: marker is emitted so the step shows as failed.
-		expect(result.stdout).toContain('::error::pack-smoke failed with exit 42');
+		expect(result.stdout).toContain(
+			'::error::pack-smoke failed with exit 42',
+		);
 	});
 
 	it('captures stderr inside the group too', () => {
@@ -95,7 +100,7 @@ describe('pack-smoke.sh (x00268)', () => {
 	});
 
 	it('refuses --command with no arguments (exit 2)', () => {
-		const res = spawnSync('bash', [scriptPath, '--command'], {
+		const res = spawnSync('bun', [scriptPath, '--command'], {
 			encoding: 'utf8',
 			cwd: repoRoot,
 		});
