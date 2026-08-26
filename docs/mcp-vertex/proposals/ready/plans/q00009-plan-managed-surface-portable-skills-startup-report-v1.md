@@ -207,7 +207,14 @@ cargan bajo demanda y se desalojan cuando dejan de ser útiles. Las
 skills deben funcionar tanto en dogfooding dentro del monorepo como
 en un proyecto externo que solo instala paquetes publicados.
 
-## Tracks
+## why
+
+El contrato necesita separar el catálogo completo, la superficie que paga
+el cliente MCP, el working set interno y el contenido bajo demanda. Esta
+separación permite reducir el coste recurrente sin perder descubribilidad
+para el operador ni portabilidad de skills fuera del monorepo.
+
+## architecture
 
 #### Track M — Managed Surface contracts & mode (P0 raíz)
 
@@ -292,7 +299,15 @@ Precondición: todos los tracks técnicos deben estar `done` para que los docs r
 
 Precondición: `c00150` (regression gate), `c00154` (generated artifacts).
 
-## Acceptance criteria globales
+## slices
+
+### S1 — Managed Surface, startup report, costes y skills
+
+- **Status**: pending
+- **Files**: `packages/core/src/lib/surface/`, `packages/core/src/lib/skills/`, `packages/core/src/lib/tools/`, plugins y documentación indicados en los tracks
+- **Gate**: `bun run validate`
+
+## acceptance
 
 Solo `q00009` puede cerrarse cuando se demuestre con evidencia
 reproducible en el SHA final:
@@ -319,7 +334,7 @@ reproducible en el SHA final:
 20. Tests unit + integration + E2E pasan.
 21. `bun run validate` verde en el SHA final.
 
-## Out of scope explícito
+## non-goals
 
 - **Selector ML scoring con pesos configurables** (Track L c00152 es P2;
   scoring heurístico es suficiente en v1).
@@ -331,7 +346,7 @@ reproducible en el SHA final:
 - **Telemetry externa** (MCP-Vertex no envía telemetría por sí mismo
   en esta iniciativa; las métricas son in-memory / logs locales).
 
-## Estado al cierre (este archivo)
+## notes
 
 Este plan **no produce código por sí mismo**: es un orquestador.
 Las hijas lo entregan.

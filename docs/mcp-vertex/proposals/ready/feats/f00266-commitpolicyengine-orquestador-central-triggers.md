@@ -1,5 +1,5 @@
 ---
-id: f00182
+id: f00266
 title: "AUD-CP-002/006/008/010/011 — `CommitPolicyEngine`: orquestador central de triggers"
 kind: feat
 status: ready
@@ -11,7 +11,7 @@ classification: CONFIRMADO
 parent-plan: q00006
 audit-source:
     file: docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol-cuarta-pasada.md
-    section: "Track B / f00182"
+    section: "Track B / f00266"
     sha256: 2374da0f620dc2cfab21e0d435e143f10174731864efce9f26f2d3a00104232a
     finding: AUD-CP-002, AUD-CP-006, AUD-CP-008, AUD-CP-010, AUD-CP-011
 related:
@@ -23,11 +23,11 @@ related:
     - x00265 # requireConventional validado aquí
     - x00266 # push policy orquestada aquí
     - x00267 # branch protection chequeda aquí
-    - f00183 # idempotency keys en el engine
+    - f00267 # idempotency keys en el engine
     - t00017, t00018, t00019, t00020, t00021 # cobertura
 ---
 
-# f00182 — CommitPolicyEngine: orquestador central de triggers
+# f00266 — CommitPolicyEngine: orquestador central de triggers
 
 ## Goal
 
@@ -58,7 +58,7 @@ manual-trigger   ─┘                        │
                                            ├─ checa branch policy (x00267)
                                            ├─ valida requireConventional (x00265)
                                            ├─ stagea (x00263, x00264)
-                                           ├─ idempotency check (f00183)
+                                           ├─ idempotency check (f00267)
                                            ├─ commit
                                            └─ push (x00266)
 ```
@@ -69,7 +69,7 @@ manual-trigger   ─┘                        │
   convergen aquí: sin orquestador central, la policy se aplica a
   tropezones.
 - Pieza base de 6 hijas (x00260, x00263, x00264, x00265, x00266,
-  x00267) y de `f00183` (idempotency).
+  x00267) y de `f00267` (idempotency).
 - "One source of truth" → todos los paths pasan por el mismo
   pipeline.
 - "Invariant as API or lint" → el chequeo de branch policy, de
@@ -127,7 +127,7 @@ export interface CommitPolicyEngine {
 | `REQUIRE_CONVENTIONAL` / `NON_CONVENTIONAL_MESSAGE` | x00265 |
 | `SLICE_HAS_NO_FILES` | x00263 |
 | `CROSS_AGENT_CONTAMINATION` | x00263 |
-| `ALREADY_PROCESSED` | f00183 |
+| `ALREADY_PROCESSED` | f00267 |
 
 ### 3. Pipeline interno
 
@@ -145,7 +145,7 @@ async handle(event) {
   const conv = await this.validateConventional(message);
   if (conv.refusal) return conv.refusal;
 
-  // 4. Idempotency (f00183)
+  // 4. Idempotency (f00267)
   const idemKey = computeIdempotencyKey(event);
   if (this.processedEvents.has(idemKey)) return ALREADY_PROCESSED;
   this.processedEvents.add(idemKey);
@@ -185,7 +185,7 @@ return { tools, knowledge, async dispose() { … } };
 
 El engine es dueño de:
 - `seenEvents: Set<string>` in-memory + sync JSONL al cerrar.
-- `processedEvents: Set<string>` (idempotency, vía `f00183`).
+- `processedEvents: Set<string>` (idempotency, vía `f00267`).
 - `commitCount`, `windowStart` (push policy, vía `x00266`).
 - `dispose()` libera timers y watchers (vía `x00261`).
 
@@ -216,4 +216,4 @@ El engine es dueño de:
 - `bun run lint` verde; `tsc --noEmit` verde.
 - Sin dependencias npm nuevas.
 - Pieza base para: x00260, x00263, x00264, x00265, x00266, x00267,
-  f00183.
+  f00267.

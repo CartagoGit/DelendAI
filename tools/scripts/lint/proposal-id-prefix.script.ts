@@ -5,7 +5,7 @@
  * Ensures proposal markdown files under `docs/mcp-vertex/proposals/**` have a
  * frontmatter `id:` prefix consistent with their parent status folder policy:
  *
- * - `ready/` -> `f|x|r|c|d|t`
+ * - `ready/` -> any active proposal kind (`f|x|b|a|c|r|v|d|t|i|s|q`)
  * - `done/`, `paused/`, `blocked/`, `retired/`, `review/`, `in-progress/`
  *   -> any prefix is accepted
  *
@@ -21,7 +21,20 @@ import {
 } from '../../../plugins/proposals/src/lib/proposals/frontmatter-parser';
 
 const PROPOSAL_FILENAME = /^[a-z]\d{5}-[a-z0-9-]+\.md$/;
-const READY_PREFIXES = new Set(['f', 'x', 'r', 'c', 'd', 't']);
+const READY_PREFIXES = new Set([
+	'f',
+	'x',
+	'b',
+	'a',
+	'c',
+	'r',
+	'v',
+	'd',
+	't',
+	'i',
+	's',
+	'q',
+]);
 const STATUS_WITH_FREE_PREFIX = new Set([
 	'done',
 	'paused',

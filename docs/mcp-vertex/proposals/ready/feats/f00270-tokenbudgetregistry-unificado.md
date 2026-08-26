@@ -1,5 +1,5 @@
 ---
-id: f00186
+id: f00270
 title: "`TokenBudgetRegistry` unificado"
 kind: feat
 status: ready
@@ -10,7 +10,7 @@ priority: P1
 parent-plan: q00006
 audit-source:
     file: docs/mcp-vertex/audits/legacy/2026-08-25-develop-external-audit-chatgpt-sol-cuarta-pasada.md
-    section: "Track E / f00186"
+    section: "Track E / f00270"
     sha256: 2374da0f620dc2cfab21e0d435e143f10174731864efce9f26f2d3a00104232a
 related:
     - q00006
@@ -20,7 +20,7 @@ related:
     - r00032 # idem orchestrator-runner
 ---
 
-# f00186 — `TokenBudgetRegistry` unificado
+# f00270 — `TokenBudgetRegistry` unificado
 
 ## Goal
 
