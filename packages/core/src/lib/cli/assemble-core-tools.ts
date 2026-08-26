@@ -197,7 +197,7 @@ export const assembleCoreTools = (
 			? { providers: () => providerSummaries }
 			: {}),
 	};
-	// f00117 S2: when no config file exists at all, orientation names the
+	// S2: when no config file exists at all, orientation names the
 	// one call that bootstraps it — the server-side self-init, for hosts
 	// with no CLI available. `configDiagnostic.present` is resolved once
 	// at boot from a real file read; no I/O here.
@@ -220,13 +220,13 @@ export const assembleCoreTools = (
 	const buildSnapshot = (): IOverviewSnapshot => ({
 		server: { name: args.serverName, version: args.serverVersion },
 		namespacePrefix: corePrefix,
-		// r00027: include workspaceRoot so the overview tool can ask
+		// Include workspaceRoot so the overview tool can ask
 		// the tool-surface runtime for getProjectContext (which
 		// requires a workspaceRoot) and surface the surface-mode +
 		// tool counts the operator asked for.
 		workspaceRoot: args.workspace,
 		corePaths,
-		// f00109 S1: config problems (schema violations, dead docsDir/roots)
+		// S1: config problems (schema violations, dead docsDir/roots)
 		// belong in the agent's first orientation call. Omitted when clean
 		// so the healthy path pays zero bytes.
 		...(configDiagnostic.issues.length > 0
@@ -339,7 +339,7 @@ export const assembleCoreTools = (
 	const metricsDirAbs = workspace.resolve(
 		joinRel(corePaths.cacheDir, 'metrics'),
 	);
-	// q00009: dynamic surface tools are ALWAYS registered.
+	// Dynamic surface tools are ALWAYS registered.
 	const dynamicSurfaceTools = [
 		buildProjectContextToolRegistration({
 			namespacePrefix: corePrefix,
@@ -417,7 +417,7 @@ export const assembleCoreTools = (
 			projectName: args.serverName,
 			projectPackageName: '@mcp-vertex/core',
 		}),
-		// f00120 S4: `create_plugin` is a SEPARATE IToolRegistration, not a
+		// S4: `create_plugin` is a SEPARATE IToolRegistration, not a
 		// nested call inside `scaffold.register`. The fake MCP server in
 		// `tools/scripts/lib/test-mcp-server.ts` captures schemas via a
 		// single closure per tool — a nested register would overwrite the
@@ -426,13 +426,13 @@ export const assembleCoreTools = (
 			namespacePrefix: corePrefix,
 			workspace,
 		}),
-		// f00141 S2: `plugin_add` MCP tool. Returns the install + wire + config
+		// S2: `plugin_add` MCP tool. Returns the install + wire + config
 		// recipe for the agent to execute; the recipe is data so the tool
 		// stays pure (no subprocess, no fs, no config write).
 		buildPluginAddRegistration({
 			namespacePrefix: corePrefix,
 		}),
-		// f00141 S3: `plugin_search` MCP tool. Read-only registry search;
+		// S3: `plugin_search` MCP tool. Read-only registry search;
 		// pairs with plugin_add so the agent can discover first.
 		buildPluginSearchRegistration({
 			namespacePrefix: corePrefix,
@@ -440,7 +440,7 @@ export const assembleCoreTools = (
 				? { sources: fileConfig.pluginRegistry.communitySources }
 				: {}),
 		}),
-		// f00117 S2: the server-side self-init — any MCP client can derive
+		// S2: the server-side self-init — any MCP client can derive
 		// (and, with write:true, persist) mcp-vertex.config.json without
 		// the CLI.
 		buildInitConfigToolRegistration({
@@ -448,7 +448,7 @@ export const assembleCoreTools = (
 			workspace,
 			reader: createWorkspaceFileReader(workspace),
 		}),
-		// f00157 S1: the one-call adoption orchestrator — composes config
+		// S1: the one-call adoption orchestrator — composes config
 		// derivation + proposals-store bootstrap + host agent scaffold.
 		buildAdoptProjectToolRegistration({
 			namespacePrefix: corePrefix,
@@ -456,7 +456,7 @@ export const assembleCoreTools = (
 			corePaths,
 			reader: createWorkspaceFileReader(workspace),
 		}),
-		// q00009: vertex router is ALWAYS registered; the runtime's
+		// The vertex router is ALWAYS registered; the runtime's
 		// `applySurfaceMode` decides whether to expose it. In native
 		// mode it stays hidden; in managed/adaptive/compact it is the fallback
 		// entry point for tools outside the bootstrap set.
@@ -519,7 +519,7 @@ export const assembleCoreTools = (
 				namespacePrefix: corePrefix,
 			},
 		}),
-		// d00010 (Track H / q00006): structural map resource so any
+		// Structural map resource (Track H) so any
 		// client can fetch the repo-wide orientation in one round
 		// trip (packages, plugins, hotspots).
 		buildCodeMapResourceRegistration(),
@@ -538,7 +538,7 @@ export const assembleCoreTools = (
 		buildStartPromptRegistration(corePrefix, () => recommendedNextAction),
 	);
 
-	// f00065 S5 (E): expose every advertised skill as a `/`-invocable prompt
+	// S5 (E): expose every advertised skill as a `/`-invocable prompt
 	// (`<prefix>_skill_<id>`), so MCP hosts list skills under their trigger
 	// character. Bodies load lazily via the catalog, so this stays cheap.
 	prompts.push(

@@ -1,4 +1,4 @@
-// q00009 / f00254: add `managed` as a fourth canonical mode. `managed`
+// `managed` is a canonical mode that keeps the catalog server-side and
 // keeps the catalog server-side, exposes only the bootstrap surface to
 // the LLM, and uses the `vertex` router to execute tools that are
 // available but not listed. `extended` is preserved as a legacy alias

@@ -239,7 +239,7 @@ export type {
 } from '../lib/scaffold/author-plugin';
 
 // --- f00193 (Track K / external MCPs): control-plane registry + router ----
-// f00193 ships the registry + router that lets the host talk to multiple
+// ships the registry + router that lets the host talk to multiple
 // external MCP providers and pick the best one per capability. Re-exports
 // the pure types and helpers; runtime values (the `ExternalMcpRegistry`
 // class) are exposed alongside.

@@ -94,13 +94,13 @@ export default definePlugin({
 			}
 		};
 
-		// f00251 S3 — adapter that forwards ICapturedError events from
+		// S3 — adapter that forwards ICapturedError events from
 		// the core collector into the same JSONL streams used by the
 		// lifecycle hooks. Instantiated here so it shares the
 		// `appendEvent` closure and inherits both-stream fan-out for free.
 		const adapter = createLogsErrorSinkAdapter({ appendEvent });
 
-		// f00072 S4 / rotation rework: register retention as DATA against
+		// S4 / rotation rework: register retention as DATA against
 		// the shared cache-eviction registry instead of an inline
 		// one-shot `gc()`. Both streams keep the newest N *files*
 		// (`keepLastN`, one file per day) rather than aging out by
@@ -125,7 +125,7 @@ export default definePlugin({
 			when: { kind: 'keepLastN', n: retentionCount },
 		});
 
-		// f00111 S2: one boot marker per server process. Sessions from a
+		// S2: one boot marker per server process. Sessions from a
 		// stale host and the live one interleave in the same date file;
 		// this line is what tells them apart when debugging.
 		await appendEvent(
@@ -138,7 +138,7 @@ export default definePlugin({
 			}),
 		);
 
-		// f00153 S4 — cross-plugin incident helper. The `logs` plugin
+		// S4 — cross-plugin incident helper. The `logs` plugin
 		// owns the `appendEvent` writer, but peer plugins (notification,
 		// quality, security, …) can call it through `ctx.logs.log(...)`
 		// without depending on `@mcp-vertex/logs` at compile time. The
@@ -198,7 +198,7 @@ export default definePlugin({
 			// it with the core error collector. Shares `appendEvent`
 			// and inherits the error-stream fan-out for free.
 			errorSinks: [adapter.sink],
-			// f00154 S2 — publish our appendEvent as the canonical
+			// S2 — publish our appendEvent as the canonical
 			// sink. The core routes every `onToolStart` / `onToolCall`
 			// / `onToolCancel` (across ALL plugins) through this sink,
 			// so the JSONL streams are populated even for plugins that
@@ -284,7 +284,7 @@ export default definePlugin({
 					}),
 				);
 			},
-			// f00111 S2: client aborted the call while the handler was
+			// S2: client aborted the call while the handler was
 			// running. The handler's own completion/failure still logs
 			// separately when it settles — both lines together tell whether
 			// the cancel raced a fast tool or interrupted a slow one. Does

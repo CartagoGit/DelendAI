@@ -219,7 +219,7 @@ export const activate = async (
 	context: IExtensionContext,
 	deps: IActivationDeps = {},
 ): Promise<void> => {
-	// r00003 S4: every disposable the extension creates will be tracked
+	// S4: every disposable the extension creates will be tracked
 	// through this handle. `deactivate()` (called by VS Code with no
 	// arguments) drains it. Tests can read `getRuntimeHandle()` to
 	// assert which disposables were registered and in what order.
@@ -254,12 +254,12 @@ export const activate = async (
 			},
 		),
 	);
-	// f00081 S2: resolve the host's tool-name namespace from
+	// S2: resolve the host's tool-name namespace from
 	// `mcp-vertex.server.prefix` once, and thread it into every service so
 	// a `--prefix=acme` deployment calls `acme_*` tools instead of silently
 	// failing. `undefined` keeps the default `mcp-vertex_` behaviour.
 	const namespacePrefix = resolveNamespacePrefix(vscode);
-	// x00072 SEC-001 S1: refuse to spawn the stdio child when the
+	// SEC-001 S1: refuse to spawn the stdio child when the
 	// workspace is not trusted. The UI/services still register so the user
 	// can see the host; the manual `start-server` command bypasses the gate
 	// via `deps.trustOverride`.
@@ -310,7 +310,7 @@ export const activate = async (
 	});
 	await context.globalState.update(CLIENT_STATE_KEY, client);
 
-	// r00003 S4: `track()` is the single registration seam for every
+	// S4: `track()` is the single registration seam for every
 	// disposable the extension creates (command subscriptions, tree
 	// providers, watchers, the dashboard webview). It pushes onto
 	// `context.subscriptions` (so VS Code's own lifecycle observer still
@@ -326,7 +326,7 @@ export const activate = async (
 	};
 
 	const overview = new OverviewService(client, namespacePrefix);
-	// f00059 S3: capture the host's actually-loaded plugin set so the
+	// S3: capture the host's actually-loaded plugin set so the
 	// toolbar can drop action cards whose `requires` is unmet. A
 	// failed overview call (server not yet booted) leaves the set
 	// undefined, and the toolbar's `deps.loadedPlugins ?? []` fallback
@@ -374,7 +374,7 @@ export const activate = async (
 		);
 		await statusBar.start();
 		context.subscriptions.push(statusBar);
-		// r00003 S4: route the status bar through the handle so that
+		// S4: route the status bar through the handle so that
 		// `deactivate()` actually disposes it. The `subscriptions` push
 		// remains for VS Code's own lifecycle observer (so the test that
 		// checks `subscriptions.length === 13` keeps passing).
@@ -391,13 +391,13 @@ export const activate = async (
 		memoryTree,
 	);
 	if (memoryRegistration !== undefined) track(memoryRegistration);
-	// f00079 S4 (a00040 H5): `mcp-vertex.proposals` is declared in
+	// S4 (H5): `mcp-vertex.proposals` is declared in
 	// `contributes.views` but had no `TreeDataProvider`, so the view was
 	// permanently empty. Register the existing `ProposalBoardProvider`
 	// (it mirrors `mcp-vertex_proposals_proposal_board`) so the view
 	// renders the live board and each node can route to its proposal via
 	// `mcp-vertex.openProposal` (S5).
-	// f00097 S2/S3: one shared read-only snapshot source backs BOTH the
+	// S2/S3: one shared read-only snapshot source backs BOTH the
 	// sidebar board and the detail webview, so opening a proposal reuses the
 	// board's cached fetch (one TTL cache, fewer tool calls).
 	const proposalsSource = new ProposalsSnapshotSource({
@@ -440,7 +440,7 @@ export const activate = async (
 			...withPrefix,
 		}),
 	);
-	// f00097 S4: the board's own refresh (also on the view title bar) and the
+	// S4: the board's own refresh (also on the view title bar) and the
 	// banner's "Copy error" action.
 	track(registerProposalsRefreshCommand({ vscode, client, proposalsTree }));
 	track(registerProposalsCopyErrorCommand({ vscode, client }));
@@ -450,10 +450,10 @@ export const activate = async (
 	// a thin host wrapper around `EmbedService` (no client request), so
 	// it only needs `vscode`.
 	track(registerOpenDocsCommand({ vscode }));
-	// f00053 S6: surface the canonical docs/how-to-use/API from the IDE.
+	// S6: surface the canonical docs/how-to-use/API from the IDE.
 	track(registerOpenDocsApiCommand({ vscode }));
 	track(registerOpenAgentCatalogCommand({ vscode, client }));
-	// f00192 S1: VSCode Agent Timeline view. Reads
+	// S1: VSCode Agent Timeline view. Reads
 	// `.vscode/mcp-vertex/timeline.json` (written by the core
 	// `TimelineBuffer`) and renders a vertical timeline of
 	// claim/activate/change/test/cost/commit/close events.
@@ -464,7 +464,7 @@ export const activate = async (
 				vscode.workspace?.workspaceFolders?.[0]?.uri.fsPath ?? null,
 		}),
 	);
-	// f00119 S6: surface the auto-agent-selector plugin's roster +
+	// S6: surface the auto-agent-selector plugin's roster +
 	// recommendation so the user can review (and pin via the CLI /
 	// configuration-center) without leaving the IDE.
 	track(
@@ -492,7 +492,7 @@ export const activate = async (
 	);
 	track(registerMemorySaveCommand({ vscode, client, memoryTree }));
 	track(registerMemoryForgetCommand({ vscode, client, memoryTree }));
-	// f00098 S3: provider dashboard panel + its action commands (pause/
+	// S3: provider dashboard panel + its action commands (pause/
 	// resume/healthcheck/usage report/usage clear-with-modal-confirm).
 	// The panel repaints when these commands run — never by polling.
 	for (const reg of registerProviderActionCommands({
@@ -503,7 +503,7 @@ export const activate = async (
 	})) {
 		track(reg);
 	}
-	// f00068 S5: external-server activation ack surface (gate decision 5).
+	// S5: external-server activation ack surface (gate decision 5).
 	// The command lists pending acks → QuickPick → accept/reject via the
 	// external_mcp_ack tool; a NON-MODAL toast surfaces them at activation.
 	const externalMcpsAckDeps = {
@@ -519,7 +519,7 @@ export const activate = async (
 	// handlers were never registered, so changes the user made in the
 	// webview were silently dropped. We now wire them to the same
 	// `SettingsService` + `ISettingsStore` used by `openSettings`.
-	// f00079 S3 (a00040 H4): back the settings store with
+	// S3 (H4): back the settings store with
 	// `context.globalState` so the user's choices survive a window
 	// reload instead of living in module-scope memory.
 	const settingsStore = createExtensionSettingsStore(context.globalState);
@@ -596,7 +596,7 @@ export const activate = async (
 	}
 };
 
-// r00003 S4: the VS Code runtime calls `deactivate()` with no arguments,
+// S4: the VS Code runtime calls `deactivate()` with no arguments,
 // so we cannot rely on the host passing the activation context back.
 // The only safe bridge between two top-level exports of this file is a
 // module-level handle slot. VS Code only allows one activation per

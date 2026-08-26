@@ -220,7 +220,7 @@ export const assembleCliConfig = async (
 	const rawConfig = await readFile(configPath);
 	const fileConfig = parseConfigFile(rawConfig);
 	const baseConfigDiagnostic = diagnoseConfigFile(rawConfig);
-	// f00087 S1: layer the semantic plugin-path warnings on top of the
+	// S1: layer the semantic plugin-path warnings on top of the
 	// schema-only diagnostic. Schema validation can't catch the
 	// "looks-like-a-bare-name" case (a bare string is still valid), so
 	// we run a separate guard for every plugin entry that sets `path`.
@@ -242,7 +242,7 @@ export const assembleCliConfig = async (
 	const docsDir =
 		args.tokens.docsDir ?? fileConfig.docsDir ?? DEFAULT_CORE_PATHS.docsDir;
 	const corePaths = { cacheDir, docsDir };
-	// f00109 S1: dead-config detection. A config file whose docsDir or
+	// S1: dead-config detection. A config file whose docsDir or
 	// plugin `options.roots` point at paths that do not exist (the classic
 	// copied-from-another-repo config) used to boot silently — every
 	// plugin scanned an empty tree and the agent never found the docs,
@@ -275,7 +275,7 @@ export const assembleCliConfig = async (
 	};
 	const corePrefix = args.namespacePrefix ?? 'mcp-vertex';
 	const keepLegacy = fileConfig.keepLegacy ?? false;
-	// f00089 U5: native authorized-roots filesystem allowlist. The config
+	// U5: native authorized-roots filesystem allowlist. The config
 	// lists absolute roots the operator authorizes for `fs_read`/`fs_write`
 	// beyond the workspace; a relative entry is resolved against the
 	// workspace root so the value handed to the containment helper is always
@@ -283,7 +283,7 @@ export const assembleCliConfig = async (
 	const fsAuthorizedRoots = (
 		fileConfig.filesystem?.authorizedRoots ?? []
 	).map((root) => resolve(workspace.root, root));
-	// f00052: host-scoped agent_worktree gate. Resolution order is host
+	// Host-scoped agent_worktree gate. Resolution order is host
 	// CLI flag > config file > `false` default. The CLI value is already a
 	// tri-state boolean (`undefined` when the flag is absent), so a simple
 	// nullish cascade gives the documented precedence with a concrete
@@ -291,7 +291,7 @@ export const assembleCliConfig = async (
 	const agentWorktreeEnabled =
 		args.agentWorktree ?? fileConfig.agentWorktree ?? false;
 
-	// f00072 slice S1: the cache eviction registry is a single shared
+	// slice S1: the cache eviction registry is a single shared
 	// instance every plugin receives via its context. We create it
 	// BEFORE loadPlugins so a plugin's `register()` can call
 	// `ctx.cacheEvictionRegistry.register(rule)`. The boot sweep that
@@ -336,13 +336,13 @@ export const assembleCliConfig = async (
 		list: () => new Map(toolRegistryEntries),
 	};
 
-	// f00082: resolve the commit-author policy ONCE (the git lookup
+	// Resolve the commit-author policy ONCE (the git lookup
 	// runs at boot, not per commit). The CLI loader fills the identity
 	// from MCP `clientInfo` (or `args.extra['agent-client']` / `agent-model`
 	// — the only two places a programmatic host can inject it today
 	// without plumbing a new channel); the named bits from the config
 	// file. Defaults: mode `'git'`, clientName `'agent'`.
-	// f00082 S3: the RAW host/model the host actually declared (config file
+	// S3: the RAW host/model the host actually declared (config file
 	// first, then the programmatic `agent-client`/`agent-model` args). Kept
 	// separate from the sentinel-defaulted commit-author identity below so the
 	// plugin-context `hostIdentity` is populated ONLY when a real identity was
@@ -385,14 +385,14 @@ export const assembleCliConfig = async (
 		createGitConfigReader(createGitRunner(workspace.root)),
 	);
 
-	// f00154 S2 — the sink every plugin's context receives. We
+	// S2 — the sink every plugin's context receives. We
 	// resolve it AFTER `assemblePlugins` (which sees the `logsSink`
 	// each plugin returned in its registrations), and fall back to a
 	// `ConsoleLogsSink` if no plugin supplied one. The fallback
 	// guarantees no tool-call lifecycle event is silently dropped
 	// when the host forgets `--plugins=logs`.
 	let resolvedLogsSink: ILogsSink | undefined;
-	// f00251 — collector assembled after `assemblePlugins` returns.
+	// — collector assembled after `assemblePlugins` returns.
 	let resolvedErrorCollector: IErrorCollector | undefined;
 	const buildContext = (
 		pluginName: string,
@@ -660,7 +660,7 @@ export const assembleCliConfig = async (
 			? { explicitMode: explicitSurfaceMode }
 			: {}),
 		bootstrapToolIds: [...BOOTSTRAP_CORE_TOOL_IDS],
-		// q00009: the vertex router is ALWAYS registered as a tool
+		// The vertex router is ALWAYS registered as a tool
 		// (see assemble-core-tools.ts) and the plan records its id so
 		// the runtime can hide it in `native` mode (the operator has
 		// every tool listed) and expose it in `managed`/`adaptive`/`compact`
@@ -850,7 +850,7 @@ export const assembleCliConfig = async (
 			: {}),
 	};
 
-	// f00154 S2 — if no plugin supplied a sink, default to the
+	// S2 — if no plugin supplied a sink, default to the
 	// console fallback so lifecycle events still surface (one
 	// structured JSON line per event on stderr, redacted).
 	resolvedLogsSink =
@@ -859,7 +859,7 @@ export const assembleCliConfig = async (
 			quiet: (args as { quiet?: boolean }).quiet === true,
 		});
 
-	// f00251 — build the error collector once; inject ConsoleErrorSink fallback when
+	// Build the error collector once; inject ConsoleErrorSink fallback when
 	// no plugin registered a sink so every tool invocation has a capture target.
 	const effectiveErrorSinks: readonly IErrorSink[] =
 		errorSinks.length > 0
@@ -945,7 +945,7 @@ export const assembleCliConfig = async (
 		});
 	const startupReport = buildStartupReport();
 
-	// f00072 slice S1/S3: boot sweep. Runs once, AFTER every plugin has
+	// slice S1/S3: boot sweep. Runs once, AFTER every plugin has
 	// registered its rules. The result is surfaced in
 	// `IAssembledCliConfig.cacheEvictionBootReport` so the doctor
 	// (and CLI tests) can assert what the sweep would have done.
