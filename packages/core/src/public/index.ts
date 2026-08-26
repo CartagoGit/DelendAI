@@ -603,6 +603,31 @@ export {
 	summariseLegacyShimWarning,
 } from '../lib/capabilities/inject';
 export type { ILegacyShimWarning } from '../lib/capabilities/inject';
+
+// --- f00189 (Track F / security): dryRun transversal protocol -------
+export {
+	buildDryRunResult,
+	dryRunRequiredFor,
+	isDryRunResult,
+	validateDryRunResult,
+} from '../lib/dry-run/protocol';
+export type {
+	DryRunOrRun,
+	IDryRunResult,
+	IDryRunResultIssue,
+	IPlannedChange,
+	IPlannedRun,
+	TDryRunRisk,
+} from '../lib/dry-run/protocol';
+export {
+	enforceDryRunReturnContract,
+	planDryRun,
+	validateToolDryRunManifest,
+} from '../lib/dry-run/enforce';
+export type {
+	IDryRunContractRefusal,
+	IDryRunManifestWarning,
+} from '../lib/dry-run/enforce';
 export type {
 	CapabilityTag,
 	CostTier,

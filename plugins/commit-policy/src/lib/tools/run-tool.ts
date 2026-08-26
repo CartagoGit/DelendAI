@@ -8,9 +8,10 @@ import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import z from 'zod';
 
 import type { IToolRegistration } from '@mcp-vertex/core/public';
-import { toolError, toolOk } from '@mcp-vertex/core/public';
+import { buildDryRunResult, toolError, toolOk } from '@mcp-vertex/core/public';
 
 import type { ICommitPolicyOptions } from '../contracts/options';
+import { branchProtectedRefusal, isBranchProtected } from '../contracts/branch';
 import { localizedString } from '../contracts/i18n-types';
 import {
 	runCommitDriver,
@@ -37,32 +38,65 @@ const InputSchema = z.object({
 	kind: z.enum(['manual', 'slice', 'threshold', 'interval']),
 	proposalId: z.string().optional(),
 	sliceId: z.string().optional(),
+	/**
+	 * f00189 (Track F / security): when true the handler returns
+	 * an `IDryRunResult` describing the change WITHOUT executing
+	 * any git operation. Plugins and humans can preview the plan.
+	 */
+	dryRun: z.boolean().optional(),
 });
 
-const OutputSchema = z.object({
-	ok: z.boolean(),
-	fired: z.object({
-		kind: z.string(),
-		proposalId: z.string().optional(),
-		sliceId: z.string().optional(),
-		status: z.string().optional(),
-		dirtyCount: z.number().optional(),
+const OutputSchema = z.union([
+	// Live branch — the tool actually fired a trigger.
+	z.object({
+		ok: z.boolean(),
+		fired: z.object({
+			kind: z.string(),
+			proposalId: z.string().optional(),
+			sliceId: z.string().optional(),
+			status: z.string().optional(),
+			dirtyCount: z.number().optional(),
+		}),
+		commit: z.object({
+			committed: z.boolean(),
+			pushed: z.boolean(),
+			hash: z.string().optional(),
+			reason: z.string().optional(),
+			refusal: z.string().optional(),
+			resolvedAuthor: z
+				.object({
+					displayName: z.string(),
+					email: z.string(),
+					label: z.string(),
+				})
+				.optional(),
+		}),
+		message: z.string().optional(),
 	}),
-	commit: z.object({
-		committed: z.boolean(),
-		pushed: z.boolean(),
-		hash: z.string().optional(),
-		reason: z.string().optional(),
-		refusal: z.string().optional(),
-		resolvedAuthor: z
-			.object({
-				displayName: z.string(),
-				email: z.string(),
-				label: z.string(),
-			})
-			.optional(),
+	// Dry-run branch — f00189 (Track F / security): the tool
+	// returned a `DryRunResult` and did NOT execute any git
+	// operation.
+	z.object({
+		ok: z.literal(true),
+		dryRun: z.literal(true),
+		wouldChange: z.array(
+			z.object({
+				kind: z.enum(['write', 'delete', 'rename', 'create', 'patch']),
+				path: z.string(),
+				summary: z.string(),
+			}),
+		),
+		wouldRun: z.array(
+			z.object({
+				shape: z.enum(['shell', 'network', 'process', 'git', 'mcp']),
+				target: z.string(),
+				summary: z.string(),
+			}),
+		),
+		risk: z.enum(['low', 'medium', 'high']),
+		note: z.string().optional(),
 	}),
-});
+]);
 
 const sliceRefusal = async (
 	options: IRunToolOptions,
@@ -206,6 +240,139 @@ const pinTriggerContext = (
 	return { kind: event.kind, files: event.files.paths };
 };
 
+/**
+ * f00189 (Track F / security): compute the dry-run plan for a
+ * given trigger kind WITHOUT executing any git command. Mirrors
+ * the early-pipeline checks of `runCommitPolicyRun` (selector,
+ * branch, message composition) so a refusal surfaces identically
+ * — the only difference is that we never call the driver. Pure
+ * over its inputs (the only I/O is the slice snapshot read for
+ * `kind: 'slice'`, which is read-only).
+ */
+export const planCommitPolicyRun = async (
+	args: z.infer<typeof InputSchema>,
+	options: IRunToolOptions,
+): Promise<
+	| {
+			readonly kind: 'plan';
+			readonly plan: ReturnType<typeof buildDryRunResult>;
+	  }
+	| { readonly kind: 'refusal'; readonly refusal: string }
+> => {
+	// Step 1 — resolve the trigger event the same way the live
+	// path does. Any refusal here short-circuits to the same
+	// refusal the caller would have seen in production.
+	let event: ITriggerEvent | { ok: false; refusal: string };
+	switch (args.kind) {
+		case 'manual':
+			event = manualTrigger();
+			break;
+		case 'slice': {
+			const selector: { proposalId?: string; sliceId?: string } = {};
+			if (args.proposalId !== undefined)
+				selector.proposalId = args.proposalId;
+			if (args.sliceId !== undefined) selector.sliceId = args.sliceId;
+			event = await sliceRefusal(options, selector);
+			break;
+		}
+		case 'threshold':
+			event = await thresholdRefusal(options);
+			break;
+		case 'interval':
+			event = await intervalRefusal(options);
+			break;
+	}
+	if ('ok' in event && event.ok === false) {
+		return { kind: 'refusal', refusal: event.refusal };
+	}
+	const triggerEvent = event as ITriggerEvent;
+
+	// Step 1.5 — branch policy (mirror of the live engine check at
+	// f00182 step 2). The dry-run MUST refuse protected branches
+	// just like the live path does, otherwise an agent could
+	// preview a commit that the engine would refuse.
+	const branch = await options.run(['rev-parse', '--abbrev-ref', 'HEAD']);
+	const branchName =
+		branch.ok && branch.output.trim() !== 'HEAD'
+			? branch.output.trim()
+			: undefined;
+	const branchPolicy = {
+		protected: options.policy.push.protectedBranches,
+		...(options.policy.push.protectedPrefixes !== undefined
+			? { protectedPrefixes: options.policy.push.protectedPrefixes }
+			: {}),
+	};
+	if (isBranchProtected(branchName, branchPolicy)) {
+		return {
+			kind: 'refusal',
+			refusal: `BRANCH_PROTECTED: ${branchProtectedRefusal(
+				branchName ?? '(detached)',
+				branchPolicy,
+			)}`,
+		};
+	}
+
+	// Step 2 — derive the file set the driver WOULD stage.
+	const slicePin = pinSliceContext(triggerEvent);
+	const triggerPin =
+		slicePin === null ? pinTriggerContext(triggerEvent) : null;
+	const wouldStage: readonly string[] =
+		slicePin !== null
+			? slicePin.files
+			: triggerPin !== null
+				? triggerPin.files
+				: [];
+
+	// Step 3 — compose the canonical commit message the engine
+	// WOULD build. We re-use `composeMessage`-style wording here
+	// without re-implementing the engine (the plan is descriptive,
+	// not authoritative).
+	const message =
+		slicePin !== null
+			? `feat(${slicePin.proposalId}): commit via ${triggerEvent.kind}`
+			: triggerPin !== null
+				? `chore: commit via ${triggerEvent.kind}`
+				: `chore: commit via ${triggerEvent.kind}`;
+
+	// Step 4 — emit the canonical DryRunResult envelope.
+	const risk: 'low' | 'medium' | 'high' = options.policy.push.enabled
+		? 'medium'
+		: 'low';
+	const wouldChange = wouldStage.map((path) => ({
+		kind: 'write' as const,
+		path,
+		summary: `stage ${path} and include in commit "${message}"`,
+	}));
+	const wouldRun = [
+		{
+			shape: 'git' as const,
+			target: `git add -- ${wouldStage.join(' ')}`,
+			summary: `stage ${wouldStage.length} file(s)`,
+		},
+		{
+			shape: 'git' as const,
+			target: `git commit -m "${message}"`,
+			summary: 'create commit with the composed message',
+		},
+	];
+	if (options.policy.push.enabled) {
+		wouldRun.push({
+			shape: 'git' as const,
+			target: 'git push',
+			summary: `push to remote per push policy`,
+		});
+	}
+	return {
+		kind: 'plan',
+		plan: buildDryRunResult({
+			wouldChange,
+			wouldRun,
+			risk,
+			note: `trigger=${triggerEvent.kind}; dry-run — no git operation was executed.`,
+		}),
+	};
+};
+
 export const runCommitPolicyRun = async (
 	args: z.infer<typeof InputSchema>,
 	options: IRunToolOptions,
@@ -216,6 +383,34 @@ export const runCommitPolicyRun = async (
 			nextAction: catalog.tools.commit.nextActionCommit,
 		}));
 		return toolError(localized.summary, localized.nextAction);
+	}
+
+	// f00189 (Track F / security): when `dryRun === true`, plan
+	// the change without executing it. We compute the same
+	// selector + branch + message checks the engine runs, then
+	// return the canonical DryRunResult envelope. No `git add`,
+	// no `git commit`, no `git push` — those run only when
+	// `args.dryRun` is unset or false.
+	if (args.dryRun === true) {
+		const planned = await planCommitPolicyRun(args, options);
+		if (planned.kind === 'refusal') {
+			return toolError(
+				planned.refusal,
+				'See commit_policy_status for details.',
+			);
+		}
+		const { plan } = planned;
+		// Spread the DryRunResult into a plain Record so the
+		// toolOk envelope (`{ ok: true, ...data }`) accepts the
+		// payload. The fields are exactly the DryRunResult fields
+		// plus `ok: true`.
+		return toolOk({
+			dryRun: plan.dryRun,
+			wouldChange: [...plan.wouldChange],
+			wouldRun: [...plan.wouldRun],
+			risk: plan.risk,
+			...(plan.note !== undefined ? { note: plan.note } : {}),
+		});
 	}
 
 	let event: ITriggerEvent | { ok: false; refusal: string };
@@ -336,15 +531,19 @@ export const buildRunToolRegistration = (
 ): IToolRegistration => ({
 	id: 'commit_policy_run',
 	summary:
-		'Manually fire any configured trigger (manual always available; slice/threshold/interval require cadence.triggers).',
-	tags: ['commit-policy', 'run', 'write'],
+		'Manually fire any configured trigger (manual always available; slice/threshold/interval require cadence.triggers). Pass `dryRun: true` to preview the change without executing any git operation.',
+	tags: ['commit-policy', 'run', 'write', 'dry-run'],
+	// f00189 (Track F / security): the tool mutates git state,
+	// so it MUST declare `dryRunSupported: true` and accept
+	// `args.dryRun` to honour the transversal dry-run protocol.
 	effects: ['write'],
+	dryRunSupported: true,
 	register: async (server: McpServer) => {
 		server.registerTool(
 			`${options.namespacePrefix}_commit_policy_run`,
 			{
 				description:
-					'Fire one trigger by kind. `manual` is always available; `slice`/`threshold`/`interval` are gated by cadence.triggers — refusing with a typed reason when not configured.',
+					'Fire one trigger by kind. `manual` is always available; `slice`/`threshold`/`interval` are gated by cadence.triggers — refusing with a typed reason when not configured. Pass `dryRun: true` to preview the change without executing any git operation (f00189).',
 				outputSchema: OutputSchema,
 				inputSchema: InputSchema,
 			},
