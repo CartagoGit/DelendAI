@@ -6,11 +6,17 @@ import {
 	rmSync,
 	writeFileSync,
 } from 'node:fs';
-import * as nodeFs from 'node:fs';
 import { basename, join } from 'node:path';
 import { tmpdir } from 'node:os';
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+
+const { watchMock } = vi.hoisted(() => ({ watchMock: vi.fn() }));
+
+vi.mock('node:fs', async () => ({
+	...(await vi.importActual<typeof import('node:fs')>('node:fs')),
+	watch: watchMock,
+}));
 
 import {
 	getRecallMetricsSnapshot,
@@ -495,10 +501,11 @@ describe('memory plugin', async () => {
 		// the assertion fails.
 		const closeSpy = vi.fn();
 		const unrefSpy = vi.fn();
-		const watchSpy = vi.spyOn(nodeFs, 'watch').mockImplementation((() => ({
+		watchMock.mockClear();
+		watchMock.mockImplementation((() => ({
 			close: closeSpy,
 			unref: unrefSpy,
-		})) as unknown as typeof nodeFs.watch);
+		})) as unknown as typeof import('node:fs').watch);
 		try {
 			const ctx = {
 				workspace: {
@@ -524,7 +531,7 @@ describe('memory plugin', async () => {
 			// watcher). The primitive's `unref?.()` call right after
 			// `watch(...)` is the regression marker for "non-blocking
 			// watcher installed".
-			expect(watchSpy).toHaveBeenCalledTimes(1);
+			expect(watchMock).toHaveBeenCalledTimes(1);
 			expect(unrefSpy).toHaveBeenCalledTimes(1);
 			expect(closeSpy).not.toHaveBeenCalled();
 
@@ -549,7 +556,7 @@ describe('memory plugin', async () => {
 			// storeWatcher.dispose() closed the underlying fs.watch handle.
 			expect(closeSpy).toHaveBeenCalledTimes(1);
 		} finally {
-			watchSpy.mockRestore();
+			watchMock.mockReset();
 			rmSync(dir, { recursive: true, force: true });
 		}
 	});

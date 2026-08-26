@@ -22,6 +22,8 @@
  *   2  unknown `--only` selector.
  */
 
+import { spawn } from 'node:child_process';
+
 interface IStep {
 	readonly name: string;
 	readonly cmd: readonly string[];
@@ -74,6 +76,15 @@ const STEPS: readonly IStep[] = [
 const out = (msg: string) => process.stdout.write(`${msg}\n`);
 const err = (msg: string) => process.stderr.write(`${msg}\n`);
 
+const runChild = (command: string, args: readonly string[]): Promise<number> =>
+	new Promise((resolve) => {
+		const child = spawn(command, [...args], {
+			stdio: 'inherit',
+		});
+		child.once('error', () => resolve(1));
+		child.once('close', (code) => resolve(code ?? 1));
+	});
+
 const flag = (argv: readonly string[], name: string): string | undefined => {
 	for (let i = 0; i < argv.length; i += 1) {
 		const token = argv[i];
@@ -90,25 +101,17 @@ const hasFlag = (argv: readonly string[], name: string): boolean =>
 
 const runStep = async (step: IStep, check: boolean): Promise<number> => {
 	out(`▶ ${step.name} — ${step.description}`);
-	const proc = Bun.spawn(
-		(check ? (step.checkCmd ?? step.cmd) : step.cmd) as string[],
-		{
-			stdout: 'inherit',
-			stderr: 'inherit',
-		},
-	);
-	const exit = await proc.exited;
+	const command = check ? (step.checkCmd ?? step.cmd) : step.cmd;
+	const [executable, ...args] = command;
+	if (executable === undefined) return 1;
+	const exit = await runChild(executable, args);
 	out(`  ${step.name} exited ${exit}`);
 	return exit;
 };
 
 const runGitDiffExit = async (): Promise<number> => {
 	out(`▶ drift-check — git diff --exit-code`);
-	const proc = Bun.spawn(['git', 'diff', '--exit-code'], {
-		stdout: 'inherit',
-		stderr: 'inherit',
-	});
-	return proc.exited;
+	return runChild('git', ['diff', '--exit-code']);
 };
 
 export const main = async (argv: readonly string[]): Promise<number> => {
