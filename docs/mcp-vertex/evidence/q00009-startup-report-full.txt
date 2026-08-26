@@ -3,7 +3,7 @@ version        0.18.0
 workspace      /workspace/my-project
 preset         swarm
 surface        managed
-startup report medium (default)
+startup report full
 
 Catalog
 plugins        51 configured · 6 warm · 0 failed
@@ -32,3 +32,19 @@ internal routing     enabled
 idle eviction        5m
 max warm plugins     8
 list_changed needed  no
+
+Plugins (detail)
+  core                     status=active-internal tools=4/12
+  git                      status=loaded-hidden tools=0/10
+  proposals                status=loaded-hidden tools=0/34
+  agent-orchestrator       status=active-internal tools=0/8
+
+Configuration (sanitised)
+  surface.mode              managed
+  startupReport.level       full
+  baseline.source           estimated
+  baseline.tokens/request   51168
+  budget.core                 shared               n/a unspecified
+  budget.git                  inherited            8000 tokens
+  budget.proposals            dedicated            18000 tokens
+  budget.agent-orchestrator   dedicated            50000 subagent-invocations
