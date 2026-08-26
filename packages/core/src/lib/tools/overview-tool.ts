@@ -41,6 +41,10 @@ export interface IOverviewPlugin {
 export interface IOverviewSnapshot {
 	readonly server: { readonly name: string; readonly version: string };
 	readonly namespacePrefix: string;
+	// r00027: surfaced so the overview tool can ask the
+	// tool-surface runtime for the per-surface counts via
+	// `getProjectContext({ workspaceRoot })`.
+	readonly workspaceRoot: string;
 	readonly corePaths: { readonly cacheDir: string; readonly docsDir: string };
 	/**
 	 * f00109 S1: config-file problems detected at boot — schema violations
@@ -243,6 +247,27 @@ export const buildOverviewToolRegistration = (
 						})
 						.optional(),
 					unusedActivePlugins: z.array(z.string()).optional(),
+					// r00027: surface mode + counts of visible vs hidden
+					// tools. Lets the operator understand at a glance which
+					// surface the host picked and how many tools are
+					// currently announced to the MCP client vs available
+					// behind `plugin_activate`. The total loaded tool count
+					// is the sum of the two; that is the answer to
+					// "cuántas herramientas tiene disponibles" the host
+					// can give without enumerating each entry.
+					projectContext: z
+						.object({
+							surfaceMode: z.enum([
+								'native',
+								'adaptive',
+								'compact',
+							]),
+							visibleToolCount: z.number().int().nonnegative(),
+							hiddenToolCount: z.number().int().nonnegative(),
+							loadedPluginCount: z.number().int().nonnegative(),
+							loadedToolCount: z.number().int().nonnegative(),
+						})
+						.optional(),
 					recommendedNextAction: z.string(),
 				}),
 			},
@@ -311,6 +336,52 @@ export const buildOverviewToolRegistration = (
 						...(snap.unusedActivePlugins?.length
 							? { unusedActivePlugins: snap.unusedActivePlugins }
 							: {}),
+						// r00027: surface mode + tool counts (compact mode
+						// also surfaces them — the operator needs to know
+						// the totals even when they ask for the grouped
+						// view).
+						...(runtime !== undefined
+							? (() => {
+									const ctx = runtime.getProjectContext({
+										workspaceRoot: snap.workspaceRoot,
+										...(snap.corePaths?.cacheDir !==
+										undefined
+											? {
+													cacheDir:
+														snap.corePaths.cacheDir,
+												}
+											: {}),
+										...(snap.corePaths?.docsDir !==
+										undefined
+											? {
+													docsDir:
+														snap.corePaths.docsDir,
+												}
+											: {}),
+										...(snap.configIssues !== undefined
+											? {
+													configIssues:
+														snap.configIssues,
+												}
+											: {}),
+									});
+									const visibleToolCount =
+										ctx.visibleToolCount;
+									const hiddenToolCount = ctx.hiddenToolCount;
+									return {
+										projectContext: {
+											surfaceMode: ctx.surfaceMode,
+											visibleToolCount,
+											hiddenToolCount,
+											loadedPluginCount:
+												ctx.loadedPlugins.length,
+											loadedToolCount:
+												visibleToolCount +
+												hiddenToolCount,
+										},
+									};
+								})()
+							: {}),
 						recommendedNextAction: snap.recommendedNextAction,
 					});
 				}
@@ -363,6 +434,39 @@ export const buildOverviewToolRegistration = (
 						: {}),
 					...(snap.unusedActivePlugins?.length
 						? { unusedActivePlugins: snap.unusedActivePlugins }
+						: {}),
+					// r00027: surface mode + tool counts. The operator's
+					// first call to `overview` is the canonical place to
+					// answer "how many tools does this server have right
+					// now, and how would I get more?".
+					...(runtime !== undefined
+						? (() => {
+								const ctx = runtime.getProjectContext({
+									workspaceRoot: snap.workspaceRoot,
+									...(snap.corePaths?.cacheDir !== undefined
+										? { cacheDir: snap.corePaths.cacheDir }
+										: {}),
+									...(snap.corePaths?.docsDir !== undefined
+										? { docsDir: snap.corePaths.docsDir }
+										: {}),
+									...(snap.configIssues !== undefined
+										? { configIssues: snap.configIssues }
+										: {}),
+								});
+								const visibleToolCount = ctx.visibleToolCount;
+								const hiddenToolCount = ctx.hiddenToolCount;
+								return {
+									projectContext: {
+										surfaceMode: ctx.surfaceMode,
+										visibleToolCount,
+										hiddenToolCount,
+										loadedPluginCount:
+											ctx.loadedPlugins.length,
+										loadedToolCount:
+											visibleToolCount + hiddenToolCount,
+									},
+								};
+							})()
 						: {}),
 					recommendedNextAction: snap.recommendedNextAction,
 				});

@@ -26,7 +26,7 @@ describe('surface capability negotiation', () => {
 		expect(detected.source).toBe('extensions');
 	});
 
-	it('negotiates adaptive for a declaring client AND as the default for a plain one (r00026 / TOK-004)', () => {
+	it('negotiates adaptive for a declaring client AND defaults to native for a plain one (r00027 / TOK-004 follow-up)', () => {
 		expect(
 			decideSurfaceModeFromCapabilities({
 				capabilities: {
@@ -36,17 +36,27 @@ describe('surface capability negotiation', () => {
 				},
 			}).mode,
 		).toBe('adaptive');
-		// r00026: adaptive is now the default even without the private
-		// capability extension — native is an explicit opt-out only.
+		// r00027: native is the silent default again. r00026's
+		// "adaptive by default" hid every tool behind a
+		// `list_changed` notification that most spec-compliant
+		// MCP clients never re-fetch on. Inverting back means the
+		// first `tools/list` enumerates every loaded tool.
 		expect(
 			decideSurfaceModeFromCapabilities({ capabilities: {} }).mode,
-		).toBe('adaptive');
+		).toBe('native');
 		expect(
 			decideSurfaceModeFromCapabilities({
 				capabilities: {},
 				explicitMode: 'native',
 			}).mode,
 		).toBe('native');
+		// Adaptive is still available as an explicit opt-in.
+		expect(
+			decideSurfaceModeFromCapabilities({
+				capabilities: {},
+				explicitMode: 'adaptive',
+			}).mode,
+		).toBe('adaptive');
 	});
 
 	it('respects explicit overrides and derives bootstrap registration hints', () => {
@@ -57,8 +67,11 @@ describe('surface capability negotiation', () => {
 				configMode: 'native',
 			}),
 		).toBe('compact');
-		expect(resolveInitialSurfaceMode(undefined)).toBe('adaptive');
-		expect(shouldRegisterSurfaceRouter(undefined)).toBe(true);
+		// r00027: default surface is now `native` (was `adaptive` in
+		// r00026). The bootstrap set therefore stays smaller and the
+		// router registration hint flips accordingly.
+		expect(resolveInitialSurfaceMode(undefined)).toBe('native');
+		expect(shouldRegisterSurfaceRouter(undefined)).toBe(false);
 		expect(shouldRegisterSurfaceRouter('native')).toBe(false);
 	});
 });

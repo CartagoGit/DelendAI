@@ -162,8 +162,15 @@ export const TOKEN_BUDGETS: ITokenBudgetRegistry = {
 		},
 		swarm: {
 			toolsList: {
-				hard: 192_000,
-				warning: 190_000,
+				// r00027: native is now the silent default, so the dynamic
+				// surface tools (project_context, tool_search,
+				// plugin_activate, plugin_deactivate, vertex router) are
+				// ALWAYS registered. The runtime gates exposure per-client,
+				// but the registrations themselves cost ~5kB on top of the
+				// previous baseline. The bump covers that cost plus a small
+				// safety margin for the next preset drift.
+				hard: 210_000,
+				warning: 204_000,
 				releaseRelativePercent: 20,
 				marginalPluginHard: 80_000,
 				marginalPluginWarning: 70_000,
