@@ -6,6 +6,23 @@ import { afterEach, describe, expect, it } from 'vitest';
 
 import { assembleCliConfig } from '@mcp-vertex/core/lib/cli/assemble';
 import { parseCliArgs } from '@mcp-vertex/core/lib/plugins/parse-cli-args';
+import type { IToolRegistration } from '@mcp-vertex/core/lib/contracts/interfaces/tool-registration.interface';
+
+const callTool = async (tool: IToolRegistration, args: unknown) => {
+	let handler!: (input: unknown) => Promise<{
+		content: Array<{ text?: string }>;
+	}>;
+	await tool.register({
+		registerTool: (
+			_name: string,
+			_description: unknown,
+			next: typeof handler,
+		) => {
+			handler = next;
+		},
+	} as never);
+	return JSON.parse((await handler(args)).content[0]?.text ?? '{}');
+};
 
 describe('managed lazy assembly defaults', () => {
 	const workspaces: string[] = [];
@@ -43,6 +60,18 @@ describe('managed lazy assembly defaults', () => {
 		);
 		expect(descriptor?.summary).toBeTruthy();
 		expect(descriptor?.tags).toContain('lazy');
+		const configurationTool = assembled.config.extraTools?.find(
+			(tool) => tool.id === 'configuration_center',
+		);
+		const page = await callTool(configurationTool!, {
+			section: 'plugins',
+			limit: 100,
+		});
+		expect(
+			page.plugins.find(
+				(plugin: { id: string }) => plugin.id === 'memory',
+			).permissions,
+		).toEqual(['filesystem-read', 'filesystem-write']);
 	});
 
 	it('keeps explicit native surface on the eager compatibility path', async () => {
