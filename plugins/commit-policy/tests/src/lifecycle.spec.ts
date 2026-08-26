@@ -59,26 +59,44 @@ describe('commit-policy lifecycle (x00261)', () => {
 
 	it('register() returns dispose() that is callable', async () => {
 		const reg = await plugin.register(buildCtx(workspace));
-		expect(typeof reg.dispose).toBe('function');
-		await reg.dispose?.();
+		const runtime = asRuntime(reg);
+		expect(typeof runtime.dispose).toBe('function');
+		await runtime.dispose();
 	});
 
 	it('dispose() is idempotent', async () => {
 		const reg = await plugin.register(buildCtx(workspace));
-		await reg.dispose?.();
+		const runtime = asRuntime(reg);
+		await runtime.dispose();
 		// Second dispose must not throw.
-		await reg.dispose?.();
+		await runtime.dispose();
 	});
 
 	it('dispose() stops the slice listener (no leaked interval)', async () => {
 		const reg = await plugin.register(buildCtx(workspace));
+		const runtime = asRuntime(reg);
 		const before = process.listenerCount('SIGINT');
-		await reg.dispose?.();
+		await runtime.dispose();
 		// Indirect check: a second dispose is a no-op and does not
 		// touch new state — proves the listener was already torn
 		// down by the first call (a leaked listener would survive
 		// and the second call would still hold a timer handle).
-		await reg.dispose?.();
+		await runtime.dispose();
 		expect(process.listenerCount('SIGINT')).toBe(before);
 	});
 });
+
+/**
+ * x00261 contract: `register()` MAY return an `IPluginRuntime`
+ * wrapper that owns a `dispose()`. x00261's audit fix expects the
+ * plugin to return the runtime shape, not the bare registrations.
+ * This narrows the union so the test can call `dispose` directly.
+ */
+function asRuntime(reg: Awaited<ReturnType<typeof plugin.register>>): {
+	dispose(): void | Promise<void>;
+} {
+	if (!('dispose' in reg) || typeof reg.dispose !== 'function') {
+		throw new Error('register() did not return an IPluginRuntime');
+	}
+	return reg as unknown as { dispose(): void | Promise<void> };
+}

@@ -66,28 +66,56 @@ const OutputSchema = z.object({
 
 const sliceRefusal = async (
 	options: IRunToolOptions,
+	selector:
+		| { readonly proposalId?: string; readonly sliceId?: string }
+		| undefined,
 ): Promise<ITriggerEvent | { ok: false; refusal: string }> => {
 	const trigger = findTrigger(options.policy.cadence, 'slice');
 	if (trigger === undefined) {
 		return { ok: false, refusal: 'no slice trigger configured' };
 	}
+	// x00262 (AUD-CP-004): the slice trigger now requires an
+	// explicit (proposalId, sliceId) selector — never "first
+	// eligible slice". Cross-agent, the implicit behaviour picked
+	// the wrong slice and committed to it; here the operator
+	// (or upstream code) names the exact slice to act on.
+	const hasProposal =
+		selector !== undefined &&
+		selector.proposalId !== undefined &&
+		selector.proposalId.length > 0;
+	const hasSlice =
+		selector !== undefined &&
+		selector.sliceId !== undefined &&
+		selector.sliceId.length > 0;
+	if (!hasProposal && !hasSlice) {
+		return { ok: false, refusal: 'SELECTOR_REQUIRED' };
+	}
+	if (hasProposal !== hasSlice) {
+		return { ok: false, refusal: 'INCOMPLETE_SELECTOR' };
+	}
+	const proposalId = selector!.proposalId as string;
+	const sliceId = selector!.sliceId as string;
 	const slices = await readCurrentSliceSnapshot(
 		options.workspaceRoot,
 		options.docsDir,
 	);
-	for (const [key, entry] of slices) {
-		const status = entry.status as 'done' | 'merged';
-		if (!trigger.onStatuses.includes(status)) continue;
-		const dash = key.indexOf('-');
-		const sliceId = dash >= 0 ? key.slice(dash + 1) : key;
+	const key = `${proposalId}-${sliceId}`;
+	const entry = slices.get(key);
+	if (entry === undefined) {
+		return { ok: false, refusal: `SLICE_NOT_FOUND: ${key}` };
+	}
+	if (!trigger.onStatuses.includes(entry.status as 'done' | 'merged')) {
 		return {
-			kind: 'slice',
-			proposalId: entry.proposalId,
-			sliceId,
-			status: entry.status,
+			ok: false,
+			refusal: `SLICE_NOT_IN_CONFIGURED_STATUS: ${key} status=${entry.status}`,
 		};
 	}
-	return { ok: false, refusal: 'no slice is in a configured status' };
+	return {
+		kind: 'slice',
+		proposalId: entry.proposalId,
+		sliceId,
+		status: entry.status,
+	};
 };
 
 const thresholdRefusal = async (
@@ -158,9 +186,14 @@ export const runCommitPolicyRun = async (
 		case 'manual':
 			event = manualTrigger();
 			break;
-		case 'slice':
-			event = await sliceRefusal(options);
+		case 'slice': {
+			const selector: { proposalId?: string; sliceId?: string } = {};
+			if (args.proposalId !== undefined)
+				selector.proposalId = args.proposalId;
+			if (args.sliceId !== undefined) selector.sliceId = args.sliceId;
+			event = await sliceRefusal(options, selector);
 			break;
+		}
 		case 'threshold':
 			event = await thresholdRefusal(options);
 			break;
