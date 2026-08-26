@@ -24,8 +24,19 @@ interface IStructuredLease {
 	readonly token: string;
 }
 
-const readStructuredLease = (path: string): IStructuredLease =>
-	JSON.parse(readFileSync(path, 'utf8')) as IStructuredLease;
+const readStructuredLease = async (path: string): Promise<IStructuredLease> => {
+	// `open(..., 'wx')` makes the sidecar visible before the first async
+	// handle.write completes. Wait for a parseable lease instead of making
+	// this race test depend on that tiny, valid creation window.
+	for (let attempt = 0; attempt < 100; attempt += 1) {
+		try {
+			return JSON.parse(readFileSync(path, 'utf8')) as IStructuredLease;
+		} catch {
+			await new Promise((resolve) => setTimeout(resolve, 1));
+		}
+	}
+	throw new Error(`lock lease was not written: ${path}`);
+};
 
 const writeStructuredLease = (path: string, lease: IStructuredLease): void => {
 	writeFileSync(path, JSON.stringify(lease));
@@ -81,7 +92,7 @@ describe('withFileMutex race window (MUT2-001)', () => {
 			await new Promise((resolve) => setTimeout(resolve, 5));
 		}
 
-		const liveLease = readStructuredLease(lockPath);
+		const liveLease = await readStructuredLease(lockPath);
 		writeStructuredLease(lockPath, {
 			...liveLease,
 			generation: liveLease.generation + 1,
@@ -92,9 +103,9 @@ describe('withFileMutex race window (MUT2-001)', () => {
 		let reclaimRenameCount = 0;
 
 		__setWithFileMutexTestHooks({
-			afterObserveStale: () => {
+			afterObserveStale: async () => {
 				observedStaleCount += 1;
-				const observedLease = readStructuredLease(lockPath);
+				const observedLease = await readStructuredLease(lockPath);
 				writeStructuredLease(lockPath, {
 					...observedLease,
 					generation: observedLease.generation + 1,
