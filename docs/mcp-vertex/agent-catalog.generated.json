@@ -798,6 +798,22 @@
 			"bodyPath": "plugins/skills-pack/skills/debugging-playbook/SKILL.md"
 		},
 		{
+			"id": "error-collection",
+			"version": "1.0.0",
+			"minCoreVersion": "0.1.0",
+			"summary": "Use when adding error capture to a plugin handler or writing a custom IErrorSink — withErrorCollection vs direct record, sink contract, privacy guarantee, autoReport opt-in.",
+			"appliesTo": [
+				"@mcp-vertex/*"
+			],
+			"tags": [
+				"error-collection",
+				"privacy",
+				"redaction",
+				"sink"
+			],
+			"bodyPath": "packages/core/skills/error-collection/SKILL.md"
+		},
+		{
 			"id": "incident-response",
 			"version": "1.0.0",
 			"minCoreVersion": "0.1.0",

@@ -5,6 +5,7 @@ import { definePlugin } from '@mcp-vertex/core/public';
 import z from 'zod';
 
 import { buildOperationalEventLogKnowledge } from './lib/knowledge/logs-knowledge';
+import { buildErrorCollectorKnowledge } from './lib/knowledge/error-collector';
 import { type LogSeverity, severityForOutcome } from './lib/services/kinds';
 import { createLogStore } from './lib/services/log-store';
 import { createLogsErrorSinkAdapter } from './lib/services/error-sink-adapter';
@@ -222,6 +223,13 @@ export default definePlugin({
 					id: 'logs-operational-event-log',
 					title: 'Operational event log',
 					body: buildOperationalEventLogKnowledge({
+						prefix: ctx.namespacePrefix,
+					}),
+				},
+				{
+					id: 'logs-error-collector',
+					title: 'Error-collector sink adapter (f00251)',
+					body: buildErrorCollectorKnowledge({
 						prefix: ctx.namespacePrefix,
 					}),
 				},
