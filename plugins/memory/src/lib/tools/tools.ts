@@ -243,32 +243,32 @@ export const buildMemoryToolRegistrations = (
 						limit?: number | undefined;
 					}) =>
 						guardCorruptStore(async () => {
-							// Recall matches (query/tags-ranked) and the full store
-							// in parallel; the digest is selected from ALL notes so
-							// it surfaces on any recall, not only when it matches the
-							// query. One extra read of the same small JSON file.
-							const [notes, all] = await Promise.all([
-								recall(options.storePathAbs, {
-									...(args.query !== undefined
-										? { query: args.query }
-										: {}),
-									...(args.tags ? { tags: args.tags } : {}),
-									bm25K1: options.bm25K1,
-									bm25B: options.bm25B,
-									titleWeight: options.titleWeight,
-									limit: Math.max(
-										MIN_PAGE_LIMIT,
-										Math.min(
-											MAX_RECALL_LIMIT,
-											Math.floor(
-												args.limit ??
-													DEFAULT_RECALL_LIMIT,
-											),
+							// Read the complete store before starting the ranked read.
+							// Both operations used to run in parallel; when corruption
+							// was detected, Promise.all returned the first error while
+							// the second quarantine could still be in flight and race a
+							// caller that recreated the store path. The extra read is
+							// cheap for this small durable store, and sequencing it makes
+							// corruption handling deterministic.
+							const all = await readStore(options.storePathAbs);
+							const notes = await recall(options.storePathAbs, {
+								...(args.query !== undefined
+									? { query: args.query }
+									: {}),
+								...(args.tags ? { tags: args.tags } : {}),
+								bm25K1: options.bm25K1,
+								bm25B: options.bm25B,
+								titleWeight: options.titleWeight,
+								limit: Math.max(
+									MIN_PAGE_LIMIT,
+									Math.min(
+										MAX_RECALL_LIMIT,
+										Math.floor(
+											args.limit ?? DEFAULT_RECALL_LIMIT,
 										),
 									),
-								}),
-								readStore(options.storePathAbs),
-							]);
+								),
+							});
 							const sessionDigest =
 								selectLatestSessionDigestForRecall(
 									all.map((note) => ({
