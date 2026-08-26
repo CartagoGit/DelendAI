@@ -290,11 +290,12 @@ const tryAssembleManagedLazy = (input: {
 		const namespace = namespaces.get(plugin.id) ?? plugin.id;
 		for (const toolId of plugin.toolIds) {
 			const name = `${input.corePrefix}_${namespace}_${toolId}`;
+			const tags = [...(plugin.tags ?? []), 'lazy'];
 			pluginToolEntries.push({
 				name,
 				plugin: namespace,
 				id: toolId,
-				tags: ['lazy'],
+				tags,
 			});
 			toolSurfaceDescriptors.push({
 				registrationId: name,
@@ -302,7 +303,8 @@ const tryAssembleManagedLazy = (input: {
 				toolId,
 				pluginId: plugin.id,
 				namespace,
-				tags: ['lazy'],
+				summary: plugin.summary,
+				tags,
 			});
 			lazyToolActivators.set(name, () => lazyRuntime.activateTool(name));
 		}
@@ -379,13 +381,12 @@ const tryAssembleManagedLazy = (input: {
 		configurationArtifacts: [],
 		pluginSummaries: pluginIds.map((id) => ({
 			name: id,
-			version: '0.1.1',
+			describe: MANAGED_LAZY_PLUGIN_BY_ID.get(id)?.summary,
 		})),
 		lazyToolActivators,
 		lazyPluginPackages: pluginIds.map((id) => ({
 			name: id,
 			resolved: MANAGED_LAZY_PLUGIN_BY_ID.get(id)?.packageSpecifier ?? id,
-			version: '0.1.1',
 		})),
 		moduleLoading: 'lazy',
 	};

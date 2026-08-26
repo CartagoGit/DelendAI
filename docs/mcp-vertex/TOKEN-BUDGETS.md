@@ -3,7 +3,7 @@
 <!-- generated: token-budget-dashboard.script.ts -->
 <!-- generated — do not edit by hand -->
 
-Generated at: 2026-08-26T15:18:49.882Z
+Generated at: 2026-08-26T15:57:36.066Z
 
 This file is generated from the same budget contract the e2e test imports: packages/core/src/lib/contracts/constants/token-budgets.constant.ts. Do not edit this markdown by hand; regenerate it with bun tools/scripts/report/token-budget-dashboard.script.ts.
 
@@ -29,18 +29,18 @@ These are the bounded payloads the e2e spec governs directly today. They use the
 
 | Surface | Bytes | Est. Tokens | Warning | Hard | Status |
 | --- | --- | --- | --- | --- | --- |
-| overview full | 1,808 | 452 | 11,000 | 11,100 | within hard |
-| overview compact | 682 | 171 | 1,450 | 1,500 | within hard |
-| auto_work idle | 62 | 16 | 2,400 | 2,600 | within hard |
-| auto_work work plan | 62 | 16 | 2,400 | 2,600 | within hard |
+| overview full | 1,466 | 367 | 11,000 | 11,100 | within hard |
+| overview compact | 556 | 139 | 1,450 | 1,500 | within hard |
+| auto_work idle | 63 | 16 | 2,400 | 2,600 | within hard |
+| auto_work work plan | 63 | 16 | 2,400 | 2,600 | within hard |
 | agent_catalog compact | 56 | 14 | 800 | 900 | within hard |
 | agent_catalog full | 56 | 14 | 6,500 | 6,800 | within hard |
 | analyze_project {} | 58 | 15 | 1,600 | 1,800 | within hard |
 | plan_mcp_project {} | 59 | 15 | 1,800 | 2,000 | within hard |
-| search_search | 56 | 14 | 2,700 | 3,000 | within hard |
-| docs_docs_list | 57 | 15 | 2,200 | 2,500 | within hard |
-| proposals_round_context | 66 | 17 | 2,700 | 3,000 | within hard |
-| logs_tail | 52 | 13 | 5,500 | 6,000 | within hard |
+| search_search | 57 | 15 | 2,700 | 3,000 | within hard |
+| docs_docs_list | 58 | 15 | 2,200 | 2,500 | within hard |
+| proposals_round_context | 67 | 17 | 2,700 | 3,000 | within hard |
+| logs_tail | 53 | 14 | 5,500 | 6,000 | within hard |
 
 ## Real preset dashboard
 
@@ -49,9 +49,9 @@ This dashboard measures the real preset assemblies through the actual plugin loa
 | Preset | Title | Surface Mode | Source | Plugins | Tools | Tools/List Bytes | Est. Tokens | Schema Bytes | Description Bytes | InputSchema Bytes | OutputSchema Bytes | Max Plugin Bytes | Overview Compact | Round Context | Tools Status | Marginal Status | Load Errors |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | minimal | minimal | native | tokens-gate | 2 | 33 | 58,378 | 14595 | 51,374 | 2,963 | 11,915 | 39,459 | 5,065 | 996 | n/a | over warning (58,000B) | over hard (0B) | none |
-| minimal | minimal | adaptive | dynamic-client | 2 | 6 | 8,934 | 2234 | 7,690 | 514 | 1,020 | 6,670 | 0 | 623 | n/a | within hard | within hard | none |
+| minimal | minimal | adaptive | dynamic-client | 2 | 6 | 8,934 | 2234 | 7,690 | 514 | 1,020 | 6,670 | 0 | 551 | n/a | within hard | within hard | none |
 | lean | lean | native | tokens-gate | 4 | 45 | 68,959 | 17240 | 59,734 | 3,671 | 15,179 | 44,555 | 8,221 | 1,213 | n/a | over warning (68,150B) | within hard | none |
-| lean | lean | adaptive | dynamic-client | 4 | 6 | 8,934 | 2234 | 7,690 | 514 | 1,020 | 6,670 | 0 | 683 | n/a | within hard | within hard | none |
+| lean | lean | adaptive | dynamic-client | 4 | 6 | 8,934 | 2234 | 7,690 | 514 | 1,020 | 6,670 | 0 | 567 | n/a | within hard | within hard | none |
 | standard | standard | native | tokens-gate | 19 | 93 | 128,979 | 32245 | 109,184 | 7,942 | 26,860 | 82,324 | 8,221 | 2,760 | n/a | within hard | over hard (0B) | none |
 | standard | standard | adaptive | dynamic-client | 19 | 8 | 12,511 | 3128 | 10,771 | 736 | 1,687 | 9,084 | 3,575 | 1,346 | n/a | within hard | over hard (0B) | none |
 | swarm | swarm | native | tokens-gate | 27 | 159 | 204,757 | 51190 | 170,557 | 13,764 | 45,074 | 125,483 | 52,503 | 4,372 | 153 | over warning (204,000B) | within hard | none |
@@ -59,13 +59,13 @@ This dashboard measures the real preset assemblies through the actual plugin loa
 | full | full | native | tokens-gate | 31 | 166 | 213,439 | 53360 | 177,892 | 14,229 | 48,136 | 129,756 | 52,503 | 4,710 | 153 | within hard | over hard (0B) | none |
 | full | full | adaptive | dynamic-client | 31 | 8 | 12,511 | 3128 | 10,771 | 736 | 1,687 | 9,084 | 3,575 | 2,026 | n/a | within hard | over hard (0B) | none |
 | vertex | vertex | native | tokens-gate | 37 | 186 | 293,179 | 73295 | 251,620 | 17,294 | 60,568 | 191,052 | 52,503 | 5,574 | 153 | within hard | over hard (0B) | none |
-| vertex | vertex | adaptive | dynamic-client | 37 | 8 | 12,511 | 3128 | 10,771 | 736 | 1,687 | 9,084 | 3,575 | 2,331 | n/a | within hard | over hard (0B) | none |
+| vertex | vertex | adaptive | dynamic-client | 37 | 6 | 8,934 | 2234 | 7,690 | 514 | 1,020 | 6,670 | 0 | 1,030 | n/a | within hard | within hard | none |
 | web-app | web-app | native | tokens-gate | 18 | 85 | 113,245 | 28312 | 95,567 | 6,904 | 24,515 | 71,052 | 8,221 | 2,644 | n/a | n/a | n/a | none |
 | web-app | web-app | adaptive | dynamic-client | 18 | 6 | 8,934 | 2234 | 7,690 | 514 | 1,020 | 6,670 | 0 | 1,332 | n/a | n/a | n/a | none |
 | backend-api | backend-api | native | tokens-gate | 16 | 84 | 111,661 | 27916 | 94,176 | 6,863 | 24,494 | 69,682 | 8,221 | 2,508 | n/a | n/a | n/a | none |
 | backend-api | backend-api | adaptive | dynamic-client | 16 | 6 | 8,934 | 2234 | 7,690 | 514 | 1,020 | 6,670 | 0 | 1,235 | n/a | n/a | n/a | none |
 | cli-tool | cli-tool | native | tokens-gate | 7 | 52 | 78,020 | 19505 | 67,230 | 4,344 | 16,968 | 50,262 | 8,221 | 1,444 | n/a | n/a | n/a | none |
-| cli-tool | cli-tool | adaptive | dynamic-client | 7 | 6 | 8,934 | 2234 | 7,690 | 514 | 1,020 | 6,670 | 0 | 776 | n/a | n/a | n/a | none |
+| cli-tool | cli-tool | adaptive | dynamic-client | 7 | 6 | 8,934 | 2234 | 7,690 | 514 | 1,020 | 6,670 | 0 | 594 | n/a | n/a | n/a | none |
 
 ## Plugin marginal dashboard
 
@@ -200,7 +200,6 @@ This dashboard measures the real preset assemblies through the actual plugin loa
 | vertex | native | tokens-gate | usage-tracking | 3 | 10,596 | 9,954 | 229 | 916 | 9,038 |
 | vertex | native | tokens-gate | error-reporting | 1 | 2,788 | 2,574 | 75 | 114 | 2,460 |
 | vertex | adaptive | dynamic-client | core | 6 | 8,927 | 7,690 | 514 | 1,020 | 6,670 |
-| vertex | adaptive | dynamic-client | agent-orchestrator | 2 | 3,575 | 3,081 | 222 | 667 | 2,414 |
 | web-app | native | tokens-gate | core | 24 | 51,530 | 46,130 | 2,474 | 10,390 | 35,740 |
 | web-app | native | tokens-gate | git | 8 | 5,065 | 3,681 | 426 | 900 | 2,781 |
 | web-app | native | tokens-gate | search | 1 | 1,749 | 1,563 | 63 | 625 | 938 |
@@ -262,7 +261,7 @@ The repo has no lightweight LLM tokenizer dependency installed today. This repor
 | full | native | tokens-gate | 213,439 | 53360 | 53360 | 53360 | heuristic-4-bytes-per-token | estimated fallback (no lightweight tokenizer dependency present) |
 | full | adaptive | dynamic-client | 12,511 | 3128 | 3128 | 3128 | heuristic-4-bytes-per-token | estimated fallback (no lightweight tokenizer dependency present) |
 | vertex | native | tokens-gate | 293,179 | 73295 | 73295 | 73295 | heuristic-4-bytes-per-token | estimated fallback (no lightweight tokenizer dependency present) |
-| vertex | adaptive | dynamic-client | 12,511 | 3128 | 3128 | 3128 | heuristic-4-bytes-per-token | estimated fallback (no lightweight tokenizer dependency present) |
+| vertex | adaptive | dynamic-client | 8,934 | 2234 | 2234 | 2234 | heuristic-4-bytes-per-token | estimated fallback (no lightweight tokenizer dependency present) |
 | web-app | native | tokens-gate | 113,245 | 28312 | 28312 | 28312 | heuristic-4-bytes-per-token | estimated fallback (no lightweight tokenizer dependency present) |
 | web-app | adaptive | dynamic-client | 8,934 | 2234 | 2234 | 2234 | heuristic-4-bytes-per-token | estimated fallback (no lightweight tokenizer dependency present) |
 | backend-api | native | tokens-gate | 111,661 | 27916 | 27916 | 27916 | heuristic-4-bytes-per-token | estimated fallback (no lightweight tokenizer dependency present) |
@@ -285,7 +284,7 @@ Each preset is reported with its adaptive (output-schema bytes via the dynamic c
 | standard | 12,511 | ok | — | 128,979 | ok | — |
 | swarm | 12,511 | ok | — | 204,757 | warning | — |
 | full | 12,511 | ok | — | 213,439 | ok | — |
-| vertex | 12,511 | ok | — | 293,179 | ok | — |
+| vertex | 8,934 | ok | — | 293,179 | ok | — |
 | web-app | 8,934 | n/a | — | 113,245 | n/a | — |
 | backend-api | 8,934 | n/a | — | 111,661 | n/a | — |
 | cli-tool | 8,934 | n/a | — | 78,020 | n/a | — |
