@@ -7,6 +7,10 @@ import {
 	buildPresetMetadataSource,
 	GENERATED_PRESET_METADATA_PATH,
 } from '../generate/preset-metadata.script.ts';
+import {
+	buildManagedLazyCatalogSource,
+	GENERATED_MANAGED_LAZY_CATALOG_PATH,
+} from '../generate/managed-lazy-catalog.script.ts';
 import { buildCapabilityMatrixMarkdown } from '../gen/capability-matrix.script.ts';
 import { buildTokenBudgetDashboardMarkdown } from '../report/token-budget-dashboard.script.ts';
 
@@ -118,6 +122,37 @@ const main = async (): Promise<number> => {
 	} catch (error: unknown) {
 		failures.push(
 			`PRESET_METADATA: generation failed. ${error instanceof Error ? error.message : String(error)}`,
+		);
+	}
+
+	const managedLazyCatalogPath = resolve(
+		workspaceRoot,
+		GENERATED_MANAGED_LAZY_CATALOG_PATH,
+	);
+	const previousManagedLazyCatalog = await readFile(
+		managedLazyCatalogPath,
+		'utf8',
+	).catch((error: unknown) => {
+		if (
+			error &&
+			typeof error === 'object' &&
+			'code' in error &&
+			error.code === 'ENOENT'
+		)
+			return null;
+		throw error;
+	});
+	try {
+		const generatedManagedLazyCatalog =
+			await buildManagedLazyCatalogSource();
+		if (generatedManagedLazyCatalog !== previousManagedLazyCatalog) {
+			failures.push(
+				`MANAGED_LAZY_CATALOG: drift detected. Run bun tools/scripts/generate/managed-lazy-catalog.script.ts and commit ${GENERATED_MANAGED_LAZY_CATALOG_PATH}.`,
+			);
+		}
+	} catch (error: unknown) {
+		failures.push(
+			`MANAGED_LAZY_CATALOG: generation failed. ${error instanceof Error ? error.message : String(error)}`,
 		);
 	}
 
