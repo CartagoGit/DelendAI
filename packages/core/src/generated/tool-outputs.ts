@@ -60,7 +60,8 @@ export interface McpVertexAdoptProjectOutput {
 			schemaBytes: number;
 			estimatedTokens: number;
 			recommendedPluginCount: number;
-			source: "preset-budget" | "fallback-budget";
+			source: "preset-budget" | "fallback-budget" | "plugin-budget";
+			runtimeSurface?: "managed" | "native" | "adaptive" | "compact";
 			note: string;
 		};
 		summary: {
