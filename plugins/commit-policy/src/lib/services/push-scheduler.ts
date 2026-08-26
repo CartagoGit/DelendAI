@@ -24,6 +24,7 @@
 
 import type { IGitRunner } from '@mcp-vertex/core/public';
 
+import { isBranchProtected } from '../contracts/branch';
 import type { ICommitPolicyPush } from '../contracts/options';
 import { gitCurrentBranch } from './git-extra';
 import { runPushDriver, type IPushDriverResult } from './push-driver';
@@ -75,8 +76,11 @@ export const createPushScheduler = (
 
 	const isProtected = async (): Promise<boolean> => {
 		const branch = await gitCurrentBranch(options.run);
-		if (branch === undefined) return true;
-		return options.policy.protectedBranches.includes(branch);
+		if (branch === undefined) return true; // detached HEAD → no push
+		return isBranchProtected(branch, {
+			protected: options.policy.protectedBranches,
+			protectedPrefixes: options.policy.protectedPrefixes,
+		});
 	};
 
 	const push = async (reason: string): Promise<IPushDriverResult> => {
