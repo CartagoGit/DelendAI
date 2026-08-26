@@ -160,4 +160,53 @@ describe('tool-surface-runtime schema accounting', () => {
 		expect(change?.pluginId).toBe('prompts-pack');
 		expect(change?.active).toBe(true);
 	});
+
+	it('does not evict a plugin while a routed call holds an active lease', async () => {
+		const runtime = createToolSurfaceRuntime({
+			mode: 'managed',
+			bootstrapToolIds: [],
+			workingSet: { idleTtlMs: 100, maxWarmPlugins: 1 },
+			descriptors: [
+				{
+					registrationId: 'memory_save',
+					name: 'mcp-vertex_memory_save',
+					toolId: 'save',
+					pluginId: 'memory',
+					namespace: 'memory',
+				},
+			],
+			plugins: [
+				{
+					id: 'memory',
+					namespace: 'memory',
+					toolRegistrationIds: ['memory_save'],
+				},
+			],
+		});
+		let release!: () => void;
+		let markStarted!: () => void;
+		const blocked = new Promise<void>((resolve) => {
+			release = resolve;
+		});
+		const started = new Promise<void>((resolve) => {
+			markStarted = resolve;
+		});
+		runtime.bindRegisteredTool({
+			registrationId: 'memory_save',
+			name: 'mcp-vertex_memory_save',
+			handler: async () => {
+				markStarted();
+				await blocked;
+				return { ok: true };
+			},
+			handle: makeHandle(),
+		});
+		runtime.activatePlugin('memory');
+		const call = runtime.invokeTool('mcp-vertex_memory_save', {}, {});
+		await started;
+		expect(runtime.evictIdlePlugins(Date.now() + 101)).toEqual([]);
+		release();
+		await call;
+		expect(runtime.evictIdlePlugins(Date.now() + 101)).toEqual(['memory']);
+	});
 });

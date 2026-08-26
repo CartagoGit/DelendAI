@@ -100,6 +100,7 @@ class ToolSurfaceRuntime implements IToolSurfaceRuntime {
 		}
 	>();
 	private readonly warmAtByPlugin = new Map<string, number>();
+	private readonly inFlightByPlugin = new Map<string, number>();
 	private readonly loadedPluginIds = new Set<string>();
 	private readonly workingSetPolicy: IToolSurfaceWorkingSetPolicy;
 	private lazyPluginLoader: ((pluginId: string) => Promise<void>) | undefined;
@@ -422,21 +423,38 @@ class ToolSurfaceRuntime implements IToolSurfaceRuntime {
 			if (record.pluginId !== undefined)
 				this.loadedPluginIds.add(record.pluginId);
 		}
-		this.touchPlugin(record);
-		const parsed = await safeParseSurfaceArgs(record.inputSchema, args);
-		if (!parsed.ok) {
-			return {
-				content: [{ type: 'text', text: parsed.message }],
-				isError: true,
-			};
+		const pluginId = record.pluginId;
+		if (pluginId !== undefined) {
+			this.inFlightByPlugin.set(
+				pluginId,
+				(this.inFlightByPlugin.get(pluginId) ?? 0) + 1,
+			);
 		}
-		const handler = record.handler as (
-			...input: unknown[]
-		) => Promise<unknown>;
-		if (record.inputSchema === undefined) {
-			return handler(extra);
+		try {
+			this.touchPlugin(record);
+			const parsed = await safeParseSurfaceArgs(record.inputSchema, args);
+			if (!parsed.ok) {
+				return {
+					content: [{ type: 'text', text: parsed.message }],
+					isError: true,
+				};
+			}
+			const handler = record.handler as (
+				...input: unknown[]
+			) => Promise<unknown>;
+			if (record.inputSchema === undefined) {
+				return await handler(extra);
+			}
+			return await handler(parsed.value, extra);
+		} finally {
+			if (pluginId !== undefined) {
+				const remaining =
+					(this.inFlightByPlugin.get(pluginId) ?? 1) - 1;
+				if (remaining > 0)
+					this.inFlightByPlugin.set(pluginId, remaining);
+				else this.inFlightByPlugin.delete(pluginId);
+			}
 		}
-		return handler(parsed.value, extra);
 	}
 
 	publicDescriptionFor(
@@ -494,6 +512,7 @@ class ToolSurfaceRuntime implements IToolSurfaceRuntime {
 		const ttl = this.workingSetPolicy.idleTtlMs;
 		if (ttl !== null) {
 			for (const [pluginId, touchedAt] of this.warmAtByPlugin) {
+				if ((this.inFlightByPlugin.get(pluginId) ?? 0) > 0) continue;
 				if (nowMs - touchedAt >= ttl) {
 					this.warmAtByPlugin.delete(pluginId);
 					evicted.push(pluginId);
