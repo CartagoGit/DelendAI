@@ -453,6 +453,7 @@ export const assembleCliConfig = async (
 		lazyToolActivators,
 		moduleLoading,
 		lazyPluginPackages,
+		consumeLazyPluginRegistrations,
 	} = await assemblePlugins({
 		args,
 		fileConfig,
@@ -711,6 +712,9 @@ export const assembleCliConfig = async (
 		toolSurfacePlan,
 		toolSurfaceRuntime,
 		...(lazyToolActivators !== undefined ? { lazyToolActivators } : {}),
+		...(consumeLazyPluginRegistrations !== undefined
+			? { consumeLazyPluginRegistrations }
+			: {}),
 		...(moduleLoading === 'lazy' || onToolStarts.length > 0
 			? {
 					onToolStart: async (toolName, toolArgs) => {

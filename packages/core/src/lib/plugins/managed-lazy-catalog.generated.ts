@@ -9,6 +9,10 @@ export interface IManagedLazyPluginCatalogEntry {
 	readonly id: string;
 	readonly packageSpecifier: string;
 	readonly toolIds: readonly string[];
+	readonly promptIds: readonly string[];
+	readonly resourceIds: readonly string[];
+	readonly knowledgeIds: readonly string[];
+	readonly skillIds: readonly string[];
 	readonly summary?: string | undefined;
 	readonly tags?: readonly string[] | undefined;
 }
@@ -17,12 +21,20 @@ const tools = (
 	id: string,
 	packageSpecifier: string,
 	toolIds: readonly string[],
+	promptIds: readonly string[],
+	resourceIds: readonly string[],
+	knowledgeIds: readonly string[],
+	skillIds: readonly string[],
 	metadata: Pick<IManagedLazyPluginCatalogEntry, 'summary' | 'tags'> = {},
 ): IManagedLazyPluginCatalogEntry => ({
 	id,
 	packageSpecifier,
 	...metadata,
 	toolIds,
+	promptIds,
+	resourceIds,
+	knowledgeIds,
+	skillIds,
 });
 
 export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntry[] =
@@ -31,6 +43,10 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 			'adaptive-optimizer',
 			'@mcp-vertex/adaptive-optimizer',
 			['optimize_run'],
+			[],
+			[],
+			[],
+			[],
 			{
 				summary:
 					'Adaptive optimizer: cheaply rank model, plugin-set and prompt candidates with explicit budget and consent guards.',
@@ -41,6 +57,10 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 			'agent-orchestrator',
 			'@mcp-vertex/agent-orchestrator',
 			['plan', 'dispatch'],
+			[],
+			[],
+			['agent-orchestrator-overview'],
+			[],
 			{
 				summary:
 					'Workflow policy plugin: single / linear / swarm / auto modes with token budgets, iteration caps, and mid-task subagent rotation.',
@@ -51,6 +71,14 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 			'api',
 			'@mcp-vertex/api',
 			['api_call', 'api_validate', 'api_mock'],
+			[],
+			[],
+			[
+				'api-validate-overview',
+				'api-mock-overview',
+				'api-plugin-catalog',
+			],
+			[],
 			{
 				summary: 'REST/GraphQL API surface for mcp-vertex plugins.',
 				tags: ['api', 'surface'],
@@ -60,6 +88,10 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 			'audit',
 			'@mcp-vertex/audit',
 			['audit_plan', 'audit_consolidate', 'audit_run', 'self_audit'],
+			[],
+			[],
+			['audit-overview', 'audit-scopes'],
+			[],
 			{
 				summary:
 					'Multi-model audit planning + consolidation; f00139 adds self_audit dogfood loop.',
@@ -76,6 +108,10 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 				'auto_evaluate',
 				'auto_run',
 			],
+			[],
+			[],
+			['auto-agent-selector'],
+			[],
 			{
 				summary:
 					'Zero-config multi-agent routing (cost↔quality dial, auto_recommend, escalation).',
@@ -86,6 +122,10 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 			'auto-plugin-selector',
 			'@mcp-vertex/auto-plugin-selector',
 			['plugins_recommend'],
+			[],
+			[],
+			['auto-plugin-selector-overview'],
+			[],
 			{
 				summary:
 					'Recommends the best plugin set for this project from its signals (manifest, files, git, task).',
@@ -101,6 +141,10 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 				'commit_policy_push',
 				'commit_policy_run',
 			],
+			[],
+			[],
+			['commit-policy'],
+			[],
 			{
 				summary:
 					'Commit-authority plugin: configurable identity, cadence and audit-trail policy wrapping the git plugin primitives. Off by default — opt in via plugins.commit-policy.options.',
@@ -111,6 +155,10 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 			'completion',
 			'@mcp-vertex/completion',
 			['report_complete', 'status', 'clear'],
+			[],
+			[],
+			['task-completion'],
+			[],
 			{
 				summary:
 					'Task-completion notifier: records an agent declaring its original task done + reviewed and pushes a notification.',
@@ -127,6 +175,14 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 				'container_build',
 				'k8s_apply',
 			],
+			[],
+			[],
+			[
+				'container-inspect-usage',
+				'container-logs-usage',
+				'container-lint-usage',
+			],
+			[],
 			{
 				summary:
 					'Container inspection + lint (docker ps/images, k8s, Dockerfile rules).',
@@ -137,6 +193,10 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 			'context-for-change',
 			'@mcp-vertex/context-for-change',
 			['context_for_change'],
+			[],
+			[],
+			[],
+			[],
 			{
 				summary:
 					'Compact task-oriented change context orchestration across diff, symbols, tests, docs and conventions.',
@@ -147,6 +207,10 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 			'conventions',
 			'@mcp-vertex/conventions',
 			['conventions_classify', 'conventions_check'],
+			[],
+			[],
+			[],
+			[],
 			{
 				summary:
 					'Repo file-convention enforcement (interface, constant, service, tool …).',
@@ -157,6 +221,10 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 			'database',
 			'@mcp-vertex/database',
 			['db_erd', 'db_schema', 'db_probe', 'db_query', 'db_explain'],
+			[],
+			[],
+			['database-erd-usage'],
+			[],
 			{
 				summary:
 					'Database schema/introspection tools (read-only, offline).',
@@ -175,6 +243,10 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 				'deps_polyglot',
 				'deps_tree',
 			],
+			[],
+			[],
+			['deps-usage'],
+			[],
 			{
 				summary:
 					'Dependency inventory + offline health (deps_list, deps_check, deps_audit, deps_licenses, deps_tree).',
@@ -190,6 +262,10 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 				'diagram_erd',
 				'diagram_proposals',
 			],
+			[],
+			[],
+			['diagram-usage'],
+			[],
 			{
 				summary:
 					'Diagram generator (mermaid, dot) from code structure.',
@@ -200,20 +276,37 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 			'docs',
 			'@mcp-vertex/docs',
 			['docs_list', 'docs_read', 'docs_search'],
+			[],
+			[],
+			['docs-usage'],
+			[],
 			{
 				summary: 'Doc generation, search, and rendered catalog.',
 				tags: ['docs', 'catalog'],
 			},
 		),
-		tools('env', '@mcp-vertex/env', ['env_check', 'env_explains'], {
-			summary:
-				'Environment config validation (.env check + schema + env_explains).',
-			tags: ['env', 'config'],
-		}),
+		tools(
+			'env',
+			'@mcp-vertex/env',
+			['env_check', 'env_explains'],
+			[],
+			[],
+			['env-usage'],
+			[],
+			{
+				summary:
+					'Environment config validation (.env check + schema + env_explains).',
+				tags: ['env', 'config'],
+			},
+		),
 		tools(
 			'error-reporting',
 			'@mcp-vertex/error-reporting',
 			['report_status'],
+			[],
+			[],
+			['error-reporting-surface'],
+			[],
 			{
 				summary:
 					'Automatic mcp-vertex error reporting: opens de-duplicated GitHub issues for internal failures (enabled by default).',
@@ -235,6 +328,10 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 				'release',
 				'search_code',
 			],
+			[],
+			[],
+			['forge-surface'],
+			[],
 			{
 				summary: 'Forge (GitHub/GitLab) wrappers — PRs, CI, issues.',
 				tags: ['forge', 'git', 'ci'],
@@ -257,36 +354,68 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 				'pr_list',
 				'pr_view',
 			],
+			[],
+			[],
+			['git-orientation'],
+			[],
 			{
 				summary:
 					'Git wrappers (PR list/view, diff, changelog, extended).',
 				tags: ['git', 'changelog'],
 			},
 		),
-		tools('i18n', '@mcp-vertex/i18n', ['i18n_check', 'i18n_validate'], {
-			summary:
-				'i18n key/interpolation validation across locale JSON files.',
-			tags: ['i18n', 'l10n'],
-		}),
+		tools(
+			'i18n',
+			'@mcp-vertex/i18n',
+			['i18n_check', 'i18n_validate'],
+			[],
+			[],
+			['i18n-usage'],
+			[],
+			{
+				summary:
+					'i18n key/interpolation validation across locale JSON files.',
+				tags: ['i18n', 'l10n'],
+			},
+		),
 		tools(
 			'impact-analysis',
 			'@mcp-vertex/impact-analysis',
 			['impact_analyze', 'tests_for_change'],
+			[],
+			[],
+			[],
+			[],
 			{
 				summary:
 					'Bounded impact analysis and test selection across changed symbols, dependents and related specs.',
 				tags: ['impact', 'tests', 'f00169'],
 			},
 		),
-		tools('issues', '@mcp-vertex/issues', ['setup_github'], {
-			summary:
-				'Issue tracker (GitHub) integration — list/fetch/analyze/ingest/resolve.',
-			tags: ['issues', 'forge', 'triage'],
-		}),
-		tools('link-check', '@mcp-vertex/link-check', ['link_check'], {
-			summary: 'Markdown link checker.',
-			tags: ['docs', 'links'],
-		}),
+		tools(
+			'issues',
+			'@mcp-vertex/issues',
+			['setup_github'],
+			[],
+			[],
+			['issues-needs-repo-config'],
+			[],
+			{
+				summary:
+					'Issue tracker (GitHub) integration — list/fetch/analyze/ingest/resolve.',
+				tags: ['issues', 'forge', 'triage'],
+			},
+		),
+		tools(
+			'link-check',
+			'@mcp-vertex/link-check',
+			['link_check'],
+			[],
+			[],
+			['link-check-usage'],
+			[],
+			{ summary: 'Markdown link checker.', tags: ['docs', 'links'] },
+		),
 		tools(
 			'logs',
 			'@mcp-vertex/logs',
@@ -301,6 +430,10 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 				'search',
 				'incidents',
 			],
+			[],
+			[],
+			['logs-operational-event-log', 'logs-error-collector'],
+			[],
 			{
 				summary: 'Structured logs reader (tail, query, redact).',
 				tags: ['logs', 'observability'],
@@ -320,6 +453,10 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 				'export',
 				'import',
 			],
+			[],
+			[],
+			['memory-usage'],
+			[],
 			{
 				summary:
 					'Persistent memory store (BM25 + recall, save, search).',
@@ -330,6 +467,10 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 			'notification',
 			'@mcp-vertex/notification',
 			['notify_status', 'await_lock'],
+			[],
+			[],
+			['lock-notifications'],
+			[],
 			{
 				summary: 'Notification + lock-await primitives.',
 				tags: ['notification', 'concurrency'],
@@ -351,6 +492,10 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 				'set_provider_state',
 				'advise_spend',
 			],
+			[],
+			[],
+			['orchestrator-runner-routing'],
+			[],
 			{
 				summary: 'Orchestrator-runner runtime utilities.',
 				tags: ['orchestrator', 'runner'],
@@ -360,6 +505,10 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 			'perf',
 			'@mcp-vertex/perf',
 			['perf_bench', 'perf_bundle', 'perf_profile'],
+			[],
+			[],
+			['perf-usage'],
+			[],
 			{
 				summary: 'Performance bench/bundle/profile tools.',
 				tags: ['perf', 'benchmark'],
@@ -369,6 +518,10 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 			'project-health',
 			'@mcp-vertex/project-health',
 			['project_health'],
+			[],
+			[],
+			[],
+			[],
 			{
 				summary:
 					'Compact project-health aggregator: cheap summary first, lazy domain details on demand.',
@@ -379,9 +532,34 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 			'prompt-eval',
 			'@mcp-vertex/prompt-eval',
 			['eval_run', 'eval_report'],
+			[],
+			[],
+			['prompt-eval'],
+			[],
 			{
 				summary: 'Prompt-eval harness (golden prompts, scoring).',
 				tags: ['prompts', 'eval'],
+			},
+		),
+		tools(
+			'prompts-pack',
+			'@mcp-vertex/prompts-pack',
+			[],
+			[
+				'explain-this-code',
+				'generate-docstrings',
+				'write-tests-for',
+				'review-this-diff',
+				'security-audit-this-file',
+				'optimize-this',
+			],
+			[],
+			['prompts-pack-overview'],
+			[],
+			{
+				summary:
+					'Project-aware MCP prompts (explain-this-code, write-tests-for, review-this-diff, etc.).',
+				tags: ['prompts'],
 			},
 		),
 		tools(
@@ -423,6 +601,10 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 				'proposal_reconcile_folder',
 				'proposal_diagnose',
 			],
+			['work', 'orchestrate'],
+			[],
+			['multi-agent-loop', 'proposals-workflow'],
+			[],
 			{
 				summary:
 					'Proposals workflow + multi-agent (swarm) orchestration.',
@@ -438,6 +620,10 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 				'quality_cancel',
 				'quality_run_all',
 			],
+			[],
+			[],
+			['quality-gates'],
+			[],
 			{
 				summary:
 					'Quality gates: coverage, complexity, lint, type-check orchestration.',
@@ -448,6 +634,10 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 			'quality-policy',
 			'@mcp-vertex/quality-policy',
 			['quality_policy'],
+			[],
+			[],
+			[],
+			[],
 			{
 				summary:
 					'Unified quality-policy surface: cheap tests, conventions, lint, types and coverage guidance without running heavy quality commands.',
@@ -465,6 +655,10 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 				'refactor_rename',
 				'refactor_apply',
 			],
+			[],
+			[],
+			[],
+			[],
 			{
 				summary:
 					'Refactor primitives (symbols, definition, references, rename, codemod).',
@@ -475,16 +669,29 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 			'rules',
 			'@mcp-vertex/rules',
 			['get_rules', 'check_rules', 'apply_rules'],
+			['enforce_rules'],
+			[],
+			['applying-rules'],
+			[],
 			{
 				summary:
 					'Lint/type rules engine (frameworks, dogmas, presets).',
 				tags: ['rules', 'lint'],
 			},
 		),
-		tools('search', '@mcp-vertex/search', ['search'], {
-			summary: 'Code search (semantic + symbol + references).',
-			tags: ['search', 'symbol', 'f00136'],
-		}),
+		tools(
+			'search',
+			'@mcp-vertex/search',
+			['search'],
+			[],
+			[],
+			['search-usage'],
+			[],
+			{
+				summary: 'Code search (semantic + symbol + references).',
+				tags: ['search', 'symbol', 'f00136'],
+			},
+		),
 		tools(
 			'security',
 			'@mcp-vertex/security',
@@ -494,28 +701,74 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 				'security_sast',
 				'security_audit',
 			],
+			[],
+			[],
+			['security-usage'],
+			[],
 			{
 				summary: 'Security audit (CVEs, SAST, secrets, env).',
 				tags: ['security', 'audit'],
 			},
 		),
 		tools(
+			'skills-pack',
+			'@mcp-vertex/skills-pack',
+			[],
+			[],
+			[],
+			['skills-pack-overview'],
+			[
+				'debugging-playbook',
+				'performance-optimization',
+				'pr-review-checklist',
+				'security-hardening-checklist',
+				'incident-response',
+				'migrate-from-x',
+			],
+			{
+				summary:
+					'Curated skill pack (debugging, perf, pr-review, security, incident, migration).',
+				tags: ['skills'],
+			},
+		),
+		tools(
 			'status-marker',
 			'@mcp-vertex/status-marker',
 			['close', 'validate', 'ping'],
+			[],
+			[],
+			['status-marker-table', 'status-marker-states'],
+			[],
 			{
 				summary: 'Status marker + closure canonical line.',
 				tags: ['status-marker', 'closure'],
 			},
 		),
-		tools('tech-debt', '@mcp-vertex/tech-debt', ['debt_scan'], {
-			summary: 'Tech-debt scanner (TODO/FIXME/HACK inventory).',
-			tags: ['tech-debt'],
-		}),
+		tools(
+			'tech-debt',
+			'@mcp-vertex/tech-debt',
+			['debt_scan'],
+			[],
+			[],
+			['tech-debt-usage'],
+			[],
+			{
+				summary: 'Tech-debt scanner (TODO/FIXME/HACK inventory).',
+				tags: ['tech-debt'],
+			},
+		),
 		tools(
 			'test-convention',
 			'@mcp-vertex/test-convention',
 			['get_convention', 'suggest_spec_path', 'scan_drift'],
+			[],
+			[],
+			[
+				'test-convention-overview',
+				'test-convention-runners',
+				'test-convention-coverage',
+			],
+			[],
 			{
 				summary:
 					'Test-file convention enforcement (spec path, mock style, forbidden patterns).',
@@ -526,6 +779,10 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 			'test-policy',
 			'@mcp-vertex/test-policy',
 			['get_test_policy', 'set_test_policy'],
+			[],
+			[],
+			['test-policy'],
+			[],
 			{
 				summary: 'Test policy mode (TDD, tests-after, free, none).',
 				tags: ['tests', 'policy'],
@@ -535,15 +792,28 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 			'usage-tracking',
 			'@mcp-vertex/usage-tracking',
 			['usage_report', 'usage_clear', 'session_hygiene'],
+			[],
+			[],
+			['usage-tracking-usage'],
+			[],
 			{
 				summary: 'Per-token/per-call usage tracking (spend, budget).',
 				tags: ['usage', 'spend'],
 			},
 		),
-		tools('web-fetch', '@mcp-vertex/web-fetch', ['web_fetch'], {
-			summary: 'Web fetch (allow-listed URLs only).',
-			tags: ['web', 'fetch'],
-		}),
+		tools(
+			'web-fetch',
+			'@mcp-vertex/web-fetch',
+			['web_fetch'],
+			[],
+			[],
+			['web-usage'],
+			[],
+			{
+				summary: 'Web fetch (allow-listed URLs only).',
+				tags: ['web', 'fetch'],
+			},
+		),
 	];
 
 export const MANAGED_LAZY_PLUGIN_BY_ID = new Map(
