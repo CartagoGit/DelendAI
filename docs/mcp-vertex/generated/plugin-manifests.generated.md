@@ -5,6 +5,7 @@
 | id | package | visibility | maturity | presets |
 | --- | --- | --- | --- | --- |
 | adaptive-optimizer | @mcp-vertex/adaptive-optimizer | public | experimental | vertex |
+| agent-orchestrator | @mcp-vertex/agent-orchestrator | public | experimental | standard, swarm, full, vertex |
 | api | @mcp-vertex/api | public | stable | full |
 | audit | @mcp-vertex/audit | public | stable | vertex |
 | auto-agent-selector | @mcp-vertex/auto-agent-selector | public | stable | standard, swarm, full, vertex |
@@ -58,6 +59,7 @@
 | id | warning | hard | releaseRelativePercent |
 | --- | --- | --- | --- |
 | adaptive-optimizer | 2700 | 3000 | 20 |
+| agent-orchestrator | 2700 | 3000 | 20 |
 | api | 2700 | 3000 | 20 |
 | audit | 2700 | 3000 | 20 |
 | auto-agent-selector | 2700 | 3000 | 20 |
@@ -113,6 +115,7 @@
 | id | permissions | toolPermissions |
 | --- | --- | --- |
 | adaptive-optimizer | filesystem-read |  |
+| agent-orchestrator | process |  |
 | api | process, network |  |
 | audit | filesystem-read, filesystem-write, network |  |
 | auto-agent-selector | process, network |  |
@@ -176,6 +179,15 @@
 | adaptive-optimizer | web-app | no | no | yes |
 | adaptive-optimizer | backend-api | no | no | yes |
 | adaptive-optimizer | cli-tool | no | no | yes |
+| agent-orchestrator | minimal | no | no | yes |
+| agent-orchestrator | lean | no | no | yes |
+| agent-orchestrator | standard | yes | no | no |
+| agent-orchestrator | swarm | yes | no | no |
+| agent-orchestrator | full | yes | no | no |
+| agent-orchestrator | vertex | yes | no | no |
+| agent-orchestrator | web-app | no | no | yes |
+| agent-orchestrator | backend-api | no | no | yes |
+| agent-orchestrator | cli-tool | no | no | yes |
 | api | minimal | no | no | yes |
 | api | lean | no | no | yes |
 | api | standard | no | no | yes |
