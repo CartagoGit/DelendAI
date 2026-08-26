@@ -433,7 +433,11 @@ export const main = async (argv: readonly string[]): Promise<number> => {
 				downstream: [],
 			};
 		} else {
-			const files = gitDiffNames(base as string, head);
+			if (base === undefined) {
+				err('affected: --base <ref> is required (or pass --all for the nightly matrix)');
+				return 2;
+			}
+			const files = gitDiffNames(base, head);
 			result = computeAffected(files, graph);
 			result = { ...result, base, head };
 		}
