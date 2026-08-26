@@ -229,7 +229,7 @@ export type {
 	IMcpPluginContext,
 	IMcpPluginRegistrations,
 } from '../lib/plugins/plugin-contract';
-// f00184 (Track D): phased plugin lifecycle.
+// (Track D): phased plugin lifecycle.
 export {
 	hasPhasedLifecycle,
 	runLifecycle,
@@ -302,7 +302,7 @@ export type {
 	IStartupReportWarning,
 } from '../lib/startup-report';
 
-// f00120 S2: monorepo-wiring writer for first-party plugins.
+// S2: monorepo-wiring writer for first-party plugins.
 export {
 	buildTsconfigPathsEntry,
 	pluginDir,
@@ -314,7 +314,7 @@ export {
 	writeTsconfigBase,
 	writeVitestShared,
 } from '../lib/scaffold/wire-plugin';
-// f00120 S4: wiring-doctor (verifier) for first-party plugins.
+// S4: wiring-doctor (verifier) for first-party plugins.
 export type {
 	IAssembleCliDeps,
 	IAssembledCliConfig,
@@ -432,7 +432,7 @@ export type {
 } from '../lib/filesystem/safe-workspace-reader.types';
 export { joinUnderRoot } from '../lib/shared/join-under-root';
 export { joinRel } from '../lib/shared/paths';
-// f00087 S2: batch atomic writer for consumers that want to apply
+// S2: batch atomic writer for consumers that want to apply
 // scaffolded files outside an MCP session.
 export { createFileSystemBatchWriter } from '../lib/shared/batch-atomic-writer';
 export type {
@@ -594,13 +594,13 @@ export {
 } from '../lib/shared/commit-author';
 export type { IGitConfigReader } from '../lib/shared/commit-author';
 
-// f00065 slice F: the canonical shared git-runner contract. Plugins that used
+// slice F: the canonical shared git-runner contract. Plugins that used
 // to redefine this type (git, proposals) import it from here instead.
 export type {
 	IGitRunner,
 	IGitRunResult,
 } from '../lib/contracts/interfaces/git-runner.interface';
-// f00082: composite agent identity contract. Plugins that produce or
+// Composite agent identity contract. Plugins that produce or
 // consume the four-field identity (proposals worktree engine, handoff
 // packets, swarm tools) import from here so the contract has one
 // source of truth.
@@ -609,7 +609,7 @@ export type {
 	AgentHost,
 	IAgentIdentity,
 } from '../lib/contracts/interfaces/agent-identity.interface';
-// f00067 S1: the canonical multi-model provider contract. Wiki pages
+// S1: the canonical multi-model provider contract. Wiki pages
 // 04/05/06/07/08 and both consuming plugins (orchestrator-runner,
 // usage-tracking) import the provider vocabulary from this single file so
 // there is no drift between the design text and the code.
@@ -729,7 +729,7 @@ export type {
 	ITokenBudgetRegistry,
 	ITokenBudgetSurface,
 } from '../lib/contracts/constants/token-budgets.constant';
-// f00187 — transversal `detail: compact | normal | full` contract.
+// — transversal `detail: compact | normal | full` contract.
 export {
 	DETAIL_LEVELS,
 	projectDetail,
@@ -742,7 +742,7 @@ export type {
 	DetailProjections,
 	WithDetail,
 } from '../lib/contracts/detail.contract';
-// f00186 — TokenBudgetRegistry + types.
+// — TokenBudgetRegistry + types.
 export {
 	createTokenBudgetRegistry,
 	TokenBudgetRegistry,
@@ -765,7 +765,7 @@ export {
 	type Surface,
 	type TokenSurface,
 } from '../lib/budgets/types';
-// c00136 — Token ROI per plugin (KPI).
+// — Token ROI per plugin (KPI).
 export {
 	aggregateROI,
 	computeROI,
@@ -786,7 +786,7 @@ export type {
 	ITruncatedEnvelope,
 	ITruncationResult,
 } from '../lib/contracts/interfaces/truncation.interface';
-// f00195 — Cost-aware routing utility (Track L, P2).
+// — Cost-aware routing utility (Track L, P2).
 export {
 	DEFAULT_UTILITY_WEIGHTS,
 	rankCandidates,
@@ -798,7 +798,7 @@ export type {
 	IUtilityScore,
 	IUtilityWeights,
 } from '../lib/routing/utility';
-// f00196 — Model-aware presets (Track L, P2).
+// — Model-aware presets (Track L, P2).
 export {
 	DEFAULT_MODEL_PROFILES,
 	detectModelTier,
@@ -811,7 +811,7 @@ export type {
 	IModelProfileOverride,
 	TModelTier,
 } from '../lib/presets/model-profiles';
-// f00197 — Memory utility score (Track M, P2).
+// — Memory utility score (Track M, P2).
 export {
 	DEFAULT_MEMORY_COST_THRESHOLD,
 	DEFAULT_MEMORY_UTILITY_WEIGHTS,
@@ -852,7 +852,7 @@ export type {
 	IToolMetric,
 } from '../lib/metrics/metrics-registry';
 export { buildMetricsToolRegistration } from '../lib/metrics/metrics-tool';
-// c00134 (Track D): plugin lifecycle metrics.
+// (Track D): plugin lifecycle metrics.
 export { createPluginMetrics } from '../lib/observability/plugin-metrics';
 export type {
 	IPluginMetrics,
@@ -862,7 +862,7 @@ export type {
 	PluginEvent,
 	PluginHistogramEvent,
 } from '../lib/observability/plugin-metrics';
-// f00198 (Track M): cross-plugin activation KPIs.
+// (Track M): cross-plugin activation KPIs.
 export {
 	createActivationKpis,
 	hydrateKpis,
@@ -878,7 +878,7 @@ export type {
 	IPersistedKpisFile,
 	ISessionKpis,
 } from '../lib/observability/activation-kpis';
-// f00199 (Track M): tool confusion matrix.
+// (Track M): tool confusion matrix.
 export {
 	createToolConfusion,
 	DEFAULT_RENAME_THRESHOLD,
@@ -1112,7 +1112,7 @@ export type {
 export { resolveTokenBudget } from '../lib/contracts/interfaces/plugin-token-budget.interface';
 export type { IPluginToolPermissions } from '../lib/contracts/interfaces/plugin-tool-permissions.interface';
 export { resolveToolPermissions } from '../lib/contracts/interfaces/plugin-tool-permissions.interface';
-// f00185 (Track D): plugin state machine.
+// (Track D): plugin state machine.
 export {
 	canTransition,
 	createPluginStateMachine,
@@ -1221,7 +1221,7 @@ export type {
 	IIncidentLoggingContext,
 	IWithIncidentLoggingOptions,
 } from '../lib/tools/with-incident-logging';
-// c00126 S2: scan helpers - pure utilities adopted by the SOLID-compliance
+// S2: scan helpers - pure utilities adopted by the SOLID-compliance
 // lint and any future lint. See `packages/core/src/lib/scan/` for the
 // full module set; this block re-exports the public surface.
 export {
@@ -1279,7 +1279,7 @@ export type {
 } from '../lib/error-collection/with-error-collection';
 export { createDefaultRedactionPolicy } from '../lib/error-collection/redaction-policy';
 export { createDefaultSeverityClassifier } from '../lib/error-collection/severity-classifier';
-// c00143 (Track N): generic mutation idempotency store.
+// (Track N): generic mutation idempotency store.
 export {
 	createIdempotencyStore,
 	duplicateSuppressedRefusal,

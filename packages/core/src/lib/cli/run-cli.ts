@@ -252,7 +252,7 @@ export const runCli = async (
 		// stderr only: stdout is the MCP stdio transport.
 		process.stderr.write(`[mcp-vertex] plugin error: ${error.message}\n`);
 	}
-	// f00109 S1: config issues (schema violations, dead docsDir/roots) are
+	// S1: config issues (schema violations, dead docsDir/roots) are
 	// warnings, not boot failures — but they must be visible in the host's
 	// server log, not only behind an explicit `--check`.
 	for (const issue of configDiagnostic.issues) {

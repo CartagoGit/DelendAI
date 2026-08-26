@@ -125,7 +125,7 @@ export type {
 	IActivateContext,
 	IPhasedLifecycle,
 } from '../lib/plugins/lifecycle';
-// r00033 (Track M / q00006 §46) — shared envelopes. Plugins adopt
+// Shared envelopes (Track M / §46). Plugins adopt
 // these shapes gradually so the LLM can recognise a small, stable
 // set of result shapes instead of one per plugin.
 export type {

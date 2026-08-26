@@ -232,7 +232,7 @@ export async function createMcpProject(
 			});
 			const change = toolSurfaceRuntime.applySurfaceMode(decision.mode);
 			const client = server.server.getClientVersion();
-			// q00007 + q00009: when the surface mode is already pinned via
+			// When the surface mode is already pinned via
 			// `config.surfaceMode` (or the `vertex` preset default), the
 			// explicit override leaves the surface unchanged. Skip the
 			// log line so the operator's stderr stays clean — the

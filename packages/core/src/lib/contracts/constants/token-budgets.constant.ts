@@ -96,7 +96,7 @@ export const TOKEN_BUDGETS: ITokenBudgetRegistry = {
 			releaseRelativePercent: 20,
 		},
 		agentCatalogFull: {
-			// q00009 adds portable skill metadata and the orchestrator roster
+			// adds portable skill metadata and the orchestrator roster
 			// to the explicit full drill-down. Compact remains the default
 			// orientation surface; this ceiling covers the measured full payload
 			// with a bounded margin instead of dropping useful metadata.
@@ -150,7 +150,7 @@ export const TOKEN_BUDGETS: ITokenBudgetRegistry = {
 		},
 		lean: {
 			toolsList: {
-				// q00009: the stable bootstrap registrations are present in
+				// The stable bootstrap registrations are present in
 				// the native measurement baseline too; the current 69,115 B
 				// roster needs a small, explicit guard band.
 				hard: 70_000,
@@ -183,7 +183,7 @@ export const TOKEN_BUDGETS: ITokenBudgetRegistry = {
 				marginalPluginWarning: 70_000,
 			},
 			overviewCompact: {
-				// x00230 added auto-agent-selector; the current compact swarm
+				// added auto-agent-selector; the current compact swarm
 				// surface now measures ~6_426 B with the live plugin mix.
 				hard: 6_450,
 				warning: 6_350,

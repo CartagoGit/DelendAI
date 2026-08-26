@@ -41,7 +41,7 @@ export interface IOverviewPlugin {
 export interface IOverviewSnapshot {
 	readonly server: { readonly name: string; readonly version: string };
 	readonly namespacePrefix: string;
-	// r00027: surfaced so the overview tool can ask the
+	// Surfaced so the overview tool can ask the
 	// tool-surface runtime for the per-surface counts via
 	// `getProjectContext({ workspaceRoot })`.
 	readonly workspaceRoot: string;
@@ -133,7 +133,7 @@ export const buildOverviewToolRegistration = (
 					corePaths: z
 						.object({ cacheDir: z.string(), docsDir: z.string() })
 						.optional(),
-					// f00109 S1: boot-time config problems (schema violations,
+					// S1: boot-time config problems (schema violations,
 					// dead docsDir/roots). Omitted when the config is clean.
 					configIssues: z.array(z.string()).optional(),
 					pluginDiagnostic: z
@@ -247,7 +247,7 @@ export const buildOverviewToolRegistration = (
 						})
 						.optional(),
 					unusedActivePlugins: z.array(z.string()).optional(),
-					// r00027: surface mode + counts of visible vs hidden
+					// Surface mode + counts of visible vs hidden
 					// tools. Lets the operator understand at a glance which
 					// surface the host picked and how many tools are
 					// currently announced to the MCP client vs available
@@ -316,7 +316,7 @@ export const buildOverviewToolRegistration = (
 					return toolJson({
 						server: snap.server,
 						namespacePrefix: snap.namespacePrefix,
-						// f00109 S1: config problems survive compact mode — a
+						// S1: config problems survive compact mode — a
 						// dead config is exactly when orientation must not look
 						// healthy. Omitted when clean.
 						...(snap.configIssues !== undefined
@@ -337,7 +337,7 @@ export const buildOverviewToolRegistration = (
 						...(snap.unusedActivePlugins?.length
 							? { unusedActivePlugins: snap.unusedActivePlugins }
 							: {}),
-						// r00027: surface mode + tool counts (compact mode
+						// Surface mode + tool counts (compact mode
 						// also surfaces them — the operator needs to know
 						// the totals even when they ask for the grouped
 						// view).
@@ -436,7 +436,7 @@ export const buildOverviewToolRegistration = (
 					...(snap.unusedActivePlugins?.length
 						? { unusedActivePlugins: snap.unusedActivePlugins }
 						: {}),
-					// r00027: surface mode + tool counts. The operator's
+					// Surface mode + tool counts. The operator's
 					// first call to `overview` is the canonical place to
 					// answer "how many tools does this server have right
 					// now, and how would I get more?".
