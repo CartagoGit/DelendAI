@@ -47,7 +47,10 @@ interface IFixtureMeasurements {
 interface IPresetDashboardRow {
 	readonly presetId: string;
 	readonly title: string;
+	/** Surface used to collect the measurement, not the default runtime. */
 	readonly surfaceMode: 'native' | 'adaptive';
+	/** Surface used by ordinary MCP-Vertex hosts for this measurement. */
+	readonly runtimeSurface: 'managed';
 	readonly source: 'tokens-gate' | 'dynamic-client';
 	readonly pluginCount: number;
 	readonly toolCount: number;
@@ -69,12 +72,14 @@ interface IPresetDashboardRow {
 export const DASHBOARD_SURFACES = [
 	{
 		surfaceMode: 'native',
+		runtimeSurface: 'managed',
 		source: 'tokens-gate',
 		clientInfo: undefined,
 		capabilities: undefined,
 	},
 	{
 		surfaceMode: 'adaptive',
+		runtimeSurface: 'managed',
 		source: 'dynamic-client',
 		clientInfo: DYNAMIC_SURFACE_CLIENT_INFO,
 		capabilities: DYNAMIC_SURFACE_CLIENT_CAPABILITIES,
@@ -318,6 +323,7 @@ export const measurePresetDashboard = async (
 			presetId,
 			title: preset?.title ?? presetId,
 			surfaceMode: measurement.surfaceMode,
+			runtimeSurface: measurement.runtimeSurface,
 			source: measurement.source,
 			pluginCount: connection.pluginIds.length,
 			toolCount: metrics.toolCount,
@@ -551,6 +557,7 @@ const renderGeneratedMarkdown = (
 		row.presetId,
 		row.title,
 		row.surfaceMode,
+		row.runtimeSurface,
 		row.source,
 		String(row.pluginCount),
 		String(row.toolCount),
@@ -576,6 +583,7 @@ const renderGeneratedMarkdown = (
 		row.ownerRows.map((ownerRow) => [
 			row.presetId,
 			row.surfaceMode,
+			row.runtimeSurface,
 			row.source,
 			ownerRow.owner,
 			String(ownerRow.toolCount),
@@ -594,6 +602,7 @@ const renderGeneratedMarkdown = (
 		return [
 			row.presetId,
 			row.surfaceMode,
+			row.runtimeSurface,
 			row.source,
 			formatInt(row.toolsListBytes),
 			String(estimates[0] ?? 0),
@@ -653,13 +662,14 @@ const renderGeneratedMarkdown = (
 		'',
 		'## Real preset dashboard',
 		'',
-		'This dashboard measures the real preset assemblies through the actual plugin loader. Each preset is reported twice: `native / tokens-gate` (the full-surface budget baseline) and explicit `adaptive / dynamic-client` (the compact bootstrap surface). The managed default uses the same bootstrap exposure contract; the measurements remain intentionally separate from the native baseline.',
+		'This dashboard measures the real preset assemblies through the actual plugin loader. Each preset is reported twice: `native / tokens-gate` (the full-surface measurement baseline) and explicit `adaptive / dynamic-client` (the compact bootstrap measurement). `Runtime Surface` is shown separately because ordinary MCP-Vertex execution defaults to `managed`; `native` here does not mean that the server is running native.',
 		'',
 		markdownTable(
 			[
 				'Preset',
 				'Title',
-				'Surface Mode',
+				'Measurement Surface',
+				'Runtime Surface',
 				'Source',
 				'Plugins',
 				'Tools',
@@ -684,7 +694,8 @@ const renderGeneratedMarkdown = (
 		markdownTable(
 			[
 				'Preset',
-				'Surface Mode',
+				'Measurement Surface',
+				'Runtime Surface',
 				'Source',
 				'Owner',
 				'Tools',
@@ -704,7 +715,8 @@ const renderGeneratedMarkdown = (
 		markdownTable(
 			[
 				'Preset',
-				'Surface Mode',
+				'Measurement Surface',
+				'Runtime Surface',
 				'Source',
 				'Tools/List Bytes',
 				`${TOKENIZER_MODELS[0]} Tokens`,
