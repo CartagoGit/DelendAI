@@ -38,6 +38,7 @@ import { serializeConfigurationSchema } from '../configuration-center/configurat
 import type { IOverviewToolEntry } from '../tools/overview-tool';
 import type { IToolSurfaceDescriptor } from '../contracts/interfaces/tool-surface.interface';
 import { FIRST_PARTY_PLUGIN_INDEX } from '../registry/first-party-index';
+import type { IErrorSink } from '../error-collection/sink.interface';
 
 /** Inputs `assemblePlugins` needs from the config-resolution phase. */
 export interface IAssemblePluginsInput {
@@ -73,6 +74,7 @@ export interface IAssemblePluginsResult {
 		NonNullable<IMcpVertexHostConfig['beforeToolCall']>
 	>;
 	readonly logsSink: import('../plugins/logs-sink').ILogsSink | undefined;
+	readonly errorSinks: readonly IErrorSink[];
 	readonly activationReport: ReturnType<typeof buildActivationReport>;
 	readonly activationById: ReadonlyMap<
 		string,
@@ -265,6 +267,8 @@ export const assemblePlugins = async (
 	// first one that does. The `logs` plugin's sink is the canonical
 	// choice when both are present.
 	let resolvedLogsSink: import('../plugins/logs-sink').ILogsSink | undefined;
+	// f00251 — collect all error sinks from every plugin; dedupe by id.
+	let resolvedErrorSinks: readonly IErrorSink[] = [];
 	for (const { plugin, registrations } of loadResult.loaded) {
 		const resolvedSpecifier =
 			loadResult.loaded.find((entry) => entry.plugin.name === plugin.name)
@@ -311,6 +315,16 @@ export const assemblePlugins = async (
 			beforeToolCallFns.push(registrations.beforeToolCall);
 		if (registrations.logsSink && resolvedLogsSink === undefined) {
 			resolvedLogsSink = registrations.logsSink;
+		}
+		if (registrations.errorSinks) {
+			// Deterministic dedupe by id, preserve first-seen order.
+			const seen = new Set(resolvedErrorSinks.map((s) => s.id));
+			for (const sink of registrations.errorSinks) {
+				if (!seen.has(sink.id)) {
+					seen.add(sink.id);
+					resolvedErrorSinks = [...resolvedErrorSinks, sink];
+				}
+			}
 		}
 		for (const tool of registrations.tools ?? []) {
 			// Every plugin tool is qualified with the host's core namespace
@@ -544,6 +558,7 @@ export const assemblePlugins = async (
 		getCheckpointAdvisoryFns,
 		beforeToolCallFns,
 		logsSink: resolvedLogsSink,
+		errorSinks: resolvedErrorSinks,
 		activationReport,
 		activationById,
 		toolSurfaceDescriptors,

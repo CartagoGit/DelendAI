@@ -41,6 +41,12 @@ import { createCacheEvictionRegistry } from '../cache/eviction-registry';
 import { resolveWorkspaceContained } from '../shared/contain-path';
 import type { ILogsSink } from '../plugins/plugin-contract';
 import { ConsoleLogsSink } from '../plugins/logs-sink';
+import type { IErrorCollector } from '../error-collection/collector.interface';
+import type { IErrorSink } from '../error-collection/sink.interface';
+import { createErrorCollector } from '../error-collection/collector.service';
+import { ConsoleErrorSink } from '../error-collection/console-sink';
+import { createDefaultSeverityClassifier } from '../error-collection/severity-classifier';
+import { createDefaultRedactionPolicy } from '../error-collection/redaction-policy';
 import type { IToolSurfaceDescriptor } from '../contracts/interfaces/tool-surface.interface';
 import type { IToolSurfacePlan } from '../contracts/interfaces/tool-surface.interface';
 import { assemblePlugins } from './assemble-plugins';
@@ -143,6 +149,8 @@ export interface IAssembledCliConfig {
 	 * (`fs_read`, `agent_catalog`, …).
 	 */
 	readonly agentCatalogTools: readonly IToolSummary[];
+	/** f00251 — the assembled error collector (always defined; ConsoleErrorSink fallback when no plugin registers a sink). */
+	readonly errorCollector: IErrorCollector;
 }
 
 export interface IAssembleCliDeps {
@@ -360,6 +368,8 @@ export const assembleCliConfig = async (
 	// guarantees no tool-call lifecycle event is silently dropped
 	// when the host forgets `--plugins=logs`.
 	let resolvedLogsSink: ILogsSink | undefined;
+	// f00251 — collector assembled after `assemblePlugins` returns.
+	let resolvedErrorCollector: IErrorCollector | undefined;
 	const buildContext = (
 		pluginName: string,
 		cacheNamespace?: string,
@@ -388,6 +398,9 @@ export const assembleCliConfig = async (
 			...(resolvedLogsSink !== undefined
 				? { logsSink: resolvedLogsSink }
 				: {}),
+			...(resolvedErrorCollector !== undefined
+				? { errorCollector: resolvedErrorCollector }
+				: {}),
 		};
 	};
 
@@ -407,6 +420,7 @@ export const assembleCliConfig = async (
 		getCheckpointAdvisoryFns,
 		beforeToolCallFns,
 		logsSink,
+		errorSinks,
 		activationReport,
 		toolSurfaceDescriptors,
 		configurationPlugins,
@@ -751,6 +765,23 @@ export const assembleCliConfig = async (
 			quiet: (args as { quiet?: boolean }).quiet === true,
 		});
 
+	// f00251 — build the error collector once; inject ConsoleErrorSink fallback when
+	// no plugin registered a sink so every tool invocation has a capture target.
+	const effectiveErrorSinks: readonly IErrorSink[] =
+		errorSinks.length > 0
+			? errorSinks
+			: [
+					new ConsoleErrorSink({
+						quiet: (args as { quiet?: boolean }).quiet === true,
+					}),
+				];
+	const errorCollector = createErrorCollector({
+		sinks: effectiveErrorSinks,
+		classifier: createDefaultSeverityClassifier(),
+		redaction: createDefaultRedactionPolicy(),
+	});
+	resolvedErrorCollector = errorCollector;
+
 	// f00072 slice S1/S3: boot sweep. Runs once, AFTER every plugin has
 	// registered its rules. The result is surfaced in
 	// `IAssembledCliConfig.cacheEvictionBootReport` so the doctor
@@ -790,5 +821,6 @@ export const assembleCliConfig = async (
 		cacheEvictionRegistry,
 		cacheEvictionBootReport,
 		agentCatalogTools: catalogToolEntries,
+		errorCollector,
 	};
 };
