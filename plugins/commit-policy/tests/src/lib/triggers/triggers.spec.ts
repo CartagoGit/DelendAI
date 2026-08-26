@@ -118,3 +118,46 @@ describe('manual trigger', () => {
 		expect(manualTrigger().kind).toBe('manual');
 	});
 });
+
+describe('x00264 — non-slice triggers carry the dirty files they saw', () => {
+	it('threshold event includes files.paths matching porcelain v1', async () => {
+		const run = buildRunner(
+			new Map([
+				[
+					'status\u0000--porcelain=v1',
+					porcelainResponse(['a.ts', 'b.ts', 'c.ts']),
+				],
+			]),
+		);
+		const tracker = createThresholdTracker(run, { files: 3 });
+		const fired = await tracker.check();
+		expect(fired?.kind).toBe('threshold');
+		expect(fired?.files?.paths).toEqual(['a.ts', 'b.ts', 'c.ts']);
+	});
+
+	it('threshold event strips rename arrow to the destination path', async () => {
+		const run = buildRunner(
+			new Map([
+				[
+					'status\u0000--porcelain=v1',
+					ok('R  old-name.ts -> new-name.ts\n'),
+				],
+			]),
+		);
+		const tracker = createThresholdTracker(run, { files: 1 });
+		const fired = await tracker.check();
+		expect(fired?.files?.paths).toEqual(['new-name.ts']);
+	});
+
+	it('interval event includes files.paths matching porcelain v1', async () => {
+		const run = buildRunner(
+			new Map([
+				['status\u0000--porcelain=v1', porcelainResponse(['one.ts'])],
+			]),
+		);
+		const timer = createIntervalTimer(run, { minutes: 1 });
+		const fired = await timer.check(60_000);
+		expect(fired?.kind).toBe('interval');
+		expect(fired?.files?.paths).toEqual(['one.ts']);
+	});
+});
