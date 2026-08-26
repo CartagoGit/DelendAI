@@ -162,6 +162,7 @@ const PRESET_SEEDS: readonly IPresetSeed[] = [
 			{ plugin: 'skills-pack' },
 			{ plugin: 'error-reporting' },
 			{ plugin: 'auto-agent-selector' },
+			{ plugin: 'agent-orchestrator' },
 		],
 	},
 	{
@@ -177,6 +178,7 @@ const PRESET_SEEDS: readonly IPresetSeed[] = [
 			{ plugin: 'test-convention' },
 			{ plugin: 'conventions' },
 			{ plugin: 'forge' },
+			{ plugin: 'agent-orchestrator' },
 		],
 	},
 	{
@@ -188,6 +190,7 @@ const PRESET_SEEDS: readonly IPresetSeed[] = [
 			{ plugin: 'issues', hostOnly: true },
 			{ plugin: 'api' },
 			{ plugin: 'prompt-eval' },
+			{ plugin: 'agent-orchestrator' },
 			// `changelog` removed — private, unpublished.
 		],
 	},
@@ -234,6 +237,7 @@ const PRESET_SEEDS: readonly IPresetSeed[] = [
 			{ plugin: 'memory' },
 			{ plugin: 'notification' },
 			{ plugin: 'orchestrator-runner' },
+			{ plugin: 'agent-orchestrator' },
 			{ plugin: 'perf' },
 			{ plugin: 'proposals' },
 			{ plugin: 'quality' },

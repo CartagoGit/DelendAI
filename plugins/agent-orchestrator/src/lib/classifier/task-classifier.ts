@@ -50,6 +50,13 @@ export class TaskClassifier {
 				confidence: 0.9,
 			};
 		}
+		if (task.hint === 'medium') {
+			return {
+				mode: 'linear',
+				reason: 'explicit hint "medium" routes to linear',
+				confidence: 0.8,
+			};
+		}
 		if (task.hint === 'large') {
 			return {
 				mode: 'swarm',

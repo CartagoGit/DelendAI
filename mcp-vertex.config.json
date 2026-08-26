@@ -159,6 +159,29 @@
 		"orchestrator-runner": {
 			"options": {}
 		},
+		"agent-orchestrator": {
+			"options": {
+				"policy": {
+					"defaultMode": "auto",
+					"defaults": {
+						"budget": {
+							"maxTokensOrchestrator": 200000,
+							"maxTokensPerSubagent": 50000,
+							"timeoutMs": 0
+						},
+						"rotation": {
+							"maxIterationsPerSubagent": 3,
+							"allow": [
+								"token-budget-exhausted",
+								"schema-violation",
+								"repeated-output",
+								"error-storm"
+							]
+						}
+					}
+				}
+			}
+		},
 		"auto-agent-selector": {
 			"options": {
 				"costQualityTradeoff": 8
