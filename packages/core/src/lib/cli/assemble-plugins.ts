@@ -188,7 +188,8 @@ const tryAssembleManagedLazy = (input: {
 	readonly buildContext: IAssemblePluginsInput['buildContext'];
 	readonly importFn: (specifier: string) => Promise<unknown>;
 }): IAssemblePluginsResult | undefined => {
-	if (input.fileConfig.managedSurface?.loading !== 'lazy') return undefined;
+	const loading = input.fileConfig.managedSurface?.loading ?? 'lazy';
+	if (loading !== 'lazy') return undefined;
 	// Native is an explicit compatibility contract: it needs real eager MCP
 	// registrations, so never pair it with the managed lazy activator table.
 	if (
