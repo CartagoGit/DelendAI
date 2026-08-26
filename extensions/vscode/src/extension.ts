@@ -41,6 +41,7 @@ import {
 } from './commands/open-docs';
 import { registerOpenDocsApiCommand } from './commands/open-docs-api';
 import { registerOpenAgentCatalogCommand } from './commands/open-agent-catalog';
+import { registerOpenAgentTimelineCommand } from './commands/open-agent-timeline';
 import {
 	OPEN_AUTO_AGENT_SELECTOR_COMMAND,
 	registerOpenAutoAgentSelectorCommand,
@@ -438,6 +439,17 @@ export const activate = async (
 	// f00053 S6: surface the canonical docs/how-to-use/API from the IDE.
 	track(registerOpenDocsApiCommand({ vscode }));
 	track(registerOpenAgentCatalogCommand({ vscode, client }));
+	// f00192 S1: VSCode Agent Timeline view. Reads
+	// `.vscode/mcp-vertex/timeline.json` (written by the core
+	// `TimelineBuffer`) and renders a vertical timeline of
+	// claim/activate/change/test/cost/commit/close events.
+	track(
+		registerOpenAgentTimelineCommand({
+			vscode,
+			workspaceRoot:
+				vscode.workspace?.workspaceFolders?.[0]?.uri.fsPath ?? null,
+		}),
+	);
 	// f00119 S6: surface the auto-agent-selector plugin's roster +
 	// recommendation so the user can review (and pin via the CLI /
 	// configuration-center) without leaving the IDE.

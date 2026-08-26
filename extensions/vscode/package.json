@@ -58,6 +58,12 @@
 				"icon": "$(list-tree)"
 			},
 			{
+				"command": "mcp-vertex.openAgentTimeline",
+				"title": "Open Agent Timeline",
+				"category": "MCP Vertex",
+				"icon": "$(history)"
+			},
+			{
 				"command": "mcp-vertex.openAutoAgentSelector",
 				"title": "Open Auto-agent Selector",
 				"category": "MCP Vertex",
