@@ -581,6 +581,28 @@ export type {
 // usage-tracking) import the provider vocabulary from this single file so
 // there is no drift between the design text and the code.
 export { CAPABILITY_TAGS } from '../lib/contracts/interfaces/provider-capabilities.interface';
+
+// --- f00188 (Track F / security): capability schema + enforcement ----
+export {
+	CAPABILITIES,
+	isCapability,
+	parseCapability,
+	parseCapabilityList,
+	splitCapability,
+} from '../lib/capabilities/schema';
+export type {
+	Capability,
+	ICapabilityParts,
+	ICapabilityRefusal,
+	TCapabilityGroup,
+} from '../lib/capabilities/schema';
+export {
+	createCapabilityGate,
+	parseDeclaredCapabilities,
+	resolveCapabilityAccess,
+	summariseLegacyShimWarning,
+} from '../lib/capabilities/inject';
+export type { ILegacyShimWarning } from '../lib/capabilities/inject';
 export type {
 	CapabilityTag,
 	CostTier,
