@@ -845,6 +845,20 @@ export type {
 	IPersistedKpisFile,
 	ISessionKpis,
 } from '../lib/observability/activation-kpis';
+// f00199 (Track M): tool confusion matrix.
+export {
+	createToolConfusion,
+	DEFAULT_RENAME_THRESHOLD,
+	hydrateConfusion,
+	serializeConfusion,
+} from '../lib/observability/tool-confusion';
+export type {
+	IConfusionMatrix,
+	IConfusionPair,
+	IPersistedConfusionFile,
+	IRenameSuggestion,
+	IToolConfusion,
+} from '../lib/observability/tool-confusion';
 // --- f00192 (Track J / agent timeline): host-agnostic append-only log ---
 export {
 	DEFAULT_MAX_EVENTS,
