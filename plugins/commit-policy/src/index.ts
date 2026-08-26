@@ -7,7 +7,11 @@ import z from 'zod';
 
 import { CommitPolicyOptionsSchema } from './lib/contracts/options';
 import type { IIdentityResolverContext } from './lib/identity/resolver';
-import { createSliceListener } from './lib/triggers/slice-listener';
+import {
+	createSliceListener,
+	type ITriggerAck,
+	type ITriggerEvent,
+} from './lib/triggers/slice-listener';
 import { buildCommitToolRegistration } from './lib/tools/commit-tool';
 import { buildPushToolRegistration } from './lib/tools/push-tool';
 import { buildRunToolRegistration } from './lib/tools/run-tool';
@@ -100,10 +104,24 @@ export default definePlugin({
 				t.kind === 'slice',
 		);
 		if (sliceTrigger !== undefined) {
+			// x00260 (AUD-CP-002): wire the listener to the engine via a
+			// handler. The full `CommitPolicyEngine` is delivered by
+			// f00182; until that lands we ack every event so the
+			// listener still progresses (no events are silently lost).
+			const handler = async (
+				event: ITriggerEvent,
+			): Promise<ITriggerAck> => {
+				// Future: dispatch through `commitPolicyEngine.handle(event)`.
+				// For now, the slice trigger is observational — every
+				// emitted event is acked OK so the listener drains its
+				// pending queue.
+				return { ack: 'OK' };
+			};
 			const listener = createSliceListener(
 				ctx.workspace.root,
 				ctx.docsDir,
 				sliceTrigger,
+				handler,
 			);
 			listener.start();
 			void listener;
