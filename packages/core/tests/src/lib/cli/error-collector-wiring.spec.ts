@@ -6,12 +6,13 @@
  *   B. No plugin registers a sink → ConsoleErrorSink fallback writes stderr.
  *   C. Two plugins each with a sink → fan-out reaches both with the same event.
  */
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterAll, afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import { assembleCliConfig } from '@mcp-vertex/core/lib/cli/assemble';
 import { parseCliArgs } from '@mcp-vertex/core/lib/plugins/parse-cli-args';
 import type { ICapturedError } from '../../../../src/lib/error-collection/types.js';
 import type { IErrorSink } from '../../../../src/lib/error-collection/sink.interface.js';
+import { createTestWorkspace, removeTestWorkspace } from '../test-workspace';
 
 // ---------------------------------------------------------------------------
 // Shared test context
@@ -23,8 +24,18 @@ const CTX = {
 	pluginName: 'test-plugin',
 } as const;
 
+const WRITABLE_WORKSPACE = createTestWorkspace('mcp-vertex-errors-');
+afterAll(() => removeTestWorkspace(WRITABLE_WORKSPACE));
+
 const buildArgs = (plugins: string[]) =>
-	parseCliArgs(['--plugins=' + plugins.join(','), '--workspace=/ws'], '/cwd');
+	parseCliArgs(
+		[
+			`--plugins=${plugins.join(',')}`,
+			`--workspace=${WRITABLE_WORKSPACE}`,
+			'--surface=native',
+		],
+		WRITABLE_WORKSPACE,
+	);
 
 // ---------------------------------------------------------------------------
 // Helpers

@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { afterAll, describe, expect, it } from 'vitest';
 import z from 'zod';
 
 import { assembleCliConfig } from '@mcp-vertex/core/lib/cli/assemble';
@@ -6,6 +6,10 @@ import type { IToolRegistration } from '@mcp-vertex/core/lib/contracts/interface
 import { parseCliArgs } from '@mcp-vertex/core/lib/plugins/parse-cli-args';
 
 import externalMcps from '../../../../../../plugins/external-mcps/src/index';
+import { createTestWorkspace, removeTestWorkspace } from '../test-workspace';
+
+const WRITABLE_WORKSPACE = createTestWorkspace('mcp-vertex-config-e2e-');
+afterAll(() => removeTestWorkspace(WRITABLE_WORKSPACE));
 
 const callTool = async (
 	tool: IToolRegistration,
@@ -53,7 +57,10 @@ describe('Configuration Center end-to-end metadata network', () => {
 				},
 			},
 		};
-		const args = parseCliArgs(['--workspace=/workspace'], '/cwd');
+		const args = parseCliArgs(
+			[`--workspace=${WRITABLE_WORKSPACE}`, '--surface=native'],
+			WRITABLE_WORKSPACE,
+		);
 		const { config } = await assembleCliConfig(args, {
 			readFile: async (path) =>
 				path.endsWith('mcp-vertex.config.json')
