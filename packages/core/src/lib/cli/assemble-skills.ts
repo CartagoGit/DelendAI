@@ -343,12 +343,6 @@ export const assembleSkills = async (
 			appliesTo: [...entry.appliesTo],
 			tags: [...entry.tags],
 			bodyPath: entry.bodyPath,
-			...(entry.source === undefined ? {} : { source: entry.source }),
-			...(entry.owner === undefined ? {} : { owner: entry.owner }),
-			...(entry.hash === undefined ? {} : { hash: entry.hash }),
-			...(entry.estimatedBodyTokens === undefined
-				? {}
-				: { estimatedBodyTokens: entry.estimatedBodyTokens }),
 		}),
 	);
 	for (const skill of skillCatalog.entries) {
