@@ -7,7 +7,7 @@
 	"commitAuthor": {
 		"mode": "git"
 	},
-	"surfaceMode": "native",
+	"surfaceMode": "managed",
 	"convention": {
 		"pluginPathsRoot": "packages",
 		"sourceRoot": "packages"

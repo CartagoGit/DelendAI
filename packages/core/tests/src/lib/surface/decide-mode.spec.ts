@@ -10,8 +10,8 @@ import {
 
 describe('decide-surface-mode (q00009 / f00254)', () => {
 	describe('resolveInitialSurfaceMode', () => {
-		it('returns `native` as the silent default when nothing is explicit', () => {
-			expect(resolveInitialSurfaceMode(undefined)).toBe('native');
+		it('returns `managed` as the silent default when nothing is explicit', () => {
+			expect(resolveInitialSurfaceMode(undefined)).toBe('managed');
 		});
 
 		it('returns the explicit override verbatim', () => {
@@ -69,17 +69,17 @@ describe('decide-surface-mode (q00009 / f00254)', () => {
 			expect(shouldRegisterSurfaceRouter('adaptive')).toBe(true);
 		});
 
-		it('does not register the router for `native`', () => {
-			expect(shouldRegisterSurfaceRouter('native')).toBe(false);
+		it('registers the router for `native` but keeps it hidden', () => {
+			expect(shouldRegisterSurfaceRouter('native')).toBe(true);
 		});
 
 		it('does not register the router when nothing is explicit (silent default)', () => {
-			expect(shouldRegisterSurfaceRouter(undefined)).toBe(false);
+			expect(shouldRegisterSurfaceRouter(undefined)).toBe(true);
 		});
 
 		it('matrix agrees with the documented contract', () => {
 			const matrix: Record<IMcpToolSurfaceMode, boolean> = {
-				native: false,
+				native: true,
 				managed: true,
 				adaptive: true,
 				compact: true,
@@ -99,8 +99,8 @@ describe('decide-surface-mode (q00009 / f00254)', () => {
 			).toBe('managed');
 		});
 
-		it('falls back to `native` when capabilities detection is silent', () => {
-			expect(decideSurfaceModeFromCapabilities({}).mode).toBe('native');
+		it('falls back to `managed` when capabilities detection is silent', () => {
+			expect(decideSurfaceModeFromCapabilities({}).mode).toBe('managed');
 		});
 	});
 });

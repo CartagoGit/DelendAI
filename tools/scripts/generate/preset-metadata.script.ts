@@ -18,6 +18,7 @@
  *   bun tools/scripts/generate/preset-metadata.script.ts --check     # exit 1 on drift
  */
 import { join } from 'node:path';
+import { readFile } from 'node:fs/promises';
 
 import {
 	TOKEN_BUDGETS,
@@ -48,18 +49,17 @@ const NATIVE_SURFACE = DASHBOARD_SURFACES[0];
 
 interface IGeneratedPresetEntry {
 	readonly presetId: string;
-	readonly surfaceMode: 'native' | 'adaptive';
+	readonly measurementSurface: 'native' | 'adaptive';
 	readonly measuredAt: string;
 	readonly toolCount: number;
 	readonly schemaBytes: number;
 	readonly estimatedTokens: number;
 }
 
-const measureAllPresets = async (): Promise<
-	readonly IGeneratedPresetEntry[]
-> => {
+const measureAllPresets = async (
+	measuredAt = new Date().toISOString(),
+): Promise<readonly IGeneratedPresetEntry[]> => {
 	const workspace = createTokenBudgetFixtureWorkspace();
-	const measuredAt = new Date().toISOString();
 	try {
 		const entries: IGeneratedPresetEntry[] = [];
 		for (const presetId of TOKEN_BUDGETS.dashboardPresetIds) {
@@ -70,7 +70,7 @@ const measureAllPresets = async (): Promise<
 			);
 			entries.push({
 				presetId,
-				surfaceMode: row.surfaceMode,
+				measurementSurface: row.surfaceMode,
 				measuredAt,
 				toolCount: row.toolCount,
 				schemaBytes: row.schemaBytes,
@@ -98,7 +98,8 @@ const sq = (value: string): string => `'${value}'`;
 const renderEntry = (entry: IGeneratedPresetEntry): string =>
 	[
 		`\t${/^[a-z][a-zA-Z0-9]*$/.test(entry.presetId) ? entry.presetId : sq(entry.presetId)}: {`,
-		`\t\tsurfaceMode: ${sq(entry.surfaceMode)},`,
+		`\t\tmeasurementSurface: ${sq(entry.measurementSurface)},`,
+		"\t\truntimeSurface: 'managed',",
 		`\t\tsource: 'generated-runtime-measurement',`,
 		`\t\tmeasuredAt: ${sq(entry.measuredAt)},`,
 		`\t\testimator: ${sq(ESTIMATOR_ID)},`,
@@ -111,8 +112,16 @@ const renderEntry = (entry: IGeneratedPresetEntry): string =>
 		`\t},`,
 	].join('\n');
 
-export const buildPresetMetadataSource = async (): Promise<string> => {
-	const entries = await measureAllPresets();
+/** Compare generated content without treating a measurement timestamp as
+ * drift. The timestamp is provenance, not a metric, and must not force a
+ * commit when the measured payload is unchanged. */
+export const normalizeMeasuredAt = (text: string): string =>
+	text.replace(/measuredAt: '.*?'/gu, "measuredAt: '<normalized>'");
+
+export const buildPresetMetadataSource = async (
+	input: { readonly measuredAt?: string } = {},
+): Promise<string> => {
+	const entries = await measureAllPresets(input.measuredAt);
 	return [
 		'/**',
 		' * preset-metadata.generated.ts — GENERATED, do not edit by hand.',
@@ -121,7 +130,10 @@ export const buildPresetMetadataSource = async (): Promise<string> => {
 		' * (r00024 / PRESET-001). `check:generated` fails the build if this',
 		' * file drifts from a fresh measurement — the same measurement',
 		' * `tools/scripts/report/token-budget-dashboard.script.ts` uses',
-		' * (`measurePresetDashboard`, native surface).',
+		' * (`measurePresetDashboard`, native surface). `measurementSurface` is',
+		' * deliberately separate from the managed runtime default: these values',
+		' * are the comparable full-surface budget baseline. `runtimeSurface`',
+		' * records the normal host surface and is not a runtime cache directive.',
 		' */',
 		"import { TOKEN_BUDGETS } from './token-budgets.constant';",
 		"import type { IPresetMetadataEntry } from '../interfaces/preset-budget-profile.interface';",
@@ -137,8 +149,22 @@ export const generatePresetMetadata = async (): Promise<{
 	readonly source: string;
 	readonly outputPath: string;
 }> => {
-	const source = await buildPresetMetadataSource();
 	const outputPath = join(repoRoot(), GENERATED_PRESET_METADATA_PATH);
+	const existing = await readFile(outputPath, 'utf8').catch(() => null);
+	const measuredAt = existing?.match(/measuredAt: '(.*?)'/u)?.[1];
+	const freshSource = await buildPresetMetadataSource();
+	// A timestamp records when the metrics last changed; it is not itself a
+	// reason to dirty the generated artifact. Preserve it when the measured
+	// values are unchanged, so repeated generation is idempotent.
+	const source =
+		existing !== null &&
+		measuredAt !== undefined &&
+		normalizeMeasuredAt(existing) === normalizeMeasuredAt(freshSource)
+			? freshSource.replace(
+					/measuredAt: '.*?'/gu,
+					`measuredAt: '${measuredAt}'`,
+				)
+			: freshSource;
 	await withFileMutex(outputPath, async () => {
 		await writeFileAtomic(outputPath, source);
 	});
@@ -159,7 +185,10 @@ if (isMainModule()) {
 			buildPresetMetadataSource(),
 			readFile(outputPath, 'utf8').catch(() => null),
 		]);
-		if (generated !== existing) {
+		if (
+			existing === null ||
+			normalizeMeasuredAt(generated) !== normalizeMeasuredAt(existing)
+		) {
 			console.error(
 				`preset-metadata: drift detected. Run bun tools/scripts/generate/preset-metadata.script.ts and commit ${GENERATED_PRESET_METADATA_PATH}.`,
 			);

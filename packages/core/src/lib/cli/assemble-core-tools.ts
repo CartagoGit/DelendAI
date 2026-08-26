@@ -68,10 +68,6 @@ import { buildSkillToolRegistration } from '../tools/skill-tool';
 import { buildStartPromptRegistration } from '../tools/start-prompt';
 import { buildStatusToolRegistration } from '../tools/status-tool';
 import {
-	resolveExplicitSurfaceMode,
-	resolveInitialSurfaceMode,
-} from '../surface/decide-mode';
-import {
 	buildPluginActivateToolRegistration,
 	buildPluginDeactivateToolRegistration,
 	buildProjectContextToolRegistration,
@@ -328,13 +324,7 @@ export const assembleCoreTools = (
 	const metricsDirAbs = workspace.resolve(
 		joinRel(corePaths.cacheDir, 'metrics'),
 	);
-	const explicitSurfaceMode = resolveExplicitSurfaceMode({
-		cliMode: args.surfaceMode,
-		cliSurfaceExplicit: args.tokens.surface !== undefined,
-		configMode: fileConfig.surfaceMode,
-	});
-	const initialSurfaceMode = resolveInitialSurfaceMode(explicitSurfaceMode);
-	// r00027: dynamic surface tools are ALWAYS registered.
+	// q00009: dynamic surface tools are ALWAYS registered.
 	const dynamicSurfaceTools = [
 		buildProjectContextToolRegistration({
 			namespacePrefix: corePrefix,
@@ -451,9 +441,9 @@ export const assembleCoreTools = (
 			corePaths,
 			reader: createWorkspaceFileReader(workspace),
 		}),
-		// r00027: vertex router is ALWAYS registered; the runtime's
+		// q00009: vertex router is ALWAYS registered; the runtime's
 		// `applySurfaceMode` decides whether to expose it. In native
-		// mode it stays hidden; in adaptive/compact it is the fallback
+		// mode it stays hidden; in managed/adaptive/compact it is the fallback
 		// entry point for tools outside the bootstrap set.
 		buildVertexRouterToolRegistration({
 			namespacePrefix: corePrefix,

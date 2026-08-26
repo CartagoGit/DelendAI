@@ -103,19 +103,17 @@ export async function createMcpProject(
 			});
 			const change = toolSurfaceRuntime.applySurfaceMode(decision.mode);
 			const client = server.server.getClientVersion();
-			// q00007 + r00027: when the surface mode is already pinned via
+			// q00007 + q00009: when the surface mode is already pinned via
 			// `config.surfaceMode` (or the `vertex` preset default), the
 			// explicit override leaves the surface unchanged. Skip the
 			// log line so the operator's stderr stays clean — the
-			// server still surfaces every loaded tool on the first
-			// `tools/list`, which is the only thing the operator
-			// actually needs to see. Surface transitions (`changed > 0`)
-			// and capability-driven decisions still log because they
-			// are real signals about what the client is asking for.
-			if (
-				change.changedToolNames.length > 0 ||
-				!config.toolSurfacePlan?.explicitMode
-			) {
+			// managed mode shows only bootstrap and router tools on the first
+			// `tools/list`,
+			// while native compatibility mode surfaces every loaded tool.
+			// Only report a real transition. The stable managed default must not
+			// add a redundant capability-negotiation line to stderr on every boot;
+			// the operator-facing Startup Report already records the effective mode.
+			if (change.changedToolNames.length > 0) {
 				process.stderr.write(
 					`[surface] Client "${client?.name ?? 'unknown'}" v${client?.version ?? 'unknown'}: ${decision.reason} (changed=${change.changedToolNames.length})\n`,
 				);

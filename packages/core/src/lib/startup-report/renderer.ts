@@ -79,8 +79,6 @@ const formatBytes = (bytes: number): string => {
 const formatTokens = (tokens: number): string =>
 	tokens === 0 ? '0' : `~${tokens.toLocaleString('en-US')}`;
 
-const header = (lines: string[]): string[] => lines;
-
 /**
  * Render the report. Pure: takes the model + env, returns a string.
  * Empty string for `off`.
@@ -110,17 +108,17 @@ const renderInternal = (report: IStartupReport, useAnsi: boolean): string => {
 			report.identity.startupReportLevel === 'medium' ? ' (default)' : ''
 		}`,
 	];
-	header(idLines).forEach((l) => lines.push(l));
+	for (const line of idLines) lines.push(line);
 	lines.push('');
 
 	const catLines: string[] = [
 		colourise('Catalog', 'header', useAnsi),
-		`plugins        ${report.catalog.pluginsConfigured} configured · ${report.catalog.pluginsWarm} warm · ${report.catalog.pluginsFailed} failed`,
+		`plugins        ${report.catalog.pluginsConfigured} configured · ${report.catalog.pluginsLoaded ?? report.catalog.pluginsWarm} loaded · ${report.catalog.pluginsWarm} warm · ${report.catalog.pluginsFailed} failed`,
 		`tools          ${report.catalog.toolsAvailable} available · ${report.catalog.toolsExposed} exposed to model`,
 		`skills         ${report.catalog.skillsAvailable} available · ${report.catalog.skillsBodiesPreloaded} bodies preloaded`,
 		`resources      ${report.catalog.resourcesAvailable} available`,
 	];
-	header(catLines).forEach((l) => lines.push(l));
+	for (const line of catLines) lines.push(line);
 	lines.push('');
 
 	// ─── Per-request context cost (compact+) ───────────────────────
@@ -138,7 +136,7 @@ const renderInternal = (report: IStartupReport, useAnsi: boolean): string => {
 			`avoided        ${formatTokens(report.reconciliation.avoidedTokensPerRequest)}/request · ${report.reconciliation.avoidedPercentage.toFixed(1)}%`,
 		);
 	}
-	header(costLines).forEach((l) => lines.push(l));
+	for (const line of costLines) lines.push(line);
 	lines.push('');
 
 	// ─── Plugin cost table (medium+) ───────────────────────────────
@@ -167,7 +165,7 @@ const renderInternal = (report: IStartupReport, useAnsi: boolean): string => {
 				useAnsi,
 			);
 			tableLines.push(
-				`  ${plugin.pluginName.padEnd(28)}${String(plugin.exposedToolsCount).padStart(3)}/${String(plugin.availableToolsCount).padStart(3)}      ${formatBytes(plugin.exposedSchemaBytesPerRequest).padStart(10)}      ${formatTokens(plugin.estimatedSchemaTokensPerRequest).padStart(10)}    ${budget}`,
+				`  ${plugin.pluginName.padEnd(28)}${String(plugin.exposedToolsCount).padStart(3)}/${String(plugin.availableToolsCount).padStart(3)} ${String(plugin.availableSkillsCount ?? 0).padStart(5)}      ${formatBytes(plugin.exposedSchemaBytesPerRequest).padStart(10)}      ${formatTokens(plugin.estimatedSchemaTokensPerRequest).padStart(10)}    ${budget}`,
 			);
 			// colourise the budget slice; keep alignment via plain prefix
 			const last = tableLines.pop() as string;
@@ -179,7 +177,6 @@ const renderInternal = (report: IStartupReport, useAnsi: boolean): string => {
 			(s, p) => s + p.availableToolsCount,
 			0,
 		);
-		const totalSkills = report.catalog.skillsAvailable;
 		const totalRow = `  TOTAL${' '.repeat(24)}${String(report.catalog.toolsExposed).padStart(3)}/${String(totalTools).padStart(3)}      ${formatBytes(totalBytes).padStart(10)}      ${formatTokens(report.reconciliation.estimatedSchemaTokensPerRequest).padStart(10)}    n/a*`;
 		tableLines.push(totalRow);
 		tableLines.push('');
@@ -190,7 +187,7 @@ const renderInternal = (report: IStartupReport, useAnsi: boolean): string => {
 				useAnsi,
 			),
 		);
-		header(tableLines).forEach((l) => lines.push(l));
+		for (const line of tableLines) lines.push(line);
 		lines.push('');
 	}
 
@@ -198,12 +195,13 @@ const renderInternal = (report: IStartupReport, useAnsi: boolean): string => {
 	const runtimeLines: string[] = [
 		colourise('Managed runtime', 'header', useAnsi),
 		`lazy activation      ${report.runtime.lazyActivation ? 'enabled' : 'disabled'}`,
+		`module loading       ${report.runtime.moduleLoading ?? 'unspecified'}`,
 		`internal routing     ${report.runtime.internalRouting ? 'enabled' : 'disabled'}`,
 		`idle eviction        ${report.runtime.idleEvictionMs ? `${report.runtime.idleEvictionMs / 60_000}m` : 'off'}`,
 		`max warm plugins     ${report.runtime.maxWarmPlugins ?? 'unbounded'}`,
 		`list_changed needed  ${report.runtime.listChangedRequired ? 'yes' : 'no'}`,
 	];
-	header(runtimeLines).forEach((l) => lines.push(l));
+	for (const line of runtimeLines) lines.push(line);
 	lines.push('');
 
 	// ─── Warnings (compact+) ───────────────────────────────────────
@@ -220,7 +218,7 @@ const renderInternal = (report: IStartupReport, useAnsi: boolean): string => {
 				`${colourise(`[${warning.severity.toUpperCase()}]`, token, useAnsi)} ${warning.code}: ${warning.message}`,
 			);
 		}
-		header(warnLines).forEach((l) => lines.push(l));
+		for (const line of warnLines) lines.push(line);
 		lines.push('');
 	}
 
@@ -231,10 +229,20 @@ const renderInternal = (report: IStartupReport, useAnsi: boolean): string => {
 		];
 		for (const plugin of report.reconciliation.plugins) {
 			detailLines.push(
-				`  ${plugin.pluginName.padEnd(24)} status=${plugin.status} tools=${plugin.exposedToolsCount}/${plugin.availableToolsCount}`,
+				`  ${plugin.pluginName.padEnd(24)} status=${plugin.status} tools=${plugin.exposedToolsCount}/${plugin.availableToolsCount} skills=${plugin.availableSkillsCount ?? 0}`,
 			);
+			if (plugin.availableToolIds !== undefined) {
+				detailLines.push(
+					`    tools: ${plugin.availableToolIds.join(', ') || 'none'}`,
+				);
+			}
+			if (plugin.availableSkillIds !== undefined) {
+				detailLines.push(
+					`    skills: ${plugin.availableSkillIds.join(', ') || 'none'}`,
+				);
+			}
 		}
-		header(detailLines).forEach((l) => lines.push(l));
+		for (const line of detailLines) lines.push(line);
 		lines.push('');
 	}
 
@@ -258,7 +266,7 @@ const renderInternal = (report: IStartupReport, useAnsi: boolean): string => {
 				`  budget.${budget.name.padEnd(20)} ${budget.semantics.padEnd(20)} ${budget.value ?? 'n/a'} ${budget.unit}`,
 			);
 		}
-		header(fullLines).forEach((l) => lines.push(l));
+		for (const line of fullLines) lines.push(line);
 		lines.push('');
 	}
 

@@ -15,9 +15,84 @@
 			"type": "string",
 			"enum": [
 				"native",
+				"managed",
 				"adaptive",
 				"compact"
 			]
+		},
+		"startupReport": {
+			"type": "object",
+			"properties": {
+				"level": {
+					"type": "string",
+					"enum": [
+						"off",
+						"compact",
+						"medium",
+						"high",
+						"full",
+						"extended"
+					]
+				},
+				"color": {
+					"type": "string",
+					"enum": [
+						"auto",
+						"always",
+						"never"
+					]
+				}
+			},
+			"additionalProperties": false
+		},
+		"managedSurface": {
+			"type": "object",
+			"properties": {
+				"idleTtlMs": {
+					"anyOf": [
+						{
+							"type": "integer",
+							"minimum": 0,
+							"maximum": 9007199254740991
+						},
+						{
+							"type": "null"
+						}
+					]
+				},
+				"maxWarmPlugins": {
+					"anyOf": [
+						{
+							"type": "integer",
+							"minimum": 0,
+							"maximum": 9007199254740991
+						},
+						{
+							"type": "null"
+						}
+					]
+				}
+			},
+			"additionalProperties": false
+		},
+		"evidence": {
+			"type": "object",
+			"properties": {
+				"retentionDays": {
+					"type": "integer",
+					"minimum": 1,
+					"maximum": 9007199254740991
+				},
+				"cleanup": {
+					"type": "string",
+					"enum": [
+						"on-boot",
+						"dry-run",
+						"off"
+					]
+				}
+			},
+			"additionalProperties": false
 		},
 		"keepLegacy": {
 			"type": "boolean"

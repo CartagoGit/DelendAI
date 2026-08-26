@@ -1,6 +1,6 @@
 import { DEFAULT_CORE_PATHS } from '../contracts/interfaces/core-paths.interface';
 import {
-	isMcpToolSurfaceMode,
+	coerceSurfaceMode,
 	type IMcpToolSurfaceMode,
 } from '../contracts/interfaces/surface-mode.interface';
 import {
@@ -28,8 +28,10 @@ export interface IMcpVertexCliArgs {
 	readonly docsDir: string;
 	/** Absolute workspace root (`--workspace`, default cwd). */
 	readonly workspace: string;
-	/** Tool-surface strategy (`--surface=native|adaptive|compact`). */
+	/** Tool-surface strategy (`--surface=managed|native|adaptive|compact`). */
 	readonly surfaceMode: IMcpToolSurfaceMode;
+	/** Optional operator-only startup report level override. */
+	readonly startupReportLevel?: string | undefined;
 	/** Server name advertised over MCP (`--name`). */
 	readonly serverName: string;
 	/** Server version (`--serverVersion`). */
@@ -84,6 +86,7 @@ const KNOWN_KEYS = new Set([
 	'docsDir',
 	'workspace',
 	'surface',
+	'startup-report',
 	'name',
 	'serverVersion',
 	'prefix',
@@ -178,10 +181,11 @@ const splitList = (value: string | undefined): string[] =>
 				.filter((entry) => entry.length > 0);
 
 const parseSurfaceMode = (value: string | undefined): IMcpToolSurfaceMode => {
-	if (value === undefined) return 'native';
-	if (isMcpToolSurfaceMode(value)) return value;
+	if (value === undefined) return 'managed';
+	const mode = coerceSurfaceMode(value);
+	if (mode !== undefined) return mode;
 	throw new Error(
-		`Invalid value for --surface: "${value}". Use --surface=native, --surface=adaptive, or --surface=compact.`,
+		`Invalid value for --surface: "${value}". Use --surface=managed, --surface=native, --surface=adaptive, or --surface=compact.`,
 	);
 };
 
@@ -224,6 +228,7 @@ export const parseCliArgs = (
 		docsDir: tokens.docsDir ?? DEFAULT_CLI_ARGS.docsDir,
 		workspace: tokens.workspace ?? cwd,
 		surfaceMode: parseSurfaceMode(tokens.surface),
+		startupReportLevel: tokens['startup-report'],
 		serverName: tokens.name ?? DEFAULT_CLI_ARGS.serverName,
 		serverVersion: tokens.serverVersion ?? DEFAULT_CLI_ARGS.serverVersion,
 		namespacePrefix: tokens.prefix,

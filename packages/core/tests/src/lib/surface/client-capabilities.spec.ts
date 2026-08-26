@@ -26,7 +26,7 @@ describe('surface capability negotiation', () => {
 		expect(detected.source).toBe('extensions');
 	});
 
-	it('negotiates adaptive for a declaring client AND defaults to native for a plain one (r00027 / TOK-004 follow-up)', () => {
+	it('keeps managed stable for clients with or without list-change support', () => {
 		expect(
 			decideSurfaceModeFromCapabilities({
 				capabilities: {
@@ -35,15 +35,15 @@ describe('surface capability negotiation', () => {
 					},
 				},
 			}).mode,
-		).toBe('adaptive');
-		// r00027: native is the silent default again. r00026's
+		).toBe('managed');
+		// Managed is the stable default. r00026's
 		// "adaptive by default" hid every tool behind a
 		// `list_changed` notification that most spec-compliant
 		// MCP clients never re-fetch on. Inverting back means the
-		// first `tools/list` enumerates every loaded tool.
+		// first `tools/list` is now the stable managed bootstrap.
 		expect(
 			decideSurfaceModeFromCapabilities({ capabilities: {} }).mode,
-		).toBe('native');
+		).toBe('managed');
 		expect(
 			decideSurfaceModeFromCapabilities({
 				capabilities: {},
@@ -67,11 +67,11 @@ describe('surface capability negotiation', () => {
 				configMode: 'native',
 			}),
 		).toBe('compact');
-		// r00027: default surface is now `native` (was `adaptive` in
-		// r00026). The bootstrap set therefore stays smaller and the
-		// router registration hint flips accordingly.
-		expect(resolveInitialSurfaceMode(undefined)).toBe('native');
-		expect(shouldRegisterSurfaceRouter(undefined)).toBe(false);
-		expect(shouldRegisterSurfaceRouter('native')).toBe(false);
+		// Managed is now the default surface (was `adaptive` in
+		// r00026). The bootstrap set therefore stays smaller and the router
+		// remains registered as the internal fallback.
+		expect(resolveInitialSurfaceMode(undefined)).toBe('managed');
+		expect(shouldRegisterSurfaceRouter(undefined)).toBe(true);
+		expect(shouldRegisterSurfaceRouter('native')).toBe(true);
 	});
 });

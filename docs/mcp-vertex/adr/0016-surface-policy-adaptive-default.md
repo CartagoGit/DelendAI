@@ -1,6 +1,6 @@
-# ADR 0016 — Surface policy: `adaptive` is the default for ordinary MCP clients
+# ADR 0016 — Surface policy: `adaptive` was the default for ordinary MCP clients
 
-> Status: **Accepted** (closes TOK-004 in `q00005` / third external audit).
+> Status: **Superseded by ADR 0017**.
 > Date: 2026-08-25.
 > Authors: q00005 orchestration.
 
@@ -29,14 +29,15 @@ The third external audit (TOK-004) points out that:
    `list_changed` handling, so any spec-compliant client is already
    expected to tolerate it.
 
-`r00026` (commit `58ef6288`) flipped the default: ordinary clients
-get `adaptive`; `native` is the explicit opt-in (capability private,
-`--surface=native`, or `mcp-vertex.config.json#surfaceMode`).
+`r00026` (commit `58ef6288`) flipped the default to `adaptive`; that
+decision is retained here as historical context. ADR 0017 later moved the
+default to `managed`, which provides the same stable bootstrap intent without
+making the session depend on dynamic `tools/list` refreshes.
 
 This ADR codifies that decision and addresses the
 "never-refreshing-client" risk that TOK-004 also flagged.
 
-## Decision
+## Historical decision
 
 The surface mode negotiated by `decideSurfaceModeFromCapabilities()`
 follows this priority:

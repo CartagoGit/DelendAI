@@ -1,16 +1,20 @@
-# Surface mode by client capabilities
+# Surface mode policy
 
-Cuando no existe un override explícito, el servidor decide el surface mode a partir de las capabilities declaradas por el cliente durante initialize.
+El modo efectivo se mantiene estable durante la sesión y no depende de que el
+cliente anuncie ni atienda `notifications/tools/list_changed`.
 
 Reglas actuales:
 
-- Si el cliente declara la extensión mcp-vertex/surface con toolsListChanged=true, el modo final es adaptive.
-- Si el cliente no declara soporte para tools list-changed, el modo final es native.
-- Si el cliente declara preferredMode=compact sin toolsListChanged, el modo final puede bajar a compact.
+- Sin override explícito, el modo es `managed`.
+- `managed` publica únicamente la superficie bootstrap y enruta el resto
+  internamente mediante `vertex`.
+- `native`, `adaptive` y `compact` se mantienen como overrides explícitos para
+  compatibilidad, medición o hosts que necesiten otra superficie.
 
 Overrides explícitos:
 
-- CLI: --surface=native|adaptive|compact tiene precedencia máxima.
+- CLI: `--surface=managed|native|adaptive|compact` tiene precedencia máxima.
 - Config: mcp-vertex.config.json.surfaceMode aplica cuando la CLI no fijó el modo.
 
-La negociación no usa heurísticas por nombre de cliente. clientInfo solo se usa para logging y diagnóstico.
+Las capabilities del cliente se conservan en la API de decisión por
+compatibilidad, pero no cambian silenciosamente el modo efectivo.

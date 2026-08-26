@@ -26,6 +26,8 @@ interface IStep {
 	readonly name: string;
 	readonly cmd: readonly string[];
 	readonly description: string;
+	/** Read-only generator invocation, when the generator supports it. */
+	readonly checkCmd?: readonly string[];
 }
 
 const STEPS: readonly IStep[] = [
@@ -60,6 +62,11 @@ const STEPS: readonly IStep[] = [
 	{
 		name: 'preset-metadata',
 		cmd: ['bun', 'tools/scripts/generate/preset-metadata.script.ts'],
+		checkCmd: [
+			'bun',
+			'tools/scripts/generate/preset-metadata.script.ts',
+			'--check',
+		],
 		description: 'Refresh preset metadata.',
 	},
 ];
@@ -81,12 +88,15 @@ const flag = (argv: readonly string[], name: string): string | undefined => {
 const hasFlag = (argv: readonly string[], name: string): boolean =>
 	argv.some((t) => t === `--${name}` || t.startsWith(`--${name}=`));
 
-const runStep = async (step: IStep): Promise<number> => {
+const runStep = async (step: IStep, check: boolean): Promise<number> => {
 	out(`▶ ${step.name} — ${step.description}`);
-	const proc = Bun.spawn(step.cmd as string[], {
-		stdout: 'inherit',
-		stderr: 'inherit',
-	});
+	const proc = Bun.spawn(
+		(check ? (step.checkCmd ?? step.cmd) : step.cmd) as string[],
+		{
+			stdout: 'inherit',
+			stderr: 'inherit',
+		},
+	);
 	const exit = await proc.exited;
 	out(`  ${step.name} exited ${exit}`);
 	return exit;
@@ -122,7 +132,7 @@ export const main = async (argv: readonly string[]): Promise<number> => {
 	out(`gen-all: ${steps.length} step(s)${check ? ' + drift-check' : ''}`);
 	let worstExit = 0;
 	for (const step of steps) {
-		const code = await runStep(step);
+		const code = await runStep(step, check);
 		if (code !== 0) worstExit = code;
 	}
 	if (worstExit !== 0) {

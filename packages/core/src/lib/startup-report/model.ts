@@ -35,6 +35,8 @@ export interface IStartupReportWarning {
 
 export interface IStartupReportCatalogCounts {
 	readonly pluginsConfigured: number;
+	/** Number of plugin modules imported during assembly. */
+	readonly pluginsLoaded?: number;
 	readonly pluginsWarm: number;
 	readonly pluginsFailed: number;
 	readonly toolsAvailable: number;
@@ -54,6 +56,8 @@ export interface IStartupReportServerIdentity {
 
 export interface IStartupReportManagedRuntime {
 	readonly lazyActivation: boolean;
+	/** Surface activation and module loading are separate dimensions. */
+	readonly moduleLoading?: 'eager' | 'lazy';
 	readonly internalRouting: boolean;
 	readonly idleEvictionMs?: number | null;
 	readonly maxWarmPlugins?: number | null;
@@ -126,6 +130,9 @@ export const buildStartupReport = (
 		pluginName: snap.pluginName,
 		status: snap.status,
 		availableToolsCount: snap.availableToolsCount,
+		availableSkillsCount: snap.availableSkillsCount ?? 0,
+		availableToolIds: snap.availableToolIds ?? [],
+		availableSkillIds: snap.availableSkillIds ?? [],
 		exposedToolsCount: snap.exposedToolsCount,
 		exposedSchemaBytesPerRequest: snap.exposedSchemaBytesPerRequest,
 		estimatedSchemaTokensPerRequest: snap.estimatedSchemaTokensPerRequest,

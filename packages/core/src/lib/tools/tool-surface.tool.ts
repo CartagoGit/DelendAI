@@ -53,12 +53,18 @@ export const buildProjectContextToolRegistration = (input: {
 					'Read-only project context: workspace root, resolved core paths, current surface mode, config issues, loaded plugins and visible domains.',
 				inputSchema: z.object({}),
 				outputSchema: z.object({
-					surfaceMode: z.enum(['native', 'adaptive', 'compact']),
+					surfaceMode: z.enum([
+						'managed',
+						'native',
+						'adaptive',
+						'compact',
+					]),
 					workspaceRoot: z.string(),
 					cacheDir: z.string().optional(),
 					docsDir: z.string().optional(),
 					configIssues: z.array(z.string()),
 					loadedPlugins: z.array(z.string()),
+					warmPlugins: z.array(z.string()).optional(),
 					visibleToolCount: z.number(),
 					hiddenToolCount: z.number(),
 					visibleDomains: z.array(z.string()),
@@ -83,7 +89,7 @@ export const buildToolSearchToolRegistration = (input: {
 }): IToolRegistration => ({
 	id: 'tool_search',
 	summary:
-		'Search the loaded tool catalog, including hidden tools in adaptive/compact surfaces.',
+		'Search the loaded tool catalog, including tools hidden by managed/adaptive/compact surfaces.',
 	tags: ['orientation', 'search'],
 	register: async (server) => {
 		server.registerTool(
