@@ -23,6 +23,8 @@ import type { ITimelineLog, TimelineEventKind } from '@mcp-vertex/core/public';
 import { TimelineBuffer, isTimelineLog } from '@mcp-vertex/core/public';
 
 import type { ICommandVscodeApi } from './types';
+import { resolveViewLang, viewCopyFor } from '../i18n/view-copy.strings';
+import type { IViewCopy } from '../contracts/interfaces/view-copy.interface';
 
 import {
 	parseTimelineQuery,
@@ -41,6 +43,9 @@ export interface IOpenAgentTimelineDeps {
 	/** Absolute path to the workspace root; the timeline lives at
 	 *  `<root>/.vscode/mcp-vertex/timeline.json` by default. */
 	readonly workspaceRoot: string | null;
+	readonly globalState?: {
+		get<T>(key: string): T | undefined;
+	};
 }
 
 /**
@@ -76,9 +81,10 @@ export const renderTimelineForFilters = (
 		readonly kind?: TimelineEventKind | null;
 		readonly plugin?: string | null;
 	},
+	copy: IViewCopy = viewCopyFor('en'),
 ): string => {
 	const model = projectTimelineView(log, filters);
-	return renderAgentTimeline(model, { refreshHref: '?' });
+	return renderAgentTimeline(model, { refreshHref: '?', copy });
 };
 
 export const registerOpenAgentTimelineCommand = (
@@ -87,18 +93,21 @@ export const registerOpenAgentTimelineCommand = (
 	deps.vscode.commands.registerCommand(
 		OPEN_AGENT_TIMELINE_COMMAND,
 		async () => {
+			const copy = viewCopyFor(
+				resolveViewLang(deps.globalState?.get<unknown>('mcpv:lang')),
+			);
 			const log = loadTimelineLog(deps.workspaceRoot);
 			const model = projectTimelineView(log, {
 				kind: null,
 				plugin: null,
 			});
-			const html = renderAgentTimeline(model, { refreshHref: '?' });
+			const html = renderAgentTimeline(model, { refreshHref: '?', copy });
 			// `vscode.window.createWebviewPanel` is the standard seam
 			// used by every other command. The view is fully static —
 			// no scripts, strict CSP — so we explicitly disable scripting.
 			const panel = deps.vscode.window.createWebviewPanel(
 				'mcp-vertex.agent-timeline',
-				'Agent Timeline',
+				copy.timelineTitle,
 				1,
 				{
 					enableScripts: false,

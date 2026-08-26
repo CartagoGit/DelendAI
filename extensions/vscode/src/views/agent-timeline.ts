@@ -30,6 +30,8 @@ import {
 
 import { DEFAULT_DENY, injectCspMeta } from '@mcp-vertex/ui-extension/webview';
 
+import type { IViewCopy } from '../contracts/interfaces/view-copy.interface';
+import { viewCopyFor } from '../i18n/view-copy.strings';
 import { escapeHtml } from './render-output-schema';
 
 export interface ITimelineViewModel {
@@ -44,6 +46,7 @@ export interface ITimelineViewOptions {
 	/** Optional href for the "copy" button (kept here so the i18n
 	 *  copy can wrap it without leaking a tool name). */
 	readonly refreshHref?: string;
+	readonly copy?: IViewCopy;
 }
 
 /**
@@ -101,41 +104,45 @@ const ALL_KINDS: readonly TimelineEventKind[] = [
 const kindChip = (event: ITimelineEvent): string =>
 	`<span class="agent-timeline__kind agent-timeline__kind--${escapeHtml(event.kind)}">${escapeHtml(event.kind)}</span>`;
 
-const renderEvent = (event: ITimelineEvent): string => {
+const renderEvent = (event: ITimelineEvent, copy: IViewCopy): string => {
 	const rows: string[] = [];
 	rows.push(
 		`<header class="agent-timeline__head">${kindChip(event)} <time>${escapeHtml(formatEventTimestamp(event.ts))}</time></header>`,
 	);
 	if (event.plugin !== undefined || event.sliceId !== undefined) {
-		const plugin = event.plugin !== undefined ? event.plugin : '—';
-		const slice = event.sliceId !== undefined ? event.sliceId : '—';
+		const plugin =
+			event.plugin !== undefined ? event.plugin : copy.timelineEmptyValue;
+		const slice =
+			event.sliceId !== undefined
+				? event.sliceId
+				: copy.timelineEmptyValue;
 		rows.push(
-			`<p class="agent-timeline__where"><strong>plugin:</strong> <code>${escapeHtml(plugin)}</code> · <strong>slice:</strong> <code>${escapeHtml(slice)}</code></p>`,
+			`<p class="agent-timeline__where"><strong>${escapeHtml(copy.timelinePlugin)}:</strong> <code>${escapeHtml(plugin)}</code> · <strong>${escapeHtml(copy.timelineSlice)}:</strong> <code>${escapeHtml(slice)}</code></p>`,
 		);
 	}
 	if (event.cost !== undefined) {
 		rows.push(
-			`<p class="agent-timeline__cost"><strong>cost:</strong> ${event.cost} tokens</p>`,
+			`<p class="agent-timeline__cost"><strong>${escapeHtml(copy.timelineCost)}:</strong> ${event.cost} ${escapeHtml(copy.timelineTokens)}</p>`,
 		);
 	}
 	if (event.commitSha !== undefined) {
 		rows.push(
-			`<p class="agent-timeline__commit"><strong>commit:</strong> <code>${escapeHtml(event.commitSha)}</code></p>`,
+			`<p class="agent-timeline__commit"><strong>${escapeHtml(copy.timelineCommit)}:</strong> <code>${escapeHtml(event.commitSha)}</code></p>`,
 		);
 	}
 	if (event.why !== undefined && event.why.length > 0) {
 		rows.push(
-			`<p class="agent-timeline__why"><strong>why:</strong> ${escapeHtml(event.why)}</p>`,
+			`<p class="agent-timeline__why"><strong>${escapeHtml(copy.timelineWhy)}:</strong> ${escapeHtml(event.why)}</p>`,
 		);
 	}
 	if (event.inputs !== undefined && event.inputs.length > 0) {
 		rows.push(
-			`<p class="agent-timeline__inputs"><strong>inputs:</strong> <code>${escapeHtml(event.inputs)}</code></p>`,
+			`<p class="agent-timeline__inputs"><strong>${escapeHtml(copy.timelineInputs)}:</strong> <code>${escapeHtml(event.inputs)}</code></p>`,
 		);
 	}
 	if (event.outputs !== undefined && event.outputs.length > 0) {
 		rows.push(
-			`<p class="agent-timeline__outputs"><strong>outputs:</strong> <code>${escapeHtml(event.outputs)}</code></p>`,
+			`<p class="agent-timeline__outputs"><strong>${escapeHtml(copy.timelineOutputs)}:</strong> <code>${escapeHtml(event.outputs)}</code></p>`,
 		);
 	}
 	if (event.meta !== undefined && Object.keys(event.meta).length > 0) {
@@ -150,16 +157,16 @@ const renderEvent = (event: ITimelineEvent): string => {
 	return `<li class="agent-timeline__item">${rows.join('\n')}</li>`;
 };
 
-const renderFilters = (model: ITimelineViewModel): string => {
+const renderFilters = (model: ITimelineViewModel, copy: IViewCopy): string => {
 	const pluginOptions = [
-		`<option value="">— any plugin —</option>`,
+		`<option value="">${escapeHtml(copy.timelineAnyPlugin)}</option>`,
 		...model.availablePlugins.map(
 			(plugin) =>
 				`<option value="${escapeHtml(plugin)}"${model.pluginFilter === plugin ? ' selected' : ''}>${escapeHtml(plugin)}</option>`,
 		),
 	];
 	const kindOptions = [
-		`<option value="">— any kind —</option>`,
+		`<option value="">${escapeHtml(copy.timelineAnyKind)}</option>`,
 		...ALL_KINDS.map(
 			(kind) =>
 				`<option value="${escapeHtml(kind)}"${model.kindFilter === kind ? ' selected' : ''}>${escapeHtml(kind)}</option>`,
@@ -168,10 +175,10 @@ const renderFilters = (model: ITimelineViewModel): string => {
 	// GET form → the host command parses the query string and
 	// re-renders. No inline JS, no extra CSP needed.
 	return `<form class="agent-timeline__filters" method="get" action="">
-		<label>plugin <select name="plugin">${pluginOptions.join('')}</select></label>
-		<label>kind <select name="kind">${kindOptions.join('')}</select></label>
-		<button type="submit">Apply</button>
-		<a class="agent-timeline__reset" href="?">reset</a>
+		<label>${escapeHtml(copy.timelinePlugin)} <select name="plugin">${pluginOptions.join('')}</select></label>
+		<label>${escapeHtml(copy.timelineKind)} <select name="kind">${kindOptions.join('')}</select></label>
+		<button type="submit">${escapeHtml(copy.timelineApply)}</button>
+		<a class="agent-timeline__reset" href="?">${escapeHtml(copy.timelineReset)}</a>
 	</form>`;
 };
 
@@ -206,27 +213,28 @@ export const renderAgentTimeline = (
 	model: ITimelineViewModel,
 	options: ITimelineViewOptions = {},
 ): string => {
+	const copy = options.copy ?? viewCopyFor('en');
 	const headerRight = options.refreshHref
-		? `<a href="${escapeHtml(options.refreshHref)}">refresh</a>`
+		? `<a href="${escapeHtml(options.refreshHref)}">${escapeHtml(copy.timelineRefresh)}</a>`
 		: '';
 	const body =
 		model.events.length === 0
-			? `<p class="muted">No events match the current filters. Showing ${model.totalCount} total events.</p>`
-			: `<ol class="agent-timeline">${model.events.map(renderEvent).join('\n')}</ol>`;
+			? `<p class="muted">${escapeHtml(copy.timelineNoMatches)} ${escapeHtml(copy.timelineShowingTotal)} ${model.totalCount} ${escapeHtml(copy.timelineTotalEvents)}</p>`
+			: `<ol class="agent-timeline">${model.events.map((event) => renderEvent(event, copy)).join('\n')}</ol>`;
 	return `<!DOCTYPE html>
-<html lang="en">
+<html lang="${escapeHtml(copy.lang)}">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Agent Timeline</title>
+<title>${escapeHtml(copy.timelineTitle)}</title>
 ${injectCspMeta('', DEFAULT_DENY)}
 ${STYLE}
 </head>
 <body>
 <header style="display:flex;justify-content:space-between;align-items:center;">
-<h1>Agent Timeline</h1>${headerRight}
+<h1>${escapeHtml(copy.timelineTitle)}</h1>${headerRight}
 </header>
-${renderFilters(model)}
+${renderFilters(model, copy)}
 ${body}
 </body>
 </html>`;
@@ -242,18 +250,19 @@ export const renderAgentTimelineBody = (
 	model: ITimelineViewModel,
 	options: ITimelineViewOptions = {},
 ): string => {
+	const copy = options.copy ?? viewCopyFor('en');
 	const headerRight = options.refreshHref
-		? `<a href="${escapeHtml(options.refreshHref)}">refresh</a>`
+		? `<a href="${escapeHtml(options.refreshHref)}">${escapeHtml(copy.timelineRefresh)}</a>`
 		: '';
 	const body =
 		model.events.length === 0
-			? `<p class="muted">No events match the current filters. Showing ${model.totalCount} total events.</p>`
-			: `<ol class="agent-timeline">${model.events.map(renderEvent).join('\n')}</ol>`;
+			? `<p class="muted">${escapeHtml(copy.timelineNoMatches)} ${escapeHtml(copy.timelineShowingTotal)} ${model.totalCount} ${escapeHtml(copy.timelineTotalEvents)}</p>`
+			: `<ol class="agent-timeline">${model.events.map((event) => renderEvent(event, copy)).join('\n')}</ol>`;
 	return `<section class="agent-timeline-page">
 <header class="agent-timeline__page-header">
-<h1>Agent Timeline</h1>${headerRight}
+<h1>${escapeHtml(copy.timelineTitle)}</h1>${headerRight}
 </header>
-${renderFilters(model)}
+${renderFilters(model, copy)}
 ${body}
 </section>`;
 };
