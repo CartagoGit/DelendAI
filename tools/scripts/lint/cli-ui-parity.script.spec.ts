@@ -65,7 +65,13 @@ describe('cli-ui-parity.script', () => {
 			'\t},',
 			'};',
 		].join('\n');
-		expect(extractCliGroups([registry, group])).toEqual([
+		const pushedData = [
+			'const rows = [];',
+			'rows.push({',
+			"\tname: 'not-a-command',",
+			'});',
+		].join('\n');
+		expect(extractCliGroups([registry, group, pushedData])).toEqual([
 			'config',
 			'doctor',
 			'plugin',
