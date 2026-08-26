@@ -788,6 +788,9 @@ export type {
 } from '../lib/migrations/migrate-file';
 export { buildAgentBootstrapPromptRegistration } from '../lib/prompts/agent-bootstrap.prompt';
 export { buildAgentCatalogResourceRegistration } from '../lib/resources/agent-catalog-resource';
+export { buildCodeMapResourceRegistration } from '../lib/code-map/resource';
+export type { ICodeMap } from '../lib/code-map/generator';
+export { CODE_MAP_SCHEMA_VERSION } from '../lib/code-map/generator';
 export { buildAgentCatalogToolRegistration } from '../lib/tools/agent-catalog-tool';
 export { buildKnowledgeResourceRegistrations } from '../lib/tools/knowledge-resources';
 export { buildKnowledgeToolRegistration } from '../lib/tools/knowledge-tool';
