@@ -23,11 +23,15 @@ export const resolveInitialSurfaceMode = (
 ): IMcpToolSurfaceMode => explicitMode ?? 'native';
 
 export const shouldRegisterSurfaceRouter = (
-	// r00027 (TOK-004 follow-up): the silent default is now `native`, so
-	// the router is no longer needed for ordinary MCP clients. Only opt
-	// in (compact / adaptive) flips the router on.
+	// q00009 / f00254: in `managed` mode the catalog stays server-side and
+	// the LLM sees only the bootstrap surface, so the `vertex` router is
+	// what makes hidden tools reachable. `compact` and `adaptive` keep
+	// their existing routing behaviour (r00027 / TOK-004 follow-up).
 	explicitMode: IMcpToolSurfaceMode | undefined,
-): boolean => explicitMode === 'adaptive' || explicitMode === 'compact';
+): boolean =>
+	explicitMode === 'adaptive' ||
+	explicitMode === 'compact' ||
+	explicitMode === 'managed';
 
 export const decideSurfaceModeFromCapabilities = (input: {
 	clientInfo?: Implementation | undefined;
