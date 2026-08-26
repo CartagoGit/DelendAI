@@ -31,6 +31,9 @@ export interface IDipHit {
 const EXEMPT_PATH_PATTERNS: readonly RegExp[] = [
 	// Boot-time config loaders are explicitly allowed sync FS.
 	/packages\/core\/src\/lib\/configuration-center\//,
+	// The code-map resource is a startup-boundary adapter: it resolves the
+	// workspace once before exposing a resource snapshot to the client.
+	/packages\/core\/src\/lib\/code-map\//,
 	/packages\/core\/src\/lib\/install\//,
 	/packages\/core\/src\/lib\/setup\//,
 	/packages\/core\/src\/lib\/cli\/parse-cli-args/,
