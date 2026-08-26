@@ -829,6 +829,22 @@ export type {
 	PluginEvent,
 	PluginHistogramEvent,
 } from '../lib/observability/plugin-metrics';
+// f00198 (Track M): cross-plugin activation KPIs.
+export {
+	createActivationKpis,
+	hydrateKpis,
+	intersectSize,
+	jaccardDistance,
+	precision,
+	recall,
+	serializeKpis,
+} from '../lib/observability/activation-kpis';
+export type {
+	IActivationKpis,
+	IAggregateKpis,
+	IPersistedKpisFile,
+	ISessionKpis,
+} from '../lib/observability/activation-kpis';
 // --- f00192 (Track J / agent timeline): host-agnostic append-only log ---
 export {
 	DEFAULT_MAX_EVENTS,
