@@ -38,5 +38,10 @@ describe('managed lazy assembly defaults', () => {
 		expect(
 			assembled.config.lazyToolActivators?.has('mcp-vertex_memory_save'),
 		).toBe(true);
+		const descriptor = assembled.config.toolSurfacePlan?.descriptors.find(
+			(entry) => entry.registrationId === 'mcp-vertex_memory_save',
+		);
+		expect(descriptor?.summary).toBeTruthy();
+		expect(descriptor?.tags).toContain('lazy');
 	});
 });

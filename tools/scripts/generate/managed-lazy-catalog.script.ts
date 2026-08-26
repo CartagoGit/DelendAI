@@ -76,10 +76,7 @@ export const buildManagedLazyCatalogSource = async (): Promise<string> => {
 	}
 
 	const packageById = new Map(
-		FIRST_PARTY_PLUGIN_INDEX.entries.map((entry) => [
-			entry.id,
-			entry.package,
-		]),
+		FIRST_PARTY_PLUGIN_INDEX.entries.map((entry) => [entry.id, entry]),
 	);
 	const toolIdsByPlugin = new Map<string, string[]>();
 	for (const descriptor of assembled.config.toolSurfacePlan?.descriptors ??
@@ -104,23 +101,34 @@ export const buildManagedLazyCatalogSource = async (): Promise<string> => {
 		'\treadonly id: string;',
 		'\treadonly packageSpecifier: string;',
 		'\treadonly toolIds: readonly string[];',
+		'\treadonly summary?: string | undefined;',
+		'\treadonly tags?: readonly string[] | undefined;',
 		'}',
 		'',
 		'const tools = (',
 		'\tid: string,',
 		'\tpackageSpecifier: string,',
 		'\ttoolIds: readonly string[],',
+		"\tmetadata: Pick<IManagedLazyPluginCatalogEntry, 'summary' | 'tags'> = {},",
 		'): IManagedLazyPluginCatalogEntry => ({',
 		'\tid,',
 		'\tpackageSpecifier,',
+		'\t...metadata,',
 		'\ttoolIds,',
 		'});',
 		'',
 		'export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntry[] =',
 		'\t[',
-		...entries.flatMap(([id, toolIds]) => [
-			`\t\ttools(${quote(id)}, ${quote(packageById.get(id) ?? `@mcp-vertex/${id}`)}, ${renderTools(toolIds)}),`,
-		]),
+		...entries.flatMap(([id, toolIds]) => {
+			const metadata = packageById.get(id);
+			const metadataLiteral =
+				metadata === undefined
+					? '{}'
+					: `{ summary: ${quote(metadata.summary)}, tags: ${renderTools(metadata.tags)} }`;
+			return [
+				`\t\ttools(${quote(id)}, ${quote(metadata?.package ?? `@mcp-vertex/${id}`)}, ${renderTools(toolIds)}, ${metadataLiteral}),`,
+			];
+		}),
 		'\t];',
 		'',
 		'export const MANAGED_LAZY_PLUGIN_BY_ID = new Map(',
