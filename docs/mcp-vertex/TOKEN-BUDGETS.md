@@ -3,7 +3,7 @@
 <!-- generated: token-budget-dashboard.script.ts -->
 <!-- generated — do not edit by hand -->
 
-Generated at: 2026-08-26T16:49:56.258Z
+Generated at: 2026-08-26T17:19:18.282Z
 
 This file is generated from the same budget contract the e2e test imports: packages/core/src/lib/contracts/constants/token-budgets.constant.ts. Do not edit this markdown by hand; regenerate it with bun tools/scripts/report/token-budget-dashboard.script.ts.
 
@@ -34,7 +34,7 @@ These are the bounded payloads the e2e spec governs directly today. They use the
 | auto_work idle | 63 | 16 | 2,400 | 2,600 | within hard |
 | auto_work work plan | 63 | 16 | 2,400 | 2,600 | within hard |
 | agent_catalog compact | 56 | 14 | 800 | 900 | within hard |
-| agent_catalog full | 56 | 14 | 6,500 | 6,800 | within hard |
+| agent_catalog full | 56 | 14 | 8,500 | 9,000 | within hard |
 | analyze_project {} | 58 | 15 | 1,600 | 1,800 | within hard |
 | plan_mcp_project {} | 59 | 15 | 1,800 | 2,000 | within hard |
 | search_search | 57 | 15 | 2,700 | 3,000 | within hard |
