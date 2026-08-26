@@ -47,6 +47,7 @@ first `tools/list` should expose):
 | `native` (default since r00027) | Every tool of every loaded plugin (≈ 159 with the `swarm` preset + a couple of standalone plugins) | The common case — operator sees every tool, no refresh dance needed |
 | `adaptive` | 6 core tools (`overview`, `tool_search`, `plugin_activate`, `plugin_deactivate`, `status`, `vertex`); the rest via `plugin_activate` + `tool_search` | Token-optimised, for clients that re-fetch on `list_changed` |
 | `compact` | A small curated subset | Specialised, opt-in only |
+| `managed` (q00009) | Bootstrap surface (`overview`, `tool_search`, `vertex`, `status`) — the rest of the catalog is reachable via the `vertex` router without being exposed in `tools/list` | Recommended for token-sensitive hosts; no functional dependence on `tools/list_changed` |
 
 The MCP spec lets the server **notify** the client of new tools
 via `notifications/tools/list_changed`. In practice, VS Code's
@@ -89,6 +90,15 @@ handling.
 ```
 
 **Opting into `compact`**: same pattern, value `compact`.
+
+**Opting into `managed`** (q00009 / f00254): same pattern, value
+`managed`. In managed mode the catalog stays server-side; the host
+sees only the bootstrap surface and uses the `vertex` router to
+reach the rest. The startup report (see §5) makes the split
+visible: `199 available · 4 exposed`.
+
+The legacy alias `extended` maps to `adaptive` for backwards
+compatibility with older configs — no operator action required.
 
 ## 3. The warning you may still see
 
@@ -173,3 +183,40 @@ bun <repo>/tools/scripts/host/host-server.script.ts \
 and fire a `tools/list` against stdin (the repo ships
 `tools/scripts/host/host-server.script.ts` for exactly this kind of
 debugging).
+
+## 5. The Startup Report — `available` vs `exposed` (q00009)
+
+When MCP-Vertex boots, it emits a Startup Report on **stderr** (or
+the host Output Channel for VS Code). It is **never** written to
+stdout of the MCP stdio transport. The report has five levels:
+
+| Level | What you see |
+| --- | --- |
+| `off` | Nothing — only fatal diagnostics. |
+| `compact` | Identity + catalog counts + per-request cost + managed runtime. |
+| `medium` (default) | Everything in `compact` + the **per-plugin per-request cost table** with totals. |
+| `high` | Everything in `medium` + plugin detail (no full schemas). |
+| `full` | Everything in `high` + sanitised configuration snapshot. |
+
+The default is `medium`. To change it, set
+`startupReport.level` in `mcp-vertex.config.json` or pass
+`--startup-report=<level>` on the host args.
+
+The report distinguishes **`available`** (the full catalog MCP-Vertex
+knows about) from **`exposed`** (the subset the LLM actually sees).
+A `managed` host will read something like:
+
+```
+plugins        51 configured · 6 warm · 0 failed
+tools          199 available · 4 exposed to model
+skills         37 available · 0 bodies preloaded
+```
+
+Even though the host says `Discovered 4 tools`, MCP-Vertex still
+holds the full catalog server-side and reaches the other 195 via
+the `vertex` router. **You do not need to depend on
+`tools/list_changed` for this to work.**
+
+Sample outputs for all five levels are in
+[`evidence/q00009-startup-report-{off,compact,medium,high,full}.txt`](evidence/).
+
