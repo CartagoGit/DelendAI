@@ -20,6 +20,7 @@ import { buildCommitToolRegistration } from './lib/tools/commit-tool';
 import { buildPushToolRegistration } from './lib/tools/push-tool';
 import { buildRunToolRegistration } from './lib/tools/run-tool';
 import { buildStatusToolRegistration } from './lib/tools/status-tool';
+import { createPushScheduler } from './lib/services/push-scheduler';
 
 const OptionsSchema = CommitPolicyOptionsSchema;
 
@@ -79,6 +80,18 @@ export default definePlugin({
 
 		const sharedDriver = { run, policy, identityCtx, auditAgent };
 
+		// x00266 (AUD-CP-008/009): the push scheduler unifies the
+		// three modes (`onCommit`, `everyNCommits`, `everyNMinutes`)
+		// and is the single source of automatic-push decisions. The
+		// explicit `commit_policy_push` tool still wins — it calls
+		// `runPushDriver` directly, bypassing the scheduler.
+		const pushScheduler = createPushScheduler({
+			run,
+			policy: policy.push,
+		});
+		pushScheduler.start();
+		disposables.push(() => pushScheduler.stop());
+
 		const tools = [
 			buildStatusToolRegistration({
 				namespacePrefix: ctx.namespacePrefix,
@@ -91,6 +104,7 @@ export default definePlugin({
 				namespacePrefix: ctx.namespacePrefix,
 				policy,
 				locale: process.env.MCP_VERTEX_LOCALE ?? 'en',
+				onCommitSucceeded: () => pushScheduler.onCommitSucceeded(),
 			}),
 			buildPushToolRegistration({
 				namespacePrefix: ctx.namespacePrefix,

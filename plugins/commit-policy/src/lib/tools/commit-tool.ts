@@ -25,6 +25,15 @@ export interface ICommitToolOptions extends ICommitDriverOptions {
 	readonly namespacePrefix: string;
 	readonly policy: ICommitPolicyOptions;
 	readonly locale?: string | undefined;
+	/**
+	 * x00266 (AUD-CP-008): hook fired after a successful commit
+	 * so the push scheduler can decide whether the configured
+	 * mode (`onCommit` / `everyNCommits`) wants to push now.
+	 * Defaults to a no-op so the tool still works in tests and
+	 * in setups that prefer to invoke `commit_policy_push` by
+	 * hand.
+	 */
+	readonly onCommitSucceeded?: (() => Promise<unknown>) | undefined;
 }
 
 const InputSchema = z.object({
@@ -126,6 +135,17 @@ export const runCommitPolicyCommit = async (
 			result.reason ?? 'commit failed',
 			'Check there are staged/changed files and the message is valid.',
 		);
+	}
+
+	// x00266: fire the scheduler hook AFTER the success response
+	// is composed. Pushes happen off the critical path so a slow
+	// push never blocks the commit tool's return value. The hook
+	// is best-effort — exceptions are swallowed to avoid masking
+	// the commit result.
+	if (options.onCommitSucceeded !== undefined) {
+		void options.onCommitSucceeded().catch(() => {
+			// best-effort — see comment above
+		});
 	}
 
 	const successMessage = localizedString(options.locale, (catalog) =>
