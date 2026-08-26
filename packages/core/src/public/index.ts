@@ -604,6 +604,25 @@ export {
 } from '../lib/capabilities/inject';
 export type { ILegacyShimWarning } from '../lib/capabilities/inject';
 
+// --- f00194 (Track K / capability versioning): semver-aware requires ---
+export {
+	WILDCARD_RANGE,
+	buildAvailableVersions,
+	checkCapabilityRequirements,
+	formatCapabilityVersionRefusal,
+	legacyVersionedCapability,
+	parseCapabilityRequirement,
+	resolveAllCapabilityVersions,
+	resolveCapabilityVersion,
+} from '../lib/capabilities/versioning';
+export type {
+	CapabilityRequirement,
+	CapabilityVersionResult,
+	ICapabilityVersionRefusal,
+	ICapabilityVersionResolution,
+	IVersionedCapability,
+} from '../lib/capabilities/versioning';
+
 // --- f00189 (Track F / security): dryRun transversal protocol -------
 export {
 	buildDryRunResult,
