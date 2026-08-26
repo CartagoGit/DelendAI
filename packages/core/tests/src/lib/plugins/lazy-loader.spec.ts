@@ -20,18 +20,19 @@ import {
 	type ILazyPluginLoader,
 	type PluginModuleImporter,
 } from '../../../../src/lib/plugins/lazy-loader';
+import type { IMcpPluginRegistrations } from '../../../../src/lib/plugins/plugin-contract';
 
 interface IFakePlugin {
 	readonly name: string;
 	readonly version: string;
 	readonly describe?: string;
-	register: () => Promise<unknown>;
+	register: () => Promise<IMcpPluginRegistrations>;
 }
 
 const FAKE_PLUGIN: IFakePlugin = {
 	name: 'fake',
 	version: '0.0.0',
-	register: async () => undefined,
+	register: async () => ({}) as IMcpPluginRegistrations,
 };
 
 const manifest = (id: string): IPluginManifest => ({

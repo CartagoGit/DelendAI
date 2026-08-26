@@ -1236,3 +1236,18 @@ export type {
 } from '../lib/error-collection/with-error-collection';
 export { createDefaultRedactionPolicy } from '../lib/error-collection/redaction-policy';
 export { createDefaultSeverityClassifier } from '../lib/error-collection/severity-classifier';
+// c00143 (Track N): generic mutation idempotency store.
+export {
+	createIdempotencyStore,
+	duplicateSuppressedRefusal,
+	IDEMPOTENCY_DUPLICATE_SUPPRESSED,
+	readIdempotencyFile,
+	writeIdempotencyFile,
+} from '../lib/mutations/idempotency';
+export type {
+	IIdempotencyFile,
+	IIdempotencyOptions,
+	IIdempotencyRecord,
+	IIdempotencySnapshot,
+	IIdempotencyStore,
+} from '../lib/mutations/idempotency';
