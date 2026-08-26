@@ -7,6 +7,7 @@ Legend: ✅ declared & used · 🟡 declared but unused · 🔴 used but not dec
 | Plugin | fs:read | fs:write | git:push | git:read | git:write | memory:read | memory:write | network:fetch | process:spawn |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | adaptive-optimizer | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ |
+| agent-orchestrator | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ |
 | api | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ |
 | audit | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ |
 | auto-agent-selector | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ |
@@ -64,10 +65,10 @@ Legend: ✅ declared & used · 🟡 declared but unused · 🔴 used but not dec
 ### Top 5 plugins by declared capability count
 
 - `adaptive-optimizer` — 0
+- `agent-orchestrator` — 0
 - `api` — 0
 - `audit` — 0
 - `auto-agent-selector` — 0
-- `auto-plugin-selector` — 0
 
 ### Rare capabilities (declared by ≤ 2 plugins)
 

@@ -54,6 +54,11 @@ export const buildStandaloneCoreToolRegistrations = (
 	const snapshot = (): IOverviewSnapshot => ({
 		server: { name: serverName, version: serverVersion },
 		namespacePrefix,
+		// r00027: surface mode + counts come from
+		// getProjectContext, which requires a workspaceRoot. The
+		// standalone scaffold passes an empty string when no
+		// workspace is configured; the runtime tolerates it.
+		workspaceRoot: '',
 		corePaths,
 		plugins: [],
 		tools: tools.map((registration) => ({

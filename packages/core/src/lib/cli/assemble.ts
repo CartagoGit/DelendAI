@@ -57,7 +57,6 @@ import { BOOTSTRAP_CORE_TOOL_IDS } from '../contracts/constants/bootstrap-core-t
 import {
 	resolveExplicitSurfaceMode,
 	resolveInitialSurfaceMode,
-	shouldRegisterSurfaceRouter,
 } from '../surface/decide-mode';
 import {
 	mergeCheckpointAdvisories,
@@ -588,9 +587,13 @@ export const assembleCliConfig = async (
 			? { explicitMode: explicitSurfaceMode }
 			: {}),
 		bootstrapToolIds: [...BOOTSTRAP_CORE_TOOL_IDS],
-		...(shouldRegisterSurfaceRouter(explicitSurfaceMode)
-			? { routerToolId: 'vertex' }
-			: {}),
+		// r00027: the vertex router is ALWAYS registered as a tool
+		// (see assemble-core-tools.ts) and the plan records its id so
+		// the runtime can hide it in `native` mode (the operator has
+		// every tool listed) and expose it in `adaptive`/`compact`
+		// mode as the fallback entry point for tools outside the
+		// bootstrap set.
+		routerToolId: 'vertex',
 		descriptors: [...coreSurfaceDescriptors, ...toolSurfaceDescriptors],
 		plugins: [...pluginDescriptorsByPlugin.entries()].map(
 			([id, entry]) => ({
