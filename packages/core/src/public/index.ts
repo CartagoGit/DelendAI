@@ -666,6 +666,19 @@ export {
 	type Surface,
 	type TokenSurface,
 } from '../lib/budgets/types';
+// c00136 — Token ROI per plugin (KPI).
+export {
+	aggregateROI,
+	computeROI,
+	confidenceFor,
+} from '../lib/budgets/roi';
+export type {
+	IComputeRoiInput,
+	IRoiConfidence,
+	IRoiMeasurement,
+	IRoiReport,
+	IRoiValueLookup,
+} from '../lib/budgets/roi';
 export {
 	paginateFileExcerpt,
 	paginateItems,
