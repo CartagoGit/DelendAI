@@ -134,6 +134,16 @@ export const extractCliGroups = (
 	const groups = new Set<string>();
 	for (const source of sources) {
 		for (const match of source.matchAll(COMMAND_NAME)) {
+			// A command object is declared directly in the registry or in a
+			// group module. Objects pushed into a runtime collection (for
+			// example `sections.push({ name: 'env' })` in `doctor`) are data,
+			// not CLI registrations, even when their indentation matches a
+			// command entry.
+			const before = source.slice(0, match.index ?? 0).trimEnd();
+			const previousLine = before
+				.slice(before.lastIndexOf('\n') + 1)
+				.trim();
+			if (/\.push\(\{\s*$/.test(previousLine)) continue;
 			const group = match[1]?.trim().split(/\s+/)[0];
 			if (group !== undefined && group.length > 0) groups.add(group);
 		}
