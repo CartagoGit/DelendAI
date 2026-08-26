@@ -248,6 +248,48 @@ describe('VS Code extension smoke', async () => {
 		]);
 	});
 
+	it('routes child stderr to the VS Code startup-report output channel', async () => {
+		const output: string[] = [];
+		const channel = {
+			append(value: string) {
+				output.push(value);
+			},
+			dispose() {},
+		};
+		const vscode: IVscodeApi = {
+			ViewColumn: { One: 1 },
+			commands: {
+				registerCommand() {
+					return { dispose() {} };
+				},
+			},
+			window: {
+				createWebviewPanel() {
+					return { webview: { html: '' } };
+				},
+			},
+		};
+		const originalConnect = McpStdioClient.connect;
+		McpStdioClient.connect = (async (opts: {
+			onStderr?: (chunk: string) => void;
+		}) => {
+			opts.onStderr?.('MCP-Vertex ready\\n');
+			return McpStdioClient.fromTransport({
+				async callTool() {
+					return { structuredContent: overviewFixture };
+				},
+			});
+		}) as typeof McpStdioClient.connect;
+		try {
+			const { createDefaultClient } = await import('../extension');
+			await createDefaultClient(vscode, channel);
+		} finally {
+			McpStdioClient.connect = originalConnect;
+		}
+
+		expect(output).toEqual(['MCP-Vertex ready\\n']);
+	});
+
 	// x00102 S1: a consumer freshly initialised by `mcpv init` has no
 	// `mcp-vertex.server.*` settings and no `"mcp-vertex"` package.json
 	// script — but it DOES have the `.mcp.json` init wrote. The extension

@@ -160,6 +160,7 @@ export interface IVscodeApi {
 		): IDisposable;
 	};
 	readonly window: {
+		createOutputChannel?(name: string): IOutputChannel;
 		createStatusBarItem?(): IStatusBarItem;
 		registerTreeDataProvider?(
 			viewId: string,
@@ -189,6 +190,10 @@ export interface IVscodeApi {
 		/** x00072 SEC-001 S1: workspace trust flag from VS Code. */
 		readonly isTrusted?: boolean;
 	};
+}
+
+export interface IOutputChannel extends IDisposable {
+	append(value: string): void;
 }
 
 /**
@@ -269,13 +274,22 @@ export const activate = async (
 		setRuntimeHandle(handle);
 		return;
 	}
+	const startupReportChannel =
+		vscode.window.createOutputChannel?.('MCP Vertex');
+	if (startupReportChannel !== undefined) {
+		handle.register('startup-report-channel', startupReportChannel);
+	}
 	let client: McpStdioClient;
 	try {
-		client = await (deps.createClient ?? createDefaultClient)(vscode);
+		client = await (
+			deps.createClient ??
+			(() => createDefaultClient(vscode, startupReportChannel))
+		)();
 	} catch (err) {
 		// Best-effort: surface the failure but never leave a stale handle
 		// for a future activation to inherit.
 		setRuntimeHandle(undefined);
+		handle.disposeAll();
 		throw err;
 	}
 	// Only NOW is the handle fully wired — client + services can safely
@@ -722,6 +736,7 @@ export const resolveNamespacePrefix = (
 
 export const createDefaultClient = async (
 	vscode?: IVscodeApi,
+	startupReportChannel?: IOutputChannel,
 ): Promise<McpStdioClient> => {
 	const api = vscode ?? (await loadVscodeApi());
 	const { command, args, cwd } = await resolveServerCommand(api);
@@ -729,6 +744,12 @@ export const createDefaultClient = async (
 		command,
 		args,
 		...(cwd === undefined ? {} : { cwd }),
+		...(startupReportChannel === undefined
+			? {}
+			: {
+					onStderr: (chunk: string) =>
+						startupReportChannel.append(chunk),
+				}),
 	});
 };
 
