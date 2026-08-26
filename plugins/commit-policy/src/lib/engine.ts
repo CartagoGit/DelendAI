@@ -32,6 +32,10 @@ import {
 	type IBranchPolicy,
 } from './contracts/branch';
 import {
+	computeIdempotencyKey,
+	type IProcessedEventsStore,
+} from './processed-events';
+import {
 	buildScopedMessage,
 	runCommitDriver,
 	type ICommitDriverInput,
@@ -104,6 +108,10 @@ export type IEngineResult =
 			readonly refusal?: string | undefined;
 	  }
 	| {
+			readonly ack: 'ALREADY_PROCESSED';
+			readonly key: string;
+	  }
+	| {
 			readonly ack: 'ERR';
 			readonly code: IEngineRefusalCode;
 			readonly reason: string;
@@ -120,6 +128,13 @@ export interface IEngineOptions {
 	readonly branchPolicy: IBranchPolicy;
 	/** Hook fired after a successful commit so the push scheduler can act. */
 	readonly onCommitSucceeded?: (() => Promise<unknown>) | undefined;
+	/**
+	 * f00183 (AUD-CP-012): idempotency store. When provided,
+	 * the engine checks `has(key)` BEFORE staging and adds the
+	 * key AFTER a successful commit. When undefined, the engine
+	 * is replay-vulnerable (only acceptable for tests).
+	 */
+	readonly processedEvents?: IProcessedEventsStore | undefined;
 }
 
 export interface ICommitPolicyEngine {
@@ -220,6 +235,16 @@ export const createCommitPolicyEngine = (
 				);
 			}
 
+			// Step 4.5 — idempotency check (f00183). The store is
+			// consulted BEFORE staging so a replay never wastes
+			// work on `git add --`.
+			if (options.processedEvents !== undefined) {
+				const key = computeIdempotencyKey(event);
+				if (await options.processedEvents.has(key)) {
+					return { ack: 'ALREADY_PROCESSED', key };
+				}
+			}
+
 			// Step 5 + 6 — delegate to the existing driver. It
 			// owns the staging + post-stage subset check + commit
 			// call; the engine is a pure router. f00183 will swap
@@ -241,6 +266,14 @@ export const createCommitPolicyEngine = (
 
 			const commitSha = result.hash;
 			seen.add(event.eventId);
+			// Persist the key AFTER a successful commit so a
+			// replay sees the marker on the next poll.
+			if (options.processedEvents !== undefined && result.committed) {
+				await options.processedEvents.add(
+					computeIdempotencyKey(event),
+					commitSha ?? 'unknown',
+				);
+			}
 			return {
 				ack: 'OK',
 				committed: result.committed,
@@ -248,8 +281,11 @@ export const createCommitPolicyEngine = (
 				...(commitSha !== undefined ? { commitSha } : {}),
 			};
 		},
-		dispose() {
+		async dispose() {
 			seen.clear();
+			if (options.processedEvents !== undefined) {
+				await options.processedEvents.dispose();
+			}
 		},
 	};
 };
