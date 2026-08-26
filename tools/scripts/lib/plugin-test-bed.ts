@@ -143,6 +143,11 @@ export const assemblePluginForTest = async (
 		[
 			`--plugins=${options.pluginName}`,
 			`--workspace=${options.workspaceRoot}`,
+			// The bed verifies a plugin's complete registration, including
+			// tools hidden by the managed bootstrap surface. Native is
+			// explicit here so this harness does not mistake exposure policy
+			// for a plugin load failure.
+			'--surface=native',
 		],
 		options.workspaceRoot,
 	);
