@@ -39,9 +39,14 @@ export const buildSkillToolRegistration = (
 						.array(
 							z.object({
 								id: z.string(),
+								version: z.string(),
 								description: z.string(),
 								appliesTo: z.array(z.string()),
 								tags: z.array(z.string()),
+								source: z.string().optional(),
+								owner: z.string().optional(),
+								hash: z.string().optional(),
+								estimatedBodyTokens: z.number().optional(),
 							}),
 						)
 						.optional(),
@@ -55,9 +60,25 @@ export const buildSkillToolRegistration = (
 					return toolJson({
 						skills: entries.map((entry) => ({
 							id: entry.id,
+							version: entry.version,
 							description: entry.description,
 							appliesTo: [...entry.appliesTo],
 							tags: [...entry.tags],
+							...(entry.source === undefined
+								? {}
+								: { source: entry.source }),
+							...(entry.owner === undefined
+								? {}
+								: { owner: entry.owner }),
+							...(entry.hash === undefined
+								? {}
+								: { hash: entry.hash }),
+							...(entry.estimatedBodyTokens === undefined
+								? {}
+								: {
+										estimatedBodyTokens:
+											entry.estimatedBodyTokens,
+									}),
 						})),
 					});
 				}
