@@ -2,6 +2,13 @@
  * slice-listener.ts — polls the proposals plugin's `index.json` for
  * slices whose status flipped to `done` / `merged` since the last
  * scan, and emits a `TriggerEvent` per new close.
+ *
+ * x00260 (AUD-CP-002): events are no longer silently dropped.
+ * The listener accepts an `onEvent` callback that is called for
+ * each detected event. The previous slice map is only updated to
+ * "seen" the event once the callback resolves successfully
+ * (`ack: 'OK'`). A throw or `{ `ACK: 'ERR' }` leaves the event
+ * un-marked so the next poll re-emits it — guaranteed delivery.
  */
 
 import { readFile } from 'node:fs/promises';
@@ -11,7 +18,29 @@ import { SafeWorkspaceReader } from '@mcp-vertex/core/public';
 
 import type { ITriggerEvent, ISliceTriggerConfig } from './trigger-types';
 
+export type { ITriggerEvent };
+
 const DEFAULT_POLL_MS = 5_000;
+
+/**
+ * Result the engine returns after consuming a trigger event.
+ * Anything other than `{ ack: 'OK' }` is treated as "not seen" so the
+ * next poll re-emits the event.
+ */
+export type ITriggerAck =
+	| { readonly ack: 'OK' }
+	| { readonly ack: 'ERR'; readonly reason?: string };
+
+/**
+ * Engine callback. Receives the event; resolves with `ack`.
+ * Pure: no I/O at the listener boundary — the engine owns the I/O.
+ */
+export type ITriggerHandler = (event: ITriggerEvent) => Promise<ITriggerAck>;
+
+/** Marker a test can use to inspect emissions synchronously. */
+export interface ISliceListenerEmissions {
+	readonly pending: readonly ITriggerEvent[];
+}
 
 const parseIndex = (
 	raw: string,
@@ -69,6 +98,8 @@ const diffSlices = (
 
 export interface ISliceListener {
 	check(): Promise<readonly ITriggerEvent[]>;
+	/** Drain the pending-events queue (events the engine has not acked yet). */
+	drainPending(): readonly ITriggerEvent[];
 	start(): void;
 	stop(): void;
 }
@@ -77,13 +108,30 @@ export const createSliceListener = (
 	workspaceRoot: string,
 	docsDir: string,
 	config: ISliceTriggerConfig,
+	onHandler: ITriggerHandler,
 	pollMs: number = DEFAULT_POLL_MS,
 ): ISliceListener => {
 	const indexRel = join(docsDir, 'proposals', 'index.json');
 	let prev = new Map<string, { status: string; proposalId: string }>();
 	let initialized = false;
 	let timer: ReturnType<typeof setInterval> | undefined;
+	const pending: ITriggerEvent[] = [];
 	const reader = new SafeWorkspaceReader(workspaceRoot);
+
+	/** Apply a single event against the engine; mark seen only on OK. */
+	const deliverOne = async (event: ITriggerEvent): Promise<void> => {
+		try {
+			const ack = await onHandler(event);
+			if (ack.ack === 'OK') {
+				// Event handled: remove from pending queue.
+				const idx = pending.indexOf(event);
+				if (idx >= 0) pending.splice(idx, 1);
+			}
+			// Otherwise: leave it pending; next poll re-emits.
+		} catch {
+			// Engine threw: keep event pending; next poll re-emits.
+		}
+	};
 
 	const checkImpl = async (): Promise<readonly ITriggerEvent[]> => {
 		let raw = '';
@@ -93,16 +141,22 @@ export const createSliceListener = (
 			return [];
 		}
 		const curr = parseIndex(raw).slices;
-		const events = initialized
+		const newEvents = initialized
 			? diffSlices(prev, curr, config.onStatuses)
 			: [];
 		prev = curr;
 		initialized = true;
-		return events;
+		if (newEvents.length > 0) {
+			pending.push(...newEvents);
+			// Deliver in parallel; each delivery either marks or leaves.
+			await Promise.all(newEvents.map(deliverOne));
+		}
+		return newEvents;
 	};
 
 	return {
 		check: checkImpl,
+		drainPending: () => pending.slice(),
 		start() {
 			if (timer !== undefined) return;
 			timer = setInterval(() => {
