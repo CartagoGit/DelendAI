@@ -96,8 +96,12 @@ export const TOKEN_BUDGETS: ITokenBudgetRegistry = {
 			releaseRelativePercent: 20,
 		},
 		agentCatalogFull: {
-			hard: 6_800,
-			warning: 6_500,
+			// q00009 adds portable skill metadata and the orchestrator roster
+			// to the explicit full drill-down. Compact remains the default
+			// orientation surface; this ceiling covers the measured full payload
+			// with a bounded margin instead of dropping useful metadata.
+			hard: 9_000,
+			warning: 8_500,
 			releaseRelativePercent: 20,
 		},
 		autoWork: {
