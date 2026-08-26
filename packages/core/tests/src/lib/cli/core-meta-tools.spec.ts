@@ -1,9 +1,26 @@
-import { describe, expect, it } from 'vitest';
+import { mkdtempSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+
+import { afterEach, describe, expect, it } from 'vitest';
 import z from 'zod';
 
 import { assembleCliConfig } from '@mcp-vertex/core/lib/cli/assemble';
 import { parseCliArgs } from '@mcp-vertex/core/lib/plugins/parse-cli-args';
 import type { IToolRegistration } from '@mcp-vertex/core/lib/contracts/interfaces/tool-registration.interface';
+
+const workspaces: string[] = [];
+const testWorkspace = (): string => {
+	const workspace = mkdtempSync(join(tmpdir(), 'mcp-vertex-core-meta-'));
+	workspaces.push(workspace);
+	return workspace;
+};
+
+afterEach(() => {
+	for (const workspace of workspaces.splice(0)) {
+		rmSync(workspace, { recursive: true, force: true });
+	}
+});
 
 const fakePlugin = {
 	name: 'demo',
@@ -58,7 +75,11 @@ const callTool = async (
 };
 
 const assemble = async () => {
-	const args = parseCliArgs(['--plugins=demo', '--workspace=/ws'], '/cwd');
+	const workspace = testWorkspace();
+	const args = parseCliArgs(
+		['--plugins=demo', `--workspace=${workspace}`],
+		'/cwd',
+	);
 	const { config } = await assembleCliConfig(args, {
 		import: async () => ({ default: fakePlugin }),
 		readFile: async () =>
@@ -76,7 +97,11 @@ const assemble = async () => {
 };
 
 const assembleNoConfig = async () => {
-	const args = parseCliArgs(['--plugins=demo', '--workspace=/ws'], '/cwd');
+	const workspace = testWorkspace();
+	const args = parseCliArgs(
+		['--plugins=demo', `--workspace=${workspace}`],
+		'/cwd',
+	);
 	const { config } = await assembleCliConfig(args, {
 		import: async () => ({ default: fakePlugin }),
 		readFile: async () => undefined,
@@ -175,8 +200,9 @@ describe('core meta-tools', async () => {
 	});
 
 	it('activation report reconciles preset and local-path config sources after loading', async () => {
+		const workspace = testWorkspace();
 		const args = parseCliArgs(
-			['--preset=minimal', '--workspace=/ws'],
+			['--preset=minimal', `--workspace=${workspace}`],
 			'/cwd',
 		);
 		const { config } = await assembleCliConfig(args, {
