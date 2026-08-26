@@ -3,7 +3,7 @@ version        0.18.0
 workspace      /workspace/my-project
 preset         swarm
 surface        managed
-startup report medium (default)
+startup report high
 
 Catalog
 plugins        51 configured · 6 warm · 0 failed
@@ -32,3 +32,9 @@ internal routing     enabled
 idle eviction        5m
 max warm plugins     8
 list_changed needed  no
+
+Plugins (detail)
+  core                     status=active-internal tools=4/12
+  git                      status=loaded-hidden tools=0/10
+  proposals                status=loaded-hidden tools=0/34
+  agent-orchestrator       status=active-internal tools=0/8
