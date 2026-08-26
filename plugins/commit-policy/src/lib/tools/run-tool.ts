@@ -110,11 +110,21 @@ const sliceRefusal = async (
 			refusal: `SLICE_NOT_IN_CONFIGURED_STATUS: ${key} status=${entry.status}`,
 		};
 	}
+	// x00263 (AUD-CP-005): slices without declared files MUST
+	// refuse rather than fall back to `skipAdd: true`. Otherwise
+	// the driver would stage whatever the operator had already
+	// staged — including work from other agents. Drivers that
+	// accept an explicit `skipStageEmpty` flag may pass that
+	// through; otherwise the refusal is final.
+	if (entry.files === undefined || entry.files.length === 0) {
+		return { ok: false, refusal: `SLICE_HAS_NO_FILES: ${key}` };
+	}
 	return {
 		kind: 'slice',
 		proposalId: entry.proposalId,
 		sliceId,
 		status: entry.status,
+		files: { paths: entry.files },
 	};
 };
 

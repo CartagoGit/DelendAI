@@ -17,7 +17,17 @@ const writeIndex = async (
 	dir: string,
 	proposals: readonly {
 		id: string;
-		slices: readonly { id: string; status: string }[];
+		slices: readonly {
+			id: string;
+			status: string;
+			/**
+			 * x00263: every test fixture must declare the files a
+			 * slice owns — the listener refuses transitions where
+			 * `files` is missing, so the previous implicit-empty
+			 * shape is no longer valid.
+			 */
+			files?: readonly string[];
+		}[];
 	}[],
 ): Promise<void> => {
 	await mkdir(join(dir, 'docs', 'proposals'), { recursive: true });
@@ -44,7 +54,12 @@ describe('slice listener', () => {
 
 	it('emits one event per slice that transitions to a configured status', async () => {
 		await writeIndex(workspace, [
-			{ id: 'f00181', slices: [{ id: 'S3', status: 'pending' }] },
+			{
+				id: 'f00181',
+				slices: [
+					{ id: 'S3', status: 'pending', files: ['fixture-S3-0.ts'] },
+				],
+			},
 		]);
 		const listener = createSliceListener(
 			workspace,
@@ -55,7 +70,12 @@ describe('slice listener', () => {
 		);
 		expect(await listener.check()).toEqual([]);
 		await writeIndex(workspace, [
-			{ id: 'f00181', slices: [{ id: 'S3', status: 'done' }] },
+			{
+				id: 'f00181',
+				slices: [
+					{ id: 'S3', status: 'done', files: ['fixture-S3-1.ts'] },
+				],
+			},
 		]);
 		const events = await listener.check();
 		expect(events.length).toBe(1);
@@ -66,7 +86,12 @@ describe('slice listener', () => {
 
 	it('does not re-emit when the status did not change', async () => {
 		await writeIndex(workspace, [
-			{ id: 'f00181', slices: [{ id: 'S3', status: 'done' }] },
+			{
+				id: 'f00181',
+				slices: [
+					{ id: 'S3', status: 'done', files: ['fixture-S3-2.ts'] },
+				],
+			},
 		]);
 		const listener = createSliceListener(
 			workspace,
@@ -83,7 +108,12 @@ describe('slice listener', () => {
 
 	it('respects onStatuses filter', async () => {
 		await writeIndex(workspace, [
-			{ id: 'f00181', slices: [{ id: 'S3', status: 'pending' }] },
+			{
+				id: 'f00181',
+				slices: [
+					{ id: 'S3', status: 'pending', files: ['fixture-S3-3.ts'] },
+				],
+			},
 		]);
 		const listener = createSliceListener(
 			workspace,
@@ -119,8 +149,8 @@ describe('slice listener', () => {
 			{
 				id: 'f00181',
 				slices: [
-					{ id: 'S1', status: 'done' },
-					{ id: 'S2', status: 'pending' },
+					{ id: 'S1', status: 'done', files: ['fixture-S1-0.ts'] },
+					{ id: 'S2', status: 'pending', files: ['fixture-S2-0.ts'] },
 				],
 			},
 		]);
@@ -132,7 +162,16 @@ describe('slice listener', () => {
 	describe('x00260 — handler ack semantics', () => {
 		it('delivers events to the handler and marks seen on OK', async () => {
 			await writeIndex(workspace, [
-				{ id: 'f00181', slices: [{ id: 'S3', status: 'pending' }] },
+				{
+					id: 'f00181',
+					slices: [
+						{
+							id: 'S3',
+							status: 'pending',
+							files: ['fixture-S3-4.ts'],
+						},
+					],
+				},
 			]);
 			const seen: string[] = [];
 			const listener = createSliceListener(
@@ -150,7 +189,16 @@ describe('slice listener', () => {
 			expect(seen).toEqual([]);
 
 			await writeIndex(workspace, [
-				{ id: 'f00181', slices: [{ id: 'S3', status: 'done' }] },
+				{
+					id: 'f00181',
+					slices: [
+						{
+							id: 'S3',
+							status: 'done',
+							files: ['fixture-S3-5.ts'],
+						},
+					],
+				},
 			]);
 			const events = await listener.check();
 			expect(events.length).toBe(1);
@@ -161,7 +209,16 @@ describe('slice listener', () => {
 
 		it('keeps the event in pending when the handler returns ERR', async () => {
 			await writeIndex(workspace, [
-				{ id: 'f00181', slices: [{ id: 'S3', status: 'pending' }] },
+				{
+					id: 'f00181',
+					slices: [
+						{
+							id: 'S3',
+							status: 'pending',
+							files: ['fixture-S3-6.ts'],
+						},
+					],
+				},
 			]);
 			const seen: string[] = [];
 			const listener = createSliceListener(
@@ -176,7 +233,16 @@ describe('slice listener', () => {
 			);
 			await listener.check();
 			await writeIndex(workspace, [
-				{ id: 'f00181', slices: [{ id: 'S3', status: 'done' }] },
+				{
+					id: 'f00181',
+					slices: [
+						{
+							id: 'S3',
+							status: 'done',
+							files: ['fixture-S3-7.ts'],
+						},
+					],
+				},
 			]);
 			await listener.check();
 			expect(seen).toEqual(['S3']);
@@ -187,7 +253,16 @@ describe('slice listener', () => {
 
 		it('re-emits the event when the handler throws', async () => {
 			await writeIndex(workspace, [
-				{ id: 'f00181', slices: [{ id: 'S3', status: 'pending' }] },
+				{
+					id: 'f00181',
+					slices: [
+						{
+							id: 'S3',
+							status: 'pending',
+							files: ['fixture-S3-8.ts'],
+						},
+					],
+				},
 			]);
 			const seen: string[] = [];
 			const listener = createSliceListener(
@@ -202,11 +277,147 @@ describe('slice listener', () => {
 			);
 			await listener.check();
 			await writeIndex(workspace, [
-				{ id: 'f00181', slices: [{ id: 'S3', status: 'done' }] },
+				{
+					id: 'f00181',
+					slices: [
+						{
+							id: 'S3',
+							status: 'done',
+							files: ['fixture-S3-9.ts'],
+						},
+					],
+				},
 			]);
 			await listener.check();
 			expect(seen.length).toBe(1);
 			expect(listener.drainPending().length).toBe(1);
+		});
+	});
+
+	describe('x00263 — slice files must be non-empty (no implicit skipAdd)', () => {
+		it('emits the event with files.paths populated', async () => {
+			await writeIndex(workspace, [
+				{
+					id: 'f00181',
+					slices: [
+						{
+							id: 'S3',
+							status: 'pending',
+							files: ['only-this.ts'],
+						},
+					],
+				},
+			]);
+			const seen: {
+				proposalId?: string | undefined;
+				sliceId?: string | undefined;
+				files?: { paths: readonly string[] } | undefined;
+			}[] = [];
+			const listener = createSliceListener(
+				workspace,
+				docsDir,
+				{ kind: 'slice', onStatuses: ['done'] },
+				async (event) => {
+					seen.push({
+						proposalId: event.proposalId,
+						sliceId: event.sliceId,
+						files: event.files,
+					});
+					return { ack: 'OK' };
+				},
+				1000,
+			);
+			await listener.check();
+			await writeIndex(workspace, [
+				{
+					id: 'f00181',
+					slices: [
+						{ id: 'S3', status: 'done', files: ['only-this.ts'] },
+					],
+				},
+			]);
+			await listener.check();
+			expect(seen.length).toBe(1);
+			expect(seen[0]?.files?.paths).toEqual(['only-this.ts']);
+		});
+
+		it('refuses SLICE_HAS_NO_FILES instead of emitting an empty-files event', async () => {
+			await writeIndex(workspace, [
+				{ id: 'f00181', slices: [{ id: 'S3', status: 'pending' }] },
+			]);
+			const seen: string[] = [];
+			const listener = createSliceListener(
+				workspace,
+				docsDir,
+				{ kind: 'slice', onStatuses: ['done'] },
+				async (event) => {
+					seen.push(event.sliceId ?? '');
+					return { ack: 'OK' };
+				},
+				1000,
+			);
+			await listener.check();
+			await writeIndex(workspace, [
+				{ id: 'f00181', slices: [{ id: 'S3', status: 'done' }] },
+			]);
+			const events = await listener.check();
+			expect(events.length).toBe(0);
+			expect(seen).toEqual([]);
+			const refusals = listener.drainRefusals();
+			expect(refusals.length).toBe(1);
+			expect(refusals[0]?.reason).toContain('SLICE_HAS_NO_FILES');
+		});
+
+		it('refuses when the slice declares an empty files array', async () => {
+			await writeIndex(workspace, [
+				{
+					id: 'f00181',
+					slices: [{ id: 'S3', status: 'pending', files: [] }],
+				},
+			]);
+			const listener = createSliceListener(
+				workspace,
+				docsDir,
+				{ kind: 'slice', onStatuses: ['done'] },
+				async () => ({ ack: 'OK' }),
+				1000,
+			);
+			await listener.check();
+			await writeIndex(workspace, [
+				{
+					id: 'f00181',
+					slices: [{ id: 'S3', status: 'done', files: [] }],
+				},
+			]);
+			const events = await listener.check();
+			expect(events.length).toBe(0);
+			const refusals = listener.drainRefusals();
+			expect(refusals[0]?.reason).toContain('SLICE_HAS_NO_FILES');
+		});
+
+		it('drainRefusals() empties the queue and does not re-emit', async () => {
+			await writeIndex(workspace, [
+				{ id: 'f00181', slices: [{ id: 'S3', status: 'pending' }] },
+			]);
+			const listener = createSliceListener(
+				workspace,
+				docsDir,
+				{ kind: 'slice', onStatuses: ['done'] },
+				async () => ({ ack: 'OK' }),
+				1000,
+			);
+			await listener.check();
+			await writeIndex(workspace, [
+				{ id: 'f00181', slices: [{ id: 'S3', status: 'done' }] },
+			]);
+			await listener.check();
+			expect(listener.drainRefusals().length).toBe(1);
+			// Second drain: empty.
+			expect(listener.drainRefusals().length).toBe(0);
+			// Re-running check does not re-emit the refusal — the
+			// underlying slice did not change.
+			await listener.check();
+			expect(listener.drainRefusals().length).toBe(0);
 		});
 	});
 });
