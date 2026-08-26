@@ -18,6 +18,7 @@ export const PUBLISH_ORDER: readonly string[] = [
 	'packages/client',
 	'packages/cli',
 	'plugins/adaptive-optimizer',
+	'plugins/agent-orchestrator',
 	'plugins/audit',
 	'plugins/auto-agent-selector',
 	'plugins/auto-plugin-selector',

@@ -109,6 +109,18 @@ const buildPackage = (rel: string): void => {
 	if (existsSync(join(dir, 'src/public/index.ts')))
 		entries.push('src/public/index.ts');
 	if (existsSync(join(dir, 'src/cli.ts'))) entries.push('src/cli.ts');
+	// Keep every declared core subpath runnable after packaging. The
+	// declaration pass already emits these files, but omitting their JS
+	// entrypoints leaves `@mcp-vertex/core/{contracts,runtime,plugin,node}`
+	// resolvable in TypeScript and broken at runtime.
+	if (rel === 'packages/core') {
+		for (const subpath of ['contracts', 'runtime', 'plugin', 'node']) {
+			if (existsSync(join(dir, 'src', subpath, 'index.ts')))
+				entries.push(`src/${subpath}/index.ts`);
+		}
+		if (existsSync(join(dir, 'src/version.ts')))
+			entries.push('src/version.ts');
+	}
 
 	// ESM-only entrypoints (packages whose package.json has a `bin` block)
 	// must be built with `--target bun` — `--target node` rewrites the
