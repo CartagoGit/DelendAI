@@ -594,6 +594,26 @@ export const assembleCliConfig = async (
 			}),
 		});
 	}
+	// Lazy plugin tools are catalogued before any plugin module is imported.
+	// Give the same identity registry coverage to those hidden routes so
+	// permission/category consumers do not mistake "not loaded" for "unknown".
+	for (const descriptor of toolSurfaceDescriptors) {
+		if (
+			descriptor.pluginId === undefined ||
+			toolRegistryEntries.has(descriptor.name)
+		)
+			continue;
+		const packageName = `@mcp-vertex/${descriptor.pluginId}`;
+		toolRegistryEntries.set(descriptor.name, {
+			packageName,
+			owner: 'mcp-vertex',
+			publicToolName: descriptor.toolId,
+			category: toolCategoryOf({
+				packageName,
+				tags: descriptor.tags,
+			}),
+		});
+	}
 	const pluginDescriptorsByPlugin = new Map<
 		string,
 		{
