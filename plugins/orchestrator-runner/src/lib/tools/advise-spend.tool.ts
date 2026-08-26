@@ -15,9 +15,18 @@
  */
 import { readFile } from 'node:fs/promises';
 
-import { toolJson, type IToolRegistration } from '@mcp-vertex/core/public';
+import {
+	projectDetail,
+	toolJson,
+	type IToolRegistration,
+} from '@mcp-vertex/core/public';
 import z from 'zod';
 
+import {
+	SPEND_DETAIL_PROJECTIONS,
+	projectSpendFull,
+	type ISpendFullView,
+} from '../contracts/spend-view.contract';
 import { AdviseSpendOutputSchema } from '../schemas';
 
 /** A grouped usage bucket, mirrored from usage-tracking's `IRollupBucket`. */
@@ -247,6 +256,8 @@ export interface IAdviseSpendToolOptions {
 
 const InputSchema = z.object({
 	windowDays: z.number().positive().optional(),
+	// r00032: opt-in projection level (compact | normal | full).
+	detail: z.enum(['compact', 'normal', 'full']).optional(),
 });
 
 export const buildAdviseSpendRegistration = (
@@ -280,12 +291,24 @@ export const buildAdviseSpendRegistration = (
 						`Requested windowDays=${args.windowDays}; the usage rollup is currently aggregated over ${windowDays} day(s). Adjust plugins.usage-tracking.options.windowDays to change the rollup window.`,
 					);
 				}
-				return toolJson({
+				const full: ISpendFullView = {
 					windowDays: args.windowDays ?? windowDays,
 					generatedAt: new Date().toISOString(),
 					currentState: state,
 					observations,
 					recommendations: advice.recommendations,
+				};
+				// r00032: project the view according to `args.detail`
+				// (default `'normal'` per the transversal contract).
+				const level = args.detail ?? 'normal';
+				const view = projectDetail(
+					full,
+					SPEND_DETAIL_PROJECTIONS,
+					level,
+				);
+				return toolJson({
+					view,
+					level,
 				});
 			},
 		);
