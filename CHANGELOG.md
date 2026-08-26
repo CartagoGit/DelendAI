@@ -98,6 +98,26 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   validates every read-only tool's `outputSchema` over the real MCP protocol.
 
 ### Changed (BREAKING)
+- **Internal API naming convention** (`b00238`, Track N / q00006 §50):
+  core-only helpers now follow the `*Internal` suffix convention so
+  plugins and external consumers cannot accidentally couple to
+  them. Migrated three helpers this cycle:
+  - `checkPluginDependencies` → `checkPluginDependenciesInternal`
+    (old name kept as `@deprecated` re-export for one minor).
+  - `formatMissingDependenciesError` →
+    `formatMissingDependenciesErrorInternal`
+    (old name kept as `@deprecated` re-export for one minor).
+  - `normalizePluginRuntime` → `normalizePluginRuntimeInternal`
+    (old name kept as `@deprecated` re-export for one minor).
+  The new lint
+  (`tools/scripts/lint/no-internal-imports.script.ts`)
+  blocks future regressions: any consumer outside
+  `packages/core/**` that imports a `*Internal` symbol from a core
+  entry point, or anything from `@mcp-vertex/core/_internal`, fails
+  the lint. No `breaking:` change in core's behavior — the old
+  names still work; only the boundary is now explicit.
+
+### Changed (BREAKING)
 - `@mcp-vertex/ide` renamed to `@mcp-vertex/ui-extension`. The
   public API (interfaces, panels, dashboard renderer) is byte-
   identical; only the package name and its location changed

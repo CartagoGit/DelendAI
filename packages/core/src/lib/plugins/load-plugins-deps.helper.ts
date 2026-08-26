@@ -7,8 +7,12 @@ import type { IMcpPlugin } from './plugin-contract';
  * or import anything — a separate concern from the import/register loop
  * in `loadPlugins`, so it can be unit-tested and reasoned about on its
  * own (SOLID: one responsibility per function).
+ *
+ * @internal
+ * Not part of the public API. Subject to change without notice.
+ * Migrated to `*Internal` naming under b00238 (Track N / q00006 §50).
  */
-export const checkPluginDependencies = (
+export const checkPluginDependenciesInternal = (
 	loadedPlugins: ReadonlyArray<{ readonly plugin: IMcpPlugin }>,
 ): readonly {
 	readonly plugin: string;
@@ -32,8 +36,20 @@ export const checkPluginDependencies = (
 	return result;
 };
 
-/** Render the combined dependency error for every plugin with missing deps. */
-export const formatMissingDependenciesError = (
+/**
+ * @deprecated Use `checkPluginDependenciesInternal` instead. Kept as a
+ * thin re-export for one minor cycle so external callers can migrate.
+ * Will be removed in the next minor release.
+ */
+export const checkPluginDependencies = checkPluginDependenciesInternal;
+
+/** Render the combined dependency error for every plugin with missing deps. *
+ *
+ * @internal
+ * Not part of the public API. Subject to change without notice.
+ * Migrated to `*Internal` naming under b00238 (Track N / q00006 §50).
+ */
+export const formatMissingDependenciesErrorInternal = (
 	missing: readonly {
 		readonly plugin: string;
 		readonly missing: readonly string[];
@@ -47,3 +63,10 @@ export const formatMissingDependenciesError = (
 					.join(', ')} (not in load set)`,
 		)
 		.join('; ');
+
+/**
+ * @deprecated Use `formatMissingDependenciesErrorInternal` instead.
+ * Kept as a thin re-export for one minor cycle.
+ */
+export const formatMissingDependenciesError =
+	formatMissingDependenciesErrorInternal;

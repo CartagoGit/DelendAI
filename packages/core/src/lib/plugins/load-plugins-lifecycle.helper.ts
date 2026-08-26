@@ -6,7 +6,7 @@ import type {
 import type { IPluginRuntime } from '../contracts/interfaces/plugin-runtime.interface';
 import type { IDependencyGraphNode } from '../contracts/interfaces/dependency-graph.interface';
 import type { IPluginRegisterErrorInfo } from '../contracts/interfaces/plugin-lifecycle-error.interface';
-import { formatMissingDependenciesError } from './load-plugins-deps.helper';
+import { formatMissingDependenciesErrorInternal } from './load-plugins-deps.helper';
 import {
 	disposeLoadedPlugins,
 	extractPartialRuntime,
@@ -137,9 +137,11 @@ export const registerResolvedPluginsWithLifecycle = async (input: {
 				dependencyFailureType: 'missing',
 				missingDependencies: missing.missing,
 				lifecycleState: 'blocked',
-				error: new Error(formatMissingDependenciesError([missing])),
+				error: new Error(
+					formatMissingDependenciesErrorInternal([missing]),
+				),
 			},
-			formatMissingDependenciesError([missing]),
+			formatMissingDependenciesErrorInternal([missing]),
 		);
 		const blockedResult = blockDependentsForFailure(
 			dependencyGraph,
