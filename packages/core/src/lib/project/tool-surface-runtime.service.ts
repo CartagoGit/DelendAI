@@ -410,7 +410,9 @@ class ToolSurfaceRuntime implements IToolSurfaceRuntime {
 		}
 		if (record.handler === undefined && record.lazyActivate !== undefined) {
 			const binding = await record.lazyActivate();
-			record = {
+			record = this.recordsByRegistrationId.get(
+				record.registrationId,
+			) ?? {
 				...record,
 				...binding,
 				lazyActivate: undefined,
