@@ -78,6 +78,8 @@
 		"gen:agent-md": "bun tools/scripts/gen/agent-md.script.ts",
 		"gen:all": "bun tools/scripts/gen-all.script.ts",
 		"gen:all:check": "bun tools/scripts/gen-all.script.ts --check",
+		"gen:web-pages": "bun tools/scripts/gen/web-pages.script.ts",
+		"gen:web-pages:check": "bun tools/scripts/gen/web-pages.script.ts --check",
 		"gen:branch-protection-check": "bun tools/scripts/ci/verify-branch-protection.script.ts --dry-run",
 		"quality:gate:ci": "bun tools/scripts/ci/quality-gate.script.ts --real",
 		"generate:from-manifests": "bun tools/scripts/generate/from-manifests.script.ts",
