@@ -630,6 +630,42 @@ export type {
 	ITokenBudgetRegistry,
 	ITokenBudgetSurface,
 } from '../lib/contracts/constants/token-budgets.constant';
+// f00187 — transversal `detail: compact | normal | full` contract.
+export {
+	DETAIL_LEVELS,
+	projectDetail,
+	UnknownDetailLevelError,
+	withDetail,
+} from '../lib/contracts/detail.contract';
+export type {
+	Detail,
+	DetailProjection,
+	DetailProjections,
+	WithDetail,
+} from '../lib/contracts/detail.contract';
+// f00186 — TokenBudgetRegistry + types.
+export {
+	createTokenBudgetRegistry,
+	TokenBudgetRegistry,
+} from '../lib/budgets/registry';
+export type {
+	IMeasureOptions,
+	IRegistryOptions,
+} from '../lib/budgets/registry';
+export { createStaticBytesSource } from '../lib/budgets/sources/static-bytes';
+export { createDashboardMockSource } from '../lib/budgets/sources/dashboard-mock';
+export {
+	TokenBudgetBreachError,
+	type IBudgetCeiling,
+	type IBudgetForSurface,
+	type IBudgetSource,
+	type IPerSurfaceMeasurement,
+	type ITokenMeasurement,
+	type ITokenReport,
+	type ITokenReportRow,
+	type Surface,
+	type TokenSurface,
+} from '../lib/budgets/types';
 export {
 	paginateFileExcerpt,
 	paginateItems,
