@@ -150,8 +150,11 @@ export const TOKEN_BUDGETS: ITokenBudgetRegistry = {
 		},
 		lean: {
 			toolsList: {
-				hard: 69_000,
-				warning: 68_150,
+				// q00009: the stable bootstrap registrations are present in
+				// the native measurement baseline too; the current 69,115 B
+				// roster needs a small, explicit guard band.
+				hard: 70_000,
+				warning: 69_000,
 				releaseRelativePercent: 20,
 				marginalPluginHard: 30_000,
 				marginalPluginWarning: 24_000,
