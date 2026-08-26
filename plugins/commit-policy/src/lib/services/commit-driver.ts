@@ -70,19 +70,87 @@ export interface ICommitDriverOptions {
 	readonly auditAgent: IAuditAgent | null;
 }
 
-const buildScopedMessage = (
+/**
+ * Pure parse of a Conventional-Commit header line — see AUD-CP-001
+ * (x00259). Returns a structured view that `buildScopedMessage`
+ * can re-emit losslessly, including the original `type`, the
+ * optional `scope`, the `!` breaking marker, and the remainder
+ * (subject + body + footers).
+ */
+export interface IParsedHeader {
+	readonly type: string;
+	readonly scope: string | undefined;
+	readonly breaking: boolean;
+	/** Subject line minus the `type(scope)?!: ` prefix. */
+	readonly subject: string;
+	/** Body + footers (everything after the first `\n`). */
+	readonly rest: string;
+}
+
+const HEADER_TYPE_PATTERN = '[A-Za-z][A-Za-z0-9_.-]*';
+const SCOPE_PATTERN = String.raw`\([^)]+\)`;
+
+export const parseHeader = (raw: string): IParsedHeader => {
+	const trimmed = raw.trimStart();
+	// Match: type(scope)!: subject OR type!: subject OR type: subject
+	const re = new RegExp(
+		`^(${HEADER_TYPE_PATTERN})(?:(${SCOPE_PATTERN}))?(!)?:\\s*([\\s\\S]*)$`,
+	);
+	const m = re.exec(trimmed);
+	if (m === null) {
+		// Not a Conventional-Commit header — return type='' so the
+		// caller fails-closed instead of silently mangling the input.
+		return {
+			type: '',
+			scope: undefined,
+			breaking: false,
+			subject: trimmed,
+			rest: '',
+		};
+	}
+	const [, type, scope, bang, rest = ''] = m as unknown as [
+		string,
+		string,
+		string | undefined,
+		string | undefined,
+		string | undefined,
+	];
+	// Split the remainder into subject (first line) and rest (body+footers).
+	const newlineIdx = rest.indexOf('\n');
+	const subject =
+		newlineIdx === -1 ? rest : rest.slice(0, newlineIdx).trimEnd();
+	const restAfterSubject =
+		newlineIdx === -1 ? '' : rest.slice(newlineIdx + 1);
+	return {
+		type,
+		scope: scope !== undefined ? scope.slice(1, -1) : undefined,
+		breaking: bang === '!',
+		subject,
+		rest: restAfterSubject,
+	};
+};
+
+export const buildScopedMessage = (
 	original: string,
 	proposalId: string,
 	autoScope: boolean,
 ): string => {
 	if (!autoScope) return original;
-	// If the message already carries a Conventional-Commit scope
-	// (e.g. `feat(core): x`) we leave it alone — never double-scope.
-	if (/^\w+\([^)]+\)(!)?:/.test(original)) return original;
-	// If the message is a bare Conventional Commit (no scope), strip
-	// the `type:` prefix and re-wrap it with the proposal id as scope.
-	const stripped = original.replace(/^(\w+)(!)?:\s*/, '');
-	return `feat(${proposalId}): ${stripped}`;
+	// Empty input — caller surfaces a typed refusal upstream; we
+	// don't synthesize a header that would commit silently.
+	if (original.trim().length === 0) return original;
+	const parsed = parseHeader(original);
+	const type = parsed.type === '' ? 'feat' : parsed.type;
+	const scope = parsed.scope ?? proposalId;
+	const bang = parsed.breaking ? '!' : '';
+	// subject is the trimmed remainder when the input was bare text
+	// (no header was matched); otherwise it is the original subject.
+	const subject = parsed.type === '' ? original.trim() : parsed.subject;
+	const head =
+		parsed.rest.length > 0
+			? `${type}(${scope})${bang}: ${subject}\n${parsed.rest}`
+			: `${type}(${scope})${bang}: ${subject}`;
+	return head;
 };
 
 /**
