@@ -21,7 +21,12 @@ const isPluginRuntime = (
 ): value is IPluginRuntime<IMcpPluginRegistrations> =>
 	isObject(value) && 'registrations' in value;
 
-export const normalizePluginRuntime = (
+/**
+ * @internal
+ * Not part of the public API. Subject to change without notice.
+ * Migrated to `*Internal` naming under b00238 (Track N / q00006 §50).
+ */
+export const normalizePluginRuntimeInternal = (
 	value: IMcpPluginRegistrations | IPluginRuntime<IMcpPluginRegistrations>,
 ): IPluginRuntime<IMcpPluginRegistrations> => {
 	if (isPluginRuntime(value)) {
@@ -37,6 +42,12 @@ export const normalizePluginRuntime = (
 	};
 };
 
+/**
+ * @deprecated Use `normalizePluginRuntimeInternal` instead. Kept as a
+ * thin re-export for one minor cycle.
+ */
+export const normalizePluginRuntime = normalizePluginRuntimeInternal;
+
 export const extractPartialRuntime = (
 	error: unknown,
 ): IPluginRuntime<IMcpPluginRegistrations> | undefined => {
@@ -44,7 +55,7 @@ export const extractPartialRuntime = (
 	if ('runtime' in error) {
 		const candidate = error.runtime;
 		if (candidate !== undefined) {
-			return normalizePluginRuntime(
+			return normalizePluginRuntimeInternal(
 				candidate as
 					| IMcpPluginRegistrations
 					| IPluginRuntime<IMcpPluginRegistrations>,
@@ -52,7 +63,7 @@ export const extractPartialRuntime = (
 		}
 	}
 	if ('registrations' in error) {
-		return normalizePluginRuntime({
+		return normalizePluginRuntimeInternal({
 			registrations: error.registrations as IMcpPluginRegistrations,
 			dispose:
 				typeof error.dispose === 'function'
@@ -132,7 +143,7 @@ export const registerPluginWithLifecycle = async (input: {
 	let cancelReason: 'timeout' | 'signal' | undefined;
 	const registerPromise = Promise.resolve(
 		plugin.register(ctx, controller.signal),
-	).then((result) => normalizePluginRuntime(result));
+	).then((result) => normalizePluginRuntimeInternal(result));
 	void registerPromise.catch(() => undefined);
 	const cleanupHandlers: Array<() => void> = [];
 	const cancellationPromise = new Promise<never>((_resolve, reject) => {
