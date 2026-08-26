@@ -102,6 +102,7 @@ class ToolSurfaceRuntime implements IToolSurfaceRuntime {
 	private readonly warmAtByPlugin = new Map<string, number>();
 	private readonly loadedPluginIds = new Set<string>();
 	private readonly workingSetPolicy: IToolSurfaceWorkingSetPolicy;
+	private lazyPluginLoader: ((pluginId: string) => Promise<void>) | undefined;
 
 	constructor(private readonly plan: IToolSurfacePlan) {
 		this.workingSetPolicy = plan.workingSet ?? DEFAULT_WORKING_SET_POLICY;
@@ -310,6 +311,19 @@ class ToolSurfaceRuntime implements IToolSurfaceRuntime {
 
 	activatePlugin(identifier: string): IPluginSurfaceChange | null {
 		return this.setPluginState(identifier, true);
+	}
+
+	setLazyPluginLoader(loader: (pluginId: string) => Promise<void>): void {
+		this.lazyPluginLoader = loader;
+	}
+
+	async activatePluginAsync(
+		identifier: string,
+	): Promise<IPluginSurfaceChange | null> {
+		const plugin = this.pluginIndex.get(identifier);
+		if (plugin === undefined) return null;
+		await this.lazyPluginLoader?.(plugin.id);
+		return this.activatePlugin(identifier);
 	}
 
 	deactivatePlugin(identifier: string): IPluginSurfaceChange | null {

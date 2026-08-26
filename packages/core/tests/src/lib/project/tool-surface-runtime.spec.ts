@@ -135,4 +135,29 @@ describe('tool-surface-runtime schema accounting', () => {
 				.warmPlugins,
 		).toEqual([]);
 	});
+
+	it('awaits a managed lazy loader before explicit plugin activation', async () => {
+		const runtime = createToolSurfaceRuntime({
+			mode: 'managed',
+			bootstrapToolIds: [],
+			descriptors: [],
+			plugins: [
+				{
+					id: 'prompts-pack',
+					namespace: 'prompts-pack',
+					toolRegistrationIds: [],
+				},
+			],
+		});
+		let loaded = false;
+		runtime.setLazyPluginLoader?.(async (pluginId) => {
+			expect(pluginId).toBe('prompts-pack');
+			loaded = true;
+		});
+
+		const change = await runtime.activatePluginAsync?.('prompts-pack');
+		expect(loaded).toBe(true);
+		expect(change?.pluginId).toBe('prompts-pack');
+		expect(change?.active).toBe(true);
+	});
 });
