@@ -415,4 +415,81 @@ describe('runCommitDriver', () => {
 			expect(result.committed).toBe(true);
 		});
 	});
+
+	describe('x00264 — non-slice triggerContext stages its own files', () => {
+		it('refuses TRIGGER_HAS_NO_FILES when the trigger fired with zero dirty paths', async () => {
+			const fake = buildFakeGit({
+				currentBranch: 'develop',
+				globalName: 'Cartago',
+				globalEmail: 'cartago@example.com',
+			});
+			const result = await runCommitDriver(
+				{
+					message: 'chore: threshold fired',
+					triggerContext: { kind: 'threshold', files: [] },
+				},
+				{
+					run: fake.run,
+					policy: basePolicy(),
+					identityCtx: { run: fake.run, envVars: Object.freeze({}) },
+					auditAgent: null,
+				},
+			);
+			expect(result.committed).toBe(false);
+			expect(result.refusal).toContain('TRIGGER_HAS_NO_FILES');
+			expect(fake.committed.count).toBe(0);
+		});
+
+		it('refuses CROSS_AGENT_CONTAMINATION when the index carries paths outside the trigger set', async () => {
+			const fake = buildFakeGit({
+				currentBranch: 'develop',
+				globalName: 'Cartago',
+				globalEmail: 'cartago@example.com',
+				cached: ['only-this.ts', 'extra-from-leak.ts'],
+			});
+			const result = await runCommitDriver(
+				{
+					message: 'chore: threshold fired',
+					triggerContext: {
+						kind: 'threshold',
+						files: ['only-this.ts'],
+					},
+				},
+				{
+					run: fake.run,
+					policy: basePolicy(),
+					identityCtx: { run: fake.run, envVars: Object.freeze({}) },
+					auditAgent: null,
+				},
+			);
+			expect(result.committed).toBe(false);
+			expect(result.refusal).toContain('CROSS_AGENT_CONTAMINATION');
+			expect(result.refusal).toContain('extra-from-leak.ts');
+		});
+
+		it('commits when the cached index is a subset of the trigger set', async () => {
+			const fake = buildFakeGit({
+				currentBranch: 'develop',
+				globalName: 'Cartago',
+				globalEmail: 'cartago@example.com',
+				cached: ['a.ts', 'b.ts'],
+			});
+			const result = await runCommitDriver(
+				{
+					message: 'chore: threshold fired',
+					triggerContext: {
+						kind: 'threshold',
+						files: ['a.ts', 'b.ts', 'c.ts'],
+					},
+				},
+				{
+					run: fake.run,
+					policy: basePolicy(),
+					identityCtx: { run: fake.run, envVars: Object.freeze({}) },
+					auditAgent: null,
+				},
+			);
+			expect(result.committed).toBe(true);
+		});
+	});
 });
