@@ -52,6 +52,9 @@ export type DetailProjections<TFull> = {
 	readonly [K in Detail]: (full: TFull) => unknown;
 };
 
+/** Convenience alias — single-level projection function. */
+export type DetailProjection<TFull> = (full: TFull) => unknown;
+
 /**
  * Pure projection dispatcher. Looks up the level in `levels` and
  * applies the matching function. Default level is `'normal'`.

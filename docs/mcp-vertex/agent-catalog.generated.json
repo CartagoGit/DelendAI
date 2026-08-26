@@ -591,6 +591,10 @@
 			"plugin": "proposals"
 		},
 		{
+			"name": "mcp-vertex_proposals_proposal_get",
+			"plugin": "proposals"
+		},
+		{
 			"name": "mcp-vertex_proposals_proposal_reconcile_folder",
 			"plugin": "proposals"
 		},
