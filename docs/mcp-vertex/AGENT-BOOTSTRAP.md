@@ -471,11 +471,11 @@ or have their own config file. Use the same single-pointer pattern:
 
 <!-- mcp-vertex:begin quantitative -->
 ```
-Generated at: 2026-08-26T03:07:49.055Z
+Generated at: 2026-08-26T03:21:02.240Z
 
 Plugins: 51
 Tools: 214
-Test specs: 379 (≈2998 cases)
+Test specs: 382 (≈3019 cases)
 Workspaces: 4 packages, 2 apps, 1 extensions, 4 tooling workspace(s).
 Proposals: 416 on disk (ready=72, in-progress=2, review=1, done=341)
 ```
