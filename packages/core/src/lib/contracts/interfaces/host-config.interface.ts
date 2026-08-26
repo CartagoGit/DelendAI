@@ -179,6 +179,21 @@ export interface IHostRegistrations {
 			import('./tool-surface.interface').IToolSurfaceLazyBinding
 		>
 	>;
+	/**
+	 * Drains non-tool registrations produced by managed lazy activation.
+	 * The project registers them after the first routed use; their bodies are
+	 * therefore absent from cold start but remain available through MCP-native
+	 * prompt/resource registration once their owning plugin is needed.
+	 */
+	readonly consumeLazyPluginRegistrations?:
+		| (() => readonly {
+				readonly prompts?: readonly IPromptRegistration[] | undefined;
+				readonly resources?:
+					| readonly IResourceRegistration[]
+					| undefined;
+				readonly knowledge?: readonly IKnowledgeEntry[] | undefined;
+		  }[])
+		| undefined;
 }
 
 /**

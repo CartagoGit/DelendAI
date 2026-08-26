@@ -6,6 +6,7 @@ import type { IToolRegistration } from '../contracts/interfaces/tool-registratio
 import { decideSurfaceModeFromCapabilities } from '../surface/decide-mode';
 import { instrumentToolHandlers } from './instrument-tool-handlers.helper';
 import { createToolSurfaceRuntime } from './tool-surface-runtime.service';
+import { buildKnowledgeResourceRegistrations } from '../tools/knowledge-resources';
 
 /**
  * An assembled (but not yet connected) MCP server. `start()` connects
@@ -93,38 +94,70 @@ export async function createMcpProject(
 		config.toolSurfaceRuntime.bind(toolSurfaceRuntime);
 	}
 	if (toolSurfaceRuntime !== undefined) {
+		const materializedLazyTools = new Map<
+			string,
+			Promise<{
+				readonly description?: string | undefined;
+				readonly inputSchema?: unknown;
+				readonly outputSchema?: unknown;
+				readonly handler: unknown;
+			}>
+		>();
 		for (const [registrationId, activate] of config.lazyToolActivators ??
 			[]) {
 			toolSurfaceRuntime.bindLazyTool({
 				registrationId,
-				activate: async () => {
-					const binding = await activate();
-					const descriptor = config.toolSurfacePlan?.descriptors.find(
-						(entry) => entry.registrationId === registrationId,
-					);
-					if (descriptor === undefined) return binding;
-					// Register through the already-instrumented MCP server so a
-					// first-use tool keeps metrics, lifecycle hooks, abort handling,
-					// and error/result decoration identical to an eager tool. Keep
-					// the SDK handle disabled: managed mode exposes the router and
-					// bootstrap set, not the activated plugin definition itself.
-					const handle = server.registerTool(
-						descriptor.name,
-						{
-							...(binding.description !== undefined
-								? { description: binding.description }
-								: {}),
-							...(binding.inputSchema !== undefined
-								? { inputSchema: binding.inputSchema }
-								: {}),
-							...(binding.outputSchema !== undefined
-								? { outputSchema: binding.outputSchema }
-								: {}),
-						} as never,
-						binding.handler as never,
-					);
-					handle.disable();
-					return { ...binding, handler: handle.handler };
+				activate: () => {
+					const existing = materializedLazyTools.get(registrationId);
+					if (existing !== undefined) return existing;
+					const materialization = (async () => {
+						const binding = await activate();
+						for (const registrations of config.consumeLazyPluginRegistrations?.() ??
+							[]) {
+							for (const prompt of registrations.prompts ?? []) {
+								await prompt.register(server);
+							}
+							for (const resource of registrations.resources ??
+								[]) {
+								await resource.register(server);
+							}
+							for (const resource of buildKnowledgeResourceRegistrations(
+								registrations.knowledge ?? [],
+							)) {
+								await resource.register(server);
+							}
+						}
+						const descriptor =
+							config.toolSurfacePlan?.descriptors.find(
+								(entry) =>
+									entry.registrationId === registrationId,
+							);
+						if (descriptor === undefined) return binding;
+						// Register through the already-instrumented MCP server so a
+						// first-use tool keeps metrics, lifecycle hooks, abort handling,
+						// and error/result decoration identical to an eager tool. Keep
+						// the SDK handle disabled: managed mode exposes the router and
+						// bootstrap set, not the activated plugin definition itself.
+						const handle = server.registerTool(
+							descriptor.name,
+							{
+								...(binding.description !== undefined
+									? { description: binding.description }
+									: {}),
+								...(binding.inputSchema !== undefined
+									? { inputSchema: binding.inputSchema }
+									: {}),
+								...(binding.outputSchema !== undefined
+									? { outputSchema: binding.outputSchema }
+									: {}),
+							} as never,
+							binding.handler as never,
+						);
+						handle.disable();
+						return { ...binding, handler: handle.handler };
+					})();
+					materializedLazyTools.set(registrationId, materialization);
+					return materialization;
 				},
 			});
 		}

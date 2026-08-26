@@ -78,17 +78,9 @@ export const buildManagedLazyCatalogSource = async (): Promise<string> => {
 	const packageById = new Map(
 		FIRST_PARTY_PLUGIN_INDEX.entries.map((entry) => [entry.id, entry]),
 	);
-	const toolIdsByPlugin = new Map<string, string[]>();
-	for (const descriptor of assembled.config.toolSurfacePlan?.descriptors ??
-		[]) {
-		if (descriptor.pluginId === undefined) continue;
-		const ids = toolIdsByPlugin.get(descriptor.pluginId) ?? [];
-		if (!ids.includes(descriptor.toolId)) ids.push(descriptor.toolId);
-		toolIdsByPlugin.set(descriptor.pluginId, ids);
-	}
-	const entries = [...toolIdsByPlugin.entries()].sort(([a], [b]) =>
-		a.localeCompare(b),
-	);
+	const entries = assembled.loadResult.loaded
+		.map((entry) => [entry.plugin.name, entry.registrations] as const)
+		.sort(([a], [b]) => a.localeCompare(b));
 	const source = [
 		'/**',
 		' * managed-lazy-catalog.generated.ts — GENERATED, do not edit by hand.',
@@ -101,6 +93,10 @@ export const buildManagedLazyCatalogSource = async (): Promise<string> => {
 		'\treadonly id: string;',
 		'\treadonly packageSpecifier: string;',
 		'\treadonly toolIds: readonly string[];',
+		'\treadonly promptIds: readonly string[];',
+		'\treadonly resourceIds: readonly string[];',
+		'\treadonly knowledgeIds: readonly string[];',
+		'\treadonly skillIds: readonly string[];',
 		'\treadonly summary?: string | undefined;',
 		'\treadonly tags?: readonly string[] | undefined;',
 		'}',
@@ -109,24 +105,32 @@ export const buildManagedLazyCatalogSource = async (): Promise<string> => {
 		'\tid: string,',
 		'\tpackageSpecifier: string,',
 		'\ttoolIds: readonly string[],',
+		'\tpromptIds: readonly string[],',
+		'\tresourceIds: readonly string[],',
+		'\tknowledgeIds: readonly string[],',
+		'\tskillIds: readonly string[],',
 		"\tmetadata: Pick<IManagedLazyPluginCatalogEntry, 'summary' | 'tags'> = {},",
 		'): IManagedLazyPluginCatalogEntry => ({',
 		'\tid,',
 		'\tpackageSpecifier,',
 		'\t...metadata,',
 		'\ttoolIds,',
+		'\tpromptIds,',
+		'\tresourceIds,',
+		'\tknowledgeIds,',
+		'\tskillIds,',
 		'});',
 		'',
 		'export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntry[] =',
 		'\t[',
-		...entries.flatMap(([id, toolIds]) => {
+		...entries.flatMap(([id, registrations]) => {
 			const metadata = packageById.get(id);
 			const metadataLiteral =
 				metadata === undefined
 					? '{}'
 					: `{ summary: ${quote(metadata.summary)}, tags: ${renderTools(metadata.tags)} }`;
 			return [
-				`\t\ttools(${quote(id)}, ${quote(metadata?.package ?? `@mcp-vertex/${id}`)}, ${renderTools(toolIds)}, ${metadataLiteral}),`,
+				`\t\ttools(${quote(id)}, ${quote(metadata?.package ?? `@mcp-vertex/${id}`)}, ${renderTools((registrations.tools ?? []).map((tool) => tool.id))}, ${renderTools((registrations.prompts ?? []).map((prompt) => prompt.id))}, ${renderTools((registrations.resources ?? []).map((resource) => resource.id))}, ${renderTools((registrations.knowledge ?? []).map((entry) => entry.id))}, ${renderTools((registrations.skills ?? []).map((skill) => skill.id))}, ${metadataLiteral}),`,
 			];
 		}),
 		'\t];',
