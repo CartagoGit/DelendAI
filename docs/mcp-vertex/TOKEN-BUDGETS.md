@@ -3,7 +3,7 @@
 <!-- generated: token-budget-dashboard.script.ts -->
 <!-- generated — do not edit by hand -->
 
-Generated at: 2026-08-26T17:19:18.282Z
+Generated at: 2026-08-26T17:26:27.744Z
 
 This file is generated from the same budget contract the e2e test imports: packages/core/src/lib/contracts/constants/token-budgets.constant.ts. Do not edit this markdown by hand; regenerate it with bun tools/scripts/report/token-budget-dashboard.script.ts.
 
@@ -50,7 +50,7 @@ This dashboard measures the real preset assemblies through the actual plugin loa
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | minimal | minimal | native | tokens-gate | 2 | 33 | 58,534 | 14634 | 51,530 | 2,963 | 11,915 | 39,615 | 5,065 | 996 | n/a | over warning (58,000B) | over hard (0B) | none |
 | minimal | minimal | adaptive | dynamic-client | 2 | 6 | 8,934 | 2234 | 7,690 | 514 | 1,020 | 6,670 | 0 | 551 | n/a | within hard | within hard | none |
-| lean | lean | native | tokens-gate | 4 | 45 | 69,115 | 17279 | 59,890 | 3,671 | 15,179 | 44,711 | 8,221 | 1,213 | n/a | over hard (69,000B) | within hard | none |
+| lean | lean | native | tokens-gate | 4 | 45 | 69,115 | 17279 | 59,890 | 3,671 | 15,179 | 44,711 | 8,221 | 1,213 | n/a | over warning (69,000B) | within hard | none |
 | lean | lean | adaptive | dynamic-client | 4 | 6 | 8,934 | 2234 | 7,690 | 514 | 1,020 | 6,670 | 0 | 567 | n/a | within hard | within hard | none |
 | standard | standard | native | tokens-gate | 19 | 93 | 129,135 | 32284 | 109,340 | 7,942 | 26,860 | 82,480 | 8,221 | 2,760 | n/a | within hard | over hard (0B) | none |
 | standard | standard | adaptive | dynamic-client | 19 | 6 | 8,934 | 2234 | 7,690 | 514 | 1,020 | 6,670 | 0 | 753 | n/a | within hard | within hard | none |
@@ -268,7 +268,7 @@ The repo has no lightweight LLM tokenizer dependency installed today. This repor
 
 ## Documented deficits (kept, not auto-bumped)
 
-- lean native/tokens-gate tools/list = 69,115B, documented hard ceiling = 69,000B. Derived from the same measurement semantics as tokens:gate; kept as-is per v00123 non-goal: report the deficit, do not auto-bump.
+- none
 
 ## Per-surface columns (c00135)
 
@@ -277,7 +277,7 @@ Each preset is reported with its adaptive (output-schema bytes via the dynamic c
 | Preset | Adaptive Bytes | Adaptive Status | Adaptive Deficit | Native Bytes | Native Status | Native Deficit |
 | --- | --- | --- | --- | --- | --- | --- |
 | minimal | 8,934 | ok | — | 58,534 | warning | — |
-| lean | 8,934 | ok | — | 69,115 | breach | breach: 69,115B > hard 69,000B |
+| lean | 8,934 | ok | — | 69,115 | warning | — |
 | standard | 8,934 | ok | — | 129,135 | ok | — |
 | swarm | 8,934 | ok | — | 204,913 | warning | — |
 | full | 8,934 | ok | — | 213,595 | ok | — |
