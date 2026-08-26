@@ -4,7 +4,7 @@
  * Exercises the pure logic (parse + select + reproduce) with
  * mocked fetch + runner. The real GitHub API + real `gh` CLI
  * path is exercised by the demo script
- * (`tools/scripts/ci/local-repro.demo.sh`) against a recent
+ * (`tools/scripts/ci/local-repro.demo.script.ts`) against a recent
  * real run, not by these specs.
  */
 
@@ -53,7 +53,9 @@ describe('local-repro (v00126) — pure helpers', () => {
 				name: 'lint-biome',
 				conclusion: 'success',
 				status: 'completed',
-				steps: [{ name: 'Run biome', conclusion: 'success', number: 1 }],
+				steps: [
+					{ name: 'Run biome', conclusion: 'success', number: 1 },
+				],
 			},
 			{
 				id: 2,
@@ -78,14 +80,18 @@ describe('local-repro (v00126) — pure helpers', () => {
 				name: 'lint-biome',
 				conclusion: 'failure',
 				status: 'completed',
-				steps: [{ name: 'Run biome', conclusion: 'failure', number: 1 }],
+				steps: [
+					{ name: 'Run biome', conclusion: 'failure', number: 1 },
+				],
 			},
 			{
 				id: 2,
 				name: 'tests',
 				conclusion: 'failure',
 				status: 'completed',
-				steps: [{ name: 'Run vitest', conclusion: 'failure', number: 1 }],
+				steps: [
+					{ name: 'Run vitest', conclusion: 'failure', number: 1 },
+				],
 			},
 		];
 		const step = selectFailedStep(jobs, 'biome');
@@ -132,7 +138,11 @@ describe('local-repro (v00126) — fetch + repro', () => {
 						conclusion: 'failure',
 						status: 'completed',
 						steps: [
-							{ name: 'Run biome', conclusion: 'failure', number: 1 },
+							{
+								name: 'Run biome',
+								conclusion: 'failure',
+								number: 1,
+							},
 						],
 					},
 				],
@@ -288,4 +298,4 @@ describe('local-repro (v00126) — CLI', () => {
 // (resolveRepo is exercised indirectly through the CLI spec
 //  below — it needs `git remote get-url origin` to be present
 //  in the test environment, so the parse logic is also covered
-//  by the live verification path described in local-repro.demo.sh.)
+//  by the live verification path described in local-repro.demo.script.ts.)

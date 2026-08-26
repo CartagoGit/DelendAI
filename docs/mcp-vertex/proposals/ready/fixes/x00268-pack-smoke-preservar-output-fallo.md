@@ -88,7 +88,7 @@ un `set -euo pipefail` mal combinado con command substitution.
 
 ### 1. Refactor del script
 
-- `tools/scripts/ci/pack-smoke.sh` (o equivalente):
+- `tools/scripts/ci/pack-smoke.script.ts` (o equivalente):
   - Cambiar `set -euo pipefail` a `set -eu` (sin pipefail, porque
     pipefail combinado con captura es problemático).
   - Capturar output con `mktemp`.
@@ -112,7 +112,7 @@ un `set -euo pipefail` mal combinado con command substitution.
 ### S1 — Refactor del script pack-smoke + tests
 
 - **Status**: pending
-- **Files**: `tools/scripts/ci/pack-smoke.sh` (o `.ts`), `tools/scripts/ci/pack-smoke.spec.ts`, `.github/workflows/pack-smoke.yml`
+- **Files**: `tools/scripts/ci/pack-smoke.script.ts`, `tools/scripts/ci/pack-smoke.spec.ts`, `.github/workflows/pack-smoke.yml`
 - **Gate**: type
 
 ## acceptance

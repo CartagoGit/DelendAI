@@ -7,7 +7,7 @@
 # the job's log with only the generic set-e abort line — no
 # actual evidence of what the smoke check failed on.
 #
-# The new wrapper (`tools/scripts/ci/pack-smoke.sh`) captures
+# The new wrapper (`tools/scripts/ci/pack-smoke.script.ts`) captures
 # everything to a temp file, prints it inside `::group::` even
 # on failure, and exits with the inner command's code. The
 # workflow below is just the runner glue.
@@ -57,4 +57,4 @@ jobs:
         # exits with the inner command's code, so a failing step
         # leaves the run log with the evidence a developer needs
         # to triage without re-running locally.
-        run: bash tools/scripts/ci/pack-smoke.sh
+        run: bun tools/scripts/ci/pack-smoke.script.ts
