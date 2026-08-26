@@ -3,6 +3,7 @@
 | Plugin | Visibility | Tool | Permissions |
 | --- | --- | --- | --- |
 | adaptive-optimizer | public | * | filesystem-read |
+| agent-orchestrator | public | * | process |
 | api | public | * | process, network |
 | audit | public | * | filesystem-read, filesystem-write, network |
 | auto-agent-selector | public | * | process, network |
