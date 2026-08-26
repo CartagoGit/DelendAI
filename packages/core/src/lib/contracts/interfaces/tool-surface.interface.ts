@@ -119,6 +119,12 @@ export interface IToolSurfaceRuntime {
 		mode: IMcpToolSurfaceMode,
 	): Readonly<Record<string, number>>;
 	activatePlugin(identifier: string): IPluginSurfaceChange | null;
+	readonly activatePluginAsync?:
+		| ((identifier: string) => Promise<IPluginSurfaceChange | null>)
+		| undefined;
+	readonly setLazyPluginLoader?:
+		| ((loader: (pluginId: string) => Promise<void>) => void)
+		| undefined;
 	deactivatePlugin(identifier: string): IPluginSurfaceChange | null;
 	/** Evict idle/least-recently-used plugin working-set entries. */
 	evictIdlePlugins(nowMs?: number): readonly string[];

@@ -97,6 +97,7 @@ export interface IAssemblePluginsResult {
 		string,
 		() => Promise<IToolSurfaceLazyBinding>
 	>;
+	readonly lazyPluginActivators?: ReadonlyMap<string, () => Promise<void>>;
 	readonly lazyPluginPackages?: readonly {
 		readonly name: string;
 		readonly resolved: string;
@@ -302,8 +303,12 @@ const tryAssembleManagedLazy = (input: {
 		string,
 		() => Promise<IToolSurfaceLazyBinding>
 	>();
+	const lazyPluginActivators = new Map<string, () => Promise<void>>();
 	for (const plugin of definitions) {
 		const namespace = namespaces.get(plugin.id) ?? plugin.id;
+		const activatePlugin = () => lazyRuntime.activatePlugin(plugin.id);
+		lazyPluginActivators.set(plugin.id, activatePlugin);
+		lazyPluginActivators.set(namespace, activatePlugin);
 		for (const toolId of plugin.toolIds) {
 			const name = `${input.corePrefix}_${namespace}_${toolId}`;
 			const tags = [...(plugin.tags ?? []), 'lazy'];
@@ -420,6 +425,7 @@ const tryAssembleManagedLazy = (input: {
 			describe: MANAGED_LAZY_PLUGIN_BY_ID.get(id)?.summary,
 		})),
 		lazyToolActivators,
+		lazyPluginActivators,
 		lazyPluginPackages: pluginIds.map((id) => ({
 			name: id,
 			resolved: MANAGED_LAZY_PLUGIN_BY_ID.get(id)?.packageSpecifier ?? id,

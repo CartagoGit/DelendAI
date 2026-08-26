@@ -25,6 +25,7 @@ export interface IManagedLazyToolBinding {
 }
 
 export interface IManagedLazyRuntime {
+	activatePlugin(pluginId: string): Promise<void>;
 	activateTool(registrationId: string): Promise<IManagedLazyToolBinding>;
 	snapshot(): {
 		readonly loadedPluginIds: readonly string[];
@@ -226,6 +227,9 @@ export const createManagedLazyRuntime = (
 	};
 
 	return {
+		async activatePlugin(pluginId) {
+			await activatePlugin(pluginId);
+		},
 		async activateTool(registrationId) {
 			const owner = ownerByRegistrationId.get(registrationId);
 			if (owner === undefined)

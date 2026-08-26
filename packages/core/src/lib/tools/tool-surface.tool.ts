@@ -142,7 +142,8 @@ const buildPluginSurfaceMutationToolRegistration = (input: {
 				const runtime = readRuntime(input.runtimeAccess);
 				const change =
 					input.toolId === 'plugin_activate'
-						? runtime.activatePlugin(args.plugin)
+						? await (runtime.activatePluginAsync?.(args.plugin) ??
+								runtime.activatePlugin(args.plugin))
 						: runtime.deactivatePlugin(args.plugin);
 				if (change === null) {
 					return toolError(

@@ -161,6 +161,31 @@ export async function createMcpProject(
 				},
 			});
 		}
+		if (
+			config.lazyPluginActivators !== undefined &&
+			toolSurfaceRuntime.setLazyPluginLoader !== undefined
+		) {
+			toolSurfaceRuntime.setLazyPluginLoader(async (pluginId) => {
+				const activatePlugin =
+					config.lazyPluginActivators?.get(pluginId);
+				if (activatePlugin === undefined) return;
+				await activatePlugin();
+				for (const registrations of config.consumeLazyPluginRegistrations?.() ??
+					[]) {
+					for (const prompt of registrations.prompts ?? []) {
+						await prompt.register(server);
+					}
+					for (const resource of registrations.resources ?? []) {
+						await resource.register(server);
+					}
+					for (const resource of buildKnowledgeResourceRegistrations(
+						registrations.knowledge ?? [],
+					)) {
+						await resource.register(server);
+					}
+				}
+			});
+		}
 		const previousOnInitialized = server.server.oninitialized;
 		server.server.oninitialized = () => {
 			previousOnInitialized?.();
