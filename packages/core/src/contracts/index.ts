@@ -124,3 +124,25 @@ export type {
 	IActivateContext,
 	IPhasedLifecycle,
 } from '../lib/plugins/lifecycle';
+// r00033 (Track M / q00006 §46) — shared envelopes. Plugins adopt
+// these shapes gradually so the LLM can recognise a small, stable
+// set of result shapes instead of one per plugin.
+export type {
+	EntityRef,
+	Refusal,
+	EnvelopeMeta,
+	OperationResult,
+	OperationSuccess,
+	OperationFailure,
+	PagedResult,
+	MutationResult,
+	DiagnosticSeverity,
+	DiagnosticResult,
+	ResourceResult,
+} from '../lib/contracts/envelopes.contract';
+export {
+	isOperationSuccess,
+	isOperationFailure,
+	success,
+	failure,
+} from '../lib/contracts/envelopes.contract';
