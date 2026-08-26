@@ -1251,3 +1251,19 @@ export type {
 	IIdempotencySnapshot,
 	IIdempotencyStore,
 } from '../lib/mutations/idempotency';
+
+// --- f00201 (Track O / q00006 §55): workflow transactions -----------
+export { plan, execute, computePlanRisk } from '../lib/transactions/plan';
+export type {
+	ICompensationContext,
+	ICompensationRecord,
+	IExecuteOptions,
+	IStep,
+	IStepContext,
+	ITransactionError,
+	ITransactionPlan,
+	ITransactionResult,
+	StepEffect,
+	TTransactionRisk,
+} from '../lib/transactions/types';
+export type { IExecuteResult } from '../lib/transactions/executor';
