@@ -19,6 +19,7 @@ import type {
 import type {
 	IConfigurationArtifact,
 	IConfigurationPlugin,
+	IConfigurationCenterSnapshot,
 } from '../contracts/interfaces/configuration-center.interface';
 import type { ICorePaths } from '../contracts/interfaces/core-paths.interface';
 import type { IKnowledgeEntry } from '../contracts/interfaces/knowledge.interface';
@@ -125,6 +126,7 @@ export interface IAssembleCoreToolsResult {
 	readonly tools: IToolRegistration[];
 	readonly catalogToolEntries: readonly IToolSummary[];
 	readonly metricsRegistry: ReturnType<typeof createMetricsRegistry>;
+	readonly configurationSnapshot: IConfigurationCenterSnapshot;
 }
 
 export const assembleCoreTools = (
@@ -543,5 +545,10 @@ export const assembleCoreTools = (
 		...buildSkillPromptRegistrations(corePrefix, () => skillCatalog),
 	);
 
-	return { tools, catalogToolEntries, metricsRegistry };
+	return {
+		tools,
+		catalogToolEntries,
+		metricsRegistry,
+		configurationSnapshot,
+	};
 };

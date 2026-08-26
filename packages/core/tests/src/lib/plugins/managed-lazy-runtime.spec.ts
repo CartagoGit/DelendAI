@@ -19,6 +19,7 @@ describe('managed lazy plugin runtime', () => {
 					resourceIds: [],
 					knowledgeIds: [],
 					skillIds: [],
+					dependencies: [],
 				},
 			],
 			namespaces: new Map([['demo', 'demo']]),

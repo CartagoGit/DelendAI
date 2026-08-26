@@ -261,6 +261,35 @@ const renderInternal = (report: IStartupReport, useAnsi: boolean): string => {
 		fullLines.push(
 			`  baseline.tokens/request   ${report.baseline.tokensPerRequest}`,
 		);
+		if (report.diagnostics !== undefined) {
+			const { configuration } = report.diagnostics;
+			fullLines.push(
+				`  redactions                ${configuration.redactions}`,
+			);
+			fullLines.push(
+				`  config                    ${JSON.stringify(configuration.config)}`,
+			);
+			fullLines.push(
+				`  unavailable artifacts     ${configuration.unavailableArtifactKinds.join(', ') || 'none'}`,
+			);
+			fullLines.push('  plugin diagnostics:');
+			for (const plugin of configuration.plugins) {
+				fullLines.push(
+					`    ${plugin.id} origin=${plugin.origin} source=${plugin.source} active=${plugin.active} schema=${plugin.schemaStatus} permissions=${plugin.permissions?.join(',') || 'none'} capabilities=tools:${plugin.capabilities.tools},prompts:${plugin.capabilities.prompts},resources:${plugin.capabilities.resources},knowledge:${plugin.capabilities.knowledge},skills:${plugin.capabilities.skills} dependencies=${plugin.dependencies?.join(',') || 'none'}`,
+				);
+			}
+			fullLines.push('  artifacts:');
+			const artifactCounts = new Map<string, number>();
+			for (const artifact of configuration.artifacts) {
+				artifactCounts.set(
+					artifact.kind,
+					(artifactCounts.get(artifact.kind) ?? 0) + 1,
+				);
+			}
+			for (const [kind, count] of artifactCounts) {
+				fullLines.push(`    ${kind.padEnd(10)} ${count}`);
+			}
+		}
 		for (const budget of report.budgets) {
 			fullLines.push(
 				`  budget.${budget.name.padEnd(20)} ${budget.semantics.padEnd(20)} ${budget.value ?? 'n/a'} ${budget.unit}`,
