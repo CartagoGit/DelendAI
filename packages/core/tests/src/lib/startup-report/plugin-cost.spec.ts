@@ -277,5 +277,27 @@ describe('startup-report/plugin-cost (q00009 / f00260)', () => {
 			expect(result.exposedSchemaBytesPerRequest).toBeGreaterThan(0);
 			expect(result.plugins[0]?.availableToolsCount).toBe(199);
 		});
+
+		it('falls back to descriptor estimates for lazy tools missing runtime schemas', () => {
+			const result = reconcileSurfaceCost([
+				{
+					pluginId: 'core',
+					status: 'active-internal',
+					availableTools: BOOTSTRAP_TOOLS,
+					exposedTools: BOOTSTRAP_TOOLS,
+					schemaBytesByRegistrationId: { overview: 500 },
+				},
+				{
+					pluginId: 'lazy-plugin',
+					status: 'unloaded',
+					availableTools: HIDDEN_PLUGIN_AVAILABLE,
+					exposedTools: HIDDEN_PLUGIN_AVAILABLE,
+					schemaBytesByRegistrationId: { overview: 500 },
+				},
+			]);
+			expect(
+				result.plugins[1]?.exposedSchemaBytesPerRequest,
+			).toBeGreaterThan(0);
+		});
 	});
 });

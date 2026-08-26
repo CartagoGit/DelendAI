@@ -143,6 +143,7 @@ export const CONFIG_FILE_SCHEMA = z
 			.optional(),
 		managedSurface: z
 			.object({
+				loading: z.enum(['lazy', 'eager']).optional(),
 				idleTtlMs: z.number().int().nonnegative().nullable().optional(),
 				maxWarmPlugins: z
 					.number()

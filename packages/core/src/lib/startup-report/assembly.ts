@@ -40,6 +40,7 @@ export const buildStartupReportForAssembly = (input: {
 	readonly failedPluginCount: number;
 	readonly skillsAvailable: number;
 	readonly resourcesAvailable: number;
+	readonly moduleLoading?: 'lazy' | 'eager';
 	readonly warnings?: readonly import('./model').IStartupReportWarning[];
 	readonly schemaBytesByRegistrationId?:
 		| Readonly<Record<string, number>>
@@ -64,7 +65,9 @@ export const buildStartupReportForAssembly = (input: {
 						? mode === 'managed'
 							? 'active-internal'
 							: 'loaded-hidden'
-						: 'failed',
+						: input.moduleLoading === 'lazy'
+							? 'unloaded'
+							: 'failed',
 				availableTools,
 				exposedTools: availableTools.filter((descriptor) =>
 					isExposed(descriptor.registrationId, input.plan, mode),
@@ -94,8 +97,6 @@ export const buildStartupReportForAssembly = (input: {
 			catalog: {
 				pluginsConfigured: input.configuredPluginIds.length,
 				pluginsLoaded: input.loadedPluginIds.length,
-				// Module loading is currently eager; the managed working set starts
-				// empty and is populated by routed use.
 				pluginsWarm:
 					input.plan.mode === 'managed'
 						? 0
@@ -110,10 +111,7 @@ export const buildStartupReportForAssembly = (input: {
 			pluginCosts: managed.plugins,
 			runtime: {
 				lazyActivation: input.plan.mode === 'managed',
-				// Plugins currently return their registrations from register(), so
-				// the assembly path imports them at boot. Keep this explicit until
-				// manifests can describe registrations without importing modules.
-				moduleLoading: 'eager',
+				moduleLoading: input.moduleLoading ?? 'eager',
 				internalRouting: input.plan.routerToolId !== undefined,
 				idleEvictionMs: input.plan.workingSet?.idleTtlMs ?? 5 * 60_000,
 				maxWarmPlugins: input.plan.workingSet?.maxWarmPlugins ?? 8,

@@ -47,6 +47,13 @@ export interface IToolSurfaceSearchEntry extends IToolSurfaceDescriptor {
 	readonly detailsId: string;
 }
 
+export interface IToolSurfaceLazyBinding {
+	readonly description?: string | undefined;
+	readonly inputSchema?: unknown;
+	readonly outputSchema?: unknown;
+	readonly handler: unknown;
+}
+
 export interface IPluginSurfaceChange {
 	readonly pluginId: string;
 	readonly namespace: string;
@@ -83,6 +90,10 @@ export interface IToolSurfaceRuntime {
 			enable(): void;
 			disable(): void;
 		};
+	}): void;
+	bindLazyTool(input: {
+		readonly registrationId: string;
+		readonly activate: () => Promise<IToolSurfaceLazyBinding>;
 	}): void;
 	finalizeInitialSurface(): void;
 	applySurfaceMode(mode: IMcpToolSurfaceMode): IToolSurfaceModeChange;
