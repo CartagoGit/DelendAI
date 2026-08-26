@@ -44,21 +44,25 @@ describe('buildAdoptionAssessment', () => {
 			},
 			docsDir: 'docs/mcp-vertex',
 		});
-		const assessment = buildAdoptionAssessment(baseAnalysis(), [
-			'packages',
-			'apps',
-			'docs',
-			'.github',
-			'Dockerfile',
-			'prisma',
-			'locales',
-			'.env.example',
-		], {
-			projectName: '@acme/platform',
-			namespacePrefix: 'mcp-vertex',
-			mcpServerName: 'mcp-vertex',
-			docsDir: 'docs/mcp-vertex',
-		});
+		const assessment = buildAdoptionAssessment(
+			baseAnalysis(),
+			[
+				'packages',
+				'apps',
+				'docs',
+				'.github',
+				'Dockerfile',
+				'prisma',
+				'locales',
+				'.env.example',
+			],
+			{
+				projectName: '@acme/platform',
+				namespacePrefix: 'mcp-vertex',
+				mcpServerName: 'mcp-vertex',
+				docsDir: 'docs/mcp-vertex',
+			},
+		);
 
 		expect(assessment.recommendedPresetId).toBe('swarm');
 		expect(assessment.recommendedPluginIds).toContain('proposals');
@@ -72,22 +76,27 @@ describe('buildAdoptionAssessment', () => {
 		);
 		expect(assessment.cost.schemaBytes).toBeGreaterThan(0);
 		expect(assessment.cost.estimatedTokens).toBeGreaterThan(0);
+		expect(assessment.cost.surfaceMode).toBe('native');
+		expect(assessment.cost.runtimeSurface).toBe('managed');
 		expect(assessment.conflicts).toEqual(
 			expect.arrayContaining([
 				expect.objectContaining({ summary: 'script:validate' }),
-					expect.objectContaining({
-						kind: 'write-estimate',
-						count: estimate.count,
-						exact: true,
-						breakdown: expect.arrayContaining([
-							expect.objectContaining({ kind: 'config', count: 1 }),
-							expect.objectContaining({ kind: 'generated', exact: true }),
-							expect.objectContaining({
-								kind: 'proposal-store',
-								exact: true,
-							}),
-						]),
-					}),
+				expect.objectContaining({
+					kind: 'write-estimate',
+					count: estimate.count,
+					exact: true,
+					breakdown: expect.arrayContaining([
+						expect.objectContaining({ kind: 'config', count: 1 }),
+						expect.objectContaining({
+							kind: 'generated',
+							exact: true,
+						}),
+						expect.objectContaining({
+							kind: 'proposal-store',
+							exact: true,
+						}),
+					]),
+				}),
 			]),
 		);
 	});
@@ -117,16 +126,20 @@ describe('buildAdoptionAssessment', () => {
 		);
 		expect(assessment.cost.source).toBe('preset-budget');
 		expect(assessment.conflicts).toEqual([
-				expect.objectContaining({ kind: 'write-estimate', count: 17 }),
+			expect.objectContaining({ kind: 'write-estimate', count: 17 }),
 		]);
 	});
 
 	it('marks the write estimate as inexact when docsDir is unavailable', () => {
-		const assessment = buildAdoptionAssessment(baseAnalysis(), ['packages'], {
-			projectName: '@acme/platform',
-			namespacePrefix: 'mcp-vertex',
-			mcpServerName: 'mcp-vertex',
-		});
+		const assessment = buildAdoptionAssessment(
+			baseAnalysis(),
+			['packages'],
+			{
+				projectName: '@acme/platform',
+				namespacePrefix: 'mcp-vertex',
+				mcpServerName: 'mcp-vertex',
+			},
+		);
 
 		expect(assessment.conflicts).toEqual([
 			expect.objectContaining({ summary: 'script:validate' }),
@@ -136,7 +149,10 @@ describe('buildAdoptionAssessment', () => {
 				exact: false,
 				count: 17,
 				breakdown: expect.arrayContaining([
-					expect.objectContaining({ kind: 'proposal-store', exact: false }),
+					expect.objectContaining({
+						kind: 'proposal-store',
+						exact: false,
+					}),
 				]),
 			}),
 		]);
