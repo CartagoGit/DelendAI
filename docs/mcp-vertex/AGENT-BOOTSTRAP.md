@@ -465,3 +465,18 @@ or have their own config file. Use the same single-pointer pattern:
 
 - That's it. No other content. When the bootstrap changes, the host
   picks it up on the next session.
+
+
+## Quantitative facts
+
+<!-- mcp-vertex:begin quantitative -->
+```
+Generated at: 2026-08-26T03:07:49.055Z
+
+Plugins: 51
+Tools: 214
+Test specs: 379 (≈2998 cases)
+Workspaces: 4 packages, 2 apps, 1 extensions, 4 tooling workspace(s).
+Proposals: 416 on disk (ready=72, in-progress=2, review=1, done=341)
+```
+<!-- mcp-vertex:end quantitative -->
