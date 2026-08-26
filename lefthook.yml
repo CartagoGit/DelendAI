@@ -132,6 +132,15 @@ pre-push:
     lint-scss-all:
       run: bun run lint:scss || true
 
+    # c00133 (AUD-P0-003): drift check on every push. Runs every
+    # generator and fails when the working tree has uncommitted
+    # drift. Advisory (wrapped with `|| true`) because a clean
+    # diff is the responsibility of the commit, not the push;
+    # the GitHub Actions `drift` workflow is the source of truth.
+    # Bypass: LEFTHOOK_BYPASS=1 git push ...
+    drift-check:
+      run: bun tools/scripts/gen-all.script.ts --check || true
+
     # f00086: config-driven branch discipline. ADVISORY (wrapped with
     # `|| true`). With `agentWorktree: false` (this repo), pushing from
     # an `agent/*` branch warns the agent to switch back to `develop`.
