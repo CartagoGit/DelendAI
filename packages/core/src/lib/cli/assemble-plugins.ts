@@ -27,7 +27,10 @@ import { loadPlugins, nodeDynamicImport } from '../plugins/load-plugins';
 import type { IPluginLoadResult } from '../plugins/load-plugins';
 import { buildActivationReport } from '../plugins/activation-report';
 import { classifyOrigin } from '../plugins/classify-origin';
-import type { IMcpPluginContext } from '../plugins/plugin-contract';
+import type {
+	IMcpPluginContext,
+	IMcpPluginRegistrations,
+} from '../plugins/plugin-contract';
 import type {
 	IPluginHookErrorInfo,
 	IPluginRegisterErrorInfo,
@@ -99,6 +102,8 @@ export interface IAssemblePluginsResult {
 		readonly resolved: string;
 		readonly version?: string;
 	}[];
+	/** Returns plugin non-tool registrations activated since the last drain. */
+	readonly consumeLazyPluginRegistrations?: () => readonly IMcpPluginRegistrations[];
 	readonly moduleLoading: 'lazy' | 'eager';
 }
 
@@ -193,6 +198,7 @@ const tryAssembleManagedLazy = (input: {
 	// Native is an explicit compatibility contract: it needs real eager MCP
 	// registrations, so never pair it with the managed lazy activator table.
 	if (
+		input.args.surfaceMode === 'native' ||
 		input.args.tokens.surface === 'native' ||
 		input.fileConfig.surfaceMode === 'native'
 	)
@@ -226,6 +232,10 @@ const tryAssembleManagedLazy = (input: {
 	let isAgentStuckFn: IMcpVertexHostConfig['isAgentStuck'];
 	let resolvedLogsSink: import('../plugins/logs-sink').ILogsSink | undefined;
 	let resolvedErrorSinks: IErrorSink[] = [];
+	const prompts: IPromptRegistration[] = [];
+	const resources: IResourceRegistration[] = [];
+	const knowledge: IKnowledgeEntry[] = [];
+	const pendingRegistrations = new Map<string, IMcpPluginRegistrations>();
 	const lazyRuntime = createManagedLazyRuntime({
 		namespacePrefix: input.corePrefix,
 		plugins: definitions,
@@ -233,6 +243,12 @@ const tryAssembleManagedLazy = (input: {
 		buildContext: input.buildContext,
 		importFn: input.importFn,
 		onActivated: ({ plugin, registrations, resolvedSpecifier }) => {
+			pendingRegistrations.set(plugin.name, registrations);
+			if (registrations.prompts) prompts.push(...registrations.prompts);
+			if (registrations.resources)
+				resources.push(...registrations.resources);
+			if (registrations.knowledge)
+				knowledge.push(...registrations.knowledge);
 			if (registrations.onToolCall)
 				onToolCalls.push({
 					pluginName: plugin.name,
@@ -295,6 +311,7 @@ const tryAssembleManagedLazy = (input: {
 				name,
 				plugin: namespace,
 				id: toolId,
+				summary: plugin.summary,
 				tags,
 			});
 			toolSurfaceDescriptors.push({
@@ -335,6 +352,7 @@ const tryAssembleManagedLazy = (input: {
 	);
 	const configurationPlugins: IConfigurationPlugin[] = pluginIds.map((id) => {
 		const configEntry = pluginConfigFor(input.fileConfig, id);
+		const catalogEntry = MANAGED_LAZY_PLUGIN_BY_ID.get(id);
 		return {
 			id,
 			origin: 'bundled',
@@ -349,20 +367,38 @@ const tryAssembleManagedLazy = (input: {
 			options: configEntry.options ?? {},
 			schemaStatus: 'unavailable',
 			capabilities: {
-				tools: MANAGED_LAZY_PLUGIN_BY_ID.get(id)?.toolIds.length ?? 0,
-				prompts: 0,
-				resources: 0,
-				knowledge: 0,
-				skills: 0,
+				tools: catalogEntry?.toolIds.length ?? 0,
+				prompts: catalogEntry?.promptIds.length ?? 0,
+				resources: catalogEntry?.resourceIds.length ?? 0,
+				knowledge: catalogEntry?.knowledgeIds.length ?? 0,
+				skills: catalogEntry?.skillIds.length ?? 0,
 			},
 		};
 	});
+	const configurationArtifacts: IConfigurationArtifact[] =
+		definitions.flatMap((plugin) => [
+			...plugin.promptIds.map((id) => ({
+				id,
+				kind: 'prompt' as const,
+				owner: { id: plugin.id, origin: 'bundled' as const },
+			})),
+			...plugin.resourceIds.map((id) => ({
+				id,
+				kind: 'resource' as const,
+				owner: { id: plugin.id, origin: 'bundled' as const },
+			})),
+			...plugin.knowledgeIds.map((id) => ({
+				id,
+				kind: 'knowledge' as const,
+				owner: { id: plugin.id, origin: 'bundled' as const },
+			})),
+		]);
 	return {
 		effectivePlugins: input.effectivePlugins,
 		loadResult: { loaded: [], errors: [], registerErrors: [] },
-		prompts: [],
-		resources: [],
-		knowledge: [],
+		prompts,
+		resources,
+		knowledge,
 		pluginToolEntries,
 		qualifiedPluginTools: [],
 		onToolCalls,
@@ -378,7 +414,7 @@ const tryAssembleManagedLazy = (input: {
 		activationById,
 		toolSurfaceDescriptors,
 		configurationPlugins,
-		configurationArtifacts: [],
+		configurationArtifacts,
 		pluginSummaries: pluginIds.map((id) => ({
 			name: id,
 			describe: MANAGED_LAZY_PLUGIN_BY_ID.get(id)?.summary,
@@ -388,6 +424,11 @@ const tryAssembleManagedLazy = (input: {
 			name: id,
 			resolved: MANAGED_LAZY_PLUGIN_BY_ID.get(id)?.packageSpecifier ?? id,
 		})),
+		consumeLazyPluginRegistrations: () => {
+			const drained = [...pendingRegistrations.values()];
+			pendingRegistrations.clear();
+			return drained;
+		},
 		moduleLoading: 'lazy',
 	};
 };
