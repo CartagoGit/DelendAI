@@ -753,6 +753,18 @@ export type {
 	ITruncatedEnvelope,
 	ITruncationResult,
 } from '../lib/contracts/interfaces/truncation.interface';
+// f00195 — Cost-aware routing utility (Track L, P2).
+export {
+	DEFAULT_UTILITY_WEIGHTS,
+	rankCandidates,
+	utility,
+} from '../lib/routing/utility';
+export type {
+	IProviderCandidate,
+	IRoutingContext,
+	IUtilityScore,
+	IUtilityWeights,
+} from '../lib/routing/utility';
 
 // --- core meta-tools (overview / knowledge / validation matrix) ------------
 export { buildCatalog } from '../lib/catalog/agent-discovery-catalog';
