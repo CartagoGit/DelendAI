@@ -1,9 +1,13 @@
-import { describe, expect, it } from 'vitest';
+import { afterAll, describe, expect, it } from 'vitest';
 import z from 'zod';
 
 import { assembleCliConfig } from '@mcp-vertex/core/lib/cli/assemble';
 import type { IToolRegistration } from '@mcp-vertex/core/lib/contracts/interfaces/tool-registration.interface';
 import { parseCliArgs } from '@mcp-vertex/core/lib/plugins/parse-cli-args';
+import { createTestWorkspace, removeTestWorkspace } from '../test-workspace';
+
+const WRITABLE_WORKSPACE = createTestWorkspace('mcp-vertex-config-tool-');
+afterAll(() => removeTestWorkspace(WRITABLE_WORKSPACE));
 
 const callTool = async (
 	tool: IToolRegistration,
@@ -37,7 +41,10 @@ describe('configuration_center tool', () => {
 				},
 			},
 		});
-		const args = parseCliArgs(['--workspace=/ws'], '/cwd');
+		const args = parseCliArgs(
+			[`--workspace=${WRITABLE_WORKSPACE}`, '--surface=native'],
+			WRITABLE_WORKSPACE,
+		);
 		const { config } = await assembleCliConfig(args, {
 			readFile: async (path) =>
 				path.endsWith('mcp-vertex.config.json')
@@ -77,7 +84,10 @@ describe('configuration_center tool', () => {
 			summary: {
 				plugins: 1,
 				activePlugins: 1,
-				artifacts: 3,
+				// Native compatibility assembly also registers the core
+				// artifacts; the demo plugin contributes the three fixture
+				// artifacts on top of that canonical set.
+				artifacts: 11,
 				unavailableArtifactKinds: ['agent'],
 			},
 		});
@@ -119,7 +129,7 @@ describe('configuration_center tool', () => {
 			limit: 2,
 		});
 		expect(artifacts.artifacts).toHaveLength(2);
-		expect(artifacts.page).toMatchObject({ total: 3, nextCursor: 2 });
+		expect(artifacts.page).toMatchObject({ total: 11, nextCursor: 2 });
 		expect(
 			artifacts.artifacts.every(
 				(entry: any) =>
