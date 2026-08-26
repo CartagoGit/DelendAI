@@ -15,6 +15,8 @@
 - isMcpToolSurfaceMode
 - MCP_TOOL_SURFACE_MODE
 - createWorkspacePathProvider
+- createEvidenceStore
+- EVIDENCE_TYPES
 - buildHostAdapterPack
 - buildHostCapabilityPlan
 - classifyPath
@@ -29,8 +31,6 @@
 - serializeConfigurationSchema
 - FIRST_PARTY_SCOPE
 - PERMISSION_CATEGORIES
-- PERMISSION_RISK_WEIGHTS
-- buildActivationReport
 
 ## Depends on
 
