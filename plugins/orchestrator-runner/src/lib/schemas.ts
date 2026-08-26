@@ -292,9 +292,33 @@ const RecommendationSchema = z.object({
 	riskLevel: z.enum(['low', 'medium', 'high']),
 });
 
-export const AdviseSpendOutputSchema = z.object({
+const SpendViewBaseSchema = z.object({
 	windowDays: z.number(),
 	generatedAt: z.string(),
+});
+
+const SpendCompactViewSchema = SpendViewBaseSchema.extend({
+	sessionSpendUsd: z.number(),
+	sessionLimitUsd: z.number().nullable(),
+	monthlySpendUsd: z.number(),
+	monthlyLimitUsd: z.number().nullable(),
+	breached: z.enum(['session', 'monthly']).nullable(),
+	topRecommendation: RecommendationSchema.nullable(),
+});
+
+const SpendNormalViewSchema = SpendCompactViewSchema.extend({
+	observations: z.array(z.string()),
+	recommendations: z.array(RecommendationSchema),
+	topByPlugin: z.array(
+		z.object({
+			key: z.string(),
+			totalTokens: z.number(),
+			costUsd: z.number(),
+		}),
+	),
+});
+
+const SpendFullViewSchema = SpendViewBaseSchema.extend({
 	currentState: z.object({
 		byProvider: z.array(UsageBucketSchema),
 		byPlugin: z.array(UsageBucketSchema),
@@ -304,6 +328,15 @@ export const AdviseSpendOutputSchema = z.object({
 	}),
 	observations: z.array(z.string()),
 	recommendations: z.array(RecommendationSchema),
+});
+
+export const AdviseSpendOutputSchema = z.object({
+	view: z.union([
+		SpendCompactViewSchema,
+		SpendNormalViewSchema,
+		SpendFullViewSchema,
+	]),
+	level: z.enum(['compact', 'normal', 'full']),
 });
 
 export { CapabilityTagSchema };
