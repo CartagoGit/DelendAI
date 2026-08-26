@@ -358,6 +358,9 @@ const tryAssembleManagedLazy = (input: {
 	const configurationPlugins: IConfigurationPlugin[] = pluginIds.map((id) => {
 		const configEntry = pluginConfigFor(input.fileConfig, id);
 		const catalogEntry = MANAGED_LAZY_PLUGIN_BY_ID.get(id);
+		const permissions = FIRST_PARTY_PLUGIN_INDEX.entries.find(
+			(entry) => entry.id === id,
+		)?.permissions;
 		return {
 			id,
 			origin: 'bundled',
@@ -371,6 +374,7 @@ const tryAssembleManagedLazy = (input: {
 				: { prefix: configEntry.prefix }),
 			options: configEntry.options ?? {},
 			schemaStatus: 'unavailable',
+			...(permissions === undefined ? {} : { permissions }),
 			capabilities: {
 				tools: catalogEntry?.toolIds.length ?? 0,
 				prompts: catalogEntry?.promptIds.length ?? 0,
