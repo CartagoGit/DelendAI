@@ -13,7 +13,7 @@
  *      Proxy that returns a refusal when a plugin tries to use a
  *      capability it did not declare. Plugins that compile against
  *      the typed shape never hit this branch; plugins that bypass
- *      the type system (e.g. via `as any`) do, and the refusal
+ *      the type system (e.g. via an untyped escape hatch) do, and the refusal
  *      surfaces as a typed envelope.
  *   4. `summariseLegacyShimWarning(declared, pluginName)` —
  *      produces the warning string emitted at boot when a plugin
