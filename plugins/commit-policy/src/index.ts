@@ -2,7 +2,11 @@
  * index.ts — the `@mcp-vertex/commit-policy` plugin entry point.
  */
 
-import { createWriteGitRunner, definePlugin } from '@mcp-vertex/core/public';
+import {
+	createWriteGitRunner,
+	definePlugin,
+	type IPluginRuntime,
+} from '@mcp-vertex/core/public';
 import z from 'zod';
 
 import { CommitPolicyOptionsSchema } from './lib/contracts/options';
@@ -136,48 +140,55 @@ export default definePlugin({
 			disposables.push(() => listener.stop());
 		}
 
-		return {
-			tools,
-			knowledge: [
-				{
-					id: 'commit-policy',
-					title: 'Commit policy',
-					body: [
-						'# Commit policy',
-						'',
-						'Wraps `git_commit` / `git_push` with three configurable policies:',
-						'',
-						'- `identity.mode` — `explicit | agent | repo | global | env | auto` (default `global`).',
-						'- `cadence.triggers` — `slice | threshold | interval | manual` (default `[]`, so no automatic commits).',
-						'- `audit.trailer` — `none | co-authored-by | body-metadata` (default `co-authored-by`).',
-						'- `push.enabled` / `push.onCommit` / `push.everyNCommits` / `push.everyNMinutes` — all default `false`.',
-						'- `push.protectedBranches` defaults to `main` + `master`; `push.force` defaults to `with-lease`.',
-						'',
-						'**Off by default.** Hosts must opt in:',
-						'',
-						'```jsonc',
-						'// mcp-vertex.config.json',
-						'{',
-						'  "plugins": {',
-						'    "commit-policy": {',
-						'      "options": {',
-						'        "commit": { "enabled": true },',
-						'        "push":   { "enabled": true, "onCommit": true },',
-						'        "cadence": { "triggers": [{ "kind": "slice" }] },',
-						'        "identity": { "mode": "global" }',
-						'      }',
-						'    }',
-						'  }',
-						'}',
-						'```',
-						'',
-						'When configured, the slice listener polls the proposals registry',
-						'and commits one slice per `done` transition; the push policy then',
-						'fires per commit when `push.onCommit` is on. For dogfooding on',
-						'this repo, identity resolves to the workstation global git user.',
-					].join('\n'),
-				},
-			],
+		const knowledge = [
+			{
+				id: 'commit-policy',
+				title: 'Commit policy',
+				body: [
+					'# Commit policy',
+					'',
+					'Wraps `git_commit` / `git_push` with three configurable policies:',
+					'',
+					'- `identity.mode` — `explicit | agent | repo | global | env | auto` (default `global`).',
+					'- `cadence.triggers` — `slice | threshold | interval | manual` (default `[]`, so no automatic commits).',
+					'- `audit.trailer` — `none | co-authored-by | body-metadata` (default `co-authored-by`).',
+					'- `push.enabled` / `push.onCommit` / `push.everyNCommits` / `push.everyNMinutes` — all default `false`.',
+					'- `push.protectedBranches` defaults to `main` + `master` + `develop`; `push.force` defaults to `with-lease`.',
+					'',
+					'**Off by default.** Hosts must opt in:',
+					'',
+					'```jsonc',
+					'// mcp-vertex.config.json',
+					'{',
+					'  "plugins": {',
+					'    "commit-policy": {',
+					'      "options": {',
+					'        "commit": { "enabled": true },',
+					'        "push":   { "enabled": true, "onCommit": true },',
+					'        "cadence": { "triggers": [{ "kind": "slice" }] },',
+					'        "identity": { "mode": "global" }',
+					'      }',
+					'    }',
+					'  }',
+					'}',
+					'```',
+					'',
+					'When configured, the slice listener polls the proposals registry',
+					'and commits one slice per `done` transition; the push policy then',
+					'fires per commit when `push.onCommit` is on. For dogfooding on',
+					'this repo, identity resolves to the workstation global git user.',
+				].join('\n'),
+			},
+		];
+
+		const runtime: IPluginRuntime<{
+			readonly tools: typeof tools;
+			readonly knowledge: typeof knowledge;
+		}> = {
+			registrations: {
+				tools,
+				knowledge,
+			},
 			// x00261 (AUD-CP-003): the host calls `dispose()` on unload
 			// or hot-reload. The plugin tears down every listener and
 			// timer it created during `register`. Idempotent: a second
@@ -193,7 +204,9 @@ export default definePlugin({
 				}
 				disposables.length = 0;
 			},
+			abortable: true,
 		};
+		return runtime;
 	},
 });
 
