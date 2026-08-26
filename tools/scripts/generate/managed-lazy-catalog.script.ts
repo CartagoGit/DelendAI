@@ -16,10 +16,12 @@ import { readFile } from 'node:fs/promises';
 import { execFileSync } from 'node:child_process';
 import { join } from 'node:path';
 
-import { assembleCliConfig } from '../../../packages/core/src/lib/cli/assemble';
-import { parseCliArgs } from '../../../packages/core/src/lib/plugins/parse-cli-args';
-import { FIRST_PARTY_PLUGIN_INDEX } from '../../../packages/core/src/lib/registry/first-party-index';
-import { writeFileAtomic } from '../../../packages/core/src/lib/shared/atomic-write';
+import {
+	assembleCliConfig,
+	FIRST_PARTY_PLUGIN_INDEX,
+	parseCliArgs,
+	writeFileAtomic,
+} from '@mcp-vertex/core/public';
 import { repoRoot } from '../lib/monorepo-paths';
 
 export const GENERATED_MANAGED_LAZY_CATALOG_PATH =
