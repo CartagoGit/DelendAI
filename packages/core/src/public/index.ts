@@ -765,6 +765,19 @@ export type {
 	IUtilityScore,
 	IUtilityWeights,
 } from '../lib/routing/utility';
+// f00196 — Model-aware presets (Track L, P2).
+export {
+	DEFAULT_MODEL_PROFILES,
+	detectModelTier,
+	filterToolsByProfile,
+	getModelProfile,
+	listModelProfiles,
+} from '../lib/presets/model-profiles';
+export type {
+	IModelProfile,
+	IModelProfileOverride,
+	TModelTier,
+} from '../lib/presets/model-profiles';
 
 // --- core meta-tools (overview / knowledge / validation matrix) ------------
 export { buildCatalog } from '../lib/catalog/agent-discovery-catalog';
