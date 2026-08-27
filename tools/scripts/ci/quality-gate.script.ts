@@ -49,7 +49,7 @@ const STEPS: readonly IStep[] = [
 	},
 	{
 		name: 'tokens-preset-gate',
-		cmd: ['bun', 'run', 'tokens:preset-gate'],
+		cmd: ['bun', 'run', 'tokens:gate'],
 		description: 'Preset gate (token budget per preset).',
 	},
 	{
@@ -59,7 +59,7 @@ const STEPS: readonly IStep[] = [
 	},
 	{
 		name: 'lint-architecture',
-		cmd: ['bun', 'run', 'lint:architecture'],
+		cmd: ['bun', 'run', 'lint:architecture-readfile-via-safe-reader'],
 		description: 'Architecture lint (SOLID, file conventions).',
 	},
 	{

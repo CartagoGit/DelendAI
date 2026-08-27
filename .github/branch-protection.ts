@@ -43,10 +43,21 @@ export interface IBranchProtectionConfig {
 		readonly allow_force_pushes: boolean;
 		readonly allow_deletions: boolean;
 	};
-	readonly branches: readonly {
-		readonly name: string;
-		readonly required_checks: readonly string[];
-	}[];
+	readonly branches: readonly IBranchPolicy[];
+}
+
+/**
+ * Per-branch policy. `protected: false` declares a deliberately
+ * unprotected working branch — the verifier then treats "GitHub has no
+ * rule here" as the expected state rather than as drift, which is what
+ * lets `develop` stay a normal branch people push to while `main` stays
+ * locked down. A single global `defaults` block is what forced the two
+ * branches to share one policy in the first place.
+ */
+export interface IBranchPolicy {
+	readonly name: string;
+	readonly protected: boolean;
+	readonly required_checks: readonly string[];
 }
 
 export const BRANCH_PROTECTION: IBranchProtectionConfig = {
@@ -59,11 +70,18 @@ export const BRANCH_PROTECTION: IBranchProtectionConfig = {
 	},
 	branches: [
 		{
+			// The branch this repo is programmed on. Pull requests target it
+			// and the owner decides what lands; protecting it would only
+			// block the owner's own direct pushes, which is friction without
+			// a second contributor to justify it.
 			name: 'develop',
-			required_checks: ['ci-complete'],
+			protected: false,
+			required_checks: [],
 		},
 		{
+			// The release branch. Nothing lands here automatically.
 			name: 'main',
+			protected: true,
 			required_checks: ['ci-complete'],
 		},
 	],

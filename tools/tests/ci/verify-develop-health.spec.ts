@@ -48,8 +48,9 @@ describe('verify-develop-health (v00125)', () => {
 					contexts: ['ci-complete'],
 				},
 			};
-			if (url.includes('/branches/develop/protection'))
-				return jsonResponse(healthy);
+			// The policy is asymmetric: `develop` is the working branch and
+			// is declared unprotected, so "no rule" is its healthy state.
+			// Only `main` is expected to carry protection.
 			if (url.includes('/branches/main/protection'))
 				return jsonResponse(healthy);
 			return jsonResponse({ message: 'not found' }, 404);
@@ -77,8 +78,6 @@ describe('verify-develop-health (v00125)', () => {
 					contexts: ['lint-biome'], // not `ci-complete` — the required check is missing
 				},
 			};
-			if (url.includes('/branches/develop/protection'))
-				return jsonResponse(unhealthy);
 			if (url.includes('/branches/main/protection'))
 				return jsonResponse(unhealthy);
 			return jsonResponse({ message: 'not found' }, 404);
@@ -94,7 +93,8 @@ describe('verify-develop-health (v00125)', () => {
 		}
 	});
 
-	it('returns healthy=false when branch has no protection rule', async () => {
+	it('returns healthy=false when the protected branch has no rule', async () => {
+		// 404 everywhere: fine for `develop`, drift for `main`.
 		stubFetch(async () => jsonResponse({ message: 'Not Found' }, 404));
 		try {
 			const { main } = await import(
