@@ -1,7 +1,11 @@
 {
-	"generatedAt": "2026-08-26T18:35:40.700Z",
+	"generatedAt": "2026-08-26T19:48:42.374Z",
 	"mode": "compact",
 	"tools": [
+		{
+			"name": "mcp-vertex_adaptive-optimizer_activation_metrics",
+			"plugin": "adaptive-optimizer"
+		},
 		{
 			"name": "mcp-vertex_adaptive-optimizer_optimize_run",
 			"plugin": "adaptive-optimizer"
