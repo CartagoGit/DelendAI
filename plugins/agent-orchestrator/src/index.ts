@@ -8,9 +8,14 @@
  * Plugin options (declared via `optionsSchema`):
  *
  *   - `policy` — the full `IOrchestratorPolicy` (default mode +
- *     defaults + per-mode overrides). When omitted, the plugin reads
+ *     defaults + per-mode overrides, applied when the resolved mode
+ *     matches). When omitted, the plugin reads
  *     `mcp-vertex.config.json → orchestration` and falls back to
  *     `auto` if absent.
+ *   - `portFactory` — factory producing the host's real
+ *     `IDispatchPort`. Required in production; see `resolveDispatchPort`.
+ *   - `allowFakeDispatchPort` — explicit opt-in (tests/fixtures only)
+ *     to run without a real port, via `FakeDispatchPort`.
  *
  * S1 wires types + adapters + planner + the read-only `plan` tool.
  * S2 will add the dispatch tools; S3 the parallel swarm runner; S4
@@ -21,8 +26,8 @@ import { z } from 'zod';
 import { definePlugin, toolError } from '@mcp-vertex/core/public';
 
 import { TaskClassifier } from './lib/classifier/task-classifier.js';
-import { FakeDispatchPort } from './lib/dispatch/fake-port.js';
 import type { IDispatchPort } from './lib/dispatch/contracts.js';
+import { resolveDispatchPort } from './lib/dispatch/port-resolution.js';
 import {
 	assertPolicyValid,
 	createOrchestratorEngine,
@@ -48,14 +53,17 @@ const DEFAULT_POLICY: IOrchestratorPolicy = {
 const OptionsSchema = z
 	.object({
 		policy: OrchestratorPolicySchema.optional(),
-		/** Factory that produces the host's `IDispatchPort`. Defaults to
-		 *  `FakeDispatchPort` — dogfooding in S5 wires the real port.
-		 *  Schema accepts any value; we narrow at runtime. */
+		/** Factory that produces the host's real `IDispatchPort`. Required
+		 *  in production (see `resolveDispatchPort`); schema accepts any
+		 *  value and we validate the *shape* it returns at runtime. */
 		portFactory: z.unknown().optional(),
+		/** Explicit opt-in to run without a real `portFactory`, using the
+		 *  deterministic `FakeDispatchPort`. Tests/fixtures only — leaving
+		 *  this unset (the default) makes a missing port a hard failure
+		 *  instead of a silently-fabricated success. */
+		allowFakeDispatchPort: z.boolean().optional(),
 	})
 	.strict();
-
-type IOptions = z.infer<typeof OptionsSchema>;
 
 export default definePlugin({
 	name: 'agent-orchestrator',
@@ -65,16 +73,41 @@ export default definePlugin({
 	optionsSchema: OptionsSchema,
 	register(ctx) {
 		const parsed = OptionsSchema.safeParse(ctx.options ?? {});
-		// S1 reads `defaultMode` + `defaults` only; `perMode` overrides
-		// land in S2 (per-mode budgets). We accept `perMode` from the host
-		// for forward compatibility but don't act on it here.
-		const policy: IOrchestratorPolicy =
-			parsed.success && parsed.data.policy
-				? {
-						defaultMode: parsed.data.policy.defaultMode,
-						defaults: parsed.data.policy.defaults,
-					}
-				: DEFAULT_POLICY;
+		if (!parsed.success) {
+			// Fail closed on malformed options rather than silently falling
+			// back to the default policy: a host that misspells a `perMode`
+			// budget key must be told, not quietly given different limits
+			// than the ones it wrote down.
+			return {
+				tools: [],
+				knowledge: [],
+				errors: [
+					toolError(
+						'invalid-options',
+						`Fix plugins.agent-orchestrator.options: ${parsed.error.issues
+							.map(
+								(issue) =>
+									`${issue.path.join('.')} — ${issue.message}`,
+							)
+							.join('; ')}`,
+					),
+				],
+			};
+		}
+		// `policy` (when supplied) already carries `perMode` — validated by
+		// `OrchestratorPolicySchema` — and the engine resolves it per mode.
+		// Rebuilt field-by-field (rather than spread) so an explicit
+		// `perMode: undefined` from zod's optional inference never leaks
+		// into the `exactOptionalPropertyTypes` surface.
+		const policy: IOrchestratorPolicy = parsed.data.policy
+			? {
+					defaultMode: parsed.data.policy.defaultMode,
+					defaults: parsed.data.policy.defaults,
+					...(parsed.data.policy.perMode !== undefined
+						? { perMode: parsed.data.policy.perMode }
+						: {}),
+				}
+			: DEFAULT_POLICY;
 		try {
 			assertPolicyValid(policy);
 		} catch (err) {
@@ -95,12 +128,24 @@ export default definePlugin({
 
 		const engine: OrchestratorEngine = createOrchestratorEngine(policy);
 
-		// Resolve the dispatch port. The host may inject its own via
-		// `portFactory`; otherwise we fall back to the fake port (S5
-		// dogfoods with the real one).
-		const port = resolvePort(
-			parsed.success ? (parsed.data as IOptions) : undefined,
-		);
+		// Resolve the dispatch port. Missing/invalid configuration fails
+		// loudly here rather than quietly degrading to a port that never
+		// actually dispatches anything (see `port-resolution.ts`).
+		// Resolved lazily: the port-independent tools stay available in
+		// every preset, while an actual dispatch still refuses to run
+		// without a real capability instead of fabricating success.
+		const port = (): IDispatchPort =>
+			resolveDispatchPort({
+				...(parsed.data.portFactory !== undefined
+					? { portFactory: parsed.data.portFactory }
+					: {}),
+				...(parsed.data.allowFakeDispatchPort !== undefined
+					? {
+							allowFakeDispatchPort:
+								parsed.data.allowFakeDispatchPort,
+						}
+					: {}),
+			});
 
 		return {
 			tools: [
@@ -144,28 +189,3 @@ export default definePlugin({
 		};
 	},
 });
-
-/**
- * Coerce the `portFactory` option into an `IDispatchPort`. The
- * factory is invoked once at register time with no arguments; the
- * returned value must implement `spawnSubagent(...)`. When the
- * factory is missing or returns garbage, we fall back to a clean
- * `FakeDispatchPort` (no spawn ⇒ all plans fail closed at the host
- * boundary, which is the safest behaviour).
- */
-function resolvePort(opts: IOptions | undefined): IDispatchPort {
-	const factory = opts?.portFactory;
-	if (typeof factory !== 'function') return new FakeDispatchPort();
-	try {
-		const candidate = factory();
-		if (
-			candidate &&
-			typeof (candidate as IDispatchPort).spawnSubagent === 'function'
-		) {
-			return candidate as IDispatchPort;
-		}
-	} catch {
-		// fallthrough
-	}
-	return new FakeDispatchPort();
-}
