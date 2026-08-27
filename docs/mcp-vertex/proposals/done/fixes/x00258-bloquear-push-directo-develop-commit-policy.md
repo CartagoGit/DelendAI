@@ -2,7 +2,7 @@
 id: x00258
 title: "Bloquear push directo a `develop` en `commit-policy` driver"
 kind: fix
-status: ready
+status: done
 type: proposal
 track: governance
 date: 2026-08-25
@@ -75,7 +75,7 @@ deben pasar por PR.
 
 ### 1. Push driver — segunda capa
 
-- `plugins/commit-policy/src/lib/drivers/push.ts` (extensión sobre
+- `plugins/commit-policy/src/lib/services/push-driver.ts` (extensión sobre
   `x00257`):
   ```ts
   export async function push(args: PushArgs): Promise<PushResult> {
@@ -100,7 +100,7 @@ deben pasar por PR.
 
 ### 2. Tests
 
-- `plugins/commit-policy/tests/src/lib/drivers/push.spec.ts`
+- `plugins/commit-policy/tests/src/lib/services/push-driver.spec.ts`
   (extensión):
   - `push({branch:'develop', from:'main', ...})` → refusal
     `DIRECT_PUSH_TO_DEVELOP_NOT_ALLOWED`.
@@ -124,8 +124,8 @@ deben pasar por PR.
 
 ### S1 — Refusal invariante + tests + doc
 
-- **Status**: pending
-- **Files**: `plugins/commit-policy/src/lib/drivers/push.ts`, `plugins/commit-policy/tests/src/lib/drivers/push.spec.ts`, `plugins/commit-policy/README.md`
+- **Status**: done
+- **Files**: `plugins/commit-policy/src/lib/services/push-driver.ts`, `plugins/commit-policy/tests/src/lib/services/push-driver.spec.ts`, `plugins/commit-policy/README.md`
 - **Gate**: type
 
 ## acceptance
@@ -136,3 +136,21 @@ deben pasar por PR.
 - Override del usuario no desactiva la regla.
 - Tests cubren los 4 casos del plan.
 - `bun run validate` verde.
+
+## Evidence
+
+Implementado y verificado el 2026-08-27. La ruta real difiere de la que
+esta propuesta anticipaba (`src/lib/drivers/push.ts`): el driver vive en
+`src/lib/services/push-driver.ts`.
+
+- `plugins/commit-policy/src/lib/services/push-driver.ts:155` devuelve el
+  refusal con el reason code `DIRECT_PUSH_TO_DEVELOP_NOT_ALLOWED`, y el
+  comentario que lo acompaña lo declara independiente de
+  `protectedBranches`, de modo que la regla se mantiene aunque un host
+  quite `develop` de su override.
+- `plugins/commit-policy/tests/src/lib/services/push-driver.spec.ts:252`
+  cubre el reason code.
+
+Sigue siendo la política vigente tras la decisión de gobernanza de esa
+misma fecha: `develop` no está protegida en GitHub porque el operador
+programa en ella, pero un agente no aterriza ahí sin pull request.

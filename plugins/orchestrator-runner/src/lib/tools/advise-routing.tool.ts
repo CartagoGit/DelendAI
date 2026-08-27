@@ -93,9 +93,6 @@ export const buildAdviseRoutingRegistration = (
 
 				return toolJson({
 					decision,
-					alternates: decision.alternates,
-					scoringTrace: decision.scoringTrace,
-					sessionId,
 					...(warning !== null ? { loopWarning: warning } : {}),
 				});
 			},
