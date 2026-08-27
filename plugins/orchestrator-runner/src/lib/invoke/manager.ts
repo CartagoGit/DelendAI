@@ -62,7 +62,6 @@ export interface IInvokeArgs {
 
 export interface IInvokeOutput {
 	readonly decision: IRoutingDecision;
-	readonly sessionId: string;
 	readonly invocationId?: string;
 	readonly result?: IInvokeResult;
 	readonly error?: {
@@ -291,7 +290,6 @@ export class InvocationManager {
 			const empty = this.emptyDecision(prompt, mode, sessionId);
 			return {
 				decision: empty,
-				sessionId,
 				error: {
 					code: 'no-providers',
 					tried: [],
@@ -319,7 +317,6 @@ export class InvocationManager {
 				if (spend?.outcome === 'block') {
 					return {
 						decision,
-						sessionId,
 						error: {
 							code: 'spend-limit-exceeded',
 							tried,
@@ -357,7 +354,6 @@ export class InvocationManager {
 					// invocation — stop (do not prompt for other providers).
 					return {
 						decision,
-						sessionId,
 						error: {
 							code: 'confirmation-required',
 							tried,
@@ -378,7 +374,6 @@ export class InvocationManager {
 			if (outcome.ok) {
 				return {
 					decision,
-					sessionId,
 					invocationId,
 					result: outcome.result,
 					autoBypassed: bypassed,
@@ -387,7 +382,6 @@ export class InvocationManager {
 			if (outcome.reason === 'timeout') {
 				return {
 					decision,
-					sessionId,
 					error: {
 						code: 'timeout-exceeded',
 						tried: [
@@ -406,7 +400,6 @@ export class InvocationManager {
 			if (outcome.reason === 'user-cancel') {
 				return {
 					decision,
-					sessionId,
 					error: {
 						code: 'cancelled',
 						tried,
@@ -427,7 +420,6 @@ export class InvocationManager {
 			tried.every((t) => t.failure === 'execution-disabled');
 		return {
 			decision: primary,
-			sessionId,
 			error: {
 				code: allBlocked
 					? 'execution-disabled'

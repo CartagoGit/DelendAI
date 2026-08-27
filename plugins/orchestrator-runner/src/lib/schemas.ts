@@ -60,9 +60,6 @@ export const RoutingDecisionSchema = z.object({
 
 export const AdviseRoutingOutputSchema = z.object({
 	decision: RoutingDecisionSchema,
-	alternates: z.array(FlatDecisionSchema),
-	scoringTrace: z.array(ScoreEntrySchema),
-	sessionId: z.string(),
 	loopWarning: z
 		.object({
 			handoffPath: z.string(),
@@ -208,7 +205,6 @@ const InvokeErrorSchema = z.object({
 
 export const InvokeOutputSchema = z.object({
 	decision: RoutingDecisionSchema,
-	sessionId: z.string(),
 	invocationId: z.string().optional(),
 	result: InvokeResultSchema.optional(),
 	error: InvokeErrorSchema.optional(),
