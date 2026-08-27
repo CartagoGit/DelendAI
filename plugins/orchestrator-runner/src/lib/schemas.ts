@@ -10,8 +10,8 @@ import z from 'zod';
 
 import { CapabilityTagSchema, InvokeSchema, ProviderSchema } from './options';
 
-const ModeSchema = z.enum(['plan', 'explore', 'implement', 'review']);
-const CostTierSchema = z.union([
+export const ModeSchema = z.enum(['plan', 'explore', 'implement', 'review']);
+export const CostTierSchema = z.union([
 	z.literal(1),
 	z.literal(2),
 	z.literal(3),
