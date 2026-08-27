@@ -142,8 +142,14 @@ export const collectCandidateSnapshot = async (
 	outFile: string,
 ): Promise<void> => {
 	const workspace = mkdtempSync(join(tmpdir(), 'mcp-metrics-gate-'));
+	// Run under bun, not node: only 15 of the ~50 workspace plugins get a
+	// node_modules symlink (bun links a workspace only when something
+	// depends on it), so node's resolver finds barely a quarter of the
+	// surface and the gate silently measures a fraction of it. Bun honours
+	// tsconfig.base.json's paths map, which is how every other in-repo
+	// measurement resolves plugins — and bun is this repo's declared engine.
 	const transport = new StdioClientTransport({
-		command: 'node',
+		command: 'bun',
 		args: [
 			CLI,
 			'--preset=swarm',
