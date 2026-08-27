@@ -2322,35 +2322,79 @@ sintético, cada uno de los hallazgos P0 de este informe.
 
 ---
 
-### AUD-F05 — Tres fuentes de versión independientes: `changelog` declara 0.1.1 y 0.1.0 a la vez
+### AUD-F05 — 41 de 51 plugins publican una versión y declaran otra al host
 
-- **Clasificación:** BUG CONFIRMADO · **Severidad:** BAJA · **Área:** manifests / release
+- **Clasificación:** BUG CONFIRMADO · **Severidad:** MEDIA · **Área:** manifests / release
 - **Propuesta:** `x00293`
 
-**Comportamiento actual.** `plugins/changelog/package.json` declara `0.1.1`;
-`plugin.manifest.ts` declara `0.1.1`; pero el plugin registrado en
-`src/index.ts` declara `version: '0.1.0'`, y conserva un comentario `S3 will
-wire…` cuando package y manifest describen ya un estado posterior.
+**Comportamiento actual.** El `version` que un plugin declara en su `register()`
+—el que viaja al host MCP— está desincronizado del que se publica en npm.
+Verificado sobre los 51 plugins de `2cf17373`:
 
-**Por qué es un problema.** No es grave funcionalmente, pero demuestra que hay
-**tres fuentes de verdad parcialmente independientes** para la versión y el
-estado de un plugin. El mismo mecanismo que permite este desajuste inocuo
-permitiría uno que sí importe (por ejemplo, `compat-window` razonando sobre una
-versión que el runtime no reporta).
+```
+$ for d in plugins/*/; do
+    pkg=$(node -e "console.log(require('./$d/package.json').version)")
+    mf=$(grep -oE "version: '[^']+'" $d/plugin.manifest.ts | head -1)
+    rt=$(grep -oE "version: '[^']+'" $d/src/index.ts   | head -1)
+    …
+  done
 
-**Solución mínima.** Corregir `changelog` y auditar los otros 50.
+PLUGIN                   PKG      MANIFEST RUNTIME
+api                      0.1.1    0.1.1    0.1.0    ✗
+audit                    0.1.1    0.1.1    0.1.0    ✗
+…
+web-fetch                0.1.1    0.1.1    0.1.0    ✗
 
-**Solución arquitectónica ideal.** Una única fuente: que el `version` del plugin
-se derive del `package.json` en build (o se verifique en CI). Ya existe
-`lint:manifest-vs-package`; falta extenderlo al `version` declarado en el
-runtime.
+Plugins con drift package↔runtime: 41 de 51
+```
 
-**Tests a añadir.** Extensión de `lint:manifest-vs-package` que compare las tres
-fuentes en los 51 plugins.
+`package.json` y `plugin.manifest.ts` van sincronizados en `0.1.1` — hay un lint
+(`lint:manifest-vs-package`) que lo garantiza. El tercer sitio, el `version:` del
+objeto que devuelve `src/index.ts`, **no lo cubre ningún gate** y se quedó en
+`0.1.0` en 41 plugins.
 
-**Criterios de aceptación.** Las tres coinciden en los 51 plugins, verificado en CI.
+Como síntoma adyacente, `plugins/changelog/src/index.ts:24` conserva un comentario
+`// S3 will wire tsconfig/vitest/plugin-defaults/publish-order/preset-catalog.`
+cuando el manifest ya describe un estado posterior.
 
-**Dependencias.** Ninguna. **Compatibilidad:** ninguna.
+**Por qué es un problema.** No es sólo cosmético, y es más grande de lo que
+parece a plugin único: **el host MCP recibe `0.1.0` para 41 plugins que se
+publican como `0.1.1`**. Cualquier lógica que razone sobre la versión reportada
+en runtime —`compat-window`, diagnóstico de `doctor`, telemetría, la matriz de
+compatibilidad de hosts, o el propio soporte al usuario— está trabajando con un
+número falso. Y demuestra que hay **tres fuentes de verdad parcialmente
+independientes**: dos con gate y una sin él.
+
+**Impacto.** Diagnóstico erróneo en todo el ecosistema de adopción; un adoptante
+que reporte "estoy en 0.1.0" habiendo instalado 0.1.1 hace imposible reproducir.
+
+**Riesgo.** Medio. Bajo hoy porque el delta es un patch; alto en cuanto las
+versiones diverjan de verdad.
+
+**Reproducción.** El bucle de la evidencia.
+
+**Solución mínima.** Corregir los 41 `version:` y borrar el comentario obsoleto de
+`changelog`.
+
+**Solución arquitectónica ideal.** Eliminar la tercera fuente: que el `version`
+del plugin **se derive** del `package.json` en build en vez de escribirse a mano.
+Si eso no es viable por el modo en que se empaquetan los plugins, extender
+`lint:manifest-vs-package` para comparar **las tres** fuentes — el gate ya existe
+y ya compara dos, sólo le falta la tercera. Una constante duplicada a mano en 51
+sitios volverá a divergir; la única corrección duradera es que no haya nada que
+sincronizar.
+
+**Tests a añadir.**
+- Extensión de `lint:manifest-vs-package` que compare `package.json` ↔
+  `plugin.manifest.ts` ↔ `src/index.ts` en los 51 plugins y falle nombrando cada
+  divergencia. Este test falla hoy con 41 violaciones: es la prueba de que sirve.
+- Spec del lint con un plugin fixture cuyas tres versiones coinciden ⇒ pasa; con
+  una divergente ⇒ falla nombrando el fichero.
+
+**Criterios de aceptación.** Las tres fuentes coinciden en los 51 plugins,
+verificado en CI; el gate está en `manifests-check`.
+
+**Dependencias.** Ninguna. **Tokens:** ninguno. **Compatibilidad:** ninguna.
 
 ---
 
