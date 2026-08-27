@@ -12,6 +12,16 @@
  * surface as `Record<string, unknown>`.
  */
 
+export interface McpVertexAdaptiveOptimizerActivationMetricsOutput {
+	activations: number;
+	responses: {
+		hasSamples: false;
+	} | {
+		hasSamples: true;
+		p95PayloadBytes: number;
+	};
+}
+
 export interface McpVertexAdaptiveOptimizerOptimizeRunOutput {
 	ranked: {
 		id: string;
@@ -1414,6 +1424,16 @@ export interface McpVertexObservabilityObsReleaseHealthOutput {
 		info: number;
 	};
 	worst: "critical" | "high" | "medium" | "low" | "info" | null;
+}
+
+export interface McpVertexObservabilityObsRuntimeMetricsOutput {
+	calls: number;
+	responses: {
+		hasSamples: false;
+	} | {
+		hasSamples: true;
+		p95PayloadBytes: number;
+	};
 }
 
 export interface McpVertexObservabilityObsTraceOutput {
@@ -3461,6 +3481,7 @@ export interface McpVertexWebFetchWebFetchOutput {
 
 /** Map of this package's MCP tool names to their `structuredContent` type. */
 export interface McpVertexToolOutputs {
+	"mcp-vertex_adaptive-optimizer_activation_metrics": McpVertexAdaptiveOptimizerActivationMetricsOutput;
 	"mcp-vertex_adaptive-optimizer_optimize_run": McpVertexAdaptiveOptimizerOptimizeRunOutput;
 	"mcp-vertex_adopt_project": McpVertexAdoptProjectOutput;
 	"mcp-vertex_agent_catalog": McpVertexAgentCatalogOutput;
@@ -3551,6 +3572,7 @@ export interface McpVertexToolOutputs {
 	"mcp-vertex_observability_obs_correlate": McpVertexObservabilityObsCorrelateOutput;
 	"mcp-vertex_observability_obs_errors": McpVertexObservabilityObsErrorsOutput;
 	"mcp-vertex_observability_obs_release_health": McpVertexObservabilityObsReleaseHealthOutput;
+	"mcp-vertex_observability_obs_runtime_metrics": McpVertexObservabilityObsRuntimeMetricsOutput;
 	"mcp-vertex_observability_obs_trace": McpVertexObservabilityObsTraceOutput;
 	"mcp-vertex_overview": McpVertexOverviewOutput;
 	"mcp-vertex_perf_perf_bench": McpVertexPerfPerfBenchOutput;
