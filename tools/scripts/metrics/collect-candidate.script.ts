@@ -204,7 +204,12 @@ export const collectCandidateSnapshot = async (
 		await writeFileAtomic(
 			outFile,
 			`${JSON.stringify(
-				{ at: new Date().toISOString(), ...parsed, pluginMetrics },
+				{
+					at: new Date().toISOString(),
+					...parsed,
+					pluginMetrics,
+					surface: { toolsMeasured: tools.length },
+				},
 				null,
 				2,
 			)}\n`,

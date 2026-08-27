@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 
 import {
 	diffSnapshots,
+	isComparableSurface,
 	renderMarkdownReport,
 	type IThresholds,
 } from './diff-snapshots.script.ts';
@@ -260,5 +261,30 @@ describe('diffSnapshots — a00065 S5: error-rate regression', async () => {
 		expect(report.tools.find((t) => t.tool === 'docs')?.status).toBe(
 			'regression',
 		);
+	});
+});
+
+describe('isComparableSurface', () => {
+	const withSurface = (toolsMeasured: number): IMetricsSnapshotFile => ({
+		...snapshot({}),
+		surface: { toolsMeasured },
+	});
+
+	it('accepts two runs that measured the same number of tools', () => {
+		expect(isComparableSurface(withSurface(19), withSurface(19))).toBe(
+			true,
+		);
+	});
+
+	it('rejects a baseline captured from a smaller surface', () => {
+		// The real case: the collector used to resolve only 7 of 29 plugins,
+		// so its snapshot recorded far fewer tools and near-empty payloads.
+		expect(isComparableSurface(withSurface(5), withSurface(19))).toBe(
+			false,
+		);
+	});
+
+	it('rejects a baseline published before the fingerprint existed', () => {
+		expect(isComparableSurface(snapshot({}), withSurface(19))).toBe(false);
 	});
 });

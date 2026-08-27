@@ -154,7 +154,12 @@ jobs:
     name: lint-governance
     runs-on: ubuntu-latest
     steps:
+      # Full history: this job verifies that commits cited by proposals
+      # actually exist. The default shallow checkout has none of them, so
+      # every citation reads as dangling and the gate could never pass.
       - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
