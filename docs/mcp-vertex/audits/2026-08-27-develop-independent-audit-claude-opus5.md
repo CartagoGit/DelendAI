@@ -20,6 +20,7 @@
 8. [Hallazgos — Track D: seguridad y efectos](#8-track-d--seguridad-y-efectos)
 9. [Hallazgos — Track E: arquitectura y fronteras](#9-track-e--arquitectura-y-fronteras)
 10. [Hallazgos — Track F: producto, DX y superficies cliente](#10-track-f--producto-dx-y-superficies-cliente)
+10bis. [Hallazgos — Track G: confianza y control (uso real del autor)](#10bis-track-g--confianza-y-control-uso-real-del-autor)
 11. [Inventario del monorepo](#11-inventario-del-monorepo)
 12. [Inventario de plugins](#12-inventario-de-plugins)
 13. [Top 10 cambios por ROI](#13-top-10-cambios-por-roi)
@@ -2629,6 +2630,357 @@ lo verifica.
 
 ---
 
+## 10bis. Track G — confianza y control (uso real del autor)
+
+> Este track no sale de leer el repositorio, sino de **preguntas concretas del
+> autor sobre su propio uso diario**, y de una conversación paralela con otro
+> revisor. Todo lo que sigue está verificado por mí contra el estado real de
+> `.cache/mcp-vertex/` y del código en `2cf17373`.
+>
+> Contexto que cambia la lectura del proyecto: **un solo autor, tres meses, en
+> ratos libres, y con dogfooding real** — las features nuevas nacen de fricción
+> vivida, no de una lista. Eso hace que estos cuatro dolores sean, con
+> diferencia, el backlog de mayor valor: no son features nuevas, son la
+> capacidad de *saber si lo que ya existe está funcionando*.
+
+### AUD-G01 — `error-reporting` no está muerto: falló 27 veces en silencio y abrió un cortacircuitos hace tres días
+
+- **Clasificación:** BUG CONFIRMADO · **Severidad:** ALTA · **Área:** observabilidad / error-reporting
+- **Propuesta:** `f00276`
+
+**La duda del autor.** *"El plugin de enviar issues de errores… o no está habiendo
+errores, cosa que dudo muchísimo, o no funciona."*
+
+**La respuesta, con datos.** El plugin **sí funciona**. Su estado persistido lo
+demuestra:
+
+```
+$ cat .cache/mcp-vertex/error-reporting/reported.json
+{
+  "25e689a8…": { "classification": "BUG", "attemptCount": 27,
+                 "lastAttemptAt": "2026-08-25T09:31:09.742Z",
+                 "lastFailureCode": "GH_NOT_INSTALLED",
+                 "consecutiveFailureCount": 7,
+                 "circuitOpenUntil": "2026-08-25T10:22:16.179Z" },
+  "fa222edd…": { … idéntico … }
+}
+$ stat -c '%y' .cache/mcp-vertex/error-reporting/reported.json
+2026-08-25 11:31:09 +0200          ← sin tocar desde hace 3 días
+```
+
+Es decir: observó los fallos, los clasificó como `BUG`, y **intentó despacharlos
+27 veces**. Las 27 fallaron en el **transporte**, no en la lógica. Tras 7 fallos
+consecutivos abrió el cortacircuitos y se calló.
+
+Y el diagnóstico está además **obsoleto**:
+```
+$ which gh && gh --version
+/usr/bin/gh
+gh version 2.4.0
+
+$ gh auth status
+✓ Logged in to github.com as CartagoGit
+✓ Token: ***
+
+$ gh issue create --help    → exit 0 (el subcomando existe)
+```
+`gh` está instalado y autenticado ahora. `GH_NOT_INSTALLED` viene de
+`run-command.ts:239` (`error.code === 'ENOENT' ? 127 : 126`) → `run-external-tool`
+(`unavailable: outcome.code === 127`) → `reporter.service.ts:82`. Era cierto el
+25 de agosto; hoy ya no lo es. Nada reevaluó ni informó.
+
+**Y el log no puede corroborarlo.** El histórico completo de eventos:
+```
+$ python3 … .cache/mcp-vertex/results/logs/*.jsonl
+total eventos: 856
+  456  server-started
+  200  tool-started
+  200  tool-completed
+outcome:  {'ok': 856}        ← 100 %
+severity: {'info': 856}      ← 100 %
+```
+856 eventos, **todos `ok`**, 200 `tool-started` contra 200 `tool-completed`, cero
+`tool-failed`. El tipo existe y hay quien lo emite
+(`packages/core/src/lib/tools/with-incident-logging.ts:103`), simplemente no ha
+ocurrido en la ventana registrada. Así que los dos subsistemas están callados y
+**ninguno puede decirte cuál de los dos silencios estás mirando**.
+
+**Por qué es un problema.** El defecto no es la lógica del plugin —es correcta y
+está bien probada (15 specs). El defecto es que un fallo de clase P0 corrió
+**27 intentos y 3 días** sin que nada lo hiciera visible: ni un log, ni una
+notificación, ni una comprobación de `doctor`, ni un aviso al arrancar. El único
+sitio donde vive la verdad es un JSON en `.cache/` que hay que saber que existe.
+
+Y el coste real no es el issue no creado: es que el autor pase a **desconfiar de
+un subsistema que funciona**. Eso es más caro que el bug.
+
+**Impacto.** Los bugs que el dogfooding descubre —el activo más valioso del
+proyecto ahora mismo— se están perdiendo silenciosamente.
+
+**Riesgo.** Alto, y ya materializado durante tres días.
+
+**Reproducción.** Los cuatro comandos de la evidencia.
+
+**Solución mínima.** Que `report_status` muestre siempre, sin argumentos:
+`lastFailureCode`, `consecutiveFailureCount`, `circuitOpenUntil` y la antigüedad
+del último intento; y que un cortacircuitos abierto se registre en el log como
+`severity: 'warn'` en vez de sólo en el JSON.
+
+**Solución arquitectónica ideal — el embudo como contadores observables.** El
+autor no debería tener que razonar sobre nueve etapas invisibles. Bastan
+contadores locales (ningún dato sensible):
+
+```
+observedFailures       184     lastObservedAt    2026-08-27T…
+ignoredNonFailures      37     lastClassifiedAt  2026-08-27T…
+notVertexInternal      121     lastSubmittedAt   2026-08-25T…
+privacyBlocked           2     lastFailureCode   GH_NOT_INSTALLED
+deduplicated            11     circuitOpenUntil  —
+rateLimited              3
+submissionAttempted     10
+submissionSucceeded      9
+submissionFailed         1
+```
+
+Con eso, la pregunta se responde sola: *"ha visto 184 fallos, 121 no eran de
+Vertex"* frente a *"500 llamadas fallidas y `observedFailures = 0`: el hook está
+roto"*. Y un cortacircuitos abierto debe **reevaluarse**, no quedarse fijado: el
+código de fallo es un hecho fechado, no una propiedad permanente.
+
+Añadir además un auto-test que no cree ningún issue:
+```
+mcpv doctor --deep error-reporting
+  ✓ plugin loaded        ✓ privacy validation working
+  ✓ hook registered      ✓ report store writable
+  ✓ synthetic failure observed
+  ✓ classification pipeline working
+  ✓ gh installed         ✓ gh authenticated
+  ✓ target repo reachable ✓ issue-create permission available
+```
+con `--live` opcional para probar el transporte de verdad.
+
+**Tests a añadir.**
+- Spec: con `gh` ausente, tras N fallos el estado es visible en `report_status`
+  **sin argumentos**.
+- Spec: un cortacircuitos cuyo `circuitOpenUntil` ya pasó se reevalúa en el
+  siguiente fallo observado (hoy el fichero lleva 3 días sin tocarse).
+- Spec por cada etapa del embudo: incrementa su contador y sólo el suyo.
+- Spec: `doctor --deep error-reporting` detecta cada modo de fallo con un
+  `gh` falso, y **no crea ningún issue**.
+- Spec de conciliación: `observedFailures` casa con los `tool-failed` del log en
+  la misma ventana. Es el test que hace que los dos subsistemas se vigilen.
+
+**Criterios de aceptación.** Responder *"¿está funcionando error-reporting?"* no
+requiere abrir ningún fichero de `.cache/`; un fallo de transporte es visible en
+el primer intento, no en el vigésimo séptimo.
+
+**Dependencias.** Ninguna. **Tokens:** ninguno (los contadores no van a
+`tools/list`). **Compatibilidad:** aditiva.
+
+---
+
+### AUD-G02 — Los agentes en worktrees son invisibles: no hay forma de saber si hacen lo que se les pidió
+
+- **Clasificación:** IDEA DE PRODUCTO (dolor real del autor) · **Severidad:** ALTA · **Área:** orquestación / producto
+- **Propuesta:** `f00277` (control plane) + `f00278` (WorkIntent y completion gates)
+
+**El dolor.** *"Cuando varios agentes trabajan en worktrees es imposible saber si
+lo que están haciendo es lo que queremos de verdad, y no voy a estar cambiando de
+ramas."*
+
+**Comportamiento actual.** Git aísla perfectamente cada worktree; el proyecto ya
+tiene `agentWorktree`, `agent-branch-naming`, locks de fichero, cola de tareas y
+detector de bucles. Lo que **no** existe es una proyección legible del estado de
+todos los agentes sin cambiar de checkout — ni, más importante, ninguna
+representación de **lo que se pidió** frente a **lo que se está haciendo**.
+
+**Por qué es un problema.** Un diff no responde la pregunta. La pregunta es de
+*alineación*: el agente iba a arreglar el ciclo de vida lazy, ¿por qué ha tocado
+`package.json` y `plugins/proposals/`? Sin un objetivo declarado, no hay nada
+contra lo que comparar, y la supervisión recae enteramente en la cabeza del
+autor.
+
+**Solución arquitectónica ideal — dos piezas, en este orden.**
+
+**1. `WorkIntent`, un contrato de trabajo previo.** Antes de arrancar, un agente
+declara: objetivo, `proposalId`, `agentId`, worktree, `baseCommit`,
+`expectedAreas` (globs, no lista exacta de ficheros), `forbiddenAreas`,
+`acceptanceCriteria[]`, `requiredChecks[]`, `allowedEffects[]`. Con eso, el
+sistema puede calcular de forma **determinista y sin LLM**:
+`ALIGNED` / `MINOR_DRIFT` / `DRIFTED` / `VIOLATION`. Comparar globs con el diff
+real es aritmética, no juicio.
+
+**2. `AgentSession` como entidad de primera clase** — no "hay una ruta por ahí":
+`{ id, agent, proposal, worktree, branch, baseCommit, currentCommit, intent,
+status, lastActivity, modifiedFiles, checks, violations, drift, cost }`, y
+`mcpv agents` como proyección:
+```
+agent-7   #183 External MCP teardown   ████████░░ 82%  aligned      12 files  0 violations
+agent-9   #186 Adaptive eviction       ██████░░░░ 61%  ⚠ drift       3 files fuera de alcance
+agent-11  #191 Docs                    █████████░ 94%  ready for review
+```
+Git permite inspeccionar otro worktree sin tocar el checkout propio, así que esto
+es leer, no coordinar.
+
+**Y un supervisor barato.** El análisis de deriva es determinista y gratis; sólo
+cuando detecta `DRIFTED` merece la pena gastar un LLM en preguntar *"el agente
+arreglaba lifecycle lazy pero tocó proposals y package.json, ¿es coherente?"*.
+Barato y más fiable que vigilar con un modelo permanentemente.
+
+**Por qué esto y no otro plugin.** Es la pieza que hace supervisable todo lo que
+ya existe. Y la extensión de VS Code —que hoy tiene 34 comandos y poca
+explicabilidad (`AUD-F03`)— tendría por fin algo que merece una vista.
+
+**Criterios de aceptación.** Responder *"¿qué están haciendo mis tres agentes y
+cuál se ha desviado?"* sin cambiar de rama y sin leer un diff.
+
+---
+
+### AUD-G03 — Las reglas dependen de la obediencia del modelo: faltan las otras dos categorías
+
+- **Clasificación:** RIESGO DE DISEÑO · **Severidad:** ALTA · **Área:** reglas / enforcement
+- **Propuesta:** `f00279`
+
+**El dolor.** *"Muchas reglas no las cumplen del todo bien."*
+
+**Comportamiento actual.** El plugin `rules` (185 ficheros) detecta stack, prioriza
+la configuración del proyecto y resuelve comandos — y su salida final es texto
+para el modelo. El modelo responde "vale" y a veces no lo hace. Eso va a ocurrir
+siempre, y **no se arregla con prompts más insistentes**.
+
+**Por qué es un problema.** Hay una confusión de categoría: *regla mostrada al
+agente* ≠ *regla aplicada*. Hoy todas las reglas viven en la primera categoría,
+incluidas las que no deberían.
+
+**Solución arquitectónica ideal — tres categorías con tres mecanismos distintos.**
+
+| Categoría | Ejemplos | Mecanismo | Incumplirla es… |
+| --- | --- | --- | --- |
+| **Guidance** | preferir `readonly`, funciones pequeñas, inyección de dependencias | prompt al LLM | aceptable a veces |
+| **Verification** | tsc, biome, fronteras de dependencias, imports prohibidos, cobertura | **completion gate** | permitido mientras trabaja, **prohibido al declarar hecho** |
+| **Enforcement** | escribir fuera del workspace, push a `main`, tocar rutas protegidas, red, procesos prohibidos | **runtime / EffectBroker** | imposible |
+
+```
+guidance     → LLM
+verification → completion gate
+enforcement  → runtime
+```
+
+**La consecuencia potente: que `COMPLETED` signifique algo.** Para pasar
+`ACTIVE → COMPLETED`, `proposal_transition` debería exigir: criterios de
+aceptación con evidencia **and** checks requeridos en verde **and** sin diff
+prohibido **and** verificación de reglas en verde **and** sin deriva sin resolver
+**and** base no invalidada. Entonces el agente no puede decir "Done": el sistema
+responde
+```
+Cannot complete proposal.
+  2 acceptance criteria have no evidence.
+  1 unexpected file was modified.
+  architecture check is failing.
+```
+Eso es control agentic real, y encaja exactamente con la máquina de estados que
+`proposals` ya tiene. Conecta además con `AUD-D01`/`AUD-D02`: el `EffectBroker`
+es el mecanismo de la tercera categoría.
+
+**Criterios de aceptación.** Toda regla del catálogo está etiquetada con su
+categoría; ninguna regla de `enforcement` se implementa como texto en un prompt.
+
+---
+
+### AUD-G04 — Adoptar el proyecto en un repo grande exige que el usuario entienda Vertex
+
+- **Clasificación:** IDEA DE PRODUCTO · **Severidad:** ALTA · **Área:** adopción / DX
+- **Propuesta:** `f00280`
+
+**El dolor.** *"Para implementarlo en otro proyecto es complejo si el proyecto es
+grande; si es pequeño es sencillo."*
+
+**Por qué ocurre.** En un repo pequeño el stack se detecta y la configuración es
+evidente. En un monorepo con varias apps, varios lenguajes, CI heredado, código
+generado, paths especiales y paquetes internos, el conocimiento requerido escala
+— y hoy lo aporta el usuario. **Debería ser al revés: cuanto más grande el repo,
+más trabajo debería hacer Vertex.** El adoptante no debería tener que entender 51
+plugins para instalar 51 plugins.
+
+**Solución arquitectónica ideal — tres piezas.**
+
+**1. `mcpv adopt`, descubrimiento en sólo lectura** que informa antes de tocar
+nada: tipo de repo, gestor de paquetes, workspaces, áreas y su framework,
+política de ramas, workflows de CI, runners de test, directorios generados,
+migraciones y rutas vendorizadas. Termina con un perfil **recomendado** y
+`No files have been changed. Apply?`.
+
+**2. `ProjectProfile` persistido** (`.mcp-vertex/project-profile.json`), generado
+y actualizado incrementalmente. Hoy da la impresión de que varios plugins
+redescubren por su cuenta partes del proyecto; un perfil central sería contexto
+común y eliminaría duplicación real. Conecta con `AUD-A09`/`AUD-A11`/`AUD-A12`:
+la misma cura de fondo, **derivar el alcance de una fuente y no repetirlo**.
+
+**3. Adopción por etapas**, para que el repo funcione desde el minuto uno:
+`core+git+search+doctor` → `rules+testing+quality` → `proposals+agents` →
+plugins especializados → external MCP y políticas avanzadas.
+
+**Criterios de aceptación.** Adoptar Vertex en un monorepo de 27 workspaces no
+exige leer documentación de plugins; `mcpv adopt` produce una configuración
+funcional y explica cada decisión.
+
+---
+
+### AUD-G05 — La arquitectura del sistema incluye la cabeza del autor
+
+- **Clasificación:** RIESGO DE DISEÑO · **Severidad:** ALTA · **Área:** mantenibilidad / gobernanza
+- **Propuesta:** `d00015`
+
+**Comportamiento actual.** Un solo autor sabe por qué existe cada pieza, qué es
+experimental, qué contrato pretendía, qué reemplaza a qué, qué caso límite motivó
+cada helper y qué comportamiento no debe tocarse. El repositorio todavía no
+contiene ese contexto.
+
+**Por qué es el riesgo más importante a medio plazo.** Por encima de varios de los
+bugs de este informe. Y hay evidencia empírica en la propia auditoría: `AUD-E01`
+(eager ≠ lazy), `AUD-D07` (el guard que compara literales inexistentes) y
+`AUD-C02` (el working set inerte) son exactamente lo que ocurre cuando un
+invariante vive en la cabeza de alguien y no en un test.
+
+**Solución.** Convertir ese conocimiento en **invariantes explícitos** por
+subsistema, cada uno con su test:
+
+```
+Plugin lifecycle
+- register ocurre exactamente una vez
+- dispose ocurre como máximo una vez
+- eager y lazy tienen semántica idéntica          ← hoy FALSO (AUD-E01)
+- timeout y AbortSignal funcionan en ambos        ← hoy FALSO (AUD-E01)
+- un fallo parcial revierte en orden inverso
+
+Effects
+- ningún efecto real evita el policy engine       ← hoy FALSO (AUD-D01)
+- dry-run no puede producir efectos               ← hoy FALSO (AUD-D02)
+- las capacidades concedidas son observables
+
+Adaptive
+- visible ≠ loaded ≠ active ≠ callable            ← hoy CIERTO (y bien diseñado)
+- una herramienta nunca desaparece mientras esté in-flight
+- activación y desactivación tienen histéresis    ← hoy no existe (AUD-C03)
+
+External MCP
+- todo proceso tiene propietario                  ← hoy FALSO (AUD-D05)
+- todo propietario tiene teardown                 ← hoy FALSO (AUD-E02)
+- toda ejecución tiene timeout
+- la autonomía del modelo se aplica de verdad     ← hoy FALSO (AUD-D04)
+```
+
+Nótese que **la mitad de los invariantes que el autor daría por ciertos son
+falsos hoy**, y que esta auditoría los encontró uno a uno. Escribirlos es lo que
+convierte cada bug del dogfooding en una propiedad permanente del sistema en vez
+de en una corrección puntual.
+
+**Criterios de aceptación.** Cada subsistema mayor tiene un documento de
+invariantes, y cada invariante tiene un test que falla si se rompe.
+
+
+---
+
 ## 11. Inventario del monorepo
 
 Snapshot `2cf17373`. 4.783 ficheros versionados, 3.230 `.ts`, 1.054 `.spec.ts`.
@@ -2881,9 +3233,26 @@ segunda frontera de seguridad independiente con sus propias reglas.
   correcta (`visible` = listado+invocable, `hidden` = no listado+invocable,
   `deactivated` = ninguna). "Arreglarlo" rompería el router adaptativo, que es la
   mejor pieza del proyecto.
-- **No añadir plugins ni tools nuevos** hasta recuperar margen en `minimal` y
-  `lean`, que ya están por encima de su umbral de aviso. El proyecto tiene
-  amplitud de sobra para diferenciarse; le falta profundidad de contrato.
+- **No añadir superficie *especulativa*.** Matiz importante, porque el proyecto
+  es de un solo autor haciendo dogfooding real: una capacidad descubierta usando
+  Vertex y sufriendo la fricción tiene mucha más legitimidad que una añadida
+  porque "podría ser útil algún día". La regla no es congelar features, es que
+  cada una tenga una fricción vivida detrás. Lo que sí conviene es que **toda
+  herramienta nueva pague su coste**: `minimal` y `lean` ya están por encima de
+  su umbral de aviso, así que una tool nueva en esos presets debe venir con su
+  compensación (ver `AUD-B03`). El ratio que sostiene la velocidad sin perder el
+  terreno conquistado sería aproximadamente 60% necesidades surgidas del uso,
+  25% endurecimiento derivado de ellas, 15% experimentos.
+- **No hacer refactors preventivos grandes** sobre los hotspots (`AUD-E05`). Con
+  tres meses de vida las abstracciones definitivas todavía se están descubriendo;
+  conviene esperar a que dos o tres problemas reales indiquen dónde cortar. El
+  criterio para los 51 plugins no es el número, es si cada uno resuelve una
+  necesidad recurrente y si el core sigue siendo pequeño conceptualmente.
+- **No intentar que el proyecto parezca hecho por un equipo de veinte personas.**
+  Una de sus ventajas actuales es poder cambiar una decisión arquitectónica en
+  una tarde sin RFCs. Lo que sí hay que hacer es que **cada decisión que
+  sobreviva varias iteraciones quede grabada en un test o un invariante**
+  (`AUD-G05`) — eso conserva la velocidad y elimina el riesgo.
 - **No implementar descarga agresiva de plugins sin seguimiento de llamadas en
   vuelo.** `inFlightByPlugin` ya existe y la evicción actual lo respeta:
   cualquier implementación real de `AUD-C02` debe mantener esa garantía.

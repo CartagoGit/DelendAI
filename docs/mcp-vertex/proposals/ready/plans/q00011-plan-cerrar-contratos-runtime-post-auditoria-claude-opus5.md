@@ -93,6 +93,19 @@ contains:
             rationale: "client/{contracts,transport,node,scaffold} + lint de fronteras: el cliente deja de arrastrar el core. AUD-E04." }
         - { id: r00042, kind: refactor, required: false, priority: P2, track: architecture,
             rationale: "proposals como event log + maquina de estados + workflow front doors. AUD-E05." }
+        # ─── Track G — confianza y control (dolores del uso real del autor) ────
+        - { id: f00276, kind: feat, required: true, priority: P0, track: trust,
+            rationale: "error-reporting como embudo observable: fallo 27 veces con GH_NOT_INSTALLED y abrio un cortacircuitos hace 3 dias sin que nada lo hiciera visible. Contadores por etapa + doctor --deep. AUD-G01." }
+        - { id: f00277, kind: feat, required: true, priority: P1, track: trust,
+            rationale: "AgentSession + mcpv agents: ver que hacen todos los agentes en worktrees sin cambiar de rama. AUD-G02." }
+        - { id: f00278, kind: feat, required: true, priority: P1, track: trust,
+            rationale: "WorkIntent + completion gates: intent vs actual con deriva determinista; ACTIVE->COMPLETED exige evidencia. AUD-G02." }
+        - { id: f00279, kind: feat, required: true, priority: P1, track: trust,
+            rationale: "Taxonomia de reglas guidance/verification/enforcement, cada una con su mecanismo. Las reglas dejan de depender de la obediencia del modelo. AUD-G03." }
+        - { id: f00280, kind: feat, required: true, priority: P1, track: adoption,
+            rationale: "mcpv adopt: descubrimiento en solo lectura + ProjectProfile + adopcion por etapas. En un repo grande el trabajo lo hace Vertex, no el usuario. AUD-G04." }
+        - { id: d00015, kind: docs, required: true, priority: P1, track: governance,
+            rationale: "Invariantes explicitos por subsistema con un test cada uno: la mitad de los que el autor daria por ciertos son falsos hoy. AUD-G05." }
         # ─── Track F — tests, DX y producto ────────────────────────────────────
         - { id: t00030, kind: test, required: true, priority: P1, track: testing,
             rationale: "Apretar los umbrales de cobertura al valor real y exigir branches >=80% en core/plugins, core/dry-run y core/project. AUD-F01." }
