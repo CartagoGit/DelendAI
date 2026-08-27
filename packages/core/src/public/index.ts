@@ -693,6 +693,15 @@ export type {
 	IDryRunEffectRefusal,
 	TEffectCapabilityKind,
 } from '../lib/dry-run/effect-guard.helper';
+// The mandatory capability-injection layer — the ambient
+// dry-run scope + the typed effects surface handed to plugins via
+// `IMcpPluginContext.effects`.
+export {
+	getActiveDryRunFlag,
+	runWithDryRunScope,
+} from '../lib/dry-run/dry-run-scope.helper';
+export { createDryRunGatedGitRunner } from '../lib/dry-run/effect-capability-factory.helper';
+export type { IPluginEffectsCapability } from '../lib/contracts/interfaces/effect-capabilities.interface';
 export type {
 	CapabilityTag,
 	CostTier,

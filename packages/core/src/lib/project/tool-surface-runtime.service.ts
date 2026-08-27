@@ -26,6 +26,7 @@ import {
 } from './tool-surface-runtime.helper';
 import { TOOL_DETAILS_PREFIX } from '../contracts/constants/tool-details-prefix.constant';
 import { enforceDryRunReturnContract } from '../dry-run/enforce';
+import { runWithDryRunScope } from '../dry-run/dry-run-scope.helper';
 
 const DEFAULT_SEARCH_LIMIT = 20;
 const DEFAULT_WORKING_SET_POLICY = {
@@ -477,10 +478,20 @@ class ToolSurfaceRuntime implements IToolSurfaceRuntime {
 			const handler = record.handler as (
 				...input: unknown[]
 			) => Promise<unknown>;
-			const result =
-				record.inputSchema === undefined
-					? await handler(extra)
-					: await handler(parsed.value, extra);
+			// Open the ambient dry-run scope BEFORE the
+			// handler runs, seeded from THIS call's `args.dryRun`. Any
+			// capability the plugin obtained from `ctx.effects` (built once
+			// at register time) reads that ambient flag on every
+			// invocation, so a handler that never checks `args.dryRun`
+			// still cannot reach a real effect while it is true — see
+			// `dry-run/dry-run-scope.helper.ts`.
+			const result = await runWithDryRunScope(
+				readDryRunFlag(args) === true,
+				async () =>
+					record.inputSchema === undefined
+						? await handler(extra)
+						: await handler(parsed.value, extra),
+			);
 			return this.applyDryRunContract(name, args, result);
 		} finally {
 			if (pluginId !== undefined) {
