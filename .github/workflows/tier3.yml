@@ -48,6 +48,12 @@ jobs:
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
+      # Packing without building ships tarballs whose declared entrypoints
+      # do not exist; the failure then surfaces as MODULE_NOT_FOUND on a
+      # temp-dir path that points nowhere near the missing step.
+      - name: Build dist
+        run: bun run build
+
       # The pack-smoke script lives under `tools/scripts/ci/`.
       # x00268 changed it to capture full output via `::group::`
       # + `mktemp` so a failing step leaves its evidence in the
@@ -106,6 +112,13 @@ jobs:
     name: branch-protection
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    # Reading branch-protection settings is not covered by the workflow's
+    # default `contents: read`; without this the API answers 403
+    # "Resource not accessible by integration" and the job fails for a
+    # reason that has nothing to do with the protection it is verifying.
+    permissions:
+      contents: read
+      administration: read
     steps:
       - uses: actions/checkout@v7
 
@@ -126,6 +139,13 @@ jobs:
     name: develop-health
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    # Reading branch-protection settings is not covered by the workflow's
+    # default `contents: read`; without this the API answers 403
+    # "Resource not accessible by integration" and the job fails for a
+    # reason that has nothing to do with the protection it is verifying.
+    permissions:
+      contents: read
+      administration: read
     steps:
       - uses: actions/checkout@v7
 
