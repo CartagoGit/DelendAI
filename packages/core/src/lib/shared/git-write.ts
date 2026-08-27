@@ -128,29 +128,175 @@ export const gitLastCommitAuthor = async (
 
 export type IPushForceMode = 'with-lease' | 'true' | 'false';
 
+/**
+ * Explicit, auditable sign-off for a force push. A caller passing
+ * `force: 'true'` (or forcing into a protected branch) must supply one —
+ * a bare string on `force` is not consent for an irreversible,
+ * history-rewriting operation against a shared remote. Both fields are
+ * required and must be non-empty so a buggy caller cannot manufacture
+ * authorization by passing `{}`.
+ */
+export interface IPushAuthorization {
+	/** Who/what granted this — an agent name, a host operator, a config id. */
+	readonly by: string;
+	/** Why this force push is warranted. Becomes part of the audit record. */
+	readonly reason: string;
+}
+
 export interface IPushOptions {
 	readonly remote?: string;
 	readonly branch?: string;
 	readonly force?: IPushForceMode;
+	/**
+	 * Branches this push refuses to force into unless `authorization` is
+	 * given — see `gitPush`. Core stays project-agnostic: there is no
+	 * built-in default here, callers supply their own resolved list
+	 * (the `git`/`commit-policy` plugins already compute one).
+	 */
+	readonly protectedBranches?: readonly string[];
+	/** See `IPushAuthorization`. Required to force-push (either mode) past the guards in `gitPush`. */
+	readonly authorization?: IPushAuthorization;
 }
+
+const hasAuthorization = (
+	authorization: IPushAuthorization | undefined,
+): authorization is IPushAuthorization =>
+	authorization !== undefined &&
+	authorization.by.trim().length > 0 &&
+	authorization.reason.trim().length > 0;
+
+/**
+ * Resolve a `src:dst` refspec / `refs/heads/`-prefixed branch down to its
+ * bare destination name, so a protected-branch check compares against
+ * what will actually be updated on the remote.
+ */
+const pushDestinationBranch = (ref: string): string => {
+	const colon = ref.indexOf(':');
+	const dst = colon >= 0 ? ref.slice(colon + 1) : ref;
+	return dst.startsWith('refs/heads/')
+		? dst.slice('refs/heads/'.length)
+		: dst;
+};
+
+/** Resolves the branch a force push would actually land on — `options.branch` when given, otherwise the current branch. */
+const resolveForceTargetBranch = async (
+	run: IGitRunner,
+	branch: string | undefined,
+): Promise<string | undefined> => {
+	if (branch !== undefined) return pushDestinationBranch(branch);
+	const head = await run(['rev-parse', '--abbrev-ref', 'HEAD']);
+	return head.ok ? head.output.trim() : undefined;
+};
+
+/**
+ * Audit trail for authorized force pushes (bounded ring buffer, in
+ * process memory — mirrors the same "record the bypass" convention used
+ * for peer-review force-closes). Not a persistence layer: a host that
+ * needs durable audit logs reads this immediately after `gitPush`
+ * resolves, or wires its own sink around the `authorization` it passed
+ * in.
+ */
+export interface IForcePushAuthorizationRecord {
+	readonly ts: string;
+	readonly by: string;
+	readonly reason: string;
+	readonly branch: string | undefined;
+	readonly forceMode: Extract<IPushForceMode, 'with-lease' | 'true'>;
+}
+
+const MAX_RECORDED_FORCE_PUSH_AUTHORIZATIONS = 200;
+const forcePushAuthorizations: IForcePushAuthorizationRecord[] = [];
+
+const recordForcePushAuthorization = (
+	record: IForcePushAuthorizationRecord,
+): void => {
+	forcePushAuthorizations.push(record);
+	if (
+		forcePushAuthorizations.length > MAX_RECORDED_FORCE_PUSH_AUTHORIZATIONS
+	) {
+		forcePushAuthorizations.shift();
+	}
+};
+
+/** Recent authorized force pushes, oldest first. For introspection/tests. */
+export const listForcePushAuthorizations =
+	(): readonly IForcePushAuthorizationRecord[] => [
+		...forcePushAuthorizations,
+	];
+
+/** Test-only: clears the in-memory audit buffer between specs. */
+export const clearForcePushAuthorizationsForTests = (): void => {
+	forcePushAuthorizations.length = 0;
+};
 
 /**
  * `git push [<remote> [<branch>]] [--force-with-lease|--force]`.
+ *
  * `force: 'with-lease'` maps to `--force-with-lease` (the safe option —
- * fails if the remote tip moved since the last fetch); `force: 'true'`
- * maps to plain `--force` and is NEVER the default — a caller must opt
- * in explicitly. `force` omitted/`'false'` pushes without any force flag.
+ * fails if the remote tip moved since the last fetch) and needs no
+ * authorization UNLESS the target is in `protectedBranches`. Plain
+ * `force: 'true'` maps to `--force` and ALWAYS needs `authorization`,
+ * regardless of branch — a caller opting into the unsafe mode is not,
+ * by itself, consent for an irreversible rewrite of shared history.
+ * `force` omitted/`'false'` pushes without any force flag and is
+ * unaffected by either guard.
+ *
+ * A successful authorized force push is recorded via
+ * `listForcePushAuthorizations()` (see above).
  */
 export const gitPush = async (
 	run: IGitRunner,
 	options: IPushOptions = {},
 ): Promise<IGitRunResult> => {
+	const force = options.force ?? 'false';
+	if (force === 'false') {
+		const args = ['push'];
+		if (options.remote !== undefined) args.push(options.remote);
+		if (options.branch !== undefined) args.push(options.branch);
+		return run(args);
+	}
+
+	if (force === 'true' && !hasAuthorization(options.authorization)) {
+		return {
+			ok: false,
+			output: '',
+			reason: 'plain --force refused: pass options.authorization { by, reason }, or use force:"with-lease" (fails safely instead of overwriting unseen commits)',
+		};
+	}
+
+	const protectedBranches = options.protectedBranches ?? [];
+	let targetBranch: string | undefined;
+	if (protectedBranches.length > 0) {
+		targetBranch = await resolveForceTargetBranch(run, options.branch);
+		if (
+			targetBranch !== undefined &&
+			protectedBranches.includes(targetBranch) &&
+			!hasAuthorization(options.authorization)
+		) {
+			return {
+				ok: false,
+				output: '',
+				reason: `force push refused: "${targetBranch}" is a protected branch — pass options.authorization { by, reason } to override`,
+			};
+		}
+	}
+
 	const args = ['push'];
 	if (options.remote !== undefined) args.push(options.remote);
 	if (options.branch !== undefined) args.push(options.branch);
-	if (options.force === 'with-lease') args.push('--force-with-lease');
-	else if (options.force === 'true') args.push('--force');
-	return run(args);
+	args.push(force === 'with-lease' ? '--force-with-lease' : '--force');
+
+	const result = await run(args);
+	if (result.ok && hasAuthorization(options.authorization)) {
+		recordForcePushAuthorization({
+			ts: new Date().toISOString(),
+			by: options.authorization.by.trim(),
+			reason: options.authorization.reason.trim(),
+			branch: targetBranch ?? options.branch,
+			forceMode: force,
+		});
+	}
+	return result;
 };
 
 // ---------------------------------------------------------------------------

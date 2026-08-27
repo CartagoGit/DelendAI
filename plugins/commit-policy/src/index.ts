@@ -112,6 +112,7 @@ export default definePlugin({
 				namespacePrefix: ctx.namespacePrefix,
 				policy,
 				run,
+				identityCtx,
 				locale: process.env.MCP_VERTEX_LOCALE ?? 'en',
 			}),
 			buildRunToolRegistration({
