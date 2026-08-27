@@ -70,7 +70,7 @@ jobs:
         run: |
           set -eu
           bun run lint
-          bun run lint:architecture
+          bun run lint:architecture-readfile-via-safe-reader
           bun run lint:privacy
           bun run lint:proposals
           bun run lint:agents
