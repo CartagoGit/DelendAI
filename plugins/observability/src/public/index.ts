@@ -25,3 +25,17 @@ export {
 } from '../lib/errors/list-errors';
 export { buildObsErrorsToolRegistration } from '../lib/tools/obs-errors.tool';
 export type { IObsErrorsToolOptions } from '../lib/tools/obs-errors.tool';
+export { buildObsHealthToolRegistration } from '../lib/tools/obs-health.tool';
+export type { IObsHealthToolOptions } from '../lib/tools/obs-health.tool';
+export { buildObsRuntimeMetricsToolRegistration } from '../lib/tools/obs-runtime-metrics.tool';
+export { createRuntimeMetricsRegistry } from '../lib/metrics/runtime-metrics-registry';
+export type {
+	IRuntimeMetricsRegistry,
+	IRuntimeMetricsSnapshot,
+} from '../lib/metrics/runtime-metrics-registry';
+// `computePayloadPercentile`/`IPayloadPercentile` now live in
+// `@mcp-vertex/core` (the shared contract with `adaptive-optimizer` and the
+// metrics longitudinal gate); re-exported here so this plugin's public
+// surface is unchanged for existing consumers.
+export { computePayloadPercentile } from '@mcp-vertex/core/public';
+export type { IPayloadPercentile } from '@mcp-vertex/core/public';

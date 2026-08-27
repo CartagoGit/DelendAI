@@ -15,6 +15,10 @@
 - sentryBuildListUrl
 - sentryParseList
 - buildObsErrorsToolRegistration
+- buildObsHealthToolRegistration
+- buildObsRuntimeMetricsToolRegistration
+- createRuntimeMetricsRegistry
+- computePayloadPercentile
 
 ## Depends on
 

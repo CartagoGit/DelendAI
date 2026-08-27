@@ -12,7 +12,7 @@ import { describe, expect, it } from 'vitest';
 import plugin from './index';
 
 describe('observability plugin registration (x00185 F13)', () => {
-	it('exposes obs_errors, obs_correlate and obs_health', async () => {
+	it('exposes obs_errors, obs_correlate, obs_health and obs_runtime_metrics', async () => {
 		const registrations = await plugin.register({
 			namespacePrefix: 'obs',
 			options: {},
@@ -42,7 +42,12 @@ describe('observability plugin registration (x00185 F13)', () => {
 		} as never);
 		expect(
 			(registrations.tools ?? []).map((tool) => tool.id).sort(),
-		).toEqual(['obs_correlate', 'obs_errors', 'obs_health']);
+		).toEqual([
+			'obs_correlate',
+			'obs_errors',
+			'obs_health',
+			'obs_runtime_metrics',
+		]);
 	});
 
 	it('obs_health registers both obs_trace and obs_release_health', async () => {

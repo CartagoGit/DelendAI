@@ -14,6 +14,7 @@ import type {
 	IMetricsSnapshotFile,
 	IMetricSnapshotEntry,
 } from './get-baseline.script.ts';
+import type { IPluginMetricsSnapshot } from './payload-percentile.schema.ts';
 
 export interface IThresholds {
 	readonly tokenDeltaPct: number;
@@ -55,12 +56,59 @@ export interface IToolDiff {
  */
 export const ERROR_RATE_REGRESSION_FLOOR = 0.05;
 
+/** One tracked plugin's before/after read of its own `*_metrics` tool. */
+export interface IPluginMetricsDiff {
+	readonly tool: string;
+	readonly baseline: IPluginMetricsSnapshot | undefined;
+	readonly candidate: IPluginMetricsSnapshot | undefined;
+	/**
+	 * `true` when the baseline had real samples but the candidate reports
+	 * none — a plugin that stopped producing data is worth a look, even
+	 * though it isn't gated as a hard regression (payload-percentile
+	 * comparisons across different sample windows aren't apples-to-apples
+	 * the way per-tool bytes/latency are).
+	 */
+	readonly wentSampleless: boolean;
+}
+
 export interface IDiffReport {
 	readonly ok: boolean;
 	readonly thresholds: IThresholds;
 	readonly tools: readonly IToolDiff[];
 	readonly regressions: readonly IToolDiff[];
+	readonly pluginMetrics: readonly IPluginMetricsDiff[];
 }
+
+/**
+ * Diff `pluginMetrics` entries (f00027): each producer already emits the
+ * discriminated `{ hasSamples: false } | { hasSamples: true; p95PayloadBytes }`
+ * contract (see `payload-percentile.schema.ts`), so this function never
+ * has to guess whether a missing number means "zero" or "no data" — it
+ * reads `hasSamples` directly instead of coercing anything.
+ */
+export const diffPluginMetrics = (
+	baseline: IMetricsSnapshotFile,
+	candidate: IMetricsSnapshotFile,
+): readonly IPluginMetricsDiff[] => {
+	const toolNames = new Set([
+		...Object.keys(baseline.pluginMetrics ?? {}),
+		...Object.keys(candidate.pluginMetrics ?? {}),
+	]);
+	return [...toolNames]
+		.sort((a, b) => a.localeCompare(b))
+		.map((tool) => {
+			const before = baseline.pluginMetrics?.[tool];
+			const after = candidate.pluginMetrics?.[tool];
+			return {
+				tool,
+				baseline: before,
+				candidate: after,
+				wentSampleless:
+					before?.responses.hasSamples === true &&
+					after?.responses.hasSamples === false,
+			};
+		});
+};
 
 /** Average response bytes per call — the proxy for "token cost" per AGENTS.md M12. */
 const bytesPerCall = (entry: IMetricSnapshotEntry): number | null =>
@@ -179,7 +227,13 @@ export const diffSnapshots = (
 	}
 
 	const regressions = tools.filter((t) => t.status === 'regression');
-	return { ok: regressions.length === 0, thresholds, tools, regressions };
+	return {
+		ok: regressions.length === 0,
+		thresholds,
+		tools,
+		regressions,
+		pluginMetrics: diffPluginMetrics(baseline, candidate),
+	};
 };
 
 const fmtPct = (n: number | null): string =>
@@ -210,6 +264,29 @@ export const renderMarkdownReport = (report: IDiffReport): string => {
 		lines.push(
 			`| ${t.tool} | ${t.status} | ${bytesCell} | ${latencyCell} | ${errorCell} |`,
 		);
+	}
+	if (report.pluginMetrics.length > 0) {
+		lines.push(
+			'',
+			'### Tracked-plugin metrics (obs_runtime_metrics / activation_metrics)',
+			'',
+			'| Tool | Baseline p95 bytes | Candidate p95 bytes |',
+			'| --- | --- | --- |',
+		);
+		for (const p of report.pluginMetrics) {
+			const cell = (
+				snapshot: IPluginMetricsSnapshot | undefined,
+			): string => {
+				if (snapshot === undefined) return '—';
+				return snapshot.responses.hasSamples
+					? snapshot.responses.p95PayloadBytes.toFixed(0)
+					: 'no samples';
+			};
+			const flag = p.wentSampleless ? ' ⚠️ went sampleless' : '';
+			lines.push(
+				`| ${p.tool}${flag} | ${cell(p.baseline)} | ${cell(p.candidate)} |`,
+			);
+		}
 	}
 	return `${lines.join('\n')}\n`;
 };

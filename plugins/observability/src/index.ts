@@ -15,6 +15,8 @@ import { realReadLocalCorrelateDeps } from './lib/correlate';
 import { buildObsErrorsToolRegistration } from './lib/tools/obs-errors.tool';
 import { buildObsCorrelateToolRegistration } from './lib/tools/obs-correlate.tool';
 import { buildObsHealthToolRegistration } from './lib/tools/obs-health.tool';
+import { buildObsRuntimeMetricsToolRegistration } from './lib/tools/obs-runtime-metrics.tool';
+import { createRuntimeMetricsRegistry } from './lib/metrics/runtime-metrics-registry';
 import {
 	listRecentErrors,
 	sentryBuildListUrl,
@@ -93,6 +95,7 @@ export default definePlugin({
 		}
 		const source: IErrorSource | undefined =
 			parsed.data?.source ?? sourceFromEnv();
+		const runtimeMetricsRegistry = createRuntimeMetricsRegistry();
 		return {
 			tools: [
 				buildObsErrorsToolRegistration({
@@ -119,6 +122,13 @@ export default definePlugin({
 				buildObsHealthToolRegistration({
 					namespacePrefix: ctx.namespacePrefix,
 					workspaceRootAbs: ctx.workspace.root,
+					metricsRegistry: runtimeMetricsRegistry,
+				}),
+				// f00027 — the manifest's own summary promises a "metrics"
+				// surface; nothing backed it until this tool existed.
+				buildObsRuntimeMetricsToolRegistration({
+					namespacePrefix: ctx.namespacePrefix,
+					registry: runtimeMetricsRegistry,
 				}),
 			],
 			knowledge: [
