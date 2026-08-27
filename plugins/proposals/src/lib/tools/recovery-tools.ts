@@ -181,7 +181,7 @@ const DIAGNOSE_OUTPUT_SCHEMA = z.object({
 	lastAgentDeadEvent: RECOVERY_EVENT_SCHEMA.optional(),
 	inconsistencies: z.array(z.string()),
 	suggestedActions: z.array(z.string()),
-	// a00072 S1.a: cross-proposal stale locks the smoke detector
+	// Cross-proposal stale locks the smoke detector
 	// saw when running. When non-empty the host should run
 	// `state_repair { mode: "execute" }` (or call
 	// `agent_lock_release_orphan` for a targeted release).
@@ -358,7 +358,7 @@ const moveProposal = async (
 		await writeFileAtomic(found.absPath, updated);
 		if (newAbsPath !== found.absPath) {
 			await mkdir(dirname(newAbsPath), { recursive: true });
-			// x00106 S2: untracked file → plain rename + stage, no warning
+			// Untracked file → plain rename + stage, no warning
 			// (nothing to preserve); the warning is for tracked-file mv
 			// failures only. Mirrors proposal-transition.tool.ts.
 			const tracked = await gitRunner([
@@ -388,7 +388,7 @@ const moveProposal = async (
 	};
 };
 
-// x00154 S2: route the local error helper through `toolJson` so the
+// Route the local error helper through `toolJson` so the
 // envelope (text + structuredContent) is produced by the same helper
 // as `toolOk` / `toolError`, and stamp `isError: true` to match
 // `toolError`'s contract.
@@ -469,9 +469,9 @@ export const runProposalForceTransition = async (
 	if (!found) {
 		return toolError(`proposal "${args.id}" not found`, 'Check the id.');
 	}
-	// a00069 S7: force_transition without skipPeerReview still needs peer approve
+	// force_transition without skipPeerReview still needs peer approve
 	// when moving review → done (same gate as proposal_transition).
-	// a00069 S11: skipPeerReview bypass is audited (reason already required).
+	// skipPeerReview bypass is audited (reason already required).
 	const requirePeer = options.requirePeerReview !== false;
 	if (requirePeer && args.to === 'done' && found.status === 'review') {
 		if (args.skipPeerReview === true) {
@@ -654,7 +654,7 @@ export const runProposalDiagnose = async (
 			'proposal_force_transition',
 		);
 	}
-	// x00154 S2: success envelope is `{ ok: true, ...payload }` so the
+	// Success envelope is `{ ok: true, ...payload }` so the
 	// contract matches `toolError` and the modern MCP client can read
 	// `ok` from `structuredContent` without re-parsing the text.
 	return toolOk({
