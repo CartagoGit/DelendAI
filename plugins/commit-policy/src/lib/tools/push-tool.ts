@@ -13,14 +13,42 @@ import { toolError, toolOk } from '@mcp-vertex/core/public';
 
 import type { ICommitPolicyOptions } from '../contracts/options';
 import { localizedString } from '../contracts/i18n-types';
+import {
+	resolveAuthor,
+	type IIdentityResolverContext,
+} from '../identity/resolver';
 import { runPushDriver, type IPushDriverInput } from '../services/push-driver';
 
 export interface IPushToolOptions {
 	readonly namespacePrefix: string;
 	readonly policy: ICommitPolicyOptions;
 	readonly run: Parameters<typeof runPushDriver>[2];
+	/**
+	 * Needed only to name the principal accountable for a plain
+	 * `--force` push. Optional so a host that never enables
+	 * `push.force: "allow"` is unaffected.
+	 */
+	readonly identityCtx?: IIdentityResolverContext | undefined;
 	readonly locale?: string | undefined;
 }
+
+/**
+ * Resolve who authorizes a plain `--force` push. Only consulted when the
+ * effective force mode is `allow`, so the identity lookup (which shells
+ * out to git) never runs on the ordinary push path.
+ */
+const resolveAuthorizedBy = async (
+	options: IPushToolOptions,
+	effectiveForce: ICommitPolicyOptions['push']['force'],
+): Promise<string | undefined> => {
+	if (effectiveForce !== 'allow') return undefined;
+	if (options.identityCtx === undefined) return undefined;
+	const resolution = await resolveAuthor(
+		options.policy.identity,
+		options.identityCtx,
+	);
+	return resolution.ok ? resolution.author.displayName : undefined;
+};
 
 const InputSchema = z.object({
 	remote: z.string().optional(),
@@ -40,10 +68,13 @@ export const runCommitPolicyPush = async (
 	args: z.infer<typeof InputSchema>,
 	options: IPushToolOptions,
 ): Promise<ReturnType<typeof toolOk> | ReturnType<typeof toolError>> => {
+	const effectiveForce = args.force ?? options.policy.push.force;
+	const authorizedBy = await resolveAuthorizedBy(options, effectiveForce);
 	const input: IPushDriverInput = {
 		...(args.remote !== undefined ? { remote: args.remote } : {}),
 		...(args.branch !== undefined ? { branch: args.branch } : {}),
 		...(args.force !== undefined ? { force: args.force } : {}),
+		...(authorizedBy !== undefined ? { authorizedBy } : {}),
 	};
 	const result = await runPushDriver(input, options.policy.push, options.run);
 

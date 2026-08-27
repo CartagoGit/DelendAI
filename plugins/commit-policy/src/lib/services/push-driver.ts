@@ -9,6 +9,7 @@
 import {
 	gitPush,
 	type IGitRunner,
+	type IPushAuthorization,
 	type IPushForceMode,
 } from '@mcp-vertex/core/public';
 
@@ -19,6 +20,13 @@ export interface IPushDriverInput {
 	readonly remote?: string;
 	readonly branch?: string;
 	readonly force?: ForceMode;
+	/**
+	 * Identity of the principal accountable for a plain `--force` push.
+	 * Resolved by the caller (the push tool resolves it through the
+	 * plugin's own identity resolver) rather than invented here, so the
+	 * audit record names a real author instead of a constant.
+	 */
+	readonly authorizedBy?: string;
 }
 
 export type IPushDriverResult =
@@ -29,6 +37,47 @@ export type IPushDriverResult =
 			readonly branch: string;
 	  }
 	| { readonly ok: false; readonly refusal: string };
+
+type IForceAuthorizationResolution =
+	| { readonly ok: true; readonly authorization?: IPushAuthorization }
+	| { readonly ok: false; readonly refusal: string };
+
+/**
+ * Plain `--force` rewrites shared history irreversibly, so `gitPush`
+ * refuses it without an explicit `{ by, reason }` sign-off. Both halves
+ * must come from real inputs: the reason is declared in config next to
+ * the permissive setting (`push.forceReason`), and the identity is
+ * resolved by the caller. Refusing here — rather than letting `gitPush`
+ * refuse — keeps the message actionable, naming the exact config key
+ * that is missing.
+ */
+const resolveForceAuthorization = (
+	forceMode: ForceMode,
+	policy: ICommitPolicyPush,
+	authorizedBy: string | undefined,
+): IForceAuthorizationResolution => {
+	if (forceMode !== 'allow') return { ok: true };
+
+	const reason = policy.forceReason?.trim() ?? '';
+	if (reason.length === 0) {
+		return {
+			ok: false,
+			refusal:
+				'push refused: push.force is "allow" but push.forceReason is not set — state why plain --force is warranted',
+		};
+	}
+
+	const by = authorizedBy?.trim() ?? '';
+	if (by.length === 0) {
+		return {
+			ok: false,
+			refusal:
+				'push refused: plain --force needs a resolvable identity to authorize it, but none could be resolved',
+		};
+	}
+
+	return { ok: true, authorization: { by, reason } };
+};
 
 const forceModeToGitPush = (mode: ForceMode): IPushForceMode => {
 	switch (mode) {
@@ -108,10 +157,24 @@ export const runPushDriver = async (
 	}
 
 	const forceMode = input.force ?? policy.force;
+	const authorization = resolveForceAuthorization(
+		forceMode,
+		policy,
+		input.authorizedBy,
+	);
+	if (!authorization.ok) return { ok: false, refusal: authorization.refusal };
+
 	const result = await gitPush(run, {
 		remote,
 		branch,
 		force: forceModeToGitPush(forceMode),
+		// Defense in depth: this driver already refused protected branches
+		// above, but handing the list to the primitive keeps the guard in
+		// place for any future path that reaches `gitPush` differently.
+		protectedBranches: policy.protectedBranches,
+		...(authorization.authorization !== undefined
+			? { authorization: authorization.authorization }
+			: {}),
 	});
 
 	if (!result.ok) {
