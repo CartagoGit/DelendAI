@@ -21,6 +21,11 @@ export default defineConfig({
 		environment: 'node',
 		setupFiles: [
 			...sharedSetupFiles(workspaceRoot),
+			// Reset ambient CI/GITHUB_ACTIONS/GITHUB_SHA env vars before each
+			// test so specs stay hermetic on a real GitHub Actions runner
+			// (which sets CI=true and GITHUB_ACTIONS=true for every job).
+			// See the file for the full story.
+			resolve(here, 'tests/setup/reset-ci-env.setup.ts'),
 			// Wire the Bun polyfill ONLY in this project. The proposals
 			// integration spec (`executable-acceptance.spec.ts`) gates itself
 			// on `typeof Bun !== 'undefined'`; vitest's thread pool is plain
