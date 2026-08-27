@@ -128,7 +128,14 @@ const main = async (): Promise<number> => {
 	let totalCommands = 0;
 
 	for (const name of names) {
+		// A name that resolves to no commands is a config bug, not an empty
+		// scope: silently running zero commands would report the gate as
+		// passing without having checked anything.
 		const commands = scopeResult[name];
+		if (commands === undefined) {
+			err(`quality:gate: scope=${name} has no commands configured`);
+			return 2;
+		}
 		const result = await runScope(name, commands, cwd, runner);
 		totalCommands += result.results.length;
 		if (result.ok) {
@@ -143,6 +150,18 @@ const main = async (): Promise<number> => {
 			.join(', ');
 		failingScopes.push(`${name} (${failingSummary})`);
 		err(`quality:gate: scope=${name} FAILED — ${failingSummary}`);
+		// Print what the child actually said. The runner already captures a
+		// tail; swallowing it turns every failure here into an exit code with
+		// no evidence, which is exactly the shape of gate nobody can act on.
+		for (const cmd of failed) {
+			const tail = cmd.tail?.trim();
+			err(`quality:gate: --- output of \`${cmd.command}\` ---`);
+			err(
+				tail === undefined || tail.length === 0
+					? '(the command produced no output — it most likely never started)'
+					: tail,
+			);
+		}
 	}
 
 	out(
