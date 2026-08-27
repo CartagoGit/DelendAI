@@ -93,3 +93,30 @@ export const createByteSamplePercentileRegistry =
 			},
 		};
 	};
+
+/**
+ * The read side every `*_metrics` tool needs: take a snapshot, and
+ * optionally zero the sample window in the same call.
+ *
+ * Generic over the snapshot so each plugin keeps its own shape — only
+ * the read-then-maybe-reset sequence is shared, which is exactly the
+ * part both plugins had copied verbatim.
+ */
+export interface IResettableMetricsRegistry<TSnapshot> {
+	snapshot(): TSnapshot;
+	reset(): void;
+}
+
+/**
+ * Reading and resetting must happen in this order: a reset before the
+ * read would return an already-emptied window and silently lose the
+ * samples the caller asked for.
+ */
+export const readMetricsSnapshot = <TSnapshot>(
+	registry: IResettableMetricsRegistry<TSnapshot>,
+	options: { readonly reset?: boolean | undefined },
+): TSnapshot => {
+	const snapshot = registry.snapshot();
+	if (options.reset === true) registry.reset();
+	return snapshot;
+};

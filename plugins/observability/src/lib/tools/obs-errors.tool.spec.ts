@@ -7,23 +7,7 @@ import {
 	sentryParseList,
 } from '../errors/list-errors';
 import type { IErrorSource } from '../errors/ierror-source';
-
-class FakeServer {
-	tools: Record<string, { handler: (a: unknown) => Promise<unknown> }> = {};
-	registerTool(
-		name: string,
-		_meta: unknown,
-		handler: (a: unknown) => Promise<unknown>,
-	) {
-		this.tools[name] = { handler };
-	}
-}
-
-const parseOk = (r: unknown): Record<string, unknown> => {
-	const text =
-		(r as { content: Array<{ text: string }> }).content[0]?.text ?? '{}';
-	return JSON.parse(text) as Record<string, unknown>;
-};
+import { FakeServer, parseOk } from '../testing/tool-spec-server';
 
 const parseError = (r: unknown): { reason: string; nextAction?: string } => {
 	const text =

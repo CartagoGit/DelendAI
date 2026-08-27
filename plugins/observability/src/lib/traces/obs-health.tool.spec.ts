@@ -7,26 +7,7 @@ import {
 	type IReadonlyReleaseHealthRecord,
 	type IReadonlyTraceRecord,
 } from './interfaces';
-
-class FakeServer {
-	tools: Record<string, { handler: (args: unknown) => Promise<unknown> }> =
-		{};
-
-	registerTool(
-		name: string,
-		_meta: unknown,
-		handler: (args: unknown) => Promise<unknown>,
-	) {
-		this.tools[name] = { handler };
-	}
-}
-
-const parseOk = (value: unknown): Record<string, unknown> => {
-	const text =
-		(value as { content: Array<{ text: string }> }).content[0]?.text ??
-		'{}';
-	return JSON.parse(text) as Record<string, unknown>;
-};
+import { FakeServer, parseOk } from '../testing/tool-spec-server';
 
 const parseError = (
 	value: unknown,
