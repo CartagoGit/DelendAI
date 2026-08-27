@@ -29,8 +29,8 @@
 
 ## Depends on
 
-- @mcp-vertex/core
 - zod
+- @mcp-vertex/core
 - better-sqlite3
 
 ## Writes
@@ -39,7 +39,7 @@
 
 ## Entry points
 
-- ./src/index.ts
+- ./dist/index.js
 - src/index.ts (default export → IMcpPlugin)
 
 ## Tests
