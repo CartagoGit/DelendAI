@@ -133,6 +133,23 @@ const pctDelta = (
  * Diff a baseline + candidate snapshot pair against the given thresholds.
  * Pure function — no I/O, no process.exit — so it is trivially unit-testable.
  */
+/**
+ * Payload sizes only mean something when both runs measured the same
+ * surface. A baseline captured while most plugins failed to load holds
+ * near-empty responses; diffing a healthy run against it reports every
+ * tool as a huge regression, which describes the broken capture rather
+ * than any change in the code. Treat that pair the way a missing baseline
+ * is already treated — report it loudly and enforce nothing, instead of
+ * failing on a comparison that cannot support a conclusion.
+ */
+export const isComparableSurface = (
+	baseline: IMetricsSnapshotFile,
+	candidate: IMetricsSnapshotFile,
+): boolean =>
+	baseline.surface !== undefined &&
+	candidate.surface !== undefined &&
+	baseline.surface.toolsMeasured === candidate.surface.toolsMeasured;
+
 export const diffSnapshots = (
 	baseline: IMetricsSnapshotFile,
 	candidate: IMetricsSnapshotFile,
@@ -370,13 +387,23 @@ if (isMainModule()) {
 			process.env.METRICS_LATENCY_DELTA_PCT === undefined
 				? { ...thresholds, latencyDeltaPct: Number.POSITIVE_INFINITY }
 				: thresholds;
+		const comparable = isComparableSurface(baseline, candidate);
 		const report = diffSnapshots(baseline, candidate, effectiveThresholds);
 		const markdown = renderMarkdownReport(report);
 		console.log(markdown);
+		if (!comparable) {
+			console.log(
+				'\n> **Baseline not comparable** — it measured ' +
+					`${baseline.surface?.toolsMeasured ?? 'an unrecorded number of'} tools, ` +
+					`this run measured ${candidate.surface?.toolsMeasured ?? 'an unrecorded number'}. ` +
+					'The table above is informational only; no regression is enforced ' +
+					'until a baseline captured from the same surface is published.',
+			);
+		}
 		if (summaryPath !== undefined) {
 			await appendFile(summaryPath, markdown);
 		}
-		if (!report.ok) {
+		if (comparable && !report.ok) {
 			process.exit(1);
 		}
 	};
