@@ -7,7 +7,7 @@ import {
 	sentryParseList,
 } from '../errors/list-errors';
 import type { IErrorSource } from '../errors/ierror-source';
-import { FakeServer, parseOk } from '../testing/tool-spec-server';
+import { FakeServer, parseOk } from '../testing/tool-spec-server.helper';
 
 const parseError = (r: unknown): { reason: string; nextAction?: string } => {
 	const text =

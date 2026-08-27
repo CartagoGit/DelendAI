@@ -13,7 +13,7 @@ import { LinearDispatcher } from '../dispatch/linear-dispatcher.js';
 import {
 	InvalidDispatchPortFactoryError,
 	MissingDispatchPortError,
-} from '../dispatch/port-resolution.js';
+} from '../dispatch/port-resolution.helper.js';
 import {
 	BudgetPolicySchema,
 	OrchestrationModeSchema,

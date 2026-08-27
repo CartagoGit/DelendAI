@@ -6,7 +6,7 @@ import type {
 } from '../correlate';
 import type { IObsIssue } from '../errors/ierror-source';
 import { buildObsCorrelateToolRegistration } from './obs-correlate.tool';
-import { FakeServer, parseOk } from '../testing/tool-spec-server';
+import { FakeServer, parseOk } from '../testing/tool-spec-server.helper';
 
 const issues: readonly IObsIssue[] = [
 	{

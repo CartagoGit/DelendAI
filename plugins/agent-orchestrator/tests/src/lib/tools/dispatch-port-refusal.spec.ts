@@ -16,7 +16,7 @@ import {
 	InvalidDispatchPortFactoryError,
 	MissingDispatchPortError,
 	resolveDispatchPort,
-} from '../../../../src/lib/dispatch/port-resolution.js';
+} from '../../../../src/lib/dispatch/port-resolution.helper.js';
 
 /** Validates the envelope instead of asserting into `unknown` with a cast. */
 const RefusalSchema = z.object({
