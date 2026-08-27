@@ -1081,14 +1081,28 @@ hang the verify harness"*. El guard es:
 tool.effects.some((e) => e === 'spawn' || e === 'fs:write' || e === 'network')
 ```
 
-El tipo real de `tool.effects[]` es `'destructive' | 'network' | 'write'`. De los
-tres literales comparados:
+El tipo real es
+`IToolEffect = 'write' | 'spawn' | 'network' | 'destructive'`
+(`packages/core/src/lib/contracts/interfaces/tool-registration.interface.ts:13`).
+El guard compara **tres** literales contra un union de **cuatro** miembros:
 
-| Literal comparado | ¿Está en el union? | Resultado |
+| Miembro del union | ¿Lo cubre el guard? | Resultado |
 | --- | --- | --- |
-| `'spawn'` | **no** | siempre falso |
-| `'fs:write'` | **no** | siempre falso |
-| `'network'` | sí | funciona |
+| `'network'` | sí | protegido |
+| `'spawn'` | sí | protegido |
+| `'write'` | **no** — el guard escribe `'fs:write'` | **desprotegido** |
+| `'destructive'` | **no** — ni siquiera aparece | **desprotegido** |
+
+Es decir: **dos de los cuatro efectos no se saltan**, incluido `'destructive'`,
+que es el más peligroso del union y no figura ni como literal mal escrito. El
+`'fs:write'` es un typo por `'write'`.
+
+*(Corrección: una versión anterior de esta tabla afirmaba que `'spawn'` tampoco
+estaba en el union. Sí está y sí funciona. El error vino de leer literalmente el
+mensaje de TS2367 —que nombra sólo `"destructive" | "network" | "write"` porque
+el estrechamiento de flujo de `some()` ya había consumido `'spawn'` en la rama
+anterior— en vez de leer la definición del tipo. La conclusión práctica no
+cambia.)*
 
 **Evidencia.**
 ```
@@ -1125,9 +1139,7 @@ ejecutaría de verdad durante `verify:tools`.
 **Reproducción.** Los dos comandos de la evidencia; y añadir una herramienta con
 `effects: ['write']` e `inputSchema` de campos opcionales, y correr `verify:tools`.
 
-**Solución mínima.** Comparar contra los literales reales del union:
-`e === 'destructive' || e === 'write' || e === 'network'` — es decir, cualquier
-efecto declarado.
+**Solución mínima.** Comparar contra los cuatro literales reales del union.
 
 **Solución arquitectónica ideal.** Que el guard **no enumere literales**: si
 `tool.effects` no está vacío, no se sondea. Enumerar valores de un union en otro
