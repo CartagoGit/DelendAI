@@ -1,17 +1,19 @@
 /**
  * f00086 / c00086 V1 — `push-to-develop-discipline` pure engine
- * (refined 2026-08-24: config-driven, block only per-agent branches).
+ * (refined 2026-08-27: `develop` only lands via PR — no direct push).
  *
  * Pins the rules the pre-push guard makes:
  *
- *   1. Pushing from `develop` → ALLOW (the shared push, and
- *      `develop → main` release merges).
- *   2. Pushing from `main` → ALLOW (release flow; versioning is
+ *   1. Pushing to `develop` (any source branch) → BLOCK. Work lands
+ *      on `develop` only through a pull request.
+ *   2. Pushing to `main` → ALLOW (release flow; versioning is
  *      derived on push to `main`).
- *   3. With `agentWorktree` on → every branch allowed.
- *   4. With `agentWorktree` off → `agent/*` blocked; user-managed
- *      branches (`fix/*`, `feature/*`) allowed. Detached HEAD /
- *      null current branch → fail-open.
+ *   3. With `agentWorktree` on → every source branch allowed (still
+ *      subject to rule 1).
+ *   4. With `agentWorktree` off → `agent/*` source branches blocked;
+ *      user-managed branches (`wip/*`, `fix/*`, `feature/*`) allowed
+ *      (still subject to rule 1). Detached HEAD / null current
+ *      branch → fail-open (still subject to rule 1).
  *
  * `parseGitPushArgs` is a separate pure helper that turns the
  * lefthook positional argv `{1} {2} {3} = remote remote_url refs`
@@ -32,14 +34,38 @@ import {
 } from './push-to-develop-discipline.script';
 
 describe('lintPushToDevelop', () => {
-	it('allows develop → origin/develop (the shared push)', () => {
+	it('blocks develop → origin/develop (direct push — must go through a PR)', () => {
 		const result = lintPushToDevelop({
 			cwd: '/repo',
 			remoteName: 'origin',
 			remoteBranch: 'develop',
 			currentBranch: 'develop',
 		});
-		expect(result.ok).toBe(true);
+		expect(result.ok).toBe(false);
+		if (!result.ok) {
+			expect(result.blockers.join('\n')).toContain('pull request');
+		}
+	});
+
+	it('blocks wip/x → origin/develop (direct push — must go through a PR)', () => {
+		const result = lintPushToDevelop({
+			cwd: '/repo',
+			remoteName: 'origin',
+			remoteBranch: 'develop',
+			currentBranch: 'wip/some-slug',
+		});
+		expect(result.ok).toBe(false);
+	});
+
+	it('blocks develop → origin/develop even with the worktree gate on', () => {
+		const result = lintPushToDevelop({
+			cwd: '/repo',
+			remoteName: 'origin',
+			remoteBranch: 'develop',
+			currentBranch: 'develop',
+			agentWorktreeEnabled: true,
+		});
+		expect(result.ok).toBe(false);
 	});
 
 	it('allows develop → origin/main (release merge)', () => {
@@ -62,11 +88,11 @@ describe('lintPushToDevelop', () => {
 		expect(result.ok).toBe(true);
 	});
 
-	it('blocks agent/x → origin/develop (no new branches)', () => {
+	it('blocks agent/x → origin/wip-target (no new branches)', () => {
 		const result = lintPushToDevelop({
 			cwd: '/repo',
 			remoteName: 'origin',
-			remoteBranch: 'develop',
+			remoteBranch: 'wip/some-slug',
 			currentBranch: 'agent/copilot-minimax-m3',
 		});
 		expect(result.ok).toBe(false);
@@ -74,46 +100,66 @@ describe('lintPushToDevelop', () => {
 			expect(result.blockers.join('\n')).toContain(
 				'agent/copilot-minimax-m3',
 			);
-			expect(result.blockers.join('\n')).toContain('git switch develop');
+			expect(result.blockers.join('\n')).toContain('wip/');
 		}
 	});
 
-	it('allows agent/x → origin/develop when the worktree gate is on', () => {
+	it('allows agent/x → origin/wip-target when the worktree gate is on', () => {
 		const result = lintPushToDevelop({
 			cwd: '/repo',
 			remoteName: 'origin',
-			remoteBranch: 'develop',
+			remoteBranch: 'wip/some-slug',
 			currentBranch: 'agent/copilot-minimax-m3',
 			agentWorktreeEnabled: true,
 		});
 		expect(result.ok).toBe(true);
 	});
 
-	it('allows feature/x → origin/develop (user-managed branch, gate off)', () => {
+	it('allows feature/x → origin/feature/x (user-managed branch, gate off)', () => {
 		const result = lintPushToDevelop({
 			cwd: '/repo',
 			remoteName: 'origin',
-			remoteBranch: 'develop',
+			remoteBranch: 'feature/f00086-discipline',
 			currentBranch: 'feature/f00086-discipline',
 		});
 		expect(result.ok).toBe(true);
 	});
 
-	it('fails open on null currentBranch (detached HEAD carve-out)', () => {
+	it('allows wip/x → origin/wip/x (the intended landing-branch push)', () => {
+		const result = lintPushToDevelop({
+			cwd: '/repo',
+			remoteName: 'origin',
+			remoteBranch: 'wip/some-slug',
+			currentBranch: 'wip/some-slug',
+		});
+		expect(result.ok).toBe(true);
+	});
+
+	it('fails open on null currentBranch pushing to a non-develop target (detached HEAD carve-out)', () => {
+		const result = lintPushToDevelop({
+			cwd: '/repo',
+			remoteName: 'origin',
+			remoteBranch: 'wip/some-slug',
+			currentBranch: null,
+		});
+		expect(result.ok).toBe(true);
+	});
+
+	it('still blocks a null currentBranch pushing straight to develop', () => {
 		const result = lintPushToDevelop({
 			cwd: '/repo',
 			remoteName: 'origin',
 			remoteBranch: 'develop',
 			currentBranch: null,
 		});
-		expect(result.ok).toBe(true);
+		expect(result.ok).toBe(false);
 	});
 
 	it('blocks the LEFTHOOK_BYPASS escape hatch in the message', () => {
 		const result = lintPushToDevelop({
 			cwd: '/repo',
 			remoteName: 'origin',
-			remoteBranch: 'develop',
+			remoteBranch: 'wip/some-slug',
 			currentBranch: 'agent/copilot-minimax-m3',
 		});
 		expect(result.ok).toBe(false);
@@ -226,7 +272,7 @@ describe('lintPrePushStdinUpdates', () => {
 	const SHA_A = 'a'.repeat(40);
 	const SHA_B = 'b'.repeat(40);
 
-	it('allows a real develop → origin/develop update (the shared push)', () => {
+	it('blocks a direct develop → origin/develop update (must go through a PR)', () => {
 		const result = lintPrePushStdinUpdates([
 			{
 				localRef: 'refs/heads/develop',
@@ -235,7 +281,7 @@ describe('lintPrePushStdinUpdates', () => {
 				remoteSha: SHA_B,
 			},
 		]);
-		expect(result.ok).toBe(true);
+		expect(result.ok).toBe(false);
 	});
 
 	it('blocks an agent branch pushed to origin/develop (no new branches)', () => {
@@ -250,7 +296,22 @@ describe('lintPrePushStdinUpdates', () => {
 		expect(result.ok).toBe(false);
 	});
 
-	it('allows an agent branch pushed when the worktree gate is on', () => {
+	it('allows an agent branch pushed to a non-develop target when the worktree gate is on', () => {
+		const result = lintPrePushStdinUpdates(
+			[
+				{
+					localRef: 'refs/heads/agent/copilot-minimax-m3',
+					localSha: SHA_A,
+					remoteRef: 'refs/heads/agent/copilot-minimax-m3',
+					remoteSha: SHA_B,
+				},
+			],
+			true,
+		);
+		expect(result.ok).toBe(true);
+	});
+
+	it('still blocks a push to develop even when the worktree gate is on', () => {
 		const result = lintPrePushStdinUpdates(
 			[
 				{
@@ -262,7 +323,7 @@ describe('lintPrePushStdinUpdates', () => {
 			],
 			true,
 		);
-		expect(result.ok).toBe(true);
+		expect(result.ok).toBe(false);
 	});
 
 	it('allows main pushed to origin/main (release flow)', () => {

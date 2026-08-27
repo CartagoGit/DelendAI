@@ -8,16 +8,21 @@
  * `{ ok: true } | { ok: false, blockers: string[] }`.
  *
  * Policy (config-driven):
- *   - `develop` → always allowed (the shared branch).
+ *   - `develop` → always allowed to commit on. This hook only governs
+ *     commits; landing that commit on `develop` still requires opening
+ *     a PR from a `wip/*` branch — `push-to-develop-discipline`
+ *     (pre-push) and `commit-policy`'s push driver both refuse a
+ *     direct push there independently.
  *   - Detached HEAD (`null` / empty) → fail-open (release hotfix).
  *   - When `agentWorktree: true` → every branch is allowed: `agent/*`
  *     branches are the expected per-agent isolation shape.
  *   - When `agentWorktree: false` (this repo) → `agent/*` branches are
  *     blocked (agents never branch on their own). User-managed
- *     branches (`fix/*`, `feature/*`, …) are allowed.
+ *     branches (`wip/*`, `fix/*`, `feature/*`, …) are allowed.
  *
  * Default behaviour: **block only `agent/*`** when the worktree gate
- * is off. The agent switches back to `develop` and re-commits there.
+ * is off. The agent switches back to `develop` (or a `wip/*` branch)
+ * and re-commits there.
  */
 import { spawnSync } from 'node:child_process';
 
@@ -65,7 +70,7 @@ export const lintCommitBranch = (
 	}
 
 	// Gate off: the only branches agents must not create are `agent/*`.
-	// User-managed branches (fix/*, feature/*, …) are allowed.
+	// User-managed branches (wip/*, fix/*, feature/*, …) are allowed.
 	if (!currentBranch.startsWith(AGENT_BRANCH_PREFIX)) {
 		return { ok: true };
 	}

@@ -681,16 +681,25 @@ export const runAutoWork = async (
 		});
 	}
 	const claimReady = claimReadyResolution.claimReady;
-	// x00231: the persist plan must respect the configured branch
-	// policy. With the worktree gate on, agents persist from per-agent
-	// branches; with it off (this repo), they commit and push directly
-	// on `develop`. The push target honours the configured
-	// `persist.pushTarget` and only falls back to a mode-appropriate
-	// default.
+	// x00231 (refined 2026-08-27): `develop` only lands merges through a
+	// PR now — a direct push there is refused independently by
+	// `commit-policy`'s push driver AND `maybePersistAfterSlice`'s own
+	// guard (mirrors the existing `main` refusal). With the worktree
+	// gate on, agents persist from per-agent branches; with it off
+	// (this repo), they commit on `develop` as before, but the push
+	// step targets a fresh `wip/<proposalId>-<sliceId>` branch off HEAD
+	// — `origin HEAD:wip/...` pushes the current commit to a new remote
+	// branch without switching the shared checkout (the concurrency
+	// hazard `mainCheckoutDrift` exists to catch). Opening the PR from
+	// that branch is still a manual/operator step. The push target
+	// honours the configured `persist.pushTarget` and only falls back
+	// to a mode-appropriate default.
 	const worktreeEnabled = options.agentWorktreeEnabled === true;
 	const pushTargetHint =
 		options.persist?.pushTarget ??
-		(worktreeEnabled ? 'origin agent/<branch>' : 'origin develop');
+		(worktreeEnabled
+			? 'origin agent/<branch>'
+			: `origin HEAD:wip/${next.proposalId}-<sliceId>`);
 	const persistStep =
 		resolvedMode === 'none'
 			? []
@@ -699,7 +708,7 @@ export const runAutoWork = async (
 						'Persist the slice: call the engine helper `maybePersistAfterSlice(<claim.files>, <proposalId>, <sliceId>, { mode: "commit" })` after `sync_proposals` and before `release`.',
 					]
 				: [
-						`Persist the slice (commit + push): call \`maybePersistAfterSlice(<claim.files>, <proposalId>, <sliceId>, { mode: "commit-and-push", pushTarget: "${pushTargetHint}" })\` after \`sync_proposals\` and before \`release\`. The helper refuses to push to \`main\` automatically.`,
+						`Persist the slice (commit + push): call \`maybePersistAfterSlice(<claim.files>, <proposalId>, <sliceId>, { mode: "commit-and-push", pushTarget: "${pushTargetHint}" })\` after \`sync_proposals\` and before \`release\`. The helper refuses to push to \`main\` or \`develop\` automatically — open a PR from the pushed \`wip/*\` branch instead.`,
 					];
 
 	// x00051 S3 + x00231: when persist is enabled, the plan must
@@ -707,9 +716,10 @@ export const runAutoWork = async (
 	// that is the per-agent branch — surface the `agent_worktree
 	// create` step explicitly so a host that runs `auto_work` solo
 	// (without going through `delegate`) still produces it before the
-	// push. With the gate off, agents never branch: surface the
-	// shared-branch commit step instead. When persist is `none`, no
-	// such step is needed — the orchestrator is not pushing.
+	// push. With the gate off, agents never create a worktree, but the
+	// push step still targets a `wip/*` branch (see above) instead of
+	// `develop`. When persist is `none`, no such step is needed — the
+	// orchestrator is not pushing.
 	const worktreeStep =
 		resolvedMode === 'none'
 			? []
@@ -719,8 +729,8 @@ export const runAutoWork = async (
 					]
 				: [
 						resolvedMode === 'commit-and-push'
-							? `This repo forbids per-agent branches (\`agentWorktree: false\`): commit and push directly on \`develop\` — do NOT create an agent worktree or branch.`
-							: `This repo forbids per-agent branches (\`agentWorktree: false\`): commit directly on \`develop\` — do NOT create an agent worktree or branch.`,
+							? `This repo forbids per-agent worktrees (\`agentWorktree: false\`): commit on \`develop\`, then push to a \`wip/*\` branch (see the push target below) and open a PR — do NOT push directly to \`develop\`.`
+							: `This repo forbids per-agent worktrees (\`agentWorktree: false\`): commit directly on \`develop\` — do NOT create an agent worktree or branch.`,
 					];
 
 	const steps = [

@@ -255,15 +255,19 @@ restates the rule for swarm context.
 - Token budget is a protected invariant. `overview` (compact) +
   `auto_work` stay under their measured budgets.
 - **Every agent MUST hold an active lock claim (`agent_lock`) for the files it edits.** The validation gate enforces this via `lint:agent-claims`, and commits/pushes violating this will be rejected by git hooks. (x00080) The claim check itself is a lefthook-installed TypeScript hook (`tools/scripts/hooks/pre-commit.ts`), not a raw `.sh` git hook template — every hook in this repo is TypeScript, per rule #10 below.
-- **Branching is config-driven; this repo forbids per-agent branches.**
-  `agentWorktree: false` in `mcp-vertex.config.json` means agents never
-  create `agent/*` worktrees or branches — they commit and push directly
-  on `develop` and share the git history. The operator may still create
-  manual branches (`fix/*`, `feature/*`); those are allowed. When the
-  gate is on, agents working in worktrees must never `git switch` the
-  shared checkout — the main checkout stays on `develop` until the
-  worktree is merged and removed. `branch_status` / `swarm_hygiene`
-  expose `mainCheckoutDrift` to detect a switched shared checkout.
+- **Branching is config-driven; `develop` only receives merges through
+  a pull request.** `agentWorktree: false` in `mcp-vertex.config.json`
+  means agents never create `agent/*` worktrees or per-agent branches
+  — they work on a `wip/*` branch off `develop`, commit there, push it,
+  and open a PR to land. Direct pushes to `develop` are refused
+  independently by both the `commit-policy` push driver and the local
+  pre-push hook, so there is no "just push it to develop" escape hatch.
+  The operator may still create manual branches (`fix/*`, `feature/*`);
+  those are allowed alongside `wip/*`. When the worktree gate is on,
+  agents working in worktrees must never `git switch` the shared
+  checkout — the main checkout stays on `develop` until the worktree is
+  merged and removed. `branch_status` / `swarm_hygiene` expose
+  `mainCheckoutDrift` to detect a switched shared checkout.
 - **No orphaned branches or stashes — always reconcile (this repo).**
   Before closing any work or session, run `bun run reclaim:orphans` and
   reconcile every listed orphan: merge-if-valuable into `develop`
@@ -471,11 +475,11 @@ or have their own config file. Use the same single-pointer pattern:
 
 <!-- mcp-vertex:begin quantitative -->
 ```
-Generated at: 2026-08-27T11:18:33.091Z
+Generated at: 2026-08-27T11:56:28.772Z
 
 Plugins: 51
 Tools: 219
-Test specs: 428 (≈3517 cases)
+Test specs: 428 (≈3523 cases)
 Workspaces: 4 packages, 2 apps, 1 extensions, 4 tooling workspace(s).
 Proposals: 425 on disk (ready=74, in-progress=2, review=1, done=348)
 ```

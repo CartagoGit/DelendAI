@@ -216,8 +216,7 @@
 					"onCommit": true,
 					"force": "with-lease",
 					"protectedBranches": ["main", "master"],
-					"remote": "origin",
-					"branch": "develop"
+					"remote": "origin"
 				},
 				"cadence": {
 					"triggers": [{ "kind": "slice" }],
