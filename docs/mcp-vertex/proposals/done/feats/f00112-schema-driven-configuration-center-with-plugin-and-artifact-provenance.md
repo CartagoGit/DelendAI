@@ -306,7 +306,7 @@ declared settings in the editor.
 
 ### S7 — Configuration Center user and author documentation
 - **Status**: done
-- **Files**: `docs/mcp-vertex/CONFIGURATION-CENTER.md`, `docs/mcp-vertex/PLUGINS-MCP-VERTEX.md`, `apps/web/src/data/pages/configuration-center/*.md` (registered in `apps/web/src/data/manifests/pages.json`, generated + gitignored, not a `Files:` entry)
+- **Files**: `docs/mcp-vertex/CONFIGURATION-CENTER.md`, `docs/mcp-vertex/PLUGINS-MCP-VERTEX.md`, `apps/web/src/data/pages/configuration-center/*.md` (registered in apps/web/src/data/manifests/pages.json, generated + gitignored, not a Files: entry)
 - **DependsOn**: [S6]
 - **Gate**: lint
 - **Evidence**:
