@@ -9,8 +9,9 @@
  * `$ENV_VAR` reference (e.g. `Authorization: Bearer $ANTHROPIC_API_KEY`) so
  * the rendered template is safe to log, paste and share.
  */
-import type { IRoutingDecision } from '@mcp-vertex/core/public';
 import { rewriteUnicodeForAgent } from '@mcp-vertex/core/public';
+
+import type { IHandoffDecision } from '../contracts/interfaces/handoff-decision.interface';
 
 export type HandoffKind = 'cli' | 'curl' | 'mcp-tool' | 'passthrough' | 'none';
 
@@ -24,7 +25,7 @@ export interface IFormattedHandoff {
 const shellQuote = (arg: string): string => `'${arg.replace(/'/g, `'\\''`)}'`;
 
 export const formatHandoff = (
-	decision: IRoutingDecision,
+	decision: IHandoffDecision,
 ): IFormattedHandoff => {
 	const invoke = decision.invoke;
 	const prompt = rewriteUnicodeForAgent(decision.prompt);
