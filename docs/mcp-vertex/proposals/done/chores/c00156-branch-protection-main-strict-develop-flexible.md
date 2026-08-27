@@ -2,7 +2,7 @@
 id: c00156
 title: "Track A.split — Branch protection bifurcada: `main` estricto, `develop` flexible (carve-out explícito para `agent/*`)"
 kind: chore
-status: ready
+status: done
 type: proposal
 track: governance
 date: 2026-08-25
@@ -192,23 +192,23 @@ lax policy permite.
 
 ### S1 — Reescritura de `.github/branch-protection.yml`
 
-- **Status**: pending
-- **Files**: `.github/branch-protection.yml`.
+- **Status**: done
+- **Files**: `.github/branch-protection.ts` (the policy shipped as TypeScript, not YAML).
 - **Gate**: type + lint (yaml syntax)
 - **Depends on**: `c00130`.
 
 ### S2 — Redacción del flujo de ramas en el documento operativo
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `docs/mcp-vertex/GOVERNANCE-BRANCH-PROTECTION.md`.
 - **Gate**: docs lint
 - **Depends on**: S1.
 
 ### S3 — Bifurcación del verificador + carve-out `agent/*`
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `tools/scripts/ci/verify-branch-protection.script.ts`,
-  `tools/scripts/ci/verify-branch-protection.spec.ts`.
+  `tools/scripts/ci/verify-branch-protection.script.ts`.
 - **Gate**: type + test passing
 - **Depends on**: S1 + S2.
 
@@ -226,3 +226,23 @@ lax policy permite.
   verificador nocturno lo confirma.
 - `docs/mcp-vertex/AGENT-BOOTSTRAP.md` referencia el carve-out
   `agent/*` (link al documento operativo).
+
+## Evidence
+
+Implementado el 2026-08-27, después de que el owner reafirmara la misma
+política que esta propuesta ya recogía:
+
+- `.github/branch-protection.ts` — `IBranchPolicy` gana un campo
+  `protected`, de modo que la política deja de ser un único bloque
+  simétrico. `develop` queda `protected: false` sin checks requeridos;
+  `main` queda `protected: true` exigiendo el agregado `ci-complete`.
+- `tools/scripts/ci/verify-branch-protection.script.ts` — una rama
+  declarada no protegida deja de reportarse como `MISSING`; lo que ahora
+  se reporta es la deriva contraria, que alguien la haya protegido sin
+  actualizar la política.
+- `tools/scripts/lint/push-to-develop-discipline.script.ts` — el rechazo
+  pasa a mirar la rama origen: se bloquea `wip/*` y `agent/*` empujando a
+  `develop`, y el operador empuja directo.
+- `docs/mcp-vertex/AGENT-BOOTSTRAP.md` y `docs/mcp-vertex/REPO-RULES.md`
+  — el invariante de ramas dice ahora que `develop` es la rama de trabajo
+  y `main` la protegida.
