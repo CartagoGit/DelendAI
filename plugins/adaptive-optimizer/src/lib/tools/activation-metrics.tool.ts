@@ -7,7 +7,7 @@ import {
 	toolJson,
 } from '@mcp-vertex/core/public';
 
-import type { IActivationMetricsRegistry } from '../metrics/activation-metrics-registry';
+import type { IActivationMetricsToolOptions } from '../contracts/interfaces/adaptive-optimizer.interface';
 
 const ACTIVATION_METRICS_INPUT = z
 	.object({ reset: z.boolean().optional() })
@@ -17,11 +17,6 @@ const ACTIVATION_METRICS_OUTPUT = z.object({
 	activations: z.number().int().nonnegative(),
 	responses: PayloadPercentileSchema,
 });
-
-export interface IActivationMetricsToolOptions {
-	readonly namespacePrefix: string;
-	readonly registry: IActivationMetricsRegistry;
-}
 
 /**
  * `activation_metrics` — how many times `optimize_run` has been activated

@@ -21,7 +21,7 @@ import type {
 import { buildOptimizeRunPayload } from '../services/optimize-run.service';
 import { buildActivationMetricsToolRegistration } from './activation-metrics.tool';
 import { createActivationMetricsRegistry } from '../metrics/activation-metrics-registry';
-import type { IActivationMetricsRegistry } from '../metrics/activation-metrics-registry';
+import type { IActivationMetricsRegistry } from '../contracts/interfaces/adaptive-optimizer.interface';
 
 interface IOptimizeRunToolOptions extends IOptimizeRunRuntimeOptions {
 	readonly namespacePrefix: string;
@@ -144,7 +144,7 @@ export const buildAdaptiveOptimizerToolRegistrations = (
 				);
 			},
 		},
-		// f00027 — the metrics longitudinal gate expects a real
+		// The metrics longitudinal gate expects a real
 		// activation-metrics surface for this plugin; nothing backed it
 		// until this tool existed.
 		buildActivationMetricsToolRegistration({

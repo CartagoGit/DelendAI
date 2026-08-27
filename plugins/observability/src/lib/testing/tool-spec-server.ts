@@ -9,7 +9,10 @@
  */
 import { z } from 'zod';
 
-export type TToolHandler = (args: unknown) => Promise<unknown>;
+// Not exported: no spec imports this alias by name (they call the handler
+// through `FakeServer#tools`), so keeping it module-private avoids adding
+// a new contracts/-eligible export for a test-only helper type.
+type TToolHandler = (args: unknown) => Promise<unknown>;
 
 /**
  * Captures `registerTool` calls so a spec can invoke a tool handler

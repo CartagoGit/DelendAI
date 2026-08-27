@@ -41,7 +41,7 @@ export default definePlugin({
 		}
 		const policy = parsed.data;
 
-		// x00261 (AUD-CP-003): every timer + listener the plugin
+		// Every timer + listener the plugin
 		// creates gets a teardown appended here so the host's
 		// `dispose()` cleans up exactly once on unload / hot-reload.
 		const disposables: Array<() => void> = [];
@@ -82,7 +82,7 @@ export default definePlugin({
 
 		const sharedDriver = { run, policy, identityCtx, auditAgent };
 
-		// x00266 (AUD-CP-008/009): the push scheduler unifies the
+		// The push scheduler unifies the
 		// three modes (`onCommit`, `everyNCommits`, `everyNMinutes`)
 		// and is the single source of automatic-push decisions. The
 		// explicit `commit_policy_push` tool still wins — it calls
@@ -125,7 +125,7 @@ export default definePlugin({
 			}),
 		];
 
-		// f00183 (AUD-CP-012): the idempotency store lives at
+		// The idempotency store lives at
 		// `<workspaceRoot>/.commit-policy/processed-events.jsonl`.
 		// Created BEFORE the engine so the engine constructor
 		// can receive a reference; disposed by `engine.dispose()`.
@@ -133,7 +133,7 @@ export default definePlugin({
 			workspaceRoot: ctx.workspace.root,
 		});
 
-		// f00182 (AUD-CP-002/006/008/010/011): the central
+		// The central
 		// orchestrator. Every trigger dispatches into the engine
 		// via the IEngineEvent interface; the engine owns the
 		// pipeline (selector → branch → conventional → files →
@@ -156,7 +156,7 @@ export default definePlugin({
 				t.kind === 'slice',
 		);
 		if (sliceTrigger !== undefined) {
-			// x00260 + f00182: the listener dispatches every
+			// The listener dispatches every
 			// emitted event into the engine. The engine decides
 			// what (if anything) gets committed; the ack flows
 			// back so the listener can drain its pending queue.
@@ -250,7 +250,7 @@ export default definePlugin({
 				tools,
 				knowledge,
 			},
-			// x00261 (AUD-CP-003): the host calls `dispose()` on unload
+			// The host calls `dispose()` on unload
 			// or hot-reload. The plugin tears down every listener and
 			// timer it created during `register`. Idempotent: a second
 			// call is a no-op.

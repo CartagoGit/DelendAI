@@ -40,22 +40,14 @@
  * module ships the strongest primitive achievable from
  * `dry-run/**` alone, ready for that wiring.
  */
-
-/** The vocabulary a guarded capability declares itself as. Mirrors
- * `IPlannedRun['shape']` / `IPlannedChange['kind']` in protocol.ts so
- * a refusal can be reported using the same words as a plan. */
-export type TEffectCapabilityKind =
-	| 'write'
-	| 'delete'
-	| 'spawn'
-	| 'network'
-	| 'git';
-
-export interface IDryRunEffectRefusal {
-	readonly kind: 'dry-run-effect-refused';
-	readonly capability: TEffectCapabilityKind;
-	readonly reason: string;
-}
+export type {
+	IDryRunEffectRefusal,
+	TEffectCapabilityKind,
+} from '../contracts/interfaces/effect-guard.interface';
+import type {
+	IDryRunEffectRefusal,
+	TEffectCapabilityKind,
+} from '../contracts/interfaces/effect-guard.interface';
 
 /**
  * Thrown by a capability created with `guardEffectCapability` when it
