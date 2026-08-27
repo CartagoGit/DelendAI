@@ -94,8 +94,8 @@ contains:
             rationale: "Apretar los umbrales de cobertura al valor real y exigir branches >=80% en core/plugins, core/dry-run y core/project. AUD-F01." }
         - { id: t00031, kind: test, required: true, priority: P1, track: testing,
             rationale: "Reescribir el e2e de dogfood de commit-policy para el comportamiento post-x00258. AUD-F02." }
-        - { id: x00293, kind: fix, required: true, priority: P2, track: release,
-            rationale: "Version unica por plugin: changelog declara 0.1.1 en package/manifest y 0.1.0 en runtime. AUD-F05." }
+        - { id: x00293, kind: fix, required: true, priority: P1, track: release,
+            rationale: "Version unica por plugin: 41 de 51 publican 0.1.1 y declaran 0.1.0 al host MCP; el gate manifest-vs-package cubre dos de las tres fuentes. AUD-F05." }
         - { id: f00274, kind: feat, required: false, priority: P2, track: product,
             rationale: "La extension VS Code se activa por comando: hoy no arranca en un repo sin mcp-vertex.config.json. AUD-F03." }
         - { id: f00275, kind: feat, required: false, priority: P2, track: product,
@@ -298,7 +298,8 @@ expresable), `x00292` (`protectedBranches` obligatorio en la firma).
 
 
 `x00279` (`defaults` consumidos), `x00282` (mapa workspace→proyecto vitest),
-`d00013` (ADR del modelo de ramas) y `x00273` (guard de push a `main`).
+`d00013` (ADR del modelo de ramas), `x00273` (guard de push a `main`) y
+`x00293` (versión única por plugin: 41 de 51 mienten al host).
 
 ### S8 — Testing (P1)
 
@@ -321,8 +322,8 @@ los tests de caminos de error suben la cobertura de ramas por sí solos.
 `f00272` (métricas de superficie útil), `f00273` (ranking e histéresis),
 `r00035` (desduplicar CI), `r00040` (subpaths del core), `r00041` (fronteras del
 cliente), `r00042` (`proposals` como event log), `x00287` (fail-closed),
-`v00132` (payload duplicado), `x00293` (versión única), `f00274` (activación de
-la extensión), `f00275` (`doctor --deep`), `d00014` (docs canónicas).
+`v00132` (payload duplicado), `f00274` (activación de la extensión), `f00275`
+(`doctor --deep`), `d00014` (docs canónicas).
 
 ## Dependency graph
 
