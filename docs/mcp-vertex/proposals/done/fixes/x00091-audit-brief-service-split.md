@@ -72,7 +72,7 @@ Three parallel slices, all file-disjoint. **S1** splits the brief service. **S2*
 
 ### S2 — Tool split: `audit-run.tool.ts`
 
-- **Status**: done (commit `3004071d`)
+- **Status**: done (landed via `00c12a3c`; the original branch commit 3004071d was squashed away and is no longer reachable)
 - **Files**:
     - `plugins/audit/src/lib/tools/audit-run.tool.ts`
 - **Gate**: `bun run validate`

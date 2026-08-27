@@ -69,8 +69,8 @@ When a line is unparseable the placeholder uses "now", which:
 
 `docs/mcp-vertex/proposals/done/**/*.md` cites backticked hashes. A grep + `git log` cross-check found 17 references in 11 proposals pointing to commits that are not in the repo. Examples:
 
-- `docs/mcp-vertex/proposals/done/feats/f00049-...md`: cites `3fbb19bd`, `ac33a462`, `be6a505c`, `f14456a8` — none exist
-- `docs/mcp-vertex/proposals/done/audits/a00069-...md`: cites `546a89a4`, `8199bd1d`
+- `docs/mcp-vertex/proposals/done/feats/f00049-...md`: cites 3fbb19bd, ac33a462, be6a505c, f14456a8 — none exist
+- `docs/mcp-vertex/proposals/done/audits/a00069-...md`: cites 546a89a4, 8199bd1d
 - `docs/mcp-vertex/proposals/done/audits/a00070-...md`, `a00071-...md`: cite `048f88a7` (which IS the `main` HEAD, not the cited branch), `4710d2a4...`
 
 The `proposal-files-exist` lint only validates file paths, never the cited commit hashes. The `a00074 S1` shipped-in: gate (commit `285e544b`) prevented this for *future* proposals, but the historical back-citations were never audited.
