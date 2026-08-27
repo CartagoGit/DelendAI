@@ -52,6 +52,9 @@ interface IPackageJson {
 	readonly version?: string;
 	readonly private?: boolean;
 	readonly files?: unknown;
+	readonly main?: string;
+	/** npm allows either a single path or a name → path map. */
+	readonly bin?: string | Readonly<Record<string, string>>;
 }
 
 const readPackageJson = (dir: string): IPackageJson => {
@@ -99,6 +102,36 @@ export const assertPublishablePackagesArePacked = (): void => {
 	if (missingFromPack.length > 0) {
 		throw new Error(
 			`pack smoke: publishable packages in PUBLISH_ORDER are not being packed: ${missingFromPack.join(', ')}`,
+		);
+	}
+};
+
+/**
+ * A tarball is only meaningful if the entrypoints its manifest advertises
+ * actually exist. Packing an unbuilt package produces a tarball that
+ * installs fine and then dies at require time with a MODULE_NOT_FOUND
+ * that names a path inside a temp dir — evidence that points nowhere near
+ * the missing build step. Fail here, naming the package and the file.
+ */
+export const assertPackedEntrypointsExist = (): void => {
+	const missing: string[] = [];
+	for (const dir of PACKED_PACKAGE_DIRS) {
+		const pkg = readPackageJson(dir);
+		const targets = [
+			...(typeof pkg.main === 'string' ? [pkg.main] : []),
+			...(typeof pkg.bin === 'string'
+				? [pkg.bin]
+				: Object.values(pkg.bin ?? {})),
+		];
+		for (const target of targets) {
+			if (!existsSync(join(ROOT, dir, target))) {
+				missing.push(`${dir} → ${target}`);
+			}
+		}
+	}
+	if (missing.length > 0) {
+		throw new Error(
+			`pack smoke: packed package(s) are missing their declared entrypoint — run \`bun run build\` first:\n  ${missing.join('\n  ')}`,
 		);
 	}
 };
@@ -357,6 +390,7 @@ const runPresetsSmoke = async (presetIds: readonly string[]): Promise<void> => {
 
 const main = async (): Promise<void> => {
 	assertPublishablePackagesArePacked();
+	assertPackedEntrypointsExist();
 	const args = parseCliArgs(process.argv.slice(2));
 	if (args.mode === 'presets') {
 		await runPresetsSmoke(args.presetIds);
