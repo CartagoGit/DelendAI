@@ -1955,10 +1955,23 @@ servidor desde la extensión VS Code (`server restart` es un comando existente).
 **Reproducción.** Arrancar con un servidor externo declarado, invocarlo (arranca
 el hijo), cerrar el servidor MCP, y comprobar con `ps` que el hijo sigue vivo.
 
-**Solución mínima.**
+**Solución mínima — con una trampa que hay que nombrar.** El snippet obvio
+**no funciona**:
 ```ts
-return { tools, activation, dispose: async () => registry.closeAll() };
+return { tools, activation, dispose: async () => registry.closeAll() };  // ✗ pierde el dispose
 ```
+El loader identifica un `IPluginRuntime` por la presencia de la clave
+`registrations` (`packages/core/src/lib/plugins/load-plugins-runtime.helper.ts:22`
+→ `isObject(value) && 'registrations' in value`). Un objeto plano con `dispose`
+al lado de `tools`/`activation` se trata como registros normales y **el `dispose`
+se descarta en silencio** — reproduciendo `AUD-E01.c` dentro de la propia
+corrección. La forma correcta envuelve la superficie:
+```ts
+return { registrations: { tools, activation }, dispose: async () => registry.closeAll() };
+```
+*(Corrección aportada por el subagente que implementó este arreglo: detectó la
+trampa probando antes y después, en vez de fiarse del snippet de esta auditoría.
+La versión anterior de este párrafo era incorrecta.)*
 
 **Solución arquitectónica ideal.** Que el contrato de plugin **exija** `dispose`
 cuando el manifest declare la capability `process`, verificado por
