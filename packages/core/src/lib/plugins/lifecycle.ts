@@ -80,21 +80,48 @@ export const hasPhasedLifecycle = (
 	typeof (plugin as { dispose?: unknown }).dispose === 'function';
 
 /**
- * Run `dispose()` idempotently: catches errors and returns a
- * stable result so the router can call it twice without breaking
- * host shutdown.
+ * Tracks the in-flight/settled disposal for a given `active` payload so
+ * concurrent or repeated `safeDispose` calls converge on one cleanup run.
+ * A `WeakMap` keyed on the payload itself (rather than a counter or a flag
+ * stored elsewhere) means the guard needs no explicit reset: once the
+ * `active` payload is no longer referenced by any caller, its entry is
+ * eligible for garbage collection along with it.
  */
-export const safeDispose = async <A>(
+const disposalSettlements = new WeakMap<object, Promise<void>>();
+
+/**
+ * Run `dispose()` exactly once per `active` payload: catches errors and
+ * memoises the settlement so the router (or any other caller) can call it
+ * twice — or from two concurrent code paths — without running cleanup
+ * twice. Every caller for the same `active` payload awaits the very same
+ * settlement, including callers that arrive while the first `dispose()`
+ * is still in flight.
+ *
+ * Requiring `A extends object` is what makes the guard sound: identity
+ * (via `WeakMap`) is the only reliable way to recognise "the same active
+ * payload" across independent call sites, and every real `ActivePlugin`
+ * payload is an object already.
+ */
+export const safeDispose = async <A extends object>(
 	dispose: ((active: A) => Promise<void>) | undefined,
 	active: A | undefined,
 ): Promise<void> => {
 	if (dispose === undefined || active === undefined) return;
-	try {
-		await dispose(active);
-	} catch {
-		// best-effort — same semantics as the commit-policy plugin
-		// (x00261 / IPluginRuntime.dispose).
-	}
+	const existingSettlement = disposalSettlements.get(active);
+	if (existingSettlement !== undefined) return existingSettlement;
+	const settlement = (async () => {
+		try {
+			await dispose(active);
+		} catch {
+			// best-effort — same semantics as the commit-policy plugin
+			// (x00261 / IPluginRuntime.dispose).
+		}
+	})();
+	// Set synchronously (no `await` above this line) so concurrent callers
+	// racing on the same tick observe the settlement before starting a
+	// second `dispose()`.
+	disposalSettlements.set(active, settlement);
+	return settlement;
 };
 
 /**
