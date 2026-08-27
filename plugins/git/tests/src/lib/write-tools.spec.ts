@@ -19,6 +19,11 @@ import {
 } from '@mcp-vertex/git/lib/tools/write-tools';
 import { createGitRunner } from '@mcp-vertex/git/lib/services/git';
 import type { IGitRunner } from '@mcp-vertex/git/lib/services/git';
+import {
+	createDryRunGatedGitRunner,
+	DryRunEffectRefusedError,
+	runWithDryRunScope,
+} from '@mcp-vertex/core/public';
 
 const execFileAsync = promisify(execFile);
 
@@ -402,6 +407,53 @@ describe('git_commit / git_push (S9)', async () => {
 				{ cwd: repoDir },
 			);
 			expect(stdout).toBe('agent-a');
+		});
+	});
+
+	/**
+	 * Capability-injection layer, pilot proof: `runGitCommit` never reads
+	 * `args.dryRun` (it has no such argument at all) — the whole point of
+	 * `ctx.effects.git` is that a handler like this one cannot mutate the
+	 * repo while the CALLER'S `dryRun: true` is in effect, entirely
+	 * without its own cooperation.
+	 */
+	describe('dry-run capability gate (ctx.effects.git)', () => {
+		it('refuses the git effect and leaves the repo untouched when the ambient dry-run scope is active', async () => {
+			const gated = createDryRunGatedGitRunner(runner);
+			await writeFile(join(repoDir, 'dry-run.txt'), 'x\n', 'utf8');
+
+			await runWithDryRunScope(true, async () => {
+				await expect(
+					runGitCommit(gated, {
+						message: 'feat: should never land',
+						files: ['dry-run.txt'],
+					}),
+				).rejects.toThrow(DryRunEffectRefusedError);
+			});
+
+			// Prove prevention, not just a caught error: no new commit was
+			// created and the file is still untracked, exactly as if
+			// `runGitCommit` had never been called.
+			const count = await runner(['rev-list', '--count', 'HEAD']);
+			expect(count.output.trim()).toBe('1'); // just the init commit
+			const status = await runner(['status', '--porcelain=v1']);
+			expect(status.output).toContain('?? dry-run.txt');
+		});
+
+		it('performs the real commit once the ambient dry-run scope is false', async () => {
+			const gated = createDryRunGatedGitRunner(runner);
+			await writeFile(join(repoDir, 'real-run.txt'), 'x\n', 'utf8');
+
+			const result = await runWithDryRunScope(false, async () =>
+				runGitCommit(gated, {
+					message: 'feat: should land for real',
+					files: ['real-run.txt'],
+				}),
+			);
+
+			expect(result.isError).toBeUndefined();
+			const count = await runner(['rev-list', '--count', 'HEAD']);
+			expect(count.output.trim()).toBe('2');
 		});
 	});
 });

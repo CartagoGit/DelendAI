@@ -22,6 +22,7 @@ import type {
 import type { IPluginRuntime } from '../contracts/interfaces/plugin-runtime.interface';
 import type { IErrorSink } from '../error-collection/sink.interface';
 import type { IErrorCollector } from '../error-collection/collector.interface';
+import type { IPluginEffectsCapability } from '../contracts/interfaces/effect-capabilities.interface';
 
 /**
  * What the core hands a plugin at registration time. A plugin is
@@ -158,6 +159,24 @@ export interface IMcpPluginContext {
 	 * arbitrary tool-name strings.
 	 */
 	readonly toolRegistry?: IToolIdentityRegistry | undefined;
+	/**
+	 * Dry-run-gated mutating capabilities. A plugin that writes git
+	 * history (or, as this
+	 * surface grows, the filesystem/network/spawn) MUST obtain that
+	 * capability from here rather than importing `node:child_process` /
+	 * `node:fs` / `fetch` directly: every method on `effects` refuses to
+	 * run its real effect while the CURRENT tool call's `args.dryRun` is
+	 * `true`, even if the plugin's own handler never reads that flag
+	 * (see `dry-run/effect-guard.helper.ts` and
+	 * `dry-run/dry-run-scope.helper.ts`). Optional on the contract for
+	 * backward-compat with test fixtures that build a context literal by
+	 * hand — production hosts (the CLI's `assemble.ts`) always supply a
+	 * concrete value. A plugin that requires it (e.g. `git`'s write
+	 * tools) should refuse to register its mutating tools rather than
+	 * silently falling back to an unguarded capability when this is
+	 * absent.
+	 */
+	readonly effects?: IPluginEffectsCapability | undefined;
 }
 
 /**

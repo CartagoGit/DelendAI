@@ -31,6 +31,8 @@ import {
 	resolveCommitAuthor,
 } from '../shared/commit-author';
 import { createGitRunner } from '../shared/git-write';
+import { createDryRunGatedGitRunner } from '../dry-run/effect-capability-factory.helper';
+import type { IPluginEffectsCapability } from '../contracts/interfaces/effect-capabilities.interface';
 import type { IToolSummary } from '../catalog/agent-discovery-types';
 import { createWorkspacePathProvider } from '../workspace/create-workspace-path-provider';
 import type {
@@ -394,6 +396,14 @@ export const assembleCliConfig = async (
 	let resolvedLogsSink: ILogsSink | undefined;
 	// — collector assembled after `assemblePlugins` returns.
 	let resolvedErrorCollector: IErrorCollector | undefined;
+	// One dry-run-gated git runner, shared across every
+	// plugin's context. Safe to share a single instance — the gate reads
+	// the AMBIENT dry-run scope of whichever tool call is currently
+	// invoking it (see `dry-run-scope.helper.ts`), not any state captured
+	// at construction time.
+	const pluginEffects: IPluginEffectsCapability = {
+		git: createDryRunGatedGitRunner(createGitRunner(workspace.root)),
+	};
 	const buildContext = (
 		pluginName: string,
 		cacheNamespace?: string,
@@ -419,6 +429,7 @@ export const assembleCliConfig = async (
 			cacheEvictionRegistry,
 			peerPlugins: peerRegistry.registry,
 			toolRegistry,
+			effects: pluginEffects,
 			...(resolvedLogsSink !== undefined
 				? { logsSink: resolvedLogsSink }
 				: {}),
