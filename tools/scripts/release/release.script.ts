@@ -264,9 +264,18 @@ const inspectTarball = (tarballPath: string): void => {
 	}
 };
 
+/**
+ * Every entry in a lockstep release plan is bumped to the SAME `plan.to`
+ * (see `applyPlan`, which writes it into each package's own `package.json`
+ * before this runs) — so resolving per-entry, from `entry.to`, is both the
+ * general-purpose rule (never borrow a version from a package other than
+ * the one being depended on) and, in this lockstep case, exactly `plan.to`
+ * for every entry.
+ */
 const createWorkspaceDepsPlan = (plan: IReleasePlan): IWorkspaceDepsPlan => ({
-	targetVersion: plan.to,
-	mcpVertexPackages: new Set(plan.entries.map((entry) => entry.name)),
+	packageVersions: new Map(
+		plan.entries.map((entry) => [entry.name, entry.to] as const),
+	),
 });
 
 async function publishAll(

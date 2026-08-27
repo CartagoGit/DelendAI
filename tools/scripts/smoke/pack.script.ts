@@ -49,6 +49,7 @@ const ROOT = resolve('.');
 
 interface IPackageJson {
 	readonly name?: string;
+	readonly version?: string;
 	readonly private?: boolean;
 	readonly files?: unknown;
 }
@@ -148,15 +149,25 @@ const run = (cmd: string, args: string[], cwd: string): string =>
 		stdio: ['ignore', 'pipe', 'inherit'],
 	});
 
-/** The monorepo version every intra-repo `workspace:*` dep resolves to. */
-const MONOREPO_VERSION = (readPackageJson('.') as { version?: string }).version;
-
+/**
+ * Every intra-repo `workspace:` dep resolves to the version the DEPENDED-ON
+ * package's own `package.json` currently declares — never the root
+ * manifest's version, which is under no obligation to match any individual
+ * package. A dependency that has independently bumped ahead of root
+ * previously produced an unsatisfiable installed set here.
+ */
 const WORKSPACE_PLAN: IWorkspaceDepsPlan = {
-	targetVersion: MONOREPO_VERSION ?? '*',
-	mcpVertexPackages: new Set(
-		PACKED_PACKAGE_DIRS.map((dir) => readPackageJson(dir).name).filter(
-			(name): name is string => typeof name === 'string',
-		),
+	packageVersions: new Map(
+		PACKED_PACKAGE_DIRS.map((dir) => {
+			const pkg = readPackageJson(dir);
+			if (typeof pkg.name !== 'string') {
+				throw new Error(`${dir}/package.json is missing a name`);
+			}
+			if (typeof pkg.version !== 'string') {
+				throw new Error(`${dir}/package.json is missing a version`);
+			}
+			return [pkg.name, pkg.version] as const;
+		}),
 	),
 };
 
@@ -276,7 +287,19 @@ const runPackageSmoke = async (): Promise<void> => {
 			workdir: proj,
 			tarballs,
 			configJson: null,
-			extraServerArgs: [`--plugins=${PLUGIN_IDS.join(',')}`],
+			// The default `managed` surface hides most plugin tools behind
+			// the `vertex` router and only lists a curated bootstrap subset,
+			// so a REQUIRED_TOOLS check against `listTools()` would mistake
+			// that exposure policy for "the plugin failed to resolve under
+			// node". `--surface=native` lists every registered tool
+			// directly (see `tools/scripts/lib/plugin-test-bed.ts`, which
+			// does the same for the same reason), which is what this smoke
+			// actually needs to verify: the plugin loaded and its tools are
+			// wired, not the default LLM-facing exposure policy.
+			extraServerArgs: [
+				`--plugins=${PLUGIN_IDS.join(',')}`,
+				'--surface=native',
+			],
 		});
 		console.log(
 			`✓ pack smoke: mcpv bin + installed-from-tarball CLI serves ${result.toolCount} tools under node ` +
