@@ -1,11 +1,11 @@
 /**
- * f00129 — `observability` plugin entry point.
+ * `observability` plugin entry point.
  *
  * S1 (error + issue read): `obs_errors` lists recent issues from a
  * Sentry/Datadog source via the allow-listed web-fetch engine. Pure
  * over an injected `IErrorSource`; auth is env-only and never logged.
  * S2 (traces + release health) and S3 (local correlation + catalog)
- * are tracked separately under f00129.
+ * are tracked separately.
  */
 import z from 'zod';
 
@@ -116,7 +116,7 @@ export default definePlugin({
 							}),
 					localDeps: realReadLocalCorrelateDeps(ctx.workspace.root),
 				}),
-				// x00185 (F13): fully implemented and tested (obs_trace +
+				// Fully implemented and tested (obs_trace +
 				// obs_release_health), but never wired into this registration
 				// — completely unreachable by any host.
 				buildObsHealthToolRegistration({
@@ -124,7 +124,7 @@ export default definePlugin({
 					workspaceRootAbs: ctx.workspace.root,
 					metricsRegistry: runtimeMetricsRegistry,
 				}),
-				// f00027 — the manifest's own summary promises a "metrics"
+				// The manifest's own summary promises a "metrics"
 				// surface; nothing backed it until this tool existed.
 				buildObsRuntimeMetricsToolRegistration({
 					namespacePrefix: ctx.namespacePrefix,

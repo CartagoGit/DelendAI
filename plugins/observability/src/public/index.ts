@@ -30,9 +30,10 @@ export type { IObsHealthToolOptions } from '../lib/tools/obs-health.tool';
 export { buildObsRuntimeMetricsToolRegistration } from '../lib/tools/obs-runtime-metrics.tool';
 export { createRuntimeMetricsRegistry } from '../lib/metrics/runtime-metrics-registry';
 export type {
+	IObsRuntimeMetricsToolOptions,
 	IRuntimeMetricsRegistry,
 	IRuntimeMetricsSnapshot,
-} from '../lib/metrics/runtime-metrics-registry';
+} from '../lib/contracts/interfaces/observability.interface';
 // `computePayloadPercentile`/`IPayloadPercentile` now live in
 // `@mcp-vertex/core` (the shared contract with `adaptive-optimizer` and the
 // metrics longitudinal gate); re-exported here so this plugin's public

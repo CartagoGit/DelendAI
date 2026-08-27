@@ -13,7 +13,7 @@ import {
 	type IReadReleaseHealthDeps,
 	type IReadTracesDeps,
 } from '../traces';
-import type { IRuntimeMetricsRegistry } from '../metrics/runtime-metrics-registry';
+import type { IRuntimeMetricsRegistry } from '../contracts/interfaces/observability.interface';
 
 export interface IObsHealthToolOptions {
 	readonly namespacePrefix: string;

@@ -24,6 +24,14 @@ import type {
 	IGitRunResult,
 	IGitRunner,
 } from '../contracts/interfaces/git-runner.interface';
+export type {
+	IForcePushAuthorizationRecord,
+	IPushAuthorization,
+} from '../contracts/interfaces/force-push-authorization.interface';
+import type {
+	IForcePushAuthorizationRecord,
+	IPushAuthorization,
+} from '../contracts/interfaces/force-push-authorization.interface';
 
 /**
  * Default runner: invoke the real `git` in `cwd` via async `execFile`, so
@@ -128,21 +136,6 @@ export const gitLastCommitAuthor = async (
 
 export type IPushForceMode = 'with-lease' | 'true' | 'false';
 
-/**
- * Explicit, auditable sign-off for a force push. A caller passing
- * `force: 'true'` (or forcing into a protected branch) must supply one —
- * a bare string on `force` is not consent for an irreversible,
- * history-rewriting operation against a shared remote. Both fields are
- * required and must be non-empty so a buggy caller cannot manufacture
- * authorization by passing `{}`.
- */
-export interface IPushAuthorization {
-	/** Who/what granted this — an agent name, a host operator, a config id. */
-	readonly by: string;
-	/** Why this force push is warranted. Becomes part of the audit record. */
-	readonly reason: string;
-}
-
 export interface IPushOptions {
 	readonly remote?: string;
 	readonly branch?: string;
@@ -187,22 +180,6 @@ const resolveForceTargetBranch = async (
 	const head = await run(['rev-parse', '--abbrev-ref', 'HEAD']);
 	return head.ok ? head.output.trim() : undefined;
 };
-
-/**
- * Audit trail for authorized force pushes (bounded ring buffer, in
- * process memory — mirrors the same "record the bypass" convention used
- * for peer-review force-closes). Not a persistence layer: a host that
- * needs durable audit logs reads this immediately after `gitPush`
- * resolves, or wires its own sink around the `authorization` it passed
- * in.
- */
-export interface IForcePushAuthorizationRecord {
-	readonly ts: string;
-	readonly by: string;
-	readonly reason: string;
-	readonly branch: string | undefined;
-	readonly forceMode: Extract<IPushForceMode, 'with-lease' | 'true'>;
-}
 
 const MAX_RECORDED_FORCE_PUSH_AUTHORIZATIONS = 200;
 const forcePushAuthorizations: IForcePushAuthorizationRecord[] = [];

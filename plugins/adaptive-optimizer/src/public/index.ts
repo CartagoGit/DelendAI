@@ -15,7 +15,8 @@ export { createActivationMetricsRegistry } from '../lib/metrics/activation-metri
 export type {
 	IActivationMetricsRegistry,
 	IActivationMetricsSnapshot,
-} from '../lib/metrics/activation-metrics-registry';
+	IActivationMetricsToolOptions,
+} from '../lib/contracts/interfaces/adaptive-optimizer.interface';
 // `computePayloadPercentile`/`IPayloadPercentile` now live in
 // `@mcp-vertex/core` (the shared contract with `observability` and the
 // metrics longitudinal gate); re-exported here so this plugin's public
