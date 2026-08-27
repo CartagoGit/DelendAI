@@ -580,6 +580,10 @@ class ToolSurfaceRuntime implements IToolSurfaceRuntime {
 		return evicted;
 	}
 
+	hasInFlightWork(): boolean {
+		return this.inFlightByPlugin.size > 0;
+	}
+
 	private touchPlugin(record: IBoundToolRecord): void {
 		if (record.pluginId === undefined) return;
 		this.warmAtByPlugin.set(record.pluginId, Date.now());

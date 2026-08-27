@@ -17,6 +17,7 @@ import type { IPluginLoadResult } from '../plugins/load-plugins';
 import { parseCliArgs } from '../plugins/parse-cli-args';
 import type { IMcpVertexCliArgs } from '../plugins/parse-cli-args';
 import { createMcpProject } from '../project/create-mcp-project';
+import { gracefulShutdown } from './graceful-shutdown';
 import {
 	createFileSystemBlueprintWriter,
 	type IBlueprintWriter,
@@ -301,6 +302,32 @@ export const runCli = async (
 		);
 	}
 	await assembled.start();
+
+	// AUD-E02 / r00039: own the teardown the same way the eager path always
+	// promised but never wired up. `assembled.dispose()` is idempotent and
+	// disposes every plugin runtime (lazy or eager, whichever ran) in
+	// reverse activation order BEFORE the transport itself closes, so a
+	// plugin's `dispose()` still has a live server to report through if it
+	// needs to. `gracefulShutdown` owns the process exit; deliberately not a
+	// `try/finally` around `start()` — `start()` resolves once the stdio
+	// transport connects, not when the server eventually closes, so
+	// disposing there would tear plugins down immediately after boot.
+	const onShutdownSignal =
+		(exitCode: number): (() => void) =>
+		(): void => {
+			void assembled
+				.dispose()
+				.catch((error: unknown) => {
+					process.stderr.write(
+						`[mcp-vertex] dispose() failed during shutdown: ${error instanceof Error ? error.message : String(error)}\n`,
+					);
+				})
+				.finally(() => {
+					void gracefulShutdown(assembled.server, { exitCode });
+				});
+		};
+	process.on('SIGTERM', onShutdownSignal(143));
+	process.on('SIGINT', onShutdownSignal(130));
 
 	// Fast boot: the one-time server blueprint is prepared AFTER the server
 	// is live and off the critical path — analysing the repo + writing the

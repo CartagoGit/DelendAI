@@ -5,7 +5,10 @@
  */
 import { describe, expect, it } from 'vitest';
 
-import type { IToolRegistration } from '@mcp-vertex/core/public';
+import type {
+	IMcpPluginRegistrations,
+	IToolRegistration,
+} from '@mcp-vertex/core/public';
 
 import plugin from '../../../src/index';
 import {
@@ -21,6 +24,16 @@ import {
 } from '../../../src/lib/tools/catalog.tool';
 
 const KEBAB = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+
+/**
+ * AUD-D05: `register()` now returns `{ registrations, dispose }` so the
+ * loader can retain `dispose` — unwrap it the same way
+ * `normalizePluginRuntimeInternal` does.
+ */
+const registrationsOf = (
+	reg: Awaited<ReturnType<typeof plugin.register>>,
+): IMcpPluginRegistrations =>
+	'registrations' in reg ? reg.registrations : reg;
 
 interface IToolResult {
 	readonly content: Array<{ type: 'text'; text: string }>;
@@ -133,7 +146,7 @@ describe('external-mcps plugin manifest (token-lean)', () => {
 	} as unknown as Parameters<typeof plugin.register>[0];
 
 	it('registers the plugin tools (catalog, discover, suggest, ack, call, status, validate_config)', async () => {
-		const regs = await plugin.register(ctx);
+		const regs = registrationsOf(await plugin.register(ctx));
 		expect((regs.tools ?? []).map((t) => t.id).sort()).toEqual([
 			'ack',
 			'call',
@@ -146,24 +159,28 @@ describe('external-mcps plugin manifest (token-lean)', () => {
 	});
 
 	it('ships ZERO system-prompt bytes: no knowledge, no skills (decision 1)', async () => {
-		const regs = await plugin.register(ctx);
+		const regs = registrationsOf(await plugin.register(ctx));
 		expect(regs.knowledge).toBeUndefined();
 		expect(regs.skills).toBeUndefined();
 	});
 
 	it('contributes configured external servers to activation introspection', async () => {
-		const regs = await plugin.register({
-			...ctx,
-			options: {
-				servers: {
-					filesystem: {
-						version: '1.2.3',
-						command: 'npx',
-						args: ['@modelcontextprotocol/server-filesystem@1.2.3'],
+		const regs = registrationsOf(
+			await plugin.register({
+				...ctx,
+				options: {
+					servers: {
+						filesystem: {
+							version: '1.2.3',
+							command: 'npx',
+							args: [
+								'@modelcontextprotocol/server-filesystem@1.2.3',
+							],
+						},
 					},
 				},
-			},
-		});
+			}),
+		);
 		expect(regs.activation).toMatchObject([
 			{
 				id: 'ext.filesystem',
@@ -188,7 +205,7 @@ describe('external-mcps plugin manifest (token-lean)', () => {
 	});
 
 	it('every tool declares a summary + a namespaced descriptionKey', async () => {
-		const regs = await plugin.register(ctx);
+		const regs = registrationsOf(await plugin.register(ctx));
 		for (const tool of regs.tools ?? []) {
 			expect(tool.summary).toBeTruthy();
 			expect(tool.descriptionKey).toMatch(/^mcp-vertex_external-mcps_/);
