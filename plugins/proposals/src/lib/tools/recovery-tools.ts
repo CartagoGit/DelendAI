@@ -30,8 +30,12 @@ import { createGitRunner, type IGitRunner } from '../shared/git-runner';
 import { purgeStaleLocks } from '../shared/purge-stale-locks';
 import { hasIndependentPeerApproval } from './proposal-transition.tool';
 import { recordPeerReviewBypass } from '../shared/peer-review-bypass-log';
-import { removeStale } from '../locks/agent-lock-engine';
+import { removeStale, type ILockFile } from '../locks/agent-lock-engine';
 import { guardDoneToReviewRegression } from '../services/proposal-state';
+/** Lock-file schema version written when no lock exists yet. */
+const DEFAULT_LOCK_VERSION = 1;
+/** Minutes after which an unrefreshed claim is considered abandoned. */
+const DEFAULT_STALE_AFTER_MINUTES = 10;
 
 export interface IRecoveryEvent {
 	readonly kind: 'agent-alive' | 'agent-idle' | 'agent-dead';
@@ -256,24 +260,19 @@ const extractFrontmatterBlock = (raw: string): string | null => {
 	return m === null ? null : (m[1] ?? '');
 };
 
-const readLock = async (
-	lockPathAbs: string,
-): Promise<{
-	version: number;
-	stale_after_minutes: number;
-	in_flight: any[];
-}> => {
-	const parsed = await readJsonOrNull<{
-		version?: number;
-		stale_after_minutes?: number;
-		in_flight?: any[];
-	}>(lockPathAbs);
+const readLock = async (lockPathAbs: string): Promise<ILockFile> => {
+	const parsed = await readJsonOrNull<Partial<ILockFile>>(lockPathAbs);
 	if (parsed === null) {
-		return { version: 1, stale_after_minutes: 10, in_flight: [] };
+		return {
+			version: DEFAULT_LOCK_VERSION,
+			stale_after_minutes: DEFAULT_STALE_AFTER_MINUTES,
+			in_flight: [],
+		};
 	}
 	return {
-		version: parsed.version ?? 1,
-		stale_after_minutes: parsed.stale_after_minutes ?? 10,
+		version: parsed.version ?? DEFAULT_LOCK_VERSION,
+		stale_after_minutes:
+			parsed.stale_after_minutes ?? DEFAULT_STALE_AFTER_MINUTES,
 		in_flight: Array.isArray(parsed.in_flight) ? parsed.in_flight : [],
 	};
 };
