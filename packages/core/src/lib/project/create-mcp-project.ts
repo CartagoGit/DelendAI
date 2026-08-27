@@ -9,6 +9,14 @@ import { createToolSurfaceRuntime } from './tool-surface-runtime.service';
 import { buildKnowledgeResourceRegistrations } from '../tools/knowledge-resources';
 
 /**
+ * Bound on how long `dispose()` waits for an in-flight lazily-activated
+ * tool call to drain before tearing down plugin runtimes anyway. A
+ * wedged handler must never pin teardown open forever (AUD-E02).
+ */
+const DISPOSE_DRAIN_TIMEOUT_MS = 5_000;
+const DISPOSE_DRAIN_POLL_MS = 25;
+
+/**
  * An assembled (but not yet connected) MCP server. `start()` connects
  * the stdio transport; `registrationOrder` exposes the exact tool
  * registration sequence for audits and tests.
@@ -17,6 +25,16 @@ export interface IMcpVertexProject {
 	readonly server: McpServer;
 	readonly registrationOrder: readonly string[];
 	start(): Promise<void>;
+	/**
+	 * Idempotent teardown (r00039 / AUD-E02): waits (bounded) for any
+	 * in-flight lazily-activated tool invocation to drain, then disposes
+	 * every plugin runtime this project activated — eager or lazy,
+	 * whichever ran — in reverse activation order. Safe to call more
+	 * than once, and safe to call even if `start()` was never invoked.
+	 * Does not close the transport itself; wire `SIGTERM`/`SIGINT` to
+	 * this alongside `gracefulShutdown(server)` (see `run-cli.ts`).
+	 */
+	dispose(): Promise<void>;
 }
 
 /**
@@ -304,11 +322,26 @@ export async function createMcpProject(
 	for (const resource of config.extraResources ?? []) {
 		await resource.register(server);
 	}
+	let disposed = false;
 	return {
 		server,
 		registrationOrder: ordered.map((registration) => registration.id),
 		async start(): Promise<void> {
 			await server.connect(new StdioServerTransport());
+		},
+		async dispose(): Promise<void> {
+			if (disposed) return;
+			disposed = true;
+			const runtime = toolSurfaceRuntime;
+			if (runtime !== undefined) {
+				const deadline = Date.now() + DISPOSE_DRAIN_TIMEOUT_MS;
+				while (runtime.hasInFlightWork() && Date.now() < deadline) {
+					await new Promise((resolve) =>
+						setTimeout(resolve, DISPOSE_DRAIN_POLL_MS),
+					);
+				}
+			}
+			await config.disposePlugins?.();
 		},
 	};
 }

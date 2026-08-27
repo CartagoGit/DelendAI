@@ -198,6 +198,22 @@ export interface IHostRegistrations {
 				readonly knowledge?: readonly IKnowledgeEntry[] | undefined;
 		  }[])
 		| undefined;
+	/**
+	 * Dispose every plugin runtime this host activated, in reverse
+	 * activation order, aggregating per-plugin failures rather than
+	 * throwing on the first one. `createMcpProject`'s returned
+	 * `dispose()` is the sole caller (AUD-E02 / r00039) — nobody else
+	 * should invoke this directly, since it is not itself idempotent
+	 * across independent callers racing each other.
+	 */
+	readonly disposePlugins?:
+		| (() => Promise<
+				readonly {
+					readonly pluginName: string;
+					readonly error: unknown;
+				}[]
+		  >)
+		| undefined;
 }
 
 /**

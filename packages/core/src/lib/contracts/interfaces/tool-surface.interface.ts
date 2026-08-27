@@ -144,6 +144,13 @@ export interface IToolSurfaceRuntime {
 	deactivatePlugin(identifier: string): IPluginSurfaceChange | null;
 	/** Evict idle/least-recently-used plugin working-set entries. */
 	evictIdlePlugins(nowMs?: number): readonly string[];
+	/**
+	 * True while at least one lazily-activated plugin has an
+	 * `invokeTool` call in flight. `McpHostSession.dispose()` polls this
+	 * before disposing plugin runtimes so a live invocation is never cut
+	 * out from under its own plugin (AUD-E02).
+	 */
+	hasInFlightWork(): boolean;
 	getProjectContext(input: {
 		readonly workspaceRoot: string;
 		readonly cacheDir?: string | undefined;
