@@ -1,7 +1,11 @@
 import z from 'zod';
 
 import type { IToolRegistration } from '@mcp-vertex/core/public';
-import { PayloadPercentileSchema, toolJson } from '@mcp-vertex/core/public';
+import {
+	PayloadPercentileSchema,
+	readMetricsSnapshot,
+	toolJson,
+} from '@mcp-vertex/core/public';
 
 import type { IRuntimeMetricsRegistry } from '../metrics/runtime-metrics-registry';
 
@@ -42,9 +46,11 @@ export const buildObsRuntimeMetricsToolRegistration = (
 				outputSchema: RUNTIME_METRICS_OUTPUT,
 			},
 			async (args: z.infer<typeof RUNTIME_METRICS_INPUT>) => {
-				const snapshot = options.registry.snapshot();
-				if (args.reset === true) options.registry.reset();
-				return toolJson(snapshot);
+				return toolJson(
+					readMetricsSnapshot(options.registry, {
+						reset: args.reset,
+					}),
+				);
 			},
 		);
 	},
