@@ -869,9 +869,11 @@ export {
 	computePayloadPercentile,
 	createByteSamplePercentileRegistry,
 	PayloadPercentileSchema,
+	readMetricsSnapshot,
 } from '../lib/metrics/payload-percentile';
 export type {
 	IByteSamplePercentileRegistry,
+	IResettableMetricsRegistry,
 	IPayloadPercentile,
 	IPayloadPercentileEmpty,
 	IPayloadPercentileSampled,
