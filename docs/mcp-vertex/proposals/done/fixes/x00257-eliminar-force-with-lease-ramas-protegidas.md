@@ -2,7 +2,7 @@
 id: x00257
 title: "Eliminar `force-with-lease` para ramas protegidas (defense in depth)"
 kind: fix
-status: ready
+status: done
 type: proposal
 track: governance
 date: 2026-08-25
@@ -33,7 +33,7 @@ o normal).
 
 ### Comportamiento actual (BUG)
 
-- `plugins/commit-policy/src/lib/drivers/push.ts` rechaza push a
+- `plugins/commit-policy/src/lib/services/push-driver.ts` rechaza push a
   `protectedBranches` solo si la rama está protegida **y** el modo
   es `force`. El modo `force-with-lease` pasa si la rama no está en
   `protectedBranches` (lo cual, sin `c00131`, excluía `develop`).
@@ -78,7 +78,7 @@ o normal).
 
 ### 1. Push driver
 
-- `plugins/commit-policy/src/lib/drivers/push.ts`:
+- `plugins/commit-policy/src/lib/services/push-driver.ts`:
   ```ts
   export type PushRefusalReason =
       | 'PUSH_TO_PROTECTED_BRANCH_NOT_ALLOWED'
@@ -105,7 +105,7 @@ o normal).
 
 ### 2. Tests
 
-- `plugins/commit-policy/tests/src/lib/drivers/push.spec.ts`
+- `plugins/commit-policy/tests/src/lib/services/push-driver.spec.ts`
   (extensión):
   - `push({branch:'develop', mode:'force'})` → refusal
     `PUSH_TO_PROTECTED_BRANCH_NOT_ALLOWED`.
@@ -122,8 +122,8 @@ o normal).
 
 ### S1 — Refusal incondicional + tests property-based
 
-- **Status**: pending
-- **Files**: `plugins/commit-policy/src/lib/drivers/push.ts`, `plugins/commit-policy/tests/src/lib/drivers/push.spec.ts`
+- **Status**: done
+- **Files**: `plugins/commit-policy/src/lib/services/push-driver.ts`, `plugins/commit-policy/tests/src/lib/services/push-driver.spec.ts`
 - **Gate**: type
 
 ## acceptance
@@ -133,3 +133,22 @@ o normal).
 - Worktrees `agent/<name>` no afectados.
 - Tests cubren los 6 casos del plan.
 - `bun run validate` verde.
+
+## Evidence
+
+Implementado y verificado el 2026-08-27.
+
+- `plugins/commit-policy/src/lib/services/push-driver.ts:140` rechaza
+  cualquier push a una rama de `protectedBranches` **antes** de evaluar
+  el modo de force, así que `with-lease` contra una rama protegida queda
+  refusada igual que `--force`. Eso es exactamente la defensa en
+  profundidad que pedía esta propuesta.
+
+Matiz que conviene dejar escrito: en la capa de core, `gitPush`
+(`packages/core/src/lib/shared/git-write.ts`) sí admite forzar contra una
+rama protegida **si el llamante aporta una autorización explícita**
+(`{ by, reason }`), que además queda registrada. Son dos capas con
+criterios distintos a propósito: el plugin rechaza sin excepción, y la
+primitiva permite la emergencia legítima dejando rastro. Si se prefiere
+que la primitiva también rechace sin excepción, eso es un cambio de
+diseño separado y merece su propia propuesta.
