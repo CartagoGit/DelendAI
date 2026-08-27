@@ -4,7 +4,6 @@ import {
 	assertPolicyValid,
 	createOrchestratorEngine,
 } from '../../../../src/lib/policy/policy.js';
-import { UnknownModeError } from '../../../../src/lib/policy/registry.js';
 import type {
 	IOrchestratorPolicy,
 	ITask,

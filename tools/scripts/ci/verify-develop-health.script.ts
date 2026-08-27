@@ -43,6 +43,8 @@ interface IGitHubProtection {
 interface IBranchHealth {
 	readonly name: string;
 	readonly protected: boolean;
+	/** Whether the declared policy expects this branch to be protected. */
+	readonly expectedProtected: boolean;
 	readonly enforce_admins: boolean;
 	readonly required_linear_history: boolean;
 	readonly allow_force_pushes: boolean;
@@ -108,6 +110,7 @@ const inspectBranch = (
 	return {
 		name: expected.name,
 		protected: live !== null,
+		expectedProtected: expected.protected,
 		enforce_admins: live?.enforce_admins?.enabled === true,
 		required_linear_history:
 			live?.required_linear_history?.enabled === true,
@@ -122,15 +125,19 @@ const inspectBranch = (
 };
 
 const isHealthy = (branches: readonly IBranchHealth[]): boolean =>
-	branches.every(
-		(b) =>
-			b.protected &&
-			b.enforce_admins &&
-			b.required_linear_history &&
-			b.allow_force_pushes &&
-			b.allow_deletion &&
-			b.missing_checks.length === 0 &&
-			b.extra_checks.length === 0,
+	branches.every((b) =>
+		// A branch the policy declares unprotected is healthy precisely
+		// when GitHub has no rule on it — `develop` is the working branch
+		// here, and protecting it would be the drift.
+		!b.expectedProtected
+			? !b.protected
+			: b.protected &&
+				b.enforce_admins &&
+				b.required_linear_history &&
+				b.allow_force_pushes &&
+				b.allow_deletion &&
+				b.missing_checks.length === 0 &&
+				b.extra_checks.length === 0,
 	);
 
 export const main = async (argv: readonly string[]): Promise<number> => {

@@ -34,17 +34,14 @@ import {
 } from './push-to-develop-discipline.script';
 
 describe('lintPushToDevelop', () => {
-	it('blocks develop → origin/develop (direct push — must go through a PR)', () => {
+	it('allows develop → origin/develop (the operator works on this branch)', () => {
 		const result = lintPushToDevelop({
 			cwd: '/repo',
 			remoteName: 'origin',
 			remoteBranch: 'develop',
 			currentBranch: 'develop',
 		});
-		expect(result.ok).toBe(false);
-		if (!result.ok) {
-			expect(result.blockers.join('\n')).toContain('pull request');
-		}
+		expect(result.ok).toBe(true);
 	});
 
 	it('blocks wip/x → origin/develop (direct push — must go through a PR)', () => {
@@ -57,7 +54,7 @@ describe('lintPushToDevelop', () => {
 		expect(result.ok).toBe(false);
 	});
 
-	it('blocks develop → origin/develop even with the worktree gate on', () => {
+	it('allows develop → origin/develop with the worktree gate on', () => {
 		const result = lintPushToDevelop({
 			cwd: '/repo',
 			remoteName: 'origin',
@@ -65,7 +62,7 @@ describe('lintPushToDevelop', () => {
 			currentBranch: 'develop',
 			agentWorktreeEnabled: true,
 		});
-		expect(result.ok).toBe(false);
+		expect(result.ok).toBe(true);
 	});
 
 	it('allows develop → origin/main (release merge)', () => {
@@ -145,14 +142,16 @@ describe('lintPushToDevelop', () => {
 		expect(result.ok).toBe(true);
 	});
 
-	it('still blocks a null currentBranch pushing straight to develop', () => {
+	it('allows a null currentBranch pushing to develop (detached HEAD carve-out)', () => {
+		// A detached HEAD cannot be identified as agent work, and develop is
+		// not a protected branch, so there is nothing to refuse.
 		const result = lintPushToDevelop({
 			cwd: '/repo',
 			remoteName: 'origin',
 			remoteBranch: 'develop',
 			currentBranch: null,
 		});
-		expect(result.ok).toBe(false);
+		expect(result.ok).toBe(true);
 	});
 
 	it('blocks the LEFTHOOK_BYPASS escape hatch in the message', () => {
@@ -272,7 +271,7 @@ describe('lintPrePushStdinUpdates', () => {
 	const SHA_A = 'a'.repeat(40);
 	const SHA_B = 'b'.repeat(40);
 
-	it('blocks a direct develop → origin/develop update (must go through a PR)', () => {
+	it('allows a direct develop → origin/develop update (operator working branch)', () => {
 		const result = lintPrePushStdinUpdates([
 			{
 				localRef: 'refs/heads/develop',
@@ -281,7 +280,7 @@ describe('lintPrePushStdinUpdates', () => {
 				remoteSha: SHA_B,
 			},
 		]);
-		expect(result.ok).toBe(false);
+		expect(result.ok).toBe(true);
 	});
 
 	it('blocks an agent branch pushed to origin/develop (no new branches)', () => {
