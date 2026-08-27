@@ -25,6 +25,8 @@
  */
 import { dirname } from 'node:path';
 
+import type { IPluginMetricsSnapshot } from './payload-percentile.schema';
+
 /** A single tool's recorded metrics inside a persisted snapshot. */
 export interface IMetricSnapshotEntry {
 	readonly calls: number;
@@ -44,6 +46,14 @@ export interface IMetricsSnapshotFile {
 		readonly totalMs: number;
 		readonly totalBytes: number;
 	};
+	/**
+	 * f00027 — per-tracked-plugin metrics (`obs_runtime_metrics`,
+	 * `activation_metrics`), keyed by the tool's registered name. Optional:
+	 * a baseline snapshot fetched before these tools existed won't have it,
+	 * and a candidate run where a tracked plugin failed to load omits its
+	 * entry rather than fabricating one.
+	 */
+	readonly pluginMetrics?: Readonly<Record<string, IPluginMetricsSnapshot>>;
 }
 
 export type IBaselineResult =

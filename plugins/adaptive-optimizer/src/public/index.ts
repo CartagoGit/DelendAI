@@ -10,6 +10,18 @@ export {
 	OptimizeRunOutputSchema,
 	runOptimizeRun,
 } from '../lib/tools/optimize-run.tool';
+export { buildActivationMetricsToolRegistration } from '../lib/tools/activation-metrics.tool';
+export { createActivationMetricsRegistry } from '../lib/metrics/activation-metrics-registry';
+export type {
+	IActivationMetricsRegistry,
+	IActivationMetricsSnapshot,
+} from '../lib/metrics/activation-metrics-registry';
+// `computePayloadPercentile`/`IPayloadPercentile` now live in
+// `@mcp-vertex/core` (the shared contract with `observability` and the
+// metrics longitudinal gate); re-exported here so this plugin's public
+// surface is unchanged for existing consumers.
+export { computePayloadPercentile } from '@mcp-vertex/core/public';
+export type { IPayloadPercentile } from '@mcp-vertex/core/public';
 export { scoreOptimizationCandidate } from '../lib/services/optimization-scoring.service';
 export type {
 	IAdaptiveOptimizerPluginOptions,

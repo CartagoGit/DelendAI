@@ -19,10 +19,19 @@ import type {
 	IOptimizeRunToolArgs,
 } from '../contracts/interfaces/adaptive-optimizer.interface';
 import { buildOptimizeRunPayload } from '../services/optimize-run.service';
+import { buildActivationMetricsToolRegistration } from './activation-metrics.tool';
+import { createActivationMetricsRegistry } from '../metrics/activation-metrics-registry';
+import type { IActivationMetricsRegistry } from '../metrics/activation-metrics-registry';
 
 interface IOptimizeRunToolOptions extends IOptimizeRunRuntimeOptions {
 	readonly namespacePrefix: string;
+	/** Optional — when present, every successful run records its response size for `activation_metrics`. */
+	readonly activationMetricsRegistry?: IActivationMetricsRegistry;
 }
+
+/** Wire-payload byte size, matching what an MCP client actually receives. */
+const responseByteSize = (payload: unknown): number =>
+	Buffer.byteLength(JSON.stringify(payload), 'utf8');
 
 const PermissionSchema = z.enum(PERMISSION_CATEGORIES);
 
@@ -100,28 +109,47 @@ export const runOptimizeRun = async (
 			'Re-run with a positive budget so the optimizer can enforce an explicit ceiling.',
 		);
 	}
-	return toolJson(await buildOptimizeRunPayload(parsed.data, options));
+	const payload = await buildOptimizeRunPayload(parsed.data, options);
+	options.activationMetricsRegistry?.recordActivation(
+		responseByteSize(payload),
+	);
+	return toolJson(payload);
 };
 
 export const buildAdaptiveOptimizerToolRegistrations = (
 	options: IOptimizeRunToolOptions,
-): IToolRegistration[] => [
-	{
-		id: 'optimize_run',
-		tags: ['optimizer', 'adaptive', 'prompt', 'compact'],
-		summary:
-			'Rank model/plugin-set/prompt candidates with multi-objective scoring, explicit consent and explicit budget guards.',
-		register: async (server) => {
-			server.registerTool(
-				`${options.namespacePrefix}_optimize_run`,
-				{
-					outputSchema: OptimizeRunOutputSchema,
-					description:
-						'Compute a bounded candidate ranking using a pure multi-objective scorer. The default path reuses only cheap public APIs and never launches the full eval harness or profiler capture.',
-					inputSchema: InputSchema,
-				},
-				async (toolArgs) => runOptimizeRun(toolArgs, options),
-			);
+): IToolRegistration[] => {
+	const activationMetricsRegistry =
+		options.activationMetricsRegistry ?? createActivationMetricsRegistry();
+	return [
+		{
+			id: 'optimize_run',
+			tags: ['optimizer', 'adaptive', 'prompt', 'compact'],
+			summary:
+				'Rank model/plugin-set/prompt candidates with multi-objective scoring, explicit consent and explicit budget guards.',
+			register: async (server) => {
+				server.registerTool(
+					`${options.namespacePrefix}_optimize_run`,
+					{
+						outputSchema: OptimizeRunOutputSchema,
+						description:
+							'Compute a bounded candidate ranking using a pure multi-objective scorer. The default path reuses only cheap public APIs and never launches the full eval harness or profiler capture.',
+						inputSchema: InputSchema,
+					},
+					async (toolArgs) =>
+						runOptimizeRun(toolArgs, {
+							...options,
+							activationMetricsRegistry,
+						}),
+				);
+			},
 		},
-	},
-];
+		// f00027 — the metrics longitudinal gate expects a real
+		// activation-metrics surface for this plugin; nothing backed it
+		// until this tool existed.
+		buildActivationMetricsToolRegistration({
+			namespacePrefix: options.namespacePrefix,
+			registry: activationMetricsRegistry,
+		}),
+	];
+};
