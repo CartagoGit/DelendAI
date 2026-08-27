@@ -260,6 +260,15 @@
 			"@mcp-vertex/impact-analysis/*": [
 				"./plugins/impact-analysis/src/*"
 			],
+			"@mcp-vertex/agent-orchestrator": [
+				"./plugins/agent-orchestrator/src/index.ts"
+			],
+			"@mcp-vertex/agent-orchestrator/public": [
+				"./plugins/agent-orchestrator/src/public/index.ts"
+			],
+			"@mcp-vertex/agent-orchestrator/*": [
+				"./plugins/agent-orchestrator/src/*"
+			],
 			"@mcp-vertex/adaptive-optimizer": [
 				"./plugins/adaptive-optimizer/src/index.ts"
 			],
@@ -315,7 +324,11 @@
 			"@mcp-vertex/issues-triage/public": [
 				"./plugins/issues-triage/src/public/index.ts"
 			],
-			"@mcp-vertex/issues-triage/*": ["./plugins/issues-triage/src/*"]
+			"@mcp-vertex/issues-triage/*": ["./plugins/issues-triage/src/*"],
+			"@mcp-vertex/external-mcps": [
+				"./plugins/external-mcps/src/index.ts"
+			],
+			"@mcp-vertex/external-mcps/*": ["./plugins/external-mcps/src/*"]
 		}
 	},
 	"exclude": ["node_modules", "dist", "build", ".cache"]
