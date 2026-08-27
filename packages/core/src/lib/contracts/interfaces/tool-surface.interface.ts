@@ -1,6 +1,22 @@
 import type { IKnowledgeEntry } from './knowledge.interface';
 import type { IMcpToolSurfaceMode } from './surface-mode.interface';
 
+/**
+ * A tool's access to the live MCP surface, modelled as one state instead
+ * of two independent booleans (visibility + authorization) so the illegal
+ * combination — deactivated yet still executable — cannot be represented:
+ *
+ *   - `visible`     — listed in tools/list AND callable through the router.
+ *   - `hidden`       — not listed (compact/adaptive/native surface modes
+ *                      hide it), but still callable through the router.
+ *                      This is a legitimate, desirable state.
+ *   - `deactivated` — not listed AND refused by the router. Only
+ *                      `plugin_deactivate` produces this state; nothing
+ *                      else may re-introduce visibility for a deactivated
+ *                      tool without first reactivating it.
+ */
+export type IToolAccessState = 'visible' | 'hidden' | 'deactivated';
+
 export interface IToolSurfaceDescriptor {
 	readonly registrationId: string;
 	readonly name: string;

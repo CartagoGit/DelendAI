@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import z from 'zod';
 
 import { createToolSurfaceRuntime } from '@mcp-vertex/core/lib/project/tool-surface-runtime.service';
+import { ToolNotAuthorizedError } from '@mcp-vertex/core/lib/project/tool-surface-runtime.helper';
 
 const makeHandle = (enabled = true) => ({
 	enabled,
@@ -208,5 +209,107 @@ describe('tool-surface-runtime schema accounting', () => {
 		release();
 		await call;
 		expect(runtime.evictIdlePlugins(Date.now() + 101)).toEqual(['memory']);
+	});
+});
+
+describe('tool-surface-runtime access state (visibility vs. authorization)', () => {
+	const buildDeactivatableRuntime = (mode: 'native' | 'compact' = 'native') =>
+		createToolSurfaceRuntime({
+			mode,
+			bootstrapToolIds: ['overview'],
+			routerToolId: 'vertex',
+			descriptors: [
+				{
+					registrationId: 'reports_run',
+					name: 'mcp-vertex_reports_run',
+					toolId: 'run',
+					pluginId: 'reports',
+					namespace: 'reports',
+				},
+			],
+			plugins: [
+				{
+					id: 'reports',
+					namespace: 'reports',
+					toolRegistrationIds: ['reports_run'],
+				},
+			],
+		});
+
+	it('a tool hidden by surface mode (compact) stays routable — legitimate compact/adaptive behaviour', async () => {
+		const runtime = buildDeactivatableRuntime('native');
+		runtime.bindRegisteredTool({
+			registrationId: 'reports_run',
+			name: 'mcp-vertex_reports_run',
+			handler: async () => ({ ok: true }),
+			handle: makeHandle(true),
+		});
+		runtime.finalizeInitialSurface();
+		runtime.applySurfaceMode('compact');
+
+		expect(runtime.isToolExposed('mcp-vertex_reports_run')).toBe(false);
+		const route = runtime.resolveRoute('reports', 'run');
+		expect(route?.active).toBe(false);
+		await expect(
+			runtime.invokeTool('mcp-vertex_reports_run', {}, {}),
+		).resolves.toEqual({ ok: true });
+	});
+
+	it('deactivating a plugin refuses invokeTool with a typed error, even though the route still resolves', async () => {
+		const runtime = buildDeactivatableRuntime('native');
+		runtime.bindRegisteredTool({
+			registrationId: 'reports_run',
+			name: 'mcp-vertex_reports_run',
+			handler: async () => ({ ok: true }),
+			handle: makeHandle(true),
+		});
+		runtime.finalizeInitialSurface();
+
+		const change = runtime.deactivatePlugin('reports');
+		expect(change?.active).toBe(false);
+		expect(runtime.isToolExposed('mcp-vertex_reports_run')).toBe(false);
+
+		// resolveRoute still finds the tool — routing metadata is not gated
+		// by authorization — but invokeTool must refuse to run it.
+		const route = runtime.resolveRoute('reports', 'run');
+		expect(route?.name).toBe('mcp-vertex_reports_run');
+
+		await expect(
+			runtime.invokeTool('mcp-vertex_reports_run', {}, {}),
+		).rejects.toBeInstanceOf(ToolNotAuthorizedError);
+	});
+
+	it('a surface-mode change cannot silently re-expose a deactivated tool', () => {
+		const runtime = buildDeactivatableRuntime('native');
+		runtime.bindRegisteredTool({
+			registrationId: 'reports_run',
+			name: 'mcp-vertex_reports_run',
+			handler: async () => ({ ok: true }),
+			handle: makeHandle(true),
+		});
+		runtime.finalizeInitialSurface();
+		runtime.deactivatePlugin('reports');
+
+		runtime.applySurfaceMode('native');
+
+		expect(runtime.isToolExposed('mcp-vertex_reports_run')).toBe(false);
+	});
+
+	it('reactivating a plugin restores both visibility and authorization', async () => {
+		const runtime = buildDeactivatableRuntime('native');
+		runtime.bindRegisteredTool({
+			registrationId: 'reports_run',
+			name: 'mcp-vertex_reports_run',
+			handler: async () => ({ ok: true }),
+			handle: makeHandle(true),
+		});
+		runtime.finalizeInitialSurface();
+		runtime.deactivatePlugin('reports');
+		runtime.activatePlugin('reports');
+
+		expect(runtime.isToolExposed('mcp-vertex_reports_run')).toBe(true);
+		await expect(
+			runtime.invokeTool('mcp-vertex_reports_run', {}, {}),
+		).resolves.toEqual({ ok: true });
 	});
 });

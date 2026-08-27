@@ -4,6 +4,7 @@ import type { IKnowledgeEntry } from '../contracts/interfaces/knowledge.interfac
 import type {
 	IPluginSurfaceChange,
 	IProjectContextSnapshot,
+	IToolAccessState,
 	IToolSurfacePlan,
 	IToolSurfaceModeChange,
 	IToolSurfaceRuntime,
@@ -13,11 +14,18 @@ import type {
 	IToolSurfaceWorkingSetPolicy,
 } from '../contracts/interfaces/tool-surface.interface';
 import {
+	buildDryRunContractViolationResult,
 	buildToolKnowledgeEntry,
 	compactDescription,
+	isToolAuthorized,
+	isToolVisible,
+	readDryRunFlag,
 	safeParseSurfaceArgs,
+	ToolNotAuthorizedError,
+	withVisibilityIntent,
 } from './tool-surface-runtime.helper';
 import { TOOL_DETAILS_PREFIX } from '../contracts/constants/tool-details-prefix.constant';
+import { enforceDryRunReturnContract } from '../dry-run/enforce';
 
 const DEFAULT_SEARCH_LIMIT = 20;
 const DEFAULT_WORKING_SET_POLICY = {
@@ -43,15 +51,35 @@ interface IBoundToolRecord {
 		enable(): void;
 		disable(): void;
 	};
+	/**
+	 * Single source of truth for both visibility and authorization (see
+	 * `IToolAccessState`). `handle.enabled` is kept as a synced projection
+	 * of `isToolVisible(access)` purely so the underlying SDK `RegisteredTool`
+	 * reflects the same visibility for `tools/list` — it is never read as
+	 * an independent signal by this module's own logic any more.
+	 */
+	access: IToolAccessState;
 	readonly lazyActivate?:
 		| (() => Promise<IToolSurfaceLazyBinding>)
 		| undefined;
 }
+
+/** Sync the SDK-facing handle to the record's canonical access state,
+ * reporting whether the handle's visibility actually flipped. */
+const syncHandleVisibility = (record: IBoundToolRecord): boolean => {
+	const wantsVisible = isToolVisible(record.access);
+	if (wantsVisible === record.handle.enabled) return false;
+	if (wantsVisible) record.handle.enable();
+	else record.handle.disable();
+	return true;
+};
+
 const matchesFilter = (
 	record: IBoundToolRecord,
 	input: Parameters<IToolSurfaceRuntime['searchTools']>[0],
 ): boolean => {
-	if (input?.activeOnly === true && !record.handle.enabled) return false;
+	if (input?.activeOnly === true && !isToolVisible(record.access))
+		return false;
 	if (input?.plugin !== undefined) {
 		const plugin = input.plugin.toLowerCase();
 		const pluginHit =
@@ -142,6 +170,9 @@ class ToolSurfaceRuntime implements IToolSurfaceRuntime {
 			outputSchema: input.outputSchema,
 			handler: input.handler,
 			handle: input.handle,
+			// Mirror the handle's incoming visibility until the surface mode
+			// is (re)applied; every bound tool starts authorized.
+			access: input.handle.enabled ? 'visible' : 'hidden',
 		};
 		this.recordsByName.set(record.name, record);
 		this.recordsByRegistrationId.set(record.registrationId, record);
@@ -170,6 +201,7 @@ class ToolSurfaceRuntime implements IToolSurfaceRuntime {
 			...descriptor,
 			detailsId: `${TOOL_DETAILS_PREFIX}${descriptor.name}`,
 			handle: handle,
+			access: 'hidden',
 			lazyActivate: input.activate,
 		};
 		this.recordsByName.set(record.name, record);
@@ -191,19 +223,15 @@ class ToolSurfaceRuntime implements IToolSurfaceRuntime {
 		const visibleToolNames: string[] = [];
 		const previousMode = this.currentMode;
 		for (const record of this.recordsByName.values()) {
-			const shouldExpose = this.shouldExpose(record.registrationId, mode);
-			if (shouldExpose) {
-				if (!record.handle.enabled) {
-					record.handle.enable();
-					changedToolNames.push(record.name);
-				}
-				visibleToolNames.push(record.name);
-				continue;
-			}
-			if (record.handle.enabled) {
-				record.handle.disable();
+			const wantsVisible = this.shouldExpose(record.registrationId, mode);
+			// A deactivated tool's `access` is left untouched here — a
+			// surface-mode change is a visibility intent only, and can
+			// never re-authorize a deactivated tool.
+			record.access = withVisibilityIntent(record.access, wantsVisible);
+			if (syncHandleVisibility(record))
 				changedToolNames.push(record.name);
-			}
+			if (isToolVisible(record.access))
+				visibleToolNames.push(record.name);
 		}
 		this.currentMode = mode;
 		return {
@@ -215,7 +243,8 @@ class ToolSurfaceRuntime implements IToolSurfaceRuntime {
 	}
 
 	isToolExposed(name: string): boolean {
-		return this.recordsByName.get(name)?.handle.enabled ?? true;
+		const record = this.recordsByName.get(name);
+		return record === undefined ? true : isToolVisible(record.access);
 	}
 
 	listToolKnowledgeEntries(): ReadonlyArray<
@@ -276,7 +305,7 @@ class ToolSurfaceRuntime implements IToolSurfaceRuntime {
 					? { summary: record.summary }
 					: {}),
 				...(record.tags !== undefined ? { tags: record.tags } : {}),
-				active: record.handle.enabled,
+				active: isToolVisible(record.access),
 				detailsId: record.detailsId,
 			}));
 	}
@@ -339,12 +368,12 @@ class ToolSurfaceRuntime implements IToolSurfaceRuntime {
 	}): IProjectContextSnapshot {
 		this.evictIdlePlugins();
 		const visibleToolCount = [...this.recordsByName.values()].filter(
-			(record) => record.handle.enabled,
+			(record) => isToolVisible(record.access),
 		).length;
 		const visibleDomains = [
 			...new Set(
 				[...this.recordsByName.values()]
-					.filter((record) => record.handle.enabled)
+					.filter((record) => isToolVisible(record.access))
 					.map(
 						(record) =>
 							record.namespace ?? record.pluginId ?? 'core',
@@ -395,7 +424,7 @@ class ToolSurfaceRuntime implements IToolSurfaceRuntime {
 				: {}),
 			...(found.summary !== undefined ? { summary: found.summary } : {}),
 			...(found.tags !== undefined ? { tags: found.tags } : {}),
-			active: found.handle.enabled,
+			active: isToolVisible(found.access),
 			detailsId: found.detailsId,
 		};
 	}
@@ -408,6 +437,12 @@ class ToolSurfaceRuntime implements IToolSurfaceRuntime {
 		let record = this.recordsByName.get(name);
 		if (record === undefined) {
 			throw new Error(`Unknown routed tool: ${name}`);
+		}
+		// Authorization is checked before any dispatch work (lazy activation,
+		// plugin warming, arg parsing): a deactivated tool must never run,
+		// whether or not it is currently visible in tools/list.
+		if (!isToolAuthorized(record.access)) {
+			throw new ToolNotAuthorizedError(name);
 		}
 		if (record.handler === undefined && record.lazyActivate !== undefined) {
 			const binding = await record.lazyActivate();
@@ -442,10 +477,11 @@ class ToolSurfaceRuntime implements IToolSurfaceRuntime {
 			const handler = record.handler as (
 				...input: unknown[]
 			) => Promise<unknown>;
-			if (record.inputSchema === undefined) {
-				return await handler(extra);
-			}
-			return await handler(parsed.value, extra);
+			const result =
+				record.inputSchema === undefined
+					? await handler(extra)
+					: await handler(parsed.value, extra);
+			return this.applyDryRunContract(name, args, result);
 		} finally {
 			if (pluginId !== undefined) {
 				const remaining =
@@ -484,16 +520,17 @@ class ToolSurfaceRuntime implements IToolSurfaceRuntime {
 		for (const registrationId of plugin.toolRegistrationIds) {
 			const record = this.recordsByRegistrationId.get(registrationId);
 			if (record === undefined) continue;
-			if (active) {
-				if (!record.handle.enabled) {
-					record.handle.enable();
-					changedToolNames.push(record.name);
-				}
-			} else if (record.handle.enabled) {
-				record.handle.disable();
+			// `plugin_activate` / `plugin_deactivate` drive AUTHORIZATION, not
+			// just visibility: deactivating forces `deactivated` (hidden AND
+			// refused by invokeTool); activating restores full `visible`
+			// access, overriding whatever the current surface mode would
+			// otherwise compute — an explicit activation is a stronger
+			// signal than the ambient mode.
+			record.access = active ? 'visible' : 'deactivated';
+			if (syncHandleVisibility(record))
 				changedToolNames.push(record.name);
-			}
-			if (record.handle.enabled) visibleToolNames.push(record.name);
+			if (isToolVisible(record.access))
+				visibleToolNames.push(record.name);
 		}
 		return {
 			pluginId: plugin.id,
@@ -536,6 +573,30 @@ class ToolSurfaceRuntime implements IToolSurfaceRuntime {
 		if (record.pluginId === undefined) return;
 		this.warmAtByPlugin.set(record.pluginId, Date.now());
 		this.evictIdlePlugins();
+	}
+
+	/**
+	 * Router-side dry-run enforcement (f00189): the ONE place a plugin
+	 * handler's return value is inspected before it reaches the caller.
+	 * When `args.dryRun !== true` this is a no-op passthrough. When
+	 * `args.dryRun === true` and the handler ignored that flag (or
+	 * returned a malformed plan), the caller gets a typed tool-error
+	 * result instead of the bogus "I did the dry run" payload — this is
+	 * DETECTION (the handler already ran), not prevention; see
+	 * `dry-run/effect-guard.ts` for the prevention-side primitive and
+	 * why it cannot be made mandatory from this module alone.
+	 */
+	private applyDryRunContract(
+		name: string,
+		args: unknown,
+		result: unknown,
+	): unknown {
+		const verdict = enforceDryRunReturnContract({
+			args: { dryRun: readDryRunFlag(args) },
+			result,
+		});
+		if (verdict.kind === 'forwarded') return verdict.value;
+		return buildDryRunContractViolationResult(name, verdict);
 	}
 
 	private shouldExpose(
