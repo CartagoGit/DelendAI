@@ -562,6 +562,7 @@ export type { IFileMutexOptions } from '../lib/shared/with-file-mutex';
 
 // --- write-side git primitives (S9: git_commit/git_push, auto_work persist) ---
 export {
+	clearForcePushAuthorizationsForTests,
 	commitAndPush,
 	createGitRunner as createWriteGitRunner,
 	gitAdd,
@@ -569,11 +570,14 @@ export {
 	gitHeadShortHash,
 	gitLastCommitAuthor,
 	gitPush,
+	listForcePushAuthorizations,
 } from '../lib/shared/git-write';
 export type {
 	ICommitAndPushOptions,
 	ICommitAndPushResult,
 	ICommitOptions,
+	IForcePushAuthorizationRecord,
+	IPushAuthorization,
 	IPushForceMode,
 	IPushOptions,
 	IGitRunner as IWriteGitRunner,
@@ -680,6 +684,15 @@ export type {
 	IDryRunContractRefusal,
 	IDryRunManifestWarning,
 } from '../lib/dry-run/enforce';
+export {
+	DryRunEffectRefusedError,
+	guardEffectCapability,
+	runWithDryRunGate,
+} from '../lib/dry-run/effect-guard';
+export type {
+	IDryRunEffectRefusal,
+	TEffectCapabilityKind,
+} from '../lib/dry-run/effect-guard';
 export type {
 	CapabilityTag,
 	CostTier,
@@ -852,6 +865,17 @@ export type {
 	IToolMetric,
 } from '../lib/metrics/metrics-registry';
 export { buildMetricsToolRegistration } from '../lib/metrics/metrics-tool';
+export {
+	computePayloadPercentile,
+	createByteSamplePercentileRegistry,
+	PayloadPercentileSchema,
+} from '../lib/metrics/payload-percentile';
+export type {
+	IByteSamplePercentileRegistry,
+	IPayloadPercentile,
+	IPayloadPercentileEmpty,
+	IPayloadPercentileSampled,
+} from '../lib/metrics/payload-percentile';
 // (Track D): plugin lifecycle metrics.
 export { createPluginMetrics } from '../lib/observability/plugin-metrics';
 export type {

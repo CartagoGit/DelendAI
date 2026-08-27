@@ -3,7 +3,7 @@
 <!-- generated: token-budget-dashboard.script.ts -->
 <!-- generated — do not edit by hand -->
 
-Generated at: 2026-08-26T19:26:17.206Z
+Generated at: 2026-08-27T03:19:35.833Z
 
 This file is generated from the same budget contract the e2e test imports: packages/core/src/lib/contracts/constants/token-budgets.constant.ts. Do not edit this markdown by hand; regenerate it with bun tools/scripts/report/token-budget-dashboard.script.ts.
 
@@ -58,7 +58,7 @@ This dashboard measures the real preset assemblies through the actual plugin loa
 | swarm | swarm | adaptive | managed | dynamic-client | 27 | 6 | 8,934 | 2234 | 7,690 | 514 | 1,020 | 6,670 | 0 | 858 | n/a | within hard | within hard | none |
 | full | full | native | managed | tokens-gate | 31 | 166 | 213,695 | 53424 | 178,148 | 14,229 | 48,136 | 130,012 | 52,503 | 4,710 | 153 | within hard | over hard (0B) | none |
 | full | full | adaptive | managed | dynamic-client | 31 | 6 | 8,934 | 2234 | 7,690 | 514 | 1,020 | 6,670 | 0 | 899 | n/a | within hard | within hard | none |
-| vertex | vertex | native | managed | tokens-gate | 37 | 186 | 295,839 | 73960 | 254,280 | 17,294 | 60,568 | 193,712 | 52,503 | 5,574 | 153 | within hard | over hard (0B) | none |
+| vertex | vertex | native | managed | tokens-gate | 37 | 187 | 296,817 | 74205 | 255,001 | 17,403 | 60,708 | 194,293 | 52,503 | 5,595 | 153 | within hard | over hard (0B) | none |
 | vertex | vertex | adaptive | managed | dynamic-client | 37 | 6 | 8,934 | 2234 | 7,690 | 514 | 1,020 | 6,670 | 0 | 1,030 | n/a | within hard | within hard | none |
 | web-app | web-app | native | managed | tokens-gate | 18 | 85 | 113,501 | 28376 | 95,823 | 6,904 | 24,515 | 71,308 | 8,221 | 2,644 | n/a | n/a | n/a | none |
 | web-app | web-app | adaptive | managed | dynamic-client | 18 | 6 | 8,934 | 2234 | 7,690 | 514 | 1,020 | 6,670 | 0 | 727 | n/a | n/a | n/a | none |
@@ -159,7 +159,7 @@ This dashboard measures the real preset assemblies through the actual plugin loa
 | full | native | managed | tokens-gate | prompt-eval | 2 | 2,757 | 2,359 | 135 | 754 | 1,605 |
 | full | adaptive | managed | dynamic-client | core | 6 | 8,927 | 7,690 | 514 | 1,020 | 6,670 |
 | vertex | native | managed | tokens-gate | core | 24 | 51,786 | 46,386 | 2,474 | 10,390 | 35,996 |
-| vertex | native | managed | tokens-gate | adaptive-optimizer | 1 | 2,302 | 2,047 | 114 | 1,136 | 911 |
+| vertex | native | managed | tokens-gate | adaptive-optimizer | 2 | 3,279 | 2,768 | 223 | 1,276 | 1,492 |
 | vertex | native | managed | tokens-gate | audit | 4 | 9,116 | 7,888 | 718 | 1,632 | 6,256 |
 | vertex | native | managed | tokens-gate | auto-agent-selector | 5 | 7,327 | 6,010 | 610 | 1,377 | 4,633 |
 | vertex | native | managed | tokens-gate | auto-plugin-selector | 1 | 3,827 | 3,527 | 152 | 1,227 | 2,300 |
@@ -257,7 +257,7 @@ The repo has no lightweight LLM tokenizer dependency installed today. This repor
 | swarm | adaptive | managed | dynamic-client | 8,934 | 2234 | 2234 | 2234 | heuristic-4-bytes-per-token | estimated fallback (no lightweight tokenizer dependency present) |
 | full | native | managed | tokens-gate | 213,695 | 53424 | 53424 | 53424 | heuristic-4-bytes-per-token | estimated fallback (no lightweight tokenizer dependency present) |
 | full | adaptive | managed | dynamic-client | 8,934 | 2234 | 2234 | 2234 | heuristic-4-bytes-per-token | estimated fallback (no lightweight tokenizer dependency present) |
-| vertex | native | managed | tokens-gate | 295,839 | 73960 | 73960 | 73960 | heuristic-4-bytes-per-token | estimated fallback (no lightweight tokenizer dependency present) |
+| vertex | native | managed | tokens-gate | 296,817 | 74205 | 74205 | 74205 | heuristic-4-bytes-per-token | estimated fallback (no lightweight tokenizer dependency present) |
 | vertex | adaptive | managed | dynamic-client | 8,934 | 2234 | 2234 | 2234 | heuristic-4-bytes-per-token | estimated fallback (no lightweight tokenizer dependency present) |
 | web-app | native | managed | tokens-gate | 113,501 | 28376 | 28376 | 28376 | heuristic-4-bytes-per-token | estimated fallback (no lightweight tokenizer dependency present) |
 | web-app | adaptive | managed | dynamic-client | 8,934 | 2234 | 2234 | 2234 | heuristic-4-bytes-per-token | estimated fallback (no lightweight tokenizer dependency present) |
@@ -281,7 +281,7 @@ Each preset is reported with its adaptive (output-schema bytes via the dynamic c
 | standard | 8,934 | ok | — | 129,235 | ok | — |
 | swarm | 8,934 | ok | — | 205,013 | warning | — |
 | full | 8,934 | ok | — | 213,695 | ok | — |
-| vertex | 8,934 | ok | — | 295,839 | ok | — |
+| vertex | 8,934 | ok | — | 296,817 | ok | — |
 | web-app | 8,934 | n/a | — | 113,501 | n/a | — |
 | backend-api | 8,934 | n/a | — | 111,917 | n/a | — |
 | cli-tool | 8,934 | n/a | — | 78,276 | n/a | — |
