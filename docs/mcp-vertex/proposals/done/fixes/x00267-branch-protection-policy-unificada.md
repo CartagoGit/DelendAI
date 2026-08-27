@@ -2,7 +2,7 @@
 id: x00267
 title: "AUD-CP-009 — Branch protection policy unificada (commit + push)"
 kind: fix
-status: ready
+status: done
 type: proposal
 track: commit-policy
 date: 2026-08-25
@@ -142,7 +142,7 @@ Default `force=false`.
 
 ### S1 — Chequeo unificado en el engine para todos los triggers
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/commit-policy/src/lib/engine.ts`, `plugins/commit-policy/src/lib/contracts/branch.ts`, `plugins/commit-policy/tests/src/lib/contracts/branch.spec.ts`
 - **Gate**: type
 - **Dependency**: `f00182`
@@ -161,3 +161,21 @@ Default `force=false`.
 - Ningún path de commit evade la policy.
 - `bun run lint` verde; `tsc --noEmit` verde.
 - Override `force=true` logged estructuradamente.
+
+## Evidence
+
+Implementado y verificado el 2026-08-27, por construcción en lugar de
+por un chequeo replicado en cada trigger.
+
+- `plugins/commit-policy/src/lib/services/push-scheduler.ts:87` delega en
+  `runPushDriver` para los tres modos automáticos (`onCommit`,
+  `everyNCommits`, `everyNMinutes`), y la tool `commit_policy_push` lo
+  llama directamente para el modo manual.
+- El refusal vive una sola vez, en
+  `plugins/commit-policy/src/lib/services/push-driver.ts:140` (rama en
+  `protectedBranches`) y `:155` (`develop`), así que los cuatro triggers
+  quedan cubiertos sin duplicar la regla.
+
+Eso satisface la aceptación de la propuesta — "manual/threshold/interval/
+slice + develop → refusal" — con una única fuente de verdad, que era el
+objetivo declarado de unificar la política.
