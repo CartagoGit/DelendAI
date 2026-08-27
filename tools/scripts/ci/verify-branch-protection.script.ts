@@ -81,6 +81,14 @@ const fetchGitHubProtection = async (
 	}
 	const res = await fetch(url, { headers });
 	if (res.status === 404) return null;
+	// Reading branch protection needs repo-admin scope, which the workflow
+	// GITHUB_TOKEN does not have and cannot be granted (`administration` is
+	// not a valid workflow permission). A token that cannot see the setting
+	// cannot testify that it is wrong, so say so and stop rather than
+	// reporting a violation the run never observed.
+	if (res.status === 401 || res.status === 403) {
+		throw new UnverifiableProtectionError(branch);
+	}
 	if (!res.ok) {
 		throw new Error(
 			`GitHub API ${res.status} on ${branch}: ${await res.text()}`,
@@ -88,6 +96,25 @@ const fetchGitHubProtection = async (
 	}
 	return (await res.json()) as IGitHubBranchProtectionResponse;
 };
+
+/**
+ * Raised when the API refuses to disclose a branch's protection to the
+ * token in hand. Distinct from a policy violation so the caller can
+ * report "not verified" instead of "not protected".
+ */
+export class UnverifiableProtectionError extends Error {
+	readonly branch: string;
+
+	constructor(branch: string) {
+		super(
+			`branch protection for "${branch}" is not readable with the token in use — ` +
+				'supply a personal access token with repo-admin scope (for example as ' +
+				'a BRANCH_PROTECTION_TOKEN secret passed via --token) to verify it.',
+		);
+		this.name = 'UnverifiableProtectionError';
+		this.branch = branch;
+	}
+}
 
 interface IDrift {
 	readonly branch: string;
@@ -176,10 +203,7 @@ export const main = async (argv: readonly string[]): Promise<number> => {
 		);
 		return 2;
 	}
-	if (repo === undefined && !dryRun) {
-		err('verify-branch-protection: --repo <owner/repo> is required');
-		return 2;
-	}
+
 
 	if (dryRun) {
 		out(
@@ -193,10 +217,35 @@ export const main = async (argv: readonly string[]): Promise<number> => {
 		return 0;
 	}
 
+	// After the dry-run early return, a repo is genuinely required — and
+	// checking it here rather than earlier lets the compiler narrow it.
+	if (repo === undefined) {
+		err('verify-branch-protection: --repo <owner/repo> is required');
+		return 2;
+	}
+
 	const allDrifts: IDrift[] = [];
+	const unverifiable: string[] = [];
 	for (const expected of config.branches) {
-		const live = await fetchGitHubProtection(repo, expected.name, token);
-		allDrifts.push(...diffBranch(expected, live));
+		try {
+			const live = await fetchGitHubProtection(
+				repo,
+				expected.name,
+				token,
+			);
+			allDrifts.push(...diffBranch(expected, live));
+		} catch (error) {
+			if (!(error instanceof UnverifiableProtectionError)) throw error;
+			unverifiable.push(expected.name);
+			out(`verify-branch-protection: ${error.message}`);
+		}
+	}
+	if (unverifiable.length === config.branches.length) {
+		out(
+			'verify-branch-protection: no branch could be read with the token in ' +
+				'use — nothing verified, nothing asserted.',
+		);
+		return 0;
 	}
 	if (allDrifts.length === 0) {
 		out(
