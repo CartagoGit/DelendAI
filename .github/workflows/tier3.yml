@@ -112,13 +112,6 @@ jobs:
     name: branch-protection
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    # Reading branch-protection settings is not covered by the workflow's
-    # default `contents: read`; without this the API answers 403
-    # "Resource not accessible by integration" and the job fails for a
-    # reason that has nothing to do with the protection it is verifying.
-    permissions:
-      contents: read
-      administration: read
     steps:
       - uses: actions/checkout@v7
 
@@ -139,13 +132,6 @@ jobs:
     name: develop-health
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    # Reading branch-protection settings is not covered by the workflow's
-    # default `contents: read`; without this the API answers 403
-    # "Resource not accessible by integration" and the job fails for a
-    # reason that has nothing to do with the protection it is verifying.
-    permissions:
-      contents: read
-      administration: read
     steps:
       - uses: actions/checkout@v7
 
