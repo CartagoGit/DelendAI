@@ -985,6 +985,182 @@ specs de `git` y no los de `core`, y lo demuestra en el log.
 **Dependencias.** Ninguna. **Tokens:** ninguno. **Compatibilidad:** ninguna.
 ---
 
+### AUD-A12 — `tools/` no lo typechequea nadie: 95 errores de TypeScript invisibles
+
+- **Clasificación:** BUG CONFIRMADO · **Severidad:** ALTA · **Área:** CI / calidad
+- **Propuesta:** `x00294`
+
+**Comportamiento actual.** `bun run typecheck` ejecuta
+`tsc --noEmit -p tsconfig.json`, **un solo proyecto**, cuyo `include` no contiene
+`tools/**`. Existe un `tools/tsconfig.json` que sí lo cubre — y **nada lo
+invoca**.
+
+**Evidencia.**
+```
+$ node -e 'console.log(require("fs").readFileSync("tsconfig.json","utf8"))'
+"include": [ "packages/*/src/**/*", …, "plugins/*/tests/**/*",
+             "docs/mcp-vertex/examples/*/…", "scripts/**/*" ]     ← no tools/**
+
+$ cat tools/tsconfig.json
+{ "extends": "../tsconfig.json",
+  "include": ["scripts/**/*.ts", "scripts/**/*.spec.ts", "vitest.config.ts"] }
+
+$ grep -rn "tools/tsconfig" package.json .github/workflows/ tools/scripts/ lefthook.yml
+(sin resultados — nadie lo ejecuta)
+
+$ bunx tsc --noEmit -p tools/tsconfig.json 2>&1 | grep -c "error TS"
+95
+```
+Repartidos en **29 ficheros**. Distribución: 29×TS2322, 13×TS18048,
+9×TS2339, 7×TS7006, 7×TS2345, 6×TS2532, 6×TS2352, **4×TS2367**, y una cola.
+
+Nótese además que `tools/tsconfig.json` sólo incluye `scripts/**`: `tools/tests/**`
+—donde viven los specs de los verificadores de CI— no lo cubre ni ese proyecto.
+
+**Por qué es un problema.** `tools/` son **303 ficheros y 56.143 líneas**: todos
+los lints, generadores, verificadores y scripts de CI del repositorio. Es el
+código que decide si el resto del código pasa. Y es el único área grande del
+monorepo sin ninguna comprobación de tipos, por la misma razón que `AUD-A09`:
+la puerta existe, pero su alcance no es el que todo el mundo supone.
+
+Los `TS2367` son especialmente significativos: son comparaciones que el
+compilador demuestra **siempre falsas**. Cada una es una comprobación muerta que
+alguien escribió creyendo que protegía algo. Una de ellas es un fallo de
+seguridad real — ver `AUD-D07`.
+
+**Impacto.** 95 defectos de tipo acumulados sin barrera, en el código que
+gobierna la calidad de todo lo demás.
+
+**Riesgo.** Alto, y ya materializado (`AUD-D07`).
+
+**Reproducción.** Los cuatro comandos de la evidencia.
+
+**Solución mínima.** Añadir `bunx tsc --noEmit -p tools/tsconfig.json` al script
+`typecheck` y al job `typecheck` de `ci.yml`, con una baseline si los 95 errores
+no se pueden arreglar de golpe.
+
+**Solución arquitectónica ideal.** Que `typecheck` derive los proyectos a
+comprobar de `package.json#workspaces` en vez de apoyarse en un `include`
+mantenido a mano, y un test que falle si un workspace declarado no queda cubierto
+por ningún proyecto de TypeScript. Es la misma corrección de fondo que `AUD-A09`
+(alcance del lint) y `AUD-A11` (mapa workspace↔proyecto): **derivar el alcance
+del manifiesto, no repetirlo a mano**.
+
+**Tests a añadir.**
+- Test de cobertura: para cada entrada de `workspaces`, existe un proyecto de
+  TypeScript que la incluye. Falla hoy con `tools`.
+- Añadir `tools/tests/**` al `include` de `tools/tsconfig.json` y comprobar que
+  los specs de los verificadores compilan.
+- Ratchet de la baseline de 95 errores, que sólo puede bajar.
+
+**Criterios de aceptación.** `bun run typecheck` cubre `tools/`; la baseline
+arranca en 95 y sólo baja; ningún workspace queda fuera de todo proyecto.
+
+**Dependencias.** Ninguna. **Tokens:** ninguno. **Compatibilidad:** ninguna.
+
+*Hallazgo aportado por el subagente que implementó `AUD-A04`–`AUD-A07`, al
+observar que el gate `typecheck` de su propio slice no cubría su territorio.
+Verificado de forma independiente antes de incluirse.*
+
+---
+
+### AUD-D07 — El guard que impide sondear herramientas con efectos es siempre falso para 33 de ellas
+
+- **Clasificación:** BUG CONFIRMADO · **Severidad:** ALTA · **Área:** seguridad / verificación
+- **Propuesta:** `x00295`
+
+**Comportamiento actual.** `runEmptyInputProbe` protege al arnés `verify:tools` de
+invocar con `{}` herramientas que declaran efectos secundarios. El comentario
+explica el peligro con precisión: *"invoking them with `{}` would execute real
+subprocesses (e.g. `run_quality` running `vitest`, `tsc`, `bun run build`) and
+hang the verify harness"*. El guard es:
+
+```ts
+// tools/scripts/verify/verify-probes.ts:90-95
+tool.effects.some((e) => e === 'spawn' || e === 'fs:write' || e === 'network')
+```
+
+El tipo real de `tool.effects[]` es `'destructive' | 'network' | 'write'`. De los
+tres literales comparados:
+
+| Literal comparado | ¿Está en el union? | Resultado |
+| --- | --- | --- |
+| `'spawn'` | **no** | siempre falso |
+| `'fs:write'` | **no** | siempre falso |
+| `'network'` | sí | funciona |
+
+**Evidencia.**
+```
+$ bunx tsc --noEmit -p tools/tsconfig.json | grep TS2367
+tools/scripts/verify/verify-probes.ts(93,28): error TS2367: This comparison
+  appears to be unintentional because the types
+  '"destructive" | "network" | "write"' and '"fs:write"' have no overlap.
+
+$ grep -rn "effects: \['write'\]" plugins/*/src --include='*.ts' | wc -l
+33
+```
+El compilador **ya informa del fallo**. Nadie lo ve porque `tools/` no se
+typecheca (`AUD-A12`).
+
+**Por qué es un problema.** El guard sólo cubre `network`. Las **33 herramientas
+que declaran `effects: ['write']` a secas** —entre ellas `memory_compact`,
+`external-mcps ack` e `issues ingest_issue`— **no se saltan**, y el arnés las
+invoca con entrada vacía. Y `'destructive'`, el efecto más peligroso del union,
+no está contemplado en absoluto: no aparece ni siquiera como literal mal escrito.
+
+Es el tercer ejemplar del patrón central de esta auditoría: una comprobación que
+parece proteger, se lee como si protegiera, y es inerte. Aquí con el agravante de
+que el mecanismo que lo habría detectado —el compilador— sí lo detecta, y está
+apagado.
+
+**Impacto.** El arnés de verificación invoca con `{}` herramientas que escriben.
+Que hoy no haya causado daño depende de que sus `inputSchema` rechacen el
+payload vacío antes de llegar al handler — es decir, de una segunda barrera que
+nadie eligió como barrera.
+
+**Riesgo.** Alto. Una herramienta `write` con todos sus campos opcionales se
+ejecutaría de verdad durante `verify:tools`.
+
+**Reproducción.** Los dos comandos de la evidencia; y añadir una herramienta con
+`effects: ['write']` e `inputSchema` de campos opcionales, y correr `verify:tools`.
+
+**Solución mínima.** Comparar contra los literales reales del union:
+`e === 'destructive' || e === 'write' || e === 'network'` — es decir, cualquier
+efecto declarado.
+
+**Solución arquitectónica ideal.** Que el guard **no enumere literales**: si
+`tool.effects` no está vacío, no se sondea. Enumerar valores de un union en otro
+módulo es precisamente lo que permite que se desincronicen. Y tipar el parámetro
+con el union importado en vez de con `string`, para que el compilador rechace un
+literal inexistente en vez de evaluarlo a `false`.
+
+**Tests a añadir.**
+- Spec por cada miembro del union (`destructive`, `write`, `network`) ⇒
+  `needs-input`, no invocación. Falla hoy para dos de los tres.
+- Spec: herramienta sin efectos declarados ⇒ sí se sondea.
+- Test de exhaustividad: un `switch` sobre el union con `never` en el default, de
+  modo que añadir un efecto nuevo rompa la compilación hasta contemplarlo.
+
+**Criterios de aceptación.** Ninguna herramienta con efectos declarados se
+invoca con entrada vacía; añadir un efecto nuevo al union rompe la compilación
+del guard hasta tratarlo.
+
+**Dependencias.** `AUD-A12` es lo que hace visible esta clase de fallo; este
+arreglo no debe entrar sin él, o el siguiente volverá a pasar desapercibido.
+
+**Tokens:** ninguno. **Compatibilidad:** ninguna.
+
+**Nota adyacente.** El cuarto y último grupo de `TS2367` está en
+`tools/scripts/lint/no-internal-imports.script.ts:164`, donde
+`name === 'node_modules' || name === 'dist' || name === 'coverage'` compara
+`NonSharedBuffer` con `string` y es siempre falso: el recorrido **desciende a
+`node_modules`**. Es de menor gravedad porque ese script es huérfano — no lo
+referencia ni `package.json` ni ningún workflow (el gate real es
+`no-internal-core-imports.script.ts`, otro fichero). Debe borrarse o conectarse;
+un lint muerto en el árbol es una trampa para el siguiente lector.
+
+---
+
 ## 6. Track B — economía de tokens
 
 ### Análisis cuantitativo: de dónde viene realmente el coste

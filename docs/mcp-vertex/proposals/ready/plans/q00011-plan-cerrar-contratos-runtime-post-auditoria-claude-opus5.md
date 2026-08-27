@@ -50,6 +50,10 @@ contains:
             rationale: "biome ci sobre el monorepo completo con baseline-ratchet: hoy solo cubre extensions/vscode y hay 45 errores invisibles. AUD-A09." }
         - { id: x00282, kind: fix, required: true, priority: P1, track: ci,
             rationale: "Mapa unico workspace->proyecto vitest: affected.script.ts emite nombres de paquete que --project rechaza. AUD-A11." }
+        - { id: x00294, kind: fix, required: true, priority: P1, track: ci,
+            rationale: "tools/ no lo typechequea nadie: el tsconfig raiz lo excluye y tools/tsconfig.json no lo invoca ningun script. 95 errores TS invisibles en 29 ficheros. AUD-A12." }
+        - { id: x00295, kind: fix, required: true, priority: P0, track: security,
+            rationale: "El guard que impide sondear herramientas con efectos compara literales que no estan en el union: 33 tools con effects ['write'] se invocan con entrada vacia. AUD-D07." }
         - { id: r00035, kind: refactor, required: false, priority: P2, track: ci,
             rationale: "Desduplicar ci.yml frente a tier2 y extraer un workflow reutilizable de setup. AUD-A10." }
         - { id: d00013, kind: docs, required: true, priority: P1, track: governance,
@@ -256,7 +260,9 @@ host no llama. Arreglar uno solo no produce ninguna mejora observable.
 
 `x00290` (`llmDecidesActivation` conectado al proxy), `x00288` (lint de
 fronteras de efectos con ratchet inicial 13), `x00281` (Biome sobre el monorepo
-completo con baseline que sólo baja).
+completo con baseline que sólo baja) y `x00295` (el guard de sondeo compara
+literales que no existen en el union: 33 herramientas con efectos se invocan con
+entrada vacía).
 
 ### S4 — Tokens: atacar el 66% (P1)
 
@@ -298,6 +304,7 @@ expresable), `x00292` (`protectedBranches` obligatorio en la firma).
 
 
 `x00279` (`defaults` consumidos), `x00282` (mapa workspace→proyecto vitest),
+`x00294` (`tools/` entra en el typecheck: 95 errores invisibles hoy),
 `d00013` (ADR del modelo de ramas), `x00273` (guard de push a `main`) y
 `x00293` (versión única por plugin: 41 de 51 mienten al host).
 
