@@ -1832,52 +1832,9 @@ export interface McpVertexProposalsAgentLockOutput {
 
 export interface McpVertexProposalsAgentLockReleaseOrphanOutput {
 	ok: boolean;
-	error?: {
-		reason: string;
-		nextAction?: string;
-	};
-	count?: number;
-	zombies?: Array<{
-		kind: "agent-alive" | "agent-idle" | "agent-dead";
-		agent: string;
-		taskId: string;
-		ts: string;
-		lastSeen: string;
-		missedBeats: number;
-		suggestedActions: string[];
-	}>;
-	taskId?: string;
-	agent?: string;
-	released?: boolean;
-	id?: string;
-	from?: string;
-	to?: string;
-	reason?: string;
-	lockReleased?: boolean;
-	movedTo?: string;
-	warning?: string;
-	changed?: boolean;
-	path?: string;
-	dryRun?: boolean;
-	file?: string;
-	folder?: string;
-	status?: string;
-	lockOwners?: string[];
-	staleTaskIds?: string[];
-	lastHeartbeat?: string;
-	lastAgentDeadEvent?: {
-		kind: "agent-alive" | "agent-idle" | "agent-dead";
-		agent: string;
-		taskId: string;
-		ts: string;
-		lastSeen: string;
-		missedBeats: number;
-	};
-	inconsistencies?: string[];
-	suggestedActions?: string[];
-	crossProposal?: boolean;
-	crossProposalStaleTaskIds?: string[];
-	crossProposalStaleAgents?: string[];
+	taskId: string;
+	agent: string;
+	released: boolean;
 }
 
 export interface McpVertexProposalsAgentNamesOutput {
@@ -2245,38 +2202,12 @@ export interface McpVertexProposalsProposalBoardOutput {
 
 export interface McpVertexProposalsProposalDiagnoseOutput {
 	ok: boolean;
-	error?: {
-		reason: string;
-		nextAction?: string;
-	};
-	count?: number;
-	zombies?: Array<{
-		kind: "agent-alive" | "agent-idle" | "agent-dead";
-		agent: string;
-		taskId: string;
-		ts: string;
-		lastSeen: string;
-		missedBeats: number;
-		suggestedActions: string[];
-	}>;
-	taskId?: string;
-	agent?: string;
-	released?: boolean;
-	id?: string;
-	from?: string;
-	to?: string;
-	reason?: string;
-	lockReleased?: boolean;
-	movedTo?: string;
-	warning?: string;
-	changed?: boolean;
-	path?: string;
-	dryRun?: boolean;
-	file?: string;
-	folder?: string;
-	status?: string;
-	lockOwners?: string[];
-	staleTaskIds?: string[];
+	id: string;
+	file: string;
+	folder: string;
+	status: string;
+	lockOwners: string[];
+	staleTaskIds: string[];
 	lastHeartbeat?: string;
 	lastAgentDeadEvent?: {
 		kind: "agent-alive" | "agent-idle" | "agent-dead";
@@ -2286,61 +2217,22 @@ export interface McpVertexProposalsProposalDiagnoseOutput {
 		lastSeen: string;
 		missedBeats: number;
 	};
-	inconsistencies?: string[];
-	suggestedActions?: string[];
+	inconsistencies: string[];
+	suggestedActions: string[];
 	crossProposal?: boolean;
-	crossProposalStaleTaskIds?: string[];
-	crossProposalStaleAgents?: string[];
+	crossProposalStaleTaskIds: string[];
+	crossProposalStaleAgents: string[];
 }
 
 export interface McpVertexProposalsProposalForceTransitionOutput {
 	ok: boolean;
-	error?: {
-		reason: string;
-		nextAction?: string;
-	};
-	count?: number;
-	zombies?: Array<{
-		kind: "agent-alive" | "agent-idle" | "agent-dead";
-		agent: string;
-		taskId: string;
-		ts: string;
-		lastSeen: string;
-		missedBeats: number;
-		suggestedActions: string[];
-	}>;
-	taskId?: string;
-	agent?: string;
-	released?: boolean;
-	id?: string;
-	from?: string;
-	to?: string;
-	reason?: string;
-	lockReleased?: boolean;
-	movedTo?: string;
+	id: string;
+	from: string;
+	to: string;
+	reason: string;
+	lockReleased: boolean;
+	movedTo: string;
 	warning?: string;
-	changed?: boolean;
-	path?: string;
-	dryRun?: boolean;
-	file?: string;
-	folder?: string;
-	status?: string;
-	lockOwners?: string[];
-	staleTaskIds?: string[];
-	lastHeartbeat?: string;
-	lastAgentDeadEvent?: {
-		kind: "agent-alive" | "agent-idle" | "agent-dead";
-		agent: string;
-		taskId: string;
-		ts: string;
-		lastSeen: string;
-		missedBeats: number;
-	};
-	inconsistencies?: string[];
-	suggestedActions?: string[];
-	crossProposal?: boolean;
-	crossProposalStaleTaskIds?: string[];
-	crossProposalStaleAgents?: string[];
 }
 
 export interface McpVertexProposalsProposalGetOutput {
@@ -2351,52 +2243,14 @@ export interface McpVertexProposalsProposalGetOutput {
 
 export interface McpVertexProposalsProposalReconcileFolderOutput {
 	ok: boolean;
-	error?: {
-		reason: string;
-		nextAction?: string;
-	};
-	count?: number;
-	zombies?: Array<{
-		kind: "agent-alive" | "agent-idle" | "agent-dead";
-		agent: string;
-		taskId: string;
-		ts: string;
-		lastSeen: string;
-		missedBeats: number;
-		suggestedActions: string[];
-	}>;
-	taskId?: string;
-	agent?: string;
-	released?: boolean;
-	id?: string;
-	from?: string;
-	to?: string;
-	reason?: string;
-	lockReleased?: boolean;
-	movedTo?: string;
-	warning?: string;
-	changed?: boolean;
+	id: string;
+	changed: boolean;
 	path?: string;
 	dryRun?: boolean;
-	file?: string;
-	folder?: string;
-	status?: string;
-	lockOwners?: string[];
-	staleTaskIds?: string[];
-	lastHeartbeat?: string;
-	lastAgentDeadEvent?: {
-		kind: "agent-alive" | "agent-idle" | "agent-dead";
-		agent: string;
-		taskId: string;
-		ts: string;
-		lastSeen: string;
-		missedBeats: number;
-	};
-	inconsistencies?: string[];
-	suggestedActions?: string[];
-	crossProposal?: boolean;
-	crossProposalStaleTaskIds?: string[];
-	crossProposalStaleAgents?: string[];
+	from?: string;
+	to?: string;
+	movedTo?: string;
+	warning?: string;
 }
 
 export interface McpVertexProposalsProposalReviewOutput {
@@ -2418,12 +2272,8 @@ export interface McpVertexProposalsProposalReviewOutput {
 
 export interface McpVertexProposalsProposalStaleListOutput {
 	ok: boolean;
-	error?: {
-		reason: string;
-		nextAction?: string;
-	};
-	count?: number;
-	zombies?: Array<{
+	count: number;
+	zombies: Array<{
 		kind: "agent-alive" | "agent-idle" | "agent-dead";
 		agent: string;
 		taskId: string;
@@ -2432,38 +2282,6 @@ export interface McpVertexProposalsProposalStaleListOutput {
 		missedBeats: number;
 		suggestedActions: string[];
 	}>;
-	taskId?: string;
-	agent?: string;
-	released?: boolean;
-	id?: string;
-	from?: string;
-	to?: string;
-	reason?: string;
-	lockReleased?: boolean;
-	movedTo?: string;
-	warning?: string;
-	changed?: boolean;
-	path?: string;
-	dryRun?: boolean;
-	file?: string;
-	folder?: string;
-	status?: string;
-	lockOwners?: string[];
-	staleTaskIds?: string[];
-	lastHeartbeat?: string;
-	lastAgentDeadEvent?: {
-		kind: "agent-alive" | "agent-idle" | "agent-dead";
-		agent: string;
-		taskId: string;
-		ts: string;
-		lastSeen: string;
-		missedBeats: number;
-	};
-	inconsistencies?: string[];
-	suggestedActions?: string[];
-	crossProposal?: boolean;
-	crossProposalStaleTaskIds?: string[];
-	crossProposalStaleAgents?: string[];
 }
 
 export interface McpVertexProposalsProposalTransitionOutput {
