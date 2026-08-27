@@ -80,6 +80,54 @@ describe('f00184 — phased plugin lifecycle', () => {
 		await expect(safeDispose(undefined, {})).resolves.toBeUndefined();
 	});
 
+	it('safeDispose runs cleanup exactly once for the same active payload', async () => {
+		let calls = 0;
+		const active = { resource: 'handle-1' };
+		const dispose = async (payload: typeof active) => {
+			calls += 1;
+			expect(payload).toBe(active);
+		};
+		await safeDispose(dispose, active);
+		await safeDispose(dispose, active);
+		await safeDispose(dispose, active);
+		expect(calls).toBe(1);
+	});
+
+	it('safeDispose: N simultaneous callers settle on exactly one cleanup', async () => {
+		let calls = 0;
+		let resolveDispose!: () => void;
+		const disposeStarted = new Promise<void>((resolve) => {
+			resolveDispose = resolve;
+		});
+		const active = { resource: 'handle-2' };
+		const dispose = async () => {
+			calls += 1;
+			resolveDispose();
+			// Yield so concurrent callers genuinely overlap in-flight.
+			await new Promise((resolve) => setTimeout(resolve, 5));
+		};
+
+		const callers = Array.from({ length: 10 }, () =>
+			safeDispose(dispose, active),
+		);
+		await disposeStarted;
+		await Promise.all(callers);
+
+		expect(calls).toBe(1);
+	});
+
+	it('safeDispose keeps independent payloads independent', async () => {
+		let calls = 0;
+		const dispose = async () => {
+			calls += 1;
+		};
+		await Promise.all([
+			safeDispose(dispose, { id: 1 }),
+			safeDispose(dispose, { id: 2 }),
+		]);
+		expect(calls).toBe(2);
+	});
+
 	it('adaptLegacyPlugin runs the legacy register() in activate()', async () => {
 		const plugin = definePlugin({
 			name: 'legacy-1',
