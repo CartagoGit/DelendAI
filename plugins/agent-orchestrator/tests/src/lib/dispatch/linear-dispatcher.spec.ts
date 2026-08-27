@@ -54,15 +54,6 @@ const PLAN: IModePlan = {
 	rotation: POLICY.defaults.rotation,
 };
 
-function okStep(): IFakeScriptStep {
-	return {
-		output: 'ok',
-		tokensUsed: 10,
-		schemaOk: true,
-		hadError: false,
-	};
-}
-
 function badOutput(s: string): IFakeScriptStep {
 	return { output: s, tokensUsed: 5, schemaOk: true, hadError: false };
 }
@@ -93,30 +84,10 @@ describe('LinearDispatcher', () => {
 				[
 					'slot-1-scout',
 					[
-						{
-							output: 'x',
-							tokensUsed: 5,
-							schemaOk: true,
-							hadError: false,
-						},
-						{
-							output: 'y',
-							tokensUsed: 5,
-							schemaOk: true,
-							hadError: false,
-						},
-						{
-							output: 'x',
-							tokensUsed: 5,
-							schemaOk: true,
-							hadError: false,
-						},
-						{
-							output: 'z',
-							tokensUsed: 5,
-							schemaOk: true,
-							hadError: false,
-						},
+						badOutput('x'),
+						badOutput('y'),
+						badOutput('x'),
+						badOutput('z'),
 					],
 				],
 			]),
@@ -138,36 +109,11 @@ describe('LinearDispatcher', () => {
 				[
 					'slot-1-scout',
 					[
-						{
-							output: 'x',
-							tokensUsed: 5,
-							schemaOk: true,
-							hadError: false,
-						},
-						{
-							output: 'y',
-							tokensUsed: 5,
-							schemaOk: true,
-							hadError: false,
-						},
-						{
-							output: 'x',
-							tokensUsed: 5,
-							schemaOk: true,
-							hadError: false,
-						},
-						{
-							output: 'y',
-							tokensUsed: 5,
-							schemaOk: true,
-							hadError: false,
-						},
-						{
-							output: 'x',
-							tokensUsed: 5,
-							schemaOk: true,
-							hadError: false,
-						},
+						badOutput('x'),
+						badOutput('y'),
+						badOutput('x'),
+						badOutput('y'),
+						badOutput('x'),
 					],
 				],
 			]),
@@ -196,26 +142,7 @@ describe('LinearDispatcher', () => {
 			script: new Map<string, readonly IFakeScriptStep[]>([
 				[
 					'slot-1-scout',
-					[
-						{
-							output: 'x',
-							tokensUsed: 5,
-							schemaOk: true,
-							hadError: false,
-						},
-						{
-							output: 'y',
-							tokensUsed: 5,
-							schemaOk: true,
-							hadError: false,
-						},
-						{
-							output: 'x',
-							tokensUsed: 5,
-							schemaOk: true,
-							hadError: false,
-						},
-					],
+					[badOutput('x'), badOutput('y'), badOutput('x')],
 				],
 			]),
 		});

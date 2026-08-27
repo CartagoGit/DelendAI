@@ -26,7 +26,14 @@
  * exits 0.
  */
 
-import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
+import { createHash } from 'node:crypto';
+import {
+	existsSync,
+	readFileSync,
+	readdirSync,
+	statSync,
+	writeFileSync,
+} from 'node:fs';
 import { join, resolve, sep } from 'node:path';
 
 import {
@@ -35,6 +42,24 @@ import {
 } from './lib/closed-frozen-guard.lib';
 import type { IFrozenDrift } from './lib/closed-frozen-guard.lib';
 import { repoRoot } from '../lib/monorepo-paths';
+
+/**
+ * Hashes recorded at archival, keyed by proposal id. Kept in one index
+ * rather than a sidecar per file so that recording a hash never has to
+ * touch the frozen body it is protecting.
+ */
+const HASH_INDEX_RELPATH = 'legacy/closed/.frozen-hashes.json';
+
+const sha256Of = (content: string): string =>
+	createHash('sha256').update(content, 'utf8').digest('hex');
+
+const readArchivedHashes = (
+	proposalsDir: string,
+): Readonly<Record<string, string>> => {
+	const abs = join(proposalsDir, HASH_INDEX_RELPATH);
+	if (!existsSync(abs)) return {};
+	return JSON.parse(readFileSync(abs, 'utf8')) as Record<string, string>;
+};
 
 import {
 	extractYamlBlock,
@@ -48,7 +73,8 @@ interface ICollectedProposal {
 	readonly id: string;
 	readonly status: string | undefined;
 	readonly archivedOn: string | undefined;
-	readonly mtimeIso: string;
+	readonly contentSha256: string;
+	readonly archivedSha256: string | undefined;
 	readonly markdown: string;
 	readonly snapshotSlices: ReadonlyArray<
 		ReturnType<typeof collectSliceStatuses>[number]
@@ -65,6 +91,7 @@ const collectArchivedProposals = (
 	proposalsDir: string,
 ): ReadonlyArray<ICollectedProposal> => {
 	const archiveRoot = join(proposalsDir, 'legacy', 'closed');
+	const archivedHashes = readArchivedHashes(proposalsDir);
 	if (!existsSync(archiveRoot)) return [];
 	const out: ICollectedProposal[] = [];
 	for (const sub of Object.values(KIND_TO_DONE_SUBFOLDER)) {
@@ -124,7 +151,8 @@ const collectArchivedProposals = (
 				id,
 				status,
 				archivedOn,
-				mtimeIso: stat.mtime.toISOString(),
+				contentSha256: sha256Of(markdown),
+				archivedSha256: archivedHashes[id],
 				markdown,
 				snapshotSlices,
 			});
@@ -137,6 +165,27 @@ const main = async (): Promise<number> => {
 	const root = repoRoot();
 	const proposalsDir = resolve(root, 'docs', 'mcp-vertex', 'proposals');
 	const collected = collectArchivedProposals(proposalsDir);
+
+	// `--seed` records today's content as the frozen baseline. Run it when
+	// archiving, never to silence a drift you did not explain: it rewrites
+	// the very evidence the gate compares against.
+	if (process.argv.slice(2).includes('--seed')) {
+		const index = Object.fromEntries(
+			[...collected]
+				.sort((a, b) => a.id.localeCompare(b.id))
+				.map((proposal) => [proposal.id, proposal.contentSha256]),
+		);
+		writeFileSync(
+			join(proposalsDir, HASH_INDEX_RELPATH),
+			`${JSON.stringify(index, null, '\t')}\n`,
+			'utf8',
+		);
+		console.log(
+			`closed-frozen-guard: recorded ${collected.length} archived hash(es)`,
+		);
+		return 0;
+	}
+
 	const drifts: IFrozenDrift[] = [];
 	for (const proposal of collected) {
 		drifts.push(...detectFrozenDrift(proposal));
