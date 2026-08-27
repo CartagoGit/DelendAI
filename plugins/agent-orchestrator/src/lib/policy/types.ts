@@ -7,6 +7,11 @@
  */
 import { z } from 'zod';
 
+import type {
+	IBudgetOverride,
+	IRotationOverride,
+} from '../contracts/interfaces/agent-orchestrator.interface.js';
+
 /** The four workflow modes the orchestrator can run. */
 export const ORCHESTRATION_MODES = [
 	'single',
@@ -131,24 +136,12 @@ export interface IOrchestratorPolicy {
 }
 
 /**
- * Bespoke (not `Partial<...>`-derived) override shapes: every field's
- * `| undefined` union mirrors how zod infers optional object fields
- * under `exactOptionalPropertyTypes`, so `OrchestratorPolicySchema`-
- * parsed values assign to these interfaces without a lossy
- * reconstruction at every call site. `Partial<IBudgetPolicy>` would
- * type each field as bare `?:`, which zod's inferred type is not.
+ * `IBudgetOverride`/`IRotationOverride` live in
+ * `contracts/interfaces/agent-orchestrator.interface.ts` (added after
+ * this file's exports were grandfathered into the types-in-contracts
+ * baseline); see that file for why they're bespoke shapes rather than
+ * `Partial<IBudgetPolicy>`/`Partial<IRotationPolicy>`.
  */
-export interface IBudgetOverride {
-	readonly maxTokensOrchestrator?: number | undefined;
-	readonly maxTokensPerSubagent?: number | undefined;
-	readonly timeoutMs?: number | undefined;
-}
-
-export interface IRotationOverride {
-	readonly maxIterationsPerSubagent?: number | undefined;
-	readonly allow?: readonly RotationReason[] | undefined;
-}
-
 export interface IModeOverride {
 	readonly budget?: IBudgetOverride | undefined;
 	readonly rotation?: IRotationOverride | undefined;

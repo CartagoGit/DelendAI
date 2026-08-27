@@ -7,7 +7,7 @@ import {
 	toolJson,
 } from '@mcp-vertex/core/public';
 
-import type { IRuntimeMetricsRegistry } from '../metrics/runtime-metrics-registry';
+import type { IObsRuntimeMetricsToolOptions } from '../contracts/interfaces/observability.interface';
 
 const RUNTIME_METRICS_INPUT = z
 	.object({ reset: z.boolean().optional() })
@@ -17,11 +17,6 @@ const RUNTIME_METRICS_OUTPUT = z.object({
 	calls: z.number().int().nonnegative(),
 	responses: PayloadPercentileSchema,
 });
-
-export interface IObsRuntimeMetricsToolOptions {
-	readonly namespacePrefix: string;
-	readonly registry: IRuntimeMetricsRegistry;
-}
 
 /**
  * `obs_runtime_metrics` — per-process call count and p95 response-payload

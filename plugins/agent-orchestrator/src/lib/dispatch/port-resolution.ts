@@ -19,6 +19,7 @@
  */
 import { FakeDispatchPort } from './fake-port.js';
 import type { IDispatchPort } from './contracts.js';
+import type { IResolveDispatchPortOptions } from '../contracts/interfaces/agent-orchestrator.interface.js';
 
 export class MissingDispatchPortError extends Error {
 	constructor() {
@@ -48,13 +49,6 @@ function isDispatchPort(value: unknown): value is IDispatchPort {
 		typeof (value as { spawnSubagent?: unknown }).spawnSubagent ===
 			'function'
 	);
-}
-
-export interface IResolveDispatchPortOptions {
-	/** Factory the host provides; invoked once with no arguments. */
-	readonly portFactory?: unknown;
-	/** Explicit opt-in for the deterministic fake port (tests/fixtures only). */
-	readonly allowFakeDispatchPort?: boolean;
 }
 
 /**

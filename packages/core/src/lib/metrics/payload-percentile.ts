@@ -29,15 +29,18 @@ export const PayloadPercentileSchema = z.discriminatedUnion('hasSamples', [
 	}),
 ]);
 
-export type IPayloadPercentile = z.infer<typeof PayloadPercentileSchema>;
-export type IPayloadPercentileEmpty = Extract<
+export type {
+	IByteSamplePercentileRegistry,
 	IPayloadPercentile,
-	{ hasSamples: false }
->;
-export type IPayloadPercentileSampled = Extract<
+	IPayloadPercentileEmpty,
+	IPayloadPercentileSampled,
+	IResettableMetricsRegistry,
+} from '../contracts/interfaces/payload-percentile.interface';
+import type {
+	IByteSamplePercentileRegistry,
 	IPayloadPercentile,
-	{ hasSamples: true }
->;
+	IResettableMetricsRegistry,
+} from '../contracts/interfaces/payload-percentile.interface';
 
 const P95_RANK = 0.95;
 
@@ -60,21 +63,6 @@ export const computePayloadPercentile = (
 	return { hasSamples: true, p95PayloadBytes: nearestRankP95(sorted) };
 };
 
-/**
- * Generic "record a byte size, read back a count + p95" recorder. This is
- * the sampling mechanics every `*_metrics_registry` in a producer plugin
- * needs — the only thing that varies per plugin is the vocabulary around
- * it (a `calls` counter vs. an `activations` counter, `recordResponseBytes`
- * vs. `recordActivation`). Plugins wrap this with their own domain-specific
- * registry interface rather than re-implementing the sample array.
- */
-export interface IByteSamplePercentileRegistry {
-	record(bytes: number): void;
-	sampleCount(): number;
-	snapshotPercentile(): IPayloadPercentile;
-	reset(): void;
-}
-
 export const createByteSamplePercentileRegistry =
 	(): IByteSamplePercentileRegistry => {
 		let byteSamples: number[] = [];
@@ -93,19 +81,6 @@ export const createByteSamplePercentileRegistry =
 			},
 		};
 	};
-
-/**
- * The read side every `*_metrics` tool needs: take a snapshot, and
- * optionally zero the sample window in the same call.
- *
- * Generic over the snapshot so each plugin keeps its own shape — only
- * the read-then-maybe-reset sequence is shared, which is exactly the
- * part both plugins had copied verbatim.
- */
-export interface IResettableMetricsRegistry<TSnapshot> {
-	snapshot(): TSnapshot;
-	reset(): void;
-}
 
 /**
  * Reading and resetting must happen in this order: a reset before the
