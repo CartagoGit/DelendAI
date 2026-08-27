@@ -2,9 +2,17 @@ import { spawn } from 'node:child_process';
 import { mkdir, readdir, readFile, rename, writeFile } from 'node:fs/promises';
 import { dirname, join, resolve } from 'node:path';
 
+/**
+ * Maps each rewritable `@mcp-vertex/*` package name to the version its OWN
+ * `package.json` currently declares. A `workspace:` range always resolves
+ * against the target package's own version — never a single version
+ * borrowed from the root manifest or any other package — because packages
+ * in this monorepo are not guaranteed to share a version outside a lockstep
+ * release (and even then, resolving per-package is what actually keeps that
+ * guarantee, rather than assuming it).
+ */
 export interface IWorkspaceDepsPlan {
-	readonly targetVersion: string;
-	readonly mcpVertexPackages: ReadonlySet<string>;
+	readonly packageVersions: ReadonlyMap<string, string>;
 }
 
 export interface IRewriteResult {
@@ -18,6 +26,38 @@ const DEP_SECTIONS = [
 	'peerDependencies',
 	'optionalDependencies',
 ] as const;
+
+const WORKSPACE_PROTOCOL_PREFIX = 'workspace:';
+
+/**
+ * Resolvers for the `workspace:` range forms this repo's tooling must
+ * support (npm/pnpm's workspace protocol). `*` pins the exact version;
+ * `^`/`~` carry the target's own version under the matching semver
+ * operator, exactly as a real publish of that range would.
+ */
+const WORKSPACE_PROTOCOL_RESOLVERS: Readonly<
+	Record<string, (targetVersion: string) => string>
+> = {
+	'*': (targetVersion) => targetVersion,
+	'^': (targetVersion) => `^${targetVersion}`,
+	'~': (targetVersion) => `~${targetVersion}`,
+};
+
+const resolveWorkspaceRange = (
+	depName: string,
+	range: string,
+	targetVersion: string,
+): string => {
+	const protocol = range.slice(WORKSPACE_PROTOCOL_PREFIX.length);
+	const resolver = WORKSPACE_PROTOCOL_RESOLVERS[protocol];
+	if (resolver === undefined) {
+		throw createWorkspaceDepsError(
+			'ERR_WORKSPACE_DEPS_PARSE',
+			`unsupported workspace protocol "${range}" for dependency "${depName}"`,
+		);
+	}
+	return resolver(targetVersion);
+};
 
 const SKIP_DIRS = new Set([
 	'.git',
@@ -92,10 +132,18 @@ const collectChangedKeys = (
 		for (const [name, range] of Object.entries(
 			deps as Record<string, unknown>,
 		)) {
-			if (!plan.mcpVertexPackages.has(name)) continue;
-			if (typeof range !== 'string' || !range.startsWith('workspace:'))
+			const targetVersion = plan.packageVersions.get(name);
+			if (targetVersion === undefined) continue;
+			if (
+				typeof range !== 'string' ||
+				!range.startsWith(WORKSPACE_PROTOCOL_PREFIX)
+			)
 				continue;
-			(deps as Record<string, string>)[name] = plan.targetVersion;
+			(deps as Record<string, string>)[name] = resolveWorkspaceRange(
+				name,
+				range,
+				targetVersion,
+			);
 			changedKeys.add(name);
 		}
 	}
