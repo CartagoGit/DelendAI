@@ -5,7 +5,7 @@ import {
 	InvalidDispatchPortFactoryError,
 	MissingDispatchPortError,
 	resolveDispatchPort,
-} from '../../../../src/lib/dispatch/port-resolution.js';
+} from '../../../../src/lib/dispatch/port-resolution.helper.js';
 import type { IDispatchPort } from '../../../../src/lib/dispatch/contracts.js';
 
 const REAL_PORT: IDispatchPort = {

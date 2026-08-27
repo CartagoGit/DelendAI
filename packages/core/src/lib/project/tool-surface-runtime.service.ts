@@ -583,7 +583,7 @@ class ToolSurfaceRuntime implements IToolSurfaceRuntime {
 	 * returned a malformed plan), the caller gets a typed tool-error
 	 * result instead of the bogus "I did the dry run" payload — this is
 	 * DETECTION (the handler already ran), not prevention; see
-	 * `dry-run/effect-guard.ts` for the prevention-side primitive and
+	 * `dry-run/effect-guard.helper.ts` for the prevention-side primitive and
 	 * why it cannot be made mandatory from this module alone.
 	 */
 	private applyDryRunContract(

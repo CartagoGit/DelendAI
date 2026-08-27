@@ -688,11 +688,11 @@ export {
 	DryRunEffectRefusedError,
 	guardEffectCapability,
 	runWithDryRunGate,
-} from '../lib/dry-run/effect-guard';
+} from '../lib/dry-run/effect-guard.helper';
 export type {
 	IDryRunEffectRefusal,
 	TEffectCapabilityKind,
-} from '../lib/dry-run/effect-guard';
+} from '../lib/dry-run/effect-guard.helper';
 export type {
 	CapabilityTag,
 	CostTier,

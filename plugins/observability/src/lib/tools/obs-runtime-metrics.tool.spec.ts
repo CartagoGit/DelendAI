@@ -7,7 +7,7 @@ import {
 	fakeReadTracesDeps,
 	type IReadonlyTraceRecord,
 } from '../traces/interfaces';
-import { FakeServer, parseOk } from '../testing/tool-spec-server';
+import { FakeServer, parseOk } from '../testing/tool-spec-server.helper';
 
 const traceRecords: readonly IReadonlyTraceRecord[] = [
 	{

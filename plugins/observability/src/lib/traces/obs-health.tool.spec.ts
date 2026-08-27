@@ -7,7 +7,7 @@ import {
 	type IReadonlyReleaseHealthRecord,
 	type IReadonlyTraceRecord,
 } from './interfaces';
-import { FakeServer, parseOk } from '../testing/tool-spec-server';
+import { FakeServer, parseOk } from '../testing/tool-spec-server.helper';
 
 const parseError = (
 	value: unknown,
