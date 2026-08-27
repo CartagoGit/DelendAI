@@ -27,7 +27,7 @@ import { definePlugin, toolError } from '@mcp-vertex/core/public';
 
 import { TaskClassifier } from './lib/classifier/task-classifier.js';
 import type { IDispatchPort } from './lib/dispatch/contracts.js';
-import { resolveDispatchPort } from './lib/dispatch/port-resolution.js';
+import { resolveDispatchPort } from './lib/dispatch/port-resolution.helper.js';
 import {
 	assertPolicyValid,
 	createOrchestratorEngine,

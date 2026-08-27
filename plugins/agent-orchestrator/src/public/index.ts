@@ -75,4 +75,4 @@ export {
 	resolveDispatchPort,
 	MissingDispatchPortError,
 	InvalidDispatchPortFactoryError,
-} from '../lib/dispatch/port-resolution.js';
+} from '../lib/dispatch/port-resolution.helper.js';

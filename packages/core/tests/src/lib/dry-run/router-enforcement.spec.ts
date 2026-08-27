@@ -19,7 +19,7 @@
  * already run — and could already have performed a real side effect —
  * by the time its return value is checked. Making the effect itself
  * impossible while `dryRun` is true requires a handler to construct
- * its mutating capabilities through `dry-run/effect-guard.ts`'s
+ * its mutating capabilities through `dry-run/effect-guard.helper.ts`'s
  * `guardEffectCapability` / `runWithDryRunGate`; `IMcpPluginContext`
  * does not currently hand out any capability object for the runtime
  * to gate on the plugin's behalf, so that stronger property is not
