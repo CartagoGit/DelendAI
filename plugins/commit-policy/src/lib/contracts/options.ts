@@ -203,7 +203,7 @@ export type ICommitPolicyCadence = z.infer<typeof CadenceSchema>;
 export const FORCE_MODES = ['with-lease', 'allow', 'never'] as const;
 export type ForceMode = (typeof FORCE_MODES)[number];
 
-export const PushSchema = z.object({
+const PushObjectSchema = z.object({
 	/** Master switch for push — default false (no push ever). */
 	enabled: z.boolean().default(false),
 	/** Push immediately after every successful commit. Default false. */
@@ -214,6 +214,20 @@ export const PushSchema = z.object({
 	everyNMinutes: z.number().int().positive().optional(),
 	/** Force policy. Default `with-lease` (the safe one). */
 	force: z.enum(FORCE_MODES).default('with-lease'),
+	/**
+	 * Required justification for `force: 'allow'` (plain `--force`,
+	 * bypassing `--force-with-lease`'s safety check). Threaded straight
+	 * through to the shared `gitPush` primitive's
+	 * `authorization.reason` (see `push-driver.ts`). Enforced below by
+	 * `superRefine` so enabling `allow` requires literally writing down
+	 * WHY — a bare boolean flip is not enough to authorize an
+	 * irreversible history rewrite.
+	 */
+	forceReason: z
+		.string()
+		.trim()
+		.min(1, 'push.forceReason must not be empty when set')
+		.optional(),
 	/** Protected branches — push is always refused. Default `main` + `master` + `develop`. */
 	protectedBranches: z
 		.array(z.string())
@@ -237,7 +251,25 @@ export const PushSchema = z.object({
 	branch: z.string().optional(),
 });
 
-export type ICommitPolicyPush = z.infer<typeof PushSchema>;
+export const PushSchema = PushObjectSchema.superRefine((value, ctx) => {
+	// A config that flips `force` to `allow` without stating why is
+	// exactly the "a config string is all it takes to rewrite shared
+	// history" hole `push-driver.ts` closes — refuse it at parse time
+	// rather than letting it surface only as a runtime push refusal.
+	if (
+		value.force === 'allow' &&
+		(value.forceReason === undefined || value.forceReason.length === 0)
+	) {
+		ctx.addIssue({
+			code: 'custom',
+			path: ['forceReason'],
+			message:
+				'push.forceReason is required when push.force is "allow" — state why plain --force is warranted',
+		});
+	}
+});
+
+export type ICommitPolicyPush = z.infer<typeof PushObjectSchema>;
 
 // ---------------------------------------------------------------------------
 // Commit

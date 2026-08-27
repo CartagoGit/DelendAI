@@ -156,10 +156,31 @@ describe('runPushDriver', () => {
 		expect(pushes.calls[0]).toEqual(['push', 'origin', 'topic/test']);
 	});
 
-	it('uses --force when force policy is "allow"', async () => {
+	it('uses --force when force policy is "allow" and the push is authorized', async () => {
 		const { run, pushes } = buildPushFake();
-		await runPushDriver(
-			{},
+		const result = await runPushDriver(
+			{ authorizedBy: 'Release Bot' },
+			basePush({
+				force: 'allow',
+				forceReason: 'rewriting a leaked secret out of history',
+				remote: 'origin',
+				branch: 'topic/test',
+			}),
+			run,
+		);
+		expect(result.ok).toBe(true);
+		expect(pushes.calls[0]).toEqual([
+			'push',
+			'origin',
+			'topic/test',
+			'--force',
+		]);
+	});
+
+	it('refuses "allow" when push.forceReason is not configured', async () => {
+		const { run, pushes } = buildPushFake();
+		const result = await runPushDriver(
+			{ authorizedBy: 'Release Bot' },
 			basePush({
 				force: 'allow',
 				remote: 'origin',
@@ -167,12 +188,46 @@ describe('runPushDriver', () => {
 			}),
 			run,
 		);
-		expect(pushes.calls[0]).toEqual([
-			'push',
-			'origin',
-			'topic/test',
-			'--force',
-		]);
+		expect(result.ok).toBe(false);
+		if (result.ok) return;
+		expect(result.refusal).toContain('push.forceReason');
+		expect(pushes.calls.length).toBe(0);
+	});
+
+	it('refuses "allow" when no identity could be resolved to authorize it', async () => {
+		const { run, pushes } = buildPushFake();
+		const result = await runPushDriver(
+			{},
+			basePush({
+				force: 'allow',
+				forceReason: 'rewriting a leaked secret out of history',
+				remote: 'origin',
+				branch: 'topic/test',
+			}),
+			run,
+		);
+		expect(result.ok).toBe(false);
+		if (result.ok) return;
+		expect(result.refusal).toContain('identity');
+		expect(pushes.calls.length).toBe(0);
+	});
+
+	it('refuses an authorized force push targeting a protected branch', async () => {
+		const { run, pushes } = buildPushFake();
+		const result = await runPushDriver(
+			{ authorizedBy: 'Release Bot' },
+			basePush({
+				force: 'allow',
+				forceReason: 'rewriting a leaked secret out of history',
+				remote: 'origin',
+				branch: 'main',
+			}),
+			run,
+		);
+		expect(result.ok).toBe(false);
+		if (result.ok) return;
+		expect(result.refusal).toContain('protectedBranches');
+		expect(pushes.calls.length).toBe(0);
 	});
 
 	it('refuses when neither remote/branch/upstream/current-branch resolves', async () => {
