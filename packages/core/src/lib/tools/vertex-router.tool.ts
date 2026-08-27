@@ -2,6 +2,7 @@ import z from 'zod';
 
 import type { IToolSurfaceRuntimeAccess } from '../contracts/interfaces/tool-surface.interface';
 import type { IToolRegistration } from '../contracts/interfaces/tool-registration.interface';
+import { ToolNotAuthorizedError } from '../project/tool-surface-runtime.helper';
 import { toolError, toolJson } from '../shared/tool-response';
 
 const ROUTER_RESULT = z.object({
@@ -58,11 +59,22 @@ export const buildVertexRouterToolRegistration = (input: {
 						'Call tool_search to inspect the loaded domains and actions.',
 					);
 				}
-				const result = await runtime.invokeTool(
-					route.name,
-					args.args ?? {},
-					extra,
-				);
+				let result: unknown;
+				try {
+					result = await runtime.invokeTool(
+						route.name,
+						args.args ?? {},
+						extra,
+					);
+				} catch (error) {
+					if (error instanceof ToolNotAuthorizedError) {
+						return toolError(
+							error.message,
+							'Call plugin_activate to re-authorize it, or tool_search to inspect the current surface.',
+						);
+					}
+					throw error;
+				}
 				const structured =
 					result && typeof result === 'object'
 						? (result as { structuredContent?: unknown })
