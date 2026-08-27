@@ -7,18 +7,43 @@
  * handoff references the key as `$ENV_VAR`, never embedding the secret.
  */
 import { toolJson, type IToolRegistration } from '@mcp-vertex/core/public';
-import type { IRoutingDecision } from '@mcp-vertex/core/public';
 import z from 'zod';
 
+import type { IHandoffDecision } from '../contracts/interfaces/handoff-decision.interface';
 import { formatHandoff } from '../invoke/handoff';
-import { FormatHandoffOutputSchema, RoutingDecisionSchema } from '../schemas';
+import { InvokeSchema } from '../options';
+import {
+	CostTierSchema,
+	FormatHandoffOutputSchema,
+	ModeSchema,
+} from '../schemas';
 
 export interface IFormatHandoffToolOptions {
 	readonly namespacePrefix: string;
 }
 
+// `formatHandoff` only reads `invoke`/`prompt`/`mode`/
+// `targetProvider.{id,modelId}`/`estimatedCostTier` (see
+// `../invoke/handoff.ts`) — accepting only that slice keeps the
+// advertised input proportional to what the tool consumes, instead of
+// re-declaring the full `IRoutingDecision` (with its recursive
+// `alternates` roster and `scoringTrace`) as a required argument. A
+// caller holding a full decision from `advise_routing`/`invoke` still
+// satisfies this schema: extra properties on the argument object are
+// accepted and ignored, never rejected.
+const DecisionSchema = z.object({
+	invoke: InvokeSchema,
+	prompt: z.string(),
+	mode: ModeSchema,
+	targetProvider: z.object({
+		id: z.string(),
+		modelId: z.string(),
+	}),
+	estimatedCostTier: CostTierSchema,
+});
+
 const InputSchema = z.object({
-	decision: RoutingDecisionSchema,
+	decision: DecisionSchema,
 });
 
 export const buildFormatHandoffRegistration = (
@@ -39,16 +64,16 @@ export const buildFormatHandoffRegistration = (
 				outputSchema: FormatHandoffOutputSchema,
 			},
 			async (args: z.infer<typeof InputSchema>) => {
-				// x00157 S6: `args.decision` is already runtime-validated by
-				// RoutingDecisionSchema — the only mismatch against
-				// IRoutingDecision is exactOptionalPropertyTypes: Zod's
-				// `.optional()` infers `T | undefined`, while IRoutingDecision's
-				// optional fields omit the explicit `undefined`. A single-hop
-				// cast (not `as unknown as`) still has TS check the two types
-				// are structurally related, unlike the `unknown` bridge this
-				// used to go through.
+				// `args.decision` is already runtime-validated by
+				// `DecisionSchema` — the only mismatch against
+				// `IHandoffDecision` is `exactOptionalPropertyTypes`: Zod's
+				// `.optional()` infers `T | undefined`, while the core
+				// invoke union's optional fields omit the explicit
+				// `undefined`. A single-hop cast (not `as unknown as`)
+				// still has TS check the two types are structurally
+				// related.
 				const formatted = formatHandoff(
-					args.decision as IRoutingDecision,
+					args.decision as IHandoffDecision,
 				);
 				return toolJson(formatted);
 			},
