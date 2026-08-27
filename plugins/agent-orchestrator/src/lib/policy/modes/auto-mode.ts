@@ -7,6 +7,7 @@
  * Implementation note: `auto` is registered as a *real* adapter
  * (not a meta-mode) so the registry loop is symmetric.
  */
+import { resolveEffectivePolicyForMode } from '../types.js';
 import type {
 	IModeAdapter,
 	IModePlan,
@@ -34,7 +35,11 @@ export class AutoModeAdapter implements IModeAdapter {
 	plan(task: ITask, policy: IOrchestratorPolicy): IModePlan {
 		const verdict = this.#classifier.classify(task, policy);
 		const adapter = this.#registry.get(verdict.mode);
-		const inner = adapter.plan(task, policy);
+		const effectivePolicy = resolveEffectivePolicyForMode(
+			policy,
+			verdict.mode,
+		);
+		const inner = adapter.plan(task, effectivePolicy);
 		return {
 			mode: 'auto',
 			rationale: `auto → ${verdict.mode} (${verdict.reason})`,

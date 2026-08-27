@@ -125,12 +125,33 @@ export interface IOrchestratorPolicy {
 		readonly rotation: IRotationPolicy;
 	};
 	/** Optional overrides per mode; missing mode falls back to `defaults`. */
-	readonly perMode?: Partial<Record<OrchestrationMode, IModeOverride>>;
+	readonly perMode?:
+		| Partial<Record<OrchestrationMode, IModeOverride>>
+		| undefined;
+}
+
+/**
+ * Bespoke (not `Partial<...>`-derived) override shapes: every field's
+ * `| undefined` union mirrors how zod infers optional object fields
+ * under `exactOptionalPropertyTypes`, so `OrchestratorPolicySchema`-
+ * parsed values assign to these interfaces without a lossy
+ * reconstruction at every call site. `Partial<IBudgetPolicy>` would
+ * type each field as bare `?:`, which zod's inferred type is not.
+ */
+export interface IBudgetOverride {
+	readonly maxTokensOrchestrator?: number | undefined;
+	readonly maxTokensPerSubagent?: number | undefined;
+	readonly timeoutMs?: number | undefined;
+}
+
+export interface IRotationOverride {
+	readonly maxIterationsPerSubagent?: number | undefined;
+	readonly allow?: readonly RotationReason[] | undefined;
 }
 
 export interface IModeOverride {
-	readonly budget?: Partial<IBudgetPolicy>;
-	readonly rotation?: Partial<IRotationPolicy>;
+	readonly budget?: IBudgetOverride | undefined;
+	readonly rotation?: IRotationOverride | undefined;
 }
 
 // ─── Zod schemas (MCP tool surface) ─────────────────────────────────────
@@ -164,14 +185,100 @@ export const RotationPolicySchema = z.object({
 		.min(1),
 });
 
+/**
+ * Overrides are partial policies: any field a host omits inherits
+ * `defaults` untouched. `.strict()` rejects unknown keys so a typo
+ * (e.g. `budegt`) fails at the config edge instead of silently
+ * doing nothing.
+ */
+export const BudgetOverrideSchema = BudgetPolicySchema.partial().strict();
+
+export const RotationOverrideSchema = RotationPolicySchema.partial().strict();
+
+export const ModeOverrideSchema = z
+	.object({
+		budget: BudgetOverrideSchema.optional(),
+		rotation: RotationOverrideSchema.optional(),
+	})
+	.strict();
+
+/**
+ * `z.record(enumSchema, ...)` requires *every* enum key to be present
+ * (zod v4 treats a finite-union key schema as exhaustive); `perMode` is
+ * meant to be sparse — a host overrides only the modes it cares about —
+ * so this uses `z.partialRecord`, zod's dedicated optional-keys variant.
+ */
+export const PerModeOverridesSchema = z.partialRecord(
+	OrchestrationModeSchema,
+	ModeOverrideSchema,
+);
+
 export const OrchestratorPolicySchema = z.object({
 	defaultMode: OrchestrationModeSchema,
 	defaults: z.object({
 		budget: BudgetPolicySchema,
 		rotation: RotationPolicySchema,
 	}),
-	perMode: z.record(z.string(), z.object({}).passthrough()).optional(),
+	perMode: PerModeOverridesSchema.optional(),
 });
+
+/**
+ * Merge the override registered for `mode` (if any) into `policy.defaults`,
+ * producing an effective policy scoped to that one mode. Mode adapters only
+ * ever read `policy.defaults` — never `policy.perMode` — so resolving the
+ * override here keeps every adapter unchanged when a new override shape is
+ * added (OCP): this is the single seam where `perMode` takes effect.
+ */
+export function resolveEffectivePolicyForMode(
+	policy: IOrchestratorPolicy,
+	mode: OrchestrationMode,
+): IOrchestratorPolicy {
+	const override = policy.perMode?.[mode];
+	if (!override) return policy;
+	return {
+		...policy,
+		defaults: {
+			budget: mergeBudgetOverride(
+				policy.defaults.budget,
+				override.budget,
+			),
+			rotation: mergeRotationOverride(
+				policy.defaults.rotation,
+				override.rotation,
+			),
+		},
+	};
+}
+
+/**
+ * Per-field merges (rather than an object spread) so a partially-set
+ * override can't widen the merged result's field types to include
+ * `undefined` — every field of `IBudgetPolicy`/`IRotationPolicy` is
+ * required, and an absent override field must fall back to `base`.
+ */
+function mergeBudgetOverride(
+	base: IBudgetPolicy,
+	override: IBudgetOverride | undefined,
+): IBudgetPolicy {
+	return {
+		maxTokensOrchestrator:
+			override?.maxTokensOrchestrator ?? base.maxTokensOrchestrator,
+		maxTokensPerSubagent:
+			override?.maxTokensPerSubagent ?? base.maxTokensPerSubagent,
+		timeoutMs: override?.timeoutMs ?? base.timeoutMs,
+	};
+}
+
+function mergeRotationOverride(
+	base: IRotationPolicy,
+	override: IRotationOverride | undefined,
+): IRotationPolicy {
+	return {
+		maxIterationsPerSubagent:
+			override?.maxIterationsPerSubagent ?? base.maxIterationsPerSubagent,
+		allow: override?.allow ?? base.allow,
+	};
+}
 
 /**
  * Re-export `IModeAdapter` (lives in the registry module) so consumers

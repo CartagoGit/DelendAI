@@ -19,6 +19,7 @@ import { LinearModeAdapter } from './modes/linear-mode.js';
 import { SingleModeAdapter } from './modes/single-mode.js';
 import { SwarmModeAdapter } from './modes/swarm-mode.js';
 import { ModeRegistry, UnknownModeError } from './registry.js';
+import { resolveEffectivePolicyForMode } from './types.js';
 import type {
 	IModePlan,
 	IOrchestratorPolicy,
@@ -32,6 +33,8 @@ export {
 	DEFAULT_BUDGET_POLICY,
 	DEFAULT_ROTATION_POLICY,
 	OrchestratorPolicySchema,
+	ModeOverrideSchema,
+	resolveEffectivePolicyForMode,
 } from './types.js';
 export type { IOrchestratorPolicy, IModeOverride } from './types.js';
 
@@ -58,12 +61,22 @@ export class OrchestratorEngine {
 		const adapter = this.#registry.get(mode);
 		if (!adapter.accepts(task, this.#policy)) {
 			// Fall back to auto when the named mode declines; auto will
-			// re-route through the classifier. Done silently so the host
+			// re-route through the classifier (and resolve `perMode` for
+			// whichever concrete mode it picks). Done silently so the host
 			// gets a plan instead of an error.
 			const auto = this.#registry.get('auto');
 			return auto.plan(task, this.#policy);
 		}
-		return adapter.plan(task, this.#policy);
+		// `auto` resolves its own inner mode's overrides once the
+		// classifier picks one; resolving here too would double-apply.
+		if (adapter.id === 'auto') {
+			return adapter.plan(task, this.#policy);
+		}
+		const effectivePolicy = resolveEffectivePolicyForMode(
+			this.#policy,
+			adapter.id,
+		);
+		return adapter.plan(task, effectivePolicy);
 	}
 
 	listModes(): readonly OrchestrationMode[] {
