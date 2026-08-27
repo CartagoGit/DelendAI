@@ -43,7 +43,7 @@ export const buildInvokeRegistration = (
 			`${options.namespacePrefix}_invoke`,
 			{
 				description:
-					"Execute a task on the best-scored provider and return its structured result. Plans a fallback chain (rerank|tier-down), enforces a wall-clock timeout that fires the per-kind cancellation ladder, and — CRITICAL SAFETY — never spends the user's API money unless executeApi is on AND a one-time signed confirmation token (from an MCP elicitation) authorises THAT invocation. With executeApi:false, api/cli routes return an 'execution-disabled' error and a handoff instead of spending. Returns {decision, result{text, structuredContent?, usage?, costUsd?}, invocationId, sessionId} on success, or {decision, error{code, tried, nextAvailableAt}, userMessage} otherwise.",
+					"Execute a task on the best-scored provider and return its structured result. Plans a fallback chain (rerank|tier-down), enforces a wall-clock timeout that fires the per-kind cancellation ladder, and — CRITICAL SAFETY — never spends the user's API money unless executeApi is on AND a one-time signed confirmation token (from an MCP elicitation) authorises THAT invocation. With executeApi:false, api/cli routes return an 'execution-disabled' error and a handoff instead of spending. Returns {decision (carries sessionId), result{text, structuredContent?, usage?, costUsd?}, invocationId} on success, or {decision, error{code, tried, nextAvailableAt}, userMessage} otherwise.",
 				inputSchema: InputSchema,
 				outputSchema: InvokeOutputSchema,
 			},
