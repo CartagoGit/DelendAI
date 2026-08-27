@@ -11,11 +11,15 @@
  * GitHub Actions runner protocol.
  */
 
+import { existsSync, readFileSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { describe, expect, it } from 'vitest';
+
+import { PUBLISH_ORDER } from '../../scripts/release/release-plan.ts';
+import { assertPublishablePackagesArePacked } from '../../scripts/smoke/pack.script.ts';
 
 const here = dirname(fileURLToPath(import.meta.url));
 // tools/tests/ci/pack-smoke.spec.ts → repo root is 3 levels up.
@@ -107,5 +111,58 @@ describe('pack-smoke.script.ts (x00268)', () => {
 		expect(res.status).toBe(2);
 		const combined = `${res.stdout ?? ''}${res.stderr ?? ''}`;
 		expect(combined).toContain('--command requires at least one argument');
+	});
+});
+
+/**
+ * Regression coverage for the class of bug this wrapper exists to surface:
+ * a package declared publishable in `PUBLISH_ORDER` (the release's single
+ * source of truth, `tools/scripts/release/release-plan.ts`) silently
+ * dropping out of the set `pack.script.ts` actually packs — e.g. because its
+ * `package.json` lost its `files` array or flipped `private: true` without
+ * also leaving `PUBLISH_ORDER`. `assertPublishablePackagesArePacked` is the
+ * one guard that catches this; these specs make sure it stays wired to a
+ * real repo state instead of only being exercised by hand during an
+ * incident. `plugins/database` is pinned by name because it is the exact
+ * package that drifted (missing `files`) and caused
+ * `pack-smoke (publishable packages)` to fail in CI run 33006331587.
+ */
+describe('assertPublishablePackagesArePacked (PUBLISH_ORDER drift guard)', () => {
+	it('does not throw against the current repo state', () => {
+		expect(() => assertPublishablePackagesArePacked()).not.toThrow();
+	});
+
+	it('keeps plugins/database in PUBLISH_ORDER as a packable, publishable package', () => {
+		expect(PUBLISH_ORDER).toContain('plugins/database');
+		const pkgPath = join(repoRoot, 'plugins/database/package.json');
+		expect(existsSync(pkgPath)).toBe(true);
+		const pkg = JSON.parse(readFileSync(pkgPath, 'utf8')) as {
+			readonly name?: string;
+			readonly private?: boolean;
+			readonly files?: unknown;
+		};
+		expect(typeof pkg.name).toBe('string');
+		expect(pkg.private).not.toBe(true);
+		expect(Array.isArray(pkg.files)).toBe(true);
+	});
+
+	it('fails loudly (not silently) whenever a publishable PUBLISH_ORDER entry loses its files[] array', () => {
+		// This does not mutate the filesystem — it re-derives the same
+		// "publishable" predicate `pack.script.ts` uses and asserts every
+		// PUBLISH_ORDER package that is not `private` really does carry a
+		// `files` array, i.e. the exact condition that silently dropped
+		// `plugins/database` out of the packed set before this fix.
+		for (const dir of PUBLISH_ORDER) {
+			const pkgPath = join(repoRoot, dir, 'package.json');
+			if (!existsSync(pkgPath)) continue;
+			const pkg = JSON.parse(readFileSync(pkgPath, 'utf8')) as {
+				readonly private?: boolean;
+				readonly files?: unknown;
+			};
+			if (pkg.private === true) continue;
+			expect(Array.isArray(pkg.files), `${dir}: package.json#files`).toBe(
+				true,
+			);
+		}
 	});
 });
