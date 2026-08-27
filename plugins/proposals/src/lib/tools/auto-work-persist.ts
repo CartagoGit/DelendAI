@@ -203,6 +203,21 @@ const pushWouldHitMain = (pushTarget: string): boolean => {
 };
 
 /**
+ * Detect whether `pushTarget` would push to `develop`. `develop` only
+ * receives merges through a pull request now — this mirrors
+ * `pushWouldHitMain` exactly (same conservative token check, same
+ * case-sensitivity rationale) so this engine never silently succeeds
+ * at the exact push `commit-policy`'s driver refuses independently.
+ */
+const pushWouldHitDevelop = (pushTarget: string): boolean => {
+	const tokens = pushTarget.split(/\s+/u);
+	return tokens.some(
+		(t) =>
+			t === 'develop' || t.endsWith('/develop') || t.endsWith('\\develop'),
+	);
+};
+
+/**
  * Resolve which `git` invocation we use. Production: spawn the real
  * binary in `cwd`. Tests: inject via `options.git`.
  */
@@ -274,13 +289,20 @@ export const maybePersistAfterSlice = async (
 	}
 
 	// `mode === 'commit-and-push'` with a `pushTarget` that would hit
-	// `main` is special-cased BEFORE calling the shared engine: the
-	// commit still happens, but the push step is skipped entirely (the
-	// engine is never told to push), preserving the exact "refusing to
-	// push to main automatically" reason this module has always reported.
+	// `main` or `develop` is special-cased BEFORE calling the shared
+	// engine: the commit still happens, but the push step is skipped
+	// entirely (the engine is never told to push), preserving the exact
+	// "refusing to push automatically" reason this module has always
+	// reported. `develop` only receives merges through a pull request
+	// now, so it gets the same treatment as `main` — this is the same
+	// invariant `commit-policy`'s push driver enforces independently
+	// when pushing through the plugin tool instead of this helper.
 	const pushTarget = options.pushTarget ?? DEFAULT_PUSH_TARGET;
 	const wouldHitMain =
 		mode === 'commit-and-push' && pushWouldHitMain(pushTarget);
+	const wouldHitDevelop =
+		mode === 'commit-and-push' && pushWouldHitDevelop(pushTarget);
+	const pushRefused = wouldHitMain || wouldHitDevelop;
 	const [pushRemote, pushBranch] = pushTarget.split(/\s+/u);
 
 	const result = await commitAndPush({
@@ -290,7 +312,7 @@ export const maybePersistAfterSlice = async (
 		...(options.commitAuthor?.authorFlag
 			? { authorFlag: options.commitAuthor.authorFlag }
 			: {}),
-		...(mode === 'commit-and-push' && !wouldHitMain
+		...(mode === 'commit-and-push' && !pushRefused
 			? {
 					push: {
 						...(pushRemote !== undefined
@@ -310,11 +332,13 @@ export const maybePersistAfterSlice = async (
 		});
 	}
 
-	if (mode === 'commit-and-push' && wouldHitMain) {
-		// Safety net: never push to main automatically. The commit is
-		// already done; we just refuse to push and explain why.
+	if (mode === 'commit-and-push' && pushRefused) {
+		// Safety net: never push to main or develop automatically. The
+		// commit is already done; we just refuse to push and explain why.
 		return persistResult(true, false, mode, {
-			reason: 'refusing to push to main automatically',
+			reason: wouldHitMain
+				? 'refusing to push to main automatically'
+				: 'refusing to push to develop automatically — open a PR from a wip/* branch instead',
 			...(result.hash !== undefined ? { hash: result.hash } : {}),
 		});
 	}

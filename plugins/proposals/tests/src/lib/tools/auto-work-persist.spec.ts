@@ -149,7 +149,38 @@ describe('maybePersistAfterSlice', async () => {
 		expect(runner.calls.some((a) => a[0] === 'push')).toBe(false);
 	});
 
-	it("mode 'commit-and-push' pushes when target is not main", async () => {
+	it('refuses to push to `develop` (PR-only landing, mirrors the `main` safety net)', async () => {
+		const runner = fakeRunner([
+			{ match: (a) => a[0] === 'add', output: '' },
+			{ match: (a) => a[0] === 'commit', output: '' },
+			{ match: (a) => a[0] === 'rev-parse', output: 'abc1234' },
+			{
+				// Push MUST NOT be attempted: the runner would otherwise
+				// receive a `push` call. Assert the absence.
+				match: (a) => a[0] === 'push',
+				output: '',
+				ok: true,
+			},
+		]);
+		const result = await maybePersistAfterSlice(
+			['plugins/proposals/src/lib/foo.ts'],
+			'l109',
+			's2',
+			{
+				mode: 'commit-and-push',
+				pushTarget: 'origin develop',
+				git: runner,
+			},
+		);
+		expect(result.committed).toBe(true);
+		expect(result.pushed).toBe(false);
+		expect(result.reason).toBe(
+			'refusing to push to develop automatically — open a PR from a wip/* branch instead',
+		);
+		expect(runner.calls.some((a) => a[0] === 'push')).toBe(false);
+	});
+
+	it("mode 'commit-and-push' pushes when target is a wip/* branch (not main or develop)", async () => {
 		const runner = fakeRunner([
 			{ match: (a) => a[0] === 'add', output: '' },
 			{ match: (a) => a[0] === 'commit', output: '' },

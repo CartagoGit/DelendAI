@@ -10,7 +10,13 @@
 `develop` and `main` MUST be protected on GitHub with:
 
 1. **Required status checks** matching the names declared in
-   [`.github/branch-protection.ts`](../../.github/branch-protection.ts).
+   [`.github/branch-protection.ts`](../../.github/branch-protection.ts)
+   — today that is a single aggregate check, `ci-complete`, which
+   `needs` every job in `.github/workflows/ci.yml` and only reports
+   success when all of them do. Naming individual jobs here was
+   brittle (a rename silently drops a job from the required set, a new
+   job silently protects nothing); naming the aggregate instead means
+   this file never drifts from the workflow.
 2. **`enforce_admins: true`** — admins are subject to the same
    checks (no "I'm an admin so I'll bypass it" loophole).
 3. **`required_linear_history: true`** — merge commits are not
@@ -18,6 +24,15 @@
 4. **`allow_force_pushes: false`** — no rewrite of history.
 5. **`allow_deletions: false`** — branches cannot be deleted
    through the UI/API.
+
+Work happens on `wip/*` (and the already-allowed `fix/*` / `feature/*`)
+branches; `develop` receives merges via pull request, and `main` stays
+the release branch. **`required_checks` alone does not stop a direct
+push** — GitHub's "Require a pull request before merging" toggle is a
+separate setting with no field in `branch-protection.ts` (this file's
+schema only tracks required checks + the boolean defaults below). The
+operator must enable that toggle by hand for `develop` (see Step 2)
+until it is worth adding to the declarative schema and its verifier.
 
 The verifier (`verify-branch-protection.script.ts`) fetches the
 live GitHub state and exits non-zero when the actual policy
@@ -51,9 +66,12 @@ Match every field in
 - **Require status checks to pass before merging:** ✅ ON.
 - **Require branches to be up to date before merging:** ✅ ON
   (this is the `strict: true` flag — checks the latest commit).
-- **Required checks:** add every name in `branches[].required_checks`.
-  These names MUST match the `name:` field in
-  `.github/workflows/*.yml` exactly (case-sensitive).
+- **Required checks:** add every name in `branches[].required_checks`
+  (today: just `ci-complete`). This name MUST match the `name:` field
+  in `.github/workflows/ci.yml` exactly (case-sensitive).
+- **Require a pull request before merging:** ✅ ON for `develop` (this
+  is what actually stops a direct push; `branch-protection.ts` has no
+  field for it yet — see the note above).
 - **Require linear history:** ✅ ON.
 - **Do not allow force pushes:** ✅ ON.
 - **Do not allow deletions:** ✅ ON.

@@ -24,6 +24,15 @@
  *                          list of required status-check names; must
  *                          match the `name:` field in
  *                          `.github/workflows/*.yml`.
+ *
+ * `required_checks` names a single aggregate check (`ci-complete`) per
+ * branch, not each individual CI job. Naming every job here used to be
+ * brittle both ways: renaming a job silently dropped it from the
+ * required set, and adding a job silently protected nothing until this
+ * file was also updated. `ci-complete` `needs` every job in
+ * `.github/workflows/ci.yml` and only reports success when all of them
+ * do — so this file only has to name the one job that already speaks
+ * for the rest.
  */
 
 export interface IBranchProtectionConfig {
@@ -51,45 +60,11 @@ export const BRANCH_PROTECTION: IBranchProtectionConfig = {
 	branches: [
 		{
 			name: 'develop',
-			required_checks: [
-				'lint-biome',
-				'lint-architecture',
-				'lint-presets',
-				'lint-docs',
-				'lint-security',
-				'lint-governance',
-				'typecheck',
-				'tests',
-				'quality-gate',
-				'verify-runtime',
-				'tokens-budget-real',
-				'manifests-check',
-				'generated-artifacts-check',
-				'web site build',
-				'pack smoke (publishable packages)',
-				'metrics longitudinal regression gate (f00027)',
-			],
+			required_checks: ['ci-complete'],
 		},
 		{
 			name: 'main',
-			required_checks: [
-				'lint-biome',
-				'lint-architecture',
-				'lint-presets',
-				'lint-docs',
-				'lint-security',
-				'lint-governance',
-				'typecheck',
-				'tests',
-				'quality-gate',
-				'verify-runtime',
-				'tokens-budget-real',
-				'manifests-check',
-				'generated-artifacts-check',
-				'web site build',
-				'pack smoke (publishable packages)',
-				'metrics longitudinal regression gate (f00027)',
-			],
+			required_checks: ['ci-complete'],
 		},
 	],
 };
