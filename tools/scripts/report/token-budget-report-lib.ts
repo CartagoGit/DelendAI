@@ -18,6 +18,14 @@ import {
 	type IPresetKind,
 } from '@mcp-vertex/core/public';
 
+import {
+	jsonBytes,
+	measureToolComponentBytes,
+	type IToolComponentBytes,
+} from './tool-component-breakdown.helper';
+
+export { jsonBytes };
+
 export interface IConnectedBudgetClient {
 	readonly client: Client;
 	readonly pluginIds: readonly string[];
@@ -46,6 +54,14 @@ export interface IToolOwnerMetrics {
 	readonly descriptionBytes: number;
 	readonly inputSchemaBytes: number;
 	readonly outputSchemaBytes: number;
+	readonly annotationsBytes: number;
+	readonly otherFieldBytes: number;
+	readonly envelopeBytes: number;
+}
+
+/** One tool's component breakdown, tagged with the owner it rolls up into. */
+export interface IToolBreakdownRow extends IToolComponentBytes {
+	readonly owner: string;
 }
 
 export interface IToolListMetrics {
@@ -55,8 +71,13 @@ export interface IToolListMetrics {
 	readonly descriptionBytes: number;
 	readonly inputSchemaBytes: number;
 	readonly outputSchemaBytes: number;
+	readonly annotationsBytes: number;
+	readonly otherFieldBytes: number;
+	readonly envelopeBytes: number;
 	readonly maxPluginBytes: number;
 	readonly ownerRows: readonly IToolOwnerMetrics[];
+	/** Per-tool component breakdown; parts sum to `totalBytes` for every row. */
+	readonly toolBreakdowns: readonly IToolBreakdownRow[];
 }
 
 type IToolListEntry = {
@@ -64,13 +85,6 @@ type IToolListEntry = {
 	readonly description?: string | undefined;
 	readonly inputSchema?: unknown | undefined;
 	readonly outputSchema?: unknown | undefined;
-};
-
-export const jsonBytes = (value: unknown): number => {
-	if (value === undefined) {
-		return 0;
-	}
-	return Buffer.byteLength(JSON.stringify(value), 'utf8');
 };
 
 export const classifyToolOwner = (
@@ -91,38 +105,50 @@ export const classifyToolOwner = (
 	return 'core';
 };
 
+const emptyOwnerMetrics = (owner: string): IToolOwnerMetrics => ({
+	owner,
+	toolCount: 0,
+	toolsListBytes: 0,
+	schemaBytes: 0,
+	descriptionBytes: 0,
+	inputSchemaBytes: 0,
+	outputSchemaBytes: 0,
+	annotationsBytes: 0,
+	otherFieldBytes: 0,
+	envelopeBytes: 0,
+});
+
 export const measureToolListMetrics = (
 	tools: readonly IToolListEntry[],
 	pluginIds: readonly string[],
 ): IToolListMetrics => {
 	const ownerTotals = new Map<string, IToolOwnerMetrics>();
+	const toolBreakdowns: IToolBreakdownRow[] = [];
 	for (const tool of tools) {
 		const owner = classifyToolOwner(tool.name, pluginIds);
-		const entryBytes = jsonBytes(tool);
-		const descriptionBytes = Buffer.byteLength(
-			tool.description ?? '',
-			'utf8',
+		// `tool` is the real wire object the client received — casting to
+		// `IToolListEntry` above narrows the *type*, not the runtime shape,
+		// so any extra field (e.g. `annotations`) is still present here.
+		const breakdown = measureToolComponentBytes(
+			tool as Readonly<Record<string, unknown>>,
 		);
-		const inputSchemaBytes = jsonBytes(tool.inputSchema);
-		const outputSchemaBytes = jsonBytes(tool.outputSchema);
-		const schemaBytes = inputSchemaBytes + outputSchemaBytes;
-		const current = ownerTotals.get(owner) ?? {
-			owner,
-			toolCount: 0,
-			toolsListBytes: 0,
-			schemaBytes: 0,
-			descriptionBytes: 0,
-			inputSchemaBytes: 0,
-			outputSchemaBytes: 0,
-		};
+		toolBreakdowns.push({ owner, ...breakdown });
+		const current = ownerTotals.get(owner) ?? emptyOwnerMetrics(owner);
 		ownerTotals.set(owner, {
 			owner,
 			toolCount: current.toolCount + 1,
-			toolsListBytes: current.toolsListBytes + entryBytes,
-			schemaBytes: current.schemaBytes + schemaBytes,
-			descriptionBytes: current.descriptionBytes + descriptionBytes,
-			inputSchemaBytes: current.inputSchemaBytes + inputSchemaBytes,
-			outputSchemaBytes: current.outputSchemaBytes + outputSchemaBytes,
+			toolsListBytes: current.toolsListBytes + breakdown.totalBytes,
+			schemaBytes:
+				current.schemaBytes +
+				breakdown.inputSchemaBytes +
+				breakdown.outputSchemaBytes,
+			descriptionBytes: current.descriptionBytes + breakdown.descriptionBytes,
+			inputSchemaBytes: current.inputSchemaBytes + breakdown.inputSchemaBytes,
+			outputSchemaBytes:
+				current.outputSchemaBytes + breakdown.outputSchemaBytes,
+			annotationsBytes: current.annotationsBytes + breakdown.annotationsBytes,
+			otherFieldBytes: current.otherFieldBytes + breakdown.otherFieldBytes,
+			envelopeBytes: current.envelopeBytes + breakdown.envelopeBytes,
 		});
 	}
 	const ownerRows = ['core', ...pluginIds]
@@ -151,8 +177,18 @@ export const measureToolListMetrics = (
 			(sum, row) => sum + row.outputSchemaBytes,
 			0,
 		),
+		annotationsBytes: ownerRows.reduce(
+			(sum, row) => sum + row.annotationsBytes,
+			0,
+		),
+		otherFieldBytes: ownerRows.reduce(
+			(sum, row) => sum + row.otherFieldBytes,
+			0,
+		),
+		envelopeBytes: ownerRows.reduce((sum, row) => sum + row.envelopeBytes, 0),
 		maxPluginBytes,
 		ownerRows,
+		toolBreakdowns,
 	};
 };
 
@@ -338,3 +374,12 @@ export const listToolsMetrics = async (
 };
 
 export const asPresetId = (value: string): IPresetKind => value as IPresetKind;
+
+/**
+ * The exact JSON text the `tools/list` byte count is derived from. Real
+ * tokenizers need this text (not just its byte length) to produce a
+ * measured token count instead of a byte-ratio estimate.
+ */
+export const toolsListJsonText = (
+	tools: readonly IToolListEntry[],
+): string => JSON.stringify(tools);

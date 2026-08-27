@@ -84,6 +84,17 @@ const topContributors = (
 		.sort((left, right) => right.toolsListBytes - left.toolsListBytes)
 		.slice(0, 5);
 
+/** Share of the preset's total owner bytes, not of `toolsListBytes` (the
+ * whole-array JSON also carries `[`/`]`/commas — see TOKEN-BUDGETS.md). */
+const shareOfPreset = (
+	row: IToolOwnerMetrics,
+	allRows: readonly IToolOwnerMetrics[],
+): string => {
+	const total = allRows.reduce((sum, entry) => sum + entry.toolsListBytes, 0);
+	if (total === 0) return '0.0%';
+	return `${((row.toolsListBytes / total) * 100).toFixed(1)}%`;
+};
+
 const printMeasuredSurface = (surface: IMeasuredSurface): void => {
 	const status =
 		surface.value > surface.hard
@@ -111,6 +122,9 @@ const main = async (): Promise<number> => {
 		);
 		process.exit(2);
 	}
+	console.log(
+		'[tokens:gate] Measures serialized BYTES of tools/list per preset (the real MCP wire payload), not native LLM tokens. See docs/mcp-vertex/TOKEN-BUDGETS.md for the component breakdown and per-model token counts (real tokenizer encode where available, byte-ratio estimate elsewhere).',
+	);
 	const workspace = createTokenBudgetFixtureWorkspace();
 	let breached = false;
 	try {
@@ -178,10 +192,10 @@ const main = async (): Promise<number> => {
 						console.error(`    - ${entry}`);
 					}
 				}
-				console.log('  top contributors:');
+				console.log('  top contributors (share of this preset\'s bytes):');
 				for (const row of topContributors(metrics.ownerRows)) {
 					console.log(
-						`    - ${row.owner}: ${formatInt(row.toolsListBytes)} B (${row.toolCount} tools)`,
+						`    - ${row.owner}: ${formatInt(row.toolsListBytes)} B (${row.toolCount} tools, ${shareOfPreset(row, metrics.ownerRows)})`,
 					);
 				}
 			} finally {

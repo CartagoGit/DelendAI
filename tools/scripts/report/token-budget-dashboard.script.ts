@@ -20,13 +20,18 @@ import {
 	listToolsMetrics,
 	measureToolTextBytes,
 	seedAutoWorkReadyProposal,
+	toolsListJsonText,
 	type IConnectedBudgetClient,
+	type IToolBreakdownRow,
+	type IToolListEntry,
 	type IToolListMetrics,
 	type IToolOwnerMetrics,
 } from './token-budget-report-lib';
 import {
+	buildTokenizerEstimates,
 	estimateTokensFromBytes,
 	TOKENIZER_MODELS,
+	type ITokenizerModelEstimate,
 } from './tokenizer-real.script';
 
 interface IFixtureMeasurements {
@@ -64,6 +69,8 @@ interface IPresetDashboardRow {
 	readonly roundContextBytes: number | null;
 	readonly loadErrors: readonly string[];
 	readonly ownerRows: readonly IToolOwnerMetrics[];
+	readonly toolBreakdowns: readonly IToolBreakdownRow[];
+	readonly tokenizerEstimates: readonly ITokenizerModelEstimate[];
 }
 
 // r00024 (PRESET-001): exported so `generate/preset-metadata.script.ts` reuses
@@ -305,6 +312,8 @@ export const measurePresetDashboard = async (
 			: {}),
 	});
 	try {
+		const toolList = await connection.client.listTools();
+		const tools = toolList.tools as readonly IToolListEntry[];
 		const metrics: IToolListMetrics = await listToolsMetrics(
 			connection.client,
 			connection.pluginIds,
@@ -337,6 +346,8 @@ export const measurePresetDashboard = async (
 			roundContextBytes,
 			loadErrors: connection.loadErrors,
 			ownerRows: metrics.ownerRows,
+			toolBreakdowns: metrics.toolBreakdowns,
+			tokenizerEstimates: buildTokenizerEstimates(toolsListJsonText(tools)),
 		};
 	} finally {
 		await connection.close();
@@ -579,8 +590,15 @@ const renderGeneratedMarkdown = (
 		row.loadErrors.length === 0 ? 'none' : row.loadErrors.join('<br>'),
 	]);
 
-	const pluginRows = presetRows.flatMap((row) =>
-		row.ownerRows.map((ownerRow) => [
+	// Share of preset is computed against the sum of the OWNER rows' own
+	// entry-level bytes (not the whole-array `toolsListBytes`, which also
+	// carries the array's `[`/`]`/commas) so shares sum to exactly 100%.
+	const pluginRows = presetRows.flatMap((row) => {
+		const presetOwnerTotal = row.ownerRows.reduce(
+			(sum, ownerRow) => sum + ownerRow.toolsListBytes,
+			0,
+		);
+		return row.ownerRows.map((ownerRow) => [
 			row.presetId,
 			row.surfaceMode,
 			row.runtimeSurface,
@@ -588,30 +606,46 @@ const renderGeneratedMarkdown = (
 			ownerRow.owner,
 			String(ownerRow.toolCount),
 			formatInt(ownerRow.toolsListBytes),
-			formatInt(ownerRow.schemaBytes),
 			formatInt(ownerRow.descriptionBytes),
 			formatInt(ownerRow.inputSchemaBytes),
 			formatInt(ownerRow.outputSchemaBytes),
-		]),
-	);
-
-	const tokenizerSummaryRows = presetRows.map((row) => {
-		const estimates = TOKENIZER_MODELS.map(() =>
-			estimateTokensFromBytes(row.toolsListBytes),
-		);
-		return [
-			row.presetId,
-			row.surfaceMode,
-			row.runtimeSurface,
-			row.source,
-			formatInt(row.toolsListBytes),
-			String(estimates[0] ?? 0),
-			String(estimates[1] ?? 0),
-			String(estimates[2] ?? 0),
-			'heuristic-4-bytes-per-token',
-			'estimated fallback (no lightweight tokenizer dependency present)',
-		];
+			formatInt(ownerRow.annotationsBytes),
+			formatInt(ownerRow.otherFieldBytes),
+			formatInt(ownerRow.envelopeBytes),
+			presetOwnerTotal === 0
+				? '0.0%'
+				: `${((ownerRow.toolsListBytes / presetOwnerTotal) * 100).toFixed(1)}%`,
+		]);
 	});
+
+	const tokenizerSummaryRows = presetRows.map((row) => [
+		row.presetId,
+		row.surfaceMode,
+		row.runtimeSurface,
+		row.source,
+		formatInt(row.toolsListBytes),
+		...row.tokenizerEstimates.map((estimate) => String(estimate.tokenCount)),
+		row.tokenizerEstimates.map((estimate) => estimate.confidence).join(', '),
+	]);
+
+	const topToolsRow = presetRows.find(
+		(row) => row.presetId === 'vertex' && row.surfaceMode === 'native',
+	);
+	const topToolsRows = [...(topToolsRow?.toolBreakdowns ?? [])]
+		.sort((left, right) => right.totalBytes - left.totalBytes)
+		.slice(0, 20)
+		.map((tool) => [
+			tool.name,
+			tool.owner,
+			formatInt(tool.totalBytes),
+			formatInt(tool.nameBytes),
+			formatInt(tool.descriptionBytes),
+			formatInt(tool.inputSchemaBytes),
+			formatInt(tool.outputSchemaBytes),
+			formatInt(tool.annotationsBytes),
+			formatInt(tool.otherFieldBytes),
+			formatInt(tool.envelopeBytes),
+		]);
 
 	const deficits = presetRows
 		.filter((row) => {
@@ -635,6 +669,10 @@ const renderGeneratedMarkdown = (
 		`Generated at: ${generatedAt}`,
 		'',
 		'This file is generated from the same budget contract the e2e test imports: packages/core/src/lib/contracts/constants/token-budgets.constant.ts. Do not edit this markdown by hand; regenerate it with bun tools/scripts/report/token-budget-dashboard.script.ts.',
+		'',
+		'## What this gate actually measures',
+		'',
+		'`tokens:gate` and this dashboard measure serialized BYTES of the tools/list JSON payload (`toolsListBytes` / `measureToolTextBytes`) — the wire size the MCP client receives, not native LLM tokens. Bytes and tokens correlate but are not interchangeable: bytes-per-token varies across prose descriptions, JSON schemas, and identifiers, so a byte delta does not reliably predict a token delta. The "Component breakdown" and "Top tools by bytes" sections below break every measurement down into name/description/inputSchema/outputSchema/annotations/envelope bytes — the parts that make up that wire size. The "CHECK-007" section separately reports token counts per model, each labelled with how much to trust it (real tokenizer encode vs. byte-ratio estimate) — see that section for what is measured versus estimated.',
 		'',
 		'## Semantics',
 		'',
@@ -689,7 +727,9 @@ const renderGeneratedMarkdown = (
 			presetSummaryRows,
 		),
 		'',
-		'## Plugin marginal dashboard',
+		'## Plugin marginal dashboard — component breakdown by owner',
+		'',
+		'`Tools/List Bytes` per owner is the sum of each tool\'s own serialized entry (`JSON.stringify({name, description, inputSchema, outputSchema, annotations})`), decomposed into the fields that make it up. `Envelope Bytes` is JSON punctuation and key labels — derived by subtraction, so every row\'s named-field columns plus Envelope Bytes sum exactly to Tools/List Bytes. `Share of Preset` is this owner\'s bytes divided by the sum of all owners\' bytes in that preset row (not divided by the whole-array `Tools/List Bytes` on the preset-summary table above, which also carries the array\'s own brackets/commas) — shares always sum to 100%.',
 		'',
 		markdownTable(
 			[
@@ -700,17 +740,40 @@ const renderGeneratedMarkdown = (
 				'Owner',
 				'Tools',
 				'Tools/List Bytes',
-				'Schema Bytes',
 				'Description Bytes',
 				'InputSchema Bytes',
 				'OutputSchema Bytes',
+				'Annotations Bytes',
+				'Other Bytes',
+				'Envelope Bytes',
+				'Share of Preset',
 			],
 			pluginRows,
 		),
 		'',
+		'## Top tools by bytes (vertex preset, native surface)',
+		'',
+		'The 20 individual tools that cost the most tools/list bytes in the largest governed preset, with the same component breakdown as the owner table above. This is where "concentration" becomes concrete: a handful of tools account for a disproportionate share of the whole surface.',
+		'',
+		markdownTable(
+			[
+				'Tool',
+				'Owner',
+				'Total Bytes',
+				'Name Bytes',
+				'Description Bytes',
+				'InputSchema Bytes',
+				'OutputSchema Bytes',
+				'Annotations Bytes',
+				'Other Bytes',
+				'Envelope Bytes',
+			],
+			topToolsRows,
+		),
+		'',
 		'## CHECK-007 — tokenizer cost by preset',
 		'',
-		'The repo has no lightweight LLM tokenizer dependency installed today. This report therefore uses an explicit fallback estimator of 4 bytes/token, published as an estimate rather than pretending to be an exact tokenizer. The script lives in tools/scripts/report/tokenizer-real.script.ts so the fallback can be replaced by a real tokenizer later without changing the dashboard contract.',
+		'This gate (`tokens:gate` / `tokens:dashboard:generate`) measures serialized BYTES of the tools/list JSON payload, not native LLM tokens — bytes-per-token varies enough across prose descriptions, JSON schemas, and identifiers that a byte count cannot substitute for a real token count. The table below reports both, with an explicit confidence label per model: `measured-real-bpe` is a real encode with the model\'s own published tokenizer (gpt-tokenizer for gpt-5.4); `measured-legacy-bpe` is a real BPE encode but on a vocabulary the vendor published for an older model generation (Anthropic has not published an offline tokenizer for Claude Sonnet 4, so @anthropic-ai/tokenizer\'s pre-Claude-3 vocabulary is used as the closest available real encoder); `estimated-byte-ratio` is bytes / 4, used only where no offline tokenizer package exists (Gemini). See tools/scripts/report/tokenizer-real.script.ts for the profile definitions.',
 		'',
 		markdownTable(
 			[
@@ -722,8 +785,7 @@ const renderGeneratedMarkdown = (
 				`${TOKENIZER_MODELS[0]} Tokens`,
 				`${TOKENIZER_MODELS[1]} Tokens`,
 				`${TOKENIZER_MODELS[2]} Tokens`,
-				'Estimator',
-				'Notes',
+				'Confidence (per model, in order above)',
 			],
 			tokenizerSummaryRows,
 		),
