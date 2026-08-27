@@ -106,11 +106,14 @@ A Bun monorepo:
 - Swarm proposals workflow. If a proposals task needs more than 3 tool
   calls, touches multiple files, or requires repeated MCP reads, delegate
   it instead of keeping it on the main thread. **Branching is
-  config-driven.** With `agentWorktree: false` in
-  `mcp-vertex.config.json` (this repo's setting) agents never create
-  `agent/*` worktrees or branches — they commit and push directly on
-  `develop` and share the git history; the operator may still create
-  manual branches (`fix/*`, `feature/*`). When the gate is on and an
+  config-driven; `develop` only receives merges through a pull
+  request.** With `agentWorktree: false` in `mcp-vertex.config.json`
+  (this repo's setting) agents never create `agent/*` worktrees or
+  per-agent branches — they work on a `wip/*` branch off `develop`,
+  commit there, push it, and open a PR to land; a direct push to
+  `develop` is refused independently by `commit-policy`'s push driver
+  and the local pre-push hook. The operator may still create manual
+  branches (`fix/*`, `feature/*`) alongside `wip/*`. When the gate is on and an
   agent works in a worktree, it must never `git switch` the shared
   checkout: the main checkout stays on `develop` and the worktree is
   merged + removed before its branch disappears. `branch_status` and

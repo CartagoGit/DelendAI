@@ -45,24 +45,7 @@ describe('verify-develop-health (v00125)', () => {
 				allow_deletion: { enabled: false },
 				required_status_checks: {
 					strict: true,
-					contexts: [
-						'lint-biome',
-						'lint-architecture',
-						'lint-presets',
-						'lint-docs',
-						'lint-security',
-						'lint-governance',
-						'typecheck',
-						'tests',
-						'quality-gate',
-						'verify-runtime',
-						'tokens-budget-real',
-						'manifests-check',
-						'generated-artifacts-check',
-						'web site build',
-						'pack smoke (publishable packages)',
-						'metrics longitudinal regression gate (f00027)',
-					],
+					contexts: ['ci-complete'],
 				},
 			};
 			if (url.includes('/branches/develop/protection'))
@@ -91,7 +74,7 @@ describe('verify-develop-health (v00125)', () => {
 				allow_deletion: { enabled: false },
 				required_status_checks: {
 					strict: true,
-					contexts: ['lint-biome'], // everything else missing
+					contexts: ['lint-biome'], // not `ci-complete` — the required check is missing
 				},
 			};
 			if (url.includes('/branches/develop/protection'))

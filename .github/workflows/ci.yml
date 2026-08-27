@@ -1,7 +1,8 @@
 name: CI
 
-# develop is the integration branch (agents push there daily); without it
-# in the triggers, breakage only surfaces when a main release is attempted.
+# develop is the integration branch (work lands there via PR from wip/*,
+# fix/*, feature/* branches); without it in the triggers, breakage only
+# surfaces when a main release is attempted.
 on:
   push:
     branches: [main, develop]
@@ -454,3 +455,51 @@ jobs:
           METRICS_LATENCY_DELTA_PCT: '20'
           METRICS_BYTES_DELTA_PCT: '20'
         run: bun tools/scripts/metrics/diff-snapshots.script.ts
+
+  # Single aggregate branch-protection check. Naming sixteen individual
+  # jobs as required checks is brittle both ways: renaming a job here
+  # silently drops it from the required set, and adding a job here
+  # silently protects nothing until someone remembers to also add it to
+  # `.github/branch-protection.ts`. This job `needs` every job above and
+  # is the ONLY one branch protection has to name — the source of truth
+  # for "did CI pass" lives in this one `needs` list, not duplicated in
+  # the branch-protection config.
+  #
+  # `if: always()` makes this job itself run even when a dependency
+  # failed (otherwise GitHub would just skip it, and a skipped required
+  # check blocks merging forever — the opposite of what we want: a red
+  # dependency must show up as a red aggregate, not a stuck one). The
+  # step then explicitly fails unless every dependency's result is
+  # `success` — `skipped` and `cancelled` do not count, so a job that
+  # never ran (misconfigured trigger, cancelled run) cannot slip a merge
+  # through silently.
+  ci-complete:
+    name: ci-complete
+    if: always()
+    needs:
+      - lint-biome
+      - lint-architecture
+      - lint-presets
+      - lint-docs
+      - lint-security
+      - lint-governance
+      - typecheck
+      - tests
+      - quality-gate
+      - verify-runtime
+      - tokens-budget-real
+      - manifests-check
+      - generated-artifacts-check
+      - site
+      - pack-smoke
+      - metrics-gate
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require every job to have succeeded
+        if: |
+          contains(needs.*.result, 'failure') ||
+          contains(needs.*.result, 'cancelled') ||
+          contains(needs.*.result, 'skipped')
+        run: |
+          echo "One or more required jobs did not succeed (failure, cancelled, or skipped)."
+          exit 1

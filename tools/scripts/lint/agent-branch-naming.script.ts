@@ -2,7 +2,12 @@
 /**
  * agent-branch-naming.script.ts — a00069 S4.
  *
- * Lint gate over local `agent/*` branches.
+ * Lint gate over local `agent/*` branches — the per-agent worktree
+ * isolation shape, gated by `agentWorktree`. This is a DIFFERENT
+ * concern from the `wip/*` branches agents use to land work on
+ * `develop` through a PR: `wip/*` (like `fix/*`, `feature/*`) is never
+ * inspected here and always passes through untouched, regardless of
+ * the `agentWorktree` gate.
  *
  * Policy:
  *   1. Every local branch matching `agent/*` must satisfy
@@ -10,8 +15,8 @@
  *      (model token + proposal-id token + optional slice token).
  *   2. When `agentWorktree` is not true in mcp-vertex.config.json,
  *      ANY local `agent/*` branch is a violation (shared-checkout
- *      mode forbids agent branches — agents commit on develop or
- *      not at all).
+ *      mode forbids agent worktree branches — agents work on `wip/*`
+ *      or commit on `develop` instead).
  *   3. When a branch has no attached worktree it is flagged
  *      `outOfCache: true` (orphan branch, consistent with f00073).
  *

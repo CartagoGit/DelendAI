@@ -1,22 +1,28 @@
 #!/usr/bin/env bun
 /**
  * push-to-develop-discipline.script.ts — f00086 S2, stdin fix x00159 S1
- * (refined 2026-08-24: config-driven, block only per-agent branches).
+ * (refined 2026-08-27: `develop` only lands via PR — no more direct push).
  *
  * Pre-push guard. Pure function over
  * `(cwd, remoteName, remoteBranch, currentBranch, agentWorktreeEnabled)`
  * → `{ ok: true } | { ok: false, blockers: string[] }`.
  *
  * Policy (config-driven):
- *   - Pushing from `develop` → always allowed (the shared push, and
- *     `develop → main` release merges).
- *   - Pushing from `main` → allowed (release flow; versioning is
+ *   - Pushing directly to `develop` → BLOCKED, regardless of source
+ *     branch or the worktree gate. Work lands on `develop` through a
+ *     pull request from `wip/*` (or the user-managed `fix/*` /
+ *     `feature/*`), never a direct push. This mirrors the independent
+ *     `DIRECT_PUSH_TO_DEVELOP_NOT_ALLOWED` refusal the `commit-policy`
+ *     plugin's push driver already enforces when pushing through its
+ *     tool instead of a raw `git push` — two layers, one rule.
+ *   - Pushing to `main` → allowed (release flow; versioning is
  *     derived on push to `main`).
- *   - When `agentWorktree: true` → every branch is allowed: `agent/*`
- *     branches are the expected per-agent isolation shape.
+ *   - When `agentWorktree: true` → every source branch is allowed:
+ *     `agent/*` branches are the expected per-agent isolation shape.
  *   - When `agentWorktree: false` (this repo) → pushing from an
  *     `agent/*` branch is blocked (agents never branch on their own).
- *     User-managed branches (`fix/*`, `feature/*`, …) are allowed.
+ *     User-managed branches (`wip/*`, `fix/*`, `feature/*`, …) are
+ *     allowed.
  *   - Branch deletes (all-zero local oid) never block.
  *
  * x00159 S1: the refs actually being pushed are NOT available as a
@@ -172,8 +178,27 @@ export const parseGitPushArgs = (
 export const lintPushToDevelop = (
 	input: IPushToDevelopInput,
 ): PushToDevelopResult => {
-	const { currentBranch, agentWorktreeEnabled = false } = input;
-	const blockers: string[] = [];
+	const { remoteBranch, currentBranch, agentWorktreeEnabled = false } = input;
+
+	// A direct push to `develop` is refused unconditionally — same rule
+	// as `commit-policy`'s push driver (`DIRECT_PUSH_TO_DEVELOP_NOT_ALLOWED`),
+	// enforced here too for raw `git push` calls that bypass the plugin
+	// tool. This check runs before the source-branch checks below: no
+	// source branch, including `develop` itself, gets a pass to `develop`.
+	if (remoteBranch === DEVELOP_BRANCH) {
+		return {
+			ok: false,
+			blockers: [
+				`pushing directly to \`${DEVELOP_BRANCH}\` — direct pushes are not allowed.`,
+				'',
+				'next-action:',
+				'  push your work branch instead:  git push origin <wip/your-branch>',
+				`  then open a pull request into \`${DEVELOP_BRANCH}\`.`,
+				'',
+				'  if this is a true emergency, bypass:  LEFTHOOK_BYPASS=1 git push ...',
+			],
+		};
+	}
 
 	// Detached HEAD / unknown source: fail-open (mirrors the commit
 	// discipline; release engineers may push from a checked-out tag).
@@ -187,24 +212,26 @@ export const lintPushToDevelop = (
 		return { ok: true };
 	}
 
-	// Gate off: the only branches agents must not push are `agent/*`.
-	// `develop` (shared push), `main` (release) and user-managed
-	// branches (fix/*, feature/*, …) are all allowed.
+	// Gate off: the only source branches agents must not push from are
+	// `agent/*`. User-managed branches (`wip/*`, `fix/*`, `feature/*`, …)
+	// are all allowed.
 	if (!currentBranch.startsWith(AGENT_BRANCH_PREFIX)) {
 		return { ok: true };
 	}
 
-	blockers.push(
-		`pushing from \`${currentBranch}\` — per-agent branches are disabled (agentWorktree: false).`,
-		'',
-		'next-action:',
-		`  switch back:  git switch ${DEVELOP_BRANCH}`,
-		'  then commit and push on develop (the shared branch).',
-		'  only the operator creates branches; agents never branch on their own.',
-		'',
-		'  if this is a true emergency, bypass:  LEFTHOOK_BYPASS=1 git push ...',
-	);
-	return { ok: false, blockers };
+	return {
+		ok: false,
+		blockers: [
+			`pushing from \`${currentBranch}\` — per-agent branches are disabled (agentWorktree: false).`,
+			'',
+			'next-action:',
+			`  switch to a wip/* branch instead:  git switch -c wip/<slug>`,
+			'  then push that branch and open a pull request.',
+			'  only the operator creates branches; agents never branch on their own.',
+			'',
+			'  if this is a true emergency, bypass:  LEFTHOOK_BYPASS=1 git push ...',
+		],
+	};
 };
 
 // ---------- CLI shell ----------
