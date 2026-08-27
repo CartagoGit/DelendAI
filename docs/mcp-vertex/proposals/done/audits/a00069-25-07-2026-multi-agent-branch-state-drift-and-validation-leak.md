@@ -1198,7 +1198,7 @@ criterio "todos los SHAs merged in develop o superseded".
 
 - `c7766ea6` (feat(core): surface unused active plugin warnings) mergeó a develop.
 - `findUnusedActivePlugins` wired en `assemble-core-tools.ts`.
-- branch `agent/codex-a00069-s9` (`546a89a4`) **redundante** post merge.
+- branch `agent/codex-a00069-s9` (546a89a4, deleted after merging) **redundante** post merge.
 
 ### F25 — F17 mitigado: `CONTENTION_NEXT` → `notification_await_lock` (nota positiva) — **CLOSED (partial dogfood)**
 
