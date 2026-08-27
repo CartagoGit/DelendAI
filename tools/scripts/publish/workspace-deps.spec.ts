@@ -12,9 +12,13 @@ import {
 
 const createdDirs: string[] = [];
 
-const plan = (targetVersion = '2.0.0'): IWorkspaceDepsPlan => ({
-	targetVersion,
-	mcpVertexPackages: new Set(['@mcp-vertex/core', '@mcp-vertex/client']),
+const plan = (
+	packageVersions: Readonly<Record<string, string>> = {
+		'@mcp-vertex/core': '2.0.0',
+		'@mcp-vertex/client': '2.0.0',
+	},
+): IWorkspaceDepsPlan => ({
+	packageVersions: new Map(Object.entries(packageVersions)),
 });
 
 const writePackageJson = async (
@@ -133,12 +137,107 @@ describe('workspace-deps', () => {
 
 		const consumers = await findWorkspaceConsumers(
 			root,
-			plan().mcpVertexPackages,
+			new Set(plan().packageVersions.keys()),
 		);
 
 		expect(consumers).toEqual([
 			join(root, 'a', 'package.json'),
 			join(root, 'b', 'package.json'),
 		]);
+	});
+
+	it('per-package-version resolves each dependency to ITS OWN version, not a shared/root version', async () => {
+		const root = await mkdtemp(join(tmpdir(), 'workspace-deps-'));
+		createdDirs.push(root);
+		// The regression this covers: a monorepo root at 0.1.0 with a
+		// dependency that has independently bumped ahead to 0.1.1. A plan
+		// keyed per-package must resolve to 0.1.1, never fall back to a
+		// single shared/root version like 0.1.0.
+		const pkgDir = await writePackageJson(root, 'pkg', {
+			name: 'fixture',
+			dependencies: {
+				'@mcp-vertex/core': 'workspace:*',
+				'@mcp-vertex/web-fetch': 'workspace:*',
+			},
+		});
+
+		const result = await rewriteWorkspaceDeps(
+			pkgDir,
+			plan({
+				'@mcp-vertex/core': '0.1.0',
+				'@mcp-vertex/web-fetch': '0.1.1',
+			}),
+		);
+
+		expect(result.rewritten.dependencies).toEqual({
+			'@mcp-vertex/core': '0.1.0',
+			'@mcp-vertex/web-fetch': '0.1.1',
+		});
+		expect(result.changedKeys).toEqual([
+			'@mcp-vertex/core',
+			'@mcp-vertex/web-fetch',
+		]);
+	});
+
+	it('every-dependency-kind rewrites workspace: ranges in dependencies, devDependencies, peerDependencies, and optionalDependencies alike', async () => {
+		const root = await mkdtemp(join(tmpdir(), 'workspace-deps-'));
+		createdDirs.push(root);
+		const pkgDir = await writePackageJson(root, 'pkg', {
+			name: 'fixture',
+			dependencies: { '@mcp-vertex/core': 'workspace:*' },
+			devDependencies: { '@mcp-vertex/core': 'workspace:*' },
+			peerDependencies: { '@mcp-vertex/core': 'workspace:*' },
+			optionalDependencies: { '@mcp-vertex/core': 'workspace:*' },
+		});
+
+		const result = await rewriteWorkspaceDeps(
+			pkgDir,
+			plan({ '@mcp-vertex/core': '3.4.5' }),
+		);
+
+		expect(result.rewritten).toMatchObject({
+			dependencies: { '@mcp-vertex/core': '3.4.5' },
+			devDependencies: { '@mcp-vertex/core': '3.4.5' },
+			peerDependencies: { '@mcp-vertex/core': '3.4.5' },
+			optionalDependencies: { '@mcp-vertex/core': '3.4.5' },
+		});
+	});
+
+	it.each([
+		['workspace:*', '1.2.3', '1.2.3'],
+		['workspace:^', '1.2.3', '^1.2.3'],
+		['workspace:~', '1.2.3', '~1.2.3'],
+	])(
+		"protocol-forms resolves %s against the target's own version %s to %s",
+		async (range, targetVersion, expected) => {
+			const root = await mkdtemp(join(tmpdir(), 'workspace-deps-'));
+			createdDirs.push(root);
+			const pkgDir = await writePackageJson(root, 'pkg', {
+				name: 'fixture',
+				dependencies: { '@mcp-vertex/core': range },
+			});
+
+			const result = await rewriteWorkspaceDeps(
+				pkgDir,
+				plan({ '@mcp-vertex/core': targetVersion }),
+			);
+
+			expect(result.rewritten.dependencies).toEqual({
+				'@mcp-vertex/core': expected,
+			});
+		},
+	);
+
+	it('unknown-protocol throws a bounded parse error instead of silently mis-resolving', async () => {
+		const root = await mkdtemp(join(tmpdir(), 'workspace-deps-'));
+		createdDirs.push(root);
+		const pkgDir = await writePackageJson(root, 'pkg', {
+			name: 'fixture',
+			dependencies: { '@mcp-vertex/core': 'workspace:1.2.3' },
+		});
+
+		await expect(
+			rewriteWorkspaceDeps(pkgDir, plan({ '@mcp-vertex/core': '2.0.0' })),
+		).rejects.toMatchObject({ code: 'ERR_WORKSPACE_DEPS_PARSE' });
 	});
 });
