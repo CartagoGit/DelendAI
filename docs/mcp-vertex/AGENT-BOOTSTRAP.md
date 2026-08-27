@@ -255,14 +255,15 @@ restates the rule for swarm context.
 - Token budget is a protected invariant. `overview` (compact) +
   `auto_work` stay under their measured budgets.
 - **Every agent MUST hold an active lock claim (`agent_lock`) for the files it edits.** The validation gate enforces this via `lint:agent-claims`, and commits/pushes violating this will be rejected by git hooks. (x00080) The claim check itself is a lefthook-installed TypeScript hook (`tools/scripts/hooks/pre-commit.ts`), not a raw `.sh` git hook template — every hook in this repo is TypeScript, per rule #10 below.
-- **Branching is config-driven; `develop` only receives merges through
-  a pull request.** `agentWorktree: false` in `mcp-vertex.config.json`
-  means agents never create `agent/*` worktrees or per-agent branches
-  — they work on a `wip/*` branch off `develop`, commit there, push it,
-  and open a PR to land. Direct pushes to `develop` are refused
-  independently by both the `commit-policy` push driver and the local
-  pre-push hook, so there is no "just push it to develop" escape hatch.
-  The operator may still create manual branches (`fix/*`, `feature/*`);
+- **Agents land on `develop` through a pull request; the operator does
+  not have to.** `develop` is the branch this repo is programmed on and
+  is deliberately NOT protected — the operator pushes to it directly.
+  Agents do not: `agentWorktree: false` in `mcp-vertex.config.json`
+  means they never create `agent/*` worktrees or per-agent branches, so
+  they work on a `wip/*` branch off `develop`, commit there, push it,
+  and open a PR that the operator reviews and decides on. `main` is the
+  protected branch: nothing lands there automatically. The operator may
+  still create manual branches (`fix/*`, `feature/*`);
   those are allowed alongside `wip/*`. When the worktree gate is on,
   agents working in worktrees must never `git switch` the shared
   checkout — the main checkout stays on `develop` until the worktree is

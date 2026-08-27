@@ -45,6 +45,9 @@ import { isLefthookBypassed } from '../lib/lefthook-bypass';
 import { readAgentWorktreeFlag } from './lib/agent-worktree-flag.lib';
 
 const DEVELOP_BRANCH = 'develop';
+
+/** Branch prefixes that identify agent-driven work rather than the operator. */
+const AGENT_BRANCH_PREFIXES = ['wip/', 'agent/'] as const;
 const AGENT_BRANCH_PREFIX = 'agent/';
 
 export interface IPushToDevelopInput {
@@ -180,16 +183,22 @@ export const lintPushToDevelop = (
 ): PushToDevelopResult => {
 	const { remoteBranch, currentBranch, agentWorktreeEnabled = false } = input;
 
-	// A direct push to `develop` is refused unconditionally — same rule
-	// as `commit-policy`'s push driver (`DIRECT_PUSH_TO_DEVELOP_NOT_ALLOWED`),
-	// enforced here too for raw `git push` calls that bypass the plugin
-	// tool. This check runs before the source-branch checks below: no
-	// source branch, including `develop` itself, gets a pass to `develop`.
-	if (remoteBranch === DEVELOP_BRANCH) {
+	// `develop` is this repo's working branch and is deliberately not
+	// protected: the operator pushes to it directly. What is refused is an
+	// AGENT doing so — agents work on `wip/*` and land through a pull
+	// request the operator decides on. The source branch is what tells the
+	// two apart, so this check comes after the source-branch resolution
+	// rather than short-circuiting ahead of it.
+	if (
+		remoteBranch === DEVELOP_BRANCH &&
+		currentBranch !== undefined &&
+		currentBranch !== null &&
+		AGENT_BRANCH_PREFIXES.some((prefix) => currentBranch.startsWith(prefix))
+	) {
 		return {
 			ok: false,
 			blockers: [
-				`pushing directly to \`${DEVELOP_BRANCH}\` — direct pushes are not allowed.`,
+				`pushing from \`${currentBranch}\` straight into \`${DEVELOP_BRANCH}\` — agent work lands through a pull request.`,
 				'',
 				'next-action:',
 				'  push your work branch instead:  git push origin <wip/your-branch>',

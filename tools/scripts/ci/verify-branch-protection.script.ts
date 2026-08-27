@@ -126,10 +126,24 @@ interface IDrift {
  * Compute the drift between declared policy and live GitHub
  * state. Returns an empty array when the branch matches.
  */
-const diffBranch = (
+export const diffBranch = (
 	expected: IBranchProtectionConfig['branches'][number],
 	live: IGitHubBranchProtectionResponse | null,
 ): readonly IDrift[] => {
+	// A branch declared unprotected is supposed to have no rule. Finding
+	// one is drift in the other direction: someone locked down a working
+	// branch without updating the declared policy.
+	if (!expected.protected) {
+		return live === null
+			? []
+			: [
+					{
+						branch: expected.name,
+						kind: 'BOOL_DRIFT',
+						detail: 'branch is declared unprotected but GitHub has a protection rule on it',
+					},
+				];
+	}
 	if (live === null) {
 		return [
 			{
