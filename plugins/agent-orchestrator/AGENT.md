@@ -11,6 +11,9 @@
 - DEFAULT_ROTATION_POLICY
 - ORCHESTRATION_MODES
 - OrchestratorPolicySchema
+- ModeOverrideSchema
+- PerModeOverridesSchema
+- resolveEffectivePolicyForMode
 - ModeRegistry
 - UnknownModeError
 - DuplicateModeError
@@ -24,6 +27,10 @@
 - TaskClassifier
 - BudgetTracker
 - LoopDetector
+- FakeDispatchPort
+- resolveDispatchPort
+- MissingDispatchPortError
+- InvalidDispatchPortFactoryError
 
 ## Depends on
 
@@ -42,12 +49,12 @@
 
 ## Tests
 
+- plugins/agent-orchestrator/tests/src/index.spec.ts
 - plugins/agent-orchestrator/tests/src/lib/policy/single-mode.spec.ts
+- plugins/agent-orchestrator/tests/src/lib/policy/per-mode-override.spec.ts
 - plugins/agent-orchestrator/tests/src/lib/policy/registry.spec.ts
 - plugins/agent-orchestrator/tests/src/lib/policy/policy.spec.ts
 - plugins/agent-orchestrator/tests/src/lib/policy/swarm-mode.spec.ts
-- plugins/agent-orchestrator/tests/src/lib/policy/auto-mode.spec.ts
-- plugins/agent-orchestrator/tests/src/lib/policy/linear-mode.spec.ts
 
 ## Do not
 

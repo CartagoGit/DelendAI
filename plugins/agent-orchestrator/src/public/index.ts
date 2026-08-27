@@ -26,6 +26,9 @@ export {
 	DEFAULT_ROTATION_POLICY,
 	ORCHESTRATION_MODES,
 	OrchestratorPolicySchema,
+	ModeOverrideSchema,
+	PerModeOverridesSchema,
+	resolveEffectivePolicyForMode,
 } from '../lib/policy/types.js';
 
 export {
@@ -57,3 +60,19 @@ export type {
 	IRotationStep,
 	IRotationVerdict,
 } from '../lib/rotation/loop-detector.js';
+
+export { FakeDispatchPort } from '../lib/dispatch/fake-port.js';
+export type {
+	IFakeDispatchPortDeps,
+	IFakeScript,
+	IFakeScriptStep,
+} from '../lib/dispatch/fake-port.js';
+export type {
+	IDispatchPort,
+	ISubagentResult,
+} from '../lib/dispatch/contracts.js';
+export {
+	resolveDispatchPort,
+	MissingDispatchPortError,
+	InvalidDispatchPortFactoryError,
+} from '../lib/dispatch/port-resolution.js';

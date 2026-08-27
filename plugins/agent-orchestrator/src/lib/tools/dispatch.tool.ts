@@ -6,10 +6,14 @@
 import { z } from 'zod';
 
 import type { IToolRegistration } from '@mcp-vertex/core/public';
-import { toolJson } from '@mcp-vertex/core/public';
+import { toolError, toolJson } from '@mcp-vertex/core/public';
 
 import type { OrchestratorEngine } from '../policy/policy.js';
 import { LinearDispatcher } from '../dispatch/linear-dispatcher.js';
+import {
+	InvalidDispatchPortFactoryError,
+	MissingDispatchPortError,
+} from '../dispatch/port-resolution.js';
 import {
 	BudgetPolicySchema,
 	OrchestrationModeSchema,
@@ -95,10 +99,37 @@ const PlanRefSchema = z.object({
 type IDispatchArgs = z.infer<typeof INPUT_SCHEMA>;
 type IBudgetArgs = { taskId?: string };
 
+/**
+ * Map a dispatch-port failure to the tool-error envelope, or `undefined`
+ * when the error is something else and must keep propagating. Pure and
+ * exported so the refusal contract is testable without standing up an
+ * `McpServer` double.
+ */
+export const dispatchPortRefusal = (
+	err: unknown,
+): ReturnType<typeof toolError> | undefined => {
+	if (
+		err instanceof MissingDispatchPortError ||
+		err instanceof InvalidDispatchPortFactoryError
+	) {
+		return toolError(
+			err.message,
+			'Configure `plugins.agent-orchestrator.options.portFactory` with a real dispatch port, or set `allowFakeDispatchPort: true` for tests only.',
+		);
+	}
+	return undefined;
+};
+
 export interface IDispatchToolDeps {
 	readonly namespacePrefix: string;
 	readonly engine: () => OrchestratorEngine;
-	readonly port: IDispatchPort;
+	/**
+	 * Resolved lazily, at call time. A host that never dispatches still
+	 * gets the port-independent tools (`_plan`, `_budget`); only an
+	 * actual `_dispatch` call has to have a real dispatch capability,
+	 * and it fails loudly rather than fabricating success.
+	 */
+	readonly port: () => IDispatchPort;
 	/** Optional in-memory cache of last outcomes, keyed by taskId. */
 	readonly lastOutcome?: (taskId: string) => IPlanOutcome | undefined;
 }
@@ -120,7 +151,7 @@ export function buildDispatchRegistration(
 			tags: task.tags,
 			...(task.hint !== undefined ? { hint: task.hint } : {}),
 		});
-		const dispatcher = new LinearDispatcher(plan, port);
+		const dispatcher = new LinearDispatcher(plan, port());
 		const outcome = await dispatcher.run();
 		lastOutcomeCache.set(task.id, { plan, outcome });
 		return outcome;
@@ -146,15 +177,21 @@ export function buildDispatchRegistration(
 					outputSchema: PlanOutcomeSchema,
 				},
 				async (args: IDispatchArgs) => {
-					const outcome = await runPlan({
-						id: args.task.id,
-						description: args.task.description,
-						tags: args.task.tags,
-						...(args.task.hint !== undefined
-							? { hint: args.task.hint }
-							: {}),
-					});
-					return toolJson(outcome);
+					try {
+						const outcome = await runPlan({
+							id: args.task.id,
+							description: args.task.description,
+							tags: args.task.tags,
+							...(args.task.hint !== undefined
+								? { hint: args.task.hint }
+								: {}),
+						});
+						return toolJson(outcome);
+					} catch (err) {
+						const refusal = dispatchPortRefusal(err);
+						if (refusal !== undefined) return refusal;
+						throw err;
+					}
 				},
 			);
 
