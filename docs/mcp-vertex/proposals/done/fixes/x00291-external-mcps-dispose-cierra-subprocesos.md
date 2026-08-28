@@ -2,7 +2,7 @@
 id: x00291
 title: "external-mcps: register() devuelve dispose() que cierra todo subproceso"
 kind: fix
-status: ready
+status: done
 type: fix
 track: security
 date: 2026-08-27

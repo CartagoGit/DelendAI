@@ -2,7 +2,7 @@
 id: x00285
 title: "decideSurfaceModeFromCapabilities lee al cliente en vez de ignorarlo"
 kind: fix
-status: ready
+status: done
 type: fix
 track: adaptive-surface
 date: 2026-08-27

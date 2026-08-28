@@ -2,7 +2,7 @@
 id: t00029
 title: "Test de equivalencia parametrizado: activación eager vs. managed-lazy"
 kind: test
-status: ready
+status: done
 type: test
 track: lifecycle
 date: 2026-08-27

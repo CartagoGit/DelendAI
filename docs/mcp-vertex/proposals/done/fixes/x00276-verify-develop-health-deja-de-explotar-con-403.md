@@ -2,7 +2,7 @@
 id: x00276
 title: "AUD-A04 — verify-develop-health deja de explotar con 403"
 kind: fix
-status: ready
+status: done
 type: fix
 track: governance
 date: 2026-08-27
@@ -90,13 +90,13 @@ verify-develop-health.script.ts
 
 ### S1 — `verify-develop-health.script.ts` consume `github-protection.lib.ts`
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `tools/scripts/ci/verify-develop-health.script.ts`, `tools/tests/ci/verify-develop-health.spec.ts`
 - **Gate**: `bunx vitest run --project tools -- tools/tests/ci/verify-develop-health.spec.ts`
 
 ### S2 — paridad de veredicto con `verify-branch-protection`
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `tools/tests/ci/verify-develop-health.spec.ts`
 - **Gate**: `bunx vitest run --project tools -- tools/tests/ci`
 

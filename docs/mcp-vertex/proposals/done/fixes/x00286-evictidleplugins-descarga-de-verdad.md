@@ -2,7 +2,7 @@
 id: x00286
 title: "evictIdlePlugins descarga el plugin de verdad (dispose + relazy)"
 kind: fix
-status: ready
+status: done
 type: fix
 track: adaptive-surface
 date: 2026-08-27

@@ -2,7 +2,7 @@
 id: r00038
 title: "PluginActivationSession — una sola ruta de activación para eager y lazy"
 kind: refactor
-status: ready
+status: done
 type: refactor
 track: lifecycle
 date: 2026-08-27

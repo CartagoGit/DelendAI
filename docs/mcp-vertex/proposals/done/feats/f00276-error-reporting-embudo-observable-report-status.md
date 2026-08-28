@@ -2,7 +2,7 @@
 id: f00276
 title: "AUD-G01 — error-reporting como embudo observable en report_status"
 kind: feat
-status: ready
+status: done
 type: feat
 track: trust
 date: 2026-08-27
