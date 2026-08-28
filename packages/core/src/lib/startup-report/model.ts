@@ -52,6 +52,18 @@ export interface IStartupReportServerIdentity {
 	readonly workspace: string;
 	readonly preset: string;
 	readonly surfaceMode: IMcpToolSurfaceMode;
+	/**
+	 * Why `surfaceMode` is what it is. The Startup Report is built once at
+	 * boot, before any client has connected, so this can only describe the
+	 * BOOT DEFAULT (an explicit override, or "managed pending the
+	 * per-client capability check") — the mode actually served to a given
+	 * client is decided later, at MCP handshake, by
+	 * `decideSurfaceModeFromCapabilities` (see the `[surface]` stderr line
+	 * on a real transition). AUD-C01: previously there was no `reason` at
+	 * all here, only the mode, which read as a fixed fact rather than a
+	 * default that adapts per client.
+	 */
+	readonly surfaceModeReason?: string | undefined;
 	readonly startupReportLevel: IStartupReportLevel;
 }
 

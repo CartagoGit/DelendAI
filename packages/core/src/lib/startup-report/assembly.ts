@@ -98,6 +98,10 @@ export const buildStartupReportForAssembly = (input: {
 				workspace: input.workspace,
 				preset: input.preset,
 				surfaceMode: input.plan.mode,
+				surfaceModeReason:
+					input.plan.explicitMode !== undefined
+						? `explicit surface override -> ${input.plan.explicitMode}`
+						: 'managed by default at boot; the per-client mode is decided at MCP handshake from client capabilities (see stderr for the resolved reason)',
 			},
 			catalog: {
 				pluginsConfigured: input.configuredPluginIds.length,
@@ -120,7 +124,14 @@ export const buildStartupReportForAssembly = (input: {
 				internalRouting: input.plan.routerToolId !== undefined,
 				idleEvictionMs: input.plan.workingSet?.idleTtlMs ?? 5 * 60_000,
 				maxWarmPlugins: input.plan.workingSet?.maxWarmPlugins ?? 8,
-				listChangedRequired: false,
+				// `managed`/`adaptive`/`compact` all rely on the client
+				// re-fetching `tools/list` after a `notifications/tools/list_changed`
+				// to ever see a lazily-activated tool appear — `native`
+				// registers everything up front and needs no such
+				// notification. This used to be a hardcoded `false`
+				// regardless of mode (AUD-C01 follow-up: another dishonest
+				// startup-report value next to `maxWarmPlugins`).
+				listChangedRequired: input.plan.mode !== 'native',
 			},
 			baseline: {
 				tokensPerRequest: native.estimatedSchemaTokensPerRequest,
