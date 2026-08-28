@@ -2,7 +2,7 @@
 id: x00295
 title: "AUD-D07 — el guard de verify:tools deja de enumerar literales de IToolEffect"
 kind: fix
-status: ready
+status: done
 type: fix
 track: security
 date: 2026-08-27

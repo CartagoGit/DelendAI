@@ -2,7 +2,7 @@
 id: x00277
 title: "AUD-A05 — verify-branch-protection deja de devolver verde cuando no ha verificado nada"
 kind: fix
-status: ready
+status: done
 type: fix
 track: governance
 date: 2026-08-27
@@ -98,19 +98,19 @@ vive en la lib compartida, consumida también por `verify-develop-health`
 
 ### S1 — cliente compartido `github-protection.lib.ts`
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `tools/scripts/ci/lib/github-protection.lib.ts`, `tools/tests/ci/lib/github-protection.lib.spec.ts`
 - **Gate**: `bunx vitest run --project tools -- tools/tests/ci/lib/github-protection.lib.spec.ts`
 
 ### S2 — `verify-branch-protection.script.ts` consume el cliente y el modelo de tres estados
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `tools/scripts/ci/verify-branch-protection.script.ts`, `tools/tests/ci/verify-branch-protection.spec.ts`
 - **Gate**: `bunx vitest run --project tools -- tools/tests/ci/verify-branch-protection.spec.ts`
 
 ### S3 — workflow acepta `BRANCH_PROTECTION_TOKEN` opcional
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `.github/workflows/tier3.yml`
 - **Gate**: `bun tools/scripts/ci/verify-branch-protection.script.ts --dry-run`
 

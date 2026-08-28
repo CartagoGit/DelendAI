@@ -2,7 +2,7 @@
 id: r00036
 title: "AUD-B03 — ratchet descendente de presupuestos: subir un techo exige excepción documentada con caducidad"
 kind: refactor
-status: ready
+status: done
 type: refactor
 track: tokens
 date: 2026-08-27
