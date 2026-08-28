@@ -2,7 +2,6 @@ import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import {
@@ -10,37 +9,21 @@ import {
 	buildReportCompleteRegistration,
 	buildStatusRegistration,
 } from '@mcp-vertex/completion/public';
-
-interface IRegisteredTool {
-	readonly def: {
-		readonly inputSchema: {
-			safeParse: (value: unknown) => { success: boolean };
-		};
-	};
-	readonly handler: (args: unknown) => Promise<unknown>;
-}
+import { createFakeToolServer } from '@mcp-vertex/test-kit/public';
+import type {
+	IFakeLoggingMessage,
+	IFakeRegisteredTool,
+} from '@mcp-vertex/test-kit/public';
 
 const makeServer = () => {
-	const tools = new Map<string, IRegisteredTool>();
-	const messages: Array<{ level: string; logger: string; data: unknown }> =
-		[];
-	const server = {
-		registerTool: (
-			name: string,
-			def: IRegisteredTool['def'],
-			handler: IRegisteredTool['handler'],
-		) => {
-			tools.set(name, { def, handler });
+	const tools = new Map<string, IFakeRegisteredTool>();
+	const messages: IFakeLoggingMessage[] = [];
+	const server = createFakeToolServer({
+		onRegisterTool: (call) => tools.set(call.name, call),
+		onSendLoggingMessage: (message) => {
+			messages.push(message);
 		},
-		sendLoggingMessage: (m: {
-			level: string;
-			logger: string;
-			data: unknown;
-		}) => {
-			messages.push(m);
-			return Promise.resolve();
-		},
-	};
+	});
 	return { server, tools, messages };
 };
 
@@ -59,14 +42,19 @@ describe('completion tools', () => {
 
 	it('report_complete requires input (taskId, summary, reviewEvidence)', async () => {
 		const { server, tools } = makeServer();
-		await buildReportCompleteRegistration(options(dir)).register(
-			server as unknown as McpServer,
-		);
+		await buildReportCompleteRegistration(options(dir)).register(server);
 		const tool = tools.get('completion_report_complete');
 		expect(tool).toBeDefined();
-		expect(tool!.def.inputSchema.safeParse({}).success).toBe(false);
+		const inputSchema = (
+			tool!.config as {
+				inputSchema: {
+					safeParse: (v: unknown) => { success: boolean };
+				};
+			}
+		).inputSchema;
+		expect(inputSchema.safeParse({}).success).toBe(false);
 		expect(
-			tool!.def.inputSchema.safeParse({
+			inputSchema.safeParse({
 				taskId: 't1',
 				summary: 's',
 				reviewEvidence: 'r',
@@ -76,9 +64,7 @@ describe('completion tools', () => {
 
 	it('report_complete stores the record and pushes an agent-complete notification', async () => {
 		const { server, tools, messages } = makeServer();
-		await buildReportCompleteRegistration(options(dir)).register(
-			server as unknown as McpServer,
-		);
+		await buildReportCompleteRegistration(options(dir)).register(server);
 		const result = (await tools.get('completion_report_complete')!.handler({
 			taskId: 't1',
 			summary: 'shipped the feature',
@@ -96,9 +82,7 @@ describe('completion tools', () => {
 
 	it('report_complete redacts secrets before persisting', async () => {
 		const { server, tools } = makeServer();
-		await buildReportCompleteRegistration(options(dir)).register(
-			server as unknown as McpServer,
-		);
+		await buildReportCompleteRegistration(options(dir)).register(server);
 		const result = (await tools.get('completion_report_complete')!.handler({
 			taskId: 't1',
 			summary: 'used OPENAI_API_KEY=abcdef123456',
@@ -116,9 +100,9 @@ describe('completion tools', () => {
 		const report = buildReportCompleteRegistration(options(dir));
 		const status = buildStatusRegistration(options(dir));
 		const clear = buildClearRegistration(options(dir));
-		await report.register(server as unknown as McpServer);
-		await status.register(server as unknown as McpServer);
-		await clear.register(server as unknown as McpServer);
+		await report.register(server);
+		await status.register(server);
+		await clear.register(server);
 
 		const reportHandler = tools.get('completion_report_complete')!.handler;
 		const statusHandler = tools.get('completion_status')!.handler;

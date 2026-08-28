@@ -121,9 +121,18 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 	const container = resolve(workspaceRoot, 'plugins/container/src');
 	const client = resolve(workspaceRoot, 'packages/client/src');
 	const cli = resolve(workspaceRoot, 'packages/cli/src');
+	const testKit = resolve(workspaceRoot, 'packages/test-kit/src');
 	const shared = resolve(workspaceRoot, 'apps/shared/src');
 	return [
 		{ find: '@mcp-vertex/cli', replacement: resolve(cli, 'index.ts') },
+		{
+			find: '@mcp-vertex/test-kit/public',
+			replacement: resolve(testKit, 'public/index.ts'),
+		},
+		{
+			find: '@mcp-vertex/test-kit',
+			replacement: resolve(testKit, 'index.ts'),
+		},
 		{
 			find: '@mcp-vertex/context-for-change/public',
 			replacement: resolve(contextForChange, 'public/index.ts'),

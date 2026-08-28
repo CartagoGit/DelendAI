@@ -6,8 +6,20 @@
  * plus JSON-envelope reader. Four copies of the same twelve lines is the
  * duplication the SOLID gate exists to catch, and it made every spec pay
  * for a change to the tool-result envelope.
+ *
+ * `asServer` is built via `@mcp-vertex/test-kit`'s `createFakeToolServer`
+ * instead of the previous `server as never` at every `.register()` call
+ * site — `as never` was the same escape hatch as `as unknown as T`
+ * (assigning the bottom type satisfies any parameter), just spelled
+ * differently, and it was never audited as such. `createFakeToolServer`
+ * centralises that one unavoidable boundary cast (see its module doc for
+ * why `McpServer.registerTool`'s generic signature makes it unavoidable)
+ * in one place shared by every plugin, instead of 17 local casts here.
  */
+import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
+
+import { createFakeToolServer } from '@mcp-vertex/test-kit/public';
 
 // Not exported: no spec imports this alias by name (they call the handler
 // through `FakeServer#tools`), so keeping it module-private avoids adding
@@ -16,14 +28,19 @@ type TToolHandler = (args: unknown) => Promise<unknown>;
 
 /**
  * Captures `registerTool` calls so a spec can invoke a tool handler
- * directly, without standing up a transport.
+ * directly, without standing up a transport. Pass `.asServer` to a real
+ * `registration.register(...)` call — never the `FakeServer` instance
+ * itself, which is not `McpServer`-shaped.
  */
 export class FakeServer {
 	readonly tools: Record<string, { handler: TToolHandler }> = {};
-
-	registerTool(name: string, _meta: unknown, handler: TToolHandler): void {
-		this.tools[name] = { handler };
-	}
+	readonly asServer: McpServer = createFakeToolServer({
+		onRegisterTool: (call) => {
+			this.tools[call.name] = {
+				handler: call.handler as TToolHandler,
+			};
+		},
+	});
 }
 
 /**

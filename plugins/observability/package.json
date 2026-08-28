@@ -42,5 +42,8 @@
 	"peerDependencies": {
 		"@mcp-vertex/core": "^0.1.1",
 		"@mcp-vertex/web-fetch": "workspace:*"
+	},
+	"devDependencies": {
+		"@mcp-vertex/test-kit": "workspace:*"
 	}
 }
