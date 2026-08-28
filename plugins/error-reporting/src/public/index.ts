@@ -112,8 +112,28 @@ export type {
 } from '../lib/contracts/interfaces/report-store.interface';
 export type {
 	IReportStatusDestination,
+	IReportStatusHealth,
 	IReportStatusOutput,
 	IReportStatusRecentReport,
 	IReportStatusToolOptions,
 	IReportStatusTransmittedFieldCatalog,
 } from '../lib/contracts/interfaces/report-status.interface';
+export { healthOf } from '../lib/tools/report-status.tool';
+
+// --- AUD-G01: the error-reporting funnel + self-test surface ---
+export { createFunnelCounterStore } from '../lib/funnel-counter-store.service';
+export type {
+	FunnelStage,
+	IFunnelCounterEvent,
+	IFunnelCounters,
+	IFunnelCounterStore,
+} from '../lib/contracts/interfaces/funnel-counters.interface';
+export { FUNNEL_STAGES } from '../lib/contracts/constants/funnel-stages.constant';
+export { runErrorReportingSelfTest } from '../lib/self-test.service';
+export { SELF_TEST_CHECK_IDS } from '../lib/contracts/interfaces/self-test.interface';
+export type {
+	IRunErrorReportingSelfTestInput,
+	ISelfTestCheck,
+	ISelfTestResult,
+	SelfTestCheckId,
+} from '../lib/contracts/interfaces/self-test.interface';
