@@ -248,23 +248,36 @@ export async function createMcpProject(
 				capabilities: server.server.getClientCapabilities(),
 				explicitMode: config.toolSurfacePlan?.explicitMode,
 			});
-			const change = toolSurfaceRuntime.applySurfaceMode(decision.mode);
-			const client = server.server.getClientVersion();
-			// When the surface mode is already pinned via
-			// `config.surfaceMode` (or the `vertex` preset default), the
-			// explicit override leaves the surface unchanged. Skip the
-			// log line so the operator's stderr stays clean — the
-			// managed mode shows only bootstrap and router tools on the first
-			// `tools/list`,
-			// while native compatibility mode surfaces every loaded tool.
-			// Only report a real transition. The stable managed default must not
-			// add a redundant capability-negotiation line to stderr on every boot;
-			// the operator-facing Startup Report already records the effective mode.
-			if (change.changedToolNames.length > 0) {
-				process.stderr.write(
-					`[surface] Client "${client?.name ?? 'unknown'}" v${client?.version ?? 'unknown'}: ${decision.reason} (changed=${change.changedToolNames.length})\n`,
+			// `oninitialized` is a fire-and-forget SDK callback (it is not
+			// awaited by `client.connect()`), and switching TO `native`
+			// needs to materialize every still-lazy plugin before the
+			// surface's visibility is computed (AUD-C01) — that import +
+			// register() work is async, so this handler must be too. Wrap
+			// rather than change the callback's own signature: nothing
+			// downstream needs to await this handler; the e2e test that
+			// depends on the outcome already polls `tools/list` for exactly
+			// this reason.
+			void (async () => {
+				const change = await toolSurfaceRuntime.applySurfaceModeAsync(
+					decision.mode,
 				);
-			}
+				const client = server.server.getClientVersion();
+				// When the surface mode is already pinned via
+				// `config.surfaceMode` (or the `vertex` preset default), the
+				// explicit override leaves the surface unchanged. Skip the
+				// log line so the operator's stderr stays clean — the
+				// managed mode shows only bootstrap and router tools on the first
+				// `tools/list`,
+				// while native compatibility mode surfaces every loaded tool.
+				// Only report a real transition. The stable managed default must not
+				// add a redundant capability-negotiation line to stderr on every boot;
+				// the operator-facing Startup Report already records the effective mode.
+				if (change.changedToolNames.length > 0) {
+					process.stderr.write(
+						`[surface] Client "${client?.name ?? 'unknown'}" v${client?.version ?? 'unknown'}: ${decision.reason} (changed=${change.changedToolNames.length})\n`,
+					);
+				}
+			})();
 		};
 	}
 	let currentRegistration: IToolRegistration | undefined;
