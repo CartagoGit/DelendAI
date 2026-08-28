@@ -134,6 +134,19 @@ export interface IAssemblePluginsResult {
 	readonly disposePlugins: () => Promise<
 		readonly { readonly pluginName: string; readonly error: unknown }[]
 	>;
+	/**
+	 * Dispose exactly one plugin's runtime, by plugin id, without
+	 * touching any other plugin — the per-plugin counterpart
+	 * `disposePlugins` above lacks (x00286 S4). Present only for the
+	 * managed-lazy assembly (`moduleLoading: 'lazy'`): eager plugins
+	 * never retain a lazy activator, so `ToolSurfaceRuntime` can never
+	 * mark one evictable in the first place, and there is nothing for a
+	 * per-plugin disposer to wire into. Delegates to
+	 * `IManagedLazyRuntime.disposePlugin`, which is itself idempotent
+	 * and shares its "already disposed" bookkeeping with `disposePlugins`
+	 * so an evicted-then-shutdown plugin is never disposed twice.
+	 */
+	readonly disposePlugin?: (pluginId: string) => Promise<void>;
 }
 
 interface IOverviewPluginEntry {
@@ -476,6 +489,7 @@ const tryAssembleManagedLazy = (input: {
 				error: failure.error,
 			}));
 		}),
+		disposePlugin: (pluginId) => lazyRuntime.disposePlugin(pluginId),
 	};
 };
 
