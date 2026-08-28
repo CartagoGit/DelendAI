@@ -13,13 +13,9 @@ import { analyzeProject } from './analyze-project';
 import { recommendServerPlan } from './recommend-plan';
 import { resolveAdoptionStrategy } from './adoption-strategy';
 import type { IPatternOverrides } from './pattern-catalog-overrides';
-import {
-	ANALYZE_INPUT_SCHEMA,
-	PROJECT_ANALYSIS_SCHEMA,
-	SERVER_PLAN_SCHEMA,
-} from './schemas';
+import { ANALYZE_INPUT_SCHEMA } from './schemas';
 import { toolJson } from '../shared/tool-response';
-import { ADOPTION_STRATEGY_SCHEMA } from '../contracts/constants/adoption-strategy-schema.constant';
+import { compactOutputSchema } from '../surface/compact-output-schema';
 
 export interface IAnalyzeToolDeps {
 	readonly namespacePrefix: string;
@@ -43,29 +39,11 @@ export const buildAnalyzeToolRegistration = (
 			server.registerTool(
 				`${prefix}_analyze_project`,
 				{
-					outputSchema: z.object({
-						analysis: PROJECT_ANALYSIS_SCHEMA.optional(),
-						plan: SERVER_PLAN_SCHEMA.optional(),
-						adoptionStrategy: ADOPTION_STRATEGY_SCHEMA,
-						summary: z
-							.object({
-								projectType:
-									PROJECT_ANALYSIS_SCHEMA.shape.projectType,
-								language:
-									PROJECT_ANALYSIS_SCHEMA.shape.language,
-								packageManager:
-									PROJECT_ANALYSIS_SCHEMA.shape
-										.packageManager,
-								framework: z.string().optional(),
-								hasMcpProject: z.boolean(),
-								serverName: z.string(),
-								namespacePrefix: z.string(),
-								targetDir: z.string(),
-								pluginCount: z.number(),
-								toolCount: z.number(),
-							})
-							.optional(),
-					}),
+					// v00129 S1 (AUD-B01): the full analysis+plan schema cost
+					// ~4.2 KB per tools/list entry for a shape the model
+					// needs only after calling (and only when full:true is
+					// explicitly requested). See compact-output-schema.ts.
+					outputSchema: compactOutputSchema(),
 					description:
 						'Read-only. Inspect this project and recommend an MCP server plan. Returns a bounded summary by DEFAULT; pass full:true for the complete analysis and plan (project type, tools, plugins, validation commands and a ready-to-paste mcp.json). Call this first; it never writes.',
 					inputSchema: ANALYZE_INPUT_SCHEMA,

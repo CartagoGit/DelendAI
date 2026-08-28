@@ -15,7 +15,7 @@
  * `completion <shell>` prints a shell-completion script derived
  * dynamically from `registerAllCommands()` so it can never drift.
  */
-import type { McpVertexToolOutputs } from '@mcp-vertex/core/public';
+import type { IOverview } from '@mcp-vertex/client/public';
 
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -45,18 +45,29 @@ import { data, positionalArg, request, usage } from './group-helpers';
 
 type SectionStatus = DoctorSectionStatus;
 
-type IOverviewish = McpVertexToolOutputs['mcp-vertex_overview'];
+type IOverviewish = IOverview;
 
 /**
  * a00060: `overview.tools` is a union (`Array<...> | Record<string,
- * string[]>` — compact mode groups by plugin) per the GENERATED SDK
- * type. The previous hand-rolled `IOverviewish.tools?: readonly
- * unknown[]` only ever matched the array shape, so `overview.tools
- * ?.length` silently read `undefined` (→ 0) against the Record shape
- * `doctor` actually receives — `mcpv doctor` always reported "0
- * tool(s) registered" / a false `warn`, regardless of how many tools
- * were really loaded. This is the same drift class x00105/f00118 fixed
- * elsewhere: use the generated type, don't hand-roll the shape.
+ * string[]>` — compact mode groups by plugin). The previous hand-rolled
+ * `IOverviewish.tools?: readonly unknown[]` only ever matched the array
+ * shape, so `overview.tools?.length` silently read `undefined` (→ 0)
+ * against the Record shape `doctor` actually receives — `mcpv doctor`
+ * always reported "0 tool(s) registered" / a false `warn`, regardless
+ * of how many tools were really loaded. This is the same drift class
+ * x00105/f00118 fixed elsewhere: use ONE shared type, don't hand-roll
+ * the shape per call site.
+ *
+ * v00129 S1 (AUD-B01): that one shared type used to be the generated
+ * `McpVertexToolOutputs['mcp-vertex_overview']` (derived straight from
+ * the wire-declared `outputSchema`). `overview`'s `outputSchema` is now
+ * a deliberately permissive `compactOutputSchema()` to save tokens —
+ * see `packages/core/src/lib/surface/compact-output-schema.ts` — so it
+ * no longer carries this shape. `@mcp-vertex/client`'s `IOverview` is
+ * the new single source of truth: a hand-kept interface next to the
+ * client code that actually calls `overview` and depends on its real
+ * shape, kept in sync with `overview-tool.ts`'s handler. This module
+ * imports that one, rather than re-deriving its own.
  */
 const countTools = (tools: IOverviewish['tools'] | undefined): number => {
 	if (tools === undefined) return 0;

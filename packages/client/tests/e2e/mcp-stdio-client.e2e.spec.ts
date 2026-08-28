@@ -5,10 +5,7 @@ import { fileURLToPath } from 'node:url';
 
 import { afterEach, describe, expect, it } from 'vitest';
 
-import {
-	McpStdioClient,
-	type McpVertexToolOutputs,
-} from '../../src/public/index';
+import { McpStdioClient, type IOverview } from '../../src/public/index';
 
 describe('e2e: McpStdioClient over a real mcp-vertex stdio server', async () => {
 	const workspaces: string[] = [];
@@ -40,10 +37,10 @@ describe('e2e: McpStdioClient over a real mcp-vertex stdio server', async () => 
 				'mcp-vertex_overview',
 			);
 
-			const overview = await client.request<
+			const overview = await client.request<{ compact: true }, IOverview>(
+				'mcp-vertex_overview',
 				{ compact: true },
-				McpVertexToolOutputs['mcp-vertex_overview']
-			>('mcp-vertex_overview', { compact: true });
+			);
 			expect(overview.server.name).toBe('mcp-vertex');
 			// compact `tools` is grouped by plugin ({ core: [...], … }); assert
 			// the groups exist and carry stems (the flat count comes via

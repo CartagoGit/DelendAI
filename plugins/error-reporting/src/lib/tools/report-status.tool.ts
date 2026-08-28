@@ -1,5 +1,6 @@
 import {
 	toolJsonBounded,
+	compactOutputSchema,
 	type IToolRegistration,
 } from '@mcp-vertex/core/public';
 import z from 'zod';
@@ -110,7 +111,12 @@ const FunnelSchema = z
 	})
 	.strict();
 
-const ReportStatusOutputSchema = z
+// Internal only — used to validate the handler's own output before
+// returning it (`.parse()` below). NOT the declared wire `outputSchema`;
+// v00129 S1 (AUD-B01) replaces that with `compactOutputSchema()` so
+// `tools/list` doesn't pay ~3.9 KB to describe a shape the model only
+// needs after calling. The real response payload is unchanged.
+const ReportStatusInternalSchema = z
 	.object({
 		enabled: z.boolean(),
 		labels: z.array(z.string()),
@@ -292,7 +298,7 @@ export const buildReportStatusRegistration = (
 				description:
 					'Read-only transparency report for automatic mcp-vertex error reporting: enablement, fixed allowlisted destination, exact transmitted fields, privacy exclusions, and recent de-duplication records with classification.',
 				inputSchema: ReportStatusInputSchema,
-				outputSchema: ReportStatusOutputSchema,
+				outputSchema: compactOutputSchema(),
 			},
 			async () => {
 				const nowMs = Date.now();
@@ -309,7 +315,7 @@ export const buildReportStatusRegistration = (
 					submissionFailed: 0,
 				};
 				return toolJsonBounded(
-					ReportStatusOutputSchema.parse(
+					ReportStatusInternalSchema.parse(
 						buildOutput({
 							recentReports: records
 								.slice()

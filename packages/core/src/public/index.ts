@@ -260,6 +260,7 @@ export {
 	type IBootstrapMeasurement,
 	type IMcpToolWireDefinition,
 } from '../lib/surface/bootstrap';
+export { compactOutputSchema } from '../lib/surface/compact-output-schema';
 export {
 	VALIDATE_EVIDENCE_SCHEMA,
 	type IValidateEvidenceInput,
