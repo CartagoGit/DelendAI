@@ -256,7 +256,9 @@ export type {
 export { CHECKPOINT_ADVISORY_SEVERITIES } from '../lib/contracts/interfaces/checkpoint-advisory.interface';
 export {
 	measureBootstrapBytes,
+	measureToolWireBytes,
 	type IBootstrapMeasurement,
+	type IMcpToolWireDefinition,
 } from '../lib/surface/bootstrap';
 export {
 	VALIDATE_EVIDENCE_SCHEMA,
@@ -747,6 +749,8 @@ export {
 } from '../lib/contracts/constants/response-byte-budget.constant';
 export { TOKEN_BUDGETS } from '../lib/contracts/constants/token-budgets.constant';
 export type {
+	IGovernedToolsListBudget,
+	IPresetTokenBudgetProfile,
 	ITokenBudgetCeiling,
 	ITokenBudgetRegistry,
 	ITokenBudgetSurface,

@@ -75,6 +75,8 @@ contains:
             rationale: "measureBootstrapBytes mide el mismo objeto que viaja en tools/list. AUD-B04." }
         - { id: r00036, kind: refactor, required: true, priority: P1, track: tokens,
             rationale: "Ratchet descendente de presupuestos: subir un techo exige excepcion documentada con caducidad. AUD-B03." }
+        - { id: x00296, kind: fix, required: true, priority: P1, track: tokens,
+            rationale: "Las filas fixture-gated del dashboard no declaran su superficie: el cliente hereda capabilities {} y tras x00285 resuelve a native, asi que overview se compara contra un techo calibrado para managed. AUD-B06." }
         - { id: f00272, kind: feat, required: true, priority: P2, track: tokens,
             rationale: "Metricas de superficie util: activation precision/recall/churn, unused activation tokens, surface utilization. AUD-B05." }
         # ─── Track C — superficie adaptativa ───────────────────────────────────

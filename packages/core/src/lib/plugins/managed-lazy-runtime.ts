@@ -35,6 +35,19 @@ export interface IManagedLazyRuntime {
 		readonly activatedToolIds: readonly string[];
 	};
 	/**
+	 * Dispose one plugin's retained `dispose`, if it registered one and
+	 * has not already been disposed. Idempotent, and shares its
+	 * bookkeeping with `disposeAll` — a plugin evicted mid-session
+	 * (x00286 S4) is never disposed a second time at final process
+	 * shutdown. A plugin that never activated, or whose `register()`
+	 * returned no `dispose`, is a silent no-op: there is nothing to
+	 * free. Errors propagate uncaught; the one production caller
+	 * (`ToolSurfaceRuntime`'s injected `pluginDisposer`, wired through
+	 * `setPluginDisposer`) already catches and aggregates per-plugin
+	 * failures without blocking the relazy.
+	 */
+	disposePlugin(pluginId: string): Promise<void>;
+	/**
 	 * Dispose every plugin runtime activated so far, in reverse
 	 * activation order (AUD-E02 / r00039). Idempotent: a plugin whose
 	 * `dispose` already ran (or that never retained one) is skipped.
@@ -292,6 +305,18 @@ export const createManagedLazyRuntime = (
 				);
 			}
 			return binding;
+		},
+		async disposePlugin(pluginId) {
+			if (disposedPluginIds.has(pluginId)) return;
+			const entry = disposersInActivationOrder.find(
+				(candidate) => candidate.pluginId === pluginId,
+			);
+			if (entry === undefined) return;
+			// Mark disposed before awaiting so a concurrent call (or a later
+			// `disposeAll` at process shutdown) can never race this plugin's
+			// `dispose` a second time.
+			disposedPluginIds.add(pluginId);
+			await entry.dispose();
 		},
 		async disposeAll() {
 			const errors: IManagedLazyDisposeAggregateError[] = [];

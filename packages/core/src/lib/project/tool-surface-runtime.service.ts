@@ -26,6 +26,7 @@ import {
 	withVisibilityIntent,
 } from './tool-surface-runtime.helper';
 import { TOOL_DETAILS_PREFIX } from '../contracts/constants/tool-details-prefix.constant';
+import { measureToolWireBytes } from '../surface/bootstrap';
 import { enforceDryRunReturnContract } from '../dry-run/enforce';
 import { runWithDryRunScope } from '../dry-run/dry-run-scope.helper';
 
@@ -372,31 +373,34 @@ class ToolSurfaceRuntime implements IToolSurfaceRuntime {
 			}));
 	}
 
+	/**
+	 * Per-tool wire bytes for every record visible in `mode`, keyed by
+	 * registration id. Delegates to the shared `measureToolWireBytes`
+	 * (AUD-B04 / x00284) with the record's RAW `description` — not the
+	 * `compactDescription`-truncated summary this used before, which no
+	 * real `tools/list` response ever sends (that compaction only
+	 * applies to the `overview`/`tool_search` display projection, never
+	 * to what a live `server.registerTool()` call actually registers).
+	 */
 	measureSchemaBytes(
 		mode: IToolSurfacePlan['mode'],
 	): Readonly<Record<string, number>> {
 		const result: Record<string, number> = {};
 		for (const record of this.recordsByName.values()) {
 			if (!this.shouldExpose(record.registrationId, mode)) continue;
-			const inputSchema = toJsonSchema(record.inputSchema) ?? {
-				type: 'object',
-				properties: {},
-			};
-			const definition: Record<string, unknown> = {
+			result[record.registrationId] = measureToolWireBytes({
 				name: record.name,
-				description: compactDescription(
-					record.description,
-					record.summary,
-				),
-				inputSchema,
-			};
-			const outputSchema = toJsonSchema(record.outputSchema);
-			if (outputSchema !== undefined)
-				definition.outputSchema = outputSchema;
-			result[record.registrationId] = Buffer.byteLength(
-				JSON.stringify(definition),
-				'utf8',
-			);
+				description: record.description,
+				inputSchema: toJsonSchema(record.inputSchema),
+				outputSchema: toJsonSchema(record.outputSchema),
+				// Every tool this codebase registers goes through the
+				// standard `server.registerTool(name, config, handler)`
+				// overload, which the MCP SDK hardcodes to
+				// `execution: {taskSupport: 'forbidden'}` (never left
+				// `undefined`) — a real, constant contributor to wire
+				// bytes that a projected measurement must include too.
+				execution: { taskSupport: 'forbidden' },
+			});
 		}
 		return result;
 	}

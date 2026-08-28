@@ -214,6 +214,15 @@ export interface IHostRegistrations {
 				}[]
 		  >)
 		| undefined;
+	/**
+	 * Dispose exactly one plugin's runtime, by plugin id (x00286 S4).
+	 * `createMcpProject` wires this into
+	 * `toolSurfaceRuntime.setPluginDisposer` so `evictIdlePlugins`'s
+	 * eviction has a real per-plugin dispose to call instead of only
+	 * relazying the tool. Present only for the managed-lazy assembly —
+	 * eager plugins are never evictable, so there is nothing to wire.
+	 */
+	readonly disposePlugin?: (pluginId: string) => Promise<void>;
 }
 
 /**

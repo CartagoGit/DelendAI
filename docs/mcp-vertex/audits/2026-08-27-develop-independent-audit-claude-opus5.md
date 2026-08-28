@@ -1468,6 +1468,86 @@ dashboard generado con drift check.
 
 ---
 
+### AUD-B06 — Los techos de `overview` miden una superficie y se comparan contra otra
+
+- **Clasificación:** BUG CONFIRMADO · **Severidad:** MEDIA · **Área:** tokens / medición
+- **Propuesta:** `x00296`
+- **Descubierto por el propio trabajo de este plan**, no por la lectura inicial.
+
+**Comportamiento actual.** Las filas *fixture-gated* del dashboard
+(`overview full`, `overview compact`, …) se miden conectando un cliente MCP
+sintético:
+```ts
+// tools/scripts/report/token-budget-report-lib.ts:294-296
+const client = new Client(
+    options.clientInfo ?? DYNAMIC_SURFACE_CLIENT_INFO,
+    { capabilities: options.capabilities ?? {} },   // ← sin capabilities
+);
+```
+Ese cliente **no declara `tools.listChanged`**. Antes de `x00285` daba igual:
+`decideSurfaceModeFromCapabilities` devolvía `'managed'` para todo el mundo
+(ése era el bug `AUD-C01`), así que la fila medía el bootstrap de 6 tools.
+Tras arreglarlo, el mismo cliente resuelve correctamente a `'native'` y la fila
+mide **la superficie completa**.
+
+**Evidencia (bisección sobre esta misma rama).** Regenerando el dashboard en
+cada commit:
+
+| Commit | `overview full` |
+| --- | ---: |
+| `2cf17373` (snapshot auditado) | 1.466 B — `within hard` |
+| `e94d5639` | 1.466 B |
+| `58be8f3a` | 1.466 B |
+| `398000a7` | 1.466 B |
+| `ab4ec6ff` (entra `x00285`) | **11.484 B — `over hard`** |
+
+El techo (`hard: 11_100`, `warning: 11_000`) no se ha tocado. Lo que cambió es
+**qué objeto se mide**.
+
+**Por qué es un problema.** El techo se calibró contra la superficie
+*gestionada* y ahora se compara contra la *nativa*: son magnitudes distintas y
+la comparación no significa nada. Un techo que compara peras con manzanas no
+puede detectar una regresión real ni absolver una falsa, y hoy reporta
+`over hard` por un motivo que no es un crecimiento del payload.
+
+Es, además, un caso instructivo: **arreglar un bug hizo visible que una métrica
+nunca había medido lo que su nombre decía**. Exactamente lo mismo que `AUD-B04`
+encontró en `measureBootstrapBytes`, y por la misma causa — la medición no
+declaraba explícitamente su superficie.
+
+**Impacto.** Dos filas del artefacto de tokens no son interpretables hasta
+arreglarlo.
+
+**Reproducción.** La tabla de la bisección; `git checkout <sha> && bun
+tools/scripts/report/token-budget-dashboard.script.ts`.
+
+**Solución mínima.** Que el cliente del fixture declare explícitamente sus
+capabilities en vez de heredar `{}`, de modo que la fila mida
+deliberadamente una superficie conocida.
+
+**Solución arquitectónica ideal.** Que toda fila del dashboard **declare su
+superficie** igual que ya hacen las tablas de presets, que tienen columnas
+`Measurement Surface` y `Runtime Surface` separadas precisamente por esto.
+`overview` debe aparecer dos veces —gestionada y nativa— cada una con su propio
+techo. Una métrica cuya superficie es implícita acabará midiendo otra cosa en
+cuanto cambie un default; eso es lo que acaba de pasar.
+
+**Prohibido:** subir el techo para que pase. `r00036` ya lo impide sin una
+excepción documentada y con caducidad.
+
+**Tests a añadir.**
+- Spec: la fila declara su superficie y el techo aplicado corresponde a ésa.
+- Spec de regresión: cambiar el default de `decideSurfaceModeFromCapabilities`
+  no altera la fila gestionada.
+
+**Criterios de aceptación.** Cada fila fixture-gated nombra su superficie; las
+dos filas de `overview` (gestionada y nativa) tienen techos propios y
+justificados; ninguna se compara contra el techo de la otra.
+
+**Dependencias.** `x00285` (ya en la rama), `r00036` (ratchet, ya en la rama).
+
+---
+
 ## 7. Track C — superficie adaptativa
 
 ### AUD-C01 — `decideSurfaceModeFromCapabilities` ignora los dos parámetros que le dan nombre

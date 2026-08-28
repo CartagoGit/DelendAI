@@ -107,15 +107,15 @@ ni dispara una segunda disposición concurrente del mismo plugin.
 
 ## Non-goals
 
-- No se conecta un `dispose()` real de proceso/módulo desde
-  `create-mcp-project.ts` o `managed-lazy-runtime.ts` en esta propuesta —
-  ambos archivos están fuera del territorio de esta slice de `q00011` S5.
-  El mecanismo (`setPluginDisposer`, relazy transparente, protección de
-  trabajo en vuelo, políticas `null`) queda completo y probado en el lado
-  del runtime de superficie; cablear un disposer real de
-  `managed-lazy-runtime.ts` (que hoy sólo expone `disposeAll()`, no un
-  dispose por-plugin) es una extensión de una línea de superficie de API
-  pequeña mencionada aquí como trabajo de seguimiento, no ejecutada.
+- ~~No se conecta un `dispose()` real de proceso/módulo desde
+  `create-mcp-project.ts` o `managed-lazy-runtime.ts` en esta
+  propuesta~~ — **superado por S4** (territorio reasignado en una
+  sesión posterior de `q00011`): `managed-lazy-runtime.ts` gana
+  `disposePlugin(pluginId)` y `create-mcp-project.ts`/
+  `assemble-plugins.ts` lo conectan a `setPluginDisposer`. El mecanismo
+  descrito abajo (relazy transparente, protección de trabajo en vuelo,
+  políticas `null`) seguía siendo correcto tal cual estaba escrito —
+  sólo faltaba el cableado, ahora hecho.
 - No se toca la semántica `visible` / `hidden` / `deactivated`: la eviction
   nunca cambia `access` — un plugin evictado que estaba `visible` sigue
   `visible` en `tools/list`; sólo su despacho interno vuelve a ser
@@ -222,26 +222,35 @@ invokeTool(name, args, extra)
 - **Files**: [`packages/core/tests/src/lib/project/tool-surface-runtime-eviction.property.spec.ts`]
 - **Gate**: `bunx vitest run --project core -- packages/core/tests/src/lib/project/tool-surface-runtime-eviction.property.spec.ts`
 
-### S4 — cablear un disposer real por plugin (PENDIENTE)
+### S4 — cablear un disposer real por plugin
 
-- **Status**: pending
-- **Por qué queda abierto**: `setPluginDisposer` es el punto de extensión
-  completo y probado, pero **ningún llamante de producción lo inyecta** —
-  `grep -rn "setPluginDisposer" packages plugins --include='*.ts'` sólo
-  devuelve la interfaz, la implementación y los specs. En la ruta real la
-  evicción hoy acota el conjunto caliente, relaza las tools y emite su
-  evento, pero **no llama al `dispose()` del plugin**: los timers,
-  listeners y subprocesos de un plugin evictado siguen vivos. La mitad
-  del hallazgo `AUD-C02` que decía "no descarga, no libera" sigue en pie.
-- **Qué falta**: `managed-lazy-runtime.ts` sólo expone `disposeAll()` de
-  todo el runtime, no un dispose por plugin. Hay que añadir esa capacidad
-  y conectarla desde `assemble-plugins.ts` / `create-mcp-project.ts` a
-  `setPluginDisposer`. `r00038` ya retiene el `dispose` de cada
-  activación en orden, así que el dato existe; falta exponerlo por id.
-- **Files**: [`packages/core/src/lib/plugins/managed-lazy-runtime.ts`, `packages/core/src/lib/cli/assemble-plugins.ts`, `packages/core/src/lib/project/create-mcp-project.ts`]
-- **Gate**: `bunx vitest run --project core` con un spec que arranque el
-  proyecto real, fuerce una evicción y compruebe que el `dispose()` del
-  plugin se invocó exactamente una vez.
+- **Status**: done
+- **Qué se hizo**: `IManagedLazyRuntime` gana `disposePlugin(pluginId)` —
+  idempotente, comparte el `Set` `disposedPluginIds` con `disposeAll` (un
+  plugin evictado en caliente nunca se vuelve a disposer en el shutdown
+  final). `assemble-plugins.ts` expone `disposePlugin` en
+  `IAssemblePluginsResult` sólo para la asamblea managed-lazy (los
+  plugins eager nunca son evictables — no tienen `bindLazyTool`, así que
+  `isPluginEvictable` los excluye siempre); `assemble.ts` lo enruta a
+  `IMcpVertexHostConfig.disposePlugin`; `create-mcp-project.ts` lo
+  conecta a `toolSurfaceRuntime.setPluginDisposer` justo al lado del
+  `setLazyPluginLoader` ya existente.
+- **Evidencia del "antes" (verificada, no asumida)**: con el cableado de
+  `create-mcp-project.ts` revertido, el nuevo test
+  `plugin-disposer-wiring.e2e.spec.ts` falla exactamente como predice el
+  hallazgo — `expected "vi.fn()" to be called 1 times, but got 0 times`.
+  Con el cableado puesto, el mismo test pasa.
+- **Test decisivo**: `plugin-disposer-wiring.e2e.spec.ts` arranca el
+  proyecto real (`assembleCliConfig` + `createMcpProject`), fuerza una
+  eviction LRU real (`maxWarmPlugins: 1`, dos plugins tocados vía el
+  router `mcp-vertex_vertex`), y comprueba que el `dispose()` del propio
+  plugin evictado se invocó exactamente una vez — y que invocar su tool
+  después sigue funcionando (relazy transparente) sin una segunda
+  disposición. No es un fake inyectado directamente en
+  `setPluginDisposer` (eso ya lo cubría S2) — pasa por el cableado de
+  producción completo.
+- **Files**: [`packages/core/src/lib/plugins/managed-lazy-runtime.ts`, `packages/core/src/lib/cli/assemble-plugins.ts`, `packages/core/src/lib/cli/assemble.ts`, `packages/core/src/lib/contracts/interfaces/host-config.interface.ts`, `packages/core/src/lib/project/create-mcp-project.ts`, `packages/core/tests/src/lib/e2e/plugin-disposer-wiring.e2e.spec.ts`]
+- **Gate**: `bunx vitest run --project core -- packages/core/tests/src/lib/e2e/plugin-disposer-wiring.e2e.spec.ts` — pasa.
 
 ## Dependency graph
 
