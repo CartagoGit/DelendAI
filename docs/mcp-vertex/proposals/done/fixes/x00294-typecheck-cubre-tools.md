@@ -2,7 +2,7 @@
 id: x00294
 title: "AUD-A12 — tools/ entra en bun run typecheck, con baseline-ratchet"
 kind: fix
-status: ready
+status: done
 type: fix
 track: ci
 date: 2026-08-27

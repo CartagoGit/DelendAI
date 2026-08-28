@@ -2,7 +2,7 @@
 id: x00284
 title: "measureBootstrapBytes mide una forma distinta de la que se envía — una sola función de bytes de wire"
 kind: fix
-status: ready
+status: done
 type: fix
 track: tokens
 date: 2026-08-27

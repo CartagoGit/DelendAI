@@ -2,7 +2,7 @@
 id: x00279
 title: "AUD-A07 — BRANCH_PROTECTION.defaults consumido de verdad por los verificadores"
 kind: fix
-status: ready
+status: done
 type: fix
 track: governance
 date: 2026-08-27
@@ -104,13 +104,13 @@ existente; ningún cambio de firma pública fuera de estas dos funciones.
 
 ### S1 — `verify-branch-protection.script.ts` consume `defaults`
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `tools/scripts/ci/verify-branch-protection.script.ts`, `tools/tests/ci/verify-branch-protection.spec.ts`
 - **Gate**: `bunx vitest run --project tools -- tools/tests/ci/verify-branch-protection.spec.ts`
 
 ### S2 — `verify-develop-health.script.ts` consume `defaults`
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `tools/scripts/ci/verify-develop-health.script.ts`, `tools/tests/ci/verify-develop-health.spec.ts`
 - **Gate**: `bunx vitest run --project tools -- tools/tests/ci/verify-develop-health.spec.ts`
 

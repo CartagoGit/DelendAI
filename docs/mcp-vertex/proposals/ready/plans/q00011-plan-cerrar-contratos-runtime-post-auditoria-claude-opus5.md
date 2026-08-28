@@ -242,7 +242,7 @@ detalle vive en la hija; aquí el orden y la razón del orden.
 
 ### S1 — Gobernanza: devolver la señal a las puertas ciegas (P0)
 
-- **Status**: pending
+- **Status**: done
 - **Files**: [`tools/scripts/ci/verify-branch-protection.script.ts`, `tools/scripts/ci/verify-develop-health.script.ts`, `tools/tests/ci/verify-branch-protection.spec.ts`, `tools/tests/ci/verify-develop-health.spec.ts`]
 - **Gate**: `bun run test -- tools/tests/ci && bun tools/scripts/ci/verify-branch-protection.script.ts --dry-run`
 
@@ -255,7 +255,7 @@ es el único check rojo que queda en `develop`).
 
 ### S2 — Ciclo de vida: la cadena completa o nada (P0)
 
-- **Status**: pending
+- **Status**: done
 - **Files**: [`packages/core/src/lib/plugins/managed-lazy-runtime.ts`, `packages/core/src/lib/plugins/load-plugins.ts`, `packages/core/src/lib/plugins/load-plugins-runtime.helper.ts`, `packages/core/src/lib/project/create-mcp-project.ts`, `packages/cli/src/index.ts`, `plugins/external-mcps/src/index.ts`]
 - **Gate**: `bun run test -- packages/core/tests/src/lib/plugins packages/core/tests/src/lib/project plugins/external-mcps`
 
@@ -293,7 +293,7 @@ progreso), luego `v00129` (envelope compartido en core), `v00130`
 
 ### S5 — Superficie adaptativa (P1)
 
-- **Status**: pending
+- **Status**: done
 - **Files**: [`packages/core/src/lib/surface/decide-mode.ts`, `packages/core/src/lib/project/tool-surface-runtime.service.ts`]
 - **Gate**: `bun run test -- packages/core/tests/src/lib/surface packages/core/tests/src/lib/project`
 

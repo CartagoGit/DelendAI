@@ -2,7 +2,7 @@
 id: x00278
 title: "AUD-A06 — renombrar allow_deletion a allow_deletions en los dos verificadores"
 kind: fix
-status: ready
+status: done
 type: fix
 track: governance
 date: 2026-08-27
@@ -77,13 +77,13 @@ comparación (`diffBranch`, `inspectBranch`) y en el campo de salida
 
 ### S1 — renombrar el campo en `verify-branch-protection.script.ts`
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `tools/scripts/ci/verify-branch-protection.script.ts`, `tools/tests/ci/verify-branch-protection.spec.ts`
 - **Gate**: `bunx vitest run --project tools -- tools/tests/ci/verify-branch-protection.spec.ts`
 
 ### S2 — renombrar el campo en `verify-develop-health.script.ts`
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `tools/scripts/ci/verify-develop-health.script.ts`, `tools/tests/ci/verify-develop-health.spec.ts`
 - **Gate**: `bunx vitest run --project tools -- tools/tests/ci/verify-develop-health.spec.ts`
 

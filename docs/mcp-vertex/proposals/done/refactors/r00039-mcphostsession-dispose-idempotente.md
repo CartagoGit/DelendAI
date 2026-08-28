@@ -2,7 +2,7 @@
 id: r00039
 title: "McpHostSession.dispose(): teardown idempotente en orden inverso de registro"
 kind: refactor
-status: ready
+status: done
 type: refactor
 track: lifecycle
 date: 2026-08-27

@@ -2,7 +2,7 @@
 id: x00283
 title: "AUD-B02 — el dashboard deja de reportar 'over hard (0B)' por un `?? 0`; techo marginal obligatorio en los 6 presets gobernados"
 kind: fix
-status: ready
+status: done
 type: fix
 track: tokens
 date: 2026-08-27
