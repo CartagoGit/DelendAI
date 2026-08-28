@@ -182,6 +182,7 @@ jobs:
           bun run lint:cache
           bun run lint:proposal-id-drift
           bun run lint:proposal-cited-commits
+          bun run lint:single-frontmatter
           bun run lint:reap-legacy-proposals
           bun run lint:closed-frozen-guard
           bun run lint:user-markers
