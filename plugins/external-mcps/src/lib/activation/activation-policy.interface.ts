@@ -36,13 +36,13 @@ export interface IActivationPolicyInput {
 }
 
 /** Stable, machine-actionable denial codes (mirrors `CallOutputSchema`). */
-export type ActivationDenialCode = 'llm-activation-disabled' | 'ack-required';
+export type IActivationDenialCode = 'llm-activation-disabled' | 'ack-required';
 
 /** The policy's verdict for one invocation. */
 export interface IActivationDecision {
 	readonly allowed: boolean;
 	/** Present only when `allowed` is `false`. */
-	readonly code?: ActivationDenialCode;
+	readonly code?: IActivationDenialCode;
 	/** Present only when `allowed` is `false` — one actionable line. */
 	readonly hint?: string;
 }

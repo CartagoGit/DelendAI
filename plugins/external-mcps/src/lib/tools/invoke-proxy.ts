@@ -36,10 +36,10 @@ import type { ExternalServerRegistry } from '../subprocess/server-registry';
  * durable pending-acks ledger can back it directly (fresh read per call —
  * an ack recorded mid-session is honoured without a restart).
  */
-export type HasRecordedAck = (serverId: string) => boolean | Promise<boolean>;
+export type IHasRecordedAck = (serverId: string) => boolean | Promise<boolean>;
 
 /** Fail-closed default when no ledger is composed: no acks are recorded. */
-export const noAcksRecorded: HasRecordedAck = () => false;
+export const noAcksRecorded: IHasRecordedAck = () => false;
 
 export interface IInvokeProxyOptions {
 	readonly namespacePrefix: string;
@@ -52,7 +52,7 @@ export interface IInvokeProxyOptions {
 	/** The resolved autonomy knob (`true` by default — gate decision 5). */
 	readonly requireHumanAckWhenLlmDecides: boolean;
 	/** Injectable pending-ack predicate. Default: {@link noAcksRecorded}. */
-	readonly hasRecordedAck?: HasRecordedAck;
+	readonly hasRecordedAck?: IHasRecordedAck;
 }
 
 const InputSchema = z.object({

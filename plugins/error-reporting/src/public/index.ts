@@ -123,7 +123,7 @@ export { healthOf } from '../lib/tools/report-status.tool';
 // --- AUD-G01: the error-reporting funnel + self-test surface ---
 export { createFunnelCounterStore } from '../lib/funnel-counter-store.service';
 export type {
-	FunnelStage,
+	IFunnelStage,
 	IFunnelCounterEvent,
 	IFunnelCounters,
 	IFunnelCounterStore,
@@ -135,5 +135,5 @@ export type {
 	IRunErrorReportingSelfTestInput,
 	ISelfTestCheck,
 	ISelfTestResult,
-	SelfTestCheckId,
+	ISelfTestCheckId,
 } from '../lib/contracts/interfaces/self-test.interface';
