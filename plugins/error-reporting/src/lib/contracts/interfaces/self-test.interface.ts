@@ -15,10 +15,10 @@ export const SELF_TEST_CHECK_IDS = [
 	'issue-create-permission-available',
 ] as const;
 
-export type SelfTestCheckId = (typeof SELF_TEST_CHECK_IDS)[number];
+export type ISelfTestCheckId = (typeof SELF_TEST_CHECK_IDS)[number];
 
 export interface ISelfTestCheck {
-	readonly id: SelfTestCheckId;
+	readonly id: ISelfTestCheckId;
 	readonly ok: boolean;
 	/** Human-readable reason, present only on failure or when skipped. */
 	readonly detail?: string;

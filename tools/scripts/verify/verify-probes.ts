@@ -52,7 +52,7 @@ export interface IToolHandle {
 }
 
 /** Outcome of a probe — same shape the script used to build inline. */
-export type ProbeOutcome =
+export type IProbeOutcome =
 	/** Empty-input probe: schema accepts `{}` AND handler returned a schema-matching result. */
 	| 'ok'
 	/** Empty-input probe: inputSchema rejected `{}` — tool documents required input. */
@@ -63,7 +63,7 @@ export type ProbeOutcome =
 /** Result of a single probe over one tool. Stable shape for the table renderer. */
 export interface IProbeResult {
 	readonly tool: string;
-	readonly outcome: ProbeOutcome;
+	readonly outcome: IProbeOutcome;
 	readonly handlerReturned: boolean;
 	readonly detail?: string;
 }
@@ -207,7 +207,7 @@ export const runEmptyInputProbe = async (
 		};
 	}
 
-	let outcome: ProbeOutcome = 'failed';
+	let outcome: IProbeOutcome = 'failed';
 	if (invocationError !== undefined) {
 		// Handler crashed on input that the schema accepted — real bug.
 		outcome = 'failed';
@@ -247,10 +247,10 @@ export const runEmptyInputProbe = async (
  * — the caller skips it (the only tools that get a happy-path
  * probe are the ones we know how to drive).
  */
-export type ProbeInputBuilder = (id: string) => Record<string, unknown> | null;
+export type IProbeInputBuilder = (id: string) => Record<string, unknown> | null;
 
 /** Returns the input shape for each "needs-input" tool we know how to drive. */
-export const KNOWN_PROBE_INPUTS: ProbeInputBuilder = (id) => {
+export const KNOWN_PROBE_INPUTS: IProbeInputBuilder = (id) => {
 	switch (id) {
 		case 'fs_read':
 			return { path: 'plugins/audit/README.md' };
@@ -283,7 +283,7 @@ export const HAPPY_PATH_PROBE_IDS: readonly string[] = [
  */
 export const runHappyPathProbe = async (
 	handle: IToolHandle,
-	buildInput: ProbeInputBuilder = KNOWN_PROBE_INPUTS,
+	buildInput: IProbeInputBuilder = KNOWN_PROBE_INPUTS,
 ): Promise<IProbeResult | null> => {
 	const { tool, inputSchema, outputSchema, invoke } = handle;
 	const probeInput = buildInput(tool.id);

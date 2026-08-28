@@ -1,7 +1,7 @@
 import type { FUNNEL_STAGES } from '../constants/funnel-stages.constant';
 import type { SafeReporterFailureCode } from '../constants/safe-reporter-failure-codes.constant';
 
-export type FunnelStage = (typeof FUNNEL_STAGES)[number];
+export type IFunnelStage = (typeof FUNNEL_STAGES)[number];
 
 /**
  * Local, privacy-safe observability counters for the error-reporting
@@ -32,7 +32,7 @@ export interface IFunnelCounters {
 }
 
 export interface IFunnelCounterEvent {
-	readonly stage: FunnelStage;
+	readonly stage: IFunnelStage;
 	readonly at: string;
 	/** Only meaningful for the `submissionFailed` stage. */
 	readonly failureCode?: SafeReporterFailureCode | undefined;

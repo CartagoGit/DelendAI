@@ -88,7 +88,7 @@ export class GitHubProtectionAuthError extends Error {
 	}
 }
 
-export type ProtectionFetchResult =
+export type IProtectionFetchResult =
 	| { readonly kind: 'live'; readonly data: IGitHubBranchProtectionResponse }
 	| { readonly kind: 'unprotected' }
 	| { readonly kind: 'unverified'; readonly branch: string };
@@ -117,7 +117,7 @@ export interface IFetchBranchProtectionParams {
  */
 export const fetchBranchProtection = async (
 	params: IFetchBranchProtectionParams,
-): Promise<ProtectionFetchResult> => {
+): Promise<IProtectionFetchResult> => {
 	const { repo, branch, token, tokenExplicit } = params;
 	const url = `https://api.github.com/repos/${repo}/branches/${branch}/protection`;
 	const headers: Record<string, string> = {
