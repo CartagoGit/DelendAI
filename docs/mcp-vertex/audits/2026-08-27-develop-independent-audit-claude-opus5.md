@@ -2559,6 +2559,21 @@ sí se ejecutan aquí y en CI.
 plugin que **escribe en el repositorio**. El motivo quedó escrito en el nombre del
 test para que se viera. Se vio, y no se arregló.
 
+> **CORRECCIÓN (redacción de `t00031`).** El *diagnóstico* de este hallazgo es
+> mío y es falso. Yo leí el motivo escrito en el nombre del skip —«x00258»— y me
+> lo creí, en vez de quitar el skip y correr el test. Al correrlo: **el push
+> funciona** (`{ok:true, pushed:true, branch:'topic/e2e-test'}`) y el commit
+> aterriza correctamente en el remoto. El test falla por otra cosa: la aserción de
+> la línea 145 hace `git log --oneline` sobre el remoto **bare sin argumento de
+> rama**, así que resuelve contra `HEAD` —la rama por defecto, `develop`— y no
+> contra `topic/e2e-test`, que es donde está el commit. Es un bug de aserción
+> **anterior e independiente** de `x00258`.
+>
+> Que el hallazgo sea «deuda técnica» sigue en pie, y la solución prescrita abajo
+> sigue siendo la correcta; lo que estaba mal era la causa. La lección es la del
+> propio hallazgo aplicada a mí: *el motivo quedó escrito para que se viera; se
+> vio, y se creyó sin comprobarlo.*
+
 **Solución mínima.** Reescribir el test para el comportamiento post-`x00258`:
 push a una rama permitida, y un caso adicional que verifique el rechazo del push
 directo a rama protegida.
