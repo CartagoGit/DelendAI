@@ -2031,6 +2031,17 @@ entre un booleano no leído, un ack persistente y una comprobación de declaraci
 **Criterios de aceptación.** Los cuatro cuadrantes de la matriz probados; el guard
 genérico en CI.
 
+> **CORRECCIÓN DE ALCANCE (implementación de `x00290`).** La arquitectura ideal
+> que propongo arriba pivota sobre una matriz `actor: 'llm' | 'human'`, y esa
+> distinción **no es observable en este código**: no hay ninguna herramienta que
+> sepa quién la invocó — toda llamada MCP llega del modelo. Pedir un `actor` es
+> pedir un dato que el runtime no tiene. La distinción real y observable es otra,
+> y es la que el propio doc-comment del schema ya describía: *activar un servidor
+> frío* frente a *llamar a uno ya activo*. El camino "humano" no es un actor
+> paralelo en runtime, es configuración (`eager: true` + reinicio). La
+> implementación usa esa distinción; la matriz por actor queda descartada, no
+> pendiente.
+
 **Dependencias.** Ninguna. **Tokens:** ninguno. **Compatibilidad:** endurece un
 default → documentar.
 
