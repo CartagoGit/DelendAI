@@ -356,12 +356,9 @@ describe('e2e: token budget (cold-start payloads)', async () => {
 				swarmRoundContextBudget!,
 			);
 			expectWithinBudget('swarm marginal plugin bytes', maxPluginBytes, {
-				hard:
-					TOKEN_BUDGETS.presets.swarm.toolsList.marginalPluginHard ??
-					0,
+				hard: TOKEN_BUDGETS.presets.swarm.toolsList.marginalPluginHard,
 				warning:
-					TOKEN_BUDGETS.presets.swarm.toolsList
-						.marginalPluginWarning ?? 0,
+					TOKEN_BUDGETS.presets.swarm.toolsList.marginalPluginWarning,
 			});
 		} finally {
 			await swarm.close();
@@ -389,12 +386,9 @@ describe('e2e: token budget (cold-start payloads)', async () => {
 				TOKEN_BUDGETS.presets.lean.toolsList,
 			);
 			expectWithinBudget('lean marginal plugin bytes', maxPluginBytes, {
-				hard:
-					TOKEN_BUDGETS.presets.lean.toolsList.marginalPluginHard ??
-					0,
+				hard: TOKEN_BUDGETS.presets.lean.toolsList.marginalPluginHard,
 				warning:
-					TOKEN_BUDGETS.presets.lean.toolsList
-						.marginalPluginWarning ?? 0,
+					TOKEN_BUDGETS.presets.lean.toolsList.marginalPluginWarning,
 			});
 			expect(toolsListBytes).toBeLessThan(
 				TOKEN_BUDGETS.presets.swarm.toolsList.hard *
@@ -404,6 +398,43 @@ describe('e2e: token budget (cold-start payloads)', async () => {
 			await lean.close();
 		}
 	});
+
+	/**
+	 * AUD-B02/x00283: the dashboard's "Marginal Status" column used to
+	 * default an undeclared `marginalPluginHard` to `0` and report "over
+	 * hard (0B)" for minimal/standard/full/vertex — a permanent false
+	 * alarm no gate shared. `swarm` and `lean` already had real ceilings
+	 * and their own dedicated assertions above; this closes the other
+	 * four governed presets so all six are asserted, matching what
+	 * `IGovernedToolsListBudget` now requires the contract to declare.
+	 */
+	it.each(['minimal', 'standard', 'full', 'vertex'] as const)(
+		'%s preset keeps its marginal plugin ceiling honest',
+		async (presetId) => {
+			const connection = await connectClient(presetId, true, {
+				clientInfo: modernClientInfo,
+				capabilities: dynamicSurfaceCapabilities,
+			});
+			try {
+				const toolList = await connection.client.listTools();
+				const maxPluginBytes = marginalPluginBytes(
+					toolList.tools,
+					connection.pluginIds,
+				);
+				const budget = TOKEN_BUDGETS.presets[presetId].toolsList;
+				expectWithinBudget(
+					`${presetId} marginal plugin bytes`,
+					maxPluginBytes,
+					{
+						hard: budget.marginalPluginHard,
+						warning: budget.marginalPluginWarning,
+					},
+				);
+			} finally {
+				await connection.close();
+			}
+		},
+	);
 
 	it('agent catalog stays under budget; compact is materially cheaper than full', async () => {
 		const catalogOnly = await connectClient('');

@@ -7,6 +7,7 @@ import {
 	TOKEN_BUDGETS,
 	withFileMutex,
 	writeFileAtomic,
+	type IGovernedToolsListBudget,
 } from '@mcp-vertex/core/public';
 
 import { repoRoot } from '../lib/monorepo-paths';
@@ -129,30 +130,23 @@ const budgetStatus = (
 
 const presetToolsBudget = (
 	presetId: string,
-):
-	| {
-			readonly hard: number;
-			readonly warning: number;
-			readonly marginalPluginHard?: number;
-			readonly marginalPluginWarning?: number;
-	  }
-	| undefined => {
+): IGovernedToolsListBudget | undefined => {
 	const budgets = TOKEN_BUDGETS.presets as Readonly<
-		Record<
-			string,
-			{
-				readonly toolsList: {
-					readonly hard: number;
-					readonly warning: number;
-					readonly marginalPluginHard?: number;
-					readonly marginalPluginWarning?: number;
-				};
-			}
-		>
+		Record<string, { readonly toolsList: IGovernedToolsListBudget }>
 	>;
 	return budgets[presetId]?.toolsList;
 };
 
+/**
+ * AUD-B02/x00283: `marginalPluginHard`/`marginalPluginWarning` are
+ * REQUIRED on `IGovernedToolsListBudget` (the compiler enforces every
+ * governed preset declares them), so this can no longer silently default
+ * to `?? 0` — that default is what produced the "over hard (0B)"
+ * permanent false alarm for minimal/standard/full/vertex. A preset
+ * outside `TOKEN_BUDGETS.presets` (e.g. the non-governed dashboard-only
+ * presets like `web-app`) still renders `n/a` via the `undefined` return
+ * here, which is the one legitimately optional case.
+ */
 const presetMarginalBudget = (
 	presetId: string,
 ):
@@ -164,8 +158,8 @@ const presetMarginalBudget = (
 	const toolsListBudget = presetToolsBudget(presetId);
 	if (toolsListBudget === undefined) return undefined;
 	return {
-		hard: toolsListBudget.marginalPluginHard ?? 0,
-		warning: toolsListBudget.marginalPluginWarning ?? 0,
+		hard: toolsListBudget.marginalPluginHard,
+		warning: toolsListBudget.marginalPluginWarning,
 	};
 };
 
@@ -347,7 +341,9 @@ export const measurePresetDashboard = async (
 			loadErrors: connection.loadErrors,
 			ownerRows: metrics.ownerRows,
 			toolBreakdowns: metrics.toolBreakdowns,
-			tokenizerEstimates: buildTokenizerEstimates(toolsListJsonText(tools)),
+			tokenizerEstimates: buildTokenizerEstimates(
+				toolsListJsonText(tools),
+			),
 		};
 	} finally {
 		await connection.close();
@@ -624,8 +620,12 @@ const renderGeneratedMarkdown = (
 		row.runtimeSurface,
 		row.source,
 		formatInt(row.toolsListBytes),
-		...row.tokenizerEstimates.map((estimate) => String(estimate.tokenCount)),
-		row.tokenizerEstimates.map((estimate) => estimate.confidence).join(', '),
+		...row.tokenizerEstimates.map((estimate) =>
+			String(estimate.tokenCount),
+		),
+		row.tokenizerEstimates
+			.map((estimate) => estimate.confidence)
+			.join(', '),
 	]);
 
 	const topToolsRow = presetRows.find(
@@ -729,7 +729,7 @@ const renderGeneratedMarkdown = (
 		'',
 		'## Plugin marginal dashboard — component breakdown by owner',
 		'',
-		'`Tools/List Bytes` per owner is the sum of each tool\'s own serialized entry (`JSON.stringify({name, description, inputSchema, outputSchema, annotations})`), decomposed into the fields that make it up. `Envelope Bytes` is JSON punctuation and key labels — derived by subtraction, so every row\'s named-field columns plus Envelope Bytes sum exactly to Tools/List Bytes. `Share of Preset` is this owner\'s bytes divided by the sum of all owners\' bytes in that preset row (not divided by the whole-array `Tools/List Bytes` on the preset-summary table above, which also carries the array\'s own brackets/commas) — shares always sum to 100%.',
+		"`Tools/List Bytes` per owner is the sum of each tool's own serialized entry (`JSON.stringify({name, description, inputSchema, outputSchema, annotations})`), decomposed into the fields that make it up. `Envelope Bytes` is JSON punctuation and key labels — derived by subtraction, so every row's named-field columns plus Envelope Bytes sum exactly to Tools/List Bytes. `Share of Preset` is this owner's bytes divided by the sum of all owners' bytes in that preset row (not divided by the whole-array `Tools/List Bytes` on the preset-summary table above, which also carries the array's own brackets/commas) — shares always sum to 100%.",
 		'',
 		markdownTable(
 			[
@@ -773,7 +773,7 @@ const renderGeneratedMarkdown = (
 		'',
 		'## CHECK-007 — tokenizer cost by preset',
 		'',
-		'This gate (`tokens:gate` / `tokens:dashboard:generate`) measures serialized BYTES of the tools/list JSON payload, not native LLM tokens — bytes-per-token varies enough across prose descriptions, JSON schemas, and identifiers that a byte count cannot substitute for a real token count. The table below reports both, with an explicit confidence label per model: `measured-real-bpe` is a real encode with the model\'s own published tokenizer (gpt-tokenizer for gpt-5.4); `measured-legacy-bpe` is a real BPE encode but on a vocabulary the vendor published for an older model generation (Anthropic has not published an offline tokenizer for Claude Sonnet 4, so @anthropic-ai/tokenizer\'s pre-Claude-3 vocabulary is used as the closest available real encoder); `estimated-byte-ratio` is bytes / 4, used only where no offline tokenizer package exists (Gemini). See tools/scripts/report/tokenizer-real.script.ts for the profile definitions.',
+		"This gate (`tokens:gate` / `tokens:dashboard:generate`) measures serialized BYTES of the tools/list JSON payload, not native LLM tokens — bytes-per-token varies enough across prose descriptions, JSON schemas, and identifiers that a byte count cannot substitute for a real token count. The table below reports both, with an explicit confidence label per model: `measured-real-bpe` is a real encode with the model's own published tokenizer (gpt-tokenizer for gpt-5.4); `measured-legacy-bpe` is a real BPE encode but on a vocabulary the vendor published for an older model generation (Anthropic has not published an offline tokenizer for Claude Sonnet 4, so @anthropic-ai/tokenizer's pre-Claude-3 vocabulary is used as the closest available real encoder); `estimated-byte-ratio` is bytes / 4, used only where no offline tokenizer package exists (Gemini). See tools/scripts/report/tokenizer-real.script.ts for the profile definitions.",
 		'',
 		markdownTable(
 			[

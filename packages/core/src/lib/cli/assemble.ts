@@ -467,6 +467,7 @@ export const assembleCliConfig = async (
 		lazyPluginActivators,
 		consumeLazyPluginRegistrations,
 		disposePlugins,
+		disposePlugin,
 	} = await assemblePlugins({
 		args,
 		fileConfig,
@@ -742,6 +743,7 @@ export const assembleCliConfig = async (
 		toolSurfacePlan,
 		toolSurfaceRuntime,
 		disposePlugins,
+		...(disposePlugin !== undefined ? { disposePlugin } : {}),
 		...(lazyToolActivators !== undefined ? { lazyToolActivators } : {}),
 		...(lazyPluginActivators !== undefined ? { lazyPluginActivators } : {}),
 		...(consumeLazyPluginRegistrations !== undefined

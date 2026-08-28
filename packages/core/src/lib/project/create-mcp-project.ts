@@ -240,6 +240,18 @@ export async function createMcpProject(
 				await drainLazyPluginRegistrations();
 			});
 		}
+		if (
+			config.disposePlugin !== undefined &&
+			toolSurfaceRuntime.setPluginDisposer !== undefined
+		) {
+			// x00286 S4: connects `evictIdlePlugins`'s bookkeeping-only
+			// eviction to a real per-plugin dispose. Without this, an
+			// evicted plugin's tools relazy but its timers/listeners/child
+			// processes outlive it (AUD-C02's "no descarga, no libera"
+			// half) — `disposePlugin` here is the managed lazy runtime's
+			// retained `dispose` for exactly this plugin id.
+			toolSurfaceRuntime.setPluginDisposer(config.disposePlugin);
+		}
 		const previousOnInitialized = server.server.oninitialized;
 		server.server.oninitialized = () => {
 			previousOnInitialized?.();
