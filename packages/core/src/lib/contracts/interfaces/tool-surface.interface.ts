@@ -79,6 +79,23 @@ export interface IPluginSurfaceChange {
 	readonly note?: string | undefined;
 }
 
+/**
+ * Fired once per plugin actually removed from the warm working set
+ * (AUD-C02 / x00286), after its `dispose` — if a disposer is wired via
+ * `IToolSurfaceRuntime.setPluginDisposer` — has settled. `disposeError`
+ * is present only when that dispose threw; the plugin is relazied
+ * either way, because a broken dispose must never block the tools from
+ * becoming reactivatable again. This is the observability the audit
+ * asked for: `evictIdlePlugins` used to change state with no signal
+ * anyone could see.
+ */
+export interface IToolSurfacePluginEvictedEvent {
+	readonly pluginId: string;
+	readonly namespace: string;
+	readonly reason: 'idle-ttl' | 'max-warm-plugins';
+	readonly disposeError?: unknown;
+}
+
 export interface IProjectContextSnapshot {
 	readonly surfaceMode: IMcpToolSurfaceMode;
 	readonly workspaceRoot: string;
@@ -113,6 +130,23 @@ export interface IToolSurfaceRuntime {
 	}): void;
 	finalizeInitialSurface(): void;
 	applySurfaceMode(mode: IMcpToolSurfaceMode): IToolSurfaceModeChange;
+	/**
+	 * Async counterpart to `applySurfaceMode` for the one transition a
+	 * pure bookkeeping flip cannot fulfil: switching TO `native` must put
+	 * every configured plugin's tools on the wire as real `tools/list`
+	 * entries immediately (AUD-C01) — a tool still behind `lazyActivate`
+	 * has no live SDK `RegisteredTool` for `applySurfaceMode`'s
+	 * `handle.enable()` to affect, so flipping `access` alone leaves it
+	 * invisible to the client. This materializes every plugin that has
+	 * not loaded yet (via the `setLazyPluginLoader` callback) before
+	 * delegating to the synchronous `applySurfaceMode` when
+	 * `mode === 'native'`; for any other mode it is exactly equivalent to
+	 * `applySurfaceMode` — no plugin is force-loaded, which is what keeps
+	 * managed/adaptive/compact's token budget intact.
+	 */
+	applySurfaceModeAsync(
+		mode: IMcpToolSurfaceMode,
+	): Promise<IToolSurfaceModeChange>;
 	publicDescriptionFor(
 		registrationId: string,
 		original: string | undefined,
@@ -142,6 +176,28 @@ export interface IToolSurfaceRuntime {
 		| ((loader: (pluginId: string) => Promise<void>) => void)
 		| undefined;
 	deactivatePlugin(identifier: string): IPluginSurfaceChange | null;
+	/**
+	 * Inject the callback that actually tears down a plugin's live
+	 * resources (timers, connections, memory) when it is evicted from
+	 * the warm working set. Optional and analogous to
+	 * `setLazyPluginLoader` for the opposite direction (warm -> cold):
+	 * without one wired, eviction still does the honest half of the
+	 * work (hides the real handler behind `lazyActivate` again, stops
+	 * counting the plugin as loaded) but never claims to have freed
+	 * resources it cannot name (AUD-C02 / x00286).
+	 */
+	readonly setPluginDisposer?:
+		| ((disposer: (pluginId: string) => Promise<void>) => void)
+		| undefined;
+	/**
+	 * Subscribe to real plugin evictions (AUD-C02 / x00286). Returns an
+	 * unsubscribe function.
+	 */
+	readonly onPluginEvicted?:
+		| ((
+				listener: (event: IToolSurfacePluginEvictedEvent) => void,
+		  ) => () => void)
+		| undefined;
 	/** Evict idle/least-recently-used plugin working-set entries. */
 	evictIdlePlugins(nowMs?: number): readonly string[];
 	/**

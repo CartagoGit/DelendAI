@@ -175,12 +175,44 @@ invokeTool(name, args, extra)
 ### S1 — activadores retenidos + `isPluginEvictable` + guarda de trabajo en vuelo en LRU
 
 - **Status**: done
-- **Files**: [`packages/core/src/lib/project/tool-surface-runtime.service.ts`, `packages/core/src/lib/contracts/interfaces/tool-surface.interface.ts`]
+- **Nota**: `isPluginEvictable` cambia el comportamiento observable de
+  dos tests preexistentes en `tool-surface-runtime.spec.ts` ("keeps a
+  bounded routed working set..." y "does not evict a plugin while a
+  routed call holds an active lease"), que construían sus plugins sólo
+  con `bindRegisteredTool` (nunca `bindLazyTool`) — la forma sintética
+  que ningún plugin real toma (`assemble-plugins.ts` retiene un
+  activador lazy para TODO plugin, sin importar el modo). Sin un
+  activador retenido esos plugins no tenían camino de vuelta, así que
+  `isPluginEvictable` los excluía y ambos tests fallaban. Se
+  actualizaron para añadir el `bindLazyTool` que la forma de producción
+  siempre tiene, preservando la intención original de cada test.
+- **Files**: [`packages/core/src/lib/project/tool-surface-runtime.service.ts`, `packages/core/src/lib/contracts/interfaces/tool-surface.interface.ts`, `packages/core/tests/src/lib/project/tool-surface-runtime.spec.ts`]
 - **Gate**: `bunx vitest run --project core -- packages/core/tests/src/lib/project/tool-surface-runtime.spec.ts`
 
 ### S2 — `setPluginDisposer` + disposición real + relazy transparente + log observable
 
 - **Status**: done
+- **Bug adicional encontrado y corregido en el camino**: `invokeTool`
+  reactivaba una tool lazy con
+  `this.recordsByRegistrationId.get(record.registrationId) ?? {...record, ...binding, lazyActivate: undefined}`.
+  Esa expresión asume que `activate()` siempre actualiza el mapa como
+  efecto secundario (cierto para `materializeLazyTool` la PRIMERA vez,
+  porque llama `bindRegisteredTool`); pero el activador que
+  `rebindPluginAsLazy` retiene para la reactivación POST-eviction es
+  ese mismo `activate()` cacheado — en la segunda llamada
+  `materializeLazyTool` devuelve el binding cacheado sin volver a
+  registrar nada, así que el mapa sigue teniendo el record viejo (sin
+  handler) y `record.handler` quedaba `undefined` para siempre tras el
+  primer ciclo evict→reactivate. Corregido en
+  `packages/core/src/lib/project/tool-surface-runtime.service.ts` para
+  preferir el record del mapa sólo cuando es una referencia DISTINTA a
+  la de antes de `await activate()` (carrera real); si no cambió, el
+  record se reconstruye desde `binding` directamente. Sin este fix,
+  `x00286` habría dejado toda tool evictada permanentemente rota tras
+  su primera reactivación — cubierto por
+  "calls the injected disposer and relazies the plugin..." en el spec
+  de abajo, que invoca la tool tras la eviction y comprueba el
+  resultado real.
 - **Files**: [`packages/core/src/lib/project/tool-surface-runtime.service.ts`, `packages/core/src/lib/contracts/interfaces/tool-surface.interface.ts`]
 - **Gate**: `bunx vitest run --project core -- packages/core/tests/src/lib/project/tool-surface-runtime-eviction.spec.ts`
 
@@ -189,6 +221,27 @@ invokeTool(name, args, extra)
 - **Status**: done
 - **Files**: [`packages/core/tests/src/lib/project/tool-surface-runtime-eviction.property.spec.ts`]
 - **Gate**: `bunx vitest run --project core -- packages/core/tests/src/lib/project/tool-surface-runtime-eviction.property.spec.ts`
+
+### S4 — cablear un disposer real por plugin (PENDIENTE)
+
+- **Status**: pending
+- **Por qué queda abierto**: `setPluginDisposer` es el punto de extensión
+  completo y probado, pero **ningún llamante de producción lo inyecta** —
+  `grep -rn "setPluginDisposer" packages plugins --include='*.ts'` sólo
+  devuelve la interfaz, la implementación y los specs. En la ruta real la
+  evicción hoy acota el conjunto caliente, relaza las tools y emite su
+  evento, pero **no llama al `dispose()` del plugin**: los timers,
+  listeners y subprocesos de un plugin evictado siguen vivos. La mitad
+  del hallazgo `AUD-C02` que decía "no descarga, no libera" sigue en pie.
+- **Qué falta**: `managed-lazy-runtime.ts` sólo expone `disposeAll()` de
+  todo el runtime, no un dispose por plugin. Hay que añadir esa capacidad
+  y conectarla desde `assemble-plugins.ts` / `create-mcp-project.ts` a
+  `setPluginDisposer`. `r00038` ya retiene el `dispose` de cada
+  activación en orden, así que el dato existe; falta exponerlo por id.
+- **Files**: [`packages/core/src/lib/plugins/managed-lazy-runtime.ts`, `packages/core/src/lib/cli/assemble-plugins.ts`, `packages/core/src/lib/project/create-mcp-project.ts`]
+- **Gate**: `bunx vitest run --project core` con un spec que arranque el
+  proyecto real, fuerce una evicción y compruebe que el `dispose()` del
+  plugin se invocó exactamente una vez.
 
 ## Dependency graph
 

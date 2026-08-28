@@ -170,12 +170,59 @@ que el operador no confunda una cosa con la otra.
 - **Files**: [`packages/core/src/lib/startup-report/model.ts`, `packages/core/src/lib/startup-report/assembly.ts`, `packages/core/src/lib/startup-report/renderer.ts`]
 - **Gate**: `bunx vitest run --project core -- packages/core/tests/src/lib/startup-report`
 
+### S3 — hacer real la promesa de `native`: materializar los plugins lazy antes de exponer visibilidad
+
+- **Status**: done
+- **Why this slice exists**: S1/S2 dejaban el propio e2e
+  (`defaults an UNKNOWN client with no listChanged signal to native`)
+  en rojo. La decisión (`decideSurfaceModeFromCapabilities`) ya
+  devolvía `'native'` correctamente, pero `applySurfaceMode` sólo
+  voltea `record.access` — para una tool aún detrás de
+  `bindLazyTool` eso mueve un booleano en un handle FALSO que nunca se
+  pasó a `server.registerTool`; el SDK real nunca se entera y la tool
+  sigue ausente de `tools/list`. `native` prometía "todo por
+  adelantado, sin espera de descubrimiento" y no lo cumplía para
+  ningún plugin cargado perezosamente — es decir, para todos (todo
+  plugin retiene un activador lazy independientemente del modo, ver
+  `assemble-plugins.ts`).
+- **Fix**: nuevo `applySurfaceModeAsync` en `IToolSurfaceRuntime` —
+  cuando `mode === 'native'`, materializa (vía `setLazyPluginLoader`)
+  cada plugin que aún no cargó antes de delegar en el
+  `applySurfaceMode` síncrono; para cualquier otro modo es
+  exactamente equivalente al síncrono (no fuerza carga alguna,
+  preservando el presupuesto de tokens de managed/adaptive/compact).
+  `create-mcp-project.ts`'s `oninitialized` pasa a ser
+  fire-and-forget-async (`void (async () => {...})()`) para poder
+  `await` esa materialización — el callback del SDK no se espera de
+  todas formas, y el propio e2e ya hacía polling sobre `tools/list`
+  por esta misma razón de carrera.
+- **Bug adicional encontrado y corregido en el camino**: `invokeTool`
+  fusionaba el binding de una reactivación lazy con
+  `this.recordsByRegistrationId.get(record.registrationId) ?? {...record, ...binding, lazyActivate: undefined}`
+  — cuando el propio mapa YA contenía la misma referencia (caso normal
+  de una activación no concurrente), esa expresión preferís el record
+  viejo (sin handler) en vez de construir el nuevo desde `binding`,
+  dejando `handler` `undefined` para siempre. Nunca se manifestaba
+  antes porque `activate()` normalmente llama `bindRegisteredTool`
+  como efecto secundario (actualizando el mapa por su cuenta); pero el
+  activador retenido por `bindLazyTool` (el que x00286 reutiliza para
+  relazy tras una eviction) NO tiene ese efecto secundario en la
+  reactivación (su `materializeLazyTool` cachea y no vuelve a
+  registrar). Corregido: sólo se prefiere el record del mapa cuando es
+  una referencia DISTINTA a la de antes de `await activate()` (carrera
+  real); si no cambió, se construye el merge desde `binding`.
+- **Files**: [`packages/core/src/lib/project/tool-surface-runtime.service.ts`, `packages/core/src/lib/contracts/interfaces/tool-surface.interface.ts`, `packages/core/src/lib/project/create-mcp-project.ts`]
+- **Gate**: `bunx vitest run --project core -- packages/core/tests/src/lib/e2e/tool-surface.e2e.spec.ts`
+
 ## Dependency graph
 
-Ninguna dependencia entrante. No bloquea `x00286` (working set): ambas
-tocan `packages/core/src/lib/surface/**` pero archivos distintos dentro de
-esa carpeta (`decide-mode.ts` / `host-mode-profiles.constant.ts` vs.
-ninguno para `x00286`, que vive en `project/tool-surface-runtime.service.ts`).
+Ninguna dependencia entrante. S1/S2 no bloquean `x00286` (working set):
+tocan `packages/core/src/lib/surface/**`, disjunto del working set. S3
+(añadida durante la implementación, ver arriba) SÍ comparte archivo con
+`x00286` — ambas tocan `tool-surface-runtime.service.ts` — pero cambian
+partes no solapadas (`applySurfaceModeAsync`/el fix del merge en
+`invokeTool` aquí; `evictIdlePlugins`/`setPluginDisposer` en `x00286`) y
+se implementaron juntas en esta misma slice de `q00011` S5 sin conflicto.
 
 ## Acceptance
 
