@@ -179,7 +179,7 @@ y no cumple.** Cinco patrones, todos verificados línea a línea contra
    `biome ci extensions/vscode`: los otros **3.320 ficheros** del monorepo nunca
    pasan por Biome en CI, y ya acumulan **45 errores y 119 warnings** reales.
    `lint:capabilities` reporta `✓ 51 plugin(s)` porque busca el patrón textual
-   `ctx.capabilities.x.y` — mientras **13 plugins importan `node:child_process`
+   `ctx.capabilities.x.y` — mientras **35 plugins importan builtins con efecto (`node:child_process`, `node:fs`, …)
    directamente** y sólo 6 usan `ctx.effects`. La puerta de seguridad se
    satisface trivialmente *no usando* la capa de seguridad. Y `affected.script.ts`
    emite nombres de paquete (`@mcp-vertex/core`) que `vitest --project` rechaza
@@ -1761,7 +1761,7 @@ un `boolean` no puede representar "no lo sé".
 > también reportaron otros dos revisores. Cada uno se ha reconfirmado línea a
 > línea contra `2cf17373` antes de incluirse; ninguno se acepta por referencia.
 
-### AUD-D01 — `lint:capabilities` es vacuo: reporta `✓ 51/51` mientras 13 plugins ejecutan procesos fuera de la capa
+### AUD-D01 — `lint:capabilities` es vacuo: reporta `✓ 51/51` mientras 35 plugins usan builtins con efecto fuera de la capa
 
 - **Clasificación:** BUG CONFIRMADO · **Severidad:** CRÍTICA · **Área:** seguridad
 - **Propuesta:** `x00288`
@@ -1823,11 +1823,26 @@ guiada por la allowlist con caducidad.
 - Spec: el mismo import dentro de un adaptador autorizado ⇒ pasa.
 - Spec: allowlist caducada ⇒ violación.
 - **Test de meta-cobertura**: el número de plugins que importan APIs sensibles
-  directamente sólo puede bajar (ratchet, valor inicial 13).
+  directamente sólo puede bajar (ratchet, valor inicial 104).
 
-**Criterios de aceptación.** El ratchet arranca en 13 y está en CI; ningún plugin
+**Criterios de aceptación.** El ratchet arranca en 104 y está en CI; ningún plugin
 nuevo puede añadirse a la lista; existe un informe generado de "efectos por
 plugin" que no depende de regex sobre `ctx.capabilities`.
+
+> **CORRECCIÓN (implementación de `x00288`).** El «13» de este hallazgo estaba mal
+> medido y el error era mío, no una estimación conservadora. 13 es el número de
+> plugins que importan **`node:child_process` y sólo ese módulo**, encontrados con
+> un grep restringido a la forma `from '...'`. La superficie real que el hallazgo
+> describe —los siete builtins con efecto (`child_process`, `fs`, `fs/promises`,
+> `net`, `http`, `https`, `dgram`), en forma prefijada o desnuda— es de
+> **104 importaciones en 100 ficheros de 35 plugins**, con `fs`/`fs/promises` como
+> las dominantes. Además, un grep por `from` es ciego a la carga dinámica: tres
+> ficheros de `plugins/proposals` (`index-reader-fs.ts`, `locate-fs.ts`,
+> `proposal-id-allocator-fs.ts`) cargan `node:fs/promises` vía `require(...)` y no
+> aparecen en ninguna búsqueda por `from`. Es, literalmente, el mismo punto ciego
+> que este hallazgo le reprocha a `lint:capabilities`: medir la declaración en vez
+> del comportamiento. El ratchet se calibra sobre el número medido, no sobre el
+> publicado.
 
 **Dependencias.** Es la base de `AUD-D02`. **Tokens:** ninguno.
 **Compatibilidad:** ninguna en runtime; sí obliga a los plugins a migrar.
@@ -3213,7 +3228,7 @@ cambian la naturaleza del proyecto; el resto son multiplicadores.
 | 1 | **`PluginActivationSession`**: unificar activación eager/lazy (opciones, timeout, cancelación, `dispose`) | `E01` | M | Cierra tres bugs críticos de una vez y elimina la causa estructural de que vuelvan |
 | 2 | **`McpHostSession.dispose()`** + `dispose` en `external-mcps` | `E02`, `D05` | M | Sin él, el nº 1 no produce mejora observable: la cadena está rota en tres niveles |
 | 3 | **Podar los 5 `outputSchema` más caros** + envelope compartido `$ref` | `B01` | S | ~40 KB inmediatos de 284 KB; el mayor ahorro por hora invertida de todo el informe |
-| 4 | **Lint de fronteras de efectos** (prohibir `node:*` sensible en plugins) con ratchet desde 13 | `D01`, `D02` | M | Convierte la seguridad de declarativa en verificable; sin esto `dryRun` no puede ser real |
+| 4 | **Lint de fronteras de efectos** (prohibir `node:*` sensible en plugins) con ratchet desde 104 | `D01`, `D02` | M | Convierte la seguridad de declarativa en verificable; sin esto `dryRun` no puede ser real |
 | 5 | **Arreglar los tres gates ciegos/rotos**: `allow_deletions`, 403 de `develop-health`, falso verde de `branch-protection` | `A04`, `A05`, `A06` | S | Tres arreglos pequeños que devuelven la señal a toda la gobernanza |
 | 6 | **`biome ci .`** con baseline-ratchet | `A09` | S | Pasa la cobertura de lint del 3% al 100% del monorepo en un PR |
 | 7 | **`llmDecidesActivation` + `eager`** conectados y probados en `external-mcps` | `D03`, `D04` | S | Requisito previo para el router de MCPs externos, que es la mejor idea de producto |
@@ -3237,7 +3252,7 @@ cambian la naturaleza del proyecto; el resto son multiplicadores.
 6. `A05` — "no verificado" deja de ser verde.
 7. `A04` — `develop-health` deja de explotar con 403 (**es el único check rojo
    del snapshot actual**).
-8. `D01` — lint de fronteras de efectos con ratchet inicial 13.
+8. `D01` — lint de fronteras de efectos con ratchet inicial 104 (medido; el 13 publicado contaba sólo `child_process`).
 9. `A09` — Biome sobre todo el monorepo con baseline.
 
 ### P1 — coste, superficie y verificabilidad
