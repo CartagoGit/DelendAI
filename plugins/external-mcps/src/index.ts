@@ -157,6 +157,7 @@ export default definePlugin({
 					buildCallToolRegistration({
 						namespacePrefix: ctx.namespacePrefix,
 						registry,
+						llmDecidesActivation: options.llmDecidesActivation,
 						requireHumanAckWhenLlmDecides:
 							options.requireHumanAckWhenLlmDecides,
 						hasRecordedAck: (serverId) =>
