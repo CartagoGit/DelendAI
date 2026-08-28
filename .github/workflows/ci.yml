@@ -64,6 +64,7 @@ jobs:
           bun run lint:shared-ui-ratchet
           bun run lint:types-in-contracts
           bun run lint:type-naming
+          bun run lint:test-unsafe-casts
           bun run lint:effect-boundaries
           bun run lint:file-conventions
 

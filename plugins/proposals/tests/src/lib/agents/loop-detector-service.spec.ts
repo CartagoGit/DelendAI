@@ -12,7 +12,7 @@ import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { AgentLoopDetectorService } from '@mcp-vertex/proposals/lib/agents/loop-detector-service';
 import { createWorkspacePathProvider } from '@mcp-vertex/core/public';
-import type { IMcpPluginContext } from '@mcp-vertex/core/public';
+import type { IGitRunner, IMcpPluginContext } from '@mcp-vertex/core/public';
 
 describe('AgentLoopDetectorService', async () => {
 	let dir = '';
@@ -527,10 +527,10 @@ describe('AgentLoopDetectorService', async () => {
 				'@mcp-vertex/proposals/lib/agents/loop-detector-service'
 			);
 			// Fake git runner returns the same diff summary every time.
-			const fakeGit = (() => ({
+			const fakeGit: IGitRunner = async () => ({
 				ok: true,
 				output: ' 1 file changed, 1 insertion(+)',
-			})) as unknown as Parameters<typeof computeProgressHash>[1];
+			});
 			const { writeFileSync } = await import('node:fs');
 			const { join } = await import('node:path');
 			const lockPath = join(dir, 'lock.json');
@@ -546,10 +546,10 @@ describe('AgentLoopDetectorService', async () => {
 			const { computeProgressHash } = await import(
 				'@mcp-vertex/proposals/lib/agents/loop-detector-service'
 			);
-			const fakeGit = (() => ({
+			const fakeGit: IGitRunner = async () => ({
 				ok: false,
 				output: '',
-			})) as unknown as Parameters<typeof computeProgressHash>[1];
+			});
 			// Lock file path is non-existent; readFile rejects; the
 			// helper catches and returns null.
 			const h = await computeProgressHash(

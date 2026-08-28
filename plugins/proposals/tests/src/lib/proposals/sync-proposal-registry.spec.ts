@@ -42,12 +42,19 @@ const seed = async (
 	);
 };
 
+interface IIndexedProposal {
+	readonly id: string;
+	readonly status: string;
+	readonly file?: string;
+	readonly archived?: boolean;
+}
+
 const readIndex = async (
 	root: string,
-): Promise<{ proposals: Array<{ id: string; status: string }> }> => {
+): Promise<{ proposals: IIndexedProposal[] }> => {
 	const indexPath = resolve(root, DEFAULT_PATH_LAYOUT.proposalIndexFile);
 	return JSON.parse(await readFile(indexPath, 'utf8')) as {
-		proposals: Array<{ id: string; status: string }>;
+		proposals: IIndexedProposal[];
 	};
 };
 
@@ -200,17 +207,9 @@ describe('syncProposalRegistry (entry point)', async () => {
 			const archived = index.proposals.find((p) => p.id === 'f910');
 			expect(archived).toBeDefined();
 			expect(archived?.status).toBe('done');
-			expect(
-				(
-					index as unknown as {
-						proposals: Array<{
-							id: string;
-							file: string;
-							archived?: boolean;
-						}>;
-					}
-				).proposals.find((p) => p.id === 'f910')?.file,
-			).toBe('legacy/closed/feats/f910-archived-alpha.md');
+			expect(index.proposals.find((p) => p.id === 'f910')?.file).toBe(
+				'legacy/closed/feats/f910-archived-alpha.md',
+			);
 		});
 
 		it('does not mark active done/<kind>/ entries as archived', async () => {
@@ -227,11 +226,7 @@ describe('syncProposalRegistry (entry point)', async () => {
 				FAKE_GIT_MV,
 			);
 			const index = await readIndex(root);
-			const live = (
-				index as unknown as {
-					proposals: Array<{ id: string; archived?: boolean }>;
-				}
-			).proposals.find((p) => p.id === 'f911');
+			const live = index.proposals.find((p) => p.id === 'f911');
 			expect(live).toBeDefined();
 			expect(live?.archived).toBeUndefined();
 		});
