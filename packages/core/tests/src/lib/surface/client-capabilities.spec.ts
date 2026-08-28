@@ -26,7 +26,7 @@ describe('surface capability negotiation', () => {
 		expect(detected.source).toBe('extensions');
 	});
 
-	it('keeps managed stable for clients with or without list-change support', () => {
+	it('keeps managed for a client that declares mcp-vertex/surface support, native otherwise (AUD-C01 / x00285)', () => {
 		expect(
 			decideSurfaceModeFromCapabilities({
 				capabilities: {
@@ -36,14 +36,17 @@ describe('surface capability negotiation', () => {
 				},
 			}).mode,
 		).toBe('managed');
-		// Managed is the stable default. r00026's
-		// "adaptive by default" hid every tool behind a
-		// `list_changed` notification that most spec-compliant
-		// MCP clients never re-fetch on. Inverting back means the
-		// first `tools/list` is now the stable managed bootstrap.
+		// An anonymous client (no clientInfo, so it matches no known host
+		// profile) that declares NOTHING about list-changed support used
+		// to get the same `managed` default as everyone else — AUD-C01:
+		// `decideSurfaceModeFromCapabilities` ignored both parameters
+		// that give it its name. It now falls back to `native`, because
+		// there is no signal it can ever discover a lazily-activated
+		// tool. A recognised host (Claude Code, Cursor, ...) is
+		// unaffected: see the host-profile spec below.
 		expect(
 			decideSurfaceModeFromCapabilities({ capabilities: {} }).mode,
-		).toBe('managed');
+		).toBe('native');
 		expect(
 			decideSurfaceModeFromCapabilities({
 				capabilities: {},

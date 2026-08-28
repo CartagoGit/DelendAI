@@ -90,17 +90,69 @@ describe('decide-surface-mode (q00009 / f00254)', () => {
 		});
 	});
 
-	describe('decideSurfaceModeFromCapabilities', () => {
-		it('returns the explicit mode when set', () => {
+	describe('decideSurfaceModeFromCapabilities (AUD-C01 / x00285)', () => {
+		it('returns the explicit mode when set, even for a client that would otherwise resolve differently', () => {
 			expect(
 				decideSurfaceModeFromCapabilities({
 					explicitMode: 'managed',
 				}).mode,
 			).toBe('managed');
+			// A known-managed host explicitly forced to native.
+			expect(
+				decideSurfaceModeFromCapabilities({
+					clientInfo: { name: 'claude-code', version: '1.0.0' },
+					explicitMode: 'native',
+				}).mode,
+			).toBe('native');
+			// A client with no signal at all, explicitly forced to managed.
+			expect(
+				decideSurfaceModeFromCapabilities({
+					clientInfo: {
+						name: 'totally-unknown-host',
+						version: '1.0.0',
+					},
+					capabilities: {},
+					explicitMode: 'managed',
+				}).mode,
+			).toBe('managed');
 		});
 
-		it('falls back to `managed` when capabilities detection is silent', () => {
-			expect(decideSurfaceModeFromCapabilities({}).mode).toBe('managed');
+		it('an unknown client with no listChanged signal resolves to native, and the reason names the signal', () => {
+			const decision = decideSurfaceModeFromCapabilities({
+				clientInfo: { name: 'totally-unknown-host', version: '1.0.0' },
+				capabilities: {},
+			});
+			expect(decision.mode).toBe('native');
+			expect(decision.reason).toContain('totally-unknown-host');
+			expect(decision.reason).toContain('listChanged');
+		});
+
+		it('an unknown client that declares mcp-vertex/surface listChanged support resolves to managed, and the reason names it', () => {
+			const decision = decideSurfaceModeFromCapabilities({
+				clientInfo: { name: 'totally-unknown-host', version: '1.0.0' },
+				capabilities: {
+					extensions: {
+						'mcp-vertex/surface': { toolsListChanged: true },
+					},
+				},
+			});
+			expect(decision.mode).toBe('managed');
+			expect(decision.reason).toContain('listChanged support');
+		});
+
+		it('a recognised host profile wins over capability detection', () => {
+			// Claude Code declares nothing, but the host profile pins it to
+			// managed regardless — matches host-compatibility-matrix.md.
+			const decision = decideSurfaceModeFromCapabilities({
+				clientInfo: { name: 'claude-code', version: '1.0.0' },
+				capabilities: {},
+			});
+			expect(decision.mode).toBe('managed');
+			expect(decision.reason).toContain('host-compatibility-matrix.md');
+		});
+
+		it('falls back to `native` when there is no clientInfo at all (fully anonymous connection)', () => {
+			expect(decideSurfaceModeFromCapabilities({}).mode).toBe('native');
 		});
 	});
 });
