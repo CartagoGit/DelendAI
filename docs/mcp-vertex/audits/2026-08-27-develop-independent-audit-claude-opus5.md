@@ -1260,6 +1260,26 @@ caros: sustituir estructuras profundas por un envelope compacto con
 `additionalProperties: true` y un puntero al esquema completo vía recurso MCP.
 `advise_routing` sola vale 12,2 KB.
 
+> **CORRECCIÓN (implementación de `v00129`).** Dos números de este hallazgo eran
+> míos y estaban mal. (1) `advise_routing` **no** vale 12,2 KB: medida en el
+> dashboard son **8.804 B totales, 7.969 B de `outputSchema`**. (2) El «top 5 ≈
+> 40 KB» sólo reproduce **mezclando tres propuestas distintas** — `invoke` y
+> `advise_routing` son de `orchestrator-runner` (→ `v00130`), `quality_policy` y
+> `usage_report` de quality-policy/usage-tracking (→ `v00131`), y sólo
+> `plan_mcp_project` cae en el ámbito de `v00129`. Dentro del territorio real de
+> `v00129` (core + error-reporting) el top 5 suma **20.972 B**, no 40 KB. Lo que
+> sí reproduce exactamente es la tesis del hallazgo: `outputSchema` era el
+> **65,5%** del preset `vertex` (184.286 B de 281.138 B), contra el 66% publicado.
+>
+> Resultado medido tras podar cinco esquemas: `vertex` **281.138 → 260.836 B**
+> (−7,2%), y el bootstrap adaptativo —lo que el modelo paga en cada sesión—
+> **8.934 → 4.900 B, un −45%**.
+>
+> Nota de diseño que invalida parte de la arquitectura ideal: `v00128` comprobó
+> que zod v4 y el SDK de MCP **no deduplican `$ref`**, así que el «envelope
+> compartido como `$defs`» no ahorra nada en esta pila. Por eso la implementación
+> usa esquemas compactos por herramienta y no la indirección propuesta arriba.
+
 **Solución arquitectónica ideal — "compact output contract".**
 1. **Envelope compartido.** Un único `IToolEnvelope` (`{ ok, summary, data?, diagnostic?, next? }`)
    declarado **una vez** como `$defs` y referenciado con `$ref` por todas las

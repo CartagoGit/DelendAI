@@ -90,121 +90,12 @@ export interface McpVertexAdoptProjectOutput {
 
 export interface McpVertexAgentCatalogOutput {
 	ok?: boolean;
-	matches?: number;
-	server: {
-		name: string;
-		version: string;
-		namespacePrefix: string;
-	};
-	generatedAt: string;
-	mode: "compact" | "full";
-	counts: {
-		tools: number;
-		skills: number;
-		proposals: number;
-	};
-	proposalStatusCounts: {
-		ready: number;
-		"in-progress": number;
-		review: number;
-		paused: number;
-		done: number;
-		blocked: number;
-		retired: number;
-		unspecified: number;
-	};
-	tools: Array<{
-		name: string;
-		plugin?: string;
-		summary?: string;
-		tags?: string[];
-		effects?: Array<"write" | "spawn" | "network" | "destructive">;
-	}>;
-	skills: {
-		id: string;
-		version?: string;
-		minCoreVersion?: string;
-		summary?: string;
-		appliesTo?: string[];
-		tags: string[];
-		bodyPath?: string;
-	}[];
-	proposals: Array<{
-		id: string;
-		title: string;
-		track: string;
-		status: "ready" | "in-progress" | "review" | "paused" | "done" | "blocked" | "retired" | "unspecified";
-		kind: "feat" | "fix" | "refactor" | "chore" | "docs" | "plan" | "audit" | "unspecified";
-		date?: string;
-	}>;
-	providers?: Array<{
-		id: string;
-		kind: "api" | "subscription" | "cli" | "mcp-server";
-		modelId: string;
-		costTier: 1 | 2 | 3 | 4 | 5;
-		reachable: boolean;
-		strengths: Array<"code-edit" | "long-context" | "very-long-context" | "architecture" | "security-audit" | "reasoning" | "vision" | "fast-iteration" | "json-strict" | "multilingual" | "agentic" | "summarization">;
-	}>;
+	[key: string]: unknown;
 }
 
 export interface McpVertexAnalyzeProjectOutput {
-	analysis?: {
-		hasPackageJson: boolean;
-		name?: string;
-		projectType: "library" | "cli" | "webapp" | "game" | "monorepo" | "generic";
-		language: "typescript" | "javascript" | "python" | "go" | "rust" | "unknown";
-		packageManager: "bun" | "pnpm" | "yarn" | "npm" | "unknown";
-		framework?: string;
-		testRunner: "vitest" | "jest" | "bun" | "node" | "unknown";
-		monorepoTool?: string;
-		hasMcpProject: boolean;
-		mcpEvidence: string[];
-		ci: string[];
-		ciProvider?: "github-actions" | "gitlab-ci" | "circleci" | "unknown";
-		agentConfigs: string[];
-		scripts: Record<string, string>;
-		docsConventions?: Array<"README.md" | "docs/" | "root-markdown" | "docs-site:astro" | "docs-site:docusaurus" | "docs-site:vitepress">;
-		conflicts?: string[];
-		signals: string[];
-	};
-	plan?: {
-		projectType: "library" | "cli" | "webapp" | "game" | "monorepo" | "generic";
-		serverName: string;
-		namespacePrefix: string;
-		targetDir: string;
-		plugins: string[];
-		tools: {
-			name: string;
-			description: string;
-		}[];
-		validationCommands: Record<string, string>;
-		cacheDir: string;
-		docsDir: string;
-		mcpJson: Record<string, unknown>;
-		notes: string[];
-	};
-	adoptionStrategy: {
-		mode: "replace" | "augment" | "partial";
-		selectedCapabilities: Array<"tools" | "prompts" | "resources" | "knowledge" | "skills" | "agents" | "mcp-config" | "proposal-workflow">;
-		operations: Array<{
-			capability: "tools" | "prompts" | "resources" | "knowledge" | "skills" | "agents" | "mcp-config" | "proposal-workflow";
-			action: "preserve" | "merge" | "replace";
-		}>;
-		protectedCapabilities: Array<"tools" | "prompts" | "resources" | "knowledge" | "skills" | "agents" | "mcp-config" | "proposal-workflow">;
-		requiresExplicitReplacementConsent: boolean;
-	};
-	summary?: {
-		projectType: "library" | "cli" | "webapp" | "game" | "monorepo" | "generic";
-		language: "typescript" | "javascript" | "python" | "go" | "rust" | "unknown";
-		packageManager: "bun" | "pnpm" | "yarn" | "npm" | "unknown";
-		framework?: string;
-		hasMcpProject: boolean;
-		serverName: string;
-		namespacePrefix: string;
-		targetDir: string;
-		pluginCount: number;
-		toolCount: number;
-	};
+	ok?: boolean;
+	[key: string]: unknown;
 }
 
 export interface McpVertexAuditAuditConsolidateOutput {
@@ -1457,71 +1348,8 @@ export interface McpVertexObservabilityObsTraceOutput {
 }
 
 export interface McpVertexOverviewOutput {
-	server: {
-		name: string;
-		version: string;
-	};
-	namespacePrefix: string;
-	corePaths?: {
-		cacheDir: string;
-		docsDir: string;
-	};
-	configIssues?: string[];
-	pluginDiagnostic?: {
-		requested: string[];
-		loaded: string[];
-		missing: string[];
-		missingReasons?: Record<string, string>;
-		configPlugins: string[];
-		errors: number;
-	};
-	plugins: Array<string | {
-		name: string;
-		version?: string;
-		describe?: string;
-	}>;
-	tools: Array<string | {
-		name: string;
-		summary?: string;
-		tags?: string[];
-		effects?: Array<"write" | "spawn" | "network" | "destructive">;
-	}> | Record<string, string[]>;
-	knowledge: Array<string | {
-		id: string;
-		title: string;
-	}>;
-	providers?: Array<{
-		id: string;
-		kind: "api" | "subscription" | "cli" | "mcp-server";
-		modelId: string;
-		costTier: 1 | 2 | 3 | 4 | 5;
-		reachable: boolean;
-		strengths: Array<"code-edit" | "long-context" | "very-long-context" | "architecture" | "security-audit" | "reasoning" | "vision" | "fast-iteration" | "json-strict" | "multilingual" | "agentic" | "summarization">;
-	}>;
-	activationReport?: {
-		entries: Array<{
-			id: string;
-			origin: "bundled" | "user-local" | "external";
-			active: boolean;
-			source: "preset" | "config" | "flag";
-			toolCount: number;
-		}>;
-		counts: {
-			bundled: number;
-			"user-local": number;
-			external: number;
-		};
-		totalTools: number;
-	};
-	unusedActivePlugins?: string[];
-	projectContext?: {
-		surfaceMode: "managed" | "native" | "adaptive" | "compact";
-		visibleToolCount: number;
-		hiddenToolCount: number;
-		loadedPluginCount: number;
-		loadedToolCount: number;
-	};
-	recommendedNextAction: string;
+	ok?: boolean;
+	[key: string]: unknown;
 }
 
 export interface McpVertexPerfPerfBenchOutput {
@@ -1595,89 +1423,8 @@ export type McpVertexPerfPerfProfileOutput = {
 };
 
 export interface McpVertexPlanMcpProjectOutput {
-	blueprint?: {
-		serverName: string;
-		namespacePrefix: string;
-		targetDir: string;
-		projectType: "library" | "cli" | "webapp" | "game" | "monorepo" | "generic";
-		plugins: string[];
-		tools: {
-			name: string;
-			description: string;
-			body?: string;
-			whenToUse?: string[];
-		}[];
-		prompts: {
-			name: string;
-			description: string;
-			body?: string;
-			whenToUse?: string[];
-		}[];
-		skills: {
-			name: string;
-			description: string;
-			body?: string;
-			whenToUse?: string[];
-		}[];
-		agents: {
-			slot: string;
-			description: string;
-		}[];
-		tests: boolean;
-		hasExistingServer: boolean;
-		adoptionStrategy: {
-			mode: "replace" | "augment" | "partial";
-			selectedCapabilities: Array<"tools" | "prompts" | "resources" | "knowledge" | "skills" | "agents" | "mcp-config" | "proposal-workflow">;
-			operations: Array<{
-				capability: "tools" | "prompts" | "resources" | "knowledge" | "skills" | "agents" | "mcp-config" | "proposal-workflow";
-				action: "preserve" | "merge" | "replace";
-			}>;
-			protectedCapabilities: Array<"tools" | "prompts" | "resources" | "knowledge" | "skills" | "agents" | "mcp-config" | "proposal-workflow">;
-			requiresExplicitReplacementConsent: boolean;
-		};
-		defaults: {
-			keepLegacy: boolean;
-			reasons: string[];
-			warnings: string[];
-		};
-		notes: string[];
-	};
-	files?: {
-		path: string;
-		content: string;
-	}[];
-	summary?: {
-		serverName: string;
-		namespacePrefix: string;
-		targetDir: string;
-		projectType: string;
-		plugins: string[];
-		counts: {
-			tools: number;
-			prompts: number;
-			skills: number;
-			agents: number;
-		};
-		tests: boolean;
-		hasExistingServer: boolean;
-		adoptionStrategy: {
-			mode: "replace" | "augment" | "partial";
-			selectedCapabilities: Array<"tools" | "prompts" | "resources" | "knowledge" | "skills" | "agents" | "mcp-config" | "proposal-workflow">;
-			operations: Array<{
-				capability: "tools" | "prompts" | "resources" | "knowledge" | "skills" | "agents" | "mcp-config" | "proposal-workflow";
-				action: "preserve" | "merge" | "replace";
-			}>;
-			protectedCapabilities: Array<"tools" | "prompts" | "resources" | "knowledge" | "skills" | "agents" | "mcp-config" | "proposal-workflow">;
-			requiresExplicitReplacementConsent: boolean;
-		};
-	};
-	detail?: {
-		section: "tools" | "prompts" | "skills" | "agents" | "files" | "notes";
-		cursor: number;
-		nextCursor: number | null;
-		total: number;
-		items: unknown[];
-	};
+	ok?: boolean;
+	[key: string]: unknown;
 }
 
 export interface McpVertexPluginActivateOutput {

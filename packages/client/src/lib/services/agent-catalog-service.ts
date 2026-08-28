@@ -13,7 +13,21 @@ import { formatToolName } from './_namespace';
 
 const DEFAULT_TTL_MS = 5 * 60 * 1000;
 
-type IAgentCatalogOutput = McpVertexToolOutputs['mcp-vertex_agent_catalog'];
+/**
+ * v00129 S1 (AUD-B01): `agent_catalog`'s WIRE-DECLARED `outputSchema` is
+ * now a permissive `compactOutputSchema()` (see
+ * `packages/core/src/lib/surface/compact-output-schema.ts`), so it can no
+ * longer be derived from `McpVertexToolOutputs`. `ICatalogSnapshot` is the
+ * hand-kept interface `agent-catalog-tool.ts`'s handler actually builds
+ * its response from (`buildCatalog` + `applyQuery`/`applySection`) — it
+ * describes what the server truly returns, which has not changed. `ok`/
+ * `matches` are the envelope/optional fields `toolOk()` and the query
+ * path add on top.
+ */
+type IAgentCatalogOutput = ICatalogSnapshot & {
+	readonly ok?: boolean;
+	readonly matches?: number;
+};
 type ISkillToolOutput = McpVertexToolOutputs['mcp-vertex_skill'];
 
 export interface IAgentCatalogSearchResult {

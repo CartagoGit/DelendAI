@@ -69,7 +69,58 @@ const capture = async (dir: string): Promise<ToolHandler> => {
 	return handler;
 };
 
+const jsonSchemaBytesOf = (schema: unknown): number => {
+	const candidate = schema as { toJSONSchema?: () => unknown };
+	const json =
+		typeof candidate?.toJSONSchema === 'function'
+			? candidate.toJSONSchema()
+			: schema;
+	return Buffer.byteLength(JSON.stringify(json), 'utf8');
+};
+
 describe('report_status tool', () => {
+	/**
+	 * v00129 S1 (AUD-B01) regression pin: `report_status` previously
+	 * declared its full, strict internal validation schema as the wire
+	 * `outputSchema` (~3.9 KB in the `vertex` preset). It now declares
+	 * `compactOutputSchema()` instead; the strict schema survives only as
+	 * `ReportStatusInternalSchema`, used to validate the handler's own
+	 * output before returning it (see the `.parse(...)` call in
+	 * `report-status.tool.ts` and the behavioural tests below, which cover
+	 * that the real response shape is unchanged). This fails the day the
+	 * declared schema regrows.
+	 */
+	it('declares a compact outputSchema, not the full internal validation shape', async () => {
+		const dir = await makeDir();
+		let outputSchema: unknown;
+		const store = createReportStore(dir);
+		const reg = buildReportStatusRegistration({
+			namespacePrefix: 'mcp',
+			options: {
+				enabled: false,
+				targetRepo: 'acme/tools',
+				labels: ['auto-reported', 'bug'],
+				dedupeWindowHours: 24,
+				maxIssuesPerDay: 10,
+				circuitBreakerThreshold: 3,
+				backoffBaseMs: 60_000,
+				backoffMaxMs: 3_600_000,
+				backoffJitterRatio: 0.2,
+			},
+			store,
+		});
+		await reg.register({
+			registerTool(
+				_name: string,
+				config: { outputSchema?: unknown },
+			): void {
+				outputSchema = config.outputSchema;
+			},
+		} as unknown as Parameters<typeof reg.register>[0]);
+		expect(outputSchema).toBeDefined();
+		expect(jsonSchemaBytesOf(outputSchema)).toBeLessThanOrEqual(200);
+	});
+
 	it('reports the fixed destination, exact transmitted fields and local classifications', async () => {
 		const handler = await capture(await makeDir());
 		const result = await handler();
