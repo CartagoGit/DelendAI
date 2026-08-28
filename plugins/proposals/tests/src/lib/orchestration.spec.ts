@@ -132,7 +132,7 @@ describe('delegate tool — x00051 per-agent worktree wiring', () => {
 		fail: boolean,
 	): IGitRunner & { calls: string[][] } => {
 		const calls: string[][] = [];
-		const runner = ((args: readonly string[]) => {
+		const runner: IGitRunner = (args) => {
 			calls.push([...args]);
 			// The worktree engine first probes `rev-parse --verify
 			// --quiet <branch>` to know whether to create the branch or
@@ -146,9 +146,13 @@ describe('delegate tool — x00051 per-agent worktree wiring', () => {
 						? { ok: false, output: '', reason: 'mock failure' }
 						: { ok: true, output: '' };
 			return Promise.resolve(result);
-		}) as unknown as IGitRunner & { calls: string[][] };
-		runner.calls = calls;
-		return runner;
+		};
+		// `IGitRunner` is a callable type (not a plain object shape), so
+		// `fakePartial` (designed for `Partial<T>` object literals) does
+		// not apply here — mapped types drop call signatures. Attaching
+		// the `calls` recorder via `Object.assign` keeps this fully typed
+		// with zero casts: its two-argument overload returns `T & U`.
+		return Object.assign(runner, { calls });
 	};
 
 	it('creates a per-agent worktree when worktree.enabled is true', async () => {

@@ -61,7 +61,7 @@ const build = (options?: {
 			: {}),
 	});
 	const server = new FakeServer();
-	void registration.register(server as never);
+	void registration.register(server.asServer);
 	return server.tools;
 };
 

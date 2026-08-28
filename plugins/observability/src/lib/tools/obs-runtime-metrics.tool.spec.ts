@@ -24,7 +24,7 @@ describe('obs_runtime_metrics', () => {
 		await buildObsRuntimeMetricsToolRegistration({
 			namespacePrefix: 'obs',
 			registry: createRuntimeMetricsRegistry(),
-		}).register(server as never);
+		}).register(server.asServer);
 		expect(Object.keys(server.tools)).toEqual(['obs_obs_runtime_metrics']);
 	});
 
@@ -33,7 +33,7 @@ describe('obs_runtime_metrics', () => {
 		await buildObsRuntimeMetricsToolRegistration({
 			namespacePrefix: 'obs',
 			registry: createRuntimeMetricsRegistry(),
-		}).register(server as never);
+		}).register(server.asServer);
 		const out = parseOk(
 			await server.tools.obs_obs_runtime_metrics!.handler({}),
 		);
@@ -47,14 +47,14 @@ describe('obs_runtime_metrics', () => {
 			namespacePrefix: 'obs',
 			tracesDeps: fakeReadTracesDeps(traceRecords),
 			metricsRegistry: registry,
-		}).register(healthServer as never);
+		}).register(healthServer.asServer);
 		await healthServer.tools.obs_obs_trace!.handler({ limit: 10 });
 
 		const metricsServer = new FakeServer();
 		await buildObsRuntimeMetricsToolRegistration({
 			namespacePrefix: 'obs',
 			registry,
-		}).register(metricsServer as never);
+		}).register(metricsServer.asServer);
 		const out = parseOk(
 			await metricsServer.tools.obs_obs_runtime_metrics!.handler({}),
 		);
@@ -70,7 +70,7 @@ describe('obs_runtime_metrics', () => {
 		await buildObsRuntimeMetricsToolRegistration({
 			namespacePrefix: 'obs',
 			registry,
-		}).register(server as never);
+		}).register(server.asServer);
 
 		const first = parseOk(
 			await server.tools.obs_obs_runtime_metrics!.handler({

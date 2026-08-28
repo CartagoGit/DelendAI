@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import { FUNNEL_STAGES } from '../src/lib/contracts/constants/funnel-stages.constant';
-import type { FunnelStage } from '../src/lib/contracts/interfaces/funnel-counters.interface';
+import type { IFunnelStage } from '../src/lib/contracts/interfaces/funnel-counters.interface';
 import { createFunnelCounterStore } from '../src/lib/funnel-counter-store.service';
 
 const tmpDirs: string[] = [];
@@ -150,7 +150,7 @@ describe('createFunnelCounterStore', () => {
 
 	it('never mixes up two different stages in one call', async () => {
 		const store = createFunnelCounterStore(await makeDir());
-		const stages: FunnelStage[] = ['deduplicated', 'rateLimited'];
+		const stages: IFunnelStage[] = ['deduplicated', 'rateLimited'];
 		await store.increment({
 			stage: stages[0]!,
 			at: '2026-08-27T00:00:00.000Z',
