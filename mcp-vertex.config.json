@@ -223,7 +223,7 @@
 				},
 				"cadence": {
 					"triggers": [{ "kind": "slice" }],
-					"sliceScoping": true
+					"sliceScoping": false
 				},
 				"identity": {
 					"mode": "explicit",
