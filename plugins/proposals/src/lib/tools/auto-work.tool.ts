@@ -133,6 +133,19 @@ export const DEFAULT_LOOP_DETECTOR_DISABLE_FOR = [
 	'proposals_auto_work',
 ] as const;
 
+const persistTargetHitsProtectedBranch = (pushTarget: string): boolean => {
+	const tokens = pushTarget.split(/\s+/u);
+	return tokens.some(
+		(token) =>
+			token === 'main' ||
+			token === 'develop' ||
+			token.endsWith('/main') ||
+			token.endsWith('/develop') ||
+			token.endsWith('\\main') ||
+			token.endsWith('\\develop'),
+	);
+};
+
 const json = toolJson;
 
 // Hard anti-idle brake: the `idle` state is guidance, but a model can ignore it
@@ -386,7 +399,7 @@ export const buildAutoWorkOrchestrationPolicy = (options: {
  *
  * When `options.persist.mode !== 'none'` the plan includes an extra
  * step that tells the orchestrator to invoke
- * `maybePersistAfterSlice(...)` after `sync_proposals`. The persist
+ * `maybePersistAfterSlice(...)` after validation and before release. The persist
  * itself is NOT executed inside this tool — `auto_work` is read-only
  * with respect to the workspace filesystem and git; it only renders
  * a plan. See l109 s3.
@@ -637,6 +650,25 @@ export const runAutoWork = async (
 	// `maybePersistAfterSlice` later.
 	const resolvedMode: IAutoWorkPersistMode =
 		options.inputPersist ?? options.persist?.mode ?? 'none';
+	if (
+		resolvedMode === 'commit-and-push' &&
+		options.persist?.pushTarget !== undefined &&
+		persistTargetHitsProtectedBranch(options.persist.pushTarget)
+	) {
+		return json({
+			state: 'work',
+			ok: false,
+			reason: 'invalid-persist-config',
+			executionMode: 'blocked',
+			proposalId: next.proposalId,
+			file: next.file,
+			hygieneBlockers: [
+				`persist.mode "commit-and-push" cannot target a protected branch: "${options.persist.pushTarget}"`,
+			],
+			nextAction:
+				'Change persist.pushTarget to a per-agent or wip/* branch, then call auto_work again. No commit-and-push plan was produced.',
+		});
+	}
 
 	const prefix = options.namespacePrefix;
 	const orchestration = buildAutoWorkOrchestrationPolicy({
@@ -705,10 +737,10 @@ export const runAutoWork = async (
 			? []
 			: resolvedMode === 'commit'
 				? [
-						'Persist the slice: call the engine helper `maybePersistAfterSlice(<claim.files>, <proposalId>, <sliceId>, { mode: "commit" })` after `sync_proposals` and before `release`.',
+						'Persist the slice using its declared files: call `maybePersistAfterSlice(claimReady.files, <proposalId>, <sliceId>, { mode: "commit" })` after validation and before release; do not stage unrelated files.',
 					]
 				: [
-						`Persist the slice (commit + push): call \`maybePersistAfterSlice(<claim.files>, <proposalId>, <sliceId>, { mode: "commit-and-push", pushTarget: "${pushTargetHint}" })\` after \`sync_proposals\` and before \`release\`. The helper refuses to push to \`main\` or \`develop\` automatically — open a PR from the pushed \`wip/*\` branch instead.`,
+						`Persist the slice using its declared files (commit + push): call \`maybePersistAfterSlice(claimReady.files, <proposalId>, <sliceId>, { mode: "commit-and-push", pushTarget: "${pushTargetHint}" })\` after validation and before release; do not stage unrelated files. The helper refuses to push to \`main\` or \`develop\` automatically. Treat committed=true/pushed=false as incomplete and never report closed=true.`,
 					];
 
 	// x00051 S3 + x00231: when persist is enabled, the plan must
