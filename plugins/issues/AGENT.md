@@ -31,7 +31,7 @@
 - plugins/issues/tests/src/lib/services/error-sink-adapter.spec.ts
 - plugins/issues/tests/src/lib/frontmatter.spec.ts
 - plugins/issues/tests/src/lib/issue-scaffold.spec.ts
-- plugins/issues/tests/src/lib/tools/list-issues.tool.spec.ts
+- plugins/issues/tests/src/lib/github-client-security-secret-scanning-advisories.spec.ts
 
 ## Do not
 

@@ -28,9 +28,9 @@ _(none)_
 - plugins/external-mcps/tests/src/lib/detect-rules.spec.ts
 - plugins/external-mcps/tests/src/lib/catalog.spec.ts
 - plugins/external-mcps/tests/src/lib/discover-gate.spec.ts
+- plugins/external-mcps/tests/src/lib/activation-policy.spec.ts
 - plugins/external-mcps/tests/src/lib/server-registry.spec.ts
 - plugins/external-mcps/tests/src/lib/validate-config.spec.ts
-- plugins/external-mcps/tests/src/lib/configuration-metadata.spec.ts
 
 ## Do not
 
