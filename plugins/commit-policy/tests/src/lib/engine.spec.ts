@@ -304,36 +304,36 @@ describe('CommitPolicyEngine (f00182)', () => {
 		}
 	});
 
-		it('does not acknowledge when the configured push fails', async () => {
-			const engine = createCommitPolicyEngine({
-				driver: {
+	it('does not acknowledge when the configured push fails', async () => {
+		const engine = createCommitPolicyEngine({
+			driver: {
+				run: buildRunner('feature/x', true),
+				policy: basePolicy(),
+				identityCtx: {
 					run: buildRunner('feature/x', true),
-					policy: basePolicy(),
-					identityCtx: {
-						run: buildRunner('feature/x', true),
-						envVars: Object.freeze({}),
-					},
-					auditAgent: null,
+					envVars: Object.freeze({}),
 				},
-				branchPolicy: DEFAULT_BRANCH_POLICY,
-				onCommitSucceeded: async () => ({
-					ok: false,
-					refusal: 'push refused',
-				}),
-			});
-			const result = await engine.handle({
-				kind: 'manual',
-				message: 'feat: reject failed push',
-				files: ['only-this.ts'],
-				eventId: 'push-failed-1',
-			});
-			expect(result).toMatchObject({
-				ack: 'ERR',
-				code: 'PUSH_FAILED',
-				committed: true,
-				pushed: false,
-			});
+				auditAgent: null,
+			},
+			branchPolicy: DEFAULT_BRANCH_POLICY,
+			onCommitSucceeded: async () => ({
+				ok: false,
+				refusal: 'push refused',
+			}),
 		});
+		const result = await engine.handle({
+			kind: 'manual',
+			message: 'feat: reject failed push',
+			files: ['only-this.ts'],
+			eventId: 'push-failed-1',
+		});
+		expect(result).toMatchObject({
+			ack: 'ERR',
+			code: 'PUSH_FAILED',
+			committed: true,
+			pushed: false,
+		});
+	});
 
 	it('dispose() clears the seen set', () => {
 		const engine = createCommitPolicyEngine({
