@@ -13,7 +13,9 @@
  */
 
 import {
-	commitAndPush,
+	gitAdd,
+	gitCommit,
+	gitHeadShortHash,
 	type ICommitAndPushResult,
 	type IGitRunner,
 } from '@mcp-vertex/core/public';
@@ -340,25 +342,21 @@ const runCommitDriverUnlocked = async (
 		};
 	}
 
-	const result = await commitAndPush({
-		git: options.run,
-		message: finalMessage,
-		authorFlag: identity.author.authorFlag,
-		// When the caller passes files OR a slice context with files,
-		// we want the driver to stage them. When neither is present
-		// we leave the worktree as-is (the caller already staged,
-		// or there is nothing to commit).
-		...(files.length > 0 ? { files } : { skipAdd: true }),
-	});
+	if (files.length > 0) {
+		const addResult = await gitAdd(options.run, files);
+		if (!addResult.ok) {
+			return {
+				committed: false,
+				pushed: false,
+				refusal: `git add failed: ${addResult.reason ?? 'unknown'}`,
+			};
+		}
+	}
 
-	// x00263 / x00264: post-stage subset check. When the driver
-	// was given an explicit file list from a trigger, the cached
-	// index MUST be a subset. Anything staged by another path
-	// (manual `git add`, a leaked sub-agent, a hook) is
-	// contamination — the commit is refused before it reaches
-	// the git layer.
+	// x00263 / x00264: validate the complete index after staging but
+	// before committing. Checking after `git commit` is too late because
+	// a successful commit clears the index and hides staged extras.
 	if (
-		result.committed &&
 		files.length > 0 &&
 		(input.triggerContext !== undefined ||
 			(scopeSliceCommit && input.sliceContext !== undefined))
@@ -376,6 +374,29 @@ const runCommitDriverUnlocked = async (
 			};
 		}
 	}
+
+	const commitResult = await gitCommit(options.run, finalMessage, {
+		authorFlag: identity.author.authorFlag,
+	});
+	if (!commitResult.ok) {
+		const reason = commitResult.reason ?? 'unknown';
+		const alreadyClean = /nothing to commit|no changes added/u.test(reason);
+		return {
+			committed: false,
+			pushed: false,
+			refusal: alreadyClean
+				? 'nothing to commit (worktree already clean)'
+				: `git commit failed: ${reason}`,
+		};
+	}
+
+	const result: ICommitAndPushResult = {
+		committed: true,
+		pushed: false,
+		...((await gitHeadShortHash(options.run)) !== undefined
+			? { hash: await gitHeadShortHash(options.run) }
+			: {}),
+	};
 
 	return {
 		...result,
