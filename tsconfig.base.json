@@ -306,6 +306,11 @@
 				"./plugins/quality-policy/src/public/index.ts"
 			],
 			"@mcp-vertex/quality-policy/*": ["./plugins/quality-policy/src/*"],
+			"@mcp-vertex/project-kpis": ["./plugins/project-kpis/src/index.ts"],
+			"@mcp-vertex/project-kpis/public": [
+				"./plugins/project-kpis/src/public/index.ts"
+			],
+			"@mcp-vertex/project-kpis/*": ["./plugins/project-kpis/src/*"],
 			"@mcp-vertex/commit-policy": [
 				"./plugins/commit-policy/src/index.ts"
 			],

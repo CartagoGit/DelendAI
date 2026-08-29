@@ -20,6 +20,9 @@
 - doneFolderFor
 - PROPOSAL_SCAN_FOLDERS
 - PROPOSAL_FLAGS
+- DEFAULT_PROPOSAL_FOLDER_POLICY
+- proposalFolderFor
+- proposalFoldersForPolicy
 - buildAgentLockRegistration
 - buildAgentWorktreeRegistration
 - runAgentWorktreeEngine
@@ -28,9 +31,6 @@
 - createPassthroughWorktreeCoordinator
 - resolveWorktreeSyncCoordinator
 - buildTaskQueueRegistration
-- buildSyncProposalsRegistration
-- buildGetProposalWorkflowRegistration
-- buildRoundContextRegistration
 
 ## Depends on
 

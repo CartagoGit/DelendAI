@@ -1,4 +1,4 @@
-import { existsSync } from 'node:fs';
+import { access } from 'node:fs/promises';
 
 import { truncateIfTooLarge } from '@mcp-vertex/core/public';
 import {
@@ -187,9 +187,20 @@ const buildUsageSummaryFromSources = async (
 	readonly records: readonly IInvocationRecord[];
 	readonly note?: string;
 }> => {
-	const pathExists = options.pathExists ?? existsSync;
-	const summaryExists = pathExists(options.usageSummaryPathAbs);
-	const invocationsExists = pathExists(options.usageInvocationsPathAbs);
+	const pathExists =
+		options.pathExists ??
+		(async (path: string): Promise<boolean> => {
+			try {
+				await access(path);
+				return true;
+			} catch {
+				return false;
+			}
+		});
+	const [summaryExists, invocationsExists] = await Promise.all([
+		pathExists(options.usageSummaryPathAbs),
+		pathExists(options.usageInvocationsPathAbs),
+	]);
 	const readUsageInvocations =
 		options.readUsageInvocations ?? readInvocations;
 	const readUsageSummary = options.readUsageSummary ?? readSummary;

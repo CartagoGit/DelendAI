@@ -269,6 +269,8 @@ export interface IMcpVertexConfigFile extends IMcpVertexCorePathsConfig {
 	 * `true` here (or via the `--agent-worktree` CLI flag, which wins).
 	 */
 	readonly agentWorktree?: boolean;
+	/** Core-owned runtime and agent policies. */
+	readonly core?: IMcpVertexCoreConfig;
 	/**
 	 * f00082: how every commit produced by the shared git engine
 	 * should be attributed. Defaults to `'git'` (the current
@@ -319,6 +321,26 @@ export interface IMcpVertexConfigFile extends IMcpVertexCorePathsConfig {
 	 */
 	readonly coreVersion?: string;
 }
+
+export interface IMcpVertexCoreConfig {
+	/** Global agent execution mode and engineering principles. */
+	readonly agentPolicy?: IMcpVertexAgentPolicyConfig;
+}
+
+export interface IMcpVertexAgentPolicyConfig {
+	readonly autonomous?: boolean;
+	readonly principles?: ReadonlyArray<string>;
+}
+
+export const DEFAULT_AGENT_POLICY: Required<IMcpVertexAgentPolicyConfig> = {
+	autonomous: true,
+	principles: [
+		'Apply SOLID architecture where it improves ownership and changeability.',
+		'Use good engineering practices and keep the code clear and maintainable.',
+		'Reuse existing code and abstractions before introducing duplication.',
+		'Keep naming, files, and folders homogeneous with the surrounding project.',
+	],
+};
 
 /** Default config file name looked up at the workspace root. */
 export const DEFAULT_CONFIG_FILENAME = 'mcp-vertex.config.json';

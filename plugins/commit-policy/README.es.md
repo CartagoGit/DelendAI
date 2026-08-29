@@ -12,12 +12,12 @@ cada agente tiene que elegir el autor, decidir cuándo empujar y recordar añadi
 un trailer de auditoría. `commit-policy` envuelve esas primitivas con tres
 políticas configurables y expone cuatro herramientas para conducir el motor:
 
-| Herramienta | Propósito |
-|---|---|
-| `commit_policy_status` | Instantánea de solo lectura de la configuración efectiva. |
+| Herramienta            | Propósito                                                                        |
+| ---------------------- | -------------------------------------------------------------------------------- |
+| `commit_policy_status` | Instantánea de solo lectura de la configuración efectiva.                        |
 | `commit_policy_commit` | Commit a través del motor (identidad + auditoría + rechazo de ramas protegidas). |
-| `commit_policy_push` | Push a través del motor (rechazo de ramas protegidas + política de force). |
-| `commit_policy_run` | Disparar manualmente cualquier disparador configurado. |
+| `commit_policy_push`   | Push a través del motor (rechazo de ramas protegidas + política de force).       |
+| `commit_policy_run`    | Disparar manualmente cualquier disparador configurado.                           |
 
 El motor **está desactivado por defecto**: ningún host verá un solo commit a
 menos que lo active explícitamente.
@@ -40,18 +40,18 @@ menos que lo active explícitamente.
 }
 ```
 
-| Knob | Por defecto | Qué controla |
-|---|---|---|
-| `commit.enabled` | `false` | Interruptor maestro — ningún commit sin `true`. |
-| `commit.requireConventional` | `true` | Rechaza mensajes que no sean Conventional Commit. |
-| `commit.autoScopeFromProposal` | `true` | Convierte `feat: x` en `feat(<proposalId>): x` cuando hay contexto de slice. |
-| `identity.mode` | `"global"` | Uno entre `explicit / agent / repo / global / env / auto`. |
-| `cadence.triggers` | `[]` | Array vacío = ningún commit automático; solo funciona `commit_policy_run`. |
-| `audit.trailer` | `"co-authored-by"` | `"none" \| "co-authored-by" \| "body-metadata"`. |
-| `push.enabled` | `false` | Interruptor maestro — ningún push sin `true`. |
-| `push.onCommit` | `false` | Push inmediato tras cada commit. |
-| `push.force` | `"with-lease"` | `"with-lease" \| "allow" \| "never"`. |
-| `push.protectedBranches` | `["main", "master"]` | Push siempre rechazado a estas ramas. |
+| Knob                           | Por defecto          | Qué controla                                                                 |
+| ------------------------------ | -------------------- | ---------------------------------------------------------------------------- |
+| `commit.enabled`               | `false`              | Interruptor maestro — ningún commit sin `true`.                              |
+| `commit.requireConventional`   | `true`               | Rechaza mensajes que no sean Conventional Commit.                            |
+| `commit.autoScopeFromProposal` | `true`               | Convierte `feat: x` en `feat(<proposalId>): x` cuando hay contexto de slice. |
+| `identity.mode`                | `"global"`           | Uno entre `explicit / agent / repo / global / env / auto`.                   |
+| `cadence.triggers`             | `[]`                 | Array vacío = ningún commit automático; solo funciona `commit_policy_run`.   |
+| `audit.trailer`                | `"co-authored-by"`   | `"none" \| "co-authored-by" \| "body-metadata"`.                             |
+| `push.enabled`                 | `false`              | Interruptor maestro — ningún push sin `true`.                                |
+| `push.onCommit`                | `false`              | Push inmediato tras cada commit.                                             |
+| `push.force`                   | `"with-lease"`       | `"with-lease" \| "allow" \| "never"`.                                        |
+| `push.protectedBranches`       | `["main", "master"]` | Push siempre rechazado a estas ramas.                                        |
 
 ### Reglas de ramas
 
@@ -67,23 +67,23 @@ campo `branchPolicy`:
 
 ### Modos de identidad
 
-| Modo | Resuelve a |
-|---|---|
-| `explicit` | El owner declarado en `identity.owner` (suministrado por el host). |
-| `agent` | La identidad del LLM (`host + model`) cuando está conectada; si no, la config global de git. |
-| `repo` | `git config user.name / user.email` del repo, con fallback a global. |
-| `global` | `git config --global user.name / user.email`. |
-| `env` | `GIT_AUTHOR_NAME` + `GIT_AUTHOR_EMAIL` desde el entorno del proceso. |
-| `auto` | Prioridad determinista: `env → global → repo → agent`. |
+| Modo       | Resuelve a                                                                                   |
+| ---------- | -------------------------------------------------------------------------------------------- |
+| `explicit` | El owner declarado en `identity.owner` (suministrado por el host).                           |
+| `agent`    | La identidad del LLM (`host + model`) cuando está conectada; si no, la config global de git. |
+| `repo`     | `git config user.name / user.email` del repo, con fallback a global.                         |
+| `global`   | `git config --global user.name / user.email`.                                                |
+| `env`      | `GIT_AUTHOR_NAME` + `GIT_AUTHOR_EMAIL` desde el entorno del proceso.                         |
+| `auto`     | Prioridad determinista: `env → global → repo → agent`.                                       |
 
 ### Tipos de disparador
 
-| Tipo | Se dispara cuando |
-|---|---|
-| `slice` | Un slice de `proposals` transiciona a un estado configurado (por defecto `done`). Sondea el `index.json` cada 5 s. |
-| `threshold` | `git status --porcelain` reporta al menos N archivos sucios (por defecto 10). Solo manual. |
-| `interval` | Han pasado al menos N minutos desde el último disparo y el árbol está sucio. Solo manual. |
-| `manual` | Siempre disponible, independientemente de `cadence.triggers`. |
+| Tipo        | Se dispara cuando                                                                                                  |
+| ----------- | ------------------------------------------------------------------------------------------------------------------ |
+| `slice`     | Un slice de `proposals` transiciona a un estado configurado (por defecto `done`). Sondea el `index.json` cada 5 s. |
+| `threshold` | `git status --porcelain` reporta al menos N archivos sucios (por defecto 10). Solo manual.                         |
+| `interval`  | Han pasado al menos N minutos desde el último disparo y el árbol está sucio. Solo manual.                          |
+| `manual`    | Siempre disponible, independientemente de `cadence.triggers`.                                                      |
 
 ## Por qué desactivado por defecto
 

@@ -14,7 +14,7 @@
 
 export interface McpVertexAdoptProjectOutput {
 	ok: true;
-	preset: 'lean' | 'standard' | 'minimal' | 'swarm';
+	preset: "lean" | "standard" | "minimal" | "swarm";
 	config?: Record<string, unknown>;
 	rationale?: string[];
 	assessment?: {
@@ -26,13 +26,13 @@ export interface McpVertexAdoptProjectOutput {
 			rationale: string;
 		}[];
 		conflicts: Array<{
-			kind: 'existing-surface' | 'write-estimate';
+			kind: "existing-surface" | "write-estimate";
 			summary: string;
-			severity: 'info' | 'warning';
+			severity: "info" | "warning";
 			count?: number;
 			exact: boolean;
 			breakdown?: Array<{
-				kind: 'config' | 'proposal-store' | 'generated';
+				kind: "config" | "proposal-store" | "generated";
 				description: string;
 				count?: number;
 				exact: boolean;
@@ -43,22 +43,15 @@ export interface McpVertexAdoptProjectOutput {
 			schemaBytes: number;
 			estimatedTokens: number;
 			recommendedPluginCount: number;
-			source: 'preset-budget' | 'fallback-budget' | 'plugin-budget';
-			runtimeSurface?: 'managed' | 'native' | 'adaptive' | 'compact';
+			source: "preset-budget" | "fallback-budget" | "plugin-budget";
+			runtimeSurface?: "managed" | "native" | "adaptive" | "compact";
 			note: string;
 		};
 		summary: {
-			projectType:
-				'library' | 'cli' | 'webapp' | 'game' | 'monorepo' | 'generic';
-			language:
-				| 'typescript'
-				| 'javascript'
-				| 'python'
-				| 'go'
-				| 'rust'
-				| 'unknown';
-			packageManager: 'bun' | 'pnpm' | 'yarn' | 'npm' | 'unknown';
-			ciProvider: 'github-actions' | 'gitlab-ci' | 'circleci' | 'unknown';
+			projectType: "library" | "cli" | "webapp" | "game" | "monorepo" | "generic";
+			language: "typescript" | "javascript" | "python" | "go" | "rust" | "unknown";
+			packageManager: "bun" | "pnpm" | "yarn" | "npm" | "unknown";
+			ciProvider: "github-actions" | "gitlab-ci" | "circleci" | "unknown";
 			docsConventions: string[];
 		};
 	};
@@ -82,7 +75,7 @@ export interface McpVertexBrowserBrowserA11yOutput {
 	url: string;
 	findings: Array<{
 		ruleId: string;
-		severity: 'critical' | 'high' | 'medium' | 'low' | 'info';
+		severity: "critical" | "high" | "medium" | "low" | "info";
 		message: string;
 		location?: {
 			file: string;
@@ -92,7 +85,7 @@ export interface McpVertexBrowserBrowserA11yOutput {
 		fix?: string;
 	}>;
 	summary: Record<string, number>;
-	worst: 'critical' | 'high' | 'medium' | 'low' | 'info' | 'none';
+	worst: "critical" | "high" | "medium" | "low" | "info" | "none";
 }
 
 export interface McpVertexBrowserBrowserAssertOutput {
@@ -100,7 +93,7 @@ export interface McpVertexBrowserBrowserAssertOutput {
 	passed: boolean;
 	findings: Array<{
 		ruleId: string;
-		severity: 'critical' | 'high' | 'medium' | 'low' | 'info';
+		severity: "critical" | "high" | "medium" | "low" | "info";
 		message: string;
 		location?: {
 			file: string;
@@ -113,54 +106,48 @@ export interface McpVertexBrowserBrowserAssertOutput {
 
 export interface McpVertexBrowserBrowserClickOutput {
 	target: string;
-	action: 'click' | 'fill';
+	action: "click" | "fill";
 	url: string;
 	matched: number;
 }
 
 export interface McpVertexBrowserBrowserFillOutput {
 	target: string;
-	action: 'click' | 'fill';
+	action: "click" | "fill";
 	url: string;
 	matched: number;
 }
 
-export type McpVertexBrowserBrowserOpenOutput =
-	| {
-			url: string;
-			title: string;
-			html: string;
-			status: 'ok';
-	  }
-	| {
-			url: string;
-			status: 'install-missing';
-			hint: string;
-	  };
+export type McpVertexBrowserBrowserOpenOutput = {
+	url: string;
+	title: string;
+	html: string;
+	status: "ok";
+} | {
+	url: string;
+	status: "install-missing";
+	hint: string;
+};
 
-export type McpVertexBrowserBrowserQueryOutput =
-	| {
-			url: string;
-			matches: string[];
-			status: 'ok';
-	  }
-	| {
-			url: string;
-			status: 'install-missing';
-			hint: string;
-	  };
+export type McpVertexBrowserBrowserQueryOutput = {
+	url: string;
+	matches: string[];
+	status: "ok";
+} | {
+	url: string;
+	status: "install-missing";
+	hint: string;
+};
 
-export type McpVertexBrowserBrowserScreenshotOutput =
-	| {
-			url: string;
-			path: string;
-			status: 'ok';
-	  }
-	| {
-			url: string;
-			status: 'install-missing';
-			hint: string;
-	  };
+export type McpVertexBrowserBrowserScreenshotOutput = {
+	url: string;
+	path: string;
+	status: "ok";
+} | {
+	url: string;
+	status: "install-missing";
+	hint: string;
+};
 
 export interface McpVertexBrowserBrowserVerifyPageOutput {
 	url: string;
@@ -170,7 +157,7 @@ export interface McpVertexBrowserBrowserVerifyPageOutput {
 		stylesheet: boolean;
 		nav: boolean;
 	};
-	mode: 'real' | 'fixture';
+	mode: "real" | "fixture";
 	installHint?: string;
 }
 
@@ -203,7 +190,7 @@ export interface McpVertexCompletionStatusOutput {
 }
 
 export interface McpVertexConfigurationCenterOutput {
-	section: 'summary' | 'config' | 'plugins' | 'artifacts';
+	section: "summary" | "config" | "plugins" | "artifacts";
 	page: {
 		cursor: number;
 		nextCursor: number | null;
@@ -213,9 +200,7 @@ export interface McpVertexConfigurationCenterOutput {
 		plugins: number;
 		activePlugins: number;
 		artifacts: number;
-		unavailableArtifactKinds: Array<
-			'agent' | 'skill' | 'prompt' | 'resource' | 'knowledge'
-		>;
+		unavailableArtifactKinds: Array<"agent" | "skill" | "prompt" | "resource" | "knowledge">;
 		env?: {
 			pluginLoaded: boolean;
 			pathsChecked: string[];
@@ -232,30 +217,16 @@ export interface McpVertexConfigurationCenterOutput {
 	redactions?: number;
 	plugins?: Array<{
 		id: string;
-		origin: 'bundled' | 'user-local' | 'external';
+		origin: "bundled" | "user-local" | "external";
 		active: boolean;
-		source: 'preset' | 'config' | 'flag';
+		source: "preset" | "config" | "flag";
 		path?: string;
 		prefix?: string;
 		options: Record<string, unknown>;
 		optionsSchema?: Record<string, unknown>;
-		schemaStatus: 'available' | 'unavailable';
+		schemaStatus: "available" | "unavailable";
 		configExample?: Record<string, unknown>;
-		permissions?: Array<
-			| 'filesystem-read'
-			| 'filesystem-write'
-			| 'process'
-			| 'network'
-			| 'git-read'
-			| 'git-write'
-			| 'forge-read'
-			| 'forge-write'
-			| 'env-read'
-			| 'secrets'
-			| 'browser'
-			| 'container'
-			| 'database'
-		>;
+		permissions?: Array<"filesystem-read" | "filesystem-write" | "process" | "network" | "git-read" | "git-write" | "forge-read" | "forge-write" | "env-read" | "secrets" | "browser" | "container" | "database">;
 		capabilities: {
 			tools: number;
 			prompts: number;
@@ -266,85 +237,77 @@ export interface McpVertexConfigurationCenterOutput {
 	}>;
 	artifacts?: Array<{
 		id: string;
-		kind: 'agent' | 'skill' | 'prompt' | 'resource' | 'knowledge';
+		kind: "agent" | "skill" | "prompt" | "resource" | "knowledge";
 		owner: {
 			id: string | null;
-			origin: 'bundled' | 'user-local' | 'external' | 'unknown';
+			origin: "bundled" | "user-local" | "external" | "unknown";
 		};
 	}>;
 }
 
-export type McpVertexContainerContainerBuildOutput =
-	| {
-			ok: true;
-			command: string;
-			exitCode: number;
-			imageId?: string;
-	  }
-	| {
-			ok: false;
-			reason: string;
-			nextAction: string;
-	  }
-	| {
-			ok: 'dry-run';
-			command: string;
-	  }
-	| {
-			ok: false;
-			isError: true;
-			error: {
-				reason: 'install-missing';
-				nextAction?: string;
-			};
-	  };
+export type McpVertexContainerContainerBuildOutput = {
+	ok: true;
+	command: string;
+	exitCode: number;
+	imageId?: string;
+} | {
+	ok: false;
+	reason: string;
+	nextAction: string;
+} | {
+	ok: "dry-run";
+	command: string;
+} | {
+	ok: false;
+	isError: true;
+	error: {
+		reason: "install-missing";
+		nextAction?: string;
+	};
+};
 
-export type McpVertexContainerContainerInspectOutput =
-	| {
-			ok: true;
-			kind: 'docker-ps';
-			items: {
-				id: string;
-				name: string;
-				image: string;
-				status: string;
-				ports: string[];
-				createdAt: string;
-			}[];
-	  }
-	| {
-			ok: true;
-			kind: 'docker-images';
-			items: {
-				id: string;
-				repository: string;
-				tag: string;
-				size: string;
-				createdAt: string;
-			}[];
-	  }
-	| {
-			ok: true;
-			kind: 'k8s-get';
-			items: {
-				name: string;
-				namespace: string;
-				status: string;
-				nodeName?: string;
-				podIp?: string;
-				containers: string[];
-			}[];
-	  }
-	| {
-			ok: 'skipped';
-			hint: string;
-	  };
+export type McpVertexContainerContainerInspectOutput = {
+	ok: true;
+	kind: "docker-ps";
+	items: {
+		id: string;
+		name: string;
+		image: string;
+		status: string;
+		ports: string[];
+		createdAt: string;
+	}[];
+} | {
+	ok: true;
+	kind: "docker-images";
+	items: {
+		id: string;
+		repository: string;
+		tag: string;
+		size: string;
+		createdAt: string;
+	}[];
+} | {
+	ok: true;
+	kind: "k8s-get";
+	items: {
+		name: string;
+		namespace: string;
+		status: string;
+		nodeName?: string;
+		podIp?: string;
+		containers: string[];
+	}[];
+} | {
+	ok: "skipped";
+	hint: string;
+};
 
 export interface McpVertexContainerContainerLintOutput {
 	ok: true;
 	findings: Array<{
 		ruleId: string;
-		severity: 'critical' | 'high' | 'medium' | 'low' | 'info';
+		severity: "critical" | "high" | "medium" | "low" | "info";
 		message: string;
 		fix?: string;
 		location: {
@@ -354,44 +317,38 @@ export interface McpVertexContainerContainerLintOutput {
 	}>;
 }
 
-export type McpVertexContainerContainerLogsOutput =
-	| {
-			ok: true;
-			container: string;
-			lines: Array<{
-				timestamp: string;
-				stream: 'stdout' | 'stderr' | 'unknown';
-				message: string;
-			}>;
-	  }
-	| {
-			ok: 'skipped';
-			hint: string;
-	  };
+export type McpVertexContainerContainerLogsOutput = {
+	ok: true;
+	container: string;
+	lines: Array<{
+		timestamp: string;
+		stream: "stdout" | "stderr" | "unknown";
+		message: string;
+	}>;
+} | {
+	ok: "skipped";
+	hint: string;
+};
 
-export type McpVertexContainerK8sApplyOutput =
-	| {
-			ok: true;
-			command: string;
-			exitCode: number;
-	  }
-	| {
-			ok: false;
-			reason: string;
-			nextAction: string;
-	  }
-	| {
-			ok: 'dry-run';
-			command: string;
-	  }
-	| {
-			ok: false;
-			isError: true;
-			error: {
-				reason: 'install-missing';
-				nextAction?: string;
-			};
-	  };
+export type McpVertexContainerK8sApplyOutput = {
+	ok: true;
+	command: string;
+	exitCode: number;
+} | {
+	ok: false;
+	reason: string;
+	nextAction: string;
+} | {
+	ok: "dry-run";
+	command: string;
+} | {
+	ok: false;
+	isError: true;
+	error: {
+		reason: "install-missing";
+		nextAction?: string;
+	};
+};
 
 export interface McpVertexCreatePluginOutput {
 	ok: boolean;
@@ -399,13 +356,7 @@ export interface McpVertexCreatePluginOutput {
 		files: string[];
 	};
 	wired: Array<{
-		pointId:
-			| 'tsconfig-base'
-			| 'vitest-shared'
-			| 'plugin-defaults'
-			| 'publish-order'
-			| 'preset-catalog'
-			| 'catalog-regen';
+		pointId: "tsconfig-base" | "vitest-shared" | "plugin-defaults" | "publish-order" | "preset-catalog" | "catalog-regen";
 		edits: {
 			path: string;
 			previous: string;
@@ -417,13 +368,7 @@ export interface McpVertexCreatePluginOutput {
 	doctor: {
 		pluginId: string;
 		points: Array<{
-			id:
-				| 'tsconfig-base'
-				| 'vitest-shared'
-				| 'plugin-defaults'
-				| 'publish-order'
-				| 'preset-catalog'
-				| 'catalog-regen';
+			id: "tsconfig-base" | "vitest-shared" | "plugin-defaults" | "publish-order" | "preset-catalog" | "catalog-regen";
 			path: string;
 			wired: boolean;
 			summary: string;
@@ -435,20 +380,13 @@ export interface McpVertexCreatePluginOutput {
 			fixHint: string;
 		}[];
 		fullyWired: boolean;
-		missing: Array<
-			| 'tsconfig-base'
-			| 'vitest-shared'
-			| 'plugin-defaults'
-			| 'publish-order'
-			| 'preset-catalog'
-			| 'catalog-regen'
-		>;
+		missing: Array<"tsconfig-base" | "vitest-shared" | "plugin-defaults" | "publish-order" | "preset-catalog" | "catalog-regen">;
 	};
 	pluginId: string;
 }
 
 export interface McpVertexCreateProjectOutput {
-	kind: 'host' | 'plugin' | 'client' | 'extension-host';
+	kind: "host" | "plugin" | "client" | "extension-host";
 	files: {
 		path: string;
 		content: string;
@@ -492,18 +430,7 @@ export interface McpVertexDiagramDiagramProposalsOutput {
 export interface McpVertexDriftCheckOutput {
 	hasDrift: boolean;
 	changes: Array<{
-		kind:
-			| 'script-added'
-			| 'script-dropped'
-			| 'framework-changed'
-			| 'language-changed'
-			| 'monorepo-changed'
-			| 'package-manager-changed'
-			| 'test-runner-changed'
-			| 'mcp-server-added'
-			| 'mcp-server-dropped'
-			| 'ci-changed'
-			| 'agent-config-changed';
+		kind: "script-added" | "script-dropped" | "framework-changed" | "language-changed" | "monorepo-changed" | "package-manager-changed" | "test-runner-changed" | "mcp-server-added" | "mcp-server-dropped" | "ci-changed" | "agent-config-changed";
 		summary: string;
 	}>;
 	isFirstSnapshot: boolean;
@@ -516,7 +443,7 @@ export interface McpVertexEnvEnvCheckOutput {
 	path: string;
 	findings: Array<{
 		ruleId: string;
-		severity: 'critical' | 'high' | 'medium' | 'low' | 'info';
+		severity: "critical" | "high" | "medium" | "low" | "info";
 		message: string;
 		fix?: string;
 		location?: {
@@ -539,20 +466,17 @@ export interface McpVertexEnvEnvExplainsOutput {
 	found: boolean;
 	path: string;
 	explain: {
-		capabilities: Array<
-			| {
-					plugin: string;
-					capability: string;
-					provider?: string;
-					satisfiedBy: string[];
-			  }
-			| {
-					plugin: string;
-					capability: string;
-					provider?: string;
-					missing: string[];
-			  }
-		>;
+		capabilities: Array<{
+			plugin: string;
+			capability: string;
+			provider?: string;
+			satisfiedBy: string[];
+		} | {
+			plugin: string;
+			capability: string;
+			provider?: string;
+			missing: string[];
+		}>;
 		blocked: {
 			plugin: string;
 			capability: string;
@@ -585,13 +509,10 @@ export interface McpVertexFsWriteOutput {
 }
 
 export interface McpVertexGetValidationMatrixOutput {
-	scopes: Record<
-		string,
-		{
-			command: string;
-			expect: string;
-		}[]
-	>;
+	scopes: Record<string, {
+		command: string;
+		expect: string;
+	}[]>;
 }
 
 export interface McpVertexI18nI18nCheckOutput {
@@ -599,7 +520,7 @@ export interface McpVertexI18nI18nCheckOutput {
 	locales: string[];
 	findings: Array<{
 		ruleId: string;
-		severity: 'critical' | 'high' | 'medium' | 'low' | 'info';
+		severity: "critical" | "high" | "medium" | "low" | "info";
 		message: string;
 		fix?: string;
 		location?: {
@@ -624,7 +545,7 @@ export interface McpVertexI18nI18nValidateOutput {
 	locales: string[];
 	findings: Array<{
 		ruleId: string;
-		severity: 'critical' | 'high' | 'medium' | 'low' | 'info';
+		severity: "critical" | "high" | "medium" | "low" | "info";
 		message: string;
 		fix?: string;
 		location?: {
@@ -649,7 +570,7 @@ export interface McpVertexInitConfigOutput {
 		reason: string;
 		nextAction?: string;
 	};
-	preset?: 'lean' | 'standard' | 'minimal' | 'swarm';
+	preset?: "lean" | "standard" | "minimal" | "swarm";
 	config?: Record<string, unknown>;
 	rationale?: string[];
 	wrote?: boolean;
@@ -671,7 +592,7 @@ export interface McpVertexLinkCheckLinkCheckOutput {
 	total: number;
 	findings: Array<{
 		ruleId: string;
-		severity: 'critical' | 'high' | 'medium' | 'low' | 'info';
+		severity: "critical" | "high" | "medium" | "low" | "info";
 		message: string;
 		fix?: string;
 		location?: {
@@ -692,25 +613,22 @@ export interface McpVertexLinkCheckLinkCheckOutput {
 }
 
 export interface McpVertexMetricsOutput {
-	tools: Record<
-		string,
-		{
-			calls: number;
-			errors: number;
-			totalMs: number;
-			maxMs: number;
-			totalBytes: number;
-			cost: {
-				contentTextBytes: number;
-				structuredJsonBytes: number;
-				wireEstimateBytes: number;
-				estimatedTokens: {
-					estimatedTokens4B: number;
-					actualModelTokens?: number;
-				};
+	tools: Record<string, {
+		calls: number;
+		errors: number;
+		totalMs: number;
+		maxMs: number;
+		totalBytes: number;
+		cost: {
+			contentTextBytes: number;
+			structuredJsonBytes: number;
+			wireEstimateBytes: number;
+			estimatedTokens: {
+				estimatedTokens4B: number;
+				actualModelTokens?: number;
 			};
-		}
-	>;
+		};
+	}>;
 	totals: {
 		calls: number;
 		errors: number;
@@ -743,12 +661,12 @@ export interface McpVertexObservabilityObsCorrelateOutput {
 }
 
 export interface McpVertexObservabilityObsErrorsOutput {
-	source: 'sentry' | 'datadog' | 'custom';
+	source: "sentry" | "datadog" | "custom";
 	issues: Array<{
 		id: string;
 		title: string;
 		project: string;
-		level: 'fatal' | 'error' | 'warning' | 'info' | 'debug' | 'unknown';
+		level: "fatal" | "error" | "warning" | "info" | "debug" | "unknown";
 		lastSeen: string;
 		eventCount: number;
 		context: string;
@@ -772,19 +690,17 @@ export interface McpVertexObservabilityObsReleaseHealthOutput {
 		low: number;
 		info: number;
 	};
-	worst: 'critical' | 'high' | 'medium' | 'low' | 'info' | null;
+	worst: "critical" | "high" | "medium" | "low" | "info" | null;
 }
 
 export interface McpVertexObservabilityObsRuntimeMetricsOutput {
 	calls: number;
-	responses:
-		| {
-				hasSamples: false;
-		  }
-		| {
-				hasSamples: true;
-				p95PayloadBytes: number;
-		  };
+	responses: {
+		hasSamples: false;
+	} | {
+		hasSamples: true;
+		p95PayloadBytes: number;
+	};
 }
 
 export interface McpVertexObservabilityObsTraceOutput {
@@ -804,7 +720,7 @@ export interface McpVertexObservabilityObsTraceOutput {
 		low: number;
 		info: number;
 	};
-	worst: 'critical' | 'high' | 'medium' | 'low' | 'info' | null;
+	worst: "critical" | "high" | "medium" | "low" | "info" | null;
 }
 
 export interface McpVertexOverviewOutput {
@@ -839,7 +755,7 @@ export interface McpVertexPerfPerfBundleOutput {
 	}[];
 	findings: Array<{
 		ruleId: string;
-		severity: 'critical' | 'high' | 'medium' | 'low' | 'info';
+		severity: "critical" | "high" | "medium" | "low" | "info";
 		message: string;
 		fix?: string;
 		location?: {
@@ -858,31 +774,29 @@ export interface McpVertexPerfPerfBundleOutput {
 	worst: string;
 }
 
-export type McpVertexPerfPerfProfileOutput =
-	| {
-			ok: true;
-			profiler: string;
-			hotspots: Array<{
-				name: string;
-				message: string;
-				severity: 'high' | 'medium' | 'low' | 'info';
-				selfPercent: number;
-				totalPercent: number;
-				samples: number;
-			}>;
-			summary: {
-				critical: number;
-				high: number;
-				medium: number;
-				low: number;
-				info: number;
-			};
-			worst: string;
-	  }
-	| {
-			ok: 'skipped';
-			hint: string;
-	  };
+export type McpVertexPerfPerfProfileOutput = {
+	ok: true;
+	profiler: string;
+	hotspots: Array<{
+		name: string;
+		message: string;
+		severity: "high" | "medium" | "low" | "info";
+		selfPercent: number;
+		totalPercent: number;
+		samples: number;
+	}>;
+	summary: {
+		critical: number;
+		high: number;
+		medium: number;
+		low: number;
+		info: number;
+	};
+	worst: string;
+} | {
+	ok: "skipped";
+	hint: string;
+};
 
 export interface McpVertexPlanMcpProjectOutput {
 	ok?: boolean;
@@ -906,12 +820,11 @@ export interface McpVertexPluginAddOutput {
 		package: string;
 		summary: string;
 		tags: string[];
-		origin: 'first-party' | 'community';
-		defaultPreset?:
-			'minimal' | 'lean' | 'standard' | 'swarm' | 'full' | 'vertex';
+		origin: "first-party" | "community";
+		defaultPreset?: "minimal" | "lean" | "standard" | "swarm" | "full" | "vertex";
 	};
 	steps: Array<{
-		kind: 'install' | 'wire' | 'config';
+		kind: "install" | "wire" | "config";
 		summary: string;
 		detail: Record<string, unknown>;
 	}>;
@@ -935,16 +848,15 @@ export interface McpVertexPluginSearchOutput {
 		package: string;
 		summary: string;
 		tags: string[];
-		origin: 'first-party' | 'community';
-		defaultPreset?:
-			'minimal' | 'lean' | 'standard' | 'swarm' | 'full' | 'vertex';
+		origin: "first-party" | "community";
+		defaultPreset?: "minimal" | "lean" | "standard" | "swarm" | "full" | "vertex";
 	}>;
 	total: number;
 	truncated: boolean;
 }
 
 export interface McpVertexProjectContextOutput {
-	surfaceMode: 'managed' | 'native' | 'adaptive' | 'compact';
+	surfaceMode: "managed" | "native" | "adaptive" | "compact";
 	workspaceRoot: string;
 	cacheDir?: string;
 	docsDir?: string;
@@ -957,7 +869,7 @@ export interface McpVertexProjectContextOutput {
 }
 
 export interface McpVertexPromptEvalEvalReportOutput {
-	tool: 'eval_report';
+	tool: "eval_report";
 	rows: Array<{
 		providerId: string;
 		costTier: number;
@@ -975,14 +887,14 @@ export interface McpVertexPromptEvalEvalReportOutput {
 }
 
 export interface McpVertexPromptEvalEvalRunOutput {
-	tool: 'eval_run';
+	tool: "eval_run";
 	taskType: string | null;
 	attempts: {
 		providerId: string;
 		costTier: number;
 		costUsd: number;
 		passed: boolean;
-		skipped?: 'spend-denied';
+		skipped?: "spend-denied";
 	}[];
 	passed: number;
 	totalCostUsd: number;
@@ -1037,7 +949,7 @@ export interface McpVertexRefactorRefactorRenameOutput {
 			newStart: number;
 			newLines: number;
 			lines: Array<{
-				kind: ' ' | '-' | '+';
+				kind: " " | "-" | "+";
 				text: string;
 			}>;
 		}>;
@@ -1065,7 +977,7 @@ export interface McpVertexRefactorRefactorSymbolsOutput {
 }
 
 export interface McpVertexScaffoldOutput {
-	kind: 'tool' | 'prompt' | 'skill' | 'agent' | 'host' | 'plugin' | 'client';
+	kind: "tool" | "prompt" | "skill" | "agent" | "host" | "plugin" | "client";
 	dryRun: boolean;
 	files: {
 		path: string;
@@ -1091,7 +1003,7 @@ export interface McpVertexSecuritySecurityAuditOutput {
 	};
 	findings: Array<{
 		ruleId: string;
-		severity: 'critical' | 'high' | 'medium' | 'low' | 'info';
+		severity: "critical" | "high" | "medium" | "low" | "info";
 		message: string;
 		fix?: string;
 		location?: {
@@ -1112,7 +1024,7 @@ export interface McpVertexSecuritySecurityDepsOutput {
 	scanned?: number;
 	findings?: Array<{
 		ruleId: string;
-		severity: 'critical' | 'high' | 'medium' | 'low' | 'info';
+		severity: "critical" | "high" | "medium" | "low" | "info";
 		message: string;
 		fix?: string;
 		location?: {
@@ -1134,11 +1046,11 @@ export interface McpVertexSecuritySecurityDepsOutput {
 }
 
 export interface McpVertexSecuritySecuritySastOutput {
-	tool: 'sast';
+	tool: "sast";
 	scanned: number;
 	findings: Array<{
 		ruleId: string;
-		severity: 'critical' | 'high' | 'medium' | 'low' | 'info';
+		severity: "critical" | "high" | "medium" | "low" | "info";
 		message: string;
 		fix?: string;
 		location?: {
@@ -1162,7 +1074,7 @@ export interface McpVertexSecuritySecuritySecretsOutput {
 	scanned: number;
 	findings: Array<{
 		ruleId: string;
-		severity: 'critical' | 'high' | 'medium' | 'low' | 'info';
+		severity: "critical" | "high" | "medium" | "low" | "info";
 		message: string;
 		fix?: string;
 		location?: {
@@ -1210,7 +1122,7 @@ export interface McpVertexTechDebtDebtScanOutput {
 	total: number;
 	findings: Array<{
 		ruleId: string;
-		severity: 'critical' | 'high' | 'medium' | 'low' | 'info';
+		severity: "critical" | "high" | "medium" | "low" | "info";
 		message: string;
 		fix?: string;
 		location?: {
@@ -1248,7 +1160,7 @@ export interface McpVertexUsageTrackingSessionHygieneOutput {
 	observedMcpOnly: true;
 	hostLifecycle: {
 		observedHostOnly: true;
-		source: 'claude-code-command-hooks';
+		source: "claude-code-command-hooks";
 		sessions: Array<{
 			hostSessionId: string;
 			observedHostOnly: true;
@@ -1259,7 +1171,7 @@ export interface McpVertexUsageTrackingSessionHygieneOutput {
 			preCompactCount: number;
 			postCompactCount: number;
 			sessionEndCount: number;
-			lastEvent: 'turn' | 'pre-compact' | 'post-compact' | 'session-end';
+			lastEvent: "turn" | "pre-compact" | "post-compact" | "session-end";
 			explicitMcpSessionIdMatch: boolean;
 			matchingMcpCalls: number;
 		}>;
@@ -1279,7 +1191,7 @@ export interface McpVertexUsageTrackingSessionHygieneOutput {
 		calls: number;
 		responseBytes: number;
 		estimatedMcpOutputTokens: number;
-		reasons: Array<'session-age' | 'idle-gap' | 'mcp-output-volume'>;
+		reasons: Array<"session-age" | "idle-gap" | "mcp-output-volume">;
 	}>;
 	sessions: Array<{
 		sessionId: string;
@@ -1291,7 +1203,7 @@ export interface McpVertexUsageTrackingSessionHygieneOutput {
 		calls: number;
 		responseBytes: number;
 		estimatedMcpOutputTokens: number;
-		reasons: Array<'session-age' | 'idle-gap' | 'mcp-output-volume'>;
+		reasons: Array<"session-age" | "idle-gap" | "mcp-output-volume">;
 	}>;
 }
 
@@ -1301,7 +1213,7 @@ export interface McpVertexUsageTrackingUsageClearOutput {
 }
 
 export interface McpVertexUsageTrackingUsageReportOutput {
-	groupBy: 'provider' | 'plugin' | 'agent' | 'extension' | 'model';
+	groupBy: "provider" | "plugin" | "agent" | "extension" | "model";
 	windowDays: number;
 	totals: {
 		calls: number;
@@ -1408,78 +1320,78 @@ export interface McpVertexVertexOutput {
 
 /** Map of this package's MCP tool names to their `structuredContent` type. */
 export interface McpVertexToolOutputs {
-	'mcp-vertex_adopt_project': McpVertexAdoptProjectOutput;
-	'mcp-vertex_agent_catalog': McpVertexAgentCatalogOutput;
-	'mcp-vertex_analyze_project': McpVertexAnalyzeProjectOutput;
-	'mcp-vertex_browser_browser_a11y': McpVertexBrowserBrowserA11yOutput;
-	'mcp-vertex_browser_browser_assert': McpVertexBrowserBrowserAssertOutput;
-	'mcp-vertex_browser_browser_click': McpVertexBrowserBrowserClickOutput;
-	'mcp-vertex_browser_browser_fill': McpVertexBrowserBrowserFillOutput;
-	'mcp-vertex_browser_browser_open': McpVertexBrowserBrowserOpenOutput;
-	'mcp-vertex_browser_browser_query': McpVertexBrowserBrowserQueryOutput;
-	'mcp-vertex_browser_browser_screenshot': McpVertexBrowserBrowserScreenshotOutput;
-	'mcp-vertex_browser_browser_verify_page': McpVertexBrowserBrowserVerifyPageOutput;
-	'mcp-vertex_completion_clear': McpVertexCompletionClearOutput;
-	'mcp-vertex_completion_report_complete': McpVertexCompletionReportCompleteOutput;
-	'mcp-vertex_completion_status': McpVertexCompletionStatusOutput;
-	'mcp-vertex_configuration_center': McpVertexConfigurationCenterOutput;
-	'mcp-vertex_container_container_build': McpVertexContainerContainerBuildOutput;
-	'mcp-vertex_container_container_inspect': McpVertexContainerContainerInspectOutput;
-	'mcp-vertex_container_container_lint': McpVertexContainerContainerLintOutput;
-	'mcp-vertex_container_container_logs': McpVertexContainerContainerLogsOutput;
-	'mcp-vertex_container_k8s_apply': McpVertexContainerK8sApplyOutput;
-	'mcp-vertex_create_plugin': McpVertexCreatePluginOutput;
-	'mcp-vertex_create_project': McpVertexCreateProjectOutput;
-	'mcp-vertex_diagram_diagram_deps': McpVertexDiagramDiagramDepsOutput;
-	'mcp-vertex_diagram_diagram_erd': McpVertexDiagramDiagramErdOutput;
-	'mcp-vertex_diagram_diagram_modules': McpVertexDiagramDiagramModulesOutput;
-	'mcp-vertex_diagram_diagram_proposals': McpVertexDiagramDiagramProposalsOutput;
-	'mcp-vertex_drift_check': McpVertexDriftCheckOutput;
-	'mcp-vertex_env_env_check': McpVertexEnvEnvCheckOutput;
-	'mcp-vertex_env_env_explains': McpVertexEnvEnvExplainsOutput;
-	'mcp-vertex_fs_read': McpVertexFsReadOutput;
-	'mcp-vertex_fs_write': McpVertexFsWriteOutput;
-	'mcp-vertex_get_validation_matrix': McpVertexGetValidationMatrixOutput;
-	'mcp-vertex_i18n_i18n_check': McpVertexI18nI18nCheckOutput;
-	'mcp-vertex_i18n_i18n_validate': McpVertexI18nI18nValidateOutput;
-	'mcp-vertex_init_config': McpVertexInitConfigOutput;
-	'mcp-vertex_knowledge': McpVertexKnowledgeOutput;
-	'mcp-vertex_link-check_link_check': McpVertexLinkCheckLinkCheckOutput;
-	'mcp-vertex_metrics': McpVertexMetricsOutput;
-	'mcp-vertex_observability_obs_correlate': McpVertexObservabilityObsCorrelateOutput;
-	'mcp-vertex_observability_obs_errors': McpVertexObservabilityObsErrorsOutput;
-	'mcp-vertex_observability_obs_release_health': McpVertexObservabilityObsReleaseHealthOutput;
-	'mcp-vertex_observability_obs_runtime_metrics': McpVertexObservabilityObsRuntimeMetricsOutput;
-	'mcp-vertex_observability_obs_trace': McpVertexObservabilityObsTraceOutput;
-	'mcp-vertex_overview': McpVertexOverviewOutput;
-	'mcp-vertex_perf_perf_bench': McpVertexPerfPerfBenchOutput;
-	'mcp-vertex_perf_perf_bundle': McpVertexPerfPerfBundleOutput;
-	'mcp-vertex_perf_perf_profile': McpVertexPerfPerfProfileOutput;
-	'mcp-vertex_plan_mcp_project': McpVertexPlanMcpProjectOutput;
-	'mcp-vertex_plugin_activate': McpVertexPluginActivateOutput;
-	'mcp-vertex_plugin_add': McpVertexPluginAddOutput;
-	'mcp-vertex_plugin_deactivate': McpVertexPluginDeactivateOutput;
-	'mcp-vertex_plugin_search': McpVertexPluginSearchOutput;
-	'mcp-vertex_project_context': McpVertexProjectContextOutput;
-	'mcp-vertex_prompt-eval_eval_report': McpVertexPromptEvalEvalReportOutput;
-	'mcp-vertex_prompt-eval_eval_run': McpVertexPromptEvalEvalRunOutput;
-	'mcp-vertex_refactor_refactor_apply': McpVertexRefactorRefactorApplyOutput;
-	'mcp-vertex_refactor_refactor_codemod': McpVertexRefactorRefactorCodemodOutput;
-	'mcp-vertex_refactor_refactor_definition': McpVertexRefactorRefactorDefinitionOutput;
-	'mcp-vertex_refactor_refactor_references': McpVertexRefactorRefactorReferencesOutput;
-	'mcp-vertex_refactor_refactor_rename': McpVertexRefactorRefactorRenameOutput;
-	'mcp-vertex_refactor_refactor_symbols': McpVertexRefactorRefactorSymbolsOutput;
-	'mcp-vertex_scaffold': McpVertexScaffoldOutput;
-	'mcp-vertex_security_security_audit': McpVertexSecuritySecurityAuditOutput;
-	'mcp-vertex_security_security_deps': McpVertexSecuritySecurityDepsOutput;
-	'mcp-vertex_security_security_sast': McpVertexSecuritySecuritySastOutput;
-	'mcp-vertex_security_security_secrets': McpVertexSecuritySecuritySecretsOutput;
-	'mcp-vertex_skill': McpVertexSkillOutput;
-	'mcp-vertex_status': McpVertexStatusOutput;
-	'mcp-vertex_tech-debt_debt_scan': McpVertexTechDebtDebtScanOutput;
-	'mcp-vertex_tool_search': McpVertexToolSearchOutput;
-	'mcp-vertex_usage-tracking_session_hygiene': McpVertexUsageTrackingSessionHygieneOutput;
-	'mcp-vertex_usage-tracking_usage_clear': McpVertexUsageTrackingUsageClearOutput;
-	'mcp-vertex_usage-tracking_usage_report': McpVertexUsageTrackingUsageReportOutput;
-	'mcp-vertex_vertex': McpVertexVertexOutput;
+	"mcp-vertex_adopt_project": McpVertexAdoptProjectOutput;
+	"mcp-vertex_agent_catalog": McpVertexAgentCatalogOutput;
+	"mcp-vertex_analyze_project": McpVertexAnalyzeProjectOutput;
+	"mcp-vertex_browser_browser_a11y": McpVertexBrowserBrowserA11yOutput;
+	"mcp-vertex_browser_browser_assert": McpVertexBrowserBrowserAssertOutput;
+	"mcp-vertex_browser_browser_click": McpVertexBrowserBrowserClickOutput;
+	"mcp-vertex_browser_browser_fill": McpVertexBrowserBrowserFillOutput;
+	"mcp-vertex_browser_browser_open": McpVertexBrowserBrowserOpenOutput;
+	"mcp-vertex_browser_browser_query": McpVertexBrowserBrowserQueryOutput;
+	"mcp-vertex_browser_browser_screenshot": McpVertexBrowserBrowserScreenshotOutput;
+	"mcp-vertex_browser_browser_verify_page": McpVertexBrowserBrowserVerifyPageOutput;
+	"mcp-vertex_completion_clear": McpVertexCompletionClearOutput;
+	"mcp-vertex_completion_report_complete": McpVertexCompletionReportCompleteOutput;
+	"mcp-vertex_completion_status": McpVertexCompletionStatusOutput;
+	"mcp-vertex_configuration_center": McpVertexConfigurationCenterOutput;
+	"mcp-vertex_container_container_build": McpVertexContainerContainerBuildOutput;
+	"mcp-vertex_container_container_inspect": McpVertexContainerContainerInspectOutput;
+	"mcp-vertex_container_container_lint": McpVertexContainerContainerLintOutput;
+	"mcp-vertex_container_container_logs": McpVertexContainerContainerLogsOutput;
+	"mcp-vertex_container_k8s_apply": McpVertexContainerK8sApplyOutput;
+	"mcp-vertex_create_plugin": McpVertexCreatePluginOutput;
+	"mcp-vertex_create_project": McpVertexCreateProjectOutput;
+	"mcp-vertex_diagram_diagram_deps": McpVertexDiagramDiagramDepsOutput;
+	"mcp-vertex_diagram_diagram_erd": McpVertexDiagramDiagramErdOutput;
+	"mcp-vertex_diagram_diagram_modules": McpVertexDiagramDiagramModulesOutput;
+	"mcp-vertex_diagram_diagram_proposals": McpVertexDiagramDiagramProposalsOutput;
+	"mcp-vertex_drift_check": McpVertexDriftCheckOutput;
+	"mcp-vertex_env_env_check": McpVertexEnvEnvCheckOutput;
+	"mcp-vertex_env_env_explains": McpVertexEnvEnvExplainsOutput;
+	"mcp-vertex_fs_read": McpVertexFsReadOutput;
+	"mcp-vertex_fs_write": McpVertexFsWriteOutput;
+	"mcp-vertex_get_validation_matrix": McpVertexGetValidationMatrixOutput;
+	"mcp-vertex_i18n_i18n_check": McpVertexI18nI18nCheckOutput;
+	"mcp-vertex_i18n_i18n_validate": McpVertexI18nI18nValidateOutput;
+	"mcp-vertex_init_config": McpVertexInitConfigOutput;
+	"mcp-vertex_knowledge": McpVertexKnowledgeOutput;
+	"mcp-vertex_link-check_link_check": McpVertexLinkCheckLinkCheckOutput;
+	"mcp-vertex_metrics": McpVertexMetricsOutput;
+	"mcp-vertex_observability_obs_correlate": McpVertexObservabilityObsCorrelateOutput;
+	"mcp-vertex_observability_obs_errors": McpVertexObservabilityObsErrorsOutput;
+	"mcp-vertex_observability_obs_release_health": McpVertexObservabilityObsReleaseHealthOutput;
+	"mcp-vertex_observability_obs_runtime_metrics": McpVertexObservabilityObsRuntimeMetricsOutput;
+	"mcp-vertex_observability_obs_trace": McpVertexObservabilityObsTraceOutput;
+	"mcp-vertex_overview": McpVertexOverviewOutput;
+	"mcp-vertex_perf_perf_bench": McpVertexPerfPerfBenchOutput;
+	"mcp-vertex_perf_perf_bundle": McpVertexPerfPerfBundleOutput;
+	"mcp-vertex_perf_perf_profile": McpVertexPerfPerfProfileOutput;
+	"mcp-vertex_plan_mcp_project": McpVertexPlanMcpProjectOutput;
+	"mcp-vertex_plugin_activate": McpVertexPluginActivateOutput;
+	"mcp-vertex_plugin_add": McpVertexPluginAddOutput;
+	"mcp-vertex_plugin_deactivate": McpVertexPluginDeactivateOutput;
+	"mcp-vertex_plugin_search": McpVertexPluginSearchOutput;
+	"mcp-vertex_project_context": McpVertexProjectContextOutput;
+	"mcp-vertex_prompt-eval_eval_report": McpVertexPromptEvalEvalReportOutput;
+	"mcp-vertex_prompt-eval_eval_run": McpVertexPromptEvalEvalRunOutput;
+	"mcp-vertex_refactor_refactor_apply": McpVertexRefactorRefactorApplyOutput;
+	"mcp-vertex_refactor_refactor_codemod": McpVertexRefactorRefactorCodemodOutput;
+	"mcp-vertex_refactor_refactor_definition": McpVertexRefactorRefactorDefinitionOutput;
+	"mcp-vertex_refactor_refactor_references": McpVertexRefactorRefactorReferencesOutput;
+	"mcp-vertex_refactor_refactor_rename": McpVertexRefactorRefactorRenameOutput;
+	"mcp-vertex_refactor_refactor_symbols": McpVertexRefactorRefactorSymbolsOutput;
+	"mcp-vertex_scaffold": McpVertexScaffoldOutput;
+	"mcp-vertex_security_security_audit": McpVertexSecuritySecurityAuditOutput;
+	"mcp-vertex_security_security_deps": McpVertexSecuritySecurityDepsOutput;
+	"mcp-vertex_security_security_sast": McpVertexSecuritySecuritySastOutput;
+	"mcp-vertex_security_security_secrets": McpVertexSecuritySecuritySecretsOutput;
+	"mcp-vertex_skill": McpVertexSkillOutput;
+	"mcp-vertex_status": McpVertexStatusOutput;
+	"mcp-vertex_tech-debt_debt_scan": McpVertexTechDebtDebtScanOutput;
+	"mcp-vertex_tool_search": McpVertexToolSearchOutput;
+	"mcp-vertex_usage-tracking_session_hygiene": McpVertexUsageTrackingSessionHygieneOutput;
+	"mcp-vertex_usage-tracking_usage_clear": McpVertexUsageTrackingUsageClearOutput;
+	"mcp-vertex_usage-tracking_usage_report": McpVertexUsageTrackingUsageReportOutput;
+	"mcp-vertex_vertex": McpVertexVertexOutput;
 }

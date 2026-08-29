@@ -137,6 +137,24 @@ const parseBarrel = async (): Promise<readonly IExport[]> => {
 			});
 		}
 	}
+	for (const line of raw.split('\n')) {
+		const trimmed = line.trim();
+		const direct =
+			/^export (const|function|class)\s+([A-Za-z_$][A-Za-z0-9_$]*)\b/.exec(
+				trimmed,
+			);
+		if (direct === null) continue;
+		const kind = direct[1] as 'const' | 'function' | 'class';
+		const name = direct[2] ?? '';
+		out.push({
+			name,
+			kind,
+			maturity: classify(name, trimmed),
+			source: '../public/index',
+			deprecatedTag: /@deprecated\b/.test(trimmed),
+			experimentalTag: /@experimental\b/.test(trimmed),
+		});
+	}
 	return out;
 };
 
@@ -208,5 +226,7 @@ export const main = async (argv: readonly string[]): Promise<number> => {
 };
 
 if (import.meta.main) {
-	process.exit(await main(process.argv.slice(2)));
+	void main(process.argv.slice(2)).then((code) => {
+		process.exitCode = code;
+	});
 }

@@ -1,5 +1,5 @@
-import { existsSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
+import { access } from 'node:fs/promises';
 import { join } from 'node:path';
 
 import { withFileMutex, writeFileAtomic } from '@mcp-vertex/core/public';
@@ -89,10 +89,19 @@ const readStore = async (
 	pathAbs: string,
 	retentionDays: number,
 ): Promise<IKpiHistoryStore> => {
-	const pathExists = options.pathExists ?? existsSync;
+	const pathExists =
+		options.pathExists ??
+		(async (path: string): Promise<boolean> => {
+			try {
+				await access(path);
+				return true;
+			} catch {
+				return false;
+			}
+		});
 	const readTextFile =
 		options.readTextFile ?? ((path: string) => readFile(path, 'utf8'));
-	if (!pathExists(pathAbs)) {
+	if (!(await pathExists(pathAbs))) {
 		return defaultStore(retentionDays);
 	}
 	const content = await readTextFile(pathAbs);

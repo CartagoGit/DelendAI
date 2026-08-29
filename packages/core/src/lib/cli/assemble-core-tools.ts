@@ -529,6 +529,9 @@ export const assembleCoreTools = (
 	prompts.unshift(
 		buildAgentBootstrapPromptRegistration(corePrefix, {
 			sources: catalogSources,
+			...(fileConfig.core?.agentPolicy !== undefined
+				? { agentPolicy: fileConfig.core.agentPolicy }
+				: {}),
 			server: {
 				name: args.serverName,
 				version: args.serverVersion,
