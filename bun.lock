@@ -154,6 +154,18 @@
         "vitest": "4.1.11",
       },
     },
+    "packages/test-kit": {
+      "name": "@mcp-vertex/test-kit",
+      "version": "0.1.0",
+      "devDependencies": {
+        "@biomejs/biome": "2.5.9",
+        "@modelcontextprotocol/sdk": "^1.29.0",
+        "@types/bun": "latest",
+        "@types/node": "^26.1.0",
+        "typescript": "7.0.2",
+        "vitest": "4.1.11",
+      },
+    },
     "packages/ui-extension": {
       "name": "@mcp-vertex/ui-extension",
       "version": "1.0.0",
@@ -343,6 +355,7 @@
       },
       "devDependencies": {
         "@mcp-vertex/core": "workspace:*",
+        "@mcp-vertex/test-kit": "workspace:*",
         "@types/bun": "latest",
         "typescript": "7.0.2",
         "vitest": "4.1.10",
@@ -671,6 +684,7 @@
       },
       "devDependencies": {
         "@mcp-vertex/core": "workspace:*",
+        "@mcp-vertex/test-kit": "workspace:*",
         "@types/bun": "latest",
         "typescript": "7.0.2",
         "vitest": "4.1.11",
@@ -716,6 +730,9 @@
     "plugins/observability": {
       "name": "@mcp-vertex/observability",
       "version": "0.1.1",
+      "devDependencies": {
+        "@mcp-vertex/test-kit": "workspace:*",
+      },
       "peerDependencies": {
         "@mcp-vertex/core": "^0.1.1",
         "@mcp-vertex/web-fetch": "workspace:*",
@@ -824,6 +841,7 @@
         "@mcp-vertex/core": "workspace:*",
         "@mcp-vertex/error-reporting": "workspace:*",
         "@mcp-vertex/logs": "workspace:*",
+        "@mcp-vertex/test-kit": "workspace:*",
         "@types/bun": "latest",
         "typescript": "7.0.2",
         "vitest": "4.1.11",
@@ -841,6 +859,7 @@
       },
       "devDependencies": {
         "@mcp-vertex/core": "workspace:*",
+        "@mcp-vertex/test-kit": "workspace:*",
         "@types/bun": "latest",
         "typescript": "7.0.2",
         "vitest": "4.1.11",
@@ -1477,6 +1496,8 @@
     "@mcp-vertex/tech-debt": ["@mcp-vertex/tech-debt@workspace:plugins/tech-debt"],
 
     "@mcp-vertex/test-convention": ["@mcp-vertex/test-convention@workspace:plugins/test-convention"],
+
+    "@mcp-vertex/test-kit": ["@mcp-vertex/test-kit@workspace:packages/test-kit"],
 
     "@mcp-vertex/test-policy": ["@mcp-vertex/test-policy@workspace:plugins/test-policy"],
 
