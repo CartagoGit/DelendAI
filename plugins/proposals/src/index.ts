@@ -92,6 +92,7 @@ const PROPOSALS_OPTIONS_SCHEMA = z.object({
 			mode: z.enum(['none', 'commit', 'commit-and-push']).default('none'),
 			messageTemplate: z.string().optional(),
 			pushTarget: z.string().optional(),
+			protectedBranches: z.array(z.string()).default(['main', 'master']),
 		})
 		.optional(),
 	orchestration: z
@@ -303,6 +304,26 @@ export default definePlugin({
 		// e.g. `['paused/demos']`. mcp-vertex bakes none — the host injects
 		// its folder policy via ctx.options (now schema-validated, S9).
 		const extraProposalFolders = parsedOptions.data.proposalFolders ?? [];
+		const commitPolicyOptions = ctx.pluginOptions?.get('commit-policy');
+		const commitPolicyPush = commitPolicyOptions?.push;
+		const protectedBranches =
+			commitPolicyPush !== null &&
+			typeof commitPolicyPush === 'object' &&
+			Array.isArray(
+				(commitPolicyPush as { protectedBranches?: unknown })
+					.protectedBranches,
+			)
+				? (commitPolicyPush as { protectedBranches: string[] })
+						.protectedBranches
+				: ['main', 'master'];
+		const configuredPersist = parsedOptions.data.persist;
+		const effectivePersist =
+			configuredPersist === undefined
+				? undefined
+				: {
+						...configuredPersist,
+						protectedBranches,
+					};
 		const microValidationCalls: IObservedToolCall[] = [];
 		const incidentLogStore = createLogStore(
 			ctx.workspace.resolve(join(ctx.cacheDir, 'results', 'logs-errors')),
@@ -393,6 +414,7 @@ export default definePlugin({
 				? {
 						persist: {
 							mode: parsedOptions.data.persist.mode,
+							protectedBranches,
 							...(parsedOptions.data.persist.messageTemplate !==
 							undefined
 								? {
@@ -570,12 +592,13 @@ export default definePlugin({
 									.requirePeerReview as boolean,
 							}
 						: { requirePeerReview: true }),
-					...(parsedOptions.data.persist !== undefined
+					...(effectivePersist !== undefined
 						? {
-								persist: parsedOptions.data.persist as {
+								persist: effectivePersist as {
 									mode: 'none' | 'commit' | 'commit-and-push';
 									messageTemplate?: string;
 									pushTarget?: string;
+									protectedBranches?: readonly string[];
 								},
 							}
 						: {}),

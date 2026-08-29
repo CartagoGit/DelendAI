@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-08-29T17:23:40.520Z",
+	"generatedAt": "2026-08-29T19:23:19.477Z",
 	"mode": "compact",
 	"tools": [
 		{
@@ -1279,18 +1279,18 @@
 				"kind": "feat"
 			},
 			{
-				"id": "q00003",
-				"title": "q00003",
-				"track": "develop-audit-consolidation",
-				"status": "in-progress",
-				"kind": "plan"
-			},
-			{
 				"id": "r00018",
 				"title": "r00018",
 				"track": "tokens",
-				"status": "paused",
+				"status": "in-progress",
 				"kind": "refactor"
+			},
+			{
+				"id": "v00125",
+				"title": "v00125",
+				"track": "governance",
+				"status": "in-progress",
+				"kind": "unspecified"
 			},
 			{
 				"id": "v00126",
@@ -1316,9 +1316,9 @@
 		],
 		"byStatus": {
 			"ready": 0,
-			"in-progress": 8,
+			"in-progress": 9,
 			"review": 0,
-			"paused": 3,
+			"paused": 2,
 			"done": 514,
 			"blocked": 0,
 			"retired": 2,

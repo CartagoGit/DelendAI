@@ -90,9 +90,6 @@ export const createPushScheduler = (
 		) {
 			return `push refused: "${branch}" is in protectedBranches`;
 		}
-		if (branch === 'develop') {
-			return 'DIRECT_PUSH_TO_DEVELOP_NOT_ALLOWED: open a PR from a wip/* branch instead';
-		}
 		return null;
 	};
 

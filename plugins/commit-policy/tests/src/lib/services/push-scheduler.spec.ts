@@ -42,7 +42,7 @@ const basePushPolicy = (
 	enabled: true,
 	onCommit: false,
 	force: 'with-lease',
-	protectedBranches: ['main', 'master', 'develop'],
+	protectedBranches: ['main', 'master'],
 	...overrides,
 });
 
@@ -123,7 +123,10 @@ describe('push scheduler (x00266)', () => {
 		const pushCount = { n: 0 };
 		const scheduler = createPushScheduler({
 			run: buildRunner('develop', fail('push refused')),
-			policy: basePushPolicy({ onCommit: true }),
+			policy: basePushPolicy({
+				onCommit: true,
+				protectedBranches: ['main', 'master', 'develop'],
+			}),
 			onAttempt: () => {
 				pushCount.n += 1;
 			},
@@ -135,7 +138,7 @@ describe('push scheduler (x00266)', () => {
 		expect(pushCount.n).toBe(1);
 	});
 
-	it('refuses pushes on develop even when config omits develop', async () => {
+	it('pushes on develop when config omits develop from protectedBranches', async () => {
 		const pushCount = { n: 0 };
 		const scheduler = createPushScheduler({
 			run: buildRunner('develop', ok('pushed\n')),
@@ -149,9 +152,9 @@ describe('push scheduler (x00266)', () => {
 			},
 		});
 		const result = await scheduler.onCommitSucceeded();
-		expect(result?.ok).toBe(false);
-		if (result?.ok !== false) return;
-		expect(result.refusal).toContain('DIRECT_PUSH_TO_DEVELOP_NOT_ALLOWED');
+		expect(result?.ok).toBe(true);
+		if (result?.ok !== true) return;
+		expect(result.branch).toBe('develop');
 		expect(pushCount.n).toBe(1);
 	});
 
