@@ -371,26 +371,22 @@ const pushFailureReason = (value: unknown): string => {
 	return 'push failed';
 };
 
-const summarizeTriggerFiles = (files: readonly string[]): string => {
-	const displayed = files.slice(0, 3);
-	const suffix =
-		files.length > displayed.length
-			? ` +${files.length - displayed.length} more`
-			: '';
-	return `${displayed.join(', ')}${suffix}`;
-};
-
 export const buildTriggerCommitMessage = (event: {
 	readonly kind: 'threshold' | 'interval';
 	readonly dirtyCount: number;
 	readonly files?: readonly string[] | undefined;
 }): string => {
 	const files = event.files ?? [];
-	const subject =
-		files.length > 0
-			? `update ${summarizeTriggerFiles(files)}`
-			: `update ${event.dirtyCount} ${event.dirtyCount === 1 ? 'file' : 'files'}`;
-	return `chore: ${subject}`;
+	if (files.length === 0) {
+		const noun = event.dirtyCount === 1 ? 'file' : 'files';
+		return `chore: update ${event.dirtyCount} ${noun}`;
+	}
+	const displayed = files.slice(0, 3);
+	const suffix =
+		files.length > displayed.length
+			? ` +${files.length - displayed.length} more`
+			: '';
+	return `chore: update ${displayed.join(', ')}${suffix}`;
 };
 
 const composeMessage = (event: IEngineEvent): string => {
