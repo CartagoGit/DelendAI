@@ -1,4 +1,5 @@
 import { dirname, join } from 'node:path';
+import z from 'zod';
 import type {
 	IToolTextResult,
 } from '@mcp-vertex/core/public';
@@ -1110,9 +1111,11 @@ export const buildCloseSliceRegistration = (
 									? { git: closeSliceOptions.persistGit }
 									: {}),
 							},
-						);
-							(!persistResult.committed ||
-									persistResult.pushed !== true))
+							);
+						if (
+							persistResult.committed !== true ||
+							(configuredPersist.mode === 'commit-and-push' &&
+								persistResult.pushed !== true)
 						) {
 							const err: ICloseSliceThrownError = Object.assign(
 								new Error(
