@@ -24,8 +24,6 @@
  * the interface is stable.
  */
 
-import { commitAndPush, type IGitRunner } from '@mcp-vertex/core/public';
-
 import {
 	branchProtectedRefusal,
 	isBranchProtected,
@@ -41,6 +39,7 @@ import {
 	type ICommitDriverInput,
 	type ICommitDriverOptions,
 } from './services/commit-driver';
+import type { IPushDriverResult } from './services/push-driver';
 import { validateConventionalHeader } from './services/git-extra';
 
 /**
@@ -97,7 +96,8 @@ export type IEngineRefusalCode =
 	| 'BRANCH_PROTECTED'
 	| 'NON_CONVENTIONAL_MESSAGE'
 	| 'CROSS_AGENT_CONTAMINATION'
-	| 'TRIGGER_HAS_NO_FILES';
+	| 'TRIGGER_HAS_NO_FILES'
+	| 'PUSH_FAILED';
 
 export type IEngineResult =
 	| {
@@ -127,7 +127,9 @@ export interface IEngineOptions {
 	readonly driver: ICommitDriverOptions;
 	readonly branchPolicy: IBranchPolicy;
 	/** Hook fired after a successful commit so the push scheduler can act. */
-	readonly onCommitSucceeded?: (() => Promise<unknown>) | undefined;
+	readonly onCommitSucceeded?:
+		| (() => Promise<IPushDriverResult | null>)
+		| undefined;
 	/**
 	 * f00183 (AUD-CP-012): idempotency store. When provided,
 	 * the engine checks `has(key)` BEFORE staging and adds the
@@ -256,12 +258,25 @@ export const createCommitPolicyEngine = (
 				return refusalToEngine(result.refusal);
 			}
 
-			// Step 7 — push (x00266). Best-effort; never blocks
-			// the engine result. Errors swallowed.
+			// Step 7 — push (x00266/x00298). A configured push is part
+			// of the result contract: never acknowledge the event before
+			// the push has completed.
+			let pushed = result.pushed;
 			if (options.onCommitSucceeded !== undefined && result.committed) {
-				void options.onCommitSucceeded().catch(() => {
-					// best-effort
-				});
+				try {
+					const pushResult = await options.onCommitSucceeded();
+					if (pushResult !== null && pushResult !== undefined) {
+						if (!pushResult.ok) {
+							return err('PUSH_FAILED', pushResult.refusal);
+						}
+						pushed = true;
+					}
+				} catch (error) {
+					return err(
+						'PUSH_FAILED',
+						error instanceof Error ? error.message : String(error),
+					);
+				}
 			}
 
 			const commitSha = result.hash;
@@ -277,7 +292,7 @@ export const createCommitPolicyEngine = (
 			return {
 				ack: 'OK',
 				committed: result.committed,
-				pushed: result.pushed,
+				pushed,
 				...(commitSha !== undefined ? { commitSha } : {}),
 			};
 		},
@@ -289,7 +304,6 @@ export const createCommitPolicyEngine = (
 		},
 	};
 };
-
 const composeMessage = (event: IEngineEvent): string => {
 	switch (event.kind) {
 		case 'slice':
@@ -372,8 +386,3 @@ const refusalToEngine = (refusal: string): IEngineResult => {
 	// slot (engine has no generic code; callers see the reason).
 	return err('BRANCH_PROTECTED', refusal);
 };
-
-// Re-export the underlying `commitAndPush` so the plugin can
-// compose the same primitives (and tests can verify nothing
-// leaks through an unexpected path).
-export { commitAndPush };
