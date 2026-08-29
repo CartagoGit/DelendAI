@@ -11,6 +11,10 @@
  * that directly.
  */
 
+import { mkdtemp, readFile, rm } from 'node:fs/promises';
+import { join } from 'node:path';
+import { tmpdir } from 'node:os';
+
 import { describe, expect, it } from 'vitest';
 
 import type { IBranchProtectionConfig } from '../../../.github/branch-protection.ts';
@@ -35,6 +39,30 @@ const LIVE_MAIN_FIXTURE = {
 	required_linear_history: { enabled: true },
 	allow_force_pushes: { enabled: false },
 	allow_deletions: { enabled: false },
+};
+
+const GREEN_CHECK_RUNS_FIXTURE = {
+	check_runs: [
+		{
+			name: 'ci-complete',
+			status: 'completed',
+			conclusion: 'success',
+			head_sha: 'abc123',
+			html_url: 'https://example.test/checks/1',
+		},
+	],
+};
+
+const RED_CHECK_RUNS_FIXTURE = {
+	check_runs: [
+		{
+			name: 'ci-complete',
+			status: 'completed',
+			conclusion: 'failure',
+			head_sha: 'abc123',
+			html_url: 'https://example.test/checks/1',
+		},
+	],
 };
 
 const MAIN_POLICY: IBranchProtectionConfig['branches'][number] = {
@@ -161,6 +189,19 @@ const jsonResponse = (body: unknown, status = 200): Response =>
 		headers: { 'content-type': 'application/json' },
 	});
 
+const stubHealthyFetch = (): void => {
+	stubFetch(async (url) => {
+		const u = url.toString();
+		if (u.includes('/commits/develop/check-runs')) {
+			return jsonResponse(GREEN_CHECK_RUNS_FIXTURE);
+		}
+		if (u.includes('/branches/main/protection')) {
+			return jsonResponse(LIVE_MAIN_FIXTURE);
+		}
+		return jsonResponse({ message: 'Not Found' }, 404);
+	});
+};
+
 describe('main() — three-state verdict', () => {
 	it('refuses without --repo', async () => {
 		const code = await healthMain([]);
@@ -168,13 +209,7 @@ describe('main() — three-state verdict', () => {
 	});
 
 	it('returns healthy=true when every branch matches', async () => {
-		stubFetch(async (url) => {
-			const u = url.toString();
-			// develop is declared unprotected — "no rule" is its healthy state.
-			if (u.includes('/branches/main/protection'))
-				return jsonResponse(LIVE_MAIN_FIXTURE);
-			return jsonResponse({ message: 'not found' }, 404);
-		});
+		stubHealthyFetch();
 		try {
 			const code = await healthMain(['--repo', 'foo/bar', '--dry-run']);
 			expect(code).toBe(0);
@@ -183,9 +218,48 @@ describe('main() — three-state verdict', () => {
 		}
 	});
 
+	it('writes the dashboard JSON shape when --output is provided', async () => {
+		stubHealthyFetch();
+		const tempDir = await mkdtemp(join(tmpdir(), 'verify-develop-health-'));
+		const outputPath = join(tempDir, 'develop-health.json');
+		try {
+			const code = await healthMain([
+				'--repo',
+				'foo/bar',
+				'--output',
+				outputPath,
+			]);
+			expect(code).toBe(0);
+			const written = JSON.parse(await readFile(outputPath, 'utf8')) as {
+				lastVerifiedAt: string | null;
+				ciStatus: string;
+				protectedBranches: {
+					main: boolean | null;
+					develop: boolean | null;
+				};
+				requiredChecks: string[];
+				discrepancies: string[];
+			};
+			expect(written.lastVerifiedAt).not.toBeNull();
+			expect(written.ciStatus).toBe('green');
+			expect(written.protectedBranches).toEqual({
+				main: true,
+				develop: false,
+			});
+			expect(written.requiredChecks).toEqual(['ci-complete']);
+			expect(written.discrepancies).toEqual([]);
+		} finally {
+			restoreFetch();
+			await rm(tempDir, { recursive: true, force: true });
+		}
+	});
+
 	it('returns exit 1 when a required check is missing', async () => {
 		stubFetch(async (url) => {
 			const u = url.toString();
+			if (u.includes('/commits/develop/check-runs')) {
+				return jsonResponse({ check_runs: [] });
+			}
 			if (u.includes('/branches/main/protection'))
 				return jsonResponse({
 					...LIVE_MAIN_FIXTURE,
@@ -204,8 +278,32 @@ describe('main() — three-state verdict', () => {
 		}
 	});
 
+	it('returns exit 1 when develop latest required check-run is red', async () => {
+		stubFetch(async (url) => {
+			const u = url.toString();
+			if (u.includes('/commits/develop/check-runs')) {
+				return jsonResponse(RED_CHECK_RUNS_FIXTURE);
+			}
+			if (u.includes('/branches/main/protection')) {
+				return jsonResponse(LIVE_MAIN_FIXTURE);
+			}
+			return jsonResponse({ message: 'not found' }, 404);
+		});
+		try {
+			const code = await healthMain(['--repo', 'foo/bar', '--dry-run']);
+			expect(code).toBe(1);
+		} finally {
+			restoreFetch();
+		}
+	});
+
 	it('returns exit 1 when the protected branch has no rule (404 on a branch declared protected: true)', async () => {
-		stubFetch(async () => jsonResponse({ message: 'Not Found' }, 404));
+		stubFetch(async (url) => {
+			if (url.toString().includes('/commits/develop/check-runs')) {
+				return jsonResponse(GREEN_CHECK_RUNS_FIXTURE);
+			}
+			return jsonResponse({ message: 'Not Found' }, 404);
+		});
 		try {
 			const code = await healthMain(['--repo', 'foo/bar', '--dry-run']);
 			expect(code).toBe(1);
@@ -260,6 +358,9 @@ describe('main() — three-state verdict', () => {
 	it('one readable branch with drift + one unreadable ⇒ drift is still reported', async () => {
 		stubFetch(async (url) => {
 			const u = url.toString();
+			if (u.includes('/commits/develop/check-runs')) {
+				return jsonResponse(GREEN_CHECK_RUNS_FIXTURE);
+			}
 			if (u.includes('/branches/main/protection')) {
 				return jsonResponse({
 					...LIVE_MAIN_FIXTURE,
@@ -286,12 +387,15 @@ describe('parity — verify-branch-protection and verify-develop-health agree', 
 		readonly name: string;
 		readonly status: number;
 		readonly body: unknown;
+		readonly checkRunsStatus?: number;
+		readonly checkRunsBody?: unknown;
 		readonly tokenExplicit: boolean;
 	}> = [
 		{
 			name: 'live, matches policy',
 			status: 200,
 			body: LIVE_MAIN_FIXTURE,
+			checkRunsBody: GREEN_CHECK_RUNS_FIXTURE,
 			tokenExplicit: false,
 		},
 		{
@@ -301,31 +405,45 @@ describe('parity — verify-branch-protection and verify-develop-health agree', 
 				...LIVE_MAIN_FIXTURE,
 				allow_force_pushes: { enabled: true },
 			},
+			checkRunsBody: GREEN_CHECK_RUNS_FIXTURE,
 			tokenExplicit: false,
 		},
 		{
 			name: '404 unprotected',
 			status: 404,
 			body: { message: 'Not Found' },
+			checkRunsBody: GREEN_CHECK_RUNS_FIXTURE,
 			tokenExplicit: false,
 		},
 		{
 			name: '403 no explicit token',
 			status: 403,
 			body: { message: 'no scope' },
+			checkRunsStatus: 403,
+			checkRunsBody: { message: 'no scope' },
 			tokenExplicit: false,
 		},
 		{
 			name: '403 with explicit token',
 			status: 403,
 			body: { message: 'bad token' },
+			checkRunsStatus: 403,
+			checkRunsBody: { message: 'bad token' },
 			tokenExplicit: true,
 		},
 	];
 
 	for (const fx of fixtures) {
 		it(`reaches the same pass/fail exit-code shape for: ${fx.name}`, async () => {
-			stubFetch(async () => jsonResponse(fx.body, fx.status));
+			stubFetch(async (url) => {
+				if (url.toString().includes('/commits/develop/check-runs')) {
+					return jsonResponse(
+						fx.checkRunsBody ?? GREEN_CHECK_RUNS_FIXTURE,
+						fx.checkRunsStatus ?? 200,
+					);
+				}
+				return jsonResponse(fx.body, fx.status);
+			});
 			delete process.env.BRANCH_PROTECTION_TOKEN;
 			const originalToken = process.env.GITHUB_TOKEN;
 			process.env.GITHUB_TOKEN = 'ambient-token';
