@@ -108,23 +108,42 @@ export const normaliseColumnType = (raw: string): IColumnType => {
 	return 'unknown';
 };
 
+const ASCII_UPPER_A = 65;
+const ASCII_UPPER_Z = 90;
+const ASCII_LOWER_A = 97;
+const ASCII_LOWER_Z = 122;
+const ASCII_ZERO = 48;
+const ASCII_NINE = 57;
+const CHAR_PLUS = 43;
+const CHAR_HYPHEN = 45;
+const CHAR_DOT = 46;
+const CHAR_TAB = 9;
+const CHAR_LINE_FEED = 10;
+const CHAR_VERTICAL_TAB = 11;
+const CHAR_FORM_FEED = 12;
+const CHAR_CARRIAGE_RETURN = 13;
+const CHAR_SPACE = 32;
+const CHAR_SLASH = 47;
+const CHAR_AMPERSAND = 38;
+
 const isAsciiLetter = (code: number): boolean =>
-	(code >= 65 && code <= 90) || (code >= 97 && code <= 122);
+	(code >= ASCII_UPPER_A && code <= ASCII_UPPER_Z) ||
+	(code >= ASCII_LOWER_A && code <= ASCII_LOWER_Z);
 
 const isSchemeChar = (code: number): boolean =>
 	isAsciiLetter(code) ||
-	(code >= 48 && code <= 57) ||
-	code === 43 ||
-	code === 45 ||
-	code === 46;
+	(code >= ASCII_ZERO && code <= ASCII_NINE) ||
+	code === CHAR_PLUS ||
+	code === CHAR_HYPHEN ||
+	code === CHAR_DOT;
 
 const isWhitespaceCode = (code: number): boolean =>
-	code === 9 ||
-	code === 10 ||
-	code === 11 ||
-	code === 12 ||
-	code === 13 ||
-	code === 32;
+	code === CHAR_TAB ||
+	code === CHAR_LINE_FEED ||
+	code === CHAR_VERTICAL_TAB ||
+	code === CHAR_FORM_FEED ||
+	code === CHAR_CARRIAGE_RETURN ||
+	code === CHAR_SPACE;
 
 const redactAuthorityCredentials = (message: string): string => {
 	let out = '';
@@ -153,7 +172,7 @@ const redactAuthorityCredentials = (message: string): string => {
 		let authorityEnd = message.length;
 		for (let index = authorityStart; index < message.length; index += 1) {
 			const code = message.charCodeAt(index);
-			if (code === 47 || isWhitespaceCode(code)) {
+			if (code === CHAR_SLASH || isWhitespaceCode(code)) {
 				authorityEnd = index;
 				break;
 			}
@@ -192,7 +211,7 @@ const redactPasswordParams = (message: string): string => {
 		let valueEnd = valueStart;
 		while (valueEnd < message.length) {
 			const code = message.charCodeAt(valueEnd);
-			if (code === 38 || isWhitespaceCode(code)) break;
+			if (code === CHAR_AMPERSAND || isWhitespaceCode(code)) break;
 			valueEnd += 1;
 		}
 		out += '***';

@@ -120,7 +120,9 @@ const loadTsCompilerApi = (): Record<string, any> => {
 			) {
 				return api as Record<string, any>;
 			}
-		} catch {}
+		} catch {
+			continue;
+		}
 	}
 	throw new Error(
 		'No usable TypeScript Compiler API runtime was found in the Bun store.',

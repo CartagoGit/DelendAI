@@ -63,6 +63,7 @@ export interface IClaimValidation {
 }
 
 const GATES: readonly ISliceGate[] = ['lint', 'type', 'e2e', 'none'];
+const DECIMAL_RADIX = 10;
 
 const asGate = (value: string | undefined): ISliceGate =>
 	GATES.includes((value ?? '') as ISliceGate)
@@ -131,7 +132,7 @@ const parsePreferredProvider = (
 
 const parseCostTier = (raw: string | undefined): ISliceCostTier | undefined => {
 	if (raw === undefined) return undefined;
-	const n = Number.parseInt(raw.trim(), 10);
+	const n = Number.parseInt(raw.trim(), DECIMAL_RADIX);
 	return n >= 1 && n <= 5 ? (n as ISliceCostTier) : undefined;
 };
 
