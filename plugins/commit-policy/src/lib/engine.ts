@@ -364,9 +364,10 @@ const pushFailureReason = (value: unknown): string => {
 	return 'push failed';
 };
 
-export const buildTriggerCommitMessage = (
-	event: Extract<IEngineEvent, { kind: 'threshold' | 'interval' }>,
-): string =>
+export const buildTriggerCommitMessage = (event: {
+	readonly kind: 'threshold' | 'interval';
+	readonly dirtyCount: number;
+}): string =>
 	`chore(snapshot): preserve concurrent agent work (${event.dirtyCount} files)`;
 
 const composeMessage = (event: IEngineEvent): string => {
