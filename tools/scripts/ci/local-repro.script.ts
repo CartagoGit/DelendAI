@@ -41,11 +41,11 @@
 
 import { spawn, spawnSync } from 'node:child_process';
 import { mkdirSync, writeFileSync } from 'node:fs';
-import { dirname, join } from 'node:path';
+import { join } from 'node:path';
 
 import { repoRoot } from '../lib/monorepo-paths';
 
-interface IRunJob {
+export interface IRunJob {
 	readonly id: number;
 	readonly name: string;
 	readonly conclusion: string | null;
@@ -64,10 +64,19 @@ interface IFailedStep {
 	readonly stepNumber: number;
 }
 
-interface IGitHubRepo {
+export interface IGitHubRepo {
 	readonly owner: string;
 	readonly repo: string;
 }
+
+export interface IGhCommandResult {
+	readonly status: number | null;
+	readonly stdout: string;
+	readonly stderr: string;
+	readonly errorMessage?: string;
+}
+
+export type GhRunner = (args: readonly string[]) => IGhCommandResult;
 
 const out = (msg: string) => process.stdout.write(`${msg}\n`);
 const err = (msg: string) => process.stderr.write(`${msg}\n`);
@@ -133,9 +142,24 @@ export const resolveRepo = (cwd: string): IGitHubRepo | null => {
  * directly so the spec can stub it without a real gh install.
  */
 export const hasGhCli = (): string | null => {
-	const r = spawnSync('command', ['-v', 'gh'], { encoding: 'utf8' });
+	const r = spawnSync('gh', ['--version'], { encoding: 'utf8' });
 	if (r.status !== 0) return null;
-	return (r.stdout ?? '').trim();
+	return 'gh';
+};
+
+export const defaultGhRunner: GhRunner = (args) => {
+	const result = spawnSync('gh', [...args], {
+		encoding: 'utf8',
+		maxBuffer: 1024 * 1024 * 16,
+	});
+	return {
+		status: result.status,
+		stdout: result.stdout ?? '',
+		stderr: result.stderr ?? '',
+		...(result.error?.message !== undefined
+			? { errorMessage: result.error.message }
+			: {}),
+	};
 };
 
 /**
@@ -222,6 +246,7 @@ export const downloadJobLogs = async (
 	jobId: number,
 	token: string | null,
 	fetcher: typeof fetch = fetch,
+	ghRunner: GhRunner = defaultGhRunner,
 ): Promise<string> => {
 	const url = `https://api.github.com/repos/${repo.owner}/${repo.repo}/actions/jobs/${jobId}/logs`;
 	const headers: Record<string, string> = {
@@ -230,13 +255,83 @@ export const downloadJobLogs = async (
 	};
 	if (token !== null) headers.Authorization = `Bearer ${token}`;
 	const res = await fetcher(url, { headers, redirect: 'follow' });
-	if (!res.ok) {
-		throw new Error(
-			`GitHub API ${res.status} on job ${jobId} logs: ${await res.text()}`,
-		);
+	if (res.ok) {
+		return await res.text();
 	}
-	return await res.text();
+	const apiError = await res.text();
+	const logsFromGh = downloadJobLogsViaGh(repo, jobId, ghRunner);
+	if (logsFromGh !== null) return logsFromGh;
+	throw new Error(
+		`GitHub API ${res.status} on job ${jobId} logs: ${apiError}`,
+	);
 };
+
+export const downloadJobLogsViaGh = (
+	repo: IGitHubRepo,
+	jobId: number,
+	ghRunner: GhRunner = defaultGhRunner,
+): string | null => {
+	for (const args of [
+		[
+			'run',
+			'view',
+			'--repo',
+			`${repo.owner}/${repo.repo}`,
+			'--job',
+			String(jobId),
+			'--log-failed',
+		],
+		[
+			'run',
+			'view',
+			'--repo',
+			`${repo.owner}/${repo.repo}`,
+			'--job',
+			String(jobId),
+			'--log',
+		],
+	]) {
+		const result = ghRunner(args);
+		const output = trim(result.stdout);
+		if (result.status === 0 && output.length > 0) return result.stdout;
+	}
+	return null;
+};
+
+interface IParsedLogLine {
+	readonly stepName: string | null;
+	readonly message: string;
+}
+
+const ANSI_ESCAPE_RE = new RegExp(`${String.fromCharCode(27)}\\[[0-9;]*m`, 'g');
+
+const stripAnsi = (line: string): string =>
+	line.replace(ANSI_ESCAPE_RE, '').replace(/^\uFEFF/, '');
+
+const parseLogLine = (line: string): IParsedLogLine => {
+	const cleaned = stripAnsi(line);
+	const richMatch = cleaned.match(
+		/^(.*?)(?:\t|\s{2,})(.*?)(?:\t|\s{2,})(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d+Z)\s?(.*)$/,
+	);
+	if (richMatch !== null) {
+		return {
+			stepName: richMatch[2]?.trim() ?? null,
+			message: richMatch[4] ?? '',
+		};
+	}
+	const bareMatch = cleaned.match(
+		/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d+Z\s?(.*)$/,
+	);
+	if (bareMatch !== null) {
+		return { stepName: null, message: bareMatch[1] ?? '' };
+	}
+	return { stepName: null, message: cleaned };
+};
+
+const looksLikeShellCommand = (line: string): boolean =>
+	/^(?:\$\s+)?(?:bunx?|npm|pnpm|yarn|npx|node|bash|sh|git|make|python3?|cargo|go|deno|\.\/|\.\.\/)/.test(
+		line,
+	);
 
 /**
  * Pull the actual shell command out of a GitHub Actions log
@@ -256,28 +351,43 @@ export const extractCommand = (
 	stepName: string,
 ): string | null => {
 	const lines = logs.split('\n');
+	const parsed = lines.map((line) => parseLogLine(line));
+	const exactStepLines = parsed.filter(
+		(line) => line.stepName?.toLowerCase() === stepName.toLowerCase(),
+	);
+	if (exactStepLines.length > 0) {
+		for (const line of exactStepLines) {
+			const groupedCommand = line.message.match(
+				/^##\[group\]Run\s+(.+)$/,
+			);
+			if (groupedCommand?.[1] !== undefined) {
+				return trim(groupedCommand[1]);
+			}
+			if (
+				line.message.startsWith('##[') ||
+				line.message.startsWith('shell: ')
+			) {
+				continue;
+			}
+			if (looksLikeShellCommand(line.message)) {
+				return trim(line.message.replace(/^\$\s+/, ''));
+			}
+		}
+		return null;
+	}
+
 	const stepStart = lines.findIndex((line) =>
 		line.toLowerCase().includes(stepName.toLowerCase()),
 	);
 	if (stepStart === -1) return null;
-
-	// GitHub Actions prefixes every log line with a timestamp and
-	// virtualisation marker; strip them so the extracted command
-	// is shell-runnable as-is.
-	const stripPrefix = (line: string): string =>
-		line.replace(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d+Z\s+/, '');
-
-	const block: string[] = [];
 	for (let i = stepStart + 1; i < lines.length; i += 1) {
-		const stripped = stripPrefix(lines[i] ?? '');
-		if (stripped.length === 0) {
-			if (block.length > 0) break;
-			continue;
+		const stripped = parseLogLine(lines[i] ?? '').message.trim();
+		if (stripped.length === 0) continue;
+		if (looksLikeShellCommand(stripped)) {
+			return stripped.replace(/^\$\s+/, '');
 		}
-		block.push(stripped);
 	}
-	if (block.length === 0) return null;
-	return block.join('\n');
+	return null;
 };
 
 export interface IRunnerResult {
@@ -326,6 +436,7 @@ export interface IReproReport {
 	readonly ciStatus: number | null;
 	readonly matched: boolean;
 	readonly localLogPath: string;
+	readonly command: string;
 }
 
 export const reproStep = async (
@@ -362,6 +473,7 @@ export const reproStep = async (
 		ciStatus: 1,
 		matched: local.status !== 0,
 		localLogPath,
+		command,
 	};
 };
 
@@ -445,6 +557,7 @@ export const main = async (argv: readonly string[]): Promise<number> => {
 			defaultRunner,
 			outputDir,
 		);
+		out(`local-repro: extracted command ${JSON.stringify(report.command)}`);
 		out(`local-repro: local log written to ${report.localLogPath}`);
 		out(
 			`local-repro: local exit=${report.localStatus} ci exit=${report.ciStatus} matched=${report.matched}`,
