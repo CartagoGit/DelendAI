@@ -18,11 +18,13 @@ import {
 	type IIdentityResolverContext,
 } from '../identity/resolver';
 import { runPushDriver, type IPushDriverInput } from '../services/push-driver';
+import { withGitWriteLock } from '../services/git-write-lock';
 
 export interface IPushToolOptions {
 	readonly namespacePrefix: string;
 	readonly policy: ICommitPolicyOptions;
 	readonly run: Parameters<typeof runPushDriver>[2];
+	readonly workspaceRoot?: string | undefined;
 	/**
 	 * Needed only to name the principal accountable for a plain
 	 * `--force` push. Optional so a host that never enables
@@ -76,7 +78,9 @@ export const runCommitPolicyPush = async (
 		...(args.force !== undefined ? { force: args.force } : {}),
 		...(authorizedBy !== undefined ? { authorizedBy } : {}),
 	};
-	const result = await runPushDriver(input, options.policy.push, options.run);
+	const result = await withGitWriteLock(options.workspaceRoot, () =>
+		runPushDriver(input, options.policy.push, options.run),
+	);
 
 	const parseResult = OutputSchema.safeParse({
 		ok: result.ok,

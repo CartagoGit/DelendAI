@@ -3,7 +3,8 @@
  * for `@mcp-vertex/core` (c00130 / AUD-P0-001).
  *
  * This file is the **single source of truth** for the branch
- * protection policy that `develop` and `main` MUST have. The
+ * protection policy that declares `develop` as an open snapshot journal and
+ * `main` as the protected release boundary. The
  * `tools/scripts/ci/verify-branch-protection.script.ts` script
  * diff-fetches the live GitHub state against this file and
  * fails the gate when the real repo diverges.
@@ -70,10 +71,8 @@ export const BRANCH_PROTECTION: IBranchProtectionConfig = {
 	},
 	branches: [
 		{
-			// The branch this repo is programmed on. Pull requests target it
-			// and the owner decides what lands; protecting it would only
-			// block the owner's own direct pushes, which is friction without
-			// a second contributor to justify it.
+			// Shared snapshot journal. Concurrent agent commits and pushes are
+			// intentionally allowed; main is the review boundary.
 			name: 'develop',
 			protected: false,
 			required_checks: [],
