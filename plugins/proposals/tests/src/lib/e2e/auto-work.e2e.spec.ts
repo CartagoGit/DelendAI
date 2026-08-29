@@ -376,7 +376,10 @@ describe('e2e: proposals_auto_work over the real MCP protocol', async () => {
 		);
 		const entries = await fs.readdir(readyDir);
 		for (const entry of entries) {
-			await fs.rm(join(readyDir, entry), { force: true });
+			await fs.rm(join(readyDir, entry), {
+				force: true,
+				recursive: true,
+			});
 		}
 		await harness.callTool<{ ok: boolean }>(
 			'mcp-vertex_proposals_sync_proposals',

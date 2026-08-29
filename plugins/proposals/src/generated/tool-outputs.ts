@@ -301,6 +301,7 @@ export interface McpVertexProposalsDelegateOutput {
 	slot?: string;
 	files?: string[];
 	locked?: boolean;
+	subscriptionId?: string;
 	worktree?: {
 		path: string;
 		branch: string;
@@ -642,6 +643,10 @@ export interface McpVertexProposalsStateHealthOutput {
 		[key: string]: unknown;
 	};
 	stale: {
+		count: number;
+		[key: string]: unknown;
+	};
+	heartbeatStalls: {
 		count: number;
 		[key: string]: unknown;
 	};

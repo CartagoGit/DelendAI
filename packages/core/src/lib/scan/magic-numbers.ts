@@ -40,8 +40,9 @@ export const detectMagicNumbers = (
 ): readonly IMagicNumberHit[] => {
 	const out: IMagicNumberHit[] = [];
 	const literalRegex = /(?<![\w.])(\d{2,})(?![\w])/g;
-	let m: RegExpExecArray | null;
-	while ((m = literalRegex.exec(body)) !== null) {
+	while (true) {
+		const m = literalRegex.exec(body);
+		if (m === null) break;
 		const value = m[1] ?? '';
 		if (MAGIC_WHITELIST.has(value)) continue;
 		const lineStart = body.lastIndexOf('\n', m.index) + 1;

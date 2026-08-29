@@ -23,7 +23,10 @@ import type { IPushDriverResult } from '../services/push-driver';
 import { gitDirtyFileCount } from '../services/git-extra';
 import { readCurrentSliceSnapshot } from '../triggers/slice-listener';
 import { createThresholdTracker } from '../triggers/threshold-tracker';
-import { createIntervalTimer } from '../triggers/interval-timer';
+import {
+	createIntervalTimer,
+	type IIntervalTimer,
+} from '../triggers/interval-timer';
 import { manualTrigger } from '../triggers/manual-trigger';
 import type { ITriggerEvent } from '../triggers/trigger-types';
 import { findTrigger } from '../triggers/trigger-types';
@@ -33,6 +36,7 @@ export interface IRunToolOptions extends ICommitDriverOptions {
 	readonly policy: ICommitPolicyOptions;
 	readonly workspaceRoot: string;
 	readonly docsDir: string;
+	readonly intervalTimer?: IIntervalTimer | undefined;
 	readonly locale?: string | undefined;
 	readonly onCommitSucceeded?: () => Promise<IPushDriverResult | null>;
 }
@@ -193,9 +197,9 @@ const intervalRefusal = async (
 	if (trigger === undefined) {
 		return { ok: false, refusal: 'no interval trigger configured' };
 	}
-	const timer = createIntervalTimer(options.run, {
-		minutes: trigger.minutes,
-	});
+	const timer =
+		options.intervalTimer ??
+		createIntervalTimer(options.run, { minutes: trigger.minutes });
 	const event = await timer.check(trigger.minutes * 60_000);
 	if (event === null) {
 		return { ok: false, refusal: 'interval not elapsed or no dirty work' };

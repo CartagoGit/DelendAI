@@ -785,16 +785,16 @@ export async function syncProposalRegistry(
 	// the same index must not lose entries (read FS → write index).
 	return withFileMutex(indexPath, async () => {
 		await reconcileAndArchiveCompletedRootProposals(proposalsDir);
-		const folderDriftBefore = await findProposalFolderDrift(
-			proposalsDir,
-			folderPolicy,
-		);
 		// f00016 S5: new-system files only (isGlossaryStatus gates it) — move
 		// anything whose folder disagrees with its status, then auto-resolve
 		// `blocked` → `ready` where every blocker has cleared. Runs before
 		// the scan below so the index reflects the post-reconciliation tree.
 		await reconcileFolders(proposalsDir, gitRunner, folderPolicy);
 		await reconcileBlocked(proposalsDir, gitRunner, folderPolicy);
+		const unresolvedFolderDrift = await findProposalFolderDrift(
+			proposalsDir,
+			folderPolicy,
+		);
 		// Generic proposal-model subtrees only. Host folders (like `paused/demos`)
 		// arrive via `extraFolders`.
 		// f00016's 7 status folders (S5) overlap with the legacy list (`paused`
@@ -857,7 +857,7 @@ export async function syncProposalRegistry(
 		// Detection only: we still write the index so agents can see both
 		// paths, but the error list is non-empty so lint/CI can fail.
 		const duplicates = await findDuplicateProposalIds(proposalsDir);
-		for (const drift of folderDriftBefore) {
+		for (const drift of unresolvedFolderDrift) {
 			warnings.push(
 				`folder drift: ${drift.id} at ${drift.path} is in ${drift.folder} but status ${drift.status} expects ${drift.expectedFolder}`,
 			);

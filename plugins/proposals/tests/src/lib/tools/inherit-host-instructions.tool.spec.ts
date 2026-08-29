@@ -115,7 +115,7 @@ describe('inherit_host_instructions', () => {
 		expect(res.id).toMatch(/^f\d{5}$/);
 		expect(res.files).toHaveLength(1);
 		expect(res.file).toMatch(
-			/^ready\/f\d{5}-inherit-host-instructions-.+\.md$/,
+			/^ready\/feats\/f\d{5}-inherit-host-instructions-.+\.md$/,
 		);
 
 		const body = readFileSync(join(root, proposalsRel, res.file), 'utf8');

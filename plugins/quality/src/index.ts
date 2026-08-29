@@ -53,20 +53,6 @@ const plannerOutputSchema = z.object({
 	findings: z.array(qualityFindingSchema),
 });
 
-const legacyRunQualityOutputSchema = z.object({
-	scope: z.string(),
-	ok: z.boolean(),
-	results: z.array(
-		z.object({
-			command: z.string(),
-			ok: z.boolean(),
-			code: z.number(),
-			timedOut: z.boolean(),
-			tail: z.string(),
-		}),
-	),
-});
-
 export interface IValidateOutputSnapshot {
 	readonly findings?: readonly IFinding[];
 	readonly severities?: Partial<Record<FindingSeverity, number>>;

@@ -3,7 +3,7 @@ id: project-kpis
 package: @mcp-vertex/project-kpis
 version: 0.1.0
 maturity: experimental
-generated: 2026-08-29T21:47:08.414Z
+generated: 2026-08-29T22:47:12.159Z
 ---
 
 # Project Kpis
@@ -23,7 +23,7 @@ Versioned project KPI snapshots and observability views across health, usage, ec
 
 ## Presets
 
-- vertex
+- none
 
 ## Permissions
 
