@@ -26,6 +26,7 @@ const fail = (reason: string): IGitRunResult => ({
 interface IFakeGit {
 	readonly run: IGitRunner;
 	readonly committed: { count: number; messages: string[] };
+	readonly added: string[];
 }
 
 /**
@@ -47,8 +48,10 @@ const buildFakeGit = (opts: {
 	 * clean-subset path without a real git repo.
 	 */
 	cached?: readonly string[];
+	dirty?: readonly string[];
 }): IFakeGit => {
 	const committed = { count: 0, messages: [] as string[] };
+	const added: string[] = [];
 	const responses = new Map<string, IGitRunResult>();
 	if (opts.currentBranch !== undefined) {
 		responses.set(
@@ -79,6 +82,12 @@ const buildFakeGit = (opts: {
 			ok(`${opts.cached.join('\n')}\n`),
 		);
 	}
+	if (opts.dirty !== undefined) {
+		responses.set(
+			'status\u0000--porcelain=v1',
+			ok(opts.dirty.map((path) => ` M ${path}`).join('\n') + '\n'),
+		);
+	}
 	const run: IGitRunner = async (
 		args: readonly string[],
 	): Promise<IGitRunResult> => {
@@ -92,12 +101,15 @@ const buildFakeGit = (opts: {
 			return ok('committed\n');
 		}
 		if (args[0] === 'push') return ok('pushed\n');
-		if (args[0] === 'add') return ok('added\n');
+		if (args[0] === 'add') {
+			added.push(...args.slice(2));
+			return ok('added\n');
+		}
 		const direct = responses.get(key);
 		if (direct !== undefined) return direct;
 		return fail(`not stubbed: ${key}`);
 	};
-	return { run, committed };
+	return { run, committed, added };
 };
 
 const basePolicy = (overrides: Partial<ParsedOptions> = {}): ParsedOptions => ({
@@ -416,6 +428,37 @@ describe('runCommitDriver', () => {
 				},
 			);
 			expect(result.committed).toBe(true);
+		});
+
+		it('captures the whole dirty workspace when sliceScoping is disabled', async () => {
+			const fake = buildFakeGit({
+				currentBranch: 'develop',
+				globalName: 'Cartago',
+				globalEmail: 'cartago@example.com',
+				dirty: ['agent-a.ts', 'agent-b.ts'],
+			});
+			const base = basePolicy();
+			const result = await runCommitDriver(
+				{
+					message: 'feat: concurrent snapshot',
+					sliceContext: {
+						proposalId: 'f00181',
+						sliceId: 'S4',
+						files: ['agent-a.ts'],
+					},
+				},
+				{
+					run: fake.run,
+					policy: {
+						...base,
+						cadence: { ...base.cadence, sliceScoping: false },
+					},
+					identityCtx: { run: fake.run, envVars: Object.freeze({}) },
+					auditAgent: null,
+				},
+			);
+			expect(result.committed).toBe(true);
+			expect(fake.added).toEqual(['agent-a.ts', 'agent-b.ts']);
 		});
 	});
 

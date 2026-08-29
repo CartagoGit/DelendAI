@@ -26,6 +26,7 @@ import { resolveAuthor } from '../identity/resolver';
 import {
 	gitCachedNames,
 	gitCurrentBranch,
+	gitDirtyFilePaths,
 	validateConventionalHeader,
 } from './git-extra';
 
@@ -287,8 +288,10 @@ export const runCommitDriver = async (
 		input.files ??
 		(input.triggerContext !== undefined
 			? input.triggerContext.files
-			: options.policy.cadence.sliceScoping && input.sliceContext
-				? input.sliceContext.files
+			: input.sliceContext !== undefined
+				? options.policy.cadence.sliceScoping
+					? input.sliceContext.files
+					: await gitDirtyFilePaths(options.run)
 				: []);
 
 	// x00263 (AUD-CP-005): when sliceScoping is on and the slice
@@ -305,6 +308,17 @@ export const runCommitDriver = async (
 			committed: false,
 			pushed: false,
 			refusal: `SLICE_HAS_NO_FILES: ${input.sliceContext.proposalId}-${input.sliceContext.sliceId}`,
+		};
+	}
+	if (
+		input.sliceContext !== undefined &&
+		!options.policy.cadence.sliceScoping &&
+		files.length === 0
+	) {
+		return {
+			committed: false,
+			pushed: false,
+			refusal: `WORKSPACE_HAS_NO_FILES: ${input.sliceContext.proposalId}-${input.sliceContext.sliceId}`,
 		};
 	}
 

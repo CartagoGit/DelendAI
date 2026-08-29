@@ -6,7 +6,7 @@ import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import {
 	createSliceListener,
@@ -142,6 +142,43 @@ describe('slice listener', () => {
 		listener.stop();
 		listener.stop();
 		expect(true).toBe(true);
+	});
+
+	it('start() performs an immediate check before the polling interval', async () => {
+		await writeIndex(workspace, [
+			{
+				id: 'f00181',
+				slices: [
+					{ id: 'S3', status: 'pending', files: ['fixture-S3-8.ts'] },
+				],
+			},
+		]);
+		const seen: string[] = [];
+		const listener = createSliceListener(
+			workspace,
+			docsDir,
+			{ kind: 'slice', onStatuses: ['done'] },
+			async (event) => {
+				seen.push(event.sliceId ?? '');
+				return { ack: 'OK' };
+			},
+			60_000,
+		);
+		await listener.check();
+		await writeIndex(workspace, [
+			{
+				id: 'f00181',
+				slices: [
+					{ id: 'S3', status: 'done', files: ['fixture-S3-9.ts'] },
+				],
+			},
+		]);
+
+		listener.start();
+		await vi.waitFor(() => {
+			expect(seen).toEqual(['S3']);
+		});
+		listener.stop();
 	});
 
 	it('readCurrentSliceSnapshot returns the latest slice map', async () => {

@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-08-29T20:45:59.804Z",
+	"generatedAt": "2026-08-29T21:44:28.355Z",
 	"mode": "compact",
 	"tools": [
 		{
@@ -1265,10 +1265,269 @@
 				"kind": "chore"
 			},
 			{
+				"id": "c00130",
+				"title": "c00130",
+				"track": "governance",
+				"status": "ready",
+				"kind": "chore"
+			},
+			{
+				"id": "c00131",
+				"title": "c00131",
+				"track": "governance",
+				"status": "ready",
+				"kind": "chore"
+			},
+			{
+				"id": "c00132",
+				"title": "c00132",
+				"track": "governance",
+				"status": "ready",
+				"kind": "chore"
+			},
+			{
+				"id": "c00133",
+				"title": "c00133",
+				"track": "governance",
+				"status": "ready",
+				"kind": "chore"
+			},
+			{
+				"id": "c00134",
+				"title": "c00134",
+				"track": "lifecycle",
+				"status": "ready",
+				"kind": "chore"
+			},
+			{
+				"id": "c00135",
+				"title": "c00135",
+				"track": "tokens",
+				"status": "ready",
+				"kind": "chore"
+			},
+			{
+				"id": "c00136",
+				"title": "c00136",
+				"track": "tokens",
+				"status": "ready",
+				"kind": "chore"
+			},
+			{
+				"id": "c00137",
+				"title": "c00137",
+				"track": "security",
+				"status": "ready",
+				"kind": "chore"
+			},
+			{
+				"id": "c00138",
+				"title": "c00138",
+				"track": "ci",
+				"status": "ready",
+				"kind": "chore"
+			},
+			{
+				"id": "c00139",
+				"title": "c00139",
+				"track": "ci",
+				"status": "ready",
+				"kind": "chore"
+			},
+			{
+				"id": "c00140",
+				"title": "c00140",
+				"track": "docs",
+				"status": "ready",
+				"kind": "chore"
+			},
+			{
+				"id": "c00141",
+				"title": "c00141",
+				"track": "docs",
+				"status": "ready",
+				"kind": "chore"
+			},
+			{
+				"id": "c00142",
+				"title": "c00142",
+				"track": "cli",
+				"status": "ready",
+				"kind": "chore"
+			},
+			{
+				"id": "c00143",
+				"title": "c00143",
+				"track": "architecture",
+				"status": "ready",
+				"kind": "chore"
+			},
+			{
+				"id": "c00145",
+				"title": "c00145",
+				"track": "governance",
+				"status": "ready",
+				"kind": "chore"
+			},
+			{
+				"id": "c00146",
+				"title": "c00146",
+				"track": "architecture",
+				"status": "ready",
+				"kind": "chore"
+			},
+			{
+				"id": "d00009",
+				"title": "d00009",
+				"track": "security",
+				"status": "ready",
+				"kind": "docs"
+			},
+			{
+				"id": "d00010",
+				"title": "d00010",
+				"track": "docs",
+				"status": "ready",
+				"kind": "docs"
+			},
+			{
+				"id": "d00011",
+				"title": "d00011",
+				"track": "docs",
+				"status": "ready",
+				"kind": "docs"
+			},
+			{
+				"id": "d00012",
+				"title": "d00012",
+				"track": "architecture",
+				"status": "ready",
+				"kind": "docs"
+			},
+			{
+				"id": "d00013",
+				"title": "d00013",
+				"track": "governance",
+				"status": "ready",
+				"kind": "docs"
+			},
+			{
+				"id": "d00014",
+				"title": "d00014",
+				"track": "docs",
+				"status": "ready",
+				"kind": "docs"
+			},
+			{
+				"id": "d00015",
+				"title": "d00015",
+				"track": "governance",
+				"status": "ready",
+				"kind": "docs"
+			},
+			{
 				"id": "f00050",
 				"title": "f00050",
 				"track": "lint+architecture+i18n+workflow+release",
 				"status": "paused",
+				"kind": "feat"
+			},
+			{
+				"id": "f00188",
+				"title": "f00188",
+				"track": "security",
+				"status": "ready",
+				"kind": "feat"
+			},
+			{
+				"id": "f00189",
+				"title": "f00189",
+				"track": "security",
+				"status": "ready",
+				"kind": "feat"
+			},
+			{
+				"id": "f00190",
+				"title": "f00190",
+				"track": "docs",
+				"status": "ready",
+				"kind": "feat"
+			},
+			{
+				"id": "f00191",
+				"title": "f00191",
+				"track": "cli",
+				"status": "ready",
+				"kind": "feat"
+			},
+			{
+				"id": "f00192",
+				"title": "f00192",
+				"track": "vscode",
+				"status": "ready",
+				"kind": "feat"
+			},
+			{
+				"id": "f00193",
+				"title": "f00193",
+				"track": "external-mcps",
+				"status": "ready",
+				"kind": "feat"
+			},
+			{
+				"id": "f00194",
+				"title": "f00194",
+				"track": "external-mcps",
+				"status": "ready",
+				"kind": "feat"
+			},
+			{
+				"id": "f00195",
+				"title": "f00195",
+				"track": "routing",
+				"status": "ready",
+				"kind": "feat"
+			},
+			{
+				"id": "f00196",
+				"title": "f00196",
+				"track": "routing",
+				"status": "ready",
+				"kind": "feat"
+			},
+			{
+				"id": "f00197",
+				"title": "f00197",
+				"track": "memory",
+				"status": "ready",
+				"kind": "feat"
+			},
+			{
+				"id": "f00198",
+				"title": "f00198",
+				"track": "observability",
+				"status": "ready",
+				"kind": "feat"
+			},
+			{
+				"id": "f00199",
+				"title": "f00199",
+				"track": "observability",
+				"status": "ready",
+				"kind": "feat"
+			},
+			{
+				"id": "f00200",
+				"title": "f00200",
+				"track": "architecture",
+				"status": "ready",
+				"kind": "feat"
+			},
+			{
+				"id": "f00201",
+				"title": "f00201",
+				"track": "transactions",
+				"status": "ready",
 				"kind": "feat"
 			},
 			{
@@ -1279,11 +1538,291 @@
 				"kind": "feat"
 			},
 			{
+				"id": "f00266",
+				"title": "f00266",
+				"track": "commit-policy",
+				"status": "ready",
+				"kind": "feat"
+			},
+			{
+				"id": "f00267",
+				"title": "f00267",
+				"track": "commit-policy",
+				"status": "ready",
+				"kind": "feat"
+			},
+			{
+				"id": "f00268",
+				"title": "f00268",
+				"track": "lifecycle",
+				"status": "ready",
+				"kind": "feat"
+			},
+			{
+				"id": "f00269",
+				"title": "f00269",
+				"track": "lifecycle",
+				"status": "ready",
+				"kind": "feat"
+			},
+			{
+				"id": "f00270",
+				"title": "f00270",
+				"track": "tokens",
+				"status": "ready",
+				"kind": "feat"
+			},
+			{
+				"id": "f00271",
+				"title": "f00271",
+				"track": "tokens",
+				"status": "ready",
+				"kind": "feat"
+			},
+			{
+				"id": "f00272",
+				"title": "f00272",
+				"track": "tokens",
+				"status": "ready",
+				"kind": "feat"
+			},
+			{
+				"id": "f00273",
+				"title": "f00273",
+				"track": "adaptive",
+				"status": "ready",
+				"kind": "feat"
+			},
+			{
+				"id": "f00274",
+				"title": "f00274",
+				"track": "product",
+				"status": "ready",
+				"kind": "feat"
+			},
+			{
+				"id": "f00275",
+				"title": "f00275",
+				"track": "product",
+				"status": "ready",
+				"kind": "feat"
+			},
+			{
+				"id": "f00277",
+				"title": "f00277",
+				"track": "trust",
+				"status": "ready",
+				"kind": "feat"
+			},
+			{
+				"id": "f00278",
+				"title": "f00278",
+				"track": "trust",
+				"status": "ready",
+				"kind": "feat"
+			},
+			{
+				"id": "f00279",
+				"title": "f00279",
+				"track": "trust",
+				"status": "ready",
+				"kind": "feat"
+			},
+			{
+				"id": "f00280",
+				"title": "f00280",
+				"track": "adoption",
+				"status": "ready",
+				"kind": "feat"
+			},
+			{
 				"id": "f00282",
 				"title": "f00282",
 				"track": "project-observability-economics",
 				"status": "ready",
 				"kind": "feat"
+			},
+			{
+				"id": "q00008",
+				"title": "q00008",
+				"track": "rail-clean-code-solid-intrinsic",
+				"status": "ready",
+				"kind": "plan"
+			},
+			{
+				"id": "q00009",
+				"title": "q00009",
+				"track": "managed-surface-portable-skills-startup-report",
+				"status": "ready",
+				"kind": "plan"
+			},
+			{
+				"id": "q00010",
+				"title": "q00010",
+				"track": "develop-audit-hardening-v4-closeout",
+				"status": "ready",
+				"kind": "plan"
+			},
+			{
+				"id": "q00011",
+				"title": "q00011",
+				"track": "runtime-contracts-v1",
+				"status": "ready",
+				"kind": "plan"
+			},
+			{
+				"id": "q00012",
+				"title": "q00012",
+				"track": "audit-stabilization",
+				"status": "ready",
+				"kind": "plan"
+			},
+			{
+				"id": "r00027",
+				"title": "r00027",
+				"track": "architecture",
+				"status": "ready",
+				"kind": "refactor"
+			},
+			{
+				"id": "r00028",
+				"title": "r00028",
+				"track": "architecture",
+				"status": "ready",
+				"kind": "refactor"
+			},
+			{
+				"id": "r00029",
+				"title": "r00029",
+				"track": "architecture",
+				"status": "ready",
+				"kind": "refactor"
+			},
+			{
+				"id": "r00030",
+				"title": "r00030",
+				"track": "architecture",
+				"status": "ready",
+				"kind": "refactor"
+			},
+			{
+				"id": "r00031",
+				"title": "r00031",
+				"track": "tokens",
+				"status": "ready",
+				"kind": "refactor"
+			},
+			{
+				"id": "r00032",
+				"title": "r00032",
+				"track": "tokens",
+				"status": "ready",
+				"kind": "refactor"
+			},
+			{
+				"id": "r00033",
+				"title": "r00033",
+				"track": "contracts",
+				"status": "ready",
+				"kind": "refactor"
+			},
+			{
+				"id": "r00034",
+				"title": "r00034",
+				"track": "security",
+				"status": "ready",
+				"kind": "refactor"
+			},
+			{
+				"id": "r00035",
+				"title": "r00035",
+				"track": "ci",
+				"status": "ready",
+				"kind": "refactor"
+			},
+			{
+				"id": "r00040",
+				"title": "r00040",
+				"track": "architecture",
+				"status": "ready",
+				"kind": "refactor"
+			},
+			{
+				"id": "r00041",
+				"title": "r00041",
+				"track": "architecture",
+				"status": "ready",
+				"kind": "refactor"
+			},
+			{
+				"id": "r00042",
+				"title": "r00042",
+				"track": "architecture",
+				"status": "ready",
+				"kind": "refactor"
+			},
+			{
+				"id": "t00017",
+				"title": "t00017",
+				"track": "commit-policy",
+				"status": "ready",
+				"kind": "unspecified"
+			},
+			{
+				"id": "t00018",
+				"title": "t00018",
+				"track": "commit-policy",
+				"status": "ready",
+				"kind": "unspecified"
+			},
+			{
+				"id": "t00019",
+				"title": "t00019",
+				"track": "commit-policy",
+				"status": "ready",
+				"kind": "unspecified"
+			},
+			{
+				"id": "t00020",
+				"title": "t00020",
+				"track": "commit-policy",
+				"status": "ready",
+				"kind": "unspecified"
+			},
+			{
+				"id": "t00021",
+				"title": "t00021",
+				"track": "commit-policy",
+				"status": "ready",
+				"kind": "unspecified"
+			},
+			{
+				"id": "t00022",
+				"title": "t00022",
+				"track": "commit-policy",
+				"status": "ready",
+				"kind": "unspecified"
+			},
+			{
+				"id": "t00023",
+				"title": "t00023",
+				"track": "commit-policy",
+				"status": "ready",
+				"kind": "unspecified"
+			},
+			{
+				"id": "t00030",
+				"title": "t00030",
+				"track": "testing",
+				"status": "ready",
+				"kind": "unspecified"
+			},
+			{
+				"id": "t00031",
+				"title": "t00031",
+				"track": "testing",
+				"status": "ready",
+				"kind": "unspecified"
 			},
 			{
 				"id": "v00125",
@@ -1300,6 +1839,34 @@
 				"kind": "unspecified"
 			},
 			{
+				"id": "v00127",
+				"title": "v00127",
+				"track": "governance",
+				"status": "ready",
+				"kind": "unspecified"
+			},
+			{
+				"id": "v00128",
+				"title": "v00128",
+				"track": "tokens",
+				"status": "ready",
+				"kind": "unspecified"
+			},
+			{
+				"id": "v00131",
+				"title": "v00131",
+				"track": "tokens",
+				"status": "ready",
+				"kind": "unspecified"
+			},
+			{
+				"id": "v00132",
+				"title": "v00132",
+				"track": "tokens",
+				"status": "ready",
+				"kind": "unspecified"
+			},
+			{
 				"id": "x00203",
 				"title": "x00203",
 				"track": "plugins+fix",
@@ -1311,6 +1878,167 @@
 				"title": "x00204",
 				"track": "plugins+fix",
 				"status": "in-progress",
+				"kind": "fix"
+			},
+			{
+				"id": "x00259",
+				"title": "x00259",
+				"track": "commit-policy",
+				"status": "ready",
+				"kind": "fix"
+			},
+			{
+				"id": "x00260",
+				"title": "x00260",
+				"track": "commit-policy",
+				"status": "ready",
+				"kind": "fix"
+			},
+			{
+				"id": "x00261",
+				"title": "x00261",
+				"track": "commit-policy",
+				"status": "ready",
+				"kind": "fix"
+			},
+			{
+				"id": "x00262",
+				"title": "x00262",
+				"track": "commit-policy",
+				"status": "ready",
+				"kind": "fix"
+			},
+			{
+				"id": "x00263",
+				"title": "x00263",
+				"track": "commit-policy",
+				"status": "ready",
+				"kind": "fix"
+			},
+			{
+				"id": "x00264",
+				"title": "x00264",
+				"track": "commit-policy",
+				"status": "ready",
+				"kind": "fix"
+			},
+			{
+				"id": "x00265",
+				"title": "x00265",
+				"track": "commit-policy",
+				"status": "ready",
+				"kind": "fix"
+			},
+			{
+				"id": "x00266",
+				"title": "x00266",
+				"track": "commit-policy",
+				"status": "ready",
+				"kind": "fix"
+			},
+			{
+				"id": "x00268",
+				"title": "x00268",
+				"track": "ci",
+				"status": "ready",
+				"kind": "fix"
+			},
+			{
+				"id": "x00269",
+				"title": "x00269",
+				"track": "commit-policy",
+				"status": "ready",
+				"kind": "fix"
+			},
+			{
+				"id": "x00270",
+				"title": "x00270",
+				"track": "commit-policy",
+				"status": "ready",
+				"kind": "fix"
+			},
+			{
+				"id": "x00272",
+				"title": "x00272",
+				"track": "governance",
+				"status": "ready",
+				"kind": "fix"
+			},
+			{
+				"id": "x00273",
+				"title": "x00273",
+				"track": "governance",
+				"status": "ready",
+				"kind": "fix"
+			},
+			{
+				"id": "x00281",
+				"title": "x00281",
+				"track": "ci",
+				"status": "ready",
+				"kind": "fix"
+			},
+			{
+				"id": "x00282",
+				"title": "x00282",
+				"track": "ci",
+				"status": "ready",
+				"kind": "fix"
+			},
+			{
+				"id": "x00287",
+				"title": "x00287",
+				"track": "adaptive",
+				"status": "ready",
+				"kind": "fix"
+			},
+			{
+				"id": "x00289",
+				"title": "x00289",
+				"track": "security",
+				"status": "ready",
+				"kind": "fix"
+			},
+			{
+				"id": "x00292",
+				"title": "x00292",
+				"track": "security",
+				"status": "ready",
+				"kind": "fix"
+			},
+			{
+				"id": "x00293",
+				"title": "x00293",
+				"track": "release",
+				"status": "ready",
+				"kind": "fix"
+			},
+			{
+				"id": "x00298",
+				"title": "x00298",
+				"track": "security",
+				"status": "ready",
+				"kind": "fix"
+			},
+			{
+				"id": "x00299",
+				"title": "x00299",
+				"track": "governance",
+				"status": "ready",
+				"kind": "fix"
+			},
+			{
+				"id": "x00300",
+				"title": "x00300",
+				"track": "audit-stabilization",
+				"status": "ready",
+				"kind": "fix"
+			},
+			{
+				"id": "x00301",
+				"title": "x00301",
+				"track": "audit-stabilization",
+				"status": "ready",
 				"kind": "fix"
 			},
 			{
@@ -1329,7 +2057,7 @@
 			}
 		],
 		"byStatus": {
-			"ready": 3,
+			"ready": 107,
 			"in-progress": 8,
 			"review": 0,
 			"paused": 2,

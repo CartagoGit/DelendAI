@@ -20,7 +20,7 @@ import type { ITriggerEvent, ISliceTriggerConfig } from './trigger-types';
 
 export type { ITriggerEvent };
 
-const DEFAULT_POLL_MS = 5_000;
+const DEFAULT_POLL_MS = 1_000;
 
 /**
  * Result the engine returns after consuming a trigger event.
@@ -270,6 +270,9 @@ export const createSliceListener = (
 		},
 		start() {
 			if (timer !== undefined) return;
+			// Prime immediately so a transition made after startup does
+			// not wait for the first polling interval.
+			void check();
 			timer = setInterval(() => {
 				void check();
 			}, pollMs);
