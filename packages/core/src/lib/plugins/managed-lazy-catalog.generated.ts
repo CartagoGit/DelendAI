@@ -60,7 +60,7 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 		tools(
 			'agent-orchestrator',
 			'@mcp-vertex/agent-orchestrator',
-			['plan', 'dispatch'],
+			['plan', 'dispatch', 'classify'],
 			[],
 			[],
 			['agent-orchestrator-overview'],

@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-08-29T06:40:29.292Z",
+	"generatedAt": "2026-08-29T06:57:05.893Z",
 	"mode": "compact",
 	"tools": [
 		{
@@ -15,6 +15,10 @@
 		},
 		{
 			"name": "mcp-vertex_agent_catalog"
+		},
+		{
+			"name": "mcp-vertex_agent-orchestrator_classify",
+			"plugin": "agent-orchestrator"
 		},
 		{
 			"name": "mcp-vertex_agent-orchestrator_dispatch",
