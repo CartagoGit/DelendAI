@@ -200,6 +200,7 @@ export const createSliceListener = (
 	>();
 	let initialized = false;
 	let timer: ReturnType<typeof setInterval> | undefined;
+	let checkInFlight: Promise<readonly ITriggerEvent[]> | undefined;
 	const pending: ITriggerEvent[] = [];
 	const refusals: ISliceRefusal[] = [];
 	const reader = new SafeWorkspaceReader(workspaceRoot);
@@ -227,6 +228,9 @@ export const createSliceListener = (
 			return [];
 		}
 		const curr = parseIndex(raw).slices;
+		if (pending.length > 0) {
+			await Promise.all(pending.slice().map(deliverOne));
+		}
 		const { events: newEvents, refusals: newRefusals } = initialized
 			? diffSlices(prev, curr, config.onStatuses)
 			: { events: [], refusals: [] };
@@ -240,9 +244,16 @@ export const createSliceListener = (
 		}
 		return newEvents;
 	};
+	const check = (): Promise<readonly ITriggerEvent[]> => {
+		if (checkInFlight !== undefined) return checkInFlight;
+		checkInFlight = checkImpl().finally(() => {
+			checkInFlight = undefined;
+		});
+		return checkInFlight;
+	};
 
 	return {
-		check: checkImpl,
+		check,
 		// x00263: both drain helpers are *true* drains — they
 		// clear the queue. Pending events are also cleared by
 		// `deliverOne` on OK; refusals have no auto-clear path,
@@ -260,7 +271,7 @@ export const createSliceListener = (
 		start() {
 			if (timer !== undefined) return;
 			timer = setInterval(() => {
-				void checkImpl();
+				void check();
 			}, pollMs);
 			if (typeof timer.unref === 'function') timer.unref();
 		},
