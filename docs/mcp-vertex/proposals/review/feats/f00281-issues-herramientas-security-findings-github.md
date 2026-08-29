@@ -2,7 +2,7 @@
 id: f00281
 title: "issues: herramientas MCP para security findings (Dependabot, CodeQL, secret scanning, advisories)"
 kind: feat
-status: in-progress
+status: review
 type: proposal
 track: security
 date: 2026-08-29
@@ -110,7 +110,7 @@ delegate al puerto, toolOk con tier.
 
 ### S1 — Tipos de contrato + funciones de cliente
 
-- **Status**: pending
+- **Status**: done
 - **Files**:
     - `plugins/issues/src/lib/contracts/security.types.ts` (nuevo)
     - `plugins/issues/src/lib/contracts/index.ts` (re-export)
@@ -119,7 +119,7 @@ delegate al puerto, toolOk con tier.
 
 ### S2 — Herramientas `issues_list_dependabot` + `issues_list_code_scanning`
 
-- **Status**: pending
+- **Status**: done
 - **Files**:
     - `plugins/issues/src/lib/tools/list-dependabot.tool.ts` (nuevo)
     - `plugins/issues/src/lib/tools/list-code-scanning.tool.ts` (nuevo)
@@ -131,7 +131,7 @@ delegate al puerto, toolOk con tier.
 
 ### S3 — Herramientas `issues_list_secret_scanning` + `issues_list_advisories`
 
-- **Status**: pending
+- **Status**: done
 - **Files**:
     - `plugins/issues/src/lib/tools/list-secret-scanning.tool.ts` (nuevo)
     - `plugins/issues/src/lib/tools/list-advisories.tool.ts` (nuevo)
@@ -141,17 +141,19 @@ delegate al puerto, toolOk con tier.
 
 ### S4 — Tests de las 4 herramientas y del cliente
 
-- **Status**: pending
+- **Status**: done
 - **Files**:
-    - `plugins/issues/tests/src/lib/security-client.spec.ts` (nuevo —
+    - `plugins/issues/tests/src/lib/github-client-security.spec.ts` (nuevo —
       fakes de spawn/fetch por tier, igual que los specs de issues)
-    - `plugins/issues/tests/src/lib/security-tools.spec.ts` (nuevo —
-      cada tool con un fake `IGithubClient`)
+    - `plugins/issues/tests/src/lib/tools/list-dependabot.tool.spec.ts` (nuevo)
+    - `plugins/issues/tests/src/lib/tools/list-code-scanning.tool.spec.ts` (nuevo)
+    - `plugins/issues/tests/src/lib/tools/list-secret-scanning.tool.spec.ts` (nuevo)
+    - `plugins/issues/tests/src/lib/tools/list-advisories.tool.spec.ts` (nuevo)
 - **Gate**: `bunx vitest run plugins/issues/tests`
 
 ### S5 — Validación completa + docs
 
-- **Status**: pending
+- **Status**: done
 - **Files**:
     - `plugins/issues/README.md` (documentar las 4 herramientas nuevas)
     - `docs/mcp-vertex/host-hints/agent-instructions.generated.md` (si
