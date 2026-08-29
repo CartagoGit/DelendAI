@@ -336,7 +336,6 @@ export const planCommitPolicyRun = async (
 			: triggerPin !== null
 				? buildTriggerCommitMessage({
 						kind: triggerPin.kind,
-						files: triggerPin.files,
 						dirtyCount:
 							triggerEvent.dirtyCount ?? triggerPin.files.length,
 					})
@@ -465,7 +464,6 @@ export const runCommitPolicyRun = async (
 				? {
 						message: buildTriggerCommitMessage({
 							kind: triggerPin.kind,
-							files: triggerPin.files,
 							dirtyCount:
 								triggerEvent.dirtyCount ??
 								triggerPin.files.length,
