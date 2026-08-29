@@ -338,6 +338,7 @@ export const planCommitPolicyRun = async (
 						kind: triggerPin.kind,
 						dirtyCount:
 							triggerEvent.dirtyCount ?? triggerPin.files.length,
+						files: triggerPin.files,
 					})
 				: `chore: commit via ${triggerEvent.kind}`;
 
@@ -467,6 +468,7 @@ export const runCommitPolicyRun = async (
 							dirtyCount:
 								triggerEvent.dirtyCount ??
 								triggerPin.files.length,
+							files: triggerPin.files,
 						}),
 						triggerContext: triggerPin,
 					}
