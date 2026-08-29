@@ -17,8 +17,8 @@ export {
 export { withFileMutex } from '../lib/shared/with-file-mutex';
 export { SafeWorkspaceReader } from '../lib/filesystem/safe-workspace-reader';
 export { WorkspaceContainmentError } from '../lib/filesystem/safe-workspace-reader.errors';
+export { nodeDynamicImport } from './dynamic-import';
 export {
 	loadPlugins,
 	resolvePluginSpecifier,
-	nodeDynamicImport,
 } from '../lib/plugins/load-plugins';
