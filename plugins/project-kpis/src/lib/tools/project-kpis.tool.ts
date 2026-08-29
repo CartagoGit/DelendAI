@@ -1348,7 +1348,6 @@ const buildViewPayload = async (
 			case 'audit':
 				return findings.status;
 			case 'summary':
-			default:
 				return deriveViewStatus([snapshot.status, history.status]);
 		}
 	})();

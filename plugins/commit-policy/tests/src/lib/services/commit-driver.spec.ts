@@ -85,7 +85,7 @@ const buildFakeGit = (opts: {
 	if (opts.dirty !== undefined) {
 		responses.set(
 			'status\u0000--porcelain=v1',
-			ok(opts.dirty.map((path) => ` M ${path}`).join('\n') + '\n'),
+			ok(`${opts.dirty.map((path) => ` M ${path}`).join('\n')}\n`),
 		);
 	}
 	const run: IGitRunner = async (

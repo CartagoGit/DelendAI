@@ -60,7 +60,7 @@ const buildRunner = (
 		if (args[0] === 'add') return Promise.resolve(ok('added\n'));
 		if (args[0] === 'status')
 			return Promise.resolve(
-				ok(dirty.map((path) => ` M ${path}`).join('\n') + '\n'),
+				ok(`${dirty.map((path) => ` M ${path}`).join('\n')}\n`),
 			);
 		if (args[0] === 'push')
 			return Promise.resolve(
