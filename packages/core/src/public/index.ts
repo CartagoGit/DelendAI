@@ -199,9 +199,13 @@ export {
 } from '../lib/plugins/load-config-file';
 export {
 	loadPlugins,
-	nodeDynamicImport,
 	resolvePluginSpecifier,
 } from '../lib/plugins/load-plugins';
+/**
+ * @deprecated r00028 / b00237 — use `@mcp-vertex/core/node` instead.
+ * Will be removed in the next minor release.
+ */
+export { nodeDynamicImport } from '../node/dynamic-import';
 export type {
 	ILoadedPlugin,
 	IPluginLoadResult,
