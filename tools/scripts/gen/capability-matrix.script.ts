@@ -52,7 +52,6 @@ const cellSymbol = (cell: CapabilityCell): string => {
 		case 'used-undeclared':
 			return '🔴';
 		case 'absent':
-		default:
 			return '⚪';
 	}
 };
