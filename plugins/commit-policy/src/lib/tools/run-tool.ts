@@ -335,7 +335,7 @@ export const planCommitPolicyRun = async (
 			? `feat(${slicePin.proposalId}): commit via ${triggerEvent.kind}`
 			: triggerPin !== null
 				? buildTriggerCommitMessage({
-						kind: triggerEvent.kind,
+						kind: triggerPin.kind,
 						files: triggerPin.files,
 						dirtyCount:
 							triggerEvent.dirtyCount ?? triggerPin.files.length,
@@ -464,7 +464,7 @@ export const runCommitPolicyRun = async (
 			: triggerPin !== null
 				? {
 						message: buildTriggerCommitMessage({
-							kind: triggerEvent.kind,
+							kind: triggerPin.kind,
 							files: triggerPin.files,
 							dirtyCount:
 								triggerEvent.dirtyCount ??
