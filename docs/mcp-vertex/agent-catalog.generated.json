@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-08-29T16:46:53.791Z",
+	"generatedAt": "2026-08-29T16:49:02.249Z",
 	"mode": "compact",
 	"tools": [
 		{
@@ -1261,7 +1261,7 @@
 				"id": "c00010",
 				"title": "c00010",
 				"track": "ci",
-				"status": "in-progress",
+				"status": "paused",
 				"kind": "chore"
 			},
 			{
@@ -1330,9 +1330,9 @@
 		],
 		"byStatus": {
 			"ready": 1,
-			"in-progress": 11,
+			"in-progress": 10,
 			"review": 0,
-			"paused": 1,
+			"paused": 2,
 			"done": 512,
 			"blocked": 0,
 			"retired": 2,
