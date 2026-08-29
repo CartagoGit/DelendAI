@@ -220,13 +220,16 @@ El commit debe mostrar el delta.
 
 ### S1 — Análisis + design de surfaces
 
-- **Status**: pending
-- **Files**: `plugins/proposals/src/lib/contracts/surfaces/*.contract.ts`
+- **Status**: done
+- **Files**: `plugins/proposals/src/lib/contracts/surfaces/proposal-read.contract.ts`
 - **Gate**: type
 - acceptance:
   - "Mapa actual → propuesto documentado."
   - "Tipos Zod discriminated unions diseñados."
-
+- review-state: done
+- review-implementer: implementation_runner
+- review-reviewer: delivery_verifier
+- review-log: approved by delivery_verifier — Contrato S1 correcto: mapa legacy documentado, unions Zod estrictas, filtros/paginación compactos y sin cableado S2; typecheck global exit 0.
 ### S2 — Implementación de las surfaces
 
 - **Status**: pending
