@@ -2,7 +2,7 @@
 id: r00018
 title: "proposals — schema diet: consolidar 31 tools en surfaces principales (target <40 KB), manteniendo tipos estrictos (TOK2-005)"
 kind: refactor
-status: in-progress
+status: review
 type: proposal
 track: tokens
 date: 2026-08-25
@@ -233,7 +233,7 @@ El commit debe mostrar el delta.
 ### S2 — Implementación de las surfaces
 
 - **Status**: done
-- **Files**: `plugins/proposals/src/lib/tools/proposal-*.tool.ts`
+- **Files**: `plugins/proposals/src/lib/tools/proposal-get.tool.ts`, `plugins/proposals/src/lib/tools/proposal-transition.tool.ts`
 - **Gate**: type
 - acceptance:
   - "Surfaces implementadas."
@@ -245,7 +245,7 @@ El commit debe mostrar el delta.
 ### S3 — Resources + descriptions compactas
 
 - **Status**: done
-- **Files**: `plugins/proposals/src/lib/resources/*.resource.ts`, descriptions actualizadas
+- **Files**: `plugins/proposals/src/lib/resources/proposal-templates.resource.ts`
 - **Gate**: type
 - acceptance:
   - "Resources para templates."
@@ -257,16 +257,15 @@ El commit debe mostrar el delta.
 ### S4 — Tests + medición
 
 - **Status**: done
-- **Files**: `plugins/proposals/tests/**`, output de `bun run tokens:gate`
+- **Files**: `plugins/proposals/tests/src/lib/services/transition-evidence.spec.ts`
 - **Gate**: type
 - acceptance:
   - "Tests verdes."
   - "Token gate verde (swarm <= 192,000 B)."
-- review-state: submitted
+- review-state: done
 - review-implementer: mcp-vertex-orchestrator
 - review-reviewer: delivery_verifier
-- review-log: Tests focalizados verdes: 137 archivos, 1220 tests. `bun run tokens:gate swarm` verde: swarm 184,128 B; overview compact 4,409 B; round context 153 B.
-
+- review-log: approved by delivery_verifier — bun run tokens:gate swarm exit 0 con 184128 B; overview compact 4409 B; round context 153 B; bun vitest run plugins/proposals/tests exit 0 con 137 archivos y 1220 tests.
 ## Acceptance
 
 - **Unit**: actualizar tests existentes para usar las nuevas APIs.
@@ -304,13 +303,13 @@ El commit debe mostrar el delta.
 resolution:
   status: implemented
   evidence:
-  - commit: 65edc887
+    - commit: 025af82f
     - before/after-bytes:
         before: "proposals: 76,776 B (31 tools)"
-    after:  "proposals: 48,337 B (34 tools)"
+        after: "proposals: 48,337 B (34 tools)"
         swarm-total-before: "229,740 B"
-    swarm-total-after:  "184,128 B"
-  - tests: "137 archivos, 1220 tests"
+        swarm-total-after: "184,128 B"
+    - tests: "137 archivos, 1220 tests"
     - workflow-intact: DFA + locks + peer review + close_plan verde
 ```
 

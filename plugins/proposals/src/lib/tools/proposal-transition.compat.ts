@@ -1,13 +1,6 @@
 /**
  * proposal-transition.compat.ts — f00152 S3 (L2 — compat window for proposal_transition).
  *
- * Wraps the existing `runProposalTransition` handler with a v1/v2
- * compat window. Today v1 and v2 are structurally identical (this is
- * a seed slice that exercises the framework) but the window is real:
- * if a future release adds a required field to v2, v1 callers will
- * keep working until `removedIn`, with a structured warning in the
- * response.
- *
  * SOLID notes:
  *   - **SRP**: this file owns the compat wrapper, not the handler.
  *   - **OCP**: future shape changes edit only `v2Schema` and the
@@ -15,67 +8,33 @@
  *   - **DIP**: imports the underlying handler from the original tool
  *     module so the handler is the single source of truth.
  */
-import z from 'zod';
-
-import { VALIDATE_EVIDENCE_SCHEMA } from '@mcp-vertex/core/public';
-
 import {
 	defineCompatWindow,
 	parseWithCompatWindow,
 	type IDeprecatedShapeUsed,
 } from '../contracts/compat-window';
-import {
-	PROPOSAL_STATUSES,
-	type IProposalStatus,
-} from '../contracts/constants/proposal-glossary.constant';
-import type { IProposalTransitionArgs } from './proposal-transition.tool';
 import { runProposalTransition } from './proposal-transition.tool';
+import {
+	PROPOSAL_TRANSITION_INPUT_SCHEMA,
+	type IProposalTransitionArgs,
+} from '../contracts/proposal-transition-input.contract';
 import type { IProposalTransitionToolOptions } from './proposal-transition.tool';
-
-const PROPOSAL_TRANSITION_STATUS_VALUES = Object.keys(PROPOSAL_STATUSES) as [
-	IProposalStatus,
-	...IProposalStatus[],
-];
-
-/** v2 — the canonical (today's) input schema. Mirrors `IProposalTransitionArgs`. */
-const v2Schema = z
-	.object({
-		id: z.string().min(1),
-		to: z.enum(PROPOSAL_TRANSITION_STATUS_VALUES),
-		reason: z.string().min(1),
-		agent: z.string().optional(),
-		force: z.boolean().optional(),
-		validateEvidence: VALIDATE_EVIDENCE_SCHEMA.optional(),
-	})
-	.strict();
-
-/** v1 — legacy shape. Today v1 === v2 (seed slice). Future releases will narrow v2. */
-const v1Schema = z
-	.object({
-		id: z.string().min(1),
-		to: z.enum(PROPOSAL_TRANSITION_STATUS_VALUES),
-		reason: z.string().min(1),
-		agent: z.string().optional(),
-		force: z.boolean().optional(),
-		validateEvidence: VALIDATE_EVIDENCE_SCHEMA.optional(),
-	})
-	.strict();
 
 /** The compat window for proposal_transition. */
 export const PROPOSAL_TRANSITION_COMPAT =
 	defineCompatWindow<IProposalTransitionArgs>({
 		v2: {
 			version: 'v2',
-			schema: v2Schema,
+			schema: PROPOSAL_TRANSITION_INPUT_SCHEMA,
 			sinceVersion: '0.1.0',
 			removedIn: 'never',
 			migrationHint:
 				'v2 is the canonical shape for proposal_transition. v1 is deprecated and will be removed in a future major release.',
-			translate: () => ({ id: '', to: '', reason: '' }),
+			translate: () => ({ id: '', to: 'ready', reason: '' }),
 		},
 		v1: {
 			version: 'v1',
-			schema: v1Schema,
+			schema: PROPOSAL_TRANSITION_INPUT_SCHEMA,
 			sinceVersion: '0.1.0',
 			removedIn: '1.0.0',
 			migrationHint:
