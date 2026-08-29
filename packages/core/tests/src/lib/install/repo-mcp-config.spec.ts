@@ -37,6 +37,23 @@ const localDogfoodLaunch = (workspace: string) => ({
 	],
 });
 
+/**
+ * The same local dogfood launch, under `bun --watch` so the host restarts
+ * when its own sources change. Committed deliberately in `eac4c91f` — an
+ * agent editing this repo needs the MCP server it is talking to to pick the
+ * edit up without a manual restart. It is the dogfood launch plus one flag,
+ * so it is listed as its own accepted shape rather than by loosening the
+ * comparison: this gate should still reject an arbitrary command.
+ */
+const localDogfoodWatchLaunch = (workspace: string) => ({
+	command: 'bun',
+	args: [
+		'--watch',
+		'tools/scripts/host/host-server.script.ts',
+		`--workspace=${workspace}`,
+	],
+});
+
 const expectCanonicalLaunch = (
 	entry: { command?: string; args?: readonly string[] } | undefined,
 	workspace: string,
@@ -45,6 +62,7 @@ const expectCanonicalLaunch = (
 	const accepted = [
 		publishedLaunch(workspace),
 		localDogfoodLaunch(workspace),
+		localDogfoodWatchLaunch(workspace),
 	];
 	const matches = accepted.some(
 		(launch) =>
