@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { buildGetProposalWorkflowRegistration } from '@mcp-vertex/proposals/lib/tools/get-proposal-workflow.tool';
+import { buildProposalTemplatesResourceRegistration } from '@mcp-vertex/proposals/lib/resources/proposal-templates.resource';
 
 describe('get_proposal_workflow registration metadata', () => {
 	it('publishes compact descriptions without dropping schemas', async () => {
@@ -31,5 +32,41 @@ describe('get_proposal_workflow registration metadata', () => {
 		);
 		expect(definition?.inputSchema).toBeDefined();
 		expect(definition?.outputSchema).toBeDefined();
+	});
+});
+
+describe('proposal templates resource registration', () => {
+	it('registers a readable compact workflow resource', async () => {
+		let resourceHandler: (() => Promise<{
+			contents: Array<{ text?: string; uri: string; mimeType?: string }>;
+		}>) | undefined;
+		const registration = buildProposalTemplatesResourceRegistration({
+			proposalsDir: '/workspace/docs/proposals',
+			indexFile: '/workspace/.cache/proposals/index.json',
+		});
+
+		await registration.register({
+			registerResource: (
+				_name: string,
+				_uri: string,
+				_metadata: unknown,
+				handler: typeof resourceHandler,
+			) => {
+				resourceHandler = handler;
+			},
+		} as never);
+
+		expect(resourceHandler).toBeDefined();
+		const result = await resourceHandler!();
+		const text = result.contents[0]?.text ?? '{}';
+		const body = JSON.parse(text) as {
+			naming?: string;
+			template?: string;
+		};
+
+		expect(result.contents[0]?.uri).toBe('mcp-vertex://proposals/templates');
+		expect(result.contents[0]?.mimeType).toBe('application/json');
+		expect(body.naming).toBeTypeOf('string');
+		expect(body.template).toBeTypeOf('string');
 	});
 });
