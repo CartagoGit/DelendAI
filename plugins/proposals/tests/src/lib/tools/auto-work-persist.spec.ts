@@ -12,12 +12,16 @@
  * 4. Every failure mode is reported as `{ committed, pushed, reason }`
  *    — the helper NEVER throws.
  */
+import { mkdtemp, rm } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 import type {
 	IGitRunResult,
 	IGitRunner,
 } from '@mcp-vertex/proposals/lib/shared/git-runner';
+import { createGitRunner } from '@mcp-vertex/proposals/lib/shared/git-runner';
 import {
 	maybePersistAfterSlice,
 	renderCommitMessage,
@@ -60,7 +64,62 @@ const fakeRunner = (
 	return fn;
 };
 
+describe('createGitRunner', async () => {
+	it('reports a real git command error', async () => {
+		const result = await createGitRunner(process.cwd())([
+			'not-a-real-subcommand',
+		]);
+
+		expect(result.ok).toBe(false);
+		expect(result.reason).toMatch(/not-a-real-subcommand|unknown/u);
+	});
+
+	it('reports a real git timeout', async () => {
+		const cwd = await mkdtemp(join(tmpdir(), 'x00298-git-runner-'));
+		try {
+			const runner = createGitRunner(cwd);
+			const init = await runner(['init']);
+			expect(init.ok).toBe(true);
+
+			const result = await createGitRunner(
+				cwd,
+				10,
+			)(['cat-file', '--batch']);
+
+			expect(result.ok).toBe(false);
+			expect(result.reason).toContain('timed out');
+		} finally {
+			await rm(cwd, { recursive: true, force: true });
+		}
+	});
+});
+
 describe('maybePersistAfterSlice', async () => {
+	it('uses the real async runner by default', async () => {
+		const result = await createGitRunner(process.cwd())(['--version']);
+
+		expect(result.ok).toBe(true);
+		expect(result.output).toMatch(/git version/u);
+	});
+
+	it('uses an injected runner instead of spawning git', async () => {
+		const runner = fakeRunner([
+			{ match: (a) => a[0] === 'add', output: '' },
+			{ match: (a) => a[0] === 'commit', output: '' },
+			{ match: (a) => a[0] === 'rev-parse', output: 'inject01' },
+		]);
+
+		const result = await maybePersistAfterSlice(
+			['plugins/proposals/src/lib/foo.ts'],
+			'x00298',
+			'S1',
+			{ mode: 'commit', git: runner },
+		);
+
+		expect(result.hash).toBe('inject01');
+		expect(runner.calls.length).toBe(3);
+	});
+
 	it("mode 'none' is a hard no-op (no git calls)", async () => {
 		const runner = fakeRunner([
 			{
@@ -355,8 +414,8 @@ describe('maybePersistAfterSlice', async () => {
 				{
 					mode: 'commit-and-push',
 					pushTarget: 'origin agent/x00298',
-					agentWorktreeEnabled: true,
-					git: runner,
+				agentWorktreeEnabled: true,
+				git: runner,
 				},
 			);
 

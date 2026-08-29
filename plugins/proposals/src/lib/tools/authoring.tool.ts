@@ -1,9 +1,5 @@
 import { dirname, join } from 'node:path';
-
-import z from 'zod';
-
 import type {
-	IToolRegistration,
 	IToolTextResult,
 } from '@mcp-vertex/core/public';
 import {
@@ -69,7 +65,10 @@ import { locateProposal } from '../proposals/locate';
 import type { IValidateEvidence } from '../services/transition-evidence';
 import { readActiveLocks, resolveIndexedDoc } from './authoring-options';
 import type { IAuthoringToolOptions } from './authoring-options';
-import { maybePersistAfterSlice } from './auto-work-persist';
+import {
+	maybePersistAfterSlice,
+	type IPersistResult,
+} from './auto-work-persist';
 
 type ICloseSlicePersistConfig = {
 	readonly mode: 'none' | 'commit' | 'commit-and-push';
@@ -101,6 +100,7 @@ type ICloseSliceThrownError = Error & {
 		| 'quality-failed'
 		| 'peer-review-required';
 	readonly output?: string;
+	readonly persist?: IPersistResult;
 	readonly detail?: {
 		readonly ok: boolean;
 		readonly severity: 'ok' | 'error';
@@ -926,6 +926,15 @@ export const buildCloseSliceRegistration = (
 					sliceId: z.string().optional(),
 					closed: z.boolean().optional(),
 					lockReleased: z.boolean().optional(),
+					persist: z
+						.object({
+							committed: z.boolean(),
+							pushed: z.boolean(),
+							mode: z.enum(['none', 'commit', 'commit-and-push']),
+							hash: z.string().optional(),
+							reason: z.string().optional(),
+						})
+						.optional(),
 					// f00091 S2: the branch (if any) recorded for deliberate
 					// integration by the non-destructive branch-integration
 					// step. `null` when agentWorktree is off, the active
@@ -1002,6 +1011,11 @@ export const buildCloseSliceRegistration = (
 						return toolErrorEnvelope(envelope);
 					}
 				}
+				let persisted: IPersistResult = {
+					committed: false,
+					pushed: false,
+					mode: 'none',
+				};
 				try {
 					await withFileMutex(docPath, async () => {
 						const md = await readTextOrNull(docPath);
@@ -1097,10 +1111,7 @@ export const buildCloseSliceRegistration = (
 									: {}),
 							},
 						);
-						if (
-							persistResult.mode !== 'none' &&
 							(!persistResult.committed ||
-								(persistResult.mode === 'commit-and-push' &&
 									persistResult.pushed !== true))
 						) {
 							const err: ICloseSliceThrownError = Object.assign(
@@ -1116,6 +1127,7 @@ export const buildCloseSliceRegistration = (
 							);
 							throw err;
 						}
+						persisted = persistResult;
 						const block = flipSliceStatusDone(rawBlock);
 						const nextContent = md.replace(
 							blockRe,
@@ -1141,6 +1153,12 @@ export const buildCloseSliceRegistration = (
 							sliceId: args.sliceId,
 							closed: false,
 							validationOutput: String(err.output ?? ''),
+							...(err.persist !== undefined
+								? { persist: err.persist }
+								: {}),
+							...(err.persist !== undefined
+								? { persist: err.persist }
+								: {}),
 						};
 						return toolErrorEnvelope(envelope);
 					}
@@ -1237,6 +1255,7 @@ export const buildCloseSliceRegistration = (
 					sliceId: args.sliceId,
 					closed: true,
 					lockReleased,
+					persist: persisted,
 					pendingIntegrationBranch,
 				});
 			},
