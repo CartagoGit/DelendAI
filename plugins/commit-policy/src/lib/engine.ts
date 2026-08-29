@@ -267,7 +267,8 @@ export const createCommitPolicyEngine = (
 			const driverInput = toDriverInput(
 				event,
 				baseMessage,
-				options.driver.policy.cadence.sliceScoping,
+				options.driver.policy.cadence.sliceScoping &&
+					options.driver.policy.cadence.allowForeignChanges !== true,
 			);
 			const result = await runCommitDriver(driverInput, options.driver);
 
