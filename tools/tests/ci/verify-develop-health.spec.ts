@@ -208,10 +208,23 @@ describe('main() — three-state verdict', () => {
 		expect(code).toBe(2);
 	});
 
+	it('dry-run is offline and returns an unverified structured report', async () => {
+		const originalFetch = globalThis.fetch;
+		globalThis.fetch = (() => {
+			throw new Error('dry-run must not contact GitHub');
+		}) as unknown as typeof fetch;
+		try {
+			const code = await healthMain(['--repo', 'foo/bar', '--dry-run']);
+			expect(code).toBe(0);
+		} finally {
+			globalThis.fetch = originalFetch;
+		}
+	});
+
 	it('returns healthy=true when every branch matches', async () => {
 		stubHealthyFetch();
 		try {
-			const code = await healthMain(['--repo', 'foo/bar', '--dry-run']);
+			const code = await healthMain(['--repo', 'foo/bar']);
 			expect(code).toBe(0);
 		} finally {
 			restoreFetch();
@@ -271,7 +284,7 @@ describe('main() — three-state verdict', () => {
 			return jsonResponse({ message: 'not found' }, 404);
 		});
 		try {
-			const code = await healthMain(['--repo', 'foo/bar', '--dry-run']);
+			const code = await healthMain(['--repo', 'foo/bar']);
 			expect(code).toBe(1);
 		} finally {
 			restoreFetch();
@@ -290,7 +303,7 @@ describe('main() — three-state verdict', () => {
 			return jsonResponse({ message: 'not found' }, 404);
 		});
 		try {
-			const code = await healthMain(['--repo', 'foo/bar', '--dry-run']);
+			const code = await healthMain(['--repo', 'foo/bar']);
 			expect(code).toBe(1);
 		} finally {
 			restoreFetch();
@@ -305,7 +318,7 @@ describe('main() — three-state verdict', () => {
 			return jsonResponse({ message: 'Not Found' }, 404);
 		});
 		try {
-			const code = await healthMain(['--repo', 'foo/bar', '--dry-run']);
+			const code = await healthMain(['--repo', 'foo/bar']);
 			expect(code).toBe(1);
 		} finally {
 			restoreFetch();
@@ -331,7 +344,7 @@ describe('main() — three-state verdict', () => {
 		const originalToken = process.env.GITHUB_TOKEN;
 		process.env.GITHUB_TOKEN = 'ambient-token';
 		try {
-			const code = await healthMain(['--repo', 'foo/bar', '--dry-run']);
+			const code = await healthMain(['--repo', 'foo/bar']);
 			expect(code).toBe(0);
 		} finally {
 			restoreFetch();
@@ -345,7 +358,6 @@ describe('main() — three-state verdict', () => {
 			const code = await healthMain([
 				'--repo',
 				'foo/bar',
-				'--dry-run',
 				'--token',
 				'a-deliberately-configured-pat',
 			]);
@@ -373,7 +385,7 @@ describe('main() — three-state verdict', () => {
 		const originalToken = process.env.GITHUB_TOKEN;
 		process.env.GITHUB_TOKEN = 'ambient-token';
 		try {
-			const code = await healthMain(['--repo', 'foo/bar', '--dry-run']);
+			const code = await healthMain(['--repo', 'foo/bar']);
 			expect(code).toBe(1);
 		} finally {
 			restoreFetch();
@@ -452,7 +464,7 @@ describe('parity — verify-branch-protection and verify-develop-health agree', 
 				: ['--repo', 'foo/bar'];
 			try {
 				const protectionCode = await protectionMain(args);
-				const healthCode = await healthMain([...args, '--dry-run']);
+				const healthCode = await healthMain(args);
 				// Both scripts must agree on whether the run is a hard failure
 				// (exit 1) or not (exit 0 — pass or unverified).
 				expect(healthCode === 1).toBe(protectionCode === 1);

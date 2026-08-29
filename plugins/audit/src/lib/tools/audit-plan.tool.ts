@@ -163,7 +163,7 @@ export const buildPlanRegistration = (
 					projects?: readonly string[] | undefined;
 				}) => {
 					const scope = args.scope ?? 'full';
-					const auditType = args.auditType ?? 'valuation';
+					const auditType = args.auditType ?? 'plan';
 					if (!allAvailableNames.includes(scope)) {
 						return toolError(
 							`unknown scope "${scope}"`,

@@ -21,7 +21,6 @@
 
 import type { IStartupReport } from './model';
 import type { IStartupReportLevel } from './level';
-import { levelIncludesPluginCostTable } from './level';
 
 /** Semantic colour tokens. Never escape-coded by business code. */
 export type IColorToken =
@@ -47,10 +46,10 @@ const ANSI_BY_TOKEN: Readonly<Record<IColorToken, string>> = {
 const ANSI_RESET = '\u001B[0m';
 
 /**
- * Auto-detect whether ANSI colours should be emitted. Conservative:
- * disabled unless `FORCE_COLOR=1` (or `--color=always`) is set. We
- * default to plain because the MCP stdio stdout must remain clean
- * (q00009 §10.3) and we cannot guarantee the host is a TTY.
+ * Resolve whether ANSI colours should be emitted. Automatic colour is only
+ * enabled for an actual terminal; MCP clients commonly pipe stderr and may
+ * display escape sequences literally. `MCP_VERTEX_COLOR=always` and
+ * `FORCE_COLOR=1` remain explicit opt-ins for compatible hosts.
  */
 export const shouldUseAnsiColors = (
 	env: NodeJS.ProcessEnv = process.env,
@@ -61,7 +60,7 @@ export const shouldUseAnsiColors = (
 	if (force === '1' || force === 'true') return true;
 	if (env.MCP_VERTEX_COLOR === 'always') return true;
 	if (env.MCP_VERTEX_COLOR === 'never') return false;
-	return false;
+	return process.stderr.isTTY === true;
 };
 
 const colourise = (
@@ -69,6 +68,16 @@ const colourise = (
 	token: IColorToken,
 	useAnsi: boolean,
 ): string => (useAnsi ? `${ANSI_BY_TOKEN[token]}${text}${ANSI_RESET}` : text);
+
+const section = (
+	title: string,
+	description: string,
+	token: IColorToken,
+	useAnsi: boolean,
+): readonly string[] => [
+	colourise(`=== ${title} ===`, token, useAnsi),
+	colourise(`  ${description}`, 'dim', useAnsi),
+];
 
 const formatBytes = (bytes: number): string => {
 	if (bytes === 0) return '0 B';
@@ -97,106 +106,119 @@ const renderInternal = (report: IStartupReport, useAnsi: boolean): string => {
 
 	const lines: string[] = [];
 
-	// ─── Identity / Catalog ────────────────────────────────────────
+	// ─── Operator summary ──────────────────────────────────────────
 	const idLines: string[] = [
-		colourise('MCP-Vertex ready', 'ready', useAnsi),
+		colourise('[info] MCP-Vertex ready', 'ready', useAnsi),
 		`version        ${report.identity.version}`,
 		`workspace      ${report.identity.workspace}`,
 		`preset         ${report.identity.preset}`,
-		`surface        ${report.identity.surfaceMode}`,
+		`surface        ${report.identity.surfaceMode} · ${report.runtime.lazyActivation ? 'lazy loading enabled' : 'eager loading'}`,
+		`tools          ${report.catalog.toolsExposed} visible / ${report.catalog.toolsAvailable} available`,
+		`plugins        ${report.catalog.pluginsConfigured} configured · ${report.catalog.pluginsLoaded ?? report.catalog.pluginsWarm} loaded · ${report.catalog.pluginsWarm} warm`,
 		...(report.identity.surfaceModeReason !== undefined
 			? [`  reason: ${report.identity.surfaceModeReason}`]
 			: []),
-		`startup report ${report.identity.startupReportLevel}${
-			report.identity.startupReportLevel === 'medium' ? ' (default)' : ''
-		}`,
 	];
+	lines.push(
+		...section(
+			'Server summary',
+			'What is running, which surface is exposed, and how tools are loaded.',
+			'ready',
+			useAnsi,
+		),
+	);
+	if (report.catalog.pluginsFailed > 0) {
+		idLines.push(`plugins failed ${report.catalog.pluginsFailed}`);
+	}
+	idLines.push(
+		`report         ${report.identity.startupReportLevel}${report.identity.startupReportLevel === 'medium' ? ' (default)' : ''}`,
+	);
 	for (const line of idLines) lines.push(line);
 	lines.push('');
 
 	const catLines: string[] = [
-		colourise('Catalog', 'header', useAnsi),
-		`plugins        ${report.catalog.pluginsConfigured} configured · ${report.catalog.pluginsLoaded ?? report.catalog.pluginsWarm} loaded · ${report.catalog.pluginsWarm} warm · ${report.catalog.pluginsFailed} failed`,
-		`tools          ${report.catalog.toolsAvailable} available · ${report.catalog.toolsExposed} exposed to model`,
-		`skills         ${report.catalog.skillsAvailable} available · ${report.catalog.skillsBodiesPreloaded} bodies preloaded`,
-		`resources      ${report.catalog.resourcesAvailable} available`,
+		...section(
+			'Available capabilities',
+			'The skills and resources that can be requested when needed.',
+			'accent',
+			useAnsi,
+		),
+		`skills        ${report.catalog.skillsAvailable} available · ${report.catalog.skillsBodiesPreloaded} preloaded`,
+		`resources     ${report.catalog.resourcesAvailable} available`,
 	];
 	for (const line of catLines) lines.push(line);
 	lines.push('');
 
 	// ─── Per-request context cost (compact+) ───────────────────────
 	const costLines: string[] = [
-		colourise('Per-request context cost', 'header', useAnsi),
+		...section(
+			'Context cost per request',
+			'The schema tokens sent to the model for the visible tool surface.',
+			'budget',
+			useAnsi,
+		),
 	];
 	costLines.push(
-		`exposed schema ${formatBytes(report.reconciliation.exposedSchemaBytesPerRequest)} · ${formatTokens(report.reconciliation.estimatedSchemaTokensPerRequest)}/request`,
+		`visible tools  ${formatTokens(report.reconciliation.estimatedSchemaTokensPerRequest)} tokens · ${formatBytes(report.reconciliation.exposedSchemaBytesPerRequest)} of schemas`,
 	);
 	if (report.baseline.source !== 'unset') {
 		costLines.push(
-			`native equiv.  ${formatTokens(report.reconciliation.nativeEquivalentTokensPerRequest)}/request`,
+			`full surface   ${formatTokens(report.reconciliation.nativeEquivalentTokensPerRequest)} tokens`,
 		);
 		costLines.push(
-			`avoided        ${formatTokens(report.reconciliation.avoidedTokensPerRequest)}/request · ${report.reconciliation.avoidedPercentage.toFixed(1)}%`,
+			`saved          ${formatTokens(report.reconciliation.avoidedTokensPerRequest)} tokens · ${report.reconciliation.avoidedPercentage.toFixed(1)}%`,
 		);
 	}
 	for (const line of costLines) lines.push(line);
 	lines.push('');
 
-	// ─── Plugin cost table (medium+) ───────────────────────────────
-	if (
-		levelIncludesPluginCostTable(level) &&
-		report.reconciliation.plugins.length > 0
-	) {
-		const tableLines: string[] = [
-			colourise('Plugin cost / request', 'header', useAnsi),
-		];
-		tableLines.push(
-			'  plugin                       tools skills  schema/request  tokens/request  budget',
-		);
-		for (const plugin of report.reconciliation.plugins) {
-			const budget =
-				plugin.budget.semantics === 'unbounded-by-plugin'
-					? 'n/a'
-					: plugin.budget.semantics === 'inherited'
-						? `${plugin.budget.value ?? '?'} inherited`
-						: plugin.budget.semantics === 'shared'
-							? 'shared'
-							: `${plugin.budget.value ?? '?'} dedicated`;
-			const budgetColoured = colourise(
-				budget.padEnd(20),
-				'budget',
-				useAnsi,
-			);
-			tableLines.push(
-				`  ${plugin.pluginName.padEnd(28)}${String(plugin.exposedToolsCount).padStart(3)}/${String(plugin.availableToolsCount).padStart(3)} ${String(plugin.availableSkillsCount ?? 0).padStart(5)}      ${formatBytes(plugin.exposedSchemaBytesPerRequest).padStart(10)}      ${formatTokens(plugin.estimatedSchemaTokensPerRequest).padStart(10)}    ${budget}`,
-			);
-			// colourise the budget slice; keep alignment via plain prefix
-			const last = tableLines.pop() as string;
-			const budgetStart = last.lastIndexOf(budget);
-			tableLines.push(last.slice(0, budgetStart) + budgetColoured);
-		}
-		const totalBytes = report.reconciliation.exposedSchemaBytesPerRequest;
-		const totalTools = report.reconciliation.plugins.reduce(
-			(s, p) => s + p.availableToolsCount,
-			0,
-		);
-		const totalRow = `  TOTAL${' '.repeat(24)}${String(report.catalog.toolsExposed).padStart(3)}/${String(totalTools).padStart(3)}      ${formatBytes(totalBytes).padStart(10)}      ${formatTokens(report.reconciliation.estimatedSchemaTokensPerRequest).padStart(10)}    n/a*`;
-		tableLines.push(totalRow);
-		tableLines.push('');
-		tableLines.push(
-			colourise(
-				'* Budgets heterogeneous do not sum when dimensions differ.',
-				'dim',
+	// ─── Plugin loading summary (medium+) ──────────────────────────
+	if (report.reconciliation.plugins.length > 0) {
+		const loadedPlugins = report.reconciliation.plugins
+			.filter(
+				(plugin) =>
+					plugin.status === 'active-internal' ||
+					plugin.status === 'loaded-hidden',
+			)
+			.map((plugin) => plugin.pluginName);
+		const lazyPlugins = report.reconciliation.plugins
+			.filter((plugin) => plugin.status === 'unloaded')
+			.map((plugin) => plugin.pluginName);
+		const failedPlugins = report.reconciliation.plugins
+			.filter(
+				(plugin) =>
+					plugin.status === 'failed' || plugin.status === 'denied',
+			)
+			.map((plugin) => plugin.pluginName);
+		const inlineList = (names: readonly string[]): string =>
+			names.length > 0 ? names.join(', ') : 'none';
+		const loadingLines: string[] = [
+			...section(
+				'Plugin loading',
+				'Plugins loaded now and plugins waiting for their first use.',
+				'accent',
 				useAnsi,
 			),
-		);
-		for (const line of tableLines) lines.push(line);
+			`  loaded at startup (${loadedPlugins.length}): ${inlineList(loadedPlugins)}`,
+			`  lazy loaded on demand (${lazyPlugins.length}): ${inlineList(lazyPlugins)}`,
+			...(failedPlugins.length > 0
+				? [
+						`  unavailable (${failedPlugins.length}): ${inlineList(failedPlugins)}`,
+					]
+				: []),
+		];
+		for (const line of loadingLines) lines.push(line);
 		lines.push('');
 	}
 
 	// ─── Managed runtime knobs (compact+) ─────────────────────────
 	const runtimeLines: string[] = [
-		colourise('Managed runtime', 'header', useAnsi),
+		...section(
+			'Managed runtime',
+			'Runtime policies for lazy activation, eviction, and MCP surface refreshes.',
+			'header',
+			useAnsi,
+		),
 		`lazy activation      ${report.runtime.lazyActivation ? 'enabled' : 'disabled'}`,
 		`module loading       ${report.runtime.moduleLoading ?? 'unspecified'}`,
 		`internal routing     ${report.runtime.internalRouting ? 'enabled' : 'disabled'}`,

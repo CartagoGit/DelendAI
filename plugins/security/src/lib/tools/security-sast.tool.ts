@@ -14,7 +14,6 @@ import {
 	MissingCliError,
 	runSastRunner,
 	SAST_RULES,
-	type IRunSastRunnerInput,
 	type ISecuritySastToolOptions,
 } from '../sast/exports';
 

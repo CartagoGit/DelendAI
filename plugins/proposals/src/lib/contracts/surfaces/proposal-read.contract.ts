@@ -20,7 +20,8 @@ export const PROPOSAL_READ_LEGACY_TOOLS = [
 	'get_proposal_review_log',
 ] as const;
 
-export const proposalReadDescription = 'Read a proposal or list them with filters.';
+export const proposalReadDescription =
+	'Read a proposal or list them with filters.';
 
 const nullableStringSchema = z.string().nullable();
 
@@ -42,9 +43,16 @@ const proposalReadFiltersSchema = z
 	})
 	.strict();
 
+/** x00298: default page size for `proposal_read` when the caller omits `limit`. */
+export const PROPOSAL_READ_DEFAULT_PAGE_SIZE = 20;
+
 const proposalReadPaginationSchema = z
 	.object({
-		limit: z.int().positive().max(100).default(20),
+		limit: z
+			.int()
+			.positive()
+			.max(100)
+			.default(PROPOSAL_READ_DEFAULT_PAGE_SIZE),
 		cursor: z.string().min(1).optional(),
 	})
 	.strict();
@@ -141,7 +149,18 @@ const proposalDetailSchema = proposalSummarySchema
 	})
 	.strict();
 
-export const proposalReadOutputSchema = z.discriminatedUnion('view', [
+/**
+ * The per-view output shapes, discriminated on `view`. This union exists
+ * ONLY to preserve the narrow TypeScript types (`IProposalReadOutput`)
+ * and runtime validation for the handlers — it is NOT safe to hand a
+ * `z.union`/`z.discriminatedUnion` root straight to the MCP SDK's
+ * `outputSchema`: `structuredContent` must serialize from a single object
+ * root, and an unwrapped union is silently dropped at `listTools` (the
+ * e2e invariant "every registered tool declares an outputSchema" then
+ * fails, exactly the drift that bit p00012/proposal_get and
+ * close_plan). See the envelope + the `view`-discriminated helper below.
+ */
+const proposalReadViewSchemas = z.discriminatedUnion('view', [
 	z
 		.object({
 			view: z.literal('list'),
@@ -176,6 +195,31 @@ export const proposalReadOutputSchema = z.discriminatedUnion('view', [
 		.strict(),
 ]);
 
+/**
+ * Narrow per-view output type used by the tool handlers (discriminator
+ * `view` is retained so a `switch (output.view)` still narrows).
+ */
+export type IProposalReadOutput = z.infer<typeof proposalReadViewSchemas>;
+
+/**
+ * The MCP-safe root envelope. `proposal_get` is registered through the
+ * compact `proposal_read` surface (r00018), whose handler returns the
+ * narrow union; before handing structured content to the SDK the output
+ * is wrapped as `payload` (an object), and the tool's wire envelope is
+ * always this single object root. Kept non-strict to tolerate SDK-
+ * injected fields (cursor pagination, etc.).
+ */
+export const proposalReadOutputSchema = z.object({
+	// One field per discriminated view; exactly one pair is present and
+	// validated by proposalReadViewSchemas in the handler return.
+	proposals: z.array(proposalSummarySchema).optional(),
+	nextCursor: z.string().nullable().optional(),
+	level: proposalReadDetailSchema.optional(),
+	proposal: proposalDetailSchema.optional(),
+	history: z.array(proposalHistoryEntrySchema).optional(),
+	slices: z.array(proposalSliceSchema).optional(),
+	reviews: z.array(proposalReviewEntrySchema).optional(),
+});
+
 export type IProposalReadInput = z.infer<typeof proposalReadInputSchema>;
-export type IProposalReadOutput = z.infer<typeof proposalReadOutputSchema>;
 export type IProposalReadView = z.infer<typeof proposalReadViewSchema>;

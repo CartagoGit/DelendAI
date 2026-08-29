@@ -169,7 +169,7 @@ the same MCP server**. The audit plugin auto-detects via the registry
 
 | Scenario | Behaviour |
 |---|---|
-| \`proposals\` is loaded (default — \`swarm\` preset includes it) | One proposal per actionable finding (FATAL / BAD / MINOR) is scaffolded to \`docs/mcp-vertex/proposals/ready/\` with a deterministic \`xNNNNN\` id and \`related: [aNNNNN]\`. |
+| \`proposals\` is loaded (default — \`swarm\` preset includes it) | A native parent plan plus one linked child proposal per actionable finding (FATAL / BAD / MINOR) is scaffolded to \`docs/mcp-vertex/proposals/ready/\`. |
 | \`proposals\` is NOT loaded | No proposals are written. The \`audit_run\` / \`audit_consolidate\` output returns \`proposals_skipped: "proposals plugin not loaded"\` so callers know what happened. |
 | \`--plugins=audit\` only (\`proposals\` absent) | Same as above: no scaffolding. The audit still works. |
 | Tool called inside a host that embeds the audit plugin without proposals | Same as above: no scaffolding. |

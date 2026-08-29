@@ -13,6 +13,11 @@ import {
 	hasExplicitPluginSurfaceSelection,
 	parseCliArgs,
 } from '@mcp-vertex/core/public';
+import {
+	renderStartupReportAnsi,
+	renderStartupReportPlain,
+	shouldUseAnsiColors,
+} from '@mcp-vertex/core/public';
 
 // x00186 (F27): `--workspace <abs>` (space or `=` form) already threads
 // through parseCliArgs's own `tokens.workspace ?? cwd` resolution
@@ -35,8 +40,27 @@ export const resolveWorkspaceFlag = (
 	return undefined;
 };
 
+export const hasHelpFlag = (argv: readonly string[]): boolean =>
+	argv.includes('--help') || argv.includes('-h');
+
 const run = async (): Promise<void> => {
 	const forwarded = process.argv.slice(2);
+	if (hasHelpFlag(forwarded)) {
+		process.stdout.write(
+			[
+				'mcp-vertex MCP host',
+				'',
+				'Usage: bun tools/scripts/host/host-server.script.ts [options]',
+				'',
+				'  --workspace <path>   Workspace root',
+				'  --preset <name>      Plugin preset',
+				'  --plugins <a,b>      Plugins to load',
+				'  --surface <mode>     MCP surface mode',
+				'  --help, -h           Show this help',
+			].join('\n') + '\n',
+		);
+		return;
+	}
 	const explicitWorkspace =
 		resolveWorkspaceFlag(forwarded) ?? process.env.MCP_VERTEX_WORKSPACE;
 	const cwd =
@@ -56,12 +80,35 @@ const run = async (): Promise<void> => {
 	// `assembleCliConfig` then adds plugin entries from
 	// `mcp-vertex.config.json` and applies exclude-plugins to the final set.
 	const args = parseCliArgs(effectiveArgv, cwd);
-	const { config, loadResult } = await assembleCliConfig(args);
+	const { config, loadResult, startupReportColor, buildStartupReport } =
+		await assembleCliConfig(args);
 	for (const error of loadResult.errors) {
 		process.stderr.write(`[mcp-vertex] plugin error: ${error.message}\n`);
 	}
 
 	const assembled = await createMcpProject(config);
+	const surfaceRuntime = config.toolSurfaceRuntime?.get();
+	const surfaceMode = config.toolSurfacePlan?.mode ?? 'managed';
+	const schemaBytesByRegistrationId =
+		surfaceRuntime === undefined
+			? undefined
+			: {
+					...surfaceRuntime.measureSchemaBytes('native'),
+					...surfaceRuntime.measureSchemaBytes(surfaceMode),
+				};
+	const startupReport = buildStartupReport(schemaBytesByRegistrationId);
+	const startupText =
+		startupReportColor === 'always'
+			? renderStartupReportAnsi(startupReport, {
+					...process.env,
+					FORCE_COLOR: '1',
+				})
+			: startupReportColor === 'never'
+				? renderStartupReportPlain(startupReport)
+				: shouldUseAnsiColors()
+					? renderStartupReportAnsi(startupReport)
+					: renderStartupReportPlain(startupReport);
+	if (startupText.length > 0) process.stderr.write(`${startupText}\n`);
 
 	// Install signal handlers BEFORE `await assembled.start()`. The
 	// `start()` call can take several seconds on a cold start (loading

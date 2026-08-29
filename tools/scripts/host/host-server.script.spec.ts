@@ -1,6 +1,17 @@
 import { describe, expect, it } from 'vitest';
 
-import { resolveWorkspaceFlag } from './host-server.script';
+import { hasHelpFlag, resolveWorkspaceFlag } from './host-server.script';
+
+describe('hasHelpFlag', () => {
+	it('recognizes long and short help flags', () => {
+		expect(hasHelpFlag(['--help'])).toBe(true);
+		expect(hasHelpFlag(['-h'])).toBe(true);
+	});
+
+	it('does not treat unrelated flags as help', () => {
+		expect(hasHelpFlag(['--workspace=/tmp/x'])).toBe(false);
+	});
+});
 
 // x00186 (F27): pure unit coverage for the argv parsing this entrypoint
 // uses to resolve `--workspace` before falling back to cwd/env. The e2e

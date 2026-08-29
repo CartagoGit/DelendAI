@@ -59,7 +59,7 @@ const ConsolidationOutputSchema = z.object({
 	/**
 	 * Proposal-scaffolding summary. Three possible shapes:
 	 *  - `{ scaffolded: [...] }` — the proposals plugin was loaded
-	 *    and the tool wrote the listed fix proposals.
+	 *    and the tool wrote the audit record plus any plan/fix proposals.
 	 *  - `{ skipped: "proposals-not-loaded" }` — proposals is NOT
 	 *    loaded; the audit consolidated but the fix-loop was deferred.
 	 *  - `{ disabled: true }` — the caller opted out via
@@ -73,6 +73,7 @@ const ConsolidationOutputSchema = z.object({
 					filename: z.string(),
 					severity: z.string(),
 					files: z.array(z.string()),
+					kind: z.enum(['audit', 'fix', 'plan']),
 				}),
 			),
 			reason: z.string().optional(),
@@ -154,8 +155,9 @@ export interface IConsolidateToolOptions {
  * `*.md` in the audits dir, parse each as an {@link IAuditDocument},
  * deduplicate findings across documents, average per-dimension scores,
  * and (when the `proposals` peer plugin is loaded AND the host opts
- * in via `autoScaffoldProposals: true`) scaffold fix proposals for
- * every actionable finding.
+ * in via `autoScaffoldProposals: true`) scaffold a native parent plan
+ * plus linked fix proposals for every actionable finding. Explicit
+ * `auditType: 'valuation'` keeps the report-oriented output.
  */
 export const buildConsolidateRegistration = (
 	options: IConsolidateToolOptions,
@@ -164,14 +166,14 @@ export const buildConsolidateRegistration = (
 	return {
 		id: 'audit_consolidate',
 		summary:
-			'Read every *.md audit in the audits directory, parse + deduplicate + average scores, and return the master view + markdown. Auto-scaffolds fix proposals when the `proposals` plugin is loaded and `autoScaffoldProposals` is enabled.',
+			'Read every *.md audit in the audits directory, parse + deduplicate + average scores, and return the master view + markdown. By default, auto-scaffold a native plan with linked fix proposals when the `proposals` plugin is loaded and `autoScaffoldProposals` is enabled.',
 		descriptionKey: 'audit_consolidate',
 		tags: ['audit', 'aggregate'],
 		register: async (server) => {
 			server.registerTool(
 				`${prefix}_audit_consolidate`,
 				{
-					description: `Read every \`*.md\` in the audits directory, parse + deduplicate + average per-dimension scores across N models, and return both the structured consolidation (per-dimension scores, deduplicated findings with \`seenBy\`) and the rendered master markdown. When the \`proposals\` plugin is loaded and \`autoScaffoldProposals\` is enabled, also scaffold one fix proposal per actionable finding under the proposals directory. Default dir: \`${options.defaultAuditDir}\`.`,
+					description: `Read every \`*.md\` in the audits directory, parse + deduplicate + average per-dimension scores across N models, and return both the structured consolidation (per-dimension scores, deduplicated findings with \`seenBy\`) and the rendered master markdown. By default, when the \`proposals\` plugin is loaded and \`autoScaffoldProposals\` is enabled, also scaffold a native parent plan plus one linked fix proposal per actionable finding under the proposals directory. Pass \`auditType: "valuation"\` for report-oriented output. Default dir: \`${options.defaultAuditDir}\`.`,
 					inputSchema: ConsolidateInputSchema,
 					outputSchema: ConsolidationOutputSchema,
 				},
@@ -182,7 +184,7 @@ export const buildConsolidateRegistration = (
 					autoScaffoldProposals?: boolean | undefined;
 					proposalsDir?: string | undefined;
 				}) => {
-					const auditType = args.auditType ?? 'valuation';
+					const auditType = args.auditType ?? 'plan';
 					const relDir = (
 						args.auditDir ?? options.defaultAuditDir
 					).replace(/^\.\//u, '');
@@ -258,6 +260,7 @@ export const buildConsolidateRegistration = (
 									filename: string;
 									severity: string;
 									files: string[];
+									kind: 'audit' | 'fix' | 'plan';
 								}>;
 								reason?: string;
 						  }
@@ -289,7 +292,7 @@ export const buildConsolidateRegistration = (
 										filename: string;
 										severity: string;
 										files: string[];
-										kind: 'fix' | 'plan';
+										kind: 'audit' | 'fix' | 'plan';
 									} => ({
 										id: r.id,
 										filename: r.filename,

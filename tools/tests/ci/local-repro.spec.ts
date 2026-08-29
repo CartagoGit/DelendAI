@@ -31,7 +31,7 @@ import {
 const fakeFetch = (
 	responder: (url: string) => Promise<Response>,
 ): typeof fetch => {
-	return ((url: string | URL | Request, init?: RequestInit) => {
+	return ((url: string | URL | Request, _init?: RequestInit) => {
 		const urlStr = typeof url === 'string' ? url : url.toString();
 		return responder(urlStr);
 	}) as typeof fetch;
