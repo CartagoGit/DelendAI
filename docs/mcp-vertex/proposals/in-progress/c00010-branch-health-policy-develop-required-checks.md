@@ -210,7 +210,8 @@ jobs:
   - "≥14 required checks."
   - "enforce_admins: true."
   - "Documentación explica política."
-
+- review-state: in_review
+- review-implementer: proposal_guardian
 ## Acceptance
 
 - **E2E**: push que rompe un check → push rechazado.

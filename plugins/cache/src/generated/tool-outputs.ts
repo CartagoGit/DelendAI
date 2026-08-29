@@ -8,6 +8,32 @@
  *
  * The drift guard in the test suite fails if this file is stale, so any
  * change to a tool's `outputSchema` must be accompanied by a regenerate.
+ * Action-multiplexed tools whose schema is intentionally permissive
+ * surface as `Record<string, unknown>`.
  */
 
-export type CacheToolOutputs = Record<string, never>;
+export interface McpVertexCacheCacheGcOutput {
+	dryRun: boolean;
+	appliedAt: string;
+	totalBytes: number;
+	rulesEvaluated: number;
+	removed: {
+		id: string;
+		path: string;
+		bytes: number;
+	}[];
+	skipped: {
+		id: string;
+		reason: string;
+	}[];
+	errors: {
+		id: string;
+		path: string;
+		error: string;
+	}[];
+}
+
+/** Map of this package's MCP tool names to their `structuredContent` type. */
+export interface CacheToolOutputs {
+	"mcp-vertex_cache_cache_gc": McpVertexCacheCacheGcOutput;
+}

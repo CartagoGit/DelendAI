@@ -1,5 +1,46 @@
 /**
- * GENERATED FILE — placeholder until `bun tools/scripts/types/generate-tool-types.script.ts`
- * refreshes the real tool output typings for this plugin.
+ * GENERATED FILE — DO NOT EDIT.
+ *
+ * Typed `structuredContent` shapes for this package's MCP tools,
+ * generated from each tool's Zod `outputSchema` by:
+ *
+ *     bun run types:generate
+ *
+ * The drift guard in the test suite fails if this file is stale, so any
+ * change to a tool's `outputSchema` must be accompanied by a regenerate.
+ * Action-multiplexed tools whose schema is intentionally permissive
+ * surface as `Record<string, unknown>`.
  */
-export {};
+
+export interface McpVertexAdaptiveOptimizerActivationMetricsOutput {
+	activations: number;
+	responses: {
+		hasSamples: false;
+	} | {
+		hasSamples: true;
+		p95PayloadBytes: number;
+	};
+}
+
+export interface McpVertexAdaptiveOptimizerOptimizeRunOutput {
+	ranked: {
+		id: string;
+		score: number;
+		utility: number;
+		relevance: number;
+		confidence: number;
+		tokenTax: number;
+		latencyTax: number;
+		permissionRisk: number;
+	}[];
+	budget: number;
+	consent: boolean;
+	bytes: number;
+	truncated: boolean;
+}
+
+/** Map of this package's MCP tool names to their `structuredContent` type. */
+export interface AdaptiveOptimizerToolOutputs {
+	"mcp-vertex_adaptive-optimizer_activation_metrics": McpVertexAdaptiveOptimizerActivationMetricsOutput;
+	"mcp-vertex_adaptive-optimizer_optimize_run": McpVertexAdaptiveOptimizerOptimizeRunOutput;
+}

@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-08-29T16:22:57.198Z",
+	"generatedAt": "2026-08-29T16:46:53.791Z",
 	"mode": "compact",
 	"tools": [
 		{
@@ -1237,13 +1237,6 @@
 	"proposals": {
 		"actionable": [
 			{
-				"id": "a00085",
-				"title": "a00085",
-				"track": "audit+bugs+maintainability",
-				"status": "in-progress",
-				"kind": "audit"
-			},
-			{
 				"id": "a00086",
 				"title": "a00086",
 				"track": "plugin-hardening",
@@ -1263,27 +1256,6 @@
 				"track": "plugin-hardening",
 				"status": "in-progress",
 				"kind": "audit"
-			},
-			{
-				"id": "a00089",
-				"title": "a00089",
-				"track": "audit+proposals+security+concurrency",
-				"status": "in-progress",
-				"kind": "audit"
-			},
-			{
-				"id": "b00237",
-				"title": "b00237",
-				"track": "architecture",
-				"status": "in-progress",
-				"kind": "unspecified"
-			},
-			{
-				"id": "b00238",
-				"title": "b00238",
-				"track": "architecture",
-				"status": "in-progress",
-				"kind": "unspecified"
 			},
 			{
 				"id": "c00010",
@@ -1358,10 +1330,10 @@
 		],
 		"byStatus": {
 			"ready": 1,
-			"in-progress": 15,
+			"in-progress": 11,
 			"review": 0,
 			"paused": 1,
-			"done": 508,
+			"done": 512,
 			"blocked": 0,
 			"retired": 2,
 			"unspecified": 0

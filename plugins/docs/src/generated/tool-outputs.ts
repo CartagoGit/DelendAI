@@ -12,39 +12,41 @@
  * surface as `Record<string, unknown>`.
  */
 
-export interface DocsDocsListOutput {
+export interface McpVertexDocsDocsListOutput {
 	count: number;
 	total: number;
 	offset: number;
 	nextOffset?: number;
 	truncated: boolean;
+	diagnostic?: string;
 	docs: {
 		path: string;
 		title: string;
 	}[];
 }
 
-export interface DocsDocsReadOutput {
+export interface McpVertexDocsDocsReadOutput {
 	path: string;
 	title: string;
 	content: string;
 	truncated: boolean;
 	found: boolean;
+	reason?: string;
 }
 
-export interface DocsDocsSearchOutput {
-	hits: {
-		path: string;
-		title: string;
-		score: number;
-		snippet: string;
-	}[];
-	truncated: boolean;
+export interface McpVertexDocsDocsSearchOutput {
+	ok: false;
+	error: {
+		reason: "deprecated";
+		replacement: string;
+		since: string;
+		note?: string;
+	};
 }
 
 /** Map of this package's MCP tool names to their `structuredContent` type. */
 export interface DocsToolOutputs {
-	"docs_docs_list": DocsDocsListOutput;
-	"docs_docs_read": DocsDocsReadOutput;
-	"docs_docs_search": DocsDocsSearchOutput;
+	"mcp-vertex_docs_docs_list": McpVertexDocsDocsListOutput;
+	"mcp-vertex_docs_docs_read": McpVertexDocsDocsReadOutput;
+	"mcp-vertex_docs_docs_search": McpVertexDocsDocsSearchOutput;
 }

@@ -2,7 +2,7 @@
 id: a00085
 title: "Auditoría exhaustiva — bugs, fixes y mantenibilidad (Copilot / Grok 4.6)"
 kind: audit
-status: in-progress
+status: done
 type: proposal
 track: audit+bugs+maintainability
 date: 2026-08-23
@@ -48,7 +48,7 @@ El usuario pidió una propuesta de auditoría **muy completa** centrada en bugs/
 
 ### S1 — Documento de auditoría (fases 0–10) + scoreboard
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `docs/mcp-vertex/proposals/in-progress/a00085-auditor-a-exhaustiva-bugs-fixes-y-mantenibilidad-copilot-grok-4-6.md`
 - **Gate**: lint
 - **Acceptance**:
@@ -57,7 +57,10 @@ El usuario pidió una propuesta de auditoría **muy completa** centrada en bugs/
   - Cada finding cita file#Lnn y Resolution Track
   - Scoreboard justificado
   - `bun run lint:proposals` exits 0
-
+- review-state: done
+- review-implementer: proposal_guardian
+- review-reviewer: delivery_verifier
+- review-log: approved by delivery_verifier — Revisión independiente de 7b6c2939 y del documento actual: el reporte quedó normalizado, añade cobertura explícita de Phases 0–10 y Scoreboard, el lint estructural devuelve 0 fatal error(s), y proposal-id-prefix valida los prefijos. El fallo restante de lint:proposals queda acotado a dos referencias Files históricas externas en v00129 y r00037, fuera del alcance de S1.
 ## Acceptance
 
 - Goal incluye hash HEAD

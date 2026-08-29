@@ -12,7 +12,7 @@
  * surface as `Record<string, unknown>`.
  */
 
-export interface GitBlameOutput {
+export interface McpVertexGitBlameOutput {
 	lines: {
 		line: number;
 		hash: string;
@@ -22,22 +22,67 @@ export interface GitBlameOutput {
 	}[];
 }
 
-export interface GitChangedOutput {
+export interface McpVertexGitChangedOutput {
 	changed: string[];
 }
 
-export interface GitDiffOutput {
+export interface McpVertexGitChangelogOutput {
+	bump: "major" | "minor" | "patch" | "none";
+	total: number;
+	groups: {
+		type: string;
+		entries: {
+			hash: string;
+			scope?: string;
+			subject: string;
+			breaking: boolean;
+		}[];
+	}[];
+}
+
+export interface McpVertexGitDiffOutput {
 	stat: string;
 }
 
-export interface GitLogOutput {
+export interface McpVertexGitLogOutput {
 	commits: {
 		hash: string;
 		subject: string;
 	}[];
 }
 
-export interface GitShowOutput {
+export interface McpVertexGitPrListOutput {
+	available: boolean;
+	note?: string;
+	prs: {
+		number: number;
+		title: string;
+		branch: string;
+		url: string;
+		draft: boolean;
+	}[];
+}
+
+export interface McpVertexGitPrViewOutput {
+	available: boolean;
+	note?: string;
+	pr?: {
+		number: number;
+		title: string;
+		state: string;
+		url: string;
+		mergeable: string;
+		reviewDecision: string;
+		checks: {
+			name: string;
+			status: string;
+			conclusion: string;
+			url: string;
+		}[];
+	};
+}
+
+export interface McpVertexGitShowOutput {
 	hash: string;
 	author: string;
 	date: string;
@@ -45,7 +90,7 @@ export interface GitShowOutput {
 	stat: string;
 }
 
-export interface GitStatusOutput {
+export interface McpVertexGitStatusOutput {
 	branch?: string;
 	clean: boolean;
 	entries: {
@@ -54,7 +99,7 @@ export interface GitStatusOutput {
 	}[];
 }
 
-export interface GitWorktreeOutput {
+export interface McpVertexGitWorktreeOutput {
 	worktrees: {
 		path: string;
 		head: string;
@@ -66,11 +111,14 @@ export interface GitWorktreeOutput {
 
 /** Map of this package's MCP tool names to their `structuredContent` type. */
 export interface GitToolOutputs {
-	"git_blame": GitBlameOutput;
-	"git_changed": GitChangedOutput;
-	"git_diff": GitDiffOutput;
-	"git_log": GitLogOutput;
-	"git_show": GitShowOutput;
-	"git_status": GitStatusOutput;
-	"git_worktree": GitWorktreeOutput;
+	"mcp-vertex_git_blame": McpVertexGitBlameOutput;
+	"mcp-vertex_git_changed": McpVertexGitChangedOutput;
+	"mcp-vertex_git_changelog": McpVertexGitChangelogOutput;
+	"mcp-vertex_git_diff": McpVertexGitDiffOutput;
+	"mcp-vertex_git_log": McpVertexGitLogOutput;
+	"mcp-vertex_git_pr_list": McpVertexGitPrListOutput;
+	"mcp-vertex_git_pr_view": McpVertexGitPrViewOutput;
+	"mcp-vertex_git_show": McpVertexGitShowOutput;
+	"mcp-vertex_git_status": McpVertexGitStatusOutput;
+	"mcp-vertex_git_worktree": McpVertexGitWorktreeOutput;
 }

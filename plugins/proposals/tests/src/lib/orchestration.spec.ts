@@ -182,6 +182,7 @@ describe('delegate tool — x00051 per-agent worktree wiring', () => {
 		expect(out.worktree.created).toBe(true);
 		expect(out.worktree.branch).toBe(`agent/${out.agent}`);
 		expect(out.worktree.path).toContain(out.agent);
+		expect(out.cwd).toBe(out.worktree.path);
 		// `git worktree add -b agent/<slug> <path> HEAD` must have
 		// been issued — this is the regression we're guarding.
 		const addCall = runner.calls.find(
@@ -194,6 +195,9 @@ describe('delegate tool — x00051 per-agent worktree wiring', () => {
 		// Instruction must surface the worktree path so the subagent
 		// knows where to commit.
 		expect(out.instruction).toContain(out.worktree.path);
+		expect(out.instruction).toContain(
+			'parent checkout on develop is not a valid workspace',
+		);
 	});
 
 	it('f00082 S3/S4: composite branch when host/model are delegated', async () => {
