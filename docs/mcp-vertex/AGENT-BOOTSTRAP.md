@@ -284,20 +284,15 @@ interactions.
 - Token budget is a protected invariant. `overview` (compact) +
   `auto_work` stay under their measured budgets.
 - **Every agent MUST hold an active lock claim (`agent_lock`) for the files it edits.** The validation gate enforces this via `lint:agent-claims`, and commits/pushes violating this will be rejected by git hooks. (x00080) The claim check itself is a lefthook-installed TypeScript hook (`tools/scripts/hooks/pre-commit.ts`), not a raw `.sh` git hook template — every hook in this repo is TypeScript, per rule #10 below.
-- **Agents land on `develop` through a pull request; the operator does
-  not have to.** `develop` is the branch this repo is programmed on and
-  is deliberately NOT protected — the operator pushes to it directly.
-  Agents do not: `agentWorktree: false` in `mcp-vertex.config.json`
-  means they never create `agent/*` worktrees or per-agent branches, so
-  they work on a `wip/*` branch off `develop`, commit there, push it,
-  and open a PR that the operator reviews and decides on. `main` is the
-  protected branch: nothing lands there automatically. The operator may
-  still create manual branches (`fix/*`, `feature/*`);
-  those are allowed alongside `wip/*`. When the worktree gate is on,
-  agents working in worktrees must never `git switch` the shared
-  checkout — the main checkout stays on `develop` until the worktree is
-  merged and removed. `branch_status` / `swarm_hygiene` expose
-  `mainCheckoutDrift` to detect a switched shared checkout.
+  - **`develop` is the shared snapshot journal; `main` is the release boundary.**
+    With `agentWorktree: false` (the repository default), agents work in the
+    shared checkout. The commit policy serializes `stage → commit → push`, so
+    concurrent agents can leave frequent, visible, reversible snapshots on
+    `develop`. Agents must not create a WIP branch merely to isolate those
+    snapshots. `main` remains protected and is promoted only through a pull
+    request after the configured quality checks. When `agentWorktree: true` is
+    explicitly enabled, isolated agent branches and worktrees are appropriate;
+    that is a separate operating mode from the shared snapshot journal.
 - **No orphaned branches or stashes — always reconcile (this repo).**
   Before closing any work or session, run `bun run reclaim:orphans` and
   reconcile every listed orphan: merge-if-valuable into `develop`

@@ -29,6 +29,7 @@ import {
 	gitDirtyFilePaths,
 	validateConventionalHeader,
 } from './git-extra';
+import { withGitWriteLock } from './git-write-lock';
 
 /**
  * Non-slice trigger context. Threshold and interval events carry
@@ -90,6 +91,7 @@ export interface ICommitDriverOptions {
 	readonly run: IGitRunner;
 	readonly policy: ICommitPolicyOptions;
 	readonly identityCtx: IIdentityResolverContext;
+	readonly workspaceRoot?: string | undefined;
 	/** Identity snapshot (host + model) used by the audit trailer. */
 	readonly auditAgent: IAuditAgent | null;
 }
@@ -194,7 +196,7 @@ const normalizeRepoPath = (raw: string): string => {
 	return replaced.startsWith('./') ? replaced.slice(2) : replaced;
 };
 
-export const runCommitDriver = async (
+const runCommitDriverUnlocked = async (
 	input: ICommitDriverInput,
 	options: ICommitDriverOptions,
 ): Promise<ICommitDriverResult> => {
@@ -382,3 +384,11 @@ export const runCommitDriver = async (
 		},
 	};
 };
+
+export const runCommitDriver = async (
+	input: ICommitDriverInput,
+	options: ICommitDriverOptions,
+): Promise<ICommitDriverResult> =>
+	withGitWriteLock(options.workspaceRoot, () =>
+		runCommitDriverUnlocked(input, options),
+	);
