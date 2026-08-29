@@ -43,7 +43,7 @@ const build = () => {
 		now: () => new Date('2026-07-25T12:00:00.000Z'),
 	});
 	const server = new FakeServer();
-	void registration.register(server as never);
+	void registration.register(server.asServer);
 	return server.tools;
 };
 

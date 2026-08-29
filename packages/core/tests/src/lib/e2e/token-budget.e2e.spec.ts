@@ -15,7 +15,10 @@ import { createMcpProject } from '@mcp-vertex/core/lib/project/create-mcp-projec
 import { nodeDynamicImport } from '@mcp-vertex/core/lib/plugins/load-plugins';
 import { parseCliArgs } from '@mcp-vertex/core/lib/plugins/parse-cli-args';
 import { SKILL_MANIFEST_REL } from '@mcp-vertex/core/lib/skills/skill-paths';
-import { TOKEN_BUDGETS } from '@mcp-vertex/core/public';
+import {
+	TOKEN_BUDGETS,
+	type IMcpToolSurfaceMode,
+} from '@mcp-vertex/core/public';
 
 /**
  * Token budget benchmark [N23]. Invariant: cold-start protocol payloads stay
@@ -111,6 +114,14 @@ describe('e2e: token budget (cold-start payloads)', async () => {
 		input?: {
 			readonly clientInfo?: Implementation;
 			readonly capabilities?: ClientCapabilities;
+			// x00296 S1 (AUD-B06) regression guard: lets a test pin an
+			// explicit surface the same way `connectTokenBudgetClient`
+			// (the dashboard's fixture measurement) does, so the test below
+			// can prove an explicit `surfaceMode` always wins regardless of
+			// what `decideSurfaceModeFromCapabilities` would infer from
+			// `capabilities`/`clientInfo` — the exact invariant whose
+			// absence let AUD-B06 slip through when AUD-C01 was fixed.
+			readonly surfaceMode?: IMcpToolSurfaceMode;
 		},
 	): Promise<{
 		client: Client;
@@ -131,9 +142,11 @@ describe('e2e: token budget (cold-start payloads)', async () => {
 				// an explicit `--surface` flag would override capability
 				// detection entirely, so only pin it when there is no
 				// capability-driven case to preserve.
-				...(input?.capabilities === undefined
-					? ['--surface=native']
-					: []),
+				...(input?.surfaceMode !== undefined
+					? [`--surface=${input.surfaceMode}`]
+					: input?.capabilities === undefined
+						? ['--surface=native']
+						: []),
 			],
 			workspace,
 		);
@@ -249,6 +262,34 @@ describe('e2e: token budget (cold-start payloads)', async () => {
 		return Buffer.byteLength(text ?? '', 'utf8');
 	};
 
+	/**
+	 * x00296 S2 (AUD-B06): `overview` is also directly callable under the
+	 * `native` surface (the default `client` above is pinned to
+	 * `--surface=native`), which lists the full tool catalog — a
+	 * materially larger, independently-governed payload than the
+	 * `managed` bootstrap listing `overviewFull`/`overviewCompact` cover.
+	 * `overviewFullNative`/`overviewCompactNative` are a NEW ceiling pair
+	 * (`token-budgets.constant.ts`), not a redefinition of the existing
+	 * `managed` ones.
+	 */
+	it('native overview listing stays under its own dedicated budget', async () => {
+		const full = await textBytes('mcp-vertex_overview', {});
+		const compact = await textBytes('mcp-vertex_overview', {
+			compact: true,
+		});
+		expectWithinBudget(
+			'overview full (native)',
+			full,
+			TOKEN_BUDGETS.toolPayloads.overviewFullNative,
+		);
+		expectWithinBudget(
+			'overview compact (native)',
+			compact,
+			TOKEN_BUDGETS.toolPayloads.overviewCompactNative,
+		);
+		expect(compact).toBeLessThan(full);
+	});
+
 	it('cold-start overview stays under budget; compact is much cheaper', async () => {
 		const adaptive = await connectClient(
 			TOKEN_BUDGETS.fixturePluginIds.join(','),
@@ -356,12 +397,9 @@ describe('e2e: token budget (cold-start payloads)', async () => {
 				swarmRoundContextBudget!,
 			);
 			expectWithinBudget('swarm marginal plugin bytes', maxPluginBytes, {
-				hard:
-					TOKEN_BUDGETS.presets.swarm.toolsList.marginalPluginHard ??
-					0,
+				hard: TOKEN_BUDGETS.presets.swarm.toolsList.marginalPluginHard,
 				warning:
-					TOKEN_BUDGETS.presets.swarm.toolsList
-						.marginalPluginWarning ?? 0,
+					TOKEN_BUDGETS.presets.swarm.toolsList.marginalPluginWarning,
 			});
 		} finally {
 			await swarm.close();
@@ -389,12 +427,9 @@ describe('e2e: token budget (cold-start payloads)', async () => {
 				TOKEN_BUDGETS.presets.lean.toolsList,
 			);
 			expectWithinBudget('lean marginal plugin bytes', maxPluginBytes, {
-				hard:
-					TOKEN_BUDGETS.presets.lean.toolsList.marginalPluginHard ??
-					0,
+				hard: TOKEN_BUDGETS.presets.lean.toolsList.marginalPluginHard,
 				warning:
-					TOKEN_BUDGETS.presets.lean.toolsList
-						.marginalPluginWarning ?? 0,
+					TOKEN_BUDGETS.presets.lean.toolsList.marginalPluginWarning,
 			});
 			expect(toolsListBytes).toBeLessThan(
 				TOKEN_BUDGETS.presets.swarm.toolsList.hard *
@@ -404,6 +439,43 @@ describe('e2e: token budget (cold-start payloads)', async () => {
 			await lean.close();
 		}
 	});
+
+	/**
+	 * AUD-B02/x00283: the dashboard's "Marginal Status" column used to
+	 * default an undeclared `marginalPluginHard` to `0` and report "over
+	 * hard (0B)" for minimal/standard/full/vertex — a permanent false
+	 * alarm no gate shared. `swarm` and `lean` already had real ceilings
+	 * and their own dedicated assertions above; this closes the other
+	 * four governed presets so all six are asserted, matching what
+	 * `IGovernedToolsListBudget` now requires the contract to declare.
+	 */
+	it.each(['minimal', 'standard', 'full', 'vertex'] as const)(
+		'%s preset keeps its marginal plugin ceiling honest',
+		async (presetId) => {
+			const connection = await connectClient(presetId, true, {
+				clientInfo: modernClientInfo,
+				capabilities: dynamicSurfaceCapabilities,
+			});
+			try {
+				const toolList = await connection.client.listTools();
+				const maxPluginBytes = marginalPluginBytes(
+					toolList.tools,
+					connection.pluginIds,
+				);
+				const budget = TOKEN_BUDGETS.presets[presetId].toolsList;
+				expectWithinBudget(
+					`${presetId} marginal plugin bytes`,
+					maxPluginBytes,
+					{
+						hard: budget.marginalPluginHard,
+						warning: budget.marginalPluginWarning,
+					},
+				);
+			} finally {
+				await connection.close();
+			}
+		},
+	);
 
 	it('agent catalog stays under budget; compact is materially cheaper than full', async () => {
 		const catalogOnly = await connectClient('');
@@ -568,6 +640,85 @@ title: token budget fixture
 			);
 		} finally {
 			await extra.close();
+		}
+	});
+
+	/**
+	 * x00296 S1 (AUD-B06) regression pin: fixing AUD-C01 (`x00285`) changed
+	 * what `decideSurfaceModeFromCapabilities` infers for a client that
+	 * declares no capabilities (managed -> native), and the dashboard's
+	 * fixture measurement (`connectTokenBudgetClient` in
+	 * `token-budget-report-lib.ts`) never declared an explicit
+	 * `surfaceMode`, so it silently started measuring a different surface
+	 * than the one its ceilings were calibrated for. The fix is that every
+	 * fixture-gated connection now passes an explicit `surfaceMode`, which
+	 * `resolveExplicitSurfaceMode` always honours ahead of any
+	 * capability-based inference (see `decide-mode.ts`). This test proves
+	 * that invariant directly: an explicit `surfaceMode` produces the same
+	 * `overview` payload regardless of what capabilities/clientInfo would
+	 * otherwise have inferred, so a FUTURE change to
+	 * `decideSurfaceModeFromCapabilities`'s default cannot silently move a
+	 * fixture-gated row onto a different surface ever again.
+	 */
+	it('an explicit surfaceMode overrides capability-based inference (AUD-B06 regression)', async () => {
+		// No capabilities at all would infer `native` (AUD-C01's fixed
+		// behaviour); pinning `managed` here must still win.
+		const managedNoCapabilities = await connectClient(
+			TOKEN_BUDGETS.fixturePluginIds.join(','),
+			false,
+			{ surfaceMode: 'managed' },
+		);
+		// Capabilities that declare `mcp-vertex/surface` listChanged support
+		// would infer `managed`; pinning `native` here must still win.
+		const nativeWithManagedCapabilities = await connectClient(
+			TOKEN_BUDGETS.fixturePluginIds.join(','),
+			false,
+			{
+				clientInfo: modernClientInfo,
+				capabilities: dynamicSurfaceCapabilities,
+				surfaceMode: 'native',
+			},
+		);
+		try {
+			const managedBytes = await (async () => {
+				const res = await managedNoCapabilities.client.callTool({
+					name: 'mcp-vertex_overview',
+					arguments: {},
+				});
+				const text = (
+					res.content as Array<{ type: string; text: string }>
+				)[0]?.text;
+				return Buffer.byteLength(text ?? '', 'utf8');
+			})();
+			const nativeBytes = await (async () => {
+				const res = await nativeWithManagedCapabilities.client.callTool(
+					{ name: 'mcp-vertex_overview', arguments: {} },
+				);
+				const text = (
+					res.content as Array<{ type: string; text: string }>
+				)[0]?.text;
+				return Buffer.byteLength(text ?? '', 'utf8');
+			})();
+
+			// `managed` (bootstrap-only listing) must stay well within the
+			// `overviewFull` ceiling regardless of the absent capabilities
+			// that would otherwise infer `native`.
+			expectWithinBudget(
+				'overview full (managed, no capabilities)',
+				managedBytes,
+				TOKEN_BUDGETS.toolPayloads.overviewFull,
+			);
+			// `native` (full catalog listing) must stay materially larger
+			// than the `managed` measurement above regardless of the
+			// listChanged-capable client that would otherwise infer
+			// `managed`, proving the two connections really measured two
+			// different surfaces, not the same one twice.
+			expect(nativeBytes).toBeGreaterThan(managedBytes);
+		} finally {
+			await Promise.all([
+				managedNoCapabilities.close(),
+				nativeWithManagedCapabilities.close(),
+			]);
 		}
 	});
 });

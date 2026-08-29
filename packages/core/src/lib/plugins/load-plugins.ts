@@ -6,6 +6,7 @@ import type {
 import type { IPluginRuntime } from '../contracts/interfaces/plugin-runtime.interface';
 import type { IPluginRegisterErrorInfo } from '../contracts/interfaces/plugin-lifecycle-error.interface';
 import { registerResolvedPluginsWithLifecycle } from './load-plugins-lifecycle.helper';
+import { normalizePluginOptions } from './plugin-activation-session';
 import { resolve as resolvePath } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
@@ -296,24 +297,15 @@ export const loadPlugins = async (
 			});
 			continue;
 		}
-		if (plugin.optionsSchema) {
-			const parsed = plugin.optionsSchema.safeParse(ctx.options);
-			if (!parsed.success) {
-				errors.push({
-					specifier,
-					message: `plugin "${plugin.name}" rejected its options (mcp-vertex.config.json → plugins.${plugin.name}.options).`,
-				});
-				continue;
-			}
-			const parsedOptions =
-				'data' in parsed
-					? (parsed.data as Readonly<Record<string, unknown>>)
-					: ctx.options;
-			ctx = {
-				...ctx,
-				options: parsedOptions,
-			};
+		// Delegates to the SAME normalizer the managed-lazy runtime uses
+		// (`plugin-activation-session.ts`) so eager and lazy activation
+		// can never re-diverge on how `optionsSchema` is applied (AUD-E01.a).
+		const normalized = normalizePluginOptions(plugin, ctx);
+		if (!normalized.ok) {
+			errors.push({ specifier, message: normalized.message });
+			continue;
 		}
+		ctx = normalized.ctx;
 		resolvedPlugins.push({ specifier, resolved, plugin, ctx });
 		resolvedNames.add(plugin.name);
 	}

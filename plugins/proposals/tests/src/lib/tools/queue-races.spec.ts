@@ -26,6 +26,7 @@ import {
 	buildStateRepairRegistration,
 	type IStateToolOptions,
 } from '@mcp-vertex/proposals/lib/tools/state-tools.tool';
+import { createFakeToolServer } from '@mcp-vertex/test-kit/public';
 
 const STALE_LAST_SEEN = new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString();
 
@@ -62,13 +63,11 @@ const captureRepairHandler = async (
 	options: IStateToolOptions,
 ): Promise<ToolHandler> => {
 	let handler: ToolHandler | undefined;
-	const server = {
-		registerTool: (_name: string, _config: unknown, h: ToolHandler) => {
-			handler = h;
+	const server = createFakeToolServer({
+		onRegisterTool: (call) => {
+			handler = call.handler as ToolHandler;
 		},
-	} as unknown as Parameters<
-		ReturnType<typeof buildStateRepairRegistration>['register']
-	>[0];
+	});
 	await buildStateRepairRegistration(options).register(server);
 	if (handler === undefined) throw new Error('state_repair did not register');
 	return handler;

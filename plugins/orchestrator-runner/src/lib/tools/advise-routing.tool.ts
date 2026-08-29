@@ -16,7 +16,11 @@
  */
 import { randomUUID } from 'node:crypto';
 
-import { toolJson, type IToolRegistration } from '@mcp-vertex/core/public';
+import {
+	compactOutputSchema,
+	toolJson,
+	type IToolRegistration,
+} from '@mcp-vertex/core/public';
 import type { IProviderCapabilities } from '@mcp-vertex/core/public';
 import z from 'zod';
 
@@ -24,7 +28,7 @@ import { buildRoutingDecision } from '../router/advise';
 import type { SessionStore } from '../router/session';
 import type { HealthStore } from '../healthcheck/store';
 import type { CostPreference, ILoopDetectionSeam } from '../types';
-import { AdviseRoutingOutputSchema, CapabilityTagSchema } from '../schemas';
+import { CapabilityTagSchema } from '../schemas';
 
 export interface IAdviseRoutingToolOptions {
 	readonly namespacePrefix: string;
@@ -58,7 +62,13 @@ export const buildAdviseRoutingRegistration = (
 				description:
 					"Advise which model provider to route a task to. Scores the confirmed roster against the task's capability hints, mode and cost preference, penalising providers the healthcheck marks unavailable, and returns the winning decision (strategy passthrough|api|cli|mcp-tool|handoff), the top-2 backups and a transparent scoring trace. Headless: it never spawns a subprocess or spends money. Pass a sessionId for sticky routing across a multi-step task.",
 				inputSchema: InputSchema,
-				outputSchema: AdviseRoutingOutputSchema,
+				// v00130 (AUD-B01): `AdviseRoutingOutputSchema` is not used
+				// as a runtime response validator anywhere in this handler
+				// — only declared here as the wire `outputSchema`. It stays
+				// exported from `schemas.ts` for the behavioural tests;
+				// `tools/list` gets the compact envelope instead. The real
+				// response payload is unchanged.
+				outputSchema: compactOutputSchema(),
 			},
 			async (args: z.infer<typeof InputSchema>) => {
 				const sessionId = args.sessionId ?? `sess_${randomUUID()}`;

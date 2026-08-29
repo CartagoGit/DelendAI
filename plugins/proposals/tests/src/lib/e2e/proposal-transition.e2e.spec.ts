@@ -40,6 +40,8 @@ interface TransitionOutput {
 		readonly nextAction?: string;
 		readonly code?: string;
 	};
+	/** Only present on error responses; stripped before the parity check. */
+	readonly logHint?: unknown;
 }
 
 const PROPOSALS_RELDIR = 'docs/mcp-vertex/proposals';
@@ -230,8 +232,7 @@ describe('e2e: proposals_proposal_transition over the real MCP protocol', async 
 		const { logHint: _t, ...textPayload } = JSON.parse(
 			rejected.text,
 		) as Record<string, unknown>;
-		const { logHint: _s, ...structuredPayload } =
-			rejected.structured as unknown as Record<string, unknown>;
+		const { logHint: _s, ...structuredPayload } = rejected.structured;
 		expect(textPayload).toEqual(structuredPayload);
 		expect(structuredPayload.ok).toBe(false);
 	});

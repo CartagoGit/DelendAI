@@ -1,6 +1,7 @@
 import {
 	definePlugin,
 	redactSecrets,
+	type IPluginLogsHelper,
 	type IToolIdentityRegistry,
 } from '@mcp-vertex/core/public';
 
@@ -13,7 +14,9 @@ import {
 } from './lib/options.service';
 import type { IReportSchedulerClock } from './lib/contracts/interfaces/report-scheduler.interface';
 import type { IReportStore } from './lib/contracts/interfaces/report-store.interface';
+import type { IFunnelCounterStore } from './lib/contracts/interfaces/funnel-counters.interface';
 import { registerInternalRuntimePaths } from './lib/frame-extractor.helper';
+import { createFunnelCounterStore } from './lib/funnel-counter-store.service';
 import { buildErrorReportingKnowledge } from './lib/knowledge/error-reporting';
 import {
 	validateSafeReport,
@@ -50,29 +53,66 @@ const EMPTY_TOOL_REGISTRY: IToolIdentityRegistry = {
 	list: () => new Map(),
 };
 
+/** No-op counters so callers that omit `funnel` (existing unit tests, hosts
+ * that predate AUD-G01) keep working byte-for-byte — the funnel is pure
+ * observability and must never gate or change reporting behavior. */
+const NOOP_FUNNEL_STORE: IFunnelCounterStore = {
+	statePath: '',
+	read: async () => ({
+		observedFailures: 0,
+		ignoredNonFailures: 0,
+		notVertexInternal: 0,
+		privacyBlocked: 0,
+		deduplicated: 0,
+		rateLimited: 0,
+		submissionAttempted: 0,
+		submissionSucceeded: 0,
+		submissionFailed: 0,
+	}),
+	increment: async () => {},
+	markClassified: async () => {},
+};
+
+/** Skip reasons the scheduler reports when it declines to submit. */
+const isDedupeSkip = (reason: string): boolean =>
+	reason === 'existing-issue' || reason === 'dedupe-window';
+
 export const buildReportErrorHandler = (input: {
 	readonly options: IErrorReportingOptions;
 	readonly store: IReportStore;
 	readonly reporter: ReturnType<typeof createSafeReporter>;
 	readonly clock: IReportSchedulerClock;
 	readonly toolRegistry: Pick<IToolIdentityRegistry, 'get'>;
+	readonly funnel?: IFunnelCounterStore | undefined;
+	readonly logs?: Pick<IPluginLogsHelper, 'log'> | undefined;
 }) => {
 	const scheduler = createReportScheduler({
 		options: input.options,
 		clock: input.clock,
 	});
+	const funnel = input.funnel ?? NOOP_FUNNEL_STORE;
 	return async (toolName: string, error: unknown): Promise<void> => {
 		try {
+			// A single clock read per invocation: existing tests script
+			// `clock.nowMs()` call counts, and every funnel/store write in
+			// this pass should share one instant anyway.
+			const nowMs = input.clock.nowMs();
+			const at = new Date(nowMs).toISOString();
 			const report = buildSafeReport({
 				toolName,
 				toolRegistry: input.toolRegistry,
 				error,
 			});
-			if (report === undefined) return;
+			if (report === undefined) {
+				await funnel.increment({ stage: 'notVertexInternal', at });
+				return;
+			}
+			await funnel.markClassified(at);
 			const redactedReport = redactReport(report);
 			const validation = validateSafeReport(redactedReport);
 			if (!validation.ok) {
 				logPrivacyBlock(validation.reasonCode ?? 'unknown');
+				await funnel.increment({ stage: 'privacyBlocked', at });
 				return;
 			}
 			const serializedReport = JSON.stringify(redactedReport);
@@ -80,10 +120,9 @@ export const buildReportErrorHandler = (input: {
 				validateSerializedSafeReport(serializedReport);
 			if (!serializedValidation.ok) {
 				logPrivacyBlock(serializedValidation.reasonCode ?? 'unknown');
+				await funnel.increment({ stage: 'privacyBlocked', at });
 				return;
 			}
-			const nowMs = input.clock.nowMs();
-			const at = new Date(nowMs).toISOString();
 			await input.store.recordAttempt(redactedReport.fingerprint, {
 				at,
 				classification: redactedReport.classification,
@@ -94,7 +133,16 @@ export const buildReportErrorHandler = (input: {
 				records: await input.store.all(),
 				nowMs,
 			});
-			if (decision.action !== 'submit') return;
+			if (decision.action !== 'submit') {
+				await funnel.increment({
+					stage: isDedupeSkip(decision.reason)
+						? 'deduplicated'
+						: 'rateLimited',
+					at,
+				});
+				return;
+			}
+			await funnel.increment({ stage: 'submissionAttempted', at });
 			const outcome =
 				await input.reporter.submitSafeReport(redactedReport);
 			if (!outcome.ok) {
@@ -111,6 +159,30 @@ export const buildReportErrorHandler = (input: {
 						? { circuitOpenUntil: failureState.circuitOpenUntil }
 						: {}),
 				});
+				await funnel.increment({
+					stage: 'submissionFailed',
+					at,
+					failureCode: failureState.failureCode,
+					...(failureState.circuitOpenUntil !== undefined
+						? { circuitOpenUntil: failureState.circuitOpenUntil }
+						: {}),
+				});
+				// A JSON file nobody knows to open is not observability
+				// (AUD-G01): once the breaker opens, put it on the record.
+				if (failureState.circuitOpenUntil !== undefined) {
+					await input.logs?.log({
+						severity: 'warning',
+						incidentType: 'error-reporting-circuit-open',
+						message: `error-reporting circuit breaker opened after ${failureState.consecutiveFailureCount} consecutive dispatch failures (${failureState.failureCode}); it will re-diagnose on the next observed failure once the cooldown passes.`,
+						context: {
+							fingerprint: redactedReport.fingerprint,
+							failureCode: failureState.failureCode,
+							consecutiveFailureCount:
+								failureState.consecutiveFailureCount,
+							circuitOpenUntil: failureState.circuitOpenUntil,
+						},
+					});
+				}
 				return;
 			}
 			await input.store.recordSuccess(redactedReport.fingerprint, {
@@ -120,6 +192,7 @@ export const buildReportErrorHandler = (input: {
 					? { issueUrl: outcome.issueUrl }
 					: {}),
 			});
+			await funnel.increment({ stage: 'submissionSucceeded', at });
 		} catch {
 			// A reporting failure must never surface into the tool call
 			// that triggered it. Intentionally swallowed.
@@ -133,21 +206,36 @@ export const buildObservedFailureHandler = (input: {
 	readonly reporter: ReturnType<typeof createSafeReporter>;
 	readonly clock: IReportSchedulerClock;
 	readonly toolRegistry: Pick<IToolIdentityRegistry, 'get'>;
+	readonly funnel?: IFunnelCounterStore | undefined;
+	readonly logs?: Pick<IPluginLogsHelper, 'log'> | undefined;
 }) => {
 	const reportError = buildReportErrorHandler(input);
+	const funnel = input.funnel ?? NOOP_FUNNEL_STORE;
 	return async (
 		toolName: string,
 		result: unknown,
 		error: unknown,
 	): Promise<void> => {
+		const at = new Date(input.clock.nowMs()).toISOString();
 		const observed = extractObservedFailure(result, error);
-		if (observed === undefined) return;
+		if (observed === undefined) {
+			// Proves the hook is alive on the overwhelming common path
+			// (a successful call) — the counterpart to `observedFailures`
+			// that lets `report_status` tell "nothing failed" apart from
+			// "the hook stopped firing" (AUD-G01).
+			await funnel.increment({ stage: 'ignoredNonFailures', at });
+			return;
+		}
+		await funnel.increment({ stage: 'observedFailures', at });
 		const reportable = asReportableError(
 			toolName,
 			input.toolRegistry,
 			observed,
 		);
-		if (reportable === undefined) return;
+		if (reportable === undefined) {
+			await funnel.increment({ stage: 'notVertexInternal', at });
+			return;
+		}
 		await reportError(toolName, reportable);
 	};
 };
@@ -174,9 +262,12 @@ export default definePlugin({
 				`${ERR_REPORTING_OPTION_DEPRECATED}: ${warning.message}`,
 			);
 		});
-		const store = createReportStore(
-			ctx.workspace.resolve(ctx.pluginCacheDir),
-		);
+		const pluginCacheDirAbs = ctx.workspace.resolve(ctx.pluginCacheDir);
+		const store = createReportStore(pluginCacheDirAbs);
+		// Same directory as `reported.json`: both are accumulated
+		// results for this plugin, not derivable scratch — see
+		// `funnel-counter-store.service.ts` for the durability rationale.
+		const funnel = createFunnelCounterStore(pluginCacheDirAbs);
 		const reporter = createSafeReporter({
 			targetRepo: options.targetRepo,
 			labels: options.labels,
@@ -188,6 +279,8 @@ export default definePlugin({
 			reporter,
 			clock: systemClock,
 			toolRegistry: ctx.toolRegistry ?? EMPTY_TOOL_REGISTRY,
+			funnel,
+			logs: ctx.logs,
 		});
 		const reportObservedFailure = buildObservedFailureHandler({
 			options,
@@ -195,12 +288,36 @@ export default definePlugin({
 			reporter,
 			clock: systemClock,
 			toolRegistry: ctx.toolRegistry ?? EMPTY_TOOL_REGISTRY,
+			funnel,
+			logs: ctx.logs,
 		});
 		const statusTool = buildReportStatusRegistration({
 			namespacePrefix: ctx.namespacePrefix,
 			options,
 			store,
+			funnel,
 		});
+		/** Lifecycle failures (register/hook) skip `onToolCall`'s
+		 * success/failure split — every call here IS a failure — but
+		 * still funnel through the same `observedFailures` /
+		 * `notVertexInternal` accounting so `report_status` sees them. */
+		const reportLifecycleFailure = async (
+			toolName: string,
+			info: unknown,
+		): Promise<void> => {
+			const at = new Date(systemClock.nowMs()).toISOString();
+			await funnel.increment({ stage: 'observedFailures', at });
+			const reportable = asReportableError(
+				toolName,
+				ctx.toolRegistry ?? EMPTY_TOOL_REGISTRY,
+				info,
+			);
+			if (reportable === undefined) {
+				await funnel.increment({ stage: 'notVertexInternal', at });
+				return;
+			}
+			await reportError(toolName, reportable);
+		};
 
 		const knowledge = [
 			{
@@ -240,27 +357,15 @@ export default definePlugin({
 				void reportObservedFailure(toolName, result, error);
 			},
 			onRegisterError: async (info) => {
-				const reportable = asReportableError(
+				void reportLifecycleFailure(
 					`plugin:${info.pluginName}:register`,
-					ctx.toolRegistry ?? EMPTY_TOOL_REGISTRY,
 					info,
-				);
-				if (reportable === undefined) return;
-				void reportError(
-					`plugin:${info.pluginName}:register`,
-					reportable,
 				);
 			},
 			onHookError: async (info) => {
-				const reportable = asReportableError(
+				void reportLifecycleFailure(
 					`plugin:${info.pluginName}:${info.hookName}`,
-					ctx.toolRegistry ?? EMPTY_TOOL_REGISTRY,
 					info,
-				);
-				if (reportable === undefined) return;
-				void reportError(
-					`plugin:${info.pluginName}:${info.hookName}`,
-					reportable,
 				);
 			},
 		};

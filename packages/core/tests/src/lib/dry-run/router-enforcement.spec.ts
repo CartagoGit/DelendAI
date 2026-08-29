@@ -17,18 +17,26 @@
  *
  * Enforcement level: DETECTION, not prevention. The handler below has
  * already run — and could already have performed a real side effect —
- * by the time its return value is checked. Making the effect itself
- * impossible while `dryRun` is true requires a handler to construct
- * its mutating capabilities through `dry-run/effect-guard.helper.ts`'s
- * `guardEffectCapability` / `runWithDryRunGate`; `IMcpPluginContext`
- * does not currently hand out any capability object for the runtime
- * to gate on the plugin's behalf, so that stronger property is not
- * wired here.
+ * by the time its return value is checked. Since 8f05b5d2 / r00037,
+ * `IMcpPluginContext.effects` DOES hand plugins a guarded capability
+ * (`git`, via the `EffectBroker` — `capabilities/effect-broker.ts`)
+ * that closes this gap for plugins that use it; see
+ * `capability-injection.spec.ts` (sibling file) and
+ * `capabilities/effect-broker.spec.ts` for the PREVENTION-level
+ * property. This file's handler intentionally does NOT use
+ * `ctx.effects` — it models a plugin that still reaches for its own
+ * unguarded mutation (or hasn't migrated yet), which is exactly the
+ * case S1's violation log (`dry-run-violation-log.ts`) exists to make
+ * visible rather than silent.
  */
 
-import { describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 
 import { createToolSurfaceRuntime } from '@mcp-vertex/core/lib/project/tool-surface-runtime.service';
+import {
+	clearDryRunViolationsForTests,
+	listDryRunViolations,
+} from '@mcp-vertex/core/public';
 
 const makeHandle = () => ({
 	enabled: true,
@@ -75,6 +83,10 @@ const buildRuntimeWithHandler = (
 };
 
 describe('f00189 — dry-run enforcement wired into invokeTool (router-level)', () => {
+	beforeEach(() => {
+		clearDryRunViolationsForTests();
+	});
+
 	it('refuses a handler that ignored args.dryRun and performed the real effect anyway', async () => {
 		let reallyRan = false;
 		const runtime = buildRuntimeWithHandler(async () => {
@@ -136,6 +148,37 @@ describe('f00189 — dry-run enforcement wired into invokeTool (router-level)', 
 		);
 
 		expect(result).toEqual(plan);
+	});
+
+	it('r00037 S1 — records the violation with the responsible plugin and tool, so it is nameable rather than silent', async () => {
+		const runtime = buildRuntimeWithHandler(async () => ({
+			ok: true,
+			committed: true,
+		}));
+
+		await runtime.invokeTool('mcp-vertex_writer_run', { dryRun: true }, {});
+
+		const violations = listDryRunViolations();
+		expect(violations).toHaveLength(1);
+		expect(violations[0]).toMatchObject({
+			tool: 'mcp-vertex_writer_run',
+			pluginId: 'writer',
+			reason: 'handler ignored args.dryRun and returned a non-dryRun payload',
+		});
+	});
+
+	it('r00037 S1 — does not record a violation when the handler honours the dryRun contract', async () => {
+		const plan = {
+			dryRun: true as const,
+			wouldChange: [],
+			wouldRun: [],
+			risk: 'low' as const,
+		};
+		const runtime = buildRuntimeWithHandler(async () => plan);
+
+		await runtime.invokeTool('mcp-vertex_writer_run', { dryRun: true }, {});
+
+		expect(listDryRunViolations()).toEqual([]);
 	});
 
 	it('does not touch the result when the caller did not ask for a dryRun', async () => {

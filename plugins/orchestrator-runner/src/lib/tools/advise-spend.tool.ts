@@ -16,6 +16,7 @@
 import { readFile } from 'node:fs/promises';
 
 import {
+	compactOutputSchema,
 	projectDetail,
 	toolJson,
 	type IToolRegistration,
@@ -27,7 +28,6 @@ import {
 	projectSpendFull,
 	type ISpendFullView,
 } from '../contracts/spend-view.contract';
-import { AdviseSpendOutputSchema } from '../schemas';
 
 /** A grouped usage bucket, mirrored from usage-tracking's `IRollupBucket`. */
 export interface IUsageBucket {
@@ -275,7 +275,13 @@ export const buildAdviseSpendRegistration = (
 				description:
 					"Act as a cost analyst over recorded usage. Reads the usage-tracking rollup (spend by provider, plugin, agent, extension) plus the circuit-breaker limitsStatus (rolling session + monthly spend vs your caps) and returns observations plus risk-graded (low/medium/high) recommendations — e.g. 'you have $12 of your $50 monthly cap left; consider switching to a cheaper model.' Recommendations are NON-DESTRUCTIVE: it never edits your config or roster; you confirm any change yourself.",
 				inputSchema: InputSchema,
-				outputSchema: AdviseSpendOutputSchema,
+				// v00130 (AUD-B01): `AdviseSpendOutputSchema` is not used as
+				// a runtime response validator anywhere in this handler —
+				// only declared here as the wire `outputSchema`. It stays
+				// exported from `schemas.ts` for the behavioural tests;
+				// `tools/list` gets the compact envelope instead. The real
+				// response payload is unchanged.
+				outputSchema: compactOutputSchema(),
 			},
 			async (args: z.infer<typeof InputSchema>) => {
 				const { state, windowDays } = await readSpendState(

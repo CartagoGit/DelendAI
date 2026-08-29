@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
 /**
- * verify-branch-protection.script.ts — c00130 (AUD-P0-001).
+ * verify-branch-protection.script.ts — c00130 (AUD-P0-001), x00276-x00279.
  *
  * Diff-fetches the real GitHub branch protection state for
  * `develop` + `main` against `.github/branch-protection.ts`
@@ -11,17 +11,40 @@
  * Inputs (CLI flags):
  *
  *   --repo <owner/repo>      REQUIRED. The GitHub repo slug.
- *   --token <gh-token>       OPTIONAL. Auth token. Falls back
- *                             to `GITHUB_TOKEN` env. Without a
- *                             token, public repos still work but
- *                             checks are limited.
+ *   --token <gh-token>       OPTIONAL. A deliberately-configured token
+ *                             (repo-admin scope). Falls back to the
+ *                             `BRANCH_PROTECTION_TOKEN` env var, then
+ *                             to the ambient `GITHUB_TOKEN` — the last
+ *                             of which is known to lack the scope this
+ *                             endpoint needs, so it is treated as "no
+ *                             explicit token" (see `--dry-run` and the
+ *                             `unverified` verdict below).
  *   --dry-run                OPTIONAL. Print the policy and exit 0
  *                             without contacting GitHub. Useful
  *                             for local development.
  *
+ * Verdict model (three states, not a boolean):
+ *   'pass'        — at least one branch was read and none of the
+ *                    branches read has drift.
+ *   'fail'        — a branch that was read has drift, OR an explicitly
+ *                    supplied token could not read a branch at all
+ *                    (misconfiguration, not an expected gap).
+ *   'unverified'  — no branch could be read, and no token was
+ *                    explicitly supplied. Exits 0 (the workflow's
+ *                    ambient token has no way to do better) but is
+ *                    never silent: a `::warning::` and a
+ *                    `$GITHUB_STEP_SUMMARY` line make it visible
+ *                    without opening the log. AUD-A05 was exactly the
+ *                    absence of this: a green check indistinguishable
+ *                    from "verified and correct".
+ *
+ * A branch that could not be read never masks a branch that could: a
+ * readable branch's drift is always reported, however many other
+ * branches were unreadable.
+ *
  * Exit codes:
- *   0 — every declared branch has the expected checks.
- *   1 — at least one branch diverges from the declared policy.
+ *   0 — 'pass' or 'unverified'.
+ *   1 — 'fail'.
  *   2 — input/config error (no repo, malformed config, etc.).
  *
  * The verifier is **read-only**: it never writes back to GitHub.
@@ -33,17 +56,14 @@ import {
 	BRANCH_PROTECTION,
 	type IBranchProtectionConfig,
 } from '../../../.github/branch-protection.ts';
+import {
+	fetchBranchProtection,
+	GitHubProtectionAuthError,
+	type IGitHubBranchProtectionResponse,
+	reportUnverifiedBranches,
+} from './lib/github-protection.lib.ts';
 
-interface IGitHubBranchProtectionResponse {
-	readonly enforce_admins?: { enabled?: boolean } | null;
-	readonly required_linear_history?: { enabled?: boolean } | null;
-	readonly allow_force_pushes?: { enabled?: boolean } | null;
-	readonly allow_deletion?: { enabled?: boolean } | null;
-	readonly required_status_checks?: {
-		readonly strict?: boolean;
-		readonly contexts?: readonly string[];
-	} | null;
-}
+const SCRIPT_NAME = 'verify-branch-protection';
 
 const out = (msg: string) => process.stdout.write(`${msg}\n`);
 const err = (msg: string) => process.stderr.write(`${msg}\n`);
@@ -62,60 +82,6 @@ const flag = (argv: readonly string[], name: string): string | undefined => {
 const hasFlag = (argv: readonly string[], name: string): boolean =>
 	argv.some((t) => t === `--${name}` || t.startsWith(`--${name}=`));
 
-/**
- * Fetch the live branch protection from GitHub. Returns `null`
- * when the branch is unprotected (404 on the protection endpoint).
- */
-const fetchGitHubProtection = async (
-	repo: string,
-	branch: string,
-	token: string | undefined,
-): Promise<IGitHubBranchProtectionResponse | null> => {
-	const url = `https://api.github.com/repos/${repo}/branches/${branch}/protection`;
-	const headers: Record<string, string> = {
-		Accept: 'application/vnd.github+json',
-		'X-GitHub-Api-Version': '2022-11-28',
-	};
-	if (token !== undefined && token.length > 0) {
-		headers.Authorization = `Bearer ${token}`;
-	}
-	const res = await fetch(url, { headers });
-	if (res.status === 404) return null;
-	// Reading branch protection needs repo-admin scope, which the workflow
-	// GITHUB_TOKEN does not have and cannot be granted (`administration` is
-	// not a valid workflow permission). A token that cannot see the setting
-	// cannot testify that it is wrong, so say so and stop rather than
-	// reporting a violation the run never observed.
-	if (res.status === 401 || res.status === 403) {
-		throw new UnverifiableProtectionError(branch);
-	}
-	if (!res.ok) {
-		throw new Error(
-			`GitHub API ${res.status} on ${branch}: ${await res.text()}`,
-		);
-	}
-	return (await res.json()) as IGitHubBranchProtectionResponse;
-};
-
-/**
- * Raised when the API refuses to disclose a branch's protection to the
- * token in hand. Distinct from a policy violation so the caller can
- * report "not verified" instead of "not protected".
- */
-export class UnverifiableProtectionError extends Error {
-	readonly branch: string;
-
-	constructor(branch: string) {
-		super(
-			`branch protection for "${branch}" is not readable with the token in use — ` +
-				'supply a personal access token with repo-admin scope (for example as ' +
-				'a BRANCH_PROTECTION_TOKEN secret passed via --token) to verify it.',
-		);
-		this.name = 'UnverifiableProtectionError';
-		this.branch = branch;
-	}
-}
-
 interface IDrift {
 	readonly branch: string;
 	readonly kind: 'MISSING' | 'CHECK_DRIFT' | 'BOOL_DRIFT';
@@ -123,12 +89,18 @@ interface IDrift {
 }
 
 /**
- * Compute the drift between declared policy and live GitHub
- * state. Returns an empty array when the branch matches.
+ * Compute the drift between declared policy and live GitHub state.
+ * Returns an empty array when the branch matches. `defaults` is the
+ * expectation for every boolean field — passed explicitly rather than
+ * imported so this stays a pure function testable against any
+ * combination, and so no expectation is ever hardcoded here again
+ * (AUD-A07: `config.defaults` used to be printed in `--dry-run` and
+ * nowhere else).
  */
 export const diffBranch = (
 	expected: IBranchProtectionConfig['branches'][number],
 	live: IGitHubBranchProtectionResponse | null,
+	defaults: IBranchProtectionConfig['defaults'],
 ): readonly IDrift[] => {
 	// A branch declared unprotected is supposed to have no rule. Finding
 	// one is drift in the other direction: someone locked down a working
@@ -154,32 +126,35 @@ export const diffBranch = (
 		];
 	}
 	const drifts: IDrift[] = [];
-	if (live.enforce_admins?.enabled !== true) {
+	if (live.enforce_admins.enabled !== defaults.enforce_admins) {
 		drifts.push({
 			branch: expected.name,
 			kind: 'BOOL_DRIFT',
-			detail: `enforce_admins must be true (got ${live.enforce_admins?.enabled})`,
+			detail: `enforce_admins must be ${defaults.enforce_admins} (got ${live.enforce_admins.enabled})`,
 		});
 	}
-	if (live.required_linear_history?.enabled !== true) {
+	if (
+		live.required_linear_history.enabled !==
+		defaults.required_linear_history
+	) {
 		drifts.push({
 			branch: expected.name,
 			kind: 'BOOL_DRIFT',
-			detail: `required_linear_history must be true (got ${live.required_linear_history?.enabled})`,
+			detail: `required_linear_history must be ${defaults.required_linear_history} (got ${live.required_linear_history.enabled})`,
 		});
 	}
-	if (live.allow_force_pushes?.enabled !== false) {
+	if (live.allow_force_pushes.enabled !== defaults.allow_force_pushes) {
 		drifts.push({
 			branch: expected.name,
 			kind: 'BOOL_DRIFT',
-			detail: `allow_force_pushes must be false (got ${live.allow_force_pushes?.enabled})`,
+			detail: `allow_force_pushes must be ${defaults.allow_force_pushes} (got ${live.allow_force_pushes.enabled})`,
 		});
 	}
-	if (live.allow_deletion?.enabled !== false) {
+	if (live.allow_deletions.enabled !== defaults.allow_deletions) {
 		drifts.push({
 			branch: expected.name,
 			kind: 'BOOL_DRIFT',
-			detail: `allow_deletion must be false (got ${live.allow_deletion?.enabled})`,
+			detail: `allow_deletions must be ${defaults.allow_deletions} (got ${live.allow_deletions.enabled})`,
 		});
 	}
 	const liveChecks = live.required_status_checks?.contexts ?? [];
@@ -208,7 +183,11 @@ export const diffBranch = (
 export const main = async (argv: readonly string[]): Promise<number> => {
 	const repo = flag(argv, 'repo');
 	const dryRun = hasFlag(argv, 'dry-run');
-	const token = flag(argv, 'token') ?? process.env.GITHUB_TOKEN;
+	const explicitToken =
+		flag(argv, 'token') ?? process.env.BRANCH_PROTECTION_TOKEN;
+	const tokenExplicit =
+		explicitToken !== undefined && explicitToken.length > 0;
+	const token = explicitToken ?? process.env.GITHUB_TOKEN;
 
 	const config = BRANCH_PROTECTION;
 	if (config.version !== 1) {
@@ -218,14 +197,13 @@ export const main = async (argv: readonly string[]): Promise<number> => {
 		return 2;
 	}
 
-
 	if (dryRun) {
 		out(
 			`verify-branch-protection: dry-run; would verify ${config.branches.length} branch(es)`,
 		);
 		for (const b of config.branches) {
 			out(
-				`  - ${b.name} — checks=${b.required_checks.length}, enforce_admins=${config.defaults.enforce_admins}`,
+				`  - ${b.name} — checks=${b.required_checks.length}, enforce_admins=${config.defaults.enforce_admins}, required_linear_history=${config.defaults.required_linear_history}, allow_force_pushes=${config.defaults.allow_force_pushes}, allow_deletions=${config.defaults.allow_deletions}`,
 			);
 		}
 		return 0;
@@ -240,21 +218,41 @@ export const main = async (argv: readonly string[]): Promise<number> => {
 
 	const allDrifts: IDrift[] = [];
 	const unverifiable: string[] = [];
+	let readCount = 0;
 	for (const expected of config.branches) {
 		try {
-			const live = await fetchGitHubProtection(
+			const result = await fetchBranchProtection({
 				repo,
-				expected.name,
+				branch: expected.name,
 				token,
-			);
-			allDrifts.push(...diffBranch(expected, live));
+				tokenExplicit,
+			});
+			if (result.kind === 'unverified') {
+				unverifiable.push(expected.name);
+				continue;
+			}
+			readCount += 1;
+			const live = result.kind === 'live' ? result.data : null;
+			allDrifts.push(...diffBranch(expected, live, config.defaults));
 		} catch (error) {
-			if (!(error instanceof UnverifiableProtectionError)) throw error;
-			unverifiable.push(expected.name);
-			out(`verify-branch-protection: ${error.message}`);
+			if (!(error instanceof GitHubProtectionAuthError)) throw error;
+			// A token that was explicitly supplied for this purpose and still
+			// can't read is a misconfiguration, not an expected gap: it must
+			// fail loud, not fall back to `unverified`.
+			err(`verify-branch-protection: ${error.message}`);
+			return 1;
 		}
 	}
-	if (unverifiable.length === config.branches.length) {
+
+	if (unverifiable.length > 0) {
+		await reportUnverifiedBranches(SCRIPT_NAME, unverifiable);
+	}
+
+	// A branch that couldn't be read never masks one that could — a
+	// readable branch with real drift always fails, however many other
+	// branches were unreadable. Only the total absence of any reading
+	// collapses to `unverified`.
+	if (readCount === 0) {
 		out(
 			'verify-branch-protection: no branch could be read with the token in ' +
 				'use — nothing verified, nothing asserted.',
@@ -263,7 +261,7 @@ export const main = async (argv: readonly string[]): Promise<number> => {
 	}
 	if (allDrifts.length === 0) {
 		out(
-			`verify-branch-protection: ${config.branches.length} branch(es) match the declared policy ✓`,
+			`verify-branch-protection: ${readCount} of ${config.branches.length} branch(es) read match the declared policy ✓`,
 		);
 		return 0;
 	}

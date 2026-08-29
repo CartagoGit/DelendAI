@@ -7,6 +7,7 @@ import type {
 	IToolAccessState,
 	IToolSurfacePlan,
 	IToolSurfaceModeChange,
+	IToolSurfacePluginEvictedEvent,
 	IToolSurfaceRuntime,
 	IToolSurfaceRuntimeAccess,
 	IToolSurfaceSearchEntry,
@@ -25,8 +26,10 @@ import {
 	withVisibilityIntent,
 } from './tool-surface-runtime.helper';
 import { TOOL_DETAILS_PREFIX } from '../contracts/constants/tool-details-prefix.constant';
+import { measureToolWireBytes } from '../surface/bootstrap';
 import { enforceDryRunReturnContract } from '../dry-run/enforce';
 import { runWithDryRunScope } from '../dry-run/dry-run-scope.helper';
+import { recordDryRunViolation } from '../dry-run/dry-run-violation-log';
 
 const DEFAULT_SEARCH_LIMIT = 20;
 const DEFAULT_WORKING_SET_POLICY = {
@@ -133,6 +136,35 @@ class ToolSurfaceRuntime implements IToolSurfaceRuntime {
 	private readonly loadedPluginIds = new Set<string>();
 	private readonly workingSetPolicy: IToolSurfaceWorkingSetPolicy;
 	private lazyPluginLoader: ((pluginId: string) => Promise<void>) | undefined;
+	/**
+	 * Every `bindLazyTool` activator ever handed to this runtime, keyed
+	 * by registrationId, retained FOREVER — even once the tool
+	 * materializes into a real handler via `bindRegisteredTool`. This is
+	 * the "way back" eviction needs: `rebindPluginAsLazy` (x00286) looks
+	 * a plugin's tools up here to hand `invokeTool` a fresh
+	 * `lazyActivate` after the live handler is torn down. A plugin whose
+	 * tools were bound only through `bindRegisteredTool` (never lazy to
+	 * begin with) has no entry here — `isPluginEvictable` uses that
+	 * absence to refuse evicting it, since there would be no way back.
+	 */
+	private readonly lazyActivatorsByRegistrationId = new Map<
+		string,
+		() => Promise<IToolSurfaceLazyBinding>
+	>();
+	/** Injected via `setPluginDisposer` (x00286); absent by default. */
+	private pluginDisposer: ((pluginId: string) => Promise<void>) | undefined;
+	/**
+	 * One entry per plugin currently being disposed/relazied by
+	 * `scheduleDisposal`. `invokeTool` awaits the matching entry before
+	 * deciding whether a tool needs reactivating, so a call that lands
+	 * mid-eviction never observes the half-transitioned state (dispose
+	 * settled but relazy not yet applied) and never triggers a second,
+	 * concurrent disposal of the same plugin.
+	 */
+	private readonly disposalsInFlight = new Map<string, Promise<void>>();
+	private readonly pluginEvictedListeners = new Set<
+		(event: IToolSurfacePluginEvictedEvent) => void
+	>();
 
 	constructor(private readonly plan: IToolSurfacePlan) {
 		this.workingSetPolicy = plan.workingSet ?? DEFAULT_WORKING_SET_POLICY;
@@ -207,6 +239,10 @@ class ToolSurfaceRuntime implements IToolSurfaceRuntime {
 		};
 		this.recordsByName.set(record.name, record);
 		this.recordsByRegistrationId.set(record.registrationId, record);
+		this.lazyActivatorsByRegistrationId.set(
+			input.registrationId,
+			input.activate,
+		);
 	}
 
 	finalizeInitialSurface(): void {
@@ -241,6 +277,33 @@ class ToolSurfaceRuntime implements IToolSurfaceRuntime {
 			changedToolNames,
 			visibleToolNames,
 		};
+	}
+
+	async applySurfaceModeAsync(
+		mode: IToolSurfacePlan['mode'],
+	): Promise<IToolSurfaceModeChange> {
+		// Only `native` needs this: it is the one mode whose whole promise
+		// is "every tool up front, no discovery round-trip" (AUD-C01). A
+		// plugin still sitting behind `bindLazyTool`'s fake handle has no
+		// real SDK `RegisteredTool` yet, so `applySurfaceMode` flipping
+		// `access` to `visible` changes nothing an unrecognised client can
+		// see. Materialize every plugin that has not loaded yet (through
+		// whatever `setLazyPluginLoader` was wired to) before computing
+		// visibility. managed/adaptive/compact never reach this branch —
+		// their entire design is NOT loading everything, and this must not
+		// undo that.
+		const loader = this.lazyPluginLoader;
+		if (mode === 'native' && loader !== undefined) {
+			const pending = this.plan.plugins.filter(
+				(plugin) => !this.loadedPluginIds.has(plugin.id),
+			);
+			await Promise.all(
+				pending.map((plugin) =>
+					loader(plugin.id).catch(() => undefined),
+				),
+			);
+		}
+		return this.applySurfaceMode(mode);
 	}
 
 	isToolExposed(name: string): boolean {
@@ -311,31 +374,34 @@ class ToolSurfaceRuntime implements IToolSurfaceRuntime {
 			}));
 	}
 
+	/**
+	 * Per-tool wire bytes for every record visible in `mode`, keyed by
+	 * registration id. Delegates to the shared `measureToolWireBytes`
+	 * (AUD-B04 / x00284) with the record's RAW `description` — not the
+	 * `compactDescription`-truncated summary this used before, which no
+	 * real `tools/list` response ever sends (that compaction only
+	 * applies to the `overview`/`tool_search` display projection, never
+	 * to what a live `server.registerTool()` call actually registers).
+	 */
 	measureSchemaBytes(
 		mode: IToolSurfacePlan['mode'],
 	): Readonly<Record<string, number>> {
 		const result: Record<string, number> = {};
 		for (const record of this.recordsByName.values()) {
 			if (!this.shouldExpose(record.registrationId, mode)) continue;
-			const inputSchema = toJsonSchema(record.inputSchema) ?? {
-				type: 'object',
-				properties: {},
-			};
-			const definition: Record<string, unknown> = {
+			result[record.registrationId] = measureToolWireBytes({
 				name: record.name,
-				description: compactDescription(
-					record.description,
-					record.summary,
-				),
-				inputSchema,
-			};
-			const outputSchema = toJsonSchema(record.outputSchema);
-			if (outputSchema !== undefined)
-				definition.outputSchema = outputSchema;
-			result[record.registrationId] = Buffer.byteLength(
-				JSON.stringify(definition),
-				'utf8',
-			);
+				description: record.description,
+				inputSchema: toJsonSchema(record.inputSchema),
+				outputSchema: toJsonSchema(record.outputSchema),
+				// Every tool this codebase registers goes through the
+				// standard `server.registerTool(name, config, handler)`
+				// overload, which the MCP SDK hardcodes to
+				// `execution: {taskSupport: 'forbidden'}` (never left
+				// `undefined`) — a real, constant contributor to wire
+				// bytes that a projected measurement must include too.
+				execution: { taskSupport: 'forbidden' },
+			});
 		}
 		return result;
 	}
@@ -346,6 +412,17 @@ class ToolSurfaceRuntime implements IToolSurfaceRuntime {
 
 	setLazyPluginLoader(loader: (pluginId: string) => Promise<void>): void {
 		this.lazyPluginLoader = loader;
+	}
+
+	setPluginDisposer(disposer: (pluginId: string) => Promise<void>): void {
+		this.pluginDisposer = disposer;
+	}
+
+	onPluginEvicted(
+		listener: (event: IToolSurfacePluginEvictedEvent) => void,
+	): () => void {
+		this.pluginEvictedListeners.add(listener);
+		return () => this.pluginEvictedListeners.delete(listener);
 	}
 
 	async activatePluginAsync(
@@ -445,15 +522,48 @@ class ToolSurfaceRuntime implements IToolSurfaceRuntime {
 		if (!isToolAuthorized(record.access)) {
 			throw new ToolNotAuthorizedError(name);
 		}
+		// A call that lands while its plugin is mid-eviction must wait for
+		// that transition to finish (dispose settled, tools relazied)
+		// before deciding whether to reactivate — otherwise it could read
+		// a handler that is about to be torn out from under it, or race
+		// `scheduleDisposal` into disposing the very plugin it just used.
+		if (record.pluginId !== undefined) {
+			const disposal = this.disposalsInFlight.get(record.pluginId);
+			if (disposal !== undefined) {
+				await disposal;
+				record = this.recordsByName.get(name) ?? record;
+			}
+		}
 		if (record.handler === undefined && record.lazyActivate !== undefined) {
+			const beforeActivate = record;
 			const binding = await record.lazyActivate();
-			record = this.recordsByRegistrationId.get(
+			// `activate()` (usually `materializeLazyTool` from
+			// `create-mcp-project.ts`) normally calls `bindRegisteredTool`
+			// itself as a side effect, which is why a concurrently-raced
+			// activation shows up here as a DIFFERENT object already in
+			// the map — prefer that. But `activate()` can also be a raw
+			// activator with no such side effect (every retained
+			// `bindLazyTool` closure `rebindPluginAsLazy` (x00286) hands
+			// back after an eviction is exactly this: calling it again
+			// just returns the same cached binding, it does not
+			// re-register anything) — in that case the map still holds
+			// the SAME stale, handler-less record we started with, and
+			// the returned `binding` is the only place the real handler
+			// exists. Only trust the map's current entry when it changed
+			// out from under us; otherwise build the merged record from
+			// `binding` ourselves.
+			const concurrentlyUpdated = this.recordsByRegistrationId.get(
 				record.registrationId,
-			) ?? {
-				...record,
-				...binding,
-				lazyActivate: undefined,
-			};
+			);
+			record =
+				concurrentlyUpdated !== undefined &&
+				concurrentlyUpdated !== beforeActivate
+					? concurrentlyUpdated
+					: {
+							...record,
+							...binding,
+							lazyActivate: undefined,
+						};
 			this.recordsByName.set(record.name, record);
 			this.recordsByRegistrationId.set(record.registrationId, record);
 			if (record.pluginId !== undefined)
@@ -492,7 +602,7 @@ class ToolSurfaceRuntime implements IToolSurfaceRuntime {
 						? await handler(extra)
 						: await handler(parsed.value, extra),
 			);
-			return this.applyDryRunContract(name, args, result);
+			return this.applyDryRunContract(name, pluginId, args, result);
 		} finally {
 			if (pluginId !== undefined) {
 				const remaining =
@@ -555,29 +665,162 @@ class ToolSurfaceRuntime implements IToolSurfaceRuntime {
 		};
 	}
 
+	/**
+	 * True only if EVERY tool registration this plugin owns still has a
+	 * retained `bindLazyTool` activator to fall back to. A plugin whose
+	 * tools were bound solely through `bindRegisteredTool` (never lazy to
+	 * begin with — the case every existing unit-test fixture in this file
+	 * that skips `bindLazyTool` hits) has no way back: evicting it would
+	 * leave `invokeTool` with a live `handler === undefined` and nothing
+	 * to reactivate it with. Deliberately conservative — this never fakes
+	 * an eviction that would break the plugin's next invocation.
+	 */
+	private isPluginEvictable(pluginId: string): boolean {
+		const plugin = this.pluginIndex.get(pluginId);
+		if (plugin === undefined) return false;
+		return plugin.toolRegistrationIds.every((registrationId) =>
+			this.lazyActivatorsByRegistrationId.has(registrationId),
+		);
+	}
+
+	/**
+	 * Flip a plugin's tools back to their pre-activation shape: no live
+	 * handler, `lazyActivate` restored from the permanent registry built
+	 * in `bindLazyTool`. Metadata (`inputSchema`/`outputSchema`/
+	 * `description`) and `access` (visible/hidden/deactivated) are left
+	 * untouched — eviction changes internal dispatch, never the
+	 * visible/hidden/deactivated contract (a plugin that was `visible`
+	 * stays `visible` in `tools/list`; only the next call through it pays
+	 * the reactivation cost). `loadedPluginIds` drops the plugin so
+	 * `project_context.loadedPlugins` stops claiming it is still resident.
+	 */
+	private rebindPluginAsLazy(pluginId: string): void {
+		const plugin = this.pluginIndex.get(pluginId);
+		if (plugin === undefined) return;
+		for (const registrationId of plugin.toolRegistrationIds) {
+			const record = this.recordsByRegistrationId.get(registrationId);
+			const activate =
+				this.lazyActivatorsByRegistrationId.get(registrationId);
+			if (record === undefined || activate === undefined) continue;
+			const relazied: IBoundToolRecord = {
+				...record,
+				handler: undefined,
+				lazyActivate: activate,
+			};
+			this.recordsByName.set(relazied.name, relazied);
+			this.recordsByRegistrationId.set(relazied.registrationId, relazied);
+		}
+		this.loadedPluginIds.delete(pluginId);
+	}
+
+	/**
+	 * Run the real teardown for one evicted plugin: best-effort
+	 * `pluginDisposer` (absent by default — see `setPluginDisposer`),
+	 * then unconditional relazy, then the observable side of this fix —
+	 * a stderr line plus every `onPluginEvicted` listener — regardless of
+	 * whether disposal succeeded. A throwing disposer is caught and
+	 * reported via `disposeError` on the event; it never blocks the
+	 * relazy or any other plugin's disposal (same aggregate-not-throw
+	 * shape as `IManagedLazyRuntime.disposeAll()` from r00038). Guarded
+	 * against re-entry per plugin via `disposalsInFlight` — `evictIdlePlugins`
+	 * cannot select an already-evicted plugin again (it is no longer in
+	 * `warmAtByPlugin`), but this guard also protects a caller invoking
+	 * this method directly in a test.
+	 */
+	private scheduleDisposal(
+		pluginId: string,
+		reason: 'idle-ttl' | 'max-warm-plugins',
+	): void {
+		if (this.disposalsInFlight.has(pluginId)) return;
+		const plugin = this.pluginIndex.get(pluginId);
+		const namespace = plugin?.namespace ?? pluginId;
+		const task = (async () => {
+			let disposeError: unknown;
+			try {
+				await this.pluginDisposer?.(pluginId);
+			} catch (error) {
+				disposeError = error;
+			}
+			this.rebindPluginAsLazy(pluginId);
+			const event: IToolSurfacePluginEvictedEvent = {
+				pluginId,
+				namespace,
+				reason,
+				...(disposeError !== undefined ? { disposeError } : {}),
+			};
+			process.stderr.write(
+				`[surface] evicted plugin "${namespace}" (${reason})${
+					disposeError !== undefined
+						? ' — dispose failed, relazied anyway'
+						: ''
+				}\n`,
+			);
+			for (const listener of this.pluginEvictedListeners) {
+				listener(event);
+			}
+		})();
+		this.disposalsInFlight.set(pluginId, task);
+		void task.finally(() => {
+			if (this.disposalsInFlight.get(pluginId) === task) {
+				this.disposalsInFlight.delete(pluginId);
+			}
+		});
+	}
+
 	evictIdlePlugins(nowMs = Date.now()): readonly string[] {
 		const evicted: string[] = [];
+		const reasonByPluginId = new Map<
+			string,
+			'idle-ttl' | 'max-warm-plugins'
+		>();
 		const ttl = this.workingSetPolicy.idleTtlMs;
 		if (ttl !== null) {
 			for (const [pluginId, touchedAt] of this.warmAtByPlugin) {
 				if ((this.inFlightByPlugin.get(pluginId) ?? 0) > 0) continue;
+				if (!this.isPluginEvictable(pluginId)) continue;
 				if (nowMs - touchedAt >= ttl) {
 					this.warmAtByPlugin.delete(pluginId);
 					evicted.push(pluginId);
+					reasonByPluginId.set(pluginId, 'idle-ttl');
 				}
 			}
 		}
 		const max = this.workingSetPolicy.maxWarmPlugins;
 		if (max !== null && this.warmAtByPlugin.size > max) {
-			const oldest = [...this.warmAtByPlugin.entries()]
+			// The LRU branch used to select "the oldest N over budget" with
+			// no in-flight guard at all — a plugin mid-invocation could be
+			// the globally oldest touch and get evicted out from under its
+			// own call. Filter to eviction-safe candidates FIRST, then take
+			// the oldest among those; if fewer safe candidates exist than
+			// the overage, the working set stays over budget rather than
+			// evicting something it cannot safely evict.
+			const candidates = [...this.warmAtByPlugin.entries()]
+				.filter(
+					([pluginId]) =>
+						(this.inFlightByPlugin.get(pluginId) ?? 0) === 0 &&
+						this.isPluginEvictable(pluginId),
+				)
 				.sort((a, b) => a[1] - b[1])
 				.slice(0, this.warmAtByPlugin.size - max);
-			for (const [pluginId] of oldest) {
+			for (const [pluginId] of candidates) {
 				this.warmAtByPlugin.delete(pluginId);
 				if (!evicted.includes(pluginId)) evicted.push(pluginId);
+				if (!reasonByPluginId.has(pluginId)) {
+					reasonByPluginId.set(pluginId, 'max-warm-plugins');
+				}
 			}
 		}
+		for (const pluginId of evicted) {
+			this.scheduleDisposal(
+				pluginId,
+				reasonByPluginId.get(pluginId) ?? 'max-warm-plugins',
+			);
+		}
 		return evicted;
+	}
+
+	hasInFlightWork(): boolean {
+		return this.inFlightByPlugin.size > 0;
 	}
 
 	private touchPlugin(record: IBoundToolRecord): void {
@@ -599,6 +842,7 @@ class ToolSurfaceRuntime implements IToolSurfaceRuntime {
 	 */
 	private applyDryRunContract(
 		name: string,
+		pluginId: string | undefined,
 		args: unknown,
 		result: unknown,
 	): unknown {
@@ -607,6 +851,19 @@ class ToolSurfaceRuntime implements IToolSurfaceRuntime {
 			result,
 		});
 		if (verdict.kind === 'forwarded') return verdict.value;
+		// S1 (r00037): DETECTION already happened — the handler ran to
+		// completion before this line — but the violation is no longer
+		// silent: it is recorded with the plugin/tool responsible so a
+		// host can turn `listDryRunViolations()` into measurable
+		// migration pressure. Prevention (making the effect itself
+		// impossible) is the EffectBroker, not this log.
+		recordDryRunViolation({
+			ts: new Date().toISOString(),
+			tool: name,
+			pluginId,
+			reason: verdict.reason,
+			issues: verdict.issues,
+		});
 		return buildDryRunContractViolationResult(name, verdict);
 	}
 
