@@ -93,6 +93,7 @@ export type IEngineRefusalCode =
 	| 'SLICE_NOT_FOUND'
 	| 'SLICE_NOT_IN_CONFIGURED_STATUS'
 	| 'SLICE_HAS_NO_FILES'
+	| 'WORKSPACE_HAS_NO_FILES'
 	| 'BRANCH_PROTECTED'
 	| 'NON_CONVENTIONAL_MESSAGE'
 	| 'CROSS_AGENT_CONTAMINATION'
@@ -431,6 +432,9 @@ const refusalToEngine = (refusal: string): IEngineResult => {
 	}
 	if (refusal.includes('CROSS_AGENT_CONTAMINATION')) {
 		return err('CROSS_AGENT_CONTAMINATION', refusal);
+	}
+	if (refusal.includes('WORKSPACE_HAS_NO_FILES')) {
+		return err('WORKSPACE_HAS_NO_FILES', refusal);
 	}
 	if (refusal.includes('NON_CONVENTIONAL_MESSAGE')) {
 		return err('NON_CONVENTIONAL_MESSAGE', refusal);

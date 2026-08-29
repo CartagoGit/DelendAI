@@ -50,7 +50,7 @@ opt in. See "Configuration" below for the exact knobs.
 | `identity.owner` | _none_ | Required when `mode === "explicit"` — `{ name, email }`. |
 | `cadence.triggers` | `[]` | Empty array = no automatic commits; only `commit_policy_run` works. |
 | `cadence.triggers[].kind` | — | `"slice" \| "threshold" \| "interval" \| "manual"`. |
-| `cadence.sliceScoping` | `true` | Slice triggers scope commits to the slice's `files:` list. |
+| `cadence.sliceScoping` | `true` | `true` scopes commits to the slice's `files:` list; `false` commits the current dirty workspace snapshot when a slice closes. |
 | `audit.trailer` | `"co-authored-by"` | `"none" \| "co-authored-by" \| "body-metadata"`. |
 | `audit.agentFormat` | `"${host}/${model}"` | Template for the agent portion of the trailer. |
 | `push.enabled` | `false` | Master switch — no push ever without `true`. |
