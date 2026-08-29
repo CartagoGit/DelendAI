@@ -31,7 +31,7 @@ import {
 	resolveCommitAuthor,
 } from '../shared/commit-author';
 import { createGitRunner } from '../shared/git-write';
-import { createEffectBroker } from '../capabilities/effect-broker';
+import { createEffectBroker } from '../capabilities/effect-broker.factory';
 import type { IPluginEffectsCapability } from '../contracts/interfaces/effect-capabilities.interface';
 import type { IToolSummary } from '../catalog/agent-discovery-types';
 import { createWorkspacePathProvider } from '../workspace/create-workspace-path-provider';

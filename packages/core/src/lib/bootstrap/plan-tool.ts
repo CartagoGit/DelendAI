@@ -16,7 +16,7 @@ import { buildBlueprintFiles, buildServerBlueprint } from './build-blueprint';
 import type { IPatternOverrides } from './pattern-catalog-overrides';
 import { PLAN_INPUT_SCHEMA } from './schemas';
 import { toolJson } from '../shared/tool-response';
-import { compactOutputSchema } from '../surface/compact-output-schema';
+import { compactOutputSchema } from '../surface/compact-output-schema.helper';
 
 export interface IPlanToolDeps {
 	readonly namespacePrefix: string;

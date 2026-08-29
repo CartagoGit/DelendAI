@@ -2,7 +2,7 @@ import z from 'zod';
 
 import type { IToolRegistration } from '../contracts/interfaces/tool-registration.interface';
 import { toolOk } from '../shared/tool-response';
-import { compactOutputSchema } from '../surface/compact-output-schema';
+import { compactOutputSchema } from '../surface/compact-output-schema.helper';
 import { buildCatalog } from '../catalog/agent-discovery-catalog';
 import type {
 	CatalogSection,

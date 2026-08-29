@@ -29,7 +29,7 @@ import { TOOL_DETAILS_PREFIX } from '../contracts/constants/tool-details-prefix.
 import { measureToolWireBytes } from '../surface/bootstrap';
 import { enforceDryRunReturnContract } from '../dry-run/enforce';
 import { runWithDryRunScope } from '../dry-run/dry-run-scope.helper';
-import { recordDryRunViolation } from '../dry-run/dry-run-violation-log';
+import { recordDryRunViolation } from '../dry-run/dry-run-violation-log.service';
 
 const DEFAULT_SEARCH_LIMIT = 20;
 const DEFAULT_WORKING_SET_POLICY = {
