@@ -151,7 +151,7 @@ que los warnings de formato.
 
 ### S1 — Medir y congelar el baseline real de warnings/infos
 
-- **Status**: pending
+- **Status**: done
 - **Files**:
     - `tools/scripts/lint/biome-baseline.script.ts` (nuevo)
     - `tools/scripts/lint/biome-baseline.script.spec.ts` (nuevo)
@@ -175,14 +175,25 @@ que los warnings de formato.
 
 ### S3 — Cablear `bun run lint` al comando completo + CI
 
-- **Status**: pending
+- **Status**: done
 - **Files**:
-    - `package.json` (script `lint`)
-    - `.github/workflows/ci.yml` (job `lint-biome`)
-    - `.github/workflows/tier1.yml` (job `affected-lint`, corrige el
-      comentario que ya prometía este comportamiento)
-    - `.github/workflows/tier2.yml` (job `lint-full`)
-- **Gate**: `bun run lint`
+    - `package.json` (script `lint`, + `lint:biome-baseline` alias
+      wired into `validate`)
+    - `.github/workflows/ci.yml` (job `lint-biome`) — **corrección**:
+      no requirió ningún cambio. `lint-biome` ya invoca `bun run
+      lint`, nunca `biome ci extensions/vscode` directamente, así que
+      queda cableado al comando completo en cuanto cambia el script
+      `lint` de `package.json`.
+    - `.github/workflows/tier1.yml` (job `affected-lint`) —
+      **corrección**: mismo caso; ya invoca `bun run lint`. El
+      comentario desactualizado ("biome scans by file globs...") sigue
+      sin corregir porque `tier1.yml` no está en el territorio
+      asignado para esta implementación (edición cosmética, no
+      bloquea el gate).
+    - `.github/workflows/tier2.yml` (job `lint-full`) — **corrección**:
+      mismo caso; ya invoca `bun run lint`, sin cambios necesarios.
+- **Gate**: `bun run lint` — PASA (verificado en vivo, ver informe de
+  implementación).
 
 ## dependency graph
 
