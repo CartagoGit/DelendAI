@@ -1,15 +1,13 @@
 import { describe, expect, it } from 'vitest';
 
-import {
-	runListDependabot,
-	type IListDependabotToolOptions,
-} from '../../../../src/lib/tools/list-dependabot.tool';
+import { runListDependabot } from '../../../../src/lib/tools/list-dependabot.tool';
 import type {
 	IFetchIssueResult,
+	IGithubClient,
 	IListDependabotAlertsOptions,
 	IListDependabotAlertsResult,
-} from '../../../../src/lib/github-client';
-import type { IGithubClient } from '../../../../src/lib/tools/list-issues.tool';
+	IListDependabotToolOptions,
+} from '../../../../src/lib/contracts';
 
 const STUB_FETCH_RESULT: IFetchIssueResult = {
 	data: {

@@ -15,7 +15,7 @@ import {
 	listSecretScanningAlerts,
 	listSecurityAdvisories,
 } from './lib/github-client';
-import type { IGithubClient } from './lib/tools';
+import type { IGithubClient } from './lib/contracts';
 import { buildIssuesToolRegistrations } from './lib/tools';
 import { buildSetupGithubRegistration } from './lib/tools/setup-github.tool';
 import { createIssuesErrorSinkAdapter } from './lib/services/error-sink-adapter';

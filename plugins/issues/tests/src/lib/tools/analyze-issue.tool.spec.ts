@@ -8,8 +8,10 @@ import {
 	runAnalyzeIssue,
 	type IAnalyzeIssueToolOptions,
 } from '../../../../src/lib/tools/analyze-issue.tool';
-import type { IFetchIssueResult } from '../../../../src/lib/github-client';
-import type { IGithubClient } from '../../../../src/lib/tools/list-issues.tool';
+import type {
+	IFetchIssueResult,
+	IGithubClient,
+} from '../../../../src/lib/contracts';
 
 const buildFetchResult = (
 	number: number,

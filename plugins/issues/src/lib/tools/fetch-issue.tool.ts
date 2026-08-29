@@ -5,9 +5,14 @@
 import z from 'zod';
 
 import type { IToolRegistration } from '@mcp-vertex/core/public';
-import { toolError, toolOk } from '@mcp-vertex/core/public';
+import { toolOk } from '@mcp-vertex/core/public';
 
-import type { IGithubClient } from './list-issues.tool';
+import type { IGithubClient } from '../contracts';
+import {
+	issueCommentSchema,
+	issueDetailSchema,
+	issueNumberToolError,
+} from './issues-tool.shared';
 
 export interface IFetchIssueToolOptions {
 	readonly namespacePrefix: string;
@@ -18,34 +23,13 @@ export interface IFetchIssueArgs {
 	readonly number: number;
 }
 
-const COMMENT_SCHEMA = z.object({
-	author: z.string(),
-	body: z.string(),
-	createdAt: z.string(),
-	url: z.string(),
-});
-
-const ISSUE_DETAIL_SCHEMA = z.object({
-	number: z.number(),
-	title: z.string(),
-	state: z.enum(['open', 'closed']),
-	labels: z.array(z.string()),
-	author: z.string(),
-	url: z.string(),
-	createdAt: z.string(),
-	updatedAt: z.string(),
-	commentsCount: z.number(),
-	body: z.string(),
-	comments: z.array(COMMENT_SCHEMA),
-});
-
 const FETCH_ISSUE_OUTPUT_SCHEMA = z.object({
 	ok: z.boolean(),
 	error: z
 		.object({ reason: z.string(), nextAction: z.string().optional() })
 		.optional(),
-	issue: ISSUE_DETAIL_SCHEMA.optional(),
-	comments: z.array(COMMENT_SCHEMA).optional(),
+	issue: issueDetailSchema.optional(),
+	comments: z.array(issueCommentSchema).optional(),
 });
 
 export const runFetchIssue = async (
@@ -56,10 +40,7 @@ export const runFetchIssue = async (
 		const result = await options.githubClient.fetchIssue(args.number);
 		return toolOk({ issue: result.data, comments: result.comments });
 	} catch (error) {
-		return toolError(
-			error instanceof Error ? error.message : String(error),
-			'Check the issue number / repo configuration / gh auth status.',
-		);
+		return issueNumberToolError(error);
 	}
 };
 
