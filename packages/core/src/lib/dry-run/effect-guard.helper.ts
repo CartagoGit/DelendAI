@@ -25,20 +25,26 @@
  *     — where a handler would hold its mutating capabilities — is
  *     never invoked at all.
  *
- * Residual gap (see the f00189 audit report for the full writeup):
- * both helpers are opt-in at the call site that WIRES a capability.
- * `IMcpPluginContext` (packages/core/src/lib/plugins/plugin-contract.ts)
- * does not currently hand plugins a filesystem/git/spawn/network
- * capability object at all — plugins call `fs`, `child_process`,
- * `fetch`, etc. directly inside their own handler code. Making
- * adoption MANDATORY (rather than merely available) requires the
- * loader/router/context-construction files
- * (`load-plugins.ts`, `lifecycle.ts`, `vertex-router.tool.ts`,
- * `tool-surface-runtime.service.ts`) to construct every mutating
- * capability through these guards before handing it to a handler.
- * Those files are out of this change's ownership boundary; this
- * module ships the strongest primitive achievable from
- * `dry-run/**` alone, ready for that wiring.
+ * STALE AS OF 8f05b5d2 (2026-08-27) AND r00037 — the paragraph that
+ * used to sit here said `IMcpPluginContext` hands plugins no
+ * capability object at all. That stopped being true when `8f05b5d2`
+ * injected a dry-run-gated effects capability, and it is now wired
+ * for every plugin through `createEffectBroker` in
+ * `packages/core/src/lib/cli/assemble.ts`. The stale text was quoted
+ * verbatim as evidence by `AUD-D02` seven hours after the commit that
+ * invalidated it, which is exactly the failure mode that finding is
+ * about: trusting the declaration instead of the behaviour. Keep this
+ * header honest.
+ *
+ * Real residual gap, as of r00037: prevention is real for the `git`
+ * capability, which routes through the broker. It is NOT yet real for
+ * filesystem, spawn or network — `IPluginEffectsCapability` has no
+ * `fs` member yet (a deliberate YAGNI, see
+ * `effect-capabilities.interface.ts`), so a handler calling
+ * `writeFileSync` directly is still only detected, not prevented.
+ * `docs/mcp-vertex/security/dry-run-contract.md` states the guarantee
+ * per capability kind; `x00288`'s effect-boundary lint is what keeps
+ * new direct calls from appearing
  */
 export type {
 	IDryRunEffectRefusal,
