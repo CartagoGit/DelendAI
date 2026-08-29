@@ -48,7 +48,7 @@ opt in. See "Configuration" below for the exact knobs.
 | `stash.enabled` | `false` | Whether agents may use git stash operations. Keep `false` to require work on the current branch. |
 | `identity.mode` | `"global"` | One of `explicit / agent / repo / global / env / auto`. |
 | `identity.owner` | _none_ | Required when `mode === "explicit"` — `{ name, email }`. |
-| `cadence.triggers` | `[]` | Empty array = no automatic commits; only `commit_policy_run` works. |
+| `cadence.triggers` | `[]` | Empty array = no automatic commits; configured `slice` and `interval` triggers run in the background, while `threshold` and `manual` are fired through `commit_policy_run`. |
 | `cadence.triggers[].kind` | — | `"slice" \| "threshold" \| "interval" \| "manual"`. |
 | `cadence.sliceScoping` | `true` | `true` scopes commits to the slice's `files:` list; `false` commits the current dirty workspace snapshot when a slice closes. |
 | `audit.trailer` | `"co-authored-by"` | `"none" \| "co-authored-by" \| "body-metadata"`. |
@@ -78,7 +78,7 @@ opt in. See "Configuration" below for the exact knobs.
 |---|---|
 | `slice` | A `proposals` slice transitions to a configured status (default `done`). Polls the proposals `index.json` every 5 s. |
 | `threshold` | `git status --porcelain` reports at least N dirty files (default 10). Manual only — the agent calls `commit_policy_run { kind: "threshold" }`. |
-| `interval` | At least N minutes have elapsed since the last fire and the worktree is dirty. Manual only. |
+| `interval` | At least N minutes have elapsed since the last fire and the worktree is dirty. Runs automatically when configured. |
 | `manual` | Always available, regardless of `cadence.triggers`. |
 
 ### Push force policy
