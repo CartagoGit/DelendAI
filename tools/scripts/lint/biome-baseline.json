@@ -1,0 +1,22 @@
+{
+	"__errors__": 50,
+	"lint/complexity/noUselessConstructor": 1,
+	"lint/complexity/noUselessContinue": 13,
+	"lint/complexity/noUselessEscapeInRegex": 3,
+	"lint/complexity/noUselessSwitchCase": 2,
+	"lint/complexity/noUselessTernary": 2,
+	"lint/complexity/useLiteralKeys": 77,
+	"lint/complexity/useOptionalChain": 3,
+	"lint/complexity/useRegexLiterals": 1,
+	"lint/correctness/noUnusedFunctionParameters": 5,
+	"lint/correctness/noUnusedImports": 42,
+	"lint/correctness/noUnusedPrivateClassMembers": 1,
+	"lint/correctness/noUnusedVariables": 49,
+	"lint/style/useConst": 2,
+	"lint/style/useExponentiationOperator": 1,
+	"lint/style/useImportType": 5,
+	"lint/style/useShorthandFunctionType": 1,
+	"lint/style/useTemplate": 27,
+	"lint/suspicious/noConfusingVoidType": 8,
+	"lint/suspicious/noUselessEscapeInString": 2
+}
