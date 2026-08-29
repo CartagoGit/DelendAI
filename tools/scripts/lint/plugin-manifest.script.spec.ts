@@ -4,10 +4,7 @@ import { join } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
-import {
-	formatPluginManifestLintReport,
-	lintPluginManifests,
-} from './plugin-manifest.script.ts';
+import { lintPluginManifests } from './plugin-manifest.script.ts';
 
 const writeJson = async (path: string, value: unknown): Promise<void> => {
 	await writeFile(path, `${JSON.stringify(value, null, '\t')}\n`, 'utf8');

@@ -156,7 +156,7 @@ describe('syncProposalRegistry (entry point)', async () => {
 		expect(index.proposals.map((p) => p.id)).toContain('f904a');
 	});
 
-	it('surfaces folder drift found before reconciliation in sync errors', async () => {
+	it('does not report folder drift once the same sync reconciles it', async () => {
 		await seed(root, 'review', 'f903-drift.md', {
 			id: 'f903',
 			status: 'done',
@@ -179,8 +179,10 @@ describe('syncProposalRegistry (entry point)', async () => {
 			[],
 			FAKE_GIT_MV,
 		);
-		expect(result.errors).toContain(
-			'folder drift: f903 at review/f903-drift.md is in review but status done expects done/feats',
+		expect(result.errors).toEqual([]);
+		const index = await readIndex(root);
+		expect(index.proposals.find((p) => p.id === 'f903')?.file).toBe(
+			'done/feats/f903-drift.md',
 		);
 	});
 

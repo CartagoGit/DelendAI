@@ -100,6 +100,39 @@ kind: fix
 		expect(out.proposalId).toBe('x00184');
 	});
 
+	it('treats by-kind ready subfolders as actionable', async () => {
+		writeFileSync(
+			options.indexPathAbs,
+			JSON.stringify({
+				proposals: [
+					{
+						id: 'f200-ready-kind',
+						file: 'ready/feats/f200-ready-kind.md',
+						status: 'ready',
+						type: 'proposal',
+					},
+				],
+			}),
+		);
+		mkdirSync(join(root, 'ready/feats'), { recursive: true });
+		writeFileSync(
+			join(root, 'ready/feats/f200-ready-kind.md'),
+			[
+				'---',
+				'id: f200-ready-kind',
+				'status: ready',
+				'kind: feat',
+				'---',
+				'',
+				'# f200-ready-kind',
+			].join('\n'),
+		);
+		options = { ...options, proposalsDirAbs: root };
+		const out = parse(await runContinueProposal({ mode: 'auto' }, options));
+		expect(out.kind).toBe('next-proposal');
+		expect(out.proposalId).toBe('f200-ready-kind');
+	});
+
 	it('applies cascadeOverride and reports its reason in cascadeTrace', async () => {
 		writeFileSync(
 			options.indexPathAbs,

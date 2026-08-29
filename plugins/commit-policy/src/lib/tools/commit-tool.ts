@@ -115,7 +115,10 @@ export const runCommitPolicyCommit = async (
 					nextAction: catalog.tools.commit.nextActionCommit,
 				};
 			}
-			if (refusal.includes('protected branch')) {
+			if (
+				refusal.includes('protected branch') ||
+				refusal.includes('BRANCH_PROTECTED')
+			) {
 				return {
 					summary: catalog.tools.commit.refuseProtectedBranch({
 						branch: refusal.match(/"([^"]+)"/)?.[1] ?? '',

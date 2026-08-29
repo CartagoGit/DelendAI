@@ -33,6 +33,23 @@ export interface INotifyToolOptions {
 	readonly heartbeatMs?: number;
 }
 
+type ICloseCapableServer = {
+	readonly server?: {
+		onclose?: (() => void) | undefined;
+	};
+};
+
+const attachCloseHandler = (server: McpServer, handler: () => void): void => {
+	const closeCapable = server as McpServer & ICloseCapableServer;
+	const transportServer = closeCapable.server;
+	if (transportServer === undefined) return;
+	const previousOnClose = transportServer.onclose;
+	transportServer.onclose = (): void => {
+		handler();
+		previousOnClose?.();
+	};
+};
+
 /**
  * `<prefix>_notify_status` — and the side effect that matters: it starts
  * a lock-release watcher wired to the live server's `notifications/message`
@@ -114,13 +131,11 @@ export const buildNotifyRegistration = (
 			});
 
 			// Tear the watcher down with the server so we don't leak timers.
-			const previousOnClose = server.server.onclose;
-			server.server.onclose = (): void => {
+			attachCloseHandler(server, () => {
 				watcher?.stop();
 				handoffWatcher?.stop();
 				agentEventsBridge?.close();
-				previousOnClose?.();
-			};
+			});
 
 			server.registerTool(
 				`${options.namespacePrefix}_notify_status`,
@@ -170,12 +185,10 @@ export const buildAwaitLockRegistration = (
 			'Wait until a task lock is released (or timeout), so agents stop polling agent_lock status.',
 		tags: ['coordination', 'lazy'],
 		register: async (server: McpServer) => {
-			const previousOnClose = server.server.onclose;
-			server.server.onclose = (): void => {
+			attachCloseHandler(server, () => {
 				for (const ac of pending) ac.abort();
 				pending.clear();
-				previousOnClose?.();
-			};
+			});
 
 			server.registerTool(
 				`${options.namespacePrefix}_await_lock`,

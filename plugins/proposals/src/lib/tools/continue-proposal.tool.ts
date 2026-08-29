@@ -137,6 +137,16 @@ const NEW_SYSTEM_ACTIONABLE_FOLDERS = new Set([
 	'review',
 ]);
 
+const folderStateOf = (
+	file: string,
+	proposalsDirAbs?: string,
+): string | null => {
+	const folder = folderOf(file, proposalsDirAbs);
+	if (folder === null || folder.length === 0) return folder;
+	const slash = folder.indexOf('/');
+	return slash === -1 ? folder : folder.slice(0, slash);
+};
+
 /**
  * Same dual signal as S5's `isNewSystemFilename` (status alone isn't
  * safe — `ready` is the *default* status `create_proposal` writes for
@@ -181,8 +191,11 @@ const folderOf = (file: string, proposalsDirAbs?: string): string | null => {
  */
 const isActionable = (entry: IProposalIndexEntry): boolean => {
 	if (isNewSystemEntry(entry)) {
-		const folder = folderOf(entry.file);
-		return folder !== null && NEW_SYSTEM_ACTIONABLE_FOLDERS.has(folder);
+		const folderState = folderStateOf(entry.file);
+		return (
+			folderState !== null &&
+			NEW_SYSTEM_ACTIONABLE_FOLDERS.has(folderState)
+		);
 	}
 	return entry.status !== undefined && ACTIONABLE.has(entry.status);
 };
@@ -301,8 +314,8 @@ export const pickFromPausedFallback = async (
 ): Promise<IToolTextResult | null> => {
 	const pausedEntries = entries.filter((entry) => {
 		if (!isNewSystemEntry(entry)) return false;
-		const folder = folderOf(entry.file, options.proposalsDirAbs);
-		return folder === 'paused';
+		const folderState = folderStateOf(entry.file, options.proposalsDirAbs);
+		return folderState === 'paused';
 	});
 	if (pausedEntries.length === 0) return null;
 	const proposalIdOf = (value: string): string =>

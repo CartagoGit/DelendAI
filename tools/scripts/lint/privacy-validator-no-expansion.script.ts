@@ -126,8 +126,9 @@ const hasLegitimateContext = (context: string): boolean => {
 export const scanValidator = (text: string): readonly IDetection[] => {
 	const findings: IDetection[] = [];
 	STOPWORD_ARRAY_PATTERN.lastIndex = 0;
-	let match: RegExpExecArray | null;
-	while ((match = STOPWORD_ARRAY_PATTERN.exec(text)) !== null) {
+	while (true) {
+		const match = STOPWORD_ARRAY_PATTERN.exec(text);
+		if (match === null) break;
 		const [whole, name, body] = match;
 		const entries = body
 			.split(',')

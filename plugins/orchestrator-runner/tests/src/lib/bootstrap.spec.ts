@@ -97,15 +97,20 @@ describe('buildProvidersPatch (RFC 6902, CRITICAL I13)', () => {
 			'/providers/-',
 			'/providers/-',
 		]);
-		expect((ops[1]?.value as { id: string }).id).toBe('claude');
+		const firstProvider = ops[1];
+		if (firstProvider === undefined)
+			throw new Error('missing first provider');
+		expect((firstProvider.value as { id: string }).id).toBe('claude');
 	});
 
 	it('is non-destructive: skips ids already confirmed, no /providers create', () => {
 		const ops = buildProvidersPatch([{ id: 'claude' }], detected);
 		// /providers already exists → no create op; claude already present.
 		expect(ops).toHaveLength(1);
-		expect(ops[0]?.path).toBe('/providers/-');
-		expect((ops[0]?.value as { id: string }).id).toBe('codex');
+		const provider = ops[0];
+		if (provider === undefined) throw new Error('missing provider');
+		expect(provider.path).toBe('/providers/-');
+		expect((provider.value as { id: string }).id).toBe('codex');
 	});
 
 	it('emits well-typed cli provider entries with placeholders to edit', () => {

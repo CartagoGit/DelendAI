@@ -64,7 +64,7 @@ describe('indexed-path tools self-heal a stale index (x00106 S1)', () => {
 	});
 	afterEach(() => rmSync(root, { recursive: true, force: true }));
 
-	/** Create f00001 and move it ready/ → in-progress/ WITHOUT re-syncing,
+	/** Create f00001 and move it ready/feats/ → in-progress/ WITHOUT re-syncing,
 	 *  exactly what a proposal_transition leaves behind. */
 	const createThenMoveStale = async (): Promise<void> => {
 		const create = await capture(buildCreateProposalRegistration(opts));
@@ -80,7 +80,7 @@ describe('indexed-path tools self-heal a stale index (x00106 S1)', () => {
 			recursive: true,
 		});
 		renameSync(
-			join(opts.proposalsDirAbs, 'ready/f00001-heal-me.md'),
+			join(opts.proposalsDirAbs, 'ready/feats/f00001-heal-me.md'),
 			join(opts.proposalsDirAbs, 'in-progress/f00001-heal-me.md'),
 		);
 	};

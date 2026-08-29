@@ -1,5 +1,5 @@
 /** Cheap quality-policy aggregator only: pure helpers + config reads, never runners. */
-import { basename, extname, join } from 'node:path';
+import { basename } from 'node:path';
 
 import {
 	SafeWorkspaceReader,
@@ -117,7 +117,9 @@ const collectSamplePaths = async (
 				queue.push(relativePath);
 				continue;
 			}
-			if (!QUALITY_POLICY_TYPESCRIPT_EXTENSIONS.has(extname(entryName))) {
+			const dot = entryName.lastIndexOf('.');
+			const extension = dot >= 0 ? entryName.slice(dot) : '';
+			if (!QUALITY_POLICY_TYPESCRIPT_EXTENSIONS.has(extension)) {
 				continue;
 			}
 			collected.push(relativePath);
