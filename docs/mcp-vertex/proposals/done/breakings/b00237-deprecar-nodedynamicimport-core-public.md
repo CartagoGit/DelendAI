@@ -2,7 +2,7 @@
 id: b00237
 title: "Deprecar `nodeDynamicImport` exportado por `core/public`"
 kind: breaking
-status: in-progress
+status: done
 type: proposal
 track: architecture
 date: 2026-08-25
@@ -117,12 +117,14 @@ marcándolo como `@deprecated` en su ubicación anterior.
 
 ### S1 — Mover a subpath + `@deprecated` shim + CHANGELOG
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/src/public/index.ts`, `packages/core/src/node/index.ts`, `packages/core/src/node/dynamic-import.ts`, `packages/core/tests/src/public/deprecation.spec.ts`, `CHANGELOG.md`, `tools/scripts/lint/no-deprecated-re-exports-from-public.script.ts`
 - **Gate**: type
-- review-state: in_review
+- review-state: done
 - review-implementer: finch
+- review-reviewer: delivery_verifier
 - review-log: requested_changes by owl — La implementación es coherente, pero la prueba sólo inspecciona JSDoc textual y no demuestra el diagnóstico de deprecación en el consumo desde la raíz ni la ausencia de diagnóstico en el subpath canónico. Añadir una comprobación de contrato viable con las herramientas del repositorio, sin ampliar el alcance.
+- review-log: approved by delivery_verifier
 ## acceptance
 
 - `nodeDynamicImport` no aparece en el barrel `"."` de

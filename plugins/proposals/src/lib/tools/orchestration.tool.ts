@@ -142,6 +142,7 @@ const DELEGATE_OUTPUT_SCHEMA = z.object({
 			created: z.boolean(),
 		})
 		.optional(),
+	cwd: z.string().optional(),
 	instruction: z.string().optional(),
 });
 
@@ -314,7 +315,7 @@ export const buildDelegateRegistration = (
 					});
 				}
 				const whereClause = worktreeInfo
-					? `Edit files in \`${worktreeInfo.path}\` (branch \`${worktreeInfo.branch}\`); commit there. `
+					? `STOP before editing: launch or continue this agent with cwd \`${worktreeInfo.path}\` on branch \`${worktreeInfo.branch}\`; the parent checkout on develop is not a valid workspace for this task. `
 					: '';
 				return toolJson({
 					ok: true,
@@ -324,7 +325,8 @@ export const buildDelegateRegistration = (
 					files: args.files,
 					locked: true,
 					...(worktreeInfo ? { worktree: worktreeInfo } : {}),
-					instruction: `You are "${assigned.agent_name}". ${whereClause}Edit ONLY ${args.files.join(', ')}; release the lock (agent_lock release, task_id "${args.taskId}") when done.`,
+					...(worktreeInfo ? { cwd: worktreeInfo.path } : {}),
+					instruction: `You are "${assigned.agent_name}". ${whereClause}Edit ONLY ${args.files.join(', ')}; do not edit the parent checkout; release the lock (agent_lock release, task_id "${args.taskId}") when done.`,
 				});
 			},
 		);

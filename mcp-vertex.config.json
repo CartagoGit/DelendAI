@@ -3,7 +3,7 @@
 	"coreVersion": "latest-published",
 	"cacheDir": ".cache/mcp-vertex",
 	"docsDir": "docs/mcp-vertex",
-	"agentWorktree": false,
+	"agentWorktree": true,
 	"commitAuthor": {
 		"mode": "git"
 	},

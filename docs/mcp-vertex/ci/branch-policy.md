@@ -1,13 +1,23 @@
 # Branch policy: develop
 
-`develop` is the integration branch for direct agent work. Its protection must
-block drift in the same places the local repo treats as non-negotiable: types,
-tests, governance, runtime verification, token budgets, manifest integrity, and
-generated artifacts.
+`develop` is the integration branch for direct agent work. The current
+declarative policy keeps it open for direct pushes and uses the CI workflow as
+the source of truth for what must stay green before release branches advance.
 
-## Required checks
+## Current policy
 
-The canonical required checks for `develop` are:
+- `develop`: `protected: false`, so GitHub branch protection does not name any
+  required checks on this branch today.
+- `main`: `protected: true` with a single required check, `ci-complete`.
+
+## CI coverage
+
+The aggregate `ci-complete` check in [.github/workflows/ci.yml](../../../.github/workflows/ci.yml)
+requires every upstream CI job to succeed. The workflow currently includes 16
+distinct prerequisite jobs, so it exceeds the proposal threshold of at least 14
+checks without duplicating every job name in branch settings.
+
+The upstream jobs are:
 
 - `lint-biome`
 - `lint-architecture`
@@ -28,13 +38,17 @@ The canonical required checks for `develop` are:
 
 ## Enforcement
 
-- `strict: true` so the branch must be up to date before a green merge.
-- `enforce_admins: true` so there is no privileged bypass.
-- `required_pull_request_reviews: null` because this repo explicitly allows
-  direct agent pushes to `develop`; correctness is enforced by the required
-  checks, not by a mandatory human review step.
+- `enforce_admins: true` is declared in the shared defaults in
+  [.github/branch-protection.ts](../../../.github/branch-protection.ts), so no
+  protected branch has an admin bypass.
+- `required_linear_history: true`, `allow_force_pushes: false`, and
+  `allow_deletions: false` are also enforced from the same defaults.
+- `required_pull_request_reviews` is not the mechanism used here; the repo
+  relies on the CI aggregate and branch-specific protection state instead.
 
 ## Operational note
 
-The declarative source of truth lives in [.github/branch-protection.yml](../../../.github/branch-protection.yml).
-GitHub branch settings or rulesets must mirror that file.
+The declarative source of truth lives in [.github/branch-protection.ts](../../../.github/branch-protection.ts).
+The verifier in `tools/scripts/ci/verify-branch-protection.script.ts` checks the
+live GitHub settings against that file, and the `ci-complete` job is the only
+required status check that protected branches need to name explicitly.
