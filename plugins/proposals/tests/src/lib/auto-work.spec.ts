@@ -334,7 +334,8 @@ describe('auto_work (one-call action plan)', async () => {
 		);
 		expect(persistSteps).toHaveLength(1);
 		expect(persistSteps[0]).toContain('mode: "commit"');
-		expect(persistSteps[0]).toContain('maybePersistAfterSlice');
+		expect(persistSteps[0]).toContain('claimReady.files');
+		expect(persistSteps[0]).toContain('do not stage unrelated files');
 	});
 
 	it("plan with persist mode 'commit-and-push' includes the push warning", async () => {
@@ -356,6 +357,9 @@ describe('auto_work (one-call action plan)', async () => {
 		);
 		expect(persistSteps).toHaveLength(1);
 		expect(persistSteps[0]).toContain('commit + push');
+		expect(persistSteps[0]).toContain(
+			'committed=true/pushed=false as incomplete',
+		);
 		expect(persistSteps[0]).toContain('refuses to push to `main`');
 	});
 
@@ -422,7 +426,7 @@ describe('auto_work (one-call action plan)', async () => {
 		expect(wtSteps).toHaveLength(0);
 	});
 
-	it("x00231: persist 'commit-and-push' with agentWorktree off orders commit+push on develop and omits the agent_worktree step", async () => {
+	it("rejects persist 'commit-and-push' targeting develop instead of degrading to commit", async () => {
 		const pushOptions: IAutoWorkToolOptions = {
 			...options,
 			persist: { mode: 'commit-and-push', pushTarget: 'origin develop' },
@@ -434,20 +438,13 @@ describe('auto_work (one-call action plan)', async () => {
 			}),
 		);
 		const out = parse(await runAutoWork(pushOptions));
-		const persistSteps = out.steps.filter((s: string) =>
-			s.includes('Persist the slice'),
+		expect(out.ok).toBe(false);
+		expect(out.reason).toBe('invalid-persist-config');
+		expect(out.executionMode).toBe('blocked');
+		expect(out.hygieneBlockers[0]).toContain('origin develop');
+		expect(out.nextAction).toContain(
+			'No commit-and-push plan was produced',
 		);
-		expect(persistSteps).toHaveLength(1);
-		expect(persistSteps[0]).toContain('pushTarget: "origin develop"');
-		const wtSteps = out.steps.filter(
-			(s: string) => s.includes('agent_worktree') && s.includes('create'),
-		);
-		expect(wtSteps).toHaveLength(0);
-		const developStep = out.steps.find((s: string) =>
-			s.includes('agentWorktree: false'),
-		);
-		expect(developStep).toBeDefined();
-		expect(developStep).toContain('develop');
 	});
 
 	it("x00231: persist 'commit' with agentWorktree off orders commit only (no push mention)", async () => {
