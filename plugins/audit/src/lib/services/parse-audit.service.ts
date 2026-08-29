@@ -51,6 +51,124 @@ const SEVERITY_PATTERNS: ReadonlyArray<{
 	{ pattern: /\b(?:EXEMPLARY|ESPL[ÉE]NDIDO)\b/iu, mapsTo: 'EXEMPLARY' },
 ];
 
+const DATE_PREFIX = /^\d{2}-\d{2}-\d{4}$/u;
+const WHITESPACE_CHAR = /\s/u;
+
+const isWhitespaceChar = (char: string | undefined): boolean =>
+	char !== undefined && WHITESPACE_CHAR.test(char);
+
+const isLevelTwoHeading = (line: string): boolean =>
+	line.startsWith('##') && isWhitespaceChar(line[2]);
+
+const trimTrailingColons = (value: string): string => {
+	let end = value.length;
+	while (end > 0 && value[end - 1] === ':') end -= 1;
+	return value.slice(0, end);
+};
+
+const stripMarkdownBold = (value: string): string => {
+	let start = 0;
+	let end = value.length;
+	if (value.startsWith('**')) {
+		start = 2;
+		while (start < end && isWhitespaceChar(value[start])) start += 1;
+	}
+	while (end > start && isWhitespaceChar(value[end - 1])) end -= 1;
+	if (end - start >= 2 && value.slice(end - 2, end) === '**') {
+		end -= 2;
+		while (end > start && isWhitespaceChar(value[end - 1])) end -= 1;
+	}
+	return value.slice(start, end).trim();
+};
+
+const isFileLabel = (value: string): boolean => {
+	const normalized = value.toLowerCase();
+	if (
+		normalized === 'archivo' ||
+		normalized === 'archivos' ||
+		normalized === 'file' ||
+		normalized === 'files' ||
+		normalized === 'fichero'
+	) {
+		return true;
+	}
+	return (
+		normalized.startsWith('fichero') &&
+		normalized.length === 'fichero'.length + 1 &&
+		(normalized.at(-1) ?? '') >= 'a' &&
+		(normalized.at(-1) ?? '') <= 'z'
+	);
+};
+
+const extractTextAfterFileLabel = (line: string): string | undefined => {
+	if (!line.startsWith('**')) return undefined;
+	const labelEnd = line.indexOf('**', 2);
+	if (labelEnd === -1) return undefined;
+	const label = trimTrailingColons(line.slice(2, labelEnd).trim());
+	if (!isFileLabel(label)) return undefined;
+	let index = labelEnd + 2;
+	while (
+		index < line.length &&
+		(line[index] === ':' || isWhitespaceChar(line[index]))
+	) {
+		index += 1;
+	}
+	return line.slice(index);
+};
+
+const parseConventionalSource = (
+	value: string,
+): { date: string; head: string; model: string } | undefined => {
+	const date = value.slice(0, 10);
+	if (!DATE_PREFIX.test(date)) return undefined;
+	let index = 10;
+	const separatorStart = index;
+	while (index < value.length) {
+		const char = value[index];
+		if (char === '-' || isWhitespaceChar(char)) {
+			index += 1;
+			continue;
+		}
+		break;
+	}
+	if (index === separatorStart) return undefined;
+
+	let remainder = value.slice(index);
+	const lower = remainder.toLowerCase();
+	for (const prefix of ['auditoría', 'auditoria']) {
+		if (!lower.startsWith(prefix)) continue;
+		let prefixEnd = prefix.length;
+		while (
+			prefixEnd < remainder.length &&
+			isWhitespaceChar(remainder[prefixEnd])
+		) {
+			prefixEnd += 1;
+		}
+		if (prefixEnd > prefix.length) remainder = remainder.slice(prefixEnd);
+		break;
+	}
+
+	const openParen = remainder.indexOf('(');
+	if (openParen === -1) return undefined;
+	const closeParen = remainder.indexOf(')', openParen + 1);
+	if (closeParen <= openParen + 1) return undefined;
+	return {
+		date,
+		head: remainder.slice(0, openParen),
+		model: remainder.slice(openParen + 1, closeParen),
+	};
+};
+
+const isExecutiveSummaryHeading = (line: string): boolean => {
+	if (!isLevelTwoHeading(line)) return false;
+	const lower = line.toLowerCase();
+	return (
+		lower.includes('resumen') ||
+		lower.includes('summary') ||
+		lower.includes('executive')
+	);
+};
+
 /** Map the source file name to the source identity. */
 const deriveSourceFromPath = (
 	path: string,
@@ -59,33 +177,33 @@ const deriveSourceFromPath = (
 	const noExt = base.replace(/\.md$/u, '');
 	// Conventional shape: `DD-MM-YYYY- <Host> (<Model>)[ <suffix>]`
 	// or `DD-MM-YYYY- Auditoría ... (<Model>)` for unified audits.
-	const m =
-		/^(\d{2}-\d{2}-\d{4})[-\s]+(?:Auditor[íi]a\s+)?(.+?)\(([^)]+)\)(.*)$/u.exec(
-			noExt,
-		);
-	if (!m) {
+	const parsed = parseConventionalSource(noExt);
+	if (!parsed) {
 		return {
 			slug: noExt,
 			source: { host: 'unknown', model: 'unknown', date: '' },
 		};
 	}
-	const [, date, head, model] = m;
 	// `noUncheckedIndexedAccess` types every capture as `string | undefined`
 	// (TS cannot see that none of this regex's groups are optional) — narrow
 	// with a real check instead of casting past it. Malformed input degrades
 	// to the same "unknown" source as the `!m` branch above, matching this
 	// parser's documented permissive design, rather than assuming success.
-	if (date === undefined || head === undefined || model === undefined) {
+	if (
+		parsed.date.length === 0 ||
+		parsed.head.length === 0 ||
+		parsed.model.length === 0
+	) {
 		return {
 			slug: noExt,
 			source: { host: 'unknown', model: 'unknown', date: '' },
 		};
 	}
-	const host = head.replace(/\s*\(.*$/u, '').trim() || 'unknown';
-	const dateIso = date.replace(/^(\d{2})-(\d{2})-(\d{4})$/u, '$3-$2-$1');
+	const host = parsed.head.trim() || 'unknown';
+	const dateIso = `${parsed.date.slice(6, 10)}-${parsed.date.slice(3, 5)}-${parsed.date.slice(0, 2)}`;
 	return {
 		slug: noExt,
-		source: { host, model: model.trim(), date: dateIso },
+		source: { host, model: parsed.model.trim(), date: dateIso },
 	};
 };
 
@@ -114,12 +232,12 @@ const extractSummary = (body: string): string => {
 	for (const line of lines) {
 		const trimmed = line.trim();
 		if (!inSummary) {
-			if (/^##\s+.*(Resumen|Summary|Executive)/iu.test(trimmed)) {
+			if (isExecutiveSummaryHeading(trimmed)) {
 				inSummary = true;
 			}
 			continue;
 		}
-		if (/^##\s+/u.test(trimmed)) break;
+		if (isLevelTwoHeading(trimmed)) break;
 		if (trimmed.startsWith('>')) continue; // skip blockquotes
 		if (trimmed.length > 0) collected.push(trimmed);
 	}
@@ -139,17 +257,12 @@ const extractSummary = (body: string): string => {
  * - rejection of leftover markdown tokens (`[`) from truncated citations
  */
 const citedPathsFromFindingLine = (line: string): readonly string[] => {
-	const fileHint =
-		/\*\*(?:Fichero[a-z]?|Archivos?|Files?)\s*:?\*\*?\s*:?/iu.test(line);
+	const restAfterFileLabel = extractTextAfterFileLabel(line);
 	const quoted = [...line.matchAll(/`([^`]+)`/gu)].map((m) => m[1] ?? '');
 	const fileUris = [...line.matchAll(/file:\/\/(\/[^)\s#]+)/gu)].map(
 		(m) => m[1] ?? '',
 	);
-	const rest = fileHint
-		? (/\*\*(?:Fichero[a-z]?|Archivos?|Files?)\s*:?\*\*?\s*:?\s*(.+)$/iu.exec(
-				line,
-			)?.[1] ?? '')
-		: '';
+	const rest = restAfterFileLabel ?? '';
 	const fromRest = rest
 		.split(',')
 		.map((part) => part.trim())
@@ -263,11 +376,7 @@ const extractScores = (body: string): readonly IAuditScore[] => {
 		// Strip surrounding `**…**` markdown emphasis from the dimension
 		// label so consumers can match on plain text (`Arquitectura`, not
 		// `**Arquitectura**`). Same goes for the score cell.
-		const cleanCell = (s: string): string =>
-			s
-				.replace(/^\*\*\s*/u, '')
-				.replace(/\s*\*\*$/u, '')
-				.trim();
+		const cleanCell = (s: string): string => stripMarkdownBold(s);
 		const dim = cleanCell(cells[0] ?? '');
 		const scoreCell = cleanCell(cells[1] ?? '');
 		const comment = cells.slice(2).join(' | ');

@@ -21,7 +21,36 @@ export interface IValidateResponseOptions {
 	readonly schema?: IJsonSchema;
 }
 
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/u;
+const isEmailLike = (value: string): boolean => {
+	let atIndex = -1;
+	let dotAfterAt = -1;
+	for (let index = 0; index < value.length; index += 1) {
+		const code = value.charCodeAt(index);
+		if (
+			code === 9 ||
+			code === 10 ||
+			code === 11 ||
+			code === 12 ||
+			code === 13 ||
+			code === 32
+		) {
+			return false;
+		}
+		if (code === 64) {
+			if (atIndex >= 0 || index === 0 || index === value.length - 1) {
+				return false;
+			}
+			atIndex = index;
+			continue;
+		}
+		if (code === 46 && atIndex >= 0 && index > atIndex + 1) {
+			dotAfterAt = index;
+		}
+	}
+	return (
+		atIndex > 0 && dotAfterAt > atIndex + 1 && dotAfterAt < value.length - 1
+	);
+};
 
 const isPlainObject = (value: unknown): value is Record<string, unknown> =>
 	typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -98,7 +127,7 @@ const hasUnsupportedFeature = (
 const isValidFormat = (value: string, format: string): boolean => {
 	switch (format) {
 		case 'email':
-			return EMAIL_RE.test(value);
+			return isEmailLike(value);
 		case 'uri':
 			try {
 				const url = new URL(value);

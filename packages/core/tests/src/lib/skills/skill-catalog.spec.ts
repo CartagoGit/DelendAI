@@ -118,4 +118,23 @@ describe('buildSkillCatalog', () => {
 		const catalog = await buildSkillCatalog('/ws', [bundle()], reader);
 		expect(await catalog.loadBody('nope')).toBeUndefined();
 	});
+
+	it('preserves paragraph fallback when frontmatter has no description', () => {
+		const body = [
+			'---',
+			'name: x',
+			'tags: [one]',
+			'---',
+			'',
+			'Body prose.',
+		].join('\n');
+		expect(extractSkillDescription('x', body)).toBe('Body prose.');
+	});
+
+	it('parses a long frontmatter block without pathological slowdown', () => {
+		const body = `---\n${'tag: value\n'.repeat(20_000)}---\n\nBody prose.`;
+		const started = Date.now();
+		expect(extractSkillDescription('x', body)).toBe('Body prose.');
+		expect(Date.now() - started).toBeLessThan(500);
+	});
 });

@@ -34,4 +34,21 @@ describe('prepareServerBlueprintOnStart cacheDir (M15/H5)', async () => {
 		const res = await prepareServerBlueprintOnStart(args);
 		expect(res.path).toBe('.cache/mcp-vertex/bootstrap/blueprint.json');
 	});
+
+	it('collapses trailing slashes in the resolved cacheDir path', async () => {
+		const args = parseCliArgs([`--workspace=${ws}`], ws);
+		const res = await prepareServerBlueprintOnStart(args, 'build/state///');
+		expect(res.path).toBe('build/state/bootstrap/blueprint.json');
+	});
+
+	it('handles a long trailing slash run in cacheDir quickly', async () => {
+		const args = parseCliArgs([`--workspace=${ws}`], ws);
+		const started = Date.now();
+		const res = await prepareServerBlueprintOnStart(
+			args,
+			`build/state${'/'.repeat(40_000)}`,
+		);
+		expect(res.path).toBe('build/state/bootstrap/blueprint.json');
+		expect(Date.now() - started).toBeLessThan(1_000);
+	});
 });

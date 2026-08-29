@@ -70,6 +70,26 @@ describe('f00128 S1 introspect-engine', () => {
 				'no such table: users',
 			);
 		});
+
+		it('keeps the exact redaction when userinfo and password query are both present', () => {
+			expect(
+				redactDsn(
+					'failed: postgres://app:s3cret@db.local/app?password=hunter2&mode=rw',
+				),
+			).toBe('failed: postgres://***@db.local/app?password=***&mode=rw');
+		});
+
+		it('handles very long credentials without pathological slowdown', () => {
+			const secret = 'hunter2'.repeat(20_000);
+			const startedAt = performance.now();
+			const redacted = redactDsn(
+				`failed: postgres://app:${secret}@db.local/app?password=${secret}&mode=rw`,
+			);
+			expect(redacted).toBe(
+				'failed: postgres://***@db.local/app?password=***&mode=rw',
+			);
+			expect(performance.now() - startedAt).toBeLessThan(1_000);
+		});
 	});
 
 	describe('buildSchema', () => {

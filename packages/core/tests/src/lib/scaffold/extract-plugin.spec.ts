@@ -201,4 +201,44 @@ export function loadLog(path: string): string {
 		);
 		expect(sourceFile.parseDiagnostics).toHaveLength(0);
 	});
+
+	it('preserves scaffold paths for repeated separators in the target plugin id', () => {
+		const result = extractPlugin({
+			sourceGlobs: ['fixtures/parse-log.ts'],
+			targetPluginId: '  Demo___Extract!!!  ',
+			pluginName: 'Demo Extract',
+			description: 'Extracted test plugin.',
+			readFile: createReadFile({
+				'fixtures/parse-log.ts': `export function parseLog(input: string): { entries: string[] } {
+	return { entries: input.split('\\n').filter(Boolean) };
+}
+`,
+			}),
+		});
+
+		expect(result.files.map((file) => file.path)).toContain(
+			'plugins/demo-extract/package.json',
+		);
+	});
+
+	it('normalises a long separator run in the target plugin id quickly', () => {
+		const started = Date.now();
+		const result = extractPlugin({
+			sourceGlobs: ['fixtures/parse-log.ts'],
+			targetPluginId: `Demo${'!'.repeat(40_000)}Extract`,
+			pluginName: 'Demo Extract',
+			description: 'Extracted test plugin.',
+			readFile: createReadFile({
+				'fixtures/parse-log.ts': `export function parseLog(input: string): { entries: string[] } {
+	return { entries: input.split('\\n').filter(Boolean) };
+}
+`,
+			}),
+		});
+
+		expect(result.files.map((file) => file.path)).toContain(
+			'plugins/demo-extract/package.json',
+		);
+		expect(Date.now() - started).toBeLessThan(1_000);
+	});
 });
