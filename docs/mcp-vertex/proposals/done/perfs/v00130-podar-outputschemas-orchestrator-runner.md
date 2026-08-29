@@ -2,7 +2,7 @@
 id: v00130
 title: "Podar los `outputSchema` de orchestrator-runner: invoke, advise_routing y advise_spend (AUD-B01)"
 kind: perf
-status: ready
+status: done
 type: proposal
 track: tokens
 date: 2026-08-29

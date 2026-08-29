@@ -2,7 +2,7 @@
 id: x00297
 title: "Zero-tolerance gate against proposal files with more than one YAML frontmatter block"
 kind: fix
-status: ready
+status: done
 type: fix
 track: governance
 date: 2026-08-28

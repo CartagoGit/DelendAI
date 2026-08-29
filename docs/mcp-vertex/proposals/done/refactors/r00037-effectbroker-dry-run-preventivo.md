@@ -2,7 +2,7 @@
 id: r00037
 title: "EffectBroker: dry-run pasa de detección post-hoc a prevención real"
 kind: refactor
-status: ready
+status: done
 type: proposal
 track: security
 date: 2026-08-29

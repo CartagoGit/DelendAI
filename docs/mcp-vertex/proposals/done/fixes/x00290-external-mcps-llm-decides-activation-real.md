@@ -2,7 +2,7 @@
 id: x00290
 title: "external-mcps: llmDecidesActivation pasa a la política real de activación"
 kind: fix
-status: ready
+status: done
 type: fix
 track: security
 date: 2026-08-27
@@ -131,7 +131,7 @@ if (!decision.allowed) {
 ### S1 — módulo puro `activation-policy`
 
 - **Status**: done
-- **Files**: [`plugins/external-mcps/src/lib/activation/activation-policy.interface.ts`, `plugins/external-mcps/src/lib/activation/activation-policy.ts`, `plugins/external-mcps/tests/src/lib/activation-policy.spec.ts`]
+- **Files**: [`plugins/external-mcps/src/lib/activation/activation-policy.interface.ts`, `plugins/external-mcps/src/lib/activation/activation-policy.helper.ts`, `plugins/external-mcps/tests/src/lib/activation-policy.spec.ts`]
 - **Gate**: `bunx vitest run --project external-mcps -- tests/src/lib/activation-policy.spec.ts`
 
 ### S2 — wiring en el proxy `call` + `index.ts`

@@ -120,7 +120,10 @@ marcándolo como `@deprecated` en su ubicación anterior.
 - **Status**: pending
 - **Files**: `packages/core/src/public/index.ts`, `packages/core/src/node/index.ts`, `packages/core/src/node/dynamic-import.ts`, `packages/core/tests/src/public/deprecation.spec.ts`, `CHANGELOG.md`, `tools/scripts/lint/no-deprecated-re-exports-from-public.script.ts`
 - **Gate**: type
-
+- review-state: changes_requested
+- review-implementer: finch
+- review-reviewer: owl
+- review-log: requested_changes by owl — La implementación es coherente, pero la prueba sólo inspecciona JSDoc textual y no demuestra el diagnóstico de deprecación en el consumo desde la raíz ni la ausencia de diagnóstico en el subpath canónico. Añadir una comprobación de contrato viable con las herramientas del repositorio, sin ampliar el alcance.
 ## acceptance
 
 - `nodeDynamicImport` no aparece en el barrel `"."` de

@@ -2,7 +2,7 @@
 id: x00296
 title: "Las filas fixture-gated del dashboard de tokens declaran explícitamente su superficie (AUD-B06)"
 kind: fix
-status: ready
+status: done
 type: proposal
 track: tokens
 date: 2026-08-29

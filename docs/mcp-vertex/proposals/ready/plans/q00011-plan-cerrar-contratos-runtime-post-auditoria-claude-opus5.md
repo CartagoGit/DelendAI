@@ -278,7 +278,7 @@ host no llama. Arreglar uno solo no produce ninguna mejora observable.
 
 ### S3 — Independientes de P0, en paralelo
 
-- **Status**: pending
+- **Status**: done
 - **Files**: [`plugins/external-mcps/src/lib/tools`, `tools/scripts/lint/effect-boundaries.script.ts`, `tools/scripts/lint/effect-boundaries.baseline.json`, `package.json`, `.github/workflows/ci.yml`]
 - **Gate**: `bun run lint && bun tools/scripts/lint/effect-boundaries.script.ts`
 
@@ -292,7 +292,7 @@ entrada vacía).
 
 ### S4 — Tokens: atacar el 66% (P1)
 
-- **Status**: pending
+- **Status**: done
 - **Files**: [`packages/core/src/lib/contracts/constants/token-budgets.constant.ts`, `packages/core/src/lib/surface/bootstrap.ts`, `tools/scripts/report/token-budget-dashboard.script.ts`, `plugins/orchestrator-runner/src/lib/schemas.ts`, `plugins/quality-policy/src`, `plugins/usage-tracking/src`]
 - **Gate**: `bun run tokens:gate && bun run tokens:dashboard:check`
 
@@ -359,6 +359,7 @@ los tests de caminos de error suben la cobertura de ramas por sí solos.
 cliente), `r00042` (`proposals` como event log), `x00287` (fail-closed),
 `v00132` (payload duplicado), `f00274` (activación de la extensión), `f00275`
 (`doctor --deep`), `d00014` (docs canónicas).
+
 
 ## Dependency graph
 
@@ -435,3 +436,59 @@ en `develop` (no sobre la rama de trabajo), verificado por comando:
   también por revisores externos y **se han reconfirmado línea a línea de forma
   independiente** contra `2cf17373` antes de incluirse. Ninguno se acepta por
   referencia.
+
+### Estado de ejecución y traspaso (2026-08-29)
+
+> Escrito para el siguiente agente. Lo que sigue es **estado verificado contra
+> disco y contra CI**, no un resumen de intenciones.
+
+#### Slices cerrados
+
+`S1` gobernanza · `S2` ciclo de vida · `S3` independientes · `S4` tokens ·
+`S5` superficie adaptativa. Cada hijo se movió a `done/` sólo después de correr
+su gate declarado.
+
+#### Slices abiertos y qué falta exactamente
+
+| Slice | Hijos sin implementar | Nota |
+|---|---|---|
+| `S6` seguridad | `x00289`, `x00292`, `x00287` | Los tres tienen propuesta escrita con gates ejecutables. `x00292` es el más barato: hacer `protectedBranches` obligatorio en la firma de `gitPush` — el único llamante real ya lo pasa, así que el riesgo es mínimo y el error de compilación **es** la prueba. |
+| `S7` CI y gobernanza | `x00282`, `x00293`, `r00035`, `d00013`, `x00273` | `x00281` quedó a `2/3`: su `S2` (arreglar los ~50 errores reales de Biome) sigue `pending` a propósito, es deuda existente, no regresión. |
+| `S8` testing | `t00030`, `t00031` | `t00031` lleva una corrección importante en su `why`: el e2e de dogfood **no** falla por `x00258` sino por una aserción que hace `git log` sobre el remoto bare sin argumento de rama. |
+| `S9` plataforma | los 14 de Track G | Ninguno empezado. `f00280` y `r00040` están re-alcanzados: lo que la auditoría mandaba construir **ya existía** en parte. |
+
+#### Reglas de casa que ahora son puertas, no costumbres
+
+Se añadieron seis lints esta tanda. Un agente que los ignore verá CI en rojo:
+
+- `type-naming` — todo `type`/`interface` exportado empieza por `I` (ratchet 320).
+- `test-unsafe-casts` — nada de `as unknown` nuevo en specs; usar `fakePartial`
+  de `@mcp-vertex/test-kit` (ratchet 354).
+- `effect-boundaries` — nada de `node:fs`/`child_process`/red directo en plugins
+  fuera de adaptadores marcados (ratchet 104).
+- `single-frontmatter` — tolerancia cero.
+- `biome-baseline` — Biome sobre el monorepo entero, por categoría.
+- `file-conventions` — todo módulo lleva sufijo de rol (`.service.ts`,
+  `.helper.ts`, `.factory.ts`…).
+
+#### Dos trampas que ya me costaron tiempo
+
+1. **Los techos de tokens sólo bajan.** `token-budget-ceiling-ratchet` exige
+   excepción fechada para subir uno. Si una cifra sube, la causa es casi siempre
+   que la fila mide otra superficie — ver `x00296`. Añadir una fila nueva con
+   techo propio sí vale; subir una existente, no.
+2. **`tokens:dashboard:check` antes de regenerar**, nunca después. Al revés
+   parece que la puerta está ciega, y no lo está.
+
+#### Método que conviene mantener
+
+Ordenar explícitamente a cada subagente que **verifique la premisa contra el
+código y contradiga la auditoría si no se sostiene**. Trece afirmaciones mías
+cayeron así en esta ronda, incluidas dos donde cité un comentario obsoleto en
+vez de leer el código, y dos donde mandé construir algo que ya existía. Todas
+las correcciones están anotadas en su hallazgo dentro del documento de
+auditoría.
+
+Y la regla que hubo que imponer por las malas: **un slice está `done` cuando
+pasa su gate, no cuando alguien ha escrito que lo está.**
+
