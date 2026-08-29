@@ -118,6 +118,7 @@ const fieldForScope = (
 			return parts.join('\n');
 		}
 	}
+	return '';
 };
 
 export const logSearch = async (
