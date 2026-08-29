@@ -71,7 +71,7 @@ La configuración del repositorio pide commit-and-push, pero auto_work sólo emi
 - review-reviewer: delivery_verifier
 - review-log: approved by delivery_verifier — Revisión independiente: el e2e managed/lazy configura un único propietario Git (proposals.persist), habilita agentWorktree y usa la rama agent/* con refspec HEAD:wip/x00298-s3. El flujo MCP real confirma commit, push terminado y ref remota actualizada; las suites e2e declaradas pasan 15/15 y el typecheck de proposals devuelve exit code 0. La activación startup de commit-policy queda cubierta sin duplicar listeners de slice.
 ### S4 — Commit-policy devuelve estado final y no éxito prematuro
-- **Status**: pending
+- **Status**: done
 - **DependsOn**: [S1, S3]
 - **Files**: `plugins/commit-policy/src/lib/tools/commit-tool.ts`, `plugins/commit-policy/src/lib/services/commit-driver.ts`, `plugins/commit-policy/src/lib/services/push-scheduler.ts`, `plugins/commit-policy/src/lib/engine.ts`, `plugins/commit-policy/tests/src/lib/services/commit-driver.spec.ts`, `plugins/commit-policy/tests/src/lib/services/push-scheduler.spec.ts`, `plugins/commit-policy/tests/src/lib/engine.spec.ts`, `plugins/commit-policy/tests/src/e2e/dogfood.spec.ts`
 - **Gate**: type
@@ -82,6 +82,8 @@ La configuración del repositorio pide commit-and-push, pero auto_work sólo emi
   - "Dogfood cubre un remote bare/local y comprueba que cada éxito reportado implica que la referencia remota contiene el commit."
 - review-state: in_review
 - review-implementer: copilot-x00298-s4
+- review-reviewer: delivery_verifier
+- review-log: Validación independiente del estado implementado: typecheck de tools verde y suites focalizadas `commit-driver`, `push-scheduler`, `engine` y dogfood verdes (4 archivos, 45 tests). Commits relevantes: `032ff1ef`, `4831bf74`, `5e6166a5`, `2f9d1c19` y `c478ccf2`.
 ## acceptance
 
 - La producción usa un runner real async en cwd cuando no se inyecta un fake; nunca cae silenciosamente a un no-op que simula persistencia configurada.
