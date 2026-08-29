@@ -368,7 +368,7 @@ export const buildTriggerCommitMessage = (event: {
 	readonly kind: 'threshold' | 'interval';
 	readonly dirtyCount: number;
 }): string =>
-	`chore(snapshot): preserve concurrent agent work (${event.dirtyCount} files)`;
+	`chore(snapshot): preserve concurrent agent work (${event.dirtyCount} ${event.dirtyCount === 1 ? 'file' : 'files'})`;
 
 const composeMessage = (event: IEngineEvent): string => {
 	switch (event.kind) {
