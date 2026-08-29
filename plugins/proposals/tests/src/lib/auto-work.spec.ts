@@ -361,7 +361,7 @@ describe('auto_work (one-call action plan)', async () => {
 		expect(persistSteps[0]).toContain(
 			'committed=true/pushed=false as incomplete',
 		);
-		expect(persistSteps[0]).toContain('refuses to push to `main`');
+		expect(persistSteps[0]).toContain('refuses main/master automatically');
 	});
 
 	it("x00051 S3: persist mode 'commit' prepends an explicit agent_worktree create step", async () => {
@@ -427,7 +427,7 @@ describe('auto_work (one-call action plan)', async () => {
 		expect(wtSteps).toHaveLength(0);
 	});
 
-	it("rejects persist 'commit-and-push' targeting develop instead of degrading to commit", async () => {
+	it("allows persist 'commit-and-push' targeting develop in shared checkout", async () => {
 		const pushOptions: IAutoWorkToolOptions = {
 			...options,
 			persist: { mode: 'commit-and-push', pushTarget: 'origin develop' },
@@ -439,13 +439,11 @@ describe('auto_work (one-call action plan)', async () => {
 			}),
 		);
 		const out = parse(await runAutoWork(pushOptions));
-		expect(out.ok).toBe(false);
-		expect(out.reason).toBe('invalid-persist-config');
-		expect(out.executionMode).toBe('blocked');
-		expect(out.hygieneBlockers[0]).toContain('origin develop');
-		expect(out.nextAction).toContain(
-			'No commit-and-push plan was produced',
-		);
+		expect(out.persist).toMatchObject({
+			mode: 'commit-and-push',
+			pushTarget: 'origin develop',
+		});
+		expect(out.executionMode).toBe('normal');
 	});
 
 	it("x00231: persist 'commit' with agentWorktree off orders commit only (no push mention)", async () => {
@@ -479,16 +477,15 @@ describe('auto_work (one-call action plan)', async () => {
 				proposals: [{ id: 'p1-x', file: 'p1.md', status: 'pending' }],
 			}),
 		);
-		// input.persist='commit-and-push' wins over config 'commit', then
-		// the worktree gate rejects the incompatible resolved mode.
+		// input.persist='commit-and-push' wins over config 'commit' and is
+		// valid in this repository's shared-checkout mode.
 		const out = parse(
 			await runAutoWork({
 				...commitOptions,
 				inputPersist: 'commit-and-push',
 			}),
 		);
-		expect(out.ok).toBe(false);
-		expect(out.reason).toBe('invalid-persist-config');
+		expect(out.persist.mode).toBe('commit-and-push');
 	});
 });
 
