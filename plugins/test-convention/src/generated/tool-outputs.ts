@@ -12,7 +12,7 @@
  * surface as `Record<string, unknown>`.
  */
 
-export interface TestConventionGetConventionOutput {
+export interface McpVertexTestConventionGetConventionOutput {
 	convention: {
 		specExtension: string;
 		specLayout: "colocate" | "tests-mirror" | "tests-flat";
@@ -31,7 +31,7 @@ export interface TestConventionGetConventionOutput {
 	markdown: string;
 }
 
-export interface TestConventionScanDriftOutput {
+export interface McpVertexTestConventionScanDriftOutput {
 	ok: boolean;
 	counts: {
 		error: number;
@@ -49,7 +49,7 @@ export interface TestConventionScanDriftOutput {
 	scannedFiles: number;
 }
 
-export interface TestConventionSuggestSpecPathOutput {
+export interface McpVertexTestConventionSuggestSpecPathOutput {
 	specPath: string;
 	rationale: string;
 	skeleton: string;
@@ -57,7 +57,7 @@ export interface TestConventionSuggestSpecPathOutput {
 
 /** Map of this package's MCP tool names to their `structuredContent` type. */
 export interface TestConventionToolOutputs {
-	"test-convention_get_convention": TestConventionGetConventionOutput;
-	"test-convention_scan_drift": TestConventionScanDriftOutput;
-	"test-convention_suggest_spec_path": TestConventionSuggestSpecPathOutput;
+	"mcp-vertex_test-convention_get_convention": McpVertexTestConventionGetConventionOutput;
+	"mcp-vertex_test-convention_scan_drift": McpVertexTestConventionScanDriftOutput;
+	"mcp-vertex_test-convention_suggest_spec_path": McpVertexTestConventionSuggestSpecPathOutput;
 }

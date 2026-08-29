@@ -6,27 +6,19 @@
  *
  *     bun run types:generate
  *
- * The current harvest pipeline groups root tools by the runtime
- * namespace prefix, so this package keeps its local generated module
- * in sync with the core SDK output until the upstream router emits
- * per-plugin modules directly.
+ * The drift guard in the test suite fails if this file is stale, so any
+ * change to a tool's `outputSchema` must be accompanied by a regenerate.
+ * Action-multiplexed tools whose schema is intentionally permissive
+ * surface as `Record<string, unknown>`.
  */
 
-export interface ContextForChangeContextForChangeOutput {
+export interface McpVertexContextForChangeContextForChangeOutput {
 	dependsOn: string[];
 	files: string[];
-	sections: {
-		source:
-			| 'git'
-			| 'symbols'
-			| 'references'
-			| 'tests'
-			| 'docs'
-			| 'conventions'
-			| 'test-policy'
-			| 'memory';
+	sections: Array<{
+		source: "git" | "symbols" | "references" | "tests" | "docs" | "conventions" | "test-policy" | "memory";
 		summary: string;
-	}[];
+	}>;
 	bytes: number;
 	truncated: boolean;
 	originalBytes?: number;
@@ -34,5 +26,5 @@ export interface ContextForChangeContextForChangeOutput {
 
 /** Map of this package's MCP tool names to their `structuredContent` type. */
 export interface ContextForChangeToolOutputs {
-	"context-for-change_context_for_change": ContextForChangeContextForChangeOutput;
+	"mcp-vertex_context-for-change_context_for_change": McpVertexContextForChangeContextForChangeOutput;
 }

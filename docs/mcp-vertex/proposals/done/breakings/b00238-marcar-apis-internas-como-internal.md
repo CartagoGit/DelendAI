@@ -2,7 +2,7 @@
 id: b00238
 title: "Marcar APIs internas como `internal`"
 kind: breaking
-status: in-progress
+status: done
 type: proposal
 track: architecture
 date: 2026-08-25
@@ -109,10 +109,13 @@ plugins o usuarios externos se renombra o se mueve al barrel
 
 ### S1 — Convención + lint + migración inicial
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `tools/scripts/lint/no-internal-imports.script.ts`, `tools/scripts/lint/no-internal-imports.spec.ts`, migraciones específicas (dependen del inventario `r00027`)
 - **Gate**: type
-
+- review-state: done
+- review-implementer: implementation_runner
+- review-reviewer: delivery_verifier
+- review-log: approved by delivery_verifier — Revisión independiente: el cambio se limita a permitir imports internos cuando la ruta pertenece a packages/core, mantiene el bloqueo fuera de core y añade cobertura focalizada para scanText y detectInternalImports. Validación ejecutada: bun test tools/scripts/lint/no-internal-imports.spec.ts => 12/12; bun run lint:internal-naming => 0 violaciones. El typecheck amplio de tools/tsconfig.json queda excluido por el bloqueo documentado de errores preexistentes fuera del slice; el intento sin tsconfig no es representativo por tipos Bun/Node ausentes.
 ## acceptance
 
 - Convención `*Internal` / `/_internal` documentada.

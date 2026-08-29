@@ -1842,6 +1842,7 @@ export interface McpVertexProposalsDelegateOutput {
 		branch: string;
 		created: boolean;
 	};
+	cwd?: string;
 	instruction?: string;
 }
 
