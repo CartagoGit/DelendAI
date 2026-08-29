@@ -163,6 +163,65 @@ describe('parseProposalSlicePlan', async () => {
 		expect(plan?.slices[1]?.gate).toBe('lint');
 	});
 
+	it('keeps multiline Files continuations byte-identical in the parsed output', async () => {
+		const plan = parseProposalSlicePlan(
+			'x00298',
+			[
+				'## Slices',
+				'',
+				'### x00298.S3 — multiline files',
+				'- **Files**:',
+				'  - `packages/core/src/public/index.ts`',
+				'  - [run-all.ts](file:///tmp/plugins/quality/src/lib/run-all.ts#L10)',
+				'- **Gate**: type',
+				'',
+			].join('\n'),
+		);
+		expect(plan).toEqual({
+			proposalId: 'x00298',
+			globalGate: 'none',
+			slices: [
+				{
+					proposalId: 'x00298',
+					sliceId: 'x00298.S3',
+					title: 'multiline files',
+					owner: null,
+					files: [
+						'packages/core/src/public/index.ts',
+						'plugins/quality/src/lib/run-all.ts',
+					],
+					dependsOn: [],
+					gate: 'type',
+					status: 'pending',
+					acceptanceCriteria: [],
+				},
+			],
+		});
+	});
+
+	it('parses a long indented Files block without changing the extracted paths', async () => {
+		const declared = Array.from(
+			{ length: 64 },
+			(_, index) =>
+				`  - \`docs/stress/file-${index.toString().padStart(2, '0')}.md\``,
+		);
+		const plan = parseProposalSlicePlan(
+			'x00298',
+			[
+				'## Slices',
+				'',
+				'### x00298.S3 — stress files',
+				'- **Files**:',
+				...declared,
+				'- **Gate**: none',
+				'',
+			].join('\n'),
+		);
+		expect(plan?.slices[0]?.files).toHaveLength(64);
+		expect(plan?.slices[0]?.files[0]).toBe('docs/stress/file-00.md');
+		expect(plan?.slices[0]?.files[63]).toBe('docs/stress/file-63.md');
+	});
+
 	it('flags overlapping files between slices', async () => {
 		const doc = DOC.replace(
 			'- files: docs/pX.md',

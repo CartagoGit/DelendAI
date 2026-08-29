@@ -137,4 +137,32 @@ export const buildHostConfig = () => ({
 			'user request mentions migration/refactor work',
 		);
 	});
+
+	it('preserves the scoped-name namespace head for repeated separators', async () => {
+		const analysis = await analyzeProject(
+			reader({
+				'package.json': JSON.stringify({
+					name: '@Acme///Portal___API!!!',
+				}),
+				'tsconfig.json': '{}',
+			}),
+		);
+		const bp = buildServerBlueprint(analysis);
+		expect(bp.namespacePrefix).toBe('portal');
+	});
+
+	it('normalises a long separator run without pathological slowdown', async () => {
+		const analysis = await analyzeProject(
+			reader({
+				'package.json': JSON.stringify({
+					name: `@scope/app${'!'.repeat(40_000)}`,
+				}),
+				'tsconfig.json': '{}',
+			}),
+		);
+		const started = Date.now();
+		const bp = buildServerBlueprint(analysis);
+		expect(bp.namespacePrefix).toBe('app');
+		expect(Date.now() - started).toBeLessThan(500);
+	});
 });

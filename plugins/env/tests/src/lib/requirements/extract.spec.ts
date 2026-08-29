@@ -95,4 +95,48 @@ describe('extractRequirements', () => {
 		expect(result).toHaveLength(1);
 		expect(result[0]?.var).toBe('REAL_VAR');
 	});
+
+	it('keeps the exact capability label before the env marker', () => {
+		const schema = z.object({
+			token: z
+				.string()
+				.describe(
+					'GitHub token   env:GH_TOKEN, provider:github, capability:GitHub API auth',
+				),
+		});
+		expect(
+			extractRequirements('github', schema as unknown as IZodLike),
+		).toEqual([
+			{
+				var: 'GH_TOKEN',
+				plugin: 'github',
+				capability: 'GitHub token',
+				provider: 'github',
+				required: true,
+			},
+		]);
+	});
+
+	it('handles a long describe prefix before env without pathological slowdown', () => {
+		const schema = z.object({
+			token: z
+				.string()
+				.describe(
+					`${'GitHub token '.repeat(20_000)} env:GH_TOKEN, provider:github, capability:GitHub API auth`,
+				),
+		});
+		const startedAt = performance.now();
+		const [result] = extractRequirements(
+			'github',
+			schema as unknown as IZodLike,
+		);
+		expect(result).toEqual({
+			var: 'GH_TOKEN',
+			plugin: 'github',
+			capability: 'GitHub token '.repeat(20_000).trim(),
+			provider: 'github',
+			required: true,
+		});
+		expect(performance.now() - startedAt).toBeLessThan(1_000);
+	});
 });

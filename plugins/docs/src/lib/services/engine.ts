@@ -50,15 +50,35 @@ const clamp = (
 		? def
 		: Math.max(lo, Math.min(hi, Math.floor(v)));
 
+const stripWrappingQuotes = (value: string): string => {
+	if (value.length < 2) return value;
+	const first = value[0];
+	const last = value[value.length - 1];
+	if ((first === '"' || first === "'") && last === first) {
+		return value.slice(1, -1);
+	}
+	return value;
+};
+
 /** Title = first `# ` heading, else frontmatter `title:`, else the path. */
 export const extractTitle = (raw: string, fallback: string): string => {
-	const fm = raw.match(/^---\n([\s\S]*?)\n---/);
-	if (fm) {
-		const t = fm[1]!.match(/^title:\s*(.+)$/m);
-		if (t) return t[1]!.trim().replace(/^['"]|['"]$/g, '');
+	if (raw.startsWith('---\n')) {
+		const frontmatterEnd = raw.indexOf('\n---', 4);
+		if (frontmatterEnd >= 0) {
+			const frontmatter = raw.slice(4, frontmatterEnd);
+			for (const line of frontmatter.split('\n')) {
+				if (!line.startsWith('title:')) continue;
+				return stripWrappingQuotes(line.slice('title:'.length).trim());
+			}
+		}
 	}
-	const h = raw.match(/^#\s+(.+)$/m);
-	if (h) return h[1]!.trim();
+	for (const line of raw.split('\n')) {
+		if (!line.startsWith('#')) continue;
+		let index = 1;
+		while (index < line.length && /\s/u.test(line[index] ?? '')) index += 1;
+		if (index <= 1 || index >= line.length) continue;
+		return line.slice(index).trim();
+	}
 	return fallback;
 };
 

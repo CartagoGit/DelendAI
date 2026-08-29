@@ -71,6 +71,10 @@ const asGate = (value: string | undefined): ISliceGate =>
 
 const CAPABILITY_TAG_SET: ReadonlySet<string> = new Set(CAPABILITY_TAGS);
 
+const FILES_FIELD_RE = /^[-*]\s*(?:files|\*\*Files\*\*):[ \t]*(.*)$/u;
+
+const FILES_CONTINUATION_RE = /^[ \t]+.*$/u;
+
 /**
  * Read a single slice-body field's raw right-hand side. Accepts both the
  * plain (`- field: value`) and narrative-bold (`- **Field**: value`) forms,
@@ -129,6 +133,26 @@ const parseCostTier = (raw: string | undefined): ISliceCostTier | undefined => {
 	if (raw === undefined) return undefined;
 	const n = Number.parseInt(raw.trim(), 10);
 	return n >= 1 && n <= 5 ? (n as ISliceCostTier) : undefined;
+};
+
+const readRawFilesBlocks = (body: string): readonly string[] => {
+	const blocks: string[] = [];
+	const lines = body.split('\n');
+	for (let index = 0; index < lines.length; index += 1) {
+		const line = lines[index] ?? '';
+		const match = line.match(FILES_FIELD_RE);
+		if (match === null) continue;
+		let raw = match[1] ?? '';
+		while (
+			index + 1 < lines.length &&
+			FILES_CONTINUATION_RE.test(lines[index + 1] ?? '')
+		) {
+			index += 1;
+			raw = `${raw}\n${lines[index] ?? ''}`;
+		}
+		blocks.push(raw);
+	}
+	return blocks;
 };
 
 /**
@@ -190,13 +214,9 @@ export const parseProposalSlicePlan = (
 		// check silently dropped every continuation line past the first,
 		// which fed only a fragment of the declared files into the
 		// (also buggy) comma split below. `[ \t]+` accepts either.
-		const files = [
-			...body.matchAll(
-				/^[-*]\s*(?:files|\*\*Files\*\*):[ \t]*(.*(?:\n[ \t]+.*)*)$/gm,
-			),
-		]
-			.flatMap((m) => {
-				const raw = (m[1] ?? '').trim();
+		const files = readRawFilesBlocks(body)
+			.flatMap((rawBlock) => {
+				const raw = rawBlock.trim();
 				// x00158 S1: prefer the shared brace-aware parser (handles
 				// backticked `{a,b,c}` expansion correctly). Also lift
 				// `file://` markdown links so a truncated `[path](file://…)`
@@ -302,7 +322,7 @@ const WORKSPACE_PATH_RE =
 
 const looksLikePath = (value: string): boolean => {
 	if (value.length < 2) return false;
-	if (/^[\[\]()]+$/.test(value)) return false;
+	if (/^[[\]()]+$/.test(value)) return false;
 	if (value.includes('/') || /\.[A-Za-z0-9]+$/.test(value)) return true;
 	return /^[A-Za-z][A-Za-z0-9._-]*$/.test(value);
 };

@@ -1,4 +1,5 @@
 import { DEFAULT_CORE_PATHS } from '../contracts/interfaces/core-paths.interface';
+import { stripPackageScope, toKebabCase } from '../shared/string-normalize';
 import type { IProjectAnalysis } from './analyze-project';
 import { resolveAdoptionStrategy } from './adoption-strategy';
 import { runnerFor } from './package-runners';
@@ -43,11 +44,7 @@ export interface IServerPlan {
 const kebabHead = (name: string | undefined): string => {
 	if (name?.startsWith('@mcp-vertex/')) return 'mcp-vertex';
 	if (!name) return 'app';
-	const cleaned = name
-		.replace(/^@[^/]+\//, '')
-		.toLowerCase()
-		.replace(/[^a-z0-9]+/g, '-')
-		.replace(/^-+|-+$/g, '');
+	const cleaned = toKebabCase(stripPackageScope(name));
 	const head = cleaned.split('-')[0];
 	return head && head.length > 0 ? head : 'app';
 };

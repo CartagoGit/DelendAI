@@ -43,6 +43,30 @@ describe('scaffold-host generators', () => {
 		);
 	});
 
+	it('preserves the generated tool path for repeated separators in the tool name', () => {
+		const file = scaffoldToolFile(
+			'acme',
+			'  render___stats!!!  ',
+			'Stats only.',
+		);
+		expect(file.path).toBe(
+			'libs/mcp-project/src/lib/tools/acme-render-stats.tool.ts',
+		);
+	});
+
+	it('normalises a long separator run in the tool name quickly', () => {
+		const started = Date.now();
+		const file = scaffoldToolFile(
+			'acme',
+			`render${'!'.repeat(40_000)}stats`,
+			'Stats only.',
+		);
+		expect(file.path).toBe(
+			'libs/mcp-project/src/lib/tools/acme-render-stats.tool.ts',
+		);
+		expect(Date.now() - started).toBeLessThan(500);
+	});
+
 	it('sanitizes hyphenated namespaces for generated TypeScript symbols', () => {
 		const file = scaffoldToolFile(
 			'mcp-vertex',
