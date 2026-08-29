@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-08-29T16:49:02.249Z",
+	"generatedAt": "2026-08-29T17:23:40.520Z",
 	"mode": "compact",
 	"tools": [
 		{
@@ -1279,13 +1279,6 @@
 				"kind": "feat"
 			},
 			{
-				"id": "f00260",
-				"title": "f00260",
-				"track": "multi-model-coordination",
-				"status": "ready",
-				"kind": "feat"
-			},
-			{
 				"id": "q00003",
 				"title": "q00003",
 				"track": "develop-audit-consolidation",
@@ -1296,15 +1289,8 @@
 				"id": "r00018",
 				"title": "r00018",
 				"track": "tokens",
-				"status": "in-progress",
+				"status": "paused",
 				"kind": "refactor"
-			},
-			{
-				"id": "v00125",
-				"title": "v00125",
-				"track": "governance",
-				"status": "in-progress",
-				"kind": "unspecified"
 			},
 			{
 				"id": "v00126",
@@ -1329,11 +1315,11 @@
 			}
 		],
 		"byStatus": {
-			"ready": 1,
-			"in-progress": 10,
+			"ready": 0,
+			"in-progress": 8,
 			"review": 0,
-			"paused": 2,
-			"done": 512,
+			"paused": 3,
+			"done": 514,
 			"blocked": 0,
 			"retired": 2,
 			"unspecified": 0
