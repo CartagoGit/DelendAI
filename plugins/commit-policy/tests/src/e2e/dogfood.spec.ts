@@ -76,6 +76,7 @@ describe('commit-policy dogfood E2E', () => {
 
 	it.skip('commits a slice with the global user + audit trailer + pushes it (x00258: skipped, pre-x00258 behavior tested pre-change)', async () => {
 		const policy = CommitPolicyOptionsSchema.parse({
+			gitTimeoutMs: 60000,
 			commit: { enabled: true },
 			identity: { mode: 'global' },
 			audit: {
