@@ -39,6 +39,7 @@ import z from 'zod';
 import type { IToolRegistration } from '@mcp-vertex/core/public';
 import {
 	SafeWorkspaceReader,
+	VALIDATE_EVIDENCE_SCHEMA,
 	toolError,
 	toolOk,
 	withFileMutex,
@@ -220,6 +221,22 @@ export const hasIndependentPeerApproval = (markdown: string): boolean => {
 
 const isKnownStatus = (value: string): value is IProposalStatus =>
 	value in PROPOSAL_STATUSES;
+
+const PROPOSAL_TRANSITION_STATUS_VALUES = Object.keys(PROPOSAL_STATUSES) as [
+	IProposalStatus,
+	...IProposalStatus[],
+];
+
+export const PROPOSAL_TRANSITION_INPUT_SCHEMA = z
+	.object({
+		id: z.string().min(1),
+		to: z.enum(PROPOSAL_TRANSITION_STATUS_VALUES),
+		reason: z.string().min(1),
+		agent: z.string().optional(),
+		force: z.boolean().optional(),
+		validateEvidence: VALIDATE_EVIDENCE_SCHEMA.optional(),
+	})
+	.strict();
 
 const KNOWN_KINDS: ReadonlySet<string> = new Set([
 	'feat',
@@ -986,20 +1003,7 @@ export const buildProposalTransitionRegistration = (
 				outputSchema: PROPOSAL_TRANSITION_OUTPUT_SCHEMA,
 				description:
 					'Move a proposal to a new status. Validates against the DFA, updates frontmatter + git mv. Requires reason.',
-				inputSchema: z.object({
-					id: z.string().min(1),
-					to: z.string().min(1),
-					reason: z.string().min(1),
-					agent: z.string().optional(),
-					force: z.boolean().optional(),
-					validateEvidence: z
-						.object({
-							timestamp: z.string().min(1),
-							exitCode: z.number().int(),
-							logPath: z.string().min(1).optional(),
-						})
-						.optional(),
-				}),
+				inputSchema: PROPOSAL_TRANSITION_INPUT_SCHEMA,
 			},
 			async (args: IProposalTransitionArgs) =>
 				runProposalTransitionCompat(args, options).then((result) =>
