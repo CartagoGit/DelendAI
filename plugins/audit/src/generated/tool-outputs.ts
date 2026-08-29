@@ -37,12 +37,13 @@ export interface McpVertexAuditAuditConsolidateOutput {
 	topActions: string[];
 	markdown: string;
 	proposals: {
-		scaffolded: {
+		scaffolded: Array<{
 			id: string;
 			filename: string;
 			severity: string;
 			files: string[];
-		}[];
+			kind: "audit" | "fix" | "plan";
+		}>;
 		reason?: string;
 	} | {
 		skipped: string;
@@ -99,7 +100,7 @@ export interface McpVertexAuditAuditRunOutput {
 			filename: string;
 			severity: string;
 			files: string[];
-			kind: "fix" | "plan";
+			kind: "audit" | "fix" | "plan";
 		}>;
 	} | {
 		skipped: string;

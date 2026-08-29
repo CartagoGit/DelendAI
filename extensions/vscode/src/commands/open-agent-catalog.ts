@@ -1,5 +1,4 @@
 import { AgentCatalogService } from '@mcp-vertex/client';
-import type { McpVertexToolOutputs } from '@mcp-vertex/core/public';
 
 import { AGENT_CATALOG_MESSAGE_SCHEMA } from '../contracts/constants/agent-catalog-message-schema.constant';
 import type { IViewCopy } from '../contracts/interfaces/view-copy.interface';
@@ -11,8 +10,12 @@ import { escapeHtml, renderJsonHtml, showCommandError } from './types';
 
 export const OPEN_AGENT_CATALOG_COMMAND = 'mcp-vertex.openAgentCatalog';
 
-type IProposalBoardOutput =
-	McpVertexToolOutputs['mcp-vertex_proposals_proposal_board'];
+type IProposalBoardOutput = {
+	readonly proposals: readonly {
+		readonly id: string;
+		readonly [key: string]: unknown;
+	}[];
+};
 
 const renderTextHtml = (title: string, body: string): string => `<!DOCTYPE html>
 <html lang="en">

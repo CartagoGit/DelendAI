@@ -459,9 +459,58 @@ export interface McpVertexProposalsProposalForceTransitionOutput {
 }
 
 export interface McpVertexProposalsProposalGetOutput {
-	id: string;
-	view: unknown;
-	level: "compact" | "normal" | "full";
+	proposals?: Array<{
+		id: string;
+		status: string;
+		kind: string | null;
+		track: string;
+		title: string;
+		summary: string;
+		progress: string | null;
+		next: string | null;
+	}>;
+	nextCursor?: string | null;
+	level?: "compact" | "normal" | "full";
+	proposal?: {
+		id: string;
+		status: string;
+		kind: string | null;
+		track: string;
+		title: string;
+		summary: string;
+		progress: string | null;
+		next: string | null;
+		priority: string | null;
+		parentPlan: string | null;
+		auditSection: string | null;
+		related: string[];
+		slices: {
+			id: string;
+			status: string;
+			title?: string;
+		}[];
+		acceptance: {
+			command: string;
+			expect: string;
+		}[];
+	};
+	history?: {
+		timestamp: string;
+		action: string;
+		agent?: string;
+		note?: string;
+	}[];
+	slices?: {
+		id: string;
+		status: string;
+		title?: string;
+	}[];
+	reviews?: Array<{
+		timestamp: string;
+		action: "submit" | "approve" | "request_changes";
+		agent: string;
+		note?: string;
+	}>;
 }
 
 export interface McpVertexProposalsProposalReconcileFolderOutput {
@@ -527,26 +576,24 @@ export interface McpVertexProposalsProposalTransitionOutput {
 	filesRewritten?: number;
 }
 
-export type McpVertexProposalsProposalsClosePlanOutput = {
-	dryRun: true;
-	wouldChange: Array<{
+export interface McpVertexProposalsProposalsClosePlanOutput {
+	dryRun: boolean;
+	wouldChange?: Array<{
 		kind: "write" | "delete" | "rename" | "create" | "patch";
 		path: string;
 		summary: string;
 	}>;
-	wouldRun: Array<{
+	wouldRun?: Array<{
 		shape: "shell" | "network" | "process" | "git" | "mcp";
 		target: string;
 		summary: string;
 	}>;
-	risk: "low" | "medium" | "high";
+	risk?: "low" | "medium" | "high";
 	note?: string;
-} | {
-	ok: boolean;
-	planId: string;
-	dryRun: boolean;
-	closable: boolean;
-	blockers: Array<{
+	ok?: boolean;
+	planId?: string;
+	closable?: boolean;
+	blockers?: Array<{
 		ref: string;
 		kind: "proposal" | "plan" | "slice";
 		code: "not-done" | "not-peer-reviewed" | "self-cycle" | "unknown-ref";
@@ -562,7 +609,7 @@ export type McpVertexProposalsProposalsClosePlanOutput = {
 		reason: string;
 		nextAction?: string;
 	};
-};
+}
 
 export interface McpVertexProposalsRoundContextOutput {
 	digest: {

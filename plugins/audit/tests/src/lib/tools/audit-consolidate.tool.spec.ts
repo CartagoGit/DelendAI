@@ -170,8 +170,15 @@ describe('audit_consolidate auditDir containment (l00008 s3)', async () => {
 				autoScaffoldProposals: true,
 			}),
 		);
-		expect(out.proposals.scaffolded).toHaveLength(1);
+		expect(out.proposals.scaffolded).toHaveLength(3);
+		expect(out.proposals.scaffolded[0]?.id).toMatch(/^a\d{5}$/u);
+		expect(out.proposals.scaffolded[1]?.id).toMatch(/^q\d{5}$/u);
+		expect(out.proposals.scaffolded[2]?.id).toMatch(/^x\d{5}$/u);
 		const written = await readdir(join(workspaceRoot, proposalsDir));
-		expect(written).toEqual([out.proposals.scaffolded[0].filename]);
+		expect(written.sort()).toEqual(
+			out.proposals.scaffolded
+				.map((proposal: { filename: string }) => proposal.filename)
+				.sort(),
+		);
 	});
 });

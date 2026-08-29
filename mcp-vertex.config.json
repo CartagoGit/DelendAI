@@ -3,7 +3,7 @@
 	"coreVersion": "latest-published",
 	"cacheDir": ".cache/mcp-vertex",
 	"docsDir": "docs/mcp-vertex",
-	"agentWorktree": true,
+	"agentWorktree": false,
 	"commitAuthor": {
 		"mode": "git"
 	},
@@ -215,9 +215,9 @@
 					"enabled": true,
 					"onCommit": true,
 					"force": "with-lease",
-					"protectedBranches": ["main", "master", "develop"],
+					"protectedBranches": ["main", "master"],
 					"remote": "origin",
-					"branch": "wip/mcp-vertex-work"
+					"branch": "develop"
 				},
 				"cadence": {
 					"triggers": [{ "kind": "slice" }],

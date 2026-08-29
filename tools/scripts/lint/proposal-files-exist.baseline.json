@@ -21,6 +21,7 @@
 	"docs/mcp-vertex/proposals/done/audits/a00074-state-machine-hardening-reject-done-review-regression-same-agent-peer-review-bypass-and-zero-work-ready-done.md": 2,
 	"docs/mcp-vertex/proposals/done/audits/a00070-25-07-2026-external-github-api-security-release-audit-intake.md": 1,
 	"docs/mcp-vertex/proposals/done/audits/a00083-29-07-2026-copilot-minimax-m3-auditoria-exhaustiva-completa.md": 1,
+	"docs/mcp-vertex/proposals/done/audits/a00085-auditor-a-exhaustiva-bugs-fixes-y-mantenibilidad-copilot-grok-4-6.md": 1,
 	"docs/mcp-vertex/proposals/done/audits/a00071-25-07-2026-copilot-grok-auditoria-exhaustiva-independiente.md": 1,
 	"docs/mcp-vertex/proposals/done/audits/a00045-28-06-2026-copilot-minimax-m3-post-merge-exhaustive-audit.md": 12,
 	"docs/mcp-vertex/proposals/done/feats/f00104-external-consumption-and-release-coherence-one-canonical-launch.md": 1,
@@ -41,9 +42,9 @@
 	"docs/mcp-vertex/proposals/done/feats/f00180-manifest-toolpermissions-per-tool-granularidad-para-adaptive-selection.md": 1,
 	"docs/mcp-vertex/proposals/done/feats/f00069-tabs-cross-fade-and-iconography.md": 2,
 	"docs/mcp-vertex/proposals/done/chores/c00075-proposal-guardian-cannot-pause-without-user-consent.md": 4,
+	"docs/mcp-vertex/proposals/done/perfs/v00129-prune-the-five-cheapest-fix-core-outputschemas.md": 1,
 	"docs/mcp-vertex/proposals/done/refactors/r00011-auto-config-packs.md": 1,
-	"docs/mcp-vertex/proposals/in-progress/b00238-marcar-apis-internas-como-internal.md": 2,
-	"docs/mcp-vertex/proposals/in-progress/b00237-deprecar-nodedynamicimport-core-public.md": 4,
-	"docs/mcp-vertex/proposals/in-progress/v00126-verify-ci-local-reproduce-fallos-reales.md": 3,
-	"docs/mcp-vertex/proposals/in-progress/v00125-verificar-estado-real-develop-verde-protegida.md": 4
+	"docs/mcp-vertex/proposals/done/refactors/r00037-effectbroker-dry-run-preventivo.md": 2,
+	"docs/mcp-vertex/proposals/in-progress/v00126-verify-ci-local-reproduce-fallos-reales.md": 1,
+	"docs/mcp-vertex/proposals/in-progress/v00125-verificar-estado-real-develop-verde-protegida.md": 1
 }

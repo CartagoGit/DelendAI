@@ -47,14 +47,16 @@ describe('resolveAutoScaffold — proposals availability', async () => {
 			);
 			expect(outcome.kind).toBe('scaffolded');
 			if (outcome.kind === 'scaffolded') {
-				expect(outcome.records.length).toBe(1);
-				expect(outcome.records[0]?.severity).toBe('FATAL');
+				expect(outcome.records.length).toBe(3);
+				expect(outcome.records[0]?.kind).toBe('audit');
+				expect(outcome.records[1]?.kind).toBe('plan');
+				expect(outcome.records[2]?.severity).toBe('FATAL');
 				// The proposal file must be on disk.
 				const written = await readFile(
 					path.join(dir, outcome.records[0]!.filename),
 					'utf8',
 				);
-				expect(written).toContain('id: x000');
+				expect(written).toContain('kind: audit');
 			}
 		} finally {
 			await rm(dir, { recursive: true, force: true });
@@ -101,7 +103,7 @@ describe('resolveAutoScaffold — proposals availability', async () => {
 				expect(written).not.toContain('f00077');
 				expect(written).not.toContain('MUY_MAL');
 				expect(written).not.toContain('MEJORABLE');
-				expect(written).toContain('Sourced by `audit_run`.');
+				expect(written).toContain('kind: audit');
 			}
 		} finally {
 			await rm(dir, { recursive: true, force: true });

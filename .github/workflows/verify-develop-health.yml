@@ -47,6 +47,7 @@ jobs:
           echo "report_path=$report_path" >> "$GITHUB_OUTPUT"
           bun tools/scripts/ci/verify-develop-health.script.ts \
             --repo ${{ github.repository }} \
+            --real \
             --output apps/web/src/data/develop-health.json \
             > "$report_path"
         continue-on-error: true

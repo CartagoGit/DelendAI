@@ -238,7 +238,8 @@ El commit debe mostrar el delta.
 - acceptance:
   - "Surfaces implementadas."
   - "Tipos estrictos validados en runtime."
-
+- review-state: in_review
+- review-implementer: sparrow
 ### S3 — Resources + descriptions compactas
 
 - **Status**: pending

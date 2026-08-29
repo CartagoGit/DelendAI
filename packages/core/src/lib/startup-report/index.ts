@@ -24,3 +24,9 @@ export {
 	type IStartupReportLevelInput,
 } from './level';
 export { isStartupReportLevelVisible } from './level';
+export {
+	renderStartupReport,
+	renderStartupReportAnsi,
+	renderStartupReportPlain,
+	shouldUseAnsiColors,
+} from './renderer';

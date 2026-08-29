@@ -12,9 +12,6 @@ import {
 	type IExternalTool,
 	type IExternalToolRun,
 	type IMcpPluginContext,
-	type IProbeDeps,
-	type IRunExternalToolInput,
-	type IFinding,
 	redactSecrets,
 } from '@mcp-vertex/core/public';
 

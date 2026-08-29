@@ -182,7 +182,7 @@ export const runPipelinePrelude = async (
 
 	// 1. Scope inference + unknown-scope guard.
 	const scope = args.scope ?? 'full';
-	const auditType = args.auditType ?? 'valuation';
+	const auditType = args.auditType ?? 'plan';
 	if (!input.allAvailableScopes.includes(scope)) {
 		return {
 			ok: false,

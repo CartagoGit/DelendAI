@@ -5,10 +5,10 @@
 	"lint/complexity/noUselessTernary": 2,
 	"lint/complexity/useLiteralKeys": 77,
 	"lint/complexity/useOptionalChain": 3,
-	"lint/correctness/noUnusedFunctionParameters": 5,
-	"lint/correctness/noUnusedImports": 37,
+	"lint/correctness/noUnusedFunctionParameters": 4,
+	"lint/correctness/noUnusedImports": 36,
 	"lint/correctness/noUnusedPrivateClassMembers": 1,
-	"lint/correctness/noUnusedVariables": 46,
-	"lint/style/useTemplate": 26,
+	"lint/correctness/noUnusedVariables": 45,
+	"lint/style/useTemplate": 27,
 	"lint/suspicious/noConfusingVoidType": 8
 }

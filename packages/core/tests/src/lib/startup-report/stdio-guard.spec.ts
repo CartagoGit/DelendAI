@@ -109,7 +109,7 @@ describe('startup-report/stdio-guard (q00009 / f00259 partial)', () => {
 			expect(result.channel).toBe('host');
 			// medium includes the per-request cost summary + level marker
 			expect(captured[0]).toContain('medium (default)');
-			expect(captured[0]).toContain('Per-request context cost');
+			expect(captured[0]).toContain('Context cost per request');
 		});
 
 		it('drops the report when channel=discard', () => {

@@ -42,6 +42,7 @@ import { buildInheritHostInstructionsRegistration } from './lib/tools/inherit-ho
 import type { IAgentNamesToolOptions } from './lib/tools/agent-names.tool';
 import { buildGetProposalWorkflowRegistration } from './lib/tools/get-proposal-workflow.tool';
 import { buildProposalGetRegistration } from './lib/tools/proposal-get.tool';
+import { buildProposalTemplatesResourceRegistration } from './lib/resources/proposal-templates.resource';
 import { buildRoundContextRegistration } from './lib/tools/round-context.tool';
 import { buildSyncProposalsRegistration } from './lib/tools/sync-proposals.tool';
 import { buildTaskQueueRegistration } from './lib/tools/task-queue.tool';
@@ -723,6 +724,12 @@ export default definePlugin({
 									.requirePeerReview as boolean,
 							}
 						: { requirePeerReview: true }),
+				}),
+			],
+			resources: [
+				buildProposalTemplatesResourceRegistration({
+					proposalsDir: layout.proposalsDir,
+					indexFile: layout.proposalIndexFile,
 				}),
 			],
 			prompts: [

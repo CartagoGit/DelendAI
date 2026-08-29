@@ -316,6 +316,9 @@ export const buildDelegateRegistration = (
 				}
 				const whereClause = worktreeInfo
 					? `STOP before editing: launch or continue this agent with cwd \`${worktreeInfo.path}\` on branch \`${worktreeInfo.branch}\`; the parent checkout on develop is not a valid workspace for this task. `
+					: 'Work in the configured checkout (normally develop). ';
+				const workspaceGuard = worktreeInfo
+					? 'Do not edit the parent checkout; '
 					: '';
 				return toolJson({
 					ok: true,
@@ -326,7 +329,7 @@ export const buildDelegateRegistration = (
 					locked: true,
 					...(worktreeInfo ? { worktree: worktreeInfo } : {}),
 					...(worktreeInfo ? { cwd: worktreeInfo.path } : {}),
-					instruction: `You are "${assigned.agent_name}". ${whereClause}Edit ONLY ${args.files.join(', ')}; do not edit the parent checkout; release the lock (agent_lock release, task_id "${args.taskId}") when done.`,
+					instruction: `You are "${assigned.agent_name}". ${whereClause}${workspaceGuard}Edit ONLY ${args.files.join(', ')}; release the lock (agent_lock release, task_id "${args.taskId}") when done.`,
 				});
 			},
 		);

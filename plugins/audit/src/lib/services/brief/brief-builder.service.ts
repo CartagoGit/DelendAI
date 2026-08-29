@@ -252,7 +252,7 @@ export const buildBrief = (
 	scope: string,
 	options: IBriefOptions = {},
 ): string => {
-	const auditType: AuditType = options.auditType ?? 'valuation';
+	const auditType: AuditType = options.auditType ?? 'plan';
 	const dimensions = options.dimensions ?? SCORE_DIMENSIONS;
 	const configuredLayers = options.layers ?? [];
 	const projects = options.projects;
