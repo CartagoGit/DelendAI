@@ -36,6 +36,8 @@
  */
 import { writeFile } from 'node:fs/promises';
 
+import z from 'zod';
+
 import {
 	BRANCH_PROTECTION,
 	type IBranchProtectionConfig,
@@ -48,6 +50,24 @@ import {
 } from './lib/github-protection.lib.ts';
 
 const SCRIPT_NAME = 'verify-develop-health';
+const GITHUB_API_VERSION = '2022-11-28';
+const PASSING_CHECK_CONCLUSIONS = new Set(['success', 'neutral', 'skipped']);
+
+type TDevelopCiStatus = 'green' | 'red' | 'unknown';
+
+const githubCheckRunSchema = z.object({
+	name: z.string(),
+	status: z.string(),
+	conclusion: z.string().nullable().optional(),
+	head_sha: z.string().optional(),
+	html_url: z.string().url().nullable().optional(),
+});
+
+const githubCheckRunsResponseSchema = z.object({
+	check_runs: z.array(githubCheckRunSchema).default([]),
+});
+
+type IGitHubCheckRunsResponse = z.infer<typeof githubCheckRunsResponseSchema>;
 
 interface IBranchHealth {
 	readonly name: string;
@@ -65,12 +85,44 @@ interface IBranchHealth {
 	readonly extra_checks: readonly string[];
 }
 
+interface IRequiredCheckRun {
+	readonly name: string;
+	readonly status: string | null;
+	readonly conclusion: string | null;
+	readonly htmlUrl: string | null;
+}
+
+interface IDevelopStatus {
+	readonly ref: 'develop';
+	readonly verified: boolean;
+	readonly headSha: string | null;
+	readonly ciStatus: TDevelopCiStatus;
+	readonly totalCheckRuns: number;
+	readonly requiredCheckRuns: readonly IRequiredCheckRun[];
+}
+
+interface IDevelopHealthDashboard {
+	readonly $schema: string;
+	readonly lastVerifiedAt: string | null;
+	readonly ciStatus: TDevelopCiStatus;
+	readonly protectedBranches: {
+		readonly main: boolean | null;
+		readonly develop: boolean | null;
+	};
+	readonly requiredChecks: readonly string[];
+	readonly discrepancies: readonly string[];
+	readonly note: string;
+}
+
 interface IHealthReport {
 	readonly repo: string;
 	readonly generatedAt: string;
 	readonly healthy: boolean;
 	readonly unverifiedBranches: readonly string[];
 	readonly branches: readonly IBranchHealth[];
+	readonly developStatus: IDevelopStatus;
+	readonly discrepancies: readonly string[];
+	readonly dashboard: IDevelopHealthDashboard;
 }
 
 const out = (msg: string) => process.stdout.write(`${msg}\n`);
@@ -87,8 +139,228 @@ const flag = (argv: readonly string[], name: string): string | undefined => {
 	return undefined;
 };
 
-const hasFlag = (argv: readonly string[], name: string): boolean =>
-	argv.some((t) => t === `--${name}` || t.startsWith(`--${name}=`));
+const githubHeaders = (token: string | undefined): Record<string, string> => {
+	const headers: Record<string, string> = {
+		Accept: 'application/vnd.github+json',
+		'X-GitHub-Api-Version': GITHUB_API_VERSION,
+	};
+	if (token !== undefined && token.length > 0) {
+		headers.Authorization = `Bearer ${token}`;
+	}
+	return headers;
+};
+
+const collectRequiredChecks = (
+	branches: IBranchProtectionConfig['branches'],
+): string[] =>
+	Array.from(
+		new Set(
+			branches
+				.filter((branch) => branch.protected)
+				.flatMap((branch) => branch.required_checks),
+		),
+	).sort();
+
+const parseGitHubCheckRunsResponse = (
+	json: unknown,
+): IGitHubCheckRunsResponse => githubCheckRunsResponseSchema.parse(json);
+
+const isPassingConclusion = (conclusion: string | null): boolean =>
+	conclusion !== null && PASSING_CHECK_CONCLUSIONS.has(conclusion);
+
+const getProtectedBranchState = (
+	branches: readonly IBranchHealth[],
+	name: string,
+): boolean | null => {
+	const branch = branches.find((candidate) => candidate.name === name);
+	if (branch === undefined || !branch.verified) return null;
+	return branch.protected;
+};
+
+const collectBranchDiscrepancies = (
+	branches: readonly IBranchHealth[],
+): string[] => {
+	const discrepancies: string[] = [];
+	for (const branch of branches) {
+		if (!branch.verified) {
+			discrepancies.push(
+				`${branch.name}: branch protection could not be verified with the token in use`,
+			);
+			continue;
+		}
+		if (branch.expectedProtected && !branch.protected) {
+			discrepancies.push(
+				`${branch.name}: branch protection is missing but declared protected`,
+			);
+		}
+		if (!branch.expectedProtected && branch.protected) {
+			discrepancies.push(
+				`${branch.name}: branch is protected but declared unprotected`,
+			);
+		}
+		if (!branch.expectedProtected) continue;
+		if (!branch.enforce_admins) {
+			discrepancies.push(`${branch.name}: enforce_admins drift detected`);
+		}
+		if (!branch.required_linear_history) {
+			discrepancies.push(
+				`${branch.name}: required_linear_history drift detected`,
+			);
+		}
+		if (!branch.allow_force_pushes) {
+			discrepancies.push(
+				`${branch.name}: allow_force_pushes drift detected`,
+			);
+		}
+		if (!branch.allow_deletions) {
+			discrepancies.push(
+				`${branch.name}: allow_deletions drift detected`,
+			);
+		}
+		for (const check of branch.missing_checks) {
+			discrepancies.push(
+				`${branch.name}: missing required status check "${check}"`,
+			);
+		}
+		for (const check of branch.extra_checks) {
+			discrepancies.push(
+				`${branch.name}: unexpected live status check "${check}"`,
+			);
+		}
+	}
+	return discrepancies;
+};
+
+const collectDevelopStatusDiscrepancies = (
+	developStatus: IDevelopStatus,
+): string[] => {
+	if (!developStatus.verified) {
+		return [
+			'develop: latest commit CI could not be verified with the token in use',
+		];
+	}
+	const discrepancies: string[] = [];
+	for (const check of developStatus.requiredCheckRuns) {
+		if (check.status === null) {
+			discrepancies.push(
+				`develop: missing check-run "${check.name}" on the latest commit`,
+			);
+			continue;
+		}
+		if (check.status !== 'completed') {
+			discrepancies.push(
+				`develop: check-run "${check.name}" is still ${check.status}`,
+			);
+			continue;
+		}
+		if (!isPassingConclusion(check.conclusion)) {
+			discrepancies.push(
+				`develop: check-run "${check.name}" concluded ${check.conclusion ?? 'null'}`,
+			);
+		}
+	}
+	return discrepancies;
+};
+
+const buildDashboard = (
+	report: Pick<
+		IHealthReport,
+		'generatedAt' | 'branches' | 'developStatus' | 'discrepancies'
+	> & { readonly requiredChecks: readonly string[] },
+): IDevelopHealthDashboard => ({
+	$schema: 'https://mcp-vertex.dev/schemas/develop-health.v1.json',
+	lastVerifiedAt:
+		report.developStatus.verified &&
+		report.branches.some((branch) => branch.verified)
+			? report.generatedAt
+			: null,
+	ciStatus: report.developStatus.ciStatus,
+	protectedBranches: {
+		main: getProtectedBranchState(report.branches, 'main'),
+		develop: getProtectedBranchState(report.branches, 'develop'),
+	},
+	requiredChecks: report.requiredChecks,
+	discrepancies: report.discrepancies,
+	note: 'Auto-populated by bun tools/scripts/ci/verify-develop-health.script.ts.',
+});
+
+const fetchDevelopStatus = async (params: {
+	readonly repo: string;
+	readonly token: string | undefined;
+	readonly tokenExplicit: boolean;
+	readonly requiredChecks: readonly string[];
+}): Promise<IDevelopStatus> => {
+	const { repo, token, tokenExplicit, requiredChecks } = params;
+	const res = await fetch(
+		`https://api.github.com/repos/${repo}/commits/develop/check-runs`,
+		{ headers: githubHeaders(token) },
+	);
+	if (res.status === 401 || res.status === 403) {
+		if (tokenExplicit) {
+			throw new Error(
+				'develop check-runs are not readable with the token supplied — the token needs repo read access and checks visibility for this repository.',
+			);
+		}
+		return {
+			ref: 'develop',
+			verified: false,
+			headSha: null,
+			ciStatus: 'unknown',
+			totalCheckRuns: 0,
+			requiredCheckRuns: requiredChecks.map((name) => ({
+				name,
+				status: null,
+				conclusion: null,
+				htmlUrl: null,
+			})),
+		};
+	}
+	if (!res.ok) {
+		throw new Error(
+			`GitHub API ${res.status} on develop check-runs: ${await res.text()}`,
+		);
+	}
+	const payload = parseGitHubCheckRunsResponse(await res.json());
+	const requiredCheckRuns = requiredChecks.map((name) => {
+		const live = payload.check_runs.find(
+			(checkRun) => checkRun.name === name,
+		);
+		return {
+			name,
+			status: live?.status ?? null,
+			conclusion: live?.conclusion ?? null,
+			htmlUrl: live?.html_url ?? null,
+		};
+	});
+	const ciStatus: TDevelopCiStatus =
+		requiredCheckRuns.length === 0
+			? payload.check_runs.length === 0
+				? 'unknown'
+				: payload.check_runs.every(
+							(checkRun) =>
+								checkRun.status === 'completed' &&
+								isPassingConclusion(
+									checkRun.conclusion ?? null,
+								),
+						)
+					? 'green'
+					: 'red'
+			: requiredCheckRuns.every(
+						(checkRun) =>
+							checkRun.status === 'completed' &&
+							isPassingConclusion(checkRun.conclusion),
+					)
+				? 'green'
+				: 'red';
+	return {
+		ref: 'develop',
+		verified: true,
+		headSha: payload.check_runs[0]?.head_sha ?? null,
+		ciStatus,
+		totalCheckRuns: payload.check_runs.length,
+		requiredCheckRuns,
+	};
+};
 
 /**
  * Build the health record for one branch. `defaults` is the
@@ -161,7 +433,6 @@ export const main = async (argv: readonly string[]): Promise<number> => {
 		explicitToken !== undefined && explicitToken.length > 0;
 	const token = explicitToken ?? process.env.GITHUB_TOKEN;
 	const output = flag(argv, 'output');
-	const dryRun = hasFlag(argv, 'dry-run');
 
 	if (repo === undefined) {
 		err('verify-develop-health: --repo <owner/repo> is required');
@@ -169,6 +440,7 @@ export const main = async (argv: readonly string[]): Promise<number> => {
 	}
 
 	const config = BRANCH_PROTECTION;
+	const requiredChecks = collectRequiredChecks(config.branches);
 	const branches: IBranchHealth[] = [];
 	const unverifiedBranches: string[] = [];
 	let readCount = 0;
@@ -201,31 +473,59 @@ export const main = async (argv: readonly string[]): Promise<number> => {
 		await reportUnverifiedBranches(SCRIPT_NAME, unverifiedBranches);
 	}
 
+	const developStatus = await fetchDevelopStatus({
+		repo,
+		token,
+		tokenExplicit,
+		requiredChecks,
+	});
+	const discrepancies = [
+		...collectBranchDiscrepancies(branches),
+		...collectDevelopStatusDiscrepancies(developStatus),
+	];
+
+	const dashboard = buildDashboard({
+		generatedAt: new Date().toISOString(),
+		branches,
+		developStatus,
+		discrepancies,
+		requiredChecks,
+	});
+
 	const report: IHealthReport = {
 		repo,
-		generatedAt: new Date().toISOString(),
-		healthy: readCount > 0 && isHealthy(branches),
+		generatedAt: dashboard.lastVerifiedAt ?? new Date().toISOString(),
+		healthy:
+			readCount > 0 &&
+			isHealthy(branches) &&
+			developStatus.verified &&
+			developStatus.ciStatus === 'green',
 		unverifiedBranches,
 		branches,
+		developStatus,
+		discrepancies,
+		dashboard,
 	};
 
 	const json = JSON.stringify(report, null, 2);
 	if (output !== undefined) {
-		await writeFile(output, json, 'utf8');
+		await writeFile(
+			output,
+			`${JSON.stringify(dashboard, null, 2)}\n`,
+			'utf8',
+		);
 	}
-	if (dryRun || output === undefined) {
-		out(json);
-	}
+	out(json);
 
 	if (readCount === 0) {
-		out(
+		err(
 			'verify-develop-health: no branch could be read with the token in use ' +
 				'— nothing verified, nothing asserted.',
 		);
-		return 0;
+		return developStatus.ciStatus === 'red' ? 1 : 0;
 	}
 	if (report.healthy) {
-		out(
+		err(
 			'verify-develop-health: develop + main match the declared policy ✓',
 		);
 		return 0;

@@ -18,7 +18,7 @@ concurrency:
   cancel-in-progress: false
 
 permissions:
-  contents: read
+  contents: write
   issues: write
 
 jobs:
@@ -27,7 +27,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@v4
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
@@ -40,23 +40,37 @@ jobs:
       - name: Run health verifier
         id: verify
         env:
+          BRANCH_PROTECTION_TOKEN: ${{ secrets.BRANCH_PROTECTION_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          report_path="$RUNNER_TEMP/develop-health-report.json"
+          echo "report_path=$report_path" >> "$GITHUB_OUTPUT"
           bun tools/scripts/ci/verify-develop-health.script.ts \
             --repo ${{ github.repository }} \
-            --output apps/web/src/data/develop-health.json
+            --output apps/web/src/data/develop-health.json \
+            > "$report_path"
         continue-on-error: true
 
       - name: Create issue on drift
         if: steps.verify.outcome == 'failure'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          REPORT: ${{ steps.verify.outputs }}
+          REPORT_PATH: ${{ steps.verify.outputs.report_path }}
         run: |
+          body_path="$RUNNER_TEMP/develop-health-issue.md"
+          {
+            echo "The nightly verify-develop-health job detected drift between the declared policy and the live GitHub state for develop."
+            echo
+            echo '```json'
+            cat "$REPORT_PATH"
+            echo '```'
+            echo
+            echo "Re-run bun tools/scripts/ci/verify-develop-health.script.ts --repo ${{ github.repository }} locally with a branch-protection token to inspect the same report."
+          } > "$body_path"
           gh issue create \
             --label ci-health,governance \
-            --title "develop branch protection drift detected (v00125)" \
-            --body "The nightly \`verify-develop-health\` job detected drift between the declared policy and the live GitHub state. Run \`bun tools/scripts/ci/verify-develop-health.script.ts --repo ${{ github.repository }}\` locally to inspect the report."
+            --title "develop health drift detected (v00125)" \
+            --body-file "$body_path"
         continue-on-error: true
 
       - name: Commit the report
