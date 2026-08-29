@@ -10,6 +10,7 @@ import {
 	createFileSystemBatchWriter,
 	type IBatchAtomicWriter,
 } from '../shared/batch-atomic-writer';
+import { toKebabCase } from '../shared/string-normalize';
 import { toolJson } from '../shared/tool-response';
 import {
 	createOverlayFs,
@@ -21,12 +22,7 @@ import { diagnosePluginWiring } from './diagnose-plugin-wiring';
 import { scaffoldPluginFiles } from './scaffold-host';
 import { wirePluginIntoMonorepo } from './wire-plugin';
 
-const kebabCase = (value: string): string =>
-	value
-		.trim()
-		.toLowerCase()
-		.replace(/[^a-z0-9]+/gu, '-')
-		.replace(/^-+|-+$/gu, '');
+const kebabCase = (value: string): string => toKebabCase(value);
 
 const PLUGIN_WIRING_POINT_ID_SCHEMA = z.enum([
 	'tsconfig-base',

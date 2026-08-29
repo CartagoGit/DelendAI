@@ -93,8 +93,9 @@ const slug = (value: string): string =>
 	value
 		.trim()
 		.toLowerCase()
-		.replace(/[^a-z0-9]+/g, '-')
-		.replace(/^-+|-+$/g, '') || 'agent';
+		.replace(/[^a-z0-9]+/gu, '-')
+		.replace(/^-+/u, '')
+		.replace(/-+$/u, '') || 'agent';
 
 const dirFor = (options: IAgentWorktreeOptions, agentSlug: string): string =>
 	join(

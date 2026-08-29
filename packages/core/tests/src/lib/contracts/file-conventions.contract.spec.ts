@@ -98,6 +98,12 @@ describe('file-conventions.contract (f00057 S8)', async () => {
 			'service',
 		);
 	});
+
+	it('classifies metacharacter-heavy literal paths without changing the result', async () => {
+		expect(classifyPath('pkg/src/lib/services/[demo](x)+.service.ts')).toBe(
+			'service',
+		);
+	});
 });
 
 describe('helper role (f00093)', async () => {
