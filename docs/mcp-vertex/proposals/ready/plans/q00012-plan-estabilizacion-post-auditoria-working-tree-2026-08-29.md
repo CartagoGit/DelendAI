@@ -13,7 +13,7 @@ contains:
         - { id: x00301, kind: fix, required: true, priority: P0, rationale: "Restaurar el outputSchema efectivo de proposals_close_plan en el protocolo runtime." }
 related:
     - x00281
-    - x00298
+    - x00302
 ---
 
 # q00012 — Plan de estabilizacion post-auditoria
@@ -81,13 +81,13 @@ graph TD
 
 ## risks and mitigations
 
-- Revertir cada hija en su commit aislado sin tocar archivos de `x00298`.
+  - Revertir cada hija en su commit aislado sin tocar archivos de `x00302`.
 - No usar reset destructivo sobre el working tree compartido.
 
 ## notes
 
 - HEAD: `9c3ed108`
-- Rama: `wip/x00298-s1`
+- Rama: `wip/x00298-s1` (histórico del trabajo que ahora está identificado como `x00302`)
 - Working tree: sucio, con cambios de varios agentes.
 - Tests: 8701 pass, 2 fail, 2 skipped.
 - Build: 56 paquetes construidos.

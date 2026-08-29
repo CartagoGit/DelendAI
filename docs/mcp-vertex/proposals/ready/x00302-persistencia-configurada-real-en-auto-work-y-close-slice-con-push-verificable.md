@@ -1,5 +1,5 @@
 ---
-id: x00298
+id: x00302
 title: "Persistencia configurada real en auto_work y close_slice con push verificable"
 kind: fix
 status: ready
@@ -8,7 +8,7 @@ track: proposals-commit-persistence
 date: 2026-08-29
 ---
 
-# x00298 — Persistencia configurada real en auto_work y close_slice con push verificable
+# x00302 — Persistencia configurada real en auto_work y close_slice con push verificable
 
 ## Goal
 
@@ -57,7 +57,7 @@ La configuración del repositorio pide commit-and-push, pero auto_work sólo emi
 - review-reviewer: delivery_verifier
 - review-log: approved by delivery_verifier — Revisión independiente: la implementación 9c3ed108 cubre los cuatro archivos de producción/prueba declarados y 4940b0dd corrige el fixture para habilitar explícitamente agentWorktree en commit-and-push. El gate type devuelve exit code 0 y ambas suites pasan 42/42; close_slice no cierra ni libera ante persistencia incompleta y auto_work expone el bloque persistido.
 ### S3 — Host managed/lazy y activación de commit-policy antes de eventos de slice
-- **Status**: pending
+- **Status**: done
 - **DependsOn**: [S2]
 - **Files**: `packages/core/src/lib/cli/assemble-plugins.ts`, `packages/core/src/lib/project/create-mcp-project.ts`, `packages/core/tests/src/lib/cli/managed-lazy-assembly.spec.ts`, `plugins/proposals/src/index.ts`, `plugins/proposals/src/lib/tools/authoring-options.ts`, `plugins/proposals/tests/src/lib/e2e/auto-work.e2e.spec.ts`, `plugins/proposals/tests/src/lib/e2e/sync-and-locks.e2e.spec.ts`
 - **Gate**: e2e
@@ -66,9 +66,12 @@ La configuración del repositorio pide commit-and-push, pero auto_work sólo emi
   - "La invocación MCP real auto_work → close_slice no depende de llamar funciones TypeScript privadas ni de una segunda activación manual del plugin."
   - "La prueba verifica observables reales: commit creado, push terminado y refs remotas actualizadas; un commit local sin push hace fallar la prueba."
   - "La activación explícita por router y la activación startup siguen siendo idempotentes y no duplican listeners/schedulers."
-
+- review-state: done
+- review-implementer: finch
+- review-reviewer: delivery_verifier
+- review-log: approved by delivery_verifier — Revisión independiente: el e2e managed/lazy configura un único propietario Git (proposals.persist), habilita agentWorktree y usa la rama agent/* con refspec HEAD:wip/x00298-s3. El flujo MCP real confirma commit, push terminado y ref remota actualizada; las suites e2e declaradas pasan 15/15 y el typecheck de proposals devuelve exit code 0. La activación startup de commit-policy queda cubierta sin duplicar listeners de slice.
 ### S4 — Commit-policy devuelve estado final y no éxito prematuro
-- **Status**: pending
+- **Status**: done
 - **DependsOn**: [S1, S3]
 - **Files**: `plugins/commit-policy/src/lib/tools/commit-tool.ts`, `plugins/commit-policy/src/lib/services/commit-driver.ts`, `plugins/commit-policy/src/lib/services/push-scheduler.ts`, `plugins/commit-policy/src/lib/engine.ts`, `plugins/commit-policy/tests/src/lib/services/commit-driver.spec.ts`, `plugins/commit-policy/tests/src/lib/services/push-scheduler.spec.ts`, `plugins/commit-policy/tests/src/lib/engine.spec.ts`, `plugins/commit-policy/tests/src/e2e/dogfood.spec.ts`
 - **Gate**: type
@@ -77,8 +80,10 @@ La configuración del repositorio pide commit-and-push, pero auto_work sólo emi
   - "Los errores de push, ramas protegidas, timeout y detached HEAD se propagan con refusal/reason estructurado y métricas de committed/pushed coherentes."
   - "El scheduler no deja un push fire-and-forget que sobreviva a la respuesta del tool sin una señal observable de finalización."
   - "Dogfood cubre un remote bare/local y comprueba que cada éxito reportado implica que la referencia remota contiene el commit."
-- review-state: in_review
+- review-state: done
 - review-implementer: copilot-x00298-s4
+- review-reviewer: delivery_verifier
+- review-log: approved by delivery_verifier — Revisión independiente: verifiqué que el commit 2f9d1c19fd092160142e6f8b17f91173757638ac está publicado en origin/wip/x00298-s4-final, el typecheck de plugins/commit-policy devuelve exit code 0 y las suites declaradas pasan 45/45. Los ocho archivos declarados no tienen drift respecto al estado actual revisado; el commit citado modifica 2 de ellos y los otros 6 ya estaban presentes en el estado aprobado, sin evidencia de regresión.
 ## acceptance
 
 - La producción usa un runner real async en cwd cuando no se inyecta un fake; nunca cae silenciosamente a un no-op que simula persistencia configurada.

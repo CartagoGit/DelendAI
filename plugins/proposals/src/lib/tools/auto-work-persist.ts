@@ -293,9 +293,21 @@ export const maybePersistAfterSlice = async (
 	// invariant `commit-policy`'s push driver enforces independently
 	// when pushing through the plugin tool instead of this helper.
 	const pushTarget = options.pushTarget ?? DEFAULT_PUSH_TARGET;
-	if (mode === 'commit-and-push' && options.agentWorktreeEnabled !== true) {
+	// x00298: shared-checkout mode (agentWorktree off) may still run
+	// `commit-and-push` when the push target is an explicit non-protected
+	// branch. The protected-branch refusal below (same wording as always)
+	// remains the only hard stop for main/develop targets.
+	const pushTargetExplicitlySafe =
+		options.pushTarget !== undefined &&
+		!pushWouldHitMain(pushTarget) &&
+		!pushWouldHitDevelop(pushTarget);
+	if (
+		mode === 'commit-and-push' &&
+		options.agentWorktreeEnabled !== true &&
+		!pushTargetExplicitlySafe
+	) {
 		return persistResult(false, false, mode, {
-			reason: 'commit-and-push requires agentWorktree to be enabled; use mode "commit" in shared-checkout mode or enable agentWorktree',
+			reason: 'commit-and-push requires agentWorktree to be enabled or an explicit non-protected pushTarget; use mode "commit" in shared-checkout mode',
 		});
 	}
 	const wouldHitMain =
