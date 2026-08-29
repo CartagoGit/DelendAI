@@ -101,6 +101,7 @@ const buildFakeGit = (opts: {
 };
 
 const basePolicy = (overrides: Partial<ParsedOptions> = {}): ParsedOptions => ({
+	gitTimeoutMs: 60_000,
 	commit: {
 		enabled: true,
 		requireConventional: true,
