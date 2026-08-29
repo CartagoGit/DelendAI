@@ -69,6 +69,16 @@ import { locateProposal } from '../proposals/locate';
 import type { IValidateEvidence } from '../services/transition-evidence';
 import { readActiveLocks, resolveIndexedDoc } from './authoring-options';
 import type { IAuthoringToolOptions } from './authoring-options';
+import {
+	maybePersistAfterSlice,
+	type IPersistResult,
+} from './auto-work-persist';
+
+type ICloseSlicePersistConfig = {
+	readonly mode: 'none' | 'commit' | 'commit-and-push';
+	readonly messageTemplate?: string;
+	readonly pushTarget?: string;
+};
 
 export type { IAuthoringToolOptions } from './authoring-options';
 export { readActiveLocks } from './authoring-options';
@@ -94,6 +104,7 @@ type ICloseSliceThrownError = Error & {
 		| 'quality-failed'
 		| 'peer-review-required';
 	readonly output?: string;
+	readonly persist?: IPersistResult;
 	readonly detail?: {
 		readonly ok: boolean;
 		readonly severity: 'ok' | 'error';
@@ -821,6 +832,8 @@ const resolveWorktreeTopLevel = async (run: IGitRunner): Promise<string> => {
 
 type ICloseSliceValidateOptions = IAuthoringToolOptions & {
 	readonly validateEvidenceDeps?: IValidateEvidenceDeps;
+	readonly persist?: ICloseSlicePersistConfig;
+	readonly persistGit?: IGitRunner;
 };
 
 interface IAgentLockReleaseResult {
@@ -917,6 +930,15 @@ export const buildCloseSliceRegistration = (
 					sliceId: z.string().optional(),
 					closed: z.boolean().optional(),
 					lockReleased: z.boolean().optional(),
+					persist: z
+						.object({
+							committed: z.boolean(),
+							pushed: z.boolean(),
+							mode: z.enum(['none', 'commit', 'commit-and-push']),
+							hash: z.string().optional(),
+							reason: z.string().optional(),
+						})
+						.optional(),
 					// f00091 S2: the branch (if any) recorded for deliberate
 					// integration by the non-destructive branch-integration
 					// step. `null` when agentWorktree is off, the active
@@ -993,6 +1015,11 @@ export const buildCloseSliceRegistration = (
 						return toolErrorEnvelope(envelope);
 					}
 				}
+				let persisted: IPersistResult = {
+					committed: false,
+					pushed: false,
+					mode: 'none',
+				};
 				try {
 					await withFileMutex(docPath, async () => {
 						const md = await readTextOrNull(docPath);
@@ -1013,6 +1040,22 @@ export const buildCloseSliceRegistration = (
 							);
 						}
 						const rawBlock = m[2] ?? '';
+						const slicePlan = parseProposalSlicePlan(entry.id, md);
+						if (slicePlan === null) {
+							throw new Error(
+								`slice plan missing in ${entry.file}`,
+							);
+						}
+						const slice = slicePlan.slices.find(
+							(candidate) =>
+								candidate.sliceId ===
+								canonicalSliceId(args.sliceId),
+						);
+						if (slice === undefined) {
+							throw new Error(
+								`slice "${args.sliceId}" not found in ${entry.file}`,
+							);
+						}
 						// a00072 S3.c — quality gate BEFORE flipping status.
 						// If the probe is wired and reports severity=error,
 						// refuse the close. Hosts that do not wire the quality
@@ -1051,6 +1094,41 @@ export const buildCloseSliceRegistration = (
 								throw err;
 							}
 						}
+						const configuredPersist = closeSliceOptions.persist ?? {
+							mode: 'none' as const,
+						};
+						const persistResult = await maybePersistAfterSlice(
+							slice.files,
+							entry.id,
+							canonicalSliceId(args.sliceId),
+							{
+								...configuredPersist,
+								cwd: options.workspaceRoot,
+								...(closeSliceOptions.persistGit !== undefined
+									? { git: closeSliceOptions.persistGit }
+									: {}),
+							},
+						);
+						if (
+							persistResult.mode !== 'none' &&
+							(!persistResult.committed ||
+								(persistResult.mode === 'commit-and-push' &&
+									persistResult.pushed !== true))
+						) {
+							const err: ICloseSliceThrownError = Object.assign(
+								new Error(
+									persistResult.reason ??
+										'persistence is incomplete; the slice was not closed',
+								),
+								{
+									kind: 'validation-error' as const,
+									output: JSON.stringify(persistResult),
+									persist: persistResult,
+								},
+							);
+							throw err;
+						}
+						persisted = persistResult;
 						const block = flipSliceStatusDone(rawBlock);
 						const nextContent = md.replace(
 							blockRe,
@@ -1076,6 +1154,12 @@ export const buildCloseSliceRegistration = (
 							sliceId: args.sliceId,
 							closed: false,
 							validationOutput: String(err.output ?? ''),
+							...(err.persist !== undefined
+								? { persist: err.persist }
+								: {}),
+							...(err.persist !== undefined
+								? { persist: err.persist }
+								: {}),
 						};
 						return toolErrorEnvelope(envelope);
 					}
@@ -1172,6 +1256,7 @@ export const buildCloseSliceRegistration = (
 					sliceId: args.sliceId,
 					closed: true,
 					lockReleased,
+					persist: persisted,
 					pendingIntegrationBranch,
 				});
 			},
