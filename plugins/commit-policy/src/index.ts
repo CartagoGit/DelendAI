@@ -289,7 +289,7 @@ export default definePlugin({
 					'- `cadence.triggers` — `slice | threshold | interval | manual` (default `[]`, so no automatic commits).',
 					'- `audit.trailer` — `none | co-authored-by | body-metadata` (default `co-authored-by`).',
 					'- `push.enabled` / `push.onCommit` / `push.everyNCommits` / `push.everyNMinutes` — all default `false`.',
-					'- `push.protectedBranches` defaults to `main` + `master` + `develop`; `push.force` defaults to `with-lease`.',
+					'- `push.protectedBranches` defaults to `main` + `master`; `push.force` defaults to `with-lease`.',
 					'',
 					'**Off by default.** Hosts must opt in:',
 					'',

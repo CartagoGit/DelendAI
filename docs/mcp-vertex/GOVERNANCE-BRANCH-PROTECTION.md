@@ -7,7 +7,10 @@
 
 ## Goal
 
-`develop` and `main` MUST be protected on GitHub with:
+`main` MUST be protected on GitHub with the release checks below. `develop` is
+the repository's open working branch: agents work there directly by default,
+and the configured commit policy publishes completed slices to `develop`.
+Per-agent worktrees are opt-in through `agentWorktree: true`.
 
 1. **Required status checks** matching the names declared in
    [`.github/branch-protection.ts`](../../.github/branch-protection.ts)
@@ -25,14 +28,11 @@
 5. **`allow_deletions: false`** — branches cannot be deleted
    through the UI/API.
 
-Work happens on `wip/*` (and the already-allowed `fix/*` / `feature/*`)
-branches; `develop` receives merges via pull request, and `main` stays
-the release branch. **`required_checks` alone does not stop a direct
-push** — GitHub's "Require a pull request before merging" toggle is a
-separate setting with no field in `branch-protection.ts` (this file's
-schema only tracks required checks + the boolean defaults below). The
-operator must enable that toggle by hand for `develop` (see Step 2)
-until it is worth adding to the declarative schema and its verifier.
+Work may happen on `develop` directly or on an explicitly configured
+worktree/branch. `main` remains the release branch and is protected. The
+`required_checks` field applies only to branches declared as protected in
+`branch-protection.ts`; `develop` intentionally has no GitHub protection rule
+in this repository.
 
 The verifier (`verify-branch-protection.script.ts`) fetches the
 live GitHub state and exits non-zero when the actual policy
@@ -62,16 +62,14 @@ the next CI run will catch the drift before any merge happens.
 Match every field in
 [`.github/branch-protection.ts`](../../.github/branch-protection.ts):
 
-- **Branch name pattern:** `develop` (repeat for `main`).
+- **Branch name pattern:** `main`.
 - **Require status checks to pass before merging:** ✅ ON.
 - **Require branches to be up to date before merging:** ✅ ON
   (this is the `strict: true` flag — checks the latest commit).
 - **Required checks:** add every name in `branches[].required_checks`
   (today: just `ci-complete`). This name MUST match the `name:` field
   in `.github/workflows/ci.yml` exactly (case-sensitive).
-- **Require a pull request before merging:** ✅ ON for `develop` (this
-  is what actually stops a direct push; `branch-protection.ts` has no
-  field for it yet — see the note above).
+- **Require a pull request before merging:** ✅ ON for `main`.
 - **Require linear history:** ✅ ON.
 - **Do not allow force pushes:** ✅ ON.
 - **Do not allow deletions:** ✅ ON.
@@ -151,7 +149,7 @@ that defeats the audit goal.
 
 ## Related
 
-- [c00131 — `develop` en `commit-policy.protectedBranches` por defecto](../proposals/ready/chores/c00131-develop-protectedbranches-default.md) (defensa en profundidad a nivel plugin).
+- [c00145 — `develop` no está protegida por defecto en `commit-policy`](../proposals/ready/chores/c00145-protectedbranches-default-main-only.md).
 - [x00257 — Eliminar `force-with-lease` para ramas protegidas](../proposals/ready/fixes/x00257-eliminar-force-with-lease-ramas-protegidas.md).
-- [x00258 — Bloquear push directo a `develop`](../proposals/ready/fixes/x00258-bloquear-push-directo-develop-commit-policy.md).
+- [x00299 — Permitir persistencia configurada hacia `develop`](../proposals/ready/fixes/x00299-permitir-persistencia-configurada-hacia-develop.md).
 - [v00125 — Verificar estado real de `develop`](../proposals/ready/verifications/v00125-verificar-estado-real-develop-verde-protegida.md).
