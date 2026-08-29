@@ -97,7 +97,7 @@ no inferir el estado desde configs declarativas.
 
 ### 3. Tests
 
-- `tools/scripts/ci/verify-develop-health.spec.ts`:
+- `tools/tests/ci/verify-develop-health.spec.ts`:
   - Fixtures de respuestas de GitHub API (CI green, CI red,
     protection presente, protection ausente).
   - Exit 0 con todo verde + protected.
@@ -117,7 +117,7 @@ no inferir el estado desde configs declarativas.
 ### S1 — Script + dashboard entry + CI nightly + tests
 
 - **Status**: pending
-- **Files**: `tools/scripts/ci/verify-develop-health.script.ts`, `tools/scripts/ci/verify-develop-health.spec.ts`, `apps/web/src/data/develop-health.json`, `.github/workflows/verify-develop-health.yml`
+- **Files**: `tools/scripts/ci/verify-develop-health.script.ts`, `tools/tests/ci/verify-develop-health.spec.ts`, `apps/web/src/data/develop-health.json`, `.github/workflows/verify-develop-health.yml`
 - **Gate**: type
 
 ## acceptance
