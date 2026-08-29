@@ -121,7 +121,8 @@ const loadTsCompilerApi = (): Record<string, any> => {
 				return api as Record<string, any>;
 			}
 		} catch {
-			continue;
+			// Intentional: this candidate runtime is unusable; the loop
+			// naturally advances to the next entry.
 		}
 	}
 	throw new Error(
