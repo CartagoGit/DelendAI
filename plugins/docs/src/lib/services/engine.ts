@@ -33,6 +33,7 @@ const DEFAULT_IGNORE_DIRS: readonly string[] = [
 	'coverage',
 	'.cache',
 ];
+const DEFAULT_MAX_RESULTS = 200;
 const MAX_READ_BYTES = 256 * 1024;
 
 const extOf = (name: string): string => {
@@ -118,7 +119,7 @@ export const listDocs = async (
 		).map((e) => e.toLowerCase().replace(/^\./, '')),
 	);
 	const ignore = new Set(options.ignoreDirs ?? DEFAULT_IGNORE_DIRS);
-	const max = clamp(options.maxResults, 200, 1, 1000);
+	const max = clamp(options.maxResults, DEFAULT_MAX_RESULTS, 1, 1000);
 
 	const docs: IDocEntry[] = [];
 	let truncated = false;
@@ -228,6 +229,7 @@ export interface IDocSearchHit {
 const SNIPPET_MAX_CHARS = 200;
 const SNIPPET_CONTEXT_CHARS = 80;
 const TITLE_HIT_WEIGHT = 3;
+const DEFAULT_SEARCH_LIMIT = 10;
 
 const countOccurrences = (haystack: string, needle: string): number => {
 	if (needle.length === 0) return 0;
@@ -289,7 +291,7 @@ export const searchDocs = async (
 }> => {
 	const trimmed = query.trim();
 	if (trimmed.length === 0) return { hits: [], truncated: false };
-	const limit = clamp(options.limit, 10, 1, 100);
+	const limit = clamp(options.limit, DEFAULT_SEARCH_LIMIT, 1, 100);
 
 	const { docs, truncated, diagnostic } = await listDocs(
 		workspaceRootAbs,
