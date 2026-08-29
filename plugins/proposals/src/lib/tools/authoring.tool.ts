@@ -1,6 +1,7 @@
 import { dirname, join } from 'node:path';
 import z from 'zod';
 import type {
+	IToolRegistration,
 	IToolTextResult,
 } from '@mcp-vertex/core/public';
 import {
@@ -1111,12 +1112,14 @@ export const buildCloseSliceRegistration = (
 									? { git: closeSliceOptions.persistGit }
 									: {}),
 							},
-							);
-						if (
-							persistResult.committed !== true ||
+						);
+						const persistIncomplete =
+							(configuredPersist.mode === 'commit' &&
+								persistResult.committed !== true) ||
 							(configuredPersist.mode === 'commit-and-push' &&
-								persistResult.pushed !== true)
-						) {
+								(persistResult.committed !== true ||
+									persistResult.pushed !== true));
+						if (persistIncomplete) {
 							const err: ICloseSliceThrownError = Object.assign(
 								new Error(
 									persistResult.reason ??

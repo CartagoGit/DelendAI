@@ -415,6 +415,12 @@ export const assembleCliConfig = async (
 		cacheNamespace?: string,
 	): IMcpPluginContext => {
 		const pluginConfig = pluginConfigFor(fileConfig, pluginName);
+		const pluginOptions = new Map(
+			Object.entries(fileConfig.plugins ?? {}).map(([name, config]) => [
+				name,
+				config.options ?? {},
+			]),
+		);
 		return {
 			workspace,
 			corePaths,
@@ -431,6 +437,7 @@ export const assembleCliConfig = async (
 			pluginDocsDir: joinRel(corePaths.docsDir, pluginName),
 			namespacePrefix: `${corePrefix}_${pluginConfig.prefix ?? pluginName}`,
 			options: pluginConfig.options ?? {},
+			pluginOptions,
 			args: args.extra,
 			cacheEvictionRegistry,
 			peerPlugins: peerRegistry.registry,

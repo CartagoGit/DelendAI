@@ -18,7 +18,9 @@ import type {
 import type { IManagedLazyPluginCatalogEntry } from './managed-lazy-catalog.generated';
 import type { IManagedLazyDisposeAggregateError } from '../contracts/interfaces/plugin-activation-session.interface';
 import { activatePluginSession } from './plugin-activation-session';
+import { normalizePluginOptions } from './plugin-activation-session';
 import { extractPartialRuntime } from './load-plugins-runtime.helper';
+import { validatePluginConfiguration } from './configuration-compatibility';
 
 export interface IManagedLazyToolBinding {
 	readonly description?: string | undefined;
@@ -83,6 +85,43 @@ export interface IManagedLazyRuntimeOptions {
 		readonly resolvedSpecifier: string;
 	}) => void;
 }
+
+export const validateManagedLazyConfiguration = async (options: {
+	readonly plugins: readonly IManagedLazyPluginCatalogEntry[];
+	readonly buildContext: (
+		pluginName: string,
+		cacheNamespace?: 'results',
+	) => IMcpPluginContext;
+	readonly pluginOptions: ReadonlyMap<
+		string,
+		Readonly<Record<string, unknown>>
+	>;
+	readonly enabledPlugins: readonly string[];
+	readonly importFn: (specifier: string) => Promise<unknown>;
+}): Promise<readonly string[]> => {
+	const loadedPlugins: IMcpPlugin[] = [];
+	const normalizedOptions = new Map<
+		string,
+		Readonly<Record<string, unknown>>
+	>();
+	for (const definition of options.plugins) {
+		const module = await options.importFn(definition.packageSpecifier);
+		const plugin = pluginFromModule(module);
+		if (plugin === undefined) continue;
+		const normalized = normalizePluginOptions(
+			plugin,
+			options.buildContext(plugin.name, plugin.cacheNamespace),
+		);
+		if (!normalized.ok) throw new Error(normalized.message);
+		loadedPlugins.push(plugin);
+		normalizedOptions.set(plugin.name, normalized.ctx.options);
+	}
+	return validatePluginConfiguration({
+		plugins: loadedPlugins,
+		pluginOptions: normalizedOptions,
+		enabledPlugins: options.enabledPlugins,
+	});
+};
 
 interface ICapturedTool {
 	readonly name: string;
@@ -211,6 +250,16 @@ export const createManagedLazyRuntime = (
 				pluginId,
 				plugin.cacheNamespace,
 			);
+			const configurationIssues = await validatePluginConfiguration({
+				plugins: [plugin],
+				pluginOptions:
+					context.pluginOptions ??
+					new Map([[pluginId, context.options]]),
+				enabledPlugins: options.plugins.map((entry) => entry.id),
+			});
+			if (configurationIssues.length > 0) {
+				throw new Error(configurationIssues.join('\n\n'));
+			}
 			// Goes through the SAME `PluginActivationSession` primitive the
 			// eager loader uses: options are parsed via `parsed.data` (not
 			// discarded, AUD-E01.a), `register()` runs under

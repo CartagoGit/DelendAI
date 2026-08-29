@@ -30,7 +30,7 @@ La configuración del repositorio pide commit-and-push, pero auto_work sólo emi
 - global_gate: type
 
 ### S1 — Runner de persistencia real y contrato estricto commit-and-push
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/proposals/src/lib/tools/auto-work-persist.ts`, `plugins/proposals/src/lib/shared/git-runner.ts`, `plugins/proposals/tests/src/lib/tools/auto-work-persist.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -38,10 +38,12 @@ La configuración del repositorio pide commit-and-push, pero auto_work sólo emi
   - "En modo commit-and-push, el resultado sólo tiene pushed=true después de que git push devuelve ok=true; committed=true,pushed=false siempre es un resultado de error/incompleto, nunca éxito."
   - "Se conservan staging explícito por archivos, identidad configurada y rechazo de ramas protegidas según la política efectiva."
   - "Las pruebas cubren runner real inyectado/por defecto, push rechazado, timeout o error de git y éxito completo con hash y push verificado."
-- review-state: in_review
+- review-state: done
 - review-implementer: finch
+- review-reviewer: delivery_verifier
+- review-log: approved by delivery_verifier — Revisión independiente: el commit d2e53cae contiene los tres archivos declarados de S1; el gate type salió con exit code 0 y la suite enfocada pasó 27/27. La implementación satisface runner real async, staging explícito, protección de ramas y resultados incompletos en fallos de push.
 ### S2 — close_slice ejecuta la persistencia configurada y expone el resultado
-- **Status**: pending
+- **Status**: done
 - **DependsOn**: [S1]
 - **Files**: `plugins/proposals/src/lib/tools/authoring.tool.ts`, `plugins/proposals/src/lib/tools/auto-work.tool.ts`, `plugins/proposals/tests/src/lib/authoring.spec.ts`, `plugins/proposals/tests/src/lib/auto-work.spec.ts`
 - **Gate**: type
@@ -50,7 +52,10 @@ La configuración del repositorio pide commit-and-push, pero auto_work sólo emi
   - "El modo commit-and-push espera el push; si commit o push fallan, close_slice devuelve un envelope de error/incompleto con reason y nunca reporta closed=true como éxito final."
   - "La respuesta de close_slice y el plan de auto_work incluyen un bloque persistido tipado con mode, committed, pushed, hash/reason cuando corresponda."
   - "La ruta legacy sin persistencia conserva mode none y no toca git; no se hace git add . ni se incorporan cambios ajenos."
-
+- review-state: done
+- review-implementer: finch
+- review-reviewer: delivery_verifier
+- review-log: approved by delivery_verifier — Revisión independiente: la implementación 9c3ed108 cubre los cuatro archivos de producción/prueba declarados y 4940b0dd corrige el fixture para habilitar explícitamente agentWorktree en commit-and-push. El gate type devuelve exit code 0 y ambas suites pasan 42/42; close_slice no cierra ni libera ante persistencia incompleta y auto_work expone el bloque persistido.
 ### S3 — Host managed/lazy y activación de commit-policy antes de eventos de slice
 - **Status**: pending
 - **DependsOn**: [S2]

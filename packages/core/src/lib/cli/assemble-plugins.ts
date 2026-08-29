@@ -46,7 +46,10 @@ import {
 	MANAGED_LAZY_PLUGIN_BY_ID,
 	type MANAGED_LAZY_PLUGIN_CATALOG,
 } from '../plugins/managed-lazy-catalog.generated';
-import { createManagedLazyRuntime } from '../plugins/managed-lazy-runtime';
+import {
+	createManagedLazyRuntime,
+	validateManagedLazyConfiguration,
+} from '../plugins/managed-lazy-runtime';
 import { disposeLoadedPlugins } from '../plugins/load-plugins-runtime.helper';
 import type { IToolSurfaceLazyBinding } from '../contracts/interfaces/tool-surface.interface';
 
@@ -261,6 +264,22 @@ const tryAssembleManagedLazy = async (input: {
 				entry !== undefined,
 		);
 	input.peerRegistry.set(pluginIds);
+	const pluginOptions = new Map(
+		Object.entries(input.fileConfig.plugins ?? {}).map(([name, config]) => [
+			name,
+			config.options ?? {},
+		]),
+	);
+	const configurationIssues = await validateManagedLazyConfiguration({
+		plugins: definitions,
+		buildContext: input.buildContext,
+		pluginOptions,
+		enabledPlugins: pluginIds,
+		importFn: input.importFn,
+	});
+	if (configurationIssues.length > 0) {
+		throw new Error(configurationIssues.join('\n\n'));
+	}
 	const onToolCalls: IPluginToolCallObserver[] = [];
 	const onToolStarts: IPluginToolStartObserver[] = [];
 	const onToolCancels: IPluginToolCancelObserver[] = [];
@@ -572,6 +591,14 @@ export const assemblePlugins = async (
 		buildContext,
 		import: importFn ?? nodeDynamicImport,
 	});
+	const configurationErrors = loadResult.errors.filter(
+		(error) => error.specifier === 'configuration',
+	);
+	if (configurationErrors.length > 0) {
+		throw new Error(
+			configurationErrors.map((error) => error.message).join('\n\n'),
+		);
+	}
 
 	// S4 — `--strict-logs` auto-injects the `logs` plugin when
 	// the host did not name it explicitly. The injection is a no-op if

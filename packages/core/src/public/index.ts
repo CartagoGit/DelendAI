@@ -248,6 +248,8 @@ export type {
 	IMcpPlugin,
 	IMcpPluginContext,
 	IMcpPluginRegistrations,
+	IPluginConfigurationIssue,
+	IPluginConfigurationValidationInput,
 } from '../lib/plugins/plugin-contract';
 // (Track D): phased plugin lifecycle.
 export {

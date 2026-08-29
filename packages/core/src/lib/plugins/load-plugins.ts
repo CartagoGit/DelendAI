@@ -7,6 +7,7 @@ import type { IPluginRuntime } from '../contracts/interfaces/plugin-runtime.inte
 import type { IPluginRegisterErrorInfo } from '../contracts/interfaces/plugin-lifecycle-error.interface';
 import { registerResolvedPluginsWithLifecycle } from './load-plugins-lifecycle.helper';
 import { normalizePluginOptions } from './plugin-activation-session';
+import { validatePluginConfiguration } from './configuration-compatibility';
 import { resolve as resolvePath } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
@@ -189,7 +190,7 @@ interface IResolvedPlugin {
 	readonly specifier: string;
 	readonly resolved: string;
 	readonly plugin: IMcpPlugin;
-	readonly ctx: IMcpPluginContext;
+	ctx: IMcpPluginContext;
 }
 
 /**
@@ -308,6 +309,32 @@ export const loadPlugins = async (
 		ctx = normalized.ctx;
 		resolvedPlugins.push({ specifier, resolved, plugin, ctx });
 		resolvedNames.add(plugin.name);
+	}
+
+	// Cross-plugin configuration validation runs only after every selected
+	// plugin has passed its own schema and before any register() side effect.
+	// This makes incompatible policies a boot-time error, never a runtime race.
+	const pluginOptions = new Map(
+		resolvedPlugins.map(({ plugin, ctx }) => [plugin.name, ctx.options]),
+	);
+	const enabledPlugins = resolvedPlugins.map(({ plugin }) => plugin.name);
+	const configurationIssues = await validatePluginConfiguration({
+		plugins: resolvedPlugins.map(({ plugin }) => plugin),
+		pluginOptions,
+		enabledPlugins,
+	});
+	if (configurationIssues.length > 0) {
+		for (const message of configurationIssues) {
+			errors.push({
+				specifier: 'configuration',
+				message,
+			});
+		}
+		return { loaded: [], errors, registerErrors: [] };
+	}
+
+	for (const entry of resolvedPlugins) {
+		entry.ctx = { ...entry.ctx, pluginOptions };
 	}
 
 	const lifecycle = await registerResolvedPluginsWithLifecycle({

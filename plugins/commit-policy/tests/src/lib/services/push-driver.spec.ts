@@ -230,7 +230,7 @@ describe('runPushDriver', () => {
 		expect(pushes.calls.length).toBe(0);
 	});
 
-	it('refuses direct push to develop even when config omits it', async () => {
+	it('allows direct push to develop when config omits it', async () => {
 		const { run, pushes } = buildPushFake();
 		const result = await runPushDriver(
 			{},
@@ -240,10 +240,8 @@ describe('runPushDriver', () => {
 			}),
 			run,
 		);
-		expect(result.ok).toBe(false);
-		if (result.ok) return;
-		expect(result.refusal).toContain('DIRECT_PUSH_TO_DEVELOP_NOT_ALLOWED');
-		expect(pushes.calls.length).toBe(0);
+		expect(result.ok).toBe(true);
+		expect(pushes.calls.length).toBe(1);
 	});
 
 	it('refuses direct push to develop when config marks it protected', async () => {

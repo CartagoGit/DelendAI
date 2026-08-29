@@ -2,6 +2,10 @@ import {
 	createWorkspaceFileReader,
 	definePlugin,
 } from '@mcp-vertex/core/public';
+import type {
+	IPluginConfigurationIssue,
+	IPluginConfigurationValidationInput,
+} from '@mcp-vertex/core/public';
 import { createLogStore, logIncidents } from '@mcp-vertex/logs/public';
 import { access } from 'node:fs/promises';
 import { join } from 'node:path';
@@ -154,12 +158,111 @@ const PROPOSALS_OPTIONS_SCHEMA = z.object({
 		.optional(),
 });
 
+const hasSliceTrigger = (
+	options: Readonly<Record<string, unknown>>,
+): boolean => {
+	const cadence = options.cadence;
+	if (typeof cadence !== 'object' || cadence === null) return false;
+	const triggers = (cadence as { readonly triggers?: unknown }).triggers;
+	return (
+		Array.isArray(triggers) &&
+		triggers.some(
+			(trigger) =>
+				typeof trigger === 'object' &&
+				trigger !== null &&
+				(trigger as { readonly kind?: unknown }).kind === 'slice',
+		)
+	);
+};
+
+/**
+ * A slice must have one automatic Git owner. `proposals.persist` mutates Git
+ * while closing the slice; `commit-policy` with a slice cadence mutates Git
+ * after observing the same transition. The core invokes this before plugin
+ * registration so a contradictory persisted config stops the boot clearly.
+ */
+export const validateProposalConfiguration = (
+	input: IPluginConfigurationValidationInput,
+): readonly IPluginConfigurationIssue[] => {
+	const proposals = input.pluginOptions.get('proposals');
+	const commitPolicy = input.pluginOptions.get('commit-policy');
+	if (proposals === undefined || commitPolicy === undefined) return [];
+
+	const persist = proposals.persist;
+	const persistMode =
+		typeof persist === 'object' && persist !== null
+			? (persist as { readonly mode?: unknown }).mode
+			: undefined;
+	const commit = commitPolicy.commit;
+	const push = commitPolicy.push;
+	const commitEnabled =
+		typeof commit === 'object' && commit !== null
+			? (commit as { readonly enabled?: unknown }).enabled === true
+			: false;
+	const sliceCadence = hasSliceTrigger(commitPolicy);
+	const pushEnabled =
+		typeof push === 'object' && push !== null
+			? (push as { readonly enabled?: unknown }).enabled === true
+			: false;
+	const pushOnCommit =
+		typeof push === 'object' && push !== null
+			? (push as { readonly onCommit?: unknown }).onCommit === true
+			: false;
+
+	if (
+		persistMode !== undefined &&
+		persistMode !== 'none' &&
+		commitEnabled &&
+		sliceCadence
+	) {
+		return [
+			{
+				code: 'DUPLICATE_SLICE_GIT_OWNER',
+				message:
+					'Automatic slice persistence is configured in both plugins. Choose one Git owner: proposals.persist or commit-policy.cadence slice trigger; boot is stopped instead of guessing.',
+				keys: [
+					'plugins.proposals.options.persist.mode',
+					'plugins.commit-policy.options.commit.enabled',
+					'plugins.commit-policy.options.cadence.triggers',
+					'plugins.commit-policy.options.push.onCommit',
+				],
+				values: {
+					persistMode,
+					commitEnabled,
+					sliceCadence,
+					pushEnabled,
+					pushOnCommit,
+				},
+				precedence:
+					'Explicit host configuration wins; conflicting automatic owners are never merged implicitly.',
+				suggestedConfig: {
+					plugins: {
+						proposals: { options: { persist: { mode: 'none' } } },
+						'commit-policy': {
+							options: {
+								commit: { enabled: true },
+								cadence: { triggers: [{ kind: 'slice' }] },
+								push: {
+									enabled: pushEnabled,
+									onCommit: pushOnCommit,
+								},
+							},
+						},
+					},
+				},
+			},
+		];
+	}
+	return [];
+};
+
 export default definePlugin({
 	name: 'proposals',
 	version: '0.1.0',
 	describe:
 		'Proposal store + file-level agent locks + persistent task queue (multi-agent swarm coordination).',
 	optionsSchema: PROPOSALS_OPTIONS_SCHEMA,
+	validateConfiguration: validateProposalConfiguration,
 	configExample: {
 		summary:
 			'Default swarm setup: bun as the validation command, and an explicit agent-name pool so multi-agent runs get reproducible names.',
@@ -467,9 +570,9 @@ export default definePlugin({
 									.requirePeerReview as boolean,
 							}
 						: { requirePeerReview: true }),
-					...(ctx.options.persist !== undefined
+					...(parsedOptions.data.persist !== undefined
 						? {
-								persist: ctx.options.persist as {
+								persist: parsedOptions.data.persist as {
 									mode: 'none' | 'commit' | 'commit-and-push';
 									messageTemplate?: string;
 									pushTarget?: string;
