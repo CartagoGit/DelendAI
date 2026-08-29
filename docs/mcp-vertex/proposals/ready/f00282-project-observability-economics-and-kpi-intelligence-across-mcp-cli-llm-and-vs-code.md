@@ -31,9 +31,13 @@ Users need to understand both whether their project is progressing and whether t
 - global_gate: type
 
 ### S1 — Versioned KPI snapshot contract and aggregation core
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/project-kpis/src/index.ts`, `plugins/project-kpis/src/lib/contracts/kpi-snapshot.interface.ts`, `plugins/project-kpis/src/lib/contracts/kpi-snapshot.schema.ts`, `plugins/project-kpis/src/lib/services/kpi-aggregation.service.ts`, `plugins/project-kpis/tests/src/kpi-aggregation.spec.ts`
 - **Gate**: type
+- review-state: submitted
+- review-implementer: mcp-vertex-orchestrator
+- review-reviewer: delivery_verifier
+- review-log: Contrato versionado, esquema Zod estricto y agregador bounded implementados. Typecheck de tools verde y `bun vitest run plugins/project-kpis/tests/src/kpi-aggregation.spec.ts` verde (1 archivo, 2 tests).
 - acceptance:
   - "A new project-kpis plugin builds through definePlugin and exposes a versioned typed snapshot contract."
   - "The snapshot distinguishes measured, estimated, unavailable and not-configured values."
