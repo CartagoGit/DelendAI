@@ -100,7 +100,7 @@
 					"delegateAfterToolCalls": 3
 				},
 				"persist": {
-					"mode": "commit"
+					"mode": "none"
 				}
 			}
 		},
@@ -217,7 +217,7 @@
 					"force": "with-lease",
 					"protectedBranches": ["main", "master", "develop"],
 					"remote": "origin",
-					"branch": "HEAD:wip/mcp-vertex-work"
+					"branch": "wip/mcp-vertex-work"
 				},
 				"cadence": {
 					"triggers": [{ "kind": "slice" }],

@@ -54,6 +54,41 @@ describe('loadPlugins', async () => {
 		expect(result.loaded[0]?.registrations.tools?.[0]?.id).toBe('demo_x');
 	});
 
+	it('blocks registration when plugins report a configuration conflict', async () => {
+		let registered = false;
+		const conflict = {
+			name: 'conflict',
+			validateConfiguration: () => [
+				{
+					code: 'TEST_CONFLICT',
+					message: 'two settings disagree',
+					keys: ['plugins.a.options.mode', 'plugins.b.options.mode'],
+					suggestedConfig: {
+						plugins: { a: { options: { mode: 'safe' } } },
+					},
+				},
+			],
+			register: () => {
+				registered = true;
+				return { tools: [] };
+			},
+		};
+		const result = await loadPlugins({
+			specifiers: ['conflict'],
+			buildContext: ctx,
+			import: async () => ({ default: conflict }),
+		});
+		expect(result.loaded).toEqual([]);
+		expect(result.registerErrors).toEqual([]);
+		expect(registered).toBe(false);
+		expect(result.errors[0]?.specifier).toBe('configuration');
+		expect(result.errors[0]?.message).toContain('TEST_CONFLICT');
+		expect(result.errors[0]?.message).toContain('plugins.a.options.mode');
+		expect(result.errors[0]?.message).toContain(
+			'mcp-vertex.config.json patch',
+		);
+	});
+
 	it('a00063: threads a plugin-declared cacheNamespace into buildContext, nesting pluginCacheDir', async () => {
 		let seenPluginCacheDir = '';
 		const fakePlugin = {

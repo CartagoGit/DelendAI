@@ -15,7 +15,9 @@ import { join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import plugin from '@mcp-vertex/commit-policy';
+import plugin, {
+	validateCommitPolicyConfiguration,
+} from '@mcp-vertex/commit-policy';
 import type { IMcpPluginContext } from '@mcp-vertex/core/public';
 
 const buildCtx = (workspace: string): IMcpPluginContext => ({
@@ -55,6 +57,33 @@ describe('commit-policy lifecycle (x00261)', () => {
 
 	afterEach(async () => {
 		if (workspace) await rm(workspace, { recursive: true, force: true });
+	});
+
+	it('rejects an enabled push whose configured branch is protected', () => {
+		const issues = validateCommitPolicyConfiguration({
+			pluginName: 'commit-policy',
+			enabledPlugins: ['commit-policy'],
+			pluginOptions: new Map([
+				[
+					'commit-policy',
+					{
+						push: {
+							enabled: true,
+							branch: 'develop',
+							protectedBranches: ['main', 'develop'],
+						},
+					},
+				],
+			]),
+		});
+
+		expect(issues[0]).toMatchObject({
+			code: 'PUSH_TARGET_IS_PROTECTED',
+			keys: expect.arrayContaining([
+				'plugins.commit-policy.options.push.branch',
+				'plugins.commit-policy.options.push.protectedBranches',
+			]),
+		});
 	});
 
 	it('register() returns dispose() that is callable', async () => {

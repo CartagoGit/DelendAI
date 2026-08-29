@@ -71,6 +71,15 @@ export interface IMcpPluginContext {
 	 * file (or no entry for this plugin) is present.
 	 */
 	readonly options: Readonly<Record<string, unknown>>;
+	/**
+	 * Effective options for every plugin selected in this boot. This is a
+	 * read-only configuration view for cross-plugin compatibility checks;
+	 * plugins must never mutate or reinterpret another plugin's options.
+	 */
+	readonly pluginOptions?: ReadonlyMap<
+		string,
+		Readonly<Record<string, unknown>>
+	>;
 	/** Extra global CLI args not consumed by the core, e.g. `--foo=x`. */
 	readonly args: Readonly<Record<string, string>>;
 	/**
@@ -408,6 +417,17 @@ export interface IMcpPlugin {
 	 * the only three plugins that currently declare this.
 	 */
 	readonly cacheNamespace?: 'results';
+	/**
+	 * Optional cross-plugin configuration validator. It runs after every
+	 * selected plugin has passed its own schema and before any plugin is
+	 * registered. Returning issues blocks the whole boot with an actionable
+	 * configuration diagnostic; returning an empty list permits registration.
+	 */
+	readonly validateConfiguration?: (
+		input: IPluginConfigurationValidationInput,
+	) =>
+		| readonly IPluginConfigurationIssue[]
+		| Promise<readonly IPluginConfigurationIssue[]>;
 	register(
 		ctx: IMcpPluginContext,
 		signal?: AbortSignal,
@@ -418,6 +438,24 @@ export interface IMcpPlugin {
 				| IMcpPluginRegistrations
 				| IPluginRuntime<IMcpPluginRegistrations>
 		  >;
+}
+
+export interface IPluginConfigurationValidationInput {
+	readonly pluginName: string;
+	readonly pluginOptions: ReadonlyMap<
+		string,
+		Readonly<Record<string, unknown>>
+	>;
+	readonly enabledPlugins: readonly string[];
+}
+
+export interface IPluginConfigurationIssue {
+	readonly code: string;
+	readonly message: string;
+	readonly keys: readonly string[];
+	readonly values?: Readonly<Record<string, unknown>>;
+	readonly precedence?: string;
+	readonly suggestedConfig?: Readonly<Record<string, unknown>>;
 }
 
 /** Identity helper for type-safe plugin authoring and inference. */
