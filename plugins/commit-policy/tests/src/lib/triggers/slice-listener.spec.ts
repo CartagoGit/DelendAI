@@ -207,7 +207,7 @@ describe('slice listener', () => {
 			expect(listener.drainPending()).toEqual([]);
 		});
 
-		it('keeps the event in pending when the handler returns ERR', async () => {
+		it('retries a pending event when the handler returns ERR', async () => {
 			await writeIndex(workspace, [
 				{
 					id: 'f00181',
@@ -221,13 +221,17 @@ describe('slice listener', () => {
 				},
 			]);
 			const seen: string[] = [];
+			let attempts = 0;
 			const listener = createSliceListener(
 				workspace,
 				docsDir,
 				{ kind: 'slice', onStatuses: ['done'] },
 				async (event) => {
+					attempts += 1;
 					seen.push(event.sliceId ?? '');
-					return { ack: 'ERR', reason: 'engine refused' };
+					return attempts === 1
+						? { ack: 'ERR', reason: 'engine refused' }
+						: { ack: 'OK' };
 				},
 				1000,
 			);
@@ -245,10 +249,9 @@ describe('slice listener', () => {
 				},
 			]);
 			await listener.check();
-			expect(seen).toEqual(['S3']);
-			// Event stays in pending queue because the handler did not
-			// ack OK — the engine can drain it later.
-			expect(listener.drainPending().length).toBe(1);
+			await listener.check();
+			expect(seen).toEqual(['S3', 'S3']);
+			expect(listener.drainPending()).toEqual([]);
 		});
 
 		it('re-emits the event when the handler throws', async () => {
