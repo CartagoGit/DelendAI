@@ -228,10 +228,8 @@ const PushObjectSchema = z.object({
 		.trim()
 		.min(1, 'push.forceReason must not be empty when set')
 		.optional(),
-	/** Protected branches — push is always refused. Default `main` + `master` + `develop`. */
-	protectedBranches: z
-		.array(z.string())
-		.default(['main', 'master', 'develop']),
+	/** Protected branches — push is always refused. Default `main` + `master`. */
+	protectedBranches: z.array(z.string()).default(['main', 'master']),
 	/**
 	 * x00267 (AUD-CP-009): branch-name prefixes that are also
 	 * protected (e.g. `release/`, `hotfix/`). The unified branch
@@ -326,7 +324,7 @@ export const CommitPolicyOptionsSchema = z.object({
 		enabled: false,
 		onCommit: false,
 		force: 'with-lease',
-		protectedBranches: ['main', 'master', 'develop'],
+		protectedBranches: ['main', 'master'],
 		protectedPrefixes: ['release/', 'hotfix/'],
 	}),
 });

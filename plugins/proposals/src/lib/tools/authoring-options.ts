@@ -27,6 +27,7 @@ export interface IAuthoringPersistConfig {
 	readonly mode: 'none' | 'commit' | 'commit-and-push';
 	readonly messageTemplate?: string;
 	readonly pushTarget?: string;
+	readonly protectedBranches?: readonly string[];
 }
 
 export interface IAuthoringToolOptions {
