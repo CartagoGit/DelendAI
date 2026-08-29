@@ -43,7 +43,7 @@ import {
 	type ICommitAuthorResolution,
 } from '@mcp-vertex/core/public';
 
-import type { IGitRunner } from '../shared/git-runner';
+import { createGitRunner, type IGitRunner } from '../shared/git-runner';
 import { assessStaleAcceptance } from '../services/checkpoint-advisory-stale-acceptance.service';
 import type { ISliceAcceptanceEvidence } from '../services/slice-acceptance-evidence.service';
 
@@ -227,16 +227,7 @@ const pushWouldHitDevelop = (pushTarget: string): boolean => {
  */
 const resolveGitRunner = (options: IAutoWorkPersistOptions): IGitRunner => {
 	if (options.git) return options.git;
-	// Lazy import to keep `auto-work-persist` decoupled from
-	// `child_process` for unit tests that always inject `options.git`.
-	// Falls back to a no-op runner that always reports "git missing" so
-	// callers see the right `IPersistResult.reason` instead of an
-	// unhandled crash.
-	return async () => ({
-		ok: false,
-		output: '',
-		reason: 'git runner not provided and no default available',
-	});
+	return createGitRunner(options.cwd ?? process.cwd());
 };
 
 /**
@@ -352,7 +343,16 @@ export const maybePersistAfterSlice = async (
 		});
 	}
 
-	return persistResult(true, result.pushed, mode, {
+	if (mode === 'commit-and-push' && result.pushed !== true) {
+		return persistResult(true, false, mode, {
+			reason:
+				result.reason ??
+				'commit completed but push was not confirmed; persistence is incomplete',
+			...(result.hash !== undefined ? { hash: result.hash } : {}),
+		});
+	}
+
+	return persistResult(true, mode === 'commit-and-push', mode, {
 		...(result.hash !== undefined ? { hash: result.hash } : {}),
 		...(result.reason !== undefined ? { reason: result.reason } : {}),
 	});

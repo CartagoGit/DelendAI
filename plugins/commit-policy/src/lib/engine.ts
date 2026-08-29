@@ -115,12 +115,24 @@ export type IEngineResult =
 			readonly ack: 'ERR';
 			readonly code: IEngineRefusalCode;
 			readonly reason: string;
+			readonly committed?: boolean;
+			readonly pushed?: boolean;
+			readonly commitSha?: string | undefined;
 	  };
 
-const err = (code: IEngineRefusalCode, reason: string): IEngineResult => ({
+const err = (
+	code: IEngineRefusalCode,
+	reason: string,
+	metadata?: {
+		readonly committed?: boolean;
+		readonly pushed?: boolean;
+		readonly commitSha?: string | undefined;
+	},
+): IEngineResult => ({
 	ack: 'ERR',
 	code,
 	reason,
+	...(metadata ?? {}),
 });
 
 export interface IEngineOptions {
@@ -258,23 +270,50 @@ export const createCommitPolicyEngine = (
 				return refusalToEngine(result.refusal);
 			}
 
-			// Step 7 — push (x00266/x00298). A configured push is part
-			// of the result contract: never acknowledge the event before
-			// the push has completed.
+			// Step 7 — push (x00266). Wait for the scheduler so
+			// callers never observe a premature success.
 			let pushed = result.pushed;
 			if (options.onCommitSucceeded !== undefined && result.committed) {
 				try {
 					const pushResult = await options.onCommitSucceeded();
+					if (
+						pushResult !== null &&
+						pushResult !== undefined &&
+						!isPushSuccess(pushResult)
+					) {
+						return err(
+							'PUSH_FAILED',
+							pushFailureReason(pushResult),
+							{
+								committed: true,
+								pushed: false,
+								...(result.hash !== undefined
+									? { commitSha: result.hash }
+									: {}),
+							},
+						);
+					}
 					if (pushResult !== null && pushResult !== undefined) {
-						if (!pushResult.ok) {
-							return err('PUSH_FAILED', pushResult.refusal);
-						}
-						pushed = true;
+						return {
+							ack: 'OK',
+							committed: true,
+							pushed: true,
+							...(result.hash !== undefined
+								? { commitSha: result.hash }
+								: {}),
+						};
 					}
 				} catch (error) {
 					return err(
 						'PUSH_FAILED',
-						error instanceof Error ? error.message : String(error),
+						`push failed: ${error instanceof Error ? error.message : String(error)}`,
+						{
+							committed: true,
+							pushed: false,
+							...(result.hash !== undefined
+								? { commitSha: result.hash }
+								: {}),
+						},
 					);
 				}
 			}
@@ -303,6 +342,20 @@ export const createCommitPolicyEngine = (
 			}
 		},
 	};
+};
+
+const isPushSuccess = (value: unknown): boolean =>
+	typeof value === 'object' &&
+	value !== null &&
+	'ok' in value &&
+	(value as { readonly ok?: unknown }).ok === true;
+
+const pushFailureReason = (value: unknown): string => {
+	if (typeof value === 'object' && value !== null && 'refusal' in value) {
+		const refusal = (value as { readonly refusal?: unknown }).refusal;
+		if (typeof refusal === 'string') return refusal;
+	}
+	return 'push failed';
 };
 const composeMessage = (event: IEngineEvent): string => {
 	switch (event.kind) {
