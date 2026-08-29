@@ -112,7 +112,7 @@ delegate al puerto, toolOk con tier.
 
 - **Status**: done
 - **Files**:
-    - `plugins/issues/src/lib/contracts/security.types.ts` (nuevo)
+    - `plugins/issues/src/lib/contracts/interfaces/security.interface.ts` (nuevo — renombrado al implementar para cumplir `lint:types-in-contracts`)
     - `plugins/issues/src/lib/contracts/index.ts` (re-export)
     - `plugins/issues/src/lib/github-client.ts` (4 funciones nuevas)
 - **Gate**: `bunx tsc --noEmit -p plugins/issues/tsconfig.json`
@@ -143,7 +143,7 @@ delegate al puerto, toolOk con tier.
 
 - **Status**: done
 - **Files**:
-    - `plugins/issues/tests/src/lib/github-client-security.spec.ts` (nuevo —
+    - `plugins/issues/tests/src/lib/github-client-security-secret-scanning-advisories.spec.ts` y `plugins/issues/tests/src/lib/github-client-security-dependabot-code-scanning.spec.ts` (nuevos — el spec único se partió en dos al implementar) (nuevo —
       fakes de spawn/fetch por tier, igual que los specs de issues)
     - `plugins/issues/tests/src/lib/tools/list-dependabot.tool.spec.ts` (nuevo)
     - `plugins/issues/tests/src/lib/tools/list-code-scanning.tool.spec.ts` (nuevo)
