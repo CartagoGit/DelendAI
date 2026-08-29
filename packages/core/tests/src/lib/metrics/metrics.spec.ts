@@ -133,6 +133,30 @@ describe('metrics tool — persist snapshots (M29)', async () => {
 		expect(res.structuredContent?.persistedTo).toBeUndefined();
 		expect(res.structuredContent?.tools).toBeDefined();
 	});
+
+	it('reset:true returns the pre-reset snapshot but zeroes the registry for the next read', async () => {
+		const registry = createMetricsRegistry();
+		registry.record('demo_ping', { ms: 5, bytes: 10, isError: false });
+		const reg = buildMetricsToolRegistration('mcp-vertex', registry);
+		let handler: (
+			a: unknown,
+		) => Promise<{ structuredContent?: Record<string, unknown> }>;
+		await reg.register({
+			registerTool: (_n: string, _d: unknown, fn: typeof handler) => {
+				handler = fn;
+			},
+		} as never);
+
+		const res = await handler!({ reset: true });
+
+		// The caller that asked for the reset still sees the data it reset.
+		const tools = res.structuredContent?.tools as
+			| Record<string, { calls: number }>
+			| undefined;
+		expect(tools?.demo_ping?.calls).toBe(1);
+		// But the registry itself is now empty for whoever reads it next.
+		expect(registry.snapshot().tools).toEqual({});
+	});
 });
 
 describe('tool metrics instrumentation over the protocol (M12)', async () => {

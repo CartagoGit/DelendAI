@@ -127,6 +127,12 @@ export default definePlugin({
 		}
 
 		const engine: OrchestratorEngine = createOrchestratorEngine(policy);
+		const classifier = new TaskClassifier();
+		// One sink per plugin registration, shared by `_dispatch` (which
+		// emits into it) and `_events` (which reads it back). Not a
+		// module-level singleton: a fresh instance per `register()` call,
+		// matching the engine's own lifecycle.
+		const telemetry = new InMemoryTelemetrySink();
 
 		// Resolve the dispatch port. Missing/invalid configuration fails
 		// loudly here rather than quietly degrading to a port that never
@@ -157,6 +163,13 @@ export default definePlugin({
 					namespacePrefix: ctx.namespacePrefix,
 					engine: () => engine,
 					port,
+					telemetry,
+				}),
+				buildReadOnlyToolRegistration({
+					namespacePrefix: ctx.namespacePrefix,
+					classifier,
+					telemetry,
+					policyDefaultMode: () => policy.defaultMode,
 				}),
 			],
 			knowledge: [

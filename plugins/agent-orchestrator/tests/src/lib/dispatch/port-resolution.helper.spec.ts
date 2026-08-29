@@ -76,6 +76,17 @@ describe('resolveDispatchPort', () => {
 		).toThrow(/boom/);
 	});
 
+	it('stringifies a non-Error throw from the factory into the wrapped message', () => {
+		expect(() =>
+			resolveDispatchPort({
+				portFactory: () => {
+					// biome-ignore lint/style/useThrowOnlyError: proving the String(err) fallback for a non-Error throw
+					throw 'not an Error instance';
+				},
+			}),
+		).toThrow(/not an Error instance/);
+	});
+
 	it('throws InvalidDispatchPortFactoryError when portFactory is present but not a function', () => {
 		expect(() =>
 			resolveDispatchPort({
