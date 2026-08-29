@@ -2,7 +2,7 @@
 id: c00010
 title: "CI — required checks en `develop` branch policy (CI2-001)"
 kind: chore
-status: in-progress
+status: paused
 type: proposal
 track: ci
 date: 2026-08-25
@@ -210,8 +210,10 @@ jobs:
   - "≥14 required checks."
   - "enforce_admins: true."
   - "Documentación explica política."
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: proposal_guardian
+- review-reviewer: delivery_verifier
+- review-log: requested_changes by delivery_verifier — Bloqueo de aprobación: S2 exige proteger develop con >=14 required checks y enforce_admins: true, pero la política declarativa vigente declara develop protected: false y required_checks: [] en .github/branch-protection.ts, mientras la documentación actual también dice que develop sigue abierto y que solo main requiere ci-complete. El workflow sí define ci-complete como agregado de 16 jobs y defaults.enforce_admins: true, pero eso solo aplica a ramas protegidas. Hay que resolver el alcance de S2 (cambiar la propuesta para aceptar develop abierto con agregado en main) o cambiar la política declarativa para que develop quede realmente protegido.
 ## Acceptance
 
 - **E2E**: push que rompe un check → push rechazado.
