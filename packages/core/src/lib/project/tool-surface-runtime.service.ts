@@ -29,6 +29,7 @@ import { TOOL_DETAILS_PREFIX } from '../contracts/constants/tool-details-prefix.
 import { measureToolWireBytes } from '../surface/bootstrap';
 import { enforceDryRunReturnContract } from '../dry-run/enforce';
 import { runWithDryRunScope } from '../dry-run/dry-run-scope.helper';
+import { recordDryRunViolation } from '../dry-run/dry-run-violation-log';
 
 const DEFAULT_SEARCH_LIMIT = 20;
 const DEFAULT_WORKING_SET_POLICY = {
@@ -601,7 +602,7 @@ class ToolSurfaceRuntime implements IToolSurfaceRuntime {
 						? await handler(extra)
 						: await handler(parsed.value, extra),
 			);
-			return this.applyDryRunContract(name, args, result);
+			return this.applyDryRunContract(name, pluginId, args, result);
 		} finally {
 			if (pluginId !== undefined) {
 				const remaining =
@@ -841,6 +842,7 @@ class ToolSurfaceRuntime implements IToolSurfaceRuntime {
 	 */
 	private applyDryRunContract(
 		name: string,
+		pluginId: string | undefined,
 		args: unknown,
 		result: unknown,
 	): unknown {
@@ -849,6 +851,19 @@ class ToolSurfaceRuntime implements IToolSurfaceRuntime {
 			result,
 		});
 		if (verdict.kind === 'forwarded') return verdict.value;
+		// S1 (r00037): DETECTION already happened — the handler ran to
+		// completion before this line — but the violation is no longer
+		// silent: it is recorded with the plugin/tool responsible so a
+		// host can turn `listDryRunViolations()` into measurable
+		// migration pressure. Prevention (making the effect itself
+		// impossible) is the EffectBroker, not this log.
+		recordDryRunViolation({
+			ts: new Date().toISOString(),
+			tool: name,
+			pluginId,
+			reason: verdict.reason,
+			issues: verdict.issues,
+		});
 		return buildDryRunContractViolationResult(name, verdict);
 	}
 
