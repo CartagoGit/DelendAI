@@ -48,6 +48,13 @@ describe('issues_fetch', async () => {
 				return STUB_RESULT;
 			},
 			listIssues: async () => ({ issues: [], tier: 'gh' }),
+			listDependabotAlerts: async () => ({ alerts: [], tier: 'gh' }),
+			listCodeScanningAlerts: async () => ({ alerts: [], tier: 'gh' }),
+			listSecretScanningAlerts: async () => ({ alerts: [], tier: 'gh' }),
+			listSecurityAdvisories: async () => ({
+				advisories: [],
+				tier: 'gh',
+			}),
 		};
 		const options: IFetchIssueToolOptions = {
 			namespacePrefix: 'issues',
@@ -71,6 +78,13 @@ describe('issues_fetch', async () => {
 				throw new Error('issue not found');
 			},
 			listIssues: async () => ({ issues: [], tier: 'gh' }),
+			listDependabotAlerts: async () => ({ alerts: [], tier: 'gh' }),
+			listCodeScanningAlerts: async () => ({ alerts: [], tier: 'gh' }),
+			listSecretScanningAlerts: async () => ({ alerts: [], tier: 'gh' }),
+			listSecurityAdvisories: async () => ({
+				advisories: [],
+				tier: 'gh',
+			}),
 		};
 		const options: IFetchIssueToolOptions = {
 			namespacePrefix: 'issues',
