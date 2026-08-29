@@ -17,15 +17,16 @@ import {
 	buildBootstrapActions,
 	type IScanEntry,
 } from '../proposals/adopt';
-import {
-	STATUS_TO_FOLDER,
-	PROPOSAL_KINDS,
-} from '../contracts/constants/proposal-glossary.constant';
+import { PROPOSAL_KINDS } from '../contracts/constants/proposal-glossary.constant';
 import { DEFAULT_PATH_LAYOUT } from '../contracts/constants/default-path-layout.constant';
 import type { IHostPathLayout } from '../contracts/interfaces/swarm-path-layout.interface';
 import { migrateForeign } from '../proposals/migrate-foreign';
 import { syncProposalRegistry } from '../proposals/sync-proposal-registry';
 import type { IAuthoringToolOptions } from './authoring.tool';
+import {
+	proposalFoldersForPolicy,
+	type IProposalFolderPolicy,
+} from '../contracts/proposal-folder-policy';
 
 // l00008 s4 — mirrors `PROPOSALS_LAYOUT` (proposals/adopt.ts): a static
 // documentation object, not the runtime `IHostPathLayout`. `files`/
@@ -113,13 +114,14 @@ const scanDir = async (dirAbs: string): Promise<IScanEntry[]> => {
  * files are skipped (a hand-rolled README wins); missing ones are
  * written atomically. Returns what happened, path by path.
  */
-const applyBootstrap = async (
+export const bootstrapProposalsStore = async (
 	dirAbs: string,
+	folderPolicy?: IProposalFolderPolicy,
 ): Promise<{ created: string[]; skipped: string[] }> => {
 	const created: string[] = [];
 	const skipped: string[] = [];
 	for (const action of buildBootstrapActions(
-		Object.values(STATUS_TO_FOLDER),
+		proposalFoldersForPolicy(folderPolicy),
 	)) {
 		const abs = join(dirAbs, ...action.rel.split('/'));
 		const exists = await access(abs).then(
@@ -261,7 +263,10 @@ export const buildAdoptRegistration = (
 				let created: string[] = [];
 				let skipped: string[] = [];
 				if (args.apply === true) {
-					({ created, skipped } = await applyBootstrap(dirAbs));
+					({ created, skipped } = await bootstrapProposalsStore(
+						dirAbs,
+						options.folderPolicy,
+					));
 				}
 
 				// f00116 S3: apply + migrate compose in one call — the
@@ -285,6 +290,8 @@ export const buildAdoptRegistration = (
 						options.workspaceRoot,
 						syncLayout,
 						options.extraFolders ?? [],
+						undefined,
+						options.folderPolicy,
 					);
 				}
 

@@ -17,6 +17,7 @@ import {
 	type ITriggerAck,
 	type ITriggerEvent,
 } from './lib/triggers/slice-listener';
+import { createIntervalTimer } from './lib/triggers/interval-timer';
 import { buildCommitToolRegistration } from './lib/tools/commit-tool';
 import { buildPushToolRegistration } from './lib/tools/push-tool';
 import { buildRunToolRegistration } from './lib/tools/run-tool';
@@ -277,6 +278,51 @@ export default definePlugin({
 			);
 			listener.start();
 			disposables.push(() => listener.stop());
+		}
+
+		const intervalTrigger = policy.cadence.triggers.find(
+			(t): t is Extract<typeof t, { kind: 'interval' }> =>
+				t.kind === 'interval',
+		);
+		if (intervalTrigger !== undefined) {
+			const intervalTimer = createIntervalTimer(run, intervalTrigger);
+			const intervalMs = intervalTrigger.minutes * 60_000;
+			let intervalCheckInFlight = false;
+			let intervalEventSequence = 0;
+			const checkInterval = async (): Promise<void> => {
+				if (intervalCheckInFlight) return;
+				intervalCheckInFlight = true;
+				try {
+					const event = await intervalTimer.check(intervalMs);
+					if (event === null || event.files === undefined) return;
+					intervalEventSequence += 1;
+					const result = await engine.handle({
+						kind: 'interval',
+						files: event.files.paths,
+						dirtyCount:
+							event.dirtyCount ?? event.files.paths.length,
+						eventId: `interval-${intervalEventSequence}`,
+					});
+					if (result.ack === 'ERR') {
+						console.warn(
+							`[commit-policy] interval snapshot refused: ${result.reason}`,
+						);
+					}
+				} catch (error) {
+					console.warn(
+						`[commit-policy] interval snapshot failed: ${error instanceof Error ? error.message : String(error)}`,
+					);
+				} finally {
+					intervalCheckInFlight = false;
+				}
+			};
+			void checkInterval();
+			const intervalHandle = setInterval(() => {
+				void checkInterval();
+			}, intervalMs);
+			if (typeof intervalHandle.unref === 'function')
+				intervalHandle.unref();
+			disposables.push(() => clearInterval(intervalHandle));
 		}
 
 		const knowledge = [

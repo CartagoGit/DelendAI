@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-08-29T14:55:43.340Z",
+	"generatedAt": "2026-08-29T21:47:08.414Z",
 	"manifests": [
 		{
 			"id": "adaptive-optimizer",
@@ -1465,6 +1465,43 @@
 			]
 		},
 		{
+			"id": "project-kpis",
+			"package": "@mcp-vertex/project-kpis",
+			"version": "0.1.0",
+			"visibility": "public",
+			"summary": "Versioned project KPI snapshots and observability views across health, usage, economics and delivery.",
+			"tags": [
+				"kpi",
+				"observability",
+				"economics",
+				"project-health"
+			],
+			"maturity": "experimental",
+			"permissions": [
+				"filesystem-read",
+				"filesystem-write"
+			],
+			"presets": [
+				"vertex"
+			],
+			"tokenBudget": {
+				"hard": 3000,
+				"warning": 2700,
+				"releaseRelativePercent": 20
+			},
+			"dependencies": [
+				"@mcp-vertex/core",
+				"@mcp-vertex/project-health",
+				"@mcp-vertex/usage-tracking",
+				"zod"
+			],
+			"capabilities": [
+				"project-kpis",
+				"observability",
+				"economics"
+			]
+		},
+		{
 			"id": "prompt-eval",
 			"package": "@mcp-vertex/prompt-eval",
 			"version": "0.1.1",
@@ -2822,6 +2859,23 @@
 		},
 		{
 			"origin": "first-party",
+			"id": "project-kpis",
+			"package": "@mcp-vertex/project-kpis",
+			"summary": "Versioned project KPI snapshots and observability views across health, usage, economics and delivery.",
+			"tags": [
+				"kpi",
+				"observability",
+				"economics",
+				"project-health"
+			],
+			"permissions": [
+				"filesystem-read",
+				"filesystem-write"
+			],
+			"tokenBudgetBytes": 2700
+		},
+		{
+			"origin": "first-party",
 			"id": "prompt-eval",
 			"package": "@mcp-vertex/prompt-eval",
 			"summary": "Prompt-eval harness (golden prompts, scoring).",
@@ -4113,6 +4167,36 @@
 			}
 		},
 		{
+			"id": "project-kpis",
+			"package": "@mcp-vertex/project-kpis",
+			"summary": "Versioned project KPI snapshots and observability views across health, usage, economics and delivery.",
+			"tags": [
+				"kpi",
+				"observability",
+				"economics",
+				"project-health"
+			],
+			"maturity": "experimental",
+			"visibility": "public",
+			"presets": [
+				"vertex"
+			],
+			"capabilities": [
+				"project-kpis",
+				"observability",
+				"economics"
+			],
+			"permissions": [
+				"filesystem-read",
+				"filesystem-write"
+			],
+			"tokenBudget": {
+				"warning": 2700,
+				"hard": 3000,
+				"releaseRelativePercent": 20
+			}
+		},
+		{
 			"id": "prompt-eval",
 			"package": "@mcp-vertex/prompt-eval",
 			"summary": "Prompt-eval harness (golden prompts, scoring).",
@@ -4800,6 +4884,12 @@
 			"releaseRelativePercent": 20
 		},
 		{
+			"id": "project-kpis",
+			"warning": 2700,
+			"hard": 3000,
+			"releaseRelativePercent": 20
+		},
+		{
 			"id": "prompt-eval",
 			"warning": 2700,
 			"hard": 3000,
@@ -5281,6 +5371,13 @@
 			"id": "project-health",
 			"permissions": [
 				"filesystem-read"
+			]
+		},
+		{
+			"id": "project-kpis",
+			"permissions": [
+				"filesystem-read",
+				"filesystem-write"
 			]
 		},
 		{
@@ -7723,6 +7820,69 @@
 		},
 		{
 			"pluginId": "project-health",
+			"presetId": "cli-tool",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "project-kpis",
+			"presetId": "minimal",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "project-kpis",
+			"presetId": "lean",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "project-kpis",
+			"presetId": "standard",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "project-kpis",
+			"presetId": "swarm",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "project-kpis",
+			"presetId": "full",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "project-kpis",
+			"presetId": "vertex",
+			"declared": true,
+			"catalogMember": false,
+			"matches": false
+		},
+		{
+			"pluginId": "project-kpis",
+			"presetId": "web-app",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "project-kpis",
+			"presetId": "backend-api",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "project-kpis",
 			"presetId": "cli-tool",
 			"declared": false,
 			"catalogMember": false,

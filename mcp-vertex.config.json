@@ -222,7 +222,10 @@
 					"branch": "develop"
 				},
 				"cadence": {
-					"triggers": [{ "kind": "slice" }],
+					"triggers": [
+						{ "kind": "slice" },
+						{ "kind": "interval", "minutes": 5 }
+					],
 					"sliceScoping": false
 				},
 				"identity": {

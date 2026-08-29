@@ -47,6 +47,11 @@
 					"id": "mcp-vertex.memory",
 					"name": "Memory",
 					"icon": "media/logo.svg"
+				},
+				{
+					"id": "mcp-vertex.kpis",
+					"name": "Project KPIs",
+					"icon": "media/logo.svg"
 				}
 			]
 		},

@@ -32,6 +32,7 @@ export type IAgentCanonicalRole = (typeof AGENT_CANONICAL_ROLES)[number];
 export const AGENT_CONVENTIONS = {
 	cooldown_days: 7,
 	heartbeat_ttl_minutes: 10,
+	lease_minutes: 10,
 	max_depth: 3,
 	registry_filename: 'subagent-registry.json',
 	// v2 (f00082 S2): assignments carry the composite-identity fields

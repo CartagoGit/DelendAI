@@ -1,4 +1,4 @@
-import { access, stat } from 'node:fs/promises';
+import { access } from 'node:fs/promises';
 
 import z from 'zod';
 
@@ -73,6 +73,7 @@ export interface IStateToolOptions {
 
 /** a00069 S8: alert when session claims − releases exceeds this. */
 const CLAIM_RELEASE_IMBALANCE_THRESHOLD = 5;
+const HEARTBEAT_STALL_MS = 30_000;
 
 interface IStateDiagnosis {
 	readonly locks: {
@@ -107,6 +108,11 @@ interface IStateDiagnosis {
 		readonly count: number;
 		readonly taskIds: readonly string[];
 		readonly lastStaleSeen: string | null;
+	};
+	/** Locks whose first heartbeat was never refreshed after the diagnose window. */
+	readonly heartbeatStalls: {
+		readonly count: number;
+		readonly taskIds: readonly string[];
 	};
 	/** a00069 S11: peer-review bypasses (force/skipPeerReview) this session. */
 	readonly peerReviewBypasses: number;
@@ -157,6 +163,11 @@ const STATE_DIAGNOSIS_SCHEMA = z
 		 * tool for a targeted release).
 		 */
 		stale: z
+			.object({
+				count: z.number(),
+			})
+			.passthrough(),
+		heartbeatStalls: z
 			.object({
 				count: z.number(),
 			})
@@ -247,6 +258,18 @@ const findLastStaleSeen = (entries: readonly ILockEntry[]): string | null => {
 	return latest === null ? null : new Date(latest).toISOString();
 };
 
+const findHeartbeatStalls = (
+	entries: readonly ILockEntry[],
+	nowMs = Date.now(),
+): readonly ILockEntry[] =>
+	entries.filter((entry) => {
+		if (entry.started_at !== entry.last_seen) return false;
+		const lastSeenMs = Date.parse(entry.last_seen);
+		return (
+			!Number.isNaN(lastSeenMs) && nowMs - lastSeenMs > HEARTBEAT_STALL_MS
+		);
+	});
+
 const summarizeCrossProposal = (
 	entries: readonly ILockEntry[],
 ): IStateDiagnosis['locks']['crossProposal'] => {
@@ -293,6 +316,7 @@ const diagnose = async (
 		taskIds: staleTaskIds,
 		lastStaleSeen: findLastStaleSeen(staleEntries),
 	};
+	const heartbeatStalls = findHeartbeatStalls(rawLock.in_flight);
 	const livelockState = await detectContention({
 		lockPath: options.lockPathAbs,
 		fileLockTablePath:
@@ -352,6 +376,7 @@ const diagnose = async (
 		livelockState.livelocks.length === 0 &&
 		!claimReleaseImbalanceAlert &&
 		stale.count === 0 &&
+		heartbeatStalls.length === 0 &&
 		autoTransitionRepairs.length === 0;
 
 	return {
@@ -379,6 +404,10 @@ const diagnose = async (
 			threshold: zombies.threshold,
 		},
 		stale,
+		heartbeatStalls: {
+			count: heartbeatStalls.length,
+			taskIds: heartbeatStalls.map((entry) => entry.task_id),
+		},
 		healthy,
 	};
 };

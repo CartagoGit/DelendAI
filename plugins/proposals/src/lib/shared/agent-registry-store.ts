@@ -24,6 +24,10 @@ export type IAgentAssignment = {
 	adopted: boolean;
 	assigned_at: string;
 	last_seen: string;
+	/** Unique session lease token; absent only on pre-subscription records. */
+	subscription_id?: string;
+	/** Lease expiry; renewed by a matching heartbeat. */
+	lease_until?: string;
 	cooldown_until: string | null;
 	status: IAgentAssignmentStatus;
 	/**

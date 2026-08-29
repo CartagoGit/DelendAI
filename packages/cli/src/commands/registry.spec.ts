@@ -139,6 +139,7 @@ const EXPECTED_COMMANDS = [
 	'plugin add',
 	'notification status',
 	'notification await-lock',
+	'kpis',
 	'web-fetch',
 	'status-marker close',
 	'status-marker validate',

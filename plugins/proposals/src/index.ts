@@ -37,7 +37,10 @@ import {
 	runCloseSliceQualityGate,
 } from './lib/tools/authoring.tool';
 import type { IAuthoringToolOptions } from './lib/tools/authoring.tool';
-import { buildAdoptRegistration } from './lib/tools/adopt.tool';
+import {
+	bootstrapProposalsStore,
+	buildAdoptRegistration,
+} from './lib/tools/adopt.tool';
 import { buildInheritHostInstructionsRegistration } from './lib/tools/inherit-host-instructions.tool';
 import type { IAgentNamesToolOptions } from './lib/tools/agent-names.tool';
 import { buildGetProposalWorkflowRegistration } from './lib/tools/get-proposal-workflow.tool';
@@ -61,6 +64,10 @@ import { buildIncidentProposalRegistration } from './lib/tools/incident-proposal
 import { mergeCheckpointAdvisories } from '@mcp-vertex/core/public';
 import { assessMicroValidationLoop } from './lib/services/checkpoint-advisory-micro-validation.service';
 import type { IObservedToolCall } from './lib/services/checkpoint-advisory-micro-validation.service';
+import {
+	DEFAULT_PROPOSAL_FOLDER_POLICY,
+	type IProposalFolderPolicy,
+} from './lib/contracts/proposal-folder-policy';
 
 /**
  * The proposals workflow plugin. It turns mcp-vertex into a multi-agent
@@ -106,6 +113,41 @@ const PROPOSALS_OPTIONS_SCHEMA = z.object({
 	 * proposals dir), e.g. `['paused/demos']`. mcp-vertex bakes none.
 	 */
 	proposalFolders: z.array(z.string()).optional(),
+	/** Per-status folder layout. Unspecified statuses stay flat. */
+	folderPolicy: z
+		.record(
+			z.enum([
+				'ready',
+				'in-progress',
+				'review',
+				'done',
+				'paused',
+				'blocked',
+				'retired',
+			]),
+			z.union([
+				z.enum(['flat', 'by-kind']),
+				z.array(
+					z.enum([
+						'feat',
+						'breaking',
+						'fix',
+						'refactor',
+						'perf',
+						'audit',
+						'chore',
+						'docs',
+						'test',
+						'infra',
+						'spike',
+						'legacy',
+						'resume',
+						'plan',
+					]),
+				),
+			]),
+		)
+		.optional(),
 	/**
 	 * r00003 S7 + S9: host narrative-heading aliases for the proposal
 	 * scaffold linter, as `[heading, canonicalSection]` tuples.
@@ -305,6 +347,10 @@ export default definePlugin({
 		// e.g. `['paused/demos']`. mcp-vertex bakes none — the host injects
 		// its folder policy via ctx.options (now schema-validated, S9).
 		const extraProposalFolders = parsedOptions.data.proposalFolders ?? [];
+		const folderPolicy: IProposalFolderPolicy = {
+			...DEFAULT_PROPOSAL_FOLDER_POLICY,
+			...parsedOptions.data.folderPolicy,
+		};
 		const commitPolicyOptions = ctx.pluginOptions?.get('commit-policy');
 		const commitPolicyPush = commitPolicyOptions?.push;
 		const protectedBranches =
@@ -333,6 +379,7 @@ export default definePlugin({
 			() => true,
 			() => false,
 		);
+		await bootstrapProposalsStore(abs(layout.proposalsDir), folderPolicy);
 
 		const agentNamesOptions: IAgentNamesToolOptions = {
 			namespacePrefix: ctx.namespacePrefix,
@@ -392,6 +439,7 @@ export default definePlugin({
 				proposalIndexFile: layout.proposalIndexFile,
 			},
 			extraFolders: extraProposalFolders,
+			folderPolicy,
 			// a00069 S5: host validation command for close_slice gate.
 			...(typeof ctx.options.validationCommand === 'string'
 				? {
@@ -407,14 +455,8 @@ export default definePlugin({
 				: { requirePeerReview: true }),
 			...((ctx.peerPlugins?.has('quality') ?? false)
 				? {
-						runQuality: (input) =>
-							input?.skipWhenValidateEvidenceFresh === true
-								? Promise.resolve({
-										ok: true,
-										severity: 'ok' as const,
-										findings: [],
-									})
-								: runCloseSliceQualityGate(ctx.workspace.root),
+						runQuality: () =>
+							runCloseSliceQualityGate(ctx.workspace.root),
 					}
 				: {}),
 			...(parsedOptions.data.persist !== undefined
@@ -534,6 +576,7 @@ export default definePlugin({
 						proposalIndexFile: layout.proposalIndexFile,
 					},
 					extraFolders: extraProposalFolders,
+					folderPolicy,
 				}),
 				buildGetProposalWorkflowRegistration({
 					namespacePrefix: ctx.namespacePrefix,
@@ -644,6 +687,7 @@ export default definePlugin({
 					// + self-**Files** rewrite inside applyTransition.
 					indexPathAbs: abs(layout.proposalIndexFile),
 					peerReviewLogPathAbs: abs(layout.peerReviewLogFile),
+					folderPolicy,
 					// a00069 S7: peer-review gate on review→done (default on).
 					...(typeof ctx.options.requirePeerReview === 'boolean'
 						? {

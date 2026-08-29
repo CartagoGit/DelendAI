@@ -22,6 +22,7 @@ import type { IHostPathLayout } from '../contracts/interfaces/swarm-path-layout.
 import type { IGitRunner } from '../shared/git-runner';
 import { readJsonOrNull, readTextOrNull } from '../proposals/index-reader';
 import { syncProposalRegistry } from '../proposals/sync-proposal-registry';
+import type { IProposalFolderPolicy } from '../contracts/proposal-folder-policy';
 
 export interface IAuthoringPersistConfig {
 	readonly mode: 'none' | 'commit' | 'commit-and-push';
@@ -57,6 +58,8 @@ export interface IAuthoringToolOptions {
 	 * post-mutation sync should also scan, e.g. `['paused/demos']`.
 	 */
 	readonly extraFolders?: readonly string[];
+	/** Folder layout policy per proposal status. */
+	readonly folderPolicy?: IProposalFolderPolicy;
 	/**
 	 * Peer-review gate (default: true). When on, `close_slice` refuses
 	 * to mark a slice `done` unless the slice has gone through the
@@ -165,6 +168,7 @@ export const resolveIndexedDoc = async (
 		| 'indexPathAbs'
 		| 'layout'
 		| 'extraFolders'
+		| 'folderPolicy'
 	>,
 	proposalId: string,
 ): Promise<IIndexedDocResolution> => {
@@ -193,6 +197,8 @@ export const resolveIndexedDoc = async (
 		options.workspaceRoot,
 		options.layout,
 		options.extraFolders ?? [],
+		undefined,
+		options.folderPolicy,
 	);
 	const second = await lookup();
 	if (second !== null) return second;

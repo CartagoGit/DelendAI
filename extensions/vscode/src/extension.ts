@@ -87,6 +87,7 @@ import {
 	registerSetupGithubCommand,
 } from './commands/setup-github';
 import { renderJsonHtml } from './commands/types';
+import { registerKpiDashboardProvider } from './providers/kpi-dashboard-provider';
 import {
 	type IFileSystemWatcher,
 	ToolTreeDataProvider,
@@ -110,6 +111,7 @@ export const SHOW_OVERVIEW_COMMAND = 'mcp-vertex.showOverview';
 export const TOOLS_VIEW_ID = 'mcp-vertex.tools';
 export const MEMORY_VIEW_ID = 'mcp-vertex.memory';
 export const PROPOSALS_VIEW_ID = 'mcp-vertex.proposals';
+export const KPI_VIEW_ID = 'mcp-vertex.kpis';
 export { OPEN_TOOL_DETAIL_COMMAND };
 export { OPEN_AUTO_AGENT_SELECTOR_COMMAND };
 
@@ -576,6 +578,13 @@ export const activate = async (
 					{},
 			}),
 		);
+		const kpiRegistration = registerKpiDashboardProvider({
+			host,
+			client,
+			viewId: KPI_VIEW_ID,
+			...(namespacePrefix === undefined ? {} : { namespacePrefix }),
+		});
+		if (kpiRegistration !== undefined) track(kpiRegistration);
 	} else {
 		// Build a host from the injected vscode surface so the dashboard
 		// works the same way it does in production, regardless of which

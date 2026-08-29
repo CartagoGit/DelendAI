@@ -31,7 +31,7 @@
  *   cleanly without needing a feature flag.
  */
 
-import { mkdir, rename } from 'node:fs/promises';
+import { access, mkdir, rename } from 'node:fs/promises';
 import { basename, dirname, join, relative } from 'node:path';
 
 import z from 'zod';
@@ -49,9 +49,11 @@ import {
 	PROPOSAL_KIND_BY_PREFIX,
 	PROPOSAL_STATUS_TRANSITIONS,
 	PROPOSAL_STATUSES,
-	STATUS_TO_FOLDER,
-	doneFolderFor,
 } from '../contracts/constants/proposal-glossary.constant';
+import {
+	proposalFolderFor,
+	type IProposalFolderPolicy,
+} from '../contracts/proposal-folder-policy';
 import type {
 	IProposalKind,
 	IProposalStatus,
@@ -193,6 +195,8 @@ export interface IProposalTransitionToolOptions {
 	 * `proposals.options.requirePeerReview: false`.
 	 */
 	readonly requirePeerReview?: boolean;
+	/** Folder layout policy per proposal status. */
+	readonly folderPolicy?: IProposalFolderPolicy;
 	readonly peerReviewGateDeps?: IPeerReviewGateDeps;
 	readonly validateEvidenceDeps?: IValidateEvidenceDeps;
 }
@@ -264,8 +268,8 @@ const resolveTargetFolder = async (
 	to: IProposalStatus,
 	found: ILocatedProposal,
 	proposalsDirAbs: string,
+	folderPolicy?: IProposalFolderPolicy,
 ): Promise<string> => {
-	if (to !== 'done') return STATUS_TO_FOLDER[to];
 	const raw = await new SafeWorkspaceReader(proposalsDirAbs)
 		.readText(relative(proposalsDirAbs, found.absPath))
 		.then((value) => value.content)
@@ -273,7 +277,7 @@ const resolveTargetFolder = async (
 	const kindRaw = readFrontmatterField(raw, 'kind');
 	const kind =
 		kindRaw !== undefined && isKnownKind(kindRaw) ? kindRaw : undefined;
-	const folder = doneFolderFor(kind);
+	const folder = proposalFolderFor(to, kind, folderPolicy);
 	void proposalsDirAbs;
 	return folder;
 };
@@ -852,6 +856,7 @@ const applyTransition = async (
 		args.to,
 		found,
 		options.proposalsDirAbs,
+		options.folderPolicy,
 	);
 	const filename = found.absPath.split('/').pop() ?? found.absPath;
 	const newAbsPath = join(options.proposalsDirAbs, newFolder, filename);
@@ -885,11 +890,18 @@ const applyTransition = async (
 		await writeFileAtomic(found.absPath, updated);
 
 		if (moved) {
-			// The 7 status folders are expected to already exist (this repo
-			// seeds them with .gitkeep), but a host project adopting f00016
-			// fresh, or a stray custom folder, might not have created the
-			// target yet — never fail the transition over a missing dir.
-			await mkdir(dirname(newAbsPath), { recursive: true });
+			// Keep dynamically-created status/kind folders visible to git too.
+			const targetDir = dirname(newAbsPath);
+			await mkdir(targetDir, { recursive: true });
+			const gitkeep = join(targetDir, '.gitkeep');
+			if (
+				!(await access(gitkeep).then(
+					() => true,
+					() => false,
+				))
+			) {
+				await writeFileAtomic(gitkeep, '');
+			}
 			if (!(await isTrackedFile(gitRunner, found.absPath))) {
 				await rename(found.absPath, newAbsPath);
 				await gitRunner(['add', newAbsPath]);
@@ -933,6 +945,7 @@ const applyTransition = async (
 				layout,
 				[],
 				gitRunner,
+				options.folderPolicy,
 			);
 			indexSynced = true;
 		} catch (err) {
