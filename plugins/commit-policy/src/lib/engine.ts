@@ -364,11 +364,27 @@ const pushFailureReason = (value: unknown): string => {
 	return 'push failed';
 };
 
+const summarizeTriggerFiles = (files: readonly string[]): string => {
+	const displayed = files.slice(0, 3);
+	const suffix =
+		files.length > displayed.length
+			? ` +${files.length - displayed.length} more`
+			: '';
+	return `${displayed.join(', ')}${suffix}`;
+};
+
 export const buildTriggerCommitMessage = (event: {
 	readonly kind: 'threshold' | 'interval';
 	readonly dirtyCount: number;
-}): string =>
-	`chore(snapshot): preserve concurrent agent work (${event.dirtyCount} ${event.dirtyCount === 1 ? 'file' : 'files'})`;
+	readonly files?: readonly string[] | undefined;
+}): string => {
+	const files = event.files ?? [];
+	const subject =
+		files.length > 0
+			? `update ${summarizeTriggerFiles(files)}`
+			: `update ${event.dirtyCount} ${event.dirtyCount === 1 ? 'file' : 'files'}`;
+	return `chore: ${subject}`;
+};
 
 const composeMessage = (event: IEngineEvent): string => {
 	switch (event.kind) {
@@ -380,7 +396,7 @@ const composeMessage = (event: IEngineEvent): string => {
 			);
 		case 'threshold':
 		case 'interval':
-			return buildTriggerCommitMessage(event);
+			return buildTriggerCommitMessage({ ...event, files: event.files });
 		case 'manual':
 			return event.message;
 	}
