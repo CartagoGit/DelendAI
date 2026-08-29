@@ -229,6 +229,17 @@ restates the rule for swarm context.
 
 ## 5. Definition of done
 
+### Cross-plugin configuration compatibility
+
+Plugin options are persistent host configuration, not suggestions. Plugins
+may complement one another when they own different effects, but the core
+performs a compatibility preflight before any plugin `register()` hook runs.
+If enabled plugins claim the same automatic side effect, startup stops with a
+diagnostic containing the exact configuration keys, effective values,
+precedence, and a JSON patch for `mcp-vertex.config.json`. The core remains
+agnostic; each plugin declares only the compatibility rules for its own
+interactions.
+
 - `bun run validate` is green (typecheck + lint + tests + drift guards).
 - Conventional Commits (`fix:` / `feat:` / `feat!:`) — versioning is
   automatic on `main`. No manual bumps.

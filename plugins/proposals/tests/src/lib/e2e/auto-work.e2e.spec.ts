@@ -48,7 +48,7 @@ const createManagedPersistenceServer = async () => {
 	const remote = mkdtempSync(join(tmpdir(), 'proposals-managed-remote-'));
 	const bareRemote = join(remote, 'origin.git');
 	git(remote, 'init', '-q', '--bare', bareRemote);
-	git(workspace, 'init', '-q', '-b', 'wip/x00298-s3');
+	git(workspace, 'init', '-q', '-b', 'agent/x00298-s3-e2e');
 	git(workspace, 'config', 'user.email', 'e2e@example.com');
 	git(workspace, 'config', 'user.name', 'e2e');
 	git(workspace, 'config', 'commit.gpgsign', 'false');
@@ -60,7 +60,11 @@ const createManagedPersistenceServer = async () => {
 	writeFileSync(join(workspace, 'tracked.txt'), 'persisted\n', 'utf8');
 
 	const args = parseCliArgs(
-		['--plugins=proposals,commit-policy', `--workspace=${workspace}`],
+		[
+			'--plugins=proposals,commit-policy',
+			`--workspace=${workspace}`,
+			'--agent-worktree=true',
+		],
 		workspace,
 	);
 	const configText = JSON.stringify({
@@ -79,7 +83,10 @@ const createManagedPersistenceServer = async () => {
 				options: {
 					commit: { enabled: true },
 					push: { enabled: true },
-					cadence: { triggers: [{ kind: 'slice' }] },
+					// proposals.persist owns slice commits in this scenario;
+					// commit-policy remains enabled to verify startup activation
+					// without registering a second slice Git owner.
+					cadence: { triggers: [] },
 				},
 			},
 		},

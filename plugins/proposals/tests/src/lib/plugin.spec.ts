@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import type { IMcpPluginContext } from '@mcp-vertex/core/public';
 
 import plugin from '@mcp-vertex/proposals';
+import { validateProposalConfiguration } from '@mcp-vertex/proposals';
 import { createFakeToolServer } from '@mcp-vertex/test-kit/public';
 
 const ctx = (): IMcpPluginContext => ({
@@ -22,6 +23,57 @@ const ctx = (): IMcpPluginContext => ({
 });
 
 describe('@mcp-vertex/proposals plugin', async () => {
+	it('rejects duplicate automatic Git ownership between proposals and commit-policy', () => {
+		const issues = validateProposalConfiguration({
+			pluginName: 'proposals',
+			enabledPlugins: ['proposals', 'commit-policy'],
+			pluginOptions: new Map([
+				['proposals', { persist: { mode: 'commit' } }],
+				[
+					'commit-policy',
+					{
+						commit: { enabled: true },
+						cadence: { triggers: [{ kind: 'slice' }] },
+						push: { enabled: true, onCommit: true },
+					},
+				],
+			]),
+		});
+
+		expect(issues[0]).toMatchObject({
+			code: 'DUPLICATE_SLICE_GIT_OWNER',
+			keys: expect.arrayContaining([
+				'plugins.proposals.options.persist.mode',
+				'plugins.commit-policy.options.cadence.triggers',
+			]),
+			suggestedConfig: {
+				plugins: {
+					proposals: { options: { persist: { mode: 'none' } } },
+				},
+			},
+		});
+	});
+
+	it('allows complementary slice ownership when proposals persistence is disabled', () => {
+		const issues = validateProposalConfiguration({
+			pluginName: 'proposals',
+			enabledPlugins: ['proposals', 'commit-policy'],
+			pluginOptions: new Map([
+				['proposals', { persist: { mode: 'none' } }],
+				[
+					'commit-policy',
+					{
+						commit: { enabled: true },
+						cadence: { triggers: [{ kind: 'slice' }] },
+						push: { enabled: true, onCommit: true },
+					},
+				],
+			]),
+		});
+
+		expect(issues).toEqual([]);
+	});
+
 	it('exposes a valid IMcpPlugin identity', async () => {
 		expect(plugin.name).toBe('proposals');
 		expect(typeof plugin.register).toBe('function');

@@ -144,14 +144,6 @@ export const runPushDriver = async (
 		};
 	}
 
-	if (branch === 'develop') {
-		return {
-			ok: false,
-			refusal:
-				"direct push to 'develop' is not allowed; open a PR (DIRECT_PUSH_TO_DEVELOP_NOT_ALLOWED)",
-		};
-	}
-
 	const forceMode = input.force ?? policy.force;
 	const authorization = resolveForceAuthorization(
 		forceMode,

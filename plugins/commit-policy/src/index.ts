@@ -5,9 +5,10 @@
 import {
 	createWriteGitRunner,
 	definePlugin,
+	type IPluginConfigurationIssue,
+	type IPluginConfigurationValidationInput,
 	type IPluginRuntime,
 } from '@mcp-vertex/core/public';
-import z from 'zod';
 
 import { CommitPolicyOptionsSchema } from './lib/contracts/options';
 import type { IIdentityResolverContext } from './lib/identity/resolver';
@@ -26,12 +27,83 @@ import { createProcessedEventsStore } from './lib/processed-events';
 
 const OptionsSchema = CommitPolicyOptionsSchema;
 
+export const validateCommitPolicyConfiguration = (
+	input: IPluginConfigurationValidationInput,
+): readonly IPluginConfigurationIssue[] => {
+	const raw = input.pluginOptions.get('commit-policy');
+	if (raw === undefined) return [];
+	const push = raw.push;
+	if (typeof push !== 'object' || push === null) return [];
+	const pushOptions = push as {
+		readonly branch?: unknown;
+		readonly enabled?: unknown;
+		readonly protectedBranches?: unknown;
+	};
+	const branch = pushOptions.branch;
+	if (
+		pushOptions.enabled === true &&
+		typeof branch === 'string' &&
+		Array.isArray(pushOptions.protectedBranches) &&
+		pushOptions.protectedBranches.includes(branch)
+	) {
+		return [
+			{
+				code: 'PUSH_TARGET_IS_PROTECTED',
+				message:
+					'Automatic push is enabled, but push.branch is listed in push.protectedBranches. The configured push can never succeed; choose another branch or remove the branch from the protected list.',
+				keys: [
+					'plugins.commit-policy.options.push.enabled',
+					'plugins.commit-policy.options.push.branch',
+					'plugins.commit-policy.options.push.protectedBranches',
+				],
+				values: {
+					enabled: pushOptions.enabled,
+					branch,
+					protectedBranches: pushOptions.protectedBranches,
+				},
+				precedence:
+					'Protected-branch policy wins over automatic push; the host must make the target and protection list compatible.',
+				suggestedConfig: {
+					plugins: {
+						'commit-policy': {
+							options: { push: { branch: 'wip/agent-work' } },
+						},
+					},
+				},
+			},
+		];
+	}
+	if (typeof branch !== 'string' || !branch.includes(':')) return [];
+	const [, suggestedBranch] = branch.split(':', 2);
+	if (suggestedBranch === undefined || suggestedBranch.length === 0)
+		return [];
+	return [
+		{
+			code: 'INVALID_PUSH_BRANCH_TARGET',
+			message:
+				'push.branch must be a branch name only. Refspec syntax such as HEAD:wip/example belongs in a git push command, not in plugins.commit-policy.options.push.branch.',
+			keys: ['plugins.commit-policy.options.push.branch'],
+			values: { branch },
+			precedence:
+				'The persisted plugin configuration is authoritative; the runtime does not reinterpret refspec syntax.',
+			suggestedConfig: {
+				plugins: {
+					'commit-policy': {
+						options: { push: { branch: suggestedBranch } },
+					},
+				},
+			},
+		},
+	];
+};
+
 export default definePlugin({
 	name: 'commit-policy',
 	version: '0.1.0',
 	describe:
 		'Commit-authority plugin wrapping @mcp-vertex/git primitives with configurable identity, cadence, audit and push policies. Off by default.',
 	optionsSchema: OptionsSchema,
+	validateConfiguration: validateCommitPolicyConfiguration,
 	register(ctx) {
 		const parsed = OptionsSchema.safeParse(ctx.options ?? {});
 		if (!parsed.success) {

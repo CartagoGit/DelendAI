@@ -88,6 +88,23 @@ opt in. See "Configuration" below for the exact knobs.
 | `"allow"` | `git push --force` — only when you really mean it. |
 | `"never"` | No `--force` flag ever. |
 
+### Compatibility with other plugins
+
+The host configuration is the persistent authority. `commit-policy` can
+complement other plugins when their effects are distinct, but startup is
+blocked before registration when effective options contradict each other.
+Diagnostics name the exact keys and values, state precedence, and include a
+JSON patch for `mcp-vertex.config.json`.
+
+For slice automation, choose exactly one Git owner. If `commit-policy` has an
+enabled `slice` cadence and commit policy, `proposals.persist.mode` must be
+`"none"`; otherwise the core reports `DUPLICATE_SLICE_GIT_OWNER` and does not
+activate either plugin.
+
+`push.branch` is a branch name, not a refspec. A value such as
+`HEAD:wip/example` is rejected with `INVALID_PUSH_BRANCH_TARGET`. An enabled
+automatic push also cannot target a branch listed in `push.protectedBranches`.
+
 ## Tools
 
 ### `commit_policy_status`
