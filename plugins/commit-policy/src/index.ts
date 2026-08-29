@@ -46,7 +46,10 @@ export default definePlugin({
 		// `dispose()` cleans up exactly once on unload / hot-reload.
 		const disposables: Array<() => void> = [];
 
-		const run = createWriteGitRunner(ctx.workspace.root);
+		const run = createWriteGitRunner(
+			ctx.workspace.root,
+			policy.gitTimeoutMs,
+		);
 
 		const identityCtx: IIdentityResolverContext = {
 			run,

@@ -308,6 +308,8 @@ export type ICommitPolicyCommit = z.infer<typeof CommitSchema>;
  * register time; the resolver never sees the raw options object.
  */
 export const CommitPolicyOptionsSchema = z.object({
+	/** Maximum time allowed for commit-policy git commands. */
+	gitTimeoutMs: z.number().int().positive().default(60_000),
 	commit: CommitSchema.default({
 		enabled: false,
 		requireConventional: true,

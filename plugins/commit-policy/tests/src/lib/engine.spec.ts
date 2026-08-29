@@ -66,6 +66,7 @@ const buildRunner = (
 const basePolicy = (
 	overrides: Partial<ICommitPolicyOptions> = {},
 ): ICommitPolicyOptions => ({
+	gitTimeoutMs: 60_000,
 	commit: {
 		enabled: true,
 		requireConventional: true,

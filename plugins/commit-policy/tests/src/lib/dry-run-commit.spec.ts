@@ -90,6 +90,7 @@ const buildPolicy = (
 		},
 	};
 	const merged: ICommitPolicyOptions = {
+		gitTimeoutMs: 60_000,
 		commit: { ...base.commit, ...(overrides.commit ?? {}) },
 		cadence: {
 			sliceScoping: base.cadence.sliceScoping,
