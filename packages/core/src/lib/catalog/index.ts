@@ -1,7 +1,9 @@
 export {
 	DEFAULT_MODEL_CATALOG_LIMIT,
-	InMemoryModelCatalog,
 	MAX_MODEL_CATALOG_LIMIT,
+} from '../contracts/constants/model-catalog.constant';
+export {
+	InMemoryModelCatalog,
 	ModelCatalogError,
 } from './model-catalog';
 export type {
@@ -10,6 +12,6 @@ export type {
 	IModelCatalogFilter,
 	IModelCatalogSearchOptions,
 	IModelLimits,
-	ModelCatalogErrorCode,
-	ModelLifecycle,
+	IModelCatalogErrorCode,
+	IModelLifecycle,
 } from '../contracts/interfaces/model-catalog.interface';

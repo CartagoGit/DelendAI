@@ -28,7 +28,7 @@
 import { toolJson, type IToolRegistration } from '@mcp-vertex/core/public';
 import z from 'zod';
 
-import { decideActivation } from '../activation/activation-policy';
+import { decideActivation } from '../activation/activation-policy.helper';
 import type { ExternalServerRegistry } from '../subprocess/server-registry';
 
 /**
