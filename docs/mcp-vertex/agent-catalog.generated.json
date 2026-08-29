@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-08-29T06:57:05.893Z",
+	"generatedAt": "2026-08-29T16:20:38.075Z",
 	"mode": "compact",
 	"tools": [
 		{
@@ -1354,10 +1354,17 @@
 				"track": "plugins+fix",
 				"status": "in-progress",
 				"kind": "fix"
+			},
+			{
+				"id": "x00302",
+				"title": "x00302",
+				"track": "proposals-commit-persistence",
+				"status": "ready",
+				"kind": "fix"
 			}
 		],
 		"byStatus": {
-			"ready": 1,
+			"ready": 2,
 			"in-progress": 15,
 			"review": 0,
 			"paused": 1,

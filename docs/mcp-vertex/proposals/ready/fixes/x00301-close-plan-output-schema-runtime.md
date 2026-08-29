@@ -8,7 +8,7 @@ track: audit-stabilization
 priority: P0
 date: 2026-08-29
 parent-plan: q00012
-related: [F-002, x00298]
+related: [F-002, x00302]
 ---
 
 # x00301 — Exponer outputSchema efectivo de proposals_close_plan
