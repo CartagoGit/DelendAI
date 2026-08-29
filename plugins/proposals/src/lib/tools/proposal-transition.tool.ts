@@ -39,7 +39,6 @@ import z from 'zod';
 import type { IToolRegistration } from '@mcp-vertex/core/public';
 import {
 	SafeWorkspaceReader,
-	VALIDATE_EVIDENCE_SCHEMA,
 	toolError,
 	toolOk,
 	withFileMutex,
@@ -92,6 +91,12 @@ import {
 import { guardTransitionToDone } from '../services/proposal-completeness';
 import { runProposalTransitionCompat } from './proposal-transition.compat';
 import { VALIDATE_LOG_RELATIVE_PATH } from '../contracts/constants/proposal-paths.constant';
+import {
+	PROPOSAL_TRANSITION_INPUT_SCHEMA,
+	type IProposalTransitionArgs,
+} from '../contracts/proposal-transition-input.contract';
+
+export type { IProposalTransitionArgs } from '../contracts/proposal-transition-input.contract';
 
 const VALIDATE_EVIDENCE_WINDOW_MS = 24 * 60 * 60 * 1000;
 
@@ -154,7 +159,10 @@ const readValidateLogEntries = async (
 			if (parsed && typeof parsed === 'object') {
 				entries.push(parsed as IValidateLogEntry);
 			}
-		} catch {}
+		} catch (error: unknown) {
+			if (error instanceof SyntaxError) continue;
+			throw error;
+		}
 	}
 	return entries;
 };
@@ -189,19 +197,6 @@ export interface IProposalTransitionToolOptions {
 	readonly validateEvidenceDeps?: IValidateEvidenceDeps;
 }
 
-export interface IProposalTransitionArgs {
-	readonly id: string;
-	readonly to: string;
-	readonly reason: string;
-	readonly agent?: string | undefined;
-	/**
-	 * a00069 S7: skip the peer-review gate on `review → done`. Only for
-	 * emergency / host-approved bypass; default false.
-	 */
-	readonly force?: boolean | undefined;
-	readonly validateEvidence?: IValidateEvidence | undefined;
-}
-
 /**
  * Legacy helper kept for compatibility with existing recovery/tests.
  * The new gate reads peer-review.jsonl first, but markdown approvals still
@@ -221,22 +216,6 @@ export const hasIndependentPeerApproval = (markdown: string): boolean => {
 
 const isKnownStatus = (value: string): value is IProposalStatus =>
 	value in PROPOSAL_STATUSES;
-
-const PROPOSAL_TRANSITION_STATUS_VALUES = Object.keys(PROPOSAL_STATUSES) as [
-	IProposalStatus,
-	...IProposalStatus[],
-];
-
-export const PROPOSAL_TRANSITION_INPUT_SCHEMA = z
-	.object({
-		id: z.string().min(1),
-		to: z.enum(PROPOSAL_TRANSITION_STATUS_VALUES),
-		reason: z.string().min(1),
-		agent: z.string().optional(),
-		force: z.boolean().optional(),
-		validateEvidence: VALIDATE_EVIDENCE_SCHEMA.optional(),
-	})
-	.strict();
 
 const KNOWN_KINDS: ReadonlySet<string> = new Set([
 	'feat',
@@ -407,6 +386,9 @@ const buildCodeError = (code: string, reason: string) => {
 		isError: true,
 	};
 };
+
+const appendWarning = (current: string | undefined, next: string): string =>
+	[current, next].filter(Boolean).join('; ');
 
 const isCiEnvironment = (): boolean =>
 	process.env.CI === 'true' || process.env.GITHUB_ACTIONS === 'true';
@@ -961,12 +943,10 @@ const applyTransition = async (
 			indexSynced = true;
 		} catch (err) {
 			const msg = err instanceof Error ? err.message : String(err);
-			gitWarning = [
+			gitWarning = appendWarning(
 				gitWarning,
 				`index sync failed after transition (${msg}); run sync_proposals`,
-			]
-				.filter(Boolean)
-				.join('; ');
+			);
 		}
 	}
 
