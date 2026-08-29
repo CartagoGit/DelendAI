@@ -13,8 +13,24 @@
  * Every `it` runs against a fresh `mkdtempSync` workspace; no test
  * mutates a real proposal, lock file, or git repo.
  */
-import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
+import { execFileSync } from 'node:child_process';
+import {
+	existsSync,
+	mkdirSync,
+	mkdtempSync,
+	rmSync,
+	writeFileSync,
+} from 'node:fs';
+import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+
+import { Client as McpClient } from '@modelcontextprotocol/sdk/client/index.js';
+import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
+import { assembleCliConfig } from '@mcp-vertex/core/lib/cli/assemble';
+import { parseCliArgs } from '@mcp-vertex/core/lib/plugins/parse-cli-args';
+import { createMcpProject } from '@mcp-vertex/core/lib/project/create-mcp-project';
+import commitPolicyPlugin from '@mcp-vertex/commit-policy';
+import proposalsPlugin from '@mcp-vertex/proposals';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
@@ -23,6 +39,88 @@ import {
 	type IAssembledProposalsServer,
 	type IAssembledToolResult,
 } from './assembled-proposals-server';
+
+const git = (cwd: string, ...args: string[]): string =>
+	execFileSync('git', args, { cwd, encoding: 'utf8' });
+
+const createManagedPersistenceServer = async () => {
+	const workspace = mkdtempSync(join(tmpdir(), 'proposals-managed-e2e-'));
+	const remote = mkdtempSync(join(tmpdir(), 'proposals-managed-remote-'));
+	const bareRemote = join(remote, 'origin.git');
+	git(remote, 'init', '-q', '--bare', bareRemote);
+	git(workspace, 'init', '-q', '-b', 'wip/x00298-s3');
+	git(workspace, 'config', 'user.email', 'e2e@example.com');
+	git(workspace, 'config', 'user.name', 'e2e');
+	git(workspace, 'config', 'commit.gpgsign', 'false');
+	writeFileSync(join(workspace, 'README.md'), '# persistence e2e\n', 'utf8');
+	git(workspace, 'add', 'README.md');
+	git(workspace, 'commit', '-q', '-m', 'test: seed');
+	git(workspace, 'remote', 'add', 'origin', bareRemote);
+	git(workspace, 'push', '-q', '-u', 'origin', 'HEAD');
+	writeFileSync(join(workspace, 'tracked.txt'), 'persisted\n', 'utf8');
+
+	const args = parseCliArgs(
+		['--plugins=proposals,commit-policy', `--workspace=${workspace}`],
+		workspace,
+	);
+	const configText = JSON.stringify({
+		managedSurface: { loading: 'lazy' },
+		plugins: {
+			proposals: {
+				options: {
+					requirePeerReview: false,
+					persist: {
+						mode: 'commit-and-push',
+						pushTarget: 'origin wip/x00298-s3',
+					},
+				},
+			},
+			'commit-policy': {
+				options: {
+					commit: { enabled: true },
+					push: { enabled: true },
+					cadence: { triggers: [{ kind: 'slice' }] },
+				},
+			},
+		},
+	});
+	writeFileSync(
+		join(workspace, 'mcp-vertex.config.json'),
+		configText,
+		'utf8',
+	);
+	const { config } = await assembleCliConfig(args, {
+		import: async (specifier) =>
+			specifier.includes('commit-policy')
+				? { default: commitPolicyPlugin }
+				: { default: proposalsPlugin },
+	});
+	const assembled = await createMcpProject(config);
+	const [clientTransport, serverTransport] =
+		InMemoryTransport.createLinkedPair();
+	await assembled.server.connect(serverTransport);
+	const client = new McpClient(
+		{ name: 'proposals-managed-e2e', version: '0.0.0' },
+		{ capabilities: {} },
+	);
+	await client.connect(clientTransport);
+	return {
+		workspace,
+		client,
+		callTool: async <T>(name: string, args: Record<string, unknown> = {}) =>
+			client.callTool({ name, arguments: args }) as Promise<{
+				isError?: boolean;
+				content: Array<{ text?: string }>;
+				structuredContent?: T;
+			}>,
+		close: async () => {
+			await client.close();
+			await assembled.server.close();
+			rmSync(workspace, { recursive: true, force: true });
+			rmSync(remote, { recursive: true, force: true });
+		},
+	};
+};
 
 /**
  * The `auto_work` tool's `outputSchema` is a small union of `idle`
@@ -302,6 +400,103 @@ describe('e2e: proposals_auto_work over the real MCP protocol', async () => {
 			/^mcp-vertex_proposals_continue_proposal/,
 		);
 		expect(res.structured.persist?.mode).toBe('none');
+	});
+
+	// Blocked until S2's proposals.register wiring reaches close_slice:
+	// auto_work receives persist, while close_slice currently falls back to
+	// mode=none. Keep the real scenario here so the dependency cannot regress
+	// silently when S2 is integrated.
+	it('runs the real managed MCP path through close_slice and verifies the pushed remote ref', async () => {
+		const managed = await createManagedPersistenceServer();
+		try {
+			const readyDir = join(
+				managed.workspace,
+				'docs/mcp-vertex/proposals/ready',
+			);
+			mkdirSync(readyDir, { recursive: true });
+			writeFileSync(
+				join(readyDir, 'p9995-managed-persistence.md'),
+				`---
+id: p9995
+status: ready
+type: proposal
+track: plugins/proposals+tests
+date: 2026-08-29
+kind: feat
+title: managed persistence
+---
+
+# p9995 — managed persistence
+
+## goal
+
+Exercise the configured persistence route over MCP.
+
+## Slices
+
+- global_gate: none
+
+### S1 — persisted file
+- **Status**: pending
+- **Files**: \`tracked.txt\`
+- **Gate**: none
+`,
+				'utf8',
+			);
+
+			const activation = await managed.callTool<{ change: unknown }>(
+				'mcp-vertex_plugin_activate',
+				{ plugin: 'proposals' },
+			);
+			expect(activation.isError).not.toBe(true);
+			const sync = await managed.callTool<{ ok: boolean }>(
+				'mcp-vertex_proposals_sync_proposals',
+			);
+			expect(sync.isError).not.toBe(true);
+			const planRaw = await managed.callTool<AutoWorkOutput>(
+				'mcp-vertex_proposals_auto_work',
+			);
+			const plan = planRaw.structuredContent ?? ({} as AutoWorkOutput);
+			expect(plan.state).toBe('work');
+			expect(plan.persist?.mode).toBe('commit-and-push');
+			expect(plan.claimReady?.sliceId).toBe('S1');
+
+			const closedRaw = await managed.callTool<{
+				ok: boolean;
+				closed?: boolean;
+				persist?: {
+					committed: boolean;
+					pushed: boolean;
+					mode: string;
+				};
+			}>('mcp-vertex_proposals_close_slice', {
+				proposalId: 'p9995',
+				sliceId: 'S1',
+				force: true,
+			});
+			const closed = closedRaw.structuredContent;
+			expect(closedRaw.isError).not.toBe(true);
+			expect(closed).toMatchObject({
+				ok: true,
+				closed: true,
+				persist: {
+					committed: true,
+					pushed: true,
+					mode: 'commit-and-push',
+				},
+			});
+
+			const head = git(managed.workspace, 'rev-parse', 'HEAD').trim();
+			const remoteHead = git(
+				managed.workspace,
+				'ls-remote',
+				'origin',
+				'refs/heads/wip/x00298-s3',
+			).trim();
+			expect(remoteHead).toBe(`${head}\trefs/heads/wip/x00298-s3`);
+		} finally {
+			await managed.close();
+		}
 	});
 
 	it('every response satisfies the outputSchema parity invariant', async () => {

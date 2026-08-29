@@ -23,6 +23,12 @@ import type { IGitRunner } from '../shared/git-runner';
 import { readJsonOrNull, readTextOrNull } from '../proposals/index-reader';
 import { syncProposalRegistry } from '../proposals/sync-proposal-registry';
 
+export interface IAuthoringPersistConfig {
+	readonly mode: 'none' | 'commit' | 'commit-and-push';
+	readonly messageTemplate?: string;
+	readonly pushTarget?: string;
+}
+
 export interface IAuthoringToolOptions {
 	readonly namespacePrefix: string;
 	readonly workspaceRoot: string;
@@ -120,6 +126,8 @@ export interface IAuthoringToolOptions {
 			readonly scopes: number;
 		};
 	}>;
+	/** x00298 S3: configured persistence for close_slice. */
+	readonly persist?: IAuthoringPersistConfig;
 }
 
 export type IIndexedDocResolution =
