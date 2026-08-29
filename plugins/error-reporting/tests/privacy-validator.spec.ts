@@ -150,21 +150,23 @@ describe('PRIV-002 blocked-classes set (x00256)', () => {
 		// Build one synthetic leaf per blocked class and check the
 		// validator catches it. This is the strongest possible
 		// "the set is live" assertion.
-		const fixtures: Record<(typeof PRIVACY_VALIDATOR_BLOCKED_CLASSES)[number], string> =
-			{
-				'absolute-path': '/home/alice/private',
-				'windows-path': 'C:\\Users\\bob\\secret',
-				'url-not-allowlisted': 'https://corp.example.org/secret',
-				email: 'contact alice@example.com',
-				'ip-address': '10.0.0.42',
-				uuid: '11111111-2222-3333-8444-555555555555',
-				token: 'Authorization: Bearer abc',
-				'git-metadata': 'repo/.git/config',
-				'branch-name': 'origin/feature/foo',
-				'json-fragment': '{"secret":true}',
-				'xml-fragment': '<?xml version="1.0"?><root/>',
-				'sql-fragment': 'select * from users',
-			};
+		const fixtures: Record<
+			(typeof PRIVACY_VALIDATOR_BLOCKED_CLASSES)[number],
+			string
+		> = {
+			'absolute-path': '/home/alice/private',
+			'windows-path': 'C:\\Users\\bob\\secret',
+			'url-not-allowlisted': 'https://corp.example.org/secret',
+			email: 'contact alice@example.com',
+			'ip-address': '10.0.0.42',
+			uuid: '11111111-2222-3333-8444-555555555555',
+			token: 'Authorization: Bearer abc',
+			'git-metadata': 'repo/.git/config',
+			'branch-name': 'origin/feature/foo',
+			'json-fragment': '{"secret":true}',
+			'xml-fragment': '<?xml version="1.0"?><root/>',
+			'sql-fragment': 'select * from users',
+		};
 		for (const cls of PRIVACY_VALIDATOR_BLOCKED_CLASSES) {
 			const report = {
 				...baseReport,

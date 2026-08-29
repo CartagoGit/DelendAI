@@ -102,6 +102,7 @@ export const buildManagedLazyCatalogSource = async (): Promise<string> => {
 		'\treadonly dependencies: readonly string[];',
 		'\treadonly summary?: string | undefined;',
 		'\treadonly tags?: readonly string[] | undefined;',
+		'\treadonly startupActivation?: boolean | undefined;',
 		'}',
 		'',
 		'const tools = (',
@@ -113,7 +114,7 @@ export const buildManagedLazyCatalogSource = async (): Promise<string> => {
 		'\tknowledgeIds: readonly string[],',
 		'\tskillIds: readonly string[],',
 		'\tdependencies: readonly string[],',
-		"\tmetadata: Pick<IManagedLazyPluginCatalogEntry, 'summary' | 'tags'> = {},",
+		"\tmetadata: Pick<IManagedLazyPluginCatalogEntry, 'summary' | 'tags' | 'startupActivation'> = {},",
 		'): IManagedLazyPluginCatalogEntry => ({',
 		'\tid,',
 		'\tpackageSpecifier,',
@@ -133,7 +134,7 @@ export const buildManagedLazyCatalogSource = async (): Promise<string> => {
 			const metadataLiteral =
 				metadata === undefined
 					? '{}'
-					: `{ summary: ${quote(metadata.summary)}, tags: ${renderTools(metadata.tags)} }`;
+					: `{ summary: ${quote(metadata.summary)}, tags: ${renderTools(metadata.tags)}${metadata.startupActivation === true ? ', startupActivation: true' : ''} }`;
 			return [
 				`\t\ttools(${quote(id)}, ${quote(metadata?.package ?? `@mcp-vertex/${id}`)}, ${renderTools((registrations.tools ?? []).map((tool) => tool.id))}, ${renderTools((registrations.prompts ?? []).map((prompt) => prompt.id))}, ${renderTools((registrations.resources ?? []).map((resource) => resource.id))}, ${renderTools((registrations.knowledge ?? []).map((entry) => entry.id))}, ${renderTools((registrations.skills ?? []).map((skill) => skill.id))}, ${renderTools(assembled.loadResult.loaded.find((entry) => entry.plugin.name === id)?.plugin.dependsOn ?? [])}, ${metadataLiteral}),`,
 			];

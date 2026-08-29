@@ -5,7 +5,10 @@ import {
 	createOrchestratorEngine,
 	OrchestratorEngine,
 } from '../../../../src/lib/policy/policy.js';
-import { ModeRegistry, UnknownModeError } from '../../../../src/lib/policy/registry.js';
+import {
+	ModeRegistry,
+	UnknownModeError,
+} from '../../../../src/lib/policy/registry.js';
 import { TaskClassifier } from '../../../../src/lib/classifier/task-classifier.js';
 import type {
 	IOrchestratorPolicy,
@@ -133,9 +136,7 @@ describe('assertPolicyValid', () => {
 
 	it('rejects a null/undefined policy up front', () => {
 		expect(() =>
-			assertPolicyValid(
-				undefined as unknown as IOrchestratorPolicy,
-			),
+			assertPolicyValid(undefined as unknown as IOrchestratorPolicy),
 		).toThrow(TypeError);
 	});
 

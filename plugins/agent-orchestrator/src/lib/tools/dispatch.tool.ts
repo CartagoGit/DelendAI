@@ -167,7 +167,12 @@ export function buildDispatchRegistration(
 			tags: task.tags,
 			...(task.hint !== undefined ? { hint: task.hint } : {}),
 		});
-		const dispatcher = new LinearDispatcher(plan, port(), task.id, telemetry);
+		const dispatcher = new LinearDispatcher(
+			plan,
+			port(),
+			task.id,
+			telemetry,
+		);
 		const outcome = await dispatcher.run();
 		lastOutcomeCache.set(task.id, { plan, outcome });
 		return outcome;

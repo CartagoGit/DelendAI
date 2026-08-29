@@ -32,7 +32,8 @@ describe('buildTokenizerEstimates', () => {
 	});
 
 	it('falls back to an explicit byte-ratio estimate for gemini, matching the heuristic exactly', () => {
-		const jsonText = '{"description":"a fairly long description of a tool"}';
+		const jsonText =
+			'{"description":"a fairly long description of a tool"}';
 		const [, , gemini] = buildTokenizerEstimates(jsonText);
 		expect(gemini?.model).toBe('gemini-2.5-pro');
 		expect(gemini?.confidence).toBe('estimated-byte-ratio');

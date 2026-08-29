@@ -118,7 +118,9 @@ export const resolveRepo = (cwd: string): IGitHubRepo | null => {
 	if (sshMatch !== null) {
 		return { owner: sshMatch[1] ?? '', repo: sshMatch[2] ?? '' };
 	}
-	const httpsMatch = url.match(/https:\/\/github\.com\/([^/]+)\/([^/]+?)(?:\.git)?$/);
+	const httpsMatch = url.match(
+		/https:\/\/github\.com\/([^/]+)\/([^/]+?)(?:\.git)?$/,
+	);
 	if (httpsMatch !== null) {
 		return { owner: httpsMatch[1] ?? '', repo: httpsMatch[2] ?? '' };
 	}
@@ -346,7 +348,10 @@ export const reproStep = async (
 	const local = await runner(command, repoRoot());
 
 	mkdirSync(outputDir, { recursive: true });
-	const localLogPath = join(outputDir, `local-repro-${runId}-job${step.jobId}.log`);
+	const localLogPath = join(
+		outputDir,
+		`local-repro-${runId}-job${step.jobId}.log`,
+	);
 	const localContent = `${local.stdout}${local.stderr.length > 0 ? `\n--- stderr ---\n${local.stderr}` : ''}`;
 	writeFileSync(localLogPath, localContent);
 
@@ -364,8 +369,7 @@ export const main = async (argv: readonly string[]): Promise<number> => {
 	const runId = flag(argv, 'run-id');
 	const repoArg = flag(argv, 'repo');
 	const stepFilter = flag(argv, 'step');
-	const outputDir =
-		flag(argv, 'output') ?? join('build', 'ci');
+	const outputDir = flag(argv, 'output') ?? join('build', 'ci');
 	const dryRun = hasFlag(argv, 'dry-run');
 
 	if (runId === undefined) {
@@ -373,7 +377,9 @@ export const main = async (argv: readonly string[]): Promise<number> => {
 		return 2;
 	}
 	if (!/^\d+$/.test(runId)) {
-		err(`local-repro: --run-id must be a numeric id, got ${JSON.stringify(runId)}`);
+		err(
+			`local-repro: --run-id must be a numeric id, got ${JSON.stringify(runId)}`,
+		);
 		return 2;
 	}
 
@@ -389,7 +395,9 @@ export const main = async (argv: readonly string[]): Promise<number> => {
 			repoName === undefined ||
 			repoName.length === 0
 		) {
-			err(`local-repro: --repo must be <owner>/<repo>, got ${JSON.stringify(repoArg)}`);
+			err(
+				`local-repro: --repo must be <owner>/<repo>, got ${JSON.stringify(repoArg)}`,
+			);
 			return 2;
 		}
 		repo = { owner, repo: repoName };
@@ -397,7 +405,9 @@ export const main = async (argv: readonly string[]): Promise<number> => {
 		repo = resolveRepo(process.cwd());
 	}
 	if (repo === null || repo.owner.length === 0 || repo.repo.length === 0) {
-		err('local-repro: could not resolve GitHub repo (set --repo or run inside a checkout with origin pointing at GitHub)');
+		err(
+			'local-repro: could not resolve GitHub repo (set --repo or run inside a checkout with origin pointing at GitHub)',
+		);
 		return 2;
 	}
 
@@ -428,14 +438,24 @@ export const main = async (argv: readonly string[]): Promise<number> => {
 		out(
 			`local-repro: will reproduce step "${step.stepName}" (job ${step.jobId} "${step.jobName}")`,
 		);
-		const report = await reproStep(repo, runId, step, defaultRunner, outputDir);
+		const report = await reproStep(
+			repo,
+			runId,
+			step,
+			defaultRunner,
+			outputDir,
+		);
 		out(`local-repro: local log written to ${report.localLogPath}`);
-		out(`local-repro: local exit=${report.localStatus} ci exit=${report.ciStatus} matched=${report.matched}`);
+		out(
+			`local-repro: local exit=${report.localStatus} ci exit=${report.ciStatus} matched=${report.matched}`,
+		);
 		if (report.matched) {
 			out('local-repro: ✓ failure reproduces locally');
 			return 0;
 		}
-		out('local-repro: ✗ local run passed — divergence between CI and local env');
+		out(
+			'local-repro: ✗ local run passed — divergence between CI and local env',
+		);
 		return 1;
 	} catch (cause) {
 		const reason = cause instanceof Error ? cause.message : String(cause);

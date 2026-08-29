@@ -16,7 +16,7 @@ const REQ: IEnvRequirement = {
 };
 
 const buildServer = () => {
-	let captured: { args: unknown; result: unknown } | null = null;
+	const captured: { args: unknown; result: unknown } | null = null;
 	const server = {
 		registerTool(
 			_name: string,

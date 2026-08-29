@@ -12,6 +12,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import type { IGitRunner, IGitRunResult } from '@mcp-vertex/core/public';
 
 import { DEFAULT_BRANCH_POLICY } from '@mcp-vertex/commit-policy/lib/contracts/branch';
+
 import type { ICommitPolicyOptions } from '@mcp-vertex/commit-policy/lib/contracts/options';
 import {
 	createCommitPolicyEngine,

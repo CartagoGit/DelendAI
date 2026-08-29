@@ -71,6 +71,8 @@ export type IAutoWorkPersistMode = 'none' | 'commit' | 'commit-and-push';
 export interface IAutoWorkPersistOptions {
 	/** Persist mode. `'none'` is a hard default; no git is touched. */
 	readonly mode: IAutoWorkPersistMode;
+	/** Host-scoped worktree capability resolved at boot. */
+	readonly agentWorktreeEnabled?: boolean;
 	/**
 	 * Conventional-Commits template. Placeholders:
 	 * - `<area>`         — first path segment of the first changed file
@@ -213,7 +215,9 @@ const pushWouldHitDevelop = (pushTarget: string): boolean => {
 	const tokens = pushTarget.split(/\s+/u);
 	return tokens.some(
 		(t) =>
-			t === 'develop' || t.endsWith('/develop') || t.endsWith('\\develop'),
+			t === 'develop' ||
+			t.endsWith('/develop') ||
+			t.endsWith('\\develop'),
 	);
 };
 
@@ -298,6 +302,11 @@ export const maybePersistAfterSlice = async (
 	// invariant `commit-policy`'s push driver enforces independently
 	// when pushing through the plugin tool instead of this helper.
 	const pushTarget = options.pushTarget ?? DEFAULT_PUSH_TARGET;
+	if (mode === 'commit-and-push' && options.agentWorktreeEnabled !== true) {
+		return persistResult(false, false, mode, {
+			reason: 'commit-and-push requires agentWorktree to be enabled; use mode "commit" in shared-checkout mode or enable agentWorktree',
+		});
+	}
 	const wouldHitMain =
 		mode === 'commit-and-push' && pushWouldHitMain(pushTarget);
 	const wouldHitDevelop =

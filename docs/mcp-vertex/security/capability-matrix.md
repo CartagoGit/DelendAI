@@ -1,6 +1,6 @@
 # Capability Matrix
 
-> Generated 2026-08-26 from plugin manifests + the `lint:capabilities` static analysis. Regenerate with `bun tools/scripts/gen/capability-matrix.script.ts`.
+> Generated 2026-08-29 from plugin manifests + the `lint:capabilities` static analysis. Regenerate with `bun tools/scripts/gen/capability-matrix.script.ts`.
 
 Legend: ✅ declared & used · 🟡 declared but unused · 🔴 used but not declared · ⚪ absent
 
@@ -10,6 +10,7 @@ Legend: ✅ declared & used · 🟡 declared but unused · 🔴 used but not dec
 | agent-orchestrator | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ |
 | api | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ |
 | audit | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ |
+| audit-orchestrator | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ |
 | auto-agent-selector | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ |
 | auto-plugin-selector | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ |
 | browser | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ |
@@ -68,7 +69,7 @@ Legend: ✅ declared & used · 🟡 declared but unused · 🔴 used but not dec
 - `agent-orchestrator` — 0
 - `api` — 0
 - `audit` — 0
-- `auto-agent-selector` — 0
+- `audit-orchestrator` — 0
 
 ### Rare capabilities (declared by ≤ 2 plugins)
 

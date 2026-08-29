@@ -51,8 +51,16 @@ const buildTwoPluginRuntime = () => {
 			},
 		],
 		plugins: [
-			{ id: 'alpha', namespace: 'alpha', toolRegistrationIds: ['alpha_read'] },
-			{ id: 'beta', namespace: 'beta', toolRegistrationIds: ['beta_write'] },
+			{
+				id: 'alpha',
+				namespace: 'alpha',
+				toolRegistrationIds: ['alpha_read'],
+			},
+			{
+				id: 'beta',
+				namespace: 'beta',
+				toolRegistrationIds: ['beta_write'],
+			},
 		],
 	};
 	const runtime = createToolSurfaceRuntime(plan);
@@ -92,9 +100,9 @@ describe('tool-surface-runtime searchTools filters', () => {
 		expect(
 			runtime.searchTools({ plugin: 'ALPHA' }).map((entry) => entry.name),
 		).toEqual(['alpha_read']);
-		expect(
-			runtime.searchTools({ plugin: 'nonexistent-plugin' }),
-		).toEqual([]);
+		expect(runtime.searchTools({ plugin: 'nonexistent-plugin' })).toEqual(
+			[],
+		);
 	});
 
 	it('the tag filter matches case-insensitively and excludes tools without the tag', () => {
@@ -152,9 +160,9 @@ describe('tool-surface-runtime unknown-identifier refusals', () => {
 			activate: async () => ({ handler: async () => undefined }),
 		});
 
-		expect(runtime.searchTools().map((entry) => entry.registrationId)).toEqual(
-			expect.not.arrayContaining(['ghost']),
-		);
+		expect(
+			runtime.searchTools().map((entry) => entry.registrationId),
+		).toEqual(expect.not.arrayContaining(['ghost']));
 	});
 
 	it('isToolExposed defaults to true for a name that was never bound', () => {

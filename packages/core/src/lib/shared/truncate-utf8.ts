@@ -27,10 +27,7 @@ const trimIncompleteUtf8Tail = (buffer: Buffer): Buffer => {
 		: buffer;
 };
 
-export const truncateUtf8Buffer = (
-	input: Buffer,
-	maxBytes: number,
-): Buffer => {
+export const truncateUtf8Buffer = (input: Buffer, maxBytes: number): Buffer => {
 	if (maxBytes < 0) {
 		throw new RangeError('maxBytes must be non-negative');
 	}

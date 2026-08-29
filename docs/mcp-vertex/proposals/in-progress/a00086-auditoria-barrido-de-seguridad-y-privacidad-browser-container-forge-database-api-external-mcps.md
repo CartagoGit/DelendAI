@@ -45,28 +45,40 @@ La auditoría legada revisa los 43 plugins como checklist, no como sentencia. Es
 - **Gate**: none
 - acceptance:
   - "Cada eje revisado con evidencia archivo+línea; hallazgos clasificados."
-
+- review-state: done
+- review-implementer: audit-implementer
+- review-reviewer: audit-peer-reviewer
+- review-log: approved by audit-peer-reviewer — Revisión independiente con evidencia real: suite focalizada de peer review 2 archivos / 15 tests, salida 0; commit actual f05127076cd06c8eeed4e58cbd4d1dc7aef03652.
 ### S2 — Auditar container/forge/git
 - **Status**: done
 - **Files**: `plugins/container/**`, `plugins/forge/**`, `plugins/git/**`
 - **Gate**: none
 - acceptance:
   - "Destructivas, process tree, socket y writes revisados; hallazgos clasificados."
-
+- review-state: done
+- review-implementer: audit-implementer
+- review-reviewer: audit-peer-reviewer
+- review-log: approved by audit-peer-reviewer — Revisión independiente con evidencia real: suite focalizada 2 archivos / 15 tests, salida 0; commit actual f05127076cd06c8eeed4e58cbd4d1dc7aef03652. La validación global queda bloqueada por regresiones Biome no atribuibles a este slice.
 ### S3 — Auditar database/env/api/security
 - **Status**: done
 - **Files**: `plugins/database/**`, `plugins/env/**`, `plugins/api/**`, `plugins/security/**`
 - **Gate**: none
 - acceptance:
   - "Read-only, credenciales, secret values, SSRF/redirects y CVE network revisados."
-
+- review-state: done
+- review-implementer: audit-implementer
+- review-reviewer: audit-peer-reviewer
+- review-log: approved by audit-peer-reviewer — Revisión independiente con evidencia real: suite focalizada 2 archivos / 15 tests, salida 0; commit actual f05127076cd06c8eeed4e58cbd4d1dc7aef03652. La validación global queda bloqueada por regresiones Biome no atribuibles a este slice.
 ### S4 — Auditar external-mcps/logs/observability/orchestrator-runner
 - **Status**: done
 - **Files**: `plugins/external-mcps/**`, `plugins/logs/**`, `plugins/observability/**`, `plugins/orchestrator-runner/**`
 - **Gate**: none
 - acceptance:
   - "Trust boundary, PII, redaction y lifecycle de procesos revisados."
-
+- review-state: done
+- review-implementer: audit-implementer
+- review-reviewer: audit-peer-reviewer
+- review-log: approved by audit-peer-reviewer — Revisión independiente con evidencia real: suite focalizada 2 archivos / 15 tests, salida 0; commit actual f05127076cd06c8eeed4e58cbd4d1dc7aef03652. La validación global queda bloqueada por regresiones Biome no atribuibles a este slice.
 ## acceptance
 
 - Cada eje revisado con evidencia archivo+línea; hallazgos clasificados.

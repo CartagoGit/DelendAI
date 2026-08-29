@@ -65,7 +65,7 @@ import {
 	extractYamlBlock,
 	parseFrontmatterBlock,
 } from '../../../plugins/proposals/src/lib/proposals/frontmatter-parser';
-import { collectSliceStatuses } from '../../../plugins/proposals/src/lib/services/proposal-completeness';
+import type { collectSliceStatuses } from '../../../plugins/proposals/src/lib/services/proposal-completeness';
 import { KIND_TO_DONE_SUBFOLDER } from '../../../plugins/proposals/src/lib/contracts/constants/proposal-glossary.constant';
 
 interface ICollectedProposal {

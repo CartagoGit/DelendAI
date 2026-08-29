@@ -434,7 +434,9 @@ export const main = async (argv: readonly string[]): Promise<number> => {
 			};
 		} else {
 			if (base === undefined) {
-				err('affected: --base <ref> is required (or pass --all for the nightly matrix)');
+				err(
+					'affected: --base <ref> is required (or pass --all for the nightly matrix)',
+				);
 				return 2;
 			}
 			const files = gitDiffNames(base, head);

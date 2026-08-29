@@ -42,9 +42,7 @@ export const parseDockerPs = (raw: string): readonly IDockerContainer[] => {
 				ports: splitPorts(parsed.data.Ports),
 				createdAt: toIso(parsed.data.CreatedAt),
 			});
-		} catch {
-			continue;
-		}
+		} catch {}
 	}
 	return items;
 };

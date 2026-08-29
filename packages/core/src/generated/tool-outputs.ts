@@ -99,6 +99,7 @@ export interface McpVertexAnalyzeProjectOutput {
 }
 
 export interface McpVertexAuditAuditConsolidateOutput {
+	auditType: "plan" | "valuation";
 	auditsFound: number;
 	skipped: {
 		path: string;
@@ -137,6 +138,7 @@ export interface McpVertexAuditAuditConsolidateOutput {
 }
 
 export interface McpVertexAuditAuditPlanOutput {
+	auditType: "plan" | "valuation";
 	scope: string;
 	mode: "general" | "specific" | "monorepo";
 	markdown: string;
@@ -150,6 +152,7 @@ export interface McpVertexAuditAuditPlanOutput {
 }
 
 export interface McpVertexAuditAuditRunOutput {
+	auditType: "plan" | "valuation";
 	scope: string;
 	mode: "general" | "specific" | "monorepo";
 	date: string;
@@ -177,12 +180,13 @@ export interface McpVertexAuditAuditRunOutput {
 		markdown: string;
 	};
 	proposals: {
-		scaffolded: {
+		scaffolded: Array<{
 			id: string;
 			filename: string;
 			severity: string;
 			files: string[];
-		}[];
+			kind: "fix" | "plan";
+		}>;
 	} | {
 		skipped: string;
 	} | {
@@ -1760,6 +1764,13 @@ export interface McpVertexProposalsCloseSliceOutput {
 	sliceId?: string;
 	closed?: boolean;
 	lockReleased?: boolean;
+	persist?: {
+		committed: boolean;
+		pushed: boolean;
+		mode: "none" | "commit" | "commit-and-push";
+		hash?: string;
+		reason?: string;
+	};
 	pendingIntegrationBranch?: string | null;
 	kind?: string;
 	validationOutput?: string;

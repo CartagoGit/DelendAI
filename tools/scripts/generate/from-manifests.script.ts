@@ -271,6 +271,9 @@ export const buildGeneratedFirstPartyEntries = (
 			tags: [...manifest.tags],
 			permissions: [...manifest.permissions],
 			tokenBudgetBytes,
+			...(manifest.startupActivation === undefined
+				? {}
+				: { startupActivation: manifest.startupActivation }),
 			...(manifest.toolPermissions === undefined
 				? {}
 				: { toolPermissions: manifest.toolPermissions }),
@@ -371,6 +374,9 @@ const renderRegistryEntry = (entry: IPluginRegistryEntry): string => {
 		lines.push(
 			`\t\t\ttokenBudgetBytes: ${entry.tokenBudgetBytes.toString()},`,
 		);
+	}
+	if (entry.startupActivation === true) {
+		lines.push('\t\t\tstartupActivation: true,');
 	}
 	if (entry.toolPermissions !== undefined) {
 		const entries = Object.entries(entry.toolPermissions)

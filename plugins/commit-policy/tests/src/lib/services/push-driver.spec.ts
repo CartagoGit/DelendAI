@@ -230,6 +230,39 @@ describe('runPushDriver', () => {
 		expect(pushes.calls.length).toBe(0);
 	});
 
+	it('refuses direct push to develop even when config omits it', async () => {
+		const { run, pushes } = buildPushFake();
+		const result = await runPushDriver(
+			{},
+			basePush({
+				remote: 'origin',
+				branch: 'develop',
+			}),
+			run,
+		);
+		expect(result.ok).toBe(false);
+		if (result.ok) return;
+		expect(result.refusal).toContain('DIRECT_PUSH_TO_DEVELOP_NOT_ALLOWED');
+		expect(pushes.calls.length).toBe(0);
+	});
+
+	it('refuses direct push to develop when config marks it protected', async () => {
+		const { run, pushes } = buildPushFake();
+		const result = await runPushDriver(
+			{},
+			basePush({
+				remote: 'origin',
+				branch: 'develop',
+				protectedBranches: ['main', 'master', 'develop'],
+			}),
+			run,
+		);
+		expect(result.ok).toBe(false);
+		if (result.ok) return;
+		expect(result.refusal).toContain('protectedBranches');
+		expect(pushes.calls.length).toBe(0);
+	});
+
 	it('refuses when neither remote/branch/upstream/current-branch resolves', async () => {
 		const { run } = buildPushFake(); // no currentBranch, no upstream
 		const result = await runPushDriver({}, basePush(), run);
@@ -237,18 +270,4 @@ describe('runPushDriver', () => {
 		if (result.ok) return;
 		expect(result.refusal).toContain('remote/branch');
 	});
-});
-
-it('refuses direct push to develop (x00258 defense in depth)', async () => {
-	const { run, pushes } = buildPushFake();
-	const result = await runPushDriver(
-		{},
-		basePush({ remote: 'origin', branch: 'develop' }),
-		run,
-	);
-	expect(result.ok).toBe(false);
-	if (result.ok) return;
-	expect(result.refusal).toContain('develop');
-	expect(result.refusal).toContain('DIRECT_PUSH_TO_DEVELOP_NOT_ALLOWED');
-	expect(pushes.calls.length).toBe(0);
 });

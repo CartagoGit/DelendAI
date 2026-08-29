@@ -45,9 +45,11 @@ export const ScaffoldedSchema = z.object({
 	filename: z.string(),
 	severity: z.string(),
 	files: z.array(z.string()),
+	kind: z.enum(['fix', 'plan']),
 });
 
 export const RunOutputSchema = z.object({
+	auditType: z.enum(['plan', 'valuation']),
 	scope: z.string(),
 	mode: z.enum(['general', 'specific', 'monorepo']),
 	date: z.string(),
@@ -93,6 +95,13 @@ export const TargetSchema = z.object({
 });
 
 export const RunInputSchema = z.object({
+	/**
+	 * Output intent for the audit pipeline. `plan` produces an exhaustive
+	 * implementation plan whose findings are scaffolded as linked proposals;
+	 * `valuation` produces the normal technical assessment and correction
+	 * proposals. Defaults to `valuation` for backwards compatibility.
+	 */
+	auditType: z.enum(['plan', 'valuation']).optional(),
 	/**
 	 * Audit scope — same vocabulary as `audit_plan`. Universal
 	 * scopes (`full` default, `security`, `tokens`, `tests`, `docs`)

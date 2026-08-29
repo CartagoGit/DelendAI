@@ -341,6 +341,7 @@ describe('auto_work (one-call action plan)', async () => {
 		const pushOptions: IAutoWorkToolOptions = {
 			...options,
 			persist: { mode: 'commit-and-push', pushTarget: 'origin agent/p1' },
+			agentWorktreeEnabled: true,
 		};
 		writeFileSync(
 			pushOptions.indexPathAbs,
@@ -422,7 +423,7 @@ describe('auto_work (one-call action plan)', async () => {
 		expect(wtSteps).toHaveLength(0);
 	});
 
-	it("x00231: persist 'commit-and-push' with agentWorktree off orders commit+push on develop and omits the agent_worktree step", async () => {
+	it("rejects persist 'commit-and-push' when agentWorktree is off", async () => {
 		const pushOptions: IAutoWorkToolOptions = {
 			...options,
 			persist: { mode: 'commit-and-push', pushTarget: 'origin develop' },
@@ -434,20 +435,11 @@ describe('auto_work (one-call action plan)', async () => {
 			}),
 		);
 		const out = parse(await runAutoWork(pushOptions));
-		const persistSteps = out.steps.filter((s: string) =>
-			s.includes('Persist the slice'),
+		expect(out.ok).toBe(false);
+		expect(out.reason).toBe('invalid-persist-config');
+		expect(out.hygieneBlockers).toContain(
+			'commit-and-push requires agentWorktree to be enabled',
 		);
-		expect(persistSteps).toHaveLength(1);
-		expect(persistSteps[0]).toContain('pushTarget: "origin develop"');
-		const wtSteps = out.steps.filter(
-			(s: string) => s.includes('agent_worktree') && s.includes('create'),
-		);
-		expect(wtSteps).toHaveLength(0);
-		const developStep = out.steps.find((s: string) =>
-			s.includes('agentWorktree: false'),
-		);
-		expect(developStep).toBeDefined();
-		expect(developStep).toContain('develop');
 	});
 
 	it("x00231: persist 'commit' with agentWorktree off orders commit only (no push mention)", async () => {
@@ -481,14 +473,16 @@ describe('auto_work (one-call action plan)', async () => {
 				proposals: [{ id: 'p1-x', file: 'p1.md', status: 'pending' }],
 			}),
 		);
-		// input.persist='commit-and-push' must win over config 'commit'.
+		// input.persist='commit-and-push' wins over config 'commit', then
+		// the worktree gate rejects the incompatible resolved mode.
 		const out = parse(
 			await runAutoWork({
 				...commitOptions,
 				inputPersist: 'commit-and-push',
 			}),
 		);
-		expect(out.persist.mode).toBe('commit-and-push');
+		expect(out.ok).toBe(false);
+		expect(out.reason).toBe('invalid-persist-config');
 	});
 });
 

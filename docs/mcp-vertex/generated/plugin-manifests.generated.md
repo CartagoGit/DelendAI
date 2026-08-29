@@ -8,6 +8,7 @@
 | agent-orchestrator | @mcp-vertex/agent-orchestrator | public | experimental | standard, swarm, full, vertex |
 | api | @mcp-vertex/api | public | stable | full |
 | audit | @mcp-vertex/audit | public | stable | vertex |
+| audit-orchestrator | @mcp-vertex/audit-orchestrator | public | experimental |  |
 | auto-agent-selector | @mcp-vertex/auto-agent-selector | public | stable | standard, swarm, full, vertex |
 | auto-plugin-selector | @mcp-vertex/auto-plugin-selector | public | stable | vertex |
 | browser | @mcp-vertex/browser | public | stable |  |
@@ -62,6 +63,7 @@
 | agent-orchestrator | 2700 | 3000 | 20 |
 | api | 2700 | 3000 | 20 |
 | audit | 2700 | 3000 | 20 |
+| audit-orchestrator | 2700 | 3000 | 20 |
 | auto-agent-selector | 2700 | 3000 | 20 |
 | auto-plugin-selector | 2700 | 3000 | 20 |
 | browser | 2700 | 3000 | 20 |
@@ -118,6 +120,7 @@
 | agent-orchestrator | process |  |
 | api | process, network |  |
 | audit | filesystem-read, filesystem-write, network |  |
+| audit-orchestrator | filesystem-read, process |  |
 | auto-agent-selector | process, network |  |
 | auto-plugin-selector | filesystem-read |  |
 | browser | browser, network |  |
@@ -206,6 +209,15 @@
 | audit | web-app | no | no | yes |
 | audit | backend-api | no | no | yes |
 | audit | cli-tool | no | no | yes |
+| audit-orchestrator | minimal | no | no | yes |
+| audit-orchestrator | lean | no | no | yes |
+| audit-orchestrator | standard | no | no | yes |
+| audit-orchestrator | swarm | no | no | yes |
+| audit-orchestrator | full | no | no | yes |
+| audit-orchestrator | vertex | no | no | yes |
+| audit-orchestrator | web-app | no | no | yes |
+| audit-orchestrator | backend-api | no | no | yes |
+| audit-orchestrator | cli-tool | no | no | yes |
 | auto-agent-selector | minimal | no | no | yes |
 | auto-agent-selector | lean | no | no | yes |
 | auto-agent-selector | standard | yes | yes | yes |

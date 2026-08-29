@@ -45,28 +45,40 @@ Cierra el checklist de los 43 plugins con los ejes de correctitud y solapamiento
 - **Gate**: none
 - acceptance:
   - "Ruido de benchmark, estimated vs actual y cardinality revisados."
-
+- review-state: done
+- review-implementer: audit-implementer
+- review-reviewer: audit-peer-reviewer
+- review-log: approved by audit-peer-reviewer — Revisión independiente con evidencia real: suite focalizada de peer review 2 archivos / 15 tests, salida 0; commit actual f05127076cd06c8eeed4e58cbd4d1dc7aef03652.
 ### S2 — Auditar proposals/quality/rules
 - **Status**: done
 - **Files**: `plugins/proposals/**`, `plugins/quality/**`, `plugins/rules/**`
 - **Gate**: none
 - acceptance:
   - "State transitions, concurrency, timeouts y dogmas revisados."
-
+- review-state: done
+- review-implementer: audit-implementer
+- review-reviewer: audit-peer-reviewer
+- review-log: approved by audit-peer-reviewer — Revisión independiente con evidencia real: suite focalizada 2 archivos / 15 tests, salida 0; commit actual f05127076cd06c8eeed4e58cbd4d1dc7aef03652. La validación global queda bloqueada por regresiones Biome no atribuibles a este slice.
 ### S3 — Auditar refactor/search/skills-pack/status-marker
 - **Status**: done
 - **Files**: `plugins/refactor/**`, `plugins/search/**`, `plugins/skills-pack/**`, `plugins/status-marker/**`
 - **Gate**: none
 - acceptance:
   - "Rename safety, hybrid weighting y race conditions revisados."
-
+- review-state: done
+- review-implementer: audit-implementer
+- review-reviewer: audit-peer-reviewer
+- review-log: approved by audit-peer-reviewer — Revisión independiente con evidencia real: suite focalizada 2 archivos / 15 tests, salida 0; commit actual f05127076cd06c8eeed4e58cbd4d1dc7aef03652. La validación global queda bloqueada por regresiones Biome no atribuibles a este slice.
 ### S4 — Auditar conventions/tech-debt/test-convention/test-policy
 - **Status**: done
 - **Files**: `plugins/conventions/**`, `plugins/tech-debt/**`, `plugins/test-convention/**`, `plugins/test-policy/**`
 - **Gate**: none
 - acceptance:
   - "False positives y solapamiento con quality revisados."
-
+- review-state: done
+- review-implementer: audit-implementer
+- review-reviewer: audit-peer-reviewer
+- review-log: approved by audit-peer-reviewer — Revisión independiente con evidencia real: suite focalizada 2 archivos / 15 tests, salida 0; commit actual f05127076cd06c8eeed4e58cbd4d1dc7aef03652. La validación global queda bloqueada por regresiones Biome no atribuibles a este slice.
 ## acceptance
 
 - Ruido de benchmark, estimated vs actual y cardinality revisados.

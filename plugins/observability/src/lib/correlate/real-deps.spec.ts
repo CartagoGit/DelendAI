@@ -83,7 +83,9 @@ describe('realReadLocalCorrelateDeps — listLocalLogs', () => {
 	});
 
 	it('drops a record with no recognizable timestamp field', async () => {
-		writeJsonl(LOGS_DIR, 'a.jsonl', [JSON.stringify({ msg: 'no ts here' })]);
+		writeJsonl(LOGS_DIR, 'a.jsonl', [
+			JSON.stringify({ msg: 'no ts here' }),
+		]);
 		const deps = realReadLocalCorrelateDeps(root);
 		expect(await deps.listLocalLogs()).toEqual([]);
 	});
@@ -112,9 +114,9 @@ describe('realReadLocalCorrelateDeps — listLocalLogs', () => {
 			JSON.stringify({ ts: '2026-01-01T00:00:00.000Z' }),
 		]);
 		const deps = realReadLocalCorrelateDeps(root);
-		expect(
-			await deps.listLocalLogs({ since: 'not-a-real-date' }),
-		).toEqual([]);
+		expect(await deps.listLocalLogs({ since: 'not-a-real-date' })).toEqual(
+			[],
+		);
 	});
 });
 
@@ -180,7 +182,10 @@ describe('realReadLocalCorrelateDeps — listLocalMetrics', () => {
 
 	it('drops a record missing a name or a value', async () => {
 		writeJsonl(METRICS_DIR, 'm.jsonl', [
-			JSON.stringify({ ts: '2026-01-01T00:00:00.000Z', name: 'no-value' }),
+			JSON.stringify({
+				ts: '2026-01-01T00:00:00.000Z',
+				name: 'no-value',
+			}),
 			JSON.stringify({ ts: '2026-01-01T00:00:00.000Z', value: 1 }),
 		]);
 		const deps = realReadLocalCorrelateDeps(root);

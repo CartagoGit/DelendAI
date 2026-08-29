@@ -78,9 +78,7 @@ export interface IRenameRequest {
 	readonly dryRun?: boolean;
 }
 
-export interface IFileReader {
-	(absPath: string): Promise<string>;
-}
+export type IFileReader = (absPath: string) => Promise<string>;
 
 const IDENT_RE = /^[A-Za-z_$][A-Za-z0-9_$]*$/;
 

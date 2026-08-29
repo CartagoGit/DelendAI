@@ -251,6 +251,22 @@
         "@mcp-vertex/core": "^0.1.1",
       },
     },
+    "plugins/audit-orchestrator": {
+      "name": "@mcp-vertex/audit-orchestrator",
+      "version": "0.1.0",
+      "devDependencies": {
+        "@mcp-vertex/agent-orchestrator": "workspace:*",
+        "@mcp-vertex/core": "workspace:*",
+        "@types/bun": "latest",
+        "typescript": "7.0.2",
+        "vitest": "4.1.11",
+        "zod": "^4.4.3",
+      },
+      "peerDependencies": {
+        "@mcp-vertex/agent-orchestrator": "workspace:*",
+        "@mcp-vertex/core": "^0.1.1",
+      },
+    },
     "plugins/auto-agent-selector": {
       "name": "@mcp-vertex/auto-agent-selector",
       "version": "0.1.1",
@@ -1396,6 +1412,8 @@
     "@mcp-vertex/api": ["@mcp-vertex/api@workspace:plugins/api"],
 
     "@mcp-vertex/audit": ["@mcp-vertex/audit@workspace:plugins/audit"],
+
+    "@mcp-vertex/audit-orchestrator": ["@mcp-vertex/audit-orchestrator@workspace:plugins/audit-orchestrator"],
 
     "@mcp-vertex/auto-agent-selector": ["@mcp-vertex/auto-agent-selector@workspace:plugins/auto-agent-selector"],
 

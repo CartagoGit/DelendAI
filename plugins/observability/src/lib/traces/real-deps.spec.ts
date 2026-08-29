@@ -13,10 +13,7 @@ import { join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import {
-	realReadReleaseHealthDeps,
-	realReadTracesDeps,
-} from './real-deps';
+import { realReadReleaseHealthDeps, realReadTracesDeps } from './real-deps';
 
 const LOGS_DIR = '.cache/mcp-vertex/results/logs';
 
@@ -46,7 +43,9 @@ describe('realReadTracesDeps', () => {
 	});
 
 	it('drops a record with no recognizable traceId, even if everything else is present', async () => {
-		writeJsonl('a.jsonl', [{ service: 'core', ts: '2026-01-01T00:00:00Z' }]);
+		writeJsonl('a.jsonl', [
+			{ service: 'core', ts: '2026-01-01T00:00:00Z' },
+		]);
 		const deps = realReadTracesDeps(root);
 		expect(await deps.listTraceRecords()).toEqual([]);
 	});
@@ -124,14 +123,20 @@ describe('realReadTracesDeps', () => {
 			{
 				meta: {
 					result: {
-						structuredContent: { traceId: 'nested-t', service: 'nested-s' },
+						structuredContent: {
+							traceId: 'nested-t',
+							service: 'nested-s',
+						},
 					},
 				},
 			},
 		]);
 		const deps = realReadTracesDeps(root);
 		const [record] = await deps.listTraceRecords();
-		expect(record).toMatchObject({ traceId: 'nested-t', service: 'nested-s' });
+		expect(record).toMatchObject({
+			traceId: 'nested-t',
+			service: 'nested-s',
+		});
 	});
 });
 

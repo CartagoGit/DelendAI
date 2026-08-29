@@ -70,11 +70,8 @@ const buildSharedHandlers = async (
 	return { handlers, telemetry };
 };
 
-const structured = (
-	res: unknown,
-): Record<string, unknown> | undefined =>
-	(res as { structuredContent?: Record<string, unknown> })
-		.structuredContent;
+const structured = (res: unknown): Record<string, unknown> | undefined =>
+	(res as { structuredContent?: Record<string, unknown> }).structuredContent;
 
 const readEvents = async (
 	handlers: Handlers,
@@ -116,7 +113,10 @@ describe('dispatch lifecycle telemetry reaches ns_events', () => {
 			...POLICY,
 			defaults: {
 				...POLICY.defaults,
-				rotation: { maxIterationsPerSubagent: 1, allow: ['error-storm'] },
+				rotation: {
+					maxIterationsPerSubagent: 1,
+					allow: ['error-storm'],
+				},
 			},
 		};
 		const engine = createOrchestratorEngine(tightPolicy);
@@ -133,7 +133,15 @@ describe('dispatch lifecycle telemetry reaches ns_events', () => {
 			script: new Map([
 				[
 					'slot-1-scout',
-					[{ output: '', tokensUsed: 0, schemaOk: false, hadError: true, throw: 'rpc-down' }],
+					[
+						{
+							output: '',
+							tokensUsed: 0,
+							schemaOk: false,
+							hadError: true,
+							throw: 'rpc-down',
+						},
+					],
 				],
 			]),
 		});
@@ -178,7 +186,12 @@ describe('dispatch lifecycle telemetry reaches ns_events', () => {
 			script: new Map([
 				[
 					'slot-1-scout',
-					[badOutput('x'), badOutput('y'), badOutput('x'), badOutput('z')],
+					[
+						badOutput('x'),
+						badOutput('y'),
+						badOutput('x'),
+						badOutput('z'),
+					],
 				],
 			]),
 		});

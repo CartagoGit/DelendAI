@@ -19,9 +19,7 @@ import {
 } from '../../../../src/lib/policy/policy.js';
 import { TaskClassifier } from '../../../../src/lib/classifier/task-classifier.js';
 import { ModeRegistry } from '../../../../src/lib/policy/registry.js';
-import type {
-	IModeAdapter,
-} from '../../../../src/lib/policy/registry.js';
+import type { IModeAdapter } from '../../../../src/lib/policy/registry.js';
 import type {
 	IModePlan,
 	IOrchestratorPolicy,
@@ -96,7 +94,11 @@ describe('agent-orchestrator_plan — override handling', () => {
 				mode: 'single',
 				rationale: 'stub plan',
 				steps: [
-					{ order: 1, kind: 'orchestrate', instruction: task.description },
+					{
+						order: 1,
+						kind: 'orchestrate',
+						instruction: task.description,
+					},
 				],
 				budget: POLICY.defaults.budget,
 				rotation: POLICY.defaults.rotation,
@@ -119,7 +121,11 @@ describe('agent-orchestrator_plan — override handling', () => {
 			  }>)
 			| undefined;
 		await registration.register({
-			registerTool: (_name: string, _def: unknown, fn: typeof handler) => {
+			registerTool: (
+				_name: string,
+				_def: unknown,
+				fn: typeof handler,
+			) => {
 				handler = fn;
 			},
 		} as never);
