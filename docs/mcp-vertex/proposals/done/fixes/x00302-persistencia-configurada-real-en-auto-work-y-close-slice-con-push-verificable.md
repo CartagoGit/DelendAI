@@ -2,7 +2,7 @@
 id: x00302
 title: "Persistencia configurada real en auto_work y close_slice con push verificable"
 kind: fix
-status: ready
+status: done
 type: proposal
 track: proposals-commit-persistence
 date: 2026-08-29

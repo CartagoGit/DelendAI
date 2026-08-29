@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-08-29T16:20:38.075Z",
+	"generatedAt": "2026-08-29T16:22:57.198Z",
 	"mode": "compact",
 	"tools": [
 		{
@@ -1354,21 +1354,14 @@
 				"track": "plugins+fix",
 				"status": "in-progress",
 				"kind": "fix"
-			},
-			{
-				"id": "x00302",
-				"title": "x00302",
-				"track": "proposals-commit-persistence",
-				"status": "ready",
-				"kind": "fix"
 			}
 		],
 		"byStatus": {
-			"ready": 2,
+			"ready": 1,
 			"in-progress": 15,
 			"review": 0,
 			"paused": 1,
-			"done": 507,
+			"done": 508,
 			"blocked": 0,
 			"retired": 2,
 			"unspecified": 0
