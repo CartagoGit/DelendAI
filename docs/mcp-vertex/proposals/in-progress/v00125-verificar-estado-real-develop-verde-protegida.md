@@ -116,9 +116,13 @@ no inferir el estado desde configs declarativas.
 
 ### S1 — Script + dashboard entry + CI nightly + tests
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `tools/scripts/ci/verify-develop-health.script.ts`, `tools/tests/ci/verify-develop-health.spec.ts`, `apps/web/src/data/develop-health.json`, `.github/workflows/verify-develop-health.yml`
 - **Gate**: type
+- review-state: submitted
+- review-implementer: mcp-vertex-orchestrator
+- review-reviewer: delivery_verifier
+- review-log: Implementación existente verificada; typecheck de tools verde y `bun vitest run tools/tests/ci/verify-develop-health.spec.ts` verde (1 archivo, 23 tests).
 
 ## acceptance
 
@@ -130,3 +134,13 @@ no inferir el estado desde configs declarativas.
 - `bun run validate` verde.
 - `resolution.evidence` de la propuesta cita el output real del
   script (JSON) cuando se cierra.
+
+---
+
+resolution:
+  status: implemented
+  shipped-in: ["30551533", "051b12d5", "e94d5639", "bd0df7b0"]
+  evidence:
+    - tests: "1 archivo, 23 tests"
+    - typecheck: "bun tools/scripts/typecheck.script.ts exit 0"
+    - workflow: "script, dashboard entry y CI nightly presentes y rastreados"

@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-08-29T20:09:28.096Z",
+	"generatedAt": "2026-08-29T20:45:59.804Z",
 	"mode": "compact",
 	"tools": [
 		{
@@ -1279,6 +1279,13 @@
 				"kind": "feat"
 			},
 			{
+				"id": "f00282",
+				"title": "f00282",
+				"track": "project-observability-economics",
+				"status": "ready",
+				"kind": "feat"
+			},
+			{
 				"id": "v00125",
 				"title": "v00125",
 				"track": "governance",
@@ -1305,14 +1312,28 @@
 				"track": "plugins+fix",
 				"status": "in-progress",
 				"kind": "fix"
+			},
+			{
+				"id": "x00303",
+				"title": "x00303",
+				"track": "proposals-commit-persistence",
+				"status": "ready",
+				"kind": "fix"
+			},
+			{
+				"id": "x00304",
+				"title": "x00304",
+				"track": "proposals-commit-persistence",
+				"status": "ready",
+				"kind": "fix"
 			}
 		],
 		"byStatus": {
-			"ready": 0,
+			"ready": 3,
 			"in-progress": 8,
-			"review": 1,
+			"review": 0,
 			"paused": 2,
-			"done": 514,
+			"done": 515,
 			"blocked": 0,
 			"retired": 2,
 			"unspecified": 0
