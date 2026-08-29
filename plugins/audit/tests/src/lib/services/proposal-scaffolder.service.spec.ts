@@ -79,4 +79,20 @@ describe('scaffoldProposals — agnostic contract (x00165)', () => {
 			proposal!.filename,
 		);
 	});
+
+	it('creates a plan parent and linked fix children for plan audits', () => {
+		const proposals = scaffoldProposals(consolidationWith(['src/x.ts']), {
+			auditType: 'plan',
+			auditId: 'a00001',
+			date: '2026-08-29',
+		});
+
+		expect(proposals).toHaveLength(2);
+		expect(proposals[0]).toMatchObject({ kind: 'plan', id: 'q00001' });
+		expect(proposals[0]!.body).toContain('type: plan');
+		expect(proposals[0]!.body).toContain('kind: plan');
+		expect(proposals[0]!.body).toContain('id: x00001');
+		expect(proposals[1]).toMatchObject({ kind: 'fix', id: 'x00001' });
+		expect(proposals[1]!.body).toContain('a00001');
+	});
 });

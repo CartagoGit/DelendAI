@@ -28,9 +28,9 @@
 - BudgetTracker
 - LoopDetector
 - FakeDispatchPort
+- LinearDispatcher
 - resolveDispatchPort
 - MissingDispatchPortError
-- InvalidDispatchPortFactoryError
 
 ## Depends on
 

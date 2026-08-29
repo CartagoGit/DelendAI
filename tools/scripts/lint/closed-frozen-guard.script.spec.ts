@@ -91,7 +91,10 @@ describe('detectFrozenDrift — content-drift', () => {
 	it('says nothing when no hash was ever recorded', () => {
 		// An archive that predates the index is not evidence of tampering.
 		const drifts = detectFrozenDrift(
-			baseInputs({ archivedSha256: undefined, contentSha256: EDITED_HASH }),
+			baseInputs({
+				archivedSha256: undefined,
+				contentSha256: EDITED_HASH,
+			}),
 		);
 		expect(drifts.some((d) => d.code === 'content-drift')).toBe(false);
 	});

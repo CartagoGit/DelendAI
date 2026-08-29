@@ -256,6 +256,7 @@ export default definePlugin({
 		const authoringOptions: IAuthoringToolOptions = {
 			namespacePrefix: ctx.namespacePrefix,
 			workspaceRoot: ctx.workspace.root,
+			agentWorktreeEnabled: ctx.agentWorktreeEnabled === true,
 			proposalsDirAbs: abs(layout.proposalsDir),
 			indexPathAbs: abs(layout.proposalIndexFile),
 			lockPathAbs: abs(layout.lockFile),

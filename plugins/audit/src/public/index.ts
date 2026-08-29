@@ -11,6 +11,7 @@ export {
 } from '../lib/services/audit-brief.service';
 export type {
 	AuditMode,
+	AuditType,
 	AuditScope,
 } from '../lib/services/audit-brief.service';
 export {

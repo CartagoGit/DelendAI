@@ -45,7 +45,8 @@ const baseCtx = (
 		pluginDocsDir: 'docs/git',
 		namespacePrefix: 'git',
 		options,
-		effects: 'effects' in overrides ? overrides.effects : { git: fakeGitRunner },
+		effects:
+			'effects' in overrides ? overrides.effects : { git: fakeGitRunner },
 	}) as unknown as IMcpPluginContext;
 
 describe('@mcp-vertex/git optionsSchema (S9 F7)', async () => {

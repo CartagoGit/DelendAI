@@ -16,6 +16,7 @@ export interface IManagedLazyPluginCatalogEntry {
 	readonly dependencies: readonly string[];
 	readonly summary?: string | undefined;
 	readonly tags?: readonly string[] | undefined;
+	readonly startupActivation?: boolean | undefined;
 }
 
 const tools = (
@@ -27,7 +28,10 @@ const tools = (
 	knowledgeIds: readonly string[],
 	skillIds: readonly string[],
 	dependencies: readonly string[],
-	metadata: Pick<IManagedLazyPluginCatalogEntry, 'summary' | 'tags'> = {},
+	metadata: Pick<
+		IManagedLazyPluginCatalogEntry,
+		'summary' | 'tags' | 'startupActivation'
+	> = {},
 ): IManagedLazyPluginCatalogEntry => ({
 	id,
 	packageSpecifier,
@@ -159,6 +163,7 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 				summary:
 					'Commit-authority plugin: configurable identity, cadence and audit-trail policy wrapping the git plugin primitives. Off by default — opt in via plugins.commit-policy.options.',
 				tags: ['commit', 'policy', 'git', 'agent', 'f00181'],
+				startupActivation: true,
 			},
 		),
 		tools(

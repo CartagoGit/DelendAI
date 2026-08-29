@@ -180,9 +180,7 @@ export const loadSkill = async (
 				source: candidate.source,
 				sourcePath: candidate.sourcePath,
 			};
-		} catch {
-			continue;
-		}
+		} catch {}
 	}
 	return null;
 };

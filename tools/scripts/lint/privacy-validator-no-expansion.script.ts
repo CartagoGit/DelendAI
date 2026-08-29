@@ -83,10 +83,7 @@ const STOPWORD_ARRAY_PATTERN =
  * constant so a sibling array's contents cannot mask the new
  * stopword list.
  */
-const contextAbove = (
-	text: string,
-	matchIndex: number,
-): string => {
+const contextAbove = (text: string, matchIndex: number): string => {
 	const start = Math.max(0, matchIndex - 200);
 	const window = text.slice(start, matchIndex);
 	// Walk back from the constant collecting consecutive comment
@@ -149,8 +146,7 @@ export const scanValidator = (text: string): readonly IDetection[] => {
 		findings.push({
 			file: VALIDATOR_PATH,
 			line,
-			reason:
-				'new stopword array detected — PRIV-002 forbids adding "looks like a company name" heuristics',
+			reason: 'new stopword array detected — PRIV-002 forbids adding "looks like a company name" heuristics',
 			excerpt: `${name} = [${entries.slice(0, 6).join(', ')}${entries.length > 6 ? ', ...' : ''}]`,
 		});
 		// Preserve the whole match for compatibility; lint only uses
@@ -176,8 +172,7 @@ export const scanAntiPatternFixture = async (
 		{
 			file: ANTI_PATTERN_FIXTURE_PATH,
 			line: 1,
-			reason:
-				'fixture file intentionally models the anti-pattern; remove it once the lint has been verified',
+			reason: 'fixture file intentionally models the anti-pattern; remove it once the lint has been verified',
 			excerpt: 'COMPANY_NAME_STOPWORDS = [Acme, Bank, Corp, Ltd, ...]',
 		},
 	];
@@ -211,7 +206,9 @@ const main = async (): Promise<number> => {
 	const fixtureFindings =
 		fixtureText === ''
 			? []
-			: await scanAntiPatternFixture(join(root, ANTI_PATTERN_FIXTURE_PATH));
+			: await scanAntiPatternFixture(
+					join(root, ANTI_PATTERN_FIXTURE_PATH),
+				);
 	const validatorFindings = scanValidator(validatorText);
 	// Findings in the production validator are always blocking on
 	// `--apply`. The fixture is a permanent sanity-check artefact:

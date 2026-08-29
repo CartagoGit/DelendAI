@@ -164,7 +164,6 @@ export const publicSymbolsFromBarrel = (text: string): readonly string[] => {
 			);
 		if (decl !== null) {
 			out.push(truncate(decl[1] ?? ''));
-			continue;
 		}
 	}
 	return out;

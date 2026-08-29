@@ -61,7 +61,6 @@ export interface IFrozenInputs {
 /** mtime newer than archived-on (with a 60s grace window for write latency). */
 const ARCHIVAL_MTIME_GRACE_MS = 60_000;
 
-
 /** Pure: produce the drift list for one proposal. */
 export const detectFrozenDrift = (
 	input: IFrozenInputs,

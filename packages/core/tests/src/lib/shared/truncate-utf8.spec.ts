@@ -27,9 +27,9 @@ describe('truncateUtf8Buffer', () => {
 	}
 
 	it('throws on negative maxBytes', () => {
-		expect(() => truncateUtf8Buffer(Buffer.from('hello', 'utf8'), -1)).toThrow(
-			RangeError,
-		);
+		expect(() =>
+			truncateUtf8Buffer(Buffer.from('hello', 'utf8'), -1),
+		).toThrow(RangeError);
 	});
 
 	it('returns the original bytes when the payload already fits', () => {

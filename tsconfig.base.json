@@ -193,6 +193,15 @@
 			"@mcp-vertex/audit": ["./plugins/audit/src/index.ts"],
 			"@mcp-vertex/audit/public": ["./plugins/audit/src/public/index.ts"],
 			"@mcp-vertex/audit/*": ["./plugins/audit/src/*"],
+			"@mcp-vertex/audit-orchestrator": [
+				"./plugins/audit-orchestrator/src/index.ts"
+			],
+			"@mcp-vertex/audit-orchestrator/public": [
+				"./plugins/audit-orchestrator/src/public/index.ts"
+			],
+			"@mcp-vertex/audit-orchestrator/*": [
+				"./plugins/audit-orchestrator/src/*"
+			],
 			"@mcp-vertex/browser": ["./plugins/browser/src/index.ts"],
 			"@mcp-vertex/browser/public": [
 				"./plugins/browser/src/public/index.ts"

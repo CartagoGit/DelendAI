@@ -114,6 +114,7 @@ const PLUGIN_MANIFEST_SCHEMA = z
 		tokenBudget: TOKEN_BUDGET_SCHEMA,
 		dependencies: nonEmptyList('dependencies'),
 		capabilities: nonEmptyList('capabilities'),
+		startupActivation: z.boolean().optional(),
 	})
 	.superRefine((manifest, ctx) => {
 		const expectedPackage = `@mcp-vertex/${manifest.id}`;

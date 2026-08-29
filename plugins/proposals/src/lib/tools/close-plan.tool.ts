@@ -23,7 +23,7 @@
 import z from 'zod';
 
 import type { IToolRegistration } from '@mcp-vertex/core/public';
-import { toolError, toolOk } from '@mcp-vertex/core/public';
+import { planDryRun, toolError, toolOk } from '@mcp-vertex/core/public';
 
 import { parseProposalDocument } from '../proposals/proposal-document';
 import { locateProposal } from '../proposals/locate';
@@ -61,39 +61,60 @@ const CLOSE_PLAN_INPUT_SCHEMA = z.object({
 // x00107: SUCCESS shape only — the SDK skips schema validation for
 // `isError` results (`toolError`), so the required fields are correct.
 // (x00105 briefly loosened this; reverted.)
-const CLOSE_PLAN_OUTPUT_SCHEMA = z.object({
-	ok: z.boolean(),
-	planId: z.string(),
-	dryRun: z.boolean(),
-	closable: z.boolean(),
-	blockers: z.array(
-		z.object({
-			ref: z.string(),
-			kind: z.enum(['proposal', 'plan', 'slice']),
-			code: z.enum([
-				'not-done',
-				'not-peer-reviewed',
-				'self-cycle',
-				'unknown-ref',
-			]),
-			message: z.string(),
-		}),
-	),
-	preview: z
-		.object({
-			from: z.string(),
-			to: z.string(),
-			movedFrom: z.string().optional(),
-			movedTo: z.string().optional(),
-		})
-		.optional(),
-	error: z
-		.object({
-			reason: z.string(),
-			nextAction: z.string().optional(),
-		})
-		.optional(),
-});
+const CLOSE_PLAN_OUTPUT_SCHEMA = z.union([
+	z.object({
+		dryRun: z.literal(true),
+		wouldChange: z.array(
+			z.object({
+				kind: z.enum(['write', 'delete', 'rename', 'create', 'patch']),
+				path: z.string(),
+				summary: z.string(),
+			}),
+		),
+		wouldRun: z.array(
+			z.object({
+				shape: z.enum(['shell', 'network', 'process', 'git', 'mcp']),
+				target: z.string(),
+				summary: z.string(),
+			}),
+		),
+		risk: z.enum(['low', 'medium', 'high']),
+		note: z.string().optional(),
+	}),
+	z.object({
+		ok: z.boolean(),
+		planId: z.string(),
+		dryRun: z.boolean(),
+		closable: z.boolean(),
+		blockers: z.array(
+			z.object({
+				ref: z.string(),
+				kind: z.enum(['proposal', 'plan', 'slice']),
+				code: z.enum([
+					'not-done',
+					'not-peer-reviewed',
+					'self-cycle',
+					'unknown-ref',
+				]),
+				message: z.string(),
+			}),
+		),
+		preview: z
+			.object({
+				from: z.string(),
+				to: z.string(),
+				movedFrom: z.string().optional(),
+				movedTo: z.string().optional(),
+			})
+			.optional(),
+		error: z
+			.object({
+				reason: z.string(),
+				nextAction: z.string().optional(),
+			})
+			.optional(),
+	}),
+]);
 
 /**
  * Build a resolver + evaluate closure for a given plan. Extracted
@@ -155,10 +176,41 @@ export const runClosePlan = async (
 
 	const report = await runPreflight(planId, located.absPath, options);
 
-	if (!report.closable || args.dryRun === true) {
+	if (args.dryRun === true) {
+		const changePath = `in-progress/${planId}-...md`;
+		const note = report.closable
+			? `dry-run: plan ${planId} is closable; no transition was applied.`
+			: `dry-run: plan ${planId} is not closable; blockers: ${report.reasons
+					.map((reason) => reason.message)
+					.join(' | ')}`;
+		return toolOk({
+			...planDryRun({
+				wouldChange: report.closable
+					? [
+							{
+								kind: 'rename',
+								path: changePath,
+								summary: `move ${planId} from in-progress to done`,
+							},
+						]
+					: [],
+				wouldRun: [
+					{
+						shape: 'mcp',
+						target: 'proposal_transition',
+						summary: `transition ${planId} to done if the preflight is clear`,
+					},
+				],
+				risk: 'medium',
+				note,
+			}),
+		});
+	}
+
+	if (!report.closable) {
 		return toolOk({
 			planId,
-			dryRun: args.dryRun === true,
+			dryRun: false,
 			closable: report.closable,
 			blockers: report.reasons,
 		});
@@ -221,6 +273,7 @@ export const buildClosePlanRegistration = (
 ): IToolRegistration => ({
 	id: 'proposals_close_plan',
 	effects: ['write'],
+	dryRunSupported: true,
 	summary:
 		'Close a `type: plan` proposal. Refuses with a list of blockers until every child proposal, sub-plan, and own slice is done + peer-reviewed.',
 	tags: ['work', 'plan'],

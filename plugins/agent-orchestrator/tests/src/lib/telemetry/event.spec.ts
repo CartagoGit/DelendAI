@@ -122,7 +122,11 @@ describe('TelemetryEvent.classify / dispatchStart / dispatchEnd / rotate', () =>
 	});
 
 	it('rotate formats evidence as "<subagentId>: <reason>"', () => {
-		const event = TelemetryEvent.rotate('t1', 'slot-1-implementer#2', 'error-storm');
+		const event = TelemetryEvent.rotate(
+			't1',
+			'slot-1-implementer#2',
+			'error-storm',
+		);
 		expect(event).toMatchObject({
 			kind: 'rotate',
 			taskId: 't1',

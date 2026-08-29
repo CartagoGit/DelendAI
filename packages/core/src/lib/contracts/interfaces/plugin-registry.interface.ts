@@ -50,6 +50,8 @@ export interface IPluginRegistryEntry {
 	 * manifest only declares the legacy global set.
 	 */
 	readonly toolPermissions?: IPluginToolPermissions | undefined;
+	/** Whether managed/lazy must activate this plugin at boot when configured. */
+	readonly startupActivation?: boolean | undefined;
 }
 
 /** A registry source — a list of entries plus its origin label. */

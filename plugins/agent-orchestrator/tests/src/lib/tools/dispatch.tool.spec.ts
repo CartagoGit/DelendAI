@@ -11,7 +11,10 @@ import { describe, expect, it } from 'vitest';
 import { buildDispatchRegistration } from '../../../../src/lib/tools/dispatch.tool.js';
 import { createOrchestratorEngine } from '../../../../src/lib/policy/policy.js';
 import { MissingDispatchPortError } from '../../../../src/lib/dispatch/port-resolution.helper.js';
-import type { IDispatchPort, IPlanOutcome } from '../../../../src/lib/dispatch/contracts.js';
+import type {
+	IDispatchPort,
+	IPlanOutcome,
+} from '../../../../src/lib/dispatch/contracts.js';
 import type { IOrchestratorPolicy } from '../../../../src/lib/policy/types.js';
 
 const POLICY: IOrchestratorPolicy = {
@@ -60,8 +63,7 @@ const captureHandlers = async (
 };
 
 const structured = (res: unknown): Record<string, unknown> | undefined =>
-	(res as { structuredContent?: Record<string, unknown> })
-		.structuredContent;
+	(res as { structuredContent?: Record<string, unknown> }).structuredContent;
 
 const TASK = { id: 't1', description: 'Fix typo.', tags: [] };
 

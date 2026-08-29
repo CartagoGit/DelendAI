@@ -53,4 +53,6 @@ export interface IPluginManifest {
 	readonly tokenBudget: IPluginManifestTokenBudget;
 	readonly dependencies: readonly string[];
 	readonly capabilities: readonly string[];
+	/** Plugin registration creates lifecycle side effects during boot. */
+	readonly startupActivation?: boolean | undefined;
 }

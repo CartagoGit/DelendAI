@@ -80,7 +80,6 @@ describe('resolveDispatchPort', () => {
 		expect(() =>
 			resolveDispatchPort({
 				portFactory: () => {
-					// biome-ignore lint/style/useThrowOnlyError: proving the String(err) fallback for a non-Error throw
 					throw 'not an Error instance';
 				},
 			}),

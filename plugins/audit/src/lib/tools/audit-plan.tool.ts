@@ -9,6 +9,7 @@ import {
 	SCORE_DIMENSIONS,
 	UNIVERSAL_SCOPES,
 	type AuditMode,
+	type AuditType,
 	type ILayerConfig,
 } from '../services/audit-brief.service';
 import { inferMode } from '../services/brief/brief-modes.service';
@@ -18,6 +19,7 @@ import z from 'zod';
 // --- output schemas --------------------------------------------------------
 
 const PlanOutputSchema = z.object({
+	auditType: z.enum(['plan', 'valuation']),
 	scope: z.string(),
 	mode: z.enum(['general', 'specific', 'monorepo']),
 	markdown: z.string(),
@@ -41,6 +43,8 @@ const PlanOutputSchema = z.object({
 // --- input schema ----------------------------------------------------------
 
 const PlanInputSchema = z.object({
+	/** Select an implementation-plan brief or the normal valuation brief. */
+	auditType: z.enum(['plan', 'valuation']).optional(),
 	/**
 	 * Scope to audit. Accepts any universal scope (`full`, `security`,
 	 * `tokens`, `tests`, `docs`) or any layer name configured via
@@ -153,11 +157,13 @@ export const buildPlanRegistration = (
 					outputSchema: PlanOutputSchema,
 				},
 				async (args: {
+					auditType?: AuditType | undefined;
 					scope?: string | undefined;
 					mode?: AuditMode | undefined;
 					projects?: readonly string[] | undefined;
 				}) => {
 					const scope = args.scope ?? 'full';
+					const auditType = args.auditType ?? 'valuation';
 					if (!allAvailableNames.includes(scope)) {
 						return toolError(
 							`unknown scope "${scope}"`,
@@ -197,9 +203,11 @@ export const buildPlanRegistration = (
 								)
 							: allAvailable;
 					return toolJson({
+						auditType,
 						scope,
 						mode,
 						markdown: buildBrief(scope, {
+							auditType,
 							dimensions,
 							layers: configuredLayers,
 							mode,

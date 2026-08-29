@@ -1,7 +1,7 @@
 import type { Stats } from 'node:fs';
 
 import {
-	SafeWorkspaceReader,
+	type SafeWorkspaceReader,
 	WorkspaceContainmentError,
 	type ContainedPathResult,
 } from '@mcp-vertex/core/public';

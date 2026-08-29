@@ -192,7 +192,9 @@ const main = async (): Promise<number> => {
 						console.error(`    - ${entry}`);
 					}
 				}
-				console.log('  top contributors (share of this preset\'s bytes):');
+				console.log(
+					"  top contributors (share of this preset's bytes):",
+				);
 				for (const row of topContributors(metrics.ownerRows)) {
 					console.log(
 						`    - ${row.owner}: ${formatInt(row.toolsListBytes)} B (${row.toolCount} tools, ${shareOfPreset(row, metrics.ownerRows)})`,

@@ -57,10 +57,14 @@ export interface IScaffoldedProposal {
 	readonly files: readonly string[];
 	/** Title of the finding (becomes the proposal title). */
 	readonly title: string;
+	/** Proposal kind emitted by this audit output. */
+	readonly kind: 'fix' | 'plan';
 }
 
 /** Options that control what the scaffolder produces. */
 export interface IScaffoldOptions {
+	/** Audit output type. Defaults to `valuation` for compatibility. */
+	readonly auditType?: 'plan' | 'valuation';
 	/**
 	 * Ids the scaffolder must skip when allocating a new one. The
 	 * orchestrator passes the index's `id` set so we never collide
@@ -148,7 +152,7 @@ export const sanitizeCitedFiles = (
 		if (workspace !== undefined) token = workspace;
 		if (
 			token.length >= 2 &&
-			!/^[\[\]()]+$/.test(token) &&
+			!/^[[\]()]+$/.test(token) &&
 			(token.includes('/') || /\.[A-Za-z0-9]+$/.test(token)) &&
 			!out.includes(token)
 		) {
@@ -285,6 +289,74 @@ const renderProposalBody = (
 	return { body: body.join('\n'), filename };
 };
 
+const renderPlanBody = (
+	id: string,
+	title: string,
+	children: readonly IScaffoldedProposal[],
+	related: readonly string[],
+	date: string,
+	outputDir: string,
+): { body: string; filename: string } => {
+	const filename = `${id}-${toSlug(title)}.md`;
+	const contains =
+		children.length > 0
+			? children
+					.map(
+						(child) =>
+							`        - id: ${child.id}\n          kind: fix\n          required: true\n          title: ${child.title}`,
+					)
+					.join('\n')
+			: '        - id: _<add child proposal ids here>_\n          kind: fix\n          required: true';
+	const body = [
+		'---',
+		`id: ${id}`,
+		'status: ready',
+		'type: plan',
+		'kind: plan',
+		`date: ${date}`,
+		`title: ${title}`,
+		'shipped-in: []',
+		'related:',
+		...(related.length > 0
+			? related.map((value) => `    - ${value}`)
+			: ['    - _<add originating audit id here>_']),
+		'contains:',
+		'    proposals:',
+		contains,
+		'closureGate:',
+		'    requirePeerReview: true',
+		'    requireAllSlicesDone: true',
+		'    requireAllChildrenDone: true',
+		'acceptance:',
+		'  - { command: bun run validate, expect: exit0 }',
+		'---',
+		'',
+		`# ${id} — ${title}`,
+		'',
+		'## Goal',
+		'',
+		'Coordinate the implementation proposals generated from an exhaustive plan audit.',
+		'',
+		'## Child proposals',
+		'',
+		...(children.length > 0
+			? children.map((child) => `- [ ] \`${child.id}\` — ${child.title}`)
+			: ['- [ ] _No actionable findings were emitted._']),
+		'',
+		'## Definition of Done',
+		'',
+		'- [ ] Every child proposal is complete and peer-reviewed.',
+		'- [ ] `bun run validate` passes.',
+		'',
+		'<!--',
+		'  Sourced by an audit of the host project.',
+		`  Suggested output dir: ${outputDir}/${filename}`,
+		'-->',
+		'',
+	];
+	return { body: body.join('\n'), filename };
+};
+
 /** Pick a track tag that roughly maps the finding to the right squad. */
 const inferTrack = (files: readonly string[]): string => {
 	const lower = files.join(' ').toLowerCase();
@@ -365,7 +437,39 @@ export const scaffoldProposals = (
 			severity: finding.worstSeverity,
 			files,
 			title,
+			kind: 'fix',
 		});
+	}
+	if (options.auditType === 'plan') {
+		const planTitle = 'Implementation plan from audit findings';
+		const planId = allocateId('q', startAt, taken);
+		taken.add(planId);
+		const related = auditId !== undefined ? [auditId] : [];
+		const linkedChildren = out.map((child) => ({
+			...child,
+			body: child.body.replace(
+				'related:\n',
+				`related:\n    - ${planId}\n`,
+			),
+		}));
+		const { body, filename } = renderPlanBody(
+			planId,
+			planTitle,
+			linkedChildren,
+			related,
+			date,
+			outputDir,
+		);
+		out.unshift({
+			id: planId,
+			filename,
+			body,
+			severity: 'MINOR',
+			files: [],
+			title: planTitle,
+			kind: 'plan',
+		});
+		out.splice(1, out.length - 1, ...linkedChildren);
 	}
 	return out;
 };

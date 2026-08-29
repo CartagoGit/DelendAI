@@ -105,6 +105,7 @@ export const buildRunRegistration = (
 						model: string;
 						apiKey: string;
 					}>;
+					auditType?: 'plan' | 'valuation' | undefined;
 					auditDir?: string | undefined;
 					scaffoldProposals?: boolean | undefined;
 					proposalsDir?: string | undefined;
@@ -145,6 +146,7 @@ export const buildRunRegistration = (
 					if (!prelude.ok) return prelude.error;
 					const {
 						scope,
+						auditType,
 						mode,
 						projects,
 						auditDirAbs,
@@ -256,6 +258,7 @@ export const buildRunRegistration = (
 					if (enabled && consolidation.findings.length > 0) {
 						const scaffoldOptions: IAutoScaffoldOptions = {
 							enabled,
+							auditType,
 							peerPlugins: options.peerPlugins,
 							proposalsDir: proposalsDirRel,
 							workspaceRoot: options.workspaceRoot,
@@ -287,11 +290,13 @@ export const buildRunRegistration = (
 										filename: string;
 										severity: string;
 										files: string[];
+										kind: 'fix' | 'plan';
 									} => ({
 										id: r.id,
 										filename: r.filename,
 										severity: r.severity,
 										files: [...r.files],
+										kind: r.kind,
 									}),
 								),
 							};
