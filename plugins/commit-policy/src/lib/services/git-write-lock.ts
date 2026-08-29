@@ -2,7 +2,7 @@ import { join } from 'node:path';
 
 import { withFileMutex } from '@mcp-vertex/core/public';
 
-const LOCK_PATH = '.commit-policy/git-write';
+const LOCK_PATH = '.cache/mcp-vertex/commit-policy/git-write';
 
 export const withGitWriteLock = async <T>(
 	workspaceRoot: string | undefined,
