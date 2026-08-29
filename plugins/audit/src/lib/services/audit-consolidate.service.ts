@@ -30,6 +30,8 @@ import {
 } from './audit-consolidation-strategies';
 
 const dedup = <T>(arr: readonly T[]): T[] => Array.from(new Set(arr));
+const DEFAULT_TOP_ACTIONS = 5;
+const SCORE_DECIMAL_FACTOR = 10;
 
 export interface IConsolidateOptions {
 	/** How many top actions to surface in `topActions`. Default 5. */
@@ -57,7 +59,7 @@ export const consolidateAudits = (
 	const _worstSeverity = strategies.severity.worst;
 	const isSameFinding = strategies.dedup;
 	const findingKey = strategies.key.key;
-	const topN = options.topActions ?? 5;
+	const topN = options.topActions ?? DEFAULT_TOP_ACTIONS;
 
 	const skipped: { path: string; reason: string }[] = [];
 	const parsed: IAuditDocument[] = [];
@@ -152,8 +154,8 @@ export const consolidateAudits = (
 				? Math.round(
 						(numeric.reduce((acc, n) => acc + n, 0) /
 							numeric.length) *
-							10,
-					) / 10
+							SCORE_DECIMAL_FACTOR,
+					) / SCORE_DECIMAL_FACTOR
 				: null;
 		// Sort scores within a dimension by model name for stable output.
 		row.scores.sort((a, b) => a.model.localeCompare(b.model));

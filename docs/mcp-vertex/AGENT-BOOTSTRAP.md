@@ -265,6 +265,15 @@ interactions.
 
 ## 6. Invariants you must not break
 
+- **Dogfooding watcher is infrastructure, not disposable configuration.**
+  Keep `.vscode/mcp.json` and `.mcp.json` pointed at the repo-local host with
+  `bun --watch tools/scripts/host/host-server.script.ts` and the appropriate
+  workspace argument. This makes the connected MCP server reload when this
+  repository changes, so agents can test the code they just edited. Never
+  remove `--watch`, replace the local launch with a one-shot command, or
+  delete either checked-in client config as cleanup. The
+  `lint:self-host-dogfood` gate must remain green; if the launch needs to
+  change, update its focused test and preserve automatic reload semantics.
 - Core stays agnostic. No project vocabulary (role enums, model names,
   folder names) inside `packages/core`. Plugins receive everything
   resolved through `IMcpPluginContext`.

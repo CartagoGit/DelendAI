@@ -388,7 +388,13 @@ const buildCodeError = (code: string, reason: string) => {
 };
 
 const appendWarning = (current: string | undefined, next: string): string =>
-	[current, next].filter(Boolean).join('; ');
+	current === undefined ? next : `${current}; ${next}`;
+
+const isTrackedFile = async (
+	gitRunner: IGitRunner,
+	filePath: string,
+): Promise<boolean> =>
+	(await gitRunner(['ls-files', '--error-unmatch', filePath])).ok;
 
 const isCiEnvironment = (): boolean =>
 	process.env.CI === 'true' || process.env.GITHUB_ACTIONS === 'true';
@@ -884,19 +890,7 @@ const applyTransition = async (
 			// fresh, or a stray custom folder, might not have created the
 			// target yet — never fail the transition over a missing dir.
 			await mkdir(dirname(newAbsPath), { recursive: true });
-			// x00106 S2: an UNTRACKED file (create_proposal writes without
-			// staging, so a fresh proposal's first transition always lands
-			// here) has no history for `git mv` to preserve — move it
-			// plainly, stage the new location (best-effort) so the NEXT
-			// transition can git mv, and emit no warning. The warning is
-			// reserved for the case that matters: git mv failing on a
-			// TRACKED file.
-			const tracked = await gitRunner([
-				'ls-files',
-				'--error-unmatch',
-				found.absPath,
-			]);
-			if (!tracked.ok) {
+			if (!(await isTrackedFile(gitRunner, found.absPath))) {
 				await rename(found.absPath, newAbsPath);
 				await gitRunner(['add', newAbsPath]);
 			} else {

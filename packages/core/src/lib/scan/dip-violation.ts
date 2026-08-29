@@ -106,19 +106,23 @@ export const detectDipViolations = (
 	}
 	const out: IDipHit[] = [];
 	let m: RegExpExecArray | null;
-	while ((m = processCwdRegex.exec(body)) !== null) {
+	m = processCwdRegex.exec(body);
+	while (m !== null) {
 		out.push({
 			line: lineOf(body, m.index),
 			kind: 'process-cwd',
 			snippet: m[0],
 		});
+		m = processCwdRegex.exec(body);
 	}
-	while ((m = syncFsImportRegex.exec(body)) !== null) {
+	m = syncFsImportRegex.exec(body);
+	while (m !== null) {
 		out.push({
 			line: lineOf(body, m.index),
 			kind: 'sync-fs-import',
 			snippet: m[0].replace(/\s+/g, ' ').slice(0, 120),
 		});
+		m = syncFsImportRegex.exec(body);
 	}
 	return out;
 };

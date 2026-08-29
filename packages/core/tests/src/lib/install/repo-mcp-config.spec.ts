@@ -15,7 +15,7 @@ const ROOT = resolve(
  *
  *   1. published CLI: `bunx --package @mcp-vertex/cli mcpv __serve --workspace <ws>`
  *   2. repo-local dogfood (while `@mcp-vertex/cli` is unpublished):
- *      `bun tools/scripts/host/host-server.script.ts --workspace=<ws>`
+ *      `bun --watch tools/scripts/host/host-server.script.ts --workspace=<ws>`
  */
 const publishedLaunch = (workspace: string) => ({
 	command: 'bunx',
@@ -38,12 +38,9 @@ const localDogfoodLaunch = (workspace: string) => ({
 });
 
 /**
- * The same local dogfood launch, under `bun --watch` so the host restarts
- * when its own sources change. Committed deliberately in `eac4c91f` — an
- * agent editing this repo needs the MCP server it is talking to to pick the
- * edit up without a manual restart. It is the dogfood launch plus one flag,
- * so it is listed as its own accepted shape rather than by loosening the
- * comparison: this gate should still reject an arbitrary command.
+ * The watcher is mandatory for the repo-local dogfood launch. An agent
+ * editing this repo needs the MCP server it is talking to to pick edits up
+ * without a manual restart; dropping `--watch` silently breaks dogfooding.
  */
 const localDogfoodWatchLaunch = (workspace: string) => ({
 	command: 'bun',

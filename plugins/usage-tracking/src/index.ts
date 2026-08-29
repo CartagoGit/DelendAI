@@ -12,14 +12,17 @@ import z from 'zod';
 import { deriveCorePrefix } from './lib/attribute';
 import { cleanupStaleTmpFiles } from './lib/cleanup-stale-tmp';
 import { detectAgent } from './lib/detect-agent';
-import { buildRecord, resolveSessionId } from './lib/record';
 import { RecordBuffer } from './lib/record-buffer';
-import { regenerateSummary } from './lib/rollup';
 import {
 	DEFAULT_SESSION_HYGIENE_POLICY,
 	SessionHygieneMonitor,
 } from './lib/session-hygiene';
 import { SessionTooLongAdvisorySource } from './lib/services/checkpoint-advisory.service';
+import {
+	buildInvocationRecord,
+	resolveInvocationSessionId,
+} from './lib/services/invocation-recorder.service';
+import { regenerateUsageSummary } from './lib/services/usage-rollup.service';
 import { StartClock } from './lib/start-clock';
 import {
 	computeCostUsd,
@@ -237,7 +240,7 @@ export default definePlugin({
 
 		// Prime the summary once at boot so `limitsStatus` (S7) is available
 		// to the orchestrator's spend guard well before the first 5-min tick.
-		void regenerateSummary(
+		void regenerateUsageSummary(
 			invocationsPath,
 			summaryPath,
 			windowDays,
@@ -264,7 +267,7 @@ export default definePlugin({
 		// was added here since no test in this repo currently re-registers
 		// the plugin without a fresh process.
 		const summaryTimer = setInterval(() => {
-			void regenerateSummary(
+			void regenerateUsageSummary(
 				invocationsPath,
 				summaryPath,
 				windowDays,
@@ -333,12 +336,16 @@ export default definePlugin({
 				const endedAt = Date.now();
 				const startedAt = clock.take(toolName);
 				const peerPrefixes = ctx.peerPlugins?.list() ?? [];
-				const sessionId = resolveSessionId(args, bootSessionId);
-				const record = buildRecord({
+				const sessionId = resolveInvocationSessionId(
+					args,
+					bootSessionId,
+				);
+				const record = buildInvocationRecord({
 					toolName,
 					corePrefix,
 					peerPrefixes,
 					agent,
+					host: ctx.hostIdentity?.host,
 					sessionId,
 					args,
 					result,
@@ -390,7 +397,8 @@ export default definePlugin({
 						'  metadata only — no message content, secrets redacted).',
 						'- `usage_report {groupBy, windowDays, filter, sortBy, limit}`',
 						'  groups spend and attributable savings by provider / plugin /',
-						'  agent / extension / model and lists the top-10 expensive calls.',
+						'  agent / extension / model and tracks request type / outcome /',
+						'  iteration / latency telemetry in the persisted summary.',
 						'- Saving tools stamp `tokensSaved` on the same append-only row;',
 						'  model attribution reuses only the last model observed in that',
 						'  session, while older/unattributed rows safely count as zero.',

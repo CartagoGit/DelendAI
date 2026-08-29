@@ -9,7 +9,10 @@ import {
 } from '@mcp-vertex/core/lib/project/create-mcp-project';
 import { createWorkspacePathProvider } from '@mcp-vertex/core/lib/workspace/create-workspace-path-provider';
 import type { IMcpVertexHostConfig } from '@mcp-vertex/core/lib/contracts/interfaces/host-config.interface';
-import type { IToolRegistration } from '@mcp-vertex/core/lib/contracts/interfaces/tool-registration.interface';
+import type {
+	IResourceRegistration,
+	IToolRegistration,
+} from '@mcp-vertex/core/lib/contracts/interfaces/tool-registration.interface';
 
 const registration = (
 	id: string,
@@ -122,6 +125,23 @@ describe('createMcpProject', async () => {
 		const assembled = await createMcpProject(hostConfig([]));
 		expect(assembled.server).toBeDefined();
 		expect(assembled.registrationOrder).toEqual([]);
+	});
+
+	it('deduplicates knowledge resources registered by eager and lazy paths', async () => {
+		let registrations = 0;
+		const resource: IResourceRegistration = {
+			id: 'resource:commit-policy',
+			register: async () => {
+				registrations += 1;
+			},
+		};
+		const assembled = await createMcpProject({
+			...hostConfig([]),
+			extraResources: [resource, resource],
+		});
+
+		expect(registrations).toBe(1);
+		await assembled.dispose();
 	});
 });
 

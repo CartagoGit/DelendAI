@@ -18,6 +18,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import plugin, {
 	validateCommitPolicyConfiguration,
 } from '@mcp-vertex/commit-policy';
+import { CommitPolicyOptionsSchema } from '@mcp-vertex/commit-policy/lib/contracts/options';
 import type { IMcpPluginContext } from '@mcp-vertex/core/public';
 
 const buildCtx = (workspace: string): IMcpPluginContext => ({
@@ -84,6 +85,14 @@ describe('commit-policy lifecycle (x00261)', () => {
 				'plugins.commit-policy.options.push.protectedBranches',
 			]),
 		});
+	});
+
+	it('disables agent stash operations by default', () => {
+		expect(CommitPolicyOptionsSchema.parse({}).stash.enabled).toBe(false);
+		expect(
+			CommitPolicyOptionsSchema.parse({ stash: { enabled: true } }).stash
+				.enabled,
+		).toBe(true);
 	});
 
 	it('register() returns dispose() that is callable', async () => {

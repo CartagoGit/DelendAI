@@ -15,7 +15,6 @@
 import { describe, expect, it } from 'vitest';
 
 import {
-	buildGraph,
 	computeAffected,
 	fileToWorkspace,
 	gitDiffNames,

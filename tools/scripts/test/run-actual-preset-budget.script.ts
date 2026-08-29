@@ -28,8 +28,6 @@ const readFlag = (prefix: string): string | undefined =>
 
 const hasFlag = (flag: string): boolean => rawArgs.includes(flag);
 
-const prefersStaticClient = (): boolean => hasFlag('--static-client');
-
 const parsePresetArgs = (): readonly IPresetKind[] => {
 	if (rawArgs.length === 0) {
 		return TOKEN_BUDGETS.governedPresetIds as readonly IPresetKind[];

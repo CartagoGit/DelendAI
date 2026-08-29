@@ -154,6 +154,7 @@ export interface IPersistResult {
 
 const DEFAULT_TEMPLATE = '<area>(<proposalId>): <sliceId>';
 const DEFAULT_PUSH_TARGET = 'origin HEAD';
+const MISSING_CWD_REASON = 'git runner requires an explicit workspace cwd';
 
 /**
  * Try to detect the conventional `area/` segment from the first file
@@ -220,7 +221,12 @@ const pushWouldHitProtectedBranch = (
  */
 const resolveGitRunner = (options: IAutoWorkPersistOptions): IGitRunner => {
 	if (options.git) return options.git;
-	return createGitRunner(options.cwd ?? process.cwd());
+	if (options.cwd !== undefined) return createGitRunner(options.cwd);
+	return async () => ({
+		ok: false,
+		output: '',
+		reason: MISSING_CWD_REASON,
+	});
 };
 
 /**

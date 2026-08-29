@@ -19,7 +19,8 @@
 		"git": {
 			"options": {
 				"allowForge": true,
-				"allowWrite": true
+				"allowWrite": true,
+				"allowStash": false
 			}
 		},
 		"forge": {
@@ -211,6 +212,7 @@
 			"options": {
 				"gitTimeoutMs": 60000,
 				"commit": { "enabled": true },
+				"stash": { "enabled": false },
 				"push": {
 					"enabled": true,
 					"onCommit": true,
