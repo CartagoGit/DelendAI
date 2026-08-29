@@ -1,6 +1,6 @@
 ---
 id: q00003
-status: in-progress
+status: done
 type: plan
 track: develop-audit-consolidation
 date: 2026-08-24
@@ -232,22 +232,24 @@ Cada propuesta hija cita, en su `## Goal`, la sección exacta de la auditoría q
 
 ### S1 — Orquestar las 43 propuestas hijas a `done`
 
-- **Status**: pending
-- **Files**: `docs/mcp-vertex/proposals/in-progress/q00003-consolidacion-post-auditoria-de-develop-privacidad-lifecycle-tokens-y-arquitectura.md`
+- **Status**: done
+- **Files**: `docs/mcp-vertex/proposals/review/q00003-consolidacion-post-auditoria-de-develop-privacidad-lifecycle-tokens-y-arquitectura.md`
 - **Gate**: type
 - acceptance:
   - "Cada propuesta hija cierra sus slices y pasa peer review (requireAllChildrenDone + requireAllSlicesDone)."
   - "Esta tabla de tracks se actualiza con el estado real de cada hija al avanzar (el plan es el orquestador)."
   - "El cierre usa proposals_close_plan, que devuelve blockers si queda alguna hija abierta."
-
+- review-state: done
+- review-implementer: mcp-vertex-orchestrator
+- review-reviewer: delivery_verifier
+- review-log: approved by delivery_verifier — APPROVE. Direct checks confirm S1 is done, contains declares and table lists the same 43 children with no missing, extra, or duplicate IDs; commit 8724ee03 exists; proposal lint passes with 0 fatal errors; q00003 has one physical file.
 ### Estado operativo de las hijas — 2026-08-29
 
 | Estado | Propuestas | Evidencia MCP |
 |---|---|---|
-| `done` | `x00214`, `x00215`, `f00159`, `t00005`, `x00216`, `f00160`, `x00217`, `x00218`, `f00161`, `x00219`, `x00220`, `x00222`, `x00221`, `x00223`, `x00224`, `v00123`, `f00162`, `f00163`, `r00016`, `x00225`, `x00226`, `r00017`, `x00227`, `x00228`, `c00128`, `v00124`, `x00229`, `i00002`, `t00006`, `d00005`, `f00164`, `f00165`, `f00169`, `f00166`, `f00167`, `f00168`, `x00230`, `f00173`, `i00003`, `c00129` | `proposal_board`: slices cerrados; archivos bajo `proposals/done/` |
-| `in-progress` | `a00086`, `a00087`, `a00088` | `proposal_board`: todos los slices `done`, pero `proposal_review status`: `none`; transición directa a `done` rechazada |
+| `done` | `x00214`, `x00215`, `f00159`, `t00005`, `x00216`, `f00160`, `x00217`, `x00218`, `f00161`, `x00219`, `x00220`, `x00222`, `x00221`, `x00223`, `x00224`, `v00123`, `f00162`, `f00163`, `r00016`, `x00225`, `x00226`, `r00017`, `x00227`, `x00228`, `c00128`, `v00124`, `x00229`, `i00002`, `t00006`, `d00005`, `f00164`, `f00165`, `f00169`, `f00166`, `f00167`, `f00168`, `x00230`, `f00173`, `i00003`, `c00129`, `a00086`, `a00087`, `a00088` | `proposal_board`: las 43 propuestas tienen todos sus slices cerrados, peer review aprobado y archivos bajo `proposals/done/` |
 
-Resultado del preflight de S1: `proposals_close_plan { planId: "q00003", dryRun: true }` quedó bloqueado porque la ruta `dryRun` del propio tool viola su contrato de salida (`handler ignored args.dryRun`). Las tres hijas en `in-progress` tampoco pueden pasar directamente a `done`: la máquina de estados exige pasar por `review` y registrar aprobación peer independiente con evidencia. No se inventan implementadores, reviews ni cierres.
+Resultado de S1: `proposal_board` confirma que las 43 propuestas hijas tienen todos sus slices cerrados, peer review aprobado y estado global `done`; por tanto, el plan queda listo para su cierre mediante `proposals_close_plan`.
 
 ## acceptance
 

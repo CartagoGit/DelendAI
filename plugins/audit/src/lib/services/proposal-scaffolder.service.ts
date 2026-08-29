@@ -3,8 +3,8 @@
  *
  * Closes the audit loop: after `audit_run` collects N model reports,
  * the consolidator produces a single canonical finding set, and this
- * module writes one proposal per actionable finding under the host's
- * configured proposals directory.
+ * module writes a native parent plan plus one child proposal per actionable
+ * finding under the host's configured proposals directory for plan audits.
  *
  * The scaffolder is deliberately conservative:
  *
@@ -58,12 +58,12 @@ export interface IScaffoldedProposal {
 	/** Title of the finding (becomes the proposal title). */
 	readonly title: string;
 	/** Proposal kind emitted by this audit output. */
-	readonly kind: 'fix' | 'plan';
+	readonly kind: 'audit' | 'fix' | 'plan';
 }
 
 /** Options that control what the scaffolder produces. */
 export interface IScaffoldOptions {
-	/** Audit output type. Defaults to `valuation` for compatibility. */
+	/** Audit output type. Defaults to `plan` for executable audit workflows. */
 	readonly auditType?: 'plan' | 'valuation';
 	/**
 	 * Ids the scaffolder must skip when allocating a new one. The
@@ -357,6 +357,83 @@ const renderPlanBody = (
 	return { body: body.join('\n'), filename };
 };
 
+const renderAuditBody = (
+	id: string,
+	title: string,
+	consolidation: IConsolidation,
+	planId: string | undefined,
+	date: string,
+	outputDir: string,
+): { body: string; filename: string } => {
+	const filename = `${id}-${toSlug(title)}.md`;
+	const related = planId !== undefined ? `    - ${planId}` : '    - []';
+	const findings =
+		consolidation.findings.length > 0
+			? consolidation.findings.map(
+					(finding) => `- ${finding.titles[0] ?? finding.id}`,
+				)
+			: ['- No actionable findings were emitted.'];
+	const body = [
+		'---',
+		`id: ${id}`,
+		'status: ready',
+		'type: proposal',
+		'track: audit',
+		`date: ${date}`,
+		'kind: audit',
+		`title: ${title}`,
+		'shipped-in: []',
+		'related:',
+		related,
+		'acceptance:',
+		'  - { command: bun run lint:proposals, expect: exit0 }',
+		'---',
+		'',
+		`# ${id} — ${title}`,
+		'',
+		'## Goal',
+		'',
+		'Record the consolidated audit, its exact evidence, and its resulting implementation direction.',
+		'',
+		'## Why',
+		'',
+		`- Audits found: ${consolidation.auditsFound}`,
+		`- Findings recorded: ${consolidation.findings.length}`,
+		'',
+		'## Non-goals',
+		'',
+		'- This proposal records audit evidence; implementation work belongs to the linked plan or child proposals.',
+		'',
+		'## Slices',
+		'',
+		`### ${id}-s1 — Preserve audit evidence`,
+		'',
+		'- **Status**: pending',
+		'- **Files**:',
+		`    - ${outputDir}/${filename}`,
+		'- **Gate**: bun run lint:proposals',
+		'- **Acceptance**:',
+		'    - The consolidated audit remains available and linked to its implementation work.',
+		'',
+		'## Acceptance',
+		'',
+		'- [ ] The audit snapshot, findings, and resulting links are preserved.',
+		'- [ ] `bun run lint:proposals` passes.',
+		'',
+		'## Verified State',
+		'',
+		`- Audits consolidated: ${consolidation.auditsFound}`,
+		`- Findings: ${findings.join('\n')}`,
+		'',
+		'<!--',
+		'  Sourced by the audit consolidation pipeline.',
+		`  Suggested output dir: ${outputDir}/${filename}`,
+		'-->',
+		'',
+	];
+	return { body: body.join('\n'), filename };
+};
+
 /** Pick a track tag that roughly maps the finding to the right squad. */
 const inferTrack = (files: readonly string[]): string => {
 	const lower = files.join(' ').toLowerCase();
@@ -396,7 +473,8 @@ export const scaffoldProposals = (
 	const outputDir = options.outputDir ?? 'docs/proposals/ready';
 	const inferTrackFn = options.inferTrack ?? inferTrack;
 	const date = options.date ?? new Date().toISOString().slice(0, 10);
-	const auditId = options.auditId;
+	const auditId = options.auditId ?? allocateId('a', startAt, taken);
+	taken.add(auditId);
 	const out: IScaffoldedProposal[] = [];
 	const seenTitles = new Set<string>();
 
@@ -418,7 +496,7 @@ export const scaffoldProposals = (
 
 		const id = allocateId(prefix, startAt, taken);
 		taken.add(id);
-		const related = auditId ? [auditId] : [];
+		const related = [auditId];
 		const files = sanitizeCitedFiles(finding.files);
 		const { body, filename } = renderProposalBody(
 			id,
@@ -440,11 +518,11 @@ export const scaffoldProposals = (
 			kind: 'fix',
 		});
 	}
-	if (options.auditType === 'plan') {
+	if (options.auditType === 'plan' && out.length > 0) {
 		const planTitle = 'Implementation plan from audit findings';
 		const planId = allocateId('q', startAt, taken);
 		taken.add(planId);
-		const related = auditId !== undefined ? [auditId] : [];
+		const related = [auditId];
 		const linkedChildren = out.map((child) => ({
 			...child,
 			body: child.body.replace(
@@ -471,6 +549,25 @@ export const scaffoldProposals = (
 		});
 		out.splice(1, out.length - 1, ...linkedChildren);
 	}
+	const planId = out.find((proposal) => proposal.kind === 'plan')?.id;
+	const auditTitle = 'Consolidated audit record';
+	const audit = renderAuditBody(
+		auditId,
+		auditTitle,
+		consolidation,
+		planId,
+		date,
+		outputDir,
+	);
+	out.unshift({
+		id: auditId,
+		filename: audit.filename,
+		body: audit.body,
+		severity: 'MINOR',
+		files: [],
+		title: auditTitle,
+		kind: 'audit',
+	});
 	return out;
 };
 

@@ -87,9 +87,7 @@ export const resolveAutoScaffold = async (
 	// Run the scaffolder to get the in-memory records, then write each
 	// one to disk with `writeFileAtomic` (the durability boundary).
 	const records = scaffoldProposals(consolidation, {
-		...(options.auditType !== undefined
-			? { auditType: options.auditType }
-			: {}),
+		auditType: options.auditType ?? 'plan',
 		...(options.knownProposalIds !== undefined
 			? { existingIds: options.knownProposalIds }
 			: {}),

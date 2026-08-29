@@ -3,6 +3,7 @@ id: c00010
 title: "CI — required checks en `develop` branch policy (CI2-001)"
 kind: chore
 status: paused
+paused-reason: "Paused: the develop branch-protection policy is being consolidated under plan q00004; enabling required checks now would conflict with the in-flight landing/ff discipline. Revisit once q00004 closes."
 type: proposal
 track: ci
 date: 2026-08-25

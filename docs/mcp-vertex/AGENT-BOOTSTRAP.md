@@ -250,12 +250,14 @@ interactions.
   never ask the user whose name to use and never leave completed work
   uncommitted waiting for a reminder.
 
-- **Delegated agents must use the returned worktree `cwd`.** When
-  `agentWorktree` is enabled, `proposals_delegate` creates the branch and
-  worktree before claiming files and returns both `worktree.path` and `cwd`.
-  The host must launch or continue the delegated agent in that directory;
-  creating the branch is not enough. Editing in the parent `develop` checkout
-  violates the delegation contract.
+- **Delegated agents follow the configured workspace policy.** With
+  `agentWorktree: false` (the repository default), agents edit the configured
+  checkout, normally `develop`; `commit-policy` owns the automatic commit and
+  push after each completed slice. With `agentWorktree: true`,
+  `proposals_delegate` creates the branch and worktree before claiming files
+  and returns both `worktree.path` and `cwd`; the host must launch or continue
+  the delegated agent in that directory. The host must never infer a different
+  workspace policy from a tool handoff.
 - Touched a tool? Kept its `outputSchema`. Added a tool? Added its
   output to the catalog generator (if it isn't picked up automatically).
 - Persisted state? Routed through `withFileMutex` + `writeFileAtomic`.
@@ -494,12 +496,12 @@ or have their own config file. Use the same single-pointer pattern:
 
 <!-- mcp-vertex:begin quantitative -->
 ```
-Generated at: 2026-08-29T16:44:21.370Z
+Generated at: 2026-08-29T19:26:35.836Z
 
 Plugins: 52
 Tools: 220
-Test specs: 456 (≈3805 cases)
+Test specs: 457 (≈3817 cases)
 Workspaces: 5 packages, 2 apps, 1 extensions, 4 tooling workspace(s).
-Proposals: 490 on disk (ready=104, in-progress=2, review=2, done=382)
+Proposals: 492 on disk (ready=104, in-progress=2, review=2, done=384)
 ```
 <!-- mcp-vertex:end quantitative -->

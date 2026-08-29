@@ -81,6 +81,12 @@ describe('delegate tool', async () => {
 		expect(out.locked).toBe(true);
 		expect(typeof out.agent).toBe('string');
 		expect(out.instruction).toContain('src/x.ts');
+		expect(out.instruction).toContain(
+			'configured checkout (normally develop)',
+		);
+		expect(out.instruction).not.toContain(
+			'do not edit the parent checkout',
+		);
 	});
 
 	it('f00082 S3: propagates host/model into the assigned registry entry', async () => {

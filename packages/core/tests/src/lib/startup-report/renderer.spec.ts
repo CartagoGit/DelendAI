@@ -74,9 +74,7 @@ const PLUGIN_INPUTS: readonly IPluginCostInput[] = [
 	},
 ];
 
-const baseInput = (
-	level: 'medium' | 'compact' | 'high' | 'full' | 'off' = 'medium',
-): IStartupReportInput => {
+const baseInput = (): IStartupReportInput => {
 	const totalBytes = PLUGIN_INPUTS.reduce((sum, p) => {
 		const snap = computePluginCostSnapshot(p, 0);
 		return sum + snap.exposedSchemaBytesPerRequest;
@@ -207,7 +205,7 @@ describe('startup-report/renderer (q00009 / f00258)', () => {
 			);
 		});
 
-		it('returns false by default (MCP stdio safety)', () => {
+		it('returns false by default when stderr is not a TTY', () => {
 			expect(shouldUseAnsiColors({})).toBe(false);
 		});
 	});
@@ -218,20 +216,47 @@ describe('startup-report/renderer (q00009 / f00258)', () => {
 			expect(renderStartupReportPlain(report)).toBe('');
 		});
 
-		it('omits the per-plugin cost table for `compact`', () => {
+		it('includes the plugin loading lists for `compact`', () => {
 			const report = buildStartupReport(baseInput(), 'compact');
 			const out = renderStartupReportPlain(report);
-			expect(out).not.toContain('Plugin cost / request');
+			expect(out).toContain('Plugin loading');
+			expect(out).toContain('loaded at startup (3)');
+			expect(out).toContain('lazy loaded on demand (0)');
 		});
 
-		it('includes the per-plugin cost table for `medium`', () => {
+		it('lists loaded plugins without exposing per-plugin cost for `medium`', () => {
 			const report = buildStartupReport(baseInput(), 'medium');
 			const out = renderStartupReportPlain(report);
-			expect(out).toContain('Plugin cost / request');
-			expect(out).toContain('core');
-			expect(out).toContain('git');
-			expect(out).toContain('proposals');
-			expect(out).toContain('TOTAL');
+			expect(out).toContain('Plugin loading');
+			expect(out).toContain('loaded at startup (3)');
+			expect(out).toContain(
+				'loaded at startup (3): core, git, proposals',
+			);
+			expect(out).toContain('lazy loaded on demand (0): none');
+			expect(out).not.toContain('    - ');
+			expect(out).not.toContain(
+				'plugin                 status    available  visible  schemas  tokens  budget',
+			);
+		});
+
+		it('explains each visible medium-level section', () => {
+			const report = buildStartupReport(baseInput(), 'medium');
+			const out = renderStartupReportPlain(report);
+			expect(out).toContain(
+				'What is running, which surface is exposed, and how tools are loaded.',
+			);
+			expect(out).toContain(
+				'The skills and resources that can be requested when needed.',
+			);
+			expect(out).toContain(
+				'The schema tokens sent to the model for the visible tool surface.',
+			);
+			expect(out).toContain(
+				'Plugins loaded now and plugins waiting for their first use.',
+			);
+			expect(out).toContain(
+				'Runtime policies for lazy activation, eviction, and MCP surface refreshes.',
+			);
 		});
 
 		it('marks (default) next to the medium level', () => {
@@ -243,7 +268,7 @@ describe('startup-report/renderer (q00009 / f00258)', () => {
 		it('does NOT mark (default) for `high`', () => {
 			const report = buildStartupReport(baseInput(), 'high');
 			const out = renderStartupReportPlain(report);
-			expect(out).toContain('startup report high');
+			expect(out).toContain('report         high');
 			expect(out).not.toContain('high (default)');
 		});
 
@@ -292,6 +317,13 @@ describe('startup-report/renderer (q00009 / f00258)', () => {
 				MCP_VERTEX_COLOR: 'always',
 			});
 			expect(colour).toContain('\u001B[');
+			expect(colour).toContain('\u001B[32m=== Server summary ===');
+			expect(colour).toContain(
+				'\u001B[34m=== Available capabilities ===',
+			);
+			expect(colour).toContain(
+				'\u001B[35m=== Context cost per request ===',
+			);
 		});
 
 		it('keeps the same content shape as the plain renderer when colour is forced off', () => {

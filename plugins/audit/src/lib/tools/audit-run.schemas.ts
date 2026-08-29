@@ -45,7 +45,7 @@ export const ScaffoldedSchema = z.object({
 	filename: z.string(),
 	severity: z.string(),
 	files: z.array(z.string()),
-	kind: z.enum(['fix', 'plan']),
+	kind: z.enum(['audit', 'fix', 'plan']),
 });
 
 export const RunOutputSchema = z.object({
@@ -98,8 +98,10 @@ export const RunInputSchema = z.object({
 	/**
 	 * Output intent for the audit pipeline. `plan` produces an exhaustive
 	 * implementation plan whose findings are scaffolded as linked proposals;
-	 * `valuation` produces the normal technical assessment and correction
-	 * proposals. Defaults to `valuation` for backwards compatibility.
+	 * `valuation` produces a report-oriented technical assessment with
+	 * optional correction proposals when explicitly requested. Plan audits
+	 * are the default so executable audits produce a native parent plan plus
+	 * linked child proposals when scaffolding is available.
 	 */
 	auditType: z.enum(['plan', 'valuation']).optional(),
 	/**

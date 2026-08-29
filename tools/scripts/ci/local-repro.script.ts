@@ -41,7 +41,7 @@
 
 import { spawn, spawnSync } from 'node:child_process';
 import { mkdirSync, writeFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { isAbsolute, join, resolve } from 'node:path';
 
 import { repoRoot } from '../lib/monorepo-paths';
 
@@ -298,6 +298,27 @@ export const downloadJobLogsViaGh = (
 	return null;
 };
 
+export const downloadJobLogsFromGhApi = (
+	repo: IGitHubRepo,
+	jobId: number,
+	ghRunner: GhRunner = defaultGhRunner,
+): string => {
+	const result = ghRunner([
+		'api',
+		`repos/${repo.owner}/${repo.repo}/actions/jobs/${jobId}/logs`,
+		'--header',
+		'Accept: application/vnd.github+json',
+		'--header',
+		'X-GitHub-Api-Version: 2022-11-28',
+	]);
+	if (result.status !== 0) {
+		throw new Error(
+			`gh api logs failed: ${result.stderr || result.errorMessage || 'unknown error'}`,
+		);
+	}
+	return result.stdout;
+};
+
 interface IParsedLogLine {
 	readonly stepName: string | null;
 	readonly message: string;
@@ -390,10 +411,50 @@ export const extractCommand = (
 	return null;
 };
 
+export const extractStepDetails = (
+	logs: string,
+	stepName: string,
+	defaultWorkingDirectory = '.',
+): IStepDetails | null => {
+	const lines = logs.split('\n');
+	const start = lines.findIndex((line) =>
+		line.toLowerCase().includes(stepName.toLowerCase()),
+	);
+	if (start === -1) return null;
+	let workingDirectory = defaultWorkingDirectory;
+	let command: string | null = null;
+	for (
+		let index = start;
+		index < Math.min(lines.length, start + 40);
+		index += 1
+	) {
+		const parsed = parseLogLine(lines[index] ?? '');
+		const message = parsed.message.trim();
+		const directory = message.match(/^working-directory:\s*(.+)$/i);
+		if (directory?.[1] !== undefined)
+			workingDirectory = directory[1].trim();
+		const groupedCommand = message.match(/^##\[group\]Run\s+(.+)$/);
+		if (groupedCommand?.[1] !== undefined) {
+			command ??= trim(groupedCommand[1]);
+		}
+		if (message.startsWith('##[') || message.startsWith('shell: '))
+			continue;
+		if (looksLikeShellCommand(message)) {
+			command ??= trim(message.replace(/^\$\s+/, ''));
+		}
+	}
+	return command === null ? null : { command, workingDirectory };
+};
+
 export interface IRunnerResult {
 	readonly status: number | null;
 	readonly stdout: string;
 	readonly stderr: string;
+}
+
+export interface IStepDetails {
+	readonly command: string;
+	readonly workingDirectory: string;
 }
 
 /**
@@ -405,25 +466,49 @@ export interface IRunnerResult {
 export const defaultRunner = (
 	command: string,
 	cwd: string,
-): Promise<IRunnerResult> =>
-	new Promise((resolveFn) => {
-		const child = spawn(command, {
-			cwd,
-			shell: true,
-			env: { ...process.env, CI_REPRO: '1' },
-		});
-		const stdoutChunks: Buffer[] = [];
-		const stderrChunks: Buffer[] = [];
-		child.stdout.on('data', (chunk: Buffer) => stdoutChunks.push(chunk));
-		child.stderr.on('data', (chunk: Buffer) => stderrChunks.push(chunk));
-		child.on('close', (status) => {
-			resolveFn({
-				status,
-				stdout: Buffer.concat(stdoutChunks).toString('utf8'),
-				stderr: Buffer.concat(stderrChunks).toString('utf8'),
+): Promise<IRunnerResult> => {
+	if (/[;&|<>`$]/.test(command)) {
+		return Promise.reject(
+			new Error('refusing command containing shell operators'),
+		);
+	}
+	const argv = command.match(/(?:[^\s"']+|"[^"]*"|'[^']*')+/g) ?? [];
+	const unquoted = argv.map((token) => token.replace(/^(['"])(.*)\1$/, '$2'));
+	if (typeof Bun === 'undefined') {
+		return new Promise((resolveFn) => {
+			const child = spawn(unquoted[0] ?? '', unquoted.slice(1), {
+				cwd,
+				env: { ...process.env, CI_REPRO: '1' },
 			});
+			const stdoutChunks: Buffer[] = [];
+			const stderrChunks: Buffer[] = [];
+			child.stdout?.on('data', (chunk: Buffer) =>
+				stdoutChunks.push(chunk),
+			);
+			child.stderr?.on('data', (chunk: Buffer) =>
+				stderrChunks.push(chunk),
+			);
+			child.on('close', (status) =>
+				resolveFn({
+					status,
+					stdout: Buffer.concat(stdoutChunks).toString('utf8'),
+					stderr: Buffer.concat(stderrChunks).toString('utf8'),
+				}),
+			);
 		});
+	}
+	const child = Bun.spawn(unquoted, {
+		cwd,
+		stdout: 'pipe',
+		stderr: 'pipe',
+		env: { ...process.env, CI_REPRO: '1' },
 	});
+	return Promise.all([
+		new Response(child.stdout).text(),
+		new Response(child.stderr).text(),
+		child.exited,
+	]).then(([stdout, stderr, status]) => ({ status, stdout, stderr }));
+};
 
 export type Runner = (command: string, cwd: string) => Promise<IRunnerResult>;
 
@@ -437,7 +522,85 @@ export interface IReproReport {
 	readonly matched: boolean;
 	readonly localLogPath: string;
 	readonly command: string;
+	readonly workingDirectory: string;
+	readonly diffSummary: string;
 }
+
+export const fetchRunJobsViaGh = (
+	repo: IGitHubRepo,
+	runId: string,
+	ghRunner: GhRunner = defaultGhRunner,
+): readonly IRunJob[] => {
+	const result = ghRunner([
+		'api',
+		`repos/${repo.owner}/${repo.repo}/actions/runs/${runId}/jobs?per_page=100`,
+		'--header',
+		'Accept: application/vnd.github+json',
+		'--header',
+		'X-GitHub-Api-Version: 2022-11-28',
+	]);
+	if (result.status !== 0) {
+		throw new Error(
+			`gh api jobs failed: ${result.stderr || result.errorMessage || 'unknown error'}`,
+		);
+	}
+	const body = JSON.parse(result.stdout) as { jobs?: readonly IRunJob[] };
+	return body.jobs ?? [];
+};
+
+export const summarizeDiff = (ciLog: string, localLog: string): string => {
+	const ciLines = ciLog.split(/\r?\n/).filter((line) => line.trim() !== '');
+	const localLines = localLog
+		.split(/\r?\n/)
+		.filter((line) => line.trim() !== '');
+	let matchingLines = 0;
+	for (
+		let index = 0;
+		index < Math.min(ciLines.length, localLines.length);
+		index += 1
+	) {
+		if (ciLines[index] === localLines[index]) matchingLines += 1;
+	}
+	const differingLines =
+		Math.max(ciLines.length, localLines.length) - matchingLines;
+	return `diff: ${differingLines} differing line(s), ${matchingLines} matching line(s), CI=${ciLines.length}, local=${localLines.length}`;
+};
+
+export const reproStepFromGh = async (
+	repo: IGitHubRepo,
+	runId: string,
+	step: IFailedStep,
+	runner: Runner,
+	outputDir: string,
+	ghRunner: GhRunner = defaultGhRunner,
+): Promise<IReproReport> => {
+	const ciLogs = downloadJobLogsFromGhApi(repo, step.jobId, ghRunner);
+	const details = extractStepDetails(ciLogs, step.stepName);
+	if (details === null) {
+		throw new Error(
+			`Could not extract a runnable command from step "${step.stepName}" in job ${step.jobId}`,
+		);
+	}
+	const root = repoRoot();
+	const workingDirectory = resolve(
+		root,
+		isAbsolute(details.workingDirectory) ? '.' : details.workingDirectory,
+	);
+	const local = await runner(details.command, workingDirectory);
+	const localContent = `${local.stdout}${local.stderr.length > 0 ? `\n--- stderr ---\n${local.stderr}` : ''}`;
+	mkdirSync(outputDir, { recursive: true });
+	const localLogPath = join(outputDir, `local-repro-${runId}.log`);
+	writeFileSync(localLogPath, localContent);
+	return {
+		localStatus: local.status,
+		ciStatus: 1,
+		matched: local.status !== 0,
+		localLogPath,
+		command: details.command,
+		workingDirectory,
+		diffSummary: summarizeDiff(ciLogs, localContent),
+	};
+};
 
 export const reproStep = async (
 	repo: IGitHubRepo,
@@ -449,31 +612,30 @@ export const reproStep = async (
 ): Promise<IReproReport> => {
 	const token = resolveToken();
 	const ciLogs = await downloadJobLogs(repo, step.jobId, token, fetcher);
-	const command = extractCommand(ciLogs, step.stepName);
-	if (command === null) {
+	const details = extractStepDetails(ciLogs, step.stepName);
+	if (details === null) {
 		throw new Error(
 			`Could not extract a runnable command from step "${step.stepName}" in job ${step.jobId}`,
 		);
 	}
-
-	const local = await runner(command, repoRoot());
-
-	mkdirSync(outputDir, { recursive: true });
-	const localLogPath = join(
-		outputDir,
-		`local-repro-${runId}-job${step.jobId}.log`,
+	const root = repoRoot();
+	const workingDirectory = resolve(
+		root,
+		isAbsolute(details.workingDirectory) ? '.' : details.workingDirectory,
 	);
+	const local = await runner(details.command, workingDirectory);
 	const localContent = `${local.stdout}${local.stderr.length > 0 ? `\n--- stderr ---\n${local.stderr}` : ''}`;
+	mkdirSync(outputDir, { recursive: true });
+	const localLogPath = join(outputDir, `local-repro-${runId}.log`);
 	writeFileSync(localLogPath, localContent);
-
 	return {
 		localStatus: local.status,
-		// CI doesn't surface a numeric exit code for cancelled
-		// steps; we treat non-success as `1` for the diff.
 		ciStatus: 1,
 		matched: local.status !== 0,
 		localLogPath,
-		command,
+		command: details.command,
+		workingDirectory,
+		diffSummary: summarizeDiff(ciLogs, localContent),
 	};
 };
 
@@ -538,8 +700,7 @@ export const main = async (argv: readonly string[]): Promise<number> => {
 	}
 
 	try {
-		const token = resolveToken();
-		const jobs = await fetchRunJobs(repo, runId, token);
+		const jobs = fetchRunJobsViaGh(repo, runId);
 		const step = selectFailedStep(jobs, stepFilter);
 		if (step === null) {
 			out(
@@ -550,7 +711,7 @@ export const main = async (argv: readonly string[]): Promise<number> => {
 		out(
 			`local-repro: will reproduce step "${step.stepName}" (job ${step.jobId} "${step.jobName}")`,
 		);
-		const report = await reproStep(
+		const report = await reproStepFromGh(
 			repo,
 			runId,
 			step,

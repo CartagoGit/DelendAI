@@ -90,6 +90,21 @@ export const PACKAGE_ROUTES: Readonly<Record<string, IPackageRoute>> = {
 /** Relative path (from a package dir) of the generated module. */
 export const GENERATED_REL_PATH = 'src/generated/tool-outputs.ts';
 
+const PLUGIN_ROUTE_PREFIXES = Object.keys(PACKAGE_ROUTES)
+	.filter((prefix) => prefix !== 'mcp-vertex')
+	.sort((left, right) => right.length - left.length);
+
+const packagePrefixForTool = (toolName: string): string => {
+	if (!toolName.startsWith('mcp-vertex_')) {
+		return toolName.split('_')[0] ?? '';
+	}
+	const unqualified = toolName.slice('mcp-vertex_'.length);
+	const pluginPrefix = PLUGIN_ROUTE_PREFIXES.find((prefix) =>
+		unqualified.startsWith(`${prefix}_`),
+	);
+	return pluginPrefix ?? 'mcp-vertex';
+};
+
 const IDENT_RE = /^[A-Za-z_$][A-Za-z0-9_$]*$/;
 
 /** PascalCase a snake/kebab tool name: `mcp-vertex_git_status` → `GitStatus`. */
@@ -293,7 +308,7 @@ export const buildPackageModules = (
 ): Map<string, string> => {
 	const byPrefix = new Map<string, IHarvestedTool[]>();
 	for (const tool of tools) {
-		const prefix = tool.name.split('_')[0] ?? '';
+		const prefix = packagePrefixForTool(tool.name);
 		const bucket = byPrefix.get(prefix);
 		if (bucket) bucket.push(tool);
 		else byPrefix.set(prefix, [tool]);

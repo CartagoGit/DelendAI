@@ -1,14 +1,26 @@
+import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 import {
 	downloadJobLogs,
 	extractCommand,
+	extractStepDetails,
+	reproStepFromGh,
+	defaultRunner,
 	type GhRunner,
 	type IGitHubRepo,
 } from './local-repro.script';
 import { pickLatestFailedRun, resolveDemoRun } from './local-repro.demo.script';
 
 const REPO: IGitHubRepo = { owner: 'CartagoGit', repo: 'mcp-vertex' };
+const GH_LOG =
+	'quality\tTest\t2026-08-29T00:00:00.000Z ##[group]Run bun run test\nquality\tTest\t2026-08-29T00:00:00.000Z working-directory: packages/core\n';
+const ghFixture: GhRunner = (args) =>
+	(args[1] ?? '').endsWith('/logs')
+		? { status: 0, stdout: GH_LOG, stderr: '' }
+		: { status: 1, stdout: '', stderr: 'unexpected fixture call' };
 
 describe('local-repro real CI coverage', () => {
 	it('extracts the top-level command from a real gh log-failed step format', () => {
@@ -30,7 +42,7 @@ describe('local-repro real CI coverage', () => {
 			stdout: 'quality-gate    Run integrated quality gate     2026-08-29T16:51:08.4698938Z bun tools/scripts/ci/quality-gate.script.ts --real\n',
 			stderr: '',
 		});
-		const fetcher: typeof fetch = async (
+		const fetcher = async (
 			_input: string | URL | Request,
 			_init?: RequestInit,
 		) =>
@@ -45,7 +57,7 @@ describe('local-repro real CI coverage', () => {
 			REPO,
 			99130845382,
 			null,
-			fetcher,
+			fetcher as unknown as typeof fetch,
 			ghRunner,
 		);
 		expect(logs).toContain('quality-gate');
@@ -80,5 +92,52 @@ describe('local-repro real CI coverage', () => {
 			);
 		});
 		expect(selection).toEqual({ runId: '33264054564', source: 'argv' });
+	});
+
+	it('extracts the working directory and writes a deterministic run log with a diff summary', async () => {
+		const details = extractStepDetails(
+			[
+				'quality-gate\tRun integrated quality gate\t2026-08-29T16:51:08.4698399Z ##[group]Run bun tools/scripts/ci/quality-gate.script.ts --real',
+				'quality-gate\tRun integrated quality gate\t2026-08-29T16:51:08.4700000Z working-directory: tools',
+			].join('\n'),
+			'Run integrated quality gate',
+		);
+		expect(details).toEqual({
+			command: 'bun tools/scripts/ci/quality-gate.script.ts --real',
+			workingDirectory: 'tools',
+		});
+
+		const output = mkdtempSync(join(tmpdir(), 'local-repro-gh-'));
+		try {
+			const report = await reproStepFromGh(
+				REPO,
+				'123',
+				{
+					jobId: 42,
+					jobName: 'quality',
+					stepName: 'Test',
+					stepNumber: 2,
+				},
+				async () => ({
+					status: 1,
+					stdout: 'FAIL expected failure\n',
+					stderr: '',
+				}),
+				output,
+				ghFixture,
+			);
+			expect(report.localLogPath).toBe(
+				join(output, 'local-repro-123.log'),
+			);
+			expect(report.diffSummary).toMatch(/^diff: /);
+		} finally {
+			rmSync(output, { recursive: true, force: true });
+		}
+	});
+
+	it('refuses shell operators before spawning a command', async () => {
+		await expect(
+			defaultRunner('bun run test && touch unsafe', process.cwd()),
+		).rejects.toThrow(/refusing command containing shell operators/);
 	});
 });

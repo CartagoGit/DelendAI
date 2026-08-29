@@ -17,7 +17,8 @@
  *                          why that distinction matters.
  *   --output <path>       OPTIONAL. Write the JSON report to a
  *                          file. Useful for the dashboard.
- *   --dry-run             OPTIONAL. Print the report to stdout.
+ *   --dry-run             OPTIONAL. Print an offline, unverified report.
+ *   --real                OPTIONAL. Explicitly contact GitHub (the default).
  *
  * This script and `verify-branch-protection.script.ts` read the same
  * GitHub endpoint and MUST reach the same verdict for the same
@@ -138,6 +139,11 @@ const flag = (argv: readonly string[], name: string): string | undefined => {
 	}
 	return undefined;
 };
+
+const hasFlag = (argv: readonly string[], name: string): boolean =>
+	argv.some(
+		(token) => token === `--${name}` || token.startsWith(`--${name}=`),
+	);
 
 const githubHeaders = (token: string | undefined): Record<string, string> => {
 	const headers: Record<string, string> = {
@@ -284,6 +290,47 @@ const buildDashboard = (
 	note: 'Auto-populated by bun tools/scripts/ci/verify-develop-health.script.ts.',
 });
 
+const buildDryRunReport = (
+	repo: string,
+	branches: readonly IBranchHealth[],
+	requiredChecks: readonly string[],
+): IHealthReport => {
+	const discrepancies = [
+		'dry-run: GitHub API was not contacted; live CI and branch protection are unverified',
+	];
+	const developStatus: IDevelopStatus = {
+		ref: 'develop',
+		verified: false,
+		headSha: null,
+		ciStatus: 'unknown',
+		totalCheckRuns: 0,
+		requiredCheckRuns: requiredChecks.map((name) => ({
+			name,
+			status: null,
+			conclusion: null,
+			htmlUrl: null,
+		})),
+	};
+	const generatedAt = new Date().toISOString();
+	const dashboard = buildDashboard({
+		generatedAt,
+		branches,
+		developStatus,
+		discrepancies,
+		requiredChecks,
+	});
+	return {
+		repo,
+		generatedAt,
+		healthy: false,
+		unverifiedBranches: branches.map((branch) => branch.name),
+		branches,
+		developStatus,
+		discrepancies,
+		dashboard: { ...dashboard, lastVerifiedAt: null },
+	};
+};
+
 const fetchDevelopStatus = async (params: {
 	readonly repo: string;
 	readonly token: string | undefined;
@@ -427,6 +474,7 @@ export const isHealthy = (branches: readonly IBranchHealth[]): boolean => {
 
 export const main = async (argv: readonly string[]): Promise<number> => {
 	const repo = flag(argv, 'repo');
+	const dryRun = hasFlag(argv, 'dry-run');
 	const explicitToken =
 		flag(argv, 'token') ?? process.env.BRANCH_PROTECTION_TOKEN;
 	const tokenExplicit =
@@ -441,6 +489,19 @@ export const main = async (argv: readonly string[]): Promise<number> => {
 
 	const config = BRANCH_PROTECTION;
 	const requiredChecks = collectRequiredChecks(config.branches);
+	if (dryRun) {
+		const branches = config.branches.map((expected) =>
+			inspectBranch(expected, null, false, config.defaults),
+		);
+		out(
+			JSON.stringify(
+				buildDryRunReport(repo, branches, requiredChecks),
+				null,
+				2,
+			),
+		);
+		return 0;
+	}
 	const branches: IBranchHealth[] = [];
 	const unverifiedBranches: string[] = [];
 	let readCount = 0;

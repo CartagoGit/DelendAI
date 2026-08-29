@@ -27,7 +27,6 @@
 	"tools/scripts/verify/dev-bundles-verify.script.ts": 1,
 	"tools/scripts/verify/host-capability-packs.script.spec.ts": 12,
 	"tools/tests/ci/lib/github-protection.lib.spec.ts": 1,
-	"tools/tests/ci/local-repro.spec.ts": 2,
 	"tools/tests/ci/tier-trigger.spec.ts": 2,
 	"tools/tests/property-based.spec.ts": 3,
 	"tools/tests/report/per-surface-columns.spec.ts": 1

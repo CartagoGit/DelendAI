@@ -84,7 +84,7 @@ export const buildRunRegistration = (
 	return {
 		id: 'audit_run',
 		summary:
-			'Dispatch the audit brief (general / specific / monorepo modes) to one or more LLM targets in parallel, save the markdown reports, consolidate the findings, and scaffold fix proposals for every actionable severity band (FATAL/BAD/MINOR).',
+			'Dispatch the audit brief (general / specific / monorepo modes) to one or more LLM targets in parallel, save the markdown reports, consolidate the findings into a native plan by default, and scaffold linked child proposals for every actionable severity band (FATAL/BAD/MINOR).',
 		descriptionKey: 'audit_run',
 		tags: ['audit', 'automation', 'fan-out'],
 		register: async (server) => {
@@ -255,7 +255,7 @@ export const buildRunRegistration = (
 						  }
 						| { skipped: string }
 						| { disabled: true };
-					if (enabled && consolidation.findings.length > 0) {
+					if (enabled) {
 						const scaffoldOptions: IAutoScaffoldOptions = {
 							enabled,
 							auditType,
@@ -290,7 +290,7 @@ export const buildRunRegistration = (
 										filename: string;
 										severity: string;
 										files: string[];
-										kind: 'fix' | 'plan';
+										kind: 'audit' | 'fix' | 'plan';
 									} => ({
 										id: r.id,
 										filename: r.filename,
