@@ -100,7 +100,7 @@ declarado en el registro de la tool.
 
 ### S1 — Podar `invoke`, `advise_routing` y `advise_spend`
 
-- **Status**: pending
+- **Status**: done
 - **Files**:
     - `plugins/orchestrator-runner/src/lib/tools/invoke.tool.ts`
     - `plugins/orchestrator-runner/src/lib/tools/advise-routing.tool.ts`

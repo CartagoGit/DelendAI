@@ -15,6 +15,7 @@ import {
 	nodeDynamicImport,
 	parseCliArgs,
 	SKILL_MANIFEST_REL,
+	type IMcpToolSurfaceMode,
 	type IPresetKind,
 } from '@mcp-vertex/core/public';
 
@@ -142,12 +143,16 @@ export const measureToolListMetrics = (
 				current.schemaBytes +
 				breakdown.inputSchemaBytes +
 				breakdown.outputSchemaBytes,
-			descriptionBytes: current.descriptionBytes + breakdown.descriptionBytes,
-			inputSchemaBytes: current.inputSchemaBytes + breakdown.inputSchemaBytes,
+			descriptionBytes:
+				current.descriptionBytes + breakdown.descriptionBytes,
+			inputSchemaBytes:
+				current.inputSchemaBytes + breakdown.inputSchemaBytes,
 			outputSchemaBytes:
 				current.outputSchemaBytes + breakdown.outputSchemaBytes,
-			annotationsBytes: current.annotationsBytes + breakdown.annotationsBytes,
-			otherFieldBytes: current.otherFieldBytes + breakdown.otherFieldBytes,
+			annotationsBytes:
+				current.annotationsBytes + breakdown.annotationsBytes,
+			otherFieldBytes:
+				current.otherFieldBytes + breakdown.otherFieldBytes,
 			envelopeBytes: current.envelopeBytes + breakdown.envelopeBytes,
 		});
 	}
@@ -185,7 +190,10 @@ export const measureToolListMetrics = (
 			(sum, row) => sum + row.otherFieldBytes,
 			0,
 		),
-		envelopeBytes: ownerRows.reduce((sum, row) => sum + row.envelopeBytes, 0),
+		envelopeBytes: ownerRows.reduce(
+			(sum, row) => sum + row.envelopeBytes,
+			0,
+		),
 		maxPluginBytes,
 		ownerRows,
 		toolBreakdowns,
@@ -269,7 +277,7 @@ export const connectTokenBudgetClient = async (
 	options: {
 		readonly pluginList: string;
 		readonly preset?: boolean;
-		readonly surfaceMode?: 'native' | 'adaptive' | 'compact';
+		readonly surfaceMode?: IMcpToolSurfaceMode;
 		readonly clientInfo?: Implementation;
 		readonly capabilities?: ClientCapabilities;
 	},
@@ -380,6 +388,5 @@ export const asPresetId = (value: string): IPresetKind => value as IPresetKind;
  * tokenizers need this text (not just its byte length) to produce a
  * measured token count instead of a byte-ratio estimate.
  */
-export const toolsListJsonText = (
-	tools: readonly IToolListEntry[],
-): string => JSON.stringify(tools);
+export const toolsListJsonText = (tools: readonly IToolListEntry[]): string =>
+	JSON.stringify(tools);
