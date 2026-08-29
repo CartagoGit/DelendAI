@@ -43,6 +43,7 @@ const buildRunner = (
 	currentBranch: string | undefined,
 	pushOk: boolean,
 	dirty: readonly string[] = [],
+	commits?: string[],
 ): IGitRunner => {
 	const handler = (args: readonly string[]): Promise<IGitRunResult> => {
 		if (args[0] === 'rev-parse' && args.includes('--abbrev-ref')) {
@@ -52,7 +53,10 @@ const buildRunner = (
 					: ok(`${currentBranch}\n`),
 			);
 		}
-		if (args[0] === 'commit') return Promise.resolve(ok('committed\n'));
+		if (args[0] === 'commit') {
+			commits?.push(args.join(' '));
+			return Promise.resolve(ok('committed\n'));
+		}
 		if (args[0] === 'add') return Promise.resolve(ok('added\n'));
 		if (args[0] === 'status')
 			return Promise.resolve(
@@ -256,6 +260,43 @@ describe('CommitPolicyEngine (f00182)', () => {
 		});
 
 		expect(result.ack).toBe('OK');
+	});
+
+	it('describes the files included in automatic commits', async () => {
+		const commits: string[] = [];
+		const files = [
+			'plugins/commit-policy/src/lib/engine.ts',
+			'plugins/commit-policy/tests/src/lib/engine.spec.ts',
+		];
+		const runner = buildRunner('feature/x', true, files, commits);
+		const engine = createCommitPolicyEngine({
+			driver: {
+				run: runner,
+				policy: basePolicy({
+					cadence: {
+						triggers: [],
+						sliceScoping: false,
+						allowForeignChanges: true,
+					},
+				}),
+				identityCtx: { run: runner, envVars: Object.freeze({}) },
+				auditAgent: null,
+			},
+			branchPolicy: DEFAULT_BRANCH_POLICY,
+		});
+
+		const result = await engine.handle({
+			kind: 'threshold',
+			files,
+			dirtyCount: files.length,
+			eventId: 'descriptive-snapshot-1',
+		});
+
+		expect(result.ack).toBe('OK');
+		expect(commits[0]).toContain(
+			'chore: update plugins/commit-policy/src/lib/engine.ts, plugins/commit-policy/tests/src/lib/engine.spec.ts',
+		);
+		expect(commits[0]).not.toContain('preserve concurrent agent work');
 	});
 
 	it('waits for a successful push before returning OK', async () => {

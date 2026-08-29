@@ -233,7 +233,7 @@ Cada propuesta hija cita, en su `## Goal`, la sección exacta de la auditoría q
 ### S1 — Orquestar las 43 propuestas hijas a `done`
 
 - **Status**: done
-- **Files**: `docs/mcp-vertex/proposals/review/q00003-consolidacion-post-auditoria-de-develop-privacidad-lifecycle-tokens-y-arquitectura.md`
+- **Files**: `docs/mcp-vertex/proposals/done/plans/q00003-consolidacion-post-auditoria-de-develop-privacidad-lifecycle-tokens-y-arquitectura.md`
 - **Gate**: type
 - acceptance:
   - "Cada propuesta hija cierra sus slices y pasa peer review (requireAllChildrenDone + requireAllSlicesDone)."

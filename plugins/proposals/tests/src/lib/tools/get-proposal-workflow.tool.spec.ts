@@ -37,9 +37,15 @@ describe('get_proposal_workflow registration metadata', () => {
 
 describe('proposal templates resource registration', () => {
 	it('registers a readable compact workflow resource', async () => {
-		let resourceHandler: (() => Promise<{
-			contents: Array<{ text?: string; uri: string; mimeType?: string }>;
-		}>) | undefined;
+		let resourceHandler:
+			| (() => Promise<{
+					contents: Array<{
+						text?: string;
+						uri: string;
+						mimeType?: string;
+					}>;
+			  }>)
+			| undefined;
 		const registration = buildProposalTemplatesResourceRegistration({
 			proposalsDir: '/workspace/docs/proposals',
 			indexFile: '/workspace/.cache/proposals/index.json',
@@ -64,7 +70,9 @@ describe('proposal templates resource registration', () => {
 			template?: string;
 		};
 
-		expect(result.contents[0]?.uri).toBe('mcp-vertex://proposals/templates');
+		expect(result.contents[0]?.uri).toBe(
+			'mcp-vertex://proposals/templates',
+		);
 		expect(result.contents[0]?.mimeType).toBe('application/json');
 		expect(body.naming).toBeTypeOf('string');
 		expect(body.template).toBeTypeOf('string');
