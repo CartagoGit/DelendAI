@@ -28,8 +28,9 @@ Per-agent worktrees are opt-in through `agentWorktree: true`.
 5. **`allow_deletions: false`** — branches cannot be deleted
    through the UI/API.
 
-Work may happen on `develop` directly or on an explicitly configured
-worktree/branch. `main` remains the release branch and is protected. The
+Work happens on `develop` directly by default so concurrent agents share a
+visible, reversible snapshot journal. An explicitly configured worktree or
+branch is an opt-in isolated mode. `main` remains the release branch and is protected. The
 `required_checks` field applies only to branches declared as protected in
 `branch-protection.ts`; `develop` intentionally has no GitHub protection rule
 in this repository.

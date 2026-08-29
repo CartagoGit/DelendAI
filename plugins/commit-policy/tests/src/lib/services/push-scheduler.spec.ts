@@ -220,4 +220,30 @@ describe('push scheduler (x00266)', () => {
 		scheduler.start();
 		scheduler.stop();
 	});
+
+	it('serializes concurrent onCommitSucceeded calls', async () => {
+		let activePushes = 0;
+		let maxActivePushes = 0;
+		const scheduler = createPushScheduler({
+			run: (async (args: readonly string[]) => {
+				if (args[0] === 'rev-parse') return ok('feature/x\n');
+				if (args[0] === 'push') {
+					activePushes += 1;
+					maxActivePushes = Math.max(maxActivePushes, activePushes);
+					await Promise.resolve();
+					activePushes -= 1;
+					return ok('pushed\n');
+				}
+				return ok('');
+			}) as never,
+			policy: { ...basePushPolicy(), onCommit: true },
+		});
+
+		await Promise.all([
+			scheduler.onCommitSucceeded(),
+			scheduler.onCommitSucceeded(),
+		]);
+		expect(maxActivePushes).toBe(1);
+		scheduler.stop();
+	});
 });

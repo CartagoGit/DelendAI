@@ -28,10 +28,12 @@ import { isBranchProtected } from '../contracts/branch';
 import type { ICommitPolicyPush } from '../contracts/options';
 import { gitCurrentBranch } from './git-extra';
 import { runPushDriver, type IPushDriverResult } from './push-driver';
+import { withGitWriteLock } from './git-write-lock';
 
 export interface IPushSchedulerOptions {
 	readonly run: IGitRunner;
 	readonly policy: ICommitPolicyPush;
+	readonly workspaceRoot?: string | undefined;
 	/**
 	 * Optional hook the host can use to observe each push attempt
 	 * (success, refusal, or runtime error). Defaults to a no-op.
@@ -75,7 +77,17 @@ export const createPushScheduler = (
 	let commitsSincePush = 0;
 	let interval: ReturnType<typeof setInterval> | undefined;
 	let pendingTick: Promise<void> | undefined;
+	let writeTail = Promise.resolve();
 	const onAttempt = options.onAttempt ?? (() => {});
+
+	const enqueueWrite = <T>(operation: () => Promise<T>): Promise<T> => {
+		const queued = writeTail.then(operation);
+		writeTail = queued.then(
+			() => undefined,
+			() => undefined,
+		);
+		return queued;
+	};
 
 	const branchRefusal = async (): Promise<string | null> => {
 		const branch = await gitCurrentBranch(options.run);
@@ -96,7 +108,9 @@ export const createPushScheduler = (
 	const push = async (reason: string): Promise<IPushDriverResult> => {
 		let result: IPushDriverResult;
 		try {
-			result = await runPushDriver({}, options.policy, options.run);
+			result = await withGitWriteLock(options.workspaceRoot, () =>
+				runPushDriver({}, options.policy, options.run),
+			);
 		} catch (error) {
 			result = {
 				ok: false,
@@ -122,7 +136,9 @@ export const createPushScheduler = (
 		// scheduler would spam empty pushes every interval.
 		if (commitsSincePush === 0) return;
 		if ((await branchRefusal()) !== null) return;
-		await push(`everyNMinutes=${options.policy.everyNMinutes ?? 0}`);
+		await enqueueWrite(() =>
+			push(`everyNMinutes=${options.policy.everyNMinutes ?? 0}`),
+		);
 	};
 
 	const scheduleTick = (): void => {
@@ -133,27 +149,31 @@ export const createPushScheduler = (
 	};
 
 	return {
-		async onCommitSucceeded() {
-			commitsSincePush += 1;
-			const refusal = await branchRefusal();
-			if (refusal !== null) {
-				const result: IPushDriverResult = { ok: false, refusal };
-				onAttempt(result);
-				return result;
-			}
-			const everyN = options.policy.everyNCommits;
-			const shouldPushByCount =
-				everyN !== undefined && commitsSincePush >= everyN;
-			const shouldPushByCommit = options.policy.onCommit === true;
-			if (!shouldPushByCommit && !shouldPushByCount) return null;
-			// x00266: when both modes are active, the engine fires
-			// ONE push (not two). The counter is reset below.
-			return push(
-				shouldPushByCount ? `everyNCommits=${everyN}` : 'onCommit=true',
-			);
+		onCommitSucceeded() {
+			return enqueueWrite(async () => {
+				commitsSincePush += 1;
+				const refusal = await branchRefusal();
+				if (refusal !== null) {
+					const result: IPushDriverResult = { ok: false, refusal };
+					onAttempt(result);
+					return result;
+				}
+				const everyN = options.policy.everyNCommits;
+				const shouldPushByCount =
+					everyN !== undefined && commitsSincePush >= everyN;
+				const shouldPushByCommit = options.policy.onCommit === true;
+				if (!shouldPushByCommit && !shouldPushByCount) return null;
+				// x00266: when both modes are active, the engine fires
+				// ONE push (not two). The counter is reset below.
+				return push(
+					shouldPushByCount
+						? `everyNCommits=${everyN}`
+						: 'onCommit=true',
+				);
+			});
 		},
-		async pushNow() {
-			return push('manual');
+		pushNow() {
+			return enqueueWrite(() => push('manual'));
 		},
 		async flush() {
 			await pendingTick;

@@ -165,6 +165,7 @@ export default definePlugin({
 		const pushScheduler = createPushScheduler({
 			run,
 			policy: policy.push,
+			workspaceRoot: ctx.workspace.root,
 		});
 		pushScheduler.start();
 		disposables.push(() => pushScheduler.stop());
@@ -187,6 +188,7 @@ export default definePlugin({
 				namespacePrefix: ctx.namespacePrefix,
 				policy,
 				run,
+				workspaceRoot: ctx.workspace.root,
 				identityCtx,
 				locale: process.env.MCP_VERTEX_LOCALE ?? 'en',
 			}),
