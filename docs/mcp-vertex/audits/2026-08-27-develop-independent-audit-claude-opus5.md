@@ -1879,6 +1879,30 @@ plugin" que no depende de regex sobre `ctx.capabilities`.
 
 ### AUD-D02 — `dryRun` es advisory, no una frontera: detecta después de ejecutar
 
+> **CORRECCIÓN (implementación de `r00037`).** La premisa de este hallazgo ya
+> era falsa cuando fijé el snapshot. Cité verbatim la cabecera de
+> `effect-guard.helper.ts` —«`IMcpPluginContext` no entrega a los plugins ningún
+> objeto de capacidades»— como evidencia. El commit `8f05b5d2` («inject a
+> dry-run-gated effects capability into plugins») aterrizó a las **13:15 del
+> 2026-08-27**; mi snapshot `2cf17373` es de las **20:31 del mismo día**. El
+> mecanismo llevaba siete horas en el árbol que estaba auditando, y yo me creí un
+> comentario en lugar de leer el código — el mismo error que en `AUD-F02`, donde
+> me creí el motivo escrito en un `skip` en vez de correr el test. Es,
+> literalmente, el defecto que este hallazgo denuncia: confiar en la declaración
+> en vez de en el comportamiento.
+>
+> El hueco real era más estrecho: una capacidad (`git`) ya estaba prevenida en
+> producción; lo que faltaba era una primitiva de composición reutilizable en vez
+> de una factoría cableada a mano, y un rastro de auditoría para lo no migrado.
+> Eso es lo que `r00037` construye. La cabecera mentirosa queda corregida en el
+> propio fichero.
+>
+> Alcance honesto tras `r00037`: la prevención es **real para `git`**; para
+> filesystem, spawn y red sigue siendo **detección**, porque
+> `IPluginEffectsCapability` aún no tiene miembro `fs`. Está escrito así en
+> `docs/mcp-vertex/security/dry-run-contract.md` en vez de venderse como una
+> garantía uniforme.
+
 - **Clasificación:** RIESGO DE DISEÑO · **Severidad:** CRÍTICA · **Área:** seguridad
 - **Propuesta:** `r00037`
 

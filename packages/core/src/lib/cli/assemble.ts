@@ -31,7 +31,7 @@ import {
 	resolveCommitAuthor,
 } from '../shared/commit-author';
 import { createGitRunner } from '../shared/git-write';
-import { createDryRunGatedGitRunner } from '../dry-run/effect-capability-factory.helper';
+import { createEffectBroker } from '../capabilities/effect-broker';
 import type { IPluginEffectsCapability } from '../contracts/interfaces/effect-capabilities.interface';
 import type { IToolSummary } from '../catalog/agent-discovery-types';
 import { createWorkspacePathProvider } from '../workspace/create-workspace-path-provider';
@@ -396,14 +396,20 @@ export const assembleCliConfig = async (
 	let resolvedLogsSink: ILogsSink | undefined;
 	// — collector assembled after `assemblePlugins` returns.
 	let resolvedErrorCollector: IErrorCollector | undefined;
-	// One dry-run-gated git runner, shared across every
-	// plugin's context. Safe to share a single instance — the gate reads
-	// the AMBIENT dry-run scope of whichever tool call is currently
-	// invoking it (see `dry-run-scope.helper.ts`), not any state captured
-	// at construction time.
-	const pluginEffects: IPluginEffectsCapability = {
-		git: createDryRunGatedGitRunner(createGitRunner(workspace.root)),
-	};
+	// One dry-run-gated effects object, shared across every plugin's
+	// context, built through the EffectBroker (r00037 S2/S3) — the
+	// single point of construction for every mutating capability a
+	// plugin context hands out. Safe to share a single instance — the
+	// gate reads the AMBIENT dry-run scope of whichever tool call is
+	// currently invoking it (see `dry-run-scope.helper.ts`), not any
+	// state captured at construction time.
+	const pluginEffects: IPluginEffectsCapability = createEffectBroker({
+		git: {
+			kind: 'git',
+			perform: createGitRunner(workspace.root),
+			describe: (args: readonly string[]) => args.join(' '),
+		},
+	});
 	const buildContext = (
 		pluginName: string,
 		cacheNamespace?: string,

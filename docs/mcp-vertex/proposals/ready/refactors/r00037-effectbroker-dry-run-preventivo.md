@@ -17,6 +17,33 @@ related: [q00011, x00288, x00292]
 
 # r00037 — `EffectBroker`: dry-run pasa de detección post-hoc a prevención real
 
+> **CORRECCIÓN (implementación, 2026-08-29).** La premisa de "why" —
+> citando el header de `effect-guard.helper.ts`: *"`IMcpPluginContext`
+> ... does not currently hand plugins a filesystem/git/spawn/network
+> capability object at all"* — **ya no era cierta en el momento de
+> implementar esta propuesta**. El commit `8f05b5d2` ("feat(core):
+> inject a dry-run-gated effects capability into plugins"), fechado el
+> mismo día que el audit (2026-08-27, 13:15, posterior a la
+> verificación línea-por-línea que cita el "why"), ya había cableado
+> exactamente el mecanismo de prevención que S2/S3 piden — pero
+> limitado a UNA capacidad (`git`), no generalizado. Concretamente, ya
+> existían y estaban en producción:
+> `dry-run/dry-run-scope.helper.ts` (scope ambiental
+> `AsyncLocalStorage`, abierto por `invokeTool` alrededor de CADA
+> handler), `dry-run/effect-capability-factory.helper.ts`
+> (`createDryRunGatedGitRunner`), `contracts/interfaces/effect-capabilities.interface.ts`
+> (`IPluginEffectsCapability.git`), y `cli/assemble.ts` pasando ese
+> `git` guardado a TODOS los plugins vía `ctx.effects` (no solo a 6 de
+> 51 — la cifra que el propio "why" ya advertía no haber re-contado).
+> El trabajo real de esta propuesta, tal y como se ejecutó, fue: (S2)
+> generalizar el patrón ad-hoc de una sola capacidad en una primitiva
+> de composición reutilizable (`EffectBroker`), y (S3) hacer que el
+> caso real (`assemble.ts`) pasara también por esa primitiva en vez de
+> llamar a `createDryRunGatedGitRunner` directamente — no "cablear
+> algo que no existía", sino "generalizar y centralizar algo que ya
+> existía para un solo caso". Ver el Status de cada slice para el
+> detalle exacto de qué tocó código nuevo y qué ya estaba hecho.
+
 ## Goal
 
 Que `dryRun: true` sea, para **todo** plugin, una barrera que hace
@@ -147,45 +174,74 @@ runtime construye el contexto por invocación
 
 ### S1 — Detección post-hoc ruidosa y persistente (paso intermedio, sin cambios de superficie)
 
-- **Status**: pending
+- **Status**: done
 - **Files**:
-    - `packages/core/src/lib/dry-run/enforce.ts` (registrar cada
-      violación de contrato con el `pluginId`/`toolId` responsable)
+    - `packages/core/src/lib/dry-run/enforce.ts` (sin cambios: se
+      mantuvo puro a propósito; el registro con `pluginId`/`toolId`
+      se hace en el call site —
+      `tool-surface-runtime.service.ts#applyDryRunContract`— que ya
+      conoce ambos valores, no dentro de la función pura)
     - `packages/core/src/lib/dry-run/dry-run-violation-log.ts` (nuevo:
       buffer acotado análogo a
       `listForcePushAuthorizations`/`clearForcePushAuthorizationsForTests`
       en `packages/core/src/lib/shared/git-write.ts`)
-    - `packages/core/tests/src/lib/dry-run/enforce.spec.ts`
-- **Gate**: `bunx vitest run packages/core/tests/src/lib/dry-run`
+    - `packages/core/src/lib/contracts/interfaces/dry-run-violation.interface.ts` (nuevo)
+    - `packages/core/src/lib/project/tool-surface-runtime.service.ts`
+      (`applyDryRunContract` ahora recibe `pluginId` y llama a
+      `recordDryRunViolation`)
+    - `packages/core/tests/src/lib/dry-run/enforce.spec.ts` (nuevo)
+    - `packages/core/tests/src/lib/dry-run/dry-run-violation-log.spec.ts` (nuevo)
+    - `packages/core/tests/src/lib/dry-run/router-enforcement.spec.ts`
+      (dos specs nuevos: la violación se registra con
+      `pluginId`/`tool`, y un handler que SÍ respeta el contrato no
+      registra nada)
+- **Gate**: `bunx vitest run packages/core/tests/src/lib/dry-run` — 50/50 passing.
 
 ### S2 — `EffectBroker`: primitiva de composición
 
-- **Status**: pending
+- **Status**: done
 - **Files**:
     - `packages/core/src/lib/capabilities/effect-broker.ts` (nuevo)
     - `packages/core/src/lib/contracts/interfaces/effect-broker.interface.ts` (nuevo)
     - `packages/core/tests/src/lib/capabilities/effect-broker.spec.ts` (nuevo)
-- **Gate**: `bunx vitest run packages/core/tests/src/lib/capabilities/effect-broker.spec.ts`
+- **Gate**: `bunx vitest run packages/core/tests/src/lib/capabilities/effect-broker.spec.ts` — 7/7 passing (incluye la property test sobre las 5 categorías de `TEffectCapabilityKind`).
+- **Nota de diseño**: la firma difiere de la sugerida (`createEffectBroker(input: { dryRun: boolean; ... })`) — usa el flag ambiental ya existente (`getActiveDryRunFlag()`, `dry-run-scope.helper.ts`) en vez de un `dryRun: boolean` estático, porque ese es el patrón YA enviado a producción (commit `8f05b5d2`, mismo día que el audit) para el caso real (`ctx.effects.git`) y es estrictamente más fuerte: cubre el caso "contexto construido una vez en `register()`, reutilizado en cada llamada" que un `dryRun` capturado en construcción no cubre. Ver "correcciones" más abajo.
 
 ### S3 — Integración obligatoria en `IMcpPluginContext` + plugin sintético de prueba
 
-- **Status**: pending
+- **Status**: done
 - **Files**:
-    - `packages/core/src/lib/plugins/plugin-contract.ts`
+    - `packages/core/src/lib/plugins/plugin-contract.ts` — **sin
+      cambios**: el campo `effects?: IPluginEffectsCapability` ya
+      existía (commit `8f05b5d2`, ver corrección abajo).
     - `packages/core/src/lib/project/tool-surface-runtime.service.ts`
-    - `packages/core/tests/src/lib/e2e/effect-broker-dry-run.e2e.spec.ts` (nuevo:
-      plugin sintético que ignora `args.dryRun` y usa `ctx.effects.fs.write`)
-- **Gate**: `bunx vitest run packages/core/tests/src/lib/e2e/effect-broker-dry-run.e2e.spec.ts`
+      — el wiring `runWithDryRunScope` alrededor del handler ya
+      existía (mismo commit); el único cambio de esta propuesta ahí
+      es el de S1 (pasar `pluginId` a `applyDryRunContract`).
+    - `packages/core/src/lib/cli/assemble.ts` — reemplazado el
+      constructor manual de `pluginEffects` (una llamada directa a
+      `createDryRunGatedGitRunner`) por `createEffectBroker({ git: {...} })`,
+      para que el broker sea el único punto de construcción también
+      en el caso real, no solo en los tests.
+    - `packages/core/tests/src/lib/e2e/effect-broker-dry-run.e2e.spec.ts` (nuevo)
+- **Gate**: `bunx vitest run packages/core/tests/src/lib/e2e/effect-broker-dry-run.e2e.spec.ts` — 7/7 passing.
+- **Corrección al plan**: el spec NO usa `ctx.effects.fs.write` — esa
+  capacidad no existe (`IPluginEffectsCapability` solo declara `git`,
+  deliberadamente, ver `effect-capabilities.interface.ts`). El plugin
+  sintético usa `createEffectBroker` directamente con las 5 categorías
+  reales de `TEffectCapabilityKind` (`write`/`delete`/`spawn`/`network`/`git`),
+  más un caso adicional con el `git` runner REAL contra un repo temporal
+  en disco (no un proxy en memoria) para la prueba de "sin rastro".
 
 ### S4 — Documentación del contrato de garantías
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `docs/mcp-vertex/security/dry-run-contract.md` (nuevo)
-- **Gate**: `bun tools/scripts/lint/proposals.script.ts` (el fichero no es una
-  propuesta pero el gate confirma que no rompe la convención de docs
-  enlazadas) y revisión manual de que documenta explícitamente qué
-  garantiza `dryRun` HOY (S1, post-hoc) y qué garantizará TRAS S2/S3
-  (broker, preventivo)
+- **Gate**: `bun tools/scripts/lint/proposals.script.ts` → `624 files
+  checked, 223 legacy file(s) skipped, 0 fatal error(s)`. Revisión
+  manual: el documento distingue explícitamente, por capacidad, qué
+  garantiza `dryRun` hoy (prevención real solo para `ctx.effects.git`;
+  detección auditada — no prevención — para todo lo demás).
 
 ## dependency graph
 
