@@ -337,7 +337,11 @@ export const CommitPolicyOptionsSchema = z.object({
 		trailer: 'co-authored-by',
 		agentFormat: '${host}/${model}',
 	}),
-	cadence: CadenceSchema.default({ triggers: [], sliceScoping: true }),
+	cadence: CadenceSchema.default({
+		triggers: [],
+		sliceScoping: true,
+		allowForeignChanges: false,
+	}),
 	push: PushSchema.default({
 		enabled: false,
 		onCommit: false,
