@@ -6,7 +6,15 @@ import {
 import z from 'zod';
 
 import { createGithubSetupDeps } from './lib/github-setup';
-import { createIssueViaGh, fetchIssue, listIssues } from './lib/github-client';
+import {
+	createIssueViaGh,
+	fetchIssue,
+	listCodeScanningAlerts,
+	listDependabotAlerts,
+	listIssues,
+	listSecretScanningAlerts,
+	listSecurityAdvisories,
+} from './lib/github-client';
 import type { IGithubClient } from './lib/tools';
 import { buildIssuesToolRegistrations } from './lib/tools';
 import { buildSetupGithubRegistration } from './lib/tools/setup-github.tool';
@@ -21,6 +29,11 @@ const DEFAULT_SCAFFOLD_DIR = 'docs/mcp-vertex/proposals/retired/issues';
 const createGithubClient = (repo: string): IGithubClient => ({
 	fetchIssue: (number: number) => fetchIssue(repo, number),
 	listIssues: (opts) => listIssues(repo, opts ?? {}),
+	listDependabotAlerts: (opts) => listDependabotAlerts(repo, opts ?? {}),
+	listCodeScanningAlerts: (opts) => listCodeScanningAlerts(repo, opts ?? {}),
+	listSecretScanningAlerts: (opts) =>
+		listSecretScanningAlerts(repo, opts ?? {}),
+	listSecurityAdvisories: (opts) => listSecurityAdvisories(repo, opts ?? {}),
 });
 
 /**
@@ -72,7 +85,8 @@ const ISSUES_NEEDS_SETUP_BODY = [
  * register `issues` at all if `proposals` is not in the same load
  * set — no partial registration, no silently broken tools.
  *
- * The 5 `issues_*` tools (list/fetch/ingest/analyze/resolve) register
+ * The 9 `issues_*` tools (list/list_dependabot/list_code_scanning/
+ * list_secret_scanning/list_advisories/fetch/ingest/analyze/resolve) register
  * conditionally on the `repo` option being set; without it, the
  * plugin returns an `IKnowledgeEntry` (`issues-needs-repo-config`) so the
  * host agent can discover the missing-config situation via
@@ -85,7 +99,7 @@ export default definePlugin({
 		'REQUIRES proposals plugin. Opt-in GitHub issues ingest/analyse/promote workflow — host-only, not in the swarm preset.',
 	dependsOn: ['proposals'],
 	optionsSchema: z.object({
-		/** `'owner/name'`; required to register the 5 `issues_*` tools. */
+		/** `'owner/name'`; required to register the 9 `issues_*` tools. */
 		repo: z.string().optional(),
 		/** Defaults to `docs/mcp-vertex/proposals/retired/issues`. */
 		scaffoldDir: z.string().optional(),

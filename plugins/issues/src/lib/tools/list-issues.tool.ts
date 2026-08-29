@@ -18,14 +18,34 @@ import { toolError, toolOk } from '@mcp-vertex/core/public';
 
 import type {
 	IFetchIssueResult,
+	IListCodeScanningAlertsOptions,
+	IListCodeScanningAlertsResult,
+	IListDependabotAlertsOptions,
+	IListDependabotAlertsResult,
 	IListIssuesOptions,
 	IListIssuesResult,
+	IListSecretScanningAlertsOptions,
+	IListSecretScanningAlertsResult,
+	IListSecurityAdvisoriesOptions,
+	IListSecurityAdvisoriesResult,
 } from '../github-client';
 import type { IGithubIssueSummary } from '../contracts';
 
 export interface IGithubClient {
 	fetchIssue(number: number): Promise<IFetchIssueResult>;
 	listIssues(opts?: IListIssuesOptions): Promise<IListIssuesResult>;
+	listDependabotAlerts(
+		opts?: IListDependabotAlertsOptions,
+	): Promise<IListDependabotAlertsResult>;
+	listCodeScanningAlerts(
+		opts?: IListCodeScanningAlertsOptions,
+	): Promise<IListCodeScanningAlertsResult>;
+	listSecretScanningAlerts(
+		opts?: IListSecretScanningAlertsOptions,
+	): Promise<IListSecretScanningAlertsResult>;
+	listSecurityAdvisories(
+		opts?: IListSecurityAdvisoriesOptions,
+	): Promise<IListSecurityAdvisoriesResult>;
 }
 
 export interface IListIssuesToolOptions {
