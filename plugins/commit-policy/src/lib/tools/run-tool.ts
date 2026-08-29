@@ -18,6 +18,7 @@ import {
 	type ICommitDriverOptions,
 	type ICommitDriverResult,
 } from '../services/commit-driver';
+import type { IPushDriverResult } from '../services/push-driver';
 import { gitDirtyFileCount } from '../services/git-extra';
 import { readCurrentSliceSnapshot } from '../triggers/slice-listener';
 import { createThresholdTracker } from '../triggers/threshold-tracker';
@@ -32,6 +33,7 @@ export interface IRunToolOptions extends ICommitDriverOptions {
 	readonly workspaceRoot: string;
 	readonly docsDir: string;
 	readonly locale?: string | undefined;
+	readonly onCommitSucceeded?: () => Promise<IPushDriverResult | null>;
 }
 
 const InputSchema = z.object({
@@ -463,10 +465,40 @@ export const runCommitPolicyRun = async (
 						files: [] as readonly string[],
 					};
 
-	const result: ICommitDriverResult = await runCommitDriver(
+	let result: ICommitDriverResult = await runCommitDriver(
 		commitInput,
 		options,
 	);
+	if (result.committed && options.onCommitSucceeded !== undefined) {
+		try {
+			const pushResult = await options.onCommitSucceeded();
+			if (pushResult !== null) {
+				if (!pushResult.ok) {
+					return toolError(
+						JSON.stringify({
+							committed: true,
+							pushed: false,
+							hash: result.hash,
+							reason: pushResult.refusal,
+						}),
+						'Commit completed locally but the configured push failed; inspect the reason and retry push.',
+					);
+				}
+				result = { ...result, pushed: true };
+			}
+		} catch (error) {
+			return toolError(
+				JSON.stringify({
+					committed: true,
+					pushed: false,
+					hash: result.hash,
+					reason:
+						error instanceof Error ? error.message : String(error),
+				}),
+				'Commit completed locally but the configured push failed; inspect the reason and retry push.',
+			);
+		}
+	}
 
 	const parseResult = OutputSchema.safeParse({
 		ok: result.committed && !result.refusal,

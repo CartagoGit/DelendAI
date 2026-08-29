@@ -641,7 +641,7 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 				'proposal_diagnose',
 			],
 			['work', 'orchestrate'],
-			[],
+			['resource:proposal-templates'],
 			['multi-agent-loop', 'proposals-workflow'],
 			[],
 			[],
