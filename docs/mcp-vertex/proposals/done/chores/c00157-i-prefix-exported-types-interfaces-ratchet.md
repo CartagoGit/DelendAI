@@ -2,7 +2,7 @@
 id: c00157
 title: "Ratchet lint: todo `type`/`interface` exportado empieza por `I`"
 kind: chore
-status: ready
+status: done
 type: proposal
 track: conventions
 date: 2026-08-28

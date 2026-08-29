@@ -2,7 +2,7 @@
 id: x00288
 title: "AUD-D01 — lint de fronteras de efectos: prohibir imports directos de node:child_process/fs/net/http en plugins"
 kind: fix
-status: ready
+status: done
 type: fix
 track: security
 date: 2026-08-27
