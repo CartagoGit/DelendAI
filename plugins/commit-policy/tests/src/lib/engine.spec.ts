@@ -42,6 +42,7 @@ const fail = (reason: string): IGitRunResult => ({
 const buildRunner = (
 	currentBranch: string | undefined,
 	pushOk: boolean,
+	dirty: readonly string[] = [],
 ): IGitRunner => {
 	const handler = (args: readonly string[]): Promise<IGitRunResult> => {
 		if (args[0] === 'rev-parse' && args.includes('--abbrev-ref')) {
@@ -53,6 +54,10 @@ const buildRunner = (
 		}
 		if (args[0] === 'commit') return Promise.resolve(ok('committed\n'));
 		if (args[0] === 'add') return Promise.resolve(ok('added\n'));
+		if (args[0] === 'status')
+			return Promise.resolve(
+				ok(dirty.map((path) => ` M ${path}`).join('\n') + '\n'),
+			);
 		if (args[0] === 'push')
 			return Promise.resolve(
 				pushOk ? ok('pushed\n') : fail('push refused'),
@@ -219,6 +224,38 @@ describe('CommitPolicyEngine (f00182)', () => {
 			expect(result.committed).toBe(true);
 		}
 		expect(hookFired).toBe(true);
+	});
+
+	it('uses the shared workspace snapshot when foreign changes are allowed', async () => {
+		const runner = buildRunner('feature/x', true, [
+			'agent-a.ts',
+			'agent-b.ts',
+		]);
+		const engine = createCommitPolicyEngine({
+			driver: {
+				run: runner,
+				policy: basePolicy({
+					cadence: {
+						triggers: [],
+						sliceScoping: true,
+						allowForeignChanges: true,
+					},
+				}),
+				identityCtx: { run: runner, envVars: Object.freeze({}) },
+				auditAgent: null,
+			},
+			branchPolicy: DEFAULT_BRANCH_POLICY,
+		});
+
+		const result = await engine.handle({
+			kind: 'slice',
+			proposalId: 'f00181',
+			sliceId: 'shared-snapshot',
+			files: ['agent-a.ts'],
+			eventId: 'shared-snapshot-1',
+		});
+
+		expect(result.ack).toBe('OK');
 	});
 
 	it('waits for a successful push before returning OK', async () => {
