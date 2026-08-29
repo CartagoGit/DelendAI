@@ -2,7 +2,7 @@
 id: c00158
 title: "Helper tipado de tests (`@mcp-vertex/test-kit`) + ratchet contra `as unknown` en specs"
 kind: chore
-status: ready
+status: done
 type: proposal
 track: conventions
 date: 2026-08-29
@@ -89,17 +89,17 @@ drenarla de golpe arriesga cambiar el significado de los tests.
 
 ### S1 — Paquete `@mcp-vertex/test-kit` con `fakePartial`
 - **Status**: done
-- **Files**: `packages/test-kit/**`, `tsconfig.base.json`, `vitest.shared.ts`
+- **Files**: `packages/test-kit/src/lib/fake-partial.helper.ts`, `packages/test-kit/src/lib/fake-tool-server.helper.ts`, `packages/test-kit/src/lib/as-array.helper.ts`, `packages/test-kit/src/contracts/interfaces/fake-partial.interface.ts`, `packages/test-kit/package.json`, `tsconfig.base.json`, `vitest.shared.ts`
 - **Gate**: `bunx vitest run --project test-kit` y `tsc --noEmit -p packages/test-kit/tsconfig.json`
 
 ### S2 — Ratchet `test-unsafe-casts` cableado en `validate` y CI
 - **Status**: done
-- **Files**: `tools/scripts/lint/test-unsafe-casts.script.ts`, `.script.spec.ts`, `.baseline.json`, `package.json`, `.github/workflows/ci.yml`
+- **Files**: `tools/scripts/lint/test-unsafe-casts.script.ts`, `tools/scripts/lint/test-unsafe-casts.script.spec.ts`, `tools/scripts/lint/test-unsafe-casts.baseline.json`, `package.json`, `.github/workflows/ci.yml`
 - **Gate**: `bun tools/scripts/lint/test-unsafe-casts.script.ts`
 
 ### S3 — Migración de los specs de 5 plugins al helper
 - **Status**: done
-- **Files**: `plugins/logs/tests/**`, `plugins/quality/tests/**`, `plugins/completion/tests/**`, `plugins/proposals/tests/**`, `plugins/observability/src/lib/**/*.spec.ts`
+- **Files**: `plugins/logs/tests/tools.spec.ts`, `plugins/quality/tests/src/lib/run-all.spec.ts`, `plugins/completion/tests/src/lib/completion-tools.spec.ts`, `plugins/proposals/tests/src/lib/auto-work.spec.ts`, `plugins/observability/src/lib/tools/obs-errors.tool.spec.ts`
 - **Gate**: `bunx vitest run --project logs --project quality --project completion --project proposals --project observability`
 
 ## dependency graph

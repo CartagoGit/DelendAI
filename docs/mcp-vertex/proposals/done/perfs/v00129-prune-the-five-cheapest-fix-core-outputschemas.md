@@ -2,7 +2,7 @@
 id: v00129
 title: "Podar los 5 outputSchema más baratos de arreglar del core (AUD-B01)"
 kind: perf
-status: ready
+status: done
 type: proposal
 track: tokens
 date: 2026-08-28
