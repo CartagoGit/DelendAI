@@ -91,6 +91,7 @@ const buildPolicy = (
 		stash: { enabled: false },
 		cadence: {
 			sliceScoping: base.cadence.sliceScoping,
+			allowForeignChanges: base.cadence.allowForeignChanges,
 			triggers: overrides.cadence?.triggers ?? base.cadence.triggers,
 		},
 		push: { ...base.push, ...(overrides.push ?? {}) },
