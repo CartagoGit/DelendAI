@@ -97,11 +97,23 @@ const SKIP_LINE_PREFIXES: readonly RegExp[] = [
 	/^[ \t]*\*/, // block comment continuation
 ];
 
+const isCoreOwnedPath = (relPath: string): boolean => {
+	const parts = relPath
+		.split('/')
+		.filter((part) => part !== '' && part !== '.');
+	for (let i = 0; i < parts.length - 1; i += 1) {
+		if (parts[i] === 'packages' && parts[i + 1] === 'core') return true;
+	}
+	return false;
+};
+
 export const scanText = (
 	text: string,
 	absPath: string,
 	relPath: string,
 ): IInternalImportFinding[] => {
+	if (isCoreOwnedPath(relPath)) return [];
+
 	const findings: IInternalImportFinding[] = [];
 	const lines = text.split(/\r?\n/);
 

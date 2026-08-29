@@ -100,6 +100,18 @@ describe('no-internal-imports.script (b00238)', () => {
 			expect(findings).toEqual([]);
 		});
 
+		it('permits internal imports inside packages/core', () => {
+			const findings = scanText(
+				[
+					`import { fooInternal } from "@mcp-vertex/core/public";`,
+					`import { x } from "@mcp-vertex/core/_internal/foo";`,
+				].join('\n'),
+				'/repo/packages/core/src/public/index.ts',
+				'packages/core/src/public/index.ts',
+			);
+			expect(findings).toEqual([]);
+		});
+
 		it('skips line comments even when they mention *Internal', () => {
 			const findings = scanText(
 				`// fooInternal is mentioned here for context\nimport { foo } from "@mcp-vertex/core/public";\n`,
@@ -147,6 +159,19 @@ describe('no-internal-imports.script (b00238)', () => {
 			const root = trackRoot(
 				await makeTmpTree({
 					'clean.ts': `import { foo } from "@mcp-vertex/core/public";\n`,
+				}),
+			);
+			const findings = await detectInternalImports(root);
+			expect(findings).toEqual([]);
+		});
+
+		it('permits violations-shaped imports in packages/core paths', async () => {
+			const root = trackRoot(
+				await makeTmpTree({
+					'packages/core/src/internal.ts': [
+						`import { fooInternal } from "@mcp-vertex/core/public";`,
+						`import { x } from "@mcp-vertex/core/_internal/y";`,
+					].join('\n'),
 				}),
 			);
 			const findings = await detectInternalImports(root);
