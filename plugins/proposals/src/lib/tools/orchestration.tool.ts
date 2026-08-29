@@ -18,6 +18,7 @@ import type {
 } from '../swarm/proposal-slice-plan';
 import { runAgentNames } from './agent-names.tool';
 import type { IAgentNamesToolOptions } from './agent-names.tool';
+import { gcZombies } from '../agents/zombie-reconcile';
 
 const GATES: readonly ISliceGate[] = ['lint', 'type', 'e2e', 'none'];
 const asGate = (value: string | undefined): ISliceGate =>
@@ -105,6 +106,8 @@ export interface IDelegateToolOptions {
 	readonly namespacePrefix: string;
 	readonly agentNames: IAgentNamesToolOptions;
 	readonly lockPathAbs: string;
+	/** Reconcile abandoned registry assignments before consuming a pool slot. */
+	readonly autoReconcile?: boolean;
 	/**
 	 * x00051: when present and `enabled`, `delegate` creates a per-agent
 	 * `git worktree` + branch (`agent/<assigned-name>`) before claiming
@@ -135,6 +138,7 @@ const DELEGATE_OUTPUT_SCHEMA = z.object({
 	slot: z.string().optional(),
 	files: z.array(z.string()).optional(),
 	locked: z.boolean().optional(),
+	subscriptionId: z.string().optional(),
 	worktree: z
 		.object({
 			path: z.string(),
@@ -201,6 +205,14 @@ export const buildDelegateRegistration = (
 				host?: string | undefined;
 				model?: string | undefined;
 			}) => {
+				if (options.autoReconcile !== false) {
+					await gcZombies(
+						options.agentNames.registryPathAbs,
+						options.lockPathAbs,
+						options.agentNames.queuePathAbs,
+						{ dryRun: false },
+					);
+				}
 				const assignResult = await runAgentNames(
 					{
 						action: 'assign',
@@ -218,7 +230,12 @@ export const buildDelegateRegistration = (
 				);
 				const assigned = JSON.parse(
 					assignResult.content[0]?.text ?? '{}',
-				) as { agent_name?: string; blocked?: boolean; error?: string };
+				) as {
+					agent_name?: string;
+					blocked?: boolean;
+					error?: string;
+					subscription_id?: string;
+				};
 				if (assigned.agent_name === undefined) {
 					return toolJson({
 						ok: false,
@@ -327,6 +344,7 @@ export const buildDelegateRegistration = (
 					slot: args.slot,
 					files: args.files,
 					locked: true,
+					subscriptionId: assigned.subscription_id,
 					...(worktreeInfo ? { worktree: worktreeInfo } : {}),
 					...(worktreeInfo ? { cwd: worktreeInfo.path } : {}),
 					instruction: `You are "${assigned.agent_name}". ${whereClause}${workspaceGuard}Edit ONLY ${args.files.join(', ')}; release the lock (agent_lock release, task_id "${args.taskId}") when done.`,

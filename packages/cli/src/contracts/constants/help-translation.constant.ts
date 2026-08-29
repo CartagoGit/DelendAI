@@ -180,6 +180,7 @@ const ENGLISH_COMMAND_SUMMARIES: Readonly<Record<string, string>> = {
 		'Report recorded tool usage/cost grouped by provider, plugin, agent or extension.',
 	'usage-tracking clear':
 		'Clear the recorded usage log + summary (destructive; requires --confirm).',
+	kpis: 'Show project health, usage, economics, efficiency and audit KPIs.',
 };
 
 export const HELP_TRANSLATIONS: Readonly<Record<string, IHelpTranslation>> = {

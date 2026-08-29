@@ -205,6 +205,12 @@ export const GENERATED_WEB_PLUGIN_CATALOG =
 		"category": "code-intelligence"
 	},
 	{
+		"slug": "project-kpis",
+		"displayName": "Project Kpis",
+		"purpose": "Versioned project KPI snapshots and observability views across health, usage, economics and delivery.",
+		"category": "observability"
+	},
+	{
 		"slug": "prompt-eval",
 		"displayName": "Prompt Eval",
 		"purpose": "Prompt-eval harness (golden prompts, scoring).",

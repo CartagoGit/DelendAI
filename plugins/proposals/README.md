@@ -21,21 +21,21 @@ coordination — including naming the whole agent tree (orchestrator included).
 
 ## Tools (namespaced `proposals_*` by default)
 
-| Tool | Purpose |
-|---|---|
-| `auto_work` | One call → next proposal + a compact ordered action plan. Start here. |
-| `continue_proposal` | Next proposal (mode `auto`), or a parallel slice plan/claim (`plan`/`claim`). |
-| `agent_lock` | Claim files before editing, release after (`claim`/`release`/`status`/`gc`). |
-| `agent_worktree` | Isolate a concurrent agent into its own git worktree + branch (`create`/`list`/`remove`) — use when 2+ agents share this repo, so `git add`/`commit` never race on a shared `.git/index`. |
-| `agent_names` | Name the whole agent tree — orchestrator (depth 0) included, not only subagents. |
-| `task_queue` | Multi-agent coordination queue (`enqueue`/`dequeue`/`subscribe`/`report`). |
-| `round_context` | Persisted multi-agent round digest + staleness, for resumed work. |
-| `sync_proposals` | Rebuild the proposal index after creating/renaming files. |
-| `get_proposal_workflow` | Families, locations, naming and template as JSON. |
-| `create_proposal` / `close_slice` | Author a proposal (frontmatter + disjoint slices); mark a slice done + release its lock. |
-| `proposal_review` | Peer-review loop: `submit` a finished slice → a **different** agent `approve`s (→ done) or `request_changes` (→ reworkable); repeat until no objection. |
-| `proposal_adopt` | Make an existing proposals folder followable: canonical layout + a scan of the real folder + a plan to organize it for mcp-vertex (read-only; you run the steps). |
-| `proposals_close_plan` | Close a `type: plan` proposal (prefix `q`). Refuses with a `blockers[]` list until every contained proposal, sub-plan, and own slice is done + peer-reviewed. `dryRun: true` runs the preflight without applying the transition. See **Plan-of-plans (q00001)** below. |
+| Tool                              | Purpose                                                                                                                                                                                                                                                                |
+| --------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `auto_work`                       | One call → next proposal + a compact ordered action plan. Start here.                                                                                                                                                                                                  |
+| `continue_proposal`               | Next proposal (mode `auto`), or a parallel slice plan/claim (`plan`/`claim`).                                                                                                                                                                                          |
+| `agent_lock`                      | Claim files before editing, release after (`claim`/`release`/`status`/`gc`).                                                                                                                                                                                           |
+| `agent_worktree`                  | Isolate a concurrent agent into its own git worktree + branch (`create`/`list`/`remove`) — use when 2+ agents share this repo, so `git add`/`commit` never race on a shared `.git/index`.                                                                              |
+| `agent_names`                     | Name the whole agent tree — orchestrator (depth 0) included, not only subagents.                                                                                                                                                                                       |
+| `task_queue`                      | Multi-agent coordination queue (`enqueue`/`dequeue`/`subscribe`/`report`).                                                                                                                                                                                             |
+| `round_context`                   | Persisted multi-agent round digest + staleness, for resumed work.                                                                                                                                                                                                      |
+| `sync_proposals`                  | Rebuild the proposal index after creating/renaming files.                                                                                                                                                                                                              |
+| `get_proposal_workflow`           | Families, locations, naming and template as JSON.                                                                                                                                                                                                                      |
+| `create_proposal` / `close_slice` | Author a proposal (frontmatter + disjoint slices); mark a slice done + release its lock.                                                                                                                                                                               |
+| `proposal_review`                 | Peer-review loop: `submit` a finished slice → a **different** agent `approve`s (→ done) or `request_changes` (→ reworkable); repeat until no objection.                                                                                                                |
+| `proposal_adopt`                  | Make an existing proposals folder followable: canonical layout + a scan of the real folder + a plan to organize it for mcp-vertex (read-only; you run the steps).                                                                                                      |
+| `proposals_close_plan`            | Close a `type: plan` proposal (prefix `q`). Refuses with a `blockers[]` list until every contained proposal, sub-plan, and own slice is done + peer-reviewed. `dryRun: true` runs the preflight without applying the transition. See **Plan-of-plans (q00001)** below. |
 
 ### Checkpoint advisories (f00156)
 
@@ -83,11 +83,11 @@ claimed files when the orchestrator closes the slice. Three modes,
 resolved by `input.persist` (per call) > `options.persist.mode` (per
 project) > `'none'` (default):
 
-| Mode | What `auto_work` does at slice close |
-|---|---|
-| `none` (default) | nothing — preserves the "analyse before committing" workflow |
-| `commit` | `git add <slice files> && git commit -m "<template>"` |
-| `commit-and-push` | the above + `git push <pushTarget>` |
+| Mode              | What `auto_work` does at slice close                         |
+| ----------------- | ------------------------------------------------------------ |
+| `none` (default)  | nothing — preserves the "analyse before committing" workflow |
+| `commit`          | `git add <slice files> && git commit -m "<template>"`        |
+| `commit-and-push` | the above + `git push <pushTarget>`                          |
 
 ```jsonc
 {
@@ -122,6 +122,39 @@ project) > `'none'` (default):
   unrelated changes.
 
 The full spec lives in [docs/mcp-vertex/proposals/l109-feat-auto-work-persist-modes.md](../../docs/mcp-vertex/proposals/l109-feat-auto-work-persist-modes.md).
+
+### Proposal folder policy
+
+The plugin creates the complete status layout when `proposal_adopt` is called
+with `apply: true`. By default, `ready/` and `done/` are divided into kind
+subfolders (`ready/feats/`, `done/fixes/`, and so on); the other statuses stay
+flat. Every status can be configured independently with `flat` or `by-kind`.
+
+```jsonc
+{
+	"plugins": {
+		"proposals": {
+			"options": {
+				"folderPolicy": {
+					"ready": ["audit", "plan"],
+					"in-progress": "by-kind",
+					"review": "flat",
+					"done": "by-kind",
+					"paused": "flat",
+					"blocked": "flat",
+					"retired": "by-kind"
+				}
+			}
+		}
+	}
+}
+```
+
+Unspecified statuses use `flat`, except `ready` and `done`, whose defaults are
+`by-kind`. A list such as `["audit", "plan"]` creates only the corresponding
+kind folders; all other kinds remain directly under the status folder. The
+policy applies consistently to bootstrap, proposal creation, status
+transitions, automatic blocked resolution, and registry reconciliation.
 
 ## Paths
 

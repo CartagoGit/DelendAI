@@ -1,6 +1,7 @@
 import { basename, dirname } from 'node:path';
 
 import { SafeWorkspaceReader } from '@mcp-vertex/core/public';
+import { runAgentLockEngine } from '../locks/agent-lock-engine';
 import { createAgentRegistryStore } from '../shared/agent-registry-store';
 import type { IAgentRegistry } from '../shared/agent-registry-store';
 
@@ -33,7 +34,9 @@ export type IZombieReason =
 	/** a00069 S6: assignment already marked `status: orphan`. */
 	| 'status_orphan'
 	/** a00069 S6: `adopted: false` past the orphan TTL (default 7d). */
-	| 'stale_not_adopted';
+	| 'stale_not_adopted'
+	/** Subscription lease expired without a renewal heartbeat. */
+	| 'lease_expired';
 
 export type IZombieRecommendedAction =
 	| 'force_release' // eliminar del registry + emitir evento
@@ -115,6 +118,10 @@ export function classifyZombies(
 
 	for (const a of registry.assignments) {
 		const lastSeenTime = Date.parse(a.last_seen);
+		const leaseUntil =
+			typeof a.lease_until === 'string'
+				? Date.parse(a.lease_until)
+				: Number.NaN;
 		const ageMinutes = Number.isNaN(lastSeenTime)
 			? Number.POSITIVE_INFINITY
 			: (checkMs - lastSeenTime) / 60_000;
@@ -132,6 +139,21 @@ export function classifyZombies(
 				lastSeen,
 				ageMinutes: Number.isFinite(ageMinutes) ? ageMinutes : 0,
 				reason: 'status_orphan',
+				recommendedAction: 'force_release',
+			});
+			continue;
+		}
+
+		// Subscription leases are authoritative for new assignments, including
+		// pooled names where `adopted` is false.
+		if (!Number.isNaN(leaseUntil) && checkMs >= leaseUntil) {
+			orphans.push({
+				agentName: a.agent_name,
+				taskId: a.task_id,
+				agentSlot: a.agent_slot,
+				lastSeen,
+				ageMinutes: Number.isFinite(ageMinutes) ? ageMinutes : 0,
+				reason: 'lease_expired',
 				recommendedAction: 'force_release',
 			});
 			continue;
@@ -253,6 +275,20 @@ export async function gcZombies(
 				);
 				if (registry.assignments.length < before) {
 					mutated = true;
+				}
+
+				const lockEntry = lockSnapshot.in_flight.find(
+					(entry) => entry.task_id === orphan.taskId,
+				);
+				if (lockEntry !== undefined) {
+					await runAgentLockEngine(
+						{
+							action: 'release',
+							task_id: orphan.taskId,
+							agent: lockEntry.agent,
+						},
+						{ lockPath },
+					);
 				}
 
 				if (options?.queueEmitter) {

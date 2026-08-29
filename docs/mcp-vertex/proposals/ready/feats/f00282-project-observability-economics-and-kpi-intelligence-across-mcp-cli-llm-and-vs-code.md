@@ -39,10 +39,12 @@ Users need to understand both whether their project is progressing and whether t
   - "The snapshot distinguishes measured, estimated, unavailable and not-configured values."
   - "The aggregation core consumes existing public plugin services or adapters instead of duplicating scanners."
   - "The aggregate output is deterministic, bounded and passes its Zod output schema."
-- review-state: in_review
+- review-state: done
 - review-implementer: mcp-vertex-orchestrator
+- review-reviewer: delivery_verifier
+- review-log: approved by delivery_verifier — Independent review passed: versioned snapshot contract, Zod schema, deterministic bounded aggregation, and focal validations confirmed.
 ### S2 — Detailed invocation telemetry by plugin model agent request and outcome
-- **Status**: pending
+- **Status**: done
 - **DependsOn**: [S1]
 - **Files**: `plugins/usage-tracking/src/index.ts`, `plugins/usage-tracking/src/lib/contracts/invocation-record.interface.ts`, `plugins/usage-tracking/src/lib/services/invocation-recorder.service.ts`, `plugins/usage-tracking/src/lib/services/usage-rollup.service.ts`, `plugins/usage-tracking/tests/src/invocation-telemetry.spec.ts`
 - **Gate**: type
@@ -51,9 +53,12 @@ Users need to understand both whether their project is progressing and whether t
   - "Rollups support total calls, successful calls, failures, retries or iterations, latency and token fields by plugin, tool, model, agent, request type and time window."
   - "Errors and schema/result incongruences are represented as structured redacted records with correlation identifiers."
   - "Telemetry writes remain non-blocking and never persist prompts, response bodies, source content, credentials or secrets."
-
+- review-state: done
+- review-implementer: mcp-vertex-orchestrator
+- review-reviewer: delivery_verifier
+- review-log: approved by delivery_verifier — Independent review passed: invocation attribution, rollups, redacted error telemetry with correlation IDs, and non-blocking buffered writes verified against implementation and focal validations.
 ### S3 — Durable snapshots history trends and cost savings evidence
-- **Status**: pending
+- **Status**: done
 - **DependsOn**: [S1, S2]
 - **Files**: `plugins/project-kpis/src/lib/services/kpi-history.service.ts`, `plugins/project-kpis/src/lib/services/kpi-trends.service.ts`, `plugins/project-kpis/src/lib/contracts/kpi-history.interface.ts`, `plugins/project-kpis/tests/src/kpi-history.spec.ts`, `plugins/project-kpis/README.md`
 - **Gate**: type
@@ -62,7 +67,8 @@ Users need to understand both whether their project is progressing and whether t
   - "History supports daily or configurable windows and computes up, down, stable and unknown trends."
   - "Costs separate provider-reported usage, configured price estimates, subscription usage and unavailable values."
   - "Token savings and financial savings are reported only when a baseline and source data exist, including the methodology and confidence status."
-
+- review-state: in_review
+- review-implementer: mcp-vertex-orchestrator
 ### S4 — CLI human JSON watch and audit reports
 - **Status**: pending
 - **DependsOn**: [S1, S2, S3]

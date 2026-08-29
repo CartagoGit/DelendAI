@@ -28,8 +28,9 @@ import {
 import { runAcceptanceCriteria } from '../proposals/proposal-acceptance';
 import {
 	PROPOSAL_KIND_BY_PREFIX,
-	STATUS_TO_FOLDER,
+	type IProposalKind,
 } from '../contracts/constants/proposal-glossary.constant';
+import { proposalFolderFor } from '../contracts/proposal-folder-policy';
 import {
 	kindMatchesId,
 	newProposalIdSchema,
@@ -438,6 +439,7 @@ export const createProposalDocument = async (
 		| 'counterPathAbs'
 		| 'layout'
 		| 'extraFolders'
+		| 'folderPolicy'
 	>,
 ): Promise<ICreateProposalWriteResult | ICreateProposalWriteError> => {
 	let id: string;
@@ -512,8 +514,10 @@ export const createProposalDocument = async (
 			nextAction: 'Make each slice edit a disjoint set of files.',
 		};
 	}
-	const inferredKind =
-		args.kind ?? (PROPOSAL_KIND_BY_PREFIX[id[0] ?? ''] || 'feat');
+	const inferredKind: IProposalKind =
+		args.kind !== undefined && prefixForKind(args.kind) !== null
+			? (args.kind as IProposalKind)
+			: (PROPOSAL_KIND_BY_PREFIX[id[0] ?? ''] ?? 'feat');
 	const date = new Date().toISOString().slice(0, ISO_DATE_LENGTH);
 	const status = canonicalStatus(args.status);
 	const acceptanceLines = slices.flatMap((s) =>
@@ -567,7 +571,7 @@ export const createProposalDocument = async (
 			: ['- TODO: observable acceptance criteria.']),
 		'',
 	].join('\n');
-	const fileRel = `${STATUS_TO_FOLDER[status]}/${id}-${slugFromTitle(args.title, id)}.md`;
+	const fileRel = `${proposalFolderFor(status, inferredKind, options.folderPolicy)}/${id}-${slugFromTitle(args.title, id)}.md`;
 	const absPath = join(options.proposalsDirAbs, ...fileRel.split('/'));
 	const { text: safeBody, redactions } = redactSecrets(body);
 	await writeFileAtomic(absPath, safeBody);
@@ -575,6 +579,8 @@ export const createProposalDocument = async (
 		options.workspaceRoot,
 		options.layout,
 		options.extraFolders ?? [],
+		undefined,
+		options.folderPolicy,
 	);
 	const syncEntry = sync.proposals.find((proposal) => proposal.id === id);
 	const finalFileRel = syncEntry ? syncEntry.file : fileRel;
@@ -992,7 +998,6 @@ export const buildCloseSliceRegistration = (
 				}
 				const { entry, docPath } = resolved;
 				const closeSliceOptions = options as ICloseSliceValidateOptions;
-				let validateEvidenceFresh = false;
 				if (args.force !== true) {
 					const validateEvidence =
 						await resolveRecentValidateEvidence({
@@ -1014,7 +1019,6 @@ export const buildCloseSliceRegistration = (
 						};
 						return toolErrorEnvelope(envelope);
 					}
-					validateEvidenceFresh = true;
 				}
 				let persisted: IPersistResult = {
 					committed: false,
@@ -1062,10 +1066,7 @@ export const buildCloseSliceRegistration = (
 						// refuse the close. Hosts that do not wire the quality
 						// plugin skip this check entirely.
 						if (typeof options.runQuality === 'function') {
-							const quality = await options.runQuality({
-								skipWhenValidateEvidenceFresh:
-									validateEvidenceFresh,
-							});
+							const quality = await options.runQuality();
 							if (quality.severity === 'error') {
 								const err: ICloseSliceThrownError =
 									Object.assign(

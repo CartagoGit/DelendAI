@@ -335,6 +335,15 @@ export const GENERATED_FIRST_PARTY_MANIFEST_ENTRIES: readonly IPluginRegistryEnt
 		},
 		{
 			origin: 'first-party',
+			id: 'project-kpis',
+			package: '@mcp-vertex/project-kpis',
+			summary: 'Versioned project KPI snapshots and observability views across health, usage, economics and delivery.',
+			tags: ['kpi', 'observability', 'economics', 'project-health'],
+			permissions: ['filesystem-read', 'filesystem-write'],
+			tokenBudgetBytes: 2700,
+		},
+		{
+			origin: 'first-party',
 			id: 'prompt-eval',
 			package: '@mcp-vertex/prompt-eval',
 			summary: 'Prompt-eval harness (golden prompts, scoring).',

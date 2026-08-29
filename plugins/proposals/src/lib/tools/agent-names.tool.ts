@@ -1,4 +1,5 @@
 import z from 'zod';
+import { randomUUID } from 'node:crypto';
 
 import type {
 	IResolvedHostIdentity,
@@ -77,6 +78,7 @@ export interface IAgentNamesArgs {
 	readonly parent_task_id?: string | null | undefined;
 	readonly topic?: string | undefined;
 	readonly now?: string | undefined;
+	readonly subscription_id?: string | undefined;
 	readonly dry_run?: boolean | undefined;
 	readonly stale_after_minutes?: number | undefined;
 	/** f00082 S3: composite-identity fields, persisted on assign. */
@@ -91,23 +93,6 @@ export interface IAgentNamesArgs {
 // structuredContent derivation always applies.
 const json = (value: unknown, isError = false): IToolTextResult =>
 	isError ? { ...toolJson(value), isError: true } : toolJson(value);
-
-const AGENT_ASSIGNMENT_SCHEMA = z.object({
-	task_id: z.string(),
-	agent_name: z.string(),
-	agent_slot: z.string(),
-	parent_task_id: z.string().nullable(),
-	depth: z.number(),
-	topic: z.string(),
-	adopted: z.boolean(),
-	assigned_at: z.string(),
-	last_seen: z.string(),
-	cooldown_until: z.string().nullable(),
-	status: z.enum(['active', 'cooldown', 'orphan']),
-	host: z.string().nullable().optional(),
-	model: z.string().nullable().optional(),
-	children: z.array(z.unknown()).optional(),
-});
 
 /** f00082 S3: the closed set of known hosts (mirrors core AgentHost). */
 const KNOWN_HOSTS = [
@@ -134,28 +119,6 @@ const coerceHost = (
 		? (host as NonNullable<IAgentAssignment['host']>)
 		: 'unknown';
 };
-
-const AGENT_ADOPTION_SCHEMA = z.object({
-	name: z.string(),
-	task_id: z.string(),
-});
-
-const ZOMBIE_ORPHAN_SCHEMA = z.object({
-	agentName: z.string(),
-	taskId: z.string(),
-	agentSlot: z.string(),
-	lastSeen: z.string(),
-	ageMinutes: z.number(),
-	reason: z.enum([
-		'cooldown_null',
-		'stale_no_lock',
-		'stale_with_orphaned_lock',
-		// a00069 S6
-		'status_orphan',
-		'stale_not_adopted',
-	]),
-	recommendedAction: z.enum(['force_release', 'extend_cooldown', 'escalate']),
-});
 
 const AGENT_NAMES_OUTPUT_SCHEMA = z
 	.object({
@@ -346,7 +309,23 @@ const runAgentNamesImpl = async (
 			const r = await store.read();
 			const entry = r.assignments.find((a) => a.task_id === args.task_id);
 			if (!entry) return json({ error: 'unknown task_id' }, true);
+			if (
+				entry.subscription_id !== undefined &&
+				entry.subscription_id !== args.subscription_id
+			)
+				return json(
+					{
+						error: 'subscription_id mismatch',
+						nextAction:
+							'Reconnect with the subscription_id returned by assign.',
+					},
+					true,
+				);
 			entry.last_seen = at;
+			entry.lease_until = new Date(
+				new Date(at).getTime() +
+					AGENT_CONVENTIONS.lease_minutes * 60_000,
+			).toISOString();
 			await store.write(r);
 			return json(entry);
 		}
@@ -454,6 +433,15 @@ const runAgentNamesImpl = async (
 					},
 					true,
 				);
+			await gcZombies(
+				options.registryPathAbs,
+				options.lockPathAbs,
+				options.queuePathAbs,
+				{
+					dryRun: false,
+					now: new Date(at),
+				},
+			);
 			const r = await store.read();
 			const parent = args.parent_task_id
 				? (r.assignments.find(
@@ -528,6 +516,11 @@ const runAgentNamesImpl = async (
 				adopted,
 				assigned_at: at,
 				last_seen: at,
+				subscription_id: randomUUID(),
+				lease_until: new Date(
+					new Date(at).getTime() +
+						AGENT_CONVENTIONS.lease_minutes * 60_000,
+				).toISOString(),
 				cooldown_until: null,
 				status: 'active',
 				host: coerceHost(args.host ?? options.defaultIdentity?.host),
@@ -577,6 +570,7 @@ export const buildAgentNamesRegistration = (
 					now: z.string().optional(),
 					dry_run: z.boolean().optional(),
 					stale_after_minutes: z.number().optional(),
+					subscription_id: z.string().optional(),
 					host: z
 						.string()
 						.optional()

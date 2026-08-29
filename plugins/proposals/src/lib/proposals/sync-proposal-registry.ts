@@ -1,4 +1,4 @@
-import { mkdir, readdir, rename } from 'node:fs/promises';
+import { access, mkdir, readdir, rename } from 'node:fs/promises';
 import { basename, dirname, join, relative, resolve, sep } from 'node:path';
 
 import {
@@ -24,13 +24,16 @@ import {
 	PROPOSAL_KIND_BY_PREFIX,
 	PROPOSAL_STATUSES,
 	STATUS_TO_FOLDER,
-	doneFolderFor,
 	KIND_TO_DONE_SUBFOLDER,
 } from '../contracts/constants/proposal-glossary.constant';
 import type {
 	IProposalKind,
 	IProposalStatus as IGlossaryStatus,
 } from '../contracts/constants/proposal-glossary.constant';
+import {
+	proposalFolderFor,
+	type IProposalFolderPolicy,
+} from '../contracts/proposal-folder-policy';
 import { lintProposalMarkdown } from './proposal-scaffold-linter';
 import { createGitRunner } from '../shared/git-runner';
 import type { IGitRunner } from '../shared/git-runner';
@@ -460,7 +463,10 @@ const isNewSystemFilename = (filename: string): boolean => {
 const newSystemScanFolders = (): readonly string[] => {
 	const folders = new Set<string>(['', ...NEW_SYSTEM_FOLDERS]);
 	for (const sub of Object.values(KIND_TO_DONE_SUBFOLDER)) {
-		if (sub !== undefined) folders.add(join('done', sub));
+		if (sub !== undefined) {
+			folders.add(join('ready', sub));
+			folders.add(join('done', sub));
+		}
 	}
 	return [...folders];
 };
@@ -576,7 +582,7 @@ const scanAllProposalIds = async (
 				// Don't recurse into sibling cache dirs / unrelated
 				// sub-trees — keep the scan strictly under the
 				// proposalsDir the caller passed.
-				if (childAbs.startsWith(proposalsDirAbs + '/')) {
+				if (childAbs.startsWith(`${proposalsDirAbs}/`)) {
 					queue.push(childAbs);
 				}
 				continue;
@@ -614,14 +620,16 @@ const scanAllProposalIds = async (
 
 export const findProposalFolderDrift = async (
 	proposalsDirAbs: string,
+	folderPolicy?: IProposalFolderPolicy,
 ): Promise<readonly IProposalFolderDrift[]> => {
 	const files = await scanNewSystemFiles(proposalsDirAbs);
 	const drift: IProposalFolderDrift[] = [];
 	for (const file of files) {
-		const expectedFolder =
-			file.status === 'done'
-				? doneFolderFor(file.kind)
-				: STATUS_TO_FOLDER[file.status];
+		const expectedFolder = proposalFolderFor(
+			file.status,
+			file.kind,
+			folderPolicy,
+		);
 		if (file.folder === expectedFolder) continue;
 		drift.push({
 			id: file.id,
@@ -640,7 +648,17 @@ const moveFile = async (
 	fromAbs: string,
 	toAbs: string,
 ): Promise<void> => {
-	await mkdir(dirname(toAbs), { recursive: true });
+	const targetDir = dirname(toAbs);
+	await mkdir(targetDir, { recursive: true });
+	const gitkeep = join(targetDir, '.gitkeep');
+	if (
+		!(await access(gitkeep).then(
+			() => true,
+			() => false,
+		))
+	) {
+		await writeFileAtomic(gitkeep, '');
+	}
 	const result = await gitRunner(['mv', fromAbs, toAbs]);
 	if (!result.ok) await rename(fromAbs, toAbs);
 };
@@ -662,16 +680,18 @@ const setStatusLine = setFrontmatterStatus;
 export const reconcileFolders = async (
 	proposalsDirAbs: string,
 	gitRunner: IGitRunner,
+	folderPolicy?: IProposalFolderPolicy,
 ): Promise<{
 	moved: ReadonlyArray<{ id: string; from: string; to: string }>;
 }> => {
 	const files = await scanNewSystemFiles(proposalsDirAbs);
 	const moved: Array<{ id: string; from: string; to: string }> = [];
 	for (const file of files) {
-		const expectedFolder =
-			file.status === 'done'
-				? doneFolderFor(file.kind)
-				: STATUS_TO_FOLDER[file.status];
+		const expectedFolder = proposalFolderFor(
+			file.status,
+			file.kind,
+			folderPolicy,
+		);
 		if (file.folder === expectedFolder) continue;
 		const newAbsPath = join(proposalsDirAbs, expectedFolder, file.filename);
 		await moveFile(gitRunner, file.absPath, newAbsPath);
@@ -694,6 +714,7 @@ export const reconcileFolders = async (
 export const reconcileBlocked = async (
 	proposalsDirAbs: string,
 	gitRunner: IGitRunner,
+	folderPolicy?: IProposalFolderPolicy,
 ): Promise<{ resolved: ReadonlyArray<{ id: string }> }> => {
 	const files = await scanNewSystemFiles(proposalsDirAbs);
 	const statusById = new Map(files.map((f) => [f.id, f.status] as const));
@@ -724,7 +745,7 @@ export const reconcileBlocked = async (
 
 			const newAbsPath = join(
 				proposalsDirAbs,
-				STATUS_TO_FOLDER.ready,
+				proposalFolderFor('ready', file.kind, folderPolicy),
 				file.filename,
 			);
 			const updated = setStatusLine(raw, 'ready');
@@ -748,6 +769,7 @@ export async function syncProposalRegistry(
 	extraFolders: readonly string[] = [],
 	// f00016 S5: injectable for tests; defaults to a real `git mv` in `root`.
 	gitRunner: IGitRunner = createGitRunner(root),
+	folderPolicy?: IProposalFolderPolicy,
 ): Promise<IProposalRegistrySyncResult> {
 	const proposalsDir = resolve(root, layout.proposalsDir);
 	const indexPath = resolve(root, layout.proposalIndexFile);
@@ -763,13 +785,16 @@ export async function syncProposalRegistry(
 	// the same index must not lose entries (read FS → write index).
 	return withFileMutex(indexPath, async () => {
 		await reconcileAndArchiveCompletedRootProposals(proposalsDir);
-		const folderDriftBefore = await findProposalFolderDrift(proposalsDir);
+		const folderDriftBefore = await findProposalFolderDrift(
+			proposalsDir,
+			folderPolicy,
+		);
 		// f00016 S5: new-system files only (isGlossaryStatus gates it) — move
 		// anything whose folder disagrees with its status, then auto-resolve
 		// `blocked` → `ready` where every blocker has cleared. Runs before
 		// the scan below so the index reflects the post-reconciliation tree.
-		await reconcileFolders(proposalsDir, gitRunner);
-		await reconcileBlocked(proposalsDir, gitRunner);
+		await reconcileFolders(proposalsDir, gitRunner, folderPolicy);
+		await reconcileBlocked(proposalsDir, gitRunner, folderPolicy);
 		// Generic proposal-model subtrees only. Host folders (like `paused/demos`)
 		// arrive via `extraFolders`.
 		// f00016's 7 status folders (S5) overlap with the legacy list (`paused`
@@ -796,6 +821,9 @@ export async function syncProposalRegistry(
 			// dedup absorbs any overlap.
 			...Object.values(KIND_TO_DONE_SUBFOLDER).map((sub) =>
 				join(proposalsDir, 'done', sub),
+			),
+			...Object.values(KIND_TO_DONE_SUBFOLDER).map((sub) =>
+				join(proposalsDir, 'ready', sub),
 			),
 			// f00076 S1: archive sub-folders under `legacy/closed/<kind>/`
 			// mirror the `done/<kind>/` layout so reaped proposals stay

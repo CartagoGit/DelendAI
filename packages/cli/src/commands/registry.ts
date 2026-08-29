@@ -49,6 +49,7 @@ import {
 import { logsCommands } from './groups/logs';
 import { memoryCommands } from './groups/memory';
 import { notificationCommands } from './groups/notification';
+import { kpisCommands } from './kpis.command';
 import { proposalsCommands } from './groups/proposals';
 import { pluginsCommands } from './groups/plugins';
 import { qualityCommands } from './groups/quality';
@@ -518,6 +519,7 @@ export const registerAllCommands = async (): Promise<
 	...proposalsCommands,
 	...pluginsCommands,
 	...notificationCommands,
+	...kpisCommands,
 	...webFetchCommands,
 	...statusMarkerCommands,
 	...conventionsCommands,
