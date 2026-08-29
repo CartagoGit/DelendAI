@@ -13,11 +13,93 @@
 
 import { spawnSync } from 'node:child_process';
 
-export const main = (argv: readonly string[]): number => {
+interface IRunListEntry {
+	readonly databaseId?: number;
+	readonly conclusion?: string | null;
+	readonly name?: string;
+	readonly url?: string;
+}
+
+export interface IDemoRunSelection {
+	readonly runId: string;
+	readonly source: 'argv' | 'gh';
+	readonly name?: string;
+	readonly url?: string;
+}
+
+export interface IDemoGhResult {
+	readonly status: number | null;
+	readonly stdout: string;
+	readonly stderr: string;
+	readonly errorMessage?: string;
+}
+
+export type DemoGhRunner = (args: readonly string[]) => IDemoGhResult;
+
+export const defaultDemoGhRunner: DemoGhRunner = (args) => {
+	const result = spawnSync('gh', [...args], {
+		encoding: 'utf8',
+		maxBuffer: 1024 * 1024,
+	});
+	return {
+		status: result.status,
+		stdout: result.stdout ?? '',
+		stderr: result.stderr ?? '',
+		...(result.error?.message !== undefined
+			? { errorMessage: result.error.message }
+			: {}),
+	};
+};
+
+export const pickLatestFailedRun = (
+	jsonText: string,
+): IDemoRunSelection | null => {
+	const parsed = JSON.parse(jsonText) as readonly IRunListEntry[];
+	for (const run of parsed) {
+		if (run.conclusion !== 'failure') continue;
+		if (typeof run.databaseId !== 'number') continue;
+		return {
+			runId: String(run.databaseId),
+			source: 'gh',
+			...(run.name !== undefined ? { name: run.name } : {}),
+			...(run.url !== undefined ? { url: run.url } : {}),
+		};
+	}
+	return null;
+};
+
+export const resolveDemoRun = (
+	argv: readonly string[],
+	ghRunner: DemoGhRunner = defaultDemoGhRunner,
+): IDemoRunSelection | null => {
 	const runId = argv[0];
-	if (runId === undefined || runId.length === 0) {
-		console.error('usage: local-repro.demo.script.ts <run-id>');
+	if (runId !== undefined && runId.length > 0) {
+		return { runId, source: 'argv' };
+	}
+	const result = ghRunner([
+		'run',
+		'list',
+		'-L',
+		'20',
+		'--json',
+		'databaseId,conclusion,name,url',
+	]);
+	if (result.status !== 0) return null;
+	return pickLatestFailedRun(result.stdout);
+};
+
+export const main = (argv: readonly string[]): number => {
+	const selection = resolveDemoRun(argv);
+	if (selection === null) {
+		console.error(
+			'usage: local-repro.demo.script.ts <run-id> (or configure gh auth so the demo can auto-pick a recent failed run)',
+		);
 		return 2;
+	}
+	if (selection.source === 'gh') {
+		console.error(
+			`local-repro demo: using recent failed run ${selection.runId}${selection.name !== undefined ? ` (${selection.name})` : ''}`,
+		);
 	}
 
 	const repo = process.env.LOCAL_REPRO_REPO ?? 'CartagoGit/mcp-vertex';
@@ -26,7 +108,7 @@ export const main = (argv: readonly string[]): number => {
 	const args = [
 		'tools/scripts/ci/local-repro.script.ts',
 		'--run-id',
-		runId,
+		selection.runId,
 		'--repo',
 		repo,
 		'--output',
