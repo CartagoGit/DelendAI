@@ -339,6 +339,49 @@ describe('polyglot manifests (M33)', async () => {
 		]);
 	});
 
+	it('keeps the exact parsed output for quoted TOML keys and indirect go.mod entries', async () => {
+		expect(
+			parseCargoToml(
+				['[dependencies]', '"serde-json" = "1.0"'].join('\n'),
+			),
+		).toEqual([
+			{
+				ecosystem: 'rust',
+				name: 'serde-json',
+				range: '1.0',
+				section: 'dependencies',
+			},
+		]);
+		expect(
+			parseGoMod('require github.com/acme/lib v1.2.3 // indirect'),
+		).toEqual([
+			{
+				ecosystem: 'go',
+				name: 'github.com/acme/lib',
+				range: 'v1.2.3',
+				section: 'require (indirect)',
+			},
+		]);
+	});
+
+	it('handles long go.mod require comments without pathological slowdown', async () => {
+		const startedAt = performance.now();
+		const commentPadding = ' '.repeat(20_000);
+		expect(
+			parseGoMod(
+				`require github.com/acme/lib v1.2.3 //${commentPadding}indirect`,
+			),
+		).toEqual([
+			{
+				ecosystem: 'go',
+				name: 'github.com/acme/lib',
+				range: 'v1.2.3',
+				section: 'require (indirect)',
+			},
+		]);
+		expect(performance.now() - startedAt).toBeLessThan(1_000);
+	});
+
 	it('listPolyglotDeps only reads whichever manifests exist', async () => {
 		const root = mkdtempSync(join(tmpdir(), 'deps-polyglot-'));
 		try {

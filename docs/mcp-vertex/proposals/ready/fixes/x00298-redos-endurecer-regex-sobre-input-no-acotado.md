@@ -99,7 +99,7 @@ Por cada regex marcado:
 
 ### S1 — `parse-audit.service.ts` (5 alertas: líneas 63, 84, 117, 149, 267)
 
-- **Status**: pending
+- **Status**: done
 - **Files**:
     - `plugins/audit/src/lib/services/parse-audit.service.ts`
     - `plugins/audit/tests/**/parse-audit*.spec.ts` (añadir caso adversarial)
@@ -107,7 +107,7 @@ Por cada regex marcado:
 
 ### S2 — `check-links.ts` (3 alertas: líneas 62, 86, 91) + `HEADING`/`LINK`
 
-- **Status**: pending
+- **Status**: done
 - **Files**:
     - `plugins/link-check/src/lib/link-check/check-links.ts`
     - `plugins/link-check/tests/**` (caso con línea larga de `#`/espacios)
@@ -115,7 +115,7 @@ Por cada regex marcado:
 
 ### S3 — `proposal-slice-plan.ts:195` (exponencial) + `agent-worktree-engine.ts:93` + `agent-identity.ts:47`
 
-- **Status**: pending
+- **Status**: done
 - **Files**:
     - `plugins/proposals/src/lib/swarm/proposal-slice-plan.ts`
     - `plugins/proposals/src/lib/agents/agent-worktree-engine.ts`
@@ -125,13 +125,13 @@ Por cada regex marcado:
 
 ### S4 — `packages/core` (11 alertas: build-blueprint:82, recommend-plan:44, run-cli:131, create-plugin:19, extract-plugin:153, scaffold-extension-host:5, scaffold-host:97, catch-swallow:25, catch-swallow:32, paths:7, skill-catalog:73, file-conventions.contract:458)
 
-- **Status**: pending
+- **Status**: done
 - **Files**: los 12 ficheros de `packages/core/src/lib/**` listados + sus specs
 - **Gate**: `bunx vitest run packages/core`
 
 ### S5 — Plugins restantes (api, browser, database, deps, docs, env, ui-extension)
 
-- **Status**: pending
+- **Status**: done
 - **Files**:
     - `plugins/api/src/lib/spec/build-request.ts:36`,
       `plugins/api/src/lib/validate/response-validator.ts:101`

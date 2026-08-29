@@ -292,4 +292,45 @@ describe('runCreatePlugin (f00120 S4)', () => {
 		expect(report.ok).toBe(true);
 		expect(fs.writes).toEqual([]);
 	});
+
+	it('preserves plugin id and scaffold paths for repeated separators in the name', async () => {
+		const fs = createMemoryFs(buildSeed());
+		const report = await runCreatePlugin(
+			{
+				name: '  Demo___Plugin!!!  ',
+				description: 'Demo plugin.',
+				dryRun: true,
+			},
+			{
+				workspace: buildWorkspace(),
+				fs,
+				batchWriter: createBatchWriter(fs),
+				regenerateCatalog: appendCatalogEntry,
+			},
+		);
+		expect(report.pluginId).toBe('demo-plugin');
+		expect(report.scaffolded.files).toContain(
+			'plugins/demo-plugin/package.json',
+		);
+	});
+
+	it('normalises a long separator run in the plugin name quickly', async () => {
+		const fs = createMemoryFs(buildSeed());
+		const started = Date.now();
+		const report = await runCreatePlugin(
+			{
+				name: `Demo${'!'.repeat(40_000)}Plugin`,
+				description: 'Demo plugin.',
+				dryRun: true,
+			},
+			{
+				workspace: buildWorkspace(),
+				fs,
+				batchWriter: createBatchWriter(fs),
+				regenerateCatalog: appendCatalogEntry,
+			},
+		);
+		expect(report.pluginId).toBe('demo-plugin');
+		expect(Date.now() - started).toBeLessThan(1_000);
+	});
 });

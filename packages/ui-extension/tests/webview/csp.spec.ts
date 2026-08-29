@@ -114,6 +114,25 @@ describe('injectCspMeta / withCsp', () => {
 		const out = withCsp('proposals', '<head></head>');
 		expect(out).toContain("script-src 'none'");
 	});
+
+	it('keeps the exact injected output for a representative head element', () => {
+		expect(
+			withCsp(
+				'proposals',
+				'<html><head data-x="1"></head><body></body></html>',
+			),
+		).toBe(
+			`<html><head data-x="1">\n\t<meta http-equiv="Content-Security-Policy" content="${cspHeaderValue(DEFAULT_DENY)}" /></head><body></body></html>`,
+		);
+	});
+
+	it('handles a very long head tag without pathological slowdown', () => {
+		const html = `<html><head ${'data-x="1" '.repeat(20_000)}></head><body></body></html>`;
+		const startedAt = performance.now();
+		const out = injectCspMeta(html, DEFAULT_DENY);
+		expect(out).toContain('<meta http-equiv="Content-Security-Policy"');
+		expect(performance.now() - startedAt).toBeLessThan(1_000);
+	});
 });
 
 describe('WEBVIEW_CSP_OVERRIDES coverage', () => {

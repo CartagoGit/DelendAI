@@ -42,6 +42,71 @@ interface ITomlTable {
 	readonly entries: ReadonlyMap<string, string>;
 }
 
+const parseTableHeading = (line: string): string | null => {
+	if (!line.startsWith('[') || !line.endsWith(']')) return null;
+	const inner = line.slice(1, -1);
+	if (inner.includes(']')) return null;
+	return inner.trim();
+};
+
+const splitKeyValueLine = (
+	line: string,
+): { key: string; value: string } | null => {
+	const equalsIndex = line.indexOf('=');
+	if (equalsIndex <= 0) return null;
+	const rawKey = line.slice(0, equalsIndex).trim();
+	const value = line.slice(equalsIndex + 1).trim();
+	if (rawKey === '' || value === '') return null;
+	return {
+		key:
+			rawKey.startsWith('"') && rawKey.endsWith('"') && rawKey.length >= 2
+				? rawKey.slice(1, -1)
+				: rawKey,
+		value,
+	};
+};
+
+const isWhitespaceCode = (code: number): boolean =>
+	code === 9 ||
+	code === 10 ||
+	code === 11 ||
+	code === 12 ||
+	code === 13 ||
+	code === 32;
+
+const splitWhitespaceFields = (value: string): readonly string[] => {
+	const out: string[] = [];
+	let start = -1;
+	for (let index = 0; index < value.length; index += 1) {
+		const code = value.charCodeAt(index);
+		if (isWhitespaceCode(code)) {
+			if (start >= 0) {
+				out.push(value.slice(start, index));
+				start = -1;
+			}
+			continue;
+		}
+		if (start < 0) start = index;
+	}
+	if (start >= 0) out.push(value.slice(start));
+	return out;
+};
+
+const hasIndirectComment = (comment: string): boolean => {
+	const trimmed = comment.trimStart();
+	if (!trimmed.startsWith('indirect')) return false;
+	const next = trimmed.charCodeAt('indirect'.length);
+	return (
+		Number.isNaN(next) ||
+		!(
+			(next >= 48 && next <= 57) ||
+			(next >= 65 && next <= 90) ||
+			(next >= 97 && next <= 122) ||
+			next === 95
+		)
+	);
+};
+
 /** Split TOML source into `[section]` tables of simple `key = value` lines. */
 const splitTomlTables = (raw: string): readonly ITomlTable[] => {
 	const tables: ITomlTable[] = [];
@@ -63,17 +128,16 @@ const splitTomlTables = (raw: string): readonly ITomlTable[] => {
 			continue;
 		}
 
-		const heading = /^\[([^\]]+)\]$/.exec(line);
-		if (heading) {
+		const heading = parseTableHeading(line);
+		if (heading !== null) {
 			if (current)
 				tables.push({ name: current.name, entries: current.entries });
-			current = { name: (heading[1] ?? '').trim(), entries: new Map() };
+			current = { name: heading, entries: new Map() };
 			continue;
 		}
-		const kv = /^([^=]+?)\s*=\s*(.+)$/.exec(line);
+		const kv = splitKeyValueLine(line);
 		if (kv && current) {
-			const key = (kv[1] ?? '').trim().replace(/^"(.*)"$/, '$1');
-			const val = (kv[2] ?? '').trim();
+			const { key, value: val } = kv;
 			if (val.startsWith('[') && !val.endsWith(']')) {
 				accumulatingKey = key;
 				accumulatingValue = val;
@@ -205,9 +269,15 @@ export const parseGoMod = (raw: string): readonly IPolyglotDepEntry[] => {
 	const pushEntry = (line: string): void => {
 		const trimmed = line.trim();
 		if (trimmed === '' || trimmed.startsWith('//')) return;
-		const indirect = / \/\/\s*indirect\b/.test(trimmed);
-		const withoutComment = trimmed.replace(/\/\/.*$/, '').trim();
-		const parts = withoutComment.split(/\s+/);
+		const commentIndex = trimmed.indexOf('//');
+		const indirect =
+			commentIndex >= 0 &&
+			hasIndirectComment(trimmed.slice(commentIndex + 2));
+		const withoutComment =
+			commentIndex >= 0
+				? trimmed.slice(0, commentIndex).trimEnd()
+				: trimmed;
+		const parts = splitWhitespaceFields(withoutComment);
 		const [name, version] = parts;
 		if (!name || !version) return;
 		out.push({

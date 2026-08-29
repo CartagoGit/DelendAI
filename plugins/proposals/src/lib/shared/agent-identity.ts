@@ -44,7 +44,10 @@ const HOST_SLUGS: Readonly<Record<AgentHost, string>> = {
  */
 export const slugify = (value: string): string => {
 	const trimmed = value.trim().toLowerCase();
-	const slug = trimmed.replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+	const slug = trimmed
+		.replace(/[^a-z0-9]+/gu, '-')
+		.replace(/^-+/u, '')
+		.replace(/-+$/u, '');
 	return slug.length > 0 ? slug : 'unknown';
 };
 

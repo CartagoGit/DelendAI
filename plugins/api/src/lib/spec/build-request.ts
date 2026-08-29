@@ -33,7 +33,11 @@ export interface IBuiltRequest {
 	readonly body?: string;
 }
 
-const stripTrailingSlash = (s: string): string => s.replace(/\/+$/, '');
+const stripTrailingSlash = (s: string): string => {
+	let end = s.length;
+	while (end > 0 && s.charCodeAt(end - 1) === 47) end -= 1;
+	return end === s.length ? s : s.slice(0, end);
+};
 
 const substitutePath = (
 	template: string,

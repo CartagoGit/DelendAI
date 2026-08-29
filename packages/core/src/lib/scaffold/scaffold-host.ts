@@ -9,6 +9,8 @@
 // generated scaffold tool; proposal-workflow tools are shown as
 // conditional on loading the `proposals` plugin.
 
+import { toKebabCase } from '../shared/string-normalize';
+
 export interface IScaffoldedFile {
 	readonly path: string;
 	readonly content: string;
@@ -93,12 +95,7 @@ export type IScaffoldAgentSlot =
 	| 'orchestrator'
 	| (typeof SUBAGENT_SLOTS)[number];
 
-const kebab = (value: string): string =>
-	value
-		.trim()
-		.toLowerCase()
-		.replace(/[^a-z0-9]+/g, '-')
-		.replace(/^-+|-+$/g, '');
+const kebab = (value: string): string => toKebabCase(value);
 
 const pascal = (value: string): string =>
 	kebab(value)
