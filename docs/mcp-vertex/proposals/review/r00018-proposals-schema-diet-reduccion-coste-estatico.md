@@ -7,6 +7,7 @@ type: proposal
 track: tokens
 date: 2026-08-25
 priority: P2
+shipped-in: ["025af82f", "00173518"]
 classification: CONFIRMADO / MEJORA
 parent-plan: q00004
 audit-source:
