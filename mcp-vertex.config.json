@@ -216,13 +216,20 @@
 					"onCommit": true,
 					"force": "with-lease",
 					"protectedBranches": ["main", "master"],
-					"remote": "origin"
+					"remote": "origin",
+					"branch": "develop"
 				},
 				"cadence": {
 					"triggers": [{ "kind": "slice" }],
 					"sliceScoping": true
 				},
-				"identity": { "mode": "global" },
+				"identity": {
+					"mode": "explicit",
+					"owner": {
+						"name": "Cartago",
+						"email": "cartago.relaxingcup@gmail.com"
+					}
+				},
 				"audit": {
 					"trailer": "co-authored-by",
 					"agentFormat": "${host}/${model}"
