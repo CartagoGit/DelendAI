@@ -62,6 +62,18 @@ opt in. See "Configuration" below for the exact knobs.
 | `push.protectedBranches`       | `["main", "master"]` | Push is always refused to these.                                                                                                                                            |
 | `push.remote` / `push.branch`  | _none_               | Optional explicit defaults; falls back to upstream / current branch.                                                                                                        |
 
+### Branch rules
+
+Before an automatic commit or push, inspect `commit_policy_status` and its
+`branchPolicy` field:
+
+- `main` and `master` are protected by default; automatic commit/push is refused.
+- `release/*` and `hotfix/*` branches are also protected by default.
+- Any other branch permits direct commit and push when `commit.enabled` and
+  `push.enabled` are enabled.
+- In this repository, `develop` is the shared working branch and allows direct
+  commit and push; `main` is the protected review boundary.
+
 ### Identity modes
 
 | Mode       | Resolves to                                                                                |
@@ -77,7 +89,7 @@ opt in. See "Configuration" below for the exact knobs.
 
 | Kind        | Fires when                                                                                                                                     |
 | ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
-| `slice`     | A `proposals` slice transitions to a configured status (default `done`). Polls the proposals `index.json` every 5 s.                           |
+| `slice`     | A `proposals` slice transitions to a configured status (default `done`). Polls the proposals `index.json` every 1 s.                           |
 | `threshold` | `git status --porcelain` reports at least N dirty files (default 10). Manual only — the agent calls `commit_policy_run { kind: "threshold" }`. |
 | `interval`  | At least N minutes have elapsed since the last fire and the worktree is dirty. Runs automatically when configured.                             |
 | `manual`    | Always available, regardless of `cadence.triggers`.                                                                                            |

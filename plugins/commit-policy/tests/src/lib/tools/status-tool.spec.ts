@@ -48,6 +48,7 @@ describe('commit_policy_status', () => {
 					'config\u0000--global\u0000user.email',
 					ok('cartago@example.com\n'),
 				],
+				['rev-parse\u0000--abbrev-ref\u0000HEAD', ok('develop\n')],
 			]),
 		);
 		const result = await runCommitPolicyStatus({
@@ -68,6 +69,12 @@ describe('commit_policy_status', () => {
 				triggers: readonly { kind: string }[];
 			};
 			push: { enabled: boolean; onCommit: boolean };
+			branchPolicy: {
+				current: string | null;
+				protectedBranches: readonly string[];
+				protectedPrefixes: readonly string[];
+				directCommitPushAllowed: boolean;
+			};
 			summary: string;
 		};
 		expect(body.ok).toBe(true);
@@ -81,6 +88,12 @@ describe('commit_policy_status', () => {
 		]);
 		expect(body.push.enabled).toBe(true);
 		expect(body.push.onCommit).toBe(true);
+		expect(body.branchPolicy).toEqual({
+			current: 'develop',
+			protectedBranches: ['main', 'master'],
+			protectedPrefixes: ['release/', 'hotfix/'],
+			directCommitPushAllowed: true,
+		});
 		expect(body.summary).toContain('commit=on');
 	});
 

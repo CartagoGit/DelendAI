@@ -53,6 +53,18 @@ menos que lo active explícitamente.
 | `push.force` | `"with-lease"` | `"with-lease" \| "allow" \| "never"`. |
 | `push.protectedBranches` | `["main", "master"]` | Push siempre rechazado a estas ramas. |
 
+### Reglas de ramas
+
+Antes de hacer commit o push automático, consulta `commit_policy_status` y su
+campo `branchPolicy`:
+
+- `main` y `master` están protegidas por defecto; el commit/push automático se rechaza.
+- Las ramas `release/*` y `hotfix/*` también están protegidas por defecto.
+- Cualquier otra rama permite commit y push directo cuando `commit.enabled` y
+  `push.enabled` están activados.
+- En este repositorio, `develop` es la rama de trabajo compartida y permite
+  commit y push directo; `main` es la frontera protegida que requiere revisión.
+
 ### Modos de identidad
 
 | Modo | Resuelve a |
