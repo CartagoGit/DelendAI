@@ -50,6 +50,13 @@ describe('issues_ingest', async () => {
 				return buildFetchResult(number);
 			},
 			listIssues: async () => ({ issues: [], tier: 'gh' }),
+			listDependabotAlerts: async () => ({ alerts: [], tier: 'gh' }),
+			listCodeScanningAlerts: async () => ({ alerts: [], tier: 'gh' }),
+			listSecretScanningAlerts: async () => ({ alerts: [], tier: 'gh' }),
+			listSecurityAdvisories: async () => ({
+				advisories: [],
+				tier: 'gh',
+			}),
 		};
 		const options: IIngestIssueToolOptions = {
 			namespacePrefix: 'issues',
@@ -82,6 +89,13 @@ describe('issues_ingest', async () => {
 				return buildFetchResult(number);
 			},
 			listIssues: async () => ({ issues: [], tier: 'gh' }),
+			listDependabotAlerts: async () => ({ alerts: [], tier: 'gh' }),
+			listCodeScanningAlerts: async () => ({ alerts: [], tier: 'gh' }),
+			listSecretScanningAlerts: async () => ({ alerts: [], tier: 'gh' }),
+			listSecurityAdvisories: async () => ({
+				advisories: [],
+				tier: 'gh',
+			}),
 		};
 		const options: IIngestIssueToolOptions = {
 			namespacePrefix: 'issues',
@@ -114,6 +128,13 @@ describe('issues_ingest', async () => {
 				});
 			},
 			listIssues: async () => ({ issues: [], tier: 'gh' }),
+			listDependabotAlerts: async () => ({ alerts: [], tier: 'gh' }),
+			listCodeScanningAlerts: async () => ({ alerts: [], tier: 'gh' }),
+			listSecretScanningAlerts: async () => ({ alerts: [], tier: 'gh' }),
+			listSecurityAdvisories: async () => ({
+				advisories: [],
+				tier: 'gh',
+			}),
 		};
 		const options: IIngestIssueToolOptions = {
 			namespacePrefix: 'issues',
@@ -138,6 +159,13 @@ describe('issues_ingest', async () => {
 				throw new Error('issue not found');
 			},
 			listIssues: async () => ({ issues: [], tier: 'gh' }),
+			listDependabotAlerts: async () => ({ alerts: [], tier: 'gh' }),
+			listCodeScanningAlerts: async () => ({ alerts: [], tier: 'gh' }),
+			listSecretScanningAlerts: async () => ({ alerts: [], tier: 'gh' }),
+			listSecurityAdvisories: async () => ({
+				advisories: [],
+				tier: 'gh',
+			}),
 		};
 		const options: IIngestIssueToolOptions = {
 			namespacePrefix: 'issues',

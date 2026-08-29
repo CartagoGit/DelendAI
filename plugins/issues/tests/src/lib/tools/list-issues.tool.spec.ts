@@ -34,6 +34,10 @@ const fakeClient = (
 ): IGithubClient => ({
 	fetchIssue: async () => STUB_FETCH_RESULT,
 	listIssues: listIssuesImpl,
+	listDependabotAlerts: async () => ({ alerts: [], tier: 'gh' }),
+	listCodeScanningAlerts: async () => ({ alerts: [], tier: 'gh' }),
+	listSecretScanningAlerts: async () => ({ alerts: [], tier: 'gh' }),
+	listSecurityAdvisories: async () => ({ advisories: [], tier: 'gh' }),
 });
 
 describe('issues_list', async () => {
