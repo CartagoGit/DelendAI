@@ -86,11 +86,8 @@ export const parseConventionalSource = (
 	const separatorStart = index;
 	while (index < value.length) {
 		const char = value[index];
-		if (char === '-' || isWhitespaceChar(char)) {
-			index += 1;
-			continue;
-		}
-		break;
+		if (char !== '-' && !isWhitespaceChar(char)) break;
+		index += 1;
 	}
 	if (index === separatorStart) return undefined;
 
