@@ -69,8 +69,12 @@ export type {
 } from '../lib/dispatch/fake-port.js';
 export type {
 	IDispatchPort,
+	IPlanOutcome,
+	IPlanOutcomeBudget,
+	IStepOutcome,
 	ISubagentResult,
 } from '../lib/dispatch/contracts.js';
+export { LinearDispatcher } from '../lib/dispatch/linear-dispatcher.js';
 export {
 	resolveDispatchPort,
 	MissingDispatchPortError,

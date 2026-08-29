@@ -29,7 +29,8 @@ export const PRIVACY_VALIDATOR_BLOCKED_CLASSES = [
 	'xml-fragment',
 	'sql-fragment',
 ] as const;
-export type IPrivacyValidatorBlockedClass = (typeof PRIVACY_VALIDATOR_BLOCKED_CLASSES)[number];
+export type IPrivacyValidatorBlockedClass =
+	(typeof PRIVACY_VALIDATOR_BLOCKED_CLASSES)[number];
 // PRIV-002 SET END
 
 const ABSOLUTE_UNIX_PATH =

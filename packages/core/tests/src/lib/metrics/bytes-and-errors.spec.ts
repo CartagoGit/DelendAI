@@ -233,7 +233,10 @@ describe('createMetricsRegistry — actualModelTokens accumulation', () => {
 				contentTextBytes: 1,
 				structuredJsonBytes: 0,
 				wireEstimateBytes: 1,
-				estimatedTokens: { estimatedTokens4B: 1, actualModelTokens: 10 },
+				estimatedTokens: {
+					estimatedTokens4B: 1,
+					actualModelTokens: 10,
+				},
 			},
 		});
 		registry.record('demo', {
@@ -253,9 +256,7 @@ describe('createMetricsRegistry — actualModelTokens accumulation', () => {
 		expect(
 			snapshot.tools.demo?.cost.estimatedTokens.actualModelTokens,
 		).toBe(15);
-		expect(
-			snapshot.totals.cost.estimatedTokens.actualModelTokens,
-		).toBe(15);
+		expect(snapshot.totals.cost.estimatedTokens.actualModelTokens).toBe(15);
 	});
 
 	it('does not let one tool with no actualModelTokens zero out another tool that reported one, in the totals', () => {

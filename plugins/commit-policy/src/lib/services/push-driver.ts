@@ -144,10 +144,6 @@ export const runPushDriver = async (
 		};
 	}
 
-	// Defense in depth (x00258): `develop` is the project invariant
-	// branch — pushes must go through a PR, not a direct push. The
-	// check is independent of `protectedBranches` so the rule holds
-	// even if a host removes `develop` from its override.
 	if (branch === 'develop') {
 		return {
 			ok: false,

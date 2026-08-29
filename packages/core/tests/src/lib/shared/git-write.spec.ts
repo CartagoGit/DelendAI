@@ -473,7 +473,11 @@ describe('commitAndPush — refusal, failure and fallback paths', () => {
 	it('detects an already-clean worktree from commit stderr and reports it distinctly from other failures', async () => {
 		const { runner } = captureRunner([
 			{ ok: true, output: '' }, // add
-			{ ok: false, output: '', reason: 'nothing to commit, working tree clean' },
+			{
+				ok: false,
+				output: '',
+				reason: 'nothing to commit, working tree clean',
+			},
 		]);
 		const result = await commitAndPush({
 			files: ['x.ts'],

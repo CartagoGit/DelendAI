@@ -37,11 +37,8 @@ const captureHandlers = async (
 	return handlers;
 };
 
-const structured = (
-	res: unknown,
-): Record<string, unknown> | undefined =>
-	(res as { structuredContent?: Record<string, unknown> })
-		.structuredContent;
+const structured = (res: unknown): Record<string, unknown> | undefined =>
+	(res as { structuredContent?: Record<string, unknown> }).structuredContent;
 
 describe('ns_classify', () => {
 	it('returns the classifier verdict and records a classify event', async () => {
@@ -77,7 +74,9 @@ describe('ns_classify', () => {
 
 describe('ns_events', () => {
 	const seedEvents = (telemetry: InMemoryTelemetrySink): void => {
-		const base: Omit<ITelemetryEvent, 'ts' | 'taskId'> = { kind: 'classify' };
+		const base: Omit<ITelemetryEvent, 'ts' | 'taskId'> = {
+			kind: 'classify',
+		};
 		telemetry.emit({ ...base, ts: 100, taskId: 'a' });
 		telemetry.emit({ ...base, ts: 200, taskId: 'b' });
 		telemetry.emit({ ...base, ts: 300, taskId: 'c' });

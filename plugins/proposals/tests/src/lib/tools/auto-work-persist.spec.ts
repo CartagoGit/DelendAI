@@ -141,7 +141,12 @@ describe('maybePersistAfterSlice', async () => {
 			['plugins/proposals/src/lib/foo.ts'],
 			'l109',
 			's2',
-			{ mode: 'commit-and-push', pushTarget: 'origin main', git: runner },
+			{
+				mode: 'commit-and-push',
+				pushTarget: 'origin main',
+				agentWorktreeEnabled: true,
+				git: runner,
+			},
 		);
 		expect(result.committed).toBe(true);
 		expect(result.pushed).toBe(false);
@@ -169,6 +174,7 @@ describe('maybePersistAfterSlice', async () => {
 			{
 				mode: 'commit-and-push',
 				pushTarget: 'origin develop',
+				agentWorktreeEnabled: true,
 				git: runner,
 			},
 		);
@@ -178,6 +184,63 @@ describe('maybePersistAfterSlice', async () => {
 			'refusing to push to develop automatically — open a PR from a wip/* branch instead',
 		);
 		expect(runner.calls.some((a) => a[0] === 'push')).toBe(false);
+	});
+
+	it('refuses commit-and-push when agentWorktree is disabled', async () => {
+		const runner = fakeRunner([
+			{ match: (a) => a[0] === 'add', output: '' },
+			{ match: (a) => a[0] === 'commit', output: '' },
+		]);
+		const result = await maybePersistAfterSlice(
+			['plugins/proposals/src/lib/foo.ts'],
+			'x00298',
+			'S1',
+			{
+				mode: 'commit-and-push',
+				pushTarget: 'origin HEAD:wip/x00298-S1',
+				agentWorktreeEnabled: false,
+				git: runner,
+			},
+		);
+
+		expect(result).toEqual({
+			committed: false,
+			pushed: false,
+			mode: 'commit-and-push',
+			reason: 'commit-and-push requires agentWorktree to be enabled; use mode "commit" in shared-checkout mode or enable agentWorktree',
+		});
+		expect(runner.calls).toHaveLength(0);
+	});
+
+	it('allows an explicit branch refspec when agentWorktree is enabled', async () => {
+		const runner = fakeRunner([
+			{ match: (a) => a[0] === 'add', output: '' },
+			{ match: (a) => a[0] === 'commit', output: '' },
+			{ match: (a) => a[0] === 'rev-parse', output: 'worktree01' },
+			{ match: (a) => a[0] === 'push', output: '' },
+		]);
+		const result = await maybePersistAfterSlice(
+			['plugins/proposals/src/lib/foo.ts'],
+			'x00298',
+			'S1',
+			{
+				mode: 'commit-and-push',
+				pushTarget: 'origin HEAD:agent/x00298-S1',
+				agentWorktreeEnabled: true,
+				git: runner,
+			},
+		);
+
+		expect(result).toMatchObject({
+			committed: true,
+			pushed: true,
+			hash: 'worktree01',
+		});
+		expect(runner.calls.find((a) => a[0] === 'push')).toEqual([
+			'push',
+			'origin',
+			'HEAD:agent/x00298-S1',
+		]);
 	});
 
 	it("mode 'commit-and-push' pushes when target is a wip/* branch (not main or develop)", async () => {
@@ -194,6 +257,7 @@ describe('maybePersistAfterSlice', async () => {
 			{
 				mode: 'commit-and-push',
 				pushTarget: 'origin agent/l109',
+				agentWorktreeEnabled: true,
 				git: runner,
 			},
 		);
@@ -260,6 +324,7 @@ describe('maybePersistAfterSlice', async () => {
 			{
 				mode: 'commit-and-push',
 				pushTarget: 'origin agent/l109',
+				agentWorktreeEnabled: true,
 				git: runner,
 			},
 		);
@@ -268,6 +333,41 @@ describe('maybePersistAfterSlice', async () => {
 		expect(result.hash).toBe('abc1234');
 		expect(result.reason).toContain('git push failed');
 	});
+
+	it.each([
+		['rejected', 'remote rejected: non-fast-forward'],
+		['error', 'remote unavailable'],
+		['timeout', 'git timed out after 15000ms'],
+	])(
+		'surfaces a push %s as incomplete, not success',
+		async (_kind, reason) => {
+			const runner = fakeRunner([
+				{ match: (a) => a[0] === 'add', output: '' },
+				{ match: (a) => a[0] === 'commit', output: '' },
+				{ match: (a) => a[0] === 'rev-parse', output: 'pushfail' },
+				{ match: (a) => a[0] === 'push', ok: false, reason },
+			]);
+
+			const result = await maybePersistAfterSlice(
+				['plugins/proposals/src/lib/foo.ts'],
+				'x00298',
+				'S1',
+				{
+					mode: 'commit-and-push',
+					pushTarget: 'origin agent/x00298',
+					agentWorktreeEnabled: true,
+					git: runner,
+				},
+			);
+
+			expect(result).toMatchObject({
+				committed: true,
+				pushed: false,
+				hash: 'pushfail',
+			});
+			expect(result.reason).toContain(reason);
+		},
+	);
 
 	it('returns early when the file list is empty (no `git add` issued)', async () => {
 		const runner = fakeRunner([
@@ -425,6 +525,7 @@ describe('f00156 S7 stale-acceptance persist guard', async () => {
 			{
 				mode: 'commit-and-push',
 				pushTarget: 'origin agent/f00156',
+				agentWorktreeEnabled: true,
 				git: runner,
 				acceptanceEvidence: {
 					sliceId: 'S7',
@@ -456,6 +557,7 @@ describe('f00156 S7 stale-acceptance persist guard', async () => {
 			{
 				mode: 'commit-and-push',
 				pushTarget: 'origin agent/f00156',
+				agentWorktreeEnabled: true,
 				git: runner,
 				acceptanceEvidence: {
 					sliceId: 'S7',

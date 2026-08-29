@@ -240,6 +240,15 @@ Cada propuesta hija cita, en su `## Goal`, la sección exacta de la auditoría q
   - "Esta tabla de tracks se actualiza con el estado real de cada hija al avanzar (el plan es el orquestador)."
   - "El cierre usa proposals_close_plan, que devuelve blockers si queda alguna hija abierta."
 
+### Estado operativo de las hijas — 2026-08-29
+
+| Estado | Propuestas | Evidencia MCP |
+|---|---|---|
+| `done` | `x00214`, `x00215`, `f00159`, `t00005`, `x00216`, `f00160`, `x00217`, `x00218`, `f00161`, `x00219`, `x00220`, `x00222`, `x00221`, `x00223`, `x00224`, `v00123`, `f00162`, `f00163`, `r00016`, `x00225`, `x00226`, `r00017`, `x00227`, `x00228`, `c00128`, `v00124`, `x00229`, `i00002`, `t00006`, `d00005`, `f00164`, `f00165`, `f00169`, `f00166`, `f00167`, `f00168`, `x00230`, `f00173`, `i00003`, `c00129` | `proposal_board`: slices cerrados; archivos bajo `proposals/done/` |
+| `in-progress` | `a00086`, `a00087`, `a00088` | `proposal_board`: todos los slices `done`, pero `proposal_review status`: `none`; transición directa a `done` rechazada |
+
+Resultado del preflight de S1: `proposals_close_plan { planId: "q00003", dryRun: true }` quedó bloqueado porque la ruta `dryRun` del propio tool viola su contrato de salida (`handler ignored args.dryRun`). Las tres hijas en `in-progress` tampoco pueden pasar directamente a `done`: la máquina de estados exige pasar por `review` y registrar aprobación peer independiente con evidencia. No se inventan implementadores, reviews ni cierres.
+
 ## acceptance
 
 Criterios de aceptación globales (de la auditoría §40), verificados a través de las hijas:

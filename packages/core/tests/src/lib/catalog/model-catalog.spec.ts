@@ -1,12 +1,32 @@
 import { describe, expect, it } from 'vitest';
 
-import { InMemoryModelCatalog, ModelCatalogError } from '@mcp-vertex/core/lib/catalog';
+import {
+	InMemoryModelCatalog,
+	ModelCatalogError,
+} from '@mcp-vertex/core/lib/catalog';
 import type { IModelCatalogEntry } from '@mcp-vertex/core/lib/contracts/interfaces/model-catalog.interface';
 
-const model = (overrides: Partial<IModelCatalogEntry> = {}): IModelCatalogEntry => ({
-	key: 'sonnet', aliases: ['claude', 'sonnet-4'], provider: 'anthropic', source: 'built-in', lifecycle: 'active',
-	id: 'anthropic-sonnet', kind: 'api', invoke: { kind: 'api', url: 'https://example.test', envVar: 'ANTHROPIC_API_KEY' },
-	modelId: 'claude-sonnet-4', contextWindow: 200_000, costTier: 3, strengths: ['reasoning', 'long-context'], weaknesses: [], ...overrides,
+const model = (
+	overrides: Partial<IModelCatalogEntry> = {},
+): IModelCatalogEntry => ({
+	key: 'sonnet',
+	aliases: ['claude', 'sonnet-4'],
+	provider: 'anthropic',
+	source: 'built-in',
+	lifecycle: 'active',
+	id: 'anthropic-sonnet',
+	kind: 'api',
+	invoke: {
+		kind: 'api',
+		url: 'https://example.test',
+		envVar: 'ANTHROPIC_API_KEY',
+	},
+	modelId: 'claude-sonnet-4',
+	contextWindow: 200_000,
+	costTier: 3,
+	strengths: ['reasoning', 'long-context'],
+	weaknesses: [],
+	...overrides,
 });
 
 describe('InMemoryModelCatalog', () => {
@@ -28,7 +48,12 @@ describe('InMemoryModelCatalog', () => {
 		const entry = model({
 			key: 'mcp-model',
 			aliases: [],
-			invoke: { kind: 'mcp-server', server: 'provider', tool: 'invoke', args },
+			invoke: {
+				kind: 'mcp-server',
+				server: 'provider',
+				tool: 'invoke',
+				args,
+			},
 		});
 		const catalog = new InMemoryModelCatalog();
 		const snapshot = catalog.register(entry);
@@ -50,18 +75,49 @@ describe('InMemoryModelCatalog', () => {
 		const catalog = new InMemoryModelCatalog();
 		catalog.register(model());
 		expect(() => catalog.register(model())).toThrowError(ModelCatalogError);
-		expect(() => catalog.register(model({ key: 'other', aliases: ['claude'] }))).toThrowError(ModelCatalogError);
-		expect(() => catalog.register(model({ key: 'third', aliases: ['sonnet'] }))).toThrowError(ModelCatalogError);
+		expect(() =>
+			catalog.register(model({ key: 'other', aliases: ['claude'] })),
+		).toThrowError(ModelCatalogError);
+		expect(() =>
+			catalog.register(model({ key: 'third', aliases: ['sonnet'] })),
+		).toThrowError(ModelCatalogError);
 		expect(catalog.list()).toHaveLength(1);
 	});
 
 	it('filters and searches by provider, capabilities and context', () => {
 		const catalog = new InMemoryModelCatalog();
 		catalog.register(model());
-		catalog.register(model({ key: 'haiku', aliases: ['quick'], id: 'anthropic-haiku', modelId: 'claude-haiku-3', contextWindow: 64_000, strengths: ['fast-iteration'], lifecycle: 'deprecated' }));
-		catalog.register(model({ key: 'gpt', aliases: ['openai'], id: 'openai-gpt', modelId: 'gpt-5', provider: 'openai', strengths: ['reasoning'] }));
-		expect(catalog.list({ provider: 'ANTHROPIC', capabilities: ['long-context'], minContextWindow: 100_000 })).toHaveLength(1);
-		expect(catalog.list({ lifecycle: 'deprecated' }).map((entry) => entry.key)).toEqual(['haiku']);
+		catalog.register(
+			model({
+				key: 'haiku',
+				aliases: ['quick'],
+				id: 'anthropic-haiku',
+				modelId: 'claude-haiku-3',
+				contextWindow: 64_000,
+				strengths: ['fast-iteration'],
+				lifecycle: 'deprecated',
+			}),
+		);
+		catalog.register(
+			model({
+				key: 'gpt',
+				aliases: ['openai'],
+				id: 'openai-gpt',
+				modelId: 'gpt-5',
+				provider: 'openai',
+				strengths: ['reasoning'],
+			}),
+		);
+		expect(
+			catalog.list({
+				provider: 'ANTHROPIC',
+				capabilities: ['long-context'],
+				minContextWindow: 100_000,
+			}),
+		).toHaveLength(1);
+		expect(
+			catalog.list({ lifecycle: 'deprecated' }).map((entry) => entry.key),
+		).toEqual(['haiku']);
 		expect(catalog.search('SONNET')).toHaveLength(1);
 		expect(catalog.resolveAlias('CLAUDE')?.key).toBe('sonnet');
 		expect(catalog.resolveAlias('missing')).toBeUndefined();
@@ -70,10 +126,14 @@ describe('InMemoryModelCatalog', () => {
 	it('enforces limits and clear', () => {
 		const catalog = new InMemoryModelCatalog();
 		catalog.register(model({ aliases: [] }));
-		catalog.register(model({ key: 'other', aliases: [], provider: 'openai' }));
+		catalog.register(
+			model({ key: 'other', aliases: [], provider: 'openai' }),
+		);
 		expect(catalog.list({ limit: 1 })).toHaveLength(1);
 		expect(catalog.list({ limit: 999 })).toHaveLength(2);
-		expect(() => catalog.list({ limit: 0 })).toThrowError(ModelCatalogError);
+		expect(() => catalog.list({ limit: 0 })).toThrowError(
+			ModelCatalogError,
+		);
 		catalog.clear();
 		expect(catalog.list()).toEqual([]);
 	});

@@ -178,9 +178,7 @@ const isPluginLoadedByHost = (
 };
 
 const isPluginIndexed = (indexText: string, pluginId: string): boolean =>
-	new RegExp(`id:\\s*['\"]${escapeRegex(pluginId)}['\"]`, 'u').test(
-		indexText,
-	);
+	new RegExp(`id:\\s*['"]${escapeRegex(pluginId)}['"]`, 'u').test(indexText);
 
 const buildLoadDiagnostics = async (
 	pluginId: string,

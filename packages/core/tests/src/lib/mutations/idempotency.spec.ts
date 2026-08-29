@@ -19,7 +19,7 @@ import {
 
 describe('idempotency (c00143) — store semantics', () => {
 	it('runs fn on first call and caches it', async () => {
-		let now = 1_000;
+		const now = 1_000;
 		const store = createIdempotencyStore<string>({ now: () => now });
 		let calls = 0;
 		const a = await store.withIdempotency('k1', async () => {

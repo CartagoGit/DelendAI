@@ -463,11 +463,7 @@ export const classifyPath = (
 	for (const rule of rules) {
 		try {
 			if (rule.match(relPath)) return rule.name;
-		} catch {
-			// A rule that throws must not poison the chain: skip it and
-			// let the remaining rules classify the path.
-			continue;
-		}
+		} catch {}
 	}
 	return 'other';
 };

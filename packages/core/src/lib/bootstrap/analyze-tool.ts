@@ -5,7 +5,7 @@
 // It does not know about drift, scaffolding, or the blueprint
 // pipeline — those are separate tools in separate files.
 
-import z from 'zod';
+import type z from 'zod';
 
 import type { IToolRegistration } from '../contracts/interfaces/tool-registration.interface';
 import type { IFileReader, IProjectAnalysis } from './analyze-project';

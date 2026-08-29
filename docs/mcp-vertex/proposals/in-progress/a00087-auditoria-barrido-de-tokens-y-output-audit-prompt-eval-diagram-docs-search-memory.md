@@ -45,28 +45,40 @@ Los plugins con output grande o catálogo estático son los que más token tax p
 - **Gate**: none
 - acceptance:
   - "Coste en tokens, fan-out y token tax estático revisados; hallazgos clasificados."
-
+- review-state: done
+- review-implementer: audit-implementer
+- review-reviewer: audit-peer-reviewer
+- review-log: approved by audit-peer-reviewer — Revisión independiente con evidencia real: suite focalizada de peer review 2 archivos / 15 tests, salida 0; commit actual f05127076cd06c8eeed4e58cbd4d1dc7aef03652.
 ### S2 — Auditar diagram/docs/search/changelog
 - **Status**: done
 - **Files**: `plugins/diagram/**`, `plugins/docs/**`, `plugins/search/**`, `plugins/changelog/**`
 - **Gate**: none
 - acceptance:
   - "Output size, paginación, symlink y historias gigantes revisados."
-
+- review-state: done
+- review-implementer: audit-implementer
+- review-reviewer: audit-peer-reviewer
+- review-log: approved by audit-peer-reviewer — Revisión independiente con evidencia real: suite focalizada 2 archivos / 15 tests, salida 0; commit actual f05127076cd06c8eeed4e58cbd4d1dc7aef03652. La validación global queda bloqueada por regresiones Biome no atribuibles a este slice.
 ### S3 — Auditar auto-agent/auto-plugin-selector/memory/notification
 - **Status**: done
 - **Files**: `plugins/auto-agent-selector/**`, `plugins/auto-plugin-selector/**`, `plugins/memory/**`, `plugins/notification/**`
 - **Gate**: none
 - acceptance:
   - "Scoring, fallback, polling y refresh global revisados."
-
+- review-state: done
+- review-implementer: audit-implementer
+- review-reviewer: audit-peer-reviewer
+- review-log: approved by audit-peer-reviewer — Revisión independiente con evidencia real: suite focalizada 2 archivos / 15 tests, salida 0; commit actual f05127076cd06c8eeed4e58cbd4d1dc7aef03652. La validación global queda bloqueada por regresiones Biome no atribuibles a este slice.
 ### S4 — Auditar cache/conventions/deps/i18n/issues/issues-triage
 - **Status**: done
 - **Files**: `plugins/cache/**`, `plugins/conventions/**`, `plugins/deps/**`, `plugins/i18n/**`, `plugins/issues/**`, `plugins/issues-triage/**`
 - **Gate**: none
 - acceptance:
   - "Namespaces, false positives, lockfile, locale drift y bot disclosure revisados."
-
+- review-state: done
+- review-implementer: audit-implementer
+- review-reviewer: audit-peer-reviewer
+- review-log: approved by audit-peer-reviewer — Revisión independiente con evidencia real: suite focalizada 2 archivos / 15 tests, salida 0; commit actual f05127076cd06c8eeed4e58cbd4d1dc7aef03652. La validación global queda bloqueada por regresiones Biome no atribuibles a este slice.
 ## acceptance
 
 - Coste en tokens, fan-out y token tax estático revisados; hallazgos clasificados.

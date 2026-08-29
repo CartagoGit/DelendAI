@@ -181,10 +181,7 @@ export const findSymbolDeclarations = (
 		undefined,
 	);
 
-	const exportFrom = new RegExp(
-		`\\bexport\\s*\\{([^}]*)\\}\\s*from\\s*['\"]([^'\"]+)['\"]`,
-		'g',
-	);
+	const exportFrom = /\bexport\s*\{([^}]*)\}\s*from\s*['"]([^'"]+)['"]/g;
 	let match: RegExpExecArray | null;
 	while ((match = exportFrom.exec(source)) !== null) {
 		const members = (match[1] ?? '')

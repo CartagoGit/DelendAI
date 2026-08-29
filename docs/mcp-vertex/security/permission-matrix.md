@@ -6,6 +6,7 @@
 | agent-orchestrator | public | * | process |
 | api | public | * | process, network |
 | audit | public | * | filesystem-read, filesystem-write, network |
+| audit-orchestrator | public | * | filesystem-read, process |
 | auto-agent-selector | public | * | process, network |
 | auto-plugin-selector | public | * | filesystem-read |
 | browser | public | * | browser, network |

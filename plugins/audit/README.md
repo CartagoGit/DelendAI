@@ -14,6 +14,25 @@ mcp-vertex --plugins=audit
 
 ## Tools
 
+### Tipos de auditoría
+
+Todas las herramientas que generan o consolidan auditorías aceptan
+`auditType: "valuation" | "plan"` y usan `valuation` por defecto para
+mantener compatibilidad:
+
+- `valuation`: valoración técnica completa del proyecto, con hallazgos y
+  propuestas de corrección (`kind: fix`).
+- `plan`: auditoría exhaustiva orientada a ejecución. El brief exige snapshot,
+  puntuaciones, hallazgos accionables, roadmap, arquitectura objetivo,
+  Definition of Done y plantilla de propuestas. Cuando el plugin `proposals`
+  está disponible, el scaffolder crea un plan padre (`type: plan`, `kind: plan`)
+  con propuestas hijas de corrección (`kind: fix`) enlazadas mediante
+  `contains.proposals`.
+
+El contrato es agnóstico: el plugin no asume el nombre, estructura, lenguaje ni
+taxonomía del proyecto auditado. Los scopes de capas, dimensiones, rutas y
+reglas específicas los proporciona el host mediante sus opciones.
+
 ### `audit_plan { scope? }` — devuelve el brief canónico
 
 Genera el markdown que el agente copia/pega en cualquier modelo

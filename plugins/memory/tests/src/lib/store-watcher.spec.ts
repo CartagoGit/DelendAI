@@ -31,7 +31,10 @@ describe('store watcher', () => {
 			(
 				_dir: string,
 				_options: { persistent: false },
-				cb: (eventType: string, fileName: string | Buffer | null) => void,
+				cb: (
+					eventType: string,
+					fileName: string | Buffer | null,
+				) => void,
 			) => {
 				listener = cb;
 				return { close: vi.fn(), unref: vi.fn() };

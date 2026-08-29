@@ -1,5 +1,4 @@
 import { readdir } from 'node:fs/promises';
-import path from 'node:path';
 
 import z from 'zod';
 
@@ -16,6 +15,7 @@ import {
 	consolidateAudits,
 	renderConsolidationMarkdown,
 } from '../services/audit-consolidate.service';
+import type { AuditType } from '../services/audit-brief.service';
 import {
 	resolveAutoScaffold,
 	type IAutoScaffoldOptions,
@@ -25,6 +25,7 @@ import { parseAuditFiles } from '../services/parse-audit.service';
 // --- output schemas --------------------------------------------------------
 
 const ConsolidationOutputSchema = z.object({
+	auditType: z.enum(['plan', 'valuation']),
 	auditsFound: z.number(),
 	skipped: z.array(z.object({ path: z.string(), reason: z.string() })),
 	consensus: z.array(
@@ -84,6 +85,8 @@ const ConsolidationOutputSchema = z.object({
 // --- input schema ----------------------------------------------------------
 
 const ConsolidateInputSchema = z.object({
+	/** Select an implementation-plan scaffold or normal fix proposals. */
+	auditType: z.enum(['plan', 'valuation']).optional(),
 	/**
 	 * Workspace-relative directory containing the individual audit
 	 * `*.md` files. Default: the host's configured `defaultAuditDir`
@@ -173,11 +176,13 @@ export const buildConsolidateRegistration = (
 					outputSchema: ConsolidationOutputSchema,
 				},
 				async (args: {
+					auditType?: AuditType | undefined;
 					auditDir?: string | undefined;
 					topActions?: number | undefined;
 					autoScaffoldProposals?: boolean | undefined;
 					proposalsDir?: string | undefined;
 				}) => {
+					const auditType = args.auditType ?? 'valuation';
 					const relDir = (
 						args.auditDir ?? options.defaultAuditDir
 					).replace(/^\.\//u, '');
@@ -214,7 +219,6 @@ export const buildConsolidateRegistration = (
 					}
 					const docs: { path: string; body: string }[] = [];
 					for (const name of mdRel) {
-						const abs = path.join(absDir, name);
 						try {
 							const body = (await reader.readText(name)).content;
 							docs.push({ path: name, body });
@@ -262,6 +266,7 @@ export const buildConsolidateRegistration = (
 					if (proposalsDirContained.ok) {
 						const scaffoldOptions: IAutoScaffoldOptions = {
 							enabled,
+							auditType,
 							peerPlugins: options.peerPlugins,
 							// Pass the normalized workspace-relative path forward. The
 							// persistence helper must never receive an absolute or escaping
@@ -284,11 +289,13 @@ export const buildConsolidateRegistration = (
 										filename: string;
 										severity: string;
 										files: string[];
+										kind: 'fix' | 'plan';
 									} => ({
 										id: r.id,
 										filename: r.filename,
 										severity: r.severity,
 										files: [...r.files],
+										kind: r.kind,
 									}),
 								),
 							};
@@ -309,6 +316,7 @@ export const buildConsolidateRegistration = (
 					}
 
 					return toolJson({
+						auditType,
 						...result,
 						markdown: renderConsolidationMarkdown(result, {
 							...(options.projectName !== undefined

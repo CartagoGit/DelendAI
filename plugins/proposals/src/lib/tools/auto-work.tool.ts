@@ -353,10 +353,7 @@ const findReviewPendingPeerApproval = async (
 			if (!hasPeerApprovedReview(raw)) {
 				return { proposalId: entry.id, file: entry.file };
 			}
-		} catch {
-			// Unreadable/missing proposal file — skip to the next entry.
-			continue;
-		}
+		} catch {}
 	}
 	return null;
 };
@@ -607,7 +604,6 @@ export const runAutoWork = async (
 		next.file &&
 		options.proposalsDirAbs
 	) {
-		const docPath = join(options.proposalsDirAbs, next.file);
 		let approved = false;
 		try {
 			const raw = (
@@ -686,20 +682,31 @@ export const runAutoWork = async (
 	// `commit-policy`'s push driver AND `maybePersistAfterSlice`'s own
 	// guard (mirrors the existing `main` refusal). With the worktree
 	// gate on, agents persist from per-agent branches; with it off
-	// (this repo), they commit on `develop` as before, but the push
-	// step targets a fresh `wip/<proposalId>-<sliceId>` branch off HEAD
-	// — `origin HEAD:wip/...` pushes the current commit to a new remote
-	// branch without switching the shared checkout (the concurrency
-	// hazard `mainCheckoutDrift` exists to catch). Opening the PR from
-	// that branch is still a manual/operator step. The push target
-	// honours the configured `persist.pushTarget` and only falls back
-	// to a mode-appropriate default.
+	// (this repo), they commit on `develop` as before. Shared checkout
+	// mode never manufactures a `wip/*` branch via a refspec; use
+	// `mode: "commit"` and let the operator decide how the commit is
+	// integrated. The push target honours the configured
+	// `persist.pushTarget` and only falls back to a mode-appropriate
+	// default.
 	const worktreeEnabled = options.agentWorktreeEnabled === true;
 	const pushTargetHint =
 		options.persist?.pushTarget ??
-		(worktreeEnabled
-			? 'origin agent/<branch>'
-			: `origin HEAD:wip/${next.proposalId}-<sliceId>`);
+		(worktreeEnabled ? 'origin agent/<branch>' : 'origin HEAD');
+	if (resolvedMode === 'commit-and-push' && !worktreeEnabled) {
+		return json({
+			state: 'work',
+			ok: false,
+			reason: 'invalid-persist-config',
+			executionMode: 'blocked',
+			proposalId: next.proposalId,
+			file: next.file,
+			hygieneBlockers: [
+				'commit-and-push requires agentWorktree to be enabled',
+			],
+			nextAction:
+				'Use persist.mode "commit" in shared-checkout mode, or enable agentWorktree before using commit-and-push.',
+		});
+	}
 	const persistStep =
 		resolvedMode === 'none'
 			? []
@@ -717,9 +724,8 @@ export const runAutoWork = async (
 	// create` step explicitly so a host that runs `auto_work` solo
 	// (without going through `delegate`) still produces it before the
 	// push. With the gate off, agents never create a worktree, but the
-	// push step still targets a `wip/*` branch (see above) instead of
-	// `develop`. When persist is `none`, no such step is needed — the
-	// orchestrator is not pushing.
+	// no push step is needed. In shared checkout mode, commit-and-push is
+	// rejected before this plan is returned.
 	const worktreeStep =
 		resolvedMode === 'none'
 			? []
@@ -728,9 +734,7 @@ export const runAutoWork = async (
 						`Ensure per-agent worktree exists before persisting: ${prefix}_agent_worktree { action: "create", agent: "<pending>" } (idempotent — returns the existing worktree if one is present; required when persist mode is "${resolvedMode}"). When the slice is delegated via ${prefix}_delegate this is handled for you; keep the step as a safety net for solo runs.`,
 					]
 				: [
-						resolvedMode === 'commit-and-push'
-							? `This repo forbids per-agent worktrees (\`agentWorktree: false\`): commit on \`develop\`, then push to a \`wip/*\` branch (see the push target below) and open a PR — do NOT push directly to \`develop\`.`
-							: `This repo forbids per-agent worktrees (\`agentWorktree: false\`): commit directly on \`develop\` — do NOT create an agent worktree or branch.`,
+						`This repo forbids per-agent worktrees (\`agentWorktree: false\`): commit directly on \`develop\` — do NOT create an agent worktree or branch.`,
 					];
 
 	const steps = [

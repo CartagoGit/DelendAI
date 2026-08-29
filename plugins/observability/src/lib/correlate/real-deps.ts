@@ -163,13 +163,9 @@ const readLogLines = async (
 						continue;
 					}
 					out.push(record);
-				} catch {
-					continue;
-				}
+				} catch {}
 			}
-		} catch {
-			continue;
-		}
+		} catch {}
 	}
 	return out;
 };
@@ -196,13 +192,9 @@ const readMetricLines = async (
 						continue;
 					}
 					out.push(record);
-				} catch {
-					continue;
-				}
+				} catch {}
 			}
-		} catch {
-			continue;
-		}
+		} catch {}
 	}
 	return out;
 };

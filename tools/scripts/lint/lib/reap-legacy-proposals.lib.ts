@@ -249,8 +249,6 @@ export const parseReaperArgs = (
 			continue;
 		}
 		if (arg === '--apply') {
-			// applied via outer flag below; skip.
-			continue;
 		}
 	}
 	return {

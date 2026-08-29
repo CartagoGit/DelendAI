@@ -85,9 +85,7 @@ export const honestRewriteFile = async (input: {
 			processed += 1;
 			if (honest.outcome !== parsed.outcome) rewritten += 1;
 			output.push(JSON.stringify(honest));
-		} catch {
-			continue;
-		}
+		} catch {}
 	}
 
 	const next = output.length === 0 ? '' : `${output.join('\n')}\n`;

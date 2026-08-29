@@ -184,7 +184,7 @@ const computeRecency = (
 	const age = Math.max(0, context.now - entry.lastUsedAt);
 	// Exponential decay: 1.0 at age=0, 0.5 at age=halfLife, etc.
 	// Math.pow(0.5, age/halfLife) but we keep it readable.
-	const decay = Math.pow(0.5, age / halfLife);
+	const decay = 0.5 ** (age / halfLife);
 	return clamp01(decay);
 };
 

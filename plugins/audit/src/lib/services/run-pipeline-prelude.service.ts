@@ -57,6 +57,7 @@ import {
 import {
 	buildBrief,
 	type AuditMode,
+	type AuditType,
 	type ILayerConfig,
 } from './audit-brief.service';
 
@@ -70,6 +71,7 @@ export interface IRunPreludeInput {
 	/** Caller's tool input — only the prelude-relevant fields. */
 	readonly args: {
 		readonly scope?: string | undefined;
+		readonly auditType?: AuditType | undefined;
 		readonly mode?: AuditMode | undefined;
 		readonly projects?: readonly string[] | undefined;
 		readonly auditDir?: string | undefined;
@@ -118,6 +120,7 @@ export type IRunPreludeResult =
 	| {
 			readonly ok: true;
 			readonly scope: string;
+			readonly auditType: AuditType;
 			readonly mode: AuditMode;
 			readonly projects: readonly string[];
 			/** Absolute `auditDir` — used for `path.join` and `writeFileAtomic`. */
@@ -179,6 +182,7 @@ export const runPipelinePrelude = async (
 
 	// 1. Scope inference + unknown-scope guard.
 	const scope = args.scope ?? 'full';
+	const auditType = args.auditType ?? 'valuation';
 	if (!input.allAvailableScopes.includes(scope)) {
 		return {
 			ok: false,
@@ -264,6 +268,7 @@ export const runPipelinePrelude = async (
 	//    session and get the same format the `audit_run` tool
 	//    would have sent.
 	const brief = buildBrief(scope, {
+		auditType,
 		dimensions: input.dimensions,
 		layers: input.configuredLayers,
 		mode,
@@ -282,6 +287,7 @@ export const runPipelinePrelude = async (
 	return {
 		ok: true,
 		scope,
+		auditType,
 		mode,
 		projects,
 		auditDirAbs,

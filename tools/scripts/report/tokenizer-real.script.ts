@@ -126,7 +126,9 @@ export const measurePresetTokenizerCosts = async (
 					presetId,
 					toolsListBytes: metrics.toolsListBytes,
 					toolCount: metrics.toolCount,
-					estimates: buildTokenizerEstimates(toolsListJsonText(tools)),
+					estimates: buildTokenizerEstimates(
+						toolsListJsonText(tools),
+					),
 				});
 			} finally {
 				await connection.close();
