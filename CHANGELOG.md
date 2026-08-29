@@ -8,6 +8,11 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Deprecated
+- `@mcp-vertex/core` now re-exports `nodeDynamicImport` through a deprecated
+  shim only. Import it from `@mcp-vertex/core/node` instead; the universal
+  barrel re-export will be removed in the next minor release.
+
 ### Added
 - **Agnostic core error collector** (`f00251`): a host-agnostic `IErrorCollector`
   engine in core, wired into the plugin context via `assembleErrorCollector`;
