@@ -20,7 +20,7 @@ import { join } from 'node:path';
 import { writeFileAtomic } from '@mcp-vertex/core/public';
 import type { ICapturedError, IErrorSink } from '@mcp-vertex/core/public';
 
-import type { IIssueCreateInput, IIssueCreateResult } from '../github-client';
+import type { IIssueCreateInput, IIssueCreateResult } from '../contracts';
 
 // ---------------------------------------------------------------------------
 // Severity gate

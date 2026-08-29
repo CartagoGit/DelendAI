@@ -8,6 +8,7 @@
  */
 import type { IFinding } from '@mcp-vertex/core/public';
 
+import { detectValueType } from './type-matcher';
 import type { IJsonSchema, IOpenApiOperation } from '../spec/openapi';
 
 type IJsonSchemaLike = IJsonSchema & {
@@ -52,16 +53,9 @@ const inferType = (schema: IJsonSchema): IJsonSchema['type'] | undefined => {
 };
 
 const detectType = (value: unknown): string => {
-	if (value === null) return 'null';
-	if (Array.isArray(value)) return 'array';
-	if (isPlainObject(value)) return 'object';
-	if (typeof value === 'string') return 'string';
-	if (typeof value === 'boolean') return 'boolean';
-	if (typeof value === 'number' && Number.isFinite(value)) {
-		return Number.isInteger(value) ? 'integer' : 'number';
-	}
 	if (value === undefined) return 'undefined';
-	return typeof value;
+	const detected = detectValueType(value);
+	return detected === 'unknown' ? typeof value : detected;
 };
 
 const TYPE_CHECKERS: Readonly<

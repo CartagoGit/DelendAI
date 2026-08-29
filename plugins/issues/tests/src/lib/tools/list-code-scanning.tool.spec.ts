@@ -1,15 +1,13 @@
 import { describe, expect, it } from 'vitest';
 
-import {
-	runListCodeScanning,
-	type IListCodeScanningToolOptions,
-} from '../../../../src/lib/tools/list-code-scanning.tool';
+import { runListCodeScanning } from '../../../../src/lib/tools/list-code-scanning.tool';
 import type {
 	IFetchIssueResult,
+	IGithubClient,
 	IListCodeScanningAlertsOptions,
 	IListCodeScanningAlertsResult,
-} from '../../../../src/lib/github-client';
-import type { IGithubClient } from '../../../../src/lib/tools/list-issues.tool';
+	IListCodeScanningToolOptions,
+} from '../../../../src/lib/contracts';
 
 const STUB_FETCH_RESULT: IFetchIssueResult = {
 	data: {

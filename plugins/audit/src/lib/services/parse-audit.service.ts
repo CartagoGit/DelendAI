@@ -19,6 +19,14 @@ import type {
 	IAuditScore,
 	IAuditSource,
 } from '../contracts/interfaces/audit.interface';
+import { DATE_PREFIX_LENGTH } from '../contracts/constants/audit.constant';
+import {
+	extractTextAfterFileLabel,
+	isExecutiveSummaryHeading,
+	isLevelTwoHeading,
+	parseConventionalSource,
+	stripMarkdownBold,
+} from './parse-audit-line';
 
 /** Normalised severity tokens the parser maps onto the canonical set.
  *  The first match wins (FATAL → BAD → MINOR → OK → GOOD → PERFECT →
@@ -51,123 +59,8 @@ const SEVERITY_PATTERNS: ReadonlyArray<{
 	{ pattern: /\b(?:EXEMPLARY|ESPL[ÉE]NDIDO)\b/iu, mapsTo: 'EXEMPLARY' },
 ];
 
-const DATE_PREFIX = /^\d{2}-\d{2}-\d{4}$/u;
-const WHITESPACE_CHAR = /\s/u;
-
-const isWhitespaceChar = (char: string | undefined): boolean =>
-	char !== undefined && WHITESPACE_CHAR.test(char);
-
-const isLevelTwoHeading = (line: string): boolean =>
-	line.startsWith('##') && isWhitespaceChar(line[2]);
-
-const trimTrailingColons = (value: string): string => {
-	let end = value.length;
-	while (end > 0 && value[end - 1] === ':') end -= 1;
-	return value.slice(0, end);
-};
-
-const stripMarkdownBold = (value: string): string => {
-	let start = 0;
-	let end = value.length;
-	if (value.startsWith('**')) {
-		start = 2;
-		while (start < end && isWhitespaceChar(value[start])) start += 1;
-	}
-	while (end > start && isWhitespaceChar(value[end - 1])) end -= 1;
-	if (end - start >= 2 && value.slice(end - 2, end) === '**') {
-		end -= 2;
-		while (end > start && isWhitespaceChar(value[end - 1])) end -= 1;
-	}
-	return value.slice(start, end).trim();
-};
-
-const isFileLabel = (value: string): boolean => {
-	const normalized = value.toLowerCase();
-	if (
-		normalized === 'archivo' ||
-		normalized === 'archivos' ||
-		normalized === 'file' ||
-		normalized === 'files' ||
-		normalized === 'fichero'
-	) {
-		return true;
-	}
-	return (
-		normalized.startsWith('fichero') &&
-		normalized.length === 'fichero'.length + 1 &&
-		(normalized.at(-1) ?? '') >= 'a' &&
-		(normalized.at(-1) ?? '') <= 'z'
-	);
-};
-
-const extractTextAfterFileLabel = (line: string): string | undefined => {
-	if (!line.startsWith('**')) return undefined;
-	const labelEnd = line.indexOf('**', 2);
-	if (labelEnd === -1) return undefined;
-	const label = trimTrailingColons(line.slice(2, labelEnd).trim());
-	if (!isFileLabel(label)) return undefined;
-	let index = labelEnd + 2;
-	while (
-		index < line.length &&
-		(line[index] === ':' || isWhitespaceChar(line[index]))
-	) {
-		index += 1;
-	}
-	return line.slice(index);
-};
-
-const parseConventionalSource = (
-	value: string,
-): { date: string; head: string; model: string } | undefined => {
-	const date = value.slice(0, 10);
-	if (!DATE_PREFIX.test(date)) return undefined;
-	let index = 10;
-	const separatorStart = index;
-	while (index < value.length) {
-		const char = value[index];
-		if (char === '-' || isWhitespaceChar(char)) {
-			index += 1;
-			continue;
-		}
-		break;
-	}
-	if (index === separatorStart) return undefined;
-
-	let remainder = value.slice(index);
-	const lower = remainder.toLowerCase();
-	for (const prefix of ['auditoría', 'auditoria']) {
-		if (!lower.startsWith(prefix)) continue;
-		let prefixEnd = prefix.length;
-		while (
-			prefixEnd < remainder.length &&
-			isWhitespaceChar(remainder[prefixEnd])
-		) {
-			prefixEnd += 1;
-		}
-		if (prefixEnd > prefix.length) remainder = remainder.slice(prefixEnd);
-		break;
-	}
-
-	const openParen = remainder.indexOf('(');
-	if (openParen === -1) return undefined;
-	const closeParen = remainder.indexOf(')', openParen + 1);
-	if (closeParen <= openParen + 1) return undefined;
-	return {
-		date,
-		head: remainder.slice(0, openParen),
-		model: remainder.slice(openParen + 1, closeParen),
-	};
-};
-
-const isExecutiveSummaryHeading = (line: string): boolean => {
-	if (!isLevelTwoHeading(line)) return false;
-	const lower = line.toLowerCase();
-	return (
-		lower.includes('resumen') ||
-		lower.includes('summary') ||
-		lower.includes('executive')
-	);
-};
+const SCORE_SCALE = 10;
+const DECIMAL_RADIX = SCORE_SCALE;
 
 /** Map the source file name to the source identity. */
 const deriveSourceFromPath = (
@@ -200,7 +93,7 @@ const deriveSourceFromPath = (
 		};
 	}
 	const host = parsed.head.trim() || 'unknown';
-	const dateIso = `${parsed.date.slice(6, 10)}-${parsed.date.slice(3, 5)}-${parsed.date.slice(0, 2)}`;
+	const dateIso = `${parsed.date.slice(6, DATE_PREFIX_LENGTH)}-${parsed.date.slice(3, 5)}-${parsed.date.slice(0, 2)}`;
 	return {
 		slug: noExt,
 		source: { host, model: parsed.model.trim(), date: dateIso },
@@ -380,9 +273,12 @@ const extractScores = (body: string): readonly IAuditScore[] => {
 		const dim = cleanCell(cells[0] ?? '');
 		const scoreCell = cleanCell(cells[1] ?? '');
 		const comment = cells.slice(2).join(' | ');
-		const scoreMatch = /^(\d+)\s*\/\s*10$/u.exec(scoreCell);
+		const scoreMatch = new RegExp(
+			String.raw`^(\d+)\s*\/\s*${String(SCORE_SCALE)}$`,
+			'u',
+		).exec(scoreCell);
 		const score = scoreMatch?.[1]
-			? Number.parseInt(scoreMatch[1], 10)
+			? Number.parseInt(scoreMatch[1], DECIMAL_RADIX)
 			: scoreCell.trim() === '?'
 				? null
 				: (() => {
@@ -445,6 +341,18 @@ export const parseAuditBody = (path: string, body: string): IAuditDocument => {
 	};
 };
 
+const tryParseAuditBody = (
+	path: string,
+	body: string,
+): IAuditDocument | undefined => {
+	try {
+		return parseAuditBody(path, body);
+	} catch {
+		// Intentional: one malformed audit must not abort the whole batch.
+		return undefined;
+	}
+};
+
 /** Convenience: parse all `*.md` files in a directory. Pure: takes the list. */
 export const parseAuditFiles = (
 	files: ReadonlyArray<{ path: string; body: string }>,
@@ -454,9 +362,8 @@ export const parseAuditFiles = (
 	for (const f of files) {
 		if (seen.has(f.path)) continue;
 		seen.add(f.path);
-		try {
-			docs.push(parseAuditBody(f.path, f.body));
-		} catch {}
+		const parsed = tryParseAuditBody(f.path, f.body);
+		if (parsed !== undefined) docs.push(parsed);
 	}
 	return docs;
 };

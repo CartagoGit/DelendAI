@@ -1,20 +1,16 @@
 import z from 'zod';
 
 import type { IToolRegistration } from '@mcp-vertex/core/public';
-import { toolError, toolOk } from '@mcp-vertex/core/public';
 
-import type { ISecretScanningAlertSummary } from '../contracts';
-import type { IGithubClient } from './list-issues.tool';
-
-export interface IListSecretScanningToolOptions {
-	readonly namespacePrefix: string;
-	readonly githubClient: IGithubClient;
-}
-
-export interface IListSecretScanningArgs {
-	readonly state?: 'open' | 'resolved' | undefined;
-	readonly limit?: number | undefined;
-}
+import type {
+	IListSecretScanningArgs,
+	IListSecretScanningToolOptions,
+	ISecretScanningAlertSummary,
+} from '../contracts';
+import {
+	githubClientToolError,
+	githubTieredCollectionOk,
+} from './github-list.tool-helpers';
 
 const SECRET_SCANNING_ALERT_SUMMARY_SCHEMA = z.object({
 	number: z.number(),
@@ -46,15 +42,13 @@ export const runListSecretScanning = async (
 			...(args.state !== undefined ? { state: args.state } : {}),
 			...(args.limit !== undefined ? { limit: args.limit } : {}),
 		});
-		return toolOk({
-			alerts: result.alerts as ISecretScanningAlertSummary[],
-			tier: result.tier,
-		});
-	} catch (error) {
-		return toolError(
-			error instanceof Error ? error.message : String(error),
-			'Check repo configuration / network connectivity / gh auth status.',
+		return githubTieredCollectionOk(
+			'alerts',
+			result.alerts as ISecretScanningAlertSummary[],
+			result.tier,
 		);
+	} catch (error) {
+		return githubClientToolError(error);
 	}
 };
 

@@ -1,20 +1,16 @@
 import z from 'zod';
 
 import type { IToolRegistration } from '@mcp-vertex/core/public';
-import { toolError, toolOk } from '@mcp-vertex/core/public';
 
-import type { ISecurityAdvisorySummary } from '../contracts';
-import type { IGithubClient } from './list-issues.tool';
-
-export interface IListAdvisoriesToolOptions {
-	readonly namespacePrefix: string;
-	readonly githubClient: IGithubClient;
-}
-
-export interface IListAdvisoriesArgs {
-	readonly state?: string | undefined;
-	readonly limit?: number | undefined;
-}
+import type {
+	IListAdvisoriesArgs,
+	IListAdvisoriesToolOptions,
+	ISecurityAdvisorySummary,
+} from '../contracts';
+import {
+	githubClientToolError,
+	githubTieredCollectionOk,
+} from './github-list.tool-helpers';
 
 const SECURITY_ADVISORY_SUMMARY_SCHEMA = z.object({
 	ghsaId: z.string(),
@@ -45,15 +41,13 @@ export const runListAdvisories = async (
 			...(args.state !== undefined ? { state: args.state } : {}),
 			...(args.limit !== undefined ? { limit: args.limit } : {}),
 		});
-		return toolOk({
-			advisories: result.advisories as ISecurityAdvisorySummary[],
-			tier: result.tier,
-		});
-	} catch (error) {
-		return toolError(
-			error instanceof Error ? error.message : String(error),
-			'Check repo configuration / network connectivity / gh auth status.',
+		return githubTieredCollectionOk(
+			'advisories',
+			result.advisories as ISecurityAdvisorySummary[],
+			result.tier,
 		);
+	} catch (error) {
+		return githubClientToolError(error);
 	}
 };
 
