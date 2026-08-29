@@ -390,12 +390,11 @@ const runCommitDriverUnlocked = async (
 		};
 	}
 
+	const hash = await gitHeadShortHash(options.run);
 	const result: ICommitAndPushResult = {
 		committed: true,
 		pushed: false,
-		...((await gitHeadShortHash(options.run)) !== undefined
-			? { hash: await gitHeadShortHash(options.run) }
-			: {}),
+		...(hash !== undefined ? { hash } : {}),
 	};
 
 	return {
