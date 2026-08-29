@@ -75,7 +75,7 @@ const createManagedPersistenceServer = async () => {
 					requirePeerReview: false,
 					persist: {
 						mode: 'commit-and-push',
-						pushTarget: 'origin wip/x00298-s3',
+						pushTarget: 'origin HEAD:wip/x00298-s3',
 					},
 				},
 			},
