@@ -1450,6 +1450,14 @@ el payload real.
 
 ### AUD-B05 — Falta la métrica que justifica todo el diseño: precisión de activación y "tokens útiles"
 
+> **CORRECCIÓN (redacción de `f00272`).** Tres de las cuatro métricas que pido
+> aquí **ya están propuestas**: `f00198` (precisión/recall/churn de activación) y
+> `f00199` (tool-confusion rate), ambas en `ready` bajo `q00006`. Presenté como
+> hueco lo que era trabajo ya planificado y no cruzado por mí. `f00272` queda
+> reducida a la única métrica que ninguna cubre: **tokens útiles**
+> (bytes-invocados / bytes-servidos).
+
+
 - **Clasificación:** MEJORA · **Severidad:** MEDIA · **Área:** tokens / observabilidad
 - **Propuesta:** `f00272`
 
@@ -2350,6 +2358,15 @@ start` no acumula handles.
 
 ### AUD-E03 — Barrel público del core: 287 exports en un único fichero de 1.347 líneas
 
+> **CORRECCIÓN (redacción de `r00040`).** Escribí la solución ideal como si no
+> existiera ningún subpath. Existen cuatro y funcionan: `./contracts`,
+> `./runtime`, `./plugin` y `./node`, con ficheros reales y un ADR (`d00012`).
+> Lo que pasa es que sólo cubren 59 de los 288 exports, y los 287 re-exports del
+> barrel siguen saliendo todos de `../lib`, ninguno de los directorios de
+> subpath. No es «construir subpaths»: es **terminar una migración ya empezada**,
+> que es un problema distinto y bastante más barato.
+
+
 - **Clasificación:** DEUDA TÉCNICA · **Severidad:** ALTA · **Área:** arquitectura / API pública
 - **Propuesta:** `r00040`
 
@@ -3054,6 +3071,17 @@ categoría; ninguna regla de `enforcement` se implementa como texto en un prompt
 ---
 
 ### AUD-G04 — Adoptar el proyecto en un repo grande exige que el usuario entienda Vertex
+
+> **CORRECCIÓN (redacción de `f00280`).** La «solución ideal» que describo aquí
+> —`mcpv adopt` con descubrimiento read-only, perfil recomendado y confirmación
+> antes de aplicar— **ya existe y funciona**: herramienta `adopt_project`,
+> comando `mcpv adopt` (cableado en `packages/cli/src/commands/groups/core.ts`),
+> dry-run por defecto y un `IAdoptionAssessment` completo con justificación por
+> plugin y estimación de coste. Prescribí construir algo construido. Lo que sí
+> falta, y es a lo que queda reducida `f00280`: un `ProjectProfile` persistido y
+> un desglose por workspace, porque hoy `chooseCandidatePreset` colapsa cualquier
+> monorepo a un único preset `'swarm'` sin analizar áreas.
+
 
 - **Clasificación:** IDEA DE PRODUCTO · **Severidad:** ALTA · **Área:** adopción / DX
 - **Propuesta:** `f00280`
