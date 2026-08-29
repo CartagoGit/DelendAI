@@ -32,7 +32,7 @@ contains:
         - { id: x00289, kind: fix, required: true, priority: P1, track: security,
             rationale: "eager expresable en ServerEntrySchema (.strict() lo rechaza hoy) + test de contrato schema-vs-registry. AUD-D03." }
         - { id: x00288, kind: fix, required: true, priority: P0, track: security,
-            rationale: "Lint de fronteras de efectos: prohibir node:child_process/fs/net/http en plugins fuera de adaptadores autorizados, con ratchet inicial de 13. AUD-D01." }
+            rationale: "Lint de fronteras de efectos: prohibir node:child_process/fs/net/http en plugins fuera de adaptadores autorizados, con ratchet medido de 104 (el 13 publicado contaba solo child_process). AUD-D01." }
         - { id: r00037, kind: refactor, required: true, priority: P1, track: security,
             rationale: "EffectBroker: dryRun pasa de deteccion post-hoc a prevencion. AUD-D02." }
         - { id: x00292, kind: fix, required: true, priority: P1, track: security,
@@ -266,6 +266,16 @@ es el único check rojo que queda en `develop`).
 niveles están rotos a la vez: el plugin no expone, el activador no retiene, el
 host no llama. Arreglar uno solo no produce ninguna mejora observable.
 
+> **Estado de cobertura documental (2026-08-29).** Los 48 hijos declarados en
+> `contains.proposals` tienen ya fichero escrito; hasta hoy faltaban 29 y el plan
+> afirmaba un cuerpo de trabajo inexistente. Al escribirlos se corrigieron cinco
+> premisas mías: `AUD-F02` fallaba por un bug de aserción anterior a `x00258` y no
+> por `x00258`; `advise_routing` mide 7.969 B y no 12.157; `v00132` es `AUD-F06`,
+> no `AUD-B05`; tres de las cuatro métricas de `AUD-B05` ya estaban propuestas en
+> `f00198`/`f00199`; y `mcpv adopt` (`AUD-G04`) y los subpaths del core
+> (`AUD-E03`) **ya existían** — prescribí construir lo construido. Todas las
+> correcciones están anotadas en su hallazgo de la auditoría.
+
 ### S3 — Independientes de P0, en paralelo
 
 - **Status**: pending
@@ -274,7 +284,8 @@ host no llama. Arreglar uno solo no produce ninguna mejora observable.
 
 
 `x00290` (`llmDecidesActivation` conectado al proxy), `x00288` (lint de
-fronteras de efectos con ratchet inicial 13), `x00281` (Biome sobre el monorepo
+fronteras de efectos, ratchet medido en 104 — el 13 publicado contaba sólo
+`child_process` con un grep ciego a `require()` dinámico), `x00281` (Biome sobre el monorepo
 completo con baseline que sólo baja) y `x00295` (el guard de sondeo compara
 literales que no existen en el union: 33 herramientas con efectos se invocan con
 entrada vacía).
@@ -287,7 +298,9 @@ entrada vacía).
 
 
 `x00283` y `x00284` primero (dashboard y medición honestos, para poder medir el
-progreso), luego `v00129` (envelope compartido en core), `v00130`
+progreso), luego `v00129` (esquemas compactos por herramienta en core; el envelope
+compartido vía `$defs`/`$ref` queda descartado: `v00128` estableció que zod v4 y
+el SDK de MCP no deduplican `$ref`, así que no ahorra nada), `v00130`
 (`advise_routing` + `invoke`), `v00131` (`quality_policy` + `usage_report`), y
 `r00036` (ratchet descendente) para blindar lo ganado.
 
