@@ -65,7 +65,7 @@ La configuración del repositorio pide commit-and-push, pero auto_work sólo emi
 ### S4 — Commit-policy devuelve estado final y no éxito prematuro
 - **Status**: pending
 - **DependsOn**: [S1, S3]
-- **Files**: `plugins/commit-policy/src/lib/tools/commit-tool.ts`, `plugins/commit-policy/src/lib/services/commit-driver.ts`, `plugins/commit-policy/src/lib/services/push-scheduler.ts`, `plugins/commit-policy/tests/src/lib/services/commit-driver.spec.ts`, `plugins/commit-policy/tests/src/lib/services/push-scheduler.spec.ts`, `plugins/commit-policy/tests/src/e2e/dogfood.spec.ts`
+- **Files**: `plugins/commit-policy/src/lib/tools/commit-tool.ts`, `plugins/commit-policy/src/lib/services/commit-driver.ts`, `plugins/commit-policy/src/lib/services/push-scheduler.ts`, `plugins/commit-policy/src/lib/engine.ts`, `plugins/commit-policy/tests/src/lib/services/commit-driver.spec.ts`, `plugins/commit-policy/tests/src/lib/services/push-scheduler.spec.ts`, `plugins/commit-policy/tests/src/lib/engine.spec.ts`, `plugins/commit-policy/tests/src/e2e/dogfood.spec.ts`
 - **Gate**: type
 - acceptance:
   - "El camino de commit con onCommit=true espera el resultado del push o devuelve un estado explícito de persistencia pendiente/fallida; no reporta éxito final con pushed=false."
