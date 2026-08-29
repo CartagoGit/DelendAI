@@ -42,6 +42,16 @@ export type ITokenBudgetRegistry = {
 	readonly toolPayloads: {
 		readonly overviewFull: ITokenBudgetSurface;
 		readonly overviewCompact: ITokenBudgetSurface;
+		/**
+		 * x00296 S2 (AUD-B06): `overviewFull`/`overviewCompact` above are
+		 * calibrated for the `managed` bootstrap listing. `overview` is
+		 * also directly callable under `native` (the full catalog
+		 * listing), which is a materially larger, independently-governed
+		 * surface — this is a NEW ceiling, not a redefinition of the
+		 * `managed` one above.
+		 */
+		readonly overviewFullNative: ITokenBudgetSurface;
+		readonly overviewCompactNative: ITokenBudgetSurface;
 		readonly agentCatalogCompact: ITokenBudgetSurface;
 		readonly agentCatalogFull: ITokenBudgetSurface;
 		readonly autoWork: ITokenBudgetSurface;
@@ -103,6 +113,29 @@ export const TOKEN_BUDGETS: ITokenBudgetRegistry = {
 		overviewCompact: {
 			hard: 1_500,
 			warning: 1_450,
+			releaseRelativePercent: 20,
+		},
+		// x00296 S2 (AUD-B06): the `native` surface lists the full tool
+		// catalog (currently 63 tools with the `fixturePluginIds` roster) —
+		// materially larger than the lean `managed` bootstrap listing
+		// `overviewFull`/`overviewCompact` above govern. Measured real
+		// payload today (bumpPolicy step 1,
+		// justify-the-cost): 12,024 B full / 1,696 B compact. Ceiling set
+		// at +5% over that measurement (bumpPolicy step 3,
+		// attempt-a-compensation: no further compaction attempted here —
+		// that is `v00129`/future proposals' territory, out of scope for a
+		// measurement-only fix) — a guard band against the catalog's
+		// natural per-tool-added drift, not an invitation to grow into it
+		// (bumpPolicy step 4, document-the-decision: this comment + the
+		// x00296 proposal doc are that record).
+		overviewFullNative: {
+			hard: 12_650,
+			warning: 12_300,
+			releaseRelativePercent: 20,
+		},
+		overviewCompactNative: {
+			hard: 1_800,
+			warning: 1_750,
 			releaseRelativePercent: 20,
 		},
 		agentCatalogCompact: {
