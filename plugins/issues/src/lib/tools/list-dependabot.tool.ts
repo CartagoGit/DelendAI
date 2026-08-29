@@ -1,21 +1,16 @@
 import z from 'zod';
 
 import type { IToolRegistration } from '@mcp-vertex/core/public';
-import { toolError, toolOk } from '@mcp-vertex/core/public';
 
-import type { IDependabotAlertSummary } from '../contracts';
-import type { IGithubClient } from './list-issues.tool';
-
-export interface IListDependabotToolOptions {
-	readonly namespacePrefix: string;
-	readonly githubClient: IGithubClient;
-}
-
-export interface IListDependabotArgs {
-	readonly state?: 'open' | 'dismissed' | 'fixed' | undefined;
-	readonly severity?: 'critical' | 'high' | 'medium' | 'low' | undefined;
-	readonly limit?: number | undefined;
-}
+import type {
+	IDependabotAlertSummary,
+	IListDependabotArgs,
+	IListDependabotToolOptions,
+} from '../contracts';
+import {
+	githubClientToolError,
+	githubTieredCollectionOk,
+} from './github-list.tool-helpers';
 
 const DEPENDABOT_ALERT_SUMMARY_SCHEMA = z.object({
 	number: z.number(),
@@ -54,15 +49,13 @@ export const runListDependabot = async (
 			...(args.severity !== undefined ? { severity: args.severity } : {}),
 			...(args.limit !== undefined ? { limit: args.limit } : {}),
 		});
-		return toolOk({
-			alerts: result.alerts as IDependabotAlertSummary[],
-			tier: result.tier,
-		});
-	} catch (error) {
-		return toolError(
-			error instanceof Error ? error.message : String(error),
-			'Check repo configuration / network connectivity / gh auth status.',
+		return githubTieredCollectionOk(
+			'alerts',
+			result.alerts as IDependabotAlertSummary[],
+			result.tier,
 		);
+	} catch (error) {
+		return githubClientToolError(error);
 	}
 };
 

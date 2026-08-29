@@ -31,6 +31,23 @@ import { spawn as nodeSpawn } from 'node:child_process';
 
 import type { ISpawn } from './contracts/interfaces/github-client.interface';
 import type {
+	IFetchFn,
+	IFetchIssueResult,
+	IGithubClientDeps,
+	IIssueCreateInput,
+	IIssueCreateResult,
+	IListCodeScanningAlertsOptions,
+	IListCodeScanningAlertsResult,
+	IListDependabotAlertsOptions,
+	IListDependabotAlertsResult,
+	IListIssuesOptions,
+	IListIssuesResult,
+	IListSecretScanningAlertsOptions,
+	IListSecretScanningAlertsResult,
+	IListSecurityAdvisoriesOptions,
+	IListSecurityAdvisoriesResult,
+} from './contracts/interfaces/github-client-types.interface';
+import type {
 	IGithubComment,
 	IGithubIssueDetail,
 	IGithubIssueSummary,
@@ -40,78 +57,20 @@ import type {
 	IDependabotAlertSummary,
 	ISecretScanningAlertSummary,
 	ISecurityAdvisorySummary,
-} from './contracts/security.types';
+} from './contracts/interfaces/security.interface';
 
 export type { ISpawn } from './contracts/interfaces/github-client.interface';
 
-// ---------------------------------------------------------------------------
-// Issue-create contract (f00251 S4 — plugin-internal widening)
-// ---------------------------------------------------------------------------
-
-/** Input for creating a new issue via the CLI. */
-export interface IIssueCreateInput {
-	readonly title: string;
-	readonly body: string;
-	readonly labels?: readonly string[] | undefined;
-}
-
-/** Result returned after a successful issue creation. */
-export interface IIssueCreateResult {
-	readonly issueNumber: number;
-	readonly issueUrl: string;
-}
-
-export type IGithubClientTier = 'gh' | 'rest-authed' | 'rest-anon';
-
-export interface IFetchIssueResult {
-	readonly data: IGithubIssueDetail;
-	readonly comments: readonly IGithubComment[];
-	readonly tier: IGithubClientTier;
-}
-
-export interface IListIssuesOptions {
-	readonly state?: 'open' | 'closed' | 'all';
-	readonly labels?: readonly string[];
-	readonly limit?: number;
-}
-
-export interface IListIssuesResult {
-	readonly issues: readonly IGithubIssueSummary[];
-	readonly tier: IGithubClientTier;
-}
-
-/** Legacy sync spawn seam — kept so existing test doubles keep working. */
-export type ISpawnSync = (cmd: readonly string[]) => {
-	readonly exitCode: number;
-	readonly stdout: Uint8Array;
-	readonly stderr: Uint8Array;
-};
-
-/** Injectable subset of the global `fetch` this module needs (testability). */
-export type IFetchFn = (
-	url: string,
-	init?: { readonly headers?: Record<string, string> },
-) => Promise<{
-	readonly ok: boolean;
-	readonly status: number;
-	json: () => Promise<unknown>;
-}>;
-
-export interface IGithubClientDeps {
-	/** Preferred async seam. */
-	readonly spawn?: ISpawn;
-	/** Legacy sync seam; adapted to async when `spawn` is absent. */
-	readonly spawnSync?: ISpawnSync;
-	readonly fetchFn?: IFetchFn;
-	readonly env?: Readonly<Record<string, string | undefined>>;
-}
+const EXIT_CODE_COMMAND_NOT_FOUND = 127;
+const EXIT_CODE_CANNOT_EXECUTE = 126;
+const DEFAULT_LIST_PAGE_SIZE = 30;
 
 const defaultSpawn: ISpawn = (cmd) =>
 	new Promise((resolve) => {
 		const [binary, ...args] = cmd;
 		if (binary === undefined) {
 			resolve({
-				exitCode: 127,
+				exitCode: EXIT_CODE_COMMAND_NOT_FOUND,
 				stdout: new Uint8Array(),
 				stderr: new TextEncoder().encode('empty argv'),
 			});
@@ -126,7 +85,10 @@ const defaultSpawn: ISpawn = (cmd) =>
 		child.stderr?.on('data', (chunk: Buffer) => err.push(chunk));
 		child.on('error', (error: NodeJS.ErrnoException) => {
 			resolve({
-				exitCode: error.code === 'ENOENT' ? 127 : 126,
+				exitCode:
+					error.code === 'ENOENT'
+						? EXIT_CODE_COMMAND_NOT_FOUND
+						: EXIT_CODE_CANNOT_EXECUTE,
 				stdout: new Uint8Array(),
 				stderr: new TextEncoder().encode(String(error)),
 			});
@@ -223,7 +185,7 @@ const tryGhApi = async (
 	path: string,
 ): Promise<unknown | null> => {
 	const result = await spawnFn(['gh', 'api', path]);
-	if (result.exitCode === 127) return null; // command not found
+	if (result.exitCode === EXIT_CODE_COMMAND_NOT_FOUND) return null;
 	const stderr = decode(result.stderr);
 	if (
 		result.exitCode !== 0 &&
@@ -269,7 +231,7 @@ const tryGhListIssues = async (
 	if (opts.labels && opts.labels.length > 0) {
 		params.set('labels', opts.labels.join(','));
 	}
-	params.set('per_page', String(opts.limit ?? 30));
+	params.set('per_page', String(opts.limit ?? DEFAULT_LIST_PAGE_SIZE));
 	const path = `repos/${repo}/issues?${params.toString()}`;
 	const raw = await tryGhApi(spawnFn, path);
 	if (raw === null) return null;
@@ -338,7 +300,7 @@ const restListIssues = async (
 	if (opts.labels && opts.labels.length > 0) {
 		params.set('labels', opts.labels.join(','));
 	}
-	params.set('per_page', String(opts.limit ?? 30));
+	params.set('per_page', String(opts.limit ?? DEFAULT_LIST_PAGE_SIZE));
 	const raw = (await restGet(
 		fetchFn,
 		`repos/${repo}/issues?${params.toString()}`,
@@ -447,56 +409,6 @@ export const createIssueViaGh = async (
 	};
 	return { issueNumber: parsed.number, issueUrl: parsed.url };
 };
-
-export interface IListDependabotAlertsOptions {
-	readonly state?: 'open' | 'dismissed' | 'fixed';
-	readonly severity?: 'critical' | 'high' | 'medium' | 'low';
-	readonly limit?: number;
-}
-
-export interface IListDependabotAlertsResult {
-	readonly alerts: readonly IDependabotAlertSummary[];
-	readonly tier: IGithubClientTier;
-}
-
-export interface IListCodeScanningAlertsOptions {
-	readonly state?: 'open' | 'fixed' | 'dismissed';
-	readonly severity?:
-		| 'critical'
-		| 'high'
-		| 'medium'
-		| 'low'
-		| 'warning'
-		| 'error'
-		| 'note'
-		| 'none';
-	readonly limit?: number;
-}
-
-export interface IListCodeScanningAlertsResult {
-	readonly alerts: readonly ICodeScanningAlertSummary[];
-	readonly tier: IGithubClientTier;
-}
-
-export interface IListSecretScanningAlertsOptions {
-	readonly state?: 'open' | 'resolved' | 'unknown';
-	readonly limit?: number;
-}
-
-export interface IListSecretScanningAlertsResult {
-	readonly alerts: readonly ISecretScanningAlertSummary[];
-	readonly tier: IGithubClientTier;
-}
-
-export interface IListSecurityAdvisoriesOptions {
-	readonly state?: string;
-	readonly limit?: number;
-}
-
-export interface IListSecurityAdvisoriesResult {
-	readonly advisories: readonly ISecurityAdvisorySummary[];
-	readonly tier: IGithubClientTier;
-}
 
 interface IRawDependabotPackage {
 	readonly ecosystem?: string | null;
@@ -676,7 +588,7 @@ const tryGhListDependabotAlerts = async (
 	if (opts.severity !== undefined) {
 		params.set('severity', opts.severity);
 	}
-	params.set('per_page', String(opts.limit ?? 30));
+	params.set('per_page', String(opts.limit ?? DEFAULT_LIST_PAGE_SIZE));
 	const raw = await tryGhApi(
 		spawnFn,
 		`repos/${repo}/dependabot/alerts?${params.toString()}`,
@@ -697,7 +609,7 @@ const restListDependabotAlerts = async (
 	if (opts.severity !== undefined) {
 		params.set('severity', opts.severity);
 	}
-	params.set('per_page', String(opts.limit ?? 30));
+	params.set('per_page', String(opts.limit ?? DEFAULT_LIST_PAGE_SIZE));
 	const raw = (await restGet(
 		fetchFn,
 		`repos/${repo}/dependabot/alerts?${params.toString()}`,
@@ -717,7 +629,7 @@ const tryGhListCodeScanningAlerts = async (
 	if (opts.severity !== undefined) {
 		params.set('severity', opts.severity);
 	}
-	params.set('per_page', String(opts.limit ?? 30));
+	params.set('per_page', String(opts.limit ?? DEFAULT_LIST_PAGE_SIZE));
 	const raw = await tryGhApi(
 		spawnFn,
 		`repos/${repo}/code-scanning/alerts?${params.toString()}`,
@@ -738,7 +650,7 @@ const restListCodeScanningAlerts = async (
 	if (opts.severity !== undefined) {
 		params.set('severity', opts.severity);
 	}
-	params.set('per_page', String(opts.limit ?? 30));
+	params.set('per_page', String(opts.limit ?? DEFAULT_LIST_PAGE_SIZE));
 	const raw = (await restGet(
 		fetchFn,
 		`repos/${repo}/code-scanning/alerts?${params.toString()}`,
@@ -755,7 +667,7 @@ const tryGhListSecretScanningAlerts = async (
 ): Promise<readonly ISecretScanningAlertSummary[] | null> => {
 	const params = new URLSearchParams();
 	params.set('state', opts.state ?? 'open');
-	params.set('per_page', String(opts.limit ?? 30));
+	params.set('per_page', String(opts.limit ?? DEFAULT_LIST_PAGE_SIZE));
 	const raw = await tryGhApi(
 		spawnFn,
 		`repos/${repo}/secret-scanning/alerts?${params.toString()}`,
@@ -773,7 +685,7 @@ const restListSecretScanningAlerts = async (
 ): Promise<readonly ISecretScanningAlertSummary[]> => {
 	const params = new URLSearchParams();
 	params.set('state', opts.state ?? 'open');
-	params.set('per_page', String(opts.limit ?? 30));
+	params.set('per_page', String(opts.limit ?? DEFAULT_LIST_PAGE_SIZE));
 	const raw = (await restGet(
 		fetchFn,
 		`repos/${repo}/secret-scanning/alerts?${params.toString()}`,
@@ -790,7 +702,7 @@ const tryGhListSecurityAdvisories = async (
 ): Promise<readonly ISecurityAdvisorySummary[] | null> => {
 	const params = new URLSearchParams();
 	params.set('state', opts.state ?? 'published');
-	params.set('per_page', String(opts.limit ?? 30));
+	params.set('per_page', String(opts.limit ?? DEFAULT_LIST_PAGE_SIZE));
 	const raw = await tryGhApi(
 		spawnFn,
 		`repos/${repo}/security-advisories?${params.toString()}`,
@@ -808,7 +720,7 @@ const restListSecurityAdvisories = async (
 ): Promise<readonly ISecurityAdvisorySummary[]> => {
 	const params = new URLSearchParams();
 	params.set('state', opts.state ?? 'published');
-	params.set('per_page', String(opts.limit ?? 30));
+	params.set('per_page', String(opts.limit ?? DEFAULT_LIST_PAGE_SIZE));
 	const raw = (await restGet(
 		fetchFn,
 		`repos/${repo}/security-advisories?${params.toString()}`,

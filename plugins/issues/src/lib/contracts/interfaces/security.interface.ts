@@ -6,10 +6,14 @@
  * scanning and repository advisories.
  */
 
+export type IDependabotAlertState = 'open' | 'dismissed' | 'fixed';
+
+export type IDependabotAlertSeverity = 'critical' | 'high' | 'medium' | 'low';
+
 export interface IDependabotAlertSummary {
 	readonly number: number;
-	readonly state: 'open' | 'dismissed' | 'fixed';
-	readonly severity: 'critical' | 'high' | 'medium' | 'low';
+	readonly state: IDependabotAlertState;
+	readonly severity: IDependabotAlertSeverity;
 	readonly package: {
 		readonly ecosystem: string;
 		readonly name: string;
@@ -24,18 +28,22 @@ export interface IDependabotAlertSummary {
 	readonly updatedAt: string;
 }
 
+export type ICodeScanningAlertState = 'open' | 'fixed' | 'dismissed';
+
+export type ICodeScanningAlertSeverity =
+	| 'critical'
+	| 'high'
+	| 'medium'
+	| 'low'
+	| 'warning'
+	| 'error'
+	| 'note'
+	| 'none';
+
 export interface ICodeScanningAlertSummary {
 	readonly number: number;
-	readonly state: 'open' | 'fixed' | 'dismissed';
-	readonly severity:
-		| 'critical'
-		| 'high'
-		| 'medium'
-		| 'low'
-		| 'warning'
-		| 'error'
-		| 'note'
-		| 'none';
+	readonly state: ICodeScanningAlertState;
+	readonly severity: ICodeScanningAlertSeverity;
 	readonly rule: {
 		readonly id: string;
 		readonly severity: string;
@@ -55,9 +63,11 @@ export interface ICodeScanningAlertSummary {
 	readonly updatedAt: string;
 }
 
+export type ISecretScanningAlertState = 'open' | 'resolved' | 'unknown';
+
 export interface ISecretScanningAlertSummary {
 	readonly number: number;
-	readonly state: 'open' | 'resolved' | 'unknown';
+	readonly state: ISecretScanningAlertState;
 	readonly secretType: string;
 	readonly pushProtection: boolean;
 	readonly validity: string | null;

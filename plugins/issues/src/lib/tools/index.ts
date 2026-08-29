@@ -12,12 +12,11 @@ import { buildIngestIssueRegistration } from './ingest-issue.tool';
 import { buildListAdvisoriesRegistration } from './list-advisories.tool';
 import { buildListCodeScanningRegistration } from './list-code-scanning.tool';
 import { buildListDependabotRegistration } from './list-dependabot.tool';
-import type { IGithubClient } from './list-issues.tool';
+import type { IGithubClient } from '../contracts';
 import { buildListIssuesRegistration } from './list-issues.tool';
 import { buildListSecretScanningRegistration } from './list-secret-scanning.tool';
 import { buildResolveIssueRegistration } from './resolve-issue.tool';
 
-export type { IGithubClient } from './list-issues.tool';
 export { buildSetupGithubRegistration } from './setup-github.tool';
 
 export interface IBuildIssuesToolRegistrationsOptions {

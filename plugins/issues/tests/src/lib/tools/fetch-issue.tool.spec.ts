@@ -4,8 +4,10 @@ import {
 	runFetchIssue,
 	type IFetchIssueToolOptions,
 } from '../../../../src/lib/tools/fetch-issue.tool';
-import type { IGithubClient } from '../../../../src/lib/tools/list-issues.tool';
-import type { IFetchIssueResult } from '../../../../src/lib/github-client';
+import type {
+	IFetchIssueResult,
+	IGithubClient,
+} from '../../../../src/lib/contracts';
 
 const STUB_RESULT: IFetchIssueResult = {
 	data: {

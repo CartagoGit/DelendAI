@@ -1,30 +1,16 @@
 import z from 'zod';
 
 import type { IToolRegistration } from '@mcp-vertex/core/public';
-import { toolError, toolOk } from '@mcp-vertex/core/public';
 
-import type { ICodeScanningAlertSummary } from '../contracts';
-import type { IGithubClient } from './list-issues.tool';
-
-export interface IListCodeScanningToolOptions {
-	readonly namespacePrefix: string;
-	readonly githubClient: IGithubClient;
-}
-
-export interface IListCodeScanningArgs {
-	readonly state?: 'open' | 'fixed' | 'dismissed' | undefined;
-	readonly severity?:
-		| 'critical'
-		| 'high'
-		| 'medium'
-		| 'low'
-		| 'warning'
-		| 'error'
-		| 'note'
-		| 'none'
-		| undefined;
-	readonly limit?: number | undefined;
-}
+import type {
+	ICodeScanningAlertSummary,
+	IListCodeScanningArgs,
+	IListCodeScanningToolOptions,
+} from '../contracts';
+import {
+	githubClientToolError,
+	githubTieredCollectionOk,
+} from './github-list.tool-helpers';
 
 const CODE_SCANNING_ALERT_SUMMARY_SCHEMA = z.object({
 	number: z.number(),
@@ -79,15 +65,13 @@ export const runListCodeScanning = async (
 			...(args.severity !== undefined ? { severity: args.severity } : {}),
 			...(args.limit !== undefined ? { limit: args.limit } : {}),
 		});
-		return toolOk({
-			alerts: result.alerts as ICodeScanningAlertSummary[],
-			tier: result.tier,
-		});
-	} catch (error) {
-		return toolError(
-			error instanceof Error ? error.message : String(error),
-			'Check repo configuration / network connectivity / gh auth status.',
+		return githubTieredCollectionOk(
+			'alerts',
+			result.alerts as ICodeScanningAlertSummary[],
+			result.tier,
 		);
+	} catch (error) {
+		return githubClientToolError(error);
 	}
 };
 

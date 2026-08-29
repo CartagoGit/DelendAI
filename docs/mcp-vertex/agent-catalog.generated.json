@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-08-28T15:58:11.936Z",
+	"generatedAt": "2026-08-29T05:13:50.930Z",
 	"mode": "compact",
 	"tools": [
 		{
@@ -1303,6 +1303,13 @@
 				"kind": "feat"
 			},
 			{
+				"id": "f00260",
+				"title": "f00260",
+				"track": "multi-model-coordination",
+				"status": "ready",
+				"kind": "feat"
+			},
+			{
 				"id": "q00003",
 				"title": "q00003",
 				"track": "develop-audit-consolidation",
@@ -1346,7 +1353,7 @@
 			}
 		],
 		"byStatus": {
-			"ready": 0,
+			"ready": 1,
 			"in-progress": 15,
 			"review": 0,
 			"paused": 1,

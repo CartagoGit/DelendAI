@@ -1,15 +1,13 @@
 import { describe, expect, it } from 'vitest';
 
-import {
-	runListAdvisories,
-	type IListAdvisoriesToolOptions,
-} from '../../../../src/lib/tools/list-advisories.tool';
+import { runListAdvisories } from '../../../../src/lib/tools/list-advisories.tool';
 import type {
 	IFetchIssueResult,
+	IGithubClient,
+	IListAdvisoriesToolOptions,
 	IListSecurityAdvisoriesOptions,
 	IListSecurityAdvisoriesResult,
-} from '../../../../src/lib/github-client';
-import type { IGithubClient } from '../../../../src/lib/tools/list-issues.tool';
+} from '../../../../src/lib/contracts';
 
 const STUB_FETCH_RESULT: IFetchIssueResult = {
 	data: {
