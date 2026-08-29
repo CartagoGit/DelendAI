@@ -78,10 +78,31 @@ export default defineConfig({
 		],
 		// Coverage is a root concern (aggregated across every project). It only
 		// runs under `--coverage` (i.e. `bun run test:coverage`), so the plain
-		// `bun run test` stays fast. The thresholds are a no-regression gate set
-		// a few points under the current numbers — tighten them as coverage grows.
+		// `bun run test` stays fast.
+		//
+		// RATCHET POLICY (re-measured 2026-08-29, see docs/mcp-vertex/coverage-ratchet.md):
+		// measured twice back-to-back — 83.23/70.29/84.05/84.90 then
+		// 83.30/70.34/84.12/84.98 (statements/branches/functions/lines) — so
+		// run-to-run drift on this suite is well under 0.1pt per metric.
+		// Floors below are the lower of the two runs minus a flat 1.0pt
+		// margin (~10x the observed drift), then floored to a whole number.
+		// That is enough headroom to absorb ordinary noise without enough
+		// slack to hide a real regression, unlike the previous 2-4pt gap.
+		// To re-tighten: run `bun run test:coverage` (or, if a spec is
+		// currently red and skipping the report, add
+		// `--coverage.reportOnFailure=true` to the vitest invocation to force
+		// the report anyway), read the "Coverage summary" percentages, and
+		// set each threshold below to floor(measured − 1.0). Never lower a
+		// threshold below its current value — that would mean coverage
+		// regressed, which is a bug to fix, not a number to accommodate.
 		coverage: {
 			provider: 'v8',
+			// Without this, coverage-v8 deletes the report on any test
+			// failure, so the threshold check never runs and the job exits
+			// red for the failing test instead — the gate silently skips
+			// exactly when a coverage regression is most likely to be
+			// arriving alongside broken tests.
+			reportOnFailure: true,
 			// r00004 S1: keep coverage out of the root — write under .cache/.
 			reportsDirectory: '.cache/coverage',
 			all: true,
@@ -119,13 +140,16 @@ export default defineConfig({
 			reporter: ['text-summary'],
 			// t00004: re-measured after widening the scope — the global
 			// numbers ROSE (83.45/70.78/82.63/84.90 on 2026-07-14) because
-			// apps/shared and the extension are well covered. Floors sit a
-			// few points under the measured values, as always.
+			// apps/shared and the extension are well covered.
+			// 2026-08-29: re-measured again (see RATCHET POLICY note above) —
+			// a large batch of new tests landed since t00004 and the old
+			// floors (80/67/79/81) had drifted 2-4pt under the real numbers.
+			// Tightened to measured − 1.0pt, floored.
 			thresholds: {
-				statements: 80,
-				branches: 67,
-				functions: 79,
-				lines: 81,
+				statements: 82,
+				branches: 69,
+				functions: 83,
+				lines: 83,
 			},
 		},
 	},

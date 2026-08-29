@@ -2051,7 +2051,21 @@ export interface McpVertexProposalsProposalTransitionOutput {
 	filesRewritten?: number;
 }
 
-export interface McpVertexProposalsProposalsClosePlanOutput {
+export type McpVertexProposalsProposalsClosePlanOutput = {
+	dryRun: true;
+	wouldChange: Array<{
+		kind: "write" | "delete" | "rename" | "create" | "patch";
+		path: string;
+		summary: string;
+	}>;
+	wouldRun: Array<{
+		shape: "shell" | "network" | "process" | "git" | "mcp";
+		target: string;
+		summary: string;
+	}>;
+	risk: "low" | "medium" | "high";
+	note?: string;
+} | {
 	ok: boolean;
 	planId: string;
 	dryRun: boolean;
@@ -2072,7 +2086,7 @@ export interface McpVertexProposalsProposalsClosePlanOutput {
 		reason: string;
 		nextAction?: string;
 	};
-}
+};
 
 export interface McpVertexProposalsRoundContextOutput {
 	digest: {
