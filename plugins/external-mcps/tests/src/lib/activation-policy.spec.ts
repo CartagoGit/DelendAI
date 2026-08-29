@@ -12,7 +12,7 @@
  */
 import { describe, expect, it } from 'vitest';
 
-import { decideActivation } from '../../../src/lib/activation/activation-policy';
+import { decideActivation } from '../../../src/lib/activation/activation-policy.helper';
 import type { IActivationPolicyInput } from '../../../src/lib/activation/activation-policy.interface';
 
 const base: IActivationPolicyInput = {

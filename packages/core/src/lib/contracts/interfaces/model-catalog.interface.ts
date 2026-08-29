@@ -1,6 +1,9 @@
-import type { CapabilityTag, IProviderCapabilities } from './provider-capabilities.interface';
+import type {
+	CapabilityTag,
+	IProviderCapabilities,
+} from './provider-capabilities.interface';
 
-export type ModelLifecycle = 'active' | 'deprecated' | 'disabled';
+export type IModelLifecycle = 'active' | 'deprecated' | 'disabled';
 
 export interface IModelLimits {
 	readonly maxInputTokens?: number;
@@ -12,7 +15,7 @@ export interface IModelCatalogEntry extends IProviderCapabilities {
 	readonly aliases: readonly string[];
 	readonly provider: string;
 	readonly source: string;
-	readonly lifecycle: ModelLifecycle;
+	readonly lifecycle: IModelLifecycle;
 	readonly limits?: IModelLimits;
 }
 
@@ -20,7 +23,7 @@ export interface IModelCatalogFilter {
 	readonly provider?: string;
 	readonly capabilities?: readonly CapabilityTag[];
 	readonly minContextWindow?: number;
-	readonly lifecycle?: ModelLifecycle | readonly ModelLifecycle[];
+	readonly lifecycle?: IModelLifecycle | readonly IModelLifecycle[];
 	readonly limit?: number;
 }
 
@@ -28,12 +31,17 @@ export interface IModelCatalogSearchOptions extends IModelCatalogFilter {
 	readonly query?: string;
 }
 
-export type ModelCatalogErrorCode = 'duplicate-key' | 'duplicate-alias' | 'ambiguous-alias' | 'invalid-entry' | 'invalid-limit';
+export type IModelCatalogErrorCode =
+	| 'duplicate-key'
+	| 'duplicate-alias'
+	| 'ambiguous-alias'
+	| 'invalid-entry'
+	| 'invalid-limit';
 
 export class ModelCatalogError extends Error {
-	readonly code: ModelCatalogErrorCode;
+	readonly code: IModelCatalogErrorCode;
 
-	constructor(code: ModelCatalogErrorCode, message: string) {
+	constructor(code: IModelCatalogErrorCode, message: string) {
 		super(message);
 		this.name = 'ModelCatalogError';
 		this.code = code;
