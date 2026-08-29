@@ -90,8 +90,8 @@ export type {
 	IModelCatalogFilter,
 	IModelCatalogSearchOptions,
 	IModelLimits,
-	ModelCatalogErrorCode,
-	ModelLifecycle,
+	IModelCatalogErrorCode,
+	IModelLifecycle,
 } from '../lib/contracts/interfaces/model-catalog.interface';
 export {
 	DEFAULT_MODEL_CATALOG_LIMIT,
@@ -275,7 +275,7 @@ export {
 	type IBootstrapMeasurement,
 	type IMcpToolWireDefinition,
 } from '../lib/surface/bootstrap';
-export { compactOutputSchema } from '../lib/surface/compact-output-schema';
+export { compactOutputSchema } from '../lib/surface/compact-output-schema.helper';
 export {
 	VALIDATE_EVIDENCE_SCHEMA,
 	type IValidateEvidenceInput,
@@ -727,11 +727,11 @@ export {
 	clearDryRunViolationsForTests,
 	listDryRunViolations,
 	recordDryRunViolation,
-} from '../lib/dry-run/dry-run-violation-log';
+} from '../lib/dry-run/dry-run-violation-log.service';
 export type { IDryRunContractViolationRecord } from '../lib/contracts/interfaces/dry-run-violation.interface';
 // r00037 S2/S3 — the EffectBroker: the single point of construction for
 // every ambient-dry-run-gated capability a plugin context hands out.
-export { createEffectBroker } from '../lib/capabilities/effect-broker';
+export { createEffectBroker } from '../lib/capabilities/effect-broker.factory';
 export type {
 	IEffectBrokerCapabilityDefinition,
 	IEffectBrokerCapabilities,

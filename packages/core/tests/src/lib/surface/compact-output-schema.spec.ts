@@ -1,7 +1,7 @@
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { describe, expect, it } from 'vitest';
 
-import { compactOutputSchema } from '@mcp-vertex/core/lib/surface/compact-output-schema';
+import { compactOutputSchema } from '@mcp-vertex/core/lib/surface/compact-output-schema.helper';
 import { buildAgentCatalogToolRegistration } from '@mcp-vertex/core/lib/tools/agent-catalog-tool';
 import { buildOverviewToolRegistration } from '@mcp-vertex/core/lib/tools/overview-tool';
 import { buildAnalyzeToolRegistration } from '@mcp-vertex/core/lib/bootstrap/analyze-tool';

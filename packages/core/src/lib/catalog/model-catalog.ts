@@ -3,15 +3,16 @@ import type {
 	IModelCatalogEntry,
 	IModelCatalogFilter,
 	IModelCatalogSearchOptions,
-	ModelCatalogErrorCode,
+	IModelCatalogErrorCode,
 } from '../contracts/interfaces/model-catalog.interface';
 import {
 	ModelCatalogError,
-	type ModelLifecycle,
+	type IModelLifecycle,
 } from '../contracts/interfaces/model-catalog.interface';
-
-export const DEFAULT_MODEL_CATALOG_LIMIT = 50;
-export const MAX_MODEL_CATALOG_LIMIT = 100;
+import {
+	DEFAULT_MODEL_CATALOG_LIMIT,
+	MAX_MODEL_CATALOG_LIMIT,
+} from '../contracts/constants/model-catalog.constant';
 
 const normalize = (value: string): string => value.trim().toLocaleLowerCase();
 
@@ -43,45 +44,67 @@ const cloneEntry = (entry: IModelCatalogEntry): IModelCatalogEntry =>
 		weaknesses: [...entry.weaknesses],
 		invoke:
 			entry.invoke.kind === 'cli'
-				? { ...entry.invoke, ...(entry.invoke.args ? { args: [...entry.invoke.args] } : {}) }
-			: entry.invoke.kind === 'mcp-server'
-				? { ...entry.invoke, args: cloneValue(entry.invoke.args) }
-				: { ...entry.invoke },
+				? {
+						...entry.invoke,
+						...(entry.invoke.args
+							? { args: [...entry.invoke.args] }
+							: {}),
+					}
+				: entry.invoke.kind === 'mcp-server'
+					? { ...entry.invoke, args: cloneValue(entry.invoke.args) }
+					: { ...entry.invoke },
 		...(entry.limits !== undefined ? { limits: { ...entry.limits } } : {}),
 	});
 
-const fail = (code: ModelCatalogErrorCode, message: string): never => {
+const fail = (code: IModelCatalogErrorCode, message: string): never => {
 	throw new ModelCatalogError(code, message);
 };
 
 const validateEntry = (entry: IModelCatalogEntry): void => {
-	if (normalize(entry.key).length === 0 || normalize(entry.provider).length === 0) {
+	if (
+		normalize(entry.key).length === 0 ||
+		normalize(entry.provider).length === 0
+	) {
 		fail('invalid-entry', 'Model key and provider are required.');
 	}
 	if (entry.aliases.some((alias) => normalize(alias).length === 0)) {
 		fail('invalid-entry', 'Model aliases must not be empty.');
 	}
-	if (entry.aliases.some((alias, index) =>
-		entry.aliases.slice(index + 1).some((other) => normalize(alias) === normalize(other)),
-	)) {
-		fail('duplicate-alias', `Model ${entry.key} contains duplicate aliases.`);
+	if (
+		entry.aliases.some((alias, index) =>
+			entry.aliases
+				.slice(index + 1)
+				.some((other) => normalize(alias) === normalize(other)),
+		)
+	) {
+		fail(
+			'duplicate-alias',
+			`Model ${entry.key} contains duplicate aliases.`,
+		);
 	}
-	if (entry.aliases.some((alias) => normalize(alias) === normalize(entry.key))) {
+	if (
+		entry.aliases.some((alias) => normalize(alias) === normalize(entry.key))
+	) {
 		fail('duplicate-alias', `Model ${entry.key} uses its key as an alias.`);
 	}
 };
 
-const lifecycleValues = (lifecycle: IModelCatalogFilter['lifecycle']): readonly ModelLifecycle[] =>
+const lifecycleValues = (
+	lifecycle: IModelCatalogFilter['lifecycle'],
+): readonly IModelLifecycle[] =>
 	lifecycle === undefined
 		? ['active', 'deprecated', 'disabled']
 		: Array.isArray(lifecycle)
 			? lifecycle
-			: [lifecycle as ModelLifecycle];
+			: [lifecycle as IModelLifecycle];
 
 const resolveLimit = (limit: number | undefined): number => {
 	if (limit === undefined) return DEFAULT_MODEL_CATALOG_LIMIT;
 	if (!Number.isInteger(limit) || limit < 1) {
-		fail('invalid-limit', 'Model catalog limit must be a positive integer.');
+		fail(
+			'invalid-limit',
+			'Model catalog limit must be a positive integer.',
+		);
 	}
 	return Math.min(limit, MAX_MODEL_CATALOG_LIMIT);
 };
@@ -94,16 +117,25 @@ export class InMemoryModelCatalog implements IModelCatalog {
 		validateEntry(entry);
 		const key = normalize(entry.key);
 		if (this.entries.has(key)) {
-			fail('duplicate-key', `Model key ${entry.key} is already registered.`);
+			fail(
+				'duplicate-key',
+				`Model key ${entry.key} is already registered.`,
+			);
 		}
 		for (const alias of entry.aliases) {
 			const aliasKey = normalize(alias);
 			if (this.entries.has(aliasKey)) {
-				fail('duplicate-alias', `Model alias ${alias} collides with a registered key.`);
+				fail(
+					'duplicate-alias',
+					`Model alias ${alias} collides with a registered key.`,
+				);
 			}
 			const owners = this.aliases.get(aliasKey);
 			if (owners !== undefined && owners.size > 0) {
-				fail('duplicate-alias', `Model alias ${alias} is already registered.`);
+				fail(
+					'duplicate-alias',
+					`Model alias ${alias} is already registered.`,
+				);
 			}
 		}
 
@@ -126,7 +158,10 @@ export class InMemoryModelCatalog implements IModelCatalog {
 		for (const alias of entry.aliases) {
 			const aliasKey = normalize(alias);
 			if (this.entries.has(aliasKey)) {
-				fail('duplicate-alias', `Model alias ${alias} collides with a registered key.`);
+				fail(
+					'duplicate-alias',
+					`Model alias ${alias} collides with a registered key.`,
+				);
 			}
 			const owners = this.aliases.get(aliasKey);
 			owners?.delete(normalizedKey);
@@ -145,26 +180,48 @@ export class InMemoryModelCatalog implements IModelCatalog {
 	}
 
 	list(filter: IModelCatalogFilter = {}): readonly IModelCatalogEntry[] {
-		const provider = filter.provider === undefined ? undefined : normalize(filter.provider);
+		const provider =
+			filter.provider === undefined
+				? undefined
+				: normalize(filter.provider);
 		const capabilities = filter.capabilities ?? [];
 		const lifecycles = lifecycleValues(filter.lifecycle);
 		const matches = [...this.entries.values()]
-			.filter((entry) =>
-				(provider === undefined || normalize(entry.provider) === provider) &&
-				(entry.contextWindow >= (filter.minContextWindow ?? 0)) &&
-				lifecycles.includes(entry.lifecycle) &&
-				capabilities.every((capability) => entry.strengths.includes(capability)),
+			.filter(
+				(entry) =>
+					(provider === undefined ||
+						normalize(entry.provider) === provider) &&
+					entry.contextWindow >= (filter.minContextWindow ?? 0) &&
+					lifecycles.includes(entry.lifecycle) &&
+					capabilities.every((capability) =>
+						entry.strengths.includes(capability),
+					),
 			)
-			.sort((left, right) => normalize(left.key).localeCompare(normalize(right.key)));
+			.sort((left, right) =>
+				normalize(left.key).localeCompare(normalize(right.key)),
+			);
 		return matches.slice(0, resolveLimit(filter.limit));
 	}
 
-	search(query: string, options: IModelCatalogSearchOptions = {}): readonly IModelCatalogEntry[] {
+	search(
+		query: string,
+		options: IModelCatalogSearchOptions = {},
+	): readonly IModelCatalogEntry[] {
 		const normalizedQuery = normalize(query);
 		if (normalizedQuery.length === 0) return this.list(options);
-		const matches = this.list({ ...options, limit: MAX_MODEL_CATALOG_LIMIT }).filter((entry) =>
-			[entry.key, entry.id, entry.modelId, entry.provider, entry.source, ...entry.aliases, ...entry.strengths]
-				.some((value) => normalize(value).includes(normalizedQuery)),
+		const matches = this.list({
+			...options,
+			limit: MAX_MODEL_CATALOG_LIMIT,
+		}).filter((entry) =>
+			[
+				entry.key,
+				entry.id,
+				entry.modelId,
+				entry.provider,
+				entry.source,
+				...entry.aliases,
+				...entry.strengths,
+			].some((value) => normalize(value).includes(normalizedQuery)),
 		);
 		return matches.slice(0, resolveLimit(options.limit));
 	}
@@ -173,7 +230,10 @@ export class InMemoryModelCatalog implements IModelCatalog {
 		const owners = this.aliases.get(normalize(alias));
 		if (owners === undefined || owners.size === 0) return undefined;
 		if (owners.size > 1) {
-			fail('ambiguous-alias', `Model alias ${alias} resolves to multiple models.`);
+			fail(
+				'ambiguous-alias',
+				`Model alias ${alias} resolves to multiple models.`,
+			);
 		}
 		return this.entries.get([...owners][0]!);
 	}
