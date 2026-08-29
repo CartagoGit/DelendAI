@@ -316,7 +316,6 @@ export default definePlugin({
 					intervalCheckInFlight = false;
 				}
 			};
-			void checkInterval();
 			const intervalHandle = setInterval(() => {
 				void checkInterval();
 			}, intervalMs);
