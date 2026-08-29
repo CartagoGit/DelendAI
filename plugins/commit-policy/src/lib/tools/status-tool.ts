@@ -19,9 +19,11 @@ import type { IToolRegistration } from '@mcp-vertex/core/public';
 import { toolError, toolOk } from '@mcp-vertex/core/public';
 
 import type { ICommitPolicyOptions } from '../contracts/options';
+import { isBranchProtected } from '../contracts/branch';
 import { localizedString } from '../contracts/i18n-types';
 import type { IIdentityResolverContext } from '../identity/resolver';
 import { resolveAuthor } from '../identity/resolver';
+import { gitCurrentBranch } from '../services/git-extra';
 
 export interface IStatusToolOptions {
 	readonly namespacePrefix: string;
@@ -77,6 +79,12 @@ const OutputSchema = z.object({
 		remote: z.string().optional(),
 		branch: z.string().optional(),
 	}),
+	branchPolicy: z.object({
+		current: z.string().nullable(),
+		protectedBranches: z.array(z.string()),
+		protectedPrefixes: z.array(z.string()),
+		directCommitPushAllowed: z.boolean(),
+	}),
 	locale: z.string(),
 });
 
@@ -87,6 +95,15 @@ export const runCommitPolicyStatus = async (
 		options.options.identity,
 		options.identityCtx,
 	);
+	const currentBranch = await gitCurrentBranch(options.identityCtx.run);
+	const protectedBranches = [...options.options.push.protectedBranches];
+	const protectedPrefixes = [
+		...(options.options.push.protectedPrefixes ?? []),
+	];
+	const currentBranchProtected = isBranchProtected(currentBranch, {
+		protected: protectedBranches,
+		protectedPrefixes,
+	});
 
 	const payload = {
 		commit: {
@@ -141,6 +158,12 @@ export const runCommitPolicyStatus = async (
 				? { branch: options.options.push.branch }
 				: {}),
 		},
+		branchPolicy: {
+			current: currentBranch ?? null,
+			protectedBranches,
+			protectedPrefixes,
+			directCommitPushAllowed: !currentBranchProtected,
+		},
 		locale: options.locale ?? 'en',
 	};
 
@@ -172,14 +195,14 @@ export const buildStatusToolRegistration = (
 ): IToolRegistration => ({
 	id: 'commit_policy_status',
 	summary:
-		'Show the current commit-policy configuration (identity mode, effective author, triggers, push policy) so agents debug "who is going to commit as whom".',
+		'Show the effective commit-policy configuration, including which branches are protected and whether direct commit/push is allowed on the current branch.',
 	tags: ['commit-policy', 'status', 'read-only'],
 	register: async (server: McpServer) => {
 		server.registerTool(
 			`${options.namespacePrefix}_commit_policy_status`,
 			{
 				description:
-					'Read-only snapshot of the commit-policy engine: which identity mode is active, what the resolved author looks like, which triggers are enabled, what the push policy says. Cheap to call; no side effects.',
+					'Read-only snapshot of commit-policy. Inspect branchPolicy before committing or pushing: protected branches refuse direct automation; other branches allow direct commit/push when enabled.',
 				outputSchema: OutputSchema,
 				inputSchema: z.object({}),
 			},

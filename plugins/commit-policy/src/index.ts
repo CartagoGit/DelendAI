@@ -157,6 +157,14 @@ export default definePlugin({
 				: null;
 
 		const sharedDriver = { run, policy, identityCtx, auditAgent };
+		const configuredInterval = policy.cadence.triggers.find(
+			(t): t is Extract<typeof t, { kind: 'interval' }> =>
+				t.kind === 'interval',
+		);
+		const intervalTimer =
+			configuredInterval === undefined
+				? undefined
+				: createIntervalTimer(run, configuredInterval);
 
 		// The push scheduler unifies the
 		// three modes (`onCommit`, `everyNCommits`, `everyNMinutes`)
@@ -199,6 +207,7 @@ export default definePlugin({
 				policy,
 				workspaceRoot: ctx.workspace.root,
 				docsDir: ctx.docsDir,
+				...(intervalTimer !== undefined ? { intervalTimer } : {}),
 				locale: process.env.MCP_VERTEX_LOCALE ?? 'en',
 				onCommitSucceeded: () => pushScheduler.onCommitSucceeded(),
 			}),
@@ -338,6 +347,12 @@ export default definePlugin({
 					'- `audit.trailer` — `none | co-authored-by | body-metadata` (default `co-authored-by`).',
 					'- `push.enabled` / `push.onCommit` / `push.everyNCommits` / `push.everyNMinutes` — all default `false`.',
 					'- `push.protectedBranches` defaults to `main` + `master`; `push.force` defaults to `with-lease`.',
+					'',
+					'**Branch rules (read before committing or pushing):**',
+					'- Branches listed in `push.protectedBranches` are protected: automatic commit/push is refused and changes must go through the repository review flow.',
+					'- Branches matching `push.protectedPrefixes` are protected too; defaults are `release/` and `hotfix/`.',
+					'- Any other branch permits direct commit and push when `commit.enabled` and `push.enabled` are true. In this repository, `develop` is the shared working branch and is intentionally allowed.',
+					'- Call `commit_policy_status` before an automatic operation to inspect `branchPolicy.current`, the effective protected lists, and `directCommitPushAllowed`.',
 					'',
 					'**Off by default.** Hosts must opt in:',
 					'',
