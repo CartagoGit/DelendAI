@@ -41,4 +41,26 @@ describe('scaffoldExtensionHostFiles', () => {
 		expect(command?.content).toContain('renderJsonHtml');
 		expect(command?.content).toContain('getOverview({ compact: true })');
 	});
+
+	it('preserves the generated host id for repeated separators in hostName', () => {
+		const files = scaffoldExtensionHostFiles({
+			hostName: '  JetBrains___IDE!!!  ',
+			description: 'JetBrains host adapter.',
+		});
+		expect(files.map((file) => file.path)).toContain(
+			'extension-hosts/jetbrains-ide/package.json',
+		);
+	});
+
+	it('normalises a long separator run in hostName quickly', () => {
+		const started = Date.now();
+		const files = scaffoldExtensionHostFiles({
+			hostName: `JetBrains${'!'.repeat(40_000)}IDE`,
+			description: 'JetBrains host adapter.',
+		});
+		expect(files.map((file) => file.path)).toContain(
+			'extension-hosts/jetbrains-ide/package.json',
+		);
+		expect(Date.now() - started).toBeLessThan(500);
+	});
 });

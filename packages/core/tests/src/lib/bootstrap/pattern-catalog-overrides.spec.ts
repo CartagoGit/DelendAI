@@ -145,4 +145,33 @@ describe('pattern overrides flow into buildServerBlueprint and recommendServerPl
 		// Hardcoded catalog is still usable.
 		expect(merged.library).toBe(PROJECT_PATTERN_CATALOG.library);
 	});
+
+	it('preserves the same namespace head when the package name has repeated separators', async () => {
+		const plan = await recommendServerPlan(
+			await analyzeProject(
+				reader({
+					'package.json': JSON.stringify({
+						name: '@Acme///Platform___Tools!!!',
+					}),
+					'tsconfig.json': '{}',
+				}),
+			),
+		);
+		expect(plan.namespacePrefix).toBe('platform');
+	});
+
+	it('normalises a long separator run in the package name quickly', async () => {
+		const analysis = await analyzeProject(
+			reader({
+				'package.json': JSON.stringify({
+					name: `@scope/plan${'!'.repeat(40_000)}`,
+				}),
+				'tsconfig.json': '{}',
+			}),
+		);
+		const started = Date.now();
+		const plan = await recommendServerPlan(analysis);
+		expect(plan.namespacePrefix).toBe('plan');
+		expect(Date.now() - started).toBeLessThan(500);
+	});
 });

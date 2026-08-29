@@ -22,6 +22,7 @@ import {
 	createFileSystemBlueprintWriter,
 	type IBlueprintWriter,
 } from '../shared/blueprint-writer';
+import { trimTrailingChar } from '../shared/string-normalize';
 import { assembleCliConfig, type IAssembleCliDeps } from './assemble';
 import {
 	renderStartupReportAnsi,
@@ -134,7 +135,7 @@ export const prepareServerBlueprintOnStart = async (
 ): Promise<{ written: boolean; path: string }> => {
 	const cacheDir =
 		resolvedCacheDir ?? args.tokens.cacheDir ?? DEFAULT_CORE_PATHS.cacheDir;
-	const relPath = `${cacheDir.replace(/\/+$/, '')}/bootstrap/blueprint.json`;
+	const relPath = `${trimTrailingChar(cacheDir, '/')}/bootstrap/blueprint.json`;
 
 	// Idempotency is the writer's responsibility (SRP): `writeOnce`
 	// repeats the existence/corruption check inside its mutex, so a

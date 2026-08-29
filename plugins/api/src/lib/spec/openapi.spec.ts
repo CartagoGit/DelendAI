@@ -163,4 +163,33 @@ describe('buildRequest', () => {
 		});
 		expect(req.url).toBe('https://staging.example.com/v2/users/42');
 	});
+
+	it('keeps the exact request shape when the baseUrl carries repeated trailing slashes', () => {
+		const spec = parseOpenApi(FIXTURE);
+		expect(
+			buildRequest({
+				operation: spec.operations.getUser as IOpenApiOperation,
+				params: { id: '42', verbose: true },
+				baseUrl: 'https://staging.example.com/v2////',
+				specServers: spec.servers,
+			}),
+		).toEqual({
+			method: 'GET',
+			url: 'https://staging.example.com/v2/users/42?verbose=true',
+			headers: {},
+		});
+	});
+
+	it('handles a baseUrl with a long trailing slash run without pathological slowdown', () => {
+		const spec = parseOpenApi(FIXTURE);
+		const startedAt = performance.now();
+		const req = buildRequest({
+			operation: spec.operations.getUser as IOpenApiOperation,
+			params: { id: '42' },
+			baseUrl: `https://staging.example.com${'/'.repeat(20_000)}`,
+			specServers: spec.servers,
+		});
+		expect(req.url).toBe('https://staging.example.com/users/42');
+		expect(performance.now() - startedAt).toBeLessThan(1_000);
+	});
 });
