@@ -11,12 +11,12 @@ primitives: every agent has to choose the author, decide when to push, and
 remember to add an audit trailer. `commit-policy` wraps those primitives with
 three configurable policies and exposes four tools to drive the engine:
 
-| Tool | Purpose |
-|---|---|
-| `commit_policy_status` | Read-only snapshot of the effective configuration. |
+| Tool                   | Purpose                                                                  |
+| ---------------------- | ------------------------------------------------------------------------ |
+| `commit_policy_status` | Read-only snapshot of the effective configuration.                       |
 | `commit_policy_commit` | Commit through the engine (identity + audit + protected-branch refusal). |
-| `commit_policy_push` | Push through the engine (protected-branch refusal + force policy). |
-| `commit_policy_run` | Manually fire any configured trigger. |
+| `commit_policy_push`   | Push through the engine (protected-branch refusal + force policy).       |
+| `commit_policy_run`    | Manually fire any configured trigger.                                    |
 
 The engine is **off by default**: no host sees a single commit unless they
 opt in. See "Configuration" below for the exact knobs.
@@ -39,56 +39,56 @@ opt in. See "Configuration" below for the exact knobs.
 }
 ```
 
-| Knob | Default | What it controls |
-|---|---|---|
-| `commit.enabled` | `false` | Master switch — no commit ever without `true`. |
-| `commit.requireConventional` | `true` | Refuse non-Conventional-Commit messages. |
-| `commit.autoScopeFromProposal` | `true` | Wrap bare `feat: x` as `feat(<proposalId>): x` when a slice context is present. |
-| `commit.refuseWhenDisabled` | `true` | Surface a typed refusal instead of silently dropping the call. |
-| `stash.enabled` | `false` | Whether agents may use git stash operations. Keep `false` to require work on the current branch. |
-| `identity.mode` | `"global"` | One of `explicit / agent / repo / global / env / auto`. |
-| `identity.owner` | _none_ | Required when `mode === "explicit"` — `{ name, email }`. |
-| `cadence.triggers` | `[]` | Empty array = no automatic commits; configured `slice` and `interval` triggers run in the background, while `threshold` and `manual` are fired through `commit_policy_run`. |
-| `cadence.triggers[].kind` | — | `"slice" \| "threshold" \| "interval" \| "manual"`. |
-| `cadence.sliceScoping` | `true` | `true` scopes commits to the slice's `files:` list; `false` commits the current dirty workspace snapshot when a slice closes. |
-| `cadence.allowForeignChanges` | `false` | Explicitly permits slice commits to include dirty files changed by other agents. When enabled, the shared-workspace snapshot is used for slice commits. |
-| `audit.trailer` | `"co-authored-by"` | `"none" \| "co-authored-by" \| "body-metadata"`. |
-| `audit.agentFormat` | `"${host}/${model}"` | Template for the agent portion of the trailer. |
-| `push.enabled` | `false` | Master switch — no push ever without `true`. |
-| `push.onCommit` | `false` | Push immediately after every successful commit. |
-| `push.everyNCommits` | _none_ | Push every N commits (alternative to `onCommit`). |
-| `push.everyNMinutes` | _none_ | Push every N minutes if there are unpushed commits. |
-| `push.force` | `"with-lease"` | `"with-lease" \| "allow" \| "never"`. |
-| `push.protectedBranches` | `["main", "master"]` | Push is always refused to these. |
-| `push.remote` / `push.branch` | _none_ | Optional explicit defaults; falls back to upstream / current branch. |
+| Knob                           | Default              | What it controls                                                                                                                                                            |
+| ------------------------------ | -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `commit.enabled`               | `false`              | Master switch — no commit ever without `true`.                                                                                                                              |
+| `commit.requireConventional`   | `true`               | Refuse non-Conventional-Commit messages.                                                                                                                                    |
+| `commit.autoScopeFromProposal` | `true`               | Wrap bare `feat: x` as `feat(<proposalId>): x` when a slice context is present.                                                                                             |
+| `commit.refuseWhenDisabled`    | `true`               | Surface a typed refusal instead of silently dropping the call.                                                                                                              |
+| `stash.enabled`                | `false`              | Whether agents may use git stash operations. Keep `false` to require work on the current branch.                                                                            |
+| `identity.mode`                | `"global"`           | One of `explicit / agent / repo / global / env / auto`.                                                                                                                     |
+| `identity.owner`               | _none_               | Required when `mode === "explicit"` — `{ name, email }`.                                                                                                                    |
+| `cadence.triggers`             | `[]`                 | Empty array = no automatic commits; configured `slice` and `interval` triggers run in the background, while `threshold` and `manual` are fired through `commit_policy_run`. |
+| `cadence.triggers[].kind`      | —                    | `"slice" \| "threshold" \| "interval" \| "manual"`.                                                                                                                         |
+| `cadence.sliceScoping`         | `true`               | `true` scopes commits to the slice's `files:` list; `false` commits the current dirty workspace snapshot when a slice closes.                                               |
+| `cadence.allowForeignChanges`  | `false`              | Explicitly permits slice commits to include dirty files changed by other agents. When enabled, the shared-workspace snapshot is used for slice commits.                     |
+| `audit.trailer`                | `"co-authored-by"`   | `"none" \| "co-authored-by" \| "body-metadata"`.                                                                                                                            |
+| `audit.agentFormat`            | `"${host}/${model}"` | Template for the agent portion of the trailer.                                                                                                                              |
+| `push.enabled`                 | `false`              | Master switch — no push ever without `true`.                                                                                                                                |
+| `push.onCommit`                | `false`              | Push immediately after every successful commit.                                                                                                                             |
+| `push.everyNCommits`           | _none_               | Push every N commits (alternative to `onCommit`).                                                                                                                           |
+| `push.everyNMinutes`           | _none_               | Push every N minutes if there are unpushed commits.                                                                                                                         |
+| `push.force`                   | `"with-lease"`       | `"with-lease" \| "allow" \| "never"`.                                                                                                                                       |
+| `push.protectedBranches`       | `["main", "master"]` | Push is always refused to these.                                                                                                                                            |
+| `push.remote` / `push.branch`  | _none_               | Optional explicit defaults; falls back to upstream / current branch.                                                                                                        |
 
 ### Identity modes
 
-| Mode | Resolves to |
-|---|---|
-| `explicit` | The owner declared in `identity.owner` (host-supplied). |
-| `agent` | The LLM host identity (`host + model`) when one is wired; otherwise the global git config. |
-| `repo` | The repo-local `git config user.name / user.email`, falling back to global. |
-| `global` | `git config --global user.name / user.email`. |
-| `env` | `GIT_AUTHOR_NAME` + `GIT_AUTHOR_EMAIL` from the process environment. |
-| `auto` | Deterministic priority: `env → global → repo → agent`. |
+| Mode       | Resolves to                                                                                |
+| ---------- | ------------------------------------------------------------------------------------------ |
+| `explicit` | The owner declared in `identity.owner` (host-supplied).                                    |
+| `agent`    | The LLM host identity (`host + model`) when one is wired; otherwise the global git config. |
+| `repo`     | The repo-local `git config user.name / user.email`, falling back to global.                |
+| `global`   | `git config --global user.name / user.email`.                                              |
+| `env`      | `GIT_AUTHOR_NAME` + `GIT_AUTHOR_EMAIL` from the process environment.                       |
+| `auto`     | Deterministic priority: `env → global → repo → agent`.                                     |
 
 ### Trigger kinds
 
-| Kind | Fires when |
-|---|---|
-| `slice` | A `proposals` slice transitions to a configured status (default `done`). Polls the proposals `index.json` every 5 s. |
+| Kind        | Fires when                                                                                                                                     |
+| ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| `slice`     | A `proposals` slice transitions to a configured status (default `done`). Polls the proposals `index.json` every 5 s.                           |
 | `threshold` | `git status --porcelain` reports at least N dirty files (default 10). Manual only — the agent calls `commit_policy_run { kind: "threshold" }`. |
-| `interval` | At least N minutes have elapsed since the last fire and the worktree is dirty. Runs automatically when configured. |
-| `manual` | Always available, regardless of `cadence.triggers`. |
+| `interval`  | At least N minutes have elapsed since the last fire and the worktree is dirty. Runs automatically when configured.                             |
+| `manual`    | Always available, regardless of `cadence.triggers`.                                                                                            |
 
 ### Push force policy
 
-| `push.force` | Maps to |
-|---|---|
-| `"with-lease"` (default) | `git push --force-with-lease` — safe force. |
-| `"allow"` | `git push --force` — only when you really mean it. |
-| `"never"` | No `--force` flag ever. |
+| `push.force`             | Maps to                                            |
+| ------------------------ | -------------------------------------------------- |
+| `"with-lease"` (default) | `git push --force-with-lease` — safe force.        |
+| `"allow"`                | `git push --force` — only when you really mean it. |
+| `"never"`                | No `--force` flag ever.                            |
 
 ### Compatibility with other plugins
 
