@@ -167,7 +167,7 @@ calculados a partir de la medición real más el guard band mínimo que
 
 ### S1 — Declarar `managed` explícito en las filas fixture-gated existentes
 
-- **Status**: pending
+- **Status**: done
 - **Files**:
     - `tools/scripts/report/token-budget-dashboard.script.ts`
       (`measureFixtureSurfaces`)
@@ -200,9 +200,36 @@ fixture-gated, exactamente el escenario que rompió esta vez.
 deja el gate en verde sin haber comprobado nada (lección ya
 documentada por la sesión que originó esta propuesta).
 
+**Desviación medida frente al texto original de esta slice**: el
+arquitecto listaba las 8 filas (`overview full/compact`, `auto_work
+idle/work plan`, `agent_catalog compact/full`, `analyze_project {}`,
+`plan_mcp_project {}`) como candidatas a declarar `managed`. Medido
+antes de tocar código (`base.client.callTool` bajo `surfaceMode:
+'managed'` explícito): `overview` es la ÚNICA de esas ocho que
+responde con un payload real bajo `managed` — el resto (`auto_work`,
+`agent_catalog`, `analyze_project`, `plan_mcp_project`, y también
+`search`/`docs`/`round_context`/`logs_tail` del cliente `extra`)
+devuelve `MCP error -32602: Tool <name> disabled` (o `not found`)
+cuando se invocan por nombre directo bajo `managed` — por diseño,
+`managed` solo expone esas tools a través del router `vertex`, nunca
+por nombre directo. Forzar `managed` en esas filas no habría
+"restaurado" la comparación pera-con-pera que pide el `goal`: habría
+sustituido cada una por un stub de error de tamaño fijo (56-67 B) que
+pasaría cualquier techo para siempre, ocultando cualquier crecimiento
+real futuro — literalmente peor que el bug que esta propuesta arregla.
+Aplicando el mismo principio que el propio `risks and mitigations` ya
+exige para el cliente `extra` ("declarar la verdad, no forzar un valor
+único"): solo `overview full`/`overview compact` declaran `managed`
+(en una conexión `overviewSurface` dedicada); el resto declara
+`native` explícito, que es la superficie que esas filas ya medían
+correctamente antes de esta propuesta (bytes idénticos, verificado) y
+contra la que sus techos ya estaban calibrados. Ver el comentario en
+`measureFixtureSurfaces` (`token-budget-dashboard.script.ts`) para el
+detalle y la evidencia reproducible.
+
 ### S2 — Filas nativas nuevas para `overview`, con techo propio y justificado
 
-- **Status**: pending
+- **Status**: done
 - **Files**:
     - `packages/core/src/lib/contracts/constants/token-budgets.constant.ts`
       (nuevos `overviewFullNative`/`overviewCompactNative`, o

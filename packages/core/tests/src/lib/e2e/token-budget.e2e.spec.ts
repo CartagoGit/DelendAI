@@ -15,7 +15,10 @@ import { createMcpProject } from '@mcp-vertex/core/lib/project/create-mcp-projec
 import { nodeDynamicImport } from '@mcp-vertex/core/lib/plugins/load-plugins';
 import { parseCliArgs } from '@mcp-vertex/core/lib/plugins/parse-cli-args';
 import { SKILL_MANIFEST_REL } from '@mcp-vertex/core/lib/skills/skill-paths';
-import { TOKEN_BUDGETS } from '@mcp-vertex/core/public';
+import {
+	TOKEN_BUDGETS,
+	type IMcpToolSurfaceMode,
+} from '@mcp-vertex/core/public';
 
 /**
  * Token budget benchmark [N23]. Invariant: cold-start protocol payloads stay
@@ -111,6 +114,14 @@ describe('e2e: token budget (cold-start payloads)', async () => {
 		input?: {
 			readonly clientInfo?: Implementation;
 			readonly capabilities?: ClientCapabilities;
+			// x00296 S1 (AUD-B06) regression guard: lets a test pin an
+			// explicit surface the same way `connectTokenBudgetClient`
+			// (the dashboard's fixture measurement) does, so the test below
+			// can prove an explicit `surfaceMode` always wins regardless of
+			// what `decideSurfaceModeFromCapabilities` would infer from
+			// `capabilities`/`clientInfo` — the exact invariant whose
+			// absence let AUD-B06 slip through when AUD-C01 was fixed.
+			readonly surfaceMode?: IMcpToolSurfaceMode;
 		},
 	): Promise<{
 		client: Client;
@@ -131,9 +142,11 @@ describe('e2e: token budget (cold-start payloads)', async () => {
 				// an explicit `--surface` flag would override capability
 				// detection entirely, so only pin it when there is no
 				// capability-driven case to preserve.
-				...(input?.capabilities === undefined
-					? ['--surface=native']
-					: []),
+				...(input?.surfaceMode !== undefined
+					? [`--surface=${input.surfaceMode}`]
+					: input?.capabilities === undefined
+						? ['--surface=native']
+						: []),
 			],
 			workspace,
 		);
@@ -248,6 +261,34 @@ describe('e2e: token budget (cold-start payloads)', async () => {
 			?.text;
 		return Buffer.byteLength(text ?? '', 'utf8');
 	};
+
+	/**
+	 * x00296 S2 (AUD-B06): `overview` is also directly callable under the
+	 * `native` surface (the default `client` above is pinned to
+	 * `--surface=native`), which lists the full tool catalog — a
+	 * materially larger, independently-governed payload than the
+	 * `managed` bootstrap listing `overviewFull`/`overviewCompact` cover.
+	 * `overviewFullNative`/`overviewCompactNative` are a NEW ceiling pair
+	 * (`token-budgets.constant.ts`), not a redefinition of the existing
+	 * `managed` ones.
+	 */
+	it('native overview listing stays under its own dedicated budget', async () => {
+		const full = await textBytes('mcp-vertex_overview', {});
+		const compact = await textBytes('mcp-vertex_overview', {
+			compact: true,
+		});
+		expectWithinBudget(
+			'overview full (native)',
+			full,
+			TOKEN_BUDGETS.toolPayloads.overviewFullNative,
+		);
+		expectWithinBudget(
+			'overview compact (native)',
+			compact,
+			TOKEN_BUDGETS.toolPayloads.overviewCompactNative,
+		);
+		expect(compact).toBeLessThan(full);
+	});
 
 	it('cold-start overview stays under budget; compact is much cheaper', async () => {
 		const adaptive = await connectClient(
@@ -599,6 +640,85 @@ title: token budget fixture
 			);
 		} finally {
 			await extra.close();
+		}
+	});
+
+	/**
+	 * x00296 S1 (AUD-B06) regression pin: fixing AUD-C01 (`x00285`) changed
+	 * what `decideSurfaceModeFromCapabilities` infers for a client that
+	 * declares no capabilities (managed -> native), and the dashboard's
+	 * fixture measurement (`connectTokenBudgetClient` in
+	 * `token-budget-report-lib.ts`) never declared an explicit
+	 * `surfaceMode`, so it silently started measuring a different surface
+	 * than the one its ceilings were calibrated for. The fix is that every
+	 * fixture-gated connection now passes an explicit `surfaceMode`, which
+	 * `resolveExplicitSurfaceMode` always honours ahead of any
+	 * capability-based inference (see `decide-mode.ts`). This test proves
+	 * that invariant directly: an explicit `surfaceMode` produces the same
+	 * `overview` payload regardless of what capabilities/clientInfo would
+	 * otherwise have inferred, so a FUTURE change to
+	 * `decideSurfaceModeFromCapabilities`'s default cannot silently move a
+	 * fixture-gated row onto a different surface ever again.
+	 */
+	it('an explicit surfaceMode overrides capability-based inference (AUD-B06 regression)', async () => {
+		// No capabilities at all would infer `native` (AUD-C01's fixed
+		// behaviour); pinning `managed` here must still win.
+		const managedNoCapabilities = await connectClient(
+			TOKEN_BUDGETS.fixturePluginIds.join(','),
+			false,
+			{ surfaceMode: 'managed' },
+		);
+		// Capabilities that declare `mcp-vertex/surface` listChanged support
+		// would infer `managed`; pinning `native` here must still win.
+		const nativeWithManagedCapabilities = await connectClient(
+			TOKEN_BUDGETS.fixturePluginIds.join(','),
+			false,
+			{
+				clientInfo: modernClientInfo,
+				capabilities: dynamicSurfaceCapabilities,
+				surfaceMode: 'native',
+			},
+		);
+		try {
+			const managedBytes = await (async () => {
+				const res = await managedNoCapabilities.client.callTool({
+					name: 'mcp-vertex_overview',
+					arguments: {},
+				});
+				const text = (
+					res.content as Array<{ type: string; text: string }>
+				)[0]?.text;
+				return Buffer.byteLength(text ?? '', 'utf8');
+			})();
+			const nativeBytes = await (async () => {
+				const res = await nativeWithManagedCapabilities.client.callTool(
+					{ name: 'mcp-vertex_overview', arguments: {} },
+				);
+				const text = (
+					res.content as Array<{ type: string; text: string }>
+				)[0]?.text;
+				return Buffer.byteLength(text ?? '', 'utf8');
+			})();
+
+			// `managed` (bootstrap-only listing) must stay well within the
+			// `overviewFull` ceiling regardless of the absent capabilities
+			// that would otherwise infer `native`.
+			expectWithinBudget(
+				'overview full (managed, no capabilities)',
+				managedBytes,
+				TOKEN_BUDGETS.toolPayloads.overviewFull,
+			);
+			// `native` (full catalog listing) must stay materially larger
+			// than the `managed` measurement above regardless of the
+			// listChanged-capable client that would otherwise infer
+			// `managed`, proving the two connections really measured two
+			// different surfaces, not the same one twice.
+			expect(nativeBytes).toBeGreaterThan(managedBytes);
+		} finally {
+			await Promise.all([
+				managedNoCapabilities.close(),
+				nativeWithManagedCapabilities.close(),
+			]);
 		}
 	});
 });
