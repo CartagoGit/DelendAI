@@ -264,7 +264,11 @@ export const createCommitPolicyEngine = (
 			// owns the staging + post-stage subset check + commit
 			// call; the engine is a pure router. f00183 will swap
 			// the driver for an idempotency-aware variant.
-			const driverInput = toDriverInput(event, baseMessage);
+			const driverInput = toDriverInput(
+				event,
+				baseMessage,
+				options.driver.policy.cadence.sliceScoping,
+			);
 			const result = await runCommitDriver(driverInput, options.driver);
 
 			if (result.refusal !== undefined) {
@@ -378,6 +382,7 @@ const composeMessage = (event: IEngineEvent): string => {
 const toDriverInput = (
 	event: IEngineEvent,
 	message: string,
+	sliceScoping: boolean,
 ): ICommitDriverInput => {
 	switch (event.kind) {
 		case 'slice':
@@ -386,7 +391,7 @@ const toDriverInput = (
 				sliceContext: {
 					proposalId: event.proposalId,
 					sliceId: event.sliceId,
-					files: event.files,
+					files: sliceScoping ? event.files : [],
 				},
 			};
 		case 'threshold':
