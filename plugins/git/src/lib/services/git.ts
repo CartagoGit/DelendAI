@@ -13,7 +13,7 @@ import type { IGitRunner, IGitRunResult } from '@mcp-vertex/core/public';
  * `{ ok: false, reason }`.
  */
 export const createGitRunner =
-	(cwd: string, timeoutMs = 15_000): IGitRunner =>
+	(cwd: string, timeoutMs = 60_000): IGitRunner =>
 	(args) =>
 		new Promise<IGitRunResult>((resolve) => {
 			execFile(
