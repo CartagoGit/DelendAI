@@ -200,6 +200,9 @@ const runCommitDriverUnlocked = async (
 	input: ICommitDriverInput,
 	options: ICommitDriverOptions,
 ): Promise<ICommitDriverResult> => {
+	const scopeSliceCommit =
+		options.policy.cadence.sliceScoping &&
+		options.policy.cadence.allowForeignChanges !== true;
 	if (!options.policy.commit.enabled) {
 		return {
 			committed: false,
@@ -291,7 +294,7 @@ const runCommitDriverUnlocked = async (
 		(input.triggerContext !== undefined
 			? input.triggerContext.files
 			: input.sliceContext !== undefined
-				? options.policy.cadence.sliceScoping
+				? scopeSliceCommit
 					? input.sliceContext.files
 					: await gitDirtyFilePaths(options.run)
 				: []);
@@ -303,7 +306,7 @@ const runCommitDriverUnlocked = async (
 	// root cause of the cross-agent contamination finding.
 	if (
 		input.sliceContext !== undefined &&
-		options.policy.cadence.sliceScoping &&
+		scopeSliceCommit &&
 		files.length === 0
 	) {
 		return {
@@ -358,8 +361,7 @@ const runCommitDriverUnlocked = async (
 		result.committed &&
 		files.length > 0 &&
 		(input.triggerContext !== undefined ||
-			(options.policy.cadence.sliceScoping &&
-				input.sliceContext !== undefined))
+			(scopeSliceCommit && input.sliceContext !== undefined))
 	) {
 		const cached = await gitCachedNames(options.run);
 		const expected = new Set(files.map(normalizeRepoPath));
