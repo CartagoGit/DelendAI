@@ -11,6 +11,10 @@ import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import type { IToolRegistration } from '@mcp-vertex/core/public';
+import type {
+	IGitRunResult,
+	IGitRunner,
+} from '@mcp-vertex/proposals/lib/shared/git-runner';
 
 import { runAgentLockEngine } from '@mcp-vertex/proposals/lib/locks/agent-lock-engine';
 import {
@@ -172,6 +176,85 @@ describe('proposal authoring (create → board → close)', async () => {
 			'utf8',
 		);
 		expect(doc).toMatch(/### S1[\s\S]*?- \*\*Status\*\*: done/);
+	});
+
+	it('returns a typed no-op persistence result when mode is none', async () => {
+		const create = await capture(buildCreateProposalRegistration(opts));
+		await create({
+			id: 'f00088',
+			title: 'No-op persist',
+			slices: [{ sliceId: 's1', files: ['src/no-op.ts'] }],
+		});
+
+		const close = await capture(buildCloseSliceRegistration(opts));
+		const result = parse(
+			await close({
+				proposalId: 'f00088',
+				sliceId: 's1',
+				releaseLock: false,
+				validateEvidence: recentValidate(),
+			}),
+		);
+		expect(result.closed).toBe(true);
+		expect(result.persist).toEqual({
+			committed: false,
+			pushed: false,
+			mode: 'none',
+		});
+	});
+
+	it('does not close or release when commit-and-push is incomplete', async () => {
+		const create = await capture(buildCreateProposalRegistration(opts));
+		await create({
+			id: 'f00089',
+			title: 'Incomplete push',
+			slices: [{ sliceId: 's1', files: ['src/incomplete.ts'] }],
+		});
+		const runner: IGitRunner = async (
+			args: readonly string[],
+		): Promise<IGitRunResult> => {
+			if (args[0] === 'add' || args[0] === 'commit') {
+				return { ok: true, output: '' };
+			}
+			if (args[0] === 'rev-parse') {
+				return { ok: true, output: 'abc1234' };
+			}
+			return { ok: false, output: '', reason: 'push rejected' };
+		};
+		const close = await capture(
+			buildCloseSliceRegistration({
+				...opts,
+				persist: {
+					mode: 'commit-and-push',
+					pushTarget: 'origin wip/f00089',
+				},
+				persistGit: runner,
+			} as IAuthoringToolOptions),
+		);
+		const result = parse(
+			await close({
+				proposalId: 'f00089',
+				sliceId: 's1',
+				validateEvidence: recentValidate(),
+			}),
+		);
+		expect(result.closed).toBe(false);
+		expect(result.persist).toMatchObject({
+			committed: true,
+			pushed: false,
+			mode: 'commit-and-push',
+		});
+		expect(result.lockReleased).toBeUndefined();
+		expect(
+			readFileSync(
+				join(
+					opts.proposalsDirAbs,
+					'ready',
+					'f00089-incomplete-push.md',
+				),
+				'utf8',
+			),
+		).toMatch(/- \*\*Status\*\*: pending/);
 	});
 
 	it('refuses close_slice until a distinct agent has approved the slice', async () => {

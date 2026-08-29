@@ -224,7 +224,7 @@ const sourceForLazyPlugin = (input: {
 	return 'preset';
 };
 
-const tryAssembleManagedLazy = (input: {
+const tryAssembleManagedLazy = async (input: {
 	readonly args: IMcpVertexCliArgs;
 	readonly fileConfig: IMcpVertexConfigFile;
 	readonly corePrefix: string;
@@ -234,7 +234,7 @@ const tryAssembleManagedLazy = (input: {
 	readonly effectivePlugins: readonly string[];
 	readonly buildContext: IAssemblePluginsInput['buildContext'];
 	readonly importFn: (specifier: string) => Promise<unknown>;
-}): IAssemblePluginsResult | undefined => {
+}): Promise<IAssemblePluginsResult | undefined> => {
 	const loading = input.fileConfig.managedSurface?.loading ?? 'lazy';
 	if (loading !== 'lazy') return undefined;
 	// Native is an explicit compatibility contract: it needs real eager MCP
@@ -338,6 +338,20 @@ const tryAssembleManagedLazy = (input: {
 				];
 		},
 	});
+	const configuredStartupPlugins = definitions.filter((plugin) => {
+		if (plugin.startupActivation !== true) return false;
+		const options = pluginConfigFor(input.fileConfig, plugin.id).options;
+		// Startup activation is a lifecycle guarantee, not an opt-in
+		// heuristic. Activate every configured startup plugin before the
+		// first lazy event so malformed options reach the plugin's schema
+		// validation and cannot silently disable its listeners.
+		return options !== undefined;
+	});
+	await Promise.all(
+		configuredStartupPlugins.map((plugin) =>
+			lazyRuntime.activatePlugin(plugin.id),
+		),
+	);
 	const pluginToolEntries: IOverviewToolEntry[] = [];
 	const toolSurfaceDescriptors: IToolSurfaceDescriptor[] = [];
 	const lazyToolActivators = new Map<
@@ -539,7 +553,7 @@ export const assemblePlugins = async (
 			!disabledConfigPlugins.has(matchedKey)
 		);
 	});
-	const managedLazy = tryAssembleManagedLazy({
+	const managedLazy = await tryAssembleManagedLazy({
 		args,
 		fileConfig,
 		corePrefix,

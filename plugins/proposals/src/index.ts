@@ -286,6 +286,29 @@ export default definePlugin({
 							runCloseSliceQualityGate(ctx.workspace.root),
 					}
 				: {}),
+			...(parsedOptions.data.persist !== undefined
+				? {
+						persist: {
+							mode: parsedOptions.data.persist.mode,
+							...(parsedOptions.data.persist.messageTemplate !==
+							undefined
+								? {
+										messageTemplate:
+											parsedOptions.data.persist
+												.messageTemplate,
+									}
+								: {}),
+							...(parsedOptions.data.persist.pushTarget !==
+							undefined
+								? {
+										pushTarget:
+											parsedOptions.data.persist
+												.pushTarget,
+									}
+								: {}),
+						},
+					}
+				: {}),
 		};
 
 		return {
