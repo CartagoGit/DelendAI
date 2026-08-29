@@ -272,7 +272,7 @@ export const createCommitPolicyEngine = (
 
 			// Step 7 — push (x00266). Wait for the scheduler so
 			// callers never observe a premature success.
-			let pushed = result.pushed;
+			const pushed = result.pushed;
 			if (options.onCommitSucceeded !== undefined && result.committed) {
 				try {
 					const pushResult = await options.onCommitSucceeded();
