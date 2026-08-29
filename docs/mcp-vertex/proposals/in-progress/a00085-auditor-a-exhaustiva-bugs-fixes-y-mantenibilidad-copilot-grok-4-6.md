@@ -30,11 +30,11 @@ Veredicto: el núcleo de durabilidad (locks, índice de propuestas, memory, docs
 
 HEAD auditado: `090a7904ed1a55c6723562dac6132301926b5184`.
 
-## why
+## Why
 
 El usuario pidió una propuesta de auditoría **muy completa** centrada en bugs/fixes y mantenibilidad, y que se commitee/pushee de forma autónoma. a00084 (2026-07-30) no cubre este HEAD. El allocator stale se reprodujo *durante* esta sesión.
 
-## non-goals
+## Non-goals
 
 - Re-auditar hallazgos de a00083/a00084 sin re-verificar el código actual (hay tabla de re-verificación).
 - Arreglar en línea todos los findings (se spawnan propuestas `x`/`r`).
@@ -58,7 +58,7 @@ El usuario pidió una propuesta de auditoría **muy completa** centrada en bugs/
   - Scoreboard justificado
   - `bun run lint:proposals` exits 0
 
-## acceptance
+## Acceptance
 
 - Goal incluye hash HEAD
 - Verified State con números reales de Phase 0
@@ -68,7 +68,7 @@ El usuario pidió una propuesta de auditoría **muy completa** centrada en bugs/
 
 ---
 
-## verified state
+## Verified State
 
 | Metric | Value | Source |
 |---|---|---|
@@ -87,6 +87,22 @@ El usuario pidió una propuesta de auditoría **muy completa** centrada en bugs/
 | **Unmerged sibling fix** | `fix/proposal-id-allocator-stale-counter` @ `59325969` — **not in develop** | `git log origin/develop` vs that branch |
 
 `create_proposal kind:audit` contra este counter **reemitió `a00084`**, que ya vive en `done/audits/a00084-30-07-2026-…`. El stub se retiró; este documento usa `a00085` pasado a mano tras ver el choque.
+
+---
+
+### Phase coverage (0–10)
+
+- **Phase 0 — Pre-flight**: cuantificada en [Verified State](#verified-state).
+- **Phase 1 — Core packages**: cubierta por los findings #8, #9 y #11.
+- **Phase 2 — Every plugin**: cubierta por los findings #1–#7, #10 y #15.
+- **Phase 3 — Extensions**: cubierta por el finding #13.
+- **Phase 4 — UI extension**: revisada sin findings materiales nuevos en esta pasada.
+- **Phase 5 — Apps**: cubierta por el finding #14.
+- **Phase 6 — Tools and scripts**: cubierta por los findings #2, #12 y #15.
+- **Phase 7 — Test suite**: cubierta por el gap de cobertura citado en el finding #1.
+- **Phase 8 — Cross-cutting concerns**: cubierta por la tabla de concurrencia y el scan de hard rules.
+- **Phase 9 — Synthesize findings**: materializada en [Findings](#findings).
+- **Phase 10 — Scoreboard and verdict**: materializada en [Scoreboard](#scoreboard).
 
 ---
 
@@ -497,7 +513,7 @@ Biome 44 errors **no** se tratan como findings cualitativos nuevos: viven en spe
 
 ---
 
-## scoreboard
+## Scoreboard
 
 Unweighted average. Dimensión con FATAL no puede ir >6.
 
