@@ -66,6 +66,7 @@ const buildPolicy = (
 		cadence: {
 			triggers: [],
 			sliceScoping: false,
+			allowForeignChanges: true,
 		},
 		push: {
 			enabled: false,
