@@ -1,5 +1,5 @@
 import { stat } from 'node:fs/promises';
-import { join, relative, resolve } from 'node:path';
+import { relative, resolve } from 'node:path';
 
 import z from 'zod';
 
@@ -724,7 +724,20 @@ export const runAutoWork = async (
 	const pushTargetHint =
 		options.persist?.pushTarget ??
 		(worktreeEnabled ? 'origin agent/<branch>' : 'origin HEAD');
-	if (resolvedMode === 'commit-and-push' && !worktreeEnabled) {
+	// x00298: shared-checkout mode (agentWorktree: false) may still use
+	// `commit-and-push` as long as the push target is NOT a protected
+	// branch — that case is already rejected above by
+	// `persistTargetHitsProtectedBranch`. Only when NO explicit
+	// non-protected target is configured do we demand per-agent
+	// worktrees, whose `agent/<branch>` targets are safe by construction.
+	const pushTargetExplicitlySafe =
+		options.persist?.pushTarget !== undefined &&
+		!persistTargetHitsProtectedBranch(options.persist.pushTarget);
+	if (
+		resolvedMode === 'commit-and-push' &&
+		!worktreeEnabled &&
+		!pushTargetExplicitlySafe
+	) {
 		return json({
 			state: 'work',
 			ok: false,
@@ -733,10 +746,10 @@ export const runAutoWork = async (
 			proposalId: next.proposalId,
 			file: next.file,
 			hygieneBlockers: [
-				'commit-and-push requires agentWorktree to be enabled',
+				'commit-and-push requires agentWorktree to be enabled or an explicit non-protected persist.pushTarget',
 			],
 			nextAction:
-				'Use persist.mode "commit" in shared-checkout mode, or enable agentWorktree before using commit-and-push.',
+				'Set persist.pushTarget to a wip/* or agent/* branch, or use persist.mode "commit" in shared-checkout mode.',
 		});
 	}
 	const persistStep =

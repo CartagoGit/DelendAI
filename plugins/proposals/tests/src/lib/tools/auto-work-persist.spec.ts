@@ -256,7 +256,8 @@ describe('maybePersistAfterSlice', async () => {
 			'S1',
 			{
 				mode: 'commit-and-push',
-				pushTarget: 'origin HEAD:wip/x00298-S1',
+				// x00298: no explicit pushTarget here - the default 'origin HEAD'
+				// is only safe with worktrees on, so the refusal must fire.
 				agentWorktreeEnabled: false,
 				git: runner,
 			},
@@ -266,7 +267,7 @@ describe('maybePersistAfterSlice', async () => {
 			committed: false,
 			pushed: false,
 			mode: 'commit-and-push',
-			reason: 'commit-and-push requires agentWorktree to be enabled; use mode "commit" in shared-checkout mode or enable agentWorktree',
+			reason: 'commit-and-push requires agentWorktree to be enabled or an explicit non-protected pushTarget; use mode "commit" in shared-checkout mode',
 		});
 		expect(runner.calls).toHaveLength(0);
 	});
@@ -414,8 +415,8 @@ describe('maybePersistAfterSlice', async () => {
 				{
 					mode: 'commit-and-push',
 					pushTarget: 'origin agent/x00298',
-				agentWorktreeEnabled: true,
-				git: runner,
+					agentWorktreeEnabled: true,
+					git: runner,
 				},
 			);
 
