@@ -228,6 +228,7 @@ describe('proposal authoring (create → board → close)', async () => {
 					mode: 'commit-and-push',
 					pushTarget: 'origin wip/f00089',
 				},
+				agentWorktreeEnabled: true,
 				persistGit: runner,
 			} as IAuthoringToolOptions),
 		);
