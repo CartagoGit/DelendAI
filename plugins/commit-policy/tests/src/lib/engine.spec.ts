@@ -214,6 +214,94 @@ describe('CommitPolicyEngine (f00182)', () => {
 		expect(hookFired).toBe(true);
 	});
 
+	it('waits for a successful push before returning OK', async () => {
+		let pushCompleted = false;
+		const engine = createCommitPolicyEngine({
+			driver: {
+				run: buildRunner('feature/x', true),
+				policy: basePolicy(),
+				identityCtx: {
+					run: buildRunner('feature/x', true),
+					envVars: Object.freeze({}),
+				},
+				auditAgent: null,
+			},
+			branchPolicy: DEFAULT_BRANCH_POLICY,
+			onCommitSucceeded: async () => {
+				await Promise.resolve();
+				pushCompleted = true;
+				return {
+					ok: true,
+					pushed: true,
+					remote: 'origin',
+					branch: 'feature/x',
+				};
+			},
+		});
+
+		const result = await engine.handle({
+			kind: 'manual',
+			message: 'feat: wait for push',
+			files: ['only-this.ts'],
+			eventId: 'push-ok',
+		});
+
+		expect(result).toMatchObject({
+			ack: 'OK',
+			committed: true,
+			pushed: true,
+		});
+		expect(pushCompleted).toBe(true);
+	});
+
+	it('returns structured PUSH_FAILED for a rejected or timed out push', async () => {
+		const failures = [
+			{
+				label: 'rejection',
+				hook: async () => ({
+					ok: false as const,
+					refusal: 'push refused',
+				}),
+			},
+			{
+				label: 'timeout',
+				hook: async () => {
+					throw new Error('timeout exceeded');
+				},
+			},
+		];
+
+		for (const failure of failures) {
+			const engine = createCommitPolicyEngine({
+				driver: {
+					run: buildRunner('feature/x', true),
+					policy: basePolicy(),
+					identityCtx: {
+						run: buildRunner('feature/x', true),
+						envVars: Object.freeze({}),
+					},
+					auditAgent: null,
+				},
+				branchPolicy: DEFAULT_BRANCH_POLICY,
+				onCommitSucceeded: failure.hook,
+			});
+
+			const result = await engine.handle({
+				kind: 'manual',
+				message: `feat: push ${failure.label}`,
+				files: ['only-this.ts'],
+				eventId: `push-${failure.label}`,
+			});
+
+			expect(result).toMatchObject({
+				ack: 'ERR',
+				code: 'PUSH_FAILED',
+				committed: true,
+				pushed: false,
+			});
+		}
+	});
+
 	it('dispose() clears the seen set', () => {
 		const engine = createCommitPolicyEngine({
 			driver: {
