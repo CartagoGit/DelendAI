@@ -13,6 +13,32 @@ function emptyUsage(): IBudgetUsage {
 }
 
 describe('LoopDetector', () => {
+	it('rejects a negative budget cap', () => {
+		const d = new LoopDetector();
+		expect(() => d.setBudgetCap(-1)).toThrow(RangeError);
+	});
+
+	it('rejects a non-finite budget cap', () => {
+		const d = new LoopDetector();
+		expect(() => d.setBudgetCap(Number.POSITIVE_INFINITY)).toThrow(
+			RangeError,
+		);
+	});
+
+	it('falls back to subagentId as the grouping key when slotId is omitted', () => {
+		// ingest()'s `step.slotId ?? step.subagentId` fallback: two ingests
+		// under the same subagentId with no slotId must land in the same
+		// history bucket as if that subagentId had been passed as slotId.
+		const d = new LoopDetector();
+		d.setBudgetCap(0);
+		d.ingest({ subagentId: 'solo', output: 'x' }, emptyUsage(), 0);
+		d.ingest({ subagentId: 'solo', output: 'y' }, emptyUsage(), 0);
+		d.ingest({ subagentId: 'solo', output: 'x' }, emptyUsage(), 0);
+		expect(d.evaluate('solo').reason).toBe<RotationReason>(
+			'repeated-output',
+		);
+	});
+
 	it('returns null reason when nothing has happened', () => {
 		const d = new LoopDetector();
 		d.setBudgetCap(1000);

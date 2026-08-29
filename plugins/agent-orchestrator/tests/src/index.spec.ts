@@ -154,6 +154,30 @@ describe('agent-orchestrator plugin register() — perMode wiring (bug 1)', () =
 		);
 	});
 
+	it('accepts a policy with no perMode field at all (the common case)', async () => {
+		const reg = (await plugin.register(
+			makeCtx({
+				policy: {
+					defaultMode: 'linear',
+					defaults: {
+						budget: {
+							maxTokensOrchestrator: 100_000,
+							maxTokensPerSubagent: 10_000,
+							timeoutMs: 0,
+						},
+						rotation: {
+							maxIterationsPerSubagent: 3,
+							allow: ['error-storm'],
+						},
+					},
+				},
+				allowFakeDispatchPort: true,
+			}),
+		)) as IRegisterResultWithErrors;
+		expect(reg.tools?.length).toBeGreaterThan(0);
+		expect(reg.errors ?? []).toHaveLength(0);
+	});
+
 	it('FakeDispatchPort instance is used only when allowFakeDispatchPort is set', () => {
 		// Sanity: `FakeDispatchPort` is exported and constructible directly,
 		// confirming it remains available for tests/fixtures per the fix.

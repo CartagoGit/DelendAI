@@ -52,6 +52,17 @@ describe('BudgetTracker', () => {
 		expect(() => t.recordSubagent('x', -1)).toThrow(RangeError);
 	});
 
+	it('rejects an empty subagentId', () => {
+		const t = new BudgetTracker(POLICY);
+		expect(() => t.recordSubagent('', 10)).toThrow(RangeError);
+	});
+
+	it('treats a 0 per-subagent cap as unlimited', () => {
+		const t = new BudgetTracker({ ...POLICY, maxTokensPerSubagent: 0 });
+		t.recordSubagent('a', 10_000_000);
+		expect(t.subagentExhausted('a')).toBe(false);
+	});
+
 	it('resets cleanly', () => {
 		const t = new BudgetTracker(POLICY);
 		t.recordOrchestrator(200);

@@ -74,7 +74,7 @@ describe('commit-policy dogfood E2E', () => {
 		}
 	});
 
-	it.skip('commits a slice with the global user + audit trailer + pushes it (x00258: skipped, pre-x00258 behavior tested pre-change)', async () => {
+	it('commits a slice with the global user + audit trailer + pushes it', async () => {
 		const policy = CommitPolicyOptionsSchema.parse({
 			gitTimeoutMs: 60000,
 			commit: { enabled: true },
@@ -143,8 +143,17 @@ describe('commit-policy dogfood E2E', () => {
 		const pushResult = await runPushDriver({}, policy.push, runner);
 		expect(pushResult.ok).toBe(true);
 
-		const remoteLog = await git(remote, 'log', '--oneline');
+		// `--all`: the bare remote's default branch is still `develop` (set
+		// up in beforeEach), so a plain `log` walks only that ref and would
+		// never see a commit pushed to the sibling `topic/e2e-test` branch.
+		const remoteLog = await git(remote, 'log', '--oneline', '--all');
 		expect(remoteLog.stdout).toContain('feat(f00181): dogfood smoke');
+
+		// The push didn't just succeed — the remote's `topic/e2e-test` ref
+		// itself now points at the exact commit the local branch produced.
+		const localHead = await git(workspace, 'rev-parse', 'topic/e2e-test');
+		const remoteHead = await git(remote, 'rev-parse', 'topic/e2e-test');
+		expect(remoteHead.stdout.trim()).toBe(localHead.stdout.trim());
 	});
 
 	it('refuses a commit when commit.enabled is false', async () => {
